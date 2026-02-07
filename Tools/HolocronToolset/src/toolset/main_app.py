@@ -293,28 +293,17 @@ def main():
     setup_post_init_settings()
     setup_toolset_default_env()
 
-    RobustLogger().debug("TRACE: About to create ToolWindow")
     tool_window = ToolWindow()
-    RobustLogger().debug("TRACE: ToolWindow created")
-    RobustLogger().debug("TRACE: About to call tool_window.show()")
     tool_window.show()
-    RobustLogger().debug("TRACE: tool_window.show() called")
-    RobustLogger().debug("TRACE: About to call check_for_updates")
     tool_window.update_manager.check_for_updates(silent=True)
-    RobustLogger().debug("TRACE: check_for_updates returned")
-    RobustLogger().debug("TRACE: About to setup qasync")
+
     qasync_installed = False
     with suppress(ImportError):
-        RobustLogger().debug("TRACE: Importing qasync")
         from qasync import QEventLoop  # type: ignore[import-not-found, import-untyped, note]  # pyright: ignore[reportMissingImports, reportMissingTypeStubs]
-        RobustLogger().debug("TRACE: qasync imported, creating QEventLoop")
         asyncio.set_event_loop(QEventLoop(app))
-        RobustLogger().debug("TRACE: QEventLoop created and set")
         qasync_installed = True
     if qasync_installed:
-        RobustLogger().debug("TRACE: qasync installed; asyncio event loop integrated with Qt")
-    else:
-        RobustLogger().debug("TRACE: qasync not installed, falling back to default event loop")
+        RobustLogger().debug("qasync installed; asyncio event loop integrated with Qt")
 
     # Best-effort: capture asyncio task exceptions too (especially when qasync is in use).
     install_asyncio_exception_handler()

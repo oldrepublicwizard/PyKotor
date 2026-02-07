@@ -175,8 +175,6 @@ class AsyncLoader(QDialog, Generic[T]):
             | Qt.WindowType.WindowMinMaxButtonsHint  # Enable minimize/maximize buttons
             & ~Qt.WindowType.WindowContextHelpButtonHint
         )
-        print("AsyncLoader.__init__: realtime_progress:", realtime_progress)
-
         # Load UI from .ui file
         from toolset.uic.qtpy.dialogs.async_loader import Ui_Dialog
 
@@ -339,7 +337,6 @@ class AsyncLoader(QDialog, Generic[T]):
         self,
         error: Exception,
     ):
-        print("AsyncLoader._on_failed")
         self.errors.append(error)
         self.optional_error_hook.emit(error)
         RobustLogger().error(str(error), exc_info=error)
@@ -347,7 +344,6 @@ class AsyncLoader(QDialog, Generic[T]):
             self.error = error
 
     def _on_completed(self):
-        print("_on_completed")
         if self.error is not None:
             self.reject()
             self._show_error_dialog()
@@ -355,7 +351,6 @@ class AsyncLoader(QDialog, Generic[T]):
             self.accept()
 
     def _show_error_dialog(self):
-        print("AsyncLoader._show_error_dialog")
         if self.error_title:
             error_msgs = ""
             for i, e in enumerate(self.errors):
@@ -408,7 +403,6 @@ class AsyncWorker(QThread, Generic[T]):
         fast_fail: bool = False,
     ):
         super().__init__(parent)
-        print("AsyncWorker.__init__: realtime_progress:", realtime_progress)
         self._tasks: list[Callable[..., T]] = task if isinstance(task, list) else [task]
         self._realtime_progress: bool = realtime_progress
         self._fast_fail: bool = fast_fail
@@ -423,7 +417,6 @@ class AsyncWorker(QThread, Generic[T]):
             except Exception as e:  # pylint: disable=W0718  # noqa: BLE001
                 self.failed.emit(e)
                 if self._fast_fail:
-                    print("fast fail, emit completed")
                     self.completed.emit()
                     break
             else:
