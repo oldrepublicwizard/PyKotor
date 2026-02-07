@@ -1,4 +1,4 @@
-[build-system]                                                                                                                              
+[build-system]
 build-backend = "setuptools.build_meta"
 requires = ["setuptools>=67.8.0", "wheel"]
 
@@ -27,10 +27,7 @@ classifiers = [
   "Topic :: File Formats",
   "Typing :: Typed",
 ]
-dependencies = [
-  "defusedxml>=0.7",
-  "ply>=3.11,<4"
-]
+dependencies = ["defusedxml>=0.7", "ply>=3.11,<4"]
 keywords = [
   "2da",
   "bif",
@@ -52,13 +49,14 @@ keywords = [
   "sith-lords",
   "star-wars",
   "tlk",
-  "tsl"
+  "tsl",
 ]
-license = {text = "LGPL-3.0-or-later"}
+license = { text = "LGPL-3.0-or-later" }
 readme = "README.md"
 requires-python = ">=3.8"
 
 [project.optional-dependencies]
+all = ["pykotor[dev,encodings,extras,font,gl,updater]"]
 # Development dependencies
 dev = [
   "astroid>=3.2.0,<3.5.0; python_version<\"3.9\"",
@@ -103,35 +101,30 @@ dev = [
   "types-setuptools>=80.10.0.20260124; python_version>=\"3.9\"",
   "typing-extensions>=4.5.0,<4.9.0; python_version<\"3.9\"",
   "typing-extensions>=4.15.0; python_version>=\"3.9\"",
-  "typing-inspection>=0.4.2; python_version>=\"3.9\""
+  "typing-inspection>=0.4.2; python_version>=\"3.9\"",
 ]
 encodings = [
   "charset-normalizer>=2.0,<3.4; python_version<\"3.9\"",
-  "charset-normalizer>=2.0; python_version>=\"3.9\""
+  "charset-normalizer>=2.0; python_version>=\"3.9\"",
 ]
-exp = [
-  "fusepy>=3.0.1",
-  "pywin32>=38; sys_platform == \"win32\""
-]
+exp = ["fusepy>=3.0.1", "pywin32>=38; sys_platform == \"win32\""]
 extra = [
   "PyYAML>=6.0",
   "colorama>=0.4.6",
   "comtypes>=1.4.0; sys_platform == \"win32\"",
   "gputil>=1.4.0",
-  "psutil>=7.2.2"
+  "psutil>=7.2.2",
 ]
 font = [
   "pillow>10,<11.1.0; python_implementation == 'PyPy'",
-  "pillow>=9.5; python_implementation == 'CPython'"
+  "pillow>=9.5; python_implementation == 'CPython'",
 ]
 gl = [
   "PyGLM>=2.0,<2.8; python_implementation == 'CPython'",
   "PyOpenGL>=3.1",
-  "numpy>=1.22"
+  "numpy>=1.22",
 ]
-gl_exp = [
-  "moderngl",
-]
+gl_exp = ["moderngl"]
 updater = [
   "certifi>=2021.10.8",
   "pycryptodome>=3.19.0",
@@ -151,7 +144,7 @@ Issues = "https://github.com/OldRepublicDevs/PyKotor/issues"
 Repository = "https://github.com/OldRepublicDevs/PyKotor.git"
 
 [tool.setuptools]
-package-dir = {"" = "src"}
+package-dir = { "" = "src" }
 
 [tool.setuptools.packages.find]
 namespaces = true

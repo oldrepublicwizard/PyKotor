@@ -9,34 +9,37 @@ description = "A Star Wars character AI chat interface using PyQt and LLMs"
 readme = "README.md"
 requires-python = ">=3.8"
 license = { text = "MIT" }
-authors = [
-    { name = "PyKotor Team" }
-]
-maintainers = [{name = "th3w1zard1", email = "boden.crouch@gmail.com"}]
+authors = [{ name = "PyKotor Team" }]
+maintainers = [{ name = "th3w1zard1", email = "boden.crouch@gmail.com" }]
 keywords = [
-    "kotor", "star-wars",
-    "ai", "llm", "chat",
-    "character", "roleplay",
-    "pyqt5", "pykotor",
+  "kotor",
+  "star-wars",
+  "ai",
+  "llm",
+  "chat",
+  "character",
+  "roleplay",
+  "pyqt5",
+  "pykotor",
 ]
 classifiers = [
-    "Development Status :: 3 - Alpha",
-    "Intended Audience :: End Users/Desktop",
-    "License :: OSI Approved :: MIT License",
-    "Operating System :: OS Independent",
-    "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3.8",
-    "Programming Language :: Python :: 3.9",
-    "Programming Language :: Python :: 3.10",
-    "Programming Language :: Python :: 3.11",
-    "Programming Language :: Python :: 3.12",
-    "Topic :: Games/Entertainment",
-    "Topic :: Scientific/Engineering :: Artificial Intelligence",
-    "Environment :: X11 Applications :: Qt",
+  "Development Status :: 3 - Alpha",
+  "Intended Audience :: End Users/Desktop",
+  "License :: OSI Approved :: MIT License",
+  "Operating System :: OS Independent",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.8",
+  "Programming Language :: Python :: 3.9",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.13",
+  "Programming Language :: Python :: 3.14",
+  "Topic :: Games/Entertainment",
+  "Topic :: Scientific/Engineering :: Artificial Intelligence",
+  "Environment :: X11 Applications :: Qt",
 ]
-dependencies = [
-    "pykotor>=2.1.0",
-]
+dependencies = ["pykotor>=2.1.1"]
 
 [project.scripts]
 holocron-ai = "holocron_ai.__main__:main"
@@ -45,10 +48,7 @@ holocron-ai = "holocron_ai.__main__:main"
 holocron-ai-gui = "holocron_ai.__main__:main"
 
 [project.optional-dependencies]
-dev = [
-    "pytest>=7.0.0",
-    "ruff>=0.5.3",
-]
+dev = ["pytest>=7.0.0", "ruff>=0.5.3"]
 
 [project.urls]
 Homepage = "https://github.com/OldRepublicDevs/PyKotor"
@@ -67,15 +67,20 @@ readme = "README.md"
 license = "MIT"
 packages = [{ include = "holocron_ai", from = "src" }]
 keywords = [
-    "kotor", "star-wars",
-    "ai", "llm", "chat",
-    "character", "roleplay",
-    "pyqt5", "pykotor",
+  "kotor",
+  "star-wars",
+  "ai",
+  "llm",
+  "chat",
+  "character",
+  "roleplay",
+  "pyqt5",
+  "pykotor",
 ]
 
 [tool.poetry.dependencies]
 python = "^3.8"
-pykotor = "^2.1.0"
+pykotor = "^2.1.1"
 
 [tool.poetry.group.dev.dependencies]
 pytest = ">=7.0.0"
@@ -107,17 +112,17 @@ target-version = ['py38']
 [tool.pyinstaller]
 console = true
 exclude-modules = [
-    "numpy",
-    "PyQt5",
-    "PyQt6",
-    "PySide2",
-    "PySide6",
-    "PIL",
-    "matplotlib",
-    "PyOpenGL",
-    "PyGLM",
-    "dl_translate",
-    "torch",
+  "numpy",
+  "PyQt5",
+  "PyQt6",
+  "PySide2",
+  "PySide6",
+  "PIL",
+  "matplotlib",
+  "PyOpenGL",
+  "PyGLM",
+  "dl_translate",
+  "torch",
 ]
 
 [tool.dependencies]

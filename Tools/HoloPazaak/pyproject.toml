@@ -18,12 +18,27 @@ maintainers = [{ name = "th3w1zard1", email = "boden.crouch@gmail.com" }]
 readme = { file = "README.md", content-type = "text/markdown" }
 license = { text = "LGPL-3.0-or-later" }
 keywords = [
-  "kotor", "kotor1", "kotor2", "tsl",
-  "star-wars", "knights-of-the-old-republic",
-  "pazaak", "card-game", "minigame",
-  "pyqt", "pyside6", "qt", "qtpy",
-  "game", "casino", "cards", "multiplayer",
-  "pykotor", "bioware", "lucasarts", "websocket",
+  "kotor",
+  "kotor1",
+  "kotor2",
+  "tsl",
+  "star-wars",
+  "knights-of-the-old-republic",
+  "pazaak",
+  "card-game",
+  "minigame",
+  "pyqt",
+  "pyside6",
+  "qt",
+  "qtpy",
+  "game",
+  "casino",
+  "cards",
+  "multiplayer",
+  "pykotor",
+  "bioware",
+  "lucasarts",
+  "websocket",
 ]
 classifiers = [
   "Development Status :: 4 - Beta",
@@ -79,20 +94,35 @@ readme = "README.md"
 license = "LGPL-3.0-or-later"
 packages = [{ include = "holopazaak", from = "src" }]
 keywords = [
-  "kotor", "kotor1", "kotor2", "tsl",
-  "star-wars", "knights-of-the-old-republic",
-  "pazaak", "card-game", "minigame",
-  "pyqt", "pyside6", "qt", "qtpy",
-  "game", "casino", "cards", "multiplayer",
-  "pykotor", "bioware", "lucasarts", "websocket",
+  "kotor",
+  "kotor1",
+  "kotor2",
+  "tsl",
+  "star-wars",
+  "knights-of-the-old-republic",
+  "pazaak",
+  "card-game",
+  "minigame",
+  "pyqt",
+  "pyside6",
+  "qt",
+  "qtpy",
+  "game",
+  "casino",
+  "cards",
+  "multiplayer",
+  "pykotor",
+  "bioware",
+  "lucasarts",
+  "websocket",
 ]
 
 [tool.poetry.dependencies]
 python = "^3.8"
 qtpy = ">=2.4.3"
-PyQt6 = {version = ">=6.6.1", optional = true}
-PyQt5 = {version = ">=5.15", optional = true}
-PySide6 = {version = ">=6.6.3.1", optional = true}
+PyQt6 = { version = ">=6.6.1", optional = true }
+PyQt5 = { version = ">=5.15", optional = true }
+PySide6 = { version = ">=6.6.3.1", optional = true }
 websockets = ">=12.0"
 
 [tool.poetry.group.dev.dependencies]
@@ -119,17 +149,14 @@ Issues = "https://github.com/OldRepublicDevs/PyKotor/issues"
 Changelog = "https://github.com/OldRepublicDevs/PyKotor/releases"
 
 [tool.setuptools]
-package-dir = {"" = "src"}
+package-dir = { "" = "src" }
 
 [tool.setuptools.packages.find]
 where = ["src"]
 
 [tool.pyinstaller]
 windowed = true
-exclude-modules = [
-  "PyQt5",
-  "PySide2",
-]
+exclude-modules = ["PyQt5", "PySide2"]
 
 [tool.dependencies]
 qt-api = "PyQt6"
@@ -175,16 +202,12 @@ ignore = [
   "D101",
   "D102",
 ]
-"./src/holopazaak/ui/*.py" = [
-  "D100",
-  "D101",
-  "D102",
-]
+"./src/holopazaak/ui/*.py" = ["D100", "D101", "D102"]
 "./src/holopazaak/ai/*.py" = [
   "D100",
   "D101",
   "D102",
-  "PLR2004",  # magic value comparison
+  "PLR2004", # magic value comparison
 ]
 
 [tool.ruff.lint.isort]
