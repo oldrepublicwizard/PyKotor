@@ -16,7 +16,7 @@ from typing import TYPE_CHECKING, cast
 import qtpy
 
 from qtpy import QtCore, QtWidgets
-from qtpy.QtCore import QFileSystemWatcher, QModelIndex, QObject, QPoint, QSortFilterProxyModel, QTimer, Qt, Signal, Slot
+from qtpy.QtCore import QFileSystemWatcher, QModelIndex, QObject, QPoint, QCoreApplication, QSortFilterProxyModel, QTimer, Qt, Signal, Slot
 from qtpy.QtGui import (
     QCloseEvent,
     QDragEnterEvent,
@@ -64,8 +64,6 @@ from toolset.gui.common.style.theme_manager import ThemeManager
 from toolset.gui.windows.update_manager import UpdateManager
 
 if TYPE_CHECKING:
-    from qtpy.QtWidgets import QCoreApplication
-
     from toolset.gui.common.localization import ToolsetLanguage
 
 
