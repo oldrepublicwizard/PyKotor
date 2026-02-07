@@ -7,7 +7,7 @@ name = "holopatcher"
 description = "A faster, cross-platform alternative to TSLPatcher written in Python."
 version = "2.0.0a3"
 requires-python = ">= 3.8"
-dependencies = ["pykotor[encodings,updater]>=2.1.0"]
+dependencies = ["pykotor[encodings,updater]>=2.2.0"]
 authors = [{ name = "NickHugi" }]
 maintainers = [{ name = "th3w1zard1", email = "boden.crouch@gmail.com" }]
 readme = { file = "README.md", content-type = "text/markdown" }
@@ -84,7 +84,7 @@ keywords = [
 
 [tool.poetry.dependencies]
 python = "^3.8"
-pykotor = { version = "^2.1.0", extras = ["encodings", "updater"] }
+pykotor = { version = "^2.2.0", extras = ["encodings", "updater"] }
 
 [tool.poetry.scripts]
 holopatcher = "holopatcher.__main__:main"

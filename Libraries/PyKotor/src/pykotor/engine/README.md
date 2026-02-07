@@ -61,6 +61,11 @@ src/
 ### Simple Viewer Example
 
 ```bash
+# From PyKotor repo root, with uv
+uv run python "Libraries/PyKotor/Game Engine/examples/simple_viewer.py" path/to/model.mdl
+
+# Without uv (activated venv, from Game Engine directory)
+cd Libraries/PyKotor/Game\ Engine
 python examples/simple_viewer.py path/to/model.mdl
 ```
 

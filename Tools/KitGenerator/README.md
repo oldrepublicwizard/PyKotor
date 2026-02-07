@@ -6,41 +6,35 @@ This is a shim package that provides a standalone GUI entry point. The core func
 
 ## Installation
 
-```bash
-pip install kit-generator
-```
-
-Or install from source:
+**End users** (use `--refresh` for latest):
 
 ```bash
-cd Tools/KitGenerator
-pip install -e .
+uvx --refresh pykotor kit-generate --help
+uvx --refresh pykotor kit-generate --gui
 ```
+
+**Developers** (local source):
+
+```bash
+uvx --with-editable Libraries/PyKotor pykotor kit-generate --installation <path> --module <module> --output <dir>
+uv run --directory Libraries/PyKotor/src --module pykotor kit-generate --installation <path> --module <module> --output <dir>
+```
+
+**Without uv** (activated venv): `pip install kit-generator` or `pip install -e Tools/KitGenerator`
 
 ## Usage
 
 ### GUI Mode
 
-Launch the GUI:
-
 ```bash
-kit-generator
-# or
-python -m kitgenerator
+uvx --refresh pykotor kit-generate --gui
+# or: python -m kitgenerator when installed via pip
 ```
 
 ### CLI Mode
 
-Use via PyKotor CLI:
-
 ```bash
-python Libraries/PyKotor/src/pykotor/cli/__main__.py kit-generate --installation <path> --module <module> --output <dir>
-```
-
-Or launch GUI from CLI:
-
-```bash
-python Libraries/PyKotor/src/pykotor/cli/__main__.py kit-generate --gui
+uvx --refresh pykotor kit-generate --installation <path> --module <module> --output <dir>
 ```
 
 ## Features

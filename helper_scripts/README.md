@@ -341,36 +341,38 @@ These are useful for debugging specific issues:
 
 ## Usage Examples
 
-### Refactored Scripts
+Run from repo root with an activated venv, or use `uv run python scripts/...`:
 
 ```bash
 # KOTOR Scripts (kotor/)
 # Check TXI files for specific textures
-python scripts/kotor/check_txi_files.py --installation "C:/Games/KOTOR" --textures lda_bark04 lda_flr11
+uv run python scripts/kotor/check_txi_files.py --installation "C:/Games/KOTOR" --textures lda_bark04 lda_flr11
 
 # Check missing resources in a module
-python scripts/kotor/check_missing_resources.py --module danm13 --lightmaps m03af_01a_lm13 --textures lda_bark04
+uv run python scripts/kotor/check_missing_resources.py --module danm13 --lightmaps m03af_01a_lm13 --textures lda_bark04
 
 # Check if a 2DA file exists
-python scripts/kotor/check_genericdoors.py --2da genericdoors --installation "C:/Games/KOTOR"
+uv run python scripts/kotor/check_genericdoors.py --2da genericdoors --installation "C:/Games/KOTOR"
 
 # Check door dimensions in a kit JSON
-python scripts/kotor/check_door_dims.py --file path/to/kit.json --default-width 2.0 --default-height 3.0
+uv run python scripts/kotor/check_door_dims.py --file path/to/kit.json --default-width 2.0 --default-height 3.0
 
 # General Scripts
 # Verify TOC in a markdown file
-python scripts/verify_toc.py --file wiki/NSS-File-Format.md
+uv run python scripts/verify_toc.py --file wiki/NSS-File-Format.md
 
 # Find localization strings in a directory
-python scripts/find_localization_strings.py --directory Tools/HolocronToolset/src/toolset
+uv run python scripts/find_localization_strings.py --directory Tools/HolocronToolset/src/toolset
 
 # Workflow Scripts (workflow/)
 # Sync versions across packages
-python scripts/workflow/sync_versions.py --show
+uv run python scripts/workflow/sync_versions.py --show
 
 # Bump version for a tool
 .\scripts\workflow\bump_version.ps1 -Tool toolset -Version 3.1.3
 ```
+
+Without uv (activated venv): use `python` (Windows) or `python3` (Linux/macOS) instead of `uv run python`.
 
 ## Notes
 
@@ -386,15 +388,15 @@ Most scripts accept command-line arguments. Use `--help` or check the script's d
 ### Examples
 
 ```bash
-# KOTOR Scripts
-python scripts/kotor/check_txi_files.py --installation "C:/Games/KOTOR" --textures lda_bark04
-python scripts/kotor/check_missing_resources.py --module danm13
+# KOTOR Scripts (from repo root; use uv run python or activated venv)
+uv run python scripts/kotor/check_txi_files.py --installation "C:/Games/KOTOR" --textures lda_bark04
+uv run python scripts/kotor/check_missing_resources.py --module danm13
 
 # Workflow Scripts
-python scripts/workflow/sync_versions.py --show
+uv run python scripts/workflow/sync_versions.py --show
 .\scripts\workflow\bump_version.ps1 -Tool toolset -Version 3.1.3
 
 # General Scripts
-python scripts/verify_toc.py --file wiki/NSS-File-Format.md
-python scripts/find_localization_strings.py --directory Tools/HolocronToolset/src/toolset
+uv run python scripts/verify_toc.py --file wiki/NSS-File-Format.md
+uv run python scripts/find_localization_strings.py --directory Tools/HolocronToolset/src/toolset
 ```

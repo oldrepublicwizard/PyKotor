@@ -170,7 +170,7 @@ dependencies = [
     { name = "opencv-contrib-python" },
     { name = "playwright", version = "1.48.0", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.9'" },
     { name = "playwright", version = "1.57.0", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.9'" },
-    { name = "pykotor", extra = ["encodings", "updater"] },
+    { name = "pykotor", extra = ["encodings", "font", "updater"] },
     { name = "pyquery" },
 ]
 
@@ -183,7 +183,7 @@ requires-dist = [
     { name = "opencv-contrib-python", specifier = ">=4.8.0.76" },
     { name = "playwright", marker = "python_full_version == '3.8.*'", specifier = ">=1.40.0,<1.49.1" },
     { name = "playwright", marker = "python_full_version >= '3.9'", specifier = ">=1.49.1,<2" },
-    { name = "pykotor", extras = ["encodings", "updater"], editable = "Libraries/PyKotor" },
+    { name = "pykotor", extras = ["encodings", "font", "updater"], editable = "Libraries/PyKotor" },
     { name = "pyquery", specifier = ">=2.0.1" },
 ]
 
@@ -1257,7 +1257,7 @@ dependencies = [
     { name = "numpy", version = "1.26.4", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.9'" },
     { name = "pillow", version = "10.4.0", source = { registry = "https://pypi.org/simple" }, marker = "(python_full_version < '3.9' and platform_python_implementation == 'CPython') or (python_full_version < '3.9' and platform_python_implementation == 'PyPy')" },
     { name = "pillow", version = "11.0.0", source = { registry = "https://pypi.org/simple" }, marker = "(python_full_version >= '3.9' and platform_python_implementation == 'CPython') or (python_full_version >= '3.9' and platform_python_implementation == 'PyPy')" },
-    { name = "pykotor", extra = ["encodings", "font", "gl", "updater"] },
+    { name = "pykotor", extra = ["encodings", "extra", "font", "gl", "updater"] },
     { name = "pyqt5", marker = "python_full_version < '3.9'" },
     { name = "pyqt5-qt5", marker = "python_full_version < '3.9'" },
     { name = "pyqt5-sip", version = "12.15.0", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.9'" },
@@ -1290,7 +1290,7 @@ requires-dist = [
     { name = "numpy", marker = "python_full_version >= '3.9'", specifier = ">=1.19.0" },
     { name = "pillow", marker = "platform_python_implementation == 'CPython'", specifier = ">=9.5" },
     { name = "pillow", marker = "platform_python_implementation == 'PyPy'", specifier = ">10,<11.1.0" },
-    { name = "pykotor", extras = ["encodings", "extras", "font", "gl", "updater"], editable = "Libraries/PyKotor" },
+    { name = "pykotor", extras = ["encodings", "extra", "font", "gl", "updater"], editable = "Libraries/PyKotor" },
     { name = "pyqt5", marker = "python_full_version == '3.8.*'", specifier = ">=5.15" },
     { name = "pyqt5-qt5", marker = "python_full_version == '3.8.*'", specifier = ">=5.15" },
     { name = "pyqt5-sip", marker = "python_full_version == '3.8.*'", specifier = ">=12.10" },
@@ -3114,7 +3114,7 @@ wheels = [
 
 [[package]]
 name = "pykotor"
-version = "2.1.1"
+version = "2.2.0"
 source = { editable = "Libraries/PyKotor" }
 dependencies = [
     { name = "defusedxml" },
@@ -3122,6 +3122,26 @@ dependencies = [
 ]
 
 [package.optional-dependencies]
+all = [
+    { name = "certifi" },
+    { name = "charset-normalizer" },
+    { name = "colorama" },
+    { name = "comtypes", version = "1.4.12", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.9' and sys_platform == 'win32'" },
+    { name = "comtypes", version = "1.4.14", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.9' and sys_platform == 'win32'" },
+    { name = "fusepy" },
+    { name = "gputil" },
+    { name = "numpy", version = "1.24.4", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.9'" },
+    { name = "numpy", version = "1.26.4", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.9'" },
+    { name = "pillow", version = "10.4.0", source = { registry = "https://pypi.org/simple" }, marker = "(python_full_version < '3.9' and platform_python_implementation == 'CPython') or (python_full_version < '3.9' and platform_python_implementation == 'PyPy')" },
+    { name = "pillow", version = "11.0.0", source = { registry = "https://pypi.org/simple" }, marker = "(python_full_version >= '3.9' and platform_python_implementation == 'CPython') or (python_full_version >= '3.9' and platform_python_implementation == 'PyPy')" },
+    { name = "psutil" },
+    { name = "pycryptodome" },
+    { name = "pyglm", marker = "platform_python_implementation == 'CPython'" },
+    { name = "pyopengl" },
+    { name = "pywin32", marker = "sys_platform == 'win32'" },
+    { name = "pyyaml" },
+    { name = "requests" },
+]
 dev = [
     { name = "astroid", version = "3.2.4", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.9'" },
     { name = "astroid", version = "3.3.11", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.9'" },
@@ -3224,6 +3244,7 @@ requires-dist = [
     { name = "pycryptodome", marker = "extra == 'updater'", specifier = ">=3.19.0" },
     { name = "pyflakes", marker = "python_full_version < '3.9' and extra == 'dev'", specifier = ">=2.0.0,<3.4.0" },
     { name = "pyglm", marker = "platform_python_implementation == 'CPython' and extra == 'gl'", specifier = ">=2.0,<2.8" },
+    { name = "pykotor", extras = ["encodings", "exp", "extra", "font", "gl", "updater"], marker = "extra == 'all'", editable = "Libraries/PyKotor" },
     { name = "pylint", marker = "python_full_version < '3.9' and extra == 'dev'", specifier = ">=2.0.0,<3.3.9" },
     { name = "pyopengl", marker = "extra == 'gl'", specifier = ">=3.1" },
     { name = "pytest", marker = "python_full_version >= '3.9' and extra == 'dev'", specifier = ">=7.0.0" },
@@ -3266,11 +3287,11 @@ requires-dist = [
     { name = "typing-extensions", marker = "python_full_version < '3.9' and extra == 'dev'", specifier = ">=4.5.0,<4.9.0" },
     { name = "typing-inspection", marker = "python_full_version >= '3.9' and extra == 'dev'", specifier = ">=0.4.2" },
 ]
-provides-extras = ["dev", "encodings", "exp", "extra", "font", "gl", "gl-exp", "updater"]
+provides-extras = ["all", "dev", "encodings", "exp", "extra", "font", "gl", "gl-exp", "updater"]
 
 [[package]]
 name = "pykotor-workspace"
-version = "2.1.1"
+version = "2.2.0"
 source = { editable = "." }
 dependencies = [
     { name = "pykotor" },

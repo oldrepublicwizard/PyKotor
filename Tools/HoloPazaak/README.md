@@ -8,23 +8,28 @@ A PyQt5/PyQt6 implementation of the Pazaak card game from Knights of the Old Rep
 
 ## Local Run
 
+**With uv** (from PyKotor repo root):
+
+```bash
+uvx --with-editable Libraries/PyKotor --with-editable Tools/HoloPazaak holopazaak
+# or: uv run --directory Tools/HoloPazaak/src --module holopazaak
+```
+
+**Without uv** (activated venv, from `Tools/HoloPazaak`):
+
 ### Windows
 
-From command line:
-
-```
-pip install -r requirements.txt
-set PYTHONPATH=%cd%\src
+```powershell
+python -m pip install -r requirements.txt
+$env:PYTHONPATH = "$(Get-Location)\src"
 python src/holopazaak/app.py
 ```
 
 ### Unix
 
-From terminal:
-
-```
-pip install -r requirements.txt
-PYTHONPATH=$PWD/src python src/holopazaak/app.py
+```bash
+python3 -m pip install -r requirements.txt
+PYTHONPATH=$PWD/src python3 src/holopazaak/app.py
 ```
 
 ## Local Development

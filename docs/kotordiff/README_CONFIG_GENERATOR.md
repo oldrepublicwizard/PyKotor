@@ -28,22 +28,29 @@ This enhanced version of KotorDiff includes a powerful configuration generator f
 
 #### Basic diff (original functionality):
 ```bash
+# End users (latest from PyPI)
+uvx --refresh kotordiff --path1=/path/to/original/kotor --path2=/path/to/modified/kotor
+
+# Developers (local source)
+uvx --with-editable Libraries/PyKotor --with-editable Tools/KotorDiff kotordiff --path1=/path/to/original/kotor --path2=/path/to/modified/kotor
+
+# Without uv (activated venv with kotordiff installed)
 python -m kotordiff --path1=/path/to/original/kotor --path2=/path/to/modified/kotor
 ```
 
 #### Generate configuration file:
 ```bash
-python -m kotordiff --path1=/path/to/original/kotor --path2=/path/to/modified/kotor --generate-config --config-output=changes.ini
+uvx --refresh kotordiff --path1=/path/to/original/kotor --path2=/path/to/modified/kotor --generate-config --config-output=changes.ini
 ```
 
 #### Launch GUI:
 ```bash
-python -m kotordiff --gui
+uvx --refresh kotordiff --gui
 ```
 
 #### All CLI options:
 ```bash
-python -m kotordiff --help
+uvx --refresh kotordiff --help
 ```
 
 ### Python API

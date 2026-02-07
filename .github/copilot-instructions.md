@@ -15,7 +15,8 @@ Concise, actionable guidance to get an AI productive fast. Prefer small, surgica
 **Setup & Run (Windows)**
 - Preferred: `uv sync`, then activate `.venv\Scripts\activate`.
 - Install editable packages selectively: `uv pip install -e Libraries/PyKotor [-e Tools/HolocronToolset ...]`.
-- Quick runs without install: `uvx holocrontoolset`, `uvx holopatcher`, `uvx kotordiff`.
+- End users: `uvx --refresh holocrontoolset`, `uvx --refresh holopatcher`, `uvx --refresh kotordiff` (ensures latest).
+- Developers: `uvx --with-editable Libraries/PyKotor --with-editable Tools/HolocronToolset holocrontoolset` (uses local source).
 
 **Builds & Packaging**
 - Use VS Code tasks / `compile/` scripts; don’t reinvent pipelines.
@@ -67,17 +68,18 @@ Concise, actionable guidance to get an AI productive fast. Prefer small, surgica
 uv sync
 .venv\Scripts\Activate.ps1
 
-uv --directory Tools/HoloPatcher/src run --active holopatcher/__main__.py
+# Run tools from source (canonical uv run --directory ... --module)
 $Env:QT_API="PyQt6"
-uv --directory Tools/HolocronToolset/src run --active toolset/__main__.py
+uv run --directory Tools/HolocronToolset/src --module toolset
+uv run --directory Tools/HoloPatcher/src --module holopatcher
 ```
 
-**Quick Dev Runs (src/__main__.py)**
+**Quick Dev Runs (without uv / fallback)**
 ```powershell
-# Run tools from source during development
+# Run tools from source when uv not used (requires venv + pip install -r requirements.txt)
+python Tools\HolocronToolset\src\toolset\__main__.py
+python Tools\HoloPatcher\src\holopatcher\__main__.py
 python Tools\KotorDiff\src\__main__.py
-python Tools\BatchPatcher\src\__main__.py
-python Tools\MDLDecompile\src\__main__.py
 # Pattern (others): python Tools\<ToolName>\src\__main__.py
 ```
 

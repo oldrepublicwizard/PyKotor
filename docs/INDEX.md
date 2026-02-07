@@ -182,7 +182,7 @@
 
 ### For Users
 
-1. Run a test: `python -m pytest test_diff_comprehensive.py::Test2DAMemoryComprehensive::test_addrow_stores_row_index -v`
+1. Run a test: `uv run pytest test_diff_comprehensive.py::Test2DAMemoryComprehensive::test_addrow_stores_row_index -v` (or `python -m pytest` if in an activated venv)
 2. Read output to understand patterns
 3. Look up specific feature in documentation
 
@@ -203,18 +203,18 @@
 ## 📋 Test Execution
 
 ```bash
-# Run all tests
-python test_diff_comprehensive.py -v
+# Run all tests (from repo root, with uv)
+uv run pytest test_diff_comprehensive.py -v
 
 # Run specific class
-python test_diff_comprehensive.py Test2DAMemoryComprehensive -v
+uv run pytest test_diff_comprehensive.py::Test2DAMemoryComprehensive -v
 
 # Run single test
-python test_diff_comprehensive.py Test2DAMemoryComprehensive.test_addrow_stores_row_index -v
+uv run pytest test_diff_comprehensive.py::Test2DAMemoryComprehensive::test_addrow_stores_row_index -v
 
-# Run with pytest (if installed)
-pytest test_diff_comprehensive.py -v
-pytest test_diff_comprehensive.py::Test2DAMemoryComprehensive -v
+# Without uv (activated venv): python -m pytest or python test_diff_comprehensive.py -v
+python test_diff_comprehensive.py -v
+python -m pytest test_diff_comprehensive.py -v
 ```
 
 ## 📖 Reading Order (Recommended)

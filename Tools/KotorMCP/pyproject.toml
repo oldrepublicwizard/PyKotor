@@ -7,7 +7,7 @@ name = "kotormcp"
 version = "0.1.1"
 description = "Model Context Protocol server exposing Knights of the Old Republic resources for AI agents."
 readme = { file = "README.md", content-type = "text/markdown" }
-requires-python = ">=3.11"
+requires-python = ">=3.8"
 license = { text = "LGPL-3.0-or-later" }
 authors = [{ name = "th3w1zard1" }]
 maintainers = [{ name = "th3w1zard1", email = "boden.crouch@gmail.com" }]
@@ -42,7 +42,7 @@ classifiers = [
 ]
 dependencies = [
   "mcp>=0.1.1",
-  "pykotor[encodings,updater]>=2.1.0",
+  "pykotor[encodings,updater]>=2.2.0",
   "uvicorn[standard]>=0.30.0",
 ]
 
@@ -137,7 +137,7 @@ keywords = [
 [tool.poetry.dependencies]
 python = "^3.8"
 mcp = ">=0.1.1"
-pykotor = { version = "^2.1.0", extras = ["encodings", "updater"] }
+pykotor = { version = "^2.2.0", extras = ["encodings", "updater"] }
 uvicorn = { version = ">=0.30.0", extras = ["standard"] }
 
 [tool.poetry.group.dev.dependencies]

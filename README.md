@@ -36,20 +36,20 @@ A Python library for reading and modifying file formats used by the game [Knight
 
 ### Quick Install
 
-The fastest way to get started is using `uvx` (no installation required):
+The fastest way to get started is using `uvx` (no installation required). Install `uv` from [astral-sh/uv installation](https://docs.astral.sh/uv/getting-started/installation/), then run tools with `--refresh` to ensure you're using the latest version:
 
 **Windows (PowerShell):**
 
 ```powershell
 powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"
-uvx holocrontoolset
+uvx --refresh holocrontoolset
 ```
 
 **macOS/Linux:**
 
 ```bash
 curl -LsSf https://astral.sh/uv/install.sh | sh
-uvx holocrontoolset
+uvx --refresh holocrontoolset
 ```
 
 ### Standard Install
@@ -76,7 +76,7 @@ pipx install kotordiff
 
 **Note:** The PyKotor CLI is included with the `pykotor` package and accessible via `pykotor` or `pykotorcli` commands.
 
-See [CONTRIBUTING.md](CONTRIBUTING.md) for development installation.
+See [CONTRIBUTING.md](CONTRIBUTING.md) for development installation. If cloning the repo is slow or stalls, use a shallow clone: `git clone --depth 1 <repo-url>` (see CONTRIBUTING for details).
 
 ## Quick Start
 
@@ -100,31 +100,29 @@ write_tpc(texture, "./C_Gammorean01.tga", ResourceType.TGA)
 **HolocronToolset** - GUI editor for KotOR files:
 
 ```bash
-uvx holocrontoolset
+uvx --refresh holocrontoolset
 ```
 
 **HoloPatcher** - Cross-platform TSLPatcher alternative:
 
 ```bash
-uvx holopatcher --help
+uvx --refresh holopatcher --help
 ```
 
 **PyKotor CLI** - Command-line build tool (included with pykotor):
 
 ```bash
-# After installing pykotor package
-pykotor init mymod
-cd mymod
-pykotor pack
+uvx --refresh pykotor --help
+# Example: convert 2DA to CSV
+uvx --refresh pykotor 2da2csv "path/to/file.2da"
 ```
 
 **KotorDiff** - Compare and generate patches:
 
 ```bash
-uvx kotordiff
+uvx --refresh kotordiff
 # or if installed via pip/pipx
 kotordiff
-kotordiff  # alternative name
 ```
 
 See individual tool documentation for detailed usage.

@@ -3,8 +3,12 @@
 ## Installation
 
 ```bash
-cd Tools/PyKotorCLI
-pip install -e .
+# With uv (recommended)
+uvx --with-editable Libraries/PyKotor pykotor --help
+
+# Without uv: from repo root, with activated venv
+cd PyKotor
+python -m pip install -e Libraries/PyKotor
 ```
 
 ## 5-Minute Tutorial
@@ -80,17 +84,15 @@ PyKotorCLI play
 Headless CLI (preferred for automation):
 
 ```bash
-python -m pykotor diff --path1 "C:\Games\KOTOR" --path2 "C:\Games\KOTOR_Modded" --filter tat_m17ac --output-mode normal
+uvx --refresh pykotor diff --path1 "C:\Games\KOTOR" --path2 "C:\Games\KOTOR_Modded" --filter tat_m17ac --output-mode normal
 # Generate incremental TSLPatcher data while diffing
-python -m pykotor diff --path1 "C:\Games\KOTOR" --path2 "C:\Games\KOTOR_Modded" --tslpatchdata .\tslpatchdata --incremental
+uvx --refresh pykotor diff --path1 "C:\Games\KOTOR" --path2 "C:\Games\KOTOR_Modded" --tslpatchdata .\tslpatchdata --incremental
 ```
 
 GUI (omit paths or pass `--gui`):
 
 ```bash
-kotordiff
-# or
-python -m pykotor diff --gui
+uvx --refresh kotordiff
 ```
 
 ## Common Workflows

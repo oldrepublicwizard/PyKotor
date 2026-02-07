@@ -27,20 +27,51 @@ git clone https://github.com/YOUR_USERNAME/PyKotor.git
 cd PyKotor
 ```
 
+**Faster clone (if full clone is slow or stalls):** The repository is large (~380 MB). If the clone hangs around 8–15%, use a shallow clone:
+
+```bash
+# Shallow clone: only latest commit (fast, ~50–100 MB)
+git clone --depth 1 https://github.com/YOUR_USERNAME/PyKotor.git
+cd PyKotor
+```
+
+To later fetch full history if needed (e.g. for bisect): `git fetch --unshallow`.
+
+Optional: clone without blob content first, then fetch as needed:
+
+```bash
+git clone --filter=blob:none --sparse https://github.com/YOUR_USERNAME/PyKotor.git
+cd PyKotor
+```
+
 ### 2. Choose Your Setup Method
 
 **Option A: Using uv (Recommended - Fastest)**
 
-Install uv:
-```bash
-# Windows (PowerShell)
-powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"
+Install uv from [astral-sh/uv installation](https://docs.astral.sh/uv/getting-started/installation/).
 
-# macOS/Linux
-curl -LsSf https://astral.sh/uv/install.sh | sh
+Run tools with `--with-editable` to use your local source:
+
+```bash
+# PyKotor CLI
+uvx --with-editable Libraries/PyKotor pykotor --help
+
+# Tools (add --with-editable for each package you're developing)
+uvx --with-editable Libraries/PyKotor --with-editable Tools/HolocronToolset holocrontoolset
+uvx --with-editable Libraries/PyKotor --with-editable Tools/HoloPatcher holopatcher
+uvx --with-editable Libraries/PyKotor --with-editable Tools/KotorDiff kotordiff
 ```
 
-Install dependencies:
+Or run directly from source:
+
+```bash
+uv run --directory Libraries/PyKotor/src --module pykotor --help
+uv run --directory Tools/HolocronToolset/src --module toolset
+uv run --directory Tools/HoloPatcher/src --module holopatcher
+```
+
+To install packages in editable mode with uv:
+
 ```bash
 uv pip install -e "Libraries/PyKotor[all,dev]"
 uv pip install -e "Tools/HolocronToolset"
@@ -51,20 +82,40 @@ uv pip install -e "Tools/KotorDiff"
 **Option B: Using pip with venv**
 
 ```bash
-# Create and activate virtual environment
-python -m venv .venv
-
-# Activate
 # Windows
-.venv\Scripts\activate
-# macOS/Linux
-source .venv/bin/activate
+python -m venv .venv
+.venv\Scripts\Activate.ps1
+python -m ensurepip
+python -m pip install --upgrade pip
+python -m pip install -r Tools/HolocronToolset/requirements.txt
+python Tools/HolocronToolset/src/toolset/__main__.py
+# Repeat for HoloPatcher, KotorDiff, etc. as needed
 
-# Install packages in editable mode
-pip install -e "Libraries/PyKotor[all,dev]"
-pip install -e "Tools/HolocronToolset"
-pip install -e "Tools/HoloPatcher"
-pip install -e "Tools/KotorDiff"
+# macOS/Linux
+python3 -m venv .venv
+source .venv/bin/activate
+python3 -m ensurepip
+python3 -m pip install --upgrade pip
+python3 -m pip install -r Tools/HolocronToolset/requirements.txt
+python3 Tools/HolocronToolset/src/toolset/__main__.py
+```
+
+Or install in editable mode:
+
+```bash
+# Windows
+python -m venv .venv
+.\.venv\Scripts\Activate.ps1
+python -m pip install -e "Libraries/PyKotor[all,dev]"
+python -m pip install -e Tools/HolocronToolset -e Tools/HoloPatcher
+# holocrontoolset, holopatcher should now be on PATH
+
+# macOS/Linux
+python3 -m venv .venv
+source .venv/bin/activate
+python3 -m pip install -e "Libraries/PyKotor[all,dev]"
+python3 -m pip install -e Tools/HolocronToolset -e Tools/HoloPatcher
+# holocrontoolset, holopatcher should now be on PATH
 ```
 
 **Option C: Using Poetry**

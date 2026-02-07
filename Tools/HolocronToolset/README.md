@@ -10,23 +10,32 @@ A PyQt/PySide application that can edit the files used by the KotOR game engine.
 
 ## Local Run
 
+**With uv** (from PyKotor repo root):
+
+```bash
+# End users (latest from PyPI)
+uvx --refresh holocrontoolset
+
+# Developers (local source)
+uvx --with-editable Libraries/PyKotor --with-editable Tools/HolocronToolset holocrontoolset
+uv run --directory Tools/HolocronToolset/src --module toolset
+```
+
+**Without uv** (activated venv, from `Tools/HolocronToolset`):
+
 ### Windows
 
-From command line:
-
-```
-pip install -r requirements.txt
-set PYTHONPATH=%cd%
+```powershell
+python -m pip install -r requirements.txt
+$env:PYTHONPATH = (Get-Location).Path
 python toolset/__main__.py
 ```
 
 ### Unix
 
-From terminal:
-
-```
-pip install -r requirements.txt
-PYTHONPATH=$PWD python toolset/__main__.py
+```bash
+python3 -m pip install -r requirements.txt
+PYTHONPATH=$PWD python3 toolset/__main__.py
 ```
 
 ### Note for Alpine users:
@@ -39,21 +48,17 @@ While we're not sure what the exact problem is, it seems newer python versions w
 
 ## Local Development
 
-- Clone [PyKotor](https://github.com/OldRepublicDevs/PyKotor) and run the `install_python_venv.ps1` script in your powershell terminal. That's it!
-
+- Clone [PyKotor](https://github.com/OldRepublicDevs/PyKotor). Use `uvx --with-editable` to run from local source, or run `install_python_venv.ps1` for a traditional venv setup.
 
 ## Accessing the GUI Designer
 
-Run the command from your terminal:
-
-```commandline
-pip install qt5-applications
+```bash
+python -m pip install qt5-applications
 ```
 
-You will then need to navigate to your Python's site-packages folder. You can determine its location through your terminal
-with the following commands:
+Then navigate to your Python's site-packages folder:
 
-```commandline
+```bash
 python -m site --user-site
 ```
 

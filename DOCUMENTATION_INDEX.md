@@ -189,13 +189,15 @@ Complete guide to all PyKotor documentation, organized by topic and audience.
 
 ### Essential Commands
 ```bash
-# Install with UV
-uv sync
+# End users: run tools (use --refresh for latest version)
+uvx --refresh holocrontoolset
+uvx --refresh holopatcher
+uvx --refresh kotordiff
+uvx --refresh pykotor --help
 
-# Run tools
-uvx holocrontoolset
-uvx holopatcher
-uvx kotordiff
+# Developers: run from local source (use --with-editable for latest)
+uvx --with-editable Libraries/PyKotor --with-editable Tools/HolocronToolset holocrontoolset
+uv run --directory Libraries/PyKotor/src --module pykotor --help
 
 # Run tests
 pytest

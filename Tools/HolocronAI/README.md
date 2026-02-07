@@ -18,17 +18,23 @@ A Star Wars character AI chat interface using PyQt and LLMs. This tool allows us
 
 ## Installation
 
-1. Create a virtual environment:
+**With uv** (recommended, from PyKotor repo root):
 
 ```bash
-python -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
+uvx --with-editable Libraries/PyKotor --with-editable Tools/HolocronAI holocron-ai
+# or run from source
+uv run --directory Tools/HolocronAI/src --module holocronai
 ```
 
-2. Install in development mode:
+**Without uv:**
 
 ```bash
-pip install -e .
+python -m venv .venv
+.venv\Scripts\Activate.ps1   # Windows
+source .venv/bin/activate    # Linux/macOS
+python -m ensurepip
+python -m pip install --upgrade pip
+python -m pip install -e Tools/HolocronAI
 ```
 
 ## Usage

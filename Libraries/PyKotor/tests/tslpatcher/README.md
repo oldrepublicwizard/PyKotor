@@ -11,9 +11,11 @@ uv sync
 
 ## Running Tests - Simple Examples
 
+Run from PyKotor repo root. Use `uv run pytest` (recommended) or `python -m pytest` with an activated venv.
+
 ### 1. Test 2DAMEMORY Token Storage (Simplest)
 ```powershell
-python tests/test_tslpatcher/test_diff_comprehensive.py Test2DAMemoryComprehensive.test_addrow_stores_row_index -v
+uv run pytest tests/test_tslpatcher/test_diff_comprehensive.py::Test2DAMemoryComprehensive::test_addrow_stores_row_index -v
 ```
 
 **What this tests**: When a new row is added to a 2DA file, the diff engine should store the row index in a 2DAMEMORY token for cross-file references.
@@ -22,7 +24,7 @@ python tests/test_tslpatcher/test_diff_comprehensive.py Test2DAMemoryComprehensi
 
 ### 2. Test 2DAMEMORY Cross-Reference Chain
 ```powershell
-python tests/test_tslpatcher/test_diff_comprehensive.py Test2DAMemoryComprehensive.test_2damemory_cross_reference_chain -v
+uv run pytest tests/test_tslpatcher/test_diff_comprehensive.py::Test2DAMemoryComprehensive::test_2damemory_cross_reference_chain -v
 ```
 
 **What this tests**: The real-world pattern from dm_qrts mod where:
@@ -34,7 +36,7 @@ python tests/test_tslpatcher/test_diff_comprehensive.py Test2DAMemoryComprehensi
 
 ### 3. Test Complete Mod Scenario (New Force Power)
 ```powershell
-python tests/test_tslpatcher/test_diff_comprehensive.py TestIntegrationComprehensive.test_full_mod_scenario_new_spell -v
+uv run pytest tests/test_tslpatcher/test_diff_comprehensive.py::TestIntegrationComprehensive::test_full_mod_scenario_new_spell -v
 ```
 
 **What this tests**: Complete mod workflow similar to "Bastila Has Battle Meditation":
@@ -47,7 +49,7 @@ python tests/test_tslpatcher/test_diff_comprehensive.py TestIntegrationComprehen
 
 ### 4. Test All GFF Field Types
 ```powershell
-python tests/test_tslpatcher/test_diff_comprehensive.py TestGFFComprehensive.test_gff_modify_all_field_types -v
+uv run pytest tests/test_tslpatcher/test_diff_comprehensive.py::TestGFFComprehensive::test_gff_modify_all_field_types -v
 ```
 
 **What this tests**: Modification of every GFF field type:
@@ -59,7 +61,7 @@ python tests/test_tslpatcher/test_diff_comprehensive.py TestGFFComprehensive.tes
 
 ### 5. Test Real-World Mod Pattern (Ajunta Pall)
 ```powershell
-python tests/test_tslpatcher/test_diff_comprehensive.py TestRealWorldScenarios.test_ajunta_pall_appearance_mod -v
+uv run pytest tests/test_tslpatcher/test_diff_comprehensive.py::TestRealWorldScenarios::test_ajunta_pall_appearance_mod -v
 ```
 
 **What this tests**: Real mod from workspace - ChangeRow modification to appearance.2da with many columns.
@@ -70,27 +72,27 @@ python tests/test_tslpatcher/test_diff_comprehensive.py TestRealWorldScenarios.t
 
 ### Run All 2DAMEMORY Tests
 ```powershell
-python tests/test_tslpatcher/test_diff_comprehensive.py Test2DAMemoryComprehensive -v
+uv run pytest tests/test_tslpatcher/test_diff_comprehensive.py::Test2DAMemoryComprehensive -v
 ```
 
 ### Run All TLK/StrRef Tests
 ```powershell
-python tests/test_tslpatcher/test_diff_comprehensive.py TestTLKStrRefComprehensive -v
+uv run pytest tests/test_tslpatcher/test_diff_comprehensive.py::TestTLKStrRefComprehensive -v
 ```
 
 ### Run All GFF Tests
 ```powershell
-python tests/test_tslpatcher/test_diff_comprehensive.py TestGFFComprehensive -v
+uv run pytest tests/test_tslpatcher/test_diff_comprehensive.py::TestGFFComprehensive -v
 ```
 
 ### Run All Integration Tests
 ```powershell
-python tests/test_tslpatcher/test_diff_comprehensive.py TestIntegrationComprehensive -v
+uv run pytest tests/test_tslpatcher/test_diff_comprehensive.py::TestIntegrationComprehensive -v
 ```
 
 ### Run All Tests (Full Suite)
 ```powershell
-python tests/test_tslpatcher/test_diff_comprehensive.py -v
+uv run pytest tests/test_tslpatcher/test_diff_comprehensive.py -v
 ```
 
 ## Understanding Test Output
@@ -166,10 +168,10 @@ Performance tests create many files to stress-test the diff engine:
 
 ```powershell
 # Test with 20 2DA files (should complete in < 30 seconds)
-python tests/test_tslpatcher/test_diff_comprehensive.py TestPerformanceComprehensive.test_many_2da_files -v
+uv run pytest tests/test_tslpatcher/test_diff_comprehensive.py::TestPerformanceComprehensive::test_many_2da_files -v
 
 # Test with 20 GFF files
-python tests/test_tslpatcher/test_diff_comprehensive.py TestPerformanceComprehensive.test_many_gff_files -v
+uv run pytest tests/test_tslpatcher/test_diff_comprehensive.py::TestPerformanceComprehensive::test_many_gff_files -v
 ```
 
 ## Questions?

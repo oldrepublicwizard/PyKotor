@@ -37,17 +37,40 @@ HoloPatcher can be used both as a command-line tool and through its graphical us
 
 ### Requirements
 
-First, see the main readme.md for instructions on how to setup the python venv. You will need to first install PyKotor's requirements. The easiest way to do this is running the `install_python_venv.ps1` script at the top level of this repo.
+Install `uv` from [astral-sh/uv installation](https://docs.astral.sh/uv/getting-started/installation/) for the simplest setup.
 
-Once your venv is setup for pykotor, install `requirements.txt`
+### Running HoloPatcher
+
+**End users** (latest from PyPI, use `--refresh` for latest):
+
 ```bash
-pip install -r requirements.txt --prefer-binary
+uvx --refresh holopatcher
+uvx --refresh holopatcher --help
+```
+
+**Developers** (local source from PyKotor repo):
+
+```bash
+uvx --with-editable Libraries/PyKotor --with-editable Tools/HoloPatcher holopatcher
+# or
+uv run --directory Tools/HoloPatcher/src --module holopatcher
+```
+
+**Without uv** (activated venv): First run `install_python_venv.ps1` at repo root, then:
+
+```bash
+python -m pip install -r Tools/HoloPatcher/requirements.txt --prefer-binary
+python Tools/HoloPatcher/src/holopatcher/__main__.py <path to game> <path to tslpatchdata> [options]
 ```
 
 ### Command-Line Interface
 
 ```bash
-python src/__main__.py <path to game> <path to tslpatchdata> [options]
+# With uv
+uvx --refresh holopatcher <path to game> <path to tslpatchdata> [options]
+
+# Without uv (activated venv)
+python Tools/HoloPatcher/src/holopatcher/__main__.py <path to game> <path to tslpatchdata> [options]
 ```
 required arguments:
 

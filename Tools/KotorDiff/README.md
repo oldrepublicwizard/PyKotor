@@ -33,15 +33,23 @@ KotorDiff's output reveals the shocking truth - changing a single field results 
 
 ## Installation
 
-The diff functionality is now integrated into PyKotor CLI:
+The diff functionality is integrated into PyKotor CLI.
+
+**End users** (use `--refresh` for latest):
 
 ```bash
-# Install PyKotor
-pip install pykotor
-
-# Run the diff command
-pykotorcli diff <path1> <path2> [options]
+uvx --refresh kotordiff <path1> <path2> [options]
+uvx --refresh pykotor diff <path1> <path2> [options]
 ```
+
+**Developers** (local source):
+
+```bash
+uvx --with-editable Libraries/PyKotor --with-editable Tools/KotorDiff kotordiff <path1> <path2> [options]
+uv run --directory Tools/KotorDiff/src --module kotordiff <path1> <path2> [options]
+```
+
+**Without uv**: `pip install pykotor` then `pykotor diff` or `kotordiff`
 
 ## Usage
 
@@ -469,7 +477,7 @@ A: Use `--filter` to target specific modules or `--output-mode normal` to see on
 A: Check the verbose logs to see which files were found and prioritized. The tool follows KOTOR's standard module loading order.
 
 **Q: Antivirus flagging the executable**
-A: This is a false positive common with PyInstaller-compiled executables. You can run from source using `uv run src/kotordiff/__main__.py` instead.
+A: This is a false positive common with PyInstaller-compiled executables. Run from source: `uv run --directory Tools/KotorDiff/src --module kotordiff` or `uvx --with-editable Libraries/PyKotor --with-editable Tools/KotorDiff kotordiff`.
 
 **TLDR:** PyInstaller is an amazing tool, but antiviruses may flag it. This is not the fault of PyInstaller or my tool, but rather the fault of how some scummy users have chosen to use PyInstaller in the past. Please report any false positives you encounter to your antivirus's website, as reports not only improve the accuracy of everybody's AV experience overall but also indirectly support the [PyInstaller project](https://github.com/pyinstaller/pyinstaller).
 

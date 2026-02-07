@@ -143,25 +143,26 @@ Provides utility methods for creating test data:
 
 ## Running Tests
 
+Run from PyKotor repo root. Use `uv run pytest` (recommended).
+
 ### Run All Tests
 ```bash
-cd tests/test_tslpatcher
-python test_diff_comprehensive.py
+uv run pytest tests/test_tslpatcher/test_diff_comprehensive.py -v
 ```
 
 ### Run Specific Test Class
 ```bash
-python test_diff_comprehensive.py Test2DAMemoryComprehensive
+uv run pytest tests/test_tslpatcher/test_diff_comprehensive.py::Test2DAMemoryComprehensive -v
 ```
 
 ### Run Specific Test
 ```bash
-python test_diff_comprehensive.py Test2DAMemoryComprehensive.test_addrow_stores_row_index -v
+uv run pytest tests/test_tslpatcher/test_diff_comprehensive.py::Test2DAMemoryComprehensive::test_addrow_stores_row_index -v
 ```
 
 ### Run with Coverage
 ```bash
-uv run pytest test_diff_comprehensive.py --cov=pykotor.tslpatcher --cov-report=html
+uv run pytest tests/test_tslpatcher/test_diff_comprehensive.py --cov=pykotor.tslpatcher --cov-report=html
 ```
 
 ## Expected Test Output

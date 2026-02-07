@@ -49,26 +49,25 @@ A Model Context Protocol (MCP) server that exposes context-rich tools for AI age
 
 ### Quick Start
 
-#### Using pip
-
-```bash
-# Install from PyPI (when available)
-pip install kotormcp
-
-# Or install from source
-git clone https://github.com/OldRepublicDevs/PyKotor.git
-cd PyKotor/Tools/KotorMCP
-pip install -e .
-```
-
 #### Using uv (Recommended)
 
 ```bash
-# Install with uv
-uv pip install kotormcp
+# End users: run with --refresh for latest (no install needed)
+uvx --refresh kotormcp
 
-# Or from source
+# Developers: run from local source with --with-editable
+uvx --with-editable Libraries/PyKotor --with-editable Tools/KotorMCP kotormcp
+uv run --directory Tools/KotorMCP/src --module kotormcp
+
+# Or install editable
 uv pip install -e Tools/KotorMCP
+```
+
+#### Using pip
+
+```bash
+pip install kotormcp
+# Or from source: pip install -e Tools/KotorMCP
 ```
 
 ### Configuration
@@ -87,6 +86,7 @@ Add the following to your Claude Desktop configuration file:
     "kotormcp": {
       "command": "uvx",
       "args": [
+        "--refresh",
         "--from",
         "kotormcp @ git+https://github.com/th3w1zard1/KotorMCP.git",
         "kotormcp"
@@ -110,6 +110,7 @@ Add to your MCP configuration:
     "kotormcp": {
       "command": "uvx",
       "args": [
+        "--refresh",
         "--from",
         "kotormcp @ git+https://github.com/th3w1zard1/KotorMCP.git",
         "kotormcp"
@@ -464,7 +465,7 @@ Tools/KotorMCP/
 ### Dependencies
 
 - `mcp>=0.1.1` - Model Context Protocol Python SDK
-- `pykotor>=2.1.1` - PyKotor core library for KOTOR file format support
+- `pykotor>=2.2.0` - PyKotor core library for KOTOR file format support
 
 ## Contributing
 

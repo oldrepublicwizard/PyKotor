@@ -35,15 +35,17 @@ The installations must contain:
 
 ### Running Tests
 
+Run from PyKotor repo root. Use `uv run pytest` (recommended) or `python -m pytest` with an activated venv.
+
 ```powershell
 # Run all editor tests (will skip if installations not available)
-python -m pytest Tools/HolocronToolset/tests/gui/editors/ -v
+uv run pytest Tools/HolocronToolset/tests/gui/editors/ -v
 
 # Run specific editor test
-python -m pytest Tools/HolocronToolset/tests/gui/editors/test_gff_editor.py -v
+uv run pytest Tools/HolocronToolset/tests/gui/editors/test_gff_editor.py -v
 
 # See skip reasons
-python -m pytest Tools/HolocronToolset/tests/gui/editors/ -v -rs
+uv run pytest Tools/HolocronToolset/tests/gui/editors/ -v -rs
 ```
 
 ### Test Results Without Installations

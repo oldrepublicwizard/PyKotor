@@ -986,19 +986,19 @@ Based on the comprehensive analysis above, PyKotorCLI should support:
 Generate a Holocron-compatible kit from a module (headless or GUI).
 
 ```bash
-python -m pykotor kit-generate --installation <path> --module <module> --output <dir> [--kit-id <id>] [--log-level info|debug|warning|error|critical]
+uvx --refresh pykotor kit-generate --installation <path> --module <module> --output <dir> [--kit-id <id>] [--log-level info|debug|warning|error|critical]
 ```
 
 - Uses `pykotor.tools.kit.extract_kit` internally (see `Libraries/PyKotor/src/pykotor/tools/kit.py`)
 - Requires installation path, module name (stem is normalized), and output directory
-- Supplying required args keeps execution headless; running `python -m pykotor` with no args opens the Tkinter GUI for interactive kit generation
+- Supplying required args keeps execution headless; running `uvx --refresh pykotor` with no args opens the Tkinter GUI for interactive kit generation
 
 ### gui-convert
 
 Convert KotOR GUI layouts to target resolutions. Headless when arguments are provided; launches a Tk GUI when arguments are omitted.
 
 ```bash
-python -m pykotor gui-convert --input <file_or_folder> --output <dir> --resolution <WIDTHxHEIGHT|ALL>
+uvx --refresh pykotor gui-convert --input <file_or_folder> --output <dir> --resolution <WIDTHxHEIGHT|ALL>
 ```
 
 - Multiple `--input` values are allowed
@@ -1011,10 +1011,10 @@ Structured comparisons across files, folders, modules, or entire installations.
 
 ```bash
 # Installation vs installation with filtering
-python -m pykotor diff --path1 <install_or_path> --path2 <install_or_path> --filter tat_m17ac --output-mode normal
+uvx --refresh pykotor diff --path1 <install_or_path> --path2 <install_or_path> --filter tat_m17ac --output-mode normal
 
 # Generate TSLPatcher output incrementally during the diff
-python -m pykotor diff --path1 <install1> --path2 <install2> --tslpatchdata ./tslpatchdata --ini changes.ini --incremental
+uvx --refresh pykotor diff --path1 <install1> --path2 <install2> --tslpatchdata ./tslpatchdata --ini changes.ini --incremental
 ```
 
 Key options:

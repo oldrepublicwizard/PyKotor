@@ -25,14 +25,38 @@ PyKotorCLI is a command-line tool for converting KOTOR modules, ERFs, and haks b
 
 ### From Source
 
+**With uv (recommended):**
+
+```bash
+# End users: run without installing (use --refresh for latest)
+uvx --refresh pykotor --help
+
+# Developers: run from local source (use --with-editable for latest)
+uvx --with-editable Libraries/PyKotor pykotor --help
+uv run --directory Libraries/PyKotor/src --module pykotor --help
+```
+
+**Without uv (Windows):**
+
 ```bash
 git clone https://github.com/OldRepublicDevs/PyKotor
 cd PyKotor
 python -m venv .venv
-./.venv/Scripts/Activate.ps1
-./.venv/Scripts/python -m ensurepip
-./.venv/Scripts/python -m pip install -e .
-pip install -e .
+.venv\Scripts\Activate.ps1
+python -m ensurepip
+python -m pip install --upgrade pip
+python -m pip install -e Libraries/PyKotor
+# pykotor is now on PATH
+```
+
+**Without uv (Linux/macOS):**
+
+```bash
+python3 -m venv .venv
+source .venv/bin/activate
+python3 -m ensurepip
+python3 -m pip install --upgrade pip
+python3 -m pip install -e Libraries/PyKotor
 ```
 
 ### Requirements
@@ -70,13 +94,21 @@ pykotor install
 Headless CLI (recommended for automation):
 
 ```bash
+# End users
+uvx --refresh pykotor kit-generate --installation "C:\Games\KOTOR" --module danm13 --output .\kits --kit-id danm13
+
+# Developers (local source)
+uv run --directory Libraries/PyKotor/src --module pykotor kit-generate --installation "C:\Games\KOTOR" --module danm13 --output .\kits --kit-id danm13
+
+# Without uv (activated venv)
 python -m pykotor kit-generate --installation "C:\Games\KOTOR" --module danm13 --output .\kits --kit-id danm13
 ```
 
 GUI (no arguments provided):
 
 ```bash
-python -m pykotor
+uvx --refresh pykotor
+# or python -m pykotor when in venv
 ```
 
 ### 6. Convert GUI layouts (GUI or headless)
@@ -84,13 +116,13 @@ python -m pykotor
 Headless CLI:
 
 ```bash
-python -m pykotor gui-convert --input ./gui_inputs --output ./gui_outputs --resolution 1920x1080,1280x720 --log-level info
+uvx --refresh pykotor gui-convert --input ./gui_inputs --output ./gui_outputs --resolution 1920x1080,1280x720 --log-level info
 ```
 
 Interactive GUI (omit args):
 
 ```bash
-python -m pykotor gui-convert
+uvx --refresh pykotor gui-convert
 ```
 
 ### 7. Run KotorDiff comparisons (headless or GUI)
@@ -98,17 +130,16 @@ python -m pykotor gui-convert
 Headless CLI (stays in the console when paths are provided):
 
 ```bash
-python -m pykotor diff --path1 "C:\Games\KOTOR" --path2 "C:\Games\KOTOR_Modded" --filter tat_m17ac --output-mode normal
+uvx --refresh pykotor diff --path1 "C:\Games\KOTOR" --path2 "C:\Games\KOTOR_Modded" --filter tat_m17ac --output-mode normal
 # Write TSLPatcher output incrementally while diffing
-python -m pykotor diff --path1 "C:\Games\KOTOR" --path2 "C:\Games\KOTOR_Modded" --tslpatchdata .\tslpatchdata --incremental
+uvx --refresh pykotor diff --path1 "C:\Games\KOTOR" --path2 "C:\Games\KOTOR_Modded" --tslpatchdata .\tslpatchdata --incremental
 ```
 
 GUI (omit paths or pass `--gui`):
 
 ```bash
-kotordiff
-# or
-python -m pykotor diff --gui
+uvx --refresh kotordiff
+# or python -m pykotor diff --gui when in venv
 ```
 
 ## Integration
@@ -258,10 +289,10 @@ pykotor install --installDir /path/to/kotor
 
 ### kit-generate (Holocron kits)
 
-Generate a Holocron-compatible kit from a module. When no CLI args are supplied (`python -m pykotor`), the Tkinter GUI launches; supplying required args keeps execution headless for CI.
+Generate a Holocron-compatible kit from a module. When no CLI args are supplied (`uvx --refresh pykotor`), the Tkinter GUI launches; supplying required args keeps execution headless for CI.
 
 ```bash
-python -m pykotor kit-generate --installation "C:\Games\KOTOR" --module danm13 --output .\kits --kit-id danm13 --log-level info
+uvx --refresh pykotor kit-generate --installation "C:\Games\KOTOR" --module danm13 --output .\kits --kit-id danm13 --log-level info
 ```
 
 ### Comparing Files and Resources (KotorDiff)
@@ -270,13 +301,13 @@ Structured comparisons for files, folders, modules, or full installations. Stays
 
 ```bash
 # Installation vs installation with filtering
-python -m pykotor diff --path1 "C:\Games\KOTOR" --path2 "C:\Games\KOTOR_Modded" --filter tat_m17ac --output-mode normal --log-level info
+uvx --refresh pykotor diff --path1 "C:\Games\KOTOR" --path2 "C:\Games\KOTOR_Modded" --filter tat_m17ac --output-mode normal --log-level info
 
 # Generate incremental TSLPatcher output while diffing
-python -m pykotor diff --path1 "C:\Games\KOTOR" --path2 "C:\Games\KOTOR_Modded" --tslpatchdata .\tslpatchdata --ini changes.ini --incremental
+uvx --refresh pykotor diff --path1 "C:\Games\KOTOR" --path2 "C:\Games\KOTOR_Modded" --tslpatchdata .\tslpatchdata --ini changes.ini --incremental
 
 # Launch the GUI explicitly
-python -m pykotor diff --gui
+uvx --refresh kotordiff
 ```
 
 Key options:
