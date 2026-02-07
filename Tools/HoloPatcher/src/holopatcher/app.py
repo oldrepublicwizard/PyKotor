@@ -75,9 +75,9 @@ from pykotor.tslpatcher.uninstall import ModUninstaller  # noqa: E402
 from utility.misc import ProcessorArchitecture  # noqa: E402
 from utility.string_util import striprtf  # noqa: E402
 from utility.system.os_helper import win_get_system32_dir  # noqa: E402
-from utility.tkinter.base_app import BaseApp  # noqa: E402
-from utility.tkinter.tooltip import ToolTip  # noqa: E402
-from utility.tkinter.updater import TkProgressDialog  # noqa: E402
+from utility.gui.tkinter.base_app import BaseApp  # noqa: E402
+from utility.gui.tkinter.tooltip import ToolTip  # noqa: E402
+from utility.gui.tkinter.updater import TkProgressDialog  # noqa: E402
 
 if TYPE_CHECKING:
     from argparse import Namespace
@@ -332,7 +332,7 @@ class App(BaseApp):
 
     def check_for_updates(self):
         try:
-            from utility.tkinter.updater import UpdateDialog
+            from utility.gui.tkinter.updater import UpdateDialog
             updateInfoData: dict[str, Any] | Exception = getRemoteHolopatcherUpdateInfo()
             if isinstance(updateInfoData, Exception):
                 self._handle_general_exception(updateInfoData)
@@ -368,7 +368,7 @@ class App(BaseApp):
         *,
         is_release: bool = True,
     ):
-        from utility.tkinter.updater import run_tk_progress_dialog
+        from utility.gui.tkinter.updater import run_tk_progress_dialog
         from utility.updater.restarter import RestartStrategy
         from utility.updater.update import AppUpdate
         proc_arch = ProcessorArchitecture.from_os()
@@ -1351,7 +1351,7 @@ class App(BaseApp):
         raise  # noqa: PLE0704
 
     def create_rte_content(self, event: tk.Tk | None = None):
-        from utility.tkinter.rte_editor import main as start_rte_editor
+        from utility.gui.tkinter.rte_editor import main as start_rte_editor
 
         start_rte_editor()
 
