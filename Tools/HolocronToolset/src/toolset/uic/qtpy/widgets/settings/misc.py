@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file '..\ui\widgets\settings\misc.ui'
+# Form implementation generated from reading ui file '../ui/widgets/settings/misc.ui'
 #
 # Created by: PyQt5 UI code generator 5.15.11
 #
@@ -129,10 +129,13 @@ class Ui_Form(object):
         _translate = QtCore.QCoreApplication.translate
         Form.setWindowTitle(_translate("Form", "Form"))
         self.saveRimCheck.setText(_translate("Form", "Allow saving resources to RIM files."))
-        self.useBetaChannel.setText(_translate("Form", "Check for beta updates and take me to their download link when they\'re available."))
+        self.useBetaChannel.setText(_translate("Form", "Check for beta updates and take me to their download link when they\'re\n"
+"           available."))
         self.alsoCheckReleaseVersion.setText(_translate("Form", "Also check release version if it is newer than beta version."))
-        self.mergeRimCheck.setText(_translate("Form", "Merge secondary ERF/RIM\'s in the Modules tab of the Main Window (i.e. \'_s.rim\' and \'_dlg.erf\')."))
-        self.attemptKeepOldGFFFields.setText(_translate("Form", "Attempts to keep any pre-existing GFF fields when saving the editor. Required for save editing."))
+        self.mergeRimCheck.setText(_translate("Form", "Merge secondary ERF/RIM\'s in the Modules tab of the Main Window (i.e. \'_s.rim\' and\n"
+"           \'_dlg.erf\')."))
+        self.attemptKeepOldGFFFields.setText(_translate("Form", "Attempts to keep any pre-existing GFF fields when saving the editor. Required for\n"
+"           save editing."))
         self.moduleSortOptionComboBox.setItemText(0, _translate("Form", "Sort by filename"))
         self.moduleSortOptionComboBox.setItemText(1, _translate("Form", "Sort by humanized area name"))
         self.moduleSortOptionComboBox.setItemText(2, _translate("Form", "Sort by area name"))
