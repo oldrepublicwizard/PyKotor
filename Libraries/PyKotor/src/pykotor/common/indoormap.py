@@ -154,7 +154,7 @@ class IndoorMap(ComparableMixin):
     """Headless indoor map model + builder.
 
     This is a migrated version of HolocronToolset `toolset.data.indoormap.IndoorMap`,
-    refactored to remove UI (`qtpy`) dependencies so it can be used by library code and KotorCLI.
+    refactored to remove UI (`qtpy`) dependencies so it can be used by library code and Pykotorcli.
     """
 
     COMPARABLE_FIELDS: tuple[str, ...] = (

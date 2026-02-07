@@ -1,4 +1,4 @@
-"""Resource conversion command implementations for KotorCLI.
+"""Resource conversion command implementations for Pykotorcli.
 
 This module provides CLI commands for converting resources (textures, sounds, models)
 using PyKotor utilities.

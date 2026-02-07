@@ -140,7 +140,6 @@ updater = [
 ]
 
 [project.scripts]
-kotorcli = "pykotor.cli.__main__:main"
 pykotor = "pykotor.cli.__main__:main"
 pykotorcli = "pykotor.cli.__main__:main"
 

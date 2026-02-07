@@ -1,6 +1,6 @@
-"""Indoor map building and extraction command implementations for KotorCLI.
+"""Indoor map building and extraction command implementations for Pykotorcli.
 
-KotorCLI must not depend on the Holocron Toolset (`toolset.*`). This command layer delegates to
+Pykotorcli must not depend on the Holocron Toolset (`toolset.*`). This command layer delegates to
 `pykotor.tools.indoormap` / `pykotor.tools.indoorkit` which are library-safe.
 """
 

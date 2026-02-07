@@ -3,7 +3,7 @@
 """Implicit ModuleKit support (headless).
 
 This mirrors Holocron Toolset's implicit-kit pipeline (ModuleKit) but without any `toolset.*`
-or Qt dependencies so it can be used from `pykotor.tools.indoormap` and KotorCLI.
+or Qt dependencies so it can be used from `pykotor.tools.indoormap` and Pykotorcli.
 
 Design rule (repo convention):
 - `pykotor.common.*` contains **classes / data models**

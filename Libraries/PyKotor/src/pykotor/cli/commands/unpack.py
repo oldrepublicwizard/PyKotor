@@ -109,7 +109,7 @@ def cmd_unpack(args: Namespace, logger: Logger) -> int:
         sources = config.get_target_sources(target)
 
         # Create cache directory for tracking
-        cache_dir = config.root_dir / ".kotorcli" / "cache" / target_name
+        cache_dir = config.root_dir / ".pykotorcli" / "cache" / target_name
         cache_dir.mkdir(parents=True, exist_ok=True)
 
         # Track unpacked files

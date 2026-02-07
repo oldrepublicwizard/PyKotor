@@ -45,8 +45,8 @@
     Creates a repo named 'pykotor-lib' for Libraries/PyKotor.
 
 .EXAMPLE
-    .\create_submodule_repo.ps1 -Tool KotorCLI -DryRun
-    Shows what would be done for KotorCLI without making changes.
+    .\create_submodule_repo.ps1 -Tool HoloPatcher -DryRun
+    Shows what would be done for HoloPatcher without making changes.
 
 .NOTES
     Requires: GitHub CLI (gh) to be installed and authenticated.
@@ -87,7 +87,7 @@ if (-not $Tool -and -not $Library) {
     Write-Host "Usage examples:"
     Write-Host "  .\create_submodule_repo.ps1 -Tool HolocronToolset"
     Write-Host "  .\create_submodule_repo.ps1 -Library PyKotorGL"
-    Write-Host "  .\create_submodule_repo.ps1 -Tool KotorCLI -DryRun"
+    Write-Host "  .\create_submodule_repo.ps1 -Tool HoloPatcher -DryRun"
     exit 1
 }
 

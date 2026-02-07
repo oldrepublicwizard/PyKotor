@@ -44,7 +44,6 @@ holocron-toolset = "toolset.__main__:main"
 toolset = "toolset.__main__:main"
 pykotor = "pykotor.cli.__main__:main"
 pykotorcli = "pykotor.cli.__main__:main"
-kotorcli = "pykotor.cli.__main__:main"
 
 
 [project.urls]
@@ -90,7 +89,6 @@ holocron-toolset = "toolset.__main__:main"
 toolset = "toolset.__main__:main"
 pykotor = "pykotor.cli.__main__:main"
 pykotorcli = "pykotor.cli.__main__:main"
-kotorcli = "pykotor.cli.__main__:main"
 
 [tool.poetry.urls]
 Documentation = "https://github.com/OldRepublicDevs/PyKotor/blob/master/README.md"
@@ -104,7 +102,6 @@ batchpatcher = {workspace = true}
 holocrontoolset = {workspace = true}
 holopatcher = {workspace = true}
 holopazaak = {workspace = true}
-kotorcli = {workspace = true}
 kotordiff = {workspace = true}
 pykotor = {workspace = true}
 pykotorcli = {workspace = true}

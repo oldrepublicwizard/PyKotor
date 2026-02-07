@@ -107,10 +107,10 @@ def cmd_pack(args: Namespace, logger: Logger) -> int:
                 return compile_result
 
         # Get cache directory
-        cache_dir = config.root_dir / ".kotorcli" / "cache" / target_name
+        cache_dir = config.root_dir / ".pykotorcli" / "cache" / target_name
         if not cache_dir.exists():
             logger.error(f"Cache directory not found: {cache_dir}")
-            logger.info("Run 'kotorcli convert' and 'kotorcli compile' first")
+            logger.info("Run 'pykotorcli convert' and 'pykotorcli compile' first")
             return 1
 
         # Determine output file

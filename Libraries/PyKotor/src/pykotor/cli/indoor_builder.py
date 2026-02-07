@@ -1,4 +1,4 @@
-"""Shared helpers for indoor map building and extraction in KotorCLI.
+"""Shared helpers for indoor map building and extraction in Pykotorcli.
 
 This module provides CLI-friendly wrappers around the HolocronToolset indoor map functionality.
 """

@@ -10,7 +10,7 @@ if TYPE_CHECKING:
 
 from pykotor.tools.archives import list_bif, list_erf, list_key, list_rim
 
-# KotorCLI-level filter supports matching either "resref" or "resref.ext".
+# Pykotorcli-level filter supports matching either "resref" or "resref.ext".
 from pykotor.cli.archive_filter import matches_resource_name
 
 # vendor references:

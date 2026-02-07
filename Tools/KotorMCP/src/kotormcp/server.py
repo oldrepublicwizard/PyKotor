@@ -2,7 +2,7 @@
 
 This server exposes context-rich tools tailored for AI agents. It focuses on installation
 management, resource discovery, and journal/plot inspection workflows that mirror the
-pipelines used in `Tools/KotorCLI` and helper scripts under `scripts/`.
+pipelines used in `Tools/Pykotorcli` and helper scripts under `scripts/`.
 
 Implementation notes:
     * Resource scanning logic mirrors `scripts/investigate_module_structure.py:35-120`.

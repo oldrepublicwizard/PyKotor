@@ -165,7 +165,7 @@ def cmd_compile(
         logger.info(f"Compiling target: {target_name}")  # noqa: G004
 
         # Get cache directory
-        cache_dir: Path = config.root_dir / ".kotorcli" / "cache" / target_name
+        cache_dir: Path = config.root_dir / ".pykotorcli" / "cache" / target_name
         if args.clean and cache_dir.exists():
             logger.info(f"Cleaning cache: {cache_dir}")  # noqa: G004
             shutil.rmtree(cache_dir)

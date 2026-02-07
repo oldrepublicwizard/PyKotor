@@ -10,7 +10,7 @@ if TYPE_CHECKING:
     from logging import Logger
 
 
-DEFAULT_CONFIG_TEMPLATE = """# KotorCLI Package Configuration
+DEFAULT_CONFIG_TEMPLATE = """# Pykotorcli Package Configuration
 # This file uses TOML format and is compatible with cli syntax
 
 [package]
@@ -84,7 +84,7 @@ def _gather_package_info(args: Namespace, target_dir: Path, logger: Logger) -> t
 
 
 def _create_directory_structure(target_dir: Path, logger: Logger) -> None:
-    """Create the standard directory structure for a kotorcli package."""
+    """Create the standard directory structure for a pykotorcli package."""
     src_dir = target_dir / "src"
     src_dir.mkdir(exist_ok=True)
     logger.info(f"Created {src_dir}")  # noqa: G004
@@ -108,15 +108,15 @@ def _create_directory_structure(target_dir: Path, logger: Logger) -> None:
     for subdir in subdirs:
         (target_dir / subdir).mkdir(parents=True, exist_ok=True)
 
-    kotorcli_dir = target_dir / ".kotorcli"
+    kotorcli_dir = target_dir / ".pykotorcli"
     kotorcli_dir.mkdir(exist_ok=True)
 
 
 def _create_gitignore(target_dir: Path, logger: Logger) -> None:
     """Create .gitignore file if it doesn't exist."""
-    gitignore_content = """# KotorCLI
-.kotorcli/cache/
-.kotorcli/user.cfg
+    gitignore_content = """# Pykotorcli
+.pykotorcli/cache/
+.pykotorcli/user.cfg
 *.log
 
 # Build output
@@ -190,7 +190,7 @@ def _unpack_initial_file(args: Namespace, init_file: str, logger: Logger) -> Non
 
 
 def cmd_init(args: Namespace, logger: Logger) -> int:
-    """Handle init command - create a new kotorcli package.
+    """Handle init command - create a new pykotorcli package.
 
     Args:
     ----
@@ -204,7 +204,7 @@ def cmd_init(args: Namespace, logger: Logger) -> int:
     target_dir = Path(args.dir if args.dir else ".").resolve()
     target_dir.mkdir(parents=True, exist_ok=True)
 
-    config_path = target_dir / "kotorcli.cfg"
+    config_path = target_dir / "pykotorcli.cfg"
     if config_path.exists():
         logger.warning(f"Package already initialized at {target_dir}")  # noqa: G004
         overwrite = prompt("Overwrite existing configuration? (yes/no)", "no")
@@ -212,7 +212,7 @@ def cmd_init(args: Namespace, logger: Logger) -> int:
             logger.info("Initialization cancelled")
             return 0
 
-    logger.info(f"Initializing kotorcli package in {target_dir}")  # noqa: G004
+    logger.info(f"Initializing pykotorcli package in {target_dir}")  # noqa: G004
 
     package_name, description, author, target_file = _gather_package_info(args, target_dir, logger)
 
@@ -237,10 +237,10 @@ def cmd_init(args: Namespace, logger: Logger) -> int:
 
     logger.info(f"\nPackage initialized successfully in {target_dir}")  # noqa: G004
     logger.info("Next steps:")
-    logger.info("  1. Edit kotorcli.cfg to configure your package")
+    logger.info("  1. Edit pykotorcli.cfg to configure your package")
     logger.info("  2. Place your source files in the src/ directory")
-    logger.info("  3. Run 'kotorcli list' to see available targets")
-    logger.info("  4. Run 'kotorcli pack' to build your module")
+    logger.info("  3. Run 'pykotorcli list' to see available targets")
+    logger.info("  4. Run 'pykotorcli pack' to build your module")
 
     return 0
 

@@ -266,7 +266,7 @@ def create_parser(prog: str | None = None) -> ArgumentParser:  # noqa: PLR0915
     config_parser.add_argument("--list", action="store_true", help="List all key/value pairs in the config file")
 
     # init command
-    init_parser = subparsers.add_parser("init", help="Create a new kotorcli package")
+    init_parser = subparsers.add_parser("init", help="Create a new pykotorcli package")
     init_parser.add_argument("dir", nargs="?", default=".", help="Directory to initialize (default: current directory)")
     init_parser.add_argument("file", nargs="?", help="File to unpack into the new package")
     init_parser.add_argument("--default", action="store_true", help="Skip package generation dialog")
@@ -274,7 +274,7 @@ def create_parser(prog: str | None = None) -> ArgumentParser:  # noqa: PLR0915
     init_parser.add_argument("--file", dest="init_file", help="File to unpack into the package")
 
     # list command
-    list_parser = subparsers.add_parser("list", help="List all targets defined in kotorcli.cfg")
+    list_parser = subparsers.add_parser("list", help="List all targets defined in pykotorcli.cfg")
     list_parser.add_argument("targets", nargs="*", help="Specific targets to list")
     list_parser.add_argument("--quiet", action="store_true", help="List only target names")
     list_parser.add_argument("--verbose", action="store_true", help="List source files as well")

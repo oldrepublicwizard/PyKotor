@@ -40,7 +40,7 @@
     Removes the submodule AND deletes the remote GitHub repository.
 
 .EXAMPLE
-    .\remove_submodule_repo.ps1 -Tool KotorCLI -DryRun
+    .\remove_submodule_repo.ps1 -Tool HoloPatcher -DryRun
     Shows what would be done without making changes.
 
 .NOTES
@@ -77,7 +77,7 @@ if (-not $Tool -and -not $Library) {
     Write-Host "Usage examples:"
     Write-Host "  .\remove_submodule_repo.ps1 -Tool HolocronToolset"
     Write-Host "  .\remove_submodule_repo.ps1 -Library PyKotorGL"
-    Write-Host "  .\remove_submodule_repo.ps1 -Tool KotorCLI -DryRun"
+    Write-Host "  .\remove_submodule_repo.ps1 -Tool HoloPatcher -DryRun"
     Write-Host "  .\remove_submodule_repo.ps1 -Tool KotorMCP -DeleteRemoteRepo"
     exit 1
 }

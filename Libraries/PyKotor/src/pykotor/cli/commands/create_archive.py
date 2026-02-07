@@ -1,4 +1,4 @@
-"""Archive creation command implementation for KotorCLI.
+"""Archive creation command implementation for Pykotorcli.
 
 This module provides CLI commands for creating archives (ERF, RIM) from directories.
 """

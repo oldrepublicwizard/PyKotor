@@ -1,4 +1,4 @@
-"""Utility command implementations for KotorCLI.
+"""Utility command implementations for Pykotorcli.
 
 This module provides CLI commands for utility operations (diff, grep, stats, validate, merge).
 """

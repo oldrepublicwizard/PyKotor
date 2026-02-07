@@ -1,4 +1,4 @@
-"""Configuration file parser for kotorcli.cfg (TOML format, cli-compatible)."""
+"""Configuration file parser for pykotorcli.cfg (TOML format, cli-compatible)."""
 
 from __future__ import annotations
 
@@ -16,7 +16,7 @@ except ModuleNotFoundError:
 
 
 class KotorCLIConfig:
-    """Represents a kotorcli.cfg configuration."""
+    """Represents a pykotorcli.cfg configuration."""
 
     def __init__(self, config_path: Path):
         self.config_path = config_path
@@ -161,13 +161,13 @@ class KotorCLIConfig:
 
 
 def find_config_file(start_dir: Path | None = None) -> Path | None:
-    """Find kotorcli.cfg by walking up the directory tree."""
+    """Find pykotorcli.cfg by walking up the directory tree."""
     if start_dir is None:
         start_dir = Path.cwd()
 
     current = start_dir.resolve()
     while True:
-        config_path = current / "kotorcli.cfg"
+        config_path = current / "pykotorcli.cfg"
         if config_path.exists():
             return config_path
 
@@ -178,7 +178,7 @@ def find_config_file(start_dir: Path | None = None) -> Path | None:
 
 
 def load_config(logger: Logger, config_path: Path | None = None) -> KotorCLIConfig | None:
-    """Load the kotorcli.cfg configuration file.
+    """Load the pykotorcli.cfg configuration file.
 
     Args:
     ----
@@ -193,7 +193,7 @@ def load_config(logger: Logger, config_path: Path | None = None) -> KotorCLIConf
         config_path = find_config_file()
 
     if config_path is None:
-        logger.error("This is not a kotorcli repository. Please run 'pykotor init' or 'kotorcli init'")
+        logger.error("This is not a pykotorcli repository. Please run 'pykotor init' or 'pykotorcli init'")
         return None
 
     try:

@@ -106,7 +106,7 @@ def extract_indoor_from_module_as_modulekit(
 ) -> IndoorMap:
     """Extract an `IndoorMap` by treating the module as an implicit kit (`ModuleKit`).
 
-    This is the “implicit-kit extraction” path, used by `kotorcli indoor-extract --implicit-kit`.
+    This is the “implicit-kit extraction” path, used by `pykotorcli indoor-extract --implicit-kit`.
     """
     if logger is None:
         logger = RobustLogger()

@@ -322,7 +322,7 @@ def launch_gui_converter() -> None:  # noqa: PLR0915
     from tkinter import filedialog, messagebox, scrolledtext  # noqa: PLC0415
 
     root = tk.Tk()
-    root.title("KotorCLI GUI Converter")
+    root.title("Pykotorcli GUI Converter")
     root.geometry("640x400")
 
     logger = RobustLogger()

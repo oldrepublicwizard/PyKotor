@@ -1,4 +1,4 @@
-"""Batch patching command implementations for KotorCLI.
+"""Batch patching command implementations for Pykotorcli.
 
 This module provides CLI commands for batch patching operations:
 - Translating resources (TLK, GFF LocalizedStrings)
@@ -39,10 +39,10 @@ def cmd_batch_patch(args: Namespace, logger: Logger) -> int:
     """Batch patch files, folders, or installations.
 
     Usage:
-        kotorcli batch-patch --path "C:/Games/KOTOR" --translate --to-lang French
-        kotorcli batch-patch --path "C:/Games/KOTOR" --set-unskippable
-        kotorcli batch-patch --path "C:/Games/KOTOR" --convert-gffs-to-k1
-        kotorcli batch-patch --path "C:/Games/KOTOR" --convert-tga "TGA to TPC"
+        pykotorcli batch-patch --path "C:/Games/KOTOR" --translate --to-lang French
+        pykotorcli batch-patch --path "C:/Games/KOTOR" --set-unskippable
+        pykotorcli batch-patch --path "C:/Games/KOTOR" --convert-gffs-to-k1
+        pykotorcli batch-patch --path "C:/Games/KOTOR" --convert-tga "TGA to TPC"
     """
     config = PatchingConfig()
     config.translate = args.translate
@@ -91,7 +91,7 @@ def cmd_patch_file(args: Namespace, logger: Logger) -> int:
     """Patch a single file.
 
     Usage:
-        kotorcli patch-file --file "mymodule.mod" --translate --to-lang French
+        pykotorcli patch-file --file "mymodule.mod" --translate --to-lang French
     """
     config = PatchingConfig()
     config.translate = args.translate
@@ -128,7 +128,7 @@ def cmd_patch_folder(args: Namespace, logger: Logger) -> int:
     """Patch all files in a folder recursively.
 
     Usage:
-        kotorcli patch-folder --folder "C:/MyMod" --translate --to-lang French
+        pykotorcli patch-folder --folder "C:/MyMod" --translate --to-lang French
     """
     config = PatchingConfig()
     config.translate = args.translate
@@ -166,7 +166,7 @@ def cmd_patch_installation(args: Namespace, logger: Logger) -> int:
     """Patch a KOTOR installation.
 
     Usage:
-        kotorcli patch-installation --installation "C:/Games/KOTOR" --translate --to-lang French
+        pykotorcli patch-installation --installation "C:/Games/KOTOR" --translate --to-lang French
     """
     config = PatchingConfig()
     config.translate = args.translate

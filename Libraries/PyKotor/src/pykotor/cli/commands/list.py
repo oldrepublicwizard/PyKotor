@@ -33,7 +33,7 @@ def cmd_list(args: Namespace, logger: Logger) -> int:
     # Get all targets
     all_targets = config.targets
     if not all_targets:
-        logger.info("No targets defined in kotorcli.cfg")
+        logger.info("No targets defined in pykotorcli.cfg")
         return 0
 
     # Filter targets if specific ones were requested

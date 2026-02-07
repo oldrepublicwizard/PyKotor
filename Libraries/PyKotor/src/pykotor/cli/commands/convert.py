@@ -58,7 +58,7 @@ def cmd_convert(args: Namespace, logger: Logger) -> int:
         logger.info(f"Converting target: {target_name}")
 
         # Get cache directory
-        cache_dir = config.root_dir / ".kotorcli" / "cache" / target_name
+        cache_dir = config.root_dir / ".pykotorcli" / "cache" / target_name
         if args.clean and cache_dir.exists():
             logger.info(f"Cleaning cache: {cache_dir}")
             shutil.rmtree(cache_dir)

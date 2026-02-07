@@ -1,4 +1,4 @@
-"""Shared helpers for kit generation inside KotorCLI.
+"""Shared helpers for kit generation inside Pykotorcli.
 
 Extraction is delegated to :func:`pykotor.tools.kit.extract_kit`
 (see `Libraries/PyKotor/src/pykotor/tools/kit.py`, around the extract_kit

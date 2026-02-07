@@ -1,4 +1,4 @@
-"""Validation and investigation command implementations for KotorCLI.
+"""Validation and investigation command implementations for Pykotorcli.
 
 This module provides CLI commands for:
 - Checking resource availability (TXI files, 2DA files)
@@ -45,8 +45,8 @@ def cmd_check_txi(args: Namespace, logger: Logger) -> int:
     """Check if TXI files exist for specific textures.
 
     Usage:
-        kotorcli check-txi --textures TEXTURE1 TEXTURE2 ...
-        kotorcli check-txi --textures lda_bark04 lda_flr11 --installation "C:/Games/KOTOR"
+        pykotorcli check-txi --textures TEXTURE1 TEXTURE2 ...
+        pykotorcli check-txi --textures lda_bark04 lda_flr11 --installation "C:/Games/KOTOR"
     """
     try:
         installation = Installation(pathlib.Path(args.installation))
@@ -83,7 +83,7 @@ def cmd_check_2da(args: Namespace, logger: Logger) -> int:
     """Check if a 2DA file exists in installation.
 
     Usage:
-        kotorcli check-2da --2da genericdoors --installation "C:/Games/KOTOR"
+        pykotorcli check-2da --2da genericdoors --installation "C:/Games/KOTOR"
     """
     try:
         installation = Installation(pathlib.Path(args.two_da_installation))
@@ -108,7 +108,7 @@ def cmd_validate_installation(args: Namespace, logger: Logger) -> int:
     """Validate a KOTOR installation.
 
     Usage:
-        kotorcli validate-installation --installation "C:/Games/KOTOR"
+        pykotorcli validate-installation --installation "C:/Games/KOTOR"
     """
     try:
         installation = Installation(pathlib.Path(args.installation))
@@ -147,8 +147,8 @@ def cmd_investigate_module(args: Namespace, logger: Logger) -> int:
     """Investigate a module's structure.
 
     Usage:
-        kotorcli investigate-module --module danm13 --installation "C:/Games/KOTOR"
-        kotorcli investigate-module --module danm13 --json output.json
+        pykotorcli investigate-module --module danm13 --installation "C:/Games/KOTOR"
+        pykotorcli investigate-module --module danm13 --json output.json
     """
     try:
         installation = Installation(pathlib.Path(args.installation))
@@ -202,7 +202,7 @@ def cmd_check_missing_resources(args: Namespace, logger: Logger) -> int:  # noqa
     """Check if missing resources are referenced by module models.
 
     Usage:
-        kotorcli check-missing-resources --module danm13 --textures TEX1 TEX2 --lightmaps LM1 LM2
+        pykotorcli check-missing-resources --module danm13 --textures TEX1 TEX2 --lightmaps LM1 LM2
     """
     try:
         installation = Installation(pathlib.Path(args.installation))
@@ -261,7 +261,7 @@ def cmd_module_resources(args: Namespace, logger: Logger) -> int:
     """Get all resources referenced by a module's models.
 
     Usage:
-        kotorcli module-resources --module danm13 --installation "C:/Games/KOTOR"
+        pykotorcli module-resources --module danm13 --installation "C:/Games/KOTOR"
     """
     try:
         installation = Installation(pathlib.Path(args.installation))

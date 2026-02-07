@@ -28,10 +28,10 @@ def get_config_dir() -> Path:
     system = platform.system()
     if system == "Windows":
         base = Path(os.environ.get("APPDATA", str(Path.home() / "AppData" / "Roaming")))
-        return base / "kotorcli"
+        return base / "pykotorcli"
     # Linux, Mac
     base = Path(os.environ.get("XDG_CONFIG_HOME", str(Path.home() / ".config")))
-    return base / "kotorcli"
+    return base / "pykotorcli"
 
 
 def get_global_config_path() -> Path:
@@ -41,7 +41,7 @@ def get_global_config_path() -> Path:
 
 def get_local_config_path() -> Path:
     """Get the local configuration file path (in current package)."""
-    return Path.cwd() / ".kotorcli" / "user.cfg"
+    return Path.cwd() / ".pykotorcli" / "user.cfg"
 
 
 def load_config_file(config_path: Path) -> dict:

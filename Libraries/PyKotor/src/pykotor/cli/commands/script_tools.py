@@ -1,4 +1,4 @@
-"""Script utility command implementations for KotorCLI.
+"""Script utility command implementations for Pykotorcli.
 
 This module provides CLI commands for working with NCS bytecode (decompile,
 disassemble, assemble) using PyKotor utilities.
