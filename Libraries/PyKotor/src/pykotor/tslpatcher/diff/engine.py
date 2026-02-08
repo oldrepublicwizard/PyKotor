@@ -1395,8 +1395,16 @@ def diff_data(  # noqa: PLR0913
         # If context.where is "swkotor\Override\journal.gui", use just "journal.gui" as the root path
         compare_path = PureWindowsPath(Path(str(context.where)).name)
         comparison_result = GFFComparisonResult()
-        # For GFF comparison, always use structured format to get field-by-field diffs
-        are_same = gff1.compare(gff2, log_func, compare_path, comparison_result=comparison_result, format_type="structured")
+        # For GFF comparison, always use structured format to get field-by-field diffs.
+        # ignore_default_changes=True: optional fields (e.g. UTE GuaranteedCount=0) are not reported.
+        are_same = gff1.compare(
+            gff2,
+            log_func,
+            compare_path,
+            ignore_default_changes=True,
+            comparison_result=comparison_result,
+            format_type="structured",
+        )
         if are_same and not comparison_result.has_field_differences():
             return True
 
