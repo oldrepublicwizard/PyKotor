@@ -240,6 +240,20 @@ jobs:
           python -m pip install --upgrade pip
           pip install build twine setuptools wheel
 
+      - name: Ensure valid README (PyPI rejects empty descriptions)
+        working-directory: ${{ matrix.package.path }}
+        run: |
+          # PyPI rejects packages with empty/missing README - copy root README if needed
+          if [ ! -f README.md ] || [ ! -s README.md ] || ! grep -q '[^[:space:]]' README.md; then
+            if [ -f ../../README.md ] && [ -s ../../README.md ]; then
+              echo "README.md is empty or missing - copying from repository root"
+              cp ../../README.md README.md
+            else
+              echo "ERROR: README.md is required and must not be empty for PyPI"
+              exit 1
+            fi
+          fi
+
       - name: Build package ${{ matrix.package.name }}
         working-directory: ${{ matrix.package.path }}
         run: |
