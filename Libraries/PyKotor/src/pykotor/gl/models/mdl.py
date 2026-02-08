@@ -226,7 +226,7 @@ class Node:
         return copy(self._transform)
 
     def _recalc_transform(self):
-        self._transform = glm.translate(self._position) * glm.mat4_cast(quat(self._rotation))
+        self._transform = glm.translate(self._position) * glm.mat4_cast(self._rotation)
 
     def position(self) -> Vector3:
         return copy(self._position)

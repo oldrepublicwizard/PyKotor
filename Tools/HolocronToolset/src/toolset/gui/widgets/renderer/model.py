@@ -98,6 +98,11 @@ class ModelRenderer(QOpenGLWidget):
 
         self.scene.git = GIT()
 
+        # Standalone model/creature preview has no module - disable frustum culling
+        # so objects are always rendered (culling relies on module layout which we don't have)
+        if self.scene._module is None:
+            self.scene.enable_frustum_culling = False
+
         self._loop_timer.start()
 
     def paintGL(self):

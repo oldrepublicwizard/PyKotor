@@ -174,11 +174,16 @@ def translate(v: Any, /) -> Any:
     Returns:
     -------
         Matrix4: Translation matrix.
+    
+    Note:
+    ----
+        Matrix4._data is row-major: _data[row][col].
+        Translation goes in column 3 (the last column) of rows 0-2.
     """
     result = Matrix4(1.0)  # Start with identity matrix
-    result._data[3][0] = v.x
-    result._data[3][1] = v.y
-    result._data[3][2] = v.z
+    result._data[0][3] = v.x
+    result._data[1][3] = v.y
+    result._data[2][3] = v.z
     return result
 
 
@@ -212,17 +217,18 @@ def rotate(m: Any, angle: float, axis: Any, /) -> Any:
     s = math.sin(angle)
     t = 1 - c
 
-    # Rotation matrix
+    # Rotation matrix (row-major: _data[row][col])
     rot = Matrix4(0.0)
     rot._data[0][0] = t * x * x + c
-    rot._data[0][1] = t * x * y + s * z
-    rot._data[0][2] = t * x * z - s * y
-    rot._data[1][0] = t * x * y - s * z
+    rot._data[0][1] = t * x * y - s * z
+    rot._data[0][2] = t * x * z + s * y
+    rot._data[1][0] = t * x * y + s * z
     rot._data[1][1] = t * y * y + c
-    rot._data[1][2] = t * y * z + s * x
-    rot._data[2][0] = t * x * z + s * y
-    rot._data[2][1] = t * y * z - s * x
+    rot._data[1][2] = t * y * z - s * x
+    rot._data[2][0] = t * x * z - s * y
+    rot._data[2][1] = t * y * z + s * x
     rot._data[2][2] = t * z * z + c
+    rot._data[3][3] = 1.0  # Must be 1 for a proper affine transform
 
     return m * rot
 
@@ -248,22 +254,25 @@ def mat4_cast(x: Any, /) -> Any:
         Vector4 stores (x, y, z, w) but quaternions are typically (w, x, y, z).
         This function assumes Vector4 quaternion format is (x, y, z, w).
     """
+    # Row-major rotation matrix from quaternion: _data[row][col]
     result = Matrix4(0.0)
 
     # Vector4 is (x, y, z, w), quaternion is (w, x, y, z)
     qw, qx, qy, qz = x.w, x.x, x.y, x.z
 
     result._data[0][0] = 1 - 2 * qy * qy - 2 * qz * qz
-    result._data[0][1] = 2 * qx * qy + 2 * qz * qw
-    result._data[0][2] = 2 * qx * qz - 2 * qy * qw
+    result._data[0][1] = 2 * qx * qy - 2 * qz * qw
+    result._data[0][2] = 2 * qx * qz + 2 * qy * qw
 
-    result._data[1][0] = 2 * qx * qy - 2 * qz * qw
+    result._data[1][0] = 2 * qx * qy + 2 * qz * qw
     result._data[1][1] = 1 - 2 * qx * qx - 2 * qz * qz
-    result._data[1][2] = 2 * qy * qz + 2 * qx * qw
+    result._data[1][2] = 2 * qy * qz - 2 * qx * qw
 
-    result._data[2][0] = 2 * qx * qz + 2 * qy * qw
-    result._data[2][1] = 2 * qy * qz - 2 * qx * qw
+    result._data[2][0] = 2 * qx * qz - 2 * qy * qw
+    result._data[2][1] = 2 * qy * qz + 2 * qx * qw
     result._data[2][2] = 1 - 2 * qx * qx - 2 * qy * qy
+
+    result._data[3][3] = 1.0  # Proper affine transform
 
     return result
 
@@ -346,7 +355,16 @@ def perspective(fovy: float, aspect: float, near: float, far: float, /) -> Matri
     
     Returns:
     -------
-        Matrix4: Perspective projection matrix.
+        Matrix4: Perspective projection matrix (row-major: _data[row][col]).
+    
+    Note:
+    ----
+        Standard OpenGL perspective matrix (row-major):
+        Row 0: [f/a,  0,    0,                    0              ]
+        Row 1: [0,    f,    0,                    0              ]
+        Row 2: [0,    0,    -(f+n)/(f-n),         -2*f*n/(f-n)   ]
+        Row 3: [0,    0,    -1,                   0              ]
+        where f = 1/tan(fovy/2), a = aspect.
     """
     result = Matrix4(0.0)
 
@@ -356,8 +374,8 @@ def perspective(fovy: float, aspect: float, near: float, far: float, /) -> Matri
     result._data[0][0] = 1.0 / (aspect * tan_half_fov)
     result._data[1][1] = 1.0 / tan_half_fov
     result._data[2][2] = -(far + near) / (far - near)
-    result._data[2][3] = -1.0
-    result._data[3][2] = -(2.0 * far * near) / (far - near)
+    result._data[2][3] = -(2.0 * far * near) / (far - near)
+    result._data[3][2] = -1.0
 
     return result
 
@@ -448,10 +466,10 @@ def decompose(
         raise TypeError("decompose requires Matrix4, Vector3, Vector4, Vector3, Vector3, Vector4 arguments")
     m = modelMatrix._data
 
-    # Extract translation
-    translation.x = float(m[3][0])
-    translation.y = float(m[3][1])
-    translation.z = float(m[3][2])
+    # Extract translation (row-major: translation is in column 3, rows 0-2)
+    translation.x = float(m[0][3])
+    translation.y = float(m[1][3])
+    translation.z = float(m[2][3])
 
     # Extract scale
     scale_x = math.sqrt(m[0][0] ** 2 + m[0][1] ** 2 + m[0][2] ** 2)

@@ -614,6 +614,5 @@ $RECYCLE.BIN/
 # NOTE: src/toolset/uic is NOT ignored so that the PyPI build (and pip install) includes
 # the generated Qt UI modules. Generate with: python src/ui/convertui.py (from repo root or Tools/HolocronToolset).
 /Tools/HolocronToolset/.git.backup
-/Tools/HolocronToolset/.git.backup
 /Tools/HolocronToolset/src/ui
 .*

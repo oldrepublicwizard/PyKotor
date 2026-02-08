@@ -316,10 +316,11 @@ def _parse_model_data(  # noqa: C901, PLR0915, PLR0912
             pos_x = mdl_reader.read_single()
             pos_y = mdl_reader.read_single()
             pos_z = mdl_reader.read_single()
+            # MDL binary stores quaternion as (w, x, y, z) - w first
+            rot_w = mdl_reader.read_single()
             rot_x = mdl_reader.read_single()
             rot_y = mdl_reader.read_single()
             rot_z = mdl_reader.read_single()
-            rot_w = mdl_reader.read_single()
             
             child_offsets_ptr = mdl_reader.read_uint32()
             child_count = mdl_reader.read_uint32()
@@ -403,7 +404,7 @@ def _parse_model_data(  # noqa: C901, PLR0915, PLR0912
             return IntermediateNode(
                 name=node_name,
                 position=(pos_x, pos_y, pos_z),
-                rotation=(rot_x, rot_y, rot_z, rot_w),
+                rotation=(rot_w, rot_x, rot_y, rot_z),
                 mesh=mesh_data,
                 children=children,
                 render=render,
