@@ -25,6 +25,10 @@ class Ui_Form(object):
         self.scrollAreaWidgetContents.setObjectName("scrollAreaWidgetContents")
         self.verticalLayout = QtWidgets.QVBoxLayout(self.scrollAreaWidgetContents)
         self.verticalLayout.setObjectName("verticalLayout")
+        self.useBlenderCheckbox = QtWidgets.QCheckBox(self.scrollAreaWidgetContents)
+        self.useBlenderCheckbox.setChecked(False)
+        self.useBlenderCheckbox.setObjectName("useBlenderCheckbox")
+        self.verticalLayout.addWidget(self.useBlenderCheckbox)
         self.formLayout_3 = QtWidgets.QFormLayout()
         self.formLayout_3.setObjectName("formLayout_3")
         self.label_20 = QtWidgets.QLabel(self.scrollAreaWidgetContents)
@@ -883,6 +887,9 @@ class Ui_Form(object):
     def retranslateUi(self, Form):
         _translate = QtCore.QCoreApplication.translate
         Form.setWindowTitle(_translate("Form", "Form"))
+        self.useBlenderCheckbox.setText(_translate("Form", "Use Blender for 3D editing"))
+        self.useBlenderCheckbox.setToolTip(_translate("Form", "When enabled, the Module Designer will try to use Blender for 3D viewport editing\n"
+"           (requires Blender and kotorblender). Disabled by default."))
         self.label_20.setText(_translate("Form", "Field of View:"))
         self.controls3dResetButton.setText(_translate("Form", "Reset"))
         self.label602.setText(_translate("Form", "Move Sensitivity"))
@@ -891,18 +898,18 @@ class Ui_Form(object):
         self.label.setText(_translate("Form", "Boosted Speed"))
         self.label_2.setToolTip(_translate("Form", "Reacts to mouse movement."))
         self.label_2.setText(_translate("Form", "Move Camera\n"
-"(XY)"))
+"                 (XY)"))
         self.label_12.setToolTip(_translate("Form", "Reacts to mouse movement."))
         self.label_12.setText(_translate("Form", "Move Camera\n"
-"(Z)"))
+"                 (Z)"))
         self.label_3.setToolTip(_translate("Form", "Reacts to mouse movement."))
         self.label_3.setText(_translate("Form", "Rotate Camera"))
         self.label_4.setToolTip(_translate("Form", "Reacts to mouse scrolling."))
         self.label_4.setText(_translate("Form", "Zoom Camera\n"
-"(Mouse Scroll)"))
+"                 (Mouse Scroll)"))
         self.label_9.setToolTip(_translate("Form", "Reacts to mouse movement."))
         self.label_9.setText(_translate("Form", "Zoom Camera\n"
-"(Mouse Movement)"))
+"                 (Mouse Movement)"))
         self.label_10.setToolTip(_translate("Form", "Reacts to mouse scrolling."))
         self.label_10.setText(_translate("Form", "Move Object XY"))
         self.label_11.setToolTip(_translate("Form", "Reacts to mouse scrolling."))
@@ -939,18 +946,18 @@ class Ui_Form(object):
         self.label_57.setText(_translate("Form", "Zoom Camera Out"))
         self.label_8.setToolTip(_translate("Form", "Reacts to keyboard input."))
         self.label_8.setText(_translate("Form", "Move Camera\n"
-"to Selection"))
+"                 to Selection"))
         self.label_58.setToolTip(_translate("Form", "Reacts to mouse movement."))
         self.label_58.setText(_translate("Form", "Duplicate Object"))
         self.label_69.setToolTip(_translate("Form", "Reacts to keyboard input."))
         self.label_69.setText(_translate("Form", "Move Camera\n"
-"to Cursor"))
+"                 to Cursor"))
         self.label_70.setToolTip(_translate("Form", "Reacts to keyboard input."))
         self.label_70.setText(_translate("Form", "Move Camera\n"
-"to Entry Point"))
+"                 to Entry Point"))
         self.label_71.setToolTip(_translate("Form", "Reacts to mouse movement."))
         self.label_71.setText(_translate("Form", "Move Camera\n"
-"(Camera Plane)"))
+"                 (Camera Plane)"))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab3DControls), _translate("Form", "3D Controls"))
         self.controls2dResetButton.setText(_translate("Form", "Reset"))
         self.label_43.setText(_translate("Form", "Move Sensitivity"))
@@ -973,7 +980,8 @@ class Ui_Form(object):
         self.label_61.setToolTip(_translate("Form", "Reacts to keyboard input."))
         self.label_61.setText(_translate("Form", "Delete Object"))
         self.label_62.setToolTip(_translate("Form", "Reacts to keyboard input."))
-        self.label_62.setText(_translate("Form", "<html><head/><body><p>Move Camera<br/>to Selection</p></body></html>"))
+        self.label_62.setText(_translate("Form", "<html><head/><body><p>Move Camera<br/>to\n"
+"                 Selection</p></body></html>"))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab2DControls), _translate("Form", "2D Controls"))
         self.controlsFcResetButton.setText(_translate("Form", "Reset"))
         self.label_18.setText(_translate("Form", "Fly Speed"))

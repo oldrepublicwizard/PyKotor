@@ -107,6 +107,7 @@ class ModuleDesignerWidget(SettingsWidget):
             self._registerColour(colorWidget, colorEdit[:-4])
 
     def setup_values(self):
+        self.ui.useBlenderCheckbox.setChecked(self.settings.useBlender)
         self.ui.fovSpin.setValue(self.settings.fieldOfView)
         self._load3dBindValues()
         self._loadFcBindValues()
@@ -115,6 +116,7 @@ class ModuleDesignerWidget(SettingsWidget):
 
     def save(self):
         super().save()
+        self.settings.useBlender = self.ui.useBlenderCheckbox.isChecked()
         self.settings.fieldOfView = self.ui.fovSpin.value()
         self.settings.flyCameraSpeedFC = self.ui.flySpeedFcEdit.value()
         self.settings.boostedFlyCameraSpeedFC = self.ui.boostedFlyCameraSpeedFCEdit.value()
@@ -549,3 +551,9 @@ class ModuleDesignerSettings(Settings):
         70,
     )
     # endregion
+
+    # Blender integration (Module Designer only; disabled by default)
+    useBlender: SettingsProperty[bool] = Settings.addSetting(
+        "useBlender",
+        False,
+    )

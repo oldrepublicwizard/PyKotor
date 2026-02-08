@@ -1090,11 +1090,16 @@ class ModuleDesigner(QMainWindow, BlenderEditorMixin):
         if dialog.exec():
             mod_filepath = self._installation.module_path().joinpath(dialog.module)
 
-            # Check for Blender and ask user preference
+            # Only consider Blender if enabled in Module Designer settings
             self._blender_choice_made = True  # Mark that we've checked
-            use_blender, blender_info = check_blender_and_ask(self, "Module Designer")
-            if blender_info is not None:
-                self._use_blender_mode = use_blender
+            if self.settings.useBlender:
+                use_blender, blender_info = check_blender_and_ask(self, "Module Designer")
+                if blender_info is not None:
+                    self._use_blender_mode = use_blender
+                else:
+                    self._use_blender_mode = False
+            else:
+                self._use_blender_mode = False
 
             self.open_module(mod_filepath)
 
@@ -1105,27 +1110,31 @@ class ModuleDesigner(QMainWindow, BlenderEditorMixin):
     ):
         """Opens a module."""
         # Check for Blender if not already checked (when opening directly via constructor or file)
+        # Only consider Blender when enabled in Module Designer settings (disabled by default).
         if not self._blender_choice_made:
             self._blender_choice_made = True
-            blender_settings = get_blender_settings()
-
-            # Check if user has a remembered preference
-            if blender_settings.remember_choice:
-                # Use remembered preference
-                self._use_blender_mode = blender_settings.prefer_blender
+            if not self.settings.useBlender:
+                self._use_blender_mode = False
             else:
-                # Show dialog to ask user (if Blender is detected)
-                blender_info = blender_settings.get_blender_info()
-                if blender_info.is_valid:
-                    use_blender, blender_info_result = check_blender_and_ask(self, "Module Designer")
-                    if blender_info_result is not None:
-                        self._use_blender_mode = use_blender
-                    # If user cancelled, default to built-in
-                    elif use_blender is False and blender_info_result is None:
-                        self._use_blender_mode = False
+                blender_settings = get_blender_settings()
+
+                # Check if user has a remembered preference
+                if blender_settings.remember_choice:
+                    # Use remembered preference
+                    self._use_blender_mode = blender_settings.prefer_blender
                 else:
-                    # Blender not available, use built-in
-                    self._use_blender_mode = False
+                    # Show dialog to ask user (if Blender is detected)
+                    blender_info = blender_settings.get_blender_info()
+                    if blender_info.is_valid:
+                        use_blender, blender_info_result = check_blender_and_ask(self, "Module Designer")
+                        if blender_info_result is not None:
+                            self._use_blender_mode = use_blender
+                        # If user cancelled, default to built-in
+                        elif use_blender is False and blender_info_result is None:
+                            self._use_blender_mode = False
+                    else:
+                        # Blender not available, use built-in
+                        self._use_blender_mode = False
 
         mod_root: str = self._installation.get_module_root(mod_filepath)
         mod_filepath = self._ensure_mod_file(mod_filepath, mod_root)

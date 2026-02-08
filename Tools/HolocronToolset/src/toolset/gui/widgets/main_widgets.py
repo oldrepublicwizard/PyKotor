@@ -22,13 +22,12 @@ from qtpy.QtCore import (
     Signal,  # pyright: ignore[reportAttributeAccessIssue, reportPrivateImportUsage]
     Slot,  # pyright: ignore[reportAttributeAccessIssue, reportPrivateImportUsage]
 )
-from qtpy.QtGui import QCursor, QIcon, QImage, QPixmap, QStandardItem, QStandardItemModel
+from qtpy.QtGui import QCursor, QColor, QIcon, QImage, QPalette, QPixmap, QStandardItem, QStandardItemModel
 from qtpy.QtWidgets import QAbstractItemView, QApplication, QFileDialog, QHeaderView, QInputDialog, QListView, QMenu, QStyle, QToolTip, QWidget
 
 from loggerplus import RobustLogger  # type: ignore[import-untyped, note]  # pyright: ignore[reportMissingTypeStubs]
 from pykotor.extract.file import FileResource
-from pykotor.resource.formats.tpc.tpc_auto import read_tpc, write_tpc
-from pykotor.resource.formats.tpc.tpc_data import TPCMipmap, TPCTextureFormat
+from pykotor.resource.formats.tpc import TPC, TPCMipmap, TPCTextureFormat, read_tpc, write_tpc
 from pykotor.resource.type import ResourceType
 from toolset.data.installation import HTInstallation
 from toolset.gui.dialogs.load_from_location_result import ResourceItems
@@ -39,7 +38,7 @@ from toolset.gui.widgets.texture_preview import load_resource_preview_mipmap, qi
 if TYPE_CHECKING:
     from qtpy.QtCore import QAbstractItemModel, QModelIndex, QRect
     from qtpy.QtGui import QMouseEvent, QResizeEvent, QShowEvent
-    from qtpy.QtWidgets import QScrollBar, _QMenu
+    from qtpy.QtWidgets import QScrollBar, QMenu
 
     from pykotor.resource.formats.tpc.tpc_data import TPC
     from toolset.data.installation import HTInstallation
@@ -80,7 +79,11 @@ class ResourceList(MainWindowList):
 
     HORIZONTAL_HEADER_LABELS: ClassVar[list[str]] = ["ResRef", "Type"]
 
-    def __init__(self, parent: QWidget):
+    def __init__(
+        self,
+        parent: QWidget,
+    ):
+        """Initialize the resource list."""
         super().__init__(parent)
         from toolset.uic.qtpy.widgets.resource_list import Ui_Form
 
@@ -145,7 +148,10 @@ class ResourceList(MainWindowList):
                 continue
             self.ui.sectionCombo.setCurrentIndex(i)
 
-    def set_installation(self, installation: HTInstallation):
+    def set_installation(
+        self,
+        installation: HTInstallation,
+    ):
         """Set the installation for the resource list."""
         self._installation: HTInstallation = installation
 
@@ -224,31 +230,51 @@ class ResourceList(MainWindowList):
     def selected_resources(self) -> list[FileResource]:
         return self.modules_model.resource_from_indexes(self.ui.resourceTree.selectedIndexes())  # pyright: ignore[reportArgumentType]
 
-    @Slot()
-    def on_filter_string_updated(self):
-        """Update the filter string for the resource list."""
+    @Slot(str)
+    def on_filter_string_updated(self, text: str = ""):
+        """Update the filter string for the resource list.
+
+        Args:
+        ----
+            text: The new text from the textEdited/textChanged signal (ignored, we read from widget).
+        """
         self.modules_model.proxy_model().set_filter_string(self.ui.searchEdit.text())
 
-    @Slot()
-    def on_section_changed(self):
+    @Slot(int)
+    def on_section_changed(self, index: int):
         """Handle the section change event."""
         data: str = self.ui.sectionCombo.currentData(Qt.ItemDataRole.UserRole)
         self.sig_section_changed.emit(data)
 
     @Slot()
-    def on_reload_clicked(self):
-        """Handle the reload button click event."""
+    @Slot(bool)
+    def on_reload_clicked(
+        self,
+        checked: bool = False,
+    ):
+        """Handle the reload button click event.
+
+        Args:
+        ----
+            checked: Whether the button was checked (from clicked signal, ignored).
+        """
         data: str = self.ui.sectionCombo.currentData(Qt.ItemDataRole.UserRole)
         self.sig_request_reload.emit(data)
 
-    @Slot()
-    def on_refresh_clicked(self):
+    @Slot(bool)
+    def on_refresh_clicked(
+        self,
+        checked: bool = False,
+    ):
         """Handle the refresh button click event."""
         self._clear_modules_model()
         self.sig_request_refresh.emit()
 
     @Slot(QPoint)
-    def on_resource_context_menu(self, point: QPoint):
+    def on_resource_context_menu(
+        self,
+        point: QPoint,
+    ):
         resources: list[FileResource] = self.selected_resources()
         if not resources:
             return
@@ -358,8 +384,17 @@ class ResourceList(MainWindowList):
 
         return False
 
-    def on_open_save_editor_from_context(self):
-        """Signal the main window to open the save editor."""
+    @Slot(bool)
+    def on_open_save_editor_from_context(
+        self,
+        checked: bool = False,
+    ):
+        """Signal the main window to open the save editor.
+
+        Args:
+        ----
+            checked: Whether the action was checked (from triggered signal, ignored).
+        """
         # Get the main window and call its open_save_editor method
         from toolset.gui.windows.main import ToolWindow
 
@@ -367,11 +402,23 @@ class ResourceList(MainWindowList):
         if isinstance(main_window, ToolWindow):
             main_window.on_open_save_editor()
 
-    @Slot()
-    def on_resource_double_clicked(self):
+    @Slot("QModelIndex")
+    def on_resource_double_clicked(
+        self,
+        index: QModelIndex | None = None,
+    ):
+        """Handle double-click on a resource.
+
+        Args:
+        ----
+            index: The model index from the doubleClicked signal (ignored).
+        """
         self.sig_request_open_resource.emit(self.selected_resources(), None)
 
-    def mouseMoveEvent(self, event: QMouseEvent):  # pylint: disable=invalid-name  # pyright: ignore[reportIncompatibleMethodOverride]
+    def mouseMoveEvent(
+        self,
+        event: QMouseEvent,  # pylint: disable=invalid-name  # pyright: ignore[reportIncompatibleMethodOverride]
+    ):
         """Show the tooltip when the mouse moves over a resource."""
         proxy_index: QModelIndex = self.ui.resourceTree.indexAt(event.pos())  # type: ignore[arg-type]
         if proxy_index.isValid():
@@ -417,16 +464,45 @@ class ResourceProxyModel(QSortFilterProxyModel):
         assert isinstance(model, QStandardItemModel)
         resref_index: QModelIndex = model.index(source_row, 0, source_parent)
         item: ResourceStandardItem | QStandardItem | None = model.itemFromIndex(resref_index)
+        
+        if item is None:
+            return False
+            
         if isinstance(item, ResourceStandardItem):
-            # Get the file name and resource name
-            filename: str = item.resource.filepath().name.lower()
-            resname: str = item.resource.filename().lower()
+            # Match against what the user sees (tree text) plus resource identifiers.
+            # This avoids edge-cases where the display label and the underlying FileResource
+            # filename/path differ (e.g. capsule/bif container names).
+            display_text: str = item.text().lower()
+            resref: str = item.resource.resname().lower()
+            identifier_filename: str = item.resource.filename().lower()  # e.g. "p_bastila.utc"
+            container_filename: str = item.resource.filepath().name.lower()  # e.g. "templates.bif"
 
-            # Check if the filter string is a substring of either the filename or the resource name
-            if self.filter_string in filename or self.filter_string in resname:
+            # Check if the filter string is a substring of any known representation.
+            if (
+                self.filter_string in display_text
+                or self.filter_string in resref
+                or self.filter_string in identifier_filename
+                or self.filter_string in container_filename
+            ):
                 return True
-
-        return False
+            return False
+        
+        # For category items (non-ResourceStandardItem), check if any child matches
+        # This ensures categories are shown if they contain matching resources
+        if self.filter_string.strip():
+            # Check all children to see if any match using the model's index-based approach
+            child_count: int = model.rowCount(resref_index)
+            for child_row in range(child_count):
+                child_index: QModelIndex = model.index(child_row, 0, resref_index)
+                if not child_index.isValid():
+                    continue
+                # Recursively check if this child (or any of its descendants) matches
+                if self.filterAcceptsRow(child_row, resref_index):
+                    return True
+            return False
+        
+        # If no filter string, show all categories
+        return True
 
 
 class ResourceModel(QStandardItemModel):
@@ -451,7 +527,7 @@ class ResourceModel(QStandardItemModel):
     def clear(self):
         """Clear the resource model."""
         super().clear()
-        self._category_items = {}
+        self._category_items.clear()
         self.setColumnCount(2)
         self.setHorizontalHeaderLabels(["ResRef", "Type"])
 
@@ -556,21 +632,24 @@ class TextureList(MainWindowList):
 
     BLANK_IMAGE: QImage = QImage(bytes(0 for _ in range(64 * 64 * 3)), 64, 64, QImage.Format.Format_RGB888)
 
-    def __init__(self, parent: QWidget):
+    def __init__(
+        self,
+        parent: QWidget,
+    ):
         """Initialize the texture list."""
-        print(f"Initializing TextureList with parent: {parent}")
         # Ensure loader attribute exists even if initialization aborts early.
         self._loader: multiprocessing.Process | None = None
         super().__init__(parent)
 
         from toolset.uic.qtpy.widgets.texture_list import Ui_Form
 
-        self.ui = Ui_Form()
+        self.ui: Ui_Form = Ui_Form()
         self.ui.setupUi(self)
         self.ui.resourceList.setUniformItemSizes(False)  # should be default
         self.ui.resourceList.setResizeMode(QListView.ResizeMode.Adjust)
         self.ui.resourceList.setMovement(QListView.Movement.Snap)
         self.ui.resourceList.setSelectionMode(QAbstractItemView.SelectionMode.ExtendedSelection)
+        self.ui.resourceList.setDragDropMode(QAbstractItemView.DragDropMode.DragOnly)
         self.setup_signals()
 
         self._installation: HTInstallation | None = None
@@ -591,6 +670,12 @@ class TextureList(MainWindowList):
         self._poll_timer.timeout.connect(self._poll_result_queue)
         # Map of (section_name, row) -> FileResource for pending process loads
         self._pending_process_loads: dict[tuple[str, int], FileResource] = {}
+        
+        # Throttle timer for scroll events to prevent rapid queue operations
+        self._scroll_throttle_timer: QTimer = QTimer(self)
+        self._scroll_throttle_timer.setSingleShot(True)
+        self._scroll_throttle_timer.timeout.connect(self._throttled_queue_load_visible_icons)
+        self._pending_scroll_load: bool = False
 
     def __del__(self):
         """Shutdown the executor when the texture list is deleted."""
@@ -631,7 +716,8 @@ class TextureList(MainWindowList):
         if vert_scroll_bar is None:
             RobustLogger().warning("Could not find vertical scroll bar for resource list")
         else:
-            vert_scroll_bar.valueChanged.connect(self.queue_load_visible_icons)
+            # Use throttled handler to prevent rapid queue operations on Windows
+            vert_scroll_bar.valueChanged.connect(self._throttled_scroll_handler)
         self.sig_icon_loaded.connect(self.on_icon_loaded)
 
     def set_installation(self, installation: HTInstallation):
@@ -761,7 +847,8 @@ class TextureList(MainWindowList):
         print(f"Added {added_count} resources to the model")
         self.queue_load_visible_icons()
 
-    def on_section_changed(self):
+    @Slot(int)
+    def on_section_changed(self, index: int):
         """Handle the section combobox selection change."""
         new_section_name: str = self.ui.sectionCombo.currentData(Qt.ItemDataRole.UserRole)
         print(f"Section changed to: '{new_section_name}'")
@@ -771,17 +858,24 @@ class TextureList(MainWindowList):
             return
         self.on_reload_clicked()  # FIXME: models are forgetting their items' icons for some reason.
 
-    def on_filter_string_updated(self):
+    @Slot(str)
+    def on_filter_string_updated(self, text: str = ""):
+        """Update the filter string for the texture list.
+
+        Args:
+        ----
+            text: The new text from the textEdited/textChanged signal (ignored, we read from widget).
+        """
         self.textures_proxy_model.setFilterFixedString(self.ui.searchEdit.text())
 
     def on_resource_context_menu(self, position: QPoint):
         """Show the context menu for the texture list."""
         print(f"Showing context menu at position: {position}")
-        menu: _QMenu = QMenu(self)
+        menu: QMenu = QMenu(self)
         menu.addAction("Open in Editor").triggered.connect(self.on_resource_double_clicked)
         menu.addAction("Reload").triggered.connect(self.on_reload_selected)
 
-        export_submenu: _QMenu = QMenu("Export texture as...", menu)
+        export_submenu: QMenu = QMenu("Export texture as...", menu)
         menu.addMenu(export_submenu)
 
         for tpc_format in TPCTextureFormat:
@@ -829,8 +923,17 @@ class TextureList(MainWindowList):
             tpc.convert(target_format)
             write_tpc(tpc, folderpath / f"{item.resource.resname()}{target_restype.extension}", target_restype)
 
-    def on_reload_selected(self):
-        """Handle reloading selected textures."""
+    @Slot(bool)
+    def on_reload_selected(
+        self,
+        checked: bool = False,
+    ):
+        """Handle reloading selected textures.
+
+        Args:
+        ----
+            checked: Whether the action was checked (from triggered signal, ignored).
+        """
         print("Reloading selected textures")
         selected_items: list[ResourceStandardItem] = self._get_selected_items()
         for item in selected_items:
@@ -853,7 +956,11 @@ class TextureList(MainWindowList):
 
         return selected_items
 
-    def _process_all_items(self, *, reload: bool):
+    def _process_all_items(
+        self,
+        *,
+        reload: bool,
+    ):
         cur_section_name: str = self.ui.sectionCombo.currentData(Qt.ItemDataRole.UserRole)
         cur_src_model: QStandardItemModel = self.texture_source_models[cur_section_name]
         for row in range(self.textures_proxy_model.rowCount()):
@@ -871,8 +978,36 @@ class TextureList(MainWindowList):
                 continue
             self.offload_texture_load(item, reload=reload)
 
-    def queue_load_visible_icons(self):
-        """Queue the loading of icons for visible items."""
+    def _throttled_scroll_handler(self, value: int):
+        """Handle scroll events with throttling to prevent rapid queue operations.
+        
+        Args:
+        ----
+            value: The scroll value from the valueChanged signal (ignored).
+        """
+        # Mark that we have a pending scroll load
+        self._pending_scroll_load = True
+        # Restart the throttle timer (single-shot, so it will fire after the timeout)
+        # This ensures we only call queue_load_visible_icons after scrolling stops
+        self._scroll_throttle_timer.start(150)  # 150ms throttle delay
+    
+    def _throttled_queue_load_visible_icons(self):
+        """Called by the throttle timer to load visible icons after scrolling stops."""
+        if self._pending_scroll_load:
+            self._pending_scroll_load = False
+            self.queue_load_visible_icons(0)
+
+    @Slot(int)
+    def queue_load_visible_icons(
+        self,
+        value: int = 0,
+    ):
+        """Queue the loading of icons for visible items.
+
+        Args:
+        ----
+            value: The scroll value from the valueChanged signal (ignored).
+        """
         visible_indexes: list[QModelIndex] = self.visible_indexes()
         if not visible_indexes:
             return
@@ -981,18 +1116,36 @@ class TextureList(MainWindowList):
                 # Queue is empty or other error, stop polling this cycle
                 break
 
-    def on_reload_clicked(self):
-        """Handle the reload button click."""
+    @Slot(bool)
+    def on_reload_clicked(
+        self,
+        checked: bool = False,
+    ):
+        """Handle the reload button click.
+
+        Args:
+        ----
+            checked: Whether the button was checked (from clicked signal, ignored).
+        """
         self._process_all_items(reload=True)
 
-    def on_refresh_clicked(self):
-        """Handle the refresh button click."""
+    @Slot(bool)
+    def on_refresh_clicked(
+        self,
+        checked: bool = False,
+    ):
+        """Handle the refresh button click.
+
+        Args:
+        ----
+            checked: Whether the button was checked (from clicked signal, ignored).
+        """
         self._process_all_items(reload=False)
 
     @Slot(Future)
     def on_icon_loaded(
         self,
-        future: Future[tuple[tuple[str, int], TPCMipmap]],
+        future: Future[tuple[tuple[str, int], TPCMipmap]],  # pyright: ignore[reportArgumentType]
     ):
         """Handle the completion of an icon load."""
         # print("Icon loaded callback triggered")
@@ -1001,7 +1154,7 @@ class TextureList(MainWindowList):
         # print(f"Loaded icon for section: {section_name}, row: {row}")
         src_index: QModelIndex = self.texture_source_models[section_name].index(row, 0)
         if not src_index.isValid():
-            RobustLogger().warning("Invalid source index for row {row}")
+            RobustLogger().warning(f"Invalid source index for row {row}")
             return
         item: QStandardItem | None = self.texture_source_models[section_name].itemFromIndex(src_index)
         if item is None:
@@ -1016,17 +1169,32 @@ class TextureList(MainWindowList):
         )
         item.setIcon(QIcon(pixmap))
 
-    @Slot()
-    def on_resource_double_clicked(self):
+    @Slot("QModelIndex")
+    def on_resource_double_clicked(
+        self,
+        index: QModelIndex | None = None,
+    ):
+        """Handle double-click on a resource.
+
+        Args:
+        ----
+            index: The model index from the doubleClicked signal (ignored).
+        """
         self.sig_request_open_resource.emit(self.selected_resources(), None)
 
-    def resizeEvent(self, a0: QResizeEvent):  # pylint: disable=unused-argument,invalid-name  # pyright: ignore[reportIncompatibleMethodOverride]
+    def resizeEvent(
+        self,
+        a0: QResizeEvent,  # pylint: disable=unused-argument,invalid-name  # pyright: ignore[reportIncompatibleMethodOverride]
+    ):
         """Ensures icons that come into view are queued to load when the widget is resized."""
-        QTimer.singleShot(0, self.queue_load_visible_icons)
+        QTimer.singleShot(0, lambda: self.queue_load_visible_icons(0))
 
-    def showEvent(self, a0: QShowEvent):  # pylint: disable=unused-argument,invalid-name,  # pyright: ignore[reportIncompatibleMethodOverride]
+    def showEvent(
+        self,
+        a0: QShowEvent,  # pylint: disable=unused-argument,invalid-name,  # pyright: ignore[reportIncompatibleMethodOverride]
+    ):
         """Ensures icons that come into view are queued to load when the widget is shown."""
-        QTimer.singleShot(0, self.queue_load_visible_icons)
+        QTimer.singleShot(0, lambda: self.queue_load_visible_icons(0))
 
 
 T = TypeVar("T")
@@ -1047,9 +1215,33 @@ def get_image_from_resource(
     except Exception as e:  # noqa: BLE001
         RobustLogger().warning(f"Failed to build preview icon for resource '{resource.path_ident()!r}': {e}")
         app_style: QStyle | None = QApplication.style()
-        assert app_style is not None
-        pixmap: QPixmap = app_style.standardPixmap(QStyle.StandardPixmap.SP_VistaShield)
-        qimg: QImage = pixmap.toImage()
+        if app_style is not None:
+            pixmap: QPixmap = app_style.standardPixmap(QStyle.StandardPixmap.SP_VistaShield)
+            qimg: QImage = pixmap.toImage()
+        else:
+            # Fallback for worker processes where QApplication.style() may return None
+            # Create a simple placeholder image using palette color
+            qimg = QImage(icon_size, icon_size, QImage.Format.Format_RGBA8888)
+            app = QApplication.instance()
+            if app is not None and isinstance(app, QApplication):
+                palette = app.palette()
+            else:
+                # Use default palette if no application instance
+                palette = QPalette()
+            
+            # Use Mid color (typically gray) for placeholder
+            placeholder_color = palette.color(QPalette.ColorRole.Mid)
+            if not placeholder_color.isValid():
+                # Fallback to WindowText if Mid is invalid
+                placeholder_color = palette.color(QPalette.ColorRole.WindowText)
+                if not placeholder_color.isValid():
+                    # Final fallback: use a neutral gray from the default palette
+                    default_palette = QPalette()
+                    placeholder_color = default_palette.color(QPalette.ColorRole.Mid)
+                    if not placeholder_color.isValid():
+                        # Last resort: create a neutral gray
+                        placeholder_color = QColor(128, 128, 128, 255)
+            qimg.fill(placeholder_color)
         return context, qimage_to_preview_mipmap(qimg, target_size=icon_size)
 
 
