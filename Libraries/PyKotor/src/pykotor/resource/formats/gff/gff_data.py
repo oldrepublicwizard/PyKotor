@@ -191,6 +191,19 @@ class GFFContent(Enum):
         return gff_content
 
 
+def _normalize_string_for_compare(value: object) -> str:
+    """Normalize string for comparison to avoid false positives from whitespace/line endings.
+
+    Engine behavior: GFF string fields are compared byte-wise; trailing whitespace and
+    CRLF vs LF can differ between tools. Normalizing allows semantically equal values
+    to match. Used in GFFStruct.compare for String and LocalizedString fields.
+    """
+    if not isinstance(value, str):
+        return str(value) if value is not None else ""
+    # Normalize line endings to \n, strip trailing whitespace from each line and overall
+    return "\n".join(line.rstrip() for line in value.replace("\r\n", "\n").replace("\r", "\n").split("\n")).rstrip()
+
+
 @dataclass
 class GFFListSemanticConfig:
     """Configuration for semantic identity matching of GFF list elements.
@@ -206,10 +219,15 @@ class GFFListSemanticConfig:
         default_when_absent: Map field_name -> default value. When a field is absent
             in one side, treat it as this default for identity and comparison.
             E.g., {"GuaranteedCount": 0} for UTE CreatureList (K2 field, default 0).
+        ignorable_when_value: Map field_name -> value(s). When a field is added with
+            this value (or removed when the effective value would be this), treat as
+            no change. E.g., {"GuaranteedCount": 0} - adding GuaranteedCount=0 is
+            ignorable (K2 default; engine reads 0 when absent).
     """
 
     identity_fields: tuple[str, ...]
     default_when_absent: dict[str, Any] = field(default_factory=dict)
+    ignorable_when_value: dict[str, Any] = field(default_factory=dict)
 
 
 # Registry: (GFFContent, list_field_name) -> semantic config for list comparison.
@@ -219,7 +237,15 @@ _GFF_LIST_SEMANTIC_REGISTRY: dict[tuple[GFFContent, str], GFFListSemanticConfig]
     (GFFContent.UTE, "CreatureList"): GFFListSemanticConfig(
         identity_fields=("ResRef", "CR", "Appearance", "SingleSpawn"),
         default_when_absent={"GuaranteedCount": 0},
+        ignorable_when_value={"GuaranteedCount": 0},
     ),
+}
+
+# Registry of ignorable field values per GFF content type.
+# Used when comparing GFFs: fields added/removed with these values are treated as no-change.
+# Engine: K1 lacks GuaranteedCount; K2 adds it, default 0 when absent.
+_GFF_IGNORABLE_FIELD_VALUES: dict[GFFContent, dict[str, set[Any]]] = {
+    GFFContent.UTE: {"GuaranteedCount": {0}},
 }
 
 
@@ -483,11 +509,14 @@ class GFF(ComparableMixin):
             if not isinstance(other, GFF):
                 return False
             comparison_result = comparison_result or GFFComparisonResult()
+            ignorable = _GFF_IGNORABLE_FIELD_VALUES.get(self.content, {})
+            ign = {k: (v if isinstance(v, set) else set(v)) for k, v in ignorable.items()} if ignorable else None
             return self.root.compare(
                 other.root,
                 log_func,
                 path,
                 ignore_default_changes,
+                ignore_values=ign,
                 comparison_result=comparison_result,
                 format_type=format_type,
             )
@@ -496,6 +525,12 @@ class GFF(ComparableMixin):
             log_func("", message_type="diff")
             log_func("", message_type="diff")
             return False
+
+        # Build ignorable field values from content type (e.g. UTE CreatureList GuaranteedCount=0)
+        ignorable: dict[str, set[Any]] = {}
+        if self.content in _GFF_IGNORABLE_FIELD_VALUES:
+            for label, values in _GFF_IGNORABLE_FIELD_VALUES[self.content].items():
+                ignorable[label] = set(values) if not isinstance(values, set) else values
 
         # Always do the full recursive comparison via GFFStruct.compare() so that
         # every added/removed/changed field is reported with its full GFF-internal
@@ -507,6 +542,7 @@ class GFF(ComparableMixin):
             log_func,
             path,
             ignore_default_changes,
+            ignore_values=ignorable or None,
             comparison_result=comparison_result,
             format_type=format_type,
         )
@@ -977,6 +1013,16 @@ class GFFStruct(ComparableMixin, dict):
                     format_type=format_type,
                 ):
                     continue
+            elif old_ftype == GFFFieldType.String and isinstance(old_value, str) and isinstance(new_value, str):
+                # Normalize to avoid false positives from CRLF vs LF, trailing whitespace
+                if _normalize_string_for_compare(old_value) == _normalize_string_for_compare(new_value):
+                    comparison_result.add_field_stat("used", label)
+                    continue
+                log_func("", message_type="diff")
+                log_func(format_diff(old_value, new_value, label), message_type="diff")
+                comparison_result.add_field_stat("mismatched", label)
+                comparison_result.add_value_mismatch(str(child_path), old_ftype.name, old_value, new_value)
+                continue
             elif old_value != new_value:
                 if (
                     isinstance(old_value, float)
@@ -2305,17 +2351,28 @@ class GFFList(ComparableMixin, list):
                     full_old_key = struct_key(old_struct)
                     full_new_key = struct_key(new_struct)
                     if full_old_key != full_new_key:
-                        modified_count += 1
-                        log_func(f"\nGFFList '{path_str}': entry [old:{old_idx}] <-> [new:{new_idx}] MODIFIED (same identity, field changes):", message_type="diff")
+                        child_result = GFFComparisonResult()
                         old_struct.compare(
                             new_struct,
-                            log_func,
+                            lambda *a, **k: None,  # no-op during probe
                             current_path / str(new_idx),
                             ignore_default_changes=ignore_default_changes,
-                            comparison_result=comparison_result,
+                            ignore_values=ignore_values,
+                            comparison_result=child_result,
                             format_type=format_type,
                         )
-                        comparison_result.add_field_stat("mismatched", path_str)
+                        if child_result.has_field_differences():
+                            modified_count += 1
+                            log_func(f"\nGFFList '{path_str}': entry [old:{old_idx}] <-> [new:{new_idx}] MODIFIED (same identity, field changes):", message_type="diff")
+                            old_struct.compare(
+                                new_struct,
+                                log_func,
+                                current_path / str(new_idx),
+                                ignore_default_changes=ignore_default_changes,
+                                ignore_values=ignore_values,
+                                comparison_result=comparison_result,
+                                format_type=format_type,
+                            )
                     elif old_idx != new_idx:
                         reordered_count += 1
                         log_func(
