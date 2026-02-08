@@ -20,9 +20,10 @@ from utility.common.geometry import Vector3
 from pykotor.resource.formats.gff import GFFList  # pyright: ignore[reportMissingImports]
 
 
-def _silent_logger(message: object = "") -> None:
-    # Helper logger that swallows output during tests.
+def _silent_logger(message: object = "", **kwargs: object) -> None:
+    # Helper logger that swallows output during tests (accepts message_type= etc.).
     _ = message
+    _ = kwargs
 
 
 def test_gfflist_compare_handles_vector_values_without_type_error() -> None:
@@ -64,4 +65,3 @@ def test_gfflist_compare_handles_vector_values_without_type_error() -> None:
     result = old_list.compare(new_list, log_func=_silent_logger)
 
     assert result is False
-
