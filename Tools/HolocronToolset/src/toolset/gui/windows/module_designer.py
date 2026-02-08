@@ -65,7 +65,7 @@ from toolset.data.installation import HTInstallation
 from toolset.gui.dialogs.insert_instance import InsertInstanceDialog
 from toolset.gui.dialogs.select_module import SelectModuleDialog
 from toolset.gui.editor import Editor
-from toolset.gui.editors.git import DuplicateCommand, MoveCommand, RotateCommand, DeleteCommand, _GeometryMode, _InstanceMode, _SpawnMode, open_instance_dialog
+from toolset.gui.editors.git import MoveCommand, RotateCommand, DeleteCommand, _GeometryMode, _InstanceMode, _SpawnMode, open_instance_dialog
 from toolset.gui.widgets.renderer.module import ModuleRenderer
 from toolset.gui.widgets.settings.widgets.module_designer import ModuleDesignerSettings
 from toolset.gui.windows.designer_controls import ModuleDesignerControls2d, ModuleDesignerControls3d, ModuleDesignerControlsFreeCam
@@ -2423,11 +2423,15 @@ class ModuleDesigner(QMainWindow, BlenderEditorMixin):
         if center_mouse:
             old_pos = renderer.mapToGlobal(renderer.rect().center())
             QCursor.setPos(old_pos.x(), old_pos.y())
+            local_center: QPoint = renderer.mapFromGlobal(QPoint(old_pos.x(), old_pos.y()))
+            mut_scr.x, mut_scr.y = float(local_center.x()), float(local_center.y())
+            renderer._mouse_prev.x, renderer._mouse_prev.y = mut_scr.x, mut_scr.y
         else:
             old_pos = renderer.mapToGlobal(QPoint(int(renderer._mouse_prev.x), int(renderer._mouse_prev.y)))
             QCursor.setPos(old_pos)
             local_old_pos: QPoint = renderer.mapFromGlobal(QPoint(old_pos.x(), old_pos.y()))
-            mut_scr.x, mut_scr.y = local_old_pos.x(), local_old_pos.y()
+            mut_scr.x, mut_scr.y = float(local_old_pos.x()), float(local_old_pos.y())
+            renderer._mouse_prev.x, renderer._mouse_prev.y = mut_scr.x, mut_scr.y
 
         if do_rotations:
             yaw_delta = old_pos.x() - new_pos.x()
