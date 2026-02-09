@@ -177,7 +177,8 @@ class AREEditor(Editor):
         self.adjustSize()
 
     def _loadARE(self, are: ARE):
-        """Load ARE into UI. Field defaults when missing: see construct_are (K1 LoadAreaHeader 0x00508c50, TSL 0x00718a20)."""
+        """Load ARE into UI. Field defaults when missing: see construct_are.
+        REVA: K1 LoadAreaHeader @ 0x00508c50, TSL @ 0x00718a20, Legacy FUN_004e3ff0; MapZoom default 1, AlphaTest 0.2, fog 10000.0."""
         if self._installation is None:
             print("Load an installation first.")
             return
@@ -227,7 +228,8 @@ class AREEditor(Editor):
 
         max_value: int = 100
 
-        # Basic (alpha_test default 0.2 when missing; K1 LoadAreaHeader 0x00508c50 ReadFieldFLOAT AlphaTest 0.2)
+        # Load ARE into UI. Defaults from construct_are (K1 LoadAreaHeader 0x00508c50, TSL 0x00718a20); field optional when not in GFF.
+        # Basic: AlphaTest default 0.2; Tag/Name/Comments ""; CameraStyle/ID 0; DefaultEnvMap blank (K1/TSL LoadAreaHeader).
         self.ui.nameEdit.set_locstring(are.name)
         self.ui.tagEdit.setText(are.tag)
         self.ui.cameraStyleSelect.setCurrentIndex(are.camera_style)
@@ -239,7 +241,7 @@ class AREEditor(Editor):
         self.ui.stealthMaxSpin.setValue(are.stealth_xp_max)
         self.ui.stealthLossSpin.setValue(are.stealth_xp_loss)
 
-        # Map (map_zoom default 1 when missing; K1 LoadAreaHeader 0x00508c50 ReadFieldINT MapZoom 1)
+        # Map: MapZoom default 1, NorthAxis 0, MapResX 0, MapPt/WorldPt 0.0 when missing (K1 0x00508c50 Map struct; TSL same).
         self.ui.mapAxisSelect.setCurrentIndex(are.north_axis)
         self.ui.mapZoomSpin.setValue(are.map_zoom)
         self.ui.mapResXSpin.setValue(are.map_res_x)
@@ -252,7 +254,7 @@ class AREEditor(Editor):
         self.ui.mapWorldY1Spin.setValue(are.world_point_1.y)
         self.ui.mapWorldY2Spin.setValue(are.world_point_2.y)
 
-        # Weather
+        # Weather: SunFogOn 0; SunFogNear/SunFogFar default 10000.0 when missing (K1/TSL LoadAreaHeader).
         self.ui.fogEnabledCheck.setChecked(are.fog_enabled)
         self.ui.fogColorEdit.set_color(are.fog_color)
         self.ui.fogNearSpin.setValue(are.fog_near)
@@ -336,7 +338,7 @@ class AREEditor(Editor):
         """Build ARE from UI. Write defaults match engine (K1 LoadAreaHeader 0x00508c50, TSL 0x00718a20)."""
         are = ARE()
 
-        # Basic (AlphaTest engine default 0.2 when missing)
+        # Basic: same defaults as construct_are/dismantle_are (K1 0x00508c50, TSL 0x00718a20). AlphaTest 0.2, MapZoom 1 when missing.
         are.name = self.ui.nameEdit.locstring()
         are.tag = self.ui.tagEdit.text()
         are.camera_style = self.ui.cameraStyleSelect.currentIndex()
@@ -348,7 +350,7 @@ class AREEditor(Editor):
         are.stealth_xp_max = self.ui.stealthMaxSpin.value()
         are.stealth_xp_loss = self.ui.stealthLossSpin.value()
 
-        # Map (MapZoom engine default 1 when missing)
+        # Map: MapZoom 1, NorthAxis 0, MapResX 0, MapPt/WorldPt 0.0 when missing (K1 Map struct; TSL same).
         are.north_axis = ARENorthAxis(self.ui.mapAxisSelect.currentIndex())
         are.map_zoom = self.ui.mapZoomSpin.value()
         are.map_res_x = self.ui.mapResXSpin.value()
@@ -357,7 +359,7 @@ class AREEditor(Editor):
         are.world_point_1 = Vector2(self.ui.mapWorldX1Spin.value(), self.ui.mapWorldY1Spin.value())
         are.world_point_2 = Vector2(self.ui.mapWorldX2Spin.value(), self.ui.mapWorldY2Spin.value())
 
-        # Weather
+        # Weather: SunFogNear/SunFogFar engine default 10000.0 when missing (K1/TSL LoadAreaHeader).
         are.fog_enabled = self.ui.fogEnabledCheck.isChecked()
         are.fog_color = self.ui.fogColorEdit.color()
         are.fog_near = self.ui.fogNearSpin.value()
