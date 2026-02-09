@@ -177,20 +177,26 @@ class AREEditor(Editor):
         self.adjustSize()
 
     def _loadARE(self, are: ARE):
-        if not self._installation:
+        """Load ARE into UI. Field defaults when missing: see construct_are (K1 LoadAreaHeader 0x00508c50, TSL 0x00718a20)."""
+        if self._installation is None:
             print("Load an installation first.")
             return
         self._rooms = are.rooms
         # Only attempt related-resource lookups when we have a real area resref.
         # Editor uses `untitled_<hex>` placeholders for new/unsaved tabs.
         # Engine reference: `vendor/swkotor.c:L468225-L468237` (`area_name` -> "lbl_map%s").
-        if self._resname and not self._resname.startswith("untitled_"):
+        resname = (self._resname or "").strip().casefold()
+        if resname and not resname.startswith("untitled_"):
             # Layout (.lyt) lookup for room walkmeshes.
             # Mirrors engine: areas resolve by `area_name` and then load auxiliary assets.
             # Engine reference: `vendor/swkotor.c:L476816-L476845` and `vendor/swkotor.c:L194243-L194331`.
-            order_lyt: list[SearchLocation] = [SearchLocation.OVERRIDE, SearchLocation.CHITIN, SearchLocation.MODULES]
+            order_lyt: list[SearchLocation] = [
+                SearchLocation.OVERRIDE,
+                SearchLocation.CHITIN,
+                SearchLocation.MODULES,
+            ]
             res_result_lyt: ResourceResult | None = self._installation.resource(self._resname, ResourceType.LYT, order_lyt)
-            if res_result_lyt:
+            if res_result_lyt is not None:
                 lyt: LYT = read_lyt(res_result_lyt.data)
                 queries: list[ResourceIdentifier] = [ResourceIdentifier(room.model, ResourceType.WOK) for room in lyt.rooms]
 
@@ -203,6 +209,8 @@ class AREEditor(Editor):
             order_tex: list[SearchLocation] = [
                 SearchLocation.OVERRIDE,
                 SearchLocation.TEXTURES_TPA,
+                SearchLocation.TEXTURES_TPB,
+                SearchLocation.TEXTURES_TPC,
                 SearchLocation.TEXTURES_GUI,
                 SearchLocation.CHITIN,
                 SearchLocation.MODULES,
@@ -219,7 +227,7 @@ class AREEditor(Editor):
 
         max_value: int = 100
 
-        # Basic
+        # Basic (alpha_test default 0.2 when missing; K1 LoadAreaHeader 0x00508c50 ReadFieldFLOAT AlphaTest 0.2)
         self.ui.nameEdit.set_locstring(are.name)
         self.ui.tagEdit.setText(are.tag)
         self.ui.cameraStyleSelect.setCurrentIndex(are.camera_style)
@@ -231,7 +239,7 @@ class AREEditor(Editor):
         self.ui.stealthMaxSpin.setValue(are.stealth_xp_max)
         self.ui.stealthLossSpin.setValue(are.stealth_xp_loss)
 
-        # Map
+        # Map (map_zoom default 1 when missing; K1 LoadAreaHeader 0x00508c50 ReadFieldINT MapZoom 1)
         self.ui.mapAxisSelect.setCurrentIndex(are.north_axis)
         self.ui.mapZoomSpin.setValue(are.map_zoom)
         self.ui.mapResXSpin.setValue(are.map_res_x)
@@ -325,9 +333,10 @@ class AREEditor(Editor):
         return bytes(data), b""
 
     def _buildARE(self) -> ARE:
+        """Build ARE from UI. Write defaults match engine (K1 LoadAreaHeader 0x00508c50, TSL 0x00718a20)."""
         are = ARE()
 
-        # Basic
+        # Basic (AlphaTest engine default 0.2 when missing)
         are.name = self.ui.nameEdit.locstring()
         are.tag = self.ui.tagEdit.text()
         are.camera_style = self.ui.cameraStyleSelect.currentIndex()
@@ -339,7 +348,7 @@ class AREEditor(Editor):
         are.stealth_xp_max = self.ui.stealthMaxSpin.value()
         are.stealth_xp_loss = self.ui.stealthLossSpin.value()
 
-        # Map
+        # Map (MapZoom engine default 1 when missing)
         are.north_axis = ARENorthAxis(self.ui.mapAxisSelect.currentIndex())
         are.map_zoom = self.ui.mapZoomSpin.value()
         are.map_res_x = self.ui.mapResXSpin.value()
