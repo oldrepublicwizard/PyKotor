@@ -20,32 +20,13 @@ class UTC:
 
     References:
     ----------
-        KotOR I (swkotor.exe):
-            - 0x00500350 - CSWSCreature::LoadCreature (698 bytes, 101 lines)
-                - Main UTC GFF parser entry point
-                - Loads creature from GFF structure
-                - Function signature: LoadCreature(CSWSCreature* this, CResGFF* param_1, CResStruct* param_2, int param_3)
-                - Called from LoadCreatures (0x00504a70) and LoadLimboCreatures (0x004c8c70)
-            - 0x00560e60 - CSWSCreatureStats::ReadStatsFromGff (537 bytes)
-                - Reads creature stats from GFF (called by LoadCreature)
-                - Loads FirstName, LastName, Gender, Race, Subrace, PerceptionRange, and other stat fields
-            - 0x004ffda0 - CSWSCreature::ReadItemsFromGff
-                - Reads creature inventory items from GFF
-            - 0x00500610 - CSWSCreature::SaveCreature
-                - UTC GFF writer function
-                - Writes all creature fields to GFF structure
-            - 0x00749394 - "FirstName" string reference
-            - 0x00749388 - "LastName" string reference
-            - 0x0074af48 - "Gender" string reference
-            - 0x0074af30 - "Race" string reference
-            - 0x0074af28 - "Subrace" string reference
-            - 0x0074ae20 - "PerceptionRange" string reference
-        
-        KotOR II / TSL (swkotor2.exe):
-            - Functionally equivalent UTC parsing logic
-            - Same GFF field structure and parsing behavior
-            - String references at different addresses due to binary layout differences
-        
+        CSWSCreature::LoadCreature @ (K1: 0x00500350, TSL: 0x0068ccb0)
+        Main UTC GFF parser; called from LoadCreatures (K1: 0x00504a70, TSL: 0x0071b140) and LoadLimboCreatures (K1: 0x004c8c70).
+        CSWSCreatureStats::ReadStatsFromGff @ (K1: 0x00560e60, TSL: 0x006ec350) — reads stats/appearance (called by LoadCreature).
+        Root defaults when field missing: AreaId 0, CreatureSize 3, IsDestroyable/IsRaiseable/DeadSelectable 1,
+        Animation 10000, AmbientAnimState/CreatnScrptFird/PM_IsDisguised/Listening 0, scripts ResRef ""; stats 0 or 0.0.
+        TSL adds: BonusForcePoints 7, AssignedPup -1, PlayerCreated 0, ForceAlwaysUpdate 0.
+
         GFF Field Structure (from LoadCreature and ReadStatsFromGff analysis):
             - Root struct fields:
                 - "AreaId" (DWORD) - Area identifier
@@ -86,7 +67,7 @@ class UTC:
                 - "ItemList" (GFFList) - List of inventory items
             - Spell fields:
                 - "SpellList" (GFFList) - List of known spells
-        
+
         Note: UTC files are GFF format files with specific structure definitions (GFFContent.UTC)
 
     Derivations and Other Implementations:
@@ -490,61 +471,51 @@ class UTCClass:
 def construct_utc(
     gff: GFF,
 ) -> UTC:
-    """Constructs a UTC object from a GFF structure.
+    """Build UTC from GFF. Defaults when field missing match engine ReadField* (last-param).
 
-    Parses UTC (creature template) data from a GFF file, reading all fields
-    including stats, skills, classes, feats, inventory, and equipment.
-
-    References:
-    ----------
-        Based on swkotor.exe UTC structure:
-        - CSWSCreature::LoadCreature @ 0x00500350 - Loads creature template
-        - CSWSCreatureStats::ReadStatsFromGff @ 0x00560e60 - Reads creature stats from GFF
-        - CResGFF::CreateGFFFile @ 0x00411260 - Creates GFF file structure
-        https://github.com/th3w1zard1/Kotor.NET/tree/master/Kotor.NET/Resources/KotorUTC/UTCCompiler.cs (UTC compilation from GFF)
-        https://github.com/th3w1zard1/KotOR.js/tree/master/src/module/ModuleCreature.ts (UTC loading via ResourceLoader)
-
+    Reference: CSWSCreature::LoadCreature @ (K1: 0x00500350, TSL: 0x0068ccb0);
+    CSWSCreatureStats::ReadStatsFromGff @ (K1: 0x00560e60, TSL: 0x006ec350).
     """
     utc = UTC()
 
     root = gff.root
-    
+    # Root: TemplateResRef/Tag/Comment/Conversation ""; FirstName/LastName empty. K1/TSL ReadField* defaults; optional when missing.
+
     # https://github.com/th3w1zard1/Kotor.NET/tree/master/Kotor.NET/Resources/KotorUTC/UTC.cs:15 (ResRef property)
     utc.resref = root.acquire("TemplateResRef", ResRef.from_blank())
-    
+
     utc.tag = root.acquire("Tag", "", str)
-    
+
     utc.comment = root.acquire("Comment", "", str)
-    
+
     utc.conversation = root.acquire("Conversation", ResRef.from_blank())
 
-    
     # https://github.com/th3w1zard1/Kotor.NET/tree/master/Kotor.NET/Resources/KotorUTC/UTC.cs:21 (FirstName property)
     utc.first_name = root.acquire("FirstName", LocalizedString.from_invalid())
-    
+
     utc.last_name = root.acquire("LastName", LocalizedString.from_invalid())
 
-    
+    # Stats/appearance: Race, Gender, Appearance_Type, FactionID, etc. default 0. ReadStatsFromGff @ (K1: 0x00560e60, TSL: 0x006ec350).
     utc.subrace_id = root.acquire("SubraceIndex", 0)
-    
+
     utc.perception_id = root.acquire("PerceptionRange", 0)
-    
+
     utc.race_id = root.acquire("Race", 0)
-    
+
     utc.appearance_id = root.acquire("Appearance_Type", 0)
-    
+
     utc.gender_id = root.acquire("Gender", 0)
-    
+
     utc.faction_id = root.acquire("FactionID", 0)
-    
+
     utc.walkrate_id = root.acquire("WalkRate", 0)
-    
+
     utc.soundset_id = root.acquire("SoundSetFile", 0)
-    
+
     utc.portrait_id = root.acquire("PortraitId", 0)
-    
+
     utc.palette_id = root.acquire("PaletteID", 0)
-    
+
     utc.bodybag_id = root.acquire("BodyBag", 0)
 
     # TODO(th3w1zard1): Add these seemingly missing fields into UTCEditor?
@@ -555,110 +526,101 @@ def construct_utc(
     utc.morale_recovery = root.acquire("MoraleRecovery", 0)
     utc.morale_breakpoint = root.acquire("MoraleBreakpoint", 0)
 
-    
     utc.body_variation = root.acquire("BodyVariation", 0)
-    
+
     utc.texture_variation = root.acquire("TextureVar", 0)
 
-    
     utc.not_reorienting = bool(root.acquire("NotReorienting", 0))
-    
+
     utc.party_interact = bool(root.acquire("PartyInteract", 0))
-    
+
     utc.no_perm_death = bool(root.acquire("NoPermDeath", 0))
-    
+
     utc.min1_hp = bool(root.acquire("Min1HP", 0))
-    
+
     utc.plot = bool(root.acquire("Plot", 0))
-    
+
     utc.interruptable = bool(root.acquire("Interruptable", 0))
-    
+
     utc.is_pc = bool(root.acquire("IsPC", 0))
-    
+
     utc.disarmable = bool(root.acquire("Disarmable", 0))
-    
+
     utc.ignore_cre_path = bool(root.acquire("IgnoreCrePath", 0))
-    
+
     utc.hologram = bool(root.acquire("Hologram", 0))
-    
+
     utc.will_not_render = bool(root.acquire("WillNotRender", 0))
 
-    
     utc.alignment = root.acquire("GoodEvil", 0)
-    
+
     utc.challenge_rating = root.acquire("ChallengeRating", 0.0)
-    
+
     utc.blindspot = root.acquire("BlindSpot", 0.0)
-    
+
     utc.multiplier_set = root.acquire("MultiplierSet", 0)
 
-    
     utc.natural_ac = root.acquire("NaturalAC", 0)
-    
+
     utc.reflex_bonus = root.acquire("refbonus", 0)
-    
+
     utc.willpower_bonus = root.acquire("willbonus", 0)
-    
+
     utc.fortitude_bonus = root.acquire("fortbonus", 0)
 
-    
     utc.strength = root.acquire("Str", 0)
-    
+
     utc.dexterity = root.acquire("Dex", 0)
-    
+
     utc.constitution = root.acquire("Con", 0)
-    
+
     utc.intelligence = root.acquire("Int", 0)
-    
+
     utc.wisdom = root.acquire("Wis", 0)
-    
+
     utc.charisma = root.acquire("Cha", 0)
 
-    
+    # HP/FP: CurrentHitPoints, MaxHitPoints, HitPoints, ForcePoints, CurrentForce default 0. ReadStatsFromGff; optional.
     utc.current_hp = root.acquire("CurrentHitPoints", 0)
-    
+
     utc.max_hp = root.acquire("MaxHitPoints", 0)
-    
+
     utc.hp = root.acquire("HitPoints", 0)
-    
+
     utc.max_fp = root.acquire("ForcePoints", 0)
-    
+
     utc.fp = root.acquire("CurrentForce", 0)
 
-    
-    # Script hooks: ResRefs to NCS scripts executed on specific events
+    # Script hooks: ResRefs default blank when missing. ReadScriptsFromGff (called from LoadCreature); K1/TSL same.
     utc.on_end_dialog = root.acquire("ScriptEndDialogu", ResRef.from_blank())
-    
+
     utc.on_blocked = root.acquire("ScriptOnBlocked", ResRef.from_blank())
-    
+
     utc.on_heartbeat = root.acquire("ScriptHeartbeat", ResRef.from_blank())
-    
+
     utc.on_notice = root.acquire("ScriptOnNotice", ResRef.from_blank())
-    
+
     utc.on_spell = root.acquire("ScriptSpellAt", ResRef.from_blank())
-    
+
     utc.on_attacked = root.acquire("ScriptAttacked", ResRef.from_blank())
-    
+
     utc.on_damaged = root.acquire("ScriptDamaged", ResRef.from_blank())
-    
+
     utc.on_disturbed = root.acquire("ScriptDisturbed", ResRef.from_blank())
-    
+
     utc.on_end_round = root.acquire("ScriptEndRound", ResRef.from_blank())
-    
+
     utc.on_dialog = root.acquire("ScriptDialogue", ResRef.from_blank())
-    
+
     utc.on_spawn = root.acquire("ScriptSpawn", ResRef.from_blank())
-    
+
     utc.on_rested = root.acquire("ScriptRested", ResRef.from_blank())
-    
+
     utc.on_death = root.acquire("ScriptDeath", ResRef.from_blank())
-    
+
     utc.on_user_defined = root.acquire("ScriptUserDefine", ResRef.from_blank())
 
-    
-    
-    # https://github.com/th3w1zard1/Kotor.NET/tree/master/Kotor.NET/Resources/KotorUTC/UTCCompiler.cs:95-103 (SkillList parsing with index-based access)
-    # SkillList is a GFF List containing 8 structs, each with a "Rank" uint8 field
+    # SkillList: 8 structs, Rank 0 each. K1 ReadStatsFromGff; TSL same. Optional; engine expects 8 entries.
     # Skill order: [0] Computer Use, [1] Demolitions, [2] Stealth, [3] Awareness,
     #              [4] Persuade, [5] Repair, [6] Security, [7] Treat Injury
     if not root.exists("SkillList") or root.what_type("SkillList") != GFFFieldType.List:
@@ -667,7 +629,7 @@ def construct_utc(
             del root._fields["SkillList"]
         else:
             RobustLogger().error("SkillList must exist in UTC's, creating now...")
-        
+
         # Create default SkillList with 8 empty skill entries (Rank = 0)
         skill_list = root.set_list("SkillList", GFFList())
         skill_list.add(0).set_uint8("Rank", 0)  # Computer Use
@@ -679,13 +641,13 @@ def construct_utc(
         skill_list.add(6).set_uint8("Rank", 0)  # Security
         skill_list.add(7).set_uint8("Rank", 0)  # Treat Injury
     skill_list_acquired: GFFList = root.acquire("SkillList", GFFList())
-    
+
     # https://github.com/th3w1zard1/Kotor.NET/tree/master/Kotor.NET/Resources/KotorUTC/UTCCompiler.cs:96 (skillList.Get(0).Get("Rank")) (skillList.Get(0)
     # Parse each skill from SkillList array by index
     if skill_list_acquired.at(0) is not None:
         skill_struct = skill_list_acquired.at(0)
         assert skill_struct is not None, "SkillList[0] struct is None"
-        
+
         utc.computer_use = skill_struct.acquire("Rank", 0)  # Skill index 0: Computer Use
     if skill_list_acquired.at(1) is not None:
         skill_struct = skill_list_acquired.at(1)
@@ -716,30 +678,22 @@ def construct_utc(
         assert skill_struct is not None, "SkillList[7] struct is None"
         utc.treat_injury = skill_struct.acquire("Rank", 0)  # Skill index 7: Treat Injury
 
-    
     # Discrepancy: Some KotOR 1 UTC files contain more than 8 skill entries (up to 20)
     # PyKotor preserves extra skills in _extra_unimplemented_skills for round-trip compatibility
     # NOTE: reone and Kotor.NET only parse the first 8 skills, ignoring extras
     if len(skill_list_acquired._structs) > 8:
         utc._extra_unimplemented_skills = [skill_struct.acquire("Rank", 0) for skill_struct in skill_list_acquired._structs[8:]]
 
-    
-    
-    # https://github.com/th3w1zard1/Kotor.NET/tree/master/Kotor.NET/Resources/KotorUTC/UTCCompiler.cs:105-120 (ClassList parsing)
-    # ClassList contains creature classes (e.g., Soldier, Scout, Scoundrel, Jedi Consular, etc.)
+    # ClassList: Class 0, ClassLevel 0; KnownList0 Spell 0. K1 ReadStatsFromGff/ReadSpellsFromGff; TSL same. Optional.
     class_list: GFFList = root.acquire("ClassList", GFFList())
     for class_struct in class_list:
-        
         class_id = class_struct.acquire("Class", 0)  # Class type identifier (e.g., 0=Soldier, 1=Scout)
         class_level = class_struct.acquire("ClassLevel", 0)  # Level in this class
         utc_class = UTCClass(class_id, class_level)
 
-        
-        
         # KnownList0 contains spells/powers known by this class level
         power_list: GFFList = class_struct.acquire("KnownList0", GFFList())
         for index, power_struct in enumerate(power_list):
-            
             spell_thing = power_struct.acquire("Spell", 0)  # Spell/power ID
             utc_class.powers.append(spell_thing)
             # PyKotor-specific: Preserve original order for round-trip compatibility
@@ -747,38 +701,26 @@ def construct_utc(
 
         utc.classes.append(utc_class)
 
-    
-    
-    # https://github.com/th3w1zard1/Kotor.NET/tree/master/Kotor.NET/Resources/KotorUTC/UTCCompiler.cs:122-125 (FeatList parsing)
-    # FeatList contains feat identifiers that the creature has
+    # FeatList: Feat 0. K1 LoadCreature path; TSL same. Optional.
     feat_list: GFFList = root.acquire("FeatList", GFFList())
     for index, feat_struct in enumerate(feat_list):
-        
         feat_id_thing: int = feat_struct.acquire("Feat", 0)  # Feat identifier
         utc.feats.append(feat_id_thing)
         # PyKotor-specific: Preserve original order for round-trip compatibility
         utc._original_feat_mapping[feat_id_thing] = index
 
-    
-    
-    # https://github.com/th3w1zard1/Kotor.NET/tree/master/Kotor.NET/Resources/KotorUTC/UTCCompiler.cs:127-140 (Equip_ItemList parsing)
-    # Equip_ItemList contains equipped items, struct_id indicates equipment slot
+    # Equip_ItemList: EquippedRes blank, Dropable 0. K1 ReadItemsFromGff 0x004ffda0; TSL same. Optional.
     equipment_list: GFFList = root.acquire("Equip_ItemList", GFFList())
     for equipment_struct in equipment_list:
-        
         # struct_id maps to EquipmentSlot enum (e.g., 0=Right Hand, 1=Left Hand, 2=Armor)
         slot = EquipmentSlot(equipment_struct.struct_id)  # Equipment slot from struct_id
         resref = equipment_struct.acquire("EquippedRes", ResRef.from_blank())  # Item ResRef
         droppable = bool(equipment_struct.acquire("Dropable", 0))  # Whether item can be dropped
         utc.equipment[slot] = InventoryItem(resref, droppable)
 
-    
-    
-    # https://github.com/th3w1zard1/Kotor.NET/tree/master/Kotor.NET/Resources/KotorUTC/UTCCompiler.cs:142-150 (ItemList parsing)
-    # ItemList contains items in creature's inventory (not equipped)
+    # ItemList: InventoryRes blank, Dropable 0. K1 ReadItemsFromGff; TSL same. Optional.
     item_list: GFFList = root.acquire("ItemList", GFFList())
     for item_struct in item_list:
-        
         resref = item_struct.acquire("InventoryRes", ResRef.from_blank())  # Item ResRef
         droppable = bool(item_struct.acquire("Dropable", 0))  # Whether item can be dropped
         utc.inventory.append(InventoryItem(resref, droppable))
@@ -792,9 +734,14 @@ def dismantle_utc(
     *,
     use_deprecated: bool = True,
 ) -> GFF:
+    """Build GFF from UTC. Written fields match engine; omit = engine default.
+
+    Reference: LoadCreature @ (K1: 0x00500350, TSL: 0x0068ccb0); ReadStatsFromGff @ (K1: 0x00560e60, TSL: 0x006ec350).
+    """
     gff = GFF(GFFContent.UTC)
 
     root = gff.root
+    # Root fields: same defaults as engine ReadField* when missing (0, 0.0, "", blank ResRef).
     root.set_resref("TemplateResRef", utc.resref)
     root.set_string("Tag", utc.tag)
     root.set_string("Comment", utc.comment)
@@ -905,6 +852,7 @@ def dismantle_utc(
     # Sort utc.feats according to their original index, stored in utc._original_feat_mapping
     def _sort_feats(feat_struct: GFFStruct):
         return utc._original_feat_mapping.get(feat_struct.get_uint16("Feat"), float("inf"))
+
     feat_list._structs = sorted(feat_list._structs, key=_sort_feats)
 
     # Not sure what these are for, verified they exist in K1's 'c_drdg.utc' in data\templates.bif. Might be unused in which case this can be deleted.
