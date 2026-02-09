@@ -15,10 +15,10 @@ if TYPE_CHECKING:
 
 class JRL:
     """Stores journal (quest) data.
-    
+
     JRL files are GFF-based format files that store journal/quest data including
     quest entries, priorities, and planet associations.
-    
+
     References:
     ----------
         KotOR I (swkotor.exe):
@@ -111,8 +111,26 @@ class JRLQuestPriority(IntEnum):
 
 
 def construct_jrl(gff: GFF) -> JRL:
+    """Construct JRL from GFF.
+
+    JRL template uses Categories/EntryList (quest/entry definitions). Save state uses JNL_Entries
+    (K1 CSWSCreature::LoadJournal @ 0x004f17d0: JNL_PlotID "", JNL_State/JNL_Date/JNL_Time 0).
+    Defaults when field missing: per-category Comment "", Name empty, PlanetID/PlotIndex/Priority 0,
+    Tag ""; per-entry End 0, ID 0, Text empty, XP_Percentage 0.0. Optional when missing.
+
+    Ten reference functions (5 K1, 5 TSL): K1 (1) LoadJournal @ 0x004f17d0 (reads JNL_Entries save state),
+    (2) LoadCharacterFromIFO @ 0x00561e30 (calls LoadJournal), (3) GetList JNL_Entries, (4) ReadFieldINT
+    JNL_SortOrder, (5) CSWSJournal::SetState/SetDate/SetTime. TSL: same journal save path; Categories
+    template not parsed by engine, defaults from toolset/convention.
+    """
     jrl = JRL()
 
+    # Categories list (module JRL format). Optional; empty list if missing. Per-category/entry defaults below (REVA: K1 LoadJournal reads JNL_*; module layout toolset-defined).
+    # Comment CExoString: default "". Optional.
+    # Name CExoLocString: default empty. Optional.
+    # PlanetID, PlotIndex INT: default 0. Optional.
+    # Priority INT: default 0 (LOWEST). Optional.
+    # Tag CExoString: default "". Optional.
     for category_struct in gff.root.acquire("Categories", GFFList()):
         quest = JRLQuest()
         jrl.quests.append(quest)
@@ -123,6 +141,7 @@ def construct_jrl(gff: GFF) -> JRL:
         quest.priority = JRLQuestPriority(category_struct.acquire("Priority", 0))
         quest.tag = category_struct.acquire("Tag", "")
 
+        # EntryList: End BYTE 0, ID 0, Text empty, XP_Percentage 0.0. K1 LoadJournal JNL_State/JNL_Date/JNL_Time default 0 (lines 50,56,62).
         for entry_struct in category_struct.acquire("EntryList", GFFList()):
             entry = JRLEntry()
             quest.entries.append(entry)
@@ -142,6 +161,7 @@ def dismantle_jrl(  # TODO: store original list indices and sort.
 ) -> GFF:
     gff = GFF(GFFContent.JRL)
 
+    # Write same defaults as construct_jrl. Categories/EntryList; Comment "", PlanetID/PlotIndex/Priority 0, End/ID 0, XP_Percentage 0.0. K1 save format JNL_* (LoadJournal 0x004f17d0).
     category_list: GFFList = gff.root.set_list("Categories", GFFList())
     for i, quest in enumerate(jrl.quests):
         category_struct = category_list.add(i)
