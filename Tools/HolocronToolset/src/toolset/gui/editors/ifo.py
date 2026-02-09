@@ -164,9 +164,9 @@ class IFOEditor(Editor):
             "onPlayerRestEdit",
             "startMovieEdit",
         ]
-        
+
         script_fields: list[QComboBox | None] = [getattr(self.ui, name, None) for name in script_field_names]
-        
+
         for field in script_fields:
             if field is None:
                 continue
@@ -191,14 +191,12 @@ class IFOEditor(Editor):
         # Populate script combo boxes with available scripts
         relevant_scripts: list[str] = sorted(
             iter(
-                {
-                    res.resname().lower()
-                    for res in installation.get_relevant_resources(ResourceType.NCS, self._filepath)
-                },
+                {res.resname().lower() for res in installation.get_relevant_resources(ResourceType.NCS, self._filepath)},
             ),
         )
 
         from toolset.gui.common.widgets.combobox import FilterComboBox
+
         for ui_name in self._script_field_mapping.keys():
             widget = getattr(self.ui, ui_name)
             if isinstance(widget, FilterComboBox):
@@ -217,6 +215,7 @@ class IFOEditor(Editor):
         if locstring and locstring.stringref != -1:
             # Try to get English text
             from pykotor.common.language import Language, Gender
+
             name = locstring.get(Language.ENGLISH, Gender.MALE) or ""
             if not name and self._installation:
                 name = self._installation.string(locstring) or ""
@@ -251,14 +250,14 @@ class IFOEditor(Editor):
         restype: ResourceType,
         data: bytes | bytearray,
     ) -> None:
-        """Load an IFO file."""
+        """Load an IFO file. Field defaults when missing: see construct_ifo (REVA: K1 LoadModuleStart @ 0x004c9050, TSL @ 0x0072aaa0)."""
         super().load(filepath, resref, restype, data)
         self.ifo = read_ifo(data)
         self.update_ui_from_ifo()
 
     def build(self) -> tuple[bytes, bytes]:
-        """Build IFO file data."""
-        if not self.ifo:
+        """Build IFO file data. Write defaults match engine read (REVA: K1 0x004c9050, TSL 0x0072aaa0)."""
+        if self.ifo is None:
             return b"", b""
 
         data = bytearray()
@@ -272,11 +271,11 @@ class IFOEditor(Editor):
         self.update_ui_from_ifo()
 
     def update_ui_from_ifo(self) -> None:
-        """Update UI elements from IFO data."""
+        """Update UI elements from IFO data. Defaults as in construct_ifo (K1 0x004c9050, TSL 0x0072aaa0)."""
         if self.ifo is None or self._installation is None:
             return
 
-        # Basic Info
+        # Basic Info: Mod_Name/Mod_Tag/Mod_VO_ID "" or empty when missing (K1/TSL LoadModuleStart).
         self.ui.modNameEdit.set_locstring(self.ifo.mod_name)
         self.ui.tagEdit.setText(self.ifo.tag)
         self.ui.voIdEdit.setText(self.ifo.vo_id)
@@ -291,7 +290,7 @@ class IFOEditor(Editor):
         self.ui.creatorIdSpin.setValue(self.ifo.creator_id)
         self.ui.versionSpin.setValue(self.ifo.version)
 
-        # Entry Point
+        # Entry Point: Mod_Entry_Area blank, Mod_Entry_X/Y/Z 0.0, Mod_Entry_Dir 1,0 when missing (K1 ~174-186).
         self.ui.entryAreaEdit.setText(str(self.ifo.resref))
         self.ui.entryXSpin.setValue(self.ifo.entry_position.x)
         self.ui.entryYSpin.setValue(self.ifo.entry_position.y)
@@ -331,11 +330,11 @@ class IFOEditor(Editor):
         self.ui.expansionPackSpin.setValue(self.ifo.expansion_id)
 
     def on_value_changed(self) -> None:
-        """Handle UI value changes."""
+        """Handle UI value changes. Persisted via dismantle_ifo (K1 0x004c9050, TSL 0x0072aaa0)."""
         if not self.ifo:
             return
 
-        # Basic Info
+        # Basic Info: same defaults as construct_ifo/dismantle_ifo.
         self.ifo.tag = self.ui.tagEdit.text()
         self.ifo.vo_id = self.ui.voIdEdit.text()
         self.ifo.hak = self.ui.hakEdit.text()
@@ -390,4 +389,4 @@ class IFOEditor(Editor):
         self.ifo.expansion_id = self.ui.expansionPackSpin.value()
 
         # TODO: determine if this is needed
-        #self.signal_modified.emit()
+        # self.signal_modified.emit()
