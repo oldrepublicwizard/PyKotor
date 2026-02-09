@@ -25,11 +25,11 @@ if UTILITY_PATH.joinpath("utility").exists():
 from typing import TYPE_CHECKING
 
 from pykotor.resource.formats.gff import read_gff
-from pykotor.resource.generics.ifo import construct_ifo, dismantle_ifo
+from pykotor.resource.generics.ifo import IFO, construct_ifo, dismantle_ifo
+from pykotor.resource.type import ResourceType
 
 if TYPE_CHECKING:
     from pykotor.resource.formats.gff.gff_data import GFF
-    from pykotor.resource.generics.ifo import IFO
 
 TEST_IFO_XML = """<gff3>
   <struct id="-1">
@@ -83,6 +83,8 @@ TEST_IFO_XML = """<gff3>
     </struct>
   </gff3>
 """
+
+
 class TestIFO(TestCase):
     def setUp(self):
         self.log_messages: list[str] = [os.linesep]
@@ -144,6 +146,57 @@ class TestIFO(TestCase):
         assert ifo.on_player_rest == ""
         assert ifo.start_movie == ""
         self.assertAlmostEqual(-1.571, ifo.entry_direction, 3)
+
+    def test_ifo_missing_field_defaults(self) -> None:
+        """Test defaults when IFO fields are omitted (REVA: K1 0x004c9050, TSL 0x0072aaa0)."""
+        minimal_ifo_xml = """<gff3>
+          <struct id="-1">
+            <exostring label="Mod_Tag">OnlyTag</exostring>
+          </struct>
+        </gff3>
+        """
+        gff = read_gff(minimal_ifo_xml.encode(), file_format=ResourceType.GFF_XML)
+        ifo = construct_ifo(gff)
+        self.assertEqual(ifo.tag, "OnlyTag")
+        self.assertEqual(ifo.mod_id, b"")
+        self.assertEqual(ifo.vo_id, "")
+        self.assertEqual(ifo.mod_name.stringref, -1)
+        self.assertEqual(ifo.resref, "")
+        self.assertEqual(ifo.entry_position.x, 0.0)
+        self.assertEqual(ifo.entry_position.y, 0.0)
+        self.assertEqual(ifo.entry_position.z, 0.0)
+        self.assertEqual(ifo.creator_id, 0)
+        self.assertEqual(ifo.version, 0)
+        self.assertEqual(ifo.expansion_id, 0)
+        self.assertEqual(ifo.dawn_hour, 0)
+        self.assertEqual(ifo.dusk_hour, 0)
+        self.assertEqual(ifo.time_scale, 0)
+        self.assertEqual(ifo.start_year, 0)
+        self.assertEqual(ifo.on_heartbeat, "")
+        self.assertEqual(ifo.on_load, "")
+        self.assertEqual(ifo.area_name, "")
+        # Mod_Area_list omitted → empty list, so area_name stays blank
+        gff_empty_list = read_gff(
+            """<gff3><struct id="-1"><list label="Mod_Area_list" /></struct></gff3>""".encode(),
+            file_format=ResourceType.GFF_XML,
+        )
+        ifo2 = construct_ifo(gff_empty_list)
+        self.assertEqual(ifo2.area_name, "")
+
+    def test_ifo_empty_roundtrip(self) -> None:
+        """Empty/minimal root struct round-trip: construct_ifo → dismantle_ifo → construct_ifo."""
+        empty_xml = """<gff3><struct id="-1"></struct></gff3>"""
+        gff = read_gff(empty_xml.encode(), file_format=ResourceType.GFF_XML)
+        ifo = construct_ifo(gff)
+        self.assertEqual(ifo.tag, "")
+        self.assertEqual(ifo.mod_id, b"")
+        self.assertEqual(ifo.area_name, "")
+        gff2 = dismantle_ifo(ifo)
+        ifo2 = construct_ifo(gff2)
+        self.assertEqual(ifo2.tag, "")
+        self.assertEqual(ifo2.mod_id, b"")
+        # dismantle_ifo writes one Mod_Area_list entry; area_name may be blank
+        self.assertIsNotNone(ifo2.area_name)
 
 
 if __name__ == "__main__":
