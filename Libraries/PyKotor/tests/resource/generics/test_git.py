@@ -251,6 +251,8 @@ K1_SAME_GIT_XML = """<gff3>
     </struct>
   </gff3>
 """
+
+
 class TestGIT(unittest.TestCase):
     def setUp(self):
         self.log_messages = [os.linesep]
@@ -511,6 +513,44 @@ class TestGITSerializeStrictTyping(unittest.TestCase):
         self.assertEqual(result["linked_to"], "test_link")
         self.assertEqual(result["transition_destination_stringref"], 54321)
         self.assertEqual(result["linked_to_flags"], GITModuleLink.ToDoor.value)
+
+    def test_git_missing_area_properties_and_empty_lists(self):
+        """AreaProperties omit → defaults (0); lists omit → empty. K1 LoadGIT 0x0050dd80, LoadProperties 0x00507490."""
+        minimal_xml = """<gff3><struct id="-1"><byte label="UseTemplates">1</byte></struct></gff3>"""
+        gff = read_gff(minimal_xml.encode(), file_format=ResourceType.GFF_XML)
+        git = construct_git(gff)
+        self.assertEqual(git.ambient_volume, 0)
+        self.assertEqual(git.ambient_sound_id, 0)
+        self.assertEqual(git.env_audio, 0)
+        self.assertEqual(git.music_standard_id, 0)
+        self.assertEqual(git.music_battle_id, 0)
+        self.assertEqual(git.music_delay, 0)
+        self.assertEqual(len(git.cameras), 0)
+        self.assertEqual(len(git.creatures), 0)
+        self.assertEqual(len(git.doors), 0)
+        self.assertEqual(len(git.encounters), 0)
+        self.assertEqual(len(git.placeables), 0)
+        self.assertEqual(len(git.sounds), 0)
+        self.assertEqual(len(git.stores), 0)
+        self.assertEqual(len(git.triggers), 0)
+        self.assertEqual(len(git.waypoints), 0)
+
+    def test_git_empty_roundtrip(self):
+        """Empty GIT round-trip: dismantle then construct preserves empty lists and AreaProperties defaults."""
+        git = construct_git(read_gff(TEST_GIT_XML.encode(), file_format=ResourceType.GFF_XML))
+        git.cameras.clear()
+        git.creatures.clear()
+        git.doors.clear()
+        git.encounters.clear()
+        git.placeables.clear()
+        git.sounds.clear()
+        git.stores.clear()
+        git.triggers.clear()
+        git.waypoints.clear()
+        gff = dismantle_git(git)
+        git2 = construct_git(gff)
+        self.assertEqual(len(git2.cameras), 0)
+        self.assertEqual(len(git2.waypoints), 0)
 
 
 if __name__ == "__main__":
