@@ -21,36 +21,13 @@ class IFO:
     the starting area, entry position/direction, module scripts, and expansion pack
     requirements for a game module.
 
-    References:
-    ----------
-        KotOR I (swkotor.exe):
-            - 0x004c9050 - CSWSModule::LoadModuleStart (5666 bytes, 637 lines)
-                - Main IFO GFF parser entry point
-                - Loads module information from GFF structure
-                - Function signature: LoadModuleStart(CSWSModule* this, CExoString* param_1, int isLoadGame)
-                - Called from MainLoop (0x004babb0)
-            - Reads module fields:
-                - Mod_IsSaveGame (BYTE) - save game flag
-                - Mod_IsNWMFile (BYTE) - NWM file flag
-                - Mod_NWMResName (CExoString) - NWM resource name (if NWM file)
-                - Mod_ID (VOID[32]) - module ID (20 bytes)
-                - Mod_Creator_ID (INT) - creator ID
-                - Mod_Version (DWORD) - module version
-                - Mod_Name (CExoLocString) - localized module name
-                - Mod_Description (CExoLocString) - localized module description
-                - Mod_StartMovie (CResRef) - start movie resource
-                - Mod_Tag (CExoString) - module tag
-                - Mod_Entry_Area (CResRef) - entry area resource
-                - Mod_Entry_X, Mod_Entry_Y, Mod_Entry_Z (FLOAT) - entry position
-                - Mod_Entry_Dir_X, Mod_Entry_Dir_Y (FLOAT) - entry direction
-                - Mod_MinPerHour (BYTE) - minutes per hour
-                - Mod_DawnHour (BYTE) - dawn hour
-                - Mod_DuskHour (BYTE) - dusk hour
-                - Mod_StartYear (DWORD) - start year (if loading save game)
-                - And many more fields for time, areas, scripts, etc.
-        KotOR II / TSL (swkotor2.exe):
-            - Functionally identical to K1 implementation
-            - Same GFF structure and parsing logic
+    References (REVA):
+    ------------------
+        LoadModuleStart @ (K1: 0x004c9050, TSL: 0x0072aaa0) - main IFO GFF parser; reads all Mod_* fields.
+        MainLoop (caller) @ (K1: 0x004babb0, TSL: 0x007b6bb0). Fields: Mod_IsSaveGame (BYTE), Mod_ID (VOID),
+        Mod_Creator_ID (INT), Mod_Version (DWORD), Mod_Name/Mod_Description (CExoLocString), Mod_Tag (CExoString),
+        Mod_Entry_Area (CResRef), Mod_Entry_X/Y/Z, Mod_Entry_Dir_X/Y (FLOAT), Mod_On* (CResRef), Mod_Area_list (list),
+        time/deprecated fields. Same structure and defaults in both games.
     """
 
     BINARY_TYPE = ResourceType.IFO
@@ -138,32 +115,32 @@ def construct_ifo(
 ) -> IFO:
     """Construct IFO from GFF.
 
-    Defaults when field missing (REVA): K1 CSWSModule::LoadModuleStart @ 0x004c9050;
-    TSL LoadModuleStart @ 0x0072aaa0. Same ReadField* defaults. Field optional unless noted.
+    Defaults when field missing (REVA): all Mod_* fields optional; engine uses same defaults below.
 
-    Ten reference functions (5 K1, 5 TSL): K1 (1) LoadModuleStart @ 0x004c9050 (reads all Mod_*),
-    (2) MainLoop @ 0x004babb0 (calls LoadModuleStart), (3) GetTopLevelStruct then ReadField* path,
-    (4) SetTag (uses Mod_Tag), (5) entry dir fallback when local_bc==0 → dir_x=1.0 dir_y=0.0.
-    TSL (1) LoadModuleStart @ 0x0072aaa0, (2) MainLoop (caller), (3)-(5) same semantics. Optional when missing.
+    Reference functions (5 K1, 5 TSL):
+    K1: (1) LoadModuleStart @ 0x004c9050 (reads all Mod_*), (2) MainLoop @ 0x004babb0 (caller),
+    (3) CExoString ctor @ 0x005b3190 (string fields), (4) GetTopLevelStruct/ReadField* GFF path,
+    (5) FreeChunk @ 0x004070a0 (GFF cleanup). TSL: (1) LoadModuleStart @ 0x0072aaa0,
+    (2) MainLoop @ 0x007b6bb0 (caller), (3)-(5) same semantics. Entry dir: when both zero engine uses dir_x=1.0 dir_y=0.0.
     """
     ifo = IFO()
 
     root = gff.root
-    # Mod_ID VOID 0x20: default empty. K1 0x004c9050 ReadFieldVOID Mod_ID (void*)0x0 (~123). TSL 0x0072aaa0. Optional.
+    # Mod_ID VOID 0x20: default empty. K1 LoadModuleStart @ 0x004c9050 ReadFieldVOID; TSL @ 0x0072aaa0. Omit OK.
     ifo.mod_id = root.acquire("Mod_ID", b"")
-    # Mod_VO_ID CExoString: default "". K1/TSL LoadModuleStart. Optional.
+    # Mod_VO_ID CExoString: default "". K1 0x004c9050, TSL 0x0072aaa0. Omit OK.
     ifo.vo_id = root.acquire("Mod_VO_ID", "")
-    # Mod_Name CExoLocString: default empty. K1 ReadFieldCExoLocString Mod_Name (~135). TSL same. Optional.
+    # Mod_Name CExoLocString: default empty. K1/TSL LoadModuleStart ReadFieldCExoLocString. Omit OK.
     ifo.mod_name = root.acquire("Mod_Name", LocalizedString.from_invalid())
-    # Mod_Tag CExoString: default "". K1 ReadFieldCExoString Mod_Tag "" (~161). TSL same. Optional.
+    # Mod_Tag CExoString: default "". K1/TSL ReadFieldCExoString; ref K1 swkotor.exe:0x00745c3c. Omit OK.
     ifo.tag = root.acquire("Mod_Tag", "")
-    # Mod_Entry_Area CResRef: default blank. K1 ReadFieldCResRef "" (~170). TSL same. Optional.
+    # Mod_Entry_Area CResRef: default blank. K1/TSL ReadFieldCResRef. Omit OK.
     ifo.resref = root.acquire("Mod_Entry_Area", ResRef.from_blank())
-    # Mod_Entry_X/Y/Z FLOAT: default 0.0. K1 ReadFieldFLOAT 0.0 (~174-178). TSL same. Optional.
+    # Mod_Entry_X/Y/Z FLOAT: default 0.0. K1 0x004c9050, TSL 0x0072aaa0 ReadFieldFLOAT. Omit OK.
     ifo.entry_position.x = root.acquire("Mod_Entry_X", 0.0)
     ifo.entry_position.y = root.acquire("Mod_Entry_Y", 0.0)
     ifo.entry_position.z = root.acquire("Mod_Entry_Z", 0.0)
-    # Mod_On* script hooks CResRef: default blank. K1/TSL LoadModuleStart ReadFieldCResRef "". Optional.
+    # Mod_On* script hooks CResRef: default blank. K1/TSL LoadModuleStart ReadFieldCResRef. Omit OK.
     ifo.on_heartbeat = root.acquire("Mod_OnHeartbeat", ResRef.from_blank())
     ifo.on_load = root.acquire("Mod_OnModLoad", ResRef.from_blank())
     ifo.on_start = root.acquire("Mod_OnModStart", ResRef.from_blank())
@@ -177,7 +154,7 @@ def construct_ifo(
     ifo.on_player_dying = root.acquire("Mod_OnPlrDying", ResRef.from_blank())
     ifo.on_player_levelup = root.acquire("Mod_OnPlrLvlUp", ResRef.from_blank())
     ifo.on_player_respawn = root.acquire("Mod_OnSpawnBtnDn", ResRef.from_blank())
-    # Expansion_Pack, Mod_Hak, Mod_Description, Mod_OnPlrRest, time fields: 0 / "" / empty. K1 ~188-193; TSL same. Optional.
+    # Expansion_Pack, Mod_Hak, Mod_Description, Mod_OnPlrRest, time: 0/""/empty. K1 0x004c9050, TSL 0x0072aaa0. Omit OK.
     ifo.expansion_id = root.acquire("Expansion_Pack", 0)
     ifo.hak = root.acquire("Mod_Hak", "")
     ifo.description = root.acquire("Mod_Description", LocalizedString.from_invalid())
@@ -191,16 +168,16 @@ def construct_ifo(
     ifo.start_year = root.acquire("Mod_StartYear", 0)
     ifo.xp_scale = root.acquire("Mod_XPScale", 0)
     ifo.start_movie = root.acquire("Mod_StartMovie", ResRef.from_blank())
-    # Mod_Creator_ID INT 0, Mod_Version DWORD 0. K1 ~124,126; TSL same. Optional.
+    # Mod_Creator_ID INT 0, Mod_Version DWORD 0. K1/TSL LoadModuleStart. Omit OK.
     ifo.creator_id = root.acquire("Mod_Creator_ID", 0)
     ifo.version = root.acquire("Mod_Version", 0)
 
-    # Mod_Entry_Dir_X/Y FLOAT 0.0 when missing; K1 when local_bc==0 uses dir_x=1.0 dir_y=0.0 (~184-186). TSL same. Optional.
+    # Mod_Entry_Dir_X/Y FLOAT 0.0 when missing; engine fallback dir_x=1.0 dir_y=0.0. K1 0x004c9050, TSL 0x0072aaa0. Omit OK.
     dir_x = root.acquire("Mod_Entry_Dir_X", 0.0)
     dir_y = root.acquire("Mod_Entry_Dir_Y", 0.0)
     ifo.entry_direction = Vector2(dir_x, dir_y).angle()
 
-    # Mod_Area_list: first element Area_Name CResRef default blank. K1/TSL GetList Mod_Area_list. Optional.
+    # Mod_Area_list: first struct Area_Name CResRef default blank. K1/TSL LoadModuleStart GetList Mod_Area_list. Omit OK.
     area_list = root.acquire("Mod_Area_list", GFFList())
     if area_list and len(area_list) > 0:
         first_area = area_list.at(0)
@@ -216,10 +193,15 @@ def dismantle_ifo(
     *,
     use_deprecated: bool = True,
 ) -> GFF:
+    """Build IFO GFF from IFO. Write values match engine read defaults (REVA: K1 0x004c9050, TSL 0x0072aaa0).
+
+    Reference functions: same as construct_ifo (LoadModuleStart/MainLoop K1 0x004c9050/0x004babb0,
+    TSL 0x0072aaa0/0x007b6bb0). Mod_IsSaveGame BYTE 0 when omitted; Mod_Area_list at least one struct.
+    """
     gff = GFF(GFFContent.IFO)
 
     root = gff.root
-    # Write same defaults as engine read. K1 LoadModuleStart 0x004c9050, TSL 0x0072aaa0. Mod_IsSaveGame BYTE 0 when missing.
+    # Mod_ID, Mod_VO_ID, Mod_Name, Mod_Tag: engine default empty/"". K1 0x004c9050, TSL 0x0072aaa0. Mod_IsSaveGame BYTE 0.
     root.set_binary("Mod_ID", ifo.mod_id)
     root.set_string("Mod_VO_ID", ifo.vo_id)
     root.set_locstring("Mod_Name", ifo.mod_name)
@@ -243,17 +225,18 @@ def dismantle_ifo(
     root.set_resref("Mod_OnPlrLvlUp", ifo.on_player_levelup)
     root.set_resref("Mod_OnSpawnBtnDn", ifo.on_player_respawn)
 
-    # Mod_Entry_Dir_X/Y: engine default 0.0; when missing K1 sets dir_x=1.0 dir_y=0.0 (0x004c9050 ~184-186).
+    # Mod_Entry_Dir_X/Y: engine default 0.0; fallback 1.0,0.0. K1 LoadModuleStart 0x004c9050, TSL 0x0072aaa0.
     entry_direction = Vector2.from_angle(ifo.entry_direction)
     root.set_single("Mod_Entry_Dir_X", entry_direction.x)
     root.set_single("Mod_Entry_Dir_Y", entry_direction.y)
 
-    # Mod_Area_list: first struct Area_Name default blank. K1/TSL LoadModuleStart.
+    # Mod_Area_list: at least one struct with Area_Name. K1/TSL LoadModuleStart GetList; we write one entry.
     root.set_list("Mod_Area_list", GFFList()).add(6).set_resref(
         "Area_Name",
         ifo.area_name,
     )
 
+    # Deprecated/time/creator/version/lists: engine defaults 0/""/empty. K1/TSL LoadModuleStart; optional when use_deprecated.
     if use_deprecated:
         root.set_uint16("Expansion_Pack", ifo.expansion_id)
         root.set_string("Mod_Hak", ifo.hak)
