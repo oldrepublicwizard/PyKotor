@@ -22,27 +22,27 @@ class UTP:
 
     References:
     ----------
-        KotOR I (swkotor.exe):
-            - 0x00585670 - CSWSPlaceable::LoadPlaceable (3624 bytes, 421 lines)
-                - Main UTP GFF parser entry point
-                - Loads all placeable fields from GFF structure
-                - Function signature: LoadPlaceable(CSWSPlaceable* this, CResGFF* param_1, CResStruct* param_2, int param_3)
-                - Called from LoadPlaceables (0x0050a7b0) and LoadFromTemplate (0x00587a70)
-            - 0x00586a70 - CSWSPlaceable::SavePlaceable
-                - UTP GFF writer function
-                - Writes all placeable fields to GFF structure
-            - 0x00746efc - "Appearance" string reference
-            - 0x007496e0 - "HasInventory" string reference
-            - 0x007496f8 - "Lockable" string reference
-            - 0x0074979c - "KeyName" string reference
-            - 0x007497a4 - "OpenLockDC" string reference
-            - 0x007496c8 - "CloseLockDC" string reference
-        
-        KotOR II / TSL (swkotor2.exe):
-            - Functionally equivalent UTP parsing logic
-            - Same GFF field structure and parsing behavior
-            - String references at different addresses due to binary layout differences
-        
+        Based on unified K1 (swkotor.exe) and TSL (swkotor2.exe) UTP implementation.
+        Addresses: (K1: swkotor.exe, TSL: swkotor2.exe). TSL addresses: resolve in REVA when
+        PyKotorGhidraProject.gpr is open (project may be locked by another process).
+
+        - CSWSPlaceable::LoadPlaceable (main UTP GFF parser)
+            K1: 0x00585670, TSL: 0x006a1680 (LoadPlaceableFromGFF, legacy PC)
+            Loads all placeable fields from GFF structure.
+            Signature: LoadPlaceable(CSWSPlaceable* this, CResGFF* param_1, CResStruct* param_2, int param_3).
+            Called from LoadPlaceables and LoadFromTemplate.
+
+        - CSWSPlaceable::SavePlaceable (UTP GFF writer)
+            K1: 0x00586a70, TSL: TODO
+            Writes all placeable fields to GFF structure.
+
+        - LoadPlaceables / LoadFromTemplate (callers)
+            K1: LoadPlaceables 0x0050a7b0, LoadFromTemplate 0x00587a70; TSL: TODO
+
+        - GFF field label string references (K1; TSL at different addresses, TODO):
+            K1: "Appearance" 0x00746efc, "HasInventory" 0x007496e0, "Lockable" 0x007496f8,
+            "KeyName" 0x0074979c, "OpenLockDC" 0x007497a4, "CloseLockDC" 0x007496c8.
+
         GFF Field Structure (from LoadPlaceable analysis):
             - Root struct fields:
                 - "Tag" (CExoString) - Placeable tag identifier
@@ -86,7 +86,7 @@ class UTP:
                 - "LightState" (BYTE) - Light state (on/off)
                 - "Description" (CExoLocString) - Placeable description
                 - "ItemList" (GFFList) - List of inventory items (if HasInventory)
-        
+
         Note: UTP files are GFF format files with specific structure definitions (GFFContent.UTP)
 
     Derivations and Other Implementations:
@@ -225,12 +225,24 @@ class UTP:
 def construct_utp(  # noqa: PLR0915
     gff: GFF,
 ) -> UTP:
+    """Constructs a UTP object from a GFF structure.
+
+    Defaults when field missing (from engine): K1 CSWSPlaceable::LoadPlaceable (K1: 0x00585670, TSL: 0x006a1680 legacy PC),
+    SavePlaceable (K1: 0x00586a70, TSL: TODO). Tag "", TemplateResRef "", LocName empty; BYTE 0,
+    scripts ResRef "". Optional when missing.
+
+    Reference functions: (1) LoadPlaceable root UTP parser, (2) SavePlaceable writer,
+    (3) LoadPlaceables area placeables, (4) LoadFromTemplate, (5) CResGFF::ReadField* for Tag,
+    LocName, Appearance, HP, ItemList, etc. TSL same semantics; addresses in UTP class References.
+    """
     utp = UTP()
 
     root: GFFStruct = gff.root
+    # Identity: Tag "", LocName empty, TemplateResRef "". K1 LoadPlaceable 0x00585670; TSL same (addresses in UTP References). Optional.
     utp.tag = root.acquire("Tag", "")
     utp.name = root.acquire("LocName", LocalizedString.from_invalid())
     utp.resref = root.acquire("TemplateResRef", ResRef.from_blank())
+    # Lock/key: AutoRemoveKey, KeyRequired, Lockable, Locked, OpenLockDC, KeyName. Default 0 or "". K1/TSL LoadPlaceable. Optional.
     utp.auto_remove_key = bool(root.acquire("AutoRemoveKey", 0))
     utp.lock_dc = root.acquire("CloseLockDC", 0)
     utp.conversation = root.acquire("Conversation", ResRef.from_blank())
@@ -244,11 +256,13 @@ def construct_utp(  # noqa: PLR0915
     utp.unlock_dc = root.acquire("OpenLockDC", 0)
     utp.key_name = root.acquire("KeyName", "")
     utp.animation_state = root.acquire("AnimationState", 0)
+    # HP/stats: Appearance, HP, CurrentHP, Hardness, Fort. Default 0. K1/TSL LoadPlaceable. Optional.
     utp.appearance_id = root.acquire("Appearance", 0)
     utp.maximum_hp = root.acquire("HP", 0)
     utp.current_hp = root.acquire("CurrentHP", 0)
     utp.hardness = root.acquire("Hardness", 0)
     utp.fortitude = root.acquire("Fort", 0)
+    # Scripts: OnClosed/OnDamaged/OnDeath/OnHeartbeat/OnOpen/OnUsed etc. ResRef "". K1/TSL LoadPlaceable. Optional.
     utp.on_closed = root.acquire("OnClosed", ResRef.from_blank())
     utp.on_damaged = root.acquire("OnDamaged", ResRef.from_blank())
     utp.on_death = root.acquire("OnDeath", ResRef.from_blank())
@@ -271,6 +285,7 @@ def construct_utp(  # noqa: PLR0915
     utp.unlock_diff = root.acquire("OpenLockDiff", 0)
     utp.unlock_diff_mod = root.acquire("OpenLockDiffMod", 0)
 
+    # ItemList: InventoryRes "", Dropable 0. K1/TSL LoadPlaceable. Optional.
     item_list: GFFList = root.acquire("ItemList", GFFList())
     for item_struct in item_list:
         resref = item_struct.acquire("InventoryRes", ResRef.from_blank())
@@ -307,6 +322,7 @@ def dismantle_utp(  # noqa: PLR0915
     gff = GFF(GFFContent.UTP)
 
     root: GFFStruct = gff.root
+    # Write same defaults as engine read. K1 LoadPlaceable 0x00585670, SavePlaceable 0x00586a70; TSL same (addresses in UTP References). BYTE 0, DWORD 0, CResRef "".
     root.set_string("Tag", utp.tag)
     root.set_locstring("LocName", utp.name)
     root.set_resref("TemplateResRef", utp.resref)
