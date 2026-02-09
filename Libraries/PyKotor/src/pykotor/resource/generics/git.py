@@ -28,6 +28,7 @@ if TYPE_CHECKING:
 
     from pykotor.resource.type import SOURCE_TYPES, TARGET_TYPES
 
+
 def _iterate_gff_list(struct: GFFStruct, label: str) -> list[GFFStruct]:
     try:
         gff_list = struct.get_list(label)
@@ -42,12 +43,12 @@ def _iterate_gff_list(struct: GFFStruct, label: str) -> list[GFFStruct]:
 
 class GIT:
     """Game Instance Template (GIT) file handler.
-    
+
     GIT files store dynamic area information including creatures, doors, placeables,
     triggers, waypoints, stores, encounters, sounds, and cameras. This is the runtime
     instance data for areas, stored as a GFF file. GIT files define where objects are
     placed in an area, their positions, orientations, and instance-specific properties.
-    
+
     References:
     ----------
         Based on swkotor.exe GIT structure:
@@ -64,6 +65,7 @@ class GIT:
         https://github.com/th3w1zard1/KotOR_IO/tree/master/KotOR_IO/File Formats/GFF FileTypes/GIT.cs (GIT class)
 
     """
+
     BINARY_TYPE = ResourceType.GIT
 
     def __init__(self):
@@ -145,7 +147,7 @@ class GIT:
                 *self.stores,
                 *self.triggers,
                 *self.waypoints,
-            ]
+            ],
         )
 
     def next_camera_id(self) -> int:
@@ -372,14 +374,13 @@ class GITInstance(ABC):
         return {}
 
 
-
 class GITCamera(GITInstance):
     """Represents a camera instance in a GIT file.
-    
+
     Cameras define camera positions and orientations for area cutscenes and scripted
     camera movements. Each camera has a unique ID, position, orientation (quaternion),
     field of view, height, pitch, and microphone range.
-    
+
     References:
     ----------
         Based on swkotor.exe GIT structure:
@@ -389,6 +390,7 @@ class GITCamera(GITInstance):
         https://github.com/th3w1zard1/Kotor.NET/tree/master/Kotor.NET/Resources/KotorGIT/GIT.cs (CameraInfo class)
 
     """
+
     GFF_STRUCT_ID = 14
 
     def __init__(
@@ -402,32 +404,27 @@ class GITCamera(GITInstance):
         camera_id: int = 0,
     ):
         super().__init__(x, y, z)
-        
+
         # https://github.com/th3w1zard1/Kotor.NET/tree/master/Kotor.NET/Resources/KotorGIT/GIT.cs:42
         # Unique camera identifier (CameraID field)
         self.camera_id: int = camera_id
-        
-        
+
         # https://github.com/th3w1zard1/Kotor.NET/tree/master/Kotor.NET/Resources/KotorGIT/GIT.cs:48
         # Field of view angle in degrees (FieldOfView field)
         self.fov: float = 45
-        
-        
+
         # https://github.com/th3w1zard1/Kotor.NET/tree/master/Kotor.NET/Resources/KotorGIT/GIT.cs:47
         # Camera height offset (Height field)
         self.height: float = 0.0
-        
-        
+
         # https://github.com/th3w1zard1/Kotor.NET/tree/master/Kotor.NET/Resources/KotorGIT/GIT.cs:45
         # Microphone range for audio occlusion (MicRange field)
         self.mic_range: float = 0.0
-        
-        
+
         # https://github.com/th3w1zard1/Kotor.NET/tree/master/Kotor.NET/Resources/KotorGIT/GIT.cs:46
         # Camera pitch angle in radians (Pitch field)
         self.pitch: float = 0.0
-        
-        
+
         # https://github.com/th3w1zard1/Kotor.NET/tree/master/Kotor.NET/Resources/KotorGIT/GIT.cs:46
         # Camera orientation quaternion (Orientation field, glm::quat)
         # NOTE: PyKotor converts from Euler angles, reone stores as quaternion directly
@@ -489,10 +486,10 @@ class GITCamera(GITInstance):
 
 class GITCreature(GITInstance):
     """Represents a creature instance in a GIT file.
-    
+
     Creature instances define where creatures spawn in an area. Each creature references
     a UTC template file (TemplateResRef) and has a position and bearing (rotation).
-    
+
     References:
     ----------
         Based on swkotor.exe GIT structure:
@@ -502,6 +499,7 @@ class GITCreature(GITInstance):
         https://github.com/th3w1zard1/Kotor.NET/tree/master/Kotor.NET/Resources/KotorGIT/GIT.cs (CreatureInfo class)
 
     """
+
     GFF_STRUCT_ID = 4
 
     def __init__(
@@ -511,12 +509,11 @@ class GITCreature(GITInstance):
         z: float = 0.0,
     ):
         super().__init__(x, y, z)
-        
+
         # https://github.com/th3w1zard1/Kotor.NET/tree/master/Kotor.NET/Resources/KotorGIT/GIT.cs:58
         # ResRef of UTC template file (TemplateResRef field)
         self.resref: ResRef = ResRef.from_blank()
-        
-        
+
         # https://github.com/th3w1zard1/Kotor.NET/tree/master/Kotor.NET/Resources/KotorGIT/GIT.cs:53-57
         # Creature bearing/rotation angle (computed from XOrientation/YOrientation)
         # NOTE: PyKotor computes bearing from XOrientation/YOrientation using Vector2.angle()
@@ -572,10 +569,10 @@ class GITModuleLink(IntEnum):
 
 class GITDoor(GITInstance):
     """Represents a door instance in a GIT file.
-    
+
     Door instances define where doors are placed in an area. Doors can link to other
     areas/modules, have transition destinations, and support color tweaking.
-    
+
     References:
     ----------
         Based on swkotor.exe GIT structure:
@@ -585,6 +582,7 @@ class GITDoor(GITInstance):
         https://github.com/th3w1zard1/Kotor.NET/tree/master/Kotor.NET/Resources/KotorGIT/GIT.cs (DoorInfo class)
 
     """
+
     GFF_STRUCT_ID = 8
 
     def __init__(
@@ -594,43 +592,36 @@ class GITDoor(GITInstance):
         z: float = 0.0,
     ):
         super().__init__(x, y, z)
-        
+
         # https://github.com/th3w1zard1/Kotor.NET/tree/master/Kotor.NET/Resources/KotorGIT/GIT.cs:63
         # ResRef of UTD template file (TemplateResRef field)
         self.resref: ResRef = ResRef.from_blank()
-        
-        
+
         # https://github.com/th3w1zard1/Kotor.NET/tree/master/Kotor.NET/Resources/KotorGIT/GIT.cs:72
         # Door bearing/rotation angle (Bearing field)
         self.bearing: float = 0.0
-        
-        
+
         # https://github.com/th3w1zard1/Kotor.NET/tree/master/Kotor.NET/Resources/KotorGIT/GIT.cs:73-74
         # Color tweak for door appearance (TweakColor/UseTweakColor fields)
         # NOTE: TODO comment indicates tweak color needs fixing in dismantle/construct
         self.tweak_color: Color | None = None  # TODO: fix tweak color in dismantle/construct
-        
-        
+
         # https://github.com/th3w1zard1/Kotor.NET/tree/master/Kotor.NET/Resources/KotorGIT/GIT.cs:66
         # Tag of linked door/waypoint (LinkedTo field)
         self.linked_to: str = ""
-        
-        
+
         # https://github.com/th3w1zard1/Kotor.NET/tree/master/Kotor.NET/Resources/KotorGIT/GIT.cs:67
         # Link type flags (LinkedToFlags field: 0=NoLink, 1=ToDoor, 2=ToWaypoint)
         self.linked_to_flags: GITModuleLink = GITModuleLink.NoLink
-        
-        
+
         # https://github.com/th3w1zard1/Kotor.NET/tree/master/Kotor.NET/Resources/KotorGIT/GIT.cs:65
         # ResRef of linked module (LinkedToModule field)
         self.linked_to_module: ResRef = ResRef.from_blank()
-        
-        
+
         # https://github.com/th3w1zard1/Kotor.NET/tree/master/Kotor.NET/Resources/KotorGIT/GIT.cs:68
         # Localized transition destination name (TransitionDestin field)
         self.transition_destination: LocalizedString = LocalizedString.from_invalid()
-        
-        
+
         # https://github.com/th3w1zard1/Kotor.NET/tree/master/Kotor.NET/Resources/KotorGIT/GIT.cs:64
         # Door tag identifier (Tag field)
         self.tag: str = ""
@@ -685,7 +676,7 @@ class GITDoor(GITInstance):
         """Serialize GITDoor-specific data."""
         # transition_destination is a LocalizedString, not Vector3
         transition_locstring = self.transition_destination
-        transition_stringref = transition_locstring.stringref if hasattr(transition_locstring, 'stringref') else -1
+        transition_stringref = transition_locstring.stringref if hasattr(transition_locstring, "stringref") else -1
 
         return {
             "resref": str(self.resref),
@@ -693,7 +684,7 @@ class GITDoor(GITInstance):
             "tag": self.tag,
             "linked_to_module": str(self.linked_to_module),
             "linked_to": self.linked_to,
-            "linked_to_flags": self.linked_to_flags.value if hasattr(self.linked_to_flags, 'value') else int(self.linked_to_flags),
+            "linked_to_flags": self.linked_to_flags.value if hasattr(self.linked_to_flags, "value") else int(self.linked_to_flags),
             "transition_destination_stringref": transition_stringref,
         }
 
@@ -1019,7 +1010,7 @@ class GITTrigger(GITInstance):
 
         # transition_destination is a LocalizedString
         transition_locstring = self.transition_destination
-        transition_stringref = transition_locstring.stringref if hasattr(transition_locstring, 'stringref') else -1
+        transition_stringref = transition_locstring.stringref if hasattr(transition_locstring, "stringref") else -1
 
         return {
             "resref": str(self.resref),
@@ -1027,7 +1018,7 @@ class GITTrigger(GITInstance):
             "geometry": geometry,
             "linked_to_module": str(self.linked_to_module),
             "linked_to": self.linked_to,
-            "linked_to_flags": self.linked_to_flags.value if hasattr(self.linked_to_flags, 'value') else int(self.linked_to_flags),
+            "linked_to_flags": self.linked_to_flags.value if hasattr(self.linked_to_flags, "value") else int(self.linked_to_flags),
             "transition_destination_stringref": transition_stringref,
         }
 
@@ -1110,10 +1101,28 @@ class GITWaypoint(GITInstance):
 def construct_git(
     gff: GFF,
 ) -> GIT:
+    """REVA GIT load path:
+
+    Args:
+    ----
+        gff: The GFF structure to construct from.
+
+    Returns:
+    -------
+        GIT: The constructed GIT object.
+
+    K1 LoadGIT @ 0x0050dd80 (LoadArea 0x0050e1d7)
+        → LoadProperties 0x00507490 (GetStructFromStruct AreaProperties)
+        → CSWSAmbientSound::Load @ 0x005c95f0 (ReadFieldINT MusicDelay/MusicDay/MusicNight/MusicBattle/AmbientSndDay/AmbientSndNight/AmbientSndDayVol/AmbientSndNitVol default current/0)
+        → LoadCreatures/LoadDoors/LoadTriggers/LoadEncounters/LoadWaypoints/LoadSounds/LoadPlaceables/LoadStores/LoadPlaceableCameras.
+    TSL Aspyr LoadGIT @ 0x0071ae10.
+    """
     git = GIT()
 
     root = gff.root
+    # AreaProperties: K1 LoadProperties 0x00507490 GetStructFromStruct(AreaProperties); CSWSAmbientSound::Load 0x005c95f0 ReadFieldINT defaults 0/current. Omit struct → use defaults.
     properties_struct = root.acquire("AreaProperties", GFFStruct())
+    # AmbientSndDayVol/AmbientSndDay/EnvAudio/MusicDay/MusicBattle/MusicDelay: K1 0x005c95f0 ReadFieldINT default 0. Omit OK.
     git.ambient_volume = properties_struct.acquire("AmbientSndDayVol", 0)
     git.ambient_sound_id = properties_struct.acquire("AmbientSndDay", 0)
     git.env_audio = properties_struct.acquire("EnvAudio", 0)
@@ -1121,6 +1130,7 @@ def construct_git(
     git.music_battle_id = properties_struct.acquire("MusicBattle", 0)
     git.music_delay = properties_struct.acquire("MusicDelay", 0)
 
+    # CameraList: K1 LoadGIT 0x0050dd80 → LoadPlaceableCameras; list omit → empty. Per-struct: CameraID 0, FieldOfView/Height/MicRange/Pitch 0.0, Orientation/Position null. Omit OK.
     for camera_struct in _iterate_gff_list(gff.root, "CameraList"):
         camera = GITCamera()
         git.cameras.append(camera)
@@ -1133,6 +1143,7 @@ def construct_git(
         camera.position = camera_struct.acquire("Position", Vector3.from_null())
         camera.pitch = camera_struct.acquire("Pitch", 0.0)
 
+    # Creature List: K1 LoadGIT 0x0050dd80 → LoadCreatures. TemplateResRef blank, X/Y/ZPosition 0.0, X/YOrientation 0.0. Omit list → empty. Omit OK.
     for creature_struct in _iterate_gff_list(gff.root, "Creature List"):
         creature = GITCreature()
         git.creatures.append(creature)
@@ -1146,6 +1157,7 @@ def construct_git(
         )
         creature.bearing = Vector2(rot_x, rot_y).angle() - math.pi / 2
 
+    # Door List: K1 LoadGIT 0x0050dd80 → LoadDoors. Bearing 0.0, Tag/LinkedTo "", TemplateResRef/LinkedToModule blank, LinkedToFlags 0, TransitionDestin invalid, X/Y/Z 0.0, UseTweakColor 0. Omit OK.
     for door_struct in _iterate_gff_list(gff.root, "Door List"):
         door = GITDoor()
         git.doors.append(door)
@@ -1162,6 +1174,7 @@ def construct_git(
         tweak_enabled = door_struct.acquire("UseTweakColor", 0)
         door.tweak_color = Color.from_bgr_integer(door_struct.acquire("TweakColor", 0)) if tweak_enabled else None
 
+    # Encounter List: K1 LoadGIT 0x0050dd80 → LoadEncounters. X/Y/ZPosition 0.0, TemplateResRef blank; Geometry omit → default triangle; SpawnPointList X/Y/Z/Orientation 0.0. Omit OK.
     for encounter_struct in _iterate_gff_list(gff.root, "Encounter List"):
         x = encounter_struct.acquire("XPosition", 0.0)
         y = encounter_struct.acquire("YPosition", 0.0)
@@ -1195,6 +1208,7 @@ def construct_git(
             spawn.orientation = spawn_struct.acquire("Orientation", 0.0)
             encounter.spawn_points.append(spawn)
 
+    # Placeable List: K1 LoadGIT 0x0050dd80 → LoadPlaceables. TemplateResRef blank, X/Y/Z 0.0, Bearing 0.0, UseTweakColor 0. Omit OK.
     for placeable_struct in _iterate_gff_list(gff.root, "Placeable List"):
         placeable = GITPlaceable()
         git.placeables.append(placeable)
@@ -1209,6 +1223,7 @@ def construct_git(
         tweak_int = placeable_struct.acquire("TweakColor", 0)
         placeable.tweak_color = Color.from_bgr_integer(tweak_int) if tweak_enabled else None
 
+    # SoundList: K1 LoadGIT 0x0050dd80 → LoadSounds. TemplateResRef blank, X/Y/ZPosition 0.0. Omit OK.
     for sound_struct in _iterate_gff_list(gff.root, "SoundList"):
         sound = GITSound()
         git.sounds.append(sound)
@@ -1233,6 +1248,7 @@ def construct_git(
         )
         store.bearing = Vector2(rot_x, rot_y).angle() - math.pi / 2
 
+    # TriggerList: K1 LoadGIT → LoadTriggers. TemplateResRef/Tag/LinkedTo/LinkedToModule blank, LinkedToFlags 0, X/Y/ZPosition 0.0; Geometry omit → default triangle.
     for trigger_struct in _iterate_gff_list(gff.root, "TriggerList"):
         trigger = GITTrigger()
         git.triggers.append(trigger)
@@ -1262,6 +1278,7 @@ def construct_git(
             RobustLogger().warning("Trigger geometry list missing! Creating a default triangle at its position.")
             trigger.geometry.create_triangle(origin=trigger.position)
 
+    # WaypointList: K1 LoadGIT → LoadWaypoints. LocalizedName/Tag invalid/blank, TemplateResRef blank, X/Y/ZPosition 0.0, HasMapNote 0, X/YOrientation 0.0 when omitted.
     for waypoint_struct in _iterate_gff_list(gff.root, "WaypointList"):
         waypoint = GITWaypoint()
         git.waypoints.append(waypoint)
@@ -1297,11 +1314,14 @@ def dismantle_git(
     *,
     use_deprecated: bool = True,
 ) -> GFF:
+    """REVA GIT write path: K1 SaveGIT @ 0x0050ba00 (SaveModuleInProgress 0x004c3bf9) → SaveProperties 0x00506090 (AddStructToStruct AreaProperties),
+    CSWSAmbientSound::Save @ 0x005c96e0 (WriteFieldINT MusicDelay/MusicDay/MusicNight/MusicBattle/AmbientSndDay/AmbientSndNight/AmbientSndDayVol/AmbientSndNitVol). TSL SaveGIT analogous."""
     gff = GFF(GFFContent.GIT)
 
     root = gff.root
     root.set_uint8("UseTemplates", 1)
 
+    # AreaProperties: K1 SaveProperties 0x00506090 AddStructToStruct(AreaProperties,100); CSWSAmbientSound::Save 0x005c96e0 writes INT fields.
     properties_struct = root.set_struct("AreaProperties", GFFStruct(100))
     properties_struct.set_int32("AmbientSndDayVol", git.ambient_volume)
     properties_struct.set_int32("AmbientSndDay", git.ambient_sound_id)
@@ -1313,6 +1333,7 @@ def dismantle_git(
     properties_struct.set_int32("MusicBattle", git.music_battle_id)
     properties_struct.set_int32("MusicDelay", git.music_delay)
 
+    # CameraList/Creature List/Door List/Encounter List/Placeable List/SoundList/StoreList/TriggerList/WaypointList: K1 SaveGIT writes each list via type-specific save helpers.
     camera_list = root.set_list("CameraList", GFFList())
     for camera in git.cameras:
         camera_struct = camera_list.add(GITCamera.GFF_STRUCT_ID)
@@ -1321,7 +1342,7 @@ def dismantle_git(
         camera_struct.set_single("Height", camera.height)
         camera_struct.set_single("MicRange", camera.mic_range)
         orientation = Vector4(*camera.orientation)
-        #orientation.z = 0.0  # Pitch has its own field.  # comment out to pass the test? idk
+        # orientation.z = 0.0  # Pitch has its own field.  # comment out to pass the test? idk
         camera_struct.set_vector4("Orientation", orientation)
         camera_struct.set_vector3("Position", camera.position)
         camera_struct.set_single("Pitch", camera.pitch)
