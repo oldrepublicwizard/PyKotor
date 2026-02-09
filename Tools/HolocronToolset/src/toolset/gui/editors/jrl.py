@@ -29,6 +29,7 @@ if TYPE_CHECKING:
 
 class PhaseTask(Enum):
     """Enum for tracking quest phase tasks."""
+
     NONE = auto()
     KILL = auto()
     TALK = auto()
@@ -57,14 +58,16 @@ class JRLEditor(Editor):
         self._jrl: JRL = JRL()
         self._model: QStandardItemModel = QStandardItemModel(self)
         from toolset.uic.qtpy.editors.jrl import Ui_MainWindow
+
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self)
         self.ui.journalTree.setModel(self._model)
         self.ui.journalTree.setSelectionMode(QTreeView.SelectionMode.SingleSelection)
         self.ui.splitter.setSizes([99999999, 1])
-        
+
         # Setup event filter to prevent scroll wheel interaction with controls
         from toolset.gui.common.filters import NoScrollEventFilter
+
         self._no_scroll_filter = NoScrollEventFilter(self)
         self._no_scroll_filter.setup_filter(parent_widget=self)
         self.resize(400, 250)
@@ -97,6 +100,7 @@ class JRLEditor(Editor):
         self.ui.entryIdSpin.editingFinished.connect(self.on_value_updated)
         self.ui.entryXpSpin.editingFinished.connect(self.on_value_updated)
         from toolset.gui.common.localization import translate as tr
+
         self.ui.entryXpSpin.setToolTip(tr("The game multiplies the value set here by 1000 to calculate actual XP to award."))
         self.ui.entryEndCheck.clicked.connect(self.on_value_updated)
 
@@ -111,7 +115,12 @@ class JRLEditor(Editor):
         planets: TwoDA | None = installation.ht_get_cache_2da(HTInstallation.TwoDA_PLANETS)
         if planets is None:
             from toolset.gui.common.localization import translate as tr, trf
-            QMessageBox(QMessageBox.Icon.Warning, tr("Missing 2DA"), trf("'{file}.2da' is missing from your installation. Please reinstall your game, this should be in the read-only bifs.", file=HTInstallation.TwoDA_PLANETS)).exec()
+
+            QMessageBox(
+                QMessageBox.Icon.Warning,
+                tr("Missing 2DA"),
+                trf("'{file}.2da' is missing from your installation. Please reinstall your game, this should be in the read-only bifs.", file=HTInstallation.TwoDA_PLANETS),
+            ).exec()
             return
 
         plot2DA: TwoDA | None = installation.ht_get_cache_2da(HTInstallation.TwoDA_PLOT)
@@ -138,28 +147,7 @@ class JRLEditor(Editor):
         restype: ResourceType,
         data: bytes,
     ):
-        """Load quest data from a file.
-
-        Args:
-        ----
-            filepath: Path or name of the file to load from
-            resref: Resource reference
-            restype: Resource type
-            data: Byte data of the file
-
-        Processing Logic:
-        ----------------
-            - Read JRL data from byte data
-            - Clear existing model
-            - Iterate through quests in JRL
-                - Create item for quest
-                - Refresh item with quest data
-                - Add to model
-            - Iterate through entries in quest
-            - Create item for entry
-            - Refresh item with entry data
-            - Add to quest item.
-        """
+        """Load quest data from a file. Field defaults when missing: see construct_jrl (REVA: K1 LoadJournal @ 0x004f17d0 reads JNL_*; module uses Categories/EntryList)."""
         super().load(filepath, resref, restype, data)
 
         self._jrl = read_jrl(data)
@@ -178,6 +166,7 @@ class JRLEditor(Editor):
                 quest_item.appendRow(entry_item)
 
     def build(self) -> tuple[bytes, bytes]:
+        """Build JRL data. Write defaults match engine/module layout (REVA: K1 LoadJournal @ 0x004f17d0; we write Categories/EntryList)."""
         data = bytearray()
         write_gff(dismantle_jrl(self._jrl), data)
         return data, b""
@@ -198,7 +187,7 @@ class JRLEditor(Editor):
             text: str = f"[{entryItem.data().entry_id}] {entryItem.data().text}"
         else:
             text: str = f"[{entryItem.data().entry_id}] {self._installation.string(entryItem.data().text)}"
-        
+
         # Use QPalette for text colors instead of hardcoded values
         palette: QPalette = self.palette()
         if entryItem.data().end:
@@ -208,16 +197,12 @@ class JRLEditor(Editor):
             if not end_color.isValid() or end_color == QColor(0, 0, 0):
                 # Fallback: use a slightly adjusted WindowText color
                 base_color = palette.color(QPalette.ColorRole.WindowText)
-                end_color = QColor(
-                    min(255, base_color.red() + 50),
-                    max(0, base_color.green() - 30),
-                    max(0, base_color.blue() - 30)
-                )
+                end_color = QColor(min(255, base_color.red() + 50), max(0, base_color.green() - 30), max(0, base_color.blue() - 30))
             entryItem.setForeground(end_color)
         else:
             # Normal entries use standard WindowText color from palette
             entryItem.setForeground(palette.color(QPalette.ColorRole.WindowText))
-        
+
         entryItem.setText(text)
 
     def refresh_quest_item(self, questItem: QStandardItem):
@@ -369,7 +354,7 @@ class JRLEditor(Editor):
             self.ui.categoryPrioritySelect,
             self.ui.entryEndCheck,
             self.ui.entryXpSpin,
-            self.ui.entryIdSpin
+            self.ui.entryIdSpin,
         ]
 
         for widget in widgets_to_block:
