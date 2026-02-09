@@ -30,7 +30,23 @@ from pykotor.resource.formats.gff import GFF, GFFStruct
 from pykotor.common.misc import Color, Game
 from pykotor.extract.installation import Installation
 from pykotor.resource.formats.gff import read_gff, GFFComparisonResult, GFFList
-from pykotor.resource.generics.gui import GUI, construct_gui, dismantle_gui, GUIControl, GUIControlType, GUIBorder, GUIText, GUIScrollbar, GUIButton, GUISlider, GUIPanel, GUIListBox, GUICheckBox, GUIProtoItem, GUIProgressBar
+from pykotor.resource.generics.gui import (
+    GUI,
+    construct_gui,
+    dismantle_gui,
+    GUIControl,
+    GUIControlType,
+    GUIBorder,
+    GUIText,
+    GUIScrollbar,
+    GUIButton,
+    GUISlider,
+    GUIPanel,
+    GUIListBox,
+    GUICheckBox,
+    GUIProtoItem,
+    GUIProgressBar,
+)
 from pykotor.resource.type import ResourceType
 
 if TYPE_CHECKING:
@@ -221,7 +237,7 @@ class TestGUI(TestCase):
                 assert isinstance(control.max_value, float), f"{control.max_value} is {type(control.max_value)}"
                 assert isinstance(control.progress_fill_texture, str), f"{control.progress_fill_texture} is {type(control.progress_fill_texture)}"
                 assert isinstance(control.progress_border, (GUIBorder, type(None))), f"{control.progress_border} is {type(control.progress_border)}"
-                
+
                 assert control.progress_fill_texture == "", f"{control.progress_fill_texture} == ''"
 
                 if control.progress_border:
@@ -232,7 +248,9 @@ class TestGUI(TestCase):
                     assert isinstance(control.progress_border.fill, str), f"{control.progress_border.fill} is {type(control.progress_border.fill)}"
                     assert isinstance(control.progress_border.fill_style, int), f"{control.progress_border.fill_style} is {type(control.progress_border.fill_style)}"
                     assert isinstance(control.progress_border.inner_offset, int), f"{control.progress_border.inner_offset} is {type(control.progress_border.inner_offset)}"
-                    assert isinstance(control.progress_border.inner_offset_y, int), f"{control.progress_border.inner_offset_y} is {type(control.progress_border.inner_offset_y)}"
+                    assert isinstance(control.progress_border.inner_offset_y, int), (
+                        f"{control.progress_border.inner_offset_y} is {type(control.progress_border.inner_offset_y)}"
+                    )
                     assert isinstance(control.progress_border.pulsing, int), f"{control.progress_border.pulsing} is {type(control.progress_border.pulsing)}"
 
                     assert control.progress_border.color == Color(0, 0, 0, 0), f"{control.progress_border.color} == {Color(0, 0, 0, 0)}"
@@ -244,6 +262,44 @@ class TestGUI(TestCase):
                     assert control.progress_border.inner_offset == 0, f"{control.progress_border.inner_offset} == 0"
                     assert control.progress_border.inner_offset_y == 0, f"{control.progress_border.inner_offset_y} == 0"
                     assert control.progress_border.pulsing == 0, f"{control.progress_border.pulsing} == 0"
+
+    def test_gui_missing_extent_and_controls_defaults(self):
+        """EXTENT omit → (0,0,0,0). CONTROLS omit → empty. K1 CSWGuiExtent::Load 0x00409dc0; TSL FUN_0090c850."""
+        minimal_xml = """<gff3>
+          <struct id="-1">
+            <sint32 label="CONTROLTYPE">2</sint32>
+          </struct>
+        </gff3>"""
+        gff = read_gff(minimal_xml.encode(), file_format=ResourceType.GFF_XML)
+        gui = construct_gui(gff)
+        root = gui.root
+        self.assertIsNotNone(root)
+        assert root is not None
+        self.assertEqual(root.gui_type, GUIControlType.Panel)
+        self.assertEqual(root.position.x, 0)
+        self.assertEqual(root.position.y, 0)
+        self.assertEqual(root.size.x, 0)
+        self.assertEqual(root.size.y, 0)
+        self.assertEqual(root.extent, Vector4(0, 0, 0, 0))
+        self.assertEqual(len(root.children), 0)
+
+    def test_gui_minimal_roundtrip(self):
+        """Minimal root (CONTROLTYPE only) round-trip preserves extent (0,0,0,0) and empty children."""
+        minimal_xml = """<gff3>
+          <struct id="-1">
+            <sint32 label="CONTROLTYPE">0</sint32>
+          </struct>
+        </gff3>"""
+        gff = read_gff(minimal_xml.encode(), file_format=ResourceType.GFF_XML)
+        gui = construct_gui(gff)
+        gff2 = dismantle_gui(gui)
+        gui2 = construct_gui(gff2)
+        root2 = gui2.root
+        self.assertIsNotNone(root2)
+        assert root2 is not None
+        self.assertEqual(root2.gui_type, GUIControlType.Control)
+        self.assertEqual(root2.extent, Vector4(0, 0, 0, 0))
+        self.assertEqual(len(root2.children), 0)
 
 
 if __name__ == "__main__":
