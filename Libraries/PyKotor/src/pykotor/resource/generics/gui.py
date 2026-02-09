@@ -444,11 +444,17 @@ class GUIProgressBar(GUIControl):
 
 
 def construct_gui(gff: GFF) -> GUI:
-    """Construct a GUI object from a GFF."""
+    """Construct a GUI object from a GFF.
+
+    REVA load path: K1 CSWGuiPanel::StartLoadFromLayout @ 0x0040a680 (loads GFF, GetTopLevelStruct);
+    CSWGuiExtent::Load @ 0x00409dc0 GetStructFromStruct(EXTENT), ReadFieldINT LEFT/TOP/WIDTH/HEIGHT default 0;
+    CSWGuiControl::Load @ 0x00418800; CSWGuiLabel::Load 0x0041b960; CSWGuiListBox::Load 0x0041d5b0, LoadProtoItem 0x0041d3e0.
+    TSL FUN_0090c850 (EXTENT loader, LEFT/TOP/WIDTH/HEIGHT default 0). EXTENT/TEXT/BORDER/CONTROLS omit → default or empty.
+    """
     gui = GUI()
 
     def read_text(struct: GFFStruct) -> GUIText | None:
-        """Read text values from a GFF struct."""
+        """Read text values from a GFF struct. K1 CSWGuiLabel::Load 0x0041b960 reads TEXT struct; FONT/ALIGNMENT default blank/0; STRREF 0xFFFFFFFF. Omit TEXT → None."""
         text_struct: GFFStruct | None = struct.get_struct("TEXT", None)
         if text_struct is None:
             return None
@@ -463,12 +469,12 @@ def construct_gui(gff: GFF) -> GUI:
         text.strref = text_struct.get_uint32("STRREF", 0xFFFFFFFF)
 
         color: Vector3 | None = text_struct.get_vector3("COLOR", None)
-        if color:
+        if color is not None:
             text.color = Color(color.x, color.y, color.z, 1.0)
         return text
 
     def read_moveto(struct: GFFStruct) -> GUIMoveTo | None:
-        """Read moveto values from a GFF struct."""
+        """Read moveto values from a GFF struct. K1 MOVETO: UP/DOWN/LEFT/RIGHT INT32 default -1. Omit MOVETO → None."""
         moveto_struct: GFFStruct | None = struct.get_struct("MOVETO", None)
         if moveto_struct is None:
             return None
@@ -481,14 +487,14 @@ def construct_gui(gff: GFF) -> GUI:
         return moveto
 
     def read_hilight(struct: GFFStruct) -> GUIBorder | None:
-        """Read hilight values from a GFF struct."""
+        """Read hilight values. K1 HILIGHT struct: CORNER/EDGE/FILL blank, DIMENSION 0, FILLSTYLE 0, INNEROFFSET 0. Omit → None."""
         hilight_struct: GFFStruct | None = struct.get_struct("HILIGHT", None)
         if hilight_struct is None:
             return None
 
         hilight = GUIBorder()
         color: Vector3 | None = hilight_struct.get_vector3("COLOR", None)
-        if color:
+        if color is not None:
             hilight.color = Color(color.x, color.y, color.z, 1.0)
         hilight.corner = hilight_struct.get_resref("CORNER", ResRef.from_blank())
         hilight.dimension = hilight_struct.get_int32("DIMENSION", 0)
@@ -527,14 +533,14 @@ def construct_gui(gff: GFF) -> GUI:
         return GUIControl()
 
     def read_extent(struct: GFFStruct) -> tuple[int, int, int, int]:
-        """Read extent values from a GFF struct."""
+        """Read extent values from a GFF struct. K1 CSWGuiExtent::Load @ 0x00409dc0 GetStructFromStruct(EXTENT); if present ReadFieldINT LEFT/TOP/WIDTH/HEIGHT default 0. TSL FUN_0090c850 same. Omit EXTENT → (0,0,0,0)."""
         extent: GFFStruct | None = struct.get_struct("EXTENT", None)
         if extent is None:
             return 0, 0, 0, 0
         return (extent.get_int32("LEFT", 0), extent.get_int32("TOP", 0), extent.get_int32("WIDTH", 0), extent.get_int32("HEIGHT", 0))
 
     def read_border(struct: GFFStruct) -> GUIBorder | None:
-        """Read border values from a GFF struct."""
+        """Read border values from a GFF struct. K1/TSL BORDER struct: CORNER/EDGE/FILL ResRef blank, DIMENSION 0, FILLSTYLE 2 when omitted. Omit BORDER → None."""
         border_struct: GFFStruct | None = struct.get_struct("BORDER", None)
         if border_struct is None:
             return None
@@ -559,7 +565,7 @@ def construct_gui(gff: GFF) -> GUI:
         struct: GFFStruct,
         control_type: type[T],
     ) -> T | None:
-        """Read scrollbar thumb or direction struct values."""
+        """Read THUMB/DIR. K1 ListBox scrollbar: IMAGE blank, ALIGNMENT 18. Omit → None."""
         field_name: Literal["THUMB", "DIR"] = "THUMB" if control_type == GUIScrollbarThumb else "DIR"
         thumb_struct: GFFStruct | None = struct.get_struct(field_name, None)
         if thumb_struct is None:
@@ -576,7 +582,7 @@ def construct_gui(gff: GFF) -> GUI:
         struct: GFFStruct,
         parent: GUIControl,
     ) -> GUIProtoItem | None:
-        """Read proto item from a GFF struct."""
+        """Read PROTOITEM. K1 LoadProtoItem 0x0041d3e0; FONT blank, EXTENT 0, BORDER/HILIGHT optional. Omit → None."""
         proto_struct: GFFStruct | None = struct.get_struct("PROTOITEM", None)
         if proto_struct is None:
             return None
@@ -610,7 +616,7 @@ def construct_gui(gff: GFF) -> GUI:
         struct: GFFStruct,
         parent: GUIControl,
     ) -> GUIScrollbar | None:
-        """Read scrollbar from a GFF struct."""
+        """Read SCROLLBAR. K1 CSWGuiListBox::Load 0x0041d5b0: MAXVALUE 99, VISIBLEVALUE 1, CURVALUE optional. Omit → None."""
         scroll_struct: GFFStruct | None = struct.get_struct("SCROLLBAR", None)
         if scroll_struct is None:
             return None
@@ -649,7 +655,7 @@ def construct_gui(gff: GFF) -> GUI:
         return scroll
 
     def read_border_like(struct: GFFStruct, field_name: str) -> GUIBorder | GUISelected | None:
-        """Read border-like struct values (BORDER, HILIGHT, SELECTED, etc.)."""
+        """Read BORDER/HILIGHT/SELECTED. K1 0x00409dc0/0x0041b960: CORNER/EDGE/FILL blank, DIMENSION 0, FILLSTYLE 2. Omit → None."""
         border_struct: GFFStruct | None = struct.get_struct(field_name, None)
         if border_struct is None:
             return None
@@ -671,14 +677,14 @@ def construct_gui(gff: GFF) -> GUI:
         return border
 
     def read_hilight_selected(struct: GFFStruct) -> GUIHilightSelected | None:
-        """Read HILIGHTSELECTED struct values."""
+        """Read HILIGHTSELECTED. K1 CheckBox: same as HILIGHT; CORNER/EDGE/FILL blank, FILLSTYLE 2. Omit → None."""
         hilight_struct: GFFStruct | None = struct.get_struct("HILIGHTSELECTED", None)
         if hilight_struct is None:
             return None
 
         hilight = GUIHilightSelected()
         color: Vector3 | None = hilight_struct.get_vector3("COLOR", None)
-        if color:
+        if color is not None:
             hilight.color = Color(color.x, color.y, color.z, 1.0)
         hilight.corner = hilight_struct.get_resref("CORNER", ResRef.from_blank())
         hilight.dimension = hilight_struct.get_int32("DIMENSION", 0)
@@ -693,7 +699,7 @@ def construct_gui(gff: GFF) -> GUI:
         return hilight
 
     def construct_control(struct: GFFStruct) -> GUIControl:
-        """Construct a GUI control from a GFF struct."""
+        """Construct a GUI control from a GFF struct. K1/TSL: CONTROLTYPE (INT32) default Invalid; CONTROLS list omit → empty; ID/TAG/Obj_Parent optional."""
         control_type = GUIControlType(struct.acquire("CONTROLTYPE", GUIControlType.Invalid.value))
         control: GUIControl = _create_control_by_type(control_type)
         control.gui_type = control_type
@@ -716,7 +722,7 @@ def construct_gui(gff: GFF) -> GUI:
 
         # Color
         color: Vector3 | None = struct.get_vector3("COLOR", None)
-        if color:
+        if color is not None:
             control.color = Color(color.x, color.y, color.z)
             alpha: float | None = struct.get_single("ALPHA", None)
             if alpha is not None:
@@ -738,11 +744,11 @@ def construct_gui(gff: GFF) -> GUI:
         if control_type == GUIControlType.Progress:
             control.start_from_left = struct.get_uint8("STARTFROMLEFT", 1)
             progress_struct = struct.get_struct("PROGRESS", None)
-            if progress_struct:
+            if progress_struct is not None:
                 progress_border = GUIBorder()
                 # Get color from PROGRESS struct if it exists
                 progress_color: Vector3 | None = progress_struct.get_vector3("COLOR", None)
-                if progress_color:
+                if progress_color is not None:
                     progress_border.color = Color(progress_color.x, progress_color.y, progress_color.z)
                     alpha = progress_struct.get_single("ALPHA", None)
                     if alpha is not None:
@@ -762,7 +768,7 @@ def construct_gui(gff: GFF) -> GUI:
         # Slider specific
         if control_type == GUIControlType.Slider:
             thumb_struct = struct.get_struct("THUMB", None)
-            if thumb_struct:
+            if thumb_struct is not None:
                 thumb = GUIScrollbarThumb()
                 thumb.image = thumb_struct.get_resref("IMAGE", ResRef.from_blank())
                 thumb.alignment = thumb_struct.get_int32("ALIGNMENT", 18)
@@ -794,7 +800,7 @@ def construct_gui(gff: GFF) -> GUI:
             control.hilight_selected = read_hilight_selected(struct)
             control.is_selected = bool(struct.get_uint8("ISSELECTED", 0))
 
-        # Handle child controls
+        # CONTROLS (GFFList): K1 StartLoadFromLayout/CSWGuiControl::Load recurse; omit → empty list.
         controls_list: GFFList = struct.get_list("CONTROLS", GFFList())
         if controls_list:
             for child_struct in controls_list:
@@ -803,7 +809,7 @@ def construct_gui(gff: GFF) -> GUI:
 
         return control
 
-    # Read root control
+    # Read root control. K1 StartLoadFromLayout 0x0040a680 GetTopLevelStruct; CSWGuiControl::Load 0x00418800 GetStructFromStruct. Root omit → invalid control.
     gui.root = construct_control(gff.root)
     return gui
 
@@ -814,7 +820,10 @@ def dismantle_gui(  # noqa: C901, PLR0915
     *,
     use_deprecated: bool = True,  # noqa: ARG001
 ) -> GFF:
-    """Convert a GUI instance to a GFF."""
+    """Convert a GUI instance to a GFF.
+
+    REVA write path: K1 GUI save mirrors load; EXTENT LEFT/TOP/WIDTH/HEIGHT, BORDER/TEXT/HILIGHT/MOVETO structs, CONTROLTYPE, CONTROLS list. Same field layout as CSWGuiExtent::Load (0x00409dc0) and control savers.
+    """
     gff = GFF()
 
     def write_extent(
@@ -900,7 +909,7 @@ def dismantle_gui(  # noqa: C901, PLR0915
         struct: GFFStruct,
         scroll: GUIScrollbar,
     ) -> None:
-        """Write scrollbar to a GFF struct."""
+        """Write SCROLLBAR. K1 CSWGuiListBox::Load 0x0041d5b0; MAXVALUE 99, VISIBLEVALUE 1. Omit OK."""
         scroll_struct: GFFStruct = struct.set_struct("SCROLLBAR", GFFStruct(0))
         if scroll.draw_mode is not None:
             scroll_struct.set_uint8("DRAWMODE", scroll.draw_mode)
@@ -942,6 +951,7 @@ def dismantle_gui(  # noqa: C901, PLR0915
         struct: GFFStruct,
         text_control: GUIText,
     ) -> None:
+        """Write TEXT. K1 CSWGuiLabel::Load 0x0041b960; FONT/ALIGNMENT 0, STRREF 0xFFFFFFFF. Omit OK."""
         """Write text values to a GFF struct."""
         text_struct: GFFStruct = struct.set_struct("TEXT", GFFStruct(0))
         if text_control.text is not None:
@@ -960,7 +970,7 @@ def dismantle_gui(  # noqa: C901, PLR0915
         struct: GFFStruct,
         moveto: GUIMoveTo,
     ) -> None:
-        """Write moveto values to a GFF struct."""
+        """Write MOVETO. K1 UP/DOWN/LEFT/RIGHT INT32 default -1. Omit OK."""
         moveto_struct: GFFStruct = struct.set_struct("MOVETO", GFFStruct(0))
         moveto_struct.set_int32("UP", moveto.up)
         moveto_struct.set_int32("DOWN", moveto.down)
