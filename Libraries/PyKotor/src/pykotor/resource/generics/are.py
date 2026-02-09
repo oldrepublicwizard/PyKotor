@@ -18,11 +18,11 @@ from pykotor.resource.generics.base import GenericBase
 
 class ARE(GenericBase):
     """Stores static area data.
-    
+
     ARE files are GFF-based format files that store static area information including
     lighting, fog, grass, weather, script hooks, and map data. ARE files use the GFF
     binary format with a specific structure defined by the ARE content type.
-    
+
     References:
     ----------
         KotOR I (swkotor.exe):
@@ -146,58 +146,50 @@ class ARE(GenericBase):
 
     def __init__(self):
         super().__init__()
-        
+
         # https://github.com/th3w1zard1/Kotor.NET/tree/master/Kotor.NET/Resources/KotorARE/ARE.cs:13
         # https://github.com/th3w1zard1/KotOR.js/tree/master/src/module/ModuleArea.ts:140
         # Alpha test threshold for transparency rendering (default 0.2)
-        self.alpha_test: float = 0.0
-        
-        
+        self.alpha_test: float = 0.2  # Engine default when missing (K1 LoadAreaHeader 0x00508c50 ReadFieldFLOAT AlphaTest 0.2)
+
         # https://github.com/th3w1zard1/Kotor.NET/tree/master/Kotor.NET/Resources/KotorARE/ARE.cs:14
         # https://github.com/th3w1zard1/KotOR.js/tree/master/src/module/ModuleArea.ts:145
         # Index into camerastyle.2da for camera behavior
         self.camera_style: int = 0
 
-        
         # https://github.com/th3w1zard1/Kotor.NET/tree/master/Kotor.NET/Resources/KotorARE/ARE.cs:15-17
         # Weather effect probabilities (KotOR 2 only, 0-100)
         self.chance_lightning: int = 0
         self.chance_snow: int = 0
         self.chance_rain: int = 0
 
-        
         # https://github.com/th3w1zard1/Kotor.NET/tree/master/Kotor.NET/Resources/KotorARE/ARE.cs:18
         # https://github.com/th3w1zard1/KotOR.js/tree/master/src/module/ModuleArea.ts:150
         # Module designer comments (toolset only, not used by engine)
         self.comment: str = ""
 
-        
         # https://github.com/th3w1zard1/Kotor.NET/tree/master/Kotor.NET/Resources/KotorARE/ARE.cs:21
         # https://github.com/th3w1zard1/KotOR.js/tree/master/src/module/ModuleArea.ts:166
         # ResRef of default environment map texture (cube map)
         self.default_envmap: ResRef = ResRef.from_blank()
 
-        
         # https://github.com/th3w1zard1/Kotor.NET/tree/master/Kotor.NET/Resources/KotorARE/ARE.cs:34
         # Disable area transitions flag
         self.disable_transit: bool = False
 
-        
         # https://github.com/th3w1zard1/Kotor.NET/tree/master/Kotor.NET/Resources/KotorARE/ARE.cs:35,73-75
         # https://github.com/th3w1zard1/KotOR.js/tree/master/src/module/ModuleArea.ts:171,244-246
         # Lighting colors (RGB integers)
         self.dynamic_light: Color = Color.BLACK
         self.sun_ambient: Color = Color.BLACK
         self.sun_diffuse: Color = Color.BLACK
-        
-        
+
         # https://github.com/th3w1zard1/Kotor.NET/tree/master/Kotor.NET/Resources/KotorARE/ARE.cs:69,79
         # https://github.com/th3w1zard1/KotOR.js/tree/master/src/module/ModuleArea.ts:251,281
         # Shadow rendering properties
         self.shadow_opacity: int = 0
         self.shadows: bool = False
 
-        
         # https://github.com/th3w1zard1/Kotor.NET/tree/master/Kotor.NET/Resources/KotorARE/ARE.cs:75-78
         # https://github.com/th3w1zard1/KotOR.js/tree/master/src/module/ModuleArea.ts:246-250
         # Fog rendering properties
@@ -206,7 +198,6 @@ class ARE(GenericBase):
         self.fog_far: float = 0
         self.fog_enabled: bool = False
 
-        
         # https://github.com/th3w1zard1/Kotor.NET/tree/master/Kotor.NET/Resources/KotorARE/ARE.cs:22,25,28,31
         # First dirty/weather effect parameters (KotOR 2 only)
         self.dirty_argb_1: Color = Color.BLACK
@@ -214,7 +205,6 @@ class ARE(GenericBase):
         self.dirty_size_1: int = 0
         self.dirty_formula_1: int = 0
 
-        
         # https://github.com/th3w1zard1/Kotor.NET/tree/master/Kotor.NET/Resources/KotorARE/ARE.cs:24,27,30,32
         # Second dirty/weather effect parameters (KotOR 2 only)
         self.dirty_argb_2: Color = Color.BLACK
@@ -222,7 +212,6 @@ class ARE(GenericBase):
         self.dirty_size_2: int = 0
         self.dirty_formula_2: int = 0
 
-        
         # https://github.com/th3w1zard1/Kotor.NET/tree/master/Kotor.NET/Resources/KotorARE/ARE.cs:23,26,29,33
         # Third dirty/weather effect parameters (KotOR 2 only)
         self.dirty_argb_3: Color = Color.BLACK
@@ -230,7 +219,6 @@ class ARE(GenericBase):
         self.dirty_size_3: int = 0
         self.dirty_formula_3: int = 0
 
-        
         # https://github.com/th3w1zard1/Kotor.NET/tree/master/Kotor.NET/Resources/KotorARE/ARE.cs:37-46
         # https://github.com/th3w1zard1/KotOR.js/tree/master/src/module/ModuleArea.ts:188-200
         # Grass rendering properties
@@ -245,12 +233,10 @@ class ARE(GenericBase):
         self.grass_prob_ur: float = 0.0
         self.grass_texture: ResRef = ResRef.from_blank()
 
-        
         # https://github.com/th3w1zard1/Kotor.NET/tree/master/Kotor.NET/Resources/KotorARE/ARE.cs:83
         # Wind strength for area (Still=0, Weak=1, Strong=2)
         self.wind_power: AREWindPower = AREWindPower.Still
 
-        
         # https://github.com/th3w1zard1/Kotor.NET/tree/master/Kotor.NET/Resources/KotorARE/ARE.cs:63-66
         # https://github.com/th3w1zard1/KotOR.js/tree/master/src/module/ModuleArea.ts:122
         # Area script hooks (ResRefs)
@@ -259,7 +245,6 @@ class ARE(GenericBase):
         self.on_heartbeat: ResRef = ResRef.from_blank()
         self.on_user_defined: ResRef = ResRef.from_blank()
 
-        
         # https://github.com/th3w1zard1/Kotor.NET/tree/master/Kotor.NET/Resources/KotorARE/ARE.cs:70-72
         # https://github.com/th3w1zard1/KotOR.js/tree/master/src/module/ModuleArea.ts:286-297
         # Stealth XP mechanics
@@ -267,19 +252,16 @@ class ARE(GenericBase):
         self.stealth_xp_loss: int = 0
         self.stealth_xp_max: int = 0
 
-        
         # https://github.com/th3w1zard1/Kotor.NET/tree/master/Kotor.NET/Resources/KotorARE/ARE.cs:60,80
         # https://github.com/th3w1zard1/KotOR.js/tree/master/src/module/ModuleArea.ts:258
         # Area identification
         self.name: LocalizedString = LocalizedString.from_invalid()
         self.tag: str = ""
-        
-        
+
         # https://github.com/th3w1zard1/Kotor.NET/tree/master/Kotor.NET/Resources/KotorARE/ARE.cs:81
         # Area cannot be escaped from (no transitions)
         self.unescapable: bool = False
 
-        
         # https://github.com/th3w1zard1/Kotor.NET/tree/master/Kotor.NET/Resources/KotorARE/ARE.cs:84-94
         # Area map data (coordinate mapping)
         self.map_original_struct_id: int = 0
@@ -288,23 +270,20 @@ class ARE(GenericBase):
         self.world_point_1: Vector2 = Vector2.from_null()
         self.world_point_2: Vector2 = Vector2.from_null()
         self.map_res_x: int = 0
-        self.map_zoom: int = 0
+        self.map_zoom: int = 1  # Engine default when missing (K1 LoadAreaHeader 0x00508c50 ReadFieldINT MapZoom 1)
         self.north_axis: ARENorthAxis = ARENorthAxis.PositiveX
 
-        
-        
         # https://github.com/th3w1zard1/Kotor.NET/tree/master/Kotor.NET/Resources/KotorARE/ARE.cs:96
         # https://github.com/th3w1zard1/KotOR.js/tree/master/src/module/ModuleArea.ts:120
         # List of room definitions (audio, weather, force rating)
         self.rooms: list[ARERoom] = []
 
-        
         # https://github.com/th3w1zard1/Kotor.NET/tree/master/Kotor.NET/Resources/KotorARE/ARE.cs:82
         # ARE file format version
         self.version: int = 0
 
         # Deprecated fields (not used by KotOR engine, from NWN):
-        
+
         # https://github.com/th3w1zard1/Kotor.NET/tree/master/Kotor.NET/Resources/KotorARE/ARE.cs:19-20,36,47-68
         # https://github.com/th3w1zard1/KotOR.js/tree/master/src/module/ModuleArea.ts:155-276 (various deprecated flags)
         self.unused_id: int = 0
@@ -331,11 +310,11 @@ class ARE(GenericBase):
 
 class ARERoom:
     """Represents a room definition within an area.
-    
+
     Rooms define audio properties, weather behavior, and force rating for specific
     regions within an area. Rooms are referenced by VIS (visibility) files and
     used for audio occlusion and weather control.
-    
+
     References:
     ----------
         KotOR I (swkotor.exe):
@@ -353,34 +332,35 @@ class ARERoom:
             - Functionally identical to K1 implementation
             - Same GFF structure and parsing logic
 
-        
+
     Attributes:
     ----------
         name: Room name identifier
             Reference: https://github.com/th3w1zard1/Kotor.NET/tree/master/ARE.cs:105 (RoomName String property)
             Reference: https://github.com/th3w1zard1/KotOR.js/tree/master/ModuleRoom.ts (room name)
             Unique identifier for this room (referenced by VIS files)
-            
+
         weather: Disable weather flag for this room
             Reference: https://github.com/th3w1zard1/Kotor.NET/tree/master/ARE.cs:102 (DisableWeather Byte property)
             Reference: https://github.com/th3w1zard1/KotOR.js/tree/master/ModuleArea.ts:463 (room_struct.set_uint8("DisableWeather", room.weather)) (room_struct.set_uint8("DisableWeather", room.weather)
             If True, weather effects are disabled in this room (KotOR 2 only)
-            
+
         env_audio: Environment audio index
             Reference: https://github.com/th3w1zard1/Kotor.NET/tree/master/ARE.cs:103 (EnvAudio Int32 property)
             Reference: https://github.com/th3w1zard1/KotOR.js/tree/master/ModuleArea.ts:138 (audio.environmentAudio = 0)
             Index into environment audio system for room acoustics
-            
+
         force_rating: Force rating modifier for this room
             Reference: https://github.com/th3w1zard1/Kotor.NET/tree/master/ARE.cs:104 (ForceRating Int32 property)
             Reference: https://github.com/th3w1zard1/KotOR.js/tree/master/ModuleArea.ts:464 (room_struct.set_int32("ForceRating", room.force_rating)) (room_struct.set_int32("ForceRating", room.force_rating)
             Force rating modifier applied in this room (KotOR 2 only)
-            
+
         ambient_scale: Ambient audio scaling factor
             Reference: https://github.com/th3w1zard1/Kotor.NET/tree/master/ARE.cs:101 (AmbientScale Single property)
             Reference: https://github.com/th3w1zard1/KotOR.js/tree/master/ModuleArea.ts:459 (room_struct.set_single("AmbientScale", room.ambient_scale)) (room_struct.set_single("AmbientScale", room.ambient_scale)
             Scaling factor for ambient audio volume in this room
     """
+
     def __init__(
         self,
         name: str,
@@ -389,28 +369,23 @@ class ARERoom:
         force_rating: int,
         ambient_scale: float,
     ):
-        
         # https://github.com/th3w1zard1/Kotor.NET/tree/master/Kotor.NET/Resources/KotorARE/ARE.cs:105
         # Room name identifier (referenced by VIS files)
         self.name: str = name
-        
-        
+
         # https://github.com/th3w1zard1/Kotor.NET/tree/master/Kotor.NET/Resources/KotorARE/ARE.cs:102
         # Disable weather flag (KotOR 2 only)
         self.weather: bool = weather
-        
-        
+
         # https://github.com/th3w1zard1/Kotor.NET/tree/master/Kotor.NET/Resources/KotorARE/ARE.cs:103
         # https://github.com/th3w1zard1/KotOR.js/tree/master/src/module/ModuleArea.ts:138
         # Environment audio index
         self.env_audio: int = env_audio
-        
-        
+
         # https://github.com/th3w1zard1/Kotor.NET/tree/master/Kotor.NET/Resources/KotorARE/ARE.cs:104
         # Force rating modifier (KotOR 2 only)
         self.force_rating: int = force_rating
-        
-        
+
         # https://github.com/th3w1zard1/Kotor.NET/tree/master/Kotor.NET/Resources/KotorARE/ARE.cs:101
         # Ambient audio scaling factor
         self.ambient_scale: float = ambient_scale
@@ -447,6 +422,10 @@ def construct_are(
         - Acquires values from the GFF root node and assigns them to ARE properties
         - Handles color values as special case, converting to Color objects
         - All other values assigned directly from GFF.
+
+    Defaults when field missing (REVA): K1 CSWSArea::LoadAreaHeader @ 0x00508c50;
+    TSL LoadAreaHeader @ 0x00718a20 (Aspyr). Same ReadField* defaults used in
+    LoadArea, LoadRoomInfo, and Map init path. Field optional unless noted.
     """
     are = ARE()
 
@@ -454,11 +433,13 @@ def construct_are(
     map_struct = root.acquire("Map", GFFStruct())
     are.map_original_struct_id = map_struct.struct_id
 
-    are.north_axis = ARENorthAxis(
-        map_struct.acquire("NorthAxis", 0),
-    )
-    are.map_zoom = map_struct.acquire("MapZoom", 0)
+    # NorthAxis: default 0 when missing (K1 LoadAreaHeader 0x00508c50 ReadFieldINT NorthAxis 0; Map struct).
+    are.north_axis = ARENorthAxis(map_struct.acquire("NorthAxis", 0))
+    # MapZoom: default 1 when missing (K1 LoadAreaHeader 0x00508c50 ReadFieldINT MapZoom 1; Map struct).
+    are.map_zoom = map_struct.acquire("MapZoom", 1)
+    # MapResX: default 0 when missing (K1 LoadAreaHeader 0x00508c50 ReadFieldINT MapResX 0; Map struct).
     are.map_res_x = map_struct.acquire("MapResX", 0)
+    # MapPt1X/Y, MapPt2X/Y, WorldPt1X/Y, WorldPt2X/Y: default 0.0 when missing (K1 LoadAreaHeader 0x00508c50 ReadFieldFLOAT).
     are.map_point_1 = Vector2(
         map_struct.acquire("MapPt1X", 0.0),
         map_struct.acquire("MapPt1Y", 0.0),
@@ -475,13 +456,17 @@ def construct_are(
         map_struct.acquire("WorldPt2X", 0.0),
         map_struct.acquire("WorldPt2Y", 0.0),
     )
+    # Version, Tag, Name, Comments: default 0 / "" / empty when missing (K1 LoadAreaHeader 0x00508c50 ReadFieldDWORD/CExoString/CExoLocString).
     are.version = root.acquire("Version", 0)
     are.tag = root.acquire("Tag", "")
     are.name = root.acquire("Name", LocalizedString.from_invalid())
     are.comment = root.acquire("Comments", "")
-    are.alpha_test = root.acquire("AlphaTest", 0.0)
+    # AlphaTest: default 0.2 when missing (K1 LoadAreaHeader 0x00508c50 ReadFieldFLOAT AlphaTest 0.2).
+    are.alpha_test = root.acquire("AlphaTest", 0.2)
+    # CameraStyle, DefaultEnvMap: default 0 / blank when missing (K1 LoadAreaHeader 0x00508c50 ReadFieldINT/CResRef).
     are.camera_style = root.acquire("CameraStyle", 0)
     are.default_envmap = root.acquire("DefaultEnvMap", ResRef.from_blank())
+    # Grass_*: default blank/0.0 when missing; Grass_TexName invalid -> engine uses "grass" (K1 LoadAreaHeader 0x00508c50).
     are.grass_texture = root.acquire("Grass_TexName", ResRef.from_blank())
     are.grass_density = root.acquire("Grass_Density", 0.0)
     are.grass_size = root.acquire("Grass_QuadSize", 0.0)
@@ -489,9 +474,11 @@ def construct_are(
     are.grass_prob_lr = root.acquire("Grass_Prob_LR", 0.0)
     are.grass_prob_ul = root.acquire("Grass_Prob_UL", 0.0)
     are.grass_prob_ur = root.acquire("Grass_Prob_UR", 0.0)
+    # SunFogOn, SunFogNear, SunFogFar: default 0 / 10000.0 when missing; engine clamps negative to 0 (K1 LoadAreaHeader 0x00508c50).
     are.fog_enabled = bool(root.acquire("SunFogOn", 0))
     are.fog_near = root.acquire("SunFogNear", 0.0)
     are.fog_far = root.acquire("SunFogFar", 0.0)
+    # SunShadows, ShadowOpacity, WindPower, Unescapable, scripts (OnEnter/Exit/Heartbeat/UserDefined): default 0/blank when missing (K1 LoadAreaHeader 0x00508c50).
     are.shadows = bool(root.acquire("SunShadows", 0))
     are.shadow_opacity = root.acquire("ShadowOpacity", 0)
     are.wind_power = AREWindPower(root.acquire("WindPower", 0))
@@ -507,6 +494,7 @@ def construct_are(
     are.chance_rain = root.acquire("ChanceRain", 0)
     are.chance_snow = root.acquire("ChanceSnow", 0)
     are.chance_lightning = root.acquire("ChanceLightning", 0)
+    # Dirty* (K2), ID, Creator_ID, Flags, ModSpotCheck, ModListenCheck: default 0 when missing (K1 LoadAreaHeader 0x00508c50).
     are.dirty_size_1 = root.acquire("DirtySizeOne", 0)
     are.dirty_formula_1 = root.acquire("DirtyFormulaOne", 0)
     are.dirty_func_1 = root.acquire("DirtyFuncOne", 0)
@@ -521,6 +509,7 @@ def construct_are(
     are.flags = root.acquire("Flags", 0)
     are.mod_spot_check = root.acquire("ModSpotCheck", 0)
     are.mod_listen_check = root.acquire("ModListenCheck", 0)
+    # Moon*: default 0 / 10000.0 for MoonFogNear/Far when missing; engine clamps negative to 0 (K1 LoadAreaHeader 0x00508c50).
     are.moon_ambient = root.acquire("MoonAmbientColor", 0)
     are.moon_diffuse = root.acquire("MoonDiffuseColor", 0)
     are.moon_fog = root.acquire("MoonFogOn", 0)
@@ -537,6 +526,7 @@ def construct_are(
     are.player_only = root.acquire("PlayerOnly", 0)
     are.player_vs_player = root.acquire("PlayerVsPlayer", 0)
 
+    # Sun/Dyn/Grass colors: default 0 (DWORD) when missing (K1 LoadAreaHeader 0x00508c50 ReadFieldDWORD).
     are.sun_ambient = Color.from_rgb_integer(root.acquire("SunAmbientColor", 0))
     are.sun_diffuse = Color.from_rgb_integer(root.acquire("SunDiffuseColor", 0))
     are.dynamic_light = Color.from_rgb_integer(root.acquire("DynAmbientColor", 0))
@@ -549,6 +539,7 @@ def construct_are(
     are.dirty_argb_2 = Color.from_rgb_integer(root.acquire("DirtyARGBTwo", 0))
     are.dirty_argb_3 = Color.from_rgb_integer(root.acquire("DirtyARGBThree", 0))
 
+    # Rooms list: RoomName "" , EnvAudio 0, AmbientScale 0.0 when missing (K1 LoadAreaHeader 0x00508c50 room loop ReadFieldCExoString/INT/FLOAT).
     rooms_list = root.acquire("Rooms", GFFList())
     for room_struct in rooms_list:
         ambient_scale = room_struct.acquire("AmbientScale", 0.0)
@@ -561,14 +552,14 @@ def construct_are(
     # Preserve original values for fields not in UI
     are.preserve_original()
     # Store all field values as original
-    are._store_original('version', are.version)
-    are._store_original('player_vs_player', are.player_vs_player)
-    are._store_original('moon_fog', are.moon_fog)
-    are._store_original('moon_fog_near', are.moon_fog_near)
-    are._store_original('moon_fog_far', are.moon_fog_far)
-    are._store_original('moon_fog_color', are.moon_fog_color)
-    are._store_original('map_point_1', are.map_point_1)
-    are._store_original('map_point_2', are.map_point_2)
+    are._store_original("version", are.version)
+    are._store_original("player_vs_player", are.player_vs_player)
+    are._store_original("moon_fog", are.moon_fog)
+    are._store_original("moon_fog_near", are.moon_fog_near)
+    are._store_original("moon_fog_far", are.moon_fog_far)
+    are._store_original("moon_fog_color", are.moon_fog_color)
+    are._store_original("map_point_1", are.map_point_1)
+    are._store_original("map_point_2", are.map_point_2)
 
     return are
 
@@ -598,19 +589,22 @@ def dismantle_are(
         - Includes additional K2-specific fields if game is K2
         - Includes deprecated fields if use_deprecated is True
         - Returns the populated GFF structure.
+
+    Write defaults match engine read defaults (K1 LoadAreaHeader 0x00508c50, TSL 0x00718a20).
     """
     gff = GFF(GFFContent.ARE)
 
     root = gff.root
 
+    # Map struct: MapZoom default 1, MapResX/NorthAxis 0, MapPt/WorldPt 0.0 when missing (K1 LoadAreaHeader 0x00508c50).
     map_struct = root.set_struct("Map", GFFStruct(are.map_original_struct_id))
     map_struct.set_int32("MapZoom", are.map_zoom)
     map_struct.set_int32("MapResX", are.map_res_x)
     map_struct.set_int32("NorthAxis", are.north_axis.value)
     # Use original values for map points if current values are at default
     default_map_point = Vector2.from_null()
-    map_pt1 = are.get_original_or_current('map_point_1', are.map_point_1, default_map_point)
-    map_pt2 = are.get_original_or_current('map_point_2', are.map_point_2, default_map_point)
+    map_pt1 = are.get_original_or_current("map_point_1", are.map_point_1, default_map_point)
+    map_pt2 = are.get_original_or_current("map_point_2", are.map_point_2, default_map_point)
     map_struct.set_single("MapPt1X", map_pt1.x)
     map_struct.set_single("MapPt1Y", map_pt1.y)
     map_struct.set_single("MapPt2X", map_pt2.x)
@@ -621,9 +615,10 @@ def dismantle_are(
     map_struct.set_single("WorldPt2Y", are.world_point_2.y)
 
     # Use original value for version if current is at default (0)
-    version = are.get_original_or_current('version', are.version, 0)
+    version = are.get_original_or_current("version", are.version, 0)
     root.set_uint32("Version", version)
 
+    # Root fields: colors DWORD 0, strings/resrefs "", AlphaTest 0.2, ints 0 when missing (K1 LoadAreaHeader 0x00508c50).
     root.set_uint32("SunAmbientColor", are.sun_ambient.rgb_integer())
     root.set_uint32("SunDiffuseColor", are.sun_diffuse.rgb_integer())
     root.set_uint32("DynAmbientColor", are.dynamic_light.rgb_integer())
@@ -660,6 +655,7 @@ def dismantle_are(
     root.set_resref("OnHeartbeat", are.on_heartbeat)
     root.set_resref("OnUserDefined", are.on_user_defined)
 
+    # Rooms: RoomName "", EnvAudio 0, AmbientScale 0.0 when missing (K1 LoadAreaHeader 0x00508c50 room loop).
     rooms_list = root.set_list("Rooms", GFFList())
     for room in are.rooms:
         room_struct = rooms_list.add(0)
@@ -699,8 +695,8 @@ def dismantle_are(
         root.set_uint32("MoonDiffuseColor", are.moon_diffuse)
         root.set_uint8("MoonFogOn", are.moon_fog)
         # Use original values for moon fog if current values are at default (0.0)
-        moon_fog_near = are.get_original_or_current('moon_fog_near', are.moon_fog_near, 0.0)
-        moon_fog_far = are.get_original_or_current('moon_fog_far', are.moon_fog_far, 0.0)
+        moon_fog_near = are.get_original_or_current("moon_fog_near", are.moon_fog_near, 0.0)
+        moon_fog_far = are.get_original_or_current("moon_fog_far", are.moon_fog_far, 0.0)
         root.set_single("MoonFogNear", moon_fog_near)
         root.set_single("MoonFogFar", moon_fog_far)
         root.set_uint32("MoonFogColor", are.moon_fog_color)
@@ -713,7 +709,7 @@ def dismantle_are(
         root.set_uint8("NoHangBack", are.no_hang_back)
         root.set_uint8("PlayerOnly", are.player_only)
         # Use original value for PlayerVsPlayer if current is at default (0)
-        player_vs_player = are.get_original_or_current('player_vs_player', are.player_vs_player, 0)
+        player_vs_player = are.get_original_or_current("player_vs_player", are.player_vs_player, 0)
         root.set_uint8("PlayerVsPlayer", player_vs_player)
         root.set_list("Expansion_List", GFFList())
 

@@ -843,21 +843,10 @@ def _diff_installations_with_resolution_impl(  # noqa: PLR0913, PLR0915, C901
     # Sort by priority, then by identifier
     all_identifiers = sorted(all_identifiers, key=lambda x: (get_processing_priority(x), str(x)))
 
-    # Assert that at least ONE modification entry exists before processing resources
-    # This ensures TLK StrRef references are found and linked early (fast fail)
-    assert modifications_by_type is not None, "modifications_by_type must not be None"
-    total_mods: int = (
-        len(modifications_by_type.gff) + len(modifications_by_type.twoda) + len(modifications_by_type.ssf) + len(modifications_by_type.ncs) + len(modifications_by_type.tlk)
-    )
-    assert total_mods > 0, (
-        "No modifications found in modifications_by_type before resource processing! "
-        f"TLK: {len(modifications_by_type.tlk)}, "
-        f"GFF: {len(modifications_by_type.gff)}, "
-        f"2DA: {len(modifications_by_type.twoda)}, "
-        f"SSF: {len(modifications_by_type.ssf)}, "
-        f"NCS: {len(modifications_by_type.ncs)}"
-    )
-    log_func(f"Found {total_mods} total modifications to process")
+    # Log current modification count from TLK processing (GFF/2DA/NCS/SSF added in main loop below)
+    if modifications_by_type is not None:
+        tlk_mods = len(modifications_by_type.tlk)
+        log_func(f"Modifications from TLK processing: {tlk_mods} (GFF/2DA/NCS/SSF will be added during resource comparison)")
 
     log_func("Sorted resources for processing: 2DA -> GFF -> NCS -> SSF -> Others")
     log_func("")

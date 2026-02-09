@@ -3114,7 +3114,7 @@ wheels = [
 
 [[package]]
 name = "pykotor"
-version = "2.2.0"
+version = "2.2.1"
 source = { editable = "Libraries/PyKotor" }
 dependencies = [
     { name = "defusedxml" },
