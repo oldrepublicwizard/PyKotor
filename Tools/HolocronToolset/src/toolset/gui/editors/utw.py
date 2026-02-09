@@ -80,6 +80,7 @@ class UTWEditor(Editor):
         restype: ResourceType,
         data: bytes,
     ):
+        """Load resource and populate UI from UTW. Defaults from construct_utw (K1 LoadWaypoint 0x005c7f30; TSL TODO)."""
         super().load(filepath, resref, restype, data)
 
         utw: UTW = read_utw(data)
@@ -92,16 +93,7 @@ class UTWEditor(Editor):
         ----
             utw (UTW): UTW object to load data from
 
-        Processing Logic:
-        ----------------
-            - Load basic UTW data like name, tag and resref into line edits
-            - Load advanced data like map note flags and text into checkboxes and line edit
-            - Load comment text into plain text edit
-            - No return, simply loads UI elements from UTW object.
-
-        Engine defaults (REVA): K1 LoadWaypoint 0x005c7f30 — Tag "", LocalizedName empty,
-        HasMapNote 0, MapNoteEnabled 0, MapNote empty; Appearance/LinkedTo/TemplateResRef/
-        Description/PaletteID/Comment toolset-only, omit OK.
+        Defaults from construct_utw; K1 LoadWaypoint 0x005c7f30; TSL same (addresses TODO). Sets name, tag, resref, map note, comment.
         """
         self._utw: UTW = utw
 
@@ -119,26 +111,13 @@ class UTWEditor(Editor):
         self.ui.commentsEdit.setPlainText(utw.comment)
 
     def build(self) -> tuple[bytes, bytes]:
-        """Builds a UTW object from UI controls.
-
-        Args:
-        ----
-            self: The UI object containing controls.
+        """Builds a UTW from UI data.
 
         Returns:
         -------
-            data: The serialized UTWSave object as bytes.
-            b"": An empty bytes object.
+            tuple[bytes, bytes]: GFF data and log.
 
-        Processing Logic:
-        ----------------
-            - Populate UTW object from UI control values
-            - Serialize UTW to bytes using GFF format
-            - Return bytes and empty bytes
-
-        GFF field defaults (REVA): Tag "", LocalizedName empty, HasMapNote/MapNoteEnabled 0,
-        MapNote empty; Appearance/LinkedTo/TemplateResRef/Description/PaletteID/Comment
-        toolset-only. K1 LoadWaypoint 0x005c7f30.
+        Populates UTW from UI, then dismantle_utw (K1 LoadWaypoint 0x005c7f30; TSL TODO). Returns GFF bytes and log.
         """
         utw: UTW = deepcopy(self._utw)
 
