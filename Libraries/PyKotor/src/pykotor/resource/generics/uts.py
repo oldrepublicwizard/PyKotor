@@ -21,23 +21,22 @@ class UTS:
 
     References:
     ----------
-        KotOR I (swkotor.exe):
-            - 0x00505560 - CSWSArea::LoadSounds (575 bytes, 93 lines)
-                - Loads sound objects from area GIT file
-                - Calls CSWSSoundObject::Load or CSWSSoundObject::LoadFromTemplate
-                - Function signature: LoadSounds(CSWSArea* this, CResGFF* param_1, CResStruct* param_2, int param_3, int param_4)
-            - 0x005c94e0 - CSWSSoundObject::LoadFromTemplate (likely)
-                - Loads sound template from ResRef
-                - Pattern consistent with other LoadFromTemplate functions
-            - CSWSSoundObject::Load (called from LoadSounds at line 51)
-                - Loads sound object from GFF struct
-                - Reads TemplateResRef, ObjectId, GeneratedType, position fields
-        
-        KotOR II / TSL (swkotor2.exe):
-            - Functionally equivalent UTS parsing logic
-            - Same GFF field structure and parsing behavior
-            - String references at different addresses due to binary layout differences
-        
+        Based on unified K1 (swkotor.exe) and TSL (swkotor2.exe) UTS implementation.
+        Addresses: (K1: swkotor.exe, TSL: swkotor2.exe). Remaining TSL addresses: resolve in REVA when
+        PyKotorGhidraProject.gpr is open (project may be locked by another process).
+
+        - CSWSArea::LoadSounds (loads sound objects from area GIT, calls CSWSSoundObject::Load)
+            K1: 0x00505560, TSL: 0x0071c730 (Aspyr; legacy PC not verified)
+            Signature: LoadSounds(CSWSArea* this, CResGFF* param_1, CResStruct* param_2, int param_3, int param_4).
+
+        - CSWSSoundObject::Load (root UTS GFF parser, called from LoadSounds)
+            K1: TODO (resolve via referencers of LoadSounds), TSL: TODO
+            Reads TemplateResRef, ObjectId, GeneratedType, position, Tag, flags, Sounds list.
+
+        - CSWSSoundObject::LoadFromTemplate (load sound template from ResRef)
+            K1: 0x005c94e0, TSL: TODO
+            Pattern consistent with other LoadFromTemplate functions.
+
         GFF Field Structure (from LoadSounds and inferred patterns):
             - Root struct fields:
                 - "TemplateResRef" (CResRef) - Template resource reference
@@ -58,7 +57,7 @@ class UTS:
                 - "PitchVariation" (FLOAT) - Pitch variation range
                 - "VolumeVariation" (FLOAT) - Volume variation range
                 - "Sound" (CResRef) - Sound resource reference
-        
+
         Note: UTS files are GFF format files with specific structure definitions (GFFContent.UTS)
 
     Attributes:
@@ -180,12 +179,27 @@ class UTS:
 
 def construct_uts(
     gff: GFF,
+    game: Game = Game.K2,
+    *,
+    use_deprecated: bool = True,
 ) -> UTS:
+    """Constructs a UTS object from a GFF structure.
+
+    Defaults when field missing (from engine): K1 CSWSArea::LoadSounds (K1: 0x00505560, TSL: 0x0071c730 (Aspyr; legacy PC not verified));
+    CSWSSoundObject::Load parses all fields. Tag "", TemplateResRef blank; Active/Continuous/Looping/
+    Positional/RandomPosition/Random 0; distances/elevation/pitch/volume 0.0 or 0. Optional when missing.
+
+    Reference functions: (1) LoadSounds area sounds, (2) CSWSSoundObject::Load root UTS parser,
+    (3) LoadFromTemplate, (4) CResGFF::ReadField* (Tag, TemplateResRef, flags, Sounds), (5) Sounds list.
+    Addresses in UTS class References.
+    """
     uts = UTS()
 
     root: GFFStruct = gff.root
+    # Identity: Tag "", TemplateResRef blank. K1 LoadSounds 0x00505560, TSL 0x0071c730 (Aspyr). Optional.
     uts.tag = root.acquire("Tag", "")
     uts.resref = root.acquire("TemplateResRef", ResRef.from_blank())
+    # Flags: Active, Continuous, Looping, Positional, RandomPosition, Random. BYTE 0. K1/TSL LoadSounds, CSWSSoundObject::Load. Optional.
     uts.active = bool(root.acquire("Active", 0))
     uts.continuous = bool(root.acquire("Continuous", 0))
     uts.looping = bool(root.acquire("Looping", 0))
@@ -209,6 +223,7 @@ def construct_uts(
     uts.times = root.acquire("Times", 0)
     uts.palette_id = root.acquire("PaletteID", 0)
 
+    # Sounds: list of structs with Sound ResRef "". K1/TSL LoadSounds, CSWSSoundObject::Load. Optional.
     for sound_struct in root.acquire("Sounds", GFFList()):
         sound = sound_struct.acquire("Sound", ResRef.from_blank())
         uts.sounds.append(sound)
@@ -225,6 +240,7 @@ def dismantle_uts(
     gff = GFF(GFFContent.UTS)
 
     root: GFFStruct = gff.root
+    # Write same defaults as engine read. K1 LoadSounds 0x00505560, TSL 0x0071c730 (Aspyr). Tag "", ResRef blank, BYTE 0, FLOAT 0.0.
     root.set_string("Tag", uts.tag)
     root.set_resref("TemplateResRef", uts.resref)
     root.set_uint8("Active", uts.active)

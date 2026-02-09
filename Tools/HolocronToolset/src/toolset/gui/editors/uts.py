@@ -116,6 +116,7 @@ class UTSEditor(Editor):
         restype: ResourceType,
         data: bytes,
     ):
+        """Load resource and populate UI from UTS. Defaults from construct_uts (K1 LoadSounds 0x00505560, TSL 0x0071c730 (Aspyr))."""
         super().load(filepath, resref, restype, data)
 
         uts: UTS = read_uts(data)
@@ -131,13 +132,7 @@ class UTSEditor(Editor):
         ----
             uts (UTS): UTS object to load
 
-        Processing Logic:
-        ----------------
-            - Sets basic property values like name, tag, etc
-            - Sets advanced playback options like random, specific position
-            - Loads sounds list
-            - Sets positioning options like style, distances
-            - Loads comments.
+        Defaults from construct_uts; K1 LoadSounds 0x00505560, TSL 0x0071c730 (Aspyr). Sets basic, playback, positioning, sounds list, comment.
         """
         self._uts = uts
 
@@ -195,18 +190,13 @@ class UTSEditor(Editor):
         self.ui.commentsEdit.setPlainText(uts.comment)
 
     def build(self) -> tuple[bytes, bytes]:
-        """Builds a UTS from UI fields.
+        """Builds a UTS from UI data.
 
         Returns:
         -------
-            tuple[bytes, bytes]: A tuple containing the unit data and log.
+            tuple[bytes, bytes]: GFF data and log.
 
-        Processing Logic:
-        ----------------
-            - Collects input from UI elements and assigns to _uts attribute
-            - Loops through sound list adding each sound to _uts
-            - Writes _uts to bytearray using dismantle_uts and write_gff
-            - Returns bytearray tuple.
+        Populates UTS from UI, then dismantle_uts (K1 LoadSounds 0x00505560, TSL 0x0071c730 (Aspyr)). Returns GFF bytes and log.
         """
         uts: UTS = deepcopy(self._uts)
 
