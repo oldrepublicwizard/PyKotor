@@ -243,6 +243,8 @@ class GITEditor(Editor, BlenderEditorMixin):
     ):
         """Load a resource from a file.
 
+        GIT defaults (REVA): K1 LoadGIT 0x0050dd80, LoadProperties/CSWSAmbientSound::Load 0x005c95f0 (AreaProperties: INT 0); lists omit → empty; TSL Aspyr LoadGIT 0x0071ae10.
+
         Args:
         ----
             filepath: {Path or filename to load from}
@@ -283,6 +285,7 @@ class GITEditor(Editor, BlenderEditorMixin):
         self.update_visibility()
 
     def build(self) -> tuple[bytes, bytes]:
+        """Build GIT bytes. Write path: K1 SaveGIT 0x0050ba00, SaveProperties/CSWSAmbientSound::Save 0x005c96e0."""
         return bytes_git(self._git), b""
 
     def new(self):
@@ -440,8 +443,7 @@ class GITEditor(Editor, BlenderEditorMixin):
         self.ui.renderArea.camera.set_position(instance.position.x, instance.position.y)
 
     # region Mode Calls
-    def open_list_context_menu(self, item: QListWidgetItem, point: QPoint):
-        ...
+    def open_list_context_menu(self, item: QListWidgetItem, point: QPoint): ...
 
     def update_visibility(self):
         self._mode.update_visibility()
