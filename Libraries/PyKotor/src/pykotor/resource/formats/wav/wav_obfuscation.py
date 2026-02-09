@@ -19,9 +19,7 @@ External code should use the public API in `wav_auto.py`.
 
 References:
 ----------
-        Original BioWare engine binaries (from swkotor.exe, swkotor2.exe)
-        Original BioWare engine binaries
-        - Shows magic "\xff\xf3\x60\xc4" detection and seek to 0x1DA
+        See wav_data module docstring for engine addresses (K1 + TSL TODO). SFX magic 0xFF 0xF3 0x60 0xC4, seek 0x1DA; riffSize 50 → MP3.
         - fakeHeaderTest = [0xFF, 0xF3, 0x60, 0xC4] → skip 470 bytes
         - riffSize == 50 → skip 58 bytes → MP3
         Derivations and Other Implementations:

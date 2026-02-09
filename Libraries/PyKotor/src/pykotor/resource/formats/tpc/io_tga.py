@@ -86,10 +86,7 @@ class TPCTGAReader(ResourceReader):
     
     References:
     ----------
-        Original BioWare engine binaries (from swkotor.exe, swkotor2.exe)
-        Original BioWare engine binaries
-        Standard TGA specification for header format
-
+        See tpc_data module docstring for engine addresses (K1 + TSL TODO). Standard TGA specification for header format.
 
     """
     def __init__(
@@ -245,10 +242,7 @@ class TPCTGAWriter(ResourceWriter):
     
     References:
     ----------
-        Original BioWare engine binaries (from swkotor.exe, swkotor2.exe)
-        Original BioWare engine binaries
-        Standard TGA specification for header format
-
+        See tpc_data module docstring for engine addresses (K1 + TSL TODO). Standard TGA specification for header format.
 
     """
     def __init__(

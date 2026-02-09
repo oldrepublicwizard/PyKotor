@@ -2,8 +2,7 @@ from __future__ import annotations
 
 from collections import deque
 from copy import copy, deepcopy
-from datetime import datetime, timedelta, timezone
-from time import perf_counter
+from time import monotonic, perf_counter
 from typing import TYPE_CHECKING
 
 import qtpy
@@ -126,7 +125,7 @@ class ModuleRenderer(QOpenGLWidget):
         self._keys_down: set[Qt.Key] = set()
         self._mouse_down: set[Qt.MouseButton] = set()
         self._mouse_prev: Vector2 = Vector2(self.cursor().pos().x(), self.cursor().pos().y())
-        self._mouse_press_time: datetime = datetime.now(tz=timezone.utc).astimezone()
+        self._mouse_press_time: float = monotonic()  # seconds (monotonic clock, cheap)
         # Cached mouse world position computed inside paintGL (GL context is current there).
         # This is intentionally separate from `scene.cursor` (which is the camera focal point).
         self._mouse_world: Vector3 = Vector3(0.0, 0.0, 0.0)
@@ -460,14 +459,13 @@ class ModuleRenderer(QOpenGLWidget):
         x = float(self._mouse_prev.x)
         y = float(self._mouse_prev.y)
         if 0.0 <= x < float(self.width()) and 0.0 <= y < float(self.height()):
-            if hasattr(self.scene, "screen_to_world_from_depth_buffer"):
-                try:
-                    world = self.scene.screen_to_world_from_depth_buffer(int(x), int(y))
-                    self._mouse_world = world
-                    self._mouse_world_last_screen = Vector2(x, y)
-                except Exception:
-                    # If context is lost during teardown, keep last cached value.
-                    pass
+            try:
+                world = self.scene.screen_to_world_from_depth_buffer(int(x), int(y))
+                self._mouse_world = world
+                self._mouse_world_last_screen = Vector2(x, y)
+            except Exception:  # noqa: BLE001
+                # If context is lost during teardown, keep last cached value.
+                pass
 
     def loop(self):
         """Repaints and checks for keyboard input on mouse press.
@@ -649,14 +647,16 @@ class ModuleRenderer(QOpenGLWidget):
         # requires depth reads (and previously an extra render pass). The cached value is
         # refreshed once per frame in `paintGL` using the already-rendered depth buffer.
         world: Vector3 = self._mouse_world
-        now = datetime.now(tz=timezone.utc).astimezone()
-        if now - self._mouse_press_time > timedelta(milliseconds=60):
+        # Debounce: suppress drag signals for 60 ms after a mouse-button press to prevent
+        # accidental drags. In free-cam mode we never debounce — the user needs immediate
+        # mouse response for look rotation.
+        if self.free_cam or (monotonic() - self._mouse_press_time) > 0.06:
             self.sig_mouse_moved.emit(screen, screenDelta, world, self._mouse_down, self._keys_down)
         self._mouse_prev = screen  # Always assign mouse_prev after emitting: allows signal handlers (e.g. ModuleDesigner, GITEditor) to handle cursor lock.
 
     def mousePressEvent(self, e: QMouseEvent):  # pyright: ignore[reportIncompatibleMethodOverride]
         super().mousePressEvent(e)
-        self._mouse_press_time = datetime.now(tz=timezone.utc).astimezone()
+        self._mouse_press_time = monotonic()
         button: Qt.MouseButton = e.button()
         self._mouse_down.add(button)
         pos: QPoint = e.pos() if qtpy.QT5 else e.position().toPoint()  # type: ignore[attr-defined] # pyright: ignore[reportAttributeAccessIssue]

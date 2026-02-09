@@ -219,6 +219,13 @@ class ModuleDesignerControls3d:
             strength: float = self.settings.moveCameraSensitivity3d / 50000
             self.renderer.scene.camera.z -= -delta.y * strength
 
+    def _any_modifier_held(self, keys: set[Qt.Key]) -> bool:
+        """Return True if any modifier key (Ctrl, Shift, Alt) is currently held."""
+        _MODIFIER_KEYS = {
+            Qt.Key.Key_Control, Qt.Key.Key_Shift, Qt.Key.Key_Alt, Qt.Key.Key_Meta,
+        }
+        return bool(keys & _MODIFIER_KEYS)
+
     def on_mouse_moved(
         self,
         screen: Vector2,
@@ -230,47 +237,66 @@ class ModuleDesignerControls3d:
         # Process input through smoothing and acceleration
         processed_dx, processed_dy = self._process_input(screen_delta)
         _processed_delta = Vector2(processed_dx, processed_dy)
-        
-        # PRIORITY: Handle movement of selected instances FIRST when instances are selected
-        # This prevents camera rotation from interfering with instance movement
-        if not self.editor.ui.lockInstancesCheck.isChecked() and self.editor.selected_instances:
-            if self.move_xy_selected.satisfied(buttons, keys):
-                if not self.editor.is_drag_moving:
-                    self.editor.initial_positions = {instance: instance.position for instance in self.editor.selected_instances}
-                    self.editor.is_drag_moving = True
-                for instance in self.editor.selected_instances:
-                    # Drag should follow the mouse-projected world point, not the scene "cursor"
-                    # (which represents the camera focal point).
-                    x = float(world.x)
-                    y = float(world.y)
-                    z = float(instance.position.z) if isinstance(instance, GITCamera) else float(world.z)
-                    instance.position = Vector3(x, y, z)
-                return  # Don't process camera controls when moving instances
 
+        # Evaluate camera control bindings FIRST.
+        # Camera bindings that require modifier keys (e.g. Ctrl+Left = pan) must take
+        # priority over generic instance manipulation bindings (e.g. Left = move instance)
+        # which have no required modifier keys and would otherwise shadow them.
+        move_xy_camera_satisfied = self.move_xy_camera.satisfied(buttons, keys)
+        move_camera_plane_satisfied = self.move_camera_plane.satisfied(buttons, keys)
+        rotate_camera_satisfied = self.rotate_camera.satisfied(buttons, keys)
+        zoom_camera_satisfied = self.zoom_camera_mm.satisfied(buttons, keys)
+
+        # When a modifier key is held, camera controls always win over instance manipulation.
+        # This prevents e.g. Ctrl+LeftDrag (pan camera) from being eaten by the instance
+        # move handler whose binding is just LeftButton with no required modifiers.
+        modifier_held = self._any_modifier_held(keys)
+        camera_wants_input = (
+            move_xy_camera_satisfied
+            or move_camera_plane_satisfied
+            or zoom_camera_satisfied
+            or (rotate_camera_satisfied and modifier_held)
+        )
+
+        # Instance manipulation - only when no camera control with modifiers claims the input
+        if (
+            not camera_wants_input
+            and not self.editor.ui.lockInstancesCheck.isChecked()
+            and self.editor.selected_instances
+        ):
+            # Check instance manipulation bindings (most specific first)
             if self.move_z_selected.satisfied(buttons, keys):
                 if not self.editor.is_drag_moving:
                     self.editor.initial_positions = {instance: instance.position for instance in self.editor.selected_instances}
                     self.editor.is_drag_moving = True
                 for instance in self.editor.selected_instances:
                     instance.position.z -= processed_dy / 40
-                return  # Don't process camera controls when moving instances
+                return
 
             if self.rotate_selected.satisfied(buttons, keys):
                 if not self.editor.is_drag_rotating:
                     self.editor.is_drag_rotating = True
                     for instance in self.editor.selected_instances:
                         if not isinstance(instance, (GITCamera, GITCreature, GITDoor, GITPlaceable, GITStore, GITWaypoint)):
-                            continue  # doesn't support rotations.
-                        self.editor.initial_rotations[instance] = Vector4(*instance.orientation) if isinstance(instance, GITCamera) else instance.bearing
+                            continue
+                        self.editor.initial_rotations[instance] = (
+                            Vector4(*instance.orientation) if isinstance(instance, GITCamera) else instance.bearing
+                        )
                 self.editor.rotate_selected(processed_dx, processed_dy)
-                return  # Don't process camera controls when rotating instances
-        
-        # Handle mouse-specific cursor lock and plane movement
-        move_xy_camera_satisfied = self.move_xy_camera.satisfied(buttons, keys)
-        move_camera_plane_satisfied = self.move_camera_plane.satisfied(buttons, keys)
-        rotate_camera_satisfied = self.rotate_camera.satisfied(buttons, keys)
-        zoom_camera_satisfied = self.zoom_camera_mm.satisfied(buttons, keys)
-        
+                return
+
+            if self.move_xy_selected.satisfied(buttons, keys):
+                if not self.editor.is_drag_moving:
+                    self.editor.initial_positions = {instance: instance.position for instance in self.editor.selected_instances}
+                    self.editor.is_drag_moving = True
+                for instance in self.editor.selected_instances:
+                    x = float(world.x)
+                    y = float(world.y)
+                    z = float(instance.position.z) if isinstance(instance, GITCamera) else float(world.z)
+                    instance.position = Vector3(x, y, z)
+                return
+
+        # Camera controls
         if (
             move_xy_camera_satisfied
             or move_camera_plane_satisfied
@@ -278,38 +304,34 @@ class ModuleDesignerControls3d:
             or zoom_camera_satisfied
         ):
             self.editor.do_cursor_lock(screen, center_mouse=False, do_rotations=False)
-            
+
             # Scale movement based on distance for consistent feel
             distance_scale = max(0.5, self.renderer.scene.camera.distance * 0.05)
             base_move_strength = self.settings.moveCameraSensitivity3d / 1000.0
             move_strength = base_move_strength * distance_scale
-            
+
             if move_xy_camera_satisfied:
-                # Pan: Move camera parallel to view plane
                 forward = -processed_dy * self.renderer.scene.camera.forward()
                 sideward = processed_dx * self.renderer.scene.camera.sideward()
                 self.renderer.scene.camera.x -= (forward.x + sideward.x) * move_strength
                 self.renderer.scene.camera.y -= (forward.y + sideward.y) * move_strength
-                
+
             if move_camera_plane_satisfied:
-                # Pan in camera-local up/right plane (middle mouse default)
                 upward = processed_dy * self.renderer.scene.camera.upward(ignore_xy=False)
                 sideward = processed_dx * self.renderer.scene.camera.sideward()
                 self.renderer.scene.camera.z -= (upward.z + sideward.z) * move_strength
                 self.renderer.scene.camera.y -= (upward.y + sideward.y) * move_strength
                 self.renderer.scene.camera.x -= (upward.x + sideward.x) * move_strength
-                
+
             if rotate_camera_satisfied:
-                # Rotate: Orbit camera around focal point
                 rotate_strength = self.settings.rotateCameraSensitivity3d / 5000.0
                 self.renderer.rotate_camera(
                     -processed_dx * rotate_strength,
                     processed_dy * rotate_strength,
-                    clamp_rotations=True
+                    clamp_rotations=True,
                 )
-                
+
             if zoom_camera_satisfied:
-                # Zoom: Move closer/farther (right mouse drag)
                 zoom_strength = self.settings.zoomCameraSensitivity3d / 2000.0
                 distance_factor = max(0.1, self.renderer.scene.camera.distance * 0.1)
                 self.renderer.scene.camera.distance -= processed_dy * zoom_strength * distance_factor

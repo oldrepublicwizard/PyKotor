@@ -7,11 +7,21 @@ KotOR Audio Format Reference:
     - SFX files (streammusic): Have 0xFFF360C4 header, skip 470 bytes, then RIFF/WAVE
     - VO files (streamvoice): Usually standard RIFF/WAVE with PCM or IMA ADPCM
     - Music with MP3: RIFF header with size=50, skip 58 bytes, then MP3 data
-    
+
 References:
 ----------
-        Original BioWare engine binaries (from swkotor.exe, swkotor2.exe)
-        Original BioWare engine binaries
+        Based on unified K1 (swkotor.exe) and TSL (swkotor2.exe) WAV/audio structure.
+        Addresses: (K1: swkotor.exe, TSL: swkotor2.exe — verify/fill TSL via REVA when available).
+
+        - ".wav" extension string: K1: 0x0074d308, TSL: TODO
+        - "wav" resource type string: K1: 0x0074d32c, TSL: TODO
+        - "wave" string (wave format identifier): K1: 0x0073f064, TSL: TODO
+        - "RIFF" string: K1: 0x0074d324, TSL: TODO
+        - "STREAMWAVES" string: K1: 0x0074df34, TSL: TODO
+        - "HD0:STREAMWAVES\\%s" path format: K1: 0x0074a7f4, TSL: TODO
+        - "HD0:STREAMMUSIC\\%s" path format: K1: 0x0074c304, TSL: TODO
+        - ".\\streamwaves", "d:\\streamwaves" paths: K1: 0x0074df40, 0x0074df50, TSL: TODO
+        Format notes: SFX 470-byte header (0xFF 0xF3 0x60 0xC4); MP3-in-WAV riffSize 50, skip 58 bytes.
         Derivations and Other Implementations:
         ----------
         https://github.com/th3w1zard1/KotOR.js/tree/master/src/audio/AudioFile.ts:9-162
@@ -28,36 +38,37 @@ from pykotor.resource.type import ResourceType
 
 class WaveEncoding(IntEnum):
     """Wave encoding types used by Bioware.
-    
-    References:
-    ----------
-        Original BioWare engine binaries (from swkotor.exe, swkotor2.exe)
-        Original BioWare engine binaries
-        Derivations and Other Implementations:
+
+        References:
         ----------
-        https://github.com/th3w1zard1/KotOR.js/tree/master/src/enums/audio/AudioFileWaveEncoding.ts
+            Original BioWare engine binaries (TODO: Verify with REVA when available)
 
-
+    Derivations and Other Implementations:
+    -------------------------------------
+        - https://github.com/th3w1zard1/KotOR.js/tree/master/src/enums/audio/AudioFileWaveEncoding.ts
     """
-    PCM = 0x01           # Linear PCM (uncompressed)
-    MS_ADPCM = 0x02      # Microsoft ADPCM
-    ALAW = 0x06          # A-Law companded
-    MULAW = 0x07         # μ-Law companded
-    IMA_ADPCM = 0x11     # IMA ADPCM (also known as DVI ADPCM)
-    MP3 = 0x55           # MPEG Layer 3
+
+    PCM = 0x01  # Linear PCM (uncompressed)
+    MS_ADPCM = 0x02  # Microsoft ADPCM
+    ALAW = 0x06  # A-Law companded
+    MULAW = 0x07  # μ-Law companded
+    IMA_ADPCM = 0x11  # IMA ADPCM (also known as DVI ADPCM)
+    MP3 = 0x55  # MPEG Layer 3
 
 
 class AudioFormat(IntEnum):
     """Audio format types for the WAV wrapper."""
-    WAVE = 1       # Standard RIFF/WAVE format
-    MP3 = 2        # MP3 data (possibly wrapped in WAV)
-    UNKNOWN = 0    # Unknown format
+
+    WAVE = 1  # Standard RIFF/WAVE format
+    MP3 = 2  # MP3 data (possibly wrapped in WAV)
+    UNKNOWN = 0  # Unknown format
 
 
 class WAVType(IntEnum):
     """The type of WAV file for KotOR obfuscation purposes."""
-    VO = 1      # Voice over WAV (streamvoice, streamwaves)
-    SFX = 2     # Sound effects WAV (streammusic/sounds with 470-byte header)
+
+    VO = 1  # Voice over WAV (streamvoice, streamwaves)
+    SFX = 2  # Sound effects WAV (streammusic/sounds with 470-byte header)
 
 
 class WAV:
@@ -74,7 +85,7 @@ class WAV:
         block_align: Block alignment
         bytes_per_sec: Bytes per second
         data: The raw audio data (PCM samples for WAVE, raw bytes for MP3)
-        
+
     Note:
     ----
         When audio_format is MP3, the data contains raw MP3 bytes that should be
@@ -142,5 +153,4 @@ class WAV:
         )
 
     def __hash__(self):
-        return hash((self.wav_type, self.audio_format, self.encoding, self.channels, 
-                     self.sample_rate, self.bits_per_sample, self.block_align, self.data))
+        return hash((self.wav_type, self.audio_format, self.encoding, self.channels, self.sample_rate, self.bits_per_sample, self.block_align, self.data))

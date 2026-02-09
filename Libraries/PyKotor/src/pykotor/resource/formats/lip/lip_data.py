@@ -65,8 +65,7 @@ class LIPShape(IntEnum):
     
     References:
     ----------
-        Original BioWare engine binaries (from swkotor.exe, swkotor2.exe)
-        Original BioWare engine binaries
+        See module docstring for engine addresses (K1 + TSL TODO). CLIP::LoadLip.
         Derivations and Other Implementations:
         ----------
         https://github.com/th3w1zard1/KotOR_IO/tree/master/KotOR_IO/File
@@ -242,8 +241,7 @@ class LIP(ComparableMixin):
     
     References:
     ----------
-        Original BioWare engine binaries (from swkotor.exe, swkotor2.exe)
-        Original BioWare engine binaries
+        See module docstring for engine addresses (K1 + TSL TODO). CLIP::LoadLip, "LIP V1.0", keyframes.
         Derivations and Other Implementations:
         ----------
         https://github.com/th3w1zard1/KotOR_IO/tree/master/KotOR_IO/File
@@ -478,8 +476,7 @@ class LIPKeyFrame(ComparableMixin):
     
     References:
     ----------
-        Original BioWare engine binaries (from swkotor.exe, swkotor2.exe)
-        Original BioWare engine binaries
+        See module docstring for engine addresses (K1 + TSL TODO). Keyframe layout (timestamp + shape).
         Derivations and Other Implementations:
         ----------
         https://github.com/th3w1zard1/KotOR_IO/tree/master/KotOR_IO/File

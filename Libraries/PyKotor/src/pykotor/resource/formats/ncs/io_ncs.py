@@ -22,19 +22,10 @@ class NCSBinaryReader(ResourceReader):
     
     References:
     ----------
-        Based on swkotor.exe NCS structure:
-        - CResNCS::CResNCS @ 0x005d4c30 - Constructor for NCS resource
-          * Initializes NCS resource with vtable
-          * Sets is_loaded = 0, size = 0, data = nullptr
-        - CResNCS::~CResNCS @ 0x005d4c50, @ 0x005d4c90 - Destructors for NCS resource
-        - ReadScriptFile @ 0x005d2260 - Reads NCS script file from resource
-        - ReadScriptsFromGff @ 0x004ebf20 - Reads script references from GFF structures
-        - LoadScripts @ 0x0066c420, @ 0x0066c740, @ 0x0066d180 - Loads scripts from various sources
-        - ExecuteCommandExecuteScript @ 0x00535b70 - Executes NCS scripts
-        - NCS file format: "NCS " type, "V1.0" version, magic byte 0x42
-        
-        Note: NCS files contain compiled NWScript bytecode. The engine loads NCS files
-        as resources and executes them through the NWScript virtual machine.
+        See ncs_data module docstring for full engine addresses (K1 + TSL TODO).
+        CResNCS::CResNCS (K1: 0x005d4c30), destructors (0x005d4c50, 0x005d4c90), ReadScriptFile (0x005d2260),
+        ReadScriptsFromGff (0x004ebf20), ExecuteCommandExecuteScript (0x00535b70). NCS format: "NCS " type, "V1.0", magic 0x42.
+        Note: Engine loads NCS as resources and executes via NWScript VM.
 
 
     """

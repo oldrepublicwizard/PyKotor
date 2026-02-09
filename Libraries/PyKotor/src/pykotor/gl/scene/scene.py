@@ -26,7 +26,8 @@ from pykotor.gl.compat import (
     glEnable,
     glReadPixels,
 )
-from pykotor.gl.glm_compat import mat4, Vector3, Vector4, unProject
+from pykotor.gl.glm_compat import mat4, Vector3 as GlmVector3, Vector4, unProject
+from pykotor.gl.models.axis_gizmo import AxisGizmo
 from pykotor.gl.models.mdl import Model
 from pykotor.gl.scene.frustum import CullingStats, Frustum
 from pykotor.gl.scene.scene_base import RenderObject, SceneBase
@@ -53,7 +54,7 @@ from pykotor.resource.generics.git import (
     GITTrigger,
     GITWaypoint,
 )
-from utility.common.geometry import Vector3
+from utility.common.geometry import Vector3 as GeomVector3
 
 T = TypeVar("T")
 SEARCH_ORDER_2DA: list[SearchLocation] = [SearchLocation.OVERRIDE, SearchLocation.CHITIN]
@@ -102,10 +103,12 @@ class Scene(SceneBase):
             self.picker_shader: Shader = Shader(PICKER_VSHADER, PICKER_FSHADER)
             self.plain_shader: Shader = Shader(PLAIN_VSHADER, PLAIN_FSHADER)
             self.shader: Shader = Shader(KOTOR_VSHADER, KOTOR_FSHADER)
+            self._axis_gizmo: AxisGizmo = AxisGizmo()
         else:
             self.picker_shader = None  # type: ignore[assignment]
             self.plain_shader = None  # type: ignore[assignment]
             self.shader = None  # type: ignore[assignment]
+            self._axis_gizmo = None  # type: ignore[assignment]
 
         # Frustum culling
         self.frustum: Frustum = Frustum()
@@ -278,9 +281,13 @@ class Scene(SceneBase):
                     if not self.enable_frustum_culling or self._is_object_visible(obj):
                         obj.boundary(self).draw(self.plain_shader, obj.transform())
 
-            if self.show_cursor:
-                self.plain_shader.set_vector4("color", Vector4(1.0, 0.0, 0.0, 0.4))
-                self._render_object(self.plain_shader, self.cursor, identity)
+            if self.show_cursor and self._axis_gizmo is not None:
+                _cursor_pos = self.cursor.position()
+                self._axis_gizmo.draw(
+                    self.plain_shader,
+                    GlmVector3(_cursor_pos.x, _cursor_pos.y, _cursor_pos.z),
+                    self.camera.distance,
+                )
 
             # End frame statistics
             if self.enable_frustum_culling:
@@ -299,6 +306,61 @@ class Scene(SceneBase):
                 # If OpenGL isn't importable for some reason, just re-raise the original error.
                 pass
             raise
+
+    # Depth value at or above this threshold is treated as "sky" (no geometry hit).
+    _FAR_PLANE_DEPTH_THRESHOLD: float = 0.9999
+
+    def screen_to_world_from_depth_buffer(self, x: int, y: int) -> GeomVector3:
+        """Convert screen coordinates to world coordinates using the *current* depth buffer.
+
+        This is a fast-path for interactive tools (e.g. the Module Designer) that already
+        rendered the scene this frame and just need to unproject the mouse position.
+
+        Unlike `screen_to_world()`, this does **not** clear the framebuffer or perform an
+        extra depth-only render pass. It simply reads a single depth pixel and unprojects.
+
+        When the depth value is at the far plane (no geometry under the cursor), the
+        camera's focal point is returned instead of a position at near-infinity. This
+        keeps the axis gizmo visible even when the mouse is over empty sky.
+
+        Preconditions:
+        - A valid GL context is current.
+        - The scene has been rendered at least once with the current camera configuration
+          (so the depth buffer and cached matrices are up-to-date).
+        """
+        if self.is_shutdown:
+            return GeomVector3(0.0, 0.0, 0.0)
+
+        # Use cached matrices if available (these are refreshed once per render()).
+        if self._cached_view is not None and self._cached_projection is not None:
+            view = self._cached_view
+            projection = self._cached_projection
+        else:
+            view = self.camera.view()
+            projection = self.camera.projection()
+
+        zpos = glReadPixels(
+            x,
+            self.camera.height - y,
+            1,
+            1,
+            GL_DEPTH_COMPONENT,
+            GL_FLOAT,
+        )[0][0]  # type: ignore[]
+
+        # If the depth sample is at the far plane (sky / no geometry), fall back to the
+        # camera focal point.  Unprojecting z=1.0 places the cursor thousands of units
+        # away, making the axis gizmo invisible.
+        if float(zpos) >= self._FAR_PLANE_DEPTH_THRESHOLD:
+            return GeomVector3(self.camera.x, self.camera.y, self.camera.z)
+
+        cursor_glm: GlmVector3 = unProject(
+            GlmVector3(float(x), float(self.camera.height - y), float(zpos)),
+            view,
+            projection,
+            Vector4(0, 0, self.camera.width, self.camera.height),
+        )
+        return GeomVector3(cursor_glm.x, cursor_glm.y, cursor_glm.z)
 
     def _prepare_gl_and_shader_optimized(self):
         """Optimized GL state preparation using cached matrices."""
@@ -414,7 +476,7 @@ class Scene(SceneBase):
             r: int = idx & 0xFF
             g: int = (idx >> 8) & 0xFF
             b: int = (idx >> 16) & 0xFF
-            color = Vector3(r / 0xFF, g / 0xFF, b / 0xFF)
+            color = GlmVector3(r / 0xFF, g / 0xFF, b / 0xFF)
             self.picker_shader.set_vector3("colorId", color)
             self._picker_render_object(obj, identity)
 
@@ -463,7 +525,7 @@ class Scene(SceneBase):
         self,
         x: int,
         y: int,
-    ) -> Vector3:
+    ) -> GeomVector3:
         """Convert screen coordinates to world coordinates.
 
         Optimized to:
@@ -472,7 +534,7 @@ class Scene(SceneBase):
         - Minimize GL state changes
         """
         if self.is_shutdown:
-            return Vector3(0.0, 0.0, 0.0)
+            return GeomVector3(0.0, 0.0, 0.0)
 
         # Prepare GL state efficiently
         glClearColor(0.5, 0.5, 1, 1.0)
@@ -510,13 +572,13 @@ class Scene(SceneBase):
             GL_FLOAT,
         )[0][0]  # type: ignore[]
 
-        cursor: Vector3 = unProject(
-            Vector3(x, self.camera.height - y, zpos),
+        cursor_glm: GlmVector3 = unProject(
+            GlmVector3(float(x), float(self.camera.height - y), float(zpos)),
             view,
             projection,
             Vector4(0, 0, self.camera.width, self.camera.height),
         )
-        return Vector3(cursor.x, cursor.y, cursor.z)
+        return GeomVector3(cursor_glm.x, cursor_glm.y, cursor_glm.z)
 
     def _prepare_gl_and_shader(self):
         """Legacy method for backward compatibility."""

@@ -285,31 +285,12 @@ class SceneCache:
                 -euler.x + math.pi / 2,
             )
 
-        # Detect if GIT objects still exist; if they do not then remove them from the render list
-        for obj in copy(scene.objects):
-            SceneCache._del_git_objects(obj, scene.git, scene.objects)
+        # --- Detect removed GIT objects and clean them from the render list ---
+        # Old approach: copy(scene.objects) + 9 isinstance + `in` list checks (O(n²)) per frame.
+        # Optimized: build a frozenset of all live GIT instances once, then do O(1) lookups.
+        _live_instances: frozenset[GITInstance | LYTRoom] = frozenset(scene.git.instances()) | frozenset(scene.layout.rooms)
+        _to_remove: list[GITInstance | LYTRoom] = [obj for obj in scene.objects if obj not in _live_instances]
+        for obj in _to_remove:
+            del scene.objects[obj]
 
-    @staticmethod
-    def _del_git_objects(
-        obj: GITInstance | LYTRoom,
-        git: GIT,
-        objects: dict[GITInstance | LYTRoom, RenderObject],
-    ):
-        if isinstance(obj, GITCreature) and obj not in git.creatures:
-            del objects[obj]
-        if isinstance(obj, GITPlaceable) and obj not in git.placeables:
-            del objects[obj]
-        if isinstance(obj, GITDoor) and obj not in git.doors:
-            del objects[obj]
-        if isinstance(obj, GITTrigger) and obj not in git.triggers:
-            del objects[obj]
-        if isinstance(obj, GITStore) and obj not in git.stores:
-            del objects[obj]
-        if isinstance(obj, GITCamera) and obj not in git.cameras:
-            del objects[obj]
-        if isinstance(obj, GITWaypoint) and obj not in git.waypoints:
-            del objects[obj]
-        if isinstance(obj, GITEncounter) and obj not in git.encounters:
-            del objects[obj]
-        if isinstance(obj, GITSound) and obj not in git.sounds:
-            del objects[obj]
+    # _del_git_objects removed - replaced by frozenset-based O(1) lookup in build_cache.

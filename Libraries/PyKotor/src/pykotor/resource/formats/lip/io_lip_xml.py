@@ -27,9 +27,7 @@ class LIPXMLReader(ResourceReader):
     
     References:
     ----------
-        Original BioWare engine binaries (from swkotor.exe, swkotor2.exe)
-        Original BioWare engine binaries
-
+        See lip_data module docstring for engine addresses (K1 + TSL TODO).
 
         Note: XML format structure may vary between tools
     """

@@ -31,12 +31,12 @@ class LTRBinaryReader(ResourceReader):
         - Triple-letter probabilities: 28x28 blocks of start[28], middle[28], end[28] arrays
         - Used for random name generation during character creation
         
-        Derivations and Other Implementations:
-        ----------
-        https://github.com/th3w1zard1/KotOR.js/tree/master/src/resource/LTRObject.ts:51-121
-        https://github.com/th3w1zard1/KotOR_IO/tree/master/KotOR_IO/File
+Derivations and Other Implementations:
+-------------------------------------
+    - https://github.com/th3w1zard1/KotOR.js/tree/master/src/resource/LTRObject.ts:51-121
+    https://github.com/th3w1zard1/KotOR_IO/tree/master/KotOR_IO/File
 
-
+    Note: LTR files are used for random name generation during character creation.
     """
     def __init__(
         self,

@@ -30,13 +30,7 @@ class TLKJSONReader(ResourceReader):
     
     References:
     ----------
-        Based on swkotor.exe TLK structure:
-        - CTlkTable::CTlkTable @ 0x0041d8d0 - Constructor for talk table manager
-        - CTlkTable::AddFile @ 0x0041d920 - Adds TLK file to table (loads .tlk and .tlkf files)
-        - CTlkFile::CTlkFile @ 0x0041d810 - Constructor for TLK file reader
-        - TLK resource type "TLK " @ 0x0073ecb0 - Resource type identifier
-        - "tlk" extension string @ 0x0074dd40 - File extension identifier
-        
+        See tlk_data module docstring for engine addresses (K1 + TSL TODO). CTlkTable::CTlkTable, CTlkTable::AddFile, CTlkFile::CTlkFile, "TLK ", "tlk" extension.
         Note: JSON format is PyKotor-specific, not a standard game format.
         The engine uses binary TLK format exclusively. JSON conversion allows easier editing
         and programmatic manipulation of talk table entries.

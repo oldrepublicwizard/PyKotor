@@ -26,10 +26,7 @@ class LazyCapsule(FileResource):
     
     References:
     ----------
-        Based on swkotor.exe ERF structure:
-        - CExoEncapsulatedFile::CExoEncapsulatedFile @ 0x0040ef90 - Constructor for encapsulated file
-        - CExoKeyTable::AddEncapsulatedContents @ 0x0040f3c0 - Adds ERF/MOD/SAV contents to key table
-        Original BioWare engine binaries
+        See pykotor.resource.formats.erf.erf_data for engine addresses (K1 + TSL TODO). CExoEncapsulatedFile::CExoEncapsulatedFile, CExoKeyTable::AddEncapsulatedContents.
 
 
     """

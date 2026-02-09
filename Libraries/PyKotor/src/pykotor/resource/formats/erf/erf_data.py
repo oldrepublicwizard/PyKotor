@@ -7,21 +7,15 @@ localized strings for descriptions in multiple languages.
 
 References:
 ----------
-        Based on swkotor.exe ERF structure:
-        - CExoEncapsulatedFile::CExoEncapsulatedFile @ 0x0040ef90 - Constructor for encapsulated file
-        - CExoKeyTable::AddEncapsulatedContents @ 0x0040f3c0 - Adds ERF/MOD/SAV contents to key table
-          * Tries resource types in order: NWM, MOD, SAV, ERF
-          * Opens file with "rb" mode
-          * Reads header and resource entries
-          * Ghidra Stack Analysis (Stack Mapping to Header):
-            - 0x00 Type: Checked via iStack_c4
-            - 0x04 Version: Checked via iStack_c0 (Matches "V1.0")
-            - 0x10 Entry Count: uStack_b4
-            - 0x18 Key Offset: uStack_ac
-            - 0x20 Build Year: Allocated but unused
-            - 0x24 Build Day: Allocated but unused
-            - 0x28 Desc StrRef: Allocated but unused
-        - "MOD V1.0" string @ 0x0074539c - MOD file version identifier
+        Based on unified K1 (swkotor.exe) and TSL (swkotor2.exe) ERF structure.
+        Addresses: (K1: swkotor.exe, TSL: swkotor2.exe — verify/fill TSL via REVA when available).
+
+        - CExoEncapsulatedFile::CExoEncapsulatedFile — constructor for encapsulated file.
+          K1: 0x0040ef90, TSL: TODO
+        - CExoKeyTable::AddEncapsulatedContents — adds ERF/MOD/SAV contents to key table; tries NWM, MOD, SAV, ERF; opens "rb"; reads header/entries.
+          K1: 0x0040f3c0, TSL: TODO
+          Stack/header: Type [0x00], Version [0x04] ("V1.0"), EntryCount [0x10], KeyOffset [0x18]; Build Year/Day/DescStrRef allocated but unused.
+        - "MOD V1.0" string (MOD file version identifier): K1: 0x0074539c, TSL: TODO
         ERF file format specification
         Binary Format:
         -------------
@@ -60,9 +54,7 @@ References:
         Raw binary data for each resource at specified offsets
 
 
-    Reference: Original BioWare engine binaries (ERF format from swkotor.exe, swkotor2.exe)
-        - CExoEncapsulatedFile::CExoEncapsulatedFile @ 0x0040ef90
-        - CExoKeyTable::AddEncapsulatedContents @ 0x0040f3c0
+    Reference: Original BioWare engine binaries (ERF from swkotor.exe, swkotor2.exe). See module docstring for K1/TSL addresses.
 """
 
 from __future__ import annotations
@@ -89,10 +81,7 @@ class ERFResource(ArchiveResource):
 
     References:
     ----------
-        Based on swkotor.exe ERF structure:
-        - CExoEncapsulatedFile::CExoEncapsulatedFile @ 0x0040ef90 - Constructor for encapsulated file
-        - CExoKeyTable::AddEncapsulatedContents @ 0x0040f3c0 - Adds ERF/MOD/SAV contents to key table
-        - "MOD V1.0" string @ 0x0074539c - MOD file version identifier
+        See module docstring for engine addresses (K1 + TSL TODO). CExoEncapsulatedFile::CExoEncapsulatedFile, CExoKeyTable::AddEncapsulatedContents, "MOD V1.0".
         https://github.com/th3w1zard1/Kotor.NET/tree/master/Kotor.NET/Formats/KotorERF/ERFBinaryStructure.cs - Key and Resource entries
         https://github.com/th3w1zard1/KotOR_IO/tree/master/KotOR_IO/File Formats/ERF.cs - Key and Resource classes
         https://github.com/th3w1zard1/KotOR.js/tree/master/src/interface/resource/IERFKeyEntry.ts - Key entry interface
@@ -126,10 +115,7 @@ class ERFType(Enum):
 
     References:
     ----------
-        Based on swkotor.exe ERF structure:
-        - CExoEncapsulatedFile::CExoEncapsulatedFile @ 0x0040ef90 - Constructor for encapsulated file
-        - CExoKeyTable::AddEncapsulatedContents @ 0x0040f3c0 - Adds ERF/MOD/SAV contents to key table
-        - "MOD V1.0" string @ 0x0074539c - MOD file version identifier
+        See module docstring for engine addresses (K1 + TSL TODO). CExoEncapsulatedFile::CExoEncapsulatedFile, CExoKeyTable::AddEncapsulatedContents, "MOD V1.0".
         https://github.com/th3w1zard1/Kotor.NET/tree/master/Kotor.NET/Formats/KotorERF/ERFBinaryStructure.cs - FileType field
         https://github.com/th3w1zard1/KotOR_IO/tree/master/KotOR_IO/File Formats/ERF.cs - FileType reading
         https://github.com/th3w1zard1/KotOR.js/tree/master/src/resource/ERFObject.ts - File type default
@@ -160,10 +146,7 @@ class ERF(BiowareArchive):
 
     References:
     ----------
-        Based on swkotor.exe ERF structure:
-        - CExoEncapsulatedFile::CExoEncapsulatedFile @ 0x0040ef90 - Constructor for encapsulated file
-        - CExoKeyTable::AddEncapsulatedContents @ 0x0040f3c0 - Adds ERF/MOD/SAV contents to key table
-        - "MOD V1.0" string @ 0x0074539c - MOD file version identifier
+        See module docstring for engine addresses (K1 + TSL TODO). CExoEncapsulatedFile::CExoEncapsulatedFile, CExoKeyTable::AddEncapsulatedContents, "MOD V1.0".
         https://github.com/th3w1zard1/Kotor.NET/tree/master/Kotor.NET/Formats/KotorERF/ERFBinaryStructure.cs - FileRoot class
         https://github.com/th3w1zard1/KotOR_IO/tree/master/KotOR_IO/File Formats/ERF.cs - Complete ERF implementation
         https://github.com/th3w1zard1/KotOR.js/tree/master/src/resource/ERFObject.ts - ERFObject class

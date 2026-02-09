@@ -20,12 +20,8 @@ def cmd_decompile(args: Namespace, logger: RobustLogger) -> int:
 
     References:
     ----------
-        Based on swkotor.exe NCS structure:
-        - CResNCS::CResNCS @ 0x005d4c30 - NCS resource constructor
-        - HandleBNCSMessage @ 0x005d5180 - NCS bytecode execution
-        - ExecuteCommandExecuteScript @ 0x00535b70 - Executes NCS scripts
-
-
+        See pykotor.resource.formats.ncs.ncs_data for engine addresses (K1 + TSL TODO).
+        CResNCS::CResNCS, HandleBNCSMessage, ExecuteCommandExecuteScript.
     """
     input_path = pathlib.Path(args.input)
     output_path = pathlib.Path(args.output) if args.output else input_path.with_suffix(".nss")
@@ -45,12 +41,8 @@ def cmd_disassemble(args: Namespace, logger: RobustLogger) -> int:
 
     References:
     ----------
-        Based on swkotor.exe NCS structure:
-        - CResNCS::CResNCS @ 0x005d4c30 - NCS resource constructor
-        - HandleBNCSMessage @ 0x005d5180 - NCS bytecode execution
-        - ExecuteCommandExecuteScript @ 0x00535b70 - Executes NCS scripts
-
-
+        See pykotor.resource.formats.ncs.ncs_data for engine addresses (K1 + TSL TODO).
+        CResNCS::CResNCS, HandleBNCSMessage, ExecuteCommandExecuteScript.
     """
     input_path = pathlib.Path(args.input)
     output_path = pathlib.Path(args.output) if args.output else input_path.with_suffix(".txt")
@@ -74,12 +66,8 @@ def cmd_assemble(args: Namespace, logger: RobustLogger) -> int:
 
     References:
     ----------
-        Based on swkotor.exe NCS structure:
-        - CResNCS::CResNCS @ 0x005d4c30 - NCS resource constructor
-        - HandleBNCSMessage @ 0x005d5180 - NCS bytecode execution
-        - ExecuteCommandExecuteScript @ 0x00535b70 - Executes NCS scripts
-        Libraries/PyKotor/src/pykotor/resource/formats/ncs/compilers.py - Built-in compiler
-
+        See pykotor.resource.formats.ncs.ncs_data for engine addresses (K1 + TSL TODO).
+        Libraries/PyKotor/src/pykotor/resource/formats/ncs/compilers.py - Built-in compiler.
     """
     input_path = pathlib.Path(args.input)
     output_path = pathlib.Path(args.output) if args.output else input_path.with_suffix(".ncs")

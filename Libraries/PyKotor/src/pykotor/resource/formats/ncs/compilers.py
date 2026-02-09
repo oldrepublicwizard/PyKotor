@@ -35,19 +35,9 @@ class InbuiltNCSCompiler(NCSCompiler):
     
     References:
     ----------
-        Based on swkotor.exe NCS/NSS compilation:
-        - CResNCS::CResNCS @ 0x005d4c30 - NCS resource constructor (29 bytes)
-        - ReadScriptFile @ 0x005d2260 - Reads NCS script file (371 bytes)
-          * Validates "NCS V1.0" header
-          * Checks magic byte 0x42
-          * Initializes script for virtual machine
-        - InitializeScript @ 0x005d461b - Initializes script execution context
-        - CVirtualMachineInternal - NWScript virtual machine implementation
-        
-        Note: PyKotor implements its own NSS compiler that produces NCS bytecode compatible
-        with the game engine's virtual machine. The compiler follows NWScript language specification
-        and produces bytecode that matches the engine's expected format.
-        
+        See ncs_data module docstring for engine addresses (K1 + TSL TODO). CResNCS::CResNCS (K1: 0x005d4c30),
+        ReadScriptFile (K1: 0x005d2260), InitializeScript (K1: 0x005d461b, TSL: TODO). CVirtualMachineInternal — NWScript VM.
+        Note: PyKotor NSS compiler produces NCS bytecode compatible with the engine VM.
         Derivations and Other Implementations:
         ----------
         https://github.com/th3w1zard1/KotOR.js/tree/master/src/nwscript/NWScriptCompiler.ts (NSS compilation reference)

@@ -133,10 +133,7 @@ def _extract_from_nested_capsules(
 
     References:
     ----------
-        Based on swkotor.exe ERF structure:
-        - CExoEncapsulatedFile::CExoEncapsulatedFile @ 0x0040ef90 - Constructor for encapsulated file
-        - CExoKeyTable::AddEncapsulatedContents @ 0x0040f3c0 - Adds ERF/MOD/SAV contents to key table
-        Original BioWare engine binaries (ERF format implementation from swkotor.exe, swkotor2.exe)
+        See pykotor.resource.formats.erf.erf_data for engine addresses (K1 + TSL TODO). CExoEncapsulatedFile::CExoEncapsulatedFile, CExoKeyTable::AddEncapsulatedContents.
     """
     from pykotor.common.stream import BinaryReader  # Prevent circular imports
     from pykotor.resource.formats.erf import ERFType
@@ -280,10 +277,7 @@ class FileResource:
     
     References:
     ----------
-        Based on swkotor.exe ERF structure:
-        - CExoEncapsulatedFile::CExoEncapsulatedFile @ 0x0040ef90 - Constructor for encapsulated file
-        - CExoKeyTable::AddEncapsulatedContents @ 0x0040f3c0 - Adds ERF/MOD/SAV contents to key table
-        Original BioWare engine binaries
+        See pykotor.resource.formats.erf.erf_data for engine addresses (K1 + TSL TODO). CExoEncapsulatedFile::CExoEncapsulatedFile, CExoKeyTable::AddEncapsulatedContents.
         https://github.com/th3w1zard1/KotOR_IO/tree/master/KotOR_IO/File Formats/KFile.cs (Resource file abstraction)
         https://github.com/th3w1zard1/KotOR-dotNET/tree/master/AuroraFile.cs (Aurora file format abstraction)
 
@@ -544,12 +538,7 @@ class FileResource:
 
     References:
     ----------
-        Based on swkotor.exe ERF structure:
-        - CExoEncapsulatedFile::CExoEncapsulatedFile @ 0x0040ef90 - Constructor for encapsulated file
-        - CExoKeyTable::AddEncapsulatedContents @ 0x0040f3c0 - Adds ERF/MOD/SAV contents to key table
-        Original BioWare engine binaries (ERF format implementation from swkotor.exe, swkotor2.exe)
-
-
+        See pykotor.resource.formats.erf.erf_data for engine addresses (K1 + TSL TODO). CExoEncapsulatedFile::CExoEncapsulatedFile, CExoKeyTable::AddEncapsulatedContents.
         """
         if reload:
             self._index_resource()

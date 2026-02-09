@@ -61,6 +61,7 @@ class Ui_MainWindow(object):
         self.horizontalLayout_2.addWidget(self.line_2)
         self.cursorCheck = QtWidgets.QCheckBox(self.centralwidget)
         self.cursorCheck.setMaximumSize(QtCore.QSize(28, 16777215))
+        self.cursorCheck.setChecked(True)
         self.cursorCheck.setStyleSheet("QCheckbox {\n"
 "                                        spacing: 0px;\n"
 "                                        }\n"

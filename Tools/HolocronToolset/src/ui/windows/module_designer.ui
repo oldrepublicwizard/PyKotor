@@ -113,6 +113,9 @@
                                 <property name="toolTip">
                                     <string>Display cursor at mouse</string>
                                 </property>
+                                <property name="checked">
+                                    <bool>true</bool>
+                                </property>
                                 <property name="styleSheet">
                                     <string notr="true">QCheckbox {
                                         spacing: 0px;

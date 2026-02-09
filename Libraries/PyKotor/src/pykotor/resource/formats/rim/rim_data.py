@@ -7,13 +7,11 @@ RIM files store all resources inline with metadata, making them self-contained a
 
 References:
 ----------
-        Based on swkotor.exe RIM structure:
-        - CExoResourceImageFile::AddResourceImageContents @ 0x0040f990 - Reads RIM headers
-          (Verified: Header=120, Count @ 0x0C, Keys @ 0x10, KeySize=32)
-        - CExoEncapsulatedFile::CExoEncapsulatedFile @ 0x0040ef90 - Constructor for encapsulated file
-        - CExoKeyTable::AddEncapsulatedContents @ 0x0040f3c0 - Adds encapsulated file contents to key table
-        - "Table being rebuilt, this RIM is being leaked: %s" @ 0x0073d8a8 - RIM leak warning message
-        
+        Based on unified K1/TSL RIM structure (shared encapsulation with ERF). Addresses: K1: swkotor.exe, TSL: TODO (verify via REVA).
+        - CExoResourceImageFile::AddResourceImageContents (reads RIM headers; Header=120, Count @ 0x0C, Keys @ 0x10, KeySize=32): K1: 0x0040f990, TSL: TODO
+        - CExoEncapsulatedFile::CExoEncapsulatedFile: K1: 0x0040ef90, TSL: TODO
+        - CExoKeyTable::AddEncapsulatedContents: K1: 0x0040f3c0, TSL: TODO
+        - "Table being rebuilt, this RIM is being leaked: %s": K1: 0x0073d8a8, TSL: TODO
         Note: RIM files use similar structure to ERF files but are read-only templates.
         The engine loads RIM files as module blueprints and exports to ERF for runtime mutation.
         RIM files in original game often use "Implicit Offsets" where the offset to keys (0x10) 
@@ -67,9 +65,7 @@ class RIMResource(ArchiveResource):
     
     References:
     ----------
-        Based on swkotor.exe RIM structure:
-        - CExoEncapsulatedFile::CExoEncapsulatedFile @ 0x0040ef90 - Constructor for encapsulated file
-        - CExoKeyTable::AddEncapsulatedContents @ 0x0040f3c0 - Adds encapsulated file contents to key table
+        See module docstring (K1/TSL addresses). CExoEncapsulatedFile::CExoEncapsulatedFile (K1: 0x0040ef90), CExoKeyTable::AddEncapsulatedContents (K1: 0x0040f3c0); TSL: TODO.
         Derivations and Other Implementations:
         ----------
         https://github.com/th3w1zard1/Kotor.NET/tree/master/Kotor.NET/Formats/KotorRIM/RIMBinaryStructure.cs:88-119
@@ -102,10 +98,7 @@ class RIM(BiowareArchive):
     
     References:
     ----------
-        Based on swkotor.exe RIM structure:
-        - CExoEncapsulatedFile::CExoEncapsulatedFile @ 0x0040ef90 - Constructor for encapsulated file
-        - CExoKeyTable::AddEncapsulatedContents @ 0x0040f3c0 - Adds encapsulated file contents to key table
-        Original BioWare engine binaries
+        See module docstring (K1/TSL addresses). CExoEncapsulatedFile::CExoEncapsulatedFile, CExoKeyTable::AddEncapsulatedContents; TSL: TODO.
         Derivations and Other Implementations:
         ----------
         https://github.com/th3w1zard1/Kotor.NET/tree/master/Kotor.NET/Formats/KotorRIM/RIMBinaryStructure.cs:13-53

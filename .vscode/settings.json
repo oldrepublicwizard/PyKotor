@@ -126,5 +126,6 @@
     ],
     "path": "pwsh.exe"
   },
-  "python-envs.defaultEnvManager": "ms-python.python:system"
+  "python-envs.defaultEnvManager": "ms-python.python:system",
+  "dotnet.defaultSolution": "disable"
 }

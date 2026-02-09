@@ -17,12 +17,7 @@ class RIMBinaryReader(ResourceReader):
     
     References:
     ----------
-        Based on swkotor.exe RIM structure:
-        - CExoResourceImageFile::AddResourceImageContents @ 0x0040f990 - Reads RIM headers
-          (Verified: Header=120, Count @ 0x0C, Keys @ 0x10, KeySize=32)
-        - CExoEncapsulatedFile::CExoEncapsulatedFile @ 0x0040ef90 - Constructor for encapsulated file
-        - CExoKeyTable::AddEncapsulatedContents @ 0x0040f3c0 - Adds encapsulated file contents to key table
-        - "Table being rebuilt, this RIM is being leaked: %s" @ 0x0073d8a8 - RIM leak warning message
+        See rim_data module docstring. Unified K1/TSL: AddResourceImageContents (K1: 0x0040f990), CExoEncapsulatedFile::CExoEncapsulatedFile (K1: 0x0040ef90), AddEncapsulatedContents (K1: 0x0040f3c0), RIM leak string (K1: 0x0073d8a8); TSL: TODO.
         
         Note: RIM files use similar structure to ERF files but are read-only templates.
         The engine loads RIM files as module blueprints and exports to ERF for runtime mutation.

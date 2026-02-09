@@ -12,7 +12,7 @@ References:
         KotOR I (swkotor.exe) / KotOR II (swkotor2.exe):
             - GFF structures are loaded via CResGFF class throughout the engine
             - See individual resource format files (uti.py, utc.py, utp.py, dlg/base.py, etc.) for specific GFF field references
-            - DLG unskippable flag: See dlg/base.py - Skippable (BYTE) field at 0x005a2ae0
+            - DLG: See gff_data module docstring for LoadDialog (K1: 0x005a2ae0); Skippable (BYTE) field see dlg/base.py
         Tools/BatchPatcher/src/batchpatcher/__main__.py - Original implementation
         Libraries/PyKotor/src/pykotor/tools/patching.py - Core patching functions
 

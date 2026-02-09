@@ -14,28 +14,25 @@ This module contains a high-level, in-memory representation of that data:
 
 References:
 ----------
-    Based on swkotor.exe BWM structure:
-    - LoadWalkMesh @ 0x00579520 - CSWSRoom::LoadWalkMesh (62 bytes, 2 callees)
-      * Loads walkmesh for a room via CSWCollisionMesh::LoadMesh
-      * Sets resref from room resref
-      * Signature: undefined4 __thiscall CSWSRoom::LoadWalkMesh(CSWSRoom *this, int param_1)
-    - LoadMesh @ 0x00596670 - CSWCollisionMesh::LoadMesh (536 bytes, 3 callees)
-      * Main walkmesh loading function
-      * Checks for binary walkmesh (BWM) first, falls back to text walkmesh (MDL)
-      * Creates CResBWM or CResMDL resource objects
-      * Calls CRes::Demand to load the resource
-      * Signature: undefined4 __thiscall CSWCollisionMesh::LoadMesh(CSWCollisionMesh *this, int param_1)
-    - LoadMeshText @ 0x00582d70 - CSWRoomSurfaceMesh::LoadMeshText (3882 bytes, 1 callee)
-      * Loads text-based walkmesh format (ASCII MDL format)
-      * Parses walkmesh geometry from text data
-      * Signature: undefined4 __thiscall CSWRoomSurfaceMesh::LoadMeshText(CSWRoomSurfaceMesh *this, byte *param_1, ulong param_2)
-    - CResBWM::CResBWM @ 0x005ceab0 - BWM resource constructor (25 bytes, 1 callee)
-    - CResBWM::~CResBWM @ 0x005cead0 - BWM resource destructor (11 bytes, 1 callee)
-    - CResBWM::~CResBWM @ 0x005ceb50 - BWM resource destructor variant (27 bytes, 2 callees)
-    - GetResourceForBinaryWalkMesh @ 0x005ce8b0 - Gets resource reference for binary walkmesh (174 bytes, 6 callees)
-    - "BWM V1.0" string @ 0x0074a098 - BWM file version identifier
-    - "bwm" extension string @ 0x0074dc88 - BWM file extension
-    - "ERROR: opening a Binary walkmesh file for writeing that already exists (File: %s)" @ 0x0074a0a8 - Error message
+    Based on unified K1 (swkotor.exe) and TSL (swkotor2.exe) BWM structure.
+    Addresses: (K1: swkotor.exe, TSL: swkotor2.exe — verify/fill TSL via REVA when available).
+
+    - CSWSRoom::LoadWalkMesh — loads walkmesh for a room via CSWCollisionMesh::LoadMesh; sets resref from room resref.
+      K1: 0x00579520, TSL: TODO
+      Signature: undefined4 __thiscall CSWSRoom::LoadWalkMesh(CSWSRoom *this, int param_1)
+    - CSWCollisionMesh::LoadMesh — main walkmesh loading; checks BWM first, falls back to text MDL; creates CResBWM/CResMDL, CRes::Demand.
+      K1: 0x00596670, TSL: TODO
+      Signature: undefined4 __thiscall CSWCollisionMesh::LoadMesh(CSWCollisionMesh *this, int param_1)
+    - CSWRoomSurfaceMesh::LoadMeshText — loads text-based walkmesh (ASCII MDL); parses geometry from text.
+      K1: 0x00582d70, TSL: TODO
+      Signature: undefined4 __thiscall CSWRoomSurfaceMesh::LoadMeshText(CSWRoomSurfaceMesh *this, byte *param_1, ulong param_2)
+    - CResBWM::CResBWM (BWM resource constructor): K1: 0x005ceab0, TSL: TODO
+    - CResBWM::~CResBWM (destructor): K1: 0x005cead0, TSL: TODO
+    - CResBWM::~CResBWM (destructor variant): K1: 0x005ceb50, TSL: TODO
+    - GetResourceForBinaryWalkMesh: K1: 0x005ce8b0, TSL: TODO
+    - "BWM V1.0" string (BWM file version identifier): K1: 0x0074a098, TSL: TODO
+    - "bwm" extension string: K1: 0x0074dc88, TSL: TODO
+    - "ERROR: opening a Binary walkmesh file for writeing that already exists (File: %s)": K1: 0x0074a0a8, TSL: TODO
     - Original BioWare engine binaries (swkotor.exe, swkotor2.exe)
     Derivations and Other Implementations:
         ----------
@@ -117,14 +114,10 @@ class BWMType(IntEnum):
 
     References:
     ----------
-    Based on swkotor.exe BWM structure:
-    - LoadWalkMesh @ 0x00579520 - CSWSRoom::LoadWalkMesh loads walkmesh for rooms
-    - LoadMesh @ 0x00596670 - CSWCollisionMesh::LoadMesh handles BWM/MDL loading
-    - CResBWM::CResBWM @ 0x005ceab0 - BWM resource constructor
-    - "BWM V1.0" string @ 0x0074a098 - BWM file version identifier
-    - Walkmesh type field at offset 0x08 in BWM header (4 bytes, uint32)
-      * 0 = PlaceableOrDoor (PWK/DWK format)
-      * 1 = AreaModel (WOK format with AABB trees)
+    Based on unified K1/TSL BWM structure. See module docstring for full addresses (K1 + TSL TODO).
+    - CSWSRoom::LoadWalkMesh (K1: 0x00579520, TSL: TODO), CSWCollisionMesh::LoadMesh (K1: 0x00596670, TSL: TODO)
+    - CResBWM::CResBWM (K1: 0x005ceab0, TSL: TODO), "BWM V1.0" (K1: 0x0074a098, TSL: TODO)
+    - Walkmesh type field at offset 0x08 in BWM header (4 bytes, uint32): 0 = PlaceableOrDoor (PWK/DWK), 1 = AreaModel (WOK)
     - Original BioWare engine binaries (swkotor.exe, swkotor2.exe)
     Derivations and Other Implementations:
     ----------
@@ -158,23 +151,10 @@ class BWM(ComparableMixin):
 
     References:
     ----------
-    Based on swkotor.exe BWM structure:
-    - LoadWalkMesh @ 0x00579520 - CSWSRoom::LoadWalkMesh (62 bytes, 2 callees)
-      * Loads walkmesh for a room via CSWCollisionMesh::LoadMesh
-      * Sets resref from room resref before loading
-    - LoadMesh @ 0x00596670 - CSWCollisionMesh::LoadMesh (536 bytes, 3 callees)
-      * Main walkmesh loading function
-      * Checks for binary walkmesh (BWM) first via GetResourceForBinaryWalkMesh
-      * Falls back to text walkmesh (MDL) if BWM not found
-      * Creates CResBWM or CResMDL resource objects via CExoResMan::GetResObject
-      * Calls CRes::Demand to load the resource data
-    - LoadMeshText @ 0x00582d70 - CSWRoomSurfaceMesh::LoadMeshText (3882 bytes)
-      * Loads text-based walkmesh format (ASCII MDL format)
-      * Parses walkmesh geometry, faces, vertices from text data
-    - CResBWM::CResBWM @ 0x005ceab0 - BWM resource constructor (25 bytes, 1 callee)
-    - GetResourceForBinaryWalkMesh @ 0x005ce8b0 - Gets resource reference for binary walkmesh (174 bytes, 6 callees)
-    - "BWM V1.0" string @ 0x0074a098 - BWM file version identifier (first 8 bytes of BWM files)
-    - "bwm" extension string @ 0x0074dc88 - BWM file extension
+    Based on unified K1/TSL BWM structure. See module docstring for full addresses (K1 + TSL TODO).
+    - LoadWalkMesh (K1: 0x00579520), LoadMesh (K1: 0x00596670), LoadMeshText (K1: 0x00582d70)
+    - CResBWM::CResBWM (K1: 0x005ceab0), GetResourceForBinaryWalkMesh (K1: 0x005ce8b0)
+    - "BWM V1.0" (K1: 0x0074a098), "bwm" extension (K1: 0x0074dc88)
     - Original BioWare engine binaries (swkotor.exe, swkotor2.exe)
     Derivations and Other Implementations:
     ----------

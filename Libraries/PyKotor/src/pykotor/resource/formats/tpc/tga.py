@@ -5,9 +5,7 @@ true-color and grayscale images. Used for texture conversion to/from TPC format.
 
 References:
 ----------
-        Original BioWare engine binaries (from swkotor.exe, swkotor2.exe)
-        Original BioWare engine binaries
-        Standard TGA specification (Truevision TGA File Format Specification)
+        See tpc_data module docstring for engine addresses (K1 + TSL TODO). Standard TGA specification (Truevision TGA File Format Specification)
 
 
 """

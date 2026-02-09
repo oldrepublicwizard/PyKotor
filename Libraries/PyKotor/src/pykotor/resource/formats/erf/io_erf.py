@@ -17,27 +17,20 @@ class ERFBinaryReader(ResourceReader):
     
     References:
     ----------
-        Based on swkotor.exe ERF structure:
-        - CExoResourceImageFile::AddResourceImageContents @ 0x0040f990 - Reads RIM headers
-          (Verified: Header=120, Count @ 0x0C, Keys @ 0x10, KeySize=32)
-        - CExoEncapsulatedFile::CExoEncapsulatedFile @ 0x0040ef90 - Constructor for encapsulated file
-        - CExoKeyTable::AddEncapsulatedContents @ 0x0040f3c0 - Adds ERF/MOD/SAV contents to key table
-          * Validates header "MOD V1.0" or similar
-          * Reads 160 bytes (0xA0) onto stack [local_b8]
-          * Offsets verified via Ghidra Decompilation:
-            - Type [0x00]: iStack_c4
-            - Version [0x04]: iStack_c0
-            - EntryCount [0x10]: uStack_b4
-            - KeyOffset [0x18]: uStack_ac
-        - "MOD V1.0" string @ 0x0074539c - MOD file version identifier
-        - "Table being rebuilt, this RIM is being leaked: %s" @ 0x0073d8a8 - RIM leak warning message
+        Based on unified K1/TSL ERF structure. See erf_data module docstring; addresses (K1: swkotor.exe, TSL: TODO via REVA).
+        - CExoResourceImageFile::AddResourceImageContents (reads RIM headers; Header=120, Count @ 0x0C, Keys @ 0x10, KeySize=32): K1: 0x0040f990, TSL: TODO
+        - CExoEncapsulatedFile::CExoEncapsulatedFile: K1: 0x0040ef90, TSL: TODO
+        - CExoKeyTable::AddEncapsulatedContents: K1: 0x0040f3c0, TSL: TODO. Validates "MOD V1.0"; header 160 bytes; Type [0x00], Version [0x04], EntryCount [0x10], KeyOffset [0x18].
+        - "MOD V1.0" string: K1: 0x0074539c, TSL: TODO
+        - "Table being rebuilt, this RIM is being leaked: %s": K1: 0x0073d8a8, TSL: TODO
         
     Note:
     ----
         ERF files are container formats that store multiple game resources. Used for MOD files,
         save games, and other resource collections.
-        Missing Features:
-        ----------------
+
+    Missing Features: TODO: address
+    ----------------
         - ResRef lowercasing (reone lowercases at erfreader.cpp:63)
         - ERF password/decryption support (xoreos-tools supports at unerf.cpp:108-145)
 

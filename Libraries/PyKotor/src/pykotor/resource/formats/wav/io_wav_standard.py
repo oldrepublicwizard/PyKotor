@@ -8,9 +8,7 @@ This module's writer produces clean RIFF/WAVE output regardless of input format.
 
 References:
 ----------
-        Original BioWare engine binaries (from swkotor.exe, swkotor2.exe)
-        Original BioWare engine binaries
-        Standard RIFF/WAVE format specification
+        See wav_data module docstring for engine addresses (K1 + TSL TODO). Standard RIFF/WAVE format specification
 
 """
 

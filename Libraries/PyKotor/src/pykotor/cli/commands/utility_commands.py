@@ -359,7 +359,7 @@ def cmd_diff(
 
     if generate_ini:
         # Use the full TSLPatcher application for INI generation
-        from pykotor.cli.diff_tool.app import DiffConfig, handle_diff, run_application  # noqa: PLC0415
+        from pykotor.diff_tool.app import DiffConfig, handle_diff, run_application  # noqa: PLC0415
 
         # Convert Path objects to the format expected by TSLPatcher
         paths_for_tslpatcher: list[Path | Installation] = []
@@ -465,7 +465,7 @@ def cmd_grep(
             - GFF structures are loaded via CResGFF class throughout the engine
             - See individual resource format files (uti.py, utc.py, utp.py, dlg/base.py, etc.) for specific GFF field references
             - 2DA structures loaded via C2DA class (see 2da/io_2da.py for references)
-            - TLK structures loaded via CTlkTable class (see tlk/io_tlk.py for references)
+            - TLK structures loaded via CTlkTable class (see pykotor.resource.formats.tlk.tlk_data for K1/TSL addresses)
 
 
     """
@@ -555,7 +555,7 @@ def cmd_merge(
             - GFF structures are loaded via CResGFF class throughout the engine
             - See individual resource format files (uti.py, utc.py, utp.py, dlg/base.py, etc.) for specific GFF field references
             - 2DA structures loaded via C2DA class (see 2da/io_2da.py for references)
-            - TLK structures loaded via CTlkTable class (see tlk/io_tlk.py for references)
+            - TLK structures loaded via CTlkTable class (see pykotor.resource.formats.tlk.tlk_data for K1/TSL addresses)
         Libraries/PyKotor/src/pykotor/resource/formats/gff/gff_data.py - GFFStruct.merge()
 
 

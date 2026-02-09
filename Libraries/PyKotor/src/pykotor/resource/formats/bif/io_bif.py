@@ -54,9 +54,8 @@ class BIFBinaryReader(ResourceReader):
     
     References:
     ----------
-        Based on swkotor.exe BIF structure:
-        - LocateBifFile @ 0x0040d200 - Locates BIF file in resource system
-        
+        See key_data module docstring for engine addresses (K1 + TSL TODO). CExoKeyTable::LocateBifFile (K1: 0x0040d200).
+
         Note: BIF (BioWare Index File) files contain game resources indexed by KEY files.
         BZF files are compressed BIF files using LZMA compression. The engine uses BIF
         files as the primary resource storage format, with KEY files providing the index.

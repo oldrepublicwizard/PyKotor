@@ -51,8 +51,22 @@ for p in (TOOLSET_SRC, KOTORDIFF_SRC, PYKOTOR_PATH, UTILITY_PATH, PYKOTORGL_PATH
     if p.exists() and str(p) not in sys.path:
         sys.path.insert(0, str(p))
 
-# Qt headless
-if "QT_QPA_PLATFORM" not in os.environ:
+def _should_force_qt_offscreen() -> bool:
+    """Return True if we should force Qt to use the offscreen platform plugin.
+
+    Most Toolset tests should run headless, but the Module Designer integration/perf
+    tests explicitly require a real display + hardware accelerated OpenGL.
+
+    We detect those runs early (before any Qt import) by checking the pytest CLI args.
+    """
+    argv = " ".join(sys.argv).lower()
+    if "test_module_designer.py" in argv:
+        return False
+    return True
+
+
+# Qt headless (default). Do NOT force offscreen for Module Designer integration tests.
+if "QT_QPA_PLATFORM" not in os.environ and _should_force_qt_offscreen():
     os.environ["QT_QPA_PLATFORM"] = "offscreen"
 
 os.environ.setdefault("PYOPENGL_ERROR_CHECKING", "0")

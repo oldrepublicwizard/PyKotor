@@ -19,8 +19,7 @@ Usage:
     
 References:
 ----------
-        Original BioWare engine binaries (from swkotor.exe, swkotor2.exe)
-        Original BioWare engine binaries
+        See wav_data module docstring for engine addresses (K1 + TSL TODO).
         Derivations and Other Implementations:
         ----------
         https://github.com/th3w1zard1/KotOR.js/tree/master/src/audio/AudioFile.ts:164-205

@@ -82,7 +82,7 @@
             <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
              <horstretch>0</horstretch>
              <verstretch>0</verstretch>
-             </sizepolicy>
+            </sizepolicy>
            </property>
            <property name="minimumSize">
             <size>
@@ -406,7 +406,7 @@
             </widget>
            </item>
            <item row="0" column="1">
-            <widget class="ComboBox2DA" name="factionSelect"/>
+            <widget class="ComboBox2DA" name="factionSelect" />
            </item>
            <item row="1" column="0">
             <widget class="QLabel" name="label_42">
@@ -621,7 +621,7 @@
               </widget>
              </item>
              <item>
-              <widget class="QLineEdit" name="keyEdit"/>
+              <widget class="QLineEdit" name="keyEdit" />
              </item>
             </layout>
            </item>
@@ -731,7 +731,7 @@
          </widget>
         </item>
         <item row="0" column="1">
-         <widget class="FilterComboBox" name="onClickEdit"/>
+         <widget class="FilterComboBox" name="onClickEdit" />
         </item>
         <item row="1" column="0">
          <widget class="QLabel" name="label_5">
@@ -741,7 +741,7 @@
          </widget>
         </item>
         <item row="1" column="1">
-         <widget class="FilterComboBox" name="onClosedEdit"/>
+         <widget class="FilterComboBox" name="onClosedEdit" />
         </item>
         <item row="2" column="0">
          <widget class="QLabel" name="label_7">
@@ -751,7 +751,7 @@
          </widget>
         </item>
         <item row="2" column="1">
-         <widget class="FilterComboBox" name="onDamagedEdit"/>
+         <widget class="FilterComboBox" name="onDamagedEdit" />
         </item>
         <item row="3" column="0">
          <widget class="QLabel" name="label_8">
@@ -761,7 +761,7 @@
          </widget>
         </item>
         <item row="3" column="1">
-         <widget class="FilterComboBox" name="onDeathEdit"/>
+         <widget class="FilterComboBox" name="onDeathEdit" />
         </item>
         <item row="4" column="0">
          <widget class="QLabel" name="label_10">
@@ -771,7 +771,7 @@
          </widget>
         </item>
         <item row="4" column="1">
-         <widget class="FilterComboBox" name="onOpenFailedEdit"/>
+         <widget class="FilterComboBox" name="onOpenFailedEdit" />
         </item>
         <item row="5" column="0">
          <widget class="QLabel" name="label_11">
@@ -781,7 +781,7 @@
          </widget>
         </item>
         <item row="5" column="1">
-         <widget class="FilterComboBox" name="onHeartbeatSelect"/>
+         <widget class="FilterComboBox" name="onHeartbeatSelect" />
         </item>
         <item row="6" column="0">
          <widget class="QLabel" name="label_13">
@@ -791,7 +791,7 @@
          </widget>
         </item>
         <item row="6" column="1">
-         <widget class="FilterComboBox" name="onMeleeAttackEdit"/>
+         <widget class="FilterComboBox" name="onMeleeAttackEdit" />
         </item>
         <item row="7" column="0">
          <widget class="QLabel" name="label_16">
@@ -801,7 +801,7 @@
          </widget>
         </item>
         <item row="7" column="1">
-         <widget class="FilterComboBox" name="onSpellEdit"/>
+         <widget class="FilterComboBox" name="onSpellEdit" />
         </item>
         <item row="8" column="0">
          <widget class="QLabel" name="label_17">
@@ -811,7 +811,7 @@
          </widget>
         </item>
         <item row="8" column="1">
-         <widget class="FilterComboBox" name="onOpenEdit"/>
+         <widget class="FilterComboBox" name="onOpenEdit" />
         </item>
         <item row="9" column="0">
          <widget class="QLabel" name="label_23">
@@ -821,7 +821,7 @@
          </widget>
         </item>
         <item row="9" column="1">
-         <widget class="FilterComboBox" name="onUnlockEdit"/>
+         <widget class="FilterComboBox" name="onUnlockEdit" />
         </item>
         <item row="10" column="0">
          <widget class="QLabel" name="label_19">
@@ -831,7 +831,7 @@
          </widget>
         </item>
         <item row="10" column="1">
-         <widget class="FilterComboBox" name="onUserDefinedSelect"/>
+         <widget class="FilterComboBox" name="onUserDefinedSelect" />
         </item>
        </layout>
       </widget>
@@ -841,7 +841,7 @@
        </attribute>
        <layout class="QGridLayout" name="gridLayout_4">
         <item row="0" column="0">
-         <widget class="QPlainTextEdit" name="commentsEdit"/>
+         <widget class="QPlainTextEdit" name="commentsEdit" />
         </item>
        </layout>
       </widget>
@@ -862,22 +862,22 @@
     <property name="title">
      <string>File</string>
     </property>
-    <addaction name="actionNew"/>
-    <addaction name="actionOpen"/>
-    <addaction name="actionSave"/>
-    <addaction name="actionSave_As"/>
-    <addaction name="actionRevert"/>
-    <addaction name="separator"/>
-    <addaction name="actionExit"/>
+    <addaction name="actionNew" />
+    <addaction name="actionOpen" />
+    <addaction name="actionSave" />
+    <addaction name="actionSave_As" />
+    <addaction name="actionRevert" />
+    <addaction name="separator" />
+    <addaction name="actionExit" />
    </widget>
    <widget class="QMenu" name="menuView">
     <property name="title">
      <string>View</string>
     </property>
-    <addaction name="actionShowPreview"/>
+    <addaction name="actionShowPreview" />
    </widget>
-   <addaction name="menuNew"/>
-   <addaction name="menuView"/>
+   <addaction name="menuNew" />
+   <addaction name="menuView" />
   </widget>
   <action name="actionOpen">
    <property name="text">
@@ -941,6 +941,6 @@
    <container>1</container>
   </customwidget>
  </customwidgets>
- <resources/>
- <connections/>
+ <resources />
+ <connections />
 </ui>

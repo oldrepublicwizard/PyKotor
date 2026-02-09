@@ -22,7 +22,7 @@ References:
     - Double Letters start at offset 0x5D (2352 bytes: 28 * 28 * 3 * 4)
     - Triple Letters start at offset 0x965 (65856 bytes: 28 * 28 * 28 * 3 * 4)
     - ".ltr" extension - LTR file extension
-    - Original BioWare engine binaries (swkotor.exe, swkotor2.exe)
+    - Original BioWare engine binaries (TODO: Verify with REVA when available)
     https://github.com/mtijanic/nwn-misc/blob/master/nwnltr.c - Original C reference implementation
         Derivations and Other Implementations:
         ----------
@@ -90,7 +90,7 @@ class LTR(ComparableMixin):
     - Triple Letters start at offset 0x965 (65856 bytes: 28 * 28 * 28 * 3 * 4)
       * 28x28 LetterSets, each with start/middle/end probabilities (28 floats each)
     - ".ltr" extension - LTR file extension identifier
-    - Original BioWare engine binaries (swkotor.exe, swkotor2.exe)
+    - Original BioWare engine binaries (TODO: Verify with REVA when available)
     Derivations and Other Implementations:
         ----------
         https://github.com/th3w1zard1/KotOR.js/tree/master/src/resource/LTRObject.ts:19-210
@@ -191,8 +191,7 @@ class LTR(ComparableMixin):
 
         References:
         ----------
-        Original BioWare engine binaries (from swkotor.exe, swkotor2.exe)
-        Original BioWare engine binaries
+        See module docstring for engine addresses (K1 + TSL TODO).
         https://github.com/mtijanic/nwn-misc/blob/master/nwnltr.c - Original C reference
         Derivations and Other Implementations:
         ----------
@@ -383,13 +382,24 @@ class LTRBlock(ComparableMixin):
     
     References:
     ----------
-        Original BioWare engine binaries (from swkotor.exe, swkotor2.exe)
-        Original BioWare engine binaries
-        Binary Format (per LetterSet):
-        ------------------------------
-        Start probabilities: num_characters * 4 bytes (float32 each)
-        Middle probabilities: num_characters * 4 bytes (float32 each)
-        End probabilities: num_characters * 4 bytes (float32 each)
+    Based on swkotor.exe LTR structure:
+    - Probability block layout (start/middle/end)
+      * Start probabilities: 28 floats (offset 0x09-0x70)
+      * Middle probabilities: 28 floats (offset 0x71-0xD8)
+      * End probabilities: 28 floats (offset 0xD9-0x140)
+    - Binary format (per LetterSet)
+      * Start probabilities: num_characters * 4 bytes (float32 each)
+      * Middle probabilities: num_characters * 4 bytes (float32 each)
+      * End probabilities: num_characters * 4 bytes (float32 each)
+    - Original BioWare engine binaries (TODO: Verify with REVA when available)
+    https://github.com/mtijanic/nwn-misc/blob/master/nwnltr.c - Original C reference implementation
+
+Derivations and Other Implementations:
+-------------------------------------
+    - https://github.com/th3w1zard1/KotOR.js/tree/master/src/resource/LTRObject.ts:19-210
+    - https://github.com/th3w1zard1/KotOR_IO/tree/master/KotOR_IO/File
+    - https://github.com/th3w1zard1/Kotor.NET/tree/master/Kotor.NET/Resources/KotorLTR/LTR.cs
+    - https://github.com/th3w1zard1/Kotor.NET/tree/master/Kotor.NET/Resources/KotorLTR/LTRDecompiler.cs
         
     Attributes:
     ----------

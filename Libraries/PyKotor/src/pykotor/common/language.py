@@ -20,9 +20,7 @@ class Language(IntEnum):
 
     References:
     ----------
-        Based on swkotor.exe TLK structure:
-        - CTlkTable::AddFile @ 0x0041d920 - Adds TLK file to table
-        - CTlkFile::CTlkFile @ 0x0041d810 - Constructor for TLK file reader
+        See pykotor.resource.formats.tlk.tlk_data for engine addresses (K1 + TSL TODO). CTlkTable::AddFile (K1: 0x0041d920), CTlkFile::CTlkFile (K1: 0x0041d810).
 
     Derivations and Other Implementations:
     ----------

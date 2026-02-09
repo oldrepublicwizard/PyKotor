@@ -3329,9 +3329,11 @@ class ModuleDesigner(QMainWindow, BlenderEditorMixin):
         time_since_last_frame = cur_time - self.last_frame_time
         self.last_frame_time = cur_time
 
-        # Skip if frame time is too large (e.g., window was minimized)
-        if time_since_last_frame > 0.1:
-            return
+        # Clamp frame time to avoid huge jumps (e.g. window was minimized or rendering
+        # stalled). MUST NOT return early here — doing so causes the fly cam to appear
+        # "stuck" whenever the renderer is slow, because camera updates are completely
+        # skipped.  Instead we cap the effective delta so movement stays smooth.
+        time_since_last_frame = min(time_since_last_frame, 0.05)  # cap at 50 ms (≈20 FPS minimum step)
 
         # Calculate rotation delta with frame-independent timing
         norm_rotate_units_setting: float = self.settings.rotateCameraSensitivity3d / 1000

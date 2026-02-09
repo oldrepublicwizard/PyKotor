@@ -7,55 +7,55 @@ that specifies operand types.
 
 References:
 ----------
-    Based on swkotor.exe NCS structure:
-    - HandleBNCSMessage @ 0x005d5180 - CNetLayer::HandleBNCSMessage (559 bytes, 8 callees)
-      * Handles BNCS (BioWare Network Compiled Script) messages
-      * Validates message length (minimum 9 bytes)
-      * Extracts player name and message type
-      * Processes authentication and permission flags
-      * Signature: undefined4 __thiscall CNetLayer::HandleBNCSMessage(CNetLayer *this, ulong param_1, byte param_2, ulong param_3)
-    - CResNCS::CResNCS @ 0x005d4c30 - NCS resource constructor (29 bytes, 1 callee)
-    - CResNCS::~CResNCS @ 0x005d4c50 - NCS resource destructor (11 bytes, 1 callee)
-    - CResNCS::~CResNCS @ 0x005d4c90 - NCS resource destructor variant (27 bytes, 2 callees)
-    - ReadScriptFile @ 0x005d2260 - Reads NCS script file from disk
-    - ReadScriptsFromGff @ 0x004ebf20 - Reads NCS scripts from GFF data
-    - ExecuteCommandExecuteScript @ 0x00535b70 - Executes NCS bytecode
-    - "ncs" extension string @ 0x0074dd68 - NCS file extension
-    - "NCS " file type identifier - First 4 bytes of NCS files
-    - "V1.0" version identifier - Bytes 4-7 of NCS files
-    - Magic byte 0x42 - First instruction bytecode (byte 8)
+    Based on unified K1 (swkotor.exe) and TSL (swkotor2.exe) NCS structure.
+    Addresses: (K1: swkotor.exe, TSL: swkotor2.exe — verify/fill TSL via REVA when available).
+
+    - CNetLayer::HandleBNCSMessage — handles BNCS messages; validates length (min 9 bytes); extracts player name/type; auth/permission flags.
+      K1: 0x005d5180, TSL: TODO
+      Signature: undefined4 __thiscall CNetLayer::HandleBNCSMessage(CNetLayer *this, ulong param_1, byte param_2, ulong param_3)
+    - CResNCS::CResNCS (NCS resource constructor): K1: 0x005d4c30, TSL: TODO
+    - CResNCS::~CResNCS (destructor): K1: 0x005d4c50, TSL: TODO
+    - CResNCS::~CResNCS (destructor variant): K1: 0x005d4c90, TSL: TODO
+    - ReadScriptFile (reads NCS from disk): K1: 0x005d2260, TSL: TODO
+    - ReadScriptsFromGff (reads NCS from GFF): K1: 0x004ebf20, TSL: TODO
+    - InitializeScript (script execution context): K1: 0x005d461b, TSL: TODO
+    - ExecuteCommandExecuteScript (executes NCS bytecode): K1: 0x00535b70, TSL: TODO
+    - "ncs" extension string: K1: 0x0074dd68, TSL: TODO
+    - "NCS " file type — first 4 bytes of NCS files; "V1.0" — bytes 4–7; magic byte 0x42 — byte 8.
     - Original BioWare engine binaries (swkotor.exe, swkotor2.exe)
     https://github.com/xoreos/xoreos-docs - Torlack's NCS specification (mirrored)
-        Derivations and Other Implementations:
-        ----------
-        https://github.com/th3w1zard1/Kotor.NET/tree/master/Kotor.NET/Formats/KotorNCS/NCS.cs:9-799
-        https://github.com/th3w1zard1/Kotor.NET/tree/master/Kotor.NET/Formats/KotorNCS/NCSReader.cs:11-31
-        Binary Format:
-        -------------
-        Header (9 bytes):
-        Offset | Size | Type   | Description
-        -------|------|--------|-------------
-        0x00   | 4    | char[] | File Type ("NCS ")
-        0x04   | 4    | char[] | File Version ("V1.0")
-        0x08   | 1    | uint8  | First instruction bytecode
-        Instructions (variable length):
-        Each instruction consists of:
-        - Bytecode (1 byte): Opcode identifying instruction type
-        - Qualifier (1 byte): Type qualifier for operands (e.g., INT, FLOAT, INT_INT)
-        - Arguments (variable): Instruction-specific arguments (offsets, constants, jump targets)
-    
-    Instruction Types:
-    -----------------
-        Stack Operations: CPDOWNSP, CPTOPSP, CPDOWNBP, CPTOPBP, MOVSP, RSADDx
-        Constants: CONSTI, CONSTF, CONSTS, CONSTO
-        Arithmetic: ADDxx, SUBxx, MULxx, DIVxx, MODxx, NEGx
-        Comparison: EQUALxx, NEQUALxx, GTxx, GEQxx, LTxx, LEQxx
-        Logic: LOGANDxx, LOGORxx, BOOLANDxx, NOTx
-        Bitwise: INCORxx, EXCORxx, SHLEFTxx, SHRIGHTxx, USHRIGHTxx, COMPx
-        Control Flow: JMP, JSR, JZ, JNZ, RETN
-        Function Calls: ACTION
-        Stack Management: SAVEBP, RESTOREBP, STORE_STATE, DESTRUCT
-        Increment/Decrement: INCxSP, DECxSP, INCxBP, DECxBP
+Derivations and Other Implementations:
+-------------------------------------
+    https://github.com/th3w1zard1/Kotor.NET/tree/master/Kotor.NET/Formats/KotorNCS/NCS.cs:9-799
+    https://github.com/th3w1zard1/Kotor.NET/tree/master/Kotor.NET/Formats/KotorNCS/NCSReader.cs:11-31
+
+Binary Format:
+-------------
+Header (9 bytes):
+Offset | Size | Type   | Description
+-------|------|--------|-------------
+0x00   | 4    | char[] | File Type ("NCS ")
+0x04   | 4    | char[] | File Version ("V1.0")
+0x08   | 1    | uint8  | First instruction bytecode
+
+Instructions (variable length):
+Each instruction consists of:
+- Bytecode (1 byte): Opcode identifying instruction type
+- Qualifier (1 byte): Type qualifier for operands (e.g., INT, FLOAT, INT_INT)
+- Arguments (variable): Instruction-specific arguments (offsets, constants, jump targets)
+
+Instruction Types:
+-----------------
+    Stack Operations: CPDOWNSP, CPTOPSP, CPDOWNBP, CPTOPBP, MOVSP, RSADDx
+    Constants: CONSTI, CONSTF, CONSTS, CONSTO
+    Arithmetic: ADDxx, SUBxx, MULxx, DIVxx, MODxx, NEGx
+    Comparison: EQUALxx, NEQUALxx, GTxx, GEQxx, LTxx, LEQxx
+    Logic: LOGANDxx, LOGORxx, BOOLANDxx, NOTx
+    Bitwise: INCORxx, EXCORxx, SHLEFTxx, SHRIGHTxx, USHRIGHTxx, COMPx
+    Control Flow: JMP, JSR, JZ, JNZ, RETN
+    Function Calls: ACTION
+    Stack Management: SAVEBP, RESTOREBP, STORE_STATE, DESTRUCT
+    Increment/Decrement: INCxSP, DECxSP, INCxBP, DECxBP
 """
 
 from __future__ import annotations
@@ -260,8 +260,7 @@ class NCS(ComparableMixin):
     
     References:
     ----------
-        Original BioWare engine binaries (from swkotor.exe, swkotor2.exe)
-        Original BioWare engine binaries
+        See module docstring for engine addresses (K1 + TSL TODO). Original BioWare engine binaries (swkotor.exe, swkotor2.exe).
         Derivations and Other Implementations:
         ----------
         https://github.com/th3w1zard1/Kotor.NET/tree/master/Kotor.NET/Formats/KotorNCS/NCS.cs:9-17
@@ -632,8 +631,7 @@ class NCSInstruction(ComparableMixin):
     
     References:
     ----------
-        Original BioWare engine binaries (from swkotor.exe, swkotor2.exe)
-        Original BioWare engine binaries
+        See module docstring for engine addresses (K1 + TSL TODO). Original BioWare engine binaries (swkotor.exe, swkotor2.exe).
         Derivations and Other Implementations:
         ----------
         https://github.com/th3w1zard1/Kotor.NET/tree/master/Kotor.NET/Formats/KotorNCS/NCS.cs:19-711

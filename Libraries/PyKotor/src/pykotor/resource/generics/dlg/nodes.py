@@ -28,10 +28,7 @@ class DLGNode:
 
     References:
     ----------
-        Based on swkotor.exe DLG structure:
-        - CSWSDialog::LoadDialog @ 0x005a2ae0 - Loads dialog from GFF structure
-        - CSWSDialog::LoadDialogBase @ 0x0059f5f0 - Loads dialog base properties
-        - CSWSDialog::LoadDialogLinkedNode @ 0x0059ec10 - Loads linked dialog nodes (entries/replies)
+        See pykotor.resource.formats.gff.gff_data module docstring for engine addresses (K1 + TSL TODO). LoadDialog, LoadDialogBase, LoadDialogLinkedNode.
         https://github.com/th3w1zard1/KotOR.js/tree/master/src/resource/DLGNode.ts (DLG node structure)
         https://github.com/th3w1zard1/Kotor.NET/tree/master/Kotor.NET/Resources/KotorDLG/DLG.cs (DLG node structure)
 

@@ -6,14 +6,15 @@ to localized text and associated voice-over audio files.
 
 References:
 ----------
-    Based on swkotor.exe TLK structure:
-    - CResTLK::CResTLK - TLK resource constructor
-    - LoadTLK - Loads TLK file from resource
-    - GetString - Gets string by StrRef index
-    - "TLK " file type identifier - First 4 bytes of TLK files
-    - "V3.0" version identifier - Bytes 4-7 of KotOR TLK files
-    - "V4.0" version identifier - Bytes 4-7 of Jade Empire TLK files
-    - "dialog.tlk" - Default TLK filename loaded by game
+    Based on unified K1 (swkotor.exe) and TSL (swkotor2.exe) TLK structure.
+    Addresses: (K1: swkotor.exe, TSL: swkotor2.exe — verify/fill TSL via REVA when available).
+
+    - CTlkTable::CTlkTable (talk table manager constructor): K1: 0x0041d8d0, TSL: TODO
+    - CTlkTable::AddFile (adds TLK file to table; loads .tlk and .tlkf): K1: 0x0041d920, TSL: TODO
+    - CTlkFile::CTlkFile (TLK file reader constructor): K1: 0x0041d810, TSL: TODO
+    - TLK resource type "TLK ": K1: 0x0073ecb0, TSL: TODO
+    - "tlk" extension string: K1: 0x0074dd40, TSL: TODO
+    - CResTLK::CResTLK, LoadTLK, GetString — see engine TLK loading. "TLK " (first 4 bytes), "V3.0"/"V4.0" (bytes 4–7), "dialog.tlk" default.
     - Original BioWare engine binaries (swkotor.exe, swkotor2.exe)
     TLK file format specification
 
@@ -59,19 +60,7 @@ class TLK(ComparableMixin):
     
     References:
     ----------
-    Based on swkotor.exe TLK structure:
-    - CResTLK::CResTLK - TLK resource constructor
-    - LoadTLK - Loads TLK file from resource manager
-    - GetString - Gets localized string by StrRef index
-    - "TLK " file type identifier - First 4 bytes of TLK files
-    - "V3.0" version identifier - Bytes 4-7 of KotOR TLK files (offset 0x04)
-    - "V4.0" version identifier - Bytes 4-7 of Jade Empire TLK files
-    - Language ID field at offset 0x08 (4 bytes, int32)
-    - String Count field at offset 0x0C (4 bytes, int32)
-    - String Entries Offset at offset 0x10 (4 bytes, int32)
-    - String Data Table starts at offset 0x14 (40 bytes per entry)
-    - "dialog.tlk" - Default TLK filename loaded by game at startup
-    - Original BioWare engine binaries (swkotor.exe, swkotor2.exe)
+    See module docstring for engine addresses (K1 + TSL TODO). CResTLK::CResTLK, LoadTLK, GetString; "TLK ", "V3.0"/"V4.0"; Language ID @ 0x08, String Count @ 0x0C, String Entries Offset @ 0x10, String Data Table @ 0x14 (40 bytes/entry); "dialog.tlk". Original BioWare engine binaries (swkotor.exe, swkotor2.exe).
     TLK file format specification
 
 

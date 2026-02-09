@@ -7,7 +7,9 @@ flipbook textures.
 
 References:
 ----------
-        Based on swkotor.exe TXI structure:
+        Based on unified K1 (swkotor.exe) and TSL (swkotor2.exe) TXI structure.
+        Addresses: (K1: swkotor.exe, TSL: swkotor2.exe — verify/fill TSL via REVA when available).
+
         - GetTXIInternal @ 0x0070e5e0 - Gets TXI data from resource (229 bytes, 6 callees)
           * Loads TXI file as resource
           * Returns TXI data pointer and size
@@ -16,6 +18,8 @@ References:
           * Parses ASCII TXI file format
           * Handles command-value pairs
         - CResTXI::CResTXI @ 0x00710db0 - TXI resource constructor (36 bytes, 1 callee)
+          * Initializes TXI resource
+          * Sets up TXI data pointer and size
         - SetTxiData @ 0x0041ecb0 - Sets TXI data (91 bytes, 2 callees)
         - GetTxiData @ 0x0041ec90 - Gets TXI data (23 bytes)
         - IsTxiLoaded @ 0x0041ec50 - Checks if TXI is loaded (26 bytes)
@@ -26,15 +30,17 @@ References:
         - "txi" resource type string @ 0x0074dd94 - TXI resource type identifier
         - "TXI" string @ 0x0075fb40 - TXI format identifier
         https://nwn.wiki/display/NWN1/TXI - NWN TXI documentation (similar format)
-        Derivations and Other Implementations:
-        ----------
-        https://github.com/th3w1zard1/KotOR.js/tree/master/src/resource/TXI.ts:16-255
-        https://github.com/th3w1zard1/KotOR.js/tree/master/src/enums/graphics/txi/TXIBlending.ts:11-15
-        https://github.com/th3w1zard1/KotOR.js/tree/master/src/enums/graphics/txi/TXIPROCEDURETYPE.ts:11-17
-        https://github.com/th3w1zard1/Kotor.NET/tree/master/Kotor.NET/Formats/KotorTXI/TXI.cs:3-64
-        ASCII Format:
-        ------------
-        TXI files are line-based ASCII text files with command-value pairs:
+
+Derivations and Other Implementations:
+----------
+    - https://github.com/th3w1zard1/KotOR.js/tree/master/src/resource/TXI.ts:16-255
+    - https://github.com/th3w1zard1/KotOR.js/tree/master/src/enums/graphics/txi/TXIBlending.ts:11-15
+    - https://github.com/th3w1zard1/KotOR.js/tree/master/src/enums/graphics/txi/TXIPROCEDURETYPE.ts:11-17
+    - https://github.com/th3w1zard1/Kotor.NET/tree/master/Kotor.NET/Formats/KotorTXI/TXI.cs:3-64
+
+ASCII Format:
+------------
+    - TXI files are line-based ASCII text files with command-value pairs:
 
     
     Format: <command> <value>
@@ -388,8 +394,7 @@ class TXIFeatures:
     
     References:
     ----------
-        Original BioWare engine binaries (from swkotor.exe, swkotor2.exe)
-        Original BioWare engine binaries
+        See module docstring for engine addresses (K1 + TSL TODO). GetTXIInternal, CAuroraTXI::CAuroraTXI, CResTXI.
         Derivations and Other Implementations:
         ----------
         https://github.com/th3w1zard1/KotOR.js/tree/master/src/resource/TXI.ts:16-46 (TXI class fields)

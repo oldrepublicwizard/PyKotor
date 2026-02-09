@@ -113,7 +113,7 @@ In multi-agent environments, conflicts arise quickly. To prevent them:
 ### CORRECT EXAMPLES
 
 ```powershell
-git add Src/CameraSystem.cs; git commit -m "feat(K2-camera): add camera rotation logic"
+git add Libraries/PyKotor/src/pykotor/gl/scene/scene_cache.py; git commit -m "feat(K2-camera): add camera rotation logic"
 ```
 
 ```bash
@@ -139,7 +139,7 @@ git add file.md; git commit -m "Update file.md"  # Wrong: non-conventional messa
 Example response ending:
 
 ```powershell
-git add Src/CameraSystem.cs; git commit -m "feat(K2-camera): implement freelook mode"
+git add Libraries/PyKotor/src/pykotor/gl/scene/scene_cache.py; git commit -m "feat(K2-camera): implement freelook mode"
 ```
 
 Git commits: Issued per rules ✅

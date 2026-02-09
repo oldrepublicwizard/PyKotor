@@ -6,41 +6,52 @@ chitin.key as the main KEY file which references all game BIF files.
 
 References:
 ----------
-        Original BioWare engine binaries (from swkotor.exe, swkotor2.exe)
-        Original BioWare engine binaries
-        KEY file format specification
-        Binary Format:
-        -------------
-        Header (64 bytes):
-        Offset | Size | Type   | Description
-        -------|------|--------|-------------
-        0x00   | 4    | char[] | File Type ("KEY ")
-        0x04   | 4    | char[] | File Version ("V1  " or "V1.1")
-        0x08   | 4    | uint32 | BIF Count
-        0x0C   | 4    | uint32 | Key Count (number of resources)
-        0x10   | 4    | uint32 | Offset to File Table (BIF entries)
-        0x14   | 4    | uint32 | Offset to Key Table (resource entries)
-        0x18   | 4    | uint32 | Build Year (years since 1900)
-        0x1C   | 4    | uint32 | Build Day (days since Jan 1)
-        0x20   | 32   | byte[] | Reserved (padding, usually zeros)
-        File Entry (12 bytes each):
-        Offset | Size | Type   | Description
-        -------|------|--------|-------------
-        0x00   | 4    | uint32 | File Size (of BIF file)
-        0x04   | 4    | uint32 | Filename Offset (into filename table)
-        0x08   | 2    | uint16 | Filename Length
-        0x0A   | 2    | uint16 | Drives (drive flags, e.g. 0x0001 = HD0)
-        Filename Table (variable length):
-        Null-terminated strings for each BIF filename
-        Referenced by File Entry's Filename Offset
-        Key Entry (22 bytes each):
-        Offset | Size | Type   | Description
-        -------|------|--------|-------------
-        0x00   | 16   | char[] | ResRef (null-padded, max 16 chars)
-        0x10   | 2    | uint16 | Resource Type
-        0x12   | 4    | uint32 | Resource ID
-        Bits 31-20: BIF Index (top 12 bits)
-        Bits 19-0:  Resource Index within BIF (bottom 20 bits)
+    Based on unified K1 (swkotor.exe) and TSL (swkotor2.exe) KEY/BIF structure.
+    Addresses: (K1: swkotor.exe, TSL: swkotor2.exe — verify/fill TSL via REVA when available).
+
+    - CExoKeyTable::CExoKeyTable (key table constructor): K1: 0x0040d030, TSL: TODO
+    - CExoKeyTable::AddKeyTable (loads KEY, parses header/BIF entries/key entries): K1: 0x00406e20, TSL: TODO
+    - CExoKeyTable::AddKeyTableContents (loads BIFs, registers resources): K1: 0x0040fb80, TSL: TODO
+    - CExoKeyTable::LocateBifFile (locates BIF in resource dirs): K1: 0x0040d200, TSL: TODO
+    - CExoKeyTable::GetKeyEntryFromTable: K1: 0x004071a0, TSL: TODO
+    - CExoKeyTable::DestroyTable: K1: 0x0040d2e0, TSL: TODO
+    - "BIF" string (BIF file type identifier): K1: 0x0073d8dc, TSL: TODO
+    - "CExoKeyTable::DestroyTable: Resource %s still in demand during table deletion": K1: 0x0073e0d8, TSL: TODO
+    - "CExoKeyTable::AddKey: Duplicate Resource ": K1: 0x0073e184, TSL: TODO
+    KEY file format specification
+
+Binary Format:
+-------------
+    Header (64 bytes):
+    Offset | Size | Type   | Description
+    -------|------|--------|-------------
+    0x00   | 4    | char[] | File Type ("KEY ")
+    0x04   | 4    | char[] | File Version ("V1  " or "V1.1")
+    0x08   | 4    | uint32 | BIF Count
+    0x0C   | 4    | uint32 | Key Count (number of resources)
+    0x10   | 4    | uint32 | Offset to File Table (BIF entries)
+    0x14   | 4    | uint32 | Offset to Key Table (resource entries)
+    0x18   | 4    | uint32 | Build Year (years since 1900)
+    0x1C   | 4    | uint32 | Build Day (days since Jan 1)
+    0x20   | 32   | byte[] | Reserved (padding, usually zeros)
+    File Entry (12 bytes each):
+    Offset | Size | Type   | Description
+    -------|------|--------|-------------
+    0x00   | 4    | uint32 | File Size (of BIF file)
+    0x04   | 4    | uint32 | Filename Offset (into filename table)
+    0x08   | 2    | uint16 | Filename Length
+    0x0A   | 2    | uint16 | Drives (drive flags, e.g. 0x0001 = HD0)
+    Filename Table (variable length):
+    Null-terminated strings for each BIF filename
+    Referenced by File Entry's Filename Offset
+    Key Entry (22 bytes each):
+    Offset | Size | Type   | Description
+    -------|------|--------|-------------
+    0x00   | 16   | char[] | ResRef (null-padded, max 16 chars)
+    0x10   | 2    | uint16 | Resource Type
+    0x12   | 4    | uint32 | Resource ID
+    Bits 31-20: BIF Index (top 12 bits)
+    Bits 19-0:  Resource Index within BIF (bottom 20 bits)
 """
 
 from __future__ import annotations
@@ -60,22 +71,22 @@ class BifEntry:
     
     References:
     ----------
-        Original BioWare engine binaries (from swkotor.exe, swkotor2.exe)
-        Original BioWare engine binaries
+        See module docstring for engine addresses (K1 + TSL TODO). CExoKeyTable::AddKeyTableContents, LocateBifFile.
         Derivations and Other Implementations:
         ----------
         https://github.com/th3w1zard1/Kotor.NET/tree/master/Kotor.NET/Formats/KotorKEY/KEYBinaryStructure.cs:70-82
         https://github.com/th3w1zard1/KotOR_IO/tree/master/KotOR_IO/File
         https://github.com/th3w1zard1/KotOR-dotNET/tree/master/AuroraParsers/KEYObject.cs:14-24
         https://github.com/th3w1zard1/KotOR.js/tree/master/src/interface/resource/IBIFEntry.ts
-        Binary Format (12 bytes):
-        -------------------------
-        Offset | Size | Type   | Description
-        -------|------|--------|-------------
-        0x00   | 4    | uint32 | File Size (of BIF file on disk)
-        0x04   | 4    | uint32 | Filename Offset (into filename table)
-        0x08   | 2    | uint16 | Filename Length (bytes)
-        0x0A   | 2    | uint16 | Drives (bitfield: 0x0001=HD0, 0x0002=CD1, etc.)
+
+    Binary Format (12 bytes):
+    -------------------------
+    Offset | Size | Type   | Description
+    -------|------|--------|-------------
+    0x00   | 4    | uint32 | File Size (of BIF file on disk)
+    0x04   | 4    | uint32 | Filename Offset (into filename table)
+    0x08   | 2    | uint16 | Filename Length (bytes)
+    0x0A   | 2    | uint16 | Drives (bitfield: 0x0001=HD0, 0x0002=CD1, etc.)
 
         
     Attributes:
@@ -150,8 +161,7 @@ class KeyEntry:
     
     References:
     ----------
-        Original BioWare engine binaries (from swkotor.exe, swkotor2.exe)
-        Original BioWare engine binaries
+        See module docstring for engine addresses (K1 + TSL TODO). CExoKeyTable::GetKeyEntryFromTable.
         Derivations and Other Implementations:
         ----------
         https://github.com/th3w1zard1/Kotor.NET/tree/master/Kotor.NET/Formats/KotorKEY/KEYBinaryStructure.cs:84-112
@@ -227,8 +237,7 @@ class KeyEntry:
         
         References:
         ----------
-        Original BioWare engine binaries (from swkotor.exe, swkotor2.exe)
-        Original BioWare engine binaries
+        See module docstring for engine addresses (K1 + TSL TODO). resource_id layout (bif_index = top 12 bits).
         Derivations and Other Implementations:
         ----------
         https://github.com/th3w1zard1/Kotor.NET/tree/master/Kotor.NET/Formats/KotorKEY/KEYBinaryStructure.cs:101-102
@@ -248,8 +257,7 @@ class KeyEntry:
         
         References:
         ----------
-        Original BioWare engine binaries (from swkotor.exe, swkotor2.exe)
-        Original BioWare engine binaries
+        See module docstring for engine addresses (K1 + TSL TODO). resource_id layout (res_index = bottom 20 bits).
         Derivations and Other Implementations:
         ----------
         https://github.com/th3w1zard1/Kotor.NET/tree/master/Kotor.NET/Formats/KotorKEY/KEYBinaryStructure.cs:105-110
@@ -290,8 +298,7 @@ class KEY:
     
     References:
     ----------
-        Original BioWare engine binaries (from swkotor.exe, swkotor2.exe)
-        Original BioWare engine binaries
+        See module docstring for engine addresses (K1 + TSL TODO). CExoKeyTable, AddKeyTable, KEY header layout.
         Derivations and Other Implementations:
         ----------
         https://github.com/th3w1zard1/Kotor.NET/tree/master/Kotor.NET/Formats/KotorKEY/KEYBinaryStructure.cs:50-68

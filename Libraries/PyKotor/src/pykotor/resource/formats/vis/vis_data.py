@@ -7,10 +7,13 @@ files with a simple format: parent room names followed by indented child room na
 
 References:
 ----------
-        Based on swkotor.exe VIS structure:
-        - LoadVisibility @ 0x004568d0 - Loads VIS file for area visibility culling
-        - "%s/%s.VIS" format string @ 0x007415e8 - VIS file path format
-        - ".vis" extension @ 0x00741604 - VIS file extension identifier
+        Based on unified K1 (swkotor.exe) and TSL (swkotor2.exe) VIS structure.
+        Addresses: (K1: swkotor.exe, TSL: swkotor2.exe — verify/fill TSL via REVA when available).
+
+        - LoadVisibility / Scene::LoadVisibility — loads VIS file for area visibility culling; parses ASCII format; builds room visibility map.
+          K1: 0x004568d0, TSL: TODO
+        - "%s/%s.VIS" format string (VIS file path format): K1: 0x007415e8, TSL: TODO
+        - ".vis" extension: K1: 0x00741604, TSL: TODO
         Derivations and Other Implementations:
         ----------
         https://github.com/th3w1zard1/KotOR.js/tree/master/src/resource/VISObject.ts:33-276

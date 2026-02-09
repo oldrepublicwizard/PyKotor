@@ -79,11 +79,8 @@ def use_builtin_compiler(
 
     References:
     ----------
-        Based on swkotor.exe NCS compilation:
-        - CResNCS::CResNCS @ 0x005d4c30 - NCS resource constructor
-        - HandleBNCSMessage @ 0x005d5180 - NCS bytecode execution
-        - NWScript compilation and execution within game engine
-        
+        Based on unified K1/TSL NCS. See pykotor.resource.formats.ncs.ncs_data (K1 addrs + TSL TODO).
+        CResNCS::CResNCS (0x005d4c30), HandleBNCSMessage (0x005d5180); NWScript compilation/execution.
         Derivations and Other Implementations:
         ----------
             - https://github.com/th3w1zard1/KotOR.js/tree/master/src/nwscript/NWScriptCompiler.ts

@@ -25,12 +25,7 @@ class TLKBinaryReader(ResourceReader):
     
     References:
     ----------
-        Based on swkotor.exe TLK structure:
-        - CTlkTable::CTlkTable @ 0x0041d8d0 - Constructor for talk table manager
-        - CTlkTable::AddFile @ 0x0041d920 - Adds TLK file to table (loads .tlk and .tlkf files)
-        - CTlkFile::CTlkFile @ 0x0041d810 - Constructor for TLK file reader
-        - TLK resource type "TLK " @ 0x0073ecb0 - Resource type identifier
-        - "tlk" extension string @ 0x0074dd40 - File extension identifier
+        See tlk_data module docstring for engine addresses (K1 + TSL TODO). CTlkTable::CTlkTable (K1: 0x0041d8d0), CTlkTable::AddFile (K1: 0x0041d920), CTlkFile::CTlkFile (K1: 0x0041d810), "TLK " (K1: 0x0073ecb0), "tlk" extension (K1: 0x0074dd40).
         Missing Features:
         ----------------
         - ResRef lowercasing (reone lowercases sound resrefs)

@@ -7,7 +7,9 @@ and string-based cells that are parsed as integers, floats, or other types as ne
 
 References:
 ----------
-        Based on swkotor.exe 2DA structure:
+        Based on unified K1 (swkotor.exe) and TSL (swkotor2.exe) 2DA structure.
+        Addresses: (K1: swkotor.exe, TSL: swkotor2.exe — verify/fill TSL via REVA when available).
+
         - C2DA::Load2DArray @ 0x004143b0 - Loads 2DA file from resource
           * Parses "2DA V2.0" header
           * Handles "DEFAULT:" line for default cell values
@@ -21,6 +23,11 @@ References:
           * "CSWClass::LoadFeatTable: Can't load feat.2da" @ 0x0074b3c8
           * "CSWClass::LoadSkillsTable: Can't load skills.2da" @ 0x0074b454
           * "CSWClass::LoadSpellsTable: Can't load spells.2da" @ 0x0074b5c0
+        - C2DA::GetINTEntry: K1: 0x00414a50, TSL: TODO
+        - C2DA::GetFLOATEntry: K1: 0x00414b20, TSL: TODO
+        - C2DA::GetCExoStringEntry: K1: 0x00414bf0, TSL: TODO
+        - " 2DA file" string: K1: 0x0074b328, TSL: TODO
+        - Error strings (missing 2DA): "CSWClass::LoadFeatGain: can't load featgain.2da" (K1: 0x0074b370), "LoadFeatTable...feat.2da" (K1: 0x0074b3c8), "LoadSkillsTable...skills.2da" (K1: 0x0074b454), "LoadSpellsTable...spells.2da" (K1: 0x0074b5c0); TSL: TODO
         2DA file format specification
         Binary Format (Version 2.b):
         ----------------------------
