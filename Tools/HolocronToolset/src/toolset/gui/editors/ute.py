@@ -48,6 +48,7 @@ class UTEEditor(Editor):
         super().__init__(parent, "Trigger Editor", "trigger", supported, supported, installation)
 
         from toolset.uic.qtpy.editors.ute import Ui_MainWindow
+
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self)
         self._setup_menus()
@@ -57,9 +58,10 @@ class UTEEditor(Editor):
             self._setup_installation(installation)
 
         self._ute: UTE = UTE()
-        
+
         # Setup event filter to prevent scroll wheel interaction with controls
         from toolset.gui.common.filters import NoScrollEventFilter
+
         self._no_scroll_filter = NoScrollEventFilter(self)
         self._no_scroll_filter.setup_filter(parent_widget=self)
 
@@ -131,16 +133,7 @@ class UTEEditor(Editor):
             line_edit = combo_box.lineEdit()
             if line_edit is not None:
                 line_edit.setMaxLength(16)
-        self.relevant_creature_resnames = sorted(
-            iter(
-                {
-                    res.resname().lower()
-                    for res in self._installation.get_relevant_resources(
-                        ResourceType.UTC, self._filepath
-                    )
-                }
-            )
-        )
+        self.relevant_creature_resnames = sorted(iter({res.resname().lower() for res in self._installation.get_relevant_resources(ResourceType.UTC, self._filepath)}))
 
     def load(
         self,
@@ -149,6 +142,7 @@ class UTEEditor(Editor):
         restype: ResourceType,
         data: bytes,
     ):
+        """Load resource and populate UI from UTE. Defaults from construct_ute (K1 LoadEncounter 0x00593830, TSL 0x007eb810)."""
         super().load(filepath, resref, restype, data)
 
         ute: UTE = read_ute(data)
@@ -161,14 +155,7 @@ class UTEEditor(Editor):
         ----
             ute (UTE): UTE object to load
 
-
-        Processing Logic:
-        ----------------
-            - Sets basic UTE properties like name, tag, etc.
-            - Sets advanced properties like active, faction, respawning
-            - Loads creatures and adds them to creature table
-            - Sets script fields
-            - Sets comment text.
+        Defaults from construct_ute; K1 LoadEncounter 0x00593830, TSL ReadEncounterFromGff 0x007eb810. Sets Basic, Advanced, creatures, scripts, comment.
         """
         self._ute = ute
 
@@ -208,16 +195,7 @@ class UTEEditor(Editor):
         self.ui.onHeartbeatSelect.set_combo_box_text(str(ute.on_heartbeat))
         self.ui.onUserDefinedSelect.set_combo_box_text(str(ute.on_user_defined))
 
-        self.relevant_script_resnames = sorted(
-            iter(
-                {
-                    res.resname().lower()
-                    for res in self._installation.get_relevant_resources(
-                        ResourceType.NCS, self._filepath
-                    )
-                }
-            )
-        )
+        self.relevant_script_resnames = sorted(iter({res.resname().lower() for res in self._installation.get_relevant_resources(ResourceType.NCS, self._filepath)}))
 
         self.ui.onEnterSelect.populate_combo_box(self.relevant_script_resnames)
         self.ui.onExitSelect.populate_combo_box(self.relevant_script_resnames)
@@ -229,19 +207,13 @@ class UTEEditor(Editor):
         self.ui.commentsEdit.setPlainText(ute.comment)
 
     def build(self) -> tuple[bytes, bytes]:
-        """Builds a UTE object from UI data.
+        """Builds a UTE from UI data.
 
         Returns:
         -------
-            tuple[bytes, bytes]: A tuple containing the UTE data and an empty string.
+            tuple[bytes, bytes]: UTE GFF data and log.
 
-        Builds the UTE object by:
-            - Setting basic properties from UI elements
-            - Setting advanced properties from checkboxes and dropdowns
-            - Adding creature details from the creature table
-            - Setting script references from line edits
-            - Adding comment text
-            - Encoding the UTE object into bytes.
+        Populates UTE from UI, then dismantle_ute (K1 SaveEncounter 0x00591350, TSL 0x007ed770). Returns GFF bytes and log.
         """
         ute: UTE = deepcopy(self._ute)
 
@@ -397,7 +369,7 @@ class UTEEditor(Editor):
                 for index in sorted(indices, reverse=True):
                     self.ui.creatureTable.removeRow(index.row())
                 return
-        
+
         # Fallback to currentRow (works when cells have widgets)
         current_row = self.ui.creatureTable.currentRow()
         if current_row >= 0:
