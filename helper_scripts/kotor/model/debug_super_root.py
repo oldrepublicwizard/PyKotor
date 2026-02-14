@@ -112,34 +112,34 @@ def main():
         print("-" * 72)
 
         fields = [
-            ("magic", 0x00),                  # 0
-            ("mdl_data_size", 0x04),          # 4
-            ("mdx_size", 0x08),               # 8
+            ("magic", 0x00),  # 0
+            ("mdl_data_size", 0x04),  # 4
+            ("mdx_size", 0x08),  # 8
             # Geometry header (offset from file header = 0x0C)
-            ("func_ptr0", 0x0C),              # 12
-            ("func_ptr1", 0x10),              # 16
+            ("func_ptr0", 0x0C),  # 12
+            ("func_ptr1", 0x10),  # 16
             # name is at 0x14, 32 bytes
-            ("root_node_offset", 0x34),       # 52
-            ("node_count", 0x38),             # 56
+            ("root_node_offset", 0x34),  # 52
+            ("node_count", 0x38),  # 56
             # ... unknowns from 0x3C-0x57
-            ("geometry_type", 0x58),          # 88
+            ("geometry_type", 0x58),  # 88
             # Model header at 0x5C
-            ("model_type_byte", 0x5C),        # 92
-            ("offset_to_animations", 0x64),   # 100
-            ("animation_count", 0x68),        # 104
-            ("animation_count2", 0x6C),       # 108
+            ("model_type_byte", 0x5C),  # 92
+            ("offset_to_animations", 0x64),  # 100
+            ("animation_count", 0x68),  # 104
+            ("animation_count2", 0x6C),  # 108
             # bounding box at 0x74-0x8B  (116-139)
             # radius at 0x8C  (140)
             # anim_scale at 0x90  (144)
             # supermodel at 0x94, 32 bytes  (148-179)
             # Names header at 0xB4  (180)
-            ("offset_to_super_root", 0xB4),   # 180
-            ("unknown3", 0xB8),               # 184
-            ("mdx_size_in_header", 0xBC),     # 188
-            ("mdx_offset", 0xC0),             # 192
-            ("offset_to_name_offsets", 0xC4), # 196
-            ("name_offsets_count", 0xC8),     # 200
-            ("name_offsets_count2", 0xCC),    # 204
+            ("offset_to_super_root", 0xB4),  # 180
+            ("unknown3", 0xB8),  # 184
+            ("mdx_size_in_header", 0xBC),  # 188
+            ("mdx_offset", 0xC0),  # 192
+            ("offset_to_name_offsets", 0xC4),  # 196
+            ("name_offsets_count", 0xC8),  # 200
+            ("name_offsets_count2", 0xCC),  # 204
         ]
 
         for name, pos in fields:

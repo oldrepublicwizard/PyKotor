@@ -2,7 +2,6 @@ from __future__ import annotations
 
 from pathlib import Path
 from collections import defaultdict, Counter
-import shutil
 import traceback
 
 from pykotor.resource.formats.tpc.tpc_auto import read_tpc
@@ -107,7 +106,7 @@ def print_summary(
         print(f"  {layers} layers: {count} files")
 
     print(f"\nTotal number of textures: {sum(format_counts.values())}")
-    print(f"Total size of all textures: {total_size / (1024*1024):.2f} MB")
+    print(f"Total size of all textures: {total_size / (1024 * 1024):.2f} MB")
     print(f"Number of errors encountered: {error_count}")
 
     # Additional potentially useful statistics

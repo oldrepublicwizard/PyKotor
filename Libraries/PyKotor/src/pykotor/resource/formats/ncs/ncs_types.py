@@ -342,12 +342,20 @@ class NCSType:
             bool: True if compound type
         """
         return self._type_code in {
-            NCSTypeCode.INTINT, NCSTypeCode.FLOATFLOAT, NCSTypeCode.OBJECTOBJECT,
-            NCSTypeCode.STRINGSTRING, NCSTypeCode.STRUCTSTRUCT,
-            NCSTypeCode.INTFLOAT, NCSTypeCode.FLOATINT,
-            NCSTypeCode.EFFECTEFFECT, NCSTypeCode.EVENTEVENT,
-            NCSTypeCode.LOCLOC, NCSTypeCode.TALTAL,
-            NCSTypeCode.VECTORVECTOR, NCSTypeCode.VECTORFLOAT, NCSTypeCode.FLOATVECTOR,
+            NCSTypeCode.INTINT,
+            NCSTypeCode.FLOATFLOAT,
+            NCSTypeCode.OBJECTOBJECT,
+            NCSTypeCode.STRINGSTRING,
+            NCSTypeCode.STRUCTSTRUCT,
+            NCSTypeCode.INTFLOAT,
+            NCSTypeCode.FLOATINT,
+            NCSTypeCode.EFFECTEFFECT,
+            NCSTypeCode.EVENTEVENT,
+            NCSTypeCode.LOCLOC,
+            NCSTypeCode.TALTAL,
+            NCSTypeCode.VECTORVECTOR,
+            NCSTypeCode.VECTORFLOAT,
+            NCSTypeCode.FLOATVECTOR,
         }
 
     def is_vector(self) -> bool:

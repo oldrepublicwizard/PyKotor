@@ -27,10 +27,10 @@ _COMPLEX_FIELD: set[GFFFieldType] = {
 
 class GFFBinaryReader(ResourceReader):
     """Binary GFF file reader.
-    
+
     Reads binary GFF (Generic File Format) files used throughout KotOR for structured data storage.
     Supports GFF V3.2 format. Note: V3.3, V4.0, and V4.1 are not currently supported.
-    
+
     References:
     ----------
         Based on swkotor.exe GFF structure:
@@ -56,6 +56,7 @@ class GFFBinaryReader(ResourceReader):
         - GFF V3.3, V4.0, V4.1 support (xoreos-tools supports these, KotOR likely does not)
         - StrRef field type (reone supports this at gffreader.cpp:141-142, 199-204)
     """
+
     def __init__(
         self,
         source: SOURCE_TYPES,
@@ -93,14 +94,13 @@ class GFFBinaryReader(ResourceReader):
         # The engine appears hardcoded to only create V3.2 GFF files.
         #
         # NOTE: xoreos-tools supports V3.2, V3.3, V4.0, V4.1 (probably for other games/engines)
-        
+
         if file_version != "V3.2":
             msg = "The GFF version of the file is unsupported."
             raise ValueError(msg)
 
         self._gff.content = GFFContent(file_type)
 
-        
         # Read GFF header offsets and counts
         self._struct_offset = self._reader.read_uint32()
         self._reader.read_uint32()  # struct count
@@ -117,7 +117,6 @@ class GFFBinaryReader(ResourceReader):
         self._list_indices_offset = self._reader.read_uint32()
         self._reader.read_uint32()  # list indices count
 
-        
         # Read label array (16-byte null-terminated strings)
         self._labels.clear()
         self._reader.seek(label_offset)
@@ -131,7 +130,6 @@ class GFFBinaryReader(ResourceReader):
         gff_struct: GFFStruct,
         struct_index: int,
     ):
-        
         # Read struct header (12 bytes: struct_id, data/offset, field_count)
         self._reader.seek(self._struct_offset + struct_index * 12)
         struct_id, data, field_count = (
@@ -142,12 +140,10 @@ class GFFBinaryReader(ResourceReader):
 
         gff_struct.struct_id = struct_id
 
-        
         # Handle empty structs (field_count == 0), single field (field_count == 1), or multiple fields
         if field_count == 1:
             self._load_field(gff_struct, data)
         elif field_count > 1:
-            
             # Read field indices array - batch read for efficiency
             self._reader.seek(self._field_indices_offset + data)
             if field_count > 0:
@@ -164,23 +160,23 @@ class GFFBinaryReader(ResourceReader):
         field_indices: list[int],
     ):
         """Optimized batch loading of multiple fields to reduce seeks.
-        
+
         Reads all field headers in one batch operation, then processes each field.
         This reduces seeks from N (one per field) to 1 (one batch read).
         """
         if not field_indices:
             return
-        
+
         # Calculate the range of field offsets we need to read
         min_index = min(field_indices)
         max_index = max(field_indices)
-        
+
         # Read all field headers in one batch (12 bytes per field header)
         batch_start = self._field_offset + min_index * 12
         batch_size = (max_index - min_index + 1) * 12
         self._reader.seek(batch_start)
         batch_data = self._reader.read_bytes(batch_size)
-        
+
         # Optimize: process fields directly without intermediate list
         # Extract labels list reference once for faster access
         labels = self._labels
@@ -216,7 +212,7 @@ class GFFBinaryReader(ResourceReader):
         data_or_offset: int,
     ):
         """Load a field value using integer field type ID (optimized hot path).
-        
+
         Uses integer comparisons instead of enum lookups for better performance.
         """
         # Handle complex fields (stored in field data section) vs simple fields (inline)
@@ -295,20 +291,19 @@ class GFFBinaryReader(ResourceReader):
         # NOTE: StrRef field type not supported (reone supports at gffreader.cpp:141-142, 199-204)
 
     def _load_list(self, gff_struct: GFFStruct, label: str, offset: int | None = None):
-        
         if offset is None:
             offset = self._reader.read_uint32()  # relative to list indices
         self._reader.seek(self._list_indices_offset + offset)
         value = GFFList()
         count = self._reader.read_uint32()
-        
+
         # Optimize: batch read all list indices at once instead of one-by-one
         if count > 0:
             indices_data = self._reader.read_bytes(count * 4)
             list_indices = list(struct.unpack(f"<{count}I", indices_data))
         else:
             list_indices = []
-        
+
         for struct_index in list_indices:
             value.add(0)
             child: GFFStruct | None = value.at(len(value) - 1)
@@ -319,18 +314,19 @@ class GFFBinaryReader(ResourceReader):
 
 class GFFBinaryWriter(ResourceWriter):
     """Binary GFF file writer.
-    
+
     Writes binary GFF (Generic File Format) files.
-    
+
     Supports GFF V3.2 format.
-    
+
     NOTE: V3.3, V4.0, V4.1 are NOT currently supported.
-    
+
     Derived Implementations:
     ----------
         https://github.com/seedhartha/reone/tree/master/src/libs/resource/format/gffwriter.cpp:271 (header offset calculation)
         https://github.com/seedhartha/reone/tree/master/src/libs/resource/format/gffwriter.cpp:294-317 (struct/field/label array writing)
     """
+
     def __init__(
         self,
         gff: GFF,
@@ -354,7 +350,6 @@ class GFFBinaryWriter(ResourceWriter):
     def write(self, *, auto_close: bool = True):  # noqa: FBT001, FBT002, ARG002  # pyright: ignore[reportUnusedParameters]
         self._build_struct(self._gff.root)
 
-        
         # Header offset is 0x38 (56 bytes) - GFF signature (8) + offsets/counts (48)
         struct_offset = 56
         struct_count = self._struct_writer.size() // 12
@@ -402,7 +397,6 @@ class GFFBinaryWriter(ResourceWriter):
 
         self._struct_writer.write_uint32(struct_id, max_neg1=True)
 
-        
         # Handle empty structs (0xFFFFFFFF), single field (inline), or multiple fields (indices array)
         if field_count == 0:
             self._struct_writer.write_uint32(0xFFFFFFFF)

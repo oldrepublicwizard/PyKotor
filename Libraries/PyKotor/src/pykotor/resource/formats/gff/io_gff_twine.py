@@ -15,10 +15,10 @@ if TYPE_CHECKING:
 
 class GFFTwineReader(ResourceReader):
     """Reads Twine 2 HTML format and converts to DLG.
-    
+
     Twine is an interactive fiction authoring tool. This reader converts Twine story
     format (HTML) to KotOR dialog (DLG) format for use in modding.
-    
+
     References:
     ----------
         Based on swkotor.exe dialog structure:
@@ -26,7 +26,7 @@ class GFFTwineReader(ResourceReader):
         - CSWSDialog::LoadDialogBase @ 0x0059f5f0 - Loads dialog base properties
         - CResGFF::CreateGFFFile @ 0x00411260 - Creates GFF file structure
         - Twine 2 format specification (twinejs.com)
-        
+
         Note: Twine conversion is PyKotor-specific functionality, not a standard game format.
         The engine uses binary DLG (GFF) format exclusively. Twine conversion allows
         easier dialog authoring for modders using interactive fiction tools.
@@ -133,7 +133,7 @@ class GFFTwineWriter(ResourceWriter):
             passage.set("pid", str(i))
             passage.set("name", entry.speaker or f"Entry {i}")
             passage.set("tags", "entry")
-            passage.set("position", f"{i*100},{i*100}")
+            passage.set("position", f"{i * 100},{i * 100}")
             passage.text = entry.text.get(Language.ENGLISH, Gender.MALE)
 
             # Add links to replies
@@ -151,7 +151,7 @@ class GFFTwineWriter(ResourceWriter):
             passage.set("pid", str(len(entries) + i))
             passage.set("name", f"Reply {i}")
             passage.set("tags", "reply")
-            passage.set("position", f"{i*100},{(i+len(entries))*100}")
+            passage.set("position", f"{i * 100},{(i + len(entries)) * 100}")
             passage.text = reply.text.get(Language.ENGLISH, Gender.MALE)
 
             # Add links to entries

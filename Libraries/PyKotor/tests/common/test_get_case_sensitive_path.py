@@ -34,27 +34,17 @@ def is_windows_case_sensitivity_supported() -> bool:
     """Check if Windows supports per-directory case sensitivity (Windows 10 1803+)."""
     if os.name != "nt":
         return False
-    
+
     try:
         # Check Windows version
-        version_output: str = subprocess.check_output(
-            ["cmd", "/c", "ver"],
-            text=True,
-            stderr=subprocess.DEVNULL,
-            timeout=5
-        )
+        version_output: str = subprocess.check_output(["cmd", "/c", "ver"], text=True, stderr=subprocess.DEVNULL, timeout=5)
         print(f"Windows version check output: {version_output}")
-        
+
         # Check if fsutil command exists and works
-        fsutil_check = subprocess.run(
-            ["fsutil", "file"],
-            capture_output=True,
-            text=True,
-            timeout=5
-        )
+        fsutil_check = subprocess.run(["fsutil", "file"], capture_output=True, text=True, timeout=5)
         fsutil_available = fsutil_check.returncode == 0
         print(f"fsutil availability: {fsutil_available}, returncode: {fsutil_check.returncode}")
-        
+
         return fsutil_available
     except (subprocess.TimeoutExpired, FileNotFoundError, Exception) as e:
         print(f"Case sensitivity support check failed with error: {e}")
@@ -64,7 +54,7 @@ def is_windows_case_sensitivity_supported() -> bool:
 def get_case_sensitivity_status(directory_path: pathlib.Path) -> bool:
     """
     Check if a directory has case sensitivity enabled on Windows.
-    
+
     Returns True if case-sensitive, False otherwise.
     """
     if os.name != "nt":
@@ -72,40 +62,35 @@ def get_case_sensitivity_status(directory_path: pathlib.Path) -> bool:
         try:
             test_file_lower = directory_path / "test_case_check_file.tmp"
             test_file_upper = directory_path / "TEST_CASE_CHECK_FILE.TMP"
-            
+
             # Clean up if they exist
             test_file_lower.unlink(missing_ok=True)
             test_file_upper.unlink(missing_ok=True)
-            
+
             # Create lowercase version
             test_file_lower.touch()
-            
+
             # Check if uppercase version is seen as different
             case_sensitive = not test_file_upper.exists()
-            
+
             # Clean up
             test_file_lower.unlink(missing_ok=True)
-            
+
             print(f"Unix case sensitivity test for {directory_path}: {case_sensitive}")
             return case_sensitive
         except Exception as e:
             print(f"Case sensitivity check failed with error: {e}")
             return False
-    
+
     try:
-        result = subprocess.run(
-            ["fsutil", "file", "queryCaseSensitiveInfo", str(directory_path)],
-            capture_output=True,
-            text=True,
-            timeout=10
-        )
+        result = subprocess.run(["fsutil", "file", "queryCaseSensitiveInfo", str(directory_path)], capture_output=True, text=True, timeout=10)
         output = result.stdout.strip()
         print(f"Case sensitivity status for {directory_path}: {output}, returncode: {result.returncode}")
-        
+
         if result.returncode != 0:
             print(f"fsutil stderr: {result.stderr}")
             return False
-        
+
         # The output contains "Case sensitive attribute on directory: Enabled" or "Disabled"
         is_case_sensitive = "enabled" in output.lower()
         print(f"Directory {directory_path} case sensitivity: {is_case_sensitive}")
@@ -118,46 +103,42 @@ def get_case_sensitivity_status(directory_path: pathlib.Path) -> bool:
 def enable_case_sensitivity(directory_path: pathlib.Path) -> bool:
     """
     Enable case sensitivity on a directory (Windows 10 1803+ only).
-    
+
     Returns True if successful, False otherwise.
     Idempotent: safe to call multiple times.
     """
     if os.name != "nt":
         print(f"Not on Windows, skipping case sensitivity enablement for {directory_path}")
         return True  # Unix systems are typically case-sensitive by default
-    
+
     if not directory_path.exists():
         print(f"Directory {directory_path} does not exist, cannot enable case sensitivity")
         return False
-    
+
     # Check if already enabled (idempotent)
     if get_case_sensitivity_status(directory_path):
         print(f"Case sensitivity already enabled for {directory_path}")
         return True
-    
+
     try:
-        result = subprocess.run(
-            ["fsutil", "file", "setCaseSensitiveInfo", str(directory_path), "enable"],
-            capture_output=True,
-            text=True,
-            timeout=10
-        )
+        result = subprocess.run(["fsutil", "file", "setCaseSensitiveInfo", str(directory_path), "enable"], capture_output=True, text=True, timeout=10)
         success = result.returncode == 0
         print(f"Enabling case sensitivity for {directory_path}: returncode={result.returncode}")
         print(f"stdout: {result.stdout}")
         if not success:
             print(f"stderr: {result.stderr}")
-        
+
         # Verify it was actually enabled
         if success:
             actual_status = get_case_sensitivity_status(directory_path)
             print(f"Verification after enabling: {actual_status}")
             return actual_status
-        
+
         return False
     except (subprocess.TimeoutExpired, FileNotFoundError, Exception) as e:
         print(f"Failed to enable case sensitivity with error: {e}")
         import traceback
+
         traceback.print_exc()
         return False
 
@@ -165,29 +146,24 @@ def enable_case_sensitivity(directory_path: pathlib.Path) -> bool:
 def disable_case_sensitivity(directory_path: pathlib.Path) -> bool:
     """
     Disable case sensitivity on a directory (Windows only).
-    
+
     Returns True if successful, False otherwise.
     Idempotent: safe to call multiple times.
     """
     if os.name != "nt":
         return True  # Not applicable on Unix
-    
+
     if not directory_path.exists():
         print(f"Directory {directory_path} does not exist, cannot disable case sensitivity")
         return False
-    
+
     # Check if already disabled (idempotent)
     if not get_case_sensitivity_status(directory_path):
         print(f"Case sensitivity already disabled for {directory_path}")
         return True
-    
+
     try:
-        result = subprocess.run(
-            ["fsutil", "file", "setCaseSensitiveInfo", str(directory_path), "disable"],
-            capture_output=True,
-            text=True,
-            timeout=10
-        )
+        result = subprocess.run(["fsutil", "file", "setCaseSensitiveInfo", str(directory_path), "disable"], capture_output=True, text=True, timeout=10)
         success = result.returncode == 0
         print(f"Disabling case sensitivity for {directory_path}: returncode={result.returncode}")
         if not success:
@@ -196,6 +172,7 @@ def disable_case_sensitivity(directory_path: pathlib.Path) -> bool:
     except (subprocess.TimeoutExpired, FileNotFoundError, Exception) as e:
         print(f"Failed to disable case sensitivity with error: {e}")
         import traceback
+
         traceback.print_exc()
         return False
 
@@ -203,24 +180,24 @@ def disable_case_sensitivity(directory_path: pathlib.Path) -> bool:
 def enable_case_sensitivity_recursive(directory_path: pathlib.Path) -> bool:
     """
     Recursively enable case sensitivity on a directory and all its subdirectories (Windows only).
-    
+
     On Windows, case sensitivity must be explicitly enabled on each directory.
     This function walks the directory tree and enables it on all subdirectories.
-    
+
     Returns True if successful, False otherwise.
     Idempotent: safe to call multiple times.
     """
     if os.name != "nt":
         return True  # Unix systems are case-sensitive by default
-    
+
     if not directory_path.exists():
         print(f"Directory {directory_path} does not exist, cannot enable recursive case sensitivity")
         return False
-    
+
     # Enable on the root directory first
     if not enable_case_sensitivity(directory_path):
         return False
-    
+
     # Windows-specific: Recursively enable on all existing subdirectories
     # On Windows, each directory must have case sensitivity explicitly enabled
     try:
@@ -233,31 +210,32 @@ def enable_case_sensitivity_recursive(directory_path: pathlib.Path) -> bool:
     except Exception as e:
         print(f"Warning: Error during recursive case sensitivity enablement: {e.__class__.__name__}: {e}")
         import traceback
+
         traceback.print_exc()
         # Don't fail if we can't enable on subdirectories, root is what matters
-    
+
     return True
 
 
 class CaseSensitiveTempDirectory:
     """
     A temporary directory with case sensitivity enabled on Windows.
-    
+
     This is a context manager and cleanup handler that ensures proper
     setup and teardown of case-sensitive test directories.
     """
-    
+
     def __init__(self):
         self.temp_dir: tempfile.TemporaryDirectory | None = None
         self.path: pathlib.Path | None = None
         self._case_sensitivity_enabled: bool = False
-    
+
     def __enter__(self) -> pathlib.Path:
         """Create and configure the temporary directory."""
         self.temp_dir = tempfile.TemporaryDirectory()
         self.path = pathlib.Path(self.temp_dir.name)
         print(f"Created temporary directory: {self.path}")
-        
+
         if os.name == "nt":
             # Windows-specific: Enable case sensitivity on root directory
             # On Windows, case sensitivity must be enabled on each directory explicitly
@@ -265,24 +243,18 @@ class CaseSensitiveTempDirectory:
             self._case_sensitivity_enabled = enable_case_sensitivity(self.path)
             if not self._case_sensitivity_enabled:
                 print(f"WARNING: Failed to enable case sensitivity for {self.path}")
-                raise unittest.SkipTest(
-                    "Could not enable case sensitivity on Windows. "
-                    "Requires Windows 10 (1803+) or Windows 11 and administrator privileges."
-                )
+                raise unittest.SkipTest("Could not enable case sensitivity on Windows. Requires Windows 10 (1803+) or Windows 11 and administrator privileges.")
             # Windows-specific: Ensure case sensitivity is enabled recursively on all subdirectories
             # This ensures any subdirectories that exist or will be created have case sensitivity
             enable_case_sensitivity_recursive(self.path)
 
         self._case_sensitivity_enabled = get_case_sensitivity_status(self.path)
         if not self._case_sensitivity_enabled:
-            raise unittest.SkipTest(
-                "File system is not case-sensitive. These tests require a case-sensitive filesystem."
-            )
-        
+            raise unittest.SkipTest("File system is not case-sensitive. These tests require a case-sensitive filesystem.")
+
         print(f"Case-sensitive directory ready: {self.path}")
         return self.path
-    
-    
+
     def __exit__(
         self,
         exc_type: type[BaseException] | None,
@@ -296,11 +268,11 @@ class CaseSensitiveTempDirectory:
                 disable_case_sensitivity(self.path)
             except Exception as e:
                 print(f"Warning: Failed to disable case sensitivity during cleanup: {e}")
-        
+
         if self.temp_dir:
             try:
                 self.temp_dir.cleanup()
-                print(f"Cleaned up temporary directory")
+                print("Cleaned up temporary directory")
             except Exception as e:
                 print(f"Warning: Failed to cleanup temp directory: {e}")
                 # If normal cleanup fails, try forceful removal
@@ -322,16 +294,12 @@ def _determine_skip_reason() -> str | None:
         windows_supported = is_windows_case_sensitivity_supported()
         print(f"Windows case sensitivity support check result: {windows_supported}")
         if not windows_supported:
-            reason = (
-                "Windows case sensitivity not supported. "
-                "Requires Windows 10 (1803+) or Windows 11, NTFS filesystem, "
-                "and fsutil.exe must be available."
-            )
+            reason = "Windows case sensitivity not supported. Requires Windows 10 (1803+) or Windows 11, NTFS filesystem, and fsutil.exe must be available."
             print(f"Windows skip reason: {reason}")
             return reason
         return None
     if os.name == "posix":
-        print(f"POSIX environment detected, skip reason: None")
+        print("POSIX environment detected, skip reason: None")
         return None
     reason = f"Unsupported operating system: {os.name}"
     print(f"Non-Windows skip reason computed: {reason}")
@@ -354,13 +322,14 @@ class TestCaseAwarePath(TestCase):
         print(f"Test setup complete with temp_path: {self.temp_path}")
 
     def tearDown(self):
-        """Clean up the case-sensitive temporary directory."""        
+        """Clean up the case-sensitive temporary directory."""
         try:
             self.case_sensitive_dir.__exit__(None, None, None)
-            print(f"Test teardown complete")
+            print("Test teardown complete")
         except Exception as e:
             print(f"Error during teardown: {e}")
             import traceback
+
             traceback.print_exc()
 
     def test_join_with_nonexistent_path(self):
@@ -382,9 +351,9 @@ class TestCaseAwarePath(TestCase):
         expected_path.touch()
         assert expected_path.exists(), f"expected_path: '{expected_path}' should always exist on disk in this test."
         assert case_aware_file_path.exists(), f"expected_path: '{expected_path}' actual_path: '{case_aware_file_path}'"
-        assert (
-            str(case_aware_file_path) == str(expected_path) or platform.system() == "Darwin"
-        ), f"Path case mismatch on a case-sensitive filesystem. Case-aware path: {case_aware_file_path}, expected path: {expected_path}"
+        assert str(case_aware_file_path) == str(expected_path) or platform.system() == "Darwin", (
+            f"Path case mismatch on a case-sensitive filesystem. Case-aware path: {case_aware_file_path}, expected path: {expected_path}"
+        )
 
     @unittest.skipIf(sys.platform == "win32", "CaseAwarePath on Windows is InternalWindowsPath and doesn't resolve case")
     def test_make_and_parse_uri(self):
@@ -405,10 +374,10 @@ class TestCaseAwarePath(TestCase):
         temp_path_str = str(self.temp_path).replace(os.sep, "/")
         if os.name == "posix":
             # On Unix, paths start with /, so use file:// (2 slashes) + /path = file:///path (3 slashes total)
-            expected_uri = f'file://{temp_path_str}/SAMPLE.TXT'
+            expected_uri = f"file://{temp_path_str}/SAMPLE.TXT"
         else:
             # On Windows, paths are like C:/path, so use file:/// (3 slashes) + C:/path = file:///C:/path
-            expected_uri = f'file:///{temp_path_str}/SAMPLE.TXT'
+            expected_uri = f"file:///{temp_path_str}/SAMPLE.TXT"
         self.assertTrue(
             uri == expected_uri or platform.system() == "Darwin",
             f"Path case mismatch on a case-sensitive filesystem. Case-aware path: {uri}, expected path: {expected_uri}",

@@ -25,9 +25,9 @@ if TYPE_CHECKING:
 
 class TLKXMLReader(ResourceReader):
     """Reads TLK files from XML format.
-    
+
     XML is a human-readable format for easier editing of talk tables.
-    
+
     References:
     ----------
         Based on swkotor.exe TLK structure:
@@ -36,11 +36,12 @@ class TLKXMLReader(ResourceReader):
         - CTlkFile::CTlkFile @ 0x0041d810 - Constructor for TLK file reader
         - TLK resource type "TLK " @ 0x0073ecb0 - Resource type identifier
         - "tlk" extension string @ 0x0074dd40 - File extension identifier
-        
+
         Note: XML format is PyKotor-specific conversion format, not a standard game format.
         The engine uses binary TLK format exclusively. XML conversion allows easier editing
         and integration with external tools.
     """
+
     def __init__(
         self,
         source: SOURCE_TYPES,

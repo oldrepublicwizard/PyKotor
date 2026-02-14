@@ -27,7 +27,6 @@ from typing import TYPE_CHECKING
 from pykotor.resource.formats.gff.gff_data import GFF
 from pykotor.resource.type import ResourceType
 from pykotor.common.misc import Game
-from pykotor.extract.installation import Installation
 from pykotor.resource.formats.gff import read_gff
 from pykotor.resource.generics.are import ARE, construct_are, dismantle_are
 
@@ -153,12 +152,12 @@ class TestARE(unittest.TestCase):
         self.log_messages.append(message)
 
     def test_io_construct(self):
-        gff: GFF = read_gff(TEST_ARE_XML.encode('utf-8'), file_format=ResourceType.GFF_XML)
+        gff: GFF = read_gff(TEST_ARE_XML.encode("utf-8"), file_format=ResourceType.GFF_XML)
         are: ARE = construct_are(gff)
         self.validate_io(are)
 
     def test_io_reconstruct(self):
-        gff = read_gff(TEST_ARE_XML.encode('utf-8'), file_format=ResourceType.GFF_XML)
+        gff = read_gff(TEST_ARE_XML.encode("utf-8"), file_format=ResourceType.GFF_XML)
         gff = dismantle_are(construct_are(gff), Game.K2)
         are = construct_are(gff)
         self.validate_io(are)
@@ -168,7 +167,7 @@ class TestARE(unittest.TestCase):
         import tempfile
         import os
 
-        with tempfile.NamedTemporaryFile(mode='w', suffix='.are.xml', delete=False, encoding='utf-8') as tmp:
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".are.xml", delete=False, encoding="utf-8") as tmp:
             tmp.write(TEST_ARE_XML)
             tmp_path = tmp.name
 

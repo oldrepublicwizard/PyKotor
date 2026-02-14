@@ -22,7 +22,7 @@ class UTC:
     ----------
         CSWSCreature::LoadCreature @ (K1: 0x00500350, TSL: 0x0068ccb0)
         Main UTC GFF parser; called from LoadCreatures (K1: 0x00504a70, TSL: 0x0071b140) and LoadLimboCreatures (K1: 0x004c8c70).
-        CSWSCreatureStats::ReadStatsFromGff @ (K1: 0x00560e60, TSL: 0x006ec350) — reads stats/appearance (called by LoadCreature).
+        CSWSCreatureStats::ReadStatsFromGff @ (K1: 0x005afce0, TSL: 0x006ec350) — reads stats/appearance (called by LoadCreature; K1 LoadCreatureData @ 0x00560e60 calls it).
         Root defaults when field missing: AreaId 0, CreatureSize 3, IsDestroyable/IsRaiseable/DeadSelectable 1,
         Animation 10000, AmbientAnimState/CreatnScrptFird/PM_IsDisguised/Listening 0, scripts ResRef ""; stats 0 or 0.0.
         TSL adds: BonusForcePoints 7, AssignedPup -1, PlayerCreated 0, ForceAlwaysUpdate 0.
@@ -471,15 +471,19 @@ class UTCClass:
 def construct_utc(
     gff: GFF,
 ) -> UTC:
-    """Build UTC from GFF. Defaults when field missing match engine ReadField* (last-param).
+    """Build UTC from GFF. Defaults when field missing: 0/0.0/""/blank ResRef/false; lists empty. Omit OK.
 
-    Reference: CSWSCreature::LoadCreature @ (K1: 0x00500350, TSL: 0x0068ccb0);
-    CSWSCreatureStats::ReadStatsFromGff @ (K1: 0x00560e60, TSL: 0x006ec350).
+    Reference functions (5 K1, 5 TSL):
+    K1: (1) LoadCreature @ 0x00500350 (root/stats/scripts/items), (2) LoadCreatures @ 0x00504a70 (caller),
+    (3) LoadLimboCreatures @ 0x004c8c70 (caller), (4) ReadStatsFromGff @ 0x005afce0 (stats/skills/classes),
+    (5) ReadItemsFromGff @ 0x004ffda0 (Equip_ItemList/ItemList). TSL: (1) LoadCreature @ 0x0068ccb0,
+    (2) LoadCreatures @ 0x0071b140 (caller), (3) FUN_007306a0 (caller), (4) ReadStatsFromGff @ 0x006ec350,
+    (5) same item read path. All fields optional when missing.
     """
     utc = UTC()
 
     root = gff.root
-    # Root: TemplateResRef/Tag/Comment/Conversation ""; FirstName/LastName empty. K1/TSL ReadField* defaults; optional when missing.
+    # Root: TemplateResRef/Tag/Comment/Conversation ""; FirstName/LastName empty. K1 LoadCreature @ 0x00500350, TSL @ 0x0068ccb0 ReadField* defaults. Omit OK.
 
     # https://github.com/th3w1zard1/Kotor.NET/tree/master/Kotor.NET/Resources/KotorUTC/UTC.cs:15 (ResRef property)
     utc.resref = root.acquire("TemplateResRef", ResRef.from_blank())
@@ -495,7 +499,7 @@ def construct_utc(
 
     utc.last_name = root.acquire("LastName", LocalizedString.from_invalid())
 
-    # Stats/appearance: Race, Gender, Appearance_Type, FactionID, etc. default 0. ReadStatsFromGff @ (K1: 0x00560e60, TSL: 0x006ec350).
+    # Stats/appearance: Race, Gender, Appearance_Type, FactionID, etc. default 0. ReadStatsFromGff @ (K1: 0x005afce0, TSL: 0x006ec350).
     utc.subrace_id = root.acquire("SubraceIndex", 0)
 
     utc.perception_id = root.acquire("PerceptionRange", 0)
@@ -580,7 +584,7 @@ def construct_utc(
 
     utc.charisma = root.acquire("Cha", 0)
 
-    # HP/FP: CurrentHitPoints, MaxHitPoints, HitPoints, ForcePoints, CurrentForce default 0. ReadStatsFromGff; optional.
+    # HP/FP: CurrentHitPoints, MaxHitPoints, HitPoints, ForcePoints, CurrentForce default 0. K1 ReadStatsFromGff @ 0x005afce0, TSL @ 0x006ec350. Omit OK.
     utc.current_hp = root.acquire("CurrentHitPoints", 0)
 
     utc.max_hp = root.acquire("MaxHitPoints", 0)
@@ -620,7 +624,7 @@ def construct_utc(
 
     utc.on_user_defined = root.acquire("ScriptUserDefine", ResRef.from_blank())
 
-    # SkillList: 8 structs, Rank 0 each. K1 ReadStatsFromGff; TSL same. Optional; engine expects 8 entries.
+    # SkillList: 8 structs, Rank 0 each. K1 ReadStatsFromGff @ 0x005afce0, TSL @ 0x006ec350. Omit OK; engine expects 8 entries.
     # Skill order: [0] Computer Use, [1] Demolitions, [2] Stealth, [3] Awareness,
     #              [4] Persuade, [5] Repair, [6] Security, [7] Treat Injury
     if not root.exists("SkillList") or root.what_type("SkillList") != GFFFieldType.List:
@@ -684,7 +688,7 @@ def construct_utc(
     if len(skill_list_acquired._structs) > 8:
         utc._extra_unimplemented_skills = [skill_struct.acquire("Rank", 0) for skill_struct in skill_list_acquired._structs[8:]]
 
-    # ClassList: Class 0, ClassLevel 0; KnownList0 Spell 0. K1 ReadStatsFromGff/ReadSpellsFromGff; TSL same. Optional.
+    # ClassList: Class 0, ClassLevel 0; KnownList0 Spell 0. K1 ReadStatsFromGff @ 0x005afce0, TSL @ 0x006ec350. Omit OK.
     class_list: GFFList = root.acquire("ClassList", GFFList())
     for class_struct in class_list:
         class_id = class_struct.acquire("Class", 0)  # Class type identifier (e.g., 0=Soldier, 1=Scout)
@@ -701,7 +705,7 @@ def construct_utc(
 
         utc.classes.append(utc_class)
 
-    # FeatList: Feat 0. K1 LoadCreature path; TSL same. Optional.
+    # FeatList: Feat 0. K1 LoadCreature @ 0x00500350, TSL @ 0x0068ccb0. Omit OK.
     feat_list: GFFList = root.acquire("FeatList", GFFList())
     for index, feat_struct in enumerate(feat_list):
         feat_id_thing: int = feat_struct.acquire("Feat", 0)  # Feat identifier
@@ -709,7 +713,7 @@ def construct_utc(
         # PyKotor-specific: Preserve original order for round-trip compatibility
         utc._original_feat_mapping[feat_id_thing] = index
 
-    # Equip_ItemList: EquippedRes blank, Dropable 0. K1 ReadItemsFromGff 0x004ffda0; TSL same. Optional.
+    # Equip_ItemList: EquippedRes blank, Dropable 0. K1 ReadItemsFromGff @ 0x004ffda0, TSL same. Omit OK.
     equipment_list: GFFList = root.acquire("Equip_ItemList", GFFList())
     for equipment_struct in equipment_list:
         # struct_id maps to EquipmentSlot enum (e.g., 0=Right Hand, 1=Left Hand, 2=Armor)
@@ -718,7 +722,7 @@ def construct_utc(
         droppable = bool(equipment_struct.acquire("Dropable", 0))  # Whether item can be dropped
         utc.equipment[slot] = InventoryItem(resref, droppable)
 
-    # ItemList: InventoryRes blank, Dropable 0. K1 ReadItemsFromGff; TSL same. Optional.
+    # ItemList: InventoryRes blank, Dropable 0. K1 ReadItemsFromGff @ 0x004ffda0, TSL same. Omit OK.
     item_list: GFFList = root.acquire("ItemList", GFFList())
     for item_struct in item_list:
         resref = item_struct.acquire("InventoryRes", ResRef.from_blank())  # Item ResRef
@@ -734,14 +738,16 @@ def dismantle_utc(
     *,
     use_deprecated: bool = True,
 ) -> GFF:
-    """Build GFF from UTC. Written fields match engine; omit = engine default.
+    """Build UTC GFF from UTC. Write values match engine read defaults.
 
-    Reference: LoadCreature @ (K1: 0x00500350, TSL: 0x0068ccb0); ReadStatsFromGff @ (K1: 0x00560e60, TSL: 0x006ec350).
+    Reference functions: same as construct_utc (K1 LoadCreature @ 0x00500350, LoadCreatures @ 0x00504a70,
+    ReadStatsFromGff @ 0x005afce0; TSL LoadCreature @ 0x0068ccb0, LoadCreatures @ 0x0071b140,
+    ReadStatsFromGff @ 0x006ec350).
     """
     gff = GFF(GFFContent.UTC)
 
     root = gff.root
-    # Root fields: same defaults as engine ReadField* when missing (0, 0.0, "", blank ResRef).
+    # Root fields: same defaults as engine ReadField* when missing (0, 0.0, "", blank ResRef). REVA: K1 LoadCreature @ 0x00500350, TSL @ 0x0068ccb0; ReadStatsFromGff @ (K1: 0x005afce0, TSL: 0x006ec350). Omit OK.
     root.set_resref("TemplateResRef", utc.resref)
     root.set_string("Tag", utc.tag)
     root.set_string("Comment", utc.comment)

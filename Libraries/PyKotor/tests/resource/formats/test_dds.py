@@ -13,7 +13,7 @@ from pykotor.resource.formats.tpc import (
 )
 from pykotor.resource.formats.tpc.tpc_auto import detect_tpc
 from pykotor.resource.formats.tpc.convert.dxt.compress_dxt import rgb_to_dxt1
-from pykotor.resource.formats.tpc.convert.dxt.decompress_dxt import dxt1_to_rgb, dxt3_to_rgba, dxt5_to_rgba
+from pykotor.resource.formats.tpc.convert.dxt.decompress_dxt import dxt1_to_rgb, dxt5_to_rgba
 from pykotor.resource.type import ResourceType
 
 
@@ -46,12 +46,7 @@ class TestDDSParsing(unittest.TestCase):
         ddpf_flags: int,
         caps2: int = 0,
     ) -> bytearray:
-        header_flags = (
-            TestDDSParsing.DDSD_CAPS
-            | TestDDSParsing.DDSD_HEIGHT
-            | TestDDSParsing.DDSD_WIDTH
-            | TestDDSParsing.DDSD_PIXELFORMAT
-        )
+        header_flags = TestDDSParsing.DDSD_CAPS | TestDDSParsing.DDSD_HEIGHT | TestDDSParsing.DDSD_WIDTH | TestDDSParsing.DDSD_PIXELFORMAT
         if fourcc:
             header_flags |= TestDDSParsing.DDSD_LINEARSIZE
             pitch_or_linear = max(1, ((width + 3) // 4) * ((height + 3) // 4)) * (8 if fourcc == b"DXT1" else 16)
@@ -310,9 +305,7 @@ class TestDDSParsing(unittest.TestCase):
 
     def test_standard_cubemap_faces_parsed(self):
         width = height = 1
-        face_bytes = [
-            bytes([i, i, i]) for i in range(6)
-        ]  # unique BGR per face
+        face_bytes = [bytes([i, i, i]) for i in range(6)]  # unique BGR per face
         caps2 = 0x00000200 | 0x0000FC00  # CUBEMAP + ALLFACES
         header = self._write_standard_dds_header(
             width,
@@ -506,4 +499,3 @@ class TestDDSParsing(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
-

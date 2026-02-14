@@ -19,18 +19,12 @@ if TYPE_CHECKING:
 
 class RobustTreeView(RobustAbstractItemView, QTreeView):
     """A tree view that supports common features and settings."""
+
     def __new__(cls, *args, **kwargs):
         # For PySide6 compatibility with multiple inheritance
         return QTreeView.__new__(cls)
 
-    def __init__(
-        self,
-        parent: QWidget | None = None,
-        *args,
-        use_columns: bool = False,
-        should_call_qt_init: bool = True,
-        **kwargs
-    ):
+    def __init__(self, parent: QWidget | None = None, *args, use_columns: bool = False, should_call_qt_init: bool = True, **kwargs):
         if should_call_qt_init:
             QTreeView.__init__(self, parent)
         self.branch_connectors_enabled: bool = False
@@ -67,10 +61,14 @@ class RobustTreeView(RobustAbstractItemView, QTreeView):
         self._add_menu_action(tree_view_menu, "Expand Items on Double Click", self.expandsOnDoubleClick, self.setExpandsOnDoubleClick, "expandsOnDoubleClick")
         self._add_menu_action(tree_view_menu, "Tree Indentation", self.indentation, self.setIndentation, "indentation", param_type=int)
         self._add_menu_action(tree_view_menu, "Show Horizontal Scrollbar", lambda: self.header_visible, self.set_horizontal_scrollbar, "horizontalScrollBarVisible")
-        self._add_menu_action(tree_view_menu, "Vertical Spacing",
+        self._add_menu_action(
+            tree_view_menu,
+            "Vertical Spacing",
             lambda: getattr(self.itemDelegate(), "custom_vertical_spacing", 0),
             lambda x: getattr(self.itemDelegate(), "setVerticalSpacing", lambda _: None)(x),
-            "verticalSpacing", param_type=int)
+            "verticalSpacing",
+            param_type=int,
+        )
         self._add_menu_action(tree_view_menu, "Word Wrap", self.wordWrap, self.setWordWrap, "wordWrap")
         self._add_menu_action(advanced_menu, "All Columns Show Focus", self.allColumnsShowFocus, self.setAllColumnsShowFocus, "allColumnsShowFocus")
         self._add_menu_action(tree_view_menu, "Animated", self.isAnimated, self.setAnimated, "animated")
@@ -103,23 +101,38 @@ class RobustTreeView(RobustAbstractItemView, QTreeView):
                     resize_mode_menu,
                     f"[{i}] {section_name}",
                     lambda idx=i: self.header().sectionResizeMode(idx),
-                    (lambda mode, idx=i: self.header().setSectionResizeMode(idx, mode)) if qtpy.QT5 else (lambda mode, idx=i: self.header().setSectionResizeMode(idx, QHeaderView.ResizeMode(mode))),
+                    (lambda mode, idx=i: self.header().setSectionResizeMode(idx, mode))
+                    if qtpy.QT5
+                    else (lambda mode, idx=i: self.header().setSectionResizeMode(idx, QHeaderView.ResizeMode(mode))),
                     options={
                         "Interactive": QHeaderView.ResizeMode.Interactive,
                         "Fixed": QHeaderView.ResizeMode.Fixed,
                         "Stretch": QHeaderView.ResizeMode.Stretch,
-                        "Resize to Contents": QHeaderView.ResizeMode.ResizeToContents
+                        "Resize to Contents": QHeaderView.ResizeMode.ResizeToContents,
                     },
-                    settings_key=f"headerResizeMode_{i}"
+                    settings_key=f"headerResizeMode_{i}",
                 )
 
         # Sizing options
         sizing_menu = header_menu.addMenu("Sizing")
         self._add_simple_action(sizing_menu, "Reset Default Section Size", self.header().resetDefaultSectionSize)
-        self._add_menu_action(sizing_menu, "Set Maximum Section Size", self.header().maximumSectionSize, self.header().setMaximumSectionSize, "maximumSectionSize", param_type=int)  # noqa: E501
-        self._add_menu_action(sizing_menu, "Set Minimum Section Size", self.header().minimumSectionSize, self.header().setMinimumSectionSize, "minimumSectionSize", param_type=int)  # noqa: E501
-        self._add_menu_action(sizing_menu, "Set Default Section Size", self.header().defaultSectionSize, self.header().setDefaultSectionSize, "defaultSectionSize", param_type=int)  # noqa: E501
-        self._add_menu_action(sizing_menu, "Set Resize Contents Precision", self.header().resizeContentsPrecision, self.header().setResizeContentsPrecision, "resizeContentsPrecision", param_type=int)  # noqa: E501
+        self._add_menu_action(
+            sizing_menu, "Set Maximum Section Size", self.header().maximumSectionSize, self.header().setMaximumSectionSize, "maximumSectionSize", param_type=int
+        )  # noqa: E501
+        self._add_menu_action(
+            sizing_menu, "Set Minimum Section Size", self.header().minimumSectionSize, self.header().setMinimumSectionSize, "minimumSectionSize", param_type=int
+        )  # noqa: E501
+        self._add_menu_action(
+            sizing_menu, "Set Default Section Size", self.header().defaultSectionSize, self.header().setDefaultSectionSize, "defaultSectionSize", param_type=int
+        )  # noqa: E501
+        self._add_menu_action(
+            sizing_menu,
+            "Set Resize Contents Precision",
+            self.header().resizeContentsPrecision,
+            self.header().setResizeContentsPrecision,
+            "resizeContentsPrecision",
+            param_type=int,
+        )  # noqa: E501
 
         # Alignment and stretching
         self._add_exclusive_menu_action(
@@ -127,11 +140,7 @@ class RobustTreeView(RobustAbstractItemView, QTreeView):
             "Alignment",
             self.header().defaultAlignment,
             self.header().setDefaultAlignment,
-            options={
-                "Left": Qt.AlignmentFlag.AlignLeft,
-                "Center": Qt.AlignmentFlag.AlignCenter,
-                "Right": Qt.AlignmentFlag.AlignRight
-            },
+            options={"Left": Qt.AlignmentFlag.AlignLeft, "Center": Qt.AlignmentFlag.AlignCenter, "Right": Qt.AlignmentFlag.AlignRight},
             settings_key="headerDefaultAlignment",
             param_type=Qt.AlignmentFlag,
         )
@@ -145,24 +154,14 @@ class RobustTreeView(RobustAbstractItemView, QTreeView):
             "Sort Order",
             self.header().sortIndicatorOrder,
             lambda order: self.header().setSortIndicator(self.header().sortIndicatorSection(), order),
-            options={
-                "Ascending": Qt.SortOrder.AscendingOrder,
-                "Descending": Qt.SortOrder.DescendingOrder
-            },
+            options={"Ascending": Qt.SortOrder.AscendingOrder, "Descending": Qt.SortOrder.DescendingOrder},
             settings_key="headerSortOrder",
             param_type=Qt.SortOrder,
         )
 
         # Miscellaneous
         self._add_simple_action(header_menu, "Toggle Highlight Sections", lambda: self.header().setHighlightSections(not self.header().highlightSections()))
-        self._add_menu_action(
-            header_menu,
-            "Set Offset",
-            lambda: self.header().offset(),
-            lambda x: self.header().setOffset(x),
-            settings_key="headerOffset",
-            param_type=int
-        )
+        self._add_menu_action(header_menu, "Set Offset", lambda: self.header().offset(), lambda x: self.header().setOffset(x), settings_key="headerOffset", param_type=int)
         self._add_simple_action(header_menu, "Set Offset to Last Section", self.header().setOffsetToLastSection)
         self._add_menu_action(
             header_menu,
@@ -170,7 +169,7 @@ class RobustTreeView(RobustAbstractItemView, QTreeView):
             lambda: self.header().offset(),
             lambda x: self.header().setOffsetToSectionPosition(x),
             settings_key="headerOffsetToSectionPosition",
-            param_type=int
+            param_type=int,
         )
 
         # Section-specific actions
@@ -184,7 +183,7 @@ class RobustTreeView(RobustAbstractItemView, QTreeView):
                 lambda idx=i: self.header().sectionSize(idx),
                 lambda size, idx=i: self.header().resizeSection(idx, size),
                 settings_key=f"headerSectionSize_{i}",
-                param_type=int
+                param_type=int,
             )
             self._add_menu_action(
                 section_submenu,
@@ -192,7 +191,7 @@ class RobustTreeView(RobustAbstractItemView, QTreeView):
                 lambda idx=i: self.header().visualIndex(idx),
                 lambda new_idx, idx=i: self.header().moveSection(idx, new_idx),
                 settings_key=f"headerSectionPosition_{i}",
-                param_type=int
+                param_type=int,
             )
 
         return header_menu
@@ -256,7 +255,7 @@ class RobustTreeView(RobustAbstractItemView, QTreeView):
 
     def _wheel_changes_indent_size(self, event: QWheelEvent) -> bool:
         delta: int = event.angleDelta().x()  # Same as y() in the other funcs but returned in x() due to AltModifier I guess. Not in the documentation.
-        #print(f"wheel changes indent delta: {delta}")
+        # print(f"wheel changes indent delta: {delta}")
         if not delta:
             return False
         self.setIndentation(max(0, self.indentation() + (1 if delta > 0 else -1)))
@@ -441,12 +440,12 @@ if __name__ == "__main__":
         def add_dummy_items(self):
             root = self.model.invisibleRootItem()
             for i in range(3):
-                parent = QStandardItem(f"Parent {i+1}")
-                value = QStandardItem(f"Value {i+1}")
+                parent = QStandardItem(f"Parent {i + 1}")
+                value = QStandardItem(f"Value {i + 1}")
                 root.appendRow([parent, value])
                 for j in range(2):
-                    child = QStandardItem(f"Child {i+1}-{j+1}")
-                    child_value = QStandardItem(f"Child Value {i+1}-{j+1}")
+                    child = QStandardItem(f"Child {i + 1}-{j + 1}")
+                    child_value = QStandardItem(f"Child Value {i + 1}-{j + 1}")
                     parent.appendRow([child, child_value])
 
         def add_item(self):

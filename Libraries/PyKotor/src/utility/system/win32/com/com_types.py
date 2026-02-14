@@ -3,7 +3,6 @@ from __future__ import annotations
 import threading
 import weakref
 
-from contextlib import suppress
 from ctypes import POINTER, Structure, byref, c_int, c_uint, c_wchar_p, oledll, windll
 from ctypes.wintypes import BYTE, DWORD, WORD
 from typing import TYPE_CHECKING, Sequence
@@ -28,12 +27,15 @@ FDE_OVERWRITE_RESPONSE = FDE_SHAREVIOLATION_RESPONSE
 
 try:
     from comtypes import GUID as COMTYPE_GUID  # pyright: ignore[reportMissingImports, reportMissingTypeStubs, reportAttributeAccessIssue]
+
     inherit = (COMTYPE_GUID,)
 except ImportError:
     inherit = (Structure,)
+
+
 class GUID(*inherit):
     _instances = weakref.WeakValueDictionary()  # Class-level dictionary to hold GUID instances
-    _fields_: Sequence[ tuple[str, type[_CData]] | tuple[str, type[_CData], int] ] = [
+    _fields_: Sequence[tuple[str, type[_CData]] | tuple[str, type[_CData], int]] = [
         ("Data1", DWORD),
         ("Data2", WORD),
         ("Data3", WORD),
@@ -153,12 +155,7 @@ class GUID(*inherit):
         )
 
     def __bytes__(self) -> bytes:
-        return (
-            self.Data1.to_bytes(4, byteorder="little")
-            + self.Data2.to_bytes(2, byteorder="little")
-            + self.Data3.to_bytes(2, byteorder="little")
-            + self.Data4
-        )
+        return self.Data1.to_bytes(4, byteorder="little") + self.Data2.to_bytes(2, byteorder="little") + self.Data3.to_bytes(2, byteorder="little") + self.Data4
 
     def __hash__(self):
         # We make GUID instances hashable, although ctypes.Structure instances are technically supposed to be mutable.

@@ -240,13 +240,7 @@ def execute_cli(cmdline_args: Namespace):
             # Fall back to Path object (for folders/files)
             resolved_paths.append(path_obj)
 
-    if (
-        len(resolved_paths) == 2
-        and all(isinstance(path, Path)
-        and path.is_file()
-        for path in resolved_paths)
-        and output_mode == "normal"
-    ):
+    if len(resolved_paths) == 2 and all(isinstance(path, Path) and path.is_file() for path in resolved_paths) and output_mode == "normal":
         # Use direct file-to-file diff for unified output
         from pykotor.tslpatcher.diff.engine import DiffContext, diff_data
 
@@ -323,9 +317,4 @@ def execute_cli(cmdline_args: Namespace):
 
 def has_cli_paths(cmdline_args: Namespace) -> bool:
     """Check if CLI paths were provided."""
-    return bool(
-        cmdline_args.path1
-        or cmdline_args.path2
-        or cmdline_args.path3
-        or cmdline_args.extra_paths
-    )
+    return bool(cmdline_args.path1 or cmdline_args.path2 or cmdline_args.path3 or cmdline_args.extra_paths)

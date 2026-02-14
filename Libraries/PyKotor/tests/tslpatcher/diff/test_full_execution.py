@@ -547,6 +547,7 @@ class TestKotorDiffFullExecution(unittest.TestCase):
             profiler.disable()
             self._save_profiler_results(profiler, profiler_output_file, profiler_summary_file, "Step 4: Uninstall Patch")
 
+
 def report_test_errors(errors: list[str], test_case: unittest.TestCase):
     """Report all errors at the end."""
     if errors:

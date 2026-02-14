@@ -5,14 +5,7 @@ import math
 from copy import copy
 from typing import TYPE_CHECKING, Any, Callable, Union
 
-from pykotor.gl.glm_compat import (
-    decompose,
-    eulerAngles,
-    mat4,
-    mat4_cast,
-    quat,
-    translate
-)
+from pykotor.gl.glm_compat import decompose, eulerAngles, mat4, mat4_cast, quat, translate
 from pykotor.gl.models.mdl import Cube, Empty
 from utility.common.geometry import Vector3, Vector4
 

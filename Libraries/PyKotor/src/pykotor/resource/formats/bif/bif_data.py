@@ -31,7 +31,7 @@ References:
         Similar to Variable but with additional Part Number field
         Resource Data:
         Raw binary data for each resource at specified offsets
-    
+
 BZF Compression:
 ---------------
     BZF files use LZMA compression on the entire BIF file after the 8-byte header.
@@ -59,10 +59,10 @@ if TYPE_CHECKING:
 
 class BIFType(Enum):
     """The type of BIF file based on file header signature.
-    
+
     BIF files can be either uncompressed (BIFF) or LZMA-compressed (BZF).
     The file type is determined by the first 4 bytes of the file header.
-    
+
     References:
     ----------
         Original BioWare engine binaries (from swkotor.exe, swkotor2.exe)
@@ -94,11 +94,11 @@ class BIFType(Enum):
 
 class BIFResource(ArchiveResource):
     """A single resource entry stored in a BIF/BZF file.
-    
+
     BIF resources contain only the resource data, type, and ID. The actual filename (ResRef)
     is stored in the KEY file and matched via the resource ID. Each resource has a unique ID
     within the BIF that corresponds to entries in the KEY file's resource table.
-    
+
     References:
     ----------
         Original BioWare engine binaries (from swkotor.exe, swkotor2.exe)
@@ -109,7 +109,7 @@ class BIFResource(ArchiveResource):
         https://github.com/th3w1zard1/KotOR_IO/tree/master/KotOR_IO/File
 
 
-        
+
     Attributes:
     ----------
         resname_key_index: Resource ID that matches KEY file entries
@@ -118,13 +118,13 @@ class BIFResource(ArchiveResource):
             This is a unique identifier within the BIF file
             Upper 20 bits encode BIF index, lower 14 bits encode resource index
             Used to match resources between BIF and KEY files
-            
+
         _offset: Byte offset to resource data within BIF file
             Reference: https://github.com/th3w1zard1/Kotor.NET/tree/master/BIFBinaryStructure.cs:54 (Offset property)
             Reference: https://github.com/th3w1zard1/KotOR_IO/tree/master/BIF.cs:204 (Offset field)
             Points to start of raw resource data in file
             Offsets are absolute from beginning of file
-            
+
         _packed_size: Size of compressed data (BZF only, unused in regular BIF)
             BZF-specific field for compressed resource size
             Not present in standard BIF format
@@ -140,19 +140,17 @@ class BIFResource(ArchiveResource):
         size: int | None = None,
     ):
         super().__init__(resref=resref, restype=restype, data=data, size=size)
-        
-        
+
         # https://github.com/th3w1zard1/Kotor.NET/tree/master/Kotor.NET/Formats/KotorBIF/BIFBinaryStructure.cs:53
         # https://github.com/th3w1zard1/KotOR_IO/tree/master/KotOR_IO/File Formats/BIF.cs:203
         # Resource ID (matches KEY file, unique within BIF)
         self.resname_key_index: int = 0 if resname_key_index is None else resname_key_index
-        
-        
+
         # https://github.com/th3w1zard1/Kotor.NET/tree/master/Kotor.NET/Formats/KotorBIF/BIFBinaryStructure.cs:54
         # https://github.com/th3w1zard1/KotOR_IO/tree/master/KotOR_IO/File Formats/BIF.cs:204
         # Byte offset to resource data in file
         self._offset: int = 0  # Offset in BIF file
-        
+
         # BZF-specific: Size of compressed data
         self._packed_size: int = 0  # Size of compressed data (BZF only)
 
@@ -196,12 +194,12 @@ class BIFResource(ArchiveResource):
 
 class BIF(BiowareArchive):
     """Represents a BIF/BZF file in the Aurora engine.
-    
+
     BIF (Binary Index Format) files are the primary data containers for KotOR game resources.
     They store thousands of game assets (models, textures, scripts, etc.) in a single file.
     BIF files work in conjunction with KEY files: the BIF contains the data and resource IDs,
     while the KEY file maps filenames (ResRefs) to resource IDs and BIF locations.
-    
+
     References:
     ----------
         Original BioWare engine binaries (from swkotor.exe, swkotor2.exe)
@@ -213,43 +211,43 @@ class BIF(BiowareArchive):
         https://github.com/th3w1zard1/KotOR.js/tree/master/src/resource/BIFObject.ts:11-152
 
 
-        
+
     Attributes:
     ----------
         HEADER_SIZE: Size of BIF header in bytes (20 bytes)
             Reference: https://github.com/th3w1zard1/Kotor.NET/tree/master/BIFBinaryStructure.cs:41-47 (header fields)
             Reference: https://github.com/th3w1zard1/KotOR_IO/tree/master/BIF.cs:46-51 (header parsing)
             Fixed size across all BIF versions
-            
+
         VAR_ENTRY_SIZE: Size of each variable resource entry (16 bytes)
             Reference: https://github.com/th3w1zard1/Kotor.NET/tree/master/BIFBinaryStructure.cs:58-64 (VariableResource reading)
             Reference: https://github.com/th3w1zard1/KotOR_IO/tree/master/BIF.cs:56 (entry reading loop)
             Each entry: ID(4) + Offset(4) + Size(4) + Type(4)
-            
+
         FIX_ENTRY_SIZE: Size of fixed resource entry (16-20 bytes, unused in KotOR)
             Reference: https://github.com/th3w1zard1/KotOR_IO/tree/master/BIF.cs:63 (FixedResourceEntry struct)
             Fixed resources not used in KotOR games (always 0 count)
-            
+
         FILE_VERSION: BIF file format version ("V1  ")
             Reference: https://github.com/th3w1zard1/Kotor.NET/tree/master/BIFBinaryStructure.cs:44 (FileVersion)
             Reference: https://github.com/th3w1zard1/KotOR_IO/tree/master/BIF.cs:48 (Version field)
-            
+
         bif_type: Whether this is regular BIF or compressed BZF
             Determines compression handling during load/save
-            
+
         _resources: List of all resources in this BIF
             Reference: https://github.com/th3w1zard1/Kotor.NET/tree/master/BIFBinaryStructure.cs:18 (Resources list)
             Reference: https://github.com/th3w1zard1/KotOR_IO/tree/master/BIF.cs:96 (VariableResourceTable)
             Ordered list maintained for indexing and iteration
-            
+
         _resource_dict: Fast lookup by ResRef and ResourceType
             PyKotor-specific optimization for O(1) resource lookup
             Built from KEY file data or user assignment
-            
+
         _id_lookup: Fast lookup by resource ID
             Reference: Similar to KEY file's resource_by_id mapping
             Maps resource ID to BIFResource for KEY-BIF coordination
-            
+
         _modified: Tracks if BIF has been modified since loading
             Used to determine if file needs to be saved
     """
@@ -265,23 +263,21 @@ class BIF(BiowareArchive):
         bif_type: BIFType = BIFType.BIF,
     ):
         super().__init__()
-        
-        
+
         # File type (BIF vs BZF determines compression)
         self.bif_type: BIFType = bif_type
-        
-        
+
         # https://github.com/th3w1zard1/Kotor.NET/tree/master/Kotor.NET/Formats/KotorBIF/BIFBinaryStructure.cs:18
         # https://github.com/th3w1zard1/KotOR_IO/tree/master/KotOR_IO/File Formats/BIF.cs:96
         # List of all resources in file (ordered)
         self._resources: list[BIFResource] = []
-        
+
         # PyKotor optimization: ResRef+Type -> Resource lookup (O(1) access)
         self._resource_dict: dict[ResourceIdentifier, BIFResource] = {}
-        
+
         # PyKotor optimization: Resource ID -> Resource lookup (for KEY coordination)
         self._id_lookup: dict[int, BIFResource] = {}
-        
+
         # Modification tracking flag
         self._modified: bool = False
 
@@ -543,14 +539,20 @@ class BIF(BiowareArchive):
         for resource in self._resources:
             if key_res := key_resources.get(resource.resname_key_index):
                 if resource.restype != key_res.restype:
-                    errors.append(f"Resource type mismatch for ID {resource.resname_key_index}: " f"BIF={resource.restype}, KEY={key_res.restype}")
+                    errors.append(f"Resource type mismatch for ID {resource.resname_key_index}: BIF={resource.restype}, KEY={key_res.restype}")
                 resource.resref = key_res.resref
             else:
                 errors.append(f"Resource ID {resource.resname_key_index} from BIF not found in KEY")
 
         # Check for KEY resources not in BIF
         bif_ids: set[int] = {r.resname_key_index for r in self._resources}
-        errors.extend([f"Resource {key_res.resref}:{key_res.restype} from KEY not found in BIF (ID: {key_res.resname_key_index})" for key_res in key_resources.values() if key_res.resname_key_index not in bif_ids])  # noqa: E501
+        errors.extend(
+            [
+                f"Resource {key_res.resref}:{key_res.restype} from KEY not found in BIF (ID: {key_res.resname_key_index})"
+                for key_res in key_resources.values()
+                if key_res.resname_key_index not in bif_ids
+            ]
+        )  # noqa: E501
 
         # Rebuild lookup tables with new names
         self.build_lookup_tables()

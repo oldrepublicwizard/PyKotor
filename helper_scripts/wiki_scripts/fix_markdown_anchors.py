@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 """Script to fix common broken anchor references in markdown files."""
+
 from __future__ import annotations
 
 import re
@@ -30,23 +31,24 @@ ANCHOR_FIXES = {
     "TPC-File-Format": "tpc-file-format-documentation",
 }
 
+
 def fix_anchors_in_file(file_path: Path) -> int:
     """Fix broken anchors in a single file.
-    
+
     Returns: Number of fixes made
     """
-    content = file_path.read_text(encoding='utf-8')
+    content = file_path.read_text(encoding="utf-8")
     original_content = content
     fixes = 0
-    
+
     # Pattern matches [text](file#anchor) or [text](#anchor)
     def replace_anchor(match):
         nonlocal fixes
         link_text = match.group(1)
         link_url = match.group(2)
-        
-        if '#' in link_url:
-            file_part, anchor_part = link_url.split('#', 1)
+
+        if "#" in link_url:
+            file_part, anchor_part = link_url.split("#", 1)
             # Only fix if pointing to GFF-File-Format
             if file_part == "GFF-File-Format" and anchor_part in ANCHOR_FIXES:
                 new_anchor = ANCHOR_FIXES[anchor_part]
@@ -57,33 +59,32 @@ def fix_anchors_in_file(file_path: Path) -> int:
                 new_anchor = ANCHOR_FIXES[anchor_part]
                 fixes += 1
                 return f"[{link_text}](#{new_anchor})"
-        
+
         return match.group(0)
-    
+
     # Replace anchors in markdown links
     pattern = r'\[([^\]]+)\]\(([^\)"]+)(?:\s+"[^"]+")?\)'
     content = re.sub(pattern, replace_anchor, content)
-    
+
     if content != original_content:
-        file_path.write_text(content, encoding='utf-8')
-    
+        file_path.write_text(content, encoding="utf-8")
+
     return fixes
 
 
 def main():
     """Main entry point."""
     total_fixes = 0
-    
+
     for md_file in WIKI_DIR.glob("*.md"):
         fixes = fix_anchors_in_file(md_file)
         if fixes > 0:
             print(f"Fixed {fixes} anchors in {md_file.name}")
             total_fixes += fixes
-    
+
     print(f"\nTotal fixes: {total_fixes}")
     return 0
 
 
 if __name__ == "__main__":
     exit(main())
-

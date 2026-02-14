@@ -21,7 +21,7 @@ class PyFileSystemNode:
     """Python adapter for QFileSystemNode matching Qt6 C++ source exactly.
 
     Matches qfilesystemmodel_p.h lines 74-196.
-    
+
     C++ class definition:
     class QFileSystemNode {
     public:
@@ -326,7 +326,7 @@ class PyFileSystemNode:
                 info = new QExtendedInformation(fileInfo.fileInfo());
             (*info) = fileInfo;
         }
-        
+
         Note: The C++ copy assignment operator copies all members. In Python,
         we create a new object if needed, then copy all fields.
         """
@@ -374,8 +374,7 @@ class PyFileSystemNode:
             }
         }
         """
-        from qtpy.QtGui import QAbstractFileIconProvider
-        
+
         if iconProvider is None:
             return
 
@@ -414,8 +413,7 @@ class PyFileSystemNode:
             }
         }
         """
-        from qtpy.QtGui import QAbstractFileIconProvider
-        
+
         if iconProvider is None:
             return
 

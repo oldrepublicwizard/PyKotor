@@ -19,10 +19,10 @@ _ENTRY_SIZE = 40
 
 class TLKBinaryReader(ResourceReader):
     """Reads TLK (Talk Table) files.
-    
+
     TLK files store localized strings used throughout the game for dialog, item descriptions,
     and other text content. Each entry can have text, sound references, and flags.
-    
+
     References:
     ----------
         See tlk_data module docstring for engine addresses (K1 + TSL TODO). CTlkTable::CTlkTable (K1: 0x0041d8d0), CTlkTable::AddFile (K1: 0x0041d920), CTlkFile::CTlkFile (K1: 0x0041d810), "TLK " (K1: 0x0073ecb0), "tlk" extension (K1: 0x0074dd40).
@@ -31,6 +31,7 @@ class TLKBinaryReader(ResourceReader):
         - ResRef lowercasing (reone lowercases sound resrefs)
 
     """
+
     def __init__(
         self,
         source: SOURCE_TYPES,
@@ -81,39 +82,39 @@ class TLKBinaryReader(ResourceReader):
 
     def _load_entries_batch(self):
         """Optimized batch loading of all entry headers.
-        
+
         Reads all entry headers in one batch operation instead of one-by-one.
         This reduces seeks from N (one per entry) to 1 (one batch read).
         """
         string_count = len(self._tlk)
         if string_count == 0:
             return
-        
+
         # Calculate where entries start (after 20-byte header)
         entries_start = _FILE_HEADER_SIZE
         # Each entry is 40 bytes: flags(4) + sound_resref(16) + volume(4) + pitch(4) + text_offset(4) + text_length(4) + sound_length(4)
         entries_size = string_count * _ENTRY_SIZE
-        
+
         # Read all entry data at once
         self._reader.seek(entries_start)
         entries_data = self._reader.read_bytes(entries_size)
-        
+
         # Parse entries from batch data
         for stringref in range(string_count):
             entry: TLKEntry = self._tlk.entries[stringref]
             offset = stringref * _ENTRY_SIZE
-            
+
             # Parse entry: flags(4) + sound_resref(16) + volume(4) + pitch(4) + text_offset(4) + text_length(4) + sound_length(4)
-            entry_flags, = struct.unpack("<I", entries_data[offset:offset + 4])
-            sound_resref_bytes = entries_data[offset + 4:offset + 20]
+            (entry_flags,) = struct.unpack("<I", entries_data[offset : offset + 4])
+            sound_resref_bytes = entries_data[offset + 4 : offset + 20]
             # Find null terminator for sound_resref
-            null_pos = sound_resref_bytes.find(b'\x00')
+            null_pos = sound_resref_bytes.find(b"\x00")
             if null_pos >= 0:
                 sound_resref_bytes = sound_resref_bytes[:null_pos]
             sound_resref = sound_resref_bytes.decode("ascii", errors="ignore")
-            _volume_variance, _pitch_variance, text_offset, text_length = struct.unpack("<IIII", entries_data[offset + 20:offset + 36])
-            entry.sound_length, = struct.unpack("<f", entries_data[offset + 36:offset + 40])
-            
+            _volume_variance, _pitch_variance, text_offset, text_length = struct.unpack("<IIII", entries_data[offset + 20 : offset + 36])
+            (entry.sound_length,) = struct.unpack("<f", entries_data[offset + 36 : offset + 40])
+
             entry.text_present = (entry_flags & 0x0001) != 0
             entry.sound_present = (entry_flags & 0x0002) != 0
             entry.soundlength_present = (entry_flags & 0x0004) != 0
@@ -128,7 +129,7 @@ class TLKBinaryReader(ResourceReader):
         entry: TLKEntry = self._tlk.entries[stringref]
 
         entry_flags = self._reader.read_uint32()
-        
+
         # NOTE: reone lowercases sound_resref, PyKotor does not
         sound_resref = self._reader.read_string(16)
         _volume_variance = self._reader.read_uint32()  # unused
@@ -136,7 +137,7 @@ class TLKBinaryReader(ResourceReader):
         text_offset = self._reader.read_uint32()
         text_length = self._reader.read_uint32()
         entry.sound_length = self._reader.read_single()  # unused
-        
+
         entry.text_present = (entry_flags & 0x0001) != 0  # Check if the TEXT_PRESENT flag is set
         entry.sound_present = (entry_flags & 0x0002) != 0  # Check if the SND_PRESENT flag is set
         entry.soundlength_present = (entry_flags & 0x0004) != 0  # Check if the SND_LENGTH flag is set

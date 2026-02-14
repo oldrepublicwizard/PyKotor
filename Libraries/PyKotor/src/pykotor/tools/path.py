@@ -1,19 +1,18 @@
-from __future__ import annotations
-
 """Case-aware path helpers used by PyKotor.
 
 The module keeps modern `pathlib` behavior where possible, while preserving
 legacy compatibility points that older callers still import from here.
 """
+from __future__ import annotations
 
-from collections.abc import Generator, Iterable
-from functools import lru_cache
 import os
 import pathlib
 import re
 import sys
-from typing import TYPE_CHECKING
 import warnings
+from collections.abc import Iterable
+from functools import lru_cache
+from typing import TYPE_CHECKING
 
 from loggerplus import RobustLogger  # pyright: ignore[reportMissingTypeStubs, reportMissingModuleSource]
 
@@ -38,6 +37,7 @@ def _warn_deprecated_endpoint(endpoint: str, replacement: str) -> None:
         stacklevel=3,
     )
 
+
 def is_filesystem_case_sensitive(
     path: os.PathLike | str,
 ) -> bool | None:
@@ -45,6 +45,7 @@ def is_filesystem_case_sensitive(
     This function creates a temporary file to test the filesystem behavior.
     """
     import tempfile
+
     try:
         with tempfile.TemporaryDirectory(dir=path) as temp_dir:
             temp_path: pathlib.Path = pathlib.Path(temp_dir)
@@ -451,6 +452,7 @@ def _get_or_create_fuse_mount(root_path: str) -> str | None:
     )
     return None
 
+
 def get_default_paths() -> dict[str, dict[Game, list[str]]]:  # TODO(th3w1zard1): Many of these paths are incomplete and need community input.  # noqa: TD003
     from pykotor.common.misc import Game  # noqa: PLC0415  # pylint: disable=import-outside-toplevel
 
@@ -520,6 +522,7 @@ def get_default_paths() -> dict[str, dict[Game, list[str]]]:  # TODO(th3w1zard1)
         },
     }
 
+
 def find_kotor_paths_from_default() -> dict[Game, list[CaseAwarePath]]:
     """Finds paths to Knights of the Old Republic game data directories.
 
@@ -527,28 +530,22 @@ def find_kotor_paths_from_default() -> dict[Game, list[CaseAwarePath]]:
     -------
         dict[Game, list[CaseAwarePath]]: A dictionary mapping Games to lists of existing path locations.
     """
-    from pykotor.common.misc import Game  # noqa: PLC0415
     import platform
+
+    from pykotor.common.misc import Game  # noqa: PLC0415
 
     os_str = platform.system()
 
     # Build hardcoded default kotor locations
     raw_locations: dict[str, dict[Game, list[str]]] = get_default_paths()
     locations: dict[Game, set[CaseAwarePath]] = {
-        game: {
-            case_path
-            for case_path in (
-                CaseAwarePath(path).expanduser().resolve()
-                for path in paths
-            )
-            if case_path.exists()
-        }
+        game: {case_path for case_path in (CaseAwarePath(path).expanduser().resolve() for path in paths) if case_path.exists()}
         for game, paths in raw_locations.get(os_str, {}).items()
     }
 
     # Build kotor locations by registry (if on windows)
     if os_str == "Windows":
-        from pykotor.tools.registry import find_software_key, winreg_key, resolve_reg_key_to_path
+        from pykotor.tools.registry import find_software_key, resolve_reg_key_to_path, winreg_key
 
         for game, possible_game_paths in ((Game.K1, winreg_key(Game.K1)), (Game.K2, winreg_key(Game.K2))):
             for reg_key, reg_valname in possible_game_paths:
@@ -556,12 +553,13 @@ def find_kotor_paths_from_default() -> dict[Game, list[CaseAwarePath]]:
                 path = CaseAwarePath(path_str).resolve() if path_str else None
                 if path and path.name and path.is_dir():
                     locations[game].add(path)
-        
+
         amazon_k1_path_str: str | None = find_software_key("AmazonGames/Star Wars - Knights of the Old")
         if amazon_k1_path_str is not None and os.path.isdir(amazon_k1_path_str):
             locations[Game.K1].add(CaseAwarePath(amazon_k1_path_str))
 
     return {Game.K1: sorted(list(locations[Game.K1])), Game.K2: sorted(list(locations[Game.K2]))}
+
 
 __all__ = [
     "CaseAwarePath",

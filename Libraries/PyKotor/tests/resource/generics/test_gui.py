@@ -26,10 +26,9 @@ from typing import TYPE_CHECKING
 
 
 from utility.common.geometry import Vector2, Vector4
-from pykotor.resource.formats.gff import GFF, GFFStruct
-from pykotor.common.misc import Color, Game
-from pykotor.extract.installation import Installation
-from pykotor.resource.formats.gff import read_gff, GFFComparisonResult, GFFList
+from pykotor.resource.formats.gff import GFF
+from pykotor.common.misc import Color
+from pykotor.resource.formats.gff import read_gff
 from pykotor.resource.generics.gui import (
     GUI,
     construct_gui,

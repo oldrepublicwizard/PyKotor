@@ -53,4 +53,3 @@ for tex in missing:
     has_tga = (expected_kit / f"{tex}.tga").exists()
     has_txi = (expected_kit / f"{tex}.txi").exists()
     print(f"  {tex}: TGA={has_tga}, TXI={has_txi}")
-

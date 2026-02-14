@@ -3,6 +3,7 @@
 This module provides CLI commands for converting resources (textures, sounds, models)
 using PyKotor utilities.
 """
+
 from __future__ import annotations
 
 import pathlib
@@ -88,7 +89,7 @@ def cmd_model_convert(args: Namespace, logger: Logger) -> int:
         Based on swkotor.exe model format:
         - LoadModel @ 0x00464200, @ 0x0061b380, @ 0x006823f0, @ 0x006842e0, @ 0x006903d0, @ 0x006910d0 - Model loading functions
         - UnloadModel @ 0x0060c8e0, @ 0x00646650, @ 0x006825f0 - Model unloading functions
-        
+
         Derivations and Other Implementations:
         ----------
         https://github.com/th3w1zard1/mdlops/tree/master/
@@ -116,4 +117,3 @@ def cmd_model_convert(args: Namespace, logger: Logger) -> int:
         return 1
     else:
         return 0
-

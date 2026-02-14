@@ -2,6 +2,7 @@
 
 Sets up headless Qt testing and provides common fixtures.
 """
+
 from __future__ import annotations
 
 import os
@@ -48,6 +49,7 @@ for path in [PYKOTOR_PATH, UTILITY_PATH, PYKOTORGL_PATH, TOOLSET_SRC]:
 
 # Import shared profiling and timeout utilities
 import pytest
+
 _test_helpers_path = str(Path(__file__).resolve().parents[1])
 if _test_helpers_path not in sys.path:
     sys.path.insert(0, _test_helpers_path)

@@ -1,4 +1,5 @@
 """Script to add help dialog tests to all editor test files."""
+
 import re
 
 from pathlib import Path
@@ -77,25 +78,26 @@ def test_{editor_lower}_editor_help_dialog_skips_when_no_wiki_file(qtbot, instal
     assert editor is not None
 '''
 
+
 def add_test_to_file(test_file_path: Path, editor_class: str, wiki_file: str | None):
     """Add help test to a test file."""
-    content = test_file_path.read_text(encoding='utf-8')
-    
+    content = test_file_path.read_text(encoding="utf-8")
+
     # Check if test already exists
     test_name = f"test_{editor_class.lower()}_editor_help_dialog"
     if test_name in content:
         print(f"  Test already exists in {test_file_path.name}, skipping...")
         return False
-    
+
     # Find the last test function or class to add after
     # Look for the last function definition
-    lines = content.split('\n')
+    lines = content.split("\n")
     last_test_line = -1
     for i in range(len(lines) - 1, -1, -1):
-        if re.match(r'^def test_', lines[i]):
+        if re.match(r"^def test_", lines[i]):
             last_test_line = i
             break
-    
+
     if last_test_line == -1:
         # No test functions found, add at end
         insert_pos = len(lines)
@@ -105,51 +107,45 @@ def add_test_to_file(test_file_path: Path, editor_class: str, wiki_file: str | N
         indent_level = len(lines[last_test_line]) - len(lines[last_test_line].lstrip())
         # Find the next line with same or less indentation (end of function)
         for i in range(last_test_line + 1, len(lines)):
-            if lines[i].strip() and not lines[i].startswith(' ' * (indent_level + 1)):
-                if not lines[i].startswith(' ' * indent_level):
+            if lines[i].strip() and not lines[i].startswith(" " * (indent_level + 1)):
+                if not lines[i].startswith(" " * indent_level):
                     insert_pos = i
                     break
-    
+
     # Generate test code
     editor_lower = editor_class.lower()
     if wiki_file:
-        test_code = TEST_TEMPLATE.format(
-            editor_lower=editor_lower,
-            editor_class=editor_class,
-            wiki_file=wiki_file
-        )
+        test_code = TEST_TEMPLATE.format(editor_lower=editor_lower, editor_class=editor_class, wiki_file=wiki_file)
     else:
-        test_code = TEST_TEMPLATE_NO_HELP.format(
-            editor_lower=editor_lower,
-            editor_class=editor_class
-        )
-    
+        test_code = TEST_TEMPLATE_NO_HELP.format(editor_lower=editor_lower, editor_class=editor_class)
+
     # Insert test
     lines.insert(insert_pos, test_code)
-    new_content = '\n'.join(lines)
-    
-    test_file_path.write_text(new_content, encoding='utf-8')
+    new_content = "\n".join(lines)
+
+    test_file_path.write_text(new_content, encoding="utf-8")
     return True
+
 
 def main():
     """Main function."""
     repo_root = Path(__file__).parent.parent
     test_dir = repo_root / "tests" / "test_toolset" / "gui" / "editors"
-    
+
     print("Adding help dialog tests to editor test files...")
-    
+
     for test_file_name, (editor_class, wiki_file) in EDITOR_MAPPING.items():
         test_file_path = test_dir / test_file_name
         if not test_file_path.exists():
             print(f"  Warning: {test_file_name} not found, skipping...")
             continue
-        
+
         print(f"  Processing {test_file_name}...")
         if add_test_to_file(test_file_path, editor_class, wiki_file):
             print(f"    Added help test for {editor_class}")
         else:
             print(f"    Skipped {editor_class} (test already exists)")
 
+
 if __name__ == "__main__":
     main()
-

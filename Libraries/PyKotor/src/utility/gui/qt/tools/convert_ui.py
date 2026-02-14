@@ -20,12 +20,7 @@ QRC_TARGET_PATH = Path("./rcc")
 
 
 def compile_ui(qt_version: str, *, ignore_timestamp: bool = False):
-    ui_compiler = {
-        "pyside2": "pyside2-uic",
-        "pyside6": "pyside6-uic",
-        "pyqt5": "pyuic5",
-        "pyqt6": "pyuic6"
-    }[qt_version]
+    ui_compiler = {"pyside2": "pyside2-uic", "pyside6": "pyside6-uic", "pyqt5": "pyuic5", "pyqt6": "pyuic6"}[qt_version]
     for ui_file in UI_SOURCE_DIR.rglob("*.ui"):
         if ui_file.is_dir():
             print(f"Skipping {ui_file}, not a file.")

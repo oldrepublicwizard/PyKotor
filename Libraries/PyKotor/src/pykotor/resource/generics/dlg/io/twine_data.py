@@ -214,27 +214,27 @@ class FormatConverter:
         if meta.animation_id != 0:
             dlg_node.camera_anim = meta.animation_id
         # else: leave as None (DLGNode default) for new files with no metadata
-        
+
         # camera_angle is always an int (defaults to 0, which is valid)
         dlg_node.camera_angle = meta.camera_angle
-        
+
         # camera_id can be None or int - None means not set (new file), int means explicitly set
         if meta.camera_id is not None:
             dlg_node.camera_id = meta.camera_id
         # else: leave as None (DLGNode default) for new files with no metadata
-        
+
         # fade_type is always an int (defaults to 0, which is valid)
         dlg_node.fade_type = meta.fade_type
-        
+
         # quest is a string (defaults to "", which is valid)
         dlg_node.quest = meta.quest
-        
+
         # sound is a ResRef, stored as string in metadata
         # Only set if non-empty (empty string means not set for new files)
         if meta.sound:
             dlg_node.sound = ResRef(meta.sound)
         # else: leave as ResRef.from_blank() (DLGNode default) for new files
-        
+
         # vo_resref is a ResRef, stored as string in metadata
         # Only set if non-empty (empty string means not set for new files)
         if meta.vo_resref:
@@ -293,7 +293,7 @@ class FormatConverter:
             twine_data: dict[str, Any] = json.loads(dlg.comment)
             story.metadata.style = twine_data.get("style", "")
             story.metadata.script = twine_data.get("script", "")
-            
+
             # Restore tag_colors, converting string representations back to Color objects
             tag_colors_raw = twine_data.get("tag_colors", {})
             tag_colors_restored: dict[str, Color] = {}
@@ -310,7 +310,7 @@ class FormatConverter:
                 elif isinstance(color_value, Color):
                     # Already a Color object (shouldn't happen, but handle gracefully)
                     tag_colors_restored[tag_name] = color_value
-            
+
             story.metadata.tag_colors = tag_colors_restored
             story.metadata.format = twine_data.get("format", "Harlowe")
             story.metadata.format_version = twine_data.get("format_version", "3.3.7")

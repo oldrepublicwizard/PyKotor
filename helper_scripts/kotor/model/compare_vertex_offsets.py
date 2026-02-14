@@ -73,15 +73,15 @@ def main():
         print(f"Model: {model_name}")
         print(f"PyKotor: MDL={len(pykotor_mdl)}, MDX={len(pykotor_mdx)}")
         print(f"MDLOps:  MDL={len(mdlops_mdl)}, MDX={len(mdlops_mdx)}")
-        
+
         # Print node info from PyKotor's model object
-        print(f"\n=== PyKotor Model Structure ===")
+        print("\n=== PyKotor Model Structure ===")
         all_nodes = mdl_obj.all_nodes()
         print(f"Total nodes: {len(all_nodes)}")
-        
+
         mesh_nodes = [n for n in all_nodes if n.mesh]
         print(f"Mesh nodes: {len(mesh_nodes)}")
-        
+
         total_vertices = 0
         total_faces = 0
         for node in mesh_nodes:
@@ -90,23 +90,23 @@ def main():
             total_vertices += vcount
             total_faces += fcount
             print(f"  {node.name}: {vcount} vertices, {fcount} faces")
-        
+
         print(f"\nTotal: {total_vertices} vertices, {total_faces} faces")
         print(f"Vertex bytes: {total_vertices * 12}")
-        
+
         # Compare sizes
-        print(f"\n=== Size Analysis ===")
+        print("\n=== Size Analysis ===")
         print(f"MDL difference: {len(mdlops_mdl) - len(pykotor_mdl)} bytes")
         print(f"MDX difference: {len(mdlops_mdx) - len(pykotor_mdx)} bytes")
-        
+
         # If MDLOps MDL is larger, it's likely because it writes vertcoords to MDL
         # but PyKotor doesn't (or writes them differently)
         expected_mdl_diff_from_vertices = total_vertices * 12
         actual_mdl_diff = len(mdlops_mdl) - len(pykotor_mdl)
-        
+
         print(f"\nExpected MDL diff if vertices missing: {expected_mdl_diff_from_vertices}")
         print(f"Actual MDL diff: {actual_mdl_diff}")
-        
+
         # Check what data PyKotor is missing
         # By looking at the MDLOps-vs-PyKotor difference
         if actual_mdl_diff > 0:
@@ -115,7 +115,7 @@ def main():
             # Let's calculate how many vertices worth of data is missing
             missing_verts = actual_mdl_diff // 12
             print(f"This equals approximately {missing_verts} missing vertices ({actual_mdl_diff} / 12)")
-        
+
         # Check if PyKotor is writing more to MDX
         mdx_diff = len(pykotor_mdx) - len(mdlops_mdx)
         if mdx_diff > 0:
@@ -127,4 +127,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-

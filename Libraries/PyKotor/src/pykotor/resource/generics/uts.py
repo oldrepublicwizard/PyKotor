@@ -29,9 +29,13 @@ class UTS:
             K1: 0x00505560, TSL: 0x0071c730 (Aspyr; legacy PC not verified)
             Signature: LoadSounds(CSWSArea* this, CResGFF* param_1, CResStruct* param_2, int param_3, int param_4).
 
-        - CSWSSoundObject::Load (root UTS GFF parser, called from LoadSounds)
-            K1: TODO (resolve via referencers of LoadSounds), TSL: TODO
-            Reads TemplateResRef, ObjectId, GeneratedType, position, Tag, flags, Sounds list.
+        - CSWSSoundObject::Load (root UTS GFF parser, called from LoadSounds and LoadFromTemplate)
+            K1: 0x005c9040, TSL: TODO
+            Reads Tag (CExoString), Active, Positional, Looping, Volume, VolumeVrtn (BYTE), Times (BYTE),
+            PitchVariation (FLOAT), Hours (DWORD), GeneratedType (DWORD→byte), Interval, IntervalVrtn (DWORD),
+            MinDistance, MaxDistance (FLOAT), Continuous, Random (BYTE), FixedVariance (FLOAT), RandomPosition (BYTE),
+            RandomRangeX, RandomRangeY (FLOAT), XPosition, YPosition, ZPosition (FLOAT), Sounds list (Sound CResRef).
+            Does not read LocName or Elevation in K1.
 
         - CSWSSoundObject::LoadFromTemplate (load sound template from ResRef)
             K1: 0x005c94e0, TSL: TODO
@@ -51,12 +55,13 @@ class UTS:
                 - "Looping" (BYTE) - Whether sound loops
                 - "Positional" (BYTE) - Whether sound is positional (3D)
                 - "RandomPosition" (BYTE) - Whether sound position is randomized
-                - "RandomRange" (FLOAT) - Random position range
-                - "Elevation" (FLOAT) - Sound elevation
+                - "RandomRangeX", "RandomRangeY" (FLOAT) - Random position range
                 - "Volume" (BYTE) - Sound volume (0-255)
-                - "PitchVariation" (FLOAT) - Pitch variation range
-                - "VolumeVariation" (FLOAT) - Volume variation range
-                - "Sound" (CResRef) - Sound resource reference
+                - "VolumeVrtn" (BYTE) - Volume variation (0-255)
+                - "PitchVariation" (FLOAT) - Pitch variation
+                - "Interval", "IntervalVrtn" (DWORD) - Timing
+                - "MinDistance", "MaxDistance" (FLOAT) - Positional distance
+                - Sounds list: each struct "Sound" (CResRef). K1 Load does not read LocName or Elevation.
 
         Note: UTS files are GFF format files with specific structure definitions (GFFContent.UTS)
 

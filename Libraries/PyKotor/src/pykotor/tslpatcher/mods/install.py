@@ -331,11 +331,4 @@ class InstallFile(PatcherModifications):
         with BinaryReader.from_auto(source) as reader:
             return reader.read_all()
 
-    def apply(
-        self,
-        mutable_data: Any,
-        memory: PatcherMemory,
-        logger: PatchLogger,
-        game: Game
-    ):
-        ...
+    def apply(self, mutable_data: Any, memory: PatcherMemory, logger: PatchLogger, game: Game): ...

@@ -45,6 +45,7 @@ if TYPE_CHECKING:
     from pykotor.gl.scene import Scene
     from pykotor.gl.shader import Shader
 
+
 class Cube:
     def __init__(
         self,
@@ -126,7 +127,7 @@ class Cube:
         shader.set_matrix4("model", transform)
         glBindVertexArray(self._vao)
         glDrawElements(GL_TRIANGLES, self._face_count, GL_UNSIGNED_SHORT, None)
-    
+
     def vertex_blob(self) -> bytes:
         """Interleaved vertex data (position only)."""
         vertex_count = len(self._vertex_data) // 3

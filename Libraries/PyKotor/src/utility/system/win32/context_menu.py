@@ -48,16 +48,23 @@ def create_dispatch_shell() -> CDispatch | ShellNamespace:
         return win32com.client.Dispatch("Shell.Application")
 
 
-def get_context_menu_functions()-> tuple[bool, Callable[..., Any], Callable[..., Any], Callable[..., Any], Callable[..., Any], int, int, int]:
+def get_context_menu_functions() -> tuple[bool, Callable[..., Any], Callable[..., Any], Callable[..., Any], Callable[..., Any], int, int, int]:
     try:
         import win32con
         import win32gui
     except ImportError:
-        return (False, windll.user32.AppendMenuW, windll.user32.CreatePopupMenu, windll.user32.GetCursorPos, windll.user32.TrackPopupMenu,
-                0x0000, 0x0000, 0x0100)
+        return (False, windll.user32.AppendMenuW, windll.user32.CreatePopupMenu, windll.user32.GetCursorPos, windll.user32.TrackPopupMenu, 0x0000, 0x0000, 0x0100)
     else:
-        return (True, win32gui.AppendMenu, win32gui.CreatePopupMenu, win32gui.GetCursorPos, win32gui.TrackPopupMenu,
-            win32con.MF_STRING, win32con.TPM_LEFTALIGN, win32con.TPM_RETURNCMD)
+        return (
+            True,
+            win32gui.AppendMenu,
+            win32gui.CreatePopupMenu,
+            win32gui.GetCursorPos,
+            win32gui.TrackPopupMenu,
+            win32con.MF_STRING,
+            win32con.TPM_LEFTALIGN,
+            win32con.TPM_RETURNCMD,
+        )
 
 
 class _Vector2:
@@ -72,39 +79,31 @@ class _POINT(ctypes.Structure):
 
 @runtime_checkable
 class ShellNamespace(Protocol):
-    def NameSpace(self, folder: str | Literal[0]) -> ShellFolder:
-        ...
+    def NameSpace(self, folder: str | Literal[0]) -> ShellFolder: ...
 
 
 @runtime_checkable
 class ShellFolder(Protocol):
-    def ParseName(self, name: str) -> ShellFolderItem:
-        ...
+    def ParseName(self, name: str) -> ShellFolderItem: ...
 
 
 @runtime_checkable
 class ShellFolderItem(Protocol):
-    def Verbs(self) -> ShellFolderItemVerbs:
-        ...
+    def Verbs(self) -> ShellFolderItemVerbs: ...
 
 
 @runtime_checkable
 class ShellFolderItemVerbs(Protocol):
-    def Item(self, index: int) -> ShellFolderItemVerb:
-        ...
-    def __getitem__(self, index: int) -> ShellFolderItemVerb:
-        ...
-    def __len__(self) -> int:
-        ...
+    def Item(self, index: int) -> ShellFolderItemVerb: ...
+    def __getitem__(self, index: int) -> ShellFolderItemVerb: ...
+    def __len__(self) -> int: ...
 
 
 @runtime_checkable
 class ShellFolderItemVerb(Protocol):
-    def DoIt(self) -> None:
-        ...
+    def DoIt(self) -> None: ...
     @property
-    def Name(self) -> str:
-        ...
+    def Name(self) -> str: ...
 
 
 def get_cursor_pos(c_getcursorpos: Callable, *, use_pywin32: bool) -> _Vector2:
@@ -129,8 +128,7 @@ def show_context_menu(context_menu: CDispatch | ShellFolderItemVerbs, hwnd: int 
     pt: _Vector2 = get_cursor_pos(GetCursorPos, use_pywin32=pywin32_available)
     with ExitStack() as stack:
         hwnd = stack.enter_context(SimplePyHWND()) if hwnd is None else hwnd
-        cmd = TrackPopupMenu(hmenu, TPM_LEFTALIGN | TPM_RETURNCMD,
-                             pt.x, pt.y, 0, hwnd, None)
+        cmd = TrackPopupMenu(hmenu, TPM_LEFTALIGN | TPM_RETURNCMD, pt.x, pt.y, 0, hwnd, None)
     if not isinstance(cmd, int):
         raise RuntimeError("Unable to open the context manager, reason unknown")  # noqa: TRY004
     verb = context_menu.Item(cmd - 1)
@@ -183,6 +181,7 @@ def windows_context_menu_folder(
     context_menu = folder_item.Verbs()
     show_context_menu(context_menu, hwnd)
 
+
 def windows_context_menu(path: os.PathLike | str | Iterable[os.PathLike | str], hwnd: int | None = None):
     if isinstance(path, Iterable):
         paths = list(path)
@@ -203,6 +202,7 @@ def windows_context_menu(path: os.PathLike | str | Iterable[os.PathLike | str], 
     else:
         msg = f"Path is neither file nor folder: '{path}'"
         raise FileNotFoundError(errno.ENOENT, msg, str(path))
+
 
 # Example usage
 if __name__ == "__main__":

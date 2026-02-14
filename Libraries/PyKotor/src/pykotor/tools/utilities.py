@@ -15,6 +15,7 @@ References:
         Libraries/PyKotor/src/pykotor/tslpatcher/diff/ - Structured diff engine
 
 """
+
 from __future__ import annotations
 
 import difflib
@@ -192,11 +193,7 @@ def _diff_binary_files(
     if data1 == data2:
         result = f"Files are identical: {file1_path.name} and {file2_path.name}\n"
     else:
-        result = (
-            f"Files differ:\n"
-            f"  {file1_path.name}: {len(data1)} bytes\n"
-            f"  {file2_path.name}: {len(data2)} bytes\n"
-        )
+        result = f"Files differ:\n  {file1_path.name}: {len(data1)} bytes\n  {file2_path.name}: {len(data2)} bytes\n"
 
     if output_path:
         output_path.write_text(result, encoding="utf-8")
@@ -485,4 +482,3 @@ def _tlk_to_text(tlk) -> str:
         text = entry.text if hasattr(entry, "text") else str(entry)
         lines.append(f"{i}: {text}")
     return "\n".join(lines)
-

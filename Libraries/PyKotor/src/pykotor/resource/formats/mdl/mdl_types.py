@@ -59,19 +59,19 @@ class MDLGeometryType(IntEnum):
 class MDLClassification(IntEnum):
     """Model classification indicating its usage in the game."""
 
-    INVALID = 0        # 0x0
-    EFFECT = 1         # 0x1
-    TILE = 2           # 0x2
-    CHARACTER = 4      # 0x4
-    DOOR = 8           # 0x8
-    PLACEABLE = 16     # 0x10
-    OTHER = 32         # 0x20
-    GUI = 64           # 0x40
-    ITEM = 128         # 0x80
-    LIGHTSABER = 256   # 0x100
-    WAYPOINT = 512     # 0x200
-    WEAPON = 1024      # 0x400
-    FURNITURE = 2048   # 0x800
+    INVALID = 0  # 0x0
+    EFFECT = 1  # 0x1
+    TILE = 2  # 0x2
+    CHARACTER = 4  # 0x4
+    DOOR = 8  # 0x8
+    PLACEABLE = 16  # 0x10
+    OTHER = 32  # 0x20
+    GUI = 64  # 0x40
+    ITEM = 128  # 0x80
+    LIGHTSABER = 256  # 0x100
+    WAYPOINT = 512  # 0x200
+    WEAPON = 1024  # 0x400
+    FURNITURE = 2048  # 0x800
 
 
 class MDLNodeFlags(IntFlag):
@@ -103,7 +103,7 @@ class MDLNodeFlags(IntFlag):
     """
 
     # Base node flags
-    # Reference: https://github.com/th3w1zard1/mdlops/tree/master/MDLOpsM.pm:302-311, 
+    # Reference: https://github.com/th3w1zard1/mdlops/tree/master/MDLOpsM.pm:302-311,
     HEADER = 0x0001  # NODE_HAS_HEADER - Base node data (mdlops:302)
     LIGHT = 0x0002  # NODE_HAS_LIGHT - Light data (mdlops:303, kotorblender:94)
     EMITTER = 0x0004  # NODE_HAS_EMITTER - Particle emitter data (mdlops:304, kotorblender:95)
@@ -169,7 +169,7 @@ class MDLControllerType(IntEnum):
     ALPHA = 132  # alpha - All nodes (mdlops:332, was 128)
 
     # Light controllers (NODE_HAS_LIGHT)
-    # Reference: https://github.com/th3w1zard1/mdlops/tree/master/MDLOpsM.pm:342-346, 
+    # Reference: https://github.com/th3w1zard1/mdlops/tree/master/MDLOpsM.pm:342-346,
     COLOR = 76  # color - Light nodes (mdlops:342)
     RADIUS = 88  # radius - Light nodes (mdlops:343)
     SHADOWRADIUS = 96  # shadowradius - Light nodes (mdlops:344)
@@ -177,7 +177,7 @@ class MDLControllerType(IntEnum):
     MULTIPLIER = 140  # multiplier - Light nodes (mdlops:346)
 
     # Emitter controllers (NODE_HAS_EMITTER)
-    # Reference: https://github.com/th3w1zard1/mdlops/tree/master/MDLOpsM.pm:357-405, 
+    # Reference: https://github.com/th3w1zard1/mdlops/tree/master/MDLOpsM.pm:357-405,
     # These mappings were updated based on fx_flame01.mdl analysis (mdlops:352-355)
     ALPHAEND = 80  # alphaEnd - Emitter (mdlops:357)
     ALPHASTART = 84  # alphaStart - Emitter (mdlops:358)
@@ -229,7 +229,7 @@ class MDLControllerType(IntEnum):
     DETONATE = 502  # detonate - Emitter, was 228 (mdlops:404)
 
     # Mesh controllers (NODE_HAS_MESH)
-    # Reference: https://github.com/th3w1zard1/mdlops/tree/master/MDLOpsM.pm:406, 
+    # Reference: https://github.com/th3w1zard1/mdlops/tree/master/MDLOpsM.pm:406,
     SELFILLUMCOLOR = 100  # selfillumcolor - Mesh (mdlops:406, same as DRAG and VERTICALDISPLACEMENT)
 
     # Legacy aliases for backward compatibility
@@ -314,7 +314,7 @@ class MDLUpdateType(IntEnum):
 
 class MDLTrimeshFlags(IntFlag):
     """Additional trimesh flags from KotOR implementation.
-    
+
     References:
     - Based on swkotor.exe MDL trimesh structure:
       * PartTriMesh::PartTriMesh @ (K1: 0x00445840, TSL: 0x00459be0) - Creates tri-mesh part from MDL node
@@ -336,7 +336,7 @@ class MDLTrimeshFlags(IntFlag):
 
 class MDLLightFlags(IntFlag):
     """Light flags from KotOR implementation.
-    
+
     References:
     - Based on swkotor.exe MDL light structure:
       * MdlNode::AsMdlNodeLight @ (K1: 0x0043e3d0, TSL: 0x004501a0) - Casts node to light

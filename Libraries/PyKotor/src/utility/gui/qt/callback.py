@@ -136,7 +136,7 @@ class MessageBoxButton(IntEnum):
             self.LastButton: 134217728,
             self.YesAll: 32768,
             self.NoAll: 131072,
-            self.ButtonMask: -769  # A bitmask covering all values
+            self.ButtonMask: -769,  # A bitmask covering all values
         }
         return enum_button_map[self]
 
@@ -164,10 +164,9 @@ class MessageBoxButton(IntEnum):
             33554432: QMessageBox.Apply,
             67108864: QMessageBox.Reset,
             134217728: QMessageBox.RestoreDefaults,
-            -769: QMessageBox.ButtonMask  # A bitmask covering all values
+            -769: QMessageBox.ButtonMask,  # A bitmask covering all values
         }
         return standard_button_map[self.value]
-
 
     def text(self) -> str:
         """Get the default text for a given MessageBoxButton."""
@@ -196,7 +195,7 @@ class MessageBoxButton(IntEnum):
             MessageBoxButton.Default: "Default",
             MessageBoxButton.Escape: "Escape",
             MessageBoxButton.FlagMask: "Flag Mask",
-            MessageBoxButton.ButtonMask: "Button Mask"
+            MessageBoxButton.ButtonMask: "Button Mask",
         }
         return button_texts.get(self.__class__(self.value), "Unknown Button")
 
@@ -205,7 +204,7 @@ class MessageBoxButton(IntEnum):
             self is not MessageBoxButton.FlagMask
             and self is not MessageBoxButton.NoButton
             and self is not MessageBoxButton.ButtonMask
-#            and self is not MessageBoxButton.FirstButton
+            #            and self is not MessageBoxButton.FirstButton
             and self is not MessageBoxButton.LastButton
         )
 
@@ -275,7 +274,9 @@ class BetterMessageBox(QtWidgets.QDialog):
         **kwargs,
     ):
         super().__init__(parent, *args, **kwargs)
-        self.setWindowFlags(QtCore.Qt.Dialog | QtCore.Qt.WindowCloseButtonHint | QtCore.Qt.WindowStaysOnTopHint & ~QtCore.Qt.WindowContextHelpButtonHint & ~QtCore.Qt.WindowMinMaxButtonsHint)
+        self.setWindowFlags(
+            QtCore.Qt.Dialog | QtCore.Qt.WindowCloseButtonHint | QtCore.Qt.WindowStaysOnTopHint & ~QtCore.Qt.WindowContextHelpButtonHint & ~QtCore.Qt.WindowMinMaxButtonsHint
+        )
 
         self.setWindowTitle(title)
         self.icon: QtWidgets.QStyle.StandardPixmap = ICON_MAP.get(icon, icon)
@@ -407,7 +408,6 @@ class QtUserCommunication(UserCommunication):
 if __name__ == "__main__":
     app = QtWidgets.QApplication([])
 
-
     buttons = QMessageBox.NoButton
     for button in MessageBoxButton:
         if not button.is_real_button():
@@ -417,8 +417,6 @@ if __name__ == "__main__":
         buttons |= button.get()
     result = QMessageBox(QMessageBox.Information, "Test title", "Test message", buttons).exec()
     print(f"first test: You pressed button '{MessageBoxButton(result).text()}'")
-
-
 
     some_window = QtWidgets.QMainWindow()
     comm = QtUserCommunication(some_window)

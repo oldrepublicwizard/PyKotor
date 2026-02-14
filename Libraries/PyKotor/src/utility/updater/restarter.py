@@ -32,7 +32,7 @@ class RestartStrategy(Enum):
 
 class Restarter:
     """Handles restarting and updating applications across Windows, macOS, and Linux.
-    
+
     This class implements industry-standard update patterns:
     - On Windows: Uses a detached PowerShell 2.0 script that waits for the old process
       to exit before copying files and launching the new version
@@ -74,8 +74,7 @@ class Restarter:
         if os.name == "nt":
             if self.current_app == self.updated_app:
                 self.log.info(
-                    "Current app and updated app path are exactly the same, "
-                    "performing simple restart. path: %s",
+                    "Current app and updated app path are exactly the same, performing simple restart. path: %s",
                     self.current_app,
                 )
                 self._win_simple_restart()
@@ -104,7 +103,7 @@ class Restarter:
 
     def _win_overwrite(self):
         """Windows overwrite strategy using a detached PowerShell 2.0 script.
-        
+
         This creates a PowerShell script that:
         1. Waits for the current process to fully exit (by PID)
         2. Copies/moves files with retry logic for locked files
@@ -112,15 +111,15 @@ class Restarter:
         4. Cleans up the temporary script
         """
         self.log.info("Calling _win_overwrite for updated app '%s'", self.updated_app)
-        
+
         is_folder = self.updated_app.is_dir()
         if is_folder:
             needs_admin = requires_admin(self.updated_app) or requires_admin(self.current_app.parent)
         else:
             needs_admin = requires_admin(self.current_app.parent)
-        
+
         self.log.debug("Admin required to update: %s", needs_admin)
-        
+
         # Create the PowerShell update script
         script_content = self._create_windows_update_script(
             source_path=self.updated_app,
@@ -129,20 +128,21 @@ class Restarter:
             current_pid=os.getpid(),
             launch_app=self.current_app,
         )
-        
+
         # Write script to a temporary file that persists after we exit
         # Using a fixed location in temp so it survives our process exit
         import tempfile
+
         script_dir = Path(tempfile.gettempdir()) / "holotoolset_update"
         script_dir.mkdir(parents=True, exist_ok=True)
         script_path = script_dir / f"update_{os.getpid()}.ps1"
-        
+
         self.log.debug("Writing update script to: %s", script_path)
         script_path.write_text(script_content, encoding="utf-8")
-        
+
         # Launch the PowerShell script as a fully detached process
         self._launch_powershell_script_detached(script_path, needs_admin)
-        
+
         # Exit the application to release file locks
         self._exit_application()
 
@@ -155,7 +155,7 @@ class Restarter:
         launch_app: Path,
     ) -> str:
         """Create a PowerShell 2.0 compatible update script.
-        
+
         This script:
         1. Waits for the parent process to exit
         2. Copies files with retry logic
@@ -166,7 +166,7 @@ class Restarter:
         source_escaped = str(source_path).replace("'", "''")
         dest_escaped = str(dest_path).replace("'", "''")
         launch_escaped = str(launch_app).replace("'", "''")
-        
+
         # PowerShell 2.0 compatible script
         # NOTE: Using older syntax for PS 2.0 compatibility:
         # - No -NoNewWindow (use -WindowStyle Hidden)
@@ -331,44 +331,48 @@ class Restarter:
             
             exit 0
         """)
-        
+
         return script
 
     def _launch_powershell_script_detached(self, script_path: Path, needs_admin: bool):
         """Launch a PowerShell script as a fully detached process.
-        
+
         Uses PowerShell 2.0 compatible syntax and proper process detachment
         so the script continues running after the parent exits.
         """
         self.log.info("Launching PowerShell update script: %s (admin=%s)", script_path, needs_admin)
-        
+
         # Build the PowerShell command
         # Using -ExecutionPolicy Bypass to ensure script runs
         # Using -WindowStyle Hidden to hide the console window
         ps_args = [
             "PowerShell.exe",
             "-NoProfile",
-            "-ExecutionPolicy", "Bypass",
-            "-WindowStyle", "Hidden",
-            "-File", str(script_path),
+            "-ExecutionPolicy",
+            "Bypass",
+            "-WindowStyle",
+            "Hidden",
+            "-File",
+            str(script_path),
         ]
-        
+
         if needs_admin:
             # For admin, we need to use Start-Process with -Verb RunAs
             # This will show a UAC prompt
             inner_command = (
-                f"Start-Process PowerShell.exe "
-                f"-ArgumentList '-NoProfile -ExecutionPolicy Bypass -WindowStyle Hidden -File \"{script_path}\"' "
-                f"-Verb RunAs -WindowStyle Hidden"
+                f"Start-Process PowerShell.exe -ArgumentList '-NoProfile -ExecutionPolicy Bypass -WindowStyle Hidden -File \"{script_path}\"' -Verb RunAs -WindowStyle Hidden"
             )
             ps_args = [
                 "PowerShell.exe",
                 "-NoProfile",
-                "-ExecutionPolicy", "Bypass",
-                "-WindowStyle", "Hidden",
-                "-Command", inner_command,
+                "-ExecutionPolicy",
+                "Bypass",
+                "-WindowStyle",
+                "Hidden",
+                "-Command",
+                inner_command,
             ]
-        
+
         # Launch as fully detached process
         # DETACHED_PROCESS: The new process does not inherit the console
         # CREATE_NEW_PROCESS_GROUP: The new process is the root of a new process group
@@ -378,18 +382,14 @@ class Restarter:
             startupinfo = subprocess.STARTUPINFO()
             startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
             startupinfo.wShowWindow = subprocess.SW_HIDE
-            
+
             subprocess.Popen(
                 ps_args,
                 stdin=subprocess.DEVNULL,
                 stdout=subprocess.DEVNULL,
                 stderr=subprocess.DEVNULL,
                 close_fds=True,
-                creationflags=(
-                    subprocess.DETACHED_PROCESS
-                    | subprocess.CREATE_NEW_PROCESS_GROUP
-                    | subprocess.CREATE_NO_WINDOW
-                ),
+                creationflags=(subprocess.DETACHED_PROCESS | subprocess.CREATE_NEW_PROCESS_GROUP | subprocess.CREATE_NO_WINDOW),
                 startupinfo=startupinfo,
             )
             self.log.debug("PowerShell update script launched successfully.")
@@ -400,22 +400,19 @@ class Restarter:
     def _launch_detached_process_windows(self, app_path: Path):
         """Launch a Windows application as a detached process."""
         self.log.debug("Launching detached process: %s", app_path)
-        
+
         try:
             startupinfo = subprocess.STARTUPINFO()
             startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
             startupinfo.wShowWindow = 1  # SW_SHOWNORMAL = 1
-            
+
             subprocess.Popen(
                 [str(app_path)],
                 stdin=subprocess.DEVNULL,
                 stdout=subprocess.DEVNULL,
                 stderr=subprocess.DEVNULL,
                 close_fds=True,
-                creationflags=(
-                    subprocess.DETACHED_PROCESS
-                    | subprocess.CREATE_NEW_PROCESS_GROUP
-                ),
+                creationflags=(subprocess.DETACHED_PROCESS | subprocess.CREATE_NEW_PROCESS_GROUP),
                 startupinfo=startupinfo,
             )
             self.log.debug("Application launched successfully.")
@@ -426,24 +423,24 @@ class Restarter:
     def _unix_join(self):
         """Unix/macOS restart using os.execl for in-place process replacement."""
         assert os.name == "posix"
-        
+
         self.log.debug("Setting executable permissions on %s", self.current_app)
         try:
             # Set executable permissions (rwxr-xr-x)
             os.chmod(str(self.current_app), 0o755)
         except OSError:
             self.log.warning("Could not set executable permissions", exc_info=True)
-        
+
         # Call exithook before exec (since exec replaces the process)
         if self.exithook is not None:
             self.exithook(False)  # noqa: FBT003
-        
+
         self.log.info("Replacing current process with new app '%s'", self.current_app)
         os.execl(str(self.current_app), self.filename, *sys.argv[1:])  # noqa: S606
 
     def _unix_overwrite(self):
         """Unix/macOS overwrite strategy using a detached shell script.
-        
+
         Creates a shell script that:
         1. Waits for the current process to exit
         2. Copies files
@@ -451,10 +448,10 @@ class Restarter:
         4. Cleans up
         """
         self.log.info("Calling _unix_overwrite for updated app '%s'", self.updated_app)
-        
+
         is_folder = self.updated_app.is_dir()
         current_pid = os.getpid()
-        
+
         # Create the shell update script
         script_content = self._create_unix_update_script(
             source_path=self.updated_app,
@@ -463,20 +460,21 @@ class Restarter:
             current_pid=current_pid,
             launch_app=self.current_app,
         )
-        
+
         # Write script to a temporary file
         import tempfile
+
         script_dir = Path(tempfile.gettempdir()) / "holotoolset_update"
         script_dir.mkdir(parents=True, exist_ok=True)
         script_path = script_dir / f"update_{current_pid}.sh"
-        
+
         self.log.debug("Writing update script to: %s", script_path)
         script_path.write_text(script_content, encoding="utf-8")
         os.chmod(script_path, 0o755)
-        
+
         # Launch the shell script as a fully detached process
         self._launch_shell_script_detached(script_path)
-        
+
         # Exit the application
         self._exit_application()
 
@@ -497,7 +495,7 @@ class Restarter:
             SOURCE_PATH='{source_path}'
             DEST_PATH='{dest_path}'
             LAUNCH_APP='{launch_app}'
-            IS_FOLDER={'true' if is_folder else 'false'}
+            IS_FOLDER={"true" if is_folder else "false"}
             MAX_RETRIES=30
             SCRIPT_PATH="$0"
             
@@ -585,13 +583,13 @@ class Restarter:
             
             exit 0
         """)
-        
+
         return script
 
     def _launch_shell_script_detached(self, script_path: Path):
         """Launch a shell script as a fully detached process on Unix/macOS."""
         self.log.info("Launching shell update script: %s", script_path)
-        
+
         try:
             # Use nohup and redirect all output to detach properly
             subprocess.Popen(
@@ -610,7 +608,7 @@ class Restarter:
     def _exit_application(self):
         """Exit the application cleanly, calling the exit hook if provided."""
         self.log.info("Exiting application (pid=%s)...", os.getpid())
-        
+
         if self.exithook is not None:
             try:
                 self.exithook(True)  # noqa: FBT003
@@ -619,7 +617,7 @@ class Restarter:
                 raise
             except Exception:
                 self.log.exception("Error in exit hook")
-        
+
         # If exithook didn't exit, do it ourselves
         sys.exit(0)
 
@@ -627,6 +625,7 @@ class Restarter:
     def win_get_system32_dir() -> Path:
         """Get the Windows System32 directory path."""
         import ctypes
+
         try:
             ctypes.windll.kernel32.GetSystemDirectoryW.argtypes = [ctypes.c_wchar_p, ctypes.c_uint]
             ctypes.windll.kernel32.GetSystemDirectoryW.restype = ctypes.c_uint

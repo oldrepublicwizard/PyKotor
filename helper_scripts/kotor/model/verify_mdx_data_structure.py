@@ -55,17 +55,11 @@ for i in range(len(mdl_data) - 100):
             tex_at_offset = mdl_data[th_start + 84 : th_start + 84 + 32]
             if tex_name in tex_at_offset:
                 # Check bitmap
-                bitmap_at = struct.unpack(
-                    "<I", mdl_data[th_start + 52 : th_start + 56]
-                )[0]
+                bitmap_at = struct.unpack("<I", mdl_data[th_start + 52 : th_start + 56])[0]
                 if bitmap_at & 0x2:  # TEXTURE1 flag
                     print(f"Found correct trimesh header at offset {th_start}")
-                    mdx_off = struct.unpack(
-                        "<I", mdl_data[th_start + 48 : th_start + 52]
-                    )[0]
-                    tex1_off = struct.unpack(
-                        "<I", mdl_data[th_start + 68 : th_start + 72]
-                    )[0]
+                    mdx_off = struct.unpack("<I", mdl_data[th_start + 48 : th_start + 52])[0]
+                    tex1_off = struct.unpack("<I", mdl_data[th_start + 68 : th_start + 72])[0]
                     print(f"  mdx_data_offset: {mdx_off} (0x{mdx_off:08X})")
                     print(f"  mdx_texture1_offset: {tex1_off} (0x{tex1_off:08X})")
                     print(f"  MDX file size: {len(mdx_data)} bytes")
@@ -74,18 +68,12 @@ for i in range(len(mdl_data) - 100):
                         # Check MDX data structure
                         # For interleaved data: vertex (12) + texture1 (8) = 20 bytes per vertex
                         block_size = 20
-                        print(
-                            f"\n  MDX data structure (block_size={block_size} bytes per vertex):"
-                        )
+                        print(f"\n  MDX data structure (block_size={block_size} bytes per vertex):")
 
                         # First vertex position at mdx_off + 0
                         if mdx_off + 12 <= len(mdx_data):
-                            x, y, z = struct.unpack(
-                                "<fff", mdx_data[mdx_off : mdx_off + 12]
-                            )
-                            print(
-                                f"    Vertex[0] position: ({x:.6f}, {y:.6f}, {z:.6f})"
-                            )
+                            x, y, z = struct.unpack("<fff", mdx_data[mdx_off : mdx_off + 12])
+                            print(f"    Vertex[0] position: ({x:.6f}, {y:.6f}, {z:.6f})")
 
                         # First texture1 UV at mdx_off + 12
                         if mdx_off + tex1_off + 8 <= len(mdx_data):
@@ -96,14 +84,10 @@ for i in range(len(mdl_data) - 100):
                             print(f"    Texture1[0] UV: ({u:.6f}, {v:.6f})")
 
                             # Check a few more to verify pattern
-                            for vi in range(
-                                min(3, (len(mdx_data) - mdx_off) // block_size)
-                            ):
+                            for vi in range(min(3, (len(mdx_data) - mdx_off) // block_size)):
                                 uv_off = mdx_off + vi * block_size + tex1_off
                                 if uv_off + 8 <= len(mdx_data):
-                                    u, v = struct.unpack(
-                                        "<ff", mdx_data[uv_off : uv_off + 8]
-                                    )
+                                    u, v = struct.unpack("<ff", mdx_data[uv_off : uv_off + 8])
                                     print(f"    Texture1[{vi}] UV: ({u:.6f}, {v:.6f})")
 
                     found = True

@@ -1,4 +1,5 @@
 """Helper script to create setup.py files that read from requirements.txt."""
+
 from __future__ import annotations
 
 from pathlib import Path
@@ -52,4 +53,3 @@ for setup_info in SETUPS:
     content = SETUP_PY_TEMPLATE.format(**setup_info)
     setup_info["path"].write_text(content, encoding="utf-8")
     print(f"Created {setup_info['path']}")
-

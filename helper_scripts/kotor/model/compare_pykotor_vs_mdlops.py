@@ -39,18 +39,17 @@ def find_mdlops_exe() -> Path | None:
 
 def compare_binaries(a: bytes, b: bytes, name: str, verbose: bool = False) -> list[str]:
     """Compare two binary blobs and return list of differences."""
-    import struct
-    
+
     diffs = []
     if len(a) != len(b):
         diffs.append(f"{name} size mismatch: {len(a)} vs {len(b)}")
-    
+
     min_len = min(len(a), len(b))
     diff_count = 0
     first_diff_offset = None
     diff_ranges = []
     current_range_start = None
-    
+
     for i in range(min_len):
         if a[i] != b[i]:
             diff_count += 1
@@ -62,24 +61,24 @@ def compare_binaries(a: bytes, b: bytes, name: str, verbose: bool = False) -> li
             if current_range_start is not None:
                 diff_ranges.append((current_range_start, i - 1))
                 current_range_start = None
-    
+
     if current_range_start is not None:
         diff_ranges.append((current_range_start, min_len - 1))
-    
+
     if diff_count > 0:
         diffs.append(f"{name} has {diff_count} byte differences (first at offset 0x{first_diff_offset:X})")
-        
+
         if verbose:
             for start, end in diff_ranges[:10]:
                 length = end - start + 1
                 diffs.append(f"  Diff range: 0x{start:X}-0x{end:X} ({length} bytes)")
                 # Show first 8 bytes of each range
                 show_bytes = min(8, length)
-                a_bytes = " ".join(f"{a[start+j]:02X}" for j in range(show_bytes))
-                b_bytes = " ".join(f"{b[start+j]:02X}" for j in range(show_bytes))
+                a_bytes = " ".join(f"{a[start + j]:02X}" for j in range(show_bytes))
+                b_bytes = " ".join(f"{b[start + j]:02X}" for j in range(show_bytes))
                 diffs.append(f"    PyKotor:  {a_bytes}")
                 diffs.append(f"    MDLOps:   {b_bytes}")
-    
+
     return diffs
 
 
@@ -187,7 +186,7 @@ def compare_model(
         game_suffix = "k1" if game == Game.K1 else "k2"
         mdlops_mdl_path = td_path / f"{model_name}-ascii-{game_suffix}-bin.mdl"
         mdlops_mdx_path = td_path / f"{model_name}-ascii-{game_suffix}-bin.mdx"
-        
+
         if not mdlops_mdl_path.exists():
             # List files for debugging
             files = [f.name for f in td_path.iterdir()]

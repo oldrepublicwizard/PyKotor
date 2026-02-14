@@ -52,11 +52,7 @@ class TaskGraph:
         -------
             A set of task IDs that depend on the given task.
         """
-        dependents: set[int] = {
-            task_id_in_graph
-            for task_id_in_graph, dependencies in self._graph.items()
-            if task_id in dependencies
-        }
+        dependents: set[int] = {task_id_in_graph for task_id_in_graph, dependencies in self._graph.items() if task_id in dependencies}
         return dependents
 
     def get_task_status(self, task_id: int) -> str:

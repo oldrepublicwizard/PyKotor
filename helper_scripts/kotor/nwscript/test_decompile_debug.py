@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 """Debug script for decompilation issues."""
+
 import traceback
 import sys
 from pathlib import Path
@@ -32,4 +33,3 @@ except Exception as e:
     print(f"ERROR: {type(e).__name__}: {e}")
     traceback.print_exc()
     sys.exit(1)
-

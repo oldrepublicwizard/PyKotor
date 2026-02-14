@@ -17,7 +17,7 @@ section_to_file = {}
 for file_path in sorted(wiki_dir.glob("NSS-*.md")):
     if file_path.name == "NSS-File-Format.md":
         continue
-    
+
     # Read first few lines to get title and category
     with open(file_path, "r", encoding="utf-8") as f:
         first_lines = f.readlines()[:15]
@@ -27,11 +27,11 @@ for file_path in sorted(wiki_dir.glob("NSS-*.md")):
             if line.strip().startswith("# ") and not line.strip().startswith("# Part"):
                 title = line.strip().replace("# ", "").strip()
             if "**Category:**" in line:
-                category_match = re.search(r'\*\*Category:\*\* (.+)', line)
+                category_match = re.search(r"\*\*Category:\*\* (.+)", line)
                 if category_match:
                     category = category_match.group(1).strip()
                     break
-        
+
         if title and category:
             # Create a unique key combining category and title
             key = f"{category}|{title}"
@@ -45,7 +45,7 @@ i = 0
 
 while i < len(lines):
     line = lines[i]
-    
+
     # Check for parent sections (## level)
     parent_match = re.match(r"^## (.+)$", line.strip())
     if parent_match:
@@ -58,46 +58,46 @@ while i < len(lines):
         new_content.append(line)
         i += 1
         continue
-    
+
     # Check if this is a ### section header that we extracted
     match = re.match(r"^### (.+)$", line.strip())
     if match and current_parent:
         section_title = match.group(1)
-        
+
         # Skip sections we don't extract
         if section_title in ["Data Structures", "Compilation Integration"]:
             new_content.append(line)
             i += 1
             continue
-        
+
         # Create unique key
         key = f"{current_parent}|{section_title}"
-        
+
         # Check if this section was extracted
         if key in section_to_file:
             # Find end of this section
             start_idx = i
             end_idx = len(lines)
-            
+
             # Look for next ### or ## section
             for j in range(i + 1, len(lines)):
                 if lines[j].strip().startswith("### ") or lines[j].strip().startswith("## "):
                     end_idx = j
                     break
-            
+
             filename = section_to_file[key]
             display_name = section_title
-            
+
             # Replace with link
             new_content.append(f"### {display_name}\n")
             new_content.append("\n")
             new_content.append(f"See [{display_name}]({filename}) for detailed documentation.\n")
             new_content.append("\n")
-            
+
             # Skip to end of section
             i = end_idx
             continue
-    
+
     # Not an extracted section - keep the line
     new_content.append(line)
     i += 1

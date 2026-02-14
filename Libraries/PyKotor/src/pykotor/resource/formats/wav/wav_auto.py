@@ -7,16 +7,16 @@ Usage:
 ------
     # Reading (automatic deobfuscation):
     wav = read_wav("path/to/file.wav")
-    
+
     # Writing (with obfuscation for game compatibility):
     write_wav(wav, "output.wav", ResourceType.WAV)
-    
+
     # Writing (clean for media players):
     write_wav(wav, "output.wav", ResourceType.WAV_DEOB)
-    
+
     # Get playable bytes (for Qt media player, etc.):
     playable_bytes = get_playable_bytes(wav)
-    
+
 References:
 ----------
         See wav_data module docstring for engine addresses (K1 + TSL TODO).
@@ -82,7 +82,7 @@ def write_wav(
 
     If file_format is ResourceType.WAV, the data will be obfuscated based on
     the WAV's type (SFX adds header, VO is unchanged) for game compatibility.
-    
+
     If file_format is ResourceType.WAV_DEOB, writes clean RIFF/WAVE format
     playable by standard media players.
 
@@ -124,19 +124,19 @@ def bytes_wav(
 
 def get_playable_bytes(wav: WAV) -> bytes:
     """Returns playable audio bytes for media player use.
-    
+
     This is the preferred method for getting audio data that can be played
     by Qt's QMediaPlayer or other standard audio players.
-    
+
     For MP3 format: Returns raw MP3 bytes
     For WAVE format: Returns clean RIFF/WAVE structure
-    
+
     Args:
         wav: The WAV object to convert
-        
+
     Returns:
         Audio bytes playable by standard media players
-        
+
     References:
         https://github.com/th3w1zard1/KotOR.js/tree/master/src/audio/AudioFile.ts:164-205 - getPlayableByteStream()
     """
@@ -145,15 +145,15 @@ def get_playable_bytes(wav: WAV) -> bytes:
 
 def detect_audio_type(wav: WAV) -> str:
     """Returns the file extension appropriate for this audio's actual format.
-    
+
     Useful for saving to temp files with correct extension.
-    
+
     Args:
         wav: The WAV object to check
-        
+
     Returns:
         "mp3" for MP3 format, "wav" for WAVE format
-        
+
     References:
         https://github.com/th3w1zard1/KotOR.js/tree/master/src/audio/AudioFile.ts:348-354 - getExportExtension()
     """

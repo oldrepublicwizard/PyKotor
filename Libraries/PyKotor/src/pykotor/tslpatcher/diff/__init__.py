@@ -50,10 +50,12 @@ from pykotor.tslpatcher.diff.resolution import (
     resolve_resource_in_installation,
 )
 from pykotor.tools.reference_cache import StrRefReferenceCache
+from pykotor.diff_tool.app import DiffConfig, run_application
 
 __all__ = [
     "CachedFileComparison",
     "ContextFormatter",
+    "DiffConfig",
     "DefaultFormatter",
     "DiffAnalyzerFactory",
     "DiffCache",
@@ -83,6 +85,7 @@ __all__ = [
     "load_diff_cache",
     "resolve_resource_in_installation",
     "restore_strref_cache_from_cache",
+    "run_application",
     "save_diff_cache",
     "validate_tslpatchdata_arguments",
 ]

@@ -49,12 +49,13 @@ from pykotor.resource.formats.ncs.optimizers import RemoveNopOptimizer
 
 if TYPE_CHECKING:
     from pykotor.common.script import ScriptConstant, ScriptFunction
+
     KOTOR_CONSTANTS: list[ScriptConstant] = []
     KOTOR_FUNCTIONS: list[ScriptFunction] = []
     TSL_CONSTANTS: list[ScriptConstant] = []
     TSL_FUNCTIONS: list[ScriptFunction] = []
 else:
-    from pykotor.common.scriptdefs import KOTOR_CONSTANTS, KOTOR_FUNCTIONS, TSL_CONSTANTS, TSL_FUNCTIONS
+    from pykotor.common.scriptdefs import KOTOR_CONSTANTS, KOTOR_FUNCTIONS
 
 K1_PATH: str | None = os.environ.get("K1_PATH", "C:\\Program Files (x86)\\Steam\\steamapps\\common\\swkotor")
 K2_PATH: str | None = os.environ.get("K2_PATH", "C:\\Program Files (x86)\\Steam\\steamapps\\common\\Knights of the Old Republic II")
@@ -66,6 +67,7 @@ EXPECTED_INSTRUCTION_COUNT = 1541
 # ============================================================================
 # Test Base Classes
 # ============================================================================
+
 
 class CompilerTestBase(unittest.TestCase):
     """Base class for compiler tests with shared compilation helper."""
@@ -111,6 +113,7 @@ class CompilerTestBase(unittest.TestCase):
 # Binary I/O Tests
 # ============================================================================
 
+
 class TestNCSBinaryIO(unittest.TestCase):
     """Tests for binary NCS file I/O operations."""
 
@@ -139,6 +142,7 @@ class TestNCSBinaryIO(unittest.TestCase):
 # ============================================================================
 # Compiler Tests
 # ============================================================================
+
 
 class TestNCSCompiler(CompilerTestBase):
     """Tests for NSS to NCS compilation."""
@@ -4002,6 +4006,7 @@ class TestNCSCompiler(CompilerTestBase):
 # Interpreter Tests
 # ============================================================================
 
+
 class TestNCSInterpreter(unittest.TestCase):
     """Tests for NCS interpreter and stack operations."""
 
@@ -4086,6 +4091,7 @@ class TestNCSInterpreter(unittest.TestCase):
 # Optimizer Tests
 # ============================================================================
 
+
 class TestNCSOptimizer(CompilerTestBase):
     """Tests for NCS bytecode optimizers."""
 
@@ -4123,6 +4129,7 @@ class TestNCSOptimizer(CompilerTestBase):
 # ============================================================================
 # Roundtrip Tests
 # ============================================================================
+
 
 class TestNCSRoundtrip(unittest.TestCase):
     """Tests for NSS to NCS to NSS roundtrip compilation."""
@@ -4251,9 +4258,7 @@ class TestNCSRoundtrip(unittest.TestCase):
                 print(f"No roots or lookup found for {game.name}, skipping...")
                 continue
             sample = cls._collect_sample(game, roots, lookup)
-            roundtrip_cases.extend(
-                (game, script, lookup) for script in sample
-            )
+            roundtrip_cases.extend((game, script, lookup) for script in sample)
 
         cls._ROUNDTRIP_CASES = roundtrip_cases
         return roundtrip_cases
@@ -4286,9 +4291,7 @@ def _assert_bidirectional_roundtrip(
 
     # NSS -> NCS -> NSS -> NCS
     recompiled = compile_nss(decompiled, game, library_lookup=library_lookup)
-    assert _canonical_bytes(compiled) == _canonical_bytes(
-        recompiled
-    ), "Recompiled bytecode diverged from initial compile"
+    assert _canonical_bytes(compiled) == _canonical_bytes(recompiled), "Recompiled bytecode diverged from initial compile"
 
     # NCS -> NSS -> NCS using freshly parsed binary payload
     binary_blob = _canonical_bytes(compiled)
@@ -4298,9 +4301,7 @@ def _assert_bidirectional_roundtrip(
         game,
         library_lookup=library_lookup,
     )
-    assert _canonical_bytes(reloaded) == _canonical_bytes(
-        ncs_from_binary
-    ), "Roundtrip from binary payload not stable"
+    assert _canonical_bytes(reloaded) == _canonical_bytes(ncs_from_binary), "Roundtrip from binary payload not stable"
 
     return decompiled
 
@@ -4313,9 +4314,7 @@ def _dedent(script: str) -> str:
 def _assert_substrings(source: str, substrings: list[str]) -> None:
     """Assert that all substrings are present in source."""
     for snippet in substrings:
-        assert (
-            snippet in source
-        ), f"Expected snippet '{snippet}' to be present in decompiled script:\n{source}"
+        assert snippet in source, f"Expected snippet '{snippet}' to be present in decompiled script:\n{source}"
 
 
 class TestNssNcsRoundtripGranular(unittest.TestCase):
@@ -4351,7 +4350,7 @@ class TestNssNcsRoundtripGranular(unittest.TestCase):
             [
                 "int valueInt = 42;",
                 "float valueFloat = 3.5;",
-                "string valueString = \"kotor\";",
+                'string valueString = "kotor";',
                 "object valueObject = OBJECT_SELF;",
                 "vector valueVector = Vector(1.0, 2.0, 3.0);",
                 "location valueLocation = Location(valueVector, 180.0);",
@@ -4595,7 +4594,7 @@ class TestNssNcsRoundtripGranular(unittest.TestCase):
                 "else if (state == 1)",
                 "if (GetIsNight())",
                 "else",
-                "ActionStartConversation(OBJECT_SELF, \"result_20\");",
+                'ActionStartConversation(OBJECT_SELF, "result_20");',
             ],
         )
 
@@ -4720,7 +4719,7 @@ class TestNssNcsRoundtripGranular(unittest.TestCase):
                 "struct CombatStats",
                 "result.attack = base + 2;",
                 "result.defense = base * 2;",
-                "stats.label = \"attack_bias\";",
+                'stats.label = "attack_bias";',
             ],
         )
 
@@ -4791,7 +4790,7 @@ class TestNssNcsRoundtripGranular(unittest.TestCase):
             [
                 "DelayCommand(1.5, AssignCommand(player, ApplyBuff(player)));",
                 "ClearAllActions();",
-                "ActionDoCommand(AssignCommand(OBJECT_SELF, PlaySound(\"pc_action\")));",
+                'ActionDoCommand(AssignCommand(OBJECT_SELF, PlaySound("pc_action")));',
             ],
         )
 
@@ -4833,7 +4832,7 @@ class TestNssNcsRoundtripGranular(unittest.TestCase):
             decompiled,
             [
                 "int HelperFunction(int value)",
-                "SetLocalInt(OBJECT_SELF, \"helper\", result);",
+                'SetLocalInt(OBJECT_SELF, "helper", result);',
             ],
         )
 
@@ -4879,9 +4878,7 @@ def test_binary_roundtrip_samples(relative_path: str, game: Game):
     decompiled = decompile_ncs(original, game)
     recompilation = compile_nss(decompiled, game)
 
-    assert _canonical_bytes(original) == _canonical_bytes(
-        recompilation
-    ), f"Roundtrip failed for {relative_path}"
+    assert _canonical_bytes(original) == _canonical_bytes(recompilation), f"Roundtrip failed for {relative_path}"
     assert len(decompiled.strip()) > 0, "Decompiled source should not be empty"
 
 
@@ -4933,9 +4930,7 @@ def test_k1_undecompilable_roundtrip(ncs_path: Path, test_id: str):
 
     # Assert byte-identical roundtrip
     assert original_bytes == recompiled_bytes, (
-        f"Roundtrip failed for {test_id}: "
-        f"original has {len(original.instructions)} instructions, "
-        f"recompiled has {len(recompiled.instructions)} instructions"
+        f"Roundtrip failed for {test_id}: original has {len(original.instructions)} instructions, recompiled has {len(recompiled.instructions)} instructions"
     )
 
 
@@ -4983,9 +4978,7 @@ def test_compile_a_galaxymap_tsl(k2_path: str):
     assert ncs is not None
     assert len(ncs.instructions) > 0, "Compiled NCS should have instructions"
     # Verify SAVEBP instruction exists (indicates global variables)
-    assert any(
-        inst.ins_type == NCSInstructionType.SAVEBP for inst in ncs.instructions
-    ), "Script with globals should have SAVEBP instruction"
+    assert any(inst.ins_type == NCSInstructionType.SAVEBP for inst in ncs.instructions), "Script with globals should have SAVEBP instruction"
 
 
 def test_compile_tr_leave_ehawk_tsl(k2_path: str):

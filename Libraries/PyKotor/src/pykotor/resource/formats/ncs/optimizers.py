@@ -15,12 +15,12 @@ logger = logging.getLogger(__name__)
 
 class RemoveNopOptimizer(NCSOptimizer):
     """Removes NOP (no-operation) instructions from compiled NCS bytecode.
-    
+
     NCS Compiler uses NOP instructions as stubs to simplify the compilation process
     however as their name suggests they do not perform any actual function. This optimizer
     removes all occurrences of NOP instructions from the compiled script, updating jump
     targets to skip over removed NOPs.
-    
+
     References:
     ----------
         Original BioWare engine binaries (from swkotor.exe, swkotor2.exe)
@@ -43,6 +43,7 @@ class RemoveNopOptimizer(NCSOptimizer):
             - For each NOP, finds all links jumping to it and updates them to jump to the next instruction instead
             - Removes all NOP instructions from the NCS instruction list.
         """
+
         def find_index(target: NCSInstruction) -> int:
             for idx, instruction in enumerate(ncs.instructions):
                 if instruction is target:

@@ -56,7 +56,7 @@ if TYPE_CHECKING:
 
 class TestQFileDialogExtendedComprehensive(unittest.TestCase):
     """Comprehensive test suite for QFileDialogExtended.
-    
+
     Follows the testing patterns from tst_qfiledialog.cpp and provides
     exhaustive coverage of all dialog functionality.
     """
@@ -67,13 +67,13 @@ class TestQFileDialogExtendedComprehensive(unittest.TestCase):
         cls.app: QApplication = QApplication.instance() or QApplication([])
         cls.temp_dir = tempfile.TemporaryDirectory()
         cls.temp_path = Path(cls.temp_dir.name)
-        
+
         # Create a directory structure for testing
         (cls.temp_path / "folder1").mkdir(parents=True, exist_ok=True)
         (cls.temp_path / "folder2").mkdir(parents=True, exist_ok=True)
         (cls.temp_path / "folder1" / "subfolder1").mkdir(parents=True, exist_ok=True)
         (cls.temp_path / "folder1" / "subfolder2").mkdir(parents=True, exist_ok=True)
-        
+
         # Create test files
         (cls.temp_path / "file1.txt").write_text("test data 1")
         (cls.temp_path / "file2.txt").write_text("test data 2")
@@ -97,8 +97,8 @@ class TestQFileDialogExtendedComprehensive(unittest.TestCase):
         """Clean up dialog after each test."""
         try:
             # Shutdown the executor's process pool first to avoid hanging
-            if hasattr(self, 'dialog') and self.dialog:
-                if hasattr(self.dialog, 'executor') and self.dialog.executor:
+            if hasattr(self, "dialog") and self.dialog:
+                if hasattr(self.dialog, "executor") and self.dialog.executor:
                     try:
                         self.dialog.executor.process_pool.shutdown(wait=False)
                     except Exception:
@@ -155,12 +155,7 @@ class TestQFileDialogExtendedComprehensive(unittest.TestCase):
     def test_constructor_full_args(self) -> None:
         """Test constructor with all arguments."""
         filter_str = "Text Files (*.txt);;All Files (*)"
-        dialog = QFileDialogExtended(
-            None,
-            "Test Caption",
-            str(self.temp_path / "folder1"),
-            filter_str
-        )
+        dialog = QFileDialogExtended(None, "Test Caption", str(self.temp_path / "folder1"), filter_str)
         self.assertEqual(dialog.windowTitle(), "Test Caption")
         self.assertIn("Text Files", dialog.nameFilters())
         current_dir = Path(dialog.directory().absolutePath())
@@ -256,10 +251,10 @@ class TestQFileDialogExtendedComprehensive(unittest.TestCase):
         """Test switching between accept modes."""
         self.dialog.setAcceptMode(AdapterQFileDialog.AcceptMode.AcceptOpen)
         self.assertEqual(self.dialog.acceptMode(), AdapterQFileDialog.AcceptMode.AcceptOpen)
-        
+
         self.dialog.setAcceptMode(AdapterQFileDialog.AcceptMode.AcceptSave)
         self.assertEqual(self.dialog.acceptMode(), AdapterQFileDialog.AcceptMode.AcceptSave)
-        
+
         self.dialog.setAcceptMode(AdapterQFileDialog.AcceptMode.AcceptOpen)
         self.assertEqual(self.dialog.acceptMode(), AdapterQFileDialog.AcceptMode.AcceptOpen)
 
@@ -285,7 +280,7 @@ class TestQFileDialogExtendedComprehensive(unittest.TestCase):
         """Test switching from list to detail view."""
         self.dialog.setViewMode(AdapterQFileDialog.ViewMode.List)
         self.assertTrue(self.dialog.ui.listView.isVisible())
-        
+
         self.dialog.setViewMode(AdapterQFileDialog.ViewMode.Detail)
         self.assertFalse(self.dialog.ui.listView.isVisible())
         self.assertTrue(self.dialog.ui.treeView.isVisible())
@@ -294,7 +289,7 @@ class TestQFileDialogExtendedComprehensive(unittest.TestCase):
         """Test switching from detail to list view."""
         self.dialog.setViewMode(AdapterQFileDialog.ViewMode.Detail)
         self.assertTrue(self.dialog.ui.treeView.isVisible())
-        
+
         self.dialog.setViewMode(AdapterQFileDialog.ViewMode.List)
         self.assertFalse(self.dialog.ui.treeView.isVisible())
         self.assertTrue(self.dialog.ui.listView.isVisible())
@@ -306,7 +301,7 @@ class TestQFileDialogExtendedComprehensive(unittest.TestCase):
         QTest.qWait(50)
         self.assertTrue(self.dialog.ui.listModeButton.isDown())
         self.assertFalse(self.dialog.ui.detailModeButton.isDown())
-        
+
         # Click detail mode button
         self.dialog.ui.detailModeButton.click()
         QTest.qWait(50)
@@ -349,11 +344,11 @@ class TestQFileDialogExtendedComprehensive(unittest.TestCase):
         # Start in subfolder
         self.dialog.setDirectory(str(self.temp_path / "folder1" / "subfolder1"))
         QTest.qWait(50)
-        
+
         # Navigate up
         self.dialog.address_bar.go_up()
         QTest.qWait(50)
-        
+
         current_dir = Path(self.dialog.directory().absolutePath())
         self.assertEqual(current_dir, self.temp_path / "folder1")
 
@@ -362,15 +357,15 @@ class TestQFileDialogExtendedComprehensive(unittest.TestCase):
         # Navigate to first directory
         self.dialog.setDirectory(str(self.temp_path / "folder1"))
         QTest.qWait(50)
-        
+
         # Navigate to second directory
         self.dialog.setDirectory(str(self.temp_path / "folder2"))
         QTest.qWait(50)
-        
+
         # Navigate back
         self.dialog.address_bar.go_back()
         QTest.qWait(50)
-        
+
         current_dir = Path(self.dialog.directory().absolutePath())
         self.assertEqual(current_dir, self.temp_path / "folder1")
 
@@ -379,18 +374,18 @@ class TestQFileDialogExtendedComprehensive(unittest.TestCase):
         # Setup history
         self.dialog.setDirectory(str(self.temp_path / "folder1"))
         QTest.qWait(50)
-        
+
         self.dialog.setDirectory(str(self.temp_path / "folder2"))
         QTest.qWait(50)
-        
+
         # Navigate back
         self.dialog.address_bar.go_back()
         QTest.qWait(50)
-        
+
         # Navigate forward
         self.dialog.address_bar.go_forward()
         QTest.qWait(50)
-        
+
         current_dir = Path(self.dialog.directory().absolutePath())
         self.assertEqual(current_dir, self.temp_path / "folder2")
 
@@ -426,12 +421,12 @@ class TestQFileDialogExtendedComprehensive(unittest.TestCase):
         self.dialog.setFileMode(AdapterQFileDialog.FileMode.ExistingFiles)
         file1 = self.temp_path / "file1.txt"
         file2 = self.temp_path / "file2.txt"
-        
+
         self.dialog.selectFile(str(file1))
         QTest.qWait(50)
         self.dialog.selectFile(str(file2))
         QTest.qWait(50)
-        
+
         selected = self.dialog.selectedFiles()
         self.assertGreaterEqual(len(selected), 1)
 
@@ -599,11 +594,11 @@ class TestQFileDialogExtendedComprehensive(unittest.TestCase):
         if root_index.isValid():
             view.setCurrentIndex(root_index)
             QTest.qWait(50)
-            
+
             # Simulate arrow down
             QTest.keyClick(view, Qt.Key.Key_Down)
             QTest.qWait(50)
-            
+
             # Current index should have changed (or stayed at root if no children)
             self.assertIsNotNone(view.currentIndex())
 
@@ -612,17 +607,17 @@ class TestQFileDialogExtendedComprehensive(unittest.TestCase):
         self.dialog.setDirectory(str(self.temp_path))
         view = self.dialog.ui.treeView
         QTest.qWait(50)
-        
+
         # Get first child (should be a folder)
         root = view.model().index(0, 0)
         if view.model().hasChildren(root):
             first_child = view.model().index(0, 0, root)
             view.setCurrentIndex(first_child)
             QTest.qWait(50)
-            
+
             # Get current directory before
             dir_before = self.dialog.directory().absolutePath()
-            
+
             # Press Enter
             QTest.keyClick(view, Qt.Key.Key_Return)
             QTest.qWait(100)
@@ -632,11 +627,11 @@ class TestQFileDialogExtendedComprehensive(unittest.TestCase):
         # Navigate to a subfolder first
         self.dialog.setDirectory(str(self.temp_path / "folder1"))
         QTest.qWait(50)
-        
+
         view = self.dialog.ui.treeView
         QTest.keyClick(view, Qt.Key.Key_Backspace)
         QTest.qWait(100)
-        
+
         # Should navigate to parent
         current_dir = Path(self.dialog.directory().absolutePath())
         self.assertEqual(current_dir, self.temp_path)
@@ -663,7 +658,7 @@ class TestQFileDialogExtendedComprehensive(unittest.TestCase):
         view = self.dialog.ui.treeView
         view.setFocus()
         QTest.qWait(50)
-        
+
         # Simulate Ctrl+L
         QTest.keyClick(view, Qt.Key.Key_L, Qt.KeyboardModifier.ControlModifier)
         QTest.qWait(50)
@@ -676,7 +671,7 @@ class TestQFileDialogExtendedComprehensive(unittest.TestCase):
         """Test mouse click on folder."""
         view = self.dialog.ui.treeView
         root = view.model().index(0, 0)
-        
+
         if view.model().hasChildren(root):
             first_child = view.model().index(0, 0, root)
             # Click on item
@@ -692,14 +687,14 @@ class TestQFileDialogExtendedComprehensive(unittest.TestCase):
         self.dialog.setDirectory(str(self.temp_path))
         view = self.dialog.ui.treeView
         QTest.qWait(50)
-        
+
         root = view.model().index(0, 0)
         if view.model().hasChildren(root):
             first_child = view.model().index(0, 0, root)
             rect = view.visualRect(first_child)
             if rect.isValid():
                 dir_before = self.dialog.directory().absolutePath()
-                
+
                 # Double click
                 QTest.mouseDoubleClick(view, Qt.MouseButton.LeftButton, Qt.KeyboardModifier.NoModifier, rect.center())
                 QTest.qWait(100)
@@ -708,7 +703,7 @@ class TestQFileDialogExtendedComprehensive(unittest.TestCase):
         """Test right click shows context menu."""
         view = self.dialog.ui.treeView
         root = view.model().index(0, 0)
-        
+
         if view.model().hasChildren(root):
             first_child = view.model().index(0, 0, root)
             rect = view.visualRect(first_child)
@@ -722,20 +717,20 @@ class TestQFileDialogExtendedComprehensive(unittest.TestCase):
         self.dialog.setFileMode(AdapterQFileDialog.FileMode.ExistingFiles)
         view = self.dialog.ui.treeView
         QTest.qWait(50)
-        
+
         root = view.model().index(0, 0)
         if view.model().rowCount(root) >= 2:
             first = view.model().index(0, 0, root)
             second = view.model().index(1, 0, root)
-            
+
             rect1 = view.visualRect(first)
             rect2 = view.visualRect(second)
-            
+
             if rect1.isValid() and rect2.isValid():
                 # Click first
                 QTest.mouseClick(view, Qt.MouseButton.LeftButton, Qt.KeyboardModifier.NoModifier, rect1.center())
                 QTest.qWait(50)
-                
+
                 # Ctrl+Click second
                 QTest.mouseClick(view, Qt.MouseButton.LeftButton, Qt.KeyboardModifier.ControlModifier, rect2.center())
                 QTest.qWait(50)
@@ -752,7 +747,7 @@ class TestQFileDialogExtendedComprehensive(unittest.TestCase):
         """Test ShowDirsOnly option."""
         self.dialog.setOption(AdapterQFileDialog.Option.ShowDirsOnly, True)
         self.assertTrue(self.dialog.testOption(AdapterQFileDialog.Option.ShowDirsOnly))
-        
+
         self.dialog.setOption(AdapterQFileDialog.Option.ShowDirsOnly, False)
         self.assertFalse(self.dialog.testOption(AdapterQFileDialog.Option.ShowDirsOnly))
 
@@ -760,7 +755,7 @@ class TestQFileDialogExtendedComprehensive(unittest.TestCase):
         """Test ReadOnly option."""
         self.dialog.setOption(AdapterQFileDialog.Option.ReadOnly, True)
         self.assertTrue(self.dialog.testOption(AdapterQFileDialog.Option.ReadOnly))
-        
+
         self.dialog.setOption(AdapterQFileDialog.Option.ReadOnly, False)
         self.assertFalse(self.dialog.testOption(AdapterQFileDialog.Option.ReadOnly))
 
@@ -773,7 +768,7 @@ class TestQFileDialogExtendedComprehensive(unittest.TestCase):
         """Test multiple options combined."""
         self.dialog.setOption(AdapterQFileDialog.Option.ShowDirsOnly, True)
         self.dialog.setOption(AdapterQFileDialog.Option.ReadOnly, True)
-        
+
         self.assertTrue(self.dialog.testOption(AdapterQFileDialog.Option.ShowDirsOnly))
         self.assertTrue(self.dialog.testOption(AdapterQFileDialog.Option.ReadOnly))
 
@@ -786,7 +781,7 @@ class TestQFileDialogExtendedComprehensive(unittest.TestCase):
         target_dir = self.temp_path / "folder1" / "subfolder1"
         self.dialog.setDirectory(str(target_dir))
         QTest.qWait(50)
-        
+
         # Verify it's still set
         current = Path(self.dialog.directory().absolutePath())
         self.assertEqual(current, target_dir)
@@ -796,7 +791,7 @@ class TestQFileDialogExtendedComprehensive(unittest.TestCase):
         file1 = self.temp_path / "file1.txt"
         self.dialog.selectFile(str(file1))
         QTest.qWait(50)
-        
+
         # Should still be selected
         selected = self.dialog.selectedFiles()
         self.assertIn(str(file1), selected)
@@ -806,7 +801,7 @@ class TestQFileDialogExtendedComprehensive(unittest.TestCase):
         self.dialog.setViewMode(AdapterQFileDialog.ViewMode.List)
         QTest.qWait(50)
         self.assertEqual(self.dialog.viewMode(), AdapterQFileDialog.ViewMode.List)
-        
+
         self.dialog.setViewMode(AdapterQFileDialog.ViewMode.Detail)
         QTest.qWait(50)
         self.assertEqual(self.dialog.viewMode(), AdapterQFileDialog.ViewMode.Detail)
@@ -824,7 +819,7 @@ class TestQFileDialogExtendedComprehensive(unittest.TestCase):
             self.temp_path / "folder2",
             self.temp_path,
         ]
-        
+
         for target_dir in dirs:
             self.dialog.setDirectory(str(target_dir))
             QTest.qWait(50)
@@ -836,20 +831,20 @@ class TestQFileDialogExtendedComprehensive(unittest.TestCase):
         # Navigate to folder1
         self.dialog.setDirectory(str(self.temp_path / "folder1"))
         QTest.qWait(50)
-        
+
         # Select a file
         file1 = self.temp_path / "folder1" / "nested_file.txt"
         self.dialog.selectFile(str(file1))
         QTest.qWait(50)
-        
+
         # Navigate to folder2
         self.dialog.setDirectory(str(self.temp_path / "folder2"))
         QTest.qWait(50)
-        
+
         # Back to folder1
         self.dialog.setDirectory(str(self.temp_path / "folder1"))
         QTest.qWait(50)
-        
+
         current = Path(self.dialog.directory().absolutePath())
         self.assertEqual(current, self.temp_path / "folder1")
 
@@ -859,16 +854,16 @@ class TestQFileDialogExtendedComprehensive(unittest.TestCase):
             AdapterQFileDialog.ViewMode.Detail,
             AdapterQFileDialog.ViewMode.List,
         ]
-        
+
         dirs = [
             self.temp_path / "folder1",
             self.temp_path / "folder2",
         ]
-        
+
         for dir_path in dirs:
             self.dialog.setDirectory(str(dir_path))
             QTest.qWait(50)
-            
+
             for view_mode in views:
                 self.dialog.setViewMode(view_mode)
                 QTest.qWait(50)
@@ -879,15 +874,15 @@ class TestQFileDialogExtendedComprehensive(unittest.TestCase):
         # Navigate to folder with files
         self.dialog.setDirectory(str(self.temp_path / "folder1"))
         QTest.qWait(50)
-        
+
         # Apply search filter
         self.dialog.search_filter.line_edit.setText("nested")
         QTest.qWait(100)
-        
+
         # Navigate to different folder
         self.dialog.setDirectory(str(self.temp_path / "folder2"))
         QTest.qWait(50)
-        
+
         # Search should be cleared or maintained depending on design
         # Just verify dialog still works
         self.assertIsNotNone(self.dialog.currentView())
@@ -919,7 +914,7 @@ class TestQFileDialogExtendedComprehensive(unittest.TestCase):
         """Test preview pane updates when selection changes."""
         self.dialog.toggle_preview_pane(True)
         QTest.qWait(50)
-        
+
         # Select a file
         file1 = self.temp_path / "file1.txt"
         self.dialog.selectFile(str(file1))
@@ -936,7 +931,7 @@ class TestQFileDialogExtendedComprehensive(unittest.TestCase):
     def test_sidebar_toggle_via_ribbon(self) -> None:
         """Test toggling sidebar via ribbon action."""
         initial_visible = self.dialog.ui.sidebar.isVisible()
-        
+
         self.dialog.ribbons.actions_definitions.actionNavigationPane.triggered.emit(not initial_visible)
         QTest.qWait(50)
 
@@ -997,7 +992,7 @@ class TestQFileDialogExtendedComprehensive(unittest.TestCase):
     def test_set_icon_provider(self) -> None:
         """Test setting icon provider."""
         from qtpy.QtWidgets import QFileIconProvider
-        
+
         new_provider = QFileIconProvider()
         self.dialog.setIconProvider(new_provider)
         self.assertEqual(self.dialog.iconProvider(), new_provider)
@@ -1014,7 +1009,7 @@ class TestQFileDialogExtendedComprehensive(unittest.TestCase):
     def test_set_item_delegate(self) -> None:
         """Test setting item delegate."""
         from qtpy.QtWidgets import QItemDelegate
-        
+
         new_delegate = QItemDelegate()
         self.dialog.setItemDelegate(new_delegate)
         self.assertEqual(self.dialog.itemDelegate(), new_delegate)
@@ -1052,7 +1047,7 @@ class TestQFileDialogExtendedComprehensive(unittest.TestCase):
         """Test resolve symlinks setting."""
         self.dialog.setResolveSymlinks(True)
         self.assertTrue(self.dialog.resolveSymlinks())
-        
+
         self.dialog.setResolveSymlinks(False)
         self.assertFalse(self.dialog.resolveSymlinks())
 
@@ -1075,15 +1070,15 @@ class TestQFileDialogExtendedComprehensive(unittest.TestCase):
             self.temp_path / "folder2",
             self.temp_path / "folder1" / "subfolder1",
         ]
-        
+
         for dir_path in dirs:
             self.dialog.setDirectory(str(dir_path))
             QTest.qWait(50)
-        
+
         # Go back through history
         self.dialog.address_bar.go_back()
         QTest.qWait(50)
-        
+
         # Go forward
         self.dialog.address_bar.go_forward()
         QTest.qWait(50)
@@ -1095,7 +1090,7 @@ class TestQFileDialogExtendedComprehensive(unittest.TestCase):
     def test_current_changed_signal(self) -> None:
         """Test current changed signal."""
         spy = QSignalSpy(self.dialog.currentChanged)
-        
+
         view = self.dialog.ui.treeView
         root = view.model().index(0, 0)
         if view.model().hasChildren(root):
@@ -1112,19 +1107,19 @@ class TestQFileDialogExtendedComprehensive(unittest.TestCase):
         # Navigate
         self.dialog.setDirectory(str(self.temp_path / "folder1"))
         QTest.qWait(50)
-        
+
         # Select file
         self.dialog.selectFile(str(self.temp_path / "folder1" / "nested_file.txt"))
         QTest.qWait(50)
-        
+
         # Apply filter
         self.dialog.search_filter.line_edit.setText("nested")
         QTest.qWait(50)
-        
+
         # Switch view
         self.dialog.setViewMode(AdapterQFileDialog.ViewMode.List)
         QTest.qWait(50)
-        
+
         # Navigate back
         self.dialog.setDirectory(str(self.temp_path))
         QTest.qWait(50)
@@ -1132,11 +1127,11 @@ class TestQFileDialogExtendedComprehensive(unittest.TestCase):
     def test_sequence_keyboard_mouse_mixed_interaction(self) -> None:
         """Test mixed keyboard and mouse interactions."""
         view = self.dialog.ui.treeView
-        
+
         # Keyboard: arrow down
         QTest.keyClick(view, Qt.Key.Key_Down)
         QTest.qWait(50)
-        
+
         # Mouse: click
         root = view.model().index(0, 0)
         if view.model().hasChildren(root):
@@ -1144,7 +1139,7 @@ class TestQFileDialogExtendedComprehensive(unittest.TestCase):
             if rect.isValid():
                 QTest.mouseClick(view, Qt.MouseButton.LeftButton, Qt.KeyboardModifier.NoModifier, rect.center())
                 QTest.qWait(50)
-        
+
         # Keyboard: press enter
         QTest.keyClick(view, Qt.Key.Key_Return)
         QTest.qWait(100)
@@ -1158,7 +1153,7 @@ class TestQFileDialogExtendedComprehensive(unittest.TestCase):
             self.temp_path / "folder1" / "subfolder2",
             self.temp_path,
         ]
-        
+
         for _ in range(3):
             for dir_path in dirs:
                 self.dialog.setDirectory(str(dir_path))
@@ -1208,7 +1203,7 @@ class TestQFileDialogExtendedComprehensive(unittest.TestCase):
         """Test browsing empty directory."""
         empty_dir = self.temp_path / "empty_folder"
         empty_dir.mkdir(exist_ok=True)
-        
+
         try:
             self.dialog.setDirectory(str(empty_dir))
             QTest.qWait(50)
@@ -1222,7 +1217,7 @@ class TestQFileDialogExtendedComprehensive(unittest.TestCase):
         # Create directory with special name
         special_dir = self.temp_path / "folder with spaces & special"
         special_dir.mkdir(exist_ok=True)
-        
+
         try:
             self.dialog.setDirectory(str(special_dir))
             QTest.qWait(50)
@@ -1239,7 +1234,7 @@ class TestQFileDialogExtendedComprehensive(unittest.TestCase):
         """Test proxy model filters files correctly."""
         self.dialog.search_filter.line_edit.setText("file1")
         QTest.qWait(100)
-        
+
         proxy = self.dialog.proxy_model
         self.assertGreater(proxy.rowCount(), 0)
 
@@ -1255,7 +1250,7 @@ class TestQFileDialogExtendedComprehensive(unittest.TestCase):
         """Test proxy model with name filters."""
         self.dialog.setNameFilter("Text Files (*.txt)")
         QTest.qWait(50)
-        
+
         # Add search filter on top
         self.dialog.search_filter.line_edit.setText("file")
         QTest.qWait(50)

@@ -85,6 +85,7 @@ def quat(*args) -> Vector4:  # noqa: N802
         return Vector4(float(x), float(y), float(z), float(w))
     raise TypeError(f"quat() takes 0, 1, or 4 arguments, got {len(args)}")
 
+
 # Re-export all functions
 __all__ = [
     "vec2",
@@ -116,6 +117,7 @@ if not TYPE_CHECKING and importlib.util.find_spec("pyglm"):  # type: ignore[attr
             vec3 as _pyglm_vec3,
             vec4 as _pyglm_vec4,
         )
+
         # Use PyGLM if available (better performance)
         vec3 = _pyglm_vec3  # type: ignore[assignment]
         vec4 = _pyglm_vec4  # type: ignore[assignment]

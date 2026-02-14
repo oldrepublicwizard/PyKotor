@@ -733,6 +733,7 @@ class RawBinaryReader:
         if encoding is None:
             # Lazy import to avoid circular dependency
             from pykotor.tools.encoding import decode_bytes_with_fallbacks
+
             string: str = decode_bytes_with_fallbacks(string_byte_data, encoding=encoding, errors=errors)
             RobustLogger().warning(f"decode_bytes_with_fallbacks called and returned '{string}'")
         else:
@@ -858,8 +859,7 @@ class RawBinaryWriter(ABC):
         exc_type: type[BaseException] | None,
         exc_val: BaseException | None,
         exc_tb: TracebackType | None,
-    ):
-        ...
+    ): ...
 
     @classmethod
     def to_file(
@@ -2135,12 +2135,11 @@ class RawBinaryWriterBytearray(RawBinaryWriter):
         encoding: str | None = "windows-1252",
         errors: str = "strict",
     ):
-        """Writes the specified string to the stream with a terminating null character.
-        """
+        """Writes the specified string to the stream with a terminating null character."""
         encoded: bytes = value.encode(encoding or "windows-1252", errors=errors)
         required_size = self._position + len(encoded) + 1
         if len(self._ba) < required_size:
-            self._ba.extend(b'\x00' * (required_size - len(self._ba)))
+            self._ba.extend(b"\x00" * (required_size - len(self._ba)))
         self._ba[self._position : self._position + len(encoded)] = encoded
         self._ba[self._position + len(encoded)] = 0
         self._position += len(encoded) + 1

@@ -50,15 +50,54 @@ class SetDefaultColumnsDialog(QDialog):
 
     def populate_columns(self):
         columns = [
-            "Name", "Type", "Size", "Date Modified", "Attributes", "Size On Disk",
-            "8.3 Name", "Owner", "Product Name", "Company", "Description", "File Version",
-            "Product Version", "Shortcut to", "Hard links", "Extension", "Date Created",
-            "Date Accessed", "Title", "Subject", "Authors", "Keywords", "Comment",
-            "Camera Model", "Date Taken", "Width", "Height", "Bit rate", "Copyright",
-            "Duration", "Protected", "Rating", "Album artist", "Album", "Beats-per-minute",
-            "Composer", "Conductor", "Director", "Genre", "Language", "Broadcast date",
-            "Channel", "Station name", "Mood", "Parental rating", "Parental rating reason",
-            "Period", "Producer"
+            "Name",
+            "Type",
+            "Size",
+            "Date Modified",
+            "Attributes",
+            "Size On Disk",
+            "8.3 Name",
+            "Owner",
+            "Product Name",
+            "Company",
+            "Description",
+            "File Version",
+            "Product Version",
+            "Shortcut to",
+            "Hard links",
+            "Extension",
+            "Date Created",
+            "Date Accessed",
+            "Title",
+            "Subject",
+            "Authors",
+            "Keywords",
+            "Comment",
+            "Camera Model",
+            "Date Taken",
+            "Width",
+            "Height",
+            "Bit rate",
+            "Copyright",
+            "Duration",
+            "Protected",
+            "Rating",
+            "Album artist",
+            "Album",
+            "Beats-per-minute",
+            "Composer",
+            "Conductor",
+            "Director",
+            "Genre",
+            "Language",
+            "Broadcast date",
+            "Channel",
+            "Station name",
+            "Mood",
+            "Parental rating",
+            "Parental rating reason",
+            "Period",
+            "Producer",
         ]
         for column in columns:
             item = QListWidgetItem(column, self.columns_list, QListWidgetItem.ItemType.UserType)
@@ -73,12 +112,10 @@ class SetDefaultColumnsDialog(QDialog):
         selected_columns: list[str] = []
         for i in range(self.columns_list.count()):
             item: QListWidgetItem | None = self.columns_list.item(i)
-            if (
-                item is not None
-                and item.checkState() == Qt.CheckState.Checked
-            ):
+            if item is not None and item.checkState() == Qt.CheckState.Checked:
                 selected_columns.append(item.text())
         return selected_columns
+
 
 if __name__ == "__main__":
     import sys
@@ -87,10 +124,12 @@ if __name__ == "__main__":
 
     app = QApplication(sys.argv)
     dialog = SetDefaultColumnsDialog()
+
     def on_accepted(*args, **kwargs):
         selected_columns = dialog.get_selected_columns()
         print("Selected columns:", selected_columns)
         QTimer.singleShot(0, app.quit)
+
     dialog.accepted.connect(on_accepted)
     dialog.show()
     sys.exit(app.exec())

@@ -161,13 +161,13 @@ class Texture:
         rgba_data: bytes,
     ) -> Texture:
         """Create texture from RGBA pixel data.
-        
+
         Args:
         ----
             width: Texture width in pixels
             height: Texture height in pixels
             rgba_data: Raw RGBA pixel data (bytes)
-        
+
         Returns:
         -------
             Texture: OpenGL texture object
@@ -177,14 +177,14 @@ class Texture:
 
         gl_id: int = glGenTextures(1)
         glBindTexture(GL_TEXTURE_2D, gl_id)
-        
+
         glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, rgba_data)
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT)
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT)
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR)
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR)
         glGenerateMipmap(GL_TEXTURE_2D)
-        
+
         return Texture(gl_id, width, height, bytes(rgba_data))
 
     @classmethod
@@ -233,5 +233,3 @@ def _rgb_to_rgba_bytes(
     arr = np.frombuffer(data, dtype=np.uint8).reshape(pixel_count, 3)
     alpha = np.full((pixel_count, 1), 255, dtype=np.uint8)
     return np.hstack([arr, alpha]).astype(np.uint8).tobytes()
-
-

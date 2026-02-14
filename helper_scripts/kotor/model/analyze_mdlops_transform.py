@@ -38,11 +38,11 @@ def analyze_model(data: bytes, label: str):
     """Print key information about a model binary."""
     print(f"\n=== {label} ===")
     print(f"Total size: {len(data)} bytes")
-    
+
     if len(data) < 100:
         print("File too small to analyze")
         return {}
-    
+
     info = {}
     info["mdl_size"] = get_uint32(data, 4)
     info["mdx_size"] = get_uint32(data, 8)
@@ -51,7 +51,7 @@ def analyze_model(data: bytes, label: str):
     info["offset_to_super_root"] = get_uint32(data, 180)
     info["offset_to_name_offsets"] = get_uint32(data, 196)
     info["name_offsets_count"] = get_uint32(data, 200)
-    
+
     print(f"MDL data size: {info['mdl_size']}")
     print(f"MDX size: {info['mdx_size']}")
     print(f"Root node offset: {info['root_node_offset']}")
@@ -59,7 +59,7 @@ def analyze_model(data: bytes, label: str):
     print(f"Offset to super root: {info['offset_to_super_root']}")
     print(f"Offset to name offsets: {info['offset_to_name_offsets']}")
     print(f"Name offsets count: {info['name_offsets_count']}")
-    
+
     # Scan first few nodes
     print("\nFirst 3 nodes:")
     root_offset = info["root_node_offset"]
@@ -77,7 +77,7 @@ def analyze_model(data: bytes, label: str):
                 if node_type & 0x40:  # SKIN
                     base_size += 100
                 file_pos += base_size
-    
+
     return info
 
 
@@ -126,7 +126,7 @@ def main():
 
         ascii_path = td_path / f"{model_name}-ascii.mdl"
         if not ascii_path.exists():
-            print(f"MDLOps ASCII not found")
+            print("MDLOps ASCII not found")
             return
 
         # Show key parts of ASCII output
@@ -150,9 +150,9 @@ def main():
 
         mdlops_mdl_path = td_path / f"{model_name}-ascii-k1-bin.mdl"
         mdlops_mdx_path = td_path / f"{model_name}-ascii-k1-bin.mdx"
-        
+
         if not mdlops_mdl_path.exists():
-            print(f"MDLOps binary not found")
+            print("MDLOps binary not found")
             return
 
         mdlops_mdl = mdlops_mdl_path.read_bytes()
@@ -175,7 +175,7 @@ def main():
             print(f"Node count changed: {orig_info.get('node_count')} -> {mdlops_info.get('node_count')}")
         else:
             print(f"Node count unchanged: {orig_info.get('node_count')}")
-        
+
         if mdl_diff > 0:
             print(f"MDL grew by {mdl_diff} bytes - MDLOps added data")
         elif mdl_diff < 0:
@@ -186,4 +186,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-

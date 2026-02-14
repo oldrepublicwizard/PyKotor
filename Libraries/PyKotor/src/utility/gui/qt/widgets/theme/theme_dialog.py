@@ -28,7 +28,6 @@ class ThemeDialog(QDialog):
         it = QDirIterator(QDir(":/themes"), QDirIterator.IteratorFlag.Subdirectories)
         return tuple(os.path.splitext(os.path.basename(file))[0].lower() for file in iter(it.next, None))
 
-
     @staticmethod
     def get_default_styles() -> tuple[str, ...]:
         """Get the available styles."""

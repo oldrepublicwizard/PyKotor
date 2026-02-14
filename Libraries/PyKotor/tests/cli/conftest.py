@@ -35,6 +35,7 @@ _load_dotenv_if_present()
 
 # Import shared profiling and timeout utilities
 import sys
+
 _test_helpers_path = str(Path(__file__).resolve().parents[1])
 if _test_helpers_path not in sys.path:
     sys.path.insert(0, _test_helpers_path)

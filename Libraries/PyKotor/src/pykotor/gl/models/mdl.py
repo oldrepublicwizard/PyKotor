@@ -383,7 +383,7 @@ class Mesh:
 
     def vertex_blob(self) -> bytes:
         """Generate an interleaved vertex blob for rendering.
-        
+
         Returns a bytes object containing interleaved vertex data:
         - 3 floats for position (x, y, z)
         - 2 floats for diffuse UV (u, v)
@@ -509,9 +509,7 @@ class Cube:
                 glBindVertexArray(0)
                 self._buffers_supported = True
             except gl_error.NullFunctionError:
-                logger.warning(
-                    "OpenGL buffer objects are unavailable; falling back to CPU-only cube bounds."
-                )
+                logger.warning("OpenGL buffer objects are unavailable; falling back to CPU-only cube bounds.")
                 self._face_count = 0
                 self._vao = 0
                 self._vbo = 0
@@ -520,7 +518,6 @@ class Cube:
             self._vao = 0
             self._vbo = 0
             self._ebo = 0
-
 
     def draw(self, shader: Shader, transform: mat4):
         if not self._buffers_supported:
@@ -531,7 +528,7 @@ class Cube:
         shader.set_matrix4("model", transform)
         glBindVertexArray(self._vao)
         glDrawElements(GL_TRIANGLES, self._face_count, GL_UNSIGNED_SHORT, None)
-    
+
     def vertex_blob(self) -> bytes:
         """Interleaved vertex data (position only)."""
         vertex_count = len(self._vertex_data) // 3
@@ -578,9 +575,7 @@ class Boundary:
                 glBindVertexArray(0)
                 self._buffers_supported = True
             except gl_error.NullFunctionError:
-                logger.warning(
-                    "OpenGL buffer objects are unavailable; boundary rendering disabled."
-                )
+                logger.warning("OpenGL buffer objects are unavailable; boundary rendering disabled.")
                 self._face_count = 0
                 self._vao = 0
                 self._vbo = 0
@@ -625,7 +620,7 @@ class Boundary:
         shader.set_matrix4("model", transform)
         glBindVertexArray(self._vao)
         glDrawElements(GL_TRIANGLES, self._face_count, GL_UNSIGNED_SHORT, None)
-    
+
     def vertex_blob(self) -> bytes:
         """Interleaved vertex data (position only)."""
         vertex_count = len(self._vertex_data) // 3
@@ -657,5 +652,4 @@ class Empty:
     def __init__(self, scene: Scene):
         self._scene: Scene = scene
 
-    def draw(self, shader: Shader, transform: mat4):
-        ...
+    def draw(self, shader: Shader, transform: mat4): ...

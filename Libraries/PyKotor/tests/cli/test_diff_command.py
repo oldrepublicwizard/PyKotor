@@ -17,7 +17,6 @@ from __future__ import annotations
 
 import pathlib
 import sys
-import tempfile
 
 from io import StringIO
 from pathlib import Path
@@ -35,13 +34,11 @@ from argparse import Namespace
 from loggerplus import RobustLogger  # type: ignore[import-untyped]
 from pykotor.cli.commands.utility_commands import _detect_path_type, _resolve_path, cmd_diff
 from pykotor.extract.installation import Installation
-from pykotor.resource.formats.gff.gff_auto import read_gff, write_gff
+from pykotor.resource.formats.gff.gff_auto import write_gff
 from pykotor.resource.formats.gff.gff_data import GFF
 from pykotor.resource.formats.rim.rim_auto import write_rim
 from pykotor.resource.formats.rim.rim_data import RIM
-from pykotor.resource.formats.tlk.tlk_auto import read_tlk, write_tlk
-from pykotor.resource.formats.tlk.tlk_data import TLK
-from pykotor.resource.formats.twoda.twoda_auto import read_2da, write_2da
+from pykotor.resource.formats.twoda.twoda_auto import write_2da
 from pykotor.resource.formats.twoda.twoda_data import TwoDA
 from pykotor.tools.path import CaseAwarePath
 
@@ -1045,6 +1042,7 @@ class TestComprehensivePathCombinations:
         # RIM with some content (add dummy data)
         rim2 = RIM()
         from pykotor.resource.type import ResourceType
+
         rim2.set_data("test", ResourceType.TXT, b"dummy content")
         write_rim(rim2, populated_rim)
 
@@ -1063,6 +1061,7 @@ class TestDiffWithTestFiles:
     def test_gff_files_diff(self):
         """Test diff between GFF files from test_files."""
         import pathlib
+
         test_files_dir = pathlib.Path(__file__).parents[4] / "Libraries" / "PyKotor" / "tests" / "test_files"
 
         # Find GFF files
@@ -1070,16 +1069,7 @@ class TestDiffWithTestFiles:
         if len(gff_files) >= 2:
             file1, file2 = gff_files[:2]
 
-            args = Namespace(
-                path1=str(file1),
-                path2=str(file2),
-                format="unified",
-                output_mode="full",
-                generate_ini=False,
-                verbose=False,
-                output=None,
-                context=3
-            )
+            args = Namespace(path1=str(file1), path2=str(file2), format="unified", output_mode="full", generate_ini=False, verbose=False, output=None, context=3)
 
             logger = RobustLogger()
             result = cmd_diff(args, logger)
@@ -1089,6 +1079,7 @@ class TestDiffWithTestFiles:
     def test_2da_files_diff(self):
         """Test diff between 2DA files from test_files."""
         import pathlib
+
         test_files_dir = pathlib.Path(__file__).parents[4] / "Libraries" / "PyKotor" / "tests" / "test_files"
 
         # Find 2DA files
@@ -1096,16 +1087,7 @@ class TestDiffWithTestFiles:
         if len(da_files) >= 2:
             file1, file2 = da_files[:2]
 
-            args = Namespace(
-                path1=str(file1),
-                path2=str(file2),
-                format="unified",
-                output_mode="normal",
-                generate_ini=False,
-                verbose=False,
-                output=None,
-                context=3
-            )
+            args = Namespace(path1=str(file1), path2=str(file2), format="unified", output_mode="normal", generate_ini=False, verbose=False, output=None, context=3)
 
             logger = RobustLogger()
             result = cmd_diff(args, logger)
@@ -1115,6 +1097,7 @@ class TestDiffWithTestFiles:
     def test_tlk_files_diff(self):
         """Test diff between TLK files from test_files."""
         import pathlib
+
         test_files_dir = pathlib.Path(__file__).parents[4] / "Libraries" / "PyKotor" / "tests" / "test_files"
 
         # Find TLK files
@@ -1122,16 +1105,7 @@ class TestDiffWithTestFiles:
         if len(tlk_files) >= 2:
             file1, file2 = tlk_files[:2]
 
-            args = Namespace(
-                path1=str(file1),
-                path2=str(file2),
-                format="unified",
-                output_mode="normal",
-                generate_ini=False,
-                verbose=False,
-                output=None,
-                context=3
-            )
+            args = Namespace(path1=str(file1), path2=str(file2), format="unified", output_mode="normal", generate_ini=False, verbose=False, output=None, context=3)
 
             logger = RobustLogger()
             result = cmd_diff(args, logger)
@@ -1141,6 +1115,7 @@ class TestDiffWithTestFiles:
     def test_archive_files_diff(self):
         """Test diff between archive files from test_files."""
         import pathlib
+
         test_files_dir = pathlib.Path(__file__).parents[4] / "Libraries" / "PyKotor" / "tests" / "test_files"
 
         # Find archive files (rim, erf, mod, sav)
@@ -1153,16 +1128,7 @@ class TestDiffWithTestFiles:
         if len(archive_files) >= 2:
             file1, file2 = archive_files[:2]
 
-            args = Namespace(
-                path1=str(file1),
-                path2=str(file2),
-                format="unified",
-                output_mode="normal",
-                generate_ini=False,
-                verbose=False,
-                output=None,
-                context=3
-            )
+            args = Namespace(path1=str(file1), path2=str(file2), format="unified", output_mode="normal", generate_ini=False, verbose=False, output=None, context=3)
 
             logger = RobustLogger()
             result = cmd_diff(args, logger)
@@ -1172,6 +1138,7 @@ class TestDiffWithTestFiles:
     def test_corrupted_vs_valid_files(self):
         """Test diff between corrupted and valid files."""
         import pathlib
+
         test_files_dir = pathlib.Path(__file__).parents[4] / "Libraries" / "PyKotor" / "tests" / "test_files"
 
         # Test corrupted vs valid GFF
@@ -1179,16 +1146,7 @@ class TestDiffWithTestFiles:
         valid_gff = test_files_dir / "test.gff"
 
         if corrupted_gff.exists() and valid_gff.exists():
-            args = Namespace(
-                path1=str(corrupted_gff),
-                path2=str(valid_gff),
-                format="unified",
-                output_mode="normal",
-                generate_ini=False,
-                verbose=False,
-                output=None,
-                context=3
-            )
+            args = Namespace(path1=str(corrupted_gff), path2=str(valid_gff), format="unified", output_mode="normal", generate_ini=False, verbose=False, output=None, context=3)
 
             logger = RobustLogger()
             result = cmd_diff(args, logger)
@@ -1198,6 +1156,7 @@ class TestDiffWithTestFiles:
     def test_text_files_unified_diff(self):
         """Test unified diff between text files."""
         import pathlib
+
         test_files_dir = pathlib.Path(__file__).parents[4] / "Libraries" / "PyKotor" / "tests" / "test_files"
 
         # Find NSS files (text-based scripts)
@@ -1205,16 +1164,7 @@ class TestDiffWithTestFiles:
         if len(nss_files) >= 2:
             file1, file2 = nss_files[:2]
 
-            args = Namespace(
-                path1=str(file1),
-                path2=str(file2),
-                format="unified",
-                output_mode="normal",
-                generate_ini=False,
-                verbose=False,
-                output=None,
-                context=3
-            )
+            args = Namespace(path1=str(file1), path2=str(file2), format="unified", output_mode="normal", generate_ini=False, verbose=False, output=None, context=3)
 
             logger = RobustLogger()
             result = cmd_diff(args, logger)
@@ -1224,25 +1174,17 @@ class TestDiffWithTestFiles:
     def test_side_by_side_format(self):
         """Test side-by-side diff format."""
         import pathlib
+
         test_files_dir = pathlib.Path(__file__).parents[4] / "Libraries" / "PyKotor" / "tests" / "test_files"
 
         # Find any two files
         all_files = list(test_files_dir.glob("*"))
-        text_files = [f for f in all_files if f.is_file() and f.suffix.lower() not in ['.rim', '.erf', '.mod', '.sav', '.bif', '.tpc', '.mp3', '.wav', '.bik', '.mve']]
+        text_files = [f for f in all_files if f.is_file() and f.suffix.lower() not in [".rim", ".erf", ".mod", ".sav", ".bif", ".tpc", ".mp3", ".wav", ".bik", ".mve"]]
 
         if len(text_files) >= 2:
             file1, file2 = text_files[:2]
 
-            args = Namespace(
-                path1=str(file1),
-                path2=str(file2),
-                format="side_by_side",
-                output_mode="normal",
-                generate_ini=False,
-                verbose=False,
-                output=None,
-                context=3
-            )
+            args = Namespace(path1=str(file1), path2=str(file2), format="side_by_side", output_mode="normal", generate_ini=False, verbose=False, output=None, context=3)
 
             logger = RobustLogger()
             result = cmd_diff(args, logger)
@@ -1252,25 +1194,17 @@ class TestDiffWithTestFiles:
     def test_context_format(self):
         """Test context diff format."""
         import pathlib
+
         test_files_dir = pathlib.Path(__file__).parents[4] / "Libraries" / "PyKotor" / "tests" / "test_files"
 
         # Find any two files
         all_files = list(test_files_dir.glob("*"))
-        text_files = [f for f in all_files if f.is_file() and f.suffix.lower() not in ['.rim', '.erf', '.mod', '.sav', '.bif', '.tpc', '.mp3', '.wav', '.bik', '.mve']]
+        text_files = [f for f in all_files if f.is_file() and f.suffix.lower() not in [".rim", ".erf", ".mod", ".sav", ".bif", ".tpc", ".mp3", ".wav", ".bik", ".mve"]]
 
         if len(text_files) >= 2:
             file1, file2 = text_files[:2]
 
-            args = Namespace(
-                path1=str(file1),
-                path2=str(file2),
-                format="context",
-                output_mode="context",
-                generate_ini=False,
-                verbose=False,
-                output=None,
-                context=3
-            )
+            args = Namespace(path1=str(file1), path2=str(file2), format="context", output_mode="context", generate_ini=False, verbose=False, output=None, context=3)
 
             logger = RobustLogger()
             result = cmd_diff(args, logger)

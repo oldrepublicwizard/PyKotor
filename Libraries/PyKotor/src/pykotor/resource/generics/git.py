@@ -1233,6 +1233,7 @@ def construct_git(
         sound.position.y = sound_struct.acquire("YPosition", 0.0)
         sound.position.z = sound_struct.acquire("ZPosition", 0.0)
 
+    # StoreList: K1 LoadGIT 0x0050dd80 → LoadStores. ResRef blank, X/Y/ZPosition 0.0, X/YOrientation 0.0. Omit OK.
     for store_struct in _iterate_gff_list(gff.root, "StoreList"):
         store = GITStore()
         git.stores.append(store)
@@ -1248,7 +1249,7 @@ def construct_git(
         )
         store.bearing = Vector2(rot_x, rot_y).angle() - math.pi / 2
 
-    # TriggerList: K1 LoadGIT → LoadTriggers. TemplateResRef/Tag/LinkedTo/LinkedToModule blank, LinkedToFlags 0, X/Y/ZPosition 0.0; Geometry omit → default triangle.
+    # TriggerList: K1 LoadGIT 0x0050dd80 → LoadTriggers. TemplateResRef/Tag/LinkedTo/LinkedToModule blank, LinkedToFlags 0, X/Y/ZPosition 0.0; Geometry omit → default triangle. Omit OK.
     for trigger_struct in _iterate_gff_list(gff.root, "TriggerList"):
         trigger = GITTrigger()
         git.triggers.append(trigger)
@@ -1278,7 +1279,7 @@ def construct_git(
             RobustLogger().warning("Trigger geometry list missing! Creating a default triangle at its position.")
             trigger.geometry.create_triangle(origin=trigger.position)
 
-    # WaypointList: K1 LoadGIT → LoadWaypoints. LocalizedName/Tag invalid/blank, TemplateResRef blank, X/Y/ZPosition 0.0, HasMapNote 0, X/YOrientation 0.0 when omitted.
+    # WaypointList: K1 LoadGIT 0x0050dd80 → LoadWaypoints. LocalizedName/Tag invalid/blank, TemplateResRef blank, X/Y/ZPosition 0.0, HasMapNote 0, X/YOrientation 0.0. Omit OK.
     for waypoint_struct in _iterate_gff_list(gff.root, "WaypointList"):
         waypoint = GITWaypoint()
         git.waypoints.append(waypoint)
@@ -1319,9 +1320,10 @@ def dismantle_git(
     gff = GFF(GFFContent.GIT)
 
     root = gff.root
+    # UseTemplates: K1 LoadGIT 0x0050dd80 ReadFieldBYTE default 0; SaveGIT 0x0050ba00 writes 1. Omit OK.
     root.set_uint8("UseTemplates", 1)
 
-    # AreaProperties: K1 SaveProperties 0x00506090 AddStructToStruct(AreaProperties,100); CSWSAmbientSound::Save 0x005c96e0 writes INT fields.
+    # AreaProperties: K1 SaveProperties 0x00506090 AddStructToStruct(AreaProperties,100); CSWSAmbientSound::Save 0x005c96e0 writes INT fields. Defaults 0.
     properties_struct = root.set_struct("AreaProperties", GFFStruct(100))
     properties_struct.set_int32("AmbientSndDayVol", git.ambient_volume)
     properties_struct.set_int32("AmbientSndDay", git.ambient_sound_id)
@@ -1333,7 +1335,7 @@ def dismantle_git(
     properties_struct.set_int32("MusicBattle", git.music_battle_id)
     properties_struct.set_int32("MusicDelay", git.music_delay)
 
-    # CameraList/Creature List/Door List/Encounter List/Placeable List/SoundList/StoreList/TriggerList/WaypointList: K1 SaveGIT writes each list via type-specific save helpers.
+    # CameraList/Creature List/Door List/Encounter List/Placeable List/SoundList/StoreList/TriggerList/WaypointList: K1 SaveGIT 0x0050ba00 writes each list; list omit → empty. Defaults per type.
     camera_list = root.set_list("CameraList", GFFList())
     for camera in git.cameras:
         camera_struct = camera_list.add(GITCamera.GFF_STRUCT_ID)

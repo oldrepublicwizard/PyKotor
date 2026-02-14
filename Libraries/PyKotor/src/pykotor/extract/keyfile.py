@@ -42,7 +42,7 @@ class KEYDataFile(ArchiveResource):
 
 class KEYFile:
     """Reads KEY files for resource indexing.
-    
+
     References:
     ----------
         Original BioWare engine binaries (from swkotor.exe, swkotor2.exe)
@@ -50,6 +50,7 @@ class KEYFile:
 
 
     """
+
     def __init__(
         self,
         key: BinaryIO,
@@ -81,7 +82,6 @@ class KEYFile:
         self,
         key: BinaryIO,
     ) -> None:
-        
         file_type: bytes = key.read(4)
         file_version: bytes = key.read(4)
 
@@ -115,14 +115,12 @@ class KEYFile:
         key: BinaryIO,
         offset: int,
     ) -> None:
-        
         key.seek(offset)
         for _ in range(self.resource_count):
             name: str = key.read(16).decode("ascii").rstrip("\0")
             res_type: int = struct.unpack("<H", key.read(2))[0]
             res_id: int = struct.unpack("<I", key.read(4))[0]
 
-            
             # Decompose resource_id into bif_index (upper 12 bits) and res_index (lower 20 bits)
             bif_index: int = res_id >> 20
             res_index: int = res_id & 0xFFFFF

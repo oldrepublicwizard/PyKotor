@@ -27,7 +27,7 @@ def get_body_model(  # noqa: C901, PLR0912, PLR0915
     baseitems: TwoDA | None = None,
 ) -> tuple[str | None, str | None]:
     """Return the body model and texture names for the given creature UTC.
-    
+
     References:
     ----------
         Original BioWare engine binaries (from swkotor.exe, swkotor2.exe)
@@ -194,8 +194,12 @@ def get_weapon_models(
             return None, None
         baseitems = read_2da(baseitems_lookup.data)
 
-    right_hand_model: str | None = _load_hand_uti(installation, str(utc.equipment[EquipmentSlot.RIGHT_HAND].resref), baseitems) if EquipmentSlot.RIGHT_HAND in utc.equipment else None
-    left_hand_model: str | None = _load_hand_uti(installation, str(utc.equipment[EquipmentSlot.LEFT_HAND].resref), baseitems) if EquipmentSlot.LEFT_HAND in utc.equipment else None
+    right_hand_model: str | None = (
+        _load_hand_uti(installation, str(utc.equipment[EquipmentSlot.RIGHT_HAND].resref), baseitems) if EquipmentSlot.RIGHT_HAND in utc.equipment else None
+    )
+    left_hand_model: str | None = (
+        _load_hand_uti(installation, str(utc.equipment[EquipmentSlot.LEFT_HAND].resref), baseitems) if EquipmentSlot.LEFT_HAND in utc.equipment else None
+    )
     return right_hand_model, left_hand_model
 
 

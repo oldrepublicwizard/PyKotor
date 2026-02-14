@@ -12,6 +12,7 @@ class MacFileDialogHelper(QFileDialogPlatformHelper):
             return False
 
         from utility.gui.qt.adapters.filesystem.qfiledialog.qfiledialog import QFileDialog
+
         if self._options.acceptMode() == QFileDialog.AcceptMode.AcceptOpen:
             panel = NSOpenPanel.openPanel()
             panel.setCanChooseFiles_(self._options.fileMode() != QFileDialog.FileMode.Directory)

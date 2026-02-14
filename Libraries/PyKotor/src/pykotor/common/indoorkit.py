@@ -138,5 +138,3 @@ class KitDoor:
 class MDLMDXTuple(NamedTuple):
     mdl: bytes
     mdx: bytes
-
-

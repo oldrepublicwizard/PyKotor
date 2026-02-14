@@ -24,15 +24,16 @@ from pykotor.gl.glm_compat import (  # type: ignore[assignment]
     vec3,
     vec4,
 )
+
 GLM_AVAILABLE = False
 try:
     import pyglm.glm
     from pyglm.glm import mat4, quat, vec3, vec4  # type: ignore[import-not-found]
+
     glm = pyglm.glm
 
     GLM_AVAILABLE = True
 except ImportError:
-
     # Create a glm module namespace for compatibility
     class _GLMNamespace:
         cross = staticmethod(cross)

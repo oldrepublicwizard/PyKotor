@@ -43,13 +43,13 @@ class PyKotorHelpFormatter(RawDescriptionHelpFormatter):
     def supports_color(self) -> bool:
         """Check if terminal supports colors."""
         return (
-            hasattr(sys.stdout, 'isatty') and
-            sys.stdout.isatty() and
-            (
-                sys.platform != "win32" or
-                "COLORTERM" in os.environ or
-                os.environ.get("TERM", "").endswith("-color") or
-                os.environ.get("FORCE_COLOR", "").lower() in ("1", "true")
+            hasattr(sys.stdout, "isatty")
+            and sys.stdout.isatty()
+            and (
+                sys.platform != "win32"
+                or "COLORTERM" in os.environ
+                or os.environ.get("TERM", "").endswith("-color")
+                or os.environ.get("FORCE_COLOR", "").lower() in ("1", "true")
             )
         )
 
@@ -83,7 +83,7 @@ class PyKotorHelpFormatter(RawDescriptionHelpFormatter):
         # Find the subcommands section and reorganize it
         if "Available Commands" in help_text:
             # Extract the subcommands section
-            lines = help_text.split('\n')
+            lines = help_text.split("\n")
             subcommands_start = None
             subcommands_end = None
 
@@ -112,7 +112,7 @@ class PyKotorHelpFormatter(RawDescriptionHelpFormatter):
                                 break
 
                 # Replace the subcommands section
-                new_help = '\n'.join(lines[:subcommands_start]) + '\n'.join(categorized_help) + '\n'.join(lines[subcommands_end:])
+                new_help = "\n".join(lines[:subcommands_start]) + "\n".join(categorized_help) + "\n".join(lines[subcommands_end:])
                 return new_help
 
         return help_text
@@ -125,9 +125,29 @@ def _organize_commands_by_category() -> dict[str, list[str]]:
         "Format Conversion": ["gff2xml", "xml2gff", "gff2json", "json2gff", "tlk2xml", "xml2tlk", "tlk2json", "ssf2xml", "xml2ssf", "2da2csv", "csv22da"],
         "Script Tools": ["decompile", "disassemble", "assemble"],
         "Resource Tools": ["texture-convert", "sound-convert", "model-convert"],
-        "Archive Operations": [ "extract", "list-archive", "ls-archive", "create-archive", "pack-archive", "search-archive", "grep-archive", "cat", "key-pack", "create-key", ],
+        "Archive Operations": [
+            "extract",
+            "list-archive",
+            "ls-archive",
+            "create-archive",
+            "pack-archive",
+            "search-archive",
+            "grep-archive",
+            "cat",
+            "key-pack",
+            "create-key",
+        ],
         "Analysis & Utilities": ["diff", "grep", "stats", "validate", "merge", "config"],
-        "Validation & Investigation": [ "check-txi", "check-2da", "validate-installation", "investigate-module", "check-missing-resources", "module-resources", "kit-generate", "kit", ],
+        "Validation & Investigation": [
+            "check-txi",
+            "check-2da",
+            "validate-installation",
+            "investigate-module",
+            "check-missing-resources",
+            "module-resources",
+            "kit-generate",
+            "kit",
+        ],
         "GUI & Interface": ["gui-convert", "gui", "indoor-build", "indoormap-build", "indoor-extract", "indoormap-extract"],
         "Patching": ["batch-patch", "patch-file", "patch-folder", "patch-installation"],
     }
@@ -138,14 +158,15 @@ def _get_invocation_command() -> str:
     """Get the actual command used to invoke the CLI."""
     if not sys.argv:
         return "pykotor"
-    
+
     import os
     from pathlib import Path
-    
+
     # Try to detect if we're being run via "uv run" by checking parent process
     is_uv_run = False
     try:
         import psutil  # type: ignore[import-untyped]
+
         current_process = psutil.Process()
         parent = current_process.parent()
         if parent and "uv" in parent.name().lower():
@@ -161,26 +182,26 @@ def _get_invocation_command() -> str:
         # Try alternative detection
         if any("UV" in k.upper() for k in os.environ.keys()):
             is_uv_run = True
-    
+
     script_path = Path(sys.argv[0]).resolve()
     cwd = Path.cwd().resolve()
-    
+
     # Try to make path relative to current directory
     try:
         rel_script = script_path.relative_to(cwd)
         rel_script_str = str(rel_script).replace("\\", "/")  # Use forward slashes for consistency
     except ValueError:
         rel_script_str = str(script_path)
-    
+
     # If detected as uv run, prefix with "uv run" (check this first)
     if is_uv_run:
         return f"uv run {rel_script_str}"
-    
+
     # Check for "python -m" pattern
     if len(sys.argv) >= 3 and sys.argv[1] == "-m":
         # python -m pykotor.cli.__main__
         return f"python -m {sys.argv[2]}"
-    
+
     # Check if we're being run via python (not as a module)
     # When python script.py is used, sys.executable contains "python"
     # and sys.argv[0] is the script path
@@ -188,21 +209,21 @@ def _get_invocation_command() -> str:
     if python_exe in ("python", "python3", "python.exe", "python3.exe", "py", "py.exe"):
         # python script.py
         return f"python {rel_script_str}"
-    
+
     # For direct execution, return the relative path
     return rel_script_str
 
 
 def create_parser(prog: str | None = None) -> ArgumentParser:  # noqa: PLR0915
     """Create the main argument parser with custom formatting.
-    
+
     Args:
         prog: Program name to use in help text. If None, auto-detects from sys.argv.
     """
     # Auto-detect the command if not provided
     if prog is None:
         prog = _get_invocation_command()
-    
+
     # Create enhanced description with usage examples
     description = f"""
 \033[1;36mPyKotor CLI\033[0m - A comprehensive build tool for KOTOR projects
@@ -251,7 +272,7 @@ def create_parser(prog: str | None = None) -> ArgumentParser:  # noqa: PLR0915
         title="\033[1;32mAvailable Commands\033[0m",
         description=f"Choose a command to execute. Use '{prog} <command> --help' for detailed help.",
         metavar="COMMAND",
-        help="Command to execute"
+        help="Command to execute",
     )
 
     # config command
@@ -368,7 +389,7 @@ Extract files from Bioware archive formats including:
   {prog} extract --file mymodule.mod
   {prog} extract --file chitin.key --filter "*.utc" --output extracted
   {prog} extract --file module.rim --filter p_* --key-file custom.key
-"""
+""",
     )
     extract_parser.add_argument("--file", dest="file", required=True, help="Archive file to extract")
     extract_parser.add_argument("--output", "-o", dest="output", help="Output directory (default: archive_name)")
@@ -504,16 +525,18 @@ Compare two paths and show differences. Supports any combination of:
   {prog} diff /path/to/kotor1 /path/to/kotor2 --output-mode normal
   {prog} diff file1.gff file2.gff --format side_by_side
   {prog} diff --generate-ini installation1 installation2
-"""
+""",
     )
     diff_parser.add_argument("path1", help="First path (file, folder, installation, or archive)")
     diff_parser.add_argument("path2", help="Second path (file, folder, installation, or archive)")
-    diff_parser.add_argument("--format", choices=["unified", "context", "side_by_side"], default="unified",
-                           help="Output format: unified (default), context, or side_by_side")
-    diff_parser.add_argument("--output-mode", choices=["full", "normal", "quiet"], default="full",
-                           help="Output mode: full (with debug logging), normal (with informatic logging), quiet (diff only)")
-    diff_parser.add_argument("--generate-ini", action="store_true",
-                           help="Generate TSLPatcher changes.ini and tslpatchdata folder")
+    diff_parser.add_argument("--format", choices=["unified", "context", "side_by_side"], default="unified", help="Output format: unified (default), context, or side_by_side")
+    diff_parser.add_argument(
+        "--output-mode",
+        choices=["full", "normal", "quiet"],
+        default="full",
+        help="Output mode: full (with debug logging), normal (with informatic logging), quiet (diff only)",
+    )
+    diff_parser.add_argument("--generate-ini", action="store_true", help="Generate TSLPatcher changes.ini and tslpatchdata folder")
     diff_parser.add_argument("--output", "-o", dest="output", help="Write diff output to file")
     diff_parser.add_argument("--context", "-C", type=int, default=3, help="Lines of context around changes (default: 3)")
 

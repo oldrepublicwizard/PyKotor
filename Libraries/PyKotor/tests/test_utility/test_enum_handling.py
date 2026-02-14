@@ -8,6 +8,7 @@ from typing import Any
 
 def sip_enum_to_int(obj: Any) -> int:
     import qtpy
+
     if isinstance(obj, int):
         return obj
     if qtpy.QT5:
@@ -22,15 +23,18 @@ if __name__ == "__main__":
     api_name = "PySide6"
     os.environ["QT_API"] = api_name
     import qtpy
+
     if api_name != qtpy.API_NAME:
         print(f"Failed to set API to {api_name}")
         sys.exit(1)
     print(f"Testing with API: {api_name}")
     from qtpy.QtWidgets import QApplication
+
     app = QApplication(sys.argv)
 
     from qtpy.QtCore import Qt
     from qtpy.QtWidgets import QApplication, QFileDialog
+
     print(f"Testing enums with API: {qtpy.API_NAME}")
     for enum_group in [
         (QFileDialog.Option.ShowDirsOnly, QFileDialog.Option, 1),

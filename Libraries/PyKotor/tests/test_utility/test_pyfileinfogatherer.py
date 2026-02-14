@@ -85,9 +85,10 @@ def test_run_abort(gatherer: PyFileInfoGatherer):
         # Act
         gatherer.abort.value = True  # Simulate abort signal
         gatherer.condition.wakeAll()  # Wake the thread so it can check abort
-        
+
         # Wait a bit for the thread to exit
         from qtpy.QtCore import QEventLoop, QTimer
+
         loop = QEventLoop()
         QTimer.singleShot(100, loop.quit)
         loop.exec()
@@ -155,34 +156,37 @@ def test_fetch_extended_information(gatherer: PyFileInfoGatherer):
 
         # Use a real signal connection to capture emitted data
         from qtpy.QtCore import QEventLoop, QTimer
+
         updates_data = []
-        
+
         def capture_updates(path, files):
             updates_data.append((path, files))
-        
+
         gatherer.updates.connect(capture_updates)
-        
+
         # Ensure the gatherer is in a clean state
         gatherer._paths.clear()  # noqa: SLF001
         gatherer._files.clear()  # noqa: SLF001
-        
+
         gatherer.fetchExtendedInformation(temp_dir, ["file.txt"])
-        
+
         # Wait for the background thread to process the request with a loop that exits when data arrives
         loop = QEventLoop()
         timeout_timer = QTimer()
         timeout_timer.setSingleShot(True)
         timeout_timer.timeout.connect(loop.quit)
         timeout_timer.start(1000)  # Wait up to 1 second
-        
+
         check_timer = QTimer()
+
         def check_data():
             if updates_data:
                 timeout_timer.stop()
                 loop.quit()
+
         check_timer.timeout.connect(check_data)
         check_timer.start(50)  # Check every 50ms
-        
+
         loop.exec()
         check_timer.stop()
         timeout_timer.stop()
@@ -315,7 +319,7 @@ def test_get_file_infos(gatherer: PyFileInfoGatherer):
         updates_data = []
         new_list_data = []
         directory_loaded_data = []
-        
+
         gatherer.updates.connect(lambda path, files: updates_data.append((path, files)))
         gatherer.newListOfFiles.connect(lambda path, files: new_list_data.append((path, files)))
         gatherer.directoryLoaded.connect(lambda path: directory_loaded_data.append(path))

@@ -29,7 +29,6 @@ for _p in (_PYKOTOR_SRC, _UTILITY_SRC):
         sys.path.insert(0, _ps)
 
 
-
 def pytest_collection_modifyitems(config: pytest.Config, items: list[pytest.Item]) -> None:  # noqa: ARG001
     vanilla_root = Path(__file__).resolve().parents[4] / "vendor" / "Vanilla_KOTOR_Script_Source"
     has_vanilla_sources = vanilla_root.exists()

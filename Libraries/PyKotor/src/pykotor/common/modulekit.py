@@ -1,5 +1,3 @@
-
-
 """Implicit ModuleKit support (headless).
 
 This mirrors Holocron Toolset's implicit-kit pipeline (ModuleKit) but without any `toolset.*`
@@ -9,6 +7,7 @@ Design rule (repo convention):
 - `pykotor.common.*` contains **classes / data models**
 - `pykotor.tools.*` contains **functions / workflows**
 """
+
 from __future__ import annotations
 
 import math
@@ -32,17 +31,17 @@ if TYPE_CHECKING:
 
 class ModuleKit(Kit):
     """A Kit generated dynamically from a game module.
-    
+
     This kit is generated lazily from module data and provides components
     that represent the rooms defined in the module's LYT file.
-    
+
     Unlike regular Kits which are loaded from JSON files, ModuleKits are
     created on-demand from module archives and use the module's resources.
     """
 
     def __init__(
         self,
-#        name: str,
+        #        name: str,
         module_root: str,
         installation: Installation,
     ):
@@ -159,8 +158,7 @@ class ModuleKit(Kit):
                 # Defensive: if translation fails, log but don't crash
                 # This should never happen, but protects against edge cases
                 RobustLogger().warning(
-                    "Failed to translate BWM for room %d (model=%s): %s. "
-                    "BWM will remain in world coordinates (may cause double-translation).",
+                    "Failed to translate BWM for room %d (model=%s): %s. BWM will remain in world coordinates (may cause double-translation).",
                     idx,
                     model_name,
                     e,
@@ -330,10 +328,7 @@ class ModuleKit(Kit):
             door: KitDoor = self.doors[0] if self.doors else self._create_default_door()
             door_name_lower: str = doorhook.door.lower()
             for existing_door in self.doors:
-                if (
-                    existing_door.utdK1.resref.get().lower() == door_name_lower
-                    or existing_door.utdK2.resref.get().lower() == door_name_lower
-                ):
+                if existing_door.utdK1.resref.get().lower() == door_name_lower or existing_door.utdK2.resref.get().lower() == door_name_lower:
                     door = existing_door
                     break
 
@@ -409,6 +404,7 @@ class ModuleKitManager:
     Provides methods to list available modules and convert them to kits
     on demand. Only loads module data when a specific module is selected.
     """
+
     def __init__(self, installation: Installation):
         self._installation: Installation = installation
         self._cache: dict[str, ModuleKit] = {}
@@ -492,5 +488,3 @@ class ModuleKitManager:
     def is_kit_valid(self, module_root: str) -> bool:
         """Check if a module kit is valid."""
         return module_root.lower() in self._cache
-
-

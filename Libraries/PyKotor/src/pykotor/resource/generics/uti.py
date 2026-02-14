@@ -25,32 +25,30 @@ class UTI:
 
     References:
     ----------
-        KotOR I (swkotor.exe):
-            - 0x0055fcd0 - CSWSItem::LoadDataFromGff (2927 bytes, 448 lines)
-                - Main UTI GFF parser entry point
-                - Loads all UTI template fields from GFF structure
-                - Function signature: LoadDataFromGff(CSWSItem* this, CResGFF* param_1, CResStruct* param_2)
-                - Called from LoadFromTemplate (0x005608b0) and LoadItem (0x00560970)
-            - 0x00560970 - CSWSItem::LoadItem (445 bytes, 48 lines)
-                - Loads item from GFF (used in containers/stores)
-                - Reads EquippedRes, InventoryRes, Dropable, Pickpocketable
-                - Calls LoadDataFromGff when no EquippedRes/InventoryRes present
-            - 0x005608b0 - CSWSItem::LoadFromTemplate
-                - Loads UTI template from ResRef
-                - Calls LoadDataFromGff after loading GFF
-            - 0x00747494 - "TemplateResRef" string reference
-            - 0x00749018 - "BaseItem" string reference
-            - 0x00748fec - "LocalizedName" string reference
-            - 0x00748ffc - "DescIdentified" string reference
-            - 0x00748f88 - "Charges" string reference
-            - 0x00748f7c - "MaxCharges" string reference
-            - 0x00748fe0 - "StackSize" string reference
-        
-        KotOR II / TSL (swkotor2.exe):
-            - Functionally equivalent UTI parsing logic
-            - Same GFF field structure and parsing behavior
-            - String references at different addresses due to binary layout differences
-        
+        Based on unified K1 (swkotor.exe) and TSL (swkotor2.exe) UTI implementation.
+        Addresses: (K1: swkotor.exe, TSL: swkotor2.exe). TSL addresses: resolve in REVA when
+        PyKotorGhidraProject.gpr is open (project may be locked by another process).
+
+        - CSWSItem::LoadDataFromGff (main UTI GFF parser)
+            K1: 0x0055fcd0, TSL: TODO
+            Loads all UTI template fields from GFF structure.
+            Signature: LoadDataFromGff(CSWSItem* this, CResGFF* param_1, CResStruct* param_2).
+            Called from LoadFromTemplate and LoadItem.
+
+        - CSWSItem::LoadItem (item from GFF in containers/stores)
+            K1: 0x00560970, TSL: TODO
+            Reads EquippedRes, InventoryRes, Dropable, Pickpocketable.
+            Calls LoadDataFromGff when no EquippedRes/InventoryRes present.
+
+        - CSWSItem::LoadFromTemplate (load UTI template from ResRef)
+            K1: 0x005608b0, TSL: TODO
+            Loads GFF then calls LoadDataFromGff.
+
+        - GFF field label string references (K1; TSL at different addresses, TODO):
+            K1: "TemplateResRef" 0x00747494, "BaseItem" 0x00749018, "LocalizedName" 0x00748fec,
+            "DescIdentified" 0x00748ffc, "Charges" 0x00748f88, "MaxCharges" 0x00748f7c,
+            "StackSize" 0x00748fe0.
+
         GFF Field Structure (from LoadDataFromGff analysis):
             - Root struct fields:
                 - "BaseItem" (INT32) - Base item type identifier
@@ -86,7 +84,7 @@ class UTI:
                 - "Useable" (BYTE) - Whether property is usable (default 1)
                 - "UsesPerDay" (BYTE) - Uses per day limit (default 0xff = unlimited)
                 - "UpgradeType" (BYTE) - Upgrade type (default 0xff)
-        
+
         Note: UTI files are GFF format files with specific structure definitions (GFFContent.UTI)
 
     Attributes:
@@ -152,25 +150,11 @@ class UTIProperty:
 
     References:
     ----------
-        KotOR I (swkotor.exe):
-            - 0x0055fcd0 - CSWSItem::LoadDataFromGff (2927 bytes, 448 lines)
-                - Loads PropertiesList from UTI GFF structure
-                - Function signature: LoadDataFromGff(CSWSItem* this, CResGFF* param_1, CResStruct* param_2)
-                - Called from LoadFromTemplate (0x005608b0) and LoadItem (0x00560970)
-            - Reads PropertiesList (GFFList) at line 150:
-                - PropertyName (WORD) - property name identifier
-                - Subtype (WORD) - property subtype identifier
-                - CostTable (BYTE) - cost table identifier
-                - CostValue (WORD) - cost value
-                - Param1 (BYTE) - first parameter
-                - Param1Value (BYTE) - first parameter value
-                - ChanceAppear (BYTE) - chance this property appears (0-100)
-                - Useable (BYTE) - usable flag (default: 1)
-                - UsesPerDay (BYTE) - uses per day (default: 0xFF)
-                - UpgradeType (BYTE) - upgrade type identifier (default: 0xFF)
-        KotOR II / TSL (swkotor2.exe):
-            - Functionally identical to K1 implementation
-            - Same GFF structure and parsing logic
+        Same engine functions as UTI; PropertiesList parsed in CSWSItem::LoadDataFromGff.
+        K1: 0x0055fcd0, TSL: TODO (see UTI class References).
+        PropertiesList element fields: PropertyName (WORD), Subtype (WORD), CostTable (BYTE),
+        CostValue (WORD), Param1 (BYTE), Param1Value (BYTE), ChanceAppear (BYTE),
+        Useable (BYTE, default 1), UsesPerDay (BYTE, default 0xFF), UpgradeType (BYTE, default 0xFF).
 
     Attributes:
     ----------
@@ -183,6 +167,7 @@ class UTIProperty:
         chance_appear: "ChanceAppear" field. Chance this property appears (0-100).
         upgrade_type: "UpgradeType" field. Upgrade type identifier.
     """
+
     def __init__(self):
         self.cost_table: int = 0
         self.cost_value: int = 0
@@ -202,26 +187,27 @@ def construct_uti_from_struct(struct: GFFStruct) -> UTI:
 
 def construct_uti(gff: GFF) -> UTI:
     """Constructs a UTI object from a GFF structure.
-    
-    Parses UTI (item template) data from a GFF file, reading all fields
-    including properties, costs, charges, and upgrade information.
-    
-    References:
-    ----------
-        Based on swkotor.exe UTI structure:
-        - CSWSItem::LoadDataFromGff @ 0x0055fcd0 - Loads item data from GFF
-        - CSWSItem::LoadItem @ 0x00560970 - Loads item template
-        - CResGFF::CreateGFFFile @ 0x00411260 - Creates GFF file structure
+
+    Defaults when field missing (from engine): K1 CSWSItem::LoadDataFromGff (K1: 0x0055fcd0, TSL: TODO),
+    LoadItem (K1: 0x00560970, TSL: TODO). TemplateResRef "", BaseItem 0, Tag/LocalizedName "" or empty;
+    Charges 0 (engine default 0x32 for some); Cost/StackSize/Plot/AddCost 0. Optional when missing.
+
+    Reference functions: (1) LoadDataFromGff root UTI parser, (2) LoadItem EquippedRes/InventoryRes/
+    Dropable/Pickpocketable, (3) LoadFromTemplate, (4) CResGFF::ReadField* for all root fields,
+    (5) PropertiesList parsing. TSL same semantics; addresses in UTI class References.
     """
     uti = UTI()
 
     root = gff.root
+    # Identity: TemplateResRef "", BaseItem 0, LocalizedName/DescIdentified/Description empty, Tag "".
+    # Engine: K1 LoadDataFromGff 0x0055fcd0, LoadItem 0x00560970; TSL same (addresses in UTI References). Optional.
     uti.resref = root.acquire("TemplateResRef", ResRef.from_blank())
     uti.base_item = root.acquire("BaseItem", 0)
     uti.name = root.acquire("LocalizedName", LocalizedString.from_invalid())
     uti.description = root.acquire("DescIdentified", LocalizedString.from_invalid())
     uti.description2 = root.acquire("Description", LocalizedString.from_invalid())
     uti.tag = root.acquire("Tag", "")
+    # Cost/charges/stack: Charges 0, Cost 0, StackSize 0, Plot 0, AddCost 0. K1/TSL LoadDataFromGff. Optional.
     uti.charges = root.acquire("Charges", 0)
     uti.cost = root.acquire("Cost", 0)
     uti.stack_size = root.acquire("StackSize", 0)
@@ -236,7 +222,7 @@ def construct_uti(gff: GFF) -> UTI:
     uti.stolen = root.acquire("Stolen", 0)
     uti.identified = root.acquire("Identified", 0)
 
-    # PropertiesList contains item properties (enchantments, upgrades, etc.)
+    # PropertiesList: PropertyName, Subtype, CostTable, CostValue, Param1, Param1Value, ChanceAppear 100; UpgradeType optional. K1/TSL LoadDataFromGff. Optional.
     for property_struct in root.acquire("PropertiesList", GFFList()):
         prop = UTIProperty()
         uti.properties.append(prop)
@@ -263,6 +249,7 @@ def dismantle_uti(
     gff = GFF(GFFContent.UTI)
 
     root = gff.root
+    # Write same defaults as engine read. K1 LoadDataFromGff 0x0055fcd0, LoadItem 0x00560970; TSL same (addresses in UTI References). ResRef "", DWORD/BYTE 0.
     root.set_resref("TemplateResRef", uti.resref)
     root.set_int32("BaseItem", uti.base_item)
     root.set_locstring("LocalizedName", uti.name)

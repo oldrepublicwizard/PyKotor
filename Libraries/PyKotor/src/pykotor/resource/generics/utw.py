@@ -20,22 +20,22 @@ class UTW:
 
     References:
     ----------
-        KotOR I (swkotor.exe):
-            - 0x005c7f30 - CSWSWaypoint::LoadWaypoint (767 bytes, 106 lines)
-                - Main UTW GFF parser entry point
-                - Loads all waypoint fields from GFF structure
-                - Function signature: LoadWaypoint(CSWSWaypoint* this, CResGFF* param_2, CResStruct* param_3)
-                - Called from LoadWaypoints (0x00505360) and LoadFromTemplate (0x005c83b0)
-            - 0x00505360 - CSWSArea::LoadWaypoints
-                - Loads waypoints from area GIT file
-            - 0x005c83b0 - CSWSWaypoint::LoadFromTemplate
-                - Loads waypoint template from ResRef
-                - Calls LoadWaypoint after loading GFF
+        Based on unified K1 (swkotor.exe) and TSL (swkotor2.exe) UTW implementation.
+        Addresses: (K1: swkotor.exe, TSL: swkotor2.exe). TSL addresses: resolve in REVA when
+        PyKotorGhidraProject.gpr is open (project may be locked by another process).
 
-        KotOR II / TSL (swkotor2.exe):
-            - Functionally equivalent UTW parsing logic
-            - Same GFF field structure and parsing behavior
-            - String references at different addresses due to binary layout differences
+        - CSWSWaypoint::LoadWaypoint (main UTW GFF parser)
+            K1: 0x005c7f30, TSL: TODO
+            Loads all waypoint fields from GFF structure.
+            Signature: LoadWaypoint(CSWSWaypoint* this, CResGFF* param_2, CResStruct* param_3).
+            Called from LoadWaypoints and LoadFromTemplate.
+
+        - CSWSArea::LoadWaypoints (load waypoints from area GIT)
+            K1: 0x00505360, TSL: TODO
+
+        - CSWSWaypoint::LoadFromTemplate (load waypoint template from ResRef)
+            K1: 0x005c83b0, TSL: TODO
+            Loads GFF then calls LoadWaypoint.
 
         GFF Field Structure (from LoadWaypoint analysis):
             - Root struct fields:
@@ -115,26 +115,25 @@ def construct_utw(
 ) -> UTW:
     """Constructs a UTW object from a GFF structure.
 
-    Defaults when field missing (REVA): K1 CSWSWaypoint::LoadWaypoint @ 0x005c7f30;
-    TSL same semantics (TODO: find LoadWaypoint in swkotor2.exe; open PyKotorGhidraProject.gpr in REVA).
-    Tag "", TemplateResRef "", LocalizedName empty; HasMapNote/MapNoteEnabled 0, MapNote empty. Position/orient from GIT. Optional when missing.
+    Defaults when field missing (from engine): K1 CSWSWaypoint::LoadWaypoint (K1: 0x005c7f30, TSL: TODO).
+    Tag "", TemplateResRef "", LocalizedName empty; HasMapNote/MapNoteEnabled 0, MapNote empty.
+    Position/orient come from GIT (not in UTW root). Optional when missing.
 
-    Ten reference functions (5 K1, 5 TSL): K1 (1) LoadWaypoint @ 0x005c7f30 (root UTW parser),
-    (2) LoadWaypoints @ 0x00505360 (area waypoints), (3) LoadFromTemplate @ 0x005c83b0,
-    (4) CResGFF::ReadField* (Tag, LocalizedName, HasMapNote, MapNote, MapNoteEnabled),
-    (5) position/orient from GIT (not in UTW root). TSL (1)-(5) same semantics; addresses TODO when REVA available.
+    Reference functions: (1) LoadWaypoint root UTW parser, (2) LoadWaypoints area waypoints,
+    (3) LoadFromTemplate, (4) CResGFF::ReadField* for Tag, LocalizedName, HasMapNote, MapNote,
+    MapNoteEnabled. TSL same semantics; addresses in UTW class References.
     """
     utw = UTW()
 
     root: GFFStruct = gff.root
-    # Identity/toolset: Appearance, LinkedTo, TemplateResRef, Tag, LocalizedName, Description. K1 LoadWaypoint 0x005c7f30 (Tag/LocalizedName); Appearance/LinkedTo/Description toolset-only. TSL same (addresses TODO). Optional.
+    # Identity/toolset: Appearance, LinkedTo, TemplateResRef, Tag, LocalizedName, Description. K1 LoadWaypoint 0x005c7f30 (Tag/LocalizedName); Appearance/LinkedTo/Description toolset-only. TSL same (addresses in UTW References). Optional.
     utw.appearance_id = root.acquire("Appearance", 0)
     utw.linked_to = root.acquire("LinkedTo", "")
     utw.resref = root.acquire("TemplateResRef", ResRef.from_blank())
     utw.tag = root.acquire("Tag", "")
     utw.name = root.acquire("LocalizedName", LocalizedString.from_invalid())
     utw.description = root.acquire("Description", LocalizedString.from_invalid())
-    # Map note: HasMapNote 0, MapNote empty, MapNoteEnabled 0. K1 LoadWaypoint 0x005c7f30; TSL same. Optional.
+    # Map note: HasMapNote 0, MapNote empty, MapNoteEnabled 0. K1/TSL LoadWaypoint. Optional.
     utw.has_map_note = bool(root.acquire("HasMapNote", 0))
     utw.map_note = root.acquire("MapNote", LocalizedString.from_invalid())
     utw.map_note_enabled = bool(root.acquire("MapNoteEnabled", 0))
@@ -150,7 +149,7 @@ def dismantle_utw(
     *,
     use_deprecated: bool = True,  # noqa: ARG001
 ) -> GFF:
-    """Dismantles a UTW object into a GFF structure. Write same defaults as engine read. K1 LoadWaypoint 0x005c7f30; TSL same (addresses TODO)."""
+    """Dismantles a UTW object into a GFF structure. Write same defaults as engine read. K1 LoadWaypoint 0x005c7f30; TSL same (addresses in UTW References)."""
     gff = GFF(GFFContent.UTW)
 
     root: GFFStruct = gff.root

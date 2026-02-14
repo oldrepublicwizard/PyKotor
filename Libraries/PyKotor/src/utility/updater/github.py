@@ -26,12 +26,12 @@ from typing import (
 )
 
 if TYPE_CHECKING:
-
     from typing_extensions import Self
 
 
 if __name__ == "__main__":
     with suppress(Exception):
+
         def update_sys_path(path: pathlib.Path):
             working_dir = str(path)
             if working_dir not in sys.path:
@@ -56,6 +56,7 @@ if __name__ == "__main__":
 
 T = TypeVar("T")
 
+
 class AbstractAPIResult(ABC):  # noqa: B024
     _type_cache: ClassVar[dict] = {}
 
@@ -73,15 +74,15 @@ class AbstractAPIResult(ABC):  # noqa: B024
             key = this_field.name
             expected_type = this_field.metadata.get("default_type", (this_field.type,))
             if key not in json_dict:
-                #print(f"{cls.__name__} Warning: Missing expected key '{key}' in data")
+                # print(f"{cls.__name__} Warning: Missing expected key '{key}' in data")
                 processed_data[key] = this_field.default if this_field.default is not MISSING else None
             else:
                 value = json_dict[key]
                 processed_data[key] = cls.handle_casting(value, expected_type)
 
-        #for key, value in json_dict.items():
-            #if key not in processed_data:
-            #    print(f"{cls.__name__} Warning: Unexpected key '{key}' in data with value '{value!r}'")
+        # for key, value in json_dict.items():
+        # if key not in processed_data:
+        #    print(f"{cls.__name__} Warning: Unexpected key '{key}' in data with value '{value!r}'")
 
         return cls(**processed_data)
 
@@ -304,7 +305,7 @@ class GithubRelease:
             assets=assets,
             tarball_url=json_dict["tarball_url"],
             zipball_url=json_dict["zipball_url"],
-            body=json_dict["body"]
+            body=json_dict["body"],
         )
 
 
@@ -498,17 +499,17 @@ class TreeInfoData(AbstractAPIResult):
 class CompleteRepoData(AbstractAPIResult):
     repo_info: RepoIndexData
     branches: list[BranchInfoData]
-    #commits: list[CommitInfoData]
-    #issues: list[dict[str, Any]]
-    #pulls: list[dict[str, Any]]
-    #contributors: list[ContributorsInfoData]
-    #releases: list[GithubRelease]
-    #tags: list[dict[str, Any]]
+    # commits: list[CommitInfoData]
+    # issues: list[dict[str, Any]]
+    # pulls: list[dict[str, Any]]
+    # contributors: list[ContributorsInfoData]
+    # releases: list[GithubRelease]
+    # tags: list[dict[str, Any]]
     contents: list[ContentInfoData]
-    #languages: dict[str, Any]
+    # languages: dict[str, Any]
     forks: list[ForkContentsData]
-    #stargazers: list[dict[str, Any]]
-    #subscribers: list[dict[str, Any]]
+    # stargazers: list[dict[str, Any]]
+    # subscribers: list[dict[str, Any]]
     tree: list[TreeInfoData]
 
     def __getattr__(self, attr_name: str):
@@ -525,15 +526,11 @@ class CompleteRepoData(AbstractAPIResult):
     def load_repo(cls, owner: str, repo_name: str, *, timeout: int = 15) -> CompleteRepoData:
         base_url = f"https://api.github.com/repos/{owner}/{repo_name}"
 
-        endpoints = {
-            "repo_info": base_url,
-            "branches": f"{base_url}/branches",
-            "contents": f"{base_url}/contents",
-            "forks": f"{base_url}/forks"
-        }
+        endpoints = {"repo_info": base_url, "branches": f"{base_url}/branches", "contents": f"{base_url}/contents", "forks": f"{base_url}/forks"}
 
         repo_data = {}
         import requests
+
         for key, url in endpoints.items():
             print(f"Fetching {key}...")
             response = requests.get(url, timeout=timeout)
@@ -555,7 +552,7 @@ class CompleteRepoData(AbstractAPIResult):
             branches=[BranchInfoData.from_dict(item) for item in repo_data.get("branches", [])],
             contents=[ContentInfoData.from_dict(item) for item in repo_data.get("contents", [])],
             forks=[ForkContentsData.from_dict(item) for item in repo_data.get("forks", [])],
-            tree=[TreeInfoData.from_dict(item) for item in repo_data.get("tree", [])]
+            tree=[TreeInfoData.from_dict(item) for item in repo_data.get("tree", [])],
         )
         print(f"Completed loading of '{base_url}'")
         return instance
@@ -569,33 +566,33 @@ class CompleteRepoData(AbstractAPIResult):
         repo_data = {
             "repo_info": load_json(os.path.join(folder_path, "repo_info.json")),
             "branches": load_json(os.path.join(folder_path, "branches.json")),
-        #    "commits": load_json(os.path.join(folder_path, "commits.json")),
-        #    "issues": load_json(os.path.join(folder_path, "issues.json")),
-        #    "pulls": load_json(os.path.join(folder_path, "pulls.json")),
-        #    "contributors": load_json(os.path.join(folder_path, "contributors.json")),
-        #    "releases": load_json(os.path.join(folder_path, "releases.json")),
-        #    "tags": load_json(os.path.join(folder_path, "tags.json")),
+            #    "commits": load_json(os.path.join(folder_path, "commits.json")),
+            #    "issues": load_json(os.path.join(folder_path, "issues.json")),
+            #    "pulls": load_json(os.path.join(folder_path, "pulls.json")),
+            #    "contributors": load_json(os.path.join(folder_path, "contributors.json")),
+            #    "releases": load_json(os.path.join(folder_path, "releases.json")),
+            #    "tags": load_json(os.path.join(folder_path, "tags.json")),
             "contents": load_json(os.path.join(folder_path, "contents.json")),
-        #    "languages": load_json(os.path.join(folder_path, "languages.json")),
+            #    "languages": load_json(os.path.join(folder_path, "languages.json")),
             "forks": load_json(os.path.join(folder_path, "forks.json")),
-        #    "stargazers": load_json(os.path.join(folder_path, "stargazers.json")),
-        #    "subscribers": load_json(os.path.join(folder_path, "subscribers.json")),
+            #    "stargazers": load_json(os.path.join(folder_path, "stargazers.json")),
+            #    "subscribers": load_json(os.path.join(folder_path, "subscribers.json")),
         }
 
         return cls(
             repo_info=RepoIndexData.from_dict(repo_data.get("repo_info", {})),
             branches=[BranchInfoData.from_dict(item) for item in repo_data.get("branches", [])],
-        #    commits=[CommitInfoData.from_dict(item) for item in repo_data.get("commits", [])],
-        #    issues=repo_data.get("issues", []),
-        #    pulls=repo_data.get("pulls", []),
-        #    contributors=[ContributorsInfoData.from_dict(item) for item in repo_data.get("contributors", [])],
-        #    releases=[GithubRelease.from_dict(item) for item in repo_data.get("releases", [])],
-        #    tags=repo_data.get("tags", []),
+            #    commits=[CommitInfoData.from_dict(item) for item in repo_data.get("commits", [])],
+            #    issues=repo_data.get("issues", []),
+            #    pulls=repo_data.get("pulls", []),
+            #    contributors=[ContributorsInfoData.from_dict(item) for item in repo_data.get("contributors", [])],
+            #    releases=[GithubRelease.from_dict(item) for item in repo_data.get("releases", [])],
+            #    tags=repo_data.get("tags", []),
             contents=[ContentInfoData.from_dict(item) for item in repo_data.get("contents", [])],
-        #    languages=repo_data.get("languages", {}),
+            #    languages=repo_data.get("languages", {}),
             forks=[ForkContentsData.from_dict(item) for item in repo_data.get("forks", [])],
-        #    stargazers=repo_data.get("stargazers", []),
-        #    subscribers=repo_data.get("subscribers", []),
+            #    stargazers=repo_data.get("stargazers", []),
+            #    subscribers=repo_data.get("subscribers", []),
         )
 
 
@@ -606,6 +603,7 @@ def download_github_file(
     timeout: int | None = None,
 ):
     import requests
+
     timeout = 180 if timeout is None else timeout
     local_path = Path(local_path).absolute()
     local_path.parent.mkdir(parents=True, exist_ok=True)
@@ -645,7 +643,7 @@ def download_github_release_asset(
     timeout: int | None = None,
 ) -> bool:
     """Download an asset from a GitHub release.
-    
+
     Args:
     ----
         owner: GitHub repository owner
@@ -654,29 +652,30 @@ def download_github_release_asset(
         asset_name: Name of the asset to download (e.g., "kits.zip")
         local_path: Local path where the asset will be saved
         timeout: Request timeout in seconds (default: 180)
-        
+
     Returns:
     -------
         bool: True if download was successful, False otherwise
-        
+
     Raises:
     ------
         ValueError: If the release or asset is not found
         requests.exceptions.RequestException: If download fails
     """
     import requests
+
     timeout = 180 if timeout is None else timeout
     local_path = Path(local_path).absolute()
     local_path.parent.mkdir(parents=True, exist_ok=True)
-    
+
     # Get release info
     if tag_name.lower() == "latest":
         api_url = f"https://api.github.com/repos/{owner}/{repo}/releases/latest"
     else:
         api_url = f"https://api.github.com/repos/{owner}/{repo}/releases/tags/{tag_name}"
-    
+
     release_info: dict[str, Any] = _request_api_data(api_url)
-    
+
     # Find the asset
     assets: list[dict[str, Any]] = release_info.get("assets", [])
     asset_url: str | None = None
@@ -684,21 +683,18 @@ def download_github_release_asset(
         if asset["name"] == asset_name:
             asset_url = asset["browser_download_url"]
             break
-    
+
     if asset_url is None:
         available_assets = [a["name"] for a in assets]
-        raise ValueError(
-            f"Asset '{asset_name}' not found in release '{tag_name}'. "
-            f"Available assets: {', '.join(available_assets) if available_assets else 'none'}"
-        )
-    
+        raise ValueError(f"Asset '{asset_name}' not found in release '{tag_name}'. Available assets: {', '.join(available_assets) if available_assets else 'none'}")
+
     # Download the asset
     with requests.get(asset_url, stream=True, timeout=timeout) as r:
         r.raise_for_status()
         with local_path.open("wb") as f:
             for chunk in r.iter_content(chunk_size=8192):
                 f.write(chunk)
-    
+
     return True
 
 
@@ -746,7 +742,7 @@ def download_github_directory_fallback(
 def fetch_repo_index(owner: str, repo: str, branch: str = "master") -> dict[str, str]: ...
 @overload
 def fetch_repo_index(repo: str, branch: str = "master") -> dict[str, str]: ...
-def fetch_repo_index(owner_or_repo: str | tuple[str, str], repo: str=None, branch: str = "master") -> dict[str, str]:
+def fetch_repo_index(owner_or_repo: str | tuple[str, str], repo: str = None, branch: str = "master") -> dict[str, str]:
     """Fetches the index of a GitHub repository.
 
     Args:
@@ -760,6 +756,7 @@ def fetch_repo_index(owner_or_repo: str | tuple[str, str], repo: str=None, branc
         A dictionary mapping file paths in the repo to their respective GitHub URLs.
     """
     import requests
+
     if repo is None:
         owner_or_repo, repo = extract_owner_repo(owner_or_repo)
     api_url = f"https://api.github.com/repos/{owner_or_repo}/{repo}/git/trees/{branch}?recursive=1"
@@ -767,16 +764,13 @@ def fetch_repo_index(owner_or_repo: str | tuple[str, str], repo: str=None, branc
     response.raise_for_status()
     data: dict[str, Any] = response.json()
 
-    repo_index = {
-        item["path"]: f"https://github.com/{owner_or_repo}/{repo}/blob/{branch}/{item['path']}"
-        for item in data.get("tree", [])
-        if item["type"] == "blob"
-    }
+    repo_index = {item["path"]: f"https://github.com/{owner_or_repo}/{repo}/blob/{branch}/{item['path']}" for item in data.get("tree", []) if item["type"] == "blob"}
     return repo_index
 
 
 def _request_api_data(api_url: str) -> Any:
     import requests
+
     response: requests.Response = requests.get(api_url, timeout=15)
     response.raise_for_status()
     return response.json()
@@ -786,7 +780,7 @@ def _request_api_data(api_url: str) -> Any:
 def get_api_url(owner: str, repo: str) -> str: ...
 @overload
 def get_api_url(repo: str) -> str: ...
-def get_api_url(owner: str, repo: str=None) -> str:
+def get_api_url(owner: str, repo: str = None) -> str:
     if repo is None:
         owner, repo = extract_owner_repo(owner)
     return f"https://api.github.com/repos/{owner}/{repo}"
@@ -796,7 +790,7 @@ def get_api_url(owner: str, repo: str=None) -> str:
 def get_forks_url(owner: str, repo: str) -> str: ...
 @overload
 def get_forks_url(repo: str) -> str: ...
-def get_forks_url(owner: str, repo: str=None) -> str:
+def get_forks_url(owner: str, repo: str = None) -> str:
     if repo is None:
         owner, repo = extract_owner_repo(owner)
     return f"https://api.github.com/repos/{owner}/{repo}/forks"
@@ -806,7 +800,7 @@ def get_forks_url(owner: str, repo: str=None) -> str:
 def get_main_url(owner: str, repo: str) -> str: ...
 @overload
 def get_main_url(repo: str) -> str: ...
-def get_main_url(owner: str, repo: str=None) -> str:
+def get_main_url(owner: str, repo: str = None) -> str:
     if repo is None:
         owner, repo = extract_owner_repo(owner)
     return f"https://github.com/{owner}/{repo}"
@@ -819,6 +813,7 @@ def extract_owner_repo_from_api_url(url: str) -> tuple[str, str]:
         raise ValueError("Invalid GitHub API URL")
     return match[1], match[2]
 
+
 def extract_owner_repo_from_raw_url(url: str) -> tuple[str, str]:
     pattern = re.compile(r"https://raw\.githubusercontent\.com/([^/]+)/([^/]+)")
     match = pattern.match(url)
@@ -826,12 +821,14 @@ def extract_owner_repo_from_raw_url(url: str) -> tuple[str, str]:
         raise ValueError("Invalid GitHub raw content URL")
     return match[1], match[2]
 
+
 def extract_owner_repo_from_main_url(url: str) -> tuple[str, str]:
     pattern = re.compile(r"https://github\.com/([^/]+)/([^/]+)")
     match = pattern.match(url)
     if not match:
         raise ValueError("Invalid GitHub main URL")
     return match[1], match[2]
+
 
 def extract_owner_repo(url: str) -> tuple[str, str]:
     parsed = urlparse(url)
@@ -849,10 +846,12 @@ def extract_owner_repo(url: str) -> tuple[str, str]:
         return extract_owner_repo_from_main_url(normalized_url)
     raise ValueError(f"Invalid GitHub URL format: {url}")
 
+
 if __name__ == "__main__":
     import sys
 
     from toolset.__main__ import onAppCrash
+
     sys.excepthook = onAppCrash
     test1 = CompleteRepoData.load_repo_from_files(r"C:\GitHub\PyKotor\KOTORCommunityPatches_Vanilla_KOTOR_Script_Source\json files")
     test1_dict = test1.to_dict()

@@ -96,11 +96,8 @@ class RobustBaseWidget(QWidget if TYPE_CHECKING else object):
     ):
         def get_object_name():
             return self.__class__.__name__
-        self._settings_name: str = (
-            settings_name
-            and settings_name.strip()
-            or getattr(self, "objectName", get_object_name)()
-        )
+
+        self._settings_name: str = settings_name and settings_name.strip() or getattr(self, "objectName", get_object_name)()
 
         self._settings_cache: dict[str, QSettings] = {}
         self.original_stylesheet: str = self.styleSheet()
@@ -143,17 +140,33 @@ class RobustBaseWidget(QWidget if TYPE_CHECKING else object):
         self._add_menu_action(window_menu, "Set Window Modified", self.isWindowModified, self.setWindowModified, "windowModified")
         self._add_menu_action(window_menu, "Set Window Role", self.windowRole, self.setWindowRole, "windowRole", param_type=str)
         self._add_menu_action(window_menu, "Set Window FilePath", self.windowFilePath, self.setWindowFilePath, "windowFilePath", param_type=str)
-        self._add_exclusive_menu_action(window_menu, "Set Window State", self.windowState, self.setWindowState, {
-            "Normal": Qt.WindowState.WindowNoState,
-            "Minimized": Qt.WindowState.WindowMinimized,
-            "Maximized": Qt.WindowState.WindowMaximized,
-            "FullScreen": Qt.WindowState.WindowFullScreen,
-        }, "windowState", param_type=Qt.WindowState)
-        self._add_exclusive_menu_action(window_menu, "Set Window Modality", self.windowModality, self.setWindowModality, {
-            "Non Modal": Qt.WindowModality.NonModal,
-            "Window Modal": Qt.WindowModality.WindowModal,
-            "Application Modal": Qt.WindowModality.ApplicationModal,
-        }, "windowModality", param_type=Qt.WindowModality)
+        self._add_exclusive_menu_action(
+            window_menu,
+            "Set Window State",
+            self.windowState,
+            self.setWindowState,
+            {
+                "Normal": Qt.WindowState.WindowNoState,
+                "Minimized": Qt.WindowState.WindowMinimized,
+                "Maximized": Qt.WindowState.WindowMaximized,
+                "FullScreen": Qt.WindowState.WindowFullScreen,
+            },
+            "windowState",
+            param_type=Qt.WindowState,
+        )
+        self._add_exclusive_menu_action(
+            window_menu,
+            "Set Window Modality",
+            self.windowModality,
+            self.setWindowModality,
+            {
+                "Non Modal": Qt.WindowModality.NonModal,
+                "Window Modal": Qt.WindowModality.WindowModal,
+                "Application Modal": Qt.WindowModality.ApplicationModal,
+            },
+            "windowModality",
+            param_type=Qt.WindowModality,
+        )
 
         # Geometry and layout
         geometry_menu: QMenu | None = widget_menu.addMenu("Geometry")
@@ -185,11 +198,7 @@ class RobustBaseWidget(QWidget if TYPE_CHECKING else object):
             "Set Background Role",
             self.backgroundRole,
             self.setBackgroundRole,
-            {
-                attr_name: role
-                for attr_name, role in QPalette.ColorRole.__dict__.items()
-                if not attr_name.startswith("_")
-            },
+            {attr_name: role for attr_name, role in QPalette.ColorRole.__dict__.items() if not attr_name.startswith("_")},
             "backgroundRole",
             param_type=QPalette.ColorRole,
         )
@@ -198,11 +207,7 @@ class RobustBaseWidget(QWidget if TYPE_CHECKING else object):
             "Set Foreground Role",
             self.foregroundRole,
             self.setForegroundRole,
-            {
-                attr_name: role
-                for attr_name, role in QPalette.ColorRole.__dict__.items()
-                if not attr_name.startswith("_")
-            },
+            {attr_name: role for attr_name, role in QPalette.ColorRole.__dict__.items() if not attr_name.startswith("_")},
             "foregroundRole",
             param_type=QPalette.ColorRole,
         )
@@ -230,9 +235,7 @@ class RobustBaseWidget(QWidget if TYPE_CHECKING else object):
 
         # Help menu
         whats_this_action: QAction | None = QAction(
-            q_app_style.standardIcon(
-                QStyle.StandardPixmap.SP_TitleBarContextHelpButton
-            ),
+            q_app_style.standardIcon(QStyle.StandardPixmap.SP_TitleBarContextHelpButton),
             "What's This?",
             self,
         )
@@ -276,17 +279,27 @@ class RobustBaseWidget(QWidget if TYPE_CHECKING else object):
             param_type=Qt.ContextMenuPolicy,
         )
         self._add_menu_action(behavior_menu, "Set Accept Drops", self.acceptDrops, self.setAcceptDrops, "acceptDrops")
-        self._add_exclusive_menu_action(behavior_menu, "Set Layout Direction", self.layoutDirection, self.setLayoutDirection, {
-            "Left to Right": Qt.LayoutDirection.LeftToRight,
-            "Right to Left": Qt.LayoutDirection.RightToLeft,
-            "Auto": Qt.LayoutDirection.LayoutDirectionAuto,
-        }, "layoutDirection", param_type=Qt.LayoutDirection)
+        self._add_exclusive_menu_action(
+            behavior_menu,
+            "Set Layout Direction",
+            self.layoutDirection,
+            self.setLayoutDirection,
+            {
+                "Left to Right": Qt.LayoutDirection.LeftToRight,
+                "Right to Left": Qt.LayoutDirection.RightToLeft,
+                "Auto": Qt.LayoutDirection.LayoutDirectionAuto,
+            },
+            "layoutDirection",
+            param_type=Qt.LayoutDirection,
+        )
 
         # Accessibility
         accessibility_menu: QMenu | None = widget_menu.addMenu("Accessibility")
         assert accessibility_menu is not None
         self._add_menu_action(accessibility_menu, "Set Accessible Name", self.accessibleName, self.setAccessibleName, "accessibleName", param_type=str)
-        self._add_menu_action(accessibility_menu, "Set Accessible Description", self.accessibleDescription, self.setAccessibleDescription, "accessibleDescription", param_type=str)
+        self._add_menu_action(
+            accessibility_menu, "Set Accessible Description", self.accessibleDescription, self.setAccessibleDescription, "accessibleDescription", param_type=str
+        )
 
         # Locale
         locale_menu: QMenu | None = widget_menu.addMenu("Locale")
@@ -336,12 +349,12 @@ class RobustBaseWidget(QWidget if TYPE_CHECKING else object):
                 lambda v=attr_value: self.testAttribute(v),  # Example getter
                 lambda b, v=attr_value: self.setAttribute(v, b),
                 "setAttribute",
-                param_type=bool
+                param_type=bool,
             )
 
-        #meta_enum = QMetaEnum.fromType(Qt.WindowType)
-        #window_type_options = {meta_enum.valueToKey(i): i for i in range(meta_enum.keyCount())}
-        #self._add_multi_option_menu_action(
+        # meta_enum = QMetaEnum.fromType(Qt.WindowType)
+        # window_type_options = {meta_enum.valueToKey(i): i for i in range(meta_enum.keyCount())}
+        # self._add_multi_option_menu_action(
         #    advanced_menu,
         #    "Set Window Flag",
         #    self.windowFlags,
@@ -349,7 +362,7 @@ class RobustBaseWidget(QWidget if TYPE_CHECKING else object):
         #    {flag.name: flag for flag in Qt.WindowType},
         #    "setWindowFlag",
         #    param_type=Qt.WindowType
-        #)
+        # )
         if qtpy.QT5:
             self._add_menu_action(
                 advanced_menu,
@@ -387,8 +400,10 @@ class RobustBaseWidget(QWidget if TYPE_CHECKING else object):
         if title == "Edit Stylesheet":
             action: QAction | None = QAction(title, self)
             assert action is not None
+
             def on_toggled(checked: bool):
                 set_func(checked)
+
             action.toggled.connect(on_toggled)
             menu.addAction(action)
             return
@@ -398,8 +413,10 @@ class RobustBaseWidget(QWidget if TYPE_CHECKING else object):
         if param_type is bool:
             action.setCheckable(True)
             action.setChecked(current_value)
+
             def on_toggled(checked: bool):  # noqa: FBT001
                 set_func(checked)
+
             action.toggled.connect(on_toggled)
         else:
 
@@ -445,9 +462,11 @@ class RobustBaseWidget(QWidget if TYPE_CHECKING else object):
             action = QAction(option_name, self)
             action.setCheckable(True)
             action.setChecked(current_value == option_value)
+
             def on_triggered(_checked, val=option_value):
                 set_func(val)
                 self._update_action_text(title, val)
+
             action.triggered.connect(on_triggered)
             sub_menu.addAction(action)
             action_group.addAction(action)
@@ -473,10 +492,7 @@ class RobustBaseWidget(QWidget if TYPE_CHECKING else object):
             for action in menu.actions():
                 if action.isChecked():
                     current_state |= options[action.text()]
-            if (
-                initial_value is not None
-                and not isinstance(current_state, initial_value.__class__)
-            ):
+            if initial_value is not None and not isinstance(current_state, initial_value.__class__):
                 current_state = initial_value.__class__(current_state)
             set_func(current_state)
 
@@ -651,7 +667,9 @@ class RobustBaseWidget(QWidget if TYPE_CHECKING else object):
             value_str = value_str[:10]  # Limit to 10 characters
             action.setText(f"{title}: {value_str}")
 
-    def show_stylesheet_editor(self,):
+    def show_stylesheet_editor(
+        self,
+    ):
         if self._stylesheet_editor is None:
             self._stylesheet_editor = QDockWidget("Stylesheet Editor", self)
             editor_widget = QWidget()
@@ -757,7 +775,9 @@ class RobustBaseWidget(QWidget if TYPE_CHECKING else object):
 
         self._stylesheet_editor.show()
 
-    def _update_stylesheet_preview(self,):
+    def _update_stylesheet_preview(
+        self,
+    ):
         if self._preview_area is not None and self._stylesheet_text_edit is not None:
             self._preview_area.setStyleSheet(self._stylesheet_text_edit.toPlainText())
 
@@ -789,6 +809,7 @@ class RobustBaseWidget(QWidget if TYPE_CHECKING else object):
 
 
 if __name__ == "__main__":
+
     class TestWidget(RobustBaseWidget, QWidget):
         def __init__(
             self,
@@ -837,13 +858,16 @@ if __name__ == "__main__":
         def test_color_action_method(self):
             def get_color() -> Qt.GlobalColor:
                 return Qt.GlobalColor.red
+
             self._handle_color_action(get_color, "Test Color", "testColorSetting")
 
         def test_generic_action_method(self):
             def new_value() -> Literal[10]:
                 return 10
+
             def update_text(x):
                 self.text_edit.setText(f"New value: {x}")
+
             self._handle_generic_action(new_value, update_text, "Test Generic", "testGenericSetting", param_type=int)
 
     class MainWindow(QMainWindow):

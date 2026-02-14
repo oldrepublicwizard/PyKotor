@@ -77,24 +77,24 @@ def create_release_metadata_footer(original_release: dict[str, Any], source_repo
     footer += f"[{source_repo}#{original_release['tag_name']}](https://github.com/{source_repo}/releases/tag/{original_release['tag_name']})\n"
     footer += f"**Original published:** {original_release.get('published_at', original_release.get('created_at', 'N/A'))}\n"
     footer += f"**Original author:** @{original_release.get('author', {}).get('login', 'N/A')}\n"
-    
+
     if original_release.get("assets"):
         footer += f"**Original assets:** {len(original_release['assets'])} file(s) (not migrated - download from original release)\n"
-    
+
     footer += "\n*Note: Release date cannot be preserved via GitHub API. This release was recreated to maintain chronological order.*"
-    
+
     return footer
 
 
 def create_release(target_repo: str, release_data: dict[str, Any], source_repo: str = "") -> bool:
     """Create a release in target repository."""
     body = release_data.get("body", "")
-    
+
     # Add metadata footer if source_repo is provided
     if source_repo:
         footer = create_release_metadata_footer(release_data, source_repo)
         body = body + footer
-    
+
     data = {
         "tag_name": release_data["tag_name"],
         "name": release_data.get("name", release_data["tag_name"]),
@@ -303,33 +303,33 @@ def get_all_discussions(source_repo: str) -> list[dict[str, Any]]:
 
 def migrate_releases(source_repo: str, target_repo: str, recreate_in_order: bool = False) -> tuple[int, int]:
     """Migrate all releases from source to target.
-    
+
     If recreate_in_order is True, deletes all existing releases and recreates
     them in exact chronological order to ensure proper sorting.
     """
     print("=" * 60)
     print("STEP 1: MIGRATING RELEASES")
     print("=" * 60)
-    
+
     releases = get_all_releases(source_repo)
     print(f"Found {len(releases)} releases in source repository")
 
     # Sort by published_at date (oldest first) for chronological order
     def get_published_date(release: dict[str, Any]) -> str:
         return release.get("published_at", release.get("created_at", "1970-01-01T00:00:00Z"))
-    
+
     sorted_releases = sorted(releases, key=get_published_date)
-    
+
     if recreate_in_order:
         print("\nRECREATE MODE: Deleting all existing releases and recreating in chronological order")
-        
+
         # Get and delete all existing releases
         existing_releases = get_all_releases(target_repo)
         print(f"Found {len(existing_releases)} existing releases to delete")
-        
+
         deleted = 0
         failed = 0
-        
+
         for release in existing_releases:
             print(f"  Deleting: {release['tag_name']}")
             if delete_release(target_repo, release["id"]):
@@ -339,21 +339,21 @@ def migrate_releases(source_repo: str, target_repo: str, recreate_in_order: bool
                 print(f"    FAILED: Could not delete {release['tag_name']}")
                 failed += 1
             time.sleep(0.5)  # Rate limiting
-        
+
         print(f"\nDeleted: {deleted}, Failed: {failed}")
-        
+
         if failed > 0:
             print("\nWARNING: Some releases could not be deleted. Continuing anyway...")
-        
+
         # Wait for deletions to propagate
         print("\nWaiting 5 seconds for deletions to propagate...")
         time.sleep(5)
-        
+
         # Recreate in exact chronological order
         print("\nRecreating releases in chronological order (oldest to newest):")
         migrated_releases = 0
         skipped_releases = 0
-        
+
         # Wait a bit more and verify deletions
         print("Verifying all releases are deleted...")
         time.sleep(2)
@@ -364,12 +364,12 @@ def migrate_releases(source_repo: str, target_repo: str, recreate_in_order: bool
                 delete_release(target_repo, release["id"])
                 time.sleep(0.5)
             time.sleep(3)
-        
+
         for i, release in enumerate(sorted_releases, 1):
             print(f"\n[{i}/{len(sorted_releases)}] Creating: {release['tag_name']}")
             print(f"  Name: {release.get('name', 'N/A')[:50]}")
             print(f"  Original date: {get_published_date(release)}")
-            
+
             # Double-check it doesn't exist (idempotency)
             existing = get_all_releases(target_repo)
             existing_tags = {r["tag_name"] for r in existing}
@@ -377,20 +377,20 @@ def migrate_releases(source_repo: str, target_repo: str, recreate_in_order: bool
                 print(f"    SKIP: {release['tag_name']} already exists (idempotency check)")
                 skipped_releases += 1
                 continue
-            
+
             if create_release(target_repo, release, source_repo):
                 print(f"    SUCCESS: Created {release['tag_name']}")
                 migrated_releases += 1
             else:
                 print(f"    FAILED: Could not create {release['tag_name']}")
                 skipped_releases += 1
-            
+
             # Wait between creations to ensure proper ordering
             if i < 5:
                 time.sleep(2)  # Longer wait for first few
             else:
                 time.sleep(1)
-        
+
         print(f"\nReleases: {migrated_releases} created, {skipped_releases} skipped/failed")
     else:
         # Standard migration (skip existing) - IDEMPOTENT
@@ -408,14 +408,14 @@ def migrate_releases(source_repo: str, target_repo: str, recreate_in_order: bool
                 continue
 
             print(f"  Creating: {release['tag_name']} - {release.get('name', 'N/A')[:50]}")
-            
+
             # Double-check before creating (idempotency)
             current_existing = {r["tag_name"] for r in get_all_releases(target_repo)}
             if release["tag_name"] in current_existing:
                 print(f"    SKIP: {release['tag_name']} was created by another process")
                 skipped_releases += 1
                 continue
-            
+
             if create_release(target_repo, release, source_repo):
                 print(f"    SUCCESS: Created {release['tag_name']}")
                 migrated_releases += 1
@@ -425,7 +425,7 @@ def migrate_releases(source_repo: str, target_repo: str, recreate_in_order: bool
             time.sleep(1)  # Rate limiting
 
         print(f"\nReleases: {migrated_releases} migrated, {skipped_releases} skipped")
-    
+
     return migrated_releases, skipped_releases
 
 
@@ -477,7 +477,7 @@ def migrate_issues(source_repo: str, target_repo: str) -> tuple[int, int, int]:
             existing_issue = existing_by_title[issue["title"]]
             print(f"  SKIP: Issue already exists (#{existing_issue['number']})")
             skipped_issues += 1
-            
+
             # Check if metadata footer is missing and add it
             body = existing_issue.get("body") or ""
             if "Migrated from:" not in body:
@@ -485,14 +485,14 @@ def migrate_issues(source_repo: str, target_repo: str) -> tuple[int, int, int]:
                 footer = create_metadata_footer(issue, source_repo)
                 new_body = body + footer
                 update_issue_body(target_repo, existing_issue["number"], new_body)
-            
+
             # Check if comments need to be migrated
             source_comments = get_issue_comments(source_repo, issue["number"])
             existing_comments = get_existing_comments(target_repo, existing_issue["number"])
-            
+
             if source_comments and len(source_comments) > len(existing_comments):
                 print(f"  Migrating {len(source_comments) - len(existing_comments)} missing comments...")
-                for comment in source_comments[len(existing_comments):]:
+                for comment in source_comments[len(existing_comments) :]:
                     if create_issue_comment(target_repo, existing_issue["number"], comment):
                         pass  # Success
                     time.sleep(0.5)
@@ -635,7 +635,7 @@ def verify_and_fix_remaining(source_repo: str, target_repo: str) -> int:
         for num, title in to_close:
             print(f"  #{num}: {title[:60]}")
             if close_issue(target_repo, num):
-                print(f"    Closed")
+                print("    Closed")
                 closed_count += 1
             time.sleep(1)
     else:
@@ -710,4 +710,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-

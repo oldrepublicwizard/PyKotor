@@ -258,6 +258,7 @@ class ActionsDispatcher:
 
         class CustomDeleteDialog(QDialog):
             """Custom dialog to confirm deletion of files/folders."""
+
             def __init__(self, parent: QWidget, items: list[Path]):
                 super().__init__(parent)
                 self.setWindowTitle("Confirm Deletion")
@@ -277,9 +278,7 @@ class ActionsDispatcher:
 
                 for item in items:
                     item_label = QLabel(f'<a href="{item}">{item.name}</a>')
-                    item_label.setTextInteractionFlags(
-                        Qt.TextInteractionFlag.TextBrowserInteraction
-                    )
+                    item_label.setTextInteractionFlags(Qt.TextInteractionFlag.TextBrowserInteraction)
                     item_label.setOpenExternalLinks(True)
                     content_layout.addWidget(item_label)
 

@@ -69,16 +69,17 @@ class INIManager:
             self.load()
 
         # Ensure section exists
-        if (
-            self.config is not None
-            and section_name not in self.config
-        ):
+        if self.config is not None and section_name not in self.config:
             self.config[section_name] = {}
 
-        section: dict[str, Any] = cast(
-            "dict[str, Any]",
-            self.config[section_name],
-        ) if self.config is not None else {}
+        section: dict[str, Any] = (
+            cast(
+                "dict[str, Any]",
+                self.config[section_name],
+            )
+            if self.config is not None
+            else {}
+        )
 
         # Parse and merge lines
         for line in lines:
@@ -150,10 +151,7 @@ class INIManager:
                 current_lines = []
 
                 # Ensure section exists
-                if (
-                    self.config is not None
-                    and section_name not in self.config
-                ):
+                if self.config is not None and section_name not in self.config:
                     self.config[section_name] = {}
             # Accumulate lines for current section
             elif current_section is not None:
@@ -198,4 +196,3 @@ class INIManager:
         if self.config is None:
             return False
         return section_name in self.config
-

@@ -37,7 +37,7 @@ def find_nss_compiler() -> Path | None:
         Based on swkotor.exe NCS compilation:
         - CResNCS::CResNCS @ 0x005d4c30 - NCS resource constructor
         - NWScript compilation and execution within game engine
-        
+
         Libraries/PyKotor/src/pykotor/resource/formats/ncs/compilers.py - PyKotor compiler implementations
 
     """

@@ -617,6 +617,7 @@ class Gender(IntEnum):
 
 class IntKeyDict(dict):
     """This purely exists because something is setting the data with string key numbers incorrectly. This is a HACK:."""
+
     def __setitem__(self, key, value):
         if not isinstance(key, int):
             try:
@@ -698,10 +699,7 @@ class LocalizedString:
         return other._substrings == self._substrings
 
     def to_dict(self) -> dict[str, Any]:
-        return {
-            "stringref": self.stringref,
-            "substrings": self._substrings
-        }
+        return {"stringref": self.stringref, "substrings": self._substrings}
 
     @classmethod
     def from_dict(cls, data: dict[str, Any]) -> Self:

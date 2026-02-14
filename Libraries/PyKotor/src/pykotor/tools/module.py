@@ -240,8 +240,10 @@ def clone_module(  # noqa: C901, PLR0915, PLR0912, PLR0913
                         [
                             SearchLocation.CHITIN,
                             SearchLocation.OVERRIDE,
-                            SearchLocation.TEXTURES_GUI,
                             SearchLocation.TEXTURES_TPA,
+                            SearchLocation.TEXTURES_TPB,
+                            SearchLocation.TEXTURES_TPC,
+                            SearchLocation.TEXTURES_GUI,
                         ],
                     )
                     if tpc is None:
@@ -267,8 +269,10 @@ def clone_module(  # noqa: C901, PLR0915, PLR0912, PLR0913
                         [
                             SearchLocation.CHITIN,
                             SearchLocation.OVERRIDE,
-                            SearchLocation.TEXTURES_GUI,
                             SearchLocation.TEXTURES_TPA,
+                            SearchLocation.TEXTURES_TPB,
+                            SearchLocation.TEXTURES_TPC,
+                            SearchLocation.TEXTURES_GUI,
                         ],
                     )
                     if tpc is None:

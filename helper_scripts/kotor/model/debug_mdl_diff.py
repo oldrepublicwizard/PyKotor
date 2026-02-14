@@ -78,6 +78,7 @@ def debug_diff(*, resref: str = "3dgui") -> int:
         except Exception as e:
             print(f"ids checks: <error> {e!r}")
         try:
+
             def _akey(anim: md.MDLAnimation) -> tuple[str, str]:
                 return (anim.name, anim.root_model)
 
@@ -192,8 +193,12 @@ def debug_diff(*, resref: str = "3dgui") -> int:
                 where = _find_first_mismatch(na, nb, f"root.{name}")
                 if name.lower() == "backcape":
                     print("\n-- BackCape attachment summary --")
-                    print(f"bin: node_type={na.node_type} mesh={na.mesh is not None} skin={na.skin is not None} dangly={na.dangly is not None} aabb={na.aabb is not None} saber={na.saber is not None}")
-                    print(f"ascii: node_type={nb.node_type} mesh={nb.mesh is not None} skin={nb.skin is not None} dangly={nb.dangly is not None} aabb={nb.aabb is not None} saber={nb.saber is not None}")
+                    print(
+                        f"bin: node_type={na.node_type} mesh={na.mesh is not None} skin={na.skin is not None} dangly={na.dangly is not None} aabb={na.aabb is not None} saber={na.saber is not None}"
+                    )
+                    print(
+                        f"ascii: node_type={nb.node_type} mesh={nb.mesh is not None} skin={nb.skin is not None} dangly={nb.dangly is not None} aabb={nb.aabb is not None} saber={nb.saber is not None}"
+                    )
                     try:
                         print("\n-- BackCape canonical transform --")
                         print("bin header pos:", md._mdl_node_header_position(na))  # noqa: SLF001
@@ -438,9 +443,21 @@ def debug_diff(*, resref: str = "3dgui") -> int:
                             comps.append(("node-edge", hash(("node", name, parent1.get(name))), hash(("node", name, parent2.get(name)))))
                             comps.append(("header-pos", hash(md._mdl_node_header_position(n1)), hash(md._mdl_node_header_position(n2))))  # noqa: SLF001
                             comps.append(("header-ori", hash(md._mdl_node_header_orientation(n1)), hash(md._mdl_node_header_orientation(n2))))  # noqa: SLF001
-                            comps.append(("controllers", hash(md._mdl_canonical_controllers_hashable(n1, drop_transform_controllers=True)), hash(md._mdl_canonical_controllers_hashable(n2, drop_transform_controllers=True))))  # noqa: SLF001
+                            comps.append(
+                                (
+                                    "controllers",
+                                    hash(md._mdl_canonical_controllers_hashable(n1, drop_transform_controllers=True)),
+                                    hash(md._mdl_canonical_controllers_hashable(n2, drop_transform_controllers=True)),
+                                )
+                            )  # noqa: SLF001
                             comps.append(("mesh", hash(md._mdl_mesh_hash(n1.mesh)) if n1.mesh else 0, hash(md._mdl_mesh_hash(n2.mesh)) if n2.mesh else 0))  # noqa: SLF001
-                            comps.append(("skin", hash(md._mdl_deep_hash(n1.skin, ignore_keys=md._MDL_EQ_IGNORE_KEYS)) if n1.skin else 0, hash(md._mdl_deep_hash(n2.skin, ignore_keys=md._MDL_EQ_IGNORE_KEYS)) if n2.skin else 0))  # noqa: SLF001
+                            comps.append(
+                                (
+                                    "skin",
+                                    hash(md._mdl_deep_hash(n1.skin, ignore_keys=md._MDL_EQ_IGNORE_KEYS)) if n1.skin else 0,
+                                    hash(md._mdl_deep_hash(n2.skin, ignore_keys=md._MDL_EQ_IGNORE_KEYS)) if n2.skin else 0,
+                                )
+                            )  # noqa: SLF001
                             for label, a, b in comps:
                                 if a != b:
                                     print(f"-- node subpart mismatch: {label} --")

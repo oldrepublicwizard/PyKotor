@@ -26,8 +26,6 @@ from typing import TYPE_CHECKING
 
 
 from pykotor.resource.type import ResourceType
-from pykotor.common.misc import Game
-from pykotor.extract.installation import Installation
 from pykotor.resource.formats.gff import read_gff
 from pykotor.resource.generics.utp import UTP, construct_utp, dismantle_utp
 
@@ -125,17 +123,17 @@ class Test(TestCase):
         self.log_messages.append("\t".join(msgs))
 
     def test_gff_reconstruct(self):
-        gff: GFF = read_gff(TEST_UTP_XML.encode('utf-8'), file_format=ResourceType.GFF_XML)
+        gff: GFF = read_gff(TEST_UTP_XML.encode("utf-8"), file_format=ResourceType.GFF_XML)
         reconstructed_gff: GFF = dismantle_utp(construct_utp(gff))
         assert gff.compare(reconstructed_gff, self.log_func), os.linesep.join(self.log_messages)
 
     def test_io_construct(self):
-        gff: GFF = read_gff(TEST_UTP_XML.encode('utf-8'), file_format=ResourceType.GFF_XML)
+        gff: GFF = read_gff(TEST_UTP_XML.encode("utf-8"), file_format=ResourceType.GFF_XML)
         utp: UTP = construct_utp(gff)
         self.validate_io(utp)
 
     def test_io_reconstruct(self):
-        gff = read_gff(TEST_UTP_XML.encode('utf-8'), file_format=ResourceType.GFF_XML)
+        gff = read_gff(TEST_UTP_XML.encode("utf-8"), file_format=ResourceType.GFF_XML)
         gff: GFF = dismantle_utp(construct_utp(gff))
         utp: UTP = construct_utp(gff)
         self.validate_io(utp)
@@ -145,7 +143,7 @@ class Test(TestCase):
         import tempfile
         import os
 
-        with tempfile.NamedTemporaryFile(mode='w', suffix='.utp.xml', delete=False, encoding='utf-8') as tmp:
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".utp.xml", delete=False, encoding="utf-8") as tmp:
             tmp.write(TEST_UTP_XML)
             tmp_path = tmp.name
 
@@ -223,12 +221,10 @@ class Test(TestCase):
         assert utp.inventory[1].resref == "g_w_iongren02"
 
 
-
 if __name__ == "__main__":
     try:
         import pytest
-    except ImportError: # pragma: no cover
+    except ImportError:  # pragma: no cover
         unittest.main()
     else:
         pytest.main(["-v", __file__])
-

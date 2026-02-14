@@ -36,7 +36,6 @@ class TestCaseAwarePath(unittest.TestCase):
         except Exception as e:
             self.fail(f"Unexpected exception raised: {e}")
 
-
     def test_hashing(self):
         path1 = CaseAwarePath("test\\path\\to\\nothing")
         path2 = CaseAwarePath("tesT\\PATH\\to\\noTHinG")
@@ -74,6 +73,7 @@ class TestCaseAwarePath(unittest.TestCase):
         items = [CaseAwarePath("test"), CaseAwarePath("TEST"), CaseAwarePath("TesT"), CaseAwarePath("teSt")]
         # find_closest_match expects a generator, not a list
         from collections.abc import Generator
+
         items_gen: Generator = (item for item in items)
         result = CaseAwarePath.find_closest_match("teST", items_gen)
         assert result == "teSt"
@@ -154,7 +154,7 @@ class TestIsRelativeTo(unittest.TestCase):
 if __name__ == "__main__":
     try:
         import pytest
-    except ImportError: # pragma: no cover
+    except ImportError:  # pragma: no cover
         unittest.main()
     else:
         pytest.main(["-v", __file__])

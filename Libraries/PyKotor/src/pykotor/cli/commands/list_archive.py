@@ -1,4 +1,5 @@
 """List-archive command implementation - list contents of archive files."""
+
 from __future__ import annotations
 
 import pathlib
@@ -14,9 +15,6 @@ from pykotor.tools.archives import list_bif, list_erf, list_key, list_rim
 from pykotor.cli.archive_filter import matches_resource_name
 
 # vendor references:
-
-
-
 
 
 def cmd_list_archive(args: Namespace, logger: Logger) -> int:  # noqa: PLR0911
@@ -187,4 +185,3 @@ def _list_erf(erf_path: pathlib.Path, args: Namespace, logger: Logger) -> int:
         return 1
     else:
         return 0
-

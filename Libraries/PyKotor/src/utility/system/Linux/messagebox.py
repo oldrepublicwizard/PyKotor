@@ -10,6 +10,7 @@ if TYPE_CHECKING:
 
 def _get_tk_root() -> tk.Tk:
     import tkinter as tk
+
     if tk._default_root is None:  # pyright: ignore[reportAttributeAccessIssue]  # noqa: SLF001
         root = tk.Tk()
         root.withdraw()
@@ -20,6 +21,7 @@ def _get_tk_root() -> tk.Tk:
 def showinfo(title: str, message: str):
     try:
         from tkinter import messagebox
+
         _get_tk_root()
         return messagebox.showinfo(title, message)
     except Exception:  # noqa: BLE001
@@ -35,6 +37,7 @@ def showinfo(title: str, message: str):
 def showwarning(title: str, message: str):
     try:
         from tkinter import messagebox
+
         _get_tk_root()
         return messagebox.showwarning(title, message)
     except Exception:  # noqa: BLE001
@@ -50,6 +53,7 @@ def showwarning(title: str, message: str):
 def showerror(title: str, message: str):
     try:
         from tkinter import messagebox
+
         _get_tk_root()
         return messagebox.showerror(title, message)
     except Exception:  # noqa: BLE001
@@ -65,6 +69,7 @@ def showerror(title: str, message: str):
 def askquestion(title: str, message: str) -> str:
     try:
         from tkinter import messagebox
+
         _get_tk_root()
         return messagebox.askquestion(title, message)
     except Exception:  # noqa: BLE001
@@ -74,7 +79,7 @@ def askquestion(title: str, message: str) -> str:
         except subprocess.CalledProcessError:
             try:
                 result = subprocess.run(["yad", "--question", "--title", title, "--text", message], check=True)  # noqa: S603, S607
-                return "yes" if result.returncode == 0 else "no" "no"  # noqa: TRY300
+                return "yes" if result.returncode == 0 else "nono"  # noqa: TRY300
             except subprocess.CalledProcessError:
                 result = subprocess.run(["gtk-message-dialog", "--type=question", "--title", title, "--text", message], check=True)  # noqa: S603, S607
                 return "yes" if result.returncode == 0 else "no"
@@ -83,6 +88,7 @@ def askquestion(title: str, message: str) -> str:
 def askokcancel(title: str, message: str) -> bool:
     try:
         from tkinter import messagebox
+
         _get_tk_root()
         return messagebox.askokcancel(title, message)
     except Exception:  # noqa: BLE001
@@ -100,8 +106,8 @@ def askokcancel(title: str, message: str) -> bool:
 
 def askyesno(title: str, message: str) -> bool:
     try:
-
         from tkinter import messagebox
+
         _get_tk_root()
         return messagebox.askyesno(title, message)
     except Exception:  # noqa: BLE001
@@ -119,8 +125,8 @@ def askyesno(title: str, message: str) -> bool:
 
 def askyesnocancel(title: str, message: str) -> bool | None:
     try:
-
         from tkinter import messagebox
+
         _get_tk_root()
         return messagebox.askyesnocancel(title, message)
     except Exception:  # noqa: BLE001
@@ -151,6 +157,7 @@ def askyesnocancel(title: str, message: str) -> bool | None:
 def askretrycancel(title: str, message: str) -> bool:
     try:
         from tkinter import messagebox
+
         _get_tk_root()
         return messagebox.askretrycancel(title, message)
     except Exception:  # noqa: BLE001

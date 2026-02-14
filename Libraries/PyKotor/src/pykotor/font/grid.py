@@ -8,6 +8,7 @@ from typing import NamedTuple
 
 class GridCell(NamedTuple):
     """Represents a cell in the bitmap font grid."""
+
     x: int
     y: int
     pixel_x1: float
@@ -23,6 +24,7 @@ class GridCell(NamedTuple):
 @dataclass
 class GridDimensions:
     """Stores the calculated dimensions for the bitmap font grid."""
+
     characters_per_row: int
     characters_per_column: int
     cell_size: int
@@ -65,20 +67,12 @@ class BitmapGrid:
         chars_per_row: int = math.ceil(math.sqrt(self.num_chars))
 
         # Calculate cell size to fit within resolution
-        cell_size: int = min(
-            self.resolution[0] // chars_per_row,
-            self.resolution[1] // chars_per_col
-        )
+        cell_size: int = min(self.resolution[0] // chars_per_row, self.resolution[1] // chars_per_col)
 
         # Calculate cell height
         cell_height: float = self.resolution[1] / chars_per_row
 
-        return GridDimensions(
-            characters_per_row=chars_per_row,
-            characters_per_column=chars_per_col,
-            cell_size=cell_size,
-            cell_height=cell_height
-        )
+        return GridDimensions(characters_per_row=chars_per_row, characters_per_column=chars_per_col, cell_size=cell_size, cell_height=cell_height)
 
     def get_cell(self, index: int) -> GridCell:
         """Get the grid cell information for a given character index.
@@ -115,5 +109,5 @@ class BitmapGrid:
             norm_x1=norm_x1,
             norm_y1=1 - norm_y1,  # Invert Y-axis normalization
             norm_x2=norm_x2,
-            norm_y2=1 - norm_y2   # Invert Y-axis normalization
+            norm_y2=1 - norm_y2,  # Invert Y-axis normalization
         )

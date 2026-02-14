@@ -1320,7 +1320,7 @@ def _walk_binary_nodes(
         # Use _NodeHeader to parse correctly
         node_hdr = _NodeHeader()
         node_hdr.read(reader)
-        
+
         node_type = node_hdr.type_id
         node_id = node_hdr.node_id
         children_off = node_hdr.offset_to_children
@@ -1362,7 +1362,7 @@ def _walk_binary_nodes(
 def cmd_node_types(args: argparse.Namespace) -> int:
     """Walk node tree and show binary node types."""
     game = _resolve_game(args.game)
-    
+
     # Load original
     if args.mdl:
         original = _load_from_files(mdl_path=args.mdl, mdx_path=args.mdx)
@@ -1375,16 +1375,16 @@ def cmd_node_types(args: argparse.Namespace) -> int:
         resref = args.resref
     else:
         return _write_output(_err("Must provide --resref or --mdl"), args.out) or 1
-    
+
     mdl_data = original.mdl
     reader = BinaryReader.from_bytes(mdl_data)
-    
+
     # Parse model header using _ModelHeader from io_mdl
     # File header: 12 bytes (skip), model header starts at offset 12
     reader.seek(12)  # Skip file header
     model_header = _ModelHeader()
     model_header.read(reader)
-    
+
     root_node_offset = model_header.geometry.root_node_offset
     name_offsets_offset = model_header.offset_to_name_offsets
     name_offsets_count = model_header.name_offsets_count
@@ -1392,7 +1392,7 @@ def cmd_node_types(args: argparse.Namespace) -> int:
     # Read name offsets (these are actually just indices, names are sequential after)
     reader.seek(name_offsets_offset + 12)
     name_offsets = [reader.read_uint32() for _ in range(name_offsets_count)]
-    
+
     # Names start right after name offsets, read as sequential null-terminated strings
     names_start = name_offsets_offset + name_offsets_count * 4 + 12
     # Names end at offset_to_animations
@@ -1404,11 +1404,11 @@ def cmd_node_types(args: argparse.Namespace) -> int:
         names_list: list[str] = []
         current_pos = 0
         for _ in range(name_offsets_count):
-            null_pos = names_raw.find(b'\x00', current_pos)
+            null_pos = names_raw.find(b"\x00", current_pos)
             if null_pos == -1:
                 null_pos = len(names_raw)
             name_bytes = names_raw[current_pos:null_pos]
-            names_list.append(name_bytes.decode('ascii', errors='ignore'))
+            names_list.append(name_bytes.decode("ascii", errors="ignore"))
             current_pos = null_pos + 1
             if current_pos >= len(names_raw):
                 break
@@ -1449,7 +1449,7 @@ def cmd_node_types(args: argparse.Namespace) -> int:
     # Count animations
     total_anims = len(pk_mdl.animations)
     anim_node_count = sum(len(list(a.all_nodes())) for a in pk_mdl.animations)
-    
+
     lines = [
         f"=== Node Types for {resref} ({game.name}) ===",
         "",

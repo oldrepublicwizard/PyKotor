@@ -34,7 +34,7 @@ def find_node_type_locations(data: bytes) -> list[tuple[int, int, int]]:
     # Node headers have type_id at offset 0 (uint16)
     # Valid types: 1, 33, 97, 161, 289, 545, etc.
     valid_base_types = {1, 33, 97, 161, 289, 545, 2081}
-    
+
     for offset in range(200, len(data) - 80, 4):  # Start after header, align to 4 bytes
         type_id = get_uint16(data, offset)
         # Check if this looks like a valid node header
@@ -47,7 +47,7 @@ def find_node_type_locations(data: bytes) -> list[tuple[int, int, int]]:
                 children_count = get_uint32(data, offset + 48)
                 if children_count < 100:
                     locations.append((offset, type_id, node_id))
-    
+
     return locations
 
 
@@ -95,26 +95,26 @@ def main():
         print(f"Original: MDL={len(orig_mdl)}")
         print(f"PyKotor:  MDL={len(pykotor_mdl)}")
         print(f"MDLOps:   MDL={len(mdlops_mdl)}")
-        
+
         # Extract key layout values
         print("\n=== Key Layout Offsets ===")
-        
+
         # From model header (file position 12+)
         # Geometry header: root_node_offset at pos 12+40=52, node_count at 12+44=56
         pk_root = get_uint32(pykotor_mdl, 52)
         mo_root = get_uint32(mdlops_mdl, 52)
         print(f"root_node_offset: PyKotor={pk_root}, MDLOps={mo_root}")
-        
+
         # offset_to_super_root at file pos 180 (0xB4)
         pk_super = get_uint32(pykotor_mdl, 180)
         mo_super = get_uint32(mdlops_mdl, 180)
         print(f"offset_to_super_root (0xB4): PyKotor={pk_super}, MDLOps={mo_super}")
-        
+
         # offset_to_name_offsets at file pos 184 (0xB8)
         pk_names = get_uint32(pykotor_mdl, 184)
         mo_names = get_uint32(mdlops_mdl, 184)
         print(f"offset_to_name_offsets (0xB8): PyKotor={pk_names}, MDLOps={mo_names}")
-        
+
         # name_offsets_count at file pos 188
         pk_names_count = get_uint32(pykotor_mdl, 188)
         mo_names_count = get_uint32(mdlops_mdl, 188)
@@ -123,21 +123,21 @@ def main():
         # Calculate layout regions
         print("\n=== Layout Regions ===")
         print(f"{'Region':<30} {'PyKotor':<20} {'MDLOps':<20}")
-        
+
         # Header ends at 196 (model header size)
         print(f"{'Header':30} 0-195              0-195")
-        
+
         # Names region
         pk_names_end = pk_names + pk_names_count * 4  # name offsets array
         mo_names_end = mo_names + mo_names_count * 4
         print(f"{'Name offsets':30} {pk_names}-{pk_names_end:<11} {mo_names}-{mo_names_end}")
-        
+
         # Root node region (node headers + data)
-        print(f"{'Root node (from header)':30} {pk_root+12:<19} {mo_root+12}")
-        
+        print(f"{'Root node (from header)':30} {pk_root + 12:<19} {mo_root + 12}")
+
         # Super root region
-        print(f"{'Super root (from 0xB4)':30} {pk_super+12:<19} {mo_super+12}")
-        
+        print(f"{'Super root (from 0xB4)':30} {pk_super + 12:<19} {mo_super + 12}")
+
         # Look for first mesh node by finding type 33 (trimesh)
         print("\n=== Node Type Scan (first 10) ===")
         for label, data in [("PyKotor", pykotor_mdl), ("MDLOps", mdlops_mdl)]:
@@ -149,4 +149,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-

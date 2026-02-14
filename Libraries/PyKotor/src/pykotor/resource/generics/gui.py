@@ -952,7 +952,6 @@ def dismantle_gui(  # noqa: C901, PLR0915
         text_control: GUIText,
     ) -> None:
         """Write TEXT. K1 CSWGuiLabel::Load 0x0041b960; FONT/ALIGNMENT 0, STRREF 0xFFFFFFFF. Omit OK."""
-        """Write text values to a GFF struct."""
         text_struct: GFFStruct = struct.set_struct("TEXT", GFFStruct(0))
         if text_control.text is not None:
             text_struct.set_string("TEXT", text_control.text)
@@ -981,7 +980,7 @@ def dismantle_gui(  # noqa: C901, PLR0915
         struct: GFFStruct,
         hilight: GUIBorder,
     ) -> None:
-        """Write hilight values to a GFF struct."""
+        """Write HILIGHT. K1 CORNER/EDGE/FILL blank, DIMENSION 0, FILLSTYLE 0. Omit OK."""
         hilight_struct: GFFStruct = struct.set_struct("HILIGHT", GFFStruct(0))
         if hilight.color is not None:
             hilight_struct.set_vector3("COLOR", Vector3(hilight.color.r, hilight.color.g, hilight.color.b))
@@ -998,7 +997,7 @@ def dismantle_gui(  # noqa: C901, PLR0915
             hilight_struct.set_uint8("PULSING", hilight.pulsing)
 
     def write_border_like(struct: GFFStruct, field_name: str, border: GUIBorder | GUISelected) -> None:
-        """Write border-like values to a GFF struct."""
+        """Write BORDER/HILIGHT/SELECTED. K1 0x00409dc0/0x0041b960; FILLSTYLE 2. Omit OK."""
         border_struct: GFFStruct = struct.set_struct(field_name, GFFStruct(0))
         if border.color is not None:
             border_struct.set_vector3("COLOR", Vector3(border.color.r, border.color.g, border.color.b))
@@ -1018,7 +1017,7 @@ def dismantle_gui(  # noqa: C901, PLR0915
             border_struct.set_uint8("PULSING", int(border.pulsing))
 
     def write_hilight_selected(struct: GFFStruct, hilight: GUIHilightSelected) -> None:
-        """Write HILIGHTSELECTED values to a GFF struct."""
+        """Write HILIGHTSELECTED. K1 CheckBox; same layout as HILIGHT. Omit OK."""
         hilight_struct: GFFStruct = struct.set_struct("HILIGHTSELECTED", GFFStruct(0))
         if hilight.color is not None:
             hilight_struct.set_vector3("COLOR", Vector3(hilight.color.r, hilight.color.g, hilight.color.b))

@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 """CLI utilities for diff operations including path normalization and argument handling."""
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
@@ -72,4 +73,3 @@ def print_path_error_with_help(path: Path, parser: argparse.ArgumentParser) -> N
         print('  - Or use forward slashes: --path1="C:/Program Files/folder/"')
     if parser:
         parser.print_help()
-

@@ -48,4 +48,3 @@ def test_parse_texture_data_tpc_without_txi_does_not_error(monkeypatch: pytest.M
     assert intermediate is not None
     assert intermediate.blend_mode == 0
     assert intermediate.has_alpha is True
-

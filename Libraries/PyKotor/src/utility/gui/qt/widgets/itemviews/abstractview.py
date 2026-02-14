@@ -217,13 +217,13 @@ class RobustAbstractItemView(RobustBaseWidget, QAbstractItemView if TYPE_CHECKIN
             option.locale = self.locale()
             option.showDecorationSelected = True
             option.text = index.data(Qt.ItemDataRole.DisplayRole)
-            #option.backgroundBrush = QColor(Qt.GlobalColor.yellow)
-            #option.decorationSize = QSize(32, 32)
-            #option.font = QFont("Arial", 12, QFont.Weight.Bold)
-            #option.icon = QIcon("/path/to/icon.png")  # Example path to an icon
-            #option.textElideMode = Qt.TextElideMode.ElideMiddle
-            #option.viewItemPosition = QStyleOptionViewItem.ViewItemPosition.Middle
-            #if index.row() % 2 == 0:
+            # option.backgroundBrush = QColor(Qt.GlobalColor.yellow)
+            # option.decorationSize = QSize(32, 32)
+            # option.font = QFont("Arial", 12, QFont.Weight.Bold)
+            # option.icon = QIcon("/path/to/icon.png")  # Example path to an icon
+            # option.textElideMode = Qt.TextElideMode.ElideMiddle
+            # option.viewItemPosition = QStyleOptionViewItem.ViewItemPosition.Middle
+            # if index.row() % 2 == 0:
             #    option.backgroundBrush = QColor(Qt.GlobalColor.lightGray)
 
         return option

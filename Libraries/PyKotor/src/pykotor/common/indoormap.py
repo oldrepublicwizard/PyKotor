@@ -352,6 +352,8 @@ class IndoorMap(ComparableMixin):
                         SearchLocation.CHITIN,
                         SearchLocation.OVERRIDE,
                         SearchLocation.TEXTURES_TPA,
+                        SearchLocation.TEXTURES_TPB,
+                        SearchLocation.TEXTURES_TPC,
                         SearchLocation.TEXTURES_GUI,
                     ],
                 )

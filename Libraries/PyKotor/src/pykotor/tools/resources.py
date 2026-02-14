@@ -14,6 +14,7 @@ References:
 
 
 """
+
 from __future__ import annotations
 
 from pathlib import Path
@@ -241,4 +242,3 @@ def convert_texture_format(
         tpc.convert(target_format)
 
     write_tpc(tpc, output_path, file_format=ResourceType.TPC)
-

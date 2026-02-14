@@ -28,10 +28,10 @@ if TYPE_CHECKING:
 
 class WAVStandardWriter(ResourceWriter):
     """Handles writing standard (non-obfuscated) WAV binary data.
-    
+
     This writer produces clean RIFF/WAVE format without KotOR obfuscation headers.
     For MP3 audio data, writes the raw MP3 bytes directly (not wrapped in WAV).
-    
+
     Use this writer when you need playable audio for:
     - Media players
     - Qt audio playback
@@ -59,7 +59,7 @@ class WAVStandardWriter(ResourceWriter):
         if self.wav.audio_format == AudioFormat.MP3:
             self._writer.write_bytes(self.wav.data)
             return
-        
+
         # Calculate sizes for RIFF header
         data_size = len(self.wav.data)
         fmt_chunk_size = 16

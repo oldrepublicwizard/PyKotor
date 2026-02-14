@@ -1,4 +1,5 @@
 """Extract command implementation - extract resources from various archive types."""
+
 from __future__ import annotations
 
 import pathlib
@@ -84,11 +85,7 @@ def _extract_key(key_path: pathlib.Path, output_dir: pathlib.Path, args: Namespa
             key_path,
             output_dir,
             bif_search_dir=key_path.parent,
-            resource_filter=(
-                (lambda r: _matches_filter(r, args.filter))
-                if args.filter
-                else None
-            ),
+            resource_filter=((lambda r: _matches_filter(r, args.filter)) if args.filter else None),
         ):
             if bif_path not in seen_bifs:
                 logger.info(f"Extracting from BIF: {bif_path.name}")  # noqa: G004
@@ -118,11 +115,7 @@ def _extract_bif(bif_path: pathlib.Path, output_dir: pathlib.Path, args: Namespa
             bif_path,
             output_dir,
             key_path=key_path if key_path.exists() else None,
-            resource_filter=(
-                (lambda r: _matches_filter(r, args.filter))
-                if args.filter and key_path.exists()
-                else None
-            ),
+            resource_filter=((lambda r: _matches_filter(r, args.filter)) if args.filter and key_path.exists() else None),
             filter_pattern=args.filter if not (args.filter and key_path.exists()) else None,
         ):
             output_file.parent.mkdir(parents=True, exist_ok=True)
@@ -144,11 +137,7 @@ def _extract_rim(rim_path: pathlib.Path, output_dir: pathlib.Path, args: Namespa
         for resource, output_file in extract_rim(
             rim_path,
             output_dir,
-            resource_filter=(
-                (lambda r: _matches_filter(r, args.filter))
-                if args.filter
-                else None
-            ),
+            resource_filter=((lambda r: _matches_filter(r, args.filter)) if args.filter else None),
         ):
             output_file.parent.mkdir(parents=True, exist_ok=True)
             output_file.write_bytes(resource.data)
@@ -169,11 +158,7 @@ def _extract_erf(erf_path: pathlib.Path, output_dir: pathlib.Path, args: Namespa
         for resource, output_file in extract_erf(
             erf_path,
             output_dir,
-            resource_filter=(
-                (lambda r: _matches_filter(r, args.filter))
-                if args.filter
-                else None
-            ),
+            resource_filter=((lambda r: _matches_filter(r, args.filter)) if args.filter else None),
         ):
             output_file.parent.mkdir(parents=True, exist_ok=True)
             output_file.write_bytes(resource.data)

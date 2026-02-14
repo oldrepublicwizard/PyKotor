@@ -6,66 +6,86 @@ including model manipulation, door handling, creature management, and kit genera
 
 from typing import TYPE_CHECKING
 
+
 # Lazy import to avoid circular dependency
 def __getattr__(name: str):
     if name == "extract_kit":
         from pykotor.tools.kit import extract_kit
+
         return extract_kit
     if name == "find_module_file":
         from pykotor.tools.kit import find_module_file
+
         return find_module_file
     if name == "extract_erf":
         from pykotor.tools.archives import extract_erf
+
         return extract_erf
     if name == "extract_rim":
         from pykotor.tools.archives import extract_rim
+
         return extract_rim
     if name == "extract_bif":
         from pykotor.tools.archives import extract_bif
+
         return extract_bif
     if name == "extract_key_bif":
         from pykotor.tools.archives import extract_key_bif
+
         return extract_key_bif
     if name == "list_erf":
         from pykotor.tools.archives import list_erf
+
         return list_erf
     if name == "list_rim":
         from pykotor.tools.archives import list_rim
+
         return list_rim
     if name == "list_bif":
         from pykotor.tools.archives import list_bif
+
         return list_bif
     if name == "list_key":
         from pykotor.tools.archives import list_key
+
         return list_key
     if name == "matches_filter":
         from pykotor.tools.archives import matches_filter
+
         return matches_filter
     if name == "create_erf_from_directory":
         from pykotor.tools.archives import create_erf_from_directory
+
         return create_erf_from_directory
     if name == "create_rim_from_directory":
         from pykotor.tools.archives import create_rim_from_directory
+
         return create_rim_from_directory
     if name == "create_key_from_directory":
         from pykotor.tools.archives import create_key_from_directory
+
         return create_key_from_directory
     if name == "search_in_erf":
         from pykotor.tools.archives import search_in_erf
+
         return search_in_erf
     if name == "search_in_rim":
         from pykotor.tools.archives import search_in_rim
+
         return search_in_rim
     if name == "get_resource_from_archive":
         from pykotor.tools.archives import get_resource_from_archive
+
         return get_resource_from_archive
     # Format conversions
     if name.startswith("convert_"):
         from pykotor.tools import conversions
+
         return getattr(conversions, name)
     # Script utilities
     if name in ("decompile_ncs_to_nss", "disassemble_ncs", "ncs_to_text"):
         from pykotor.tools import scripts
+
         return getattr(scripts, name)
     # Resource conversions
     if name.startswith("convert_") and name in (
@@ -78,10 +98,12 @@ def __getattr__(name: str):
         "convert_texture_format",
     ):
         from pykotor.tools import resources
+
         return getattr(resources, name)
     # Utility commands
     if name in ("diff_files", "grep_in_file", "get_file_stats", "validate_file"):
         from pykotor.tools import utilities
+
         return getattr(utilities, name)
     # Validation functions
     if name in (
@@ -93,6 +115,7 @@ def __getattr__(name: str):
         "validate_installation",
     ):
         from pykotor.tools import validation
+
         return getattr(validation, name)
     # Patching functions
     if name in (
@@ -113,8 +136,10 @@ def __getattr__(name: str):
         "determine_input_path",
     ):
         from pykotor.tools import patching
+
         return getattr(patching, name)
     raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
+
 
 if TYPE_CHECKING:
     # Type stubs for static analysis - these are lazy-loaded at runtime via __getattr__
@@ -213,6 +238,7 @@ if TYPE_CHECKING:
         restype: Optional[str] = None,
     ) -> Optional[bytes]: ...
 
+
 __all__ = [
     "extract_kit",
     "find_module_file",
@@ -285,4 +311,3 @@ __all__ = [
     "is_kotor_install_dir",
     "determine_input_path",
 ]
-

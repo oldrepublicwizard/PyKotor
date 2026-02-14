@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import math
 
-from copy import copy
 from typing import TYPE_CHECKING, ClassVar, TypeVar
 
 from loggerplus import RobustLogger
@@ -10,7 +9,6 @@ from pykotor.extract.installation import SearchLocation
 from pykotor.gl.glm_compat import eulerAngles, quat
 from pykotor.gl.models.mdl import Boundary
 from pykotor.gl.scene import RenderObject
-from pykotor.resource.generics.git import GIT, GITCamera, GITCreature, GITDoor, GITEncounter, GITPlaceable, GITSound, GITStore, GITTrigger, GITWaypoint
 from pykotor.resource.generics.utd import UTD
 from pykotor.resource.generics.utp import UTP
 from pykotor.resource.generics.uts import UTS
@@ -20,7 +18,7 @@ from utility.common.geometry import Vector3
 if TYPE_CHECKING:
     from pykotor.gl.scene.scene import Scene
     from pykotor.resource.formats.lyt import LYTRoom
-    from pykotor.resource.generics.git import GIT, GITInstance
+    from pykotor.resource.generics.git import GITInstance
 
 T = TypeVar("T")
 SEARCH_ORDER_2DA: list[SearchLocation] = [SearchLocation.OVERRIDE, SearchLocation.CHITIN]
@@ -112,10 +110,10 @@ class SceneCache:
                                 )
                         else:
                             RobustLogger().warning(
-                                f"Door '{door.resref}.utd' references appearance_id {utd.appearance_id} " f"which does not exist in doors.2da. Using default model 'unknown'."
+                                f"Door '{door.resref}.utd' references appearance_id {utd.appearance_id} which does not exist in doors.2da. Using default model 'unknown'."
                             )
                 except (IndexError, KeyError) as e:
-                    RobustLogger().warning(f"Could not get the model name from the UTD '{door.resref}.utd' " f"and/or the doors.2da: {e}. Using default model 'unknown'.")
+                    RobustLogger().warning(f"Could not get the model name from the UTD '{door.resref}.utd' and/or the doors.2da: {e}. Using default model 'unknown'.")
                 except Exception:  # noqa: BLE001
                     RobustLogger().exception(f"Could not get the model name from the UTD '{door.resref}.utd' and/or the appearance.2da")
                 if utd is None:
@@ -155,7 +153,7 @@ class SceneCache:
                             )
                 except (IndexError, KeyError) as e:
                     RobustLogger().warning(
-                        f"Could not get the model name from the UTP '{placeable.resref}.utp' " f"and/or the placeables.2da: {e}. Using default model 'unknown'."
+                        f"Could not get the model name from the UTP '{placeable.resref}.utp' and/or the placeables.2da: {e}. Using default model 'unknown'."
                     )
                 except Exception:  # noqa: BLE001
                     RobustLogger().exception(f"Could not get the model name from the UTP '{placeable.resref}.utp' and/or the appearance.2da")

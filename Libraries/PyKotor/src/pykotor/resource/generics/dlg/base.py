@@ -35,12 +35,12 @@ class DLGConversationType(IntEnum):
 
 class DLG:
     """Stores dialog data.
-    
+
     DLG files are GFF-based format files that store dialog trees with entries, replies,
     links, and conversation metadata. The dialog system uses a graph structure where
     entries (NPC lines) and replies (player options) are connected via links with
     conditional logic.
-    
+
     References:
     ----------
         KotOR I (swkotor.exe):
@@ -91,52 +91,52 @@ class DLG:
     ----------
         starters: "StartingList" field. List of initial dialog links.
             The entry points into the dialog tree.
-        
+
         stunts: "StuntList" field. List of stunt model references.
             Used for special dialog animations.
-        
+
         word_count: "NumWords" field. Word count for dialog.
-        
+
         on_abort: "EndConverAbort" field. Script to run on conversation abort.
-        
+
         on_end: "EndConversation" field. Script to run when conversation ends.
-        
+
         skippable: "Skippable" field. Whether dialog can be skipped.
-        
+
         ambient_track: "AmbientTrack" field. Background music track.
-        
+
         animated_cut: "AnimatedCut" field. Animated cutscene flag.
-        
+
         camera_model: "CameraModel" field. Camera model ResRef.
-        
+
         computer_type: "ComputerType" field. Type of computer interface.
             Values: 0=Modern, 1=Ancient
-        
+
         conversation_type: "ConversationType" field. Type of conversation.
             Values: 0=Human, 1=Computer, 2=Other
-        
+
         old_hit_check: "OldHitCheck" field. Legacy hit check flag.
-        
+
         unequip_hands: "UnequipHItem" field. Unequip hand items flag.
-        
+
         unequip_items: "UnequipItems" field. Unequip all items flag.
-        
+
         vo_id: "VO_ID" field. Voice-over identifier string.
 
         alien_race_owner: "AlienRaceOwner" field. KotOR 2 Only.
             Alien race for dialog processing.
-        
+
         post_proc_owner: "PostProcOwner" field. KotOR 2 Only.
             Post-processing owner ID.
-        
+
         record_no_vo: "RecordNoVO" field. KotOR 2 Only.
             Flag to record without voice-over.
-        
+
         next_node_id: "NextNodeID" field. KotOR 2 Only.
             Next available node ID for new nodes.
 
         delay_entry: "DelayEntry" field. Not used by the game engine.
-        
+
         delay_reply: "DelayReply" field. Not used by the game engine.
     """
 

@@ -17,7 +17,7 @@ from loggerplus import RobustLogger
 from utility.error_handling import format_exception_with_variables
 
 if TYPE_CHECKING:
-    from collections.abc import Callable, Generator
+    from collections.abc import Callable
     from logging import Logger
     from types import ModuleType
 

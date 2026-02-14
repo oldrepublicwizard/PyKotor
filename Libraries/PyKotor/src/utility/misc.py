@@ -140,9 +140,9 @@ def get_system_info() -> dict[str, Any]:
 
         # RAM Information
         svmem = psutil.virtual_memory()
-        info["Total Memory"] = f"{svmem.total / (1024 ** 3):.2f} GB"
-        info["Available Memory"] = f"{svmem.available / (1024 ** 3):.2f} GB"
-        info["Used Memory"] = f"{svmem.used / (1024 ** 3):.2f} GB"
+        info["Total Memory"] = f"{svmem.total / (1024**3):.2f} GB"
+        info["Available Memory"] = f"{svmem.available / (1024**3):.2f} GB"
+        info["Used Memory"] = f"{svmem.used / (1024**3):.2f} GB"
         info["Memory Usage"] = f"{svmem.percent}%"
 
     # GPU Information
@@ -266,7 +266,9 @@ def get_file_attributes(
     }
 
     # Check if file is hidden
-    attributes["is_hidden"] = path.name.startswith(".") or bool(path.stat().st_file_attributes & stat.FILE_ATTRIBUTE_HIDDEN) if hasattr(stat, "FILE_ATTRIBUTE_HIDDEN") else False
+    attributes["is_hidden"] = (
+        path.name.startswith(".") or bool(path.stat().st_file_attributes & stat.FILE_ATTRIBUTE_HIDDEN) if hasattr(stat, "FILE_ATTRIBUTE_HIDDEN") else False
+    )
 
     # Check if file is read-only
     attributes["is_readonly"] = not os.access(path, os.W_OK)

@@ -16,14 +16,14 @@ name = "pykotor-workspace"
 authors = [{ name = "Nick Hugi" }, { name = "th3w1zard1" }]
 maintainers = [{ name = "th3w1zard1", email = "boden.crouch@gmail.com" }]
 dependencies = [
-  "pykotor>=2.2.0"
+  "pykotor>=2.3.0"
 ]
 description = "PyKotor workspace - meta-package for PyKotor ecosystem"
 keywords = ["editor", "holocron", "holopatcher", "kotor", "library", "pykotor", "toolset", "tslpatcher"]
 license = {text = "LGPL-3.0-or-later License"}
 readme = {content-type = "text/markdown", file = "README.md"}
 requires-python = ">=3.8"
-version = "2.2.0"
+version = "2.3.0"
 
 [project.scripts]
 batch_patcher = "batchpatcher.__main__:main"
@@ -68,7 +68,7 @@ keywords = ["editor", "holocron", "holopatcher", "kotor", "library", "pykotor", 
 
 [tool.poetry.dependencies]
 python = "^3.8"
-pykotor = "^2.2.0"
+pykotor = "^2.3.0"
 
 [tool.poetry.scripts]
 batch_patcher = "batchpatcher.__main__:main"

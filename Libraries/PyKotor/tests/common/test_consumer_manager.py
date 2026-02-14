@@ -26,12 +26,12 @@ if UTILITY_PATH.joinpath("utility").exists():
 
 from utility.system.app_process.consumer_manager import ConsumerManager
 
+
 @pytest.mark.skipif(
     os.environ.get("PYKOTOR_RUN_CONSUMER_MANAGER_TESTS", "0") == "0",
-    reason="ConsumerManager tests require complex async/multiprocessing setup - set PYKOTOR_RUN_CONSUMER_MANAGER_TESTS=1 to run"
+    reason="ConsumerManager tests require complex async/multiprocessing setup - set PYKOTOR_RUN_CONSUMER_MANAGER_TESTS=1 to run",
 )
 class TestConsumerManagerMainThreadAsync(unittest.TestCase):
-
     def test_singleton_behavior(self):
         # Ensure only one instance is created
         manager1 = ConsumerManager()
@@ -45,7 +45,6 @@ class TestConsumerManagerMainThreadAsync(unittest.TestCase):
         assert len(self.manager._consumers) == 2, f"Expected 2 consumers, got {len(self.manager._consumers)}"  # noqa: SLF001, PLR2004
         assert not self.manager._is_running, f"Expected _is_running to be False, got {self.manager._is_running}"  # noqa: SLF001
         assert isinstance(self.manager._stop_event, asyncio.Event), f"Expected {asyncio.Event}, got {type(self.manager._stop_event)}"  # noqa: SLF001
-
 
     def test_add_task(self):
         # Add a task and check the task queue
@@ -150,6 +149,7 @@ class TestConsumerManagerMainThreadAsync(unittest.TestCase):
             raise ValueError("Test exception")
 
         self.manager.add_task(faulty_task)
+
         async def run_manager():
             await self.manager.run()
 
@@ -200,6 +200,7 @@ if __name__ == "__main__":
     PYTEST_AVAILABLE = False
     try:
         import pytest
+
         PYTEST_AVAILABLE = not force_disabled
     except ImportError:
         PYTEST_AVAILABLE = False

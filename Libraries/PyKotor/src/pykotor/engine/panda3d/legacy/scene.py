@@ -33,7 +33,6 @@ from pykotor.resource.type import ResourceType
 from pykotor.tools import creature
 
 if TYPE_CHECKING:
-
     from pykotor.common.module import Module, ModuleResource
     from pykotor.extract.installation import Installation
     from pykotor.resource.formats.lyt import LYT
@@ -97,10 +96,13 @@ class KotorRenderer(ShowBase):
         module: Module | None = None,
     ):
         # Enable hardware animation and advanced shaders
-        loadPrcFileData("", """
+        loadPrcFileData(
+            "",
+            """
             hardware-animated-vertices true
             basic-shaders-only false
-        """)
+        """,
+        )
 
         super().__init__()
 
@@ -411,6 +413,8 @@ class KotorRenderer(ShowBase):
                 SearchLocation.CUSTOM_MODULES,
                 SearchLocation.OVERRIDE,
                 SearchLocation.TEXTURES_TPA,
+                SearchLocation.TEXTURES_TPB,
+                SearchLocation.TEXTURES_TPC,
                 SearchLocation.CHITIN,
             ],
             capsules=None if self._module is None else self._module.capsules(),

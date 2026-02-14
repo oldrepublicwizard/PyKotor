@@ -28,11 +28,11 @@ class TestMutableStrStrictTyping:
     def test_attribute_forwarding_uses_getattr(self):
         """Test that __getattr__ uses getattr for forwarding to _content."""
         mutable = WrappedStr("test")
-        
+
         # Access str method through forwarding (uses getattr internally)
         result = mutable.upper()
         assert result == "TEST"
-        
+
         # Access str attribute through forwarding
         assert mutable.__class__.__name__ == "WrappedStr"
 
@@ -46,7 +46,7 @@ class TestMutableStrStrictTyping:
     def test_removeprefix_if_not_available(self):
         """Test removeprefix implementation when str doesn't have it."""
         mutable = WrappedStr("test_string")
-        
+
         # If str has removeprefix, use it; otherwise use custom implementation
         result = mutable.removeprefix("test_")
         assert result == "string" or result == WrappedStr("string")
@@ -54,8 +54,7 @@ class TestMutableStrStrictTyping:
     def test_removesuffix_if_not_available(self):
         """Test removesuffix implementation when str doesn't have it."""
         mutable = WrappedStr("test_string")
-        
+
         # If str has removesuffix, use it; otherwise use custom implementation
         result = mutable.removesuffix("_string")
         assert result == "test" or result == WrappedStr("test")
-

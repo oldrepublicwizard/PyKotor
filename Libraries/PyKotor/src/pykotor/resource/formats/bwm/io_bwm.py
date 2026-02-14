@@ -46,10 +46,10 @@ if TYPE_CHECKING:
 
 class BWMBinaryReader(ResourceReader):
     """Reads BWM/WOK (Walkmesh) files.
-    
+
     Walkmesh files define collision geometry for areas, including walkable surfaces,
     adjacencies, AABB trees for spatial queries, and edge transitions.
-    
+
     References:
     ----------
         Original BioWare engine binaries (from swkotor.exe, swkotor2.exe)
@@ -57,6 +57,7 @@ class BWMBinaryReader(ResourceReader):
 
 
     """
+
     def __init__(
         self,
         source: SOURCE_TYPES,
@@ -324,6 +325,7 @@ class BWMBinaryWriter(ResourceWriter):
             # Create new BWMEdge with correct face reference and transition
             # The edge.index is the local edge index (0, 1, or 2) within the face
             from pykotor.resource.formats.bwm.bwm_data import BWMEdge
+
             new_edge = BWMEdge(faces[face_idx], edge.index, edge.transition)
             edge_index = face_idx * 3 + edge.index
             edge_index_map[edge_index] = new_edge
@@ -346,6 +348,7 @@ class BWMBinaryWriter(ResourceWriter):
                         existing.transition = transition
                     continue
                 from pykotor.resource.formats.bwm.bwm_data import BWMEdge
+
                 new_edge = BWMEdge(face, edge_idx, transition)
                 edge_index_map[edge_index] = new_edge
                 edges.append(new_edge)

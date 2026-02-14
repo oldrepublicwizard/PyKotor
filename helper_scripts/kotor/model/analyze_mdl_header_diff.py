@@ -121,10 +121,10 @@ def main():
         # Find the output files - MDLOps produces *-k1-bin.mdl files
         files_after = list(td_path.iterdir())
         print(f"Files after MDLOps compile: {[f.name for f in files_after]}")
-        
+
         mdlops_mdl_path = td_path / f"{model_name}-ascii-k1-bin.mdl"
         mdlops_mdx_path = td_path / f"{model_name}-ascii-k1-bin.mdx"
-        
+
         if not mdlops_mdl_path.exists():
             print(f"MDLOps compile failed to produce MDL. stderr: {result.stderr.decode()}")
             return

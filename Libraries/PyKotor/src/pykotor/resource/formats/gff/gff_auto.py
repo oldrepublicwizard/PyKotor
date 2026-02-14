@@ -127,15 +127,9 @@ def write_gff(
     """
     if file_format.is_gff():
         GFFBinaryWriter(gff, target).write()
-    elif (
-        file_format.name.endswith("_XML")
-        and file_format.target_type().is_gff()
-    ):
+    elif file_format.name.endswith("_XML") and file_format.target_type().is_gff():
         GFFXMLWriter(gff, target).write()
-    elif (
-        file_format.name.endswith("_JSON")
-        and file_format.target_type().is_gff()
-    ):
+    elif file_format.name.endswith("_JSON") and file_format.target_type().is_gff():
         GFFJSONWriter(gff, target).write()
     else:
         msg = "Unsupported format specified; use GFF, GFF_XML, or GFF_JSON."

@@ -1,4 +1,5 @@
 """Cat command implementation - display resource contents to stdout."""
+
 from __future__ import annotations
 
 import pathlib
@@ -57,4 +58,3 @@ def cmd_cat(args: Namespace, logger: Logger) -> int:
         return 1
     else:
         return 0
-

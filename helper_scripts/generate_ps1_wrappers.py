@@ -67,31 +67,31 @@ def main() -> None:
         target_dirs = [Path(p) for p in sys.argv[1:]]
     else:
         target_dirs = [Path("compile"), Path("scripts")]
-    
+
     generated = 0
     for target_dir in target_dirs:
         if not target_dir.exists():
             continue
-        
+
         for ps1_file in target_dir.rglob("*.ps1"):
             # Skip workflow subdirectory for now (those are complex)
             if "workflow" in ps1_file.parts:
                 continue
-            
+
             # Generate .sh
             sh_file = ps1_file.with_suffix(".sh")
             if not sh_file.exists():
                 sh_file.write_text(generate_sh_wrapper(ps1_file), encoding="utf-8")
                 print(f"Generated: {sh_file}")
                 generated += 1
-            
+
             # Generate .bat
             bat_file = ps1_file.with_suffix(".bat")
             if not bat_file.exists():
                 bat_file.write_text(generate_bat_wrapper(ps1_file), encoding="utf-8")
                 print(f"Generated: {bat_file}")
                 generated += 1
-    
+
     print(f"\nGenerated {generated} wrapper scripts.")
 
 

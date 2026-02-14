@@ -4,6 +4,7 @@
 This module provides an enhanced diff engine that combines structured
 comparison with configurable output formatting.
 """
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING, Callable

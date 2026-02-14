@@ -8,6 +8,7 @@ except ImportError:
     # this error will happen when running from src without the pip package installed.
     import os
     import sys
+
     sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))  # noqa: PTH120, PTH100
     from loggerplus import RobustLogger
 

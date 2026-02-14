@@ -33,29 +33,9 @@ class RobustColumnView(RobustAbstractItemView, QColumnView):
 
         column_menu = menu.addMenu("ColumnView")
 
-        self._add_menu_action(
-            column_menu,
-            "Resize Grips Visible",
-            self.resizeGripsVisible,
-            self.setResizeGripsVisible,
-            "resizeGripsVisible"
-        )
-        self._add_menu_action(
-            column_menu,
-            "Column Widths",
-            self.columnWidths,
-            self.setColumnWidths,
-            "columnWidths",
-            param_type=list
-        )
-        self._add_menu_action(
-            column_menu,
-            "Preview Widget",
-            self.previewWidget,
-            self.setPreviewWidget,
-            "previewWidget",
-            param_type=QWidget
-        )
+        self._add_menu_action(column_menu, "Resize Grips Visible", self.resizeGripsVisible, self.setResizeGripsVisible, "resizeGripsVisible")
+        self._add_menu_action(column_menu, "Column Widths", self.columnWidths, self.setColumnWidths, "columnWidths", param_type=list)
+        self._add_menu_action(column_menu, "Preview Widget", self.previewWidget, self.setPreviewWidget, "previewWidget", param_type=QWidget)
 
         # Actions submenu
         actions_menu = column_menu.addMenu("Actions")
@@ -79,10 +59,12 @@ class RobustColumnView(RobustAbstractItemView, QColumnView):
         if isinstance(column, RobustAbstractItemView):
             column.build_context_menu()
 
+
 if __name__ == "__main__":
     import sys
 
     from qtpy.QtWidgets import QApplication, QVBoxLayout, QWidget
+
     app = QApplication(sys.argv)
     window = QWidget()
     layout = QVBoxLayout()
@@ -94,7 +76,9 @@ if __name__ == "__main__":
     standard_pixmaps = [
         QApplication.style().standardIcon(getattr(QApplication.style().StandardPixmap, attr))
         for attr in dir(QApplication.style().StandardPixmap)
-        if not attr.startswith("_") and attr not in (
+        if not attr.startswith("_")
+        and attr
+        not in (
             "as_integer_ratio",
             "bit_length",
             "conjugate",
@@ -109,13 +93,13 @@ if __name__ == "__main__":
 
     root_item = model.invisibleRootItem()
     for i, icon in enumerate(standard_pixmaps):
-        item = QStandardItem(icon, f"Item {i+1}")
+        item = QStandardItem(icon, f"Item {i + 1}")
         root_item.appendRow(item)
         for j in range(10):
-            child_item = QStandardItem(f"Child {j+1} of Item {i+1}")
+            child_item = QStandardItem(f"Child {j + 1} of Item {i + 1}")
             item.appendRow(child_item)
             for k in range(12):
-                child_item = QStandardItem(f"Child {k+1} of Item {j+1}")
+                child_item = QStandardItem(f"Child {k + 1} of Item {j + 1}")
                 item.appendRow(child_item)
 
     column_view.setModel(model)

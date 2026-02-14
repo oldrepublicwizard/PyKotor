@@ -23,7 +23,6 @@ import tempfile
 import urllib.request
 import zipfile
 from pathlib import Path
-from typing import Literal
 
 # Act version to install if not specified
 DEFAULT_ACT_VERSION = "0.2.67"
@@ -33,7 +32,7 @@ def get_platform_info() -> dict[str, str]:
     """Get platform-specific information."""
     system = platform.system().lower()
     machine = platform.machine().lower()
-    
+
     # Map common machine architectures
     arch_map = {
         "x86_64": "x86_64",
@@ -42,9 +41,9 @@ def get_platform_info() -> dict[str, str]:
         "arm64": "arm64",
         "armv7l": "armv7",
     }
-    
+
     arch = arch_map.get(machine, machine)
-    
+
     return {
         "system": system,
         "machine": machine,
@@ -54,11 +53,11 @@ def get_platform_info() -> dict[str, str]:
 
 def check_command(cmd: str | list[str], check_path: bool = True) -> tuple[bool, str | None]:
     """Check if a command is available.
-    
+
     Args:
         cmd: Command name or list of command parts
         check_path: If True, also check if it's in PATH
-        
+
     Returns:
         Tuple of (is_available, version_output_or_path)
     """
@@ -66,7 +65,7 @@ def check_command(cmd: str | list[str], check_path: bool = True) -> tuple[bool, 
         cmd_list = [cmd, "--version"]
     else:
         cmd_list = cmd + ["--version"]
-    
+
     try:
         result = subprocess.run(
             cmd_list,
@@ -78,7 +77,7 @@ def check_command(cmd: str | list[str], check_path: bool = True) -> tuple[bool, 
             return True, result.stdout.strip()
     except (FileNotFoundError, subprocess.TimeoutExpired):
         pass
-    
+
     # Also check if it's in PATH
     if check_path:
         which_cmd = "where" if platform.system() == "Windows" else "which"
@@ -94,13 +93,13 @@ def check_command(cmd: str | list[str], check_path: bool = True) -> tuple[bool, 
                 return True, path
         except (FileNotFoundError, subprocess.TimeoutExpired):
             pass
-    
+
     return False, None
 
 
 def check_docker() -> tuple[bool, str | None, str]:
     """Check for Docker availability (CLI or Desktop).
-    
+
     Returns:
         Tuple of (is_available, version_or_path, runtime_type)
     """
@@ -118,13 +117,13 @@ def check_docker() -> tuple[bool, str | None, str]:
                 return True, version, "docker"
         except (FileNotFoundError, subprocess.TimeoutExpired):
             pass
-    
+
     return False, None, "none"
 
 
 def check_podman() -> tuple[bool, str | None, str]:
     """Check for Podman availability (CLI or Desktop).
-    
+
     Returns:
         Tuple of (is_available, version_or_path, runtime_type)
     """
@@ -142,16 +141,16 @@ def check_podman() -> tuple[bool, str | None, str]:
                 return True, version, "podman"
         except (FileNotFoundError, subprocess.TimeoutExpired):
             pass
-    
+
     return False, None, "none"
 
 
 def check_container_runtime(prefer_podman: bool = False) -> tuple[bool, str, str | None]:
     """Check for available container runtime (Docker or Podman).
-    
+
     Args:
         prefer_podman: If True, check Podman first
-        
+
     Returns:
         Tuple of (is_available, runtime_type, version_or_path)
     """
@@ -159,7 +158,7 @@ def check_container_runtime(prefer_podman: bool = False) -> tuple[bool, str, str
         podman_available, podman_version, _ = check_podman()
         if podman_available:
             return True, "podman", podman_version
-        
+
         docker_available, docker_version, _ = check_docker()
         if docker_available:
             return True, "docker", docker_version
@@ -167,17 +166,17 @@ def check_container_runtime(prefer_podman: bool = False) -> tuple[bool, str, str
         docker_available, docker_version, _ = check_docker()
         if docker_available:
             return True, "docker", docker_version
-        
+
         podman_available, podman_version, _ = check_podman()
         if podman_available:
             return True, "podman", podman_version
-    
+
     return False, "none", None
 
 
 def check_act() -> tuple[bool, str | None]:
     """Check if act is installed.
-    
+
     Returns:
         Tuple of (is_installed, version_output)
     """
@@ -186,7 +185,7 @@ def check_act() -> tuple[bool, str | None]:
 
 def get_package_manager() -> str | None:
     """Detect available package manager on the system.
-    
+
     Returns:
         Package manager name or None
     """
@@ -195,73 +194,73 @@ def get_package_manager() -> str | None:
         "Linux": ["apt", "yum", "dnf", "pacman", "zypper"],
         "Darwin": ["brew"],
     }
-    
+
     system = platform.system()
     for manager in managers.get(system, []):
         available, _ = check_command(manager, check_path=False)
         if available:
             return manager
-    
+
     return None
 
 
 def install_act_windows(version: str = DEFAULT_ACT_VERSION, install_dir: Path | None = None) -> bool:
     """Install act on Windows via direct download.
-    
+
     Args:
         version: Act version to install
         install_dir: Directory to install act.exe to (defaults to ~/.local/bin)
-        
+
     Returns:
         True if installation succeeded
     """
     if install_dir is None:
         install_dir = Path.home() / ".local" / "bin"
-    
+
     install_dir.mkdir(parents=True, exist_ok=True)
     act_exe_path = install_dir / "act.exe"
-    
+
     # Determine architecture
     platform_info = get_platform_info()
     arch = platform_info["arch"]
-    
+
     # Act uses different naming for Windows
     if arch == "arm64":
         arch_name = "arm64"
     else:
         arch_name = "x86_64"
-    
+
     url = f"https://github.com/nektos/act/releases/download/v{version}/act_Windows_{arch_name}.zip"
-    
+
     print(f"Downloading act from: {url}")
-    
+
     try:
         with tempfile.TemporaryDirectory() as tmpdir:
             zip_path = Path(tmpdir) / "act.zip"
-            
+
             # Download
             with urllib.request.urlopen(url, timeout=60) as response:
                 with open(zip_path, "wb") as f:
                     shutil.copyfileobj(response, f)
             print(f"Downloaded to: {zip_path}")
-            
+
             # Extract
             extract_dir = Path(tmpdir) / "act"
             with zipfile.ZipFile(zip_path, "r") as zip_ref:
                 zip_ref.extractall(extract_dir)
-            
+
             # Find act.exe
             act_exe = next(extract_dir.rglob("act.exe"), None)
             if not act_exe:
                 print("ERROR: act.exe not found in extracted archive")
                 return False
-            
+
             print(f"Found act.exe at: {act_exe}")
-            
+
             # Copy to install directory
             shutil.copy2(act_exe, act_exe_path)
             print(f"Copied to: {act_exe_path}")
-            
+
             # Verify installation
             try:
                 result = subprocess.run(
@@ -271,7 +270,7 @@ def install_act_windows(version: str = DEFAULT_ACT_VERSION, install_dir: Path | 
                     timeout=10,
                 )
                 if result.returncode == 0:
-                    print(f"✓ act installed successfully!")
+                    print("✓ act installed successfully!")
                     print(f"  Version: {result.stdout.strip()}")
                     print(f"  Location: {act_exe_path}")
                     print(f"\n  Note: Add {install_dir} to your PATH if not already present")
@@ -279,34 +278,34 @@ def install_act_windows(version: str = DEFAULT_ACT_VERSION, install_dir: Path | 
             except Exception as e:
                 print(f"WARNING: Installation may have succeeded but verification failed: {e}")
                 return True  # Assume success if file was copied
-            
+
     except Exception as e:
         print(f"ERROR: Failed to install act: {e}")
         return False
-    
+
     return False
 
 
 def install_act_linux(version: str = DEFAULT_ACT_VERSION, install_dir: Path | None = None) -> bool:
     """Install act on Linux via direct download.
-    
+
     Args:
         version: Act version to install
         install_dir: Directory to install act to (defaults to ~/.local/bin)
-        
+
     Returns:
         True if installation succeeded
     """
     if install_dir is None:
         install_dir = Path.home() / ".local" / "bin"
-    
+
     install_dir.mkdir(parents=True, exist_ok=True)
     act_path = install_dir / "act"
-    
+
     # Determine architecture
     platform_info = get_platform_info()
     arch = platform_info["arch"]
-    
+
     # Map Linux architectures to act release names
     arch_map = {
         "x86_64": "x86_64",
@@ -314,44 +313,44 @@ def install_act_linux(version: str = DEFAULT_ACT_VERSION, install_dir: Path | No
         "armv7": "armv7",
     }
     arch_name = arch_map.get(arch, "x86_64")
-    
+
     url = f"https://github.com/nektos/act/releases/download/v{version}/act_Linux_{arch_name}.tar.gz"
-    
+
     print(f"Downloading act from: {url}")
-    
+
     try:
         import tarfile
-        
+
         with tempfile.TemporaryDirectory() as tmpdir:
             tar_path = Path(tmpdir) / "act.tar.gz"
-            
+
             # Download
             with urllib.request.urlopen(url, timeout=60) as response:
                 with open(tar_path, "wb") as f:
                     shutil.copyfileobj(response, f)
             print(f"Downloaded to: {tar_path}")
-            
+
             # Extract
             extract_dir = Path(tmpdir) / "act"
             extract_dir.mkdir()
             with tarfile.open(tar_path, "r:gz") as tar_ref:
                 tar_ref.extractall(extract_dir)
-            
+
             # Find act binary
             act_binary = next(extract_dir.rglob("act"), None)
             if not act_binary:
                 print("ERROR: act binary not found in extracted archive")
                 return False
-            
+
             print(f"Found act at: {act_binary}")
-            
+
             # Copy to install directory
             shutil.copy2(act_binary, act_path)
-            
+
             # Make executable
             os.chmod(act_path, 0o755)
             print(f"Copied to: {act_path}")
-            
+
             # Verify installation
             try:
                 result = subprocess.run(
@@ -361,7 +360,7 @@ def install_act_linux(version: str = DEFAULT_ACT_VERSION, install_dir: Path | No
                     timeout=10,
                 )
                 if result.returncode == 0:
-                    print(f"✓ act installed successfully!")
+                    print("✓ act installed successfully!")
                     print(f"  Version: {result.stdout.strip()}")
                     print(f"  Location: {act_path}")
                     print(f"\n  Note: Add {install_dir} to your PATH if not already present")
@@ -369,81 +368,81 @@ def install_act_linux(version: str = DEFAULT_ACT_VERSION, install_dir: Path | No
             except Exception as e:
                 print(f"WARNING: Installation may have succeeded but verification failed: {e}")
                 return True  # Assume success if file was copied
-            
+
     except ImportError:
         print("ERROR: tarfile module not available (this shouldn't happen)")
         return False
     except Exception as e:
         print(f"ERROR: Failed to install act: {e}")
         return False
-    
+
     return False
 
 
 def install_act_macos(version: str = DEFAULT_ACT_VERSION, install_dir: Path | None = None) -> bool:
     """Install act on macOS via direct download.
-    
+
     Args:
         version: Act version to install
         install_dir: Directory to install act to (defaults to ~/.local/bin)
-        
+
     Returns:
         True if installation succeeded
     """
     if install_dir is None:
         install_dir = Path.home() / ".local" / "bin"
-    
+
     install_dir.mkdir(parents=True, exist_ok=True)
     act_path = install_dir / "act"
-    
+
     # Determine architecture
     platform_info = get_platform_info()
     arch = platform_info["arch"]
-    
+
     # Map macOS architectures
     arch_map = {
         "x86_64": "x86_64",
         "arm64": "arm64",
     }
     arch_name = arch_map.get(arch, "x86_64")
-    
+
     url = f"https://github.com/nektos/act/releases/download/v{version}/act_Darwin_{arch_name}.tar.gz"
-    
+
     print(f"Downloading act from: {url}")
-    
+
     try:
         import tarfile
-        
+
         with tempfile.TemporaryDirectory() as tmpdir:
             tar_path = Path(tmpdir) / "act.tar.gz"
-            
+
             # Download
             with urllib.request.urlopen(url, timeout=60) as response:
                 with open(tar_path, "wb") as f:
                     shutil.copyfileobj(response, f)
             print(f"Downloaded to: {tar_path}")
-            
+
             # Extract
             extract_dir = Path(tmpdir) / "act"
             extract_dir.mkdir()
             with tarfile.open(tar_path, "r:gz") as tar_ref:
                 tar_ref.extractall(extract_dir)
-            
+
             # Find act binary
             act_binary = next(extract_dir.rglob("act"), None)
             if not act_binary:
                 print("ERROR: act binary not found in extracted archive")
                 return False
-            
+
             print(f"Found act at: {act_binary}")
-            
+
             # Copy to install directory
             shutil.copy2(act_binary, act_path)
-            
+
             # Make executable
             os.chmod(act_path, 0o755)
             print(f"Copied to: {act_path}")
-            
+
             # Verify installation
             try:
                 result = subprocess.run(
@@ -453,7 +452,7 @@ def install_act_macos(version: str = DEFAULT_ACT_VERSION, install_dir: Path | No
                     timeout=10,
                 )
                 if result.returncode == 0:
-                    print(f"✓ act installed successfully!")
+                    print("✓ act installed successfully!")
                     print(f"  Version: {result.stdout.strip()}")
                     print(f"  Location: {act_path}")
                     print(f"\n  Note: Add {install_dir} to your PATH if not already present")
@@ -461,29 +460,29 @@ def install_act_macos(version: str = DEFAULT_ACT_VERSION, install_dir: Path | No
             except Exception as e:
                 print(f"WARNING: Installation may have succeeded but verification failed: {e}")
                 return True  # Assume success if file was copied
-            
+
     except ImportError:
         print("ERROR: tarfile module not available (this shouldn't happen)")
         return False
     except Exception as e:
         print(f"ERROR: Failed to install act: {e}")
         return False
-    
+
     return False
 
 
 def install_act(version: str = DEFAULT_ACT_VERSION, install_dir: Path | None = None) -> bool:
     """Install act on the current platform.
-    
+
     Args:
         version: Act version to install
         install_dir: Directory to install act to
-        
+
     Returns:
         True if installation succeeded
     """
     system = platform.system()
-    
+
     if system == "Windows":
         return install_act_windows(version, install_dir)
     elif system == "Linux":
@@ -499,9 +498,9 @@ def print_installation_instructions(platform_info: dict[str, str]) -> None:
     """Print platform-specific installation instructions for act."""
     system = platform_info["system"]
     package_manager = get_package_manager()
-    
+
     print("\nInstallation options for act:")
-    
+
     if system == "Windows":
         print("  On Windows, act can be installed via:")
         if package_manager == "choco":
@@ -518,7 +517,7 @@ def print_installation_instructions(platform_info: dict[str, str]) -> None:
     elif system == "Linux":
         if package_manager:
             if package_manager == "apt":
-                print(f"    - APT: sudo apt install act (if available in your repos)")
+                print("    - APT: sudo apt install act (if available in your repos)")
             elif package_manager == "yum" or package_manager == "dnf":
                 print(f"    - {package_manager.upper()}: sudo {package_manager} install act (if available)")
             elif package_manager == "pacman":
@@ -586,26 +585,26 @@ Examples:
         action="store_true",
         help="Verbose output",
     )
-    
+
     args = parser.parse_args()
-    
+
     platform_info = get_platform_info()
-    
+
     print("Checking for GitHub Actions local workflow support...")
     print(f"Platform: {platform_info['system']} ({platform_info['arch']})")
     print()
-    
+
     # Check act
     act_available, act_version = check_act()
     if act_available:
-        print(f"✓ act is installed")
+        print("✓ act is installed")
         if act_version:
             print(f"  Version: {act_version}")
     else:
         print("✗ act is not installed")
         if not args.check_only:
             print_installation_instructions(platform_info)
-            
+
             if args.install_act:
                 print("\nAttempting to install act...")
                 success = install_act(args.act_version, args.install_dir)
@@ -618,9 +617,9 @@ Examples:
                     return 1
             else:
                 print("\nUse --install-act to automatically install act.")
-    
+
     print()
-    
+
     # Check container runtime
     runtime_available, runtime_type, runtime_version = check_container_runtime(args.prefer_podman)
     if runtime_available:
@@ -634,21 +633,21 @@ Examples:
         print("  - Docker Engine: https://docs.docker.com/engine/install/")
         print("  - Podman Desktop: https://podman-desktop.io/")
         print("  - Podman: https://podman.io/getting-started/installation")
-        
+
         if not act_available:
             return 1
-    
+
     print()
-    
+
     # Summary
     if act_available and runtime_available:
         print("✓ Setup complete! You can now run GitHub Actions workflows locally with act.")
-        print(f"\nExample usage:")
-        print(f"  act -l                    # List workflows")
-        print(f"  act push                  # Run workflow on push event")
-        print(f"  act pull_request          # Run workflow on pull_request event")
+        print("\nExample usage:")
+        print("  act -l                    # List workflows")
+        print("  act push                  # Run workflow on push event")
+        print("  act pull_request          # Run workflow on pull_request event")
         if runtime_type == "podman":
-            print(f"\nNote: Using Podman. You may need to set ACT_EXPERIMENTAL=1")
+            print("\nNote: Using Podman. You may need to set ACT_EXPERIMENTAL=1")
         return 0
     else:
         print("✗ Setup incomplete. Please install missing components above.")
@@ -657,4 +656,3 @@ Examples:
 
 if __name__ == "__main__":
     sys.exit(main())
-

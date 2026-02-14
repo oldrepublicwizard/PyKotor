@@ -22,7 +22,6 @@ from pykotor.tools.reference_cache import StrRefReferenceCache
 
 from pykotor.tslpatcher.diff.engine import (
     diff_data,
-    get_module_root,
     run_differ_from_args_impl,
 )
 from pykotor.tslpatcher.diff.generator import (
@@ -104,10 +103,12 @@ def log_output(*args, **kwargs):
         print(msg, end="")
         return
 
-    # Use logging for other messages
+    # Use logging for other messages (skip INFO in quiet mode)
     import logging
-    logger = logging.getLogger(__name__)
-    if msg.strip():
+
+    output_mode = _global_config.config.output_mode if _global_config.config is not None else "normal"
+    if output_mode != "quiet" and msg.strip():
+        logger = logging.getLogger(__name__)
         logger.info(msg.strip())
 
     if _global_config.config is None:
@@ -208,12 +209,19 @@ def _setup_logging(config: DiffConfig) -> None:
     Args:
         config: diff operations configuration
     """
+    import logging
+
     from pykotor.cli.logger import LogLevel, OutputMode
     from pykotor.diff_tool.logger import setup_logger
 
     log_level = getattr(LogLevel, config.log_level.upper())
     output_mode = getattr(OutputMode, config.output_mode.upper())
     use_colors = config.use_colors
+
+    # In quiet mode, suppress INFO/DEBUG from all pykotor loggers and root
+    if output_mode == OutputMode.QUIET:
+        for logger_name in ("pykotor", "pykotor.diff_tool", "pykotor.tslpatcher", "pykotor.extract", "root"):
+            logging.getLogger(logger_name).setLevel(logging.ERROR)
 
     # Set up output file if specified
     output_file: TextIO | None = None
@@ -299,6 +307,7 @@ def generate_tslpatcher_data(
 
         for tlk_mod in modifications.tlk:
             from pykotor.tslpatcher.diff.analyzers import analyze_tlk_strref_references
+
             try:
                 # Build the tuple expected by new analyze_tlk_strref_references signature.
                 # Here we do not have strref_mappings directly, so pass empty mapping for now.

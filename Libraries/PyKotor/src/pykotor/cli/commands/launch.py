@@ -1,4 +1,5 @@
 """Launch command implementation."""
+
 from __future__ import annotations
 
 import os
@@ -107,6 +108,3 @@ def cmd_launch(args: Namespace, logger: Logger) -> int:
         return 1
 
     return 0
-
-
-

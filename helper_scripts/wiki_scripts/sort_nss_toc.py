@@ -27,28 +27,30 @@ if toc_start is None or toc_end is None:
     print("Could not find TOC section")
     exit(1)
 
-print(f"Found TOC from line {toc_start+1} to {toc_end+1}")
+print(f"Found TOC from line {toc_start + 1} to {toc_end + 1}")
 
 # Extract TOC content
 toc_lines = lines[toc_start:toc_end]
 new_toc_lines = []
 
+
 def get_sort_key(item):
     """Extract sort key from a TOC item line."""
-    match = re.search(r'\[([^\]]+)\]', item)
+    match = re.search(r"\[([^\]]+)\]", item)
     if match:
         text = match.group(1)
         # Remove backslash escapes for sorting
-        text = text.replace('\\_', '_').replace('\\*', '*').replace('\\&', '&')
+        text = text.replace("\\_", "_").replace("\\*", "*").replace("\\&", "&")
         # Convert to lowercase for case-insensitive sorting
         return text.lower()
     return item.lower()
+
 
 i = 0
 section_count = 0
 while i < len(toc_lines):
     line = toc_lines[i]
-    
+
     # Check if this is a section header (starts with "- [" and is NOT indented with 4 spaces)
     # Section headers have 2 spaces of indentation
     if line.strip().startswith("- [") and not line.startswith("    "):
@@ -57,25 +59,25 @@ while i < len(toc_lines):
             # This is a section with sub-items - collect them all
             section_header = line
             sub_items = []
-            
+
             j = i + 1
             while j < len(toc_lines) and toc_lines[j].startswith("    - ["):
                 sub_items.append(toc_lines[j])
                 j += 1
-            
+
             if len(sub_items) > 0:
                 section_count += 1
-            
+
             # Sort sub-items alphabetically by the text between [ and ](
             sub_items_sorted = sorted(sub_items, key=get_sort_key)
-            
+
             # Add header and sorted sub-items
             new_toc_lines.append(section_header)
             new_toc_lines.extend(sub_items_sorted)
-            
+
             i = j
             continue
-    
+
     # Regular line (not a section header with sub-items), just add it
     new_toc_lines.append(line)
     i += 1
@@ -90,4 +92,3 @@ with open(nss_file, "w", encoding="utf-8") as f:
     f.writelines(new_lines)
 
 print("Sorted TOC alphabetically within each section")
-

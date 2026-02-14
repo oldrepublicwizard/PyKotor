@@ -1,4 +1,5 @@
 """Script to create standard GitHub labels for the repository."""
+
 from __future__ import annotations
 
 # Standard labels that should exist in the repository
@@ -13,19 +14,16 @@ LABELS = [
     {"name": "wontfix", "color": "ffffff", "description": "This will not be worked on"},
     {"name": "help wanted", "color": "008672", "description": "Extra attention is needed"},
     {"name": "good first issue", "color": "7057ff", "description": "Good for newcomers"},
-    
     # Status labels
     {"name": "needs-triage", "color": "fbca04", "description": "Needs to be triaged"},
     {"name": "in-progress", "color": "0e8a16", "description": "Work in progress"},
     {"name": "blocked", "color": "b60205", "description": "Blocked by another issue"},
     {"name": "stale", "color": "ededed", "description": "Stale issue or PR"},
-    
     # Priority labels
     {"name": "priority: critical", "color": "b60205", "description": "Critical priority"},
     {"name": "priority: high", "color": "d93f0b", "description": "High priority"},
     {"name": "priority: medium", "color": "fbca04", "description": "Medium priority"},
     {"name": "priority: low", "color": "0e8a16", "description": "Low priority"},
-    
     # Package labels
     {"name": "package: pykotor", "color": "1d76db", "description": "Related to PyKotor core"},
     {"name": "package: pykotorgl", "color": "1d76db", "description": "Related to PyKotorGL"},
@@ -33,7 +31,6 @@ LABELS = [
     {"name": "package: holopatcher", "color": "1d76db", "description": "Related to HoloPatcher"},
     {"name": "package: batchpatcher", "color": "1d76db", "description": "Related to BatchPatcher"},
     {"name": "package: kotordiff", "color": "1d76db", "description": "Related to KotorDiff"},
-    
     # Size labels (for PRs)
     {"name": "size/XS", "color": "3cbf00", "description": "Extra small PR (< 30 lines)"},
     {"name": "size/S", "color": "5d9801", "description": "Small PR (30-100 lines)"},
@@ -41,7 +38,6 @@ LABELS = [
     {"name": "size/L", "color": "a14c05", "description": "Large PR (300-500 lines)"},
     {"name": "size/XL", "color": "c32607", "description": "Extra large PR (500-1000 lines)"},
     {"name": "size/XXL", "color": "e50009", "description": "XXL PR (> 1000 lines)"},
-    
     # Area labels
     {"name": "area: libraries", "color": "c2e0c6", "description": "Related to libraries"},
     {"name": "area: tools", "color": "c2e0c6", "description": "Related to tools"},
@@ -49,7 +45,6 @@ LABELS = [
     {"name": "area: ci/cd", "color": "c2e0c6", "description": "Related to CI/CD"},
     {"name": "area: documentation", "color": "c2e0c6", "description": "Related to documentation"},
     {"name": "area: dependencies", "color": "c2e0c6", "description": "Related to dependencies"},
-    
     # Special labels
     {"name": "security", "color": "b60205", "description": "Security related"},
     {"name": "breaking-change", "color": "b60205", "description": "Breaking change"},
@@ -72,4 +67,3 @@ print("\nLabels to create:")
 print("-" * 50)
 for label in LABELS:
     print(f"  {label['name']:30} {label['color']:8} {label['description']}")
-

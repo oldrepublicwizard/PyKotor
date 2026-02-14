@@ -98,7 +98,6 @@ def LoadCOMFunctionPointers(dialog_type: type[IFileDialog | IFileOpenDialog | IF
     comFuncPtrs.hOle32 = comFuncPtrs.load_library("ole32.dll")
     comFuncPtrs.hShell32 = comFuncPtrs.load_library("shell32.dll")
 
-
     # Get function pointers
     if comFuncPtrs.hOle32:  # sourcery skip: extract-method
         PFN_CoInitialize: type[_FuncPointer] = WINFUNCTYPE(HRESULT, POINTER(dialog_type))
@@ -205,7 +204,7 @@ DEFAULT_FILTERS: list[COMDLG_FILTERSPEC] = [
     COMDLG_FILTERSPEC("Vagrantfiles", "Vagrantfile"),
     COMDLG_FILTERSPEC("Terraform Files", "*.tf"),
     COMDLG_FILTERSPEC("HCL Files", "*.hcl"),
-    COMDLG_FILTERSPEC("Kubernetes YAML Files", "*.yaml;*.yml")
+    COMDLG_FILTERSPEC("Kubernetes YAML Files", "*.yaml;*.yml"),
 ]
 
 
@@ -258,9 +257,7 @@ def configure_file_dialog(  # noqa: PLR0913, PLR0912, C901, PLR0915
                 if differences & flag:
                     set_in_options = bool(set_options & flag)
                     set_in_cur_options = bool(get_options & flag)
-                    differing_flags.append(
-                        f"{flag.name}: SetOptions={'SET' if set_in_options else 'UNSET'}, GetOptions={'SET' if set_in_cur_options else 'UNSET'}"
-                    )
+                    differing_flags.append(f"{flag.name}: SetOptions={'SET' if set_in_options else 'UNSET'}, GetOptions={'SET' if set_in_cur_options else 'UNSET'}")
             return differing_flags
 
         original_dialog_options = file_dialog.GetOptions()
@@ -271,21 +268,15 @@ def configure_file_dialog(  # noqa: PLR0913, PLR0912, C901, PLR0915
         print(f"GetOptions({cur_options})")
 
         assert original_dialog_options != cur_options, (
-            f"SetOptions call was completely ignored by the dialog interface, attempted to set {options}, "
-            f"but retrieved {cur_options} (the original)"
+            f"SetOptions call was completely ignored by the dialog interface, attempted to set {options}, but retrieved {cur_options} (the original)"
         )
-        if (options != cur_options):
+        if options != cur_options:
             differing_flags = get_flag_differences(options, cur_options)
             RobustLogger().warning(f"Differing flags: {', '.join(differing_flags)}")
 
         if not options & FileOpenOptions.FOS_PICKFOLDERS and file_types:
             print("Using custom file filters")
-            filters = (COMDLG_FILTERSPEC * len(file_types))(
-                *[
-                    (c_wchar_p(name), c_wchar_p(spec))
-                    for name, spec in file_types
-                ]
-            )
+            filters = (COMDLG_FILTERSPEC * len(file_types))(*[(c_wchar_p(name), c_wchar_p(spec)) for name, spec in file_types])
             with HandleCOMCall(f"SetFileTypes({len(filters)})") as check:
                 check(file_dialog.SetFileTypes(len(filters), cast_with_ctypes(filters, POINTER(c_void_p))))
 
@@ -307,17 +298,10 @@ def configure_file_dialog(  # noqa: PLR0913, PLR0912, C901, PLR0915
             file_dialog.SetDefaultExtension(default_extension)
 
         if show_file_dialog(file_dialog, hwnd):
-            control_event_handler = next(
-                (interface for interface in dialog_interfaces if isinstance(interface, FileDialogControlEvents)),
-                None
-            )
+            control_event_handler = next((interface for interface in dialog_interfaces if isinstance(interface, FileDialogControlEvents)), None)
             if control_event_handler and control_event_handler.selected_path:
                 return [control_event_handler.selected_path]
-            return (
-                [get_save_file_dialog_results(comFuncs, file_dialog)]
-                if isinstance(file_dialog, IFileSaveDialog)
-                else get_open_file_dialog_results(file_dialog)
-            )
+            return [get_save_file_dialog_results(comFuncs, file_dialog)] if isinstance(file_dialog, IFileSaveDialog) else get_open_file_dialog_results(file_dialog)
 
     finally:
         for cookie in cookies:

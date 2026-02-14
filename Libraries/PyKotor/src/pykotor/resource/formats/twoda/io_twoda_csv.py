@@ -15,10 +15,10 @@ if TYPE_CHECKING:
 
 class TwoDACSVReader(ResourceReader):
     """Reads 2DA files from CSV format.
-    
+
     CSV is a PyKotor-specific convenience format for easier editing in spreadsheet applications.
     Format: First column is row label, remaining columns are headers.
-    
+
     References:
     ----------
         Based on swkotor.exe 2DA structure:
@@ -34,11 +34,12 @@ class TwoDACSVReader(ResourceReader):
           * "CSWClass::LoadFeatTable: Can't load feat.2da" @ 0x0074b3c8
           * "CSWClass::LoadSkillsTable: Can't load skills.2da" @ 0x0074b454
           * "CSWClass::LoadSpellsTable: Can't load spells.2da" @ 0x0074b5c0
-        
+
         Note: CSV format is PyKotor-specific, not a standard game format.
         The engine uses binary 2DA format exclusively. CSV conversion allows easier editing
         in spreadsheet applications.
     """
+
     def __init__(
         self,
         source: SOURCE_TYPES,

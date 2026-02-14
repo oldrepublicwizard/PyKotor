@@ -8,4 +8,3 @@ This package provides:
 - rte_editor: Rich text editor utilities
 - loader_dialog: Loading dialog utilities
 """
-

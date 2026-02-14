@@ -32,11 +32,13 @@ def create_pointer(
         PREVENT_GC.append(pointer_array)
     elif mode is PointerHandlerMode.NUMPY:
         import numpy as np
+
         np_array = np.array([address.value], dtype=np.uintp)
         new_pointer = CPointer(np_array.ctypes.data)
         PREVENT_GC.append(np_array)
     PREVENT_GC.append(new_pointer)
     return new_pointer
+
 
 def follow_pointer(
     address: CPointer | _CData,
@@ -60,13 +62,17 @@ def follow_pointer(
         return CPointer(dereferenced_address)
     if mode is PointerHandlerMode.NUMPY:
         import numpy as np
+
         np_array = np.ctypeslib.as_array((c_uint * 1).from_address(address.value or 0))
         return CPointer(np_array[0])
     raise ValueError("Invalid/unsupported mode")
 
+
 class CPointer(c_void_p):
     """A custom pointer type mirroring ctypes pointer functionality supporting original object return."""
+
     resolve: Callable[..., _CData]
+
     def __init__(self, address: int, *args, reinit: bool = False):
         if not reinit:
             super().__init__(address)
@@ -112,7 +118,6 @@ def adjust_pointer_depth(  # noqa: C901, ANN201
     if not pointer_depth:
         return actual_obj  # pointer_depth of 0 doesn't make sense past this point.
 
-
     actual_obj_type = actual_obj.__class__
     orig_addr = addressof(actual_obj)
 
@@ -122,7 +127,16 @@ def adjust_pointer_depth(  # noqa: C901, ANN201
         cur_depth = 1
         last_ptr = None
         while addressof(current) != orig_addr:
-            print("Resolving to type:", actual_obj_type.__name__, "Address of Current:", hex(addressof(current)), "Current Address:", hex(0 if current.value is None else current.value), "Current Depth Level:", cur_depth)
+            print(
+                "Resolving to type:",
+                actual_obj_type.__name__,
+                "Address of Current:",
+                hex(addressof(current)),
+                "Current Address:",
+                hex(0 if current.value is None else current.value),
+                "Current Depth Level:",
+                cur_depth,
+            )
             last_ptr = current
             current = follow_pointer(current, mode=mode)
             assert isinstance(current, (PointerType, c_void_p)), current.__class__.__name__
@@ -131,6 +145,7 @@ def adjust_pointer_depth(  # noqa: C901, ANN201
                 raise RuntimeError(f"Max pointer depth {max_depth} reached!")
         assert last_ptr is not None
         return cast_with_ctypes(last_ptr, POINTER(actual_obj_type)).contents
+
     CPointer.resolve = resolve
 
     # Initialize pointer storage and pointer
@@ -146,7 +161,7 @@ def adjust_pointer_depth(  # noqa: C901, ANN201
     PREVENT_GC.append(retptr)
 
     deref_obj = current_ptr
-    for _ in range(depth+1):
+    for _ in range(depth + 1):
         deref_obj = follow_pointer(deref_obj, mode=mode)
     deref_addr = addressof(deref_obj)
 
@@ -163,4 +178,4 @@ if __name__ == "__main__":
     print(adjust_pointer_depth(pointer(c_uint(5)), -1))
     print(adjust_pointer_depth(c_uint(5), 5).resolve())
     print(adjust_pointer_depth(pointer(c_uint(5)), 0))
-    #print(adjust_pointer_depth(pointer(c_uint(5)), 1).resolve())  # Seems to only fail in 'run without debugging' mode...
+    # print(adjust_pointer_depth(pointer(c_uint(5)), 1).resolve())  # Seems to only fail in 'run without debugging' mode...

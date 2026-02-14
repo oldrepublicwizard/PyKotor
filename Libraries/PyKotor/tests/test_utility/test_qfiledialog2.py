@@ -148,6 +148,7 @@ class FilterDirModel(QAbstractProxyModel):
 
 class sortProxy(QSortFilterProxyModel):  # noqa: N801
     """Proxy model that sorts directories first, then files, case-insensitive."""
+
     def __init__(self, parent: QWidget | None = None):
         super().__init__(parent)
 
@@ -155,10 +156,10 @@ class sortProxy(QSortFilterProxyModel):  # noqa: N801
         source_model = self.sourceModel()
         if not isinstance(source_model, QFileSystemModel):
             return super().lessThan(left, right)
-        
+
         left_info = source_model.fileInfo(left)
         right_info = source_model.fileInfo(right)
-        
+
         if left_info.isDir() == right_info.isDir():
             return left_info.filePath().lower() < right_info.filePath().lower()
         elif left_info.isDir():
@@ -169,6 +170,7 @@ class sortProxy(QSortFilterProxyModel):  # noqa: N801
 
 class CrashDialog(PythonQFileDialog):
     """Test dialog for crash scenarios with proxy model."""
+
     def __init__(
         self,
         parent: QWidget | None,
@@ -367,24 +369,36 @@ class TestQFileDialog2(unittest.TestCase):
         # defaults
         assert self.open_context_menu(fd), "Failed to open context menu"
         assert fd.selectedFiles() == [ctx.file.fileName()], f"Selected files were not correct, expected: {ctx.file.fileName()}, got: {fd.selectedFiles()}"
-        assert rm.isEnabled() != fd.testOption(self.fd_class.Option.ReadOnly), f"Delete action was not enabled, expected: {not fd.testOption(self.fd_class.Option.ReadOnly)}, got: {rm.isEnabled()}"
-        assert mv.isEnabled() != fd.testOption(self.fd_class.Option.ReadOnly), f"Rename action was not enabled, expected: {not fd.testOption(self.fd_class.Option.ReadOnly)}, got: {mv.isEnabled()}"
+        assert rm.isEnabled() != fd.testOption(self.fd_class.Option.ReadOnly), (
+            f"Delete action was not enabled, expected: {not fd.testOption(self.fd_class.Option.ReadOnly)}, got: {rm.isEnabled()}"
+        )
+        assert mv.isEnabled() != fd.testOption(self.fd_class.Option.ReadOnly), (
+            f"Rename action was not enabled, expected: {not fd.testOption(self.fd_class.Option.ReadOnly)}, got: {mv.isEnabled()}"
+        )
 
         # change to non-defaults:
         fd.setOption(self.fd_class.Option.ReadOnly, not fd.testOption(self.fd_class.Option.ReadOnly))  # noqa: FBT003
 
         assert self.open_context_menu(fd), "Failed to open context menu"
         assert len(fd.selectedFiles()) == 1, f"Selected files were not correct, expected: 1, got: {len(fd.selectedFiles())}"
-        assert rm.isEnabled() != fd.testOption(self.fd_class.Option.ReadOnly), f"Delete action was not enabled, expected: {not fd.testOption(self.fd_class.Option.ReadOnly)}, got: {rm.isEnabled()}"
-        assert mv.isEnabled() != fd.testOption(self.fd_class.Option.ReadOnly), f"Rename action was not enabled, expected: {not fd.testOption(self.fd_class.Option.ReadOnly)}, got: {mv.isEnabled()}"
+        assert rm.isEnabled() != fd.testOption(self.fd_class.Option.ReadOnly), (
+            f"Delete action was not enabled, expected: {not fd.testOption(self.fd_class.Option.ReadOnly)}, got: {rm.isEnabled()}"
+        )
+        assert mv.isEnabled() != fd.testOption(self.fd_class.Option.ReadOnly), (
+            f"Rename action was not enabled, expected: {not fd.testOption(self.fd_class.Option.ReadOnly)}, got: {mv.isEnabled()}"
+        )
 
         # and changed back to defaults:
         fd.setOption(self.fd_class.Option.ReadOnly, not fd.testOption(self.fd_class.Option.ReadOnly))
 
         assert self.open_context_menu(fd), "Failed to open context menu"
         assert len(fd.selectedFiles()) == 1, f"Selected files were not correct, expected: 1, got: {len(fd.selectedFiles())}"
-        assert rm.isEnabled() != fd.testOption(self.fd_class.Option.ReadOnly), f"Delete action was not enabled, expected: {not fd.testOption(self.fd_class.Option.ReadOnly)}, got: {rm.isEnabled()}"
-        assert mv.isEnabled() != fd.testOption(self.fd_class.Option.ReadOnly), f"Rename action was not enabled, expected: {not fd.testOption(self.fd_class.Option.ReadOnly)}, got: {mv.isEnabled()}"
+        assert rm.isEnabled() != fd.testOption(self.fd_class.Option.ReadOnly), (
+            f"Delete action was not enabled, expected: {not fd.testOption(self.fd_class.Option.ReadOnly)}, got: {rm.isEnabled()}"
+        )
+        assert mv.isEnabled() != fd.testOption(self.fd_class.Option.ReadOnly), (
+            f"Rename action was not enabled, expected: {not fd.testOption(self.fd_class.Option.ReadOnly)}, got: {mv.isEnabled()}"
+        )
 
     def test_task178897_minimumSize(self):
         fd: PythonQFileDialog = self.fd_class()
@@ -421,7 +435,9 @@ class TestQFileDialog2(unittest.TestCase):
         model: QFileSystemModel | None = dlg.findChild(QFileSystemModel, "qt_filesystem_model")
         assert model is not None, "File system model was not found with name 'qt_filesystem_model'"
         dlg.setAcceptMode(self.fd_class.AcceptSave)
-        assert model.index(dlg.directory().absolutePath()) == model.index(str(directory)), f"Selected directory was not correct, expected: {directory}, got: {dlg.directory().absolutePath()}"
+        assert model.index(dlg.directory().absolutePath()) == model.index(str(directory)), (
+            f"Selected directory was not correct, expected: {directory}, got: {dlg.directory().absolutePath()}"
+        )
         button_box: QDialogButtonBox | None = dlg.findChild(QDialogButtonBox, "buttonBox")
         button: QPushButton = button_box.button(QDialogButtonBox.StandardButton.Save)
         assert button is not None, "Save button was not found with name 'Save'"
@@ -658,7 +674,9 @@ class TestQFileDialog2(unittest.TestCase):
         assert tree2 is not None, "Tree view was not found with name 'treeView'"
         tree2.setFocus()
 
-        assert tree2.rootIndex().data(QFileSystemModel.Roles.FilePathRole) == current.absolutePath(), f"Root index was not correct, expected: {current.absolutePath()!r}, got: {tree2.rootIndex().data(QFileSystemModel.Roles.FilePathRole)!r}"
+        assert tree2.rootIndex().data(QFileSystemModel.Roles.FilePathRole) == current.absolutePath(), (
+            f"Root index was not correct, expected: {current.absolutePath()!r}, got: {tree2.rootIndex().data(QFileSystemModel.Roles.FilePathRole)!r}"
+        )
 
         button_box2: QDialogButtonBox | None = fd2.findChild(QDialogButtonBox, "buttonBox")
         assert button_box2 is not None, "Button box was not found with name 'buttonBox'"
@@ -666,7 +684,9 @@ class TestQFileDialog2(unittest.TestCase):
         assert button2 is not None, "Open button was not found with name 'Open'"
         fd2.selectFile("g")
         self._qtest.mouseClick(button2, Qt.MouseButton.LeftButton)  # pyright: ignore[reportCallIssue]
-        assert fd2.selectedFiles()[0] == current.absolutePath() + "/g", f"Selected file was not correct, expected: {current.absolutePath() + '/g'!r}, got: {fd2.selectedFiles()[0]!r}"
+        assert fd2.selectedFiles()[0] == current.absolutePath() + "/g", (
+            f"Selected file was not correct, expected: {current.absolutePath() + '/g'!r}, got: {fd2.selectedFiles()[0]!r}"
+        )
 
         fd3 = self.fd_class(None, "This is a third file dialog", tempFile.fileName())
         fd3.restoreState(fd.saveState())
@@ -677,7 +697,9 @@ class TestQFileDialog2(unittest.TestCase):
         assert tree3 is not None, "Tree view was not found with name 'treeView'"
         tree3.setFocus()
 
-        assert tree3.rootIndex().data(QFileSystemModel.Roles.FilePathRole) == current.absolutePath(), f"Root index was not correct, expected: {current.absolutePath()!r}, got: {tree3.rootIndex().data(QFileSystemModel.Roles.FilePathRole)!r}"
+        assert tree3.rootIndex().data(QFileSystemModel.Roles.FilePathRole) == current.absolutePath(), (
+            f"Root index was not correct, expected: {current.absolutePath()!r}, got: {tree3.rootIndex().data(QFileSystemModel.Roles.FilePathRole)!r}"
+        )
 
         button_box3: QDialogButtonBox | None = fd3.findChild(QDialogButtonBox, "buttonBox")
         assert button_box3 is not None, "Button box was not found with name 'buttonBox'"
@@ -750,7 +772,9 @@ class TestQFileDialog2(unittest.TestCase):
 
         model: QFileSystemModel | None = fd.findChild(QFileSystemModel, "qt_filesystem_model")
         assert model is not None, "Model was not found with name 'qt_filesystem_model'"
-        assert model.rowCount(model.index(hiddenSubDir.absolutePath())) == 2, f"Row count was not correct, expected: 2, got: {model.rowCount(model.index(hiddenSubDir.absolutePath()))!r}"
+        assert model.rowCount(model.index(hiddenSubDir.absolutePath())) == 2, (
+            f"Row count was not correct, expected: 2, got: {model.rowCount(model.index(hiddenSubDir.absolutePath()))!r}"
+        )
 
         hiddenSubDir.rmdir("happy2")
         hiddenSubDir.rmdir("happy")
@@ -780,7 +804,9 @@ class TestQFileDialog2(unittest.TestCase):
 
         model: QFileSystemModel | None = fd.findChild(QFileSystemModel, "qt_filesystem_model")
         assert model is not None, "Model was not found with name 'qt_filesystem_model'"
-        assert model.rowCount(model.index(test_sub_dir.absolutePath())) == 0, f"Row count was not correct, expected: 0, got: {model.rowCount(model.index(test_sub_dir.absolutePath()))!r}"
+        assert model.rowCount(model.index(test_sub_dir.absolutePath())) == 0, (
+            f"Row count was not correct, expected: 0, got: {model.rowCount(model.index(test_sub_dir.absolutePath()))!r}"
+        )
         # The remaining part of the original test exercised icon caching and
         # custom sidebar models for invalid URLs; those behaviours are
         # implementation‑specific and can legitimately differ, so we stop after

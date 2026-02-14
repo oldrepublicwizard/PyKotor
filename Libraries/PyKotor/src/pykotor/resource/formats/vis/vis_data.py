@@ -24,7 +24,7 @@ References:
         room_name number_of_child_rooms
 
         Example: "room001 3"
-        
+
     Child Room Lines (indented with 2 spaces):
           child_room_name
           child_room_name
@@ -32,7 +32,7 @@ References:
           room002
           room003
           room004
-    
+
     Format Rules:
         - Parent rooms start at column 0
         - Child rooms are indented with exactly 2 spaces
@@ -55,12 +55,12 @@ if TYPE_CHECKING:
 
 class VIS(ComparableMixin):
     """Represents a VIS (Visibility) file defining room visibility relationships.
-    
+
     VIS files optimize rendering by specifying which rooms are visible from each
     parent room. When the player is in a room, only rooms marked as visible in
     the VIS file are rendered. This prevents rendering rooms that are occluded
     by walls or geometry, improving performance.
-    
+
     References:
     ----------
         Based on swkotor.exe VIS structure:
@@ -70,13 +70,13 @@ class VIS(ComparableMixin):
           * Stores parent-child room relationships
         - "%s/%s.VIS" format string @ 0x007415e8 - VIS file path format
         - ".vis" extension @ 0x00741604 - VIS file extension identifier
-        
+
         Derivations and Other Implementations:
         ----------
         https://github.com/th3w1zard1/KotOR.js/tree/master/src/resource/VISObject.ts:34 (rooms Map)
 
 
-        
+
     Attributes:
     ----------
         _rooms: Set of all room names defined in this VIS file
@@ -84,7 +84,7 @@ class VIS(ComparableMixin):
             Room names are stored lowercase for case-insensitive comparison
             Each room name corresponds to a room model/area in the module
             Used to validate room existence before setting visibility
-            
+
         _visibility: Dictionary mapping observer rooms to sets of visible rooms
             Reference: https://github.com/th3w1zard1/KotOR.js/tree/master/VISObject.ts:99 (currentRoom.rooms array)
             Key: Observer room name (room player is currently in)
@@ -98,12 +98,10 @@ class VIS(ComparableMixin):
     COMPARABLE_FIELDS = ("_visibility",)
 
     def __init__(self):
-        
         # https://github.com/th3w1zard1/KotOR.js/tree/master/src/resource/VISObject.ts:34,118
         # Set of all room names (stored lowercase for case-insensitive comparison)
         self._rooms: set[str] = set()
-        
-        
+
         # https://github.com/th3w1zard1/KotOR.js/tree/master/src/resource/VISObject.ts:99
         # Dictionary: observer room -> set of visible rooms
         # Used for occlusion culling (only render visible rooms)
@@ -115,10 +113,12 @@ class VIS(ComparableMixin):
         return self._rooms == other._rooms and self._visibility == other._visibility
 
     def __hash__(self):
-        return hash((
-            tuple(sorted(self._rooms)),
-            tuple(sorted((k, tuple(sorted(v))) for k, v in self._visibility.items())),
-        ))
+        return hash(
+            (
+                tuple(sorted(self._rooms)),
+                tuple(sorted((k, tuple(sorted(v))) for k, v in self._visibility.items())),
+            )
+        )
 
     def __iter__(self) -> Generator[tuple[str, set[str]], Any, None]:
         for observer, observed in self._visibility.items():

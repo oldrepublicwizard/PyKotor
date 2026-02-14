@@ -20,6 +20,7 @@ class CustomProcessPoolExecutor(Generic[T]):
 
     Use concurrent.futures.ProcessPoolExecutor instead of this implementation.
     """
+
     _shared_state: ClassVar[dict[str, Any]] = {}
 
     def __new__(cls, *args, **kwargs):

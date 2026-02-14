@@ -24,9 +24,7 @@ def main():
             if "doorhookcount" in lower_raw:
                 section: str = lower_raw.split("doorhookcount")[1].split("donelayout")[0]
                 lines: list[str] = [
-                    raw_lwr.strip()
-                    for raw_lwr in section.split("\n")
-                    if raw_lwr.strip() and not raw_lwr.strip().isdigit() and "doorhookcount" not in raw_lwr.lower()
+                    raw_lwr.strip() for raw_lwr in section.split("\n") if raw_lwr.strip() and not raw_lwr.strip().isdigit() and "doorhookcount" not in raw_lwr.lower()
                 ]
 
                 print(f"\n=== {m.upper()} ===")

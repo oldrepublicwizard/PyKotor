@@ -15,10 +15,10 @@ if TYPE_CHECKING:
 
 class TPCBMPWriter(ResourceWriter):
     """Writes TPC textures as BMP (Windows Bitmap) image files.
-    
+
     Converts TPC textures to standard BMP format. Currently only writes the first
     mipmap layer as RGB24 format.
-    
+
     References:
     ----------
         Based on swkotor.exe TPC structure:
@@ -33,14 +33,15 @@ class TPCBMPWriter(ResourceWriter):
         - ReadTextureHeader @ 0x0070ece0, @ 0x00710430, @ 0x00710810 - Reads texture headers
         - CreateProcessedTexture @ 0x00424dd0 - Creates processed texture (1131 bytes, 7 callees)
         - Standard BMP file format specification (Windows Bitmap)
-        
+
         Note: BMP is a standard format, but TPC conversion uses engine's texture loading functions
-    
+
     Missing Features:
     ----------------
         - Only writes first layer/mipmap (TODO: Other layers)
         - No alpha channel support (BMP format limitation)
     """
+
     def __init__(
         self,
         tpc: TPC,

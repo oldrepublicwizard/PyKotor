@@ -25,9 +25,7 @@ from pykotor.resource.type import ResourceType
 k1_path = os.environ.get("K1_PATH", "C:\\Program Files (x86)\\Steam\\steamapps\\common\\swkotor")
 inst = Installation(k1_path)
 
-missing_textures = [
-    "p_carthh01", "plc_chair1", "p_bastillah01", "pheyea", "w_vbroswrd01"
-]
+missing_textures = ["p_carthh01", "plc_chair1", "p_bastillah01", "pheyea", "w_vbroswrd01"]
 
 print("Checking if missing textures are in RIM files or module resources:")
 print("=" * 80)
@@ -71,6 +69,7 @@ for model_resource in module.models():
         model_data = model_resource.data()
         if model_data:
             from pykotor.tools.model import iterate_textures
+
             all_texture_refs.update(iterate_textures(model_data))
     except Exception:
         pass
@@ -80,4 +79,3 @@ for tex in missing_textures:
         print(f"  {tex}: Referenced by models")
     else:
         print(f"  {tex}: NOT referenced by models")
-

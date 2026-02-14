@@ -32,12 +32,15 @@ module = Module("danm13", inst, use_dot_mod=False)
 
 # Missing resources to investigate
 missing_lms = [
-    "m03af_01a_lm13", "m03af_03a_lm13",
+    "m03af_01a_lm13",
+    "m03af_03a_lm13",
     "m03mg_01a_lm13",
-    "m10aa_01a_lm13", "m10ac_28a_lm13",
+    "m10aa_01a_lm13",
+    "m10ac_28a_lm13",
     "m14ab_02a_lm13",
     "m15aa_01a_lm13",
-    "m22aa_03a_lm13", "m22ab_12a_lm13",
+    "m22aa_03a_lm13",
+    "m22ab_12a_lm13",
     "m28ab_19a_lm13",
     "m33ab_01_lm13",
     "m36aa_01_lm13",
@@ -45,10 +48,26 @@ missing_lms = [
 ]
 
 missing_textures = [
-    "h_f_lo01headtest", "i_datapad", "lda_bark04", "lda_flr07", "lda_flr08",
-    "lda_flr11", "lda_grass07", "lda_grate01", "lda_ivy01", "lda_leaf02",
-    "lda_lite01", "lda_rock06", "lda_sky0001", "lda_sky0002", "lda_sky0003",
-    "lda_sky0004", "lda_sky0005", "lda_trim02", "lda_trim03", "lda_trim04",
+    "h_f_lo01headtest",
+    "i_datapad",
+    "lda_bark04",
+    "lda_flr07",
+    "lda_flr08",
+    "lda_flr11",
+    "lda_grass07",
+    "lda_grate01",
+    "lda_ivy01",
+    "lda_leaf02",
+    "lda_lite01",
+    "lda_rock06",
+    "lda_sky0001",
+    "lda_sky0002",
+    "lda_sky0003",
+    "lda_sky0004",
+    "lda_sky0005",
+    "lda_trim02",
+    "lda_trim03",
+    "lda_trim04",
     "lda_unwal07",
 ]
 
@@ -84,6 +103,8 @@ for lm in missing_lms:
             SearchLocation.OVERRIDE,
             SearchLocation.TEXTURES_GUI,
             SearchLocation.TEXTURES_TPA,
+            SearchLocation.TEXTURES_TPB,
+            SearchLocation.TEXTURES_TPC,
             SearchLocation.CHITIN,
         ],
     )
@@ -109,6 +130,8 @@ for tex in missing_textures[:10]:  # Check first 10
             SearchLocation.OVERRIDE,
             SearchLocation.TEXTURES_GUI,
             SearchLocation.TEXTURES_TPA,
+            SearchLocation.TEXTURES_TPB,
+            SearchLocation.TEXTURES_TPC,
             SearchLocation.CHITIN,
         ],
     )
@@ -153,6 +176,8 @@ print("\n4. Checking if resources are in common/shared locations...")
 common_locations = [
     SearchLocation.CHITIN,
     SearchLocation.TEXTURES_TPA,
+    SearchLocation.TEXTURES_TPB,
+    SearchLocation.TEXTURES_TPC,
     SearchLocation.TEXTURES_GUI,
 ]
 

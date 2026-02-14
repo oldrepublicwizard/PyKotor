@@ -81,13 +81,12 @@ def deswizzle(data: bytes | bytearray, width: int, height: int, bytes_per_pixel:
     return deswizzled
 
 
-
 class TPCBinaryReader(ResourceReader):
     """Used to read TPC binary data.
-    
+
     TPC (Texture Pack Container) files store texture data with mipmaps, compression,
     and various texture formats used throughout KotOR.
-    
+
     References:
     ----------
         Based on swkotor.exe TPC structure:
@@ -95,12 +94,13 @@ class TPCBinaryReader(ResourceReader):
         - CResTPC::~CResTPC @ 0x00712ee0 - Destructor for TPC resource
         - GetTPCAttrib @ 0x00712ef0 - Gets TPC texture attributes
         - TPC file format specification
-        
+
         Note: TPC (Texture Pack Container) files store texture data with mipmaps, compression,
         and various texture formats (DXT1, DXT3, DXT5, RGB, RGBA) used throughout KotOR.
 
 
     """
+
     MAX_DIMENSIONS: Literal[0x8000] = 0x8000
     IMG_DATA_START_OFFSET: Literal[0x80] = 0x80
 
@@ -215,8 +215,7 @@ class TPCBinaryReader(ResourceReader):
         full_data_size: int = self._reader.size() - self.IMG_DATA_START_OFFSET
         if full_data_size < (self._layer_count * full_image_data_size):
             msg: str = (
-                f"Insufficient data for image. Expected at least {hex(self._layer_count * full_image_data_size)} bytes,"
-                f" but only {hex(full_data_size)} bytes are available."
+                f"Insufficient data for image. Expected at least {hex(self._layer_count * full_image_data_size)} bytes, but only {hex(full_data_size)} bytes are available."
             )
             raise ValueError(
                 msg,
@@ -310,7 +309,7 @@ class TPCBinaryWriter(ResourceWriter):
     Followed by:
     - Texture data
     - TXI data (optional)
-    
+
     References:
     ----------
         Based on swkotor.exe TPC structure:
@@ -426,10 +425,7 @@ class TPCBinaryWriter(ResourceWriter):
                 current_width = max(1, layer_width >> mipmap_idx)
                 current_height = max(1, layer_height >> mipmap_idx)
 
-                if (
-                    mipmap.width != current_width
-                    or mipmap.height != current_height
-                ):
+                if mipmap.width != current_width or mipmap.height != current_height:
                     raise ValueError(
                         f"Invalid mipmap dimensions at level {mipmap_idx}."  # noqa: E501
                         f" Expected {current_width}x{current_height},"
@@ -437,10 +433,7 @@ class TPCBinaryWriter(ResourceWriter):
                     )
 
                 mipmap_data: bytearray = mipmap.data
-                if (
-                    tpc_format == TPCTextureFormat.BGRA
-                    and (current_width & (current_width - 1)) == 0
-                ):
+                if tpc_format == TPCTextureFormat.BGRA and (current_width & (current_width - 1)) == 0:
                     mipmap_data = swizzle(mipmap_data, current_width, current_height, tpc_format.bytes_per_pixel())
 
                 self._writer.write_bytes(bytes(mipmap_data))

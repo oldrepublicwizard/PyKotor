@@ -57,12 +57,12 @@ if TYPE_CHECKING:
 
 class LIPShape(IntEnum):
     """Represents different mouth shapes (visemes) for lip sync animation.
-    
+
     These shapes correspond to visual phonemes used in lip-sync animation. Each shape
     represents a specific mouth position for speech sounds, based on the Preston Blair
     phoneme series adapted for KotOR's animation system. The game engine interpolates
     between shapes to create smooth lip movement during dialogue.
-    
+
     References:
     ----------
         See module docstring for engine addresses (K1 + TSL TODO). CLIP::LoadLip.
@@ -82,99 +82,99 @@ class LIPShape(IntEnum):
 
             Reference: https://github.com/th3w1zard1/KotOR.js/tree/master/LIPShape.ts:12 (EE = 0, but NEUTRAL typically used)
             Default shape when no speech is occurring
-            
+
         EE = 1: Teeth slightly apart, corners wide (as in "see", "teeth")
             Reference: https://github.com/th3w1zard1/KotOR_IO/tree/master/LIP.cs:127 (ee = 0x0)
             Reference: https://github.com/th3w1zard1/KotOR.js/tree/master/LIPShape.ts:12 (EE = 0)
             Used for long 'e' sounds
-            
+
         EH = 2: Mouth relaxed, slightly open (as in "get", "bet", "red")
             Reference: https://github.com/th3w1zard1/KotOR_IO/tree/master/LIP.cs:129 (eh = 0x1)
             Reference: https://github.com/th3w1zard1/KotOR.js/tree/master/LIPShape.ts:13 (EH = 1)
             Used for short 'e' sounds
-            
+
         AH = 3: Mouth open (as in "father", "bat", "cat")
             Reference: https://github.com/th3w1zard1/KotOR_IO/tree/master/LIP.cs:133 (ah = 0x3)
             Reference: https://github.com/th3w1zard1/KotOR.js/tree/master/LIPShape.ts:15 (AH = 3)
             Used for 'a' sounds
-            
+
         OH = 4: Rounded lips (as in "go", "boat", "or")
             Reference: https://github.com/th3w1zard1/KotOR_IO/tree/master/LIP.cs:135 (oh = 0x4)
             Reference: https://github.com/th3w1zard1/KotOR.js/tree/master/LIPShape.ts:16 (OH = 4)
             Used for 'o' sounds
-            
+
         OOH = 5: Pursed lips (as in "too", "blue", "wheel")
             Reference: https://github.com/th3w1zard1/KotOR_IO/tree/master/LIP.cs:137 (oo = 0x5)
             Reference: https://github.com/th3w1zard1/KotOR.js/tree/master/LIPShape.ts:17 (OOH = 5)
             Used for 'u' and 'w' sounds
-            
+
         Y = 6: Slight smile (as in "yes", "you")
             Reference: https://github.com/th3w1zard1/KotOR_IO/tree/master/LIP.cs:139 (y = 0x6)
             Reference: https://github.com/th3w1zard1/KotOR.js/tree/master/LIPShape.ts:18 (Y = 6)
             Used for 'y' sounds
-            
+
         STS = 7: Teeth together (as in "stop", "sick", "nets")
             Reference: https://github.com/th3w1zard1/KotOR_IO/tree/master/LIP.cs:141 (s = 0x7)
             Reference: https://github.com/th3w1zard1/KotOR.js/tree/master/LIPShape.ts:19 (S = 7)
             Used for 's', 'z', 'ts' sounds
-            
+
         FV = 8: Lower lip touching upper teeth (as in "five", "fish", "very")
             Reference: https://github.com/th3w1zard1/KotOR_IO/tree/master/LIP.cs:143 (f = 0x8)
             Reference: https://github.com/th3w1zard1/KotOR.js/tree/master/LIPShape.ts:20 (FV = 8)
             Used for 'f' and 'v' sounds
-            
+
         NG = 9: Back of tongue up (as in "ring", "nacho", "running")
             Reference: https://github.com/th3w1zard1/KotOR_IO/tree/master/LIP.cs:145 (n = 0x9)
             Reference: https://github.com/th3w1zard1/KotOR.js/tree/master/LIPShape.ts:21 (NNG = 9)
             Used for 'n' and 'ng' sounds
-            
+
         TH = 10: Tongue between teeth (as in "thin", "think", "that")
             Reference: https://github.com/th3w1zard1/KotOR_IO/tree/master/LIP.cs:147 (th = 0xA)
             Reference: https://github.com/th3w1zard1/KotOR.js/tree/master/LIPShape.ts:22 (TH = 10)
             Used for 'th' sounds
-            
+
         MPB = 11: Lips pressed together (as in "bump", "moose", "pop", "book")
             Reference: https://github.com/th3w1zard1/KotOR_IO/tree/master/LIP.cs:149 (m = 0xB)
             Reference: https://github.com/th3w1zard1/KotOR.js/tree/master/LIPShape.ts:23 (MBP = 11)
             Used for 'm', 'p', 'b' sounds
-            
+
         TD = 12: Tongue up (as in "top", "table", "door")
             Reference: https://github.com/th3w1zard1/KotOR_IO/tree/master/LIP.cs:151 (t = 0xC)
             Reference: https://github.com/th3w1zard1/KotOR.js/tree/master/LIPShape.ts:24 (TD = 12)
             Used for 't' and 'd' sounds
-            
+
         SH = 13: Rounded but relaxed (as in "measure", "cheese", "jee")
             Reference: https://github.com/th3w1zard1/KotOR_IO/tree/master/LIP.cs:153 (sh = 0xD)
             Reference: https://github.com/th3w1zard1/KotOR.js/tree/master/LIPShape.ts:25 (SH = 13)
             Used for 'sh', 'ch', 'j', 'zh' sounds
-            
+
         L = 14: Tongue forward (as in "lip", "read")
             Reference: https://github.com/th3w1zard1/KotOR_IO/tree/master/LIP.cs:155 (l = 0xE)
             Reference: https://github.com/th3w1zard1/KotOR.js/tree/master/LIPShape.ts:26 (LR = 14)
             Used for 'l' and 'r' sounds
-            
+
         KG = 15: Back of tongue raised (as in "kick", "green", "key", "he")
             Reference: https://github.com/th3w1zard1/KotOR_IO/tree/master/LIP.cs:157 (k = 0xF)
             Reference: https://github.com/th3w1zard1/KotOR.js/tree/master/LIPShape.ts:27 (KG = 15)
             Used for 'k', 'g', 'h' sounds
     """
-    
-    NEUTRAL = 0    # Neutral/rest position (used for pauses)
-    EE = 1        # Teeth slightly apart, corners wide (as in "see")
-    EH = 2        # Mouth relaxed, slightly open (as in "get")
-    AH = 3        # Mouth open (as in "father")
-    OH = 4        # Rounded lips (as in "go")
-    OOH = 5       # Pursed lips (as in "too")
-    Y = 6         # Slight smile (as in "yes")
-    STS = 7       # Teeth together (as in "stop")
-    FV = 8        # Lower lip touching upper teeth (as in "five")
-    NG = 9        # Back of tongue up (as in "ring")
-    TH = 10       # Tongue between teeth (as in "thin")
-    MPB = 11      # Lips pressed together (as in "bump")
-    TD = 12       # Tongue up (as in "top")
-    SH = 13       # Rounded but relaxed (as in "measure")
-    L = 14        # Tongue forward (as in "lip")
-    KG = 15       # Back of tongue raised (as in "kick")
+
+    NEUTRAL = 0  # Neutral/rest position (used for pauses)
+    EE = 1  # Teeth slightly apart, corners wide (as in "see")
+    EH = 2  # Mouth relaxed, slightly open (as in "get")
+    AH = 3  # Mouth open (as in "father")
+    OH = 4  # Rounded lips (as in "go")
+    OOH = 5  # Pursed lips (as in "too")
+    Y = 6  # Slight smile (as in "yes")
+    STS = 7  # Teeth together (as in "stop")
+    FV = 8  # Lower lip touching upper teeth (as in "five")
+    NG = 9  # Back of tongue up (as in "ring")
+    TH = 10  # Tongue between teeth (as in "thin")
+    MPB = 11  # Lips pressed together (as in "bump")
+    TD = 12  # Tongue up (as in "top")
+    SH = 13  # Rounded but relaxed (as in "measure")
+    L = 14  # Tongue forward (as in "lip")
+    KG = 15  # Back of tongue raised (as in "kick")
 
     @classmethod
     def from_phoneme(cls, phoneme: str) -> LIPShape:
@@ -184,61 +184,59 @@ class LIPShape(IntEnum):
         """
         phoneme = phoneme.upper()
         mapping: dict[str, LIPShape] = {
-            "AA": cls.AH,    # father
-            "AE": cls.AH,    # cat
-            "AH": cls.AH,    # but
-            "AO": cls.OH,    # bought
-            "AW": cls.AH,    # down
-            "AY": cls.AH,    # bite
-            "B": cls.MPB,    # be
-            "CH": cls.SH,    # cheese
-            "D": cls.TD,     # dee
-            "DH": cls.TH,    # thee
-            "EH": cls.EH,    # bet
-            "ER": cls.EH,    # bird
-            "EY": cls.EE,    # bait
-            "F": cls.FV,     # fee
-            "G": cls.KG,     # green
-            "HH": cls.KG,    # he
-            "IH": cls.EE,    # bit
-            "IY": cls.EE,    # beet
-            "JH": cls.SH,    # jee
-            "K": cls.KG,     # key
-            "L": cls.L,      # lee
-            "M": cls.MPB,    # me
-            "N": cls.NG,     # knee
-            "NG": cls.NG,    # ping
-            "OW": cls.OH,    # boat
-            "OY": cls.OH,    # boy
-            "P": cls.MPB,    # pee
-            "R": cls.L,      # read
-            "S": cls.STS,    # sea
-            "SH": cls.SH,    # she
-            "T": cls.TD,     # tea
-            "TH": cls.TH,    # theta
-            "UH": cls.OOH,   # book
-            "UW": cls.OOH,   # boot
-            "V": cls.FV,     # vee
-            "W": cls.OOH,    # we
-            "Y": cls.Y,      # yield
-            "Z": cls.STS,    # zee
-            "ZH": cls.SH,    # seizure
+            "AA": cls.AH,  # father
+            "AE": cls.AH,  # cat
+            "AH": cls.AH,  # but
+            "AO": cls.OH,  # bought
+            "AW": cls.AH,  # down
+            "AY": cls.AH,  # bite
+            "B": cls.MPB,  # be
+            "CH": cls.SH,  # cheese
+            "D": cls.TD,  # dee
+            "DH": cls.TH,  # thee
+            "EH": cls.EH,  # bet
+            "ER": cls.EH,  # bird
+            "EY": cls.EE,  # bait
+            "F": cls.FV,  # fee
+            "G": cls.KG,  # green
+            "HH": cls.KG,  # he
+            "IH": cls.EE,  # bit
+            "IY": cls.EE,  # beet
+            "JH": cls.SH,  # jee
+            "K": cls.KG,  # key
+            "L": cls.L,  # lee
+            "M": cls.MPB,  # me
+            "N": cls.NG,  # knee
+            "NG": cls.NG,  # ping
+            "OW": cls.OH,  # boat
+            "OY": cls.OH,  # boy
+            "P": cls.MPB,  # pee
+            "R": cls.L,  # read
+            "S": cls.STS,  # sea
+            "SH": cls.SH,  # she
+            "T": cls.TD,  # tea
+            "TH": cls.TH,  # theta
+            "UH": cls.OOH,  # book
+            "UW": cls.OOH,  # boot
+            "V": cls.FV,  # vee
+            "W": cls.OOH,  # we
+            "Y": cls.Y,  # yield
+            "Z": cls.STS,  # zee
+            "ZH": cls.SH,  # seizure
             " ": cls.NEUTRAL,  # pause
             "-": cls.NEUTRAL,  # pause
         }
         return mapping.get(phoneme, cls.NEUTRAL)
 
 
-
-
 class LIP(ComparableMixin):
     """Represents a LIP (Lip Sync) file containing mouth animation data.
-    
+
     LIP files synchronize character mouth movements with voice-over audio during dialogue.
     They contain a series of keyframes that specify mouth shapes (visemes) at specific
     timestamps. The game engine interpolates between keyframes to create smooth lip
     animation that matches the spoken dialogue.
-    
+
     References:
     ----------
         See module docstring for engine addresses (K1 + TSL TODO). CLIP::LoadLip, "LIP V1.0", keyframes.
@@ -248,7 +246,7 @@ class LIP(ComparableMixin):
         https://github.com/th3w1zard1/KotOR.js/tree/master/src/resource/LIPObject.ts:23-348
 
 
-        
+
     Attributes:
     ----------
         length: Total duration of lip animation in seconds
@@ -258,7 +256,7 @@ class LIP(ComparableMixin):
             Matches the duration of the associated voice-over WAV file
             Stored as float32 in binary format (4 bytes)
             Used to determine animation playback bounds
-            
+
         frames: List of keyframes defining mouth shapes at specific times
             Reference: https://github.com/th3w1zard1/KotOR_IO/tree/master/LIP.cs:117 (Entries list)
             Reference: https://github.com/th3w1zard1/KotOR.js/tree/master/LIPObject.ts:29 (keyframes array)
@@ -274,13 +272,11 @@ class LIP(ComparableMixin):
     COMPARABLE_SEQUENCE_FIELDS = ("frames",)
 
     def __init__(self) -> None:
-        
         # https://github.com/th3w1zard1/KotOR_IO/tree/master/KotOR_IO/File Formats/LIP.cs:85
         # https://github.com/th3w1zard1/KotOR.js/tree/master/src/resource/LIPObject.ts:32,106
         # Total duration of lip animation (matches voice-over length)
         self.length: float = 0.0
-        
-        
+
         # https://github.com/th3w1zard1/KotOR_IO/tree/master/KotOR_IO/File Formats/LIP.cs:117
         # https://github.com/th3w1zard1/KotOR.js/tree/master/src/resource/LIPObject.ts:29,112-116
         # List of keyframes (timestamp + mouth shape pairs)
@@ -389,7 +385,6 @@ class LIP(ComparableMixin):
                 right_frame = frame
                 break
 
-
         return left_frame.interpolate(right_frame, time)
 
     def get(self, index: int) -> LIPKeyFrame | None:
@@ -414,7 +409,7 @@ class LIP(ComparableMixin):
         Args:
         ----
             time: The time to get the shape for
-        
+
         Returns:
         -------
             The appropriate LIPShape for the given time, or None if no animation exists
@@ -465,15 +460,16 @@ class LIP(ComparableMixin):
 
         return errors
 
+
 @dataclass
 class LIPKeyFrame(ComparableMixin):
     """A single keyframe in a LIP animation sequence.
-    
+
     Each keyframe specifies a mouth shape at a specific timestamp. The game engine
     interpolates between consecutive keyframes to create smooth lip movement during
     dialogue playback. Keyframes are sorted by time to enable efficient lookup and
     interpolation.
-    
+
     References:
     ----------
         See module docstring for engine addresses (K1 + TSL TODO). Keyframe layout (timestamp + shape).
@@ -488,7 +484,7 @@ class LIPKeyFrame(ComparableMixin):
         -------|------|--------|-------------
         0x00   | 4    | float  | Time Stamp (seconds from start of audio)
         0x04   | 1    | uint8  | Shape (mouth shape index, 0-15)
-    
+
     Attributes:
     ----------
         time: Timestamp when this keyframe occurs (seconds from start)
@@ -497,7 +493,7 @@ class LIPKeyFrame(ComparableMixin):
             Stored as float32 in binary format (4 bytes)
             Must be >= 0.0 and <= animation length
             Keyframes should be sorted by time for proper playback
-            
+
         shape: Mouth shape (viseme) for this keyframe
             Reference: https://github.com/th3w1zard1/KotOR_IO/tree/master/LIP.cs:99 (State property, LipState enum)
             Reference: https://github.com/th3w1zard1/KotOR.js/tree/master/LIPObject.ts:115 (readByte for shape)
@@ -506,7 +502,7 @@ class LIPKeyFrame(ComparableMixin):
             Index into character's "talk" animation keyframes
             Game engine uses this to select the appropriate mouth mesh pose
     """
-    
+
     time: float
     shape: LIPShape
     COMPARABLE_FIELDS = ("time", "shape")

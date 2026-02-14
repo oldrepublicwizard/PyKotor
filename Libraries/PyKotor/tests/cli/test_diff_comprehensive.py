@@ -331,7 +331,7 @@ class DiffTestDataHelper:
                     if not module_filename.endswith(".rim"):
                         module_filename = f"{module_filename}.rim"
                     module_archive = RIM()
-                
+
                 # Add all resources to the module archive
                 for res_name, res_data in resources.items():
                     if "." in res_name:
@@ -344,7 +344,7 @@ class DiffTestDataHelper:
                     except KeyError:
                         res_type = ResourceType.ARE
                     module_archive.set_data(res_ref_str, res_type, res_data)
-                
+
                 # Write module file
                 module_path = modules_dir / module_filename
                 if isinstance(module_archive, RIM):
@@ -384,10 +384,10 @@ class DiffTestDataHelper:
                 # Ensure .mod extension
                 if not mod_filename.lower().endswith(".mod"):
                     mod_filename = f"{mod_filename}.mod"
-                
+
                 # Create MOD file (MOD is ERF with MOD type)
                 mod_archive = ERF(erf_type=ERFType.MOD)
-                
+
                 # Add all resources to the MOD file
                 for res_name, res_data in resources.items():
                     if "." in res_name:
@@ -400,7 +400,7 @@ class DiffTestDataHelper:
                     except KeyError:
                         res_type = ResourceType.LIP
                     mod_archive.set_data(res_ref_str, res_type, res_data)
-                
+
                 # Write MOD file
                 mod_path = lips_dir / mod_filename
                 write_erf(mod_archive, mod_path, file_format=ResourceType.MOD)
@@ -498,7 +498,7 @@ class DiffTestDataHelper:
             # Add at least 3 entries (0, 1, 2) to support common stringref tests
             dialog_tlk = TLK(language=Language.ENGLISH)
             dialogf_tlk = TLK(language=Language.ENGLISH)
-            
+
             # Add entries for common stringrefs used in tests
             dialog_tlk.add("", "")  # StrRef 0
             dialog_tlk.add("", "")  # StrRef 1
@@ -506,7 +506,7 @@ class DiffTestDataHelper:
             dialogf_tlk.add("", "")  # StrRef 0
             dialogf_tlk.add("", "")  # StrRef 1
             dialogf_tlk.add("ERROR: FATAL COMPILER ERROR", "")  # StrRef 2
-            
+
             tlk_path = install_path / "dialog.tlk"
             dialogf_path = install_path / "dialogf.tlk"
             write_tlk(dialog_tlk, tlk_path)
@@ -740,7 +740,7 @@ class TestDiffFolderVsFolder:
 
 class TestDiffInstallationVsInstallation:
     """Tests for installation vs installation comparisons.
-    
+
     NOTE: Full installation testing requires complete game files (dialog.tlk, etc.)
     which are not available in unit tests. These tests are designed to verify
     the behavior with mock installations where possible.
@@ -750,15 +750,15 @@ class TestDiffInstallationVsInstallation:
         """Test that installations are properly detected by chitin.key."""
         install_dir = tmp_path / "test_install"
         install_dir.mkdir()
-        
+
         # Without chitin.key, should be detected as folder
         assert _detect_path_type(install_dir) == "folder"
-        
+
         # Create valid KEY file
         key = KEY()
         key_path = install_dir / "chitin.key"
         write_key(key, key_path)
-        
+
         # Now should be detected as installation
         assert _detect_path_type(install_dir) == "installation"
 
@@ -779,24 +779,24 @@ class TestDiffFileVsInstallation:
         """Test detection of different path types in a test environment."""
         test_dir = tmp_path / "test_paths"
         test_dir.mkdir()
-        
+
         # Create a file
         file_path = test_dir / "test.txt"
         file_path.write_text("test content")
         assert _detect_path_type(file_path) == "file"
-        
+
         # Create a folder
         folder_path = test_dir / "folder"
         folder_path.mkdir()
         assert _detect_path_type(folder_path) == "folder"
-        
+
         # Create an installation
         install_path = test_dir / "install"
         install_path.mkdir()
         key = KEY()
         write_key(key, install_path / "chitin.key")
         assert _detect_path_type(install_path) == "installation"
-        
+
         # Verify they're all different
         assert _detect_path_type(file_path) != _detect_path_type(folder_path)
         assert _detect_path_type(folder_path) != _detect_path_type(install_path)

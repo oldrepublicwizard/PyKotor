@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 """Debug script to decode node headers from MDL files."""
+
 from __future__ import annotations
 
 import struct

@@ -1,4 +1,5 @@
 """Install command implementation."""
+
 from __future__ import annotations
 
 import os
@@ -158,6 +159,3 @@ def cmd_install(args: Namespace, logger: Logger) -> int:
 
     logger.info("Installation complete")
     return 0
-
-
-

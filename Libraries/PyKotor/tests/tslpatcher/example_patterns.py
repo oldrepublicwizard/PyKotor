@@ -464,7 +464,7 @@ if __name__ == "__main__":
     print("\nThis file contains example patterns for common TSLPatcher scenarios.")
     print("Import the pattern strings in your code or use as reference documentation.")
     print("\nAvailable patterns:")
-    
+
     patterns = [
         ("PATTERN_ADDROW_BASIC", "Simple 2DA row addition"),
         ("PATTERN_ADDROW_WITH_MEMORY", "AddRow with 2DAMEMORY storage"),
@@ -484,13 +484,12 @@ if __name__ == "__main__":
         ("REAL_WORLD_BASTILA_BATTLE_MEDITATION", "Complete: Bastila spell mod"),
         ("REAL_WORLD_DM_QRTS_QUARTERSTAFF", "Complete: Quarterstaff weapon mod"),
     ]
-    
+
     for i, (name, description) in enumerate(patterns, 1):
         print(f"{i:2}. {description:45} -> {name}")
-    
+
     print("\nExample usage:")
     print("  from example_patterns import PATTERN_ADDROW_WITH_MEMORY")
     print("  print(PATTERN_ADDROW_WITH_MEMORY)")
-    
-    print("\nSee test_diff_comprehensive.py for executable tests of these patterns.")
 
+    print("\nSee test_diff_comprehensive.py for executable tests of these patterns.")

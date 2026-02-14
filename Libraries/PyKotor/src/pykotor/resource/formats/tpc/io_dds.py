@@ -111,7 +111,7 @@ class TPCDDSReader(ResourceReader):
     def _detect_format(self, fmt: _DDSPixelFormat) -> tuple[TPCTextureFormat, _DDSDataLayout]:
         """Map DDS pixel format to TPCTextureFormat and data layout.
 
-        Mirrors 
+        Mirrors
         """
         data_layout = _DDSDataLayout.DIRECT
 
@@ -463,12 +463,8 @@ class TPCDDSWriter(ResourceWriter):
                 mipmap = layer.mipmaps[mip_index]
                 expected_w, expected_h = max(1, mm_width), max(1, mm_height)
                 if mipmap.width != expected_w or mipmap.height != expected_h:
-                    raise ValueError(
-                        f"Mipmap {mip_index} dimensions mismatch: expected {expected_w}x{expected_h}, "
-                        f"found {mipmap.width}x{mipmap.height}"
-                    )
+                    raise ValueError(f"Mipmap {mip_index} dimensions mismatch: expected {expected_w}x{expected_h}, found {mipmap.width}x{mipmap.height}")
                 payload = self._convert_mipmap_payload(mipmap, target_format)
                 self._writer.write_bytes(payload)
                 mm_width >>= 1
                 mm_height >>= 1
-

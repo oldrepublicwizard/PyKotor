@@ -202,9 +202,7 @@ class LinuxFileDialogHelper(QFileDialogPlatformHelper):
         if self._options.acceptMode() == AcceptMode.AcceptOpen:
             dialog = Gtk.FileChooserDialog(
                 title="Open File",
-                action=Gtk.FileChooserAction.OPEN
-                if self._options.fileMode() != FileMode.Directory
-                else Gtk.FileChooserAction.SELECT_FOLDER,
+                action=Gtk.FileChooserAction.OPEN if self._options.fileMode() != FileMode.Directory else Gtk.FileChooserAction.SELECT_FOLDER,
             )
             dialog.add_button(Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL)
             dialog.add_button(Gtk.STOCK_OPEN, Gtk.ResponseType.OK)

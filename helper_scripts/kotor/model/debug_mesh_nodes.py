@@ -58,15 +58,17 @@ def parse_mesh_nodes(mdl_bytes: bytes, game: Game) -> list[dict]:
                 trimesh = _TrimeshHeader().read(reader, game)
                 # Validate trimesh data
                 if trimesh.vertex_count < 10000 and trimesh.mdx_data_size < 1000:
-                    nodes.append({
-                        "node_id": node_hdr.node_id,
-                        "type": "skin" if is_skin else "mesh",
-                        "vertex_count": trimesh.vertex_count,
-                        "mdx_data_offset": trimesh.mdx_data_offset,
-                        "mdx_data_size": trimesh.mdx_data_size,
-                        "mdx_data_bitmap": trimesh.mdx_data_bitmap,
-                        "texture1": trimesh.texture1 or "NULL",
-                    })
+                    nodes.append(
+                        {
+                            "node_id": node_hdr.node_id,
+                            "type": "skin" if is_skin else "mesh",
+                            "vertex_count": trimesh.vertex_count,
+                            "mdx_data_offset": trimesh.mdx_data_offset,
+                            "mdx_data_size": trimesh.mdx_data_size,
+                            "mdx_data_bitmap": trimesh.mdx_data_bitmap,
+                            "texture1": trimesh.texture1 or "NULL",
+                        }
+                    )
             except OSError:
                 pass  # Ignore OOB reads
 
@@ -104,12 +106,12 @@ def main() -> None:
     print("ORIGINAL MDL mesh nodes:")
     print("=" * 80)
     orig_nodes = parse_mesh_nodes(orig_mdl, Game.K1)
-    
+
     print(f"Found {len(orig_nodes)} mesh nodes")
     print()
     print(f"{'ID':>3} {'Tex':<12} {'Type':<5} {'Verts':>6} {'Row':>5} {'Bitmap':>12} {'MDX Off':>10} {'MDX Bytes':>10}")
     print("-" * 80)
-    
+
     total_mdx_orig = 0
     for n in sorted(orig_nodes, key=lambda x: x["node_id"]):
         mdx_bytes = n["vertex_count"] * n["mdx_data_size"]
@@ -168,7 +170,7 @@ def main() -> None:
     # Calculate total MDX data per source
     pk_total = sum(n["vertex_count"] * n["mdx_data_size"] for n in pk_nodes)
     mo_total = sum(n["vertex_count"] * n["mdx_data_size"] for n in mo_nodes)
-    print(f"Total MDX data from mesh headers:")
+    print("Total MDX data from mesh headers:")
     print(f"  PyKotor: {pk_total} bytes")
     print(f"  MDLOps:  {mo_total} bytes")
     print(f"  Difference: {pk_total - mo_total:+d} bytes")
@@ -191,7 +193,7 @@ def main() -> None:
                 issues.append("bitmap")
             if pk["vertex_count"] != mo["vertex_count"]:
                 issues.append(f"verts {pk['vertex_count']}!={mo['vertex_count']}")
-            
+
             if issues:
                 mismatch_count += 1
                 print(
@@ -206,7 +208,7 @@ def main() -> None:
         elif mo:
             mismatch_count += 1
             print(f"{node_id:>3} {mo['texture1'][:12]:<12}  ONLY in MDLOps")
-    
+
     if mismatch_count == 0:
         print("  (No mismatches - all nodes match)")
     print()
@@ -215,4 +217,3 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
-

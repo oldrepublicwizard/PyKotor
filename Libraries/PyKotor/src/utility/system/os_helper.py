@@ -75,13 +75,12 @@ def get_app_dir() -> Path:
 def is_frozen() -> bool:
     # Check for sys attributes - legitimate use of getattr for optional runtime attributes
     return (
-        getattr(sys, "frozen", False)
-        or getattr(sys, "_MEIPASS", False)
+        getattr(sys, "frozen", False) or getattr(sys, "_MEIPASS", False)
         # or tempfile.gettempdir() in sys.executable  # Not sure any frozen implementations use this (PyInstaller/py2exe). Re-enable if we find one that does.
     )
 
 
-def requires_admin(path: os.PathLike | str) -> bool:    # pragma: no cover
+def requires_admin(path: os.PathLike | str) -> bool:  # pragma: no cover
     """Check if a dir or a file requires admin permissions for read/write."""
     path_obj = Path(path)
     isdir_check = path_obj.is_dir()
@@ -129,12 +128,7 @@ def dir_requires_admin(
         remove_any(dummy_filepath, ignore_errors=True, missing_ok=True)
 
 
-def remove_any(
-    path: os.PathLike | str,
-    *,
-    ignore_errors: bool = True,
-    missing_ok: bool = True
-):
+def remove_any(path: os.PathLike | str, *, ignore_errors: bool = True, missing_ok: bool = True):
     path_obj = Path(path)
     isdir_func = Path.is_dir
     isfile_func = Path.exists
@@ -142,6 +136,7 @@ def remove_any(
         if missing_ok:
             return
         import errno
+
         raise FileNotFoundError(errno.ENOENT, os.strerror(errno.ENOENT), str(path_obj))
 
     def _remove_any(x: Path):

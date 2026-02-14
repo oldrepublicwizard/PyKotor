@@ -149,18 +149,18 @@ def _resolve_resource_with_priority(
 
 def _get_component_name_mapping(kit_id: str | None, model_names: list[str]) -> dict[str, str]:
     """Generate a mapping from model names to friendly component IDs.
-    
+
     Args:
     ----
         kit_id: Optional kit identifier (e.g., "sithbase")
         model_names: List of model names to map
-        
+
     Returns:
     -------
         Dictionary mapping model names (lowercase) to component IDs
     """
     mapping: dict[str, str] = {}
-    
+
     # Kit-specific mappings for known kits
     if kit_id == "sithbase":
         # Map tar_m09aa model names to expected component IDs
@@ -170,7 +170,7 @@ def _get_component_name_mapping(kit_id: str | None, model_names: list[str]) -> d
         # The test expects these specific components to exist, so we prioritize them
         sithbase_mapping = {
             "m09aa_01a": "armory_1",
-            "m09aa_02a": "barracks_1", 
+            "m09aa_02a": "barracks_1",
             "m09aa_03a": "control_1",
             "m09aa_05a": "control_2",
             "m09aa_06a": "hall_1",
@@ -201,7 +201,7 @@ def _get_component_name_mapping(kit_id: str | None, model_names: list[str]) -> d
                 else:
                     clean_name = f"component_{model_lower}"
                 mapping[model_lower] = clean_name
-    
+
     # Default: use model names as-is (sanitized)
     if not mapping:
         for model_name in model_names:
@@ -219,7 +219,7 @@ def _get_component_name_mapping(kit_id: str | None, model_names: list[str]) -> d
                         # Remove module prefix (e.g., "m09aa" from "m09aa_01a")
                         clean_name = parts[1]
             mapping[model_lower] = clean_name
-    
+
     return mapping
 
 
@@ -574,7 +574,7 @@ def extract_kit(
         component_resource_identifiers.append(ResourceIdentifier(resname=room_model, restype=ResourceType.MDL))
         component_resource_identifiers.append(ResourceIdentifier(resname=room_model, restype=ResourceType.MDX))
         component_resource_identifiers.append(ResourceIdentifier(resname=room_model, restype=ResourceType.WOK))
-    
+
     # Batch lookup all component resources
     component_locations: dict[ResourceIdentifier, list[LocationResult]] = {}
     if component_resource_identifiers:
@@ -593,7 +593,7 @@ def extract_kit(
                     loc_list,
                     key=lambda loc: get_resource_priority(loc, installation),
                 )
-    
+
     for room_model in lyt_room_model_names:
         room_model_lower = room_model.lower()
 
@@ -602,11 +602,11 @@ def extract_kit(
         mdl_ident = ResourceIdentifier(resname=room_model, restype=ResourceType.MDL)
         mdx_ident = ResourceIdentifier(resname=room_model, restype=ResourceType.MDX)
         wok_ident = ResourceIdentifier(resname=room_model, restype=ResourceType.WOK)
-        
+
         mdl_data = None
         mdx_data_raw = None
         wok_data = None
-        
+
         # Resolve MDL
         mdl_location_list = component_locations.get(mdl_ident, [])
         if mdl_location_list:
@@ -618,7 +618,7 @@ def extract_kit(
                     mdl_data = f.read(mdl_location.size)
             except Exception:  # noqa: BLE001
                 pass
-        
+
         # Resolve MDX
         mdx_location_list = component_locations.get(mdx_ident, [])
         if mdx_location_list:
@@ -630,7 +630,7 @@ def extract_kit(
                     mdx_data_raw = f.read(mdx_location.size)
             except Exception:  # noqa: BLE001
                 pass
-        
+
         # Resolve WOK
         wok_location_list = component_locations.get(wok_ident, [])
         if wok_location_list:
@@ -722,7 +722,7 @@ def extract_kit(
 
     # Map component model names to friendly component IDs
     component_name_mapping = _get_component_name_mapping(kit_id, list(components.keys()))
-    
+
     # Create new components dict with mapped names
     mapped_components: dict[str, dict[str, bytes]] = {}
     for model_name, component_data in components.items():
@@ -731,7 +731,7 @@ def extract_kit(
         mapped_components[mapped_id] = component_data
         if mapped_id != model_lower:
             logger.debug(f"Mapped component '{model_name}' -> '{mapped_id}'")
-    
+
     # Replace components with mapped versions
     components = mapped_components
 
@@ -799,8 +799,10 @@ def extract_kit(
         [
             SearchLocation.OVERRIDE,
             SearchLocation.MODULES,  # Check modules (.mod/.rim) before texture packs
-            SearchLocation.TEXTURES_GUI,
             SearchLocation.TEXTURES_TPA,
+            SearchLocation.TEXTURES_TPB,
+            SearchLocation.TEXTURES_TPC,
+            SearchLocation.TEXTURES_GUI,
             SearchLocation.CHITIN,
         ],
     )
@@ -830,8 +832,10 @@ def extract_kit(
         [
             SearchLocation.OVERRIDE,
             SearchLocation.MODULES,  # Check modules (.mod/.rim) before texture packs
-            SearchLocation.TEXTURES_GUI,
             SearchLocation.TEXTURES_TPA,
+            SearchLocation.TEXTURES_TPB,
+            SearchLocation.TEXTURES_TPC,
+            SearchLocation.TEXTURES_GUI,
             SearchLocation.CHITIN,
         ],
     )
@@ -849,7 +853,7 @@ def extract_kit(
     # Group by location file to minimize file I/O operations
     texture_extraction_queue: list[tuple[str, bool, ResourceIdentifier, LocationResult]] = []
     lightmap_extraction_queue: list[tuple[str, bool, ResourceIdentifier, LocationResult]] = []
-    
+
     # Build extraction queues with location information
     for name in all_texture_names:
         name_lower = name.lower()
@@ -863,7 +867,7 @@ def extract_kit(
                 if loc_list:
                     texture_extraction_queue.append((name, False, res_ident, loc_list[0]))
                     break
-    
+
     for name in all_lightmap_names:
         name_lower = name.lower()
         if name_lower in lightmaps:
@@ -876,12 +880,12 @@ def extract_kit(
                 if loc_list:
                     lightmap_extraction_queue.append((name, True, res_ident, loc_list[0]))
                     break
-    
+
     # Process TPC files in batches grouped by file to minimize I/O
     # Group by filepath to read multiple resources from the same file in one pass
     tpc_files: dict[Path, list[tuple[str, bool, LocationResult]]] = {}
     tga_files: dict[Path, list[tuple[str, bool, LocationResult]]] = {}
-    
+
     for name, is_lightmap, res_ident, location in texture_extraction_queue + lightmap_extraction_queue:
         if res_ident.restype == ResourceType.TPC:
             if location.filepath not in tpc_files:
@@ -891,7 +895,7 @@ def extract_kit(
             if location.filepath not in tga_files:
                 tga_files[location.filepath] = []
             tga_files[location.filepath].append((name, is_lightmap, location))
-    
+
     # Process TPC files in batches
     for filepath, items in tpc_files.items():
         with filepath.open("rb") as f:
@@ -899,10 +903,10 @@ def extract_kit(
                 name_lower = name.lower()
                 target_dict = lightmaps if is_lightmap else textures
                 target_txis_dict = lightmap_txis if is_lightmap else texture_txis
-                
+
                 if name_lower in target_dict:
                     continue  # Already extracted
-                
+
                 try:
                     f.seek(location.offset)
                     tpc_data = f.read(location.size)
@@ -915,32 +919,32 @@ def extract_kit(
                         target_txis_dict[name_lower] = tpc.txi.encode("ascii", errors="ignore")
                 except Exception:  # noqa: BLE001
                     continue
-    
+
     # Process TGA files in batches
     for filepath, items in tga_files.items():
         with filepath.open("rb") as f:
             for name, is_lightmap, location in items:
                 name_lower = name.lower()
                 target_dict = lightmaps if is_lightmap else textures
-                
+
                 if name_lower in target_dict:
                     continue  # Already extracted
-                
+
                 try:
                     f.seek(location.offset)
                     target_dict[name_lower] = f.read(location.size)
                 except Exception:  # noqa: BLE001
                     continue
-    
+
     # Batch extract TXI files grouped by filepath to minimize I/O
     # Group TXI files by filepath for batch reading
     txi_files: dict[Path, list[tuple[str, bool, LocationResult]]] = {}
-    
+
     # Collect all TXI files that need to be extracted
     texture_name_map: dict[str, str] = {}  # Map lowercase -> original case
     for orig_name in all_texture_names:
         texture_name_map[orig_name.lower()] = orig_name
-    
+
     for name in all_texture_names:
         name_lower = name.lower()
         if name_lower in textures and name_lower not in texture_txis:
@@ -952,7 +956,7 @@ def extract_kit(
                     if txi_location.filepath not in txi_files:
                         txi_files[txi_location.filepath] = []
                     txi_files[txi_location.filepath].append((name_lower, False, txi_location))
-    
+
     for name in all_lightmap_names:
         name_lower = name.lower()
         if name_lower in lightmaps and name_lower not in lightmap_txis:
@@ -964,7 +968,7 @@ def extract_kit(
                     if txi_location.filepath not in txi_files:
                         txi_files[txi_location.filepath] = []
                     txi_files[txi_location.filepath].append((name_lower, True, txi_location))
-    
+
     # Process TXI files in batches
     for filepath, items in txi_files.items():
         with filepath.open("rb") as f:
@@ -977,13 +981,13 @@ def extract_kit(
                     target_txis_dict[name_lower] = f.read(location.size)
                 except Exception:  # noqa: BLE001
                     pass
-    
+
     # Create empty TXI placeholders for textures/lightmaps that don't have TXI files
     # This matches the expected kit structure where textures have corresponding TXI files
     for texture_name_lower in textures.keys():
         if texture_name_lower not in texture_txis:
             texture_txis[texture_name_lower] = b""
-    
+
     for lightmap_name_lower in lightmaps.keys():
         if lightmap_name_lower not in lightmap_txis:
             lightmap_txis[lightmap_name_lower] = b""
@@ -1064,7 +1068,7 @@ def extract_kit(
     genericdoors_2da_for_dwk = door_tools.load_genericdoors_2da(installation, logger)
     door_model_names: list[str] = []
     door_model_map: dict[str, str] = {}  # model_name -> door_name
-    
+
     # Get all door model names first
     for door_name, door_data in doors.items():
         try:
@@ -1076,7 +1080,7 @@ def extract_kit(
                     door_model_map[door_model_name] = door_name
         except Exception:  # noqa: BLE001
             continue
-    
+
     # Batch lookup all DWK files (3 states per door: 0, 1, 2)
     dwk_identifiers: list[ResourceIdentifier] = []
     dwk_model_map: dict[ResourceIdentifier, tuple[str, str]] = {}  # identifier -> (model_name, door_name)
@@ -1086,7 +1090,7 @@ def extract_kit(
             dwk_ident = ResourceIdentifier(resname=dwk_resname, restype=ResourceType.DWK)
             dwk_identifiers.append(dwk_ident)
             dwk_model_map[dwk_ident] = (model_name, door_model_map[model_name])
-    
+
     dwk_locations: dict[ResourceIdentifier, list[LocationResult]] = {}
     if dwk_identifiers:
         dwk_locations = installation.locations(
@@ -1097,7 +1101,7 @@ def extract_kit(
                 SearchLocation.CHITIN,
             ],
         )
-    
+
     # Extract DWK files using batched results
     for door_name, door_data in doors.items():
         door_walkmeshes[door_name] = {}
@@ -1108,13 +1112,13 @@ def extract_kit(
             door_model_name = door_tools.get_model(utd, installation, genericdoors=genericdoors_2da_for_dwk)
             if not door_model_name:
                 continue
-            
+
             # Try module first (fastest), then fall back to batched installation locations
             for suffix in ["0", "1", "2"]:
                 dwk_key = f"dwk{suffix}"
                 dwk_resname = f"{door_model_name}{suffix}"
                 dwk_found = False
-                
+
                 # Try module first
                 if module is not None:
                     dwk_resource = module.resource(resname=dwk_resname, restype=ResourceType.DWK)
@@ -1124,7 +1128,7 @@ def extract_kit(
                             door_walkmeshes[door_name][dwk_key] = dwk_data
                             logger.debug(f"Found DWK '{dwk_resname}' (state: {dwk_key}) from module")
                             dwk_found = True
-                
+
                 # Try batched installation locations if not found in module
                 if not dwk_found:
                     dwk_ident = ResourceIdentifier(resname=dwk_resname, restype=ResourceType.DWK)
@@ -1146,19 +1150,20 @@ def extract_kit(
     #
     # Format: <modelname>.pwk
     from pykotor.tools import placeable as placeable_tools
-    
+
     # Load placeables.2da once for all placeables (performance optimization)
     placeables_2da = placeable_tools.load_placeables_2da(installation, logger)
-    
+
     # First, try to get all placeable model names and batch PWK lookups
     # This avoids calling installation.locations() individually for each placeable
     placeable_model_names: list[str] = []
     placeable_model_map: dict[str, str] = {}  # model_name -> placeable_name
-    
+
     for placeable_name, placeable_data in placeables.items():
         try:
             from pykotor.resource.generics.utp import read_utp
             from pykotor.tools.placeable import get_model
+
             utp = read_utp(placeable_data)
             if placeables_2da:
                 placeable_model_name = get_model(utp, installation, placeables=placeables_2da)
@@ -1167,7 +1172,7 @@ def extract_kit(
                     placeable_model_map[placeable_model_name] = placeable_name
         except Exception:  # noqa: BLE001
             continue
-    
+
     # Batch lookup all PWK files at once
     pwk_identifiers = [ResourceIdentifier(resname=model_name, restype=ResourceType.PWK) for model_name in placeable_model_names]
     pwk_locations: dict[ResourceIdentifier, list[LocationResult]] = {}
@@ -1180,19 +1185,20 @@ def extract_kit(
                 SearchLocation.CHITIN,
             ],
         )
-    
+
     # Extract PWK files using batched results
     for placeable_name, placeable_data in placeables.items():
         try:
             from pykotor.resource.generics.utp import read_utp
             from pykotor.tools.placeable import get_model
+
             utp = read_utp(placeable_data)
             if not placeables_2da:
                 continue
             placeable_model_name = get_model(utp, installation, placeables=placeables_2da)
             if not placeable_model_name:
                 continue
-            
+
             # Try module first (fastest)
             if module is not None:
                 pwk_resource = module.resource(resname=placeable_model_name, restype=ResourceType.PWK)
@@ -1202,7 +1208,7 @@ def extract_kit(
                         placeable_walkmeshes[placeable_model_name] = pwk_data
                         logger.debug(f"Found PWK '{placeable_model_name}' for placeable '{placeable_name}' from module")
                         continue
-            
+
             # Try batched installation locations
             pwk_ident = ResourceIdentifier(resname=placeable_model_name, restype=ResourceType.PWK)
             pwk_loc_list = pwk_locations.get(pwk_ident, [])
@@ -1224,11 +1230,11 @@ def extract_kit(
     # This matches the expected kit format from the examples
     # Ensure kit_dir exists before writing door files (in case no components/textures were written)
     kit_dir.mkdir(parents=True, exist_ok=True)
-    
+
     # Load genericdoors.2da once for all doors (major performance optimization)
     # This avoids reloading the same file for each door
     genericdoors_2da = door_tools.load_genericdoors_2da(installation, logger)
-    
+
     door_list: list[dict] = []
     for door_idx, (door_name, door_data) in enumerate(doors.items()):
         # Use simple identifier: door0, door1, door2, etc.
@@ -1262,7 +1268,7 @@ def extract_kit(
         # This avoids 2+ seconds per door for texture/model extraction
         door_width = 2.0
         door_height = 3.0
-        
+
         door_list.append(
             {
                 "utd_k1": f"{door_id}_k1",

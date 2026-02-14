@@ -36,6 +36,7 @@ class WrappedStr(str):
         return (self.__class__, (self._content,))
 
     if not TYPE_CHECKING:  # Prevents pylance in vs code from bringing us here in 'go to definition'
+
         def __getattribute__(self, name: str):
             try:
                 return super().__getattribute__(name)
@@ -49,6 +50,7 @@ class WrappedStr(str):
     # region Forwards Compatibility
     # Check if str has __reduce_ex__ - legitimate runtime check for optional builtin method
     if not hasattr(str, "__reduce_ex__"):
+
         def __reduce_ex__(self, protocol: int):
             if protocol >= 2:  # Protocol version 2 or higher uses a more efficient pickling format  # noqa: PLR2004
                 return (self.__class__, (str(self),), None, None, None)
@@ -70,6 +72,7 @@ class WrappedStr(str):
 
     # Check if str has removeprefix - legitimate runtime check for optional builtin method
     if not hasattr(str, "removeprefix"):
+
         def removeprefix(
             self,
             __prefix: WrappedStr | str,
@@ -81,6 +84,7 @@ class WrappedStr(str):
 
     # Check if str has removesuffix - legitimate runtime check for optional builtin method
     if not hasattr(str, "removesuffix"):
+
         def removesuffix(
             self,
             __suffix: WrappedStr | str,
@@ -89,6 +93,8 @@ class WrappedStr(str):
             if self._content.endswith(parsed_suffix):
                 return self.__class__(self._content[: -len(parsed_suffix)])
             return self.__class__(self._content)
+
     def __getstate__(self) -> str:
         return self._content
+
     # endregion

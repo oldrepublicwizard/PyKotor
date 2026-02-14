@@ -1,4 +1,5 @@
 """Test door dimension extraction for a single door."""
+
 import os
 import sys
 
@@ -111,6 +112,7 @@ try:
 except Exception as e:
     print(f"  ERROR: {e}")
     import traceback
+
     traceback.print_exc()
     sys.exit(1)
 
@@ -126,6 +128,7 @@ try:
 except Exception as e:
     print(f"  ERROR: {e}")
     import traceback
+
     traceback.print_exc()
     sys.exit(1)
 
@@ -170,16 +173,15 @@ if bb_min.x < 1000000:
     width = abs(bb_max.y - bb_min.y)
     height = abs(bb_max.z - bb_min.z)
     depth = abs(bb_max.x - bb_min.x)
-    
+
     print("\nCalculated dimensions:")
     print(f"  Width (Y): {width:.3f}")
     print(f"  Height (Z): {height:.3f}")
     print(f"  Depth (X): {depth:.3f}")
-    
+
     if 0.1 < width < 50.0 and 0.1 < height < 50.0:
         print(f"\nSUCCESS: Valid dimensions: {width:.2f} x {height:.2f}")
     else:
         print("\nWARNING: Dimensions out of range")
 else:
     print("\nERROR: Invalid bounding box")
-

@@ -27,6 +27,7 @@ if not TYPE_CHECKING:
     _Pointer = POINTER(c_uint).__class__
     T = TypeVar("T")
 
+
 class COMInitializeContext(Generic[T]):
     def __init__(self):
         self._should_uninitialize: bool = False
@@ -128,6 +129,7 @@ def comtypes2pywin(
     """
     import comtypes  # pyright: ignore[reportMissingTypeStubs, reportMissingModuleSource]
     import pythoncom
+
     if interface is None:
         interface = comtypes.IUnknown
     # ripped from
@@ -148,6 +150,7 @@ def register_idispatch_object(
     interface: type[comtypes.IUnknown] | None = None,
 ) -> PyIBindCtx:
     import pythoncom
+
     ctx = pythoncom.CreateBindCtx()
     py_data = comtypes2pywin(com_object, interface)
     ctx.RegisterObjectParam(name, py_data)
@@ -159,33 +162,38 @@ if __name__ == "__main__":
     import comtypes  # pyright: ignore[reportMissingTypeStubs]
 
     from win32com.shell import shell  # pyright: ignore[reportMissingModuleSource]
+
     IID_IFileSystemBindData = GUID("{01e18d10-4d8b-11d2-855d-006008059367}")
+
     class IFileSystemBindData(comtypes.IUnknown):
         """The IFileSystemBindData interface
         https://learn.microsoft.com/en-us/windows/win32/api/shobjidl_core/nn-shobjidl_core-ifilesystembinddata.
         """
+
         _iid_ = IID_IFileSystemBindData
         _methods_: ClassVar[list[_ComMemberSpec]] = [
-            comtypes.COMMETHOD([], HRESULT, "SetFindData",
-                    (["in"], POINTER(WIN32_FIND_DATAW), "pfd")),
-            comtypes.COMMETHOD([], HRESULT, "GetFindData",
-                    (["out"], POINTER(WIN32_FIND_DATAW), "pfd"))
+            comtypes.COMMETHOD([], HRESULT, "SetFindData", (["in"], POINTER(WIN32_FIND_DATAW), "pfd")),
+            comtypes.COMMETHOD([], HRESULT, "GetFindData", (["out"], POINTER(WIN32_FIND_DATAW), "pfd")),
         ]
+
     class FileSystemBindData(comtypes.COMObject):
         """Implements the IFileSystemBindData interface:
         https://learn.microsoft.com/en-us/windows/win32/api/shobjidl_core/nn-shobjidl_core-ifilesystembinddata.
         """
+
         _com_interfaces_: Sequence[type[comtypes.IUnknown]] = [IFileSystemBindData]
+
         def IFileSystemBindData_SetFindData(self: Self, this: Self, pfd: _Pointer | _CArgObject) -> HRESULT:
             self.pfd: _Pointer = pfd  # pyright: ignore[reportAttributeAccessIssue]
             return S_OK
+
         def IFileSystemBindData_GetFindData(self: Self, this: Self, pfd: _Pointer | _CArgObject) -> HRESULT:
             return S_OK
+
     find_data = WIN32_FIND_DATAW()  # from wintypes
     bind_data: FileSystemBindData = FileSystemBindData()  # pyright: ignore[reportAssignmentType]
     bind_data.IFileSystemBindData_SetFindData(bind_data, byref(find_data))
     ctx = register_idispatch_object(bind_data, "File System Bind Data")
 
-    item = shell.SHCreateItemFromParsingName(
-        fspath(r"Z:\blah\blah"), ctx, shell.IID_IShellItem2)
+    item = shell.SHCreateItemFromParsingName(fspath(r"Z:\blah\blah"), ctx, shell.IID_IShellItem2)
     print(item.GetDisplayName(SIGDN.SIGDN_DESKTOPABSOLUTEPARSING))  # prints Z:\blah\blah

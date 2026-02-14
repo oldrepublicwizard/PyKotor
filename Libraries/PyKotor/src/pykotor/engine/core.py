@@ -69,4 +69,3 @@ class KotorEngine:
     def request_exit(self) -> None:
         """Request shutdown of the engine."""
         self._state = EngineState(game_path=self._state.game_path, exit_requested=True)
-

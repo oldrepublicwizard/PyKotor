@@ -40,8 +40,8 @@ class TestTalkTable(unittest.TestCase):
         from pykotor.resource.type import ResourceType
 
         # Convert XML to binary TLK and save to temp file
-        tlk = read_tlk(TEST_TLK_XML.encode('utf-8'), file_format=ResourceType.TLK_XML)
-        with tempfile.NamedTemporaryFile(mode='wb', suffix='.tlk', delete=False) as tmp:
+        tlk = read_tlk(TEST_TLK_XML.encode("utf-8"), file_format=ResourceType.TLK_XML)
+        with tempfile.NamedTemporaryFile(mode="wb", suffix=".tlk", delete=False) as tmp:
             tmp_path = tmp.name
 
         write_tlk(tlk, tmp_path, ResourceType.TLK)
@@ -59,8 +59,8 @@ class TestTalkTable(unittest.TestCase):
         from pykotor.resource.type import ResourceType
 
         # Convert XML to binary TLK and save to temp file
-        tlk = read_tlk(TEST_TLK_XML.encode('utf-8'), file_format=ResourceType.TLK_XML)
-        with tempfile.NamedTemporaryFile(mode='wb', suffix='.tlk', delete=False) as tmp:
+        tlk = read_tlk(TEST_TLK_XML.encode("utf-8"), file_format=ResourceType.TLK_XML)
+        with tempfile.NamedTemporaryFile(mode="wb", suffix=".tlk", delete=False) as tmp:
             tmp_path = tmp.name
 
         write_tlk(tlk, tmp_path, ResourceType.TLK)
@@ -82,8 +82,8 @@ class TestTalkTable(unittest.TestCase):
         from pykotor.resource.type import ResourceType
 
         # Convert XML to binary TLK and save to temp file
-        tlk = read_tlk(TEST_TLK_XML.encode('utf-8'), file_format=ResourceType.TLK_XML)
-        with tempfile.NamedTemporaryFile(mode='wb', suffix='.tlk', delete=False) as tmp:
+        tlk = read_tlk(TEST_TLK_XML.encode("utf-8"), file_format=ResourceType.TLK_XML)
+        with tempfile.NamedTemporaryFile(mode="wb", suffix=".tlk", delete=False) as tmp:
             tmp_path = tmp.name
 
         write_tlk(tlk, tmp_path, ResourceType.TLK)
@@ -105,8 +105,8 @@ class TestTalkTable(unittest.TestCase):
         from pykotor.resource.type import ResourceType
 
         # Convert XML to binary TLK and save to temp file
-        tlk = read_tlk(TEST_TLK_XML.encode('utf-8'), file_format=ResourceType.TLK_XML)
-        with tempfile.NamedTemporaryFile(mode='wb', suffix='.tlk', delete=False) as tmp:
+        tlk = read_tlk(TEST_TLK_XML.encode("utf-8"), file_format=ResourceType.TLK_XML)
+        with tempfile.NamedTemporaryFile(mode="wb", suffix=".tlk", delete=False) as tmp:
             tmp_path = tmp.name
 
         write_tlk(tlk, tmp_path, ResourceType.TLK)
@@ -128,8 +128,8 @@ class TestTalkTable(unittest.TestCase):
         from pykotor.resource.type import ResourceType
 
         # Convert XML to binary TLK and save to temp file
-        tlk = read_tlk(TEST_TLK_XML.encode('utf-8'), file_format=ResourceType.TLK_XML)
-        with tempfile.NamedTemporaryFile(mode='wb', suffix='.tlk', delete=False) as tmp:
+        tlk = read_tlk(TEST_TLK_XML.encode("utf-8"), file_format=ResourceType.TLK_XML)
+        with tempfile.NamedTemporaryFile(mode="wb", suffix=".tlk", delete=False) as tmp:
             tmp_path = tmp.name
 
         write_tlk(tlk, tmp_path, ResourceType.TLK)

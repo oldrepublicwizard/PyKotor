@@ -22,15 +22,16 @@ if TYPE_CHECKING:
 
 class LIPXMLReader(ResourceReader):
     """Reads LIP files from XML format.
-    
+
     XML is a human-readable format for easier editing of lip-sync animation data.
-    
+
     References:
     ----------
         See lip_data module docstring for engine addresses (K1 + TSL TODO).
 
         Note: XML format structure may vary between tools
     """
+
     def __init__(
         self,
         source: SOURCE_TYPES,

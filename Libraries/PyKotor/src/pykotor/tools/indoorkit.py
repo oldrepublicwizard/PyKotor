@@ -101,8 +101,8 @@ def load_kits(path: "os.PathLike | str") -> list[Kit]:
                     kit.top_padding[door_id][padding_size] = MDLMDXTuple(mdl, mdx)
 
         for door_json in kit_json.get("doors", []):
-            utd_k1 = read_utd(kits_path / kit_id / f'{door_json["utd_k1"]}.utd')
-            utd_k2 = read_utd(kits_path / kit_id / f'{door_json["utd_k2"]}.utd')
+            utd_k1 = read_utd(kits_path / kit_id / f"{door_json['utd_k1']}.utd")
+            utd_k2 = read_utd(kits_path / kit_id / f"{door_json['utd_k2']}.utd")
             door = KitDoor(utd_k1, utd_k2, door_json["width"], door_json["height"])
             kit.doors.append(door)
 
@@ -223,8 +223,8 @@ def load_kits_with_missing_files(
 
         for door_json in kit_json_raw.get("doors", []):
             try:
-                utd_k1_path = kits_path / kit_id / f'{door_json["utd_k1"]}.utd'
-                utd_k2_path = kits_path / kit_id / f'{door_json["utd_k2"]}.utd'
+                utd_k1_path = kits_path / kit_id / f"{door_json['utd_k1']}.utd"
+                utd_k2_path = kits_path / kit_id / f"{door_json['utd_k2']}.utd"
                 utd_k1 = read_utd(utd_k1_path)
                 utd_k2 = read_utd(utd_k2_path)
             except FileNotFoundError as e:
@@ -274,5 +274,3 @@ def load_kits_with_missing_files(
         kits.append(kit)
 
     return kits, missing_files
-
-

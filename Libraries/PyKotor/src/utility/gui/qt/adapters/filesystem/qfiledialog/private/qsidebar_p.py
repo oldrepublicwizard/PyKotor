@@ -93,7 +93,7 @@ class QUrlModel(QStandardItemModel):
 
     def __del__(self):
         """Cleanup connections on destruction, matching C++ destructor behavior."""
-        if hasattr(self, 'modelConnections'):
+        if hasattr(self, "modelConnections"):
             for conn in self.modelConnections:
                 if conn is not None:
                     try:
@@ -238,7 +238,7 @@ class QUrlModel(QStandardItemModel):
             # Match C++: QIcon newIcon = qvariant_cast<QIcon>(dirIndex.data(Qt::DecorationRole));
             decoration_data = dirIndex.data(Qt.ItemDataRole.DecorationRole)
             newIcon = cast("QIcon", decoration_data) if decoration_data is not None else None
-            
+
             if not dirIndex.isValid():
                 # Match C++: const QAbstractFileIconProvider *provider = fileSystemModel->iconProvider();
                 provider: QAbstractFileIconProvider | None = self.fileSystemModel.iconProvider()
@@ -289,6 +289,7 @@ class QUrlModel(QStandardItemModel):
             # An empty QIcon has cacheKey 0. The comparison happens regardless of whether newIcon is empty.
             # In Python, we need to handle None (which represents empty QIcon in our context)
             from qtpy.QtGui import QIcon as QtQIcon
+
             # Get cache keys: None/empty icons have cacheKey 0
             new_icon_cache_key = newIcon.cacheKey() if newIcon is not None and not newIcon.isNull() else 0
             old_icon_cache_key = oldIcon.cacheKey() if oldIcon is not None and not oldIcon.isNull() else 0
@@ -398,7 +399,7 @@ class QUrlModel(QStandardItemModel):
             return
         if self.fileSystemModel is not None:
             # Disconnect all previous connections
-            if hasattr(self, 'modelConnections'):
+            if hasattr(self, "modelConnections"):
                 for conn in self.modelConnections:
                     if conn is not None:
                         try:
@@ -505,7 +506,7 @@ class QSidebar(QListView):
 
     def addUrls(self, urls: list[QUrl], row: int) -> None:
         """Add URLs to the sidebar at the specified row.
-        
+
         Matches C++ inline implementation: urlModel->addUrls(list, row)
         The move parameter defaults to True in QUrlModel.addUrls.
         """
@@ -549,9 +550,7 @@ class QSidebar(QListView):
         sidebar_model: QAbstractItemModel | None = self.model()
         if sidebar_model is None:
             return QListView.sizeHint(self)
-        return self.sizeHintForIndex(sidebar_model.index(0, 0)) + QSize(
-            2 * self.frameWidth(), 2 * self.frameWidth()
-        )
+        return self.sizeHintForIndex(sidebar_model.index(0, 0)) + QSize(2 * self.frameWidth(), 2 * self.frameWidth())
 
     def selectUrl(self, url: QUrl) -> None:
         """Select URL in sidebar. Matches C++ QSidebar::selectUrl() implementation."""
@@ -581,10 +580,7 @@ class QSidebar(QListView):
                 self.goToUrl.emit(url)
                 # Match C++: selectionModel()->setCurrentIndex(model()->index(i, 0), QItemSelectionModel::SelectCurrent);
                 if sel_model is not None:
-                    sel_model.setCurrentIndex(
-                        sidebar_model.index(i, 0),
-                        QItemSelectionModel.SelectionFlag.SelectCurrent
-                    )
+                    sel_model.setCurrentIndex(sidebar_model.index(i, 0), QItemSelectionModel.SelectionFlag.SelectCurrent)
                 # Match C++: break;
                 break
         # Match C++: connect(selectionModel(), &QItemSelectionModel::currentChanged, this, &QSidebar::clicked);
@@ -600,6 +596,7 @@ class QSidebar(QListView):
             # Match C++: QAction *action = new QAction(QFileDialog::tr("Remove"), this);
             # Import QFileDialog to use its tr() method, matching C++ QFileDialog::tr()
             from utility.gui.qt.adapters.filesystem.qfiledialog.qfiledialog import QFileDialog as PythonQFileDialog
+
             action = QAction(PythonQFileDialog.tr("Remove"), self)
             # Match C++: if (indexAt(position).data(QUrlModel::UrlRole).toUrl().path().isEmpty()) action->setEnabled(false);
             url_data = self.indexAt(position).data(QUrlModel.UrlRole)

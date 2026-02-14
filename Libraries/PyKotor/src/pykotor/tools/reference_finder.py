@@ -500,17 +500,17 @@ def _search_gff_for_resref_with_gff(
         for label, field_type, value in gff_struct:
             # Use integer comparison for field type (optimization)
             field_type_int = field_type.value if isinstance(field_type, GFFFieldType) else field_type
-            
+
             # Check field name filter
             name_matches = field_names is None or label in field_names
             # Check field type filter using integer comparison (faster than enum)
             type_matches = field_type_int in field_type_ints
-            
+
             # If name doesn't match, only recurse into nested structures
             if not name_matches:
                 recurse_nested(field_type, value, label, path_prefix)
                 continue
-            
+
             # If type doesn't match, only recurse into nested structures
             if not type_matches:
                 recurse_nested(field_type, value, label, path_prefix)
@@ -524,7 +524,7 @@ def _search_gff_for_resref_with_gff(
                 resref_str = value  # type: ignore[assignment]
             elif field_type_int == STRING_TYPE and check_string:
                 resref_str = str(value)
-            
+
             # If we couldn't extract a string value, recurse and continue
             if resref_str is None:
                 recurse_nested(field_type, value, label, path_prefix)
@@ -652,17 +652,17 @@ def _search_gff_for_value_with_gff(
         for label, field_type, value in gff_struct:
             # Use integer comparison for field type (optimization)
             field_type_int = field_type.value if isinstance(field_type, GFFFieldType) else field_type
-            
+
             # Check field name filter
             name_matches = field_names is None or label in field_names
             # Check field type filter using integer comparison (faster than enum)
             type_matches = field_type_int in field_type_ints
-            
+
             # If name doesn't match, only recurse into nested structures
             if not name_matches:
                 recurse_nested(field_type, value, label, path_prefix)
                 continue
-            
+
             # If type doesn't match, only recurse into nested structures
             if not type_matches:
                 recurse_nested(field_type, value, label, path_prefix)
@@ -676,7 +676,7 @@ def _search_gff_for_value_with_gff(
                 value_str = value  # type: ignore[assignment]
             elif field_type_int == STRING_TYPE and check_string:
                 value_str = str(value)
-            
+
             # If we couldn't extract a string value, recurse and continue
             if value_str is None:
                 recurse_nested(field_type, value, label, path_prefix)

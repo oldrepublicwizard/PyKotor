@@ -54,34 +54,34 @@ class DLGLink(Generic[T_co]):
     ----------
         node: Target DLGNode this link connects to.
             The destination node in the dialog graph.
-        
+
         list_index: "Index" field. Index of this link in its parent's link list.
             Used for GFF path resolution (e.g., "RepliesList\\0").
-        
+
         active1: "Active" field. Primary conditional script ResRef.
             Script that must return true for this link to be available.
-        
+
         active2: "Active2" field. Secondary conditional script (KotOR 2).
             Additional conditional script for KotOR 2.
-        
+
         logic: "Logic" field. Logic operator for Active1 and Active2 (KotOR 2).
             Values: 0=AND, 1=OR (determines how Active1 and Active2 are combined).
-        
+
         active1_not: "Not" field. Negate Active1 result (KotOR 2).
             If true, Active1 result is negated.
-        
+
         active2_not: "Not2" field. Negate Active2 result (KotOR 2).
             If true, Active2 result is negated.
-        
+
         active1_param1-6: "Param1-5" and "ParamStrA" fields. Parameters for Active1 script.
             Parameters passed to the Active1 script.
-        
+
         active2_param1-6: "Param1b-5b" and "ParamStrB" fields. Parameters for Active2 script.
             Parameters passed to the Active2 script.
-        
+
         is_child: "IsChild" field. Whether this is a child link (not in StartingList).
             Distinguishes links in nodes from links in StartingList.
-        
+
         comment: "LinkComment" field. Comment string for this link.
             Developer comment, not used by game engine.
     """
@@ -153,11 +153,7 @@ class DLGLink(Generic[T_co]):
         if is_starter:
             p1: Literal["EntriesList", "RepliesList", "StartingList"] = "StartingList"
         else:
-            p1 = (
-                "EntriesList"
-                if self.node.__class__.__name__ == "DLGEntry"
-                else "RepliesList"
-            )
+            p1 = "EntriesList" if self.node.__class__.__name__ == "DLGEntry" else "RepliesList"
         return f"{p1}\\{self.list_index}"
 
     def to_dict(  # noqa: C901, PLR0912

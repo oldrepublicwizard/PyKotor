@@ -207,7 +207,7 @@ class QtObjectParser:
             QMetaType.Type.QPen: lambda: cls.create_pen_widget(current_value),
             QMetaType.Type.QTextLength: lambda: cls.create_text_length_widget(current_value),
             QMetaType.Type.QTextFormat: lambda: cls.create_text_format_widget(current_value),
-            #QMetaType.Type.QMatrix: lambda: cls.create_text_format_widget(current_value),
+            # QMetaType.Type.QMatrix: lambda: cls.create_text_format_widget(current_value),
             QMetaType.Type.QTransform: lambda: cls.create_transform_widget(current_value),
             QMetaType.Type.QMatrix4x4: lambda: cls.create_matrix4x4_widget(current_value),
             QMetaType.Type.QVector2D: lambda: cls.create_vector2d_widget(current_value),
@@ -450,11 +450,7 @@ class QtObjectParser:
     @classmethod
     def create_json_document_widget(cls, value: QJsonDocument | QJsonArray) -> QTextEdit:
         widget = QTextEdit()
-        widget.setPlainText(
-            value.toJson().data().decode()
-            if isinstance(value, QJsonDocument)
-            else json.dumps(value.toVariantList())
-        )
+        widget.setPlainText(value.toJson().data().decode() if isinstance(value, QJsonDocument) else json.dumps(value.toVariantList()))
         return widget
 
     @classmethod

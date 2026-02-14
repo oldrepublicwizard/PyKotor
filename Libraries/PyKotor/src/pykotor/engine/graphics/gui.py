@@ -74,4 +74,3 @@ class GUIManager:
     def remove_gui(self, gui: GUI) -> None:
         """Remove a GUI instance from management."""
         self._guis.pop(gui.name, None)
-

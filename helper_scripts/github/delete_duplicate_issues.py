@@ -66,10 +66,10 @@ def close_issue(repo: str, issue_number: int) -> bool:
 
 def main():
     repo = "OldRepublicDevs/PyKotor"
-    
+
     print("Finding duplicate issues...")
     issues = get_all_issues(repo)
-    
+
     # Group by title
     issue_titles = {}
     for issue in issues:
@@ -77,7 +77,7 @@ def main():
         if title not in issue_titles:
             issue_titles[title] = []
         issue_titles[title].append(issue)
-    
+
     # Find duplicates
     duplicates_to_delete = []
     for title, issues_list in issue_titles.items():
@@ -87,24 +87,24 @@ def main():
             # Delete all but the oldest
             for issue in sorted_issues[1:]:
                 duplicates_to_delete.append(issue)
-    
+
     if not duplicates_to_delete:
         print("No duplicates found!")
         return
-    
+
     print(f"\nFound {len(duplicates_to_delete)} duplicate issues to delete")
     print("Keeping oldest issue for each title, deleting newer duplicates")
     print("\nNOTE: GitHub API doesn't allow deleting issues directly.")
     print("      Closing duplicates instead (they'll be filtered out by idempotent script).")
-    
+
     deleted = 0
     failed = 0
-    
+
     for issue in duplicates_to_delete:
         print(f"\nClosing duplicate issue #{issue['number']}: {issue['title'][:50]}")
         print(f"  Created: {issue.get('created_at', 'N/A')}")
         print(f"  State: {issue.get('state', 'unknown')}")
-        
+
         # Try to delete first (may not work without admin)
         if delete_issue(repo, issue["number"]):
             print(f"  SUCCESS: Deleted #{issue['number']}")
@@ -120,9 +120,9 @@ def main():
         else:
             print(f"  SKIP: Already closed #{issue['number']}")
             deleted += 1
-        
+
         time.sleep(0.5)
-    
+
     print(f"\nProcessed: {deleted}, Failed: {failed}")
     print("\nNote: The idempotent migration script will skip closed issues with same titles.")
 

@@ -25,16 +25,16 @@ def walk_nodes(mdl_bytes: bytes, game: Game, verbose: bool = False) -> list[dict
     """Walk all nodes in MDL and return their metadata."""
     reader = BinaryReader.from_auto(mdl_bytes, 0)
     reader.set_offset(reader.offset() + 12)
-    
+
     try:
         header = _ModelHeader().read(reader)
     except Exception as e:
         print(f"ERROR reading header: {e}")
         return []
-    
+
     if verbose:
         print(f"  Root node offset: {header.geometry.root_node_offset}")
-    
+
     file_size = len(mdl_bytes)
     nodes: list[dict] = []
     seen: set[int] = set()
@@ -63,10 +63,10 @@ def walk_nodes(mdl_bytes: bytes, game: Game, verbose: bool = False) -> list[dict
 
         is_mesh = bool(hdr.type_id & MDLNodeFlags.MESH)
         is_skin = bool(hdr.type_id & 0x40)
-        
+
         if verbose:
-            print(f"  {'  '*depth}Node {hdr.node_id} @ {offset}: type=0x{hdr.type_id:04X}, children={hdr.children_count}")
-        
+            print(f"  {'  ' * depth}Node {hdr.node_id} @ {offset}: type=0x{hdr.type_id:04X}, children={hdr.children_count}")
+
         node_info = {
             "offset": offset,
             "node_id": hdr.node_id,
@@ -76,7 +76,7 @@ def walk_nodes(mdl_bytes: bytes, game: Game, verbose: bool = False) -> list[dict
             "children_count": hdr.children_count,
             "offset_to_children": hdr.offset_to_children,
         }
-        
+
         if is_mesh:
             try:
                 tri = _TrimeshHeader().read(reader, game)
@@ -85,12 +85,12 @@ def walk_nodes(mdl_bytes: bytes, game: Game, verbose: bool = False) -> list[dict
                 node_info["mdx_data_size"] = tri.mdx_data_size
                 node_info["mdx_data_bitmap"] = tri.mdx_data_bitmap
                 if verbose:
-                    print(f"  {'  '*depth}  -> mesh: verts={tri.vertex_count}, row_size={tri.mdx_data_size}")
+                    print(f"  {'  ' * depth}  -> mesh: verts={tri.vertex_count}, row_size={tri.mdx_data_size}")
             except Exception as e:
                 node_info["error"] = str(e)
                 if verbose:
-                    print(f"  {'  '*depth}  -> ERROR reading trimesh: {e}")
-        
+                    print(f"  {'  ' * depth}  -> ERROR reading trimesh: {e}")
+
         nodes.append(node_info)
 
         if hdr.children_count > 0 and hdr.children_count < 100:
@@ -101,20 +101,20 @@ def walk_nodes(mdl_bytes: bytes, game: Game, verbose: bool = False) -> list[dict
                     for _ in range(hdr.children_count):
                         child_off = reader.read_uint32()
                         child_offsets.append(child_off)
-                    
+
                     valid_children = [c for c in child_offsets if 0 < c < file_size]
                     invalid_children = [c for c in child_offsets if c <= 0 or c >= file_size]
-                    
+
                     if verbose and invalid_children:
-                        print(f"  {'  '*depth}  -> Invalid children: {invalid_children[:5]}{'...' if len(invalid_children) > 5 else ''}")
-                    
+                        print(f"  {'  ' * depth}  -> Invalid children: {invalid_children[:5]}{'...' if len(invalid_children) > 5 else ''}")
+
                     for child_off in valid_children:
                         walk(child_off, depth + 1)
                 except Exception as e:
                     if verbose:
-                        print(f"  {'  '*depth}  -> ERROR reading children: {e}")
+                        print(f"  {'  ' * depth}  -> ERROR reading children: {e}")
             elif verbose:
-                print(f"  {'  '*depth}  -> Invalid children offset: {hdr.offset_to_children}")
+                print(f"  {'  ' * depth}  -> Invalid children offset: {hdr.offset_to_children}")
 
     walk(header.geometry.root_node_offset)
     return nodes
@@ -209,4 +209,3 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
-

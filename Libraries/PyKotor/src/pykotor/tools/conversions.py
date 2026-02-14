@@ -15,6 +15,7 @@ References:
 
 
 """
+
 from __future__ import annotations
 
 from pathlib import Path
@@ -243,4 +244,3 @@ def convert_json_to_tlk(input_path: Path, output_path: Path) -> None:
     """
     tlk = read_tlk(input_path, file_format=ResourceType.TLK_JSON)
     write_tlk(tlk, output_path, file_format=ResourceType.TLK)
-

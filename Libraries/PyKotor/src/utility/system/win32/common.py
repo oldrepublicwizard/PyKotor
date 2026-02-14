@@ -43,5 +43,6 @@ class SHELLEXECUTEINFO(Structure):
     hIconOrMonitor: int
     hProcess: int
 
+
 ShellExecuteEx = windll.shell32.ShellExecuteEx
 ShellExecuteEx.restype = BOOL

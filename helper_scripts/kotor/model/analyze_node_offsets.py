@@ -50,13 +50,13 @@ def analyze_model_header(data: bytes) -> dict:
     return result
 
 
-def calc_mesh_node_data_size(type_id: int, vertex_count: int, face_count: int, 
-                              indices_counts_count: int, indices_offsets_count: int, 
-                              counters_count: int, game: Game = Game.K1) -> int:
+def calc_mesh_node_data_size(
+    type_id: int, vertex_count: int, face_count: int, indices_counts_count: int, indices_offsets_count: int, counters_count: int, game: Game = Game.K1
+) -> int:
     """Calculate the data size for a mesh node (arrays written after header)."""
     # indices_counts array
     size = indices_counts_count * 4
-    # indices_offsets array  
+    # indices_offsets array
     size += indices_offsets_count * 4
     # inverted_counters array
     size += counters_count * 4
@@ -64,7 +64,7 @@ def calc_mesh_node_data_size(type_id: int, vertex_count: int, face_count: int,
     size += face_count * 32
     # vertices array (12 bytes each)
     size += vertex_count * 12
-    
+
     return size
 
 
@@ -112,53 +112,52 @@ def main():
         print(f"Original: MDL={len(orig_mdl)}")
         print(f"PyKotor:  MDL={len(pykotor_mdl)}")
         print(f"MDLOps:   MDL={len(mdlops_mdl)}")
-        
+
         # Compare headers
         print("\n=== Model Headers ===")
         orig_hdr = analyze_model_header(orig_mdl)
         pk_hdr = analyze_model_header(pykotor_mdl)
         mo_hdr = analyze_model_header(mdlops_mdl)
-        
+
         print(f"{'Field':<25} {'Original':<15} {'PyKotor':<15} {'MDLOps':<15}")
-        for key in ["root_node_offset", "node_count", "offset_to_animations", "animation_count", 
-                    "offset_to_name_offsets", "name_offsets_count"]:
+        for key in ["root_node_offset", "node_count", "offset_to_animations", "animation_count", "offset_to_name_offsets", "name_offsets_count"]:
             print(f"{key:<25} {orig_hdr[key]:<15} {pk_hdr[key]:<15} {mo_hdr[key]:<15}")
-        
+
         # Analyze where data is placed
         print("\n=== Data Layout ===")
-        
+
         # Name offsets come first after header
         pk_names_start = pk_hdr["offset_to_name_offsets"] + 12
         mo_names_start = mo_hdr["offset_to_name_offsets"] + 12
         pk_names_size = pk_hdr["name_offsets_count"] * 4
         mo_names_size = mo_hdr["name_offsets_count"] * 4
-        
+
         print(f"Name offsets: PyKotor starts at 0x{pk_names_start:X}, MDLOps starts at 0x{mo_names_start:X}")
-        
+
         # Check animations offset
         pk_anims_start = pk_hdr["offset_to_animations"] + 12
         mo_anims_start = mo_hdr["offset_to_animations"] + 12
-        
+
         print(f"Animations: PyKotor starts at 0x{pk_anims_start:X}, MDLOps starts at 0x{mo_anims_start:X}")
-        
+
         # Calculate space between name offsets and animations (this is where names strings are)
         pk_names_str_space = pk_hdr["offset_to_animations"] - (pk_hdr["offset_to_name_offsets"] + pk_names_size)
         mo_names_str_space = mo_hdr["offset_to_animations"] - (mo_hdr["offset_to_name_offsets"] + mo_names_size)
         print(f"Names strings space: PyKotor={pk_names_str_space}, MDLOps={mo_names_str_space}")
-        
+
         # Check root node
         pk_root = pk_hdr["root_node_offset"] + 12
         mo_root = mo_hdr["root_node_offset"] + 12
         print(f"Root node: PyKotor at 0x{pk_root:X}, MDLOps at 0x{mo_root:X}")
-        
+
         # Estimate node data size from file
         # For PyKotor: from root node to name offsets
         pk_node_data_size = pk_hdr["offset_to_name_offsets"] - pk_hdr["root_node_offset"]
         mo_node_data_size = mo_hdr["offset_to_name_offsets"] - mo_hdr["root_node_offset"]
-        
+
         print(f"\nNode data block size: PyKotor={pk_node_data_size}, MDLOps={mo_node_data_size}")
         print(f"Difference: {mo_node_data_size - pk_node_data_size} bytes (MDLOps larger)")
-        
+
         # This difference should account for the vertex data difference
         # Expected: 14484 bytes for 1207 vertices
         print(f"\nExpected vertex data size for 1207 vertices: {1207 * 12} bytes")
@@ -166,4 +165,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-

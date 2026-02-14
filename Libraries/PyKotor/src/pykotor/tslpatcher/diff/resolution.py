@@ -168,9 +168,9 @@ def resolve_resource_in_installation(
             elif "data" in parent_names_lower or filepath.suffix.lower() == ".bif":
                 chitin_files.append(filepath)
             # TODO: Verify dialog.tlk is still being diffed, despite this code commented out.
-            #elif filepath.parent == install_root:
-                # Files directly in installation root (like dialog.tlk, chitin.key, etc.)
-                # Treat as Override priority since they're loose files at root level
+            # elif filepath.parent == install_root:
+            # Files directly in installation root (like dialog.tlk, chitin.key, etc.)
+            # Treat as Override priority since they're loose files at root level
             #    override_files.append(filepath)
             # TODO: Verify the below line comment's claim.
             # StreamWaves/etc in subdirectories are NOT added - they don't participate in resolution

@@ -9,10 +9,9 @@ from pathlib import Path
 REPO_ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(REPO_ROOT / "Libraries" / "PyKotor" / "src"))
 
-from pykotor.common.misc import Game
 from pykotor.common.stream import BinaryReader
 from pykotor.extract.installation import Installation
-from pykotor.resource.formats.mdl.io_mdl import _ModelHeader, _NodeHeader, _TrimeshHeader
+from pykotor.resource.formats.mdl.io_mdl import _ModelHeader, _NodeHeader
 from pykotor.resource.formats.mdl.mdl_types import MDLNodeFlags
 from pykotor.resource.type import ResourceType
 
@@ -57,14 +56,16 @@ def main() -> None:
         if is_skin:
             node_type = "SKIN"
 
-        all_nodes.append({
-            "offset": offset,
-            "node_id": hdr.node_id,
-            "type_id": hdr.type_id,
-            "is_mesh": is_mesh,
-            "children_count": hdr.children_count,
-            "offset_to_children": hdr.offset_to_children,
-        })
+        all_nodes.append(
+            {
+                "offset": offset,
+                "node_id": hdr.node_id,
+                "type_id": hdr.type_id,
+                "is_mesh": is_mesh,
+                "children_count": hdr.children_count,
+                "offset_to_children": hdr.offset_to_children,
+            }
+        )
 
         indent = "  " * depth
         print(f"{indent}Node id={hdr.node_id} type=0x{hdr.type_id:04X} ({node_type}) children={hdr.children_count} @{offset} (children_offset={hdr.offset_to_children})")
@@ -76,7 +77,7 @@ def main() -> None:
                 for i in range(hdr.children_count):
                     child_off = reader.read_uint32()
                     child_offsets.append(child_off)
-                
+
                 # Show child offsets for debugging
                 if depth < 10:
                     valid = [o for o in child_offsets if 0 < o < 100000]
@@ -84,7 +85,7 @@ def main() -> None:
                     print(f"{indent}  -> Valid children: {valid[:5]}{'...' if len(valid) > 5 else ''}")
                     if invalid:
                         print(f"{indent}  -> INVALID children: {invalid[:5]}{'...' if len(invalid) > 5 else ''}")
-                
+
                 for child_off in child_offsets:
                     if 0 < child_off < 100000:  # Sanity check
                         walk(child_off, depth + 1)
@@ -103,4 +104,3 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
-

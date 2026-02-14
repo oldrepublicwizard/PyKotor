@@ -1691,7 +1691,7 @@ class IncrementalTSLPatchDataWriter:
         Example:
             AddColumn: I1=42 (index_insert[1] = RowValueConstant("42"))
             GFF:       CustomStat=42 (FieldValueConstant(42))
-            
+
             After linking:
             AddColumn: I1=42, 2DAMEMORY0=I1 (store_2da[0] = "I1")
             GFF:       CustomStat=2DAMEMORY0 (FieldValue2DAMemory(0))
@@ -1828,11 +1828,7 @@ class IncrementalTSLPatchDataWriter:
                             # For AddRow2DA with RowValueRowIndex, the row index isn't known until runtime
                             # So we can't match it statically - skip this token for matching
                             continue
-                        if (
-                            isinstance(modifier, ChangeRow2DA)
-                            and modifier.target.target_type == TargetType.ROW_INDEX
-                            and isinstance(modifier.target.value, int)
-                        ):
+                        if isinstance(modifier, ChangeRow2DA) and modifier.target.target_type == TargetType.ROW_INDEX and isinstance(modifier.target.value, int):
                             stored_value = str(modifier.target.value)
                     elif isinstance(row_value, RowValueConstant):
                         # For constant values, the stored value is the string itself
@@ -1842,10 +1838,7 @@ class IncrementalTSLPatchDataWriter:
                         # For ChangeRow2DA, we can get it from target
                         # For AddRow2DA, we can get it from modifier.row_label
                         if isinstance(modifier, ChangeRow2DA):
-                            if (
-                                modifier.target.target_type == TargetType.ROW_LABEL
-                                and isinstance(modifier.target.value, str)
-                            ):
+                            if modifier.target.target_type == TargetType.ROW_LABEL and isinstance(modifier.target.value, str):
                                 stored_value = modifier.target.value
                         elif isinstance(modifier, AddRow2DA) and modifier.row_label:
                             stored_value = modifier.row_label
@@ -1860,10 +1853,7 @@ class IncrementalTSLPatchDataWriter:
                         stored_value is not None
                         # Only add if this token hasn't been stored yet, or if this token ID is lower
                         # (prefer lower token IDs when multiple tokens store the same value)
-                        and (
-                            stored_value not in available_tokens
-                            or token_id < available_tokens[stored_value]
-                        )
+                        and (stored_value not in available_tokens or token_id < available_tokens[stored_value])
                     ):
                         available_tokens[stored_value] = token_id
 

@@ -6,11 +6,11 @@ import sys
 
 from abc import abstractmethod
 from enum import Flag, IntEnum, IntFlag
-from typing import Iterable, TYPE_CHECKING
+from typing import TYPE_CHECKING
 
 from qtpy.QtCore import QObject, QUrl, Qt, Signal  # pyright: ignore[reportPrivateImportUsage]
 from qtpy.QtGui import QColor, QFont
-from qtpy.QtWidgets import QFileDialog, QMessageBox, QStyle
+from qtpy.QtWidgets import QFileDialog, QMessageBox
 
 from utility.gui.qt.adapters.kernel.qplatformdialoghelper.qfiledialogoptions import QFileDialogOptions
 
@@ -334,12 +334,10 @@ class QPlatformColorDialogHelper(QPlatformDialogHelper):
     currentColorChanged: Signal = Signal(QColor)
 
     @abstractmethod
-    def setCurrentColor(self, color: QColor):
-        ...
+    def setCurrentColor(self, color: QColor): ...
 
     @abstractmethod
-    def currentColor(self) -> QColor:
-        ...
+    def currentColor(self) -> QColor: ...
 
 
 class QPlatformFileDialogHelper(QPlatformDialogHelper):
@@ -429,12 +427,10 @@ class QPlatformFontDialogHelper(QPlatformDialogHelper):
     currentFontChanged = Signal(QFont)
 
     @abstractmethod
-    def setCurrentFont(self, font: QFont):
-        ...
+    def setCurrentFont(self, font: QFont): ...
 
     @abstractmethod
-    def currentFont(self) -> QFont:
-        ...
+    def currentFont(self) -> QFont: ...
 
 
 class QPlatformMessageDialogHelper(QPlatformDialogHelper):
@@ -449,24 +445,26 @@ class QPlatformMessageDialogHelper(QPlatformDialogHelper):
         """Enum defining the roles of buttons in a message dialog.
         These roles determine the semantic meaning and behavior of buttons.
         """
+
         InvalidRole = -1  # Invalid button role
-        AcceptRole = 0    # Accepting or "OK" role
-        RejectRole = 1    # Rejecting or "Cancel" role
+        AcceptRole = 0  # Accepting or "OK" role
+        RejectRole = 1  # Rejecting or "Cancel" role
         DestructiveRole = 2  # Destructive or dangerous action role
-        ActionRole = 3    # Action button role
-        HelpRole = 4      # Help button role
-        YesRole = 5       # "Yes" button role
-        NoRole = 6        # "No" button role
-        ResetRole = 7     # Reset to default values role
-        ApplyRole = 8     # Apply changes role
+        ActionRole = 3  # Action button role
+        HelpRole = 4  # Help button role
+        YesRole = 5  # "Yes" button role
+        NoRole = 6  # "No" button role
+        ResetRole = 7  # Reset to default values role
+        ApplyRole = 8  # Apply changes role
 
     class Icon(Flag):
         """Enum defining the standard icons that can be displayed in a message dialog."""
-        NoIcon = 0        # No icon
-        Information = 1   # Information icon
-        Warning = 2       # Warning icon
-        Critical = 3      # Critical or error icon
-        Question = 4      # Question icon
+
+        NoIcon = 0  # No icon
+        Information = 1  # Information icon
+        Warning = 2  # Warning icon
+        Critical = 3  # Critical or error icon
+        Question = 4  # Question icon
 
     clickedButton = Signal(int)  # Signal emitted when a button is clicked, passing the button's ID
 

@@ -74,11 +74,7 @@ class RobustTableView(RobustAbstractItemView, QTableView):
                         resize_mode_menu,
                         f"[{i}] {section_name}",
                         lambda idx=i, h=header: h.sectionResizeMode(idx),
-                        (
-                            lambda mode,
-                            idx=i,
-                            h=header: h.setSectionResizeMode(idx, mode if qtpy.QT5 else QHeaderView.ResizeMode(mode))
-                        ),
+                        (lambda mode, idx=i, h=header: h.setSectionResizeMode(idx, mode if qtpy.QT5 else QHeaderView.ResizeMode(mode))),
                         options={
                             "Interactive": QHeaderView.ResizeMode.Interactive,
                             "Fixed": QHeaderView.ResizeMode.Fixed,
@@ -91,9 +87,15 @@ class RobustTableView(RobustAbstractItemView, QTableView):
             # Sizing options
             sizing_menu = menu.addMenu("Sizing")
             self._add_simple_action(sizing_menu, "Reset Default Section Size", header.resetDefaultSectionSize)
-            self._add_menu_action(sizing_menu, "Set Maximum Section Size", header.maximumSectionSize, header.setMaximumSectionSize, f"{h_or_v_name.lower()}MaximumSectionSize", param_type=int)
-            self._add_menu_action(sizing_menu, "Set Minimum Section Size", header.minimumSectionSize, header.setMinimumSectionSize, f"{h_or_v_name.lower()}MinimumSectionSize", param_type=int)
-            self._add_menu_action(sizing_menu, "Set Default Section Size", header.defaultSectionSize, header.setDefaultSectionSize, f"{h_or_v_name.lower()}DefaultSectionSize", param_type=int)
+            self._add_menu_action(
+                sizing_menu, "Set Maximum Section Size", header.maximumSectionSize, header.setMaximumSectionSize, f"{h_or_v_name.lower()}MaximumSectionSize", param_type=int
+            )
+            self._add_menu_action(
+                sizing_menu, "Set Minimum Section Size", header.minimumSectionSize, header.setMinimumSectionSize, f"{h_or_v_name.lower()}MinimumSectionSize", param_type=int
+            )
+            self._add_menu_action(
+                sizing_menu, "Set Default Section Size", header.defaultSectionSize, header.setDefaultSectionSize, f"{h_or_v_name.lower()}DefaultSectionSize", param_type=int
+            )
 
             # Alignment
             self._add_exclusive_menu_action(
@@ -101,11 +103,7 @@ class RobustTableView(RobustAbstractItemView, QTableView):
                 "Alignment",
                 header.defaultAlignment,
                 header.setDefaultAlignment,
-                options={
-                    "Left": Qt.AlignmentFlag.AlignLeft,
-                    "Center": Qt.AlignmentFlag.AlignCenter,
-                    "Right": Qt.AlignmentFlag.AlignRight
-                },
+                options={"Left": Qt.AlignmentFlag.AlignLeft, "Center": Qt.AlignmentFlag.AlignCenter, "Right": Qt.AlignmentFlag.AlignRight},
                 settings_key=f"{h_or_v_name.lower()}HeaderDefaultAlignment",
                 param_type=Qt.AlignmentFlag,
             )
@@ -119,10 +117,7 @@ class RobustTableView(RobustAbstractItemView, QTableView):
                 "Sort Order",
                 header.sortIndicatorOrder,
                 lambda order, h=header: h.setSortIndicator(h.sortIndicatorSection(), order),
-                options={
-                    "Ascending": Qt.SortOrder.AscendingOrder,
-                    "Descending": Qt.SortOrder.DescendingOrder
-                },
+                options={"Ascending": Qt.SortOrder.AscendingOrder, "Descending": Qt.SortOrder.DescendingOrder},
                 settings_key=f"{h_or_v_name.lower()}HeaderSortOrder",
                 param_type=Qt.SortOrder,
             )
@@ -138,7 +133,7 @@ class RobustTableView(RobustAbstractItemView, QTableView):
                     lambda idx=i, h=header: h.sectionSize(idx),
                     lambda size, idx=i, h=header: h.resizeSection(idx, size),
                     settings_key=f"{h_or_v_name.lower()}HeaderSectionSize_{i}",
-                    param_type=int
+                    param_type=int,
                 )
                 self._add_menu_action(
                     section_submenu,
@@ -146,7 +141,7 @@ class RobustTableView(RobustAbstractItemView, QTableView):
                     lambda idx=i, h=header: h.visualIndex(idx),
                     lambda new_idx, idx=i, h=header: h.moveSection(idx, new_idx),
                     settings_key=f"{h_or_v_name.lower()}HeaderSectionPosition_{i}",
-                    param_type=int
+                    param_type=int,
                 )
 
         return header_menu

@@ -35,20 +35,20 @@ def compute_per_vertex_tangent_space(
     mesh: MDLMesh,
 ) -> dict[int, tuple[Vector3, Vector3]]:
     """Compute per-vertex tangent and binormal vectors for a mesh.
-    
+
     This function computes tangent space basis vectors for each vertex by:
     1. Computing tangent/bitangent for each face
     2. Accumulating contributions from all faces sharing each vertex
     3. Averaging and normalizing the results
-    
+
     Args:
     ----
         mesh: MDL mesh with vertex positions, UVs, and faces
-    
+
     Returns:
     -------
         Dictionary mapping vertex index to (tangent, binormal) tuple
-    
+
     References:
     ----------
         Based on swkotor.exe GFF structure:
@@ -58,26 +58,26 @@ def compute_per_vertex_tangent_space(
         - https://github.com/th3w1zard1/mdlops/tree/master/MDLOpsM.pm:5470-5596
     """
     from pykotor.resource.formats.mdl.io_mdl import _calculate_face_normal, _calculate_tangent_space
-    
+
     vertex_tangents: dict[int, list[Vector3]] = {}
     vertex_binormals: dict[int, list[Vector3]] = {}
-    
+
     # Compute per-face tangent space
     for face in mesh.faces:
         v1 = mesh.vertex_positions[face.v1]
         v2 = mesh.vertex_positions[face.v2]
         v3 = mesh.vertex_positions[face.v3]
-        
+
         if face.v1 >= len(mesh.vertex_uvs) or face.v2 >= len(mesh.vertex_uvs) or face.v3 >= len(mesh.vertex_uvs):
             continue
-        
+
         uv1 = mesh.vertex_uvs[face.v1]
         uv2 = mesh.vertex_uvs[face.v2]
         uv3 = mesh.vertex_uvs[face.v3]
-        
+
         face_normal, _ = _calculate_face_normal(v1, v2, v3)
         tangent, binormal = _calculate_tangent_space(v1, v2, v3, uv1, uv2, uv3, face_normal)
-        
+
         # Accumulate for each vertex
         for v_idx in [face.v1, face.v2, face.v3]:
             if v_idx not in vertex_tangents:
@@ -85,7 +85,7 @@ def compute_per_vertex_tangent_space(
                 vertex_binormals[v_idx] = []
             vertex_tangents[v_idx].append(tangent)
             vertex_binormals[v_idx].append(binormal)
-    
+
     # Average accumulated tangents/binormals
     result: dict[int, tuple[Vector3, Vector3]] = {}
     for v_idx in vertex_tangents:
@@ -95,38 +95,38 @@ def compute_per_vertex_tangent_space(
             avg_tangent = Vector3(avg_tangent.x + t.x, avg_tangent.y + t.y, avg_tangent.z + t.z)
         count = len(vertex_tangents[v_idx])
         avg_tangent = Vector3(avg_tangent.x / count, avg_tangent.y / count, avg_tangent.z / count)
-        
+
         # Normalize
         length = (avg_tangent.x**2 + avg_tangent.y**2 + avg_tangent.z**2) ** 0.5
         if length > 0:
             avg_tangent = Vector3(avg_tangent.x / length, avg_tangent.y / length, avg_tangent.z / length)
-        
+
         # Average binormals
         avg_binormal = Vector3(0, 0, 0)
         for b in vertex_binormals[v_idx]:
             avg_binormal = Vector3(avg_binormal.x + b.x, avg_binormal.y + b.y, avg_binormal.z + b.z)
         avg_binormal = Vector3(avg_binormal.x / count, avg_binormal.y / count, avg_binormal.z / count)
-        
+
         # Normalize
         length = (avg_binormal.x**2 + avg_binormal.y**2 + avg_binormal.z**2) ** 0.5
         if length > 0:
             avg_binormal = Vector3(avg_binormal.x / length, avg_binormal.y / length, avg_binormal.z / length)
-        
+
         result[v_idx] = (avg_tangent, avg_binormal)
-    
+
     return result
 
 
 def determine_vertex_format_requirements(mesh: MDLMesh) -> dict[str, bool]:
     """Determine what vertex format attributes are needed for a mesh.
-    
+
     This is a backend-agnostic way to determine vertex format requirements
     that can be used by any rendering backend implementation.
-    
+
     Args:
     ----
         mesh: MDL mesh to analyze
-    
+
     Returns:
     -------
         Dictionary with boolean flags for each attribute type:
@@ -135,7 +135,7 @@ def determine_vertex_format_requirements(mesh: MDLMesh) -> dict[str, bool]:
         - has_lightmap: True if mesh has lightmap UVs
         - has_skinning: True if mesh has bone weights
         - has_uv2: True if mesh has second UV set
-    
+
     References:
     ----------
         Based on swkotor.exe GFF structure:
@@ -160,21 +160,22 @@ def determine_vertex_format_requirements(mesh: MDLMesh) -> dict[str, bool]:
 # GLM-compatible transformation functions
 # These provide a GLM-style API for matrix and vector operations
 
+
 @overload
 def translate(v: Vector3, /) -> Matrix4: ...
 @overload
 def translate(v: Any, /) -> Any: ...
 def translate(v: Any, /) -> Any:
     """Create a translation matrix.
-    
+
     Args:
     ----
         v: Translation vector (Vector3).
-    
+
     Returns:
     -------
         Matrix4: Translation matrix.
-    
+
     Note:
     ----
         Matrix4._data is row-major: _data[row][col].
@@ -193,13 +194,13 @@ def rotate(m: Matrix4, angle: float, axis: Vector3, /) -> Matrix4: ...
 def rotate(m: Any, angle: float, axis: Any, /) -> Any: ...
 def rotate(m: Any, angle: float, axis: Any, /) -> Any:
     """Rotate a matrix by angle (radians) around axis.
-    
+
     Args:
     ----
         m: Matrix to rotate.
         angle: Rotation angle in radians.
         axis: Rotation axis (Vector3).
-    
+
     Returns:
     -------
         Matrix4: Rotated matrix.
@@ -239,16 +240,16 @@ def mat4_cast(x: Vector4, /) -> Matrix4: ...
 def mat4_cast(x: Any, /) -> Any: ...
 def mat4_cast(x: Any, /) -> Any:
     """Convert a quaternion (Vector4) to a 4x4 rotation matrix.
-    
+
     Args:
     ----
         x: Quaternion as Vector4 (w, x, y, z order expected, but Vector4 is x, y, z, w).
            For quaternions, typically Vector4(w, x, y, z) is used.
-    
+
     Returns:
     -------
         Matrix4: Rotation matrix.
-    
+
     Note:
     ----
         Vector4 stores (x, y, z, w) but quaternions are typically (w, x, y, z).
@@ -283,11 +284,11 @@ def inverse(m: Matrix4, /) -> Matrix4: ...
 def inverse(m: Any, /) -> Any: ...
 def inverse(m: Any, /) -> Any:
     """Calculate the inverse of a matrix.
-    
+
     Args:
     ----
         m: Matrix to invert.
-    
+
     Returns:
     -------
         Matrix4: Inverse matrix, or identity if singular.
@@ -295,7 +296,7 @@ def inverse(m: Any, /) -> Any:
     # Simple 4x4 matrix inversion using Gaussian elimination
     # For numerical stability, we use a basic implementation
     # In production, numpy.linalg.inv would be preferred but we avoid dependencies
-    
+
     try:
         # Create augmented matrix [M|I]
         aug = [[0.0] * 8 for _ in range(4)]
@@ -303,7 +304,7 @@ def inverse(m: Any, /) -> Any:
             for j in range(4):
                 aug[i][j] = m._data[i][j]
             aug[i][i + 4] = 1.0
-        
+
         # Gaussian elimination with partial pivoting
         for col in range(4):
             # Find pivot
@@ -311,32 +312,32 @@ def inverse(m: Any, /) -> Any:
             for row in range(col + 1, 4):
                 if abs(aug[row][col]) > abs(aug[max_row][col]):
                     max_row = row
-            
+
             # Swap rows
             aug[col], aug[max_row] = aug[max_row], aug[col]
-            
+
             # Check for singular matrix
             if abs(aug[col][col]) < 1e-10:
                 return Matrix4(1.0)  # Return identity if singular
-            
+
             # Normalize pivot row
             pivot = aug[col][col]
             for j in range(8):
                 aug[col][j] /= pivot
-            
+
             # Eliminate column
             for row in range(4):
                 if row != col:
                     factor = aug[row][col]
                     for j in range(8):
                         aug[row][j] -= factor * aug[col][j]
-        
+
         # Extract inverse
         result = Matrix4(0.0)
         for i in range(4):
             for j in range(4):
                 result._data[i][j] = aug[i][j + 4]
-        
+
         return result
     except Exception:
         # Return identity matrix if inversion fails
@@ -345,18 +346,18 @@ def inverse(m: Any, /) -> Any:
 
 def perspective(fovy: float, aspect: float, near: float, far: float, /) -> Matrix4:
     """Create a perspective projection matrix.
-    
+
     Args:
     ----
         fovy: Field of view in degrees.
         aspect: Aspect ratio (width/height).
         near: Near clipping plane.
         far: Far clipping plane.
-    
+
     Returns:
     -------
         Matrix4: Perspective projection matrix (row-major: _data[row][col]).
-    
+
     Note:
     ----
         Standard OpenGL perspective matrix (row-major):
@@ -386,11 +387,11 @@ def normalize(x: Vector3, /) -> Vector3: ...
 def normalize(x: Any, /) -> Any: ...
 def normalize(x: Any, /) -> Any:
     """Normalize a vector.
-    
+
     Args:
     ----
         x: Vector to normalize (Vector3).
-    
+
     Returns:
     -------
         Vector3: Normalized vector.
@@ -408,12 +409,12 @@ def cross(x: Vector3, y: Vector3, /) -> Vector3: ...
 def cross(x: Any, y: Any, /) -> Any: ...
 def cross(x: Any, y: Any, /) -> Any:
     """Calculate the cross product of two vectors.
-    
+
     Args:
     ----
         x: First vector (Vector3).
         y: Second vector (Vector3).
-    
+
     Returns:
     -------
         Vector3: Cross product.
@@ -441,7 +442,7 @@ def decompose(
     /,
 ) -> bool:
     """Decompose a transformation matrix into its components.
-    
+
     Args:
     ----
         modelMatrix: The transformation matrix to decompose.
@@ -450,7 +451,7 @@ def decompose(
         translation: Output translation vector (Vector3).
         skew: Output skew vector (Vector3, not implemented).
         perspective_vec: Output perspective vector (Vector4, not implemented).
-    
+
     Returns:
     -------
         bool: True if decomposition was successful.
@@ -531,11 +532,11 @@ def eulerAngles(x: Vector4, /) -> Vector3: ...
 def eulerAngles(x: Any, /) -> Any: ...
 def eulerAngles(x: Any, /) -> Any:
     """Convert a quaternion (Vector4) to Euler angles (in radians).
-    
+
     Args:
     ----
         x: Quaternion as Vector4 (x, y, z, w format).
-    
+
     Returns:
     -------
         Vector3: Euler angles (roll, pitch, yaw) in radians.
@@ -571,17 +572,17 @@ def value_ptr(x: Vector4, /) -> ndarray: ...
 def value_ptr(x: Any, /) -> Any: ...
 def value_ptr(x: Any, /) -> Any:
     """Get a pointer to the underlying data (returns flattened numpy array).
-    
+
     This function requires numpy and is primarily for OpenGL interop.
-    
+
     Args:
     ----
         x: Matrix or vector to get pointer from.
-    
+
     Returns:
     -------
         np.ndarray: Flattened array of the data.
-    
+
     Raises:
     ------
         ImportError: If numpy is not available.
@@ -590,7 +591,7 @@ def value_ptr(x: Any, /) -> Any:
         import numpy as np
     except ImportError as e:
         raise ImportError("value_ptr requires numpy to be installed") from e
-    
+
     if isinstance(x, Matrix4):
         # PyKotor Matrix4 - has _data attribute
         # OpenGL expects column-major order
@@ -616,25 +617,22 @@ def unProject(obj: Vector3, model: Matrix4, proj: Matrix4, viewport: Vector4, /)
 def unProject(obj: Any, model: Any, proj: Any, viewport: Any, /) -> Any: ...
 def unProject(obj: Any, model: Any, proj: Any, viewport: Any, /) -> Any:
     """Unproject a window coordinate to world coordinates.
-    
+
     Args:
     ----
         obj: Window coordinates (Vector3, where z is depth).
         model: Model-view matrix (Matrix4).
         proj: Projection matrix (Matrix4).
         viewport: Viewport as Vector4 (x, y, width, height).
-    
+
     Returns:
     -------
         Vector3: World coordinates.
     """
-    if (
-        not isinstance(obj, Vector3)
-        or not isinstance(model, Matrix4)
-        or not isinstance(proj, Matrix4)
-        or not isinstance(viewport, Vector4)
-    ):
-        raise TypeError(f"unProject requires Vector3, Matrix4, Matrix4, Vector4, got {obj.__class__.__name__}, {model.__class__.__name__}, {proj.__class__.__name__}, {viewport.__class__.__name__}")
+    if not isinstance(obj, Vector3) or not isinstance(model, Matrix4) or not isinstance(proj, Matrix4) or not isinstance(viewport, Vector4):
+        raise TypeError(
+            f"unProject requires Vector3, Matrix4, Matrix4, Vector4, got {obj.__class__.__name__}, {model.__class__.__name__}, {proj.__class__.__name__}, {viewport.__class__.__name__}"
+        )
     win = obj
     # Compute the inverse of model * projection
     m: Matrix4 = proj * model  # type: ignore[assignment]
@@ -666,14 +664,13 @@ def length(x: Vector3, /) -> float: ...
 def length(x: Any, /) -> Any: ...
 def length(x: Any, /) -> Any:
     """Calculate the length (magnitude) of a vector.
-    
+
     Args:
     ----
         x: Vector (Vector3).
-    
+
     Returns:
     -------
         float: Vector length.
     """
     return math.sqrt(x.x**2 + x.y**2 + x.z**2)
-

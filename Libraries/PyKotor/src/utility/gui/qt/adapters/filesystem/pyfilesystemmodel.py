@@ -302,11 +302,11 @@ class PyFileSystemModel(QAbstractItemModel):
     _roleNames: dict[int, QByteArray] | None = None
 
     # Signals matching C++ lines 29-32
-    #rootPathChanged = Signal(str)  # (const QString &newPath)
+    # rootPathChanged = Signal(str)  # (const QString &newPath)
     rootPathChanged: ClassVar[Signal] = QFileSystemModel.rootPathChanged  # (const QString &newPath)
-    #fileRenamed = Signal(str, str, str)  # (const QString &path, const QString &oldName, const QString &newName)
+    # fileRenamed = Signal(str, str, str)  # (const QString &path, const QString &oldName, const QString &newName)
     fileRenamed: ClassVar[Signal] = QFileSystemModel.fileRenamed  # (const QString &path, const QString &oldName, const QString &newName)
-    #directoryLoaded: ClassVar[Signal] = Signal(str)  # (const QString &path)
+    # directoryLoaded: ClassVar[Signal] = Signal(str)  # (const QString &path)
     directoryLoaded: ClassVar[Signal] = QFileSystemModel.directoryLoaded  # (const QString &path)
 
     def __init__(self, parent: QObject | None = None):
@@ -1130,7 +1130,9 @@ class PyFileSystemModel(QAbstractItemModel):
 
     def _handle_unc_path(
         self,
-        resolvedPath: Path, rootNode: PyFileSystemNode, host: str,
+        resolvedPath: Path,
+        rootNode: PyFileSystemNode,
+        host: str,
     ) -> PyFileSystemNode:  # noqa: N803
         if len(resolvedPath.parts) == 1 and not resolvedPath.name.endswith("/"):
             return rootNode
@@ -1374,6 +1376,7 @@ class PyFileSystemModel(QAbstractItemModel):
         # QFileSystemModelSorter ms(column);
         # std::sort(values.begin(), values.end(), ms);
         ms = PyFileSystemModelSorter(column)
+
         # Python's sort with a key function that uses the sorter's __call__ operator
         # We need to create a stable sort key. Since we can't use a comparison function directly
         # in Python 3 (no cmp parameter), we'll use a workaround with a key that preserves order.
@@ -1479,8 +1482,10 @@ class PyFileSystemModel(QAbstractItemModel):
         if not node.hasInformation():
             return False
 
-        filterPermissions = ((self._filters & QDir.Filter.PermissionMask)  # type: ignore[attr-defined]
-                            and (self._filters & QDir.Filter.PermissionMask) != QDir.Filter.PermissionMask)  # type: ignore[attr-defined]
+        filterPermissions = (
+            (self._filters & QDir.Filter.PermissionMask)  # type: ignore[attr-defined]
+            and (self._filters & QDir.Filter.PermissionMask) != QDir.Filter.PermissionMask
+        )  # type: ignore[attr-defined]
         hideFiles = not bool(self._filters & QDir.Filter.Files)  # type: ignore[attr-defined]
         hideReadable = not (not filterPermissions or bool(self._filters & QDir.Filter.Readable))  # type: ignore[attr-defined]
         hideWritable = not (not filterPermissions or bool(self._filters & QDir.Filter.Writable))  # type: ignore[attr-defined]
@@ -1546,14 +1551,14 @@ class PyFileSystemModel(QAbstractItemModel):
         # Check the name regularexpression filters
         if not (node.isDir() and bool(self._filters & QDir.Filter.AllDirs)):  # type: ignore[attr-defined]
             from qtpy.QtCore import QRegularExpression
-            
+
             # C++: node->fileName.contains(re) where re is QRegularExpression
             # In Qt, QString::contains(QRegularExpression) checks if string contains a match
             # In Python/PyQt6, we use match().hasMatch()
             def matchesNodeFileName(regexp: QRegularExpression) -> bool:
                 match = regexp.match(node.fileName)
                 return match.hasMatch()
-            
+
             return any(matchesNodeFileName(regexp) for regexp in self._nameFiltersRegexps)
         return True
 
@@ -1580,14 +1585,14 @@ class PyFileSystemModel(QAbstractItemModel):
         """
         # QT_CONFIG(regularexpression) - always true in Python
         from qtpy.QtCore import QRegularExpression
-        
+
         self._nameFiltersRegexps.clear()
         self._nameFiltersRegexps = []
         # Reserve equivalent - pre-allocate list size
         self._nameFiltersRegexps = [None] * len(self._nameFilters)  # type: ignore[list-item]
-        
+
         cs = Qt.CaseSensitivity.CaseSensitive if bool(self._filters & QDir.Filter.CaseSensitive) else Qt.CaseSensitivity.CaseInsensitive  # type: ignore[attr-defined]
-        
+
         for i, nameFilter in enumerate(self._nameFilters):
             # QRegularExpression::fromWildcard equivalent
             regexp = QRegularExpression.fromWildcard(nameFilter, cs)
@@ -2169,11 +2174,7 @@ class PyFileSystemModel(QAbstractItemModel):
             return ""
         dirNode = self.node(index)
         # QT_CONFIG(filesystemwatcher) - always true
-        if (
-            self._fileInfoGatherer.resolveSymlinks()
-            and self._resolvedSymLinks
-            and dirNode.isSymLink(ignoreNtfsSymLinks=True)
-        ):
+        if self._fileInfoGatherer.resolveSymlinks() and self._resolvedSymLinks and dirNode.isSymLink(ignoreNtfsSymLinks=True):
             fullPath = QDir.fromNativeSeparators(self.filePath(index))
             return self._resolvedSymLinks.get(fullPath, dirNode.fileName)
         return dirNode.fileName
@@ -2647,40 +2648,40 @@ class PyFileSystemModel(QAbstractItemModel):
             longNewPath = qt_GetLongPathName(newPath)
         else:
             longNewPath = newPath
-        
+
         # Remove .. and . from the given path if exist (line 1515-1516)
         if newPath:
             longNewPath = QDir.cleanPath(longNewPath)
-        
+
         self._setRootPath = True
-        
+
         # User don't ask for the root path ("") but the conversion failed (lines 1521-1522)
         if newPath and not longNewPath:
             return self._index_from_node(self.node(self.rootPath()), 0)
-        
+
         # If root path unchanged, return existing index (lines 1524-1525)
         if self._rootDir.path() == longNewPath:
             return self._index_from_node(self.node(self.rootPath()), 0)
-        
+
         # Get node and file info (lines 1527-1532)
         node = self.node(longNewPath)
         if node and node.hasInformation():
             newPathInfo = node.fileInfo()
         else:
             newPathInfo = QFileInfo(longNewPath)
-        
+
         # Check if we should show drives (line 1534)
         showDrives = not longNewPath or longNewPath == self._myComputer()
         if not showDrives and not newPathInfo.exists():
             return self._index_from_node(self.node(self.rootPath()), 0)
-        
+
         # Remove watcher on previous path (lines 1538-1548)
         if self.rootPath() and self.rootPath() != ".":
             # QT_CONFIG(filesystemwatcher) - always true
             self._fileInfoGatherer.removePath(self.rootPath())
             # Mark node as dirty
             self.node(self.rootPath()).populatedChildren = False
-        
+
         # We have a new valid root path (lines 1550-1558)
         self._rootDir = QDir(longNewPath)
         newRootIndex = QModelIndex()
@@ -2689,12 +2690,12 @@ class PyFileSystemModel(QAbstractItemModel):
             self._rootDir.setPath("")
         else:
             newRootIndex = self._index_from_node(self.node(self._rootDir.path()), 0)
-        
+
         self.fetchMore(newRootIndex)
         self.rootPathChanged.emit(longNewPath)
         self._forceSort = True
         self._delayedSort()
-        
+
         return newRootIndex
 
     def rootPath(self) -> str:

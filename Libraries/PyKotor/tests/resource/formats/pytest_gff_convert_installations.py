@@ -14,6 +14,7 @@ THIS_SCRIPT_PATH = pathlib.Path(__file__)
 PYKOTOR_PATH = THIS_SCRIPT_PATH.parents[4].joinpath("src")
 UTILITY_PATH = THIS_SCRIPT_PATH.parents[6].joinpath("Libraries", "Utility", "src")
 
+
 def add_sys_path(p: pathlib.Path):
     working_dir = str(p)
     if working_dir not in sys.path:
@@ -46,7 +47,6 @@ from pykotor.resource.generics.utw import read_utw, write_utw
 from pykotor.resource.type import ResourceType
 from pykotor.extract.installation import Installation
 from pykotor.extract.file import FileResource, ResourceIdentifier
-from typing_extensions import Literal
 
 if TYPE_CHECKING:
     from pykotor.extract.file import FileResource
@@ -69,6 +69,7 @@ def _setup_and_profile_installation() -> dict[Game, Installation]:
     if K2_PATH and Path(K2_PATH).joinpath("chitin.key").is_file():
         all_installations[Game.K2] = Installation(K2_PATH)
     return all_installations
+
 
 def collect_all_gffs(
     restype: ResourceType = ResourceType.NSS,
@@ -115,11 +116,13 @@ def extract_all_gffs():
 def pytest_generate_tests(metafunc: pytest.Metafunc):
     if "gff_data" in metafunc.fixturenames:
         print("Generating GFF conversion tests...")
-        
+
         if not ALL_GFFS[Game.K1] and not ALL_GFFS[Game.K2]:
             collect_all_gffs()
 
-        combined_data: list[tuple[str, tuple[Game, FileResource, Path]]] = [(f"{game}_{resource._path_ident_obj}", (game, resource, conversion_path)) for game, gff_info in ALL_GFFS.items() for resource, conversion_path in gff_info]
+        combined_data: list[tuple[str, tuple[Game, FileResource, Path]]] = [
+            (f"{game}_{resource._path_ident_obj}", (game, resource, conversion_path)) for game, gff_info in ALL_GFFS.items() for resource, conversion_path in gff_info
+        ]
 
         sorted_combined_data: list[tuple[str, tuple[Game, FileResource, Path]]] = sorted(combined_data, key=lambda x: x[0])
 
@@ -133,6 +136,7 @@ def ensure_gffs_ready():
     if not ALL_GFFS[Game.K1] and not ALL_GFFS[Game.K2]:
         collect_all_gffs()
     extract_all_gffs()
+
 
 @pytest.fixture
 def gff_data(request: pytest.FixtureRequest, ensure_gffs_ready):

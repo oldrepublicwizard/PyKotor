@@ -2,6 +2,7 @@
 
 This module handles conversion of JSON source files to binary GFF format for packing.
 """
+
 from __future__ import annotations
 
 import glob
@@ -158,4 +159,3 @@ def cmd_convert(args: Namespace, logger: Logger) -> int:
                     logger.error(f"Failed to modify module.ifo: {e}")
 
     return 0
-

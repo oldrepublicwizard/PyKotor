@@ -15,7 +15,6 @@ import sys
 import tempfile
 import traceback
 import unittest
-from typing import Any
 
 THIS_SCRIPT_PATH = pathlib.Path(__file__).resolve()
 PYKOTOR_PATH = THIS_SCRIPT_PATH.parents[3].joinpath("src")
@@ -82,10 +81,7 @@ class TestGlobberBug(unittest.TestCase):
             print(f"[TEST] Exception type: {type(e).__name__}")
             print(f"[TEST] Exception args: {e.args}")
             traceback.print_exc()
-            self.fail(
-                f"rglob('*') raised TypeError: {e}\n"
-                "This is the _Globber.__init__() bug. Check traceback above."
-            )
+            self.fail(f"rglob('*') raised TypeError: {e}\nThis is the _Globber.__init__() bug. Check traceback above.")
 
     def test_rglob_recursive_pattern(self):
         """Test rglob with recursive pattern like '**/*.txt'."""
@@ -97,10 +93,7 @@ class TestGlobberBug(unittest.TestCase):
         except TypeError as e:
             print(f"[TEST] FAILED with TypeError: {e}")
             traceback.print_exc()
-            self.fail(
-                f"rglob('**/*.txt') raised TypeError: {e}\n"
-                "This is the _Globber.__init__() bug. Check traceback above."
-            )
+            self.fail(f"rglob('**/*.txt') raised TypeError: {e}\nThis is the _Globber.__init__() bug. Check traceback above.")
 
     def test_rglob_file_extension(self):
         """Test rglob with file extension pattern."""
@@ -112,10 +105,7 @@ class TestGlobberBug(unittest.TestCase):
         except TypeError as e:
             print(f"[TEST] FAILED with TypeError: {e}")
             traceback.print_exc()
-            self.fail(
-                f"rglob('*.txt') raised TypeError: {e}\n"
-                "This is the _Globber.__init__() bug. Check traceback above."
-            )
+            self.fail(f"rglob('*.txt') raised TypeError: {e}\nThis is the _Globber.__init__() bug. Check traceback above.")
 
     def test_rglob_case_sensitive_parameter(self):
         """Test rglob with case_sensitive parameter (Python 3.12+)."""
@@ -173,17 +163,14 @@ class TestGlobberBug(unittest.TestCase):
             if "_Globber.__init__()" in error_msg:
                 print(f"[TEST] FAILED with _Globber TypeError: {e}")
                 traceback.print_exc()
-                self.fail(
-                    f"glob('*') raised _Globber TypeError: {e}\n"
-                    "This is the _Globber.__init__() bug. Check traceback above."
-                )
+                self.fail(f"glob('*') raised _Globber TypeError: {e}\nThis is the _Globber.__init__() bug. Check traceback above.")
             else:
                 print(f"[TEST] TypeError (unexpected): {e}")
                 traceback.print_exc()
 
     def test_glob_with_kwargs(self):
         """Test glob with keyword arguments (case_sensitive, recurse_symlinks)."""
-        print(f"\n[TEST] Testing glob('*', case_sensitive=False, recurse_symlinks=True)")
+        print("\n[TEST] Testing glob('*', case_sensitive=False, recurse_symlinks=True)")
 
         try:
             result = list(
@@ -200,17 +187,13 @@ class TestGlobberBug(unittest.TestCase):
                 print(f"[TEST] FAILED with _Globber TypeError: {e}")
                 print(f"[TEST] Error message: {error_msg}")
                 traceback.print_exc()
-                self.fail(
-                    f"glob() with kwargs raised _Globber TypeError: {e}\n"
-                    "This is the _Globber.__init__() bug when passing multiple kwargs.\n"
-                    "Check traceback above."
-                )
+                self.fail(f"glob() with kwargs raised _Globber TypeError: {e}\nThis is the _Globber.__init__() bug when passing multiple kwargs.\nCheck traceback above.")
             else:
                 print(f"[TEST] TypeError (might be expected): {e}")
 
     def test_rglob_from_utility(self):
         """Test rglob which calls rglob internally."""
-        print(f"\n[TEST] Testing rglob('*') (from utility.path)")
+        print("\n[TEST] Testing rglob('*') (from utility.path)")
 
         try:
             from pathlib import Path as UtilityPath
@@ -223,18 +206,14 @@ class TestGlobberBug(unittest.TestCase):
             if "_Globber.__init__()" in error_msg:
                 print(f"[TEST] FAILED with _Globber TypeError: {e}")
                 traceback.print_exc()
-                self.fail(
-                    f"rglob() raised _Globber TypeError: {e}\n"
-                    "This is the _Globber.__init__() bug propagating through rglob.\n"
-                    "Check traceback above."
-                )
+                self.fail(f"rglob() raised _Globber TypeError: {e}\nThis is the _Globber.__init__() bug propagating through rglob.\nCheck traceback above.")
             else:
                 print(f"[TEST] TypeError: {e}")
                 traceback.print_exc()
 
     def test_compare_with_standard_pathlib(self):
         """Compare CaseAwarePath behavior with standard pathlib.Path."""
-        print(f"\n[TEST] Comparing CaseAwarePath vs pathlib.Path behavior")
+        print("\n[TEST] Comparing CaseAwarePath vs pathlib.Path behavior")
 
         standard_path = pathlib.Path(self.temp_dir)
 
@@ -253,19 +232,16 @@ class TestGlobberBug(unittest.TestCase):
         except TypeError as e:
             error_msg = str(e)
             if "_Globber.__init__()" in error_msg:
-                print(f"[TEST] CaseAwarePath FAILED while pathlib.Path succeeded")
-                print(f"[TEST] This confirms the bug is specific to CaseAwarePath wrapper")
+                print("[TEST] CaseAwarePath FAILED while pathlib.Path succeeded")
+                print("[TEST] This confirms the bug is specific to CaseAwarePath wrapper")
                 traceback.print_exc()
-                self.fail(
-                    f"CaseAwarePath.rglob() failed with _Globber TypeError while "
-                    f"pathlib.Path.rglob() succeeded. Error: {e}"
-                )
+                self.fail(f"CaseAwarePath.rglob() failed with _Globber TypeError while pathlib.Path.rglob() succeeded. Error: {e}")
             else:
                 raise
 
     def test_nested_directory_rglob(self):
         """Test rglob on nested directory structure."""
-        print(f"\n[TEST] Testing rglob on nested directory: level1/level2")
+        print("\n[TEST] Testing rglob on nested directory: level1/level2")
 
         nested_path = self.test_base / "level1" / "level2"
 
@@ -277,14 +253,11 @@ class TestGlobberBug(unittest.TestCase):
             if "_Globber.__init__()" in error_msg:
                 print(f"[TEST] FAILED with _Globber TypeError: {e}")
                 traceback.print_exc()
-                self.fail(
-                    f"rglob() on nested directory raised _Globber TypeError: {e}\n"
-                    "Check traceback above."
-                )
+                self.fail(f"rglob() on nested directory raised _Globber TypeError: {e}\nCheck traceback above.")
 
     def test_globber_signature_analysis(self):
         """Analyze and document the exact error signature."""
-        print(f"\n[TEST] Analyzing _Globber.__init__() signature issue")
+        print("\n[TEST] Analyzing _Globber.__init__() signature issue")
 
         import inspect
 
@@ -303,18 +276,18 @@ class TestGlobberBug(unittest.TestCase):
         # Now test actual call to see what arguments are being passed
         try:
             result = list(self.test_base.rglob("*"))
-            print(f"[TEST] rglob() call succeeded")
+            print("[TEST] rglob() call succeeded")
         except TypeError as e:
             error_msg = str(e)
-            print(f"\n[TEST] ========================================")
-            print(f"[TEST] ERROR ANALYSIS")
-            print(f"[TEST] ========================================")
+            print("\n[TEST] ========================================")
+            print("[TEST] ERROR ANALYSIS")
+            print("[TEST] ========================================")
             print(f"[TEST] Error Type: {type(e).__name__}")
             print(f"[TEST] Error Message: {error_msg}")
             print(f"[TEST] Error Args: {e.args}")
-            print(f"\n[TEST] Full Traceback:")
+            print("\n[TEST] Full Traceback:")
             traceback.print_exc()
-            print(f"[TEST] ========================================")
+            print("[TEST] ========================================")
 
             if "_Globber.__init__()" in error_msg:
                 # Extract the argument count from error message
@@ -322,7 +295,7 @@ class TestGlobberBug(unittest.TestCase):
                     parts = error_msg.split("takes from")[1].split("but")[0].strip()
                     expected = parts.split("to")[0].strip()
                     actual_part = error_msg.split("but")[1].split("were given")[0].strip()
-                    print(f"\n[TEST] EXPECTED: 3 to 5 arguments")
+                    print("\n[TEST] EXPECTED: 3 to 5 arguments")
                     print(f"[TEST] ACTUAL: {actual_part} arguments")
                     print(f"[TEST] DIFFERENCE: {int(actual_part) - 5} extra arguments")
 
@@ -330,7 +303,7 @@ class TestGlobberBug(unittest.TestCase):
 
     def test_installation_load_override_scenario(self):
         """Reproduce the exact scenario from installation.py:553 that triggers the bug."""
-        print(f"\n[TEST] Reproducing installation.py:553 scenario (load_override)")
+        print("\n[TEST] Reproducing installation.py:553 scenario (load_override)")
 
         # This mimics: target_dirs = [f for f in override_path.rglob("*") if f.is_dir()]
         from pathlib import Path as UtilityPath
@@ -343,8 +316,8 @@ class TestGlobberBug(unittest.TestCase):
         except TypeError as e:
             error_msg = str(e)
             if "_Globber.__init__()" in error_msg:
-                print(f"[TEST] FAILED: Reproduced the exact bug from installation.py")
-                print(f"[TEST] This is the scenario that causes KotorDiff to fail")
+                print("[TEST] FAILED: Reproduced the exact bug from installation.py")
+                print("[TEST] This is the scenario that causes KotorDiff to fail")
                 traceback.print_exc()
                 self.fail(
                     f"Reproduced installation.py:553 bug: {e}\n"
@@ -364,4 +337,3 @@ if __name__ == "__main__":
     print("=" * 80)
 
     unittest.main(verbosity=2)
-

@@ -691,14 +691,14 @@ def build_section_content(
     section_type: str | None = None,
 ) -> tuple[str, list[tuple[str, bool, str | None, str | None, int | None]]]:
     """Build content for a section and return (content, toc_entries).
-    
+
     Args:
         items_by_category: Dictionary mapping category names to lists of items
         format_func: Function to format items as markdown
         item_type: "function" or "constant"
         vendor_to_repo: Dictionary mapping vendor paths to repo URLs
         section_type: Section type for TOC generation (e.g., "Shared Functions (K1 & TSL)")
-    
+
     Returns:
         Tuple of (content_string, list of (name, is_item, category, section_type, routine_num))
     """

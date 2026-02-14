@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 """Quick test for decompilation."""
+
 import sys
 import traceback
 
@@ -20,4 +21,3 @@ try:
 except Exception as e:
     print(f"ERROR: {e}", file=sys.stderr)
     traceback.print_exc(file=sys.stderr)
-

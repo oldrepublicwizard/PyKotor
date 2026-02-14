@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 """Test runner for all MDL tests with proper path setup."""
+
 import sys
 from pathlib import Path
 
@@ -22,13 +23,11 @@ if __name__ == "__main__":
         "tests/resource/formats/test_mdl_roundtrip.py",
         "tests/resource/formats/test_mdl_comprehensive.py",
     ]
-    
+
     # Also check for test_mdl_editor.py
     editor_test = THIS_DIR.parents[2] / "Tools" / "HolocronToolset" / "tests" / "gui" / "editors" / "test_mdl_editor.py"
     if editor_test.exists():
         test_files.append(str(editor_test.relative_to(THIS_DIR.parents[2])))
-    
+
     exit_code = pytest.main(["-v", "--tb=short"] + test_files)
     sys.exit(exit_code)
-
-

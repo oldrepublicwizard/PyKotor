@@ -1308,16 +1308,8 @@ class AxisAngle:
         axis: Vector3 | None = None,
         angle: float | None = None,
     ):
-        self.axis: Vector3 = (
-            axis
-            if axis is not None
-            else Vector3()
-        )
-        self.angle: float = (
-            angle
-            if angle is not None
-            else 0.0
-        )
+        self.axis: Vector3 = axis if axis is not None else Vector3()
+        self.angle: float = angle if angle is not None else 0.0
 
     @classmethod
     def from_quaternion(

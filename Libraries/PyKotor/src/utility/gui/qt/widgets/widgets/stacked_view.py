@@ -117,7 +117,7 @@ class DynamicStackedView(QStackedWidget):
     ) -> None:
         for view in self.all_views():
             view.setModel(model)
-        
+
         # After setting the model, create a new common selection model
         # because the old one is tied to the old model
         self.common_selection_model = QItemSelectionModel(model)
@@ -356,12 +356,12 @@ if __name__ == "__main__":
     import random
 
     for i in range(len(icons)):
-        item = QStandardItem(icons[i], f"Item {i+1}")
+        item = QStandardItem(icons[i], f"Item {i + 1}")
         model.appendRow(item)
         for _ in range(random.randint(0, 5)):  # noqa: S311
             child = QStandardItem(
                 icons[random.randint(0, len(icons) - 1)],  # noqa: S311
-                f"Child {i+1}.{_+1}",
+                f"Child {i + 1}.{_ + 1}",
             )
             item.appendRow(child)
 

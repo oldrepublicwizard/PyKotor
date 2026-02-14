@@ -32,7 +32,6 @@ from pykotor.resource.generics.git import GITDoor, GITModuleLink, GITTrigger, co
 from pykotor.resource.type import ResourceType
 
 if TYPE_CHECKING:
-    from pykotor.resource.formats.gff.gff_data import GFF
     from pykotor.resource.generics.git import GIT
 
 TEST_GIT_XML = """<gff3>

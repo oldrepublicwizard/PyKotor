@@ -13,10 +13,10 @@ if TYPE_CHECKING:
 
 class VISAsciiReader(ResourceReader):
     """Reads VIS (Visibility) files.
-    
+
     VIS files define which rooms are visible from other rooms, used for occlusion culling
     and level-of-detail management in KotOR modules.
-    
+
     References:
     ----------
         Based on swkotor.exe VIS structure:
@@ -33,6 +33,7 @@ class VISAsciiReader(ResourceReader):
 
 
     """
+
     def __init__(self, source: SOURCE_TYPES, offset: int = 0, size: int = 0):
         super().__init__(source, offset, size)
         self._vis: VIS | None = None

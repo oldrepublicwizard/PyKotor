@@ -69,10 +69,7 @@ class _BitmapGrid:
         self.num_chars: int = num_chars
         self.chars_per_col: int = math.ceil(math.sqrt(num_chars))
         self.chars_per_row: int = math.ceil(math.sqrt(num_chars))
-        self.cell_size: int = min(
-            resolution[0] // self.chars_per_row,
-            resolution[1] // self.chars_per_col
-        )
+        self.cell_size: int = min(resolution[0] // self.chars_per_row, resolution[1] // self.chars_per_col)
         self.cell_height: float = resolution[1] / self.chars_per_row
 
 

@@ -3,6 +3,7 @@
 This module provides CLI commands for converting between different file formats
 (GFF<->XML, TLK<->XML, SSF<->XML, 2DA<->CSV, etc.) using PyKotor utilities.
 """
+
 from __future__ import annotations
 
 import pathlib
@@ -232,4 +233,3 @@ def cmd_tlk2json(args: Namespace, logger: Logger) -> int:
         return 1
     else:
         return 0
-

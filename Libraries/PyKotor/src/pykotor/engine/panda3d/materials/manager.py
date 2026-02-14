@@ -6,7 +6,7 @@ References:
         - CResTPC::CResTPC @ 0x00712ea0 - TPC texture resource constructor
         - GetTPCAttrib @ 0x00712ef0 - Gets TPC texture attributes
         - Material and shader management in game engine
-        
+
         Libraries/PyKotor/src/pykotor/engine/materials/base.py - Abstract interfaces
 
 
@@ -60,7 +60,7 @@ class Panda3DMaterial(IMaterial):
         Based on swkotor.exe texture loading:
         - CResTPC::CResTPC @ 0x00712ea0 - TPC texture resource constructor
         - GetTPCAttrib @ 0x00712ef0 - Gets TPC texture attributes
-        
+
         /panda3d/panda3d-docs/programming/texturing/creating-texture - loader.loadTexture()
 
 
@@ -98,7 +98,7 @@ class Panda3DMaterial(IMaterial):
         Based on swkotor.exe material application:
         - Material and shader management in game engine
         - Texture stage configuration and shader input setup
-        
+
         /panda3d/panda3d-docs/programming/shaders/shader-basics.rst - model.setShader()
         /panda3d/panda3d-docs/programming/texturing/texture-modes.rst - TextureStage.MNormal
         /panda3d/panda3d-docs/programming/shaders/coordinate-spaces.rst - setShaderInput()
@@ -166,4 +166,3 @@ class Panda3DMaterialManager(IMaterialManager):
         if not isinstance(material, Panda3DMaterial):
             raise TypeError("Expected Panda3DMaterial instance")
         material.apply(node)
-

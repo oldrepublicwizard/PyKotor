@@ -29,7 +29,7 @@ from pykotor.resource.generics.ifo import IFO, construct_ifo, dismantle_ifo
 from pykotor.resource.type import ResourceType
 
 if TYPE_CHECKING:
-    from pykotor.resource.formats.gff.gff_data import GFF
+    pass
 
 TEST_IFO_XML = """<gff3>
   <struct id="-1">

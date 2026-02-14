@@ -1,4 +1,5 @@
 """Init command implementation."""
+
 from __future__ import annotations
 
 import subprocess
@@ -243,6 +244,3 @@ def cmd_init(args: Namespace, logger: Logger) -> int:
     logger.info("  4. Run 'pykotorcli pack' to build your module")
 
     return 0
-
-
-

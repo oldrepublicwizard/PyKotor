@@ -2,6 +2,7 @@
 
 This module handles unpacking of module/ERF/hak files into JSON source files.
 """
+
 from __future__ import annotations
 
 import glob
@@ -196,4 +197,3 @@ def cmd_unpack(args: Namespace, logger: Logger) -> int:
         return 1
 
     return 0
-

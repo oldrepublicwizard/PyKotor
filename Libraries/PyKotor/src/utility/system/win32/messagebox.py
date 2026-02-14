@@ -23,11 +23,13 @@ from utility.system.win32.winapi.messagebox import (
 
 def _get_tk_root() -> tk.Tk:
     import tkinter as tk
+
     if tk._default_root is None:  # pyright: ignore[reportAttributeAccessIssue]  # noqa: SLF001
         root = tk.Tk()
         root.withdraw()
         return root
     return tk._default_root  # pyright: ignore[reportAttributeAccessIssue]  # noqa: SLF001
+
 
 def showinfo(title: str, message: str, **options):
     try:

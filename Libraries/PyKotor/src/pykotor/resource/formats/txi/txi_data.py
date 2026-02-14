@@ -7,29 +7,47 @@ flipbook textures.
 
 References:
 ----------
-        Based on unified K1 (swkotor.exe) and TSL (swkotor2.exe) TXI structure.
-        Addresses: (K1: swkotor.exe, TSL: swkotor2.exe — verify/fill TSL via REVA when available).
+    Based on unified K1 (swkotor.exe) and TSL (swkotor2.exe) TXI structure.
+    All addresses below are for K1 (swkotor.exe) unless a TSL address is given.
+    TSL equivalents: verify and fill via Reva (open swkotor2.exe, search functions by
+    name or references to strings ".txi", "txi", "TXI" to locate same logic).
 
-        - GetTXIInternal @ 0x0070e5e0 - Gets TXI data from resource (229 bytes, 6 callees)
-          * Loads TXI file as resource
-          * Returns TXI data pointer and size
-        - ReleaseTXIInternal @ 0x0070eaa0 - Releases TXI resource (71 bytes, 3 callees)
-        - CAuroraTXI::CAuroraTXI @ 0x0070fd10 - TXI parser constructor (131 bytes, 3 callees)
-          * Parses ASCII TXI file format
-          * Handles command-value pairs
-        - CResTXI::CResTXI @ 0x00710db0 - TXI resource constructor (36 bytes, 1 callee)
-          * Initializes TXI resource
-          * Sets up TXI data pointer and size
-        - SetTxiData @ 0x0041ecb0 - Sets TXI data (91 bytes, 2 callees)
-        - GetTxiData @ 0x0041ec90 - Gets TXI data (23 bytes)
-        - IsTxiLoaded @ 0x0041ec50 - Checks if TXI is loaded (26 bytes)
-        - GetTxiSize @ 0x0041ed20 - Gets TXI data size (23 bytes)
-        - GetProcessedTextureTXIPtr @ 0x0070f3e0 - Gets processed texture TXI pointer (33 bytes, 2 callees)
-        - GetProcessedTextureTXISize @ 0x0070f410 - Gets processed texture TXI size (33 bytes, 2 callees)
-        - ".txi" extension string @ 0x0073f09c - TXI file extension
-        - "txi" resource type string @ 0x0074dd94 - TXI resource type identifier
-        - "TXI" string @ 0x0075fb40 - TXI format identifier
-        https://nwn.wiki/display/NWN1/TXI - NWN TXI documentation (similar format)
+    Functions (code):
+        - GetTXIInternal — Gets TXI data from resource (loads TXI file, returns data ptr/size).
+            K1: 0x0070e5e0 (229 bytes, 6 callees). TSL: TODO.
+        - ReleaseTXIInternal — Releases TXI resource.
+            K1: 0x0070eaa0 (71 bytes, 3 callees). TSL: TODO.
+        - CAuroraTXI::CAuroraTXI — TXI parser constructor (parses ASCII command-value pairs).
+            K1: 0x0070fd10 (131 bytes, 3 callees). TSL: TODO.
+        - CResTXI::CResTXI — TXI resource constructor (init TXI resource, data ptr/size).
+            K1: 0x00710db0 (36 bytes, 1 callee). TSL: TODO.
+        - SetTxiData — Sets TXI data.
+            K1: 0x0041ecb0 (91 bytes, 2 callees). TSL: TODO.
+        - GetTxiData — Gets TXI data.
+            K1: 0x0041ec90 (23 bytes). TSL: TODO.
+        - IsTxiLoaded — Checks if TXI is loaded.
+            K1: 0x0041ec50 (26 bytes). TSL: TODO.
+        - GetTxiSize — Gets TXI data size.
+            K1: 0x0041ed20 (23 bytes). TSL: TODO.
+        - GetProcessedTextureTXIPtr — Gets processed texture TXI pointer.
+            K1: 0x0070f3e0 (33 bytes, 2 callees). TSL: TODO.
+        - GetProcessedTextureTXISize — Gets processed texture TXI size.
+            K1: 0x0070f410 (33 bytes, 2 callees). TSL: TODO.
+
+    Data (strings / constants; K1 only; TSL layout differs — locate via string search in Reva):
+        - ".txi" extension string: K1: 0x0073f09c. TSL: TODO.
+        - "txi" resource type string: K1: 0x0074dd94. TSL: TODO.
+        - "TXI" format identifier: K1: 0x0075fb40. TSL: TODO.
+
+    External: https://nwn.wiki/display/NWN1/TXI - NWN TXI documentation (similar format).
+
+    Reva verification (when MCP available): To find TSL (swkotor2.exe) addresses for each
+    symbol: (1) list-functions by_identifiers with programPath "swkotor.exe" and the K1
+    address to get the function name; (2) list-functions mode search with programPath
+    "swkotor2.exe" and that name to get the TSL equivalent; (3) for string/data addresses,
+    manage-strings list with filter ".txi" or "txi" on swkotor2.exe, then get-references
+    to the string address to confirm usage. Update the "TSL: TODO" lines above with the
+    resolved addresses and, if desired, add a "TSL: 0x..." line in gff_data.py-style.
 
 Derivations and Other Implementations:
 ----------
@@ -42,7 +60,7 @@ ASCII Format:
 ------------
     - TXI files are line-based ASCII text files with command-value pairs:
 
-    
+
     Format: <command> <value>
     Example: "mipmap 0"
     Example: "blending additive"
@@ -50,10 +68,10 @@ ASCII Format:
              0.000000 0.000000 0
              0.031250 0.031250 0
              ...
-    
+
     Commands are case-insensitive. Values can be integers, floats, booleans (0/1),
     strings (texture names), or multi-line coordinate arrays.
-    
+
 Note:
 ----
     The TXI class needs to be merged with the TXIBaseInformation and its subclasses
@@ -94,7 +112,7 @@ class TXI:
                 if not parsed_line:
                     continue
 
-                #print(parsed_line)
+                # print(parsed_line)
                 if mode == TXIReaderMode.UPPER_LEFT_COORDS:
                     parts: list[str] = parsed_line.split()
                     coords: tuple[float, float, int] = (
@@ -387,11 +405,11 @@ class TXI:
 
 class TXIFeatures:
     """Stores texture features parsed from TXI file.
-    
+
     TXIFeatures contains all properties that can be specified in a TXI file, including
     rendering properties (blending, mipmaps, filtering), companion textures (bump maps,
     environment maps), font metrics for bitmap fonts, and animation parameters.
-    
+
     References:
     ----------
         See module docstring for engine addresses (K1 + TSL TODO). GetTXIInternal, CAuroraTXI::CAuroraTXI, CResTXI.
@@ -401,153 +419,153 @@ class TXIFeatures:
         https://github.com/th3w1zard1/KotOR.js/tree/master/src/resource/TXI.ts:98-252 (ParseInfo method)
 
 
-        
+
     Attributes:
     ----------
         blending: Blending mode for texture rendering (0=None, 1=Additive, 2=PunchThrough)
             Reference: https://github.com/th3w1zard1/KotOR.js/tree/master/TXI.ts:17,145-154 (blending field and parsing)
             Reference: https://github.com/th3w1zard1/KotOR.js/tree/master/TXIBlending.ts:11-15 (enum values)
             Controls how texture blends with background (additive for glowing effects, punchthrough for transparency)
-            
+
         mipmap: Enable mipmap generation (0=disabled, 1=enabled)
             Reference: https://github.com/th3w1zard1/KotOR.js/tree/master/TXI.ts:30,124-126 (mipMap field and parsing)
             Reference: PyKotor txi_data.py:396 (mipmap comment)
             NOTE: Engine has broken mip implementation - incorrectly mixes mip levels even on full-screen objects
             Setting to 0 tells engine to use highest resolution (mip 0)
-            
+
         filter: Enable texture filtering (0=nearest, 1=linear)
             Reference: https://github.com/th3w1zard1/KotOR.js/tree/master/TXI.ts:33,142-144 (filter field and parsing)
             Applies graphical "softening" on fonts (doesn't affect spacing)
             NOTE: Broken implementation in engine, avoid using
-            
+
         decal: Enable decal rendering mode (0=disabled, 1=enabled)
             Reference: https://github.com/th3w1zard1/KotOR.js/tree/master/TXI.ts:31,133-135 (decal field and parsing)
             Decals are rendered on top of geometry without affecting depth buffer
-            
+
         cube: Enable cube map texture (0=disabled, 1=enabled)
             Reference: https://github.com/th3w1zard1/KotOR.js/tree/master/TXI.ts:118-120 (cube parsing, sets textureType to ENVMAP)
             Cube maps are used for environment mapping (skyboxes, reflections)
-            
+
         bumpmaptexture: ResRef of bump map texture companion
             Reference: https://github.com/th3w1zard1/KotOR.js/tree/master/TXI.ts:23,158-160 (bumpMapTexture field and parsing)
             Companion texture providing normal map data for bump mapping
-            
+
         bumpyshinytexture: ResRef of bumpy shiny texture companion
             Reference: https://github.com/th3w1zard1/KotOR.js/tree/master/TXI.ts:24 (envMapTexture field, also used for bumpyshiny)
             Companion texture combining bump and specular mapping
-            
+
         envmaptexture: ResRef of environment map texture companion
             Reference: https://github.com/th3w1zard1/KotOR.js/tree/master/TXI.ts:24,162-164 (envMapTexture field and parsing)
             Companion texture for environment mapping (reflections)
-            
+
         bumpmapscaling: Scaling factor for bump map intensity
             Reference: https://github.com/th3w1zard1/KotOR.js/tree/master/TXI.ts:21,155-157 (bumpMapScaling field and parsing)
             Controls how pronounced bump mapping effects are (default 1.0)
-            
+
         wateralpha: Alpha transparency for water textures (0.0-1.0)
             Reference: https://github.com/th3w1zard1/KotOR.js/tree/master/TXI.ts:25,165-167 (waterAlpha field and parsing)
             Used with proceduretype "water" for water surface rendering
-            
+
         proceduretype: Animation procedure type ("cycle", "water", "arturo", etc.)
             Reference: https://github.com/th3w1zard1/KotOR.js/tree/master/TXI.ts:19,170-187 (procedureType field and parsing)
             Reference: https://github.com/th3w1zard1/KotOR.js/tree/master/TXIPROCEDURETYPE.ts:11-17 (enum values)
             "cycle" = flipbook animation, "water" = water shader, "arturo" = unknown effect
-            
+
         numx: Number of frames horizontally in flipbook animation
             Reference: https://github.com/th3w1zard1/KotOR.js/tree/master/TXI.ts:43,188-190 (numx field and parsing)
             Used with proceduretype "cycle" for flipbook textures
-            
+
         numy: Number of frames vertically in flipbook animation
             Reference: https://github.com/th3w1zard1/KotOR.js/tree/master/TXI.ts:44,191-193 (numy field and parsing)
             Used with proceduretype "cycle" for flipbook textures
-            
+
         fps: Frames per second for flipbook animation
             Reference: https://github.com/th3w1zard1/KotOR.js/tree/master/TXI.ts:45,194-196 (fps field and parsing)
             Animation speed for flipbook textures (proceduretype "cycle")
-            
+
         numchars: Number of characters in font texture
             Reference: https://github.com/th3w1zard1/KotOR.js/tree/master/TXI.ts:32,199-201 (numchars field and parsing)
             NOTE: Unsure if required - game may derive from upperleftcoords/lowerrightcoords sizes
-            
+
         fontheight: Font height in normalized coordinates (0.0-1.0)
             Reference: https://github.com/th3w1zard1/KotOR.js/tree/master/TXI.ts:34,202-204 (fontheight field and parsing)
             Height of font characters in texture space (normalized 0-1)
-            
+
         baselineheight: Baseline height for font rendering (0.0-1.0)
             Reference: https://github.com/th3w1zard1/KotOR.js/tree/master/TXI.ts:35,205-207 (baselineheight field and parsing)
             Vertical position of text baseline in normalized coordinates
             Untested - may control accent positioning above characters
-            
+
         texturewidth: Texture width scaling factor for fonts
             Reference: https://github.com/th3w1zard1/KotOR.js/tree/master/TXI.ts:36,208-210 (texturewidth field and parsing)
             Actual displayed width of texture, allows stretching/compressing along X axis
             Tested - controls font width scaling
-            
+
         spacingR: Horizontal spacing between characters (0.0-1.0)
             Reference: https://github.com/th3w1zard1/KotOR.js/tree/master/TXI.ts:37,211-213 (spacingr field and parsing)
             NOTE: Should NEVER exceed maximum of 0.002600 according to research
             Untested - controls character spacing horizontally
-            
+
         spacingB: Vertical spacing between lines (0.0-1.0)
             Reference: https://github.com/th3w1zard1/KotOR.js/tree/master/TXI.ts:38,214-216 (spacingb field and parsing)
             Confirmed - spacing between each multiline string rendered in-game
             Float between 0 and 1
-            
+
         caretindent: Indent for caret/accent marks above characters
             Reference: https://github.com/th3w1zard1/KotOR.js/tree/master/TXI.ts:39,217-219 (caretindent field and parsing)
             Probably determines accent information above character
             Probably negative since Y is inverted (default -0.010000)
             Untested
-            
+
         upperleftcoords: List of upper-left UV coordinates for font character boxes
             Reference: https://github.com/th3w1zard1/KotOR.js/tree/master/TXI.ts:40,220-233 (upperleftcoords field and parsing)
             Each tuple: (x, y, z) where x,y are normalized 0-1, z is always 0
             Confirmed - top-left coordinates for character boxes game draws
-            
+
         lowerrightcoords: List of lower-right UV coordinates for font character boxes
             Reference: https://github.com/th3w1zard1/KotOR.js/tree/master/TXI.ts:41,234-247 (lowerrightcoords field and parsing)
             Each tuple: (x, y, z) where x,y are normalized 0-1, z is always 0
             Confirmed - bottom-right coordinates for character boxes game draws
-            
+
         isbumpmap: Flag indicating texture is a bump map (0=no, 1=yes)
             Reference: https://github.com/th3w1zard1/KotOR.js/tree/master/TXI.ts:22,112-114 (isbumpmap field and parsing)
             Marks texture as normal map for bump mapping
-            
+
         islightmap: Flag indicating texture is a lightmap (0=no, 1=yes)
             Reference: https://github.com/th3w1zard1/KotOR.js/tree/master/TXI.ts:115-117 (islightmap parsing, sets textureType to LIGHTMAP)
             Marks texture as pre-baked lighting data
-            
+
         downsamplemin: Minimum downsample level
             Reference: https://github.com/th3w1zard1/KotOR.js/tree/master/TXI.ts:28,127-129 (downSampleMin field and parsing)
             Probably unsupported or broken related to mipmap issues
-            
+
         downsamplemax: Maximum downsample level
             Reference: https://github.com/th3w1zard1/KotOR.js/tree/master/TXI.ts:29,130-132 (downSampleMax field and parsing)
             Probably unsupported or broken related to mipmap issues
-            
+
         defaultwidth: Default texture width (pixels)
             Reference: https://github.com/th3w1zard1/KotOR.js/tree/master/TXI.ts:26,136-138 (defaultWidth field and parsing)
             Default width hint for texture loading
-            
+
         defaultheight: Default texture height (pixels)
             Reference: https://github.com/th3w1zard1/KotOR.js/tree/master/TXI.ts:27,139-141 (defaultHeight field and parsing)
             Default height hint for texture loading
-            
+
         compresstexture: Enable texture compression (0=no, 1=yes)
             Reference: https://github.com/th3w1zard1/KotOR.js/tree/master/TXI.ts:20,121-123 (isCompressed field and parsing)
             Controls whether texture should be compressed in memory
-            
+
         clamp: Enable texture clamping (0=repeat, 1=clamp)
             Controls texture wrapping behavior at edges
-            
+
         alphamean: Mean alpha value for alpha testing
             Reference: PyKotor txi_data.py:335 (alphamean field)
             Used for alpha testing optimization
-            
+
         filter: Texture filtering mode (separate from mipmap filter)
             Reference: PyKotor txi_data.py:371 (filter comment)
             NOTE: Broken implementation in engine
-            
+
         Other fields (arturoheight, arturowidth, channelscale, channeltranslate, codepage,
         cols, controllerscript, dbmapping, defaultbpp, distort, distortangle,
         distortionamplitude, downsamplefactor, filerange, isdiffusebumpmap, isdoublebyte,
@@ -558,135 +576,102 @@ class TXIFeatures:
     """
 
     def __init__(self):  # noqa: PLR0915
-        
-        
         # https://github.com/th3w1zard1/KotOR.js/tree/master/src/resource/TXI.ts:17,145-154
         # Blending mode (0=None, 1=Additive, 2=PunchThrough)
         self.blending: int | None = None
-        
-        
+
         # https://github.com/th3w1zard1/KotOR.js/tree/master/src/resource/TXI.ts:30,124-126
         # Enable mipmap generation (0=disabled, 1=enabled, NOTE: broken in engine)
         self.mipmap: bool | None = None
-        
+
         # https://github.com/th3w1zard1/KotOR.js/tree/master/src/resource/TXI.ts:33,142-144
         # Enable texture filtering (NOTE: broken implementation)
         self.filter: bool | None = None
-        
-        
-        
+
         # https://github.com/th3w1zard1/KotOR.js/tree/master/src/resource/TXI.ts:31,133-135
         # Enable decal rendering mode
         self.decal: bool | None = None
-        
-        
-        
+
         # https://github.com/th3w1zard1/KotOR.js/tree/master/src/resource/TXI.ts:118-120
         # Enable cube map texture
         self.cube: bool | None = None
-        
-        
-        
+
         # https://github.com/th3w1zard1/KotOR.js/tree/master/src/resource/TXI.ts:23,158-160
         # ResRef of bump map texture companion
         self.bumpmaptexture: str | None = None
-        
-        
-        
+
         # https://github.com/th3w1zard1/KotOR.js/tree/master/src/resource/TXI.ts:24
         # ResRef of bumpy shiny texture companion
         self.bumpyshinytexture: str | None = None
-        
-        
-        
+
         # https://github.com/th3w1zard1/KotOR.js/tree/master/src/resource/TXI.ts:24,162-164
         # ResRef of environment map texture companion
         self.envmaptexture: str | None = None
-        
-        
-        
+
         # https://github.com/th3w1zard1/KotOR.js/tree/master/src/resource/TXI.ts:21,155-157
         # Scaling factor for bump map intensity
         self.bumpmapscaling: float | None = None
-        
-        
-        
+
         # https://github.com/th3w1zard1/KotOR.js/tree/master/src/resource/TXI.ts:25,165-167
         # Alpha transparency for water textures (0.0-1.0)
         self.wateralpha: float | None = None
-        
-        
-        
+
         # https://github.com/th3w1zard1/KotOR.js/tree/master/src/resource/TXI.ts:19,170-187
         # Animation procedure type ("cycle", "water", "arturo", etc.)
         self.proceduretype: str | None = None
-        
-        
-        
+
         # https://github.com/th3w1zard1/KotOR.js/tree/master/src/resource/TXI.ts:43,188-190
         # Number of frames horizontally in flipbook animation
         self.numx: int | None = None
-        
-        
-        
+
         # https://github.com/th3w1zard1/KotOR.js/tree/master/src/resource/TXI.ts:44,191-193
         # Number of frames vertically in flipbook animation
         self.numy: int | None = None
-        
-        
-        
+
         # https://github.com/th3w1zard1/KotOR.js/tree/master/src/resource/TXI.ts:45,194-196
         # Frames per second for flipbook animation
         self.fps: float | None = None
-        
-        
-        
+
         # https://github.com/th3w1zard1/KotOR.js/tree/master/src/resource/TXI.ts:32,199-201
         # Number of characters in font texture (may be derived from coords)
         self.numchars: int | None = None
-        
-        
-        
+
         # https://github.com/th3w1zard1/KotOR.js/tree/master/src/resource/TXI.ts:34,202-204
         # Font height in normalized coordinates (0.0-1.0)
         self.fontheight: float | None = None
-        
+
         # https://github.com/th3w1zard1/KotOR.js/tree/master/src/resource/TXI.ts:224,225
         # Font width in normalized coordinates (0.0-1.0)
         self.fontwidth: float | None = None
-        
+
         # https://github.com/th3w1zard1/KotOR.js/tree/master/src/resource/TXI.ts:35,205-207
         # Baseline height for font rendering (0.0-1.0)
         self.baselineheight: float | None = None
-        
+
         # https://github.com/th3w1zard1/KotOR.js/tree/master/src/resource/TXI.ts:36,208-210
         # Texture width scaling factor for fonts
         self.texturewidth: float | None = None
-        
+
         # https://github.com/th3w1zard1/KotOR.js/tree/master/src/resource/TXI.ts:37,211-213
         # Horizontal spacing between characters (0.0-1.0, max 0.002600)
         self.spacingR: float | None = None
-        
+
         # https://github.com/th3w1zard1/KotOR.js/tree/master/src/resource/TXI.ts:38,214-216
         # Vertical spacing between lines (0.0-1.0)
         self.spacingB: float | None = None
-        
+
         # https://github.com/th3w1zard1/KotOR.js/tree/master/src/resource/TXI.ts:39,217-219
         # Indent for caret/accent marks above characters (probably negative)
         self.caretindent: float | None = None
-        
-        
-        
+
         # https://github.com/th3w1zard1/KotOR.js/tree/master/src/resource/TXI.ts:40,220-233
         # Upper-left UV coordinates for font character boxes (normalized 0-1, z always 0)
         self.upperleftcoords: list[tuple[float, float, int]] | None = None
-        
-        
-        
+
         # https://github.com/th3w1zard1/KotOR.js/tree/master/src/resource/TXI.ts:41,234-247
         # Lower-right UV coordinates for font character boxes (normalized 0-1, z always 0)
         self.lowerrightcoords: list[tuple[float, float, int]] | None = None
-        
+
         # Additional fields (many are NWN-specific or unimplemented)
         self.alphamean: float | None = None
         self.arturoheight: int | None = None
@@ -731,13 +716,7 @@ class TXIFeatures:
     @property
     def is_flipbook(self) -> bool:
         """Return True when the TXI describes a flipbook animation."""
-        return (
-            isinstance(self.proceduretype, str)
-            and self.proceduretype.lower() == "cycle"
-            and bool(self.numx)
-            and bool(self.numy)
-            and bool(self.fps)
-        )
+        return isinstance(self.proceduretype, str) and self.proceduretype.lower() == "cycle" and bool(self.numx) and bool(self.numy) and bool(self.fps)
 
 
 class TXICommand(Enum):
@@ -831,12 +810,7 @@ class TXIBaseInformation(ComparableMixin):
     def __eq__(self, other):
         if not isinstance(other, TXIBaseInformation):
             return NotImplemented  # type: ignore[no-any-return]
-        return (
-            self.mipmap == other.mipmap
-            and self.filter == other.filter
-            and self.downsamplemin == other.downsamplemin
-            and self.downsamplemax == other.downsamplemax
-        )
+        return self.mipmap == other.mipmap and self.filter == other.filter and self.downsamplemin == other.downsamplemin and self.downsamplemax == other.downsamplemax
 
     def __hash__(self):
         return hash((self.mipmap, self.filter, self.downsamplemin, self.downsamplemax))
@@ -852,6 +826,7 @@ class TXIMaterialInformation(TXIBaseInformation):
         "decal",
         "envmaptexture",
     )
+
     def __init__(self):
         super().__init__()
         self.bumpmaptexture: int = 0
@@ -875,15 +850,7 @@ class TXIMaterialInformation(TXIBaseInformation):
         )
 
     def __hash__(self):
-        return hash((
-            super().__hash__(),
-            self.bumpmaptexture,
-            self.bumpyshinytexture,
-            self.envmaptexture,
-            self.bumpreplacementtexture,
-            self.blending,
-            self.decal
-        ))
+        return hash((super().__hash__(), self.bumpmaptexture, self.bumpyshinytexture, self.envmaptexture, self.bumpreplacementtexture, self.blending, self.decal))
 
 
 class TXITextureInformation(TXIBaseInformation):
@@ -912,6 +879,7 @@ class TXITextureInformation(TXIBaseInformation):
         "temporary",
         "useglobalalpha",
     )
+
     def __init__(self):
         super().__init__()
         self.proceduretype: int = 0
@@ -967,31 +935,33 @@ class TXITextureInformation(TXIBaseInformation):
         )
 
     def __hash__(self):
-        return hash((
-            super().__hash__(),
-            self.proceduretype,
-            self.filerange,
-            self.defaultwidth,
-            self.defaultheight,
-            self.filter,
-            self.maptexelstopixels,
-            self.gamma,
-            self.isbumpmap,
-            self.clamp,
-            self.alphamean,
-            self.isdiffusebumpmap,
-            self.isspecularbumpmap,
-            self.bumpmapscaling,
-            self.specularcolor,
-            self.numx,
-            self.numy,
-            self.cube,
-            self.bumpintensity,
-            self.temporary,
-            self.useglobalalpha,
-            self.isenvironmentmapped,
-            self.pltreplacement
-        ))
+        return hash(
+            (
+                super().__hash__(),
+                self.proceduretype,
+                self.filerange,
+                self.defaultwidth,
+                self.defaultheight,
+                self.filter,
+                self.maptexelstopixels,
+                self.gamma,
+                self.isbumpmap,
+                self.clamp,
+                self.alphamean,
+                self.isdiffusebumpmap,
+                self.isspecularbumpmap,
+                self.bumpmapscaling,
+                self.specularcolor,
+                self.numx,
+                self.numy,
+                self.cube,
+                self.bumpintensity,
+                self.temporary,
+                self.useglobalalpha,
+                self.isenvironmentmapped,
+                self.pltreplacement,
+            )
+        )
 
 
 class TXIFontInformation(TXIBaseInformation):
@@ -1055,8 +1025,12 @@ class TXIFontInformation(TXIBaseInformation):
         self.baselineheight: float = 0.0  # Untested. Float between 0 and 1.
         self.texturewidth: float = 0.0  # Tested. Float between 0 and 1. Actual displayed width of the texture, allows stretching/compressing along the X axis.
 
-        self.upper_left_coords: list[tuple[float, float, int]] = []  # Confirmed. The top left coordinates for the character box the game draws. each float is 0 to 1. 3rd tuple int is always 0  # noqa: E501
-        self.lower_right_coords: list[tuple[float, float, int]] = []  # Confirmed. The bottom right coordinates for the character box the game draws. each float is 0 to 1. 3rd tuple int is always 0  # noqa: E501
+        self.upper_left_coords: list[
+            tuple[float, float, int]
+        ] = []  # Confirmed. The top left coordinates for the character box the game draws. each float is 0 to 1. 3rd tuple int is always 0  # noqa: E501
+        self.lower_right_coords: list[
+            tuple[float, float, int]
+        ] = []  # Confirmed. The bottom right coordinates for the character box the game draws. each float is 0 to 1. 3rd tuple int is always 0  # noqa: E501
 
     COMPARABLE_FIELDS = (
         *TXIBaseInformation.COMPARABLE_FIELDS,
@@ -1069,19 +1043,21 @@ class TXIFontInformation(TXIBaseInformation):
     COMPARABLE_SEQUENCE_FIELDS = ("upper_left_coords", "lower_right_coords")
 
     def __hash__(self):
-        return hash((
-            super().__hash__(),
-            self.numchars,
-            self.spacingR,
-            self.spacingB,
-            self.caretindent,
-            self.fontwidth,
-            self.fontheight,
-            self.baselineheight,
-            self.texturewidth,
-            tuple(self.upper_left_coords),
-            tuple(self.lower_right_coords)
-        ))
+        return hash(
+            (
+                super().__hash__(),
+                self.numchars,
+                self.spacingR,
+                self.spacingB,
+                self.caretindent,
+                self.fontwidth,
+                self.fontheight,
+                self.baselineheight,
+                self.texturewidth,
+                tuple(self.upper_left_coords),
+                tuple(self.lower_right_coords),
+            )
+        )
         #
         # The 3rd int in the upperleftcoords and bottomright coords is unknown. It could be any of the following:
         #

@@ -166,18 +166,18 @@ class ERF(BiowareArchive):
             Save games use MOD signature but have different structure
             Affects how certain fields are interpreted (e.g., build date)
             PyKotor-specific flag for save game handling
-        
+
         build_year: Years since 1900 (e.g., 103 = 2003)
             Reference: https://github.com/th3w1zard1/Kotor.NET/blob/master/Kotor.NET/Formats/KotorERF/ERFBinaryStructure.cs:84 (BuildYear)
-            
+
         build_day: Day of the year (1-366)
             Reference: https://github.com/th3w1zard1/Kotor.NET/blob/master/Kotor.NET/Formats/KotorERF/ERFBinaryStructure.cs:85 (BuildDay)
-            
+
         description_strref: TLK String Reference for module description
             Reference: ERF File Format Specification (Offset 0x28)
             Note: Kotor.NET stops reading at 0x24 (BuildDay), skipping this field.
             Defaults: -1 for MOD/NWM, 0 for SAV
-            
+
         localized_strings: Dictionary providing descriptions in multiple languages (LanguageID -> String)
             Reference: ERF File Format Specification (Offsets 0x08, 0x0C, 0x14)
             Note: reone (erfreader.cpp:28) and Kotor.NET (ERFBinaryStructure.cs:100) skip these fields.
@@ -201,7 +201,6 @@ class ERF(BiowareArchive):
     ):
         super().__init__()
 
-        
         # https://github.com/th3w1zard1/Kotor.NET/tree/master/Kotor.NET/Formats/KotorERF/ERFBinaryStructure.cs:73
         # https://github.com/th3w1zard1/KotOR_IO/tree/master/KotOR_IO/File Formats/ERF.cs:46
         # https://github.com/th3w1zard1/KotOR.js/tree/master/src/resource/ERFObject.ts:45
@@ -227,8 +226,7 @@ class ERF(BiowareArchive):
         self.is_save = value
 
     def __repr__(self) -> str:
-        return f"{self.__class__.__name__}({self.erf_type!r}, is_save={self.is_save}, " \
-               f"desc_strref={self.description_strref})"
+        return f"{self.__class__.__name__}({self.erf_type!r}, is_save={self.is_save}, desc_strref={self.description_strref})"
 
     def __eq__(self, other: object):
         from pykotor.resource.formats.rim import RIM  # Prevent circular imports  # noqa: PLC0415

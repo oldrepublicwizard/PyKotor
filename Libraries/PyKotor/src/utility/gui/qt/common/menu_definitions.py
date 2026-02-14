@@ -16,6 +16,7 @@ class MenuContext(Enum):
 
 class FileExplorerMenus:
     """Creates dynamic menus for a file explorer."""
+
     def __init__(self):
         self.actions = FileExplorerActions()
 

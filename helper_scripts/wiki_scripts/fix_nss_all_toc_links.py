@@ -134,6 +134,7 @@ FUNCTION_FILE_MAP = {
     "Set": "NSS-Shared-Functions-Other-Functions",
 }
 
+
 # Build comprehensive function mapping
 def build_function_map() -> dict[str, tuple[str, str]]:
     """Build mapping from function name to (file_name, anchor)."""
@@ -175,40 +176,42 @@ def build_function_map() -> dict[str, tuple[str, str]]:
         # K1-Only Functions
         "NSS-K1-Only-Functions-Other-Functions.md",
     ]
-    
+
     for func_file in FUNCTION_FILES:
         file_path = WIKI_DIR / func_file
         if not file_path.exists():
             continue
-        
-        content = file_path.read_text(encoding='utf-8')
-        file_name = func_file.replace('.md', '')
-        
+
+        content = file_path.read_text(encoding="utf-8")
+        file_name = func_file.replace(".md", "")
+
         # Find all HTML anchors and their following headings
         for match in re.finditer(r'<a id="([^"]+)"></a>\s*\n\s*##\s+`([^(]+)\(', content):
             anchor = match.group(1)
             func_name = match.group(2)
             function_map[func_name] = (file_name, anchor)
-    
+
     return function_map
+
 
 FUNCTION_MAP = build_function_map()
 
+
 def get_function_file_and_anchor(func_name: str) -> tuple[str, str] | None:
     """Get the file name and anchor for a function.
-    
+
     Returns: (file_name, anchor) or None if not found
     """
     # First try exact match from comprehensive map
     if func_name in FUNCTION_MAP:
         return FUNCTION_MAP[func_name]
-    
+
     # Fallback to prefix-based mapping (for functions not yet indexed)
     for prefix, file_name in FUNCTION_FILE_MAP.items():
         if func_name.startswith(prefix):
             # Generate anchor from function name
             return file_name, func_name.lower()
-    
+
     return None
 
 
@@ -232,10 +235,10 @@ def fix_toc_links():
     current_section = None
     in_tsl_only = False
     in_k1_only = False
-    
+
     for line_num, line in enumerate(lines, 1):
         parsed_line = line
-        
+
         # Track section context
         if "## TSL-Only Functions" in parsed_line:
             in_tsl_only = True
@@ -246,7 +249,7 @@ def fix_toc_links():
         elif parsed_line.strip().startswith("## ") and not parsed_line.strip().startswith("## TSL-Only") and not parsed_line.strip().startswith("## K1-Only"):
             in_tsl_only = False
             in_k1_only = False
-        
+
         # Match lines with function links: - [`Function(params)` - Routine N](#anchor or file)
         # Pattern: backtick, function name, backtick, optional routine, link
         if "`" in parsed_line and ("Routine" in parsed_line or "](NSS-" in parsed_line):
@@ -274,7 +277,7 @@ def fix_toc_links():
                         tsl_file = file_name.replace("NSS-Shared-Functions", "NSS-TSL-Only-Functions")
                         tsl_path = WIKI_DIR / f"{tsl_file}.md"
                         if tsl_path.exists():
-                            content = tsl_path.read_text(encoding='utf-8')
+                            content = tsl_path.read_text(encoding="utf-8")
                             anchor_pattern = rf'<a id="([^"]+)"></a>\s*\n\s*##\s+`{re.escape(func_name)}\('
                             match_anchor = re.search(anchor_pattern, content)
                             if match_anchor:
@@ -285,7 +288,7 @@ def fix_toc_links():
                         k1_file = file_name.replace("NSS-Shared-Functions", "NSS-K1-Only-Functions")
                         k1_path = WIKI_DIR / f"{k1_file}.md"
                         if k1_path.exists():
-                            content = k1_path.read_text(encoding='utf-8')
+                            content = k1_path.read_text(encoding="utf-8")
                             anchor_pattern = rf'<a id="([^"]+)"></a>\s*\n\s*##\s+`{re.escape(func_name)}\('
                             match_anchor = re.search(anchor_pattern, content)
                             if match_anchor:
@@ -296,9 +299,9 @@ def fix_toc_links():
                     file_path = WIKI_DIR / f"{file_name}.md"
                     has_function = False
                     if file_path.exists():
-                        content = file_path.read_text(encoding='utf-8')
+                        content = file_path.read_text(encoding="utf-8")
                         # Check if file has actual function content (not just "See X for detailed documentation")
-                        if f'<a id="{anchor}"></a>' in content or f'## `{func_name}(' in content:
+                        if f'<a id="{anchor}"></a>' in content or f"## `{func_name}(" in content:
                             has_function = True
                             # Verify anchor exists
                             if f'<a id="{anchor}"></a>' not in content:

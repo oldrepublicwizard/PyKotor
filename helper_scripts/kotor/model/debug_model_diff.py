@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 """Debug script to analyze model differences between PyKotor and MDLOps."""
+
 from __future__ import annotations
 
 import sys

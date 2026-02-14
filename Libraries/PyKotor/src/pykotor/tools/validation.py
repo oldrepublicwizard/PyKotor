@@ -16,6 +16,7 @@ References:
 
 
 """
+
 from __future__ import annotations
 
 from pathlib import Path
@@ -287,10 +288,12 @@ def investigate_module_structure(
         lyt = read_lyt(lyt_data)
         for room in lyt.rooms:
             model_name = room.model.lower()
-            rooms.append({
-                "model": model_name,
-                "position": (room.position.x, room.position.y, room.position.z),
-            })
+            rooms.append(
+                {
+                    "model": model_name,
+                    "position": (room.position.x, room.position.y, room.position.z),
+                }
+            )
 
             # Check for MDL/MDX/WOK
             mdl_key = (model_name, ResourceType.MDL)
@@ -385,4 +388,3 @@ def validate_installation(
         "missing_files": missing_files,
         "errors": errors,
     }
-

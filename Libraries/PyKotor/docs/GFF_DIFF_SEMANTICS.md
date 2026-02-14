@@ -24,7 +24,7 @@ Located in `gff_data.py`. Maps `(GFFContent, list_field_name)` → `GFFListSeman
 
 | GFF Type | List Field   | Identity Fields                         | Default When Absent   | Ignorable When Value |
 |----------|--------------|-----------------------------------------|------------------------|----------------------|
-| UTE      | CreatureList | ResRef, CR, Appearance, SingleSpawn     | GuaranteedCount: 0    | GuaranteedCount: 0   |
+| UTE      | CreatureList | ResRef, CR, SingleSpawn                 | GuaranteedCount: 0, Appearance: 0 | GuaranteedCount: 0   |
 
 ### Registry: `_GFF_IGNORABLE_FIELD_VALUES`
 

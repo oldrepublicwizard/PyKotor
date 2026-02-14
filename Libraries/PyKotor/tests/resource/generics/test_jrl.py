@@ -24,11 +24,11 @@ if UTILITY_PATH.joinpath("utility").exists():
 from typing import TYPE_CHECKING
 
 from pykotor.resource.formats.gff import read_gff
-from pykotor.resource.generics.jrl import construct_jrl, dismantle_jrl
+from pykotor.resource.generics.jrl import JRL, JRLEntry, JRLQuest, construct_jrl, dismantle_jrl
+from pykotor.resource.type import ResourceType
 
 if TYPE_CHECKING:
-    from pykotor.resource.formats.gff import GFF
-    from pykotor.resource.generics.jrl import JRL, JRLEntry, JRLQuest
+    pass
 
 TEST_JRL_XML = """<gff3>
   <struct id="-1">
@@ -59,6 +59,8 @@ TEST_JRL_XML = """<gff3>
     </struct>
   </gff3>
 """
+
+
 class TestJRL(unittest.TestCase):
     def setUp(self):
         self.log_messages: list[str] = [os.linesep]
@@ -109,6 +111,64 @@ class TestJRL(unittest.TestCase):
         assert expected_entry_id == jrl.entry_id
         assert expected_stringref == jrl.text.stringref
         self.assertAlmostEqual(expected_xp, jrl.xp_percentage, decimal_places)
+
+    def test_jrl_missing_field_defaults(self) -> None:
+        """Test defaults when JRL fields are omitted (REVA: K1 0x004f17d0, TSL 0x006fd830; module Categories/EntryList)."""
+        minimal_jrl_xml = """<gff3>
+          <struct id="-1">
+            <list label="Categories">
+              <struct id="0">
+                <exostring label="Tag">OnlyTag</exostring>
+              </struct>
+            </list>
+          </struct>
+        </gff3>
+        """
+        gff = read_gff(minimal_jrl_xml.encode(), file_format=ResourceType.GFF_XML)
+        jrl = construct_jrl(gff)
+        self.assertEqual(len(jrl.quests), 1)
+        quest = jrl.quests[0]
+        self.assertEqual(quest.tag, "OnlyTag")
+        self.assertEqual(quest.comment, "")
+        self.assertEqual(quest.name.stringref, -1)
+        self.assertEqual(quest.planet_id, 0)
+        self.assertEqual(quest.plot_index, 0)
+        self.assertEqual(quest.priority.value, 0)  # default 0 = HIGHEST when Priority omitted
+        self.assertEqual(len(quest.entries), 0)
+        # One category with one entry, entry fields omitted
+        one_entry_xml = """<gff3>
+          <struct id="-1">
+            <list label="Categories">
+              <struct id="0">
+                <exostring label="Tag">Q</exostring>
+                <list label="EntryList">
+                  <struct id="0">
+                    <uint32 label="ID">5</uint32>
+                  </struct>
+                </list>
+              </struct>
+            </list>
+          </struct>
+        </gff3>
+        """
+        gff2 = read_gff(one_entry_xml.encode(), file_format=ResourceType.GFF_XML)
+        jrl2 = construct_jrl(gff2)
+        self.assertEqual(len(jrl2.quests[0].entries), 1)
+        ent = jrl2.quests[0].entries[0]
+        self.assertEqual(ent.entry_id, 5)
+        self.assertFalse(ent.end)
+        self.assertEqual(ent.text.stringref, -1)
+        self.assertAlmostEqual(ent.xp_percentage, 0.0, places=5)
+
+    def test_jrl_empty_roundtrip(self) -> None:
+        """Empty/minimal root struct: no Categories → empty quests; round-trip preserves empty."""
+        empty_xml = """<gff3><struct id="-1"></struct></gff3>"""
+        gff = read_gff(empty_xml.encode(), file_format=ResourceType.GFF_XML)
+        jrl = construct_jrl(gff)
+        self.assertEqual(len(jrl.quests), 0)
+        gff2 = dismantle_jrl(jrl)
+        jrl2 = construct_jrl(gff2)
+        self.assertEqual(len(jrl2.quests), 0)
 
 
 if __name__ == "__main__":

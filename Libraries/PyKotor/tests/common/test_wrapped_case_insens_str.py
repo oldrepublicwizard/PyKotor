@@ -22,7 +22,7 @@ class TestCaseInsensImmutableStr(unittest.TestCase):
         ciws_input_value = CaseInsensImmutableStr(input_value)
         ciws_repr = f"CaseInsensImmutableStr({input_value!r})"
         ciws_result = ciws_func(ciws_input_value, *args, **kwargs)
-        
+
         args_context = f"{args}"[1:-1] if args else ""
         kwargs_context = f",{kwargs}" if kwargs else ""
         all_test_args_context = f"{args_context}{kwargs_context}"
@@ -31,15 +31,15 @@ class TestCaseInsensImmutableStr(unittest.TestCase):
 
         assert ciws_result == expected_output, f"{ciws_func_call_context} == {expected_output}"
         if not _basic__:
-            assert (
-                str(ciws_result).lower() == str(expected_output).lower()
-            ), f"Expected str({ciws_func_call_context}) to match the case-insensitive equivalent of {expected_output!r}, but got {ciws_result!r}"
+            assert str(ciws_result).lower() == str(expected_output).lower(), (
+                f"Expected str({ciws_func_call_context}) to match the case-insensitive equivalent of {expected_output!r}, but got {ciws_result!r}"
+            )
         if _compare_str_result__ and isinstance(ciws_result, CaseInsensImmutableStr):
             str_result = str_func(str(input_value), *args, **kwargs)
             str_result = str(str_result)
-            assert (
-                ciws_result.lower() == str_result.lower()
-            ), f"Expected {ciws_func_call_context} to return a case-insensitive equivalent to {str_func_call_context}, but got {ciws_result!r} (which does not equal str result {str_result!r})"
+            assert ciws_result.lower() == str_result.lower(), (
+                f"Expected {ciws_func_call_context} to return a case-insensitive equivalent to {str_func_call_context}, but got {ciws_result!r} (which does not equal str result {str_result!r})"
+            )
 
     def test_capitalize(self):
         self.assert_ciws_function(CaseInsensImmutableStr.capitalize, str.capitalize, "hello", "Hello")
@@ -211,43 +211,53 @@ class TestCaseInsensImmutableStr(unittest.TestCase):
 
     def test_replace(self):
         ciws = CaseInsensImmutableStr("test")
-        
+
         assert str(ciws.replace("e", "a")) == CaseInsensImmutableStr("tast"), 'str(ciws.replace("e", "a")) != CaseInsensImmutableStr("tast")'
-        assert str(str(ciws.replace("e", "a"))).lower() == str(CaseInsensImmutableStr("tast")).lower(), 'str(str(ciws.replace("e", "a"))).lower() != str(CaseInsensImmutableStr("tast")).lower()'
+        assert str(str(ciws.replace("e", "a"))).lower() == str(CaseInsensImmutableStr("tast")).lower(), (
+            'str(str(ciws.replace("e", "a"))).lower() != str(CaseInsensImmutableStr("tast")).lower()'
+        )
         assert str(ciws.replace("e", "a")) == "tast", 'str(ciws.replace("e", "a")) != "tast"'
         assert str(str(ciws.replace("e", "a"))).lower() == "tast".lower(), 'str(str(ciws.replace("e", "a"))).lower() != str("tast").lower()'
-        
+
         assert str(ciws.replace("", "x")) == CaseInsensImmutableStr("xtxexsxtx"), 'str(ciws.replace("", "x")) != CaseInsensImmutableStr("xtxexsxtx")'
-        assert str(str(ciws.replace("", "x"))).lower() == str(CaseInsensImmutableStr("xtxexsxtx")).lower(), 'str(str(ciws.replace("", "x"))).lower() != str(CaseInsensImmutableStr("xtxexsxtx")).lower()'
+        assert str(str(ciws.replace("", "x"))).lower() == str(CaseInsensImmutableStr("xtxexsxtx")).lower(), (
+            'str(str(ciws.replace("", "x"))).lower() != str(CaseInsensImmutableStr("xtxexsxtx")).lower()'
+        )
         assert str(ciws.replace("", "x")) == "xtxexsxtx", 'str(ciws.replace("", "x")) != "xtxexsxtx"'
         assert str(str(ciws.replace("", "x"))).lower() == "xtxexsxtx".lower(), 'str(str(ciws.replace("", "x"))).lower() != str("xtxexsxtx").lower()'
-        
+
         assert str(ciws.replace("T", "x")) == "xesx", 'str(ciws.replace("T", "x")) != "xesx"'
         assert str(str(ciws.replace("T", "x"))).lower() == "xesx".lower(), 'str(str(ciws.replace("T", "x"))).lower() != str("xesx").lower()'
         assert str(ciws.replace("E", "a")) == "tast", 'str(ciws.replace("E", "a")) != "tast"'
         assert str(str(ciws.replace("E", "a"))).lower() == "tast".lower(), 'str(str(ciws.replace("E", "a"))).lower() != str("tast").lower()'
-        
+
         longer = CaseInsensImmutableStr("test test TEST")
         assert str(longer.replace("test", "exam")) == "exam exam EXAM", 'str(longer.replace("test", "exam")) != "exam exam EXAM"'
-        assert str(str(longer.replace("test", "exam"))).lower() == "exam exam EXAM".lower(), 'str(str(longer.replace("test", "exam"))).lower() != str("exam exam EXAM").lower()'
+        assert str(str(longer.replace("test", "exam"))).lower() == "exam exam EXAM".lower(), (
+            'str(str(longer.replace("test", "exam"))).lower() != str("exam exam EXAM").lower()'
+        )
         assert str(longer.replace("test", "exam", 2)) == "exam exam TEST", 'str(longer.replace("test", "exam", 2)) != "exam exam TEST"'
-        assert str(str(longer.replace("test", "exam", 2))).lower() == "exam exam TEST".lower(), 'str(str(longer.replace("test", "exam", 2))).lower() != str("exam exam TEST").lower()'
-        
+        assert str(str(longer.replace("test", "exam", 2))).lower() == "exam exam TEST".lower(), (
+            'str(str(longer.replace("test", "exam", 2))).lower() != str("exam exam TEST").lower()'
+        )
+
         assert str(ciws.replace("t", "x")) == "xesx", 'str(ciws.replace("t", "x")) != "xesx"'
         assert str(str(ciws.replace("t", "x"))).lower() == "xesx".lower(), 'str(str(ciws.replace("t", "x"))).lower() != str("xesx").lower()'
-        
+
         assert str(ciws.replace("t", "x", 1)) == "xest", 'str(ciws.replace("t", "x", 1)) != "xest"'
         assert str(str(ciws.replace("t", "x", 1))).lower() == "xest".lower(), 'str(str(ciws.replace("t", "x", 1))).lower() != str("xest").lower()'
-        
+
         assert str(ciws.replace("z", "a")) == "test", 'str(ciws.replace("z", "a")) != "test"'
         assert str(str(ciws.replace("z", "a"))).lower() == "test".lower(), 'str(str(ciws.replace("z", "a"))).lower() != str("test").lower()'
-        
+
         assert str(ciws.replace("t", "")) == "es", 'str(ciws.replace("t", "")) != "es"'
         assert str(str(ciws.replace("t", ""))).lower() == "es".lower(), 'str(str(ciws.replace("t", ""))).lower() != str("es").lower()'
-        
+
         mixed_case = CaseInsensImmutableStr("TeSt")
         assert mixed_case.replace("t", "x") == "XeSx", 'mixed_case.replace("t", "x") != "XeSx"'
-        assert str(mixed_case.replace("t", "x")).lower() == "TeSx".lower().replace("t", "x"), 'str(mixed_case.replace("t", "x")).lower() != str("TeSx").lower().replace("t", "x")'
+        assert str(mixed_case.replace("t", "x")).lower() == "TeSx".lower().replace("t", "x"), (
+            'str(mixed_case.replace("t", "x")).lower() != str("TeSx").lower().replace("t", "x")'
+        )
 
         assert str(ciws.replace("t", "x")) == "xesx", 'str(ciws.replace("t", "x")) != "xesx"'
         assert str(str(ciws.replace("t", "x"))).lower() == "xesx".lower(), 'str(str(ciws.replace("t", "x"))).lower() != str("xesx").lower()'

@@ -8,7 +8,7 @@ from __future__ import annotations
 import os
 from typing import TYPE_CHECKING
 
-from qtpy.QtCore import QCollator, QDateTime, QTimeZone, Qt  # type: ignore[attr-defined]
+from qtpy.QtCore import QCollator, QTimeZone, Qt  # type: ignore[attr-defined]
 
 if TYPE_CHECKING:
     from utility.gui.qt.adapters.filesystem.pyfilesystemnode import PyFileSystemNode
@@ -122,6 +122,7 @@ class PyFileSystemModelSorter:
             if os.name == "posix":
                 try:
                     import platform
+
                     is_mac = platform.system() == "Darwin"
                 except Exception:
                     pass

@@ -1,4 +1,5 @@
 """Script to create GitHub Actions workflow files."""
+
 from __future__ import annotations
 
 from pathlib import Path
@@ -728,4 +729,3 @@ labeler_path.write_text(labeler_config, encoding="utf-8")
 print(f"Created {labeler_path}")
 
 print("\nAll workflow files created successfully!")
-

@@ -2,6 +2,7 @@
 
 This module provides CLI commands for creating archives (ERF, RIM) from directories.
 """
+
 from __future__ import annotations
 
 import pathlib
@@ -57,4 +58,3 @@ def cmd_create_archive(args: Namespace, logger: Logger) -> int:
         return 1
     else:
         return 0
-

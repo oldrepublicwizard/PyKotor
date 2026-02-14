@@ -153,26 +153,23 @@ void main()
 
 class Shader:
     """Optimized shader class with cached uniform locations.
-    
+
     Performance optimization: glGetUniformLocation is expensive and was being
     called every frame for every uniform. This class caches uniform locations
     on first access, providing ~10x speedup for uniform setting operations.
-    
+
     Reference: Industry standard practice in game engines (Unity, Unreal, Godot)
     """
-    
+
     __slots__ = ("_id", "_uniform_cache")
-    
+
     def __init__(
         self,
         vshader: str,
         fshader: str,
     ):
         if not HAS_PYOPENGL or shaders is None:
-            raise MissingPyOpenGLError(
-                "PyOpenGL is required for the legacy Shader class. "
-                "Install PyOpenGL (and ensure it imports)."
-            )
+            raise MissingPyOpenGLError("PyOpenGL is required for the legacy Shader class. Install PyOpenGL (and ensure it imports).")
         vertex_shader: int = shaders.compileShader(vshader, GL_VERTEX_SHADER)
         fragment_shader: int = shaders.compileShader(fshader, GL_FRAGMENT_SHADER)
         self._id: int = shaders.compileProgram(vertex_shader, fragment_shader)
@@ -181,10 +178,7 @@ class Shader:
 
     def use(self):
         if not HAS_PYOPENGL:
-            raise MissingPyOpenGLError(
-                "PyOpenGL is required for the legacy Shader class. "
-                "Install PyOpenGL (and ensure it imports)."
-            )
+            raise MissingPyOpenGLError("PyOpenGL is required for the legacy Shader class. Install PyOpenGL (and ensure it imports).")
         glUseProgram(self._id)
 
     def uniform(
@@ -192,7 +186,7 @@ class Shader:
         uniform_name: str,
     ) -> int:
         """Get uniform location with caching.
-        
+
         Caches the result of glGetUniformLocation which is expensive.
         Subsequent calls for the same uniform are O(1) dictionary lookups.
         """
@@ -200,7 +194,7 @@ class Shader:
         cached = self._uniform_cache.get(uniform_name)
         if cached is not None:
             return cached
-        
+
         # Cache miss - get from OpenGL and store
         location = glGetUniformLocation(self._id, uniform_name)
         self._uniform_cache[uniform_name] = location
@@ -232,7 +226,7 @@ class Shader:
 
     def set_float(self, uniform: str, value: float):
         glUniform1f(self.uniform(uniform), float(value))
-    
+
     def clear_cache(self):
         """Clear the uniform cache. Call if shader is recompiled."""
         self._uniform_cache.clear()

@@ -14,6 +14,7 @@ References:
 
 
 """
+
 from __future__ import annotations
 
 import fnmatch
@@ -916,4 +917,3 @@ def create_key_from_directory(
     key.build_lookup_tables()
     output_path.parent.mkdir(parents=True, exist_ok=True)
     write_key(key, output_path)
-

@@ -11,6 +11,7 @@ References:
 
 
 """
+
 from __future__ import annotations
 
 from pathlib import Path
@@ -152,4 +153,3 @@ def ncs_to_text(
 
     msg = f"Invalid mode: {mode!r}. Must be 'decompile' or 'disassemble'"
     raise ValueError(msg)
-

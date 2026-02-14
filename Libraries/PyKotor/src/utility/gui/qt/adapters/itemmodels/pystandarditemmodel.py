@@ -38,6 +38,7 @@ class PyQStandardItem:
         item.setType(custom_type)
         ```
         """
+
         Type = 0
         UserType = 1000
 
@@ -188,7 +189,7 @@ class PyQStandardItem:
                 12: "AccessibleDescriptionRole",
                 13: "SizeHintRole",
                 14: "InitialSortOrderRole",
-                256: "UserRole"
+                256: "UserRole",
             }
             formatted_cache = {}
             for k, v in cache.items():
@@ -197,11 +198,7 @@ class PyQStandardItem:
                 formatted_cache[formatted_key] = f"{repr_v[:30]}..." if len(repr_v) > 30 else repr_v  # noqa: PLR2004
             return formatted_cache
 
-        details = {
-            "Text": repr(self._data.get(Qt.ItemDataRole.DisplayRole, QVariant())),
-            "Children Count": str(self.childCount()),
-            "Roles": str(format_cache(self._data))
-        }
+        details = {"Text": repr(self._data.get(Qt.ItemDataRole.DisplayRole, QVariant())), "Children Count": str(self.childCount()), "Roles": str(format_cache(self._data))}
         if self._parent:
             details["Parent"] = f"Parent Row: {self.row()}"
         return f"{self.__class__.__name__}({', '.join(f'{key}: {value}' for key, value in details.items())})"
@@ -507,14 +504,7 @@ class PyQStandardItem:
         return [item for _ in range(count) for item in self.takeRow(row)]
 
     def takeColumn(self, column: int) -> list[PyQStandardItem]:
-        return cast(
-            "list[PyQStandardItem]",
-            [
-                row.takeChild(column)
-                for row in self._children
-                if row.child(column) is not None
-            ]
-        )
+        return cast("list[PyQStandardItem]", [row.takeChild(column) for row in self._children if row.child(column) is not None])
 
     def insertColumn(self, column: int, items: Iterable[PyQStandardItem]) -> None:
         for i, item in enumerate(items):
@@ -626,14 +616,14 @@ class PyQStandardItem:
     def emitDataChanged(self) -> None:
         if self._model:
             self._model.dataChanged.emit(self.index(), self.index())
+
     def sortChildren(self, column: int, order: Qt.SortOrder = Qt.AscendingOrder) -> None:
         self._children = sorted(
-            [child for child in self._children if isinstance(child[0], PyQStandardItem)],
-            key=lambda item: item[0].data(column),
-            reverse=(order == Qt.DescendingOrder)
+            [child for child in self._children if isinstance(child[0], PyQStandardItem)], key=lambda item: item[0].data(column), reverse=(order == Qt.DescendingOrder)
         )
         if self._model:
             self._model.layoutChanged.emit()
+
 
 class PyQStandardItemModel(QAbstractItemModel):
     def __init__(

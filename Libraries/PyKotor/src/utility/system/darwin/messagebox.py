@@ -10,6 +10,7 @@ if TYPE_CHECKING:
 
 def _get_tk_root() -> tk.Tk:
     import tkinter as tk
+
     if tk._default_root is None:  # pyright: ignore[reportAttributeAccessIssue]  # noqa: SLF001
         root = tk.Tk()
         root.withdraw()

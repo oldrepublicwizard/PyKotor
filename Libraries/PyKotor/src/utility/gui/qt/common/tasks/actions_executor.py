@@ -12,7 +12,6 @@ import uuid
 from concurrent.futures import (
     Future as _ConcurrentFuture,
     ProcessPoolExecutor,
-    ThreadPoolExecutor,
 )
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta
@@ -107,6 +106,7 @@ class FileActionsExecutor(QObject):
         AllTasksCompleted: Signal emitted when all queued tasks complete.
         ProgressUpdated: Signal emitted for overall progress (completed: int, total: int).
     """
+
     TaskStarted: ClassVar[Signal] = Signal(str)
     TaskCompleted: ClassVar[Signal] = Signal(str, object)
     TaskFailed: ClassVar[Signal] = Signal(str, Exception)
@@ -135,7 +135,7 @@ class FileActionsExecutor(QObject):
             self.tasks: DictProxy[str, Task] = {}  # type: ignore[assignment]
             self.futures: dict[str, _ConcurrentFuture] = {}
             return
-        
+
         worker_count: int = max_workers or multiprocessing.cpu_count()
         RobustLogger().debug(f"Initializing FileActionsExecutor with max_workers: {worker_count}")
         # Use multiprocessing exclusively, never threading
@@ -206,9 +206,7 @@ class FileActionsExecutor(QObject):
         submitter = self.process_pool.submit
 
         if custom_function is not None and not self._is_picklable(custom_function):
-            RobustLogger().warning(
-                f"Task {task_id} custom function is not picklable; multiprocessing may fail"
-            )
+            RobustLogger().warning(f"Task {task_id} custom function is not picklable; multiprocessing may fail")
 
         future: _ConcurrentFuture[Any] = submitter(
             self._execute_task,
@@ -289,9 +287,7 @@ class FileActionsExecutor(QObject):
             signature = inspect.signature(func)
         except (TypeError, ValueError):
             return kwargs
-        accepts_var_kw: bool = any(
-            parameter.kind == inspect.Parameter.VAR_KEYWORD for parameter in signature.parameters.values()
-        )
+        accepts_var_kw: bool = any(parameter.kind == inspect.Parameter.VAR_KEYWORD for parameter in signature.parameters.values())
         if accepts_var_kw:
             return kwargs
         allowed_keys = set(signature.parameters.keys())

@@ -138,7 +138,9 @@ class TestKEY(TestCase):
         with self.assertRaises(ValueError) as context:
             key: KEY = KEYBinaryReader(data).load()
 
-        assert "Tried to save or load an unsupported or corrupted file." in str(context.exception), f"{str(context.exception)!r} does not contain 'Tried to save or load an unsupported or corrupted file.'"
+        assert "Tried to save or load an unsupported or corrupted file." in str(context.exception), (
+            f"{str(context.exception)!r} does not contain 'Tried to save or load an unsupported or corrupted file.'"
+        )
 
     def test_key_invalid_version(self):
         """Test reading a KEY file with invalid version."""
@@ -159,7 +161,9 @@ class TestKEY(TestCase):
         with self.assertRaises(ValueError) as context:
             KEYBinaryReader(stream).load()
 
-        assert "Tried to save or load an unsupported or corrupted file." in str(context.exception), f"{str(context.exception)!r} does not contain 'Tried to save or load an unsupported or corrupted file.'"
+        assert "Tried to save or load an unsupported or corrupted file." in str(context.exception), (
+            f"{str(context.exception)!r} does not contain 'Tried to save or load an unsupported or corrupted file.'"
+        )
 
     def test_key_create_empty(self):
         """Test creating an empty KEY file."""
@@ -251,7 +255,9 @@ class TestKEY(TestCase):
 
         # Verify offset calculations
         assert key.calculate_file_table_offset() == KEY.HEADER_SIZE, f"{key.calculate_file_table_offset()} != {KEY.HEADER_SIZE}"
-        assert key.calculate_filename_table_offset() == KEY.HEADER_SIZE + (2 * KEY.BIF_ENTRY_SIZE), f"{key.calculate_filename_table_offset()} != {KEY.HEADER_SIZE + (2 * KEY.BIF_ENTRY_SIZE)}"
+        assert key.calculate_filename_table_offset() == KEY.HEADER_SIZE + (2 * KEY.BIF_ENTRY_SIZE), (
+            f"{key.calculate_filename_table_offset()} != {KEY.HEADER_SIZE + (2 * KEY.BIF_ENTRY_SIZE)}"
+        )
 
         # Test BIF filename offset calculation
         offset0: int = key.calculate_filename_offset(0)
@@ -263,35 +269,128 @@ class TestKEY(TestCase):
     def test_key_v1_read(self):
         """Test reading a KEY V1.0 file using xoreos-tools test data."""
         # This is the exact same test data from xoreos-tools tests/aurora/keyfile.cpp
-        key_data = bytes([
-            # Header
-            0x4B, 0x45, 0x59, 0x20,  # "KEY "
-            0x56, 0x31, 0x20, 0x20,  # "V1  "
-            0x01, 0x00, 0x00, 0x00,  # 1 BIF
-            0x01, 0x00, 0x00, 0x00,  # 1 resource
-            0x40, 0x00, 0x00, 0x00,  # File table offset (64)
-            0x5B, 0x00, 0x00, 0x00,  # Key table offset (91)
-            0x00, 0x00, 0x00, 0x00,  # Build year
-            0x00, 0x00, 0x00, 0x00,  # Build day
-            # 32 bytes reserved
-            0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-            0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-            0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-            0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-            # BIF entry
-            0x4C, 0x00, 0x00, 0x00,  # File size (76)
-            0x4C, 0x00, 0x00, 0x00,  # Filename offset
-            0x0F, 0x00,              # Filename size (15)
-            0x00, 0x00,              # Drives
-            # Filename "data\xoreos.bif"
-            0x64, 0x61, 0x74, 0x61, 0x5C, 0x78, 0x6F, 0x72,
-            0x65, 0x6F, 0x73, 0x2E, 0x62, 0x69, 0x66,
-            # Resource entry "ozymandias"
-            0x6F, 0x7A, 0x79, 0x6D, 0x61, 0x6E, 0x64, 0x69,
-            0x61, 0x73, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-            0x0A, 0x00,              # Type (TXT)
-            0x01, 0x00, 0x00, 0x00,  # Resource ID
-        ])
+        key_data = bytes(
+            [
+                # Header
+                0x4B,
+                0x45,
+                0x59,
+                0x20,  # "KEY "
+                0x56,
+                0x31,
+                0x20,
+                0x20,  # "V1  "
+                0x01,
+                0x00,
+                0x00,
+                0x00,  # 1 BIF
+                0x01,
+                0x00,
+                0x00,
+                0x00,  # 1 resource
+                0x40,
+                0x00,
+                0x00,
+                0x00,  # File table offset (64)
+                0x5B,
+                0x00,
+                0x00,
+                0x00,  # Key table offset (91)
+                0x00,
+                0x00,
+                0x00,
+                0x00,  # Build year
+                0x00,
+                0x00,
+                0x00,
+                0x00,  # Build day
+                # 32 bytes reserved
+                0x00,
+                0x00,
+                0x00,
+                0x00,
+                0x00,
+                0x00,
+                0x00,
+                0x00,
+                0x00,
+                0x00,
+                0x00,
+                0x00,
+                0x00,
+                0x00,
+                0x00,
+                0x00,
+                0x00,
+                0x00,
+                0x00,
+                0x00,
+                0x00,
+                0x00,
+                0x00,
+                0x00,
+                0x00,
+                0x00,
+                0x00,
+                0x00,
+                0x00,
+                0x00,
+                0x00,
+                0x00,
+                # BIF entry
+                0x4C,
+                0x00,
+                0x00,
+                0x00,  # File size (76)
+                0x4C,
+                0x00,
+                0x00,
+                0x00,  # Filename offset
+                0x0F,
+                0x00,  # Filename size (15)
+                0x00,
+                0x00,  # Drives
+                # Filename "data\xoreos.bif"
+                0x64,
+                0x61,
+                0x74,
+                0x61,
+                0x5C,
+                0x78,
+                0x6F,
+                0x72,
+                0x65,
+                0x6F,
+                0x73,
+                0x2E,
+                0x62,
+                0x69,
+                0x66,
+                # Resource entry "ozymandias"
+                0x6F,
+                0x7A,
+                0x79,
+                0x6D,
+                0x61,
+                0x6E,
+                0x64,
+                0x69,
+                0x61,
+                0x73,
+                0x00,
+                0x00,
+                0x00,
+                0x00,
+                0x00,
+                0x00,
+                0x0A,
+                0x00,  # Type (TXT)
+                0x01,
+                0x00,
+                0x00,
+                0x00,  # Resource ID
+            ]
+        )
 
         # Read the KEY file
         key: KEY = KEYBinaryReader(key_data).load()

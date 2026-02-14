@@ -77,7 +77,7 @@ def token_type_to_datatype(token_type: str) -> str | None:
 
 def parse_constant_from_tokens(tokens: list, start_idx: int, lines: list[str]) -> tuple[dict, int] | None:
     """Parse a constant declaration from tokens.
-    
+
     Grammar: global_variable_initialization : data_type IDENTIFIER '=' expression ';'
     Note: TRUE and FALSE are tokenized as TRUE_VALUE/FALSE_VALUE, not IDENTIFIER
     Note: Negative numbers are tokenized as MINUS followed by INT_VALUE
@@ -89,17 +89,17 @@ def parse_constant_from_tokens(tokens: list, start_idx: int, lines: list[str]) -
     # Also handle: TYPE TRUE_VALUE = VALUE ; or TYPE FALSE_VALUE = VALUE ;
     # Also handle: TYPE IDENTIFIER = MINUS VALUE ; (negative numbers)
     name_token_type = tokens[start_idx + 1].type
-    is_valid_name = (name_token_type == "IDENTIFIER" or
-                     name_token_type in ["TRUE_VALUE", "FALSE_VALUE", "OBJECTSELF_VALUE", "OBJECTINVALID_VALUE"])
+    is_valid_name = name_token_type == "IDENTIFIER" or name_token_type in ["TRUE_VALUE", "FALSE_VALUE", "OBJECTSELF_VALUE", "OBJECTINVALID_VALUE"]
 
     # Check for negative number pattern first (TYPE IDENTIFIER = MINUS VALUE ;)
-    if (start_idx + 5 < len(tokens) and
-        tokens[start_idx].type in ["INT_TYPE", "FLOAT_TYPE"] and
-        is_valid_name and
-        tokens[start_idx + 2].type == "=" and
-        tokens[start_idx + 3].type == "MINUS" and
-        tokens[start_idx + 5].type == ";"):
-
+    if (
+        start_idx + 5 < len(tokens)
+        and tokens[start_idx].type in ["INT_TYPE", "FLOAT_TYPE"]
+        and is_valid_name
+        and tokens[start_idx + 2].type == "="
+        and tokens[start_idx + 3].type == "MINUS"
+        and tokens[start_idx + 5].type == ";"
+    ):
         datatype = token_type_to_datatype(tokens[start_idx].type)
         if not datatype:
             return None
@@ -136,18 +136,10 @@ def parse_constant_from_tokens(tokens: list, start_idx: int, lines: list[str]) -
         else:
             return None
 
-        return ({
-            "datatype": datatype,
-            "name": name,
-            "value": value
-        }, start_idx + 6)
+        return ({"datatype": datatype, "name": name, "value": value}, start_idx + 6)
 
     # Standard pattern: TYPE IDENTIFIER = VALUE ;
-    if (tokens[start_idx].type in ["INT_TYPE", "FLOAT_TYPE", "STRING_TYPE"] and
-        is_valid_name and
-        tokens[start_idx + 2].type == "=" and
-        tokens[start_idx + 4].type == ";"):
-
+    if tokens[start_idx].type in ["INT_TYPE", "FLOAT_TYPE", "STRING_TYPE"] and is_valid_name and tokens[start_idx + 2].type == "=" and tokens[start_idx + 4].type == ";":
         datatype = token_type_to_datatype(tokens[start_idx].type)
         if not datatype:
             return None
@@ -177,7 +169,7 @@ def parse_constant_from_tokens(tokens: list, start_idx: int, lines: list[str]) -
                 if hasattr(expr, "value"):
                     value = expr.value  # RAW VALUE - Do not add quotes here
                 else:
-                    value = str(expr)   # RAW VALUE - Do not add quotes here
+                    value = str(expr)  # RAW VALUE - Do not add quotes here
             else:
                 return None
         elif datatype == "int":
@@ -211,18 +203,14 @@ def parse_constant_from_tokens(tokens: list, start_idx: int, lines: list[str]) -
         else:
             return None
 
-        return ({
-            "datatype": datatype,
-            "name": name,
-            "value": value
-        }, start_idx + 5)
+        return ({"datatype": datatype, "name": name, "value": value}, start_idx + 5)
 
     return None
 
 
 def parse_function_from_tokens(tokens: list, start_idx: int, lines: list[str], line_numbers: dict) -> tuple[dict, int] | None:
     """Parse a function forward declaration from tokens.
-    
+
     Grammar: function_forward_declaration : data_type IDENTIFIER '(' function_definition_params ')' ';'
     """
     # Find the function signature in tokens
@@ -232,10 +220,11 @@ def parse_function_from_tokens(tokens: list, start_idx: int, lines: list[str], l
         return None
 
     # Check if this looks like a function declaration
-    if (tokens[start_idx].type.endswith("_TYPE") or tokens[start_idx].type == "VOID_TYPE") and \
-       tokens[start_idx + 1].type == "IDENTIFIER" and \
-       tokens[start_idx + 2].type == "(":
-
+    if (
+        (tokens[start_idx].type.endswith("_TYPE") or tokens[start_idx].type == "VOID_TYPE")
+        and tokens[start_idx + 1].type == "IDENTIFIER"
+        and tokens[start_idx + 2].type == "("
+    ):
         return_type_token = tokens[start_idx]
         name_token = tokens[start_idx + 1]
 
@@ -276,20 +265,23 @@ def parse_function_from_tokens(tokens: list, start_idx: int, lines: list[str], l
         func_line_num = line_numbers.get(id(tokens[start_idx]), 0)
         func_doc = extract_function_documentation_from_line(lines, func_line_num, name)
 
-        return ({
-            "return_type": return_type,
-            "name": name,
-            "params": params,
-            "description": func_doc["description"],
-            "raw": func_doc["raw"],
-        }, i + 2)
+        return (
+            {
+                "return_type": return_type,
+                "name": name,
+                "params": params,
+                "description": func_doc["description"],
+                "raw": func_doc["raw"],
+            },
+            i + 2,
+        )
 
     return None
 
 
 def parse_function_params(param_tokens: list) -> list[dict]:
     """Parse function parameters from tokens.
-    
+
     Grammar: function_definition_param : data_type IDENTIFIER ['=' expression]
     """
     params: list[dict[str, Any]] = []
@@ -347,9 +339,7 @@ def parse_function_params(param_tokens: list) -> list[dict]:
                 default_token = group[3]
                 # Special handling: negative number defaults like -1 or -1.0
                 # Pattern: = MINUS INT_VALUE or = MINUS FLOAT_VALUE
-                if (len(group) >= 5 and
-                    default_token.type == "MINUS" and
-                    group[4].type in ["INT_VALUE", "FLOAT_VALUE"]):
+                if len(group) >= 5 and default_token.type == "MINUS" and group[4].type in ["INT_VALUE", "FLOAT_VALUE"]:
                     value_token = group[4]
                     if value_token.type == "INT_VALUE":
                         expr = value_token.value
@@ -366,14 +356,16 @@ def parse_function_params(param_tokens: list) -> list[dict]:
                 # Pattern: [ FLOAT_VALUE , FLOAT_VALUE , FLOAT_VALUE ]
                 elif param_type == "vector" and default_token.type == "[":
                     # Try to parse vector literal: [ FLOAT_VALUE , FLOAT_VALUE , FLOAT_VALUE ]
-                    if (len(group) >= 10 and
-                        group[3].type == "[" and
-                        group[4].type == "FLOAT_VALUE" and
-                        group[5].type == "," and
-                        group[6].type == "FLOAT_VALUE" and
-                        group[7].type == "," and
-                        group[8].type == "FLOAT_VALUE" and
-                        group[9].type == "]"):
+                    if (
+                        len(group) >= 10
+                        and group[3].type == "["
+                        and group[4].type == "FLOAT_VALUE"
+                        and group[5].type == ","
+                        and group[6].type == "FLOAT_VALUE"
+                        and group[7].type == ","
+                        and group[8].type == "FLOAT_VALUE"
+                        and group[9].type == "]"
+                    ):
                         # Extract the three float values
                         x_expr = group[4].value
                         y_expr = group[6].value
@@ -485,11 +477,13 @@ def parse_function_params(param_tokens: list) -> list[dict]:
                     # No value attribute, can't extract default
                     default_value = None
 
-            params.append({
-                "type": param_type,
-                "name": param_name,
-                "default": default_value,
-            })
+            params.append(
+                {
+                    "type": param_type,
+                    "name": param_name,
+                    "default": default_value,
+                }
+            )
 
     return params
 
@@ -730,8 +724,7 @@ def generate_function_python(func: dict, constants: list[dict]) -> str:
     ),"""
 
 
-def generate_scriptdefs(k1_constants: list[dict], k1_functions: list[dict],
-                       k2_constants: list[dict], k2_functions: list[dict]) -> str:
+def generate_scriptdefs(k1_constants: list[dict], k1_functions: list[dict], k2_constants: list[dict], k2_functions: list[dict]) -> str:
     """Generate the complete scriptdefs.py file content."""
     header = """from __future__ import annotations
 

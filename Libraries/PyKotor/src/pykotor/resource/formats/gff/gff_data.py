@@ -1099,17 +1099,22 @@ class GFFStruct(ComparableMixin, dict):
         -------
             The field value. If the field does not exist or the value type does not match the specified type then the default is returned instead.
         """
-        assert isinstance(default, object), f"{type(default).__name__}: {default}"
+        default_cls = default.__class__
+        assert isinstance(default, object), f"{default_cls.__name__}: {default}"
         value: T = default
         if object_type is None:
-            object_type = default.__class__
+            object_type = default_cls
         if (
-            self.exists(label) and object_type is not None
-            #   and isinstance(self[label], object_type)  # TODO(th3w1zard1): uncomment this and assert type after fixing all the call typings
+            self.exists(label)
+            and object_type is not None
         ):
             value = self[label]
-        if object_type is bool and value.__class__ is int:
-            value = bool(value)  # type: ignore[assignment]  # pyright: ignore[reportAssignmentType]
+            try:
+                print(f"value: {value} cls: {value.__class__} (isinstance? {isinstance(value, object_type)} {object_type})")
+            except Exception:
+                ...
+        if object_type is bool and issubclass(value.__class__, int):
+            value = bool(value)
         return value
 
     def value(

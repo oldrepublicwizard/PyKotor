@@ -66,6 +66,7 @@ def _validate_struct_hierarchy(gff: GFF, issues: list[str]) -> None:
 
     # Validate struct IDs are reasonable
     struct_ids: set[int] = set()
+
     def collect_struct_ids(struct: GFFStruct) -> None:
         if struct.struct_id in struct_ids:
             issues.append(f"Duplicate struct ID: {struct.struct_id}")
@@ -88,7 +89,7 @@ def _validate_field_data_integrity(gff: GFF, issues: list[str]) -> None:
                 issues.append(f"Struct {struct.struct_id} has field with empty label")
 
             # Check label length (based on 16-byte engine limit)
-            if len(label.encode('utf-8')) > 16:
+            if len(label.encode("utf-8")) > 16:
                 issues.append(f"Field label '{label}' exceeds 16-byte engine limit")
 
 
@@ -98,14 +99,14 @@ def _validate_label_constraints(gff: GFF, issues: list[str]) -> None:
 
     for struct in _iterate_all_structs(gff.root):
         for label, _, _ in struct:
-            label_bytes = label.encode('utf-8')
+            label_bytes = label.encode("utf-8")
 
             # Engine uses 16-byte labels
             if len(label_bytes) > 16:
                 issues.append(f"Label '{label}' is {len(label_bytes)} bytes (engine limit: 16)")
 
             # Check for null bytes in labels (engine may not handle this well)
-            if b'\x00' in label_bytes:
+            if b"\x00" in label_bytes:
                 issues.append(f"Label '{label}' contains null bytes")
 
             # Track duplicate labels (may cause lookup issues)
@@ -136,12 +137,12 @@ def _validate_performance_constraints(gff: GFF, issues: list[str]) -> None:
 
 def _calculate_max_struct_depth(struct) -> int:
     """Calculate the maximum depth of the struct hierarchy."""
-    if not hasattr(struct, '__iter__'):
+    if not hasattr(struct, "__iter__"):
         return 0
 
     max_child_depth: int = 0
     for _field_type, _field_label, value in struct:
-        if hasattr(value, '__iter__'):
+        if hasattr(value, "__iter__"):
             for item in value:
                 if not isinstance(item, GFFStruct):
                     continue

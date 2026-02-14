@@ -139,22 +139,20 @@ def _build_indoor_map_to_mod(
     indoor_map.build(installation, kits=[], output_path=output_path)
 
 
-
-
 def _get_testable_module_roots(installation: Installation, max_modules: int = 5) -> list[str]:
     """Get module roots suitable for roundtrip testing (have LYT with rooms)."""
     roots: list[str] = []
     seen: set[str] = set()
-    
+
     for module_filename in installation.module_names(use_hardcoded=True):
         if len(roots) >= max_modules:
             break
-            
+
         root = installation.get_module_root(module_filename)
         if root in seen:
             continue
         seen.add(root)
-        
+
         try:
             mod = Module(root, installation, use_dot_mod=True, load_textures=False)
             lyt_res = mod.layout()
@@ -166,7 +164,7 @@ def _get_testable_module_roots(installation: Installation, max_modules: int = 5)
             roots.append(root)
         except Exception:
             continue
-    
+
     return roots
 
 
@@ -212,10 +210,10 @@ class TestIndoorCLIRoundtrip:
         """Test: LYT room count preserved through extract → build roundtrip."""
         game_key, module_root = module_case
         installation = _installation_for_game(game_key, k1_installation, k2_installation)
-        
+
         # Get original (full composite: .mod or .rim + _s.rim + _dlg.erf etc.)
         original_resources = _get_module_resources(module_root, installation)
-        
+
         original_lyt_data = next(
             (data for (resref, restype), data in original_resources.items() if restype == ResourceType.LYT),
             None,
@@ -223,14 +221,14 @@ class TestIndoorCLIRoundtrip:
         if original_lyt_data is None:
             pytest.skip(f"{module_root}: No LYT in original module")
         original_lyt = read_lyt(original_lyt_data)
-        
+
         # Extract
         indoor_map = _extract_module_to_indoor_map(module_root, installation)
-        
+
         # Build
         rebuilt_path = tmp_path / f"{module_root}_rebuilt.mod"
         _build_indoor_map_to_mod(indoor_map, installation, rebuilt_path)
-        
+
         # Compare
         rebuilt_resources = _read_erf_resources(rebuilt_path)
         rebuilt_lyt_data = next(
@@ -239,10 +237,8 @@ class TestIndoorCLIRoundtrip:
         )
         assert rebuilt_lyt_data is not None, f"{module_root}: Rebuilt module missing LYT"
         rebuilt_lyt = read_lyt(rebuilt_lyt_data)
-        
-        assert len(rebuilt_lyt.rooms) == len(original_lyt.rooms), (
-            f"{module_root}: Room count mismatch - original={len(original_lyt.rooms)}, rebuilt={len(rebuilt_lyt.rooms)}"
-        )
+
+        assert len(rebuilt_lyt.rooms) == len(original_lyt.rooms), f"{module_root}: Room count mismatch - original={len(original_lyt.rooms)}, rebuilt={len(rebuilt_lyt.rooms)}"
 
     def test_roundtrip_lyt_room_positions(
         self,
@@ -254,9 +250,9 @@ class TestIndoorCLIRoundtrip:
         """Test: LYT room positions preserved through roundtrip."""
         game_key, module_root = module_case
         installation = _installation_for_game(game_key, k1_installation, k2_installation)
-        
+
         original_resources = _get_module_resources(module_root, installation)
-        
+
         original_lyt_data = next(
             (data for (resref, restype), data in original_resources.items() if restype == ResourceType.LYT),
             None,
@@ -264,11 +260,11 @@ class TestIndoorCLIRoundtrip:
         if original_lyt_data is None:
             pytest.skip(f"{module_root}: No LYT in original module")
         original_lyt = read_lyt(original_lyt_data)
-        
+
         indoor_map = _extract_module_to_indoor_map(module_root, installation)
         rebuilt_path = tmp_path / f"{module_root}_rebuilt.mod"
         _build_indoor_map_to_mod(indoor_map, installation, rebuilt_path)
-        
+
         rebuilt_resources = _read_erf_resources(rebuilt_path)
         rebuilt_lyt_data = next(
             (data for (resref, restype), data in rebuilt_resources.items() if restype == ResourceType.LYT),
@@ -276,12 +272,12 @@ class TestIndoorCLIRoundtrip:
         )
         assert rebuilt_lyt_data is not None
         rebuilt_lyt = read_lyt(rebuilt_lyt_data)
-        
+
         for i, (orig_room, rebuilt_room) in enumerate(zip(original_lyt.rooms, rebuilt_lyt.rooms)):
             pos_diff_x = abs(orig_room.position.x - rebuilt_room.position.x)
             pos_diff_y = abs(orig_room.position.y - rebuilt_room.position.y)
             pos_diff_z = abs(orig_room.position.z - rebuilt_room.position.z)
-            
+
             assert pos_diff_x < 0.001 and pos_diff_y < 0.001 and pos_diff_z < 0.001, (
                 f"{module_root} room {i}: Position mismatch - "
                 f"original=({orig_room.position.x:.3f}, {orig_room.position.y:.3f}, {orig_room.position.z:.3f}), "
@@ -298,23 +294,21 @@ class TestIndoorCLIRoundtrip:
         """Test: WOK total face count preserved through roundtrip."""
         game_key, module_root = module_case
         installation = _installation_for_game(game_key, k1_installation, k2_installation)
-        
+
         original_resources = _get_module_resources(module_root, installation)
-        
+
         indoor_map = _extract_module_to_indoor_map(module_root, installation)
         rebuilt_path = tmp_path / f"{module_root}_rebuilt.mod"
         _build_indoor_map_to_mod(indoor_map, installation, rebuilt_path)
         rebuilt_resources = _read_erf_resources(rebuilt_path)
-        
+
         original_woks = [data for (resref, restype), data in original_resources.items() if restype == ResourceType.WOK]
         rebuilt_woks = [data for (resref, restype), data in rebuilt_resources.items() if restype == ResourceType.WOK]
-        
+
         original_total = sum(len(read_bwm(data).faces) for data in original_woks)
         rebuilt_total = sum(len(read_bwm(data).faces) for data in rebuilt_woks)
-        
-        assert rebuilt_total == original_total, (
-            f"{module_root}: WOK face count mismatch - original={original_total}, rebuilt={rebuilt_total}"
-        )
+
+        assert rebuilt_total == original_total, f"{module_root}: WOK face count mismatch - original={original_total}, rebuilt={rebuilt_total}"
 
     def test_roundtrip_wok_walkable_count(
         self,
@@ -326,23 +320,21 @@ class TestIndoorCLIRoundtrip:
         """Test: WOK walkable face count preserved through roundtrip."""
         game_key, module_root = module_case
         installation = _installation_for_game(game_key, k1_installation, k2_installation)
-        
+
         original_resources = _get_module_resources(module_root, installation)
-        
+
         indoor_map = _extract_module_to_indoor_map(module_root, installation)
         rebuilt_path = tmp_path / f"{module_root}_rebuilt.mod"
         _build_indoor_map_to_mod(indoor_map, installation, rebuilt_path)
         rebuilt_resources = _read_erf_resources(rebuilt_path)
-        
+
         original_woks = [data for (resref, restype), data in original_resources.items() if restype == ResourceType.WOK]
         rebuilt_woks = [data for (resref, restype), data in rebuilt_resources.items() if restype == ResourceType.WOK]
-        
+
         original_walkable = sum(len(read_bwm(data).walkable_faces()) for data in original_woks)
         rebuilt_walkable = sum(len(read_bwm(data).walkable_faces()) for data in rebuilt_woks)
-        
-        assert rebuilt_walkable == original_walkable, (
-            f"{module_root}: Walkable face count mismatch - original={original_walkable}, rebuilt={rebuilt_walkable}"
-        )
+
+        assert rebuilt_walkable == original_walkable, f"{module_root}: Walkable face count mismatch - original={original_walkable}, rebuilt={rebuilt_walkable}"
 
     def test_roundtrip_wok_vertex_count(
         self,
@@ -354,23 +346,21 @@ class TestIndoorCLIRoundtrip:
         """Test: WOK total vertex count preserved through roundtrip."""
         game_key, module_root = module_case
         installation = _installation_for_game(game_key, k1_installation, k2_installation)
-        
+
         original_resources = _get_module_resources(module_root, installation)
-        
+
         indoor_map = _extract_module_to_indoor_map(module_root, installation)
         rebuilt_path = tmp_path / f"{module_root}_rebuilt.mod"
         _build_indoor_map_to_mod(indoor_map, installation, rebuilt_path)
         rebuilt_resources = _read_erf_resources(rebuilt_path)
-        
+
         original_woks = [data for (resref, restype), data in original_resources.items() if restype == ResourceType.WOK]
         rebuilt_woks = [data for (resref, restype), data in rebuilt_resources.items() if restype == ResourceType.WOK]
-        
+
         original_vertices = sum(len(list(read_bwm(data).vertices())) for data in original_woks)
         rebuilt_vertices = sum(len(list(read_bwm(data).vertices())) for data in rebuilt_woks)
-        
-        assert rebuilt_vertices == original_vertices, (
-            f"{module_root}: Vertex count mismatch - original={original_vertices}, rebuilt={rebuilt_vertices}"
-        )
+
+        assert rebuilt_vertices == original_vertices, f"{module_root}: Vertex count mismatch - original={original_vertices}, rebuilt={rebuilt_vertices}"
 
     def test_roundtrip_wok_material_distribution(
         self,
@@ -382,17 +372,17 @@ class TestIndoorCLIRoundtrip:
         """Test: WOK material distribution preserved through roundtrip."""
         game_key, module_root = module_case
         installation = _installation_for_game(game_key, k1_installation, k2_installation)
-        
+
         original_resources = _get_module_resources(module_root, installation)
-        
+
         indoor_map = _extract_module_to_indoor_map(module_root, installation)
         rebuilt_path = tmp_path / f"{module_root}_rebuilt.mod"
         _build_indoor_map_to_mod(indoor_map, installation, rebuilt_path)
         rebuilt_resources = _read_erf_resources(rebuilt_path)
-        
+
         original_woks = [data for (resref, restype), data in original_resources.items() if restype == ResourceType.WOK]
         rebuilt_woks = [data for (resref, restype), data in rebuilt_resources.items() if restype == ResourceType.WOK]
-        
+
         def count_materials(wok_list: list[bytes]) -> dict[int, int]:
             materials: dict[int, int] = {}
             for wok_data in wok_list:
@@ -401,14 +391,11 @@ class TestIndoorCLIRoundtrip:
                     mat_val = face.material.value
                     materials[mat_val] = materials.get(mat_val, 0) + 1
             return materials
-        
+
         original_materials = count_materials(original_woks)
         rebuilt_materials = count_materials(rebuilt_woks)
-        
-        assert rebuilt_materials == original_materials, (
-            f"{module_root}: Material distribution mismatch - "
-            f"original={original_materials}, rebuilt={rebuilt_materials}"
-        )
+
+        assert rebuilt_materials == original_materials, f"{module_root}: Material distribution mismatch - original={original_materials}, rebuilt={rebuilt_materials}"
 
     def test_roundtrip_required_resources(
         self,
@@ -420,17 +407,17 @@ class TestIndoorCLIRoundtrip:
         """Test: Required resource types present in both original and rebuilt (location-agnostic)."""
         game_key, module_root = module_case
         installation = _installation_for_game(game_key, k1_installation, k2_installation)
-        
+
         original_resources = _get_module_resources(module_root, installation)
         indoor_map = _extract_module_to_indoor_map(module_root, installation)
         rebuilt_path = tmp_path / f"{module_root}_rebuilt.mod"
         _build_indoor_map_to_mod(indoor_map, installation, rebuilt_path)
         rebuilt_resources = _read_erf_resources(rebuilt_path)
-        
+
         required_types = {ResourceType.LYT, ResourceType.ARE, ResourceType.IFO, ResourceType.GIT}
         original_types = {restype for (_, restype) in original_resources.keys()}
         rebuilt_types = {restype for (_, restype) in rebuilt_resources.keys()}
-        
+
         for req_type in required_types:
             assert req_type in original_types, f"{module_root}: Original missing required {req_type}"
             assert req_type in rebuilt_types, f"{module_root}: Rebuilt missing required {req_type}"
@@ -445,24 +432,22 @@ class TestIndoorCLIRoundtrip:
         """Test: ARE content equivalent between original and rebuilt (canonical bytes)."""
         game_key, module_root = module_case
         installation = _installation_for_game(game_key, k1_installation, k2_installation)
-        
+
         original_resources = _get_module_resources(module_root, installation)
         indoor_map = _extract_module_to_indoor_map(module_root, installation)
         rebuilt_path = tmp_path / f"{module_root}_rebuilt.mod"
         _build_indoor_map_to_mod(indoor_map, installation, rebuilt_path)
         rebuilt_resources = _read_erf_resources(rebuilt_path)
-        
+
         orig_are_data = _get_resource_by_type(original_resources, ResourceType.ARE)
         reb_are_data = _get_resource_by_type(rebuilt_resources, ResourceType.ARE)
         assert orig_are_data is not None, f"{module_root}: Original missing ARE"
         assert reb_are_data is not None, f"{module_root}: Rebuilt missing ARE"
-        
+
         game = installation.game()
         orig_canonical = bytes_are(read_are(orig_are_data), game=game)
         reb_canonical = bytes_are(read_are(reb_are_data), game=game)
-        assert orig_canonical == reb_canonical, (
-            f"{module_root}: ARE canonical bytes differ (original vs rebuilt)"
-        )
+        assert orig_canonical == reb_canonical, f"{module_root}: ARE canonical bytes differ (original vs rebuilt)"
 
     def test_roundtrip_ifo_equivalent(
         self,
@@ -474,24 +459,22 @@ class TestIndoorCLIRoundtrip:
         """Test: IFO content equivalent between original and rebuilt (canonical bytes)."""
         game_key, module_root = module_case
         installation = _installation_for_game(game_key, k1_installation, k2_installation)
-        
+
         original_resources = _get_module_resources(module_root, installation)
         indoor_map = _extract_module_to_indoor_map(module_root, installation)
         rebuilt_path = tmp_path / f"{module_root}_rebuilt.mod"
         _build_indoor_map_to_mod(indoor_map, installation, rebuilt_path)
         rebuilt_resources = _read_erf_resources(rebuilt_path)
-        
+
         orig_ifo_data = _get_resource_by_type(original_resources, ResourceType.IFO, resref="module")
         reb_ifo_data = _get_resource_by_type(rebuilt_resources, ResourceType.IFO, resref="module")
         assert orig_ifo_data is not None, f"{module_root}: Original missing IFO (module.ifo)"
         assert reb_ifo_data is not None, f"{module_root}: Rebuilt missing IFO (module.ifo)"
-        
+
         game = installation.game()
         orig_canonical = bytes_ifo(read_ifo(orig_ifo_data), game=game)
         reb_canonical = bytes_ifo(read_ifo(reb_ifo_data), game=game)
-        assert orig_canonical == reb_canonical, (
-            f"{module_root}: IFO canonical bytes differ (original vs rebuilt)"
-        )
+        assert orig_canonical == reb_canonical, f"{module_root}: IFO canonical bytes differ (original vs rebuilt)"
 
     def test_roundtrip_git_equivalent(
         self,
@@ -503,24 +486,22 @@ class TestIndoorCLIRoundtrip:
         """Test: GIT content equivalent between original and rebuilt (canonical bytes)."""
         game_key, module_root = module_case
         installation = _installation_for_game(game_key, k1_installation, k2_installation)
-        
+
         original_resources = _get_module_resources(module_root, installation)
         indoor_map = _extract_module_to_indoor_map(module_root, installation)
         rebuilt_path = tmp_path / f"{module_root}_rebuilt.mod"
         _build_indoor_map_to_mod(indoor_map, installation, rebuilt_path)
         rebuilt_resources = _read_erf_resources(rebuilt_path)
-        
+
         orig_git_data = _get_resource_by_type(original_resources, ResourceType.GIT)
         reb_git_data = _get_resource_by_type(rebuilt_resources, ResourceType.GIT)
         assert orig_git_data is not None, f"{module_root}: Original missing GIT"
         assert reb_git_data is not None, f"{module_root}: Rebuilt missing GIT"
-        
+
         game = installation.game()
         orig_canonical = bytes_git(read_git(orig_git_data), game=game)
         reb_canonical = bytes_git(read_git(reb_git_data), game=game)
-        assert orig_canonical == reb_canonical, (
-            f"{module_root}: GIT canonical bytes differ (original vs rebuilt)"
-        )
+        assert orig_canonical == reb_canonical, f"{module_root}: GIT canonical bytes differ (original vs rebuilt)"
 
     def test_roundtrip_lyt_full_equivalent(
         self,
@@ -532,13 +513,13 @@ class TestIndoorCLIRoundtrip:
         """Test: LYT full structure equivalent (rooms, tracks, obstacles, doorhooks)."""
         game_key, module_root = module_case
         installation = _installation_for_game(game_key, k1_installation, k2_installation)
-        
+
         original_resources = _get_module_resources(module_root, installation)
         orig_lyt_data = _get_resource_by_type(original_resources, ResourceType.LYT)
         if orig_lyt_data is None:
             pytest.skip(f"{module_root}: No LYT in original")
         original_lyt = read_lyt(orig_lyt_data)
-        
+
         indoor_map = _extract_module_to_indoor_map(module_root, installation)
         rebuilt_path = tmp_path / f"{module_root}_rebuilt.mod"
         _build_indoor_map_to_mod(indoor_map, installation, rebuilt_path)
@@ -546,10 +527,8 @@ class TestIndoorCLIRoundtrip:
         reb_lyt_data = _get_resource_by_type(rebuilt_resources, ResourceType.LYT)
         assert reb_lyt_data is not None, f"{module_root}: Rebuilt missing LYT"
         rebuilt_lyt = read_lyt(reb_lyt_data)
-        
-        assert original_lyt == rebuilt_lyt, (
-            f"{module_root}: LYT structure differs (rooms/tracks/obstacles/doorhooks)"
-        )
+
+        assert original_lyt == rebuilt_lyt, f"{module_root}: LYT structure differs (rooms/tracks/obstacles/doorhooks)"
 
     def test_roundtrip_lyt_room_models(
         self,
@@ -561,14 +540,14 @@ class TestIndoorCLIRoundtrip:
         """Test: LYT room model refs equivalent between original and rebuilt."""
         game_key, module_root = module_case
         installation = _installation_for_game(game_key, k1_installation, k2_installation)
-        
+
         original_resources = _get_module_resources(module_root, installation)
         orig_lyt_data = _get_resource_by_type(original_resources, ResourceType.LYT)
         if orig_lyt_data is None:
             pytest.skip(f"{module_root}: No LYT in original")
         original_lyt = read_lyt(orig_lyt_data)
         orig_models = [r.model.lower().strip() for r in original_lyt.rooms]
-        
+
         indoor_map = _extract_module_to_indoor_map(module_root, installation)
         rebuilt_path = tmp_path / f"{module_root}_rebuilt.mod"
         _build_indoor_map_to_mod(indoor_map, installation, rebuilt_path)
@@ -577,10 +556,8 @@ class TestIndoorCLIRoundtrip:
         assert reb_lyt_data is not None, f"{module_root}: Rebuilt missing LYT"
         rebuilt_lyt = read_lyt(reb_lyt_data)
         reb_models = [r.model.lower().strip() for r in rebuilt_lyt.rooms]
-        
-        assert orig_models == reb_models, (
-            f"{module_root}: LYT room models differ - original={orig_models}, rebuilt={reb_models}"
-        )
+
+        assert orig_models == reb_models, f"{module_root}: LYT room models differ - original={orig_models}, rebuilt={reb_models}"
 
     def test_roundtrip_resource_set(
         self,
@@ -592,23 +569,21 @@ class TestIndoorCLIRoundtrip:
         """Test: Core resource set equivalent (same types present; WOK count matches)."""
         game_key, module_root = module_case
         installation = _installation_for_game(game_key, k1_installation, k2_installation)
-        
+
         original_resources = _get_module_resources(module_root, installation)
         indoor_map = _extract_module_to_indoor_map(module_root, installation)
         rebuilt_path = tmp_path / f"{module_root}_rebuilt.mod"
         _build_indoor_map_to_mod(indoor_map, installation, rebuilt_path)
         rebuilt_resources = _read_erf_resources(rebuilt_path)
-        
+
         core_types = {ResourceType.LYT, ResourceType.ARE, ResourceType.IFO, ResourceType.GIT, ResourceType.WOK}
         orig_count_by_type = {rt: sum(1 for (_, t) in original_resources if t == rt) for rt in core_types}
         reb_count_by_type = {rt: sum(1 for (_, t) in rebuilt_resources if t == rt) for rt in core_types}
-        
+
         for rt in core_types:
             orig_count = orig_count_by_type[rt]
             reb_count = reb_count_by_type[rt]
-            assert reb_count == orig_count, (
-                f"{module_root}: {rt.extension} count differs - original={orig_count}, rebuilt={reb_count}"
-            )
+            assert reb_count == orig_count, f"{module_root}: {rt.extension} count differs - original={orig_count}, rebuilt={reb_count}"
 
     def test_roundtrip_vis_equivalent(
         self,
@@ -620,19 +595,19 @@ class TestIndoorCLIRoundtrip:
         """Test: VIS content equivalent when present in original (location-agnostic)."""
         game_key, module_root = module_case
         installation = _installation_for_game(game_key, k1_installation, k2_installation)
-        
+
         original_resources = _get_module_resources(module_root, installation)
         orig_vis_data = _get_resource_by_type(original_resources, ResourceType.VIS)
         if orig_vis_data is None:
             pytest.skip(f"{module_root}: No VIS in original")
-        
+
         indoor_map = _extract_module_to_indoor_map(module_root, installation)
         rebuilt_path = tmp_path / f"{module_root}_rebuilt.mod"
         _build_indoor_map_to_mod(indoor_map, installation, rebuilt_path)
         rebuilt_resources = _read_erf_resources(rebuilt_path)
         reb_vis_data = _get_resource_by_type(rebuilt_resources, ResourceType.VIS)
         assert reb_vis_data is not None, f"{module_root}: Rebuilt missing VIS (original had VIS)"
-        
+
         orig_vis = read_vis(orig_vis_data)
         reb_vis = read_vis(reb_vis_data)
         assert orig_vis == reb_vis, f"{module_root}: VIS content differs (original vs rebuilt)"
@@ -647,24 +622,22 @@ class TestIndoorCLIRoundtrip:
         """Test: PTH content equivalent when present in original (canonical bytes)."""
         game_key, module_root = module_case
         installation = _installation_for_game(game_key, k1_installation, k2_installation)
-        
+
         original_resources = _get_module_resources(module_root, installation)
         orig_pth_data = _get_resource_by_type(original_resources, ResourceType.PTH)
         if orig_pth_data is None:
             pytest.skip(f"{module_root}: No PTH in original")
-        
+
         indoor_map = _extract_module_to_indoor_map(module_root, installation)
         rebuilt_path = tmp_path / f"{module_root}_rebuilt.mod"
         _build_indoor_map_to_mod(indoor_map, installation, rebuilt_path)
         rebuilt_resources = _read_erf_resources(rebuilt_path)
         reb_pth_data = _get_resource_by_type(rebuilt_resources, ResourceType.PTH)
         assert reb_pth_data is not None, f"{module_root}: Rebuilt missing PTH (original had PTH)"
-        
+
         orig_canonical = bytes_pth(read_pth(orig_pth_data))
         reb_canonical = bytes_pth(read_pth(reb_pth_data))
-        assert orig_canonical == reb_canonical, (
-            f"{module_root}: PTH canonical bytes differ (original vs rebuilt)"
-        )
+        assert orig_canonical == reb_canonical, f"{module_root}: PTH canonical bytes differ (original vs rebuilt)"
 
     def test_roundtrip_wok_byte_exact(
         self,
@@ -676,30 +649,24 @@ class TestIndoorCLIRoundtrip:
         """Test: WOK bytes equivalent between original and rebuilt (byte-for-byte, location-agnostic)."""
         game_key, module_root = module_case
         installation = _installation_for_game(game_key, k1_installation, k2_installation)
-        
+
         original_resources = _get_module_resources(module_root, installation)
-        
+
         indoor_map = _extract_module_to_indoor_map(module_root, installation)
         rebuilt_path = tmp_path / f"{module_root}_rebuilt.mod"
         _build_indoor_map_to_mod(indoor_map, installation, rebuilt_path)
         rebuilt_resources = _read_erf_resources(rebuilt_path)
-        
-        original_woks = sorted(
-            [(resref, data) for (resref, restype), data in original_resources.items() if restype == ResourceType.WOK]
-        )
-        rebuilt_woks = sorted(
-            [(resref, data) for (resref, restype), data in rebuilt_resources.items() if restype == ResourceType.WOK]
-        )
-        
-        assert len(rebuilt_woks) == len(original_woks), (
-            f"{module_root}: WOK count mismatch - original={len(original_woks)}, rebuilt={len(rebuilt_woks)}"
-        )
-        
+
+        original_woks = sorted([(resref, data) for (resref, restype), data in original_resources.items() if restype == ResourceType.WOK])
+        rebuilt_woks = sorted([(resref, data) for (resref, restype), data in rebuilt_resources.items() if restype == ResourceType.WOK])
+
+        assert len(rebuilt_woks) == len(original_woks), f"{module_root}: WOK count mismatch - original={len(original_woks)}, rebuilt={len(rebuilt_woks)}"
+
         for i, ((orig_resref, orig_data), (rebuilt_resref, rebuilt_data)) in enumerate(zip(original_woks, rebuilt_woks)):
             if orig_data != rebuilt_data:
                 orig_bwm = read_bwm(orig_data)
                 rebuilt_bwm = read_bwm(rebuilt_data)
-                
+
                 diff_info: list[str] = []
                 if len(orig_bwm.faces) != len(rebuilt_bwm.faces):
                     diff_info.append(f"faces: {len(orig_bwm.faces)} vs {len(rebuilt_bwm.faces)}")
@@ -707,11 +674,8 @@ class TestIndoorCLIRoundtrip:
                     diff_info.append(f"vertices: {len(list(orig_bwm.vertices()))} vs {len(list(rebuilt_bwm.vertices()))}")
                 if len(orig_bwm.walkable_faces()) != len(rebuilt_bwm.walkable_faces()):
                     diff_info.append(f"walkable: {len(orig_bwm.walkable_faces())} vs {len(rebuilt_bwm.walkable_faces())}")
-                
-                assert False, (
-                    f"{module_root} WOK {i} ({orig_resref}): Bytes differ - "
-                    f"{'; '.join(diff_info) if diff_info else 'binary difference at unknown location'}"
-                )
+
+                assert False, f"{module_root} WOK {i} ({orig_resref}): Bytes differ - {'; '.join(diff_info) if diff_info else 'binary difference at unknown location'}"
 
 
 class TestIndoorCLIRoundtripIndoorMapComparison:
@@ -727,29 +691,27 @@ class TestIndoorCLIRoundtripIndoorMapComparison:
         """Test: IndoorMap.compare() shows no differences after extract → build → extract."""
         game_key, module_root = module_case
         installation = _installation_for_game(game_key, k1_installation, k2_installation)
-        
+
         # First extraction
         indoor_map_1 = _extract_module_to_indoor_map(module_root, installation)
-        
+
         # Build to new module
         rebuilt_path = tmp_path / f"{module_root}_rebuilt.mod"
         _build_indoor_map_to_mod(indoor_map_1, installation, rebuilt_path)
-        
+
         # Extract from rebuilt module
         # We need to get the ModuleKitManager pointed at our rebuilt module
         # For this test, we compare the IndoorMap objects directly
-        
+
         # Use the compare method if available
         if hasattr(IndoorMap, "compare"):
             # Extract again from same source to get comparable object
             indoor_map_2 = _extract_module_to_indoor_map(module_root, installation)
-            
+
             diff_log: list[str] = []
             is_identical = indoor_map_1.compare(indoor_map_2, log_func=diff_log.append)
-            
-            assert is_identical, (
-                f"{module_root}: IndoorMap comparison failed:\n" + "\n".join(diff_log)
-            )
+
+            assert is_identical, f"{module_root}: IndoorMap comparison failed:\n" + "\n".join(diff_log)
         else:
             # Fallback: compare room counts
             assert len(indoor_map_1.rooms) > 0, f"{module_root}: No rooms extracted"

@@ -226,6 +226,7 @@ class PyFileInfo:
         if sys.platform != "win32":
             return self._path.name.lstrip().lstrip("/").lstrip("\\").startswith(".")
         from ctypes import windll
+
         attrs = windll.kernel32.GetFileAttributesW(str(self._path))
         assert attrs != -1
         return bool(attrs & 2)
@@ -269,13 +270,7 @@ class PyFileInfo:
     def birthTime(self) -> QDateTime | None:
         """Returns the creation time."""
         if self._stat:
-            return QDateTime.fromMSecsSinceEpoch(
-                int(
-                    self._stat.st_ctime
-                    if os.name == "nt"
-                    else self._stat.st_birthtime * 1000
-                )
-            )  # noqa: DTZ006
+            return QDateTime.fromMSecsSinceEpoch(int(self._stat.st_ctime if os.name == "nt" else self._stat.st_birthtime * 1000))  # noqa: DTZ006
         return None
 
     def metadataChangeTime(self) -> QDateTime | None:
@@ -287,6 +282,7 @@ class PyFileInfo:
         if sys.platform != "win32" and self._stat:
             with suppress(KeyError):
                 import pwd
+
                 return pwd.getpwuid(self._stat.st_uid).pw_name
         return None
 
@@ -299,6 +295,7 @@ class PyFileInfo:
         if sys.platform != "win32" and self._stat:
             try:
                 import grp
+
                 return grp.getgrgid(self._stat.st_gid).gr_name
             except KeyError:
                 return None
@@ -368,8 +365,6 @@ class PyFileInfo:
 
     def __repr__(self):
         return f"<QFileInfo _path='{self._path}'>"
-
-
 
 
 class PyWrappedQFileInfo:
@@ -518,6 +513,7 @@ class PyWrappedQFileInfo:
             return self._path.name.lstrip().lstrip("/").lstrip("\\").startswith(".")
         with suppress(Exception):
             from ctypes import windll
+
             attrs = windll.kernel32.GetFileAttributesW(str(self._path))
             assert attrs != -1
             return bool(attrs & 2)
@@ -565,9 +561,7 @@ class PyWrappedQFileInfo:
         """Returns the creation time."""
         if self._stat:
             return datetime.fromtimestamp(  # noqa: DTZ006
-                self._stat.st_ctime
-                if os.name == "nt"
-                else self._stat.st_birthtime
+                self._stat.st_ctime if os.name == "nt" else self._stat.st_birthtime
             )
         return None
 
@@ -580,6 +574,7 @@ class PyWrappedQFileInfo:
         if sys.platform != "win32" and self._stat:
             with suppress(KeyError):
                 import pwd
+
                 return pwd.getpwuid(self._stat.st_uid).pw_name
         return None
 
@@ -592,6 +587,7 @@ class PyWrappedQFileInfo:
         if sys.platform != "win32" and self._stat:
             try:
                 import grp
+
                 return grp.getgrgid(self._stat.st_gid).gr_name
             except KeyError:
                 return None

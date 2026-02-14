@@ -6,9 +6,7 @@ the Qt API with correct method signatures, return types, and behavior.
 
 from __future__ import annotations
 
-import os
 import tempfile
-import time
 from pathlib import Path
 from typing import TYPE_CHECKING
 
@@ -18,10 +16,8 @@ from qtpy.QtCore import (
     QFileInfo,
     QModelIndex,
     Qt,
-    QUrl,
-    Signal,  # pyright: ignore[reportPrivateImportUsage]
+    QUrl,  # pyright: ignore[reportPrivateImportUsage]
 )
-from qtpy.QtGui import QIcon
 from qtpy.QtWidgets import QApplication, QFileDialog, QFileSystemModel
 
 if TYPE_CHECKING:
@@ -60,12 +56,12 @@ class TestQtAdapterAPICompatibility:
         qt_model = QFileSystemModel()
 
         # Test basic properties
-        assert hasattr(py_model, 'rootPath')
-        assert hasattr(py_model, 'setRootPath')
-        assert hasattr(py_model, 'filter')
-        assert hasattr(py_model, 'setFilter')
-        assert hasattr(py_model, 'nameFilters')
-        assert hasattr(py_model, 'setNameFilters')
+        assert hasattr(py_model, "rootPath")
+        assert hasattr(py_model, "setRootPath")
+        assert hasattr(py_model, "filter")
+        assert hasattr(py_model, "setFilter")
+        assert hasattr(py_model, "nameFilters")
+        assert hasattr(py_model, "setNameFilters")
 
         # Test root path functionality
         test_path = str(temp_dir)
@@ -76,36 +72,36 @@ class TestQtAdapterAPICompatibility:
         assert qt_model.rootPath() == test_path
 
         # Test model interface
-        assert hasattr(py_model, 'index')
-        assert hasattr(py_model, 'parent')
-        assert hasattr(py_model, 'data')
-        assert hasattr(py_model, 'rowCount')
-        assert hasattr(py_model, 'columnCount')
-        assert hasattr(py_model, 'flags')
+        assert hasattr(py_model, "index")
+        assert hasattr(py_model, "parent")
+        assert hasattr(py_model, "data")
+        assert hasattr(py_model, "rowCount")
+        assert hasattr(py_model, "columnCount")
+        assert hasattr(py_model, "flags")
 
         # Test QFileSystemModel specific methods
-        assert hasattr(py_model, 'filePath')
-        assert hasattr(py_model, 'isDir')
-        assert hasattr(py_model, 'size')
-        assert hasattr(py_model, 'fileInfo')
-        assert hasattr(py_model, 'permissions')
+        assert hasattr(py_model, "filePath")
+        assert hasattr(py_model, "isDir")
+        assert hasattr(py_model, "size")
+        assert hasattr(py_model, "fileInfo")
+        assert hasattr(py_model, "permissions")
 
     def test_pyfileinfogatherer_api_compatibility(self):
         """Test PyFileInfoGatherer API compatibility."""
         gatherer = PyFileInfoGatherer()
 
         # Test basic interface
-        assert hasattr(gatherer, 'getInfo')
-        assert hasattr(gatherer, 'iconProvider')
-        assert hasattr(gatherer, 'setIconProvider')
-        assert hasattr(gatherer, 'resolveSymlinks')
-        assert hasattr(gatherer, 'setResolveSymlinks')
+        assert hasattr(gatherer, "getInfo")
+        assert hasattr(gatherer, "iconProvider")
+        assert hasattr(gatherer, "setIconProvider")
+        assert hasattr(gatherer, "resolveSymlinks")
+        assert hasattr(gatherer, "setResolveSymlinks")
 
         # Test signals
-        assert hasattr(gatherer, 'updates')
-        assert hasattr(gatherer, 'newListOfFiles')
-        assert hasattr(gatherer, 'nameResolved')
-        assert hasattr(gatherer, 'directoryLoaded')
+        assert hasattr(gatherer, "updates")
+        assert hasattr(gatherer, "newListOfFiles")
+        assert hasattr(gatherer, "nameResolved")
+        assert hasattr(gatherer, "directoryLoaded")
 
     def test_pyfilesystemnode_api_compatibility(self, temp_dir):
         """Test PyFileSystemNode API compatibility."""
@@ -116,19 +112,19 @@ class TestQtAdapterAPICompatibility:
         node = PyFileSystemNode("test.txt", None)
 
         # Test basic properties
-        assert hasattr(node, 'fileName')
-        assert hasattr(node, 'parent')
-        assert hasattr(node, 'children')
-        assert hasattr(node, 'info')
+        assert hasattr(node, "fileName")
+        assert hasattr(node, "parent")
+        assert hasattr(node, "children")
+        assert hasattr(node, "info")
 
         # Test utility methods
-        assert hasattr(node, 'size')
-        assert hasattr(node, 'isDir')
-        assert hasattr(node, 'isFile')
-        assert hasattr(node, 'isHidden')
-        assert hasattr(node, 'isSymLink')
-        assert hasattr(node, 'fileInfo')
-        assert hasattr(node, 'permissions')
+        assert hasattr(node, "size")
+        assert hasattr(node, "isDir")
+        assert hasattr(node, "isFile")
+        assert hasattr(node, "isHidden")
+        assert hasattr(node, "isSymLink")
+        assert hasattr(node, "fileInfo")
+        assert hasattr(node, "permissions")
 
     def test_pyqextendedinformation_api_compatibility(self, temp_dir):
         """Test PyQExtendedInformation API compatibility."""
@@ -139,26 +135,26 @@ class TestQtAdapterAPICompatibility:
         ext_info = PyQExtendedInformation(file_info)
 
         # Test basic interface
-        assert hasattr(ext_info, 'isDir')
-        assert hasattr(ext_info, 'isFile')
-        assert hasattr(ext_info, 'isSymLink')
-        assert hasattr(ext_info, 'isHidden')
-        assert hasattr(ext_info, 'fileInfo')
-        assert hasattr(ext_info, 'permissions')
-        assert hasattr(ext_info, 'size')
-        assert hasattr(ext_info, 'lastModified')
+        assert hasattr(ext_info, "isDir")
+        assert hasattr(ext_info, "isFile")
+        assert hasattr(ext_info, "isSymLink")
+        assert hasattr(ext_info, "isHidden")
+        assert hasattr(ext_info, "fileInfo")
+        assert hasattr(ext_info, "permissions")
+        assert hasattr(ext_info, "size")
+        assert hasattr(ext_info, "lastModified")
 
         # Test data members
-        assert hasattr(ext_info, 'displayType')
-        assert hasattr(ext_info, 'icon')
+        assert hasattr(ext_info, "displayType")
+        assert hasattr(ext_info, "icon")
 
     def test_pyfilesystemmodelsorter_api_compatibility(self):
         """Test PyFileSystemModelSorter API compatibility."""
         sorter = PyFileSystemModelSorter(0)  # Sort by name
 
         # Test interface
-        assert hasattr(sorter, 'compareNodes')
-        assert hasattr(sorter, '__call__')
+        assert hasattr(sorter, "compareNodes")
+        assert hasattr(sorter, "__call__")
 
         # Test operator
         node1 = PyFileSystemNode("file_a.txt", None)
@@ -173,31 +169,31 @@ class TestQtAdapterAPICompatibility:
         qt_dialog = QFileDialog()
 
         # Test basic properties
-        assert hasattr(adapter_dialog, 'directory')
-        assert hasattr(adapter_dialog, 'setDirectory')
-        assert hasattr(adapter_dialog, 'selectedFiles')
-        assert hasattr(adapter_dialog, 'selectFile')
-        assert hasattr(adapter_dialog, 'nameFilters')
-        assert hasattr(adapter_dialog, 'setNameFilters')
-        assert hasattr(adapter_dialog, 'viewMode')
-        assert hasattr(adapter_dialog, 'setViewMode')
-        assert hasattr(adapter_dialog, 'fileMode')
-        assert hasattr(adapter_dialog, 'setFileMode')
-        assert hasattr(adapter_dialog, 'acceptMode')
-        assert hasattr(adapter_dialog, 'setAcceptMode')
+        assert hasattr(adapter_dialog, "directory")
+        assert hasattr(adapter_dialog, "setDirectory")
+        assert hasattr(adapter_dialog, "selectedFiles")
+        assert hasattr(adapter_dialog, "selectFile")
+        assert hasattr(adapter_dialog, "nameFilters")
+        assert hasattr(adapter_dialog, "setNameFilters")
+        assert hasattr(adapter_dialog, "viewMode")
+        assert hasattr(adapter_dialog, "setViewMode")
+        assert hasattr(adapter_dialog, "fileMode")
+        assert hasattr(adapter_dialog, "setFileMode")
+        assert hasattr(adapter_dialog, "acceptMode")
+        assert hasattr(adapter_dialog, "setAcceptMode")
 
         # Test options
-        assert hasattr(adapter_dialog, 'options')
-        assert hasattr(adapter_dialog, 'setOptions')
-        assert hasattr(adapter_dialog, 'setOption')
-        assert hasattr(adapter_dialog, 'testOption')
+        assert hasattr(adapter_dialog, "options")
+        assert hasattr(adapter_dialog, "setOptions")
+        assert hasattr(adapter_dialog, "setOption")
+        assert hasattr(adapter_dialog, "testOption")
 
         # Test static methods
-        assert hasattr(AdapterQFileDialog, 'getOpenFileName')
-        assert hasattr(AdapterQFileDialog, 'getSaveFileName')
-        assert hasattr(AdapterQFileDialog, 'getExistingDirectory')
-        assert hasattr(AdapterQFileDialog, 'getOpenFileNames')
-        assert hasattr(AdapterQFileDialog, 'getOpenFileUrls')
+        assert hasattr(AdapterQFileDialog, "getOpenFileName")
+        assert hasattr(AdapterQFileDialog, "getSaveFileName")
+        assert hasattr(AdapterQFileDialog, "getExistingDirectory")
+        assert hasattr(AdapterQFileDialog, "getOpenFileNames")
+        assert hasattr(AdapterQFileDialog, "getOpenFileUrls")
 
     def test_filesystemmodel_roles_compatibility(self, temp_dir):
         """Test QFileSystemModel roles compatibility."""
@@ -205,11 +201,11 @@ class TestQtAdapterAPICompatibility:
         py_model.setRootPath(str(temp_dir))
 
         # Test role constants
-        assert hasattr(PyFileSystemModel, 'FileIconRole')
-        assert hasattr(PyFileSystemModel, 'FilePathRole')
-        assert hasattr(PyFileSystemModel, 'FileNameRole')
-        assert hasattr(PyFileSystemModel, 'FilePermissions')
-        assert hasattr(PyFileSystemModel, 'FileInfoRole')
+        assert hasattr(PyFileSystemModel, "FileIconRole")
+        assert hasattr(PyFileSystemModel, "FilePathRole")
+        assert hasattr(PyFileSystemModel, "FileNameRole")
+        assert hasattr(PyFileSystemModel, "FilePermissions")
+        assert hasattr(PyFileSystemModel, "FileInfoRole")
 
         # Verify role values match Qt
         assert PyFileSystemModel.FileIconRole == Qt.DecorationRole
@@ -222,45 +218,45 @@ class TestQtAdapterAPICompatibility:
         py_model = PyFileSystemModel()
 
         # Test option constants
-        assert hasattr(PyFileSystemModel, 'DontWatchForChanges')
-        assert hasattr(PyFileSystemModel, 'DontResolveSymlinks')
-        assert hasattr(PyFileSystemModel, 'DontUseCustomDirectoryIcons')
+        assert hasattr(PyFileSystemModel, "DontWatchForChanges")
+        assert hasattr(PyFileSystemModel, "DontResolveSymlinks")
+        assert hasattr(PyFileSystemModel, "DontUseCustomDirectoryIcons")
 
         # Test option methods
-        assert hasattr(py_model, 'setOption')
-        assert hasattr(py_model, 'testOption')
-        assert hasattr(py_model, 'setOptions')
-        assert hasattr(py_model, 'options')
+        assert hasattr(py_model, "setOption")
+        assert hasattr(py_model, "testOption")
+        assert hasattr(py_model, "setOptions")
+        assert hasattr(py_model, "options")
 
     def test_qfiledialog_options_compatibility(self):
         """Test QFileDialog options compatibility."""
         adapter_dialog = AdapterQFileDialog()
 
         # Test option constants
-        assert hasattr(AdapterQFileDialog, 'ShowDirsOnly')
-        assert hasattr(AdapterQFileDialog, 'DontResolveSymlinks')
-        assert hasattr(AdapterQFileDialog, 'DontConfirmOverwrite')
-        assert hasattr(AdapterQFileDialog, 'DontUseNativeDialog')
-        assert hasattr(AdapterQFileDialog, 'ReadOnly')
-        assert hasattr(AdapterQFileDialog, 'HideNameFilterDetails')
-        assert hasattr(AdapterQFileDialog, 'DontUseCustomDirectoryIcons')
+        assert hasattr(AdapterQFileDialog, "ShowDirsOnly")
+        assert hasattr(AdapterQFileDialog, "DontResolveSymlinks")
+        assert hasattr(AdapterQFileDialog, "DontConfirmOverwrite")
+        assert hasattr(AdapterQFileDialog, "DontUseNativeDialog")
+        assert hasattr(AdapterQFileDialog, "ReadOnly")
+        assert hasattr(AdapterQFileDialog, "HideNameFilterDetails")
+        assert hasattr(AdapterQFileDialog, "DontUseCustomDirectoryIcons")
 
     def test_signal_compatibility(self):
         """Test signal compatibility across adapters."""
         py_model = PyFileSystemModel()
 
         # Test QFileSystemModel signals
-        assert hasattr(py_model, 'rootPathChanged')
-        assert hasattr(py_model, 'fileRenamed')
-        assert hasattr(py_model, 'directoryLoaded')
+        assert hasattr(py_model, "rootPathChanged")
+        assert hasattr(py_model, "fileRenamed")
+        assert hasattr(py_model, "directoryLoaded")
 
         gatherer = PyFileInfoGatherer()
 
         # Test QFileInfoGatherer signals
-        assert hasattr(gatherer, 'updates')
-        assert hasattr(gatherer, 'newListOfFiles')
-        assert hasattr(gatherer, 'nameResolved')
-        assert hasattr(gatherer, 'directoryLoaded')
+        assert hasattr(gatherer, "updates")
+        assert hasattr(gatherer, "newListOfFiles")
+        assert hasattr(gatherer, "nameResolved")
+        assert hasattr(gatherer, "directoryLoaded")
 
     def test_method_signatures_compatibility(self, temp_dir):
         """Test that method signatures match Qt API exactly."""
@@ -304,8 +300,8 @@ class TestQtAdapterAPICompatibility:
         py_model = PyFileSystemModel()
 
         # Test icon provider methods
-        assert hasattr(py_model, 'iconProvider')
-        assert hasattr(py_model, 'setIconProvider')
+        assert hasattr(py_model, "iconProvider")
+        assert hasattr(py_model, "setIconProvider")
 
         # Test setting icon provider
         icon_provider = QApplication.style()
@@ -384,7 +380,7 @@ class TestQtAdapterAPICompatibility:
         py_model.sort(1, Qt.DescendingOrder)  # Sort by size descending
 
         # Test sort role
-        assert hasattr(py_model, 'sortRole')
+        assert hasattr(py_model, "sortRole")
         sort_role = py_model.sortRole()
         assert isinstance(sort_role, int)
 
@@ -426,18 +422,18 @@ class TestQtAdapterAPICompatibility:
         dialog = AdapterQFileDialog()
 
         # Test view modes
-        assert hasattr(AdapterQFileDialog, 'Detail')
-        assert hasattr(AdapterQFileDialog, 'List')
+        assert hasattr(AdapterQFileDialog, "Detail")
+        assert hasattr(AdapterQFileDialog, "List")
 
         # Test file modes
-        assert hasattr(AdapterQFileDialog, 'AnyFile')
-        assert hasattr(AdapterQFileDialog, 'ExistingFile')
-        assert hasattr(AdapterQFileDialog, 'Directory')
-        assert hasattr(AdapterQFileDialog, 'ExistingFiles')
+        assert hasattr(AdapterQFileDialog, "AnyFile")
+        assert hasattr(AdapterQFileDialog, "ExistingFile")
+        assert hasattr(AdapterQFileDialog, "Directory")
+        assert hasattr(AdapterQFileDialog, "ExistingFiles")
 
         # Test accept modes
-        assert hasattr(AdapterQFileDialog, 'AcceptOpen')
-        assert hasattr(AdapterQFileDialog, 'AcceptSave')
+        assert hasattr(AdapterQFileDialog, "AcceptOpen")
+        assert hasattr(AdapterQFileDialog, "AcceptSave")
 
         # Test setting modes
         dialog.setViewMode(AdapterQFileDialog.Detail)
@@ -501,15 +497,15 @@ class TestQtAdapterAPICompatibility:
         dialog = AdapterQFileDialog()
 
         # Test that signals exist
-        assert hasattr(dialog, 'fileSelected')
-        assert hasattr(dialog, 'filesSelected')
-        assert hasattr(dialog, 'currentChanged')
-        assert hasattr(dialog, 'directoryEntered')
-        assert hasattr(dialog, 'urlSelected')
-        assert hasattr(dialog, 'urlsSelected')
-        assert hasattr(dialog, 'currentUrlChanged')
-        assert hasattr(dialog, 'directoryUrlEntered')
-        assert hasattr(dialog, 'filterSelected')
+        assert hasattr(dialog, "fileSelected")
+        assert hasattr(dialog, "filesSelected")
+        assert hasattr(dialog, "currentChanged")
+        assert hasattr(dialog, "directoryEntered")
+        assert hasattr(dialog, "urlSelected")
+        assert hasattr(dialog, "urlsSelected")
+        assert hasattr(dialog, "currentUrlChanged")
+        assert hasattr(dialog, "directoryUrlEntered")
+        assert hasattr(dialog, "filterSelected")
 
     def test_adapter_initialization_and_cleanup(self):
         """Test adapter initialization and cleanup."""
@@ -549,11 +545,11 @@ class TestQtAdapterAPICompatibility:
         """Test indicators of thread safety in adapters."""
         # PyFileInfoGatherer should be thread-safe
         gatherer = PyFileInfoGatherer()
-        assert hasattr(gatherer, 'run')  # QThread method
-        assert hasattr(gatherer, 'mutex')  # Should have mutex for thread safety
+        assert hasattr(gatherer, "run")  # QThread method
+        assert hasattr(gatherer, "mutex")  # Should have mutex for thread safety
 
         # Test that file operations are properly synchronized
-        assert hasattr(gatherer, 'mutex')
+        assert hasattr(gatherer, "mutex")
 
     def test_error_handling(self, temp_dir):
         """Test error handling in adapters."""
@@ -578,29 +574,29 @@ class TestQtAdapterAPICompatibility:
 
         # Test lazy loading indicators
         model.setRootPath(str(temp_dir))
-        assert hasattr(model, 'canFetchMore')
-        assert hasattr(model, 'fetchMore')
+        assert hasattr(model, "canFetchMore")
+        assert hasattr(model, "fetchMore")
 
         # Test caching indicators
-        assert hasattr(model, 'setOption')
-        assert hasattr(model, 'testOption')
+        assert hasattr(model, "setOption")
+        assert hasattr(model, "testOption")
 
         # Test that options include DontWatchForChanges for performance
-        assert hasattr(PyFileSystemModel, 'DontWatchForChanges')
+        assert hasattr(PyFileSystemModel, "DontWatchForChanges")
 
     def test_cross_platform_compatibility(self):
         """Test cross-platform compatibility indicators."""
         model = PyFileSystemModel()
 
         # Test platform-specific behavior indicators
-        assert hasattr(model, 'caseSensitivity')
+        assert hasattr(model, "caseSensitivity")
         case_sensitive = model.caseSensitivity()
         assert isinstance(case_sensitive, bool)
 
         # Test path handling
-        assert hasattr(model, 'resolveSymlinks')
-        assert hasattr(model, 'setResolveSymlinks')
+        assert hasattr(model, "resolveSymlinks")
+        assert hasattr(model, "setResolveSymlinks")
 
         # Test icon handling (platform-specific)
-        assert hasattr(model, 'iconProvider')
-        assert hasattr(model, 'setIconProvider')
+        assert hasattr(model, "iconProvider")
+        assert hasattr(model, "setIconProvider")

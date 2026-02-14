@@ -75,12 +75,14 @@ def _compress_dxt1_block(
 ) -> None:
     _compress_color_block(dest, src)
 
+
 def _compress_dxt3_block(
     dest: bytearray,
     src: list[int],
 ) -> None:
     _compress_alpha_block_dxt3(dest, src)
     _compress_color_block(dest[8:], src)
+
 
 def _compress_alpha_block_dxt3(
     dest: bytearray,

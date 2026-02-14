@@ -320,4 +320,3 @@ class Pathfinder:
         dy = a.y - b.y
         dz = a.z - b.z
         return dx * dx + dy * dy + dz * dz
-

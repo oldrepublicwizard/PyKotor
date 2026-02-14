@@ -215,6 +215,7 @@ class QFileDialogExtended(AdapterQFileDialog):
                 # Be defensive: if the import fails, do not crash the dialog.
                 try:
                     from loggerplus import RobustLogger
+
                     RobustLogger.getLogger(__name__).warning("Windows11ItemDelegate not available; using default delegates", exc_info=True)
                 except Exception:
                     # Last resort: ignore logging failures
@@ -397,7 +398,7 @@ class QFileDialogExtended(AdapterQFileDialog):
         # View mode actions
         actions.actionListView.triggered.connect(self._q_showListView)
         actions.actionDetailView.triggered.connect(self._q_showDetailsView)
-        
+
         # Icon size actions
         actions.actionExtraLargeIcons.triggered.connect(self._set_extra_large_icons)
         actions.actionLargeIcons.triggered.connect(self._set_large_icons)
@@ -407,34 +408,38 @@ class QFileDialogExtended(AdapterQFileDialog):
     def _set_extra_large_icons(self) -> None:
         """Set extra large icons (256px) and switch to list view mode."""
         from utility.gui.qt.widgets.itemviews.thumbnail_list_view import IconSize
+
         self._set_icon_size(IconSize.EXTRA_LARGE)
 
     def _set_large_icons(self) -> None:
         """Set large icons (128px) and switch to list view mode."""
         from utility.gui.qt.widgets.itemviews.thumbnail_list_view import IconSize
+
         self._set_icon_size(IconSize.LARGE)
 
     def _set_medium_icons(self) -> None:
         """Set medium icons (64px) and switch to list view mode."""
         from utility.gui.qt.widgets.itemviews.thumbnail_list_view import IconSize
+
         self._set_icon_size(IconSize.MEDIUM)
 
     def _set_small_icons(self) -> None:
         """Set small icons (32px) and switch to list view mode."""
         from utility.gui.qt.widgets.itemviews.thumbnail_list_view import IconSize
+
         self._set_icon_size(IconSize.SMALL)
 
     def _set_icon_size(self, size: int) -> None:
         """Set the icon size for the list view and switch to it."""
         from qtpy.QtCore import QSize
         from qtpy.QtWidgets import QListView
-        
+
         # Switch to list view mode
         self._q_showListView()
-        
+
         # Set icon size
         self.ui.listView.setIconSize(QSize(size, size))
-        
+
         # Configure view mode based on size
         if size >= 64:  # Medium and above
             self.ui.listView.setViewMode(QListView.ViewMode.IconMode)

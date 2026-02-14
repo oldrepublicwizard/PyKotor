@@ -3,43 +3,43 @@
 
 # Our trimesh header write order (from io_mdl.py _TrimeshHeader.write):
 write_order = [
-    "function_pointer0",      # 0: uint32
-    "function_pointer1",      # 1: uint32
-    "offset_to_faces",        # 2: uint32
-    "faces_count",            # 3: uint32
-    "faces_count2",           # 4: uint32
-    "bounding_box_min",       # 5-7: Vector3 (3 floats)
-    "bounding_box_max",       # 8-10: Vector3 (3 floats)
-    "radius",                 # 11: float
-    "average",                 # 12-14: Vector3 (3 floats)
-    "diffuse",                # 15-17: Vector3 (3 floats)
-    "ambient",                # 18-20: Vector3 (3 floats)
-    "transparency_hint",      # 21: uint32
-    "texture1",               # 22-29: 32-byte string (8 uint32s when unpacked as uint32s, but 1 element as string)
-    "texture2",               # 30-37: 32-byte string
-    "unknown0",               # 38-43: 24 bytes (6 uint32s)
-    "offset_to_indices_counts", # 44: uint32
-    "indices_counts_count",   # 45: uint32
+    "function_pointer0",  # 0: uint32
+    "function_pointer1",  # 1: uint32
+    "offset_to_faces",  # 2: uint32
+    "faces_count",  # 3: uint32
+    "faces_count2",  # 4: uint32
+    "bounding_box_min",  # 5-7: Vector3 (3 floats)
+    "bounding_box_max",  # 8-10: Vector3 (3 floats)
+    "radius",  # 11: float
+    "average",  # 12-14: Vector3 (3 floats)
+    "diffuse",  # 15-17: Vector3 (3 floats)
+    "ambient",  # 18-20: Vector3 (3 floats)
+    "transparency_hint",  # 21: uint32
+    "texture1",  # 22-29: 32-byte string (8 uint32s when unpacked as uint32s, but 1 element as string)
+    "texture2",  # 30-37: 32-byte string
+    "unknown0",  # 38-43: 24 bytes (6 uint32s)
+    "offset_to_indices_counts",  # 44: uint32
+    "indices_counts_count",  # 45: uint32
     "indices_counts_count2",  # 46: uint32
-    "offset_to_indices_offset", # 47: uint32
+    "offset_to_indices_offset",  # 47: uint32
     "indices_offsets_count",  # 48: uint32
-    "indices_offsets_count2", # 49: uint32
-    "offset_to_counters",     # 50: uint32
-    "counters_count",         # 51: uint32
-    "counters_count2",        # 52: uint32
-    "unknown1",               # 53-55: 12 bytes (3 uint32s)
-    "saber_unknowns",         # 56-57: 8 bytes (2 uint32s)
-    "unknown2",               # 58: uint32
-    "uv_direction",           # 59-60: Vector2 (2 floats)
-    "uv_jitter",              # 61: float
-    "uv_speed",               # 62: float
-    "mdx_data_size",          # 63: uint32
-    "mdx_data_bitmap",        # 64: uint32
-    "mdx_vertex_offset",      # 65: uint32
-    "mdx_normal_offset",      # 66: uint32
-    "mdx_color_offset",       # 67: uint32
-    "mdx_texture1_offset",    # 68: uint32
-    "mdx_texture2_offset",    # 69: uint32
+    "indices_offsets_count2",  # 49: uint32
+    "offset_to_counters",  # 50: uint32
+    "counters_count",  # 51: uint32
+    "counters_count2",  # 52: uint32
+    "unknown1",  # 53-55: 12 bytes (3 uint32s)
+    "saber_unknowns",  # 56-57: 8 bytes (2 uint32s)
+    "unknown2",  # 58: uint32
+    "uv_direction",  # 59-60: Vector2 (2 floats)
+    "uv_jitter",  # 61: float
+    "uv_speed",  # 62: float
+    "mdx_data_size",  # 63: uint32
+    "mdx_data_bitmap",  # 64: uint32
+    "mdx_vertex_offset",  # 65: uint32
+    "mdx_normal_offset",  # 66: uint32
+    "mdx_color_offset",  # 67: uint32
+    "mdx_texture1_offset",  # 68: uint32
+    "mdx_texture2_offset",  # 69: uint32
     # ... more fields
 ]
 
@@ -111,4 +111,3 @@ print("  mdx_data_bitmap at byte offset 52 (but MDLOps expects it at 256)")
 print("  mdx_texture1_offset at byte offset 68 (but MDLOps expects it at 272)")
 
 print("\nThis suggests our trimesh header structure doesn't match MDLOps' template!")
-

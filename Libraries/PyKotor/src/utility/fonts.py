@@ -3,6 +3,7 @@
 This module provides functions for finding TTF font files on different operating systems.
 These are general utility functions, not specific to KOTOR.
 """
+
 from __future__ import annotations
 
 import platform
@@ -87,4 +88,3 @@ def get_font_paths() -> list[Path]:
             return get_font_paths_windows()
     msg = "Unsupported operating system"
     raise NotImplementedError(msg)
-

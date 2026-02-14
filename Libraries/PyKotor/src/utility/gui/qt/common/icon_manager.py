@@ -37,11 +37,11 @@ class IconManager:
 
         self.DOCUMENT_FILES: dict[str, str] = {
             "vnd.ms-powerpoint": "PowerpointFileIcon",
-            "vnd.openxmlformats-officedocument." "presentationml.presentation": "PowerpointFileIcon",
+            "vnd.openxmlformats-officedocument.presentationml.presentation": "PowerpointFileIcon",
             "msword": "WordFileIcon",
-            "vnd.openxmlformats-officedocument." "wordprocessingml.document": "WordFileIcon",
+            "vnd.openxmlformats-officedocument.wordprocessingml.document": "WordFileIcon",
             "vnd.ms-excel": "ExcelFileIcon",
-            "vnd.openxmlformats-officedocument." "spreadsheetml.sheet": "ExcelFileIcon",
+            "vnd.openxmlformats-officedocument.spreadsheetml.sheet": "ExcelFileIcon",
             "pdf": "PDFIcon",
         }
 
@@ -583,7 +583,7 @@ class ImagePathManager:
                 complete_path: str = osp.join(dirpath, filename)  # noqa: PTH118
                 if name in self.IMG_PATH:
                     warnings.warn(
-                        f"The icon located in {complete_path} is overriding " f"the existing {name}",
+                        f"The icon located in {complete_path} is overriding the existing {name}",
                         stacklevel=1,
                     )
                 self.IMG_PATH[name] = complete_path

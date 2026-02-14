@@ -30,7 +30,7 @@ test_textures = ["lda_bark04", "lda_flr11", "lda_grass07"]
 print("Checking if TXI is embedded in TPC files:")
 for tex_name in test_textures:
     print(f"\n{tex_name}:")
-    
+
     # First, find the TPC file
     tpc_results = inst.locations(
         [ResourceIdentifier(resname=tex_name, restype=rt) for rt in (ResourceType.TPC, ResourceType.TGA)],
@@ -38,10 +38,12 @@ for tex_name in test_textures:
             SearchLocation.OVERRIDE,
             SearchLocation.TEXTURES_GUI,
             SearchLocation.TEXTURES_TPA,
+            SearchLocation.TEXTURES_TPB,
+            SearchLocation.TEXTURES_TPC,
             SearchLocation.CHITIN,
         ],
     )
-    
+
     for res_ident, loc_list in tpc_results.items():
         if loc_list and res_ident.restype == ResourceType.TPC:
             loc = loc_list[0]
@@ -58,7 +60,7 @@ for tex_name in test_textures:
                     print("    Embedded TXI: NO")
             except Exception as e:
                 print(f"    Error reading TPC: {e}")
-    
+
     # Also check standalone TXI
     txi_results = inst.locations(
         [ResourceIdentifier(resname=tex_name, restype=ResourceType.TXI)],
@@ -66,6 +68,8 @@ for tex_name in test_textures:
             SearchLocation.OVERRIDE,
             SearchLocation.TEXTURES_GUI,
             SearchLocation.TEXTURES_TPA,
+            SearchLocation.TEXTURES_TPB,
+            SearchLocation.TEXTURES_TPC,
             SearchLocation.CHITIN,
         ],
     )
@@ -76,4 +80,3 @@ for tex_name in test_textures:
                 print(f"    - {loc.filepath.name}")
         else:
             print("  Standalone TXI: NOT FOUND (empty list)")
-

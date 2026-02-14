@@ -39,10 +39,10 @@ if TYPE_CHECKING:
 
 class ModInstaller:
     """Core mod installer implementing TSLPatcher/HoloPatcher logic.
-    
+
     Handles mod installation, backup creation, and applying patches from changes.ini files.
     This is a Python rewrite of the original TSLPatcher Perl implementation.
-    
+
     References:
     ----------
         Based on swkotor.exe GFF structure:
@@ -53,6 +53,7 @@ class ModInstaller:
 
 
     """
+
     def __init__(
         self,
         mod_path: os.PathLike | str,
@@ -198,7 +199,9 @@ class ModInstaller:
             module_root: str = Installation.get_module_root(output_container_path)
             tslrcm_omitted_rims: tuple[Literal["702KOR"], Literal["401DXN"]] = ("702KOR", "401DXN")
             if module_root.upper() not in tslrcm_omitted_rims and is_rim_file(output_container_path):
-                self.log.add_warning(f"This mod is patching RIM file Modules/{output_container_path.name}!\nPatching RIMs is highly incompatible, not recommended, and widely considered bad practice. Please request the mod developer to fix this.")  # noqa: E501
+                self.log.add_warning(
+                    f"This mod is patching RIM file Modules/{output_container_path.name}!\nPatching RIMs is highly incompatible, not recommended, and widely considered bad practice. Please request the mod developer to fix this."
+                )  # noqa: E501
             if not output_container_path.is_file():
                 if is_mod_file(output_container_path):
                     self.log.add_note(
@@ -543,11 +546,7 @@ class ModInstaller:
 
         if female_dialog_file.is_file():
             female_tlk_patches: ModificationsTLK = deepcopy(patches_tlk)
-            female_tlk_patches.sourcefile = (
-                female_tlk_patches.sourcefile_f
-                if (self.mod_path / female_tlk_patches.sourcefile_f).is_file()
-                else patches_tlk.sourcefile
-            )
+            female_tlk_patches.sourcefile = female_tlk_patches.sourcefile_f if (self.mod_path / female_tlk_patches.sourcefile_f).is_file() else patches_tlk.sourcefile
             female_tlk_patches.saveas = female_dialog_filename
             tlk_patches.append(female_tlk_patches)
 

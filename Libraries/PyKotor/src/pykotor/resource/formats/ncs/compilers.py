@@ -28,11 +28,11 @@ class InbuiltNCSCompiler(NCSCompiler):
     This compiler provides full NSS compilation without external dependencies,
     supporting all KOTOR/TSL script features including:
     - Functions, variables, structs
-    - Control flow (if/else, while, for, do-while, switch)  
+    - Control flow (if/else, while, for, do-while, switch)
     - All data types (int, float, string, object, vector, etc.)
     - #include directive support
     - Optimization passes
-    
+
     References:
     ----------
         See ncs_data module docstring for engine addresses (K1 + TSL TODO). CResNCS::CResNCS (K1: 0x005d4c30),
@@ -75,7 +75,7 @@ class ExternalCompilerConfig(NamedTuple):
 
 class KnownExternalCompilers(Enum):
     """Known external NSS compilers and their configurations.
-    
+
     References:
     ----------
         Original BioWare engine binaries (from swkotor.exe, swkotor2.exe)
@@ -87,6 +87,7 @@ class KnownExternalCompilers(Enum):
 
 
     """
+
     TSLPATCHER = ExternalCompilerConfig(
         sha256="539EB689D2E0D3751AEED273385865278BEF6696C46BC0CAB116B40C3B2FE820",
         name="TSLPatcher",

@@ -48,13 +48,13 @@ class TestQFileDialogExtended(unittest.TestCase):
         self.assertIsNotNone(item)
         address_widget = item.widget()
         self.assertEqual(address_widget, self.dialog.address_bar)
-        
+
         # Search at row 2
         item = grid.itemAtPosition(2, 0)
         self.assertIsNotNone(item)
         search_widget = item.widget()
         self.assertEqual(search_widget, self.dialog.search_filter)
-        
+
         # After insertion, original row 0 (lookInLabel) should be at row 3
         item = grid.itemAtPosition(3, 0)
         self.assertIsNotNone(item, "lookInLabel should be at row 3 after inserting ribbon, address bar and search")
@@ -101,7 +101,7 @@ class TestQFileDialogExtended(unittest.TestCase):
         # List enum should have an integer value of 1
         self.assertEqual(current_mode.value, 1)  # List = 1
         self.assertEqual(current_mode.name, "List")
-        
+
         self.dialog.ui.detailModeButton.click()
         current_mode = self.dialog.viewMode()
         # Detail enum should have an integer value of 0
@@ -130,4 +130,4 @@ class TestQFileDialogExtended(unittest.TestCase):
         QTest.qWait(20)
         # The signal may or may not be emitted depending on current path
         # Just verify the address bar has navigation capabilities
-        self.assertTrue(hasattr(self.dialog.address_bar, 'pathChanged'))
+        self.assertTrue(hasattr(self.dialog.address_bar, "pathChanged"))

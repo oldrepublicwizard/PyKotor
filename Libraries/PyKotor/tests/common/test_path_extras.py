@@ -26,8 +26,7 @@ if UTILITY_PATH.joinpath("utility").exists():
 import contextlib
 
 from utility.system.path import Path
-from pykotor.tools.path import CaseAwarePath
-from pathlib import Path, PosixPath, PurePath, PurePosixPath, PureWindowsPath, WindowsPath
+from pathlib import Path
 
 
 class TestPathExtras(unittest.TestCase):

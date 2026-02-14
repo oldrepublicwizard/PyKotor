@@ -36,17 +36,13 @@ _RESOURCE_TYPE_CACHE: list[tuple[ResourceType, str]] | None = None
 
 def _get_cached_resource_types() -> list[tuple[ResourceType, str]]:
     """Get cached list of valid ResourceTypes with extensions, sorted by extension length (longest first).
-    
+
     This cache is computed once and reused for all file parsing operations.
     """
     global _RESOURCE_TYPE_CACHE  # noqa: PLW0603
     if _RESOURCE_TYPE_CACHE is None:
         _RESOURCE_TYPE_CACHE = sorted(
-            [
-                (rt, f".{rt.extension}")
-                for rt in ResourceType.__members__.values()
-                if not rt.is_invalid and rt.extension
-            ],
+            [(rt, f".{rt.extension}") for rt in ResourceType.__members__.values() if not rt.is_invalid and rt.extension],
             key=lambda x: len(x[1]),
             reverse=True,  # Longest extensions first (handles multi-part extensions like "res.xml")
         )
@@ -59,7 +55,6 @@ def clear_file_data_cache() -> None:
 
 
 def _find_real_filesystem_path(filepath: CaseAwarePath) -> tuple[CaseAwarePath | None, list[str]]:
-
     """Find the real filesystem path within a potentially nested capsule path.
 
     Given a path like 'C:/games/SAVEGAME.sav/inner.sav/resource.utc', this function
@@ -106,7 +101,6 @@ def _extract_from_nested_capsules(
     real_path: CaseAwarePath,
     nested_parts: list[str],
 ) -> bytes:
-
     """Extract data from potentially nested capsules.
 
     Given a real filesystem path to a capsule and a list of nested path components,
@@ -153,7 +147,7 @@ def _extract_from_nested_capsules(
             # NOTE: SAV uses "MOD " signature, HAK may use "ERF " or "HAK "
             erf_signatures = set(member.value for member in ERFType)
             erf_signatures.update({"SAV ", "HAK "})  # Add explicit signatures that might be used
-            
+
             if file_type in erf_signatures:
                 resources = _read_erf_resources(reader, current_data)
             elif file_type == "RIM ":
@@ -165,7 +159,7 @@ def _extract_from_nested_capsules(
         # Find the requested resource in this capsule
         res_ident = ResourceIdentifier.from_path(part)
         target_resource: tuple[int, int] | None = None  # (offset, size)
-        
+
         for res_name, res_type, res_offset, res_size in resources:
             if res_name.lower() == res_ident.resname.lower() and res_type == res_ident.restype:
                 target_resource = (res_offset, res_size)
@@ -173,14 +167,15 @@ def _extract_from_nested_capsules(
 
         if target_resource is None:
             import errno
+
             msg = f"Resource '{part}' not found in nested capsule"
-            raise FileNotFoundError(errno.ENOENT, msg, str(real_path / "/".join(nested_parts[:i + 1])))
+            raise FileNotFoundError(errno.ENOENT, msg, str(real_path / "/".join(nested_parts[: i + 1])))
 
         res_offset, res_size = target_resource
 
         # Extract the resource data using offset/size from capsule header
         # We always extract the full resource at each level
-        current_data = current_data[res_offset:res_offset + res_size]
+        current_data = current_data[res_offset : res_offset + res_size]
 
     return current_data
 
@@ -271,10 +266,10 @@ def get_file_data_cache_stats() -> dict[str, int]:
 
 class FileResource:
     """Stores information for a resource regarding its name, type and where the data can be loaded from.
-    
+
     Represents a resource entry with metadata (name, type, size, offset) and file location.
     Used throughout PyKotor for resource abstraction and lazy loading.
-    
+
     References:
     ----------
         See pykotor.resource.formats.erf.erf_data for engine addresses (K1 + TSL TODO). CExoEncapsulatedFile::CExoEncapsulatedFile, CExoKeyTable::AddEncapsulatedContents.
@@ -310,22 +305,10 @@ class FileResource:
         self.inside_capsule: bool = filepath_str.endswith(_CAPSULE_EXTENSIONS)
         self.inside_bif: bool = filepath_str.endswith(".bif")
 
-        self._path_ident_obj: Path = (
-            self._filepath / str(self._identifier)
-            if self.inside_capsule or self.inside_bif
-            else self._filepath
-        )
+        self._path_ident_obj: Path = self._filepath / str(self._identifier) if self.inside_capsule or self.inside_bif else self._filepath
 
     def __repr__(self):
-        return (
-            f"{self.__class__.__name__}("
-            f"resname='{self._resname}', "
-            f"restype={self._restype!r}, "
-            f"size={self._size}, "
-            f"offset={self._offset}, "
-            f"filepath={self._filepath!r}"
-            ")"
-        )
+        return f"{self.__class__.__name__}(resname='{self._resname}', restype={self._restype!r}, size={self._size}, offset={self._offset}, filepath={self._filepath!r})"
 
     def __hash__(self):
         return hash(self._path_ident_obj)
@@ -395,7 +378,6 @@ class FileResource:
         """
         return self._filepath
 
-
     def path_ident(self) -> CaseAwarePath:
         """Returns a CaseAwarePath identifier for this resource.
 
@@ -413,7 +395,7 @@ class FileResource:
 
     def _index_resource(self):
         """Reload information about where the resource can be loaded from.
-        
+
         Supports nested capsule paths by checking if the filepath is directly accessible
         or if it needs to be resolved through nested capsule extraction.
         """
@@ -431,6 +413,7 @@ class FileResource:
                     return
                 if res is None:
                     import errno
+
                     msg = f"Resource '{self._identifier}' not found in Capsule"
                     raise FileNotFoundError(errno.ENOENT, msg, str(self._filepath))
 
@@ -443,15 +426,17 @@ class FileResource:
 
         # Slow path: handle nested capsule paths
         real_path, nested_parts = _find_real_filesystem_path(self._filepath)
-        
+
         if real_path is None:
             import errno
+
             msg = f"Cannot find file or capsule to index: {self._filepath}"
             raise FileNotFoundError(errno.ENOENT, msg, str(self._filepath))
 
         if not nested_parts:
             # Shouldn't happen if is_file() returned False but real_path was found
             import errno
+
             msg = f"Path exists but cannot be indexed: {self._filepath}"
             raise FileNotFoundError(errno.ENOENT, msg, str(self._filepath))
 
@@ -490,11 +475,12 @@ class FileResource:
 
                 # It's a capsule file that exists - verify the resource is inside it
                 from pykotor.extract.capsule import LazyCapsule  # Prevent circular imports
+
                 return bool(LazyCapsule(self._filepath).info(self._resname, self._restype))
 
             # Check for nested capsule path
             real_path, nested_parts = _find_real_filesystem_path(self._filepath)
-            
+
             if real_path is None:
                 return False
 
@@ -521,24 +507,24 @@ class FileResource:
     ) -> bytes:
         """Opens the file the resource is located at and returns the bytes data of the resource.
 
-        Supports nested capsule paths (e.g., SAVEGAME.sav/inner.sav) by recursively
-        extracting through each capsule level.
+            Supports nested capsule paths (e.g., SAVEGAME.sav/inner.sav) by recursively
+            extracting through each capsule level.
 
-        Args:
-        ----
-            reload (bool, kwarg): Whether to reload the file from disk or use the cache. Default is False
+            Args:
+            ----
+                reload (bool, kwarg): Whether to reload the file from disk or use the cache. Default is False
 
-        Returns:
-        -------
-            Bytes data of the resource.
+            Returns:
+            -------
+                Bytes data of the resource.
 
-        Raises:
-        ------
-            FileNotFoundError: File not found on disk or in nested capsule.
+            Raises:
+            ------
+                FileNotFoundError: File not found on disk or in nested capsule.
 
-    References:
-    ----------
-        See pykotor.resource.formats.erf.erf_data for engine addresses (K1 + TSL TODO). CExoEncapsulatedFile::CExoEncapsulatedFile, CExoKeyTable::AddEncapsulatedContents.
+        References:
+        ----------
+            See pykotor.resource.formats.erf.erf_data for engine addresses (K1 + TSL TODO). CExoEncapsulatedFile::CExoEncapsulatedFile, CExoKeyTable::AddEncapsulatedContents.
         """
         if reload:
             self._index_resource()
@@ -557,6 +543,7 @@ class FileResource:
         if real_path is None:
             # No part of the path exists on the filesystem
             import errno
+
             msg = f"Cannot find file or capsule: {self._filepath}"
             raise FileNotFoundError(errno.ENOENT, msg, str(self._filepath))
 
@@ -601,12 +588,7 @@ class ResourceResult:
         if self is other:
             return True
         if isinstance(other, ResourceResult):
-            return (
-                self.filepath == other.filepath
-                and self.resname == other.resname
-                and self.restype == other.restype
-                and self.data == other.data
-            )
+            return self.filepath == other.filepath and self.resname == other.resname and self.restype == other.restype and self.data == other.data
         return NotImplemented  # type: ignore[no-any-return]
 
     def __len__(self) -> Literal[4]:
@@ -662,11 +644,7 @@ class LocationResult:
         if self is other:
             return True
         if isinstance(other, LocationResult):
-            return (
-                self.filepath == other.filepath
-                and self.size == other.size
-                and self.offset == other.offset
-            )
+            return self.filepath == other.filepath and self.size == other.size and self.offset == other.offset
         return NotImplemented  # type: ignore[no-any-return]
 
     def __len__(self) -> Literal[3]:
@@ -714,6 +692,7 @@ class ResourceIdentifier:
     def __post_init__(self):
         # Workaround to initialize a field in a frozen dataclass
         from pykotor.common.misc import ResRef
+
         ext: str = self.restype.extension
         suffix: str = f".{ext}" if ext else ""
         lower_filename_str: str = f"{self.resname}{suffix}".lower()
@@ -846,7 +825,7 @@ class ResourceIdentifier:
             if "." in fname:
                 last_dot = fname.rfind(".")
                 stem = fname[:last_dot]
-                suffix = fname[last_dot + 1:]
+                suffix = fname[last_dot + 1 :]
             else:
                 stem = fname
                 suffix = ""

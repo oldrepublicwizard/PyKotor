@@ -209,4 +209,3 @@ def write_tga(image: TGAImage, stream: BinaryIO, rle: bool = False) -> None:
                     break
 
             write_packet(raw_pixels, raw=True)
-

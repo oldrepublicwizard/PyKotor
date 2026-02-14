@@ -11,10 +11,10 @@ if TYPE_CHECKING:
 
 class ERFBinaryReader(ResourceReader):
     """Reads ERF (Encapsulated Resource File) files.
-    
+
     ERF files are container formats that store multiple game resources. Used for MOD files,
     save games, and other resource collections.
-    
+
     References:
     ----------
         Based on unified K1/TSL ERF structure. See erf_data module docstring; addresses (K1: swkotor.exe, TSL: TODO via REVA).
@@ -23,7 +23,7 @@ class ERFBinaryReader(ResourceReader):
         - CExoKeyTable::AddEncapsulatedContents: K1: 0x0040f3c0, TSL: TODO. Validates "MOD V1.0"; header 160 bytes; Type [0x00], Version [0x04], EntryCount [0x10], KeyOffset [0x18].
         - "MOD V1.0" string: K1: 0x0074539c, TSL: TODO
         - "Table being rebuilt, this RIM is being leaked: %s": K1: 0x0073d8a8, TSL: TODO
-        
+
     Note:
     ----
         ERF files are container formats that store multiple game resources. Used for MOD files,
@@ -35,6 +35,7 @@ class ERFBinaryReader(ResourceReader):
         - ERF password/decryption support (xoreos-tools supports at unerf.cpp:108-145)
 
     """
+
     def __init__(
         self,
         source: SOURCE_TYPES,
@@ -87,7 +88,7 @@ class ERFBinaryReader(ResourceReader):
         offset_to_localized_strings: int = self._reader.read_uint32()
         offset_to_keys: int = self._reader.read_uint32()
         offset_to_resources: int = self._reader.read_uint32()
-        
+
         self._erf.build_year = self._reader.read_uint32()
         self._erf.build_day = self._reader.read_uint32()
         self._erf.description_strref = self._reader.read_uint32()
@@ -95,7 +96,7 @@ class ERFBinaryReader(ResourceReader):
         # Resilience: Some ERF/MOD files might use implicit 160 offset if these are 0
         if offset_to_keys == 0:
             offset_to_keys = 160
-            
+
         if offset_to_resources == 0:
             # If keys are at 160, resources are after (entry_count * 24)
             offset_to_resources = offset_to_keys + (entry_count * 24)
@@ -120,7 +121,6 @@ class ERFBinaryReader(ResourceReader):
         restypes: list[int] = []
         self._reader.seek(offset_to_keys)
         for _ in range(entry_count):
-            
             # reone lowercases resrefs at line 63, but we preserve case for round-trip fidelity
             resref_str = self._reader.read_string(16).rstrip("\0")
             resrefs.append(resref_str)
@@ -159,39 +159,39 @@ class ERFBinaryWriter(ResourceWriter):
     @autoclose
     def write(self, *, auto_close: bool = True):  # noqa: FBT001, FBT002, ARG002  # pyright: ignore[reportUnusedParameters]
         entry_count: int = len(self.erf)
-        
+
         # Calculate Localized String Block Size
         language_count = len(self.erf.localized_strings)
         localized_string_block_size = 0
-        sorted_langs = sorted(self.erf.localized_strings.items()) # Ensure deterministic order
-        
+        sorted_langs = sorted(self.erf.localized_strings.items())  # Ensure deterministic order
+
         for _, text in sorted_langs:
             # Entry: 4 (ID) + 4 (Size) + len(text)
-            localized_string_block_size += 8 + len(text.encode('windows-1252')) 
-            
+            localized_string_block_size += 8 + len(text.encode("windows-1252"))
+
         offset_to_localized_strings = 0
         if language_count > 0:
             offset_to_localized_strings = ERFBinaryWriter.FILE_HEADER_SIZE
         elif self.erf.erf_type == ERFType.ERF:
             # Heuristic: Generic ERF files (texture packs) tend to use 160 even if empty
             offset_to_localized_strings = ERFBinaryWriter.FILE_HEADER_SIZE
-            
+
         offset_to_keys: int = ERFBinaryWriter.FILE_HEADER_SIZE + localized_string_block_size
         offset_to_resources: int = offset_to_keys + ERFBinaryWriter.KEY_ELEMENT_SIZE * entry_count
-        
+
         # Use stored values if available, otherwise fallback to defaults/logic
         description_strref = self.erf.description_strref
-        
+
         # Legacy auto-logic for new files if not set
-        if description_strref == -1: # Default from init
-             if self.erf.is_save:
+        if description_strref == -1:  # Default from init
+            if self.erf.is_save:
                 description_strref = 0x00000000
-             elif self.erf.erf_type is ERFType.ERF:
-                description_strref = 0xFFFFFFFF # Standard Empty
-             elif self.erf.erf_type is ERFType.MOD:
+            elif self.erf.erf_type is ERFType.ERF:
+                description_strref = 0xFFFFFFFF  # Standard Empty
+            elif self.erf.erf_type is ERFType.MOD:
                 # 0xFFFFFFFF is standard for most modules (Verified via bulk scan of rimtesting/modules)
                 # Note: TSL LIPS files consistently use 0xCDCDCDCD (Debug Fill), but we default to standard empty.
-                description_strref = 0xFFFFFFFF 
+                description_strref = 0xFFFFFFFF
 
         self._writer.write_string(self.erf.erf_type.value)
         self._writer.write_string("V1.0")
@@ -208,7 +208,7 @@ class ERFBinaryWriter(ResourceWriter):
 
         # Write Localized Strings
         for lang_id, text in sorted_langs:
-            encoded_text = text.encode('windows-1252')
+            encoded_text = text.encode("windows-1252")
             self._writer.write_uint32(lang_id)
             self._writer.write_uint32(len(encoded_text))
             self._writer.write_bytes(encoded_text)
@@ -218,7 +218,7 @@ class ERFBinaryWriter(ResourceWriter):
             self._writer.write_uint32(resid)
             self._writer.write_uint16(resource.restype.type_id)
             self._writer.write_uint16(0)
-            
+
         data_offset: int = offset_to_resources + ERFBinaryWriter.RESOURCE_ELEMENT_SIZE * entry_count
         for resource in self.erf:
             self._writer.write_uint32(data_offset)

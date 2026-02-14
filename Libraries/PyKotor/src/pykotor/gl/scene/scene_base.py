@@ -50,7 +50,6 @@ from utility.common.geometry import Vector3
 from utility.common.more_collections import CaseInsensitiveDict
 
 if TYPE_CHECKING:
-
     from collections.abc import Callable
 
     from typing_extensions import Literal  # pyright: ignore[reportMissingModuleSource]
@@ -87,7 +86,7 @@ class SceneBase:
         # If __init__ raises an exception before line 195, __del__ can safely check is not None
         self.async_loader: AsyncResourceLoader | None = None
         self._shutdown: bool = False
-        
+
         self.installation: Installation | None = installation
         if installation is not None:
             self.set_installation(installation)
@@ -116,27 +115,25 @@ class SceneBase:
         # NOTE: Do NOT add additional installation.location(...) calls just for UI.
         self.texture_lookup_info: dict[str, dict[str, Any]] = {}
         self.requested_texture_names: set[str] = set()
-        
+
         # Async resource loading
         # Main thread: Use Installation to RESOLVE file locations ONLY (no Installation in child!)
         # Child process: Do raw file IO + parsing (one process per file)
-        
+
         # Pre-compute search location lists to avoid creating new lists on every call
         # Include all texture packs so creature/world textures resolve correctly.
         texture_search_locs = [
             SearchLocation.OVERRIDE,
-            SearchLocation.TEXTURES_GUI,
             SearchLocation.TEXTURES_TPA,
-# NOTE: only include tpa, don't include tpb/tpc, same as tpa but worse quality.
-# DO NOT uncomment these.
-#            SearchLocation.TEXTURES_TPB,
-#            SearchLocation.TEXTURES_TPC,
+            SearchLocation.TEXTURES_TPB,
+            SearchLocation.TEXTURES_TPC,
+            SearchLocation.TEXTURES_GUI,
             SearchLocation.CHITIN,
         ]
         model_search_locs = [SearchLocation.OVERRIDE, SearchLocation.CHITIN]
         # Cache capsules list for model loading (computed once per scene, not per model)
         _cached_capsules: list[Capsule] | None = None
-        
+
         def _infer_search_location(filepath_str: str) -> SearchLocation | None:
             """Infer SearchLocation from the resolved filepath (no additional lookups).
 
@@ -164,7 +161,7 @@ class SceneBase:
 
         def _resolve_texture_location(name: str) -> tuple[str, int, int, int] | None:
             """Resolve texture file location in main thread using Installation ONLY.
-            
+
             Returns (filepath, offset, size) or None.
             """
             if self.installation is None:
@@ -177,7 +174,7 @@ class SceneBase:
                     "error": "No installation set on Scene",
                 }
                 return None
-            
+
             # Single call: find texture by trying all supported texture restypes.
             # This avoids extra location() calls while still reporting the real restype (TPC/TGA/DDS).
             restypes = list(getattr(self.installation, "TEXTURES_TYPES", (ResourceType.TPC, ResourceType.TGA, ResourceType.DDS)))
@@ -230,40 +227,40 @@ class SceneBase:
                 [getattr(x, "name", str(x)) for x in texture_search_locs],
             )
             return None
-        
+
         def _resolve_model_location(name: str) -> tuple[tuple[str, int, int] | None, tuple[str, int, int] | None]:
             """Resolve model file locations in main thread using Installation ONLY.
-            
+
             Returns ((mdl_path, offset, size), (mdx_path, offset, size)) or (None, None).
             """
             nonlocal _cached_capsules
             if self.installation is None:
                 return (None, None)
-            
+
             # Cache capsules list for this scene (avoids repeated calls to capsules())
             if _cached_capsules is None and self._module is not None:
                 module_capsules = self._module.capsules()
                 _cached_capsules = list(module_capsules) if module_capsules else []
-            
+
             capsules = _cached_capsules or []
-            
+
             # Installation.location() returns list[LocationResult] with offset/size fields
             mdl_locs = self.installation.location(name, ResourceType.MDL, model_search_locs, capsules=capsules)
             mdx_locs = self.installation.location(name, ResourceType.MDX, model_search_locs, capsules=capsules)
-            
+
             mdl_loc = None
             mdx_loc = None
-            
+
             if mdl_locs:
                 loc = mdl_locs[0]
                 mdl_loc = (str(loc.filepath), loc.offset, loc.size)
-            
+
             if mdx_locs:
                 loc = mdx_locs[0]
                 mdx_loc = (str(loc.filepath), loc.offset, loc.size)
-            
+
             return (mdl_loc, mdx_loc)
-        
+
         # Now assign the actual AsyncResourceLoader instance
         self.async_loader = AsyncResourceLoader(
             texture_location_resolver=_resolve_texture_location,
@@ -290,7 +287,7 @@ class SceneBase:
         self.backface_culling: bool = True
         self.use_lightmap: bool = True
         self.show_cursor: bool = True
-    
+
     @property
     def is_shutdown(self) -> bool:
         return self._shutdown
@@ -358,7 +355,7 @@ class SceneBase:
         sync: bool = False,
     ) -> RenderObject:
         """Get a RenderObject for a creature.
-        
+
         Args:
             instance: Optional GITCreature instance to get the UTC from.
             utc: Optional UTC object to use directly.
@@ -525,7 +522,7 @@ class SceneBase:
             self.camera.x = point.x
             self.camera.y = point.y
             self.camera.z = point.z + 1.8
-    
+
     def invalidate_cache(self):
         """Invalidate resource caches and cancel pending async operations."""
         # Cancel pending operations
@@ -533,10 +530,10 @@ class SceneBase:
             future.cancel()
         for future in self._pending_model_futures.values():
             future.cancel()
-        
+
         self._pending_texture_futures.clear()
         self._pending_model_futures.clear()
-        
+
         # Clear caches (but keep predefined models/textures)
         predefined_models = {"waypoint", "sound", "store", "entry", "encounter", "trigger", "camera", "empty", "cursor", "unknown"}
         self.models = CaseInsensitiveDict({k: v for k, v in self.models.items() if k in predefined_models})
@@ -549,15 +546,15 @@ class SceneBase:
         self.textures = CaseInsensitiveDict()
         if null_tex is not None:
             self.textures["NULL"] = null_tex
-        
+
         RobustLogger().debug("Invalidated resource cache")
-    
+
     def poll_async_resources(self, *, max_textures_per_frame: int = 8, max_models_per_frame: int = 4):
         """Poll for completed async resource loading and create OpenGL objects.
-        
+
         MUST be called from main thread with active OpenGL context.
         This is non-blocking and processes only completed futures.
-        
+
         Args:
             max_textures_per_frame: Max textures to upload to GPU per frame (prevents frame spikes)
             max_models_per_frame: Max models to upload to GPU per frame (prevents frame spikes)
@@ -565,7 +562,7 @@ class SceneBase:
         # Fast path: nothing to poll
         if not self._pending_texture_futures and not self._pending_model_futures:
             return
-        
+
         # Check completed texture futures (limited per frame to prevent stuttering)
         completed_textures: list[str] = []
         textures_processed = 0
@@ -604,10 +601,10 @@ class SceneBase:
                     info.update({"loaded": False, "load_error": "Exception while processing completed texture future"})
                     completed_textures.append(name)
                     textures_processed += 1
-        
+
         for name in completed_textures:
             del self._pending_texture_futures[name]
-        
+
         # Check completed model futures (limited per frame)
         completed_models: list[str] = []
         models_processed = 0
@@ -642,7 +639,7 @@ class SceneBase:
                     )
                     completed_models.append(name)
                     models_processed += 1
-        
+
         for name in completed_models:
             del self._pending_model_futures[name]
 
@@ -658,12 +655,12 @@ class SceneBase:
             if tex is self._missing_texture and lightmap:
                 return self._missing_lightmap
             return tex
-        
+
         # Already loading?
         if name in self._pending_texture_futures:
             # Return placeholder while loading
             return self._loading_texture
-        
+
         # Start async loading if location resolver available
         if self.async_loader is not None and self.async_loader.texture_location_resolver is not None:
             # Track requests for UI/debugging (names only). Resolution details are stored by the resolver.
@@ -673,7 +670,7 @@ class SceneBase:
             self._pending_texture_futures[name] = future
             # Return gray placeholder immediately
             return self._loading_texture
-        
+
         # Fallback to synchronous loading (e.g., if process pools unavailable)
         type_name: Literal["lightmap", "texture"] = "lightmap" if lightmap else "texture"
         tpc: TPC | None = None
@@ -689,7 +686,17 @@ class SceneBase:
             # Otherwise just search through all relevant game files
             if tpc is None and self.installation is not None:
                 RobustLogger().debug(f"Locating and loading {type_name} '{name}' from override/bifs/texturepacks...")
-                tpc = self.installation.texture(name, [SearchLocation.OVERRIDE, SearchLocation.TEXTURES_TPA, SearchLocation.CHITIN])
+                tpc = self.installation.texture(
+                    name,
+                    [
+                        SearchLocation.OVERRIDE,
+                        SearchLocation.TEXTURES_TPA,
+                        SearchLocation.TEXTURES_TPB,
+                        SearchLocation.TEXTURES_TPC,
+                        SearchLocation.TEXTURES_GUI,
+                        SearchLocation.CHITIN,
+                    ],
+                )
             if tpc is None:
                 RobustLogger().warning(f"MISSING {type_name.upper()}: '{name}'")
         except Exception:  # noqa: BLE001
@@ -698,7 +705,7 @@ class SceneBase:
         if tpc is None:
             self.textures[name] = self._missing_texture
             return self._missing_lightmap if lightmap else self._missing_texture
-        
+
         self.textures[name] = Texture.from_tpc(tpc)
         return self.textures[name]
 
@@ -707,25 +714,25 @@ class SceneBase:
         name: str,
     ) -> Model:
         """Load a model synchronously, bypassing async loading.
-        
+
         This is useful when you need the model immediately (e.g., for finding hooks).
         The model will be cached for future use.
-        
+
         Args:
             name: The model name to load.
-            
+
         Returns:
             The loaded Model object.
         """
         # Already cached?
         if name in self.models:
             return self.models[name]
-        
+
         # Cancel any pending async load for this model
         if name in self._pending_model_futures:
             self._pending_model_futures[name].cancel()
             del self._pending_model_futures[name]
-        
+
         # Handle predefined models
         predefined_models = {
             "waypoint": (WAYPOINT_MDL_DATA, WAYPOINT_MDX_DATA),
@@ -739,7 +746,7 @@ class SceneBase:
             "cursor": (CURSOR_MDL_DATA, CURSOR_MDX_DATA),
             "unknown": (UNKNOWN_MDL_DATA, UNKNOWN_MDX_DATA),
         }
-        
+
         if name in predefined_models:
             mdl_data, mdx_data = predefined_models[name]
             try:
@@ -750,11 +757,11 @@ class SceneBase:
                 return model
             except Exception:  # noqa: BLE001
                 RobustLogger().exception(f"Could not load predefined model '{name}'.")
-        
+
         # Synchronous loading from installation
         fallback_mdl_data: bytes = EMPTY_MDL_DATA
         fallback_mdx_data: bytes = EMPTY_MDX_DATA
-        
+
         if self.installation is not None:
             capsules: list[ModulePieceResource] = [] if self._module is None else self.module.capsules()
             mdl_search: ResourceResult | None = self.installation.resource(name, ResourceType.MDL, SEARCH_ORDER, capsules=capsules)
@@ -787,7 +794,7 @@ class SceneBase:
         # Already cached?
         if name in self.models:
             return self.models[name]
-        
+
         # Special/predefined models - load synchronously
         predefined_models = {
             "waypoint": (WAYPOINT_MDL_DATA, WAYPOINT_MDX_DATA),
@@ -801,7 +808,7 @@ class SceneBase:
             "cursor": (CURSOR_MDL_DATA, CURSOR_MDX_DATA),
             "unknown": (UNKNOWN_MDL_DATA, UNKNOWN_MDX_DATA),
         }
-        
+
         if name in predefined_models:
             mdl_data, mdx_data = predefined_models[name]
             try:
@@ -813,7 +820,7 @@ class SceneBase:
             except Exception:  # noqa: BLE001
                 RobustLogger().exception(f"Could not load predefined model '{name}'.")
                 # Fall through to empty model
-        
+
         # Already loading?
         if name in self._pending_model_futures:
             # Return empty model placeholder while loading
@@ -825,7 +832,7 @@ class SceneBase:
                 )
                 self.models["empty"] = empty_model
             return self.models["empty"]
-        
+
         # Start async loading if location resolver available
         if self.async_loader is not None and self.async_loader.model_location_resolver is not None:
             future = self.async_loader.load_model_async(name)
@@ -839,11 +846,11 @@ class SceneBase:
                 )
                 self.models["empty"] = empty_model
             return self.models["empty"]
-        
+
         # Fallback to synchronous loading
         fallback_mdl_data: bytes = EMPTY_MDL_DATA
         fallback_mdx_data: bytes = EMPTY_MDX_DATA
-        
+
         if self.installation is not None:
             capsules: list[ModulePieceResource] = [] if self._module is None else self.module.capsules()
             mdl_search: ResourceResult | None = self.installation.resource(name, ResourceType.MDL, SEARCH_ORDER, capsules=capsules)

@@ -5,11 +5,11 @@ KotOR audio files have various obfuscation formats that need to be handled:
 1. **SFX Format** (streammusic, some sounds):
    - Header: 0xFF 0xF3 0x60 0xC4 (little-endian: 0xC460F3FF = 3294888959)
    - Skip 470 bytes (0x1DA), then standard RIFF/WAVE follows
-   
+
 2. **MP3-in-WAV Format** (some music):
    - Header: RIFF with riffSize == 50
    - Skip 58 bytes, then raw MP3 data follows
-   
+
 3. **Standard WAV** (streamvoice, most dialog):
    - Standard RIFF/WAVE format, no obfuscation
 
@@ -38,9 +38,10 @@ from enum import IntEnum
 
 class DeobfuscationResult(IntEnum):
     """Result type from deobfuscation indicating what format was detected."""
-    STANDARD = 0       # Standard RIFF/WAVE, no header removed
-    SFX_HEADER = 1     # SFX 470-byte header removed, data is WAVE
-    MP3_IN_WAV = 2     # MP3-in-WAV 58-byte header removed, data is MP3
+
+    STANDARD = 0  # Standard RIFF/WAVE, no header removed
+    SFX_HEADER = 1  # SFX 470-byte header removed, data is WAVE
+    MP3_IN_WAV = 2  # MP3-in-WAV 58-byte header removed, data is MP3
 
 
 # Magic numbers for detection
@@ -69,20 +70,20 @@ def detect_audio_format(data: bytes) -> tuple[DeobfuscationResult, int]:
 
     Args:
         data: Raw audio file bytes
-        
+
     Returns:
         Tuple of (format_type, header_size_to_skip)
-        
+
     References:
-        
+
         https://github.com/th3w1zard1/KotOR.js/tree/master/src/audio/AudioFile.ts:111-146
     """
     if len(data) < 12:
         return DeobfuscationResult.STANDARD, 0
-    
+
     # Check first 4 bytes
     first_four = data[:4]
-    
+
     # Check for SFX header: 0xFF 0xF3 0x60 0xC4
     #
     if first_four == SFX_MAGIC_BYTES:
@@ -92,7 +93,7 @@ def detect_audio_format(data: bytes) -> tuple[DeobfuscationResult, int]:
     if first_four == RIFF_MAGIC:
         # Check for VO header: if "RIFF" appears again at offset 20, it's a 20-byte VO header
         # Reference: test comment mentions "to satisfy deobfuscation check at offset 16"
-        if len(data) >= VO_HEADER_SIZE + 4 and data[VO_HEADER_SIZE:VO_HEADER_SIZE + 4] == RIFF_MAGIC:
+        if len(data) >= VO_HEADER_SIZE + 4 and data[VO_HEADER_SIZE : VO_HEADER_SIZE + 4] == RIFF_MAGIC:
             return DeobfuscationResult.STANDARD, VO_HEADER_SIZE
 
         # Read the riffSize (bytes 4-8)
@@ -102,17 +103,17 @@ def detect_audio_format(data: bytes) -> tuple[DeobfuscationResult, int]:
         # if(riffSize == 50) → MP3 wrapped in WAV
         if riff_size == MP3_IN_WAV_RIFF_SIZE:
             return DeobfuscationResult.MP3_IN_WAV, MP3_IN_WAV_HEADER_SIZE
-        
+
         # Standard RIFF/WAVE
         return DeobfuscationResult.STANDARD, 0
-    
+
     # Unknown format, assume standard
     return DeobfuscationResult.STANDARD, 0
 
 
 def deobfuscate_audio(data: bytes) -> bytes:
     """Removes obfuscation headers from KotOR audio files.
-    
+
     This function detects and removes KotOR-specific audio headers to produce
     data playable by standard media players.
 
@@ -126,35 +127,35 @@ def deobfuscate_audio(data: bytes) -> bytes:
         1. Check for SFX header (0xFF 0xF3 0x60 0xC4) → skip 470 bytes
         2. Check for MP3-in-WAV (RIFF with size 50) → skip 58 bytes (returns MP3!)
         3. Otherwise return unchanged (standard WAV)
-        
+
     References:
-        
+
         https://github.com/th3w1zard1/KotOR.js/tree/master/src/audio/AudioFile.ts:111-162
     """
     format_type, skip_size = detect_audio_format(data)
-    
+
     if skip_size > 0 and len(data) > skip_size:
         return data[skip_size:]
-    
+
     return data
 
 
 def get_deobfuscation_result(data: bytes) -> tuple[bytes, DeobfuscationResult]:
     """Deobfuscate audio and return both the data and the format detected.
-    
+
     This is useful when you need to know whether the result is WAVE or MP3.
-    
+
     Args:
         data: Raw audio data bytes
-        
+
     Returns:
         Tuple of (deobfuscated_data, format_type)
     """
     format_type, skip_size = detect_audio_format(data)
-    
+
     if skip_size > 0 and len(data) > skip_size:
         return data[skip_size:], format_type
-    
+
     return data, format_type
 
 
@@ -189,7 +190,7 @@ def obfuscate_audio(
         # as long as the magic is correct - game just skips to offset 0x1DA)
         # Using 0x00 for the rest is safe
         return bytes(header) + data
-    
+
     elif wav_type == "VO":
         # Create 20-byte VO header
         # Header starts with "RIFF" (magic number 1179011410 = 0x46464952)
@@ -198,6 +199,6 @@ def obfuscate_audio(
         header[0:4] = RIFF_MAGIC
         # Fill remaining bytes with 0x00 (pattern doesn't matter, just needs to be 20 bytes)
         return bytes(header) + data
-    
+
     # Unknown type, return unchanged
     return data

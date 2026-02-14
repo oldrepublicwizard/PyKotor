@@ -39,7 +39,4 @@ def run_subprocess(
 
 def is_frozen() -> bool:
     # Check for sys attributes - legitimate use of getattr for optional runtime attributes
-    return (
-        getattr(sys, "frozen", False)
-        or getattr(sys, "_MEIPASS", False)
-    )
+    return getattr(sys, "frozen", False) or getattr(sys, "_MEIPASS", False)

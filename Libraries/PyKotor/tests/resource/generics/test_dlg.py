@@ -46,7 +46,6 @@ from pykotor.resource.generics.dlg import (
 from pykotor.resource.type import ResourceType
 
 if TYPE_CHECKING:
-
     from pykotor.resource.formats.gff import GFF
 
 
@@ -721,6 +720,7 @@ TEST_K1_DLG_XML = """<gff3>
   </gff3>
 """
 
+
 class TestDLG(TestCase):
     def setUp(self):
         self.log_messages: list[str] = [os.linesep]
@@ -729,14 +729,14 @@ class TestDLG(TestCase):
         self.log_messages.extend(args)
 
     def test_k1_reconstruct(self):
-        gff: GFF = read_gff(TEST_K1_DLG_XML.encode('utf-8'), file_format=ResourceType.GFF_XML)
+        gff: GFF = read_gff(TEST_K1_DLG_XML.encode("utf-8"), file_format=ResourceType.GFF_XML)
         reconstructed_gff: GFF = dismantle_dlg(construct_dlg(gff), Game.K1)
         result = gff.compare(reconstructed_gff, self.log_func, ignore_default_changes=True)
         output = os.linesep.join(self.log_messages)
         assert result, output
 
     def test_k1_reconstruct_from_reconstruct(self):
-        gff: GFF = read_gff(TEST_K1_DLG_XML.encode('utf-8'), file_format=ResourceType.GFF_XML)
+        gff: GFF = read_gff(TEST_K1_DLG_XML.encode("utf-8"), file_format=ResourceType.GFF_XML)
         reconstructed_gff: GFF = dismantle_dlg(construct_dlg(gff), Game.K1)
         re_reconstructed_gff: GFF = dismantle_dlg(construct_dlg(reconstructed_gff), Game.K1)
         result: bool = reconstructed_gff.compare(re_reconstructed_gff, self.log_func)
@@ -744,20 +744,20 @@ class TestDLG(TestCase):
         assert result, output
 
     def test_k1_serialization(self):
-        gff: GFF = read_gff(TEST_K1_DLG_XML.encode('utf-8'), file_format=ResourceType.GFF_XML)
+        gff: GFF = read_gff(TEST_K1_DLG_XML.encode("utf-8"), file_format=ResourceType.GFF_XML)
         dlg: DLG = construct_dlg(gff)
         for node in dlg.all_entries():
             assert node == DLGNode.from_dict(node.to_dict())
 
     def test_k2_reconstruct(self):
-        gff: GFF = read_gff(TEST_DLG_XML.encode('utf-8'), file_format=ResourceType.GFF_XML)
+        gff: GFF = read_gff(TEST_DLG_XML.encode("utf-8"), file_format=ResourceType.GFF_XML)
         reconstructed_gff: GFF = dismantle_dlg(construct_dlg(gff), Game.K2)
         print(reconstructed_gff.root.get_list("EntryList").at(0).get_int32("RecordNoOverri"))
         reconstructed_gff.root.get_list("EntryList").at(0).set_int32("RecordNoOverri", 1)
         assert gff.compare(reconstructed_gff, self.log_func, ignore_default_changes=True), os.linesep.join(self.log_messages)
 
     def test_k2_reconstruct_from_reconstruct(self):
-        gff: GFF = read_gff(TEST_DLG_XML.encode('utf-8'), file_format=ResourceType.GFF_XML)
+        gff: GFF = read_gff(TEST_DLG_XML.encode("utf-8"), file_format=ResourceType.GFF_XML)
         reconstructed_gff: GFF = dismantle_dlg(construct_dlg(gff), Game.K2)
         re_reconstructed_gff: GFF = dismantle_dlg(construct_dlg(reconstructed_gff), Game.K2)
         result = reconstructed_gff.compare(re_reconstructed_gff, self.log_func)
@@ -765,7 +765,7 @@ class TestDLG(TestCase):
         assert result, output
 
     def test_io_construct(self):
-        gff = read_gff(TEST_DLG_XML.encode('utf-8'), file_format=ResourceType.GFF_XML)
+        gff = read_gff(TEST_DLG_XML.encode("utf-8"), file_format=ResourceType.GFF_XML)
         dlg = construct_dlg(gff)
         self.validate_io(dlg)
 
@@ -774,7 +774,7 @@ class TestDLG(TestCase):
         import tempfile
         import os
 
-        with tempfile.NamedTemporaryFile(mode='w', suffix='.dlg.xml', delete=False, encoding='utf-8') as tmp:
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".dlg.xml", delete=False, encoding="utf-8") as tmp:
             tmp.write(TEST_DLG_XML)
             tmp_path = tmp.name
 
@@ -971,7 +971,7 @@ class TestDLGEntrySerialization(unittest.TestCase):
 
         # Assert top-level comment
         assert entry1.comment == deserialized.comment
-        
+
         # Assert first level link
         assert len(deserialized.links) == 1
         deserialized_reply1 = deserialized.links[0].node
@@ -1372,11 +1372,9 @@ class TestDLGLinkSerialization(unittest.TestCase):
         reply_one.links.append(link_leaf)
         reply_one.links.append(link_secondary)
 
-        visited_nodes = {
-            link.node.comment if isinstance(link.node, DLGEntry) else link.node.text.get(Language.ENGLISH, Gender.MALE)
-            for link in link_root
-        }
+        visited_nodes = {link.node.comment if isinstance(link.node, DLGEntry) else link.node.text.get(Language.ENGLISH, Gender.MALE) for link in link_root}
         assert visited_nodes == {"r1", "r2", "leaf"}
+
 
 class TestDLGAnimationSerialization(unittest.TestCase):
     def test_dlg_animation_serialization_basic(self):

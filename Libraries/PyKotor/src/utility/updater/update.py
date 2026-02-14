@@ -616,7 +616,9 @@ class AppUpdate(LibUpdate):  # pragma: no cover
             return old_app_path, cur_app_filepath
 
         try:
-            r = Restarter(cur_app_filepath, temp_app_filepath, restart_strategy=self.r_strategy, filename=self.filename, update_strategy=self.u_strategy, exithook=self.exithook)
+            r = Restarter(
+                cur_app_filepath, temp_app_filepath, restart_strategy=self.r_strategy, filename=self.filename, update_strategy=self.u_strategy, exithook=self.exithook
+            )
             r.process()
         except OSError as e:
             if not is_frozen():

@@ -96,6 +96,7 @@ class SearchLocation(IntEnum):
     CUSTOM_FOLDERS = 13
     """Resource files stored in the folders specified in the method parameters."""
 
+
 class TexturePackNames(Enum):
     """Full list of texturepack ERF filenames for both games."""
 
@@ -141,11 +142,11 @@ HARDCODED_MODULE_NAMES: dict[str, str] = {
 
 class Installation:
     """Installation provides a centralized location for loading resources stored in the game through its various folders and formats.
-    
+
     Handles resource loading from game installation directories including override folders,
     modules, chitin.key/BIF files, texture packs, RIM files, and stream directories.
     Provides lazy loading and caching for performance.
-    
+
     References:
     ----------
         Based on swkotor.exe GFF structure:
@@ -156,7 +157,7 @@ class Installation:
         https://github.com/th3w1zard1/KotOR.js/tree/master/src/loaders/ (Resource loading patterns)
 
 
-    
+
     Note: Installation path detection may differ between platforms (Windows registry vs manual path)
     """  # noqa: E501
 
@@ -531,7 +532,7 @@ class Installation:
 
     def load_saves(self):
         """Reloads the data in the 'saves' folder linked to the Installation.
-        
+
         This method loads both:
         1. File resources for each save (for UI display)
         2. SaveFolderEntry objects (for save editing and corruption detection)
@@ -547,13 +548,13 @@ class Installation:
                 if not this_save_path.is_dir():
                     continue
                 self.saves[save_location][this_save_path] = []
-                
+
                 # Load file resources for UI display
                 for file in this_save_path.iterdir():
                     res_ident = ResourceIdentifier.from_path(file)
                     file_res = FileResource(res_ident.resname, res_ident.restype, file.stat().st_size, 0, file)
                     self.saves[save_location][this_save_path].append(file_res)
-                
+
                 # Load SaveFolderEntry for save editing and corruption detection
                 try:
                     save_folder = SaveFolderEntry(str(this_save_path))
@@ -561,7 +562,7 @@ class Installation:
                     self.save_folders[this_save_path] = save_folder
                 except Exception as e:  # noqa: BLE001
                     RobustLogger().warning(f"Failed to create SaveFolderEntry for '{this_save_path}': {e}")
-                    
+
         self._saves_loaded = True
 
     def load_override(self, directory: str | None = None):
@@ -1138,6 +1139,7 @@ class Installation:
             4. Return game with highest score or None if scores are equal or all checks fail
         """
         from pykotor.tools.heuristics import determine_game
+
         return determine_game(path)
 
     def game(self) -> Game:
@@ -1188,11 +1190,29 @@ class Installation:
         return self._female_talktable
 
     @overload
-    def resource(self, resname: str, restype: ResourceType, order: Sequence[SearchLocation] | None = None, *, capsules: Sequence[Capsule] | None = None, folders: list[Path] | None = None, module_root: str | None = None, logger: Callable[[str], None] | None = None) -> ResourceResult | None:
-        ...
+    def resource(
+        self,
+        resname: str,
+        restype: ResourceType,
+        order: Sequence[SearchLocation] | None = None,
+        *,
+        capsules: Sequence[Capsule] | None = None,
+        folders: list[Path] | None = None,
+        module_root: str | None = None,
+        logger: Callable[[str], None] | None = None,
+    ) -> ResourceResult | None: ...
     @overload
-    def resource(self, resname: str, restype: Sequence[ResourceType], order: Sequence[SearchLocation] | None = None, *, capsules: Sequence[Capsule] | None = None, folders: list[Path] | None = None, module_root: str | None = None, logger: Callable[[str], None] | None = None) -> ResourceResult | None:
-        ...
+    def resource(
+        self,
+        resname: str,
+        restype: Sequence[ResourceType],
+        order: Sequence[SearchLocation] | None = None,
+        *,
+        capsules: Sequence[Capsule] | None = None,
+        folders: list[Path] | None = None,
+        module_root: str | None = None,
+        logger: Callable[[str], None] | None = None,
+    ) -> ResourceResult | None: ...
     def resource(  # noqa: PLR0913
         self,
         resname: str,
@@ -1340,15 +1360,49 @@ class Installation:
         return results
 
     @overload
-    def location(self, file: os.PathLike | str, order: Sequence[SearchLocation] | None = None, /, *, capsules: list[Capsule] | None = None, folders: list[Path] | None = None) -> list[LocationResult]: ...
+    def location(
+        self, file: os.PathLike | str, order: Sequence[SearchLocation] | None = None, /, *, capsules: list[Capsule] | None = None, folders: list[Path] | None = None
+    ) -> list[LocationResult]: ...
     @overload
-    def location(self, query: ResourceIdentifier, order: Sequence[SearchLocation] | None = None, /, *, capsules: list[Capsule] | None = None, folders: list[Path] | None = None) -> list[LocationResult]: ...
+    def location(
+        self, query: ResourceIdentifier, order: Sequence[SearchLocation] | None = None, /, *, capsules: list[Capsule] | None = None, folders: list[Path] | None = None
+    ) -> list[LocationResult]: ...
     @overload
-    def location(self, resname: str, restype: ResourceType | None = None, order: Sequence[SearchLocation] | None = None, /, *, capsules: list[Capsule] | None = None, folders: list[Path] | None = None) -> list[LocationResult]: ...
+    def location(
+        self,
+        resname: str,
+        restype: ResourceType | None = None,
+        order: Sequence[SearchLocation] | None = None,
+        /,
+        *,
+        capsules: list[Capsule] | None = None,
+        folders: list[Path] | None = None,
+    ) -> list[LocationResult]: ...
     @overload
-    def location(self, query: ResourceIdentifier, order: Sequence[SearchLocation] | None = None, /, *, capsules: list[Capsule] | None = None, folders: list[Path] | None = None, module_root: str | None = None, logger: Callable[[str], None] | None = None) -> list[LocationResult]: ...
+    def location(
+        self,
+        query: ResourceIdentifier,
+        order: Sequence[SearchLocation] | None = None,
+        /,
+        *,
+        capsules: list[Capsule] | None = None,
+        folders: list[Path] | None = None,
+        module_root: str | None = None,
+        logger: Callable[[str], None] | None = None,
+    ) -> list[LocationResult]: ...
     @overload
-    def location(self, resname: str, restype: ResourceType, order: Sequence[SearchLocation] | None = None, /, *, capsules: list[Capsule] | None = None, folders: list[Path] | None = None, module_root: str | None = None, logger: Callable[[str], None] | None = None) -> list[LocationResult]: ...
+    def location(
+        self,
+        resname: str,
+        restype: ResourceType,
+        order: Sequence[SearchLocation] | None = None,
+        /,
+        *,
+        capsules: list[Capsule] | None = None,
+        folders: list[Path] | None = None,
+        module_root: str | None = None,
+        logger: Callable[[str], None] | None = None,
+    ) -> list[LocationResult]: ...
     def location(
         self,
         resname: str | os.PathLike | ResourceIdentifier,
@@ -1415,9 +1469,27 @@ class Installation:
         )[query]
 
     @overload
-    def locations(self, queries: list[ResourceIdentifier], order: list[SearchLocation] | None = None, *, capsules: Sequence[LazyCapsule] | None = None, folders: list[Path] | None = None, module_root: str | None = None, logger: Callable[[str], None] | None = None) -> dict[ResourceIdentifier, list[LocationResult]]: ...
+    def locations(
+        self,
+        queries: list[ResourceIdentifier],
+        order: list[SearchLocation] | None = None,
+        *,
+        capsules: Sequence[LazyCapsule] | None = None,
+        folders: list[Path] | None = None,
+        module_root: str | None = None,
+        logger: Callable[[str], None] | None = None,
+    ) -> dict[ResourceIdentifier, list[LocationResult]]: ...
     @overload
-    def locations(self, queries: tuple[Sequence[str], Sequence[ResourceIdentifier] | Sequence[ResourceType]], order: list[SearchLocation] | None = None, *, capsules: Sequence[LazyCapsule] | None = None, folders: list[Path] | None = None, module_root: str | None = None, logger: Callable[[str], None] | None = None) -> dict[ResourceIdentifier, list[LocationResult]]: ...
+    def locations(
+        self,
+        queries: tuple[Sequence[str], Sequence[ResourceIdentifier] | Sequence[ResourceType]],
+        order: list[SearchLocation] | None = None,
+        *,
+        capsules: Sequence[LazyCapsule] | None = None,
+        folders: list[Path] | None = None,
+        module_root: str | None = None,
+        logger: Callable[[str], None] | None = None,
+    ) -> dict[ResourceIdentifier, list[LocationResult]]: ...
     def locations(
         self,
         queries: list[ResourceIdentifier] | tuple[Sequence[str], Sequence[ResourceType] | Sequence[ResourceIdentifier]],
@@ -1542,11 +1614,11 @@ class Installation:
 
                     location.set_file_resource(FileResource(identifier.resname, identifier.restype, location.size, location.offset, location.filepath))
                     locations[identifier].append(location)
-        
+
         # Cache filtered modules to avoid repeated dictionary filtering (performance optimization)
         _cached_filtered_modules: dict[str, list[FileResource]] | CaseInsensitiveDict[list[FileResource]] | None = None
         _cached_module_root: str | None = None
-        
+
         def check_modules():
             nonlocal _cached_filtered_modules, _cached_module_root
             if module_root is None:
@@ -1659,6 +1731,9 @@ class Installation:
                 SearchLocation.OVERRIDE,
                 SearchLocation.CUSTOM_MODULES,
                 SearchLocation.TEXTURES_TPA,
+                SearchLocation.TEXTURES_TPB,
+                SearchLocation.TEXTURES_TPC,
+                SearchLocation.TEXTURES_GUI,
                 SearchLocation.CHITIN,
             )
 
@@ -1818,6 +1893,9 @@ class Installation:
                 SearchLocation.OVERRIDE,
                 SearchLocation.CUSTOM_MODULES,
                 SearchLocation.TEXTURES_TPA,
+                SearchLocation.TEXTURES_TPB,
+                SearchLocation.TEXTURES_TPC,
+                SearchLocation.TEXTURES_GUI,
                 SearchLocation.CHITIN,
             )
 
@@ -1963,6 +2041,9 @@ class Installation:
                 SearchLocation.OVERRIDE,
                 SearchLocation.CUSTOM_MODULES,
                 SearchLocation.TEXTURES_TPA,
+                SearchLocation.TEXTURES_TPB,
+                SearchLocation.TEXTURES_TPC,
+                SearchLocation.TEXTURES_GUI,
                 SearchLocation.CHITIN,
             )
         textures: CaseInsensitiveDict[TPC | None] = CaseInsensitiveDict()
@@ -2064,6 +2145,7 @@ class Installation:
                 case_resnames.remove(case_resname)
                 sound_data: bytes = resource.data()
                 from io import BytesIO
+
                 try:
                     wav = read_wav(BytesIO(sound_data))
                     sounds[resource.resname()] = bytes_wav(wav, ResourceType.WAV_DEOB)
@@ -2085,6 +2167,7 @@ class Installation:
                     RobustLogger().debug("Found sound resource in capsule at '%s'", capsule.filepath())
                     case_resnames.remove(case_resname)
                     from io import BytesIO
+
                     try:
                         wav = read_wav(BytesIO(sound_data))
                         sounds[case_resname] = bytes_wav(wav, ResourceType.WAV_DEOB)
@@ -2106,6 +2189,7 @@ class Installation:
                 case_resnames.remove(sound_file.stem.casefold())
                 sound_data: bytes = sound_file.read_bytes()
                 from io import BytesIO
+
                 try:
                     wav = read_wav(BytesIO(sound_data))
                     sounds[sound_file.stem] = bytes_wav(wav, ResourceType.WAV_DEOB)
@@ -2546,12 +2630,12 @@ class Installation:
                 file_path = module_path.joinpath(f"{root}.rim")
             else:
                 file_path = module_path.joinpath(module_filename)
-            
+
             # Check if file exists before trying to build Capsule (handles deleted files gracefully)
             if not file_path.is_file():
                 RobustLogger().warning(f"Module file does not exist: 'Modules/{module_filename}', returning root name")
                 return root
-            
+
             relevant_capsule = Capsule(file_path)
         except Exception:  # noqa: BLE001
             RobustLogger().exception(f"Could not build capsule for 'Modules/{module_filename}'")

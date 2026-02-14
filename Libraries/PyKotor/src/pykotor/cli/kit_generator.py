@@ -4,6 +4,7 @@ Extraction is delegated to :func:`pykotor.tools.kit.extract_kit`
 (see `Libraries/PyKotor/src/pykotor/tools/kit.py`, around the extract_kit
 implementation) so behavior stays aligned with the library implementation.
 """
+
 from __future__ import annotations
 
 from pathlib import Path
@@ -60,4 +61,3 @@ def generate_kit(
         kit_id=kit_id,
         logger=logger,
     )
-

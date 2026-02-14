@@ -46,6 +46,7 @@ if TYPE_CHECKING:
     from pykotor.gl.scene import Scene
     from pykotor.gl.shader import Shader
 
+
 class Boundary:
     def __init__(
         self,
@@ -113,7 +114,7 @@ class Boundary:
         shader.set_matrix4("model", transform)
         glBindVertexArray(self._vao)
         glDrawElements(GL_TRIANGLES, self._face_count, GL_UNSIGNED_SHORT, None)
-    
+
     def vertex_blob(self) -> bytes:
         """Interleaved vertex data (position only; UVs are zero-filled)."""
         vertex_count = len(self._vertex_data) // 3

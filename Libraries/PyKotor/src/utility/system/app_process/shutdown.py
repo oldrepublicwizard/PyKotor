@@ -207,6 +207,7 @@ def terminate_main_process(
 
 
 if __name__ == "__main__":
+
     def main():
         """Test the shutdown process."""
         start_shutdown_process()

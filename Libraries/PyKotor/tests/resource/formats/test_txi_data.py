@@ -1,6 +1,7 @@
 import unittest
 from pykotor.resource.formats.txi.txi_data import TXI
 
+
 class TestTXI(unittest.TestCase):
     def test_parse_blending_default(self):
         self.assertEqual(TXI.parse_blending("default"), 0)
@@ -27,6 +28,7 @@ class TestTXI(unittest.TestCase):
         self.assertEqual(TXI.parse_blending("DeFaUlT"), 0)
         self.assertEqual(TXI.parse_blending("AdDiTiVe"), 1)
         self.assertEqual(TXI.parse_blending("PuNcHtHrOuGh"), 2)
+
 
 if __name__ == "__main__":
     unittest.main()

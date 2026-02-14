@@ -31,10 +31,10 @@ class Resource:
 
 class BZFFile:
     """Reads BZF (compressed BIF) files.
-    
+
     BZF files are LZMA-compressed BIF archives used in KotOR. This class handles
     decompression and resource indexing for compressed BIF files.
-    
+
     References:
     ----------
         Original BioWare engine binaries (from swkotor.exe, swkotor2.exe)
@@ -47,6 +47,7 @@ class BZFFile:
         - Fixed resources not yet supported (see line 67)
 
     """
+
     def __init__(self, bzf: BinaryIO):
         self._bzf: BinaryIO = bzf
         self._resources: list[Resource] = []
@@ -106,7 +107,7 @@ class BZFFile:
                 continue
 
             if key_res.type != self._iResources[key_res.res_index].type:
-                print(f'KEY and BZF disagree on the type of the resource "{key_res.name}" ' f"({key_res.type}, {self._iResources[key_res.res_index].type}). Trusting the BZF")
+                print(f'KEY and BZF disagree on the type of the resource "{key_res.name}" ({key_res.type}, {self._iResources[key_res.res_index].type}). Trusting the BZF')
 
             res = Resource()
             res.name = key_res.name

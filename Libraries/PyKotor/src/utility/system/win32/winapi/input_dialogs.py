@@ -8,10 +8,14 @@ from typing import TYPE_CHECKING, Sequence
 if TYPE_CHECKING:
     from ctypes import _CData
 
+
 class COLORREF(ctypes.Structure):
     _fields_ = [("rgb", wintypes.DWORD)]
 
+
 CHOOSECOLOR = ctypes.windll.comdlg32.ChooseColorW
+
+
 class ChooseColor(ctypes.Structure):
     _fields_: Sequence[tuple[str, type[_CData]] | tuple[str, type[_CData], int]] = [
         ("lStructSize", wintypes.DWORD),
@@ -22,8 +26,9 @@ class ChooseColor(ctypes.Structure):
         ("Flags", wintypes.DWORD),
         ("lCustData", wintypes.LPARAM),
         ("lpfnHook", wintypes.LPVOID),
-        ("lpTemplateName", wintypes.LPCWSTR)
+        ("lpTemplateName", wintypes.LPCWSTR),
     ]
+
 
 def color_picker():
     cc = CHOOSECOLOR()
@@ -35,6 +40,7 @@ def color_picker():
     if CHOOSECOLOR(ctypes.byref(cc)):
         return (cc.rgbResult.rgb & 0xFF, (cc.rgbResult.rgb >> 8) & 0xFF, (cc.rgbResult.rgb >> 16) & 0xFF)
     return None
+
 
 color = color_picker()
 print(f"Selected color: {color}")

@@ -2663,6 +2663,7 @@ class TestTSLPatcher(unittest.TestCase):
         )
         mod_0 = config.patches_gff[0].modifiers[0]
         from pykotor.tslpatcher.mods.gff import ModifyFieldGFF
+
         self.assertIsInstance(mod_0, ModifyFieldGFF)
         assert isinstance(mod_0, ModifyFieldGFF), "mod_0 is not an instance of ModifyFieldGFF"
         self.assertEqual("ClassList\\0\\Class", str(mod_0.path))
@@ -2670,6 +2671,7 @@ class TestTSLPatcher(unittest.TestCase):
         # Apply end-to-end
         gff = GFF()
         from pykotor.resource.formats.gff.gff_data import GFFList
+
         gff_list = gff.root.set_list("ClassList", GFFList())
         gff_struct = gff_list.add(0)
         gff_struct.set_uint8("Class", 0)
@@ -2693,6 +2695,7 @@ class TestTSLPatcher(unittest.TestCase):
         )
         mod_0 = config.patches_gff[0].modifiers[0]
         from pykotor.tslpatcher.mods.gff import ModifyFieldGFF
+
         self.assertIsInstance(mod_0, ModifyFieldGFF)
         assert isinstance(mod_0, ModifyFieldGFF), "mod_0 is not an instance of ModifyFieldGFF"
         self.assertIsInstance(mod_0.value, FieldValueConstant)
@@ -2720,6 +2723,7 @@ class TestTSLPatcher(unittest.TestCase):
         )
         mod_0 = config.patches_gff[0].modifiers[0]
         from pykotor.tslpatcher.mods.gff import ModifyFieldGFF
+
         self.assertIsInstance(mod_0, ModifyFieldGFF)
         assert isinstance(mod_0, ModifyFieldGFF), "mod_0 is not an instance of ModifyFieldGFF"
         self.assertIsInstance(mod_0.value, FieldValueConstant)
@@ -2737,6 +2741,7 @@ class TestTSLPatcher(unittest.TestCase):
     def test_gff_modify_type_vector3(self):
         """Test modifying Vector3 fields."""
         from utility.common.geometry import Vector3
+
         config: PatcherConfig = self._setupIniAndConfig(
             """
             [GFFList]
@@ -2748,6 +2753,7 @@ class TestTSLPatcher(unittest.TestCase):
         )
         mod_0 = config.patches_gff[0].modifiers[0]
         from pykotor.tslpatcher.mods.gff import ModifyFieldGFF
+
         self.assertIsInstance(mod_0, ModifyFieldGFF)
         assert isinstance(mod_0, ModifyFieldGFF), "mod_0 is not an instance of ModifyFieldGFF"
         self.assertIsInstance(mod_0.value, FieldValueConstant)
@@ -2765,6 +2771,7 @@ class TestTSLPatcher(unittest.TestCase):
     def test_gff_modify_type_vector4(self):
         """Test modifying Vector4 fields."""
         from utility.common.geometry import Vector4
+
         config: PatcherConfig = self._setupIniAndConfig(
             """
             [GFFList]
@@ -2776,6 +2783,7 @@ class TestTSLPatcher(unittest.TestCase):
         )
         mod_0 = config.patches_gff[0].modifiers[0]
         from pykotor.tslpatcher.mods.gff import ModifyFieldGFF
+
         self.assertIsInstance(mod_0, ModifyFieldGFF)
         assert isinstance(mod_0, ModifyFieldGFF), "mod_0 is not an instance of ModifyFieldGFF"
         self.assertIsInstance(mod_0.value, FieldValueConstant)
@@ -2807,6 +2815,7 @@ class TestTSLPatcher(unittest.TestCase):
         for i in range(3):
             mod = config.patches_gff[0].modifiers[i]
             from pykotor.tslpatcher.mods.gff import ModifyFieldGFF
+
             self.assertIsInstance(mod, ModifyFieldGFF)
             assert isinstance(mod, ModifyFieldGFF), "mod is not an instance of ModifyFieldGFF"
             self.assertIsInstance(mod.value, FieldValueConstant)
@@ -2838,6 +2847,7 @@ class TestTSLPatcher(unittest.TestCase):
         )
         mod_0 = config.patches_gff[0].modifiers[0]
         from pykotor.tslpatcher.mods.gff import ModifyFieldGFF
+
         self.assertIsInstance(mod_0, ModifyFieldGFF)
         assert isinstance(mod_0, ModifyFieldGFF), "mod_0 is not an instance of ModifyFieldGFF"
         self.assertIsInstance(mod_0.value, FieldValue2DAMemory)
@@ -2852,6 +2862,7 @@ class TestTSLPatcher(unittest.TestCase):
         memory.memory_2da[12] = "123"
         # Need to add IntField modifier too
         from pykotor.tslpatcher.mods.gff import ModifyFieldGFF
+
         config.patches_gff[0].modifiers.append(ModifyFieldGFF("IntField", FieldValue2DAMemory(12)))
         patched = read_gff(cast(bytes, config.patches_gff[0].patch_resource(bytes_gff(gff), memory, PatchLogger(), Game.K1)))
         self.assertEqual("123", patched.root.get_string("SomeField"))
@@ -2871,6 +2882,7 @@ class TestTSLPatcher(unittest.TestCase):
         )
         mod_0 = config.patches_gff[0].modifiers[0]
         from pykotor.tslpatcher.mods.gff import FieldValueTLKMemory, ModifyFieldGFF
+
         self.assertIsInstance(mod_0, ModifyFieldGFF)
         assert isinstance(mod_0, ModifyFieldGFF), "mod_0 is not an instance of ModifyFieldGFF"
         self.assertIsInstance(mod_0.value, FieldValueConstant)
@@ -2886,6 +2898,7 @@ class TestTSLPatcher(unittest.TestCase):
         self.assertIsInstance(mod_1, ModifyFieldGFF)
         assert isinstance(mod_1, ModifyFieldGFF), "mod_1 is not an instance of ModifyFieldGFF"
         from pykotor.tslpatcher.mods.gff import FieldValueTLKMemory
+
         self.assertIsInstance(mod_1.value, FieldValueTLKMemory)
         assert isinstance(mod_1.value, FieldValueTLKMemory), "mod_1.value is not an instance of FieldValueTLKMemory"
         self.assertEqual(2, mod_1.value.token_id)
@@ -3054,6 +3067,7 @@ class TestTSLPatcher(unittest.TestCase):
     def test_gff_add_vector3(self):
         """Test adding Vector3 fields."""
         from utility.common.geometry import Vector3
+
         config: PatcherConfig = self._setupIniAndConfig(
             """
             [GFFList]
@@ -3085,6 +3099,7 @@ class TestTSLPatcher(unittest.TestCase):
     def test_gff_add_vector4(self):
         """Test adding Vector4 fields."""
         from utility.common.geometry import Vector4
+
         config: PatcherConfig = self._setupIniAndConfig(
             """
             [GFFList]
@@ -3192,6 +3207,7 @@ class TestTSLPatcher(unittest.TestCase):
         self.assertIsInstance(mod_1.value.stored, LocalizedStringDelta)
         assert isinstance(mod_1.value.stored, LocalizedStringDelta)
         from pykotor.tslpatcher.mods.gff import FieldValueTLKMemory
+
         self.assertIsInstance(mod_1.value.stored.stringref, FieldValueTLKMemory)
         assert isinstance(mod_1.value.stored.stringref, FieldValueTLKMemory)
         self.assertEqual(8, mod_1.value.stored.stringref.token_id)
@@ -3240,6 +3256,7 @@ class TestTSLPatcher(unittest.TestCase):
         self.assertEqual("SomeList", mod_0.label)
 
         from pykotor.tslpatcher.mods.gff import AddStructToListGFF
+
         mod_1 = mod_0.modifiers[0]
         self.assertIsInstance(mod_1, AddStructToListGFF)
         assert isinstance(mod_1, AddStructToListGFF)
@@ -3488,6 +3505,7 @@ class TestTSLPatcher(unittest.TestCase):
     def test_modify_field_vector3(self):
         """Test modifying Vector3 fields."""
         from utility.common.geometry import Vector3
+
         ini_text = """
             [GFFList]
             File0=test.gff
@@ -3507,6 +3525,7 @@ class TestTSLPatcher(unittest.TestCase):
     def test_modify_field_vector4(self):
         """Test modifying Vector4 fields."""
         from utility.common.geometry import Vector4
+
         ini_text = """
             [GFFList]
             File0=test.gff
@@ -3535,6 +3554,7 @@ class TestTSLPatcher(unittest.TestCase):
         config = self._setupIniAndConfig(ini_text)
         gff = GFF()
         from pykotor.resource.formats.gff.gff_data import GFFList
+
         gff_list = gff.root.set_list("List", GFFList())
         gff_struct = gff_list.add(0)
         gff_struct.set_string("String", "")
@@ -3649,6 +3669,7 @@ class TestTSLPatcher(unittest.TestCase):
         config = self._setupIniAndConfig(ini_text)
         gff = GFF()
         from pykotor.resource.formats.gff.gff_data import GFFList
+
         gff_list = gff.root.set_list("List", GFFList())
         gff_struct = gff_list.add(0)
 
@@ -3757,6 +3778,7 @@ class TestTSLPatcher(unittest.TestCase):
         config = self._setupIniAndConfig(ini_text)
         gff = GFF()
         from pykotor.resource.formats.gff.gff_data import GFFList
+
         gff_list = gff.root.set_list("List", GFFList())
 
         memory = PatcherMemory()
@@ -3801,6 +3823,7 @@ class TestTSLPatcher(unittest.TestCase):
         config = self._setupIniAndConfig(ini_text)
         gff = GFF()
         from pykotor.resource.formats.gff.gff_data import GFFList
+
         gff.root.set_list("List", GFFList())
 
         memory = PatcherMemory()
@@ -3825,6 +3848,7 @@ class TestTSLPatcher(unittest.TestCase):
 
         memory = PatcherMemory()
         from pykotor.resource.formats.ssf.ssf_auto import bytes_ssf, read_ssf
+
         ssf = read_ssf(config.patches_ssf[0].patch_resource(bytes_ssf(ssf), memory, PatchLogger(), Game.K1))
 
         self.assertEqual(5, ssf.get(SSFSound.BATTLE_CRY_1))
@@ -3844,6 +3868,7 @@ class TestTSLPatcher(unittest.TestCase):
         memory = PatcherMemory()
         memory.memory_2da[5] = "123"
         from pykotor.resource.formats.ssf.ssf_auto import bytes_ssf, read_ssf
+
         ssf = read_ssf(config.patches_ssf[0].patch_resource(bytes_ssf(ssf), memory, PatchLogger(), Game.K1))
 
         self.assertEqual(123, ssf.get(SSFSound.BATTLE_CRY_2))
@@ -3863,6 +3888,7 @@ class TestTSLPatcher(unittest.TestCase):
         memory = PatcherMemory()
         memory.memory_str[5] = 321
         from pykotor.resource.formats.ssf.ssf_auto import bytes_ssf, read_ssf
+
         ssf = read_ssf(config.patches_ssf[0].patch_resource(bytes_ssf(ssf), memory, PatchLogger(), Game.K1))
 
         self.assertEqual(321, ssf.get(SSFSound.BATTLE_CRY_3))

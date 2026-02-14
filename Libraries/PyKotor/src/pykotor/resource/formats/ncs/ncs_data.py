@@ -253,11 +253,11 @@ class NCSInstructionType(Enum):
 
 class NCS(ComparableMixin):
     """Represents a compiled NWScript bytecode program.
-    
+
     NCS contains a sequence of bytecode instructions that implement NWScript logic.
     Instructions are executed sequentially by a stack-based virtual machine, with
     control flow instructions (JMP, JSR, JZ, JNZ) allowing jumps to other instructions.
-    
+
     References:
     ----------
         See module docstring for engine addresses (K1 + TSL TODO). Original BioWare engine binaries (swkotor.exe, swkotor2.exe).
@@ -266,7 +266,7 @@ class NCS(ComparableMixin):
         https://github.com/th3w1zard1/Kotor.NET/tree/master/Kotor.NET/Formats/KotorNCS/NCS.cs:9-17
 
 
-        
+
     Attributes:
     ----------
         instructions: List of NCSInstruction objects making up the program
@@ -274,11 +274,10 @@ class NCS(ComparableMixin):
             Instructions are executed sequentially, with jumps allowing control flow
             Each instruction has an offset, type, arguments, and optional jump target
     """
+
     COMPARABLE_SEQUENCE_FIELDS = ("instructions",)
 
     def __init__(self):
-        
-        
         # https://github.com/th3w1zard1/Kotor.NET/tree/master/Kotor.NET/Formats/KotorNCS/NCS.cs:11
         # List of bytecode instructions making up the compiled script
         self.instructions: list[NCSInstruction] = []
@@ -482,9 +481,7 @@ class NCS(ComparableMixin):
         for i, inst in enumerate(self.instructions):
             expected_args = self._expected_arg_count(inst.ins_type)
             if expected_args is not None and len(inst.args) != expected_args:
-                issues.append(
-                    f"Instruction #{i} ({inst.ins_type.name}) has {len(inst.args)} args, expected {expected_args}"
-                )
+                issues.append(f"Instruction #{i} ({inst.ins_type.name}) has {len(inst.args)} args, expected {expected_args}")
 
         return issues
 
@@ -599,24 +596,40 @@ class NCS(ComparableMixin):
     def _expected_arg_count(ins_type: NCSInstructionType) -> int | None:
         """Get expected argument count for instruction type, or None if variable/complex."""
         # Instructions with 2 args
-        if ins_type in {NCSInstructionType.CPDOWNSP, NCSInstructionType.CPTOPSP,
-                        NCSInstructionType.CPDOWNBP, NCSInstructionType.CPTOPBP,
-                        NCSInstructionType.ACTION, NCSInstructionType.STORE_STATE}:
+        if ins_type in {
+            NCSInstructionType.CPDOWNSP,
+            NCSInstructionType.CPTOPSP,
+            NCSInstructionType.CPDOWNBP,
+            NCSInstructionType.CPTOPBP,
+            NCSInstructionType.ACTION,
+            NCSInstructionType.STORE_STATE,
+        }:
             return 2
         # Instructions with 1 arg
-        if ins_type in {NCSInstructionType.CONSTI, NCSInstructionType.CONSTF,
-                          NCSInstructionType.CONSTS, NCSInstructionType.CONSTO,
-                          NCSInstructionType.MOVSP,
-                          NCSInstructionType.DECxSP, NCSInstructionType.INCxSP,
-                          NCSInstructionType.DECxBP, NCSInstructionType.INCxBP}:
+        if ins_type in {
+            NCSInstructionType.CONSTI,
+            NCSInstructionType.CONSTF,
+            NCSInstructionType.CONSTS,
+            NCSInstructionType.CONSTO,
+            NCSInstructionType.MOVSP,
+            NCSInstructionType.DECxSP,
+            NCSInstructionType.INCxSP,
+            NCSInstructionType.DECxBP,
+            NCSInstructionType.INCxBP,
+        }:
             return 1
         # Instructions with 3 args
         if ins_type == NCSInstructionType.DESTRUCT:
             return 3
         # Most other instructions have 0 args
-        if ins_type in {NCSInstructionType.RETN, NCSInstructionType.NOP,
-                          NCSInstructionType.SAVEBP, NCSInstructionType.RESTOREBP,
-                          NCSInstructionType.NOTI, NCSInstructionType.COMPI}:
+        if ins_type in {
+            NCSInstructionType.RETN,
+            NCSInstructionType.NOP,
+            NCSInstructionType.SAVEBP,
+            NCSInstructionType.RESTOREBP,
+            NCSInstructionType.NOTI,
+            NCSInstructionType.COMPI,
+        }:
             return 0
         # Complex/variable - return None
         return None
@@ -624,11 +637,11 @@ class NCS(ComparableMixin):
 
 class NCSInstruction(ComparableMixin):
     """Represents a single NCS bytecode instruction.
-    
+
     Each instruction consists of a bytecode opcode, a qualifier specifying operand types,
     optional arguments (offsets, constants, etc.), and an optional jump target for
     control flow instructions.
-    
+
     References:
     ----------
         See module docstring for engine addresses (K1 + TSL TODO). Original BioWare engine binaries (swkotor.exe, swkotor2.exe).
@@ -637,22 +650,22 @@ class NCSInstruction(ComparableMixin):
         https://github.com/th3w1zard1/Kotor.NET/tree/master/Kotor.NET/Formats/KotorNCS/NCS.cs:19-711
 
 
-        
+
     Attributes:
     ----------
         ins_type: Instruction type (opcode + qualifier combination)
             Reference: https://github.com/th3w1zard1/Kotor.NET/tree/master/NCS.cs:21-22 (Instruction and Qualifier properties)
             Combines bytecode opcode (e.g., ADDxx) with qualifier (e.g., INT_INT) to form complete instruction
-            
+
         args: List of instruction arguments (offsets, constants, sizes, etc.)
             Reference: https://github.com/th3w1zard1/Kotor.NET/tree/master/NCS.cs:23 (Args property, varies by instruction type)
             Examples: CPDOWNSP has [offset, size], CONSTI has [int_value], ACTION has [routine_id, arg_count]
-            
+
         jump: Optional jump target instruction for control flow (JMP, JSR, JZ, JNZ)
             Reference: https://github.com/th3w1zard1/Kotor.NET/tree/master/NCS.cs:24 (JumpTo property, NCSInstruction?)
             Used by JMP (unconditional), JSR (subroutine call), JZ (jump if zero), JNZ (jump if not zero)
             Jump offset is stored as int32 in binary, converted to instruction reference in memory
-            
+
         offset: Byte offset of instruction in NCS file (set during loading)
             Used for jump target resolution and debugging
             Value -1 indicates offset not yet determined
@@ -666,28 +679,21 @@ class NCSInstruction(ComparableMixin):
         args: list[Any] | None = None,
         jump: NCSInstruction | None = None,
     ):
-        
-        
         # https://github.com/th3w1zard1/Kotor.NET/tree/master/Kotor.NET/Formats/KotorNCS/NCS.cs:21-22
         # Instruction type (bytecode opcode + qualifier combination)
         self.ins_type: NCSInstructionType = ins_type
-        
-        
-        
+
         # https://github.com/th3w1zard1/Kotor.NET/tree/master/Kotor.NET/Formats/KotorNCS/NCS.cs:24
         # Optional jump target for control flow instructions (JMP, JSR, JZ, JNZ)
         self.jump: NCSInstruction | None = jump
-        
-        
-        
+
         # https://github.com/th3w1zard1/Kotor.NET/tree/master/Kotor.NET/Formats/KotorNCS/NCS.cs:23
         # Instruction arguments (offsets, constants, sizes, etc., varies by instruction type)
         self.args: list[Any] = [] if args is None else args
-        
-        
+
         # Byte offset of instruction in NCS file (set during loading, -1 if not determined)
         self.offset: int = -1
-        
+
         # Source line number for debugging (set during compilation, -1 if not tracked)
         # Used by debugger to map bytecode instructions back to source code lines
         self.line_number: int = -1
@@ -707,11 +713,7 @@ class NCSInstruction(ComparableMixin):
         if not isinstance(other, NCSInstruction):
             return NotImplemented  # type: ignore[no-any-return]
         # NOTE: We compare jump by identity since it's a circular reference
-        return (
-            self.ins_type == other.ins_type
-            and self.args == other.args
-            and self.jump is other.jump
-        )
+        return self.ins_type == other.ins_type and self.args == other.args and self.jump is other.jump
 
     def __hash__(self):
         # NOTE: We use id() for jump since it's a circular reference
@@ -756,29 +758,55 @@ class NCSInstruction(ComparableMixin):
     def is_arithmetic(self) -> bool:
         """Check if this instruction performs arithmetic operations."""
         return self.ins_type in {
-            NCSInstructionType.ADDII, NCSInstructionType.ADDIF, NCSInstructionType.ADDFI, NCSInstructionType.ADDFF,
-            NCSInstructionType.ADDSS, NCSInstructionType.ADDVV,
-            NCSInstructionType.SUBII, NCSInstructionType.SUBIF, NCSInstructionType.SUBFI, NCSInstructionType.SUBFF,
+            NCSInstructionType.ADDII,
+            NCSInstructionType.ADDIF,
+            NCSInstructionType.ADDFI,
+            NCSInstructionType.ADDFF,
+            NCSInstructionType.ADDSS,
+            NCSInstructionType.ADDVV,
+            NCSInstructionType.SUBII,
+            NCSInstructionType.SUBIF,
+            NCSInstructionType.SUBFI,
+            NCSInstructionType.SUBFF,
             NCSInstructionType.SUBVV,
-            NCSInstructionType.MULII, NCSInstructionType.MULIF, NCSInstructionType.MULFI, NCSInstructionType.MULFF,
-            NCSInstructionType.MULVF, NCSInstructionType.MULFV,
-            NCSInstructionType.DIVII, NCSInstructionType.DIVIF, NCSInstructionType.DIVFI, NCSInstructionType.DIVFF,
-            NCSInstructionType.DIVVF, NCSInstructionType.DIVFV,
+            NCSInstructionType.MULII,
+            NCSInstructionType.MULIF,
+            NCSInstructionType.MULFI,
+            NCSInstructionType.MULFF,
+            NCSInstructionType.MULVF,
+            NCSInstructionType.MULFV,
+            NCSInstructionType.DIVII,
+            NCSInstructionType.DIVIF,
+            NCSInstructionType.DIVFI,
+            NCSInstructionType.DIVFF,
+            NCSInstructionType.DIVVF,
+            NCSInstructionType.DIVFV,
             NCSInstructionType.MODII,
-            NCSInstructionType.NEGI, NCSInstructionType.NEGF,
+            NCSInstructionType.NEGI,
+            NCSInstructionType.NEGF,
         }
 
     def is_comparison(self) -> bool:
         """Check if this instruction performs comparison operations."""
         return self.ins_type in {
-            NCSInstructionType.EQUALII, NCSInstructionType.EQUALFF, NCSInstructionType.EQUALSS,
-            NCSInstructionType.EQUALOO, NCSInstructionType.EQUALTT,
-            NCSInstructionType.NEQUALII, NCSInstructionType.NEQUALFF, NCSInstructionType.NEQUALSS,
-            NCSInstructionType.NEQUALOO, NCSInstructionType.NEQUALTT,
-            NCSInstructionType.GTII, NCSInstructionType.GTFF,
-            NCSInstructionType.GEQII, NCSInstructionType.GEQFF,
-            NCSInstructionType.LTII, NCSInstructionType.LTFF,
-            NCSInstructionType.LEQII, NCSInstructionType.LEQFF,
+            NCSInstructionType.EQUALII,
+            NCSInstructionType.EQUALFF,
+            NCSInstructionType.EQUALSS,
+            NCSInstructionType.EQUALOO,
+            NCSInstructionType.EQUALTT,
+            NCSInstructionType.NEQUALII,
+            NCSInstructionType.NEQUALFF,
+            NCSInstructionType.NEQUALSS,
+            NCSInstructionType.NEQUALOO,
+            NCSInstructionType.NEQUALTT,
+            NCSInstructionType.GTII,
+            NCSInstructionType.GTFF,
+            NCSInstructionType.GEQII,
+            NCSInstructionType.GEQFF,
+            NCSInstructionType.LTII,
+            NCSInstructionType.LTFF,
+            NCSInstructionType.LEQII,
+            NCSInstructionType.LEQFF,
         }
 
     def is_logical(self) -> bool:
@@ -885,5 +913,6 @@ class NCSOptimizer(ABC):
 
 class NCSCompiler(ABC):
     @abstractmethod
-    def compile_script(self, source_file: os.PathLike | str, output_file: os.PathLike | str, game: Game | int, timeout: int = 5, *, debug: bool = False) -> tuple[str, str]:
-        ...
+    def compile_script(
+        self, source_file: os.PathLike | str, output_file: os.PathLike | str, game: Game | int, timeout: int = 5, *, debug: bool = False
+    ) -> tuple[str, str]: ...

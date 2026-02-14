@@ -1,4 +1,5 @@
 """Quick smoke test to verify basic QFileDialogExtended functionality."""
+
 from __future__ import annotations
 
 import os
@@ -17,19 +18,19 @@ from utility.gui.qt.filesystem.qfiledialogextended.qfiledialogextended import QF
 def test_basic_creation():
     """Test that we can create and destroy a dialog quickly."""
     app = QApplication.instance() or QApplication([])
-    
+
     print("Creating dialog...")
     dialog = QFileDialogExtended()
     print("Dialog created")
-    
+
     assert dialog is not None
     assert dialog.testOption(AdapterQFileDialog.Option.DontUseNativeDialog)
-    
+
     print("Closing dialog...")
     dialog.close()
     dialog.deleteLater()
     print("Dialog closed")
-    
+
     QTest.qWait(10)
     print("Test passed!")
 

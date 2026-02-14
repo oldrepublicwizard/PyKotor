@@ -8,7 +8,7 @@ References:
         - CResTPC::CResTPC @ 0x00712ea0 - TPC resource constructor
         - GetTPCAttrib @ 0x00712ef0 - Gets TPC texture attributes
         - TPC texture loading and format conversion functions
-        
+
         Libraries/PyKotor/src/pykotor/resource/formats/tpc - TPC format
 
 
@@ -28,22 +28,22 @@ if TYPE_CHECKING:
 
 def load_tpc(tpc: TPC) -> Texture:
     """Load a KotOR TPC file into a Panda3D Texture.
-    
+
     Args:
     ----
         tpc: TPC resource object
-    
+
     Returns:
     -------
         Panda3D Texture object
-    
+
     References:
     ----------
         Based on swkotor.exe TPC structure:
         - CResTPC::CResTPC @ 0x00712ea0 - TPC resource constructor
         - GetTPCAttrib @ 0x00712ef0 - Gets TPC texture attributes
         - TPC texture loading and format conversion functions
-        
+
         Libraries/PyKotor/src/pykotor/resource/formats/tpc - TPC format
 
     """
@@ -115,4 +115,3 @@ def load_tpc(tpc: TPC) -> Texture:
     texture.setWrapV(Texture.WM_clamp)
 
     return texture
-

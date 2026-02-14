@@ -10,7 +10,6 @@ from qtpy.QtWidgets import (
     QHBoxLayout,
     QMenu,
     QSizePolicy,
-    QStyle,
     QTabWidget,
     QToolButton,
     QVBoxLayout,
@@ -380,10 +379,10 @@ class RibbonsWidget(QWidget):
         win11_active_bg = "#E1F5FE"
         win11_active_border = "#0078D7"
         win11_group_border = "#E1E1E1"
-        
+
         # Check if dark theme
         is_dark = palette.color(QPalette.ColorRole.Window).lightness() < 128
-        
+
         if is_dark:
             # Dark theme colors
             win11_bg = "#202020"

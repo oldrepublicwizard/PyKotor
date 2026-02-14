@@ -9,4 +9,3 @@ def xml_bytes(xml: str) -> bytes:
         if element.text is None:
             element.text = ""
     return ET.tostring(root, encoding="utf-8")
-

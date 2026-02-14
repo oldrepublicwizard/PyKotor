@@ -1,4 +1,5 @@
 """Debug script to understand DLG serialization issue."""
+
 from pykotor.resource.generics.dlg import DLGEntry, DLGReply, DLGLink
 from pykotor.common.language import LocalizedString, Language, Gender
 
@@ -25,6 +26,7 @@ serialized = entry1.to_dict()
 
 # Print the structure
 import json
+
 print("Serialized structure:")
 print(json.dumps(serialized, indent=2, default=str))
 
@@ -41,4 +43,3 @@ deserialized_reply4 = deserialized.links[0].node.links[1].node.links[0].node.lin
 for i, link in enumerate(deserialized_reply4.links):
     print(f"  link[{i}].node.text = {link.node.text.get(Language.ENGLISH, Gender.MALE)}")
     print(f"  link[{i}].node is reply4: {link.node is deserialized_reply4}")
-

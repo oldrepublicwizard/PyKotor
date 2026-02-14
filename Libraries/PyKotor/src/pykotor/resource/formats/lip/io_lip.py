@@ -11,10 +11,10 @@ if TYPE_CHECKING:
 
 class LIPBinaryReader(ResourceReader):
     """Reads LIP (Lip Sync) files.
-    
+
     LIP files store lip-sync animation data for character speech, mapping time points
     to mouth shapes for synchronized lip movement during voice-over playback.
-    
+
     References:
     ----------
         Based on swkotor.exe LIP structure:
@@ -31,6 +31,7 @@ class LIPBinaryReader(ResourceReader):
 
 
     """
+
     def __init__(
         self,
         source: SOURCE_TYPES,
@@ -58,7 +59,6 @@ class LIPBinaryReader(ResourceReader):
         self._lip.length = self._reader.read_single()
         entry_count = self._reader.read_uint32()
 
-        
         for _ in range(entry_count):
             time = self._reader.read_single()
             shape = LIPShape(self._reader.read_uint8())

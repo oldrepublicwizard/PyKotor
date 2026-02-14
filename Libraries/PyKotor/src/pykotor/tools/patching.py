@@ -18,6 +18,7 @@ References:
 
 
 """
+
 from __future__ import annotations
 
 import concurrent.futures
@@ -92,13 +93,7 @@ class PatchingConfig:
 
     def is_patching(self) -> bool:
         """Check if any patching operation is enabled."""
-        return bool(
-            self.translate
-            or self.set_unskippable
-            or self.convert_tga
-            or self.k1_convert_gffs
-            or self.tsl_convert_gffs
-        )
+        return bool(self.translate or self.set_unskippable or self.convert_tga or self.k1_convert_gffs or self.tsl_convert_gffs)
 
 
 def log_message(config: PatchingConfig, message: str) -> None:
@@ -150,17 +145,13 @@ def patch_nested_gff(
 
         if ftype == GFFFieldType.Struct:
             assert isinstance(value, GFFStruct), f"Not a GFFStruct instance: {value.__class__.__name__}: {value}"  # noqa: S101
-            result_made_change, alien_vo_count = patch_nested_gff(
-                value, gff_content, gff, config, child_path, made_change, alien_vo_count
-            )
+            result_made_change, alien_vo_count = patch_nested_gff(value, gff_content, gff, config, child_path, made_change, alien_vo_count)
             made_change |= result_made_change
             continue
 
         if ftype == GFFFieldType.List:
             assert isinstance(value, GFFList), f"Not a GFFList instance: {value.__class__.__name__}: {value}"  # noqa: S101
-            result_made_change, alien_vo_count = recurse_through_list(
-                value, gff_content, gff, config, child_path, made_change, alien_vo_count
-            )
+            result_made_change, alien_vo_count = recurse_through_list(value, gff_content, gff, config, child_path, made_change, alien_vo_count)
             made_change |= result_made_change
             continue
 
@@ -201,9 +192,7 @@ def recurse_through_list(
     """
     current_path = current_path or Path("GFFListRoot")
     for list_index, gff_struct in enumerate(gff_list):
-        result_made_change, alien_vo_count = patch_nested_gff(
-            gff_struct, gff_content, gff, config, current_path / str(list_index), made_change, alien_vo_count
-        )
+        result_made_change, alien_vo_count = patch_nested_gff(gff_struct, gff_content, gff, config, current_path / str(list_index), made_change, alien_vo_count)
         made_change |= result_made_change
     return made_change, alien_vo_count
 
@@ -268,11 +257,7 @@ def convert_gff_game(
     new_name = resource.filename()
     converted_data: Path | bytearray = bytearray()
     if not resource.inside_capsule:
-        new_name = (
-            f"{resource.resname()}_{to_game.name!s}.{resource.restype()!s}"
-            if config.always_backup
-            else resource.filename()
-        )
+        new_name = f"{resource.resname()}_{to_game.name!s}.{resource.restype()!s}" if config.always_backup else resource.filename()
         converted_data = resource.filepath().with_name(new_name)
         savepath = converted_data
     else:
@@ -390,9 +375,7 @@ def process_translations(
         return text, config.translator.translate(text, from_lang=from_lang)
 
     with concurrent.futures.ThreadPoolExecutor(max_workers=config.max_threads) as executor:
-        future_to_strref: dict[concurrent.futures.Future[tuple[str, str]], int] = {
-            executor.submit(translate_entry, tlkentry, from_lang): strref for strref, tlkentry in tlk
-        }
+        future_to_strref: dict[concurrent.futures.Future[tuple[str, str]], int] = {executor.submit(translate_entry, tlkentry, from_lang): strref for strref, tlkentry in tlk}
 
         for future in concurrent.futures.as_completed(future_to_strref):
             strref: int = future_to_strref[future]
@@ -489,13 +472,7 @@ def patch_resource(
                 current_path=resource.path_ident(),
             )
 
-            if (
-                config.set_unskippable
-                and alien_owner in {0, "0", None}
-                and alien_vo_count != -1
-                and alien_vo_count < 3
-                and gff.content is GFFContent.DLG
-            ):
+            if config.set_unskippable and alien_owner in {0, "0", None} and alien_vo_count != -1 and alien_vo_count < 3 and gff.content is GFFContent.DLG:
                 skippable = gff.root.acquire("Skippable", None)
                 if skippable not in {0, "0"}:
                     conversationtype = gff.root.acquire("ConversationType", None)
@@ -852,6 +829,7 @@ def determine_input_path(
     """
     if not path.exists() or path.resolve() == Path.cwd().resolve():
         import errno
+
         raise FileNotFoundError(errno.ENOENT, f"No such file or directory: {path}")
 
     if is_kotor_install_dir(path):
@@ -864,4 +842,3 @@ def determine_input_path(
         return patch_file(path, config, processed_files)
 
     return None
-

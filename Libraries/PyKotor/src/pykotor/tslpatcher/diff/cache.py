@@ -165,8 +165,10 @@ def save_diff_cache(
 
     # Save metadata to YAML
     import importlib.util
+
     if importlib.util.find_spec("yaml") is not None:
         import yaml
+
         cache_file.write_text(yaml.dump(cache.to_dict(), default_flow_style=False), encoding="utf-8")
         log_func(f"Saved diff cache to: {cache_file}")
         log_func(f"  Cached {len(files_list)} file comparisons")

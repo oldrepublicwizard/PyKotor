@@ -26,13 +26,13 @@ def _decode_mipmap_to_rgba(mipmap: TPCMipmap) -> bytes:
 
 def _has_alpha_channel(pixels: bytes) -> bool:
     """Return True when any pixel contains transparency.
-    
+
     Optimized: Direct byte access with early exit for better performance.
     Uses memoryview for faster byte access when available.
     """
     if len(pixels) < 4:
         return False
-    
+
     # Use memoryview for faster byte access (O(1) indexing vs O(n) for large bytes)
     # This is especially beneficial for large textures
     try:
@@ -47,7 +47,7 @@ def _has_alpha_channel(pixels: bytes) -> bool:
         for i in range(3, len(pixels), 4):
             if pixels[i] != 0xFF:
                 return True
-    
+
     return False
 
 
@@ -80,15 +80,16 @@ def _write_tga_rgba(writer: ResourceWriter, width: int, height: int, rgba: bytes
 
 class TPCTGAReader(ResourceReader):
     """Reads TGA files and converts them to TPC format.
-    
+
     Supports uncompressed and RLE-compressed TGA files, color-mapped images,
     grayscale images, and cube map detection (6:1 aspect ratio).
-    
+
     References:
     ----------
         See tpc_data module docstring for engine addresses (K1 + TSL TODO). Standard TGA specification for header format.
 
     """
+
     def __init__(
         self,
         source: SOURCE_TYPES,
@@ -234,17 +235,19 @@ class TPCTGAReader(ResourceReader):
 
         return self._tpc
 
+
 class TPCTGAWriter(ResourceWriter):
     """Writes TPC textures as TGA image files.
-    
+
     Converts TPC textures (including animated flipbooks and cube maps) to TGA format.
     Supports single frame, animated flipbook, and cube map output.
-    
+
     References:
     ----------
         See tpc_data module docstring for engine addresses (K1 + TSL TODO). Standard TGA specification for header format.
 
     """
+
     def __init__(
         self,
         tpc: TPC,

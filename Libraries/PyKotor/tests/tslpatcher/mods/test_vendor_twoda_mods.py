@@ -195,4 +195,3 @@ class TestVendorEditRowModifier(TestCase):
         )
         modifier.apply(self.twoda, self.memory)
         self.assertEqual(self.memory.memory_2da[30], "1")
-

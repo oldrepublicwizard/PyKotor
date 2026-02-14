@@ -4,6 +4,7 @@
 This module provides formatters that convert structured DiffResult objects
 into various human-readable output formats (unified, context, side-by-side, etc.).
 """
+
 from __future__ import annotations
 
 import difflib
@@ -147,13 +148,15 @@ class UnifiedFormatter(DiffFormatter):
                     left_lines = []
                     right_lines = []
 
-                diff_lines = list(difflib.unified_diff(
-                    left_lines,
-                    right_lines,
-                    fromfile=diff_result.left_identifier,
-                    tofile=diff_result.right_identifier,
-                    lineterm="",
-                ))
+                diff_lines = list(
+                    difflib.unified_diff(
+                        left_lines,
+                        right_lines,
+                        fromfile=diff_result.left_identifier,
+                        tofile=diff_result.right_identifier,
+                        lineterm="",
+                    )
+                )
 
                 return "\n".join(diff_lines)
             except Exception as e:  # noqa: BLE001
@@ -196,13 +199,15 @@ class ContextFormatter(DiffFormatter):
                     left_lines = []
                     right_lines = []
 
-                diff_lines = list(difflib.context_diff(
-                    left_lines,
-                    right_lines,
-                    fromfile=diff_result.left_identifier,
-                    tofile=diff_result.right_identifier,
-                    lineterm="",
-                ))
+                diff_lines = list(
+                    difflib.context_diff(
+                        left_lines,
+                        right_lines,
+                        fromfile=diff_result.left_identifier,
+                        tofile=diff_result.right_identifier,
+                        lineterm="",
+                    )
+                )
 
                 return "\n".join(diff_lines)
             except Exception as e:  # noqa: BLE001
@@ -247,8 +252,8 @@ class SideBySideFormatter(DiffFormatter):
             return f"{diff_result.left_identifier:<{self.half_width}} | {'(none)':>{self.half_width}}"
 
         # For modified files, show a simple side-by-side comparison
-        left_name = diff_result.left_identifier[:self.half_width-3] + "..." if len(diff_result.left_identifier) > self.half_width else diff_result.left_identifier
-        right_name = diff_result.right_identifier[:self.half_width-3] + "..." if len(diff_result.right_identifier) > self.half_width else diff_result.right_identifier
+        left_name = diff_result.left_identifier[: self.half_width - 3] + "..." if len(diff_result.left_identifier) > self.half_width else diff_result.left_identifier
+        right_name = diff_result.right_identifier[: self.half_width - 3] + "..." if len(diff_result.right_identifier) > self.half_width else diff_result.right_identifier
 
         return f"{left_name:<{self.half_width}} | {right_name:>{self.half_width}}"
 
@@ -283,4 +288,3 @@ class FormatterFactory:
             return SideBySideFormatter(width, output_func)
         error_msg = f"Unknown diff format: {format_type}"
         raise ValueError(error_msg)
-

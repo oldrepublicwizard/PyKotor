@@ -58,4 +58,3 @@ class IMaterialManager(ABC):
     @abstractmethod
     def apply_material(self, node: Any, material: IMaterial) -> None:
         """Apply the provided material to the backend-specific node."""
-

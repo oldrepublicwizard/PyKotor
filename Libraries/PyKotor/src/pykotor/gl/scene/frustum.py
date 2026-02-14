@@ -296,4 +296,4 @@ class CullingStats:
         return (self.culled_objects / self.total_objects) * 100.0
 
     def __repr__(self) -> str:
-        return f"CullingStats(total={self.total_objects}, visible={self.visible_objects}, " f"culled={self.culled_objects}, rate={self.cull_rate:.1f}%)"
+        return f"CullingStats(total={self.total_objects}, visible={self.visible_objects}, culled={self.culled_objects}, rate={self.cull_rate:.1f}%)"

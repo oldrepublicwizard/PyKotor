@@ -28,7 +28,6 @@ Usage:
 
 from __future__ import annotations
 
-import os
 import pathlib
 import shutil
 import subprocess
@@ -214,7 +213,7 @@ def create_case_insensitive_dir_loop_fat32(
         # Create FAT32 image
         print(f"Creating {size_mb}MB FAT32 image...")
         subprocess.run(
-            ["dd", "if=/dev/zero", f"of={image_file}", f"bs=1M", f"count={size_mb}"],
+            ["dd", "if=/dev/zero", f"of={image_file}", "bs=1M", f"count={size_mb}"],
             capture_output=True,
             check=True,
             timeout=60,
@@ -381,4 +380,3 @@ if __name__ == "__main__":
     print("  Debian/Ubuntu: sudo apt-get install ciopfs")
     print("  Fedora/RHEL:   sudo dnf install ciopfs")
     print("  Arch:          sudo pacman -S ciopfs")
-

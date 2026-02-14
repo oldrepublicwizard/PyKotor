@@ -23,13 +23,14 @@ class LazyCapsule(FileResource):
 
     Resource data is not actually stored in memory by default but is instead loaded up on demand with the
     LazyCapsule.resource() method. Use the Capsule, RIM, or ERF classes if you want to solely work with capsules in memory.
-    
+
     References:
     ----------
         See pykotor.resource.formats.erf.erf_data for engine addresses (K1 + TSL TODO). CExoEncapsulatedFile::CExoEncapsulatedFile, CExoKeyTable::AddEncapsulatedContents.
 
 
     """
+
     def __init__(
         self,
         path: os.PathLike | str,
@@ -221,7 +222,7 @@ class LazyCapsule(FileResource):
         # Check if file is empty (0 bytes) - empty files cannot be valid capsules
         if self._filepath.exists() and self._filepath.stat().st_size == 0:
             return []
-        
+
         with BinaryReader.from_file(self._filepath) as reader:
             file_type = reader.read_string(4)
             reader.skip(4)  # file version
@@ -233,7 +234,7 @@ class LazyCapsule(FileResource):
             else:
                 msg = f"File '{self._filepath}' must be a ERF/MOD/SAV/RIM capsule, '{self._filepath.suffix}' is not implemented."
                 raise NotImplementedError(msg)
-        #get_root_logger().debug("%s.resources() call, found %s total resources inside %s", self.__class__.__name__, len(resources), self._filepath)
+        # get_root_logger().debug("%s.resources() call, found %s total resources inside %s", self.__class__.__name__, len(resources), self._filepath)
         return resources
 
     def add(
@@ -261,6 +262,7 @@ class LazyCapsule(FileResource):
             - Calls set_data to add the resource
             - Writes the container back to the file.
         """
+
         def _add_to(container: RIM | ERF):
             container.set_data(resname, restype, resdata)
             for resource in self.resources():
@@ -301,6 +303,7 @@ class LazyCapsule(FileResource):
             - Calls ERF.remove or RIM.remove
             - Writes the container back to the file.
         """
+
         def _remove_from(container: RIM | ERF):
             for resource in self.resources():
                 if resource.resname().lower() == resname.lower() and resource.restype() is restype:
@@ -332,11 +335,7 @@ class LazyCapsule(FileResource):
         return rim
 
     def as_cached(self) -> ERF | RIM:
-        return (
-            self.as_cached_erf()
-            if is_any_erf_type_file(self._filepath)
-            else self.as_cached_rim()
-        )
+        return self.as_cached_erf() if is_any_erf_type_file(self._filepath) else self.as_cached_rim()
 
     def _load_erf(
         self,
@@ -360,7 +359,7 @@ class LazyCapsule(FileResource):
             - Seeks to resource data offset table
             - Loops to read offsets and sizes and populate resource objects.
         """
-        
+
         resources: list[FileResource] = []
         reader.skip(8)
         entry_count = reader.read_uint32()
@@ -368,11 +367,11 @@ class LazyCapsule(FileResource):
         offset_to_keys = reader.read_uint32()
         offset_to_resources = reader.read_uint32()
 
-        resrefs:  list[str] = []
-        resids:   list[int] = []
+        resrefs: list[str] = []
+        resids: list[int] = []
         restypes: list[ResourceType] = []
         reader.seek(offset_to_keys)
-        
+
         for _ in range(entry_count):
             resref = reader.read_string(16)
             resrefs.append(resref)
@@ -384,7 +383,7 @@ class LazyCapsule(FileResource):
         reader.seek(offset_to_resources)
         for i in range(entry_count):
             res_offset: int = reader.read_uint32()
-            res_size:   int = reader.read_uint32()
+            res_size: int = reader.read_uint32()
             resources.append(FileResource(resrefs[i], restypes[i], res_size, res_offset, self._filepath))
         return resources
 
@@ -415,14 +414,14 @@ class LazyCapsule(FileResource):
                 - Read the 4 byte offset
                 - Read the 4 byte size
         """
-        
+
         resources: list[FileResource] = []
         reader.skip(4)
         entry_count = reader.read_uint32()
         offset_to_entries = reader.read_uint32()
 
         reader.seek(offset_to_entries)
-        
+
         for _ in range(entry_count):
             resref = reader.read_string(16)
             restype = ResourceType.from_id(reader.read_uint32())

@@ -22,6 +22,7 @@ if TYPE_CHECKING:
 T = TypeVar("T")
 VT = TypeVar("VT")
 
+
 class OrderedSet(MutableSet[T]):
     def __init__(
         self,
@@ -83,7 +84,7 @@ class OrderedSet(MutableSet[T]):
         return self._list[index]
 
     def __setitem__(self, index: SupportsIndex, value: T) -> None:
-        #if value in self._set:
+        # if value in self._set:
         #    raise ValueError(f"Duplicate item found: {value}")
         old_value = self._list[index]
         self._list[index] = value
@@ -149,7 +150,7 @@ class OrderedSet(MutableSet[T]):
     def sort(
         self,
         *,
-        key = None,
+        key=None,
         reverse: bool = False,
     ) -> None:
         self._list.sort(key=key, reverse=reverse)
@@ -177,6 +178,8 @@ class OrderedSet(MutableSet[T]):
 
 
 _unique_sentinel = object()
+
+
 class CaseInsensitiveDict(Generic[T]):
     """A class exactly like the builtin dict[str, Any], but provides case-insensitive key lookups.
 
@@ -192,11 +195,7 @@ class CaseInsensitiveDict(Generic[T]):
 
         if initial:
             # If initial is a mapping, use its items method.
-            items: Iterable[tuple[str, T]] | ItemsView[str, T] | ItemsView[tuple[str, T], T] = (
-                initial.items()
-                if isinstance(initial, Mapping)
-                else initial
-            )
+            items: Iterable[tuple[str, T]] | ItemsView[str, T] | ItemsView[tuple[str, T], T] = initial.items() if isinstance(initial, Mapping) else initial
 
             # Iterate over initial items directly, avoiding the creation of an interim dict
             for key, value in items:
@@ -363,9 +362,7 @@ class CaseInsensitiveDict(Generic[T]):
     def get(self, __key: str, __default: VT | None = None) -> VT | T | None:
         key_lookup: str | object = self._case_map.get(__key.lower(), _unique_sentinel)
         return (
-            __default
-            if key_lookup is _unique_sentinel
-            else self._dictionary.get(key_lookup, __default)  # type: ignore[arg-type]
+            __default if key_lookup is _unique_sentinel else self._dictionary.get(key_lookup, __default)  # type: ignore[arg-type]
         )
 
     def items(self):
@@ -481,4 +478,3 @@ if __name__ == "__main__":
     assert os2 != os3
 
     print("All tests passed!")
-

@@ -24,15 +24,12 @@ if UTILITY_PATH.joinpath("utility").exists():
 from typing import TYPE_CHECKING
 
 from utility.common.geometry import Vector2
-from pykotor.common.misc import Game
-from pykotor.extract.installation import Installation
 from pykotor.resource.formats.gff import read_gff
-from pykotor.resource.generics.pth import construct_pth, dismantle_pth
+from pykotor.resource.generics.pth import PTH, construct_pth, dismantle_pth
 from pykotor.resource.type import ResourceType
 
 if TYPE_CHECKING:
-    from pykotor.resource.formats.gff.gff_data import GFF
-    from pykotor.resource.generics.pth import PTH
+    pass
 
 TEST_PTH_XML = """<gff3>
   <struct id="-1">
@@ -137,6 +134,60 @@ class TestPTH(unittest.TestCase):
 
         assert len(pth.outgoing(3)) == 1
         assert pth.is_connected(3, 1)
+
+    def test_pth_missing_field_defaults(self) -> None:
+        """Test defaults when PTH fields are omitted (REVA: K1 0x00508400, TSL 0x00721db0)."""
+        minimal_pth_xml = """<gff3>
+          <struct id="-1">
+            <list label="Path_Points">
+              <struct id="2">
+                <float label="X">2.5</float>
+              </struct>
+            </list>
+            <list label="Path_Conections" />
+          </struct>
+        </gff3>
+        """
+        gff = read_gff(minimal_pth_xml.encode(), file_format=ResourceType.GFF_XML)
+        pth = construct_pth(gff)
+        self.assertEqual(len(pth), 1)
+        pt = pth.get(0)
+        self.assertIsNotNone(pt)
+        self.assertEqual(pt.x, 2.5)
+        self.assertEqual(pt.y, 0.0)
+        self.assertEqual(len(pth.outgoing(0)), 0)
+        # One point with one connection; Destination omitted → default 0
+        one_conn_xml = """<gff3>
+          <struct id="-1">
+            <list label="Path_Points">
+              <struct id="2">
+                <float label="X">0.0</float>
+                <float label="Y">1.0</float>
+                <uint32 label="Conections">1</uint32>
+                <uint32 label="First_Conection">0</uint32>
+              </struct>
+            </list>
+            <list label="Path_Conections">
+              <struct id="3" />
+            </list>
+          </struct>
+        </gff3>
+        """
+        gff2 = read_gff(one_conn_xml.encode(), file_format=ResourceType.GFF_XML)
+        pth2 = construct_pth(gff2)
+        self.assertEqual(len(pth2), 1)
+        self.assertEqual(len(pth2.outgoing(0)), 1)
+        self.assertEqual(pth2.outgoing(0)[0].target, 0)
+
+    def test_pth_empty_roundtrip(self) -> None:
+        """Empty root struct: no Path_Points/Path_Conections → 0 points; round-trip preserves empty."""
+        empty_xml = """<gff3><struct id="-1"></struct></gff3>"""
+        gff = read_gff(empty_xml.encode(), file_format=ResourceType.GFF_XML)
+        pth = construct_pth(gff)
+        self.assertEqual(len(pth), 0)
+        gff2 = dismantle_pth(pth)
+        pth2 = construct_pth(gff2)
+        self.assertEqual(len(pth2), 0)
 
 
 if __name__ == "__main__":

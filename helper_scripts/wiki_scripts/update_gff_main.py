@@ -37,10 +37,10 @@ for section_title, file_name in sections:
     # Pattern to match from ### Section Title to the next ### or end of Generic Types section
     # We need to match everything from "### Section Title" to just before the next "###" or before "## Implementation Details"
     pattern = rf"### {re.escape(section_title)}.*?(?=\n### |\n## Implementation Details|\Z)"
-    
+
     # Replacement: just a link with blank line after
     replacement = f"### {section_title}\n\nSee [{section_title}]({file_name}) for detailed documentation.\n"
-    
+
     content = re.sub(pattern, replacement, content, flags=re.DOTALL)
 
 # Write back
@@ -48,4 +48,3 @@ with open(gff_file, "w", encoding="utf-8") as f:
     f.write(content)
 
 print("Updated GFF-File-Format.md")
-

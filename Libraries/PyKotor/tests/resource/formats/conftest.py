@@ -4,12 +4,9 @@ import cProfile
 import logging
 import os
 import pathlib
-import shutil
 import sys
-from contextlib import suppress
 from io import StringIO
 from pathlib import Path  # noqa: E402
-from tempfile import TemporaryDirectory
 from typing import TYPE_CHECKING
 
 import pytest
@@ -17,6 +14,7 @@ import pytest
 THIS_SCRIPT_PATH = pathlib.Path(__file__)
 PYKOTOR_PATH = THIS_SCRIPT_PATH.parents[4].joinpath("src")
 UTILITY_PATH = THIS_SCRIPT_PATH.parents[6].joinpath("Libraries", "Utility", "src")
+
 
 def add_sys_path(p: pathlib.Path):
     working_dir = str(p)
@@ -32,17 +30,14 @@ if PYKOTOR_PATH.joinpath("pykotor").exists():
 if UTILITY_PATH.joinpath("utility").exists():
     add_sys_path(UTILITY_PATH)
 
-from pykotor.extract.file import FileResource, ResourceIdentifier
 from utility.error_handling import format_exception_with_variables
 
 from pykotor.common.misc import Game  # noqa: E402
 from pykotor.extract.installation import Installation  # noqa: E402
-from pykotor.resource.type import ResourceType  # noqa: E402
 
 if TYPE_CHECKING:
     from typing_extensions import Literal
 
-    from pykotor.extract.file import FileResource
 
 K1_PATH: str | None = os.environ.get("K1_PATH", "C:\\Program Files (x86)\\Steam\\steamapps\\common\\swkotor")
 K2_PATH: str | None = os.environ.get("K2_PATH", "C:\\Program Files (x86)\\Steam\\steamapps\\common\\Knights of the Old Republic II")
@@ -154,6 +149,7 @@ def _setup_and_profile_installation() -> dict[Game, Installation]:
 def game(request: pytest.FixtureRequest) -> Game:
     return request.param
 
+
 # Cleanup hooks can remain as they are general utilities, but ensure they don't trigger heavy operations.
 def cleanup_before_tests():
     log_files: list[str] = [
@@ -215,6 +211,7 @@ def pytest_runtest_makereport(
 
 def pytest_configure(config):
     """Configure logging to suppress 'Loading ... from installation...' messages during tests."""
+
     # Suppress INFO level messages from root logger that contain "Loading" and "from installation"
     class InstallationLoadingFilter(logging.Filter):
         def filter(self, record: logging.LogRecord) -> bool:
@@ -223,12 +220,12 @@ def pytest_configure(config):
             if "Loading" in message and "from installation" in message:
                 return False
             return True
-    
+
     # Apply filter to root logger
     root_logger = logging.getLogger()
     installation_filter = InstallationLoadingFilter()
     root_logger.addFilter(installation_filter)
-    
+
     # Also set root logger level to WARNING to suppress INFO messages
     # But keep the filter in case some handlers bypass the level
     root_logger.setLevel(logging.WARNING)

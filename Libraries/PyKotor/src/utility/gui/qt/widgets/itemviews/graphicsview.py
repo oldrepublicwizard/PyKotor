@@ -37,36 +37,11 @@ class RobustGraphicsView(RobustAbstractItemView, QGraphicsView):
             "Drag Mode",
             self.dragMode,
             self.setDragMode,
-            options={
-                "No Drag": QGraphicsView.NoDrag,
-                "Scroll Hand Drag": QGraphicsView.ScrollHandDrag,
-                "Rubber Band Drag": QGraphicsView.RubberBandDrag
-            },
-            settings_key="dragMode"
+            options={"No Drag": QGraphicsView.NoDrag, "Scroll Hand Drag": QGraphicsView.ScrollHandDrag, "Rubber Band Drag": QGraphicsView.RubberBandDrag},
+            settings_key="dragMode",
         )
-        self._add_menu_action(
-            graphics_menu,
-            "Cache Mode",
-            self.cacheMode,
-            self.setCacheMode,
-            "cacheMode",
-            param_type=QGraphicsView.CacheMode
-        )
-        self._add_menu_action(
-            graphics_menu,
-            "Render Hints",
-            self.renderHints,
-            self.setRenderHints,
-            "renderHints",
-            param_type=int
-        )
-        self._add_menu_action(
-            graphics_menu,
-            "Transform",
-            self.transform,
-            self.setTransform,
-            "transform",
-            param_type=QTransform
-        )
+        self._add_menu_action(graphics_menu, "Cache Mode", self.cacheMode, self.setCacheMode, "cacheMode", param_type=QGraphicsView.CacheMode)
+        self._add_menu_action(graphics_menu, "Render Hints", self.renderHints, self.setRenderHints, "renderHints", param_type=int)
+        self._add_menu_action(graphics_menu, "Transform", self.transform, self.setTransform, "transform", param_type=QTransform)
 
         return menu

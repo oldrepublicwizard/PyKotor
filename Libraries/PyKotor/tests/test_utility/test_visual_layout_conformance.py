@@ -15,7 +15,7 @@ Windows File Dialog (QFileDialogExtended):
 4. Bottom controls: File name input, File type dropdown, Open/Cancel buttons
 5. Optional right preview pane
 
-Windows 11 Explorer (FileSystemExplorerWidget):  
+Windows 11 Explorer (FileSystemExplorerWidget):
 1. Toolbar with ribbon-style grouped actions (New, Cut, Copy, Paste, Sort, View)
 2. Address bar with breadcrumb navigation
 3. Left navigation pane with tree structure
@@ -53,7 +53,7 @@ if TYPE_CHECKING:
 
 class TestQFileDialogExtendedLayout(unittest.TestCase):
     """Test visual layout conformance for QFileDialogExtended.
-    
+
     Verifies the dialog matches Windows file dialog layout requirements.
     """
 
@@ -63,7 +63,7 @@ class TestQFileDialogExtendedLayout(unittest.TestCase):
         cls.app: QApplication = QApplication.instance() or QApplication([])
         cls.temp_dir = tempfile.TemporaryDirectory()
         cls.temp_path = Path(cls.temp_dir.name)
-        
+
         # Create test folder structure
         (cls.temp_path / "folder1").mkdir(exist_ok=True)
         (cls.temp_path / "file1.txt").write_text("test")
@@ -81,7 +81,7 @@ class TestQFileDialogExtendedLayout(unittest.TestCase):
         from utility.gui.qt.filesystem.qfiledialogextended.qfiledialogextended import (
             QFileDialogExtended,
         )
-        
+
         self.dialog = QFileDialogExtended(None, "Test", str(self.temp_path))
         self.dialog.setOption(AdapterQFileDialog.Option.DontUseNativeDialog, True)
         QTest.qWaitForWindowActive(self.dialog, 500)
@@ -105,7 +105,7 @@ class TestQFileDialogExtendedLayout(unittest.TestCase):
     def test_grid_has_minimum_rows(self) -> None:
         """Verify grid has at least the required rows for all elements."""
         grid = self.dialog.ui.gridlayout
-        # Should have: ribbon (row 0), address (row 1), search (row 2), 
+        # Should have: ribbon (row 0), address (row 1), search (row 2),
         # splitter (row 3+), filename controls (row n-1), filetype (row n)
         self.assertGreaterEqual(grid.rowCount(), 4)
 
@@ -113,7 +113,7 @@ class TestQFileDialogExtendedLayout(unittest.TestCase):
         """Verify ribbon is at row 0 spanning all columns."""
         grid = self.dialog.ui.gridlayout
         ribbon_item = None
-        
+
         # Search for ribbon in grid
         for i in range(grid.count()):
             item = grid.itemAt(i)
@@ -123,13 +123,13 @@ class TestQFileDialogExtendedLayout(unittest.TestCase):
                 self.assertGreaterEqual(col_span, 2, "Ribbon should span multiple columns")
                 ribbon_item = item
                 break
-        
+
         self.assertIsNotNone(ribbon_item, "Ribbon should be in grid layout")
 
     def test_address_bar_position_in_grid(self) -> None:
         """Verify address bar is positioned correctly."""
         grid = self.dialog.ui.gridlayout
-        
+
         for i in range(grid.count()):
             item = grid.itemAt(i)
             if item and item.widget() is self.dialog.address_bar:
@@ -137,33 +137,33 @@ class TestQFileDialogExtendedLayout(unittest.TestCase):
                 self.assertEqual(row, 1, "Address bar should be at row 1")
                 self.assertGreaterEqual(col_span, 2, "Address bar should span columns")
                 return
-        
+
         self.fail("Address bar not found in grid layout")
 
     def test_search_filter_position_in_grid(self) -> None:
         """Verify search filter is positioned correctly."""
         grid = self.dialog.ui.gridlayout
-        
+
         for i in range(grid.count()):
             item = grid.itemAt(i)
             if item and item.widget() is self.dialog.search_filter:
                 row, col, row_span, col_span = grid.getItemPosition(i)
                 self.assertEqual(row, 2, "Search filter should be at row 2")
                 return
-        
+
         self.fail("Search filter not found in grid layout")
 
     def test_splitter_position_in_grid(self) -> None:
         """Verify splitter (main content) is positioned after toolbar elements."""
         grid = self.dialog.ui.gridlayout
-        
+
         for i in range(grid.count()):
             item = grid.itemAt(i)
             if item and item.widget() is self.dialog.ui.splitter:
                 row, col, row_span, col_span = grid.getItemPosition(i)
                 self.assertGreaterEqual(row, 3, "Splitter should be after toolbar rows")
                 return
-        
+
         # Splitter might be at different position due to offset
         self.assertIsNotNone(self.dialog.ui.splitter)
 
@@ -175,7 +175,7 @@ class TestQFileDialogExtendedLayout(unittest.TestCase):
         """Verify splitter contains sidebar on the left."""
         splitter = self.dialog.ui.splitter
         self.assertGreater(splitter.count(), 1, "Splitter should have multiple widgets")
-        
+
         # First widget should be sidebar
         first_widget = splitter.widget(0)
         self.assertIsNotNone(first_widget)
@@ -184,7 +184,7 @@ class TestQFileDialogExtendedLayout(unittest.TestCase):
     def test_splitter_contains_content_frame(self) -> None:
         """Verify splitter contains main content frame."""
         splitter = self.dialog.ui.splitter
-        
+
         # Second widget should be frame with stacked widget
         second_widget = splitter.widget(1)
         self.assertIsNotNone(second_widget)
@@ -234,10 +234,10 @@ class TestQFileDialogExtendedLayout(unittest.TestCase):
         from utility.gui.qt.adapters.filesystem.qfiledialog.qfiledialog import (
             QFileDialog as AdapterQFileDialog,
         )
-        
+
         self.dialog.setViewMode(AdapterQFileDialog.ViewMode.List)
         QTest.qWait(50)
-        
+
         self.assertTrue(self.dialog.ui.listView.isVisible())
         self.assertFalse(self.dialog.ui.treeView.isVisible())
 
@@ -246,10 +246,10 @@ class TestQFileDialogExtendedLayout(unittest.TestCase):
         from utility.gui.qt.adapters.filesystem.qfiledialog.qfiledialog import (
             QFileDialog as AdapterQFileDialog,
         )
-        
+
         self.dialog.setViewMode(AdapterQFileDialog.ViewMode.Detail)
         QTest.qWait(50)
-        
+
         self.assertFalse(self.dialog.ui.listView.isVisible())
         self.assertTrue(self.dialog.ui.treeView.isVisible())
 
@@ -308,9 +308,9 @@ class TestQFileDialogExtendedLayout(unittest.TestCase):
     def test_address_bar_has_navigation_buttons(self) -> None:
         """Verify address bar has back/forward/up buttons."""
         addr = self.dialog.address_bar
-        self.assertTrue(hasattr(addr, 'backButton'))
-        self.assertTrue(hasattr(addr, 'forwardButton'))
-        self.assertTrue(hasattr(addr, 'upButton'))
+        self.assertTrue(hasattr(addr, "backButton"))
+        self.assertTrue(hasattr(addr, "forwardButton"))
+        self.assertTrue(hasattr(addr, "upButton"))
 
     def test_address_bar_shows_current_path(self) -> None:
         """Verify address bar displays current directory path."""
@@ -323,7 +323,7 @@ class TestQFileDialogExtendedLayout(unittest.TestCase):
         target = self.temp_path / "folder1"
         self.dialog.setDirectory(str(target))
         QTest.qWait(100)
-        
+
         self.assertEqual(self.dialog.address_bar.current_path, target)
 
     # ========================================================================
@@ -332,7 +332,7 @@ class TestQFileDialogExtendedLayout(unittest.TestCase):
 
     def test_search_filter_has_line_edit(self) -> None:
         """Verify search filter has text input."""
-        self.assertTrue(hasattr(self.dialog.search_filter, 'line_edit'))
+        self.assertTrue(hasattr(self.dialog.search_filter, "line_edit"))
         self.assertIsInstance(self.dialog.search_filter.line_edit, QLineEdit)
 
     def test_search_filter_has_placeholder(self) -> None:
@@ -346,7 +346,7 @@ class TestQFileDialogExtendedLayout(unittest.TestCase):
 
     def test_preview_pane_exists(self) -> None:
         """Verify preview pane widget exists."""
-        self.assertTrue(hasattr(self.dialog, 'preview_pane'))
+        self.assertTrue(hasattr(self.dialog, "preview_pane"))
         self.assertIsNotNone(self.dialog.preview_pane)
 
     def test_preview_pane_hidden_by_default(self) -> None:
@@ -365,7 +365,7 @@ class TestQFileDialogExtendedLayout(unittest.TestCase):
         # When visible, preview pane should be in splitter
         self.dialog.toggle_preview_pane(True)
         QTest.qWait(50)
-        
+
         # Splitter should have 3 widgets: sidebar, frame, preview
         self.assertGreaterEqual(splitter.count(), 2)
 
@@ -379,7 +379,7 @@ class TestQFileDialogExtendedLayout(unittest.TestCase):
 
     def test_ribbon_has_tab_widget(self) -> None:
         """Verify ribbon has tab widget for different tabs."""
-        self.assertTrue(hasattr(self.dialog.ribbons, 'tab_widget'))
+        self.assertTrue(hasattr(self.dialog.ribbons, "tab_widget"))
 
     def test_ribbon_has_view_tab(self) -> None:
         """Verify ribbon has View tab."""
@@ -433,7 +433,7 @@ class TestQFileDialogExtendedLayout(unittest.TestCase):
 
 class TestFileSystemExplorerWidgetLayout(unittest.TestCase):
     """Test visual layout conformance for FileSystemExplorerWidget.
-    
+
     Verifies the widget matches Windows 11 Explorer layout requirements.
     """
 
@@ -443,7 +443,7 @@ class TestFileSystemExplorerWidgetLayout(unittest.TestCase):
         cls.app: QApplication = QApplication.instance() or QApplication([])
         cls.temp_dir = tempfile.TemporaryDirectory()
         cls.temp_path = Path(cls.temp_dir.name)
-        
+
         (cls.temp_path / "folder1").mkdir(exist_ok=True)
         (cls.temp_path / "file1.txt").write_text("test")
 
@@ -457,7 +457,7 @@ class TestFileSystemExplorerWidgetLayout(unittest.TestCase):
         from utility.gui.qt.filesystem.qfileexplorer.explorer import (
             FileSystemExplorerWidget,
         )
-        
+
         self.explorer = FileSystemExplorerWidget(
             initial_path=self.temp_path,
             parent=None,
@@ -478,6 +478,7 @@ class TestFileSystemExplorerWidgetLayout(unittest.TestCase):
     def test_is_main_window(self) -> None:
         """Verify explorer is a QMainWindow."""
         from qtpy.QtWidgets import QMainWindow
+
         self.assertIsInstance(self.explorer, QMainWindow)
 
     def test_has_central_widget(self) -> None:
@@ -504,7 +505,7 @@ class TestFileSystemExplorerWidgetLayout(unittest.TestCase):
         """Verify ribbon is at top of layout."""
         ribbon = self.explorer.ui.ribbonWidget
         layout = self.explorer.ui.topLayout
-        
+
         # Ribbon should be first widget in top layout
         self.assertEqual(layout.itemAt(0).widget(), ribbon)
 
@@ -622,14 +623,11 @@ class TestFileSystemExplorerWidgetLayout(unittest.TestCase):
     def test_address_bar_has_refresh_button(self) -> None:
         """Verify address bar has refresh button."""
         addr = self.explorer.ui.addressBar
-        self.assertTrue(hasattr(addr, 'refreshButton'))
+        self.assertTrue(hasattr(addr, "refreshButton"))
 
     def test_address_bar_shows_current_path(self) -> None:
         """Verify address bar shows current path."""
-        self.assertEqual(
-            self.explorer.ui.addressBar.current_path,
-            self.explorer.current_path
-        )
+        self.assertEqual(self.explorer.ui.addressBar.current_path, self.explorer.current_path)
 
     # ========================================================================
     # SIZE POLICY TESTS
@@ -646,10 +644,7 @@ class TestFileSystemExplorerWidgetLayout(unittest.TestCase):
         """Verify dynamic view expands to fill space."""
         view = self.explorer.ui.dynamicView
         policy = view.sizePolicy()
-        self.assertIn(
-            policy.horizontalPolicy(),
-            [QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred]
-        )
+        self.assertIn(policy.horizontalPolicy(), [QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred])
 
     # ========================================================================
     # MODEL TESTS
@@ -665,10 +660,7 @@ class TestFileSystemExplorerWidgetLayout(unittest.TestCase):
 
     def test_proxy_model_source_is_fs_model(self) -> None:
         """Verify proxy model wraps file system model."""
-        self.assertEqual(
-            self.explorer.proxy_model.sourceModel(),
-            self.explorer.fs_model
-        )
+        self.assertEqual(self.explorer.proxy_model.sourceModel(), self.explorer.fs_model)
 
     def test_views_use_proxy_model(self) -> None:
         """Verify views use the proxy model."""
@@ -702,13 +694,13 @@ class TestLayoutConformanceIntegration(unittest.TestCase):
         from utility.gui.qt.filesystem.qfileexplorer.explorer import (
             FileSystemExplorerWidget,
         )
-        
+
         dialog = QFileDialogExtended(None, "Test", str(self.temp_path))
         explorer = FileSystemExplorerWidget(initial_path=self.temp_path)
-        
+
         self.assertIsNotNone(dialog)
         self.assertIsNotNone(explorer)
-        
+
         dialog.deleteLater()
         explorer.deleteLater()
         QCoreApplication.processEvents()
@@ -721,22 +713,22 @@ class TestLayoutConformanceIntegration(unittest.TestCase):
         from utility.gui.qt.filesystem.qfileexplorer.explorer import (
             FileSystemExplorerWidget,
         )
-        
+
         dialog = QFileDialogExtended(None, "Test", str(self.temp_path))
         explorer = FileSystemExplorerWidget(initial_path=self.temp_path)
-        
+
         # Both should have address bar
-        self.assertTrue(hasattr(dialog, 'address_bar'))
-        self.assertTrue(hasattr(explorer.ui, 'addressBar'))
-        
+        self.assertTrue(hasattr(dialog, "address_bar"))
+        self.assertTrue(hasattr(explorer.ui, "addressBar"))
+
         # Both should have ribbon/toolbar
-        self.assertTrue(hasattr(dialog, 'ribbons'))
-        self.assertTrue(hasattr(explorer.ui, 'ribbonWidget'))
-        
+        self.assertTrue(hasattr(dialog, "ribbons"))
+        self.assertTrue(hasattr(explorer.ui, "ribbonWidget"))
+
         # Both should use file system model
         self.assertIsNotNone(dialog.model)
         self.assertIsNotNone(explorer.fs_model)
-        
+
         dialog.deleteLater()
         explorer.deleteLater()
         QCoreApplication.processEvents()

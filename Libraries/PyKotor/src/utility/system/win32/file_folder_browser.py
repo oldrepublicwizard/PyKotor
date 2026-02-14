@@ -15,6 +15,7 @@ if TYPE_CHECKING:
 
 def _get_tk_root() -> Tk:
     import tkinter as tk
+
     if tk._default_root is None:  # pyright: ignore[reportAttributeAccessIssue]  # noqa: SLF001
         root = tk.Tk()
         root.withdraw()
@@ -31,6 +32,7 @@ def askdirectory(  # noqa: ANN201
 ) -> str:
     try:
         from tkinter import filedialog
+
         result = filedialog.askdirectory(
             initialdir=initialdir,
             mustexist=mustexist,
@@ -41,6 +43,7 @@ def askdirectory(  # noqa: ANN201
     except Exception:  # noqa: BLE001
         RobustLogger().warning("Tkinter's filedialog.askdirectory() threw an exception!", exc_info=True)
         from utility.system.win32.com.windialogs import open_folder_dialog
+
         result = open_folder_dialog(title, None if initialdir is None else str(initialdir))
         return "" if not result or not result[0].strip() else result[0]
 
@@ -58,6 +61,7 @@ def askopenfile(  # noqa: PLR0913
 ) -> IO[Any] | None:
     try:
         from tkinter import filedialog
+
         return filedialog.askopenfile(
             mode,
             defaultextension=defaultextension,
@@ -71,6 +75,7 @@ def askopenfile(  # noqa: PLR0913
     except Exception:  # noqa: BLE001
         RobustLogger().warning("Tkinter's filedialog.askopenfile() threw an exception!", exc_info=True)
         from utility.system.win32.com.windialogs import open_file_dialog
+
         result = open_file_dialog(
             title,
             None if initialdir is None else str(initialdir),
@@ -92,6 +97,7 @@ def askopenfilename(  # noqa: PLR0913
 ) -> str:
     try:
         from tkinter import filedialog
+
         result = filedialog.askopenfilename(
             defaultextension=defaultextension,
             filetypes=[] if filetypes is None else filetypes,  # rem: do not send None
@@ -105,6 +111,7 @@ def askopenfilename(  # noqa: PLR0913
     except Exception:  # noqa: BLE001
         RobustLogger().warning("Tkinter's filedialog.askopenfilename() threw an exception!", exc_info=True)
         from utility.system.win32.com.windialogs import open_file_dialog
+
         result = open_file_dialog(
             title,
             None if initialdir is None else str(initialdir),
@@ -126,6 +133,7 @@ def askopenfilenames(  # noqa: PLR0913
 ) -> tuple[str, ...] | Literal[""]:
     try:
         from tkinter import filedialog
+
         result = filedialog.askopenfilenames(
             defaultextension=defaultextension,
             filetypes=[] if filetypes is None else filetypes,  # rem: do not send None
@@ -139,13 +147,8 @@ def askopenfilenames(  # noqa: PLR0913
     except Exception:  # noqa: BLE001
         RobustLogger().warning("Tkinter's filedialog.askopenfilenames() threw an exception!", exc_info=True)
         from utility.system.win32.com.windialogs import open_file_dialog
-        result = open_file_dialog(
-            title,
-            None if initialdir is None else str(initialdir),
-            filetypes,
-            defaultextension,
-            allow_multiple_selection=True
-        )
+
+        result = open_file_dialog(title, None if initialdir is None else str(initialdir), filetypes, defaultextension, allow_multiple_selection=True)
         return tuple(result) if result else ""
 
 
@@ -162,6 +165,7 @@ def askopenfiles(  # noqa: PLR0913
 ) -> tuple[IO[Any], ...] | None:
     try:
         from tkinter import filedialog
+
         return filedialog.askopenfiles(
             mode,
             defaultextension=defaultextension,
@@ -175,15 +179,9 @@ def askopenfiles(  # noqa: PLR0913
     except Exception:  # noqa: BLE001
         RobustLogger().warning("Tkinter's filedialog.askopenfiles() threw an exception!", exc_info=True)
         from utility.system.win32.com.windialogs import open_file_dialog
-        result = open_file_dialog(
-            title,
-            None if initialdir is None else str(initialdir),
-            filetypes,
-            defaultextension,
-            allow_multiple_selection=True
-        )
-        return tuple(open(file, mode) for file in result) if result else None  # noqa: PTH123, SIM115
 
+        result = open_file_dialog(title, None if initialdir is None else str(initialdir), filetypes, defaultextension, allow_multiple_selection=True)
+        return tuple(open(file, mode) for file in result) if result else None  # noqa: PTH123, SIM115
 
 
 def asksaveasfile(  # noqa: PLR0913, ANN201
@@ -200,6 +198,7 @@ def asksaveasfile(  # noqa: PLR0913, ANN201
 ) -> IO[Any] | None:
     try:
         from tkinter import filedialog
+
         return filedialog.asksaveasfile(
             mode,
             confirmoverwrite=confirmoverwrite,
@@ -214,12 +213,13 @@ def asksaveasfile(  # noqa: PLR0913, ANN201
     except Exception:  # noqa: BLE001
         RobustLogger().warning("Tkinter's filedialog.asksaveasfile() threw an exception!", exc_info=True)
         from utility.system.win32.com.windialogs import save_file_dialog
+
         result = save_file_dialog(
             title,
             default_folder=None if initialdir is None else str(initialdir),
             file_types=filetypes,
             default_extension=defaultextension,
-            overwrite_prompt=True if confirmoverwrite is None else confirmoverwrite
+            overwrite_prompt=True if confirmoverwrite is None else confirmoverwrite,
         )
         return None if not result or not result[0].strip() else open(result[0], mode)  # noqa: PTH123, SIM115
 
@@ -237,6 +237,7 @@ def asksaveasfilename(  # noqa: PLR0913
 ) -> str:
     try:
         from tkinter import filedialog
+
         result = filedialog.asksaveasfilename(
             confirmoverwrite=confirmoverwrite,
             defaultextension=defaultextension,
@@ -251,12 +252,13 @@ def asksaveasfilename(  # noqa: PLR0913
     except Exception:  # noqa: BLE001
         RobustLogger().warning("Tkinter's filedialog.asksaveasfilename() threw an exception!", exc_info=True)
         from utility.system.win32.com.windialogs import save_file_dialog
+
         result = save_file_dialog(
             title,
             default_folder=None if initialdir is None else str(initialdir),
             file_types=filetypes,
             default_extension=defaultextension,
-            overwrite_prompt=True if confirmoverwrite is None else confirmoverwrite
+            overwrite_prompt=True if confirmoverwrite is None else confirmoverwrite,
         )
         return "" if not result or not result[0].strip() else result[0]
 

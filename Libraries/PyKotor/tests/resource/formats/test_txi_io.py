@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import io
 import pytest
-from pykotor.resource.formats.txi import TXI, read_txi, write_txi, bytes_txi
+from pykotor.resource.formats.txi import TXI, read_txi, bytes_txi
 
 from typing import TYPE_CHECKING
 

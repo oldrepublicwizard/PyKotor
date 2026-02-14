@@ -814,12 +814,7 @@ def find_all_strref_references(
                 # This dramatically improves performance by skipping textures, models, audio, etc.
                 restype = resource.restype()
                 # StrRefs can only exist in: GFF files, 2DA files, SSF files, NCS files
-                can_contain_strref = (
-                    restype.is_gff()
-                    or restype is ResourceType.TwoDA
-                    or restype is ResourceType.SSF
-                    or restype is ResourceType.NCS
-                )
+                can_contain_strref = restype.is_gff() or restype is ResourceType.TwoDA or restype is ResourceType.SSF or restype is ResourceType.NCS
                 if not can_contain_strref:
                     skipped_count += 1
                     continue

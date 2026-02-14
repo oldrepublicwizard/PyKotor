@@ -5,11 +5,9 @@ import logging
 import os
 import pathlib
 import sys
-import shutil
 from io import StringIO
 from logging.handlers import RotatingFileHandler
 from typing import TYPE_CHECKING
-from contextlib import suppress
 from tempfile import TemporaryDirectory
 
 import pytest
@@ -36,7 +34,6 @@ if UTILITY_PATH.joinpath("utility").is_dir():
 from _pytest.reports import TestReport
 from utility.error_handling import (  # noqa: E402
     format_exception_with_variables,
-    universal_simplify_exception,
 )
 from pathlib import Path  # noqa: E402
 
@@ -58,8 +55,6 @@ from pykotor.resource.formats.ncs.io_ncs import NCSBinaryWriter
 from pykotor.resource.formats.ncs.ncs_auto import compile_nss, write_ncs  # noqa: E402
 from pykotor.resource.formats.ncs.ncs_data import NCS  # noqa: E402
 from pykotor.tools.encoding import decode_bytes_with_fallbacks
-from utility.error_handling import format_exception_with_variables, universal_simplify_exception  # noqa: E402
-from pathlib import Path  # noqa: E402
 
 if TYPE_CHECKING:
     from typing_extensions import Literal
@@ -68,8 +63,9 @@ if TYPE_CHECKING:
 
     from pykotor.extract.file import FileResource
     from pykotor.resource.formats.ncs.ncs_data import NCSCompiler
-    
+
     from pykotor.common.script import ScriptConstant, ScriptFunction
+
     KOTOR_CONSTANTS: list[ScriptConstant] = []
     KOTOR_FUNCTIONS: list[ScriptFunction] = []
     TSL_CONSTANTS: list[ScriptConstant] = []
@@ -77,7 +73,7 @@ if TYPE_CHECKING:
     KOTOR_LIBRARY: dict[str, bytes] = {}
     TSL_LIBRARY: dict[str, bytes] = {}
 else:
-    from pykotor.common.scriptdefs import KOTOR_CONSTANTS, KOTOR_FUNCTIONS, TSL_CONSTANTS, TSL_FUNCTIONS
+    from pykotor.common.scriptdefs import KOTOR_CONSTANTS, KOTOR_FUNCTIONS
     from pykotor.common.scriptlib import KOTOR_LIBRARY, TSL_LIBRARY
 
 K1_PATH: str | None = os.environ.get("K1_PATH", "C:\\Program Files (x86)\\Steam\\steamapps\\common\\swkotor")
@@ -106,6 +102,7 @@ def _setup_and_profile_installation() -> dict[Game, Installation]:
     if K2_PATH and Path(K2_PATH).joinpath("chitin.key").is_file():
         all_installations[Game.K2] = Installation(K2_PATH)
     return all_installations
+
 
 def collect_all_scripts(
     restype: ResourceType = ResourceType.NSS,
@@ -142,19 +139,19 @@ def collect_all_scripts(
 
             nss_dir = Path(TEMP_NSS_DIRS[game].name)
             nss_path: Path = nss_dir.joinpath(subfolder, filename)
-            
+
             ncs_dir = Path(TEMP_NCS_DIRS[game].name)
             ncs_path: Path = ncs_dir.joinpath(subfolder, filename).with_suffix(".ncs")
-            
+
             if resource.inside_bif and "_inc_" in filename.lower():
                 if nss_path not in symlink_map:
                     symlink_map[nss_path] = resource
 
             entry: tuple[FileResource, Path, Path] = (resource, nss_path, ncs_path)
-            
+
             if entry in all_scripts[game]:
                 continue
-            
+
             all_scripts[game].append(entry)
 
     ALL_SCRIPTS = all_scripts
@@ -165,11 +162,11 @@ def collect_all_scripts(
 def extract_all_scripts():
     global ALL_SCRIPTS
     global SYMLINK_MAP
-    
+
     for game, scripts in ALL_SCRIPTS.items():
         game_name: Literal["K1", "TSL"] = "K1" if game.is_k1() else "TSL"
         print(f"Extracting {len(scripts)} {game_name} scripts...")
-        
+
         for resource, nss_path, ncs_path in scripts:
             nss_path.parent.mkdir(exist_ok=True, parents=True)
             ncs_path.parent.mkdir(exist_ok=True, parents=True)
@@ -203,15 +200,12 @@ def extract_all_scripts():
 def pytest_generate_tests(metafunc: pytest.Metafunc):
     if "script_data" in metafunc.fixturenames:
         print("Generating NSS compile tests...")
-        
+
         if not ALL_SCRIPTS[Game.K1] and not ALL_SCRIPTS[Game.K2]:
             collect_all_scripts()
 
         test_script_data: list[tuple[Game, tuple[FileResource, Path, Path]]] = [
-            (game, script)
-            for game, scripts in ALL_SCRIPTS.items()
-            for script in scripts
-            if not script[1].is_symlink()
+            (game, script) for game, scripts in ALL_SCRIPTS.items() for script in scripts if not script[1].is_symlink()
         ]
         print(f"Test data collected. Total tests: {len(test_script_data)}")
         ids: list[str] = sorted([f"{game}_{script[0].identifier()}" for game, script in test_script_data])
@@ -223,6 +217,7 @@ def ensure_scripts_ready():
     if not ALL_SCRIPTS[Game.K1] and not ALL_SCRIPTS[Game.K2]:
         collect_all_scripts()
     extract_all_scripts()
+
 
 @pytest.fixture
 def script_data(request: pytest.FixtureRequest, ensure_scripts_ready):
@@ -375,6 +370,7 @@ def compile_with_abstract_compatible(
         if not ncs_path.is_file():
             # raise it so _handle_compile_exc can be used to reduce duplicated logging code.
             import errno
+
             raise FileNotFoundError(errno.ENOENT, f"Could not find NCS compiled script on disk, '{compiler_identifier}' compiler failed.", str(ncs_path))
 
     except Exception as e:  # pylint: disable=W0718  # noqa: BLE001
@@ -499,6 +495,7 @@ def test_bizarre_compiler(script_data: tuple[Game, tuple[FileResource, Path, Pat
             pytest.fail(f"Failed bizarre compilation, no NCS returned: '{working_dir.name}/{nss_path}'")
         if not ncs_path.is_file():
             import errno
+
             raise FileNotFoundError(errno.ENOENT, f"Could not find NCS compiled script on disk at '{working_dir.name}/{nss_path}', bizarre compiler failed.", str(ncs_path))
 
     except EntryPointError as e:

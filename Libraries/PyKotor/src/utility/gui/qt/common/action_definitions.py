@@ -104,7 +104,7 @@ ShortcutType = Union[QKeySequence, QKeySequence.StandardKey, Qt.Key, str, None]
 
 class ActionDefinition:
     """Declarative definition for a file explorer action.
-    
+
     This class provides a structured way to define QAction configurations
     for file explorer/browser applications. Each definition includes:
     - icon: Theme icon name (freedesktop.org icon naming spec)
@@ -146,24 +146,24 @@ class ActionDefinition:
 
 class FileExplorerActions:
     """Creates actions for a file browser/manager/explorer using declarative definitions.
-    
+
     This class provides a centralized registry of all actions used by file explorer
     widgets. Actions are defined declaratively in ACTION_DEFINITIONS and created
     on initialization.
-    
+
     Access actions via:
     - actionPropertyName - via @property accessors for backward compatibility
-    
+
     All action properties are explicitly defined (no __getattr__) for static type checking.
     """
 
     # =============================================================================
     # DECLARATIVE ACTION DEFINITIONS
     # =============================================================================
-    
+
     # Each ActionDefinition specifies a QAction's complete configuration.
     # Actions are grouped by category for organization.
-    
+
     ACTION_DEFINITIONS: dict[ActionKey, ActionDefinition] = {
         # =========================================================================
         # OPEN ACTIONS
@@ -177,7 +177,6 @@ class FileExplorerActions:
         ActionKey.PROPERTIES: ActionDefinition("document-properties", "Properties", "Alt+Return", "get_properties"),
         ActionKey.OPEN_TERMINAL: ActionDefinition("utilities-terminal", "Open Terminal", "Shift+F10", "open_terminal"),
         ActionKey.OPEN_IN_TERMINAL: ActionDefinition("utilities-terminal", "Open in Terminal", "Ctrl+Shift+T", "open_terminal", prepare_func="prepare_open_in_terminal"),
-        
         # =========================================================================
         # EDIT / CLIPBOARD ACTIONS
         # Cut, copy, paste and related clipboard operations
@@ -189,7 +188,6 @@ class FileExplorerActions:
         ActionKey.COPY_AS_PATH: ActionDefinition("edit-copy", "Copy as path", None, None, handler_func="copy_as_path"),
         ActionKey.PASTE_SHORTCUT: ActionDefinition("insert-link", "Paste Shortcut", "Ctrl+Shift+V", None, handler_func="paste_shortcut"),
         ActionKey.CREATE_SHORTCUT: ActionDefinition("insert-link", "Create Shortcut", None, "create_shortcut"),
-        
         # =========================================================================
         # ORGANIZE ACTIONS
         # Move, copy to, delete, rename operations
@@ -199,7 +197,6 @@ class FileExplorerActions:
         ActionKey.DELETE: ActionDefinition("edit-delete", "Delete", QKeySequence.StandardKey.Delete, "delete_items"),
         ActionKey.RENAME: ActionDefinition("edit-rename", "Rename", Qt.Key.Key_F2, "rename_item"),
         ActionKey.PIN_TO_QUICK_ACCESS: ActionDefinition("bookmark-new", "Pin to Quick access", "Ctrl+Q", None, handler_func="pin_to_quick_access"),
-        
         # =========================================================================
         # NEW ITEMS ACTIONS
         # Creating new folders, files, shortcuts
@@ -209,13 +206,11 @@ class FileExplorerActions:
         ActionKey.NEW_TEXT_DOCUMENT: ActionDefinition("document-new", "New Text Document", None, "new_text_document"),
         ActionKey.NEW_COMPRESSED_FOLDER: ActionDefinition("package-x-generic", "New Compressed Folder", None, "new_compressed_folder"),
         ActionKey.NEW_SHORTCUT: ActionDefinition("insert-link", "New Shortcut", None, "new_shortcut"),
-        
         # =========================================================================
         # EDIT ACTIONS
         # File editing operations
         # =========================================================================
         ActionKey.EDIT: ActionDefinition("document-edit", "Edit", None, None, handler_func="edit_file"),
-        
         # =========================================================================
         # SELECT ACTIONS
         # Selection management operations
@@ -223,37 +218,47 @@ class FileExplorerActions:
         ActionKey.SELECT_ALL: ActionDefinition("edit-select-all", "Select All", QKeySequence.StandardKey.SelectAll, None, handler_func="select_all"),
         ActionKey.SELECT_NONE: ActionDefinition("edit-select-none", "Select None", "Escape", None, handler_func="select_none"),
         ActionKey.INVERT_SELECTION: ActionDefinition("edit-select-all", "Invert Selection", "Ctrl+I", None, handler_func="invert_selection"),
-        
         # =========================================================================
         # VIEW MODE ACTIONS
         # Icon sizes and view layouts (matches Windows Explorer View tab)
         # =========================================================================
-        ActionKey.EXTRA_LARGE_ICONS: ActionDefinition("view-list-icons", "Extra large icons", "Ctrl+Shift+1", None, handler_func="set_view_mode", checkable=True, extra_kwargs={"mode": "extra_large"}),
-        ActionKey.LARGE_ICONS: ActionDefinition("view-list-icons", "Large icons", "Ctrl+Shift+2", None, handler_func="set_view_mode", checkable=True, extra_kwargs={"mode": "large"}),
-        ActionKey.MEDIUM_ICONS: ActionDefinition("view-list-icons", "Medium icons", "Ctrl+Shift+3", None, handler_func="set_view_mode", checkable=True, extra_kwargs={"mode": "medium"}),
-        ActionKey.SMALL_ICONS: ActionDefinition("view-list-icons", "Small icons", "Ctrl+Shift+4", None, handler_func="set_view_mode", checkable=True, extra_kwargs={"mode": "small"}),
+        ActionKey.EXTRA_LARGE_ICONS: ActionDefinition(
+            "view-list-icons", "Extra large icons", "Ctrl+Shift+1", None, handler_func="set_view_mode", checkable=True, extra_kwargs={"mode": "extra_large"}
+        ),
+        ActionKey.LARGE_ICONS: ActionDefinition(
+            "view-list-icons", "Large icons", "Ctrl+Shift+2", None, handler_func="set_view_mode", checkable=True, extra_kwargs={"mode": "large"}
+        ),
+        ActionKey.MEDIUM_ICONS: ActionDefinition(
+            "view-list-icons", "Medium icons", "Ctrl+Shift+3", None, handler_func="set_view_mode", checkable=True, extra_kwargs={"mode": "medium"}
+        ),
+        ActionKey.SMALL_ICONS: ActionDefinition(
+            "view-list-icons", "Small icons", "Ctrl+Shift+4", None, handler_func="set_view_mode", checkable=True, extra_kwargs={"mode": "small"}
+        ),
         ActionKey.LIST_VIEW: ActionDefinition("view-list-details", "List", "Ctrl+Shift+5", None, handler_func="set_view_mode", checkable=True, extra_kwargs={"mode": "list"}),
-        ActionKey.DETAIL_VIEW: ActionDefinition("view-list-tree", "Details", "Ctrl+Shift+6", None, handler_func="set_view_mode", checkable=True, extra_kwargs={"mode": "detail"}),
+        ActionKey.DETAIL_VIEW: ActionDefinition(
+            "view-list-tree", "Details", "Ctrl+Shift+6", None, handler_func="set_view_mode", checkable=True, extra_kwargs={"mode": "detail"}
+        ),
         ActionKey.TILES: ActionDefinition("view-list-icons", "Tiles", "Ctrl+Shift+7", None, handler_func="set_view_mode", checkable=True, extra_kwargs={"mode": "tiles"}),
         ActionKey.CONTENT: ActionDefinition("view-list-text", "Content", "Ctrl+Shift+8", None, handler_func="set_view_mode", checkable=True, extra_kwargs={"mode": "content"}),
-        
         # =========================================================================
         # PANES ACTIONS
         # Navigation pane, preview pane, details pane toggles
         # =========================================================================
-        ActionKey.NAVIGATION_PANE: ActionDefinition("view-sidetree", "Navigation Pane", "Ctrl+Shift+E", None, handler_func="toggle_navigation_pane", checkable=True, checked=True),
+        ActionKey.NAVIGATION_PANE: ActionDefinition(
+            "view-sidetree", "Navigation Pane", "Ctrl+Shift+E", None, handler_func="toggle_navigation_pane", checkable=True, checked=True
+        ),
         ActionKey.PREVIEW_PANE: ActionDefinition("view-preview", "Preview Pane", "Alt+P", None, handler_func="toggle_preview_pane", checkable=True),
         ActionKey.DETAILS_PANE: ActionDefinition("view-list-tree", "Details Pane", "Alt+Shift+P", None, handler_func="toggle_details_pane", checkable=True),
-        
         # =========================================================================
         # SHOW/HIDE ACTIONS
         # Toggle visibility of hidden files, extensions, etc.
         # =========================================================================
         ActionKey.SHOW_HIDDEN_FILES: ActionDefinition("view-hidden", "Hidden Items", "Ctrl+H", None, handler_func="toggle_hidden_files", checkable=True),
         ActionKey.SHOW_HIDE_HIDDEN_ITEMS: ActionDefinition("view-hidden", "Show/Hide Hidden Items", "Ctrl+H", None, handler_func="toggle_hidden_items", checkable=True),
-        ActionKey.SHOW_FILE_EXTENSIONS: ActionDefinition("view-list-details", "File Name Extensions", None, None, handler_func="toggle_file_extensions", checkable=True, checked=True),
+        ActionKey.SHOW_FILE_EXTENSIONS: ActionDefinition(
+            "view-list-details", "File Name Extensions", None, None, handler_func="toggle_file_extensions", checkable=True, checked=True
+        ),
         ActionKey.SHOW_ITEM_CHECKBOXES: ActionDefinition("checkbox", "Item Check Boxes", None, None, handler_func="toggle_item_checkboxes", checkable=True),
-        
         # =========================================================================
         # SORT ACTIONS
         # Sorting options matching Windows Explorer
@@ -268,7 +273,6 @@ class FileExplorerActions:
         ActionKey.SORT_BY_TAGS: ActionDefinition("view-sort", "Tags", None, None, handler_func="sort_by_tags", checkable=True),
         ActionKey.SORT_ASCENDING: ActionDefinition("view-sort-ascending", "Ascending", None, None, handler_func="sort_ascending", checkable=True, checked=True),
         ActionKey.SORT_DESCENDING: ActionDefinition("view-sort-descending", "Descending", None, None, handler_func="sort_descending", checkable=True),
-        
         # =========================================================================
         # GROUP ACTIONS
         # Grouping options
@@ -280,7 +284,6 @@ class FileExplorerActions:
         ActionKey.GROUP_BY_DATE_MODIFIED: ActionDefinition("view-list-text", "Date modified", None, None, handler_func="group_by_date_modified", checkable=True),
         ActionKey.GROUP_BY_TYPE: ActionDefinition("view-list-text", "Type", None, None, handler_func="group_by_type", checkable=True),
         ActionKey.GROUP_BY_SIZE: ActionDefinition("view-list-text", "Size", None, None, handler_func="group_by_size", checkable=True),
-        
         # =========================================================================
         # SHARE TAB ACTIONS
         # Share, email, compress, print
@@ -297,7 +300,6 @@ class FileExplorerActions:
         ActionKey.ADD_TO_ARCHIVE: ActionDefinition("package-x-generic", "Add to Archive", None, "add_to_archive"),
         ActionKey.PRINT: ActionDefinition("document-print", "Print", QKeySequence.StandardKey.Print, None, handler_func="print_items"),
         ActionKey.BURN_TO_DISC: ActionDefinition("media-optical-burn", "Burn to disc", None, "burn_to_disc"),
-        
         # =========================================================================
         # NAVIGATION ACTIONS
         # Back, forward, up, refresh
@@ -306,7 +308,6 @@ class FileExplorerActions:
         ActionKey.GO_FORWARD: ActionDefinition("go-next", "Forward", QKeySequence.StandardKey.Forward, None, handler_func="go_forward"),
         ActionKey.GO_UP: ActionDefinition("go-up", "Up", "Alt+Up", None, handler_func="go_up"),
         ActionKey.REFRESH: ActionDefinition("view-refresh", "Refresh", QKeySequence.StandardKey.Refresh, None, handler_func="refresh_view"),
-        
         # =========================================================================
         # OPTIONS/SETTINGS ACTIONS
         # Configuration dialogs
@@ -316,7 +317,6 @@ class FileExplorerActions:
         ActionKey.PERSONALIZE: ActionDefinition("preferences-system", "Personalize", None, "personalize"),
         ActionKey.DISPLAY_SETTINGS: ActionDefinition("preferences-system-display", "Display Settings", None, "display_settings"),
         ActionKey.CUSTOMIZE_CONTEXT_MENU: ActionDefinition("configure", "Customize Context Menu", "Ctrl+Shift+X", None, handler_func="prepare_customize_context_menu"),
-        
         # =========================================================================
         # ADVANCED UTILITY ACTIONS
         # Power user features
@@ -326,7 +326,6 @@ class FileExplorerActions:
         ActionKey.PERMISSIONS_EDITOR: ActionDefinition("document-edit-sign", "Edit File Permissions", None, "edit_permissions", prepare_func="prepare_permissions_editor"),
         ActionKey.FILE_SHREDDER: ActionDefinition("edit-delete-shred", "Securely Delete Files", "Ctrl+Shift+Del", "shred_files", prepare_func="prepare_file_shredder"),
         ActionKey.FILE_COMPARISON: ActionDefinition("document-compare", "Compare Files", "Ctrl+Shift+M", "compare_files", prepare_func="prepare_file_comparison"),
-        
         # =========================================================================
         # UNDO/REDO ACTIONS
         # =========================================================================
@@ -504,7 +503,7 @@ class FileExplorerActions:
     # =========================================================================
     # SHOW/HIDE ACTION PROPERTIES
     # =========================================================================
-    
+
     @property
     def actionShowHiddenFiles(self) -> QAction:
         return self.actions[ActionKey.SHOW_HIDDEN_FILES]
@@ -524,7 +523,7 @@ class FileExplorerActions:
     # =========================================================================
     # SORT ACTION PROPERTIES
     # =========================================================================
-    
+
     @property
     def actionSortByName(self) -> QAction:
         return self.actions[ActionKey.SORT_BY_NAME]
@@ -568,7 +567,7 @@ class FileExplorerActions:
     # =========================================================================
     # GROUP ACTION PROPERTIES
     # =========================================================================
-    
+
     @property
     def actionGroupByNone(self) -> QAction:
         return self.actions[ActionKey.GROUP_BY_NONE]
@@ -600,7 +599,7 @@ class FileExplorerActions:
     # =========================================================================
     # SHARE TAB ACTION PROPERTIES
     # =========================================================================
-    
+
     @property
     def actionShare(self) -> QAction:
         return self.actions[ActionKey.SHARE]
@@ -652,7 +651,7 @@ class FileExplorerActions:
     # =========================================================================
     # NAVIGATION ACTION PROPERTIES
     # =========================================================================
-    
+
     @property
     def actionGoBack(self) -> QAction:
         return self.actions[ActionKey.GO_BACK]
@@ -672,7 +671,7 @@ class FileExplorerActions:
     # =========================================================================
     # NEW ITEM ACTION PROPERTIES
     # =========================================================================
-    
+
     @property
     def actionNewFolder(self) -> QAction:
         return self.actions[ActionKey.NEW_FOLDER]
@@ -696,7 +695,7 @@ class FileExplorerActions:
     # =========================================================================
     # UNDO/REDO ACTION PROPERTIES
     # =========================================================================
-    
+
     @property
     def actionUndo(self) -> QAction:
         return self.actions[ActionKey.UNDO]
@@ -708,7 +707,7 @@ class FileExplorerActions:
     # =========================================================================
     # ADVANCED UTILITY ACTION PROPERTIES
     # =========================================================================
-    
+
     @property
     def actionDuplicateFinder(self) -> QAction:
         return self.actions[ActionKey.DUPLICATE_FINDER]

@@ -7,8 +7,7 @@ if TYPE_CHECKING:
     from typing_extensions import Literal, Self  # pyright: ignore[reportMissingModuleSource]
 
 
-class Win32OSError(OSError):
-    ...
+class Win32OSError(OSError): ...
 
 
 class HRESULT(ctypesHRESULT):
@@ -113,9 +112,7 @@ class HRESULT(ctypesHRESULT):
         99: "FACILITY_USERMODE_DNS_SERVER_WEB3",
     }
 
-    def __new__(
-        cls, value: HRESULT | ctypesHRESULT | int | c_long | None = None
-    ) -> Self:
+    def __new__(cls, value: HRESULT | ctypesHRESULT | int | c_long | None = None) -> Self:
         if value is None:
             converted_value = 0
         elif isinstance(value, int):
@@ -161,12 +158,7 @@ class HRESULT(ctypesHRESULT):
         severity_str: Literal["Success", "Failure"] = "Success" if severity == 0 else "Failure"
         facility_str: str = HRESULT.FACILITY_CODES.get(facility, "Unknown Facility")
 
-        return (
-            f"HRESULT: 0x{self:08X}\n"
-            f"Severity: {severity_str}\n"
-            f"Facility: {facility_str} ({facility})\n"
-            f"Code: 0x{code:04X} ({code})"
-        )
+        return f"HRESULT: 0x{self:08X}\nSeverity: {severity_str}\nFacility: {facility_str} ({facility})\nCode: 0x{code:04X} ({code})"
 
     def __str__(self):
         return str(self.to_hresult(self.value))
@@ -174,9 +166,7 @@ class HRESULT(ctypesHRESULT):
     def __repr__(self):
         return f"{self.__class__.__name__}({self.value})"
 
-    def __eq__(
-        self, other: object | int | ctypesHRESULT
-    ) -> bool:  # sourcery skip: assign-if-exp, reintroduce-else
+    def __eq__(self, other: object | int | ctypesHRESULT) -> bool:  # sourcery skip: assign-if-exp, reintroduce-else
         if not isinstance(other, int) and (not hasattr(other, "value") or not isinstance(other.value, int)):
             return NotImplemented  # type: ignore[no-any-return]
         if isinstance(other, (HRESULT, ctypesHRESULT, c_long)):
@@ -187,9 +177,7 @@ class HRESULT(ctypesHRESULT):
             return NotImplemented  # type: ignore[no-any-return]
         return self.value == other_int
 
-    def __ne__(
-        self, other: object | HRESULT | ctypesHRESULT | int | c_long
-    ) -> bool:  # sourcery skip: assign-if-exp, reintroduce-else
+    def __ne__(self, other: object | HRESULT | ctypesHRESULT | int | c_long) -> bool:  # sourcery skip: assign-if-exp, reintroduce-else
         if not isinstance(other, int) and (not hasattr(other, "value") or not isinstance(other.value, int)):
             return NotImplemented  # type: ignore[no-any-return]
         if isinstance(other, (HRESULT, ctypesHRESULT, c_long)):
@@ -215,17 +203,13 @@ class HRESULT(ctypesHRESULT):
         other_int = self.to_hresult(other.value if isinstance(other, (HRESULT, ctypesHRESULT, c_long)) else other)
         return self.value % other_int
 
-    def __divmod__(
-        self, other: HRESULT | ctypesHRESULT | int | c_long
-    ) -> tuple[int, int]:
+    def __divmod__(self, other: HRESULT | ctypesHRESULT | int | c_long) -> tuple[int, int]:
         if not isinstance(other, int) and (not hasattr(other, "value") or not isinstance(other.value, int)):
             return NotImplemented  # type: ignore[no-any-return]
         other_int = self.to_hresult(other.value if isinstance(other, (HRESULT, ctypesHRESULT, c_long)) else other)
         return divmod(self.value, other_int)
 
-    def __pow__(
-        self, other: HRESULT | ctypesHRESULT | int | c_long, mod: int | None = None
-    ) -> int:
+    def __pow__(self, other: HRESULT | ctypesHRESULT | int | c_long, mod: int | None = None) -> int:
         if not isinstance(other, int) and (not hasattr(other, "value") or not isinstance(other.value, int)):
             return NotImplemented  # type: ignore[no-any-return]
         other_int = self.to_hresult(other.value if isinstance(other, (HRESULT, ctypesHRESULT, c_long)) else other)
@@ -239,9 +223,7 @@ class HRESULT(ctypesHRESULT):
         other_int = self.to_hresult(other.value if isinstance(other, (HRESULT, ctypesHRESULT, c_long)) else other)
         return other_int % self.to_hresult(self.value)
 
-    def __rdivmod__(
-        self, other: HRESULT | ctypesHRESULT | int | c_long
-    ) -> tuple[int, int]:
+    def __rdivmod__(self, other: HRESULT | ctypesHRESULT | int | c_long) -> tuple[int, int]:
         if not isinstance(other, int) and (not hasattr(other, "value") or not isinstance(other.value, int)):
             return NotImplemented  # type: ignore[no-any-return]
         other_int = self.to_hresult(other.value if isinstance(other, (HRESULT, ctypesHRESULT, c_long)) else other)
@@ -384,7 +366,6 @@ class HRESULT(ctypesHRESULT):
         return hresult
 
 
-
 def decode_hresult(hresult: HRESULT | int) -> str:
     if isinstance(hresult, HRESULT):
         hresult = hresult.value
@@ -395,12 +376,7 @@ def decode_hresult(hresult: HRESULT | int) -> str:
     severity_str: Literal["Success", "Failure"] = "Success" if severity == 0 else "Failure"
     facility_str = HRESULT.FACILITY_CODES.get(facility, "Unknown Facility")
 
-    return (
-        f"HRESULT: 0x{HRESULT.to_hresult(hresult):08X}\n"
-        f"Severity: {severity_str}\n"
-        f"Facility: {facility_str} ({facility})\n"
-        f"Code: 0x{code:04X} ({code})"
-    )
+    return f"HRESULT: 0x{HRESULT.to_hresult(hresult):08X}\nSeverity: {severity_str}\nFacility: {facility_str} ({facility})\nCode: 0x{code:04X} ({code})"
 
 
 def print_hresult(hresult: HRESULT | int) -> None:
@@ -415,6 +391,7 @@ def hresult_to_winerror(hresult: int) -> int:
 def winerror_to_hresult(winerror: int) -> int:
     """Convert a WinError value to the corresponding positive HRESULT value."""
     return winerror + 0x100000000 if winerror < 0 else winerror
+
 
 S_OK = HRESULT(0)
 S_FALSE = HRESULT(1)

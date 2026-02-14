@@ -154,9 +154,7 @@ def test_error_handling_in_declarative_actions(qapp, temp_dir: Path):
 
     # Test invalid action (should not crash)
     # Since we dynamically look up methods, invalid ones should be handled gracefully
-    invalid_definition = ActionDefinition(
-        "invalid", "invalid-icon", "Invalid", None, "nonexistent_operation"
-    )
+    invalid_definition = ActionDefinition("invalid", "invalid-icon", "Invalid", None, "nonexistent_operation")
 
     # This should not crash, though it may not do anything
     try:
@@ -217,9 +215,7 @@ def test_async_flags_in_definitions():
     file_ops = ["open", "delete", "copy", "rename"]
     for op in file_ops:
         if op in actions.actions:
-            definition = next(
-                (d for d in actions.ACTION_DEFINITIONS if d.name == op), None
-            )
+            definition = next((d for d in actions.ACTION_DEFINITIONS if d.name == op), None)
             if definition:
                 # Most file operations should be async
                 assert definition.async_operation

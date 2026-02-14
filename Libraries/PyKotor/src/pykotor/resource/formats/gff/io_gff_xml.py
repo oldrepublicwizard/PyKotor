@@ -30,10 +30,10 @@ if TYPE_CHECKING:
 
 class GFFXMLReader(ResourceReader):
     """Reads GFF files from XML format.
-    
+
     XML is a human-readable format used by xoreos-tools and other modding tools.
     Provides easier editing than binary GFF format.
-    
+
     References:
     ----------
         Based on swkotor.exe GFF structure:
@@ -41,12 +41,13 @@ class GFFXMLReader(ResourceReader):
         - CResGFF::WriteGFFFile @ 0x00413030 - Writes GFF data to file
         - CResGFF::WriteGFFData @ 0x004113d0 - Writes GFF header and data sections
         - GFFVersion string "V3.2" @ 0x0073e2c8 - Hardcoded GFF version identifier
-        
+
         Note: XML format is PyKotor-specific conversion format, not a standard game format.
         The engine uses binary GFF format exclusively. XML conversion allows easier editing
         and integration with external tools like xoreos-tools.
 
     """
+
     def __init__(
         self,
         source: SOURCE_TYPES,
@@ -111,11 +112,7 @@ class GFFXMLReader(ResourceReader):
             gff_struct.set_resref(label, ResRef(xml_field.text or ""))
         elif xml_field.tag == "locstring":
             locstring = LocalizedString(-1)
-            locstring.stringref = (
-                -1
-                if xml_field.get("strref") == "4294967295"
-                else int(xml_field.get("strref") or -1)
-            )
+            locstring.stringref = -1 if xml_field.get("strref") == "4294967295" else int(xml_field.get("strref") or -1)
             for substring in xml_field:
                 language, gender = LocalizedString.substring_pair(
                     int(substring.get("language", 0)),

@@ -49,20 +49,14 @@ class Interpreter:
     # This is set to a high value to accommodate complex scripts while still providing protection
     DEFAULT_MAX_INSTRUCTIONS = 100_000
 
-    def __init__(
-        self, ncs: NCS, game: Game = Game.K1, max_instructions: int | None = None
-    ):
+    def __init__(self, ncs: NCS, game: Game = Game.K1, max_instructions: int | None = None):
         self._ncs: NCS = ncs
         self._cursor: NCSInstruction | None = ncs.instructions[0]
         self._cursor_index: int = 0
-        self._functions: list[ScriptFunction] = (
-            KOTOR_FUNCTIONS if game == Game.K1 else TSL_FUNCTIONS
-        )
+        self._functions: list[ScriptFunction] = KOTOR_FUNCTIONS if game == Game.K1 else TSL_FUNCTIONS
 
         # Precompute instruction index lookup to avoid reliance on equality semantics
-        self._instruction_indices: dict[int, int] = {
-            id(instruction): idx for idx, instruction in enumerate(ncs.instructions)
-        }
+        self._instruction_indices: dict[int, int] = {id(instruction): idx for idx, instruction in enumerate(ncs.instructions)}
 
         self._stack: Stack = Stack()
         self._returns: list[tuple[NCSInstruction, int]] = []
@@ -73,31 +67,27 @@ class Interpreter:
         self.action_snapshots: list[ActionSnapshot] = []
 
         # Instruction execution limit
-        self._max_instructions: int = (
-            max_instructions
-            if max_instructions is not None
-            else self.DEFAULT_MAX_INSTRUCTIONS
-        )
+        self._max_instructions: int = max_instructions if max_instructions is not None else self.DEFAULT_MAX_INSTRUCTIONS
         self._instructions_executed: int = 0
 
     def step_execute(self) -> bool:
         """Execute a single instruction and return whether execution should continue.
-        
+
         This method extracts the core instruction execution logic from run() to allow
         step-by-step execution for debugging. Returns True if execution should continue,
         False if execution is complete or should stop.
-        
+
         Returns:
         -------
             bool: True if more instructions remain, False if execution finished
-            
+
         Raises:
         ------
             RuntimeError: If the instruction limit is exceeded (possible infinite loop detected).
         """
         if self._cursor is None:
             return False
-            
+
         # Check instruction limit to prevent infinite loops
         if self._instructions_executed >= self._max_instructions:
             log.error(
@@ -318,9 +308,7 @@ class Interpreter:
 
         elif cursor.ins_type == NCSInstructionType.JSR:
             index_return_to = index + 1
-            return_to: NCSInstruction | None = self._ncs.instructions[
-                index_return_to
-            ]
+            return_to: NCSInstruction | None = self._ncs.instructions[index_return_to]
             self._returns.append((return_to, index_return_to))
 
         elif cursor.ins_type in {
@@ -345,9 +333,7 @@ class Interpreter:
                 return False
             return_to, return_index = return_info
             if not isinstance(return_to, NCSInstruction):
-                msg = (
-                    f"Return instruction RETN at index {index} has no return target"
-                )
+                msg = f"Return instruction RETN at index {index} has no return target"
                 raise RuntimeError(msg)
             self._set_cursor(return_to, return_index)
             return True
@@ -375,7 +361,7 @@ class Interpreter:
                 self._cursor_index = -1
                 return False
             self._set_cursor(self._ncs.instructions[index + 1], index + 1)
-        
+
         return True
 
     def run(self):
@@ -428,16 +414,13 @@ class Interpreter:
             ValueError: If argument count or types don't match function signature
         """
         if args != len(function.params):
-            msg = (
-                f"Action '{function.name}' called with {args} arguments "
-                f"but expects {len(function.params)} parameters"
-            )
+            msg = f"Action '{function.name}' called with {args} arguments but expects {len(function.params)} parameters"
             raise ValueError(msg)
 
         # DEBUG: Log stack state before popping arguments
         print(f"DEBUG do_action: function={function.name}, args={args}")
         print(f"DEBUG do_action: stack before pop: {[f'{obj.data_type.name}={obj.value}' for obj in self._stack.state()[-10:]]}")
-        
+
         args_snap = []
 
         # Pop arguments from stack in reverse order (last param popped first)
@@ -466,19 +449,17 @@ class Interpreter:
                 try:
                     args_snap.append(self._stack.pop())
                 except IndexError as e:
-                    msg = (
-                        f"Stack underflow while popping argument for '{function.name}'"
-                    )
+                    msg = f"Stack underflow while popping argument for '{function.name}'"
                     raise RuntimeError(msg) from e
 
         # DEBUG: Log args_snap before reverse
         print(f"DEBUG: args_snap before reverse: {[f'{obj.data_type.name}={obj.value}' for obj in args_snap]}")
-        
+
         # We compiled arguments in reverse order (last first), so when we pop them (last-in-first-out),
         # args_snap[0] is the last parameter and args_snap[-1] is the first parameter.
         # We need to reverse to match function.params order (first parameter at index 0).
         args_snap.reverse()
-        
+
         # DEBUG: Log args_snap after reverse and function params
         print(f"DEBUG: args_snap after reverse: {[f'{obj.data_type.name}={obj.value}' for obj in args_snap]}")
         print(f"DEBUG: function.params: {[(p.name, p.datatype.name) for p in function.params]}")
@@ -522,11 +503,7 @@ class Interpreter:
 
     def set_mock(self, function_name: str, mock: Callable):
         function = next(
-            (
-                function
-                for function in self._functions
-                if function.name == function_name
-            ),
+            (function for function in self._functions if function.name == function_name),
             None,
         )
 
@@ -752,9 +729,7 @@ class StackV2:
                 raise ValueError(msg)
             float_value = float(value)
             self._stack.extend(struct.pack("f", float_value))
-            log.debug(
-                "StackV2 added FLOAT: %s (bytes: %s)", float_value, len(self._stack)
-            )
+            log.debug("StackV2 added FLOAT: %s (bytes: %s)", float_value, len(self._stack))
 
         elif datatype in {
             DataType.STRING,
@@ -779,9 +754,7 @@ class StackV2:
             # Actions are special non-primitive types used for delayed execution
             handle = self._object_heap.allocate(value, datatype)
             self._stack.extend(struct.pack("I", handle))
-            log.debug(
-                "StackV2 added ACTION: handle=%s (bytes: %s)", handle, len(self._stack)
-            )
+            log.debug("StackV2 added ACTION: handle=%s (bytes: %s)", handle, len(self._stack))
 
         elif datatype == DataType.VECTOR:
             # Vectors are stored as three consecutive floats (12 bytes)
@@ -849,9 +822,7 @@ class StackV2:
             value_bytes = self._stack[-4:]
             self._stack = self._stack[:-4]
             value = struct.unpack("i", value_bytes)[0]
-            log.debug(
-                "StackV2 popped INT: %s (bytes remaining: %s)", value, len(self._stack)
-            )
+            log.debug("StackV2 popped INT: %s (bytes remaining: %s)", value, len(self._stack))
             return value
 
         if datatype == DataType.FLOAT:
@@ -1015,9 +986,7 @@ class Stack:
         self._stack: list[StackObject] = []
         self._bp: int = 0
         self._bp_buffer: list[int] = []
-        self._global_bp: int = (
-            0  # BP value for accessing globals (set after global initialization)
-        )
+        self._global_bp: int = 0  # BP value for accessing globals (set after global initialization)
 
     def state(self) -> list:
         return copy(self._stack)
@@ -1103,9 +1072,7 @@ class Stack:
         absolute_index = bp_index - relative_index
 
         if absolute_index < 0 or absolute_index >= len(self._stack):
-            msg = (
-                f"BP-relative offset {offset} results in invalid index {absolute_index}"
-            )
+            msg = f"BP-relative offset {offset} results in invalid index {absolute_index}"
             raise ValueError(msg)
 
         return absolute_index
@@ -1124,20 +1091,20 @@ class Stack:
         # DEBUG: Log copy_to_top params and stack state
         print(f"DEBUG copy_to_top: offset={offset}, size={size}, stack_len={len(self._stack)}, bp={self._bp}")
         print(f"DEBUG copy_to_top: stack_contents={[f'{obj.data_type.name}={obj.value}' for obj in self._stack]}")
-        
+
         if size <= 0 or size % 4 != 0:
             msg = f"Size must be a positive multiple of 4, got {size}"
             raise ValueError(msg)
         if offset == 0 or offset % 4 != 0:
             msg = f"Offset must be a non-zero multiple of 4, got {offset}"
             raise ValueError(msg)
-        
+
         # CPTOPSP can reference beyond current stack when accessing globals via base pointer
         # So we need a more flexible approach:
         # 1. If stack is empty, we can't copy anything
         # 2. Try to copy from the specified offset, but don't fail if offset > stack size
         #    as this might be accessing globals via BP
-        
+
         if not self._stack:
             # Empty stack - check if this is trying to access globals via BP
             # In that case, we should just push default values
@@ -1149,7 +1116,7 @@ class Stack:
 
         offset_abs = abs(offset)
         total_bytes = sum(obj.data_type.size() for obj in self._stack)
-        
+
         # If offset exceeds stack size, this might be accessing uninit globals - push defaults
         if offset_abs > total_bytes:
             print(f"DEBUG copy_to_top: offset {offset} exceeds stack size {total_bytes}, pushing defaults")
@@ -1206,9 +1173,7 @@ class Stack:
         # Now copy the elements down the stack
         for i in range(num_elements):
             source_index = -1 - i  # Counting from the end of the list
-            target_index = target_indices[
-                -1 - i
-            ]  # The last target index corresponds to the first source index
+            target_index = target_indices[-1 - i]  # The last target index corresponds to the first source index
             self._stack[target_index] = self._stack[source_index]
 
     def pop(self) -> Any:
@@ -1254,7 +1219,7 @@ class Stack:
         if not self._stack:
             print(f"DEBUG: move() called with offset={offset} on empty stack, treating as no-op")
             return
-            
+
         remove_to = self._stack_index(offset)
         self._stack = self._stack[:remove_to]
 
@@ -1324,16 +1289,10 @@ class Stack:
             raise IndexError(msg)
         saved_bp = self._stack.pop()
         if saved_bp.data_type != DataType.INT:
-            msg = (
-                "Encountered non-integer value while restoring base pointer; "
-                f"found {saved_bp.data_type}"
-            )
+            msg = f"Encountered non-integer value while restoring base pointer; found {saved_bp.data_type}"
             raise TypeError(msg)
         if not isinstance(saved_bp.value, int):
-            msg = (
-                "Base pointer restore requires integer value "
-                f"but received {type(saved_bp.value)}"
-            )
+            msg = f"Base pointer restore requires integer value but received {type(saved_bp.value)}"
             raise TypeError(msg)
         self._bp = saved_bp.value
         if self._bp_buffer:
@@ -1446,7 +1405,7 @@ class Stack:
             self.add(DataType.FLOAT, y1 + y2)
             self.add(DataType.FLOAT, z1 + z2)
             return
-            
+
         if len(self._stack) < 2:
             msg = "Stack underflow in addition operation"
             raise IndexError(msg)
@@ -1454,9 +1413,7 @@ class Stack:
         index2 = -2  # second from top
         value1 = copy(self._stack[index1])
         value2 = copy(self._stack[index2])
-        if isinstance(value1.value, (int, float)) and isinstance(
-            value2.value, (int, float)
-        ):
+        if isinstance(value1.value, (int, float)) and isinstance(value2.value, (int, float)):
             result = value2.value + value1.value
             self._stack.pop()
             self._stack.pop()
@@ -1476,10 +1433,7 @@ class Stack:
             self._stack.pop()
             self.add(DataType.STRING, result)
             return
-        msg = (
-            "Addition requires numeric or string operands; got "
-            f"{value2.data_type.name} and {value1.data_type.name}"
-        )
+        msg = f"Addition requires numeric or string operands; got {value2.data_type.name} and {value1.data_type.name}"
         raise TypeError(msg)
 
     def subtraction_op(self, instruction_type: NCSInstructionType | None = None):
@@ -1501,7 +1455,7 @@ class Stack:
             self.add(DataType.FLOAT, y1 - y2)
             self.add(DataType.FLOAT, z1 - z2)
             return
-            
+
         if len(self._stack) < 2:
             msg = "Stack underflow in subtraction operation"
             raise IndexError(msg)
@@ -1509,9 +1463,7 @@ class Stack:
         index2 = -2
         value1 = copy(self._stack[index1])
         value2 = copy(self._stack[index2])
-        if not isinstance(value1.value, (int, float)) or not isinstance(
-            value2.value, (int, float)
-        ):
+        if not isinstance(value1.value, (int, float)) or not isinstance(value2.value, (int, float)):
             msg = "Subtraction requires numeric operands"
             raise TypeError(msg)
         result = value2.value - value1.value
@@ -1552,7 +1504,7 @@ class Stack:
             self.add(DataType.FLOAT, y * scalar)
             self.add(DataType.FLOAT, z * scalar)
             return
-            
+
         if len(self._stack) < 2:
             msg = "Stack underflow in multiplication operation"
             raise IndexError(msg)
@@ -1560,9 +1512,7 @@ class Stack:
         index2 = -2
         value1 = copy(self._stack[index1])
         value2 = copy(self._stack[index2])
-        if not isinstance(value1.value, (int, float)) or not isinstance(
-            value2.value, (int, float)
-        ):
+        if not isinstance(value1.value, (int, float)) or not isinstance(value2.value, (int, float)):
             msg = "Multiplication requires numeric operands"
             raise TypeError(msg)
         result = value2.value * value1.value
@@ -1591,7 +1541,7 @@ class Stack:
             self.add(DataType.FLOAT, y / scalar)
             self.add(DataType.FLOAT, z / scalar)
             return
-            
+
         if len(self._stack) < 2:
             msg = "Stack underflow in division operation"
             raise IndexError(msg)
@@ -1599,9 +1549,7 @@ class Stack:
         index2 = -2
         value1 = copy(self._stack[index1])
         value2 = copy(self._stack[index2])
-        if not isinstance(value1.value, (int, float)) or not isinstance(
-            value2.value, (int, float)
-        ):
+        if not isinstance(value1.value, (int, float)) or not isinstance(value2.value, (int, float)):
             msg = "Division requires numeric operands"
             raise TypeError(msg)
         if value1.value == 0:
@@ -1624,9 +1572,7 @@ class Stack:
         index2 = -2
         value1 = copy(self._stack[index1])
         value2 = copy(self._stack[index2])
-        if not isinstance(value1.value, (int, float)) or not isinstance(
-            value2.value, (int, float)
-        ):
+        if not isinstance(value1.value, (int, float)) or not isinstance(value2.value, (int, float)):
             msg = "Modulus requires numeric operands"
             raise TypeError(msg)
         if value1.value == 0:
@@ -1787,6 +1733,7 @@ class Stack:
         # Perform unsigned right shift by treating value2 as unsigned
         # Python doesn't have >>> operator, so we use ctypes or manual conversion
         import ctypes
+
         unsigned_value2 = ctypes.c_uint32(value2.value).value
         result = (unsigned_value2 >> value1.value) & 0xFFFFFFFF
         # Convert back to signed int if needed (handle sign extension)
@@ -1801,9 +1748,7 @@ class Stack:
             raise IndexError(msg)
         value1 = self._stack.pop()
         value2 = self._stack.pop()
-        if not isinstance(value2.value, (int, float)) or not isinstance(
-            value1.value, (int, float)
-        ):
+        if not isinstance(value2.value, (int, float)) or not isinstance(value1.value, (int, float)):
             msg = "Comparison requires numeric operands"
             raise TypeError(msg)
         result = 1 if value2.value > value1.value else 0
@@ -1816,9 +1761,7 @@ class Stack:
             raise IndexError(msg)
         value1 = self._stack.pop()
         value2 = self._stack.pop()
-        if not isinstance(value2.value, (int, float)) or not isinstance(
-            value1.value, (int, float)
-        ):
+        if not isinstance(value2.value, (int, float)) or not isinstance(value1.value, (int, float)):
             msg = "Comparison requires numeric operands"
             raise TypeError(msg)
         result = 1 if value2.value >= value1.value else 0
@@ -1831,9 +1774,7 @@ class Stack:
             raise IndexError(msg)
         value1 = self._stack.pop()
         value2 = self._stack.pop()
-        if not isinstance(value2.value, (int, float)) or not isinstance(
-            value1.value, (int, float)
-        ):
+        if not isinstance(value2.value, (int, float)) or not isinstance(value1.value, (int, float)):
             msg = "Comparison requires numeric operands"
             raise TypeError(msg)
         result = 1 if value2.value < value1.value else 0
@@ -1846,9 +1787,7 @@ class Stack:
             raise IndexError(msg)
         value1 = self._stack.pop()
         value2 = self._stack.pop()
-        if not isinstance(value2.value, (int, float)) or not isinstance(
-            value1.value, (int, float)
-        ):
+        if not isinstance(value2.value, (int, float)) or not isinstance(value1.value, (int, float)):
             msg = "Comparison requires numeric operands"
             raise TypeError(msg)
         result = 1 if value2.value <= value1.value else 0

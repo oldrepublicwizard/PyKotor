@@ -24,7 +24,7 @@ def hex_dump(data: bytes, start: int, end: int, label: str):
     """Print hex dump with field annotations."""
     print(f"\n=== {label} (0x{start:04X}-0x{end:04X}) ===")
     for i in range(start, end, 16):
-        chunk = data[i:min(i+16, end)]
+        chunk = data[i : min(i + 16, end)]
         hex_str = " ".join(f"{b:02X}" for b in chunk)
         ascii_str = "".join(chr(b) if 32 <= b < 127 else "." for b in chunk)
         print(f"  {i:04X}: {hex_str:<48} {ascii_str}")
@@ -87,14 +87,14 @@ def main():
         # Decode specific fields (all offsets are file-relative after 12-byte file header)
         # File header: 0x00-0x0B (12 bytes)
         # Geometry header starts at 0x0C
-        
+
         print("\n=== Key Fields ===")
         print(f"{'Field':<40} {'Orig':<15} {'PyKotor':<15} {'MDLOps':<15}")
-        
+
         # File header
         for name, off in [("MDL Size", 4), ("MDX Size", 8)]:
             print(f"{name:<40} {get_uint32(orig_mdl, off):<15} {get_uint32(pykotor_mdl, off):<15} {get_uint32(mdlops_mdl, off):<15}")
-        
+
         # Geometry header (starts at 0x0C = 12)
         base = 12
         for name, rel_off in [
@@ -105,7 +105,7 @@ def main():
         ]:
             off = base + rel_off
             print(f"{name:<40} {get_uint32(orig_mdl, off):<15} {get_uint32(pykotor_mdl, off):<15} {get_uint32(mdlops_mdl, off):<15}")
-        
+
         # Model header fields (after geometry header which is 48 bytes)
         model_header_base = 12 + 48  # = 60
         for name, rel_off in [
@@ -120,7 +120,7 @@ def main():
         ]:
             off = model_header_base + rel_off
             print(f"{name} (file offset {off})"[:40].ljust(40) + f" {get_uint32(orig_mdl, off):<15} {get_uint32(pykotor_mdl, off):<15} {get_uint32(mdlops_mdl, off):<15}")
-        
+
         # Show bytes around the name header area (around 0xB0-0xC0)
         print("\n--- Bytes 0xA0-0xC4 (name header area) ---")
         for label, data in [("Original", orig_mdl), ("PyKotor", pykotor_mdl), ("MDLOps", mdlops_mdl)]:
@@ -132,4 +132,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-

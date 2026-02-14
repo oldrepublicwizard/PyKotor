@@ -15,34 +15,34 @@ if TYPE_CHECKING:
 
 class UTM:
     """Stores merchant data.
-    
+
     UTM (User Template Merchant) files define merchant/store blueprints. Stored as GFF format
     with inventory, pricing, and script references. Merchants use UTM templates to define
     their inventory, buy/sell capabilities, and markup/down rates.
 
     References:
     ----------
-        KotOR I (swkotor.exe):
-            - 0x005c7180 - CSWSStore::LoadStore (1116 bytes, 189 lines)
-                - Main UTM GFF parser entry point
-                - Reads Tag, LocName, MarkDown, MarkUp, OnOpenStore, BuySellFlag, ItemList fields
-                - Function signature: LoadStore(CSWSStore* this, CResGFF* param_1, CResStruct* param_2, int param_3)
-                - Called from LoadFromTemplate (0x005c7760) and LoadStores (0x005057a0)
-            - 0x005c6cd0 - CSWSStore::SaveStore
-                - UTM GFF writer function
-                - Writes all UTM fields to GFF structure
-            - 0x0074bea4 - "BuySellFlag" string reference
-            - 0x0074beb0 - "OnOpenStore" string reference
-            - 0x0074bebc - "MarkUp" string reference
-            - 0x0074bec4 - "MarkDown" string reference
-            - 0x00747210 - "ItemList" string reference
-            - 0x0074dcc8 - "utm" extension string (used in resource extension table)
-        
-        KotOR II / TSL (swkotor2.exe):
-            - Functionally equivalent UTM parsing logic
-            - Same GFF field structure and parsing behavior
-            - String references at different addresses due to binary layout differences
-        
+        Based on unified K1 (swkotor.exe) and TSL (swkotor2.exe) UTM implementation.
+        Addresses: (K1: swkotor.exe, TSL: swkotor2.exe). TSL addresses: resolve in REVA when
+        PyKotorGhidraProject.gpr is open (project may be locked by another process).
+
+        - CSWSStore::LoadStore (main UTM GFF parser)
+            K1: 0x005c7180, TSL: TODO
+            Reads Tag, LocName, MarkDown, MarkUp, OnOpenStore, BuySellFlag, ItemList.
+            Signature: LoadStore(CSWSStore* this, CResGFF* param_1, CResStruct* param_2, int param_3).
+            Called from LoadFromTemplate and LoadStores.
+
+        - CSWSStore::SaveStore (UTM GFF writer)
+            K1: 0x005c6cd0, TSL: TODO
+            Writes all UTM fields to GFF structure.
+
+        - LoadFromTemplate / LoadStores (callers)
+            K1: LoadFromTemplate 0x005c7760, LoadStores 0x005057a0; TSL: TODO
+
+        - GFF field label string references (K1; TSL at different addresses, TODO):
+            K1: "BuySellFlag" 0x0074bea4, "OnOpenStore" 0x0074beb0, "MarkUp" 0x0074bebc,
+            "MarkDown" 0x0074bec4, "ItemList" 0x00747210; "utm" extension 0x0074dcc8 (resource table).
+
         GFF Field Structure (from LoadStore analysis):
             - Root struct fields:
                 - "Tag" (CExoString) - Merchant tag identifier
@@ -57,7 +57,7 @@ class UTM:
                 - "InventoryRes" (CResRef) - Item template ResRef (used when loading from template)
                 - "Infinite" (BYTE) - Flag indicating infinite stock (bit 2 of item bit_flags)
                 - "Dropable" (BYTE) - Flag indicating item can be dropped (not directly in LoadStore, inferred from SaveStore)
-        
+
         Note: UTM files are GFF format files with specific structure definitions (GFFContent.UTM)
 
     Derivations and Other Implementations:
@@ -71,33 +71,33 @@ class UTM:
     ----------
         resref: "ResRef" field. Merchant template ResRef.
             Unique identifier for this merchant template.
-        
+
         name: "LocName" field. Localized merchant name.
             Display name shown in merchant interface.
-        
+
         tag: "Tag" field. Merchant tag identifier.
             Used for script references and identification.
-        
+
         mark_up: "MarkUp" field. Markup percentage for selling to player.
             Percentage added to base item price when player buys.
             Reference: merchants.2da for predefined markup values.
-        
+
         mark_down: "MarkDown" field. Markdown percentage for buying from player.
             Percentage subtracted from base item price when player sells.
             Reference: merchants.2da for predefined markdown values.
-        
+
         on_open: "OnOpenStore" field. Script executed when store opens.
             Script ResRef called when merchant interface is opened.
-        
+
         comment: "Comment" field. Developer comment string.
             Not used by game engine.
-        
+
         can_buy: Derived from "BuySellFlag" bit 0. Whether merchant can buy items.
             Bit 0: 1 = can buy, 0 = cannot buy.
-        
+
         can_sell: Derived from "BuySellFlag" bit 1. Whether merchant can sell items.
             Bit 1: 1 = can sell, 0 = cannot sell.
-        
+
         inventory: "ItemList" field. List of items in merchant inventory.
             Items available for purchase from this merchant.
             Each item has InventoryRes (ResRef), Infinite flag, and position.
@@ -145,12 +145,24 @@ class UTM:
 def construct_utm(
     gff: GFF,
 ) -> UTM:
+    """Constructs a UTM object from a GFF structure.
+
+    Defaults when field missing (from engine): K1 CSWSStore::LoadStore (K1: 0x005c7180, TSL: TODO),
+    SaveStore (K1: 0x005c6cd0, TSL: TODO). ResRef "", Tag "", LocName empty; MarkUp/MarkDown 0,
+    OnOpenStore "", BuySellFlag 0. Optional when missing.
+
+    Reference functions: (1) LoadStore root UTM parser, (2) SaveStore writer, (3) LoadFromTemplate,
+    (4) LoadStores area stores, (5) CResGFF::ReadField* for Tag, LocName, MarkDown, MarkUp,
+    OnOpenStore, BuySellFlag, ItemList. TSL same semantics; addresses in UTM class References.
+    """
     utm = UTM()
 
     root: GFFStruct = gff.root
+    # Identity: ResRef "", Tag "", LocName empty. K1 LoadStore 0x005c7180; TSL same (addresses in UTM References). Optional.
     utm.resref = root.acquire("ResRef", ResRef.from_blank())
     utm.name = root.acquire("LocName", LocalizedString.from_invalid())
     utm.tag = root.acquire("Tag", "")
+    # Pricing/script: MarkUp/MarkDown 0, OnOpenStore "", BuySellFlag 0 (can_buy bit0, can_sell bit1). K1/TSL LoadStore. Optional.
     utm.mark_up = root.acquire("MarkUp", 0)
     utm.mark_down = root.acquire("MarkDown", 0)
     utm.on_open = root.acquire("OnOpenStore", ResRef.from_blank())
@@ -159,6 +171,7 @@ def construct_utm(
     utm.can_buy = root.acquire("BuySellFlag", 0) & 1 != 0
     utm.can_sell = root.acquire("BuySellFlag", 0) & 2 != 0
 
+    # ItemList: InventoryRes "", Infinite 0, Dropable 0. K1/TSL LoadStore. Optional.
     item_list: GFFList = root.acquire("ItemList", GFFList())
     for item_struct in item_list:
         item = InventoryItem(ResRef.from_blank())
@@ -179,6 +192,7 @@ def dismantle_utm(
     gff = GFF(GFFContent.UTM)
 
     root: GFFStruct = gff.root
+    # Write same defaults as engine read. K1 LoadStore 0x005c7180, SaveStore 0x005c6cd0; TSL same (addresses in UTM References). ResRef "", INT32 0, BYTE 0.
     root.set_resref("ResRef", utm.resref)
     root.set_locstring("LocName", utm.name)
     root.set_string("Tag", utm.tag)

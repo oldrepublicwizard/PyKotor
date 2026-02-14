@@ -24,12 +24,10 @@ class LookupResult2DA(NamedTuple):
 
 
 @dataclass(frozen=True, init=False, repr=False)
-class K1ResRef2DAColumns:
-    ...
+class K1ResRef2DAColumns: ...
 
 
 class ABSColumns2DA:
-
     @classmethod
     def as_dict(cls) -> dict[str, set[str]]:
         # HACK(th3w1zard1): Include only attributes that are defined in the current class and are not methods or private
@@ -67,6 +65,7 @@ class K1Columns2DA:
     @dataclass(frozen=True, init=False, repr=False)
     class StrRefs(ABSColumns2DA):
         """All 2DA's that contain columns referencing a stringref in the TalkTable used by the first game."""
+
         actions: ClassVar[set[str]] = {"string_ref"}
         aiscripts: ClassVar[set[str]] = {"name_strref", "description_strref"}  # k1 only
         ambientsound: ClassVar[set[str]] = {"description"}
@@ -152,6 +151,7 @@ class K1Columns2DA:
     @dataclass(frozen=True, init=False, repr=False)
     class ResRefs(ABSColumns2DA):
         """All 2DA's that contain columns referencing a filestem used by the first game."""
+
         appearance: ClassVar[set[str]] = {"race"}
         droiddischarge: ClassVar[set[str]] = {">>##HEADER##<<"}
         hen_companion: ClassVar[set[str]] = {"baseresref"}  # Not used in the game engine.
@@ -164,6 +164,7 @@ class K1Columns2DA:
         @dataclass(frozen=True, init=False, repr=False)
         class Models(ABSColumns2DA):
             """All 2DA columns that reference model resrefs in the first game."""
+
             ammunitiontypes: ClassVar[set[str]] = {"model", "model0", "model1", "muzzleflash"}
             appearance: ClassVar[set[str]] = {"modela", "modelb", "modelc", "modeld", "modele", "modelf", "modelg", "modelh", "modeli", "modelj"}
             baseitems: ClassVar[set[str]] = {"defaultmodel"}
@@ -174,28 +175,50 @@ class K1Columns2DA:
             @dataclass(frozen=True, init=False, repr=False)
             class Doors(ABSColumns2DA):
                 """All 2DA columns that reference door model resrefs."""
+
                 doortypes: ClassVar[set[str]] = {"model"}
                 genericdoors: ClassVar[set[str]] = {"modelname"}
 
         @dataclass(frozen=True, init=False, repr=False)
         class Sounds(ABSColumns2DA):
             """All 2DA columns that reference sound resrefs."""
+
             aliensound: ClassVar[set[str]] = {"filename"}
             ambientsound: ClassVar[set[str]] = {"resource"}
             ammunitiontypes: ClassVar[set[str]] = {"shotsound0", "shotsound1", "impactsound0", "impactsound1"}
             appearancesndset: ClassVar[set[str]] = {"falldirt", "fallhard", "fallmetal", "fallwater"}
             baseitems: ClassVar[set[str]] = {"powerupsnd", "powerdownsnd", "poweredsnd"}
-            footstepsounds: ClassVar[set[str]] = {"rolling",
-                                                  "dirt0", "dirt1", "dirt2",
-                                                  "grass0", "grass1", "grass2",
-                                                  "stone0", "stone1", "stone2",
-                                                  "wood0", "wood1", "wood2"
-                                                  "water0", "water1", "water2"
-                                                  "carpet0", "carpet1", "carpet2",
-                                                  "metal0", "metal1", "metal2",
-                                                  "puddles0", "puddles1", "puddles2",
-                                                  "leaves0", "leaves1", "leaves2",
-                                                  "force1", "force2", "force3"}  # TODO: Why are these the only ones different?
+            footstepsounds: ClassVar[set[str]] = {
+                "rolling",
+                "dirt0",
+                "dirt1",
+                "dirt2",
+                "grass0",
+                "grass1",
+                "grass2",
+                "stone0",
+                "stone1",
+                "stone2",
+                "wood0",
+                "wood1",
+                "wood2water0",
+                "water1",
+                "water2carpet0",
+                "carpet1",
+                "carpet2",
+                "metal0",
+                "metal1",
+                "metal2",
+                "puddles0",
+                "puddles1",
+                "puddles2",
+                "leaves0",
+                "leaves1",
+                "leaves2",
+                "force1",
+                "force2",
+                "force3",
+            }  # TODO: Why are these the only ones different?
             grenadesnd: ClassVar[set[str]] = {"sound"}
             guisounds: ClassVar[set[str]] = {"soundresref"}
             inventorysnds: ClassVar[set[str]] = {"inventorysound"}
@@ -203,15 +226,32 @@ class K1Columns2DA:
         @dataclass(frozen=True, init=False, repr=False)
         class Music(ABSColumns2DA):
             """All 2DA columns that reference music resrefs."""
+
             ambientmusic: ClassVar[set[str]] = {"resource", "stinger1", "stinger2", "stinger3"}
             loadscreens: ClassVar[set[str]] = {"musicresref"}
 
         @dataclass(frozen=True, init=False, repr=False)
         class Textures(ABSColumns2DA):
             """All 2DA columns that reference texture resrefs."""
+
             actions: ClassVar[set[str]] = {"iconresref"}
-            appearance: ClassVar[set[str]] = {"racetex", "texa", "texb", "texc", "texd", "texe", "texf", "texg", "texh", "texi", "texj",
-                                              "headtexve", "headtexe", "headtexvg", "headtexg"}
+            appearance: ClassVar[set[str]] = {
+                "racetex",
+                "texa",
+                "texb",
+                "texc",
+                "texd",
+                "texe",
+                "texf",
+                "texg",
+                "texh",
+                "texi",
+                "texj",
+                "headtexve",
+                "headtexe",
+                "headtexvg",
+                "headtexg",
+            }
             baseitems: ClassVar[set[str]] = {"defaulticon"}
             effecticon: ClassVar[set[str]] = {"iconresref"}
             heads: ClassVar[set[str]] = {"head", "headtexvvve", "headtexvve", "headtexve", "headtexe", "headtexg", "headtexvg"}
@@ -222,6 +262,7 @@ class K1Columns2DA:
         @dataclass(frozen=True, init=False, repr=False)
         class Items(ABSColumns2DA):
             """All 2DA columns that reference item resrefs."""
+
             baseitems: ClassVar[set[str]] = {"itemclass", "baseitemstatref"}
             chargenclothes: ClassVar[set[str]] = {"itemresref"}
             feat: ClassVar[set[str]] = {"icon"}
@@ -229,11 +270,13 @@ class K1Columns2DA:
         @dataclass(frozen=True, init=False, repr=False)
         class GUIs(ABSColumns2DA):
             """All 2DA columns that reference GUI resrefs."""
+
             cursors: ClassVar[set[str]] = {"resref"}
 
         @dataclass(frozen=True, init=False, repr=False)
         class Scripts(ABSColumns2DA):
             """All 2DA columns that reference script resrefs."""
+
             areaeffects: ClassVar[set[str]] = {"onenter", "heartbeat", "onexit"}
             disease: ClassVar[set[str]] = {"end_incu_script", "24_hour_script"}
             spells: ClassVar[set[str]] = {"impactscript"}
@@ -243,6 +286,7 @@ class K2Columns2DA:
     @dataclass(frozen=True, init=False, repr=False)
     class StrRefs(ABSColumns2DA):
         """All 2DA's that contain columns referencing a stringref in the TalkTable used by the second game."""
+
         aiscripts: ClassVar[set[str]] = {"name_strref"}
         ambientsound: ClassVar[set[str]] = {"description"}
         appearance: ClassVar[set[str]] = {"string_ref"}
@@ -330,6 +374,7 @@ class K2Columns2DA:
     @dataclass(frozen=True, init=False, repr=False)
     class ResRefs(ABSColumns2DA):
         """All 2DA's that contain columns referencing a filestem."""
+
         ammunitiontypes: ClassVar[set[str]] = {"muzzleflash"}
         appearance: ClassVar[set[str]] = {"race"}
         droiddischarge: ClassVar[set[str]] = {">>##HEADER##<<"}
@@ -343,6 +388,7 @@ class K2Columns2DA:
         @dataclass(frozen=True, init=False, repr=False)
         class Models(ABSColumns2DA):
             """All 2DA columns that reference model resrefs."""
+
             ammunitiontypes: ClassVar[set[str]] = {"model", "model0", "model1"}
             appearance: ClassVar[set[str]] = {"modela", "modelb", "modelc", "modeld", "modele", "modelf", "modelg", "modelh", "modeli", "modelj"}
             baseitems: ClassVar[set[str]] = {"defaultmodel"}
@@ -353,41 +399,86 @@ class K2Columns2DA:
             @dataclass(frozen=True, init=False, repr=False)
             class Doors(ABSColumns2DA):
                 """All 2DA columns that reference door model resrefs."""
+
                 doortypes: ClassVar[set[str]] = {"model"}
                 genericdoors: ClassVar[set[str]] = {"modelname"}
 
         @dataclass(frozen=True, init=False, repr=False)
         class Sounds(ABSColumns2DA):
             """All 2DA columns that reference sound resrefs."""
+
             aliensound: ClassVar[set[str]] = {"filename"}
-            alienvo: ClassVar[set[str]] = {"angry_long", "angry_medium", "angry_short",
-                                           "comment_generic_long", "comment_generic_medium", "comment_generic_short",
-                                           "greeting_medium", "greeting_short",
-                                           "happy_thankful_long", "happy_thankful_medium", "happy_thankful_short",
-                                           "laughter_normal", "laughter_mocking_medium", "laughter_mocking_short", "laughter_long", "laughter_short"
-                                           "pleading_medium", "pleading_short",
-                                           "question_long", "question_medium", "question_short",
-                                           "sad_long", "sad_medium", "sad_short",
-                                           "scared_long", "scared_medium", "scared_short",
-                                           "seductive_long", "seductive_medium", "seductive_short",
-                                           "silence",
-                                           "wounded_medium", "wounded_small",
-                                           "screaming_medium", "screaming_small"}
+            alienvo: ClassVar[set[str]] = {
+                "angry_long",
+                "angry_medium",
+                "angry_short",
+                "comment_generic_long",
+                "comment_generic_medium",
+                "comment_generic_short",
+                "greeting_medium",
+                "greeting_short",
+                "happy_thankful_long",
+                "happy_thankful_medium",
+                "happy_thankful_short",
+                "laughter_normal",
+                "laughter_mocking_medium",
+                "laughter_mocking_short",
+                "laughter_long",
+                "laughter_shortpleading_medium",
+                "pleading_short",
+                "question_long",
+                "question_medium",
+                "question_short",
+                "sad_long",
+                "sad_medium",
+                "sad_short",
+                "scared_long",
+                "scared_medium",
+                "scared_short",
+                "seductive_long",
+                "seductive_medium",
+                "seductive_short",
+                "silence",
+                "wounded_medium",
+                "wounded_small",
+                "screaming_medium",
+                "screaming_small",
+            }
             ambientsound: ClassVar[set[str]] = {"resource"}
             ammunitiontypes: ClassVar[set[str]] = {"shotsound0", "shotsound1", "impactsound0", "impactsound1"}
             appearancesndset: ClassVar[set[str]] = {"falldirt", "fallhard", "fallmetal", "fallwater"}
             baseitems: ClassVar[set[str]] = {"powerupsnd", "powerdownsnd", "poweredsnd"}
-            footstepsounds: ClassVar[set[str]] = {"rolling",
-                                                  "dirt0", "dirt1", "dirt2",
-                                                  "grass0", "grass1", "grass2",
-                                                  "stone0", "stone1", "stone2",
-                                                  "wood0", "wood1", "wood2"
-                                                  "water0", "water1", "water2"
-                                                  "carpet0", "carpet1", "carpet2",
-                                                  "metal0", "metal1", "metal2",
-                                                  "puddles0", "puddles1", "puddles2",
-                                                  "leaves0", "leaves1", "leaves2",
-                                                  "force1", "force2", "force3"}  # TODO: Why are these the only ones different?
+            footstepsounds: ClassVar[set[str]] = {
+                "rolling",
+                "dirt0",
+                "dirt1",
+                "dirt2",
+                "grass0",
+                "grass1",
+                "grass2",
+                "stone0",
+                "stone1",
+                "stone2",
+                "wood0",
+                "wood1",
+                "wood2water0",
+                "water1",
+                "water2carpet0",
+                "carpet1",
+                "carpet2",
+                "metal0",
+                "metal1",
+                "metal2",
+                "puddles0",
+                "puddles1",
+                "puddles2",
+                "leaves0",
+                "leaves1",
+                "leaves2",
+                "force1",
+                "force2",
+                "force3",
+            }  # TODO: Why are these the only ones different?
             grenadesnd: ClassVar[set[str]] = {"sound"}
             guisounds: ClassVar[set[str]] = {"soundresref"}
             inventorysnds: ClassVar[set[str]] = {"inventorysound"}
@@ -395,15 +486,32 @@ class K2Columns2DA:
             @dataclass(frozen=True, init=False, repr=False)
             class Music(ABSColumns2DA):
                 """All 2DA columns that reference music resref sounds."""
+
                 ambientmusic: ClassVar[set[str]] = {"resource", "stinger1", "stinger2", "stinger3"}
                 loadscreens: ClassVar[set[str]] = {"musicresref"}
 
         @dataclass(frozen=True, init=False, repr=False)
         class Textures(ABSColumns2DA):
             """All 2DA columns that reference texture resrefs."""
+
             actions: ClassVar[set[str]] = {"iconresref"}
-            appearance: ClassVar[set[str]] = {"racetex", "texa", "texb", "texc", "texd", "texe", "texf", "texg", "texh", "texi", "texj",
-                                              "headtexve", "headtexe", "headtexvg", "headtexg"}
+            appearance: ClassVar[set[str]] = {
+                "racetex",
+                "texa",
+                "texb",
+                "texc",
+                "texd",
+                "texe",
+                "texf",
+                "texg",
+                "texh",
+                "texi",
+                "texj",
+                "headtexve",
+                "headtexe",
+                "headtexvg",
+                "headtexg",
+            }
             cursors: ClassVar[set[str]] = {"resref"}
             baseitems: ClassVar[set[str]] = {"defaulticon"}
             effecticon: ClassVar[set[str]] = {"iconresref"}
@@ -415,6 +523,7 @@ class K2Columns2DA:
         @dataclass(frozen=True, init=False, repr=False)
         class Items(ABSColumns2DA):
             """All 2DA columns that reference item resrefs."""
+
             baseitems: ClassVar[set[str]] = {"itemclass", "baseitemstatref"}
             chargenclothes: ClassVar[set[str]] = {"itemresref"}
             feat: ClassVar[set[str]] = {"icon"}
@@ -422,30 +531,31 @@ class K2Columns2DA:
         @dataclass(frozen=True, init=False, repr=False)
         class GUIs(ABSColumns2DA):
             """All 2DA columns that reference GUI resrefs."""
+
             cursors: ClassVar[set[str]] = {"resref"}
 
         @dataclass(frozen=True, init=False, repr=False)
         class Scripts(ABSColumns2DA):
             """All 2DA columns that reference script resrefs."""
+
             areaeffects: ClassVar[set[str]] = {"onenter", "heartbeat", "onexit"}
             disease: ClassVar[set[str]] = {"end_incu_script", "24_hour_script"}
             spells: ClassVar[set[str]] = {"impactscript"}
 
 
-
 class TwoDARegistry:
     """Central registry for 2DA metadata, GFF mappings, and helpers.
-    
+
     This registry provides metadata about 2DA files, including which columns contain
     string references (StrRefs) or resource references (ResRefs). It also maps GFF fields
     to their corresponding 2DA lookup tables.
-    
+
     Game Engine Usage:
     ----------------
     The following 2DA files are confirmed to be loaded and used by the game engine,
     as verified through reverse engineering analysis of swkotor.exe and swkotor2.exe
     using Ghidra (via Reva MCP server):
-    
+
     **swkotor.exe (KotOR 1) - Loaded via Load2DArrays() and related functions:**
     - ambientmusic.2da: Load2DArrays_AmbientMusic() - CResRef("AmbientMusic")
     - ambientsound.2da: Load2DArrays_AmbientSound() - CResRef("AmbientSound")
@@ -519,7 +629,7 @@ class TwoDARegistry:
     - visualeffects.2da: Load2DArrays_VisualEffect() - CResRef("VisualEffect")
     - weaponsounds.2da: Load2DArrays_WeaponSounds() - CResRef("WeaponSounds")
     - xptable.2da: Load2DArrays_XpBase() - CResRef("XPTable")
-    
+
     **swkotor2.exe (KotOR 2/TSL) - Additional files loaded:**
     - emotion.2da: FUN_00612fb0() - CResRef("Emotion")
     - facialanim.2da: FUN_005e6ac0() - CResRef("FacialAnim")
@@ -534,10 +644,10 @@ class TwoDARegistry:
     - subrace.2da: FUN_00612ab0() - CResRef("Subrace")
     - upcrystals.2da: FUN_00730970() - CResRef("upcrystals")
     - upgrade.2da: FUN_00730970() - CResRef("upgrade")
-    
+
     All files listed above were verified through decompilation analysis of the game executables.
     The canonical file names in this registry match those used by the game engine.
-    
+
     References:
     ----------
         Based on swkotor.exe 2DA structure:
@@ -714,12 +824,13 @@ class TwoDARegistry:
         files: set[str] = set(cls._STRREF_COLUMNS.keys()) | set(cls._RESREF_COLUMNS.keys())
         return files
 
+
 class TwoDAManager:
     """Manager for 2DA file lookups within an installation.
-    
+
     Provides methods to search for string references or resource references across
     all known 2DA files in a game installation.
-    
+
     References:
     ----------
         Based on swkotor.exe 2DA structure:
@@ -730,6 +841,7 @@ class TwoDAManager:
         Note: This manager is PyKotor-specific for tooling and modding purposes.
 
     """
+
     def __init__(self, installation: Installation):
         TwoDARegistry.init_metadata()
         self._installation: Installation = installation

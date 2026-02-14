@@ -36,6 +36,7 @@ def cmd_decompile(args: Namespace, logger: RobustLogger) -> int:
     else:
         return 0
 
+
 def cmd_disassemble(args: Namespace, logger: RobustLogger) -> int:
     """Disassemble NCS bytecode to text representation.
 

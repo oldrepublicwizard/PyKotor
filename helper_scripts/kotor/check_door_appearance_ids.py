@@ -1,4 +1,5 @@
 """Check appearance_ids of all doors in danm13_s.rim."""
+
 import os
 import sys
 
@@ -66,4 +67,3 @@ if mydoor_cap_result and mydoor_cap_result.data:
     print("  ✓ MyDoor.mdl exists")
 else:
     print("  ✗ MyDoor.mdl does NOT exist")
-

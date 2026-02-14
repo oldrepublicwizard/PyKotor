@@ -1,4 +1,5 @@
 """Check what's in genericdoors.2da for a specific appearance_id."""
+
 import os
 import sys
 
@@ -109,4 +110,3 @@ for i in range(100):  # Check first 100 rows
         break
 
 print(f"\nFound {len(valid_models)} rows with valid model names")
-

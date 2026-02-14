@@ -30,7 +30,7 @@ def read_pyproject(tool_path: Path) -> dict[str, Any]:
     pyproject_path = tool_path / "pyproject.toml"
     if not pyproject_path.exists():
         return {}
-    
+
     try:
         with open(pyproject_path, "rb") as f:
             return tomllib.load(f)
@@ -51,61 +51,61 @@ def find_entrypoint(tool_path: Path, src_dir: Path) -> str | None:
 def discover_tools(tools_dir: Path) -> list[dict[str, Any]]:
     """Discover all valid tools in Tools/ directory."""
     tools = []
-    
+
     if not tools_dir.exists():
         print(f"Error: Tools directory not found: {tools_dir}", file=sys.stderr)
         return tools
-    
+
     for tool_dir in sorted(tools_dir.iterdir()):
         if not tool_dir.is_dir():
             continue
-        
+
         # Skip hidden directories and tests
         if tool_dir.name.startswith(".") or tool_dir.name.lower() in ("tests", "test"):
             continue
-        
+
         # Check for src directory
         src_dir = tool_dir / "src"
         if not src_dir.exists():
             print(f"Skipping {tool_dir.name}: no src/ directory", file=sys.stderr)
             continue
-        
+
         # Read pyproject.toml
         pyproject = read_pyproject(tool_dir)
         tool_config = pyproject.get("tool", {})
         pyinstaller_config = tool_config.get("pyinstaller", {})
-        
+
         # Find entrypoint
         entrypoint = pyinstaller_config.get("entrypoint") or find_entrypoint(tool_dir, src_dir)
         if not entrypoint:
             print(f"Skipping {tool_dir.name}: no entrypoint found", file=sys.stderr)
             continue
-        
+
         # Extract metadata
         name = tool_dir.name
         build_name = None
         display_name = name
         requires_qt = False
-        
+
         if "project" in pyproject:
             project = pyproject["project"]
             if "name" in project:
                 name = project["name"]
-            
+
             # Check dependencies for Qt
             if "dependencies" in project:
                 deps_str = " ".join(str(d).lower() for d in project["dependencies"])
                 if any(qt in deps_str for qt in ["pyqt", "pyside", "qtpy"]):
                     requires_qt = True
-        
+
         tool_config = pyproject.get("tool", {})
         pyinstaller_config = tool_config.get("pyinstaller", {})
         build_name = pyinstaller_config.get("name") or None
-        
+
         tool_deps = tool_config.get("dependencies", {})
         if tool_deps.get("qt-api"):
             requires_qt = True
-        
+
         tool_info = {
             "directory": tool_dir.name,
             "name": name,
@@ -115,31 +115,30 @@ def discover_tools(tools_dir: Path) -> list[dict[str, Any]]:
             "requires_qt": requires_qt,
             "path": f"Tools/{tool_dir.name}",
         }
-        
+
         tools.append(tool_info)
         print(f"Discovered: {tool_dir.name} (entrypoint: {entrypoint})", file=sys.stderr)
-    
+
     return tools
 
 
 def main() -> None:
     import argparse
-    
+
     parser = argparse.ArgumentParser(description="Discover tools for CI/CD")
     parser.add_argument("--tools-dir", default="Tools", help="Tools directory path")
-    parser.add_argument("--format", choices=["json", "github"], default="github",
-                        help="Output format (json or github actions output)")
+    parser.add_argument("--format", choices=["json", "github"], default="github", help="Output format (json or github actions output)")
     args = parser.parse_args()
-    
+
     repo_root = Path(__file__).resolve().parent.parent.parent
     tools_dir = repo_root / args.tools_dir
-    
+
     tools = discover_tools(tools_dir)
-    
+
     if not tools:
         print("Error: No tools discovered", file=sys.stderr)
         sys.exit(1)
-    
+
     # Output
     if args.format == "json":
         print(json.dumps(tools, indent=2))

@@ -64,6 +64,7 @@ def temp_dir() -> Generator[Path, None, None]:
 
         yield test_dir
 
+
 def test_qfiledialogextended_initialization(qapp: QApplication):
     """Test QFileDialogExtended initialization."""
     dialog = QFileDialogExtended()
@@ -214,7 +215,7 @@ def test_qfiledialogextended_actions_dispatcher(qapp: QApplication, temp_dir: Pa
     # Should not crash
     menu = dialog.dispatcher.get_context_menu(view, position)
     # Menu can be None if no selection, but should not crash
-    assert menu is None or hasattr(menu, 'exec')
+    assert menu is None or hasattr(menu, "exec")
 
 
 def test_qfiledialogextended_file_actions_executor(qapp: QApplication):
@@ -225,6 +226,7 @@ def test_qfiledialogextended_file_actions_executor(qapp: QApplication):
     assert dialog.executor is not None
     assert hasattr(dialog.executor, "execute")
     assert hasattr(dialog.executor, "cancel")
+
 
 def test_qfiledialogextended_extended_ui_rows(qapp: QApplication):
     """Test QFileDialogExtended extended UI rows insertion."""
@@ -374,6 +376,7 @@ def test_qfiledialogextended_static_methods(qapp):
     assert callable(QFileDialogExtended.getSaveFileUrl)
     assert callable(QFileDialogExtended.saveFileContent)
     assert callable(QFileDialogExtended.getOpenFileContent)
+
 
 def test_qfiledialogextended_file_mode_operations(qapp):
     """Test QFileDialogExtended file mode operations."""
@@ -578,6 +581,7 @@ def test_qfiledialogextended_cross_platform_features(qapp):
 
     dialog.model.setResolveSymlinks(False)
     assert not dialog.model.resolveSymlinks()
+
 
 def test_qfiledialogextended_full_integration_workflow(qapp, temp_dir: Path):
     """Test full QFileDialogExtended integration workflow."""

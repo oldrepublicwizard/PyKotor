@@ -149,6 +149,7 @@ class ModificationsNSS(PatcherModifications):
             - Searches string for #StrRef# patterns and replaces with string reference value
             - Repeats searches until no matches remain.
         """
+
         def iterate_and_replace_tokens(
             token_name: str,
             memory_dict: dict[int, Any],

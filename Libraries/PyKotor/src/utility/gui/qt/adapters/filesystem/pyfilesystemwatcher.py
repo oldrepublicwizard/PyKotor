@@ -10,8 +10,7 @@ from qasync import asyncSlot  # pyright: ignore[reportMissingTypeStubs]
 from qtpy.QtCore import QObject, Signal  # pyright: ignore[reportPrivateImportUsage]
 
 
-class FileSystemWatcherError(OSError):
-    ...
+class FileSystemWatcherError(OSError): ...
 
 
 class PyFileSystemWatcher(QObject):

@@ -359,7 +359,7 @@ def cmd_diff(
 
     if generate_ini:
         # Use the full TSLPatcher application for INI generation
-        from pykotor.diff_tool.app import DiffConfig, handle_diff, run_application  # noqa: PLC0415
+        from pykotor.diff_tool.app import DiffConfig, run_application  # noqa: PLC0415
 
         # Convert Path objects to the format expected by TSLPatcher
         paths_for_tslpatcher: list[Path | Installation] = []
@@ -372,15 +372,20 @@ def cmd_diff(
             else:
                 paths_for_tslpatcher.append(path)
 
+        # Default tslpatchdata to current directory when --generate-ini is used
+        tslpatchdata_path = Path.cwd() / "tslpatchdata"
+        ini_filename = getattr(args, "ini", "changes.ini")
+
         config = DiffConfig(
             paths=paths_for_tslpatcher,
-            output_mode=getattr(args, "output_mode", "full").lower(),  # full by default when generating tslpatcher ini
+            output_mode=getattr(args, "output_mode", "full").lower(),
             use_incremental_writer=True,
+            tslpatchdata_path=tslpatchdata_path,
+            ini_filename=ini_filename,
         )
 
-        run_application(config)
-        result, exit_code = handle_diff(config)
-        return 1 if exit_code is None else exit_code
+        exit_code = run_application(config)
+        return exit_code
 
     # For archives and directories, implement proper diff display
     try:

@@ -40,7 +40,7 @@ def analyze_node(data: bytes, offset: int) -> dict:
     result["name_id"] = get_uint16(data, offset + 6)
     result["offset_to_children"] = get_uint32(data, offset + 44)
     result["children_count"] = get_uint32(data, offset + 48)
-    
+
     # If mesh node (type & 32)
     if result["type_id"] & 32:
         tm_offset = offset + 80  # After 80-byte node header
@@ -52,7 +52,7 @@ def analyze_node(data: bytes, offset: int) -> dict:
         result["mdx_data_bitmap"] = get_uint32(data, tm_offset + 312)
         result["mdx_data_offset"] = get_uint32(data, tm_offset + 316)
         result["texture1"] = get_string(data, tm_offset + 52)
-    
+
     return result
 
 
@@ -62,14 +62,14 @@ def traverse_nodes_linear(data: bytes, start_offset: int, node_count: int) -> li
     # Find all mesh nodes by scanning the MDL linearly
     # Nodes are typically laid out contiguously after the header
     offset = start_offset + 12  # Add 12 for file header offset
-    
+
     for i in range(node_count):
         if offset >= len(data):
             break
         try:
             node_info = analyze_node(data, offset)
             nodes.append((offset, node_info))
-            
+
             # Calculate next node offset based on current node type
             next_offset = offset + 80  # Base node header
             if node_info["type_id"] & 32:  # Mesh
@@ -85,14 +85,14 @@ def traverse_nodes_linear(data: bytes, start_offset: int, node_count: int) -> li
                 next_offset += 68
             if node_info["type_id"] & 512:  # Skin
                 next_offset += 116  # Plus variable-length arrays
-            
+
             # This is a simplified calculation - actual node traversal should use the children pointers
             # For now, we'll just skip ahead to scan more nodes
             offset = next_offset
         except Exception as e:
             print(f"Error at offset {offset}: {e}")
             offset += 80  # Try to skip ahead
-    
+
     return nodes
 
 
@@ -102,7 +102,7 @@ def scan_all_mesh_nodes(data: bytes, max_scan: int = 200000) -> list[tuple[int, 
     # Mesh nodes have type_id with bit 5 set (0x20 = 32)
     # Try to find mesh node headers by scanning for valid type patterns
     offset = 620  # Start after typical header (file header + geometry header + name offsets)
-    
+
     while offset < min(len(data) - 400, max_scan):
         try:
             type_id = get_uint16(data, offset)
@@ -115,7 +115,7 @@ def scan_all_mesh_nodes(data: bytes, max_scan: int = 200000) -> list[tuple[int, 
         except:
             pass
         offset += 4  # Scan in 4-byte increments
-    
+
     return nodes
 
 
@@ -172,38 +172,38 @@ def main():
         # Compare mesh nodes
         print("\n=== Mesh Nodes Comparison ===")
         print(f"{'NodeID':<8} {'Type':<6} {'Verts(PK)':<12} {'Verts(MO)':<12} {'VOffset(PK)':<12} {'VOffset(MO)':<12} {'FaceOff(PK)':<12} {'FaceOff(MO)':<12}")
-        
+
         pk_nodes_list = traverse_nodes(pykotor_mdl, pk_root, pk_nodes)
         mo_nodes_list = traverse_nodes(mdlops_mdl, mo_root, mo_nodes)
-        
+
         total_pk_verts = 0
         total_mo_verts = 0
         total_pk_vbytes = 0
         total_mo_vbytes = 0
-        
+
         for i, (pk_off, pk_info) in enumerate(pk_nodes_list):
             if pk_info["type_id"] & 32:  # Mesh node
                 mo_info = mo_nodes_list[i][1] if i < len(mo_nodes_list) else {}
-                
+
                 pk_vcount = pk_info.get("vertex_count", 0)
                 mo_vcount = mo_info.get("vertex_count", 0)
                 pk_voff = pk_info.get("vertices_offset", 0)
                 mo_voff = mo_info.get("vertices_offset", 0)
                 pk_foff = pk_info.get("offset_to_faces", 0)
                 mo_foff = mo_info.get("offset_to_faces", 0)
-                
+
                 total_pk_verts += pk_vcount
                 total_mo_verts += mo_vcount
-                
+
                 # Only count vertex bytes if vertices_offset is set (means vertices in MDL)
                 if pk_voff > 0:
                     total_pk_vbytes += pk_vcount * 12
                 if mo_voff > 0:
                     total_mo_vbytes += mo_vcount * 12
-                
+
                 marker = "" if pk_voff == mo_voff else " <-- DIFF"
                 print(f"{pk_info['node_id']:<8} 0x{pk_info['type_id']:04X} {pk_vcount:<12} {mo_vcount:<12} {pk_voff:<12} {mo_voff:<12} {pk_foff:<12} {mo_foff:<12}{marker}")
-        
+
         print(f"\nTotal vertices: PyKotor={total_pk_verts}, MDLOps={total_mo_verts}")
         print(f"Total vertex bytes in MDL: PyKotor={total_pk_vbytes}, MDLOps={total_mo_vbytes}")
         print(f"Difference in MDL vertex bytes: {total_mo_vbytes - total_pk_vbytes}")
@@ -211,4 +211,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-

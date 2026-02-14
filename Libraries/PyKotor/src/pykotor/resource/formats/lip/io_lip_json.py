@@ -24,9 +24,9 @@ if TYPE_CHECKING:
 
 class LIPJSONReader(ResourceReader):
     """Reads LIP files from JSON format.
-    
+
     JSON is a PyKotor-specific convenience format for easier editing of lip-sync data.
-    
+
     References:
     ----------
         See lip_data module docstring for engine addresses (K1 + TSL TODO).
@@ -34,6 +34,7 @@ class LIPJSONReader(ResourceReader):
         Note: JSON format is PyKotor-specific, not a standard game format
 
     """
+
     def __init__(
         self,
         source: SOURCE_TYPES,
@@ -61,7 +62,6 @@ class LIPJSONReader(ResourceReader):
             self._lip.add(time, shape)
 
         return self._lip
-
 
 
 class LIPJSONWriter(ResourceWriter):

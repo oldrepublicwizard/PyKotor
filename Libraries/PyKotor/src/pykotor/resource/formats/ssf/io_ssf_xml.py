@@ -25,20 +25,21 @@ if TYPE_CHECKING:
 
 class SSFXMLReader(ResourceReader):
     """Reads SSF files from XML format.
-    
+
     XML is a human-readable format for easier editing of sound set files.
-    
+
     References:
     ----------
         Based on swkotor.exe SSF structure:
         - CResSSF::CResSSF @ 0x006db650 - Constructor for SSF resource
         - CResSSF::~CResSSF @ 0x006db670, @ 0x006db6b0 - Destructors for SSF resource
         - SSF file format: "SSF " type, "V1.1" version
-        
+
         Note: XML format is PyKotor-specific conversion format, not a standard game format.
         The engine uses binary SSF format exclusively. XML conversion allows easier editing
         and integration with external tools.
     """
+
     def __init__(
         self,
         source: SOURCE_TYPES,

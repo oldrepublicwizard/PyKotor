@@ -77,7 +77,7 @@ DOES_NOT_EXIST_FILE = "./thisfiledoesnotexist"
 
 class TestLYT(TestCase):
     def test_binary_io(self):
-        lyt = LYTAsciiReader(ASCII_TEST_DATA.encode('utf-8')).load()
+        lyt = LYTAsciiReader(ASCII_TEST_DATA.encode("utf-8")).load()
         self.validate_io(lyt)
 
         data = bytearray()
@@ -90,7 +90,7 @@ class TestLYT(TestCase):
         import tempfile
         import os
 
-        with tempfile.NamedTemporaryFile(mode='w', suffix='.lyt', delete=False, encoding='utf-8') as tmp:
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".lyt", delete=False, encoding="utf-8") as tmp:
             tmp.write(ASCII_TEST_DATA)
             tmp_path = tmp.name
 
@@ -116,7 +116,7 @@ class TestLYT(TestCase):
         else:
             self.assertRaises(IsADirectoryError, read_lyt, ".")
         self.assertRaises(FileNotFoundError, read_lyt, DOES_NOT_EXIST_FILE)
-        self.assertRaises(ValueError, read_lyt, CORRUPT_BINARY_TEST_DATA.encode('utf-8'))
+        self.assertRaises(ValueError, read_lyt, CORRUPT_BINARY_TEST_DATA.encode("utf-8"))
 
     def test_write_raises(self):
         if os.name == "nt":

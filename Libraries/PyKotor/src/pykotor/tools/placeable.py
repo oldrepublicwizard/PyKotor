@@ -55,24 +55,24 @@ def load_placeables_2da(
     logger: RobustLogger | None = None,
 ) -> TwoDA | None:
     """Load placeables.2da from installation using priority order.
-    
+
     Tries locations() first (more reliable), then falls back to resource().
     Searches in Override first, then Chitin.
-    
+
     Args:
     ----
         installation: The game installation instance
         logger: Optional logger for debugging
-        
+
     Returns:
     -------
         TwoDA object if found, None otherwise
     """
     if logger is None:
         logger = RobustLogger()
-    
+
     placeables_2da: TwoDA | None = None
-    
+
     # Try locations() first (more reliable, handles BIF files)
     try:
         location_results = installation.locations(
@@ -91,7 +91,7 @@ def load_placeables_2da(
                     break
     except Exception as e:  # noqa: BLE001
         logger.debug(f"locations() failed for placeables.2da: {e}")
-    
+
     # Fallback: try resource() if locations() didn't work
     if placeables_2da is None:
         try:
@@ -100,7 +100,7 @@ def load_placeables_2da(
                 placeables_2da = read_2da(placeables_result.data)
         except Exception as e:  # noqa: BLE001
             logger.debug(f"resource() also failed for placeables.2da: {e}")
-    
+
     return placeables_2da
 
 
@@ -112,9 +112,9 @@ def extract_placeable_walkmesh(
     logger: RobustLogger | None = None,
 ) -> tuple[str, bytes] | None:
     """Extract placeable walkmesh (PWK file) for a placeable.
-    
+
     Format: <modelname>.pwk
-    
+
     References:
     ----------
         Original BioWare engine binaries (from swkotor.exe, swkotor2.exe)
@@ -124,14 +124,14 @@ def extract_placeable_walkmesh(
         https://github.com/th3w1zard1/KotOR.js/tree/master/src/module/ModulePlaceable.ts:684
 
 
-    
+
     Args:
     ----
         utp_data: UTP placeable data bytes
         installation: The game installation instance
         module: Optional Module instance to search for PWK file in module resources first
         logger: Optional logger for debugging
-        
+
     Returns:
     -------
         Tuple of (model_name, pwk_data) if found, None otherwise
@@ -139,21 +139,21 @@ def extract_placeable_walkmesh(
     if logger is None:
         logger = RobustLogger()
     placeable_model_name: str | None = None
-    
+
     try:
         utp = read_utp(utp_data)
-        
+
         # Get placeable model name from UTP using placeables.2da
         placeables_2da = load_placeables_2da(installation, logger)
         if not placeables_2da:
             logger.warning("Could not load placeables.2da, cannot extract placeable walkmesh")
             return None
-        
+
         placeable_model_name = get_model(utp, installation, placeables=placeables_2da)
         if not placeable_model_name:
             logger.warning(f"Could not get model name for placeable (appearance_id={utp.appearance_id})")
             return None
-        
+
         # Try to extract PWK file: modelname.pwk
         try:
             # Try to find PWK in module resources first (if module provided)
@@ -164,7 +164,7 @@ def extract_placeable_walkmesh(
                     if pwk_data is not None:
                         logger.info(f"Found PWK '{placeable_model_name}' from module")
                         return placeable_model_name, pwk_data
-            
+
             # Try installation locations
             pwk_locations = installation.locations(
                 [ResourceIdentifier(resname=placeable_model_name, restype=ResourceType.PWK)],
@@ -182,7 +182,7 @@ def extract_placeable_walkmesh(
                         pwk_data = f.read(pwk_loc.size)
                     logger.debug(f"Found PWK '{placeable_model_name}' from installation")
                     return placeable_model_name, pwk_data
-        
+
         except Exception:  # noqa: BLE001
             logger.debug(f"PWK '{placeable_model_name}' not found, skip it", exc_info=True)
     except Exception:  # noqa: BLE001

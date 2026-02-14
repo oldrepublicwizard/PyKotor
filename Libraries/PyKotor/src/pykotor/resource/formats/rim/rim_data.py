@@ -14,7 +14,7 @@ References:
         - "Table being rebuilt, this RIM is being leaked: %s": K1: 0x0073d8a8, TSL: TODO
         Note: RIM files use similar structure to ERF files but are read-only templates.
         The engine loads RIM files as module blueprints and exports to ERF for runtime mutation.
-        RIM files in original game often use "Implicit Offsets" where the offset to keys (0x10) 
+        RIM files in original game often use "Implicit Offsets" where the offset to keys (0x10)
         is 0, implying it starts immediately after the 120-byte header.
 
         RIM file format specification
@@ -30,7 +30,7 @@ References:
         0x10   | 4    | uint32 | Offset to Resource Table (0 = Implicit 120)
         0x14   | 1    | byte   | IsExtension (0x01 if extension RIM)
         0x15   | 99   | byte[] | Reserved / Padding
-        
+
         Resource Entry (32 bytes each):
         Offset | Size | Type   | Description
         -------|------|--------|-------------
@@ -58,11 +58,11 @@ if TYPE_CHECKING:
 
 class RIMResource(ArchiveResource):
     """A resource stored inside a RIM archive.
-    
+
     RIM resources are similar to ERF resources - they include the ResRef (filename) and
     resource type within the archive metadata. RIM resources are typically read-only from
     the game's perspective, as RIM files serve as module templates.
-    
+
     References:
     ----------
         See module docstring (K1/TSL addresses). CExoEncapsulatedFile::CExoEncapsulatedFile (K1: 0x0040ef90), CExoKeyTable::AddEncapsulatedContents (K1: 0x0040f3c0); TSL: TODO.
@@ -72,7 +72,7 @@ class RIMResource(ArchiveResource):
         https://github.com/th3w1zard1/KotOR_IO/tree/master/KotOR_IO/File
 
 
-        
+
     Attributes:
     ----------
         All inherited from ArchiveResource (resref, restype, data, size)
@@ -90,12 +90,12 @@ class RIMResource(ArchiveResource):
 
 class RIM(BiowareArchive):
     """Represents a RIM (Resource Information Module) file.
-    
+
     RIM files are template archives used to initialize game modules. They are similar to ERF
     files but serve a different purpose - providing immutable resource templates that the game
     engine reads and exports to ERF format for runtime use. RIM files can also be extensions
     to other RIM files (marked with 'x' in filename).
-    
+
     References:
     ----------
         See module docstring (K1/TSL addresses). CExoEncapsulatedFile::CExoEncapsulatedFile, CExoKeyTable::AddEncapsulatedContents; TSL: TODO.
@@ -105,7 +105,7 @@ class RIM(BiowareArchive):
         https://github.com/th3w1zard1/KotOR_IO/tree/master/KotOR_IO/File
 
 
-        
+
     Attributes:
     ----------
         Inherits from BiowareArchive: _resources, _resource_dict, etc.

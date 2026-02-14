@@ -1,4 +1,5 @@
 """Debug door dimension extraction for jedienclave kit."""
+
 import os
 import sys
 
@@ -127,6 +128,7 @@ try:
 except Exception as e:
     print(f"  ✗ Failed to load MDL: {e}")
     import traceback
+
     traceback.print_exc()
     sys.exit(1)
 
@@ -143,7 +145,7 @@ while nodes_to_check:
     if node.mesh:
         mesh_count += 1
         print(f"  Processing mesh {mesh_count} in node '{node.name}'")
-        
+
         # Use mesh bounding box if available
         if node.mesh.bb_min and node.mesh.bb_max:
             print(f"    Using mesh bounding box: min={node.mesh.bb_min}, max={node.mesh.bb_max}")
@@ -165,7 +167,7 @@ while nodes_to_check:
                 bb_max.z = max(bb_max.z, vertex.z)
         else:
             print("    WARNING: Mesh has no bounding box or vertices!")
-    
+
     # Check child nodes
     nodes_to_check.extend(node.children)
 
@@ -176,16 +178,15 @@ if bb_min.x < 1000000:
     width = abs(bb_max.y - bb_min.y)
     height = abs(bb_max.z - bb_min.z)
     depth = abs(bb_max.x - bb_min.x)
-    
+
     print("\n  Calculated dimensions:")
     print(f"    Width (Y): {width:.3f}")
     print(f"    Height (Z): {height:.3f}")
     print(f"    Depth (X): {depth:.3f}")
-    
+
     if 0.1 < width < 50.0 and 0.1 < height < 50.0:
         print(f"\n  ✓ Valid dimensions extracted: {width:.2f} x {height:.2f}")
     else:
         print("\n  ✗ Dimensions out of range, will use defaults")
 else:
     print("\n  ✗ Invalid bounding box calculated")
-

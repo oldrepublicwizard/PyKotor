@@ -377,14 +377,14 @@ def pytest_runtest_logreport(report: pytest.TestReport) -> None:  # noqa: ARG001
             # Extract just the error message part - find "Failed: Model" and extract everything from there
             # but stop at "Stack Trace Variables" or any traceback lines
             lines = longrepr_str.split("\n")
-            
+
             # Find the start of our error message
             msg_start = None
             for i, line in enumerate(lines):
                 if "Failed: Model" in line:
                     msg_start = i
                     break
-            
+
             if msg_start is not None:
                 # Extract from msg_start until we hit "Stack Trace Variables" or a traceback line
                 clean_lines: list[str] = []
@@ -394,7 +394,7 @@ def pytest_runtest_logreport(report: pytest.TestReport) -> None:  # noqa: ARG001
                     if "Stack Trace Variables" in line or line.strip().startswith("Function '") or "Traceback (most recent call last):" in line:
                         break
                     clean_lines.append(line)
-                
+
                 # Replace the report's longrepr with just the clean error message
                 if clean_lines:
                     report.longrepr = "\n".join(clean_lines)

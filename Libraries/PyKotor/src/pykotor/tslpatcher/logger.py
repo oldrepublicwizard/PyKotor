@@ -14,7 +14,6 @@ if TYPE_CHECKING:
     from typing_extensions import LiteralString  # pyright: ignore[reportMissingModuleSource]
 
 
-
 class LogType(IntEnum):
     VERBOSE = 0
     NOTE = 1

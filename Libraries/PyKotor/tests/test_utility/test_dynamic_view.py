@@ -26,7 +26,7 @@ class TestDynamicStackedView(unittest.TestCase):
         self.view_manager: DynamicStackedView = DynamicStackedView()
         self.model = QStandardItemModel()
         for i in range(10):
-            item = QStandardItem(f"Item {i+1}")
+            item = QStandardItem(f"Item {i + 1}")
             self.model.appendRow(item)
         self.view_manager.setModel(self.model)
 
@@ -38,13 +38,13 @@ class TestDynamicStackedView(unittest.TestCase):
         view_manager = DynamicStackedView()
         all_views = view_manager.all_views()
         assert len(all_views) >= 4, "Should have at least 4 default views"
-        
+
         # Check that we have various view types
         has_list_view = any(isinstance(view, QListView) for view in all_views)
         has_tree_view = any(isinstance(view, QTreeView) for view in all_views)
         has_table_view = any(isinstance(view, QTableView) for view in all_views)
         has_column_view = any(isinstance(view, QColumnView) for view in all_views)
-        
+
         assert has_list_view, "Should have at least one QListView"
         assert has_tree_view, "Should have a QTreeView"
         assert has_table_view, "Should have a QTableView"
@@ -113,7 +113,7 @@ class TestDynamicStackedView(unittest.TestCase):
         new_model = QStandardItemModel()
         new_model.appendRow(QStandardItem("Test"))
         self.view_manager.setModel(new_model)
-        
+
         for view in self.view_manager.all_views():
             assert view.model() == new_model, "All views should have the new model"
 
@@ -136,7 +136,7 @@ class TestDynamicStackedView(unittest.TestCase):
         # First switch to next view
         self.view_manager.switch_to_next_view()
         current_index = self.view_manager.current_view_index
-        
+
         # Then switch back
         self.view_manager.switch_to_previous_view()
         assert self.view_manager.current_view_index == current_index - 1, "Should move to previous view"
@@ -146,7 +146,7 @@ class TestDynamicStackedView(unittest.TestCase):
         widgets = self.view_manager.all_widgets()
         self.view_manager.current_view_index = len(widgets) - 1
         self.view_manager.setCurrentWidget(widgets[-1])
-        
+
         self.view_manager.switch_to_next_view()
         assert self.view_manager.current_view_index == len(widgets) - 1, "Should stay at last view"
 
@@ -154,7 +154,7 @@ class TestDynamicStackedView(unittest.TestCase):
         """Test that switching at start doesn't go below zero."""
         self.view_manager.current_view_index = 0
         self.view_manager.setCurrentWidget(self.view_manager.all_widgets()[0])
-        
+
         self.view_manager.switch_to_previous_view()
         assert self.view_manager.current_view_index == 0, "Should stay at first view"
 
@@ -163,12 +163,12 @@ class TestDynamicStackedView(unittest.TestCase):
         # Create a parent item with children
         parent_item = QStandardItem("Parent")
         for i in range(3):
-            parent_item.appendRow(QStandardItem(f"Child {i+1}"))
+            parent_item.appendRow(QStandardItem(f"Child {i + 1}"))
         self.model.appendRow(parent_item)
-        
+
         parent_index = self.model.indexFromItem(parent_item)
         self.view_manager.setRootIndex(parent_index)
-        
+
         # Check that all views have the new root index
         for view in self.view_manager.all_views():
             assert view.rootIndex() == parent_index, "All views should have the new root index"
@@ -185,9 +185,9 @@ class TestDynamicStackedView(unittest.TestCase):
         if current_view:
             index = self.model.index(0, 0)
             current_view.setCurrentIndex(index)
-            
+
         self.view_manager.clearSelection()
-        
+
         # Verify selection is cleared
         for view in self.view_manager.all_views():
             assert len(view.selectedIndexes()) == 0, "Selection should be cleared"
@@ -196,7 +196,7 @@ class TestDynamicStackedView(unittest.TestCase):
         """Test that all views share the same selection model."""
         selection_model = self.view_manager.selectionModel()
         assert selection_model is not None, "Should have a selection model"
-        
+
         for view in self.view_manager.all_views():
             assert view.selectionModel() == selection_model, "All views should share selection model"
 
@@ -207,7 +207,7 @@ class TestDynamicStackedView(unittest.TestCase):
             index = self.model.index(0, 0)
             current_view.setCurrentIndex(index)
             current_view.selectionModel().select(index, current_view.selectionModel().SelectionFlag.Select)
-            
+
         selected = self.view_manager.selectedIndexes()
         assert len(selected) > 0, "Should have selected indexes"
 
@@ -216,10 +216,11 @@ class TestDynamicStackedView(unittest.TestCase):
         # Set up a model with actual items
         from qtpy.QtGui import QStandardItemModel, QStandardItem
         from qtpy.QtWidgets import QAbstractItemView
+
         model = QStandardItemModel()
         for i in range(5):
             model.appendRow(QStandardItem(f"Item {i}"))
-        
+
         self.view_manager.setModel(model)
         current_view = self.view_manager.current_view()
         if current_view:
@@ -235,7 +236,7 @@ class TestDynamicStackedView(unittest.TestCase):
         """Test updating icon size."""
         text_size = 24
         self.view_manager.update_icon_size(text_size)
-        
+
         for view in self.view_manager.all_views():
             icon_size = view.iconSize()
             assert icon_size.width() == text_size, f"Icon width should be {text_size}"
@@ -288,7 +289,7 @@ class TestDynamicStackedView(unittest.TestCase):
         current_view = self.view_manager.current_view()
         if current_view:
             # Create a mock wheel event with Ctrl modifier
-            with patch.object(self.view_manager, 'adjust_view_size') as mock_adjust:
+            with patch.object(self.view_manager, "adjust_view_size") as mock_adjust:
                 # This would normally be triggered by actual wheel event
                 # We're just testing the logic path
                 self.view_manager.adjust_view_size(1)

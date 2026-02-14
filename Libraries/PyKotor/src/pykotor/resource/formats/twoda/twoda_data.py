@@ -103,7 +103,7 @@ class TwoDA(ComparableMixin):
         - C2DA::GetINTEntry @ 0x00414a50 - Gets integer cell value
         - C2DA::GetFLOATEntry @ 0x00414b20 - Gets float cell value
         - C2DA::GetCExoStringEntry @ 0x00414bf0 - Gets string cell value
-        
+
         2DA file format specification
 
 
@@ -147,7 +147,7 @@ class TwoDA(ComparableMixin):
 
         # https://github.com/th3w1zard1/Kotor.NET/tree/master/Kotor.NET/Formats/Kotor2DA/TwoDABinaryStructure.cs:15
         # https://github.com/th3w1zard1/KotOR_IO/tree/master/KotOR_IO/File Formats/TwoDA.cs:142
-        
+
         # Column headers (case-sensitive, typically lowercase)
         self._headers: list[str] = [] if headers is None else headers  # for columns
 
@@ -929,7 +929,7 @@ class TwoDARow(ComparableMixin):
         - C2DA::GetINTEntry @ 0x00414a50 - Gets integer cell value
         - C2DA::GetFLOATEntry @ 0x00414b20 - Gets float cell value
         - C2DA::GetCExoStringEntry @ 0x00414bf0 - Gets string cell value
-        
+
         Derivations and Other Implementations:
         ----------
         https://github.com/th3w1zard1/TSLPatcher/tree/master/lib/site/Bioware/TwoDA.pm:48-71

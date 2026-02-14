@@ -74,18 +74,10 @@ for pos in lhr_positions[:10]:  # Show first 10
         if 4216000 <= fp0 <= 4217000 and 4216000 <= fp1 <= 4217000:
             print(f"    ✓ Looks like trimesh header at offset {th_start}")
             # Read texture1 field
-            tex1 = (
-                mdl_content[th_start + 84 : th_start + 84 + 32]
-                .rstrip(b"\x00")
-                .decode("ascii", errors="ignore")
-            )
+            tex1 = mdl_content[th_start + 84 : th_start + 84 + 32].rstrip(b"\x00").decode("ascii", errors="ignore")
             print(f"    texture1: {repr(tex1)}")
             # Read MDX fields
-            mdx_data_bitmap = struct.unpack(
-                "<I", mdl_content[th_start + 52 : th_start + 56]
-            )[0]
-            mdx_texture1_offset = struct.unpack(
-                "<I", mdl_content[th_start + 68 : th_start + 72]
-            )[0]
+            mdx_data_bitmap = struct.unpack("<I", mdl_content[th_start + 52 : th_start + 56])[0]
+            mdx_texture1_offset = struct.unpack("<I", mdl_content[th_start + 68 : th_start + 72])[0]
             print(f"    mdx_data_bitmap: 0x{mdx_data_bitmap:08X}")
             print(f"    mdx_texture1_offset: {mdx_texture1_offset}")

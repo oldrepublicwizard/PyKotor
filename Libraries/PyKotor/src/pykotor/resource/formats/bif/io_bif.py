@@ -48,10 +48,10 @@ def _decompress_bzf_payload(payload: bytes, expected_size: int) -> bytes:
 
 class BIFBinaryReader(ResourceReader):
     """Reads BIF/BZF files.
-    
+
     BIF (BioWare Index File) files contain game resources indexed by KEY files.
     BZF files are compressed BIF files using LZMA compression.
-    
+
     References:
     ----------
         See key_data module docstring for engine addresses (K1 + TSL TODO). CExoKeyTable::LocateBifFile (K1: 0x0040d200).
@@ -64,6 +64,7 @@ class BIFBinaryReader(ResourceReader):
         - Fixed resources explicitly rejected (reone reads but doesn't use them)
 
     """
+
     def __init__(
         self,
         source: SOURCE_TYPES,
@@ -87,7 +88,7 @@ class BIFBinaryReader(ResourceReader):
 
     def _check_signature(self) -> None:
         """Check BIF/BZF signature."""
-        
+
         signature: str = self._reader.read_string(8)  # "BIFFV1  " or "BZF V1  "
 
         # Check file type
@@ -100,7 +101,7 @@ class BIFBinaryReader(ResourceReader):
             raise ValueError(msg)
 
         # Check version - PyKotor supports "V1  " and "V1.1", reone only checks "BIFFV1  "
-        
+
         if signature[4:] != "V1  " and signature[4:] != "V1.1":
             msg = f"Unsupported BIF/BZF version: {signature[4:]}"
             raise ValueError(msg)
@@ -111,7 +112,6 @@ class BIFBinaryReader(ResourceReader):
         self.fixed_res_count = self._reader.read_uint32()
         self.data_offset = self._reader.read_uint32()
 
-        
         # NOTE: reone reads fixed_res_count but doesn't use it. PyKotor explicitly rejects.
         if self.fixed_res_count > 0:
             msg = "Fixed resources not supported"
@@ -214,7 +214,7 @@ class BIFBinaryWriter(ResourceWriter):
         # Data section starts after header and resource table
         data_section_offset = BIF.HEADER_SIZE + (self.bif.var_count * BIF.VAR_ENTRY_SIZE)
         current_offset = data_section_offset
-        
+
         for resource in self.bif.resources:
             # Align resource data to 4-byte boundary
             if current_offset % 4 != 0:

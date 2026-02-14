@@ -702,7 +702,9 @@ class _ModelHeader:
         # Used by Reset() function as offset into MDX data buffer: reads value at param_1 + 0xac, then accesses param_2 + value to copy MDX data
         # Line 27: iVar3 = *(int *)(param_1 + 0xac); reads the offset
         # Line 32: pbVar8 = param_2 + iVar3; uses it to locate data within MDX buffer
-        self.mdx_data_buffer_offset: int = 0  # Offset into MDX data buffer for data copying operations (uint32 at binary offset 0xac). Used by Reset() function to locate data within MDX buffer.
+        self.mdx_data_buffer_offset: int = (
+            0  # Offset into MDX data buffer for data copying operations (uint32 at binary offset 0xac). Used by Reset() function to locate data within MDX buffer.
+        )
         self.mdx_size: int = 0  # MDX geometry data size in bytes (uint32)
         self.mdx_offset: int = 0
         self.offset_to_name_offsets: int = 0
@@ -1071,18 +1073,12 @@ class _Node:
             self.reference = _ReferenceHeader().read(reader)
 
         # Danglymesh sub-sub-header follows trimesh header (28 bytes: l[3]f[3]l)
-        if (
-            self.header.type_id & MDLNodeFlags.DANGLY
-            and self.trimesh is not None
-        ):
+        if self.header.type_id & MDLNodeFlags.DANGLY and self.trimesh is not None:
             self.dangly = _DanglymeshHeader().read(reader)
 
         # AABB nodes have an extra 4-byte field (aabbloc) after the trimesh header
         # This extends the header from 332/340 bytes to 336/344 bytes
-        if (
-            self.header.type_id & MDLNodeFlags.AABB
-            and self.trimesh is not None
-        ):
+        if self.header.type_id & MDLNodeFlags.AABB and self.trimesh is not None:
             # Read the AABB tree offset (aabbloc)
             # MDLOps stores this as (absolute_offset - 12), but since BinaryReader has
             # set_offset(+12) applied, the raw value can be used directly without adjustment.
@@ -1159,10 +1155,7 @@ class _Node:
         # This extends the header from 332/340 bytes to 336/344 bytes
         #
         # The AABB tree is written IMMEDIATELY after the aabbloc field, not after all node data
-        if (
-            self.header.type_id & MDLNodeFlags.AABB
-            and self.trimesh is not None
-        ):
+        if self.header.type_id & MDLNodeFlags.AABB and self.trimesh is not None:
             # Write aabbloc field: the offset to AABB tree (position + 4 = right after this field)
             # MDLOps writes: pack("L", ((tell(BMDLOUT) - 12) + 4))
             #
@@ -2071,8 +2064,7 @@ class _TrimeshHeader:
         return len(self.vertices) * 12
 
     def vertex_indices_size(self) -> int:
-        """Size of vertex indices array (3 int16s per face = 6 bytes per face).
-        """
+        """Size of vertex indices array (3 int16s per face = 6 bytes per face)."""
         return len(self.faces) * 6  # 3 shorts per face
 
 
@@ -2574,7 +2566,7 @@ def _calculate_face_area(v1: Vector3, v2: Vector3, v3: Vector3) -> float:
         Based on swkotor.exe geometry calculations:
         - Triangle area calculation uses standard Heron's formula
         - Used in mesh processing and collision detection
-        
+
         Derivations and Other Implementations:
         ----------
         https://github.com/th3w1zard1/mdlops/tree/master/MDLOpsM.pm:465-488
@@ -2631,7 +2623,7 @@ def _decompress_quaternion(compressed: int) -> Vector4:
         - slerp @ (K1: 0x004a9e00, TSL: 0x004d8c80) - Spherical linear interpolation for quaternions
         - quaternionScalarMult @ (K1: 0x004a9b80, TSL: N/A - likely inlined) - Quaternion scalar multiplication (47 bytes)
         - quaternionDotProduct @ (K1: 0x004a9d30, TSL: N/A - likely inlined in slerp) - Quaternion dot product (37 bytes)
-        
+
         Derivations and Other Implementations:
         ----------
         https://github.com/th3w1zard1/kotorblender/tree/master/io_scene_kotor/format/mdl/reader.py:850-868
@@ -2855,7 +2847,7 @@ class MDLBinaryReader:
           * Different from CSWCCreature::UnloadModel (uses vtable offset 0x74 vs 0x78)
         - UnloadModel call site @ (K1: 0x006825f0, TSL: 0x006d9721) (within CSWCPlaceable::LoadModel) - Additional unload function call
         - MdlNode::AsMdlNodeTriMesh @ (K1: 0x0043e400, TSL: 0x004501d0) - Converts node to trimesh type
-        
+
         Derivations and Other Implementations:
         ----------
         - https://github.com/th3w1zard1/mdlops/tree/master/MDLOpsM.pm:1649-1778 (Controller structure and bezier detection)
@@ -2879,11 +2871,7 @@ class MDLBinaryReader:
     ):
         self._reader: BinaryReader = BinaryReader.from_auto(source, offset)
 
-        self._reader_ext: BinaryReader | None = (
-            None
-            if source_ext is None
-            else BinaryReader.from_auto(source_ext, offset_ext)
-        )
+        self._reader_ext: BinaryReader | None = None if source_ext is None else BinaryReader.from_auto(source_ext, offset_ext)
 
         # first 12 bytes do not count in offsets used within the file
         self._reader.set_offset(self._reader.offset() + 12)
@@ -2912,14 +2900,10 @@ class MDLBinaryReader:
 
         # Determine game version from the file header function pointers.
         # This is more reliable than using per-node function pointer values.
-        if (
-            model_header.geometry.function_pointer0 == _GeometryHeader.K1_FUNCTION_POINTER0
-            and model_header.geometry.function_pointer1 == _GeometryHeader.K1_FUNCTION_POINTER1
-        ):
+        if model_header.geometry.function_pointer0 == _GeometryHeader.K1_FUNCTION_POINTER0 and model_header.geometry.function_pointer1 == _GeometryHeader.K1_FUNCTION_POINTER1:
             self.game = Game.K1
         elif (
-            model_header.geometry.function_pointer0 == _GeometryHeader.K2_FUNCTION_POINTER0
-            and model_header.geometry.function_pointer1 == _GeometryHeader.K2_FUNCTION_POINTER1
+            model_header.geometry.function_pointer0 == _GeometryHeader.K2_FUNCTION_POINTER0 and model_header.geometry.function_pointer1 == _GeometryHeader.K2_FUNCTION_POINTER1
         ):
             self.game = Game.K2
 
@@ -2953,10 +2937,7 @@ class MDLBinaryReader:
         # Skip animations when fast loading (not needed for rendering)
         if not self._fast_load:
             self._reader.seek(model_header.offset_to_animations)
-            animation_offsets: list[int] = [
-                self._reader.read_uint32()
-                for _ in range(model_header.animation_count)
-            ]
+            animation_offsets: list[int] = [self._reader.read_uint32() for _ in range(model_header.animation_count)]
             for animation_offset in animation_offsets:
                 anim: MDLAnimation = self._load_anim(animation_offset)
                 self._mdl.anims.append(anim)
@@ -2986,10 +2967,7 @@ class MDLBinaryReader:
                 ),
             )
 
-        names_size: int = model_header.offset_to_animations - (
-            model_header.offset_to_name_offsets
-            + (4 * name_indexes_count)
-        )
+        names_size: int = model_header.offset_to_animations - (model_header.offset_to_name_offsets + (4 * name_indexes_count))
         names_raw: bytes = self._reader.read_bytes(names_size)
 
         names_list: list[str] = []
@@ -3576,10 +3554,7 @@ class MDLBinaryReader:
         # Compressed quaternions use column_count=2 as a FLAG (not 2 values per row!)
         # Each compressed quaternion is stored as a single uint32, NOT uint32 + padding float
         # https://github.com/th3w1zard1/mdlops/tree/master/MDLOpsM.pm:1719 - "$template .= 'L' x $_->[2]" - just row_count uint32s
-        if (
-            bin_controller.type_id == MDLControllerType.ORIENTATION
-            and bin_controller.column_count == 2
-        ):
+        if bin_controller.type_id == MDLControllerType.ORIENTATION and bin_controller.column_count == 2:
             # Detected compressed quaternions - set the model flag
             self._mdl.compress_quaternions = 1
             for _ in range(bin_controller.row_count):
@@ -3609,10 +3584,7 @@ class MDLBinaryReader:
                 # Check bounds before reading each row
                 if self._reader.position() + bytes_per_row > self._reader.size():
                     break
-                row_data: list[float] = [
-                    self._reader.read_single()
-                    for _ in range(effective_columns)
-                ]
+                row_data: list[float] = [self._reader.read_single() for _ in range(effective_columns)]
                 data.append(row_data)
 
         controller_type: int = bin_controller.type_id
@@ -3633,10 +3605,7 @@ class MDLBinaryReader:
 
         # Handle case where we didn't read all rows due to bounds issues
         actual_row_count: int = min(len(time_keys), len(data), row_count)
-        rows: list[MDLControllerRow] = [
-            MDLControllerRow(time_keys[i], data[i])
-            for i in range(actual_row_count)
-        ]
+        rows: list[MDLControllerRow] = [MDLControllerRow(time_keys[i], data[i]) for i in range(actual_row_count)]
         # https://github.com/th3w1zard1/mdlops/tree/master/MDLOpsM.pm:1709 - Store bezier flag with controller
         controller = MDLController(
             controller_type_enum,
@@ -3666,7 +3635,7 @@ class MDLBinaryWriter:
         - CSWCCreature::UnloadModel @ (K1: 0x0060c8e0, TSL: N/A - likely inlined) - Unloads creature models (42 bytes, 19 lines)
         - CSWCObject::UnloadModel @ (K1: 0x00646650, TSL: N/A - likely inlined), @ (K1: 0x006825f0, TSL: 0x006d9721) (call site within CSWCPlaceable::LoadModel) - Additional unload functions
         - MdlNode::AsMdlNodeTriMesh @ (K1: 0x0043e400, TSL: 0x004501d0) - Converts node to trimesh type
-        
+
         Derivations and Other Implementations:
         ----------
         https://github.com/th3w1zard1/mdlops/tree/master/MDLOpsM.pm (Binary MDL writing paths)
@@ -4062,7 +4031,7 @@ class MDLBinaryWriter:
         #
         # References:
         #   - https://github.com/th3w1zard1/mdlops/tree/master/MDLOpsM.pm:1649-1778
-        #   - 
+        #   -
         cur_float_offset = 0
         for mdl_controller in mdl_node.controllers:
             bin_controller = _Controller()
@@ -4276,13 +4245,13 @@ class MDLBinaryWriter:
             bin_node.trimesh.mdx_texture1_offset = suboffset
             bin_node.trimesh.mdx_data_bitmap |= _MDXDataFlags.TEX0
             if _DEBUG_MDL:
-                print(f"DEBUG _update_mdx: Node {mdl_node.name} has_uv1=True texture1={mdl_node.mesh.texture_1} bitmap=0x{bin_node.trimesh.mdx_data_bitmap:08X} TEX0={bool(bin_node.trimesh.mdx_data_bitmap & _MDXDataFlags.TEX0)} texture1_offset={bin_node.trimesh.mdx_texture1_offset}")
+                print(
+                    f"DEBUG _update_mdx: Node {mdl_node.name} has_uv1=True texture1={mdl_node.mesh.texture_1} bitmap=0x{bin_node.trimesh.mdx_data_bitmap:08X} TEX0={bool(bin_node.trimesh.mdx_data_bitmap & _MDXDataFlags.TEX0)} texture1_offset={bin_node.trimesh.mdx_texture1_offset}"
+                )
             assert bin_node.trimesh.mdx_data_bitmap & _MDXDataFlags.TEX0, f"Failed to set TEX0 flag for node {mdl_node.name}"
             suboffset += 8
         elif (  # has_texture1
-            mdl_node.mesh.texture_1 is not None
-            and mdl_node.mesh.texture_1.strip() != ""
-            and mdl_node.mesh.texture_1.upper() != "NULL"
+            mdl_node.mesh.texture_1 is not None and mdl_node.mesh.texture_1.strip() != "" and mdl_node.mesh.texture_1.upper() != "NULL"
         ) and vcount > 0:
             # Texture name exists but no valid UV data - generate default UV coordinates
             # This ensures MDLOps can find tverts data when it reads the binary
@@ -4291,7 +4260,9 @@ class MDLBinaryWriter:
             bin_node.trimesh.mdx_texture1_offset = suboffset
             bin_node.trimesh.mdx_data_bitmap |= _MDXDataFlags.TEX0
             if _DEBUG_MDL:
-                print(f"DEBUG _update_mdx: Node {mdl_node.name} has_uv1=False texture1={mdl_node.mesh.texture_1} vcount={vcount} generated default UVs bitmap=0x{bin_node.trimesh.mdx_data_bitmap:08X} TEX0={bool(bin_node.trimesh.mdx_data_bitmap & _MDXDataFlags.TEX0)}")
+                print(
+                    f"DEBUG _update_mdx: Node {mdl_node.name} has_uv1=False texture1={mdl_node.mesh.texture_1} vcount={vcount} generated default UVs bitmap=0x{bin_node.trimesh.mdx_data_bitmap:08X} TEX0={bool(bin_node.trimesh.mdx_data_bitmap & _MDXDataFlags.TEX0)}"
+                )
             suboffset += 8
 
         # Only set TEX1 flag if texture name is valid (not None, not empty, not "NULL")
@@ -4300,9 +4271,7 @@ class MDLBinaryWriter:
             bin_node.trimesh.mdx_data_bitmap |= _MDXDataFlags.TEX1
             suboffset += 8
         elif (  # has_texture2
-            mdl_node.mesh.texture_2 is not None
-            and mdl_node.mesh.texture_2.strip() != ""
-            and mdl_node.mesh.texture_2.upper() != "NULL"
+            mdl_node.mesh.texture_2 is not None and mdl_node.mesh.texture_2.strip() != "" and mdl_node.mesh.texture_2.upper() != "NULL"
         ) and vcount > 0:
             # Texture name exists but no valid UV data - generate default UV coordinates
             if not mdl_node.mesh.vertex_uv2 or len(mdl_node.mesh.vertex_uv2) != vcount:
@@ -4335,35 +4304,19 @@ class MDLBinaryWriter:
         for i in range(vcount):
             if bin_node.trimesh.mdx_data_bitmap & _MDXDataFlags.VERTEX:
                 # Use vertex from vertex_positions if available, otherwise use null vertex
-                position = (
-                    mdl_node.mesh.vertex_positions[i]
-                    if (mdl_node.mesh.vertex_positions and i < len(mdl_node.mesh.vertex_positions))
-                    else Vector3.from_null()
-                )
+                position = mdl_node.mesh.vertex_positions[i] if (mdl_node.mesh.vertex_positions and i < len(mdl_node.mesh.vertex_positions)) else Vector3.from_null()
                 self._writer_ext.write_vector3(position)
             if bin_node.trimesh.mdx_data_bitmap & _MDXDataFlags.NORMAL:
                 # Only write normals if they're actually in MDX (bitmap flag set)
-                norm = (
-                    mdl_node.mesh.vertex_normals[i]
-                    if (mdl_node.mesh.vertex_normals and i < len(mdl_node.mesh.vertex_normals))
-                    else Vector3.from_null()
-                )
+                norm = mdl_node.mesh.vertex_normals[i] if (mdl_node.mesh.vertex_normals and i < len(mdl_node.mesh.vertex_normals)) else Vector3.from_null()
                 self._writer_ext.write_vector3(norm)
             if bin_node.trimesh.mdx_data_bitmap & _MDXDataFlags.TEX0:
                 # Only write UV1 if it's actually in MDX (bitmap flag set)
-                uv1 = (
-                    mdl_node.mesh.vertex_uv1[i]
-                    if (mdl_node.mesh.vertex_uv1 and i < len(mdl_node.mesh.vertex_uv1))
-                    else Vector2(0.0, 0.0)
-                )
+                uv1 = mdl_node.mesh.vertex_uv1[i] if (mdl_node.mesh.vertex_uv1 and i < len(mdl_node.mesh.vertex_uv1)) else Vector2(0.0, 0.0)
                 self._writer_ext.write_vector2(uv1)
             if bin_node.trimesh.mdx_data_bitmap & _MDXDataFlags.TEX1:
                 # Only write UV2 if it's actually in MDX (bitmap flag set)
-                uv2 = (
-                    mdl_node.mesh.vertex_uv2[i]
-                    if (mdl_node.mesh.vertex_uv2 and i < len(mdl_node.mesh.vertex_uv2))
-                    else Vector2(0.0, 0.0)
-                )
+                uv2 = mdl_node.mesh.vertex_uv2[i] if (mdl_node.mesh.vertex_uv2 and i < len(mdl_node.mesh.vertex_uv2)) else Vector2(0.0, 0.0)
                 self._writer_ext.write_vector2(uv2)
 
             if mdl_node.skin and bin_node.skin is not None:
@@ -4473,10 +4426,7 @@ class MDLBinaryWriter:
         if len(bin_nodes) != len(mdl_nodes):
             raise ValueError(f"bin_nodes and mdl_nodes length mismatch ({len(bin_nodes)} vs {len(mdl_nodes)})")
 
-        idx_by_id: dict[int, int] = {
-            id(n): i
-            for i, n in enumerate(mdl_nodes)
-        }
+        idx_by_id: dict[int, int] = {id(n): i for i, n in enumerate(mdl_nodes)}
         parent_by_idx: dict[int, int] = {}
         parent_idx: int | None
         for parent_idx, parent in enumerate(mdl_nodes):
@@ -4646,10 +4596,7 @@ class MDLBinaryWriter:
         # indices_offsets stores offsets relative to the start of the indices data block
         # If indices_offsets is empty but count > 0, create the correct number of offsets (all 0)
         # This ensures the count matches the array length, preventing MDLOps from reading beyond bounds
-        if (
-            bin_node.trimesh.indices_offsets_count > 0
-            and not bin_node.trimesh.indices_offsets
-        ):
+        if bin_node.trimesh.indices_offsets_count > 0 and not bin_node.trimesh.indices_offsets:
             # No offsets preserved - create the correct number of offsets (all set to 0)
             # This matches the count that was preserved from the original binary header
             bin_node.trimesh.indices_offsets = [0] * bin_node.trimesh.indices_offsets_count
@@ -4699,16 +4646,15 @@ class MDLBinaryWriter:
         # The all_nodes() traversal returns nodes in a different order than they appear in the binary,
         # so we need to sort by node_id before writing MDX data.
         # Create a list of (bin_node, mdl_node, original_index) tuples sorted by node_id
-        node_pairs: list[tuple[_Node, MDLNode, int, int]] = [
-            (self._bin_nodes[i], self._mdl_nodes[i], i, self._mdl_nodes[i].node_id)
-            for i in range(len(self._bin_nodes))
-        ]
+        node_pairs: list[tuple[_Node, MDLNode, int, int]] = [(self._bin_nodes[i], self._mdl_nodes[i], i, self._mdl_nodes[i].node_id) for i in range(len(self._bin_nodes))]
 
         # Write MDX data in node_id order
-        for bin_node, mdl_node, orig_idx, node_id in sorted(node_pairs, key=lambda x: x[3]):   # Sort by node_id
+        for bin_node, mdl_node, orig_idx, node_id in sorted(node_pairs, key=lambda x: x[3]):  # Sort by node_id
             if bin_node.trimesh is not None:
                 if _DEBUG_MDL:
-                    print(f"DEBUG _write_all: Calling _update_mdx for node {mdl_node.name} (node_id={node_id}, orig_idx={orig_idx}, bin_node_id={id(bin_node)}, trimesh_id={id(bin_node.trimesh)})")
+                    print(
+                        f"DEBUG _write_all: Calling _update_mdx for node {mdl_node.name} (node_id={node_id}, orig_idx={orig_idx}, bin_node_id={id(bin_node)}, trimesh_id={id(bin_node.trimesh)})"
+                    )
                 self._update_mdx(bin_node, mdl_node)
                 if _DEBUG_MDL and bin_node.trimesh.texture1:
                     print(f"DEBUG _write_all: After _update_mdx, node {mdl_node.name} has tex1_off={bin_node.trimesh.mdx_texture1_offset} (trimesh_id={id(bin_node.trimesh)})")
@@ -4763,19 +4709,19 @@ class MDLBinaryWriter:
         }
         # Default to 0x00 (Other) if classification not in map
         self._file_header.model_type = classification_map.get(self._mdl.classification, 0x00)
-        
+
         # classification_unk1: defaults to 4 for Placeable, 0 otherwise (mdlops:6142-6144)
         if self._mdl.classification_unk1 is not None:
             self._file_header.subclassification = self._mdl.classification_unk1
         else:
             self._file_header.subclassification = 4 if self._mdl.classification == MDLClassification.PLACEABLE else 0
-        
+
         # fog: mdlops uses ignorefog (inverted), writes as "affectedByFog" (mdlops:6147)
         # ignorefog ? 0 : 1 means: if ignorefog is true, fog_byte=0; if false, fog_byte=1
         # Our fog=True means fog affects model (ignorefog=False), so write 1
         # Our fog=False means fog doesn't affect model (ignorefog=True), so write 0
         self._file_header.fog = 1 if self._mdl.fog else 0
-        
+
         animation_count_actual = len(self._mdl.anims)
         animation_count_clamped = min(animation_count_actual, 0x7FFFFFFF)
         self._file_header.animation_count = self._file_header.animation_count2 = animation_count_clamped
@@ -4783,7 +4729,7 @@ class MDLBinaryWriter:
         self._file_header.bounding_box_max = self._mdl.bmax
         self._file_header.radius = self._mdl.radius
         self._file_header.anim_scale = float(self._mdl.animation_scale)
-        
+
         # supermodel: special handling for "mdlops" -> "NULL" (mdlops:6156-6160)
         if self._mdl.supermodel == "mdlops":
             self._file_header.supermodel = "NULL"
@@ -4808,7 +4754,9 @@ class MDLBinaryWriter:
             bin_anim.write(self._writer, self.game)
         for i, bin_node in enumerate(self._bin_nodes):
             if _DEBUG_MDL and bin_node.trimesh and bin_node.trimesh.texture1:
-                print(f"DEBUG _write_all: About to write node {i} (name_id={bin_node.header.name_id if bin_node.header else '?'}) texture1={bin_node.trimesh.texture1} bitmap=0x{bin_node.trimesh.mdx_data_bitmap:08X} texture1_offset={bin_node.trimesh.mdx_texture1_offset}")
+                print(
+                    f"DEBUG _write_all: About to write node {i} (name_id={bin_node.header.name_id if bin_node.header else '?'}) texture1={bin_node.trimesh.texture1} bitmap=0x{bin_node.trimesh.mdx_data_bitmap:08X} texture1_offset={bin_node.trimesh.mdx_texture1_offset}"
+                )
             bin_node.write(self._writer, self.game)
             if _DEBUG_MDL and bin_node.trimesh and bin_node.trimesh.texture1:
                 print(f"DEBUG _write_all: After writing node {i}, texture1_offset={bin_node.trimesh.mdx_texture1_offset}")

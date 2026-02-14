@@ -2727,6 +2727,7 @@ def resolve_resource_in_installation_impl(
             SearchLocation.TEXTURES_TPA,
             SearchLocation.TEXTURES_TPB,
             SearchLocation.TEXTURES_TPC,
+            SearchLocation.TEXTURES_GUI,
             SearchLocation.LIPS,
             # SearchLocation.RIMS intentionally omitted - must be specified explicitly
         ]

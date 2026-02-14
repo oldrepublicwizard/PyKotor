@@ -205,35 +205,27 @@ class BWM(ComparableMixin):
     COMPARABLE_SEQUENCE_FIELDS = ("faces",)
 
     def __init__(self):
-        
         # https://github.com/th3w1zard1/KotOR.js/tree/master/src/odyssey/OdysseyWalkMesh.ts:60
         # Walkmesh type (AreaModel=WOK or PlaceableOrDoor=PWK/DWK)
         self.walkmesh_type: BWMType = BWMType.AreaModel
 
-        
-        
         # https://github.com/th3w1zard1/KotOR.js/tree/master/src/odyssey/OdysseyWalkMesh.ts:37
         # List of triangular faces (vertices, material, transitions)
         self.faces: list[BWMFace] = []
 
-        
         # https://github.com/th3w1zard1/KotOR.js/tree/master/src/odyssey/OdysseyWalkMesh.ts:36
         # 3D position offset for walkmesh (typically 0,0,0 for areas)
         self.position: Vector3 = Vector3.from_null()
 
-        
         # First relative hook position (door/transition placement, relative to walkmesh)
         self.relative_hook1: Vector3 = Vector3.from_null()
 
-        
         # Second relative hook position (door/transition placement, relative to walkmesh)
         self.relative_hook2: Vector3 = Vector3.from_null()
 
-        
         # First absolute hook position (door/transition placement, world space)
         self.absolute_hook1: Vector3 = Vector3.from_null()
 
-        
         # Second absolute hook position (door/transition placement, world space)
         self.absolute_hook2: Vector3 = Vector3.from_null()
 
@@ -653,8 +645,7 @@ class BWM(ComparableMixin):
         max_distance: float,
         materials: set[SurfaceMaterial],
     ) -> tuple[BWMFace, float] | None:
-        """Recursively raycast through AABB tree.
-        """
+        """Recursively raycast through AABB tree."""
         # Test ray against AABB bounds
         if not self._ray_aabb_intersect(origin, direction, node.bb_min, node.bb_max, max_distance):
             return None
@@ -697,8 +688,7 @@ class BWM(ComparableMixin):
         max_distance: float,
         materials: set[SurfaceMaterial],
     ) -> tuple[BWMFace, float] | None:
-        """Brute force raycast testing all faces.
-        """
+        """Brute force raycast testing all faces."""
         best_result: tuple[BWMFace, float] | None = None
         best_distance = max_distance
 
@@ -892,20 +882,20 @@ class BWM(ComparableMixin):
         materials: set[SurfaceMaterial] | None = None,
     ) -> float | None:
         """Get the Z-height (elevation) at a given (X, Y) point.
-        
+
         Finds the walkable face containing the point and returns its Z coordinate at that location.
         Uses AABB tree for efficient spatial queries on area walkmeshes.
-        
+
         Args:
         ----
             x: X coordinate
             y: Y coordinate
             materials: Set of materials to consider (None = all walkable materials)
-            
+
         Returns:
         -------
             float | None: Z coordinate if point is on a walkable face, None otherwise
-            
+
         References:
         ----------
         Original BioWare engine binaries (from swkotor.exe, swkotor2.exe)
@@ -916,7 +906,7 @@ class BWM(ComparableMixin):
         https://github.com/th3w1zard1/KotOR.js/tree/master/src/odyssey/OdysseyWalkMesh.ts:497-504 (isPointWalkable)
         Libraries/PyKotor/src/utility/common/geometry.py:1270-1292 (Face.determine_z)
 
-            
+
         Example:
         -------
             >>> bwm = read_bwm(data)
@@ -927,17 +917,17 @@ class BWM(ComparableMixin):
         # Default to walkable materials if not specified
         if materials is None:
             materials = {mat for mat in SurfaceMaterial if mat.walkable()}
-        
+
         # Find face containing the point
         face = self.find_face_at(x, y, materials)
         if face is None:
             return None
-        
+
         # Check if face is flat (all vertices have same Z)
         if abs(face.v1.z - face.v2.z) < 1e-6 and abs(face.v2.z - face.v3.z) < 1e-6:
             # Flat face: return Z coordinate directly
             return face.v1.z
-        
+
         # Use face's determine_z method to compute Z coordinate
         try:
             return face.determine_z(x, y)
@@ -1510,13 +1500,10 @@ class BWMFace(Face, ComparableMixin):
         v2: Vector3,
         v3: Vector3,
     ):
-        
-        
         # https://github.com/th3w1zard1/KotOR.js/tree/master/src/odyssey/OdysseyWalkMesh.ts:80-84
         # Three vertices defining the triangular face
         super().__init__(v1, v2, v3)
 
-        
         # https://github.com/th3w1zard1/KotOR.js/tree/master/src/odyssey/WalkmeshEdge.ts:16
         # Optional transition indices for each edge (stored in edges table in binary)
         # Edge 0 (v1->v2): transition index into LYT door hooks
@@ -1540,12 +1527,7 @@ class BWMFace(Face, ComparableMixin):
         parent_eq = super().__eq__(other)
         if parent_eq is NotImplemented:
             return NotImplemented  # type: ignore[no-any-return]
-        return (
-            parent_eq
-            and self.trans1 == other.trans1
-            and self.trans2 == other.trans2
-            and self.trans3 == other.trans3
-        )
+        return parent_eq and self.trans1 == other.trans1 and self.trans2 == other.trans2 and self.trans3 == other.trans3
 
     def __hash__(self):  # type: ignore[override]
         return hash((super().__hash__(), self.trans1, self.trans2, self.trans3))
@@ -1653,36 +1635,25 @@ class BWMNodeAABB(ComparableMixin):
             - Sets the splitting face and most significant plane
             - Sets the left and right child nodes.
         """
-        
-        
+
         # https://github.com/th3w1zard1/KotOR.js/tree/master/src/interface/odyssey/IOdysseyModelAABBNode.ts
         # Minimum bounds of axis-aligned bounding box
         self.bb_min: Vector3 = bb_min
 
-        
-        
         # Maximum bounds of axis-aligned bounding box
         self.bb_max: Vector3 = bb_max
 
-        
-        
         # https://github.com/th3w1zard1/KotOR.js/tree/master/src/odyssey/OdysseyWalkMesh.ts:191
         # Face referenced by this node (None for internal nodes, face for leaves)
         self.face: BWMFace | None = face
 
-        
-        
         # Most significant splitting plane (axis: 0=X, 1=Y, 2=Z)
         self.sigplane: BWMMostSignificantPlane = BWMMostSignificantPlane(sigplane)
 
-        
-        
         # https://github.com/th3w1zard1/KotOR.js/tree/master/src/odyssey/OdysseyWalkMesh.ts:192
         # Left child node (None for leaf nodes)
         self.left: BWMNodeAABB | None = left
 
-        
-        
         # https://github.com/th3w1zard1/KotOR.js/tree/master/src/odyssey/OdysseyWalkMesh.ts:193
         # Right child node (None for leaf nodes)
         self.right: BWMNodeAABB | None = right
@@ -1754,12 +1725,10 @@ class BWMAdjacency(ComparableMixin):
         face: BWMFace,
         index: int,
     ):
-        
         # https://github.com/th3w1zard1/KotOR.js/tree/master/src/odyssey/OdysseyWalkMesh.ts:96
         # Target face that shares an edge with source face
         self.face: BWMFace = face
 
-        
         # https://github.com/th3w1zard1/KotOR.js/tree/master/src/odyssey/OdysseyWalkMesh.ts:98-100
         # Edge index of target face (0, 1, or 2)
         self.edge: int = index
@@ -1832,21 +1801,20 @@ class BWMEdge(ComparableMixin):
         final: bool = False,
     ):
         # https://github.com/th3w1zard1/KotOR.js/tree/master/src/odyssey/WalkmeshEdge.ts:22
-        
+
         # Face this perimeter edge belongs to
         self.face: BWMFace = face
 
         # https://github.com/th3w1zard1/KotOR.js/tree/master/src/odyssey/WalkmeshEdge.ts:27
-        
+
         # Edge index on face (0, 1, or 2)
         self.index: int = index
 
         # https://github.com/th3w1zard1/KotOR.js/tree/master/src/odyssey/WalkmeshEdge.ts:16
-        
+
         # Transition index into LYT door hooks (-1 for no transition)
         self.transition: int = transition
 
-        
         # Flag indicating final edge of perimeter loop
         self.final: bool = final
 

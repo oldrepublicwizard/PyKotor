@@ -1,4 +1,5 @@
 """List command implementation."""
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
@@ -80,6 +81,3 @@ def cmd_list(args: Namespace, logger: Logger) -> int:
                         logger.info(f"    filter: {pattern}")
 
     return 0
-
-
-

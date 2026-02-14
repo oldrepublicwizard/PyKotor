@@ -137,7 +137,7 @@ def _read_json(content: str) -> TwineStory:
             position=Vector2(float(position[0]), float(position[1])),
             size=Vector2(float(size[0]), float(size[1])),
         )
-        
+
         # Restore KotOR-specific metadata and custom metadata from custom dict
         if "custom" in p_meta and isinstance(p_meta["custom"], dict):
             custom_data = p_meta["custom"]
@@ -175,7 +175,7 @@ def _read_json(content: str) -> TwineStory:
                 passage_metadata.vo_resref = str(custom_data["vo_resref"]) if custom_data["vo_resref"] else ""
             if "speaker" in custom_data:
                 passage_metadata.speaker = str(custom_data["speaker"])
-            
+
             # Store remaining custom metadata (e.g., language variants) that aren't KotOR-specific fields
             kotorf_fields = {"animation_id", "camera_angle", "camera_id", "fade_type", "quest", "sound", "vo_resref", "speaker"}
             for key, value in custom_data.items():
@@ -269,7 +269,7 @@ def _read_html(content: str) -> TwineStory:
             position=Vector2(float(position[0]), float(position[1])),
             size=Vector2(float(size[0]), float(size[1])),
         )
-        
+
         # Restore custom metadata from data-custom attribute
         custom_data = p_data.get("data-custom")
         if custom_data:
@@ -309,7 +309,7 @@ def _read_html(content: str) -> TwineStory:
                         passage_metadata.vo_resref = str(custom_dict["vo_resref"]) if custom_dict["vo_resref"] else ""
                     if "speaker" in custom_dict:
                         passage_metadata.speaker = str(custom_dict["speaker"])
-                    
+
                     # Store remaining custom metadata that aren't KotOR-specific fields
                     kotorf_fields = {"animation_id", "camera_angle", "camera_id", "fade_type", "quest", "sound", "vo_resref", "speaker"}
                     for key, value in custom_dict.items():
@@ -390,12 +390,12 @@ def _write_json(
             if link_texts:
                 # Append links to the text (Twine convention is to append links at the end)
                 text_with_links = passage.text + (" " if passage.text else "") + " ".join(link_texts)
-        
+
         metadata_dict: PassageMetadataDict = {
             "position": f"{passage.metadata.position.x},{passage.metadata.position.y}",
             "size": f"{passage.metadata.size.x},{passage.metadata.size.y}",
         }
-        
+
         # Include KotOR-specific metadata fields in custom dict
         kotorf_metadata: dict[str, str] = {}
         if passage.metadata.animation_id != 0:
@@ -415,14 +415,14 @@ def _write_json(
             kotorf_metadata["vo_resref"] = str(passage.metadata.vo_resref)
         if passage.metadata.speaker:
             kotorf_metadata["speaker"] = passage.metadata.speaker
-        
+
         # Merge with existing custom metadata (e.g., language variants)
         if passage.metadata.custom:
             kotorf_metadata.update(passage.metadata.custom)
-        
+
         if kotorf_metadata:
             metadata_dict["custom"] = kotorf_metadata
-        
+
         p_data: PassageDict = {
             "name": passage.name,
             "text": text_with_links,
@@ -507,7 +507,7 @@ def _write_html(
 
         if custom_payload:
             p_data.set("data-custom", json.dumps(custom_payload))
-        
+
         # Embed links into text in Twine format: [[text->target]] or [[target]]
         text_with_links = passage.text
         if passage.links:
@@ -521,7 +521,7 @@ def _write_html(
             if link_texts:
                 # Append links to the text (Twine convention is to append links at the end)
                 text_with_links = passage.text + (" " if passage.text else "") + " ".join(link_texts)
-        
+
         p_data.text = text_with_links
 
     # Mark starting passage if known
@@ -550,7 +550,7 @@ def _story_to_dlg(story: TwineStory) -> DLG:
         # Set text - restore all language/gender combinations from custom metadata
         node.text = LocalizedString(-1)
         node.text.set_data(Language.ENGLISH, Gender.MALE, passage.text)
-        
+
         # Restore additional language variants from custom metadata
         for key, value in passage.metadata.custom.items():
             if key.startswith("text_") and isinstance(value, str):
@@ -650,7 +650,7 @@ def _dlg_to_story(
 
         # Get primary text (English, Male) for main passage text
         primary_text = node.text.get(Language.ENGLISH, Gender.MALE) or ""
-        
+
         passage: TwinePassage = TwinePassage(
             name=_assign_name(node),
             text=primary_text,
@@ -658,14 +658,14 @@ def _dlg_to_story(
             pid=pid,
             tags=["entry"] if isinstance(node, DLGEntry) else ["reply"],
         )
-        
+
         # Store all language/gender combinations in custom metadata
         if node.text.stringref == -1:  # Only store if using custom strings, not TLK reference
             for language, gender, text in node.text:
                 if text:  # Only store non-empty strings
                     key = f"text_{language.name.lower()}_{gender.value}"
                     passage.metadata.custom[key] = text
-        
+
         converter.store_kotor_metadata(passage, node)
         node_to_passage[node] = passage
         story.passages.append(passage)

@@ -84,11 +84,14 @@ class FileOperationProgressSinkImpl(IFileOperationProgressSink):
         print("Timer resumed")
         return S_OK
 
+
 def initialize_com():
     comtypes.CoInitialize()
 
+
 def uninitialize_com():
     comtypes.CoUninitialize()
+
 
 def create_shell_item(path_obj):
     path = WindowsPath(path_obj).resolve()
@@ -98,6 +101,7 @@ def create_shell_item(path_obj):
     folder = shell.NameSpace(str(path.parent))
     item = folder.ParseName(path.name)
     return item.QueryInterface(Shell32.IShellItem)
+
 
 def perform_file_operation(
     source: os.PathLike | str,
@@ -139,6 +143,7 @@ def perform_file_operation(
 
     finally:
         uninitialize_com()
+
 
 # Example usage
 if __name__ == "__main__":

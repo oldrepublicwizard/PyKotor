@@ -22,9 +22,9 @@ from typing import Any
 
 class IAnimationController(ABC):
     """Abstract interface for animation controllers.
-    
+
     Controllers animate node properties by interpolating between keyframes.
-    
+
     References:
     ----------
         Original BioWare engine binaries (from swkotor.exe, swkotor2.exe)
@@ -35,19 +35,19 @@ class IAnimationController(ABC):
 
 
     """
-    
+
     @abstractmethod
     def get_value_at_time(self, time: float) -> Any:
         """Get the interpolated value at a specific time.
-        
+
         Args:
         ----
             time: Time in seconds
-        
+
         Returns:
         -------
             Interpolated value at the given time
-        
+
         References:
         ----------
         Original BioWare engine binaries (from swkotor.exe, swkotor2.exe)
@@ -56,16 +56,16 @@ class IAnimationController(ABC):
 
         """
         ...
-    
+
     @abstractmethod
     def apply(self, node: Any, value: Any) -> None:
         """Apply animated value to a node.
-        
+
         Args:
         ----
             node: Backend-specific node object
             value: Animated value to apply
-        
+
         References:
         ----------
         Original BioWare engine binaries (from swkotor.exe, swkotor2.exe)
@@ -81,7 +81,7 @@ class IAnimationController(ABC):
 
 class IAnimationState(ABC):
     """Abstract interface for animation playback state.
-    
+
     References:
     ----------
         Original BioWare engine binaries (from swkotor.exe, swkotor2.exe)
@@ -92,19 +92,19 @@ class IAnimationState(ABC):
 
 
     """
-    
+
     @abstractmethod
     def update(self, dt: float) -> bool:
         """Update animation state for the current frame.
-        
+
         Args:
         ----
             dt: Delta time since last update (seconds)
-        
+
         Returns:
         -------
             True if animation is still playing, False if finished
-        
+
         References:
         ----------
         Original BioWare engine binaries (from swkotor.exe, swkotor2.exe)
@@ -113,17 +113,17 @@ class IAnimationState(ABC):
 
         """
         ...
-    
+
     @abstractmethod
     def play(self) -> None:
         """Start playing the animation."""
         ...
-    
+
     @abstractmethod
     def pause(self) -> None:
         """Pause the animation."""
         ...
-    
+
     @abstractmethod
     def stop(self) -> None:
         """Stop and reset the animation."""
@@ -132,7 +132,7 @@ class IAnimationState(ABC):
 
 class IAnimationManager(ABC):
     """Abstract interface for managing animations on a model.
-    
+
     References:
     ----------
         Original BioWare engine binaries (from swkotor.exe, swkotor2.exe)
@@ -143,21 +143,21 @@ class IAnimationManager(ABC):
 
 
     """
-    
+
     @abstractmethod
     def play_animation(self, animation_name: str, loop: bool = True, speed: float = 1.0) -> bool:
         """Play an animation by name.
-        
+
         Args:
         ----
             animation_name: Name of the animation to play
             loop: Whether to loop the animation
             speed: Playback speed multiplier
-        
+
         Returns:
         -------
             True if animation was found and started, False otherwise
-        
+
         References:
         ----------
         Original BioWare engine binaries (from swkotor.exe, swkotor2.exe)
@@ -166,25 +166,25 @@ class IAnimationManager(ABC):
 
         """
         ...
-    
+
     @abstractmethod
     def pause_animation(self) -> None:
         """Pause the current animation."""
         ...
-    
+
     @abstractmethod
     def stop_animation(self) -> None:
         """Stop the current animation."""
         ...
-    
+
     @abstractmethod
     def update(self, dt: float) -> None:
         """Update animation for the current frame.
-        
+
         Args:
         ----
             dt: Delta time since last update (seconds)
-        
+
         References:
         ----------
         Original BioWare engine binaries (from swkotor.exe, swkotor2.exe)
@@ -193,28 +193,27 @@ class IAnimationManager(ABC):
 
         """
         ...
-    
+
     @abstractmethod
     def get_animation_names(self) -> list[str]:
         """Get list of all available animation names.
-        
+
         Returns:
         -------
             List of animation names
         """
         ...
-    
+
     @abstractmethod
     def has_animation(self, name: str) -> bool:
         """Check if an animation exists.
-        
+
         Args:
         ----
             name: Animation name to check
-        
+
         Returns:
         -------
             True if animation exists, False otherwise
         """
         ...
-

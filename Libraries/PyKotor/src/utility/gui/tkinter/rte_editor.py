@@ -16,6 +16,7 @@ from typing import Any
 if os.name == "nt":
     ctypes.windll.shcore.SetProcessDpiAwareness(True)  # noqa: FBT003
 
+
 class RichTextEditor:
     def __init__(self, master: tk.Tk, initialdir: Path | None = None):
         self.root: tk.Tk = master
@@ -33,47 +34,36 @@ class RichTextEditor:
                 "Bold": {"font": f"{self.current_font} 15 bold"},
                 "Italic": {"font": f"{self.current_font} 15 italic"},
                 "Underline": {"underline": True},
-                "Overstrike": {"overstrike": True}
+                "Overstrike": {"overstrike": True},
             },
             "Font Sizes": {
                 "Small": {"font": f"{self.current_font} 8"},
                 "Medium": {"font": f"{self.current_font} 12"},
                 "Large": {"font": f"{self.current_font} 18"},
-                "Extra Large": {"font": f"{self.current_font} 24"}
+                "Extra Large": {"font": f"{self.current_font} 24"},
             },
             "Text Colors": {
                 "Black": {"foreground": "#000000"},
                 "Red": {"foreground": "#FF0000"},
                 "Green": {"foreground": "#00FF00"},
                 "Blue": {"foreground": "#0000FF"},
-                "Custom Color...": "custom_color"
+                "Custom Color...": "custom_color",
             },
             "Background Colors": {
                 "Yellow": {"background": "#FFFF00"},
                 "Light Blue": {"background": "#ADD8E6"},
                 "Light Green": {"background": "#90EE90"},
-                "Custom Color...": "custom_background_color"
+                "Custom Color...": "custom_background_color",
             },
-            "Paragraph Alignment": {
-                "Left": {"justify": "left"},
-                "Center": {"justify": "center"},
-                "Right": {"justify": "right"}
-            },
-            "Spacing": {
-                "Single": {"spacing1": "0", "spacing3": "0"},
-                "1.5": {"spacing1": "3", "spacing3": "3"},
-                "Double": {"spacing1": "6", "spacing3": "6"}
-            },
+            "Paragraph Alignment": {"Left": {"justify": "left"}, "Center": {"justify": "center"}, "Right": {"justify": "right"}},
+            "Spacing": {"Single": {"spacing1": "0", "spacing3": "0"}, "1.5": {"spacing1": "3", "spacing3": "3"}, "Double": {"spacing1": "6", "spacing3": "6"}},
             "Indentation": {
                 "No Indent": {"lmargin1": "0", "lmargin2": "0"},
                 "First Line": {"lmargin1": "20", "lmargin2": "0"},
                 "Hanging": {"lmargin1": "0", "lmargin2": "20"},
-                "Both": {"lmargin1": "20", "lmargin2": "20"}
+                "Both": {"lmargin1": "20", "lmargin2": "20"},
             },
-            "Lists": {
-                "Bullet List": "bullet_list",
-                "Numbered List": "numbered_list"
-            }
+            "Lists": {"Bullet List": "bullet_list", "Numbered List": "numbered_list"},
         }
 
         self.text_area = tk.Text(self.root, undo=True, wrap="word")
@@ -126,6 +116,7 @@ class RichTextEditor:
         for family in self.font_families:
             font_menu.add_command(label=family, command=lambda f=family: self.apply_font(family))
         self.menu_bar.add_cascade(label="Font", menu=font_menu)
+
         # Context (right-click) menu setup
         def show_context_menu(event):
             """Show the right-click context menu."""
@@ -133,6 +124,7 @@ class RichTextEditor:
                 self.menu_bar.tk_popup(event.x_root, event.y_root)
             finally:
                 self.menu_bar.grab_release()
+
         self.text_area.bind("<Button-3>", show_context_menu)
         self.root.config(menu=self.menu_bar)
 
@@ -217,7 +209,7 @@ class RichTextEditor:
             self.text_area.delete(selection_start, selection_end)
             # If numbering and we're adding numbers, add them here
             if list_type == "number" and process == "add":
-                new_text_lines = [f"{i+1}. {line}" for i, line in enumerate(new_text_lines)]
+                new_text_lines = [f"{i + 1}. {line}" for i, line in enumerate(new_text_lines)]
             self.text_area.insert(selection_start, "\n".join(new_text_lines))
 
     def align_text(self, alignment):
@@ -248,7 +240,6 @@ class RichTextEditor:
             tag_name = f"{category}_{option}"
             self.text_area.tag_configure(tag_name, **properties)
             self.text_area.tag_add(tag_name, "sel.first", "sel.last")
-
 
     def toggle_format(self, tag, properties=None):
         """Toggle formatting for the selected text based on the tag.
@@ -340,6 +331,7 @@ class RichTextEditor:
         if file_path:
             self.file_path = Path(file_path)
             self.save_file_content()
+
 
 def main():
     root = tk.Tk()

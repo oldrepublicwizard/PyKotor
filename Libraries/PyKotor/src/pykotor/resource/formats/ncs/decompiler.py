@@ -27,12 +27,15 @@ except ImportError:
     # Fallback if utility module not available
     def format_exception_with_variables(exc: BaseException, *args, **kwargs) -> str:
         import traceback
+
         return "".join(traceback.format_exception(type(exc), exc, exc.__traceback__))
+
 
 if TYPE_CHECKING:
     from pykotor.common.misc import Game  # pyright: ignore[reportMissingImports]
     from pykotor.common.script import ScriptConstant, ScriptFunction  # pyright: ignore[reportMissingImports]
     from pykotor.resource.formats.ncs.ncs_data import NCS, NCSInstruction  # pyright: ignore[reportMissingImports]
+
     KOTOR_CONSTANTS: list[ScriptConstant] = []
     KOTOR_FUNCTIONS: list[ScriptFunction] = []
     TSL_CONSTANTS: list[ScriptConstant] = []
@@ -128,13 +131,24 @@ class ExpressionNode:
             Precedence value (higher = higher precedence)
         """
         prec_map = {
-            "*": 5, "/": 5, "%": 5,
-            "+": 4, "-": 4,
-            "<<": 3, ">>": 3,
-            "<": 2, ">": 2, "<=": 2, ">=": 2,
-            "==": 1, "!=": 1,
-            "&": 0, "|": 0, "^": 0,
-            "&&": -1, "||": -1,
+            "*": 5,
+            "/": 5,
+            "%": 5,
+            "+": 4,
+            "-": 4,
+            "<<": 3,
+            ">>": 3,
+            "<": 2,
+            ">": 2,
+            "<=": 2,
+            ">=": 2,
+            "==": 1,
+            "!=": 1,
+            "&": 0,
+            "|": 0,
+            "^": 0,
+            "&&": -1,
+            "||": -1,
         }
         return prec_map.get(op, 0)
 
@@ -252,6 +266,7 @@ class NCSDecompiler:
 
             # Convert NCS to bytes for Decoder
             from pykotor.resource.formats.ncs.io_ncs import NCSBinaryWriter
+
             # Use BytesIO for automatic buffer resizing
             ncs_stream = io.BytesIO()
             writer = NCSBinaryWriter(self.ncs, ncs_stream)
@@ -280,6 +295,7 @@ class NCSDecompiler:
             return result.get_code() if hasattr(result, "get_code") else str(result)
         except Exception as e:
             import traceback  # noqa: PLC0415
+
             tb_str = "".join(traceback.format_exception(type(e), e, e.__traceback__))
             logger.exception("DeNCS decompilation failed:\n%s", tb_str)
             msg = f"DeNCS decompilation failed: {e}"
@@ -460,8 +476,8 @@ class NCSDecompiler:
                                         structure_type="if",
                                         start_block=block,
                                         end_block=self.basic_blocks[self._find_block_index(jmp_target_idx)],
-                                        body_blocks=self.basic_blocks[i + 1:j + 1],
-                                        else_blocks=self.basic_blocks[self._find_block_index(jz_target_idx):self._find_block_index(jmp_target_idx)],
+                                        body_blocks=self.basic_blocks[i + 1 : j + 1],
+                                        else_blocks=self.basic_blocks[self._find_block_index(jz_target_idx) : self._find_block_index(jmp_target_idx)],
                                     )
                                     self.control_structures.append(structure)
                                     break
@@ -549,32 +565,47 @@ class NCSDecompiler:
 
         # Arithmetic operations
         elif inst.ins_type in {
-            NCSInstructionType.ADDII, NCSInstructionType.ADDFF, NCSInstructionType.ADDIF,
-            NCSInstructionType.ADDFI, NCSInstructionType.ADDSS, NCSInstructionType.ADDVV,
+            NCSInstructionType.ADDII,
+            NCSInstructionType.ADDFF,
+            NCSInstructionType.ADDIF,
+            NCSInstructionType.ADDFI,
+            NCSInstructionType.ADDSS,
+            NCSInstructionType.ADDVV,
         }:
             if len(stack) >= 2:
                 right = stack.pop()
                 left = stack.pop()
                 stack.append(ExpressionNode("binary", "+", [left, right]))
         elif inst.ins_type in {
-            NCSInstructionType.SUBII, NCSInstructionType.SUBFF, NCSInstructionType.SUBIF,
-            NCSInstructionType.SUBFI, NCSInstructionType.SUBVV,
+            NCSInstructionType.SUBII,
+            NCSInstructionType.SUBFF,
+            NCSInstructionType.SUBIF,
+            NCSInstructionType.SUBFI,
+            NCSInstructionType.SUBVV,
         }:
             if len(stack) >= 2:
                 right = stack.pop()
                 left = stack.pop()
                 stack.append(ExpressionNode("binary", "-", [left, right]))
         elif inst.ins_type in {
-            NCSInstructionType.MULII, NCSInstructionType.MULFF, NCSInstructionType.MULIF,
-            NCSInstructionType.MULFI, NCSInstructionType.MULVF, NCSInstructionType.MULFV,
+            NCSInstructionType.MULII,
+            NCSInstructionType.MULFF,
+            NCSInstructionType.MULIF,
+            NCSInstructionType.MULFI,
+            NCSInstructionType.MULVF,
+            NCSInstructionType.MULFV,
         }:
             if len(stack) >= 2:
                 right = stack.pop()
                 left = stack.pop()
                 stack.append(ExpressionNode("binary", "*", [left, right]))
         elif inst.ins_type in {
-            NCSInstructionType.DIVII, NCSInstructionType.DIVFF, NCSInstructionType.DIVIF,
-            NCSInstructionType.DIVFI, NCSInstructionType.DIVVF, NCSInstructionType.DIVFV,
+            NCSInstructionType.DIVII,
+            NCSInstructionType.DIVFF,
+            NCSInstructionType.DIVIF,
+            NCSInstructionType.DIVFI,
+            NCSInstructionType.DIVVF,
+            NCSInstructionType.DIVFV,
         }:
             if len(stack) >= 2:
                 right = stack.pop()
@@ -588,16 +619,22 @@ class NCSDecompiler:
 
         # Comparisons
         elif inst.ins_type in {
-            NCSInstructionType.EQUALII, NCSInstructionType.EQUALFF, NCSInstructionType.EQUALOO,
-            NCSInstructionType.EQUALSS, NCSInstructionType.EQUALTT,
+            NCSInstructionType.EQUALII,
+            NCSInstructionType.EQUALFF,
+            NCSInstructionType.EQUALOO,
+            NCSInstructionType.EQUALSS,
+            NCSInstructionType.EQUALTT,
         }:
             if len(stack) >= 2:
                 right = stack.pop()
                 left = stack.pop()
                 stack.append(ExpressionNode("binary", "==", [left, right]))
         elif inst.ins_type in {
-            NCSInstructionType.NEQUALII, NCSInstructionType.NEQUALFF, NCSInstructionType.NEQUALOO,
-            NCSInstructionType.NEQUALSS, NCSInstructionType.NEQUALTT,
+            NCSInstructionType.NEQUALII,
+            NCSInstructionType.NEQUALFF,
+            NCSInstructionType.NEQUALOO,
+            NCSInstructionType.NEQUALSS,
+            NCSInstructionType.NEQUALTT,
         }:
             if len(stack) >= 2:
                 right = stack.pop()
@@ -712,8 +749,10 @@ class NCSDecompiler:
 
         # Variable assignments (CPDOWNSP/CPDOWNBP)
         elif inst.ins_type in {
-            NCSInstructionType.CPDOWNSP, NCSInstructionType.CPDOWNBP,
-            NCSInstructionType.CPTOPBP, NCSInstructionType.CPTOPSP,
+            NCSInstructionType.CPDOWNSP,
+            NCSInstructionType.CPDOWNBP,
+            NCSInstructionType.CPTOPBP,
+            NCSInstructionType.CPTOPSP,
         }:
             if inst.args and len(inst.args) >= 2:
                 offset = inst.args[0]
@@ -758,4 +797,3 @@ class NCSDecompiler:
             var_num = len(self.variables)
             self.variables[offset] = f"var_{var_num}"
         return self.variables[offset]
-

@@ -60,4 +60,3 @@ if __name__ == "__main__":
 else:
     # Auto-normalize when imported
     normalize_pythonpath()
-

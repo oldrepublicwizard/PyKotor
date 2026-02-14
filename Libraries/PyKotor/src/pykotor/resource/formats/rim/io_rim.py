@@ -11,14 +11,14 @@ if TYPE_CHECKING:
 
 class RIMBinaryReader(ResourceReader):
     """Reads RIM (Resource Information Manager) files.
-    
+
     RIM files are container formats similar to ERF files, used for module resources.
     They store multiple game resources with ResRef, type, and data.
-    
+
     References:
     ----------
         See rim_data module docstring. Unified K1/TSL: AddResourceImageContents (K1: 0x0040f990), CExoEncapsulatedFile::CExoEncapsulatedFile (K1: 0x0040ef90), AddEncapsulatedContents (K1: 0x0040f3c0), RIM leak string (K1: 0x0073d8a8); TSL: TODO.
-        
+
         Note: RIM files use similar structure to ERF files but are read-only templates.
         The engine loads RIM files as module blueprints and exports to ERF for runtime mutation.
         Missing Features:
@@ -28,6 +28,7 @@ class RIMBinaryReader(ResourceReader):
         vs reone which reads resRef, type (uint16), skips 6 bytes, offset, size
 
     """
+
     def __init__(
         self,
         source: SOURCE_TYPES,
@@ -52,15 +53,15 @@ class RIMBinaryReader(ResourceReader):
             msg = "The RIM version that was loaded is not supported."
             raise ValueError(msg)
 
-        self._reader.skip(4) # Skip 0x08 (4 bytes)
-        entry_count = self._reader.read_uint32() # 0x0C
-        offset_to_keys = self._reader.read_uint32() # 0x10
-        
+        self._reader.skip(4)  # Skip 0x08 (4 bytes)
+        entry_count = self._reader.read_uint32()  # 0x0C
+        offset_to_keys = self._reader.read_uint32()  # 0x10
+
         # Resilience: Vanilla files have 0 for offsets, meaning "Implicit" (Header + Keys)
         # If 0, we calculate them (Header size 120). If non-zero, we respect the file's values.
         if offset_to_keys == 0:
             offset_to_keys = 120
-        
+
         self._read_entries(entry_count, offset_to_keys)
 
         return self._rim
@@ -71,7 +72,7 @@ class RIMBinaryReader(ResourceReader):
         restypes: list[int] = []
         resoffsets: list[int] = []
         ressizes: list[int] = []
-        
+
         if entry_count > 0 and offset_to_keys >= self._size:
             msg = "The RIM file is malformed: offset to keys is out of bounds."
             raise ValueError(msg)
@@ -79,7 +80,6 @@ class RIMBinaryReader(ResourceReader):
         if offset_to_keys < self._size:
             self._reader.seek(offset_to_keys)
             for _ in range(entry_count):
-            
                 # reone lowercases resref at line 47, but we preserve case for round-trip fidelity
                 # NOTE: Field order differs - PyKotor reads restype before resids, reone reads differently
                 resref_str = self._reader.read_string(16).rstrip("\0")
@@ -93,7 +93,6 @@ class RIMBinaryReader(ResourceReader):
                 self._reader.seek(resoffsets[i])
                 resdata = self._reader.read_bytes(ressizes[i])
                 self._rim.set_data(resrefs[i], ResourceType.from_id(restypes[i]), resdata)
-
 
 
 class RIMBinaryWriter(ResourceWriter):
@@ -113,39 +112,39 @@ class RIMBinaryWriter(ResourceWriter):
         entry_count = len(self._rim)
         # Vanilla uses explicit offsets for keys (120), but 0 for resources (implicit)
         header_offset_to_keys = RIMBinaryWriter.FILE_HEADER_SIZE
-        header_offset_to_resources = 0 
-        
+        header_offset_to_resources = 0
+
         # Actual locations
         offset_to_keys = RIMBinaryWriter.FILE_HEADER_SIZE
 
         self._writer.write_string("RIM ")
         self._writer.write_string("V1.0")
-        self._writer.write_uint32(0) # 0x08
-        self._writer.write_uint32(entry_count) # 0x0C
-        self._writer.write_uint32(header_offset_to_keys) # 0x10
-        self._writer.write_uint32(header_offset_to_resources) # 0x14
-        self._writer.write_bytes(b"\0" * 96) # Padding to 120
+        self._writer.write_uint32(0)  # 0x08
+        self._writer.write_uint32(entry_count)  # 0x0C
+        self._writer.write_uint32(header_offset_to_keys)  # 0x10
+        self._writer.write_uint32(header_offset_to_resources)  # 0x14
+        self._writer.write_bytes(b"\0" * 96)  # Padding to 120
 
         # Align data start to 16 bytes (Vanilla RIM behavior)
         keys_end = offset_to_keys + RIMBinaryWriter.KEY_ELEMENT_SIZE * entry_count
         key_padding = (16 - (keys_end % 16)) % 16
-        
+
         current_data_offset = keys_end + key_padding
         resource_offsets = []
 
         # Pass 1: Calculate Offsets with strict vanilla alignment
         for resource in self._rim:
             resource_offsets.append(current_data_offset)
-            
+
             # Vanilla Resource Padding Logic:
             # 1. Write Data
             # 2. Align to 4 bytes
             # 3. Write 16 bytes of null padding
             # This applies to ALL resources, including the last one (based on file size analysis)
-            
+
             data_len = len(resource.data)
             current_data_offset += data_len
-            
+
             padding = (4 - (current_data_offset % 4)) % 4
             current_data_offset += padding + 16
 
@@ -160,7 +159,7 @@ class RIMBinaryWriter(ResourceWriter):
 
         for resource in self._rim:
             self._writer.write_bytes(resource.data)
-            
+
             # Write Padding matches calculation
             current_pos = self._writer.position()
             padding = (4 - (current_pos % 4)) % 4

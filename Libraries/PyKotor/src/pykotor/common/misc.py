@@ -214,9 +214,9 @@ class ResRef(str):
 
         # Strict maximum length validation (16 characters)
         if len(parsed_text) > self.MAX_LENGTH:
-            #if not truncate:
+            # if not truncate:
             #    raise self.ExceedsMaxLengthError(parsed_text)
-            #warnings.warn(f"String '{raw_text}' exceeds the maximum allowed length ({self.MAX_LENGTH}) and will be truncated to '{parsed_text[: self.MAX_LENGTH]}'", stacklevel=2)
+            # warnings.warn(f"String '{raw_text}' exceeds the maximum allowed length ({self.MAX_LENGTH}) and will be truncated to '{parsed_text[: self.MAX_LENGTH]}'", stacklevel=2)
             parsed_text = parsed_text[: self.MAX_LENGTH]
 
         # Check for invalid characters (Windows filename restrictions)

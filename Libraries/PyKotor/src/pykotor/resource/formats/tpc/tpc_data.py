@@ -125,11 +125,11 @@ class TPCTextureFormat(IntEnum):
 
     def to_qimage_format(self) -> QImage.Format:
         """Convert to Qt image format.
-        
+
         Note: BGRA format should be converted to RGBA before calling this method,
         as Qt does not have a native BGRA format. Format_ARGB32 expects ARGB byte order
         (A, R, G, B), which does not match BGRA byte order (B, G, R, A).
-        
+
         Raises:
             ValueError: If format is BGRA (must be converted to RGBA first) or Invalid/unsupported.
         """
@@ -149,10 +149,7 @@ class TPCTextureFormat(IntEnum):
             # Format_ARGB32 expects ARGB byte order (A, R, G, B)
             # but BGRA is (B, G, R, A) - completely different byte order
             # Callers must convert BGRA to RGBA first using bgra_to_rgba()
-            raise ValueError(
-                "BGRA format cannot be directly converted to QImage format. "
-                "Convert to RGBA first using bgra_to_rgba() or mipmap.convert(TPCTextureFormat.RGBA)."
-            )
+            raise ValueError("BGRA format cannot be directly converted to QImage format. Convert to RGBA first using bgra_to_rgba() or mipmap.convert(TPCTextureFormat.RGBA).")
         elif self is self.Invalid:
             q_format = QImage.Format.Format_Invalid
         else:
@@ -224,7 +221,7 @@ class TPCMipmap:
 
     def to_qimage(self) -> QImage:
         """Convert to Qt image.
-        
+
         Note: BGRA format is automatically converted to RGBA before creating QImage,
         as Qt does not have a native BGRA format.
         """
@@ -236,7 +233,7 @@ class TPCMipmap:
             mipmap_copy = self.copy()
             mipmap_copy.convert(TPCTextureFormat.RGBA)
             return QImage(bytes(mipmap_copy.data), mipmap_copy.width, mipmap_copy.height, mipmap_copy.tpc_format.to_qimage_format())
-        
+
         return QImage(bytes(self.data), self.width, self.height, self.tpc_format.to_qimage_format())
 
     def to_pil_image(self) -> Image.Image:
@@ -422,7 +419,7 @@ class TPCLayer:
 
             # Generate the next mipmap data by downsampling
             if w > 1 and h > 1:
-                #RobustLogger().debug(f"Downsampling mipmap ({w}x{h}) to {mm_width}x{mm_height}")
+                # RobustLogger().debug(f"Downsampling mipmap ({w}x{h}) to {mm_width}x{mm_height}")
                 data = self._downsample(data, w, h, tpc_format)
             else:
                 break
@@ -619,14 +616,7 @@ class TPC(ComparableMixin):
     def _integer48(
         bytes48: bytes,
     ) -> int:
-        return (
-            bytes48[0]
-            + (bytes48[1] << 8)
-            + (bytes48[2] << 16)
-            + (bytes48[3] << 24)
-            + (bytes48[4] << 32)
-            + (bytes48[5] << 40)
-        )
+        return bytes48[0] + (bytes48[1] << 8) + (bytes48[2] << 16) + (bytes48[3] << 24) + (bytes48[4] << 32) + (bytes48[5] << 40)
 
     def copy(self) -> Self:
         """Create a deep copy of this TPC texture."""

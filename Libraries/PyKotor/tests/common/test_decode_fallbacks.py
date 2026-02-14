@@ -35,7 +35,7 @@ try:
 except ImportError:
     charset_normalizer = None
 
-import unittest
+
 
 class TestDecodeBytes(unittest.TestCase):
     def test_basic(self):

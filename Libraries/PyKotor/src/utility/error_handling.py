@@ -177,7 +177,7 @@ def safe_repr(
             attr_value = getattr(obj, attr_name)
             if not attr_name.startswith("__") and not callable(attr_value):
                 try:
-                    this_repr = safe_repr(attr_value, max_length, indent_level + 1, _depth=_depth+1)
+                    this_repr = safe_repr(attr_value, max_length, indent_level + 1, _depth=_depth + 1)
                     # Concatenate attribute name and its representation with appropriate indentation
                     attr_repr = f"{attr_name}={this_repr}"
                     # Check if current attribute representation exceeds the max length
@@ -255,6 +255,7 @@ def format_frame_info(
         if formatted_var:
             detailed_message.append(formatted_var)
     return detailed_message
+
 
 @lru_cache(maxsize=128)
 def format_exception_with_variables(

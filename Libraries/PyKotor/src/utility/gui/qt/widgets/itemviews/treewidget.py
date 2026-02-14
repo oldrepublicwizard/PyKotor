@@ -141,9 +141,9 @@ if __name__ == "__main__":
 
     # Add some sample items
     for i in range(5):
-        parent = QTreeWidgetItem(tree_widget, [f"Parent {i+1}"])
+        parent = QTreeWidgetItem(tree_widget, [f"Parent {i + 1}"])
         for j in range(3):
-            QTreeWidgetItem(parent, [f"Child {j+1} of Parent {i+1}"])
+            QTreeWidgetItem(parent, [f"Child {j + 1} of Parent {i + 1}"])
 
     # Add a button to show context menu
     def show_context_menu():

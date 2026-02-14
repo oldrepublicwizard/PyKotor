@@ -348,7 +348,7 @@ def _download_file(
     progress_hooks: list[Callable[[dict[str, Any]], Any]] | None = None,
 ):
     if not _CRYPTO_AVAILABLE:
-        raise ImportError("pycryptodome is required for MEGA file downloads. " "Install it with: pip install pycryptodome")
+        raise ImportError("pycryptodome is required for MEGA file downloads. Install it with: pip install pycryptodome")
     dest_path = Path(dest or Path.cwd()).absolute()
     if file is None:
         if is_public:

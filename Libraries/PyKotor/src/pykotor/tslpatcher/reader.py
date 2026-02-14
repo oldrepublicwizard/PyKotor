@@ -138,11 +138,7 @@ class ConfigReader:
         self.ini: ConfigParser = ini
         self.mod_path: CaseAwarePath = CaseAwarePath(mod_path)
         # path to the tslpatchdata, optional but we'll use it here for the nwnnsscomp.exe if it exists.
-        self.tslpatchdata_path: CaseAwarePath | None = (
-            None
-            if tslpatchdata_path is None
-            else CaseAwarePath(tslpatchdata_path)
-        )
+        self.tslpatchdata_path: CaseAwarePath | None = None if tslpatchdata_path is None else CaseAwarePath(tslpatchdata_path)
         self.config: PatcherConfig
         self.log: PatchLogger = logger or PatchLogger()
 
@@ -227,11 +223,7 @@ class ConfigReader:
     ) -> str | None:
         """Resolves the case-insensitive section name string if found and returns the case-sensitive correct section name."""
         s: str | None = next(
-            (
-                section
-                for section in self.ini.sections()
-                if section.lower() == section_name.lower()
-            ),
+            (section for section in self.ini.sections() if section.lower() == section_name.lower()),
             None,
         )
         if s is not None:

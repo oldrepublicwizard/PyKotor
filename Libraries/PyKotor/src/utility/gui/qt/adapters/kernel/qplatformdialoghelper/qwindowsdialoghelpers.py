@@ -327,6 +327,7 @@ class QWindowsFileDialogHelper(QWindowsDialogHelperBase, QPlatformFileDialogHelp
 
     def isSupportedUrl(self, url: str) -> bool:
         from qtpy.QtCore import QUrl
+
         parsed_url = QUrl(url)
         return parsed_url.isValid() and parsed_url.scheme() in ["file", ""]
 
@@ -513,7 +514,6 @@ class QWindowsFontDialogHelper(QWindowsDialogHelperBase, QPlatformFontDialogHelp
 
     def styleHint(self) -> QPlatformDialogHelper.StyleHint:
         return self.defaultStyleHint()
-
 
     def updateFont(self, font: QFont):
         self.setCurrentFont(font)

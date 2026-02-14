@@ -144,16 +144,10 @@ class GlobalVariableDeclaration(TopLevelObject):
                 msg = f"Unknown struct type for variable '{self.identifier}'"
                 raise CompileError(msg)
         elif self.data_type.builtin == DataType.VOID:
-            msg = (
-                f"Cannot declare variable '{self.identifier}' with void type\n"
-                f"  void can only be used as a function return type"
-            )
+            msg = f"Cannot declare variable '{self.identifier}' with void type\n  void can only be used as a function return type"
             raise CompileError(msg)
         else:
-            msg = (
-                f"Unsupported type '{self.data_type.builtin.name}' for global variable '{self.identifier}'\n"
-                f"  This may indicate a compiler bug or unsupported type"
-            )
+            msg = f"Unsupported type '{self.data_type.builtin.name}' for global variable '{self.identifier}'\n  This may indicate a compiler bug or unsupported type"
             raise CompileError(msg)
 
         root.add_scoped(self.identifier, self.data_type, is_const=self.is_const)
@@ -284,10 +278,7 @@ class Struct:
         else:
             # Provide helpful error with available members
             available = [m.identifier.label for m in self.members]
-            msg = (
-                f"Unknown member '{identifier}' in struct '{self.identifier}'\n"
-                f"  Available members: {', '.join(available)}"
-            )
+            msg = f"Unknown member '{identifier}' in struct '{self.identifier}'\n  Available members: {', '.join(available)}"
             raise CompileError(msg)
         return size
 
@@ -296,10 +287,7 @@ class Struct:
             if member.identifier == identifier:
                 return member.datatype
         available = [m.identifier.label for m in self.members]
-        msg = (
-            f"Member '{identifier}' not found in struct '{self.identifier}'\n"
-            f"  Available members: {', '.join(available)}"
-        )
+        msg = f"Member '{identifier}' not found in struct '{self.identifier}'\n  Available members: {', '.join(available)}"
         raise CompileError(msg)
 
 
@@ -355,6 +343,7 @@ class CodeRoot:
 
 
     """
+
     def __init__(
         self,
         constants: list[ScriptConstant],
@@ -554,10 +543,7 @@ class CodeRoot:
             available = [s.identifier.label for s in self._global_scope[:10]]  # Show first 10
             more = len(self._global_scope) - 10
             more_text = f" (and {more} more)" if more > 0 else ""
-            msg = (
-                f"Undefined variable '{identifier}'\n"
-                f"  Available globals: {', '.join(available)}{more_text}"
-            )
+            msg = f"Undefined variable '{identifier}'\n  Available globals: {', '.join(available)}{more_text}"
             raise CompileError(msg)
         return GetScopedResult(is_global=True, datatype=scoped.data_type, offset=offset, is_const=scoped.is_const)
 
@@ -761,10 +747,7 @@ class FunctionDefinition(TopLevelObject):
                 raise CompileError(msg)
 
         if name in root.function_map and not root.function_map[name].is_prototype():
-            msg = (
-                f"Function '{name}' is already defined\n"
-                f"  Cannot redefine a function that already has an implementation"
-            )
+            msg = f"Function '{name}' is already defined\n  Cannot redefine a function that already has an implementation"
             raise CompileError(msg)
         if name in root.function_map and root.function_map[name].is_prototype():
             self._compile_function(root, name, ncs)
@@ -783,27 +766,17 @@ class FunctionDefinition(TopLevelObject):
             # Build detailed error message
             details = []
             if self.return_type != prototype.return_type:
-                details.append(
-                    f"Return type mismatch: prototype has {prototype.return_type.builtin.name}, "
-                    f"definition has {self.return_type.builtin.name}"
-                )
+                details.append(f"Return type mismatch: prototype has {prototype.return_type.builtin.name}, definition has {self.return_type.builtin.name}")
             if len(self.parameters) != len(prototype.parameters):
-                details.append(
-                    f"Parameter count mismatch: prototype has {len(prototype.parameters)}, "
-                    f"definition has {len(self.parameters)}"
-                )
+                details.append(f"Parameter count mismatch: prototype has {len(prototype.parameters)}, definition has {len(self.parameters)}")
             else:
                 for i, (def_param, proto_param) in enumerate(zip(self.parameters, prototype.parameters)):
                     if def_param.data_type != proto_param.data_type:
                         details.append(
-                            f"Parameter {i+1} type mismatch: prototype has {proto_param.data_type.builtin.name}, "
-                            f"definition has {def_param.data_type.builtin.name}"
+                            f"Parameter {i + 1} type mismatch: prototype has {proto_param.data_type.builtin.name}, definition has {def_param.data_type.builtin.name}"
                         )
 
-            msg = (
-                f"Function '{name}' definition does not match its prototype\n"
-                f"  " + "\n  ".join(details)
-            )
+            msg = f"Function '{name}' definition does not match its prototype\n  " + "\n  ".join(details)
             raise CompileError(msg)
 
         # Function has forward declaration, insert the compiled definition after the stub
@@ -820,10 +793,7 @@ class FunctionDefinition(TopLevelObject):
             return False
         if len(self.parameters) != len(prototype.parameters):
             return False
-        return all(
-            these_parameters.data_type == prototype.parameters[i].data_type
-            for i, these_parameters in enumerate(self.parameters)
-        )
+        return all(these_parameters.data_type == prototype.parameters[i].data_type for i, these_parameters in enumerate(self.parameters))
 
 
 class FunctionDefinitionParam:
@@ -895,11 +865,7 @@ class IncludeScript(TopLevelObject):
                     raise MissingIncludeError(msg) from e
         else:
             # Not found in filesystem, try library
-            case_sensitive: bool = not root.library_lookup or all(
-                lookup_path
-                for lookup_path in root.library_lookup
-                if isinstance(lookup_path, Path)
-            )
+            case_sensitive: bool = not root.library_lookup or all(lookup_path for lookup_path in root.library_lookup if isinstance(lookup_path, Path))
             include_filename: str = self.file.value if case_sensitive else self.file.value.lower()
             if include_filename in self.library:
                 source = self.library[include_filename].decode(errors="ignore")
@@ -923,10 +889,7 @@ class StructDefinition(TopLevelObject):
 
     def compile(self, ncs: NCS, root: CodeRoot):  # noqa: A003
         if len(self.members) == 0:
-            msg = (
-                f"Struct '{self.identifier}' cannot be empty\n"
-                f"  Structs must have at least one member"
-            )
+            msg = f"Struct '{self.identifier}' cannot be empty\n  Structs must have at least one member"
             raise CompileError(msg)
         root.struct_map[self.identifier.label] = Struct(self.identifier, self.members)
 
@@ -947,6 +910,7 @@ class Expression(ABC):
 
 
     """
+
     @abstractmethod
     def compile(
         self,
@@ -972,6 +936,7 @@ class Statement(ABC):
 
 
     """
+
     def __init__(self):
         self.line_num: None = None
 
@@ -1276,21 +1241,14 @@ class EngineCallExpression(Expression):
         arg_count = len(self._args)
 
         if arg_count > len(self._function.params):
-            msg = (
-                f"Too many arguments for '{self._function.name}'\n"
-                f"  Expected: {len(self._function.params)}, Got: {arg_count}"
-            )
+            msg = f"Too many arguments for '{self._function.name}'\n  Expected: {len(self._function.params)}, Got: {arg_count}"
             raise CompileError(msg)
 
         for i, param in enumerate(self._function.params):
             if i >= arg_count:
                 if param.default is None:
                     required_params = [p.name for p in self._function.params if p.default is None]
-                    msg = (
-                        f"Missing required arguments for '{self._function.name}'\n"
-                        f"  Required parameters: {', '.join(required_params)}\n"
-                        f"  Provided: {arg_count} argument(s)"
-                    )
+                    msg = f"Missing required arguments for '{self._function.name}'\n  Required parameters: {', '.join(required_params)}\n  Provided: {arg_count} argument(s)"
                     raise CompileError(msg)
                 constant: ScriptConstant | None = next(
                     (constant for constant in root.constants if constant.name == param.default),
@@ -1401,11 +1359,7 @@ class FunctionCallExpression(Expression):
         if self._function.label not in root.function_map:
             # Provide helpful error with similar function names
             available_funcs = list(root.function_map.keys())[:10]
-            msg = (
-                f"Undefined function '{self._function.label}'\n"
-                f"  Available functions: {', '.join(available_funcs)}"
-                f"{'...' if len(root.function_map) > 10 else ''}"
-            )
+            msg = f"Undefined function '{self._function.label}'\n  Available functions: {', '.join(available_funcs)}{'...' if len(root.function_map) > 10 else ''}"
             raise CompileError(msg)
 
         # compile_jsr handles return value space reservation and temp_stack tracking
@@ -1447,8 +1401,7 @@ class BinaryOperatorExpression(Expression):
                 break
         else:
             # Build helpful error showing what operations are supported
-            supported = [f"{m.lhs.name.lower()} {m.instruction.name} {m.rhs.name.lower()}"
-                        for m in self.compatibility[:3]]
+            supported = [f"{m.lhs.name.lower()} {m.instruction.name} {m.rhs.name.lower()}" for m in self.compatibility[:3]]
             msg = (
                 f"Incompatible types for binary operation: {type1.builtin.name.lower()} and {type2.builtin.name.lower()}\n"
                 f"  Supported combinations: {', '.join(supported)}"
@@ -1459,7 +1412,7 @@ class BinaryOperatorExpression(Expression):
         result_type = DynamicDataType(x.result)
         result_size = result_type.size(root)
         # Binary operation consumed both operands and left result on stack
-        block.temp_stack -= (type1_size + type2_size - result_size)
+        block.temp_stack -= type1_size + type2_size - result_size
         return result_type
 
 
@@ -1477,10 +1430,7 @@ class TernaryConditionalExpression(Expression):
         # Compile condition (leaves value on stack)
         condition_type = self.condition.compile(ncs, root, block)
         if condition_type != DynamicDataType.INT:
-            msg = (
-                f"Ternary condition must be integer type, got {condition_type.builtin.name}\n"
-                f"  Note: Conditions must evaluate to int (0 = false, non-zero = true)"
-            )
+            msg = f"Ternary condition must be integer type, got {condition_type.builtin.name}\n  Note: Conditions must evaluate to int (0 = false, non-zero = true)"
             raise CompileError(msg)
 
         # Jump to false branch if condition is zero (JZ consumes the condition from stack)
@@ -1544,10 +1494,7 @@ class UnaryOperatorExpression(Expression):
                 break
         else:
             supported_types = [m.rhs.name.lower() for m in self.compatibility]
-            msg = (
-                f"Incompatible type for unary operation: {type1.builtin.name.lower()}\n"
-                f"  Supported types: {', '.join(supported_types)}"
-            )
+            msg = f"Incompatible type for unary operation: {type1.builtin.name.lower()}\n  Supported types: {', '.join(supported_types)}"
             raise CompileError(msg)
 
         block.temp_stack -= 4
@@ -1566,10 +1513,7 @@ class LogicalNotExpression(Expression):
         if type1 == DynamicDataType.INT:
             ncs.add(NCSInstructionType.NOTI)
         else:
-            msg = (
-                f"Logical NOT requires integer operand, got {type1.builtin.name.lower()}\n"
-                f"  Note: In NWScript, only int types can be used in logical operations"
-            )
+            msg = f"Logical NOT requires integer operand, got {type1.builtin.name.lower()}\n  Note: In NWScript, only int types can be used in logical operations"
             raise CompileError(msg)
 
         block.temp_stack -= 4
@@ -1588,10 +1532,7 @@ class BitwiseNotExpression(Expression):
         if type1 == DynamicDataType.INT:
             ncs.add(NCSInstructionType.COMPI)
         else:
-            msg = (
-                f"Bitwise NOT (~) requires integer operand, got {type1.builtin.name.lower()}\n"
-                f"  Note: Bitwise operations only work on int types"
-            )
+            msg = f"Bitwise NOT (~) requires integer operand, got {type1.builtin.name.lower()}\n  Note: Bitwise operations only work on int types"
             raise CompileError(msg)
 
         block.temp_stack -= 4
@@ -1635,11 +1576,7 @@ class Assignment(Expression):
 
         if variable_type != expression_type:
             var_name = ".".join(str(ident) for ident in self.field_access.identifiers)
-            msg = (
-                f"Type mismatch in assignment to '{var_name}'\n"
-                f"  Variable type: {expression_type.builtin.name}\n"
-                f"  Expression type: {variable_type.builtin.name}"
-            )
+            msg = f"Type mismatch in assignment to '{var_name}'\n  Variable type: {expression_type.builtin.name}\n  Expression type: {variable_type.builtin.name}"
             raise CompileError(msg)
 
         # Copy the value that the expression has already been placed on the stack to where the identifiers position is
@@ -2468,10 +2405,7 @@ class VariableDeclarator:
                 msg = f"Unknown struct type for variable '{self.identifier}'"
                 raise CompileError(msg)
         elif data_type.builtin == DataType.VOID:
-            msg = (
-                f"Cannot declare variable '{self.identifier}' with void type\n"
-                f"  void can only be used as a function return type"
-            )
+            msg = f"Cannot declare variable '{self.identifier}' with void type\n  void can only be used as a function return type"
             raise CompileError(msg)
         else:
             msg = (
@@ -2634,10 +2568,7 @@ class WhileLoopBlock(Statement):
         condition_type = self.condition.compile(ncs, root, block)
 
         if condition_type != DynamicDataType.INT:
-            msg = (
-                f"Loop condition must be integer type, got {condition_type.builtin.name.lower()}\n"
-                f"  Note: Conditions must evaluate to int (0 = false, non-zero = true)"
-            )
+            msg = f"Loop condition must be integer type, got {condition_type.builtin.name.lower()}\n  Note: Conditions must evaluate to int (0 = false, non-zero = true)"
             raise CompileError(msg)
 
         # JZ consumes the condition value from stack
@@ -2688,10 +2619,7 @@ class DoWhileLoopBlock(Statement):
         initial_temp_stack = block.temp_stack
         condition_type = self.condition.compile(ncs, root, block)
         if condition_type != DynamicDataType.INT:
-            msg = (
-                f"do-while condition must be integer type, got {condition_type.builtin.name.lower()}\n"
-                f"  Note: Conditions must evaluate to int (0 = false, non-zero = true)"
-            )
+            msg = f"do-while condition must be integer type, got {condition_type.builtin.name.lower()}\n  Note: Conditions must evaluate to int (0 = false, non-zero = true)"
             raise CompileError(msg)
 
         # JZ consumes the condition value from stack
@@ -2753,10 +2681,7 @@ class ForLoopBlock(Statement):
         initial_temp_stack = block.temp_stack
         condition_type = self.condition.compile(ncs, root, block)
         if condition_type != DynamicDataType.INT:
-            msg = (
-                f"for loop condition must be integer type, got {condition_type.builtin.name.lower()}\n"
-                f"  Note: Conditions must evaluate to int (0 = false, non-zero = true)"
-            )
+            msg = f"for loop condition must be integer type, got {condition_type.builtin.name.lower()}\n  Note: Conditions must evaluate to int (0 = false, non-zero = true)"
             raise CompileError(msg)
 
         # JZ consumes the condition value from stack
@@ -2822,10 +2747,7 @@ class BreakStatement(Statement):
         continue_instruction: NCSInstruction | None,
     ):
         if break_instruction is None:
-            msg = (
-                "break statement not inside loop or switch\n"
-                "  break can only be used inside while, do-while, for, or switch statements"
-            )
+            msg = "break statement not inside loop or switch\n  break can only be used inside while, do-while, for, or switch statements"
             raise CompileError(msg)
         ncs.add(NCSInstructionType.MOVSP, args=[-block.break_scope_size(root)])
         ncs.add(NCSInstructionType.JMP, jump=break_instruction)
@@ -2845,10 +2767,7 @@ class ContinueStatement(Statement):
         continue_instruction: NCSInstruction | None,
     ):
         if continue_instruction is None:
-            msg = (
-                "continue statement not inside loop\n"
-                "  continue can only be used inside while, do-while, or for loops"
-            )
+            msg = "continue statement not inside loop\n  continue can only be used inside while, do-while, or for loops"
             raise CompileError(msg)
         ncs.add(NCSInstructionType.MOVSP, args=[-block.break_scope_size(root)])
         ncs.add(NCSInstructionType.JMP, jump=continue_instruction)
@@ -2863,10 +2782,7 @@ class PrefixIncrementExpression(Expression):
 
         if variable_type != DynamicDataType.INT:
             var_name = ".".join(str(ident) for ident in self.field_access.identifiers)
-            msg = (
-                f"Increment operator (++) requires integer variable, got {variable_type.builtin.name.lower()}\n"
-                f"  Variable: {var_name}"
-            )
+            msg = f"Increment operator (++) requires integer variable, got {variable_type.builtin.name.lower()}\n  Variable: {var_name}"
             raise CompileError(msg)
 
         isglobal, variable_type, stack_index, is_const = self.field_access.get_scoped(block, root)
@@ -2900,10 +2816,7 @@ class PostfixIncrementExpression(Expression):
 
         if variable_type != DynamicDataType.INT:
             var_name = ".".join(str(ident) for ident in self.field_access.identifiers)
-            msg = (
-                f"Increment operator (++) requires integer variable, got {variable_type.builtin.name.lower()}\n"
-                f"  Variable: {var_name}"
-            )
+            msg = f"Increment operator (++) requires integer variable, got {variable_type.builtin.name.lower()}\n  Variable: {var_name}"
             raise CompileError(msg)
 
         isglobal, variable_type, stack_index, is_const = self.field_access.get_scoped(block, root)
@@ -2929,10 +2842,7 @@ class PrefixDecrementExpression(Expression):
 
         if variable_type != DynamicDataType.INT:
             var_name = ".".join(str(ident) for ident in self.field_access.identifiers)
-            msg = (
-                f"Decrement operator (--) requires integer variable, got {variable_type.builtin.name.lower()}\n"
-                f"  Variable: {var_name}"
-            )
+            msg = f"Decrement operator (--) requires integer variable, got {variable_type.builtin.name.lower()}\n  Variable: {var_name}"
             raise CompileError(msg)
 
         isglobal, variable_type, stack_index, is_const = self.field_access.get_scoped(block, root)
@@ -2966,10 +2876,7 @@ class PostfixDecrementExpression(Expression):
 
         if variable_type != DynamicDataType.INT:
             var_name = ".".join(str(ident) for ident in self.field_access.identifiers)
-            msg = (
-                f"Decrement operator (--) requires integer variable, got {variable_type.builtin.name.lower()}\n"
-                f"  Variable: {var_name}"
-            )
+            msg = f"Decrement operator (--) requires integer variable, got {variable_type.builtin.name.lower()}\n  Variable: {var_name}"
             raise CompileError(msg)
 
         isglobal, variable_type, stack_index, is_const = self.field_access.get_scoped(block, root)

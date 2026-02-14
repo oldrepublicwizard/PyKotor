@@ -15,6 +15,7 @@ if TYPE_CHECKING:
 def command_exists(cmd: str) -> bool:
     return subprocess.call(["which", cmd], stdout=subprocess.PIPE, stderr=subprocess.PIPE) == 0  # noqa: S603, S607
 
+
 # Get default actions using xdg-mime and gio
 def get_default_actions(path: os.PathLike | str) -> list[str]:
     try:
@@ -24,6 +25,7 @@ def get_default_actions(path: os.PathLike | str) -> list[str]:
         return []
     else:
         return [action.split(":")[1].strip() for action in actions if action.startswith("default:")]
+
 
 # ctypes method 1: Using GTK
 def context_menu_gtk(path: os.PathLike | str) -> bool:
@@ -48,6 +50,7 @@ def context_menu_gtk(path: os.PathLike | str) -> bool:
     else:
         return True
 
+
 # ctypes method 2: Using Qt
 def context_menu_qt(path: os.PathLike | str) -> bool:
     try:
@@ -65,6 +68,7 @@ def context_menu_qt(path: os.PathLike | str) -> bool:
         return False
     else:
         return True
+
 
 # ctypes method 3: Using wxWidgets
 def context_menu_wxwidgets(path: os.PathLike | str) -> bool:
@@ -99,7 +103,8 @@ def context_menu_zenity(path: str):
         result = subprocess.run(
             ["zenity", "--list", "--title=Context Menu", "--column=Options", *actions],  # noqa: S603, S607
             stdout=subprocess.PIPE,
-            text=True, check=False
+            text=True,
+            check=False,
         )
         if result.returncode == 0:
             choice = result.stdout.strip()
@@ -122,7 +127,8 @@ def context_menu_yad(path: str):
         result = subprocess.run(
             ["yad", "--list", "--title=Context Menu", "--column=Options", *actions],  # noqa: S607, S603
             stdout=subprocess.PIPE,
-            text=True, check=False
+            text=True,
+            check=False,
         )
         if result.returncode == 0:
             choice = result.stdout.strip()
@@ -146,7 +152,7 @@ def context_menu_dmenu(path: str):  # noqa: ANN201
             ["dmenu", "-p", "Choose an option:"],  # noqa: S607, S603
             stdin=subprocess.PIPE,
             stdout=subprocess.PIPE,
-            text=True
+            text=True,
         )
         result, _ = process.communicate(input="\n".join(actions))
         if process.returncode == 0:
@@ -162,8 +168,10 @@ def context_menu_dmenu(path: str):  # noqa: ANN201
 
 def show_context_menu(path: str):
     abs_path = PosixPath(path).resolve()
+
     def cmd_exists(cmd) -> bool:
         return subprocess.call(["which", cmd], stdout=subprocess.PIPE, stderr=subprocess.PIPE) == 0  # noqa: S603, S607
+
     def get_actions(p) -> list[str]:
         return [
             a.split(":")[1].strip()
@@ -190,7 +198,7 @@ def show_context_menu(path: str):
         context_menu_dmenu,
         context_menu_gtk,
         context_menu_qt,
-        context_menu_wxwidgets
+        context_menu_wxwidgets,
     ]
     abs_path = PosixPath(path).resolve()
     for method in methods:

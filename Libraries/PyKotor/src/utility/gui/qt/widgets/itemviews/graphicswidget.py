@@ -33,7 +33,6 @@ class RobustGraphicsWidget(QGraphicsWidget, RobustGraphicsView):
     def build_context_menu(self, parent: QWidget | None = None) -> QMenu:
         menu = super().build_context_menu()
 
-
         # Graphics-specific actions
         graphics_widget_menu = menu.addMenu("GraphicsWidget")
 

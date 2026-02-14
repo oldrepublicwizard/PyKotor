@@ -39,7 +39,7 @@ import uuid
 from enum import Enum
 from functools import lru_cache
 from io import BytesIO
-from typing import TYPE_CHECKING, NamedTuple, TypeVar, Union, cast
+from typing import TYPE_CHECKING, NamedTuple, TypeVar, Union
 from xml.etree.ElementTree import ParseError
 
 from pykotor.common.stream import BinaryReader, BinaryWriter
@@ -50,7 +50,6 @@ if TYPE_CHECKING:
 
     from typing_extensions import Literal, Self  # pyright: ignore[reportMissingModuleSource]
 
-    from pykotor.common.stream import BinaryWriterBytearray, BinaryWriterFile
 
 
 class BiowareEngine(Enum):
@@ -180,10 +179,68 @@ class ResourceTuple(NamedTuple):
 
     type_id: int
     extension: str
-    category: Literal["Save Data", "Images", "Video", "Audio", "Text Files", "Other", "Models", "Textures", "Scripts", "Modules", "Module Data", "Creatures", "2D Arrays", "Talk Tables", "Dialogs", "Palettes", "Triggers", "Sounds", "Factions", "Encounters", "Doors", "Placeables", "Defaults", "GUIs", "Unused"]
+    category: Literal[
+        "Save Data",
+        "Images",
+        "Video",
+        "Audio",
+        "Text Files",
+        "Other",
+        "Models",
+        "Textures",
+        "Scripts",
+        "Modules",
+        "Module Data",
+        "Creatures",
+        "2D Arrays",
+        "Talk Tables",
+        "Dialogs",
+        "Palettes",
+        "Triggers",
+        "Sounds",
+        "Factions",
+        "Encounters",
+        "Doors",
+        "Placeables",
+        "Defaults",
+        "GUIs",
+        "Unused",
+    ]
     contents: Literal["binary", "plaintext", "gff", "erf", "lips", "video", "xml"]
     is_invalid: bool = False
-    target_member: Literal["RES", "BMP", "MVE", "TGA", "WAV", "PLT", "INI", "BMU", "MPG", "TXT", "WMA", "WMV", "XMV", "PLH", "TEX", "MDL", "THG", "FNT", "LUA", "SLT", "NSS", "NCS", "MOD", "ARE", "SET", "BIP", "JPG2", "PWC"] | None = None
+    target_member: (
+        Literal[
+            "RES",
+            "BMP",
+            "MVE",
+            "TGA",
+            "WAV",
+            "PLT",
+            "INI",
+            "BMU",
+            "MPG",
+            "TXT",
+            "WMA",
+            "WMV",
+            "XMV",
+            "PLH",
+            "TEX",
+            "MDL",
+            "THG",
+            "FNT",
+            "LUA",
+            "SLT",
+            "NSS",
+            "NCS",
+            "MOD",
+            "ARE",
+            "SET",
+            "BIP",
+            "JPG2",
+            "PWC",
+        ]
+        | None
+    ) = None
     supported_engines: tuple[BiowareEngine, ...] = ()  # Empty tuple as default, use tuple for immutability
 
 
@@ -244,7 +301,8 @@ class ResourceType(Enum):
     )
     # Type ID 5 is reserved/unused in all BioWare engines
     PLT = ResourceTuple(  # Packed layer texture
-        6, "plt", "Other", "binary", supported_engines=(BiowareEngine.Aurora, BiowareEngine.Odyssey))
+        6, "plt", "Other", "binary", supported_engines=(BiowareEngine.Aurora, BiowareEngine.Odyssey)
+    )
     INI = ResourceTuple(  # Configuration, Windows INI
         7, "ini", "Text Files", "plaintext", supported_engines=(BiowareEngine.Infinity, BiowareEngine.Aurora, BiowareEngine.Odyssey, BiowareEngine.Eclipse)
     )

@@ -8,9 +8,9 @@ if TYPE_CHECKING:
     from pykotor.gl.scene import Scene
     from pykotor.gl.shader import Shader
 
+
 class Empty:
     def __init__(self, scene: Scene):
         self._scene: Scene = scene
 
-    def draw(self, shader: Shader, transform: mat4):
-        ...
+    def draw(self, shader: Shader, transform: mat4): ...

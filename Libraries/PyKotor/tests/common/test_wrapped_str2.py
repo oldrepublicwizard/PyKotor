@@ -2,11 +2,10 @@ from __future__ import annotations
 
 import unittest
 
-from utility.common.misc_string.mutable_str import WrappedStr
 from utility.common.misc_string.case_insens_str import CaseInsensImmutableStr
 
-class TestCaseInsensImmutableStr(unittest.TestCase):
 
+class TestCaseInsensImmutableStr(unittest.TestCase):
     def test_coerce_str(self):
         assert CaseInsensImmutableStr._coerce_str("Test") == "test"
         assert CaseInsensImmutableStr._coerce_str(CaseInsensImmutableStr("Test")) == "test"
@@ -64,7 +63,7 @@ class TestCaseInsensImmutableStr(unittest.TestCase):
 if __name__ == "__main__":
     try:
         import pytest
-    except ImportError: # pragma: no cover
+    except ImportError:  # pragma: no cover
         unittest.main()
     else:
         pytest.main(["-v", __file__])

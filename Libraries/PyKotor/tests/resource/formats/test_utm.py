@@ -22,7 +22,6 @@ if UTILITY_PATH.joinpath("utility").exists():
 
 from typing import TYPE_CHECKING
 
-from pykotor.resource.formats.gff import read_gff
 from pykotor.resource.generics.utm import construct_utm, dismantle_utm
 
 if TYPE_CHECKING:
@@ -46,7 +45,7 @@ TEST_UTM_OBJECT = UTM(
         InventoryItem(resref=ResRef("g_i_drdltplat002"), infinite=True),
     ],
     id=5,
-    comment="comment"
+    comment="comment",
 )
 
 

@@ -33,6 +33,7 @@ Usage in __main__.py:
     if __name__ == "__main__":
         main()
 """
+
 from __future__ import annotations
 
 import atexit
@@ -58,11 +59,7 @@ def is_frozen() -> bool:
         True if running from a frozen executable
     """
     # Check for sys attributes - legitimate use of getattr for optional runtime attributes
-    return (
-        getattr(sys, "frozen", False)
-        or getattr(sys, "_MEIPASS", False)
-        or tempfile.gettempdir() in sys.executable
-    )
+    return getattr(sys, "frozen", False) or getattr(sys, "_MEIPASS", False) or tempfile.gettempdir() in sys.executable
 
 
 def setup_sys_path(
@@ -141,6 +138,7 @@ def create_exception_hook(
     Returns:
         Exception hook function suitable for sys.excepthook
     """
+
     def on_app_crash(
         etype: type[BaseException],
         exc: BaseException,
@@ -156,6 +154,7 @@ def create_exception_hook(
         if tback is None:
             with suppress(Exception):
                 import inspect
+
                 current_stack = inspect.stack()
                 if current_stack:
                     current_stack = current_stack[1:][::-1]
@@ -171,6 +170,7 @@ def create_exception_hook(
         # Try GUI messagebox
         with suppress(Exception):
             from tkinter import Tk, messagebox
+
             root = Tk()
             root.withdraw()
             messagebox.showerror(title, short_msg)
@@ -194,6 +194,7 @@ def create_cleanup_func(
     Returns:
         Cleanup function that takes an App instance
     """
+
     def cleanup(app: BaseApp):
         """Prevent the app from running in background after sys.exit."""
         from utility.system.app_process.shutdown import terminate_main_process
@@ -252,4 +253,3 @@ def main_wrapper(
             print(gui_fallback_message)
             print("[Info] Use --help to see CLI options")
             sys.exit(0)
-

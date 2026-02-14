@@ -1,4 +1,5 @@
 """Search archive command implementation."""
+
 from __future__ import annotations
 
 import fnmatch
@@ -190,4 +191,3 @@ def cmd_search_archive(args: Namespace, logger: Logger) -> int:
         return 1
     else:
         return 0
-

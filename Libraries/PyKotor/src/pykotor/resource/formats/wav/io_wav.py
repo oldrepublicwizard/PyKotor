@@ -19,13 +19,14 @@ References:
         - ".\\streamwaves" @ 0x0074df40, "d:\\streamwaves" @ 0x0074df50 - Stream waves paths
         - SFX format: 470-byte obfuscation header starting with 0xFF 0xF3 0x60 0xC4
         - MP3-in-WAV: RIFF header with size == 50, 58-byte header before MP3 data
-        
+
         Derivations and Other Implementations:
         ----------
         https://github.com/th3w1zard1/KotOR.js/tree/master/src/audio/AudioFile.ts
 
 
 """
+
 from __future__ import annotations
 
 from io import BytesIO
@@ -51,21 +52,21 @@ if TYPE_CHECKING:
 
 class WAVBinaryReader(ResourceReader):
     """Handles reading WAV binary data with automatic deobfuscation.
-    
+
     WAV files in KotOR come in several formats:
-    
+
     1. **Standard RIFF/WAVE** - Most voice-over files (streamvoice/)
        - Standard PCM or IMA ADPCM encoding
        - No obfuscation header
-       
+
     2. **SFX Format** - Sound effects and some music (streammusic/)
        - 470-byte header starting with 0xFF 0xF3 0x60 0xC4
        - After header removal, standard RIFF/WAVE follows
-       
+
     3. **MP3-in-WAV** - Some music files
        - RIFF header with size == 50
        - After 58-byte header removal, raw MP3 data follows
-    
+
     References:
     ----------
         Based on swkotor.exe WAV structure:
@@ -79,13 +80,14 @@ class WAVBinaryReader(ResourceReader):
         - "HD0:STREAMMUSIC\\%s" @ 0x0074c304 - Stream music path format
         - SFX format: 470-byte obfuscation header starting with 0xFF 0xF3 0x60 0xC4
         - MP3-in-WAV: RIFF header with size == 50, 58-byte header before MP3 data
-        
+
         Derivations and Other Implementations:
         ----------
         https://github.com/th3w1zard1/KotOR.js/tree/master/src/audio/AudioFile.ts:111-162
 
 
     """
+
     def __init__(
         self,
         source: SOURCE_TYPES,
@@ -111,16 +113,16 @@ class WAVBinaryReader(ResourceReader):
         # Read all data
         self._reader.seek(0)
         raw_data = self._reader.read_all()
-        
+
         # Deobfuscate and get format info
         deobfuscated_data, format_type = get_deobfuscation_result(raw_data)
-        
+
         # Determine WAV type based on deobfuscation result
         if format_type == DeobfuscationResult.SFX_HEADER:
             wav_type = WAVType.SFX
         else:
             wav_type = WAVType.VO
-        
+
         # If MP3-in-WAV format detected, return MP3 data directly
         # Reference: https://github.com/th3w1zard1/KotOR.js/tree/master/src/audio/AudioFile.ts:134-140
         if format_type == DeobfuscationResult.MP3_IN_WAV:
@@ -131,28 +133,28 @@ class WAVBinaryReader(ResourceReader):
                 channels=2,  # Default stereo for MP3
                 sample_rate=44100,  # Default sample rate
                 bits_per_sample=16,
-                data=deobfuscated_data
+                data=deobfuscated_data,
             )
-        
+
         # Parse as RIFF/WAVE
         return self._parse_riff_wave(deobfuscated_data, wav_type)
-    
+
     def _parse_riff_wave(self, data: bytes, wav_type: WAVType) -> WAV:
         """Parse RIFF/WAVE format data.
-        
+
         Args:
             data: Deobfuscated audio data (should start with RIFF)
             wav_type: The determined WAV type (VO/SFX)
-            
+
         Returns:
             Parsed WAV object
-            
+
         References:
-            
+
             https://github.com/th3w1zard1/KotOR.js/tree/master/src/audio/AudioFile.ts:250-262
         """
         reader = BinaryReader(BytesIO(data))
-        
+
         # Read RIFF header
         #
         riff_tag = reader.read_bytes(4)
@@ -162,7 +164,7 @@ class WAVBinaryReader(ResourceReader):
 
         file_size = reader.read_uint32()
         wave_tag = reader.read_bytes(4)
-        
+
         #
         if wave_tag != b"WAVE":
             msg = f"Not a valid WAVE file, got: {wave_tag!r}"
@@ -218,7 +220,7 @@ class WAVBinaryReader(ResourceReader):
                 # Skip fact chunk (contains sample count for compressed formats)
                 # Reference: https://github.com/th3w1zard1/KotOR.js/tree/master/src/audio/AudioFile.ts:230-234
                 reader.skip(chunk_size)
-                
+
             else:
                 # Skip unknown chunks
                 if chunk_size > reader.remaining():
@@ -242,7 +244,7 @@ class WAVBinaryReader(ResourceReader):
             bits_per_sample=bits_per_sample,
             bytes_per_sec=bytes_per_sec,
             block_align=block_align,
-            data=audio_data
+            data=audio_data,
         )
 
         return self._wav
@@ -250,7 +252,7 @@ class WAVBinaryReader(ResourceReader):
 
 class WAVBinaryWriter(ResourceWriter):
     """Handles writing WAV binary data with optional obfuscation.
-    
+
     For VO files: Writes standard RIFF/WAVE format
     For SFX files: Adds 470-byte obfuscation header before RIFF/WAVE
     For MP3 data: Wraps in appropriate container based on wav_type
@@ -274,18 +276,18 @@ class WAVBinaryWriter(ResourceWriter):
             3. Write obfuscated data to target
         """
         from pykotor.common.stream import BinaryWriter
-        
+
         # For MP3 format, just obfuscate and write
         if self.wav.audio_format == AudioFormat.MP3:
             wav_type_str = "SFX" if self.wav.wav_type == WAVType.SFX else "VO"
             obfuscated_data = obfuscate_audio(self.wav.data, wav_type_str)
             self._writer.write_bytes(obfuscated_data)
             return
-        
+
         # Build clean WAV data
         clean_buffer = BytesIO()
         clean_writer = BinaryWriter.to_stream(clean_buffer)
-        
+
         # Calculate sizes
         data_size = len(self.wav.data)
         fmt_chunk_size = 16
@@ -312,11 +314,11 @@ class WAVBinaryWriter(ResourceWriter):
         clean_writer.write_bytes(b"data")
         clean_writer.write_uint32(data_size)
         clean_writer.write_bytes(self.wav.data)
-        
+
         # Get clean data and obfuscate it
         clean_data = clean_buffer.getvalue()
         wav_type_str = "SFX" if self.wav.wav_type == WAVType.SFX else "VO"
         obfuscated_data = obfuscate_audio(clean_data, wav_type_str)
-        
+
         # Write obfuscated data
         self._writer.write_bytes(obfuscated_data)

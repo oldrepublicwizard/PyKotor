@@ -24,15 +24,13 @@ if UTILITY_PATH.joinpath("utility").exists():
 
 from typing import TYPE_CHECKING
 
-from pykotor.common.misc import EquipmentSlot, Game
-from pykotor.extract.installation import Installation
+from pykotor.common.misc import EquipmentSlot
 from pykotor.resource.formats.gff import read_gff
-from pykotor.resource.generics.utc import construct_utc, dismantle_utc
+from pykotor.resource.generics.utc import UTC, construct_utc, dismantle_utc
 from pykotor.resource.type import ResourceType
 
 if TYPE_CHECKING:
-    from pykotor.resource.formats.gff.gff_data import GFF
-    from pykotor.resource.generics.utc import UTC
+    pass
 
 # Inlined test.utc content converted to XML format
 TEST_UTC_XML = """<gff3>
@@ -216,12 +214,12 @@ class TestUTC(TestCase):
         self.log_messages.append("\t".join(msgs))
 
     def test_io_construct(self):
-        gff = read_gff(TEST_UTC_XML.encode('utf-8'), file_format=ResourceType.GFF_XML)
+        gff = read_gff(TEST_UTC_XML.encode("utf-8"), file_format=ResourceType.GFF_XML)
         utc = construct_utc(gff)
         self.validate_io(utc)
 
     def test_io_reconstruct(self):
-        gff = read_gff(TEST_UTC_XML.encode('utf-8'), file_format=ResourceType.GFF_XML)
+        gff = read_gff(TEST_UTC_XML.encode("utf-8"), file_format=ResourceType.GFF_XML)
         gff = dismantle_utc(construct_utc(gff))
         utc = construct_utc(gff)
         self.validate_io(utc)
@@ -231,7 +229,7 @@ class TestUTC(TestCase):
         import tempfile
         import os
 
-        with tempfile.NamedTemporaryFile(mode='w', suffix='.utc.xml', delete=False, encoding='utf-8') as tmp:
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".utc.xml", delete=False, encoding="utf-8") as tmp:
             tmp.write(TEST_UTC_XML)
             tmp_path = tmp.name
 
@@ -331,6 +329,85 @@ class TestUTC(TestCase):
         assert utc.repair == 6
         assert utc.security == 7
         assert utc.treat_injury == 8
+
+    def test_utc_missing_field_defaults(self) -> None:
+        """Test defaults when UTC fields are omitted (REVA: K1 0x00500350, TSL 0x0068ccb0; ReadStatsFromGff 0x00560e60/0x006ec350)."""
+        minimal_utc_xml = """<gff3>
+          <struct id="-1">
+            <exostring label="Tag">OnlyTag</exostring>
+            <list label="SkillList">
+              <struct id="0"><byte label="Rank">0</byte></struct>
+              <struct id="0"><byte label="Rank">0</byte></struct>
+              <struct id="0"><byte label="Rank">0</byte></struct>
+              <struct id="0"><byte label="Rank">0</byte></struct>
+              <struct id="0"><byte label="Rank">0</byte></struct>
+              <struct id="0"><byte label="Rank">0</byte></struct>
+              <struct id="0"><byte label="Rank">0</byte></struct>
+              <struct id="0"><byte label="Rank">0</byte></struct>
+            </list>
+            <list label="ClassList" />
+            <list label="FeatList" />
+            <list label="Equip_ItemList" />
+            <list label="ItemList" />
+          </struct>
+        </gff3>
+        """
+        gff = read_gff(minimal_utc_xml.encode("utf-8"), file_format=ResourceType.GFF_XML)
+        utc = construct_utc(gff)
+        self.assertEqual(utc.tag, "OnlyTag")
+        self.assertEqual(utc.resref, "")
+        self.assertEqual(utc.comment, "")
+        self.assertEqual(utc.conversation, "")
+        self.assertEqual(utc.first_name.stringref, -1)
+        self.assertEqual(utc.last_name.stringref, -1)
+        self.assertEqual(utc.race_id, 0)
+        self.assertEqual(utc.gender_id, 0)
+        self.assertEqual(utc.strength, 0)
+        self.assertEqual(utc.faction_id, 0)
+        self.assertEqual(utc.current_hp, 0)
+        self.assertEqual(utc.max_hp, 0)
+        self.assertFalse(utc.plot)
+        self.assertFalse(utc.is_pc)
+        self.assertEqual(utc.on_heartbeat, "")
+        self.assertEqual(len(utc.classes), 0)
+        self.assertEqual(len(utc.feats), 0)
+        self.assertEqual(len(utc.equipment), 0)
+        self.assertEqual(len(utc.inventory), 0)
+        self.assertEqual(utc.computer_use, 0)
+        self.assertEqual(utc.treat_injury, 0)
+
+    def test_utc_empty_roundtrip(self) -> None:
+        """Minimal root with empty lists: construct_utc -> dismantle_utc -> construct_utc preserves defaults."""
+        minimal_xml = """<gff3>
+          <struct id="-1">
+            <list label="SkillList">
+              <struct id="0"><byte label="Rank">0</byte></struct>
+              <struct id="0"><byte label="Rank">0</byte></struct>
+              <struct id="0"><byte label="Rank">0</byte></struct>
+              <struct id="0"><byte label="Rank">0</byte></struct>
+              <struct id="0"><byte label="Rank">0</byte></struct>
+              <struct id="0"><byte label="Rank">0</byte></struct>
+              <struct id="0"><byte label="Rank">0</byte></struct>
+              <struct id="0"><byte label="Rank">0</byte></struct>
+            </list>
+            <list label="ClassList" />
+            <list label="FeatList" />
+            <list label="Equip_ItemList" />
+            <list label="ItemList" />
+          </struct>
+        </gff3>
+        """
+        gff = read_gff(minimal_xml.encode("utf-8"), file_format=ResourceType.GFF_XML)
+        utc = construct_utc(gff)
+        self.assertEqual(utc.tag, "")
+        self.assertEqual(len(utc.classes), 0)
+        self.assertEqual(len(utc.feats), 0)
+        gff2 = dismantle_utc(utc)
+        utc2 = construct_utc(gff2)
+        self.assertEqual(utc2.tag, "")
+        self.assertEqual(len(utc2.classes), 0)
+        self.assertEqual(len(utc2.feats), 0)
+        self.assertEqual(utc2.resref, "")
 
 
 if __name__ == "__main__":

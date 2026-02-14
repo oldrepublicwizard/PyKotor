@@ -26,4 +26,3 @@ __all__ = [
     "read_bwm",
     "write_bwm",
 ]
-

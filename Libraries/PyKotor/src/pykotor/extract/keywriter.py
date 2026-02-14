@@ -43,10 +43,10 @@ class KEYDataWriter(ABC):
 
 class KEYWriter:
     """Writes KEY (Keyfile) files.
-    
+
     KEY files index BIF/BZF archives and provide resource lookup tables. This writer
     creates KEY files by collecting BIF entries and their contained resources.
-    
+
     References:
     ----------
         Original BioWare engine binaries (from swkotor.exe, swkotor2.exe)
@@ -59,13 +59,14 @@ class KEYWriter:
 
         Note: KEY writing is uncommon in vendor implementations; most tools only read KEY files.
         PyKotor's KEYWriter is primarily for modding and tooling purposes.
-    
+
     Missing Features:
     ----------------
         - ResRef lowercasing (vendor implementations lowercase ResRefs)
         - Resource ID decomposition (vendor implementations decompose resource IDs)
         - BZF compression support (vendor implementations handle compressed BIFs)
     """
+
     def __init__(self):
         self._entries: list[Entry] = []
 
@@ -92,7 +93,7 @@ class KEYWriter:
 
         Args:
             write_stream: The stream to write to
-        
+
         References:
         ----------
         Original BioWare engine binaries (from swkotor.exe, swkotor2.exe)
@@ -104,7 +105,7 @@ class KEYWriter:
 
         """
         # Write header
-        
+
         write_stream.write(struct.pack(">4s4s", b"KEY ", b"V1  "))
 
         # Number of BIF/BZF files

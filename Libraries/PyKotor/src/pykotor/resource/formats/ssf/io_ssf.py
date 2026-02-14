@@ -54,22 +54,23 @@ if TYPE_CHECKING:
 
 class SSFBinaryReader(ResourceReader):
     """Reads SSF (Sound Set File) files.
-    
+
     SSF files map sound event types to sound resource IDs. Used for creature sound sets
     that define battle cries, grunts, pain sounds, and other audio events.
-    
+
     References:
     ----------
         Based on swkotor.exe SSF structure:
         - CResSSF::CResSSF @ 0x006db650 - Constructor for SSF resource
         - CResSSF::~CResSSF @ 0x006db670, @ 0x006db6b0 - Destructors for SSF resource
         - SSF file format: "SSF " type, "V1.1" version
-        
+
         Note: SSF files map sound event types (BattleCry, Attack, Pain, etc.) to sound
         resource IDs. Used for creature sound sets that define battle cries, grunts,
         pain sounds, and other audio events.
 
     """
+
     def __init__(
         self,
         source: SOURCE_TYPES,
@@ -97,7 +98,6 @@ class SSFBinaryReader(ResourceReader):
         sounds_offset = self._reader.read_uint32()
         self._reader.seek(sounds_offset)
 
-        
         # Read sound set entries (uint32 array, -1 indicates no sound)
         self._ssf.set_data(SSFSound.BATTLE_CRY_1, self._reader.read_uint32(max_neg1=True))
         self._ssf.set_data(SSFSound.BATTLE_CRY_2, self._reader.read_uint32(max_neg1=True))

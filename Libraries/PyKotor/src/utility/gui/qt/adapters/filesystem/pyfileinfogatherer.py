@@ -47,7 +47,7 @@ from utility.gui.qt.adapters.filesystem.pyextendedinformation import PyQExtended
 
 def translateDriveName(drive: QFileInfo) -> str:
     """Translate drive name matching C++ lines 36-46 exactly.
-    
+
     Matches:
     static QString translateDriveName(const QFileInfo &drive)
     {
@@ -72,10 +72,10 @@ def translateDriveName(drive: QFileInfo) -> str:
 
 class PyFileInfoGatherer(QThread):
     """Python adapter for QFileInfoGatherer matching Qt6 C++ source exactly.
-    
+
     Matches qfileinfogatherer_p.h lines 126-199 and qfileinfogatherer.cpp.
     """
-    
+
     # Signals matching C++ lines 130-134
     updates = Signal(str, list)  # (directory, QList<std::pair<QString, QFileInfo>>)
     newListOfFiles = Signal(str, list)  # (directory, QStringList) const
@@ -84,7 +84,7 @@ class PyFileInfoGatherer(QThread):
 
     def __init__(self, parent: QObject | None = None):
         """Initialize QFileInfoGatherer matching C++ lines 57-62 exactly.
-        
+
         Matches:
         QFileInfoGatherer::QFileInfoGatherer(QObject *parent)
             : QThread(parent)
@@ -98,7 +98,7 @@ class PyFileInfoGatherer(QThread):
         # Matches C++ line 192: QAbstractFileIconProvider defaultProvider;
         self.defaultProvider: QFileIconProvider = QFileIconProvider()
         self.m_iconProvider: QAbstractFileIconProvider = self.defaultProvider
-        
+
         # Matches C++ line 181: mutable QMutex mutex;
         self.mutex: QMutex = QMutex()
         # Matches C++ line 183: QWaitCondition condition;
@@ -108,22 +108,22 @@ class PyFileInfoGatherer(QThread):
         self.path: list[str] = []
         # Matches C++ line 185: QStack<QStringList> files;
         self.files: list[list[str]] = []
-        
+
         # Matches C++ line 189: QFileSystemWatcher *m_watcher = nullptr;
         self.m_watcher: QFileSystemWatcher | None = None
-        
+
         # Matches C++ line 194: bool m_resolveSymlinks = true; (Windows only)
         if os.name == "nt":
             self.m_resolveSymlinks: bool = True
         # Matches C++ line 197: bool m_watching = true;
         self.m_watching: bool = True
-        
+
         # Start thread with LowPriority matching C++ line 61
         self.start(QThread.Priority.LowPriority)
 
     def __del__(self):
         """Destructor matching C++ lines 67-71 exactly.
-        
+
         Matches:
         QFileInfoGatherer::~QFileInfoGatherer()
         {
@@ -136,7 +136,7 @@ class PyFileInfoGatherer(QThread):
 
     def event(self, event: QEvent) -> bool:
         """Event handler matching C++ lines 73-96 exactly.
-        
+
         Matches:
         bool QFileInfoGatherer::event(QEvent *event)
         {
@@ -165,7 +165,7 @@ class PyFileInfoGatherer(QThread):
 
     def requestAbort(self) -> None:
         """Request abort matching C++ lines 98-103 exactly.
-        
+
         Matches:
         void QFileInfoGatherer::requestAbort()
         {
@@ -180,7 +180,7 @@ class PyFileInfoGatherer(QThread):
 
     def setResolveSymlinks(self, enable: bool) -> None:  # noqa: FBT001
         """Set resolve symlinks matching C++ lines 105-111 exactly.
-        
+
         Matches:
         void QFileInfoGatherer::setResolveSymlinks(bool enable)
         {
@@ -195,7 +195,7 @@ class PyFileInfoGatherer(QThread):
 
     def driveAdded(self) -> None:
         """Drive added handler matching C++ lines 113-116 exactly.
-        
+
         Matches:
         void QFileInfoGatherer::driveAdded()
         {
@@ -206,7 +206,7 @@ class PyFileInfoGatherer(QThread):
 
     def driveRemoved(self) -> None:
         """Drive removed handler matching C++ lines 118-125 exactly.
-        
+
         Matches:
         void QFileInfoGatherer::driveRemoved()
         {
@@ -225,7 +225,7 @@ class PyFileInfoGatherer(QThread):
 
     def resolveSymlinks(self) -> bool:
         """Check if resolving symlinks matching C++ lines 127-134 exactly.
-        
+
         Matches:
         bool QFileInfoGatherer::resolveSymlinks() const
         {
@@ -242,7 +242,7 @@ class PyFileInfoGatherer(QThread):
 
     def setIconProvider(self, provider: QAbstractFileIconProvider | None) -> None:
         """Set icon provider matching C++ lines 136-139 exactly.
-        
+
         Matches:
         void QFileInfoGatherer::setIconProvider(QAbstractFileIconProvider *provider)
         {
@@ -253,7 +253,7 @@ class PyFileInfoGatherer(QThread):
 
     def iconProvider(self) -> QAbstractFileIconProvider | None:
         """Get icon provider matching C++ lines 141-144 exactly.
-        
+
         Matches:
         QAbstractFileIconProvider *QFileInfoGatherer::iconProvider() const
         {
@@ -264,7 +264,7 @@ class PyFileInfoGatherer(QThread):
 
     def fetchExtendedInformation(self, path: str, files: list[str]) -> None:
         """Fetch extended information matching C++ lines 151-179 exactly.
-        
+
         Matches:
         void QFileInfoGatherer::fetchExtendedInformation(const QString &path, const QStringList &files)
         {
@@ -324,7 +324,7 @@ class PyFileInfoGatherer(QThread):
 
     def updateFile(self, filePath: str) -> None:  # noqa: N803
         """Update file matching C++ lines 186-191 exactly.
-        
+
         Matches:
         void QFileInfoGatherer::updateFile(const QString &filePath)
         {
@@ -339,12 +339,12 @@ class PyFileInfoGatherer(QThread):
             fileName = filePath
         else:
             dir = filePath[:last_slash]
-            fileName = filePath[last_slash + 1:]
+            fileName = filePath[last_slash + 1 :]
         self.fetchExtendedInformation(dir, [fileName])
 
     def watchedFiles(self) -> list[str]:
         """Get watched files matching C++ lines 193-200 exactly.
-        
+
         Matches:
         QStringList QFileInfoGatherer::watchedFiles() const
         {
@@ -361,7 +361,7 @@ class PyFileInfoGatherer(QThread):
 
     def watchedDirectories(self) -> list[str]:
         """Get watched directories matching C++ lines 202-209 exactly.
-        
+
         Matches:
         QStringList QFileInfoGatherer::watchedDirectories() const
         {
@@ -378,7 +378,7 @@ class PyFileInfoGatherer(QThread):
 
     def createWatcher(self) -> None:
         """Create watcher matching C++ lines 211-227 exactly.
-        
+
         Matches:
         void QFileInfoGatherer::createWatcher()
         {
@@ -401,7 +401,7 @@ class PyFileInfoGatherer(QThread):
         self.m_watcher = QFileSystemWatcher(self)
         self.m_watcher.directoryChanged.connect(self.list)
         self.m_watcher.fileChanged.connect(self.updateFile)
-        
+
         if os.name == "nt":
             listener = self.m_watcher.property("_q_driveListener")
             if listener and isinstance(listener, QVariant):
@@ -415,7 +415,7 @@ class PyFileInfoGatherer(QThread):
 
     def watchPaths(self, paths: list[str]) -> None:
         """Watch paths matching C++ lines 229-240 exactly.
-        
+
         Matches:
         void QFileInfoGatherer::watchPaths(const QStringList &paths)
         {
@@ -438,7 +438,7 @@ class PyFileInfoGatherer(QThread):
 
     def unwatchPaths(self, paths: list[str]) -> None:
         """Unwatch paths matching C++ lines 242-250 exactly.
-        
+
         Matches:
         void QFileInfoGatherer::unwatchPaths(const QStringList &paths)
         {
@@ -455,7 +455,7 @@ class PyFileInfoGatherer(QThread):
 
     def isWatching(self) -> bool:
         """Check if watching matching C++ lines 252-260 exactly.
-        
+
         Matches:
         bool QFileInfoGatherer::isWatching() const
         {
@@ -472,7 +472,7 @@ class PyFileInfoGatherer(QThread):
 
     def setWatching(self, v: bool) -> None:  # noqa: N803
         """Set watching matching C++ lines 271-283 exactly.
-        
+
         Matches:
         void QFileInfoGatherer::setWatching(bool v)
         {
@@ -500,7 +500,7 @@ class PyFileInfoGatherer(QThread):
 
     def clear(self) -> None:
         """Clear watcher matching C++ lines 290-297 exactly.
-        
+
         Matches:
         void QFileInfoGatherer::clear()
         {
@@ -517,7 +517,7 @@ class PyFileInfoGatherer(QThread):
 
     def removePath(self, path: str) -> None:
         """Remove path matching C++ lines 304-312 exactly.
-        
+
         Matches:
         void QFileInfoGatherer::removePath(const QString &path)
         {
@@ -534,7 +534,7 @@ class PyFileInfoGatherer(QThread):
 
     def list(self, directoryPath: str) -> None:  # noqa: A003
         """List directory matching C++ lines 319-322 exactly.
-        
+
         Matches:
         void QFileInfoGatherer::list(const QString &directoryPath)
         {
@@ -545,7 +545,7 @@ class PyFileInfoGatherer(QThread):
 
     def run(self) -> None:
         """Run thread matching C++ lines 327-350 exactly.
-        
+
         Matches:
         void QFileInfoGatherer::run()
         {
@@ -588,7 +588,7 @@ class PyFileInfoGatherer(QThread):
 
     def getInfo(self, fileInfo: QFileInfo) -> PyQExtendedInformation:
         """Get info matching C++ lines 352-387 exactly.
-        
+
         Matches:
         QExtendedInformation QFileInfoGatherer::getInfo(const QFileInfo &fileInfo) const
         {
@@ -635,7 +635,7 @@ class PyFileInfoGatherer(QThread):
             # Use QFileIconProvider as fallback
             default_provider = QFileIconProvider()
             info.displayType = default_provider.type(fileInfo)
-        
+
         # QT_CONFIG(filesystemwatcher)
         watchFiles = os.environ.get("QT_FILESYSTEMMODEL_WATCH_FILES", "").strip()
         if watchFiles:
@@ -646,18 +646,18 @@ class PyFileInfoGatherer(QThread):
                 if path and fileInfo.exists() and fileInfo.isFile() and fileInfo.isReadable():
                     if path not in self.watchedFiles():
                         self.watchPaths([path])
-        
+
         # Q_OS_WIN
         if os.name == "nt" and self.m_resolveSymlinks and info.isSymLink(ignoreNtfsSymLinks=True):
             resolvedInfo = QFileInfo(QFileInfo(fileInfo.symLinkTarget()).canonicalFilePath())
             if resolvedInfo.exists():
                 self.nameResolved.emit(fileInfo.filePath(), resolvedInfo.fileName())
-        
+
         return info
 
     def getFileInfos(self, path: str, files: list[str]) -> None:
         """Get file infos matching C++ lines 393-456 exactly.
-        
+
         Matches:
         void QFileInfoGatherer::getFileInfos(const QString &path, const QStringList &files)
         {
@@ -722,6 +722,7 @@ class PyFileInfoGatherer(QThread):
         # List drives
         updatedFiles: list[tuple[str, QFileInfo]] = []
         if not path:
+
             def addToUpdatedFiles(fileInfo: QFileInfo) -> None:
                 fileInfo.refresh()  # stat() equivalent
                 updatedFiles.append((translateDriveName(fileInfo), fileInfo))
@@ -735,7 +736,7 @@ class PyFileInfoGatherer(QThread):
                 # Reverse iterate (crbegin/crend)
                 for filePath in reversed(files):
                     addToUpdatedFiles(QFileInfo(filePath))
-            
+
             self.updates.emit(path, updatedFiles)
             return
 
@@ -760,7 +761,7 @@ class PyFileInfoGatherer(QThread):
                         firstTime = self._fetch(fileInfo, base, firstTime, updatedFiles, path)
             except OSError:
                 pass  # Handle errors silently like C++ does
-        
+
         if allFiles:
             self.newListOfFiles.emit(path, allFiles)
 
@@ -773,7 +774,7 @@ class PyFileInfoGatherer(QThread):
             fileInfo.setFile(path + QDir.separator() + fileName)
             fileInfo.refresh()  # stat()
             firstTime = self._fetch(fileInfo, base, firstTime, updatedFiles, path)
-        
+
         if updatedFiles:
             self.updates.emit(path, updatedFiles)
         self.directoryLoaded.emit(path)
@@ -787,7 +788,7 @@ class PyFileInfoGatherer(QThread):
         path: str,
     ) -> bool:
         """Fetch file info matching C++ lines 458-470 exactly.
-        
+
         Matches:
         void QFileInfoGatherer::fetch(const QFileInfo &fileInfo, QElapsedTimer &base, bool &firstTime,
                                       QList<std::pair<QString, QFileInfo>> &updatedFiles, const QString &path)

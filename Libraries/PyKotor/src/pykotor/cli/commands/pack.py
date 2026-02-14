@@ -2,6 +2,7 @@
 
 This module handles packing source files into KOTOR module/ERF/hak files.
 """
+
 from __future__ import annotations
 
 import glob
@@ -221,4 +222,3 @@ def cmd_pack(args: Namespace, logger: Logger) -> int:
             return 1
 
     return 0
-

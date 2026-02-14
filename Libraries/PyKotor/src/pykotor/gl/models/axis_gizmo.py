@@ -87,14 +87,26 @@ _BASE_AXIS_LENGTH: float = 1.0
 _AXIS_VERTICES: np.ndarray = np.array(
     [
         # X axis
-        0.0, 0.0, 0.0,
-        _BASE_AXIS_LENGTH, 0.0, 0.0,
+        0.0,
+        0.0,
+        0.0,
+        _BASE_AXIS_LENGTH,
+        0.0,
+        0.0,
         # Y axis
-        0.0, 0.0, 0.0,
-        0.0, _BASE_AXIS_LENGTH, 0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        _BASE_AXIS_LENGTH,
+        0.0,
         # Z axis
-        0.0, 0.0, 0.0,
-        0.0, 0.0, _BASE_AXIS_LENGTH,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        _BASE_AXIS_LENGTH,
     ],
     dtype=np.float32,
 )
@@ -171,8 +183,8 @@ class AxisGizmo:
         old_line_width = glGetFloatv(GL_LINE_WIDTH)
 
         # --- Set overlay state ---
-        glDisable(GL_DEPTH_TEST)     # Always on top
-        glDepthMask(False)           # Don't write to depth buffer
+        glDisable(GL_DEPTH_TEST)  # Always on top
+        glDepthMask(False)  # Don't write to depth buffer
         glLineWidth(line_width)
 
         shader.set_matrix4("model", model)

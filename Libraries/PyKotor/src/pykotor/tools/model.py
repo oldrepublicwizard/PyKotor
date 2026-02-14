@@ -162,7 +162,10 @@ def iterate_textures(
                 reader.seek(node_offset + 168)
                 texture = reader.read_string(32, encoding="ascii", errors="ignore").strip()
                 if (
-                    texture and texture != "NULL" and texture.lower() not in texture_caseset and texture.lower() != "dirt"  # TODO(th3w1zard1): determine if the game really prevents the literal resname of 'dirt'.
+                    texture
+                    and texture != "NULL"
+                    and texture.lower() not in texture_caseset
+                    and texture.lower() != "dirt"  # TODO(th3w1zard1): determine if the game really prevents the literal resname of 'dirt'.
                 ):
                     texture_caseset.add(texture.lower())
                     yield texture.lower()
@@ -204,10 +207,7 @@ def change_textures(
     parsed_data: bytearray = bytearray(data)
     offsets: dict[str, list[int]] = {}
 
-    textures_ins: dict[str, str] = {
-        old_texture.lower(): new_texture.lower()
-        for old_texture, new_texture in textures.items()
-    }
+    textures_ins: dict[str, str] = {old_texture.lower(): new_texture.lower() for old_texture, new_texture in textures.items()}
     textures = textures_ins
 
     with BinaryReader.from_bytes(parsed_data, 12) as reader:
@@ -258,10 +258,7 @@ def change_lightmaps(
     parsed_data: bytearray = bytearray(data)
     offsets: dict[str, list[int]] = {}
 
-    textures_ins: dict[str, str] = {
-        old_texture.lower(): new_texture.lower()
-        for old_texture, new_texture in textures.items()
-    }
+    textures_ins: dict[str, str] = {old_texture.lower(): new_texture.lower() for old_texture, new_texture in textures.items()}
     textures = textures_ins
 
     with BinaryReader.from_bytes(parsed_data, 12) as reader:

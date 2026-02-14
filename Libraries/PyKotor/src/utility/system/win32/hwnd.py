@@ -26,7 +26,7 @@ if TYPE_CHECKING:
 
 WNDPROC: type[_FuncPointer] = WINFUNCTYPE(c_long, HWND, c_uint, WPARAM, LPARAM)
 WM_DESTROY = 0x0002
-WS_OVERLAPPEDWINDOW = (0x00CF0000)
+WS_OVERLAPPEDWINDOW = 0x00CF0000
 WS_VISIBLE = 0x10000000
 HCURSOR = c_void_p
 
@@ -42,7 +42,7 @@ class ctypesWNDCLASS(Structure):  # noqa: N801
         ("hCursor", HCURSOR),
         ("hbrBackground", HBRUSH),
         ("lpszMenuName", LPCWSTR),
-        ("lpszClassName", LPCWSTR)
+        ("lpszClassName", LPCWSTR),
     ]
 
 
@@ -84,6 +84,7 @@ class CursorType(IntEnum):
 
 class SimplePyHWND:
     """Context manager for creating and destroying a simple custom window."""
+
     CLASS_NAME: str = "SimplePyHWND"
     DISPLAY_NAME: str = "Python Simple Window"
 
@@ -138,6 +139,7 @@ class SimplePyHWND:
     def register_class(self):
         """Register the window class."""
         import win32gui
+
         wc = win32gui.WNDCLASS()
         wc.lpfnWndProc = WNDPROC(wnd_proc)  # pyright: ignore[reportAttributeAccessIssue]
         wc.lpszClassName = self.CLASS_NAME  # pyright: ignore[reportAttributeAccessIssue]
@@ -158,11 +160,19 @@ class SimplePyHWND:
     def create_window(self) -> int:
         """Create the window."""
         return windll.user32.CreateWindowExW(
-            self.dwExStyle, self.lpClassName, self.lpWindowName, self.dwStyle,
-            self.x, self.y, self.nWidth, self.nHeight,
-            self.hWndParent, self.hMenu,
+            self.dwExStyle,
+            self.lpClassName,
+            self.lpWindowName,
+            self.dwStyle,
+            self.x,
+            self.y,
+            self.nWidth,
+            self.nHeight,
+            self.hWndParent,
+            self.hMenu,
             windll.kernel32.GetModuleHandleW(None) if self.hInstance is None else self.hInstance,
-            self.lpParam)
+            self.lpParam,
+        )
 
 
 if __name__ == "__main__":
