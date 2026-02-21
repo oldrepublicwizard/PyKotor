@@ -1,4 +1,5 @@
 """Minimal conftest for debugging - add back pieces incrementally to find the culprit."""
+
 from __future__ import annotations
 
 import os
@@ -6,21 +7,27 @@ import runpy
 import sys
 from pathlib import Path
 
+
 # CRITICAL FIX (pytest-qt / Tavily research): Prevent QApplication.quit() from terminating the event loop.
 # When any widget/window calls instance.quit() during closeEvent, it exits the app and subsequent tests
 # cannot run (pytest collects 245 tests but only the first executes). Monkeypatching quit to a no-op
 # allows all tests to run. See: pytest-qt issue #37, pytest-qt app_exit docs, pytest #3574
 def _patch_qapp_quit():
     from qtpy.QtWidgets import QApplication
+
     _orig = QApplication.quit
+
     def _noop_quit(self):
         pass  # Do not terminate event loop - allows subsequent tests to run
+
     QApplication.quit = _noop_quit  # type: ignore[method-assign]
+
 
 # --- Module-level: path setup (needed for imports) ---
 def _load_dotenv_if_available() -> None:
     try:
         from dotenv import load_dotenv  # type: ignore
+
         repo_root = Path(__file__).resolve().parents[3]
         env_path = repo_root / ".env"
         if env_path.exists():
@@ -36,6 +43,7 @@ def _load_dotenv_if_available() -> None:
                 key, value = line.split("=", 1)
                 os.environ.setdefault(key.strip(), value.strip().strip('"').strip("'"))
 
+
 _load_dotenv_if_available()
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
@@ -50,6 +58,7 @@ PYKOTORGL_PATH = (LIBS_PATH / "PyKotorGL" / "src").resolve()
 for p in (TOOLSET_SRC, KOTORDIFF_SRC, PYKOTOR_PATH, UTILITY_PATH, PYKOTORGL_PATH):
     if p.exists() and str(p) not in sys.path:
         sys.path.insert(0, str(p))
+
 
 def _should_force_qt_offscreen() -> bool:
     """Return True if we should force Qt to use the offscreen platform plugin.
@@ -71,20 +80,22 @@ if "QT_QPA_PLATFORM" not in os.environ and _should_force_qt_offscreen():
 
 os.environ.setdefault("PYOPENGL_ERROR_CHECKING", "0")
 
+
 # Use single Qt API (no parametrization over pyqt6/pyside6/pyqt5). Set before any Qt import.
 def _get_qt_api() -> str:
     import importlib
+
     env_api = os.environ.get("PYTEST_QT_API", "").strip().lower()
     if env_api:
         return env_api
-    for name, mod in [("pyqt6", "PyQt6.QtCore"), ("pyqt5", "PyQt5.QtCore"),
-                      ("pyside6", "PySide6.QtCore"), ("pyside2", "PySide2.QtCore")]:
+    for name, mod in [("pyqt6", "PyQt6.QtCore"), ("pyqt5", "PyQt5.QtCore"), ("pyside6", "PySide6.QtCore"), ("pyside2", "PySide2.QtCore")]:
         try:
             importlib.import_module(mod)
             return name
         except ImportError:
             continue
     return "pyqt6"
+
 
 _qt_api = _get_qt_api()
 _api_name = {"pyqt6": "PyQt6", "pyqt5": "PyQt5", "pyside6": "PySide6", "pyside2": "PySide2"}.get(_qt_api, "PyQt6")
@@ -132,14 +143,8 @@ def pytest_collection_modifyitems(session: pytest.Session, config: pytest.Config
                 rebuilt_path = tmp_path / f"{module_root}_rebuilt.mod"
                 tmod._export_indoor_map_to_mod(indoor_map, k1_pykotor_installation, rebuilt_path)
                 rebuilt_resources = tmod._read_archive_resources(rebuilt_path)
-                rebuilt_woks = {
-                    resref: data
-                    for (resref, restype), data in rebuilt_resources.items()
-                    if restype == ResourceType.WOK
-                }
-                assert len(rebuilt_woks) == len(indoor_map.rooms), (
-                    f"{module_root}: WOK count mismatch - rebuilt={len(rebuilt_woks)}, rooms={len(indoor_map.rooms)}"
-                )
+                rebuilt_woks = {resref: data for (resref, restype), data in rebuilt_resources.items() if restype == ResourceType.WOK}
+                assert len(rebuilt_woks) == len(indoor_map.rooms), f"{module_root}: WOK count mismatch - rebuilt={len(rebuilt_woks)}, rooms={len(indoor_map.rooms)}"
                 original_total_faces = sum(len(room.base_walkmesh().faces) for room in indoor_map.rooms)
                 rebuilt_total_faces = sum(len(read_bwm(data).faces) for data in rebuilt_woks.values())
                 assert rebuilt_total_faces == original_total_faces, (

@@ -14,13 +14,13 @@ UTW files define [waypoint templates](GFF-File-Format#utw-waypoint). Waypoints a
 
 ## Core Identity fields
 
-| field | type | Description |
-|:------|:-----|:------------|
-| `TemplateResRef` | [ResRef](GFF-File-Format#gff-data-types) | Template identifier for this waypoint |
-| `Tag` | [CExoString](GFF-File-Format#gff-data-types) | Unique tag for script/linking references |
-| `LocalizedName` | [CExoLocString](GFF-File-Format#gff-data-types) | Waypoint name |
-| `Description` | [CExoLocString](GFF-File-Format#gff-data-types) | Description (unused) |
-| `Comment` | [CExoString](GFF-File-Format#gff-data-types) | Developer comment/notes |
+| field | type | Engine default | Description |
+|:------|:-----|:---------------|:------------|
+| `TemplateResRef` | [ResRef](GFF-File-Format#gff-data-types) | blank | Template identifier; max 16 chars. Engine loads the matching .utw. |
+| `Tag` | [CExoString](GFF-File-Format#gff-data-types) | "" | Unique tag for GetObjectByTag/GetWaypointByTag and door/trigger links. Keep unique per area. |
+| `LocalizedName` | [CExoLocString](GFF-File-Format#gff-data-types) | empty | Waypoint name on map and in travel menu. |
+| `Description` | [CExoLocString](GFF-File-Format#gff-data-types) | empty | Not read by engine; toolset/legacy only. |
+| `Comment` | [CExoString](GFF-File-Format#gff-data-types) | "" | Developer comment; not used by the game. |
 
 ---
 

@@ -8,7 +8,7 @@ description = "A translator/font creator tool useful for patching/working with m
 version = "2.2.1"
 requires-python = ">=3.8"
 dependencies = [
-  "pykotor[encodings,font,updater]>=2.2.1",
+  "pykotor[encodings,font,updater]>=2.3.0",
   "arabic-reshaper>=3.0.0",
   "deep_translator>=1.11.4",
   "deepl-cli>=1",
@@ -92,7 +92,7 @@ keywords = [
 
 [tool.poetry.dependencies]
 python = "^3.8"
-pykotor = { version = "^2.2.1", extras = ["encodings", "font", "updater"] }
+pykotor = { version = "^2.3.0", extras = ["encodings", "font", "updater"] }
 arabic-reshaper = ">=3.0.0"
 deep_translator = ">=1.11.4"
 deepl-cli = ">=1"

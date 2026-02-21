@@ -12,19 +12,12 @@ from qtpy.QtMultimedia import QAudioOutput, QMediaPlayer
 from qtpy.QtWidgets import (
     QAction,  # pyright: ignore[reportPrivateImportUsage]
     QApplication,  # pyright: ignore[reportPrivateImportUsage]
-    QComboBox,
-    QDoubleSpinBox,
     QFileDialog,
-    QHBoxLayout,
     QLabel,
-    QLineEdit,
-    QListWidget,
     QListWidgetItem,
     QMenu,
     QMessageBox,
-    QPushButton,
     QShortcut,  # pyright: ignore[reportPrivateImportUsage]
-    QVBoxLayout,
     QWidget,
 )
 
@@ -352,23 +345,24 @@ class LIPEditor(Editor):
 
         self.central_widget: QWidget = QWidget()
         self.setCentralWidget(self.central_widget)
-        
+
         # Setup event filter to prevent scroll wheel interaction with controls
         from toolset.gui.common.filters import NoScrollEventFilter
+
         self._no_scroll_filter = NoScrollEventFilter(self)
         self._no_scroll_filter.setup_filter(parent_widget=self)
 
         # Preview playback
         self.player = QMediaPlayer()
         self.audio_output: QAudioOutput | None = None
-        
+
         # Qt6 requires explicit audio output setup
         if qtpy.QT6:
             self.audio_output = QAudioOutput()
             self.audio_output.setVolume(1)
             player: Any = cast("Any", self.player)
             player.setAudioOutput(self.audio_output)  # type: ignore[attr-defined]
-        
+
         self.player.positionChanged.connect(self.on_playback_position_changed)
         state_changed = self.player.stateChanged if qtpy.QT5 else self.player.playbackStateChanged  # type: ignore[attr-defined]
         state_changed.connect(self.on_playback_state_changed)
@@ -389,10 +383,10 @@ class LIPEditor(Editor):
         self._shortcuts: list[QShortcut] = []
 
         self.setup_ui()
-        
+
         # Initialize undo/redo system BEFORE setting up menus (menus need it)
         self.undo_redo_manager = UndoRedoManager()
-        
+
         self._setup_menus()
         self._add_help_action()
         self.setup_shortcuts()
@@ -416,7 +410,7 @@ class LIPEditor(Editor):
         self.preview_label = self.ui.previewLabel
 
         # Connect signals
-        from toolset.gui.common.localization import translate as tr
+
         self.ui.loadAudioButton.clicked.connect(self.load_audio)
         self.preview_list.itemSelectionChanged.connect(self.on_keyframe_selected)
         self.preview_list.customContextMenuRequested.connect(self.show_preview_context_menu)
@@ -585,6 +579,7 @@ class LIPEditor(Editor):
             # Set up media player
             if qtpy.QT5:
                 from qtpy.QtMultimedia import QMediaContent  # pyright: ignore[reportAttributeAccessIssue]
+
                 self.player.setMedia(QMediaContent(QUrl.fromLocalFile(file_path)))  # pyright: ignore[reportAttributeAccessIssue]
             elif qtpy.QT6:
                 player: Any = cast("Any", self.player)
@@ -774,7 +769,7 @@ class LIPEditor(Editor):
         """Handle key press events as fallback for shortcuts."""
         key = event.key()
         modifiers = event.modifiers()
-        
+
         # Handle keyframe operations
         if key == Qt.Key.Key_Insert:
             self.add_keyframe()
@@ -806,7 +801,13 @@ class LIPEditor(Editor):
             self.redo()
             event.accept()
             return
-        
+
         # Let parent handle other keys
         super().keyPressEvent(event)
 
+if __name__ == "__main__":
+    import sys
+
+    from toolset.gui.editors.standalone import launch_editor_cli
+
+    sys.exit(launch_editor_cli("lip"))

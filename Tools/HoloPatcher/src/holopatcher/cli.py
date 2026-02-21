@@ -113,4 +113,3 @@ def execute_cli(cmdline_args: Namespace):
         error_name, msg = e.__class__.__name__, str(e)
         print(f"[Error] {error_name}: {msg}", file=sys.stderr)  # noqa: T201
         sys.exit(ExitCode.EXCEPTION_DURING_INSTALL)
-

@@ -14,7 +14,7 @@ from toolset.config import get_remote_toolset_update_info, is_remote_version_new
 from toolset.gui.common.filters import NoScrollEventFilter
 from toolset.gui.dialogs.asyncloader import AsyncLoader
 from toolset.gui.widgets.settings.installations import GlobalSettings
-from utility.error_handling import format_exception_with_variables, universal_simplify_exception
+from utility.error_handling import format_exception_with_variables
 from utility.misc import is_debug_mode
 from utility.system.os_helper import is_frozen
 from utility.updater.github import download_github_release_asset
@@ -282,4 +282,3 @@ class KitDownloader(QDialog):
                 kits_zip_path.unlink()
 
         return True
-

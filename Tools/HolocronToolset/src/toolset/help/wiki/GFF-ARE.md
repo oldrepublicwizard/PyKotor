@@ -27,7 +27,7 @@ ARE files define static [area properties](GFF-File-Format#are-area) including li
 | `SunAmbientColor` | color | Ambient light color RGB |
 | `SunDiffuseColor` | color | Sun diffuse light color RGB |
 | `SunShadows` | Byte | Enable shadow rendering |
-| `ShadowOpacity` | Byte | Shadow opacity (0-255) |
+| `ShadowOpacity` | Byte | Shadow opacity (0-255); K1 LoadAreaHeader ReadFieldBYTE |
 | `DynAmbientColor` | color | Dynamic ambient light RGB |
 
 **Lighting System:**
@@ -43,8 +43,8 @@ ARE files define static [area properties](GFF-File-Format#are-area) including li
 | field | type | Description |
 | ----- | ---- | ----------- |
 | `SunFogOn` | Byte | Enable fog rendering |
-| `SunFogNear` | Float | Fog start distance |
-| `SunFogFar` | Float | Fog end distance |
+| `SunFogNear` | Float | Fog start distance; K1 default 10000.0; engine clamps negative to 0 |
+| `SunFogFar` | Float | Fog end distance; K1 default 10000.0; engine clamps negative to 0 |
 | `SunFogColor` | color | Fog color RGB |
 
 **Fog Rendering:**
@@ -167,13 +167,15 @@ ARE files define static [area properties](GFF-File-Format#are-area) including li
 
 ## Area Behavior [flags](GFF-File-Format#gff-data-types)
 
+**Verified (Reva):** K1 `CSWSArea::LoadProperties` @ 0x00507490 reads from **AreaProperties** struct: Unescapable, RestrictMode (BYTE); StealthXPMax, StealthXPCurrent, StealthXPLoss (DWORD); StealthXPEnabled, TransPending, TransPendNextID, TransPendCurrID (BYTE); SunFogColor (DWORD).
+
 | field | type | Description |
 | ----- | ---- | ----------- |
 | `Unescapable` | Byte | Cannot use save/travel functions |
 | `DisableTransit` | Byte | Cannot travel to other modules |
 | `StealthXPEnabled` | Byte | Award stealth XP |
-| `StealthXPLoss` | Int | Stealth detection XP penalty |
-| `StealthXPMax` | Int | Maximum stealth XP per area |
+| `StealthXPLoss` | DWord | Stealth detection XP penalty |
+| `StealthXPMax` | DWord | Maximum stealth XP per area |
 
 **Stealth System:**
 

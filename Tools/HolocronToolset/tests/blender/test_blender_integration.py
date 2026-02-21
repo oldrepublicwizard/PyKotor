@@ -4,6 +4,7 @@ Unit Tests for Blender integration module.
 Each test focuses on specific functionality and validates serialization,
 IPC communication, detection, and integration components.
 """
+
 from __future__ import annotations
 
 import json
@@ -410,7 +411,7 @@ class TestIPCSerialization:
                 self.x = x
                 self.y = y
                 self.z = z
-            
+
             def serialize(self) -> dict[str, float]:
                 """Serialize to JSON-compatible dict."""
                 return {"x": float(self.x), "y": float(self.y), "z": float(self.z)}
@@ -457,7 +458,7 @@ class TestIPCSerialization:
                 self.y = y
                 self.z = z
                 self.w = w
-            
+
             def serialize(self) -> dict[str, float]:
                 """Serialize to JSON-compatible dict."""
                 return {"x": float(self.x), "y": float(self.y), "z": float(self.z), "w": float(self.w)}
@@ -552,6 +553,7 @@ class TestIPCSerialization:
         door.linked_to_module = ResRef("mymod")
         door.linked_to = "door_exit"
         from pykotor.resource.generics.git import GITModuleLink
+
         door.linked_to_flags = GITModuleLink.ToDoor
         door.transition_destination = LocalizedString.from_english("Transition")
 
@@ -1420,6 +1422,7 @@ class TestBlenderEditorController:
 
         # Need to set up a session for callbacks to work
         from toolset.blender.commands import BlenderSession, BlenderEditorMode
+
         controller._session = BlenderSession(
             mode=BlenderEditorMode.MODULE_DESIGNER,
             module_root="test",
@@ -1429,11 +1432,9 @@ class TestBlenderEditorController:
 
         # Simulate events
         from unittest.mock import Mock
+
         controller._on_selection_changed(IPCEvent(method="selection_changed", params={"selected": ["obj1"]}))
-        controller._on_transform_changed(IPCEvent(
-            method="transform_changed",
-            params={"name": "obj1", "position": {"x": 1}, "rotation": {}}
-        ))
+        controller._on_transform_changed(IPCEvent(method="transform_changed", params={"name": "obj1", "position": {"x": 1}, "rotation": {}}))
         controller._on_instance_added(IPCEvent(method="instance_added", params={"instance": {"type": "GITCreature", "resref": "test_creature"}}))
 
         assert len(selection_calls) == 1
@@ -1537,13 +1538,13 @@ class TestBlenderEditorMixin:
         mock_controller.unload_module = Mock()
         mock_controller.disconnect = Mock()
         obj._blender_controller = mock_controller
-        
+
         mock_process = Mock()
         mock_process.terminate = Mock()
         mock_process.wait = Mock()
         mock_process.kill = Mock()
         obj._blender_process = mock_process
-        
+
         mock_timer = Mock()
         mock_timer.stop = Mock()
         obj._blender_connection_timer = mock_timer
@@ -1852,7 +1853,7 @@ class TestSerializationRoundtrips:
                 self.x = x
                 self.y = y
                 self.z = z
-            
+
             def serialize(self) -> dict[str, float]:
                 """Serialize to JSON-compatible dict."""
                 return {"x": float(self.x), "y": float(self.y), "z": float(self.z)}
@@ -1921,7 +1922,7 @@ class TestErrorHandling:
             x: float | None = None
             y: float | None = None
             z: float | None = None
-            
+
             def serialize(self) -> dict[str, float]:
                 """Serialize to JSON-compatible dict - will fail on None values."""
                 # This will raise TypeError when float() is called on None
@@ -2014,14 +2015,17 @@ class TestComprehensiveIntegration:
         controller = BlenderEditorController()
 
         # Try to load module
-        assert controller.load_module(
-            mode=BlenderEditorMode.MODULE_DESIGNER,
-            lyt=LYT(),
-            git=GIT(),
-            walkmeshes=[],
-            module_root="test",
-            installation_path="/path/to/kotor",
-        ) is False
+        assert (
+            controller.load_module(
+                mode=BlenderEditorMode.MODULE_DESIGNER,
+                lyt=LYT(),
+                git=GIT(),
+                walkmeshes=[],
+                module_root="test",
+                installation_path="/path/to/kotor",
+            )
+            is False
+        )
 
         # Try to add instance
         from pykotor.resource.generics.git import GITCreature

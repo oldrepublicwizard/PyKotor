@@ -1078,7 +1078,7 @@ class DLGStandardItemModel(QStandardItemModel):
         """Refreshes the item text and formatting based on the node data."""
         assert item.link is not None
         assert self.editor is not None
-        
+
         # Get palette colors for theme-aware node coloring
         app = QApplication.instance()
         if app is not None and isinstance(app, QApplication):
@@ -1086,34 +1086,34 @@ class DLGStandardItemModel(QStandardItemModel):
         else:
             # Use default palette for fallback
             palette = QPalette()
-        
+
         link_color = palette.color(QPalette.ColorRole.Link)
         window_text = palette.color(QPalette.ColorRole.WindowText)
         mid_color = palette.color(QPalette.ColorRole.Mid)
-        
+
         # Create semantic colors from palette
         # Entry: Red-ish (error-like) - use link color adjusted to red
         entry_color = QColor(link_color)
         entry_color.setRed(min(255, int(entry_color.red() * 1.5 + 100)))
         entry_color.setGreen(int(entry_color.green() * 0.3))
         entry_color.setBlue(int(entry_color.blue() * 0.3))
-        
+
         # Reply: Blue-ish (link-like) - use link color
         reply_color = link_color
-        
+
         # Default/Neutral: Muted gray from mid or window text
         default_color = QColor(mid_color if mid_color.isValid() else window_text)
         if default_color.lightness() > 200:  # Too light, darken
             default_color = default_color.darker(150)
         elif default_color.lightness() < 50:  # Too dark, lighten
             default_color = default_color.lighter(150)
-        
+
         # End Dialog: Orange-ish - create from link color
         end_dialog_color_obj = QColor(link_color)
         end_dialog_color_obj.setRed(min(255, int(end_dialog_color_obj.red() * 1.2 + 80)))
         end_dialog_color_obj.setGreen(int(end_dialog_color_obj.green() * 0.7 + 50))
         end_dialog_color_obj.setBlue(int(end_dialog_color_obj.blue() * 0.4))
-        
+
         color: QColor = default_color
         prefix: Literal["E", "R", "N"] = "N"
         extra_node_info: str = ""
@@ -1419,6 +1419,7 @@ class DLGLinkSync(DLGLink):
 
     Not perfect, e.g. if you store `node = link.node`, this class's __setattr__ won't be called for that node on the copied link.
     """
+
     def __init__(self, *args, **kwargs):
         self._syncer: CopySyncDict  # purely here for type hinting purposes.
         raise RuntimeError("__init__ is not supported, __class__ must be set directly.")
@@ -1452,6 +1453,7 @@ class CopySyncDict(weakref.WeakKeyDictionary):
     It was added simply as a fallback in case we forgot to call an update function somewhere. This makes certain our copies have the same data.
     Feel free to replace origToOrphanCopies with a regular dict.
     """
+
     def __init__(
         self,
         init_dict: Mapping[weakref.ref[DLGLink], DLGLink] | Iterable[tuple[weakref.ref[DLGLink], DLGLink]] | None = None,
@@ -1504,6 +1506,7 @@ class CopySyncDict(weakref.WeakKeyDictionary):
     def _remove_key(self, key_hash: int):
         def remove(_):
             del self[self._storage[key_hash][1]]
+
         return remove
 
     def values(self) -> Generator[DLGLink, None, None]:  # type: ignore[override]

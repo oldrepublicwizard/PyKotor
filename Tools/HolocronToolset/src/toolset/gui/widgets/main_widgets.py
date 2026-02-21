@@ -464,10 +464,10 @@ class ResourceProxyModel(QSortFilterProxyModel):
         assert isinstance(model, QStandardItemModel)
         resref_index: QModelIndex = model.index(source_row, 0, source_parent)
         item: ResourceStandardItem | QStandardItem | None = model.itemFromIndex(resref_index)
-        
+
         if item is None:
             return False
-            
+
         if isinstance(item, ResourceStandardItem):
             # Match against what the user sees (tree text) plus resource identifiers.
             # This avoids edge-cases where the display label and the underlying FileResource
@@ -478,15 +478,10 @@ class ResourceProxyModel(QSortFilterProxyModel):
             container_filename: str = item.resource.filepath().name.lower()  # e.g. "templates.bif"
 
             # Check if the filter string is a substring of any known representation.
-            if (
-                self.filter_string in display_text
-                or self.filter_string in resref
-                or self.filter_string in identifier_filename
-                or self.filter_string in container_filename
-            ):
+            if self.filter_string in display_text or self.filter_string in resref or self.filter_string in identifier_filename or self.filter_string in container_filename:
                 return True
             return False
-        
+
         # For category items (non-ResourceStandardItem), check if any child matches
         # This ensures categories are shown if they contain matching resources
         if self.filter_string.strip():
@@ -500,7 +495,7 @@ class ResourceProxyModel(QSortFilterProxyModel):
                 if self.filterAcceptsRow(child_row, resref_index):
                     return True
             return False
-        
+
         # If no filter string, show all categories
         return True
 
@@ -670,7 +665,7 @@ class TextureList(MainWindowList):
         self._poll_timer.timeout.connect(self._poll_result_queue)
         # Map of (section_name, row) -> FileResource for pending process loads
         self._pending_process_loads: dict[tuple[str, int], FileResource] = {}
-        
+
         # Throttle timer for scroll events to prevent rapid queue operations
         self._scroll_throttle_timer: QTimer = QTimer(self)
         self._scroll_throttle_timer.setSingleShot(True)
@@ -980,7 +975,7 @@ class TextureList(MainWindowList):
 
     def _throttled_scroll_handler(self, value: int):
         """Handle scroll events with throttling to prevent rapid queue operations.
-        
+
         Args:
         ----
             value: The scroll value from the valueChanged signal (ignored).
@@ -990,7 +985,7 @@ class TextureList(MainWindowList):
         # Restart the throttle timer (single-shot, so it will fire after the timeout)
         # This ensures we only call queue_load_visible_icons after scrolling stops
         self._scroll_throttle_timer.start(150)  # 150ms throttle delay
-    
+
     def _throttled_queue_load_visible_icons(self):
         """Called by the throttle timer to load visible icons after scrolling stops."""
         if self._pending_scroll_load:
@@ -1228,7 +1223,7 @@ def get_image_from_resource(
             else:
                 # Use default palette if no application instance
                 palette = QPalette()
-            
+
             # Use Mid color (typically gray) for placeholder
             placeholder_color = palette.color(QPalette.ColorRole.Mid)
             if not placeholder_color.isValid():

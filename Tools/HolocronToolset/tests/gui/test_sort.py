@@ -3,6 +3,7 @@ from __future__ import annotations
 
 # Simplifying the model and data types for efficient execution and analysis
 
+
 class ERFResource:
     def __init__(self, name: str, res_type: str, size: int):
         self.name = name
@@ -19,7 +20,7 @@ class ERFSortFilterProxyModel:
         self.data.append(resource)
 
     def sort(self, column, order="ascending"):
-        reverse = (order == "descending")
+        reverse = order == "descending"
 
         # Extracting sort key based on the column index provided.
         if column == 0:
@@ -36,6 +37,7 @@ class ERFSortFilterProxyModel:
 
     def get_data(self):
         return [(item.name, item.res_type, item.size) for item in self.data]
+
 
 # Data and tests setup
 data = [

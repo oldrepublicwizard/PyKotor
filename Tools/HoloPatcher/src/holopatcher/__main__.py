@@ -83,6 +83,7 @@ def onAppCrash(
 
     with suppress(Exception):
         from tkinter import Tk, messagebox
+
         root = Tk()
         root.withdraw()  # Hide
         messagebox.showerror(title, short_msg)
@@ -114,11 +115,13 @@ def main():
     if force_cli:
         # CLI mode explicitly requested
         from holopatcher.cli import execute_cli
+
         execute_cli(cmdline_args)
     else:
         # Try GUI mode, fall back to CLI if GUI unavailable
         try:
             from holopatcher.app import App
+
             app = App()
             atexit.register(lambda: holopatcher_cleanup_func(app))
             app.root.mainloop()
@@ -141,6 +144,7 @@ if __name__ == "__main__":
         # Try GUI message first
         with suppress(Exception):
             from tkinter import Tk, messagebox
+
             root = Tk()
             root.withdraw()
             messagebox.showerror("Error", error_msg)

@@ -1,4 +1,5 @@
 """Find the correct module name for each kit."""
+
 import os
 import sys
 from pathlib import Path
@@ -48,13 +49,13 @@ kit_to_module = {}
 
 for kit_id, area_name in KIT_TO_AREA.items():
     found_module = None
-    
+
     # Try exact area name match first
     for module_root, module_area_name in module_roots_to_areas.items():
         if module_area_name and area_name.lower() == module_area_name.lower():
             found_module = module_root
             break
-    
+
     # Try partial area name match
     if not found_module:
         for module_root, module_area_name in module_roots_to_areas.items():
@@ -63,7 +64,7 @@ for kit_id, area_name in KIT_TO_AREA.items():
                 if area_name.lower() in module_area_name.lower() or module_area_name.lower() in area_name.lower():
                     found_module = module_root
                     break
-    
+
     # Try keyword matching
     if not found_module:
         keywords = {
@@ -84,7 +85,7 @@ for kit_id, area_name in KIT_TO_AREA.items():
                 if any(keyword in area_lower for keyword in kit_keywords):
                     found_module = module_root
                     break
-    
+
     kit_to_module[kit_id] = found_module
     status = f"✓ {found_module}" if found_module else "✗ NOT FOUND"
     print(f"{kit_id:20s} -> {area_name:25s} -> {status}")
@@ -97,4 +98,3 @@ for kit_id, module_name in sorted(kit_to_module.items()):
         print(f'    "{kit_id}": "{module_name}",')
     else:
         print(f'    "{kit_id}": None,  # NOT FOUND')
-

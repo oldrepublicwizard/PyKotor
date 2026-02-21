@@ -1,4 +1,3 @@
-
 from __future__ import annotations
 
 import platform
@@ -49,7 +48,7 @@ class UpdateManager:
         RobustLogger().debug("TRACE: check_for_updates called")
         print("Checking for updates")
         RobustLogger().debug("TRACE: About to create ProcessPoolExecutor")
-        
+
         # Ensure we're in the main process and start method is set correctly
         try:
             # Only set start method if we're in the main process and it hasn't been set
@@ -61,17 +60,17 @@ class UpdateManager:
                     pass
         except Exception as e:  # noqa: BLE001
             RobustLogger().debug(f"Could not set multiprocessing start method: {e}")
-        
+
         edge_future: Future[dict[str, Any] | Exception] | None = None
         master_future: Future[dict[str, Any] | Exception] | None = None
         executor: ProcessPoolExecutor | None = None
-        
+
         try:
             # Create executor with proper initialization
             # max_workers=1 helps avoid handle duplication issues on Windows
             executor = ProcessPoolExecutor(max_workers=2)
             RobustLogger().debug("TRACE: ProcessPoolExecutor created")
-            
+
             if self.settings.useBetaChannel:
                 print("Using beta channel")
                 RobustLogger().debug("TRACE: Beta channel enabled, submitting edge_future")
@@ -85,7 +84,7 @@ class UpdateManager:
             else:
                 RobustLogger().debug("TRACE: Beta channel disabled, edge_future will be None")
                 edge_future = None
-                
+
             print("Using release channel")
             RobustLogger().debug("TRACE: Submitting master_future")
             try:
@@ -95,12 +94,12 @@ class UpdateManager:
             except Exception as e:  # noqa: BLE001
                 RobustLogger().exception(f"Failed to submit master_future: {e}")
                 master_future = None
-            
+
             # Don't shutdown executor yet - let futures complete
             # Store executor reference to keep it alive
             self._executor = executor
             RobustLogger().debug("TRACE: Executor stored, futures will complete asynchronously")
-            
+
             # Add callbacks before shutting down
             if master_future is not None:
                 RobustLogger().debug("TRACE: Adding done callbacks to futures")
@@ -108,7 +107,7 @@ class UpdateManager:
                 RobustLogger().debug("TRACE: master_future callback added")
             else:
                 RobustLogger().warning("TRACE: master_future is None, cannot add callback")
-                
+
             if edge_future is not None:
                 edge_future.add_done_callback(self.on_edge_future_fetched)
                 RobustLogger().debug("TRACE: edge_future callback added")
@@ -121,7 +120,7 @@ class UpdateManager:
                 # If no edge future, shutdown executor when master completes
                 if master_future is not None:
                     master_future.add_done_callback(lambda _: self._mark_future_complete("master"))
-                    
+
         except (PermissionError, OSError) as e:
             # Windows permission error during process spawn
             RobustLogger().exception(f"Windows permission error during multiprocessing spawn: {e}")
@@ -153,9 +152,9 @@ class UpdateManager:
                 except Exception:  # noqa: BLE001
                     pass
             self._executor = None
-            
+
         RobustLogger().debug("TRACE: check_for_updates returning")
-    
+
     def _mark_future_complete(self, future_type: str):
         """Mark a future as complete and shutdown executor if all are done."""
         self._futures_complete[future_type] = True
@@ -163,7 +162,7 @@ class UpdateManager:
         if self._futures_complete["master"] and (not self.settings.useBetaChannel or self._futures_complete["edge"]):
             # Schedule shutdown on main thread to avoid deadlock when called from executor callback
             QTimer.singleShot(0, self._shutdown_executor)
-    
+
     def _shutdown_executor(self):
         """Safely shutdown the executor. Must be called from the main thread."""
         if self._executor is not None:
@@ -297,6 +296,7 @@ class UpdateManager:
             if self.silent:
                 return
             from toolset.gui.common.localization import translate as tr, trf
+
             up_to_date_msg_box = QMessageBox(
                 QMessageBox.Icon.Information,
                 tr("Version is up to date"),
@@ -307,6 +307,7 @@ class UpdateManager:
             )
 
             from toolset.gui.common.localization import translate as tr
+
             up_to_date_msg_box.button(QMessageBox.StandardButton.Ok).setText(tr("Auto-Update"))  # pyright: ignore[reportOptionalMemberAccess]
             up_to_date_msg_box.button(QMessageBox.StandardButton.Yes).setText(tr("Choose Update"))  # pyright: ignore[reportOptionalMemberAccess]
             result = up_to_date_msg_box.exec()
@@ -320,10 +321,17 @@ class UpdateManager:
 
         beta_string: Literal["release ", "beta "] = "release " if release_version_checked else "beta "
         from toolset.gui.common.localization import translate as tr, trf
+
         new_version_msg_box = QMessageBox(
             QMessageBox.Icon.Information,
             trf("Your toolset version {version} is outdated.", version=CURRENT_VERSION),
-            trf("A new toolset {beta_str}version ({new_version}) is available for <a href='{link}'>download</a>.<br><br>{notes}", beta_str=beta_string, new_version=greatest_version, link=download_link, notes=notes),
+            trf(
+                "A new toolset {beta_str}version ({new_version}) is available for <a href='{link}'>download</a>.<br><br>{notes}",
+                beta_str=beta_string,
+                new_version=greatest_version,
+                link=download_link,
+                notes=notes,
+            ),
             QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.Abort,
             parent=None,
             flags=Qt.WindowType.Window | Qt.WindowType.Dialog | Qt.WindowType.WindowStaysOnTopHint,
@@ -331,6 +339,7 @@ class UpdateManager:
 
         new_version_msg_box.setDefaultButton(QMessageBox.StandardButton.Abort)
         from toolset.gui.common.localization import translate as tr
+
         new_version_msg_box.button(QMessageBox.StandardButton.Ok).setText(tr("Auto-Update"))  # pyright: ignore[reportOptionalMemberAccess]
         new_version_msg_box.button(QMessageBox.StandardButton.Yes).setText(tr("Details"))  # pyright: ignore[reportOptionalMemberAccess]
         new_version_msg_box.button(QMessageBox.StandardButton.Abort).setText(tr("Ignore"))  # pyright: ignore[reportOptionalMemberAccess]

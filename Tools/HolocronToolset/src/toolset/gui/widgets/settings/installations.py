@@ -2,11 +2,12 @@ from __future__ import annotations
 
 import os
 import uuid
-
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, ClassVar
 
 from loggerplus import RobustLogger, get_log_directory
+from pykotor.common.misc import Game
+from pykotor.tools.path import CaseAwarePath, find_kotor_paths_from_default
 from qtpy.QtCore import (
     QModelIndex,
     QSettings,
@@ -15,13 +16,14 @@ from qtpy.QtCore import (
 from qtpy.QtGui import QStandardItem, QStandardItemModel
 from qtpy.QtWidgets import QWidget
 
-from pykotor.common.misc import Game
-from pykotor.tools.path import CaseAwarePath, find_kotor_paths_from_default
 from toolset.data.settings import Settings
 
 if TYPE_CHECKING:
     from qtpy.QtCore import QItemSelectionModel, QModelIndex
-    from typing_extensions import Literal, TypedDict  # pyright: ignore[reportMissingModuleSource]
+    from typing_extensions import (  # pyright: ignore[reportMissingModuleSource]
+        Literal,
+        TypedDict,
+    )
 
     from toolset.data.installation import HTInstallation  # noqa: F401
     from toolset.data.settings import SettingsProperty
@@ -88,6 +90,7 @@ class InstallationsWidget(QWidget):
 
     def add_new_installation(self):
         from toolset.gui.common.localization import translate as tr
+
         item: QStandardItem = QStandardItem(tr("New"))
         item.setData({"path": "", "tsl": False})
         self.installations_model.appendRow(item)
@@ -97,7 +100,9 @@ class InstallationsWidget(QWidget):
         if len(self.ui.pathList.selectedIndexes()) > 0:
             index: QModelIndex = self.ui.pathList.selectedIndexes()[0]
             item: QStandardItem | None = self.installations_model.itemFromIndex(index)
-            assert item is not None, "Item should not be None in remove_selected_installation"
+            assert item is not None, (
+                "Item should not be None in remove_selected_installation"
+            )
             self.installations_model.removeRow(item.row())
             self.sig_settings_edited.emit()
 
@@ -139,7 +144,10 @@ class InstallationConfig:
         name: str,
     ):
         from toolset.utils.misc import get_qsettings_organization
-        self._settings: QSettings = QSettings(get_qsettings_organization("HolocronToolsetV4"), "Global")
+
+        self._settings: QSettings = QSettings(
+            get_qsettings_organization("HolocronToolsetV4"), "Global"
+        )
         self._name: str = name
 
     @property
@@ -151,7 +159,9 @@ class InstallationConfig:
         self,
         value: str,
     ):
-        installations: dict[str, dict[str, Any]] = self._settings.value("installations", {}, dict)
+        installations: dict[str, dict[str, Any]] = self._settings.value(
+            "installations", {}, dict
+        )
         installation: dict[str, Any] = installations[self._name]
 
         del installations[self._name]
@@ -164,7 +174,9 @@ class InstallationConfig:
     @property
     def path(self) -> str:
         try:
-            installation: dict[str, Any] = self._settings.value("installations", {})[self._name]
+            installation: dict[str, Any] = self._settings.value("installations", {})[
+                self._name
+            ]
         except Exception:  # noqa: BLE001
             return ""
         else:
@@ -176,7 +188,9 @@ class InstallationConfig:
         value: str,
     ):
         try:
-            installations: dict[str, dict[str, str]] = self._settings.value("installations", {})
+            installations: dict[str, dict[str, str]] = self._settings.value(
+                "installations", {}
+            )
             installations[self._name] = installations.get(self._name, {})
             installations[self._name]["path"] = value
             self._settings.setValue("installations", installations)
@@ -186,7 +200,9 @@ class InstallationConfig:
 
     @property
     def tsl(self) -> bool:
-        all_installs: dict[str, dict[str, Any]] = self._settings.value("installations", {})
+        all_installs: dict[str, dict[str, Any]] = self._settings.value(
+            "installations", {}
+        )
         installation: dict[str, Any] = all_installs.get(self._name, {})
         return installation.get("tsl", False)
 
@@ -195,7 +211,9 @@ class InstallationConfig:
         self,
         value: bool,
     ):
-        installations: dict[str, dict[str, Any]] = self._settings.value("installations", {})
+        installations: dict[str, dict[str, Any]] = self._settings.value(
+            "installations", {}
+        )
         installations[self._name] = installations.get(self._name, {})
         installations[self._name]["tsl"] = value
         self._settings.setValue("installations", installations)
@@ -216,10 +234,7 @@ class GlobalSettings(Settings):
             self._handle_firsttime_user(installations)
         self.settings.setValue("installations", installations)
 
-        return {
-            name: InstallationConfig(name)
-            for name in installations
-        }
+        return {name: InstallationConfig(name) for name in installations}
 
     def set_installations(
         self,
@@ -244,7 +259,9 @@ class GlobalSettings(Settings):
             elif isinstance(config, dict):
                 installations_data[name] = dict(config)
             else:
-                raise ValueError(f"Invalid type for installation config value: {type(config)}")
+                raise ValueError(
+                    f"Invalid type for installation config value: {type(config)}"
+                )
         self.settings.setValue("installations", installations_data)
 
     def _handle_firsttime_user(
@@ -258,11 +275,15 @@ class GlobalSettings(Settings):
         The installations dictionary is then saved back to the user settings.
         """
         self.firstTime = False
-        RobustLogger().info("First time user, attempt auto-detection of currently installed KOTOR paths.")
+        RobustLogger().info(
+            "First time user, attempt auto-detection of currently installed KOTOR paths."
+        )
         self.extractPath = str(get_log_directory(f"{uuid.uuid4().hex[:7]}_extract"))
         counters: dict[Game, int] = {Game.K1: 1, Game.K2: 1}
         # Create a set of existing paths
-        existing_paths: set[Path] = {Path(inst["path"]) for inst in installations.values()}
+        existing_paths: set[Path] = {
+            Path(inst["path"]) for inst in installations.values()
+        }
 
         for game, paths in find_kotor_paths_from_default().items():
             for path in filter(CaseAwarePath.is_dir, paths):
@@ -379,5 +400,4 @@ class GlobalSettings(Settings):
     # endregion
 
 
-class NoConfigurationSetError(Exception):
-    ...
+class NoConfigurationSetError(Exception): ...

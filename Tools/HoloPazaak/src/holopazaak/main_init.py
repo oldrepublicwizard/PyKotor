@@ -6,7 +6,6 @@ import multiprocessing
 import os
 import pathlib
 import sys
-import tempfile
 
 from typing import TYPE_CHECKING
 
@@ -20,10 +19,7 @@ def is_frozen() -> bool:
     Returns:
         bool: True if frozen, False otherwise.
     """
-    return (
-        getattr(sys, "frozen", False)
-        or getattr(sys, "_MEIPASS", False)
-    )
+    return getattr(sys, "frozen", False) or getattr(sys, "_MEIPASS", False)
 
 
 def on_app_crash(
@@ -41,6 +37,7 @@ def on_app_crash(
     print(f"Uncaught exception: {etype.__name__}: {exc}", file=sys.stderr)
     if tback:
         import traceback
+
         traceback.print_exception(etype, exc, tback)
 
 
@@ -135,4 +132,3 @@ def last_resort_cleanup():
     """
     print("Fully shutting down HoloPazaak...")
     # The process will exit when cleanup is done.
-

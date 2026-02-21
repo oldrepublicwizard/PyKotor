@@ -37,7 +37,7 @@ class TestFindScriptReferences:
         )
 
         assert isinstance(results, list)
-        
+
         # If no results, try a partial match to see if any scripts exist
         if len(results) == 0:
             # Try partial match to find any scripts with "k_ai" in the name
@@ -47,7 +47,7 @@ class TestFindScriptReferences:
                 partial_match=True,
                 case_sensitive=False,
             )
-        
+
         # If still no results, try searching for any script references at all
         if len(results) == 0:
             # Search for empty string with partial match to get all script fields
@@ -73,7 +73,7 @@ class TestFindScriptReferences:
         )
 
         assert isinstance(results, list)
-        
+
         # Verify matched values contain the search term if we have results
         for result in results:
             assert "k_ai" in result.matched_value.lower()
@@ -84,7 +84,7 @@ class TestFindScriptReferences:
         """Test finding script references with case sensitivity."""
         # Try to find a script that exists - use partial match to find any script
         test_script = "k_ai"
-        
+
         # Case sensitive search
         results_sensitive = find_script_references(
             installation,
@@ -103,7 +103,7 @@ class TestFindScriptReferences:
 
         # Case insensitive should find same or more results
         assert len(results_insensitive) >= len(results_sensitive)
-        
+
         # Verify results are valid
         for result in results_sensitive + results_insensitive:
             assert isinstance(result, ReferenceSearchResult)
@@ -135,9 +135,7 @@ class TestFindScriptReferences:
         # Verify file patterns are respected
         for result in results_modules:
             filename = result.file_resource.filename().lower()
-            assert filename.endswith(".mod") or any(
-                "module" in str(result.file_resource.filepath()).lower() for _ in [None]
-            )
+            assert filename.endswith(".mod") or any("module" in str(result.file_resource.filepath()).lower() for _ in [None])
 
     def test_find_script_references_file_types(self, installation: HTInstallation):
         """Test finding script references with file type filter."""
@@ -202,7 +200,7 @@ class TestFindTagReferences:
         )
 
         assert isinstance(results, list)
-        
+
         # If no results, try partial match
         if len(results) == 0:
             results = find_tag_references(
@@ -211,7 +209,7 @@ class TestFindTagReferences:
                 partial_match=True,
                 case_sensitive=False,
             )
-        
+
         # Verify all results are ReferenceSearchResult if we have any
         for result in results:
             assert isinstance(result, ReferenceSearchResult)

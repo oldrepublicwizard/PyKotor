@@ -203,6 +203,7 @@ class UTPEditor(Editor):
         restype: ResourceType,
         data: bytes,
     ):
+        """Load resource and populate UI from UTP. Defaults from construct_utp (K1 LoadPlaceable 0x00585670; TSL TODO)."""
         super().load(filepath, resref, restype, data)
 
         utp = read_utp(data)
@@ -217,11 +218,7 @@ class UTPEditor(Editor):
         ----
             utp (UTP): UTP object to load data from.
 
-        Loads UTP data:
-            - Sets UI element values like name, tag, etc from UTP properties
-            - Sets checkboxes, dropdowns, spinboxes from UTP boolean and integer properties
-            - Sets script text fields from UTP script properties
-            - Sets comment text from UTP comment property.
+        Defaults from construct_utp; K1 LoadPlaceable 0x00585670; TSL same (addresses TODO). Sets Basic, Advanced, scripts, inventory, comment.
         """
         self._utp: UTP = utp
 
@@ -299,22 +296,13 @@ class UTPEditor(Editor):
         self.update_item_count()
 
     def build(self) -> tuple[bytes, bytes]:
-        """Builds a UTP from UI fields.
-
-        Args:
-        ----
-            self: The class instance
-            utp: The UTP object
+        """Builds a UTP from UI data.
 
         Returns:
         -------
-            data: The built UTP data
-            mdx b"": Empty byte string
+            tuple[bytes, bytes]: GFF data and log.
 
-        Builds a UTP by:
-            - Setting UTP properties like name, tag, scripts from UI elements
-            - Writing the constructed UTP to a byte array
-            - Returning the byte array and an empty byte string.
+        Populates UTP from UI, then dismantle_utp (K1 LoadPlaceable 0x00585670, SavePlaceable 0x00586a70; TSL TODO). Returns GFF bytes and log.
         """
         utp: UTP = deepcopy(self._utp)
 
@@ -735,3 +723,10 @@ class UTPEditor(Editor):
         except (ValueError, AttributeError):
             pass
         return None
+
+if __name__ == "__main__":
+    import sys
+
+    from toolset.gui.editors.standalone import launch_editor_cli
+
+    sys.exit(launch_editor_cli("utp"))

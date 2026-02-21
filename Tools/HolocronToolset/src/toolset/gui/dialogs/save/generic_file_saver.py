@@ -78,6 +78,7 @@ class FileSaveHandler(Generic[T]):
             resource: T = self.resources[0]
             identifier = self.get_resource_ident(resource)
             from toolset.gui.common.localization import translate as tr
+
             dialog = QFileDialog(self.parent, tr("Save File"), str(identifier), "Files (*.*)")
             dialog.setAcceptMode(QFileDialog.AcceptMode.AcceptSave)  # pyright: ignore[reportArgumentType]
             dialog.setOption(QFileDialog.Option.DontConfirmOverwrite)  # pyright: ignore[reportArgumentType]
@@ -202,10 +203,16 @@ class FileSaveHandler(Generic[T]):
         existing_files_and_folders: list[str],
     ) -> int:
         from toolset.gui.common.localization import translate as tr, trf
+
         msg_box = QMessageBox()
         msg_box.setIcon(QMessageBox.Icon.Warning)
         msg_box.setWindowTitle(tr("Existing files/folders found."))
-        msg_box.setText(trf("The following {count} files and folders already exist in the selected folder.<br><br>How would you like to handle this?", count=len(existing_files_and_folders)))
+        msg_box.setText(
+            trf(
+                "The following {count} files and folders already exist in the selected folder.<br><br>How would you like to handle this?",
+                count=len(existing_files_and_folders),
+            )
+        )
         msg_box.setDetailedText("\n".join(existing_files_and_folders))
         msg_box.setStandardButtons(QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No | QMessageBox.StandardButton.Abort)  # pyright: ignore[reportArgumentType]
         yes_button, no_button = msg_box.button(QMessageBox.StandardButton.Yes), msg_box.button(QMessageBox.StandardButton.No)
@@ -222,6 +229,7 @@ class FileSaveHandler(Generic[T]):
         failed_extractions: dict[Path, Exception],
     ):
         from toolset.gui.common.localization import translate as tr, trf
+
         msg_box = QMessageBox()
         msg_box.setIcon(QMessageBox.Icon.Critical)
         msg_box.setWindowTitle(tr("Failed to extract files to disk."))

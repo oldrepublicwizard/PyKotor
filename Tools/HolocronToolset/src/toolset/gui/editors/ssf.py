@@ -33,6 +33,7 @@ try:  # QUndoStack location differs between Qt5/Qt6 bindings
 except Exception:  # noqa: BLE001
     from qtpy.QtGui import QUndoCommand, QUndoStack  # type: ignore[assignment]
 
+
 @dataclass(frozen=True)
 class _PendingSpinEdit:
     row_label: str
@@ -119,9 +120,10 @@ class SSFEditor(Editor):
         self._pending_spin_edits: dict[QSpinBox, _PendingSpinEdit] = {}
         self._rows: list[_SSFRow] = []
         self._spin_focus_batcher = _SpinFocusBatcher(self)
-        
+
         # Setup event filter to prevent scroll wheel interaction with controls
         from toolset.gui.common.filters import NoScrollEventFilter
+
         self._no_scroll_filter = NoScrollEventFilter(self)
         self._no_scroll_filter.setup_filter(parent_widget=self)
 
@@ -391,12 +393,54 @@ class SSFEditor(Editor):
         play_icon = style.standardIcon(QStyle.StandardPixmap.SP_MediaPlay) if style is not None else None  # pyright: ignore[reportOptionalMemberAccess]
 
         self._rows = [
-            _SSFRow("Battlecry 1", self.ui.battlecry1StrrefSpin, self.ui.battlecry1SoundEdit, self.ui.battlecry1TextEdit, self.ui.battlecry1PlayButton, self.ui.battlecry1MoreButton),
-            _SSFRow("Battlecry 2", self.ui.battlecry2StrrefSpin, self.ui.battlecry2SoundEdit, self.ui.battlecry2TextEdit, self.ui.battlecry2PlayButton, self.ui.battlecry2MoreButton),
-            _SSFRow("Battlecry 3", self.ui.battlecry3StrrefSpin, self.ui.battlecry3SoundEdit, self.ui.battlecry3TextEdit, self.ui.battlecry3PlayButton, self.ui.battlecry3MoreButton),
-            _SSFRow("Battlecry 4", self.ui.battlecry4StrrefSpin, self.ui.battlecry4SoundEdit, self.ui.battlecry4TextEdit, self.ui.battlecry4PlayButton, self.ui.battlecry4MoreButton),
-            _SSFRow("Battlecry 5", self.ui.battlecry5StrrefSpin, self.ui.battlecry5SoundEdit, self.ui.battlecry5TextEdit, self.ui.battlecry5PlayButton, self.ui.battlecry5MoreButton),
-            _SSFRow("Battlecry 6", self.ui.battlecry6StrrefSpin, self.ui.battlecry6SoundEdit, self.ui.battlecry6TextEdit, self.ui.battlecry6PlayButton, self.ui.battlecry6MoreButton),
+            _SSFRow(
+                "Battlecry 1",
+                self.ui.battlecry1StrrefSpin,
+                self.ui.battlecry1SoundEdit,
+                self.ui.battlecry1TextEdit,
+                self.ui.battlecry1PlayButton,
+                self.ui.battlecry1MoreButton,
+            ),
+            _SSFRow(
+                "Battlecry 2",
+                self.ui.battlecry2StrrefSpin,
+                self.ui.battlecry2SoundEdit,
+                self.ui.battlecry2TextEdit,
+                self.ui.battlecry2PlayButton,
+                self.ui.battlecry2MoreButton,
+            ),
+            _SSFRow(
+                "Battlecry 3",
+                self.ui.battlecry3StrrefSpin,
+                self.ui.battlecry3SoundEdit,
+                self.ui.battlecry3TextEdit,
+                self.ui.battlecry3PlayButton,
+                self.ui.battlecry3MoreButton,
+            ),
+            _SSFRow(
+                "Battlecry 4",
+                self.ui.battlecry4StrrefSpin,
+                self.ui.battlecry4SoundEdit,
+                self.ui.battlecry4TextEdit,
+                self.ui.battlecry4PlayButton,
+                self.ui.battlecry4MoreButton,
+            ),
+            _SSFRow(
+                "Battlecry 5",
+                self.ui.battlecry5StrrefSpin,
+                self.ui.battlecry5SoundEdit,
+                self.ui.battlecry5TextEdit,
+                self.ui.battlecry5PlayButton,
+                self.ui.battlecry5MoreButton,
+            ),
+            _SSFRow(
+                "Battlecry 6",
+                self.ui.battlecry6StrrefSpin,
+                self.ui.battlecry6SoundEdit,
+                self.ui.battlecry6TextEdit,
+                self.ui.battlecry6PlayButton,
+                self.ui.battlecry6MoreButton,
+            ),
             _SSFRow("Select 1", self.ui.select1StrrefSpin, self.ui.select1SoundEdit, self.ui.select1TextEdit, self.ui.select1PlayButton, self.ui.select1MoreButton),
             _SSFRow("Select 2", self.ui.select2StrrefSpin, self.ui.select2SoundEdit, self.ui.select2TextEdit, self.ui.select2PlayButton, self.ui.select2MoreButton),
             _SSFRow("Select 3", self.ui.select3StrrefSpin, self.ui.select3SoundEdit, self.ui.select3TextEdit, self.ui.select3PlayButton, self.ui.select3MoreButton),
@@ -410,14 +454,70 @@ class SSFEditor(Editor):
             _SSFRow("Critical Hit", self.ui.criticalStrrefSpin, self.ui.criticalSoundEdit, self.ui.criticalTextEdit, self.ui.criticalPlayButton, self.ui.criticalMoreButton),
             _SSFRow("Target Immune", self.ui.immuneStrrefSpin, self.ui.immuneSoundEdit, self.ui.immuneTextEdit, self.ui.immunePlayButton, self.ui.immuneMoreButton),
             _SSFRow("Lay Mine", self.ui.layMineStrrefSpin, self.ui.layMineSoundEdit, self.ui.layMineTextEdit, self.ui.layMinePlayButton, self.ui.layMineMoreButton),
-            _SSFRow("Disarm Mine", self.ui.disarmMineStrrefSpin, self.ui.disarmMineSoundEdit, self.ui.disarmMineTextEdit, self.ui.disarmMinePlayButton, self.ui.disarmMineMoreButton),
-            _SSFRow("Begin Stealth", self.ui.beginStealthStrrefSpin, self.ui.beginStealthSoundEdit, self.ui.beginStealthTextEdit, self.ui.beginStealthPlayButton, self.ui.beginStealthMoreButton),
-            _SSFRow("Begin Search", self.ui.beginSearchStrrefSpin, self.ui.beginSearchSoundEdit, self.ui.beginSearchTextEdit, self.ui.beginSearchPlayButton, self.ui.beginSearchMoreButton),
-            _SSFRow("Begin Unlock", self.ui.beginUnlockStrrefSpin, self.ui.beginUnlockSoundEdit, self.ui.beginUnlockTextEdit, self.ui.beginUnlockPlayButton, self.ui.beginUnlockMoreButton),
-            _SSFRow("Unlock Failed", self.ui.unlockFailedStrrefSpin, self.ui.unlockFailedSoundEdit, self.ui.unlockFailedTextEdit, self.ui.unlockFailedPlayButton, self.ui.unlockFailedMoreButton),
-            _SSFRow("Unlock Success", self.ui.unlockSuccessStrrefSpin, self.ui.unlockSuccessSoundEdit, self.ui.unlockSuccessTextEdit, self.ui.unlockSuccessPlayButton, self.ui.unlockSuccessMoreButton),
-            _SSFRow("Party Separated", self.ui.partySeparatedStrrefSpin, self.ui.partySeparatedSoundEdit, self.ui.partySeparatedTextEdit, self.ui.partySeparatedPlayButton, self.ui.partySeparatedMoreButton),
-            _SSFRow("Rejoin Party", self.ui.rejoinPartyStrrefSpin, self.ui.rejoinPartySoundEdit, self.ui.rejoinPartyTextEdit, self.ui.rejoinPartyPlayButton, self.ui.rejoinPartyMoreButton),
+            _SSFRow(
+                "Disarm Mine",
+                self.ui.disarmMineStrrefSpin,
+                self.ui.disarmMineSoundEdit,
+                self.ui.disarmMineTextEdit,
+                self.ui.disarmMinePlayButton,
+                self.ui.disarmMineMoreButton,
+            ),
+            _SSFRow(
+                "Begin Stealth",
+                self.ui.beginStealthStrrefSpin,
+                self.ui.beginStealthSoundEdit,
+                self.ui.beginStealthTextEdit,
+                self.ui.beginStealthPlayButton,
+                self.ui.beginStealthMoreButton,
+            ),
+            _SSFRow(
+                "Begin Search",
+                self.ui.beginSearchStrrefSpin,
+                self.ui.beginSearchSoundEdit,
+                self.ui.beginSearchTextEdit,
+                self.ui.beginSearchPlayButton,
+                self.ui.beginSearchMoreButton,
+            ),
+            _SSFRow(
+                "Begin Unlock",
+                self.ui.beginUnlockStrrefSpin,
+                self.ui.beginUnlockSoundEdit,
+                self.ui.beginUnlockTextEdit,
+                self.ui.beginUnlockPlayButton,
+                self.ui.beginUnlockMoreButton,
+            ),
+            _SSFRow(
+                "Unlock Failed",
+                self.ui.unlockFailedStrrefSpin,
+                self.ui.unlockFailedSoundEdit,
+                self.ui.unlockFailedTextEdit,
+                self.ui.unlockFailedPlayButton,
+                self.ui.unlockFailedMoreButton,
+            ),
+            _SSFRow(
+                "Unlock Success",
+                self.ui.unlockSuccessStrrefSpin,
+                self.ui.unlockSuccessSoundEdit,
+                self.ui.unlockSuccessTextEdit,
+                self.ui.unlockSuccessPlayButton,
+                self.ui.unlockSuccessMoreButton,
+            ),
+            _SSFRow(
+                "Party Separated",
+                self.ui.partySeparatedStrrefSpin,
+                self.ui.partySeparatedSoundEdit,
+                self.ui.partySeparatedTextEdit,
+                self.ui.partySeparatedPlayButton,
+                self.ui.partySeparatedMoreButton,
+            ),
+            _SSFRow(
+                "Rejoin Party",
+                self.ui.rejoinPartyStrrefSpin,
+                self.ui.rejoinPartySoundEdit,
+                self.ui.rejoinPartyTextEdit,
+                self.ui.rejoinPartyPlayButton,
+                self.ui.rejoinPartyMoreButton,
+            ),
             _SSFRow("Poisoned", self.ui.poisonedStrrefSpin, self.ui.poisonedSoundEdit, self.ui.poisonedTextEdit, self.ui.poisonedPlayButton, self.ui.poisonedMoreButton),
         ]
 
@@ -559,3 +659,10 @@ class SSFEditor(Editor):
         if result == QMessageBox.StandardButton.Discard:
             return True
         return False
+
+if __name__ == "__main__":
+    import sys
+
+    from toolset.gui.editors.standalone import launch_editor_cli
+
+    sys.exit(launch_editor_cli("ssf"))

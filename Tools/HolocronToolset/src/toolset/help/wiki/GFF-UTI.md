@@ -21,17 +21,20 @@ UTI files define [item templates](GFF-File-Format#uti-item) for all objects in c
 
 ## Base Item Configuration
 
-| field | type | Description |
-| ----- | ---- | ----------- |
-| `BaseItem` | Int | index into [`baseitems.2da`](2DA-baseitems) (defines item type) |
-| `Cost` | DWord | Base value in credits |
-| `AddCost` | DWord | Additional cost from properties |
-| `Plot` | Byte | Plot-critical item (cannot be sold/destroyed) |
-| `Charges` | Byte | Number of uses remaining |
-| `StackSize` | Word | Current stack quantity |
-| `ModelVariation` | Byte | [model](MDL-MDX-File-Format) variation index (1-99) |
-| `BodyVariation` | Byte | Body variation for armor (1-9) |
-| `TextureVar` | Byte | [texture](TPC-File-Format) variation for armor (1-9) |
+**Verified (Reva):** K1 `CSWSItem::LoadDataFromGff` @ 0x0055fcd0; `SaveItem` @ 0x0055ccd0. Field types and ranges below match engine behavior.
+
+| field | type | Min | Max | Description |
+| ----- | ---- | --- | --- | ----------- |
+| `BaseItem` | Int | - | - | index into [`baseitems.2da`](2DA-baseitems) (defines item type) |
+| `Cost` | DWord | 0 | 4294967295 | Base value in credits; **not read** in LoadDataFromGff; written by SaveItem when saving. Store logic typically uses base item + AddCost |
+| `AddCost` | DWord | 0 | 4294967295 | Additional cost modifier; engine reads directly |
+| `Plot` | Byte | 0 | 1 | Plot-critical item (cannot be sold/destroyed) |
+| `Charges` | Byte | 0 | 255 | Current uses remaining; default 50 (0x32) when missing |
+| `MaxCharges` | Byte | 0 | 255 | Maximum charges (used internally) |
+| `StackSize` | Word | 0 | 65535 | Maximum stack quantity per inventory slot |
+| `ModelVariation` | Byte | 0 | 255 | [model](MDL-MDX-File-Format) variation index; fallback ModelPart1 if 0 |
+| `BodyVariation` | Byte | 0 | 255 | Body variation for armor only (model_type 1) |
+| `TextureVar` | Byte | 0 | 255 | [texture](TPC-File-Format) variation for armor only; default 1 |
 
 **BaseItem types** (from [`baseitems.2da`](2DA-baseitems)):
 
@@ -105,12 +108,19 @@ UTI files define [item templates](GFF-File-Format#uti-item) for all objects in c
 
 ## Quest & Special Items
 
-| field | type | Description |
-| ----- | ---- | ----------- |
-| `Plot` | Byte | Cannot be sold or destroyed |
-| `Stolen` | Byte | Marked as stolen |
-| `Cursed` | Byte | Cannot be unequipped |
-| `Identified` | Byte | Player has identified the item |
+**Verified (Reva):** All below read in K1 `CSWSItem::LoadDataFromGff` @ 0x0055fcd0 as BYTE unless noted.
+
+| field | type | Min | Max | Description |
+| ----- | ---- | --- | --- | ----------- |
+| `Plot` | Byte | 0 | 1 | Cannot be sold or destroyed; plot-critical |
+| `Identified` | Byte | 0 | 1 | Player has identified the item (bit 0 of bit_flags) |
+| `Stolen` | Byte | 0 | 1 | Marked as stolen (bit 5) |
+| `Dropable` | Byte | 0 | 1 | Item can be dropped (bit 3) |
+| `Pickpocketable` | Byte | 0 | 1 | Item can be pickpocketed (bit 4) |
+| `NonEquippable` | Byte | 0 | 1 | Item cannot be equipped (bit 6) |
+| `NewItem` | Byte | 0 | 1 | New item flag (bit 7) |
+| `DELETING` | Byte | 0 | 1 | Deletion flag (bit 8) |
+| `Cursed` | Byte | 0 | 1 | Cannot be unequipped (engine/toolset) |
 
 **Plot Item Behavior:**
 

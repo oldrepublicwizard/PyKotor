@@ -1,4 +1,5 @@
 """Debug module lookup."""
+
 import os
 import sys
 from pathlib import Path
@@ -29,4 +30,3 @@ for mod_name in test_modules:
     # Test the exact logic from _find_module_for_kit
     main_rim = (rims_path / f"{mod_name}.rim" if rims_path.exists() else None) or (modules_path / f"{mod_name}.rim" if modules_path.exists() else None)
     print(f"  combined result: {main_rim} exists={main_rim.exists() if main_rim else False}")
-

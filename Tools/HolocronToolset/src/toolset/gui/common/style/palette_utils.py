@@ -41,5 +41,3 @@ def apply_locstring_background(
         pal.setColor(QPalette.ColorRole.Base, _blend(base, highlight, 0.18))
 
     widget.setPalette(pal)
-
-

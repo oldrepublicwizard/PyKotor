@@ -48,7 +48,7 @@ class CardWidget(QFrame):
         self.setFixedSize(80, 120)
         self.setFrameStyle(QFrame.Box | QFrame.Raised)
         self.setLineWidth(2)
-        
+
         layout = QVBoxLayout()
         self.label: QLabel = QLabel(str(card))
         self.label.setAlignment(Qt.AlignCenter)
@@ -66,7 +66,7 @@ class CardWidget(QFrame):
     def update_style(self):
         color = "#FFFFFF"
         border_color = "#000000"
-        
+
         if self.card.card_type == CardType.MAIN:
             color = self.theme.get("card_main", "#D0F0C0")
             border_color = "#2E8B57"
@@ -85,28 +85,29 @@ class CardWidget(QFrame):
             border: 2px solid {border_color}; 
             border-radius: 8px;
         """)
-        
+
         # Update label color if needed
         if self.card.card_type == CardType.MINUS:
-             self.label.setStyleSheet("color: #500000; font-weight: bold; border: none; background: transparent;")
+            self.label.setStyleSheet("color: #500000; font-weight: bold; border: none; background: transparent;")
         elif self.card.card_type == CardType.PLUS:
-             self.label.setStyleSheet("color: #000050; font-weight: bold; border: none; background: transparent;")
+            self.label.setStyleSheet("color: #000050; font-weight: bold; border: none; background: transparent;")
         else:
-             self.label.setStyleSheet("color: black; border: none; background: transparent;")
+            self.label.setStyleSheet("color: black; border: none; background: transparent;")
 
     def mousePressEvent(self, event):  # pyright: ignore[reportIncompatibleMethodOverride]
         if not self.is_opponent:
             self.clicked.emit(self.index)
+
 
 class PazaakWindow(QMainWindow):
     def __init__(self):
         super().__init__()
         self.setWindowTitle("HoloPazaak")
         self.resize(1000, 800)
-        
+
         self.settings = QSettings("PyKotor", "HoloPazaak")
         self.sound_manager = SoundManager()
-        
+
         # Game Setup - will be initialized after side deck selection
         self.human: Player | None = None
         self.ai: AIPlayer | None = None
@@ -117,7 +118,7 @@ class PazaakWindow(QMainWindow):
         self.current_theme = Theme.REPUBLIC
         self.total_games = 0
         self.games_won = 0
-        
+
         self.setup_ui()
         self.load_settings()
         self.show_side_deck_selection()
@@ -125,11 +126,11 @@ class PazaakWindow(QMainWindow):
     def load_settings(self):
         auto_stand = self.settings.value("auto_stand", False, type=bool)
         self.auto_stand_checkbox.setChecked(auto_stand)
-        
+
         # Load stats
         self.total_games = self.settings.value("total_games", 0, type=int)
         self.games_won = self.settings.value("games_won", 0, type=int)
-        
+
         # Load theme
         theme_name = self.settings.value("theme", "Republic", type=str)
         if theme_name == "Sith":
@@ -137,7 +138,7 @@ class PazaakWindow(QMainWindow):
         else:
             self.current_theme = Theme.REPUBLIC
         self.apply_theme()
-        
+
     def save_settings(self):
         self.settings.setValue("auto_stand", self.auto_stand_checkbox.isChecked())
         self.settings.setValue("total_games", self.total_games)
@@ -173,10 +174,10 @@ class PazaakWindow(QMainWindow):
         # Opponent Area
         self.opp_info = QLabel("Opponent: ")
         main_layout.addWidget(self.opp_info)
-        
+
         self.opp_hand_layout = QHBoxLayout()
         main_layout.addLayout(self.opp_hand_layout)
-        
+
         self.opp_board_layout = QGridLayout()
         opp_board_frame = QFrame()
         opp_board_frame.setLayout(self.opp_board_layout)
@@ -225,11 +226,11 @@ class PazaakWindow(QMainWindow):
         self.btn_end_turn = QPushButton("End Turn (Space)")
         self.btn_end_turn.clicked.connect(self.on_end_turn)
         self.btn_end_turn.setEnabled(False)
-        
+
         self.btn_stand = QPushButton("Stand (S)")
         self.btn_stand.clicked.connect(self.on_stand)
         self.btn_stand.setEnabled(False)
-        
+
         controls_layout.addWidget(self.btn_end_turn)
         controls_layout.addWidget(self.btn_stand)
 
@@ -243,33 +244,33 @@ class PazaakWindow(QMainWindow):
         self.btn_change_deck = QPushButton("Change Deck")
         self.btn_change_deck.clicked.connect(self.change_deck)
         controls_layout.addWidget(self.btn_change_deck)
-        
+
         self.btn_change_opponent = QPushButton("Change Opponent")
         self.btn_change_opponent.clicked.connect(self.change_opponent)
         controls_layout.addWidget(self.btn_change_opponent)
-        
+
         self.btn_theme = QPushButton("Theme")
         self.btn_theme.clicked.connect(self.toggle_theme)
         controls_layout.addWidget(self.btn_theme)
-        
+
         self.btn_help = QPushButton("Help")
         self.btn_help.clicked.connect(self.show_help)
         controls_layout.addWidget(self.btn_help)
 
         main_layout.addLayout(controls_layout)
-        
+
         # Shortcuts
         self.shortcut_end_turn = QShortcut(QKeySequence(Qt.Key_Space), self)
         self.shortcut_end_turn.activated.connect(self.on_end_turn)
-        
+
         self.shortcut_stand = QShortcut(QKeySequence(Qt.Key_S), self)
         self.shortcut_stand.activated.connect(self.on_stand)
-        
+
         # Hand shortcuts 1-4
         for i in range(4):
-            shortcut = QShortcut(QKeySequence(f"{i+1}"), self)
+            shortcut = QShortcut(QKeySequence(f"{i + 1}"), self)
             shortcut.activated.connect(lambda i=i: self.on_hand_card_clicked(i))
-    
+
     def keyPressEvent(self, event):
         # Fallback for simple keys if shortcuts don't catch
         if event.key() == Qt.Key_Space:
@@ -283,7 +284,7 @@ class PazaakWindow(QMainWindow):
             self.on_hand_card_clicked(idx)
         else:
             super().keyPressEvent(event)
-    
+
     def show_side_deck_selection(self, allow_cancel_exit: bool = True):
         """Show the side deck selection dialog"""
         dialog = SideDeckSelectionDialog(self)
@@ -294,25 +295,25 @@ class PazaakWindow(QMainWindow):
             # User cancelled - could close app or show menu
             if allow_cancel_exit and not self.game:
                 self.close()
-    
+
     def start_game_with_deck(self, sideboard: list[Card]):
         """Initialize and start the game with the selected side deck"""
         self.current_sideboard = [Card(card.name, card.value, card.card_type) for card in sideboard]
         self.human = Player("Player")
         self.human.sideboard = [Card(card.name, card.value, card.card_type) for card in self.current_sideboard]
-        
+
         self.ai = AIPlayer(self.ai_profile)
-        
+
         self.game = PazaakGame(self.human, self.ai)
         self.round_logged = False
-        
+
         # Update UI with opponent info
         self.opp_info.setText(f"Opponent: {self.ai.name}")
         self.side_deck_label.setText("Side Deck: " + ", ".join(str(card) for card in self.current_sideboard))
         self.log_text.clear()
         self.log_message("New game started! Good luck.")
         self.log_message(f"Opponent: {self.ai.name}")
-        
+
         # Start the game (this will reset both players and draw hands)
         self.game.start_game()
         self.update_ui()
@@ -320,20 +321,20 @@ class PazaakWindow(QMainWindow):
     def update_ui(self):
         if not self.game or not self.human or not self.ai:
             return
-        
+
         # Update Opponent
         self.opp_score_label.setText(f"Score: {self.ai.score} {'(STANDING)' if self.ai.is_standing else ''}")
         self.clear_layout(self.opp_board_layout)
         for i, card in enumerate(self.ai.board):
             cw = CardWidget(card, i, self.current_theme, is_opponent=True)
             self.opp_board_layout.addWidget(cw, 0, i)
-        
+
         # Opponent Hand (Hidden logic usually, but for debug/simplicity shown as backs or count)
         self.clear_layout(self.opp_hand_layout)
         for i in range(len(self.ai.hand)):
-             lbl = QLabel("Card")
-             lbl.setStyleSheet(f"background-color: gray; border: 1px solid black; padding: 5px; color: {self.current_theme['text']}")
-             self.opp_hand_layout.addWidget(lbl)
+            lbl = QLabel("Card")
+            lbl.setStyleSheet(f"background-color: gray; border: 1px solid black; padding: 5px; color: {self.current_theme['text']}")
+            self.opp_hand_layout.addWidget(lbl)
 
         # Update Player
         self.player_score_label.setText(f"Score: {self.human.score} {'(STANDING)' if self.human.is_standing else ''}")
@@ -349,9 +350,7 @@ class PazaakWindow(QMainWindow):
             self.player_hand_layout.addWidget(cw)
 
         # Buttons
-        can_act = (self.game.current_turn == self.human and 
-                   not self.human.is_standing and 
-                   not self.game.is_round_over)
+        can_act = self.game.current_turn == self.human and not self.human.is_standing and not self.game.is_round_over
         self.btn_end_turn.setEnabled(can_act)
         self.btn_stand.setEnabled(can_act)
 
@@ -385,12 +384,7 @@ class PazaakWindow(QMainWindow):
                 QTimer.singleShot(1000, self.ai_turn)
 
         # Auto-stand check
-        if (
-            self.auto_stand_checkbox.isChecked()
-            and self.game.current_turn == self.human
-            and not self.human.is_standing
-            and self.human.score >= self.game.WIN_SCORE
-        ):
+        if self.auto_stand_checkbox.isChecked() and self.game.current_turn == self.human and not self.human.is_standing and self.human.score >= self.game.WIN_SCORE:
             self.log_message("Auto-stand activated at 20.")
             self.game.stand(self.human)
             self.sound_manager.play("stand")
@@ -432,9 +426,9 @@ class PazaakWindow(QMainWindow):
     def ai_turn(self):
         if not self.game or not self.ai or self.game.is_round_over:
             return
-        
+
         action, data = self.ai.decide_move(self.game)
-        
+
         if action == "play_card" and data is not None:
             # Execute play card
             self.perform_ai_play_card(data)
@@ -514,4 +508,3 @@ class PazaakWindow(QMainWindow):
 
     def log_message(self, message: str):
         self.log_text.append(message)
-

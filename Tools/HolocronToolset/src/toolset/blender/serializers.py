@@ -24,7 +24,7 @@ if TYPE_CHECKING:
 
 def serialize_vector3(v: Vector3) -> dict[str, float]:
     """Serialize a Vector3 to JSON-compatible dict.
-    
+
     Deprecated: Use v.serialize() instead.
     """
     return v.serialize()
@@ -32,7 +32,7 @@ def serialize_vector3(v: Vector3) -> dict[str, float]:
 
 def serialize_vector4(v: Vector4) -> dict[str, float]:
     """Serialize a Vector4 (quaternion) to JSON-compatible dict.
-    
+
     Deprecated: Use v.serialize() instead.
     """
     return v.serialize()
@@ -61,7 +61,7 @@ def serialize_git_instance(instance: GITInstance) -> dict[str, Any]:
 
     Returns:
         Dictionary representation suitable for JSON serialization
-    
+
     Deprecated: Use instance.serialize() instead.
     """
     return instance.serialize()
@@ -87,57 +87,69 @@ def deserialize_git_instance(data: dict[str, Any]) -> dict[str, Any]:
     instance_type = data.get("type", "")
 
     if instance_type == "GITCamera":
-        result.update({
-            "camera_id": data.get("camera_id", 0),
-            "orientation": deserialize_vector4(data.get("orientation", {})),
-            "fov": data.get("fov", 55.0),
-            "height": data.get("height", 0.0),
-            "mic_range": data.get("mic_range", 0.0),
-            "pitch": data.get("pitch", 0.0),
-        })
+        result.update(
+            {
+                "camera_id": data.get("camera_id", 0),
+                "orientation": deserialize_vector4(data.get("orientation", {})),
+                "fov": data.get("fov", 55.0),
+                "height": data.get("height", 0.0),
+                "mic_range": data.get("mic_range", 0.0),
+                "pitch": data.get("pitch", 0.0),
+            }
+        )
     elif instance_type in ("GITCreature", "GITPlaceable", "GITStore"):
-        result.update({
-            "resref": data.get("resref", ""),
-            "bearing": data.get("bearing", 0.0),
-        })
+        result.update(
+            {
+                "resref": data.get("resref", ""),
+                "bearing": data.get("bearing", 0.0),
+            }
+        )
         if instance_type == "GITPlaceable":
             result["tweak_color"] = data.get("tweak_color")
     elif instance_type == "GITDoor":
-        result.update({
-            "resref": data.get("resref", ""),
-            "bearing": data.get("bearing", 0.0),
-            "tag": data.get("tag", ""),
-            "linked_to_module": data.get("linked_to_module", ""),
-            "linked_to": data.get("linked_to", ""),
-            "linked_to_flags": data.get("linked_to_flags", 0),
-            "transition_destination_stringref": data.get("transition_destination_stringref", -1),
-        })
-    elif instance_type == "GITSound":
-        result["resref"] = data.get("resref", "")
-    elif instance_type in ("GITEncounter", "GITTrigger"):
-        result.update({
-            "resref": data.get("resref", ""),
-            "geometry": [deserialize_vector3(g) for g in data.get("geometry", [])],
-        })
-        if instance_type == "GITTrigger":
-            result.update({
+        result.update(
+            {
+                "resref": data.get("resref", ""),
+                "bearing": data.get("bearing", 0.0),
                 "tag": data.get("tag", ""),
                 "linked_to_module": data.get("linked_to_module", ""),
                 "linked_to": data.get("linked_to", ""),
                 "linked_to_flags": data.get("linked_to_flags", 0),
                 "transition_destination_stringref": data.get("transition_destination_stringref", -1),
-            })
+            }
+        )
+    elif instance_type == "GITSound":
+        result["resref"] = data.get("resref", "")
+    elif instance_type in ("GITEncounter", "GITTrigger"):
+        result.update(
+            {
+                "resref": data.get("resref", ""),
+                "geometry": [deserialize_vector3(g) for g in data.get("geometry", [])],
+            }
+        )
+        if instance_type == "GITTrigger":
+            result.update(
+                {
+                    "tag": data.get("tag", ""),
+                    "linked_to_module": data.get("linked_to_module", ""),
+                    "linked_to": data.get("linked_to", ""),
+                    "linked_to_flags": data.get("linked_to_flags", 0),
+                    "transition_destination_stringref": data.get("transition_destination_stringref", -1),
+                }
+            )
         else:
             result["spawn_points"] = data.get("spawn_points", [])
     elif instance_type == "GITWaypoint":
-        result.update({
-            "resref": data.get("resref", ""),
-            "bearing": data.get("bearing", 0.0),
-            "tag": data.get("tag", ""),
-            "name_stringref": data.get("name_stringref", -1),
-            "map_note_enabled": data.get("map_note_enabled", False),
-            "has_map_note": data.get("has_map_note", False),
-        })
+        result.update(
+            {
+                "resref": data.get("resref", ""),
+                "bearing": data.get("bearing", 0.0),
+                "tag": data.get("tag", ""),
+                "name_stringref": data.get("name_stringref", -1),
+                "map_note_enabled": data.get("map_note_enabled", False),
+                "has_map_note": data.get("has_map_note", False),
+            }
+        )
 
     return result
 
@@ -155,7 +167,7 @@ def serialize_git(git: GIT) -> dict[str, Any]:
 
     Returns:
         Dictionary representation
-    
+
     Deprecated: Use git.serialize() instead.
     """
     return git.serialize()
@@ -168,7 +180,7 @@ def serialize_git(git: GIT) -> dict[str, Any]:
 
 def serialize_lyt_room(room: LYTRoom) -> dict[str, Any]:
     """Serialize an LYTRoom to JSON-compatible dict.
-    
+
     Deprecated: Use room.serialize() instead.
     """
     return room.serialize()
@@ -176,7 +188,7 @@ def serialize_lyt_room(room: LYTRoom) -> dict[str, Any]:
 
 def serialize_lyt_doorhook(doorhook: LYTDoorHook) -> dict[str, Any]:
     """Serialize an LYTDoorHook to JSON-compatible dict.
-    
+
     Deprecated: Use doorhook.serialize() instead.
     """
     return doorhook.serialize()
@@ -184,7 +196,7 @@ def serialize_lyt_doorhook(doorhook: LYTDoorHook) -> dict[str, Any]:
 
 def serialize_lyt_track(track: LYTTrack) -> dict[str, Any]:
     """Serialize an LYTTrack to JSON-compatible dict.
-    
+
     Deprecated: Use track.serialize() instead.
     """
     return track.serialize()
@@ -192,7 +204,7 @@ def serialize_lyt_track(track: LYTTrack) -> dict[str, Any]:
 
 def serialize_lyt_obstacle(obstacle: LYTObstacle) -> dict[str, Any]:
     """Serialize an LYTObstacle to JSON-compatible dict.
-    
+
     Deprecated: Use obstacle.serialize() instead.
     """
     return obstacle.serialize()
@@ -206,7 +218,7 @@ def serialize_lyt(lyt: LYT) -> dict[str, Any]:
 
     Returns:
         Dictionary representation
-    
+
     Deprecated: Use lyt.serialize() instead.
     """
     return lyt.serialize()
@@ -269,7 +281,7 @@ def serialize_bwm(bwm: BWM) -> dict[str, Any]:
 
     Returns:
         Dictionary representation
-    
+
     Deprecated: Use bwm.serialize() instead.
     """
     return bwm.serialize()
@@ -315,13 +327,13 @@ def serialize_module_data(
 
 def serialize_indoor_map_room(room: IndoorMapRoom) -> dict[str, Any]:
     """Serialize an IndoorMapRoom to JSON-compatible dict.
-    
+
     Args:
         room: IndoorMapRoom instance
-        
+
     Returns:
         Dictionary representation
-    
+
     Deprecated: Use room.serialize() instead.
     """
     return room.serialize()
@@ -329,13 +341,13 @@ def serialize_indoor_map_room(room: IndoorMapRoom) -> dict[str, Any]:
 
 def serialize_indoor_map(indoor_map: IndoorMap) -> dict[str, Any]:
     """Serialize an IndoorMap to JSON-compatible dict.
-    
+
     Args:
         indoor_map: IndoorMap instance
-        
+
     Returns:
         Dictionary representation
-    
+
     Deprecated: Use indoor_map.serialize() instead.
     """
     return indoor_map.serialize()

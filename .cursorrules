@@ -169,6 +169,10 @@ This step is never optional. It ensures atomic commits and proves rule adherence
 - On new discoveries: Check/create `wiki/*.md`, update, and commit separately to both repos.
 - Always update the wiki with the new information if it is relevant to either game.
 
+## 5. Holocron UI Workflow
+
+Edit only `Tools/HolocronToolset/src/ui/`. Never edit `uic/`. Run `convertui.py` after UI changes.
+
 ## 6. Testing and Environment
 
 - Enforce timeouts (120s/test, 300s/suite).

@@ -19,6 +19,7 @@ if TYPE_CHECKING:
 
 class ModuleDesignerWidget(SettingsWidget):
     sig_settings_edited = QtCore.Signal()  # pyright: ignore[reportPrivateImportUsage]
+
     def __init__(self, parent: QWidget):
         """Initializes the Module Designer UI.
 
@@ -38,6 +39,7 @@ class ModuleDesignerWidget(SettingsWidget):
         self.settings: ModuleDesignerSettings = ModuleDesignerSettings()
 
         from toolset.uic.qtpy.widgets.settings import module_designer
+
         self.ui = module_designer.Ui_Form()
         self.ui.setupUi(self)
 
@@ -71,7 +73,7 @@ class ModuleDesignerWidget(SettingsWidget):
 
         # Install the event filter on all child widgets
         self.installEventFilters(self, self.noScrollEventFilter)
-        #self.installEventFilters(self, self.hoverEventFilter, include_types=[QWidget])
+        # self.installEventFilters(self, self.hoverEventFilter, include_types=[QWidget])
 
     def _load3dBindValues(self):
         self.ui.moveCameraSensitivity3dEdit.setValue(self.settings.moveCameraSensitivity3d)

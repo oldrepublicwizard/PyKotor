@@ -31,14 +31,16 @@ class MDLEditor(Editor):
         self._installation = installation
 
         from toolset.uic.qtpy.editors.mdl import Ui_MainWindow
+
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self)
-        
+
         # Setup event filter to prevent scroll wheel interaction with controls
         from toolset.gui.common.filters import NoScrollEventFilter
+
         self._no_scroll_filter = NoScrollEventFilter(self)
         self._no_scroll_filter.setup_filter(parent_widget=self)
-        
+
         self._setup_menus()
         self._add_help_action()
         self._setup_signals()
@@ -47,8 +49,7 @@ class MDLEditor(Editor):
 
         self.new()
 
-    def _setup_signals(self):
-        ...
+    def _setup_signals(self): ...
 
     def load(self, filepath: os.PathLike | str, resref: str, restype: ResourceType, data: bytes | bytearray):
         """Loads a model resource and its associated data.
@@ -125,3 +126,10 @@ class MDLEditor(Editor):
         super().new()
         self._mdl = MDL()
         self.ui.modelRenderer.clear_model()
+
+if __name__ == "__main__":
+    import sys
+
+    from toolset.gui.editors.standalone import launch_editor_cli
+
+    sys.exit(launch_editor_cli("mdl"))

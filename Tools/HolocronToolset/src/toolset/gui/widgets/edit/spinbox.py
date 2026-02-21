@@ -17,7 +17,7 @@ class GFFFieldSpinBox(QSpinBox):
         super().__init__(*args, **kwargs)
         self.special_value_text_mapping: dict[int, str] = {0: "0", -1: "-1"}
         self.min_value = self.minimum()
-        self.setMinimum(-2147483647+1)
+        self.setMinimum(-2147483647 + 1)
         self.setMaximum(2147483647)
         self.setSpecialValueText(self.special_value_text_mapping.get(self.value(), ""))
 

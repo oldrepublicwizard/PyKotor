@@ -31,7 +31,7 @@ class DLGViewSwitcher(QWidget):
 
         # Load UI from .ui file
         from toolset.uic.qtpy.editors.view_switcher import Ui_Widget
-        
+
         self.ui: Ui_Widget = Ui_Widget()
         self.ui.setupUi(self)
 

@@ -252,4 +252,3 @@ def get_all_searchable_file_types() -> set[str]:
     all_types.update(CONVERSATION_FIELDS.keys())
     all_types.update(ITEMLIST_FIELDS.keys())
     return all_types
-

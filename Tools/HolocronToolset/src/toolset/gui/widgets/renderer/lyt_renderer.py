@@ -29,7 +29,7 @@ if TYPE_CHECKING:
 
 class LYTRenderer(QWidget):
     """Widget for rendering and editing LYT layout elements.
-    
+
     Provides 2D visualization of rooms, door hooks, tracks, and obstacles
     matching kotorblender's visual representation.
     """
@@ -201,12 +201,7 @@ class LYTRenderer(QWidget):
             new_element = LYTRoom(f"{element.model}_copy", element.position + offset)
             self._lyt.rooms.append(new_element)
         elif isinstance(element, LYTDoorHook):
-            new_element = LYTDoorHook(
-                element.room,
-                f"{element.door}_copy",
-                element.position + offset,
-                element.orientation
-            )
+            new_element = LYTDoorHook(element.room, f"{element.door}_copy", element.position + offset, element.orientation)
             self._lyt.doorhooks.append(new_element)
         elif isinstance(element, LYTTrack):
             new_element = LYTTrack(f"{element.model}_copy", element.position + offset)
@@ -243,37 +238,25 @@ class LYTRenderer(QWidget):
 
         # Check door hooks first (smallest, should be on top)
         for doorhook in self._lyt.doorhooks:
-            dist = math.sqrt(
-                (doorhook.position.x - world_pos.x) ** 2 +
-                (doorhook.position.y - world_pos.y) ** 2
-            )
+            dist = math.sqrt((doorhook.position.x - world_pos.x) ** 2 + (doorhook.position.y - world_pos.y) ** 2)
             if dist <= self.DOORHOOK_SIZE / self._zoom:
                 return doorhook
 
         # Check tracks
         for track in self._lyt.tracks:
-            dist = math.sqrt(
-                (track.position.x - world_pos.x) ** 2 +
-                (track.position.y - world_pos.y) ** 2
-            )
+            dist = math.sqrt((track.position.x - world_pos.x) ** 2 + (track.position.y - world_pos.y) ** 2)
             if dist <= self.TRACK_SIZE / self._zoom:
                 return track
 
         # Check obstacles
         for obstacle in self._lyt.obstacles:
-            dist = math.sqrt(
-                (obstacle.position.x - world_pos.x) ** 2 +
-                (obstacle.position.y - world_pos.y) ** 2
-            )
+            dist = math.sqrt((obstacle.position.x - world_pos.x) ** 2 + (obstacle.position.y - world_pos.y) ** 2)
             if dist <= self.OBSTACLE_SIZE / self._zoom:
                 return obstacle
 
         # Check rooms (largest, should be checked last)
         for room in self._lyt.rooms:
-            dist = math.sqrt(
-                (room.position.x - world_pos.x) ** 2 +
-                (room.position.y - world_pos.y) ** 2
-            )
+            dist = math.sqrt((room.position.x - world_pos.x) ** 2 + (room.position.y - world_pos.y) ** 2)
             if dist <= self.ROOM_SIZE / self._zoom:
                 return room
 
@@ -364,12 +347,7 @@ class LYTRenderer(QWidget):
 
         # Draw as square
         size = self.ROOM_SIZE
-        painter.drawRect(
-            int(room.position.x - size / 2),
-            int(room.position.y - size / 2),
-            int(size),
-            int(size)
-        )
+        painter.drawRect(int(room.position.x - size / 2), int(room.position.y - size / 2), int(size), int(size))
 
         # Draw label
         if self._zoom > 0.5:  # Only show text when zoomed in enough
@@ -377,8 +355,7 @@ class LYTRenderer(QWidget):
             painter.resetTransform()
             screen_pos = self._world_to_screen(room.position)
             painter.setPen(Qt.GlobalColor.white)
-            painter.drawText(int(screen_pos.x - 50), int(screen_pos.y + size * self._zoom / 2 + 15), 100, 20,
-                           Qt.AlignmentFlag.AlignCenter, room.model)
+            painter.drawText(int(screen_pos.x - 50), int(screen_pos.y + size * self._zoom / 2 + 15), 100, 20, Qt.AlignmentFlag.AlignCenter, room.model)
             painter.restore()
 
     def _draw_doorhook(self, painter: QPainter, doorhook: LYTDoorHook):
@@ -392,10 +369,7 @@ class LYTRenderer(QWidget):
 
         # Draw as circle
         painter.drawEllipse(
-            int(doorhook.position.x - self.DOORHOOK_SIZE / 2),
-            int(doorhook.position.y - self.DOORHOOK_SIZE / 2),
-            int(self.DOORHOOK_SIZE),
-            int(self.DOORHOOK_SIZE)
+            int(doorhook.position.x - self.DOORHOOK_SIZE / 2), int(doorhook.position.y - self.DOORHOOK_SIZE / 2), int(self.DOORHOOK_SIZE), int(self.DOORHOOK_SIZE)
         )
 
         # Draw orientation indicator
@@ -403,12 +377,7 @@ class LYTRenderer(QWidget):
         angle = euler.z
         end_x = doorhook.position.x + math.cos(angle) * self.DOORHOOK_SIZE
         end_y = doorhook.position.y + math.sin(angle) * self.DOORHOOK_SIZE
-        painter.drawLine(
-            int(doorhook.position.x),
-            int(doorhook.position.y),
-            int(end_x),
-            int(end_y)
-        )
+        painter.drawLine(int(doorhook.position.x), int(doorhook.position.y), int(end_x), int(end_y))
 
     def _draw_track(self, painter: QPainter, track: LYTTrack):
         """Draw a track."""
@@ -429,6 +398,7 @@ class LYTRenderer(QWidget):
         ]
         from qtpy.QtCore import QPoint
         from qtpy.QtGui import QPolygon
+
         polygon = QPolygon([QPoint(int(p[0]), int(p[1])) for p in points])
         painter.drawPolygon(polygon)
 
@@ -443,27 +413,12 @@ class LYTRenderer(QWidget):
 
         # Draw as cross
         size = self.OBSTACLE_SIZE / 2
-        painter.drawLine(
-            int(obstacle.position.x - size),
-            int(obstacle.position.y - size),
-            int(obstacle.position.x + size),
-            int(obstacle.position.y + size)
-        )
-        painter.drawLine(
-            int(obstacle.position.x - size),
-            int(obstacle.position.y + size),
-            int(obstacle.position.x + size),
-            int(obstacle.position.y - size)
-        )
+        painter.drawLine(int(obstacle.position.x - size), int(obstacle.position.y - size), int(obstacle.position.x + size), int(obstacle.position.y + size))
+        painter.drawLine(int(obstacle.position.x - size), int(obstacle.position.y + size), int(obstacle.position.x + size), int(obstacle.position.y - size))
 
         # Draw circle around it
         painter.setBrush(Qt.BrushStyle.NoBrush)
-        painter.drawEllipse(
-            int(obstacle.position.x - size),
-            int(obstacle.position.y - size),
-            int(size * 2),
-            int(size * 2)
-        )
+        painter.drawEllipse(int(obstacle.position.x - size), int(obstacle.position.y - size), int(size * 2), int(size * 2))
 
     def mousePressEvent(self, event: QMouseEvent):  # pyright: ignore[reportIncompatibleMethodOverride]
         """Handle mouse press events."""
@@ -475,7 +430,7 @@ class LYTRenderer(QWidget):
                 self.select_element(element)
                 self._dragging = True
                 self._drag_start_pos = mouse_pos
-                self._element_start_pos = element.position.copy() if hasattr(element.position, 'copy') else Vector3(element.position.x, element.position.y, element.position.z)
+                self._element_start_pos = element.position.copy() if hasattr(element.position, "copy") else Vector3(element.position.x, element.position.y, element.position.z)
             else:
                 self.select_element(None)
 
@@ -491,18 +446,10 @@ class LYTRenderer(QWidget):
             # Calculate world space delta
             world_start = self._screen_to_world(self._drag_start_pos)
             world_current = self._screen_to_world(mouse_pos)
-            delta = Vector3(
-                world_current.x - world_start.x,
-                world_current.y - world_start.y,
-                0
-            )
+            delta = Vector3(world_current.x - world_start.x, world_current.y - world_start.y, 0)
 
             # Update element position
-            new_pos = Vector3(
-                self._element_start_pos.x + delta.x,
-                self._element_start_pos.y + delta.y,
-                self._element_start_pos.z
-            )
+            new_pos = Vector3(self._element_start_pos.x + delta.x, self._element_start_pos.y + delta.y, self._element_start_pos.z)
             self._selected_element.position = new_pos
             self.update()
 
@@ -546,8 +493,8 @@ class LYTRenderer(QWidget):
             return
 
         # Calculate bounding box of all elements
-        min_x = min_y = float('inf')
-        max_x = max_y = float('-inf')
+        min_x = min_y = float("inf")
+        max_x = max_y = float("-inf")
 
         for room in self._lyt.rooms:
             min_x = min(min_x, room.position.x)
@@ -567,4 +514,3 @@ class LYTRenderer(QWidget):
         self._zoom = min(zoom_x, zoom_y, 2.0)  # Cap at 2x zoom
 
         self.update()
-

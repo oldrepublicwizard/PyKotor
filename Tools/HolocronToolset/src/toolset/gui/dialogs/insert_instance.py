@@ -47,9 +47,7 @@ class InsertInstanceDialog(QDialog):
         self.setWindowFlags(
             Qt.WindowType.Dialog  # pyright: ignore[reportArgumentType]
             | Qt.WindowType.WindowCloseButtonHint
-            | Qt.WindowType.WindowStaysOnTopHint
-            & ~Qt.WindowType.WindowContextHelpButtonHint
-            & ~Qt.WindowType.WindowMinMaxButtonsHint
+            | Qt.WindowType.WindowStaysOnTopHint & ~Qt.WindowType.WindowContextHelpButtonHint & ~Qt.WindowType.WindowMinMaxButtonsHint
         )
 
         self._installation: HTInstallation = installation
@@ -62,15 +60,17 @@ class InsertInstanceDialog(QDialog):
         self.filepath: Path | None = None
 
         from toolset.uic.qtpy.dialogs.insert_instance import Ui_Dialog
+
         self.ui = Ui_Dialog()
         self.ui.setupUi(self)
         self.ui.previewRenderer.installation = installation
-        
+
         # Setup event filter to prevent scroll wheel interaction with controls
         from toolset.gui.common.filters import NoScrollEventFilter
+
         self._no_scroll_filter = NoScrollEventFilter(self)
         self._no_scroll_filter.setup_filter(parent_widget=self)
-        
+
         self._setup_signals()
         self._setup_location_select()
         self._setup_resource_list()
@@ -129,7 +129,12 @@ class InsertInstanceDialog(QDialog):
         new = True
         if not self.ui.resourceList.selectedItems():
             from toolset.gui.common.localization import translate as tr
-            BetterMessageBox(tr("Choose an instance"), tr("You must choose an instance, use the radial buttons to determine where/how to create the GIT instance."), icon=QMessageBox.Critical).exec()
+
+            BetterMessageBox(
+                tr("Choose an instance"),
+                tr("You must choose an instance, use the radial buttons to determine where/how to create the GIT instance."),
+                icon=QMessageBox.Critical,
+            ).exec()
             return
         resource: FileResource = self.ui.resourceList.selectedItems()[0].data(Qt.ItemDataRole.UserRole)
 
@@ -218,13 +223,12 @@ class InsertInstanceDialog(QDialog):
                 elif resource.restype() is ResourceType.UTP and self.global_settings.showPreviewUTP:
                     modelname: str = placeable.get_model(read_utp(resource.data()), self._installation)
                     self.set_render_model(modelname)
-                elif (
-                    resource.restype() in (ResourceType.MDL, ResourceType.MDX)
-                    and any((
+                elif resource.restype() in (ResourceType.MDL, ResourceType.MDX) and any(
+                    (
                         self.global_settings.showPreviewUTC,
                         self.global_settings.showPreviewUTD,
                         self.global_settings.showPreviewUTP,
-                    ))
+                    )
                 ):
                     data = resource.data()
                     if resource.restype() is ResourceType.MDL:
@@ -265,12 +269,8 @@ class InsertInstanceDialog(QDialog):
         self,
         modelname: str,
     ):
-        mdl: ResourceResult | None = self._installation.resource(
-            modelname, ResourceType.MDL
-        )
-        mdx: ResourceResult | None = self._installation.resource(
-            modelname, ResourceType.MDX
-        )
+        mdl: ResourceResult | None = self._installation.resource(modelname, ResourceType.MDL)
+        mdx: ResourceResult | None = self._installation.resource(modelname, ResourceType.MDX)
         if mdl is not None and mdx is not None:
             self.ui.previewRenderer.setModel(mdl.data, mdx.data)
         else:
@@ -284,7 +284,7 @@ class InsertInstanceDialog(QDialog):
             f"Name: {resource.resname()}",
             f"Type: {resource.restype().name}",
             f"Size: {len(resource.data())} bytes",
-            f"Path: {resource.filepath().relative_to(self._installation.path())}"
+            f"Path: {resource.filepath().relative_to(self._installation.path())}",
         ]
         return "\n".join(summary)
 

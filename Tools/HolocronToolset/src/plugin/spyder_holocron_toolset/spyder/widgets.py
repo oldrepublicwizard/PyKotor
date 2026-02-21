@@ -8,6 +8,7 @@ from spyder.api.widgets.status import StatusBarWidget
 
 class HolocronToolbar(QToolBar):
     """Toolbar for the Holocron Toolset."""
+
     installationChanged = Signal(str)
 
     def __init__(self, parent=None):
@@ -32,6 +33,7 @@ class HolocronToolbar(QToolBar):
     def on_installation_changed(self, installation_name):
         if installation_name != "Select Installation":
             self.installationChanged.emit(installation_name)
+
 
 class HolocronStatus(StatusBarWidget):
     ID = "holocron_status"

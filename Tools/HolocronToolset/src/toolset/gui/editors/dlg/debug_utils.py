@@ -31,6 +31,7 @@ def identify_reference_path(obj, max_depth=10):
     focusing on the most likely sources of strong references.
     """
     import objgraph  # pyright: ignore[reportMissingTypeStubs]
+
     # Define a predicate that returns True for all objects
     def predicate(*__args: Any, **__kwargs: Any) -> Literal[True]:
         return True
@@ -78,4 +79,3 @@ def identify_reference_path(obj, max_depth=10):
 
 def debug_references(obj: Any):
     identify_reference_path(obj)
-

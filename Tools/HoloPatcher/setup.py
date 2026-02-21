@@ -10,7 +10,7 @@ def read_requirements() -> list[str]:
     requirements_path = Path(__file__).parent / "requirements.txt"
     if not requirements_path.exists():
         return []
-    
+
     requirements = []
     with open(requirements_path, encoding="utf-8") as f:
         for line in f:

@@ -4,6 +4,7 @@ Unit Tests for GFF Editor - testing EVERY possible manipulation.
 Each test focuses on a specific manipulation and validates save/load roundtrips.
 The GFF Editor is a generic editor that supports all GFF field types and operations.
 """
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
@@ -12,7 +13,7 @@ import unittest
 import pytest
 from pathlib import Path
 from qtpy.QtCore import Qt
-from qtpy.QtWidgets import  QMenu
+from qtpy.QtWidgets import QMenu
 from toolset.gui.editors.gff import GFFEditor, _LABEL_NODE_ROLE, _TYPE_NODE_ROLE, _VALUE_NODE_ROLE  # type: ignore[import-not-found]
 from toolset.data.installation import HTInstallation  # type: ignore[import-not-found]
 from pykotor.resource.formats.gff import GFF, GFFContent, GFFFieldType, GFFStruct, GFFList, read_gff, write_gff  # type: ignore[import-not-found]
@@ -30,6 +31,7 @@ if TYPE_CHECKING:
 def _select_item_in_tree(editor: GFFEditor, item, qtbot: QtBot):
     """Helper function to select an item in the tree view and ensure selection is set."""
     from qtpy.QtCore import QModelIndex, QItemSelectionModel
+
     source_index = editor.model.indexFromItem(item)
     proxy_index = editor.proxy_model.mapFromSource(source_index)
     editor.ui.treeView.setCurrentIndex(proxy_index)
@@ -44,6 +46,7 @@ def _select_item_in_tree(editor: GFFEditor, item, qtbot: QtBot):
 # ============================================================================
 # BASIC FIELD TYPE MANIPULATIONS
 # ============================================================================
+
 
 def test_gff_editor_manipulate_uint8_field(qtbot: QtBot, installation: HTInstallation, test_files_dir: Path):
     """Test manipulating UInt8 field values."""
@@ -79,7 +82,7 @@ def test_gff_editor_manipulate_uint8_field(qtbot: QtBot, installation: HTInstall
         # Ensure item is selected
         editor.ui.treeView.setCurrentIndex(proxy_index)
         QApplication.processEvents()  # Small wait for selection to process
-        
+
         editor.ui.intSpin.setValue(val)
         # Trigger the update_data method manually since editingFinished signal may not fire in tests
         editor.update_data()
@@ -693,7 +696,7 @@ def test_gff_editor_manipulate_binary_field(qtbot: QtBot, installation: HTInstal
     qtbot.addWidget(editor)
 
     # Create a test GFF with a Binary field
-    test_data = b"\x00\x01\x02\x03\x04\x05\xFF\xFE\xFD"
+    test_data = b"\x00\x01\x02\x03\x04\x05\xff\xfe\xfd"
     gff = GFF(GFFContent.GFF)
     gff.root.set_binary("test_binary", test_data)
     original_data = bytearray()
@@ -892,6 +895,7 @@ def test_gff_editor_add_remove_localized_string_substring(qtbot: QtBot, installa
 # STRUCT OPERATIONS
 # ============================================================================
 
+
 def test_gff_editor_add_struct_to_struct(qtbot: QtBot, installation: HTInstallation, test_files_dir: Path):
     """Test adding a struct to another struct."""
     editor = GFFEditor(None, installation)
@@ -975,7 +979,7 @@ def test_gff_editor_remove_struct(qtbot: QtBot, installation: HTInstallation, te
 
     # Select and remove the first struct
     proxy_index = _select_item_in_tree(editor, first_struct, qtbot)
-    
+
     # Remove using remove_selected_nodes (which is what Delete key does)
     editor.remove_selected_nodes()
     QApplication.processEvents()
@@ -1035,6 +1039,7 @@ def test_gff_editor_edit_struct_id(qtbot: QtBot, installation: HTInstallation, t
 # ============================================================================
 # LIST OPERATIONS
 # ============================================================================
+
 
 def test_gff_editor_add_struct_to_list(qtbot: QtBot, installation: HTInstallation, test_files_dir: Path):
     """Test adding a struct to a list."""
@@ -1116,7 +1121,7 @@ def test_gff_editor_remove_struct_from_list(qtbot: QtBot, installation: HTInstal
     assert middle_struct is not None, "Middle struct not found"
 
     proxy_index = _select_item_in_tree(editor, middle_struct, qtbot)
-    
+
     # Remove using remove_selected_nodes (which is what Delete key does)
     editor.remove_selected_nodes()
     QApplication.processEvents()
@@ -1134,6 +1139,7 @@ def test_gff_editor_remove_struct_from_list(qtbot: QtBot, installation: HTInstal
 # ============================================================================
 # CONTEXT MENU OPERATIONS
 # ============================================================================
+
 
 def test_gff_editor_context_menu_add_all_field_types(qtbot: QtBot, installation: HTInstallation, test_files_dir: Path):
     """Test adding all field types via context menu."""
@@ -1206,6 +1212,7 @@ def test_gff_editor_context_menu_add_all_field_types(qtbot: QtBot, installation:
 # TYPE CHANGING
 # ============================================================================
 
+
 def test_gff_editor_change_field_type(qtbot: QtBot, installation: HTInstallation, test_files_dir: Path):
     """Test changing field types."""
     editor = GFFEditor(None, installation)
@@ -1242,7 +1249,7 @@ def test_gff_editor_change_field_type(qtbot: QtBot, installation: HTInstallation
             string_index = i
             break
     assert string_index >= 0, "String type not found in combo box"
-    
+
     # Set the current index and trigger the activated signal
     editor.ui.typeCombo.setCurrentIndex(string_index)
     editor.type_changed(string_index)  # Call the method directly to ensure it's triggered
@@ -1305,6 +1312,7 @@ def test_gff_editor_change_field_label(qtbot: QtBot, installation: HTInstallatio
 # ============================================================================
 # LOAD/SAVE ROUNDTRIP VALIDATION
 # ============================================================================
+
 
 def test_gff_editor_save_load_roundtrip_identity(qtbot: QtBot, installation: HTInstallation, test_files_dir: Path):
     """Test that save/load roundtrip preserves all data exactly."""
@@ -1469,10 +1477,12 @@ def test_gff_editor_comprehensive_gff_roundtrip(qtbot: QtBot, installation: HTIn
     if missing_in_new:
         error_msg.append(f"Fields missing in roundtrip output: {missing_in_new}")
     if mismatches:
-        mismatch_details = "\n".join([
-            f"  {label}: original={orig} -> new={new}"
-            for label, orig, new in mismatches[:10]  # Limit output
-        ])
+        mismatch_details = "\n".join(
+            [
+                f"  {label}: original={orig} -> new={new}"
+                for label, orig, new in mismatches[:10]  # Limit output
+            ]
+        )
         if len(mismatches) > 10:
             mismatch_details += f"\n  ... and {len(mismatches) - 10} more"
         error_msg.append(f"Field value mismatches:\n{mismatch_details}")
@@ -1483,6 +1493,7 @@ def test_gff_editor_comprehensive_gff_roundtrip(qtbot: QtBot, installation: HTIn
 # ============================================================================
 # EDGE CASES AND BOUNDARY TESTS
 # ============================================================================
+
 
 def test_gff_editor_minimum_maximum_values(qtbot: QtBot, installation: HTInstallation, test_files_dir: Path):
     """Test setting all numeric fields to minimum and maximum values."""
@@ -1630,15 +1641,15 @@ def test_gff_editor_special_characters(qtbot: QtBot, installation: HTInstallatio
     editor.ui.treeView.setCurrentIndex(proxy_index)
     QApplication.processEvents()
     editor.update_data()
-    
+
     # Save and verify the string value was saved
     data_temp, _ = editor.build()
     temp_gff = read_gff(data_temp)
     assert temp_gff.root.get_string("normal_field") == special_string, "String value should be saved"
-    
+
     # Now test special characters in label - reload first to get a clean state
     editor.load(Path("test.gff"), "test", ResourceType.GFF, data_temp)
-    
+
     # Find the field again after reload
     root_item = editor.model.item(0, 0)
     field_item = None
@@ -1648,10 +1659,10 @@ def test_gff_editor_special_characters(qtbot: QtBot, installation: HTInstallatio
             field_item = child
             break
     assert field_item is not None, "Could not find normal_field after reload"
-    
+
     # Select the field again - this will load the item and populate textEdit
     proxy_index = _select_item_in_tree(editor, field_item, qtbot)
-    
+
     # Verify the textEdit has the correct value (should be loaded from the item)
     current_text = editor.ui.textEdit.toPlainText()
     assert current_text == special_string, f"TextEdit should have the special string after reload, got: {current_text!r}"
@@ -1667,7 +1678,7 @@ def test_gff_editor_special_characters(qtbot: QtBot, installation: HTInstallatio
     QApplication.processEvents()
     # Trigger the update_data method manually - this should save both label and text
     editor.update_data()
-    
+
     # Verify the item has the correct data before building
     assert field_item.data(_VALUE_NODE_ROLE) == special_string, "Item should have the special string value"
     # GFF labels are limited to 16 characters, so the label will be truncated if longer
@@ -1685,6 +1696,7 @@ def test_gff_editor_special_characters(qtbot: QtBot, installation: HTInstallatio
 # NEW FILE CREATION TESTS
 # ============================================================================
 
+
 def test_gff_editor_new_file_creation(qtbot: QtBot, installation: HTInstallation):
     """Test creating a new GFF file from scratch."""
     editor = GFFEditor(None, installation)
@@ -1692,7 +1704,7 @@ def test_gff_editor_new_file_creation(qtbot: QtBot, installation: HTInstallation
 
     # Create new file
     editor.new()
-    
+
     # Set GFF content type (required for building)
     editor._gff_content = GFFContent.GFF
 
@@ -1717,7 +1729,7 @@ def test_gff_editor_new_file_add_fields(qtbot: QtBot, installation: HTInstallati
 
     # Create new file
     editor.new()
-    
+
     # Set GFF content type (required for building)
     editor._gff_content = GFFContent.GFF
 
@@ -1750,6 +1762,7 @@ def test_gff_editor_new_file_add_fields(qtbot: QtBot, installation: HTInstallati
 # TLK INTEGRATION TESTS
 # ============================================================================
 
+
 def test_gff_editor_tlk_integration(qtbot: QtBot, installation: HTInstallation, test_files_dir: Path):
     """Test TLK table integration for localized strings."""
     # This test would require a TLK file to be available
@@ -1758,7 +1771,7 @@ def test_gff_editor_tlk_integration(qtbot: QtBot, installation: HTInstallation, 
     qtbot.addWidget(editor)
 
     # Verify the TLK integration method exists
-    assert hasattr(editor, 'select_talk_table')
+    assert hasattr(editor, "select_talk_table")
     assert callable(editor.select_talk_table)
 
     # Create a test GFF with a localized string
@@ -1796,6 +1809,7 @@ def test_gff_editor_tlk_integration(qtbot: QtBot, installation: HTInstallation, 
 # HELP DIALOG TESTS
 # ============================================================================
 
+
 def test_gff_editor_help_dialog_opens_correct_file(qtbot: QtBot, installation: HTInstallation):
     """Test that GFFEditor help dialog opens and displays the correct help file."""
     from toolset.gui.dialogs.editor_help import EditorHelpDialog
@@ -1824,8 +1838,7 @@ def test_gff_editor_help_dialog_opens_correct_file(qtbot: QtBot, installation: H
     html = dialog.text_browser.toHtml()
 
     # Assert that "Help File Not Found" error is NOT shown
-    assert "Help File Not Found" not in html, \
-        "Help file 'GFF-File-Format.md' should be found, but error was shown"
+    assert "Help File Not Found" not in html, "Help file 'GFF-File-Format.md' should be found, but error was shown"
 
     # Assert that some content is present (file was loaded successfully)
     assert len(html) > 100, "Help dialog should contain content"
@@ -1834,6 +1847,7 @@ def test_gff_editor_help_dialog_opens_correct_file(qtbot: QtBot, installation: H
 # ============================================================================
 # Pytest-based headless UI tests
 # ============================================================================
+
 
 def test_gff_editor_headless_ui_load_build(qtbot, installation: HTInstallation, test_files_dir):
     """Test GFF Editor in headless UI - loads real file and builds data."""
@@ -1857,8 +1871,7 @@ def test_gff_editor_headless_ui_load_build(qtbot, installation: HTInstallation, 
         gff_data = gff_resource.data
         if not gff_data:
             pytest.skip(f"Could not load GFF data for {gff_resource.identifier()}")
-        editor.load(gff_resource.filepath if hasattr(gff_resource, "filepath") else Path("test.gff"),
-                   gff_resource.resname, gff_resource.restype, gff_data)
+        editor.load(gff_resource.filepath if hasattr(gff_resource, "filepath") else Path("test.gff"), gff_resource.resname, gff_resource.restype, gff_data)
     else:
         original_data = gff_file.read_bytes()
         editor.load(gff_file, "zio001", ResourceType.GIT, original_data)
@@ -1879,6 +1892,7 @@ def test_gff_editor_headless_ui_load_build(qtbot, installation: HTInstallation, 
 # ADDITIONAL HEADLESS-SPECIFIC TESTS
 # ============================================================================
 
+
 def test_gff_editor_headless_complex_nested_structures(qtbot: QtBot, installation: HTInstallation):
     """Test complex nested structures in headless mode."""
     editor = GFFEditor(None, installation)
@@ -1886,15 +1900,15 @@ def test_gff_editor_headless_complex_nested_structures(qtbot: QtBot, installatio
 
     # Create a complex GFF with deeply nested structures
     gff = GFF(GFFContent.GFF)
-    
+
     # Add a struct with nested structs
     outer_struct = GFFStruct()
     outer_struct.set_string("outer_field", "outer_value")
-    
+
     inner_struct = GFFStruct()
     inner_struct.set_uint32("inner_field", 42)
     outer_struct.set_struct("nested_struct", inner_struct)
-    
+
     # Add a list with structs containing nested structs
     complex_list = GFFList()
     list_struct1 = complex_list.add(0)
@@ -1902,20 +1916,20 @@ def test_gff_editor_headless_complex_nested_structures(qtbot: QtBot, installatio
     nested_in_list = GFFStruct()
     nested_in_list.set_int32("nested_in_list", 100)
     list_struct1.set_struct("nested", nested_in_list)
-    
+
     list_struct2 = complex_list.add(0)
     list_struct2.set_string("list_field2", "value2")
-    
+
     outer_struct.set_list("complex_list", complex_list)
     gff.root.set_struct("complex_struct", outer_struct)
-    
+
     original_data = bytearray()
     write_gff(gff, original_data, ResourceType.GFF)
-    
+
     # Load in headless mode
     editor.load(Path("test.gff"), "test", ResourceType.GFF, bytes(original_data))
     QApplication.processEvents()  # Wait for tree to populate
-    
+
     # Navigate and modify nested structures
     root_item = editor.model.item(0, 0)
     complex_struct_item = None
@@ -1924,29 +1938,29 @@ def test_gff_editor_headless_complex_nested_structures(qtbot: QtBot, installatio
         if child.data(_LABEL_NODE_ROLE) == "complex_struct":  # type: ignore[arg-type]
             complex_struct_item = child
             break
-    
+
     assert complex_struct_item is not None, "Could not find complex_struct"
-    
+
     # Expand and find nested struct
     source_index = editor.model.indexFromItem(complex_struct_item)
     proxy_index = editor.proxy_model.mapFromSource(source_index)
     editor.ui.treeView.expand(proxy_index)
     QApplication.processEvents()
-    
+
     nested_struct_item = None
     for i in range(complex_struct_item.rowCount()):
         child = complex_struct_item.child(i, 0)
         if child.data(_LABEL_NODE_ROLE) == "nested_struct":  # type: ignore[arg-type]
             nested_struct_item = child
             break
-    
+
     assert nested_struct_item is not None, "Could not find nested_struct"
-    
+
     # Modify nested struct field
     proxy_index = _select_item_in_tree(editor, nested_struct_item, qtbot)
     editor.ui.treeView.expand(proxy_index)
     QApplication.processEvents()
-    
+
     # Find and modify inner field
     inner_field_item = None
     for i in range(nested_struct_item.rowCount()):
@@ -1954,13 +1968,13 @@ def test_gff_editor_headless_complex_nested_structures(qtbot: QtBot, installatio
         if child.data(_LABEL_NODE_ROLE) == "inner_field":  # type: ignore[arg-type]
             inner_field_item = child
             break
-    
+
     assert inner_field_item is not None, "Could not find inner_field"
-    
+
     proxy_index = _select_item_in_tree(editor, inner_field_item, qtbot)
     editor.ui.intSpin.setValue(999)
     editor.update_data()
-    
+
     # Build and verify
     data, _ = editor.build()
     modified_gff = read_gff(data)
@@ -1979,10 +1993,10 @@ def test_gff_editor_headless_rapid_sequential_operations(qtbot: QtBot, installat
     gff.root.set_uint32("test_field", 0)
     original_data = bytearray()
     write_gff(gff, original_data, ResourceType.GFF)
-    
+
     editor.load(Path("test.gff"), "test", ResourceType.GFF, bytes(original_data))
     QApplication.processEvents()
-    
+
     # Find the field
     root_item = editor.model.item(0, 0)
     field_item = None
@@ -1991,19 +2005,19 @@ def test_gff_editor_headless_rapid_sequential_operations(qtbot: QtBot, installat
         if child.data(_LABEL_NODE_ROLE) == "test_field":  # type: ignore[arg-type]
             field_item = child
             break
-    
+
     assert field_item is not None
-    
+
     # Perform rapid sequential operations
     proxy_index = _select_item_in_tree(editor, field_item, qtbot)
-    
+
     for i in range(10):
         editor.ui.treeView.setCurrentIndex(proxy_index)
         QApplication.processEvents()
         editor.ui.intSpin.setValue(i * 10)
         editor.update_data()
         QApplication.processEvents()
-    
+
     # Verify final value
     data, _ = editor.build()
     modified_gff = read_gff(data)
@@ -2024,13 +2038,13 @@ def test_gff_editor_headless_tree_expansion_collapse(qtbot: QtBot, installation:
     nested_struct.set_string("nested_field", "nested")
     test_struct.set_struct("nested", nested_struct)
     gff.root.set_struct("test_struct", test_struct)
-    
+
     original_data = bytearray()
     write_gff(gff, original_data, ResourceType.GFF)
-    
+
     editor.load(Path("test.gff"), "test", ResourceType.GFF, bytes(original_data))
     QApplication.processEvents()
-    
+
     # Find and expand the struct
     root_item = editor.model.item(0, 0)
     struct_item = None
@@ -2039,26 +2053,26 @@ def test_gff_editor_headless_tree_expansion_collapse(qtbot: QtBot, installation:
         if child.data(_LABEL_NODE_ROLE) == "test_struct":  # type: ignore[arg-type]
             struct_item = child
             break
-    
+
     assert struct_item is not None
-    
+
     source_index = editor.model.indexFromItem(struct_item)
     proxy_index = editor.proxy_model.mapFromSource(source_index)
-    
+
     # Expand
     editor.ui.treeView.expand(proxy_index)
     QApplication.processEvents()
     assert editor.ui.treeView.isExpanded(proxy_index), "Struct should be expanded"
-    
+
     # Collapse
     editor.ui.treeView.collapse(proxy_index)
     QApplication.processEvents()
     assert not editor.ui.treeView.isExpanded(proxy_index), "Struct should be collapsed"
-    
+
     # Expand again and verify nested items are accessible
     editor.ui.treeView.expand(proxy_index)
     QApplication.processEvents()
-    
+
     # Find nested struct
     nested_item = None
     for i in range(struct_item.rowCount()):
@@ -2066,7 +2080,7 @@ def test_gff_editor_headless_tree_expansion_collapse(qtbot: QtBot, installation:
         if child.data(_LABEL_NODE_ROLE) == "nested":  # type: ignore[arg-type]
             nested_item = child
             break
-    
+
     assert nested_item is not None, "Nested struct should be accessible after expansion"
 
 
@@ -2080,10 +2094,10 @@ def test_gff_editor_headless_multiple_field_type_changes(qtbot: QtBot, installat
     gff.root.set_uint32("test_field", 42)
     original_data = bytearray()
     write_gff(gff, original_data, ResourceType.GFF)
-    
+
     editor.load(Path("test.gff"), "test", ResourceType.GFF, bytes(original_data))
     QApplication.processEvents()
-    
+
     # Find the field
     root_item = editor.model.item(0, 0)
     field_item = None
@@ -2092,18 +2106,18 @@ def test_gff_editor_headless_multiple_field_type_changes(qtbot: QtBot, installat
         if child.data(_LABEL_NODE_ROLE) == "test_field":  # type: ignore[arg-type]
             field_item = child
             break
-    
+
     assert field_item is not None
-    
+
     proxy_index = _select_item_in_tree(editor, field_item, qtbot)
-    
+
     # Change type multiple times: UInt32 -> String -> Int32 -> Single
     type_changes = [
         ("String", "test_string_value"),
         ("Int32", -12345),
         ("Single", 3.14159),
     ]
-    
+
     for type_name, test_value in type_changes:
         # Find the index of the type in combo box
         type_index = -1
@@ -2112,13 +2126,13 @@ def test_gff_editor_headless_multiple_field_type_changes(qtbot: QtBot, installat
                 type_index = i
                 break
         assert type_index >= 0, f"Type {type_name} not found in combo box"
-        
+
         editor.ui.treeView.setCurrentIndex(proxy_index)
         QApplication.processEvents()
         editor.ui.typeCombo.setCurrentIndex(type_index)
         editor.type_changed(type_index)
         QApplication.processEvents()
-        
+
         # Set appropriate value based on type
         if type_name == "String":
             editor.ui.textEdit.setPlainText(test_value)
@@ -2126,10 +2140,10 @@ def test_gff_editor_headless_multiple_field_type_changes(qtbot: QtBot, installat
             editor.ui.intSpin.setValue(test_value)
         elif type_name == "Single":
             editor.ui.floatSpin.setValue(test_value)
-        
+
         editor.update_data()
         QApplication.processEvents()
-    
+
     # Verify final type and value
     data, _ = editor.build()
     modified_gff = read_gff(data)
@@ -2144,7 +2158,7 @@ def test_gff_editor_headless_complex_list_manipulations(qtbot: QtBot, installati
     # Create a GFF with a list containing structs with nested data
     gff = GFF(GFFContent.GFF)
     test_list = GFFList()
-    
+
     # Add multiple structs to the list
     for i in range(5):
         list_struct = test_list.add(0)
@@ -2154,14 +2168,14 @@ def test_gff_editor_headless_complex_list_manipulations(qtbot: QtBot, installati
         nested = GFFStruct()
         nested.set_single("nested_value", float(i) * 1.5)
         list_struct.set_struct("nested", nested)
-    
+
     gff.root.set_list("test_list", test_list)
     original_data = bytearray()
     write_gff(gff, original_data, ResourceType.GFF)
-    
+
     editor.load(Path("test.gff"), "test", ResourceType.GFF, bytes(original_data))
     QApplication.processEvents()
-    
+
     # Find the list
     root_item = editor.model.item(0, 0)
     list_item = None
@@ -2170,26 +2184,26 @@ def test_gff_editor_headless_complex_list_manipulations(qtbot: QtBot, installati
         if child.data(_LABEL_NODE_ROLE) == "test_list":  # type: ignore[arg-type]
             list_item = child
             break
-    
+
     assert list_item is not None
     assert list_item.rowCount() == 5, "List should have 5 items"
-    
+
     # Expand list and modify items
     source_index = editor.model.indexFromItem(list_item)
     proxy_index = editor.proxy_model.mapFromSource(source_index)
     editor.ui.treeView.expand(proxy_index)
     QApplication.processEvents()
-    
+
     # Modify the third item's nested struct
     third_item = list_item.child(2, 0)  # Index 2 (third item)
     assert third_item is not None
-    
+
     # Expand third item
     source_index = editor.model.indexFromItem(third_item)
     proxy_index = editor.proxy_model.mapFromSource(source_index)
     editor.ui.treeView.expand(proxy_index)
     QApplication.processEvents()
-    
+
     # Find nested struct
     nested_item = None
     for i in range(third_item.rowCount()):
@@ -2197,28 +2211,28 @@ def test_gff_editor_headless_complex_list_manipulations(qtbot: QtBot, installati
         if child.data(_LABEL_NODE_ROLE) == "nested":  # type: ignore[arg-type]
             nested_item = child
             break
-    
+
     assert nested_item is not None
-    
+
     # Expand nested and modify field
     source_index = editor.model.indexFromItem(nested_item)
     proxy_index = editor.proxy_model.mapFromSource(source_index)
     editor.ui.treeView.expand(proxy_index)
     QApplication.processEvents()
-    
+
     nested_field_item = None
     for i in range(nested_item.rowCount()):
         child = nested_item.child(i, 0)
         if child.data(_LABEL_NODE_ROLE) == "nested_value":  # type: ignore[arg-type]
             nested_field_item = child
             break
-    
+
     assert nested_field_item is not None
-    
+
     proxy_index = _select_item_in_tree(editor, nested_field_item, qtbot)
     editor.ui.floatSpin.setValue(99.99)
     editor.update_data()
-    
+
     # Build and verify
     data, _ = editor.build()
     modified_gff = read_gff(data)
@@ -2242,16 +2256,16 @@ def test_gff_editor_headless_tree_sorting(qtbot: QtBot, installation: HTInstalla
     gff.root.set_string("field_1", "value1")
     gff.root.set_string("field_10", "value10")
     gff.root.set_string("field_2", "value2")
-    
+
     original_data = bytearray()
     write_gff(gff, original_data, ResourceType.GFF)
-    
+
     editor.load(Path("test.gff"), "test", ResourceType.GFF, bytes(original_data))
     QApplication.processEvents()
-    
+
     # Verify sorting is enabled
     assert editor.ui.treeView.isSortingEnabled(), "Tree view sorting should be enabled"
-    
+
     # Get all field labels and verify they're sorted
     root_item = editor.model.item(0, 0)
     field_labels = []
@@ -2260,7 +2274,7 @@ def test_gff_editor_headless_tree_sorting(qtbot: QtBot, installation: HTInstalla
         label = child.data(_LABEL_NODE_ROLE)
         if label:
             field_labels.append(label)
-    
+
     # Fields should be sorted (tree view has sorting enabled)
     # Note: The actual sort order depends on the proxy model's sorting logic
     assert len(field_labels) >= 6, "Should have at least 6 fields"
@@ -2277,10 +2291,10 @@ def test_gff_editor_headless_binary_data_display(qtbot: QtBot, installation: HTI
     gff.root.set_binary("test_binary", binary_data)
     original_data = bytearray()
     write_gff(gff, original_data, ResourceType.GFF)
-    
+
     editor.load(Path("test.gff"), "test", ResourceType.GFF, bytes(original_data))
     QApplication.processEvents()
-    
+
     # Find the binary field
     root_item = editor.model.item(0, 0)
     binary_item = None
@@ -2289,20 +2303,19 @@ def test_gff_editor_headless_binary_data_display(qtbot: QtBot, installation: HTI
         if child.data(_LABEL_NODE_ROLE) == "test_binary":  # type: ignore[arg-type]
             binary_item = child
             break
-    
+
     assert binary_item is not None
-    
+
     # Select the binary field - should show in blank page
     proxy_index = _select_item_in_tree(editor, binary_item, qtbot)
-    
+
     # Verify blank page is shown (binary fields are read-only)
     assert editor.ui.pages.currentWidget() == editor.ui.blankPage, "Binary field should show blank page"
-    
+
     # Verify binary data is preserved
     data, _ = editor.build()
     modified_gff = read_gff(data)
     assert modified_gff.root.get_binary("test_binary") == binary_data
-
 
 
 if __name__ == "__main__":

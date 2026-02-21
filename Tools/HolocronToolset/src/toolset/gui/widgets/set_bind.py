@@ -22,6 +22,7 @@ class SetBindWidget(QWidget):
         self.record_bind: bool = False
 
         from toolset.uic.qtpy.widgets.set_bind import Ui_Form
+
         self.ui = Ui_Form()
         self.ui.setupUi(self)
 
@@ -34,18 +35,20 @@ class SetBindWidget(QWidget):
         self.ui.mouseCombo.setItemData(1, {Qt.MouseButton.MiddleButton})
         self.ui.mouseCombo.setItemData(2, {Qt.MouseButton.RightButton})
         self.ui.mouseCombo.setItemData(3, set())  # Any
-        self.ui.mouseCombo.setItemData(4, None)   # None
+        self.ui.mouseCombo.setItemData(4, None)  # None
 
     def start_recording(self):
         self.record_bind = True
         self.keybind.clear()
         self.update_keybind_text()
         from toolset.gui.common.localization import translate as tr
+
         self.ui.setKeysEdit.setPlaceholderText(tr("Enter a key..."))
 
     def clear_keybind(self):
         self.keybind.clear()
         from toolset.gui.common.localization import translate as tr
+
         self.ui.setKeysEdit.setPlaceholderText(tr("none"))
         self.update_keybind_text()
 
@@ -55,6 +58,7 @@ class SetBindWidget(QWidget):
             assert isinstance(self.keybind, set), f"{self.keybind!r} <{self.keybind}> ({self.keybind.__class__.__name__}) is not a set"
             self.update_keybind_text()
         super().keyPressEvent(a0)
+
     def keyReleaseEvent(self, e: QKeyEvent):
         self.record_bind = False
         RobustLogger().info(f"Set keybind to {self.keybind}")

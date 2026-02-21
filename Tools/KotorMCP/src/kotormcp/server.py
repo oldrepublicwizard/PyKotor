@@ -24,7 +24,8 @@ from pathlib import Path
 from typing import Any
 
 try:
-    from uvicorn import Config, Server as UvicornServer
+    from uvicorn import Config
+    from uvicorn import Server as UvicornServer
 except ImportError:
     UvicornServer = None  # type: ignore[assignment, misc]
     Config = None  # type: ignore[assignment, misc]
@@ -525,7 +526,7 @@ async def _run_sse(port: int = 8000, host: str = "localhost") -> None:
         if scope["type"] == "http":
             path = scope.get("path", "")
             method = scope.get("method", "")
-            
+
             if method == "GET" and path == "/mcp":
                 # SSE connection - establishes Server-Sent Events stream
                 await transport.connect_sse(scope, receive, send)
@@ -534,15 +535,19 @@ async def _run_sse(port: int = 8000, host: str = "localhost") -> None:
                 await transport.handle_post_message(scope, receive, send)
             else:
                 # 404 for other paths
-                await send({
-                    "type": "http.response.start",
-                    "status": 404,
-                    "headers": [[b"content-type", b"text/plain"]],
-                })
-                await send({
-                    "type": "http.response.body",
-                    "body": b"Not Found",
-                })
+                await send(
+                    {
+                        "type": "http.response.start",
+                        "status": 404,
+                        "headers": [[b"content-type", b"text/plain"]],
+                    }
+                )
+                await send(
+                    {
+                        "type": "http.response.body",
+                        "body": b"Not Found",
+                    }
+                )
         else:
             msg = f"Unsupported scope type: {scope['type']}"
             raise ValueError(msg)
@@ -580,15 +585,19 @@ async def _run_http(port: int = 8000, host: str = "localhost") -> None:
                 # The transport manages the connection and message flow
                 await transport.handle_request(scope, receive, send)
             else:
-                await send({
-                    "type": "http.response.start",
-                    "status": 405,
-                    "headers": [[b"content-type", b"text/plain"]],
-                })
-                await send({
-                    "type": "http.response.body",
-                    "body": b"Method Not Allowed",
-                })
+                await send(
+                    {
+                        "type": "http.response.start",
+                        "status": 405,
+                        "headers": [[b"content-type", b"text/plain"]],
+                    }
+                )
+                await send(
+                    {
+                        "type": "http.response.body",
+                        "body": b"Method Not Allowed",
+                    }
+                )
         else:
             msg = f"Unsupported scope type: {scope['type']}"
             raise ValueError(msg)
@@ -608,77 +617,66 @@ def _get_invocation_command() -> str:
     """Get the actual command used to invoke the CLI."""
     import os
     import sys
-    from pathlib import Path
-    
+
     if not sys.argv:
         return "kotormcp"
-    
+
     # Try to detect if we're being run via "uv run" by checking parent process
     is_uv_run = False
     try:
         import psutil  # type: ignore[import-untyped]
+
         current_process = psutil.Process()
         parent = current_process.parent()
         if parent and "uv" in parent.name().lower():
             is_uv_run = True
-    except (ImportError, Exception):  # noqa: BLE001
+    except (ImportError, Exception):
         # psutil not available or can't access parent process
         # Try alternative detection: check if UV_* env vars exist
         if any("UV" in k.upper() for k in os.environ.keys()):
             is_uv_run = True
-    
+
     script_path = Path(sys.argv[0]).resolve()
     cwd = Path.cwd().resolve()
-    
+
     # Try to make path relative to current directory
     try:
         rel_script = script_path.relative_to(cwd)
         rel_script_str = str(rel_script).replace("\\", "/")  # Use forward slashes for consistency
     except ValueError:
         rel_script_str = str(script_path)
-    
+
     # If detected as uv run, prefix with "uv run"
     if is_uv_run:
         return f"uv run {rel_script_str}"
-    
+
     # Check for "python -m" pattern
     if len(sys.argv) >= 3 and sys.argv[1] == "-m":
         # python -m kotormcp.server
         return f"python -m {sys.argv[2]}"
-    
+
     # Check if we're being run via python (not as a module)
     python_exe = Path(sys.executable).name.lower()
     if python_exe in ("python", "python3", "python.exe", "python3.exe", "py", "py.exe"):
         # python script.py
         return f"python {rel_script_str}"
-    
+
     # For direct execution, return the relative path
     return rel_script_str
 
 
 def main(argv: list[str] | None = None) -> None:
-    import sys
-    from pathlib import Path
-    
+
     prog = _get_invocation_command()
     parser = argparse.ArgumentParser(prog=prog, description="Run the KotorMCP server.")
     parser.add_argument(
         "--mode",
         choices=["stdio", "sse", "http"],
         default="stdio",
-        help="Transport to use (stdio for command-line, sse for Server-Sent Events, http for HTTP streaming)"
+        help="Transport to use (stdio for command-line, sse for Server-Sent Events, http for HTTP streaming)",
     )
-    parser.add_argument(
-        "--host",
-        default="localhost",
-        help="Host to bind to for HTTP/SSE modes (default: localhost)"
-    )
-    parser.add_argument(
-        "--port",
-        type=int,
-        default=8000,
-        help="Port to bind to for HTTP/SSE modes (default: 8000)"
-    )
+    parser.add_argument("--host", default="localhost", help="Host to bind to for HTTP/SSE modes (default: localhost)")
+    parser.add_argument("--port", type=int, default=8000, help="Port to bind to for HTTP/SSE modes (default: 8000)")
     args = parser.parse_args(argv)
 
     if args.mode == "stdio":
@@ -694,4 +692,3 @@ def main(argv: list[str] | None = None) -> None:
 
 if __name__ == "__main__":
     main()
-

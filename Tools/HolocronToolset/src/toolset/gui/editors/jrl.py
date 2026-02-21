@@ -147,7 +147,7 @@ class JRLEditor(Editor):
         restype: ResourceType,
         data: bytes,
     ):
-        """Load quest data from a file. Field defaults when missing: see construct_jrl (REVA: K1 LoadJournal @ 0x004f17d0 reads JNL_*; module uses Categories/EntryList)."""
+        """Load JRL from bytes. Defaults when field missing: Categories optional; per-category Comment "", Name empty, PlanetID/PlotIndex 0, Priority 0 (LOWEST), Tag ""; per-entry End 0, ID 0, Text empty, XP_Percentage 0.0. REVA: K1 LoadJournal @ 0x004f17d0 (LoadCharacterFromIFO @ 0x00561e30), TSL @ 0x006fd830 (caller 0x00701d10); module format Categories/EntryList."""
         super().load(filepath, resref, restype, data)
 
         self._jrl = read_jrl(data)
@@ -166,7 +166,7 @@ class JRLEditor(Editor):
                 quest_item.appendRow(entry_item)
 
     def build(self) -> tuple[bytes, bytes]:
-        """Build JRL data. Write defaults match engine/module layout (REVA: K1 LoadJournal @ 0x004f17d0; we write Categories/EntryList)."""
+        """Build JRL bytes from editor state. Write values match engine/module layout (Categories/EntryList, Comment, Name, PlanetID, PlotIndex, Priority, Tag, End, ID, Text, XP_Percentage). REVA: K1 LoadJournal @ 0x004f17d0, TSL @ 0x006fd830."""
         data = bytearray()
         write_gff(dismantle_jrl(self._jrl), data)
         return data, b""
@@ -462,3 +462,10 @@ class JRLEditor(Editor):
         result = self._model.itemFromIndex(index)
         assert result is not None, f"Could not find journalTree index '{index}'"
         return result
+
+if __name__ == "__main__":
+    import sys
+
+    from toolset.gui.editors.standalone import launch_editor_cli
+
+    sys.exit(launch_editor_cli("jrl"))

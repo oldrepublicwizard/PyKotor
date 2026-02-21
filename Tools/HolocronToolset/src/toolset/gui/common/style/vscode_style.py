@@ -3,6 +3,7 @@
 This module provides fonts, colors, and styling configurations that mimic
 VS Code's appearance for a professional IDE experience.
 """
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
@@ -23,19 +24,19 @@ VSCODE_FONT_FAMILIES = (
     "Fira Code",
     "JetBrains Mono",
     # Traditional monospace fonts
-    "Consolas",          # Windows default
-    "SF Mono",           # macOS
-    "Monaco",            # macOS fallback
-    "Menlo",             # macOS
-    "Ubuntu Mono",       # Linux
+    "Consolas",  # Windows default
+    "SF Mono",  # macOS
+    "Monaco",  # macOS fallback
+    "Menlo",  # macOS
+    "Ubuntu Mono",  # Linux
     "DejaVu Sans Mono",  # Linux
-    "Liberation Mono",   # Linux
+    "Liberation Mono",  # Linux
     "Source Code Pro",
     "Droid Sans Mono",
     # Ultimate fallbacks
     "Courier New",
     "Courier",
-    "monospace",         # Generic fallback
+    "monospace",  # Generic fallback
 )
 
 # Default font size matching VS Code
@@ -49,15 +50,15 @@ def get_best_monospace_font(
     size: int = DEFAULT_FONT_SIZE,
 ) -> QFont:
     """Get the best available monospace font from the system.
-    
+
     Checks for available fonts in order of preference and returns
     the first one found. This ensures consistent character width
     across the editor (essential for code alignment).
-    
+
     Args:
         preferred_families: Optional tuple of font families to try first.
         size: Font size in points.
-        
+
     Returns:
         QFont configured with the best available monospace font.
     """
@@ -78,7 +79,7 @@ def get_best_monospace_font(
         except Exception:  # noqa: BLE001
             available_families = set()
             is_fixed_pitch = lambda *_args, **_kwargs: False  # noqa: E731
-    
+
     # Find first available font from our preferred list
     selected_family = None
     for family in families_to_try:
@@ -89,7 +90,7 @@ def get_best_monospace_font(
             if bool(is_fixed_pitch(family)) or _is_font_monospace(test_font):
                 selected_family = family
                 break
-    
+
     # Create the font with proper configuration
     font = QFont()
     if selected_family:
@@ -98,40 +99,40 @@ def get_best_monospace_font(
         # Fall back to system monospace
         font.setStyleHint(QFont.StyleHint.Monospace)
         font.setFamily("monospace")
-    
+
     # Configure font properties for VS Code-like appearance
     font.setPointSize(size)
     font.setFixedPitch(True)
     font.setStyleHint(QFont.StyleHint.Monospace)
-    
+
     # Disable kerning for consistent character spacing
     font.setKerning(False)
-    
+
     # Use medium weight for better readability
     font.setWeight(QFont.Weight.Normal)
-    
+
     # Enable hinting for sharper rendering
     font.setHintingPreference(QFont.HintingPreference.PreferFullHinting)
-    
+
     return font
 
 
 def _is_font_monospace(font: QFont) -> bool:
     """Check if a font is actually monospace by comparing character widths.
-    
+
     Args:
         font: The font to check.
-        
+
     Returns:
         True if the font appears to be monospace.
     """
     metrics = QFontMetrics(font)
-    
+
     # Compare widths of different characters
     # In a true monospace font, all these should be the same
     test_chars = ["i", "m", "W", "l", ".", " "]
     widths = [metrics.horizontalAdvance(char) for char in test_chars]
-    
+
     # Check if all widths are the same (with small tolerance for rendering)
     if not widths:
         return False
@@ -144,18 +145,18 @@ def get_editor_stylesheet(
     use_ligatures: bool = False,
 ) -> str:
     """Get a VS Code-like stylesheet for code editors.
-    
+
     This stylesheet uses palette colors for theme compatibility
     while providing VS Code-like visual appearance.
-    
+
     Args:
         use_ligatures: Whether to enable font ligatures (requires supported font).
-        
+
     Returns:
         CSS stylesheet string for QPlainTextEdit/QTextEdit widgets.
     """
     ligature_style = "normal" if use_ligatures else "none"
-    
+
     return f"""
         QPlainTextEdit, QTextEdit {{
             background-color: palette(base);
@@ -223,10 +224,10 @@ def get_editor_stylesheet(
 
 def get_tooltip_stylesheet() -> str:
     """Get a VS Code-like stylesheet for tooltips.
-    
+
     Uses palette colors for automatic theme adaptation while maintaining
     good readability in both light and dark themes.
-    
+
     Returns:
         CSS stylesheet string for QToolTip widgets.
     """
@@ -249,36 +250,36 @@ def configure_code_editor_font(
     preferred_families: tuple[str, ...] | None = None,
 ) -> QFont:
     """Configure a widget with VS Code-like monospace font.
-    
+
     This is the main entry point for configuring code editor fonts.
     It sets up a proper monospace font with all the necessary properties
     for a professional code editing experience.
-    
+
     Args:
         widget: The widget to configure (usually QPlainTextEdit).
         size: Optional font size override.
         preferred_families: Optional preferred font families.
-        
+
     Returns:
         The QFont that was applied to the widget.
     """
     font_size = size or DEFAULT_FONT_SIZE
     font = get_best_monospace_font(preferred_families, font_size)
-    
+
     # Apply font to widget
     widget.setFont(font)
-    
+
     # Set tab stop width to match VS Code (4 spaces by default)
-    if hasattr(widget, 'setTabStopDistance'):
+    if hasattr(widget, "setTabStopDistance"):
         metrics = QFontMetrics(font)
-        tab_width = metrics.horizontalAdvance(' ') * DEFAULT_TAB_SIZE
+        tab_width = metrics.horizontalAdvance(" ") * DEFAULT_TAB_SIZE
         widget.setTabStopDistance(tab_width)
-    elif hasattr(widget, 'setTabStopWidth'):
+    elif hasattr(widget, "setTabStopWidth"):
         # Fallback for older Qt versions
         metrics = QFontMetrics(font)
-        tab_width = metrics.horizontalAdvance(' ') * DEFAULT_TAB_SIZE
+        tab_width = metrics.horizontalAdvance(" ") * DEFAULT_TAB_SIZE
         widget.setTabStopWidth(int(tab_width))
-    
+
     return font
 
 
@@ -289,16 +290,16 @@ def get_documentation_tooltip_html(
     widget: QWidget | None = None,
 ) -> str:
     """Generate VS Code-like documentation tooltip HTML.
-    
+
     Creates a properly formatted tooltip that works with any Qt theme
     by using relative colors and proper styling.
-    
+
     Args:
         title: The main title (e.g., function name).
         signature: Optional signature line (e.g., "int func(int a, int b)").
         description: Optional description text.
         widget: Optional widget to get palette colors from.
-        
+
     Returns:
         HTML string for use with QToolTip.showText().
     """
@@ -311,19 +312,19 @@ def get_documentation_tooltip_html(
     else:
         # Create default palette as fallback
         palette = QPalette()
-    
+
     # Extract colors
     text_color = palette.color(QPalette.ColorRole.ToolTipText).name()
     bg_color = palette.color(QPalette.ColorRole.ToolTipBase).name()
-    
+
     # Calculate readable colors based on background luminance
     bg = QColor(bg_color)
     is_dark_theme = _get_luminance(bg) < 0.5
-    
+
     # Get palette colors for syntax highlighting
     link_color = palette.color(QPalette.ColorRole.Link)
     highlight = palette.color(QPalette.ColorRole.Highlight)
-    
+
     if is_dark_theme:
         # Dark theme colors - derive from palette with adjustments for readability
         # Keyword: Use link color (blue-like) or create blue variant
@@ -338,13 +339,13 @@ def get_documentation_tooltip_html(
                 keyword_color_obj = QColor(highlight)
                 keyword_color_obj = keyword_color_obj.lighter(120)
         keyword_color = keyword_color_obj.name()
-        
+
         # Type: Cyan-like from highlight or link
         type_color_obj = QColor(link_color)
         type_color_obj.setGreen(min(255, type_color_obj.green() + 50))
         type_color_obj.setBlue(min(255, type_color_obj.blue() + 30))
         type_color = type_color_obj.name()
-        
+
         # Comment: Green-like from link
         comment_color_obj = QColor(link_color)
         comment_color_obj.setRed(int(comment_color_obj.red() * 0.4))
@@ -358,14 +359,14 @@ def get_documentation_tooltip_html(
         if keyword_color_obj.lightness() > 200:
             keyword_color_obj = keyword_color_obj.darker(200)
         keyword_color = keyword_color_obj.name()
-        
+
         # Type: Teal from link
         type_color_obj = QColor(link_color)
         type_color_obj.setGreen(min(255, type_color_obj.green() + 30))
         if type_color_obj.lightness() > 200:
             type_color_obj = type_color_obj.darker(150)
         type_color = type_color_obj.name()
-        
+
         # Comment: Green from link
         comment_color_obj = QColor(link_color)
         comment_color_obj.setRed(int(comment_color_obj.red() * 0.3))
@@ -373,42 +374,34 @@ def get_documentation_tooltip_html(
         if comment_color_obj.lightness() > 200:
             comment_color_obj = comment_color_obj.darker(150)
         comment_color = comment_color_obj.name()
-    
+
     # Build HTML content with explicit wrapping + compact spacing.
     parts: list[str] = []
 
     # Title
-    parts.append(
-        f'<div style="margin: 0; padding: 0;">'
-        f'<span style="color: {keyword_color}; font-weight: 600;">{title}</span>'
-        f'</div>'
-    )
+    parts.append(f'<div style="margin: 0; padding: 0;"><span style="color: {keyword_color}; font-weight: 600;">{title}</span></div>')
 
     # Signature (must wrap; Qt tooltips otherwise tend to treat <code> as no-wrap)
     if signature:
         parts.append(
             f'<div style="margin-top: 4px;">'
             f'<code style="'
-            f'color: {type_color}; '
-            f'font-family: Consolas, Menlo, Monaco, monospace; '
-            f'white-space: pre-wrap; '
-            f'word-break: break-word; '
-            f'display: block;'
+            f"color: {type_color}; "
+            f"font-family: Consolas, Menlo, Monaco, monospace; "
+            f"white-space: pre-wrap; "
+            f"word-break: break-word; "
+            f"display: block;"
             f'">{signature}</code>'
-            f'</div>'
+            f"</div>"
         )
 
     # Description (wrap + compact)
     if description:
-        parts.append(
-            f'<div style="margin-top: 6px; color: {comment_color}; white-space: normal; word-break: break-word;">'
-            f'{description}'
-            f'</div>'
-        )
+        parts.append(f'<div style="margin-top: 6px; color: {comment_color}; white-space: normal; word-break: break-word;">{description}</div>')
 
     content = "".join(parts)
 
-    return f'''<div style="
+    return f"""<div style="
         font-family: 'Segoe UI', 'SF Pro Text', 'Helvetica Neue', Arial, sans-serif;
         font-size: 12px;
         line-height: 1.2;
@@ -418,50 +411,51 @@ def get_documentation_tooltip_html(
         word-break: break-word;
         margin: 0;
         padding: 0;
-    ">{content}</div>'''
+    ">{content}</div>"""
 
 
 def _get_luminance(color: QColor) -> float:
     """Calculate relative luminance of a color.
-    
+
     Uses the WCAG formula for relative luminance.
-    
+
     Args:
         color: The color to calculate luminance for.
-        
+
     Returns:
         Luminance value between 0 (black) and 1 (white).
     """
+
     def adjust(c: float) -> float:
         c = c / 255.0
         if c <= 0.03928:
             return c / 12.92
         return ((c + 0.055) / 1.055) ** 2.4
-    
+
     r = adjust(color.red())
     g = adjust(color.green())
     b = adjust(color.blue())
-    
+
     return 0.2126 * r + 0.7152 * g + 0.0722 * b
 
 
 def apply_tooltip_style_to_app(app: QApplication | None = None):
     """Apply VS Code-like tooltip styling to the application.
-    
+
     Should be called once during application initialization to ensure
     all tooltips have consistent, readable styling.
-    
+
     Args:
         app: The QApplication instance. If None, uses current instance.
     """
     parsed_app = QApplication.instance() if app is None else app
     if not isinstance(parsed_app, QApplication):
         return
-    
+
     # Get current stylesheet and append tooltip styling
     current_style = parsed_app.styleSheet() or ""
     tooltip_style = get_tooltip_stylesheet()
-    
+
     # Only add if not already present
     if "QToolTip" not in current_style:
         parsed_app.setStyleSheet(current_style + "\n" + tooltip_style)
@@ -469,21 +463,20 @@ def apply_tooltip_style_to_app(app: QApplication | None = None):
 
 def get_line_number_font(base_font: QFont) -> QFont:
     """Get a slightly smaller font for line numbers.
-    
+
     VS Code uses a slightly smaller, lighter font for line numbers
     to reduce visual clutter.
-    
+
     Args:
         base_font: The main editor font.
-        
+
     Returns:
         A modified font suitable for line numbers.
     """
     line_num_font = QFont(base_font)
-    
+
     # Slightly smaller than main font
     current_size = base_font.pointSize()
     line_num_font.setPointSize(max(8, current_size - 1))
-    
-    return line_num_font
 
+    return line_num_font

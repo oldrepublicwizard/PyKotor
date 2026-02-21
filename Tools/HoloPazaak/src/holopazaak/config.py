@@ -15,4 +15,3 @@ LOCAL_PROGRAM_INFO: dict[str, Any] = {
     "holopazaakLatestBetaNotes": "Initial release of HoloPazaak - A PyQt5 Pazaak card game implementation.",
 }  # <---JSON_END--->
 CURRENT_VERSION = LOCAL_PROGRAM_INFO["currentVersion"]
-

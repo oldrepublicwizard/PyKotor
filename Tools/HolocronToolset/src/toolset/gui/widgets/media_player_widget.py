@@ -8,11 +8,7 @@ from qtpy.QtCore import QBuffer, QPoint, QTimer, Qt, Signal
 from qtpy.QtGui import QKeyEvent, QKeySequence, QWheelEvent
 from qtpy.QtMultimedia import QMediaPlayer
 from qtpy.QtWidgets import (
-    QLabel,
-    QPushButton,
-    QSlider,
     QStyle,
-    QToolButton,
     QWidget,
 )
 
@@ -51,7 +47,7 @@ class MediaPlayerWidget(QWidget):
         super().__init__(parent)
         self.buffer: QBuffer = QBuffer(self)
         self.player: QMediaPlayer = QMediaPlayer(self)
-        
+
         # State tracking
         self._is_seeking: bool = False
         self._previous_volume: float = 0.75  # Default volume
@@ -59,14 +55,14 @@ class MediaPlayerWidget(QWidget):
         self._drag_position: QPoint = QPoint()
         self._hover_position: QPoint = QPoint()
         self._hover_timer: QTimer | None = None
-        
+
         # Audio output for Qt6
         self._audio_output: QAudioOutput | None = None
-        
+
         # Playback speed levels (industry-standard range)
         self.speed_levels: list[float] = [0.25, 0.5, 0.75, 1.0, 1.25, 1.5, 1.75, 2.0]
         self.current_speed_index: int = 3  # Default to 1.0x
-        
+
         self._setup_audio_output()
         self._setup_media_player()
         self._setup_signals()
@@ -77,11 +73,11 @@ class MediaPlayerWidget(QWidget):
         """Set up audio output for Qt6 compatibility."""
         if not qtpy.QT6:
             return
-        
+
         # Only set up if not already configured (allows external setup)
         if self._audio_output is None:
             from qtpy.QtMultimedia import QAudioOutput  # pyright: ignore[reportAttributeAccessIssue]
-            
+
             self._audio_output = QAudioOutput(self)  # type: ignore[call-overload]
             self._audio_output.setVolume(self._previous_volume)
             self.player.setAudioOutput(self._audio_output)  # type: ignore[arg-type]
@@ -93,10 +89,10 @@ class MediaPlayerWidget(QWidget):
         """Set up the media player UI components."""
         # Load UI from .ui file
         from toolset.uic.qtpy.widgets.media_player_widget import Ui_MediaPlayerWidget
-        
+
         self.ui = Ui_MediaPlayerWidget()
         self.ui.setupUi(self)
-        
+
         # Get references to UI widgets
         self.play_pause_button = self.ui.playPauseButton
         self.stop_button = self.ui.stopButton
@@ -105,23 +101,23 @@ class MediaPlayerWidget(QWidget):
         self.mute_button = self.ui.muteButton
         self.volume_slider = self.ui.volumeSlider
         self.speed_button = self.ui.speedButton
-        
+
         # Set up icons for buttons
         q_style: QStyle | None = self.style()
         assert q_style is not None, "q_style is somehow None"
         self.play_pause_button.setIcon(q_style.standardIcon(QStyle.StandardPixmap.SP_MediaPlay))
         self.stop_button.setIcon(q_style.standardIcon(QStyle.StandardPixmap.SP_MediaStop))
         self.mute_button.setIcon(q_style.standardIcon(QStyle.StandardPixmap.SP_MediaVolume))
-        
+
         # Set up time slider behavior
         self._setup_time_slider()
-        
+
         # Set up volume controls
         self._setup_volume_controls()
-        
+
         # Set up speed controls
         self._setup_speed_controls()
-        
+
         # Set stretch factor for time slider (make it expandable)
         self.ui.controlsLayout.setStretch(2, 1)  # timeSlider is at index 2
 
@@ -137,7 +133,7 @@ class MediaPlayerWidget(QWidget):
         original_mouse_move = self.time_slider.mouseMoveEvent
         original_mouse_release = self.time_slider.mouseReleaseEvent
         original_wheel = self.time_slider.wheelEvent
-        
+
         def mouse_press_event(ev: QMouseEvent) -> None:
             if ev.button() == Qt.MouseButton.LeftButton:
                 # Calculate position based on click location
@@ -150,7 +146,7 @@ class MediaPlayerWidget(QWidget):
                 ev.accept()
             else:
                 original_mouse_press(ev)
-        
+
         def mouse_move_event(ev: QMouseEvent) -> None:
             if self._is_seeking and ev.buttons() == Qt.MouseButton.LeftButton:
                 value = self._slider_value_from_position(ev.pos().x())
@@ -162,7 +158,7 @@ class MediaPlayerWidget(QWidget):
                 # Track hover position for preview
                 self._hover_position = ev.pos()
                 original_mouse_move(ev)
-        
+
         def mouse_release_event(ev: QMouseEvent) -> None:
             if ev.button() == Qt.MouseButton.LeftButton and self._is_seeking:
                 value = self._slider_value_from_position(ev.pos().x())
@@ -174,12 +170,12 @@ class MediaPlayerWidget(QWidget):
                 ev.accept()
             else:
                 original_mouse_release(ev)
-        
+
         def wheel_event(ev: QWheelEvent) -> None:
             """Seek with mouse wheel."""
             if self.time_slider.maximum() == 0:
                 return
-            
+
             delta = ev.angleDelta().y()
             step = 5000 if ev.modifiers() & Qt.KeyboardModifier.ShiftModifier else 1000
             current = self.time_slider.value()
@@ -187,7 +183,7 @@ class MediaPlayerWidget(QWidget):
             self.time_slider.setValue(new_value)
             self.player.setPosition(new_value)
             ev.accept()
-        
+
         self.time_slider.mousePressEvent = mouse_press_event  # type: ignore[assignment]
         self.time_slider.mouseMoveEvent = mouse_move_event  # type: ignore[assignment]
         self.time_slider.mouseReleaseEvent = mouse_release_event  # type: ignore[assignment]
@@ -218,16 +214,16 @@ class MediaPlayerWidget(QWidget):
         self.player.mediaStatusChanged.connect(self._on_media_status_changed)
         self.player.positionChanged.connect(self._on_position_changed)
         self.player.durationChanged.connect(self._on_duration_changed)
-        
+
         state_changed = self.player.stateChanged if qtpy.QT5 else self.player.playbackStateChanged  # type: ignore[attr-defined]
         state_changed.connect(self._on_state_changed)
-        
+
         # Error handling
         if qtpy.QT5:
             self.player.error.connect(self._on_error)  # type: ignore[attr-defined]
         else:
             self.player.errorOccurred.connect(self._on_error)  # type: ignore[attr-defined]
-        
+
         # Button signals
         self.play_pause_button.clicked.connect(self.toggle_play_pause)
         self.stop_button.clicked.connect(self.stop)
@@ -236,28 +232,28 @@ class MediaPlayerWidget(QWidget):
     def _setup_keyboard_shortcuts(self) -> None:
         """Set up keyboard shortcuts for media control."""
         from qtpy.QtWidgets import QShortcut
-        
+
         # Space: Play/Pause
         QShortcut(QKeySequence(Qt.Key.Key_Space), self, self.toggle_play_pause)
-        
+
         # S: Stop
         QShortcut(QKeySequence(Qt.Key.Key_S), self, self.stop)
-        
+
         # Left/Right: Seek backward/forward (5 seconds)
         QShortcut(QKeySequence(Qt.Key.Key_Left), self, lambda: self.seek_relative(-5000))
         QShortcut(QKeySequence(Qt.Key.Key_Right), self, lambda: self.seek_relative(5000))
-        
+
         # Shift+Left/Right: Seek backward/forward (1 second)
         QShortcut(QKeySequence(Qt.Modifier.SHIFT | Qt.Key.Key_Left), self, lambda: self.seek_relative(-1000))
         QShortcut(QKeySequence(Qt.Modifier.SHIFT | Qt.Key.Key_Right), self, lambda: self.seek_relative(1000))
-        
+
         # Up/Down: Volume up/down
         QShortcut(QKeySequence(Qt.Key.Key_Up), self, self.volume_up)
         QShortcut(QKeySequence(Qt.Key.Key_Down), self, self.volume_down)
-        
+
         # M: Mute
         QShortcut(QKeySequence(Qt.Key.Key_M), self, self.toggle_mute)
-        
+
         # [ ]: Playback speed
         QShortcut(QKeySequence(Qt.Key.Key_BracketLeft), self, lambda: self.change_playback_speed(-1))
         QShortcut(QKeySequence(Qt.Key.Key_BracketRight), self, lambda: self.change_playback_speed(1))
@@ -290,7 +286,7 @@ class MediaPlayerWidget(QWidget):
         state_getter = self.player.state if qtpy.QT5 else self.player.playbackState  # type: ignore[attr-defined]
         q_style: QStyle | None = self.style()
         assert q_style is not None, "q_style is somehow None"
-        
+
         current_state = state_getter()
         if current_state == state_enum.PlayingState:
             self.player.pause()
@@ -354,7 +350,7 @@ class MediaPlayerWidget(QWidget):
             if audio_output is None:
                 self._setup_audio_output()
                 audio_output = self._audio_output
-            
+
             if audio_output is not None:
                 current_volume = audio_output.volume()  # type: ignore[attr-defined]
                 if current_volume > 0:
@@ -364,14 +360,14 @@ class MediaPlayerWidget(QWidget):
                 else:
                     audio_output.setVolume(self._previous_volume)  # type: ignore[attr-defined]
                     self._is_muted = False
-        
+
         self._update_mute_icon()
 
     def _update_mute_icon(self) -> None:
         """Update mute button icon based on current state."""
         q_style: QStyle | None = self.style()
         assert q_style is not None, "q_style is somehow None"
-        
+
         if self._is_muted:
             self.mute_button.setIcon(q_style.standardIcon(QStyle.StandardPixmap.SP_MediaVolumeMuted))
             self.mute_button.setToolTip("Unmute (M)")
@@ -392,12 +388,12 @@ class MediaPlayerWidget(QWidget):
             current_vol = audio_output.volume()  # type: ignore[attr-defined]
             self._previous_volume = current_vol
             return current_vol
-    
+
     def set_volume(self, volume: float) -> None:
         """Set volume (0.0-1.0)."""
         volume = max(0.0, min(1.0, volume))
         self._previous_volume = volume
-        
+
         if qtpy.QT5:
             self.player.setVolume(int(volume * 100))  # type: ignore[attr-defined]
         else:
@@ -406,17 +402,17 @@ class MediaPlayerWidget(QWidget):
             if audio_output is None:
                 self._setup_audio_output()
                 audio_output = self._audio_output
-            
+
             if audio_output is not None:
                 audio_output.setVolume(volume)  # type: ignore[attr-defined]
-        
+
         if volume > 0:
             self._is_muted = False
-        
+
         self.volume_slider.setValue(int(volume * 100))
         self._update_mute_icon()
         self.volume_changed.emit(volume)
-    
+
     def sync_volume_from_player(self) -> None:
         """Sync volume slider with current player volume (useful when audio output is set externally)."""
         current_vol = self.volume()
@@ -452,18 +448,18 @@ class MediaPlayerWidget(QWidget):
         closest_index = min(range(len(self.speed_levels)), key=lambda i: abs(self.speed_levels[i] - rate))
         self.current_speed_index = closest_index
         rate = self.speed_levels[self.current_speed_index]
-        
+
         state_enum = QMediaPlayer.State if qtpy.QT5 else QMediaPlayer.PlaybackState  # type: ignore[attr-defined]
         state_getter = self.player.state if qtpy.QT5 else self.player.playbackState  # type: ignore[attr-defined]
         was_playing = state_getter() == state_enum.PlayingState
         current_position = self.player.position()
-        
+
         self.player.setPlaybackRate(rate)
         self.player.setPosition(current_position)
-        
+
         if was_playing:
             self.player.play()
-        
+
         self.speed_button.setText(f"{rate:.2f}x")
         self.playback_speed_changed.emit(rate)
 
@@ -480,7 +476,7 @@ class MediaPlayerWidget(QWidget):
         state_enum = QMediaPlayer.State if qtpy.QT5 else QMediaPlayer.PlaybackState  # type: ignore[attr-defined]
         q_style: QStyle | None = self.style()
         assert q_style is not None, "q_style is somehow None"
-        
+
         if state == state_enum.PlayingState:
             self.show_widget()
             self.play_pause_button.setIcon(q_style.standardIcon(QStyle.StandardPixmap.SP_MediaPause))
@@ -499,7 +495,7 @@ class MediaPlayerWidget(QWidget):
         """Handle position updates."""
         if not self._is_seeking and not self.time_slider.isSliderDown():
             self.time_slider.setValue(position)
-        
+
         current_time = self.format_time(position)
         total_time = self.format_time(self.time_slider.maximum())
         self.time_label.setText(f"{current_time} / {total_time}")
@@ -516,9 +512,10 @@ class MediaPlayerWidget(QWidget):
         """Handle player errors."""
         error = self.player.error() if qtpy.QT5 else self.player.error()  # type: ignore[attr-defined]
         error_string = self.player.errorString() if qtpy.QT5 else self.player.errorString()  # type: ignore[attr-defined]
-        
+
         # Log error but don't crash - just stop playback
         from loggerplus import RobustLogger  # pyright: ignore[reportMissingTypeStubs]
+
         RobustLogger().warning(f"Media player error: {error_string} (error code: {error})")
         self.stop()
 
@@ -532,7 +529,7 @@ class MediaPlayerWidget(QWidget):
         hours = total_seconds // 3600
         minutes = (total_seconds % 3600) // 60
         seconds = total_seconds % 60
-        
+
         if hours > 0:
             return f"{hours:02d}:{minutes:02d}:{seconds:02d}"
         return f"{minutes:02d}:{seconds:02d}"
@@ -564,7 +561,7 @@ class MediaPlayerWidget(QWidget):
         if not visible:
             super().setVisible(False)
             return
-        
+
         state_enum = QMediaPlayer.State if qtpy.QT5 else QMediaPlayer.PlaybackState  # type: ignore[attr-defined]
         state_getter = self.player.state if qtpy.QT5 else self.player.playbackState  # type: ignore[attr-defined]
         if state_getter() == state_enum.PlayingState:

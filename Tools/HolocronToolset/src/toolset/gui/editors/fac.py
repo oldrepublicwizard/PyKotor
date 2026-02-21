@@ -3,7 +3,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 from qtpy.QtGui import QStandardItem, QStandardItemModel
-from qtpy.QtWidgets import QMenu, QMessageBox, QShortcut, QTreeView
+from qtpy.QtWidgets import QMenu, QShortcut, QTreeView
 
 from pykotor.resource.formats.gff import write_gff
 from pykotor.resource.generics.fac import FAC, FACFaction, FACReputation, dismantle_fac, read_fac
@@ -352,3 +352,10 @@ class FACEditor(Editor):
         reputation: FACReputation = rep_item.data()
         self._reputation_model.removeRow(rep_item.row())
         self._fac.reputations.remove(reputation)
+
+if __name__ == "__main__":
+    import sys
+
+    from toolset.gui.editors.standalone import launch_editor_cli
+
+    sys.exit(launch_editor_cli("fac"))

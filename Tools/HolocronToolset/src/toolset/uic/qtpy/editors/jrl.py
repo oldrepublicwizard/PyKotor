@@ -103,6 +103,8 @@ class Ui_MainWindow(object):
         self.formLayout_2.setWidget(0, QtWidgets.QFormLayout.LabelRole, self.label_8)
         self.entryIdSpin = QtWidgets.QSpinBox(self.entryPage)
         self.entryIdSpin.setMinimumSize(QtCore.QSize(80, 0))
+        self.entryIdSpin.setMinimum(0)
+        self.entryIdSpin.setMaximum(2147483647)
         self.entryIdSpin.setObjectName("entryIdSpin")
         self.formLayout_2.setWidget(0, QtWidgets.QFormLayout.FieldRole, self.entryIdSpin)
         self.label_7 = QtWidgets.QLabel(self.entryPage)
@@ -112,6 +114,8 @@ class Ui_MainWindow(object):
         self.label_9.setObjectName("label_9")
         self.formLayout_2.setWidget(1, QtWidgets.QFormLayout.LabelRole, self.label_9)
         self.entryXpSpin = QtWidgets.QDoubleSpinBox(self.entryPage)
+        self.entryXpSpin.setMinimum(0.0)
+        self.entryXpSpin.setMaximum(1000.0)
         self.entryXpSpin.setObjectName("entryXpSpin")
         self.formLayout_2.setWidget(1, QtWidgets.QFormLayout.FieldRole, self.entryXpSpin)
         self.entryEndCheck = QtWidgets.QCheckBox(self.entryPage)
@@ -167,20 +171,53 @@ class Ui_MainWindow(object):
         _translate = QtCore.QCoreApplication.translate
         MainWindow.setWindowTitle(_translate("MainWindow", "MainWindow"))
         self.label.setText(_translate("MainWindow", "Name:"))
+        self.categoryNameEdit.setToolTip(_translate("MainWindow", "Name (GFF: Name): Display title of the quest in the journal.\n"
+"                 Localized string—supports multiple languages. Shown in the quest\n"
+"                 list; scripts use the Tag to reference quests, not the name."))
         self.label_2.setText(_translate("MainWindow", "Planet ID:"))
         self.label_5.setText(_translate("MainWindow", "Tag:"))
+        self.categoryTag.setToolTip(_translate("MainWindow", "Tag (GFF: Tag): Unique identifier for this quest. Scripts use\n"
+"               AddJournalQuestEntry(\"Tag\", ID) to update progress. Must match the\n"
+"               Quest field in dialogue nodes. Keep short, no spaces (e.g.\n"
+"               \"tar_mq01\")."))
         self.label_3.setText(_translate("MainWindow", "Plot Index:"))
+        self.categoryPlanetSelect.setToolTip(_translate("MainWindow", "PlanetID (GFF: PlanetID): Row index into a planet 2DA. Engine\n"
+"               does not use this; it is toolset/modder metadata for organizing quests\n"
+"               by planet. INT32. Set to 0 if unused."))
+        self.categoryPlotSelect.setToolTip(_translate("MainWindow", "PlotIndex (GFF: PlotIndex): Row index into plot.2da. Legacy plot\n"
+"               flag; used for plot-critical quest tracking. INT32. Typically 0 for\n"
+"               side quests."))
         self.label_4.setText(_translate("MainWindow", "Priority:"))
+        self.categoryPrioritySelect.setToolTip(_translate("MainWindow", "Priority (GFF: Priority): Quest sort order in the journal.\n"
+"               0=Highest (main quest), 4=Lowest. Affects which tab and order quests\n"
+"               appear. UINT32 stored as 0-4."))
         self.categoryPrioritySelect.setItemText(0, _translate("MainWindow", "Highest"))
         self.categoryPrioritySelect.setItemText(1, _translate("MainWindow", "High"))
         self.categoryPrioritySelect.setItemText(2, _translate("MainWindow", "Medium"))
         self.categoryPrioritySelect.setItemText(3, _translate("MainWindow", "Low"))
         self.categoryPrioritySelect.setItemText(4, _translate("MainWindow", "Lowest"))
         self.label_6.setText(_translate("MainWindow", "Comment:"))
+        self.categoryCommentEdit.setToolTip(_translate("MainWindow", "Comment (GFF: Comment): Developer notes only. The game ignores\n"
+"               this. Use to document quest flow, scripting requirements, or notes for\n"
+"               other modders."))
         self.label_8.setText(_translate("MainWindow", "ID:"))
+        self.entryIdSpin.setToolTip(_translate("MainWindow", "ID (GFF: ID): State identifier for this entry. Scripts use\n"
+"               AddJournalQuestEntry(\"Tag\", ID) to set progress. Dialogue QuestEntry\n"
+"               field references this. Higher IDs typically override lower. UINT32\n"
+"               0-4294967295."))
         self.label_7.setText(_translate("MainWindow", "End:"))
         self.label_9.setText(_translate("MainWindow", "XP Percentage:"))
+        self.entryXpSpin.setToolTip(_translate("MainWindow", "XP_Percentage (GFF: XP_Percentage): XP reward multiplier when\n"
+"               this entry is reached. Scales the base value from journal.2da. 0=no\n"
+"               XP, 100=full reward, >100=bonus. Float."))
+        self.entryEndCheck.setToolTip(_translate("MainWindow", "End (GFF: End): When checked, reaching this entry completes the\n"
+"               quest and moves it to the Completed tab. Use for the final entry in a\n"
+"               quest chain. Stored as BYTE 0/1."))
         self.label_10.setText(_translate("MainWindow", "Text:"))
+        self.entryTextEdit.setToolTip(_translate("MainWindow", "Text (GFF: Text): Journal text shown when this entry is the\n"
+"               current state. Localized string. Displayed in the quest log when the\n"
+"               player views the quest. Use to describe objectives, updates, or\n"
+"               completion."))
         self.menuNew.setTitle(_translate("MainWindow", "File"))
         self.actionOpen.setText(_translate("MainWindow", "Open"))
         self.actionSave.setText(_translate("MainWindow", "Save"))

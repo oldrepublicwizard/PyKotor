@@ -12,6 +12,7 @@ Each test focuses on a specific manipulation and validates save/load roundtrips.
 Following the ARE editor test pattern for comprehensive coverage.
 Tests cover: individual fields, combinations, edge cases, real files, UI interactions, stress testing.
 """
+
 from __future__ import annotations
 
 import pytest
@@ -1092,34 +1093,50 @@ def test_ifo_editor_boundary_value_combinations(qtbot: QtBot, installation: HTIn
     test_cases = [
         # Case 1: All zeros
         {
-            "tag": "", "vo_id": "", "hak": "",
-            "entry_resref": "", "entry_x": 0.0, "entry_y": 0.0, "entry_z": 0.0, "entry_dir": 0.0,
-            "dawn_hour": 0, "dusk_hour": 0, "time_scale": 0, "start_year": 0, "xp_scale": 0,
-            "scripts": {field: "" for field in editor.script_fields.keys()}
+            "tag": "",
+            "vo_id": "",
+            "hak": "",
+            "entry_resref": "",
+            "entry_x": 0.0,
+            "entry_y": 0.0,
+            "entry_z": 0.0,
+            "entry_dir": 0.0,
+            "dawn_hour": 0,
+            "dusk_hour": 0,
+            "time_scale": 0,
+            "start_year": 0,
+            "xp_scale": 0,
+            "scripts": {field: "" for field in editor.script_fields.keys()},
         },
         # Case 2: Maximum values
         {
-            "tag": "x" * 32, "vo_id": "x" * 16, "hak": "x" * 100,
-            "entry_resref": "x" * 16, "entry_x": 99999.0, "entry_y": 99999.0, "entry_z": 99999.0, "entry_dir": 3.14159,
-            "dawn_hour": 23, "dusk_hour": 23, "time_scale": 100, "start_year": 9999, "xp_scale": 100,
-            "scripts": {field: "x" * 16 for field in editor.script_fields.keys()}
+            "tag": "x" * 32,
+            "vo_id": "x" * 16,
+            "hak": "x" * 100,
+            "entry_resref": "x" * 16,
+            "entry_x": 99999.0,
+            "entry_y": 99999.0,
+            "entry_z": 99999.0,
+            "entry_dir": 3.14159,
+            "dawn_hour": 23,
+            "dusk_hour": 23,
+            "time_scale": 100,
+            "start_year": 9999,
+            "xp_scale": 100,
+            "scripts": {field: "x" * 16 for field in editor.script_fields.keys()},
         },
         # Case 3: Negative extremes
-        {
-            "entry_x": -99999.0, "entry_y": -99999.0, "entry_z": -99999.0, "entry_dir": -3.14159,
-            "scripts": {field: "" for field in editor.script_fields.keys()}
-        },
+        {"entry_x": -99999.0, "entry_y": -99999.0, "entry_z": -99999.0, "entry_dir": -3.14159, "scripts": {field: "" for field in editor.script_fields.keys()}},
         # Case 4: Special characters
         {
-            "tag": "tag_!@#$%^&*()", "vo_id": "vo_!@#$", "hak": "hak1;hak2;hak3!@#",
+            "tag": "tag_!@#$%^&*()",
+            "vo_id": "vo_!@#$",
+            "hak": "hak1;hak2;hak3!@#",
             "entry_resref": "area_!@#",
-            "scripts": {field: f"script_{field}_!@#" for field in editor.script_fields.keys()}
+            "scripts": {field: f"script_{field}_!@#" for field in editor.script_fields.keys()},
         },
         # Case 5: Unicode characters (if supported)
-        {
-            "tag": "täg_mödülé", "vo_id": "vö_ïd",
-            "scripts": {field: f"scrïpt_{field}" for field in editor.script_fields.keys()}
-        }
+        {"tag": "täg_mödülé", "vo_id": "vö_ïd", "scripts": {field: f"scrïpt_{field}" for field in editor.script_fields.keys()}},
     ]
 
     for case_num, case_data in enumerate(test_cases):
@@ -1488,10 +1505,21 @@ def test_ifo_editor_ui_initialization(qtbot: QtBot, installation: HTInstallation
 
     # Test that script_fields has all expected entries
     expected_scripts = [
-        "on_heartbeat", "on_load", "on_start", "on_enter", "on_leave",
-        "on_activate_item", "on_acquire_item", "on_user_defined",
-        "on_unacquire_item", "on_player_death", "on_player_dying",
-        "on_player_levelup", "on_player_respawn", "on_player_rest", "start_movie"
+        "on_heartbeat",
+        "on_load",
+        "on_start",
+        "on_enter",
+        "on_leave",
+        "on_activate_item",
+        "on_acquire_item",
+        "on_user_defined",
+        "on_unacquire_item",
+        "on_player_death",
+        "on_player_dying",
+        "on_player_levelup",
+        "on_player_respawn",
+        "on_player_rest",
+        "start_movie",
     ]
     for script in expected_scripts:
         assert script in editor.script_fields
@@ -1582,7 +1610,7 @@ def test_ifo_editor_load_from_test_files_comprehensive(qtbot: QtBot, installatio
         pytest.skip("No IFO files found in test_files_dir")
 
     # Test multiple files if available
-    files_to_test = ifo_files[:min(3, len(ifo_files))]  # Test up to 3 files
+    files_to_test = ifo_files[: min(3, len(ifo_files))]  # Test up to 3 files
 
     for ifo_file in files_to_test:
         original_data = ifo_file.read_bytes()
@@ -1964,10 +1992,21 @@ def test_ifo_editor_headless_script_field_validation():
 
     # Test all script fields
     script_fields = [
-        "on_heartbeat", "on_load", "on_start", "on_enter", "on_leave",
-        "on_activate_item", "on_acquire_item", "on_user_defined",
-        "on_unacquire_item", "on_player_death", "on_player_dying",
-        "on_player_levelup", "on_player_respawn", "on_player_rest", "start_movie"
+        "on_heartbeat",
+        "on_load",
+        "on_start",
+        "on_enter",
+        "on_leave",
+        "on_activate_item",
+        "on_acquire_item",
+        "on_user_defined",
+        "on_unacquire_item",
+        "on_player_death",
+        "on_player_dying",
+        "on_player_levelup",
+        "on_player_respawn",
+        "on_player_rest",
+        "start_movie",
     ]
 
     # Short names for ResRef 16 char limit

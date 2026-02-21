@@ -6,7 +6,7 @@ UTE files define [encounter templates](GFF-File-Format#ute-encounter) which spaw
 
 **Official Bioware Documentation:** For the authoritative Bioware Aurora Engine Encounter format specification, see [Bioware Aurora Encounter Format](Bioware-Aurora-Encounter).
 
-**Reference**: [`Libraries/PyKotor/src/pykotor/resource/generics/ute.py`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/ute.py)
+**Reference**: [`Libraries/PyKotor/src/pykotor/resource/generics/ute.py`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/ute.py). Field types verified against `CSWSEncounter::ReadEncounterFromGff` in Reva (K1: 0x00592430, TSL: 0x007eb810).
 
 ## Core Identity fields
 
@@ -25,9 +25,9 @@ UTE files define [encounter templates](GFF-File-Format#ute-encounter) which spaw
 | `Difficulty` | Int | Difficulty setting (unused) |
 | `DifficultyIndex` | Int | Difficulty scaling index |
 | `Faction` | Word | Faction of spawned creatures |
-| `MaxCreatures` | Int | Maximum concurrent creatures |
-| `RecCreatures` | Int | Recommended number of creatures |
-| `SpawnOption` | Int | Spawn behavior (0=Continuous, 1=Single Shot) |
+| `MaxCreatures` | INT32 | Maximum creatures to spawn (0–32767) |
+| `RecCreatures` | INT32 | Recommended minimum creatures (0–32767) |
+| `SpawnOption` | INT32 | Spawn behavior (0=Single Shot, 1=Continuous) |
 
 **Spawn Behavior:**
 
@@ -41,8 +41,8 @@ UTE files define [encounter templates](GFF-File-Format#ute-encounter) which spaw
 | field | type | Description |
 | ----- | ---- | ----------- |
 | `Reset` | Byte | Encounter resets after being cleared |
-| `ResetTime` | Int | Time in seconds before reset |
-| `Respawns` | Int | Number of times it can respawn (-1 = infinite) |
+| `ResetTime` | INT32 | Time in seconds before reset (0–2147483647) |
+| `Respawns` | INT32 | Number of respawns (-1 = infinite, 0 = none) |
 
 **Respawn System:**
 

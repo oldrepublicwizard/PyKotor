@@ -2,6 +2,7 @@
 
 This module provides opponent profiles and game configuration data.
 """
+
 from holopazaak.data.opponents import (
     OPPONENTS,
     OpponentDifficulty,
@@ -23,4 +24,3 @@ __all__ = [
     "get_all_opponent_ids",
     "get_random_opponent",
 ]
-

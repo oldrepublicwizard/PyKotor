@@ -25,6 +25,7 @@ if TYPE_CHECKING:
 
 log = RobustLogger()
 
+
 def ht_compile_script(
     source: str,
     installation_path: Path,
@@ -72,6 +73,7 @@ def ht_compile_script(
     # This should never be reached, leave in for static type checkers.
     raise ValueError("Could not get the NCS bytes.")  # noqa: TRY003, EM101
 
+
 def _prompt_additional_include_dirs(  # noqa: PLR0913
     extCompiler: ExternalNCSCompiler,
     source: str,
@@ -118,6 +120,7 @@ def _prompt_additional_include_dirs(  # noqa: PLR0913
 
     return stdout, stderr
 
+
 def _execute_nwnnsscomp_compile(
     global_settings: GlobalSettings,
     extract_path: Path,
@@ -157,15 +160,7 @@ def _execute_nwnnsscomp_compile(
             raise  # TODO(th3w1zard1): return something ignorable.
         else:
             if stderr:
-                stdout, stderr = _prompt_additional_include_dirs(
-                    extCompiler,
-                    source,
-                    stderr,
-                    tempSourcePath,
-                    tempCompiledPath,
-                    extract_path,
-                    gameEnum
-                )
+                stdout, stderr = _prompt_additional_include_dirs(extCompiler, source, stderr, tempSourcePath, tempCompiledPath, extract_path, gameEnum)
             if stderr:
                 raise ValueError(f"{stdout}\n{stderr}")
 
@@ -191,8 +186,10 @@ def _execute_nwnnsscomp_compile(
     # All the abstraction work is now complete... verify the file exists one last time then return the compiled script's data.
     if not tempCompiledPath.is_file():
         import errno
+
         raise FileNotFoundError(errno.ENOENT, "Could not find the temp compiled script!", str(tempCompiledPath))  # noqa: TRY003, EM102
     return tempCompiledPath.read_bytes()
+
 
 def _prompt_user_for_compiler_option() -> int:
     # Create the message box
@@ -203,11 +200,7 @@ def _prompt_user_for_compiler_option() -> int:
     msgBox.setWindowTitle("Choose a NCS compiler")
     msgBox.setText("Would you like to use 'nwnnsscomp.exe' or Holocron Toolset's built-in compiler?")
     msgBox.setInformativeText("Choose one of the options below:")
-    msgBox.setStandardButtons(
-        QMessageBox.StandardButton.Yes
-        | QMessageBox.StandardButton.No
-        | QMessageBox.StandardButton.Abort
-    )
+    msgBox.setStandardButtons(QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No | QMessageBox.StandardButton.Abort)
     msgBox.setDefaultButton(QMessageBox.StandardButton.Abort)
 
     # Set the button text

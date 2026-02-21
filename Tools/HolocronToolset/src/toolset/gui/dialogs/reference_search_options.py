@@ -41,21 +41,14 @@ class ReferenceSearchOptions(QDialog):
         """
         super().__init__(parent)
         if qtpy.QT5:
-            win_type = Qt.WindowType(
-                Qt.WindowType.Dialog
-                | Qt.WindowType.WindowCloseButtonHint
-                & ~Qt.WindowType.WindowContextHelpButtonHint
-            )
+            win_type = Qt.WindowType(Qt.WindowType.Dialog | Qt.WindowType.WindowCloseButtonHint & ~Qt.WindowType.WindowContextHelpButtonHint)
         else:
-            win_type = (
-                Qt.WindowType.Dialog
-                | Qt.WindowType.WindowCloseButtonHint
-                & ~Qt.WindowType.WindowContextHelpButtonHint
-            )
-        
+            win_type = Qt.WindowType.Dialog | Qt.WindowType.WindowCloseButtonHint & ~Qt.WindowType.WindowContextHelpButtonHint
+
         self.setWindowFlags(win_type)
 
         from toolset.uic.qtpy.dialogs.reference_search_options import Ui_Dialog
+
         self.ui = Ui_Dialog()
         self.ui.setupUi(self)
 
@@ -97,4 +90,3 @@ class ReferenceSearchOptions(QDialog):
         all_types = set(self.file_type_checks.keys())
         # Return None if all types are selected (means "search all")
         return None if selected_types == all_types else selected_types
-

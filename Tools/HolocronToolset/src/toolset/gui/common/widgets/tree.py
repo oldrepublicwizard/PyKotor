@@ -141,7 +141,7 @@ class RobustTreeView(QTreeView):
 
     def _get_default_text_color(self) -> QColor:
         """Get the default text color from the application palette.
-        
+
         Returns:
             QColor from the palette's WindowText role, or black as fallback
         """
@@ -483,6 +483,7 @@ class RobustTreeView(QTreeView):
 
         # Help or Miscellaneous actions
         from toolset.gui.common.localization import translate as tr
+
         self.help_menu: _QMenu | None = self.header_menu.addMenu(tr("Help"))  # pyright: ignore[reportAttributeAccessIssue]
         whats_this_action = QAction(self.style().standardIcon(QStyle.StandardPixmap.SP_TitleBarContextHelpButton), tr("What's This?"), self)  # pyright: ignore[reportOptionalMemberAccess]
         whats_this_action.triggered.connect(QWhatsThis.enterWhatsThisMode)

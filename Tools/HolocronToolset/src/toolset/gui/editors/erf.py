@@ -74,6 +74,13 @@ def human_readable_size(byte_size: float) -> str:
     return str(byte_size)
 
 
+def _archive_resource_resname(resource: ERFResource | RIMResource | BIFResource) -> str:
+    """Return display/resname for an archive resource. BIF does not store ResRef (it is in KEY); use ID when blank."""
+    if isinstance(resource, BIFResource) and not str(resource.resref).strip():
+        return f"id_{resource.resname_key_index}"
+    return str(resource.resref)
+
+
 class ERFSortFilterProxyModel(RobustSortFilterProxyModel):
     def get_sort_value(
         self,
@@ -239,7 +246,9 @@ class ERFEditor(Editor):
         elif restype is ResourceType.BIF:
             bif: BIF = read_bif(data)
             for resource in bif:
-                resref_item = QStandardItem(str(resource.resref))
+                # BIF files do not store ResRef names (they are in the KEY file); use resource ID when blank
+                resref_display = str(resource.resref).strip() or f"id_{resource.resname_key_index}"
+                resref_item = QStandardItem(resref_display)
                 resref_item.setData(resource)
                 restype_item = QStandardItem(resource.restype.extension.upper())
                 size_item = QStandardItem(human_readable_size(len(resource.data)))
@@ -283,6 +292,7 @@ class ERFEditor(Editor):
                 arch.set_data(res.resref, res.restype, res.data, res.resname_key_index)
             else:
                 arch.set_data(res.resref, res.restype, res.data)
+
         def write_archive_data(arch: RIM | ERF | BIF, data_buf: bytearray):
             writer_mapping = {
                 RIM: write_rim,
@@ -586,6 +596,7 @@ class ERFEditor(Editor):
     ):
         for resource in resources:
             new_filepath: Path = filepath
+            resname = _archive_resource_resname(resource)
             if resource.restype in (
                 ResourceType.ERF,
                 ResourceType.SAV,
@@ -594,10 +605,10 @@ class ERFEditor(Editor):
             ):
                 RobustLogger().info(
                     "Nested capsule selected for opening, appending resref/restype '%s.%s' to the filepath.",
-                    resource.resref,
+                    resname,
                     resource.restype,
                 )
-                new_filepath /= str(ResourceIdentifier(str(resource.resref), resource.restype))
+                new_filepath /= str(ResourceIdentifier(resname, resource.restype))
 
             # IMPORTANT:
             # We already have the in-memory bytes (`resource.data`). Do NOT wrap this as a FileResource
@@ -605,7 +616,7 @@ class ERFEditor(Editor):
             # which leads to opening the wrong bytes in the wrong editor (e.g. "Failed to determine GFF").
             _tempPath, editor = open_resource_editor(
                 new_filepath,
-                str(resource.resref),
+                resname,
                 resource.restype,
                 resource.data,
                 installation=installation,
@@ -863,3 +874,10 @@ class ERFEditorTable(RobustTableView):
         drag = QtGui.QDrag(self)
         drag.setMimeData(mime_data)
         drag.exec(Qt.DropAction.CopyAction, Qt.DropAction.CopyAction)
+
+if __name__ == "__main__":
+    import sys
+
+    from toolset.gui.editors.standalone import launch_editor_cli
+
+    sys.exit(launch_editor_cli("erf"))

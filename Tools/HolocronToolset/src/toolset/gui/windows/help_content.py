@@ -43,11 +43,11 @@ class HelpContent:
                 else:
                     THIS_FILE_PATH = Path(__file__).absolute()
                     contents_path = THIS_FILE_PATH.parents[2].joinpath("help", "contents.xml")
-            
+
             if not contents_path.exists():
                 RobustLogger().warning(f"Could not find contents.xml at {contents_path}")
                 return
-            
+
             tree = ET.parse(contents_path)  # noqa: S314 incorrect warning.
             root = tree.getroot()
 
@@ -64,9 +64,7 @@ class HelpContent:
 
     def _setup_contents_rec_json(self, parent: QTreeWidgetItem | None, data: dict[str, Any]):
         addItem: Callable[[QTreeWidgetItem], None] = (  # type: ignore[arg-type]
-            self.help_window.ui.contentsTree.addTopLevelItem
-            if parent is None
-            else parent.addChild
+            self.help_window.ui.contentsTree.addTopLevelItem if parent is None else parent.addChild
         )
 
         structure = data.get("structure", {})
@@ -78,9 +76,7 @@ class HelpContent:
 
     def _setup_contents_rec_xml(self, parent: QTreeWidgetItem | None, element: ET.Element):
         addItem: Callable[[QTreeWidgetItem], None] = (  # type: ignore[arg-type]
-            self.help_window.ui.contentsTree.addTopLevelItem
-            if parent is None
-            else parent.addChild
+            self.help_window.ui.contentsTree.addTopLevelItem if parent is None else parent.addChild
         )
 
         for child in element:

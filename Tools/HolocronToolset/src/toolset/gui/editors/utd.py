@@ -207,11 +207,7 @@ class UTDEditor(Editor):
         restype: ResourceType,
         data: bytes | bytearray,
     ) -> None:
-        """Load UTD from bytes via read_utd/construct_utd.
-
-        Defaults when fields are missing follow engine: CSWSDoor::LoadDoor
-        @ (K1: 0x0058a1f0, TSL: 0x00765620). See construct_utd in generics.utd for per-field defaults.
-        """
+        """Load UTD from bytes. Defaults when field missing: Tag/LocName/TemplateResRef "" or empty; lock/key/HP/scripts 0 or blank ResRef; Conversation ""; Static 0. REVA: K1 LoadDoor @ 0x0058a1f0, TSL @ 0x00765620."""
         super().load(filepath, resref, restype, data)
 
         utd = read_utd(data)
@@ -295,11 +291,7 @@ class UTDEditor(Editor):
         self.ui.commentsEdit.setPlainText(utd.comment)
 
     def build(self) -> tuple[bytes | bytearray, bytes]:
-        """Serialize UTD via bytes_utd/dismantle_utd.
-
-        Output matches engine expectations; see dismantle_utd in generics.utd and
-        CSWSDoor::LoadDoor @ (K1: 0x0058a1f0, TSL: 0x00765620). Returns GFF bytes and log.
-        """
+        """Build UTD bytes from editor state. Write values match engine (Tag, LocName, TemplateResRef, lock/key, HP, scripts, GenericType, Static, etc.). REVA: K1 LoadDoor @ 0x0058a1f0, TSL @ 0x00765620. Returns GFF bytes and log."""
         utd: UTD = deepcopy(self._utd)
 
         # Basic
@@ -693,3 +685,10 @@ class UTDEditor(Editor):
         except (ValueError, AttributeError):
             pass
         return None
+
+if __name__ == "__main__":
+    import sys
+
+    from toolset.gui.editors.standalone import launch_editor_cli
+
+    sys.exit(launch_editor_cli("utd"))

@@ -90,12 +90,14 @@ class KotorDiffWindow(QMainWindow):
         self._installations: dict[str, HTInstallation] = installations or {}
         self._active_installation: HTInstallation | None = active_installation
         from toolset.utils.misc import get_qsettings_organization
+
         self._settings = QSettings(get_qsettings_organization("HolocronToolset"), "KotorDiff")
         self._setup_ui()
         self._load_settings()
-        
+
         # Setup event filter to prevent scroll wheel interaction with controls
         from toolset.gui.common.filters import NoScrollEventFilter
+
         self._no_scroll_filter = NoScrollEventFilter(self)
         self._no_scroll_filter.setup_filter(parent_widget=self)
 
@@ -112,6 +114,7 @@ class KotorDiffWindow(QMainWindow):
 
         # Set up TSLPatchData placeholder text
         from toolset.gui.common.localization import translate as tr
+
         self.ui.tslpatchdataEdit.setPlaceholderText(tr("Path to tslpatchdata folder"))
 
         # Connect TSLPatchData checkbox signals
@@ -123,9 +126,11 @@ class KotorDiffWindow(QMainWindow):
         # Connect button signals
         self.ui.runBtn.clicked.connect(self._run_diff)
         self.ui.clearBtn.clicked.connect(self.ui.outputText.clear)
+
         # QPushButton.clicked emits a bool; QWidget.close takes no args.
         def _close_window(*_):
             self.close()
+
         self.ui.closeBtn.clicked.connect(_close_window)
 
     def _setup_path_selector(
@@ -304,16 +309,8 @@ class KotorDiffWindow(QMainWindow):
         # Build configuration
         config = DiffConfig(
             paths=paths,
-            tslpatchdata_path=(
-                Path(self.ui.tslpatchdataEdit.text().strip()) 
-                if self.ui.tslpatchdataCheck.isChecked() 
-                and self.ui.tslpatchdataEdit.text().strip() 
-                else None
-            ),
-            ini_filename=(
-                self.ui.iniNameEdit.text().strip() 
-                or "changes.ini"
-            ),
+            tslpatchdata_path=(Path(self.ui.tslpatchdataEdit.text().strip()) if self.ui.tslpatchdataCheck.isChecked() and self.ui.tslpatchdataEdit.text().strip() else None),
+            ini_filename=(self.ui.iniNameEdit.text().strip() or "changes.ini"),
             output_log_path=None,
             log_level=self.ui.logLevelCombo.currentText(),
             output_mode="quiet",

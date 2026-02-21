@@ -8,6 +8,12 @@ Part of the [GFF File Format Documentation](GFF-File-Format).
 
 **Reference**: [`Libraries/PyKotor/src/pykotor/resource/generics/dlg/`](https://github.com/OldRepublicDevs/PyKotor/tree/master/Libraries/PyKotor/src/pykotor/resource/generics/dlg/)
 
+**Reva (Engine) References (K1 swkotor.exe):**
+- `0x005a2ae0` - CSWSDialog::LoadDialog (root: CameraModel, DelayEntry, DelayReply, EndConversation, EndConverAbort, Skippable, ConversationType, ComputerType, AmbientTrack, UnequipItems, UnequipHItem, AnimatedCut, OldHitCheck)
+- `0x0059f5f0` - CSWSDialog::LoadDialogBase (nodes: Text, Script, Speaker, WaitFlags, Quest, QuestEntry, PlotIndex, PlotXPPercentage, Delay, FadeType, FadeColor, FadeDelay, FadeLength, Sound, VO_ResRef, SoundExists, AnimList/Animation WORD, Participant)
+- `0x0059eaa0` - CSWSDialog::LoadDialogCamera (Listener, CameraAngle DWORD, CameraID INT, CamHeightOffset, TarHeightOffset, CameraAnimation WORD, CamVidEffect INT, CamFieldOfView)
+- `0x0059ec10` - CSWSDialog::LoadDialogLinkedNode (links: Active ResRef, Index DWORD)
+
 ## Conversation Properties
 
 | field | type | Description |

@@ -69,9 +69,10 @@ class GFFEditor(Editor):
 
         self.ui.treeView.sortByColumn(0, Qt.SortOrder.AscendingOrder)
         self.ui.treeView.setSortingEnabled(True)
-        
+
         # Setup event filter to prevent scroll wheel interaction with controls
         from toolset.gui.common.filters import NoScrollEventFilter
+
         self._no_scroll_filter = NoScrollEventFilter(self)
         self._no_scroll_filter.setup_filter(parent_widget=self)
 
@@ -524,13 +525,13 @@ class GFFEditor(Editor):
         if ftype is None and item.parent() is None:
             text = "[ROOT]"
         elif ftype is None:
-            text = f'{str(item.row()).ljust(16)} {"[Struct]".ljust(17)} = {value}'
+            text = f"{str(item.row()).ljust(16)} {'[Struct]'.ljust(17)} = {value}"
         elif ftype == GFFFieldType.Struct:
-            text = f'{label.ljust(16)} {"[Struct]".ljust(17)} = {value}'
+            text = f"{label.ljust(16)} {'[Struct]'.ljust(17)} = {value}"
         elif ftype == GFFFieldType.List:
-            text = f'{label.ljust(16)} {"[List]".ljust(17)} = {item.rowCount()}'
+            text = f"{label.ljust(16)} {'[List]'.ljust(17)} = {item.rowCount()}"
         else:
-            text = f'{label.ljust(16)} {f"[{ftype.name}]".ljust(17)} = {value}'
+            text = f"{label.ljust(16)} {f'[{ftype.name}]'.ljust(17)} = {value}"
         self.apply_palette(item, ftype)
 
         # if ftype == GFFFieldType.Struct or ftype is None:
@@ -793,3 +794,10 @@ class GFFSortFilterProxyModel(QSortFilterProxyModel):
             right_int = int(right_text)
             return left_int < right_int
         return left_text < right_text
+
+if __name__ == "__main__":
+    import sys
+
+    from toolset.gui.editors.standalone import launch_editor_cli
+
+    sys.exit(launch_editor_cli("gff"))

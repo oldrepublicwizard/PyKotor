@@ -374,3 +374,10 @@ class UTEEditor(Editor):
         current_row = self.ui.creatureTable.currentRow()
         if current_row >= 0:
             self.ui.creatureTable.removeRow(current_row)
+
+if __name__ == "__main__":
+    import sys
+
+    from toolset.gui.editors.standalone import launch_editor_cli
+
+    sys.exit(launch_editor_cli("ute"))

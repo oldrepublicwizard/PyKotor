@@ -179,6 +179,7 @@ def test_nss_editor_load_real_ncs_file(qtbot: QtBot, installation: HTInstallatio
     # Mock QMessageBox.exec() to return "Decompile" (Yes button) to avoid hanging in headless mode
     def mock_exec(self):
         return QMessageBox.StandardButton.Yes
+
     monkeypatch.setattr(QMessageBox, "exec", mock_exec)
 
     editor = NSSEditor(None, installation)
@@ -1885,27 +1886,31 @@ def test_nss_editor_command_palette_setup(qtbot: QtBot, installation: HTInstalla
     """Test that command palette is set up."""
     from toolset.gui.common.widgets.command_palette import CommandPalette
     from qtpy.QtWidgets import QDialog, QFileDialog
-    
+
     # Mock CommandPalette.exec_() to return immediately to avoid hanging in headless mode
     def mock_exec(self):
         return QDialog.DialogCode.Rejected
+
     monkeypatch.setattr(CommandPalette, "exec_", mock_exec)
-    
+
     # Mock QFileDialog methods to prevent file browser dialogs from hanging in headless mode
     def mock_get_open_file_name(*args, **kwargs):
         return ("", "")  # Return empty (user cancelled)
+
     def mock_get_save_file_name(*args, **kwargs):
         return ("", "")  # Return empty (user cancelled)
+
     def mock_get_existing_directory(*args, **kwargs):
         return ""  # Return empty (user cancelled)
+
     def mock_get_open_file_names(*args, **kwargs):
         return ([], "")  # Return empty list (user cancelled)
-    
+
     monkeypatch.setattr(QFileDialog, "getOpenFileName", mock_get_open_file_name)
     monkeypatch.setattr(QFileDialog, "getSaveFileName", mock_get_save_file_name)
     monkeypatch.setattr(QFileDialog, "getExistingDirectory", mock_get_existing_directory)
     monkeypatch.setattr(QFileDialog, "getOpenFileNames", mock_get_open_file_names)
-    
+
     editor = NSSEditor(None, installation)
     qtbot.addWidget(editor)
     editor.new()
@@ -1938,12 +1943,13 @@ def test_nss_editor_command_palette_shortcut(qtbot: QtBot, installation: HTInsta
     """Test Ctrl+Shift+P shortcut for command palette."""
     from toolset.gui.common.widgets.command_palette import CommandPalette
     from qtpy.QtWidgets import QDialog
-    
+
     # Mock CommandPalette.exec_() to return immediately to avoid hanging in headless mode
     def mock_exec(self):
         return QDialog.DialogCode.Rejected
+
     monkeypatch.setattr(CommandPalette, "exec_", mock_exec)
-    
+
     editor = NSSEditor(None, installation)
     qtbot.addWidget(editor)
     editor.new()

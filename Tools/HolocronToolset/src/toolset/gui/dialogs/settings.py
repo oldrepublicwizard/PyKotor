@@ -16,10 +16,7 @@ if TYPE_CHECKING:
 
 
 class SettingsDialog(QDialog):
-    def __init__(
-        self,
-        parent: QWidget
-    ):
+    def __init__(self, parent: QWidget):
         """Initialize Holocron Toolset settings dialog editor.
 
         Args:
@@ -30,8 +27,7 @@ class SettingsDialog(QDialog):
         self.setWindowFlags(
             Qt.WindowType.Dialog  # pyright: ignore[reportArgumentType]
             | Qt.WindowType.WindowCloseButtonHint
-            | Qt.WindowType.WindowMinMaxButtonsHint
-            & ~Qt.WindowType.WindowContextHelpButtonHint
+            | Qt.WindowType.WindowMinMaxButtonsHint & ~Qt.WindowType.WindowContextHelpButtonHint
         )
 
         self._is_resetting: bool = False
@@ -65,17 +61,11 @@ class SettingsDialog(QDialog):
         self.reset_button.clicked.connect(self.on_reset_all_settings)
         self.ui.verticalLayout.addWidget(self.reset_button)  # pyright: ignore[reportCallIssue, reportArgumentType]
 
-    def closeEvent(
-        self,
-        a0: QCloseEvent | None
-    ) -> None:
+    def closeEvent(self, a0: QCloseEvent | None) -> None:
         self.accept()
         return super().closeEvent(a0)  # pyright: ignore[reportArgumentType]
 
-    def on_page_change(
-        self,
-        page_tree_item: QTreeWidgetItem
-    ):
+    def on_page_change(self, page_tree_item: QTreeWidgetItem):
         page_item_text: str = page_tree_item.text(0)
         new_page: QWidget = self.page_dict[page_item_text]
         self.ui.settingsStack.setCurrentWidget(new_page)  # type: ignore[arg-type]
@@ -97,16 +87,12 @@ class SettingsDialog(QDialog):
             tr("Reset All Settings"),
             tr("Are you sure you want to reset all settings to their default values? This action cannot be undone."),
             QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
-            QMessageBox.StandardButton.No
+            QMessageBox.StandardButton.No,
         )
 
         if reply == QMessageBox.StandardButton.Yes:
             GlobalSettings().settings.clear()
-            QMessageBox.information(
-                self,
-                tr("Settings Reset"),
-                tr("All settings have been cleared and reset to their default values.")
-            )
+            QMessageBox.information(self, tr("Settings Reset"), tr("All settings have been cleared and reset to their default values."))
             self._is_resetting = True
             self.close()
 

@@ -27,18 +27,17 @@ class TriggerDialog(QDialog):
         self.setWindowFlags(
             Qt.WindowType.Dialog
             | Qt.WindowType.WindowCloseButtonHint
-            | Qt.WindowType.WindowStaysOnTopHint
-            & ~Qt.WindowType.WindowContextHelpButtonHint
-            & ~Qt.WindowType.WindowMinimizeButtonHint
+            | Qt.WindowType.WindowStaysOnTopHint & ~Qt.WindowType.WindowContextHelpButtonHint & ~Qt.WindowType.WindowMinimizeButtonHint
         )
 
         from toolset.uic.qtpy.dialogs.instance.trigger import Ui_Dialog  # noqa: PLC0415  # pylint: disable=C0415
 
         self.ui = Ui_Dialog()
         self.ui.setupUi(self)
-        
+
         # Setup scrollbar event filter to prevent scrollbar interaction with controls
         from toolset.gui.common.filters import NoScrollEventFilter
+
         self._no_scroll_filter = NoScrollEventFilter(self)
         self._no_scroll_filter.setup_filter(parent_widget=self)
 
@@ -71,10 +70,6 @@ class TriggerDialog(QDialog):
         self.trigger.linked_to = self.ui.linkToTagEdit.text()
         self.trigger.linked_to_module = ResRef(self.ui.linkToModuleEdit.text())
         self.trigger.linked_to_flags = GITModuleLink(
-            0
-            if self.ui.noTransCheck.isChecked()
-            else 1
-            if self.ui.toDoorCheck.isChecked()
-            else 2,
+            0 if self.ui.noTransCheck.isChecked() else 1 if self.ui.toDoorCheck.isChecked() else 2,
         )
         self.trigger.transition_destination = self.ui.transNameEdit.locstring()

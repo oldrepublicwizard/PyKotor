@@ -389,6 +389,7 @@ class HelpWindow(QMainWindow):
             text: str = decode_bytes_with_fallbacks(filepath.read_bytes())
             if filepath.suffix.lower() == ".md":
                 from toolset.gui.common.palette_helpers import wrap_html_with_palette_styles
+
                 html_body: str = markdown.markdown(text, extensions=["tables", "fenced_code", "codehilite"])
                 html: str = wrap_html_with_palette_styles(html_body, self)
             else:

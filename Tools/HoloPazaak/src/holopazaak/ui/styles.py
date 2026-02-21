@@ -9,34 +9,35 @@ This module provides comprehensive theming with inspiration from:
 Includes CSS stylesheets for all Qt widgets with animations
 and visual polish.
 """
+
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Any
 
 
 @dataclass
 class ThemeColors:
     """Color scheme for a theme."""
+
     name: str
-    
+
     # Main colors
     background: str
     background_alt: str
     panel: str
     panel_highlight: str
-    
+
     # Text colors
     text: str
     text_muted: str
     text_accent: str
-    
+
     # Button colors
     button_bg: str
     button_text: str
     button_hover: str
     button_disabled: str
-    
+
     # Card colors
     card_main: str
     card_main_border: str
@@ -48,25 +49,25 @@ class ThemeColors:
     card_flip_border: str
     card_special: str
     card_special_border: str
-    
+
     # Status colors
     success: str
     warning: str
     error: str
-    
+
     # Board colors
     board_bg: str
     board_border: str
-    
+
     # Score indicator
     score_normal: str
     score_good: str
     score_danger: str
     score_bust: str
-    
+
     def get(self, key: str, default: str = "") -> str:
         """Get a color by key name (dict-like access).
-        
+
         This allows ThemeColors to be used like a dict in widgets.
         """
         # Map simplified keys to attribute names
@@ -84,34 +85,30 @@ class ThemeColors:
             "card_tiebreaker": "card_special",
             "card_plus_minus_3_6": "card_special",
         }
-        
+
         attr_name = key_map.get(key, key)
         return getattr(self, attr_name, default)
 
 
 class Theme:
     """Theme definitions for HoloPazaak."""
-    
+
     REPUBLIC = ThemeColors(
         name="Republic",
-        
         # Cool blue-gray tones
         background="#1a1f2e",
         background_alt="#232a3d",
         panel="#2d3548",
         panel_highlight="#3a4660",
-        
         # Text
         text="#e8eaf0",
         text_muted="#8890a4",
         text_accent="#4ecdc4",
-        
         # Buttons - republic blue/green
         button_bg="#2c7d7b",
         button_text="#ffffff",
         button_hover="#3a9694",
         button_disabled="#4a5568",
-        
         # Cards
         card_main="#4a6741",
         card_main_border="#6b8f5f",
@@ -123,43 +120,36 @@ class Theme:
         card_flip_border="#9a8560",
         card_special="#5a4a70",
         card_special_border="#8070a0",
-        
         # Status
         success="#4ecdc4",
         warning="#f4d35e",
         error="#ee6055",
-        
         # Board
         board_bg="#1e2433",
         board_border="#3a4660",
-        
         # Score
         score_normal="#e8eaf0",
         score_good="#4ecdc4",
         score_danger="#f4d35e",
         score_bust="#ee6055",
     )
-    
+
     SITH = ThemeColors(
         name="Sith",
-        
         # Dark with red accents
         background="#0f0a0a",
         background_alt="#1a1010",
         panel="#251515",
         panel_highlight="#3a2020",
-        
         # Text
         text="#e0d0d0",
         text_muted="#8a7575",
         text_accent="#ff4444",
-        
         # Buttons - sith red/black
         button_bg="#8b0000",
         button_text="#ffffff",
         button_hover="#aa2020",
         button_disabled="#3a2a2a",
-        
         # Cards - darker variants
         card_main="#3a4a30",
         card_main_border="#5a7048",
@@ -171,43 +161,36 @@ class Theme:
         card_flip_border="#786040",
         card_special="#402848",
         card_special_border="#604068",
-        
         # Status
         success="#44aa44",
         warning="#dd9922",
         error="#ff4444",
-        
         # Board
         board_bg="#120808",
         board_border="#4a2020",
-        
         # Score
         score_normal="#e0d0d0",
         score_good="#44aa44",
         score_danger="#dd9922",
         score_bust="#ff4444",
     )
-    
+
     KOTOR_CLASSIC = ThemeColors(
         name="KOTOR Classic",
-        
         # Authentic KOTOR amber/brown
         background="#1c1810",
         background_alt="#252015",
         panel="#2e2820",
         panel_highlight="#3d3528",
-        
         # Text - amber
         text="#d4c4a0",
         text_muted="#8a7a58",
         text_accent="#e8b030",
-        
         # Buttons - gold/amber
         button_bg="#8a6a20",
         button_text="#ffffff",
         button_hover="#aa8830",
         button_disabled="#4a4030",
-        
         # Cards
         card_main="#404830",
         card_main_border="#606850",
@@ -219,43 +202,36 @@ class Theme:
         card_flip_border="#787048",
         card_special="#483858",
         card_special_border="#685078",
-        
         # Status
         success="#88aa44",
         warning="#e8b030",
         error="#cc4444",
-        
         # Board
         board_bg="#1a1408",
         board_border="#4a4030",
-        
         # Score
         score_normal="#d4c4a0",
         score_good="#88aa44",
         score_danger="#e8b030",
         score_bust="#cc4444",
     )
-    
+
     MANDALORIAN = ThemeColors(
         name="Mandalorian",
-        
         # Steel gray with blue highlights
         background="#14181c",
         background_alt="#1c2228",
         panel="#252d35",
         panel_highlight="#323e48",
-        
         # Text
         text="#c8d0d8",
         text_muted="#7088a0",
         text_accent="#5080c0",
-        
         # Buttons - beskar steel
         button_bg="#4a5a6a",
         button_text="#ffffff",
         button_hover="#5a7088",
         button_disabled="#3a4550",
-        
         # Cards
         card_main="#3a4840",
         card_main_border="#5a6858",
@@ -267,16 +243,13 @@ class Theme:
         card_flip_border="#6a6858",
         card_special="#3a3858",
         card_special_border="#5a5878",
-        
         # Status
         success="#50a0a0",
         warning="#c0a040",
         error="#c05050",
-        
         # Board
         board_bg="#0c1014",
         board_border="#3a4850",
-        
         # Score
         score_normal="#c8d0d8",
         score_good="#50a0a0",
@@ -301,7 +274,7 @@ def get_theme(name: str) -> ThemeColors:
 
 def get_stylesheet(theme: ThemeColors) -> str:
     """Generate a complete Qt stylesheet for the theme.
-    
+
     Includes styles for:
     - Main window and central widget
     - Labels and text
@@ -592,7 +565,7 @@ QMenu::item:selected {{
 
 def get_card_style(theme: ThemeColors, card_type: str, is_selected: bool = False) -> str:
     """Get inline style for a card based on type.
-    
+
     Args:
         theme: Current theme
         card_type: One of "main", "plus", "minus", "flip", "special"
@@ -605,13 +578,13 @@ def get_card_style(theme: ThemeColors, card_type: str, is_selected: bool = False
         "flip": (theme.card_flip, theme.card_flip_border),
         "special": (theme.card_special, theme.card_special_border),
     }
-    
+
     bg_color, border_color = colors.get(card_type, colors["main"])
-    
+
     border_width = "3px" if is_selected else "2px"
     if is_selected:
         border_color = theme.success
-    
+
     return f"""
         background-color: {bg_color};
         border: {border_width} solid {border_color};

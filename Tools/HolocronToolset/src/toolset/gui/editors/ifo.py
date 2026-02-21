@@ -260,7 +260,7 @@ class IFOEditor(Editor):
         self.update_ui_from_ifo()
 
     def build(self) -> tuple[bytes, bytes]:
-        """Build IFO bytes from editor state. Write values match engine read. REVA: K1 LoadModuleStart @ 0x004c9050, TSL @ 0x0072aaa0."""
+        """Build IFO bytes from editor state. Write values match engine read (Mod_ID, Mod_Tag, Mod_Entry_*, Mod_On*, Mod_Area_list). REVA: K1 LoadModuleStart @ 0x004c9050, TSL @ 0x0072aaa0."""
         if self.ifo is None:
             return b"", b""
 
@@ -394,3 +394,10 @@ class IFOEditor(Editor):
 
         # TODO: determine if this is needed
         # self.signal_modified.emit()
+
+if __name__ == "__main__":
+    import sys
+
+    from toolset.gui.editors.standalone import launch_editor_cli
+
+    sys.exit(launch_editor_cli("ifo"))

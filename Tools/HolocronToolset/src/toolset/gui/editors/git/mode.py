@@ -546,6 +546,7 @@ class _InstanceMode(_Mode):
 
     def _get_undo_stack(self) -> QUndoStack:
         from toolset.gui.editors.git.git import GITEditor
+
         undo_stack = (
             self._editor._controls.undo_stack  # noqa: SLF001
             if isinstance(self._editor, GITEditor)  # noqa: SLF001

@@ -31,7 +31,7 @@ _TRANS_EDGE_ROLE = Qt.ItemDataRole.UserRole + 2  # type: ignore[attr-defined]
 def calculate_zoom_strength(delta_y: float, sens_setting: int) -> float:
     m = 0.00202
     b = 1
-    factor_in = (m * sens_setting + b)
+    factor_in = m * sens_setting + b
     return 1 / abs(factor_in) if delta_y < 0 else abs(factor_in)
 
 
@@ -58,14 +58,16 @@ class BWMEditor(Editor):
         super().__init__(parent, "Walkmesh Painter", "walkmesh", supported, supported, installation)
 
         from toolset.uic.qtpy.editors.bwm import Ui_MainWindow
+
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self)
-        
+
         # Setup event filter to prevent scroll wheel interaction with controls
         from toolset.gui.common.filters import NoScrollEventFilter
+
         self._no_scroll_filter = NoScrollEventFilter(self)
         self._no_scroll_filter.setup_filter(parent_widget=self)
-        
+
         self._setup_menus()
         self._add_help_action()
         self._setup_signals()
@@ -215,7 +217,7 @@ class BWMEditor(Editor):
             self.change_face_material(face)
 
         coords_text = f"x: {world.x:.2f}, {world.y:.2f}"
-        face_text = f', face: {"None" if face is None else self._bwm.faces.index(face)}'
+        face_text = f", face: {'None' if face is None else self._bwm.faces.index(face)}"
 
         screen = self.ui.renderArea.to_render_coords(world.x, world.y)
         xy = f" || x: {screen.x:.2f}, " + f"y: {screen.y:.2f}, "
@@ -261,3 +263,10 @@ class BWMEditor(Editor):
             self.ui.renderArea.setHighlightedTrans(face, edge)
         else:
             self.ui.renderArea.setHighlightedTrans(None, None)
+
+if __name__ == "__main__":
+    import sys
+
+    from toolset.gui.editors.standalone import launch_editor_cli
+
+    sys.exit(launch_editor_cli("bwm"))

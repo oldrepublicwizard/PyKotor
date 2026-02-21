@@ -7,7 +7,6 @@ import os
 import pathlib
 import subprocess
 import sys
-import tempfile
 import threading
 import traceback
 
@@ -23,10 +22,7 @@ def is_frozen() -> bool:
     Returns:
         bool: True if the toolset is frozen, False otherwise.
     """
-    return (
-        getattr(sys, "frozen", False)
-        or getattr(sys, "_MEIPASS", False)
-    )
+    return getattr(sys, "frozen", False) or getattr(sys, "_MEIPASS", False)
 
 
 def on_app_crash(
@@ -43,6 +39,7 @@ def on_app_crash(
         return
     from loggerplus import RobustLogger  # noqa: PLC0415
     import time  # noqa: PLC0415
+
     logger = RobustLogger()
     logger.critical("Uncaught exception", exc_info=(etype, exc, tback))
 
@@ -259,6 +256,7 @@ def main_init():
     from loggerplus import RobustLogger  # noqa: PLC0415
 
     sys.excepthook = on_app_crash
+
     # Ensure thread exceptions (Python 3.8+) are routed to the same handler.
     def _thread_excepthook(args: threading.ExceptHookArgs):  # noqa: ANN001
         if args.exc_value is not None:
@@ -268,15 +266,17 @@ def main_init():
     is_main_process: bool = multiprocessing.current_process().name == "MainProcess"
     if is_main_process:
         try:
-            multiprocessing.set_start_method("spawn", force=False)  # 'spawn' is default on windows, linux/mac defaults to most likely 'fork' which breaks the built-in updater.
+            multiprocessing.set_start_method(
+                "spawn", force=False
+            )  # 'spawn' is default on windows, linux/mac defaults to most likely 'fork' which breaks the built-in updater.
         except RuntimeError:
             # Start method already set, ignore
             pass
-        
+
         # Fix for PyInstaller: Hide console windows for multiprocessing child processes on Windows
-        #if sys.platform == "win32" and is_frozen():
+        # if sys.platform == "win32" and is_frozen():
         #    _patch_multiprocessing_for_windows()
-        
+
         atexit.register(last_resort_cleanup)  # last_resort_cleanup already handles child processes.
 
     if is_frozen():
@@ -286,29 +286,30 @@ def main_init():
             set_qt_api()
     # Do not use `faulthandler.enable()` in the toolset!
     # https://bugreports.qt.io/browse/PYSIDE-2359
-    #faulthandler.enable()
+    import faulthandler
+    faulthandler.enable()
 
 
 def _patch_multiprocessing_for_windows():
     """Patch multiprocessing to hide console windows on Windows when frozen.
-    
+
     This prevents command prompt windows from appearing when multiprocessing
     spawns child processes in a PyInstaller-compiled application.
-    
+
     The patch intercepts subprocess.Popen calls made by multiprocessing and
     adds the CREATE_NO_WINDOW flag to hide console windows.
     """
     try:
         import multiprocessing.popen_spawn_win32
-        
+
         # Store original _launch method
         original_launch = multiprocessing.popen_spawn_win32.Popen._launch
-        
+
         def patched_launch(self, process_obj):
             """Patched _launch that adds CREATE_NO_WINDOW flag to subprocess calls."""
             # Store original subprocess.Popen
             original_subprocess_popen = subprocess.Popen
-            
+
             # Create a wrapper that adds CREATE_NO_WINDOW flag
             def no_window_popen(*args, **kwargs):
                 if sys.platform == "win32":
@@ -316,7 +317,7 @@ def _patch_multiprocessing_for_windows():
                     kwargs.setdefault("creationflags", 0)
                     kwargs["creationflags"] |= subprocess.CREATE_NO_WINDOW
                 return original_subprocess_popen(*args, **kwargs)
-            
+
             # Temporarily replace subprocess.Popen during process launch
             subprocess.Popen = no_window_popen
             try:
@@ -324,13 +325,14 @@ def _patch_multiprocessing_for_windows():
             finally:
                 # Restore original subprocess.Popen
                 subprocess.Popen = original_subprocess_popen
-        
+
         # Replace the _launch method
         multiprocessing.popen_spawn_win32.Popen._launch = patched_launch
-        
+
     except (ImportError, AttributeError) as e:
         # If patching fails, log but don't crash
         from loggerplus import RobustLogger  # noqa: PLC0415
+
         RobustLogger().debug(f"Could not patch multiprocessing for Windows (non-critical): {e}")
 
 

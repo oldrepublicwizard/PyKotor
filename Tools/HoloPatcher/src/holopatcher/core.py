@@ -181,11 +181,15 @@ def load_namespace_config(
 
     game_number: int | None = reader.config.game_number
     game: Game | None = Game(game_number) if game_number else None
-    game_paths: list[str] = [
-        str(path)
-        for game_key in ([game] + ([Game.K1] if game is not None and game == Game.K2 else []))
-        for path in (find_kotor_paths_from_default()[game_key] if game_key is not None else [])
-    ] if game_number else []
+    game_paths: list[str] = (
+        [
+            str(path)
+            for game_key in ([game] + ([Game.K1] if game is not None and game == Game.K2 else []))
+            for path in (find_kotor_paths_from_default()[game_key] if game_key is not None else [])
+        ]
+        if game_number
+        else []
+    )
 
     info_rtf_path = CaseAwarePath(mod_path, "tslpatchdata", namespace_option.rtf_filepath())
     info_rte_path = info_rtf_path.with_suffix(".rte")
@@ -268,12 +272,7 @@ def validate_install_paths(
     -------
         bool: True if paths are valid
     """
-    return (
-        bool(mod_path)
-        and CaseAwarePath(mod_path).is_dir()
-        and bool(game_path)
-        and CaseAwarePath(game_path).is_dir()
-    )
+    return bool(mod_path) and CaseAwarePath(mod_path).is_dir() and bool(game_path) and CaseAwarePath(game_path).is_dir()
 
 
 def parse_args() -> Namespace:
@@ -287,17 +286,17 @@ def parse_args() -> Namespace:
     from argparse import ArgumentParser
     from pathlib import Path
 
-    from utility.error_handling import universal_simplify_exception
 
     def _get_invocation_command() -> str:
         """Get the actual command used to invoke the CLI."""
         if not sys.argv:
             return "holopatcher"
-        
+
         # Try to detect if we're being run via "uv run" by checking parent process
         is_uv_run = False
         try:
             import psutil  # type: ignore[import-untyped]
+
             current_process = psutil.Process()
             parent = current_process.parent()
             if parent and "uv" in parent.name().lower():
@@ -307,32 +306,32 @@ def parse_args() -> Namespace:
             # Try alternative detection: check if UV_* env vars exist
             if any("UV" in k.upper() for k in os.environ.keys()):
                 is_uv_run = True
-        
+
         script_path = Path(sys.argv[0]).resolve()
         cwd = Path.cwd().resolve()
-        
+
         # Try to make path relative to current directory
         try:
             rel_script = script_path.relative_to(cwd)
             rel_script_str = str(rel_script).replace("\\", "/")  # Use forward slashes for consistency
         except ValueError:
             rel_script_str = str(script_path)
-        
+
         # If detected as uv run, prefix with "uv run"
         if is_uv_run:
             return f"uv run {rel_script_str}"
-        
+
         # Check for "python -m" pattern
         if len(sys.argv) >= 3 and sys.argv[1] == "-m":
             # python -m holopatcher
             return f"python -m {sys.argv[2]}"
-        
+
         # Check if we're being run via python (not as a module)
         python_exe = Path(sys.executable).name.lower()
         if python_exe in ("python", "python3", "python.exe", "python3.exe", "py", "py.exe"):
             # python script.py
             return f"python {rel_script_str}"
-        
+
         # For direct execution, return the relative path
         return rel_script_str
 
@@ -380,15 +379,17 @@ def calculate_total_patches(installer: ModInstaller) -> int:
     -------
         int: Total number of patches
     """
-    return len([
-        *installer.config().install_list,  # NOTE: TSLPatcher executes [InstallList] after [TLKList]
-        *installer.get_tlk_patches(installer.config()),
-        *installer.config().patches_2da,
-        *installer.config().patches_gff,
-        *installer.config().patches_nss,
-        *installer.config().patches_ncs,  # NOTE: TSLPatcher executes [CompileList] after [HACKList]
-        *installer.config().patches_ssf,
-    ])
+    return len(
+        [
+            *installer.config().install_list,  # NOTE: TSLPatcher executes [InstallList] after [TLKList]
+            *installer.get_tlk_patches(installer.config()),
+            *installer.config().patches_2da,
+            *installer.config().patches_gff,
+            *installer.config().patches_nss,
+            *installer.config().patches_ncs,  # NOTE: TSLPatcher executes [CompileList] after [HACKList]
+            *installer.config().patches_ssf,
+        ]
+    )
 
 
 def get_confirm_message(installer: ModInstaller) -> str | None:
@@ -639,7 +640,7 @@ def write_log_entry(
             LogLevel.GENERAL: LogType.WARNING,
             LogLevel.FULL: LogType.VERBOSE,
             LogLevel.WARNINGS: LogType.NOTE,
-            LogLevel.NOTHING: LogType.WARNING
+            LogLevel.NOTHING: LogType.WARNING,
         }
         return log_map[log_level]
 

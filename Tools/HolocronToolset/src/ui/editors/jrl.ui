@@ -55,12 +55,18 @@
            <item row="0" column="1">
             <layout class="QHBoxLayout" name="horizontalLayout">
              <item>
-              <widget class="LocalizedStringLineEdit" name="categoryNameEdit" native="true">
+              <widget class="LocalizedStringLineEdit" name="categoryNameEdit"
+               native="true">
                <property name="minimumSize">
                 <size>
                  <width>0</width>
                  <height>23</height>
                 </size>
+               </property>
+               <property name="toolTip">
+                <string>Name (GFF: Name): Display title of the quest in the journal.
+                 Localized string—supports multiple languages. Shown in the quest
+                 list; scripts use the Tag to reference quests, not the name.</string>
                </property>
               </widget>
              </item>
@@ -81,7 +87,14 @@
             </widget>
            </item>
            <item row="1" column="1">
-            <widget class="QLineEdit" name="categoryTag"/>
+            <widget class="QLineEdit" name="categoryTag">
+             <property name="toolTip">
+              <string>Tag (GFF: Tag): Unique identifier for this quest. Scripts use
+               AddJournalQuestEntry("Tag", ID) to update progress. Must match the
+               Quest field in dialogue nodes. Keep short, no spaces (e.g.
+               "tar_mq01").</string>
+             </property>
+            </widget>
            </item>
            <item row="2" column="0">
             <widget class="QLabel" name="label_3">
@@ -91,10 +104,22 @@
             </widget>
            </item>
            <item row="3" column="1">
-            <widget class="ComboBox2DA" name="categoryPlanetSelect"/>
+            <widget class="ComboBox2DA" name="categoryPlanetSelect">
+             <property name="toolTip">
+              <string>PlanetID (GFF: PlanetID): Row index into a planet 2DA. Engine
+               does not use this; it is toolset/modder metadata for organizing quests
+               by planet. INT32. Set to 0 if unused.</string>
+             </property>
+            </widget>
            </item>
            <item row="2" column="1">
-            <widget class="ComboBox2DA" name="categoryPlotSelect"/>
+            <widget class="ComboBox2DA" name="categoryPlotSelect">
+             <property name="toolTip">
+              <string>PlotIndex (GFF: PlotIndex): Row index into plot.2da. Legacy plot
+               flag; used for plot-critical quest tracking. INT32. Typically 0 for
+               side quests.</string>
+             </property>
+            </widget>
            </item>
            <item row="4" column="0">
             <widget class="QLabel" name="label_4">
@@ -105,6 +130,11 @@
            </item>
            <item row="4" column="1">
             <widget class="QComboBox" name="categoryPrioritySelect">
+             <property name="toolTip">
+              <string>Priority (GFF: Priority): Quest sort order in the journal.
+               0=Highest (main quest), 4=Lowest. Affects which tab and order quests
+               appear. UINT32 stored as 0-4.</string>
+             </property>
              <item>
               <property name="text">
                <string>Highest</string>
@@ -144,7 +174,13 @@
             </widget>
            </item>
            <item>
-            <widget class="HTPlainTextEdit" name="categoryCommentEdit"/>
+            <widget class="HTPlainTextEdit" name="categoryCommentEdit">
+             <property name="toolTip">
+              <string>Comment (GFF: Comment): Developer notes only. The game ignores
+               this. Use to document quest flow, scripting requirements, or notes for
+               other modders.</string>
+             </property>
+            </widget>
            </item>
           </layout>
          </item>
@@ -169,6 +205,18 @@
                <height>0</height>
               </size>
              </property>
+             <property name="toolTip">
+              <string>ID (GFF: ID): State identifier for this entry. Scripts use
+               AddJournalQuestEntry("Tag", ID) to set progress. Dialogue QuestEntry
+               field references this. Higher IDs typically override lower. UINT32
+               0-4294967295.</string>
+             </property>
+             <property name="minimum">
+              <number>0</number>
+             </property>
+             <property name="maximum">
+              <number>2147483647</number>
+             </property>
             </widget>
            </item>
            <item row="2" column="0">
@@ -186,12 +234,29 @@
             </widget>
            </item>
            <item row="1" column="1">
-            <widget class="QDoubleSpinBox" name="entryXpSpin"/>
+            <widget class="QDoubleSpinBox" name="entryXpSpin">
+             <property name="toolTip">
+              <string>XP_Percentage (GFF: XP_Percentage): XP reward multiplier when
+               this entry is reached. Scales the base value from journal.2da. 0=no
+               XP, 100=full reward, &gt;100=bonus. Float.</string>
+             </property>
+             <property name="minimum">
+              <double>0.000000000000000</double>
+             </property>
+             <property name="maximum">
+              <double>1000.000000000000000</double>
+             </property>
+            </widget>
            </item>
            <item row="2" column="1">
             <widget class="QCheckBox" name="entryEndCheck">
+             <property name="toolTip">
+              <string>End (GFF: End): When checked, reaching this entry completes the
+               quest and moves it to the Completed tab. Use for the final entry in a
+               quest chain. Stored as BYTE 0/1.</string>
+             </property>
              <property name="text">
-              <string/>
+              <string />
              </property>
             </widget>
            </item>
@@ -210,6 +275,12 @@
             <widget class="HTPlainTextEdit" name="entryTextEdit">
              <property name="readOnly">
               <bool>true</bool>
+             </property>
+             <property name="toolTip">
+              <string>Text (GFF: Text): Journal text shown when this entry is the
+               current state. Localized string. Displayed in the quest log when the
+               player views the quest. Use to describe objectives, updates, or
+               completion.</string>
              </property>
             </widget>
            </item>
@@ -235,15 +306,15 @@
     <property name="title">
      <string>File</string>
     </property>
-    <addaction name="actionNew"/>
-    <addaction name="actionOpen"/>
-    <addaction name="actionSave"/>
-    <addaction name="actionSave_As"/>
-    <addaction name="actionRevert"/>
-    <addaction name="separator"/>
-    <addaction name="actionExit"/>
+    <addaction name="actionNew" />
+    <addaction name="actionOpen" />
+    <addaction name="actionSave" />
+    <addaction name="actionSave_As" />
+    <addaction name="actionRevert" />
+    <addaction name="separator" />
+    <addaction name="actionExit" />
    </widget>
-   <addaction name="menuNew"/>
+   <addaction name="menuNew" />
   </widget>
   <action name="actionOpen">
    <property name="text">
@@ -277,11 +348,11 @@
   </action>
  </widget>
  <customwidgets>
-    <customwidget>
-      <class>RobustTreeView</class>
-      <extends>QTreeView</extends>
-     <header location="global">utility.gui.qt.widgets.itemviews.treeview</header>
-    </customwidget>
+  <customwidget>
+   <class>RobustTreeView</class>
+   <extends>QTreeView</extends>
+   <header location="global">utility.gui.qt.widgets.itemviews.treeview</header>
+  </customwidget>
   <customwidget>
    <class>LocalizedStringLineEdit</class>
    <extends>QWidget</extends>
@@ -299,6 +370,6 @@
    <header location="global">toolset.gui.widgets.edit.plaintext</header>
   </customwidget>
  </customwidgets>
- <resources/>
- <connections/>
+ <resources />
+ <connections />
 </ui>

@@ -2,6 +2,7 @@
 
 This module provides the HoloPatcher GUI, inheriting from the base tkinter app framework.
 """
+
 from __future__ import annotations
 
 import ctypes
@@ -32,11 +33,7 @@ from typing import TYPE_CHECKING, Any, NoReturn, cast
 
 
 def is_frozen() -> bool:
-    return (
-        getattr(sys, "frozen", False)
-        or getattr(sys, "_MEIPASS", False)
-        or tempfile.gettempdir() in sys.executable
-    )
+    return getattr(sys, "frozen", False) or getattr(sys, "_MEIPASS", False) or tempfile.gettempdir() in sys.executable
 
 
 if not is_frozen():
@@ -191,7 +188,9 @@ class App(BaseApp):
         # PCGamingWiki submenu
         pcgamingwiki_menu = tk.Menu(help_menu, tearoff=0)
         pcgamingwiki_menu.add_command(label="KOTOR 1", command=lambda: webbrowser.open_new("https://www.pcgamingwiki.com/wiki/Star_Wars:_Knights_of_the_Old_Republic"))
-        pcgamingwiki_menu.add_command(label="KOTOR 2: TSL", command=lambda: webbrowser.open_new("https://www.pcgamingwiki.com/wiki/Star_Wars:_Knights_of_the_Old_Republic_II_-_The_Sith_Lords"))
+        pcgamingwiki_menu.add_command(
+            label="KOTOR 2: TSL", command=lambda: webbrowser.open_new("https://www.pcgamingwiki.com/wiki/Star_Wars:_Knights_of_the_Old_Republic_II_-_The_Sith_Lords")
+        )
         help_menu.add_cascade(label="PCGamingWiki", menu=pcgamingwiki_menu)
 
         # About menu
@@ -243,11 +242,7 @@ class App(BaseApp):
         self.gamepaths = ttk.Combobox(top_frame, style="TCombobox")
         self.gamepaths.set("Select your KOTOR directory path")
         self.gamepaths.grid(row=1, column=0, padx=5, pady=2, sticky="ew")
-        self.gamepaths["values"] = [
-            str(path)
-            for game in find_kotor_paths_from_default().values()
-            for path in game
-        ]
+        self.gamepaths["values"] = [str(path) for game in find_kotor_paths_from_default().values() for path in game]
         self.gamepaths.bind("<<ComboboxSelected>>", self.on_gamepaths_chosen)
         # Browse for a KOTOR path
         self.gamepaths_browse_button = ttk.Button(top_frame, text="Browse", command=self.open_kotor)
@@ -333,6 +328,7 @@ class App(BaseApp):
     def check_for_updates(self):
         try:
             from utility.gui.tkinter.updater import UpdateDialog
+
             updateInfoData: dict[str, Any] | Exception = getRemoteHolopatcherUpdateInfo()
             if isinstance(updateInfoData, Exception):
                 self._handle_general_exception(updateInfoData)
@@ -371,6 +367,7 @@ class App(BaseApp):
         from utility.gui.tkinter.updater import run_tk_progress_dialog
         from utility.updater.restarter import RestartStrategy
         from utility.updater.update import AppUpdate
+
         proc_arch = ProcessorArchitecture.from_os()
         assert proc_arch == ProcessorArchitecture.from_python()
         os_name = platform.system()
@@ -384,11 +381,13 @@ class App(BaseApp):
 
         progress_queue: Queue = Queue()
         progress_dialog: Process = run_tk_progress_dialog(progress_queue, "HoloPatcher is updating and will restart shortly...")
+
         def download_progress_hook(data: dict[str, Any], progress_queue: Queue = progress_queue):
             progress_queue.put(data)
 
         # Prepare the list of progress hooks with the method from ProgressDialog
         progress_hooks = [download_progress_hook]
+
         def exitapp(kill_self_here: bool):  # noqa: FBT001
             packaged_data = {"action": "shutdown", "data": {}}
             progress_queue.put(packaged_data)
@@ -404,7 +403,7 @@ class App(BaseApp):
                 # Find the index of the second dot
                 second_dot_index = s.find(".", s.find(".") + 1)
                 # Remove the second dot by slicing and concatenating
-                s = s[:second_dot_index] + s[second_dot_index + 1:]
+                s = s[:second_dot_index] + s[second_dot_index + 1 :]
             return f"v{s}-patcher"
 
         updater = AppUpdate(
@@ -416,7 +415,7 @@ class App(BaseApp):
             progress_hooks=progress_hooks,
             exithook=exitapp,
             r_strategy=RestartStrategy.DEFAULT,
-            version_to_tag_parser=remove_second_dot
+            version_to_tag_parser=remove_second_dot,
         )
         try:
             progress_queue.put({"action": "update_status", "text": "Downloading update..."})
@@ -427,7 +426,7 @@ class App(BaseApp):
             updater.cleanup()
         except Exception:  # noqa: BLE001
             RobustLogger().critical("Auto-update had an unexpected error", exc_info=True)
-        #finally:
+        # finally:
         #    exitapp(True)
 
     def execute_commandline(
@@ -594,11 +593,7 @@ class App(BaseApp):
             - If stopping fails, force terminate install thread
             - Destroy window and exit with abort code.
         """
-        if (
-            not self.task_running
-            or not self.task_thread
-            or not self.task_thread.is_alive()
-        ):
+        if not self.task_running or not self.task_thread or not self.task_thread.is_alive():
             print("Goodbye!")
             sys.exit(ExitCode.SUCCESS)
             return  # leave here for the static type checkers
@@ -756,11 +751,7 @@ class App(BaseApp):
             game_number: int | None = reader.config.game_number
             if game_number:
                 game = Game(game_number)
-                self.gamepaths["values"] = [
-                    str(path)
-                    for game_key in ([game] + ([Game.K1] if game == Game.K2 else []))
-                    for path in find_kotor_paths_from_default()[game_key]
-                ]
+                self.gamepaths["values"] = [str(path) for game_key in ([game] + ([Game.K1] if game == Game.K2 else [])) for path in find_kotor_paths_from_default()[game_key]]
 
             # Strip info.rtf and display in the main window frame.
             info_rtf_path = CaseAwarePath(self.mod_path, "tslpatchdata", namespace_option.rtf_filepath())
@@ -1200,12 +1191,7 @@ class App(BaseApp):
             self.gamepaths_browse_button.config(state=tk.NORMAL)
             self.browse_button.config(state=tk.NORMAL)
 
-    def _execute_mod_install(
-        self,
-        installer: ModInstaller,
-        should_cancel_thread: Event,
-        progress_update_func: Callable | None = None
-    ):
+    def _execute_mod_install(self, installer: ModInstaller, should_cancel_thread: Event, progress_update_func: Callable | None = None):
         """Executes the mod installation.
 
         Args:
@@ -1238,16 +1224,16 @@ class App(BaseApp):
             if progress_update_func is not None:
                 assert self.progress_bar is not None, "Progress bar is None"
                 self.progress_bar["maximum"] = len(
-                [
-                    *installer.config().install_list,  # NOTE: TSLPatcher executes [InstallList] after [TLKList]
-                    *installer.get_tlk_patches(installer.config()),
-                    *installer.config().patches_2da,
-                    *installer.config().patches_gff,
-                    *installer.config().patches_nss,
-                    *installer.config().patches_ncs,  # NOTE: TSLPatcher executes [CompileList] after [HACKList]
-                    *installer.config().patches_ssf,
-                ]
-            )
+                    [
+                        *installer.config().install_list,  # NOTE: TSLPatcher executes [InstallList] after [TLKList]
+                        *installer.get_tlk_patches(installer.config()),
+                        *installer.config().patches_2da,
+                        *installer.config().patches_gff,
+                        *installer.config().patches_nss,
+                        *installer.config().patches_ncs,  # NOTE: TSLPatcher executes [CompileList] after [HACKList]
+                        *installer.config().patches_ssf,
+                    ]
+                )
             # profiler = cProfile.Profile()
             # profiler.enable()
             install_start_time: datetime = datetime.now(timezone.utc).astimezone()
@@ -1430,21 +1416,24 @@ class App(BaseApp):
             - Scrolling to the end of the text
             - Making the description text widget not editable again.
         """
+
         def log_type_to_level() -> LogType:
             log_map: dict[LogLevel, LogType] = {
                 LogLevel.ERRORS: LogType.WARNING,
                 LogLevel.GENERAL: LogType.WARNING,
                 LogLevel.FULL: LogType.VERBOSE,
                 LogLevel.WARNINGS: LogType.NOTE,
-                LogLevel.NOTHING: LogType.WARNING
+                LogLevel.NOTHING: LogType.WARNING,
             }
             return log_map[self.log_level]
+
         def log_to_tag(this_log: PatchLog) -> str:
             if this_log.log_type == LogType.NOTE:
                 return "INFO"
             if this_log.log_type == LogType.VERBOSE:
                 return "DEBUG"
             return this_log.log_type.name
+
         try:
             self.log_file_path.parent.mkdir(parents=True, exist_ok=True)
             with self.log_file_path.open("a", encoding="utf-8") as log_file:

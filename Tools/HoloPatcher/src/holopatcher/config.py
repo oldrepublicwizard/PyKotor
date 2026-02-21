@@ -17,21 +17,15 @@ LOCAL_PROGRAM_INFO: dict[str, Any] = {
     "holopatcherDownloadLink": "https://deadlystream.com/files/file/1982-holocron-holopatcher",
     "holopatcherBetaDownloadLink": "https://github.com/OldRepublicDevs/PyKotor/releases/tag/v1.70-patcher-beta1",
     "holopatcherDirectLinks": {
-        "Darwin": {
-            "32bit": [],
-            "64bit": ["https://github.com/OldRepublicDevs/PyKotor/releases/download/{tag}/HoloPatcher_Mac.zip"]
-        },
-        "Linux": {
-            "32bit": [],
-            "64bit": ["https://github.com/OldRepublicDevs/PyKotor/releases/download/{tag}/HoloPatcher_Linux.zip"]
-        },
+        "Darwin": {"32bit": [], "64bit": ["https://github.com/OldRepublicDevs/PyKotor/releases/download/{tag}/HoloPatcher_Mac.zip"]},
+        "Linux": {"32bit": [], "64bit": ["https://github.com/OldRepublicDevs/PyKotor/releases/download/{tag}/HoloPatcher_Linux.zip"]},
         "Windows": {
             "32bit": ["https://github.com/OldRepublicDevs/PyKotor/releases/download/{tag}/HoloPatcher_Windows.zip"],
-            "64bit": ["https://github.com/OldRepublicDevs/PyKotor/releases/download/{tag}/HoloPatcher_Windows.zip"]
-        }
+            "64bit": ["https://github.com/OldRepublicDevs/PyKotor/releases/download/{tag}/HoloPatcher_Windows.zip"],
+        },
     },
     "holopatcherLatestNotes": "",
-    "holopatcherLatestBetaNotes": ""
+    "holopatcherLatestBetaNotes": "",
 }  # <---JSON_END--->#
 
 CURRENT_VERSION = LOCAL_PROGRAM_INFO["currentVersion"]

@@ -534,24 +534,25 @@ def test_git_editor_manipulate_creature_resref(qtbot: QtBot, installation: HTIns
 # DOOR INSTANCE MANIPULATIONS
 # ============================================================================
 
+
 def test_git_editor_manipulate_door_position(qtbot: QtBot, installation: HTInstallation, test_files_dir: pathlib.Path):
     """Test manipulating door position."""
     editor = GITEditor(None, installation)
     qtbot.addWidget(editor)
-    
+
     _load_git_file_for_testing(editor, installation, test_files_dir)
     qtbot.waitUntil(lambda: editor._git is not None, timeout=2000)
-    
+
     door = GITDoor(15.0, 25.0, 2.0)
     door.resref = ResRef("test_door")
     editor.git().doors.append(door)
-    
+
     test_positions = [
         Vector3(0.0, 0.0, 0.0),
         Vector3(150.0, 250.0, 10.0),
         Vector3(-75.0, -125.0, -5.0),
     ]
-    
+
     for pos in test_positions:
         door.position = pos
         data, _ = editor.build()
@@ -567,14 +568,14 @@ def test_git_editor_manipulate_door_bearing(qtbot: QtBot, installation: HTInstal
     """Test manipulating door bearing."""
     editor = GITEditor(None, installation)
     qtbot.addWidget(editor)
-    
+
     _load_git_file_for_testing(editor, installation, test_files_dir)
     qtbot.waitUntil(lambda: editor._git is not None, timeout=2000)
-    
+
     door = GITDoor(15.0, 25.0, 0.0)
     door.resref = ResRef("test_door")
     editor.git().doors.append(door)
-    
+
     test_bearings = [0.0, math.pi / 4, math.pi / 2, math.pi]
     for bearing in test_bearings:
         door.bearing = bearing
@@ -589,14 +590,14 @@ def test_git_editor_manipulate_door_tag(qtbot: QtBot, installation: HTInstallati
     """Test manipulating door tag."""
     editor = GITEditor(None, installation)
     qtbot.addWidget(editor)
-    
+
     _load_git_file_for_testing(editor, installation, test_files_dir)
     qtbot.waitUntil(lambda: editor._git is not None, timeout=2000)
-    
+
     door = GITDoor(15.0, 25.0, 0.0)
     door.resref = ResRef("test_door")
     editor.git().doors.append(door)
-    
+
     test_tags = ["door_001", "entrance_door", "exit_door", ""]
     for tag in test_tags:
         door.tag = tag
@@ -611,14 +612,14 @@ def test_git_editor_manipulate_door_linked_to_module(qtbot: QtBot, installation:
     """Test manipulating door linked module."""
     editor = GITEditor(None, installation)
     qtbot.addWidget(editor)
-    
+
     _load_git_file_for_testing(editor, installation, test_files_dir)
     qtbot.waitUntil(lambda: editor._git is not None, timeout=2000)
-    
+
     door = GITDoor(15.0, 25.0, 0.0)
     door.resref = ResRef("test_door")
     editor.git().doors.append(door)
-    
+
     test_modules = ["module_001", "test_module", "endmodule", ""]
     for module_str in test_modules:
         door.linked_to_module = ResRef(module_str)
@@ -633,14 +634,14 @@ def test_git_editor_manipulate_door_linked_to(qtbot: QtBot, installation: HTInst
     """Test manipulating door linked to waypoint/door tag."""
     editor = GITEditor(None, installation)
     qtbot.addWidget(editor)
-    
+
     _load_git_file_for_testing(editor, installation, test_files_dir)
     qtbot.waitUntil(lambda: editor._git is not None, timeout=2000)
-    
+
     door = GITDoor(15.0, 25.0, 0.0)
     door.resref = ResRef("test_door")
     editor.git().doors.append(door)
-    
+
     test_linked = ["wp_entrance", "door_exit", "waypoint_01", ""]
     for linked_str in test_linked:
         door.linked_to = linked_str
@@ -655,14 +656,14 @@ def test_git_editor_manipulate_door_linked_to_flags(qtbot: QtBot, installation: 
     """Test manipulating door link type flags."""
     editor = GITEditor(None, installation)
     qtbot.addWidget(editor)
-    
+
     _load_git_file_for_testing(editor, installation, test_files_dir)
     qtbot.waitUntil(lambda: editor._git is not None, timeout=2000)
-    
+
     door = GITDoor(15.0, 25.0, 0.0)
     door.resref = ResRef("test_door")
     editor.git().doors.append(door)
-    
+
     test_flags = [GITModuleLink.NoLink, GITModuleLink.ToDoor, GITModuleLink.ToWaypoint]
     for flag in test_flags:
         door.linked_to_flags = flag
@@ -677,14 +678,14 @@ def test_git_editor_manipulate_door_transition_destination(qtbot: QtBot, install
     """Test manipulating door transition destination LocalizedString."""
     editor = GITEditor(None, installation)
     qtbot.addWidget(editor)
-    
+
     _load_git_file_for_testing(editor, installation, test_files_dir)
     qtbot.waitUntil(lambda: editor._git is not None, timeout=2000)
-    
+
     door = GITDoor(15.0, 25.0, 0.0)
     door.resref = ResRef("test_door")
     editor.git().doors.append(door)
-    
+
     # Test transition destination
     new_transition = LocalizedString.from_english("Test Transition")
     door.transition_destination = new_transition
@@ -699,17 +700,17 @@ def test_git_editor_manipulate_door_tweak_color(qtbot: QtBot, installation: HTIn
     """Test manipulating door tweak color (TSL only)."""
     if not installation.tsl:
         pytest.skip("Door tweak color is TSL-only feature")
-    
+
     editor = GITEditor(None, installation)
     qtbot.addWidget(editor)
-    
+
     _load_git_file_for_testing(editor, installation, test_files_dir)
     qtbot.waitUntil(lambda: editor._git is not None, timeout=2000)
-    
+
     door = GITDoor(15.0, 25.0, 0.0)
     door.resref = ResRef("test_door")
     editor.git().doors.append(door)
-    
+
     # Test various colors
     test_colors = [
         Color(1.0, 0.0, 0.0),  # Red
@@ -718,7 +719,7 @@ def test_git_editor_manipulate_door_tweak_color(qtbot: QtBot, installation: HTIn
         Color(0.5, 0.5, 0.5),  # Gray
         None,  # No color
     ]
-    
+
     for color in test_colors:
         door.tweak_color = color
         data, _ = editor.build()
@@ -738,10 +739,10 @@ def test_git_editor_manipulate_door_all_properties_combination(qtbot: QtBot, ins
     """Test manipulating all door properties simultaneously."""
     editor = GITEditor(None, installation)
     qtbot.addWidget(editor)
-    
+
     _load_git_file_for_testing(editor, installation, test_files_dir)
     qtbot.waitUntil(lambda: editor._git is not None, timeout=2000)
-    
+
     door = GITDoor(100.0, 200.0, 10.0)
     door.resref = ResRef("combo_door")
     door.tag = "door_tag_combo"
@@ -753,7 +754,7 @@ def test_git_editor_manipulate_door_all_properties_combination(qtbot: QtBot, ins
     if installation.tsl:
         door.tweak_color = Color(0.8, 0.6, 0.4)
     editor.git().doors.append(door)
-    
+
     data, _ = editor.build()
     modified_git = read_git(data)
     modified_door = next((d for d in modified_git.doors if str(d.resref) == "combo_door"), None)
@@ -773,24 +774,25 @@ def test_git_editor_manipulate_door_all_properties_combination(qtbot: QtBot, ins
 # PLACEABLE INSTANCE MANIPULATIONS
 # ============================================================================
 
+
 def test_git_editor_manipulate_placeable_position(qtbot: QtBot, installation: HTInstallation, test_files_dir: pathlib.Path):
     """Test manipulating placeable position."""
     editor = GITEditor(None, installation)
     qtbot.addWidget(editor)
-    
+
     _load_git_file_for_testing(editor, installation, test_files_dir)
     qtbot.waitUntil(lambda: editor._git is not None, timeout=2000)
-    
+
     placeable = GITPlaceable(20.0, 30.0, 1.0)
     placeable.resref = ResRef("test_placeable")
     editor.git().placeables.append(placeable)
-    
+
     test_positions = [
         Vector3(0.0, 0.0, 0.0),
         Vector3(200.0, 300.0, 15.0),
         Vector3(-100.0, -150.0, -7.5),
     ]
-    
+
     for pos in test_positions:
         placeable.position = pos
         data, _ = editor.build()
@@ -806,14 +808,14 @@ def test_git_editor_manipulate_placeable_bearing(qtbot: QtBot, installation: HTI
     """Test manipulating placeable bearing."""
     editor = GITEditor(None, installation)
     qtbot.addWidget(editor)
-    
+
     _load_git_file_for_testing(editor, installation, test_files_dir)
     qtbot.waitUntil(lambda: editor._git is not None, timeout=2000)
-    
+
     placeable = GITPlaceable(20.0, 30.0, 0.0)
     placeable.resref = ResRef("test_placeable")
     editor.git().placeables.append(placeable)
-    
+
     test_bearings = [0.0, math.pi / 6, math.pi / 3, math.pi / 2, math.pi]
     for bearing in test_bearings:
         placeable.bearing = bearing
@@ -828,13 +830,13 @@ def test_git_editor_manipulate_placeable_resref(qtbot: QtBot, installation: HTIn
     """Test manipulating placeable ResRef."""
     editor = GITEditor(None, installation)
     qtbot.addWidget(editor)
-    
+
     _load_git_file_for_testing(editor, installation, test_files_dir)
     qtbot.waitUntil(lambda: editor._git is not None, timeout=2000)
-    
+
     placeable = GITPlaceable(20.0, 30.0, 0.0)
     editor.git().placeables.append(placeable)
-    
+
     test_resrefs = ["placeable_001", "container_01", "workbench", ""]
     for resref_str in test_resrefs:
         placeable.resref = ResRef(resref_str)
@@ -849,14 +851,14 @@ def test_git_editor_manipulate_placeable_tag(qtbot: QtBot, installation: HTInsta
     """Test manipulating placeable tag."""
     editor = GITEditor(None, installation)
     qtbot.addWidget(editor)
-    
+
     _load_git_file_for_testing(editor, installation, test_files_dir)
     qtbot.waitUntil(lambda: editor._git is not None, timeout=2000)
-    
+
     placeable = GITPlaceable(20.0, 30.0, 0.0)
     placeable.resref = ResRef("test_placeable")
     editor.git().placeables.append(placeable)
-    
+
     test_tags = ["placeable_tag_01", "container_tag", ""]
     for tag in test_tags:
         placeable.tag = tag
@@ -871,24 +873,24 @@ def test_git_editor_manipulate_placeable_tweak_color(qtbot: QtBot, installation:
     """Test manipulating placeable tweak color (TSL only)."""
     if not installation.tsl:
         pytest.skip("Placeable tweak color is TSL-only feature")
-    
+
     editor = GITEditor(None, installation)
     qtbot.addWidget(editor)
-    
+
     _load_git_file_for_testing(editor, installation, test_files_dir)
     qtbot.waitUntil(lambda: editor._git is not None, timeout=2000)
-    
+
     placeable = GITPlaceable(20.0, 30.0, 0.0)
     placeable.resref = ResRef("test_placeable")
     editor.git().placeables.append(placeable)
-    
+
     test_colors = [
         Color(1.0, 1.0, 0.0),  # Yellow
         Color(1.0, 0.5, 0.0),  # Orange
         Color(0.5, 0.5, 1.0),  # Light Blue
         None,
     ]
-    
+
     for color in test_colors:
         placeable.tweak_color = color
         data, _ = editor.build()
@@ -907,6 +909,7 @@ def test_git_editor_manipulate_placeable_tweak_color(qtbot: QtBot, installation:
 # ============================================================================
 # WAYPOINT INSTANCE MANIPULATIONS
 # ============================================================================
+
 
 def test_git_editor_manipulate_waypoint_position(qtbot: QtBot, installation: HTInstallation, test_files_dir: pathlib.Path):
     """Test manipulating waypoint position."""
@@ -1036,6 +1039,7 @@ def test_git_editor_manipulate_waypoint_map_note(qtbot: QtBot, installation: HTI
 # ============================================================================
 # TRIGGER INSTANCE MANIPULATIONS
 # ============================================================================
+
 
 def test_git_editor_manipulate_trigger_position(qtbot: QtBot, installation: HTInstallation, test_files_dir: pathlib.Path):
     """Test manipulating trigger position."""
@@ -1212,6 +1216,7 @@ def test_git_editor_manipulate_trigger_transition_destination(qtbot: QtBot, inst
 # ENCOUNTER INSTANCE MANIPULATIONS
 # ============================================================================
 
+
 def test_git_editor_manipulate_encounter_position(qtbot: QtBot, installation: HTInstallation, test_files_dir: pathlib.Path):
     """Test manipulating encounter position."""
     editor = GITEditor(None, installation)
@@ -1342,6 +1347,7 @@ def test_git_editor_headless_encounter_manipulations(qtbot: QtBot, installation:
 # SOUND INSTANCE MANIPULATIONS
 # ============================================================================
 
+
 def test_git_editor_manipulate_sound_position(qtbot: QtBot, installation: HTInstallation, test_files_dir: pathlib.Path):
     """Test manipulating sound position."""
     editor = GITEditor(None, installation)
@@ -1403,6 +1409,7 @@ def test_git_editor_manipulate_sound_tag(qtbot: QtBot, installation: HTInstallat
 # ============================================================================
 # STORE INSTANCE MANIPULATIONS
 # ============================================================================
+
 
 def test_git_editor_manipulate_store_position(qtbot: QtBot, installation: HTInstallation, test_files_dir: pathlib.Path):
     """Test manipulating store position."""
@@ -1483,6 +1490,7 @@ def test_git_editor_headless_store_manipulations(qtbot: QtBot, installation: HTI
 # ============================================================================
 # CAMERA INSTANCE MANIPULATIONS
 # ============================================================================
+
 
 def test_git_editor_manipulate_camera_position(qtbot: QtBot, installation: HTInstallation, test_files_dir: pathlib.Path):
     """Test manipulating camera position."""
@@ -1631,6 +1639,7 @@ def test_git_editor_manipulate_camera_id(qtbot: QtBot, installation: HTInstallat
 # VISIBILITY TOGGLE TESTS
 # ============================================================================
 
+
 def test_git_editor_visibility_toggle_creatures(qtbot: QtBot, installation: HTInstallation, test_files_dir: pathlib.Path):
     """Test toggling creature visibility checkbox."""
     editor = GITEditor(None, installation)
@@ -1777,6 +1786,7 @@ def test_git_editor_visibility_double_click_exclusive(qtbot: QtBot, installation
 # FILTER FUNCTIONALITY TESTS
 # ============================================================================
 
+
 def test_git_editor_filter_by_text(qtbot: QtBot, installation: HTInstallation, test_files_dir: pathlib.Path):
     """Test filtering instances by text."""
     editor = GITEditor(None, installation)
@@ -1831,6 +1841,7 @@ def test_git_editor_filter_case_insensitive(qtbot: QtBot, installation: HTInstal
 # ============================================================================
 # SAVE/LOAD ROUNDTRIP TESTS
 # ============================================================================
+
 
 def test_git_editor_save_load_roundtrip_identity(qtbot: QtBot, installation: HTInstallation, test_files_dir: pathlib.Path):
     """Test that save/load roundtrip preserves all data exactly."""
@@ -2046,6 +2057,7 @@ def test_git_editor_headless_multiple_save_load_cycles(qtbot: QtBot, installatio
 # INSTANCE MANIPULATION TESTS (MOVE, ROTATE, DELETE, DUPLICATE)
 # ============================================================================
 
+
 def test_git_editor_move_creature(qtbot: QtBot, installation: HTInstallation, test_files_dir: pathlib.Path):
     """Test moving a creature instance."""
     editor = GITEditor(None, installation)
@@ -2056,6 +2068,7 @@ def test_git_editor_move_creature(qtbot: QtBot, installation: HTInstallation, te
     creature.resref = ResRef("test_move")
     editor.git().creatures.append(creature)
     from toolset.gui.editors.git.undo import MoveCommand
+
     old_position = Vector3(creature.position.x, creature.position.y, creature.position.z)
     new_position = Vector3(100.0, 200.0, 10.0)
     creature.position = new_position
@@ -2080,6 +2093,7 @@ def test_git_editor_rotate_creature(qtbot: QtBot, installation: HTInstallation, 
     creature.bearing = 0.0
     editor.git().creatures.append(creature)
     from toolset.gui.editors.git.undo import RotateCommand
+
     old_bearing = creature.bearing
     new_bearing = math.pi / 2
     creature.bearing = new_bearing
@@ -2103,6 +2117,7 @@ def test_git_editor_delete_creature(qtbot: QtBot, installation: HTInstallation, 
     editor.git().creatures.append(creature)
     assert len(editor.git().creatures) == initial_count + 1
     from toolset.gui.editors.git.undo import DeleteCommand
+
     editor._controls.undo_stack.push(DeleteCommand(editor.git(), [creature], editor))
     editor.git().remove(creature)
     editor.enter_instance_mode()
@@ -2125,6 +2140,7 @@ def test_git_editor_duplicate_creature(qtbot: QtBot, installation: HTInstallatio
     editor.git().creatures.append(creature)
     from copy import deepcopy
     from toolset.gui.editors.git.undo import DuplicateCommand
+
     duplicated = deepcopy(creature)
     duplicated.position = Vector3(30.0, 40.0, 0.0)
     editor._controls.undo_stack.push(DuplicateCommand(editor.git(), [duplicated], editor))
@@ -2171,6 +2187,7 @@ def test_git_editor_headless_instance_manipulations(qtbot: QtBot, installation: 
 # ============================================================================
 # MULTIPLE INSTANCE TYPE TESTS
 # ============================================================================
+
 
 def test_git_editor_add_all_instance_types(qtbot: QtBot, installation: HTInstallation, test_files_dir: pathlib.Path):
     """Test adding one of each instance type."""
@@ -2236,6 +2253,7 @@ def test_git_editor_add_all_instance_types(qtbot: QtBot, installation: HTInstall
 # ============================================================================
 # EDGE CASES AND BOUNDARY TESTS
 # ============================================================================
+
 
 def test_git_editor_empty_git_file(qtbot: QtBot, installation: HTInstallation):
     """Test creating and saving an empty GIT file."""
@@ -2387,6 +2405,7 @@ def test_git_editor_extreme_bearings(qtbot: QtBot, installation: HTInstallation,
 # GFF ROUNDTRIP VALIDATION TESTS
 # ============================================================================
 
+
 def test_git_editor_gff_roundtrip_comparison(qtbot: QtBot, installation: HTInstallation, test_files_dir: pathlib.Path):
     """Test GFF roundtrip comparison like resource tests."""
     editor = GITEditor(None, installation)
@@ -2481,6 +2500,7 @@ def test_git_editor_comprehensive_gff_roundtrip(qtbot: QtBot, installation: HTIn
     """Comprehensive test that validates ALL GFF fields are preserved through editor roundtrip."""
     from pykotor.resource.formats.gff import GFFFieldType
     from pykotor.resource.formats.gff.gff_data import GFFStruct, GFFList
+
     editor = GITEditor(None, installation)
     qtbot.addWidget(editor)
     git_file = _load_git_file_for_testing(editor, installation, test_files_dir)
@@ -2489,7 +2509,7 @@ def test_git_editor_comprehensive_gff_roundtrip(qtbot: QtBot, installation: HTIn
     qtbot.waitUntil(lambda: editor._git is not None, timeout=2000)
     original_data = git_file.read_bytes()
     original_gff = read_gff(original_data)
-    
+
     def get_all_fields(struct: GFFStruct, prefix: str = "") -> dict:
         """Recursively extract all fields from a GFF struct."""
         fields = {}
@@ -2506,13 +2526,14 @@ def test_git_editor_comprehensive_gff_roundtrip(qtbot: QtBot, installation: HTIn
                     fields.update(get_all_fields(item, f"{full_label}[{i}]."))
             elif field_type == GFFFieldType.LocalizedString:
                 from pykotor.common.language import LocalizedString
+
                 locstr = struct.acquire(label, LocalizedString.from_invalid())
                 locstr_tuples = sorted((lang.value, gender.value, str(text)) for lang, gender, text in locstr)
                 fields[full_label] = ("LocalizedString", locstr.stringref, tuple(locstr_tuples))
             else:
                 fields[full_label] = (field_type.name, value)
         return fields
-    
+
     original_fields = get_all_fields(original_gff.root)
     editor.load(git_file, git_file.stem, ResourceType.GIT, original_data)
     new_data, _ = editor.build()
@@ -2549,6 +2570,7 @@ def test_git_editor_headless_comprehensive_gff_roundtrip(qtbot: QtBot, installat
     """Headless variant: Comprehensive test that validates ALL GFF fields are preserved through editor roundtrip without UI."""
     from pykotor.resource.formats.gff import GFFFieldType
     from pykotor.resource.formats.gff.gff_data import GFFStruct, GFFList
+
     editor = GITEditor(None, installation)
     qtbot.addWidget(editor)
     git_file = _load_git_file_for_testing(editor, installation, test_files_dir)
@@ -2557,7 +2579,7 @@ def test_git_editor_headless_comprehensive_gff_roundtrip(qtbot: QtBot, installat
     qtbot.waitUntil(lambda: editor._git is not None, timeout=2000)
     original_data = git_file.read_bytes()
     original_gff = read_gff(original_data)
-    
+
     def get_all_fields(struct: GFFStruct, prefix: str = "") -> dict:
         """Recursively extract all fields from a GFF struct."""
         fields = {}
@@ -2574,13 +2596,14 @@ def test_git_editor_headless_comprehensive_gff_roundtrip(qtbot: QtBot, installat
                     fields.update(get_all_fields(item, f"{full_label}[{i}]."))
             elif field_type == GFFFieldType.LocalizedString:
                 from pykotor.common.language import LocalizedString
+
                 locstr = struct.acquire(label, LocalizedString.from_invalid())
                 locstr_tuples = sorted((lang.value, gender.value, str(text)) for lang, gender, text in locstr)
                 fields[full_label] = ("LocalizedString", locstr.stringref, tuple(locstr_tuples))
             else:
                 fields[full_label] = (field_type.name, value)
         return fields
-    
+
     original_fields = get_all_fields(original_gff.root)
     editor.load(git_file, git_file.stem, ResourceType.GIT, original_data)
     new_data, _ = editor.build()
@@ -2616,6 +2639,7 @@ def test_git_editor_headless_comprehensive_gff_roundtrip(qtbot: QtBot, installat
 # ============================================================================
 # COMBINATION TESTS - Multiple manipulations
 # ============================================================================
+
 
 def test_git_editor_all_area_properties_and_instances_combination(qtbot: QtBot, installation: HTInstallation, test_files_dir: pathlib.Path):
     """Test manipulating all area properties and multiple instance types simultaneously."""

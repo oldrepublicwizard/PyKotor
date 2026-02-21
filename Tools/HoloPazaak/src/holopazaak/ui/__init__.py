@@ -2,6 +2,7 @@
 
 This module provides the graphical user interface using qtpy (PyQt6).
 """
+
 from holopazaak.ui.styles import Theme
 from holopazaak.ui.widgets import (
     ActionButton,
@@ -29,4 +30,3 @@ __all__ = [
     "DeckBuilderDialog",
     "PazaakWindow",
 ]
-

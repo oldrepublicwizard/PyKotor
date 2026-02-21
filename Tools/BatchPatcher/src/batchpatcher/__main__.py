@@ -5,7 +5,6 @@ import concurrent.futures
 import os
 import pathlib
 import sys
-import tempfile
 import tkinter as tk
 import traceback
 
@@ -299,11 +298,11 @@ def convert_gff_game(
         savepath = converted_data
     else:
         # TODO(th3w1zard1): define this up the stack
-        #savepath = (
+        # savepath = (
         #    resource.filepath().with_name(f"{resource.filepath().stem}_{to_game.name!s}{resource.filepath().suffix}")
         #    if SCRIPT_GLOBALS.always_backup
         #    else resource.filepath()
-        #)
+        # )
         savepath = resource.filepath()
     log_output(f"Converting {resource.path_ident().parent}/{resource.path_ident().name} to {to_game.name}")
     generic: Any
@@ -415,11 +414,10 @@ def process_translations(tlk: TLK, from_lang: Language):
         if "actual text to be translated" in text:
             return text, text
         return text, SCRIPT_GLOBALS.pytranslator.translate(text, from_lang=from_lang)
+
     with concurrent.futures.ThreadPoolExecutor(max_workers=SCRIPT_GLOBALS.max_threads) as executor:
         # Create a future for each translation task
-        future_to_strref: dict[concurrent.futures.Future[tuple[str, str]], int] = {
-            executor.submit(translate_entry, tlkentry, from_lang): strref for strref, tlkentry in tlk
-        }
+        future_to_strref: dict[concurrent.futures.Future[tuple[str, str]], int] = {executor.submit(translate_entry, tlkentry, from_lang): strref for strref, tlkentry in tlk}
 
         for future in concurrent.futures.as_completed(future_to_strref):
             strref: int = future_to_strref[future]
@@ -436,7 +434,6 @@ def process_translations(tlk: TLK, from_lang: Language):
 
 
 def patch_resource(resource: FileResource) -> GFF | TPC | None:
-
     if resource.restype().extension.lower() == "tlk" and SCRIPT_GLOBALS.translate and SCRIPT_GLOBALS.pytranslator:
         tlk: TLK | None = None
         log_output(f"Loading TLK '{resource.filepath()}'")
@@ -474,7 +471,6 @@ def patch_resource(resource: FileResource) -> GFF | TPC | None:
             log_output(traceback.format_exc())
             return None
 
-
     if resource.restype().name.upper() in {x.name for x in GFFContent}:
         if SCRIPT_GLOBALS.k1_convert_gffs and not resource.inside_capsule:
             convert_gff_game(Game.K2, resource)
@@ -497,25 +493,12 @@ def patch_resource(resource: FileResource) -> GFF | TPC | None:
                 gff,
                 resource.path_ident(),  # noqa: SLF001
             )
-            if (
-                SCRIPT_GLOBALS.set_unskippable
-                and alien_owner in {0, "0", None}
-                and alien_vo_count != -1
-                and alien_vo_count < 3
-                and gff.content is GFFContent.DLG
-            ):
+            if SCRIPT_GLOBALS.set_unskippable and alien_owner in {0, "0", None} and alien_vo_count != -1 and alien_vo_count < 3 and gff.content is GFFContent.DLG:
                 skippable = gff.root.acquire("Skippable", None)
                 if skippable not in {0, "0"}:
                     conversationtype = gff.root.acquire("ConversationType", None)
                     if conversationtype not in {"1", 1}:
-                        print(
-                            "Skippable",
-                            skippable,
-                            "alien_vo_count",
-                            alien_vo_count,
-                            "ConversationType",
-                            conversationtype
-                        )
+                        print("Skippable", skippable, "alien_vo_count", alien_vo_count, "ConversationType", conversationtype)
                         log_output(f"Setting dialog {resource.path_ident()} as unskippable")
                         made_change |= True
                         gff.root.set_uint8("Skippable", 0)
@@ -973,7 +956,7 @@ class KOTORPatchingToolUI:
         browse_folder_button.grid(row=row, column=3, padx=2)  # Stick to both sides within its cell
         browse_folder_button.config(width=15)
         browse_file_button = ttk.Button(self.root, text="Browse File", command=self.browse_source_file)
-        browse_file_button.grid(row=row+1, column=3, padx=2)  # Stick to both sides within its cell
+        browse_file_button.grid(row=row + 1, column=3, padx=2)  # Stick to both sides within its cell
         browse_file_button.config(width=15)
         row += 1
 
@@ -1273,7 +1256,7 @@ class KOTORPatchingToolUI:
         -------
             Hex color string (e.g., "#FFFFFF") if found, None otherwise
         """
-        if not hasattr(self, 'path') or not self.path.get():
+        if not hasattr(self, "path") or not self.path.get():
             return None
 
         try:
@@ -1291,10 +1274,7 @@ class KOTORPatchingToolUI:
             installation = Installation(install_path)
 
             # Look for GUI files that might contain font color information
-            gui_files = [
-                "mainmenu.gui", "dialog.gui", "journal.gui", "charinfo.gui",
-                "ingame.gui", "loadscreen.gui", "partyselect.gui"
-            ]
+            gui_files = ["mainmenu.gui", "dialog.gui", "journal.gui", "charinfo.gui", "ingame.gui", "loadscreen.gui", "partyselect.gui"]
 
             for gui_filename in gui_files:
                 try:
@@ -1342,7 +1322,7 @@ class KOTORPatchingToolUI:
             color_field = struct.acquire("COLOR", None)
             if color_field is not None:
                 # COLOR is stored as a vector3 (RGB 0.0-1.0)
-                if hasattr(color_field, '__iter__') and len(color_field) >= 3:
+                if hasattr(color_field, "__iter__") and len(color_field) >= 3:
                     # Convert from 0.0-1.0 range to 0-255 range
                     r = int(color_field[0] * 255)
                     g = int(color_field[1] * 255)

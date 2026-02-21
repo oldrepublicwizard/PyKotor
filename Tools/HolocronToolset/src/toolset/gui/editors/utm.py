@@ -113,6 +113,7 @@ class UTMEditor(Editor):
         restype: ResourceType,
         data: bytes,
     ):
+        """Load resource and populate UI from UTM. Defaults from construct_utm (K1 LoadStore 0x005c7180; TSL TODO)."""
         super().load(filepath, resref, restype, data)
 
         utm: UTM = read_utm(data)
@@ -128,11 +129,7 @@ class UTMEditor(Editor):
         ----
             utm (UTM): UTM object to load data from
 
-        Processing Logic:
-        ----------------
-            - Sets name, tag, resref, id, markups from UTM object
-            - Sets can_buy, can_sell flags from UTM object
-            - Sets comment text from UTM object.
+        Defaults from construct_utm; K1 LoadStore 0x005c7180; TSL same (addresses TODO). Sets name, tag, resref, markups, can_buy/can_sell, inventory, comment.
         """
         self._utm = utm
 
@@ -150,19 +147,13 @@ class UTMEditor(Editor):
         self.ui.commentsEdit.setPlainText(utm.comment)
 
     def build(self) -> tuple[bytes, bytes]:
-        """Builds a UTM object from UI fields.
+        """Builds a UTM from UI data.
 
         Returns:
         -------
-            data: The built UTM data.
-            b"": An empty bytes object.
+            tuple[bytes, bytes]: GFF data and log.
 
-        Processing Logic:
-        ----------------
-            - Populate UTM object fields from UI elements
-            - Convert UTM to GFF format
-            - Write GFF to bytearray
-            - Return bytearray and empty bytes
+        Populates UTM from UI, then dismantle_utm (K1 LoadStore 0x005c7180, SaveStore 0x005c6cd0; TSL TODO). Returns GFF bytes and log.
         """
         utm: UTM = deepcopy(self._utm)
 
@@ -233,3 +224,10 @@ class UTMEditor(Editor):
         )
         if inventoryEditor.exec():
             self._utm.inventory = inventoryEditor.inventory
+
+if __name__ == "__main__":
+    import sys
+
+    from toolset.gui.editors.standalone import launch_editor_cli
+
+    sys.exit(launch_editor_cli("utm"))

@@ -6,7 +6,7 @@ UTS files define [sound object templates](GFF-File-Format#uts-sound) for ambient
 
 **Official Bioware Documentation:** For the authoritative Bioware Aurora Engine Sound Object format specification, see [Bioware Aurora Sound Object Format](Bioware-Aurora-SoundObject).
 
-**Reference**: [`Libraries/PyKotor/src/pykotor/resource/generics/uts.py`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/uts.py)
+**Reference**: [`Libraries/PyKotor/src/pykotor/resource/generics/uts.py`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/uts.py). Field types and ranges are verified against K1 `CSWSSoundObject::Load` @ 0x005c9040 (reva); the Sound editor UI tooltips and min/max match these.
 
 ## Core Identity fields
 
@@ -19,24 +19,26 @@ UTS files define [sound object templates](GFF-File-Format#uts-sound) for ambient
 
 ## Playback Control
 
-| field | type | Description |
-| ----- | ---- | ----------- |
-| `Active` | Byte | Sound is currently active |
-| `Continuous` | Byte | Sound plays continuously |
-| `Looping` | Byte | Individual samples loop |
-| `Positional` | Byte | Sound is 3D positional |
-| `Random` | Byte | Randomly select from Sounds list |
-| `Volume` | Byte | Volume level (0-127) |
-| `VolumeVary` | Byte | Random volume variation |
-| `PitchVary` | Byte | Random pitch variation |
+**Verified (Reva):** K1 `CSWSSoundObject::Load` @ 0x005c9040, `Save` @ 0x005c86d0. Field types match engine.
+
+| field | type | Min | Max | Description |
+| ----- | ---- | --- | --- | ----------- |
+| `Active` | Byte | 0 | 1 | Sound is currently active |
+| `Continuous` | Byte | 0 | 1 | Sound plays continuously |
+| `Looping` | Byte | 0 | 1 | Individual samples loop |
+| `Positional` | Byte | 0 | 1 | Sound is 3D positional |
+| `Random` | Byte | 0 | 1 | Randomly select from Sounds list |
+| `Volume` | Byte | 0 | 255 | Volume level (0=silent, 255=full) |
+| `VolumeVrtn` | Byte | 0 | 255 | Random volume variation |
+| `PitchVariation` | Float | - | - | Random pitch variation |
 
 ## Timing & Interval
 
-| field | type | Description |
-| ----- | ---- | ----------- |
-| `Interval` | Int | Delay between plays (seconds) |
-| `IntervalVary` | Int | Random interval variation |
-| `Times` | Int | Times to play (unused) |
+| field | type | Min | Max | Description |
+| ----- | ---- | --- | --- | ----------- |
+| `Interval` | DWord | 0 | 4294967295 | Delay between plays (seconds) |
+| `IntervalVrtn` | DWord | 0 | 4294967295 | Random interval variation |
+| `Times` | Byte | 0 | 255 | Times to play (unused by engine) |
 
 **Playback Modes:**
 

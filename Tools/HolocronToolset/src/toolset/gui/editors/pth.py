@@ -253,12 +253,7 @@ class PTHEditor(Editor):
         restype: ResourceType,
         data: bytes,
     ):
-        """Load PTH from bytes via read_pth/construct_pth.
-
-        Defaults when fields are missing follow engine: CSWSArea::LoadPathPoints
-        @ (K1: 0x00508400, TSL: 0x00721db0). See construct_pth in generics.pth for
-        per-field defaults (X/Y 0.0, Conections/First_Conection/Destination 0).
-        """
+        """Load PTH from bytes. Defaults when missing: see construct_pth. REVA: K1 LoadPathPoints @ 0x00508400 (LoadArea @ 0x0050e190), TSL LoadPathPoints @ 0x00721db0 (LoadArea @ 0x00718860)."""
         super().load(filepath, resref, restype, data)
 
         order: list[SearchLocation] = [SearchLocation.OVERRIDE, SearchLocation.CHITIN, SearchLocation.MODULES]
@@ -288,11 +283,7 @@ class PTHEditor(Editor):
         self.ui.renderArea.set_pth(pth)
 
     def build(self) -> tuple[bytes, bytes]:
-        """Serialize PTH via bytes_pth/dismantle_pth.
-
-        Output matches engine expectations; see dismantle_pth in generics.pth and
-        CSWSArea::LoadPathPoints @ (K1: 0x00508400, TSL: 0x00721db0).
-        """
+        """Build PTH bytes from editor state. Write values match engine. REVA: K1 LoadPathPoints @ 0x00508400, TSL @ 0x00721db0."""
         return bytes_pth(self._pth), b""
 
     def new(self):
@@ -662,3 +653,10 @@ class PTHControlScheme:
 
     @delete_selected.setter
     def delete_selected(self, value): ...
+
+if __name__ == "__main__":
+    import sys
+
+    from toolset.gui.editors.standalone import launch_editor_cli
+
+    sys.exit(launch_editor_cli("pth"))

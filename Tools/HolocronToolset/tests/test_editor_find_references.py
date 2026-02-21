@@ -148,7 +148,7 @@ class TestComboBox2DAFindReferences:
         from qtpy.QtWidgets import QWidget
         from pykotor.resource.type import ResourceType
         from pykotor.extract.installation import SearchLocation
-        
+
         # Create a ComboBox2DA with a parent widget
         parent = QWidget()
         qtbot.addWidget(parent)
@@ -158,11 +158,13 @@ class TestComboBox2DAFindReferences:
         # Set a 2DA file - load it from installation and use set_context
         try:
             from toolset.data.installation import HTInstallation
+
             resname = "classes"
             order = [SearchLocation.OVERRIDE, SearchLocation.MODULES, SearchLocation.CHITIN]
             result = installation.resource(resname, ResourceType.TwoDA, order)
             if result:
                 from pykotor.resource.formats.twoda.twoda_auto import read_2da
+
                 twoda_data = read_2da(result.data)
                 combo.set_context(twoda_data, installation, resname)
                 combo.set_items(twoda_data.get_column("label"))
@@ -193,6 +195,7 @@ class TestComboBox2DAFindReferences:
             result = installation.resource(resname, ResourceType.TwoDA, order)
             if result:
                 from pykotor.resource.formats.twoda.twoda_auto import read_2da
+
                 twoda_data = read_2da(result.data)
                 combo.set_context(twoda_data, installation, resname)
                 combo.set_items(twoda_data.get_column("label"))

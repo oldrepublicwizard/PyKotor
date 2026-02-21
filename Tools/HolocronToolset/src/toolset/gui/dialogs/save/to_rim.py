@@ -25,23 +25,23 @@ class RimSaveDialog(QDialog):
         self.setWindowFlags(
             Qt.WindowType.Dialog  # pyright: ignore[reportArgumentType]
             | Qt.WindowType.WindowCloseButtonHint
-            | Qt.WindowType.WindowStaysOnTopHint
-            & ~Qt.WindowType.WindowContextHelpButtonHint
-            & ~Qt.WindowType.WindowMinMaxButtonsHint
+            | Qt.WindowType.WindowStaysOnTopHint & ~Qt.WindowType.WindowContextHelpButtonHint & ~Qt.WindowType.WindowMinMaxButtonsHint
         )
 
         from toolset.uic.qtpy.dialogs.save_in_rim import Ui_Dialog
+
         self.ui = Ui_Dialog()
         self.ui.setupUi(self)
-        
+
         # Setup event filter to prevent scroll wheel interaction with controls
         from toolset.gui.common.filters import NoScrollEventFilter
+
         self._no_scroll_filter = NoScrollEventFilter(self)
         self._no_scroll_filter.setup_filter(parent_widget=self)
 
-        self.ui.cancelButton.clicked.connect(self.reject)
-        self.ui.modSaveButton.clicked.connect(self.save_as_mod)
-        self.ui.overrideSaveButton.clicked.connect(self.save_as_override)
+        self.ui.cancelButton.clicked.connect(lambda: self.reject())
+        self.ui.modSaveButton.clicked.connect(lambda: self.save_as_mod())
+        self.ui.overrideSaveButton.clicked.connect(lambda: self.save_as_override())
 
         self.option: RimSaveOption = RimSaveOption.Nothing
 

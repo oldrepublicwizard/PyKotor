@@ -82,9 +82,10 @@ class TPCEditor(Editor):
         self._setup_context_menu()
         self._setup_drag_drop()
         self._setup_properties_panel()
-        
+
         # Setup event filter to prevent scroll wheel interaction with controls
         from toolset.gui.common.filters import NoScrollEventFilter
+
         self._no_scroll_filter = NoScrollEventFilter(self)
         self._no_scroll_filter.setup_filter(parent_widget=self)
 
@@ -189,9 +190,7 @@ class TPCEditor(Editor):
         self.ui.actionFlipVertical.setIcon(QIcon.fromTheme("object-flip-vertical"))
 
         # Other
-        self.ui.actionToggleTXIEditor.setIcon(
-            style.standardIcon(QStyle.StandardPixmap.SP_FileDialogDetailedView)
-        )
+        self.ui.actionToggleTXIEditor.setIcon(style.standardIcon(QStyle.StandardPixmap.SP_FileDialogDetailedView))
 
     def _setup_context_menu(self) -> None:
         """Set up context menu for texture display."""
@@ -227,7 +226,7 @@ class TPCEditor(Editor):
         # Create drag object
         drag = QDrag(self)
         mime_data = drag.mimeData()
-        
+
         # Set image data
         image = pixmap.toImage()
         buffer = QBuffer()
@@ -289,6 +288,7 @@ class TPCEditor(Editor):
             self._animate_copy_action()
 
             from toolset.gui.common.localization import translate as tr, trf
+
             self.ui.statusbar.showMessage(tr("Texture copied to clipboard"), 2000)
         except Exception as e:  # noqa: BLE001
             QMessageBox.critical(self, tr("Copy Failed"), trf("Failed to copy texture:\n{error}", error=str(e)))
@@ -296,17 +296,18 @@ class TPCEditor(Editor):
     def _animate_copy_action(self) -> None:
         """Animate the texture label when copying."""
         original_style: str = self.ui.textureLabel.styleSheet()
-        
+
         # Flash effect
         # Get palette color for success/confirmation indicator
         from qtpy.QtGui import QPalette
+
         app = QApplication.instance()
         if app is not None and isinstance(app, QApplication):
             palette = app.palette()
         else:
             # Use default palette for fallback
             palette = QPalette()
-        
+
         link_color = palette.color(QPalette.ColorRole.Link)
         # Use link color for success (green-like), or create a green variant
         success_color = QColor(link_color)
@@ -324,15 +325,15 @@ class TPCEditor(Editor):
             success_color.setGreen(min(255, int(success_color.green() * 0.8 + 30)))
             success_color.setBlue(min(255, int(success_color.blue() * 0.2)))
         border_color = success_color.name()
-        
+
         animation = QPropertyAnimation(self.ui.textureLabel, b"styleSheet", self)
         animation.setDuration(200)
         animation.setStartValue(original_style)
         animation.setEndValue(f"{original_style} border: 3px solid {border_color};")
-        
+
         def restore_style():
             self.ui.textureLabel.setStyleSheet(original_style)
-        
+
         animation.finished.connect(restore_style)
         animation.start()
 
@@ -350,6 +351,7 @@ class TPCEditor(Editor):
             pixmap: QPixmap = clipboard.pixmap()
             if pixmap.isNull():
                 from toolset.gui.common.localization import translate as tr
+
                 QMessageBox.warning(self, tr("No Image"), tr("Clipboard does not contain an image."))
                 return
             image = pixmap.toImage()
@@ -387,6 +389,7 @@ class TPCEditor(Editor):
             self._update_properties_panel()
 
             from toolset.gui.common.localization import translate as tr, trf
+
             self.ui.statusbar.showMessage(tr("Texture pasted from clipboard"), 2000)
         except Exception as e:  # noqa: BLE001
             QMessageBox.critical(self, tr("Paste Failed"), trf("Failed to paste texture:\n{error}", error=str(e)))
@@ -394,27 +397,28 @@ class TPCEditor(Editor):
     def _animate_paste_action(self) -> None:
         """Animate the texture label when pasting."""
         original_style = self.ui.textureLabel.styleSheet()
-        
+
         # Flash effect with different color - use palette link color for paste action
         from qtpy.QtGui import QPalette
+
         app = QApplication.instance()
         if app is not None and isinstance(app, QApplication):
             palette = app.palette()
         else:
             # Use default palette for fallback
             palette = QPalette()
-        
+
         link_color = palette.color(QPalette.ColorRole.Link)
         border_color = link_color.name()
-        
+
         animation = QPropertyAnimation(self.ui.textureLabel, b"styleSheet", self)
         animation.setDuration(200)
         animation.setStartValue(original_style)
         animation.setEndValue(f"{original_style} border: 3px solid {border_color};")
-        
+
         def restore_style():
             self.ui.textureLabel.setStyleSheet(original_style)
-        
+
         animation.finished.connect(restore_style)
         animation.start()
 
@@ -521,23 +525,23 @@ class TPCEditor(Editor):
         try:
             # Store original format for error recovery
             original_format = self._tpc.format()
-            
+
             # Perform the conversion
             self._tpc.convert(target_format)
-            
+
             # Verify the conversion succeeded by checking the format
             if self._tpc.format() != target_format:
                 raise ValueError(f"Conversion failed: format is {self._tpc.format().name} instead of {target_format.name}")
-            
+
             # Verify we still have valid mipmap data
             if not self._tpc.layers or not self._tpc.layers[0].mipmaps:
                 raise ValueError("Conversion resulted in empty texture data")
-            
+
             # Check that the first mipmap has valid data
             first_mipmap = self._tpc.layers[0].mipmaps[0]
             if not first_mipmap.data or len(first_mipmap.data) == 0:
                 raise ValueError("Conversion resulted in empty mipmap data")
-            
+
             # Update all displays and controls
             self._current_mipmap = 0  # Reset to first mipmap after conversion
             self._update_texture_display()
@@ -545,8 +549,9 @@ class TPCEditor(Editor):
             self._update_mipmap_controls()
             self._update_status_bar()
             self._update_properties_panel()
-            
+
             from toolset.gui.common.localization import translate as tr, trf
+
             self.ui.statusbar.showMessage(trf("Texture format converted to {format}", format=target_format.name), 3000)
         except Exception as e:  # noqa: BLE001
             # Attempt to restore original format if conversion failed
@@ -558,8 +563,9 @@ class TPCEditor(Editor):
                     self._update_properties_panel()
             except Exception:  # noqa: BLE001
                 pass  # If restore fails, at least show the error
-            
+
             from toolset.gui.common.localization import translate as tr, trf
+
             QMessageBox.critical(
                 self,
                 tr("Conversion Failed"),
@@ -635,7 +641,7 @@ class TPCEditor(Editor):
         self.ui.dimensionsValue.setText(f"{width} × {height}")
         self.ui.formatValue.setText(self._tpc.format().name)
         self.ui.layersValue.setText(str(len(self._tpc.layers)))
-        
+
         mipmap_count = len(self._tpc.layers[0].mipmaps) if self._tpc.layers else 0
         self.ui.mipmapsValue.setText(str(mipmap_count))
         self.ui.alphaTestSpinBox.setValue(self._tpc.alpha_test)
@@ -781,7 +787,7 @@ class TPCEditor(Editor):
                 save_format = format_map.get(file_ext, "PNG")
                 if not qimage.save(file_path, save_format):
                     raise RuntimeError(f"Failed to save image as {save_format}")
-            
+
             QMessageBox.information(self, "Export Successful", f"Texture exported to:\n{file_path}")
         except Exception as e:  # noqa: BLE001
             QMessageBox.critical(self, "Export Failed", f"Failed to export texture:\n{str(e)}")
@@ -927,7 +933,8 @@ class TPCEditor(Editor):
         else:
             # Load from standard image format
             supported_formats: list[str] = [
-                x.data().decode().strip().lstrip(".") for x in QImageReader.supportedImageFormats()  # pyright: ignore[reportGeneralTypeIssues]
+                x.data().decode().strip().lstrip(".")
+                for x in QImageReader.supportedImageFormats()  # pyright: ignore[reportGeneralTypeIssues]
             ]
             if restype.extension.lstrip(".") not in supported_formats:
                 warnings.warn(f"Unsupported image format: {restype.extension!r}", stacklevel=1)
@@ -953,7 +960,7 @@ class TPCEditor(Editor):
             const_bits = image.constBits()
             if const_bits is None:
                 raise ValueError("Failed to extract image data")
-            
+
             bytes_per_pixel = tpc_format.bytes_per_pixel()
             data_size = width * height * bytes_per_pixel
             image_bytes = bytearray(const_bits.asarray(data_size))  # type: ignore[attr-defined]
@@ -982,3 +989,10 @@ class TPCEditor(Editor):
             return bytes(data), b""
 
         return bytes(data), b""
+
+if __name__ == "__main__":
+    import sys
+
+    from toolset.gui.editors.standalone import launch_editor_cli
+
+    sys.exit(launch_editor_cli("tpc"))

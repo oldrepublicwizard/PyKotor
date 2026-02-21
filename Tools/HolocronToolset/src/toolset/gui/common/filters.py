@@ -16,8 +16,7 @@ if TYPE_CHECKING:
 
 class TemplateFilterProxyModel(QSortFilterProxyModel):
     @abstractmethod
-    def get_sort_value(self, index: QModelIndex) -> Any:
-        ...
+    def get_sort_value(self, index: QModelIndex) -> Any: ...
 
 
 class RobustSortFilterProxyModel(TemplateFilterProxyModel):
@@ -84,10 +83,7 @@ class NoScrollEventFilter(QObject):
 
         parent_widget: QObject | None = obj.parent()
         self_parent: QObject | None = self.parent()
-        while parent_widget is not None and (
-            not isinstance(parent_widget, self_parent.__class__)
-            or self_parent.__class__ == QObject
-        ):
+        while parent_widget is not None and (not isinstance(parent_widget, self_parent.__class__) or self_parent.__class__ == QObject):
             parent_widget: QObject | None = parent_widget.parent()
         if parent_widget:
             QApplication.sendEvent(parent_widget, event)
@@ -113,9 +109,9 @@ class NoScrollEventFilter(QObject):
             if not isinstance(widget, QWidget):
                 continue
             if isinstance(widget, tuple(include_types)):
-                #RobustLogger.debug(f"Installing event filter on: {widget.objectName()} (type: {widget.__class__.__name__})")
+                # RobustLogger.debug(f"Installing event filter on: {widget.objectName()} (type: {widget.__class__.__name__})")
                 widget.installEventFilter(self)
-            #else:
+            # else:
             #    RobustLogger.debug(f"Skipping NoScrollEventFilter installation on '{widget.objectName()}' due to instance check {widget.__class__.__name__}.")
             self.setup_filter(include_types, widget)
 
@@ -146,4 +142,3 @@ class HoverEventFilter(QObject):
             else:
                 print("No control is currently hovered.")
         return super().eventFilter(obj, event)
-

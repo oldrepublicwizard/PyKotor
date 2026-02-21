@@ -8,6 +8,11 @@ Part of the [GFF File Format Documentation](GFF-File-Format).
 
 **Reference**: [`Libraries/PyKotor/src/pykotor/resource/generics/jrl.py`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/jrl.py)
 
+**Reva (Engine) References (module format toolset-defined; save format):**
+- K1: CSWSCreature::LoadJournal @ 0x004f17d0 (JNL_Entries, JNL_SortOrder INT, JNL_PlotID, JNL_State/JNL_Date/JNL_Time)
+- TSL: FUN_006fd830 @ 0x006fd830 (same JNL_* save format)
+- Categories/EntryList parsed by toolset only; engine loads save-game JNL_* structure
+
 ## Quest structure
 
 [JRL](GFF-File-Format#jrl-journal) files contain a list of `Categories` (Quests), each containing a list of `EntryList` (States).

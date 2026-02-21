@@ -8,6 +8,8 @@ Part of the [GFF File Format Documentation](GFF-File-Format).
 
 **Reference**: [`Libraries/PyKotor/src/pykotor/resource/generics/utp.py`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/utp.py)
 
+**Verified (Reva):** K1 `CSWSPlaceable::LoadPlaceable` @ 0x00585670. Fields read: Tag (CExoString), TemplateResRef (CResRef), LocName (CExoLocString), AutoRemoveKey, Faction (DWORD), Invulnerable, Plot, Min1HP, PartyInteract, OpenLockDC, KeyName, TrapDisarmable, TrapDetectable, DisarmDC, TrapDetectDC, TrapFlag, TrapOneShot, TrapType, Useable, Static, Appearance (DWORD), HP (SHORT), CurrentHP (SHORT), Hardness, Fort, Will, Ref (BYTE), Lockable, Locked, HasInventory, KeyRequired, CloseLockDC (BYTE), PortraitId (WORD), Portrait (CResRef), Conversation (CResRef), BodyBag, DieWhenEmpty, GroundPile, LightState, Description (CExoLocString). The Placeable editor (utp.ui) spin min/max and all field tooltips are aligned with these types and LoadPlaceable usage.
+
 ## Core Identity fields
 
 | field | type | Description |

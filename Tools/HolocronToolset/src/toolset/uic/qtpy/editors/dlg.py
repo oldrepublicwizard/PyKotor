@@ -138,6 +138,8 @@ class Ui_MainWindow(object):
         sizePolicy.setHeightForWidth(self.script1Param5Spin.sizePolicy().hasHeightForWidth())
         self.script1Param5Spin.setSizePolicy(sizePolicy)
         self.script1Param5Spin.setMaximumSize(QtCore.QSize(85, 16777215))
+        self.script1Param5Spin.setMinimum(-2147483648)
+        self.script1Param5Spin.setMaximum(2147483647)
         self.script1Param5Spin.setObjectName("script1Param5Spin")
         self.horizontalLayout_script1Params.addWidget(self.script1Param5Spin)
         spacerItem1 = QtWidgets.QSpacerItem(40, 20, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum)
@@ -227,6 +229,8 @@ class Ui_MainWindow(object):
         sizePolicy.setHeightForWidth(self.script2Param5Spin.sizePolicy().hasHeightForWidth())
         self.script2Param5Spin.setSizePolicy(sizePolicy)
         self.script2Param5Spin.setMinimumSize(QtCore.QSize(30, 0))
+        self.script2Param5Spin.setMinimum(-2147483648)
+        self.script2Param5Spin.setMaximum(2147483647)
         self.script2Param5Spin.setMinimum(-2147483648)
         self.script2Param5Spin.setMaximum(2147483647)
         self.script2Param5Spin.setObjectName("script2Param5Spin")
@@ -534,6 +538,8 @@ class Ui_MainWindow(object):
         self.cameraAnimLabel.setObjectName("cameraAnimLabel")
         self.verticalLayout_camera.addWidget(self.cameraAnimLabel)
         self.cameraAnimSpin = GFFFieldSpinBox(self.scrollAreaWidgetContents)
+        self.cameraAnimSpin.setMinimum(0)
+        self.cameraAnimSpin.setMaximum(65535)
         self.cameraAnimSpin.setObjectName("cameraAnimSpin")
         self.verticalLayout_camera.addWidget(self.cameraAnimSpin)
         self.cameraAngleLabel = QtWidgets.QLabel(self.scrollAreaWidgetContents)
@@ -568,42 +574,56 @@ class Ui_MainWindow(object):
         self.nodeIdLabel.setObjectName("nodeIdLabel")
         self.formLayout_other.setWidget(0, QtWidgets.QFormLayout.LabelRole, self.nodeIdLabel)
         self.nodeIdSpin = GFFFieldSpinBox(self.scrollAreaWidgetContents)
+        self.nodeIdSpin.setMinimum(-2147483648)
+        self.nodeIdSpin.setMaximum(2147483647)
         self.nodeIdSpin.setObjectName("nodeIdSpin")
         self.formLayout_other.setWidget(0, QtWidgets.QFormLayout.FieldRole, self.nodeIdSpin)
         self.alienRaceNodeLabel = QtWidgets.QLabel(self.scrollAreaWidgetContents)
         self.alienRaceNodeLabel.setObjectName("alienRaceNodeLabel")
         self.formLayout_other.setWidget(1, QtWidgets.QFormLayout.LabelRole, self.alienRaceNodeLabel)
         self.alienRaceNodeSpin = GFFFieldSpinBox(self.scrollAreaWidgetContents)
+        self.alienRaceNodeSpin.setMinimum(-2147483648)
+        self.alienRaceNodeSpin.setMaximum(2147483647)
         self.alienRaceNodeSpin.setObjectName("alienRaceNodeSpin")
         self.formLayout_other.setWidget(1, QtWidgets.QFormLayout.FieldRole, self.alienRaceNodeSpin)
         self.postProcNodeLabel = QtWidgets.QLabel(self.scrollAreaWidgetContents)
         self.postProcNodeLabel.setObjectName("postProcNodeLabel")
         self.formLayout_other.setWidget(2, QtWidgets.QFormLayout.LabelRole, self.postProcNodeLabel)
         self.postProcSpin = GFFFieldSpinBox(self.scrollAreaWidgetContents)
+        self.postProcSpin.setMinimum(-2147483648)
+        self.postProcSpin.setMaximum(2147483647)
         self.postProcSpin.setObjectName("postProcSpin")
         self.formLayout_other.setWidget(2, QtWidgets.QFormLayout.FieldRole, self.postProcSpin)
         self.delayNodeLabel = QtWidgets.QLabel(self.scrollAreaWidgetContents)
         self.delayNodeLabel.setObjectName("delayNodeLabel")
         self.formLayout_other.setWidget(3, QtWidgets.QFormLayout.LabelRole, self.delayNodeLabel)
         self.delaySpin = GFFFieldSpinBox(self.scrollAreaWidgetContents)
+        self.delaySpin.setMinimum(-1)
+        self.delaySpin.setMaximum(2147483647)
         self.delaySpin.setObjectName("delaySpin")
         self.formLayout_other.setWidget(3, QtWidgets.QFormLayout.FieldRole, self.delaySpin)
         self.logicLabel = QtWidgets.QLabel(self.scrollAreaWidgetContents)
         self.logicLabel.setObjectName("logicLabel")
         self.formLayout_other.setWidget(4, QtWidgets.QFormLayout.LabelRole, self.logicLabel)
         self.logicSpin = GFFFieldSpinBox(self.scrollAreaWidgetContents)
+        self.logicSpin.setMinimum(-2147483648)
+        self.logicSpin.setMaximum(2147483647)
         self.logicSpin.setObjectName("logicSpin")
         self.formLayout_other.setWidget(4, QtWidgets.QFormLayout.FieldRole, self.logicSpin)
         self.waitFlagsLabel = QtWidgets.QLabel(self.scrollAreaWidgetContents)
         self.waitFlagsLabel.setObjectName("waitFlagsLabel")
         self.formLayout_other.setWidget(5, QtWidgets.QFormLayout.LabelRole, self.waitFlagsLabel)
         self.waitFlagSpin = GFFFieldSpinBox(self.scrollAreaWidgetContents)
+        self.waitFlagSpin.setMinimum(0)
+        self.waitFlagSpin.setMaximum(2147483647)
         self.waitFlagSpin.setObjectName("waitFlagSpin")
         self.formLayout_other.setWidget(5, QtWidgets.QFormLayout.FieldRole, self.waitFlagSpin)
         self.fadeTypeLabel = QtWidgets.QLabel(self.scrollAreaWidgetContents)
         self.fadeTypeLabel.setObjectName("fadeTypeLabel")
         self.formLayout_other.setWidget(6, QtWidgets.QFormLayout.LabelRole, self.fadeTypeLabel)
         self.fadeTypeSpin = GFFFieldSpinBox(self.scrollAreaWidgetContents)
+        self.fadeTypeSpin.setMinimum(0)
+        self.fadeTypeSpin.setMaximum(255)
         self.fadeTypeSpin.setObjectName("fadeTypeSpin")
         self.formLayout_other.setWidget(6, QtWidgets.QFormLayout.FieldRole, self.fadeTypeSpin)
         self.verticalLayout_other.addLayout(self.formLayout_other)
@@ -719,7 +739,7 @@ class Ui_MainWindow(object):
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(self.replyDelaySpin.sizePolicy().hasHeightForWidth())
         self.replyDelaySpin.setSizePolicy(sizePolicy)
-        self.replyDelaySpin.setMinimum(-2147483648)
+        self.replyDelaySpin.setMinimum(0)
         self.replyDelaySpin.setMaximum(2147483647)
         self.replyDelaySpin.setObjectName("replyDelaySpin")
         self.gridLayout_3.addWidget(self.replyDelaySpin, 2, 1, 1, 1)
@@ -732,7 +752,7 @@ class Ui_MainWindow(object):
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(self.entryDelaySpin.sizePolicy().hasHeightForWidth())
         self.entryDelaySpin.setSizePolicy(sizePolicy)
-        self.entryDelaySpin.setMinimum(-2147483648)
+        self.entryDelaySpin.setMinimum(0)
         self.entryDelaySpin.setMaximum(2147483647)
         self.entryDelaySpin.setObjectName("entryDelaySpin")
         self.gridLayout_3.addWidget(self.entryDelaySpin, 3, 1, 1, 1)
@@ -996,30 +1016,91 @@ class Ui_MainWindow(object):
         MainWindow.setWindowTitle(_translate("MainWindow", "DLGEditor"))
         self.rightDockWidget.setWindowTitle(_translate("MainWindow", "Node Fields"))
         self.commentsEdit.setPlaceholderText(_translate("MainWindow", "Comments"))
+        self.commentsEdit.setToolTip(_translate("MainWindow", "Comment (GFF: Comment): Developer-only notes stored in the node. The game ignores\n"
+"            this field entirely. Use it to document your dialogue structure, tag nodes for\n"
+"            scripting, or leave notes for other modders. Comments are preserved when saving the DLG."))
         self.script1Label.setText(_translate("MainWindow", "Script #1:"))
+        self.script1ResrefEdit.setToolTip(_translate("MainWindow", "Script (GFF: Script): Action script run when this node is reached. Executes\n"
+"              after text/voice plays. Use for granting items, updating variables, or triggering\n"
+"              cutscenes. ResRef must be a valid .ncs script. Params below are passed as (int int int\n"
+"              int int string)."))
+        self.script1Param1Spin.setToolTip(_translate("MainWindow", "ActionParam1 (GFF: ActionParam1): First integer argument passed to the action\n"
+"              script. Scripts receive params as (nParam1, nParam2, nParam3, nParam4, nParam5,\n"
+"              sParam). Common uses: quest IDs, item resrefs as IDs, or custom flags. Range: INT32\n"
+"              (-2147483648 to 2147483647)."))
+        self.script1Param2Spin.setToolTip(_translate("MainWindow", "ActionParam2 (GFF: ActionParam2): Second integer argument for the action\n"
+"              script. INT32 range."))
+        self.script1Param3Spin.setToolTip(_translate("MainWindow", "ActionParam3 (GFF: ActionParam3): Third integer argument for the action script.\n"
+"              INT32 range."))
+        self.script1Param4Spin.setToolTip(_translate("MainWindow", "ActionParam4 (GFF: ActionParam4): Fourth integer argument for the action\n"
+"              script. INT32 range."))
+        self.script1Param5Spin.setToolTip(_translate("MainWindow", "ActionParam5 (GFF: ActionParam5): Fifth integer argument for the action script.\n"
+"              INT32 range."))
+        self.script1Param6Edit.setToolTip(_translate("MainWindow", "ActionParamStrA (GFF: ActionParamStrA): String argument passed to the action\n"
+"              script. Use for ResRefs, object tags, or custom text. Script receives as sParam."))
         self.script2Label.setText(_translate("MainWindow", "Script #2:"))
+        self.script2ResrefEdit.setToolTip(_translate("MainWindow", "Script2 (GFF: Script2): Secondary action script. KotOR supports two scripts per\n"
+"              node; both run when the node is reached. Same param structure as Script. Use for\n"
+"              modular or conditional logic."))
+        self.script2Param5Spin.setToolTip(_translate("MainWindow", "ActionParam5b (GFF: ActionParam5b): Fifth integer for Script2. INT32 range."))
         self.conditional1Label.setText(_translate("MainWindow", "Conditional #1:"))
+        self.condition1ResrefEdit.setToolTip(_translate("MainWindow", "Active (GFF: Active): Condition script that determines if this link is shown.\n"
+"              Must return TRUE (non-zero) for the link to appear. Empty = always show. Params below\n"
+"              are passed to the script. Logic combines with Condition #2 (AND/OR)."))
         self.condition1NotCheckbox.setText(_translate("MainWindow", "Not"))
-        self.condition1Param2Spin.setToolTip(_translate("MainWindow", "Param2"))
-        self.condition1Param3Spin.setToolTip(_translate("MainWindow", "Param3"))
-        self.condition1Param4Spin.setToolTip(_translate("MainWindow", "Param4"))
+        self.condition1NotCheckbox.setToolTip(_translate("MainWindow", "Not (GFF: Not): Inverts the Active condition result. When checked, the link is\n"
+"              shown only when the script returns FALSE. Use for hide-if-met logic."))
+        self.condition1Param1Spin.setToolTip(_translate("MainWindow", "Param1 (GFF: Param1): First integer passed to the Active condition script.\n"
+"              INT32 range."))
+        self.condition1Param2Spin.setToolTip(_translate("MainWindow", "Param2 (GFF: Param2): Second integer passed to the Active condition script.\n"
+"              Script must return TRUE for the link to be shown. INT32 range."))
+        self.condition1Param3Spin.setToolTip(_translate("MainWindow", "Param3 (GFF: Param3): Third integer for the Active condition script. INT32\n"
+"              range."))
+        self.condition1Param4Spin.setToolTip(_translate("MainWindow", "Param4 (GFF: Param4): Fourth integer for the Active condition script. INT32\n"
+"              range."))
+        self.condition1Param5Spin.setToolTip(_translate("MainWindow", "Param5 (GFF: Param5): Fifth integer for the Active condition script. INT32\n"
+"              range."))
+        self.condition1Param6Edit.setToolTip(_translate("MainWindow", "ParamStrA (GFF: ParamStrA): String argument for the Active condition script.\n"
+"              Use for tags, ResRefs, or custom data."))
         self.conditional2Label.setText(_translate("MainWindow", "Conditional #2:"))
+        self.condition2ResrefEdit.setToolTip(_translate("MainWindow", "Active2 (GFF: Active2): Second condition script for links. Combined with\n"
+"              Condition #1 via Logic (AND/OR). KotOR 2 extension. Params use Param1b-5b, ParamStrB."))
         self.condition2NotCheckbox.setText(_translate("MainWindow", "Not"))
         self.curAnimsLabel.setText(_translate("MainWindow", "Current Animations"))
         self.addAnimButton.setText(_translate("MainWindow", "Add"))
         self.removeAnimButton.setText(_translate("MainWindow", "Remove"))
         self.editAnimButton.setText(_translate("MainWindow", "Edit"))
+        self.emotionSelect.setToolTip(_translate("MainWindow", "Emotion (GFF: Emotion): Emotion ID from appearance.2da or similar. Plays on the\n"
+"              speaker. Used for gesture/emotion animations during dialogue."))
         self.expressionLabel.setText(_translate("MainWindow", "Expression:"))
+        self.expressionSelect.setToolTip(_translate("MainWindow", "FacialAnim (GFF: FacialAnim): Expression ID from expressions.2da. Plays on the\n"
+"              speaker during this node. Index into the 2DA row."))
         self.emotionLabel.setText(_translate("MainWindow", "Emotion:"))
         self.soundLabel.setText(_translate("MainWindow", "Sound:"))
-        self.soundCheckbox.setToolTip(_translate("MainWindow", "\'SoundExists\' field"))
+        self.soundCheckbox.setToolTip(_translate("MainWindow", "SoundExists (GFF: SoundExists): BYTE. When checked (0x80), the engine treats\n"
+"                the Sound/VO as present and waits for playback. Default 0x80. Affects WaitFlags and\n"
+"                timing. LoadDialogBase @ 0x0059f5f0."))
         self.soundCheckbox.setText(_translate("MainWindow", "Exists"))
+        self.soundComboBox.setToolTip(_translate("MainWindow", "Sound (GFF: Sound): ResRef of a WAV played during this node. Overrides\n"
+"                VO_ResRef if both exist. Used for ambient or non-voice sounds. LoadDialogBase\n"
+"                prefers Sound over VO_ResRef when valid."))
         self.soundButton.setText(_translate("MainWindow", "Play"))
+        self.voiceComboBox.setToolTip(_translate("MainWindow", "VO_ResRef (GFF: VO_ResRef): Voice-over WAV ResRef. Plays when this node is\n"
+"                reached. Used if Sound is empty. LoadDialogBase @ 0x0059f5f0."))
         self.voiceButton.setText(_translate("MainWindow", "Play"))
         self.voiceLabel.setText(_translate("MainWindow", "Voice:"))
         self.cameraIdLabel.setText(_translate("MainWindow", "Camera ID:"))
+        self.cameraIdSpin.setToolTip(_translate("MainWindow", "CameraID (GFF: CameraID): Index of a static camera in the CameraModel. Only used\n"
+"            when Camera Angle is Static Camera (6). Engine ignores this when angle is not 6. INT32.\n"
+"            See LoadDialogCamera @ 0x0059eaa0."))
         self.cameraAnimLabel.setText(_translate("MainWindow", "Camera Animation:"))
+        self.cameraAnimSpin.setToolTip(_translate("MainWindow", "CameraAnimation (GFF: CameraAnimation): Index into the CameraModel for animated\n"
+"            cutscene cameras. WORD 0-65535. Used when CameraAngle is Animated Camera (4). Leave 0\n"
+"            for default."))
         self.cameraAngleLabel.setText(_translate("MainWindow", "Camera Angle:"))
+        self.cameraAngleSelect.setToolTip(_translate("MainWindow", "CameraAngle (GFF: CameraAngle): DWORD. 0=Auto, 1=Face, 2=Shoulder, 3=Wide Shot,\n"
+"            4=Animated Camera, 5=unused, 6=Static Camera. Only angle 6 uses CameraID.\n"
+"            LoadDialogCamera @ 0x0059eaa0."))
         self.cameraAngleSelect.setItemText(0, _translate("MainWindow", "Auto"))
         self.cameraAngleSelect.setItemText(1, _translate("MainWindow", "Face"))
         self.cameraAngleSelect.setItemText(2, _translate("MainWindow", "Shoulder"))
@@ -1028,34 +1109,74 @@ class Ui_MainWindow(object):
         self.cameraAngleSelect.setItemText(5, _translate("MainWindow", "(DO NOT USE THIS ENTRY)"))
         self.cameraAngleSelect.setItemText(6, _translate("MainWindow", "Static Camera"))
         self.cameraVidEffectLabel.setText(_translate("MainWindow", "Camera Video Effect:"))
+        self.cameraEffectSelect.setToolTip(_translate("MainWindow", "CamVidEffect (GFF: CamVidEffect): Video effect ID from a 2DA. INT32. -1 = no\n"
+"            effect. Applied during this node\'s camera shot."))
         self.nodeUnskippableCheckbox.setText(_translate("MainWindow", "Node Unskippable"))
+        self.nodeUnskippableCheckbox.setToolTip(_translate("MainWindow", "NodeUnskippable (GFF): When checked, the player cannot skip this node\'s\n"
+"            voice/text. Use for critical story moments. Overrides file-level Skippable."))
         self.nodeIdLabel.setText(_translate("MainWindow", "Node ID:"))
+        self.nodeIdSpin.setToolTip(_translate("MainWindow", "NodeID (GFF: NodeID): Unique identifier for this node. Used by scripts and\n"
+"              external references. INT32. Modders can use this to target specific nodes in scripts."))
         self.alienRaceNodeLabel.setText(_translate("MainWindow", "Alien Race Node:"))
+        self.alienRaceNodeSpin.setToolTip(_translate("MainWindow", "AlienRaceNode (GFF: AlienRaceNode): Index for alien-race-specific dialogue\n"
+"              variants. Used with alien language/translation systems. INT32."))
         self.postProcNodeLabel.setText(_translate("MainWindow", "Post Proc Node:"))
+        self.postProcSpin.setToolTip(_translate("MainWindow", "PostProcNode (GFF: PostProcNode): Post-processing node index for special\n"
+"              dialogue effects. INT32. See PostProcOwner at file level."))
         self.delayNodeLabel.setText(_translate("MainWindow", "Delay:"))
+        self.delaySpin.setToolTip(_translate("MainWindow", "Delay (GFF: Delay): Milliseconds before text appears. DWORD. 0xFFFFFFFF (-1) =\n"
+"              auto-calculated from voice/sound or DelayEntry/DelayReply. Engine: LoadDialogBase."))
         self.logicLabel.setText(_translate("MainWindow", "Logic:"))
+        self.logicSpin.setToolTip(_translate("MainWindow", "Logic (GFF: Logic): For links, combines Condition #1 and #2: 0=AND (both must\n"
+"              pass), 1=OR (either passes). KotOR 2 extension. INT32."))
         self.waitFlagsLabel.setText(_translate("MainWindow", "Wait Flags:"))
+        self.waitFlagSpin.setToolTip(_translate("MainWindow", "WaitFlags (GFF: WaitFlags): Bitmask controlling when the dialogue advances.\n"
+"              DWORD. Bit 2=wait for sound/VO; bit 4=use explicit Delay; bit 0x10=Delay is set.\n"
+"              Engine derives behavior from Sound/VO presence and Delay. See LoadDialogBase."))
         self.fadeTypeLabel.setText(_translate("MainWindow", "Fade Type:"))
+        self.fadeTypeSpin.setToolTip(_translate("MainWindow", "FadeType (GFF: FadeType): Screen fade for this node. BYTE 0-255. 0=None,\n"
+"              1=FadeIn, 2=FadeOut. Values 1-2 clear FadeDelay/FadeLength. Engine: LoadDialogBase @\n"
+"              0x0059f5f0."))
         self.menuFile.setTitle(_translate("MainWindow", "File"))
         self.menuTools.setTitle(_translate("MainWindow", "Tools"))
         self.topDockWidget.setWindowTitle(_translate("MainWindow", "File Globals"))
         self.cutsceneModelLabel.setText(_translate("MainWindow", "Cutscene Model"))
-        self.stuntList.setToolTip(_translate("MainWindow", "<html><head/><body><p>Dialogue Stunts list</p></body></html>"))
+        self.stuntList.setToolTip(_translate("MainWindow", "StuntList (GFF): Custom models for dialogue participants. Each stunt maps\n"
+"           Participant tag to StuntModel ResRef. Used for cutscenes with non-standard character\n"
+"           models (e.g. droids, creatures). Participant must match a creature/npc tag in the\n"
+"           dialogue."))
         self.addStuntButton.setText(_translate("MainWindow", "Add"))
         self.editStuntButton.setText(_translate("MainWindow", "Edit"))
         self.removeStuntButton.setText(_translate("MainWindow", "Remove"))
         self.convoTypeLabel.setText(_translate("MainWindow", "Conversation Type:"))
+        self.conversationSelect.setToolTip(_translate("MainWindow", "ConversationType (GFF: ConversationType): 0=Human (cinematic, voice), 1=Computer\n"
+"           (terminal UI), 2=Other (bark strings). Engine uses ReadFieldINT. See LoadDialog @\n"
+"           0x005a2ae0."))
         self.conversationSelect.setItemText(0, _translate("MainWindow", "Human"))
         self.conversationSelect.setItemText(1, _translate("MainWindow", "Computer"))
         self.conversationSelect.setItemText(2, _translate("MainWindow", "Type 3"))
         self.conversationSelect.setItemText(3, _translate("MainWindow", "Type 4"))
         self.conversationSelect.setItemText(4, _translate("MainWindow", "Type 5"))
         self.computerTypeLabel.setText(_translate("MainWindow", "Computer Type:"))
+        self.computerSelect.setToolTip(_translate("MainWindow", "ComputerType (GFF: ComputerType): BYTE. 0=Modern (green terminal), 1=Ancient\n"
+"           (orange/red). Used when ConversationType is Computer. See LoadDialog @ 0x005a2ae0."))
         self.computerSelect.setItemText(0, _translate("MainWindow", "Modern"))
         self.computerSelect.setItemText(1, _translate("MainWindow", "Ancient"))
         self.delayReplyLabel.setText(_translate("MainWindow", "Delay before Reply:"))
+        self.replyDelaySpin.setToolTip(_translate("MainWindow", "DelayReply (GFF: DelayReply): Default delay in ms before player reply options\n"
+"           appear. DWORD 0-4294967295. Used when node Delay is 0xFFFFFFFF. LoadDialog @ 0x005a2ae0."))
         self.delayEntryLabel.setText(_translate("MainWindow", "Delay before Entry:"))
+        self.entryDelaySpin.setToolTip(_translate("MainWindow", "DelayEntry (GFF: DelayEntry): Default delay in ms before NPC entry lines appear.\n"
+"           DWORD 0-4294967295. Used when node Delay is 0xFFFFFFFF. LoadDialog @ 0x005a2ae0."))
         self.voiceOverIDLabel.setText(_translate("MainWindow", "Voiceover ID:"))
+        self.ambientTrackCombo.setToolTip(_translate("MainWindow", "AmbientTrack (GFF: AmbientTrack): ResRef of background music loop during dialogue.\n"
+"           Leave blank for default. LoadDialog @ 0x005a2ae0."))
+        self.cameraModelSelect.setToolTip(_translate("MainWindow", "CameraModel (GFF: CameraModel): ResRef of MDL defining camera positions for\n"
+"           cinematic dialogue. Required for Animated/Static camera angles. LoadDialog @ 0x005a2ae0."))
+        self.onAbortCombo.setToolTip(_translate("MainWindow", "EndConverAbort (GFF: EndConverAbort): Script run when the conversation is aborted\n"
+"           (player exits early). ResRef of .ncs. LoadDialog @ 0x005a2ae0."))
+        self.onEndEdit.setToolTip(_translate("MainWindow", "EndConversation (GFF: EndConversation): Script run when the conversation ends\n"
+"           normally. ResRef of .ncs. LoadDialog @ 0x005a2ae0."))
         self.cameraModelLabel.setText(_translate("MainWindow", "Camera Model:"))
         self.convoEndsScriptLabel.setText(_translate("MainWindow", "Conversation Ends:"))
         self.convoAbortsScriptLabel.setText(_translate("MainWindow", "Conversation Aborts:"))
@@ -1064,6 +1185,9 @@ class Ui_MainWindow(object):
         self.unequipHandsCheckbox.setText(_translate("MainWindow", "Unequip Hands"))
         self.unequipAllCheckbox.setText(_translate("MainWindow", "Unequip All"))
         self.oldHitCheckbox.setText(_translate("MainWindow", "Old Hit Check"))
+        self.skippableCheckbox.setToolTip(_translate("MainWindow", "Skippable (GFF: Skippable): BYTE. When checked, the player can skip dialogue\n"
+"            lines. Default 1. When unchecked, dialogue is unskippable (e.g. cutscenes). LoadDialog @\n"
+"            0x005a2ae0."))
         self.skippableCheckbox.setText(_translate("MainWindow", "Skippable"))
         self.plotIndexLabel.setWhatsThis(_translate("MainWindow", "GFF Field \"PlotIndex\" Int32"))
         self.plotIndexLabel.setText(_translate("MainWindow", "Plot Index:"))

@@ -13,7 +13,6 @@ from typing import TYPE_CHECKING
 
 from qtpy.QtCore import Qt
 from qtpy.QtWidgets import (
-    QCheckBox,
     QComboBox,
     QDialog,
     QFileDialog,
@@ -22,7 +21,6 @@ from qtpy.QtWidgets import (
     QLabel,
     QMessageBox,
     QPushButton,
-    QVBoxLayout,
 )
 
 from toolset.blender import BlenderInfo, detect_blender, get_blender_settings
@@ -111,7 +109,7 @@ class BlenderChoiceDialog(QDialog):
         self._update_blender_button_state()
         self.ui.blenderButton.clicked.connect(self._choose_blender)
         self.ui.builtinButton.clicked.connect(self._choose_builtin)
-        self.ui.cancelButton.clicked.connect(self.reject)
+        self.ui.cancelButton.clicked.connect(lambda: self.reject())
 
         # Update Blender info display
         self._update_blender_info_display()

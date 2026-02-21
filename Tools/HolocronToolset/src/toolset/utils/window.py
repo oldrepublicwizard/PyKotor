@@ -84,22 +84,14 @@ def open_resource_editor(  # noqa: PLR0913
 ) -> tuple[os.PathLike | str | None, Editor | QMainWindow | None]:
     raise NotImplementedError("Unsupported input type")
 
+
 @open_resource_editor.register(FileResource)
 def _(
-    resource: FileResource,
-    installation: HTInstallation | None = None,
-    parent_window: QWidget | None = None,
-    *,
-    gff_specialized: bool | None = None,
-    **kwargs
+    resource: FileResource, installation: HTInstallation | None = None, parent_window: QWidget | None = None, *, gff_specialized: bool | None = None, **kwargs
 ) -> tuple[os.PathLike | str | None, Editor | QMainWindow | None]:
     # Implementation for FileResource
-    return _open_resource_editor_impl(
-        resource=resource,
-        installation=installation,
-        parent_window=parent_window,
-        gff_specialized=gff_specialized
-    )
+    return _open_resource_editor_impl(resource=resource, installation=installation, parent_window=parent_window, gff_specialized=gff_specialized)
+
 
 @open_resource_editor.register(str)
 @open_resource_editor.register(os.PathLike)
@@ -114,14 +106,9 @@ def _(  # noqa: PLR0913
     gff_specialized: bool | None = None,
 ) -> tuple[os.PathLike | str | None, Editor | QMainWindow | None]:
     return _open_resource_editor_impl(
-        filepath=path,
-        resname=resname,
-        restype=restype,
-        data=data,
-        installation=installation,
-        parent_window=parent_window,
-        gff_specialized=gff_specialized
+        filepath=path, resname=resname, restype=restype, data=data, installation=installation, parent_window=parent_window, gff_specialized=gff_specialized
     )
+
 
 def _open_resource_editor_impl(  # noqa: C901, PLR0913, PLR0912, PLR0915
     resource: FileResource | None = None,
@@ -179,13 +166,7 @@ def _open_resource_editor_impl(  # noqa: C901, PLR0913, PLR0912, PLR0915
         restype = resource.restype()
         resname = resource.resname()
         filepath = resource.filepath()
-    elif (
-        resname
-        and resname.strip()
-        and restype
-        and data is not None
-        and filepath
-    ):
+    elif resname and resname.strip() and restype and data is not None and filepath:
         ...
     else:
         raise ValueError("Invalid input combination")
@@ -202,10 +183,7 @@ def _open_resource_editor_impl(  # noqa: C901, PLR0913, PLR0912, PLR0915
         editor = LIPEditor(None, installation)
     elif restype.category == "Walkmeshes":
         editor = BWMEditor(None, installation)
-    elif (
-        restype.category in {"Images", "Textures"}
-        and restype is not ResourceType.TXI
-    ):
+    elif restype.category in {"Images", "Textures"} and restype is not ResourceType.TXI:
         editor = TPCEditor(None, installation)
     elif restype is ResourceType.NSS:
         editor = NSSEditor(None, installation)
@@ -331,9 +309,7 @@ def _open_resource_editor_impl(  # noqa: C901, PLR0913, PLR0912, PLR0915
             trf("The selected file format '{format}' is not yet supported.", format=str(restype)),
             QMessageBox.StandardButton.Ok,
             parent_window_widget,
-            flags=Qt.WindowType.Window
-            | Qt.WindowType.Dialog
-            | Qt.WindowType.WindowStaysOnTopHint,  # pyright: ignore[reportArgumentType]
+            flags=Qt.WindowType.Window | Qt.WindowType.Dialog | Qt.WindowType.WindowStaysOnTopHint,  # pyright: ignore[reportArgumentType]
         ).show()
         return None, None
 

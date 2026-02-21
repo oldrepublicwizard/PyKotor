@@ -39,4 +39,3 @@ def test_kotordiff_close_button_accepts_clicked_bool(qtbot) -> None:
 
     win.close_btn.click()
     QApplication.processEvents()
-

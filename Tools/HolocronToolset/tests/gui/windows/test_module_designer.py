@@ -58,10 +58,10 @@ _RESREF_CLASSES = (GITCreature, GITDoor, GITPlaceable, GITStore, GITTrigger, GIT
 # Priority order: smaller modules first for faster testing, then larger ones
 PREFERRED_MODULES = [
     "tar_m02af",  # Small module (~150KB)
-    "danm13",     # Medium module (~2MB)
+    "danm13",  # Medium module (~2MB)
     "end_m01aa",  # Endar Spire - starter module
-    "m12aa",      # Dantooine
-    "m15aa",      # Manaan
+    "m12aa",  # Dantooine
+    "m15aa",  # Manaan
 ]
 
 MIN_EXPECTED_FPS = 30.0
@@ -131,14 +131,11 @@ def test_module_designer_free_cam_forward_movement(
     distance_moved = math.sqrt(dx * dx + dy * dy + dz * dz)
 
     if renderer_type == "pyopengl" and distance_moved <= 0.5:
-        pytest.xfail(
-            f"[{renderer_type}] Free-cam forward movement did not exceed threshold "
-            f"(moved {distance_moved:.3f} units)"
-        )
+        pytest.xfail(f"[{renderer_type}] Free-cam forward movement did not exceed threshold (moved {distance_moved:.3f} units)")
 
-    assert (
-        distance_moved > 0.5
-    ), f"Expected camera to move forward in free-cam when holding W, but it only moved {distance_moved:.3f} units"
+    assert distance_moved > 0.5, f"Expected camera to move forward in free-cam when holding W, but it only moved {distance_moved:.3f} units"
+
+
 MODULE_PARAM = pytest.mark.parametrize("module_name", PREFERRED_MODULES, indirect=True)
 
 _MODULE_MOD_CACHE: dict[str, Path] = {}
@@ -148,7 +145,7 @@ _MODULE_MOD_CACHE_DIR: Path | None = None
 @pytest.fixture(autouse=True)
 def _suppress_modal_dialogs(monkeypatch: pytest.MonkeyPatch):
     """Avoid blocking prompts during automated tests.
-    
+
     This fixture patches:
     - get_blender_settings: Returns settings indicating no Blender preference
     - check_blender_and_ask: Always returns (False, None) to skip Blender
@@ -159,7 +156,7 @@ def _suppress_modal_dialogs(monkeypatch: pytest.MonkeyPatch):
         prefer_blender=False,
         get_blender_info=lambda: SimpleNamespace(is_valid=False),
     )
-    
+
     # Patch both the module_designer and blender modules to ensure no Blender dialogs
     monkeypatch.setattr(
         "toolset.gui.windows.module_designer.get_blender_settings",
@@ -169,7 +166,7 @@ def _suppress_modal_dialogs(monkeypatch: pytest.MonkeyPatch):
         "toolset.gui.windows.module_designer.check_blender_and_ask",
         lambda *args, **kwargs: (False, None),
     )
-    
+
     # Also patch the blender module directly in case it's imported elsewhere
     try:
         monkeypatch.setattr(
@@ -182,7 +179,7 @@ def _suppress_modal_dialogs(monkeypatch: pytest.MonkeyPatch):
         )
     except AttributeError:
         pass  # Module may not exist or have these attributes
-    
+
     monkeypatch.setattr(
         "qtpy.QtWidgets.QMessageBox.question",
         lambda *args, **kwargs: QMessageBox.StandardButton.Yes,
@@ -197,14 +194,14 @@ def renderer_type():
 
 def _find_available_modules(installation: HTInstallation) -> list[str]:
     """Find available modules in the installation.
-    
+
     Returns a list of module names that have corresponding .rim files.
     Prioritizes modules from PREFERRED_MODULES list.
     """
     modules_dir = Path(installation.module_path())
     if not modules_dir.exists():
         return []
-    
+
     # Find all .rim files
     available_modules: list[str] = []
     for rim_file in modules_dir.glob("*.rim"):
@@ -212,16 +209,16 @@ def _find_available_modules(installation: HTInstallation) -> list[str]:
         # Skip _s.rim files (data RIMs)
         if not module_name.endswith("_s"):
             available_modules.append(module_name)
-    
+
     # Prioritize preferred modules
     preferred_available = [m for m in PREFERRED_MODULES if m in available_modules]
     other_available = [m for m in available_modules if m not in PREFERRED_MODULES]
-    
+
     # Return preferred modules first, then others, up to 5 total
     result = preferred_available[:5]
     if len(result) < 5:
-        result.extend(other_available[:5 - len(result)])
-    
+        result.extend(other_available[: 5 - len(result)])
+
     return result
 
 
@@ -237,7 +234,7 @@ def available_module_names(installation: HTInstallation) -> list[str]:
 @pytest.fixture
 def module_name(request, available_module_names: list[str]) -> str:
     """Parametrize tests with available module names.
-    
+
     This fixture receives the module name from request.param when parametrized.
     """
     name = getattr(request, "param", None)
@@ -250,8 +247,7 @@ def module_name(request, available_module_names: list[str]) -> str:
 
 @pytest.fixture
 def module_mod_path(tmp_path_factory, installation: HTInstallation, module_name: str) -> Path:
-    """Create (or reuse) a .mod file for the specified module.
-    """
+    """Create (or reuse) a .mod file for the specified module."""
     global _MODULE_MOD_CACHE_DIR
 
     if module_name in _MODULE_MOD_CACHE:
@@ -343,7 +339,7 @@ def module_designer(
     assert renderer.renderer_type == renderer_type, f"Unexpected renderer type: {renderer.renderer_type}"
 
     yield designer
-    
+
     # Close - QMessageBox.question is mocked to return Yes
     designer.close()
     QApplication.processEvents()
@@ -351,20 +347,20 @@ def module_designer(
 
 def _position_camera_to_view_scene(designer: ModuleDesigner) -> None:
     """Position the camera to view the scene content (rooms and objects).
-    
+
     This ensures the camera is:
     1. At the module's entry point or center of the layout
     2. Looking slightly downward (pitch ~ pi/2 radians)
     3. At a reasonable distance to see the scene
     """
     from pykotor.gl.scene import Scene
-    
+
     scene: Scene = designer.ui.mainRenderer._scene  # noqa: SLF001  # pyright: ignore[reportAssignmentType]
     if scene is None:
         return
-    
+
     camera = scene.camera
-    
+
     # Try to get the module's entry point from IFO
     try:
         ifo = designer.ifo()
@@ -390,54 +386,54 @@ def _position_camera_to_view_scene(designer: ModuleDesigner) -> None:
             # Last resort: origin
             camera.x, camera.y, camera.z = 0.0, 0.0, 1.7
             print("[Test] Camera positioned at origin")
-    
+
     # Look slightly downward. pitch=pi/2 is horizontal; add a small offset to tilt downwards.
     camera.yaw = 0.0
     camera.pitch = (math.pi / 2) + math.radians(5.0)
     camera.distance = 20.0  # Orbit away from the focus point
     camera.fov = 90.0  # Wide field of view
-    
+
     print(f"[Test] Camera orientation: yaw={camera.yaw:.2f}, pitch={camera.pitch:.2f} rad, fov={camera.fov:.0f}")
 
 
 def _rotate_camera_360(designer: ModuleDesigner, qtbot, num_steps: int = 16) -> None:
     """Rotate the camera 360 degrees horizontally to ensure all directions are rendered.
-    
+
     This forces the renderer to load textures/models in all directions.
     The camera keeps the downward-looking pitch throughout the rotation.
     """
     from pykotor.gl.scene import Scene
-    
+
     scene: Scene = designer.ui.mainRenderer._scene  # noqa: SLF001  # pyright: ignore[reportAssignmentType]
     if scene is None:
         return
-    
+
     camera = scene.camera
     original_yaw = camera.yaw
     target_pitch = (math.pi / 2) + math.radians(5.0)
     camera.pitch = target_pitch
-    
+
     print(f"[Test] Rotating camera 360 degrees horizontally in {num_steps} steps (pitch={camera.pitch:.2f})...")
-    
+
     for i in range(num_steps):
         # Calculate yaw for this step (full 360 degree rotation)
         camera.yaw = original_yaw + (2 * math.pi * i / num_steps)
-        
+
         # Ensure pitch stays fixed to keep looking at the scene
         camera.pitch = target_pitch
-        
+
         # Render several frames at each angle to allow async loading
         for _ in range(5):
             QApplication.processEvents()
             designer.ui.mainRenderer.update()
             QApplication.processEvents()
             QApplication.processEvents()  # ~30 FPS to allow more processing time
-        
+
         # Log progress every quarter turn
         if i % (num_steps // 4) == 0:
-            angle_deg = (360 * i / num_steps)
+            angle_deg = 360 * i / num_steps
             print(f"[Test]   Rotation: {angle_deg:.0f}° (yaw={camera.yaw:.2f})")
-    
+
     # Return to original orientation, still looking straight ahead
     camera.yaw = original_yaw
     camera.pitch = target_pitch
@@ -446,7 +442,7 @@ def _rotate_camera_360(designer: ModuleDesigner, qtbot, num_steps: int = 16) -> 
 
 def _wait_for_designer_ready(qtbot, designer: ModuleDesigner, timeout: int = 120000) -> None:
     """Wait until the scene is fully initialized with all async resources loaded.
-    
+
     This function waits for:
     1. Module and scene to exist
     2. GIT (Game Instance Table) to be loaded
@@ -455,17 +451,17 @@ def _wait_for_designer_ready(qtbot, designer: ModuleDesigner, timeout: int = 120
     5. All pending texture futures to complete (loaded or failed)
     6. All pending model futures to complete (loaded or failed)
     7. Scene objects to be populated and visible
-    
+
     Args:
         qtbot: pytest-qt fixture
         designer: ModuleDesigner instance
         timeout: Maximum time to wait in milliseconds (default: 120 seconds)
     """
     from pykotor.gl.scene import Scene  # Local import to avoid circular imports
-    
+
     start_time = time.time()
     timeout_seconds = timeout / 1000
-    
+
     # Phase 1: Wait for basic scene initialization
     print("[Test] Phase 1: Waiting for scene initialization...")
 
@@ -476,12 +472,12 @@ def _wait_for_designer_ready(qtbot, designer: ModuleDesigner, timeout: int = 120
 
     qtbot.waitUntil(_scene_exists, timeout=30000)
     print(f"[Test] Phase 1 complete: Scene exists after {time.time() - start_time:.1f}s")
-    
+
     # Phase 2: Wait for GIT and Layout to be loaded
     print("[Test] Phase 2: Waiting for GIT and Layout...")
     scene: Scene = designer.ui.mainRenderer._scene  # noqa: SLF001  # pyright: ignore[reportAssignmentType]
     assert scene is not None, "Scene should exist after Phase 1"
-    
+
     def _git_and_layout_loaded() -> bool:
         # Process events to allow rendering to happen
         QApplication.processEvents()
@@ -489,83 +485,80 @@ def _wait_for_designer_ready(qtbot, designer: ModuleDesigner, timeout: int = 120
         designer.ui.mainRenderer.update()
         QApplication.processEvents()
         return scene.git is not None and scene.layout is not None
-    
+
     qtbot.waitUntil(_git_and_layout_loaded, timeout=30000)
-    
+
     # Now scene.git and scene.layout should be loaded
     assert scene.git is not None, "GIT should be loaded after Phase 2"
     assert scene.layout is not None, "Layout should be loaded after Phase 2"
     git_instances = len(list(scene.git.instances()))
     layout_rooms = len(scene.layout.rooms)
-    print(f"[Test] Phase 2 complete: GIT has {git_instances} instances, "
-          f"Layout has {layout_rooms} rooms after {time.time() - start_time:.1f}s")
-    
+    print(f"[Test] Phase 2 complete: GIT has {git_instances} instances, Layout has {layout_rooms} rooms after {time.time() - start_time:.1f}s")
+
     # Phase 2.5: Position camera to view the scene
     print("[Test] Phase 2.5: Positioning camera...")
     _position_camera_to_view_scene(designer)
-    
+
     # Render a few frames to start loading visible content
     for _ in range(10):
         QApplication.processEvents()
         designer.ui.mainRenderer.update()
         QApplication.processEvents()
         QApplication.processEvents()
-    
+
     # Phase 3: Wait for all async resources to finish loading
     print("[Test] Phase 3: Waiting for async resource loading to complete...")
     last_status_time = time.time()
-    
+
     def _async_loading_complete() -> bool:
         nonlocal last_status_time
-        
+
         # Process events and render frames to process completed futures
         for _ in range(3):
             QApplication.processEvents()
             designer.ui.mainRenderer.update()
             QApplication.processEvents()
-        
+
         pending_textures = len(scene._pending_texture_futures)
         pending_models = len(scene._pending_model_futures)
         loaded_textures = len(scene.textures)
         loaded_models = len(scene.models)
-        
+
         # Log status periodically (every 2 seconds)
         current_time = time.time()
         if current_time - last_status_time >= 2.0:
-            print(f"[Test]   Textures: {loaded_textures} loaded, {pending_textures} pending | "
-                  f"Models: {loaded_models} loaded, {pending_models} pending")
+            print(f"[Test]   Textures: {loaded_textures} loaded, {pending_textures} pending | Models: {loaded_models} loaded, {pending_models} pending")
             last_status_time = current_time
-        
+
         # Check if we've exceeded timeout
         if current_time - start_time > timeout_seconds:
-            print(f"[Test] WARNING: Timeout reached with {pending_textures} textures "
-                  f"and {pending_models} models still pending!")
+            print(f"[Test] WARNING: Timeout reached with {pending_textures} textures and {pending_models} models still pending!")
             return True  # Return True to exit the wait, will check status below
-        
+
         return pending_textures == 0 and pending_models == 0
-    
+
     try:
         qtbot.waitUntil(_async_loading_complete, timeout=timeout)
     except Exception:
         pass  # We'll check the status below
-    
+
     # Final status check
     pending_textures = len(scene._pending_texture_futures)
     pending_models = len(scene._pending_model_futures)
     loaded_textures = len(scene.textures)
     loaded_models = len(scene.models)
     scene_objects = len(scene.objects)
-    
+
     elapsed = time.time() - start_time
     print(f"[Test] Phase 3 complete after {elapsed:.1f}s:")
     print(f"[Test]   Final textures: {loaded_textures} loaded, {pending_textures} pending")
     print(f"[Test]   Final models: {loaded_models} loaded, {pending_models} pending")
     print(f"[Test]   Scene objects: {scene_objects}")
-    
+
     # Phase 4: Rotate camera 360 degrees to force loading of all visible content
     print("[Test] Phase 4: Rotating camera to load all visible content...")
     _rotate_camera_360(designer, qtbot, num_steps=16)
-    
+
     # Phase 5: Process additional frames to ensure everything is rendered
     print("[Test] Phase 5: Processing final render frames...")
     for _ in range(30):
@@ -573,19 +566,18 @@ def _wait_for_designer_ready(qtbot, designer: ModuleDesigner, timeout: int = 120
         QApplication.processEvents()
         designer.ui.mainRenderer.update()
         QApplication.processEvents()
-    
+
     # Final assertions to ensure the designer is actually ready
     assert scene.git is not None, "GIT was not loaded"
     assert scene.layout is not None, "Layout was not loaded"
     assert len(scene.objects) > 0, "No scene objects were created (expected rooms + instances)"
-    
+
     # Log final loaded resource counts
     final_textures = len(scene.textures)
     final_models = len(scene.models)
     final_objects = len(scene.objects)
     total_time = time.time() - start_time
-    print(f"[Test] Module designer ready after {total_time:.1f}s: "
-          f"{final_textures} textures, {final_models} models, {final_objects} objects")
+    print(f"[Test] Module designer ready after {total_time:.1f}s: {final_textures} textures, {final_models} models, {final_objects} objects")
 
 
 def _first_movable_instance(designer: ModuleDesigner) -> GITInstance | None:
@@ -600,7 +592,7 @@ def _first_movable_instance(designer: ModuleDesigner) -> GITInstance | None:
 @MODULE_PARAM
 def test_module_designer_baseline_fps(qtbot, module_designer: ModuleDesigner, module_name: str, renderer_type: str):
     """Ensure the renderer sustains the expected baseline FPS.
-    
+
     This test:
     1. Waits for the scene to be fully loaded (async resources completed)
     2. Allows a warm-up period for the renderer to stabilize
@@ -608,70 +600,67 @@ def test_module_designer_baseline_fps(qtbot, module_designer: ModuleDesigner, mo
     4. Verifies PyOpenGL achieves an acceptable frame rate
     """
     from pykotor.gl.scene import Scene  # Local import to avoid circular imports
-    
+
     renderer = module_designer.ui.mainRenderer
     scene: Scene = renderer._scene  # noqa: SLF001  # pyright: ignore[reportAssignmentType]
     assert scene is not None, "Scene should be initialized by fixture"
     assert renderer.renderer_type == renderer_type, f"Renderer type mismatch: expected {renderer_type}, got {renderer.renderer_type}"
-    
+
     # Log initial state
     print(f"\n[FPS Test] Starting FPS test with {renderer_type} renderer on module {module_name}")
     print(f"[FPS Test] Initial state: {len(scene.textures)} textures, {len(scene.models)} models, {len(scene.objects)} objects")
     print(f"[FPS Test] Pending: {len(scene._pending_texture_futures)} textures, {len(scene._pending_model_futures)} models")
-    
+
     # Warm-up period: render frames until async loading is mostly complete
     print("[FPS Test] Warm-up phase: processing remaining async resources...")
     warmup_start = time.time()
     warmup_frames = 0
-    
+
     while True:
         QApplication.processEvents()  # ~60 FPS timing
         QApplication.processEvents()
         renderer.update()
         QApplication.processEvents()
         warmup_frames += 1
-        
+
         pending = len(scene._pending_texture_futures) + len(scene._pending_model_futures)
         elapsed = time.time() - warmup_start
-        
+
         # Exit warm-up when no pending resources or after 30 seconds
         if pending == 0 or elapsed > 30:
             break
-        
+
         # Status update every 5 seconds
         if warmup_frames % 300 == 0:
             print(f"[FPS Test]   Warm-up: {warmup_frames} frames, {pending} resources pending, {elapsed:.1f}s elapsed")
-    
+
     print(f"[FPS Test] Warm-up complete: {warmup_frames} frames in {time.time() - warmup_start:.1f}s")
     print(f"[FPS Test] Post warm-up: {len(scene.textures)} textures, {len(scene.models)} models")
-    
+
     # Reset stats for actual measurement
     renderer.frame_stats.reset()
-    
+
     # Measure FPS over at least 200 frames
     print("[FPS Test] Measuring FPS...")
     measure_start = time.time()
-    
+
     def _enough_frames() -> bool:
         return renderer.frame_stats.frame_count >= 200
-    
+
     try:
         qtbot.waitUntil(_enough_frames, timeout=30000)
     except Exception:
         frame_count = renderer.frame_stats.frame_count
         print(f"[FPS Test] Only rendered {frame_count} frames in 30 seconds")
-    
+
     fps = renderer.average_fps(window_seconds=2.0)
     measure_elapsed = time.time() - measure_start
     frame_count = renderer.frame_stats.frame_count
-    
+
     print(f"[FPS Test] Measured {frame_count} frames in {measure_elapsed:.1f}s = {fps:.1f} FPS")
-    
+
     if fps < MIN_EXPECTED_FPS:
-        pytest.xfail(
-            f"[{renderer_type}] Measured FPS {fps:.2f} < {MIN_EXPECTED_FPS:.0f}; "
-            f"renderer still CPU bound"
-        )
+        pytest.xfail(f"[{renderer_type}] Measured FPS {fps:.2f} < {MIN_EXPECTED_FPS:.0f}; renderer still CPU bound")
     assert fps >= MIN_EXPECTED_FPS, f"[{renderer_type}] FPS {fps:.2f} below minimum {MIN_EXPECTED_FPS:.0f}"
 
 
@@ -681,7 +670,7 @@ def test_module_designer_move_and_undo(qtbot, module_designer: ModuleDesigner, m
 
     renderer = module_designer.ui.mainRenderer
     assert renderer.renderer_type == renderer_type
-    
+
     instance = _first_movable_instance(module_designer)
     if instance is None:
         pytest.skip("No movable instances present in test module")
@@ -706,7 +695,7 @@ def test_module_designer_delete_and_restore(qtbot, module_designer: ModuleDesign
 
     renderer = module_designer.ui.mainRenderer
     assert renderer.renderer_type == renderer_type
-    
+
     instance = _first_movable_instance(module_designer)
     if instance is None:
         pytest.skip("No movable instances present in test module")
@@ -728,7 +717,7 @@ def test_module_designer_instance_list_sync(qtbot, module_designer: ModuleDesign
 
     renderer = module_designer.ui.mainRenderer
     assert renderer.renderer_type == renderer_type
-    
+
     module_designer.rebuild_instance_list()
     assert module_designer.ui.instanceList.count() > 0
 
@@ -749,7 +738,7 @@ def test_module_designer_resource_tree_selection(qtbot, module_designer: ModuleD
 
     renderer = module_designer.ui.mainRenderer
     assert renderer.renderer_type == renderer_type
-    
+
     module_designer.rebuild_resource_tree()
     tree = module_designer.ui.resourceTree
     assert tree.topLevelItemCount() > 0
@@ -792,20 +781,21 @@ def test_blender_transform_remote_move_is_undoable(qtbot, module_designer: Modul
         {"x": original_position.x + 2.5, "y": original_position.y - 1.0, "z": original_position.z},
         {"euler": {"z": original_bearing + 0.25}},
     )
-    
+
     # Wait for the position to change (the deferred function should execute and push the command)
     expected_x = original_position.x + 2.5
+
     def _position_changed() -> bool:
         QApplication.processEvents()
         return abs(instance.position.x - expected_x) < 0.001
-    
+
     qtbot.waitUntil(_position_changed, timeout=5000)
 
     assert instance.position.x == pytest.approx(original_position.x + 2.5)
-    
+
     # Verify commands are on the stack (both position and rotation commands)
     assert module_designer.undo_stack.canUndo(), "Expected undo commands to be on the stack"
-    
+
     # Undo both commands (rotation first, then position)
     # The rotation command was pushed last, so undo it first
     module_designer.undo_stack.undo()
@@ -814,7 +804,7 @@ def test_blender_transform_remote_move_is_undoable(qtbot, module_designer: Modul
     module_designer.undo_stack.undo()
     QApplication.processEvents()
     assert instance.position.x == pytest.approx(original_position.x), f"Position after undo: {instance.position.x}, expected: {original_position.x}"
-    
+
     # Redo both commands (position first, then rotation)
     module_designer.undo_stack.redo()
     QApplication.processEvents()
@@ -837,20 +827,21 @@ def test_blender_property_resref_update(qtbot, module_designer: ModuleDesigner):
         id(instance),
         {"resref": "zz_test_remote"},
     )
+
     # Wait for the resref to change
     def _resref_changed() -> bool:
         QApplication.processEvents()
         return str(instance.resref) == "zz_test_remote"
-    
+
     qtbot.waitUntil(_resref_changed, timeout=5000)
     assert str(instance.resref) == "zz_test_remote"
-    
+
     module_designer.undo_stack.undo()
-    
+
     def _resref_undone() -> bool:
         QApplication.processEvents()
         return str(instance.resref) == original_resref
-    
+
     qtbot.waitUntil(_resref_undone, timeout=5000)
     assert str(instance.resref) == original_resref
 
@@ -872,27 +863,23 @@ def test_blender_add_and_remove_instance(qtbot, module_designer: ModuleDesigner)
 
     original_count = len(module_designer.git().instances())
     module_designer._handle_blender_instance_added(payload)  # noqa: SLF001
-    
+
     # Wait for the instance to be added
     def _instance_added() -> bool:
         QApplication.processEvents()
         return len(module_designer.git().instances()) == original_count + 1
-    
+
     qtbot.waitUntil(_instance_added, timeout=5000)
     assert len(module_designer.git().instances()) == original_count + 1
 
-    new_instance = next(
-        inst
-        for inst in module_designer.git().instances()
-        if inst is not template and str(inst.resref) == serialized["resref"]
-    )
+    new_instance = next(inst for inst in module_designer.git().instances() if inst is not template and str(inst.resref) == serialized["resref"])
     module_designer._handle_blender_instance_removed({"id": id(new_instance)})  # noqa: SLF001
-    
+
     # Wait for the instance to be removed
     def _instance_removed() -> bool:
         QApplication.processEvents()
         return len(module_designer.git().instances()) == original_count
-    
+
     qtbot.waitUntil(_instance_removed, timeout=5000)
     assert len(module_designer.git().instances()) == original_count
 
@@ -942,11 +929,7 @@ def test_blender_transform_position_only(qtbot, module_designer: ModuleDesigner)
 
     def _position_changed() -> bool:
         QApplication.processEvents()
-        return (
-            abs(instance.position.x - new_x) < 0.001
-            and abs(instance.position.y - new_y) < 0.001
-            and abs(instance.position.z - new_z) < 0.001
-        )
+        return abs(instance.position.x - new_x) < 0.001 and abs(instance.position.y - new_y) < 0.001 and abs(instance.position.z - new_z) < 0.001
 
     qtbot.waitUntil(_position_changed, timeout=5000)
     assert instance.position.x == pytest.approx(new_x)
@@ -1298,11 +1281,7 @@ def test_blender_instance_added_with_all_properties(qtbot, module_designer: Modu
     qtbot.waitUntil(_instance_added, timeout=5000)
     assert len(module_designer.git().instances()) == original_count + 1
 
-    new_instance = next(
-        inst
-        for inst in module_designer.git().instances()
-        if inst is not template and str(inst.resref) == serialized["resref"]
-    )
+    new_instance = next(inst for inst in module_designer.git().instances() if inst is not template and str(inst.resref) == serialized["resref"])
     assert new_instance.position.x == pytest.approx(serialized["position"]["x"])
     assert new_instance.position.y == pytest.approx(serialized["position"]["y"])
     assert str(new_instance.resref) == serialized["resref"]

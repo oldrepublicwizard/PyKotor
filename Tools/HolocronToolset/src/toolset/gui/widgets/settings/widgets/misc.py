@@ -21,6 +21,7 @@ class MiscWidget(QWidget):
         self.settings = GlobalSettings()
 
         from toolset.uic.qtpy.widgets.settings.misc import Ui_Form
+
         self.ui = Ui_Form()
         self.ui.setupUi(self)
         self.setup_values()
@@ -29,12 +30,7 @@ class MiscWidget(QWidget):
         self.noScrollEventFilter: NoScrollEventFilter = NoScrollEventFilter(self)
         self.installEventFilters(self, self.noScrollEventFilter)
 
-    def installEventFilters(
-        self,
-        parent_widget: QWidget,
-        event_filter: QObject,
-        include_types: list[type[QWidget]] | None = None
-    ) -> None:
+    def installEventFilters(self, parent_widget: QWidget, event_filter: QObject, include_types: list[type[QWidget]] | None = None) -> None:
         """Recursively install event filters on all child widgets."""
         if include_types is None:
             include_types = [QComboBox, QSlider, QSpinBox, QGroupBox, QAbstractSpinBox, QDoubleSpinBox]
@@ -43,9 +39,9 @@ class MiscWidget(QWidget):
             if not widget.objectName():
                 widget.setObjectName(widget.__class__.__name__)
             if isinstance(widget, tuple(include_types)):
-                #RobustLogger.debug(f"Installing event filter on: {widget.objectName()} (type: {widget.__class__.__name__})")
+                # RobustLogger.debug(f"Installing event filter on: {widget.objectName()} (type: {widget.__class__.__name__})")
                 widget.installEventFilter(event_filter)
-            #else:
+            # else:
             #    RobustLogger.debug(f"Skipping NoScrollEventFilter installation on '{widget.objectName()}' due to instance check {widget.__class__.__name__}.")
             self.installEventFilters(widget, event_filter, include_types)
 

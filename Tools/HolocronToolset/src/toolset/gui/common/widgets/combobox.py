@@ -166,6 +166,7 @@ class CustomListView(QListView):
                 option = self.viewOptions()  # type: ignore[attr-defined]
             else:
                 from qtpy.QtWidgets import QStyleOptionViewItem
+
                 option = QStyleOptionViewItem()
                 option.initFrom(self)
 
@@ -368,6 +369,7 @@ class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
         from toolset.gui.common.localization import translate as tr
+
         self.setWindowTitle(tr("FilterComboBox Test"))
         self.setGeometry(100, 100, 300, 200)
 

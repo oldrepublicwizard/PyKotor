@@ -57,7 +57,7 @@ K1_PATH: str | None = _k1_path_raw.strip('"').strip("'") if _k1_path_raw else No
 
 class TestKitGeneration(unittest.TestCase):
     """Test kit generation from RIM files."""
-    
+
     # Mapping of kit IDs to their correct module names
     KIT_TO_MODULE = {
         "blackvulkar": "tar_m10aa",
@@ -88,7 +88,7 @@ class TestKitGeneration(unittest.TestCase):
         # Use robust cleanup that handles locked files/directories
         import shutil
         import time
-        
+
         if self.test_output_path.exists():  # type: ignore[attr-defined]
             # Retry cleanup with exponential backoff to handle locked files
             max_retries = 3
@@ -99,7 +99,7 @@ class TestKitGeneration(unittest.TestCase):
                 except (OSError, PermissionError) as e:
                     if attempt < max_retries - 1:
                         # Wait before retry (exponential backoff)
-                        time.sleep(0.1 * (2 ** attempt))
+                        time.sleep(0.1 * (2**attempt))
                         # Try to remove individual files/dirs that might be locked
                         try:
                             for item in self.test_output_path.iterdir():  # type: ignore[attr-defined]
@@ -145,15 +145,7 @@ class TestKitGeneration(unittest.TestCase):
         self.assertTrue(generated_kit_path.exists(), f"Generated kit directory should exist for '{kit_id}'")
         self._verify_kit_structure(generated_kit_path)
 
-        expected_base = (
-            REPO_ROOT
-            / "Tools"
-            / "HolocronToolset"
-            / "src"
-            / "toolset"
-            / "kits"
-            / "kits"
-        )
+        expected_base = REPO_ROOT / "Tools" / "HolocronToolset" / "src" / "toolset" / "kits" / "kits"
         expected_kit_path = expected_base / kit_id
         expected_json_path = expected_base / f"{kit_id}.json"
 
@@ -204,11 +196,11 @@ class TestKitGeneration(unittest.TestCase):
 
     def _get_module_for_kit(self, kit_id: str) -> str | None:
         """Get the module name for a given kit ID.
-        
+
         Args:
         ----
             kit_id: Kit identifier (e.g., "blackvulkar")
-            
+
         Returns:
         -------
             Module name if found, None otherwise
@@ -216,7 +208,7 @@ class TestKitGeneration(unittest.TestCase):
         module_name = self.KIT_TO_MODULE.get(kit_id)
         if not module_name:
             return None
-        
+
         # Verify the module exists using the utility function
         module_path = find_module_file(self.installation, module_name)  # type: ignore[attr-defined]
         if module_path and module_path.exists():
@@ -225,11 +217,11 @@ class TestKitGeneration(unittest.TestCase):
 
     def _generate_kit(self, kit_id: str) -> tuple[Path, Path]:
         """Helper method to generate a kit and return paths.
-        
+
         Args:
         ----
             kit_id: Kit identifier (e.g., "blackvulkar")
-            
+
         Returns:
         -------
             Tuple of (generated_kit_path, generated_json_path)
@@ -237,7 +229,7 @@ class TestKitGeneration(unittest.TestCase):
         module_name = self._get_module_for_kit(kit_id)
         if module_name is None:
             self.skipTest(f"Could not find module for kit '{kit_id}'")
-        
+
         # Generate the kit
         extract_kit(
             self.installation,  # type: ignore[attr-defined]
@@ -248,9 +240,9 @@ class TestKitGeneration(unittest.TestCase):
 
         generated_kit_path = self.test_output_path / kit_id  # type: ignore[attr-defined]
         generated_json_path = self.test_output_path / f"{kit_id}.json"  # type: ignore[attr-defined]
-        
+
         self.assertTrue(generated_kit_path.exists(), f"Generated kit directory should exist for '{kit_id}'")
-        
+
         return generated_kit_path, generated_json_path
 
     # Black Vulkar tests
@@ -297,7 +289,7 @@ class TestKitGeneration(unittest.TestCase):
 
     def _verify_kit_structure(self, kit_path: Path):
         """Verify that a generated kit has the expected directory structure and file types.
-        
+
         Args:
         ----
             kit_path: Path to the generated kit directory
@@ -309,14 +301,14 @@ class TestKitGeneration(unittest.TestCase):
             # Directory may or may not exist depending on kit content
             if dir_path.exists():
                 self.assertTrue(dir_path.is_dir(), f"{dir_name} should be a directory if it exists")
-        
+
         # Check for component files (MDL, MDX, WOK, PNG) in root
         mdl_files: list[Path] = list(kit_path.glob("*.mdl"))
         mdx_files: list[Path] = list(kit_path.glob("*.mdx"))
         wok_files: list[Path] = list(kit_path.glob("*.wok"))
         png_files = list(kit_path.glob("*.png"))
         utd_files = list(kit_path.glob("*.utd"))
-        
+
         # If there are components, verify they have the expected structure
         if mdl_files:
             for mdl_file in mdl_files:
@@ -327,7 +319,7 @@ class TestKitGeneration(unittest.TestCase):
                 # Each component should have a minimap PNG
                 png_file = kit_path / f"{component_id}.png"
                 self.assertTrue(png_file.exists(), f"Component {component_id} should have minimap PNG")
-        
+
         # Check for door files (UTD)
         # Doors should use simple identifiers: door0_k1.utd, door1_k1.utd, etc.
         if utd_files:
@@ -336,6 +328,7 @@ class TestKitGeneration(unittest.TestCase):
             for door_name in door_names:
                 # Verify door naming format: should be "door0", "door1", etc.
                 import re
+
                 expected_pattern = re.compile(r"^door\d+$")
                 self.assertTrue(
                     expected_pattern.match(door_name),
@@ -345,7 +338,7 @@ class TestKitGeneration(unittest.TestCase):
                 k2_file = kit_path / f"{door_name}_k2.utd"
                 self.assertTrue(k1_file.exists(), f"Door {door_name} should have _k1.utd file")
                 self.assertTrue(k2_file.exists(), f"Door {door_name} should have _k2.utd file")
-        
+
         # Check for door walkmeshes (DWK files)
         # Doors have 3 walkmesh states: closed (0), open1 (1), open2 (2)
         # Format: {door_model_name}0.dwk, {door_model_name}1.dwk, {door_model_name}2.dwk
@@ -362,14 +355,14 @@ class TestKitGeneration(unittest.TestCase):
                     if model_name not in dwk_by_model:
                         dwk_by_model[model_name] = set()
                     dwk_by_model[model_name].add(suffix)
-            
+
             # Verify that if any DWK exists for a door model, all three states should exist
             for model_name, suffixes in dwk_by_model.items():
                 for expected_suffix in ["0", "1", "2"]:
                     dwk_file = kit_path / f"{model_name}{expected_suffix}.dwk"
                     if expected_suffix in suffixes:
                         self.assertTrue(dwk_file.exists(), f"Door walkmesh {model_name}{expected_suffix}.dwk should exist")
-        
+
         # Check for placeable walkmeshes (PWK files)
         # Format: {placeable_model_name}.pwk
         pwk_files: list[Path] = list(kit_path.glob("*.pwk"))
@@ -384,7 +377,7 @@ class TestKitGeneration(unittest.TestCase):
                 mdl_in_models = (kit_path / "models" / f"{model_name}.mdl").exists() if (kit_path / "models").exists() else False
                 # NOTE: PWK may not have corresponding MDL in kit if it's for a placeable that's not extracted
                 # So we just verify the PWK file exists and is valid
-        
+
         # Check texture files
         textures_dir = kit_path / "textures"
         if textures_dir.exists():
@@ -394,7 +387,7 @@ class TestKitGeneration(unittest.TestCase):
             for tga_file in tga_files:
                 txi_file = textures_dir / f"{tga_file.stem}.txi"
                 self.assertTrue(txi_file.exists(), f"Texture {tga_file.stem} should have corresponding TXI file")
-        
+
         # Check lightmap files
         lightmaps_dir = kit_path / "lightmaps"
         if lightmaps_dir.exists():
@@ -404,7 +397,7 @@ class TestKitGeneration(unittest.TestCase):
             for tga_file in tga_files:
                 txi_file = lightmaps_dir / f"{tga_file.stem}.txi"
                 self.assertTrue(txi_file.exists(), f"Lightmap {tga_file.stem} should have corresponding TXI file")
-        
+
         # Check skybox files
         skyboxes_dir = kit_path / "skyboxes"
         if skyboxes_dir.exists():
@@ -437,12 +430,12 @@ class TestKitGeneration(unittest.TestCase):
         # Normalize content - strip trailing whitespace from each line and normalize line endings
         generated_content = generated_file.read_text(encoding="utf-8")
         expected_content = expected_file.read_text(encoding="utf-8")
-        
+
         # For TXI files, normalize trailing newlines (some have extra newlines, some don't)
         if generated_file.suffix.lower() == ".txi":
             generated_content = generated_content.rstrip() + "\n"
             expected_content = expected_content.rstrip() + "\n"
-        
+
         generated_lines = generated_content.splitlines(keepends=True)
         expected_lines = expected_content.splitlines(keepends=True)
 
@@ -470,7 +463,7 @@ class TestKitGeneration(unittest.TestCase):
         # Known shared resources that may not be referenced by the module's models
         # These are manually included in kits for self-containment
         known_shared_resources = self._get_known_shared_resources()
-        
+
         # Get all files in expected directory
         expected_files = set(expected_dir.rglob("*"))
         expected_files = {f for f in expected_files if f.is_file()}
@@ -485,14 +478,10 @@ class TestKitGeneration(unittest.TestCase):
 
         missing_files = expected_rel - generated_rel
         extra_files = generated_rel - expected_rel
-        
+
         # Filter out known shared resources from missing files
         missing_files_filtered: set[Path] = {
-            f for f in missing_files
-            if not any(
-                shared_pattern in str(f).lower().replace("\\", "/")
-                for shared_pattern in known_shared_resources
-            )
+            f for f in missing_files if not any(shared_pattern in str(f).lower().replace("\\", "/") for shared_pattern in known_shared_resources)
         }
 
         if missing_files_filtered:
@@ -504,16 +493,15 @@ class TestKitGeneration(unittest.TestCase):
                     print(f"  - {f}")
                 if len(known_missing) > 10:
                     print(f"  ... and {len(known_missing) - 10} more")
-            
+
             self.fail(
                 f"Missing files in generated kit ({len(missing_files_filtered)}): "
-                f"{sorted(list(missing_files_filtered))[:20]}"
-                + (f"\n... and {len(missing_files_filtered) - 20} more" if len(missing_files_filtered) > 20 else "")
+                f"{sorted(list(missing_files_filtered))[:20]}" + (f"\n... and {len(missing_files_filtered) - 20} more" if len(missing_files_filtered) > 20 else "")
             )
         elif missing_files:
             # Only known shared resources are missing - this is acceptable
             print(f"\nNote: {len(missing_files)} known shared resources not extracted (acceptable)")
-        
+
         if extra_files:
             # Extra files are usually okay (might be generated differently)
             print(f"\nNote: {len(extra_files)} extra files in generated kit (may be acceptable)")
@@ -521,17 +509,17 @@ class TestKitGeneration(unittest.TestCase):
 
         # Compare each file (skip known shared resources)
         known_shared_resources = self._get_known_shared_resources()
-        
+
         # Track what file types we're comparing for reporting
         file_types_compared: dict[str, int] = {}
-        
+
         for rel_path in expected_rel:
             # Skip known shared resources
             # Normalize path separators using as_posix() which always uses forward slashes
             rel_path_str = rel_path.as_posix().lower()
             if any(shared_pattern in rel_path_str for shared_pattern in known_shared_resources):
                 continue
-            
+
             generated_file = generated_dir / rel_path
             expected_file = expected_dir / rel_path
 
@@ -546,7 +534,7 @@ class TestKitGeneration(unittest.TestCase):
                 self._compare_plaintext_files(generated_file, expected_file)
             else:
                 self._compare_binary_files(generated_file, expected_file)
-        
+
         # Report what was compared
         if file_types_compared:
             print(f"\nCompared {sum(file_types_compared.values())} files:")
@@ -566,25 +554,28 @@ class TestKitGeneration(unittest.TestCase):
 
     def _get_known_shared_resources(self) -> list[str]:
         """Get list of known shared resource patterns that may not be referenced by models.
-        
+
         Returns:
         -------
             List of filename patterns (lowercase) for shared resources
         """
         # Shared lightmaps from other modules (not referenced by danm13)
         shared_lightmaps: list[str] = [
-            "m03af_01a_lm13", "m03af_03a_lm13",
+            "m03af_01a_lm13",
+            "m03af_03a_lm13",
             "m03mg_01a_lm13",
-            "m10aa_01a_lm13", "m10ac_28a_lm13",
+            "m10aa_01a_lm13",
+            "m10ac_28a_lm13",
             "m14ab_02a_lm13",
             "m15aa_01a_lm13",
-            "m22aa_03a_lm13", "m22ab_12a_lm13",
+            "m22aa_03a_lm13",
+            "m22ab_12a_lm13",
             "m28ab_19a_lm13",
             "m33ab_01_lm13",
             "m36aa_01_lm13",
             "m44ab_27a_lm13",
         ]
-        
+
         # Shared textures not referenced by danm13 models
         shared_textures: list[str] = [
             "i_datapad",
@@ -593,28 +584,46 @@ class TestKitGeneration(unittest.TestCase):
             "lda_flr12",  # Also add flr12
             "h_f_lo01headtest",
         ]
-        
+
         # Combine and create patterns
         patterns: list[str] = []
         for lm in shared_lightmaps:
             patterns.append(lm.lower())
             patterns.append(f"lightmaps/{lm.lower()}")
-            patterns.append(f"lightmaps/{lm.lower()}.txi") # Add TXI for lightmaps
-            patterns.append(f"lightmaps/{lm.lower()}.tga") # Add TGA for lightmaps
+            patterns.append(f"lightmaps/{lm.lower()}.txi")  # Add TXI for lightmaps
+            patterns.append(f"lightmaps/{lm.lower()}.tga")  # Add TGA for lightmaps
         for tex in shared_textures:
             patterns.append(tex.lower())
             patterns.append(f"textures/{tex.lower()}")
-            patterns.append(f"textures/{tex.lower()}.txi") # Add TXI for textures
-            patterns.append(f"textures/{tex.lower()}.tga") # Add TGA for textures
-        
+            patterns.append(f"textures/{tex.lower()}.txi")  # Add TXI for textures
+            patterns.append(f"textures/{tex.lower()}.tga")  # Add TGA for textures
+
         # Additional textures/TXIs found in the expected jedienclave kit that are not referenced by danm13 models
         # These are also considered "shared" or manually added
         additional_shared_textures_base: list[str] = [
-            "lda_bark04", "lda_ehawk01", "lda_flr11", "lda_flr12", "lda_grass07", "lda_grate01",
-            "lda_ivy01", "lda_leaf02", "lda_lite01", "lda_rock06",
-            "lda_sky0001", "lda_sky0002", "lda_sky0003", "lda_sky0004",
-            "lda_sky0005", "lda_trim01", "lda_trim02", "lda_trim03", "lda_trim04",
-            "lda_unwal07", "lda_wall02", "lda_wall03", "lda_wall04",
+            "lda_bark04",
+            "lda_ehawk01",
+            "lda_flr11",
+            "lda_flr12",
+            "lda_grass07",
+            "lda_grate01",
+            "lda_ivy01",
+            "lda_leaf02",
+            "lda_lite01",
+            "lda_rock06",
+            "lda_sky0001",
+            "lda_sky0002",
+            "lda_sky0003",
+            "lda_sky0004",
+            "lda_sky0005",
+            "lda_trim01",
+            "lda_trim02",
+            "lda_trim03",
+            "lda_trim04",
+            "lda_unwal07",
+            "lda_wall02",
+            "lda_wall03",
+            "lda_wall04",
             "lda_window01",  # Window texture - may differ between installations
             "lmi_bed01",  # Lightmap textures
         ]
@@ -622,22 +631,26 @@ class TestKitGeneration(unittest.TestCase):
             # Add both TGA and TXI versions
             patterns.append(f"textures/{tex_base.lower()}.tga")
             patterns.append(f"textures/{tex_base.lower()}.txi")
-        
+
         # Textures that exist in the expected kit but are not referenced by models
         # These may be referenced by other resources (placeables, characters, etc.) or manually added
         additional_shared_textures: list[str] = [
-            "p_bastillah01.txi", "p_carthh01.tga", "p_carthh01.txi",
-            "pheyea.txi", "plc_chair1.tga", "plc_chair1.txi",
+            "p_bastillah01.txi",
+            "p_carthh01.tga",
+            "p_carthh01.txi",
+            "pheyea.txi",
+            "plc_chair1.tga",
+            "plc_chair1.txi",
             "w_vbroswrd01.txi",
         ]
         for tex_name in additional_shared_textures:
             patterns.append(f"textures/{tex_name.lower()}")
-        
+
         return patterns
 
     def _compare_binary_files(self, generated_file: Path, expected_file: Path):
         """Compare binary files.
-        
+
         For image files (TGA/TPC), compares by dimensions, format, and pixel data.
         For other binary files, uses SHA256 hash comparison.
 
@@ -657,13 +670,13 @@ class TestKitGeneration(unittest.TestCase):
                 rel_path = Path(generated_file.name)
         except Exception:
             rel_path = Path(generated_file.name)
-        
+
         known_shared = self._get_known_shared_resources()
         rel_path_str = rel_path.as_posix().lower()
         if any(shared_pattern in rel_path_str for shared_pattern in known_shared):
             # Known shared resource - skip comparison
             return
-        
+
         # For image files (TGA/TPC), compare by image properties
         if generated_file.suffix.lower() in {".tga", ".tpc"}:
             self._compare_image_files(generated_file, expected_file, rel_path)
@@ -672,7 +685,7 @@ class TestKitGeneration(unittest.TestCase):
             # This ensures models, walkmeshes, minimaps, and doors are byte-for-byte identical
             generated_hash = hashlib.sha256(generated_file.read_bytes()).hexdigest()
             expected_hash = hashlib.sha256(expected_file.read_bytes()).hexdigest()
-            
+
             if generated_hash != expected_hash:
                 file_type = {
                     ".mdl": "Model",
@@ -687,7 +700,7 @@ class TestKitGeneration(unittest.TestCase):
                     ".tga": "Texture/Lightmap (TGA)",
                     ".tpc": "Texture (TPC)",
                 }.get(generated_file.suffix.lower(), "Binary file")
-                
+
                 self.fail(
                     f"{file_type} files differ (SHA256):\n"
                     f"  Generated: {generated_file} ({generated_hash[:16]}...)\n"
@@ -697,7 +710,7 @@ class TestKitGeneration(unittest.TestCase):
 
     def _compare_image_files(self, generated_file: Path, expected_file: Path, rel_path: Path):
         """Compare image files (TGA/TPC) by dimensions, format, and pixel data.
-        
+
         Args:
         ----
             generated_file: Path to generated image file
@@ -709,15 +722,15 @@ class TestKitGeneration(unittest.TestCase):
             from pykotor.resource.formats.tpc.tga import read_tga
             from pykotor.resource.formats.tpc.tpc_data import TPCTextureFormat
             from pykotor.resource.type import ResourceType
-            
+
             # Read both images
             gen_data = generated_file.read_bytes()
             exp_data = expected_file.read_bytes()
-            
+
             # Determine file type and read
             gen_tpc = None
             exp_tpc = None
-            
+
             # Determine file type and read
             if generated_file.suffix.lower() == ".tpc":
                 gen_tpc = read_tpc(gen_data)
@@ -725,35 +738,34 @@ class TestKitGeneration(unittest.TestCase):
                 # TGA - read and convert to TPC for comparison
                 gen_tga = read_tga(io.BytesIO(gen_data))
                 from pykotor.resource.formats.tpc.tpc_data import TPC
+
                 gen_tpc = TPC()
                 gen_tpc.set_single(gen_tga.data, TPCTextureFormat.RGBA, gen_tga.width, gen_tga.height)
-            
+
             if expected_file.suffix.lower() == ".tpc":
                 exp_tpc = read_tpc(exp_data)
             else:
                 # TGA - read and convert to TPC for comparison
                 exp_tga = read_tga(io.BytesIO(exp_data))
                 from pykotor.resource.formats.tpc.tpc_data import TPC
+
                 exp_tpc = TPC()
                 exp_tpc.set_single(exp_tga.data, TPCTextureFormat.RGBA, exp_tga.width, exp_tga.height)
-            
+
             if gen_tpc is None or exp_tpc is None:
                 # Fallback to hash comparison if we can't read as image
                 gen_hash = hashlib.sha256(gen_data).hexdigest()
                 exp_hash = hashlib.sha256(exp_data).hexdigest()
                 if gen_hash != exp_hash:
                     self.fail(
-                        f"Image files differ (could not parse):\n"
-                        f"  Generated: {generated_file}\n"
-                        f"  Expected:  {expected_file}\n"
-                        f"  Relative path: {rel_path}",
+                        f"Image files differ (could not parse):\n  Generated: {generated_file}\n  Expected:  {expected_file}\n  Relative path: {rel_path}",
                     )
                 return
-            
+
             # Compare dimensions
             gen_width, gen_height = gen_tpc.dimensions()
             exp_width, exp_height = exp_tpc.dimensions()
-            
+
             if gen_width != exp_width or gen_height != exp_height:
                 self.fail(
                     f"Image dimensions differ:\n"
@@ -761,24 +773,24 @@ class TestKitGeneration(unittest.TestCase):
                     f"  Expected:  {expected_file} ({exp_width}x{exp_height})\n"
                     f"  Relative path: {rel_path}",
                 )
-            
+
             # Get pixel data in RGBA format for comparison
             gen_mipmap = gen_tpc.get(0, 0)
             exp_mipmap = exp_tpc.get(0, 0)
-            
+
             # Convert both to RGBA if needed
             gen_rgba = gen_mipmap.copy()
             if gen_rgba.tpc_format != TPCTextureFormat.RGBA:
                 gen_rgba.convert(TPCTextureFormat.RGBA)
-            
+
             exp_rgba = exp_mipmap.copy()
             if exp_rgba.tpc_format != TPCTextureFormat.RGBA:
                 exp_rgba.convert(TPCTextureFormat.RGBA)
-            
+
             # Compare pixel data (allow small differences for compression artifacts)
             gen_pixels = bytes(gen_rgba.data)
             exp_pixels = bytes(exp_rgba.data)
-            
+
             if len(gen_pixels) != len(exp_pixels):
                 self.fail(
                     f"Image pixel data size differs:\n"
@@ -786,30 +798,30 @@ class TestKitGeneration(unittest.TestCase):
                     f"  Expected:  {expected_file} ({len(exp_pixels)} bytes)\n"
                     f"  Relative path: {rel_path}",
                 )
-            
+
             # Compare pixel by pixel with tolerance for compression artifacts
             # DXT compression can cause small differences even for the same source image
             differences = 0
             max_diff = 0
             total_pixels = gen_width * gen_height
-            
+
             for i in range(0, len(gen_pixels), 4):
-                gen_r, gen_g, gen_b, gen_a = gen_pixels[i:i+4]
-                exp_r, exp_g, exp_b, exp_a = exp_pixels[i:i+4]
-                
+                gen_r, gen_g, gen_b, gen_a = gen_pixels[i : i + 4]
+                exp_r, exp_g, exp_b, exp_a = exp_pixels[i : i + 4]
+
                 # Calculate color difference (perceptual difference)
                 r_diff = abs(int(gen_r) - int(exp_r))
                 g_diff = abs(int(gen_g) - int(exp_g))
                 b_diff = abs(int(gen_b) - int(exp_b))
                 a_diff = abs(int(gen_a) - int(exp_a))
-                
+
                 pixel_diff = max(r_diff, g_diff, b_diff, a_diff)
                 max_diff = max(max_diff, pixel_diff)
-                
+
                 # Allow up to 2 levels of difference per channel (compression artifacts)
                 if pixel_diff > 2:
                     differences += 1
-            
+
             # Allow up to 1% of pixels to differ by more than 2 levels
             # This accounts for DXT compression artifacts
             tolerance = total_pixels * 0.01
@@ -823,7 +835,7 @@ class TestKitGeneration(unittest.TestCase):
                     f"  Max difference: {max_diff} levels\n"
                     f"  Relative path: {rel_path}",
                 )
-            
+
         except Exception as e:
             # If image comparison fails, fall back to hash comparison
             gen_hash = hashlib.sha256(generated_file.read_bytes()).hexdigest()
@@ -857,7 +869,7 @@ class TestKitGeneration(unittest.TestCase):
                     expected_data[key],
                     f"JSON field '{key}' differs",
                 )
-        
+
         # Verify JSON structure has required sections
         if "components" in expected_data:
             self.assertIn("components", generated_data, "Generated JSON missing 'components' section")
@@ -875,15 +887,13 @@ class TestKitGeneration(unittest.TestCase):
                 len(expected_data["doors"]),
                 "Number of doors differs",
             )
-            for i, (gen_door, exp_door) in enumerate(
-                zip(generated_data.get("doors", []), expected_data["doors"])
-            ):
+            for i, (gen_door, exp_door) in enumerate(zip(generated_data.get("doors", []), expected_data["doors"])):
                 # Verify door naming format: should be "door0_k1", "door1_k1", etc.
                 gen_utd_k1 = gen_door.get("utd_k1")
                 gen_utd_k2 = gen_door.get("utd_k2")
                 exp_utd_k1 = exp_door.get("utd_k1")
                 exp_utd_k2 = exp_door.get("utd_k2")
-                
+
                 # Check format matches expected pattern (door0_k1, door1_k1, etc.)
                 if exp_utd_k1:
                     # Expected format should be "door{N}_k1" where N is a number
@@ -933,9 +943,7 @@ class TestKitGeneration(unittest.TestCase):
                 len(expected_data["components"]),
                 "Number of components differs",
             )
-            for i, (gen_comp, exp_comp) in enumerate(
-                zip(generated_data.get("components", []), expected_data["components"])
-            ):
+            for i, (gen_comp, exp_comp) in enumerate(zip(generated_data.get("components", []), expected_data["components"])):
                 self.assertEqual(
                     gen_comp.get("id"),
                     exp_comp.get("id"),
@@ -965,9 +973,7 @@ class TestKitGeneration(unittest.TestCase):
                             f"Component {i} doorhooks count differs",
                         )
                         if gen_hooks:
-                            for j, (gen_hook, exp_hook) in enumerate(
-                                zip(gen_hooks, exp_hooks)
-                            ):
+                            for j, (gen_hook, exp_hook) in enumerate(zip(gen_hooks, exp_hooks)):
                                 self.assertIn("x", gen_hook, f"Component {i} hook {j} missing x")
                                 self.assertIn("y", gen_hook, f"Component {i} hook {j} missing y")
                                 self.assertIn("z", gen_hook, f"Component {i} hook {j} missing z")
@@ -1012,4 +1018,3 @@ class TestKitGeneration(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
-

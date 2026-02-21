@@ -85,17 +85,16 @@ class InventoryEditor(QDialog):
         self.setWindowFlags(
             Qt.WindowType.Dialog  # pyright: ignore[reportArgumentType]
             | Qt.WindowType.WindowCloseButtonHint
-            | Qt.WindowType.WindowStaysOnTopHint
-            & ~Qt.WindowType.WindowContextHelpButtonHint
-            & ~Qt.WindowType.WindowMinimizeButtonHint
+            | Qt.WindowType.WindowStaysOnTopHint & ~Qt.WindowType.WindowContextHelpButtonHint & ~Qt.WindowType.WindowMinimizeButtonHint
         )
         from toolset.uic.qtpy.dialogs.inventory import Ui_Dialog
 
         self.ui = Ui_Dialog()
         self.ui.setupUi(self)
-        
+
         # Setup event filter to prevent scroll wheel interaction with controls
         from toolset.gui.common.filters import NoScrollEventFilter
+
         self._no_scroll_filter = NoScrollEventFilter(self)
         self._no_scroll_filter.setup_filter(parent_widget=self)
 
@@ -161,8 +160,8 @@ class InventoryEditor(QDialog):
         self.ui.claw2Frame.customContextMenuRequested.connect(lambda point: self.open_item_context_menu(self.ui.claw2Frame, point))
         self.ui.claw3Frame.customContextMenuRequested.connect(lambda point: self.open_item_context_menu(self.ui.claw3Frame, point))
 
-        self.ui.okButton.clicked.connect(self.accept)
-        self.ui.cancelButton.clicked.connect(self.reject)
+        self.ui.okButton.clicked.connect(lambda: self.accept())
+        self.ui.cancelButton.clicked.connect(lambda: self.reject())
 
         self.ui.implantFrame.slot = EquipmentSlot.IMPLANT
         self.ui.headFrame.slot = EquipmentSlot.HEAD
@@ -316,22 +315,32 @@ class InventoryEditor(QDialog):
         if widget.has_item:
             if self.is_store:
                 infinite_action = menu.addAction("Infinite")
+                assert infinite_action is not None
                 infinite_action.setCheckable(True)
                 infinite_action.setChecked(widget.infinite)
                 infinite_action.triggered.connect(widget.toggle_infinite)
             else:
                 droppable_action = menu.addAction("Droppable")
+                assert droppable_action is not None
                 droppable_action.setCheckable(True)
                 droppable_action.setChecked(widget.droppable)
                 droppable_action.triggered.connect(widget.toggle_droppable)
 
             menu.addSeparator()
-            menu.addAction("Remove Item").triggered.connect(widget.remove_item)
+            remove_action = menu.addAction("Remove Item")
+            assert remove_action is not None
+            remove_action.triggered.connect(widget.remove_item)
         else:
-            menu.addAction("No Item").setEnabled(False)
+            no_item_action = menu.addAction("No Item")
+            assert no_item_action is not None
+            no_item_action.setEnabled(False)
 
         menu.addSeparator()
-        menu.addAction("Set Item ResRef").triggered.connect(lambda: self.prompt_set_item_resref_dialog(cast("DropFrame", widget)))
+        set_item_resref_action = menu.addAction("Set Item ResRef")
+        assert set_item_resref_action is not None
+        set_item_resref_action.triggered.connect(lambda: self.prompt_set_item_resref_dialog(cast("DropFrame", widget)))
+        assert menu is not None
+        assert widget is not None
         menu.exec(widget.mapToGlobal(point))
 
     def prompt_set_item_resref_dialog(
@@ -640,8 +649,10 @@ class ItemBuilderDialog(QDialog):
         self.ui.setupUi(self)
 
         self.setWindowFlags(
-            (Qt.WindowType.Dialog  # pyright: ignore[reportArgumentType]
-            | Qt.WindowType.WindowCloseButtonHint)
+            (
+                Qt.WindowType.Dialog  # pyright: ignore[reportArgumentType]
+                | Qt.WindowType.WindowCloseButtonHint
+            )
             & ~Qt.WindowType.WindowContextHelpButtonHint
             & ~Qt.WindowType.WindowMinMaxButtonsHint
         )
@@ -651,12 +662,14 @@ class ItemBuilderDialog(QDialog):
 
         # Setup event filter to prevent scroll wheel interaction with controls
         from toolset.gui.common.filters import NoScrollEventFilter  # noqa: PLC0415
+
         self._no_scroll_filter = NoScrollEventFilter(self)
         self._no_scroll_filter.setup_filter(parent_widget=self)
         self._progress_bar.setValue(0)
         self._progress_bar.setTextVisible(False)
 
         from toolset.gui.common.localization import translate as tr
+
         self.setWindowTitle(tr("Building Item Lists..."))
         self.core_model: ItemModel = ItemModel(parent)
         self.modules_model: ItemModel = ItemModel(parent)
@@ -826,9 +839,9 @@ class ItemModel(QStandardItemModel):
 
 class CP1252ResRefValidator(QValidator):
     """Validator that ensures input contains only cp-1252 (windows-1252) characters and invalid filename characters are excluded."""
-    
+
     INVALID_CHARACTERS = '<>:"/\\|?*'
-    
+
     def validate(
         self,
         text: str,
@@ -837,14 +850,14 @@ class CP1252ResRefValidator(QValidator):
         """Validates that the text contains only cp-1252 characters and no invalid filename characters."""
         if not text:
             return (QValidator.Acceptable, text, pos)
-        
+
         # Check for invalid filename characters
         if any(char in self.INVALID_CHARACTERS for char in text):
             return (QValidator.Invalid, text, pos)
-        
+
         # Check if all characters can be encoded in cp-1252
         try:
-            text.encode('cp1252')
+            text.encode("cp1252")
             return (QValidator.Acceptable, text, pos)
         except UnicodeEncodeError:
             return (QValidator.Invalid, text, pos)
@@ -862,13 +875,14 @@ class SetItemResRefDialog(QDialog):
 
         self.ui = Ui_Dialog()
         self.ui.setupUi(self)
-        
+
         # Set validator to ensure only cp-1252 characters are allowed
         validator = CP1252ResRefValidator(self)
         self.ui.resrefEdit.setValidator(validator)
-        
+
         # Setup event filter to prevent scroll wheel interaction with controls
         from toolset.gui.common.filters import NoScrollEventFilter
+
         self._no_scroll_filter = NoScrollEventFilter(self)
         self._no_scroll_filter.setup_filter(parent_widget=self)
 

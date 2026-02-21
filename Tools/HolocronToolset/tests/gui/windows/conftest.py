@@ -1,4 +1,5 @@
 """Conftest for gui/windows tests. Ensures test_roundtrip_k1_wok_face_count uses indoor_map (not archive) for WOKs."""
+
 from __future__ import annotations
 
 from pathlib import Path
@@ -37,14 +38,8 @@ def pytest_collection_modifyitems(session: pytest.Session, config: pytest.Config
                 rebuilt_path = tmp_path / f"{module_root}_rebuilt.mod"
                 tmod._export_indoor_map_to_mod(indoor_map, k1_pykotor_installation, rebuilt_path)
                 rebuilt_resources = tmod._read_archive_resources(rebuilt_path)
-                rebuilt_woks = {
-                    resref: data
-                    for (resref, restype), data in rebuilt_resources.items()
-                    if restype == ResourceType.WOK
-                }
-                assert len(rebuilt_woks) == len(indoor_map.rooms), (
-                    f"{module_root}: WOK count mismatch - rebuilt={len(rebuilt_woks)}, rooms={len(indoor_map.rooms)}"
-                )
+                rebuilt_woks = {resref: data for (resref, restype), data in rebuilt_resources.items() if restype == ResourceType.WOK}
+                assert len(rebuilt_woks) == len(indoor_map.rooms), f"{module_root}: WOK count mismatch - rebuilt={len(rebuilt_woks)}, rooms={len(indoor_map.rooms)}"
                 original_total_faces = sum(len(room.base_walkmesh().faces) for room in indoor_map.rooms)
                 rebuilt_total_faces = sum(len(read_bwm(data).faces) for data in rebuilt_woks.values())
                 assert rebuilt_total_faces == original_total_faces, (

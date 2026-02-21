@@ -9,22 +9,15 @@ import qtpy
 from qtpy.QtCore import QRectF, Qt, pyqtSignal as Signal
 from qtpy.QtGui import QBrush, QColor, QPainter, QPen, QUndoCommand
 from qtpy.QtWidgets import (
-    QComboBox,
     QDialog,
-    QDoubleSpinBox,
-    QFormLayout,
     QGraphicsEllipseItem,
     QGraphicsItem,
     QGraphicsLineItem,
     QGraphicsRectItem,
     QGraphicsScene,
-    QHBoxLayout,
-    QLineEdit,
     QListWidgetItem,
     QMessageBox,
-    QPushButton,
     QUndoStack,
-    QVBoxLayout,
     QWidget,
 )
 from qtpy.uic import loadUi
@@ -154,6 +147,7 @@ class WalkmeshEditor(QWidget):
     def add_track(self):
         if len(self.lyt.rooms) < 2:  # noqa: PLR2004
             from toolset.gui.common.localization import translate as tr
+
             QMessageBox.warning(self, tr("Add Track"), tr("At least two rooms are required to add a track."))
             return
         dialog = TrackPropertiesDialog(self, self.lyt.rooms)
@@ -218,6 +212,7 @@ class WalkmeshEditor(QWidget):
     def add_door_hook(self):
         if not self.lyt.rooms:
             from toolset.gui.common.localization import translate as tr
+
             QMessageBox.warning(self, tr("Add Door Hook"), tr("At least one room is required to add a door hook."))
             return
         dialog = DoorHookPropertiesDialog(self, self.lyt.rooms)
@@ -271,17 +266,9 @@ class WalkmeshEditor(QWidget):
         width: float = room.size.x
         height: float = room.size.y
 
-        vertices: list[tuple[float, float, float]] = [
-            (x, y, z),
-            (x + width, y, z),
-            (x + width, y + height, z),
-            (x, y + height, z)
-        ]
+        vertices: list[tuple[float, float, float]] = [(x, y, z), (x + width, y, z), (x + width, y + height, z), (x, y + height, z)]
 
-        faces: list[tuple[int, int, int]] = [
-            (0, 1, 2),
-            (0, 2, 3)
-        ]
+        faces: list[tuple[int, int, int]] = [(0, 1, 2), (0, 2, 3)]
 
         for face in faces:
             self.walkmesh.add_face([Vector3(*vertices[i]) for i in face])
@@ -498,6 +485,7 @@ class WalkmeshEditor(QWidget):
             return
         self.undo_stack.push(command)
 
+
 class RoomPropertiesDialog(QDialog):
     def __init__(
         self,
@@ -510,7 +498,7 @@ class RoomPropertiesDialog(QDialog):
 
         self.ui = Ui_Dialog()
         self.ui.setupUi(self)
-        
+
         self.setWindowTitle(tr("Room Properties"))
         self.room: LYTRoom | None = room
 
@@ -531,11 +519,12 @@ class RoomPropertiesDialog(QDialog):
             self.size_y.setValue(room.size.y)
 
         # Connect buttons (connections are already set up in .ui file, but we can also do it here for clarity)
-        self.ui.okButton.clicked.connect(self.accept)
-        self.ui.cancelButton.clicked.connect(self.reject)
-        
+        self.ui.okButton.clicked.connect(lambda: self.accept())
+        self.ui.cancelButton.clicked.connect(lambda: self.reject())
+
         # Setup event filter to prevent scroll wheel interaction with controls
         from toolset.gui.common.filters import NoScrollEventFilter
+
         self._no_scroll_filter = NoScrollEventFilter(self)
         self._no_scroll_filter.setup_filter(parent_widget=self)
 
@@ -544,6 +533,7 @@ class RoomPropertiesDialog(QDialog):
         self.position: Vector3 = Vector3(self.pos_x.value(), self.pos_y.value(), self.pos_z.value())
         self.size: Vector3 = Vector3(self.size_x.value(), self.size_y.value(), 0)
         super().accept()
+
 
 class TrackPropertiesDialog(QDialog):
     def __init__(
@@ -557,7 +547,7 @@ class TrackPropertiesDialog(QDialog):
 
         self.ui = Ui_Dialog()
         self.ui.setupUi(self)
-        
+
         self.setWindowTitle("Track Properties")
         self.rooms: list[LYTRoom] = rooms or []
         self.track: LYTTrack | None = track
@@ -577,11 +567,12 @@ class TrackPropertiesDialog(QDialog):
             self.end_room_combo.setCurrentIndex(end_index)
 
         # Connect buttons (connections are already set up in .ui file, but we can also do it here for clarity)
-        self.ui.okButton.clicked.connect(self.accept)
-        self.ui.cancelButton.clicked.connect(self.reject)
-        
+        self.ui.okButton.clicked.connect(lambda: self.accept())
+        self.ui.cancelButton.clicked.connect(lambda: self.reject())
+
         # Setup event filter to prevent scroll wheel interaction with controls
         from toolset.gui.common.filters import NoScrollEventFilter
+
         self._no_scroll_filter = NoScrollEventFilter(self)
         self._no_scroll_filter.setup_filter(parent_widget=self)
 
@@ -589,6 +580,7 @@ class TrackPropertiesDialog(QDialog):
         self.start_room: LYTRoom = self.start_room_combo.currentData()
         self.end_room: LYTRoom = self.end_room_combo.currentData()
         super().accept()
+
 
 class ObstaclePropertiesDialog(QDialog):
     def __init__(
@@ -601,7 +593,7 @@ class ObstaclePropertiesDialog(QDialog):
 
         self.ui = Ui_Dialog()
         self.ui.setupUi(self)
-        
+
         self.setWindowTitle("Obstacle Properties")
         self.obstacle: LYTObstacle | None = obstacle
 
@@ -618,11 +610,12 @@ class ObstaclePropertiesDialog(QDialog):
             self.radius.setValue(obstacle.radius)
 
         # Connect buttons (connections are already set up in .ui file, but we can also do it here for clarity)
-        self.ui.okButton.clicked.connect(self.accept)
-        self.ui.cancelButton.clicked.connect(self.reject)
-        
+        self.ui.okButton.clicked.connect(lambda: self.accept())
+        self.ui.cancelButton.clicked.connect(lambda: self.reject())
+
         # Setup event filter to prevent scroll wheel interaction with controls
         from toolset.gui.common.filters import NoScrollEventFilter
+
         self._no_scroll_filter = NoScrollEventFilter(self)
         self._no_scroll_filter.setup_filter(parent_widget=self)
 
@@ -630,6 +623,7 @@ class ObstaclePropertiesDialog(QDialog):
         self.position: Vector3 = Vector3(self.pos_x.value(), self.pos_y.value(), self.pos_z.value())
         self.radius: float = self.radius.value()
         super().accept()
+
 
 class DoorHookPropertiesDialog(QDialog):
     def __init__(
@@ -643,7 +637,7 @@ class DoorHookPropertiesDialog(QDialog):
 
         self.ui = Ui_Dialog()
         self.ui.setupUi(self)
-        
+
         self.setWindowTitle("Door Hook Properties")
         self.rooms: list[LYTRoom] = rooms or []
         self.doorhook: LYTDoorHook | None = doorhook
@@ -667,11 +661,12 @@ class DoorHookPropertiesDialog(QDialog):
             self.orientation.setValue(math.degrees(doorhook.orientation))
 
         # Connect buttons (connections are already set up in .ui file, but we can also do it here for clarity)
-        self.ui.okButton.clicked.connect(self.accept)
-        self.ui.cancelButton.clicked.connect(self.reject)
-        
+        self.ui.okButton.clicked.connect(lambda: self.accept())
+        self.ui.cancelButton.clicked.connect(lambda: self.reject())
+
         # Setup event filter to prevent scroll wheel interaction with controls
         from toolset.gui.common.filters import NoScrollEventFilter
+
         self._no_scroll_filter = NoScrollEventFilter(self)
         self._no_scroll_filter.setup_filter(parent_widget=self)
 
@@ -680,6 +675,7 @@ class DoorHookPropertiesDialog(QDialog):
         self.position: Vector3 = Vector3(self.pos_x.value(), self.pos_y.value(), self.pos_z.value())
         self.orientation: float = math.radians(self.orientation.value())
         super().accept()
+
 
 class AddRoomCommand(QUndoCommand):
     def __init__(
@@ -705,6 +701,7 @@ class AddRoomCommand(QUndoCommand):
                 break
         self.editor.update_lists()
         self.editor.sig_lyt_updated.emit(self.editor._lyt)
+
 
 class EditRoomCommand(QUndoCommand):
     def __init__(
@@ -734,6 +731,7 @@ class EditRoomCommand(QUndoCommand):
         self.editor.update_lists()
         self.editor.sig_lyt_updated.emit(self.editor._lyt)
 
+
 class DeleteRoomCommand(QUndoCommand):
     def __init__(
         self,
@@ -759,6 +757,7 @@ class DeleteRoomCommand(QUndoCommand):
         self.editor.update_lists()
         self.editor.sig_lyt_updated.emit(self.editor._lyt)
 
+
 class AddTrackCommand(QUndoCommand):
     def __init__(self, editor: LYTEditor, track: LYTTrack):
         super().__init__("Add Track")
@@ -779,6 +778,7 @@ class AddTrackCommand(QUndoCommand):
                 break
         self.editor.update_lists()
         self.editor.sig_lyt_updated.emit(self.editor._lyt)
+
 
 class EditTrackCommand(QUndoCommand):
     def __init__(
@@ -806,6 +806,7 @@ class EditTrackCommand(QUndoCommand):
         self.editor.update_lists()
         self.editor.sig_lyt_updated.emit(self.editor._lyt)
 
+
 class DeleteTrackCommand(QUndoCommand):
     def __init__(
         self,
@@ -831,6 +832,7 @@ class DeleteTrackCommand(QUndoCommand):
         self.editor.update_lists()
         self.editor.sig_lyt_updated.emit(self.editor._lyt)
 
+
 class AddObstacleCommand(QUndoCommand):
     def __init__(self, editor: LYTEditor, obstacle: LYTObstacle):
         super().__init__("Add Obstacle")
@@ -851,6 +853,7 @@ class AddObstacleCommand(QUndoCommand):
                 break
         self.editor.update_lists()
         self.editor.sig_lyt_updated.emit(self.editor._lyt)
+
 
 class EditObstacleCommand(QUndoCommand):
     def __init__(
@@ -878,6 +881,7 @@ class EditObstacleCommand(QUndoCommand):
         self.editor.update_lists()
         self.editor.sig_lyt_updated.emit(self.editor._lyt)
 
+
 class DeleteObstacleCommand(QUndoCommand):
     def __init__(self, editor: LYTEditor, obstacle: LYTObstacle):
         super().__init__("Delete Obstacle")
@@ -899,6 +903,7 @@ class DeleteObstacleCommand(QUndoCommand):
         self.editor.update_lists()
         self.editor.sig_lyt_updated.emit(self.editor._lyt)
 
+
 class AddDoorHookCommand(QUndoCommand):
     def __init__(self, editor: LYTEditor, doorhook: LYTDoorHook):
         super().__init__("Add Door Hook")
@@ -919,6 +924,7 @@ class AddDoorHookCommand(QUndoCommand):
                 break
         self.editor.update_lists()
         self.editor.sig_lyt_updated.emit(self.editor._lyt)
+
 
 class EditDoorHookCommand(QUndoCommand):
     def __init__(
@@ -948,6 +954,7 @@ class EditDoorHookCommand(QUndoCommand):
         self.editor.update_lists()
         self.editor.sig_lyt_updated.emit(self.editor._lyt)
 
+
 class DeleteDoorHookCommand(QUndoCommand):
     def __init__(self, editor: LYTEditor, doorhook: LYTDoorHook):
         super().__init__("Delete Door Hook")
@@ -968,6 +975,7 @@ class DeleteDoorHookCommand(QUndoCommand):
         self.editor.add_doorhook_to_scene(self.doorhook)
         self.editor.update_lists()
         self.editor.sig_lyt_updated.emit(self.editor._lyt)
+
 
 class MoveRoomCommand(QUndoCommand):
     def __init__(
@@ -999,6 +1007,7 @@ class MoveRoomCommand(QUndoCommand):
                 item.setPos(self.room.position.x, self.room.position.y)
                 break
 
+
 class MoveObstacleCommand(QUndoCommand):
     def __init__(
         self,
@@ -1026,9 +1035,9 @@ class MoveObstacleCommand(QUndoCommand):
     def update_scene_item(self):
         for item in self.editor.scene.items():
             if item.data(0) == self.obstacle:
-                item.setPos(self.obstacle.position.x - self.obstacle.radius,
-                            self.obstacle.position.y - self.obstacle.radius)
+                item.setPos(self.obstacle.position.x - self.obstacle.radius, self.obstacle.position.y - self.obstacle.radius)
                 break
+
 
 class MoveDoorHookCommand(QUndoCommand):
     def __init__(

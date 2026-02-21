@@ -1435,17 +1435,37 @@ class NSSEditor(Editor):
         self.ui.fileExplorerView.hideColumn(3)
 
         self.ui.fileExplorerView.setContextMenuPolicy(Qt.ContextMenuPolicy.CustomContextMenu)
+        try:
+            self.ui.fileExplorerView.customContextMenuRequested.disconnect(self._show_file_explorer_context_menu)
+        except (TypeError, RuntimeError):
+            pass
+        try:
+            self.ui.fileExplorerView.doubleClicked.disconnect(self._open_file_from_explorer)
+        except (TypeError, RuntimeError):
+            pass
         self.ui.fileExplorerView.customContextMenuRequested.connect(self._show_file_explorer_context_menu)
         self.ui.fileExplorerView.doubleClicked.connect(self._open_file_from_explorer)
 
         # Connect address bar
+        try:
+            self.ui.lineEdit.returnPressed.disconnect(self._on_address_bar_changed)
+        except (TypeError, RuntimeError):
+            pass
         self.ui.lineEdit.returnPressed.connect(self._on_address_bar_changed)
         self.ui.lineEdit.setText(root_path)
 
         # Connect file search
+        try:
+            self.ui.fileSearchEdit.textChanged.disconnect(self._filter_file_explorer)
+        except (TypeError, RuntimeError):
+            pass
         self.ui.fileSearchEdit.textChanged.connect(self._filter_file_explorer)
 
         # Connect refresh button
+        try:
+            self.ui.refreshFileExplorerButton.clicked.disconnect(self._refresh_file_explorer)
+        except (TypeError, RuntimeError):
+            pass
         self.ui.refreshFileExplorerButton.clicked.connect(self._refresh_file_explorer)
 
         # Set current file if available
@@ -3870,13 +3890,9 @@ Code Operations:
         # Call parent close
         super().closeEvent(event)
 
-
 if __name__ == "__main__":
     import sys
 
-    from qtpy.QtWidgets import QApplication
+    from toolset.gui.editors.standalone import launch_editor_cli
 
-    app = QApplication(sys.argv)
-    editor = NSSEditor()
-    editor.show()
-    sys.exit(app.exec())
+    sys.exit(launch_editor_cli("nss"))

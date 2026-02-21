@@ -16,4 +16,3 @@ setup(
         "PySide6>=6.0; python_implementation == 'PyPy'",
     ],
 )
-

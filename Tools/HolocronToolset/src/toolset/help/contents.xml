@@ -174,6 +174,7 @@
       <Document name="JRL" file="wiki/GFF-JRL.md" />
       <Document name="PTH" file="wiki/GFF-PTH.md" />
       <Document name="UTC" file="wiki/GFF-UTC.md" />
+      <Document name="UTC Editor Field Types" file="wiki/UTC-Editor-Field-Types.md" />
       <Document name="UTD" file="wiki/GFF-UTD.md" />
       <Document name="UTE" file="wiki/GFF-UTE.md" />
       <Document name="UTI" file="wiki/GFF-UTI.md" />

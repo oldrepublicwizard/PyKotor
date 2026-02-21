@@ -8,7 +8,9 @@ from toolset.utils.window_base import add_window
 
 if TYPE_CHECKING:
     from qtpy.QtWidgets import QWidget
+
     pass
+
 
 def create_editor_window(
     filepath: Path | str | None = None,
@@ -22,6 +24,7 @@ def create_editor_window(
     editor.show()
     return editor
 
+
 def get_editor_by_filepath(filepath: Path | str) -> Editor | None:
     """Get an editor window by its filepath."""
     from toolset.utils.window_base import TOOLSET_WINDOWS
@@ -33,6 +36,7 @@ def get_editor_by_filepath(filepath: Path | str) -> Editor | None:
             return window
     return None
 
+
 def get_editor_by_title(title: str) -> Editor | None:
     """Get an editor window by its title."""
     from toolset.utils.window_base import TOOLSET_WINDOWS
@@ -42,10 +46,13 @@ def get_editor_by_title(title: str) -> Editor | None:
             return window
     return None
 
+
 def get_all_editors() -> list[Editor]:
     """Get all editor windows."""
     from toolset.utils.window_base import TOOLSET_WINDOWS
+
     return [window for window in TOOLSET_WINDOWS if isinstance(window, Editor)]
+
 
 def close_all_editors():
     """Close all editor windows."""

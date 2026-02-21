@@ -38,6 +38,9 @@
            <layout class="QHBoxLayout" name="horizontalLayout_15">
             <item>
              <widget class="LocalizedStringLineEdit" name="nameEdit" native="true">
+              <property name="toolTip">
+               <string>Name (GFF: LocalizedName). CExoLocString. Display name on area map and travel menu. Default when missing: empty. Modders: descriptive name (e.g. "Dantooine - Jedi Enclave"); scripts target by Tag, not name.</string>
+              </property>
               <property name="minimumSize">
                <size>
                 <width>0</width>
@@ -58,10 +61,17 @@
           <item row="1" column="1">
            <layout class="QHBoxLayout" name="horizontalLayout_16">
             <item>
-             <widget class="QLineEdit" name="tagEdit"/>
+             <widget class="QLineEdit" name="tagEdit">
+              <property name="toolTip">
+               <string>Tag (GFF: Tag). CExoString. Unique waypoint identifier for scripts and transitions. Default when missing: "". Modders: keep unique per module; GetObjectByTag and doors/triggers use this.</string>
+              </property>
+             </widget>
             </item>
             <item>
              <widget class="QPushButton" name="tagGenerateButton">
+              <property name="toolTip">
+               <string>Generate Tag from ResRef. Copies Template ResRef into Tag so they stay in sync for script targeting.</string>
+              </property>
               <property name="maximumSize">
                <size>
                 <width>26</width>
@@ -86,6 +96,9 @@
            <layout class="QHBoxLayout" name="horizontalLayout_17">
             <item>
              <widget class="QLineEdit" name="resrefEdit">
+              <property name="toolTip">
+               <string>ResRef (GFF: TemplateResRef). CResRef. Waypoint template resource reference; .utw implied. Default when missing: blank. Modders: max 16 chars; must match .utw filename or area load fails.</string>
+              </property>
               <property name="maxLength">
                <number>16</number>
               </property>
@@ -93,6 +106,9 @@
             </item>
             <item>
              <widget class="QPushButton" name="resrefGenerateButton">
+              <property name="toolTip">
+               <string>Generate ResRef from Tag. Copies Tag into Template ResRef (max 16 chars); ResRef must match .utw filename.</string>
+              </property>
               <property name="maximumSize">
                <size>
                 <width>26</width>
@@ -117,6 +133,9 @@
        <layout class="QVBoxLayout" name="verticalLayout_2">
         <item>
          <widget class="QCheckBox" name="isNoteCheckbox">
+          <property name="toolTip">
+           <string>Is a Map Note (GFF: HasMapNote). BYTE. Waypoint shows custom text on area map. Default when missing: 0. Modders: set 1 to enable; MapNote and MapNoteEnabled only read when this is set.</string>
+          </property>
           <property name="text">
            <string>Is a Map Note</string>
           </property>
@@ -124,6 +143,9 @@
         </item>
         <item>
          <widget class="QCheckBox" name="noteEnabledCheckbox">
+          <property name="toolTip">
+           <string>Map Note is Enabled (GFF: MapNoteEnabled). BYTE. Map note pin initially visible. Default when missing: 0. Modders: only when Is a Map Note is set; 1 = visible, 0 = hidden (scripts can toggle).</string>
+          </property>
           <property name="text">
            <string>Map Note is Enabled</string>
           </property>
@@ -141,10 +163,17 @@
           <item row="0" column="1">
            <layout class="QHBoxLayout" name="horizontalLayout_18">
             <item>
-             <widget class="QLineEdit" name="noteEdit"/>
+             <widget class="QLineEdit" name="noteEdit">
+              <property name="toolTip">
+               <string>Map Note (GFF: MapNote). CExoLocString. Text shown on area map. Default when missing: empty. Modders: only read when Is a Map Note is set; use for quest hints or location labels.</string>
+              </property>
+             </widget>
             </item>
             <item>
              <widget class="QPushButton" name="noteChangeButton">
+              <property name="toolTip">
+               <string>Edit Map Note. Opens localized string editor for Map Note (GFF: MapNote); supports multiple languages.</string>
+              </property>
               <property name="maximumSize">
                <size>
                 <width>26</width>
@@ -181,7 +210,11 @@
        </attribute>
        <layout class="QGridLayout" name="gridLayout_2">
         <item row="0" column="0">
-         <widget class="QPlainTextEdit" name="commentsEdit"/>
+         <widget class="QPlainTextEdit" name="commentsEdit">
+          <property name="toolTip">
+           <string>Comments (GFF: Comment). CExoString. Developer comment; not used by the game engine. Default when missing: "". Modders: toolset only.</string>
+          </property>
+         </widget>
         </item>
        </layout>
       </widget>
@@ -202,15 +235,15 @@
     <property name="title">
      <string>File</string>
     </property>
-    <addaction name="actionNew"/>
-    <addaction name="actionOpen"/>
-    <addaction name="actionSave"/>
-    <addaction name="actionSaveAs"/>
-    <addaction name="actionRevert"/>
-    <addaction name="separator"/>
-    <addaction name="actionExit"/>
+    <addaction name="actionNew" />
+    <addaction name="actionOpen" />
+    <addaction name="actionSave" />
+    <addaction name="actionSaveAs" />
+    <addaction name="actionRevert" />
+    <addaction name="separator" />
+    <addaction name="actionExit" />
    </widget>
-   <addaction name="menuFile"/>
+   <addaction name="menuFile" />
   </widget>
   <action name="actionNew">
    <property name="text">
@@ -251,6 +284,6 @@
    <container>1</container>
   </customwidget>
  </customwidgets>
- <resources/>
- <connections/>
+ <resources />
+ <connections />
 </ui>

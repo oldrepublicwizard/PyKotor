@@ -25,16 +25,16 @@ if TYPE_CHECKING:
 
 def convert_markdown_to_html(md_text: str, widget: QWidget | None = None) -> str:
     """Convert Markdown text to HTML with theme-aware styling.
-    
+
     Args:
         md_text: Markdown text to convert
         widget: Optional widget to get palette from (defaults to QApplication)
-        
+
     Returns:
         HTML string with embedded CSS styles using palette colors
     """
     from toolset.gui.common.palette_helpers import wrap_html_with_palette_styles
-    
+
     html_body = markdown.markdown(md_text, extensions=["tables", "fenced_code", "codehilite"])
     return wrap_html_with_palette_styles(html_body, widget)
 
@@ -144,20 +144,20 @@ class UpdateDialog(QDialog):
             palette = QPalette()
         else:
             palette = app.palette()
-        
+
         link_color = palette.color(QPalette.ColorRole.Link)
         mid_color = palette.color(QPalette.ColorRole.Mid)
-        
+
         # Warning color (for outdated): Use mid color with adjustment
         warning_color = QColor(mid_color)
         if warning_color.lightness() < 128:  # Dark theme
             warning_color = warning_color.lighter(130)
         else:  # Light theme
             warning_color = warning_color.darker(120)
-        
+
         # Success color (for up-to-date): Use link color
         success_color = link_color
-        
+
         current_version: str = LOCAL_PROGRAM_INFO["currentVersion"]
         selected_tag: str = self.get_selected_tag()
         if selected_tag:

@@ -15,6 +15,7 @@ References:
 - vendor/pazaak-eggborne/src/scripts/characters.js: lines 1-750
 - vendor/pazaak-iron-ginger/modules/tertiary/opponents.py: lines 1-205
 """
+
 from __future__ import annotations
 
 from dataclasses import dataclass, field
@@ -25,33 +26,35 @@ from holopazaak.game.card import CardType  # type: ignore[import-not-found, note
 
 class OpponentDifficulty(Enum):
     """Opponent difficulty tiers."""
-    NOVICE = auto()      # Very easy
-    EASY = auto()        # Beginner-friendly
-    NORMAL = auto()      # Balanced
-    HARD = auto()        # Challenging
-    EXPERT = auto()      # Very challenging
-    MASTER = auto()      # Near-perfect play
+
+    NOVICE = auto()  # Very easy
+    EASY = auto()  # Beginner-friendly
+    NORMAL = auto()  # Balanced
+    HARD = auto()  # Challenging
+    EXPERT = auto()  # Very challenging
+    MASTER = auto()  # Near-perfect play
 
 
 @dataclass
 class OpponentPhrases:
     """Character quotes for different game events.
-    
+
     Based on pazaak-iron-ginger phrases system.
     """
-    chosen: str = ""       # When opponent is selected
-    play: str = ""         # When playing a card
-    stand: str = ""        # When standing
-    win_round: str = ""    # When winning a round
-    lose_round: str = ""   # When losing a round
-    win_game: str = ""     # When winning the match
-    lose_game: str = ""    # When losing the match
+
+    chosen: str = ""  # When opponent is selected
+    play: str = ""  # When playing a card
+    stand: str = ""  # When standing
+    win_round: str = ""  # When winning a round
+    lose_round: str = ""  # When losing a round
+    win_game: str = ""  # When winning the match
+    lose_game: str = ""  # When losing the match
 
 
 @dataclass
 class OpponentProfile:
     """Complete opponent profile.
-    
+
     Attributes:
         id: Unique identifier
         name: Display name
@@ -66,6 +69,7 @@ class OpponentProfile:
         prizes: Credits and card rewards for winning
         phrases: Character quotes
     """
+
     id: str
     name: str
     description: str
@@ -100,10 +104,16 @@ OPPONENTS = [
         stand_at=15,
         tie_chance=100,  # Always accepts ties
         sideboard=[
-            (1, CardType.PLUS), (1, CardType.PLUS), (2, CardType.PLUS),
-            (2, CardType.PLUS), (5, CardType.PLUS),
-            (1, CardType.MINUS), (1, CardType.MINUS), (2, CardType.MINUS),
-            (2, CardType.MINUS), (5, CardType.MINUS),
+            (1, CardType.PLUS),
+            (1, CardType.PLUS),
+            (2, CardType.PLUS),
+            (2, CardType.PLUS),
+            (5, CardType.PLUS),
+            (1, CardType.MINUS),
+            (1, CardType.MINUS),
+            (2, CardType.MINUS),
+            (2, CardType.MINUS),
+            (5, CardType.MINUS),
         ],
         prizes={"credits": 25, "cards": []},
         phrases=OpponentPhrases(
@@ -116,7 +126,6 @@ OPPONENTS = [
             lose_game="Ohhh, meesa clumsy.",
         ),
     ),
-    
     # =========================================================================
     # EASY TIER
     # =========================================================================
@@ -131,10 +140,16 @@ OPPONENTS = [
         stand_at=16,
         tie_chance=80,
         sideboard=[
-            (1, CardType.PLUS), (2, CardType.PLUS), (3, CardType.PLUS),
-            (1, CardType.PLUS), (2, CardType.PLUS), (3, CardType.PLUS),
             (1, CardType.PLUS),
-            (2, CardType.MINUS), (3, CardType.MINUS), (1, CardType.MINUS),
+            (2, CardType.PLUS),
+            (3, CardType.PLUS),
+            (1, CardType.PLUS),
+            (2, CardType.PLUS),
+            (3, CardType.PLUS),
+            (1, CardType.PLUS),
+            (2, CardType.MINUS),
+            (3, CardType.MINUS),
+            (1, CardType.MINUS),
         ],
         prizes={"credits": 75, "cards": []},
         phrases=OpponentPhrases(
@@ -147,7 +162,6 @@ OPPONENTS = [
             lose_game="I told you I wasn't programmed for this!",
         ),
     ),
-    
     OpponentProfile(
         id="butters",
         name="Butters",
@@ -159,10 +173,16 @@ OPPONENTS = [
         stand_at=16,
         tie_chance=70,
         sideboard=[
-            (1, CardType.PLUS), (2, CardType.PLUS), (3, CardType.PLUS),
-            (1, CardType.PLUS), (2, CardType.PLUS),
-            (1, CardType.MINUS), (2, CardType.MINUS), (3, CardType.MINUS),
-            (1, CardType.MINUS), (2, CardType.MINUS),
+            (1, CardType.PLUS),
+            (2, CardType.PLUS),
+            (3, CardType.PLUS),
+            (1, CardType.PLUS),
+            (2, CardType.PLUS),
+            (1, CardType.MINUS),
+            (2, CardType.MINUS),
+            (3, CardType.MINUS),
+            (1, CardType.MINUS),
+            (2, CardType.MINUS),
         ],
         prizes={"credits": 50, "cards": []},
         phrases=OpponentPhrases(
@@ -175,7 +195,6 @@ OPPONENTS = [
             lose_game="Oh, hamburgers!",
         ),
     ),
-    
     # =========================================================================
     # NORMAL TIER
     # =========================================================================
@@ -190,10 +209,16 @@ OPPONENTS = [
         stand_at=17,
         tie_chance=50,
         sideboard=[
-            (1, CardType.PLUS), (2, CardType.PLUS), (3, CardType.PLUS),
-            (1, CardType.PLUS), (2, CardType.PLUS),
-            (1, CardType.MINUS), (2, CardType.MINUS), (3, CardType.MINUS),
-            (1, CardType.MINUS), (2, CardType.MINUS),
+            (1, CardType.PLUS),
+            (2, CardType.PLUS),
+            (3, CardType.PLUS),
+            (1, CardType.PLUS),
+            (2, CardType.PLUS),
+            (1, CardType.MINUS),
+            (2, CardType.MINUS),
+            (3, CardType.MINUS),
+            (1, CardType.MINUS),
+            (2, CardType.MINUS),
         ],
         prizes={"credits": 150, "cards": []},
         phrases=OpponentPhrases(
@@ -206,7 +231,6 @@ OPPONENTS = [
             lose_game="Eject! Eject!",
         ),
     ),
-    
     OpponentProfile(
         id="hk47",
         name="HK-47",
@@ -218,10 +242,16 @@ OPPONENTS = [
         stand_at=17,
         tie_chance=40,
         sideboard=[
-            (1, CardType.PLUS), (2, CardType.PLUS), (3, CardType.PLUS),
-            (4, CardType.PLUS), (5, CardType.PLUS),
-            (1, CardType.MINUS), (2, CardType.MINUS), (3, CardType.MINUS),
-            (4, CardType.MINUS), (5, CardType.MINUS),
+            (1, CardType.PLUS),
+            (2, CardType.PLUS),
+            (3, CardType.PLUS),
+            (4, CardType.PLUS),
+            (5, CardType.PLUS),
+            (1, CardType.MINUS),
+            (2, CardType.MINUS),
+            (3, CardType.MINUS),
+            (4, CardType.MINUS),
+            (5, CardType.MINUS),
         ],
         prizes={"credits": 200, "cards": []},
         phrases=OpponentPhrases(
@@ -234,7 +264,6 @@ OPPONENTS = [
             lose_game="Resentful Accolade: Congratulations... meatbag.",
         ),
     ),
-    
     OpponentProfile(
         id="hal",
         name="HAL 9000",
@@ -246,10 +275,16 @@ OPPONENTS = [
         stand_at=17,
         tie_chance=30,
         sideboard=[
-            (1, CardType.PLUS), (2, CardType.PLUS), (3, CardType.PLUS),
-            (4, CardType.PLUS), (1, CardType.FLIP),
-            (1, CardType.MINUS), (2, CardType.MINUS), (3, CardType.MINUS),
-            (2, CardType.FLIP), (3, CardType.FLIP),
+            (1, CardType.PLUS),
+            (2, CardType.PLUS),
+            (3, CardType.PLUS),
+            (4, CardType.PLUS),
+            (1, CardType.FLIP),
+            (1, CardType.MINUS),
+            (2, CardType.MINUS),
+            (3, CardType.MINUS),
+            (2, CardType.FLIP),
+            (3, CardType.FLIP),
         ],
         prizes={"credits": 200, "cards": []},
         phrases=OpponentPhrases(
@@ -262,7 +297,6 @@ OPPONENTS = [
             lose_game="I can give you my complete assurance that my work will be back to normal.",
         ),
     ),
-    
     OpponentProfile(
         id="republic_soldier",
         name="Republic Soldier",
@@ -274,10 +308,16 @@ OPPONENTS = [
         stand_at=17,
         tie_chance=50,
         sideboard=[
-            (1, CardType.PLUS), (2, CardType.PLUS), (3, CardType.PLUS),
-            (4, CardType.PLUS), (5, CardType.PLUS),
-            (1, CardType.MINUS), (2, CardType.MINUS), (3, CardType.MINUS),
-            (4, CardType.MINUS), (5, CardType.MINUS),
+            (1, CardType.PLUS),
+            (2, CardType.PLUS),
+            (3, CardType.PLUS),
+            (4, CardType.PLUS),
+            (5, CardType.PLUS),
+            (1, CardType.MINUS),
+            (2, CardType.MINUS),
+            (3, CardType.MINUS),
+            (4, CardType.MINUS),
+            (5, CardType.MINUS),
         ],
         prizes={"credits": 100, "cards": []},
         phrases=OpponentPhrases(
@@ -290,9 +330,8 @@ OPPONENTS = [
             lose_game="I'll report back to command.",
         ),
     ),
-    
     # =========================================================================
-    # HARD TIER  
+    # HARD TIER
     # =========================================================================
     OpponentProfile(
         id="ig88",
@@ -305,10 +344,16 @@ OPPONENTS = [
         stand_at=18,
         tie_chance=30,
         sideboard=[
-            (1, CardType.PLUS), (2, CardType.PLUS), (3, CardType.PLUS),
-            (4, CardType.PLUS), (5, CardType.PLUS),
-            (1, CardType.MINUS), (2, CardType.MINUS),
-            (1, CardType.FLIP), (2, CardType.FLIP), (3, CardType.FLIP),
+            (1, CardType.PLUS),
+            (2, CardType.PLUS),
+            (3, CardType.PLUS),
+            (4, CardType.PLUS),
+            (5, CardType.PLUS),
+            (1, CardType.MINUS),
+            (2, CardType.MINUS),
+            (1, CardType.FLIP),
+            (2, CardType.FLIP),
+            (3, CardType.FLIP),
         ],
         prizes={"credits": 300, "cards": []},
         phrases=OpponentPhrases(
@@ -321,7 +366,6 @@ OPPONENTS = [
             lose_game="SYSTEM ERROR. MISSION FAILED.",
         ),
     ),
-    
     OpponentProfile(
         id="trump",
         name="Donald Trump",
@@ -333,10 +377,16 @@ OPPONENTS = [
         stand_at=18,
         tie_chance=20,
         sideboard=[
-            (1, CardType.PLUS), (2, CardType.PLUS), (3, CardType.PLUS),
-            (4, CardType.PLUS), (5, CardType.PLUS),
-            (1, CardType.MINUS), (2, CardType.MINUS),
-            (1, CardType.FLIP), (2, CardType.FLIP), (3, CardType.FLIP),
+            (1, CardType.PLUS),
+            (2, CardType.PLUS),
+            (3, CardType.PLUS),
+            (4, CardType.PLUS),
+            (5, CardType.PLUS),
+            (1, CardType.MINUS),
+            (2, CardType.MINUS),
+            (1, CardType.FLIP),
+            (2, CardType.FLIP),
+            (3, CardType.FLIP),
         ],
         prizes={"credits": 350, "cards": []},
         phrases=OpponentPhrases(
@@ -349,7 +399,6 @@ OPPONENTS = [
             lose_game="Why is Obama playing basketball today?",
         ),
     ),
-    
     # =========================================================================
     # EXPERT TIER
     # =========================================================================
@@ -364,10 +413,16 @@ OPPONENTS = [
         stand_at=18,
         tie_chance=0,
         sideboard=[
-            (1, CardType.FLIP), (2, CardType.FLIP), (3, CardType.FLIP),
-            (4, CardType.FLIP), (5, CardType.FLIP),
-            (1, CardType.FLIP), (2, CardType.FLIP), (3, CardType.FLIP),
-            (4, CardType.FLIP), (5, CardType.FLIP),
+            (1, CardType.FLIP),
+            (2, CardType.FLIP),
+            (3, CardType.FLIP),
+            (4, CardType.FLIP),
+            (5, CardType.FLIP),
+            (1, CardType.FLIP),
+            (2, CardType.FLIP),
+            (3, CardType.FLIP),
+            (4, CardType.FLIP),
+            (5, CardType.FLIP),
         ],
         prizes={"credits": 600, "cards": []},
         phrases=OpponentPhrases(
@@ -380,7 +435,6 @@ OPPONENTS = [
             lose_game="Impressed, I am. Learn from defeat, I will.",
         ),
     ),
-    
     OpponentProfile(
         id="theemperor",
         name="The Emperor",
@@ -392,10 +446,16 @@ OPPONENTS = [
         stand_at=19,
         tie_chance=0,
         sideboard=[
-            (1, CardType.FLIP), (2, CardType.FLIP), (3, CardType.FLIP),
-            (4, CardType.FLIP), (5, CardType.FLIP),
-            (1, CardType.FLIP), (2, CardType.FLIP), (3, CardType.FLIP),
-            (4, CardType.FLIP), (5, CardType.FLIP),
+            (1, CardType.FLIP),
+            (2, CardType.FLIP),
+            (3, CardType.FLIP),
+            (4, CardType.FLIP),
+            (5, CardType.FLIP),
+            (1, CardType.FLIP),
+            (2, CardType.FLIP),
+            (3, CardType.FLIP),
+            (4, CardType.FLIP),
+            (5, CardType.FLIP),
         ],
         prizes={"credits": 1200, "cards": []},
         phrases=OpponentPhrases(
@@ -408,7 +468,6 @@ OPPONENTS = [
             lose_game="No... NO! You were supposed to lose!",
         ),
     ),
-    
     OpponentProfile(
         id="revan",
         name="Darth Revan",
@@ -420,11 +479,16 @@ OPPONENTS = [
         stand_at=19,
         tie_chance=0,
         sideboard=[
-            (1, CardType.FLIP), (2, CardType.FLIP), (3, CardType.FLIP),
-            (4, CardType.FLIP), (5, CardType.FLIP),
+            (1, CardType.FLIP),
+            (2, CardType.FLIP),
+            (3, CardType.FLIP),
+            (4, CardType.FLIP),
+            (5, CardType.FLIP),
             (6, CardType.FLIP),
-            (1, CardType.PLUS), (2, CardType.PLUS),
-            (1, CardType.MINUS), (2, CardType.MINUS),
+            (1, CardType.PLUS),
+            (2, CardType.PLUS),
+            (1, CardType.MINUS),
+            (2, CardType.MINUS),
         ],
         prizes={"credits": 1500, "cards": []},
         phrases=OpponentPhrases(
@@ -437,7 +501,6 @@ OPPONENTS = [
             lose_game="Perhaps redemption takes many forms.",
         ),
     ),
-    
     # =========================================================================
     # MASTER TIER
     # =========================================================================
@@ -452,10 +515,16 @@ OPPONENTS = [
         stand_at=19,
         tie_chance=0,
         sideboard=[
-            (1, CardType.FLIP), (2, CardType.FLIP), (3, CardType.FLIP),
-            (4, CardType.FLIP), (5, CardType.FLIP),
-            (1, CardType.FLIP), (2, CardType.FLIP), (3, CardType.FLIP),
-            (4, CardType.FLIP), (5, CardType.FLIP),
+            (1, CardType.FLIP),
+            (2, CardType.FLIP),
+            (3, CardType.FLIP),
+            (4, CardType.FLIP),
+            (5, CardType.FLIP),
+            (1, CardType.FLIP),
+            (2, CardType.FLIP),
+            (3, CardType.FLIP),
+            (4, CardType.FLIP),
+            (5, CardType.FLIP),
         ],
         prizes={"credits": 4000, "cards": []},
         phrases=OpponentPhrases(
@@ -468,7 +537,6 @@ OPPONENTS = [
             lose_game="I'LL BE BACK.",
         ),
     ),
-    
     OpponentProfile(
         id="drchannard",
         name="Dr. Channard",
@@ -480,10 +548,16 @@ OPPONENTS = [
         stand_at=19,
         tie_chance=0,
         sideboard=[
-            (1, CardType.FLIP), (2, CardType.FLIP), (3, CardType.FLIP),
-            (4, CardType.FLIP), (5, CardType.FLIP),
-            (1, CardType.FLIP), (2, CardType.FLIP), (3, CardType.FLIP),
-            (4, CardType.FLIP), (5, CardType.FLIP),
+            (1, CardType.FLIP),
+            (2, CardType.FLIP),
+            (3, CardType.FLIP),
+            (4, CardType.FLIP),
+            (5, CardType.FLIP),
+            (1, CardType.FLIP),
+            (2, CardType.FLIP),
+            (3, CardType.FLIP),
+            (4, CardType.FLIP),
+            (5, CardType.FLIP),
         ],
         prizes={"credits": 12000, "cards": []},
         phrases=OpponentPhrases(
@@ -496,7 +570,6 @@ OPPONENTS = [
             lose_game="Impossible... I was promised eternity!",
         ),
     ),
-    
     OpponentProfile(
         id="blaine",
         name="Blaine the Mono",
@@ -508,10 +581,16 @@ OPPONENTS = [
         stand_at=20,
         tie_chance=0,
         sideboard=[
-            (1, CardType.FLIP), (2, CardType.FLIP), (3, CardType.FLIP),
-            (4, CardType.FLIP), (5, CardType.FLIP),
-            (1, CardType.FLIP), (2, CardType.FLIP), (3, CardType.FLIP),
-            (4, CardType.FLIP), (5, CardType.FLIP),
+            (1, CardType.FLIP),
+            (2, CardType.FLIP),
+            (3, CardType.FLIP),
+            (4, CardType.FLIP),
+            (5, CardType.FLIP),
+            (1, CardType.FLIP),
+            (2, CardType.FLIP),
+            (3, CardType.FLIP),
+            (4, CardType.FLIP),
+            (5, CardType.FLIP),
         ],
         prizes={"credits": 500000, "cards": []},
         phrases=OpponentPhrases(
@@ -524,7 +603,6 @@ OPPONENTS = [
             lose_game="AAASK ME A RIDDDDLE!",
         ),
     ),
-    
     OpponentProfile(
         id="nu",
         name="Nu",
@@ -536,10 +614,16 @@ OPPONENTS = [
         stand_at=20,
         tie_chance=0,
         sideboard=[
-            (1, CardType.FLIP), (2, CardType.FLIP), (3, CardType.FLIP),
-            (4, CardType.FLIP), (5, CardType.FLIP),
-            (1, CardType.FLIP), (2, CardType.FLIP), (3, CardType.FLIP),
-            (4, CardType.FLIP), (5, CardType.FLIP),
+            (1, CardType.FLIP),
+            (2, CardType.FLIP),
+            (3, CardType.FLIP),
+            (4, CardType.FLIP),
+            (5, CardType.FLIP),
+            (1, CardType.FLIP),
+            (2, CardType.FLIP),
+            (3, CardType.FLIP),
+            (4, CardType.FLIP),
+            (5, CardType.FLIP),
         ],
         prizes={"credits": 99999999, "cards": []},
         phrases=OpponentPhrases(
@@ -557,7 +641,7 @@ OPPONENTS = [
 
 def get_opponent(opp_id: str) -> OpponentProfile:
     """Get an opponent profile by ID.
-    
+
     Returns the first opponent (Jar Jar) if ID not found.
     """
     for opp in OPPONENTS:
@@ -579,10 +663,10 @@ def get_all_opponent_ids() -> list[str]:
 def get_random_opponent(difficulty: OpponentDifficulty | None = None) -> OpponentProfile:
     """Get a random opponent, optionally filtered by difficulty."""
     import random
-    
+
     if difficulty:
         pool = get_opponents_by_difficulty(difficulty)
     else:
         pool = OPPONENTS
-    
+
     return random.choice(pool)

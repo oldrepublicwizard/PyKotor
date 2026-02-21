@@ -3,6 +3,7 @@ Unit Tests for ERF Editor - testing EVERY possible manipulation.
 
 Each test focuses on a specific manipulation and validates save/load roundtrips.
 """
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
@@ -37,6 +38,7 @@ TEST_RESOURCE_TYPES = [ResourceType.TXT, ResourceType.TXI, ResourceType.UTC, Res
 # BASIC LOADING AND SAVING TESTS
 # ============================================================================
 
+
 def test_erf_editor_load_empty_erf(qtbot: QtBot, installation: HTInstallation):
     """Test loading an empty ERF file."""
     editor = ERFEditor(None, installation)
@@ -49,7 +51,8 @@ def test_erf_editor_load_empty_erf(qtbot: QtBot, installation: HTInstallation):
 
     # Use a temporary path since None causes issues
     import tempfile
-    with tempfile.NamedTemporaryFile(delete=False, suffix='.erf') as tmp:
+
+    with tempfile.NamedTemporaryFile(delete=False, suffix=".erf") as tmp:
         tmp_path = tmp.name
 
     editor.load(tmp_path, "empty", ResourceType.ERF, bytes(data))
@@ -80,7 +83,8 @@ def test_erf_editor_load_erf_with_resources(qtbot: QtBot, installation: HTInstal
 
     # Use a temporary path since None causes issues
     import tempfile
-    with tempfile.NamedTemporaryFile(delete=False, suffix='.erf') as tmp:
+
+    with tempfile.NamedTemporaryFile(delete=False, suffix=".erf") as tmp:
         tmp_path = tmp.name
 
     editor.load(tmp_path, "test_erf", ResourceType.ERF, bytes(data))
@@ -110,7 +114,8 @@ def test_erf_editor_load_mod_file(qtbot: QtBot, installation: HTInstallation):
 
     # Use a temporary path since None causes issues
     import tempfile
-    with tempfile.NamedTemporaryFile(delete=False, suffix='.erf') as tmp:
+
+    with tempfile.NamedTemporaryFile(delete=False, suffix=".erf") as tmp:
         tmp_path = tmp.name
 
     editor.load(tmp_path, "test_mod", ResourceType.MOD, bytes(data))
@@ -134,7 +139,8 @@ def test_erf_editor_load_sav_file(qtbot: QtBot, installation: HTInstallation):
 
     # Use a temporary path since None causes issues
     import tempfile
-    with tempfile.NamedTemporaryFile(delete=False, suffix='.erf') as tmp:
+
+    with tempfile.NamedTemporaryFile(delete=False, suffix=".erf") as tmp:
         tmp_path = tmp.name
 
     editor.load(tmp_path, "test_sav", ResourceType.SAV, bytes(data))
@@ -158,7 +164,8 @@ def test_erf_editor_load_rim_file(qtbot: QtBot, installation: HTInstallation):
 
     # Use a temporary path since None causes issues
     import tempfile
-    with tempfile.NamedTemporaryFile(delete=False, suffix='.erf') as tmp:
+
+    with tempfile.NamedTemporaryFile(delete=False, suffix=".erf") as tmp:
         tmp_path = tmp.name
 
     editor.load(tmp_path, "test_rim", ResourceType.RIM, bytes(data))
@@ -182,7 +189,8 @@ def test_erf_editor_load_bif_file(qtbot: QtBot, installation: HTInstallation):
 
     # Use a temporary path since None causes issues
     import tempfile
-    with tempfile.NamedTemporaryFile(delete=False, suffix='.erf') as tmp:
+
+    with tempfile.NamedTemporaryFile(delete=False, suffix=".erf") as tmp:
         tmp_path = tmp.name
 
     editor.load(tmp_path, "test_bif", ResourceType.BIF, bytes(data))
@@ -210,7 +218,8 @@ def test_erf_editor_save_load_roundtrip_erf(qtbot: QtBot, installation: HTInstal
     # Load into editor
     # Use a temporary path since None causes issues
     import tempfile
-    with tempfile.NamedTemporaryFile(delete=False, suffix='.erf') as tmp:
+
+    with tempfile.NamedTemporaryFile(delete=False, suffix=".erf") as tmp:
         tmp_path = tmp.name
 
     editor.load(tmp_path, "test_erf", ResourceType.ERF, original_data)
@@ -245,7 +254,8 @@ def test_erf_editor_save_load_roundtrip_rim(qtbot: QtBot, installation: HTInstal
     # Load into editor
     # Use a temporary path since None causes issues
     import tempfile
-    with tempfile.NamedTemporaryFile(delete=False, suffix='.erf') as tmp:
+
+    with tempfile.NamedTemporaryFile(delete=False, suffix=".erf") as tmp:
         tmp_path = tmp.name
 
     editor.load(tmp_path, "test_rim", ResourceType.RIM, original_data)
@@ -280,7 +290,8 @@ def test_erf_editor_save_load_roundtrip_bif(qtbot: QtBot, installation: HTInstal
     # Load into editor
     # Use a temporary path since None causes issues
     import tempfile
-    with tempfile.NamedTemporaryFile(delete=False, suffix='.erf') as tmp:
+
+    with tempfile.NamedTemporaryFile(delete=False, suffix=".erf") as tmp:
         tmp_path = tmp.name
 
     editor.load(tmp_path, "test_bif", ResourceType.BIF, original_data)
@@ -317,7 +328,8 @@ def test_erf_editor_save_load_roundtrip_mod(qtbot: QtBot, installation: HTInstal
     # Load into editor
     # Use a temporary path since None causes issues
     import tempfile
-    with tempfile.NamedTemporaryFile(delete=False, suffix='.erf') as tmp:
+
+    with tempfile.NamedTemporaryFile(delete=False, suffix=".erf") as tmp:
         tmp_path = tmp.name
 
     editor.load(tmp_path, "test_mod", ResourceType.MOD, original_data)
@@ -352,7 +364,8 @@ def test_erf_editor_save_load_roundtrip_sav(qtbot: QtBot, installation: HTInstal
     # Load into editor
     # Use a temporary path since None causes issues
     import tempfile
-    with tempfile.NamedTemporaryFile(delete=False, suffix='.erf') as tmp:
+
+    with tempfile.NamedTemporaryFile(delete=False, suffix=".erf") as tmp:
         tmp_path = tmp.name
 
     editor.load(tmp_path, "test_sav", ResourceType.SAV, original_data)
@@ -372,6 +385,7 @@ def test_erf_editor_save_load_roundtrip_sav(qtbot: QtBot, installation: HTInstal
 # ============================================================================
 # RESOURCE MANAGEMENT TESTS
 # ============================================================================
+
 
 def test_erf_editor_add_single_resource(qtbot: QtBot, installation: HTInstallation, tmp_path: Path):
     """Test adding a single resource to empty ERF."""
@@ -556,6 +570,7 @@ def test_erf_editor_remove_multiple_resources(qtbot: QtBot, installation: HTInst
     # Select multiple resources (every other one: 0, 2, 4)
     # Use selection model directly to add to selection rather than replace
     from qtpy.QtCore import QItemSelection
+
     sel_model: QItemSelectionModel | None = editor.ui.tableView.selectionModel()
     if sel_model is not None:
         # Build a selection that includes all three rows
@@ -565,13 +580,13 @@ def test_erf_editor_remove_multiple_resources(qtbot: QtBot, installation: HTInst
         index2_end: QModelIndex = editor._proxy_model.index(2, editor._proxy_model.columnCount() - 1)
         index4: QModelIndex = editor._proxy_model.index(4, 0)
         index4_end: QModelIndex = editor._proxy_model.index(4, editor._proxy_model.columnCount() - 1)
-        
+
         # Create selection ranges for each row
         selection: QItemSelection = QItemSelection()
         selection.select(index0, index0_end)
         selection.select(index2, index2_end)
         selection.select(index4, index4_end)
-        
+
         # Apply the selection
         sel_model.select(selection, sel_model.SelectionFlag.Select | sel_model.SelectionFlag.Rows)
 
@@ -616,6 +631,7 @@ def test_erf_editor_remove_all_resources(qtbot: QtBot, installation: HTInstallat
 
     # Select all resources
     from qtpy.QtCore import QItemSelection
+
     sel_model: QItemSelectionModel | None = editor.ui.tableView.selectionModel()
     if sel_model is not None:
         # Build a selection that includes all rows
@@ -625,7 +641,7 @@ def test_erf_editor_remove_all_resources(qtbot: QtBot, installation: HTInstallat
             index_start: QModelIndex = editor._proxy_model.index(row, 0)
             index_end: QModelIndex = editor._proxy_model.index(row, editor._proxy_model.columnCount() - 1)
             selection.select(index_start, index_end)
-        
+
         # Apply the selection
         sel_model.select(selection, sel_model.SelectionFlag.Select | sel_model.SelectionFlag.Rows)
     else:
@@ -668,29 +684,32 @@ def test_erf_editor_extract_single_resource(qtbot: QtBot, installation: HTInstal
 
     # Mock the file dialog and extraction feedback
     from unittest.mock import patch, MagicMock
-    
+
     # Create a mock dialog class that returns a mock instance with the right methods
     class MockFileDialog:
         # Add class attributes that QFileDialog has
         AcceptMode = QFileDialog.AcceptMode
         Option = QFileDialog.Option
         DialogCode = QFileDialog.DialogCode
-        
+
         def __init__(self, *args, **kwargs):
             pass
+
         def setAcceptMode(self, mode):
             pass
+
         def setOption(self, option):
             pass
+
         def exec(self):
             return QFileDialog.DialogCode.Accepted
+
         def selectedFiles(self):
             return [str(extracted_file)]
-    
+
     # Mock QFileDialog to use our mock class
     # Also mock show_extraction_results to prevent blocking dialog
-    with patch('toolset.gui.dialogs.save.generic_file_saver.QFileDialog', MockFileDialog), \
-         patch('toolset.gui.common.extraction_feedback.show_extraction_results'):
+    with patch("toolset.gui.dialogs.save.generic_file_saver.QFileDialog", MockFileDialog), patch("toolset.gui.common.extraction_feedback.show_extraction_results"):
         editor.extract_selected()
 
     # Check if file was extracted
@@ -724,7 +743,7 @@ def test_erf_editor_extract_single_resource_headless(qtbot: QtBot, installation:
     # Start extraction - this will show the file dialog
     # We need to interact with it headlessly using QTest
     from qtpy.QtCore import QTimer
-    
+
     # Use a timer to interact with the dialog after it opens
     def interact_with_dialog():
         # Find the file dialog
@@ -733,7 +752,7 @@ def test_erf_editor_extract_single_resource_headless(qtbot: QtBot, installation:
             return
         if not isinstance(app, QApplication):
             return
-        
+
         # Find the active modal widget (should be the file dialog)
         dialog: QWidget | None = app.activeModalWidget()
         if dialog is None or not isinstance(dialog, QFileDialog):
@@ -742,14 +761,14 @@ def test_erf_editor_extract_single_resource_headless(qtbot: QtBot, installation:
                 if isinstance(widget, QFileDialog) and widget.isVisible():
                     dialog = widget
                     break
-        
+
         if dialog is None or not isinstance(dialog, QFileDialog):
             return
-        
+
         # Wait for dialog to be ready
         QApplication.processEvents()
         QApplication.processEvents()
-        
+
         # Find the line edit for file name
         line_edit: QLineEdit | None = dialog.findChild(QLineEdit, "fileNameEdit")
         if line_edit is not None:
@@ -757,7 +776,7 @@ def test_erf_editor_extract_single_resource_headless(qtbot: QtBot, installation:
             line_edit.setText(str(extracted_file))
             QApplication.processEvents()
             QApplication.processEvents()
-        
+
         # Find and click the Save button
         button_box: QDialogButtonBox | None = dialog.findChild(QDialogButtonBox, "buttonBox")
         if button_box is not None:
@@ -766,7 +785,7 @@ def test_erf_editor_extract_single_resource_headless(qtbot: QtBot, installation:
                 QTest.mouseClick(save_button, Qt.MouseButton.LeftButton)
                 QApplication.processEvents()
                 QApplication.processEvents()
-    
+
     # Also set up a timer to close the extraction results dialog if it appears
     def close_results_dialog():
         app = QApplication.instance()
@@ -779,14 +798,14 @@ def test_erf_editor_extract_single_resource_headless(qtbot: QtBot, installation:
                     QTest.mouseClick(ok_button, Qt.MouseButton.LeftButton)
                     QApplication.processEvents()
                     QApplication.processEvents()
-    
+
     # Start extraction in a timer to allow dialog to open
     QTimer.singleShot(200, interact_with_dialog)
     QTimer.singleShot(500, close_results_dialog)
-    
+
     # Trigger extraction
     editor.extract_selected()
-    
+
     # Wait for extraction to complete
     QApplication.processEvents()
     QApplication.processEvents()
@@ -824,10 +843,11 @@ def test_erf_editor_extract_multiple_resources(qtbot: QtBot, installation: HTIns
 
     # Mock the file dialog where it's actually used
     from unittest.mock import patch
+
     # Patch it in the module where it's imported and used
-    with patch('toolset.gui.dialogs.save.generic_file_saver.QFileDialog.getExistingDirectory', return_value=str(extract_dir)):
+    with patch("toolset.gui.dialogs.save.generic_file_saver.QFileDialog.getExistingDirectory", return_value=str(extract_dir)):
         # Also patch show_extraction_results to prevent blocking dialog
-        with patch('toolset.gui.common.extraction_feedback.show_extraction_results'):
+        with patch("toolset.gui.common.extraction_feedback.show_extraction_results"):
             editor.extract_selected()
             # Process events to ensure extraction completes
             QApplication.processEvents()
@@ -868,6 +888,7 @@ def test_erf_editor_extract_no_selection(qtbot: QtBot, installation: HTInstallat
 # RENAMING TESTS
 # ============================================================================
 
+
 def test_erf_editor_rename_resource_valid(qtbot: QtBot, installation: HTInstallation, tmp_path: Path):
     """Test renaming a resource with valid name."""
     editor = ERFEditor(None, installation)
@@ -889,15 +910,15 @@ def test_erf_editor_rename_resource_valid(qtbot: QtBot, installation: HTInstalla
     # Mock the input dialog instance to return new name
     from unittest.mock import patch, MagicMock
     from qtpy.QtWidgets import QInputDialog
-    
+
     # Create a mock dialog instance
     mock_dialog = MagicMock(spec=QInputDialog)
     mock_dialog.exec.return_value = QInputDialog.DialogCode.Accepted
     mock_dialog.textValue.return_value = "new_name"
     mock_dialog.findChild.return_value = None  # Return None for validator setup
-    
+
     # Patch QInputDialog constructor to return our mock
-    with patch('toolset.gui.editors.erf.QInputDialog', return_value=mock_dialog):
+    with patch("toolset.gui.editors.erf.QInputDialog", return_value=mock_dialog):
         editor.rename_selected()
         # Process events to ensure rename completes
         QApplication.processEvents()
@@ -938,7 +959,8 @@ def test_erf_editor_rename_resource_invalid(qtbot: QtBot, installation: HTInstal
 
     # Mock the input dialog to return invalid name (spaces not allowed)
     from unittest.mock import patch
-    with patch('qtpy.QtWidgets.QInputDialog.getText', return_value=("invalid name", True)):
+
+    with patch("qtpy.QtWidgets.QInputDialog.getText", return_value=("invalid name", True)):
         editor.rename_selected()
 
     # Verify resource was NOT renamed (should still be "old_name")
@@ -967,7 +989,8 @@ def test_erf_editor_rename_resource_empty_name(qtbot: QtBot, installation: HTIns
 
     # Mock the input dialog to return empty name
     from unittest.mock import patch
-    with patch('qtpy.QtWidgets.QInputDialog.getText', return_value=("", True)):
+
+    with patch("qtpy.QtWidgets.QInputDialog.getText", return_value=("", True)):
         editor.rename_selected()
 
     # Verify resource was NOT renamed
@@ -998,7 +1021,8 @@ def test_erf_editor_rename_resource_too_long(qtbot: QtBot, installation: HTInsta
     long_name = "a" * 20  # 20 characters, should be truncated to 16
 
     from unittest.mock import patch
-    with patch('qtpy.QtWidgets.QInputDialog.getText', return_value=(long_name, True)):
+
+    with patch("qtpy.QtWidgets.QInputDialog.getText", return_value=(long_name, True)):
         editor.rename_selected()
 
     # Verify resource was renamed (should be truncated to valid length)
@@ -1073,6 +1097,7 @@ def test_erf_editor_rename_no_selection(qtbot: QtBot, installation: HTInstallati
 # UI INTERACTION TESTS
 # ============================================================================
 
+
 def test_erf_editor_ui_buttons_enabled_states(qtbot: QtBot, installation: HTInstallation, tmp_path: Path):
     """Test UI button enabled states based on selection."""
     editor = ERFEditor(None, installation)
@@ -1128,11 +1153,12 @@ def test_erf_editor_context_menu_single_selection(qtbot: QtBot, installation: HT
     editor.ui.tableView.selectRow(0)
 
     # Test context menu functionality
-    assert hasattr(editor, 'open_context_menu')
+    assert hasattr(editor, "open_context_menu")
     assert callable(editor.open_context_menu)
 
     # Simulate right-click to open context menu
     from qtpy.QtCore import QPoint
+
     position = QPoint(10, 10)
 
     # This should create a context menu (though we can't easily test the full menu interaction in unit tests)
@@ -1158,7 +1184,7 @@ def test_erf_editor_context_menu_multiple_selection(qtbot: QtBot, installation: 
     editor.ui.tableView.selectAll()
 
     # Context menu should still work
-    assert hasattr(editor, 'open_context_menu')
+    assert hasattr(editor, "open_context_menu")
 
     # Test with mixed resource types
     selected_resources = editor.get_selected_resources()
@@ -1166,6 +1192,7 @@ def test_erf_editor_context_menu_multiple_selection(qtbot: QtBot, installation: 
 
     # Test context menu with mixed types
     from qtpy.QtCore import QPoint
+
     position = QPoint(10, 10)
     editor.open_context_menu(position)
 
@@ -1217,7 +1244,7 @@ def test_erf_editor_double_click_open(qtbot: QtBot, installation: HTInstallation
     editor.ui.tableView.doubleClicked.emit(index)
 
     # Should trigger open_selected
-    assert hasattr(editor, 'open_selected')
+    assert hasattr(editor, "open_selected")
 
 
 def test_erf_editor_table_sorting(qtbot: QtBot, installation: HTInstallation, tmp_path: Path):
@@ -1339,6 +1366,7 @@ def test_erf_editor_table_sort_by_type(qtbot: QtBot, installation: HTInstallatio
 # DRAG AND DROP TESTS
 # ============================================================================
 
+
 def test_erf_editor_drag_drop_accept_urls(qtbot: QtBot, installation: HTInstallation, tmp_path: Path):
     """Test drag enter event accepts URLs."""
     editor = ERFEditor(None, installation)
@@ -1364,8 +1392,7 @@ def test_erf_editor_drag_drop_accept_urls(qtbot: QtBot, installation: HTInstalla
     mime_data.setUrls([QUrl.fromLocalFile(str(test_file1)), QUrl.fromLocalFile(str(test_file2))])
 
     # Create drag enter event
-    drag_enter_event = QDragEnterEvent(QPoint(10, 10), Qt.DropAction.CopyAction, mime_data,
-                                       Qt.MouseButton.LeftButton, Qt.KeyboardModifier.NoModifier)
+    drag_enter_event = QDragEnterEvent(QPoint(10, 10), Qt.DropAction.CopyAction, mime_data, Qt.MouseButton.LeftButton, Qt.KeyboardModifier.NoModifier)
 
     # Send drag enter event to table
     table: ERFEditorTable = editor.ui.tableView
@@ -1394,8 +1421,7 @@ def test_erf_editor_drag_drop_reject_non_urls(qtbot: QtBot, installation: HTInst
     mime_data.setText("This is not a URL")
 
     # Create drag enter event
-    drag_enter_event = QDragEnterEvent(QPoint(10, 10), Qt.DropAction.CopyAction, mime_data,
-                                       Qt.MouseButton.LeftButton, Qt.KeyboardModifier.NoModifier)
+    drag_enter_event = QDragEnterEvent(QPoint(10, 10), Qt.DropAction.CopyAction, mime_data, Qt.MouseButton.LeftButton, Qt.KeyboardModifier.NoModifier)
 
     # Send drag enter event to table
     table: ERFEditorTable = editor.ui.tableView
@@ -1430,8 +1456,7 @@ def test_erf_editor_drop_files(qtbot: QtBot, installation: HTInstallation, tmp_p
     mime_data.setUrls([QUrl.fromLocalFile(str(test_file1)), QUrl.fromLocalFile(str(test_file2))])
 
     # Create drop event
-    drop_event = QDropEvent(QPoint(10, 10), Qt.DropAction.CopyAction, mime_data,
-                           Qt.MouseButton.LeftButton, Qt.KeyboardModifier.NoModifier)
+    drop_event = QDropEvent(QPoint(10, 10), Qt.DropAction.CopyAction, mime_data, Qt.MouseButton.LeftButton, Qt.KeyboardModifier.NoModifier)
 
     # Send drop event to table
     table: ERFEditorTable = editor.ui.tableView
@@ -1479,7 +1504,7 @@ def test_erf_editor_start_drag(qtbot: QtBot, installation: HTInstallation, tmp_p
 
     # Table should support drag operations
     table: ERFEditorTable = editor.ui.tableView
-    assert hasattr(table, 'startDrag')
+    assert hasattr(table, "startDrag")
 
     # Test that drag can be initiated (though we can't fully test the drag operation)
     assert table.dragEnabled()
@@ -1507,8 +1532,7 @@ def test_erf_editor_drag_drop_invalid_files(qtbot: QtBot, installation: HTInstal
     mime_data = QMimeData()
     mime_data.setUrls([QUrl.fromLocalFile(str(invalid_file))])
 
-    drop_event = QDropEvent(QPoint(10, 10), Qt.DropAction.CopyAction, mime_data,
-                           Qt.MouseButton.LeftButton, Qt.KeyboardModifier.NoModifier)
+    drop_event = QDropEvent(QPoint(10, 10), Qt.DropAction.CopyAction, mime_data, Qt.MouseButton.LeftButton, Qt.KeyboardModifier.NoModifier)
 
     # Send drop event to table
     table: ERFEditorTable = editor.ui.tableView
@@ -1545,8 +1569,7 @@ def test_erf_editor_drag_drop_mixed_valid_invalid(qtbot: QtBot, installation: HT
     mime_data = QMimeData()
     mime_data.setUrls([QUrl.fromLocalFile(str(valid_file)), QUrl.fromLocalFile(str(invalid_file))])
 
-    drop_event = QDropEvent(QPoint(10, 10), Qt.DropAction.CopyAction, mime_data,
-                           Qt.MouseButton.LeftButton, Qt.KeyboardModifier.NoModifier)
+    drop_event = QDropEvent(QPoint(10, 10), Qt.DropAction.CopyAction, mime_data, Qt.MouseButton.LeftButton, Qt.KeyboardModifier.NoModifier)
 
     # Send drop event to table
     table: ERFEditorTable = editor.ui.tableView
@@ -1569,6 +1592,7 @@ def test_erf_editor_drag_drop_mixed_valid_invalid(qtbot: QtBot, installation: HT
 # SORTING AND FILTERING TESTS
 # ============================================================================
 
+
 def test_erf_editor_sort_by_resref(qtbot: QtBot, installation: HTInstallation):
     """Test sorting resources by ResRef."""
     editor = ERFEditor(None, installation)
@@ -1584,7 +1608,8 @@ def test_erf_editor_sort_by_resref(qtbot: QtBot, installation: HTInstallation):
     write_erf(erf, data)
     # Use a temporary path since None causes issues
     import tempfile
-    with tempfile.NamedTemporaryFile(delete=False, suffix='.erf') as tmp:
+
+    with tempfile.NamedTemporaryFile(delete=False, suffix=".erf") as tmp:
         tmp_path = tmp.name
 
     editor.load(tmp_path, "test", ResourceType.ERF, bytes(data))
@@ -1615,7 +1640,8 @@ def test_erf_editor_sort_by_type(qtbot: QtBot, installation: HTInstallation):
     write_erf(erf, data)
     # Use a temporary path since None causes issues
     import tempfile
-    with tempfile.NamedTemporaryFile(delete=False, suffix='.erf') as tmp:
+
+    with tempfile.NamedTemporaryFile(delete=False, suffix=".erf") as tmp:
         tmp_path = tmp.name
 
     editor.load(tmp_path, "test", ResourceType.ERF, bytes(data))
@@ -1649,7 +1675,8 @@ def test_erf_editor_sort_by_size(qtbot: QtBot, installation: HTInstallation):
     write_erf(erf, data)
     # Use a temporary path since None causes issues
     import tempfile
-    with tempfile.NamedTemporaryFile(delete=False, suffix='.erf') as tmp:
+
+    with tempfile.NamedTemporaryFile(delete=False, suffix=".erf") as tmp:
         tmp_path = tmp.name
 
     editor.load(tmp_path, "test", ResourceType.ERF, bytes(data))
@@ -1670,6 +1697,7 @@ def test_erf_editor_sort_by_size(qtbot: QtBot, installation: HTInstallation):
 # ============================================================================
 # EDGE CASES AND ERROR HANDLING TESTS
 # ============================================================================
+
 
 def test_erf_editor_load_invalid_file_type(qtbot: QtBot, installation: HTInstallation, tmp_path: Path):
     """Test loading a file with invalid type shows error."""
@@ -1809,7 +1837,8 @@ def test_erf_editor_save_without_filepath(qtbot: QtBot, installation: HTInstalla
 
     # Save without filepath should trigger save_as (we mock it)
     from unittest.mock import patch
-    with patch.object(editor, 'save_as') as mock_save_as:
+
+    with patch.object(editor, "save_as") as mock_save_as:
         editor.save()
         mock_save_as.assert_called_once()
 
@@ -1959,6 +1988,7 @@ def test_erf_editor_open_resource_without_filepath(qtbot: QtBot, installation: H
 # NEW FILE CREATION TESTS
 # ============================================================================
 
+
 def test_erf_editor_new_erf_file(qtbot: QtBot, installation: HTInstallation):
     """Test creating a new ERF file."""
     editor = ERFEditor(None, installation)
@@ -2052,6 +2082,7 @@ def test_erf_editor_new_file_add_then_build(qtbot: QtBot, installation: HTInstal
 # INTEGRATION TESTS WITH INSTALLATION
 # ============================================================================
 
+
 def test_erf_editor_load_from_installation_erf(qtbot: QtBot, installation: HTInstallation):
     """Test loading ERF files from game installation."""
     editor = ERFEditor(None, installation)
@@ -2059,6 +2090,7 @@ def test_erf_editor_load_from_installation_erf(qtbot: QtBot, installation: HTIns
 
     # Try to find an ERF file in installation
     from pykotor.extract.file import ResourceIdentifier
+
     erf_resources = list(installation.resources([ResourceIdentifier(restype=ResourceType.ERF)]).values())[:1]
 
     if not erf_resources:
@@ -2079,6 +2111,7 @@ def test_erf_editor_load_from_installation_mod(qtbot: QtBot, installation: HTIns
 
     # Try to find a MOD file in installation
     from pykotor.extract.file import ResourceIdentifier
+
     mod_resources = list(installation.resources([ResourceIdentifier(restype=ResourceType.MOD)]).values())[:1]
 
     if not mod_resources:
@@ -2096,6 +2129,7 @@ def test_erf_editor_load_from_installation_mod(qtbot: QtBot, installation: HTIns
 # COMPREHENSIVE ROUNDTRIP VALIDATION TESTS
 # ============================================================================
 
+
 def test_erf_editor_comprehensive_roundtrip_erf(qtbot: QtBot, installation: HTInstallation, tmp_path: Path):
     """Comprehensive test that validates ERF data preservation through editor roundtrip."""
     editor = ERFEditor(None, installation)
@@ -2109,7 +2143,7 @@ def test_erf_editor_comprehensive_roundtrip_erf(qtbot: QtBot, installation: HTIn
         ("res3", ResourceType.UTC, b"gff data"),
         ("empty", ResourceType.TXT, b""),
         ("large", ResourceType.TXT, b"x" * 10000),
-        ("binary", ResourceType.NCS, b"\x00\x01\x02\x03\xFF\xFE\xFD"),
+        ("binary", ResourceType.NCS, b"\x00\x01\x02\x03\xff\xfe\xfd"),
         ("max_resref", "a" * 16, b"max length resref"),
     ]
 
@@ -2253,15 +2287,15 @@ def test_erf_editor_roundtrip_with_modifications(qtbot: QtBot, installation: HTI
     editor.ui.tableView.selectRow(0)  # Select remaining resource
     from unittest.mock import patch, MagicMock
     from qtpy.QtWidgets import QInputDialog
-    
+
     # Create a mock dialog instance
     mock_dialog = MagicMock(spec=QInputDialog)
     mock_dialog.exec.return_value = QInputDialog.DialogCode.Accepted
     mock_dialog.textValue.return_value = "renamed"
     mock_dialog.findChild.return_value = None  # Return None for validator setup
-    
+
     # Patch QInputDialog constructor to return our mock
-    with patch('toolset.gui.editors.erf.QInputDialog', return_value=mock_dialog):
+    with patch("toolset.gui.editors.erf.QInputDialog", return_value=mock_dialog):
         editor.rename_selected()
         QApplication.processEvents()
         QApplication.processEvents()
@@ -2317,6 +2351,7 @@ def test_erf_editor_multiple_roundtrips(qtbot: QtBot, installation: HTInstallati
 # HELP DIALOG TESTS
 # ============================================================================
 
+
 def test_erf_editor_help_dialog_opens_correct_file(qtbot: QtBot, installation: HTInstallation):
     """Test that ERFEditor help dialog opens and displays the correct help file (not 'Help File Not Found')."""
     from toolset.gui.dialogs.editor_help import EditorHelpDialog
@@ -2345,8 +2380,7 @@ def test_erf_editor_help_dialog_opens_correct_file(qtbot: QtBot, installation: H
     html = dialog.text_browser.toHtml()
 
     # Assert that "Help File Not Found" error is NOT shown
-    assert "Help File Not Found" not in html, \
-        f"Help file 'ERF-File-Format.md' should be found, but error was shown. HTML: {html[:500]}"
+    assert "Help File Not Found" not in html, f"Help file 'ERF-File-Format.md' should be found, but error was shown. HTML: {html[:500]}"
 
     # Assert that some content is present (file was loaded successfully)
     assert len(html) > 100, "Help dialog should contain content"
@@ -2380,8 +2414,7 @@ def test_erf_editor_help_dialog_invalid_file(qtbot: QtBot, installation: HTInsta
     html = dialog.text_browser.toHtml()
 
     # Should show "Help File Not Found" error
-    assert "Help File Not Found" in html, \
-        "Help dialog should show error for non-existent file"
+    assert "Help File Not Found" in html, "Help dialog should show error for non-existent file"
 
 
 def test_erf_editor_help_button_exists(qtbot: QtBot, installation: HTInstallation):
@@ -2390,7 +2423,7 @@ def test_erf_editor_help_button_exists(qtbot: QtBot, installation: HTInstallatio
     qtbot.addWidget(editor)
 
     # Check that help button exists
-    assert hasattr(editor, 'help_button')
+    assert hasattr(editor, "help_button")
     assert editor.help_button is not None
 
     # Check that help button is visible
@@ -2401,6 +2434,7 @@ def test_erf_editor_help_button_exists(qtbot: QtBot, installation: HTInstallatio
 # INTEGRATION TESTS WITH INSTALLATION
 # ============================================================================
 
+
 def test_erf_editor_load_from_installation_erf(qtbot: QtBot, installation: HTInstallation):
     """Test loading ERF files from game installation."""
     editor = ERFEditor(None, installation)
@@ -2408,6 +2442,7 @@ def test_erf_editor_load_from_installation_erf(qtbot: QtBot, installation: HTIns
 
     # Try to find an ERF file in installation
     from pykotor.extract.file import ResourceIdentifier
+
     erf_resources = list(installation.resources([ResourceIdentifier(restype=ResourceType.ERF)]).values())[:1]
 
     if not erf_resources:
@@ -2428,6 +2463,7 @@ def test_erf_editor_load_from_installation_mod(qtbot: QtBot, installation: HTIns
 
     # Try to find a MOD file in installation
     from pykotor.extract.file import ResourceIdentifier
+
     mod_resources = list(installation.resources([ResourceIdentifier(restype=ResourceType.MOD)]).values())[:1]
 
     if not mod_resources:
@@ -2448,6 +2484,7 @@ def test_erf_editor_load_from_installation_rim(qtbot: QtBot, installation: HTIns
 
     # Try to find a RIM file in installation
     from pykotor.extract.file import ResourceIdentifier
+
     rim_resources = list(installation.resources([ResourceIdentifier(restype=ResourceType.RIM)]).values())[:1]
 
     if not rim_resources:
@@ -2464,6 +2501,7 @@ def test_erf_editor_load_from_installation_rim(qtbot: QtBot, installation: HTIns
 # ============================================================================
 # HEADLESS UI TESTS (for compatibility with existing tests)
 # ============================================================================
+
 
 def test_erf_editor_headless_ui_load_build(qtbot: QtBot, installation: HTInstallation, tmp_path: Path):
     """Test ERF Editor in headless UI - loads real file and builds data."""
@@ -2555,6 +2593,7 @@ def test_erf_editor_undo_redo_simulation(qtbot: QtBot, installation: HTInstallat
 # HEADLESS UI TESTS (for compatibility with existing tests)
 # ============================================================================
 
+
 def test_erf_editor_headless_ui_load_build(qtbot: QtBot, installation: HTInstallation, test_files_dir: pathlib.Path):
     """Test ERF Editor in headless UI - loads real file and builds data."""
     editor = ERFEditor(None, installation)
@@ -2565,6 +2604,7 @@ def test_erf_editor_headless_ui_load_build(qtbot: QtBot, installation: HTInstall
     if not erf_file.exists():
         # Try to get one from installation
         from pykotor.extract.file import ResourceIdentifier
+
         erf_resources = list(installation.resources([ResourceIdentifier(resname="001EBO_dlg", restype=ResourceType.ERF)]).values())[:1]
         if not erf_resources:
             erf_resources = list(installation.resources([ResourceIdentifier(resname="001EBO_dlg", restype=ResourceType.MOD)]).values())[:1]
@@ -2578,12 +2618,7 @@ def test_erf_editor_headless_ui_load_build(qtbot: QtBot, installation: HTInstall
         assert erf_data is not None, f"ERF data not found for resource '{erf_resource_test.identifier()}'"
         if not erf_data:
             pytest.fail(f"Could not load ERF data for {erf_resource.identifier()}")
-        editor.load(
-            erf_resource.filepath,
-            erf_resource.resname,
-            erf_resource.restype,
-            erf_data
-        )
+        editor.load(erf_resource.filepath, erf_resource.resname, erf_resource.restype, erf_data)
     else:
         original_data = erf_file.read_bytes()
         editor.load(erf_file, "001EBO_dlg", ResourceType.ERF, original_data)
@@ -2597,5 +2632,6 @@ def test_erf_editor_headless_ui_load_build(qtbot: QtBot, installation: HTInstall
 
     # Verify we can read it back
     from pykotor.resource.formats.erf import read_erf
+
     loaded_erf = read_erf(data)
     assert loaded_erf is not None

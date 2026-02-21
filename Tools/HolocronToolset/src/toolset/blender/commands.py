@@ -172,9 +172,7 @@ class BlenderEditorController:
             return False
 
         # Serialize module data
-        module_data = serialize_module_data(
-            lyt, git, walkmeshes, module_root, str(installation_path)
-        )
+        module_data = serialize_module_data(lyt, git, walkmeshes, module_root, str(installation_path))
 
         # Send to Blender
         success = self._commands.load_module(
@@ -859,11 +857,7 @@ class BlenderEditorController:
             return
         runtime_id = event.params.get("runtime_id")
         object_name = event.params.get("name")
-        if (
-            runtime_id is not None
-            and object_name
-            and self._session is not None
-        ):
+        if runtime_id is not None and object_name and self._session is not None:
             try:
                 runtime_key = int(runtime_id)
             except (TypeError, ValueError):
@@ -978,4 +972,3 @@ def get_blender_controller() -> BlenderEditorController:
     if _controller is None:
         _controller = BlenderEditorController()
     return _controller
-

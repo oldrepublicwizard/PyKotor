@@ -28,11 +28,7 @@ def print_qt_object(  # noqa: C901
     ):
         print(f"{obj_name} Attributes:")
         for attr in dir(obj):
-            if (
-                not attr.startswith(("_", "set"))
-                and not callable(getattr(obj, attr))
-                and attr not in exclude_attrs
-            ):
+            if not attr.startswith(("_", "set")) and not callable(getattr(obj, attr)) and attr not in exclude_attrs:
                 try:
                     print(f"  {attr}: {getattr(obj, attr)}")
                 except Exception as ex:  # noqa: BLE001

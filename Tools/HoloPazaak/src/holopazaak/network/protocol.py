@@ -7,23 +7,25 @@ Based on WebSocket messaging patterns from PazaakApp.
 
 Reference: vendor/PazaakApp/server/server.js
 """
+
 from __future__ import annotations
 
 import json
 from dataclasses import dataclass, field
-from enum import Enum, auto
-from typing import TYPE_CHECKING, Any
+from enum import Enum
+from typing import Any
 
 
 class MessageType(Enum):
     """Types of messages in the protocol."""
+
     # Connection
     CONNECT = "connect"
     DISCONNECT = "disconnect"
     PING = "ping"
     PONG = "pong"
     ERROR = "error"
-    
+
     # Game management
     HOST_GAME = "host_game"
     JOIN_GAME = "join_game"
@@ -31,23 +33,23 @@ class MessageType(Enum):
     GAME_LIST = "game_list"
     GAME_START = "game_start"
     GAME_END = "game_end"
-    
+
     # Player management
     PLAYER_JOINED = "player_joined"
     PLAYER_LEFT = "player_left"
     PLAYER_READY = "player_ready"
-    
+
     # Game actions
     CARD_PLAYED = "card_played"
     CARD_DRAWN = "card_drawn"
     STAND = "stand"
     END_TURN = "end_turn"
-    
+
     # Game state
     GAME_STATE = "game_state"
     ROUND_START = "round_start"
     ROUND_END = "round_end"
-    
+
     # Social
     CHAT_MESSAGE = "chat_message"
     EMOTE = "emote"
@@ -56,18 +58,19 @@ class MessageType(Enum):
 @dataclass
 class GameMessage:
     """A network message.
-    
+
     Attributes:
         msg_type: The type of message
         player_id: ID of the sending player (optional)
         game_id: ID of the game (optional)
         data: Additional data payload
     """
+
     msg_type: MessageType
     player_id: str | None = None
     game_id: str | None = None
     data: dict[str, Any] = field(default_factory=dict)
-    
+
     def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary."""
         return {
@@ -76,11 +79,11 @@ class GameMessage:
             "game_id": self.game_id,
             "data": self.data,
         }
-    
+
     def to_json(self) -> str:
         """Convert to JSON string."""
         return json.dumps(self.to_dict())
-    
+
     @classmethod
     def from_dict(cls, d: dict[str, Any]) -> GameMessage | None:
         """Create from dictionary."""
@@ -94,7 +97,7 @@ class GameMessage:
             )
         except (ValueError, KeyError):
             return None
-    
+
     @classmethod
     def from_json(cls, json_str: str) -> GameMessage | None:
         """Create from JSON string."""
@@ -133,13 +136,14 @@ def msg_error(error_text: str) -> GameMessage:
 @dataclass
 class GameStatePayload:
     """Payload for GAME_STATE messages.
-    
+
     Contains the complete game state for synchronization.
     """
+
     round_number: int = 0
     turn_number: int = 0
     current_player_id: str = ""
-    
+
     # Player 1 state
     p1_score: int = 0
     p1_sets_won: int = 0
@@ -147,21 +151,21 @@ class GameStatePayload:
     p1_is_bust: bool = False
     p1_board: list[dict] = field(default_factory=list)
     p1_hand_size: int = 0
-    
-    # Player 2 state  
+
+    # Player 2 state
     p2_score: int = 0
     p2_sets_won: int = 0
     p2_is_standing: bool = False
     p2_is_bust: bool = False
     p2_board: list[dict] = field(default_factory=list)
     p2_hand_size: int = 0
-    
+
     # Round/game status
     is_round_over: bool = False
     is_game_over: bool = False
     round_winner_id: str | None = None
     game_winner_id: str | None = None
-    
+
     def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary."""
         return {
@@ -191,11 +195,12 @@ class GameStatePayload:
 @dataclass
 class CardPayload:
     """Card data for network transfer."""
+
     name: str
     value: int
     card_type: str  # String enum value
     is_flipped: bool = False
-    
+
     def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary."""
         return {

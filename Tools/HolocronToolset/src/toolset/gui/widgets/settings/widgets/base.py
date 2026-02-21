@@ -41,14 +41,9 @@ class SettingsWidget(QWidget):
         self.noScrollEventFilter: NoScrollEventFilter = NoScrollEventFilter(self)
         self.hoverEventFilter: HoverEventFilter = HoverEventFilter(self)
         self.installEventFilters(self, self.noScrollEventFilter)
-        #self.installEventFilters(self, self.hoverEventFilter, include_types=[QWidget])
+        # self.installEventFilters(self, self.hoverEventFilter, include_types=[QWidget])
 
-    def installEventFilters(
-        self,
-        parent_widget: QWidget,
-        event_filter: QObject,
-        include_types: list[type[QWidget]] | None = None
-    ) -> None:
+    def installEventFilters(self, parent_widget: QWidget, event_filter: QObject, include_types: list[type[QWidget]] | None = None) -> None:
         """Recursively install event filters on all child widgets."""
         if include_types is None:
             include_types = [QComboBox, QSlider, QSpinBox, QGroupBox, QAbstractSpinBox, QDoubleSpinBox]
@@ -57,15 +52,17 @@ class SettingsWidget(QWidget):
             if not widget.objectName():
                 widget.setObjectName(widget.__class__.__name__)
             if isinstance(widget, tuple(include_types)):
-                #RobustLogger.debug(f"Installing event filter on: {widget.objectName()} (type: {widget.__class__.__name__})")
+                # RobustLogger.debug(f"Installing event filter on: {widget.objectName()} (type: {widget.__class__.__name__})")
                 widget.installEventFilter(event_filter)
-            #else:
+            # else:
             #    RobustLogger.debug(f"Skipping NoScrollEventFilter installation on '{widget.objectName()}' due to instance check {widget.__class__.__name__}.")
             self.installEventFilters(widget, event_filter, include_types)
 
     def validateBind(self, bindName: str, bind: Bind) -> Bind:
         if not isinstance(bind, tuple) or (bind[0] is not None and not isinstance(bind[0], set)) or (bind[1] is not None and not isinstance(bind[1], set)):
-            RobustLogger().error(f"Invalid setting bind: '{bindName}', expected a Bind type (tuple with two sets of binds) but got {bind!r} (tuple[{bind[0].__class__.__name__}, {bind[1].__class__.__name__}])")
+            RobustLogger().error(
+                f"Invalid setting bind: '{bindName}', expected a Bind type (tuple with two sets of binds) but got {bind!r} (tuple[{bind[0].__class__.__name__}, {bind[1].__class__.__name__}])"
+            )
             bind = self._reset_and_get_default(bindName)
         return bind
 
@@ -96,5 +93,5 @@ class SettingsWidget(QWidget):
     def _reset_and_get_default(self, settingName: str) -> Any:
         self.settings.reset_setting(settingName)
         result = self.settings.get_default(settingName)
-        RobustLogger().warning(f"Due to last error, will use default value '{result!r}'" )
+        RobustLogger().warning(f"Due to last error, will use default value '{result!r}'")
         return result

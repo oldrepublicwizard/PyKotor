@@ -57,6 +57,7 @@ class ApplicationSettingsWidget(SettingsWidget):
     def update_font_label(self):
         """Update the label to show the current font."""
         from toolset.gui.common.localization import translate as tr, trf
+
         font_string = self.settings.settings.value("GlobalFont", "")
         if font_string:
             font = QFont()
@@ -84,6 +85,7 @@ class ApplicationSettingsWidget(SettingsWidget):
                 if attr in self.settings.REQUIRES_RESTART:
                     checkbox = QCheckBox(attr.replace("AA_", "").replace("_", " ") + " *")
                     from toolset.gui.common.localization import translate as tr
+
                     checkbox.setToolTip(tr("Requires app restart!"))
                 else:
                     checkbox = QCheckBox(attr.replace("AA_", "").replace("_", " "))
@@ -158,6 +160,7 @@ class ApplicationSettingsWidget(SettingsWidget):
             group_menu = self.add_menu.addMenu(group)
             for env_var in filter(lambda var: var.group == group, ENV_VARS):
                 action = group_menu.addAction(env_var.name)
+                assert action is not None
                 action.setToolTip(env_var.description)
 
                 def show_tooltip(act: QAction = action):
@@ -246,6 +249,7 @@ class ApplicationSettingsWidget(SettingsWidget):
         selected_row = self.ui.tableWidget.currentRow()
         if selected_row < 0:
             from toolset.gui.common.localization import translate as tr
+
             QMessageBox.warning(self, tr("Remove Variable"), tr("Please select a variable to remove."))
             return
 

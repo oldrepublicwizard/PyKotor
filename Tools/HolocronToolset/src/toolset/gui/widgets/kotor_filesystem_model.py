@@ -61,13 +61,10 @@ if toolset_path.exists():
 from pathlib import Path  # noqa: E402
 
 from qtpy.QtCore import QAbstractItemModel, QDir, QModelIndex, QObject, Qt, Signal  # noqa: E402, F401
-from qtpy.QtGui import QColor, QDrag, QIcon, QImage, QPalette, QPixmap  # noqa: E402
+from qtpy.QtGui import QDrag, QIcon, QImage, QPalette, QPixmap  # noqa: E402
 from qtpy.QtWidgets import (  # noqa: E402
     QFileSystemModel,  # pyright: ignore[reportPrivateImportUsage]
-    QHBoxLayout,
-    QLineEdit,
-    QPushButton,
-)
+    )
 
 from pykotor.extract.file import FileResource  # noqa: E402
 from pykotor.tools.misc import is_capsule_file  # noqa: E402
@@ -106,10 +103,7 @@ class TreeItem:
         if self.parent is None:
             return -1
         if not hasattr(self.parent, "children"):
-            raise RuntimeError(
-                "INVALID parent item! Parent items must expose a children list, "
-                f"but parent was: '{self.parent.__class__.__name__}'"
-            )
+            raise RuntimeError(f"INVALID parent item! Parent items must expose a children list, but parent was: '{self.parent.__class__.__name__}'")
         parent_children = getattr(self.parent, "children")
         if self not in parent_children:
             parent_path = getattr(self.parent, "path", "<virtual>")
@@ -223,7 +217,6 @@ class InstallationItem(DirItem):
 
     def loadChildren(self, model: KotorFileSystemModel | ResourceFileSystemModel) -> list[TreeItem]:
         """Load category nodes (Core, Modules, Override, Textures, Saves) as children."""
-        from toolset.data.installation import HTInstallation
 
         idx: QModelIndex = model.indexFromItem(self)
         if self.childCount() > 0:
@@ -232,29 +225,29 @@ class InstallationItem(DirItem):
             model.endRemoveRows()
 
         print(f"{self.__class__.__name__}({self.name}).loadChildren, row={self.row()}")
-        
+
         # Create category nodes
         children: list[TreeItem] = []
-        
+
         # Core category
         core_path = self.path / "data"
         if core_path.exists() and core_path.is_dir():
             children.append(CategoryItem("Core", core_path, self))
-        
+
         # Modules category
         modules_path = self.path / "modules"
         if modules_path.exists() and modules_path.is_dir():
             children.append(CategoryItem("Modules", modules_path, self))
-        
+
         # Override category
         override_path = self.path / "override"
         if override_path.exists() and override_path.is_dir():
             children.append(CategoryItem("Override", override_path, self))
-        
+
         # Textures category (same as Override but filtered)
         if override_path.exists() and override_path.is_dir():
             children.append(CategoryItem("Textures", override_path, self, filter_textures=True))
-        
+
         # Saves category
         saves_path = self.path / "saves"
         if saves_path.exists() and saves_path.is_dir():
@@ -266,14 +259,14 @@ class InstallationItem(DirItem):
             model.endInsertRows()
         else:
             self.children = []
-        
+
         self._children_loaded = True
         return self.children
 
 
 class CategoryItem(DirItem):
     """Represents a category node (Core, Modules, Override, Textures, Saves) under an installation."""
-    
+
     def __init__(
         self,
         category_name: str,
@@ -311,27 +304,27 @@ class CategoryItem(DirItem):
 
         print(f"{self.__class__.__name__}({self.category_name}).loadChildren, row={self.row()}")
         children: list[TreeItem] = []
-        
+
         if not self.path.exists() or not self.path.is_dir():
             self._children_loaded = True
             return self.children
 
         qdir = QDir(str(self.path))
         qdir.setFilter(model.filter())
-        
+
         for entry in qdir.entryInfoList():
             child_path = Path(entry.filePath())
-            
+
             # Filter for texture files if this is the Textures category
             if self.filter_textures:
                 if child_path.is_file():
                     ext = child_path.suffix.lower()
-                    if ext not in ['.tpc', '.tga', '.png', '.jpg', '.jpeg', '.bmp', '.dds']:
+                    if ext not in [".tpc", ".tga", ".png", ".jpg", ".jpeg", ".bmp", ".dds"]:
                         continue
                 else:
                     # Skip directories in Textures category
                     continue
-            
+
             if child_path.is_dir():
                 item = DirItem(child_path, self)
             elif is_capsule_file(child_path):
@@ -346,11 +339,11 @@ class CategoryItem(DirItem):
             model.endInsertRows()
         else:
             self.children = []
-        
+
         self._children_loaded = True
         for child in self.children:
             model.setData(model.index(self.children.index(child), 0, idx), child.iconData(), Qt.ItemDataRole.DecorationRole)
-        
+
         return self.children
 
 
@@ -813,7 +806,7 @@ T = TypeVar("T", bound=Union[SupportsRichComparison, str])
 class KotorFileSystemModel(QAbstractItemModel):
     # Signals
     address_changed = Signal()  # Emitted when the address bar should be updated
-    
+
     COLUMN_TO_STAT_MAP: ClassVar[dict[str, str]] = {
         "Size on Disk": "size_on_disk",
         "Size Ratio": "size_ratio",
@@ -1236,7 +1229,10 @@ class KotorFileSystemModel(QAbstractItemModel):
             if column_name == "Size":
                 assert isinstance(item, (DirItem, ResourceItem))
                 size_value = 0 if isinstance(item, DirItem) else item.resource.size()
-                key = (0 if is_dir else 1, size_value)  # Directories first, then by size in bytes  # pyright: ignore[reportCallIssue, reportArgumentType, reportAssignmentType]
+                key = (
+                    0 if is_dir else 1,
+                    size_value,
+                )  # Directories first, then by size in bytes  # pyright: ignore[reportCallIssue, reportArgumentType, reportAssignmentType]
             else:
                 if column_name == "Name":
                     key_value = item.path.name if isinstance(item, DirItem) else item.path.name  # noqa: PTH119

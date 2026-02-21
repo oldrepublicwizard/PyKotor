@@ -1,10 +1,21 @@
 from __future__ import annotations
 
 import os
-
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, Callable, cast
 
+from loggerplus import RobustLogger  # pyright: ignore[reportMissingTypeStubs]
+from pykotor.extract.capsule import Capsule
+from pykotor.extract.chitin import Chitin
+from pykotor.extract.file import FileResource, ResourceIdentifier
+from pykotor.extract.installation import Installation, SearchLocation
+from pykotor.extract.talktable import TalkTable
+from pykotor.extract.twoda import TwoDARegistry
+from pykotor.resource.formats.tpc.tpc_data import TPC
+from pykotor.resource.formats.twoda import read_2da
+from pykotor.resource.formats.twoda.twoda_data import TwoDA
+from pykotor.resource.type import ResourceType
+from pykotor.tools.misc import is_capsule_file, is_erf_file, is_mod_file, is_rim_file
 from qtpy.QtCore import (
     QPoint,
     Qt,
@@ -20,42 +31,34 @@ from qtpy.QtWidgets import (
     QWidget,
 )
 
-from loggerplus import RobustLogger  # pyright: ignore[reportMissingTypeStubs]
-from pykotor.extract.capsule import Capsule
-from pykotor.extract.chitin import Chitin
-from pykotor.extract.file import FileResource, ResourceIdentifier
-from pykotor.extract.installation import Installation, SearchLocation
-from pykotor.extract.talktable import TalkTable
-from pykotor.extract.twoda import TwoDARegistry
-from pykotor.resource.formats.tpc.tpc_data import TPC
-from pykotor.resource.formats.twoda import read_2da
-from pykotor.resource.formats.twoda.twoda_data import TwoDA
-from pykotor.resource.type import ResourceType
-from pykotor.tools.misc import is_capsule_file, is_erf_file, is_mod_file, is_rim_file
+from toolset.gui.common.localization import tr, trf
 from toolset.utils.window import add_window
 
 if TYPE_CHECKING:
-    from qtpy.QtGui import QStandardItemModel
-    from qtpy.QtWidgets import QPlainTextEdit
-    from typing_extensions import Literal, Self  # pyright: ignore[reportMissingModuleSource]
-
     from pykotor.extract.file import LocationResult, ResourceResult
     from pykotor.resource.formats.tpc import TPC
     from pykotor.resource.formats.tpc.tpc_data import TPCMipmap
     from pykotor.resource.formats.twoda import TwoDA
     from pykotor.resource.generics.uti import UTI
+    from qtpy.QtGui import QStandardItemModel
+    from qtpy.QtWidgets import QPlainTextEdit
+    from typing_extensions import (  # pyright: ignore[reportMissingModuleSource]
+        Literal,
+        Self,
+    )
 
 
 class HTInstallation(Installation):
     """Extended Installation class for Holocron Toolset with 2DA caching and game-specific features.
-    
+
     This class provides access to canonical 2DA file names that are verified to be loaded
     by the game engine. All 2DA constants below reference files confirmed through reverse
     engineering analysis of swkotor.exe and swkotor2.exe using Ghidra (Reva MCP server).
-    
+
     See TwoDARegistry class docstring for detailed function references showing where each
     2DA file is loaded in the game executables.
     """
+
     # All 2DA file names below are verified to be loaded by the game engine.
     # See Libraries/PyKotor/src/pykotor/extract/twoda.py TwoDARegistry class for details.
     TwoDA_APPEARANCES: str = TwoDARegistry.APPEARANCES
@@ -111,7 +114,19 @@ class HTInstallation(Installation):
         name: str,
         *,
         tsl: bool | None = None,
-        progress_callback: Callable[[int | str, Literal["set_maximum", "increment", "update_maintask_text", "update_subtask_text"]], Any] | None = None,
+        progress_callback: Callable[
+            [
+                int | str,
+                Literal[
+                    "set_maximum",
+                    "increment",
+                    "update_maintask_text",
+                    "update_subtask_text",
+                ],
+            ],
+            Any,
+        ]
+        | None = None,
     ):
         super().__init__(path, progress_callback=progress_callback)
 
@@ -205,6 +220,7 @@ class HTInstallation(Installation):
     @property
     def _female_talktable(self) -> TalkTable:
         return TalkTable(self._path / "dialogf.tlk")
+
     @_female_talktable.setter
     def _female_talktable(self, value: TalkTable) -> None: ...  # pylint: disable=unused-argument  # pyright: ignore[reportIncompatibleVariableOverride]
 
@@ -212,7 +228,9 @@ class HTInstallation(Installation):
     def _lips(self) -> dict[str, list[FileResource]]:
         def _load_lips_local_function() -> dict[str, list[FileResource]]:
             return self.load_resources_dict(self.lips_path(), capsule_check=is_mod_file)
+
         return self._get_cached_or_load("lips", _load_lips_local_function)
+
     @_lips.setter
     def _lips(self, value: dict[str, list[FileResource]]) -> None: ...  # pylint: disable=unused-argument  # pyright: ignore[reportIncompatibleVariableOverride]
     def _load_lips(self) -> dict[str, list[FileResource]]:
@@ -227,21 +245,28 @@ class HTInstallation(Installation):
     @property
     def _modules(self) -> dict[str, list[FileResource]]:
         def _load_modules_local_function() -> dict[str, list[FileResource]]:
-            return self.load_resources_dict(self.module_path(), capsule_check=is_capsule_file)
+            return self.load_resources_dict(
+                self.module_path(), capsule_check=is_capsule_file
+            )
+
         return self._get_cached_or_load("modules", _load_modules_local_function)
+
     @_modules.setter
     def _modules(self, value: dict[str, list[FileResource]]) -> None: ...  # pylint: disable=unused-argument  # pyright: ignore[reportIncompatibleVariableOverride]
 
     @property
     def _override(self) -> dict[str, list[FileResource]]:
         return self._get_cached_or_load("override", self._load_override)
+
     @_override.setter
     def _override(self, value: dict[str, list[FileResource]]) -> None: ...  # pylint: disable=unused-argument  # pyright: ignore[reportIncompatibleVariableOverride]
     def _load_override(self) -> dict[str, list[FileResource]]:
         """Load the override resources."""
         override_path: Path = self.override_path()
         result: dict[str, list[FileResource]] = {}
-        for folder in [f for f in override_path.rglob("*") if f.is_dir()] + [override_path]:
+        for folder in [f for f in override_path.rglob("*") if f.is_dir()] + [
+            override_path
+        ]:
             relative_folder: str = folder.relative_to(override_path).as_posix()
             result[relative_folder] = self.load_resources_list(folder, recurse=True)
         return result
@@ -249,6 +274,7 @@ class HTInstallation(Installation):
     @property
     def _rims(self) -> dict[str, list[FileResource]]:
         return self.load_resources_dict(self.rims_path(), capsule_check=is_rim_file)
+
     @_rims.setter
     def _rims(self, value: dict[str, list[FileResource]]) -> None: ...  # pylint: disable=unused-argument  # pyright: ignore[reportIncompatibleVariableOverride]
 
@@ -256,7 +282,9 @@ class HTInstallation(Installation):
     def saves(self) -> dict[Path, dict[Path, list[FileResource]]]:
         def _load_saves_local_function() -> dict[Path, dict[Path, list[FileResource]]]:
             return self._load_saves()
+
         return self._get_cached_or_load("saves", _load_saves_local_function)
+
     @saves.setter
     def saves(self, value: dict[Path, dict[Path, list[FileResource]]]) -> None: ...  # pylint: disable=unused-argument  # pyright: ignore[reportIncompatibleVariableOverride]
     def _load_saves(self) -> dict[Path, dict[Path, list[FileResource]]]:  # pylint: disable=unused-argument
@@ -272,13 +300,18 @@ class HTInstallation(Installation):
                         file.stat().st_size,
                         0,
                         file,
-                    ) for file in save_path.iterdir() if file.is_file()
-                ] for save_path in save_location.iterdir() if save_path.is_dir()
+                    )
+                    for file in save_path.iterdir()
+                    if file.is_file()
+                ]
+                for save_path in save_location.iterdir()
+                if save_path.is_dir()
             }
             for save_location in self.save_locations()
             if save_location.is_dir()
         }
         return self._saves
+
     @saves.setter
     def saves(self, value: dict[Path, dict[Path, list[FileResource]]]) -> None: ...  # pylint: disable=unused-argument  # pyright: ignore[reportIncompatibleVariableOverride]
 
@@ -286,7 +319,9 @@ class HTInstallation(Installation):
     def _streammusic(self) -> list[FileResource]:
         def _load_streammusic_local_function() -> list[FileResource]:
             return self.load_resources_list(self.streammusic_path())
+
         return self._get_cached_or_load("streammusic", _load_streammusic_local_function)
+
     @_streammusic.setter
     def _streammusic(self, value: list[FileResource]) -> None: ...  # pylint: disable=unused-argument  # pyright: ignore[reportIncompatibleVariableOverride]
     def _load_streammusic(self) -> list[FileResource]:
@@ -296,7 +331,11 @@ class HTInstallation(Installation):
     def _streamsounds(self) -> list[FileResource]:
         def _load_streamsounds_local_function() -> list[FileResource]:
             return self.load_resources_list(self.streamsounds_path())
-        return self._get_cached_or_load("streamsounds", _load_streamsounds_local_function)
+
+        return self._get_cached_or_load(
+            "streamsounds", _load_streamsounds_local_function
+        )
+
     @_streamsounds.setter
     def _streamsounds(self, value: list[FileResource]) -> None: ...  # pylint: disable=unused-argument  # pyright: ignore[reportIncompatibleVariableOverride]
     def _load_streamsounds(self) -> list[FileResource]:
@@ -305,23 +344,36 @@ class HTInstallation(Installation):
     @property
     def _streamwaves(self) -> list[FileResource]:
         def _load_streamwaves_local_function() -> list[FileResource]:
-            return self.load_resources_list(self._find_resource_folderpath(("streamwaves", "streamvoice")), recurse=True)
+            return self.load_resources_list(
+                self._find_resource_folderpath(("streamwaves", "streamvoice")),
+                recurse=True,
+            )
+
         return self._get_cached_or_load("streamwaves", _load_streamwaves_local_function)
+
     @_streamwaves.setter
     def _streamwaves(self, value: list[FileResource]) -> None: ...  # pylint: disable=unused-argument  # pyright: ignore[reportIncompatibleVariableOverride]
     def _load_streamwaves(self) -> list[FileResource]:
-        return self.load_resources_list(self._find_resource_folderpath(("streamwaves", "streamvoice")), recurse=True)
+        return self.load_resources_list(
+            self._find_resource_folderpath(("streamwaves", "streamvoice")), recurse=True
+        )
 
     @property
     def _streamvoice(self) -> list[FileResource]:
         def _load_streamvoice_local_function() -> list[FileResource]:
-            return self.load_resources_list(self._find_resource_folderpath(("streamvoice", "streamwaves")), recurse=True)
+            return self.load_resources_list(
+                self._find_resource_folderpath(("streamvoice", "streamwaves")),
+                recurse=True,
+            )
+
         return self._get_cached_or_load("streamvoice", _load_streamvoice_local_function)
 
     @_streamvoice.setter
     def _streamvoice(self, value: list[FileResource]) -> None: ...  # pylint: disable=unused-argument  # pyright: ignore[reportIncompatibleVariableOverride]
     def _load_streamvoice(self) -> list[FileResource]:
-        return self.load_resources_list(self._find_resource_folderpath(("streamvoice", "streamwaves")), recurse=True)
+        return self.load_resources_list(
+            self._find_resource_folderpath(("streamvoice", "streamwaves")), recurse=True
+        )
 
     @property
     def _talktable(self) -> TalkTable:
@@ -335,10 +387,13 @@ class HTInstallation(Installation):
     @property
     def _texturepacks(self) -> dict[str, list[FileResource]]:
         return self._get_cached_or_load("texturepacks", self._load_texturepacks)
+
     @_texturepacks.setter
     def _texturepacks(self, value: dict[str, list[FileResource]]) -> None: ...  # pylint: disable=unused-argument  # pyright: ignore[reportIncompatibleVariableOverride]
     def _load_texturepacks(self) -> dict[str, list[FileResource]]:
-        return self.load_resources_dict(self.texturepacks_path(), capsule_check=is_erf_file)
+        return self.load_resources_dict(
+            self.texturepacks_path(), capsule_check=is_erf_file
+        )
 
     @classmethod
     def from_base_instance(
@@ -349,7 +404,9 @@ class HTInstallation(Installation):
         ht_installation: HTInstallation = installation  # type: ignore[assignment]
         ht_installation.__class__ = cls
         assert isinstance(ht_installation, cls)
-        ht_installation.name = f"NonHTInit_{installation.__class__.__name__}_{id(installation)}"
+        ht_installation.name = (
+            f"NonHTInit_{installation.__class__.__name__}_{id(installation)}"
+        )
         ht_installation._tsl = installation.game().is_k2()  # noqa: SLF001  # pylint: disable=protected-access
         ht_installation.cache_core_items = None
         ht_installation._cache2da = {}  # noqa: SLF001  # pylint: disable=protected-access
@@ -366,7 +423,10 @@ class HTInstallation(Installation):
         resref_type: list[ResourceType] | list[ResourceIdentifier],
         order: list[SearchLocation] | None = None,
         enable_reference_search: bool = False,
-        reference_search_type: Literal["script", "tag", "template_resref", "conversation", "resref"] | None = None,
+        reference_search_type: Literal[
+            "script", "tag", "template_resref", "conversation", "resref"
+        ]
+        | None = None,
     ) -> None:
         """Populate `root_menu` with the standard 'file(s) located' menu for a resref.
 
@@ -411,9 +471,7 @@ class HTInstallation(Installation):
             SearchLocation.RIMS,
         ]
         resource_types: list[ResourceType] | list[ResourceIdentifier] = (
-            resref_type
-            if isinstance(resref_type[0], ResourceType)
-            else resref_type
+            resref_type if isinstance(resref_type[0], ResourceType) else resref_type
         )
         # FIXME(th3w1zard1): Seems the type hinter override's for `locations` are wrong, need to fix
         locations: dict[str, list[LocationResult]] = self.locations(
@@ -421,10 +479,7 @@ class HTInstallation(Installation):
             search_order,
         )
         flat_locations: list[LocationResult] = (
-            [
-                item for sublist in locations.values()
-                for item in sublist
-            ]
+            [item for sublist in locations.values() for item in sublist]
             if isinstance(locations, dict)
             else locations
         )
@@ -439,8 +494,10 @@ class HTInstallation(Installation):
                 ResourceItems(resources=[location]).build_menu(location_menu, self)
 
             details_action = QAction("Details...", file_menu)
+
             def _open_details_action() -> None:
                 self._open_details(flat_locations)
+
             details_action.triggered.connect(_open_details_action)
             file_menu.addAction(details_action)
         else:
@@ -455,10 +512,13 @@ class HTInstallation(Installation):
         if enable_reference_search and widget_text.strip():
             root_menu.addSeparator()
             find_refs_action = QAction("Find References...", parent_widget)
+
             def _find_references_action(
                 checked: bool = False,
                 search_text: str = widget_text.strip(),
-                search_type: Literal["script", "tag", "template_resref", "conversation", "resref"] = reference_search_type or "resref",
+                search_type: Literal[
+                    "script", "tag", "template_resref", "conversation", "resref"
+                ] = reference_search_type or "resref",
             ) -> None:
                 """Find references to the given search text and type."""
                 self._find_references(
@@ -466,6 +526,7 @@ class HTInstallation(Installation):
                     search_text,
                     search_type,
                 )
+
             find_refs_action.triggered.connect(_find_references_action)
             root_menu.addAction(find_refs_action)
 
@@ -475,7 +536,10 @@ class HTInstallation(Installation):
         resref_type: list[ResourceType] | list[ResourceIdentifier],
         order: list[SearchLocation] | None = None,
         enable_reference_search: bool = False,
-        reference_search_type: Literal["script", "tag", "template_resref", "conversation", "resref"] | None = None,
+        reference_search_type: Literal[
+            "script", "tag", "template_resref", "conversation", "resref"
+        ]
+        | None = None,
     ):
         from toolset.gui.common.localization import tr
 
@@ -486,7 +550,9 @@ class HTInstallation(Installation):
                 if isinstance(widget, QComboBox)
                 else widget.createStandardContextMenu()
             )
-            assert root_menu is not None, f"{type(self).__name__}.setup_file_context_menu: root_menu cannot be None"
+            assert root_menu is not None, (
+                f"{type(self).__name__}.setup_file_context_menu: root_menu cannot be None"
+            )
             widget_text: str = str(
                 widget.currentText()
                 if isinstance(widget, QComboBox)
@@ -534,7 +600,10 @@ class HTInstallation(Installation):
         self,
         parent_widget: QWidget,
         search_text: str,
-        search_type: Literal["script", "tag", "template_resref", "conversation", "resref"] | None = None,
+        search_type: Literal[
+            "script", "tag", "template_resref", "conversation", "resref"
+        ]
+        | None = None,
     ) -> None:
         """Perform a reference search and display results.
 
@@ -552,6 +621,7 @@ class HTInstallation(Installation):
             find_tag_references,
             find_template_resref_references,
         )
+
         from toolset.gui.dialogs.asyncloader import AsyncLoader
         from toolset.gui.dialogs.reference_search_options import ReferenceSearchOptions
         from toolset.gui.dialogs.search import FileResults
@@ -634,13 +704,14 @@ class HTInstallation(Installation):
             """Handle the search completed event."""
             from qtpy.QtWidgets import QMessageBox
 
-            from toolset.gui.common.localization import tr, trf
-
             if not results_list:
                 QMessageBox(
                     QMessageBox.Icon.Information,
                     tr("No references found"),
-                    trf("No references found for '{search_text}'", search_text=search_text),
+                    trf(
+                        "No references found for '{search_text}'",
+                        search_text=search_text,
+                    ),
                     parent=parent_widget,
                 ).exec()
                 return
@@ -683,9 +754,13 @@ class HTInstallation(Installation):
         lower_rims_path = str(self.rims_path()).lower()
         lower_streammusic_path = str(self.streammusic_path()).lower()
         lower_streamsounds_path = str(self.streamsounds_path()).lower()
-        lower_streamwaves_path = str(self._find_resource_folderpath(("streamvoice", "streamwaves"))).lower()
+        lower_streamwaves_path = str(
+            self._find_resource_folderpath(("streamvoice", "streamwaves"))
+        ).lower()
         lower_texturepacks_path = str(self.texturepacks_path()).lower()
-        lower_save_locations: list[str] = [str(save_loc).lower() for save_loc in self.save_locations()]
+        lower_save_locations: list[str] = [
+            str(save_loc).lower() for save_loc in self.save_locations()
+        ]
 
         for path in changed_files:
             lower_path: str = path.lower()
@@ -719,7 +794,7 @@ class HTInstallation(Installation):
         This method caches 2DA files that are verified to be loaded by the game engine.
         All 2DA files accessible through this cache are confirmed through reverse engineering
         analysis of swkotor.exe and swkotor2.exe using Ghidra (Reva MCP server).
-        
+
         See TwoDARegistry class in Libraries/PyKotor/src/pykotor/extract/twoda.py for the
         complete list of verified 2DA files and their game engine loading functions.
 
@@ -778,7 +853,9 @@ class HTInstallation(Installation):
             - If inside override, add all resources of the specified type from the override.
             - Return the set of relevant resources.
         """
-        from pykotor.common.module import Module
+        from pykotor.common.module import (
+            Module,  # pyright: ignore[reportMissingImports]
+        )
 
         if src_filepath is None:
             return {res for res in self if res.restype() is restype}
@@ -803,7 +880,10 @@ class HTInstallation(Installation):
         if _is_within(src_absolute, module_path):
             relevant_resources.update(
                 res
-                for cap in cast("dict[str, Capsule]", Module.get_capsules_dict_matching(self, src_filepath.name)).values()
+                for cap in cast(
+                    "dict[str, Capsule]",
+                    Module.get_capsules_dict_matching(self, src_filepath.name),
+                ).values()
                 if cap is not None
                 for res in cap
                 if res.restype() == restype
@@ -846,8 +926,7 @@ class HTInstallation(Installation):
         queries: list[ResourceIdentifier] = []
         if reload:
             queries.extend(
-                ResourceIdentifier(resname, ResourceType.TwoDA)
-                for resname in resnames
+                ResourceIdentifier(resname, ResourceType.TwoDA) for resname in resnames
             )
         else:
             queries.extend(
@@ -859,7 +938,9 @@ class HTInstallation(Installation):
         if not queries:
             return
 
-        resources: dict[ResourceIdentifier, ResourceResult | None] = self.resources(queries, [SearchLocation.OVERRIDE, SearchLocation.CHITIN])
+        resources: dict[ResourceIdentifier, ResourceResult | None] = self.resources(
+            queries, [SearchLocation.OVERRIDE, SearchLocation.CHITIN]
+        )
         for iden, resource in resources.items():
             if not resource:
                 continue
@@ -882,6 +963,8 @@ class HTInstallation(Installation):
                 order=[
                     SearchLocation.OVERRIDE,
                     SearchLocation.TEXTURES_TPA,
+                    SearchLocation.TEXTURES_TPB,
+                    SearchLocation.TEXTURES_TPC,
                     SearchLocation.TEXTURES_GUI,
                 ],
             )
@@ -909,6 +992,8 @@ class HTInstallation(Installation):
                 resname,
                 order=[
                     SearchLocation.TEXTURES_TPA,
+                    SearchLocation.TEXTURES_TPB,
+                    SearchLocation.TEXTURES_TPC,
                     SearchLocation.TEXTURES_GUI,
                 ],
             )
@@ -933,14 +1018,21 @@ class HTInstallation(Installation):
 
         try:
             item_class: str = baseitems.get_cell(uti.base_item, "itemclass")
-            variation: int = uti.model_variation if uti.model_variation != 0 else uti.texture_variation
-            texture_resname: str = f'i{item_class}_{str(variation).rjust(3, "0")}'
+            variation: int = (
+                uti.model_variation
+                if uti.model_variation != 0
+                else uti.texture_variation
+            )
+            texture_resname: str = f"i{item_class}_{str(variation).rjust(3, '0')}"
             texture: TPC | None = self.ht_get_cache_tpc(texture_resname.lower())
 
             if texture is None:
                 return pixmap
         except Exception:  # noqa: BLE001  # pylint: disable=broad-exception-caught
-            RobustLogger().warning(f"An error occurred while getting item icon from UTI '{uti}'.", exc_info=True)
+            RobustLogger().warning(
+                f"An error occurred while getting item icon from UTI '{uti}'.",
+                exc_info=True,
+            )
             return pixmap
         else:
             return self._get_icon(texture)
@@ -951,12 +1043,18 @@ class HTInstallation(Installation):
     ) -> str:
         """Get the name of the base item from its ID."""
         try:
-            baseitems: TwoDA | None = self.ht_get_cache_2da(HTInstallation.TwoDA_BASEITEMS)
+            baseitems: TwoDA | None = self.ht_get_cache_2da(
+                HTInstallation.TwoDA_BASEITEMS
+            )
             if baseitems is None:
-                RobustLogger().error("Failed to retrieve `baseitems.2da` from your installation.")
+                RobustLogger().error(
+                    "Failed to retrieve `baseitems.2da` from your installation."
+                )
                 return "Unknown"
         except Exception:  # noqa: BLE001  # pylint: disable=broad-exception-caught
-            RobustLogger().exception("An exception occurred while retrieving `baseitems.2da` from your installation.")
+            RobustLogger().exception(
+                "An exception occurred while retrieving `baseitems.2da` from your installation."
+            )
             return "Unknown"
         else:
             return baseitems.get_cell(base_item, "label")
@@ -984,15 +1082,21 @@ class HTInstallation(Installation):
         """Get the icon path based on base item, model variation, and texture variation."""
         baseitems: TwoDA | None = self.ht_get_cache_2da(HTInstallation.TwoDA_BASEITEMS)
         if baseitems is None:
-            RobustLogger().warning("Failed to retrieve `baseitems.2da` from your installation.")
+            RobustLogger().warning(
+                "Failed to retrieve `baseitems.2da` from your installation."
+            )
             return "Unknown"
         try:
             item_class: str = baseitems.get_cell(base_item, "itemclass")
         except Exception:  # noqa: BLE001  # pylint: disable=broad-exception-caught
-            RobustLogger().exception(f"An exception occurred while getting cell '{base_item}' from `baseitems.2da`.")
+            RobustLogger().exception(
+                f"An exception occurred while getting cell '{base_item}' from `baseitems.2da`."
+            )
             return "Unknown"
         else:
-            variation: int = model_variation if model_variation != 0 else texture_variation
+            variation: int = (
+                model_variation if model_variation != 0 else texture_variation
+            )
             return f"i{item_class}_{str(variation).rjust(3, '0')}"
 
     def get_item_icon(
@@ -1003,15 +1107,19 @@ class HTInstallation(Installation):
     ) -> QPixmap:
         """Get an item icon from a base item, model variation, and texture variation."""
         pixmap = QPixmap(":/images/inventory/unknown.png")
-        icon_path: str = self.get_item_icon_path(base_item, model_variation, texture_variation)
+        icon_path: str = self.get_item_icon_path(
+            base_item, model_variation, texture_variation
+        )
         print(f"Icon path: '{icon_path}'")
         try:
-            texture: TPC | None = self.ht_get_cache_tpc(os.path.basename(icon_path.lower()))  # noqa: PTH119
+            texture: TPC | None = self.ht_get_cache_tpc(
+                os.path.basename(icon_path.lower())
+            )  # noqa: PTH119
             if texture is None:
                 return pixmap
         except Exception:  # noqa: BLE001  # pylint: disable=broad-exception-caught
             RobustLogger().exception(
-                f"An error occurred loading the icon at '{icon_path}' " f"model variation '{model_variation}' and " f"texture variation '{texture_variation}'.",
+                f"An error occurred loading the icon at '{icon_path}' model variation '{model_variation}' and texture variation '{texture_variation}'.",
             )
             return pixmap
         else:
@@ -1026,7 +1134,9 @@ class HTInstallation(Installation):
         if texture.format().is_dxt():
             texture.decode()
         mm: TPCMipmap = texture.get(0, mipmap)
-        image = QImage(bytes(mm.data), mm.width, mm.height, mm.tpc_format.to_qimage_format())
+        image = QImage(
+            bytes(mm.data), mm.width, mm.height, mm.tpc_format.to_qimage_format()
+        )
         return QPixmap.fromImage(image).transformed(QTransform().scale(1, -1))
 
     @property

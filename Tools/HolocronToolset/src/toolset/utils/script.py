@@ -38,10 +38,12 @@ NON_TSLPATCHER_NWNNSSCOMP_PERMISSION_MSG = (
 
 log = RobustLogger()
 
+
 class NoOpRegistrySpoofer:
     def __enter__(self):
         log.debug("Enter NoOpRegistrySpoofer")
         return self
+
     def __exit__(self, exc_type, exc_val, exc_tb):
         log.debug(f"NoOpRegistrySpoofer.__exit__({exc_type}, {exc_val}, {exc_tb})")
 
@@ -124,6 +126,7 @@ def ht_decompile_script(
         raise ValueError(stderr)  # noqa: TRY301
     return temp_decompiled_path.read_text(encoding="windows-1252")
 
+
 def setup_extract_path() -> Path:
     global_settings = GlobalSettings()
     extract_path = Path(global_settings.extractPath)
@@ -135,6 +138,7 @@ def setup_extract_path() -> Path:
             msg = "Temp directory has not been set or is invalid."
             raise NoConfigurationSetError(msg)
     return extract_path
+
 
 def ht_compile_script(
     source: str,
@@ -184,6 +188,7 @@ def ht_compile_script(
     # This should never be reached, leave in for static type checkers.
     raise ValueError("Could not get the NCS bytes.")  # noqa: TRY003, EM101
 
+
 def _prompt_additional_include_dirs(  # noqa: PLR0913
     extCompiler: ExternalNCSCompiler,
     source: str,
@@ -230,6 +235,7 @@ def _prompt_additional_include_dirs(  # noqa: PLR0913
 
     return stdout, stderr
 
+
 def _execute_nwnnsscomp_compile(
     global_settings: GlobalSettings,
     extract_path: Path,
@@ -269,15 +275,7 @@ def _execute_nwnnsscomp_compile(
             raise  # TODO(th3w1zard1): return something ignorable.
         else:
             if stderr:
-                stdout, stderr = _prompt_additional_include_dirs(
-                    extCompiler,
-                    source,
-                    stderr,
-                    tempSourcePath,
-                    tempCompiledPath,
-                    extract_path,
-                    gameEnum
-                )
+                stdout, stderr = _prompt_additional_include_dirs(extCompiler, source, stderr, tempSourcePath, tempCompiledPath, extract_path, gameEnum)
             if stderr:
                 raise ValueError(f"{stdout}\n{stderr}")
 
@@ -308,6 +306,7 @@ def _execute_nwnnsscomp_compile(
     # All the abstraction work is now complete... verify the file exists one last time then return the compiled script's data.
     if not tempCompiledPath.is_file():
         import errno
+
         raise FileNotFoundError(errno.ENOENT, "Could not find the temp compiled script!", str(tempCompiledPath))  # noqa: TRY003, EM102
     return tempCompiledPath.read_bytes()
 
@@ -348,11 +347,7 @@ def _prompt_user_for_compiler_option() -> int:
     msgBox.setWindowTitle("Choose a NCS compiler")
     msgBox.setText("Would you like to use 'nwnnsscomp.exe' or Holocron Toolset's built-in compiler?")
     msgBox.setInformativeText("Choose one of the options below:")
-    msgBox.setStandardButtons(
-        QMessageBox.StandardButton.Yes
-        | QMessageBox.StandardButton.No
-        | QMessageBox.StandardButton.Abort
-    )
+    msgBox.setStandardButtons(QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No | QMessageBox.StandardButton.Abort)
     msgBox.setDefaultButton(QMessageBox.StandardButton.Abort)
 
     # Set the button text

@@ -152,18 +152,18 @@ def qt_cleanup():
 
 def _should_enable_profiling() -> bool:
     """Check if profiling should be enabled.
-    
+
     Profiling is controlled *exclusively* by an explicit toggle (env or CLI).
     It is not tied to debug/frozen state.
-    
+
     Enable when:
       - Environment variable TOOLSET_PROFILE is one of: 1, true, yes, on
       - OR command-line argument --profile is present
-    
+
     Disable when:
       - Environment variable TOOLSET_DISABLE_PROFILE is one of: 1, true, yes, on
       - OR command-line argument --no-profile is present
-    
+
     Returns:
         bool: True if profiling should be enabled, False otherwise
     """
@@ -176,11 +176,11 @@ def _should_enable_profiling() -> bool:
 
 def _save_profile_stats(profiler: cProfile.Profile, output_path: Path):
     """Save profiling statistics to files.
-    
+
     Saves both:
     - Binary .prof file (for tools like snakeviz, py-spy, etc.)
     - Text .txt file (human-readable stats)
-    
+
     Args:
         profiler: The cProfile.Profile instance
         output_path: Base path where to save the profile stats (will add .prof and .txt extensions)
@@ -188,14 +188,14 @@ def _save_profile_stats(profiler: cProfile.Profile, output_path: Path):
     try:
         # Save binary profile data (.prof) - compatible with snakeviz, py-spy, etc.
         profiler.dump_stats(str(output_path))
-        
+
         # Also save human-readable text stats
         txt_path = output_path.with_suffix(".txt")
         with open(txt_path, "w", encoding="utf-8") as f:
             stats = pstats.Stats(profiler, stream=f)
             stats.sort_stats("cumulative")
             stats.print_stats()
-        
+
         RobustLogger().info("Profile statistics saved:")
         RobustLogger().info(f"  - Binary: {output_path} (use with snakeviz: snakeviz {output_path})")
         RobustLogger().info(f"  - Text: {txt_path} (human-readable)")
@@ -219,9 +219,7 @@ def _prune_old_profiles(
             with suppress(Exception):
                 if txt.exists():
                     txt.unlink()
-        RobustLogger().info(
-            "Pruned old profile files, kept newest %s (dir=%s)", max_profiles, profile_dir
-        )
+        RobustLogger().info("Pruned old profile files, kept newest %s (dir=%s)", max_profiles, profile_dir)
     except Exception as e:  # noqa: BLE001
         RobustLogger().warning(f"Failed to prune old profile files: {e}")
 
@@ -230,18 +228,18 @@ def main():
     """Main entry point for the Holocron Toolset.
 
     This block is ran when users run __main__.py directly.
-    
+
     When not frozen, cProfile is enabled by default to profile the application execution.
     Profile statistics will be saved to a timestamped file in the current directory.
     Profiling can be disabled by setting TOOLSET_DISABLE_PROFILE=1 or using --no-profile flag.
     """
     setup_pre_init_settings()
-    
+
     # Enable profiling if requested and not frozen
     enable_profiling = _should_enable_profiling()
     profiler: cProfile.Profile | None = None
     profile_output_path: Path | None = None
-    
+
     profile_dir = Path(__file__).resolve().parent
     if enable_profiling:
         profiler = cProfile.Profile()
@@ -274,20 +272,20 @@ def main():
     # - Wrap Qt signal/slot connections so Python exceptions in slots are forwarded to sys.excepthook
     install_sys_unraisablehook()
     install_qt_signal_slot_safety_net()
-    
+
     def cleanup_with_profiling():
         """Cleanup function that also saves profiling stats if enabled."""
         # Disable profiler before cleanup to avoid profiling cleanup code
         if profiler is not None:
             profiler.disable()
-        
+
         qt_cleanup()
-        
+
         # Save profile stats after cleanup
         if profiler is not None and profile_output_path is not None:
             _save_profile_stats(profiler, profile_output_path)
             _prune_old_profiles(profile_dir, max_profiles=10)
-    
+
     app.aboutToQuit.connect(cleanup_with_profiling)
 
     setup_post_init_settings()
@@ -306,6 +304,7 @@ def main():
     with suppress(ImportError):
         RobustLogger().debug("TRACE: Importing qasync")
         from qasync import QEventLoop  # type: ignore[import-not-found, import-untyped, note]  # pyright: ignore[reportMissingImports, reportMissingTypeStubs]
+
         RobustLogger().debug("TRACE: qasync imported, creating QEventLoop")
         asyncio.set_event_loop(QEventLoop(app))
         RobustLogger().debug("TRACE: QEventLoop created and set")
@@ -317,7 +316,7 @@ def main():
 
     # Best-effort: capture asyncio task exceptions too (especially when qasync is in use).
     install_asyncio_exception_handler()
-    
+
     # Install event filter only when explicitly requested to avoid log spam/perf issues
     trace_events_env = os.environ.get("TOOLSET_TRACE_EVENTS", "").lower().strip()
     trace_events_enabled = trace_events_env in ("1", "true", "yes", "on")
@@ -342,7 +341,7 @@ def main():
         )
     else:
         RobustLogger().debug("TRACE: Event filter disabled (set TOOLSET_TRACE_EVENTS=1 to sample events)")
-    
+
     RobustLogger().debug("TRACE: About to call app.exec()")
     exit_code = app.exec()
     RobustLogger().debug(f"TRACE: app.exec() returned with exit code: {exit_code}")

@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import math
 import os
-import sys
 
 from collections import deque
 from copy import deepcopy
@@ -258,61 +257,61 @@ class IndoorMapBuilder(QMainWindow, BlenderEditorMixin):
 
     def _get_semantic_colors(self) -> dict[str, str]:
         """Get semantic colors from the application palette.
-        
+
         Returns:
             Dictionary with keys: 'info', 'ok', 'warn', 'error', 'muted', 'accent1', 'accent2', 'accent3'
         """
         from qtpy.QtGui import QPalette
-        
+
         app = QApplication.instance()
         if app is None or not isinstance(app, QApplication):
             # Use default palette for fallback
             palette = QPalette()
         else:
             palette = app.palette()
-        
+
         # Get base palette colors
         link_color = palette.color(QPalette.ColorRole.Link)
         mid_color = palette.color(QPalette.ColorRole.Mid)
         shadow_color = palette.color(QPalette.ColorRole.Shadow)
-        
+
         # Create semantic colors from palette
         # Info: Use link color (usually blue)
         info_color = link_color
-        
+
         # OK/Success: Create a green-ish color from highlight or link
         ok_color = QColor(link_color)
         if ok_color.lightness() < 128:  # Dark theme
             ok_color = QColor(0, min(255, ok_color.green() + 100), 0)
         else:  # Light theme
             ok_color = QColor(0, min(200, ok_color.green() + 50), 0)
-        
+
         # Warning: Use mid color with adjustment
         warn_color = QColor(mid_color)
         if warn_color.lightness() < 128:  # Dark theme
             warn_color = warn_color.lighter(150)
         else:  # Light theme
             warn_color = warn_color.darker(120)
-        
+
         # Error: Use shadow or create red variant
         error_color = QColor(shadow_color)
         if error_color.lightness() < 128:  # Dark theme
             error_color = QColor(min(255, error_color.red() + 100), 0, 0)
         else:  # Light theme
             error_color = QColor(min(200, error_color.red() + 50), 0, 0)
-        
+
         # Muted: Use mid color
         muted_color = mid_color
-        
+
         # Accent colors for UI elements
         accent1 = link_color  # Blue for coordinates/info
-        accent2 = ok_color    # Green for success
+        accent2 = ok_color  # Green for success
         accent3 = QColor(link_color)  # Purple variant for keys
         if accent3.lightness() < 128:
             accent3 = QColor(min(255, accent3.red() + 50), min(255, accent3.green() + 20), min(255, accent3.blue() + 100))
         else:
             accent3 = QColor(min(200, accent3.red() + 30), min(200, accent3.green() + 10), min(200, accent3.blue() + 50))
-        
+
         return {
             "info": info_color.name(),
             "ok": ok_color.name(),
@@ -1149,7 +1148,7 @@ class IndoorMapBuilder(QMainWindow, BlenderEditorMixin):
         # Mouse/hover
         # Get semantic colors from palette
         colors = self._get_semantic_colors()
-        
+
         hover_text = (
             f"<b><span style=\"{self._emoji_style}\">🧩</span>&nbsp;Hover:</b> <span style='color:{colors['accent1']}'>{hover_room.component.name}</span>"
             if hover_room
@@ -1260,8 +1259,8 @@ class IndoorMapBuilder(QMainWindow, BlenderEditorMixin):
             return "&nbsp;+&nbsp;".join(colored_items)
 
         colors = self._get_semantic_colors()
-        keys_text = fmt(keys_sorted, get_qt_key_string_local, colors['accent3'])
-        buttons_text = fmt(buttons_sorted, get_qt_button_string_local, colors['accent2'])
+        keys_text = fmt(keys_sorted, get_qt_key_string_local, colors["accent3"])
+        buttons_text = fmt(buttons_sorted, get_qt_button_string_local, colors["accent2"])
         sep = " + " if keys_text and buttons_text else ""
         self._keys_label.setText(
             f'<b><span style="{self._emoji_style}">⌨</span>&nbsp;Keys/<span style="{self._emoji_style}">🖱</span>&nbsp;Buttons:</b> {keys_text}{sep}{buttons_text}'
@@ -1367,7 +1366,6 @@ class IndoorMapBuilder(QMainWindow, BlenderEditorMixin):
                 if missing_rooms:
                     self._show_missing_rooms_dialog(missing_rooms)
             except OSError as e:
-
                 QMessageBox(
                     QMessageBox.Icon.Critical,
                     tr("Failed to load file"),
@@ -2488,3 +2486,10 @@ class IndoorMapBuilder(QMainWindow, BlenderEditorMixin):
                 e.accept()
             except Exception:
                 pass
+
+if __name__ == "__main__":
+    import sys
+
+    from toolset.gui.editors.standalone import launch_app_cli
+
+    sys.exit(launch_app_cli("indoor-builder"))

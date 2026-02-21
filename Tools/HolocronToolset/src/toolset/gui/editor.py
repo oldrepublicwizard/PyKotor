@@ -16,14 +16,11 @@ from qtpy.QtMultimedia import QMediaPlayer
 from qtpy.QtWidgets import (
     QApplication,
     QFileDialog,
-    QHBoxLayout,
-    QLabel,
     QLineEdit,
     QMainWindow,
     QMenu,
     QMessageBox,
     QPlainTextEdit,
-    QPushButton,
     QShortcut,  # pyright: ignore[reportPrivateImportUsage]
     QSlider,
     QStyle,
@@ -50,7 +47,7 @@ from toolset.gui.dialogs.save.to_module import SaveToModuleDialog
 from toolset.gui.dialogs.save.to_rim import RimSaveDialog, RimSaveOption
 from toolset.gui.widgets.settings.installations import GlobalSettings
 from ui import stylesheet_resources  # noqa: PLC0415, F401, I001  # pylint: disable=C0415
-from utility.error_handling import assert_with_variable_trace, format_exception_with_variables, universal_simplify_exception
+from utility.error_handling import assert_with_variable_trace, format_exception_with_variables
 from utility.system.os_helper import remove_any
 
 if qtpy.API_NAME == "PySide2":

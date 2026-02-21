@@ -271,10 +271,7 @@ class BetterMessageBox(QtWidgets.QDialog):
         self,
         title: str,
         message: str,
-        flags=Qt.WindowType.Dialog
-        | Qt.WindowType.WindowTitleHint
-        | Qt.WindowType.WindowCloseButtonHint
-        | Qt.WindowType.WindowStaysOnTopHint,  # Adjusted default flags
+        flags=Qt.WindowType.Dialog | Qt.WindowType.WindowTitleHint | Qt.WindowType.WindowCloseButtonHint | Qt.WindowType.WindowStaysOnTopHint,  # Adjusted default flags
         *args,
         icon: QtWidgets.QStyle.StandardPixmap = QtWidgets.QStyle.StandardPixmap.SP_MessageBoxInformation,
         buttons: QMessageBox.StandardButton = QMessageBox.StandardButton.Ok,

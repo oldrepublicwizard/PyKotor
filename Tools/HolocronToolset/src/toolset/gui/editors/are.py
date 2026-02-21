@@ -484,3 +484,10 @@ def calculate_zoom_strength(delta_y: float, sens_setting: int) -> float:
     b = 1
     factor_in = m * sens_setting + b
     return 1 / abs(factor_in) if delta_y < 0 else abs(factor_in)
+
+if __name__ == "__main__":
+    import sys
+
+    from toolset.gui.editors.standalone import launch_editor_cli
+
+    sys.exit(launch_editor_cli("are"))

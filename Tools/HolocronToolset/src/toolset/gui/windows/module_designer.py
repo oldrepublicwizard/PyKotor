@@ -294,12 +294,13 @@ class ModuleDesigner(QMainWindow, BlenderEditorMixin):
         self.ui: Ui_MainWindow = Ui_MainWindow()
         self.ui.setupUi(self)
         self.setWindowTitle("Module Designer")  # Re-set after UI setup
-        
+
         # Setup event filter to prevent scroll wheel interaction with controls
         from toolset.gui.common.filters import NoScrollEventFilter
+
         self._no_scroll_filter = NoScrollEventFilter(self)
         self._no_scroll_filter.setup_filter(parent_widget=self)
-        
+
         self._init_ui()
         self._install_view_stack()
         self._setup_signals()
@@ -616,61 +617,61 @@ class ModuleDesigner(QMainWindow, BlenderEditorMixin):
 
     def _get_semantic_colors(self) -> dict[str, str]:
         """Get semantic colors from the application palette.
-        
+
         Returns:
             Dictionary with keys: 'info', 'ok', 'warn', 'error', 'muted', 'accent1', 'accent2', 'accent3'
         """
         from qtpy.QtGui import QPalette
-        
+
         app = QApplication.instance()
         if app is None or not isinstance(app, QApplication):
             # Use default palette for fallback
             palette = QPalette()
         else:
             palette = app.palette()
-        
+
         # Get base palette colors
         link_color = palette.color(QPalette.ColorRole.Link)
         mid_color = palette.color(QPalette.ColorRole.Mid)
         shadow_color = palette.color(QPalette.ColorRole.Shadow)
-        
+
         # Create semantic colors from palette
         # Info: Use link color (usually blue)
         info_color = link_color
-        
+
         # OK/Success: Create a green-ish color from highlight or link
         ok_color = QColor(link_color)
         if ok_color.lightness() < 128:  # Dark theme
             ok_color = QColor(0, min(255, ok_color.green() + 100), 0)
         else:  # Light theme
             ok_color = QColor(0, min(200, ok_color.green() + 50), 0)
-        
+
         # Warning: Use mid color with adjustment
         warn_color = QColor(mid_color)
         if warn_color.lightness() < 128:  # Dark theme
             warn_color = warn_color.lighter(150)
         else:  # Light theme
             warn_color = warn_color.darker(120)
-        
+
         # Error: Use shadow or create red variant
         error_color = QColor(shadow_color)
         if error_color.lightness() < 128:  # Dark theme
             error_color = QColor(min(255, error_color.red() + 100), 0, 0)
         else:  # Light theme
             error_color = QColor(min(200, error_color.red() + 50), 0, 0)
-        
+
         # Muted: Use mid color
         muted_color = mid_color
-        
+
         # Accent colors for UI elements
         accent1 = link_color  # Blue for coordinates/info
-        accent2 = ok_color    # Green for success
+        accent2 = ok_color  # Green for success
         accent3 = QColor(link_color)  # Purple variant for keys
         if accent3.lightness() < 128:
             accent3 = QColor(min(255, accent3.red() + 50), min(255, accent3.green() + 20), min(255, accent3.blue() + 100))
         else:
             accent3 = QColor(min(200, accent3.red() + 30), min(200, accent3.green() + 10), min(200, accent3.blue() + 50))
-        
+
         return {
             "info": info_color.name(),
             "ok": ok_color.name(),
@@ -802,14 +803,7 @@ class ModuleDesigner(QMainWindow, BlenderEditorMixin):
             prev = self._selection_sync_in_progress
             self._selection_sync_in_progress = True
             try:
-                resolved = [
-                    inst
-                    for inst in (
-                        self._instance_id_lookup.get(instance_id)
-                        for instance_id in instance_ids
-                    )
-                    if inst is not None
-                ]
+                resolved = [inst for inst in (self._instance_id_lookup.get(instance_id) for instance_id in instance_ids) if inst is not None]
                 self.set_selection(cast(list[GITInstance], resolved))
             finally:
                 self._selection_sync_in_progress = prev
@@ -880,14 +874,7 @@ class ModuleDesigner(QMainWindow, BlenderEditorMixin):
 
     def _on_blender_context_menu_requested(self, instance_ids: list[int]):
         def _apply():
-            resolved = [
-                inst
-                for inst in (
-                    self._instance_id_lookup.get(instance_id)
-                    for instance_id in instance_ids
-                )
-                if inst is not None
-            ]
+            resolved = [inst for inst in (self._instance_id_lookup.get(instance_id) for instance_id in instance_ids) if inst is not None]
             if not resolved:
                 return
             prev = self._selection_sync_in_progress
@@ -922,33 +909,39 @@ class ModuleDesigner(QMainWindow, BlenderEditorMixin):
 
     def _on_blender_material_changed(self, payload: dict):
         """Handle material/texture changes from Blender."""
+
         def _apply():
             object_name = payload.get("object_name", "")
             material_data = payload.get("material", {})
             model_name = payload.get("model_name")
-            
+
             if not model_name:
                 return
-            
+
             self.log.info(f"Material changed for {object_name} (model: {model_name})")
-            
+
             # If textures were changed, we need to export the MDL and reload it
             if "diffuse_texture" in material_data or "lightmap_texture" in material_data:
                 # Request MDL export from Blender
                 if self.is_blender_mode() and self._blender_controller is not None:
                     # Export MDL to a temp location
                     import tempfile
+
                     temp_mdl = tempfile.NamedTemporaryFile(suffix=".mdl", delete=False)
                     temp_mdl.close()
-                    
+
                     # Use IPC to export MDL
                     from toolset.blender.ipc_client import get_ipc_client
+
                     client = get_ipc_client()
                     if client and client.is_connected:
-                        result = client.send_command("export_mdl", {
-                            "path": temp_mdl.name,
-                            "object": object_name,
-                        })
+                        result = client.send_command(
+                            "export_mdl",
+                            {
+                                "path": temp_mdl.name,
+                                "object": object_name,
+                            },
+                        )
                         if result.success:
                             self.log.info(f"Exported updated MDL to {temp_mdl.name}")
                             # TODO: Reload the MDL in the toolset and update the module
@@ -974,18 +967,16 @@ class ModuleDesigner(QMainWindow, BlenderEditorMixin):
 
         # Get semantic colors from palette
         colors = self._get_semantic_colors()
-        
+
         # Mouse and camera info
         if isinstance(renderer, ModuleRenderer):
             # Check if scene is initialized before accessing it
             if renderer._scene is None:
                 self.mouse_pos_label.setText(
-                    f"<b><span style='{self._emoji_style}'>🖱</span>&nbsp;Coords:</b> "
-                    f"<span style='font-style:italic; color:{colors['muted']}'>— not available —</span>"
+                    f"<b><span style='{self._emoji_style}'>🖱</span>&nbsp;Coords:</b> <span style='font-style:italic; color:{colors['muted']}'>— not available —</span>"
                 )
                 self.view_camera_label.setText(
-                    f"<b><span style='{self._emoji_style}'>🎥</span>&nbsp;View:</b> "
-                    f"<span style='font-style:italic; color:{colors['muted']}'>— not available —</span>"
+                    f"<b><span style='{self._emoji_style}'>🎥</span>&nbsp;View:</b> <span style='font-style:italic; color:{colors['muted']}'>— not available —</span>"
                 )
             else:
                 pos = renderer.scene.cursor.position()
@@ -1066,7 +1057,9 @@ class ModuleDesigner(QMainWindow, BlenderEditorMixin):
                 instance_name = f"<span style='color:{colors['accent1']}'>{instance.identifier()}</span>"
             self.selected_instance_label.setText(f"<b><span style='{self._emoji_style}'>🟦</span>&nbsp;Selected Instance:</b> {instance_name}")
         else:
-            self.selected_instance_label.setText(f"<b><span style='{self._emoji_style}'>🟦</span>&nbsp;Selected Instance:</b> <span style='color:{colors['muted']}'><i>None</i></span>")
+            self.selected_instance_label.setText(
+                f"<b><span style='{self._emoji_style}'>🟦</span>&nbsp;Selected Instance:</b> <span style='color:{colors['muted']}'><i>None</i></span>"
+            )
 
     def _refresh_window_title(self):
         if self._module is None:
@@ -1779,9 +1772,7 @@ class ModuleDesigner(QMainWindow, BlenderEditorMixin):
 
             def color_setter(inst: GITInstance, val: Any) -> None:
                 placeable = cast(GITPlaceable, inst)
-                placeable.tweak_color = (
-                    Color.from_bgr_integer(int(val)) if val is not None else None
-                )
+                placeable.tweak_color = Color.from_bgr_integer(int(val)) if val is not None else None
 
             setter_func = color_setter
         else:
@@ -1926,11 +1917,11 @@ class ModuleDesigner(QMainWindow, BlenderEditorMixin):
             git_resource.add(instance)
         if self.ui.mainRenderer._scene:
             self.ui.mainRenderer._scene.invalidate_cache()
-        
+
         # Sync to Blender if not already syncing from Blender
         if self.is_blender_mode() and self._blender_controller is not None and not self._instance_sync_in_progress:
             self.add_instance_to_blender(instance)
-        
+
         self.rebuild_instance_list()
 
     #    @with_variable_trace()
@@ -1972,11 +1963,11 @@ class ModuleDesigner(QMainWindow, BlenderEditorMixin):
             git_resource = git_module.resource()
             assert git_resource is not None
             git_resource.add(instance)
-        
+
         # Sync to Blender if not already syncing from Blender
         if self.is_blender_mode() and self._blender_controller is not None and not self._instance_sync_in_progress:
             self.add_instance_to_blender(instance)
-        
+
         self.rebuild_instance_list()
 
     #    @with_variable_trace()
@@ -3274,7 +3265,7 @@ class ModuleDesigner(QMainWindow, BlenderEditorMixin):
     def _on_undo_stack_index_changed(self, index: int):
         """Track unsaved changes based on undo stack state."""
         # If we're at the clean index, there are no unsaved changes
-        self._has_unsaved_changes = (index != self._clean_undo_index)
+        self._has_unsaved_changes = index != self._clean_undo_index
         self._refresh_window_title()
 
     def _mark_clean_state(self):
@@ -3357,16 +3348,10 @@ class ModuleDesigner(QMainWindow, BlenderEditorMixin):
             exact_keys_and_buttons=False,
         ):
             move_units_delta: float = (
-                self.settings.boostedFlyCameraSpeedFC
-                if isinstance(self._controls3d, ModuleDesignerControlsFreeCam)
-                else self.settings.boostedMoveCameraSensitivity3d
+                self.settings.boostedFlyCameraSpeedFC if isinstance(self._controls3d, ModuleDesignerControlsFreeCam) else self.settings.boostedMoveCameraSensitivity3d
             )
         else:
-            move_units_delta = (
-                self.settings.flyCameraSpeedFC
-                if isinstance(self._controls3d, ModuleDesignerControlsFreeCam)
-                else self.settings.moveCameraSensitivity3d
-            )
+            move_units_delta = self.settings.flyCameraSpeedFC if isinstance(self._controls3d, ModuleDesignerControlsFreeCam) else self.settings.moveCameraSensitivity3d
 
         move_units_delta /= 500  # normalize
         move_units_delta *= time_since_last_frame * self.target_frame_rate  # apply modifier based on frame time
@@ -3412,3 +3397,10 @@ class ModuleDesigner(QMainWindow, BlenderEditorMixin):
                 self.ui.mainRenderer.pan_camera(-move_units_delta, 0, 0)
             else:
                 self.ui.mainRenderer.move_camera(-move_units_delta, 0, 0)
+
+if __name__ == "__main__":
+    import sys
+
+    from toolset.gui.editors.standalone import launch_app_cli
+
+    sys.exit(launch_app_cli("module-designer"))

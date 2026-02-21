@@ -11,6 +11,7 @@ from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from typing_extensions import Literal  # pyright: ignore[reportMissingModuleSource]
 
+
 def update_sys_path(path: pathlib.Path):
     working_dir = str(path)
     if working_dir not in sys.path:
@@ -69,13 +70,13 @@ def get_available_qt_version() -> Literal["PyQt5", "PyQt6", "PySide6", "PySide2"
                 # If the specified version isn't available, fall through to auto-detection
                 pass
                 # If the specified version isn't available, raise an error
-                #raise RuntimeError(
+                # raise RuntimeError(
                 #    f"QT_API environment variable is set to '{qt_api_env}' (mapped to '{mapped_version}'), "
                 #    f"but {mapped_version} cannot be imported. Please install it or unset QT_API."
-                #) from e
+                # ) from e
         else:
             print(f"Warning: QT_API='{qt_api_env}' is not a recognized value. Valid values: pyqt5, pyqt6, pyside6, pyside2. Falling back to auto-detection.")
-    
+
     # Fall back to auto-detection if QT_API is not set or the specified version is unavailable
     qt_versions = ["PyQt5", "PyQt6", "PySide6", "PySide2"]
     for qt_version in qt_versions:
@@ -108,7 +109,7 @@ def compile_ui_through_python(
         module_name = "PySide6.uic"
     else:
         raise RuntimeError(f"Unknown Qt version: {qt_version}")
-    
+
     args = [
         sys.executable,
         "-m",
@@ -140,7 +141,8 @@ def compile_ui_through_subprocess(
 
 
 def compile_ui(
-    qt_version: str, *,
+    qt_version: str,
+    *,
     ignore_timestamp: bool = False,
     debug: bool = False,
 ):
@@ -242,7 +244,7 @@ def compile_qrc(
                 module_name = "PySide6.rcc"
             else:
                 raise RuntimeError(f"Unknown Qt version: {qt_version}")
-            
+
             args = [
                 sys.executable,
                 "-m",
@@ -265,7 +267,7 @@ def compile_qrc(
                 print(result.stdout)
             if result.stderr:
                 print(result.stderr, file=sys.stderr)
-        
+
         filedata: str = qrc_target.read_text(encoding="utf-8")
         new_filedata: str = filedata.replace(f"from {qt_version}", "from qtpy").replace(f"import {qt_version}", "import qtpy")
         if filedata != new_filedata:
@@ -273,7 +275,14 @@ def compile_qrc(
 
 
 if __name__ == "__main__":
+    import argparse
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--force", action="store_true", help="Recompile all UI files ignoring timestamps")
+    args = parser.parse_args()
+    force = args.force
+
     qt_version = get_available_qt_version()
-    compile_ui(qt_version, ignore_timestamp=False, debug=False)
-    compile_qrc(qt_version, ignore_timestamp=False)
+    compile_ui(qt_version, ignore_timestamp=force, debug=False)
+    compile_qrc(qt_version, ignore_timestamp=force)
     print("All ui compilations completed in", TOOLSET_DIR)

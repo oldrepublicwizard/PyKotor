@@ -119,5 +119,3 @@ def _create_preview_image_from_bwm(bwm: BWM) -> QImage:
 
     painter.end()
     return image.mirrored()
-
-

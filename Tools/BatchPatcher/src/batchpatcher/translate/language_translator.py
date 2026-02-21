@@ -686,7 +686,7 @@ class Translator:
                 break
             except MinimumLengthError:
                 print(
-                    f"Using a fallback translator because {option.name} requires a minimum" f" of {option.min_chunk_length()} characters to translate.",
+                    f"Using a fallback translator because {option.name} requires a minimum of {option.min_chunk_length()} characters to translate.",
                 )
                 if minimum_length_failed_translate_option is None:
                     minimum_length_failed_translate_option = option

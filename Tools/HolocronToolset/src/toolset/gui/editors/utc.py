@@ -24,6 +24,7 @@ from pykotor.tools import creature
 from pykotor.tools.misc import is_capsule_file, is_sav_file
 from toolset.data.installation import HTInstallation
 from toolset.gui.common.localization import translate as tr
+from toolset.gui.common.tooltip_utils import append_reference_search_tooltip
 from toolset.gui.dialogs.inventory import InventoryEditor
 from toolset.gui.dialogs.load_from_location_result import FileSelectionWindow, ResourceItems
 from toolset.gui.editor import Editor
@@ -202,9 +203,9 @@ class UTCEditor(Editor):
             - Connects menu action triggers to toggle settings.
         """
         self.ui.firstnameRandomButton.clicked.connect(self.randomize_first_name)
-        self.ui.firstnameRandomButton.setToolTip(tr("Utilize the game's LTR randomizers to generate a unique name."))
+        # Tooltip set in utc.ui (rich HTML)
         self.ui.lastnameRandomButton.clicked.connect(self.randomize_last_name)
-        self.ui.lastnameRandomButton.setToolTip(tr("Utilize the game's LTR randomizers to generate a unique name."))
+        # Tooltip set in utc.ui (rich HTML)
         self.ui.tagGenerateButton.clicked.connect(self.generate_tag)
         self.ui.alignmentSlider.valueChanged.connect(lambda: self.portrait_changed(self.ui.portraitSelect.currentIndex()))
         self.ui.portraitSelect.currentIndexChanged.connect(self.portrait_changed)
@@ -212,8 +213,7 @@ class UTCEditor(Editor):
         self.ui.inventoryButton.clicked.connect(self.open_inventory)
         self.ui.featList.itemChanged.connect(self.update_feat_summary)
         self.ui.powerList.itemChanged.connect(self.update_power_summary)
-        self.ui.class1LevelSpin.setToolTip(tr("Class Level"))
-        self.ui.class2LevelSpin.setToolTip(tr("Class Level"))
+        # Class level tooltips are set in utc.ui with full GFF/modder description
 
         self.ui.appearanceSelect.currentIndexChanged.connect(self.update3dPreview)
         self.ui.alignmentSlider.valueChanged.connect(self.update3dPreview)
@@ -377,7 +377,7 @@ class UTCEditor(Editor):
         ]
         for field in script_fields:
             self._installation.setup_file_context_menu(field, [ResourceType.NSS, ResourceType.NCS], enable_reference_search=True, reference_search_type="script")
-            field.setToolTip(tr("Right-click to find references to this script in the installation."))
+            append_reference_search_tooltip(field, "script")
 
     def load(
         self,
@@ -386,12 +386,7 @@ class UTCEditor(Editor):
         restype: ResourceType,
         data: bytes,
     ):
-        """Load UTC from bytes via read_utc/construct_utc.
-
-        Defaults when fields are missing follow engine: CSWSCreature::LoadCreature
-        @ (K1: 0x00500350, TSL: 0x0068ccb0); ReadStatsFromGff @ (K1: 0x00560e60, TSL: 0x006ec350).
-        See construct_utc in generics.utc for per-field defaults.
-        """
+        """Load UTC from bytes. Defaults when missing: see construct_utc. REVA: K1 LoadCreature @ 0x00500350 (LoadCreatures @ 0x00504a70), TSL LoadCreature @ 0x0068ccb0 (LoadCreatures @ 0x0071b140); ReadStatsFromGff @ (K1: 0x00560e60, TSL: 0x006ec350)."""
         super().load(filepath, resref, restype, data)
         self._load_utc(read_utc(data))
         self.update_item_count()
@@ -521,15 +516,15 @@ class UTCEditor(Editor):
         dlg_resnames_sorted: list[str] = sorted(dlg_resnames_set)
         self.ui.conversationEdit.populate_combo_box(dlg_resnames_sorted)
         self._installation.setup_file_context_menu(self.ui.conversationEdit, [ResourceType.DLG], enable_reference_search=True, reference_search_type="conversation")
-        self.ui.conversationEdit.setToolTip(tr("Right-click to find references to this conversation in the installation."))
+        append_reference_search_tooltip(self.ui.conversationEdit, "conversation")
 
         # Setup reference search for Tag field
         self._installation.setup_file_context_menu(self.ui.tagEdit, [], enable_reference_search=True, reference_search_type="tag")
-        self.ui.tagEdit.setToolTip(tr("Right-click to find references to this tag in the installation."))
+        append_reference_search_tooltip(self.ui.tagEdit, "tag")
 
         # Setup reference search for TemplateResRef field
         self._installation.setup_file_context_menu(self.ui.resrefEdit, [], enable_reference_search=True, reference_search_type="template_resref")
-        self.ui.resrefEdit.setToolTip(tr("Right-click to find references to this template resref in the installation."))
+        append_reference_search_tooltip(self.ui.resrefEdit, "template_resref")
 
         # Set maxLength for FilterComboBox script fields (ResRefs are max 16 characters)
         script_combo_boxes = [
@@ -595,12 +590,7 @@ class UTCEditor(Editor):
             self.ui.tabWidget.setTabText(self.ui.tabWidget.indexOf(self.ui.commentsTab), "Comments")  # pyright: ignore[reportArgumentType]
 
     def build(self) -> tuple[bytes | bytearray, bytes]:
-        """Serialize UTC via bytes_utc/dismantle_utc.
-
-        Output matches engine expectations; see dismantle_utc in generics.utc and
-        LoadCreature @ (K1: 0x00500350, TSL: 0x0068ccb0), ReadStatsFromGff @ (K1: 0x00560e60, TSL: 0x006ec350).
-        Returns GFF bytes and log.
-        """
+        """Build UTC bytes from editor state. Write values match engine. REVA: K1 LoadCreature @ 0x00500350, TSL @ 0x0068ccb0; ReadStatsFromGff @ (K1: 0x00560e60, TSL: 0x006ec350)."""
         utc: UTC = deepcopy(self._utc)
 
         utc.first_name = self.ui.firstnameEdit.locstring()
@@ -1296,3 +1286,10 @@ class UTCSettings:
     @alwaysSaveK2Fields.setter
     def alwaysSaveK2Fields(self, value: bool):
         self.settings.setValue("alwaysSaveK2Fields", value)
+
+if __name__ == "__main__":
+    import sys
+
+    from toolset.gui.editors.standalone import launch_editor_cli
+
+    sys.exit(launch_editor_cli("utc"))

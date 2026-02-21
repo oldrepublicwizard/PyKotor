@@ -17,26 +17,28 @@ class RoomPropertiesDialog(QDialog):
         super().__init__(parent)
         self.room = room
         from toolset.gui.common.localization import translate as tr
-        
+
         # Load UI from .ui file
         from toolset.uic.qtpy.dialogs.room_properties import Ui_Dialog
+
         self.ui = Ui_Dialog()
         self.ui.setupUi(self)
-        
+
         self.setWindowTitle(tr("Room Properties"))
-        
+
         # Set initial values
         self.ui.modelInput.setText(self.room.model)
         self.ui.xSpin.setValue(self.room.position.x)
         self.ui.ySpin.setValue(self.room.position.y)
         self.ui.zSpin.setValue(self.room.position.z)
-        
+
         # Connect buttons (connections are already set up in .ui file, but we can also do it here for clarity)
-        self.ui.okButton.clicked.connect(self.accept)
-        self.ui.cancelButton.clicked.connect(self.reject)
-        
+        self.ui.okButton.clicked.connect(lambda: self.accept())
+        self.ui.cancelButton.clicked.connect(lambda: self.reject())
+
         # Setup event filter to prevent scroll wheel interaction with controls
         from toolset.gui.common.filters import NoScrollEventFilter
+
         self._no_scroll_filter = NoScrollEventFilter(self)
         self._no_scroll_filter.setup_filter(parent_widget=self)
 
@@ -45,6 +47,7 @@ class RoomPropertiesDialog(QDialog):
             # Validate inputs
             model = self.ui.modelInput.text().strip()
             from toolset.gui.common.localization import translate as tr, trf
+
             if not model:
                 QMessageBox.warning(self, tr("Invalid Input"), tr("Model name cannot be empty."))
                 return
@@ -63,26 +66,28 @@ class TrackPropertiesDialog(QDialog):
         self.track = track
         self.rooms = rooms
         from toolset.gui.common.localization import translate as tr
-        
+
         # Load UI from .ui file
         from toolset.uic.qtpy.dialogs.track_properties import Ui_Dialog
+
         self.ui = Ui_Dialog()
         self.ui.setupUi(self)
-        
+
         self.setWindowTitle(tr("Track Properties"))
-        
+
         # Set initial values
         self.ui.modelInput.setText(self.track.model)
         self.ui.xSpin.setValue(self.track.position.x)
         self.ui.ySpin.setValue(self.track.position.y)
         self.ui.zSpin.setValue(self.track.position.z)
-        
+
         # Connect buttons (connections are already set up in .ui file, but we can also do it here for clarity)
-        self.ui.okButton.clicked.connect(self.accept)
-        self.ui.cancelButton.clicked.connect(self.reject)
-        
+        self.ui.okButton.clicked.connect(lambda: self.accept())
+        self.ui.cancelButton.clicked.connect(lambda: self.reject())
+
         # Setup event filter to prevent scroll wheel interaction with controls
         from toolset.gui.common.filters import NoScrollEventFilter
+
         self._no_scroll_filter = NoScrollEventFilter(self)
         self._no_scroll_filter.setup_filter(parent_widget=self)
 
@@ -91,6 +96,7 @@ class TrackPropertiesDialog(QDialog):
             # Validate inputs
             model = self.ui.modelInput.text().strip()
             from toolset.gui.common.localization import translate as tr, trf
+
             if not model:
                 QMessageBox.warning(self, tr("Invalid Input"), tr("Model name cannot be empty."))
                 return
@@ -101,6 +107,7 @@ class TrackPropertiesDialog(QDialog):
             super().accept()
         except Exception as e:
             from toolset.gui.common.localization import translate as tr, trf
+
             QMessageBox.critical(self, tr("Error"), trf("Failed to update track properties: {error}", error=str(e)))
 
 
@@ -109,26 +116,28 @@ class ObstaclePropertiesDialog(QDialog):
         super().__init__(parent)
         self.obstacle = obstacle
         from toolset.gui.common.localization import translate as tr
-        
+
         # Load UI from .ui file
         from toolset.uic.qtpy.dialogs.obstacle_properties import Ui_Dialog
+
         self.ui = Ui_Dialog()
         self.ui.setupUi(self)
-        
+
         self.setWindowTitle(tr("Obstacle Properties"))
-        
+
         # Set initial values
         self.ui.modelInput.setText(self.obstacle.model)
         self.ui.xSpin.setValue(self.obstacle.position.x)
         self.ui.ySpin.setValue(self.obstacle.position.y)
         self.ui.zSpin.setValue(self.obstacle.position.z)
-        
+
         # Connect buttons (connections are already set up in .ui file, but we can also do it here for clarity)
-        self.ui.okButton.clicked.connect(self.accept)
-        self.ui.cancelButton.clicked.connect(self.reject)
-        
+        self.ui.okButton.clicked.connect(lambda: self.accept())
+        self.ui.cancelButton.clicked.connect(lambda: self.reject())
+
         # Setup event filter to prevent scroll wheel interaction with controls
         from toolset.gui.common.filters import NoScrollEventFilter
+
         self._no_scroll_filter = NoScrollEventFilter(self)
         self._no_scroll_filter.setup_filter(parent_widget=self)
 
@@ -137,6 +146,7 @@ class ObstaclePropertiesDialog(QDialog):
             # Validate inputs
             model = self.ui.modelInput.text().strip()
             from toolset.gui.common.localization import translate as tr, trf
+
             if not model:
                 QMessageBox.warning(self, tr("Invalid Input"), tr("Model name cannot be empty."))
                 return
@@ -147,6 +157,7 @@ class ObstaclePropertiesDialog(QDialog):
             super().accept()
         except Exception as e:
             from toolset.gui.common.localization import translate as tr, trf
+
             QMessageBox.critical(self, tr("Error"), trf("Failed to update obstacle properties: {error}", error=str(e)))
 
 
@@ -155,27 +166,29 @@ class DoorHookPropertiesDialog(QDialog):
         super().__init__(parent)
         self.doorhook: LYTDoorHook = doorhook
         from toolset.gui.common.localization import translate as tr
-        
+
         # Load UI from .ui file
         from toolset.uic.qtpy.dialogs.door_hook_properties import Ui_Dialog
+
         self.ui = Ui_Dialog()
         self.ui.setupUi(self)
-        
+
         self.setWindowTitle(tr("Door Hook Properties"))
-        
+
         # Set initial values
         self.ui.roomInput.setText(self.doorhook.room)
         self.ui.doorInput.setText(self.doorhook.door)
         self.ui.xSpin.setValue(self.doorhook.position.x)
         self.ui.ySpin.setValue(self.doorhook.position.y)
         self.ui.zSpin.setValue(self.doorhook.position.z)
-        
+
         # Connect buttons (connections are already set up in .ui file, but we can also do it here for clarity)
-        self.ui.okButton.clicked.connect(self.accept)
-        self.ui.cancelButton.clicked.connect(self.reject)
-        
+        self.ui.okButton.clicked.connect(lambda: self.accept())
+        self.ui.cancelButton.clicked.connect(lambda: self.reject())
+
         # Setup event filter to prevent scroll wheel interaction with controls
         from toolset.gui.common.filters import NoScrollEventFilter
+
         self._no_scroll_filter = NoScrollEventFilter(self)
         self._no_scroll_filter.setup_filter(parent_widget=self)
 
@@ -183,6 +196,7 @@ class DoorHookPropertiesDialog(QDialog):
         try:
             # Validate inputs
             from toolset.gui.common.localization import translate as tr, trf
+
             room = self.ui.roomInput.text().strip()
             door = self.ui.doorInput.text().strip()
             if not room or not door:
@@ -196,6 +210,7 @@ class DoorHookPropertiesDialog(QDialog):
             super().accept()
         except Exception as e:
             from toolset.gui.common.localization import translate as tr, trf
+
             QMessageBox.critical(self, tr("Error"), trf("Failed to update door hook properties: {error}", error=str(e)))
 
 
@@ -205,9 +220,10 @@ class AddRoomDialog(QDialog):
     def __init__(self, parent=None):
         super().__init__(parent)
         self._setup_ui()
-        
+
         # Setup event filter to prevent scroll wheel interaction with controls
         from toolset.gui.common.filters import NoScrollEventFilter
+
         self._no_scroll_filter = NoScrollEventFilter(self)
         self._no_scroll_filter.setup_filter(parent_widget=self)
 
@@ -215,12 +231,12 @@ class AddRoomDialog(QDialog):
         """Initialize the UI."""
         from toolset.gui.common.localization import translate as tr
         from toolset.uic.qtpy.dialogs.add_room import Ui_Dialog
-        
+
         self.ui = Ui_Dialog()
         self.ui.setupUi(self)
-        
+
         self.setWindowTitle(tr("Add Room"))
-        
+
         # Connect buttons
         self.ui.buttonBox.accepted.connect(self.accept)
         self.ui.buttonBox.rejected.connect(self.reject)
@@ -232,9 +248,10 @@ class AddDoorHookDialog(QDialog):
     def __init__(self, parent=None):
         super().__init__(parent)
         self._setup_ui()
-        
+
         # Setup event filter to prevent scroll wheel interaction with controls
         from toolset.gui.common.filters import NoScrollEventFilter
+
         self._no_scroll_filter = NoScrollEventFilter(self)
         self._no_scroll_filter.setup_filter(parent_widget=self)
 
@@ -242,12 +259,12 @@ class AddDoorHookDialog(QDialog):
         """Initialize the UI."""
         from toolset.gui.common.localization import translate as tr
         from toolset.uic.qtpy.dialogs.add_door_hook import Ui_Dialog
-        
+
         self.ui = Ui_Dialog()
         self.ui.setupUi(self)
-        
+
         self.setWindowTitle(tr("Add Door Hook"))
-        
+
         # Connect buttons
-        self.ui.okButton.clicked.connect(self.accept)
-        self.ui.cancelButton.clicked.connect(self.reject)
+        self.ui.okButton.clicked.connect(lambda: self.accept())
+        self.ui.cancelButton.clicked.connect(lambda: self.reject())

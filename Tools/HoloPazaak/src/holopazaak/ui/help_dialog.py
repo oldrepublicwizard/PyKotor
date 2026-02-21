@@ -10,20 +10,20 @@ class HelpDialog(QDialog):
         self.setWindowTitle("How to Play HoloPazaak")
         self.resize(500, 600)
         self.setup_ui()
-        
+
     def setup_ui(self):
         layout = QVBoxLayout(self)
-        
+
         scroll = QScrollArea()
         scroll.setWidgetResizable(True)
         content = QWidget()
         content_layout = QVBoxLayout(content)
-        
+
         title = QLabel("HoloPazaak Rules")
         title.setAlignment(Qt.AlignCenter)
         title.setStyleSheet("font-size: 24px; font-weight: bold; margin-bottom: 10px;")
         content_layout.addWidget(title)
-        
+
         rules = """
         <h2>Objective</h2>
         <p>The goal is to have the sum of your cards be as close to 20 as possible without exceeding it.</p>
@@ -59,17 +59,16 @@ class HelpDialog(QDialog):
             <li><b>1-4:</b> Play Hand Card</li>
         </ul>
         """
-        
+
         lbl_rules = QLabel(rules)
         lbl_rules.setWordWrap(True)
         lbl_rules.setTextFormat(Qt.RichText)
         content_layout.addWidget(lbl_rules)
-        
+
         content_layout.addStretch()
         scroll.setWidget(content)
         layout.addWidget(scroll)
-        
+
         btn_close = QPushButton("Close")
         btn_close.clicked.connect(self.accept)
         layout.addWidget(btn_close)
-

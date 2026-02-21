@@ -21,15 +21,15 @@ from qtpy.QtWidgets import QMessageBox
 
 def _clean_json_trailing_commas(json_str: str) -> str:
     """Remove trailing commas from JSON strings to make parsing more robust.
-    
+
     This function handles trailing commas in JSON arrays and objects,
     which are not allowed by the standard JSON parser but are common
     in hand-edited JSON files.
-    
+
     Args:
     ----
         json_str: The JSON string that may contain trailing commas
-        
+
     Returns:
     -------
         A cleaned JSON string without trailing commas
@@ -37,7 +37,7 @@ def _clean_json_trailing_commas(json_str: str) -> str:
     # Remove trailing commas before closing brackets/braces
     # This regex matches: comma, optional whitespace, closing bracket/brace
     # Pattern: ,\s*([}\]])
-    cleaned = re.sub(r',\s*([}\]])', r'\1', json_str)
+    cleaned = re.sub(r",\s*([}\]])", r"\1", json_str)
     return cleaned
 
 
@@ -46,11 +46,7 @@ def fetch_update_info(
     timeout: int = 15,
 ) -> dict[str, Any]:
     if requests is None:
-        raise ImportError(
-            "The 'requests' module is not installed. "
-            "Please install it to enable update checking functionality. "
-            "You can install it with: pip install requests"
-        )
+        raise ImportError("The 'requests' module is not installed. Please install it to enable update checking functionality. You can install it with: pip install requests")
     req = requests.get(
         update_link,
         timeout=timeout,
@@ -67,7 +63,7 @@ def get_remote_toolset_update_info(
 ) -> Exception | dict[str, Any]:
     # Import here to avoid circular import (config.py imports from this module)
     from toolset.config.config_info import LOCAL_PROGRAM_INFO  # noqa: PLC0415
-    
+
     if use_beta_channel:
         update_info_link: str = LOCAL_PROGRAM_INFO["updateBetaInfoLink"]
     else:
@@ -112,7 +108,12 @@ def get_remote_toolset_update_info(
         result = silent or QMessageBox.question(
             None,
             "Error occurred fetching update information.",
-            ("An error occurred while fetching the latest toolset information.<br><br>" + err_msg.replace("\n", "<br>") + "<br><br>" + "Would you like to check against the local database instead?"),  # noqa: E501
+            (
+                "An error occurred while fetching the latest toolset information.<br><br>"
+                + err_msg.replace("\n", "<br>")
+                + "<br><br>"
+                + "Would you like to check against the local database instead?"
+            ),  # noqa: E501
             QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
             QMessageBox.StandardButton.Yes,
         )

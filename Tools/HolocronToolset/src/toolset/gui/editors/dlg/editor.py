@@ -22,19 +22,15 @@ from qtpy.QtWidgets import (
     QDialog,
     QDockWidget,
     QDoubleSpinBox,
-    QHBoxLayout,
     QLabel,
     QLineEdit,
     QListWidgetItem,
     QMenu,
     QMessageBox,
     QPlainTextEdit,
-    QPushButton,
     QSizePolicy,
     QSpinBox,
     QStyle,
-    QTextEdit,
-    QVBoxLayout,
     QWhatsThis,
     QWidget,
 )
@@ -253,7 +249,7 @@ class DLGEditor(Editor):
         dialog.setFixedWidth(fixed_width)
 
         ui.textEdit.setHtml("<ul>" + "".join(f"<li>{tip}</li>" for tip in self.tips) + "</ul>")
-        ui.closeButton.clicked.connect(dialog.accept)
+        ui.closeButton.clicked.connect(lambda: dialog.accept())
 
         dialog.exec()
 
@@ -2831,3 +2827,10 @@ Should return 1 or 0, representing a boolean.
                 anim_item = QListWidgetItem(text)
                 anim_item.setData(Qt.ItemDataRole.UserRole, anim)
                 self.ui.animsList.addItem(anim_item)  # pyright: ignore[reportArgumentType, reportCallIssue]
+
+if __name__ == "__main__":
+    import sys
+
+    from toolset.gui.editors.standalone import launch_editor_cli
+
+    sys.exit(launch_editor_cli("dlg"))

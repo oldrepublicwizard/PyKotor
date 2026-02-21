@@ -46,21 +46,19 @@ class ERFSortFilterProxyModel(QSortFilterProxyModel):
 
         return left_data < right_data
 
+
 def create_model(init_colleciton) -> QStandardItemModel:
     model = QStandardItemModel()
     model.setHorizontalHeaderLabels(["Name", "Resource Type", "Size"])
     for resref, restype, data in init_colleciton:
         res = ERFResource(ResRef(resref), restype, data)
-        row = [
-            QStandardItem(resref),
-            QStandardItem(res.restype.extension.upper()),
-            QStandardItem(human_readable_size(len(data)))
-        ]
+        row = [QStandardItem(resref), QStandardItem(res.restype.extension.upper()), QStandardItem(human_readable_size(len(data)))]
         row[0].setData(res)
         row[1].setData(res)
         row[2].setData(res)
         model.appendRow(row)
     return model
+
 
 def verify_sorting(proxy: ERFSortFilterProxyModel, expected_order):
     actual_order = [proxy.index(row, 0).data() for row in range(proxy.rowCount())]

@@ -14,7 +14,7 @@ def setup_pre_init_settings():
     """Setup pre-initialization settings for HoloPazaak.
 
     Call main_init() to get here.
-    
+
     Currently, no pre-init settings are required for HoloPazaak.
     This function exists for future extensibility and to maintain
     consistency with the initialization pattern.
@@ -54,4 +54,3 @@ def setup_holopazaak_default_env():
     else:
         os.environ["QT_DEBUG_PLUGINS"] = os.environ.get("QT_DEBUG_PLUGINS", "1")
         os.environ["QT_LOGGING_RULES"] = os.environ.get("QT_LOGGING_RULES", "qt5ct.debug=true")
-

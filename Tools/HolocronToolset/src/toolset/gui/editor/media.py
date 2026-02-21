@@ -24,15 +24,15 @@ if TYPE_CHECKING:
 
 def _detect_audio_extension(data: bytes) -> str:
     """Detect audio format from file magic bytes.
-    
+
     Returns appropriate file extension for media player compatibility.
-    
+
     References:
         vendor/KotOR.js/src/audio/AudioFile.ts:9-16 - Magic byte constants
     """
     if len(data) < 4:
         return ".wav"
-    
+
     # Check for MP3 signatures
     # ID3 header (ID3v2 tags at start of MP3)
     if data[:3] == b"ID3":
@@ -43,11 +43,11 @@ def _detect_audio_extension(data: bytes) -> str:
     # LAME header
     if data[:4] == b"LAME":
         return ".mp3"
-    
+
     # Check for RIFF/WAVE
     if data[:4] == b"RIFF":
         return ".wav"
-    
+
     # Default to wav
     return ".wav"
 
@@ -81,7 +81,7 @@ class EditorMedia:
             # Detect audio format for proper file extension
             # Reference: vendor/KotOR.js/src/audio/AudioFile.ts:348-354
             suffix = _detect_audio_extension(data)
-            
+
             temp_file: tempfile._TemporaryFileWrapper[bytes] = tempfile.NamedTemporaryFile(delete=False, suffix=suffix)  # noqa: SIM115
             temp_file.write(data)  # pyright: ignore[reportArgumentType, reportCallIssue]
             temp_file.flush()

@@ -612,3 +612,10 @@ class LoaderWorker(QThread):
 
     def run(self):
         self.load_data()
+
+if __name__ == "__main__":
+    import sys
+
+    from toolset.gui.editors.standalone import launch_editor_cli
+
+    sys.exit(launch_editor_cli("tlk"))

@@ -2679,7 +2679,9 @@ def test_utc_editor_reference_search_context_menu_tag_field(qtbot: QtBot, instal
     editor.new()
 
     # Check that tag field has tooltip indicating reference search
-    assert "right-click to find references" in editor.ui.tagEdit.toolTip().lower(), f"TagEdit tooltip should contain 'Right-click to find references', but got '{editor.ui.tagEdit.toolTip()}'"
+    assert "right-click to find references" in editor.ui.tagEdit.toolTip().lower(), (
+        f"TagEdit tooltip should contain 'Right-click to find references', but got '{editor.ui.tagEdit.toolTip()}'"
+    )
 
 
 def test_utc_editor_reference_search_context_menu_conversation_field(qtbot: QtBot, installation: HTInstallation):
@@ -2689,7 +2691,9 @@ def test_utc_editor_reference_search_context_menu_conversation_field(qtbot: QtBo
     editor.new()
 
     # Check that conversation field has tooltip indicating reference search
-    assert "right-click to find references" in editor.ui.conversationEdit.toolTip().lower(), f"ConversationEdit tooltip should contain 'Right-click to find references', but got '{editor.ui.conversationEdit.toolTip()}'"
+    assert "right-click to find references" in editor.ui.conversationEdit.toolTip().lower(), (
+        f"ConversationEdit tooltip should contain 'Right-click to find references', but got '{editor.ui.conversationEdit.toolTip()}'"
+    )
 
 
 def test_reference_finder_find_script_references(qtbot: QtBot, installation: HTInstallation):

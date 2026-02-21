@@ -213,7 +213,7 @@ def test_select_deselect_reselect_exact_cells(qtbot: QtBot):
     view.resize(800, 600)
     view.show()
     qtbot.waitExposed(view)
-    
+
     # Ensure all cells are visible by resizing columns and rows
     view.resizeColumnsToContents()
     view.resizeRowsToContents()

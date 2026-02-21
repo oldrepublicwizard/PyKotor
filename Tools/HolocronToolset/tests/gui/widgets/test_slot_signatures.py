@@ -134,6 +134,7 @@ class TestTextureListSlots:
 
     def test_queue_load_visible_icons_via_timer(self, texture_list, qtbot):
         """Test queue_load_visible_icons works when called via QTimer.singleShot."""
+
         # This should not raise TypeError
         def check_called():
             # Verify the method was called
@@ -192,6 +193,7 @@ class TestTextureListSlots:
     def test_on_icon_loaded_with_future(self, texture_list, qtbot):
         """Test on_icon_loaded accepts Future from signal."""
         from concurrent.futures import Future
+
         future = Future()
         future.set_result((("test", 0), None))
         texture_list.on_icon_loaded(future)
@@ -385,6 +387,7 @@ class TestToolWindowSlots:
     def test_handle_search_completed_with_list_installation(self, tool_window, qtbot):
         """Test handle_search_completed accepts list, HTInstallation from signal."""
         from toolset.data.installation import HTInstallation
+
         mock_inst = MagicMock(spec=HTInstallation)
         tool_window.handle_search_completed([], mock_inst)
 

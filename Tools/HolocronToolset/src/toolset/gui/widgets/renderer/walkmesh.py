@@ -614,7 +614,7 @@ class WalkmeshRenderer(QWidget):
         # - `vendor/swkotor.c:L194248-L194331` initializes the area map from ARE "Map" struct fields.
         # - `vendor/xoreos/src/engines/kotor/gui/ingame/minimap.cpp:L51-L77` maps world -> minimap coords
         #   based on NorthAxis and the ARE map/world points.
-        # 
+        #
         # MATHEMATICAL DERIVATION:
         # xoreos' Minimap::setPosition converts world -> normalized minimap coordinates:
         #   mapPos.x = (world.x - worldPoint1.x) * scaleX + mapPoint1.x
@@ -711,7 +711,7 @@ class WalkmeshRenderer(QWidget):
             edge_color.setAlpha(120)
         else:
             edge_color = QColor(10, 10, 10, 120)
-        
+
         pen: QPen = (
             QPen(Qt.PenStyle.NoPen)
             if self.hide_walkmesh_edges
@@ -731,15 +731,16 @@ class WalkmeshRenderer(QWidget):
         if app is not None and isinstance(app, QApplication):
             palette = app.palette()
             from toolset.gui.common.palette_helpers import get_semantic_colors
+
             colors = get_semantic_colors()
-            highlight_color = QColor(colors.get('warning', '#ffc800'))
-            edge_highlight_color = QColor(colors.get('warning', '#ffff00'))
-            boundary_color = QColor(colors.get('error', '#ff0000'))
+            highlight_color = QColor(colors.get("warning", "#ffc800"))
+            edge_highlight_color = QColor(colors.get("warning", "#ffff00"))
+            boundary_color = QColor(colors.get("error", "#ff0000"))
         else:
             highlight_color = QColor(255, 200, 0)
             edge_highlight_color = QColor(255, 255, 0)
             boundary_color = QColor(255, 0, 0)
-        
+
         # Highlight a specific face/edge if requested
         if self._highlighted_face is not None:
             painter.setBrush(Qt.BrushStyle.NoBrush)
@@ -793,7 +794,7 @@ class WalkmeshRenderer(QWidget):
 
                 # Get bounding box of walkmesh (already in world space)
                 bbmin, bbmax = walkmesh.box()
-                
+
                 # Draw room boundary - just draw the bounding rectangle for the room dimensions
                 # Walkmeshes are already in world space, no need to transform by room.position
                 app = QApplication.instance()
@@ -805,7 +806,7 @@ class WalkmeshRenderer(QWidget):
                     room_boundary_color = QColor(100, 150, 255, 200)
                 painter.setPen(QPen(room_boundary_color, 2 / self.camera.zoom(), Qt.PenStyle.SolidLine))
                 painter.setBrush(Qt.BrushStyle.NoBrush)
-                
+
                 # Draw rectangle representing the room's dimensions
                 room_rect = QRectF(bbmin.x, bbmin.y, bbmax.x - bbmin.x, bbmax.y - bbmin.y)
                 painter.drawRect(room_rect)
@@ -818,16 +819,16 @@ class WalkmeshRenderer(QWidget):
                 # For bottom-right corner: max X, min Y
                 text_x_world = bbmax.x
                 text_y_world = bbmin.y
-                
+
                 # Use painter's transform to convert world coordinates to screen coordinates
                 # The painter transform already accounts for camera position, rotation, zoom, and Y flip
                 text_world_point = QPointF(text_x_world, text_y_world)
                 text_screen_point = painter.transform().map(text_world_point)
-                
+
                 # Reset transform temporarily for text rendering (text should be screen-space)
                 painter.save()
                 painter.resetTransform()
-                
+
                 # Set up text rendering with palette colors
                 app = QApplication.instance()
                 if app is not None and isinstance(app, QApplication):
@@ -840,24 +841,23 @@ class WalkmeshRenderer(QWidget):
                     bg_color = QColor(0, 0, 0, 180)
                 painter.setPen(QPen(text_color, 1))
                 painter.setBrush(bg_color)
-                
+
                 # Get text metrics to position it properly (bottom right)
                 font = painter.font()
                 font.setPointSize(10)
                 painter.setFont(font)
                 text_rect = painter.fontMetrics().boundingRect(room_name)
-                
+
                 # Position text at bottom right (adjust for text size)
                 # text_screen_point.y is screen Y (increases downward after Y flip in transform)
                 # For bottom right, we want: x = right edge - text width, y = bottom edge - text height
                 text_x_screen_pos = text_screen_point.x() - text_rect.width() - 5
                 text_y_screen_pos = text_screen_point.y() - text_rect.height() - 5
-                
+
                 # Draw background rectangle
-                bg_rect = QRectF(text_x_screen_pos - 2, text_y_screen_pos - text_rect.height() - 2, 
-                                text_rect.width() + 4, text_rect.height() + 4)
+                bg_rect = QRectF(text_x_screen_pos - 2, text_y_screen_pos - text_rect.height() - 2, text_rect.width() + 4, text_rect.height() + 4)
                 painter.drawRect(bg_rect)
-                
+
                 # Draw text
                 painter.drawText(int(text_x_screen_pos), int(text_y_screen_pos), room_name)
                 painter.restore()
@@ -870,17 +870,18 @@ class WalkmeshRenderer(QWidget):
             if app is not None and isinstance(app, QApplication):
                 palette = app.palette()
                 from toolset.gui.common.palette_helpers import get_semantic_colors
+
                 colors = get_semantic_colors()
                 path_edge_color = palette.color(QPalette.ColorRole.Mid)
                 path_node_color = palette.color(QPalette.ColorRole.Mid)
                 path_hover_color = palette.color(QPalette.ColorRole.Base)
-                path_selected_color = QColor(colors.get('success', '#00ff00'))
+                path_selected_color = QColor(colors.get("success", "#00ff00"))
             else:
                 path_edge_color = QColor(200, 200, 200, 255)
                 path_node_color = QColor(200, 200, 200, 255)
                 path_hover_color = QColor(255, 255, 255, 255)
                 path_selected_color = QColor(0, 255, 0, 255)
-            
+
             for i, source in enumerate(self._pth):
                 painter.setPen(QPen(path_edge_color, self._path_edge_width, Qt.PenStyle.SolidLine))
                 for j in self._pth.outgoing(i):
@@ -963,7 +964,7 @@ class WalkmeshRenderer(QWidget):
                 else:
                     spawn_color = QColor(180, 200, 255, 180)
                     spawn_arrow_color = QColor(180, 200, 255, 200)
-                
+
                 painter.setOpacity(0.8)
                 painter.setPen(Qt.PenStyle.NoPen)
                 for encounter in self._git.encounters:
@@ -984,24 +985,25 @@ class WalkmeshRenderer(QWidget):
         if app is not None and isinstance(app, QApplication):
             palette = app.palette()
             from toolset.gui.common.palette_helpers import get_semantic_colors
+
             colors = get_semantic_colors()
             hover_bg = palette.color(QPalette.ColorRole.Base)
             hover_bg.setAlpha(35)
-            hover_highlight = QColor(colors.get('success', '#00dc00'))
+            hover_highlight = QColor(colors.get("success", "#00dc00"))
             hover_highlight.setAlpha(50)
-            hover_highlight_pen = QColor(colors.get('success', '#00ff00'))
+            hover_highlight_pen = QColor(colors.get("success", "#00ff00"))
             hover_highlight_pen.setAlpha(75)
             selected_bg = palette.color(QPalette.ColorRole.Base)
             selected_bg.setAlpha(70)
             selected_pen = palette.color(QPalette.ColorRole.WindowText)
-            selected_highlight = QColor(colors.get('success', '#00dc00'))
+            selected_highlight = QColor(colors.get("success", "#00dc00"))
             selected_highlight.setAlpha(100)
-            selected_highlight_pen = QColor(colors.get('success', '#00ff00'))
+            selected_highlight_pen = QColor(colors.get("success", "#00ff00"))
             selected_highlight_pen.setAlpha(150)
             point_color = palette.color(QPalette.ColorRole.Base)
             point_color.setAlpha(200)
             point_selected = palette.color(QPalette.ColorRole.WindowText)
-            success_color = QColor(colors.get('success', '#00ff00'))
+            success_color = QColor(colors.get("success", "#00ff00"))
         else:
             hover_bg = QColor(255, 255, 255, 35)
             hover_highlight = QColor(0, 220, 0, 50)
@@ -1013,7 +1015,7 @@ class WalkmeshRenderer(QWidget):
             point_color = QColor(255, 255, 255, 200)
             point_selected = QColor(255, 255, 255, 255)
             success_color = QColor(0, 255, 0, 255)
-        
+
         # Highlight the first instance that is underneath the mouse
         if self._instances_under_mouse:
             instance: GITInstance = self._instances_under_mouse[0]

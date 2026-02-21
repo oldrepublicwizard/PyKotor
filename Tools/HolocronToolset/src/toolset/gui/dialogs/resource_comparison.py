@@ -27,17 +27,20 @@ class ResourceComparisonDialog(QDialog):
     ):
         super().__init__(parent)
         from toolset.gui.common.localization import trf
+
         self.setWindowTitle(trf("Compare: {name}.{ext}", name=resource1.resname(), ext=resource1.restype().extension))
 
         self.resource1 = resource1
         self.resource2 = resource2
 
         from toolset.uic.qtpy.dialogs.resource_comparison import Ui_Dialog
+
         self.ui = Ui_Dialog()
         self.ui.setupUi(self)
 
         # Update localized labels
         from toolset.gui.common.localization import translate as tr
+
         self.ui.leftLabel.setText(tr("<b>Left:</b>"))
         self.ui.rightLabel.setText(tr("<b>Right:</b>"))
         self.ui.closeButton.setText(tr("Close"))
@@ -57,13 +60,14 @@ class ResourceComparisonDialog(QDialog):
             right_hscroll.valueChanged.connect(left_hscroll.setValue)
 
         # Connect button
-        self.ui.closeButton.clicked.connect(self.accept)
-        
+        self.ui.closeButton.clicked.connect(lambda: self.accept())
+
         # Setup event filter to prevent scroll wheel interaction with controls
         from toolset.gui.common.filters import NoScrollEventFilter
+
         self._no_scroll_filter = NoScrollEventFilter(self)
         self._no_scroll_filter.setup_filter(parent_widget=self)
-        
+
         self._load_resources()
 
     def _load_resources(self):
@@ -74,6 +78,7 @@ class ResourceComparisonDialog(QDialog):
             self.ui.rightPathLabel.setText(str(self.resource2.filepath()))
         else:
             from toolset.gui.common.localization import translate as tr
+
             self.ui.rightPathLabel.setText(tr("[Not selected]"))
 
         # Load left resource

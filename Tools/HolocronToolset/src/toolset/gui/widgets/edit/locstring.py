@@ -38,6 +38,7 @@ class LocalizedStringLineEdit(QWidget):
         super().__init__(parent)
 
         from toolset.uic.qtpy.widgets.locstring_edit import Ui_Form
+
         self.ui = Ui_Form()
         self.ui.setupUi(self)
 
@@ -46,6 +47,7 @@ class LocalizedStringLineEdit(QWidget):
         self.ui.editButton.clicked.connect(self.edit_locstring)
         self.ui.locstringText.mouseDoubleClickEvent = lambda a0: self.edit_locstring()  # noqa: ARG005  # pyright: ignore[reportAttributeAccessIssue]
         from toolset.gui.common.localization import translate as tr
+
         self.setToolTip(tr("Double-click to edit this Localized String.<br><br><i>Right-click for more options</i>"))
 
     def set_installation(self, installation: HTInstallation):
@@ -54,6 +56,7 @@ class LocalizedStringLineEdit(QWidget):
     def on_context_menu(self, pos: QPoint):
         menu: QMenu = self.ui.locstringText.createStandardContextMenu()
         from toolset.gui.common.localization import translate as tr
+
         menu.addAction(tr("Edit with TLK")).triggered.connect(self.edit_locstring)
         menu.addAction(tr("Copy")).triggered.connect(self.copy_text)
         menu.exec(self.ui.locstringText.mapToGlobal(pos))
@@ -87,6 +90,7 @@ class LocalizedStringLineEdit(QWidget):
 
     def locstring(self) -> LocalizedString:
         return self._locstring
+
 
 if __name__ == "__main__":
     import os

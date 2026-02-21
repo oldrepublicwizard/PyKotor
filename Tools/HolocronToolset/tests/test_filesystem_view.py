@@ -108,7 +108,7 @@ class TestFilesystemViewComprehensive:
 
         model = ResourceFileSystemModel()
         model.setRootPath(installation.path())
-        
+
         root_path = model.rootPath()
         assert root_path is not None
         assert root_path.exists()
@@ -122,7 +122,7 @@ class TestFilesystemViewComprehensive:
         parent = QWidget()
         widget = ResourceFileSystemWidget(parent)
         qtbot.addWidget(parent)
-        
+
         assert widget is not None
         assert widget.fs_model is not None
         assert widget.fsTreeView is not None
@@ -135,10 +135,10 @@ class TestFilesystemViewComprehensive:
         parent = QWidget()
         widget = ResourceFileSystemWidget(parent)
         qtbot.addWidget(parent)
-        
+
         widget.setRootPath(installation.path())
         QApplication.processEvents()  # Wait for async operations
-        
+
         assert widget.fs_model.rootPath() == installation.path()
 
     def test_archive_as_folder_bif(self, qt_api: str, qtbot: QtBot, installation: HTInstallation):
@@ -150,10 +150,10 @@ class TestFilesystemViewComprehensive:
         parent = QWidget()
         widget = ResourceFileSystemWidget(parent)
         qtbot.addWidget(parent)
-        
+
         widget.setRootPath(installation.path())
         QApplication.processEvents()  # Wait for initial load
-        
+
         # Find a BIF file in the installation
         chitin_path = installation.path() / "chitin.key"
         if chitin_path.exists():
@@ -165,7 +165,7 @@ class TestFilesystemViewComprehensive:
                 # Try to expand and see if BIF files appear as expandable
                 widget.fsTreeView.expand(root_index)
                 QApplication.processEvents()
-                
+
                 # Check if any child items are BIF files
                 row_count = model.rowCount(root_index)
                 for row in range(row_count):
@@ -187,17 +187,17 @@ class TestFilesystemViewComprehensive:
         parent = QWidget()
         widget = ResourceFileSystemWidget(parent)
         qtbot.addWidget(parent)
-        
+
         # Set root to modules directory where ERF files are
         widget.setRootPath(installation.module_path())
         QApplication.processEvents()
-        
+
         model = widget.fs_model
         root_index = model.index(0, 0)
         if root_index.isValid():
             widget.fsTreeView.expand(root_index)
             QApplication.processEvents()
-            
+
             row_count = model.rowCount(root_index)
             for row in range(row_count):
                 child_index = model.index(row, 0, root_index)
@@ -218,16 +218,16 @@ class TestFilesystemViewComprehensive:
         parent = QWidget()
         widget = ResourceFileSystemWidget(parent)
         qtbot.addWidget(parent)
-        
+
         widget.setRootPath(installation.module_path())
         QApplication.processEvents()
-        
+
         model = widget.fs_model
         root_index = model.index(0, 0)
         if root_index.isValid():
             widget.fsTreeView.expand(root_index)
             QApplication.processEvents()
-            
+
             row_count = model.rowCount(root_index)
             for row in range(row_count):
                 child_index = model.index(row, 0, root_index)
@@ -247,28 +247,28 @@ class TestFilesystemViewComprehensive:
         parent = QWidget()
         widget = ResourceFileSystemWidget(parent)
         qtbot.addWidget(parent)
-        
+
         widget.setRootPath(installation.path())
         QApplication.processEvents()
-        
+
         model = widget.fs_model
         root_index = model.index(0, 0)
-        
+
         if root_index.isValid():
             initial_row_count = model.rowCount(root_index)
-            
+
             # Expand
             widget.fsTreeView.expand(root_index)
             QApplication.processEvents()
-            
+
             # Should have more rows after expansion
             expanded_row_count = model.rowCount(root_index)
             assert expanded_row_count >= initial_row_count
-            
+
             # Collapse
             widget.fsTreeView.collapse(root_index)
             QApplication.processEvents()
-            
+
             # Row count should remain the same (children are not removed)
             collapsed_row_count = model.rowCount(root_index)
             assert collapsed_row_count == expanded_row_count
@@ -282,17 +282,17 @@ class TestFilesystemViewComprehensive:
         parent = QWidget()
         widget = ResourceFileSystemWidget(parent)
         qtbot.addWidget(parent)
-        
+
         widget.setRootPath(installation.module_path())
         QApplication.processEvents()
-        
+
         model = widget.fs_model
         root_index = model.index(0, 0)
-        
+
         if root_index.isValid():
             widget.fsTreeView.expand(root_index)
             QApplication.processEvents()
-            
+
             # Find an archive file
             row_count = model.rowCount(root_index)
             archive_index = None
@@ -303,18 +303,18 @@ class TestFilesystemViewComprehensive:
                     if item is not None and is_capsule_file(item.path):
                         archive_index = child_index
                         break
-            
+
             if archive_index is not None:
                 initial_row_count = model.rowCount(archive_index)
-                
+
                 # Expand archive
                 widget.fsTreeView.expand(archive_index)
                 QApplication.processEvents()  # Archives may take longer to load
-                
+
                 # Should have children after expansion
                 expanded_row_count = model.rowCount(archive_index)
                 assert expanded_row_count > initial_row_count or model.canFetchMore(archive_index)
-                
+
                 # Collapse
                 widget.fsTreeView.collapse(archive_index)
                 QApplication.processEvents()
@@ -328,22 +328,22 @@ class TestFilesystemViewComprehensive:
         parent = QWidget()
         widget = ResourceFileSystemWidget(parent)
         qtbot.addWidget(parent)
-        
+
         widget.setRootPath(installation.path())
         QApplication.processEvents()
-        
+
         model = widget.fs_model
         root_index = model.index(0, 0)
-        
+
         if root_index.isValid():
             # Test display role
             display_data = model.data(root_index, Qt.ItemDataRole.DisplayRole)
             assert display_data is not None
-            
+
             # Test decoration role
             decoration_data = model.data(root_index, Qt.ItemDataRole.DecorationRole)
             # Decoration may be None for some items
-            
+
             # Test header data
             header_data = model.headerData(0, Qt.Orientation.Horizontal, Qt.ItemDataRole.DisplayRole)
             assert header_data is not None
@@ -357,17 +357,17 @@ class TestFilesystemViewComprehensive:
         parent = QWidget()
         widget = ResourceFileSystemWidget(parent)
         qtbot.addWidget(parent)
-        
+
         widget.setRootPath(installation.path())
         QApplication.processEvents()
-        
+
         model = widget.fs_model
         root_index = model.index(0, 0)
-        
+
         if root_index.isValid():
             widget.fsTreeView.expand(root_index)
             QApplication.processEvents()
-            
+
             row_count = model.rowCount(root_index)
             if row_count > 1:
                 # Get initial order
@@ -378,11 +378,11 @@ class TestFilesystemViewComprehensive:
                         name = model.data(idx, Qt.ItemDataRole.DisplayRole)
                         if name:
                             initial_names.append(str(name))
-                
+
                 # Sort ascending
                 model.sort(0, Qt.SortOrder.AscendingOrder)
                 QApplication.processEvents()
-                
+
                 # Get sorted order
                 sorted_names = []
                 for row in range(row_count):
@@ -391,7 +391,7 @@ class TestFilesystemViewComprehensive:
                         name = model.data(idx, Qt.ItemDataRole.DisplayRole)
                         if name:
                             sorted_names.append(str(name))
-                
+
                 # Verify sorting
                 assert sorted_names == sorted(initial_names) or len(sorted_names) == len(initial_names)
 
@@ -404,16 +404,16 @@ class TestFilesystemViewComprehensive:
         parent = QWidget()
         widget = ResourceFileSystemWidget(parent)
         qtbot.addWidget(parent)
-        
+
         widget.setRootPath(installation.path())
         QApplication.processEvents()
-        
+
         model = widget.fs_model
-        
+
         # Test setting filter
         model.setFilter(QDir.Filter.Files | QDir.Filter.Dirs)
         QApplication.processEvents()
-        
+
         filter_value = model.filter()
         assert filter_value is not None
 
@@ -428,20 +428,20 @@ class TestFilesystemViewComprehensive:
         qtbot.addWidget(parent)
         parent.show()
         qtbot.waitForWindowShown(parent)
-        
+
         widget.setRootPath(installation.path())
         QApplication.processEvents()
-        
+
         # Get a valid index
         model = widget.fs_model
         root_index = model.index(0, 0)
-        
+
         if root_index.isValid():
             # Get viewport coordinates
             viewport = widget.fsTreeView.viewport()
             rect = widget.fsTreeView.visualRect(root_index)
             point = QPoint(rect.center().x(), rect.center().y())
-            
+
             # Trigger context menu
             widget.fsTreeView.customContextMenuRequested.emit(point)
             QApplication.processEvents()
@@ -456,13 +456,13 @@ class TestFilesystemViewComprehensive:
         qtbot.addWidget(parent)
         parent.show()
         qtbot.waitForWindowShown(parent)
-        
+
         widget.setRootPath(installation.path())
         QApplication.processEvents()
-        
+
         model = widget.fs_model
         root_index = model.index(0, 0)
-        
+
         if root_index.isValid():
             # Double-click should expand/collapse or open
             widget.fsTreeView.doubleClicked.emit(root_index)
@@ -476,13 +476,13 @@ class TestFilesystemViewComprehensive:
         parent = QWidget()
         widget = ResourceFileSystemWidget(parent)
         qtbot.addWidget(parent)
-        
+
         widget.setRootPath(installation.path())
         QApplication.processEvents()
-        
+
         model = widget.fs_model
         root_index = model.index(0, 0)
-        
+
         if root_index.isValid():
             # Rapid expand/collapse cycles
             for _ in range(10):
@@ -490,7 +490,7 @@ class TestFilesystemViewComprehensive:
                 QApplication.processEvents()
                 widget.fsTreeView.collapse(root_index)
                 QApplication.processEvents()
-            
+
             # Model should still be stable
             assert model.rootPath() is not None
 
@@ -502,19 +502,19 @@ class TestFilesystemViewComprehensive:
         parent = QWidget()
         widget = ResourceFileSystemWidget(parent)
         qtbot.addWidget(parent)
-        
+
         # Rapidly change paths
         paths = [
             installation.path(),
             installation.module_path(),
             installation.override_path(),
         ]
-        
+
         for path in paths * 3:  # Cycle through paths 3 times
             if path.exists():
                 widget.setRootPath(path)
                 QApplication.processEvents()
-        
+
         # Widget should still be functional
         assert widget.fs_model is not None
 
@@ -527,17 +527,17 @@ class TestFilesystemViewComprehensive:
         parent = QWidget()
         widget = ResourceFileSystemWidget(parent)
         qtbot.addWidget(parent)
-        
+
         widget.setRootPath(installation.module_path())
         QApplication.processEvents()
-        
+
         model = widget.fs_model
         root_index = model.index(0, 0)
-        
+
         if root_index.isValid():
             widget.fsTreeView.expand(root_index)
             QApplication.processEvents()
-            
+
             # Find an archive
             row_count = model.rowCount(root_index)
             for row in range(row_count):
@@ -548,7 +548,7 @@ class TestFilesystemViewComprehensive:
                         # Expand the archive
                         widget.fsTreeView.expand(archive_index)
                         QApplication.processEvents()
-                        
+
                         # Check if it has children (which might be nested archives)
                         child_count = model.rowCount(archive_index)
                         if child_count > 0:
@@ -572,22 +572,20 @@ class TestFilesystemViewComprehensive:
         parent = QWidget()
         widget = ResourceFileSystemWidget(parent)
         qtbot.addWidget(parent)
-        
+
         widget.setRootPath(installation.path())
         QApplication.processEvents()
-        
+
         model = widget.fs_model
-        
+
         # Reset the model
         model.reloadModelData()
         QApplication.processEvents()
-        
+
         # Model should still have root path
         assert model.rootPath() is not None
 
-    def test_view_switching_legacy_to_filesystem(
-        self, qt_api: str, qtbot: QtBot, installation: HTInstallation
-    ):
+    def test_view_switching_legacy_to_filesystem(self, qt_api: str, qtbot: QtBot, installation: HTInstallation):
         """Test switching from legacy view to filesystem view."""
         from qtpy.QtWidgets import QApplication
         from toolset.gui.windows.main import ToolWindow
@@ -595,32 +593,30 @@ class TestFilesystemViewComprehensive:
         app = QApplication.instance()
         if app is None:
             app = QApplication([])
-        
+
         window = ToolWindow()
         qtbot.addWidget(window)
-        
+
         # Set installation
         from qtpy.QtCore import QModelIndex
 
         window.change_active_installation(QModelIndex(), QModelIndex())
         QApplication.processEvents()  # Wait for installation to load
-        
+
         # Initially should be filesystem view (default)
         assert not window._use_legacy_layout
-        
+
         # Switch to legacy
         window._on_legacy_layout_toggled(True)
         QApplication.processEvents()
         assert window._use_legacy_layout
-        
+
         # Switch back to filesystem
         window._on_legacy_layout_toggled(False)
         QApplication.processEvents()
         assert not window._use_legacy_layout
 
-    def test_view_switching_filesystem_to_legacy(
-        self, qt_api: str, qtbot: QtBot, installation: HTInstallation
-    ):
+    def test_view_switching_filesystem_to_legacy(self, qt_api: str, qtbot: QtBot, installation: HTInstallation):
         """Test switching from filesystem view to legacy view."""
         from qtpy.QtWidgets import QApplication
         from toolset.gui.windows.main import ToolWindow
@@ -628,25 +624,25 @@ class TestFilesystemViewComprehensive:
         app = QApplication.instance()
         if app is None:
             app = QApplication([])
-        
+
         window = ToolWindow()
         qtbot.addWidget(window)
-        
+
         # Set installation
         from qtpy.QtCore import QModelIndex
 
         window.change_active_installation(QModelIndex(), QModelIndex())
         QApplication.processEvents()
-        
+
         # Should start in filesystem view
         assert not window._use_legacy_layout
-        
+
         # Switch to legacy
         if hasattr(window.ui, "actionLegacyLayout"):
             window.ui.actionLegacyLayout.setChecked(True)
             window._on_legacy_layout_toggled(True)
             QApplication.processEvents()
-            
+
             # Legacy widgets should be visible
             assert window.ui.coreWidget.isVisible()
             assert window.ui.modulesWidget.isVisible()
@@ -654,29 +650,27 @@ class TestFilesystemViewComprehensive:
             assert window.ui.savesWidget.isVisible()
 
     @pytest.mark.parametrize("installation_type", ["k1", "k2"])
-    def test_installation_types(
-        self, qt_api: str, qtbot: QtBot, installation_type: str, installation: HTInstallation, tsl_installation: HTInstallation
-    ):
+    def test_installation_types(self, qt_api: str, qtbot: QtBot, installation_type: str, installation: HTInstallation, tsl_installation: HTInstallation):
         """Test with both K1 and K2 installations."""
         from qtpy.QtWidgets import QWidget
         from toolset.gui.widgets.kotor_filesystem_model import ResourceFileSystemWidget
 
         inst = installation if installation_type == "k1" else tsl_installation
-        
+
         parent = QWidget()
         widget = ResourceFileSystemWidget(parent)
         qtbot.addWidget(parent)
-        
+
         widget.setRootPath(inst.path())
         QApplication.processEvents()
-        
+
         assert widget.fs_model.rootPath() == inst.path()
-        
+
         # Test modules path
         widget.setRootPath(inst.module_path())
         QApplication.processEvents()
         assert widget.fs_model.rootPath() == inst.module_path()
-        
+
         # Test override path
         widget.setRootPath(inst.override_path())
         QApplication.processEvents()
@@ -690,21 +684,21 @@ class TestFilesystemViewComprehensive:
         parent = QWidget()
         widget = ResourceFileSystemWidget(parent)
         qtbot.addWidget(parent)
-        
+
         widget.setRootPath(installation.path())
         QApplication.processEvents()
-        
+
         model = widget.fs_model
-        
+
         # Toggle detailed view
         initial_column_count = model.columnCount()
         model.toggle_detailed_view()
         QApplication.processEvents()
-        
+
         # Column count should change
         new_column_count = model.columnCount()
         assert new_column_count != initial_column_count or new_column_count > 0
-        
+
         # Toggle back
         model.toggle_detailed_view()
         QApplication.processEvents()
@@ -718,20 +712,20 @@ class TestFilesystemViewComprehensive:
         parent = QWidget()
         widget = ResourceFileSystemWidget(parent)
         qtbot.addWidget(parent)
-        
+
         widget.setRootPath(installation.path())
         QApplication.processEvents()
-        
+
         # Test address bar update
         widget.updateAddressBar()
         assert widget.address_bar.text() == str(installation.path())
-        
+
         # Test navigation via address bar
         new_path = installation.module_path()
         widget.address_bar.setText(str(new_path))
         widget.onAddressBarReturnPressed()
         QApplication.processEvents()
-        
+
         assert widget.fs_model.rootPath() == new_path
 
     def test_refresh_functionality(self, qt_api: str, qtbot: QtBot, installation: HTInstallation):
@@ -742,14 +736,14 @@ class TestFilesystemViewComprehensive:
         parent = QWidget()
         widget = ResourceFileSystemWidget(parent)
         qtbot.addWidget(parent)
-        
+
         widget.setRootPath(installation.path())
         QApplication.processEvents()
-        
+
         # Refresh
         widget.onRefreshButtonClicked()
         QApplication.processEvents()
-        
+
         # Model should still be functional
         assert widget.fs_model.rootPath() is not None
 
@@ -763,14 +757,14 @@ class TestFilesystemViewComprehensive:
         qtbot.addWidget(parent)
         parent.show()
         qtbot.waitForWindowShown(parent)
-        
+
         widget.setRootPath(installation.path())
         QApplication.processEvents()
-        
+
         # Resize columns
         widget.resize_all_columns()
         QApplication.processEvents()
-        
+
         # Header should still be functional
         header = widget.fsTreeView.header()
         assert header is not None

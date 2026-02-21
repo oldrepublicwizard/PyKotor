@@ -33,6 +33,7 @@ class LTREditor(Editor):
         self.resize(800, 600)
 
         from toolset.uic.qtpy.editors.ltr import Ui_MainWindow
+
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self)
         self.ui.tableSingles.setSortingEnabled(True)
@@ -46,12 +47,13 @@ class LTREditor(Editor):
         self.ltr = LTR()
 
         self.populateComboBoxes()
-        
+
         # Setup event filter to prevent scroll wheel interaction with controls
         from toolset.gui.common.filters import NoScrollEventFilter
+
         self._no_scroll_filter = NoScrollEventFilter(self)
         self._no_scroll_filter.setup_filter(parent_widget=self)
-        
+
         self.new()
 
     def _setup_signals(self):
@@ -91,8 +93,8 @@ class LTREditor(Editor):
     def updateUIFromLTR(self):
         char_set = LTR.CHARACTER_SET
         self.ui.tableSingles.setRowCount(len(char_set))
-        self.ui.tableDoubles.setRowCount(len(char_set)**2)
-        self.ui.tableTriples.setRowCount(len(char_set)**2 * len(char_set))
+        self.ui.tableDoubles.setRowCount(len(char_set) ** 2)
+        self.ui.tableTriples.setRowCount(len(char_set) ** 2 * len(char_set))
 
         for i, char in enumerate(char_set):
             self.ui.tableSingles.setItem(i, 0, QTableWidgetItem(char))
@@ -288,3 +290,10 @@ class LTREditor(Editor):
         self.ltr = LTR()
         self.ui.lineEditGeneratedName.setText("")
         self.updateUIFromLTR()
+
+if __name__ == "__main__":
+    import sys
+
+    from toolset.gui.editors.standalone import launch_editor_cli
+
+    sys.exit(launch_editor_cli("ltr"))

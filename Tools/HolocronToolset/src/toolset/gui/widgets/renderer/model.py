@@ -73,7 +73,7 @@ class ModelRenderer(QOpenGLWidget):
     @property
     def installation(self) -> Installation | None:
         return self._installation
-    
+
     @installation.setter
     def installation(self, value: Installation | None):
         self._installation = value
@@ -154,11 +154,8 @@ class ModelRenderer(QOpenGLWidget):
         # 1. texture_lookup_info count increased (new textures have lookup info stored)
         # 2. OR pending count decreased (async loads completed)
         # DO NOT emit just because requested count increased - that means textures are still loading!
-        textures_finished_loading = (
-            current_texture_count > self._last_texture_count or 
-            (current_pending_count < previous_pending_count and previous_pending_count > 0)
-        )
-        
+        textures_finished_loading = current_texture_count > self._last_texture_count or (current_pending_count < previous_pending_count and previous_pending_count > 0)
+
         if textures_finished_loading:
             self._last_texture_count = current_texture_count
             self._last_pending_texture_count = current_pending_count

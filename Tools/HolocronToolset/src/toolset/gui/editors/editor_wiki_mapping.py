@@ -1,4 +1,5 @@
 """Mapping of editors to their wiki documentation files."""
+
 from __future__ import annotations
 
 # Editor class name -> wiki markdown filename
@@ -38,4 +39,3 @@ EDITOR_WIKI_MAP: dict[str, str | None] = {
     "SaveGameEditor": "GFF-File-Format.md",  # Save game uses general GFF format doc
     "MetadataEditor": "GFF-File-Format.md",  # Metadata uses general GFF format doc
 }
-

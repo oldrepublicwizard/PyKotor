@@ -70,13 +70,19 @@ def read_pyproject_toml(tool_path: Path) -> dict[str, Any]:
         return tomllib.load(f)
 
 
-def discover_tool_metadata(tool_path: Path, src_dir: Path, os_name: str) -> dict[str, Any]:
+def discover_tool_metadata(
+    tool_path: Path,
+    src_dir: Path,
+    os_name: str,
+    script_name: str | None = None,
+) -> dict[str, Any]:
     """Discover tool metadata from filesystem and pyproject.toml."""
     pyproject = read_pyproject_toml(tool_path)
 
     metadata: dict[str, Any] = {
         "name": None,
         "entrypoint": None,
+        "selected_script": None,
         "console": None,
         "windowed": None,
         "icon": None,
@@ -95,13 +101,19 @@ def discover_tool_metadata(tool_path: Path, src_dir: Path, os_name: str) -> dict
     if "project" in pyproject and "scripts" in pyproject["project"]:
         scripts = pyproject["project"]["scripts"]
         if scripts:
-            # Use first script as entrypoint
-            script_name = list(scripts.keys())[0]
-            script_path = scripts[script_name]
+            selected_script = script_name or list(scripts.keys())[0]
+            if script_name and script_name not in scripts:
+                available = ", ".join(sorted(scripts.keys()))
+                raise SystemExit(
+                    f"Script '{script_name}' not found in [project.scripts]. "
+                    f"Available scripts: {available}"
+                )
+            script_path = scripts[selected_script]
             # Convert 'toolset.__main__:main' to 'toolset/__main__.py'
             if ":" in script_path:
                 module_path = script_path.split(":")[0]
                 metadata["entrypoint"] = module_path.replace(".", "/") + ".py"
+            metadata["selected_script"] = selected_script
 
     # Fallback: search for __main__.py in src directory
     if not metadata["entrypoint"]:
@@ -355,6 +367,7 @@ Example pyproject.toml:
     parser.add_argument("--python-exe", default=default_python, help="Python executable")
     parser.add_argument("--name", help="Override output binary name (from pyproject.toml or directory name)")
     parser.add_argument("--entrypoint", help="Override entry point, relative to src dir (e.g., toolset/__main__.py)")
+    parser.add_argument("--script-name", help="Select script key from [project.scripts] for entrypoint discovery")
     parser.add_argument("--icon", help="Override icon path")
     parser.add_argument("--console", action="store_true", help="Force console mode")
     parser.add_argument("--windowed", action="store_true", help="Force windowed mode")
@@ -406,8 +419,9 @@ Example pyproject.toml:
     # Discover tool metadata from pyproject.toml
     print(f"Building tool from: {tool_path}")
     print("Reading configuration from pyproject.toml...")
-    metadata = discover_tool_metadata(tool_path, src_dir, os_name)
+    metadata = discover_tool_metadata(tool_path, src_dir, os_name, script_name=args.script_name)
     print(f"  Tool name: {metadata.get('name') or tool_path.name}")
+    print(f"  Selected script: {metadata.get('selected_script') or args.script_name or 'first project.scripts entry'}")
     print(f"  Entry point: {metadata.get('entrypoint') or 'auto-detect'}")
     print(f"  Requires Qt: {metadata.get('requires_qt')}")
     print(f"  Console: {metadata.get('console')}")

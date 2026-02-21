@@ -16,6 +16,7 @@ from toolset.utils.script_utils import NoOpRegistrySpoofer, handle_permission_er
 
 log = RobustLogger()
 
+
 def ht_decompile_script(
     compiled_bytes: bytes,
     installation_path: Path,

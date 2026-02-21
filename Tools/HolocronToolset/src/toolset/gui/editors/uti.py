@@ -86,20 +86,20 @@ class UTIEditor(Editor):
         self.ui.iconLabel.setContextMenuPolicy(Qt.ContextMenuPolicy.CustomContextMenu)  # pyright: ignore[reportArgumentType]
         self.ui.iconLabel.customContextMenuRequested.connect(self._icon_label_context_menu)
 
-        # Setup reference search for Tag field
+        # Setup reference search for Tag field (append to .ui tooltip)
         if installation is not None:
             installation.setup_file_context_menu(self.ui.tagEdit, [], enable_reference_search=True, reference_search_type="tag")
-            self.ui.tagEdit.setToolTip(tr("Right-click to find references to this tag in the installation."))
+            self.ui.tagEdit.setToolTip(self.ui.tagEdit.toolTip() + " " + tr("Right-click to find references to this tag in the installation."))
             # Setup reference search for TemplateResRef field
             installation.setup_file_context_menu(self.ui.resrefEdit, [], enable_reference_search=True, reference_search_type="template_resref")
-            self.ui.resrefEdit.setToolTip(tr("Right-click to find references to this template resref in the installation."))
+            self.ui.resrefEdit.setToolTip(self.ui.resrefEdit.toolTip() + " " + tr("Right-click to find references to this template resref in the installation."))
 
         self.new()
 
     def _setup_signals(self):
         """Set up signal connections for UI elements."""
         self.ui.tagGenerateButton.clicked.connect(self.generate_tag)
-        self.ui.tagGenerateButton.setToolTip(tr("Reset this custom tag so it matches the resref"))
+        # Tooltip from .ui; optional: append " Right-click..." if needed
         self.ui.resrefGenerateButton.clicked.connect(self.generate_resref)
         self.ui.editPropertyButton.clicked.connect(self.edit_selected_property)
         self.ui.removePropertyButton.clicked.connect(self.remove_selected_property)
@@ -168,12 +168,14 @@ class UTIEditor(Editor):
         restype: ResourceType,
         data: bytes | bytearray,
     ):
+        """Load resource and populate UI from UTI. Defaults from construct_uti (K1 LoadDataFromGff 0x0055fcd0, LoadItem 0x00560970; TSL TODO)."""
         super().load(filepath, resref, restype, data)
 
         uti = read_uti(data)
         self._loadUTI(uti)
 
     def _loadUTI(self, uti: UTI):
+        """Loads UTI data into UI. Defaults from construct_uti; K1 LoadDataFromGff 0x0055fcd0, LoadItem 0x00560970; TSL same (addresses TODO)."""
         self._uti: UTI = uti
 
         # Basic
@@ -204,6 +206,7 @@ class UTIEditor(Editor):
         self.ui.commentsEdit.setPlainText(uti.comment)
 
     def build(self) -> tuple[bytes, bytes]:
+        """Builds UTI from UI. Populates from UI then dismantle_uti (K1 LoadDataFromGff 0x0055fcd0, LoadItem 0x00560970; TSL TODO). Returns GFF bytes and log."""
         uti: UTI = deepcopy(self._uti)
 
         # Basic
@@ -408,7 +411,7 @@ class UTIEditor(Editor):
         assert file_menu is not None
         locations: dict[ResourceIdentifier, list[LocationResult]] = self._installation.locations(
             ([icon_path], [ResourceType.TGA, ResourceType.TPC]),
-            order=[SearchLocation.OVERRIDE, SearchLocation.TEXTURES_GUI, SearchLocation.TEXTURES_TPA, SearchLocation.TEXTURES_TPB, SearchLocation.TEXTURES_TPC],
+            order=[SearchLocation.OVERRIDE, SearchLocation.TEXTURES_GUI, SearchLocation.TEXTURES_TPA, SearchLocation.TEXTURES_TPB, SearchLocation.TEXTURES_TPC, SearchLocation.CHITIN],
         )
         flat_locations: list[LocationResult] = [item for sublist in locations.values() for item in sublist]
         if flat_locations:
@@ -714,3 +717,10 @@ class PropertyEditor(QDialog):
         if self.ui.upgradeSelect.currentIndex() == 0:
             self._uti_property.upgrade_type = None
         return self._uti_property
+
+if __name__ == "__main__":
+    import sys
+
+    from toolset.gui.editors.standalone import launch_editor_cli
+
+    sys.exit(launch_editor_cli("uti"))

@@ -66,9 +66,10 @@ class HelpWindow(QMainWindow):
         self._setup_signals()
         self.help_content.setup_contents()
         self.starting_page: str | None = startingPage
-        
+
         # Setup event filter to prevent scroll wheel interaction with controls
         from toolset.gui.common.filters import NoScrollEventFilter
+
         self._no_scroll_filter = NoScrollEventFilter(self)
         self._no_scroll_filter.setup_filter(parent_widget=self)
 
@@ -99,7 +100,7 @@ class HelpWindow(QMainWindow):
             palette = QPalette()
         else:
             palette = app.palette()
-        
+
         # Get palette colors
         text_color_obj = palette.color(QPalette.ColorRole.Text)
         base_color_obj = palette.color(QPalette.ColorRole.Base)
@@ -110,17 +111,17 @@ class HelpWindow(QMainWindow):
         shadow_color_obj = palette.color(QPalette.ColorRole.Shadow)
         link_color_obj = palette.color(QPalette.ColorRole.Link)
         bright_text_obj = palette.color(QPalette.ColorRole.BrightText)
-        
+
         # Ensure we have valid colors
         if not text_color_obj.isValid() or text_color_obj == base_color_obj:
             text_color_obj = window_text_obj
         if not base_color_obj.isValid():
             base_color_obj = window_color_obj
-        
+
         # Convert to hex strings
         def color_to_hex(color: QColor) -> str:
             return f"#{color.red():02x}{color.green():02x}{color.blue():02x}"
-        
+
         text_color = color_to_hex(text_color_obj)
         base_color = color_to_hex(base_color_obj)
         alternate_base = color_to_hex(alternate_base_obj)
@@ -128,7 +129,7 @@ class HelpWindow(QMainWindow):
         shadow_color = color_to_hex(shadow_color_obj)
         link_color = color_to_hex(link_color_obj)
         bright_text = color_to_hex(bright_text_obj)
-        
+
         # Create variants for code backgrounds and table headers
         if alternate_base_obj != base_color_obj:
             code_bg = alternate_base
@@ -140,18 +141,18 @@ class HelpWindow(QMainWindow):
             table_header_bg_obj = QColor(base_color_obj)
             table_header_bg_obj = table_header_bg_obj.darker(105)
             table_header_bg = color_to_hex(table_header_bg_obj)
-        
+
         # Hover color
         hover_bg_obj = QColor(base_color_obj)
         hover_bg_obj = hover_bg_obj.darker(102)
         hover_bg = color_to_hex(hover_bg_obj)
-        
+
         # Code text color
         if bright_text_obj != text_color_obj:
             code_text = bright_text
         else:
             code_text = link_color
-        
+
         # Wrap with styled HTML
         return f"""<!DOCTYPE html>
 <html>
@@ -307,11 +308,12 @@ class HelpWindow(QMainWindow):
                 filepath = Path(filepath)
         else:
             filepath = Path(filepath)
-        
+
         try:
             text: str = decode_bytes_with_fallbacks(filepath.read_bytes())
             if filepath.suffix.lower() == ".md":
                 from toolset.gui.common.palette_helpers import wrap_html_with_palette_styles
+
                 html_body: str = markdown.markdown(text, extensions=["tables", "fenced_code", "codehilite"])
                 html: str = wrap_html_with_palette_styles(html_body, self)
             else:
@@ -319,6 +321,7 @@ class HelpWindow(QMainWindow):
             self.ui.textDisplay.setHtml(html)
         except OSError as e:
             from toolset.gui.common.localization import translate as tr, trf
+
             QMessageBox(
                 QMessageBox.Icon.Critical,
                 tr("Failed to open help file"),

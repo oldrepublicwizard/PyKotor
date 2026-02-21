@@ -21,11 +21,11 @@ Features:
 Usage:
     # Run as module
     python -m holopazaak
-    
+
     # Or import and use programmatically
     from holopazaak import PazaakGame, Player, AIPlayer
     from holopazaak.data import get_opponent
-    
+
     player = Player("Hero")
     opponent = AIPlayer(get_opponent("hk47"))
     game = PazaakGame(player, opponent)
@@ -34,6 +34,7 @@ Usage:
 Version: 1.0.0
 License: LGPL-2.1-only
 """
+
 from __future__ import annotations
 
 __version__ = "1.0.0"
@@ -70,4 +71,3 @@ __all__ = [
     "get_opponent",
     "OPPONENTS",
 ]
-

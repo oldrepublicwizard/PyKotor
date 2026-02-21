@@ -81,7 +81,9 @@ class ModuleRenderer(QOpenGLWidget):
     sig_scene_initialized = QtCore.Signal()  # pyright: ignore[reportPrivateImportUsage]
     """Signal emitted when scene has been initialized."""
 
-    sig_mouse_moved = QtCore.Signal(object, object, object, object, object)  # screen coords, screen delta, world/mouse pos, mouse, keys  # pyright: ignore[reportPrivateImportUsage]  # noqa: E501
+    sig_mouse_moved = QtCore.Signal(
+        object, object, object, object, object
+    )  # screen coords, screen delta, world/mouse pos, mouse, keys  # pyright: ignore[reportPrivateImportUsage]  # noqa: E501
     """Signal emitted when mouse is moved over the widget."""
 
     sig_mouse_scrolled = QtCore.Signal(object, object, object)  # screen delta, mouse, keys  # pyright: ignore[reportPrivateImportUsage]
@@ -153,6 +155,7 @@ class ModuleRenderer(QOpenGLWidget):
 
     def show_scene_not_ready_message(self):
         from toolset.gui.common.localization import translate as tr
+
         QMessageBox.warning(self, tr("Scene Not Ready"), tr("The scene is not ready yet."))
 
     def isReady(self) -> bool:
@@ -192,21 +195,22 @@ class ModuleRenderer(QOpenGLWidget):
                     self.makeCurrent()
                     # Force initializeGL call if it hasn't been called yet (headless mode workaround)
                     # Qt should call it automatically, but in headless mode we may need to ensure it
-                    if hasattr(self, '_gl_initialized') and not self._gl_initialized:
+                    if hasattr(self, "_gl_initialized") and not self._gl_initialized:
                         self.initializeGL()
                         self._gl_initialized = True
                     break  # Context is ready
                 except Exception:
                     pass  # Context exists but not ready yet
-            
+
             # Process events to allow Qt to call initializeGL
             QApplication.processEvents()
             QApplication.processEvents()  # Process twice to ensure events are handled
-            
+
             if attempt < max_attempts - 1:
                 from time import sleep
+
                 sleep(0.01)  # Small delay to allow Qt to initialize
-        
+
         # Final check if a context is available
         ctx = self.context()
         if ctx is None or not ctx.isValid():
@@ -251,19 +255,19 @@ class ModuleRenderer(QOpenGLWidget):
         if self._initializing:
             RobustLogger().debug("Skipping resizeEvent during initialization")
             return
-        
+
         # Ensure OpenGL context is valid and current before Qt tries to resize
         ctx = self.context()
         if ctx is None or not ctx.isValid():
             RobustLogger().warning("OpenGL context not valid in resizeEvent, skipping resize")
             return
-        
+
         try:
             self.makeCurrent()
         except Exception as exc:
             RobustLogger().warning("Failed to make context current in resizeEvent: %s", exc)
             return
-        
+
         super().resizeEvent(e)
 
     def resizeGL(  # pyright: ignore[reportIncompatibleMethodOverride]
@@ -404,12 +408,12 @@ class ModuleRenderer(QOpenGLWidget):
 
     def paintGL(self):
         """Optimized paintGL with lazy cursor updates.
-        
+
         Performance optimizations:
         - Cursor world position only calculated when mouse is within bounds
         - screen_to_world only called when cursor position has changed significantly
         - Selection picking separated from rendering
-        
+
         Reference: Standard game engine practice - minimize expensive per-frame operations
         """
         if not self.loop_timer.isActive():
@@ -420,7 +424,7 @@ class ModuleRenderer(QOpenGLWidget):
         # Ensure OpenGL context is current before any GL calls
         self.makeCurrent()
         super().paintGL()
-        
+
         # Handle object selection (only when requested)
         if self.do_select:
             self.do_select = False
@@ -481,7 +485,7 @@ class ModuleRenderer(QOpenGLWidget):
         # calls into a single paint, which is more efficient.
         # repaint() bypasses the event queue and can cause stuttering.
         self.update()
-        
+
         if self.underMouse() and self.free_cam and len(self._keys_down) > 0:
             self.sig_keyboard_pressed.emit(self._mouse_down, self._keys_down)
 
@@ -632,7 +636,7 @@ class ModuleRenderer(QOpenGLWidget):
         self.sig_mouse_scrolled.emit(Vector2(e.angleDelta().x(), e.angleDelta().y()), self._mouse_down, self._keys_down)
 
     def mouseMoveEvent(self, e: QMouseEvent):  # pyright: ignore[reportIncompatibleMethodOverride]
-        #super().mouseMoveEvent(e)
+        # super().mouseMoveEvent(e)
         if e is None:
             return
         pos: QPoint = e.pos() if qtpy.QT5 else e.position().toPoint()  # type: ignore[attr-defined] # pyright: ignore[reportAttributeAccessIssue]
@@ -662,7 +666,7 @@ class ModuleRenderer(QOpenGLWidget):
         pos: QPoint = e.pos() if qtpy.QT5 else e.position().toPoint()  # type: ignore[attr-defined] # pyright: ignore[reportAttributeAccessIssue]
         coords: Vector2 = Vector2(pos.x(), pos.y())
         self.sig_mouse_pressed.emit(coords, self._mouse_down, self._keys_down)
-        #RobustLogger().debug(f"ModuleRenderer.mousePressEvent: {self._mouse_down}, e.button() '{button}'")
+        # RobustLogger().debug(f"ModuleRenderer.mousePressEvent: {self._mouse_down}, e.button() '{button}'")
 
     def mouseReleaseEvent(self, e: QMouseEvent):  # pyright: ignore[reportIncompatibleMethodOverride]
         super().mouseReleaseEvent(e)
@@ -672,7 +676,7 @@ class ModuleRenderer(QOpenGLWidget):
         pos: QPoint = e.pos() if qtpy.QT5 else e.position().toPoint()  # type: ignore[attr-defined] # pyright: ignore[reportAttributeAccessIssue]
         coords: Vector2 = Vector2(pos.x(), pos.y())
         self.sig_mouse_released.emit(coords, self._mouse_down, self._keys_down)
-        #RobustLogger().debug(f"ModuleRenderer.mouseReleaseEvent: {self._mouse_down}, e.button() '{button}'")
+        # RobustLogger().debug(f"ModuleRenderer.mouseReleaseEvent: {self._mouse_down}, e.button() '{button}'")
 
     def keyPressEvent(  # pyright: ignore[reportIncompatibleMethodOverride]
         self,
@@ -686,8 +690,8 @@ class ModuleRenderer(QOpenGLWidget):
         self._keys_down.add(key)  # pyright: ignore[reportArgumentType]
         if self.underMouse() and not self.free_cam:
             self.sig_keyboard_pressed.emit(self._mouse_down, self._keys_down)
-        #key_name = get_qt_key_string_localized(key)
-        #RobustLogger().debug(f"ModuleRenderer.keyPressEvent: {self._keys_down}, e.key() '{key_name}'")
+        # key_name = get_qt_key_string_localized(key)
+        # RobustLogger().debug(f"ModuleRenderer.keyPressEvent: {self._keys_down}, e.key() '{key_name}'")
 
     def keyReleaseEvent(  # pyright: ignore[reportIncompatibleMethodOverride]
         self,

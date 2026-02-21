@@ -355,3 +355,10 @@ class UTSEditor(Editor):
 
     def closeEvent(self, e: QCloseEvent):
         self.player.stop()
+
+if __name__ == "__main__":
+    import sys
+
+    from toolset.gui.editors.standalone import launch_editor_cli
+
+    sys.exit(launch_editor_cli("uts"))

@@ -64,12 +64,7 @@ def show_extraction_results(
         QMessageBox.Icon.Information,
         title,
         summary,
-        flags=(
-            Qt.WindowType.Dialog
-            | Qt.WindowType.WindowTitleHint
-            | Qt.WindowType.WindowCloseButtonHint
-            | Qt.WindowType.WindowStaysOnTopHint
-        ),
+        flags=(Qt.WindowType.Dialog | Qt.WindowType.WindowTitleHint | Qt.WindowType.WindowCloseButtonHint | Qt.WindowType.WindowStaysOnTopHint),
     )
 
     # Add detailed information

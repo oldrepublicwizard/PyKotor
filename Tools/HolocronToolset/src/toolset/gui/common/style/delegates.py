@@ -103,7 +103,7 @@ class HTMLDelegate(QStyledItemDelegate):
                 palette = app.palette()
             else:
                 palette = QPalette()
-        
+
         background_color = palette.color(QPalette.ColorRole.Base)
         border_color = palette.color(QPalette.ColorRole.Mid)
         text_color = palette.color(QPalette.ColorRole.WindowText)

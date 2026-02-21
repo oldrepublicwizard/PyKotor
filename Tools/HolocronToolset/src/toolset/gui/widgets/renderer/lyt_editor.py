@@ -28,20 +28,12 @@ from qtpy.QtCore import (
 from qtpy.QtGui import QAction, QBrush, QColor, QLinearGradient, QPainter, QPalette, QPen, QRadialGradient, QTransform
 from qtpy.QtWidgets import (
     QApplication,
-    QCheckBox,
     QGraphicsItem,
     QGraphicsRectItem,
-    QHBoxLayout,
-    QLabel,
-    QListWidget,
     QListWidgetItem,
     QMessageBox,
-    QPushButton,
-    QSlider,
-    QSpinBox,
     QToolBar,
     QUndoStack,
-    QVBoxLayout,
     QWidget,
 )
 
@@ -861,10 +853,7 @@ class LYTEditor(QWidget):
         if not self._snap_to_grid:
             return point
 
-        return Vector2(
-            round(point.x / self._grid_size) * self._grid_size,
-            round(point.y / self._grid_size) * self._grid_size
-        )
+        return Vector2(round(point.x / self._grid_size) * self._grid_size, round(point.y / self._grid_size) * self._grid_size)
 
     def get_room_resize_corner(
         self,
@@ -1015,8 +1004,9 @@ class LYTEditor(QWidget):
         app = QApplication.instance()
         if app is not None and isinstance(app, QApplication):
             from toolset.gui.common.palette_helpers import get_semantic_colors
+
             colors = get_semantic_colors()
-            error_color = QColor(colors.get('error', '#ff0000'))
+            error_color = QColor(colors.get("error", "#ff0000"))
             error_color.setAlpha(200)
         else:
             error_color = QColor(255, 0, 0, 200)
@@ -1268,12 +1258,7 @@ class LYTEditor(QWidget):
             # Get room size from extended attributes
             size = room.size if isinstance(room, ExtendedLYTRoom) else Vector3(10, 10, 3)
 
-            rect = QRect(
-                int(position.x * zoom),
-                int(position.y * zoom),
-                int(size.x * zoom),
-                int(size.y * zoom)
-            )
+            rect = QRect(int(position.x * zoom), int(position.y * zoom), int(size.x * zoom), int(size.y * zoom))
 
             # Draw selection highlight if this is the selected room
             if room == self.selected_room:
@@ -1287,41 +1272,29 @@ class LYTEditor(QWidget):
                     (QPoint(rect.center().x(), rect.top()), "n-resize"),
                     (QPoint(rect.center().x(), rect.bottom()), "s-resize"),
                     (QPoint(rect.left(), rect.center().y()), "w-resize"),
-                    (QPoint(rect.right(), rect.center().y()), "e-resize")
+                    (QPoint(rect.right(), rect.center().y()), "e-resize"),
                 ]
 
                 for handle_pos, cursor in handles:
-                    handle_rect = QRect(
-                        handle_pos.x() - handle_size//2,
-                        handle_pos.y() - handle_size//2,
-                        handle_size,
-                        handle_size
-                    )
+                    handle_rect = QRect(handle_pos.x() - handle_size // 2, handle_pos.y() - handle_size // 2, handle_size, handle_size)
                     painter.setPen(QPen(Qt.GlobalColor.yellow))
                     painter.setBrush(QBrush(Qt.GlobalColor.white))
                     painter.drawRect(handle_rect)
 
                 # Draw rotation handle
-                rotation_handle_pos = QPoint(
-                    rect.center().x(),
-                    rect.top() - 20 * zoom
-                )
+                rotation_handle_pos = QPoint(rect.center().x(), rect.top() - 20 * zoom)
                 painter.setPen(QPen(Qt.GlobalColor.blue, 2))
                 painter.drawLine(rect.center(), rotation_handle_pos)
                 painter.setBrush(QBrush(Qt.GlobalColor.blue))
-                painter.drawEllipse(
-                    rotation_handle_pos.x() - handle_size//2,
-                    rotation_handle_pos.y() - handle_size//2,
-                    handle_size,
-                    handle_size
-                )
+                painter.drawEllipse(rotation_handle_pos.x() - handle_size // 2, rotation_handle_pos.y() - handle_size // 2, handle_size, handle_size)
 
                 # Draw selection outline
                 app = QApplication.instance()
                 if app is not None and isinstance(app, QApplication):
                     from toolset.gui.common.palette_helpers import get_semantic_colors
+
                     colors = get_semantic_colors()
-                    selection_color = QColor(colors.get('warning', '#ffff00'))
+                    selection_color = QColor(colors.get("warning", "#ffff00"))
                 else:
                     selection_color = QColor(255, 255, 0)
                 painter.setPen(QPen(selection_color, 2, Qt.PenStyle.DashLine))
@@ -1335,19 +1308,19 @@ class LYTEditor(QWidget):
                 link_color = palette.color(QPalette.ColorRole.Link)
                 mid_color = palette.color(QPalette.ColorRole.Mid)
                 window_text = palette.color(QPalette.ColorRole.WindowText)
-                
+
                 selected_grad_start = QColor(link_color)
                 selected_grad_start.setAlpha(180)
                 selected_grad_end = QColor(link_color)
                 selected_grad_end.setAlpha(180)
                 selected_grad_end = selected_grad_end.darker(110)
-                
+
                 unselected_grad_start = QColor(mid_color)
                 unselected_grad_start.setAlpha(180)
                 unselected_grad_end = QColor(mid_color)
                 unselected_grad_end.setAlpha(180)
                 unselected_grad_end = unselected_grad_end.darker(110)
-                
+
                 selected_pen_color = link_color
                 unselected_pen_color = window_text
             else:
@@ -1357,7 +1330,7 @@ class LYTEditor(QWidget):
                 unselected_grad_end = QColor(200, 200, 200, 180)
                 selected_pen_color = Qt.GlobalColor.blue
                 unselected_pen_color = Qt.GlobalColor.black
-            
+
             gradient = QLinearGradient(rect.topLeft(), rect.bottomRight())
             if room == self.selected_room:
                 gradient.setColorAt(0, selected_grad_start)
@@ -1386,33 +1359,19 @@ class LYTEditor(QWidget):
                 # Draw connection point glow
                 if is_valid:
                     glow_size = 16 * zoom
-                    glow_gradient = QRadialGradient(
-                        point.x() * zoom,
-                        point.y() * zoom,
-                        glow_size
-                    )
+                    glow_gradient = QRadialGradient(point.x() * zoom, point.y() * zoom, glow_size)
                     glow_gradient.setColorAt(0, QColor(0, 255, 0, 100))
                     glow_gradient.setColorAt(1, QColor(0, 255, 0, 0))
                     painter.setBrush(QBrush(glow_gradient))
                     painter.setPen(Qt.PenStyle.NoPen)
-                    painter.drawEllipse(
-                        int((point.x - glow_size/2) * zoom),
-                        int((point.y - glow_size/2) * zoom),
-                        int(glow_size),
-                        int(glow_size)
-                    )
+                    painter.drawEllipse(int((point.x - glow_size / 2) * zoom), int((point.y - glow_size / 2) * zoom), int(glow_size), int(glow_size))
 
                 # Draw connection point
                 point_color = QColor(0, 255, 0) if is_valid else QColor(128, 128, 128)
                 point_size = 8 * zoom
                 painter.setPen(QPen(point_color, 2))
                 painter.setBrush(QBrush(point_color.lighter(120)))
-                painter.drawEllipse(
-                    int((point.x - point_size/2) * zoom),
-                    int((point.y - point_size/2) * zoom),
-                    int(point_size),
-                    int(point_size)
-                )
+                painter.drawEllipse(int((point.x - point_size / 2) * zoom), int((point.y - point_size / 2) * zoom), int(point_size), int(point_size))
 
             # Draw room info with shadow
             app = QApplication.instance()
@@ -1424,7 +1383,7 @@ class LYTEditor(QWidget):
             else:
                 shadow_color = QColor(0, 0, 0, 100)
                 text_color = Qt.GlobalColor.white
-            
+
             text = f"{room.model}\n{int(size.x)}x{int(size.y)}"
             painter.setPen(shadow_color)
             painter.drawText(rect.adjusted(1, 1, 1, 1), Qt.AlignmentFlag.AlignCenter, text)
@@ -1505,10 +1464,7 @@ class LYTEditor(QWidget):
 
     def get_selected_item(self) -> Any:
         """Get the currently selected item."""
-        return (self.selected_room or
-                self.selected_track or
-                self.selected_obstacle or
-                self.selected_door_hook)
+        return self.selected_room or self.selected_track or self.selected_obstacle or self.selected_door_hook
 
     def update_room(
         self,
@@ -1600,7 +1556,7 @@ class LYTEditor(QWidget):
             "select": Qt.CursorShape.ArrowCursor,
             "move": Qt.CursorShape.SizeAllCursor,
             "rotate": Qt.CursorShape.CrossCursor,
-            "scale": Qt.CursorShape.SizeFDiagCursor
+            "scale": Qt.CursorShape.SizeFDiagCursor,
         }
         self.setCursor(cursor_map.get(self.current_tool, Qt.CursorShape.ArrowCursor))
 
@@ -1672,11 +1628,7 @@ class LYTEditor(QWidget):
         mdl = mdl_res.resource()
 
         # Create room with data from MDL/ARE
-        room: LYTRoom = LYTRoom(
-            model=model,
-            position=position or Vector3(0, 0, 0),
-            orientation=Vector4(0, 0, 0, 1)
-        )
+        room: LYTRoom = LYTRoom(model=model, position=position or Vector3(0, 0, 0), orientation=Vector4(0, 0, 0, 1))
         room.id = str(uuid4())  # Add unique ID
 
         # Snap to grid if enabled

@@ -2515,6 +2515,8 @@ class ToolWindow(QMainWindow):
                 SearchLocation.OVERRIDE,
                 SearchLocation.TEXTURES_GUI,
                 SearchLocation.TEXTURES_TPA,
+                SearchLocation.TEXTURES_TPB,
+                SearchLocation.TEXTURES_TPC,
                 SearchLocation.CHITIN,
             ],
         )

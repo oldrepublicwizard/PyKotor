@@ -7,6 +7,7 @@ Repo rule:
 This module exists as a compatibility shim for Toolset code that historically imported
 `toolset.data.indoormap.*`.
 """
+
 from __future__ import annotations
 
 from copy import deepcopy

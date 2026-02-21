@@ -675,6 +675,7 @@ class Editor(QMainWindow):
     def new(self):
         self._revert = b""
         self._is_save_game_resource = False
+        self._resname = f"untitled_{uuid.uuid4().hex[:8]}"
         self._filepath = self.setup_extract_path() / f"{self._resname}.{self._restype.extension}"
         menu_bar: QMenuBar | None = cast("Optional[QMenuBar]", self.menuBar())
         assert menu_bar is not None, "Menu bar is None somehow? This should be impossible."

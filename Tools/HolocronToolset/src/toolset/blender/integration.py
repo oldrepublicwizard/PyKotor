@@ -172,9 +172,9 @@ class BlenderEditorMixin:
         self._blender_controller.on_context_menu_requested(self._on_blender_context_menu_requested)
         self._blender_controller.on_instance_changed(self._on_blender_instance_changed)
         self._blender_controller.on_instance_updated(self._on_blender_instance_updated)
-        
+
         # Register material/texture change handler
-        if hasattr(self._blender_controller, 'on_material_changed'):
+        if hasattr(self._blender_controller, "on_material_changed"):
             self._blender_controller.on_material_changed(self._on_blender_material_changed)
 
         # Start connection attempts
@@ -203,8 +203,7 @@ class BlenderEditorMixin:
             QMessageBox.warning(
                 self,  # type: ignore[arg-type]
                 "Connection Failed",
-                "Failed to connect to Blender IPC server.\n"
-                "Please make sure Blender started correctly and kotorblender is installed.",
+                "Failed to connect to Blender IPC server.\nPlease make sure Blender started correctly and kotorblender is installed.",
             )
             self.stop_blender_mode()
             self._on_blender_connection_failed()
@@ -424,9 +423,9 @@ class BlenderEditorMixin:
 
     def _on_blender_material_changed(self, payload: dict):
         """Handle material/texture changes from Blender.
-        
+
         Override this to update textures/models in the toolset.
-        
+
         Args:
             payload: Event payload containing:
                 - object_name: Blender object name
@@ -488,7 +487,6 @@ def check_blender_and_ask(
     #     return True, info
     # else:
     #     return False, None
-    
+
     # Temporarily always return False to use built-in editor
     return False, None
-

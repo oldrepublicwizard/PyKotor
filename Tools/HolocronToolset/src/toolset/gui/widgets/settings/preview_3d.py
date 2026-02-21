@@ -12,6 +12,7 @@ if TYPE_CHECKING:
 
 class ModelRendererSettings(Settings):
     sig_settings_edited: QtCore.Signal = QtCore.Signal()  # pyright: ignore[reportPrivateImportUsage]
+
     def __init__(self):
         super().__init__("ModelRenderer")
 

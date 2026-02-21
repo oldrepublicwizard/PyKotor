@@ -36,6 +36,7 @@ class TextureBrowser(QWidget):
 
         # Get references to UI widgets
         from toolset.gui.common.localization import translate as tr
+
         self.ui.importButton.setText(tr("Import Texture"))
         self.ui.importButton.clicked.connect(self.import_texture_dialog)
 

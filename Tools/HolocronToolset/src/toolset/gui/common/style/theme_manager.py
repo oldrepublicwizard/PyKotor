@@ -49,7 +49,7 @@ class ThemeManager:
     def get_available_themes(cls) -> tuple[str, ...]:
         """List all available themes including QSS files, VS Code JSON themes, and hardcoded themes."""
         themes: list[str] = []
-        
+
         # Get themes from QSS files in resources
         it = QDirIterator(QDir(":/themes"), QDirIterator.IteratorFlag.Subdirectories)
         while True:
@@ -59,14 +59,14 @@ class ThemeManager:
             theme_name = os.path.splitext(os.path.basename(file))[0].lower()  # noqa: PTH122, PTH119
             if theme_name and theme_name not in themes:
                 themes.append(theme_name)
-        
+
         # Get VS Code themes from extra_themes folder
         current_file = Path(__file__).resolve()
         extra_themes_paths = [
             current_file.parent.parent.parent.parent.parent / "resources" / "extra_themes",
             current_file.parent.parent.parent.parent / "resources" / "extra_themes",
         ]
-        
+
         for extra_themes_path in extra_themes_paths:
             if extra_themes_path.exists() and extra_themes_path.is_dir():
                 try:
@@ -81,7 +81,7 @@ class ThemeManager:
                 except Exception:
                     continue
                 break
-        
+
         # Add all hardcoded themes from _build_builtin_theme_configs
         # Create a temporary instance to access the method
         temp_manager = cls()
@@ -89,9 +89,8 @@ class ThemeManager:
         for theme_key in builtin_configs:
             if theme_key and theme_key.lower() not in [t.lower() for t in themes]:
                 themes.append(theme_key)
-        
-        return tuple(sorted(themes))
 
+        return tuple(sorted(themes))
 
     @staticmethod
     def get_default_styles() -> tuple[str, ...]:
@@ -118,30 +117,30 @@ class ThemeManager:
         """Parse a hex color string (supports formats like #RRGGBB, #RRGGBBAA, or just hex values)."""
         if not color_str or not isinstance(color_str, str):
             return QColor()
-        
+
         # Remove any alpha suffix if present (Qt will handle alpha separately)
         color_str = color_str.strip()
-        
+
         # Handle alpha channel if present (e.g., "#RRGGBBAA" -> "#RRGGBB")
         if len(color_str) == 9 and color_str.startswith("#"):
             color_str = color_str[:7]
-        
+
         # Handle shorthand hex (e.g., "#RGB" -> "#RRGGBB")
         if len(color_str) == 4 and color_str.startswith("#"):
             r, g, b = color_str[1], color_str[2], color_str[3]
             color_str = f"#{r}{r}{g}{g}{b}{b}"
-        
+
         try:
             return QColor(color_str)
         except Exception:
             return QColor()
-    
+
     def _create_palette_from_vscode_colors(
         self,
         colors: dict[str, str],
     ) -> QPalette:
         """Create a Qt palette from VS Code theme colors with proper contrast.
-        
+
         Maps VS Code color keys to Qt palette roles:
         - editor.background / sideBar.background -> Window (secondary)
         - input.background / dropdown.background -> Base/Button (primary)
@@ -150,6 +149,7 @@ class ThemeManager:
         - button.background -> Button
         - etc.
         """
+
         # Extract key colors from VS Code theme with fallbacks
         def get_color(key: str, fallback: str | None = None) -> QColor:
             color_str = colors.get(key)
@@ -161,37 +161,39 @@ class ThemeManager:
             if parsed.isValid():
                 return parsed
             return QColor()
-        
+
         # Primary background (for buttons, inputs, bases) - prefer input/dropdown over editor
         primary_bg = get_color("input.background") or get_color("dropdown.background") or get_color("button.background") or get_color("editor.background", "#2D2D2D")
         if not primary_bg.isValid():
             primary_bg = QColor(45, 45, 45)
-        
+
         # Secondary background (for windows, sidebars) - prefer sidebar/activity bar
         secondary_bg = get_color("sideBar.background") or get_color("activityBar.background") or get_color("editor.background", "#1E1E1E")
         if not secondary_bg.isValid():
             secondary_bg = QColor(30, 30, 30)
-        
+
         # Text color - prefer foreground over editor.foreground
         text_color = get_color("foreground") or get_color("editor.foreground") or get_color("input.foreground", "#FFFFFF")
         if not text_color.isValid():
             text_color = QColor(255, 255, 255)
-        
+
         # Tooltip base - use editor hover widget or similar
         tooltip_base = get_color("editorHoverWidget.background") or get_color("editorWidget.background") or get_color("dropdown.background")
         if not tooltip_base.isValid() or tooltip_base.alpha() < 200:
             tooltip_base = QColor(secondary_bg)
-        
+
         # Highlight color - prefer selection/highlight colors
-        highlight = get_color("editor.selectionBackground") or get_color("list.activeSelectionBackground") or get_color("focusBorder") or get_color("button.background", "#0078D4")
+        highlight = (
+            get_color("editor.selectionBackground") or get_color("list.activeSelectionBackground") or get_color("focusBorder") or get_color("button.background", "#0078D4")
+        )
         if not highlight.isValid():
             highlight = QColor(0, 120, 212)
-        
+
         # Ensure highlight has good contrast - brighten if too dark
         highlight_lum = self._get_luminance(highlight)
         if highlight_lum < 0.3:  # Too dark, brighten it
             highlight = self.adjust_color(highlight, lightness=180)
-        
+
         # Bright text - for text on dark backgrounds
         bright_text = get_color("foreground", "#FFFFFF")
         if not bright_text.isValid():
@@ -199,10 +201,10 @@ class ThemeManager:
         bright_lum = self._get_luminance(bright_text)
         if bright_lum < 0.8:  # Ensure it's bright enough
             bright_text = QColor(255, 255, 255)
-        
+
         # Ensure all colors have proper contrast
         text_color = self._ensure_contrast(text_color, secondary_bg, min_ratio=4.5)
-        
+
         return self.create_palette(
             primary_bg,
             secondary_bg,
@@ -211,17 +213,17 @@ class ThemeManager:
             highlight,
             bright_text,
         )
-    
+
     def _load_vscode_theme(
         self,
         theme_filename: str,
     ) -> dict[str, Any] | None:
         """Load a VS Code theme from JSON file and convert to Qt palette configuration.
-        
+
         Args:
         ----
             theme_filename: Name of the theme JSON file (e.g., "dracula.json")
-        
+
         Returns:
         -------
             Theme config dict with style, palette, and sheet, or None if failed
@@ -235,9 +237,9 @@ class ThemeManager:
             current_file.parent.parent.parent.parent.parent / "resources" / "extra_themes",  # Normal path
             current_file.parent.parent.parent.parent / "resources" / "extra_themes",  # Alternative
         ]
-        
+
         theme_path = None
-        
+
         # Try exact filename match first
         for base_path in extra_themes_paths:
             if not base_path.exists() or not base_path.is_dir():
@@ -246,7 +248,7 @@ class ThemeManager:
             if potential_path.exists() and potential_path.is_file():
                 theme_path = potential_path
                 break
-        
+
         # If exact filename not found, try case-insensitive search
         if not theme_path:
             for base_path in extra_themes_paths:
@@ -262,26 +264,26 @@ class ThemeManager:
                         break
                 if theme_path:
                     break
-        
+
         if not theme_path or not theme_path.exists():
             return None
-        
+
         try:
             with open(theme_path, "r", encoding="utf-8") as f:
                 theme_data = json.load(f)
         except Exception:
             return None
-        
+
         if not theme_data or "colors" not in theme_data:
             return None
-        
+
         colors = theme_data.get("colors", {})
         if not colors:
             return None
-        
+
         # Create palette from VS Code colors with proper contrast
         palette = self._create_palette_from_vscode_colors(colors)
-        
+
         return {
             "style": "Fusion",  # VS Code themes work best with Fusion
             "palette": lambda p=palette: p,  # Return the pre-created palette
@@ -290,7 +292,7 @@ class ThemeManager:
 
     def _build_builtin_theme_configs(self) -> dict[str, dict[str, Any]]:
         """Build and return all built-in theme configurations.
-        
+
         This method centralizes all hardcoded theme definitions to allow
         get_available_themes() to dynamically list them.
         """
@@ -304,24 +306,24 @@ class ThemeManager:
             "fusion (light)": {
                 "style": "Fusion",
                 "palette": lambda: self.create_palette(
-                    QColor(240, 240, 240),   # primary - button/base (light gray)
-                    QColor(255, 255, 255),   # secondary - window background (white)
-                    QColor(30, 30, 30),      # text - dark text on light background
-                    QColor(250, 250, 250),   # tooltip base - light gray
-                    QColor(0, 120, 212),     # highlight - blue accent
-                    QColor(0, 0, 0),         # bright text - black for light theme
+                    QColor(240, 240, 240),  # primary - button/base (light gray)
+                    QColor(255, 255, 255),  # secondary - window background (white)
+                    QColor(30, 30, 30),  # text - dark text on light background
+                    QColor(250, 250, 250),  # tooltip base - light gray
+                    QColor(0, 120, 212),  # highlight - blue accent
+                    QColor(0, 0, 0),  # bright text - black for light theme
                 ),
                 "sheet": "",
             },
             "fusion (dark)": {
                 "style": "Fusion",
                 "palette": lambda: self.create_palette(
-                    QColor(53, 53, 53),      # primary - button/base
-                    QColor(35, 35, 35),      # secondary - window background
-                    QColor(240, 240, 240),   # text - high contrast on dark
-                    QColor(60, 60, 60),      # tooltip base - improved visibility
-                    QColor(255, 160, 0),     # highlight - brighter orange for visibility
-                    QColor(255, 255, 255),   # bright text
+                    QColor(53, 53, 53),  # primary - button/base
+                    QColor(35, 35, 35),  # secondary - window background
+                    QColor(240, 240, 240),  # text - high contrast on dark
+                    QColor(60, 60, 60),  # tooltip base - improved visibility
+                    QColor(255, 160, 0),  # highlight - brighter orange for visibility
+                    QColor(255, 255, 255),  # bright text
                 ),
                 "sheet": "",
             },
@@ -611,7 +613,6 @@ class ThemeManager:
                 # Light+: Default VS Code light theme (alias)
                 "palette": lambda: self.create_palette("#FFFFFF", "#F3F3F3", "#333333", "#F0F0F0", "#007ACC", "#000000"),
             },
-
             "2077-theme-color-theme": {
                 "style": "Fusion",
                 # 2077 Theme Color Theme (dark)
@@ -2822,7 +2823,7 @@ class ThemeManager:
         theme_name: str,
     ) -> dict[str, Any]:
         """Get the configuration for a specific theme with expertly-crafted color palettes.
-        
+
         Supports both built-in themes and VS Code themes from extra_themes folder.
         VS Code themes are loaded dynamically from JSON files.
         """
@@ -2830,7 +2831,7 @@ class ThemeManager:
         vscode_config = self._load_vscode_theme(f"{theme_name}.json")
         if vscode_config:
             return vscode_config
-        
+
         # Try alternative naming patterns for VS Code themes
         alt_names = [
             f"{theme_name}-color-theme.json",
@@ -2841,16 +2842,16 @@ class ThemeManager:
             vscode_config = self._load_vscode_theme(alt_name)
             if vscode_config:
                 return vscode_config
-        
+
         # Built-in theme configurations
         configs = self._build_builtin_theme_configs()
-        
+
         # Try to find theme with case-insensitive matching and common variations
         theme_lower = theme_name.lower()
         for key in configs:
             if key.lower() == theme_lower:
                 return configs[key]
-        
+
         # If not found in built-ins, try to load as VS Code theme from JSON files
         # This allows dynamic loading of all 444 VS Code themes
         return configs.get(theme_name, configs["sourcegraph-dark"])
@@ -2905,6 +2906,7 @@ class ThemeManager:
         if theme_name == "QDarkStyle":
             if not importlib.util.find_spec("qdarkstyle"):  # pyright: ignore[reportAttributeAccessIssue]
                 from toolset.gui.common.localization import translate as tr
+
                 QMessageBox.critical(None, tr("Theme not found"), tr("QDarkStyle is not installed in this environment."))
                 GlobalSettings().reset_setting("selectedTheme")
                 self._apply_theme_and_style(GlobalSettings().selectedTheme or "sourcegraph-dark", style_name)
@@ -2979,26 +2981,26 @@ class ThemeManager:
         r = color.redF()
         g = color.greenF()
         b = color.blueF()
-        
+
         # Convert to linear RGB
         r = r / 12.92 if r <= 0.03928 else ((r + 0.055) / 1.055) ** 2.4
         g = g / 12.92 if g <= 0.03928 else ((g + 0.055) / 1.055) ** 2.4
         b = b / 12.92 if b <= 0.03928 else ((b + 0.055) / 1.055) ** 2.4
-        
+
         # Calculate relative luminance
         return 0.2126 * r + 0.7152 * g + 0.0722 * b
-    
+
     @staticmethod
     def _get_contrast_ratio(color1: QColor, color2: QColor) -> float:
         """Calculate contrast ratio between two colors (WCAG standard)."""
         lum1 = ThemeManager._get_luminance(color1)
         lum2 = ThemeManager._get_luminance(color2)
-        
+
         lighter = max(lum1, lum2)
         darker = min(lum1, lum2)
-        
+
         return (lighter + 0.05) / (darker + 0.05)
-    
+
     def _ensure_contrast(
         self,
         text_color: QColor,
@@ -3009,16 +3011,16 @@ class ThemeManager:
         current_ratio = self._get_contrast_ratio(text_color, bg_color)
         if current_ratio >= min_ratio:
             return text_color
-        
+
         # Adjust text color to meet contrast requirement
         bg_lum = self._get_luminance(bg_color)
         text_lum = self._get_luminance(text_color)
-        
+
         # Calculate required luminance difference
         # For WCAG AA: (L1 + 0.05) / (L2 + 0.05) >= min_ratio
         # If bg is darker, text needs: L_text >= (min_ratio * (L_bg + 0.05)) - 0.05
         # If bg is lighter, text needs: L_text <= ((L_bg + 0.05) / min_ratio) - 0.05
-        
+
         if bg_lum < 0.5:  # Dark background - need light text
             target_lum = (min_ratio * (bg_lum + 0.05)) - 0.05
             # Ensure target is lighter than background
@@ -3027,10 +3029,10 @@ class ThemeManager:
             target_lum = ((bg_lum + 0.05) / min_ratio) - 0.05
             # Ensure target is darker than background
             target_lum = min(target_lum, bg_lum - 0.3)
-        
+
         # Clamp target luminance
         target_lum = max(0.05, min(0.95, target_lum))
-        
+
         # Adjust text color to target luminance while preserving hue
         result = QColor(text_color)
         h, s, v, a = result.getHsv()
@@ -3047,9 +3049,9 @@ class ThemeManager:
                     v_adjustment = int(255 * lum_diff * 2)  # Scale factor
                     new_v = max(10, min(245, v + v_adjustment))
                     result.setHsv(h, s, new_v, a)
-        
+
         return result
-    
+
     def adjust_color(
         self,
         color: Any,
@@ -3102,7 +3104,7 @@ class ThemeManager:
             highlighted_text_color = bright_text
         else:  # Light highlight
             highlighted_text_color = self.adjust_color(secondary, lightness=20)
-        
+
         role_colors: dict[QPalette.ColorRole, QColor] = {
             QPalette.ColorRole.Window: secondary,
             QPalette.ColorRole.Dark: self.adjust_color(primary, lightness=80),
@@ -3198,6 +3200,7 @@ class ThemeManager:
 
                 # Buttons - use palette colors for hover effect
                 from qtpy.QtWidgets import QApplication
+
                 app = QApplication.instance()
                 if app is not None:
                     palette = app.palette()
@@ -3211,7 +3214,7 @@ class ThemeManager:
                     hover_color = default_palette.color(QPalette.ColorRole.Highlight)
                     hover_color.setAlpha(30)
                     hover_rgba = f"rgba({hover_color.red()}, {hover_color.green()}, {hover_color.blue()}, {hover_color.alpha() / 255.0:.2f})"
-                
+
                 button_style = f"""
                     QPushButton {{
                         background-color: transparent;
@@ -3299,7 +3302,7 @@ class ThemeManager:
             else:
                 # Use default palette for fallback
                 palette = QPalette()
-            
+
             mid_color = palette.color(QPalette.ColorRole.Mid)
             separator.setStyleSheet(f"background-color: {mid_color.name()};")
             layout.addWidget(separator)

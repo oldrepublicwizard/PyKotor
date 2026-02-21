@@ -43,6 +43,9 @@
        <layout class="QVBoxLayout" name="verticalLayout">
         <item>
          <widget class="QLineEdit" name="filterEdit">
+          <property name="toolTip">
+           <string>Filter the instance list by tag or resref. Type part of a creature, door, placeable, trigger, waypoint, or sound tag to show only matching entries. Max 16 characters. Does not change the GIT file—only filters what is shown in the list. Leave empty to show all instances.</string>
+          </property>
           <property name="text">
            <string/>
           </property>
@@ -56,6 +59,9 @@
         </item>
         <item>
          <widget class="QListWidget" name="listWidget">
+          <property name="toolTip">
+           <string>Instance list. Shows all creatures, doors, placeables, triggers, waypoints, and sounds in this area (GIT). Click an entry to select it in the 3D view and edit its position, rotation, or template. Use the filter box above to narrow the list by tag or resref. Right-click for context menu (add, remove, duplicate).</string>
+          </property>
           <property name="maximumSize">
            <size>
             <width>16777215</width>
@@ -98,7 +104,7 @@
              </size>
             </property>
             <property name="toolTip">
-             <string>Lock all instances in place</string>
+             <string>Lock instances. When checked, prevents moving, rotating, or deleting instances in the 3D view. Use when you want to select or inspect without accidentally editing. Does not modify the GIT file until you change an instance and save.</string>
             </property>
             <property name="styleSheet">
              <string notr="true">QCheckbox {
@@ -164,7 +170,7 @@ QCheckBox::indicator:checked:hover {
              </size>
             </property>
             <property name="toolTip">
-             <string>Show Creatures</string>
+             <string>Show or hide creature instances in the 3D view. Creatures (UTC) are NPCs, enemies, and party members placed in the area. Uncheck to hide them while editing other object types. Does not remove them from the GIT.</string>
             </property>
             <property name="styleSheet">
              <string notr="true">QCheckbox {
@@ -212,7 +218,7 @@ QCheckBox::indicator:checked:hover {
              </size>
             </property>
             <property name="toolTip">
-             <string>Show Doors</string>
+             <string>Show or hide door instances (UTD) in the 3D view. Doors link areas or open/close; they use a door template and position. Uncheck to hide them while editing other objects. Does not remove them from the GIT.</string>
             </property>
             <property name="styleSheet">
              <string notr="true">QCheckBox::indicator {
@@ -256,7 +262,7 @@ QCheckBox::indicator:checked:hover {
              </size>
             </property>
             <property name="toolTip">
-             <string>Show Placeables</string>
+             <string>Show or hide placeable instances (UTP) in the 3D view. Placeables are containers, chairs, crates, and other interactive objects. Uncheck to hide them. Does not remove them from the GIT.</string>
             </property>
             <property name="styleSheet">
              <string notr="true">QCheckBox::indicator {
@@ -300,7 +306,7 @@ QCheckBox::indicator:checked:hover {
              </size>
             </property>
             <property name="toolTip">
-             <string>Show Merchants</string>
+             <string>Show or hide merchant/store placeables in the 3D view. Merchants are placeables with store data; toggling this only affects visibility, not the GIT.</string>
             </property>
             <property name="styleSheet">
              <string notr="true">QCheckBox::indicator {
@@ -344,7 +350,7 @@ QCheckBox::indicator:checked:hover {
              </size>
             </property>
             <property name="toolTip">
-             <string>Show Sounds</string>
+             <string>Show or hide sound object instances (UTS) in the 3D view. Sound objects play ambient audio; they have a position when positional. Uncheck to hide them. Does not remove them from the GIT.</string>
             </property>
             <property name="styleSheet">
              <string notr="true">QCheckBox::indicator {
@@ -388,7 +394,7 @@ QCheckBox::indicator:checked:hover {
              </size>
             </property>
             <property name="toolTip">
-             <string>Show Waypoints</string>
+             <string>Show or hide waypoint instances (UTW) in the 3D view. Waypoints are invisible markers used for scripting (e.g. MoveToPoint). Uncheck to hide them. Does not remove them from the GIT.</string>
             </property>
             <property name="styleSheet">
              <string notr="true">QCheckBox::indicator {
@@ -432,7 +438,7 @@ QCheckBox::indicator:checked:hover {
              </size>
             </property>
             <property name="toolTip">
-             <string>Show Cameras</string>
+             <string>Show or hide camera instances in the 3D view. Cameras define camera positions/cuts for cutscenes. Uncheck to hide them. Does not remove them from the GIT.</string>
             </property>
             <property name="styleSheet">
              <string notr="true">QCheckBox::indicator {
@@ -476,7 +482,7 @@ QCheckBox::indicator:checked:hover {
              </size>
             </property>
             <property name="toolTip">
-             <string>Show Encounters</string>
+             <string>Show or hide encounter instances (UTE) in the 3D view. Encounters spawn creatures when the player enters the region. Uncheck to hide them. Does not remove them from the GIT.</string>
             </property>
             <property name="styleSheet">
              <string notr="true">QCheckBox::indicator {
@@ -520,7 +526,7 @@ QCheckBox::indicator:checked:hover {
              </size>
             </property>
             <property name="toolTip">
-             <string>Show Triggers</string>
+             <string>Show or hide trigger instances (UTT) in the 3D view. Triggers detect when the player enters a region and run scripts. Uncheck to hide them. Does not remove them from the GIT.</string>
             </property>
             <property name="styleSheet">
              <string notr="true">QCheckBox::indicator {

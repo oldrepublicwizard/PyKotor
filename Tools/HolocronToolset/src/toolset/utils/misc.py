@@ -120,14 +120,14 @@ STRING_KEY_TO_INT: dict[str, int] = {k: v.value if qtpy.QT6 else v for k, v in Q
 
 def get_qsettings_organization(organization: str) -> str:
     """Get Qt API-specific organization name for QSettings.
-    
+
     This ensures that PyQt5, PyQt6, PySide2, and PySide6 each use separate
     settings storage locations to prevent conflicts.
-    
+
     Args:
     ----
         organization: Base organization name (e.g., "HolocronToolsetV4")
-    
+
     Returns:
     -------
         Organization name with Qt API suffix (e.g., "HolocronToolsetV4_PyQt6")
@@ -137,8 +137,9 @@ def get_qsettings_organization(organization: str) -> str:
         api_name = API_NAME
     except (AttributeError, NameError):
         import os
+
         api_name = os.environ.get("QT_API", "Unknown")
-    
+
     return f"{organization}_{api_name}"
 
 
@@ -213,10 +214,16 @@ def get_qt_key_string(
 def get_qt_key_string_localized(
     key: Qt.Key | str | int | bytes,
 ) -> str:
-    return MODIFIER_KEY_NAMES.get(
-        key,  # type: ignore[arg-type]
-        getattr(key, "name", QKeySequence(key).toString()),
-    ).upper().strip().replace("KEY_", "").replace("CONTROL", "CTRL")
+    return (
+        MODIFIER_KEY_NAMES.get(
+            key,  # type: ignore[arg-type]
+            getattr(key, "name", QKeySequence(key).toString()),
+        )
+        .upper()
+        .strip()
+        .replace("KEY_", "")
+        .replace("CONTROL", "CTRL")
+    )
 
 
 def get_qt_button_string(
@@ -294,16 +301,8 @@ def get_resource_from_file(
 
 
 if __name__ == "__main__":  # quick test
-    all_keys: list[Qt.Key] = [
-        getattr(Qt.Key, key)
-        for key in dir(Qt.Key)
-        if key.startswith("Key_")
-    ]
-    all_buttons: list[Qt.MouseButton] = [
-        getattr(Qt.MouseButton, button)
-        for button in dir(Qt.MouseButton)
-        if "Button" in button and button not in ("AllButtons", "NoButton")
-    ]
+    all_keys: list[Qt.Key] = [getattr(Qt.Key, key) for key in dir(Qt.Key) if key.startswith("Key_")]
+    all_buttons: list[Qt.MouseButton] = [getattr(Qt.MouseButton, button) for button in dir(Qt.MouseButton) if "Button" in button and button not in ("AllButtons", "NoButton")]
 
     for key in all_keys:
         key_string: str = get_qt_key_string(key)

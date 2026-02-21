@@ -106,7 +106,7 @@ class TSLPatchDataEditor(QDialog):
         self.ui.generateBtn.clicked.connect(self._generate_tslpatchdata)
         self.ui.previewBtn.clicked.connect(self._preview_ini)
         self.ui.saveBtn.clicked.connect(self._save_configuration)
-        self.ui.closeBtn.clicked.connect(self.accept)
+        self.ui.closeBtn.clicked.connect(lambda: self.accept())
 
     # Implementation methods
     def _browse_tslpatchdata_path(self):

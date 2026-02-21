@@ -1,4 +1,5 @@
 """Batch processor for LIP files."""
+
 from __future__ import annotations
 
 import wave
@@ -34,16 +35,17 @@ class BatchLIPProcessor(QDialog):
         self.ui.setupUi(self)
 
         self.installation = installation
-        
+
         # Connect signals
         self.ui.addAudioBtn.clicked.connect(self.add_audio_files)
         self.ui.removeAudioBtn.clicked.connect(self.remove_audio_file)
         self.ui.clearAudioBtn.clicked.connect(self.clear_audio_files)
         self.ui.browseBtn.clicked.connect(self.browse_output_dir)
         self.ui.processBtn.clicked.connect(self.process_files)
-        
+
         # Setup event filter to prevent scroll wheel interaction with controls
         from toolset.gui.common.filters import NoScrollEventFilter
+
         self._no_scroll_filter = NoScrollEventFilter(self)
         self._no_scroll_filter.setup_filter(parent_widget=self)
 
@@ -53,9 +55,7 @@ class BatchLIPProcessor(QDialog):
 
     def add_audio_files(self):
         """Add WAV files to process."""
-        files, _ = QFileDialog.getOpenFileNames(
-            self, "Select Audio Files", "", "Audio Files (*.wav)"
-        )
+        files, _ = QFileDialog.getOpenFileNames(self, "Select Audio Files", "", "Audio Files (*.wav)")
         for file in files:
             path = Path(file)
             if path not in self.audio_files:
@@ -112,8 +112,8 @@ class BatchLIPProcessor(QDialog):
                 # Currently just adds a few basic shapes evenly spaced
                 shapes = [
                     LIPShape.MPB,  # Start with closed mouth
-                    LIPShape.AH,   # Open for vowel sound
-                    LIPShape.OH,   # Round for O sound
+                    LIPShape.AH,  # Open for vowel sound
+                    LIPShape.OH,  # Round for O sound
                     LIPShape.MPB,  # Close mouth again
                 ]
 
@@ -130,14 +130,6 @@ class BatchLIPProcessor(QDialog):
                 errors.append(f"{audio_file.name}: {str(e)}")
 
         if errors:
-            QMessageBox.warning(
-                self,
-                "Errors Occurred",
-                "The following errors occurred:\n\n" + "\n".join(errors)
-            )
+            QMessageBox.warning(self, "Errors Occurred", "The following errors occurred:\n\n" + "\n".join(errors))
         else:
-            QMessageBox.information(
-                self,
-                "Success",
-                f"Successfully processed {len(self.audio_files)} files"
-            )
+            QMessageBox.information(self, "Success", f"Successfully processed {len(self.audio_files)} files")

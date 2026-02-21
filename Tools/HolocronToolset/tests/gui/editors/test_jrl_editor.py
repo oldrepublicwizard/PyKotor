@@ -3,6 +3,7 @@ Unit Tests for JRL Editor - testing EVERY possible manipulation.
 
 Each test focuses on a specific manipulation and validates save/load roundtrips.
 """
+
 from __future__ import annotations
 
 import os
@@ -40,10 +41,8 @@ except (ImportError, ModuleNotFoundError):
 absolute_file_path = pathlib.Path(__file__).resolve()
 TESTS_FILES_PATH = next(f for f in absolute_file_path.parents if f.name == "tests") / "test_files"
 
-if (
-    __name__ == "__main__"
-    and getattr(sys, "frozen", False) is False
-):
+if __name__ == "__main__" and getattr(sys, "frozen", False) is False:
+
     def add_sys_path(p):
         working_dir = str(p)
         if working_dir in sys.path:
@@ -76,6 +75,7 @@ from pykotor.resource.type import ResourceType  # pyright: ignore[reportMissingI
 # BASIC LOADING AND SAVING TESTS
 # ============================================================================
 
+
 @unittest.skipIf(
     not K2_PATH or not pathlib.Path(K2_PATH).joinpath("chitin.key").exists(),
     "K2_PATH environment variable is not set or not found on disk.",
@@ -88,8 +88,10 @@ class JRLEditorTest(TestCase):
     @classmethod
     def setUpClass(cls):
         from toolset.gui.editors.jrl import JRLEditor
+
         cls.JRLEditor = JRLEditor
         from toolset.data.installation import HTInstallation
+
         cls.K2_INSTALLATION = HTInstallation(K2_PATH, "", tsl=True)
 
     def setUp(self):
@@ -130,6 +132,7 @@ class JRLEditorTest(TestCase):
 # HELPER FUNCTIONS FOR REAL USER INTERACTIONS
 # ============================================================================
 
+
 def click_tree_item(qtbot: QtBot, tree_view: QTreeView, item: QStandardItem):
     """Click on a tree item using mouse interaction (real user simulation)."""
     index = item.index()
@@ -139,6 +142,7 @@ def click_tree_item(qtbot: QtBot, tree_view: QTreeView, item: QStandardItem):
     center = rect.center()
     qtbot.mouseClick(tree_view.viewport(), Qt.MouseButton.LeftButton, pos=center)
     QApplication.processEvents()
+
 
 def type_text_in_field(qtbot: QtBot, widget: QLineEdit, text: str, clear_first: bool = True):
     """Type text into a widget using keyboard (real user simulation)."""
@@ -154,6 +158,7 @@ def type_text_in_field(qtbot: QtBot, widget: QLineEdit, text: str, clear_first: 
     # Press Enter to trigger editingFinished signal for QLineEdit
     qtbot.keyClick(widget, Qt.Key.Key_Enter)
     QApplication.processEvents()
+
 
 def select_combo_item(qtbot: QtBot, combo_box: QComboBox, index: int):
     """Select a combo box item using mouse and keyboard (real user simulation).
@@ -187,6 +192,7 @@ def select_combo_item(qtbot: QtBot, combo_box: QComboBox, index: int):
     qtbot.keyClick(combo_box, Qt.Key.Key_Enter)
     QApplication.processEvents()
 
+
 def set_spin_value(qtbot: QtBot, spin_box: QSpinBox | QDoubleSpinBox, value: float | int):
     """Set spin box value using keyboard (real user simulation)."""
     spin_box.setFocus()
@@ -198,9 +204,11 @@ def set_spin_value(qtbot: QtBot, spin_box: QSpinBox | QDoubleSpinBox, value: flo
     qtbot.keyClick(spin_box, Qt.Key.Key_Enter)
     QApplication.processEvents()
 
+
 # ============================================================================
 # BASIC FIELD MANIPULATIONS - QUEST FIELDS
 # ============================================================================
+
 
 def test_jrl_editor_manipulate_quest_tag(qtbot: QtBot, installation: HTInstallation, test_files_dir: pathlib.Path):
     """Test manipulating quest tag field using real user interactions."""
@@ -549,6 +557,7 @@ def test_jrl_editor_manipulate_quest_comment(
 # BASIC FIELD MANIPULATIONS - ENTRY FIELDS
 # ============================================================================
 
+
 def test_jrl_editor_manipulate_entry_id(qtbot: QtBot, installation: HTInstallation, test_files_dir: pathlib.Path):
     """Test manipulating entry ID using real user interactions."""
     editor = JRLEditor(None, installation)
@@ -790,6 +799,7 @@ def test_jrl_editor_manipulate_entry_end_flag(qtbot: QtBot, installation: HTInst
 # QUEST AND ENTRY MANAGEMENT TESTS
 # ============================================================================
 
+
 def test_jrl_editor_add_quest(qtbot: QtBot, installation: HTInstallation):
     """Test adding a quest."""
     editor = JRLEditor(None, installation)
@@ -993,6 +1003,7 @@ def test_jrl_editor_remove_multiple_entries(qtbot: QtBot, installation: HTInstal
 # NAME AND TEXT EDITING TESTS
 # ============================================================================
 
+
 def test_jrl_editor_change_quest_name_via_dialog(qtbot: QtBot, installation: HTInstallation, monkeypatch: pytest.MonkeyPatch):
     """Test changing quest name via localized string dialog."""
     from toolset.gui.editors import jrl as jrl_module
@@ -1069,6 +1080,7 @@ def test_jrl_editor_change_entry_text_via_dialog(qtbot: QtBot, installation: HTI
 # ============================================================================
 # SELECTION AND UI UPDATES TESTS
 # ============================================================================
+
 
 def test_jrl_editor_selection_loads_quest_fields(qtbot: QtBot, installation: HTInstallation):
     """Test that selecting a quest loads all fields correctly."""
@@ -1294,6 +1306,7 @@ def test_jrl_editor_selection_empty_entry(qtbot: QtBot, installation: HTInstalla
 # CONTEXT MENU TESTS
 # ============================================================================
 
+
 def test_jrl_editor_context_menu_add_quest(qtbot: QtBot, installation: HTInstallation):
     """Test context menu add quest action."""
     editor = JRLEditor(None, installation)
@@ -1425,6 +1438,7 @@ def test_jrl_editor_context_menu_remove_entry(qtbot: QtBot, installation: HTInst
 # KEYBOARD SHORTCUT TESTS
 # ============================================================================
 
+
 def test_jrl_editor_delete_shortcut_quest(qtbot: QtBot, installation: HTInstallation):
     """Test Delete key shortcut removes selected quest."""
     editor = JRLEditor(None, installation)
@@ -1486,6 +1500,7 @@ def test_jrl_editor_delete_shortcut_entry(qtbot: QtBot, installation: HTInstalla
 # ============================================================================
 # COMBINATION TESTS - Multiple manipulations
 # ============================================================================
+
 
 def test_jrl_editor_manipulate_all_quest_fields_combination(qtbot: QtBot, installation: HTInstallation, test_files_dir: pathlib.Path):
     """Test manipulating all quest fields simultaneously."""
@@ -1607,7 +1622,7 @@ def test_jrl_editor_complex_workflow(qtbot: QtBot, installation: HTInstallation,
             entry.text = LocalizedString.from_english(f"Entry {j}")
             entry.entry_id = j
             entry.xp_percentage = float(j * 25)
-            entry.end = (j == 1)
+            entry.end = j == 1
             editor.add_entry(quest_item, entry)
 
     # Modify quests
@@ -1648,6 +1663,7 @@ def test_jrl_editor_complex_workflow(qtbot: QtBot, installation: HTInstallation,
 # ============================================================================
 # SAVE/LOAD ROUNDTRIP VALIDATION TESTS
 # ============================================================================
+
 
 def test_jrl_editor_save_load_roundtrip_identity(qtbot: QtBot, installation: HTInstallation, test_files_dir: pathlib.Path):
     """Test that save/load roundtrip preserves all data exactly."""
@@ -1793,6 +1809,7 @@ def test_jrl_editor_multiple_save_load_cycles(qtbot: QtBot, installation: HTInst
 # EDGE CASES AND BOUNDARY TESTS
 # ============================================================================
 
+
 def test_jrl_editor_empty_jrl(qtbot: QtBot, installation: HTInstallation):
     """Test handling empty JRL file."""
     editor = JRLEditor(None, installation)
@@ -1937,6 +1954,7 @@ def test_jrl_editor_multiple_entries_same_id(qtbot: QtBot, installation: HTInsta
 # GFF COMPARISON TESTS
 # ============================================================================
 
+
 def test_jrl_editor_gff_roundtrip_comparison(qtbot: QtBot, installation: HTInstallation, test_files_dir: pathlib.Path):
     """Test GFF roundtrip comparison like resource tests."""
     editor = JRLEditor(None, installation)
@@ -1997,6 +2015,7 @@ def test_jrl_editor_gff_roundtrip_with_modifications(qtbot: QtBot, installation:
 # NEW FILE CREATION TESTS
 # ============================================================================
 
+
 def test_jrl_editor_new_file_creation(qtbot: QtBot, installation: HTInstallation):
     """Test creating a new JRL file from scratch."""
     editor = JRLEditor(None, installation)
@@ -2053,6 +2072,7 @@ def test_jrl_editor_new_file_all_defaults(qtbot: QtBot, installation: HTInstalla
 # HELP DIALOG TESTS
 # ============================================================================
 
+
 def test_jrl_editor_help_dialog_opens_correct_file(qtbot: QtBot, installation: HTInstallation):
     """Test that JRLEditor help dialog opens and displays the correct help file."""
     from toolset.gui.dialogs.editor_help import EditorHelpDialog
@@ -2081,8 +2101,7 @@ def test_jrl_editor_help_dialog_opens_correct_file(qtbot: QtBot, installation: H
     html = dialog.text_browser.toHtml()
 
     # Assert that "Help File Not Found" error is NOT shown
-    assert "Help File Not Found" not in html, \
-        f"Help file 'GFF-JRL.md' should be found, but error was shown. HTML: {html[:500]}"
+    assert "Help File Not Found" not in html, f"Help file 'GFF-JRL.md' should be found, but error was shown. HTML: {html[:500]}"
 
     # Assert that some content is present
     assert len(html) > 100, "Help dialog should contain content"
@@ -2095,6 +2114,7 @@ def test_jrl_editor_help_dialog_opens_correct_file(qtbot: QtBot, installation: H
 # ============================================================================
 # COMPREHENSIVE ROUNDTRIP VALIDATION TEST
 # ============================================================================
+
 
 def test_jrl_editor_comprehensive_roundtrip(qtbot: QtBot, installation: HTInstallation, test_files_dir: pathlib.Path):
     """Comprehensive test that validates ALL fields are preserved through editor roundtrip."""
@@ -2163,6 +2183,7 @@ def test_jrl_editor_comprehensive_roundtrip(qtbot: QtBot, installation: HTInstal
 # ============================================================================
 # REPEATED OPERATIONS TESTS
 # ============================================================================
+
 
 def test_jrl_editor_repeated_add_remove_quests(qtbot: QtBot, installation: HTInstallation):
     """Test repeatedly adding and removing quests."""
@@ -2270,6 +2291,7 @@ def test_jrl_editor_repeated_priority_changes(qtbot: QtBot, installation: HTInst
 # INTEGRATION TESTS
 # ============================================================================
 
+
 def test_jrl_editor_headless_ui_load_build(qtbot: QtBot, installation: HTInstallation, test_files_dir: pathlib.Path):
     """Test JRL Editor in headless UI - loads real file and builds data."""
     editor = JRLEditor(None, installation)
@@ -2299,6 +2321,7 @@ def test_jrl_editor_headless_ui_load_build(qtbot: QtBot, installation: HTInstall
 # ============================================================================
 # TREE VIEW INTERACTION TESTS
 # ============================================================================
+
 
 def test_jrl_editor_tree_expand_collapse(qtbot: QtBot, installation: HTInstallation):
     """Test expanding and collapsing quest items in tree view."""
@@ -2438,6 +2461,7 @@ def test_jrl_editor_tree_selection_with_entries(qtbot: QtBot, installation: HTIn
 # UI STATE MANAGEMENT TESTS
 # ============================================================================
 
+
 def test_jrl_editor_button_states_no_selection(qtbot: QtBot, installation: HTInstallation):
     """Test button enabled/disabled states when nothing is selected."""
     editor = JRLEditor(None, installation)
@@ -2513,6 +2537,7 @@ def test_jrl_editor_button_states_entry_selected(qtbot: QtBot, installation: HTI
 # ============================================================================
 # STRING HANDLING TESTS
 # ============================================================================
+
 
 def test_jrl_editor_very_long_tag(qtbot: QtBot, installation: HTInstallation):
     """Test handling very long tag strings."""
@@ -2608,6 +2633,7 @@ def test_jrl_editor_unicode_characters(qtbot: QtBot, installation: HTInstallatio
 # STRESS TESTS
 # ============================================================================
 
+
 def test_jrl_editor_many_quests(qtbot: QtBot, installation: HTInstallation):
     """Test editor with many quests (stress test)."""
     editor = JRLEditor(None, installation)
@@ -2699,6 +2725,7 @@ def test_jrl_editor_rapid_add_remove(qtbot: QtBot, installation: HTInstallation)
 # ERROR HANDLING TESTS
 # ============================================================================
 
+
 def test_jrl_editor_load_invalid_data(qtbot: QtBot, installation: HTInstallation):
     """Test loading invalid/corrupted JRL data."""
     editor = JRLEditor(None, installation)
@@ -2742,6 +2769,7 @@ def test_jrl_editor_load_empty_data(qtbot: QtBot, installation: HTInstallation):
 # RESOURCE LOADING TESTS
 # ============================================================================
 
+
 def test_jrl_editor_load_from_installation(qtbot: QtBot, installation: HTInstallation):
     """Test loading JRL resource from installation."""
     if installation is None:
@@ -2765,12 +2793,7 @@ def test_jrl_editor_load_from_installation(qtbot: QtBot, installation: HTInstall
         pytest.skip(f"Could not load JRL data for {jrl_resource.resname}")
 
     # Load from installation
-    editor.load(
-        jrl_resource.filepath if hasattr(jrl_resource, 'filepath') else pathlib.Path("global.jrl"),
-        jrl_resource.resname,
-        ResourceType.JRL,
-        jrl_data.data
-    )
+    editor.load(jrl_resource.filepath if hasattr(jrl_resource, "filepath") else pathlib.Path("global.jrl"), jrl_resource.resname, ResourceType.JRL, jrl_data.data)
 
     # Verify loaded
     assert editor._model.rowCount() >= 0
@@ -2780,6 +2803,7 @@ def test_jrl_editor_load_from_installation(qtbot: QtBot, installation: HTInstall
 # ============================================================================
 # REFRESH TESTS
 # ============================================================================
+
 
 def test_jrl_editor_refresh_quest_item(qtbot: QtBot, installation: HTInstallation):
     """Test refresh_quest_item updates tree item text correctly."""
@@ -2853,6 +2877,7 @@ def test_jrl_editor_refresh_entry_item(qtbot: QtBot, installation: HTInstallatio
 # COMPREHENSIVE WORKFLOW TESTS
 # ============================================================================
 
+
 def test_jrl_editor_complete_workflow(qtbot: QtBot, installation: HTInstallation, test_files_dir: pathlib.Path):
     """Test complete workflow: load, modify, save, reload, verify."""
     editor = JRLEditor(None, installation)
@@ -2890,7 +2915,7 @@ def test_jrl_editor_complete_workflow(qtbot: QtBot, installation: HTInstallation
         entry.text = LocalizedString.from_english(f"Workflow Entry {i}")
         entry.entry_id = i
         entry.xp_percentage = float(i * 25)
-        entry.end = (i == 2)
+        entry.end = i == 2
         editor.add_entry(quest_item, entry)
 
     # Modify existing quest (if any)

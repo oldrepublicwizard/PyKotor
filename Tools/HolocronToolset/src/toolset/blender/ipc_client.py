@@ -799,4 +799,3 @@ def get_ipc_client() -> BlenderIPCClient:
 def get_blender_commands() -> BlenderCommands:
     """Get BlenderCommands wrapper for the global client."""
     return BlenderCommands(get_ipc_client())
-

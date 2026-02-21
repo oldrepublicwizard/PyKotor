@@ -29,10 +29,10 @@ def main():
     app.setApplicationVersion(CURRENT_VERSION)
     app.setDesktopFileName("com.pykotor.holopazaak")
     app.setApplicationDisplayName("HoloPazaak")
-    
+
     # Application icon will be set by the window if needed
     # For now, we rely on system defaults rather than requiring Qt resource files
-    
+
     main_gui_thread: QThread | None = app.thread()
     assert main_gui_thread is not None, "Main GUI thread should not be None"
     main_gui_thread.setPriority(QThread.Priority.HighestPriority)
@@ -44,4 +44,3 @@ def main():
     window = PazaakWindow()
     window.show()
     sys.exit(app.exec())
-

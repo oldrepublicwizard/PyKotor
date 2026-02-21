@@ -1,4 +1,5 @@
 """Installation script for HolocronAI."""
+
 from __future__ import annotations
 
 import subprocess
@@ -73,6 +74,7 @@ def main() -> None:
     print("\nInstallation complete! You can now run HolocronAI using:")
     print("python -m holocron_ai  # For GUI mode")
     print("python -m holocron_ai --cli  # For CLI mode")
+
 
 if __name__ == "__main__":
     main()

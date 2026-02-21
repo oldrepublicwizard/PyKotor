@@ -42,17 +42,21 @@ class IndoorMapSettings(QDialog):
         """
         super().__init__(parent)
         self.setWindowFlags(
-            (Qt.WindowType.Dialog  # pyright: ignore[reportArgumentType]
-             | Qt.WindowType.WindowCloseButtonHint)
+            (
+                Qt.WindowType.Dialog  # pyright: ignore[reportArgumentType]
+                | Qt.WindowType.WindowCloseButtonHint
+            )
             & ~Qt.WindowType.WindowContextHelpButtonHint
         )
 
         from toolset.uic.qtpy.dialogs.indoor_settings import Ui_Dialog
+
         self.ui = Ui_Dialog()
         self.ui.setupUi(self)
-        
+
         # Setup event filter to prevent scroll wheel interaction with controls
         from toolset.gui.common.filters import NoScrollEventFilter
+
         self._no_scroll_filter = NoScrollEventFilter(self)
         self._no_scroll_filter.setup_filter(parent_widget=self)
         self.ui.nameEdit.set_installation(installation)
@@ -65,11 +69,12 @@ class IndoorMapSettings(QDialog):
         self.ui.warpCodeEdit.setText(indoor_map.module_id)
 
         from toolset.gui.common.localization import translate as tr
+
         self.ui.skyboxSelect.addItem(tr("[None]"), "")
         for kit in kits:
             for skybox in kit.skyboxes:
                 self.ui.skyboxSelect.addItem(skybox, skybox)
-        
+
         # Set current skybox by finding matching data or text
         if indoor_map.skybox:
             # Try to find by text first
@@ -83,12 +88,12 @@ class IndoorMapSettings(QDialog):
                 self.ui.skyboxSelect.setCurrentIndex(0)  # Default to [None]
         else:
             self.ui.skyboxSelect.setCurrentIndex(0)  # Default to [None]
-        
+
         # Populate and set target game type selector
         self.ui.gameTypeSelect.addItem(tr("Use Installation Default"), None)
         self.ui.gameTypeSelect.addItem("Knights of the Old Republic (K1)", False)
         self.ui.gameTypeSelect.addItem("The Sith Lords (TSL/K2)", True)
-        
+
         # Set current selection based on indoor_map.target_game_type
         if indoor_map.target_game_type is None:
             self.ui.gameTypeSelect.setCurrentIndex(0)  # Use Installation Default

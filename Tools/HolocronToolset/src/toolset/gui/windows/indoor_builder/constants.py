@@ -3,6 +3,7 @@
 This module centralizes all magic numbers, thresholds, and configuration values
 used throughout the indoor map builder to improve maintainability and consistency.
 """
+
 from __future__ import annotations
 
 from enum import Enum
@@ -147,4 +148,3 @@ class DragMode(Enum):
     WARP = "warp"
     MARQUEE = "marquee"
     HOOK = "hook"
-

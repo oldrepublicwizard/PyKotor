@@ -161,7 +161,7 @@ class DLGListWidget(QListWidget):
         """Refreshes the item text and formatting based on the node data."""
         assert self.editor is not None
         link_parent_path, link_partial_path, node_path = self.editor.get_item_dlg_paths(item) if cached_paths is None else cached_paths
-        
+
         # Get palette colors for entry/reply (same logic as model.py)
         app = QApplication.instance()
         if app is not None and isinstance(app, QApplication):
@@ -169,12 +169,12 @@ class DLGListWidget(QListWidget):
         else:
             # Fallback to default palette
             palette = QPalette()
-        
+
         link_color = palette.color(QPalette.ColorRole.Link)
         if not link_color.isValid():
             # If link color is invalid, use a default based on theme
             link_color = QColor(0, 120, 212)  # Default blue
-        
+
         if isinstance(item.link.node, DLGEntry):
             # Entry: Red-ish derived from link color
             entry_color_obj = QColor(link_color)

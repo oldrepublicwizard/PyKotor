@@ -155,5 +155,3 @@ def _qimage_from_bytes(data: bytes) -> "QImage":
     if not qimg.loadFromData(data):
         raise ValueError("Failed to load image data into QImage")
     return qimg
-
-

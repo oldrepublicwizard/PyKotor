@@ -19,9 +19,8 @@ import re
 import shutil
 import subprocess
 import sys
-import tempfile
 
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from pathlib import Path
 from typing import TYPE_CHECKING
 
@@ -113,7 +112,7 @@ def _get_windows_registry_blender_paths() -> list[Path]:
 
 def _get_default_blender_paths() -> dict[str, list[str]]:
     """Get default Blender installation paths by OS.
-    
+
     Similar to find_kotor_paths_from_default pattern in pykotor.tools.path.
     """
     return {
@@ -167,24 +166,26 @@ def _get_default_blender_paths() -> dict[str, list[str]]:
 
 def _expand_path_pattern(pattern: str) -> Iterator[Path]:
     """Expand a path pattern with environment variables and globs.
-    
+
     Supports:
     - {EnvVar} syntax for environment variables
     - ~ for home directory
     - * wildcards for glob matching
     """
+
     # Expand environment variables in {VAR} format
     def expand_env(m: re.Match) -> str:
         return os.environ.get(m.group(1), m.group(0))
-    
+
     expanded = re.sub(r"\{(\w+)\}", expand_env, pattern)
-    
+
     # Expand ~ to home directory
     expanded = os.path.expanduser(expanded)
-    
+
     # If pattern contains wildcards, use glob
     if "*" in expanded:
         from glob import glob
+
         for match in glob(expanded):
             yield Path(match)
     else:
@@ -201,7 +202,7 @@ def _get_common_blender_paths() -> list[Path]:
     # Get paths from default patterns
     default_paths = _get_default_blender_paths()
     patterns = default_paths.get(system, [])
-    
+
     for pattern in patterns:
         for path in _expand_path_pattern(pattern):
             if path.is_file():
@@ -227,7 +228,7 @@ def _get_common_blender_paths() -> list[Path]:
                         exe = item / "blender.exe"
                         if exe.is_file() and exe not in paths:
                             paths.append(exe)
-    
+
     elif system == "Darwin":
         for apps_dir in [Path("/Applications"), Path.home() / "Applications"]:
             if apps_dir.is_dir():
@@ -236,7 +237,7 @@ def _get_common_blender_paths() -> list[Path]:
                         exe = item / "Contents" / "MacOS" / "Blender"
                         if exe.is_file() and exe not in paths:
                             paths.append(exe)
-    
+
     elif system == "Linux":
         for opt_dir in [Path("/opt"), Path.home()]:
             if opt_dir.is_dir():
@@ -270,7 +271,7 @@ def get_blender_version(executable: Path) -> tuple[int, int, int] | None:
         kwargs: dict = {"capture_output": True, "text": True, "timeout": 10}
         if sys.platform == "win32":
             kwargs["creationflags"] = subprocess.CREATE_NO_WINDOW
-        
+
         result = subprocess.run(
             [str(executable), "--version"],
             **kwargs,
@@ -355,7 +356,7 @@ def find_all_blender_installations(
     min_version: tuple[int, int, int] = (3, 6, 0),
 ) -> list[BlenderInfo]:
     """Find ALL valid Blender installations on the system.
-    
+
     Similar to find_kotor_paths_from_default pattern.
 
     Args:
@@ -392,7 +393,7 @@ def find_all_blender_installations(
 
     # Build info for each valid installation
     installations: list[BlenderInfo] = []
-    
+
     for candidate in unique_candidates:
         version = get_blender_version(candidate)
         if version is None:
@@ -417,7 +418,7 @@ def find_all_blender_installations(
 
     # Sort by version (newest first), then by kotorblender status
     installations.sort(key=lambda x: (x.has_kotorblender, x.version or (0, 0, 0)), reverse=True)
-    
+
     return installations
 
 
@@ -438,7 +439,7 @@ def find_blender_executable(
     if custom_path:
         custom = Path(custom_path)
         executable: Path | None = None
-        
+
         if custom.is_file():
             executable = custom
         elif custom.is_dir():
@@ -453,7 +454,7 @@ def find_blender_executable(
                 exe = custom / "Contents" / "MacOS" / "Blender"
                 if exe.is_file():
                     executable = exe
-        
+
         if executable:
             version = get_blender_version(executable)
             if version and version >= min_version:
@@ -496,21 +497,18 @@ def detect_blender(
         )
 
     if not info.has_kotorblender:
-        info.error = (
-            f"Blender {info.version_string} found but kotorblender add-on is not installed. "
-            "Click 'Install kotorblender' to install it automatically."
-        )
+        info.error = f"Blender {info.version_string} found but kotorblender add-on is not installed. Click 'Install kotorblender' to install it automatically."
 
     return info
 
 
 def _get_kotorblender_source_path() -> Path | None:
     """Find the kotorblender source directory.
-    
+
     Works for both:
     - Running from source: vendor/kotorblender/io_scene_kotor
     - PyInstaller builds: bundled in _MEIPASS/kotorblender/io_scene_kotor
-    
+
     Returns:
         Path to io_scene_kotor directory, or None if not found
     """
@@ -518,45 +516,45 @@ def _get_kotorblender_source_path() -> Path | None:
     if getattr(sys, "frozen", False):
         # Running as PyInstaller bundle
         bundle_dir = Path(sys._MEIPASS)  # type: ignore[attr-defined]
-        
+
         # Check bundled location
         bundled_path = bundle_dir / "kotorblender" / "io_scene_kotor"
         if bundled_path.is_dir() and (bundled_path / "__init__.py").is_file():
             return bundled_path
-        
+
         # Alternative bundled location
         bundled_path2 = bundle_dir / "io_scene_kotor"
         if bundled_path2.is_dir() and (bundled_path2 / "__init__.py").is_file():
             return bundled_path2
-    
+
     # Running from source - find repo root
     current_file = Path(__file__).resolve()
-    
+
     # Go up from Tools/HolocronToolset/src/toolset/blender/detection.py to repo root
     for parent in current_file.parents:
         vendor_path = parent / "vendor" / "kotorblender" / "io_scene_kotor"
         if vendor_path.is_dir() and (vendor_path / "__init__.py").is_file():
             return vendor_path
-    
+
     return None
 
 
 def _test_ipc_connection(timeout: float = 5.0, max_attempts: int = 3) -> tuple[bool, str]:
     """Test if Blender IPC server is running and responsive.
-    
+
     Args:
         timeout: Connection timeout per attempt
         max_attempts: Maximum number of connection attempts
-        
+
     Returns:
         Tuple of (success: bool, message: str)
     """
     try:
         from toolset.blender.ipc_client import BlenderIPCClient, BlenderCommands
-        
+
         client = BlenderIPCClient()
         commands = BlenderCommands(client)
-        
+
         # Try to connect
         for attempt in range(1, max_attempts + 1):
             if client.connect(timeout=timeout):
@@ -568,7 +566,7 @@ def _test_ipc_connection(timeout: float = 5.0, max_attempts: int = 3) -> tuple[b
                         kotorblender_ver = version.get("kotorblender", "")
                         if kotorblender_ver:
                             version_msg = f" (v{kotorblender_ver})"
-                    
+
                     client.disconnect()
                     return True, f"IPC connection verified{version_msg}"
                 else:
@@ -577,10 +575,11 @@ def _test_ipc_connection(timeout: float = 5.0, max_attempts: int = 3) -> tuple[b
             else:
                 if attempt < max_attempts:
                     import time
+
                     time.sleep(0.5)  # Brief delay before retry
-        
+
         return False, "IPC server not responding (Blender may not be running or addon not enabled)"
-        
+
     except ImportError:
         return False, "IPC client not available"
     except Exception as e:
@@ -593,7 +592,7 @@ def install_kotorblender(
     verify_ipc: bool = True,
 ) -> tuple[bool, str]:
     """Install kotorblender addon to Blender's addons/extensions directory.
-    
+
     Works for both source installations and PyInstaller builds.
     Installation is idempotent - safe to call multiple times.
 
@@ -617,7 +616,7 @@ def install_kotorblender(
         kotorblender_src = Path(source_path)
     else:
         kotorblender_src = _get_kotorblender_source_path()
-    
+
     if kotorblender_src is None or not kotorblender_src.is_dir():
         return False, (
             "kotorblender source not found.\n\n"
@@ -625,7 +624,7 @@ def install_kotorblender(
             "https://deadlystream.com/files/file/1853-kotorblender/\n\n"
             "Then extract and select the io_scene_kotor folder."
         )
-    
+
     init_file = kotorblender_src / "__init__.py"
     if not init_file.is_file():
         return False, f"Invalid kotorblender source: {kotorblender_src} (missing __init__.py)"
@@ -643,7 +642,7 @@ def install_kotorblender(
 
         # Verify installation files exist
         info.has_kotorblender = check_kotorblender_installed(info)
-        
+
         if not info.has_kotorblender:
             return False, f"Installation completed but file verification failed at:\n{kotorblender_dest}"
 
@@ -651,13 +650,10 @@ def install_kotorblender(
         if verify_ipc:
             ipc_success, ipc_message = _test_ipc_connection()
             version_msg = f" (v{info.kotorblender_version})" if info.kotorblender_version else ""
-            
+
             if ipc_success:
                 # Both file check and IPC verification passed - fully successful
-                return True, (
-                    f"kotorblender{version_msg} installed successfully to:\n{kotorblender_dest}\n\n"
-                    f"{ipc_message}"
-                )
+                return True, (f"kotorblender{version_msg} installed successfully to:\n{kotorblender_dest}\n\n{ipc_message}")
             else:
                 # Files installed but IPC verification failed
                 # This could mean Blender isn't running, or addon isn't enabled
@@ -798,13 +794,14 @@ def _generate_ipc_startup_script(
 
     This script starts the IPC server and optionally loads a module.
     """
+
     # Escape paths for Python string
     def escape_path(p: Path | str | None) -> str:
         if p is None:
             return "None"
         return repr(str(p))
 
-    script = f'''
+    script = f"""
 import sys
 import traceback
 
@@ -839,7 +836,7 @@ except ImportError as e:
 except Exception as e:
     print(f"[HolocronToolset] Error starting IPC server: {{e}}")
     traceback.print_exc()
-'''
+"""
 
     return script
 
@@ -854,7 +851,7 @@ class BlenderSettings:
         """Initialize BlenderSettings and load persisted values."""
         from qtpy.QtCore import QSettings
         from toolset.utils.misc import get_qsettings_organization
-        
+
         self._qsettings = QSettings(get_qsettings_organization("HolocronToolsetV4"), "Blender")
         self._load_settings()
 

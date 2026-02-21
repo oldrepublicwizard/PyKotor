@@ -149,11 +149,14 @@
            </item>
            <item row="4" column="1">
             <widget class="QSpinBox" name="creatorIdSpin">
+             <property name="toolTip">
+              <string>Creator ID (GFF: Mod_Creator_ID). INT32. Toolset creator identifier. Deprecated; unused at runtime. Modders: leave 0.</string>
+             </property>
+             <property name="minimum">
+              <number>-2147483648</number>
+             </property>
              <property name="maximum">
               <number>2147483647</number>
-             </property>
-             <property name="toolTip">
-              <string>Toolset creator identifier (deprecated, unused at runtime)</string>
              </property>
             </widget>
            </item>
@@ -169,11 +172,14 @@
            </item>
            <item row="5" column="1">
             <widget class="QSpinBox" name="versionSpin">
+             <property name="toolTip">
+              <string>Version (GFF: Mod_Version). DWORD. Module version number. Deprecated; unused at runtime. Modders: leave 0.</string>
+             </property>
+             <property name="minimum">
+              <number>0</number>
+             </property>
              <property name="maximum">
               <number>2147483647</number>
-             </property>
-             <property name="toolTip">
-              <string>Module version number (deprecated, unused at runtime)</string>
              </property>
             </widget>
            </item>
@@ -658,11 +664,14 @@
            </item>
            <item row="0" column="1">
             <widget class="QSpinBox" name="expansionPackSpin">
+             <property name="toolTip">
+              <string>Expansion Pack (GFF: Mod_Expansion_Pack). WORD. Bitfield: 0x01=Pack1, 0x02=Pack2. 0=no expansion required. Modders: 0 for standard modules.</string>
+             </property>
+             <property name="minimum">
+              <number>0</number>
+             </property>
              <property name="maximum">
               <number>65535</number>
-             </property>
-             <property name="toolTip">
-              <string>Required expansion bitfield. 0x01 = Expansion Pack 1, 0x02 = Expansion Pack 2, etc.</string>
              </property>
             </widget>
            </item>
@@ -770,14 +779,17 @@
            </item>
            <item row="2" column="1">
             <widget class="QSpinBox" name="xpScaleSpin">
+             <property name="toolTip">
+              <string>XP Scale (GFF: Mod_XP_Scale). INT32 0–200. Experience multiplier: 100=normal, 200=double XP, 50=half. Modders: adjust difficulty or reward pacing.</string>
+             </property>
+             <property name="minimum">
+              <number>0</number>
+             </property>
              <property name="maximum">
               <number>200</number>
              </property>
              <property name="suffix">
               <string>%</string>
-             </property>
-             <property name="toolTip">
-              <string>Experience point multiplier (0-200%). 100 = normal XP, 200 = double XP, 50 = half XP</string>
              </property>
             </widget>
            </item>
@@ -809,11 +821,14 @@
            </item>
            <item row="0" column="1">
             <widget class="QSpinBox" name="dawnHourSpin">
+             <property name="toolTip">
+              <string>Dawn Hour (GFF: Mod_DawnHour). INT32 0–23. Deprecated; day/night cycle not implemented in KotOR. Modders: leave 0.</string>
+             </property>
+             <property name="minimum">
+              <number>0</number>
+             </property>
              <property name="maximum">
               <number>23</number>
-             </property>
-             <property name="toolTip">
-              <string>Dawn start hour (deprecated, unused in KotOR). Intended for day/night cycle which is not implemented.</string>
              </property>
             </widget>
            </item>
@@ -829,11 +844,14 @@
            </item>
            <item row="1" column="1">
             <widget class="QSpinBox" name="duskHourSpin">
+             <property name="toolTip">
+              <string>Dusk Hour (GFF: Mod_DuskHour). INT32 0–23. Deprecated; day/night cycle not implemented. Modders: leave 0.</string>
+             </property>
+             <property name="minimum">
+              <number>0</number>
+             </property>
              <property name="maximum">
               <number>23</number>
-             </property>
-             <property name="toolTip">
-              <string>Dusk start hour (deprecated, unused in KotOR). Intended for day/night cycle which is not implemented.</string>
              </property>
             </widget>
            </item>
@@ -849,11 +867,14 @@
            </item>
            <item row="2" column="1">
             <widget class="QSpinBox" name="timeScaleSpin">
+             <property name="toolTip">
+              <string>Time Scale (GFF: Mod_TimeScale). INT32. Minutes per in-game hour. Deprecated; unused in KotOR. Modders: leave 0.</string>
+             </property>
+             <property name="minimum">
+              <number>0</number>
+             </property>
              <property name="maximum">
               <number>255</number>
-             </property>
-             <property name="toolTip">
-              <string>Minutes per hour (deprecated, unused in KotOR). Intended for time-based events which are not implemented.</string>
              </property>
             </widget>
            </item>
@@ -915,11 +936,14 @@
            </item>
            <item row="5" column="1">
             <widget class="QSpinBox" name="startHourSpin">
+             <property name="toolTip">
+              <string>Start Hour (GFF: Mod_StartHour). INT32 0–23. Deprecated; unused in KotOR.</string>
+             </property>
+             <property name="minimum">
+              <number>0</number>
+             </property>
              <property name="maximum">
               <number>23</number>
-             </property>
-             <property name="toolTip">
-              <string>Starting hour (deprecated, unused in KotOR)</string>
              </property>
             </widget>
            </item>
@@ -935,11 +959,14 @@
            </item>
            <item row="6" column="1">
             <widget class="QSpinBox" name="startYearSpin">
+             <property name="toolTip">
+              <string>Start Year (GFF: Mod_StartYear). INT32. Deprecated; unused in KotOR.</string>
+             </property>
+             <property name="minimum">
+              <number>0</number>
+             </property>
              <property name="maximum">
               <number>2147483647</number>
-             </property>
-             <property name="toolTip">
-              <string>Starting year (deprecated, unused in KotOR)</string>
              </property>
             </widget>
            </item>

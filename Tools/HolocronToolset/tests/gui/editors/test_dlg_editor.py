@@ -3,6 +3,7 @@
 This module tests all UI controls, context menus, dialogs, and interactions
 in the DLG Editor to ensure complete coverage of user-editable functionality.
 """
+
 from __future__ import annotations
 
 import json
@@ -20,7 +21,7 @@ from qtpy.QtGui import QStandardItem
 from qtpy.QtWidgets import QApplication, QDialogButtonBox
 
 from pykotor.common.language import LocalizedString  # pyright: ignore[reportMissingModuleSource]  # type: ignore[import-untyped, import-not-found, note]
-from pykotor.common.misc import ResRef  # pyright: ignore[reportMissingModuleSource]  # type: ignore[import-untyped, import-not-found, note]    
+from pykotor.common.misc import ResRef  # pyright: ignore[reportMissingModuleSource]  # type: ignore[import-untyped, import-not-found, note]
 from pykotor.resource.formats.gff import read_gff  # pyright: ignore[reportMissingModuleSource]  # type: ignore[import-untyped, import-not-found, note]
 from pykotor.resource.generics.dlg import DLG, DLGEntry, DLGLink, DLGNode, DLGReply, DLGComputerType, DLGConversationType, DLGStunt, DLGAnimation, read_dlg  # pyright: ignore[reportMissingModuleSource]  # type: ignore[import-untyped, import-not-found, note]
 from pykotor.resource.type import ResourceType  # pyright: ignore[reportMissingModuleSource]  # type: ignore[import-untyped, import-not-found, note]
@@ -47,11 +48,13 @@ class TestDLGStandardItemModel(unittest.TestCase):
     def setUpClass(cls):
         if K1_PATH is None or not os.path.exists(K1_PATH):
             import pytest
+
             pytest.skip("K1_PATH environment variable is not set or not found on disk.")
         # Try to use shared pre-warmed installation from conftest if available
         # This ensures expensive operations happen before any tests run, not during them
         import importlib.util
         from pathlib import Path
+
         conftest_path = Path(__file__).parents[2] / "conftest.py"
         conftest_module = None
         if conftest_path.exists():
@@ -65,7 +68,7 @@ class TestDLGStandardItemModel(unittest.TestCase):
                     if shared_inst is not None:
                         cls.installation = shared_inst
                         return
-        
+
         # Fallback: create new installation and pre-warm it (slower, but works)
         cls.installation = HTInstallation(K1_PATH, "", tsl=False)
         if conftest_module:
@@ -186,7 +189,7 @@ class TestDLGStandardItemModel(unittest.TestCase):
         ):
             if seen_nodes is None:
                 seen_nodes = set()
-            
+
             for i, link in enumerate(node.links):
                 assert link.list_index == i, f"Link list_index {link.list_index} == {i} before loading to the model"
                 if link.node is None or link.node in seen_nodes:
@@ -327,13 +330,14 @@ if __name__ == "__main__":
 # Pytest-based UI tests (merged from test_ui_dlg.py and test_ui_dlg_comprehensive.py)
 # ============================================================================
 
+
 def set_text_via_ui_dialog(qtbot: QtBot, editor: DLGEditor, item: DLGStandardItem, text: str) -> None:
     """Helper function to set node text via the UI dialog."""
     assert item.link is not None, "item.link should not be None"
     # Call edit_text to open the dialog
     editor.edit_text(indexes=[item.index()], source_widget=editor.ui.dialogTree)
     QApplication.processEvents()  # Wait for dialog to appear
-    
+
     # Find and interact with the dialog
     dialogs = [w for w in QApplication.topLevelWidgets() if isinstance(w, LocalizedStringDialog)]
     if dialogs:
@@ -358,40 +362,41 @@ def set_text_via_ui_dialog(qtbot: QtBot, editor: DLGEditor, item: DLGStandardIte
 # BASIC EDITOR TESTS
 # ============================================================================
 
+
 def test_dlg_editor_all_widgets_exist(qtbot: QtBot, installation: HTInstallation):
     """Verify ALL widgets exist in DLG editor."""
     editor = DLGEditor(None, installation)
     qtbot.addWidget(editor)
     editor.show()
-    
+
     # Main tree
-    assert hasattr(editor.ui, 'dialogTree')
-    
+    assert hasattr(editor.ui, "dialogTree")
+
     # Node editor widgets (right dock)
-    assert hasattr(editor.ui, 'speakerEdit')
+    assert hasattr(editor.ui, "speakerEdit")
     # NOTE: textEdit doesn't exist - text is edited via dialog, not a direct widget
-    assert hasattr(editor.ui, 'script1ResrefEdit')
-    assert hasattr(editor.ui, 'script2ResrefEdit')
-    assert hasattr(editor.ui, 'listenerEdit')
-    assert hasattr(editor.ui, 'voResrefEdit') or hasattr(editor.ui, 'voiceComboBox')
-    assert hasattr(editor.ui, 'soundComboBox')
-    assert hasattr(editor.ui, 'cameraAngleSelect') or hasattr(editor.ui, 'cameraAngleSpin')
-    assert hasattr(editor.ui, 'animsList')
-    assert hasattr(editor.ui, 'plotIndexCombo') or hasattr(editor.ui, 'plotIndexSpin')
-    assert hasattr(editor.ui, 'questEdit')
-    assert hasattr(editor.ui, 'questEntrySpin')
-    assert hasattr(editor.ui, 'commentsEdit')
-    
+    assert hasattr(editor.ui, "script1ResrefEdit")
+    assert hasattr(editor.ui, "script2ResrefEdit")
+    assert hasattr(editor.ui, "listenerEdit")
+    assert hasattr(editor.ui, "voResrefEdit") or hasattr(editor.ui, "voiceComboBox")
+    assert hasattr(editor.ui, "soundComboBox")
+    assert hasattr(editor.ui, "cameraAngleSelect") or hasattr(editor.ui, "cameraAngleSpin")
+    assert hasattr(editor.ui, "animsList")
+    assert hasattr(editor.ui, "plotIndexCombo") or hasattr(editor.ui, "plotIndexSpin")
+    assert hasattr(editor.ui, "questEdit")
+    assert hasattr(editor.ui, "questEntrySpin")
+    assert hasattr(editor.ui, "commentsEdit")
+
     # Search/find widgets
-    assert hasattr(editor, 'find_bar')
-    assert hasattr(editor, 'find_input')
-    assert hasattr(editor, 'results_label')
-    
+    assert hasattr(editor, "find_bar")
+    assert hasattr(editor, "find_input")
+    assert hasattr(editor, "results_label")
+
     # Dock widgets
-    assert hasattr(editor.ui, 'rightDockWidget')
-    assert hasattr(editor.ui, 'topDockWidget')
-    assert hasattr(editor, 'left_dock_widget')
-    assert hasattr(editor, 'orphaned_nodes_list')
+    assert hasattr(editor.ui, "rightDockWidget")
+    assert hasattr(editor.ui, "topDockWidget")
+    assert hasattr(editor, "left_dock_widget")
+    assert hasattr(editor, "orphaned_nodes_list")
 
 
 def test_dlg_editor_new_dlg(qtbot: QtBot, installation: HTInstallation):
@@ -399,9 +404,9 @@ def test_dlg_editor_new_dlg(qtbot: QtBot, installation: HTInstallation):
     editor = DLGEditor(None, installation)
     qtbot.addWidget(editor)
     editor.show()
-    
+
     editor.new()
-    
+
     # Model should be reset
     assert editor.model.rowCount() == 0
     assert len(editor.core_dlg.starters) == 0
@@ -413,11 +418,11 @@ def test_dlg_editor_add_root_node(qtbot: QtBot, installation: HTInstallation):
     qtbot.addWidget(editor)
     editor.show()
     editor.new()
-    
+
     # Add root node
     editor.model.add_root_node()
     assert editor.model.rowCount() == 1
-    
+
     root_item = editor.model.item(0, 0)
     assert isinstance(root_item, DLGStandardItem)
     assert root_item.link is not None
@@ -431,12 +436,12 @@ def test_dlg_editor_add_child_node(qtbot: QtBot, installation: HTInstallation):
     qtbot.addWidget(editor)
     editor.show()
     editor.new()
-    
+
     # Add root node
     editor.model.add_root_node()
     root_item = editor.model.item(0, 0)
     assert isinstance(root_item, DLGStandardItem)
-    
+
     # Add child (should be Reply since parent is Entry)
     child_item = editor.model.add_child_to_item(root_item)
     assert isinstance(child_item, DLGStandardItem)
@@ -452,28 +457,29 @@ def test_dlg_editor_add_child_node(qtbot: QtBot, installation: HTInstallation):
 # FILE-LEVEL WIDGETS (TOP DOCK) - Unit Tests
 # ============================================================================
 
+
 def test_dlg_editor_manipulate_conversation_type(qtbot: QtBot, installation: HTInstallation, test_files_dir: Path):
     """Test manipulating conversation type combo box."""
     editor = DLGEditor(None, installation)
     qtbot.addWidget(editor)
-    
+
     dlg_file = test_files_dir / "ORIHA.dlg"
     if not dlg_file.exists():
         pytest.skip("ORIHA.dlg not found")
-    
+
     original_data = dlg_file.read_bytes()
     editor.load(dlg_file, "ORIHA", ResourceType.DLG, original_data)
     original_dlg = read_dlg(original_data)
-    
+
     # Test all conversation types
     for i in range(editor.ui.conversationSelect.count()):
         editor.ui.conversationSelect.setCurrentIndex(i)
-        
+
         # Save and verify
         data, _ = editor.build()
         modified_dlg = read_dlg(data)
         assert modified_dlg.conversation_type == DLGConversationType(i)
-        
+
         # Load back and verify
         editor.load(dlg_file, "ORIHA", ResourceType.DLG, data)
         assert editor.ui.conversationSelect.currentIndex() == i
@@ -483,18 +489,18 @@ def test_dlg_editor_manipulate_computer_type(qtbot: QtBot, installation: HTInsta
     """Test manipulating computer type combo box."""
     editor = DLGEditor(None, installation)
     qtbot.addWidget(editor)
-    
+
     dlg_file = test_files_dir / "ORIHA.dlg"
     if not dlg_file.exists():
         pytest.skip("ORIHA.dlg not found")
-    
+
     original_data = dlg_file.read_bytes()
     editor.load(dlg_file, "ORIHA", ResourceType.DLG, original_data)
-    
+
     # Test all computer types
     for i in range(editor.ui.computerSelect.count()):
         editor.ui.computerSelect.setCurrentIndex(i)
-        
+
         # Save and verify
         data, _ = editor.build()
         modified_dlg = read_dlg(data)
@@ -505,24 +511,24 @@ def test_dlg_editor_manipulate_reply_delay_spin(qtbot: QtBot, installation: HTIn
     """Test manipulating reply delay spin box."""
     editor = DLGEditor(None, installation)
     qtbot.addWidget(editor)
-    
+
     dlg_file = test_files_dir / "ORIHA.dlg"
     if not dlg_file.exists():
         pytest.skip("ORIHA.dlg not found")
-    
+
     original_data = dlg_file.read_bytes()
     editor.load(dlg_file, "ORIHA", ResourceType.DLG, original_data)
-    
+
     # Test various delay values
     test_values = [0, 100, 500, 1000, 5000]
     for val in test_values:
         editor.ui.replyDelaySpin.setValue(val)
-        
+
         # Save and verify
         data, _ = editor.build()
         modified_dlg = read_dlg(data)
         assert modified_dlg.delay_reply == val
-        
+
         # Load back and verify
         editor.load(dlg_file, "ORIHA", ResourceType.DLG, data)
         assert editor.ui.replyDelaySpin.value() == val
@@ -532,19 +538,19 @@ def test_dlg_editor_manipulate_entry_delay_spin(qtbot: QtBot, installation: HTIn
     """Test manipulating entry delay spin box."""
     editor = DLGEditor(None, installation)
     qtbot.addWidget(editor)
-    
+
     dlg_file = test_files_dir / "ORIHA.dlg"
     if not dlg_file.exists():
         pytest.skip("ORIHA.dlg not found")
-    
+
     original_data = dlg_file.read_bytes()
     editor.load(dlg_file, "ORIHA", ResourceType.DLG, original_data)
-    
+
     # Test various delay values
     test_values = [0, 200, 1000, 2000]
     for val in test_values:
         editor.ui.entryDelaySpin.setValue(val)
-        
+
         # Save and verify
         data, _ = editor.build()
         modified_dlg = read_dlg(data)
@@ -555,19 +561,19 @@ def test_dlg_editor_manipulate_vo_id_edit(qtbot: QtBot, installation: HTInstalla
     """Test manipulating voiceover ID field."""
     editor = DLGEditor(None, installation)
     qtbot.addWidget(editor)
-    
+
     dlg_file = test_files_dir / "ORIHA.dlg"
     if not dlg_file.exists():
         pytest.skip("ORIHA.dlg not found")
-    
+
     original_data = dlg_file.read_bytes()
     editor.load(dlg_file, "ORIHA", ResourceType.DLG, original_data)
-    
+
     # Test various VO IDs
     test_vo_ids = ["", "vo_001", "vo_test_123", "vo_long_name"]
     for vo_id in test_vo_ids:
         editor.ui.voIdEdit.setText(vo_id)
-        
+
         # Save and verify
         data, _ = editor.build()
         modified_dlg = read_dlg(data)
@@ -578,17 +584,17 @@ def test_dlg_editor_manipulate_on_abort_combo(qtbot: QtBot, installation: HTInst
     """Test manipulating on abort script combo box."""
     editor = DLGEditor(None, installation)
     qtbot.addWidget(editor)
-    
+
     dlg_file = test_files_dir / "ORIHA.dlg"
     if not dlg_file.exists():
         pytest.skip("ORIHA.dlg not found")
-    
+
     original_data = dlg_file.read_bytes()
     editor.load(dlg_file, "ORIHA", ResourceType.DLG, original_data)
-    
+
     # Modify script
     editor.ui.onAbortCombo.set_combo_box_text("test_abort")
-    
+
     # Save and verify
     data, _ = editor.build()
     modified_dlg = read_dlg(data)
@@ -599,17 +605,17 @@ def test_dlg_editor_manipulate_on_end_edit(qtbot: QtBot, installation: HTInstall
     """Test manipulating on end script combo box."""
     editor = DLGEditor(None, installation)
     qtbot.addWidget(editor)
-    
+
     dlg_file = test_files_dir / "ORIHA.dlg"
     if not dlg_file.exists():
         pytest.skip("ORIHA.dlg not found")
-    
+
     original_data = dlg_file.read_bytes()
     editor.load(dlg_file, "ORIHA", ResourceType.DLG, original_data)
-    
+
     # Modify script
     editor.ui.onEndEdit.set_combo_box_text("test_on_end")
-    
+
     # Save and verify
     data, _ = editor.build()
     modified_dlg = read_dlg(data)
@@ -620,17 +626,17 @@ def test_dlg_editor_manipulate_camera_model_select(qtbot: QtBot, installation: H
     """Test manipulating camera model combo box."""
     editor = DLGEditor(None, installation)
     qtbot.addWidget(editor)
-    
+
     dlg_file = test_files_dir / "ORIHA.dlg"
     if not dlg_file.exists():
         pytest.skip("ORIHA.dlg not found")
-    
+
     original_data = dlg_file.read_bytes()
     editor.load(dlg_file, "ORIHA", ResourceType.DLG, original_data)
-    
+
     # Modify camera model
     editor.ui.cameraModelSelect.set_combo_box_text("test_camera")
-    
+
     # Save and verify
     data, _ = editor.build()
     modified_dlg = read_dlg(data)
@@ -641,17 +647,17 @@ def test_dlg_editor_manipulate_ambient_track_combo(qtbot: QtBot, installation: H
     """Test manipulating ambient track combo box."""
     editor = DLGEditor(None, installation)
     qtbot.addWidget(editor)
-    
+
     dlg_file = test_files_dir / "ORIHA.dlg"
     if not dlg_file.exists():
         pytest.skip("ORIHA.dlg not found")
-    
+
     original_data = dlg_file.read_bytes()
     editor.load(dlg_file, "ORIHA", ResourceType.DLG, original_data)
-    
+
     # Modify ambient track
     editor.ui.ambientTrackCombo.set_combo_box_text("test_ambient")
-    
+
     # Save and verify
     data, _ = editor.build()
     modified_dlg = read_dlg(data)
@@ -662,64 +668,64 @@ def test_dlg_editor_manipulate_file_level_checkboxes(qtbot: QtBot, installation:
     """Test manipulating all file-level checkboxes."""
     editor = DLGEditor(None, installation)
     qtbot.addWidget(editor)
-    
+
     dlg_file = test_files_dir / "ORIHA.dlg"
     if not dlg_file.exists():
         pytest.skip("ORIHA.dlg not found")
-    
+
     original_data = dlg_file.read_bytes()
     editor.load(dlg_file, "ORIHA", ResourceType.DLG, original_data)
-    
+
     # Test unequipHandsCheckbox
     editor.ui.unequipHandsCheckbox.setChecked(True)
     data, _ = editor.build()
     modified_dlg = read_dlg(data)
     assert modified_dlg.unequip_hands
-    
+
     editor.ui.unequipHandsCheckbox.setChecked(False)
     data, _ = editor.build()
     modified_dlg = read_dlg(data)
     assert not modified_dlg.unequip_hands
-    
+
     # Test unequipAllCheckbox
     editor.ui.unequipAllCheckbox.setChecked(True)
     data, _ = editor.build()
     modified_dlg = read_dlg(data)
     assert modified_dlg.unequip_items
-    
+
     editor.ui.unequipAllCheckbox.setChecked(False)
     data, _ = editor.build()
     modified_dlg = read_dlg(data)
     assert not modified_dlg.unequip_items
-    
+
     # Test skippableCheckbox
     editor.ui.skippableCheckbox.setChecked(True)
     data, _ = editor.build()
     modified_dlg = read_dlg(data)
     assert modified_dlg.skippable
-    
+
     editor.ui.skippableCheckbox.setChecked(False)
     data, _ = editor.build()
     modified_dlg = read_dlg(data)
     assert not modified_dlg.skippable
-    
+
     # Test animatedCutCheckbox
     editor.ui.animatedCutCheckbox.setChecked(True)
     data, _ = editor.build()
     modified_dlg = read_dlg(data)
     assert modified_dlg.animated_cut
-    
+
     editor.ui.animatedCutCheckbox.setChecked(False)
     data, _ = editor.build()
     modified_dlg = read_dlg(data)
     assert not modified_dlg.animated_cut
-    
+
     # Test oldHitCheckbox
     editor.ui.oldHitCheckbox.setChecked(True)
     data, _ = editor.build()
     modified_dlg = read_dlg(data)
     assert modified_dlg.old_hit_check
-    
+
     editor.ui.oldHitCheckbox.setChecked(False)
     data, _ = editor.build()
     modified_dlg = read_dlg(data)
@@ -730,202 +736,200 @@ def test_dlg_editor_manipulate_file_level_checkboxes(qtbot: QtBot, installation:
 # NODE-LEVEL WIDGETS (RIGHT DOCK) - Unit Tests
 # ============================================================================
 
+
 def test_dlg_editor_all_node_widgets_interactions(qtbot: QtBot, installation: HTInstallation):
     """Test ALL node editor widgets with exhaustive interactions."""
     editor = DLGEditor(None, installation)
     qtbot.addWidget(editor)
     editor.show()
     editor.new()
-    
+
     # Create a node to edit
     editor.model.add_root_node()
     root_item = editor.model.item(0, 0)
     assert isinstance(root_item, DLGStandardItem)
     assert root_item.link is not None
-    
+
     # Select it
     editor.ui.dialogTree.setCurrentIndex(root_item.index())
-    
+
     # Test speakerEdit - QLineEdit (only for Entry nodes)
     if isinstance(root_item.link.node, DLGEntry):
         editor.ui.speakerEdit.setText("TestSpeaker")
         editor.on_node_update()
         assert root_item.link.node.speaker == "TestSpeaker"
-    
+
     # Test listenerEdit - QLineEdit
     editor.ui.listenerEdit.setText("PLAYER")
     editor.on_node_update()
     assert root_item.link.node.listener == "PLAYER"
-    
+
     # Test script1ResrefEdit - ComboBox
     editor.ui.script1ResrefEdit.set_combo_box_text("test_script1")
     editor.on_node_update()
     assert str(root_item.link.node.script1) == "test_script1"
-    
+
     # Test script1Param spins
-    for i, param_name in enumerate(['script1Param1Spin', 'script1Param2Spin', 'script1Param3Spin', 
-                                    'script1Param4Spin', 'script1Param5Spin'], 1):
+    for i, param_name in enumerate(["script1Param1Spin", "script1Param2Spin", "script1Param3Spin", "script1Param4Spin", "script1Param5Spin"], 1):
         spin = getattr(editor.ui, param_name)
         spin.setValue(i * 10)
         editor.on_node_update()
-        assert getattr(root_item.link.node, f'script1_param{i}') == i * 10
-    
+        assert getattr(root_item.link.node, f"script1_param{i}") == i * 10
+
     # Test script1Param6Edit - QLineEdit
     editor.ui.script1Param6Edit.setText("param6_text")
     editor.on_node_update()
     assert root_item.link.node.script1_param6 == "param6_text"
-    
+
     # Test script2ResrefEdit - ComboBox
     editor.ui.script2ResrefEdit.set_combo_box_text("test_script2")
     editor.on_node_update()
     assert str(root_item.link.node.script2) == "test_script2"
-    
+
     # Test script2Param spins
-    for i, param_name in enumerate(['script2Param1Spin', 'script2Param2Spin', 'script2Param3Spin',
-                                    'script2Param4Spin', 'script2Param5Spin'], 1):
+    for i, param_name in enumerate(["script2Param1Spin", "script2Param2Spin", "script2Param3Spin", "script2Param4Spin", "script2Param5Spin"], 1):
         spin = getattr(editor.ui, param_name)
         spin.setValue(i * 5)
         editor.on_node_update()
-        assert getattr(root_item.link.node, f'script2_param{i}') == i * 5
-    
+        assert getattr(root_item.link.node, f"script2_param{i}") == i * 5
+
     # Test condition1ResrefEdit - ComboBox
     editor.ui.condition1ResrefEdit.set_combo_box_text("test_cond1")
     editor.on_node_update()
     assert str(root_item.link.active1) == "test_cond1"
-    
+
     # Test condition1Param spins
-    for i, param_name in enumerate(['condition1Param1Spin', 'condition1Param2Spin', 'condition1Param3Spin',
-                                    'condition1Param4Spin', 'condition1Param5Spin'], 1):
+    for i, param_name in enumerate(["condition1Param1Spin", "condition1Param2Spin", "condition1Param3Spin", "condition1Param4Spin", "condition1Param5Spin"], 1):
         spin = getattr(editor.ui, param_name)
         spin.setValue(i * 2)
         editor.on_node_update()
-        assert getattr(root_item.link, f'active1_param{i}') == i * 2
-    
+        assert getattr(root_item.link, f"active1_param{i}") == i * 2
+
     # Test condition1NotCheckbox
     editor.ui.condition1NotCheckbox.setChecked(True)
     editor.on_node_update()
     assert root_item.link.active1_not
-    
+
     # Test condition2ResrefEdit - ComboBox
     editor.ui.condition2ResrefEdit.set_combo_box_text("test_cond2")
     editor.on_node_update()
     assert str(root_item.link.active2) == "test_cond2"
-    
+
     # Test condition2NotCheckbox
     editor.ui.condition2NotCheckbox.setChecked(True)
     editor.on_node_update()
     assert root_item.link.active2_not
-    
+
     # Test emotionSelect - ComboBox
     if editor.ui.emotionSelect.count() > 0:
         editor.ui.emotionSelect.setCurrentIndex(1)
         editor.on_node_update()
         assert root_item.link.node.emotion_id == 1
-    
+
     # Test expressionSelect - ComboBox
     if editor.ui.expressionSelect.count() > 0:
         editor.ui.expressionSelect.setCurrentIndex(1)
         editor.on_node_update()
         assert root_item.link.node.facial_id == 1
-    
+
     # Test soundComboBox - ComboBox
     editor.ui.soundComboBox.set_combo_box_text("test_sound")
     editor.on_node_update()
     assert str(root_item.link.node.sound) == "test_sound"
-    
+
     # Test soundCheckbox
     editor.ui.soundCheckbox.setChecked(True)
     editor.on_node_update()
     assert root_item.link.node.sound_exists
-    
+
     # Test voiceComboBox - ComboBox
     editor.ui.voiceComboBox.set_combo_box_text("test_vo")
     editor.on_node_update()
     assert str(root_item.link.node.vo_resref) == "test_vo"
-    
+
     # Test plotIndexCombo - ComboBox
     if editor.ui.plotIndexCombo.count() > 0:
         editor.ui.plotIndexCombo.setCurrentIndex(5)
         editor.on_node_update()
         assert root_item.link.node.plot_index == 5
-    
+
     # Test plotXpSpin - QSpinBox
     editor.ui.plotXpSpin.setValue(50)
     editor.on_node_update()
     assert root_item.link.node.plot_xp_percentage == 50
-    
+
     # Test questEdit - QLineEdit
     editor.ui.questEdit.setText("test_quest")
     editor.on_node_update()
     assert root_item.link.node.quest == "test_quest"
-    
+
     # Test questEntrySpin - QSpinBox
     editor.ui.questEntrySpin.setValue(10)
     editor.on_node_update()
     assert root_item.link.node.quest_entry == 10
-    
+
     # Test cameraIdSpin - QSpinBox
     editor.ui.cameraIdSpin.setValue(1)
     editor.on_node_update()
     assert root_item.link.node.camera_id == 1
-    
+
     # Test cameraAnimSpin - QSpinBox
     editor.ui.cameraAnimSpin.setValue(1200)
     editor.on_node_update()
     assert root_item.link.node.camera_anim == 1200
-    
+
     # Test cameraAngleSelect - ComboBox
     if editor.ui.cameraAngleSelect.count() > 0:
         editor.ui.cameraAngleSelect.setCurrentIndex(1)
         editor.on_node_update()
         assert root_item.link.node.camera_angle == 1
-    
+
     # Test cameraEffectSelect - ComboBox
     if editor.ui.cameraEffectSelect.count() > 0:
         editor.ui.cameraEffectSelect.setCurrentIndex(1)
         editor.on_node_update()
         assert root_item.link.node.camera_effect == 1
-    
+
     # Test nodeUnskippableCheckbox
     editor.ui.nodeUnskippableCheckbox.setChecked(True)
     editor.on_node_update()
     assert root_item.link.node.unskippable
-    
+
     # Test nodeIdSpin - QSpinBox
     editor.ui.nodeIdSpin.setValue(5)
     editor.on_node_update()
     assert root_item.link.node.node_id == 5
-    
+
     # Test alienRaceNodeSpin - QSpinBox
     editor.ui.alienRaceNodeSpin.setValue(2)
     editor.on_node_update()
     assert root_item.link.node.alien_race_node == 2
-    
+
     # Test postProcSpin - QSpinBox
     editor.ui.postProcSpin.setValue(3)
     editor.on_node_update()
     assert root_item.link.node.post_proc_node == 3
-    
+
     # Test delaySpin - QSpinBox
     editor.ui.delaySpin.setValue(100)
     editor.on_node_update()
     assert root_item.link.node.delay == 100
-    
+
     # Test waitFlagSpin - QSpinBox
     editor.ui.waitFlagSpin.setValue(1)
     editor.on_node_update()
     assert root_item.link.node.wait_flags == 1
-    
+
     # Test fadeTypeSpin - QSpinBox
     editor.ui.fadeTypeSpin.setValue(2)
     editor.on_node_update()
     assert root_item.link.node.fade_type == 2
-    
+
     # Test logicSpin - QSpinBox
     editor.ui.logicSpin.setValue(1)
     editor.on_node_update()
     assert root_item.link.logic
-    
+
     # Test commentsEdit - QPlainTextEdit
     editor.ui.commentsEdit.setPlainText("Test comment\nLine 2")
     editor.on_node_update()
@@ -938,30 +942,30 @@ def test_dlg_editor_link_widgets_interactions(qtbot: QtBot, installation: HTInst
     qtbot.addWidget(editor)
     editor.show()
     editor.new()
-    
+
     # Create entry -> reply structure
     editor.model.add_root_node()
     root_item = editor.model.item(0, 0)
     assert isinstance(root_item, DLGStandardItem)
     assert root_item.link is not None
-    
+
     child_item = editor.model.add_child_to_item(root_item)
     assert isinstance(child_item, DLGStandardItem)
     assert child_item.link is not None
-    
+
     # Select child (Reply)
     editor.ui.dialogTree.setCurrentIndex(child_item.index())
-    
+
     # Test condition1ResrefEdit - already tested above but test again for child
     editor.ui.condition1ResrefEdit.set_combo_box_text("child_cond1")
     editor.on_node_update()
     assert str(child_item.link.active1) == "child_cond1"
-    
+
     # Test condition2ResrefEdit
     editor.ui.condition2ResrefEdit.set_combo_box_text("child_cond2")
     editor.on_node_update()
     assert str(child_item.link.active2) == "child_cond2"
-    
+
     # Test logicSpin
     editor.ui.logicSpin.setValue(0)
     editor.on_node_update()
@@ -970,7 +974,7 @@ def test_dlg_editor_link_widgets_interactions(qtbot: QtBot, installation: HTInst
 
 def test_dlg_editor_condition_params_full(qtbot: QtBot, installation: HTInstallation):
     """Test all condition parameters for both conditions (TSL-specific).
-    
+
     Note: Condition params are TSL-only features. This test checks that the UI
     correctly updates the in-memory model. The params will only persist when
     saving if the installation is TSL.
@@ -979,12 +983,12 @@ def test_dlg_editor_condition_params_full(qtbot: QtBot, installation: HTInstalla
     qtbot.addWidget(editor)
     editor.show()
     editor.new()
-    
+
     editor.model.add_root_node()
     root_item = editor.model.item(0, 0)
     assert isinstance(root_item, DLGStandardItem)
     editor.ui.dialogTree.setCurrentIndex(root_item.index())
-    
+
     # Test condition1 all params - these update in-memory model regardless of K1/TSL
     editor.ui.condition1Param1Spin.setValue(11)
     editor.ui.condition1Param2Spin.setValue(22)
@@ -993,7 +997,7 @@ def test_dlg_editor_condition_params_full(qtbot: QtBot, installation: HTInstalla
     editor.ui.condition1Param5Spin.setValue(55)
     editor.ui.condition1Param6Edit.setText("cond1_str")
     editor.on_node_update()
-    
+
     # In-memory values are always updated
     assert root_item.link.active1_param1 == 11
     assert root_item.link.active1_param2 == 22
@@ -1001,7 +1005,7 @@ def test_dlg_editor_condition_params_full(qtbot: QtBot, installation: HTInstalla
     assert root_item.link.active1_param4 == 44
     assert root_item.link.active1_param5 == 55
     assert root_item.link.active1_param6 == "cond1_str"
-    
+
     # Test condition2 all params
     editor.ui.condition2Param1Spin.setValue(111)
     editor.ui.condition2Param2Spin.setValue(222)
@@ -1010,7 +1014,7 @@ def test_dlg_editor_condition_params_full(qtbot: QtBot, installation: HTInstalla
     editor.ui.condition2Param5Spin.setValue(555)
     editor.ui.condition2Param6Edit.setText("cond2_str")
     editor.on_node_update()
-    
+
     assert root_item.link.active2_param1 == 111
     assert root_item.link.active2_param2 == 222
     assert root_item.link.active2_param3 == 333
@@ -1022,41 +1026,40 @@ def test_dlg_editor_condition_params_full(qtbot: QtBot, installation: HTInstalla
 def test_dlg_editor_help_dialog_opens_correct_file(qtbot: QtBot, installation: HTInstallation):
     """Test that DLGEditor help dialog opens and displays the correct help file (not 'Help File Not Found')."""
     from toolset.gui.dialogs.editor_help import EditorHelpDialog
-    
+
     editor = DLGEditor(None, installation)
     qtbot.addWidget(editor)
-    
+
     # Trigger help dialog with the correct file for DLG editor
     editor._show_help_dialog("GFF-DLG.md")
-    
+
     # Process events to allow dialog to be created
     qtbot.waitUntil(lambda: len(editor.findChildren(EditorHelpDialog)) > 0, timeout=2000)
-    
+
     # Find the help dialog
     dialogs = [child for child in editor.findChildren(EditorHelpDialog)]
     assert len(dialogs) > 0, "Help dialog should be opened"
-    
+
     dialog = dialogs[0]
     qtbot.addWidget(dialog)  # Add to qtbot for proper lifecycle management
     qtbot.waitExposed(dialog, timeout=2000)
-    
+
     # Wait for content to load by checking if HTML is populated
     qtbot.waitUntil(lambda: dialog.text_browser.toHtml().strip() != "", timeout=2000)
-    
+
     # Get the HTML content
     html = dialog.text_browser.toHtml()
-    
+
     # Assert that "Help File Not Found" error is NOT shown
-    assert "Help File Not Found" not in html, \
-        f"Help file 'GFF-DLG.md' should be found, but error was shown. HTML: {html[:500]}"
-    
+    assert "Help File Not Found" not in html, f"Help file 'GFF-DLG.md' should be found, but error was shown. HTML: {html[:500]}"
+
     # Assert that some content is present (file was loaded successfully)
     assert len(html) > 100, "Help dialog should contain content"
 
 
 def test_dlg_editor_script_params_full(qtbot: QtBot, installation: HTInstallation):
     """Test all script parameters for both scripts (TSL-specific).
-    
+
     Note: Script params are TSL-only features. This test checks that the UI
     correctly updates the in-memory model. The params will only persist when
     saving if the installation is TSL.
@@ -1065,12 +1068,12 @@ def test_dlg_editor_script_params_full(qtbot: QtBot, installation: HTInstallatio
     qtbot.addWidget(editor)
     editor.show()
     editor.new()
-    
+
     editor.model.add_root_node()
     root_item = editor.model.item(0, 0)
     assert isinstance(root_item, DLGStandardItem)
     editor.ui.dialogTree.setCurrentIndex(root_item.index())
-    
+
     # Test script1 all params - these update in-memory model regardless of K1/TSL
     editor.ui.script1Param1Spin.setValue(100)
     editor.ui.script1Param2Spin.setValue(200)
@@ -1079,7 +1082,7 @@ def test_dlg_editor_script_params_full(qtbot: QtBot, installation: HTInstallatio
     editor.ui.script1Param5Spin.setValue(500)
     editor.ui.script1Param6Edit.setText("script1_str")
     editor.on_node_update()
-    
+
     # In-memory values are always updated
     assert root_item.link.node.script1_param1 == 100
     assert root_item.link.node.script1_param2 == 200
@@ -1087,7 +1090,7 @@ def test_dlg_editor_script_params_full(qtbot: QtBot, installation: HTInstallatio
     assert root_item.link.node.script1_param4 == 400
     assert root_item.link.node.script1_param5 == 500
     assert root_item.link.node.script1_param6 == "script1_str"
-    
+
     # Test script2 all params
     editor.ui.script2Param1Spin.setValue(1000)
     editor.ui.script2Param2Spin.setValue(2000)
@@ -1096,7 +1099,7 @@ def test_dlg_editor_script_params_full(qtbot: QtBot, installation: HTInstallatio
     editor.ui.script2Param5Spin.setValue(5000)
     editor.ui.script2Param6Edit.setText("script2_str")
     editor.on_node_update()
-    
+
     assert root_item.link.node.script2_param1 == 1000
     assert root_item.link.node.script2_param2 == 2000
     assert root_item.link.node.script2_param3 == 3000
@@ -1111,12 +1114,12 @@ def test_dlg_editor_node_widget_build_verification(qtbot: QtBot, installation: H
     qtbot.addWidget(editor)
     editor.show()
     editor.new()
-    
+
     # Create and configure a node
     editor.model.add_root_node()
     root_item = editor.model.item(0, 0)
     assert isinstance(root_item, DLGStandardItem)
-    
+
     editor.ui.dialogTree.setCurrentIndex(root_item.index())
     editor.ui.speakerEdit.setText("TestSpeaker")
     editor.ui.listenerEdit.setText("PLAYER")
@@ -1132,19 +1135,19 @@ def test_dlg_editor_node_widget_build_verification(qtbot: QtBot, installation: H
     editor.ui.waitFlagSpin.setValue(2)
     editor.ui.fadeTypeSpin.setValue(1)
     editor.on_node_update()
-    
+
     # Set text via UI dialog
     set_text_via_ui_dialog(qtbot, editor, root_item, "Test Entry Text")
-    
+
     # Build and verify
     data, _ = editor.build()
     dlg = read_dlg(data)
-    
+
     assert len(dlg.starters) == 1
     assert isinstance(dlg.starters[0].node, DLGEntry)
     node = dlg.starters[0].node
     link = dlg.starters[0]
-    
+
     assert node.speaker == "TestSpeaker"
     assert node.listener == "PLAYER"
     assert str(node.script1) == "k_test"
@@ -1165,18 +1168,19 @@ def test_dlg_editor_node_widget_build_verification(qtbot: QtBot, installation: H
 # SEARCH FUNCTIONALITY TESTS
 # ============================================================================
 
+
 def test_dlg_editor_search_functionality(qtbot: QtBot, installation: HTInstallation):
     """Test search/find functionality without mocks."""
     editor = DLGEditor(None, installation)
     qtbot.addWidget(editor)
     editor.show()
     editor.new()
-    
+
     # Add some nodes with text
     editor.model.add_root_node()
     root_item = editor.model.item(0, 0)
     assert isinstance(root_item, DLGStandardItem)
-    
+
     # Set text on root using edit_text method (opens dialog)
     editor.ui.dialogTree.setCurrentIndex(root_item.index())
     # Text editing is done via dialog, so we test the method exists
@@ -1184,18 +1188,18 @@ def test_dlg_editor_search_functionality(qtbot: QtBot, installation: HTInstallat
     # Instead verify the node has text property
     assert root_item.link.node is not None, "root_item.link.node should not be None"
     assert root_item.link.node.text is not None, "root_item.link.node.text should not be None"
-    
+
     # Show find bar
     editor.show_find_bar()
     assert editor.find_bar.isVisible()
-    
+
     # Search for text
     editor.find_input.setText("Hello")
     editor.handle_find()
-    
+
     # Should find the node
     assert len(editor.search_results) > 0 or editor.results_label.text() == "No results found"
-    
+
     # Test search with no results
     editor.find_input.setText("NonexistentText12345")
     editor.handle_find()
@@ -1208,7 +1212,7 @@ def test_dlg_editor_search_with_operators(qtbot: QtBot, installation: HTInstalla
     qtbot.addWidget(editor)
     editor.show()
     editor.new()
-    
+
     # Add root with specific properties
     editor.model.add_root_node()
     root_item = editor.model.item(0, 0)
@@ -1217,13 +1221,13 @@ def test_dlg_editor_search_with_operators(qtbot: QtBot, installation: HTInstalla
     editor.ui.speakerEdit.setText("TestSpeaker")
     editor.ui.listenerEdit.setText("PLAYER")
     editor.on_node_update()
-    
+
     # Test attribute search
     editor.show_find_bar()
     editor.find_input.setText("speaker:TestSpeaker")
     editor.handle_find()
     # Verify results
-    
+
     # Test AND operator
     editor.find_input.setText("speaker:TestSpeaker AND listener:PLAYER")
     editor.handle_find()
@@ -1235,15 +1239,15 @@ def test_dlg_editor_search_navigation(qtbot: QtBot, installation: HTInstallation
     qtbot.addWidget(editor)
     editor.show()
     editor.new()
-    
+
     # Add multiple nodes
     for _ in range(3):
         editor.model.add_root_node()
-    
+
     editor.show_find_bar()
     editor.find_input.setText("")  # Empty search finds all
     editor.handle_find()
-    
+
     if editor.search_results:
         initial_index = editor.current_result_index
         editor.handle_find()  # Move forward
@@ -1255,38 +1259,39 @@ def test_dlg_editor_search_navigation(qtbot: QtBot, installation: HTInstallation
 # TREE OPERATIONS TESTS
 # ============================================================================
 
+
 def test_dlg_editor_copy_paste_real(qtbot: QtBot, installation: HTInstallation):
     """Test copy/paste functionality without mocks."""
     editor = DLGEditor(None, installation)
     qtbot.addWidget(editor)
     editor.show()
     editor.new()
-    
+
     # Create a node
     editor.model.add_root_node()
     root_item = editor.model.item(0, 0)
     assert isinstance(root_item, DLGStandardItem)
-    
+
     # Set some data
     editor.ui.dialogTree.setCurrentIndex(root_item.index())
     editor.ui.speakerEdit.setText("TestSpeaker")
-    
+
     # Test text editing via UI dialog
     set_text_via_ui_dialog(qtbot, editor, root_item, "Test Text")
     editor.on_node_update()
-    
+
     # Copy using real method (on model)
     editor.model.copy_link_and_node(root_item.link)
-    
+
     # Verify clipboard has data
     clipboard = QApplication.clipboard()
     assert clipboard is not None
     clipboard_text = clipboard.text()
     assert len(clipboard_text) > 0
-    
+
     # Verify _copy is set
     assert editor._copy is not None
-    
+
     # Paste into model
     editor.model.paste_item(None, editor._copy)
     assert editor.model.rowCount() == 2  # Original + pasted
@@ -1298,14 +1303,14 @@ def test_dlg_editor_delete_node(qtbot: QtBot, installation: HTInstallation):
     qtbot.addWidget(editor)
     editor.show()
     editor.new()
-    
+
     # Add root node
     editor.model.add_root_node()
     assert editor.model.rowCount() == 1
-    
+
     root_item = editor.model.item(0, 0)
     assert isinstance(root_item, DLGStandardItem)
-    
+
     # Delete it
     editor.model.delete_node(root_item)
     assert editor.model.rowCount() == 0
@@ -1318,19 +1323,19 @@ def test_dlg_editor_tree_expansion(qtbot: QtBot, installation: HTInstallation):
     qtbot.addWidget(editor)
     editor.show()
     editor.new()
-    
+
     # Add root with child
     editor.model.add_root_node()
     root_item = editor.model.item(0, 0)
     assert isinstance(root_item, DLGStandardItem)
-    
+
     child_item = editor.model.add_child_to_item(root_item)
-    
+
     # Expand root
     root_index = root_item.index()
     editor.ui.dialogTree.expand(root_index)
     assert editor.ui.dialogTree.isExpanded(root_index)
-    
+
     # Collapse
     editor.ui.dialogTree.collapse(root_index)
     assert not editor.ui.dialogTree.isExpanded(root_index)
@@ -1342,24 +1347,24 @@ def test_dlg_editor_move_item_up_down(qtbot: QtBot, installation: HTInstallation
     qtbot.addWidget(editor)
     editor.show()
     editor.new()
-    
+
     # Add multiple root nodes
     editor.model.add_root_node()
     editor.model.add_root_node()
     editor.model.add_root_node()
-    
+
     assert editor.model.rowCount() == 3
-    
+
     item0 = editor.model.item(0, 0)
     item1 = editor.model.item(1, 0)
-    
+
     # Store original order
     link0 = item0.link
     link1 = item1.link
-    
+
     # Move first item down
     editor.model.shift_item(item0, 1)
-    
+
     # Verify order changed
     new_item0 = editor.model.item(0, 0)
     new_item1 = editor.model.item(1, 0)
@@ -1373,19 +1378,19 @@ def test_dlg_editor_delete_node_everywhere(qtbot: QtBot, installation: HTInstall
     qtbot.addWidget(editor)
     editor.show()
     editor.new()
-    
+
     # Create structure with multiple references
     editor.model.add_root_node()
     root_item = editor.model.item(0, 0)
     assert isinstance(root_item, DLGStandardItem)
-    
+
     child = editor.model.add_child_to_item(root_item)
-    
+
     initial_count = editor.model.rowCount()
-    
+
     # Delete all references to root node
     editor.model.delete_node_everywhere(root_item.link.node)
-    
+
     # Should have fewer items
     assert editor.model.rowCount() < initial_count or editor.model.rowCount() == 0
 
@@ -1394,18 +1399,19 @@ def test_dlg_editor_delete_node_everywhere(qtbot: QtBot, installation: HTInstall
 # CONTEXT MENU TESTS
 # ============================================================================
 
+
 def test_dlg_editor_context_menu(qtbot: QtBot, installation: HTInstallation):
     """Test context menu functionality."""
     editor = DLGEditor(None, installation)
     qtbot.addWidget(editor)
     editor.show()
     editor.new()
-    
+
     # Add root node
     editor.model.add_root_node()
     root_item = editor.model.item(0, 0)
     assert isinstance(root_item, DLGStandardItem)
-    
+
     # Right-click should show context menu
     # We verify the signal is connected
     assert editor.ui.dialogTree.receivers(editor.ui.dialogTree.customContextMenuRequested) > 0
@@ -1417,19 +1423,20 @@ def test_dlg_editor_context_menu_creation(qtbot: QtBot, installation: HTInstalla
     qtbot.addWidget(editor)
     editor.show()
     editor.new()
-    
+
     # Add root node
     editor.model.add_root_node()
     root_item = editor.model.item(0, 0)
     assert isinstance(root_item, DLGStandardItem)
-    
+
     # Get context menu for item
     from toolset.gui.editors.dlg.list_widget_base import DLGListWidgetItem
+
     menu = editor._get_link_context_menu(editor.ui.dialogTree, root_item)
-    
+
     # Verify menu has expected actions
     action_texts = [action.text() for action in menu.actions() if action.text()]
-    
+
     # Check for essential actions
     assert any("Edit Text" in t for t in action_texts)
     assert any("Copy" in t for t in action_texts)
@@ -1441,24 +1448,25 @@ def test_dlg_editor_context_menu_creation(qtbot: QtBot, installation: HTInstalla
 # UNDO/REDO TESTS
 # ============================================================================
 
+
 def test_dlg_editor_undo_redo(qtbot: QtBot, installation: HTInstallation):
     """Test undo/redo functionality."""
     editor = DLGEditor(None, installation)
     qtbot.addWidget(editor)
     editor.show()
     editor.new()
-    
+
     # Add root node
     editor.model.add_root_node()
     assert editor.model.rowCount() == 1
-    
+
     # Undo stack should exist
     assert editor.undo_stack is not None
-    
+
     # Test undo (if available)
     if editor.undo_stack.canUndo():
         editor.undo_stack.undo()
-    
+
     # Test redo (if available)
     if editor.undo_stack.canRedo():
         editor.undo_stack.redo()
@@ -1468,21 +1476,22 @@ def test_dlg_editor_undo_redo(qtbot: QtBot, installation: HTInstallation):
 # ORPHANED NODES TESTS
 # ============================================================================
 
+
 def test_dlg_editor_orphaned_nodes(qtbot: QtBot, installation: HTInstallation):
     """Test orphaned nodes list."""
     editor = DLGEditor(None, installation)
     qtbot.addWidget(editor)
     editor.show()
     editor.new()
-    
+
     # Add root node
     editor.model.add_root_node()
     root_item = editor.model.item(0, 0)
     assert isinstance(root_item, DLGStandardItem)
-    
+
     # Orphaned nodes list should exist
     assert editor.orphaned_nodes_list is not None
-    
+
     # Delete node - should potentially create orphaned node if it has children
     # This is complex logic, but we verify the list exists
 
@@ -1491,19 +1500,20 @@ def test_dlg_editor_orphaned_nodes(qtbot: QtBot, installation: HTInstallation):
 # MENU TESTS
 # ============================================================================
 
+
 def test_dlg_editor_all_menus(qtbot: QtBot, installation: HTInstallation):
     """Test all menu actions exist and are accessible."""
     editor = DLGEditor(None, installation)
     qtbot.addWidget(editor)
     editor.show()
-    
+
     # Verify menu actions exist
-    assert hasattr(editor.ui, 'actionReloadTree')
-    
+    assert hasattr(editor.ui, "actionReloadTree")
+
     # Test reload tree action
     editor.model.add_root_node()
     assert editor.model.rowCount() == 1
-    
+
     editor.ui.actionReloadTree.trigger()
     # Tree should reload (may clear or maintain state depending on implementation)
 
@@ -1512,16 +1522,17 @@ def test_dlg_editor_all_menus(qtbot: QtBot, installation: HTInstallation):
 # STUNT MANAGEMENT TESTS
 # ============================================================================
 
+
 def test_dlg_editor_stunt_list_exists(qtbot: QtBot, installation: HTInstallation):
     """Test stunt list widget exists."""
     editor = DLGEditor(None, installation)
     qtbot.addWidget(editor)
     editor.show()
-    
-    assert hasattr(editor.ui, 'stuntList')
-    assert hasattr(editor.ui, 'addStuntButton')
-    assert hasattr(editor.ui, 'removeStuntButton')
-    assert hasattr(editor.ui, 'editStuntButton')
+
+    assert hasattr(editor.ui, "stuntList")
+    assert hasattr(editor.ui, "addStuntButton")
+    assert hasattr(editor.ui, "removeStuntButton")
+    assert hasattr(editor.ui, "editStuntButton")
 
 
 def test_dlg_editor_add_stunt_programmatically(qtbot: QtBot, installation: HTInstallation):
@@ -1530,17 +1541,17 @@ def test_dlg_editor_add_stunt_programmatically(qtbot: QtBot, installation: HTIns
     qtbot.addWidget(editor)
     editor.show()
     editor.new()
-    
+
     # Add stunt directly to DLG
     stunt = DLGStunt()
     stunt.stunt_model = ResRef("test_model")
     stunt.participant = "PLAYER"
     editor.core_dlg.stunts.append(stunt)
     editor.refresh_stunt_list()
-    
+
     # Verify stunt is in list
     assert editor.ui.stuntList.count() == 1
-    
+
     # Build and verify
     data, _ = editor.build()
     dlg = read_dlg(data)
@@ -1555,21 +1566,21 @@ def test_dlg_editor_remove_stunt(qtbot: QtBot, installation: HTInstallation):
     qtbot.addWidget(editor)
     editor.show()
     editor.new()
-    
+
     # Add stunt
     stunt = DLGStunt()
     stunt.stunt_model = ResRef("test_model")
     stunt.participant = "PLAYER"
     editor.core_dlg.stunts.append(stunt)
     editor.refresh_stunt_list()
-    
+
     assert editor.ui.stuntList.count() == 1
-    
+
     # Select and remove
     editor.ui.stuntList.setCurrentRow(0)
     editor.core_dlg.stunts.remove(stunt)
     editor.refresh_stunt_list()
-    
+
     assert editor.ui.stuntList.count() == 0
 
 
@@ -1579,17 +1590,17 @@ def test_dlg_editor_multiple_stunts(qtbot: QtBot, installation: HTInstallation):
     qtbot.addWidget(editor)
     editor.show()
     editor.new()
-    
+
     # Add multiple stunts
     for i in range(5):
         stunt = DLGStunt()
         stunt.stunt_model = ResRef(f"model_{i}")
         stunt.participant = f"PARTICIPANT_{i}"
         editor.core_dlg.stunts.append(stunt)
-    
+
     editor.refresh_stunt_list()
     assert editor.ui.stuntList.count() == 5
-    
+
     # Build and verify
     data, _ = editor.build()
     dlg = read_dlg(data)
@@ -1600,16 +1611,17 @@ def test_dlg_editor_multiple_stunts(qtbot: QtBot, installation: HTInstallation):
 # ANIMATION MANAGEMENT TESTS
 # ============================================================================
 
+
 def test_dlg_editor_animation_list_exists(qtbot: QtBot, installation: HTInstallation):
     """Test animation list widget exists."""
     editor = DLGEditor(None, installation)
     qtbot.addWidget(editor)
     editor.show()
-    
-    assert hasattr(editor.ui, 'animsList')
-    assert hasattr(editor.ui, 'addAnimButton')
-    assert hasattr(editor.ui, 'removeAnimButton')
-    assert hasattr(editor.ui, 'editAnimButton')
+
+    assert hasattr(editor.ui, "animsList")
+    assert hasattr(editor.ui, "addAnimButton")
+    assert hasattr(editor.ui, "removeAnimButton")
+    assert hasattr(editor.ui, "editAnimButton")
 
 
 def test_dlg_editor_add_animation_programmatically(qtbot: QtBot, installation: HTInstallation):
@@ -1618,22 +1630,22 @@ def test_dlg_editor_add_animation_programmatically(qtbot: QtBot, installation: H
     qtbot.addWidget(editor)
     editor.show()
     editor.new()
-    
+
     # Create node and select it
     editor.model.add_root_node()
     root_item = editor.model.item(0, 0)
     editor.ui.dialogTree.setCurrentIndex(root_item.index())
-    
+
     # Add animation to node
     anim = DLGAnimation()
     anim.animation_id = 1
     anim.participant = "PLAYER"
     root_item.link.node.animations.append(anim)
     editor.refresh_anim_list()
-    
+
     # Verify animation is in list
     assert editor.ui.animsList.count() == 1
-    
+
     # Build and verify
     data, _ = editor.build()
     dlg = read_dlg(data)
@@ -1646,24 +1658,24 @@ def test_dlg_editor_remove_animation(qtbot: QtBot, installation: HTInstallation)
     qtbot.addWidget(editor)
     editor.show()
     editor.new()
-    
+
     # Create node with animation
     editor.model.add_root_node()
     root_item = editor.model.item(0, 0)
     editor.ui.dialogTree.setCurrentIndex(root_item.index())
-    
+
     anim = DLGAnimation()
     anim.animation_id = 1
     anim.participant = "PLAYER"
     root_item.link.node.animations.append(anim)
     editor.refresh_anim_list()
-    
+
     assert editor.ui.animsList.count() == 1
-    
+
     # Remove
     root_item.link.node.animations.remove(anim)
     editor.refresh_anim_list()
-    
+
     assert editor.ui.animsList.count() == 0
 
 
@@ -1673,18 +1685,18 @@ def test_dlg_editor_multiple_animations(qtbot: QtBot, installation: HTInstallati
     qtbot.addWidget(editor)
     editor.show()
     editor.new()
-    
+
     editor.model.add_root_node()
     root_item = editor.model.item(0, 0)
     editor.ui.dialogTree.setCurrentIndex(root_item.index())
-    
+
     # Add multiple animations
     for i in range(3):
         anim = DLGAnimation()
         anim.animation_id = i
         anim.participant = f"PARTICIPANT_{i}"
         root_item.link.node.animations.append(anim)
-    
+
     editor.refresh_anim_list()
     assert editor.ui.animsList.count() == 3
 
@@ -1693,20 +1705,21 @@ def test_dlg_editor_multiple_animations(qtbot: QtBot, installation: HTInstallati
 # LOAD REAL FILE TESTS
 # ============================================================================
 
+
 def test_dlg_editor_load_real_file(qtbot: QtBot, installation: HTInstallation, test_files_dir: Path):
     """Test loading a real DLG file."""
     editor = DLGEditor(None, installation)
     qtbot.addWidget(editor)
-    
+
     dlg_file = test_files_dir / "ORIHA.dlg"
     if not dlg_file.exists():
         pytest.skip("ORIHA.dlg not found")
-    
+
     editor.load(dlg_file, "ORIHA", ResourceType.DLG, dlg_file.read_bytes())
-    
+
     # Verify tree populated
     assert editor.model.rowCount() > 0
-    
+
     # Verify widgets populated when selecting first node
     if editor.model.rowCount() > 0:
         first_item = editor.model.item(0, 0)
@@ -1722,18 +1735,18 @@ def test_dlg_editor_load_and_save_preserves_data(qtbot: QtBot, installation: HTI
     """Test that loading and saving preserves all data."""
     editor = DLGEditor(None, installation)
     qtbot.addWidget(editor)
-    
+
     dlg_file = test_files_dir / "ORIHA.dlg"
     if not dlg_file.exists():
         pytest.skip("ORIHA.dlg not found")
-    
+
     original_data = dlg_file.read_bytes()
     original_dlg = read_dlg(original_data)
-    
+
     editor.load(dlg_file, "ORIHA", ResourceType.DLG, original_data)
     saved_data, _ = editor.build()
     saved_dlg = read_dlg(saved_data)
-    
+
     # Compare key properties
     assert len(saved_dlg.starters) == len(original_dlg.starters)
     assert saved_dlg.conversation_type == original_dlg.conversation_type
@@ -1747,19 +1760,19 @@ def test_dlg_editor_load_multiple_files(qtbot: QtBot, installation: HTInstallati
     """Test loading multiple DLG files in sequence."""
     editor = DLGEditor(None, installation)
     qtbot.addWidget(editor)
-    
+
     dlg_file = test_files_dir / "ORIHA.dlg"
     if not dlg_file.exists():
         pytest.skip("ORIHA.dlg not found")
-    
+
     # Load first time
     editor.load(dlg_file, "ORIHA", ResourceType.DLG, dlg_file.read_bytes())
     first_count = editor.model.rowCount()
-    
+
     # Create new
     editor.new()
     assert editor.model.rowCount() == 0
-    
+
     # Load again
     editor.load(dlg_file, "ORIHA", ResourceType.DLG, dlg_file.read_bytes())
     assert editor.model.rowCount() == first_count
@@ -1769,28 +1782,30 @@ def test_dlg_editor_load_multiple_files(qtbot: QtBot, installation: HTInstallati
 # GFF ROUNDTRIP TESTS
 # ============================================================================
 
+
 def test_dlg_editor_gff_roundtrip_no_modification(qtbot: QtBot, installation: HTInstallation, test_files_dir: Path):
     """Test GFF roundtrip without any modifications."""
     editor = DLGEditor(None, installation)
     qtbot.addWidget(editor)
-    
+
     dlg_file = test_files_dir / "ORIHA.dlg"
     if not dlg_file.exists():
         pytest.skip("ORIHA.dlg not found")
-    
+
     original_data = dlg_file.read_bytes()
-    
+
     # Load
     editor.load(dlg_file, "ORIHA", ResourceType.DLG, original_data)
-    
+
     # Save without modification
     saved_data, _ = editor.build()
-    
+
     # Compare GFF structures
     from pykotor.resource.formats.gff import read_gff
+
     original_gff = read_gff(original_data)
     saved_gff = read_gff(saved_data)
-    
+
     # Root should have same number of fields (allowing for minor differences)
     # NOTE: Some fields may differ due to defaults being added
     assert original_gff.root is not None
@@ -1803,38 +1818,38 @@ def test_dlg_editor_create_from_scratch_roundtrip(qtbot: QtBot, installation: HT
     qtbot.addWidget(editor)
     editor.show()
     editor.new()
-    
+
     # Create structure
     editor.model.add_root_node()
     root_item = editor.model.item(0, 0)
     editor.ui.dialogTree.setCurrentIndex(root_item.index())
-    
+
     # Set file-level properties
     editor.ui.conversationSelect.setCurrentIndex(1)
     editor.ui.skippableCheckbox.setChecked(True)
     editor.ui.onAbortCombo.set_combo_box_text("test_abort")
-    
+
     # Set node properties
     editor.ui.speakerEdit.setText("TestSpeaker")
     editor.ui.listenerEdit.setText("PLAYER")
     editor.ui.script1ResrefEdit.set_combo_box_text("k_test")
     editor.ui.commentsEdit.setPlainText("Test comment")
     editor.on_node_update()
-    
+
     # Add child
     child = editor.model.add_child_to_item(root_item)
     editor.ui.dialogTree.setCurrentIndex(child.index())
     editor.ui.condition1ResrefEdit.set_combo_box_text("c_test")
     editor.on_node_update()
-    
+
     # Build
     data, _ = editor.build()
-    
+
     # Load in new editor
     editor2 = DLGEditor(None, installation)
     qtbot.addWidget(editor2)
     editor2.load(Path("test.dlg"), "test", ResourceType.DLG, data)
-    
+
     # Verify structure
     assert editor2.model.rowCount() == 1
     assert editor2.ui.conversationSelect.currentIndex() == 1
@@ -1845,14 +1860,15 @@ def test_dlg_editor_create_from_scratch_roundtrip(qtbot: QtBot, installation: HT
 # KEYBOARD SHORTCUT TESTS (non-interactive verification)
 # ============================================================================
 
+
 def test_dlg_editor_keyboard_shortcuts_exist(qtbot: QtBot, installation: HTInstallation):
     """Test that keyboard shortcuts are properly set up."""
     editor = DLGEditor(None, installation)
     qtbot.addWidget(editor)
     editor.show()
-    
+
     # Verify keys_down tracking exists
-    assert hasattr(editor, 'keys_down')
+    assert hasattr(editor, "keys_down")
     assert isinstance(editor.keys_down, set)
 
 
@@ -1862,20 +1878,21 @@ def test_dlg_editor_key_press_handling(qtbot: QtBot, installation: HTInstallatio
     qtbot.addWidget(editor)
     editor.show()
     editor.new()
-    
+
     # Add a node to work with
     editor.model.add_root_node()
     root_item = editor.model.item(0, 0)
     editor.ui.dialogTree.setCurrentIndex(root_item.index())
-    
+
     # Verify keyPressEvent is implemented
-    assert hasattr(editor, 'keyPressEvent')
-    assert hasattr(editor, 'keyReleaseEvent')
+    assert hasattr(editor, "keyPressEvent")
+    assert hasattr(editor, "keyReleaseEvent")
 
 
 # ============================================================================
 # FOCUS AND REFERENCE TESTS
 # ============================================================================
+
 
 def test_dlg_editor_focus_on_node(qtbot: QtBot, installation: HTInstallation):
     """Test focusing on a specific node."""
@@ -1883,15 +1900,15 @@ def test_dlg_editor_focus_on_node(qtbot: QtBot, installation: HTInstallation):
     qtbot.addWidget(editor)
     editor.show()
     editor.new()
-    
+
     # Create structure
     editor.model.add_root_node()
     root_item = editor.model.item(0, 0)
     child = editor.model.add_child_to_item(root_item)
-    
+
     # Focus on child's link
     result = editor.focus_on_node(child.link)
-    
+
     # Should return focused item
     assert result is not None or editor._focused
 
@@ -1902,13 +1919,13 @@ def test_dlg_editor_find_references(qtbot: QtBot, installation: HTInstallation):
     qtbot.addWidget(editor)
     editor.show()
     editor.new()
-    
+
     # Create structure with potential references
     editor.model.add_root_node()
     root_item = editor.model.item(0, 0)
-    
+
     # Verify find_references method exists
-    assert hasattr(editor, 'find_references')
+    assert hasattr(editor, "find_references")
 
 
 def test_dlg_editor_jump_to_node(qtbot: QtBot, installation: HTInstallation):
@@ -1917,13 +1934,13 @@ def test_dlg_editor_jump_to_node(qtbot: QtBot, installation: HTInstallation):
     qtbot.addWidget(editor)
     editor.show()
     editor.new()
-    
+
     editor.model.add_root_node()
     root_item = editor.model.item(0, 0)
-    
+
     # Jump to node
     editor.jump_to_node(root_item.link)
-    
+
     # Current index should be the root item
     current = editor.ui.dialogTree.currentIndex()
     assert current.isValid()
@@ -1933,19 +1950,20 @@ def test_dlg_editor_jump_to_node(qtbot: QtBot, installation: HTInstallation):
 # ENTRY VS REPLY NODE TYPE TESTS
 # ============================================================================
 
+
 def test_dlg_editor_entry_has_speaker(qtbot: QtBot, installation: HTInstallation):
     """Test that Entry nodes have speaker field visible."""
     editor = DLGEditor(None, installation)
     qtbot.addWidget(editor)
     editor.show()
     editor.new()
-    
+
     editor.model.add_root_node()
     root_item = editor.model.item(0, 0)
     assert isinstance(root_item.link.node, DLGEntry)
-    
+
     editor.ui.dialogTree.setCurrentIndex(root_item.index())
-    
+
     # Speaker should be visible for Entry
     assert editor.ui.speakerEdit.isVisible()
     assert editor.ui.speakerEditLabel.isVisible()
@@ -1957,15 +1975,15 @@ def test_dlg_editor_reply_hides_speaker(qtbot: QtBot, installation: HTInstallati
     qtbot.addWidget(editor)
     editor.show()
     editor.new()
-    
+
     # Create Entry -> Reply
     editor.model.add_root_node()
     root_item = editor.model.item(0, 0)
     child = editor.model.add_child_to_item(root_item)
     assert isinstance(child.link.node, DLGReply)
-    
+
     editor.ui.dialogTree.setCurrentIndex(child.index())
-    
+
     # Speaker should be hidden for Reply
     assert not editor.ui.speakerEdit.isVisible()
     assert not editor.ui.speakerEditLabel.isVisible()
@@ -1977,16 +1995,16 @@ def test_dlg_editor_alternating_node_types(qtbot: QtBot, installation: HTInstall
     qtbot.addWidget(editor)
     editor.show()
     editor.new()
-    
+
     # Start with Entry (root)
     editor.model.add_root_node()
     root = editor.model.item(0, 0)
     assert isinstance(root.link.node, DLGEntry)
-    
+
     # Add child - should be Reply
     child1 = editor.model.add_child_to_item(root)
     assert isinstance(child1.link.node, DLGReply)
-    
+
     # Add grandchild - should be Entry
     child2 = editor.model.add_child_to_item(child1)
     assert isinstance(child2.link.node, DLGEntry)
@@ -1996,13 +2014,14 @@ def test_dlg_editor_alternating_node_types(qtbot: QtBot, installation: HTInstall
 # COMPREHENSIVE BUILD/IO VALIDATION TESTS
 # ============================================================================
 
+
 def test_dlg_editor_build_all_file_properties(qtbot: QtBot, installation: HTInstallation):
     """Test that build() correctly saves all file-level properties."""
     editor = DLGEditor(None, installation)
     qtbot.addWidget(editor)
     editor.show()
     editor.new()
-    
+
     # Set all file-level properties
     editor.ui.conversationSelect.setCurrentIndex(2)
     editor.ui.computerSelect.setCurrentIndex(1)
@@ -2018,14 +2037,14 @@ def test_dlg_editor_build_all_file_properties(qtbot: QtBot, installation: HTInst
     editor.ui.onEndEdit.set_combo_box_text("end_script")
     editor.ui.ambientTrackCombo.set_combo_box_text("ambient")
     editor.ui.cameraModelSelect.set_combo_box_text("cam_mdl")
-    
+
     # Add at least one node
     editor.model.add_root_node()
-    
+
     # Build
     data, _ = editor.build()
     dlg = read_dlg(data)
-    
+
     # Verify all properties
     assert dlg.conversation_type == DLGConversationType(2)
     assert dlg.computer_type == DLGComputerType(1)
@@ -2049,13 +2068,13 @@ def test_dlg_editor_build_all_node_properties(qtbot: QtBot, installation: HTInst
     qtbot.addWidget(editor)
     editor.show()
     editor.new()
-    
+
     is_tsl = installation.tsl  # TSL-specific params only persist for K2
-    
+
     editor.model.add_root_node()
     root_item = editor.model.item(0, 0)
     editor.ui.dialogTree.setCurrentIndex(root_item.index())
-    
+
     # Set all node properties
     editor.ui.speakerEdit.setText("SPEAKER_TAG")
     editor.ui.listenerEdit.setText("LISTENER_TAG")
@@ -2091,12 +2110,12 @@ def test_dlg_editor_build_all_node_properties(qtbot: QtBot, installation: HTInst
     editor.ui.fadeTypeSpin.setValue(2)
     editor.ui.commentsEdit.setPlainText("Test node comment")
     editor.on_node_update()
-    
+
     # Build
     data, _ = editor.build()
     dlg = read_dlg(data)
     node = dlg.starters[0].node
-    
+
     # Verify K1-compatible properties
     assert node.speaker == "SPEAKER_TAG"
     assert node.listener == "LISTENER_TAG"
@@ -2112,7 +2131,7 @@ def test_dlg_editor_build_all_node_properties(qtbot: QtBot, installation: HTInst
     assert node.wait_flags == 3
     assert node.fade_type == 2
     assert node.comment == "Test node comment"
-    
+
     # Verify TSL-specific properties (only when installation is TSL)
     if is_tsl:
         assert node.script1_param1 == 1
@@ -2140,13 +2159,13 @@ def test_dlg_editor_build_all_link_properties(qtbot: QtBot, installation: HTInst
     qtbot.addWidget(editor)
     editor.show()
     editor.new()
-    
+
     is_tsl = installation.tsl  # TSL-specific params only persist for K2
-    
+
     editor.model.add_root_node()
     root_item = editor.model.item(0, 0)
     editor.ui.dialogTree.setCurrentIndex(root_item.index())
-    
+
     # Set link properties (K1 supports active1 script, TSL supports all params)
     editor.ui.condition1ResrefEdit.set_combo_box_text("cond1")
     if is_tsl:
@@ -2167,15 +2186,15 @@ def test_dlg_editor_build_all_link_properties(qtbot: QtBot, installation: HTInst
         editor.ui.condition2NotCheckbox.setChecked(True)
         editor.ui.logicSpin.setValue(1)
     editor.on_node_update()
-    
+
     # Build
     data, _ = editor.build()
     dlg = read_dlg(data)
     link = dlg.starters[0]
-    
+
     # Verify K1-compatible link properties
     assert str(link.active1) == "cond1"
-    
+
     # Verify TSL-specific link properties
     if is_tsl:
         assert link.active1_param1 == 101
@@ -2200,13 +2219,14 @@ def test_dlg_editor_build_all_link_properties(qtbot: QtBot, installation: HTInst
 # PINNED ITEMS TESTS
 # ============================================================================
 
+
 def test_dlg_editor_pinned_items_list_exists(qtbot: QtBot, installation: HTInstallation):
     """Test pinned items list widget exists."""
     editor = DLGEditor(None, installation)
     qtbot.addWidget(editor)
     editor.show()
-    
-    assert hasattr(editor, 'pinned_items_list')
+
+    assert hasattr(editor, "pinned_items_list")
     assert editor.pinned_items_list is not None
 
 
@@ -2215,16 +2235,17 @@ def test_dlg_editor_left_dock_widget(qtbot: QtBot, installation: HTInstallation)
     editor = DLGEditor(None, installation)
     qtbot.addWidget(editor)
     editor.show()
-    
-    assert hasattr(editor, 'left_dock_widget')
+
+    assert hasattr(editor, "left_dock_widget")
     assert editor.left_dock_widget is not None
-    assert hasattr(editor, 'orphaned_nodes_list')
-    assert hasattr(editor, 'pinned_items_list')
+    assert hasattr(editor, "orphaned_nodes_list")
+    assert hasattr(editor, "pinned_items_list")
 
 
 # ============================================================================
 # EDGE CASE TESTS
 # ============================================================================
+
 
 def test_dlg_editor_empty_dlg(qtbot: QtBot, installation: HTInstallation):
     """Test handling empty DLG."""
@@ -2232,11 +2253,11 @@ def test_dlg_editor_empty_dlg(qtbot: QtBot, installation: HTInstallation):
     qtbot.addWidget(editor)
     editor.show()
     editor.new()
-    
+
     # Empty DLG should have no starters
     assert editor.model.rowCount() == 0
     assert len(editor.core_dlg.starters) == 0
-    
+
     # Build should still work
     data, _ = editor.build()
     dlg = read_dlg(data)
@@ -2249,18 +2270,18 @@ def test_dlg_editor_deep_nesting(qtbot: QtBot, installation: HTInstallation):
     qtbot.addWidget(editor)
     editor.show()
     editor.new()
-    
+
     # Create deep nesting
     editor.model.add_root_node()
     current = editor.model.item(0, 0)
-    
+
     for _ in range(10):
         current = editor.model.add_child_to_item(current)
-    
+
     # Build should work
     data, _ = editor.build()
     dlg = read_dlg(data)
-    
+
     # Verify structure depth
     depth = 0
     node = dlg.starters[0].node
@@ -2276,14 +2297,14 @@ def test_dlg_editor_many_siblings(qtbot: QtBot, installation: HTInstallation):
     qtbot.addWidget(editor)
     editor.show()
     editor.new()
-    
+
     # Create many root nodes
     for _ in range(20):
         editor.model.add_root_node()
-    
+
     assert editor.model.rowCount() == 20
     assert len(editor.core_dlg.starters) == 20
-    
+
     # Build and verify
     data, _ = editor.build()
     dlg = read_dlg(data)
@@ -2296,23 +2317,23 @@ def test_dlg_editor_special_characters_in_text(qtbot: QtBot, installation: HTIns
     qtbot.addWidget(editor)
     editor.show()
     editor.new()
-    
+
     editor.model.add_root_node()
     root_item = editor.model.item(0, 0)
     editor.ui.dialogTree.setCurrentIndex(root_item.index())
-    
+
     # Test special characters in various fields
     editor.ui.speakerEdit.setText("Speaker<>&\"'")
     editor.ui.listenerEdit.setText("Listener\n\t")
     editor.ui.questEdit.setText("Quest with spaces")
     editor.ui.commentsEdit.setPlainText("Comment with\nmultiple\nlines")
     editor.on_node_update()
-    
+
     # Build and verify
     data, _ = editor.build()
     dlg = read_dlg(data)
     node = dlg.starters[0].node
-    
+
     assert node.speaker == "Speaker<>&\"'"
     assert node.listener == "Listener\n\t"
     assert node.quest == "Quest with spaces"
@@ -2325,21 +2346,21 @@ def test_dlg_editor_max_values(qtbot: QtBot, installation: HTInstallation):
     qtbot.addWidget(editor)
     editor.show()
     editor.new()
-    
+
     editor.model.add_root_node()
     root_item = editor.model.item(0, 0)
     editor.ui.dialogTree.setCurrentIndex(root_item.index())
-    
+
     # Set maximum values
     editor.ui.delaySpin.setValue(editor.ui.delaySpin.maximum())
     editor.ui.nodeIdSpin.setValue(editor.ui.nodeIdSpin.maximum())
     editor.ui.plotXpSpin.setValue(editor.ui.plotXpSpin.maximum())
     editor.on_node_update()
-    
+
     # Build should work
     data, _ = editor.build()
     dlg = read_dlg(data)
-    
+
     # Values should be preserved
     assert dlg.starters[0].node.delay == editor.ui.delaySpin.maximum()
 
@@ -2350,213 +2371,222 @@ def test_dlg_editor_negative_values(qtbot: QtBot, installation: HTInstallation):
     qtbot.addWidget(editor)
     editor.show()
     editor.new()
-    
+
     editor.model.add_root_node()
     root_item = editor.model.item(0, 0)
     editor.ui.dialogTree.setCurrentIndex(root_item.index())
-    
+
     # Set to -1 (common "unset" value)
     editor.ui.cameraIdSpin.setValue(-1)
     editor.on_node_update()
-    
+
     # Build and verify
     data, _ = editor.build()
     dlg = read_dlg(data)
     assert dlg.starters[0].node.camera_id == -1
 
+
 # ============================================================================
 # GRANULAR FIELD-BY-FIELD TESTS (Following ARE Editor Pattern)
 # ============================================================================
+
 
 def test_dlg_editor_manipulate_speaker_roundtrip(qtbot: QtBot, installation: HTInstallation, test_files_dir: Path):
     """Test manipulating speaker field with save/load roundtrip."""
     editor = DLGEditor(None, installation)
     qtbot.addWidget(editor)
-    
+
     dlg_file = test_files_dir / "ORIHA.dlg"
     if not dlg_file.exists():
         pytest.skip("ORIHA.dlg not found")
-    
+
     original_data = dlg_file.read_bytes()
     editor.load(dlg_file, "ORIHA", ResourceType.DLG, original_data)
     original_dlg = read_dlg(original_data)
-    
+
     # Find first Entry node
     if editor.model.rowCount() > 0:
         first_item = editor.model.item(0, 0)
         if isinstance(first_item, DLGStandardItem) and isinstance(first_item.link.node, DLGEntry):
             editor.ui.dialogTree.setCurrentIndex(first_item.index())
-            
+
             # Modify speaker
             editor.ui.speakerEdit.setText("ModifiedSpeaker")
             editor.on_node_update()
-            
+
             # Save and verify
             data, _ = editor.build()
             modified_dlg = read_dlg(data)
-            
+
             # Find the modified node
             modified_node = modified_dlg.starters[0].node if modified_dlg.starters else None
             if modified_node and isinstance(modified_node, DLGEntry):
                 assert modified_node.speaker == "ModifiedSpeaker"
-                assert modified_node.speaker != original_dlg.starters[0].node.speaker if original_dlg.starters and isinstance(original_dlg.starters[0].node, DLGEntry) else True
-                
+                assert (
+                    modified_node.speaker != original_dlg.starters[0].node.speaker if original_dlg.starters and isinstance(original_dlg.starters[0].node, DLGEntry) else True
+                )
+
                 # Load back and verify
                 editor.load(dlg_file, "ORIHA", ResourceType.DLG, data)
                 editor.ui.dialogTree.setCurrentIndex(first_item.index())
                 assert editor.ui.speakerEdit.text() == "ModifiedSpeaker"
 
+
 def test_dlg_editor_manipulate_listener_roundtrip(qtbot: QtBot, installation: HTInstallation, test_files_dir: Path):
     """Test manipulating listener field with save/load roundtrip."""
     editor = DLGEditor(None, installation)
     qtbot.addWidget(editor)
-    
+
     dlg_file = test_files_dir / "ORIHA.dlg"
     if not dlg_file.exists():
         pytest.skip("ORIHA.dlg not found")
-    
+
     original_data = dlg_file.read_bytes()
     editor.load(dlg_file, "ORIHA", ResourceType.DLG, original_data)
-    
+
     if editor.model.rowCount() > 0:
         first_item = editor.model.item(0, 0)
         if isinstance(first_item, DLGStandardItem):
             editor.ui.dialogTree.setCurrentIndex(first_item.index())
-            
+
             # Modify listener
             test_listeners = ["PLAYER", "COMPANION", "NPC", ""]
             for listener in test_listeners:
                 editor.ui.listenerEdit.setText(listener)
                 editor.on_node_update()
-                
+
                 # Save and verify
                 data, _ = editor.build()
                 modified_dlg = read_dlg(data)
                 if modified_dlg.starters:
                     assert modified_dlg.starters[0].node.listener == listener
-                    
+
                     # Load back and verify
                     editor.load(dlg_file, "ORIHA", ResourceType.DLG, data)
                     editor.ui.dialogTree.setCurrentIndex(first_item.index())
                     assert editor.ui.listenerEdit.text() == listener
 
+
 def test_dlg_editor_manipulate_script1_roundtrip(qtbot: QtBot, installation: HTInstallation, test_files_dir: Path):
     """Test manipulating script1 field with save/load roundtrip."""
     editor = DLGEditor(None, installation)
     qtbot.addWidget(editor)
-    
+
     dlg_file = test_files_dir / "ORIHA.dlg"
     if not dlg_file.exists():
         pytest.skip("ORIHA.dlg not found")
-    
+
     original_data = dlg_file.read_bytes()
     editor.load(dlg_file, "ORIHA", ResourceType.DLG, original_data)
-    
+
     if editor.model.rowCount() > 0:
         first_item = editor.model.item(0, 0)
         if isinstance(first_item, DLGStandardItem):
             editor.ui.dialogTree.setCurrentIndex(first_item.index())
-            
+
             # Modify script1
             editor.ui.script1ResrefEdit.set_combo_box_text("test_script1")
             editor.on_node_update()
-            
+
             # Save and verify
             data, _ = editor.build()
             modified_dlg = read_dlg(data)
             if modified_dlg.starters:
                 assert str(modified_dlg.starters[0].node.script1) == "test_script1"
-                
+
                 # Load back and verify
                 editor.load(dlg_file, "ORIHA", ResourceType.DLG, data)
                 editor.ui.dialogTree.setCurrentIndex(first_item.index())
                 assert editor.ui.script1ResrefEdit.currentText() == "test_script1"
 
+
 def test_dlg_editor_manipulate_script1_param1_roundtrip(qtbot: QtBot, installation: HTInstallation, test_files_dir: Path):
     """Test manipulating script1 param1 with save/load roundtrip."""
     editor = DLGEditor(None, installation)
     qtbot.addWidget(editor)
-    
+
     dlg_file = test_files_dir / "ORIHA.dlg"
     if not dlg_file.exists():
         pytest.skip("ORIHA.dlg not found")
-    
+
     original_data = dlg_file.read_bytes()
     editor.load(dlg_file, "ORIHA", ResourceType.DLG, original_data)
-    
+
     if editor.model.rowCount() > 0:
         first_item = editor.model.item(0, 0)
         if isinstance(first_item, DLGStandardItem):
             editor.ui.dialogTree.setCurrentIndex(first_item.index())
-            
+
             # Test various param1 values (TSL only, but test that UI updates in-memory model)
             test_values = [0, 1, 42, 100, -1]
             for val in test_values:
                 editor.ui.script1Param1Spin.setValue(val)
                 editor.on_node_update()
-                
+
                 # Verify in-memory model updated (always works)
                 assert first_item.link.node.script1_param1 == val
+
 
 def test_dlg_editor_manipulate_condition1_roundtrip(qtbot: QtBot, installation: HTInstallation, test_files_dir: Path):
     """Test manipulating condition1 field with save/load roundtrip."""
     editor = DLGEditor(None, installation)
     qtbot.addWidget(editor)
-    
+
     dlg_file = test_files_dir / "ORIHA.dlg"
     if not dlg_file.exists():
         pytest.skip("ORIHA.dlg not found")
-    
+
     original_data = dlg_file.read_bytes()
     editor.load(dlg_file, "ORIHA", ResourceType.DLG, original_data)
-    
+
     if editor.model.rowCount() > 0:
         first_item = editor.model.item(0, 0)
         if isinstance(first_item, DLGStandardItem):
             editor.ui.dialogTree.setCurrentIndex(first_item.index())
-            
+
             # Modify condition1
             editor.ui.condition1ResrefEdit.set_combo_box_text("test_condition1")
             editor.on_node_update()
-            
+
             # Save and verify
             data, _ = editor.build()
             modified_dlg = read_dlg(data)
             if modified_dlg.starters:
                 assert str(modified_dlg.starters[0].active1) == "test_condition1"
-                
+
                 # Load back and verify
                 editor.load(dlg_file, "ORIHA", ResourceType.DLG, data)
                 editor.ui.dialogTree.setCurrentIndex(first_item.index())
                 assert editor.ui.condition1ResrefEdit.currentText() == "test_condition1"
 
+
 def test_dlg_editor_manipulate_condition1_not_roundtrip(qtbot: QtBot, installation: HTInstallation, test_files_dir: Path):
     """Test manipulating condition1 NOT checkbox with save/load roundtrip."""
     editor = DLGEditor(None, installation)
     qtbot.addWidget(editor)
-    
+
     dlg_file = test_files_dir / "ORIHA.dlg"
     if not dlg_file.exists():
         pytest.skip("ORIHA.dlg not found")
-    
+
     original_data = dlg_file.read_bytes()
     editor.load(dlg_file, "ORIHA", ResourceType.DLG, original_data)
-    
+
     if editor.model.rowCount() > 0:
         first_item = editor.model.item(0, 0)
         if isinstance(first_item, DLGStandardItem):
             editor.ui.dialogTree.setCurrentIndex(first_item.index())
-            
+
             # Toggle checkbox
             editor.ui.condition1NotCheckbox.setChecked(True)
             editor.on_node_update()
-            
+
             # Save and verify
             data, _ = editor.build()
             modified_dlg = read_dlg(data)
             if modified_dlg.starters:
                 assert modified_dlg.starters[0].active1_not
-                
+
                 # Toggle off
                 editor.ui.condition1NotCheckbox.setChecked(False)
                 editor.on_node_update()
@@ -2565,125 +2595,129 @@ def test_dlg_editor_manipulate_condition1_not_roundtrip(qtbot: QtBot, installati
                 if modified_dlg.starters:
                     assert not modified_dlg.starters[0].active1_not
 
+
 def test_dlg_editor_manipulate_emotion_roundtrip(qtbot: QtBot, installation: HTInstallation, test_files_dir: Path):
     """Test manipulating emotion field with save/load roundtrip."""
     editor = DLGEditor(None, installation)
     qtbot.addWidget(editor)
-    
+
     dlg_file = test_files_dir / "ORIHA.dlg"
     if not dlg_file.exists():
         pytest.skip("ORIHA.dlg not found")
-    
+
     original_data = dlg_file.read_bytes()
     editor.load(dlg_file, "ORIHA", ResourceType.DLG, original_data)
-    
+
     if editor.model.rowCount() > 0:
         first_item = editor.model.item(0, 0)
         if isinstance(first_item, DLGStandardItem):
             editor.ui.dialogTree.setCurrentIndex(first_item.index())
-            
+
             # Test emotion selection (if available)
             if editor.ui.emotionSelect.count() > 0:
                 for i in range(min(5, editor.ui.emotionSelect.count())):
                     editor.ui.emotionSelect.setCurrentIndex(i)
                     editor.on_node_update()
-                    
+
                     # Save and verify
                     data, _ = editor.build()
                     modified_dlg = read_dlg(data)
                     if modified_dlg.starters:
                         assert modified_dlg.starters[0].node.emotion_id == i
 
+
 def test_dlg_editor_manipulate_expression_roundtrip(qtbot: QtBot, installation: HTInstallation, test_files_dir: Path):
     """Test manipulating expression field with save/load roundtrip."""
     editor = DLGEditor(None, installation)
     qtbot.addWidget(editor)
-    
+
     dlg_file = test_files_dir / "ORIHA.dlg"
     if not dlg_file.exists():
         pytest.skip("ORIHA.dlg not found")
-    
+
     original_data = dlg_file.read_bytes()
     editor.load(dlg_file, "ORIHA", ResourceType.DLG, original_data)
-    
+
     if editor.model.rowCount() > 0:
         first_item = editor.model.item(0, 0)
         if isinstance(first_item, DLGStandardItem):
             editor.ui.dialogTree.setCurrentIndex(first_item.index())
-            
+
             # Test expression selection (if available)
             if editor.ui.expressionSelect.count() > 0:
                 for i in range(min(5, editor.ui.expressionSelect.count())):
                     editor.ui.expressionSelect.setCurrentIndex(i)
                     editor.on_node_update()
-                    
+
                     # Save and verify
                     data, _ = editor.build()
                     modified_dlg = read_dlg(data)
                     if modified_dlg.starters:
                         assert modified_dlg.starters[0].node.facial_id == i
 
+
 def test_dlg_editor_manipulate_sound_roundtrip(qtbot: QtBot, installation: HTInstallation, test_files_dir: Path):
     """Test manipulating sound field with save/load roundtrip."""
     editor = DLGEditor(None, installation)
     qtbot.addWidget(editor)
-    
+
     dlg_file = test_files_dir / "ORIHA.dlg"
     if not dlg_file.exists():
         pytest.skip("ORIHA.dlg not found")
-    
+
     original_data = dlg_file.read_bytes()
     editor.load(dlg_file, "ORIHA", ResourceType.DLG, original_data)
-    
+
     if editor.model.rowCount() > 0:
         first_item = editor.model.item(0, 0)
         if isinstance(first_item, DLGStandardItem):
             editor.ui.dialogTree.setCurrentIndex(first_item.index())
-            
+
             # Modify sound
             test_sounds = ["test_sound", "another_sound", ""]
             for sound in test_sounds:
                 editor.ui.soundComboBox.set_combo_box_text(sound)
                 editor.on_node_update()
-                
+
                 # Save and verify
                 data, _ = editor.build()
                 modified_dlg = read_dlg(data)
                 if modified_dlg.starters:
                     assert str(modified_dlg.starters[0].node.sound) == sound
-                    
+
                     # Load back and verify
                     editor.load(dlg_file, "ORIHA", ResourceType.DLG, data)
                     editor.ui.dialogTree.setCurrentIndex(first_item.index())
                     assert editor.ui.soundComboBox.currentText() == sound
 
+
 def test_dlg_editor_manipulate_sound_checkbox_roundtrip(qtbot: QtBot, installation: HTInstallation, test_files_dir: Path):
     """Test manipulating sound exists checkbox with save/load roundtrip."""
     editor = DLGEditor(None, installation)
     qtbot.addWidget(editor)
-    
+
     dlg_file = test_files_dir / "ORIHA.dlg"
     if not dlg_file.exists():
         pytest.skip("ORIHA.dlg not found")
-    
+
     original_data = dlg_file.read_bytes()
     editor.load(dlg_file, "ORIHA", ResourceType.DLG, original_data)
-    
+
     if editor.model.rowCount() > 0:
         first_item = editor.model.item(0, 0)
         if isinstance(first_item, DLGStandardItem):
             editor.ui.dialogTree.setCurrentIndex(first_item.index())
-            
+
             # Toggle checkbox
             editor.ui.soundCheckbox.setChecked(True)
             editor.on_node_update()
-            
+
             # Save and verify
             data, _ = editor.build()
             modified_dlg = read_dlg(data)
             if modified_dlg.starters:
                 assert modified_dlg.starters[0].node.sound_exists
-                
+
                 # Toggle off
                 editor.ui.soundCheckbox.setChecked(False)
                 editor.on_node_update()
@@ -2692,125 +2726,129 @@ def test_dlg_editor_manipulate_sound_checkbox_roundtrip(qtbot: QtBot, installati
                 if modified_dlg.starters:
                     assert not modified_dlg.starters[0].node.sound_exists
 
+
 def test_dlg_editor_manipulate_quest_roundtrip(qtbot: QtBot, installation: HTInstallation, test_files_dir: Path):
     """Test manipulating quest field with save/load roundtrip."""
     editor = DLGEditor(None, installation)
     qtbot.addWidget(editor)
-    
+
     dlg_file = test_files_dir / "ORIHA.dlg"
     if not dlg_file.exists():
         pytest.skip("ORIHA.dlg not found")
-    
+
     original_data = dlg_file.read_bytes()
     editor.load(dlg_file, "ORIHA", ResourceType.DLG, original_data)
-    
+
     if editor.model.rowCount() > 0:
         first_item = editor.model.item(0, 0)
         if isinstance(first_item, DLGStandardItem):
             editor.ui.dialogTree.setCurrentIndex(first_item.index())
-            
+
             # Modify quest
             test_quests = ["test_quest", "quest_001", ""]
             for quest in test_quests:
                 editor.ui.questEdit.setText(quest)
                 editor.on_node_update()
-                
+
                 # Save and verify
                 data, _ = editor.build()
                 modified_dlg = read_dlg(data)
                 if modified_dlg.starters:
                     assert modified_dlg.starters[0].node.quest == quest
-                    
+
                     # Load back and verify
                     editor.load(dlg_file, "ORIHA", ResourceType.DLG, data)
                     editor.ui.dialogTree.setCurrentIndex(first_item.index())
                     assert editor.ui.questEdit.text() == quest
 
+
 def test_dlg_editor_manipulate_quest_entry_roundtrip(qtbot: QtBot, installation: HTInstallation, test_files_dir: Path):
     """Test manipulating quest entry spin box with save/load roundtrip."""
     editor = DLGEditor(None, installation)
     qtbot.addWidget(editor)
-    
+
     dlg_file = test_files_dir / "ORIHA.dlg"
     if not dlg_file.exists():
         pytest.skip("ORIHA.dlg not found")
-    
+
     original_data = dlg_file.read_bytes()
     editor.load(dlg_file, "ORIHA", ResourceType.DLG, original_data)
-    
+
     if editor.model.rowCount() > 0:
         first_item = editor.model.item(0, 0)
         if isinstance(first_item, DLGStandardItem):
             editor.ui.dialogTree.setCurrentIndex(first_item.index())
-            
+
             # Test various quest entry values
             test_values = [0, 1, 5, 10, 50]
             for val in test_values:
                 editor.ui.questEntrySpin.setValue(val)
                 editor.on_node_update()
-                
+
                 # Save and verify
                 data, _ = editor.build()
                 modified_dlg = read_dlg(data)
                 if modified_dlg.starters:
                     assert modified_dlg.starters[0].node.quest_entry == val
-                    
+
                     # Load back and verify
                     editor.load(dlg_file, "ORIHA", ResourceType.DLG, data)
                     editor.ui.dialogTree.setCurrentIndex(first_item.index())
                     assert editor.ui.questEntrySpin.value() == val
 
+
 def test_dlg_editor_manipulate_plot_xp_roundtrip(qtbot: QtBot, installation: HTInstallation, test_files_dir: Path):
     """Test manipulating plot XP percentage with save/load roundtrip."""
     editor = DLGEditor(None, installation)
     qtbot.addWidget(editor)
-    
+
     dlg_file = test_files_dir / "ORIHA.dlg"
     if not dlg_file.exists():
         pytest.skip("ORIHA.dlg not found")
-    
+
     original_data = dlg_file.read_bytes()
     editor.load(dlg_file, "ORIHA", ResourceType.DLG, original_data)
-    
+
     if editor.model.rowCount() > 0:
         first_item = editor.model.item(0, 0)
         if isinstance(first_item, DLGStandardItem):
             editor.ui.dialogTree.setCurrentIndex(first_item.index())
-            
+
             # Test various XP percentages
             test_values = [0, 25, 50, 75, 100]
             for val in test_values:
                 editor.ui.plotXpSpin.setValue(val)
                 editor.on_node_update()
-                
+
                 # Save and verify
                 data, _ = editor.build()
                 modified_dlg = read_dlg(data)
                 if modified_dlg.starters:
                     assert modified_dlg.starters[0].node.plot_xp_percentage == val
-                    
+
                     # Load back and verify
                     editor.load(dlg_file, "ORIHA", ResourceType.DLG, data)
                     editor.ui.dialogTree.setCurrentIndex(first_item.index())
                     assert editor.ui.plotXpSpin.value() == val
 
+
 def test_dlg_editor_manipulate_comments_roundtrip(qtbot: QtBot, installation: HTInstallation, test_files_dir: Path):
     """Test manipulating comments field with save/load roundtrip."""
     editor = DLGEditor(None, installation)
     qtbot.addWidget(editor)
-    
+
     dlg_file = test_files_dir / "ORIHA.dlg"
     if not dlg_file.exists():
         pytest.skip("ORIHA.dlg not found")
-    
+
     original_data = dlg_file.read_bytes()
     editor.load(dlg_file, "ORIHA", ResourceType.DLG, original_data)
-    
+
     if editor.model.rowCount() > 0:
         first_item = editor.model.item(0, 0)
         if isinstance(first_item, DLGStandardItem):
             editor.ui.dialogTree.setCurrentIndex(first_item.index())
-            
+
             # Test various comment texts
             test_comments = [
                 "",
@@ -2818,189 +2856,195 @@ def test_dlg_editor_manipulate_comments_roundtrip(qtbot: QtBot, installation: HT
                 "Multi\nline\ncomment",
                 "Comment with special chars !@#$%^&*()",
             ]
-            
+
             for comment in test_comments:
                 editor.ui.commentsEdit.setPlainText(comment)
                 editor.on_node_update()
-                
+
                 # Save and verify
                 data, _ = editor.build()
                 modified_dlg = read_dlg(data)
                 if modified_dlg.starters:
                     assert modified_dlg.starters[0].node.comment == comment
-                    
+
                     # Load back and verify
                     editor.load(dlg_file, "ORIHA", ResourceType.DLG, data)
                     editor.ui.dialogTree.setCurrentIndex(first_item.index())
                     assert editor.ui.commentsEdit.toPlainText() == comment
 
+
 def test_dlg_editor_manipulate_camera_id_roundtrip(qtbot: QtBot, installation: HTInstallation, test_files_dir: Path):
     """Test manipulating camera ID with save/load roundtrip."""
     editor = DLGEditor(None, installation)
     qtbot.addWidget(editor)
-    
+
     dlg_file = test_files_dir / "ORIHA.dlg"
     if not dlg_file.exists():
         pytest.skip("ORIHA.dlg not found")
-    
+
     original_data = dlg_file.read_bytes()
     editor.load(dlg_file, "ORIHA", ResourceType.DLG, original_data)
-    
+
     if editor.model.rowCount() > 0:
         first_item = editor.model.item(0, 0)
         if isinstance(first_item, DLGStandardItem):
             editor.ui.dialogTree.setCurrentIndex(first_item.index())
-            
+
             # Test various camera IDs
             test_values = [-1, 0, 1, 5, 10]
             for val in test_values:
                 editor.ui.cameraIdSpin.setValue(val)
                 editor.on_node_update()
-                
+
                 # Save and verify
                 data, _ = editor.build()
                 modified_dlg = read_dlg(data)
                 if modified_dlg.starters:
                     assert modified_dlg.starters[0].node.camera_id == val
-                    
+
                     # Load back and verify
                     editor.load(dlg_file, "ORIHA", ResourceType.DLG, data)
                     editor.ui.dialogTree.setCurrentIndex(first_item.index())
                     assert editor.ui.cameraIdSpin.value() == val
 
+
 def test_dlg_editor_manipulate_delay_roundtrip(qtbot: QtBot, installation: HTInstallation, test_files_dir: Path):
     """Test manipulating delay field with save/load roundtrip."""
     editor = DLGEditor(None, installation)
     qtbot.addWidget(editor)
-    
+
     dlg_file = test_files_dir / "ORIHA.dlg"
     if not dlg_file.exists():
         pytest.skip("ORIHA.dlg not found")
-    
+
     original_data = dlg_file.read_bytes()
     editor.load(dlg_file, "ORIHA", ResourceType.DLG, original_data)
-    
+
     if editor.model.rowCount() > 0:
         first_item = editor.model.item(0, 0)
         if isinstance(first_item, DLGStandardItem):
             editor.ui.dialogTree.setCurrentIndex(first_item.index())
-            
+
             # Test various delay values
             test_values = [0, 100, 500, 1000, 5000]
             for val in test_values:
                 editor.ui.delaySpin.setValue(val)
                 editor.on_node_update()
-                
+
                 # Save and verify
                 data, _ = editor.build()
                 modified_dlg = read_dlg(data)
                 if modified_dlg.starters:
                     assert modified_dlg.starters[0].node.delay == val
-                    
+
                     # Load back and verify
                     editor.load(dlg_file, "ORIHA", ResourceType.DLG, data)
                     editor.ui.dialogTree.setCurrentIndex(first_item.index())
                     assert editor.ui.delaySpin.value() == val
 
+
 def test_dlg_editor_manipulate_wait_flags_roundtrip(qtbot: QtBot, installation: HTInstallation, test_files_dir: Path):
     """Test manipulating wait flags with save/load roundtrip."""
     editor = DLGEditor(None, installation)
     qtbot.addWidget(editor)
-    
+
     dlg_file = test_files_dir / "ORIHA.dlg"
     if not dlg_file.exists():
         pytest.skip("ORIHA.dlg not found")
-    
+
     original_data = dlg_file.read_bytes()
     editor.load(dlg_file, "ORIHA", ResourceType.DLG, original_data)
-    
+
     if editor.model.rowCount() > 0:
         first_item = editor.model.item(0, 0)
         if isinstance(first_item, DLGStandardItem):
             editor.ui.dialogTree.setCurrentIndex(first_item.index())
-            
+
             # Test various wait flag values
             test_values = [0, 1, 2, 3]
             for val in test_values:
                 editor.ui.waitFlagSpin.setValue(val)
                 editor.on_node_update()
-                
+
                 # Save and verify
                 data, _ = editor.build()
                 modified_dlg = read_dlg(data)
                 if modified_dlg.starters:
                     assert modified_dlg.starters[0].node.wait_flags == val
 
+
 def test_dlg_editor_manipulate_fade_type_roundtrip(qtbot: QtBot, installation: HTInstallation, test_files_dir: Path):
     """Test manipulating fade type with save/load roundtrip."""
     editor = DLGEditor(None, installation)
     qtbot.addWidget(editor)
-    
+
     dlg_file = test_files_dir / "ORIHA.dlg"
     if not dlg_file.exists():
         pytest.skip("ORIHA.dlg not found")
-    
+
     original_data = dlg_file.read_bytes()
     editor.load(dlg_file, "ORIHA", ResourceType.DLG, original_data)
-    
+
     if editor.model.rowCount() > 0:
         first_item = editor.model.item(0, 0)
         if isinstance(first_item, DLGStandardItem):
             editor.ui.dialogTree.setCurrentIndex(first_item.index())
-            
+
             # Test various fade type values
             test_values = [0, 1, 2, 3]
             for val in test_values:
                 editor.ui.fadeTypeSpin.setValue(val)
                 editor.on_node_update()
-                
+
                 # Save and verify
                 data, _ = editor.build()
                 modified_dlg = read_dlg(data)
                 if modified_dlg.starters:
                     assert modified_dlg.starters[0].node.fade_type == val
 
+
 def test_dlg_editor_manipulate_voice_roundtrip(qtbot: QtBot, installation: HTInstallation, test_files_dir: Path):
     """Test manipulating voice ResRef with save/load roundtrip."""
     editor = DLGEditor(None, installation)
     qtbot.addWidget(editor)
-    
+
     dlg_file = test_files_dir / "ORIHA.dlg"
     if not dlg_file.exists():
         pytest.skip("ORIHA.dlg not found")
-    
+
     original_data = dlg_file.read_bytes()
     editor.load(dlg_file, "ORIHA", ResourceType.DLG, original_data)
-    
+
     if editor.model.rowCount() > 0:
         first_item = editor.model.item(0, 0)
         if isinstance(first_item, DLGStandardItem):
             editor.ui.dialogTree.setCurrentIndex(first_item.index())
-            
+
             # Modify voice
             test_voices = ["test_vo", "voice_001", ""]
             for voice in test_voices:
                 editor.ui.voiceComboBox.set_combo_box_text(voice)
                 editor.on_node_update()
-                
+
                 # Save and verify
                 data, _ = editor.build()
                 modified_dlg = read_dlg(data)
                 if modified_dlg.starters:
                     assert str(modified_dlg.starters[0].node.vo_resref) == voice
 
+
 def test_dlg_editor_manipulate_all_file_fields_combination(qtbot: QtBot, installation: HTInstallation, test_files_dir: Path):
     """Test manipulating all file-level fields simultaneously."""
     editor = DLGEditor(None, installation)
     qtbot.addWidget(editor)
-    
+
     dlg_file = test_files_dir / "ORIHA.dlg"
     if not dlg_file.exists():
         pytest.skip("ORIHA.dlg not found")
-    
+
     original_data = dlg_file.read_bytes()
     editor.load(dlg_file, "ORIHA", ResourceType.DLG, original_data)
-    
+
     # Modify ALL file-level fields
     if editor.ui.conversationSelect.count() > 0:
         editor.ui.conversationSelect.setCurrentIndex(1)
@@ -3018,11 +3062,11 @@ def test_dlg_editor_manipulate_all_file_fields_combination(qtbot: QtBot, install
     editor.ui.onEndEdit.set_combo_box_text("test_on_end")
     editor.ui.ambientTrackCombo.set_combo_box_text("test_ambient")
     editor.ui.cameraModelSelect.set_combo_box_text("test_camera")
-    
+
     # Save and verify all
     data, _ = editor.build()
     modified_dlg = read_dlg(data)
-    
+
     assert modified_dlg.skippable
     assert modified_dlg.animated_cut
     assert modified_dlg.old_hit_check
@@ -3036,24 +3080,24 @@ def test_dlg_editor_manipulate_all_file_fields_combination(qtbot: QtBot, install
     assert str(modified_dlg.ambient_track) == "test_ambient"
     assert str(modified_dlg.camera_model) == "test_camera"
 
-def test_dlg_editor_manipulate_all_node_fields_combination(qtbot: QtBot, installation: HTInstallation, test_files_dir: Path):
 
+def test_dlg_editor_manipulate_all_node_fields_combination(qtbot: QtBot, installation: HTInstallation, test_files_dir: Path):
     """Test manipulating all node-level fields simultaneously."""
     editor = DLGEditor(None, installation)
     qtbot.addWidget(editor)
-    
+
     dlg_file = test_files_dir / "ORIHA.dlg"
     if not dlg_file.exists():
         pytest.skip("ORIHA.dlg not found")
-    
+
     original_data = dlg_file.read_bytes()
     editor.load(dlg_file, "ORIHA", ResourceType.DLG, original_data)
-    
+
     if editor.model.rowCount() > 0:
         first_item = editor.model.item(0, 0)
         if isinstance(first_item, DLGStandardItem) and isinstance(first_item.link.node, DLGEntry):
             editor.ui.dialogTree.setCurrentIndex(first_item.index())
-            
+
             # Modify ALL node fields
             editor.ui.speakerEdit.setText("TestSpeaker")
             editor.ui.listenerEdit.setText("PLAYER")
@@ -3072,14 +3116,14 @@ def test_dlg_editor_manipulate_all_node_fields_combination(qtbot: QtBot, install
             editor.ui.condition1ResrefEdit.set_combo_box_text("c_test")
             editor.ui.condition1NotCheckbox.setChecked(True)
             editor.on_node_update()
-            
+
             # Save and verify all
             data, _ = editor.build()
             modified_dlg = read_dlg(data)
             if modified_dlg.starters:
                 node = modified_dlg.starters[0].node
                 link = modified_dlg.starters[0]
-                
+
                 if isinstance(node, DLGEntry):
                     assert node.speaker == "TestSpeaker"
                 assert node.listener == "PLAYER"

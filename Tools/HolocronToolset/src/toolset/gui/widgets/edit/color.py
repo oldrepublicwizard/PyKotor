@@ -14,6 +14,7 @@ class ColorEdit(QWidget):
         self.allow_alpha: bool = False
 
         from toolset.uic.qtpy.widgets.color_edit import Ui_Form
+
         self.ui = Ui_Form()
         self.ui.setupUi(self)
 

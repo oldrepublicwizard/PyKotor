@@ -1636,12 +1636,7 @@ class IndoorMapRenderer(QWidget):
         """Handle focus out - cancel operations that require focus (standard Windows behavior)."""
         super().focusOutEvent(e)
         # Cancel drag operations when focus is lost (prevents stuck states)
-        if (
-            self._dragging
-            or self._dragging_hook
-            or self._dragging_warp
-            or self._marquee_active
-        ):
+        if self._dragging or self._dragging_hook or self._dragging_warp or self._marquee_active:
             self.end_drag()
             self._dragging_hook = False
             self._dragging_warp = False

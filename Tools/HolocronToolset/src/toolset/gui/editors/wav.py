@@ -10,6 +10,7 @@ This editor provides comprehensive audio file handling including:
 The editor inherits from the base Editor class and uses its built-in
 MediaPlayerWidget for audio playback, while providing its own UI controls.
 """
+
 from __future__ import annotations
 
 import tempfile
@@ -66,8 +67,9 @@ class WAVEditor(Editor):
 
         # Ensure mediaPlayer exists - create it if base class didn't
         # The base Editor class should create this, but if it doesn't, we create it
-        if not hasattr(self, 'mediaPlayer'):
+        if not hasattr(self, "mediaPlayer"):
             from toolset.gui.widgets.media_player_widget import MediaPlayerWidget
+
             self.mediaPlayer = MediaPlayerWidget(self)
 
         # Audio-specific state
@@ -86,6 +88,7 @@ class WAVEditor(Editor):
 
         # Setup event filter to prevent scroll wheel interaction with controls
         from toolset.gui.common.filters import NoScrollEventFilter
+
         self._no_scroll_filter = NoScrollEventFilter(self)
         self._no_scroll_filter.setup_filter(parent_widget=self)
 
@@ -107,7 +110,7 @@ class WAVEditor(Editor):
     def _setup_player_signals(self) -> None:
         """Set up media player signals."""
         player = self.mediaPlayer.player  # pyright: ignore[reportAttributeAccessIssue]
-        
+
         # Disconnect any existing connections to avoid duplicates
         try:
             player.durationChanged.disconnect()
@@ -131,7 +134,7 @@ class WAVEditor(Editor):
                 player.errorOccurred.disconnect()  # type: ignore[attr-defined]
             except TypeError:
                 pass  # No connections to disconnect
-        
+
         # Connect signals
         player.durationChanged.connect(self._on_duration_changed)
         player.positionChanged.connect(self._on_position_changed)
@@ -279,20 +282,21 @@ class WAVEditor(Editor):
             data: Raw audio data bytes
         """
         player = self.mediaPlayer.player  # pyright: ignore[reportAttributeAccessIssue]
-        
+
         # Stop player and clear media to prevent signal firing during cleanup
         player.stop()
-        
+
         # Clear media to release any existing resources
         try:
             if qtpy.QT5:
                 from qtpy.QtMultimedia import QMediaContent  # pyright: ignore[reportAttributeAccessIssue]
+
                 player.setMedia(QMediaContent())  # pyright: ignore[reportAttributeAccessIssue]
             else:
                 player.setSource(None)  # type: ignore[attr-defined]
         except Exception:  # noqa: BLE001
             pass  # Ignore errors when clearing media
-        
+
         # Cleanup temp files synchronously
         self._cleanup_temp_file()
 
@@ -467,7 +471,7 @@ class WAVEditor(Editor):
         # Clamp duration to valid range for QSlider (int32 max) and ensure non-negative
         max_slider_value = 2147483647
         duration = max(0, min(duration, max_slider_value))
-        
+
         # Format time only if duration is valid
         if duration > 0:
             try:
@@ -476,7 +480,7 @@ class WAVEditor(Editor):
                 total_time = "00:00:00"
         else:
             total_time = "00:00:00"
-            
+
         self.ui.totalTimeLabel.setText(total_time)
         # Set minimum to 0 to ensure valid range even for zero duration
         self.ui.timeSlider.setMinimum(0)
@@ -490,7 +494,7 @@ class WAVEditor(Editor):
         """
         # Clamp position to valid range and ensure non-negative
         position = max(0, min(position, 2147483647))
-        
+
         # Only format time if position is valid
         if position > 0:
             try:
@@ -500,7 +504,7 @@ class WAVEditor(Editor):
                 current_time = "00:00:00"
         else:
             current_time = "00:00:00"
-        
+
         self.ui.currentTimeLabel.setText(current_time)
 
         # Fix for inaccurate duration calculation (but clamp to avoid overflow)
@@ -542,3 +546,9 @@ class WAVEditor(Editor):
         if a0 is not None:
             super().closeEvent(a0)
 
+if __name__ == "__main__":
+    import sys
+
+    from toolset.gui.editors.standalone import launch_editor_cli
+
+    sys.exit(launch_editor_cli("wav"))

@@ -139,4 +139,3 @@ __all__ = [
     "ZOOM_STEP_FACTOR",
     "ZOOM_WHEEL_SENSITIVITY",
 ]
-

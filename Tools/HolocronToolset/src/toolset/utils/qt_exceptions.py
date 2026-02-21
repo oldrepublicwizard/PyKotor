@@ -125,11 +125,7 @@ def install_qt_signal_slot_safety_net() -> None:  # noqa: C901
             if any(p.kind is inspect.Parameter.VAR_POSITIONAL for p in sig.parameters.values()):
                 max_positional_args = None
             else:
-                max_positional_args = sum(
-                    1
-                    for p in sig.parameters.values()
-                    if p.kind in (inspect.Parameter.POSITIONAL_ONLY, inspect.Parameter.POSITIONAL_OR_KEYWORD)
-                )
+                max_positional_args = sum(1 for p in sig.parameters.values() if p.kind in (inspect.Parameter.POSITIONAL_ONLY, inspect.Parameter.POSITIONAL_OR_KEYWORD))
         except Exception:  # noqa: BLE001
             # If we can't introspect the callable, fall back to passing the original args through.
             max_positional_args = None

@@ -147,6 +147,7 @@ class UTTEditor(Editor):
         restype: ResourceType,
         data: bytes,
     ):
+        """Load resource and populate UI from UTT. Defaults from construct_utt (K1 LoadTrigger 0x0058da80; TSL TODO)."""
         super().load(filepath, resref, restype, data)
 
         utt: UTT = read_utt(data)
@@ -162,13 +163,7 @@ class UTTEditor(Editor):
         ----
             utt: UTT - UTT object to load data from
 
-        Loads UTT data:{
-            - Sets name, tag, resref from utt
-            - Sets cursor, type indexes from utt
-            - Sets trap properties from utt
-            - Sets scripts from utt
-            - Sets comments from utt
-        }.
+        Defaults from construct_utt; K1 LoadTrigger 0x0058da80; TSL same (addresses TODO). Sets name, tag, resref, cursor, type, trap, scripts, comment.
         """
         self._utt = utt
 
@@ -207,17 +202,13 @@ class UTTEditor(Editor):
         self.ui.commentsEdit.setPlainText(utt.comment)
 
     def build(self) -> tuple[bytes, bytes]:
-        """Builds an UTT from UI input.
+        """Builds a UTT from UI data.
 
         Returns:
         -------
-            tuple[bytes, bytes]: A tuple containing the GFF data (bytes) and any errors (bytes).
+            tuple[bytes, bytes]: GFF data and log.
 
-        Processing Logic:
-        ----------------
-        - Gets input from various UI elements like name, tag, scripts etc and populates an UTT object
-        - Serializes the UTT to GFF format
-        - Returns the GFF data and any errors
+        Populates UTT from UI, then dismantle_utt (K1 LoadTrigger 0x0058da80; TSL TODO). Returns GFF bytes and log.
         """
         utt: UTT = deepcopy(self._utt)
 
@@ -281,3 +272,10 @@ class UTTEditor(Editor):
             self.ui.resrefEdit.setText(self._resname)
         else:
             self.ui.resrefEdit.setText("m00xx_trg_000")
+
+if __name__ == "__main__":
+    import sys
+
+    from toolset.gui.editors.standalone import launch_editor_cli
+
+    sys.exit(launch_editor_cli("utt"))

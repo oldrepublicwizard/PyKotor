@@ -187,12 +187,12 @@ class DLGTreeView(RobustTreeView):
             palette = QPalette()
             highlight_color_obj = palette.color(QPalette.ColorRole.Highlight)
             window_text_color = palette.color(QPalette.ColorRole.WindowText)
-        
+
         if not highlight_color_obj.isValid():
             highlight_color_obj = QColor(200, 200, 200)
         if not window_text_color.isValid():
             window_text_color = QColor(0, 0, 0)
-        
+
         if self.drop_indicator_rect.topLeft().y() == self.drop_indicator_rect.bottomLeft().y():
             pen = QPen(window_text_color, 1, Qt.PenStyle.DashLine)
             painter.setPen(pen)
@@ -254,11 +254,11 @@ class DLGTreeView(RobustTreeView):
         else:
             # Fallback to default palette
             palette = QPalette()
-        
+
         link_color = palette.color(QPalette.ColorRole.Link)
         window_color = palette.color(QPalette.ColorRole.Window)
         mid_color = palette.color(QPalette.ColorRole.Mid)
-        
+
         # Ensure valid colors
         if not link_color.isValid():
             link_color = QColor(0, 120, 212)  # Default blue
@@ -266,26 +266,26 @@ class DLGTreeView(RobustTreeView):
             window_color = QColor(255, 255, 255)  # Default white
         if not mid_color.isValid():
             mid_color = QColor(200, 200, 200)  # Default gray
-        
+
         # Entry color: Red-ish derived from link color (same as model.py)
         entry_color_obj = QColor(link_color)
         entry_color_obj.setRed(min(255, int(entry_color_obj.red() * 1.5 + 100)))
         entry_color_obj.setGreen(int(entry_color_obj.green() * 0.3))
         entry_color_obj.setBlue(int(entry_color_obj.blue() * 0.3))
         entry_color = entry_color_obj.name()
-        
+
         # Reply color: Use link color (blue-ish)
         reply_color = link_color.name()
-        
+
         # Background colors
         bg_color = QColor(window_color)
         bg_color.setAlpha(200)
         border_color = QColor(mid_color)
-        
+
         painter.setBrush(bg_color)
         painter.setPen(QPen(border_color, 1))
         painter.drawRoundedRect(QRect(0, 0, pixmap.width(), pixmap.height()), 10, 10)
-        
+
         # Use palette colors for icons
         entry_qcolor = QColor(entry_color)
         reply_qcolor = QColor(reply_color)
@@ -339,10 +339,10 @@ class DLGTreeView(RobustTreeView):
         else:
             palette = QPalette()
             text_color = palette.color(QPalette.ColorRole.WindowText)
-        
+
         if not text_color.isValid():
             text_color = QColor(0, 0, 0)  # Fallback to black
-        
+
         # Create gradient with palette-aware colors
         bright_color = QColor(text_color)
         bright_color.setAlpha(200)
@@ -406,9 +406,9 @@ class DLGTreeView(RobustTreeView):
         model: DLGStandardItemModel | None = self.model()
         assert isinstance(model, QStandardItemModel), f"model was not QStandardItemModel, was instead {model.__class__.__name__}: {model}"
         dragged_item: DLGStandardItem | None = model.itemFromIndex(index)
-        assert isinstance(
-            dragged_item, DLGStandardItem
-        ), f"model.itemFromIndex({index}(row={index.row()}, col={index.column()}) did not return a DLGStandardItem, was instead {self.dragged_item.__class__.__name__}: {self.dragged_item}"  # noqa: E501
+        assert isinstance(dragged_item, DLGStandardItem), (
+            f"model.itemFromIndex({index}(row={index.row()}, col={index.column()}) did not return a DLGStandardItem, was instead {self.dragged_item.__class__.__name__}: {self.dragged_item}"
+        )  # noqa: E501
         self.dragged_item = dragged_item
         if not self.dragged_item or getattr(self.dragged_item, "link", None) is None:
             return False
@@ -702,10 +702,7 @@ class DLGTreeView(RobustTreeView):
         return (
             isinstance(dragged_node, DLGReply)  # pyright: ignore[reportOptionalMemberAccess]
             and isinstance(target_node, DLGReply)
-        ) or (
-            isinstance(dragged_node, DLGEntry)
-            and isinstance(target_node, DLGEntry)
-        )
+        ) or (isinstance(dragged_node, DLGEntry) and isinstance(target_node, DLGEntry))
 
     def reset_drag_state(self):
         self.start_pos = QPoint()

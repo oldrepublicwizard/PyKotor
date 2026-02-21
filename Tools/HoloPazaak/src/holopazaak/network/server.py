@@ -7,15 +7,15 @@ Reference: vendor/PazaakApp/server/server.js
 
 Usage:
     python -m holopazaak.network.server --port 8765
-    
+
 Or:
     holopazaak-server --port 8765
 """
+
 from __future__ import annotations
 
 import argparse
 import asyncio
-import json
 import logging
 import uuid
 from dataclasses import dataclass, field
@@ -24,6 +24,7 @@ from typing import TYPE_CHECKING, Any
 try:
     import websockets
     from websockets.server import WebSocketServerProtocol
+
     HAS_WEBSOCKETS = True
 except ImportError:
     HAS_WEBSOCKETS = False
@@ -38,7 +39,7 @@ from holopazaak.network.protocol import (
 )
 
 if TYPE_CHECKING:
-    from collections.abc import Set
+    pass
 
 # Configure logging
 logging.basicConfig(
@@ -51,6 +52,7 @@ logger = logging.getLogger(__name__)
 @dataclass
 class ConnectedPlayer:
     """A connected player."""
+
     player_id: str
     name: str
     websocket: WebSocketServerProtocol
@@ -60,6 +62,7 @@ class ConnectedPlayer:
 @dataclass
 class GameRoom:
     """A multiplayer game room."""
+
     game_id: str
     host_id: str
     players: list[str] = field(default_factory=list)
@@ -70,25 +73,25 @@ class GameRoom:
 
 class PazaakServer:
     """WebSocket server for Pazaak multiplayer games.
-    
+
     Handles:
     - Player connections and disconnections
     - Game room creation and joining
     - Game state synchronization
     - Action relay between players
     """
-    
+
     def __init__(self, host: str = "0.0.0.0", port: int = 8765):
         self.host = host
         self.port = port
-        
+
         # Connected players by websocket
         self.players: dict[WebSocketServerProtocol, ConnectedPlayer] = {}
         # Players by ID
         self.players_by_id: dict[str, ConnectedPlayer] = {}
         # Game rooms
         self.games: dict[str, GameRoom] = {}
-    
+
     async def handle_connection(self, websocket: WebSocketServerProtocol):
         """Handle a new WebSocket connection."""
         player_id = str(uuid.uuid4())[:8]
@@ -97,19 +100,22 @@ class PazaakServer:
             name=f"Player_{player_id}",
             websocket=websocket,
         )
-        
+
         self.players[websocket] = player
         self.players_by_id[player_id] = player
-        
+
         logger.info(f"Player connected: {player_id}")
-        
+
         # Send welcome message
-        await self._send(websocket, create_message(
-            MessageType.CONNECT,
-            player_id=player_id,
-            success=True,
-        ))
-        
+        await self._send(
+            websocket,
+            create_message(
+                MessageType.CONNECT,
+                player_id=player_id,
+                success=True,
+            ),
+        )
+
         try:
             async for message in websocket:
                 await self._handle_message(websocket, message)
@@ -117,23 +123,23 @@ class PazaakServer:
             pass
         finally:
             await self._handle_disconnect(websocket)
-    
+
     async def _handle_message(self, websocket: WebSocketServerProtocol, raw_message: str):
         """Handle an incoming message."""
         msg = parse_message(raw_message)
         if not msg:
             await self._send(websocket, msg_error("Invalid message format"))
             return
-        
+
         player = self.players.get(websocket)
         if not player:
             await self._send(websocket, msg_error("Not connected"))
             return
-        
+
         # Update player ID from message if provided
         if msg.player_id:
             player.player_id = msg.player_id
-        
+
         handlers = {
             MessageType.PING: self._handle_ping,
             MessageType.HOST_GAME: self._handle_host_game,
@@ -145,29 +151,29 @@ class PazaakServer:
             MessageType.END_TURN: self._handle_end_turn,
             MessageType.CHAT_MESSAGE: self._handle_chat,
         }
-        
+
         handler = handlers.get(msg.msg_type)
         if handler:
             await handler(player, msg)
         else:
             await self._send(websocket, msg_error(f"Unknown message type: {msg.msg_type}"))
-    
+
     async def _handle_disconnect(self, websocket: WebSocketServerProtocol):
         """Handle player disconnection."""
         player = self.players.pop(websocket, None)
         if not player:
             return
-        
+
         self.players_by_id.pop(player.player_id, None)
         logger.info(f"Player disconnected: {player.player_id}")
-        
+
         # Remove from game if in one
         if player.game_id:
             game = self.games.get(player.game_id)
             if game:
                 if player.player_id in game.players:
                     game.players.remove(player.player_id)
-                
+
                 # Notify other players
                 await self._broadcast_to_game(
                     game.game_id,
@@ -178,15 +184,15 @@ class PazaakServer:
                     ),
                     exclude=player.player_id,
                 )
-                
+
                 # Clean up empty games
                 if not game.players:
                     del self.games[game.game_id]
-    
+
     async def _handle_ping(self, player: ConnectedPlayer, msg: GameMessage):
         """Handle ping message."""
         await self._send(player.websocket, create_message(MessageType.PONG))
-    
+
     async def _handle_host_game(self, player: ConnectedPlayer, msg: GameMessage):
         """Handle game hosting."""
         game_id = str(uuid.uuid4())[:8]
@@ -195,42 +201,45 @@ class PazaakServer:
             host_id=player.player_id,
             players=[player.player_id],
         )
-        
+
         self.games[game_id] = game
         player.game_id = game_id
         player.name = msg.data.get("player_name", player.name)
-        
+
         logger.info(f"Game created: {game_id} by {player.name}")
-        
-        await self._send(player.websocket, create_message(
-            MessageType.HOST_GAME,
-            game_id=game_id,
-            success=True,
-        ))
-    
+
+        await self._send(
+            player.websocket,
+            create_message(
+                MessageType.HOST_GAME,
+                game_id=game_id,
+                success=True,
+            ),
+        )
+
     async def _handle_join_game(self, player: ConnectedPlayer, msg: GameMessage):
         """Handle joining a game."""
         game_id = msg.game_id or msg.data.get("game_id")
         game = self.games.get(game_id)
-        
+
         if not game:
             await self._send(player.websocket, msg_error("Game not found"))
             return
-        
+
         if len(game.players) >= 2:
             await self._send(player.websocket, msg_error("Game is full"))
             return
-        
+
         if game.is_started:
             await self._send(player.websocket, msg_error("Game already started"))
             return
-        
+
         player.game_id = game_id
         player.name = msg.data.get("player_name", player.name)
         game.players.append(player.player_id)
-        
+
         logger.info(f"Player {player.name} joined game {game_id}")
-        
+
         # Notify all players
         await self._broadcast_to_game(
             game_id,
@@ -241,7 +250,7 @@ class PazaakServer:
                 player_name=player.name,
             ),
         )
-        
+
         # If 2 players, start the game
         if len(game.players) == 2:
             game.is_started = True
@@ -253,18 +262,18 @@ class PazaakServer:
                     players=game.players,
                 ),
             )
-    
+
     async def _handle_leave_game(self, player: ConnectedPlayer, msg: GameMessage):
         """Handle leaving a game."""
         if not player.game_id:
             return
-        
+
         game = self.games.get(player.game_id)
         if not game:
             return
-        
+
         game.players.remove(player.player_id)
-        
+
         await self._broadcast_to_game(
             game.game_id,
             create_message(
@@ -274,13 +283,13 @@ class PazaakServer:
             ),
             exclude=player.player_id,
         )
-        
+
         player.game_id = None
-        
+
         # Clean up empty games
         if not game.players:
             del self.games[game.game_id]
-    
+
     async def _handle_game_list(self, player: ConnectedPlayer, msg: GameMessage):
         """Handle game list request."""
         available_games = [
@@ -293,17 +302,20 @@ class PazaakServer:
             for game in self.games.values()
             if not game.is_started and len(game.players) < 2
         ]
-        
-        await self._send(player.websocket, create_message(
-            MessageType.GAME_LIST,
-            games=available_games,
-        ))
-    
+
+        await self._send(
+            player.websocket,
+            create_message(
+                MessageType.GAME_LIST,
+                games=available_games,
+            ),
+        )
+
     async def _handle_card_played(self, player: ConnectedPlayer, msg: GameMessage):
         """Handle card played action."""
         if not player.game_id:
             return
-        
+
         # Relay to other player
         await self._broadcast_to_game(
             player.game_id,
@@ -316,12 +328,12 @@ class PazaakServer:
             ),
             exclude=player.player_id,
         )
-    
+
     async def _handle_stand(self, player: ConnectedPlayer, msg: GameMessage):
         """Handle stand action."""
         if not player.game_id:
             return
-        
+
         await self._broadcast_to_game(
             player.game_id,
             create_message(
@@ -331,12 +343,12 @@ class PazaakServer:
             ),
             exclude=player.player_id,
         )
-    
+
     async def _handle_end_turn(self, player: ConnectedPlayer, msg: GameMessage):
         """Handle end turn action."""
         if not player.game_id:
             return
-        
+
         await self._broadcast_to_game(
             player.game_id,
             create_message(
@@ -346,12 +358,12 @@ class PazaakServer:
             ),
             exclude=player.player_id,
         )
-    
+
     async def _handle_chat(self, player: ConnectedPlayer, msg: GameMessage):
         """Handle chat message."""
         if not player.game_id:
             return
-        
+
         await self._broadcast_to_game(
             player.game_id,
             create_message(
@@ -362,14 +374,14 @@ class PazaakServer:
                 message=msg.data.get("message", ""),
             ),
         )
-    
+
     async def _send(self, websocket: WebSocketServerProtocol, msg: GameMessage):
         """Send a message to a websocket."""
         try:
             await websocket.send(msg.to_json())
         except websockets.exceptions.ConnectionClosed:
             pass
-    
+
     async def _broadcast_to_game(
         self,
         game_id: str,
@@ -380,22 +392,22 @@ class PazaakServer:
         game = self.games.get(game_id)
         if not game:
             return
-        
+
         for player_id in game.players:
             if player_id == exclude:
                 continue
             player = self.players_by_id.get(player_id)
             if player:
                 await self._send(player.websocket, msg)
-    
+
     async def start(self):
         """Start the server."""
         if not HAS_WEBSOCKETS:
             logger.error("websockets package not installed. Install with: pip install websockets")
             return
-        
+
         logger.info(f"Starting Pazaak server on {self.host}:{self.port}")
-        
+
         async with websockets.serve(self.handle_connection, self.host, self.port):
             logger.info(f"Server running at ws://{self.host}:{self.port}")
             await asyncio.Future()  # Run forever
@@ -406,14 +418,15 @@ def _get_invocation_command() -> str:
     import os
     import sys
     from pathlib import Path
-    
+
     if not sys.argv:
         return "holopazaak-server"
-    
+
     # Try to detect if we're being run via "uv run" by checking parent process
     is_uv_run = False
     try:
         import psutil  # type: ignore[import-untyped]
+
         current_process = psutil.Process()
         parent = current_process.parent()
         if parent and "uv" in parent.name().lower():
@@ -423,49 +436,47 @@ def _get_invocation_command() -> str:
         # Try alternative detection: check if UV_* env vars exist
         if any("UV" in k.upper() for k in os.environ.keys()):
             is_uv_run = True
-    
+
     script_path = Path(sys.argv[0]).resolve()
     cwd = Path.cwd().resolve()
-    
+
     # Try to make path relative to current directory
     try:
         rel_script = script_path.relative_to(cwd)
         rel_script_str = str(rel_script).replace("\\", "/")  # Use forward slashes for consistency
     except ValueError:
         rel_script_str = str(script_path)
-    
+
     # If detected as uv run, prefix with "uv run"
     if is_uv_run:
         return f"uv run {rel_script_str}"
-    
+
     # Check for "python -m" pattern
     if len(sys.argv) >= 3 and sys.argv[1] == "-m":
         # python -m holopazaak.network.server
         return f"python -m {sys.argv[2]}"
-    
+
     # Check if we're being run via python (not as a module)
     python_exe = Path(sys.executable).name.lower()
     if python_exe in ("python", "python3", "python.exe", "python3.exe", "py", "py.exe"):
         # python script.py
         return f"python {rel_script_str}"
-    
+
     # For direct execution, return the relative path
     return rel_script_str
 
 
 def main():
     """Main entry point for the server."""
-    import sys
-    from pathlib import Path
-    
+
     prog = _get_invocation_command()
     parser = argparse.ArgumentParser(prog=prog, description="Pazaak Multiplayer Server")
     parser.add_argument("--host", default="0.0.0.0", help="Host to bind to")
     parser.add_argument("--port", type=int, default=8765, help="Port to listen on")
     args = parser.parse_args()
-    
+
     server = PazaakServer(host=args.host, port=args.port)
-    
+
     try:
         asyncio.run(server.start())
     except KeyboardInterrupt:
@@ -474,4 +485,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-

@@ -1,4 +1,5 @@
 """One-off script: replace OLD test_roundtrip_k1_wok_face_count body with fixed version."""
+
 from pathlib import Path
 
 TEST_FILE = Path(__file__).resolve().parent / "test_indoor_builder_roundtrip.py"
@@ -26,6 +27,7 @@ NEW_BODY = '''        """Test K1: WOK face count preserved through roundtrip.
                 f"{module_root}: Total WOK face count mismatch - original={original_total_faces}, rebuilt={rebuilt_total_faces}"
             )'''
 
+
 def main() -> None:
     text = TEST_FILE.read_text(encoding="utf-8")
     start_marker = "def test_roundtrip_k1_wok_face_count("
@@ -50,6 +52,7 @@ def main() -> None:
     new_text = text[:idx] + new_method + after_def[end_search:]
     TEST_FILE.write_text(new_text, encoding="utf-8")
     print("Patched test_roundtrip_k1_wok_face_count to use indoor_map room walkmeshes.")
+
 
 if __name__ == "__main__":
     main()

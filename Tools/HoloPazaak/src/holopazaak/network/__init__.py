@@ -2,6 +2,7 @@
 
 This module provides WebSocket-based multiplayer networking.
 """
+
 from holopazaak.network.protocol import (
     CardPayload,
     GameMessage,

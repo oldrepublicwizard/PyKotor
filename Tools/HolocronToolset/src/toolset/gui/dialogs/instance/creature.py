@@ -22,18 +22,17 @@ class CreatureDialog(QDialog):
         self.setWindowFlags(
             QtCore.Qt.WindowType.Dialog  # pyright: ignore[reportArgumentType]
             | QtCore.Qt.WindowType.WindowCloseButtonHint
-            | QtCore.Qt.WindowType.WindowStaysOnTopHint
-            & ~QtCore.Qt.WindowType.WindowContextHelpButtonHint
-            & ~QtCore.Qt.WindowType.WindowMinimizeButtonHint
+            | QtCore.Qt.WindowType.WindowStaysOnTopHint & ~QtCore.Qt.WindowType.WindowContextHelpButtonHint & ~QtCore.Qt.WindowType.WindowMinimizeButtonHint
         )
 
         from toolset.uic.qtpy.dialogs.instance.creature import Ui_Dialog
 
         self.ui = Ui_Dialog()
         self.ui.setupUi(self)
-        
+
         # Setup scrollbar event filter to prevent scrollbar interaction with controls
         from toolset.gui.common.filters import NoScrollEventFilter
+
         self._no_scroll_filter = NoScrollEventFilter(self)
         self._no_scroll_filter.setup_filter(parent_widget=self)
 

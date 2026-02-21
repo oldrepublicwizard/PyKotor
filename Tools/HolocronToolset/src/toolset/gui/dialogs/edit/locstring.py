@@ -28,21 +28,22 @@ class LocalizedStringDialog(QDialog):
         self.setWindowFlags(
             Qt.WindowType.Dialog  # pyright: ignore[reportArgumentType]
             | Qt.WindowType.WindowCloseButtonHint
-            | Qt.WindowType.WindowStaysOnTopHint
-            & ~Qt.WindowType.WindowContextHelpButtonHint
-            & ~Qt.WindowType.WindowMinMaxButtonsHint
+            | Qt.WindowType.WindowStaysOnTopHint & ~Qt.WindowType.WindowContextHelpButtonHint & ~Qt.WindowType.WindowMinMaxButtonsHint
         )
 
         from toolset.uic.qtpy.dialogs.locstring import Ui_Dialog
+
         self.ui = Ui_Dialog()
         self.ui.setupUi(self)
-        
+
         # Setup event filter to prevent scroll wheel interaction with controls
         from toolset.gui.common.filters import NoScrollEventFilter
+
         self._no_scroll_filter = NoScrollEventFilter(self)
         self._no_scroll_filter.setup_filter(parent_widget=self)
-        
+
         from toolset.gui.common.localization import translate as tr, trf
+
         self.ui.stringrefNoneButton.setToolTip(tr("Override the TLK with a custom entry."))
         self.ui.stringrefNewButton.setToolTip(tr("Create a new entry in the TLK."))
         self.setWindowTitle(trf("{language} - {name} - Localized String Editor", language=installation.talktable().language().name.title(), name=installation.name))

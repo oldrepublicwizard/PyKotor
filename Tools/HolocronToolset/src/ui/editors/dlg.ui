@@ -137,6 +137,11 @@
           <property name="placeholderText">
            <string>Comments</string>
           </property>
+          <property name="toolTip">
+           <string>Comment (GFF: Comment): Developer-only notes stored in the node. The game ignores
+            this field entirely. Use it to document your dialogue structure, tag nodes for
+            scripting, or leave notes for other modders. Comments are preserved when saving the DLG.</string>
+          </property>
          </widget>
         </item>
         <item>
@@ -186,6 +191,12 @@
               <height>16777215</height>
              </size>
             </property>
+            <property name="toolTip">
+             <string>Script (GFF: Script): Action script run when this node is reached. Executes
+              after text/voice plays. Use for granting items, updating variables, or triggering
+              cutscenes. ResRef must be a valid .ncs script. Params below are passed as (int int int
+              int int string).</string>
+            </property>
            </widget>
           </item>
           <item>
@@ -222,6 +233,12 @@
               <height>0</height>
              </size>
             </property>
+            <property name="toolTip">
+             <string>ActionParam1 (GFF: ActionParam1): First integer argument passed to the action
+              script. Scripts receive params as (nParam1, nParam2, nParam3, nParam4, nParam5,
+              sParam). Common uses: quest IDs, item resrefs as IDs, or custom flags. Range: INT32
+              (-2147483648 to 2147483647).</string>
+            </property>
             <property name="minimum">
              <number>-2147483648</number>
             </property>
@@ -243,6 +260,10 @@
               <width>30</width>
               <height>0</height>
              </size>
+            </property>
+            <property name="toolTip">
+             <string>ActionParam2 (GFF: ActionParam2): Second integer argument for the action
+              script. INT32 range.</string>
             </property>
             <property name="minimum">
              <number>-2147483648</number>
@@ -266,6 +287,10 @@
               <height>0</height>
              </size>
             </property>
+            <property name="toolTip">
+             <string>ActionParam3 (GFF: ActionParam3): Third integer argument for the action script.
+              INT32 range.</string>
+            </property>
             <property name="minimum">
              <number>-2147483648</number>
             </property>
@@ -288,6 +313,10 @@
               <height>0</height>
              </size>
             </property>
+            <property name="toolTip">
+             <string>ActionParam4 (GFF: ActionParam4): Fourth integer argument for the action
+              script. INT32 range.</string>
+            </property>
             <property name="minimum">
              <number>-2147483648</number>
             </property>
@@ -309,6 +338,16 @@
               <width>85</width>
               <height>16777215</height>
              </size>
+            </property>
+            <property name="toolTip">
+             <string>ActionParam5 (GFF: ActionParam5): Fifth integer argument for the action script.
+              INT32 range.</string>
+            </property>
+            <property name="minimum">
+             <number>-2147483648</number>
+            </property>
+            <property name="maximum">
+             <number>2147483647</number>
             </property>
            </widget>
           </item>
@@ -338,6 +377,10 @@
               <width>0</width>
               <height>0</height>
              </size>
+            </property>
+            <property name="toolTip">
+             <string>ActionParamStrA (GFF: ActionParamStrA): String argument passed to the action
+              script. Use for ResRefs, object tags, or custom text. Script receives as sParam.</string>
             </property>
            </widget>
           </item>
@@ -383,6 +426,11 @@
               <width>16777215</width>
               <height>16777215</height>
              </size>
+            </property>
+            <property name="toolTip">
+             <string>Script2 (GFF: Script2): Secondary action script. KotOR supports two scripts per
+              node; both run when the node is reached. Same param structure as Script. Use for
+              modular or conditional logic.</string>
             </property>
            </widget>
           </item>
@@ -508,6 +556,15 @@
               <height>0</height>
              </size>
             </property>
+            <property name="toolTip">
+             <string>ActionParam5b (GFF: ActionParam5b): Fifth integer for Script2. INT32 range.</string>
+            </property>
+            <property name="minimum">
+             <number>-2147483648</number>
+            </property>
+            <property name="maximum">
+             <number>2147483647</number>
+            </property>
             <property name="minimum">
              <number>-2147483648</number>
             </property>
@@ -586,12 +643,21 @@
               <height>16777215</height>
              </size>
             </property>
+            <property name="toolTip">
+             <string>Active (GFF: Active): Condition script that determines if this link is shown.
+              Must return TRUE (non-zero) for the link to appear. Empty = always show. Params below
+              are passed to the script. Logic combines with Condition #2 (AND/OR).</string>
+            </property>
            </widget>
           </item>
           <item>
            <widget class="QCheckBox" name="condition1NotCheckbox">
             <property name="text">
              <string>Not</string>
+            </property>
+            <property name="toolTip">
+             <string>Not (GFF: Not): Inverts the Active condition result. When checked, the link is
+              shown only when the script returns FALSE. Use for hide-if-met logic.</string>
             </property>
            </widget>
           </item>
@@ -629,6 +695,10 @@
               <height>0</height>
              </size>
             </property>
+            <property name="toolTip">
+             <string>Param1 (GFF: Param1): First integer passed to the Active condition script.
+              INT32 range.</string>
+            </property>
             <property name="minimum">
              <number>-2147483648</number>
             </property>
@@ -652,7 +722,8 @@
              </size>
             </property>
             <property name="toolTip">
-             <string>Param2</string>
+             <string>Param2 (GFF: Param2): Second integer passed to the Active condition script.
+              Script must return TRUE for the link to be shown. INT32 range.</string>
             </property>
             <property name="minimum">
              <number>-2147483648</number>
@@ -677,7 +748,8 @@
              </size>
             </property>
             <property name="toolTip">
-             <string>Param3</string>
+             <string>Param3 (GFF: Param3): Third integer for the Active condition script. INT32
+              range.</string>
             </property>
             <property name="minimum">
              <number>-2147483648</number>
@@ -702,7 +774,8 @@
              </size>
             </property>
             <property name="toolTip">
-             <string>Param4</string>
+             <string>Param4 (GFF: Param4): Fourth integer for the Active condition script. INT32
+              range.</string>
             </property>
             <property name="minimum">
              <number>-2147483648</number>
@@ -726,6 +799,10 @@
               <height>0</height>
              </size>
             </property>
+            <property name="toolTip">
+             <string>Param5 (GFF: Param5): Fifth integer for the Active condition script. INT32
+              range.</string>
+            </property>
             <property name="minimum">
              <number>-2147483648</number>
             </property>
@@ -741,6 +818,10 @@
               <horstretch>0</horstretch>
               <verstretch>0</verstretch>
              </sizepolicy>
+            </property>
+            <property name="toolTip">
+             <string>ParamStrA (GFF: ParamStrA): String argument for the Active condition script.
+              Use for tags, ResRefs, or custom data.</string>
             </property>
            </widget>
           </item>
@@ -783,6 +864,10 @@
               <width>16777215</width>
               <height>16777215</height>
              </size>
+            </property>
+            <property name="toolTip">
+             <string>Active2 (GFF: Active2): Second condition script for links. Combined with
+              Condition #1 via Logic (AND/OR). KotOR 2 extension. Params use Param1b-5b, ParamStrB.</string>
             </property>
            </widget>
           </item>
@@ -1000,7 +1085,12 @@
         <item>
          <layout class="QFormLayout" name="formLayout_anims">
           <item row="0" column="1">
-           <widget class="ComboBox2DA" name="emotionSelect"/>
+           <widget class="ComboBox2DA" name="emotionSelect">
+            <property name="toolTip">
+             <string>Emotion (GFF: Emotion): Emotion ID from appearance.2da or similar. Plays on the
+              speaker. Used for gesture/emotion animations during dialogue.</string>
+            </property>
+           </widget>
           </item>
           <item row="1" column="0">
            <widget class="QLabel" name="expressionLabel">
@@ -1010,7 +1100,12 @@
            </widget>
           </item>
           <item row="1" column="1">
-           <widget class="ComboBox2DA" name="expressionSelect"/>
+           <widget class="ComboBox2DA" name="expressionSelect">
+            <property name="toolTip">
+             <string>FacialAnim (GFF: FacialAnim): Expression ID from expressions.2da. Plays on the
+              speaker during this node. Index into the 2DA row.</string>
+            </property>
+           </widget>
           </item>
           <item row="0" column="0">
            <widget class="QLabel" name="emotionLabel">
@@ -1056,7 +1151,9 @@
                </size>
               </property>
               <property name="toolTip">
-               <string>'SoundExists' field</string>
+               <string>SoundExists (GFF: SoundExists): BYTE. When checked (0x80), the engine treats
+                the Sound/VO as present and waits for playback. Default 0x80. Affects WaitFlags and
+                timing. LoadDialogBase @ 0x0059f5f0.</string>
               </property>
               <property name="text">
                <string>Exists</string>
@@ -1071,7 +1168,13 @@
              <number>4</number>
             </property>
             <item>
-             <widget class="FilterComboBox" name="soundComboBox"/>
+             <widget class="FilterComboBox" name="soundComboBox">
+              <property name="toolTip">
+               <string>Sound (GFF: Sound): ResRef of a WAV played during this node. Overrides
+                VO_ResRef if both exist. Used for ambient or non-voice sounds. LoadDialogBase
+                prefers Sound over VO_ResRef when valid.</string>
+              </property>
+             </widget>
             </item>
             <item>
              <widget class="QPushButton" name="soundButton">
@@ -1085,7 +1188,12 @@
           <item row="2" column="1">
            <layout class="QVBoxLayout" name="verticalLayout_voice">
             <item>
-             <widget class="FilterComboBox" name="voiceComboBox"/>
+             <widget class="FilterComboBox" name="voiceComboBox">
+              <property name="toolTip">
+               <string>VO_ResRef (GFF: VO_ResRef): Voice-over WAV ResRef. Plays when this node is
+                reached. Used if Sound is empty. LoadDialogBase @ 0x0059f5f0.</string>
+              </property>
+             </widget>
             </item>
             <item>
              <widget class="QPushButton" name="voiceButton">
@@ -1108,7 +1216,7 @@
        </layout>
       </item>
       <item>
-       <layout class="QVBoxLayout" name="verticalLayout_journal"/>
+       <layout class="QVBoxLayout" name="verticalLayout_journal" />
       </item>
       <item>
        <layout class="QVBoxLayout" name="verticalLayout_camera">
@@ -1121,6 +1229,11 @@
         </item>
         <item>
          <widget class="GFFFieldSpinBox" name="cameraIdSpin">
+          <property name="toolTip">
+           <string>CameraID (GFF: CameraID): Index of a static camera in the CameraModel. Only used
+            when Camera Angle is Static Camera (6). Engine ignores this when angle is not 6. INT32.
+            See LoadDialogCamera @ 0x0059eaa0.</string>
+          </property>
           <property name="minimum">
            <number>-2147483648</number>
           </property>
@@ -1137,7 +1250,19 @@
          </widget>
         </item>
         <item>
-         <widget class="GFFFieldSpinBox" name="cameraAnimSpin"/>
+         <widget class="GFFFieldSpinBox" name="cameraAnimSpin">
+          <property name="toolTip">
+           <string>CameraAnimation (GFF: CameraAnimation): Index into the CameraModel for animated
+            cutscene cameras. WORD 0-65535. Used when CameraAngle is Animated Camera (4). Leave 0
+            for default.</string>
+          </property>
+          <property name="minimum">
+           <number>0</number>
+          </property>
+          <property name="maximum">
+           <number>65535</number>
+          </property>
+         </widget>
         </item>
         <item>
          <widget class="QLabel" name="cameraAngleLabel">
@@ -1148,6 +1273,11 @@
         </item>
         <item>
          <widget class="QComboBox" name="cameraAngleSelect">
+          <property name="toolTip">
+           <string>CameraAngle (GFF: CameraAngle): DWORD. 0=Auto, 1=Face, 2=Shoulder, 3=Wide Shot,
+            4=Animated Camera, 5=unused, 6=Static Camera. Only angle 6 uses CameraID.
+            LoadDialogCamera @ 0x0059eaa0.</string>
+          </property>
           <item>
            <property name="text">
             <string>Auto</string>
@@ -1193,7 +1323,12 @@
          </widget>
         </item>
         <item>
-         <widget class="ComboBox2DA" name="cameraEffectSelect"/>
+         <widget class="ComboBox2DA" name="cameraEffectSelect">
+          <property name="toolTip">
+           <string>CamVidEffect (GFF: CamVidEffect): Video effect ID from a 2DA. INT32. -1 = no
+            effect. Applied during this node's camera shot.</string>
+          </property>
+         </widget>
         </item>
        </layout>
       </item>
@@ -1203,6 +1338,10 @@
          <widget class="QCheckBox" name="nodeUnskippableCheckbox">
           <property name="text">
            <string>Node Unskippable</string>
+          </property>
+          <property name="toolTip">
+           <string>NodeUnskippable (GFF): When checked, the player cannot skip this node's
+            voice/text. Use for critical story moments. Overrides file-level Skippable.</string>
           </property>
          </widget>
         </item>
@@ -1222,7 +1361,18 @@
            </widget>
           </item>
           <item row="0" column="1">
-           <widget class="GFFFieldSpinBox" name="nodeIdSpin"/>
+           <widget class="GFFFieldSpinBox" name="nodeIdSpin">
+            <property name="toolTip">
+             <string>NodeID (GFF: NodeID): Unique identifier for this node. Used by scripts and
+              external references. INT32. Modders can use this to target specific nodes in scripts.</string>
+            </property>
+            <property name="minimum">
+             <number>-2147483648</number>
+            </property>
+            <property name="maximum">
+             <number>2147483647</number>
+            </property>
+           </widget>
           </item>
           <item row="1" column="0">
            <widget class="QLabel" name="alienRaceNodeLabel">
@@ -1232,7 +1382,18 @@
            </widget>
           </item>
           <item row="1" column="1">
-           <widget class="GFFFieldSpinBox" name="alienRaceNodeSpin"/>
+           <widget class="GFFFieldSpinBox" name="alienRaceNodeSpin">
+            <property name="toolTip">
+             <string>AlienRaceNode (GFF: AlienRaceNode): Index for alien-race-specific dialogue
+              variants. Used with alien language/translation systems. INT32.</string>
+            </property>
+            <property name="minimum">
+             <number>-2147483648</number>
+            </property>
+            <property name="maximum">
+             <number>2147483647</number>
+            </property>
+           </widget>
           </item>
           <item row="2" column="0">
            <widget class="QLabel" name="postProcNodeLabel">
@@ -1242,7 +1403,18 @@
            </widget>
           </item>
           <item row="2" column="1">
-           <widget class="GFFFieldSpinBox" name="postProcSpin"/>
+           <widget class="GFFFieldSpinBox" name="postProcSpin">
+            <property name="toolTip">
+             <string>PostProcNode (GFF: PostProcNode): Post-processing node index for special
+              dialogue effects. INT32. See PostProcOwner at file level.</string>
+            </property>
+            <property name="minimum">
+             <number>-2147483648</number>
+            </property>
+            <property name="maximum">
+             <number>2147483647</number>
+            </property>
+           </widget>
           </item>
           <item row="3" column="0">
            <widget class="QLabel" name="delayNodeLabel">
@@ -1252,7 +1424,18 @@
            </widget>
           </item>
           <item row="3" column="1">
-           <widget class="GFFFieldSpinBox" name="delaySpin"/>
+           <widget class="GFFFieldSpinBox" name="delaySpin">
+            <property name="toolTip">
+             <string>Delay (GFF: Delay): Milliseconds before text appears. DWORD. 0xFFFFFFFF (-1) =
+              auto-calculated from voice/sound or DelayEntry/DelayReply. Engine: LoadDialogBase.</string>
+            </property>
+            <property name="minimum">
+             <number>-1</number>
+            </property>
+            <property name="maximum">
+             <number>2147483647</number>
+            </property>
+           </widget>
           </item>
           <item row="4" column="0">
            <widget class="QLabel" name="logicLabel">
@@ -1262,7 +1445,18 @@
            </widget>
           </item>
           <item row="4" column="1">
-           <widget class="GFFFieldSpinBox" name="logicSpin"/>
+           <widget class="GFFFieldSpinBox" name="logicSpin">
+            <property name="toolTip">
+             <string>Logic (GFF: Logic): For links, combines Condition #1 and #2: 0=AND (both must
+              pass), 1=OR (either passes). KotOR 2 extension. INT32.</string>
+            </property>
+            <property name="minimum">
+             <number>-2147483648</number>
+            </property>
+            <property name="maximum">
+             <number>2147483647</number>
+            </property>
+           </widget>
           </item>
           <item row="5" column="0">
            <widget class="QLabel" name="waitFlagsLabel">
@@ -1272,7 +1466,19 @@
            </widget>
           </item>
           <item row="5" column="1">
-           <widget class="GFFFieldSpinBox" name="waitFlagSpin"/>
+           <widget class="GFFFieldSpinBox" name="waitFlagSpin">
+            <property name="toolTip">
+             <string>WaitFlags (GFF: WaitFlags): Bitmask controlling when the dialogue advances.
+              DWORD. Bit 2=wait for sound/VO; bit 4=use explicit Delay; bit 0x10=Delay is set.
+              Engine derives behavior from Sound/VO presence and Delay. See LoadDialogBase.</string>
+            </property>
+            <property name="minimum">
+             <number>0</number>
+            </property>
+            <property name="maximum">
+             <number>2147483647</number>
+            </property>
+           </widget>
           </item>
           <item row="6" column="0">
            <widget class="QLabel" name="fadeTypeLabel">
@@ -1282,14 +1488,26 @@
            </widget>
           </item>
           <item row="6" column="1">
-           <widget class="GFFFieldSpinBox" name="fadeTypeSpin"/>
+           <widget class="GFFFieldSpinBox" name="fadeTypeSpin">
+            <property name="toolTip">
+             <string>FadeType (GFF: FadeType): Screen fade for this node. BYTE 0-255. 0=None,
+              1=FadeIn, 2=FadeOut. Values 1-2 clear FadeDelay/FadeLength. Engine: LoadDialogBase @
+              0x0059f5f0.</string>
+            </property>
+            <property name="minimum">
+             <number>0</number>
+            </property>
+            <property name="maximum">
+             <number>255</number>
+            </property>
+           </widget>
           </item>
          </layout>
         </item>
        </layout>
       </item>
       <item>
-       <layout class="QVBoxLayout" name="verticalLayout_stunts"/>
+       <layout class="QVBoxLayout" name="verticalLayout_stunts" />
       </item>
      </layout>
     </widget>
@@ -1308,23 +1526,23 @@
     <property name="title">
      <string>File</string>
     </property>
-    <addaction name="actionNew"/>
-    <addaction name="actionOpen"/>
-    <addaction name="actionSave"/>
-    <addaction name="actionSaveAs"/>
-    <addaction name="actionRevert"/>
-    <addaction name="separator"/>
-    <addaction name="actionExit"/>
+    <addaction name="actionNew" />
+    <addaction name="actionOpen" />
+    <addaction name="actionSave" />
+    <addaction name="actionSaveAs" />
+    <addaction name="actionRevert" />
+    <addaction name="separator" />
+    <addaction name="actionExit" />
    </widget>
    <widget class="QMenu" name="menuTools">
     <property name="title">
      <string>Tools</string>
     </property>
-    <addaction name="actionReloadTree"/>
-    <addaction name="actionUnfocus"/>
+    <addaction name="actionReloadTree" />
+    <addaction name="actionUnfocus" />
    </widget>
-   <addaction name="menuFile"/>
-   <addaction name="menuTools"/>
+   <addaction name="menuFile" />
+   <addaction name="menuTools" />
   </widget>
   <widget class="QDockWidget" name="topDockWidget">
    <property name="baseSize">
@@ -1371,7 +1589,10 @@
        <item>
         <widget class="QListWidget" name="stuntList">
          <property name="toolTip">
-          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Dialogue Stunts list&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+          <string>StuntList (GFF): Custom models for dialogue participants. Each stunt maps
+           Participant tag to StuntModel ResRef. Used for cutscenes with non-standard character
+           models (e.g. droids, creatures). Participant must match a creature/npc tag in the
+           dialogue.</string>
          </property>
         </widget>
        </item>
@@ -1478,6 +1699,11 @@
        </item>
        <item row="0" column="1">
         <widget class="QComboBox" name="conversationSelect">
+         <property name="toolTip">
+          <string>ConversationType (GFF: ConversationType): 0=Human (cinematic, voice), 1=Computer
+           (terminal UI), 2=Other (bark strings). Engine uses ReadFieldINT. See LoadDialog @
+           0x005a2ae0.</string>
+         </property>
          <property name="sizePolicy">
           <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
            <horstretch>0</horstretch>
@@ -1520,6 +1746,10 @@
        </item>
        <item row="1" column="1">
         <widget class="QComboBox" name="computerSelect">
+         <property name="toolTip">
+          <string>ComputerType (GFF: ComputerType): BYTE. 0=Modern (green terminal), 1=Ancient
+           (orange/red). Used when ConversationType is Computer. See LoadDialog @ 0x005a2ae0.</string>
+         </property>
          <property name="sizePolicy">
           <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
            <horstretch>0</horstretch>
@@ -1553,8 +1783,12 @@
            <verstretch>0</verstretch>
           </sizepolicy>
          </property>
+         <property name="toolTip">
+          <string>DelayReply (GFF: DelayReply): Default delay in ms before player reply options
+           appear. DWORD 0-4294967295. Used when node Delay is 0xFFFFFFFF. LoadDialog @ 0x005a2ae0.</string>
+         </property>
          <property name="minimum">
-          <number>-2147483648</number>
+          <number>0</number>
          </property>
          <property name="maximum">
           <number>2147483647</number>
@@ -1576,8 +1810,12 @@
            <verstretch>0</verstretch>
           </sizepolicy>
          </property>
+         <property name="toolTip">
+          <string>DelayEntry (GFF: DelayEntry): Default delay in ms before NPC entry lines appear.
+           DWORD 0-4294967295. Used when node Delay is 0xFFFFFFFF. LoadDialog @ 0x005a2ae0.</string>
+         </property>
          <property name="minimum">
-          <number>-2147483648</number>
+          <number>0</number>
          </property>
          <property name="maximum">
           <number>2147483647</number>
@@ -1634,13 +1872,27 @@
         <number>4</number>
        </property>
        <item row="4" column="1">
-        <widget class="FilterComboBox" name="ambientTrackCombo"/>
+        <widget class="FilterComboBox" name="ambientTrackCombo">
+         <property name="toolTip">
+          <string>AmbientTrack (GFF: AmbientTrack): ResRef of background music loop during dialogue.
+           Leave blank for default. LoadDialog @ 0x005a2ae0.</string>
+         </property>
+        </widget>
        </item>
        <item row="2" column="1">
-        <widget class="FilterComboBox" name="cameraModelSelect"/>
+        <widget class="FilterComboBox" name="cameraModelSelect">
+         <property name="toolTip">
+          <string>CameraModel (GFF: CameraModel): ResRef of MDL defining camera positions for
+           cinematic dialogue. Required for Animated/Static camera angles. LoadDialog @ 0x005a2ae0.</string>
+         </property>
+        </widget>
        </item>
        <item row="0" column="1">
         <widget class="FilterComboBox" name="onAbortCombo">
+         <property name="toolTip">
+          <string>EndConverAbort (GFF: EndConverAbort): Script run when the conversation is aborted
+           (player exits early). ResRef of .ncs. LoadDialog @ 0x005a2ae0.</string>
+         </property>
          <property name="minimumSize">
           <size>
            <width>160</width>
@@ -1651,6 +1903,10 @@
        </item>
        <item row="1" column="1">
         <widget class="FilterComboBox" name="onEndEdit">
+         <property name="toolTip">
+          <string>EndConversation (GFF: EndConversation): Script run when the conversation ends
+           normally. ResRef of .ncs. LoadDialog @ 0x005a2ae0.</string>
+         </property>
          <property name="minimumSize">
           <size>
            <width>160</width>
@@ -1807,6 +2063,11 @@
             <verstretch>0</verstretch>
            </sizepolicy>
           </property>
+          <property name="toolTip">
+           <string>Skippable (GFF: Skippable): BYTE. When checked, the player can skip dialogue
+            lines. Default 1. When unchecked, dialogue is unskippable (e.g. cutscenes). LoadDialog @
+            0x005a2ae0.</string>
+          </property>
           <property name="text">
            <string>Skippable</string>
           </property>
@@ -1897,7 +2158,7 @@
       </widget>
      </item>
      <item row="3" column="3">
-      <widget class="ComboBox2DA" name="plotIndexCombo"/>
+      <widget class="ComboBox2DA" name="plotIndexCombo" />
      </item>
      <item row="1" column="0" alignment="Qt::AlignRight">
       <widget class="QLabel" name="listenerTagLabel">
@@ -2146,6 +2407,6 @@
    <container>1</container>
   </customwidget>
  </customwidgets>
- <resources/>
- <connections/>
+ <resources />
+ <connections />
 </ui>
