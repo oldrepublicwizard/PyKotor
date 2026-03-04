@@ -1,3 +1,5 @@
+"""Camera: view/projection matrices with invalidation cache for GL rendering."""
+
 from __future__ import annotations
 
 import math

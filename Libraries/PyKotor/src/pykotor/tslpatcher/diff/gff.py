@@ -1,3 +1,5 @@
+"""GFF diff helpers: flatten differences and build hierarchy for INI serialization."""
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any

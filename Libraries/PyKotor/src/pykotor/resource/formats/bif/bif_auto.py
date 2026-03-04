@@ -1,3 +1,5 @@
+"""BIF/BZF format detection and read/write dispatch (BZF uses LZMA decompression)."""
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
@@ -136,7 +138,7 @@ def write_bif(
         PermissionError: If the file could not be written to the specified destination.
         ValueError: If the specified format was unsupported.
     """
-    if file_format is ResourceType.BIF:
+    if file_format == ResourceType.BIF:
         BIFBinaryWriter(bif, target).write()
     else:
         msg = "Unsupported format specified; use BIF."

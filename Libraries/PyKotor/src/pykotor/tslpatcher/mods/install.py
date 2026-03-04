@@ -1,3 +1,5 @@
+"""TSLPatcher install: backup, InstallFile, and apply modifications to target files/capsules."""
+
 from __future__ import annotations
 
 import shutil

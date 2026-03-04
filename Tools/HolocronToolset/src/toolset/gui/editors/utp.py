@@ -1,3 +1,5 @@
+"""Placeable (UTP) editor: inventory, properties, and module integration."""
+
 from __future__ import annotations
 
 import os
@@ -27,7 +29,6 @@ from toolset.gui.widgets.settings.installations import GlobalSettings
 from toolset.utils.window import open_resource_editor
 
 if TYPE_CHECKING:
-    import os
 
     from qtpy.QtWidgets import QComboBox, QLineEdit, QPlainTextEdit, QWidget
 
@@ -104,16 +105,69 @@ class UTPEditor(Editor):
             - Connect appearanceSelect currentIndexChanged signal to update3dPreview method
             - Connect actionShowPreview triggered signal to toggle_preview method
         """
-        self.ui.tagGenerateButton.clicked.connect(self.generate_tag)
-        self.ui.resrefGenerateButton.clicked.connect(self.generate_resref)
-        self.ui.conversationModifyButton.clicked.connect(self.edit_conversation)
-        self.ui.inventoryButton.clicked.connect(self.open_inventory)
+        signal_connections = [
+            (self.ui.tagGenerateButton.clicked, self.generate_tag),
+            (self.ui.resrefGenerateButton.clicked, self.generate_resref),
+            (self.ui.conversationModifyButton.clicked, self.edit_conversation),
+            (self.ui.inventoryButton.clicked, self.open_inventory),
+            (self.ui.appearanceSelect.currentIndexChanged, self.update3dPreview),
+            (self.ui.actionShowPreview.triggered, self.toggle_preview),
+            (self.ui.modelInfoGroupBox.toggled, self._on_model_info_toggled),
+            (self.ui.previewRenderer.resourcesLoaded, self._on_textures_loaded),
+        ]
+        for signal, handler in signal_connections:
+            signal.connect(handler)
 
-        self.ui.appearanceSelect.currentIndexChanged.connect(self.update3dPreview)
-        self.ui.actionShowPreview.triggered.connect(self.toggle_preview)
-        self.ui.modelInfoGroupBox.toggled.connect(self._on_model_info_toggled)
-        # Connect to renderer's signal to update texture info when textures finish loading
-        self.ui.previewRenderer.resourcesLoaded.connect(self._on_textures_loaded)
+    def _script_fields(self) -> list[QLineEdit | QComboBox | QPlainTextEdit]:
+        """Return all script-related combo/text fields used by this editor."""
+        return [field for _attr_name, field in self._script_attr_fields()]
+
+    def _script_attr_fields(self) -> list[tuple[str, QLineEdit | QComboBox | QPlainTextEdit]]:
+        """Map UTP script attribute names to corresponding UI fields."""
+        return [
+            ("on_closed", self.ui.onClosedEdit),
+            ("on_damaged", self.ui.onDamagedEdit),
+            ("on_death", self.ui.onDeathEdit),
+            ("on_end_dialog", self.ui.onEndConversationEdit),
+            ("on_open_failed", self.ui.onOpenFailedEdit),
+            ("on_heartbeat", self.ui.onHeartbeatSelect),
+            ("on_inventory", self.ui.onInventoryEdit),
+            ("on_melee_attack", self.ui.onMeleeAttackEdit),
+            ("on_force_power", self.ui.onSpellEdit),
+            ("on_open", self.ui.onOpenEdit),
+            ("on_lock", self.ui.onLockEdit),
+            ("on_unlock", self.ui.onUnlockEdit),
+            ("on_used", self.ui.onUsedEdit),
+            ("on_user_defined", self.ui.onUserDefinedSelect),
+        ]
+
+    def _script_value_pairs(self, utp: UTP) -> list[tuple[QLineEdit | QComboBox | QPlainTextEdit, ResRef]]:
+        """Map script widgets to UTP script values for load/populate operations."""
+        return [(field, getattr(utp, attr_name)) for attr_name, field in self._script_attr_fields()]
+
+    def _setup_reference_field(
+        self,
+        widget: QLineEdit | QComboBox | QPlainTextEdit,
+        resource_types: list[ResourceType],
+        reference_type: str,
+        tooltip_text: str,
+        *,
+        set_max_length: bool = False,
+    ) -> None:
+        """Configure context menu reference search behavior for a widget."""
+        assert self._installation is not None
+        self._installation.setup_file_context_menu(
+            widget,
+            resource_types,
+            enable_reference_search=True,
+            reference_search_type=reference_type,
+        )
+        widget.setToolTip(tr(tooltip_text))
+
+        if set_max_length and hasattr(widget, "lineEdit"):
+            line_edit = widget.lineEdit()
+            if line_edit is not None:
+                line_edit.setMaxLength(16)
 
     def _setup_installation(
         self,
@@ -158,43 +212,34 @@ class UTPEditor(Editor):
         self.ui.difficultyModLabel.setVisible(installation.tsl)
 
         # Setup context menus for script fields with reference search enabled
-        script_fields: list[QLineEdit | QComboBox | QPlainTextEdit] = [
-            self.ui.onClosedEdit,
-            self.ui.onDamagedEdit,
-            self.ui.onDeathEdit,
-            self.ui.onEndConversationEdit,
-            self.ui.onOpenFailedEdit,
-            self.ui.onHeartbeatSelect,
-            self.ui.onInventoryEdit,
-            self.ui.onMeleeAttackEdit,
-            self.ui.onSpellEdit,
-            self.ui.onOpenEdit,
-            self.ui.onLockEdit,
-            self.ui.onUnlockEdit,
-            self.ui.onUsedEdit,
-            self.ui.onUserDefinedSelect,
-        ]
-        for field in script_fields:
-            installation.setup_file_context_menu(field, [ResourceType.NSS, ResourceType.NCS], enable_reference_search=True, reference_search_type="script")
-            field.setToolTip(tr("Right-click to find references to this script in the installation."))
-            # Set maxLength for FilterComboBox script fields (ResRefs are max 16 characters)
-            line_edit = field.lineEdit() if hasattr(field, "lineEdit") else None
-            if line_edit is not None:
-                line_edit.setMaxLength(16)
-        installation.setup_file_context_menu(self.ui.conversationEdit, [ResourceType.DLG], enable_reference_search=True, reference_search_type="conversation")
-        self.ui.conversationEdit.setToolTip(tr("Right-click to find references to this conversation in the installation."))
-        # Set maxLength for conversation FilterComboBox (ResRefs are max 16 characters)
-        line_edit = self.ui.conversationEdit.lineEdit()
-        if line_edit is not None:
-            line_edit.setMaxLength(16)
+        for field in self._script_fields():
+            self._setup_reference_field(
+                field,
+                [ResourceType.NSS, ResourceType.NCS],
+                "script",
+                "Right-click to find references to this script in the installation.",
+                set_max_length=True,
+            )
 
-        # Setup reference search for Tag field
-        installation.setup_file_context_menu(self.ui.tagEdit, [], enable_reference_search=True, reference_search_type="tag")
-        self.ui.tagEdit.setToolTip(tr("Right-click to find references to this tag in the installation."))
-
-        # Setup reference search for TemplateResRef field
-        installation.setup_file_context_menu(self.ui.resrefEdit, [], enable_reference_search=True, reference_search_type="template_resref")
-        self.ui.resrefEdit.setToolTip(tr("Right-click to find references to this template resref in the installation."))
+        self._setup_reference_field(
+            self.ui.conversationEdit,
+            [ResourceType.DLG],
+            "conversation",
+            "Right-click to find references to this conversation in the installation.",
+            set_max_length=True,
+        )
+        self._setup_reference_field(
+            self.ui.tagEdit,
+            [],
+            "tag",
+            "Right-click to find references to this tag in the installation.",
+        )
+        self._setup_reference_field(
+            self.ui.resrefEdit,
+            [],
+            "template_resref",
+            "Right-click to find references to this template resref in the installation.",
+        )
 
     def load(
         self,
@@ -258,37 +303,13 @@ class UTPEditor(Editor):
         assert self._installation is not None
         self.relevant_script_resnames = sorted(iter({res.resname().lower() for res in self._installation.get_relevant_resources(ResourceType.NCS, self._filepath)}))
 
-        self.ui.onClosedEdit.populate_combo_box(self.relevant_script_resnames)
-        self.ui.onDamagedEdit.populate_combo_box(self.relevant_script_resnames)
-        self.ui.onDeathEdit.populate_combo_box(self.relevant_script_resnames)
-        self.ui.onEndConversationEdit.populate_combo_box(self.relevant_script_resnames)
-        self.ui.onOpenFailedEdit.populate_combo_box(self.relevant_script_resnames)
-        self.ui.onHeartbeatSelect.populate_combo_box(self.relevant_script_resnames)
-        self.ui.onInventoryEdit.populate_combo_box(self.relevant_script_resnames)
-        self.ui.onMeleeAttackEdit.populate_combo_box(self.relevant_script_resnames)
-        self.ui.onSpellEdit.populate_combo_box(self.relevant_script_resnames)
-        self.ui.onOpenEdit.populate_combo_box(self.relevant_script_resnames)
-        self.ui.onLockEdit.populate_combo_box(self.relevant_script_resnames)
-        self.ui.onUnlockEdit.populate_combo_box(self.relevant_script_resnames)
-        self.ui.onUsedEdit.populate_combo_box(self.relevant_script_resnames)
-        self.ui.onUserDefinedSelect.populate_combo_box(self.relevant_script_resnames)
+        for field in self._script_fields():
+            field.populate_combo_box(self.relevant_script_resnames)
         self.ui.conversationEdit.populate_combo_box(sorted(res.resname() for res in self._installation.get_relevant_resources(ResourceType.DLG)))
 
         # Scripts
-        self.ui.onClosedEdit.set_combo_box_text(str(utp.on_closed))
-        self.ui.onDamagedEdit.set_combo_box_text(str(utp.on_damaged))
-        self.ui.onDeathEdit.set_combo_box_text(str(utp.on_death))
-        self.ui.onEndConversationEdit.set_combo_box_text(str(utp.on_end_dialog))
-        self.ui.onOpenFailedEdit.set_combo_box_text(str(utp.on_open_failed))
-        self.ui.onHeartbeatSelect.set_combo_box_text(str(utp.on_heartbeat))
-        self.ui.onInventoryEdit.set_combo_box_text(str(utp.on_inventory))
-        self.ui.onMeleeAttackEdit.set_combo_box_text(str(utp.on_melee_attack))
-        self.ui.onSpellEdit.set_combo_box_text(str(utp.on_force_power))
-        self.ui.onOpenEdit.set_combo_box_text(str(utp.on_open))
-        self.ui.onLockEdit.set_combo_box_text(str(utp.on_lock))
-        self.ui.onUnlockEdit.set_combo_box_text(str(utp.on_unlock))
-        self.ui.onUsedEdit.set_combo_box_text(str(utp.on_used))
-        self.ui.onUserDefinedSelect.set_combo_box_text(str(utp.on_user_defined))
+        for field, value in self._script_value_pairs(utp):
+            field.set_combo_box_text(str(value))
 
         # Comments
         self.ui.commentsEdit.setPlainText(utp.comment)
@@ -340,20 +361,8 @@ class UTPEditor(Editor):
         utp.key_name = self.ui.keyEdit.text()
 
         # Scripts
-        utp.on_closed = ResRef(self.ui.onClosedEdit.currentText())
-        utp.on_damaged = ResRef(self.ui.onDamagedEdit.currentText())
-        utp.on_death = ResRef(self.ui.onDeathEdit.currentText())
-        utp.on_end_dialog = ResRef(self.ui.onEndConversationEdit.currentText())
-        utp.on_open_failed = ResRef(self.ui.onOpenFailedEdit.currentText())
-        utp.on_heartbeat = ResRef(self.ui.onHeartbeatSelect.currentText())
-        utp.on_inventory = ResRef(self.ui.onInventoryEdit.currentText())
-        utp.on_melee_attack = ResRef(self.ui.onMeleeAttackEdit.currentText())
-        utp.on_force_power = ResRef(self.ui.onSpellEdit.currentText())
-        utp.on_open = ResRef(self.ui.onOpenEdit.currentText())
-        utp.on_lock = ResRef(self.ui.onLockEdit.currentText())
-        utp.on_unlock = ResRef(self.ui.onUnlockEdit.currentText())
-        utp.on_used = ResRef(self.ui.onUsedEdit.currentText())
-        utp.on_user_defined = ResRef(self.ui.onUserDefinedSelect.currentText())
+        for attr_name, field in self._script_attr_fields():
+            setattr(utp, attr_name, ResRef(field.currentText()))
 
         # Comments
         utp.comment = self.ui.commentsEdit.toPlainText()

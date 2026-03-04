@@ -26,6 +26,20 @@ if TYPE_CHECKING:
     from pykotor.resource.formats.ncs.ncs_data import NCS
 
 
+def _write_text_if_requested(output_path: Path | None, text: str) -> None:
+    """Write text output to disk when an output path is provided."""
+    if output_path:
+        output_path.write_text(text, encoding="utf-8")
+
+
+def _instruction_offset(index: int, instruction: object) -> int:
+    """Return a stable instruction offset, falling back to 4-byte indexing."""
+    offset = getattr(instruction, "offset", -1)
+    if isinstance(offset, int) and offset >= 0:
+        return offset
+    return index * 4
+
+
 def decompile_ncs_to_nss(
     ncs_path: Path,
     output_path: Path | None = None,
@@ -58,8 +72,7 @@ def decompile_ncs_to_nss(
     ncs = read_ncs(ncs_path)
     source = decompile_ncs(ncs, game, functions, constants)
 
-    if output_path:
-        output_path.write_text(source, encoding="utf-8")
+    _write_text_if_requested(output_path, source)
 
     return source
 
@@ -102,20 +115,13 @@ def disassemble_ncs(
         instruction_str = str(instruction)
 
         if pretty:
-            # Use instruction offset if available, otherwise use index
-            if instruction.offset >= 0:
-                byte_offset = instruction.offset
-            else:
-                # Estimate offset (rough approximation)
-                byte_offset = i * 4  # Average ~4 bytes per instruction
-            lines.append(f"{byte_offset:08X}: {instruction_str}")
+            lines.append(f"{_instruction_offset(i, instruction):08X}: {instruction_str}")
         else:
             lines.append(instruction_str)
 
     result = "\n".join(lines)
 
-    if output_path:
-        output_path.write_text(result, encoding="utf-8")
+    _write_text_if_requested(output_path, result)
 
     return result
 

@@ -154,10 +154,10 @@ class LYT(ComparableMixin):
 
     def all_room_models(self) -> Generator[str, Any, None]:
         """Return all models used by this LYT."""
-        for room in self.rooms:
+        for room_index, room in enumerate(self.rooms):
             parsed_model: str = room.model.strip()
             assert parsed_model == room.model, "room model names cannot contain spaces."
-            assert ResRef.is_valid(parsed_model), f"invalid room model: '{room.model}' at room {self.rooms.index(room)}, must conform to resref restrictions."
+            assert ResRef.is_valid(parsed_model), f"invalid room model: '{room.model}' at room {room_index}, must conform to resref restrictions."
             yield parsed_model.lower()
 
     def find_room_by_model(self, model: str) -> LYTRoom | None:

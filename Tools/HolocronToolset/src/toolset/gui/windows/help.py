@@ -1,3 +1,5 @@
+"""Help system: load markdown/XML from help paths and build tree for the help window."""
+
 from __future__ import annotations
 
 # Try to import defusedxml, fallback to ElementTree if not available

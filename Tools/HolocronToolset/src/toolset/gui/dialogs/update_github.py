@@ -1,3 +1,5 @@
+"""Fetch GitHub releases for Holocron Toolset forks and update checks."""
+
 from __future__ import annotations
 
 from typing import Any
@@ -9,7 +11,6 @@ except ImportError:
     requests = None  # type: ignore[assignment, unused-ignore]
 
 from loggerplus import RobustLogger
-
 from utility.updater.github import GithubRelease
 
 

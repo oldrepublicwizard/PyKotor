@@ -1,3 +1,5 @@
+"""Save-to-RIM dialog: choose MOD/Override when saving as RIM."""
+
 from __future__ import annotations
 
 from enum import IntEnum

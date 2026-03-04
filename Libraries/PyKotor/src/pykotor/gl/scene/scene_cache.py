@@ -1,3 +1,5 @@
+"""Scene cache: incremental GIT/instance resolution and render object updates for the module designer."""
+
 from __future__ import annotations
 
 import math
@@ -60,23 +62,23 @@ class SceneCache:
 
         for identifier in scene.clear_cache_buffer:
             for git_creature in scene.git.creatures.copy():
-                if identifier.resname == git_creature.resref and identifier.restype is ResourceType.UTC:
+                if identifier.resname == git_creature.resref and identifier.restype == ResourceType.UTC:
                     del scene.objects[git_creature]
             for placeable in scene.git.placeables.copy():
-                if identifier.resname == placeable.resref and identifier.restype is ResourceType.UTP:
+                if identifier.resname == placeable.resref and identifier.restype == ResourceType.UTP:
                     del scene.objects[placeable]
             for door in scene.git.doors.copy():
-                if door.resref == identifier.resname and identifier.restype is ResourceType.UTD:
+                if door.resref == identifier.resname and identifier.restype == ResourceType.UTD:
                     del scene.objects[door]
             if identifier.restype in {ResourceType.TPC, ResourceType.TGA}:
                 del scene.textures[identifier.resname]
             if identifier.restype in {ResourceType.MDL, ResourceType.MDX}:
                 del scene.models[identifier.resname]
-            if identifier.restype is ResourceType.GIT:
+            if identifier.restype == ResourceType.GIT:
                 for instance in scene.git.instances():
                     del scene.objects[instance]
                 scene.git = scene._get_git()
-            if identifier.restype is ResourceType.LYT:
+            if identifier.restype == ResourceType.LYT:
                 for room in scene.layout.rooms:
                     del scene.objects[room]
                 scene.layout = scene._get_lyt()

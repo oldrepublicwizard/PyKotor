@@ -550,7 +550,7 @@ def _test_ipc_connection(timeout: float = 5.0, max_attempts: int = 3) -> tuple[b
         Tuple of (success: bool, message: str)
     """
     try:
-        from toolset.blender.ipc_client import BlenderIPCClient, BlenderCommands
+        from toolset.blender.ipc_client import BlenderCommands, BlenderIPCClient
 
         client = BlenderIPCClient()
         commands = BlenderCommands(client)
@@ -850,6 +850,7 @@ class BlenderSettings:
     def __init__(self):
         """Initialize BlenderSettings and load persisted values."""
         from qtpy.QtCore import QSettings
+
         from toolset.utils.misc import get_qsettings_organization
 
         self._qsettings = QSettings(get_qsettings_organization("HolocronToolsetV4"), "Blender")

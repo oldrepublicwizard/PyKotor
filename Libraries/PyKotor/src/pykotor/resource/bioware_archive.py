@@ -1,3 +1,5 @@
+"""BioWare archive abstraction: ERF, RIM, BIF base classes and resource handling."""
+
 from __future__ import annotations
 
 from abc import ABC, abstractmethod

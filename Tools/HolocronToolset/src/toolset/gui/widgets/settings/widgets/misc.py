@@ -1,3 +1,5 @@
+"""Misc settings widget: global options (game, paths, checkboxes) with GlobalSettings binding."""
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING

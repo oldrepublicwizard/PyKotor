@@ -1,3 +1,5 @@
+"""Render object: model instance with transform, AABB/cube, and cached bounds for culling."""
+
 from __future__ import annotations
 
 import math

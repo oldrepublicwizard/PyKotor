@@ -1,3 +1,5 @@
+"""Fast math: CFFI-backed transform_bounds for AABB in vertex buffers (optional acceleration)."""
+
 from __future__ import annotations
 
 from typing import Sequence

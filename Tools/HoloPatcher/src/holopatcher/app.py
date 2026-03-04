@@ -23,7 +23,7 @@ from contextlib import suppress
 from datetime import datetime, timezone
 from multiprocessing import Queue
 from pathlib import Path
-from threading import Event, Thread
+from threading import Thread
 from tkinter import (
     filedialog,
     messagebox,
@@ -80,6 +80,7 @@ if TYPE_CHECKING:
     from collections.abc import Callable
     from datetime import timedelta
     from multiprocessing import Process
+    from threading import Event
 
     from pykotor.tslpatcher.logger import PatchLog
     from pykotor.tslpatcher.namespaces import PatcherNamespace

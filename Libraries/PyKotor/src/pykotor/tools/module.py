@@ -1,3 +1,5 @@
+"""Module (ERF/RIM) build: pack ARE/GIT/IFO/PTH and resources into game modules."""
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
@@ -18,8 +20,8 @@ from pykotor.resource.generics.are import dismantle_are
 from pykotor.resource.generics.git import dismantle_git
 from pykotor.resource.generics.ifo import dismantle_ifo
 from pykotor.resource.generics.pth import PTH, dismantle_pth
-from pykotor.resource.generics.utd import UTD, dismantle_utd
-from pykotor.resource.generics.utp import UTP, dismantle_utp
+from pykotor.resource.generics.utd import dismantle_utd
+from pykotor.resource.generics.utp import dismantle_utp
 from pykotor.resource.generics.uts import dismantle_uts
 from pykotor.resource.type import ResourceType
 from pykotor.tools import model
@@ -42,9 +44,6 @@ if TYPE_CHECKING:
     from pykotor.resource.generics.git import GIT
     from pykotor.resource.generics.ifo import IFO
     from pykotor.resource.generics.pth import PTH
-    from pykotor.resource.generics.utd import UTD
-    from pykotor.resource.generics.utp import UTP
-    from pykotor.resource.generics.uts import UTS
 
 
 def clone_module(  # noqa: C901, PLR0915, PLR0912, PLR0913
@@ -136,64 +135,73 @@ def clone_module(  # noqa: C901, PLR0915, PLR0912, PLR0913
     git.waypoints = []
     git.cameras = []
 
-    if keep_doors:
-        for i, door in enumerate(git.doors):
-            old_resname: str = str(door.resref)
-            new_resname: str = f"{identifier}_dor{i}"
-            door.resref.set_data(new_resname)
-            door.tag = new_resname
+    def _clone_tagged_resources(
+        instances,
+        *,
+        keep: bool,
+        suffix: str,
+        resource_type: ResourceType,
+        fetch_module_resource,
+        dismantle_func,
+    ):
+        if not keep:
+            return []
 
-            utd_mod_res: ModuleResource[UTD] | None = old_module.door(old_resname)
-            if utd_mod_res is None:
-                RobustLogger().warning(f"No UTD found for door '{old_resname}' in module '{root}'")
-                continue
-            utd_res: UTD | None = utd_mod_res.resource()
-            if utd_res is None:
-                RobustLogger().warning(f"UTD resource is None for door '{old_resname}' in module '{root}'")
-                continue
+        for i, instance in enumerate(instances):
+            old_resname: str = str(instance.resref)
+            new_resname: str = f"{identifier}_{suffix}{i}"
+            instance.resref.set_data(new_resname)
+            instance.tag = new_resname
 
-            new_module.set_data(new_resname, ResourceType.UTD, bytes_gff(dismantle_utd(utd_res)))
-    else:
-        git.doors = []
-
-    if keep_placeables:
-        for i, placeable in enumerate(git.placeables):
-            old_resname = str(placeable.resref)
-            new_resname = f"{identifier}_plc{i}"
-            placeable.resref.set_data(new_resname)
-            placeable.tag = new_resname
-
-            utp_mod_res: ModuleResource[UTP] | None = old_module.placeable(old_resname)
-            if utp_mod_res is None:
-                RobustLogger().warning(f"No UTP found for placeable '{old_resname}' in module '{root}'")
-                continue
-            utp_res: UTP | None = utp_mod_res.resource()
-            if utp_res is None:
-                RobustLogger().warning(f"UTP resource is None for placeable '{old_resname}' in module '{root}'")
+            module_resource = fetch_module_resource(old_resname)
+            if module_resource is None:
+                RobustLogger().warning(
+                    "No %s found for '%s' in module '%s'",
+                    resource_type.extension.upper(),
+                    old_resname,
+                    root,
+                )
                 continue
 
-            new_module.set_data(new_resname, ResourceType.UTP, bytes_gff(dismantle_utp(utp_res)))
-    else:
-        git.placeables = []
-
-    if keep_sounds:
-        git.sounds = []
-    else:
-        for i, sound in enumerate(git.sounds):
-            old_resname = str(sound.resref)
-            new_resname = f"{identifier}_snd{i}"
-            sound.resref.set_data(new_resname)
-            sound.tag = new_resname
-
-            uts_mod_res = old_module.sound(old_resname)
-            if uts_mod_res is None:
-                RobustLogger().warning(f"No UTS found for sound '{old_resname}' in module '{root}'")
+            resource_obj = module_resource.resource()
+            if resource_obj is None:
+                RobustLogger().warning(
+                    "%s resource is None for '%s' in module '%s'",
+                    resource_type.extension.upper(),
+                    old_resname,
+                    root,
+                )
                 continue
-            uts_res: UTS | None = uts_mod_res.resource()
-            if uts_res is None:
-                RobustLogger().warning(f"UTS resource is None for sound '{old_resname}' in module '{root}'")
-                continue
-            new_module.set_data(new_resname, ResourceType.UTS, bytes_gff(dismantle_uts(uts_res)))
+
+            new_module.set_data(new_resname, resource_type, bytes_gff(dismantle_func(resource_obj)))
+        return instances
+
+    git.doors = _clone_tagged_resources(
+        git.doors,
+        keep=keep_doors,
+        suffix="dor",
+        resource_type=ResourceType.UTD,
+        fetch_module_resource=old_module.door,
+        dismantle_func=dismantle_utd,
+    )
+
+    git.placeables = _clone_tagged_resources(
+        git.placeables,
+        keep=keep_placeables,
+        suffix="plc",
+        resource_type=ResourceType.UTP,
+        fetch_module_resource=old_module.placeable,
+        dismantle_func=dismantle_utp,
+    )
+
+    git.sounds = _clone_tagged_resources(
+        git.sounds,
+        keep=not keep_sounds,
+        suffix="snd",
+        resource_type=ResourceType.UTS,
+        fetch_module_resource=old_module.sound,
+        dismantle_func=dismantle_uts,
+    )
 
     new_module.set_data(identifier, ResourceType.GIT, bytes_gff(dismantle_git(git)))
 
@@ -202,6 +210,50 @@ def clone_module(  # noqa: C901, PLR0915, PLR0912, PLR0913
 
     vis_res: ModuleResource[VIS] | None = old_module.vis()
     vis: VIS | None = vis_res.resource() if vis_res is not None else None
+
+    texture_search_order = [
+        SearchLocation.CHITIN,
+        SearchLocation.OVERRIDE,
+        SearchLocation.TEXTURES_TPA,
+        SearchLocation.TEXTURES_TPB,
+        SearchLocation.TEXTURES_TPC,
+        SearchLocation.TEXTURES_GUI,
+    ]
+
+    def _write_texture_as_tga(source_resname: str, target_resname: str) -> bool:
+        tpc: TPC | None = installation.texture(source_resname, texture_search_order)
+        if tpc is None:
+            return False
+
+        tpc = tpc.copy()
+        if tpc.format() in (TPCTextureFormat.BGR, TPCTextureFormat.DXT1, TPCTextureFormat.Greyscale):
+            tpc.convert(TPCTextureFormat.RGB)
+        elif tpc.format() in (TPCTextureFormat.BGRA, TPCTextureFormat.DXT3, TPCTextureFormat.DXT5):
+            tpc.convert(TPCTextureFormat.RGBA)
+
+        new_module.set_data(target_resname, ResourceType.TGA, bytes_tpc(tpc, ResourceType.TGA))
+        return True
+
+    def _load_model_resource_triplet(model_name: str) -> tuple[bytes, bytes, bytes] | None:
+        """Load MDL/MDX/WOK payloads required for room model cloning."""
+
+        def _load_resource_bytes(res_type: ResourceType) -> bytes | None:
+            resource: ResourceResult | None = installation.resource(model_name, res_type)
+            return None if resource is None else resource.data
+
+        mdl_data = _load_resource_bytes(ResourceType.MDL)
+        if mdl_data is None:
+            return None
+
+        mdx_data = _load_resource_bytes(ResourceType.MDX)
+        if mdx_data is None:
+            return None
+
+        wok_data = _load_resource_bytes(ResourceType.WOK)
+        if wok_data is None:
+            return None
+
+        return mdl_data, mdx_data, wok_data
 
     new_lightmaps: dict[str, str] = {}
     new_textures: dict[str, str] = {}
@@ -214,18 +266,10 @@ def clone_module(  # noqa: C901, PLR0915, PLR0912, PLR0913
             if vis is not None and vis.room_exists(old_model_name):
                 vis.rename_room(old_model_name, new_model_name)
 
-            mdl_resource: ResourceResult | None = installation.resource(old_model_name, ResourceType.MDL)
-            mdl_data: None | bytes = None if mdl_resource is None else mdl_resource.data
-            if mdl_data is None:
+            resource_triplet = _load_model_resource_triplet(old_model_name)
+            if resource_triplet is None:
                 continue
-            mdx_resource: ResourceResult | None = installation.resource(old_model_name, ResourceType.MDX)
-            mdx_data: None | bytes = None if mdx_resource is None else mdx_resource.data
-            if mdx_data is None:
-                continue
-            wok_resource: ResourceResult | None = installation.resource(old_model_name, ResourceType.WOK)
-            wok_data: None | bytes = None if wok_resource is None else wok_resource.data
-            if wok_data is None:
-                continue
+            mdl_data, mdx_data, wok_data = resource_triplet
 
             if copy_textures:
                 for texture in model.iterate_textures(mdl_data):
@@ -234,26 +278,9 @@ def clone_module(  # noqa: C901, PLR0915, PLR0912, PLR0913
                     new_texture_name: str = prefix + texture[3:]
                     new_textures[texture] = new_texture_name
 
-                    tpc: TPC | None = installation.texture(
-                        texture,
-                        [
-                            SearchLocation.CHITIN,
-                            SearchLocation.OVERRIDE,
-                            SearchLocation.TEXTURES_TPA,
-                            SearchLocation.TEXTURES_TPB,
-                            SearchLocation.TEXTURES_TPC,
-                            SearchLocation.TEXTURES_GUI,
-                        ],
-                    )
-                    if tpc is None:
+                    if not _write_texture_as_tga(texture, new_texture_name):
                         RobustLogger().warning(f"TPC/TGA resource not found for texture '{texture}' in module '{root}'")
                         continue
-                    tpc = tpc.copy()
-                    if tpc.format() in (TPCTextureFormat.BGR, TPCTextureFormat.DXT1, TPCTextureFormat.Greyscale):
-                        tpc.convert(TPCTextureFormat.RGB)
-                    elif tpc.format() in (TPCTextureFormat.BGRA, TPCTextureFormat.DXT3, TPCTextureFormat.DXT5):
-                        tpc.convert(TPCTextureFormat.RGBA)
-                    new_module.set_data(new_texture_name, ResourceType.TGA, bytes_tpc(tpc, ResourceType.TGA))
                 mdl_data = model.change_textures(mdl_data, new_textures)
 
             if copy_lightmaps:
@@ -263,26 +290,9 @@ def clone_module(  # noqa: C901, PLR0915, PLR0912, PLR0913
                     new_lightmap_name: str = f"{identifier}_lm_{len(new_lightmaps.keys())}"
                     new_lightmaps[lightmap] = new_lightmap_name
 
-                    tpc = installation.texture(
-                        lightmap,
-                        [
-                            SearchLocation.CHITIN,
-                            SearchLocation.OVERRIDE,
-                            SearchLocation.TEXTURES_TPA,
-                            SearchLocation.TEXTURES_TPB,
-                            SearchLocation.TEXTURES_TPC,
-                            SearchLocation.TEXTURES_GUI,
-                        ],
-                    )
-                    if tpc is None:
+                    if not _write_texture_as_tga(lightmap, new_lightmap_name):
                         RobustLogger().warning(f"TPC/TGA resource not found for lightmap '{lightmap}' in module '{root}'")
                         continue
-                    tpc = tpc.copy()
-                    if tpc.format() in (TPCTextureFormat.BGR, TPCTextureFormat.DXT1, TPCTextureFormat.Greyscale):
-                        tpc.convert(TPCTextureFormat.RGB)
-                    elif tpc.format() in (TPCTextureFormat.BGRA, TPCTextureFormat.DXT3, TPCTextureFormat.DXT5):
-                        tpc.convert(TPCTextureFormat.RGBA)
-                    new_module.set_data(new_lightmap_name, ResourceType.TGA, bytes_tpc(tpc))
                 mdl_data = model.change_lightmaps(mdl_data, new_lightmaps)
 
             mdl_data = model.rename(mdl_data, new_model_name)

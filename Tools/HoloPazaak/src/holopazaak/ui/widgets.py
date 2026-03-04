@@ -17,7 +17,6 @@ from typing import TYPE_CHECKING
 from qtpy.QtCore import (
     Property,
     QEasingCurve,
-    QPoint,
     QPropertyAnimation,
     Qt,
     Signal,
@@ -39,6 +38,10 @@ from qtpy.QtWidgets import (
 )
 
 if TYPE_CHECKING:
+    from qtpy.QtCore import (
+        QPoint,
+    )
+
     from holopazaak.game.card import Card
     from holopazaak.ui.styles import ThemeColors
 

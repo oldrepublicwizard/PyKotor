@@ -1,3 +1,5 @@
+"""Scene graph node: transform hierarchy and optional mesh for OpenGL rendering."""
+
 from __future__ import annotations
 
 from copy import copy

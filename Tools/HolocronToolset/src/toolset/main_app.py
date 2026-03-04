@@ -1,3 +1,5 @@
+"""Holocron Toolset application: QApplication, startup, exception hooks, and window registry."""
+
 from __future__ import annotations
 
 import asyncio
@@ -11,13 +13,13 @@ from contextlib import suppress
 from datetime import datetime
 from pathlib import Path
 
-from loggerplus import RobustLogger
 from qtpy.QtCore import QEvent, QObject, QThread
 from qtpy.QtGui import QIcon
 from qtpy.QtWidgets import QApplication, QWidget
 
 import resources_rc  # noqa: PLC0415, F401  # pylint: disable=ungrouped-imports,unused-import
 
+from loggerplus import RobustLogger
 from toolset.config import CURRENT_VERSION
 from toolset.gui.windows.main import ToolWindow
 from toolset.main_settings import setup_post_init_settings, setup_pre_init_settings, setup_toolset_default_env

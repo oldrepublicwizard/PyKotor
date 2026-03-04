@@ -1,3 +1,5 @@
+"""Extract options dialog: TPC decompile and other extraction settings."""
+
 from __future__ import annotations
 
 from qtpy.QtWidgets import QDialog

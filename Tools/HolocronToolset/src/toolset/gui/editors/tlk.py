@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+"""TLK (talk table) editor: string list, sound refs, and TLK export/import."""
+
 from __future__ import annotations
 
 from time import sleep
@@ -51,6 +53,9 @@ if TYPE_CHECKING:
     from typing_extensions import Literal  # pyright: ignore[reportMissingModuleSource]
 
     from pykotor.extract.file import FileResource
+    from pykotor.tools.reference_cache import (  # noqa: PLC0415
+        StrRefSearchResult,
+    )
     from pykotor.tools.reference_finder import ReferenceSearchResult
     from toolset.data.installation import HTInstallation
 
@@ -314,7 +319,6 @@ class TLKEditor(Editor):
                 GFFRefLocation,
                 NCSRefLocation,
                 SSFRefLocation,
-                StrRefSearchResult,
                 TwoDARefLocation,
                 find_strref_references,
             )

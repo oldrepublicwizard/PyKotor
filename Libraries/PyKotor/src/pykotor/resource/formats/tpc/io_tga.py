@@ -1,3 +1,5 @@
+"""TGA read/write for TPC textures: RGBA mipmap I/O and TGA header handling."""
+
 from __future__ import annotations
 
 import io

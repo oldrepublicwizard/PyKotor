@@ -14,7 +14,6 @@ from __future__ import annotations
 from io import BytesIO
 from typing import TYPE_CHECKING
 
-from pykotor.extract.file import FileResource
 from pykotor.resource.formats.tpc import read_tpc
 from pykotor.resource.formats.tpc.tpc_data import TPCMipmap, TPCTextureFormat
 from pykotor.resource.type import ResourceType
@@ -22,13 +21,15 @@ from pykotor.resource.type import ResourceType
 if TYPE_CHECKING:
     from qtpy.QtGui import QImage
 
+    from pykotor.extract.file import FileResource
+
 
 def load_preview_mipmap_from_bytes(restype: ResourceType, data: bytes, target_size: int) -> TPCMipmap:
     """Load a displayable preview mipmap from raw bytes + declared restype."""
-    if restype is ResourceType.TPC:
+    if restype == ResourceType.TPC:
         return load_tpc_preview_mipmap(data, target_size)
 
-    if restype is ResourceType.TGA:
+    if restype == ResourceType.TGA:
         try:
             return load_tpc_preview_mipmap(data, target_size)
         except Exception:
@@ -109,11 +110,11 @@ def load_image_preview_mipmap(
 
 def load_resource_preview_mipmap(resource: FileResource, target_size: int) -> TPCMipmap:
     """Load a displayable preview mipmap for a `FileResource`."""
-    if resource.restype() is ResourceType.TPC:
+    if resource.restype() == ResourceType.TPC:
         return load_tpc_preview_mipmap(resource.data(), target_size)
 
     # Try parsing as TPC container if possible (some inputs route through read_tpc).
-    if resource.restype() is ResourceType.TGA:
+    if resource.restype() == ResourceType.TGA:
         try:
             return load_tpc_preview_mipmap(resource.data(), target_size)
         except Exception:

@@ -1,3 +1,5 @@
+"""TPC/texture format detection and auto read/write dispatch (TPC, TGA, DDS, BMP)."""
+
 from __future__ import annotations
 
 import os
@@ -117,11 +119,11 @@ def read_tpc(
     file_format: ResourceType = detect_tpc(source, offset)
 
     loaded_tpc: TPC
-    if file_format is ResourceType.TPC:
+    if file_format == ResourceType.TPC:
         loaded_tpc = TPCBinaryReader(source, offset, size or 0).load()
-    elif file_format is ResourceType.TGA:
+    elif file_format == ResourceType.TGA:
         loaded_tpc = TPCTGAReader(source, offset, size or 0).load()
-    elif file_format is ResourceType.DDS:
+    elif file_format == ResourceType.DDS:
         loaded_tpc = TPCDDSReader(source, offset, size or 0).load()
     else:
         msg = "Failed to determine the format of the TPC/TGA file."
@@ -163,13 +165,13 @@ def write_tpc(
         PermissionError: If the file could not be written to the specified destination.
         ValueError: If the specified format was unsupported.
     """
-    if file_format is ResourceType.TGA:
+    if file_format == ResourceType.TGA:
         TPCTGAWriter(tpc, target).write()
-    elif file_format is ResourceType.BMP:
+    elif file_format == ResourceType.BMP:
         TPCBMPWriter(tpc, target).write()
-    elif file_format is ResourceType.DDS:
+    elif file_format == ResourceType.DDS:
         TPCDDSWriter(tpc, target).write()
-    elif file_format is ResourceType.TPC:
+    elif file_format == ResourceType.TPC:
         TPCBinaryWriter(tpc, target).write()
     else:
         msg = "Unsupported format specified; use TPC, TGA, DDS or BMP."

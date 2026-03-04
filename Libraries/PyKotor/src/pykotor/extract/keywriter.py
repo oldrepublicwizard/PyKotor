@@ -1,3 +1,5 @@
+"""KEY/BIF writer: abstract writer and helpers for building key/bif archives."""
+
 from __future__ import annotations
 
 import os

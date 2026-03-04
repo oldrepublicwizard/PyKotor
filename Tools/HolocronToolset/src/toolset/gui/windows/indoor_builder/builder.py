@@ -1,23 +1,21 @@
-from __future__ import annotations
+"""Indoor map builder: kit loading, room editing, and save/export."""
 
-import math
-import os
+from __future__ import annotations
 
 from collections import deque
 from copy import deepcopy
 from dataclasses import dataclass
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Callable, TextIO, cast
+from typing import TYPE_CHECKING, Any, TextIO, cast
 
 import qtpy
 
-from qtpy.QtCore import QEvent, QObject, QPoint, QPointF, QSize, QTimer, Qt
-from qtpy.QtGui import QColor, QIcon, QImage, QKeyEvent, QPixmap, QShortcut
+from qtpy.QtCore import QEvent, QPoint, QTimer, Qt
+from qtpy.QtGui import QColor, QIcon, QImage, QPixmap, QShortcut
 from qtpy.QtWidgets import (
     QAction,  # pyright: ignore[reportPrivateImportUsage]
     QApplication,
     QDialog,
-    QDockWidget,
     QFileDialog,
     QHBoxLayout,
     QLabel,
@@ -26,12 +24,13 @@ from qtpy.QtWidgets import (
     QMenu,
     QMessageBox,
     QPlainTextEdit,
-    QProgressDialog,
     QStackedWidget,
     QStatusBar,
     QVBoxLayout,
     QWidget,
 )
+
+from loggerplus import RobustLogger
 
 if qtpy.QT5:
     from qtpy.QtGui import QCloseEvent
@@ -43,32 +42,65 @@ elif qtpy.QT6:
         from qtpy.QtGui import QCloseEvent
     except ImportError:
         # Fallback for Qt6 where QCloseEvent may be in QtCore
-        from qtpy.QtCore import QCloseEvent  # type: ignore[assignment, attr-defined, no-redef]
+        pass  # type: ignore[assignment, attr-defined, no-redef]
 else:
     raise ValueError(f"Invalid QT_API: '{qtpy.API_NAME}'")
 
-from pykotor.common.indoorkit import Kit, KitComponent, KitComponentHook
+from pykotor.common.indoorkit import Kit
 from pykotor.common.indoormap import EmbeddedKit, IndoorMap, IndoorMapRoom
-from pykotor.common.misc import Color  # type: ignore[reportPrivateImportUsage]
-from pykotor.common.modulekit import ModuleKit, ModuleKitManager
+from pykotor.common.modulekit import ModuleKitManager
 from pykotor.common.stream import BinaryWriter  # type: ignore[reportPrivateImportUsage]
-from pykotor.resource.formats.bwm import bytes_bwm, read_bwm  # type: ignore[reportPrivateImportUsage]
 from pykotor.tools import indoorkit as indoorkit_tools
 from pykotor.tools.indoormap import extract_indoor_from_module_as_modulekit
-from toolset.blender import BlenderEditorMode, ConnectionState, check_blender_and_ask, get_blender_settings
+from toolset.blender import BlenderEditorMode, check_blender_and_ask, get_blender_settings
 from toolset.blender.integration import BlenderEditorMixin
 from toolset.data.indoorkit.qt_preview import ensure_component_image
 from toolset.data.installation import HTInstallation
-from toolset.gui.common.filters import NoScrollEventFilter
 from toolset.gui.common.editor_pipelines import (
     populate_module_root_combobox,
     set_preview_source_image,
     update_preview_image_size,
 )
+from toolset.gui.common.filters import NoScrollEventFilter
+from toolset.gui.common.indoor_builder_ops import (
+    add_connected_indoor_rooms_to_selection,
+    apply_flip_selected_rooms,
+    apply_merge_selected_rooms,
+    apply_paste_rooms_from_clipboard,
+    apply_rotate_selected_rooms,
+    cancel_indoor_operations_and_clear_selection,
+    cancel_indoor_operations_and_refresh,
+    cancel_indoor_operations_core,
+    center_indoor_camera_on_selected_rooms,
+    clear_indoor_placement_mode,
+    connect_indoor_option_signals,
+    connect_indoor_paint_control_signals,
+    connect_indoor_renderer_signals,
+    copy_selected_rooms_to_clipboard,
+    cut_indoor_selection,
+    delete_selected_rooms_or_hook,
+    duplicate_selected_rooms_or_hook,
+    get_indoor_context_hits,
+    handle_indoor_double_click_select_connected,
+    handle_indoor_key_press_shortcuts,
+    handle_indoor_primary_press,
+    handle_indoor_scroll,
+    populate_indoor_context_menu,
+    push_rooms_moved_undo,
+    push_rooms_rotated_undo,
+    push_warp_moved_undo,
+    reset_indoor_camera_view,
+    run_if_any_indoor_rooms_selected,
+    select_all_indoor_rooms,
+    sync_indoor_options_ui_from_renderer,
+    toggle_check_widget,
+)
+from toolset.gui.common.interaction.camera import calculate_zoom_strength, handle_standard_2d_camera_movement
 from toolset.gui.common.localization import translate as tr, translate_format as trf
+from toolset.gui.common.status_bar_utils import format_status_bar_keys_and_buttons
+from toolset.gui.common.walkmesh_materials import get_walkmesh_material_colors
 from toolset.gui.dialogs.asyncloader import AsyncLoader
 from toolset.gui.dialogs.indoor_settings import IndoorMapSettings
-from toolset.gui.widgets.settings.widgets.module_designer import ModuleDesignerSettings
 from toolset.gui.windows.help import HelpWindow
 from toolset.gui.windows.indoor_builder.constants import (
     DEFAULT_CAMERA_POSITION_X,
@@ -86,25 +118,28 @@ from toolset.gui.windows.indoor_builder.constants import (
 )
 from toolset.gui.windows.indoor_builder.undo_commands import (
     AddRoomCommand,
-    DeleteRoomsCommand,
-    DuplicateRoomsCommand,
-    FlipRoomsCommand,
-    MergeRoomsCommand,
-    MoveRoomsCommand,
-    MoveWarpCommand,
     PaintWalkmeshCommand,
     ResetWalkmeshCommand,
-    RotateRoomsCommand,
 )
-from toolset.utils.misc import get_qt_button_string, get_qt_key_string
 from utility.common.geometry import SurfaceMaterial, Vector2, Vector3
 from utility.system.os_helper import is_frozen
 
 if TYPE_CHECKING:
-    from qtpy.QtGui import QKeySequence
-    from qtpy.QtWidgets import QLayout
+    import os
 
+    from qtpy.QtCore import QCloseEvent, QObject
+    from qtpy.QtGui import QKeyEvent, QKeySequence
+    from qtpy.QtWidgets import (
+        QDockWidget,
+        QLayout,
+        QProgressDialog,
+    )
+
+    from pykotor.common.indoorkit import KitComponent, KitComponentHook
     from pykotor.common.indoormap import MissingRoomInfo
+    from pykotor.common.modulekit import ModuleKit
+    from toolset.blender import ConnectionState
+    from toolset.gui.common.indoor_builder_ops import RoomClipboardData
 
 
 def get_kits_path() -> Path:
@@ -114,24 +149,6 @@ def get_kits_path() -> Path:
         this_file_path = Path(__file__).absolute()
         kits_path = this_file_path.parents[2].joinpath("kits").absolute()
     return kits_path
-
-
-# =============================================================================
-# Data structures for clipboard
-# =============================================================================
-
-
-@dataclass
-class RoomClipboardData:
-    """Stores room data for clipboard operations."""
-
-    component_kit_name: str
-    component_name: str
-    position: Vector3
-    rotation: float
-    flip_x: bool
-    flip_y: bool
-    walkmesh_override: bytes | None = None
 
 
 @dataclass
@@ -374,60 +391,41 @@ class IndoorMapBuilder(QMainWindow, BlenderEditorMixin):
         # Help menu
         self.ui.actionInstructions.triggered.connect(self.show_help_window)
 
-        # Renderer signals
-        self.ui.mapRenderer.customContextMenuRequested.connect(self.on_context_menu)
-        self.ui.mapRenderer.sig_mouse_moved.connect(self.on_mouse_moved)
-        self.ui.mapRenderer.sig_mouse_pressed.connect(self.on_mouse_pressed)
-        self.ui.mapRenderer.sig_mouse_released.connect(self.on_mouse_released)
-        self.ui.mapRenderer.sig_mouse_scrolled.connect(self.on_mouse_scrolled)
-        self.ui.mapRenderer.sig_mouse_double_clicked.connect(self.onMouseDoubleClicked)
-        self.ui.mapRenderer.sig_rooms_moved.connect(self.on_rooms_moved)
-        self.ui.mapRenderer.sig_rooms_rotated.connect(self.on_rooms_rotated)
-        self.ui.mapRenderer.sig_warp_moved.connect(self.on_warp_moved)
-        self.ui.mapRenderer.sig_marquee_select.connect(self.on_marquee_select)
+        connect_indoor_renderer_signals(
+            self.ui.mapRenderer,
+            on_context_menu=self.on_context_menu,
+            on_mouse_moved=self.on_mouse_moved,
+            on_mouse_pressed=self.on_mouse_pressed,
+            on_mouse_released=self.on_mouse_released,
+            on_mouse_scrolled=self.on_mouse_scrolled,
+            on_mouse_double_clicked=self.onMouseDoubleClicked,
+            on_rooms_moved=self.on_rooms_moved,
+            on_rooms_rotated=self.on_rooms_rotated,
+            on_warp_moved=self.on_warp_moved,
+            on_marquee_select=self.on_marquee_select,
+        )
 
         # Ensure renderer can receive keyboard focus for accessibility
         self.ui.mapRenderer.setFocusPolicy(Qt.FocusPolicy.StrongFocus)
 
-        # Options checkboxes - use proper setters that trigger mark_dirty
-        self.ui.snapToGridCheck.toggled.connect(self.ui.mapRenderer.set_snap_to_grid)
-        self.ui.snapToHooksCheck.toggled.connect(self.ui.mapRenderer.set_snap_to_hooks)
-        self.ui.showGridCheck.toggled.connect(self.ui.mapRenderer.set_show_grid)
-        self.ui.showHooksCheck.toggled.connect(lambda v: self.ui.mapRenderer.set_hide_magnets(not v))
-        self.ui.gridSizeSpin.valueChanged.connect(self.ui.mapRenderer.set_grid_size)
-        self.ui.rotSnapSpin.valueChanged.connect(self.ui.mapRenderer.set_rotation_snap)
+        connect_indoor_option_signals(
+            snap_to_grid_check=self.ui.snapToGridCheck,
+            snap_to_hooks_check=self.ui.snapToHooksCheck,
+            show_grid_check=self.ui.showGridCheck,
+            show_hooks_check=self.ui.showHooksCheck,
+            grid_size_spin=self.ui.gridSizeSpin,
+            rotation_snap_spin=self.ui.rotSnapSpin,
+            set_snap_to_grid=self.ui.mapRenderer.set_snap_to_grid,
+            set_snap_to_hooks=self.ui.mapRenderer.set_snap_to_hooks,
+            set_show_grid=self.ui.mapRenderer.set_show_grid,
+            set_hide_magnets=self.ui.mapRenderer.set_hide_magnets,
+            set_grid_size=self.ui.mapRenderer.set_grid_size,
+            set_rotation_snap=self.ui.mapRenderer.set_rotation_snap,
+        )
 
     def _setup_walkmesh_painter(self):
         """Initialize walkmesh painting UI and palette."""
-        settings = ModuleDesignerSettings()
-
-        def int_to_qcolor(intvalue: int) -> QColor:
-            color = Color.from_rgba_integer(intvalue)
-            return QColor(int(color.r * 255), int(color.g * 255), int(color.b * 255), int(color.a * 255))
-
-        self._material_colors = {
-            SurfaceMaterial.UNDEFINED: int_to_qcolor(settings.undefinedMaterialColour),
-            SurfaceMaterial.OBSCURING: int_to_qcolor(settings.obscuringMaterialColour),
-            SurfaceMaterial.DIRT: int_to_qcolor(settings.dirtMaterialColour),
-            SurfaceMaterial.GRASS: int_to_qcolor(settings.grassMaterialColour),
-            SurfaceMaterial.STONE: int_to_qcolor(settings.stoneMaterialColour),
-            SurfaceMaterial.WOOD: int_to_qcolor(settings.woodMaterialColour),
-            SurfaceMaterial.WATER: int_to_qcolor(settings.waterMaterialColour),
-            SurfaceMaterial.NON_WALK: int_to_qcolor(settings.nonWalkMaterialColour),
-            SurfaceMaterial.TRANSPARENT: int_to_qcolor(settings.transparentMaterialColour),
-            SurfaceMaterial.CARPET: int_to_qcolor(settings.carpetMaterialColour),
-            SurfaceMaterial.METAL: int_to_qcolor(settings.metalMaterialColour),
-            SurfaceMaterial.PUDDLES: int_to_qcolor(settings.puddlesMaterialColour),
-            SurfaceMaterial.SWAMP: int_to_qcolor(settings.swampMaterialColour),
-            SurfaceMaterial.MUD: int_to_qcolor(settings.mudMaterialColour),
-            SurfaceMaterial.LEAVES: int_to_qcolor(settings.leavesMaterialColour),
-            SurfaceMaterial.LAVA: int_to_qcolor(settings.lavaMaterialColour),
-            SurfaceMaterial.BOTTOMLESS_PIT: int_to_qcolor(settings.bottomlessPitMaterialColour),
-            SurfaceMaterial.DEEP_WATER: int_to_qcolor(settings.deepWaterMaterialColour),
-            SurfaceMaterial.DOOR: int_to_qcolor(settings.doorMaterialColour),
-            SurfaceMaterial.NON_WALK_GRASS: int_to_qcolor(settings.nonWalkGrassMaterialColour),
-            SurfaceMaterial.TRIGGER: int_to_qcolor(settings.nonWalkGrassMaterialColour),
-        }
+        self._material_colors = get_walkmesh_material_colors()
 
         self._populate_material_list()
         self._colorize_materials = True
@@ -438,9 +436,14 @@ class IndoorMapBuilder(QMainWindow, BlenderEditorMixin):
         self.ui.mapRenderer.set_colorize_materials(self._colorize_materials)
 
         self.ui.materialList.currentItemChanged.connect(lambda _old, _new=None: self._refresh_status_bar())
-        self.ui.enablePaintCheck.toggled.connect(self._toggle_paint_mode)
-        self.ui.colorizeMaterialsCheck.toggled.connect(self._toggle_colorize_materials)
-        self.ui.resetPaintButton.clicked.connect(self._reset_selected_walkmesh)
+        connect_indoor_paint_control_signals(
+            enable_paint_check=self.ui.enablePaintCheck,
+            colorize_check=self.ui.colorizeMaterialsCheck,
+            reset_button=self.ui.resetPaintButton,
+            on_toggle_paint=self._toggle_paint_mode,
+            on_toggle_colorize=self._toggle_colorize_materials,
+            on_reset_paint=self._reset_selected_walkmesh,
+        )
 
         # Shortcut to quickly toggle paint mode
         QShortcut(Qt.Key.Key_P, self).activated.connect(lambda: self.ui.enablePaintCheck.toggle())
@@ -925,17 +928,15 @@ class IndoorMapBuilder(QMainWindow, BlenderEditorMixin):
                         position.get("y", room.position.y),
                         position.get("z", room.position.z),
                     )
-                    if room.position != new_position:
-                        old_positions = [Vector3(*room.position)]
-                        new_positions = [new_position]
-                        move_cmd = MoveRoomsCommand(
-                            self._map,
-                            [room],
-                            old_positions,
-                            new_positions,
-                            self._invalidate_rooms,
-                        )
-                        self._undo_stack.push(move_cmd)
+                    push_rooms_moved_undo(
+                        self._map,
+                        [room],
+                        [Vector3(*room.position)],
+                        [new_position],
+                        self._undo_stack,
+                        self._invalidate_rooms,
+                        position_change_epsilon=0.0,
+                    )
 
                 if rotation and "euler" in rotation:
                     euler = rotation["euler"]
@@ -943,17 +944,15 @@ class IndoorMapBuilder(QMainWindow, BlenderEditorMixin):
                         new_rotation = euler.get("z", room.rotation)
                     else:
                         new_rotation = room.rotation
-                    if not math.isclose(room.rotation, new_rotation, abs_tol=1e-4):
-                        old_rotations = [room.rotation]
-                        new_rotations = [new_rotation]
-                        rotate_cmd = RotateRoomsCommand(  # type: ignore[assignment]
-                            self._map,
-                            [room],
-                            old_rotations,
-                            new_rotations,
-                            self._invalidate_rooms,
-                        )
-                        self._undo_stack.push(rotate_cmd)
+                    push_rooms_rotated_undo(
+                        self._map,
+                        [room],
+                        [room.rotation],
+                        [new_rotation],
+                        self._undo_stack,
+                        self._invalidate_rooms,
+                        rotation_change_epsilon=1e-4,
+                    )
             finally:
                 self._transform_sync_in_progress = prev
 
@@ -1041,30 +1040,15 @@ class IndoorMapBuilder(QMainWindow, BlenderEditorMixin):
 
     def _initialize_options_ui(self):
         """Initialize Options UI to match renderer's initial state."""
-        renderer = self.ui.mapRenderer
-        # Block signals temporarily to avoid triggering updates during initialization
-        self.ui.snapToGridCheck.blockSignals(True)
-        self.ui.snapToHooksCheck.blockSignals(True)
-        self.ui.showGridCheck.blockSignals(True)
-        self.ui.showHooksCheck.blockSignals(True)
-        self.ui.gridSizeSpin.blockSignals(True)
-        self.ui.rotSnapSpin.blockSignals(True)
-
-        # Set UI to match renderer state
-        self.ui.snapToGridCheck.setChecked(renderer.snap_to_grid)
-        self.ui.snapToHooksCheck.setChecked(renderer.snap_to_hooks)
-        self.ui.showGridCheck.setChecked(renderer.show_grid)
-        self.ui.showHooksCheck.setChecked(not renderer.hide_magnets)
-        self.ui.gridSizeSpin.setValue(renderer.grid_size)
-        self.ui.rotSnapSpin.setValue(int(renderer.rotation_snap))
-
-        # Unblock signals
-        self.ui.snapToGridCheck.blockSignals(False)
-        self.ui.snapToHooksCheck.blockSignals(False)
-        self.ui.showGridCheck.blockSignals(False)
-        self.ui.showHooksCheck.blockSignals(False)
-        self.ui.gridSizeSpin.blockSignals(False)
-        self.ui.rotSnapSpin.blockSignals(False)
+        sync_indoor_options_ui_from_renderer(
+            self.ui.mapRenderer,
+            snap_to_grid_check=self.ui.snapToGridCheck,
+            snap_to_hooks_check=self.ui.snapToHooksCheck,
+            show_grid_check=self.ui.showGridCheck,
+            show_hooks_check=self.ui.showHooksCheck,
+            grid_size_spin=self.ui.gridSizeSpin,
+            rotation_snap_spin=self.ui.rotSnapSpin,
+        )
 
     def _refresh_status_bar(
         self,
@@ -1147,95 +1131,8 @@ class IndoorMapBuilder(QMainWindow, BlenderEditorMixin):
         self._update_preview_from_selection()
 
         # Keys/buttons (sorted with modifiers first)
-        def sort_with_modifiers(
-            items: set[Qt.MouseButton]
-            | set[int | Qt.Key | Qt.MouseButton]
-            | set[int | Qt.Key]
-            | set[Qt.Key]
-            | set[int]
-            | set[int | Qt.MouseButton]
-            | set[Qt.Key | int]
-            | set[Qt.MouseButton | int]
-            | set[int | Qt.Key | Qt.MouseButton | int]
-            | set[QKeySequence],
-            get_string_func: Callable[[int | Qt.Key | Qt.MouseButton], str],
-            qt_enum_type: str,
-        ) -> list[int | Qt.Key | Qt.MouseButton]:
-            # Ensure items is a set and iterable
-            if not isinstance(items, set):
-                items = set(items) if hasattr(items, "__iter__") else set()
-
-            # Convert to union type set for processing
-            items_union: set[int | Qt.Key | Qt.MouseButton] = set(items)  # type: ignore[assignment]
-
-            modifiers: list[int | Qt.Key | Qt.MouseButton] = []
-            normal: list[int | Qt.Key | Qt.MouseButton] = []
-            if qt_enum_type == "QtKey":
-                modifier_set = {Qt.Key.Key_Control, Qt.Key.Key_Shift, Qt.Key.Key_Alt, Qt.Key.Key_Meta}
-                modifiers = [item for item in items_union if item in modifier_set]
-                normal = [item for item in items_union if item not in modifier_set]
-            else:
-                normal = list(items_union)
-            return sorted(modifiers, key=get_string_func) + sorted(normal, key=get_string_func)
-
-        def get_qt_key_string_local(key: int | Qt.Key | Qt.MouseButton) -> str:
-            """Get key string using utility function, with fallback."""
-            # Only process keys, not mouse buttons
-            if isinstance(key, Qt.MouseButton):
-                return str(key)
-            try:
-                result = get_qt_key_string(key)  # type: ignore[arg-type]
-                # Remove "Key_" prefix if present
-                return result.replace("Key_", "").replace("KEY_", "")
-            except (AttributeError, TypeError, ValueError):
-                # Fallback: try to get name attribute
-                try:
-                    key_enum = Qt.Key(key) if isinstance(key, int) else key  # type: ignore[arg-type]
-                    name = getattr(key_enum, "name", str(key_enum))
-                    return name.replace("Key_", "").replace("KEY_", "")
-                except (AttributeError, TypeError, ValueError):
-                    return str(key)
-
-        def get_qt_button_string_local(btn: int | Qt.MouseButton | Qt.Key) -> str:
-            """Get button string using utility function, with fallback."""
-            # Only process mouse buttons, not keys
-            if isinstance(btn, Qt.Key):
-                return str(btn)
-            try:
-                result = get_qt_button_string(btn)  # type: ignore[arg-type]
-                # Remove "Button" suffix if present
-                return result.replace("Button", "").replace("BUTTON", "")
-            except (AttributeError, TypeError, ValueError):
-                # Fallback: try to get name attribute
-                try:
-                    btn_enum = Qt.MouseButton(btn) if isinstance(btn, int) else btn  # type: ignore[arg-type]
-                    name = getattr(btn_enum, "name", str(btn_enum))
-                    return name.replace("Button", "").replace("BUTTON", "")
-                except (AttributeError, TypeError, ValueError):
-                    return str(btn)
-
-        keys_sorted: list[int | Qt.Key | Qt.MouseButton] = sort_with_modifiers(keys, get_qt_key_string_local, "QtKey")
-        buttons_sorted: list[int | Qt.MouseButton | Qt.Key] = sort_with_modifiers(buttons, get_qt_button_string_local, "QtMouse")
-
-        def fmt(
-            seq: list[int | Qt.Key | Qt.MouseButton],
-            formatter: Callable[[int | Qt.Key | Qt.MouseButton], str],
-            color: str,
-        ) -> str:
-            if not seq:
-                return ""
-            formatted_items = [formatter(item) for item in seq]
-            # Properly escape and wrap each item in a colored span
-            colored_items = [f"<span style='color: {color}'>{item}</span>" for item in formatted_items]
-            return "&nbsp;+&nbsp;".join(colored_items)
-
         colors = self._get_semantic_colors()
-        keys_text = fmt(keys_sorted, get_qt_key_string_local, colors["accent3"])
-        buttons_text = fmt(buttons_sorted, get_qt_button_string_local, colors["accent2"])
-        sep = " + " if keys_text and buttons_text else ""
-        self._keys_label.setText(
-            f'<b><span style="{self._emoji_style}">⌨</span>&nbsp;Keys/<span style="{self._emoji_style}">🖱</span>&nbsp;Buttons:</b> {keys_text}{sep}{buttons_text}'
-        )
+        self._keys_label.setText(format_status_bar_keys_and_buttons(keys, buttons, self._emoji_style, colors["accent3"], colors["accent2"]))
 
         # Mode/status line (reuse colors from above)
         mode_parts: list[str] = []
@@ -1603,51 +1500,26 @@ class IndoorMapBuilder(QMainWindow, BlenderEditorMixin):
     # =========================================================================
 
     def delete_selected(self):
-        # If a hook is selected, delete the hook instead of rooms
-        hook_sel: tuple[IndoorMapRoom, int] | None = self.ui.mapRenderer.selected_hook()
-        if hook_sel is not None:
-            room, hook_index = hook_sel
-            self.ui.mapRenderer.delete_hook(room, hook_index)
-            self._refresh_window_title()
+        changed = delete_selected_rooms_or_hook(
+            self.ui.mapRenderer,
+            self._map,
+            self._undo_stack,
+            self._invalidate_rooms,
+        )
+        if not changed:
             return
-
-        rooms: list[IndoorMapRoom] = self.ui.mapRenderer.selected_rooms()
-        if not rooms:
-            return
-        delete_cmd = DeleteRoomsCommand(self._map, rooms, self._invalidate_rooms)
-        self._undo_stack.push(delete_cmd)
-        # Clear selected hook if any of the deleted rooms had the selected hook
-        if self.ui.mapRenderer._selected_hook is not None:
-            hook_room, _ = self.ui.mapRenderer._selected_hook
-            if hook_room in rooms:
-                self.ui.mapRenderer.clear_selected_hook()
-        self.ui.mapRenderer.clear_selected_rooms()
         self._refresh_window_title()
 
     def duplicate_selected(self):
-        hook_sel = self.ui.mapRenderer.selected_hook()
-        if hook_sel is not None:
-            room, hook_index = hook_sel
-            self.ui.mapRenderer.duplicate_hook(room, hook_index)
-            self._refresh_window_title()
-            return
-
-        rooms: list[IndoorMapRoom] = self.ui.mapRenderer.selected_rooms()
-        if not rooms:
-            return
-        duplicate_cmd = DuplicateRoomsCommand(
+        changed = duplicate_selected_rooms_or_hook(
+            self.ui.mapRenderer,
             self._map,
-            rooms,
-            Vector3(DUPLICATE_OFFSET_X, DUPLICATE_OFFSET_Y, DUPLICATE_OFFSET_Z),
+            self._undo_stack,
             self._invalidate_rooms,
+            Vector3(DUPLICATE_OFFSET_X, DUPLICATE_OFFSET_Y, DUPLICATE_OFFSET_Z),
         )
-        self._undo_stack.push(duplicate_cmd)
-        # Select the duplicates
-        self.ui.mapRenderer.clear_selected_rooms()
-        for room in duplicate_cmd.duplicates:
-            self.ui.mapRenderer.select_room(room, clear_existing=False)
-        # Force immediate update after duplicate
-        self.ui.mapRenderer.update()
+        if not changed:
+            return
         self._refresh_window_title()
 
     def merge_selected(self):
@@ -1662,102 +1534,37 @@ class IndoorMapBuilder(QMainWindow, BlenderEditorMixin):
         The merged room is treated as a single entity for all subsequent operations.
         This action is undoable.
         """
-        rooms: list[IndoorMapRoom] = self.ui.mapRenderer.selected_rooms()
-        if len(rooms) < 2:
+        changed = apply_merge_selected_rooms(
+            self.ui.mapRenderer,
+            self._map,
+            self._embedded_kit,
+            self._undo_stack,
+            self._invalidate_rooms,
+            on_changed=self._refresh_window_title,
+        )
+        if not changed:
             return
-
-        # Create and execute the merge command
-        merge_cmd = MergeRoomsCommand(self._map, rooms, self._embedded_kit, self._invalidate_rooms)
-        self._undo_stack.push(merge_cmd)
-
-        # Clear selection and select the merged room
-        self.ui.mapRenderer.clear_selected_rooms()
-        self.ui.mapRenderer.clear_selected_hook()
-        self.ui.mapRenderer.select_room(merge_cmd.merged_room, clear_existing=True)
-
-        # Force immediate update
-        self.ui.mapRenderer.update()
-        self._refresh_window_title()
 
     def cut_selected(self):
-        self.copy_selected()
-        self.delete_selected()
+        cut_indoor_selection(copy_selected=self.copy_selected, delete_selected=self.delete_selected)
 
     def copy_selected(self):
-        rooms: list[IndoorMapRoom] = self.ui.mapRenderer.selected_rooms()
-        if not rooms:
-            return
-
-        self._clipboard.clear()
-        # Calculate centroid for relative positioning
-        cx: float = sum(r.position.x for r in rooms) / len(rooms)
-        cy: float = sum(r.position.y for r in rooms) / len(rooms)
-
-        for room in rooms:
-            clipboard_data: RoomClipboardData = RoomClipboardData(
-                component_kit_name=room.component.kit.name,
-                component_name=room.component.name,
-                position=Vector3(room.position.x - cx, room.position.y - cy, room.position.z),
-                rotation=room.rotation,
-                flip_x=room.flip_x,
-                flip_y=room.flip_y,
-                walkmesh_override=bytes_bwm(room.walkmesh_override) if room.walkmesh_override is not None else None,
-            )
-            self._clipboard.append(clipboard_data)
+        self._clipboard = copy_selected_rooms_to_clipboard(self.ui.mapRenderer)
 
     def paste(self):
-        if not self._clipboard:
+        if apply_paste_rooms_from_clipboard(
+            self.ui.mapRenderer,
+            self._map,
+            self._undo_stack,
+            self._invalidate_rooms,
+            self._clipboard,
+            self._kits,
+            on_changed=self._refresh_window_title,
+        ):
             return
 
-        # Get paste position (cursor position or center of view)
-        screen_center = QPointF(self.ui.mapRenderer.width() / 2, self.ui.mapRenderer.height() / 2)
-        world_center = self.ui.mapRenderer.to_world_coords(screen_center.x(), screen_center.y())
-
-        new_rooms: list[IndoorMapRoom] = []
-        for data in self._clipboard:
-            # Find the kit and component
-            kit: Kit | None = next((k for k in self._kits if k.name == data.component_kit_name), None)
-            if not kit:
-                continue
-            component: KitComponent | None = next((c for c in kit.components if c.name == data.component_name), None)
-            if not component:
-                continue
-
-            # Deep copy component so hooks can be edited independently
-            component_copy = deepcopy(component)
-            room = IndoorMapRoom(
-                component_copy,
-                Vector3(world_center.x + data.position.x, world_center.y + data.position.y, data.position.z),
-                data.rotation,
-                flip_x=data.flip_x,
-                flip_y=data.flip_y,
-            )
-            if data.walkmesh_override is not None:
-                try:
-                    room.walkmesh_override = read_bwm(data.walkmesh_override)
-                except Exception:
-                    pass
-            # Initialize hooks connections list to match hooks length
-            room.hooks = [None] * len(component_copy.hooks)
-            new_rooms.append(room)
-
-        if new_rooms:
-            # Create a compound command for all pasted rooms
-            for room in new_rooms:
-                cmd = AddRoomCommand(self._map, room, self._invalidate_rooms)
-                self._undo_stack.push(cmd)
-
-            self.ui.mapRenderer.clear_selected_rooms()
-            for room in new_rooms:
-                self.ui.mapRenderer.select_room(room, clear_existing=False)
-            # Force immediate update after paste
-            self.ui.mapRenderer.update()
-            self._refresh_window_title()
-
     def select_all(self):
-        self.ui.mapRenderer.clear_selected_rooms()
-        for room in self._map.rooms:
-            self.ui.mapRenderer.select_room(room, clear_existing=False)
+        select_all_indoor_rooms(self.ui.mapRenderer, self._map.rooms)
 
     def deselect_all(self):
         self.ui.mapRenderer.clear_selected_rooms()
@@ -1774,18 +1581,16 @@ class IndoorMapBuilder(QMainWindow, BlenderEditorMixin):
     # =========================================================================
 
     def reset_view(self):
-        self.ui.mapRenderer.set_camera_position(DEFAULT_CAMERA_POSITION_X, DEFAULT_CAMERA_POSITION_Y)
-        self.ui.mapRenderer.set_camera_rotation(DEFAULT_CAMERA_ROTATION)
-        self.ui.mapRenderer.set_camera_zoom(DEFAULT_CAMERA_ZOOM)
+        reset_indoor_camera_view(
+            self.ui.mapRenderer,
+            default_camera_x=DEFAULT_CAMERA_POSITION_X,
+            default_camera_y=DEFAULT_CAMERA_POSITION_Y,
+            default_camera_rotation=DEFAULT_CAMERA_ROTATION,
+            default_camera_zoom=DEFAULT_CAMERA_ZOOM,
+        )
 
     def center_on_selection(self):
-        rooms = self.ui.mapRenderer.selected_rooms()
-        if not rooms:
-            return
-
-        cx = sum(r.position.x for r in rooms) / len(rooms)
-        cy = sum(r.position.y for r in rooms) / len(rooms)
-        self.ui.mapRenderer.set_camera_position(cx, cy)
+        center_indoor_camera_on_selected_rooms(self.ui.mapRenderer)
 
     # =========================================================================
     # Component selection
@@ -1856,16 +1661,11 @@ class IndoorMapBuilder(QMainWindow, BlenderEditorMixin):
         world_delta: Vector2 = self.ui.mapRenderer.to_world_delta(delta.x, delta.y)
 
         # Walkmesh painting drag - Shift+Left drag should paint
-        if (self._painting_walkmesh or Qt.Key.Key_Shift in keys) and Qt.MouseButton.LeftButton in buttons and Qt.Key.Key_Control not in keys:
+        handled_cam = handle_standard_2d_camera_movement(self.ui.mapRenderer, screen, delta, world_delta, buttons, keys, is_indoor_builder=True)
+
+        if not handled_cam and (self._painting_walkmesh or Qt.Key.Key_Shift in keys) and Qt.MouseButton.LeftButton in buttons and Qt.Key.Key_Control not in keys:
             self._apply_paint_at_screen(screen)
             return
-
-        # Pan camera with middle mouse or LMB + Ctrl
-        if Qt.MouseButton.MiddleButton in buttons or (Qt.MouseButton.LeftButton in buttons and Qt.Key.Key_Control in keys):
-            self.ui.mapRenderer.pan_camera(-world_delta.x, -world_delta.y)
-        # Rotate camera with RMB + Ctrl
-        elif Qt.MouseButton.RightButton in buttons and Qt.Key.Key_Control in keys:
-            self.ui.mapRenderer.rotate_camera(delta.x / 50)
 
     def on_mouse_pressed(
         self,
@@ -1885,78 +1685,23 @@ class IndoorMapBuilder(QMainWindow, BlenderEditorMixin):
 
         renderer = self.ui.mapRenderer
         world = renderer.to_world_coords(screen.x, screen.y)
-
-        # Check if clicking on warp point first
-        if renderer.is_over_warp_point(world):
-            renderer.start_warp_drag()
-            return
-
-        # STEP 1: Check for existing room/hook at click position
-        # Use pick_face which checks the actual walkmesh geometry
-        clicked_room: IndoorMapRoom | None = None
-        face_room, _ = renderer.pick_face(world)
-        if face_room is not None:
-            clicked_room = face_room
-        hook_hit = renderer.hook_under_mouse(world)
-
-        # STEP 2: If clicking on an existing room or hook, ALWAYS select/drag
-        # This takes ABSOLUTE priority over placement mode
-        if clicked_room is not None or hook_hit is not None:
-            # Force clear placement mode when interacting with existing objects
-            self._clear_placement_mode()
-
-            # Handle hook selection/dragging first (hooks have priority over room body)
-            if hook_hit is not None and Qt.Key.Key_Shift not in keys:
-                hook_room, hook_index = hook_hit
-                renderer.select_hook(hook_room, hook_index, clear_existing=True)
-                renderer._dragging_hook = True
-                renderer._drag_hook_start = Vector3(*renderer.cursor_point)
-                return
-
-            # Handle room selection and dragging
-            if clicked_room is not None:
-                if clicked_room in renderer.selected_rooms():
-                    # Room already selected - just start drag
-                    renderer.start_drag(clicked_room)
-                else:
-                    # Select the room first, then start drag
-                    clear_existing = Qt.Key.Key_Shift not in keys
-                    renderer.select_room(clicked_room, clear_existing=clear_existing)
-                    renderer.start_drag(clicked_room)
-                return
-
-        # STEP 3: Clicked on empty space - check placement mode
-        # ONLY use cursor_component, ignore UI list fallback to prevent desync
-        if renderer.cursor_component is not None:
-            self._place_new_room(renderer.cursor_component)
-            if Qt.Key.Key_Shift not in keys:
-                # Clear placement mode after placing
-                self._clear_placement_mode()
-            return
-
-        # STEP 4: Empty space, no placement mode - start marquee or clear selection
-        if Qt.Key.Key_Shift not in keys:
-            renderer.clear_selected_rooms()
-        renderer.start_marquee(screen)
+        handle_indoor_primary_press(
+            renderer,
+            world,
+            shift_pressed=Qt.Key.Key_Shift in keys,
+            clear_placement_mode=self._clear_placement_mode,
+            place_new_room=self._place_new_room,
+            start_marquee=lambda: renderer.start_marquee(screen),
+        )
 
     def _clear_placement_mode(self):
         """Clear all placement mode state - cursor component and UI selections."""
-        renderer = self.ui.mapRenderer
-        renderer.set_cursor_component(None)
-        renderer.clear_selected_hook()
-        # Block signals to prevent recursive calls during clear
-        self.ui.componentList.blockSignals(True)
-        self.ui.moduleComponentList.blockSignals(True)
-        try:
-            self.ui.componentList.clearSelection()
-            self.ui.componentList.setCurrentItem(None)
-            self.ui.moduleComponentList.clearSelection()
-            self.ui.moduleComponentList.setCurrentItem(None)
-        finally:
-            self.ui.componentList.blockSignals(False)
-            self.ui.moduleComponentList.blockSignals(False)
-        # Update preview to show selected rooms (if any) now that placement mode is cleared
-        self._update_preview_from_selection()
+        clear_indoor_placement_mode(
+            self.ui.mapRenderer,
+            self.ui.componentList,
+            self.ui.moduleComponentList,
+            on_cleared=self._update_preview_from_selection,
+        )
 
     def on_mouse_released(
         self,
@@ -1993,18 +1738,17 @@ class IndoorMapBuilder(QMainWindow, BlenderEditorMixin):
         new_positions: list[Vector3],
     ):
         """Called when rooms have been moved via drag."""
-        if not rooms:
-            return
-        # Only create command if positions actually changed
-        if any(old.distance(new) > POSITION_CHANGE_EPSILON for old, new in zip(old_positions, new_positions)):
-            cmd = MoveRoomsCommand(self._map, rooms, old_positions, new_positions, self._invalidate_rooms)
-            self._undo_stack.push(cmd)
+        if push_rooms_moved_undo(
+            self._map,
+            rooms,
+            old_positions,
+            new_positions,
+            self._undo_stack,
+            self._invalidate_rooms,
+            position_change_epsilon=POSITION_CHANGE_EPSILON,
+        ):
             self._refresh_window_title()
-
-            # Sync to Blender if not already syncing from Blender
-            if self.is_blender_mode() and self._blender_controller is not None and not self._transform_sync_in_progress:
-                for room in rooms:
-                    self.sync_room_to_blender(room)
+            self._sync_rooms_to_blender_if_enabled(rooms)
 
     def on_rooms_rotated(
         self,
@@ -2013,17 +1757,23 @@ class IndoorMapBuilder(QMainWindow, BlenderEditorMixin):
         new_rotations: list[float],
     ):
         """Called when rooms have been rotated during drag."""
-        if not rooms:
-            return
-        if any(abs(o - n) > ROTATION_CHANGE_EPSILON for o, n in zip(old_rotations, new_rotations)):
-            cmd = RotateRoomsCommand(self._map, rooms, old_rotations, new_rotations, self._invalidate_rooms)
-            self._undo_stack.push(cmd)
+        if push_rooms_rotated_undo(
+            self._map,
+            rooms,
+            old_rotations,
+            new_rotations,
+            self._undo_stack,
+            self._invalidate_rooms,
+            rotation_change_epsilon=ROTATION_CHANGE_EPSILON,
+        ):
             self._refresh_window_title()
+            self._sync_rooms_to_blender_if_enabled(rooms)
 
-            # Sync to Blender if not already syncing from Blender
-            if self.is_blender_mode() and self._blender_controller is not None and not self._transform_sync_in_progress:
-                for room in rooms:
-                    self.sync_room_to_blender(room)
+    def _sync_rooms_to_blender_if_enabled(self, rooms: list[IndoorMapRoom]) -> None:
+        if not self.is_blender_mode() or self._blender_controller is None or self._transform_sync_in_progress:
+            return
+        for room in rooms:
+            self.sync_room_to_blender(room)
 
     def on_warp_moved(
         self,
@@ -2031,9 +1781,13 @@ class IndoorMapBuilder(QMainWindow, BlenderEditorMixin):
         new_position: Vector3,
     ):
         """Called when warp point has been moved via drag."""
-        if old_position.distance(new_position) > POSITION_CHANGE_EPSILON:
-            cmd = MoveWarpCommand(self._map, old_position, new_position)
-            self._undo_stack.push(cmd)
+        if push_warp_moved_undo(
+            self._map,
+            old_position,
+            new_position,
+            self._undo_stack,
+            position_change_epsilon=POSITION_CHANGE_EPSILON,
+        ):
             self._refresh_window_title()
 
     def on_marquee_select(
@@ -2130,26 +1884,12 @@ class IndoorMapBuilder(QMainWindow, BlenderEditorMixin):
         buttons: set[int | Qt.MouseButton],
         keys: set[int | Qt.Key],
     ):
-        if Qt.Key.Key_Control in keys:
-            # Use multiplicative zoom for linear visual zoom
-            # Normalize delta.y by typical wheel click (120) to get number of clicks
-            # Apply consistent percentage change per click
-            # Positive delta.y means scrolling up (zoom in), negative means scrolling down (zoom out)
-            clicks = delta.y / 120.0  # Normalize to number of wheel clicks
-            # Calculate zoom factor: 1.0 + sensitivity for zoom in, 1.0 - sensitivity for zoom out
-            zoom_factor = (1.0 + ZOOM_WHEEL_SENSITIVITY) ** clicks
-            self.ui.mapRenderer.zoom_in_camera(zoom_factor)
-            return
-
-        # When dragging existing rooms, allow scroll-wheel rotation just like placement mode.
-        if self.ui.mapRenderer.is_dragging_rooms():
-            self.ui.mapRenderer.rotate_drag_selection(delta.y)
-            return
-
-        # Placement preview rotation
-        if self.ui.mapRenderer.cursor_component is not None:
-            snap = self.ui.mapRenderer.rotation_snap
-            self.ui.mapRenderer.cursor_rotation += math.copysign(snap, delta.y)
+        handle_indoor_scroll(
+            self.ui.mapRenderer,
+            delta_y=delta.y,
+            ctrl_pressed=Qt.Key.Key_Control in keys,
+            zoom_factor_from_delta=lambda value: calculate_zoom_strength(value, ZOOM_WHEEL_SENSITIVITY),
+        )
         self._refresh_status_bar(screen=None, buttons=buttons, keys=keys)  # type: ignore[reportArgumentType]
 
     def onMouseDoubleClicked(
@@ -2158,122 +1898,65 @@ class IndoorMapBuilder(QMainWindow, BlenderEditorMixin):
         buttons: set[Qt.MouseButton] | set[Qt.MouseButton] | set[int] | set[Qt.MouseButton | int],
         keys: set[Qt.Key] | set[QKeySequence] | set[int] | set[Qt.Key | QKeySequence | int],
     ):
-        room: IndoorMapRoom | None = self.ui.mapRenderer.room_under_mouse()
-        if Qt.MouseButton.LeftButton not in buttons or room is None:
-            return
-        self.ui.mapRenderer.clear_selected_rooms()
-        self.add_connected_to_selection(room)
+        handle_indoor_double_click_select_connected(
+            self.ui.mapRenderer,
+            left_pressed=Qt.MouseButton.LeftButton in buttons,
+            add_connected_to_selection=self.add_connected_to_selection,
+        )
 
     def on_context_menu(self, point: QPoint):
-        world: Vector3 = self.ui.mapRenderer.to_world_coords(point.x(), point.y())
-        room: IndoorMapRoom | None = self.ui.mapRenderer.room_under_mouse()
-        hook_hit = self.ui.mapRenderer.hook_under_mouse(world)
+        world, room, hook_hit = get_indoor_context_hits(
+            self.ui.mapRenderer,
+            screen_x=point.x(),
+            screen_y=point.y(),
+        )
         menu = QMenu(self)
 
-        # Room-specific actions
-        if room:
-            if room not in self.ui.mapRenderer.selected_rooms():
-                self.ui.mapRenderer.select_room(room, clear_existing=True)
-
-            selected = self.ui.mapRenderer.selected_rooms()
-            count = len(selected)
-
-            duplicate_action = menu.addAction(f"Duplicate ({count} room{'s' if count > 1 else ''})")
-            assert duplicate_action is not None
-            duplicate_action.triggered.connect(self.duplicate_selected)
-
-            delete_action = menu.addAction(f"Delete ({count} room{'s' if count > 1 else ''})")
-            assert delete_action is not None
-            delete_action.triggered.connect(self.delete_selected)
-
-            menu.addSeparator()
-
-            # Rotation submenu
-            rotate_menu = menu.addMenu("Rotate")
-            assert rotate_menu is not None
-            for angle in [90, 180, 270]:
-                action = rotate_menu.addAction(f"{angle}°")
-                assert action is not None
-                action.triggered.connect(lambda _, a=angle: self._rotate_selected(a))
-
-            # Flip submenu
-            flip_menu = menu.addMenu("Flip")
-            assert flip_menu is not None
-            flip_x_action = flip_menu.addAction("Flip Horizontal")
-            assert flip_x_action is not None
-            flip_x_action.triggered.connect(lambda: self._flip_selected(True, False))
-            flip_y_action = flip_menu.addAction("Flip Vertical")
-            assert flip_y_action is not None
-            flip_y_action.triggered.connect(lambda: self._flip_selected(False, True))
-
-            menu.addSeparator()
-
-            # Merge action - only enabled when 2+ rooms are selected
-            merge_action = menu.addAction(f"Merge Rooms ({count} rooms)")
-            assert merge_action is not None
-            merge_action.triggered.connect(self.merge_selected)
-            # Disable if fewer than 2 rooms selected
-            merge_action.setEnabled(count >= 2)
-
-            menu.addSeparator()
-
-        # Hook actions (context under hook or room)
-        if hook_hit is not None:
-            hook_room, hook_index = hook_hit
-            hook_select_action = menu.addAction("Select Hook")
-            assert hook_select_action is not None
-            hook_select_action.triggered.connect(lambda: self.ui.mapRenderer.select_hook(hook_room, hook_index, clear_existing=True))
-
-            hook_delete_action = menu.addAction("Delete Hook")
-            assert hook_delete_action is not None
-            hook_delete_action.triggered.connect(lambda: self.ui.mapRenderer.delete_hook(hook_room, hook_index))
-
-            hook_duplicate_action = menu.addAction("Duplicate Hook")
-            assert hook_duplicate_action is not None
-            hook_duplicate_action.triggered.connect(lambda: self.ui.mapRenderer.duplicate_hook(hook_room, hook_index))
-
-            menu.addSeparator()
-
-        add_hook_action = menu.addAction("Add Hook Here")
-        assert add_hook_action is not None
-        add_hook_action.triggered.connect(lambda: self.ui.mapRenderer.add_hook_at(world))
-
-        # General actions
-        warp_set_action = menu.addAction("Set Warp Point Here")
-        assert warp_set_action is not None
-        warp_set_action.triggered.connect(lambda: self.set_warp_point(world.x, world.y, world.z))
-
-        center_action = menu.addAction("Center View Here")
-        assert center_action is not None
-        center_action.triggered.connect(lambda: self.ui.mapRenderer.set_camera_position(world.x, world.y))
+        populate_indoor_context_menu(
+            menu,
+            renderer=self.ui.mapRenderer,
+            room=room,
+            hook_hit=hook_hit,
+            world=world,
+            on_duplicate=self.duplicate_selected,
+            on_delete=self.delete_selected,
+            on_rotate=self._rotate_selected,
+            on_flip=self._flip_selected,
+            on_merge=self.merge_selected,
+            on_add_hook_at=self.ui.mapRenderer.add_hook_at,
+            on_set_warp_point=lambda pos: self.set_warp_point(pos.x, pos.y, pos.z),
+        )
 
         menu.popup(self.ui.mapRenderer.mapToGlobal(point))
 
     def _rotate_selected(self, angle: float):
-        rooms = self.ui.mapRenderer.selected_rooms()
-        if not rooms:
+        changed = apply_rotate_selected_rooms(
+            self.ui.mapRenderer,
+            self._map,
+            self._undo_stack,
+            self._invalidate_rooms,
+            angle,
+            on_changed=self._refresh_window_title,
+        )
+        if not changed:
             return
-        old_rotations = [r.rotation for r in rooms]
-        new_rotations = [(r.rotation + angle) % 360 for r in rooms]
-        cmd = RotateRoomsCommand(self._map, rooms, old_rotations, new_rotations, self._invalidate_rooms)
-        self._undo_stack.push(cmd)
-        # Force immediate update to prevent desync
-        self.ui.mapRenderer.update()
-        self._refresh_window_title()
 
     def _flip_selected(
         self,
         flip_x: bool,
         flip_y: bool,
     ):
-        rooms = self.ui.mapRenderer.selected_rooms()
-        if not rooms:
+        changed = apply_flip_selected_rooms(
+            self.ui.mapRenderer,
+            self._map,
+            self._undo_stack,
+            self._invalidate_rooms,
+            flip_x,
+            flip_y,
+            on_changed=self._refresh_window_title,
+        )
+        if not changed:
             return
-        cmd = FlipRoomsCommand(self._map, rooms, flip_x, flip_y, self._invalidate_rooms)
-        self._undo_stack.push(cmd)
-        # Force immediate update to prevent desync
-        self.ui.mapRenderer.update()
-        self._refresh_window_title()
 
     def _cancel_all_operations(self):
         """Cancel all active operations and reset to safe state.
@@ -2286,84 +1969,75 @@ class IndoorMapBuilder(QMainWindow, BlenderEditorMixin):
         - Clears selections (optional, can be toggled)
         """
         renderer = self.ui.mapRenderer
+        cancel_indoor_operations_core(
+            renderer,
+            clear_paint_stroke=self._clear_paint_stroke,
+            clear_placement_mode=self._clear_cursor_component_only,
+            on_marquee_cleared=self._reset_renderer_drag_mode,
+            on_finished=self._refresh_status_bar,
+        )
 
-        # Cancel marquee selection
-        if renderer._marquee_active:
-            renderer._marquee_active = False
-            renderer._drag_mode = DragMode.NONE
-            renderer.mark_dirty()
+    def _clear_paint_stroke(self) -> None:
+        if not self._paint_stroke_active:
+            return
+        self._paint_stroke_active = False
+        self._paint_stroke_originals.clear()
+        self._paint_stroke_new.clear()
 
-        # Cancel all drag operations
-        if renderer._dragging or renderer._dragging_hook or renderer._dragging_warp:
-            renderer.end_drag()
-            renderer._dragging_hook = False
-            renderer._dragging_warp = False
+    def _clear_cursor_component_only(self) -> None:
+        renderer = self.ui.mapRenderer
+        renderer.set_cursor_component(None)
+        renderer.clear_selected_hook()
 
-        # Cancel walkmesh painting
-        if self._paint_stroke_active:
-            self._paint_stroke_active = False
-            self._paint_stroke_originals.clear()
-            self._paint_stroke_new.clear()
-
-        # Cancel placement mode (clear cursor component)
-        if renderer.cursor_component is not None:
-            renderer.set_cursor_component(None)
-            renderer.clear_selected_hook()
-
-        # Force repaint to clear any stuck visuals
-        renderer.update()
-        self._refresh_status_bar()
+    def _reset_renderer_drag_mode(self) -> None:
+        self.ui.mapRenderer._drag_mode = DragMode.NONE
 
     def keyPressEvent(self, e: QKeyEvent):  # type: ignore[reportIncompatibleMethodOverride]
-        # ESC key - Universal cancel/escape (standard Windows behavior)
-        if e.key() == Qt.Key.Key_Escape:
-            self._cancel_all_operations()
-            # Also clear selection on ESC (standard behavior)
-            self.ui.mapRenderer.clear_selected_rooms()
-            self.ui.mapRenderer.clear_selected_hook()
-            return
+        key = e.key()
+        modifiers = e.modifiers()
+        has_ctrl = bool(modifiers & Qt.KeyboardModifier.ControlModifier)
+        has_no_mods = not bool(modifiers)
+        renderer = self.ui.mapRenderer
 
-        # Handle toggle keys
-        if e.key() == Qt.Key.Key_G and not bool(e.modifiers()):
-            self.ui.snapToGridCheck.setChecked(not self.ui.snapToGridCheck.isChecked())
-        elif e.key() == Qt.Key.Key_H and not bool(e.modifiers()):
-            self.ui.snapToHooksCheck.setChecked(not self.ui.snapToHooksCheck.isChecked())
-        elif e.key() == Qt.Key.Key_R and not bool(e.modifiers()):
-            # Quick rotate selected by rotation snap amount
-            rooms = self.ui.mapRenderer.selected_rooms()
-            if rooms:
-                self._rotate_selected(self.ui.rotSnapSpin.value())
-        elif e.key() == Qt.Key.Key_F and not bool(e.modifiers()):
-            # Quick flip
-            rooms = self.ui.mapRenderer.selected_rooms()
-            if rooms:
-                self._flip_selected(True, False)
-        # Ctrl+A - Select all (standard Windows behavior)
-        elif e.key() == Qt.Key.Key_A and (e.modifiers() & Qt.KeyboardModifier.ControlModifier):
-            self.select_all()
-        # Delete/Backspace - Delete selected (standard Windows behavior)
-        elif e.key() in (Qt.Key.Key_Delete, Qt.Key.Key_Backspace) and not bool(e.modifiers()):
-            self.delete_selected()
-        # Space - Cancel placement mode (intuitive)
-        elif e.key() == Qt.Key.Key_Space and not bool(e.modifiers()):
-            if self.ui.mapRenderer.cursor_component is not None:
-                self.ui.mapRenderer.set_cursor_component(None)
-                self.ui.componentList.clearSelection()
-                self.ui.componentList.setCurrentItem(None)
-                self.ui.moduleComponentList.clearSelection()
-                self.ui.moduleComponentList.setCurrentItem(None)
-                self.ui.mapRenderer.clear_selected_hook()
-        # Ctrl+0 or Home - Reset camera view (standard behavior)
-        elif (e.key() == Qt.Key.Key_0 and (e.modifiers() & Qt.KeyboardModifier.ControlModifier)) or (e.key() == Qt.Key.Key_Home and not bool(e.modifiers())):
-            self.ui.mapRenderer.set_camera_position(DEFAULT_CAMERA_POSITION_X, DEFAULT_CAMERA_POSITION_Y)
-            self.ui.mapRenderer.set_camera_rotation(DEFAULT_CAMERA_ROTATION)
-            self.ui.mapRenderer.set_camera_zoom(DEFAULT_CAMERA_ZOOM)
-        # F5 - Refresh/Reset view (standard Windows behavior)
-        elif e.key() == Qt.Key.Key_F5 and not bool(e.modifiers()):
-            # Cancel all operations and refresh
-            self._cancel_all_operations()
-            self.ui.mapRenderer.update()
-        else:
+        handled = handle_indoor_key_press_shortcuts(
+            key,
+            has_ctrl=has_ctrl,
+            has_no_mods=has_no_mods,
+            placement_active=renderer.cursor_component is not None,
+            key_escape=Qt.Key.Key_Escape,
+            key_toggle_snap_grid=Qt.Key.Key_G,
+            key_toggle_snap_hooks=Qt.Key.Key_H,
+            key_rotate_selected=Qt.Key.Key_R,
+            key_flip_selected=Qt.Key.Key_F,
+            key_select_all=Qt.Key.Key_A,
+            key_delete=Qt.Key.Key_Delete,
+            key_backspace=Qt.Key.Key_Backspace,
+            key_copy=Qt.Key.Key_C,
+            key_cut=Qt.Key.Key_X,
+            key_paste=Qt.Key.Key_V,
+            key_duplicate=Qt.Key.Key_D,
+            key_cancel_placement=Qt.Key.Key_Space,
+            key_toggle_paint=Qt.Key.Key_P,
+            key_reset_home=Qt.Key.Key_Home,
+            key_reset_zero=Qt.Key.Key_0,
+            key_refresh=Qt.Key.Key_F5,
+            key_save=Qt.Key.Key_S,
+            key_new=Qt.Key.Key_N,
+            key_open=Qt.Key.Key_O,
+            on_escape=lambda: cancel_indoor_operations_and_clear_selection(renderer, cancel_operations=self._cancel_all_operations),
+            on_toggle_snap_grid=lambda: toggle_check_widget(self.ui.snapToGridCheck),
+            on_toggle_snap_hooks=lambda: toggle_check_widget(self.ui.snapToHooksCheck),
+            on_rotate_selected=lambda: run_if_any_indoor_rooms_selected(renderer, lambda: self._rotate_selected(self.ui.rotSnapSpin.value())),
+            on_flip_selected=lambda: run_if_any_indoor_rooms_selected(renderer, lambda: self._flip_selected(True, False)),
+            on_select_all=self.select_all,
+            on_delete_selected=self.delete_selected,
+            on_cancel_placement=self._clear_placement_mode,
+            on_toggle_paint=lambda: toggle_check_widget(self.ui.enablePaintCheck),
+            on_reset_view=self.reset_view,
+            on_refresh=lambda: cancel_indoor_operations_and_refresh(renderer, cancel_operations=self._cancel_all_operations),
+        )
+
+        if not handled:
             self.ui.mapRenderer.keyPressEvent(e)
 
     def keyReleaseEvent(self, e: QKeyEvent):  # type: ignore[reportIncompatibleMethodOverride]
@@ -2373,12 +2047,7 @@ class IndoorMapBuilder(QMainWindow, BlenderEditorMixin):
         self,
         room: IndoorMapRoom,
     ):
-        self.ui.mapRenderer.select_room(room, clear_existing=False)
-        for hook_index, _hook in enumerate(room.component.hooks):
-            hook: IndoorMapRoom | None = room.hooks[hook_index]
-            if hook is None or hook in self.ui.mapRenderer.selected_rooms():
-                continue
-            self.add_connected_to_selection(hook)
+        add_connected_indoor_rooms_to_selection(self.ui.mapRenderer, room)
 
     def closeEvent(self, e: QCloseEvent):  # pyright: ignore[reportIncompatibleMethodOverride]
         """Handle window close event - ensure proper cleanup of all resources."""
@@ -2388,7 +2057,7 @@ class IndoorMapBuilder(QMainWindow, BlenderEditorMixin):
             # Process events to allow renderer to stop gracefully
             QApplication.processEvents()
         except Exception:
-            pass
+            RobustLogger().warning("Failed to stop renderer timer during closeEvent - it may have already been stopped or not initialized.")
 
         # Disconnect all signals to prevent callbacks after destruction
         try:
@@ -2411,7 +2080,7 @@ class IndoorMapBuilder(QMainWindow, BlenderEditorMixin):
                 renderer.sig_warp_moved.disconnect()
                 renderer.sig_marquee_select.disconnect()
             except Exception:
-                pass
+                RobustLogger().warning("Failed to disconnect renderer signals during closeEvent - they may have already been disconnected.")
 
             # Disconnect undo stack signals
             if self._undo_stack is not None:
@@ -2457,6 +2126,7 @@ class IndoorMapBuilder(QMainWindow, BlenderEditorMixin):
                 e.accept()
             except Exception:
                 pass
+
 
 if __name__ == "__main__":
     import sys

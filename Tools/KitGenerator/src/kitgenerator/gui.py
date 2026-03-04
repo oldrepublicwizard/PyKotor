@@ -11,7 +11,6 @@ import sys
 import tkinter as tk
 
 from pathlib import Path
-from threading import Event
 from tkinter import filedialog, messagebox, ttk
 from typing import TYPE_CHECKING, cast
 
@@ -30,11 +29,13 @@ from pykotor.cli.kit_generator import generate_kit  # noqa: E402
 from pykotor.cli.version import VERSION as pykotor_version  # noqa: E402
 from pykotor.extract.installation import Installation  # noqa: E402
 from pykotor.tools.path import CaseAwarePath, find_kotor_paths_from_default  # noqa: E402
-from pykotor.tslpatcher.logger import LogType, PatchLogger  # noqa: E402
+from pykotor.tslpatcher.logger import LogType  # noqa: E402
 from utility.gui.tkinter.base_app import BaseApp  # noqa: E402
 
 if TYPE_CHECKING:
-    from pykotor.tslpatcher.logger import PatchLog
+    from threading import Event
+
+    from pykotor.tslpatcher.logger import PatchLog, PatchLogger
 
 VERSION_LABEL = pykotor_version
 

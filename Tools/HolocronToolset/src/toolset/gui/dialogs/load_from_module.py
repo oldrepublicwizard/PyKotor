@@ -1,3 +1,5 @@
+"""Load-from-module dialog: pick a resource from an open ERF/RIM capsule."""
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING

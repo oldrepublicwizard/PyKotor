@@ -1,3 +1,5 @@
+"""Model: thin wrapper around root node for drawing a scene graph with a shader."""
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING

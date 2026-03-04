@@ -1,3 +1,5 @@
+"""2DA editor: table view, row/column edit, default row, and CSV/JSON import/export."""
+
 from __future__ import annotations
 
 from enum import IntEnum
@@ -20,8 +22,7 @@ from qtpy.QtWidgets import (
     QMessageBox,
     QPushButton,
     QShortcut,  # pyright: ignore[reportPrivateImportUsage]
-    QWidget,
-)
+    )
 
 from pykotor.resource.formats.twoda import TwoDA, read_2da, write_2da
 from pykotor.resource.type import ResourceType
@@ -40,7 +41,10 @@ if TYPE_CHECKING:
     import os
 
     from qtpy.QtCore import QModelIndex
-    from qtpy.QtWidgets import QHeaderView
+    from qtpy.QtWidgets import (
+        QHeaderView,
+        QWidget,
+    )
 
     from toolset.data.installation import HTInstallation
 
@@ -1006,23 +1010,14 @@ class ColumnFilterDialog(QDialog):
         # Value list with checkboxes
         from qtpy.QtWidgets import QListWidget, QListWidgetItem
         self.value_list = QListWidget()
-        
-        # Add "Select All" option
-        select_all_item = QListWidgetItem("(Select All)")
-        select_all_item.setCheckState(Qt.CheckState.Checked)
-        self.value_list.addItem(select_all_item)
-        
-        # Add "(Blanks)" option
-        blanks_item = QListWidgetItem("(Blanks)")
-        blanks_item.setCheckState(Qt.CheckState.Checked)
-        self.value_list.addItem(blanks_item)
+
+        self._add_checked_value_item("(Select All)")
+        self._add_checked_value_item("(Blanks)")
         
         # Add unique values
         for value in sorted(unique_values):
             if value.strip():
-                item = QListWidgetItem(value)
-                item.setCheckState(Qt.CheckState.Checked)
-                self.value_list.addItem(item)
+                self._add_checked_value_item(value)
         
         layout.addWidget(self.value_list, 2, 0, 1, 2)
         
@@ -1043,6 +1038,12 @@ class ColumnFilterDialog(QDialog):
         buttons.accepted.connect(self.accept)
         buttons.rejected.connect(self.reject)
         layout.addWidget(buttons, 4, 0, 1, 2)
+
+    def _add_checked_value_item(self, text: str) -> None:
+        """Add a checked list item to the value-list widget."""
+        item = QListWidgetItem(text)
+        item.setCheckState(Qt.CheckState.Checked)
+        self.value_list.addItem(item)
 
     def _filter_list(self, text: str):
         """Filter the value list based on search text."""
@@ -1118,40 +1119,40 @@ class ColumnStatisticsDialog(QDialog):
         
         # Display statistics
         row = 0
-        layout.addWidget(QLabel(f"<b>Total Cells:</b>"), row, 0)
+        layout.addWidget(QLabel("<b>Total Cells:</b>"), row, 0)
         layout.addWidget(QLabel(str(total)), row, 1)
         row += 1
         
-        layout.addWidget(QLabel(f"<b>Non-Blank:</b>"), row, 0)
+        layout.addWidget(QLabel("<b>Non-Blank:</b>"), row, 0)
         layout.addWidget(QLabel(str(non_blank)), row, 1)
         row += 1
         
-        layout.addWidget(QLabel(f"<b>Blank:</b>"), row, 0)
+        layout.addWidget(QLabel("<b>Blank:</b>"), row, 0)
         layout.addWidget(QLabel(str(blank)), row, 1)
         row += 1
         
-        layout.addWidget(QLabel(f"<b>Unique:</b>"), row, 0)
+        layout.addWidget(QLabel("<b>Unique:</b>"), row, 0)
         layout.addWidget(QLabel(str(unique)), row, 1)
         row += 1
         
         if numeric_values:
-            layout.addWidget(QLabel(f"<b>Numeric Values:</b>"), row, 0)
+            layout.addWidget(QLabel("<b>Numeric Values:</b>"), row, 0)
             layout.addWidget(QLabel(str(len(numeric_values))), row, 1)
             row += 1
             
-            layout.addWidget(QLabel(f"<b>Sum:</b>"), row, 0)
+            layout.addWidget(QLabel("<b>Sum:</b>"), row, 0)
             layout.addWidget(QLabel(f"{sum(numeric_values):.4f}"), row, 1)
             row += 1
             
-            layout.addWidget(QLabel(f"<b>Average:</b>"), row, 0)
+            layout.addWidget(QLabel("<b>Average:</b>"), row, 0)
             layout.addWidget(QLabel(f"{sum(numeric_values) / len(numeric_values):.4f}"), row, 1)
             row += 1
             
-            layout.addWidget(QLabel(f"<b>Min:</b>"), row, 0)
+            layout.addWidget(QLabel("<b>Min:</b>"), row, 0)
             layout.addWidget(QLabel(f"{min(numeric_values):.4f}"), row, 1)
             row += 1
             
-            layout.addWidget(QLabel(f"<b>Max:</b>"), row, 0)
+            layout.addWidget(QLabel("<b>Max:</b>"), row, 0)
             layout.addWidget(QLabel(f"{max(numeric_values):.4f}"), row, 1)
             row += 1
             
@@ -1162,7 +1163,7 @@ class ColumnStatisticsDialog(QDialog):
                 median = (sorted_vals[n//2 - 1] + sorted_vals[n//2]) / 2
             else:
                 median = sorted_vals[n//2]
-            layout.addWidget(QLabel(f"<b>Median:</b>"), row, 0)
+            layout.addWidget(QLabel("<b>Median:</b>"), row, 0)
             layout.addWidget(QLabel(f"{median:.4f}"), row, 1)
             row += 1
             
@@ -1171,7 +1172,7 @@ class ColumnStatisticsDialog(QDialog):
                 mean = sum(numeric_values) / len(numeric_values)
                 variance = sum((x - mean) ** 2 for x in numeric_values) / (len(numeric_values) - 1)
                 std_dev = variance ** 0.5
-                layout.addWidget(QLabel(f"<b>Std Dev:</b>"), row, 0)
+                layout.addWidget(QLabel("<b>Std Dev:</b>"), row, 0)
                 layout.addWidget(QLabel(f"{std_dev:.4f}"), row, 1)
                 row += 1
             
@@ -1180,7 +1181,7 @@ class ColumnStatisticsDialog(QDialog):
             counter = Counter(numeric_values)
             if counter:
                 mode_val, mode_count = counter.most_common(1)[0]
-                layout.addWidget(QLabel(f"<b>Mode:</b>"), row, 0)
+                layout.addWidget(QLabel("<b>Mode:</b>"), row, 0)
                 layout.addWidget(QLabel(f"{mode_val:.4f} (appears {mode_count}x)"), row, 1)
                 row += 1
         
@@ -2900,7 +2901,7 @@ class TwoDAEditor(Editor):
 
     def _apply_cell_formatting(self, indexes: list, formatting: dict):
         """Apply formatting to the given indexes."""
-        from qtpy.QtGui import QBrush, QColor, QFont
+        from qtpy.QtGui import QBrush, QColor
         
         for idx in indexes:
             source_idx = self.proxy_model.mapToSource(idx)

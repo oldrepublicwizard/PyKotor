@@ -10,18 +10,12 @@ from __future__ import annotations
 import subprocess
 import threading
 
-from pathlib import Path
 from typing import TYPE_CHECKING
 
-from loggerplus import RobustLogger
 from qtpy.QtCore import QTimer
-from qtpy.QtWidgets import QMessageBox, QWidget
+from qtpy.QtWidgets import QMessageBox
 
-from toolset.blender import BlenderInfo, launch_blender_with_ipc
-from toolset.blender.commands import BlenderEditorController, BlenderEditorMode, get_blender_controller
-from toolset.blender.detection import get_blender_settings
-from toolset.blender.ipc_client import ConnectionState
-
+from loggerplus import RobustLogger
 from pykotor.resource.generics.git import (
     GITCamera,
     GITCreature,
@@ -30,11 +24,21 @@ from pykotor.resource.generics.git import (
     GITStore,
     GITWaypoint,
 )
+from toolset.blender import launch_blender_with_ipc
+from toolset.blender.commands import get_blender_controller
+from toolset.blender.detection import get_blender_settings
 
 if TYPE_CHECKING:
+    from pathlib import Path
+
+    from qtpy.QtWidgets import QWidget
+
     from pykotor.resource.formats.bwm import BWM
     from pykotor.resource.formats.lyt import LYT
     from pykotor.resource.generics.git import GIT, GITInstance
+    from toolset.blender import BlenderInfo
+    from toolset.blender.commands import BlenderEditorController, BlenderEditorMode
+    from toolset.blender.ipc_client import ConnectionState
 
 
 class BlenderEditorMixin:

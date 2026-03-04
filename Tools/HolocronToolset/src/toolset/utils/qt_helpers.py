@@ -1,3 +1,5 @@
+"""Qt helpers: object debugging, drag/drop, and encoding for toolset UI."""
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING, Iterable, Sequence

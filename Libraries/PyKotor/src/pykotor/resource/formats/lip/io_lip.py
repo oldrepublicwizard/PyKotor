@@ -1,3 +1,5 @@
+"""Binary LIP (lip sync) read/write: LIP V1.0 format with keyframe time and shape data."""
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING

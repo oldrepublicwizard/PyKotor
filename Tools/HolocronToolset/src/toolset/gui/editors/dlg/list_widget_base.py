@@ -1,3 +1,5 @@
+"""Base list widgets for DLG editor: items that wrap DLGLink and list with hover/context menu."""
+
 from __future__ import annotations
 
 import json

@@ -21,12 +21,13 @@ from loggerplus import RobustLogger
 from pykotor.extract.installation import Installation, SearchLocation
 from pykotor.resource.formats.tpc import TPCTextureFormat
 from pykotor.resource.formats.tpc.tpc_data import TPCMipmap
-from pykotor.resource.type import ResourceType
 from toolset.gui.widgets.texture_preview import load_preview_mipmap_from_bytes
 
 if TYPE_CHECKING:
     from multiprocessing import Queue
     from multiprocessing.synchronize import Event as MPEvent
+
+    from pykotor.resource.type import ResourceType
 
 
 class TextureLoaderProcess(multiprocessing.Process):

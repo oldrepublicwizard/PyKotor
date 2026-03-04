@@ -1,3 +1,5 @@
+"""Script (NCS) compile/decompile helpers: registry spoofing, paths, and permission messages."""
+
 from __future__ import annotations
 
 from pathlib import Path

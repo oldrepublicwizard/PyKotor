@@ -1,3 +1,5 @@
+"""Editor window lifecycle: create, look up by path, and list open editors."""
+
 from __future__ import annotations
 
 from pathlib import Path
@@ -8,6 +10,7 @@ from toolset.utils.window_base import add_window
 
 if TYPE_CHECKING:
     from qtpy.QtWidgets import QWidget
+
     from pykotor.resource.type import ResourceType
 
     pass

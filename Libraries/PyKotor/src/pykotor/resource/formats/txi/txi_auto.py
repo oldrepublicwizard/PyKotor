@@ -1,3 +1,5 @@
+"""TXI (texture info) format detection and read/write dispatch."""
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
@@ -25,7 +27,7 @@ def write_txi(
     file_format: ResourceType = ResourceType.TXI,
 ):
     """Writes the TXI data to the target location with the specified format."""
-    if file_format is ResourceType.TXI:
+    if file_format == ResourceType.TXI:
         TXIBinaryWriter(txi, target).write()
     else:
         msg = "Unsupported format specified; use TXI."

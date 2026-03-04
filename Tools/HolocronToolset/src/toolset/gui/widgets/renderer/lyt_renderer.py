@@ -19,6 +19,7 @@ from qtpy.QtGui import QBrush, QColor, QPainter, QPalette, QPen, QTransform
 from qtpy.QtWidgets import QApplication, QWidget
 
 from pykotor.resource.formats.lyt import LYT, LYTDoorHook, LYTObstacle, LYTRoom, LYTTrack
+from toolset.gui.common.lyt_ops import duplicate_lyt_element_with_offset, remove_lyt_element
 from utility.common.geometry import Vector2, Vector3, Vector4
 
 if TYPE_CHECKING:
@@ -171,14 +172,7 @@ class LYTRenderer(QWidget):
         if element is None or self._lyt is None:
             return
 
-        if isinstance(element, LYTRoom):
-            self._lyt.rooms.remove(element)
-        elif isinstance(element, LYTDoorHook):
-            self._lyt.doorhooks.remove(element)
-        elif isinstance(element, LYTTrack):
-            self._lyt.tracks.remove(element)
-        elif isinstance(element, LYTObstacle):
-            self._lyt.obstacles.remove(element)
+        remove_lyt_element(self._lyt, element)
 
         if element == self._selected_element:
             self._selected_element = None
@@ -196,21 +190,7 @@ class LYTRenderer(QWidget):
 
         # Offset the duplicate slightly
         offset = Vector3(20, 20, 0)
-
-        if isinstance(element, LYTRoom):
-            new_element = LYTRoom(f"{element.model}_copy", element.position + offset)
-            self._lyt.rooms.append(new_element)
-        elif isinstance(element, LYTDoorHook):
-            new_element = LYTDoorHook(element.room, f"{element.door}_copy", element.position + offset, element.orientation)
-            self._lyt.doorhooks.append(new_element)
-        elif isinstance(element, LYTTrack):
-            new_element = LYTTrack(f"{element.model}_copy", element.position + offset)
-            self._lyt.tracks.append(new_element)
-        elif isinstance(element, LYTObstacle):
-            new_element = LYTObstacle(f"{element.model}_copy", element.position + offset)
-            self._lyt.obstacles.append(new_element)
-        else:
-            return None
+        new_element = duplicate_lyt_element_with_offset(self._lyt, element, offset)
 
         self.sig_element_added.emit(new_element)
         self.update()

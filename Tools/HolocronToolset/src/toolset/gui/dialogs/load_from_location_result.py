@@ -1,3 +1,7 @@
+"""Dialog and helpers for loading resources from a location (installation or path).
+
+Handles missing files, user choices (copy/move/skip), and reporting load results.
+"""
 from __future__ import annotations
 
 import atexit
@@ -62,7 +66,6 @@ if __name__ == "__main__":
 
 
 from loggerplus import RobustLogger
-
 from pykotor.common.misc import Game
 from pykotor.common.stream import BinaryWriterFile
 from pykotor.extract.file import FileResource, ResourceIdentifier

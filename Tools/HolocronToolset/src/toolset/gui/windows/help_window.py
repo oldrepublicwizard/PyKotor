@@ -1,10 +1,13 @@
+"""Help window: display markdown/HTML help content and navigation tree."""
+
 from __future__ import annotations
+
+import sys
 
 from pathlib import Path
 from typing import TYPE_CHECKING
 
 import markdown
-import sys
 
 from qtpy import QtCore
 from qtpy.QtGui import QColor, QPalette

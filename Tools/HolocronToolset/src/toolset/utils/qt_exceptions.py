@@ -1,8 +1,9 @@
+"""Qt exception handling: excepthook integration and unraisablehook for __del__ errors."""
+
 from __future__ import annotations
 
 import inspect
 import sys
-import types
 import weakref
 
 from typing import TYPE_CHECKING, Any
@@ -12,6 +13,8 @@ import qtpy
 from loggerplus import RobustLogger  # pyright: ignore[reportMissingTypeStubs]
 
 if TYPE_CHECKING:
+    import types
+
     from types import TracebackType
 
 

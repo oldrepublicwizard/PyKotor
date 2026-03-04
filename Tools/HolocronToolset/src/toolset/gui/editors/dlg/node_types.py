@@ -1,3 +1,5 @@
+"""DLG node types: NodeCategory, NodeStyle, and node/link display data for the editor."""
+
 from __future__ import annotations
 
 from dataclasses import dataclass, field

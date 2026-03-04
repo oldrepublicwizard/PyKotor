@@ -1,3 +1,5 @@
+"""NSS compiler AST and helpers: CompileError, expression/statement nodes, type helpers."""
+
 from __future__ import annotations
 
 from abc import ABC, abstractmethod

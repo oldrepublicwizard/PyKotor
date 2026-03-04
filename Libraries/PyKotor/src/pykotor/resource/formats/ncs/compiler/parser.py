@@ -1,3 +1,5 @@
+"""NSS (NWScript) parser: PLY yacc grammar and AST construction."""
+
 from __future__ import annotations
 
 from pathlib import Path
@@ -629,9 +631,12 @@ class NssParser:
 
         # identifier is an Identifier object, need to get its label for comparison
         identifier_label = identifier.label if isinstance(identifier, Identifier) else str(identifier)
-        engine_function = next((x for x in self.functions if x.name == identifier_label), None)
-        if engine_function:
-            routine_id = self.functions.index(engine_function)
+        # Single pass: get (index, function) to avoid separate index() call
+        routine_id, engine_function = next(
+            ((i, x) for i, x in enumerate(self.functions) if x.name == identifier_label),
+            (None, None),
+        )
+        if engine_function is not None and routine_id is not None:
             data_type = DynamicDataType(engine_function.returntype)
             p[0] = EngineCallExpression(engine_function, routine_id, data_type, args)
         else:

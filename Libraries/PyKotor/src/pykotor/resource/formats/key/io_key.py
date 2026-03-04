@@ -1,4 +1,8 @@
-"""This module handles reading and writing KEY files."""
+"""Reading and writing KEY (BIF index) files.
+
+KEY files list BIF archives and map ResRef+ResourceType to (bif_index, res_index).
+Used by the game to resolve resource names to data in BIF files.
+"""
 
 from __future__ import annotations
 

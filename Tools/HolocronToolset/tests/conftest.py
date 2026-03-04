@@ -250,6 +250,13 @@ def installation(k1_path):
     return HTInstallation(k1_path, "Test Installation", tsl=False)
 
 
+@pytest.fixture(scope="session")
+def tsl_installation(k2_path):
+    if not Path(k2_path).joinpath("chitin.key").exists():
+        pytest.skip("K2/TSL installation incomplete (no chitin.key)")
+    return HTInstallation(k2_path, "Test TSL Installation", tsl=True)
+
+
 @pytest.fixture
 def qt_api() -> str:
     """Return the Qt API name in use (e.g. 'PyQt6'). No parametrization - single API per run."""

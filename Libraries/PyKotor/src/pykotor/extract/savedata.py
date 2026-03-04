@@ -1801,12 +1801,12 @@ class SaveNestedCapsule:
             self.resource_data[identifier] = data
 
             # Load cached module saves
-            if identifier.restype is ResourceType.SAV:
+            if identifier.restype == ResourceType.SAV:
                 sav = read_erf(data)
                 self.cached_modules[identifier] = sav
 
             # Load cached companion characters
-            elif identifier.restype is ResourceType.UTC:
+            elif identifier.restype == ResourceType.UTC:
                 utc = read_utc(data)
                 self.cached_characters[identifier] = utc
                 companion_index = self._extract_companion_index(identifier.resname)
@@ -1889,9 +1889,9 @@ class SaveNestedCapsule:
         from pykotor.resource.generics.uti import construct_uti_from_struct
 
         # Update typed caches when appropriate
-        if identifier.restype is ResourceType.SAV:
+        if identifier.restype == ResourceType.SAV:
             self.cached_modules[identifier] = read_erf(data)
-        elif identifier.restype is ResourceType.UTC:
+        elif identifier.restype == ResourceType.UTC:
             utc = read_utc(data)
             self.cached_characters[identifier] = utc
             companion_index = self._extract_companion_index(identifier.resname)
@@ -1979,7 +1979,7 @@ class SaveNestedCapsule:
             # We can identify modules by checking for module.ifo resource
             for resource in module_erf:
                 resref_lower = str(resource.resref).lower()
-                if resref_lower == "module" and resource.restype is ResourceType.IFO:
+                if resref_lower == "module" and resource.restype == ResourceType.IFO:
                     # Found module.ifo - this helps identify the module
                     # The module name is typically the ERF's original filename
                     # For now, we check all resources to find matching module identifier
@@ -2025,7 +2025,7 @@ class SaveNestedCapsule:
         # Check each cached module for EventQueue
         for module_erf in self.cached_modules.values():
             for resource in module_erf:
-                if str(resource.resref).lower() == "module" and resource.restype is ResourceType.IFO:
+                if str(resource.resref).lower() == "module" and resource.restype == ResourceType.IFO:
                     # Found module.ifo - check for EventQueue
                     ifo_gff = read_gff(resource.data)
                     if ifo_gff.root.exists("EventQueue"):
@@ -2078,7 +2078,7 @@ class SaveNestedCapsule:
         for module_erf in self.cached_modules.values():
             # Look for module.ifo in this cached module
             for resource in module_erf:
-                if str(resource.resref).lower() == "module" and resource.restype is ResourceType.IFO:
+                if str(resource.resref).lower() == "module" and resource.restype == ResourceType.IFO:
                     # Found module.ifo - load it as GFF
                     ifo_gff = read_gff(resource.data)
 

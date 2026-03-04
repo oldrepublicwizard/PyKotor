@@ -1,3 +1,5 @@
+"""Font metrics: PIL-based measurements for bitmap font generation."""
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING

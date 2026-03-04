@@ -1,3 +1,5 @@
+"""Reference cache: GFF/NCS/TLK/2DA lookups and installation-wide reference finding."""
+
 from __future__ import annotations
 
 import os
@@ -19,7 +21,7 @@ from pykotor.resource.formats.gff.gff_auto import read_gff
 from pykotor.resource.formats.gff.gff_data import GFFContent, GFFFieldType, GFFList, GFFStruct
 from pykotor.resource.formats.ncs.ncs_auto import read_ncs  # noqa: PLC0415
 from pykotor.resource.formats.ssf.ssf_auto import read_ssf
-from pykotor.resource.formats.ssf.ssf_data import SSF
+from pykotor.resource.formats.ssf.ssf_data import SSF, SSFSound
 from pykotor.resource.formats.twoda.twoda_auto import read_2da
 from pykotor.resource.type import ResourceType
 
@@ -175,15 +177,15 @@ class StrRefReferenceCache:
 
         try:
             # 2DA files
-            if restype is ResourceType.TwoDA and filename in self._strref_2da_columns:
+            if restype == ResourceType.TwoDA and filename in self._strref_2da_columns:
                 self._scan_2da(identifier, data, filename)
 
             # SSF files
-            elif restype is ResourceType.SSF:
+            elif restype == ResourceType.SSF:
                 self._scan_ssf(identifier, data)
 
             # NCS files - FIXME: TEMPORARILY DISABLED (will revisit later)
-            # elif restype is ResourceType.NCS:
+            # elif restype == ResourceType.NCS:
             #     self._scan_ncs(identifier, data)
 
             # GFF files (only try to parse if restype indicates it's a GFF file)
@@ -813,7 +815,7 @@ def find_all_strref_references(
                 # This dramatically improves performance by skipping textures, models, audio, etc.
                 restype = resource.restype()
                 # StrRefs can only exist in: GFF files, 2DA files, SSF files, NCS files
-                can_contain_strref = restype.is_gff() or restype is ResourceType.TwoDA or restype is ResourceType.SSF or restype is ResourceType.NCS
+                can_contain_strref = restype.is_gff() or restype == ResourceType.TwoDA or restype == ResourceType.SSF or restype == ResourceType.NCS
                 if not can_contain_strref:
                     skipped_count += 1
                     continue
@@ -933,6 +935,26 @@ def find_strref_references(
         installation_folder = installation_path.name if installation_path else "unknown"
         return f"{installation_folder}/{path_str}"
 
+    def resource_path_str(resource: FileResource, *, use_path_ident: bool = False) -> str:
+        """Return resource path as installation-relative POSIX string when possible."""
+        path_obj = resource.path_ident() if use_path_ident else resource.filepath()
+        try:
+            return path_obj.relative_to(installation.path()).as_posix()
+        except ValueError:
+            return str(path_obj)
+
+    def formatted_resource_path(resource: FileResource, *, use_path_ident: bool = False) -> str:
+        """Return formatted resource path prefixed with installation folder name."""
+        return format_path_with_installation_prefix(resource_path_str(resource, use_path_ident=use_path_ident))
+
+    def is_rims_resource(resource: FileResource) -> bool:
+        """Check whether resource resides in RIMs (not used at runtime)."""
+        try:
+            parts = resource.filepath().relative_to(installation.path()).parts
+            return bool(parts) and parts[0].lower() == "rims"
+        except ValueError:
+            return "rims" in resource.filepath().parts
+
     # Get game-specific 2DA columns that contain StrRefs
     strref_2da_columns: dict[str, set[str]] = {}
     if game.is_k1():
@@ -964,15 +986,7 @@ def find_strref_references(
                         locations.append(TwoDARefLocation(row_index=row_idx, column_name=column_name))
 
                         if logger:
-                            # Use path_ident() to show full path including resource inside BIF/capsule
-                            try:
-                                path_ident = resource.path_ident()
-                                relative_path = path_ident.relative_to(installation.path())
-                                path_str = relative_path.as_posix()
-                            except ValueError:
-                                path_str = str(resource.path_ident())
-                            # Format path with installation folder prefix
-                            formatted_path = format_path_with_installation_prefix(path_str)
+                            formatted_path = formatted_resource_path(resource, use_path_ident=True)
                             logger(f"    Found at: row {row_idx}, column '{column_name}' at {formatted_path}")
 
             if locations:
@@ -995,15 +1009,7 @@ def find_strref_references(
                     locations.append(SSFRefLocation(sound=sound))
 
                     if logger:
-                        # Use path_ident() to show full path including resource inside BIF/capsule
-                        try:
-                            path_ident = resource.path_ident()
-                            relative_path = path_ident.relative_to(installation.path())
-                            path_str = relative_path.as_posix()
-                        except ValueError:
-                            path_str = str(resource.path_ident())
-                        # Format path with installation folder prefix
-                        formatted_path = format_path_with_installation_prefix(path_str)
+                        formatted_path = formatted_resource_path(resource, use_path_ident=True)
                         logger(f"    Found at: sound slot '{sound.name}' at {formatted_path}")
 
             if locations:
@@ -1044,26 +1050,14 @@ def find_strref_references(
                     except Exception as e:  # noqa: BLE001
                         # Individual field errors - log but continue processing other fields
                         if logger:
-                            try:
-                                relative_path = resource.filepath().relative_to(installation.path())
-                                path_str = relative_path.as_posix()
-                            except ValueError:
-                                path_str = str(resource.filepath())
+                            path_str = resource_path_str(resource)
                             logger(f"[Debug] Error processing GFF field '{field_path}' in {path_str}: {e.__class__.__name__}: {e}")
                         print(traceback.format_exc())
 
             recurse_gff(gff.root)
 
             if locations and logger:
-                try:
-                    # Use path_ident() to show full path including resource inside BIF/capsule
-                    path_ident = resource.path_ident()
-                    relative_path = path_ident.relative_to(installation.path())
-                    path_str = relative_path.as_posix()
-                except ValueError:
-                    path_str = str(resource.path_ident())
-                # Format path with installation folder prefix
-                formatted_path = format_path_with_installation_prefix(path_str)
+                formatted_path = formatted_resource_path(resource, use_path_ident=True)
                 for location in locations:
                     logger(f"    Found at: field path '{location.field_path}' at {formatted_path}")
 
@@ -1073,11 +1067,7 @@ def find_strref_references(
         except Exception as e:  # noqa: BLE001, S110
             # Log which file failed to parse, but don't spam on expected failures (non-GFF files)
             if logger:
-                try:
-                    relative_path = resource.filepath().relative_to(installation.path())
-                    path_str = relative_path.as_posix()
-                except ValueError:
-                    path_str = str(resource.filepath())
+                path_str = resource_path_str(resource)
                 logger(f"[Debug] Error scanning GFF {resource.filename()}: {e.__class__.__name__}: {e}")
             print(traceback.format_exc())
 
@@ -1137,15 +1127,7 @@ def find_strref_references(
 
             if locations:
                 if logger:
-                    try:
-                        # Use path_ident() to show full path including resource inside BIF/capsule
-                        path_ident = resource.path_ident()
-                        relative_path = path_ident.relative_to(installation.path())
-                        path_str = relative_path.as_posix()
-                    except ValueError:
-                        path_str = str(resource.path_ident())
-                    # Format path with installation folder prefix
-                    formatted_path = format_path_with_installation_prefix(path_str)
+                    formatted_path = formatted_resource_path(resource, use_path_ident=True)
                     for location in locations:
                         logger(f"    Found at: byte offset {location.byte_offset:#X} (0x{location.byte_offset:X}) at {formatted_path}")
 
@@ -1210,31 +1192,23 @@ def find_strref_references(
         restype = resource.restype()
 
         # Skip RIM files - they're not used at runtime
-        try:
-            relative_path = resource.filepath().relative_to(installation.path())
-            path_parts = relative_path.parts
-            if path_parts and path_parts[0].lower() == "rims":
-                continue
-        except ValueError:
-            # If path isn't relative to installation, check absolute path
-            abs_path = resource.filepath()
-            if "rims" in abs_path.parts:
-                continue
+        if is_rims_resource(resource):
+            continue
 
         # Check 2DA files
-        if restype is ResourceType.TwoDA:
+        if restype == ResourceType.TwoDA:
             result = scan_2da(resource)
             if result:
                 results.append(result)
 
         # Check SSF files
-        elif restype is ResourceType.SSF:
+        elif restype == ResourceType.SSF:
             result = scan_ssf(resource)
             if result:
                 results.append(result)
 
         # Check NCS files - FIXME: TEMPORARILY DISABLED (will revisit later)
-        # elif restype is ResourceType.NCS:
+        # elif restype == ResourceType.NCS:
         #     result = scan_ncs(resource)
         #     if result:
         #         results.append(result)
@@ -1297,6 +1271,13 @@ def find_tlk_entry_references(
 
     installation_path = installation.path()
 
+    def _resource_path_str(resource: FileResource) -> str:
+        """Return resource path as installation-relative POSIX string when possible."""
+        try:
+            return resource.filepath().relative_to(installation_path).as_posix()
+        except ValueError:
+            return str(resource.filepath())
+
     def check_2da(resource2da: FileResource) -> bool:
         valid_2da: TwoDA | None = None
         with suppress(ValueError, OSError):
@@ -1306,12 +1287,7 @@ def find_tlk_entry_references(
             return False
         filename_2da = resource2da.filename().lower()
 
-        # Get relative path for logging
-        try:
-            relative_path = resource2da.filepath().relative_to(installation_path)
-            path_str = relative_path.as_posix()
-        except ValueError:
-            path_str = str(resource2da.filepath())
+        path_str = _resource_path_str(resource2da)
 
         found_locations: list[tuple[str, int | None]] = []  # (column_name, row_index)
 
@@ -1357,12 +1333,7 @@ def find_tlk_entry_references(
         if not valid_ssf:
             return False
 
-        # Get relative path for logging
-        try:
-            relative_path = resource_ssf.filepath().relative_to(installation_path)
-            path_str = relative_path.as_posix()
-        except ValueError:
-            path_str = str(resource_ssf.filepath())
+        path_str = _resource_path_str(resource_ssf)
 
         # Check all sound slots for this StrRef
         for sound in SSFSound:
@@ -1385,12 +1356,7 @@ def find_tlk_entry_references(
         if not valid_ncs:
             return False
 
-        # Get relative path for logging
-        try:
-            relative_path = resource_ncs.filepath().relative_to(installation_path)
-            path_str = relative_path.as_posix()
-        except ValueError:
-            path_str = str(resource_ncs.filepath())
+        path_str = _resource_path_str(resource_ncs)
 
         # Get byte offsets using the existing function
         offsets = get_ncs_consti_offsets(resource_ncs, query_stringref)
@@ -1410,12 +1376,7 @@ def find_tlk_entry_references(
         if valid_gff is None:
             return False
 
-        # Get relative path for logging
-        try:
-            relative_path = resource_gff.filepath().relative_to(installation_path)
-            path_str = relative_path.as_posix()
-        except ValueError:
-            path_str = str(resource_gff.filepath())
+        path_str = _resource_path_str(resource_gff)
 
         # Track found field paths for logging
         found_paths: list[str] = []
@@ -1548,17 +1509,17 @@ def find_tlk_entry_references(
             this_restype: ResourceType = resource.restype()
 
             # Check 2DA files
-            if resource.filename().lower() in relevant_2da_filenames and this_restype is ResourceType.TwoDA and check_2da(resource):
+            if resource.filename().lower() in relevant_2da_filenames and this_restype == ResourceType.TwoDA and check_2da(resource):
                 found_resources.add(resource)
                 continue
 
             # Check SSF files
-            if this_restype is ResourceType.SSF and check_ssf(resource):
+            if this_restype == ResourceType.SSF and check_ssf(resource):
                 found_resources.add(resource)
                 continue
 
             # Check NCS files - FIXME: TEMPORARILY DISABLED (will revisit later)
-            # if this_restype is ResourceType.NCS and check_ncs(resource):
+            # if this_restype == ResourceType.NCS and check_ncs(resource):
             #     found_resources.add(resource)
             #     continue
 
@@ -1578,17 +1539,17 @@ def find_tlk_entry_references(
                 this_restype: ResourceType = resource.restype()
 
                 # Check 2DA files
-                if resource.filename().lower() in relevant_2da_filenames and this_restype is ResourceType.TwoDA and check_2da(resource):
+                if resource.filename().lower() in relevant_2da_filenames and this_restype == ResourceType.TwoDA and check_2da(resource):
                     found_resources.add(resource)
                     continue
 
                 # Check SSF files
-                if this_restype is ResourceType.SSF and check_ssf(resource):
+                if this_restype == ResourceType.SSF and check_ssf(resource):
                     found_resources.add(resource)
                     continue
 
                 # Check NCS files - FIXME: TEMPORARILY DISABLED (will revisit later)
-                # if this_restype is ResourceType.NCS and check_ncs(resource):
+                # if this_restype == ResourceType.NCS and check_ncs(resource):
                 #     found_resources.add(resource)
                 #     continue
 
@@ -1626,17 +1587,17 @@ def find_tlk_entry_references(
             fileres = FileResource(resname=gff_file.stem, restype=restype, size=gff_file.stat().st_size, offset=0, filepath=gff_file)
 
             # Check 2DA files
-            if restype is ResourceType.TwoDA and check_2da(fileres):
+            if restype == ResourceType.TwoDA and check_2da(fileres):
                 found_resources.add(fileres)
                 continue
 
             # Check SSF files
-            if restype is ResourceType.SSF and check_ssf(fileres):
+            if restype == ResourceType.SSF and check_ssf(fileres):
                 found_resources.add(fileres)
                 continue
 
             # Check NCS files - FIXME: TEMPORARILY DISABLED (will revisit later)
-            # if restype is ResourceType.NCS and check_ncs(fileres):
+            # if restype == ResourceType.NCS and check_ncs(fileres):
             #     found_resources.add(fileres)
             #     continue
 

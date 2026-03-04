@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+"""Module merge: aggregate resources across modules, detect missing/unused, build merged MOD."""
+
 from __future__ import annotations
 
 import shutil

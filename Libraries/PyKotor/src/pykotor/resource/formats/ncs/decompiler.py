@@ -439,20 +439,24 @@ class NCSDecompiler:
 
     def _identify_control_structures(self):
         """Identify control structures from basic blocks."""
+        block_to_index: dict[int, int] = {id(b): i for i, b in enumerate(self.basic_blocks)}
         # Identify loops by finding back edges
         for block in self.basic_blocks:
+            succ_idx = block_to_index[id(block)]
             for successor in block.successors:
                 # Back edge: successor's index < block's index
-                if self.basic_blocks.index(successor) < self.basic_blocks.index(block):
-                    # This is a loop
-                    structure = ControlStructure(
-                        structure_type="while",  # Default to while, refine later
-                        start_block=successor,
-                        end_block=block,
-                        body_blocks=[b for b in self.basic_blocks if self.basic_blocks.index(successor) < self.basic_blocks.index(b) <= self.basic_blocks.index(block)],
-                    )
-                    self.control_structures.append(structure)
-                    logger.debug(f"Found loop structure from block {block.start_index} to {successor.start_index}")
+                successor_idx = block_to_index.get(id(successor))
+                if successor_idx is None or successor_idx >= succ_idx:
+                    continue
+                # This is a loop
+                structure = ControlStructure(
+                    structure_type="while",  # Default to while, refine later
+                    start_block=successor,
+                    end_block=block,
+                    body_blocks=[b for b in self.basic_blocks if successor_idx < block_to_index[id(b)] <= succ_idx],
+                )
+                self.control_structures.append(structure)
+                logger.debug(f"Found loop structure from block {block.start_index} to {successor.start_index}")
 
         # Identify if/else by pattern: JZ -> if-block -> JMP -> else-block -> end
         for i, block in enumerate(self.basic_blocks):

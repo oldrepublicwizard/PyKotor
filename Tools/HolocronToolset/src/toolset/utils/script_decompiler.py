@@ -1,3 +1,5 @@
+"""NCS decompilation for the toolset: run external decompiler and return NSS source."""
+
 from __future__ import annotations
 
 import uuid

@@ -1,3 +1,5 @@
+"""LTR (letter/name generator) package: Markov chain data and binary I/O."""
+
 from __future__ import annotations
 
 from pykotor.resource.formats.ltr.ltr_data import LTR, LTRBlock

@@ -1,3 +1,5 @@
+"""Open resource by path: reuse existing editor or create new one and focus."""
+
 from __future__ import annotations
 
 from pathlib import Path

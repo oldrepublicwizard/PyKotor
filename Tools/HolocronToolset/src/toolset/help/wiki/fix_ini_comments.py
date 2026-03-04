@@ -1,9 +1,16 @@
+"""Wiki INI fix: replace # with ; inside ```ini code blocks for valid INI syntax."""
+
 from __future__ import annotations
 
 import os
 import re
 
 from pathlib import Path
+
+
+_MD_BLOCK_START_RE = re.compile(r"^(\s*)```ini", re.IGNORECASE)
+_HASH_START_COMMENT_RE = re.compile(r"^(\s*)# (.+)$")
+_INLINE_HASH_COMMENT_RE = re.compile(r"(\S)\s+# ([^#]+)$")
 
 
 def fix_ini_comments(content: str) -> str:
@@ -14,20 +21,20 @@ def fix_ini_comments(content: str) -> str:
 
     for line in lines:
         this_line = line.rstrip()
-        if this_line.strip().startswith("```ini"):
+        if _MD_BLOCK_START_RE.match(this_line):
             in_ini_block = True
             new_lines.append(this_line)
-        elif this_line.strip().startswith("```") and in_ini_block:
+        elif this_line.strip() == "```" and in_ini_block:
             in_ini_block = False
             new_lines.append(this_line)
         elif in_ini_block:
             # Replace # at start of line (with optional whitespace) with ;
-            if re.match(r"^(\s*)# (.+)$", this_line):
-                this_line = re.sub(r"^(\s*)# ", r"\1; ", this_line)
+            if _HASH_START_COMMENT_RE.match(this_line):
+                this_line = _HASH_START_COMMENT_RE.sub(r"\1; ", this_line)
             # Replace inline # comments (but be careful not to match markdown headers)
-            elif "#" in line and not line.strip().startswith("#"):
+            elif "#" in this_line and not this_line.startswith("#"):
                 # Replace inline # comments (where # is followed by space and text)
-                this_line = re.sub(r"(\S)\s+# ([^#]+)$", r"\1  ; \2", this_line)
+                this_line = _INLINE_HASH_COMMENT_RE.sub(r"\1  ; \2", this_line)
             new_lines.append(this_line)
         else:
             new_lines.append(this_line)

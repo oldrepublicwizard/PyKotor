@@ -1,3 +1,5 @@
+"""OpenGL scene: models, camera, picking, and render loop for module designer."""
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING, TypeVar, cast
@@ -73,7 +75,7 @@ class Scene(SceneBase):
     - Cached view/projection matrices (set once per frame, not per object)
     - Cached bounding spheres for frustum culling
     - Incremental cache building (only rebuilds when dirty)
-    - Lazy cursor position calculation
+    - Cached camera focus gizmo placement
 
     Reference implementations:
     - reone: src/graphics/renderpipeline.cpp
@@ -285,11 +287,13 @@ class Scene(SceneBase):
                     if not self.enable_frustum_culling or self._is_object_visible(obj):
                         obj.boundary(self).draw(self.plain_shader, obj.transform())
 
-            if self.show_cursor and self._axis_gizmo is not None:
-                _cursor_pos = self.cursor.position()
+            # Draw the axis gizmo at the camera focal point (view focus), not at
+            # the mouse-world anchor (`scene.cursor`), which may change every frame.
+            if self.show_focus_point_gizmo and self._axis_gizmo is not None:
+                focus_point = self.camera_focal_point()
                 self._axis_gizmo.draw(
                     self.plain_shader,
-                    GlmVector3(_cursor_pos.x, _cursor_pos.y, _cursor_pos.z),
+                    GlmVector3(focus_point.x, focus_point.y, focus_point.z),
                     self.camera.distance,
                 )
 
@@ -325,7 +329,7 @@ class Scene(SceneBase):
 
         When the depth value is at the far plane (no geometry under the cursor), the
         camera's focal point is returned instead of a position at near-infinity. This
-        keeps the axis gizmo visible even when the mouse is over empty sky.
+        keeps mouse-projected placement coordinates finite and stable over empty sky.
 
         Preconditions:
         - A valid GL context is current.
@@ -353,10 +357,10 @@ class Scene(SceneBase):
         )[0][0]  # type: ignore[]
 
         # If the depth sample is at the far plane (sky / no geometry), fall back to the
-        # camera focal point.  Unprojecting z=1.0 places the cursor thousands of units
-        # away, making the axis gizmo invisible.
+        # camera focal point. Unprojecting z=1.0 places the point thousands of units
+        # away, which is not useful for placement/manipulation workflows.
         if float(zpos) >= self._FAR_PLANE_DEPTH_THRESHOLD:
-            return GeomVector3(self.camera.x, self.camera.y, self.camera.z)
+            return self.camera_focal_point()
 
         cursor_glm: GlmVector3 = unProject(
             GlmVector3(float(x), float(self.camera.height - y), float(zpos)),
@@ -410,26 +414,26 @@ class Scene(SceneBase):
         self,
         obj: RenderObject,
     ) -> bool:
-        result = False
-        if isinstance(obj.data, GITCreature) and self.hide_creatures:
-            result = True
-        elif isinstance(obj.data, GITPlaceable) and self.hide_placeables:
-            result = True
-        elif isinstance(obj.data, GITDoor) and self.hide_doors:
-            result = True
-        elif isinstance(obj.data, GITTrigger) and self.hide_triggers:
-            result = True
-        elif isinstance(obj.data, GITEncounter) and self.hide_encounters:
-            result = True
-        elif isinstance(obj.data, GITWaypoint) and self.hide_waypoints:
-            result = True
-        elif isinstance(obj.data, GITSound) and self.hide_sounds:
-            result = True
-        elif isinstance(obj.data, GITStore) and self.hide_sounds:
-            result = True
-        elif isinstance(obj.data, GITCamera) and self.hide_cameras:
-            result = True
-        return result
+        type_to_hide_attr = {
+            GITCreature: "hide_creatures",
+            GITPlaceable: "hide_placeables",
+            GITDoor: "hide_doors",
+            GITTrigger: "hide_triggers",
+            GITEncounter: "hide_encounters",
+            GITWaypoint: "hide_waypoints",
+            GITSound: "hide_sounds",
+            GITStore: "hide_sounds",
+            GITCamera: "hide_cameras",
+        }
+
+        for obj_type, hide_attr in type_to_hide_attr.items():
+            if isinstance(obj.data, obj_type):
+                return bool(getattr(self, hide_attr, False))
+        return False
+
+    def _object_list_snapshot(self) -> list[RenderObject]:
+        """Return a stable snapshot of objects for index-based rendering workflows."""
+        return list(self.objects.values())
 
     def _render_object(
         self,
@@ -475,7 +479,7 @@ class Scene(SceneBase):
 
         # Use enumerate instead of list.index() which is O(n) per call
         identity = mat4()
-        instances: list[RenderObject] = list(self.objects.values())
+        instances: list[RenderObject] = self._object_list_snapshot()
         for idx, obj in enumerate(instances):
             r: int = idx & 0xFF
             g: int = (idx >> 8) & 0xFF
@@ -500,7 +504,7 @@ class Scene(SceneBase):
     ) -> RenderObject | None:
         self.picker_render()
         pixel: int = glReadPixels(x, y, 1, 1, GL_BGRA, GL_UNSIGNED_INT_8_8_8_8)[0][0] >> 8  # type: ignore[]
-        instances: list[RenderObject] = list(self.objects.values())
+        instances: list[RenderObject] = self._object_list_snapshot()
         return instances[pixel] if pixel != 0xFFFFFF else None  # noqa: PLR2004
 
     def select(

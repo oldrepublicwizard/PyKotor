@@ -1,3 +1,5 @@
+"""XML read/write for TLK (talk table); uses defusedxml when available."""
+
 from __future__ import annotations
 
 # Try to import defusedxml, fallback to ET if not available

@@ -1,6 +1,7 @@
+"""Door (UTD) model and resource resolution using genericdoors.2da and installation."""
+
 from __future__ import annotations
 
-from pathlib import Path
 from typing import TYPE_CHECKING
 
 from loggerplus import RobustLogger
@@ -12,11 +13,11 @@ from pykotor.resource.formats.twoda import TwoDA, read_2da
 from pykotor.resource.generics.utd import read_utd
 from pykotor.resource.type import ResourceType
 from pykotor.tools.model import iterate_textures
+from pykotor.tools.resource_lookup import load_2da_with_fallback, read_location_data
 from utility.common.geometry import Vector3
 
 if TYPE_CHECKING:
     from pykotor.common.module import Module
-    from pykotor.extract.file import ResourceResult
     from pykotor.extract.installation import Installation
     from pykotor.resource.formats.mdl import MDL, MDLNode
     from pykotor.resource.generics.utd import UTD
@@ -60,10 +61,10 @@ def get_model(
         ValueError: genericdoors.2da not found in passed arguments OR the installation.
     """
     if genericdoors is None:
-        result: ResourceResult | None = installation.resource("genericdoors", ResourceType.TwoDA)
-        if not result:
+        loaded = load_2da_with_fallback(installation, "genericdoors", RobustLogger())
+        if loaded is None:
             raise ValueError("Resource 'genericdoors.2da' not found in the installation, cannot get UTD model.")
-        genericdoors = read_2da(result.data)
+        genericdoors = loaded
     if not isinstance(genericdoors, TwoDA):
         genericdoors = read_2da(genericdoors)
 
@@ -90,38 +91,7 @@ def load_genericdoors_2da(
     """
     if logger is None:
         logger = RobustLogger()
-
-    genericdoors_2da: TwoDA | None = None
-
-    # Try locations() first (more reliable, handles BIF files)
-    try:
-        location_results = installation.locations(
-            [ResourceIdentifier(resname="genericdoors", restype=ResourceType.TwoDA)],
-            order=[SearchLocation.OVERRIDE, SearchLocation.CHITIN],
-        )
-        for res_ident, loc_list in location_results.items():
-            if loc_list:
-                loc = loc_list[0]  # Use first location (Override takes precedence)
-                if loc.filepath and Path(loc.filepath).exists():
-                    # Read from file (handles both direct files and BIF files)
-                    with loc.filepath.open("rb") as f:
-                        f.seek(loc.offset)
-                        data = f.read(loc.size)
-                    genericdoors_2da = read_2da(data)
-                    break
-    except Exception as e:  # noqa: BLE001
-        logger.debug(f"locations() failed for genericdoors.2da: {e}")
-
-    # Fallback: try resource() if locations() didn't work
-    if genericdoors_2da is None:
-        try:
-            genericdoors_result = installation.resource("genericdoors", ResourceType.TwoDA)
-            if genericdoors_result and genericdoors_result.data:
-                genericdoors_2da = read_2da(genericdoors_result.data)
-        except Exception as e:  # noqa: BLE001
-            logger.debug(f"resource() also failed for genericdoors.2da: {e}")
-
-    return genericdoors_2da
+    return load_2da_with_fallback(installation, "genericdoors", logger)
 
 
 def extract_door_walkmeshes(
@@ -207,9 +177,10 @@ def extract_door_walkmeshes(
                 for dwk_ident, dwk_loc_list in dwk_locations.items():
                     if dwk_loc_list:
                         dwk_loc = dwk_loc_list[0]
-                        with dwk_loc.filepath.open("rb") as f:
-                            f.seek(dwk_loc.offset)
-                            door_walkmeshes[dwk_key] = f.read(dwk_loc.size)
+                        dwk_data = read_location_data(dwk_loc)
+                        if dwk_data is None:
+                            continue
+                        door_walkmeshes[dwk_key] = dwk_data
                         logger.debug(f"Found DWK '{dwk_resname}' (state: {dwk_key}) from installation")
                         break
             except Exception:  # noqa: BLE001
@@ -284,9 +255,9 @@ def _load_mdl_with_variations(
                 if loc_list:
                     loc = loc_list[0]
                     try:
-                        with loc.filepath.open("rb") as f:
-                            f.seek(loc.offset)
-                            mdl_data = f.read(loc.size)
+                        mdl_data = read_location_data(loc)
+                        if mdl_data is None:
+                            continue
                         mdl = read_mdl(mdl_data)
                         return mdl, mdl_data
                     except Exception:  # noqa: BLE001

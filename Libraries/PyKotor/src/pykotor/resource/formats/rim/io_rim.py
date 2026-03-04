@@ -1,3 +1,5 @@
+"""Binary RIM read/write: container format for module resources (ResRef + data)."""
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING

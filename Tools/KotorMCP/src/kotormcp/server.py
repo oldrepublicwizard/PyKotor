@@ -18,10 +18,10 @@ import asyncio
 import hashlib
 import json
 import os
-from collections.abc import Iterable, Iterator
+import sys
 from io import BytesIO
 from pathlib import Path
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 try:
     from uvicorn import Config
@@ -37,13 +37,17 @@ from mcp import types
 from mcp.server.lowlevel import NotificationOptions, Server
 from mcp.server.models import InitializationOptions
 from pykotor.common.misc import Game
-from pykotor.extract.file import FileResource, ResourceResult
 from pykotor.extract.installation import Installation, SearchLocation
 from pykotor.resource.formats.gff.gff_auto import read_gff
 from pykotor.resource.formats.tlk.tlk_auto import read_tlk
 from pykotor.resource.formats.twoda.twoda_auto import read_2da
 from pykotor.resource.type import ResourceType
 from pykotor.tools.path import CaseAwarePath, find_kotor_paths_from_default
+
+if TYPE_CHECKING:
+    from collections.abc import Iterable, Iterator
+
+    from pykotor.extract.file import FileResource, ResourceResult
 
 SERVER = Server("KotorMCP")
 
@@ -123,7 +127,8 @@ def _load_installation(game: Game, explicit_path: str | None = None) -> Installa
             INSTALLATIONS[game] = Installation(candidate)
             return INSTALLATIONS[game]
 
-    raise ValueError(f"Unable to locate installation for {game.name}. Provide --path or set {ENV_HINTS[game][0]}.")
+    msg = f"Unable to locate installation for {game.name}. Provide --path or set {ENV_HINTS[game][0]}."
+    raise ValueError(msg)
 
 
 def _parse_resource_types(raw: Iterable[str] | None) -> set[ResourceType]:
@@ -141,7 +146,8 @@ def _parse_resource_types(raw: Iterable[str] | None) -> set[ResourceType]:
         try:
             parsed.add(ResourceType.from_extension(cleaned))
         except ValueError:
-            raise ValueError(f"Unknown resource type '{token}'") from None
+            msg = f"Unknown resource type '{token}'"
+            raise ValueError(msg) from None
     return parsed
 
 
@@ -292,9 +298,9 @@ def _describe_resource(result: ResourceResult) -> dict[str, Any]:
     data = result.data
     if result.restype in GFF_HEAVY_TYPES:
         summary["analysis"] = _summarize_gff(data)
-    elif result.restype is ResourceType.TLK:
+    elif result.restype == ResourceType.TLK:
         summary["analysis"] = _summarize_tlk(data)
-    elif result.restype is ResourceType.TwoDA:
+    elif result.restype == ResourceType.TwoDA:
         summary["analysis"] = _summarize_2da(data)
     else:
         summary["analysis"] = {"size": len(data), "head": data[:64].hex()}
@@ -305,7 +311,8 @@ def _journal_entries(installation: Installation) -> list[dict[str, Any]]:
     """Parse global.jrl and extract plot entries (structure documented in xoreos journal.cpp)."""
     resource = installation.resource("global", ResourceType.JRL)
     if resource is None:
-        raise ValueError("Unable to locate global.jrl in the current installation.")
+        msg = "Unable to locate global.jrl in the current installation."
+        raise ValueError(msg)
     gff = read_gff(BytesIO(resource.data))
     categories = []
     for entry in gff.root.get_list("Categories", default=[]):
@@ -429,7 +436,8 @@ async def handle_call_tool(name: str, arguments: dict[str, Any]) -> types.CallTo
     if name == "loadInstallation":
         game = _resolve_game(arguments.get("game"))
         if game is None:
-            raise ValueError("Specify game as k1 or k2.")
+            msg = "Specify game as k1 or k2."
+            raise ValueError(msg)
         path = arguments.get("path")
         installation = _load_installation(game, path)
         return _json_content({"game": game.name, "path": str(installation.path())})
@@ -437,7 +445,8 @@ async def handle_call_tool(name: str, arguments: dict[str, Any]) -> types.CallTo
     if name == "listResources":
         game = _resolve_game(arguments.get("game"))
         if game is None:
-            raise ValueError("Specify game parameter (k1/k2).")
+            msg = "Specify game parameter (k1/k2)."
+            raise ValueError(msg)
         installation = _load_installation(game)
         location = arguments.get("location", "all")
         module_filter = arguments.get("moduleFilter")
@@ -458,7 +467,8 @@ async def handle_call_tool(name: str, arguments: dict[str, Any]) -> types.CallTo
     if name == "describeResource":
         game = _resolve_game(arguments.get("game"))
         if game is None:
-            raise ValueError("Specify game parameter (k1/k2).")
+            msg = "Specify game parameter (k1/k2)."
+            raise ValueError(msg)
         installation = _load_installation(game)
         resref = arguments["resref"]
         restype = arguments["restype"]
@@ -472,19 +482,22 @@ async def handle_call_tool(name: str, arguments: dict[str, Any]) -> types.CallTo
         for label in order_labels:
             upper = label.upper()
             if upper not in SearchLocation.__members__:
-                raise ValueError(f"Unknown SearchLocation '{label}'")
+                msg = f"Unknown SearchLocation '{label}'"
+                raise ValueError(msg)
             order.append(SearchLocation[upper])
         resource_type = _parse_resource_types([restype]).pop()
         result = installation.resource(resref, resource_type, order=order)
         if result is None:
-            raise ValueError(f"{resref}.{resource_type.extension} not found.")
+            msg = f"{resref}.{resource_type.extension} not found."
+            raise ValueError(msg)
         summary = _describe_resource(result)
         return _json_content(summary)
 
     if name == "journalOverview":
         game = _resolve_game(arguments.get("game"))
         if game is None:
-            raise ValueError("Specify game parameter (k1/k2).")
+            msg = "Specify game parameter (k1/k2)."
+            raise ValueError(msg)
         installation = _load_installation(game)
         payload = _journal_entries(installation)
         return _json_content({"count": len(payload), "categories": payload})
@@ -615,8 +628,6 @@ async def _run_http(port: int = 8000, host: str = "localhost") -> None:
 
 def _get_invocation_command() -> str:
     """Get the actual command used to invoke the CLI."""
-    import os
-    import sys
 
     if not sys.argv:
         return "kotormcp"
@@ -624,7 +635,7 @@ def _get_invocation_command() -> str:
     # Try to detect if we're being run via "uv run" by checking parent process
     is_uv_run = False
     try:
-        import psutil  # type: ignore[import-untyped]
+        import psutil  # type: ignore[import-untyped]  # noqa: PLC0415
 
         current_process = psutil.Process()
         parent = current_process.parent()
@@ -633,7 +644,7 @@ def _get_invocation_command() -> str:
     except (ImportError, Exception):
         # psutil not available or can't access parent process
         # Try alternative detection: check if UV_* env vars exist
-        if any("UV" in k.upper() for k in os.environ.keys()):
+        if any("UV" in k.upper() for k in os.environ):
             is_uv_run = True
 
     script_path = Path(sys.argv[0]).resolve()

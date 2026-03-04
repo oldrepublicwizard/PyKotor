@@ -1,3 +1,5 @@
+"""ERF/MOD/SAV archive editor: resource list, extract/pack, and drag-drop."""
+
 from __future__ import annotations
 
 from pathlib import Path
@@ -28,7 +30,6 @@ from qtpy.QtWidgets import (
 from loggerplus import RobustLogger  # pyright: ignore[reportMissingTypeStubs]
 from pykotor.common.misc import ResRef
 from pykotor.extract.file import ResourceIdentifier
-from pykotor.resource.bioware_archive import ArchiveResource
 from pykotor.resource.formats.bif import BIF, BIFResource, BIFType, read_bif, write_bif
 from pykotor.resource.formats.erf import ERF, ERFResource, ERFType, read_erf, write_erf
 from pykotor.resource.formats.rim import RIM, RIMResource, read_rim, write_rim
@@ -55,7 +56,7 @@ if TYPE_CHECKING:
     from qtpy.QtGui import QDragEnterEvent, QDragMoveEvent, QDropEvent
     from qtpy.QtWidgets import QAbstractButton, QHeaderView, QWidget
 
-    from pykotor.resource.formats.rim import RIMResource
+    from pykotor.resource.bioware_archive import ArchiveResource
     from toolset.data.installation import HTInstallation
 
 if qtpy.QT5:
@@ -79,6 +80,15 @@ def _archive_resource_resname(resource: ERFResource | RIMResource | BIFResource)
     if isinstance(resource, BIFResource) and not str(resource.resref).strip():
         return f"id_{resource.resname_key_index}"
     return str(resource.resref)
+
+
+def _resource_identifier(source_model: QStandardItemModel, row: int) -> str:
+    """Build a stable lower-case key for row resource identity."""
+    row_item = source_model.item(row, 0)
+    type_item = source_model.item(row, 1)
+    res_name = row_item.data() if row_item is not None else ""
+    ext = type_item.data() if type_item is not None else ""
+    return f"{res_name}.{ext}".strip().lower()
 
 
 class ERFSortFilterProxyModel(RobustSortFilterProxyModel):
@@ -233,7 +243,7 @@ class ERFEditor(Editor):
                 offset_item: QStandardItem = QStandardItem(f"0x{res_offset:X}")
                 self.source_model.appendRow([resref_item, restype_item, size_item, offset_item])
 
-        elif restype is ResourceType.RIM:
+        elif restype == ResourceType.RIM:
             rim: RIM = read_rim(data)
             for resource in rim:
                 resref_item = QStandardItem(str(resource.resref))
@@ -243,7 +253,7 @@ class ERFEditor(Editor):
                 offset_item = QStandardItem(f"0x{rim.get_resource_offset(resource):X}")
                 self.source_model.appendRow([resref_item, restype_item, size_item, offset_item])
 
-        elif restype is ResourceType.BIF:
+        elif restype == ResourceType.BIF:
             bif: BIF = read_bif(data)
             for resource in bif:
                 # BIF files do not store ResRef names (they are in the KEY file); use resource ID when blank
@@ -302,7 +312,7 @@ class ERFEditor(Editor):
             write_func = writer_mapping[arch.__class__]
             write_func(arch, data_buf)
 
-        if self._restype is ResourceType.RIM:
+        if self._restype == ResourceType.RIM:
             rim = RIM()
             self._build_archive(
                 rim,
@@ -314,7 +324,7 @@ class ERFEditor(Editor):
 
         elif self._restype in (ResourceType.ERF, ResourceType.MOD, ResourceType.SAV):  # sourcery skip: split-or-ifs
             erf = ERF(ERFType.from_extension(self._restype.extension))
-            if self._restype is ResourceType.SAV:
+            if self._restype == ResourceType.SAV:
                 erf.is_save = True
             self._build_archive(
                 erf,
@@ -753,7 +763,7 @@ class ERFEditorTable(RobustTableView):
             event.accept()
             filter_model: ERFSortFilterProxyModel = cast("ERFSortFilterProxyModel", self.model())
             source_model: QStandardItemModel = cast("QStandardItemModel", filter_model.sourceModel())
-            existing_items: set[str] = {f"{source_model.index(row, 0).data()}.{source_model.index(row, 1).data()}".strip().lower() for row in range(source_model.rowCount())}
+            existing_items: set[str] = {_resource_identifier(source_model, row) for row in range(source_model.rowCount())}
             always: bool = False
             never: bool = False
             to_skip: list[str] = []

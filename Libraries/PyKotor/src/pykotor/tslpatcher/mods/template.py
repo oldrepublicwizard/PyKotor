@@ -1,3 +1,5 @@
+"""TSLPatcher modification template: OverrideType and PatcherModifications base."""
+
 from __future__ import annotations
 
 from abc import ABC, abstractmethod

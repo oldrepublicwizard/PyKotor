@@ -1,3 +1,5 @@
+"""Long spin box: QAbstractSpinBox for values beyond 32-bit signed range."""
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING

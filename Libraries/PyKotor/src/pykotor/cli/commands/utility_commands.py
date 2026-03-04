@@ -147,12 +147,16 @@ def _diff_archives_or_directories(
                     differences_found = True
                     diff_logger.info(f"Files differ: {resource_key}")
 
-        # Summary
+        # Summary (print to stdout so result is visible in normal mode and tests)
         if not differences_found:
-            diff_logger.info(f"'{args.path1}' MATCHES '{args.path2}'")
+            msg = f"'{args.path1}' MATCHES '{args.path2}'"
+            diff_logger.info(msg)
+            print(msg)
             return 0
         else:
-            diff_logger.info(f"'{args.path1}' DOES NOT MATCH '{args.path2}'")
+            msg = f"'{args.path1}' DOES NOT MATCH '{args.path2}'"
+            diff_logger.info(msg)
+            print(msg)
             return 1
 
     except Exception:
@@ -343,11 +347,15 @@ def cmd_diff(
                 format_type=format_type,
             )
 
-            # Add summary message
+            # Add summary message (print so visible in normal mode and when stdout is captured)
             if result:
-                diff_logger.info(f"'{args.path1}' MATCHES '{args.path2}'")
+                msg = f"'{args.path1}' MATCHES '{args.path2}'"
+                diff_logger.info(msg)
+                print(msg)
             else:
-                diff_logger.info(f"'{args.path1}' DOES NOT MATCH '{args.path2}'")
+                msg = f"'{args.path1}' DOES NOT MATCH '{args.path2}'"
+                diff_logger.info(msg)
+                print(msg)
 
             return 0 if result else 1
 
@@ -360,6 +368,27 @@ def cmd_diff(
 
     # Check if we need to generate TSLPatcher INI files
     generate_ini = getattr(args, "generate_ini", False)
+
+    # Handle two plain directories (no installation, no archive) via n-way diff engine
+    if (
+        isinstance(path1, Path)
+        and isinstance(path2, Path)
+        and path1.is_dir()
+        and path2.is_dir()
+        and not (path1 / "chitin.key").exists()
+        and not (path2 / "chitin.key").exists()
+    ):
+        from pykotor.diff_tool.app import DiffConfig, run_application  # noqa: PLC0415
+
+        config = DiffConfig(
+            paths=[path1, path2],
+            output_mode=output_mode_str,
+            compare_hashes=True,
+            logging_enabled=output_mode != OutputMode.QUIET,
+        )
+        exit_code = run_application(config)
+        # Map app exit codes to CLI: 0=match, 2/3=differ/error -> 1
+        return 0 if exit_code == 0 else 1
 
     if generate_ini:
         # Use the full TSLPatcher application for INI generation

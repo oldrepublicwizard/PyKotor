@@ -1,3 +1,5 @@
+"""UTD (door) generic: GFF-based door definitions and lock/unlock mechanics."""
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING

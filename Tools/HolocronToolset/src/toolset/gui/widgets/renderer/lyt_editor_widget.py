@@ -28,7 +28,19 @@ from qtpy.QtCore import (
     Qt,
     Signal,  # pyright: ignore[reportPrivateImportUsage]
 )
-from qtpy.QtGui import QAction, QActionGroup, QDrag, QHelpEvent, QIcon, QKeySequence, QPainter, QPalette, QPixmap, QShortcut, QUndoCommand
+from qtpy.QtGui import (
+    QAction,
+    QActionGroup,
+    QDrag,
+    QHelpEvent,
+    QIcon,
+    QKeySequence,
+    QPainter,
+    QPalette,
+    QPixmap,
+    QShortcut,
+    QUndoCommand,
+)
 from qtpy.QtWidgets import (
     QApplication,
     QDialog,
@@ -54,7 +66,7 @@ from loggerplus import RobustLogger
 from pykotor.resource.formats.lyt.lyt_auto import write_lyt
 from pykotor.resource.formats.lyt.lyt_data import LYT, LYTDoorHook, LYTRoom
 from pykotor.resource.resource_auto import BWM
-from toolset.data.lyt_structures import ExtendedLYTDoorHook, ExtendedLYTObstacle, ExtendedLYTRoom, ExtendedLYTTrack
+from toolset.data.lyt_structures import ExtendedLYTObstacle, ExtendedLYTTrack
 from toolset.gui.common.localization import translate as tr
 from toolset.gui.dialogs.lyt_dialogs import DoorHookPropertiesDialog, ObstaclePropertiesDialog, RoomPropertiesDialog, TrackPropertiesDialog
 from toolset.gui.editors.lyt import LYTEditor
@@ -81,7 +93,6 @@ if TYPE_CHECKING:
         QObject,
     )
     from qtpy.QtGui import (
-        QAction,
         QCloseEvent,
         QContextMenuEvent,
         QDragEnterEvent,
@@ -95,9 +106,9 @@ if TYPE_CHECKING:
         QShowEvent,
         QWheelEvent,
     )
-    from qtpy.QtWidgets import QMenu
     from typing_extensions import Literal
 
+    from toolset.data.lyt_structures import ExtendedLYTDoorHook, ExtendedLYTRoom
     from toolset.gui.editors.lyt import LYTEditor
     from toolset.gui.widgets.renderer.module import ModuleRenderer
 

@@ -1,3 +1,5 @@
+"""Generic GFF editor: tree view, field editing, substring search, and locstring support."""
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any, cast
@@ -92,18 +94,21 @@ class GFFEditor(Editor):
         sel_model: QItemSelectionModel | None = self.ui.treeView.selectionModel()
         assert sel_model is not None
         sel_model.selectionChanged.connect(self.selection_changed)
-        self.ui.intSpin.editingFinished.connect(self.update_data)
-        self.ui.floatSpin.editingFinished.connect(self.update_data)
-        self.ui.lineEdit.editingFinished.connect(self.update_data)
-        self.ui.textEdit.textChanged.connect(self.update_data)
-        self.ui.xVec3Spin.editingFinished.connect(self.update_data)
-        self.ui.yVec3Spin.editingFinished.connect(self.update_data)
-        self.ui.zVec3Spin.editingFinished.connect(self.update_data)
-        self.ui.xVec4Spin.editingFinished.connect(self.update_data)
-        self.ui.yVec4Spin.editingFinished.connect(self.update_data)
-        self.ui.zVec4Spin.editingFinished.connect(self.update_data)
-        self.ui.wVec4Spin.editingFinished.connect(self.update_data)
-        self.ui.labelEdit.editingFinished.connect(self.update_data)
+        for signal in (
+            self.ui.intSpin.editingFinished,
+            self.ui.floatSpin.editingFinished,
+            self.ui.lineEdit.editingFinished,
+            self.ui.textEdit.textChanged,
+            self.ui.xVec3Spin.editingFinished,
+            self.ui.yVec3Spin.editingFinished,
+            self.ui.zVec3Spin.editingFinished,
+            self.ui.xVec4Spin.editingFinished,
+            self.ui.yVec4Spin.editingFinished,
+            self.ui.zVec4Spin.editingFinished,
+            self.ui.wVec4Spin.editingFinished,
+            self.ui.labelEdit.editingFinished,
+        ):
+            signal.connect(self.update_data)
 
         self.ui.stringrefSpin.valueChanged.connect(self.change_locstring_text)
         self.ui.stringrefSpin.editingFinished.connect(self.update_data)
@@ -217,38 +222,28 @@ class GFFEditor(Editor):
             value: Any = child.data(_VALUE_NODE_ROLE)
             ftype: GFFFieldType | None = child.data(_TYPE_NODE_ROLE)
 
-            if ftype == GFFFieldType.UInt8:
-                gff_struct.set_uint8(label, value)
-            if ftype == GFFFieldType.UInt16:
-                gff_struct.set_uint16(label, value)
-            if ftype == GFFFieldType.UInt32:
-                gff_struct.set_uint32(label, value)
-            if ftype == GFFFieldType.UInt64:
-                gff_struct.set_uint64(label, value)
-            if ftype == GFFFieldType.Int8:
-                gff_struct.set_int8(label, value)
-            if ftype == GFFFieldType.Int16:
-                gff_struct.set_int16(label, value)
-            if ftype == GFFFieldType.Int32:
-                gff_struct.set_int32(label, value)
-            if ftype == GFFFieldType.Int64:
-                gff_struct.set_int64(label, value)
-            if ftype == GFFFieldType.Single:
-                gff_struct.set_single(label, value)
-            if ftype == GFFFieldType.Double:
-                gff_struct.set_double(label, value)
-            if ftype == GFFFieldType.ResRef:
-                gff_struct.set_resref(label, value)
-            if ftype == GFFFieldType.String:
-                gff_struct.set_string(label, value)
-            if ftype == GFFFieldType.LocalizedString:
-                gff_struct.set_locstring(label, value)
-            if ftype == GFFFieldType.Binary:
-                gff_struct.set_binary(label, value)
-            if ftype == GFFFieldType.Vector3:
-                gff_struct.set_vector3(label, value)
-            if ftype == GFFFieldType.Vector4:
-                gff_struct.set_vector4(label, value)
+            # Mapping of GFFFieldType to setter methods for simple types
+            field_setters = {
+                GFFFieldType.UInt8: gff_struct.set_uint8,
+                GFFFieldType.UInt16: gff_struct.set_uint16,
+                GFFFieldType.UInt32: gff_struct.set_uint32,
+                GFFFieldType.UInt64: gff_struct.set_uint64,
+                GFFFieldType.Int8: gff_struct.set_int8,
+                GFFFieldType.Int16: gff_struct.set_int16,
+                GFFFieldType.Int32: gff_struct.set_int32,
+                GFFFieldType.Int64: gff_struct.set_int64,
+                GFFFieldType.Single: gff_struct.set_single,
+                GFFFieldType.Double: gff_struct.set_double,
+                GFFFieldType.ResRef: gff_struct.set_resref,
+                GFFFieldType.String: gff_struct.set_string,
+                GFFFieldType.LocalizedString: gff_struct.set_locstring,
+                GFFFieldType.Binary: gff_struct.set_binary,
+                GFFFieldType.Vector3: gff_struct.set_vector3,
+                GFFFieldType.Vector4: gff_struct.set_vector4,
+            }
+
+            if ftype in field_setters:
+                field_setters[ftype](label, value)
 
             if ftype == GFFFieldType.Struct:
                 childGffStruct = GFFStruct(value)
@@ -670,29 +665,28 @@ class GFFEditor(Editor):
         menu: _QMenu,  # pyright: ignore[reportInvalidTypeForm]
         item: QStandardItem,
     ):
-        menu.addAction("Add UInt8").triggered.connect(lambda: self.insert_node(item, "New UInt8", GFFFieldType.UInt8, 0))
-        menu.addAction("Add UInt16").triggered.connect(lambda: self.insert_node(item, "New UInt16", GFFFieldType.UInt16, 0))
-        menu.addAction("Add UInt32").triggered.connect(lambda: self.insert_node(item, "New UInt32", GFFFieldType.UInt32, 0))
-        menu.addAction("Add UInt64").triggered.connect(lambda: self.insert_node(item, "New UInt64", GFFFieldType.UInt64, 0))
-        menu.addAction("Add Int8").triggered.connect(lambda: self.insert_node(item, "New Int8", GFFFieldType.Int8, 0))
-        menu.addAction("Add Int16").triggered.connect(lambda: self.insert_node(item, "New Int16", GFFFieldType.Int16, 0))
-        menu.addAction("Add Int32").triggered.connect(lambda: self.insert_node(item, "New Int32", GFFFieldType.Int32, 0))
-        menu.addAction("Add Int64").triggered.connect(lambda: self.insert_node(item, "New Int64", GFFFieldType.Int64, 0))
-        menu.addAction("Add Single").triggered.connect(lambda: self.insert_node(item, "New Single", GFFFieldType.Single, 0.0))
-        menu.addAction("Add Double").triggered.connect(lambda: self.insert_node(item, "New Double", GFFFieldType.Double, 0.0))
-        menu.addAction("Add ResRef").triggered.connect(lambda: self.insert_node(item, "New ResRef", GFFFieldType.ResRef, 0))
-        menu.addAction("Add String").triggered.connect(lambda: self.insert_node(item, "New String", GFFFieldType.String, 0))
-        menu.addAction("Add LocalizedString").triggered.connect(
-            lambda: self.insert_node(
-                item,
-                "New LocalizedString",
-                GFFFieldType.LocalizedString,
-                LocalizedString.from_invalid(),
-            ),
-        )
-        menu.addAction("Add Binary").triggered.connect(lambda: self.insert_node(item, "New Binary", GFFFieldType.Binary, b""))
-        menu.addAction("Add Vector3").triggered.connect(lambda: self.insert_node(item, "New Vector3", GFFFieldType.Vector3, Vector3.from_null()))
-        menu.addAction("Add Vector4").triggered.connect(lambda: self.insert_node(item, "New Vector4", GFFFieldType.Vector4, Vector3.from_null()))
+        field_actions: list[tuple[str, str, GFFFieldType, object]] = [
+            ("Add UInt8", "New UInt8", GFFFieldType.UInt8, 0),
+            ("Add UInt16", "New UInt16", GFFFieldType.UInt16, 0),
+            ("Add UInt32", "New UInt32", GFFFieldType.UInt32, 0),
+            ("Add UInt64", "New UInt64", GFFFieldType.UInt64, 0),
+            ("Add Int8", "New Int8", GFFFieldType.Int8, 0),
+            ("Add Int16", "New Int16", GFFFieldType.Int16, 0),
+            ("Add Int32", "New Int32", GFFFieldType.Int32, 0),
+            ("Add Int64", "New Int64", GFFFieldType.Int64, 0),
+            ("Add Single", "New Single", GFFFieldType.Single, 0.0),
+            ("Add Double", "New Double", GFFFieldType.Double, 0.0),
+            ("Add ResRef", "New ResRef", GFFFieldType.ResRef, 0),
+            ("Add String", "New String", GFFFieldType.String, 0),
+            ("Add LocalizedString", "New LocalizedString", GFFFieldType.LocalizedString, LocalizedString.from_invalid()),
+            ("Add Binary", "New Binary", GFFFieldType.Binary, b""),
+            ("Add Vector3", "New Vector3", GFFFieldType.Vector3, Vector3.from_null()),
+            ("Add Vector4", "New Vector4", GFFFieldType.Vector4, Vector3.from_null()),
+        ]
+        for action_label, node_label, field_type, default_value in field_actions:
+            menu.addAction(action_label).triggered.connect(
+                lambda _=False, n=node_label, t=field_type, v=default_value: self.insert_node(item, n, t, v)
+            )
         menu.addSeparator()
         menu.addAction("Add Struct").triggered.connect(lambda: self.insert_node(item, "New Struct", GFFFieldType.Struct, GFFStruct()))
         menu.addAction("Add List").triggered.connect(lambda: self.insert_node(item, "New List", GFFFieldType.List, GFFList()))

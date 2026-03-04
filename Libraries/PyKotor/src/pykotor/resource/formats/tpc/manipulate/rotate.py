@@ -1,3 +1,5 @@
+"""Rotate RGB/RGBA (and BGR/BGRA) image data in 90° steps for TPC texture manipulation."""
+
 from __future__ import annotations
 
 

@@ -30,6 +30,49 @@ if TYPE_CHECKING:
     from pykotor.resource.formats.tpc.tpc_data import TPCTextureFormat
 
 
+def _read_convert_write_tpc(
+    input_path: Path,
+    output_path: Path,
+    *,
+    file_format: ResourceType,
+    target_format: TPCTextureFormat | None = None,
+    txi_source: Path | None = None,
+) -> None:
+    """Shared TPC conversion pipeline helper."""
+    tpc = read_tpc(input_path, txi_source=txi_source)
+    if target_format is not None:
+        tpc.convert(target_format)
+    write_tpc(tpc, output_path, file_format=file_format)
+
+
+def _read_write_wav(
+    input_path: Path,
+    output_path: Path,
+    *,
+    file_format: ResourceType,
+) -> None:
+    """Shared WAV conversion pipeline helper."""
+    wav = read_wav(input_path)
+    write_wav(wav, output_path, file_format=file_format)
+
+
+def _write_txi_if_requested(
+    txi_output_path: Path | None,
+    txi_text: str | None,
+) -> None:
+    """Write TXI sidecar data when both output path and content are present."""
+    if txi_output_path and txi_text:
+        txi_output_path.write_text(txi_text, encoding="ascii")
+
+
+def _resolve_wav_type(wav_type: str):
+    """Resolve user-facing WAV type label to internal WAVType enum."""
+    from pykotor.resource.formats.wav.wav_data import WAVType
+
+    type_map = {"VO": WAVType.VO, "SFX": WAVType.SFX}
+    return type_map.get(wav_type.upper(), WAVType.VO)
+
+
 def convert_tpc_to_tga(
     input_path: Path,
     output_path: Path,
@@ -54,9 +97,7 @@ def convert_tpc_to_tga(
     tpc = read_tpc(input_path)
     write_tpc(tpc, output_path, file_format=ResourceType.TGA)
 
-    # Write TXI if available and requested
-    if txi_output_path and tpc.txi:
-        txi_output_path.write_text(str(tpc.txi), encoding="ascii")
+    _write_txi_if_requested(txi_output_path, str(tpc.txi) if tpc.txi else None)
 
 
 def convert_tga_to_tpc(
@@ -82,13 +123,13 @@ def convert_tga_to_tpc(
 
 
     """
-    tpc = read_tpc(input_path, txi_source=txi_input_path)
-
-    # Convert format if specified
-    if target_format:
-        tpc.convert(target_format)
-
-    write_tpc(tpc, output_path, file_format=ResourceType.TPC)
+    _read_convert_write_tpc(
+        input_path,
+        output_path,
+        file_format=ResourceType.TPC,
+        target_format=target_format,
+        txi_source=txi_input_path,
+    )
 
 
 def convert_wav_to_clean(
@@ -111,8 +152,7 @@ def convert_wav_to_clean(
 
 
     """
-    wav = read_wav(input_path)
-    write_wav(wav, output_path, file_format=ResourceType.WAV_DEOB)
+    _read_write_wav(input_path, output_path, file_format=ResourceType.WAV_DEOB)
 
 
 def convert_clean_to_wav(
@@ -138,14 +178,11 @@ def convert_clean_to_wav(
 
 
     """
-    from pykotor.resource.formats.wav.wav_data import WAVType
-
     # Read as clean WAV (read_wav auto-deobfuscates)
     wav = read_wav(input_path)
 
     # Set WAV type if converting to game format
-    type_map = {"VO": WAVType.VO, "SFX": WAVType.SFX}
-    wav.wav_type = type_map.get(wav_type.upper(), WAVType.VO)
+    wav.wav_type = _resolve_wav_type(wav_type)
 
     write_wav(wav, output_path, file_format=ResourceType.WAV)
 
@@ -237,9 +274,9 @@ def convert_texture_format(
 
 
     """
-    tpc = read_tpc(input_path)
-
-    if target_format:
-        tpc.convert(target_format)
-
-    write_tpc(tpc, output_path, file_format=ResourceType.TPC)
+    _read_convert_write_tpc(
+        input_path,
+        output_path,
+        file_format=ResourceType.TPC,
+        target_format=target_format,
+    )

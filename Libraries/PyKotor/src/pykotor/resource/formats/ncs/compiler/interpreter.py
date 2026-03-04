@@ -1,3 +1,5 @@
+"""NCS bytecode interpreter: execute NCS for testing and script debugging."""
+
 from __future__ import annotations
 
 import logging

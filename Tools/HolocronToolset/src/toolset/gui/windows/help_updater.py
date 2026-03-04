@@ -1,3 +1,5 @@
+"""Help updater: fetch help content from GitHub and refresh the help window."""
+
 from __future__ import annotations
 
 import sys
@@ -6,10 +8,10 @@ import zipfile
 from pathlib import Path
 from typing import TYPE_CHECKING, Any
 
-from loggerplus import RobustLogger
 from qtpy.QtCore import Qt
 from qtpy.QtWidgets import QMessageBox
 
+from loggerplus import RobustLogger
 from toolset.config import get_remote_toolset_update_info, is_remote_version_newer
 from toolset.gui.dialogs.asyncloader import AsyncLoader
 from toolset.gui.widgets.settings.installations import GlobalSettings

@@ -1,3 +1,5 @@
+"""Update selection dialog: check for updates, pick release, and run installer."""
+
 from __future__ import annotations
 
 import gc

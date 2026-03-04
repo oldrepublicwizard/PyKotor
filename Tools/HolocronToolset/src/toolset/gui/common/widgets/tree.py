@@ -1,3 +1,5 @@
+"""Tree settings, TreeView with HTML delegate, and context menu/expansion helpers."""
+
 from __future__ import annotations
 
 import ast

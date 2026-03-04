@@ -1,3 +1,5 @@
+"""Walkmesh renderer: 2D/3D BWM faces and materials for the module designer."""
+
 from __future__ import annotations
 
 import math
@@ -20,7 +22,6 @@ from qtpy.QtGui import QColor, QCursor, QImage, QPainter, QPainterPath, QPalette
 from qtpy.QtWidgets import QApplication, QWidget
 
 from pykotor.resource.formats.bwm import BWM
-from pykotor.resource.formats.lyt import LYT
 from pykotor.resource.formats.tpc import TPCTextureFormat
 from pykotor.resource.generics.are import ARENorthAxis
 from pykotor.resource.generics.git import (
@@ -28,12 +29,15 @@ from pykotor.resource.generics.git import (
     GITCreature,
     GITDoor,
     GITEncounter,
-    GITEncounterSpawnPoint,
     GITPlaceable,
     GITSound,
     GITStore,
     GITTrigger,
     GITWaypoint,
+)
+from toolset.gui.common.marquee import (
+    MARQUEE_MOVE_THRESHOLD_PIXELS,
+    draw_marquee_rect,
 )
 from toolset.utils.misc import clamp
 from utility.common.geometry import Vector2, Vector3
@@ -43,10 +47,15 @@ if TYPE_CHECKING:
     from qtpy.QtGui import QFocusEvent, QKeyEvent, QMouseEvent, QPaintEvent, QWheelEvent
 
     from pykotor.resource.formats.bwm.bwm_data import BWMFace
+    from pykotor.resource.formats.lyt import LYT
     from pykotor.resource.formats.lyt.lyt_data import LYTRoom
     from pykotor.resource.formats.tpc.tpc_data import TPC, TPCMipmap
     from pykotor.resource.generics.are import ARE
-    from pykotor.resource.generics.git import GIT, GITInstance
+    from pykotor.resource.generics.git import (
+        GIT,
+        GITEncounterSpawnPoint,
+        GITInstance,
+    )
     from pykotor.resource.generics.pth import PTH
     from utility.common.geometry import SurfaceMaterial
 
@@ -144,6 +153,9 @@ class WalkmeshRenderer(QWidget):
     sig_mouse_pressed = Signal(object, object, object)  # screen coords, mouse, keys  # pyright: ignore[reportPrivateImportUsage]
     """Signal emitted when a mouse button is pressed on the widget."""
 
+    sig_marquee_select = Signal(object, object)  # (min_x, min_y, max_x, max_y) world rect, additive  # pyright: ignore[reportPrivateImportUsage]
+    """Emitted when marquee selection completes. Subscribers select items in the world rect."""
+
     sig_key_pressed = Signal(object, object)  # mouse keys  # pyright: ignore[reportPrivateImportUsage]
     sig_key_released = Signal(object, object)  # mouse keys  # pyright: ignore[reportPrivateImportUsage]
     sig_instance_hovered = Signal(object)  # instance  # pyright: ignore[reportPrivateImportUsage]
@@ -211,6 +223,17 @@ class WalkmeshRenderer(QWidget):
         self._pixmap_trigger: QPixmap = QPixmap(":/images/icons/k1/trigger.png")
         self._pixmap_encounter: QPixmap = QPixmap(":/images/icons/k1/encounter.png")
         self._pixmap_camera: QPixmap = QPixmap(":/images/icons/k1/camera.png")
+        self._instance_pixmaps: dict[type[GITInstance], QPixmap] = {
+            GITCamera: self._pixmap_camera,
+            GITCreature: self._pixmap_creature,
+            GITDoor: self._pixmap_door,
+            GITEncounter: self._pixmap_encounter,
+            GITPlaceable: self._pixmap_placeable,
+            GITTrigger: self._pixmap_trigger,
+            GITSound: self._pixmap_sound,
+            GITStore: self._pixmap_merchant,
+            GITWaypoint: self._pixmap_waypoint,
+        }
 
         self._instances_under_mouse: list[GITInstance] = []
         self._geom_points_under_mouse: list[GeomPoint] = []
@@ -220,6 +243,11 @@ class WalkmeshRenderer(QWidget):
         self.path_selection: WalkmeshSelection[Vector2] = WalkmeshSelection()
         self._path_node_size: float = 0.3
         self._path_edge_width: float = 0.2
+
+        # Marquee selection (same behavior as IndoorMapRenderer)
+        self._marquee_active: bool = False
+        self._marquee_start: Vector2 = Vector2.from_null()
+        self._marquee_end: Vector2 = Vector2.from_null()
 
         self._loop()
 
@@ -450,48 +478,44 @@ class WalkmeshRenderer(QWidget):
         return self._spawn_points_under_mouse
 
     def is_instance_visible(self, instance: GITInstance) -> bool | None:
-        retBool: bool | None = None
+        """Check if an instance type should be visible based on hide flags."""
         if isinstance(instance, GITCamera):
-            retBool = not self.hide_cameras
-        elif isinstance(instance, GITCreature):
-            retBool = not self.hide_creatures
-        elif isinstance(instance, GITDoor):
-            retBool = not self.hide_doors
-        elif isinstance(instance, GITEncounter):
-            retBool = not self.hide_encounters
-        elif isinstance(instance, GITPlaceable):
-            retBool = not self.hide_placeables
-        elif isinstance(instance, GITSound):
-            retBool = not self.hide_sounds
-        elif isinstance(instance, GITStore):
-            retBool = not self.hide_stores
-        elif isinstance(instance, GITTrigger):
-            retBool = not self.hide_triggers
-        elif isinstance(instance, GITWaypoint):
-            retBool = not self.hide_waypoints
-        return retBool
+            return not self.hide_cameras
+        if isinstance(instance, GITCreature):
+            return not self.hide_creatures
+        if isinstance(instance, GITDoor):
+            return not self.hide_doors
+        if isinstance(instance, GITEncounter):
+            return not self.hide_encounters
+        if isinstance(instance, GITPlaceable):
+            return not self.hide_placeables
+        if isinstance(instance, GITSound):
+            return not self.hide_sounds
+        if isinstance(instance, GITStore):
+            return not self.hide_stores
+        if isinstance(instance, GITTrigger):
+            return not self.hide_triggers
+        if isinstance(instance, GITWaypoint):
+            return not self.hide_waypoints
+
+        return None
 
     def instance_pixmap(self, instance: GITInstance) -> QPixmap:
-        retPixmap: QPixmap = QPixmap()
-        if isinstance(instance, GITCamera):
-            retPixmap = self._pixmap_camera
-        if isinstance(instance, GITCreature):
-            retPixmap = self._pixmap_creature
-        if isinstance(instance, GITDoor):
-            retPixmap = self._pixmap_door
-        if isinstance(instance, GITEncounter):
-            retPixmap = self._pixmap_encounter
-        if isinstance(instance, GITPlaceable):
-            retPixmap = self._pixmap_placeable
-        if isinstance(instance, GITTrigger):
-            retPixmap = self._pixmap_trigger
-        if isinstance(instance, GITSound):
-            retPixmap = self._pixmap_sound
-        if isinstance(instance, GITStore):
-            retPixmap = self._pixmap_merchant
-        if isinstance(instance, GITWaypoint):
-            retPixmap = self._pixmap_waypoint
-        return retPixmap
+        """Get the pixmap icon for an instance based on its type."""
+        for inst_type, pixmap in self._instance_pixmaps.items():
+            if isinstance(instance, inst_type):
+                return pixmap
+
+        return QPixmap()
+
+    def _should_collect_geom_points(self, instance: GITInstance, selected_instances: list[GITInstance]) -> bool:
+        return isinstance(instance, GITEncounter) or (isinstance(instance, GITTrigger) and instance in selected_instances)
+
+    def _current_palette(self) -> QPalette | None:
+        app = QApplication.instance()
+        if app is None or not isinstance(app, QApplication):
+            return None
+        return app.palette()
 
     def center_camera(self, *, fill: float = 1.0):
         self.camera.set_position((self._bbmin.x + self._bbmax.x) / 2, (self._bbmin.y + self._bbmax.y) / 2)
@@ -702,9 +726,8 @@ class WalkmeshRenderer(QWidget):
             painter.drawImage(targetRect, image_to_draw)
 
         # Get palette colors for edges
-        app = QApplication.instance()
-        if app is not None and isinstance(app, QApplication):
-            palette = app.palette()
+        palette = self._current_palette()
+        if palette is not None:
             edge_color = palette.color(QPalette.ColorRole.Mid)
             if not edge_color.isValid():
                 edge_color = palette.color(QPalette.ColorRole.Shadow)
@@ -727,9 +750,8 @@ class WalkmeshRenderer(QWidget):
             painter.drawPath(path)
 
         # Get palette colors for highlights
-        app = QApplication.instance()
-        if app is not None and isinstance(app, QApplication):
-            palette = app.palette()
+        palette = self._current_palette()
+        if palette is not None:
             from toolset.gui.common.palette_helpers import get_semantic_colors
 
             colors = get_semantic_colors()
@@ -797,9 +819,8 @@ class WalkmeshRenderer(QWidget):
 
                 # Draw room boundary - just draw the bounding rectangle for the room dimensions
                 # Walkmeshes are already in world space, no need to transform by room.position
-                app = QApplication.instance()
-                if app is not None and isinstance(app, QApplication):
-                    palette = app.palette()
+                palette = self._current_palette()
+                if palette is not None:
                     room_boundary_color = palette.color(QPalette.ColorRole.Link)
                     room_boundary_color.setAlpha(200)
                 else:
@@ -830,9 +851,8 @@ class WalkmeshRenderer(QWidget):
                 painter.resetTransform()
 
                 # Set up text rendering with palette colors
-                app = QApplication.instance()
-                if app is not None and isinstance(app, QApplication):
-                    palette = app.palette()
+                palette = self._current_palette()
+                if palette is not None:
                     text_color = palette.color(QPalette.ColorRole.WindowText)
                     bg_color = palette.color(QPalette.ColorRole.Window)
                     bg_color.setAlpha(180)
@@ -866,9 +886,8 @@ class WalkmeshRenderer(QWidget):
         painter.setOpacity(1.0)
         if self._pth is not None:
             # Get palette colors for path rendering
-            app = QApplication.instance()
-            if app is not None and isinstance(app, QApplication):
-                palette = app.palette()
+            palette = self._current_palette()
+            if palette is not None:
                 from toolset.gui.common.palette_helpers import get_semantic_colors
 
                 colors = get_semantic_colors()
@@ -909,54 +928,46 @@ class WalkmeshRenderer(QWidget):
         painter.setRenderHint(QPainter.RenderHint.SmoothPixmapTransform, True)
         lower_filter: str = self.instance_filter.lower()
         if self._git is not None:
-            for creature in [] if self.hide_creatures else self._git.creatures:
-                if creature.resref and lower_filter not in str(creature.resref).lower():
-                    continue
-                self._draw_image(painter, self._pixmap_creature, creature.position.x, creature.position.y, math.pi + self.camera.rotation(), 1 / 16)
+            icon_rotation = math.pi + self.camera.rotation()
+            icon_scale = 1 / 16
 
-            for door in [] if self.hide_doors else self._git.doors:
-                if door.resref and lower_filter not in str(door.resref).lower():
-                    continue
-                self._draw_image(painter, self._pixmap_door, door.position.x, door.position.y, math.pi + self.camera.rotation(), 1 / 16)
-
-            for placeable in [] if self.hide_placeables else self._git.placeables:
-                if placeable.resref and lower_filter not in str(placeable.resref).lower():
-                    continue
-                self._draw_image(painter, self._pixmap_placeable, placeable.position.x, placeable.position.y, math.pi + self.camera.rotation(), 1 / 16)
-
-            for merchant in [] if self.hide_stores else self._git.stores:
-                if merchant.resref and lower_filter not in str(merchant.resref).lower():
-                    continue
-                self._draw_image(painter, self._pixmap_merchant, merchant.position.x, merchant.position.y, math.pi + self.camera.rotation(), 1 / 16)
-
-            for waypoint in [] if self.hide_waypoints else self._git.waypoints:
-                if waypoint.resref and lower_filter not in str(waypoint.resref).lower():
-                    continue
-                self._draw_image(painter, self._pixmap_waypoint, waypoint.position.x, waypoint.position.y, math.pi + self.camera.rotation(), 1 / 16)
-
-            for sound in [] if self.hide_sounds else self._git.sounds:
-                if sound.resref and lower_filter not in str(sound.resref).lower():
-                    continue
-                self._draw_image(painter, self._pixmap_sound, sound.position.x, sound.position.y, math.pi + self.camera.rotation(), 1 / 16)
-
-            for encounter in [] if self.hide_encounters else self._git.encounters:
-                if encounter.resref and lower_filter not in str(encounter.resref).lower():
-                    continue
-                self._draw_image(painter, self._pixmap_encounter, encounter.position.x, encounter.position.y, math.pi + self.camera.rotation(), 1 / 16)
-
-            for trigger in [] if self.hide_triggers else self._git.triggers:
-                if trigger.resref and lower_filter not in str(trigger.resref).lower():
-                    continue
-                self._draw_image(painter, self._pixmap_trigger, trigger.position.x, trigger.position.y, math.pi + self.camera.rotation(), 1 / 16)
+            non_camera_groups = (
+                ([] if self.hide_creatures else self._git.creatures, self._pixmap_creature),
+                ([] if self.hide_doors else self._git.doors, self._pixmap_door),
+                ([] if self.hide_placeables else self._git.placeables, self._pixmap_placeable),
+                ([] if self.hide_stores else self._git.stores, self._pixmap_merchant),
+                ([] if self.hide_waypoints else self._git.waypoints, self._pixmap_waypoint),
+                ([] if self.hide_sounds else self._git.sounds, self._pixmap_sound),
+                ([] if self.hide_encounters else self._git.encounters, self._pixmap_encounter),
+                ([] if self.hide_triggers else self._git.triggers, self._pixmap_trigger),
+            )
+            for instances, pixmap in non_camera_groups:
+                for instance in instances:
+                    if instance.resref and lower_filter not in str(instance.resref).lower():
+                        continue
+                    self._draw_image(
+                        painter,
+                        pixmap,
+                        instance.position.x,
+                        instance.position.y,
+                        icon_rotation,
+                        icon_scale,
+                    )
 
             for camera in [] if self.hide_cameras else self._git.cameras:
-                self._draw_image(painter, self._pixmap_camera, camera.position.x, camera.position.y, math.pi + self.camera.rotation(), 1 / 16)
+                self._draw_image(
+                    painter,
+                    self._pixmap_camera,
+                    camera.position.x,
+                    camera.position.y,
+                    icon_rotation,
+                    icon_scale,
+                )
 
             # Draw encounter spawn points (if enabled)
             if not self.hide_spawn_points:
-                app = QApplication.instance()
-                if app is not None and isinstance(app, QApplication):
-                    palette = app.palette()
+                palette = self._current_palette()
+                if palette is not None:
                     spawn_color = palette.color(QPalette.ColorRole.Link)
                     spawn_color.setAlpha(180)
                     spawn_arrow_color = QColor(spawn_color)
@@ -981,9 +992,8 @@ class WalkmeshRenderer(QWidget):
                         painter.setPen(Qt.PenStyle.NoPen)
 
         # Get palette colors for highlights
-        app = QApplication.instance()
-        if app is not None and isinstance(app, QApplication):
-            palette = app.palette()
+        palette = self._current_palette()
+        if palette is not None:
             from toolset.gui.common.palette_helpers import get_semantic_colors
 
             colors = get_semantic_colors()
@@ -1099,6 +1109,36 @@ class WalkmeshRenderer(QWidget):
                 painter.setPen(QPen(QColor(255, 255, 255, 255), 0.15))
                 painter.drawLine(QPointF(sp.x, sp.y), QPointF(sp.x + dx, sp.y + dy))
 
+        # Marquee selection (screen space, after transform reset)
+        if self._marquee_active:
+            painter.save()
+            painter.resetTransform()
+            draw_marquee_rect(painter, self._marquee_start, self._marquee_end)
+            painter.restore()
+
+    def start_marquee(self, screen_pos: Vector2) -> None:
+        """Start marquee selection. Call on left-click on empty space."""
+        self._marquee_active = True
+        self._marquee_start = screen_pos
+        self._marquee_end = screen_pos
+
+    def _end_marquee_and_emit(self, additive: bool) -> None:
+        """End marquee, compute world rect, and emit sig_marquee_select if marquee moved."""
+        if not self._marquee_active:
+            return
+        self._marquee_active = False
+        if self._marquee_start.distance(self._marquee_end) <= MARQUEE_MOVE_THRESHOLD_PIXELS:
+            self.update()
+            return
+        start_world = self.to_world_coords(self._marquee_start.x, self._marquee_start.y)
+        end_world = self.to_world_coords(self._marquee_end.x, self._marquee_end.y)
+        min_x = min(start_world.x, end_world.x)
+        max_x = max(start_world.x, end_world.x)
+        min_y = min(start_world.y, end_world.y)
+        max_y = max(start_world.y, end_world.y)
+        self.sig_marquee_select.emit((min_x, min_y, max_x, max_y), additive)
+        self.update()
+
     def wheelEvent(self, e: QWheelEvent):  # pyright: ignore[reportIncompatibleMethodOverride]
         self.sig_mouse_scrolled.emit(Vector2(e.angleDelta().x(), e.angleDelta().y()), self._mouse_down, self._keys_down)
 
@@ -1110,6 +1150,14 @@ class WalkmeshRenderer(QWidget):
         self.sig_mouse_moved.emit(coords, coords_delta, self._mouse_down, self._keys_down)
         self._mouse_prev = coords  # Always assign mouse_prev after emitting: allows signal handlers (e.g. ModuleDesigner, GITEditor) to handle cursor lock.
 
+        if self._marquee_active:
+            if Qt.MouseButton.LeftButton not in self._mouse_down:
+                self._end_marquee_and_emit(additive=False)
+                return
+            self._marquee_end = coords
+            self.update()
+            return
+
         self._instances_under_mouse = []
         self._geom_points_under_mouse = []
         self._spawn_points_under_mouse = []
@@ -1119,13 +1167,14 @@ class WalkmeshRenderer(QWidget):
 
         if self._git is not None:
             instances: list[GITInstance] = self._git.instances()
+            selected_instances = self.instance_selection.all()
             for instance in instances:
                 position = Vector2(instance.position.x, instance.position.y)
                 if position.distance(world) <= 1 and self.is_instance_visible(instance):
                     self.sig_instance_hovered.emit(instance)
                     self._instances_under_mouse.append(instance)
 
-                if isinstance(instance, GITEncounter) or (isinstance(instance, GITTrigger) and instance in self.instance_selection.all()):
+                if self._should_collect_geom_points(instance, selected_instances):
                     for point in instance.geometry:
                         pworld: Vector2 = Vector2.from_vector3(instance.position + point)
                         if pworld.distance(world) <= 0.5:  # noqa: PLR2004
@@ -1143,6 +1192,9 @@ class WalkmeshRenderer(QWidget):
                     self._path_nodes_under_mouse.append(point)
 
     def focusOutEvent(self, e: QFocusEvent):  # pyright: ignore[reportIncompatibleMethodOverride]
+        if self._marquee_active:
+            self._marquee_active = False
+            self.update()
         self._mouse_down.clear()
         self._keys_down.clear()
         super().focusOutEvent(e)
@@ -1171,6 +1223,9 @@ class WalkmeshRenderer(QWidget):
             if qtpy.QT5
             else Vector2(e.position().toPoint().x(), e.position().toPoint().y())
         )
+        if self._marquee_active and button == Qt.MouseButton.LeftButton:
+            additive = Qt.Key.Key_Shift in self._keys_down
+            self._end_marquee_and_emit(additive=additive)
         self.sig_mouse_released.emit(coords, self._mouse_down, self._keys_down)
 
     def keyPressEvent(self, e: QKeyEvent):  # pyright: ignore[reportIncompatibleMethodOverride]
@@ -1178,7 +1233,9 @@ class WalkmeshRenderer(QWidget):
         if e is None:
             return
         key = e.key()
-        if e is None:
+        if key == Qt.Key.Key_Escape and self._marquee_active:
+            self._marquee_active = False
+            self.update()
             return
         self._keys_down.add(key)
         if self.underMouse():

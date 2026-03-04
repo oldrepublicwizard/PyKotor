@@ -1,3 +1,5 @@
+"""Editor factory and base: open/save/close, recent files, and resource loading for all editors."""
+
 from __future__ import annotations
 
 import tempfile
@@ -16,7 +18,6 @@ from qtpy.QtMultimedia import QMediaPlayer
 from qtpy.QtWidgets import (
     QApplication,
     QFileDialog,
-    QLineEdit,
     QMainWindow,
     QMenu,
     QMessageBox,
@@ -69,7 +70,11 @@ if TYPE_CHECKING:
     from PyQt6.QtMultimedia import QMediaPlayer as PyQt6MediaPlayer
     from PySide6.QtMultimedia import QMediaPlayer as PySide6MediaPlayer
     from qtpy.QtGui import QFocusEvent, QMouseEvent, QShowEvent
-    from qtpy.QtWidgets import QAction, QMenuBar  # pyright: ignore[reportPrivateImportUsage]
+    from qtpy.QtWidgets import (  # pyright: ignore[reportPrivateImportUsage]
+        QAction,
+        QLineEdit,
+        QMenuBar,
+    )
 
     from pykotor.common.language import LocalizedString
     from pykotor.resource.formats.rim.rim_data import RIM
@@ -403,28 +408,34 @@ class Editor(QMainWindow):
         menu: QMenu | None = cast("Optional[QMenu]", menuActions[0].menu())
         if menu is None:
             raise TypeError(f"self.menuBar().actions()[0].menu() returned a {type(menu).__name__} object, expected QMenu.")
+
+        # Map action text to handler methods
+        action_handlers = {
+            "New": self.new,
+            "Open": self.open,
+            "Save": self.save,
+            "Save As": self.save_as,
+            "Revert": self.revert,
+            "Exit": lambda *_: self.close(),
+        }
         for action in menu.actions():
-            if action.text() == "New":  # sourcery skip: extract-method
-                action.triggered.connect(self.new)
-            if action.text() == "Open":
-                action.triggered.connect(self.open)
-            if action.text() == "Save":
-                action.triggered.connect(self.save)
-            if action.text() == "Save As":
-                action.triggered.connect(self.save_as)
-            if action.text() == "Revert":
-                action.triggered.connect(self.revert)
+            handler = action_handlers.get(action.text())
+            if handler is not None:
+                action.triggered.connect(handler)
             if action.text() == "Revert":
                 action.setEnabled(False)
-            if action.text() == "Exit":
-                # QAction.triggered emits a bool; QWidget.close takes no args.
-                action.triggered.connect(lambda *_: self.close())
-        QShortcut("Ctrl+N", self).activated.connect(self.new)
-        QShortcut("Ctrl+O", self).activated.connect(self.open)
-        QShortcut("Ctrl+S", self).activated.connect(self.save)
-        QShortcut("Ctrl+Shift+S", self).activated.connect(self.save_as)
-        QShortcut("Ctrl+R", self).activated.connect(self.revert)
-        QShortcut("Ctrl+Q", self).activated.connect(self.exit)
+
+        # Map shortcuts to handlers
+        shortcut_handlers = {
+            "Ctrl+N": self.new,
+            "Ctrl+O": self.open,
+            "Ctrl+S": self.save,
+            "Ctrl+Shift+S": self.save_as,
+            "Ctrl+R": self.revert,
+            "Ctrl+Q": self.exit,
+        }
+        for shortcut, handler in shortcut_handlers.items():
+            QShortcut(shortcut, self).activated.connect(handler)
 
     def _setup_menus(self):
         """Alias for _setupMenus() to match snake_case naming convention."""
@@ -751,7 +762,7 @@ class Editor(QMainWindow):
         rim: RIM = read_rim(self._filepath)
 
         # MDL is a special case - we need to save the MDX file with the MDL file.
-        if self._restype is ResourceType.MDL:
+        if self._restype == ResourceType.MDL:
             rim.set_data(self._resname, ResourceType.MDX, data_ext)
 
         rim.set_data(self._resname, self._restype, data)
@@ -784,7 +795,7 @@ class Editor(QMainWindow):
 
         # At this point, c_filepath points to the physical ERF/RIM on disk
         # and c_parent_filepath points to the physical folder containing the file.
-        erf_or_rim: ERF | RIM = read_rim(c_filepath) if ResourceType.from_extension(c_parent_filepath.suffix) is ResourceType.RIM else read_erf(c_filepath)
+        erf_or_rim: ERF | RIM = read_rim(c_filepath) if ResourceType.from_extension(c_parent_filepath.suffix) == ResourceType.RIM else read_erf(c_filepath)
         nested_capsules: list[tuple[PurePath, ERF | RIM]] = [(c_filepath, erf_or_rim)]
         for capsule_path in reversed(nested_paths[:-1]):
             nested_erf_or_rim_data = erf_or_rim.get(capsule_path.stem, ResourceType.from_extension(capsule_path.suffix))
@@ -792,7 +803,7 @@ class Editor(QMainWindow):
                 msg = f"You must save the ERFEditor for '{capsule_path.relative_to(c_parent_filepath)}' to before modifying its nested resources. Do so and try again."
                 raise ValueError(msg)
 
-            erf_or_rim = read_rim(nested_erf_or_rim_data) if ResourceType.from_extension(capsule_path.suffix) is ResourceType.RIM else read_erf(nested_erf_or_rim_data)
+            erf_or_rim = read_rim(nested_erf_or_rim_data) if ResourceType.from_extension(capsule_path.suffix) == ResourceType.RIM else read_erf(nested_erf_or_rim_data)
             nested_capsules.append((capsule_path, erf_or_rim))
 
         # Let's now save each erf/rim to its parent.
@@ -853,7 +864,7 @@ class Editor(QMainWindow):
         erf.erf_type = erftype
 
         # MDL is a special case - we need to save the MDX file with the MDL file.
-        if self._restype is ResourceType.MDL:
+        if self._restype == ResourceType.MDL:
             assert data_ext is not None, assert_with_variable_trace(data_ext is not None)
             erf.set_data(self._resname, ResourceType.MDX, data_ext)
 
@@ -873,7 +884,7 @@ class Editor(QMainWindow):
             file.write(data)
 
         # MDL is a special case - we need to save the MDX file with the MDL file.
-        if self._restype is ResourceType.MDL:
+        if self._restype == ResourceType.MDL:
             with c_filepath.with_suffix(".mdx").open("wb") as file:
                 file.write(data_ext)
         self.savedFile.emit(self._filepath, self._resname, self._restype, data)

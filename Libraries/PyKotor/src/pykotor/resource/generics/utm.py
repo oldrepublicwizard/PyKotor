@@ -1,3 +1,5 @@
+"""UTM (merchant) generic: GFF-based merchant templates and inventory/pricing."""
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING

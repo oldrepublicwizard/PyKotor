@@ -1,3 +1,5 @@
+"""Persisted DLG editor options (tree/list layout, etc.) via QSettings."""
+
 from __future__ import annotations
 
 from typing import Any

@@ -14,6 +14,10 @@ if TYPE_CHECKING:
     from pathlib import Path
 
 
+K1_ALIASES = ("k1", "kotor1", "kotor 1")
+K2_ALIASES = ("k2", "kotor2", "kotor 2", "tsl")
+
+
 def parse_game_argument(game_arg: str | None) -> Game | None:
     """Parse game argument string to Game enum.
 
@@ -29,9 +33,9 @@ def parse_game_argument(game_arg: str | None) -> Game | None:
         return None
 
     game_lower = game_arg.lower().strip()
-    if game_lower in ("k1", "kotor1", "kotor 1"):
+    if game_lower in K1_ALIASES:
         return Game.K1
-    if game_lower in ("k2", "kotor2", "kotor 2", "tsl"):
+    if game_lower in K2_ALIASES:
         return Game.K2
 
     return None
@@ -53,3 +57,11 @@ def determine_game_from_installation(installation_path: Path) -> Game | None:
         return installation.game()
     except Exception:
         return None
+
+
+def resolve_game_argument(game_arg: str | None, installation_path: Path) -> Game | None:
+    """Resolve game from explicit argument first, then by probing installation."""
+    explicit = parse_game_argument(game_arg)
+    if explicit is not None:
+        return explicit
+    return determine_game_from_installation(installation_path)

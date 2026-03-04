@@ -1,3 +1,5 @@
+"""Encoding utilities: decode bytes with language/encoding fallbacks and KotOR charset helpers."""
+
 from __future__ import annotations
 
 import codecs

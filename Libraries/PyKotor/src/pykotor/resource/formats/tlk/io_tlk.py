@@ -1,3 +1,5 @@
+"""Binary TLK (talk table) read/write: string entries, sound refs, and flags."""
+
 from __future__ import annotations
 
 import struct

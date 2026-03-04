@@ -1,3 +1,5 @@
+"""LIP package: lip sync data, keyframes, and binary/XML I/O."""
+
 from __future__ import annotations
 
 from pykotor.resource.formats.lip.lip_data import (

@@ -12,10 +12,13 @@ from qtpy.QtWidgets import (
     QFileDialog,
     QMessageBox,
     QTreeWidgetItem,
-    QWidget,
 )
 
 if TYPE_CHECKING:
+    from qtpy.QtWidgets import (
+        QWidget,
+    )
+
     from toolset.data.installation import HTInstallation
 
 
@@ -51,8 +54,8 @@ class TSLPatchDataEditor(QDialog):
 
     def _setup_ui(self):
         """Set up the user interface."""
-        from toolset.uic.qtpy.dialogs.tslpatchdata_editor import Ui_Dialog
         from toolset.gui.common.localization import translate as tr
+        from toolset.uic.qtpy.dialogs.tslpatchdata_editor import Ui_Dialog
 
         self.ui = Ui_Dialog()
         self.ui.setupUi(self)

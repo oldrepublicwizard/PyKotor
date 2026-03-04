@@ -23,7 +23,7 @@ from qtpy.QtWidgets import (
     QPushButton,
 )
 
-from toolset.blender import BlenderInfo, detect_blender, get_blender_settings
+from toolset.blender import detect_blender, get_blender_settings
 from toolset.blender.detection import (
     find_all_blender_installations,
     install_kotorblender,
@@ -32,6 +32,8 @@ from toolset.blender.detection import (
 if TYPE_CHECKING:
     from qtpy.QtWidgets import QLayout, QWidget
     from typing_extensions import Literal
+
+    from toolset.blender import BlenderInfo
 
 
 def _get_semantic_colors() -> dict[str, str]:

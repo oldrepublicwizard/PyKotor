@@ -1,3 +1,5 @@
+"""IFO (module info) generic: GFF-based module metadata and entry points."""
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING

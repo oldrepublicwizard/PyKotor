@@ -1,3 +1,5 @@
+"""NSS (script) editor: source view, compile/decompile, and installation integration."""
+
 from __future__ import annotations
 
 import io
@@ -81,8 +83,7 @@ if TYPE_CHECKING:
     from qtpy.QtCore import (
         QAbstractItemModel,
         QCloseEvent,  # pyright: ignore[reportPrivateImportUsage]
-        QModelIndex,
-        QPoint,  # pyright: ignore[reportPrivateImportUsage, reportAttributeAccessIssue]
+        QModelIndex,  # pyright: ignore[reportPrivateImportUsage, reportAttributeAccessIssue]
     )
     from qtpy.QtGui import (
         QAction,  # pyright: ignore[reportPrivateImportUsage]
@@ -95,6 +96,7 @@ if TYPE_CHECKING:
     )
 
     from pykotor.common.script import ScriptConstant, ScriptFunction, ScriptParam  # pyright: ignore[reportPrivateImportUsage]
+    from pykotor.tools.reference_finder import ReferenceSearchResult
     from toolset.data.installation import HTInstallation  # pyright: ignore[reportPrivateImportUsage]
     from toolset.gui.common.language_server_client import LanguageServerClient
 
@@ -240,6 +242,22 @@ class NSSEditor(Editor):
         self.ui.removeBookmarkButton.clicked.connect(self.delete_bookmark)
         self.load_bookmarks()
 
+    def _get_settings(self) -> QSettings:
+        return QSettings(get_qsettings_organization("HolocronToolsetV4"), "NSSEditor")
+
+    def _bookmark_settings_key(self) -> str:
+        return f"nss_editor/bookmarks/{self._resname}" if self._resname else "nss_editor/bookmarks/untitled"
+
+    def _load_json_list_setting(self, key: str) -> list[Any]:
+        raw_value = self._get_settings().value(key, "[]")
+        if isinstance(raw_value, str):
+            try:
+                parsed = json.loads(raw_value)
+            except json.JSONDecodeError:
+                return []
+            return parsed if isinstance(parsed, list) else []
+        return raw_value if isinstance(raw_value, list) else []
+
     def add_bookmark(self):
         cursor = self.ui.codeEdit.textCursor()
         line_number = cursor.blockNumber() + 1
@@ -305,25 +323,13 @@ class NSSEditor(Editor):
                     "description": item.text(1),
                 }
             )
-        settings = QSettings(get_qsettings_organization("HolocronToolsetV4"), "NSSEditor")
-        # Save bookmarks per-file for better persistence
-        file_key = f"nss_editor/bookmarks/{self._resname}" if self._resname else "nss_editor/bookmarks/untitled"
-        settings.setValue(file_key, json.dumps(bookmarks))
+        settings = self._get_settings()
+        settings.setValue(self._bookmark_settings_key(), json.dumps(bookmarks))
         settings.sync()  # Ensure settings are persisted immediately
 
     def load_bookmarks(self):
         """Load bookmarks from QSettings, keyed by file path."""
-        settings = QSettings(get_qsettings_organization("HolocronToolsetV4"), "NSSEditor")
-        # Load bookmarks per-file
-        file_key = f"nss_editor/bookmarks/{self._resname}" if self._resname else "nss_editor/bookmarks/untitled"
-        bookmarks_json = settings.value(file_key, "[]")
-        if isinstance(bookmarks_json, str):
-            try:
-                bookmarks = json.loads(bookmarks_json)
-            except json.JSONDecodeError:
-                bookmarks = []
-        else:
-            bookmarks = bookmarks_json if isinstance(bookmarks_json, list) else []
+        bookmarks = self._load_json_list_setting(self._bookmark_settings_key())
 
         self.ui.bookmarkTree.clear()
         for bookmark in bookmarks:
@@ -335,15 +341,7 @@ class NSSEditor(Editor):
 
     def load_snippets(self):
         """Load snippets from QSettings into the list widget."""
-        settings = QSettings(get_qsettings_organization("HolocronToolsetV4"), "NSSEditor")
-        snippets_json = settings.value("nss_editor/snippets", "[]")
-        if isinstance(snippets_json, str):
-            try:
-                snippets = json.loads(snippets_json)
-            except json.JSONDecodeError:
-                snippets = []
-        else:
-            snippets = snippets_json if isinstance(snippets_json, list) else []
+        snippets = self._load_json_list_setting("nss_editor/snippets")
 
         self.ui.snippetList.clear()
         for snippet in snippets:
@@ -364,8 +362,8 @@ class NSSEditor(Editor):
                 name = item.text() or ""
                 content = item.data(Qt.ItemDataRole.UserRole) or ""
                 snippets.append({"name": name, "content": content})
-        settings = QSettings(get_qsettings_organization("HolocronToolsetV4"), "NSSEditor")
-        settings.setValue("nss_editor/snippets", json.dumps(snippets))
+            settings = self._get_settings()
+            settings.setValue("nss_editor/snippets", json.dumps(snippets))
 
     def on_add_snippet(self):
         name, ok = QInputDialog.getText(self, "Add Snippet", "Enter snippet name:")
@@ -416,13 +414,6 @@ class NSSEditor(Editor):
         self.ui.snippetReloadButton.clicked.connect(self.load_snippets)
         self.ui.snippetSearchEdit.textChanged.connect(self._filter_snippets)
         self.load_snippets()
-
-        # Bookmarks
-        self.ui.bookmarkTree.setHeaderLabels(["Line", "Description"])
-        self.ui.bookmarkTree.itemDoubleClicked.connect(self._goto_bookmark)
-        self.ui.addBookmarkButton.clicked.connect(self.add_bookmark)
-        self.ui.removeBookmarkButton.clicked.connect(self.delete_bookmark)
-        self.load_bookmarks()
 
         # Connect signals for the outline view
         self.ui.outlineView.itemClicked.connect(self.ui.codeEdit.on_outline_item_clicked)
@@ -483,7 +474,6 @@ class NSSEditor(Editor):
 
         self.ui.codeEdit.setMouseTracking(True)
         self.ui.codeEdit.mouseMoveEvent = self._show_hover_documentation  # type: ignore[assignment]
-        # NOTE: _update_outline is already connected above, don't connect twice!
 
         # Use the existing outputEdit widget from UI file with proper encoding
         self.output_text_edit = self.ui.outputEdit
@@ -532,8 +522,7 @@ class NSSEditor(Editor):
         max_lines = document.blockCount()
         items_to_remove = []
 
-        for i in range(self.ui.bookmarkTree.topLevelItemCount()):
-            item = self.ui.bookmarkTree.topLevelItem(i)
+        for i, item in self._iter_bookmark_items():
             if item is None:
                 continue
             line_number = item.data(0, Qt.ItemDataRole.UserRole)
@@ -548,16 +537,23 @@ class NSSEditor(Editor):
             self._save_bookmarks()
         self._update_bookmark_visualization()
 
+    def _iter_bookmark_items(self):
+        for i in range(self.ui.bookmarkTree.topLevelItemCount()):
+            yield i, self.ui.bookmarkTree.topLevelItem(i)
+
+    def _bookmark_lines(self) -> list[int]:
+        lines: list[int] = []
+        for _index, item in self._iter_bookmark_items():
+            if item is None:
+                continue
+            line = item.data(0, Qt.ItemDataRole.UserRole)
+            if isinstance(line, int):
+                lines.append(line)
+        return lines
+
     def _update_bookmark_visualization(self):
         """Update bookmark visualization in the gutter."""
-        bookmark_lines = set()
-        for i in range(self.ui.bookmarkTree.topLevelItemCount()):
-            item = self.ui.bookmarkTree.topLevelItem(i)
-            if item:
-                line = item.data(0, Qt.ItemDataRole.UserRole)
-                if isinstance(line, int):
-                    bookmark_lines.add(line)
-        self.ui.codeEdit.set_bookmark_lines(bookmark_lines)
+        self.ui.codeEdit.set_bookmark_lines(set(self._bookmark_lines()))
 
     def _setup_debug_widgets(self):
         """Set up debug UI widgets (variables, call stack, watch)."""
@@ -979,6 +975,14 @@ class NSSEditor(Editor):
         menu: QMenu | None = self.ui.codeEdit.createStandardContextMenu()
         assert menu is not None, "Menu should not be None"
 
+        def add_action(target_menu: QMenu, text: str, callback: Callable[..., Any], shortcut: str | None = None) -> QAction:
+            action = target_menu.addAction(text)
+            assert action is not None, f"{text} action should not be None"
+            if shortcut:
+                action.setShortcut(QKeySequence(shortcut))
+            action.triggered.connect(callback)
+            return action
+
         # Get word under cursor for context-aware actions
         cursor: QTextCursor = self.ui.codeEdit.cursorForPosition(pos)
         cursor.select(QTextCursor.SelectionType.WordUnderCursor)
@@ -987,86 +991,41 @@ class NSSEditor(Editor):
         # Navigation section
         menu.addSeparator()
         if word_under_cursor and word_under_cursor.strip():
-            action_go_to_definition: QAction | None = menu.addAction("Go to Definition")
-            assert action_go_to_definition is not None, "Go to definition action should not be None"
-            action_go_to_definition.setShortcut(QKeySequence("F12"))
-            action_go_to_definition.triggered.connect(self.go_to_definition)
-
-            action_find_all_refs: QAction | None = menu.addAction("Find All References")
-            assert action_find_all_refs is not None, "Find all references action should not be None"
-            action_find_all_refs.setShortcut(QKeySequence("Shift+F12"))
-            action_find_all_refs.triggered.connect(lambda: self._find_all_references(word_under_cursor))
+            add_action(menu, "Go to Definition", self.go_to_definition, "F12")
+            add_action(menu, "Find All References", lambda: self._find_all_references(word_under_cursor), "Shift+F12")
 
             # Add "Find References in Installation" action
             if hasattr(self, "_installation") and self._installation is not None and word_under_cursor:
-                action_find_installation_refs: QAction | None = menu.addAction("Find References in Installation...")
-                assert action_find_installation_refs is not None, "Find references in installation action should not be None"
-                action_find_installation_refs.triggered.connect(lambda checked=False, script_name=word_under_cursor: self._find_script_references_in_installation(script_name))
+                add_action(menu, "Find References in Installation...", lambda checked=False, script_name=word_under_cursor: self._find_script_references_in_installation(script_name))
 
-        action_go_to_line: QAction | None = menu.addAction("Go to Line...")
-        assert action_go_to_line is not None, "Go to line action should not be None"
-        action_go_to_line.setShortcut(QKeySequence("Ctrl+G"))
-        action_go_to_line.triggered.connect(self.ui.codeEdit.go_to_line)
+        add_action(menu, "Go to Line...", self.ui.codeEdit.go_to_line, "Ctrl+G")
         menu.addSeparator()
 
         # Editing section
-        action_cut: QAction | None = menu.addAction("Cut")
-        assert action_cut is not None, "Cut action should not be None"
-        action_cut.setShortcut(QKeySequence("Ctrl+X"))
-        action_cut.triggered.connect(self.ui.codeEdit.cut)
-
-        action_copy: QAction | None = menu.addAction("Copy")
-        assert action_copy is not None, "Copy action should not be None"
-        action_copy.setShortcut(QKeySequence("Ctrl+C"))
-        action_copy.triggered.connect(self.ui.codeEdit.copy)
-
-        action_paste: QAction | None = menu.addAction("Paste")
-        assert action_paste is not None, "Paste action should not be None"
-        action_paste.setShortcut(QKeySequence("Ctrl+V"))
-        action_paste.triggered.connect(self.ui.codeEdit.paste)
+        add_action(menu, "Cut", self.ui.codeEdit.cut, "Ctrl+X")
+        add_action(menu, "Copy", self.ui.codeEdit.copy, "Ctrl+C")
+        add_action(menu, "Paste", self.ui.codeEdit.paste, "Ctrl+V")
 
         menu.addSeparator()
 
-        action_duplicate_line: QAction | None = menu.addAction("Duplicate Line")
-        assert action_duplicate_line is not None, "Duplicate line action should not be None"
-        action_duplicate_line.setShortcut(QKeySequence("Ctrl+D"))
-        action_duplicate_line.triggered.connect(self.ui.codeEdit.duplicate_line)
-
-        action_delete_line: QAction | None = menu.addAction("Delete Line")
-        assert action_delete_line is not None, "Delete line action should not be None"
-        action_delete_line.setShortcut(QKeySequence("Ctrl+Shift+K"))
-        action_delete_line.triggered.connect(self._delete_line)
+        add_action(menu, "Duplicate Line", self.ui.codeEdit.duplicate_line, "Ctrl+D")
+        add_action(menu, "Delete Line", self._delete_line, "Ctrl+Shift+K")
 
         # Line Movement
         move_line_menu: QMenu | None = menu.addMenu("Move Line")
         assert move_line_menu is not None, "Move line menu should not be None"
-        action_move_line_up: QAction | None = move_line_menu.addAction("Move Line Up")
-        assert action_move_line_up is not None, "Move line up action should not be None"
-        action_move_line_up.setShortcut(QKeySequence("Alt+Up"))
-        action_move_line_up.triggered.connect(lambda: self.ui.codeEdit.move_line_up_or_down("up"))
-        action_move_line_down: QAction | None = move_line_menu.addAction("Move Line Down")
-        assert action_move_line_down is not None, "Move line down action should not be None"
-        action_move_line_down.setShortcut(QKeySequence("Alt+Down"))
-        action_move_line_down.triggered.connect(lambda: self.ui.codeEdit.move_line_up_or_down("down"))
+        add_action(move_line_menu, "Move Line Up", lambda: self.ui.codeEdit.move_line_up_or_down("up"), "Alt+Up")
+        add_action(move_line_menu, "Move Line Down", lambda: self.ui.codeEdit.move_line_up_or_down("down"), "Alt+Down")
 
         menu.addSeparator()
 
         # Code actions
-        action_toggle_comment: QAction | None = menu.addAction("Toggle Line Comment")
-        assert action_toggle_comment is not None, "Toggle line comment action should not be None"
-        action_toggle_comment.setShortcut(QKeySequence("Ctrl+/"))
-        action_toggle_comment.triggered.connect(self.ui.codeEdit.toggle_comment)
+        add_action(menu, "Toggle Line Comment", self.ui.codeEdit.toggle_comment, "Ctrl+/")
 
         indent_menu: QMenu | None = menu.addMenu("Indentation")
         assert indent_menu is not None, "Indentation menu should not be None"
-        action_indent: QAction | None = indent_menu.addAction("Indent Line")
-        assert action_indent is not None, "Indent line action should not be None"
-        action_indent.setShortcut(QKeySequence("Ctrl+]"))
-        action_indent.triggered.connect(self._indent_selection)
-        action_unindent: QAction | None = indent_menu.addAction("Outdent Line")
-        assert action_unindent is not None, "Outdent line action should not be None"
-        action_unindent.setShortcut(QKeySequence("Ctrl+["))
-        action_unindent.triggered.connect(self._unindent_selection)
+        add_action(indent_menu, "Indent Line", self._indent_selection, "Ctrl+]")
+        add_action(indent_menu, "Outdent Line", self._unindent_selection, "Ctrl+[")
 
         menu.addSeparator()
 
@@ -1075,25 +1034,12 @@ class NSSEditor(Editor):
         has_bookmark = self._has_bookmark_at_line(current_line)
 
         if has_bookmark:
-            action_remove_bookmark: QAction | None = menu.addAction("Remove Bookmark")
-            assert action_remove_bookmark is not None, "Remove bookmark action should not be None"
-            action_remove_bookmark.setShortcut(QKeySequence("Ctrl+K, Ctrl+B"))
-            action_remove_bookmark.triggered.connect(lambda: self._remove_bookmark_at_line(current_line))
+            add_action(menu, "Remove Bookmark", lambda: self._remove_bookmark_at_line(current_line), "Ctrl+K, Ctrl+B")
         else:
-            action_add_bookmark: QAction | None = menu.addAction("Toggle Bookmark")
-            assert action_add_bookmark is not None, "Toggle bookmark action should not be None"
-            action_add_bookmark.setShortcut(QKeySequence("Ctrl+K, Ctrl+B"))
-            action_add_bookmark.triggered.connect(self.add_bookmark)
+            add_action(menu, "Toggle Bookmark", self.add_bookmark, "Ctrl+K, Ctrl+B")
 
-        action_next_bookmark: QAction | None = menu.addAction("Next Bookmark")
-        assert action_next_bookmark is not None, "Next bookmark action should not be None"
-        action_next_bookmark.setShortcut(QKeySequence("Ctrl+K, Ctrl+N"))
-        action_next_bookmark.triggered.connect(self._goto_next_bookmark)
-
-        action_prev_bookmark: QAction | None = menu.addAction("Previous Bookmark")
-        assert action_prev_bookmark is not None, "Previous bookmark action should not be None"
-        action_prev_bookmark.setShortcut(QKeySequence("Ctrl+K, Ctrl+P"))
-        action_prev_bookmark.triggered.connect(self._goto_previous_bookmark)
+        add_action(menu, "Next Bookmark", self._goto_next_bookmark, "Ctrl+K, Ctrl+N")
+        add_action(menu, "Previous Bookmark", self._goto_previous_bookmark, "Ctrl+K, Ctrl+P")
 
         # Snippets
         menu.addSeparator()
@@ -1116,36 +1062,22 @@ class NSSEditor(Editor):
         menu.addSeparator()
         insert_menu: QMenu | None = menu.addMenu("Insert")
         assert insert_menu is not None, "Insert menu should not be None"
-        action_insert_constant: QAction | None = insert_menu.addAction("Insert Constant...")
-        assert action_insert_constant is not None, "Insert constant action should not be None"
-        action_insert_constant.setShortcut(QKeySequence("Ctrl+Shift+I"))
-        action_insert_constant.triggered.connect(self.insert_selected_constant)
-        action_insert_function: QAction | None = insert_menu.addAction("Insert Function...")
-        assert action_insert_function is not None, "Insert function action should not be None"
-        action_insert_function.setShortcut(QKeySequence("Ctrl+Shift+F"))
-        action_insert_function.triggered.connect(self.insert_selected_function)
+        add_action(insert_menu, "Insert Constant...", self.insert_selected_constant, "Ctrl+Shift+I")
+        add_action(insert_menu, "Insert Function...", self.insert_selected_function, "Ctrl+Shift+F")
 
         # Auto-complete
         menu.addSeparator()
-        action_show_auto_complete_menu: QAction | None = menu.addAction("Trigger Suggest")
-        assert action_show_auto_complete_menu is not None, "Trigger suggest action should not be None"
-        action_show_auto_complete_menu.setShortcut(QKeySequence("Ctrl+Space"))
-        action_show_auto_complete_menu.triggered.connect(self.ui.codeEdit.show_auto_complete_menu)
+        add_action(menu, "Trigger Suggest", self.ui.codeEdit.show_auto_complete_menu, "Ctrl+Space")
 
         menu.exec(self.ui.codeEdit.mapToGlobal(pos))
 
     def _has_bookmark_at_line(self, line_number: int) -> bool:
         """Check if a bookmark exists at the given line."""
-        for i in range(self.ui.bookmarkTree.topLevelItemCount()):
-            item = self.ui.bookmarkTree.topLevelItem(i)
-            if item and item.data(0, Qt.ItemDataRole.UserRole) == line_number:
-                return True
-        return False
+        return line_number in self._bookmark_lines()
 
     def _remove_bookmark_at_line(self, line_number: int):
         """Remove bookmark at the given line."""
-        for i in range(self.ui.bookmarkTree.topLevelItemCount()):
-            item = self.ui.bookmarkTree.topLevelItem(i)
+        for i, item in self._iter_bookmark_items():
             if item and item.data(0, Qt.ItemDataRole.UserRole) == line_number:
                 self.ui.bookmarkTree.takeTopLevelItem(i)
                 self._save_bookmarks()
@@ -1156,49 +1088,21 @@ class NSSEditor(Editor):
         """Go to next bookmark after current line."""
         cursor = self.ui.codeEdit.textCursor()
         current_line = cursor.blockNumber() + 1
-
-        bookmarks = []
-        for i in range(self.ui.bookmarkTree.topLevelItemCount()):
-            item = self.ui.bookmarkTree.topLevelItem(i)
-            if item:
-                line = item.data(0, Qt.ItemDataRole.UserRole)
-                if line > current_line:
-                    bookmarks.append(line)
-
-        if bookmarks:
-            self._goto_line(min(bookmarks))
-        else:
-            # Wrap around to first bookmark
-            for i in range(self.ui.bookmarkTree.topLevelItemCount()):
-                item = self.ui.bookmarkTree.topLevelItem(i)
-                if item:
-                    self._goto_line(item.data(0, Qt.ItemDataRole.UserRole))
-                    break
+        bookmark_lines = self._bookmark_lines()
+        if not bookmark_lines:
+            return
+        next_lines = [line for line in bookmark_lines if line > current_line]
+        self._goto_line(min(next_lines) if next_lines else min(bookmark_lines))
 
     def _goto_previous_bookmark(self):
         """Go to previous bookmark before current line."""
         cursor = self.ui.codeEdit.textCursor()
         current_line = cursor.blockNumber() + 1
-
-        bookmarks = []
-        for i in range(self.ui.bookmarkTree.topLevelItemCount()):
-            item = self.ui.bookmarkTree.topLevelItem(i)
-            if item:
-                line = item.data(0, Qt.ItemDataRole.UserRole)
-                if line < current_line:
-                    bookmarks.append(line)
-
-        if bookmarks:
-            self._goto_line(max(bookmarks))
-        else:
-            # Wrap around to last bookmark
-            last_line = None
-            for i in range(self.ui.bookmarkTree.topLevelItemCount()):
-                item = self.ui.bookmarkTree.topLevelItem(i)
-                if item:
-                    last_line = item.data(0, Qt.ItemDataRole.UserRole)
-            if last_line:
-                self._goto_line(last_line)
+        bookmark_lines = self._bookmark_lines()
+        if not bookmark_lines:
+            return
+        previous_lines = [line for line in bookmark_lines if line < current_line]
+        self._goto_line(max(previous_lines) if previous_lines else max(bookmark_lines))
 
     def _find_all_references(self, word: str):
         """Find all references to a symbol in the current file."""
@@ -1250,7 +1154,7 @@ class NSSEditor(Editor):
 
         from qtpy.QtWidgets import QDialog, QMessageBox
 
-        from pykotor.tools.reference_finder import ReferenceSearchResult, find_script_references
+        from pykotor.tools.reference_finder import find_script_references
         from toolset.gui.dialogs.asyncloader import AsyncLoader
         from toolset.gui.dialogs.reference_search_options import ReferenceSearchOptions
         from toolset.gui.dialogs.search import FileResults
@@ -2215,7 +2119,7 @@ class NSSEditor(Editor):
             self._save_bookmarks()
         self._update_bookmark_visualization()
 
-        if restype is ResourceType.NSS:
+        if restype == ResourceType.NSS:
             # Try multiple encodings to properly decode the text
             try:
                 text = data.decode("utf-8")
@@ -2225,7 +2129,7 @@ class NSSEditor(Editor):
                 except UnicodeDecodeError:
                     text = data.decode("latin-1", errors="replace")
             self.ui.codeEdit.setPlainText(text)
-        elif restype is ResourceType.NCS:
+        elif restype == ResourceType.NCS:
             error_occurred = False
             try:
                 self._handle_user_ncs(data, resref)  # pyright: ignore[reportArgumentType]
@@ -2448,171 +2352,121 @@ class NSSEditor(Editor):
             self.ui.codeEdit.insert_text_at_cursor(insert, insert.index("(") + 1)
 
     def on_function_search(self):
-        string = self.ui.functionSearchEdit.text()
-        if not string or not string.strip():
-            return
-        lower_string = string.lower()
-        for i in range(self.ui.functionList.count()):
-            item = self.ui.functionList.item(i)
-            if not item:
-                continue
-            item.setHidden(lower_string not in item.text().lower())
+        self._filter_list_widget_items(self.ui.functionSearchEdit.text(), self.ui.functionList)
 
     def on_constant_search(self):
-        string: str = self.ui.constantSearchEdit.text()
-        if not string or not string.strip():
+        self._filter_list_widget_items(self.ui.constantSearchEdit.text(), self.ui.constantList)
+
+    def _filter_list_widget_items(self, search_text: str, list_widget: object):
+        if not search_text or not search_text.strip():
             return
-        lower_string: str = string.lower()
-        for i in range(self.ui.constantList.count()):
-            item = self.ui.constantList.item(i)
-            if not item:
+        normalized_search = search_text.lower()
+        for index in range(list_widget.count()):
+            item = list_widget.item(index)
+            if item is None:
                 continue
-            item.setHidden(lower_string not in item.text().lower())
-
-    def _update_outline(self):
-        """Request outline update via language server.
-
-        DEPRECATED: Outline updates are now handled via _request_analysis callback.
-        This method is kept for compatibility but does nothing.
-        """
-        # Outline updates are now batched with diagnostics via _request_analysis
+            item.setHidden(normalized_search not in item.text().lower())
 
     def _setup_shortcuts(self):  # noqa: PLR0915
         """Set up all keyboard shortcuts with VS Code-like behavior."""
+        def bind_action(action: QAction, shortcut: str, callback: Callable[[], Any] | None = None):
+            action.setShortcut(QKeySequence(shortcut))
+            if callback is not None:
+                action.triggered.connect(callback)
+
+        def bind_shortcut(shortcut: str, callback: Callable[[], Any]):
+            qshortcut = QShortcut(QKeySequence(shortcut), self)
+            qshortcut.activated.connect(callback)
+
         # File operations
-        self.ui.actionNew.setShortcut(QKeySequence("Ctrl+N"))
-        self.ui.actionNew.triggered.connect(self.new)
-        self.ui.actionOpen.setShortcut(QKeySequence("Ctrl+O"))
-        self.ui.actionOpen.triggered.connect(self.open)
-        self.ui.actionSave.setShortcut(QKeySequence("Ctrl+S"))
-        self.ui.actionSave.triggered.connect(self.save)
-        self.ui.actionSave_As.setShortcut(QKeySequence("Ctrl+Shift+S"))
-        self.ui.actionSave_As.triggered.connect(self.save_as)
+        bind_action(self.ui.actionNew, "Ctrl+N", self.new)
+        bind_action(self.ui.actionOpen, "Ctrl+O", self.open)
+        bind_action(self.ui.actionSave, "Ctrl+S", self.save)
+        bind_action(self.ui.actionSave_As, "Ctrl+Shift+S", self.save_as)
         self.ui.actionSave_All.setShortcut(QKeySequence("Ctrl+K, S"))  # VS Code style
-        self.ui.actionClose.setShortcut(QKeySequence("Ctrl+W"))
+        bind_action(self.ui.actionClose, "Ctrl+W")
         # QAction.triggered emits a bool; QWidget.close takes no args.
         self.ui.actionClose.triggered.connect(lambda *_: self.close())
         self.ui.actionClose_All.setShortcut(QKeySequence("Ctrl+K, W"))
-        self.ui.actionExit.setShortcut(QKeySequence("Ctrl+Q"))
+        bind_action(self.ui.actionExit, "Ctrl+Q")
         # QAction.triggered emits a bool; QWidget.close takes no args.
         self.ui.actionExit.triggered.connect(lambda *_: self.close())
 
         # Compile
-        self.ui.actionCompile.setShortcut(QKeySequence("F5"))  # Changed from Ctrl+Shift+B to F5 (VS Code style)
-        self.ui.actionCompile.triggered.connect(self.compile_current_script)
+        bind_action(self.ui.actionCompile, "F5", self.compile_current_script)  # Changed from Ctrl+Shift+B to F5 (VS Code style)
 
         # Edit operations - VS Code style
-        self.ui.actionUndo.setShortcut(QKeySequence("Ctrl+Z"))
-        self.ui.actionUndo.triggered.connect(self.ui.codeEdit.undo)
+        bind_action(self.ui.actionUndo, "Ctrl+Z", self.ui.codeEdit.undo)
         # VS Code uses Ctrl+Shift+Z for redo, but Ctrl+Y also works
-        self.ui.actionRedo.setShortcut(QKeySequence("Ctrl+Shift+Z"))
-        self.ui.actionRedo.triggered.connect(self.ui.codeEdit.redo)
+        bind_action(self.ui.actionRedo, "Ctrl+Shift+Z", self.ui.codeEdit.redo)
         # Also add Ctrl+Y as alternative
-        redo_alt = QShortcut(QKeySequence("Ctrl+Y"), self)
-        redo_alt.activated.connect(self.ui.codeEdit.redo)
-        self.ui.actionCut.setShortcut(QKeySequence("Ctrl+X"))
-        self.ui.actionCut.triggered.connect(lambda: self.ui.codeEdit.cut())
-        self.ui.actionCopy.setShortcut(QKeySequence("Ctrl+C"))
-        self.ui.actionCopy.triggered.connect(lambda: self.ui.codeEdit.copy())
-        self.ui.actionPaste.setShortcut(QKeySequence("Ctrl+V"))
-        self.ui.actionPaste.triggered.connect(lambda: self.ui.codeEdit.paste())
+        bind_shortcut("Ctrl+Y", self.ui.codeEdit.redo)
+        bind_action(self.ui.actionCut, "Ctrl+X", self.ui.codeEdit.cut)
+        bind_action(self.ui.actionCopy, "Ctrl+C", self.ui.codeEdit.copy)
+        bind_action(self.ui.actionPaste, "Ctrl+V", self.ui.codeEdit.paste)
 
         # Find/Replace - Use inline widget instead of dialog
-        self.ui.actionFind.setShortcut(QKeySequence("Ctrl+F"))
-        self.ui.actionFind.triggered.connect(self._show_find)
-        self.ui.actionReplace.setShortcut(QKeySequence("Ctrl+H"))
-        self.ui.actionReplace.triggered.connect(self._show_replace)
+        bind_action(self.ui.actionFind, "Ctrl+F", self._show_find)
+        bind_action(self.ui.actionReplace, "Ctrl+H", self._show_replace)
 
         # Add F3 and Shift+F3 for find next/previous (VS Code style)
-        find_next_shortcut = QShortcut(QKeySequence("F3"), self)
-        find_next_shortcut.activated.connect(self._on_find_next_requested)
-        find_prev_shortcut = QShortcut(QKeySequence("Shift+F3"), self)
-        find_prev_shortcut.activated.connect(self._on_find_previous_requested)
-        self.ui.actionFind_in_Files.setShortcut(QKeySequence("Ctrl+Shift+F"))
-        self.ui.actionFind_in_Files.triggered.connect(self._find_in_files)
+        bind_shortcut("F3", self._on_find_next_requested)
+        bind_shortcut("Shift+F3", self._on_find_previous_requested)
+        bind_action(self.ui.actionFind_in_Files, "Ctrl+Shift+F", self._find_in_files)
 
         # Navigation
-        self.ui.actionGo_to_Line.setShortcut(QKeySequence("Ctrl+G"))
-        self.ui.actionGo_to_Line.triggered.connect(self.ui.codeEdit.go_to_line)
+        bind_action(self.ui.actionGo_to_Line, "Ctrl+G", self.ui.codeEdit.go_to_line)
 
         # Code editing - VS Code style shortcuts
-        self.ui.actionToggle_Comment.setShortcut(QKeySequence("Ctrl+/"))
-        self.ui.actionToggle_Comment.triggered.connect(self.ui.codeEdit.toggle_comment)
+        bind_action(self.ui.actionToggle_Comment, "Ctrl+/", self.ui.codeEdit.toggle_comment)
 
         # Indent/Unindent - VS Code uses Tab/Shift+Tab when no selection, Ctrl+]/[ for selection
-        self.ui.actionIndent.setShortcut(QKeySequence("Ctrl+]"))
-        self.ui.actionIndent.triggered.connect(self._indent_selection)
-        self.ui.actionUnindent.setShortcut(QKeySequence("Ctrl+["))
-        self.ui.actionUnindent.triggered.connect(self._unindent_selection)
+        bind_action(self.ui.actionIndent, "Ctrl+]", self._indent_selection)
+        bind_action(self.ui.actionUnindent, "Ctrl+[", self._unindent_selection)
 
         # Add select next occurrence shortcut (Ctrl+D in VS Code - selects next occurrence of word)
-        select_next_shortcut = QShortcut(QKeySequence("Ctrl+D"), self)
-        select_next_shortcut.activated.connect(self.ui.codeEdit.select_next_occurrence)
+        bind_shortcut("Ctrl+D", self.ui.codeEdit.select_next_occurrence)
 
         # Add select all occurrences shortcut (Alt+F3 in VS Code alternative since Ctrl+Shift+L is used for line numbers)
-        select_all_shortcut = QShortcut(QKeySequence("Alt+F3"), self)
-        select_all_shortcut.activated.connect(self.ui.codeEdit.select_all_occurrences)
+        bind_shortcut("Alt+F3", self.ui.codeEdit.select_all_occurrences)
 
         # Add select line shortcut (Ctrl+L in VS Code)
-        select_line_shortcut = QShortcut(QKeySequence("Ctrl+L"), self)
-        select_line_shortcut.activated.connect(self.ui.codeEdit.select_line)
+        bind_shortcut("Ctrl+L", self.ui.codeEdit.select_line)
 
         # Add duplicate line shortcut (Ctrl+Shift+D in VS Code alternative, or we can use Alt+Shift+Down)
-        duplicate_shortcut = QShortcut(QKeySequence("Ctrl+Shift+D"), self)
-        duplicate_shortcut.activated.connect(self.ui.codeEdit.duplicate_line)
+        bind_shortcut("Ctrl+Shift+D", self.ui.codeEdit.duplicate_line)
 
         # Code folding shortcuts
-        fold_shortcut = QShortcut(QKeySequence("Ctrl+Shift+["), self)
-        fold_shortcut.activated.connect(self.ui.codeEdit.fold_region)
-        unfold_shortcut = QShortcut(QKeySequence("Ctrl+Shift+]"), self)
-        unfold_shortcut.activated.connect(self.ui.codeEdit.unfold_region)
-        fold_all_shortcut = QShortcut(QKeySequence("Ctrl+K, Ctrl+0"), self)
-        fold_all_shortcut.activated.connect(self.ui.codeEdit.fold_all)
-        unfold_all_shortcut = QShortcut(QKeySequence("Ctrl+K, Ctrl+J"), self)
-        unfold_all_shortcut.activated.connect(self.ui.codeEdit.unfold_all)
+        bind_shortcut("Ctrl+Shift+[", self.ui.codeEdit.fold_region)
+        bind_shortcut("Ctrl+Shift+]", self.ui.codeEdit.unfold_region)
+        bind_shortcut("Ctrl+K, Ctrl+0", self.ui.codeEdit.fold_all)
+        bind_shortcut("Ctrl+K, Ctrl+J", self.ui.codeEdit.unfold_all)
 
         # Add delete line shortcut (Ctrl+Shift+K in VS Code)
-        delete_line_shortcut = QShortcut(QKeySequence("Ctrl+Shift+K"), self)
-        delete_line_shortcut.activated.connect(self._delete_line)
+        bind_shortcut("Ctrl+Shift+K", self._delete_line)
 
         # Add move line shortcuts (Alt+Up/Down in VS Code)
-        move_line_up_shortcut = QShortcut(QKeySequence("Alt+Up"), self)
-        move_line_up_shortcut.activated.connect(lambda: self.ui.codeEdit.move_line_up_or_down("up"))
-        move_line_down_shortcut = QShortcut(QKeySequence("Alt+Down"), self)
-        move_line_down_shortcut.activated.connect(lambda: self.ui.codeEdit.move_line_up_or_down("down"))
+        bind_shortcut("Alt+Up", lambda: self.ui.codeEdit.move_line_up_or_down("up"))
+        bind_shortcut("Alt+Down", lambda: self.ui.codeEdit.move_line_up_or_down("down"))
 
         # Add bookmark shortcuts (Ctrl+K, Ctrl+B/N/P in VS Code)
-        toggle_bookmark_shortcut = QShortcut(QKeySequence("Ctrl+K, Ctrl+B"), self)
-        toggle_bookmark_shortcut.activated.connect(self._toggle_bookmark_at_cursor)
-        next_bookmark_shortcut = QShortcut(QKeySequence("Ctrl+K, Ctrl+N"), self)
-        next_bookmark_shortcut.activated.connect(self._goto_next_bookmark)
-        prev_bookmark_shortcut = QShortcut(QKeySequence("Ctrl+K, Ctrl+P"), self)
-        prev_bookmark_shortcut.activated.connect(self._goto_previous_bookmark)
+        bind_shortcut("Ctrl+K, Ctrl+B", self._toggle_bookmark_at_cursor)
+        bind_shortcut("Ctrl+K, Ctrl+N", self._goto_next_bookmark)
+        bind_shortcut("Ctrl+K, Ctrl+P", self._goto_previous_bookmark)
 
         # Add go to definition and find references shortcuts
-        go_to_def_shortcut = QShortcut(QKeySequence("F12"), self)
-        go_to_def_shortcut.activated.connect(self.go_to_definition)
-        find_refs_shortcut = QShortcut(QKeySequence("Shift+F12"), self)
-        find_refs_shortcut.activated.connect(self._find_all_references_at_cursor)
+        bind_shortcut("F12", self.go_to_definition)
+        bind_shortcut("Shift+F12", self._find_all_references_at_cursor)
 
         # Add trigger suggest shortcut (Ctrl+Space in VS Code)
-        trigger_suggest_shortcut = QShortcut(QKeySequence("Ctrl+Space"), self)
-        trigger_suggest_shortcut.activated.connect(self.ui.codeEdit.show_auto_complete_menu)
-
-        # Add go to line shortcut (already set but ensure it's correct)
-        self.ui.actionGo_to_Line.setShortcut(QKeySequence("Ctrl+G"))
+        bind_shortcut("Ctrl+Space", self.ui.codeEdit.show_auto_complete_menu)
 
         # View operations
-        self.ui.actionZoom_In.setShortcut(QKeySequence("Ctrl+="))
-        self.ui.actionZoom_In.triggered.connect(lambda: self.ui.codeEdit.change_text_size(increase=True))
-        self.ui.actionZoom_Out.setShortcut(QKeySequence("Ctrl+-"))
-        self.ui.actionZoom_Out.triggered.connect(lambda: self.ui.codeEdit.change_text_size(increase=False))
-        self.ui.actionReset_Zoom.setShortcut(QKeySequence("Ctrl+0"))
-        self.ui.actionReset_Zoom.triggered.connect(self._reset_zoom)
-        self.ui.actionToggle_Line_Numbers.setShortcut(QKeySequence("Ctrl+Shift+L"))
-        self.ui.actionToggle_Line_Numbers.triggered.connect(self._toggle_line_numbers)
-        self.ui.actionToggle_Wrap_Lines.setShortcut(QKeySequence("Alt+Z"))
-        self.ui.actionToggle_Wrap_Lines.triggered.connect(self._toggle_word_wrap)
+        bind_action(self.ui.actionZoom_In, "Ctrl+=", lambda: self.ui.codeEdit.change_text_size(increase=True))
+        bind_action(self.ui.actionZoom_Out, "Ctrl+-", lambda: self.ui.codeEdit.change_text_size(increase=False))
+        bind_action(self.ui.actionReset_Zoom, "Ctrl+0", self._reset_zoom)
+        bind_action(self.ui.actionToggle_Line_Numbers, "Ctrl+Shift+L", self._toggle_line_numbers)
+        bind_action(self.ui.actionToggle_Wrap_Lines, "Alt+Z", self._toggle_word_wrap)
 
         # Minimap toggle (if action exists)
         assert self.ui.actionToggle_Minimap is not None, "Toggle minimap action should not be None"
@@ -2622,12 +2476,10 @@ class NSSEditor(Editor):
         # Command Palette (VS Code Ctrl+Shift+P)
         self._command_palette = CommandPalette(self)
         self._setup_command_palette()
-        command_palette_shortcut = QShortcut(QKeySequence("Ctrl+Shift+P"), self)
-        command_palette_shortcut.activated.connect(self._show_command_palette)
+        bind_shortcut("Ctrl+Shift+P", self._show_command_palette)
 
         # Quick Open (VS Code Ctrl+P) - for now just show command palette
-        quick_open_shortcut = QShortcut(QKeySequence("Ctrl+P"), self)
-        quick_open_shortcut.activated.connect(self._show_command_palette)
+        bind_shortcut("Ctrl+P", self._show_command_palette)
 
         # Panel toggles
         self.ui.actionToggleFileExplorer.setShortcut(QKeySequence("Ctrl+B"))
@@ -2635,8 +2487,7 @@ class NSSEditor(Editor):
         self.ui.actionToggle_Output_Panel.setShortcut(QKeySequence("Ctrl+Shift+U"))  # VS Code uses Ctrl+Shift+U for output
 
         # Tools
-        self.ui.actionFormat_Code.setShortcut(QKeySequence("Shift+Alt+F"))
-        self.ui.actionFormat_Code.triggered.connect(self._format_code)
+        bind_action(self.ui.actionFormat_Code, "Shift+Alt+F", self._format_code)
         self.ui.actionManage_Snippets.triggered.connect(self._manage_snippets)
 
         # Connect Analyze Code action if it exists
@@ -2644,10 +2495,8 @@ class NSSEditor(Editor):
         self.ui.actionAnalyze_Code.triggered.connect(self._analyze_code)
 
         # Help
-        self.ui.actionDocumentation.setShortcut(QKeySequence("F1"))
-        self.ui.actionDocumentation.triggered.connect(self._show_documentation)
-        self.ui.actionKeyboard_Shortcuts.setShortcut(QKeySequence("Ctrl+K, Ctrl+H"))
-        self.ui.actionKeyboard_Shortcuts.triggered.connect(self._show_keyboard_shortcuts)
+        bind_action(self.ui.actionDocumentation, "F1", self._show_documentation)
+        bind_action(self.ui.actionKeyboard_Shortcuts, "Ctrl+K, Ctrl+H", self._show_keyboard_shortcuts)
         assert self.ui.actionAbout is not None, "About action should not be None"
         self.ui.actionAbout.triggered.connect(self._show_about)
         assert self.ui.actionCheck_for_Updates is not None, "Check for updates action should not be None"
@@ -2753,24 +2602,21 @@ class NSSEditor(Editor):
         """Handle breadcrumb segment click - navigate to that context."""
         # If clicking on filename, do nothing (already there)
         # If clicking on function/struct, navigate to it
-        if segment.startswith("Function: "):
-            func_name = segment.replace("Function: ", "")
-            self._navigate_to_symbol(func_name)
-        elif segment.startswith("Struct: "):
-            struct_name = segment.replace("Struct: ", "")
-            self._navigate_to_symbol(struct_name)
-        elif segment.startswith("Variable: "):
-            var_name = segment.replace("Variable: ", "")
-            self._navigate_to_symbol(var_name)
+        for prefix in ("Function: ", "Struct: ", "Variable: "):
+            if segment.startswith(prefix):
+                self._navigate_to_symbol(segment.replace(prefix, "", 1))
+                return
 
     def _navigate_to_symbol(self, symbol_name: str):
         """Navigate to a symbol (function, struct, variable) by name."""
         text = self.ui.codeEdit.toPlainText()
         lines = text.split("\n")
+        function_declaration_prefixes = ("void ", "int ", "float ")
+        variable_type_keywords = ("int ", "float ", "string ", "object ", "void ")
 
         for i, line in enumerate(lines, 1):
             # Look for function definition
-            if f"void {symbol_name}(" in line or f"int {symbol_name}(" in line or f"float {symbol_name}(" in line:
+            if any(f"{prefix}{symbol_name}(" in line for prefix in function_declaration_prefixes):
                 self._goto_line(i)
                 return
             # Look for struct definition
@@ -2780,7 +2626,7 @@ class NSSEditor(Editor):
             # Look for variable declaration
             if f"{symbol_name}" in line and ("=" in line or ";" in line):
                 # More specific check needed
-                if any(keyword in line for keyword in ["int ", "float ", "string ", "object ", "void "]):
+                if any(keyword in line for keyword in variable_type_keywords):
                     self._goto_line(i)
                     return
 

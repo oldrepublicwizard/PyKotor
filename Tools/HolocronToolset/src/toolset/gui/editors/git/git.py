@@ -1,6 +1,7 @@
+"""GIT (game instance) editor: placeables, creatures, doors, and module designer integration."""
+
 from __future__ import annotations
 
-import os
 import sys
 
 from typing import TYPE_CHECKING
@@ -8,16 +9,13 @@ from typing import TYPE_CHECKING
 import qtpy
 
 from qtpy.QtCore import (
-    Qt,
     Signal,  # pyright: ignore[reportPrivateImportUsage]
 )
-from qtpy.QtGui import QColor, QKeySequence
+from qtpy.QtGui import QKeySequence
 from qtpy.QtWidgets import (
-    QListWidgetItem,
     QMessageBox,  # pyright: ignore[reportPrivateImportUsage]
 )
 
-from pykotor.common.misc import Color
 from pykotor.extract.installation import SearchLocation
 from pykotor.resource.formats.bwm import read_bwm
 from pykotor.resource.formats.lyt import read_lyt
@@ -26,23 +24,35 @@ from pykotor.resource.type import ResourceType
 from pykotor.tools.template import extract_name, extract_tag_from_gff
 from toolset.blender import BlenderEditorMode
 from toolset.blender.integration import BlenderEditorMixin
-from toolset.gui.editor import Editor
 from toolset.gui.common.editor_pipelines import set_exclusive_checkbox_selection
+from toolset.gui.common.walkmesh_materials import get_walkmesh_material_colors
+from toolset.gui.editor import Editor
 from toolset.gui.editors.git.controls import GITControlScheme
-from toolset.gui.editors.git.mode import _GeometryMode, _InstanceMode, _Mode, _SpawnMode
+from toolset.gui.editors.git.mode import _GeometryMode, _InstanceMode, _SpawnMode
 from toolset.gui.widgets.settings.editor_settings.git import GITSettings
-from utility.common.geometry import SurfaceMaterial, Vector2, Vector3
+from utility.common.geometry import Vector2
 
 if TYPE_CHECKING:
-    from qtpy.QtCore import QPoint
-    from qtpy.QtGui import QCloseEvent, QKeyEvent
-    from qtpy.QtWidgets import QCheckBox, QWidget
+    import os
+
+    from qtpy.QtCore import (
+        QPoint,
+        Qt,  # pyright: ignore[reportPrivateImportUsage]
+    )
+    from qtpy.QtGui import QCloseEvent, QColor, QKeyEvent
+    from qtpy.QtWidgets import (
+        QCheckBox,
+        QListWidgetItem,  # pyright: ignore[reportPrivateImportUsage]
+        QWidget,
+    )
 
     from pykotor.extract.file import ResourceIdentifier, ResourceResult
     from pykotor.resource.formats.bwm import BWM
     from pykotor.resource.formats.lyt import LYT
     from pykotor.resource.generics.git import GITInstance
     from toolset.data.installation import HTInstallation
+    from toolset.gui.editors.git.mode import _Mode
+    from utility.common.geometry import SurfaceMaterial, Vector3
 
 if qtpy.QT5:
     pass
@@ -93,33 +103,8 @@ class GITEditor(Editor, BlenderEditorMixin):
 
         self.settings = GITSettings()
 
-        def int_color_to_qcolor(int_value: int) -> QColor:
-            color = Color.from_rgba_integer(int_value)
-            return QColor(int(color.r * 255), int(color.g * 255), int(color.b * 255), int(color.a * 255))
+        self.material_colors: dict[SurfaceMaterial, QColor] = get_walkmesh_material_colors()
 
-        self.material_colors: dict[SurfaceMaterial, QColor] = {
-            SurfaceMaterial.UNDEFINED: int_color_to_qcolor(self.settings.undefinedMaterialColour),
-            SurfaceMaterial.OBSCURING: int_color_to_qcolor(self.settings.obscuringMaterialColour),
-            SurfaceMaterial.DIRT: int_color_to_qcolor(self.settings.dirtMaterialColour),
-            SurfaceMaterial.GRASS: int_color_to_qcolor(self.settings.grassMaterialColour),
-            SurfaceMaterial.STONE: int_color_to_qcolor(self.settings.stoneMaterialColour),
-            SurfaceMaterial.WOOD: int_color_to_qcolor(self.settings.woodMaterialColour),
-            SurfaceMaterial.WATER: int_color_to_qcolor(self.settings.waterMaterialColour),
-            SurfaceMaterial.NON_WALK: int_color_to_qcolor(self.settings.nonWalkMaterialColour),
-            SurfaceMaterial.TRANSPARENT: int_color_to_qcolor(self.settings.transparentMaterialColour),
-            SurfaceMaterial.CARPET: int_color_to_qcolor(self.settings.carpetMaterialColour),
-            SurfaceMaterial.METAL: int_color_to_qcolor(self.settings.metalMaterialColour),
-            SurfaceMaterial.PUDDLES: int_color_to_qcolor(self.settings.puddlesMaterialColour),
-            SurfaceMaterial.SWAMP: int_color_to_qcolor(self.settings.swampMaterialColour),
-            SurfaceMaterial.MUD: int_color_to_qcolor(self.settings.mudMaterialColour),
-            SurfaceMaterial.LEAVES: int_color_to_qcolor(self.settings.leavesMaterialColour),
-            SurfaceMaterial.LAVA: int_color_to_qcolor(self.settings.lavaMaterialColour),
-            SurfaceMaterial.BOTTOMLESS_PIT: int_color_to_qcolor(self.settings.bottomlessPitMaterialColour),
-            SurfaceMaterial.DEEP_WATER: int_color_to_qcolor(self.settings.deepWaterMaterialColour),
-            SurfaceMaterial.DOOR: int_color_to_qcolor(self.settings.doorMaterialColour),
-            SurfaceMaterial.NON_WALK_GRASS: int_color_to_qcolor(self.settings.nonWalkGrassMaterialColour),
-            SurfaceMaterial.TRIGGER: int_color_to_qcolor(self.settings.nonWalkGrassMaterialColour),
-        }
         self.name_buffer: dict[ResourceIdentifier, str] = {}
         self.tag_buffer: dict[ResourceIdentifier, str] = {}
 
@@ -142,6 +127,7 @@ class GITEditor(Editor, BlenderEditorMixin):
         self.ui.renderArea.sig_mouse_moved.connect(self.on_mouse_moved)
         self.ui.renderArea.sig_mouse_scrolled.connect(self.on_mouse_scrolled)
         self.ui.renderArea.sig_mouse_released.connect(self.on_mouse_released)
+        self.ui.renderArea.sig_marquee_select.connect(self.on_marquee_select)
         self.ui.renderArea.sig_key_pressed.connect(self.on_key_pressed)
         self.ui.renderArea.customContextMenuRequested.connect(self.on_context_menu)
 
@@ -516,6 +502,23 @@ class GITEditor(Editor, BlenderEditorMixin):
 
     def on_mouse_released(self, buttons: set[Qt.MouseButton], keys: set[Qt.Key]):
         self._controls.on_mouse_released(Vector2(0, 0), buttons, keys)
+
+    def on_marquee_select(self, world_rect: tuple[float, float, float, float], additive: bool):
+        """Select instances inside the marquee world rect. Called from WalkmeshRenderer.sig_marquee_select."""
+        min_x, min_y, max_x, max_y = world_rect
+        in_rect: list[GITInstance] = []
+        for instance in self._git.instances():
+            if not self.ui.renderArea.is_instance_visible(instance):
+                continue
+            x, y = instance.position.x, instance.position.y
+            if min_x <= x <= max_x and min_y <= y <= max_y:
+                in_rect.append(instance)
+        if additive:
+            current = self._mode.renderer2d.instance_selection.all()
+            combined = list({*current, *in_rect})
+            self._mode.set_selection(combined)
+        else:
+            self._mode.set_selection(in_rect)
 
     def on_key_pressed(self, buttons: set[Qt.MouseButton], keys: set[Qt.Key]):
         self._controls.on_keyboard_pressed(buttons, keys)

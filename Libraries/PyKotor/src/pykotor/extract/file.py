@@ -1,3 +1,5 @@
+"""File resources: ResourceIdentifier, FileResource, path resolution, and data cache."""
+
 from __future__ import annotations
 
 from dataclasses import dataclass, field

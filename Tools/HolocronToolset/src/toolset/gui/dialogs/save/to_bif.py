@@ -1,3 +1,5 @@
+"""Save-to-BIF dialog: choose MOD/Override option when saving into a BIF."""
+
 from __future__ import annotations
 
 from enum import IntEnum

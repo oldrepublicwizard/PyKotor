@@ -206,11 +206,17 @@ class KotorRenderer(ShowBase):
                 return TwoDA()
             return read_2da(resource.data)
 
-        self.table_doors = load_2da("genericdoors")
-        self.table_placeables = load_2da("placeables")
-        self.table_creatures = load_2da("appearance")
-        self.table_heads = load_2da("heads")
-        self.table_baseitems = load_2da("baseitems")
+        # Mapping of table attributes to 2DA file names
+        table_mappings = {
+            "table_doors": "genericdoors",
+            "table_placeables": "placeables",
+            "table_creatures": "appearance",
+            "table_heads": "heads",
+            "table_baseitems": "baseitems",
+        }
+
+        for attr_name, filename in table_mappings.items():
+            setattr(self, attr_name, load_2da(filename))
 
     def load_module(self, module: Module) -> None:
         """Load a module and all its content into the scene."""

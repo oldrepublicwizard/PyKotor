@@ -343,6 +343,7 @@ def dismantle_dlg(  # noqa: PLR0912, C901, PLR0915
         link: DLGLink,
         nodes: list,
         list_name: str,
+        node_to_index: dict[int, int],
     ):
         """Disassembles a link into a GFFStruct.
 
@@ -351,7 +352,8 @@ def dismantle_dlg(  # noqa: PLR0912, C901, PLR0915
             gff_struct: GFFStruct - The struct to populate
             link: DLGLink - The link to disassemble
             nodes: list - The list of nodes
-            list_name: str - The name of the GFF list.
+            list_name: str - The name of the GFF list
+            node_to_index: id(node) -> index for O(1) lookup
 
         Returns:
         -------
@@ -364,7 +366,7 @@ def dismantle_dlg(  # noqa: PLR0912, C901, PLR0915
             - If game is K2, sets additional link properties on the GFFStruct.
         """
         object.__setattr__(link, "__class__", DLGLink)
-        node_list_index = nodes.index(link.node)
+        node_list_index = node_to_index.get(id(link.node), nodes.index(link.node))
         gff_struct.set_uint32("Index", node_list_index)
 
         if list_name != "StartingList":
@@ -395,6 +397,7 @@ def dismantle_dlg(  # noqa: PLR0912, C901, PLR0915
         node: DLGNode,
         nodes: list[DLGEntry] | list[DLGReply],
         list_name: Literal["EntriesList", "RepliesList"],
+        node_to_index: dict[int, int],
     ):
         """Disassembles a DLGNode into a GFFStruct.
 
@@ -404,6 +407,7 @@ def dismantle_dlg(  # noqa: PLR0912, C901, PLR0915
             node: DLGNode - The DLGNode to dismantle into a EntryList/ReplyList GFFStruct node.
             nodes: list - The nodes list (abstracted EntryList/ReplyList represented as list[DLGEntry] | list[DLGReply])
             list_name: Literal["EntriesList", "RepliesList"] - the name of the nested linked list. If nodes is list[DLGEntry], should be 'RepliesList' and vice versa.
+            node_to_index: id(node) -> index for O(1) link target lookup when dismantling links.
 
         Processing Logic:
         ----------------
@@ -492,10 +496,13 @@ def dismantle_dlg(  # noqa: PLR0912, C901, PLR0915
         sorted_links: list[DLGLink] = sorted(node.links, key=lambda link: (link.list_index == -1, link.list_index))
         for i, link in enumerate(sorted_links):
             link_struct: GFFStruct = link_list.add(i)
-            dismantle_link(link_struct, link, nodes, list_name)
+            dismantle_link(link_struct, link, nodes, list_name, node_to_index)
 
     all_entries: list[DLGEntry] = dlg.all_entries(as_sorted=True)
     all_replies: list[DLGReply] = dlg.all_replies(as_sorted=True)
+    # O(1) node index lookup when writing links instead of O(n) list.index() per link
+    entry_index: dict[int, int] = {id(e): i for i, e in enumerate(all_entries)}
+    reply_index: dict[int, int] = {id(r): i for i, r in enumerate(all_replies)}
 
     gff = GFF(GFFContent.DLG)
 
@@ -540,18 +547,18 @@ def dismantle_dlg(  # noqa: PLR0912, C901, PLR0915
     sorted_links: list[DLGLink] = sorted(dlg.starters, key=lambda link: (link.list_index == -1, link.list_index))
     for link_list_index, starter in enumerate(sorted_links):
         starting_struct: GFFStruct = starting_list.add(link_list_index)
-        dismantle_link(starting_struct, starter, all_entries, "StartingList")
+        dismantle_link(starting_struct, starter, all_entries, "StartingList", entry_index)
 
     entry_list: GFFList = root.set_list("EntryList", GFFList())
     for node_list_index, entry in enumerate(all_entries):
         entry_struct: GFFStruct = entry_list.add(node_list_index)
         entry_struct.set_string("Speaker", entry.speaker)
-        dismantle_node(entry_struct, entry, all_replies, "RepliesList")
+        dismantle_node(entry_struct, entry, all_replies, "RepliesList", reply_index)
 
     reply_list: GFFList = root.set_list("ReplyList", GFFList())
     for node_list_index, reply in enumerate(all_replies):
         reply_struct: GFFStruct = reply_list.add(node_list_index)
-        dismantle_node(reply_struct, reply, all_entries, "EntriesList")
+        dismantle_node(reply_struct, reply, all_entries, "EntriesList", entry_index)
 
     return gff
 

@@ -1,3 +1,5 @@
+"""Panda3D legacy demo entry point: run KotOR module renderer with optional GUI."""
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING

@@ -1,3 +1,5 @@
+"""UTW (waypoint) generic: GFF-based waypoint definitions and map notes."""
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING

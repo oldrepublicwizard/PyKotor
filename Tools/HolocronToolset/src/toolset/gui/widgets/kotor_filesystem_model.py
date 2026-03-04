@@ -1,3 +1,5 @@
+"""KotOR filesystem model: file tree over installation/capsule with icons and resource types."""
+
 from __future__ import annotations
 
 import os
@@ -68,7 +70,7 @@ from qtpy.QtWidgets import (  # noqa: E402
 from pykotor.extract.file import FileResource  # noqa: E402
 from pykotor.tools.misc import is_capsule_file  # noqa: E402
 from toolset.gui.dialogs.load_from_location_result import ResourceItems  # noqa: E402
-from toolset.gui.widgets.settings.installations import GlobalSettings, InstallationConfig  # noqa: E402
+from toolset.gui.widgets.settings.installations import GlobalSettings  # noqa: E402
 from toolset.main_init import main_init  # noqa: E402
 from toolset.utils.window import open_resource_editor_from_path  # noqa: E402
 from utility.gui.qt.widgets.itemviews.html_delegate import ICONS_DATA_ROLE, HTMLDelegate  # noqa: E402
@@ -82,6 +84,7 @@ if TYPE_CHECKING:
     from typing_extensions import Literal
 
     from toolset.data.installation import HTInstallation
+    from toolset.gui.widgets.settings.installations import InstallationConfig
     from toolset.gui.windows.main import ToolWindow
     from utility.gui.qt.adapters.filesystem.pyfilesystemmodel import PyFileSystemModel
 

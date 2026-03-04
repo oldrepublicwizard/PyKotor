@@ -22,6 +22,10 @@ for path in (PYKOTOR_SRC, UTILITY_SRC):
 from contextlib import redirect_stdout
 from io import StringIO
 
+import pytest
+
+pytest.importorskip("pykotor.resource.formats.ncs.dencs", reason="Optional DeNCS package is not available in this build")
+
 from pykotor.resource.formats.ncs.dencs.do_types import DoTypes
 from pykotor.resource.formats.ncs.dencs.node.node import Node
 from pykotor.resource.formats.ncs.dencs.utils.node_analysis_data import NodeAnalysisData

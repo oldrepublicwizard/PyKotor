@@ -1,3 +1,5 @@
+"""NSS (NWScript) lexer: PLY lex tokenization and keyword/operator mapping."""
+
 from __future__ import annotations
 
 from typing import ClassVar

@@ -1,4 +1,7 @@
+"""TPC (texture) package: mipmaps, DXT/TGA/BMP I/O and format detection."""
+
 from __future__ import annotations
+
 from pykotor.resource.formats.tpc.tpc_data import (
     TPC,
     TPCTextureFormat,

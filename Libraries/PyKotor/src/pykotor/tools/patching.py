@@ -105,6 +105,18 @@ def log_message(config: PatchingConfig, message: str) -> None:
         config.log_callback(message)
 
 
+def _serialize_patched_resource(resource: FileResource, patched_data: GFF | TPC) -> tuple[ResourceType, bytes]:
+    """Serialize patched resource data for writing to capsules/files."""
+    if isinstance(patched_data, GFF):
+        return resource.restype(), bytes_gff(patched_data)
+    return ResourceType.TPC, bytes(bytes_tpc(patched_data))
+
+
+def _ensure_processed_files(processed_files: set[Path] | None) -> set[Path]:
+    """Return a mutable processed-files set for patching workflows."""
+    return processed_files if processed_files is not None else set()
+
+
 def patch_nested_gff(
     gff_struct: GFFStruct,
     gff_content: GFFContent,
@@ -269,62 +281,29 @@ def convert_gff_game(
     log_message(config, f"Converting {resource.path_ident().parent}/{resource.path_ident().name} to {to_game.name}")
     generic: Any
     try:
-        if resource.restype() is ResourceType.ARE:
-            generic = read_are(resource.data(), offset=0, size=resource.size())
-            write_are(generic, converted_data, to_game)
+        # Mapping of ResourceType to (read_func, write_func) pairs for GFF conversion
+        gff_converters = {
+            ResourceType.ARE: (read_are, write_are),
+            ResourceType.DLG: (read_dlg, write_dlg),
+            ResourceType.GIT: (read_git, write_git),
+            ResourceType.JRL: (read_jrl, write_jrl),
+            ResourceType.PTH: (read_pth, write_pth),
+            ResourceType.UTC: (read_utc, write_utc),
+            ResourceType.UTD: (read_utd, write_utd),
+            ResourceType.UTE: (read_ute, write_ute),
+            ResourceType.UTI: (read_uti, write_uti),
+            ResourceType.UTM: (read_utm, write_utm),
+            ResourceType.UTP: (read_utp, write_utp),
+            ResourceType.UTS: (read_uts, write_uts),
+            ResourceType.UTT: (read_utt, write_utt),
+            ResourceType.UTW: (read_utw, write_utw),
+        }
 
-        elif resource.restype() is ResourceType.DLG:
-            generic = read_dlg(resource.data(), offset=0, size=resource.size())
-            write_dlg(generic, converted_data, to_game)
-
-        elif resource.restype() is ResourceType.GIT:
-            generic = read_git(resource.data(), offset=0, size=resource.size())
-            write_git(generic, converted_data, to_game)
-
-        elif resource.restype() is ResourceType.JRL:
-            generic = read_jrl(resource.data(), offset=0, size=resource.size())
-            write_jrl(generic, converted_data, game=to_game)
-
-        elif resource.restype() is ResourceType.PTH:
-            generic = read_pth(resource.data(), offset=0, size=resource.size())
-            write_pth(generic, converted_data, game=to_game)
-
-        elif resource.restype() is ResourceType.UTC:
-            generic = read_utc(resource.data(), offset=0, size=resource.size())
-            write_utc(generic, converted_data, game=to_game)
-
-        elif resource.restype() is ResourceType.UTD:
-            generic = read_utd(resource.data(), offset=0, size=resource.size())
-            write_utd(generic, converted_data, game=to_game)
-
-        elif resource.restype() is ResourceType.UTE:
-            generic = read_ute(resource.data(), offset=0, size=resource.size())
-            write_ute(generic, converted_data, game=to_game)
-
-        elif resource.restype() is ResourceType.UTI:
-            generic = read_uti(resource.data(), offset=0, size=resource.size())
-            write_uti(generic, converted_data, game=to_game)
-
-        elif resource.restype() is ResourceType.UTM:
-            generic = read_utm(resource.data(), offset=0, size=resource.size())
-            write_utm(generic, converted_data, game=to_game)
-
-        elif resource.restype() is ResourceType.UTP:
-            generic = read_utp(resource.data(), offset=0, size=resource.size())
-            write_utp(generic, converted_data, game=to_game)
-
-        elif resource.restype() is ResourceType.UTS:
-            generic = read_uts(resource.data(), offset=0, size=resource.size())
-            write_uts(generic, converted_data, game=to_game)
-
-        elif resource.restype() is ResourceType.UTT:
-            generic = read_utt(resource.data(), offset=0, size=resource.size())
-            write_utt(generic, converted_data, game=to_game)
-
-        elif resource.restype() is ResourceType.UTW:
-            generic = read_utw(resource.data(), offset=0, size=resource.size())
-            write_utw(generic, converted_data, game=to_game)
-
+        restype = resource.restype()
+        if restype in gff_converters:
+            read_func, write_func = gff_converters[restype]
+            generic = read_func(resource.data(), offset=0, size=resource.size())
+            write_func(generic, converted_data, to_game)
         else:
             log_message(config, f"Unsupported gff: {resource.identifier()}")
     except (OSError, ValueError):
@@ -409,8 +388,7 @@ def patch_resource(
     -------
         Patched GFF or TPC object, or None if no changes or error
     """
-    if processed_files is None:
-        processed_files = set()
+    processed_files = _ensure_processed_files(processed_files)
 
     # Handle TLK translation
     if resource.restype().extension.lower() == "tlk" and config.translate and config.translator:
@@ -568,8 +546,7 @@ def patch_capsule_file(
         config: Patching configuration
         processed_files: Set to track processed files (optional)
     """
-    if processed_files is None:
-        processed_files = set()
+    processed_files = _ensure_processed_files(processed_files)
 
     log_message(config, f"Load {c_file.name}")
     try:
@@ -582,41 +559,39 @@ def patch_capsule_file(
     if config.translate and config.translator:
         new_filepath = c_file.parent / f"{c_file.stem}_{config.translator.to_lang.get_bcp47_code()}{c_file.suffix}"
 
+    if not config.is_patching():
+        return
+
     new_resources: list[tuple[str, ResourceType, bytes]] = []
     omitted_resources: list[ResourceIdentifier] = []
     for resource in file_capsule:
-        if config.is_patching():
-            patched_data: GFF | TPC | None = patch_resource(resource, config, processed_files)
-            if isinstance(patched_data, GFF):
-                new_data = bytes_gff(patched_data) if patched_data else resource.data()
-                log_message(config, f"Adding patched GFF resource '{resource.identifier()}' to capsule {new_filepath.name}")
-                new_resources.append((resource.resname(), resource.restype(), new_data))
-                omitted_resources.append(resource.identifier())
+        patched_data: GFF | TPC | None = patch_resource(resource, config, processed_files)
+        if patched_data is None:
+            continue
 
-            elif isinstance(patched_data, TPC):
-                txi_resource = file_capsule.resource(resource.resname(), ResourceType.TXI)
-                if txi_resource is not None:
-                    patched_data.txi = txi_resource.decode("ascii", errors="ignore")
-                    omitted_resources.append(ResourceIdentifier(resource.resname(), ResourceType.TXI))
+        if isinstance(patched_data, TPC):
+            txi_resource = file_capsule.resource(resource.resname(), ResourceType.TXI)
+            if txi_resource is not None:
+                patched_data.txi = decode_bytes_with_fallbacks(txi_resource)
+                omitted_resources.append(ResourceIdentifier(resource.resname(), ResourceType.TXI))
 
-        new_data = bytes_tpc(patched_data)
-        log_message(config, f"Adding patched TPC resource '{resource.identifier()}' to capsule {new_filepath.name}")
-        new_resources.append((resource.resname(), ResourceType.TPC, bytes(new_data)))
+        patched_restype, new_data = _serialize_patched_resource(resource, patched_data)
+        log_message(config, f"Adding patched {patched_restype.name} resource '{resource.identifier()}' to capsule {new_filepath.name}")
+        new_resources.append((resource.resname(), patched_restype, new_data))
         omitted_resources.append(resource.identifier())
 
-    if config.is_patching():
-        erf_or_rim: ERF | RIM = ERF(ERFType.from_extension(new_filepath)) if is_any_erf_type_file(c_file) else RIM()
-        for resource in file_capsule:
-            if resource.identifier() not in omitted_resources:
-                erf_or_rim.set_data(resource.resname(), resource.restype(), resource.data())
-        for resinfo in new_resources:
-            erf_or_rim.set_data(*resinfo)
+    erf_or_rim: ERF | RIM = ERF(ERFType.from_extension(new_filepath)) if is_any_erf_type_file(c_file) else RIM()
+    for resource in file_capsule:
+        if resource.identifier() not in omitted_resources:
+            erf_or_rim.set_data(resource.resname(), resource.restype(), resource.data())
+    for resinfo in new_resources:
+        erf_or_rim.set_data(*resinfo)
 
-        log_message(config, f"Saving back to {new_filepath.name}")
-        if is_any_erf_type_file(c_file):
-            write_erf(erf_or_rim, new_filepath)  # type: ignore[arg-type]
-        else:
-            write_rim(erf_or_rim, new_filepath)  # type: ignore[arg-type]
+    log_message(config, f"Saving back to {new_filepath.name}")
+    if is_any_erf_type_file(c_file):
+        write_erf(erf_or_rim, new_filepath)  # type: ignore[arg-type]
+    else:
+        write_rim(erf_or_rim, new_filepath)  # type: ignore[arg-type]
 
 
 def patch_erf_or_rim(
@@ -645,25 +620,22 @@ def patch_erf_or_rim(
 
     for resource in resources:
         patched_data: GFF | TPC | None = patch_resource(resource, config)
-        if isinstance(patched_data, GFF):
-            log_message(config, f"Adding patched GFF resource '{resource.identifier()}' to {new_filename}")
-            new_data: bytes = bytes_gff(patched_data) if patched_data else resource.data()
-            erf_or_rim.set_data(resource.resname(), resource.restype(), new_data)
-            omitted_resources.append(resource.identifier())
+        if patched_data is None:
+            continue
 
-        elif isinstance(patched_data, TPC):
-            log_message(config, f"Adding patched TPC resource '{resource.resname()}' to {new_filename}")
+        if isinstance(patched_data, TPC):
             txi_resource: FileResource | None = next(
-                (res for res in resources if res.resname() == resource.resname() and res.restype() is ResourceType.TXI),
+                (res for res in resources if res.resname() == resource.resname() and res.restype() == ResourceType.TXI),
                 None,
             )
             if txi_resource:
-                patched_data.txi = txi_resource.data().decode("ascii", errors="ignore")
+                patched_data.txi = decode_bytes_with_fallbacks(txi_resource.data())
                 omitted_resources.append(txi_resource.identifier())
 
-            new_data = bytes_tpc(patched_data)
-            erf_or_rim.set_data(resource.resname(), ResourceType.TPC, new_data)
-            omitted_resources.append(resource.identifier())
+        patched_restype, new_data = _serialize_patched_resource(resource, patched_data)
+        log_message(config, f"Adding patched {patched_restype.name} resource '{resource.identifier()}' to {new_filename}")
+        erf_or_rim.set_data(resource.resname(), patched_restype, new_data)
+        omitted_resources.append(resource.identifier())
 
     for resource in resources:
         if resource.identifier() not in omitted_resources:
@@ -690,8 +662,7 @@ def patch_file(
         config: Patching configuration
         processed_files: Set to track processed files (optional)
     """
-    if processed_files is None:
-        processed_files = set()
+    processed_files = _ensure_processed_files(processed_files)
 
     c_file = Path(file)
     if c_file in processed_files:
@@ -716,8 +687,7 @@ def patch_folder(
         config: Patching configuration
         processed_files: Set to track processed files (optional)
     """
-    if processed_files is None:
-        processed_files = set()
+    processed_files = _ensure_processed_files(processed_files)
 
     c_folderpath = Path(folder_path)
     log_message(config, f"Recursing through resources in the '{c_folderpath.name}' folder...")
@@ -753,8 +723,7 @@ def patch_install(
         config: Patching configuration
         processed_files: Set to track processed files (optional)
     """
-    if processed_files is None:
-        processed_files = set()
+    processed_files = _ensure_processed_files(processed_files)
 
     log_message(config, f"Using install dir for operations:\t{install_path}")
 
@@ -779,7 +748,7 @@ def patch_install(
             res_ident = ResourceIdentifier.from_path(module_name)
             filename = str(res_ident)
             filepath = k_install.path().joinpath("Modules", filename)
-            if res_ident.restype is ResourceType.RIM:
+            if res_ident.restype == ResourceType.RIM:
                 if filepath.with_suffix(".mod").is_file():
                     log_message(config, f"Skipping {filepath}, a .mod already exists at this path.")
                     continue
@@ -790,7 +759,7 @@ def patch_install(
 
             elif res_ident.restype.name in (ResourceType.ERF, ResourceType.MOD, ResourceType.SAV):
                 new_erf = ERF(ERFType.from_extension(filepath.suffix))
-                if res_ident.restype is ResourceType.SAV:
+                if res_ident.restype == ResourceType.SAV:
                     new_erf.is_save = True
                 new_erf_filename = patch_erf_or_rim(resources, module_name, new_erf, config)
                 log_message(config, f"Saving '{new_erf_filename}'")

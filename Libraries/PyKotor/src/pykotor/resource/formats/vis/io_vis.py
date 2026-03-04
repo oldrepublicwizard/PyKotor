@@ -1,3 +1,5 @@
+"""VIS (visibility) ASCII read/write: room-to-room visibility for occlusion culling."""
+
 from __future__ import annotations
 
 import os

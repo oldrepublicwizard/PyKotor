@@ -1,3 +1,5 @@
+"""ARE (area) generic: GFF-based static area data and script hooks."""
+
 from __future__ import annotations
 
 from enum import IntEnum

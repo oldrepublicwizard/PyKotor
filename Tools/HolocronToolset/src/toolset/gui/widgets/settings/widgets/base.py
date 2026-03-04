@@ -1,8 +1,9 @@
+"""Base widgets for editor settings: spin/combobox/slider with Settings binding and bind UI."""
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any
 
-from loggerplus import RobustLogger
 from qtpy.QtWidgets import (
     QAbstractSpinBox,
     QComboBox,
@@ -13,12 +14,13 @@ from qtpy.QtWidgets import (
     QWidget,
 )
 
+from loggerplus import RobustLogger
 from pykotor.common.misc import Color
-from utility.misc import is_int
 from utility.gui.qt.adapters.itemmodels.filters import (
     HoverEventFilter,
     NoScrollEventFilter,
 )
+from utility.misc import is_int
 
 if TYPE_CHECKING:
     from qtpy.QtCore import QObject

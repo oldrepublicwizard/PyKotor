@@ -1,3 +1,5 @@
+"""LTR (letter) editor: character set tables and preview."""
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
@@ -57,28 +59,26 @@ class LTREditor(Editor):
         self.new()
 
     def _setup_signals(self):
-        self.ui.buttonSetSingle.clicked.connect(self.setSingleCharacter)
-        self.ui.buttonSetDouble.clicked.connect(self.setDoubleCharacter)
-        self.ui.buttonSetTriple.clicked.connect(self.setTripleCharacter)
-        self.ui.buttonGenerate.clicked.connect(self.generateName)
-        self.ui.buttonAddSingle.clicked.connect(self.addSingleRow)
-        self.ui.buttonRemoveSingle.clicked.connect(self.removeSingleRow)
-        self.ui.buttonAddDouble.clicked.connect(self.addDoubleRow)
-        self.ui.buttonRemoveDouble.clicked.connect(self.removeDoubleRow)
-        self.ui.buttonAddTriple.clicked.connect(self.addTripleRow)
-        self.ui.buttonRemoveTriple.clicked.connect(self.removeTripleRow)
-        hor_header = self.ui.tableSingles.horizontalHeader()
-        assert hor_header is not None
-        hor_header.setContextMenuPolicy(Qt.ContextMenuPolicy.CustomContextMenu)
-        hor_header.customContextMenuRequested.connect(self.show_header_context_menu)
-        hor_header2 = self.ui.tableDoubles.horizontalHeader()
-        assert hor_header2 is not None
-        hor_header2.setContextMenuPolicy(Qt.ContextMenuPolicy.CustomContextMenu)
-        hor_header2.customContextMenuRequested.connect(self.show_header_context_menu)
-        hor_header3 = self.ui.tableTriples.horizontalHeader()
-        assert hor_header3 is not None
-        hor_header3.setContextMenuPolicy(Qt.ContextMenuPolicy.CustomContextMenu)
-        hor_header3.customContextMenuRequested.connect(self.show_header_context_menu)
+        signal_connections = [
+            (self.ui.buttonSetSingle.clicked, self.setSingleCharacter),
+            (self.ui.buttonSetDouble.clicked, self.setDoubleCharacter),
+            (self.ui.buttonSetTriple.clicked, self.setTripleCharacter),
+            (self.ui.buttonGenerate.clicked, self.generateName),
+            (self.ui.buttonAddSingle.clicked, self.addSingleRow),
+            (self.ui.buttonRemoveSingle.clicked, self.removeSingleRow),
+            (self.ui.buttonAddDouble.clicked, self.addDoubleRow),
+            (self.ui.buttonRemoveDouble.clicked, self.removeDoubleRow),
+            (self.ui.buttonAddTriple.clicked, self.addTripleRow),
+            (self.ui.buttonRemoveTriple.clicked, self.removeTripleRow),
+        ]
+        for signal, handler in signal_connections:
+            signal.connect(handler)
+
+        for table in (self.ui.tableSingles, self.ui.tableDoubles, self.ui.tableTriples):
+            header = table.horizontalHeader()
+            assert header is not None
+            header.setContextMenuPolicy(Qt.ContextMenuPolicy.CustomContextMenu)
+            header.customContextMenuRequested.connect(self.show_header_context_menu)
 
     def populateComboBoxes(self):
         char_set = LTR.CHARACTER_SET
@@ -96,6 +96,8 @@ class LTREditor(Editor):
         self.ui.tableDoubles.setRowCount(len(char_set) ** 2)
         self.ui.tableTriples.setRowCount(len(char_set) ** 2 * len(char_set))
 
+        char_to_idx = {c: i for i, c in enumerate(char_set)}
+
         for i, char in enumerate(char_set):
             self.ui.tableSingles.setItem(i, 0, QTableWidgetItem(char))
             self.ui.tableSingles.setItem(i, 1, QTableWidgetItem(str(self.ltr._singles.get_start(char))))
@@ -104,24 +106,28 @@ class LTREditor(Editor):
 
         index = 0
         for prev_char in char_set:
+            prev_idx = char_to_idx[prev_char]
+            doubles_row = self.ltr._doubles[prev_idx]
             for char in char_set:
                 self.ui.tableDoubles.setItem(index, 0, QTableWidgetItem(prev_char))
                 self.ui.tableDoubles.setItem(index, 1, QTableWidgetItem(char))
-                self.ui.tableDoubles.setItem(index, 2, QTableWidgetItem(str(self.ltr._doubles[char_set.index(prev_char)].get_start(char))))
-                self.ui.tableDoubles.setItem(index, 3, QTableWidgetItem(str(self.ltr._doubles[char_set.index(prev_char)].get_middle(char))))
-                self.ui.tableDoubles.setItem(index, 4, QTableWidgetItem(str(self.ltr._doubles[char_set.index(prev_char)].get_end(char))))
+                self.ui.tableDoubles.setItem(index, 2, QTableWidgetItem(str(doubles_row.get_start(char))))
+                self.ui.tableDoubles.setItem(index, 3, QTableWidgetItem(str(doubles_row.get_middle(char))))
+                self.ui.tableDoubles.setItem(index, 4, QTableWidgetItem(str(doubles_row.get_end(char))))
                 index += 1
 
         index = 0
         for prev2_char in char_set:
+            triples_row = self.ltr._triples[char_to_idx[prev2_char]]
             for prev1_char in char_set:
+                triples_cell = triples_row[char_to_idx[prev1_char]]
                 for char in char_set:
                     self.ui.tableTriples.setItem(index, 0, QTableWidgetItem(prev2_char))
                     self.ui.tableTriples.setItem(index, 1, QTableWidgetItem(prev1_char))
                     self.ui.tableTriples.setItem(index, 2, QTableWidgetItem(char))
-                    self.ui.tableTriples.setItem(index, 3, QTableWidgetItem(str(self.ltr._triples[char_set.index(prev2_char)][char_set.index(prev1_char)].get_start(char))))
-                    self.ui.tableTriples.setItem(index, 4, QTableWidgetItem(str(self.ltr._triples[char_set.index(prev2_char)][char_set.index(prev1_char)].get_middle(char))))
-                    self.ui.tableTriples.setItem(index, 5, QTableWidgetItem(str(self.ltr._triples[char_set.index(prev2_char)][char_set.index(prev1_char)].get_end(char))))
+                    self.ui.tableTriples.setItem(index, 3, QTableWidgetItem(str(triples_cell.get_start(char))))
+                    self.ui.tableTriples.setItem(index, 4, QTableWidgetItem(str(triples_cell.get_middle(char))))
+                    self.ui.tableTriples.setItem(index, 5, QTableWidgetItem(str(triples_cell.get_end(char))))
                     index += 1
 
     def show_header_context_menu(self, position: QPoint):
@@ -137,18 +143,12 @@ class LTREditor(Editor):
         toggle_alternate_row_colors_action.triggered.connect(self.toggle_alternate_row_colors)
         menu.addAction(toggle_alternate_row_colors_action)
 
-        if self.ui.tableSingles.hasFocus():
-            hor_header_single = self.ui.tableSingles.horizontalHeader()
-            assert hor_header_single is not None
-            menu.exec(hor_header_single.mapToGlobal(position))
-        if self.ui.tableDoubles.hasFocus():
-            hor_header_double = self.ui.tableDoubles.horizontalHeader()
-            assert hor_header_double is not None
-            menu.exec(hor_header_double.mapToGlobal(position))
-        if self.ui.tableTriples.hasFocus():
-            hor_header_triple = self.ui.tableTriples.horizontalHeader()
-            assert hor_header_triple is not None
-            menu.exec(hor_header_triple.mapToGlobal(position))
+        for table in (self.ui.tableSingles, self.ui.tableDoubles, self.ui.tableTriples):
+            if not table.hasFocus():
+                continue
+            header = table.horizontalHeader()
+            assert header is not None
+            menu.exec(header.mapToGlobal(position))
 
     def toggle_alternate_row_colors(self):
         for table in (self.ui.tableSingles, self.ui.tableDoubles, self.ui.tableTriples):

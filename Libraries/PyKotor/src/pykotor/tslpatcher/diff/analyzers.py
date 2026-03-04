@@ -1144,7 +1144,7 @@ def analyze_tlk_strref_references(  # noqa: PLR0913
 
                     # Check based on file type
                     try:
-                        if restype is ResourceType.TwoDA and file_path.name.lower() in relevant_2da_filenames:
+                        if restype == ResourceType.TwoDA and file_path.name.lower() in relevant_2da_filenames:
                             twoda_obj = read_2da(BinaryReader.load_file(file_path))
                             columns_with_strrefs = relevant_2da_filenames[file_path.name.lower()]
 
@@ -1157,14 +1157,14 @@ def analyze_tlk_strref_references(  # noqa: PLR0913
                                         found_resources.add(file_res)
                                         break
 
-                        elif restype is ResourceType.SSF:
+                        elif restype == ResourceType.SSF:
                             ssf_obj = read_ssf(BinaryReader.load_file(file_path))
                             for sound in SSFSound:
                                 if ssf_obj.get(sound) == old_strref:
                                     found_resources.add(file_res)
                                     break
 
-                        elif restype is ResourceType.NCS:
+                        elif restype == ResourceType.NCS:
                             # Just check if it contains the StrRef, actual offset extraction happens later
                             ncs_data = BinaryReader.load_file(file_path)
                             if _extract_ncs_consti_offsets(ncs_data, old_strref):
@@ -1195,7 +1195,7 @@ def analyze_tlk_strref_references(  # noqa: PLR0913
                 print(f"  [{idx}/{len(found_resources)}] Patching {filename} (StrRef {old_strref} → StrRef{token_id})")
 
                 # Handle 2DA files
-                if filename in relevant_2da_filenames and restype is ResourceType.TwoDA:
+                if filename in relevant_2da_filenames and restype == ResourceType.TwoDA:
                     try:
                         twoda_obj = read_2da(resource.data())
                         columns_with_strrefs = relevant_2da_filenames[filename]
@@ -1246,7 +1246,7 @@ def analyze_tlk_strref_references(  # noqa: PLR0913
                             print(f"  {line}")
 
                 # Handle SSF files
-                elif restype is ResourceType.SSF:
+                elif restype == ResourceType.SSF:
                     try:
                         ssf_obj = read_ssf(resource.data())
 
@@ -1279,7 +1279,7 @@ def analyze_tlk_strref_references(  # noqa: PLR0913
                             print(f"  {line}")
 
                 # Handle NCS files (compiled scripts)
-                elif restype is ResourceType.NCS:
+                elif restype == ResourceType.NCS:
                     try:
                         ncs_data = resource.data()
                         consti_offsets = _extract_ncs_consti_offsets(ncs_data, old_strref)

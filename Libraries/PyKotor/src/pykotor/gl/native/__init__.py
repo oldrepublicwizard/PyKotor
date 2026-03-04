@@ -1,3 +1,5 @@
+"""Native GL helpers: optional fastmath for transform_bounds (C extension)."""
+
 from __future__ import annotations
 
 try:

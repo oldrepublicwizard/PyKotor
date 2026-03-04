@@ -1,11 +1,13 @@
+"""Key/mouse bind widget: record and display keybind for editor settings."""
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from loggerplus import RobustLogger  # pyright: ignore[reportMissingTypeStubs]
 from qtpy.QtCore import Qt
 from qtpy.QtWidgets import QWidget
 
+from loggerplus import RobustLogger  # pyright: ignore[reportMissingTypeStubs]
 from toolset.utils.misc import MODIFIER_KEY_NAMES, get_qt_key_string_localized
 
 if TYPE_CHECKING:

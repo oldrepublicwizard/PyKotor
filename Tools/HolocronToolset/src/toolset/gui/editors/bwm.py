@@ -1,39 +1,31 @@
-from __future__ import annotations
+"""BWM (walkmesh) editor: face list, materials, and 2D camera for module designer."""
 
-import struct
+from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
 from qtpy.QtCore import Qt
-from qtpy.QtGui import QColor, QIcon, QImage, QPixmap
 from qtpy.QtWidgets import QListWidgetItem, QShortcut  # pyright: ignore[reportPrivateImportUsage]
 
-from pykotor.common.misc import Color  # pyright: ignore[reportMissingImports]
 from pykotor.resource.formats.bwm import read_bwm, write_bwm  # pyright: ignore[reportMissingImports]
 from pykotor.resource.type import ResourceType  # pyright: ignore[reportMissingImports]
+from toolset.gui.common.interaction.camera import calculate_zoom_strength, handle_standard_2d_camera_movement
+from toolset.gui.common.walkmesh_materials import get_walkmesh_material_colors, populate_material_list_widget
 from toolset.gui.editor import Editor
 from toolset.gui.widgets.settings.widgets.module_designer import ModuleDesignerSettings
-from utility.common.geometry import SurfaceMaterial
 
 if TYPE_CHECKING:
     import os
 
+    from qtpy.QtGui import QColor
     from qtpy.QtWidgets import QWidget
 
     from pykotor.resource.formats.bwm import BWM, BWMFace  # pyright: ignore[reportMissingImports]
     from toolset.data.installation import HTInstallation
-    from utility.common.geometry import Vector2, Vector3
+    from utility.common.geometry import SurfaceMaterial, Vector2, Vector3
 
 _TRANS_FACE_ROLE = Qt.ItemDataRole.UserRole + 1  # type: ignore[attr-defined]
 _TRANS_EDGE_ROLE = Qt.ItemDataRole.UserRole + 2  # type: ignore[attr-defined]
-
-
-def calculate_zoom_strength(delta_y: float, sens_setting: int) -> float:
-    m = 0.00202
-    b = 1
-    factor_in = m * sens_setting + b
-    return 1 / abs(factor_in) if delta_y < 0 else abs(factor_in)
-
 
 class BWMEditor(Editor):
     def __init__(self, parent: QWidget | None, installation: HTInstallation | None = None):
@@ -74,35 +66,7 @@ class BWMEditor(Editor):
 
         self._bwm: BWM | None = None
 
-        moduleDesignerSettings = ModuleDesignerSettings()
-
-        def int_to_qcolor(intvalue: int) -> QColor:
-            color = Color.from_rgba_integer(intvalue)
-            return QColor(int(color.r * 255), int(color.g * 255), int(color.b * 255), int(color.a * 255))
-
-        self.material_colors: dict[SurfaceMaterial, QColor] = {
-            SurfaceMaterial.UNDEFINED: int_to_qcolor(moduleDesignerSettings.undefinedMaterialColour),
-            SurfaceMaterial.OBSCURING: int_to_qcolor(moduleDesignerSettings.obscuringMaterialColour),
-            SurfaceMaterial.DIRT: int_to_qcolor(moduleDesignerSettings.dirtMaterialColour),
-            SurfaceMaterial.GRASS: int_to_qcolor(moduleDesignerSettings.grassMaterialColour),
-            SurfaceMaterial.STONE: int_to_qcolor(moduleDesignerSettings.stoneMaterialColour),
-            SurfaceMaterial.WOOD: int_to_qcolor(moduleDesignerSettings.woodMaterialColour),
-            SurfaceMaterial.WATER: int_to_qcolor(moduleDesignerSettings.waterMaterialColour),
-            SurfaceMaterial.NON_WALK: int_to_qcolor(moduleDesignerSettings.nonWalkMaterialColour),
-            SurfaceMaterial.TRANSPARENT: int_to_qcolor(moduleDesignerSettings.transparentMaterialColour),
-            SurfaceMaterial.CARPET: int_to_qcolor(moduleDesignerSettings.carpetMaterialColour),
-            SurfaceMaterial.METAL: int_to_qcolor(moduleDesignerSettings.metalMaterialColour),
-            SurfaceMaterial.PUDDLES: int_to_qcolor(moduleDesignerSettings.puddlesMaterialColour),
-            SurfaceMaterial.SWAMP: int_to_qcolor(moduleDesignerSettings.swampMaterialColour),
-            SurfaceMaterial.MUD: int_to_qcolor(moduleDesignerSettings.mudMaterialColour),
-            SurfaceMaterial.LEAVES: int_to_qcolor(moduleDesignerSettings.leavesMaterialColour),
-            SurfaceMaterial.LAVA: int_to_qcolor(moduleDesignerSettings.lavaMaterialColour),
-            SurfaceMaterial.BOTTOMLESS_PIT: int_to_qcolor(moduleDesignerSettings.bottomlessPitMaterialColour),
-            SurfaceMaterial.DEEP_WATER: int_to_qcolor(moduleDesignerSettings.deepWaterMaterialColour),
-            SurfaceMaterial.DOOR: int_to_qcolor(moduleDesignerSettings.doorMaterialColour),
-            SurfaceMaterial.NON_WALK_GRASS: int_to_qcolor(moduleDesignerSettings.nonWalkGrassMaterialColour),
-            SurfaceMaterial.TRIGGER: int_to_qcolor(moduleDesignerSettings.nonWalkGrassMaterialColour),
-        }
+        self.material_colors: dict[SurfaceMaterial, QColor] = get_walkmesh_material_colors()
         self.ui.renderArea.material_colors = self.material_colors
         self.rebuild_materials()
 
@@ -111,6 +75,8 @@ class BWMEditor(Editor):
     def _setup_signals(self) -> None:
         self.ui.renderArea.sig_mouse_moved.connect(self.on_mouse_moved)
         self.ui.renderArea.sig_mouse_scrolled.connect(self.on_mouse_scrolled)
+        self.ui.renderArea.sig_mouse_pressed.connect(self.on_mouse_pressed)
+        self.ui.renderArea.sig_marquee_select.connect(self.on_marquee_select)
 
         # Use "=" (base key) for zoom in instead of "+" (which requires Shift).
         QShortcut("=", self).activated.connect(lambda: self.ui.renderArea.camera.set_zoom(2))
@@ -128,14 +94,7 @@ class BWMEditor(Editor):
             - Create list item with icon and text
             - Add item to material list.
         """
-        self.ui.materialList.clear()
-        for material, color in self.material_colors.items():
-            image = QImage(struct.pack("BBB", color.red(), color.green(), color.blue()) * 16 * 16, 16, 16, QImage.Format.Format_RGB888)
-            icon = QIcon(QPixmap(image))
-            text = material.name.replace("_", " ").title()
-            item = QListWidgetItem(icon, text)
-            item.setData(Qt.ItemDataRole.UserRole, material)  # type: ignore[attr-defined]
-            self.ui.materialList.addItem(item)
+        populate_material_list_widget(self.ui.materialList, self.material_colors)
 
     def load(
         self,
@@ -206,14 +165,12 @@ class BWMEditor(Editor):
         assert self._bwm is not None
         face: BWMFace | None = self._bwm.faceAt(world.x, world.y)
 
-        if Qt.MouseButton.LeftButton in buttons and Qt.Key.Key_Control in keys:  # type: ignore[attr-defined]
-            self.ui.renderArea.do_cursor_lock(screen)
-            self.ui.renderArea.camera.nudge_position(-world_data.x, -world_data.y)
-        elif Qt.MouseButton.MiddleButton in buttons and Qt.Key.Key_Control in keys:  # type: ignore[attr-defined]
-            self.ui.renderArea.do_cursor_lock(screen)
-            self.ui.renderArea.camera.nudge_rotation(delta.x / 50)
+        handled_cam = handle_standard_2d_camera_movement(
+            self.ui.renderArea, screen, delta, world_data, buttons, keys
+        )
+
         # Painting: require Shift + LeftButton to avoid conflicts with normal selection/drag
-        elif Qt.MouseButton.LeftButton in buttons and Qt.Key.Key_Shift in keys and face is not None:  # type: ignore[attr-defined]
+        if not handled_cam and Qt.MouseButton.LeftButton in buttons and Qt.Key.Key_Shift in keys and face is not None:  # type: ignore[attr-defined]
             self.change_face_material(face)
 
         coords_text = f"x: {world.x:.2f}, {world.y:.2f}"
@@ -223,6 +180,32 @@ class BWMEditor(Editor):
         xy = f" || x: {screen.x:.2f}, " + f"y: {screen.y:.2f}, "
 
         self.statusBar().showMessage(coords_text + face_text + xy)  # pyright: ignore[reportCallIssue]
+
+    def on_mouse_pressed(self, screen: Vector2, buttons: set[int], keys: set[int]):
+        """Start marquee on left click when not panning (Ctrl) or painting (Shift)."""
+        if (
+            Qt.MouseButton.LeftButton in buttons  # type: ignore[attr-defined]
+            and Qt.Key.Key_Control not in keys  # type: ignore[attr-defined]
+            and Qt.Key.Key_Shift not in keys  # type: ignore[attr-defined]
+        ):
+            self.ui.renderArea.start_marquee(screen)
+
+    def on_marquee_select(self, world_rect: tuple[float, float, float, float], additive: bool):
+        """Highlight the first face that intersects the marquee rect."""
+        if self._bwm is None:
+            return
+        min_x, min_y, max_x, max_y = world_rect
+        for face in self._bwm.faces:
+            # Check if any vertex or centroid is inside the rect
+            cx = (face.v1.x + face.v2.x + face.v3.x) / 3
+            cy = (face.v1.y + face.v2.y + face.v3.y) / 3
+            if min_x <= cx <= max_x and min_y <= cy <= max_y:
+                self.ui.renderArea.setHighlightedTrans(face, None)
+                return
+            for v in (face.v1, face.v2, face.v3):
+                if min_x <= v.x <= max_x and min_y <= v.y <= max_y:
+                    self.ui.renderArea.setHighlightedTrans(face, None)
+                    return
 
     def on_mouse_scrolled(self, delta: Vector2, buttons: set[int], keys: set[int]):
         if not delta.y:

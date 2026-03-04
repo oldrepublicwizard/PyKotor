@@ -1,3 +1,5 @@
+"""Plain text edit with optional LocalizedString and key/double-click signals."""
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING

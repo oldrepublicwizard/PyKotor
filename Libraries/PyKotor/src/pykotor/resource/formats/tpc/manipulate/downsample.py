@@ -1,3 +1,5 @@
+"""Downsample DXT texture data by averaging 2x2 blocks."""
+
 from __future__ import annotations
 
 

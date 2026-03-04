@@ -1,3 +1,5 @@
+"""UTP (placeable) generic: GFF-based placeable definitions and inventory."""
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING

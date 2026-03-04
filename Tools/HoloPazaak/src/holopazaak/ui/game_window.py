@@ -35,7 +35,7 @@ from holopazaak.data.opponents import OPPONENTS, OpponentDifficulty, get_opponen
 from holopazaak.game.card import Card, CardType
 from holopazaak.game.engine import PazaakGame
 from holopazaak.game.player import Player
-from holopazaak.ui.styles import Theme, ThemeColors
+from holopazaak.ui.styles import Theme
 from holopazaak.ui.widgets import (
     ActionButton,
     BoardWidget,
@@ -44,6 +44,9 @@ from holopazaak.ui.widgets import (
     MessageLogWidget,
     ScoreWidget,
 )
+
+if TYPE_CHECKING:
+    from holopazaak.ui.styles import ThemeColors
 
 
 class OpponentSelectDialog(QDialog):

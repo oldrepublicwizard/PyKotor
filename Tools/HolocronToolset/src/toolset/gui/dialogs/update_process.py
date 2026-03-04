@@ -1,3 +1,5 @@
+"""Update process: run installer in subprocess and show progress via queue."""
+
 from __future__ import annotations
 
 import multiprocessing

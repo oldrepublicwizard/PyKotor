@@ -1,3 +1,5 @@
+"""GIT (game instance) generic: GFF-based area instance data (creatures, doors, placeables, etc.)."""
+
 from __future__ import annotations
 
 import math
@@ -5,6 +7,7 @@ import math
 from abc import ABC, abstractmethod
 from enum import IntEnum
 from typing import TYPE_CHECKING, Any, NoReturn, cast
+from types import MappingProxyType
 
 from loggerplus import RobustLogger
 from pykotor.common.language import LocalizedString
@@ -66,6 +69,50 @@ class GIT:
     """
 
     BINARY_TYPE = ResourceType.GIT
+    _ITERATION_SECTIONS: tuple[str, ...] = (
+        "cameras",
+        "creatures",
+        "doors",
+        "encounters",
+        "stores",
+        "placeables",
+        "sounds",
+        "triggers",
+        "waypoints",
+    )
+    _SERIALIZE_SECTIONS: tuple[str, ...] = (
+        "creatures",
+        "doors",
+        "placeables",
+        "waypoints",
+        "triggers",
+        "encounters",
+        "sounds",
+        "stores",
+        "cameras",
+    )
+    _RESOURCE_IDENTIFIER_SECTIONS: tuple[tuple[str, ResourceType], ...] = (
+        ("creatures", ResourceType.UTC),
+        ("doors", ResourceType.UTD),
+        ("encounters", ResourceType.UTE),
+        ("placeables", ResourceType.UTP),
+        ("sounds", ResourceType.UTS),
+        ("stores", ResourceType.UTM),
+        ("triggers", ResourceType.UTT),
+        ("waypoints", ResourceType.UTW),
+    )
+    _TYPE_NAMES: dict[str, str] = {
+        "creatures": "Creature",
+        "doors": "Door",
+        "encounters": "Encounter",
+        "placeables": "Placeable",
+        "sounds": "Sound",
+        "stores": "Store",
+        "triggers": "Trigger",
+        "waypoints": "Waypoint",
+        "cameras": "Camera",
+    }
+    _INSTANCE_TYPE_MAP: MappingProxyType[type["GITInstance"], str] | None = None
 
     def __init__(self):
         # https://github.com/th3w1zard1/Kotor.NET/tree/master/Kotor.NET/Resources/KotorGIT/GIT.cs:29-37
@@ -90,42 +137,14 @@ class GIT:
         self.waypoints: list[GITWaypoint] = []  # WaypointList (waypoint markers)
 
     def __iter__(self) -> Generator[ResRef, Any, None]:
-        # Iterate over creatures
-        for creature in self.creatures:
-            yield creature.resref
-        # Iterate over doors
-        for door in self.doors:
-            yield door.resref
-        for encounter in self.encounters:
-            yield encounter.resref
-        for store in self.stores:
-            yield store.resref
-        for placeable in self.placeables:
-            yield placeable.resref
-        for sound in self.sounds:
-            yield sound.resref
-        for trigger in self.triggers:
-            yield trigger.resref
-        for waypoint in self.waypoints:
-            yield waypoint.resref
+        for section_name in self._ITERATION_SECTIONS:
+            for instance in cast("list[GITInstance]", getattr(self, section_name)):
+                yield instance.resref
 
     def iter_resource_identifiers(self) -> Generator[ResourceIdentifier, Any, None]:
-        for creature in self.creatures:
-            yield ResourceIdentifier(str(creature.resref), ResourceType.UTC)
-        for door in self.doors:
-            yield ResourceIdentifier(str(door.resref), ResourceType.UTD)
-        for encounter in self.encounters:
-            yield ResourceIdentifier(str(encounter.resref), ResourceType.UTE)
-        for store in self.stores:
-            yield ResourceIdentifier(str(store.resref), ResourceType.UTM)
-        for placeable in self.placeables:
-            yield ResourceIdentifier(str(placeable.resref), ResourceType.UTP)
-        for sound in self.sounds:
-            yield ResourceIdentifier(str(sound.resref), ResourceType.UTS)
-        for trigger in self.triggers:
-            yield ResourceIdentifier(str(trigger.resref), ResourceType.UTT)
-        for waypoint in self.waypoints:
-            yield ResourceIdentifier(str(waypoint.resref), ResourceType.UTW)
+        for section_name, res_type in self._RESOURCE_IDENTIFIER_SECTIONS:
+            for instance in cast("list[GITInstance]", getattr(self, section_name)):
+                yield ResourceIdentifier(str(instance.resref), res_type)
 
     def instances(self) -> list[GITInstance]:
         """Returns a list of all instances stored inside the GIT, regardless of the type.
@@ -134,47 +153,48 @@ class GIT:
         -------
             A list of all stored instances.
         """
-        return cast(
-            "list[GITInstance]",
-            [
-                *self.cameras,
-                *self.creatures,
-                *self.doors,
-                *self.encounters,
-                *self.placeables,
-                *self.sounds,
-                *self.stores,
-                *self.triggers,
-                *self.waypoints,
-            ],
-        )
+        return [
+            instance
+            for section_name in self._ITERATION_SECTIONS
+            for instance in cast("list[GITInstance]", getattr(self, section_name))
+        ]
 
     def next_camera_id(self) -> int:
         """Get a unique new camera id for this git to use with a new GITCamera."""
         return max(camera.camera_id for camera in self.cameras) + 1
 
+    def _get_instance_list(self, instance: GITInstance) -> list[GITInstance]:
+        """Get the appropriate instance list for the given instance type.
+        
+        Maps an instance to its corresponding list (creatures, doors, placeables, etc).
+        Used internally to reduce isinstance dispatch duplication.
+        
+        Args:
+        ----
+            instance: The GIT instance to find the list for.
+            
+        Returns:
+        -------
+            The list containing this instance type, or None if unknown type.
+        """
+        type_map = self._build_instance_type_map()
+        for instance_type, section_name in type_map.items():
+            if isinstance(instance, instance_type):
+                return cast("list[GITInstance]", getattr(self, section_name))
+        msg = f"Unknown instance type: {type(instance)!r}"
+        raise ValueError(msg)
+
     def remove(
         self,
         instance: GITInstance,
     ):
-        if isinstance(instance, GITCreature):
-            self.creatures.remove(instance)
-        elif isinstance(instance, GITPlaceable):
-            self.placeables.remove(instance)
-        elif isinstance(instance, GITDoor):
-            self.doors.remove(instance)
-        elif isinstance(instance, GITTrigger):
-            self.triggers.remove(instance)
-        elif isinstance(instance, GITEncounter):
-            self.encounters.remove(instance)
-        elif isinstance(instance, GITWaypoint):
-            self.waypoints.remove(instance)
-        elif isinstance(instance, GITCamera):
-            self.cameras.remove(instance)
-        elif isinstance(instance, GITSound):
-            self.sounds.remove(instance)
-        elif isinstance(instance, GITStore):
-            self.stores.remove(instance)
+        """Remove an instance from its respective list.
+        
+        Args:
+        ----
+            instance: The instance to remove.
+        """
+        self._get_instance_list(instance).remove(instance)
 
     def index(
         self,
@@ -194,27 +214,60 @@ class GIT:
         -------
             The index into one of the GIT instance lists.
         """
-        if isinstance(instance, GITCreature):
-            return self.creatures.index(instance)
-        if isinstance(instance, GITPlaceable):
-            return self.placeables.index(instance)
-        if isinstance(instance, GITDoor):
-            return self.doors.index(instance)
-        if isinstance(instance, GITTrigger):
-            return self.triggers.index(instance)
-        if isinstance(instance, GITEncounter):
-            return self.encounters.index(instance)
-        if isinstance(instance, GITWaypoint):
-            return self.waypoints.index(instance)
-        if isinstance(instance, GITCamera):
-            return self.cameras.index(instance)
-        if isinstance(instance, GITSound):
-            return self.sounds.index(instance)
-        if isinstance(instance, GITStore):
-            return self.stores.index(instance)
+        return self._get_instance_list(instance).index(instance)
 
-        msg = "Could not find instance in GIT object."
-        raise ValueError(msg)
+    def _get_instance_type_name(self, instance: GITInstance) -> str:
+        """Get a human-readable name for an instance type.
+        
+        Args:
+        ----
+            instance: The GIT instance to get the name for.
+            
+        Returns:
+        -------
+            A string like "Creature", "Door", "Placeable", etc.
+        """
+        section_name = self._find_section_for_instance(instance)
+        return self._TYPE_NAMES.get(section_name or "", "Unknown")
+
+    @classmethod
+    def _build_instance_type_map(cls) -> MappingProxyType[type["GITInstance"], str]:
+        if cls._INSTANCE_TYPE_MAP is not None:
+            return cls._INSTANCE_TYPE_MAP
+        from pykotor.resource.generics.git import (
+            GITCreature,
+            GITDoor,
+            GITEncounter,
+            GITPlaceable,
+            GITSound,
+            GITStore,
+            GITTrigger,
+            GITWaypoint,
+            GITCamera,
+        )
+
+        type_map = MappingProxyType(
+            {
+                GITCreature: "creatures",
+                GITDoor: "doors",
+                GITEncounter: "encounters",
+                GITPlaceable: "placeables",
+                GITSound: "sounds",
+                GITStore: "stores",
+                GITTrigger: "triggers",
+                GITWaypoint: "waypoints",
+                GITCamera: "cameras",
+            },
+        )
+        cls._INSTANCE_TYPE_MAP = type_map
+        return type_map
+
+    def _find_section_for_instance(self, instance: GITInstance) -> str | None:
+        type_map = self._build_instance_type_map()
+        for instance_type, section_name in type_map.items():
+            if isinstance(instance, instance_type):
+                return section_name
+        return None
 
     def add(
         self,
@@ -230,45 +283,12 @@ class GIT:
         ------
             ValueError: If the instance already is stored inside the GIT.
         """
-        if isinstance(instance, GITCreature):
-            if instance in self.creatures:
-                raise ValueError("Creature instance already exists inside the GIT object.")
-            return self.creatures.append(instance)
-        if isinstance(instance, GITPlaceable):
-            if instance in self.placeables:
-                raise ValueError("Placeable instance already exists inside the GIT object.")
-            return self.placeables.append(instance)
-        if isinstance(instance, GITDoor):
-            if instance in self.doors:
-                raise ValueError("Door instance already exists inside the GIT object.")
-            return self.doors.append(instance)
-        if isinstance(instance, GITTrigger):
-            if instance in self.triggers:
-                raise ValueError("Trigger instance already exists inside the GIT object.")
-            return self.triggers.append(instance)
-        if isinstance(instance, GITEncounter):
-            if instance in self.encounters:
-                raise ValueError("Encounter instance already exists inside the GIT object.")
-            return self.encounters.append(instance)
-        if isinstance(instance, GITWaypoint):
-            if instance in self.waypoints:
-                raise ValueError("Waypoint instance already exists inside the GIT object.")
-            return self.waypoints.append(instance)
-        if isinstance(instance, GITCamera):
-            if instance in self.cameras:
-                raise ValueError("Camera instance already exists inside the GIT object.")
-            return self.cameras.append(instance)
-        if isinstance(instance, GITSound):
-            if instance in self.sounds:
-                raise ValueError("Sound instance already exists inside the GIT object.")
-            return self.sounds.append(instance)
-        if isinstance(instance, GITStore):
-            if instance in self.stores:
-                raise ValueError("Store instance already exists inside the GIT object.")
-            return self.stores.append(instance)
-
-        msg = "Tried to add invalid instance."
-        raise ValueError(msg)
+        instance_list = self._get_instance_list(instance)
+        type_name = self._get_instance_type_name(instance)
+        
+        if instance in instance_list:
+            raise ValueError(f"{type_name} instance already exists inside the GIT object.")
+        instance_list.append(instance)
 
     def serialize(self) -> dict[str, Any]:
         """Serialize a complete GIT to JSON-compatible dict.
@@ -278,15 +298,8 @@ class GIT:
             Dictionary representation
         """
         return {
-            "creatures": [c.serialize() for c in self.creatures],
-            "doors": [d.serialize() for d in self.doors],
-            "placeables": [p.serialize() for p in self.placeables],
-            "waypoints": [w.serialize() for w in self.waypoints],
-            "triggers": [t.serialize() for t in self.triggers],
-            "encounters": [e.serialize() for e in self.encounters],
-            "sounds": [s.serialize() for s in self.sounds],
-            "stores": [s.serialize() for s in self.stores],
-            "cameras": [c.serialize() for c in self.cameras],
+            section_name: [instance.serialize() for instance in cast("list[GITInstance]", getattr(self, section_name))]
+            for section_name in self._SERIALIZE_SECTIONS
         }
 
 

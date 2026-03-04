@@ -1,3 +1,8 @@
+"""Unified read/write and type dispatch for KotOR resources.
+
+This module provides read_resource, resource_to_bytes, and dismantle_generic so callers
+can work with sources and high-level types (ARE, DLG, GIT, etc.) without format-specific imports.
+"""
 from __future__ import annotations
 
 import os
@@ -41,6 +46,124 @@ if TYPE_CHECKING:
     from pykotor.resource.type import SOURCE_TYPES
 
 
+def _ncs_to_bytes(ncs: NCS) -> bytes:
+    return bytes(bytes_ncs(ncs))
+
+
+def _read_ncs_as_bytes(source: SOURCE_TYPES) -> bytes:
+    return _ncs_to_bytes(read_ncs(source))
+
+
+def _try_read_with(readers: tuple[callable, ...], source: SOURCE_TYPES) -> bytes | None:
+    for reader in readers:
+        with suppress(OSError, ValueError):
+            return reader(source)
+    return None
+
+
+_UNKNOWN_RESOURCE_READERS: tuple[callable, ...] = (
+    lambda source: bytes_tlk(read_tlk(source)),
+    lambda source: bytes_ssf(read_ssf(source)),
+    lambda source: bytes_2da(read_2da(source)),
+    lambda source: bytes_lip(read_lip(source)),
+    lambda source: bytes_tpc(read_tpc(source)),
+    lambda source: bytes_erf(read_erf(source)),
+    lambda source: bytes_rim(read_rim(source)),
+    _read_ncs_as_bytes,
+    lambda source: bytes_gff(read_gff(source)),
+    lambda source: bytes_mdl(read_mdl(source)),
+    lambda source: bytes_vis(read_vis(source)),
+    lambda source: bytes_lyt(read_lyt(source)),
+    lambda source: bytes_ltr(read_ltr(source)),
+    lambda source: bytes_bwm(read_bwm(source)),
+)
+
+
+_GENERIC_DISMANTLERS: tuple[tuple[type, callable], ...] = (
+    (ARE, dismantle_are),
+    (DLG, dismantle_dlg),
+    (GIT, dismantle_git),
+    (IFO, dismantle_ifo),
+    (JRL, dismantle_jrl),
+    (PTH, dismantle_pth),
+    (UTC, dismantle_utc),
+    (UTD, dismantle_utd),
+    (UTE, dismantle_ute),
+    (UTM, dismantle_utm),
+    (UTP, dismantle_utp),
+    (UTS, dismantle_uts),
+    (UTT, dismantle_utt),
+    (UTW, dismantle_utw),
+)
+
+
+_RESOURCE_SERIALIZERS: tuple[tuple[type, callable], ...] = (
+    (BWM, bytes_bwm),
+    (GFF, bytes_gff),
+    (ERF, bytes_erf),
+    (LIP, bytes_lip),
+    (LTR, bytes_ltr),
+    (LYT, bytes_lyt),
+    (MDL, bytes_mdl),
+    (NCS, _ncs_to_bytes),
+    (RIM, bytes_rim),
+    (SSF, bytes_ssf),
+    (TLK, bytes_tlk),
+    (TPC, bytes_tpc),
+    (TwoDA, bytes_2da),
+    (VIS, bytes_vis),
+)
+
+
+def _read_ext_ssf(source: SOURCE_TYPES) -> bytes:
+    return bytes_ssf(read_ssf(source))
+
+
+def _read_ext_2da(source: SOURCE_TYPES) -> bytes:
+    return bytes_2da(read_2da(source))
+
+
+def _read_ext_lip(source: SOURCE_TYPES) -> bytes:
+    return bytes_lip(read_lip(source))
+
+
+def _read_ext_rim(source: SOURCE_TYPES) -> bytes:
+    return bytes_rim(read_rim(source))
+
+
+def _read_ext_ncs(source: SOURCE_TYPES) -> bytes:
+    return bytes(bytes_ncs(read_ncs(source)))
+
+
+def _read_ext_mdl(source: SOURCE_TYPES) -> bytes:
+    return bytes_mdl(read_mdl(source))
+
+
+def _read_ext_vis(source: SOURCE_TYPES) -> bytes:
+    return bytes_vis(read_vis(source))
+
+
+def _read_ext_lyt(source: SOURCE_TYPES) -> bytes:
+    return bytes_lyt(read_lyt(source))
+
+
+def _read_ext_ltr(source: SOURCE_TYPES) -> bytes:
+    return bytes_ltr(read_ltr(source))
+
+
+_READ_RESOURCE_BY_EXT: dict[str, callable] = {
+    "ssf": _read_ext_ssf,
+    "2da": _read_ext_2da,
+    "lip": _read_ext_lip,
+    "rim": _read_ext_rim,
+    "ncs": _read_ext_ncs,
+    "mdl": _read_ext_mdl,
+    "vis": _read_ext_vis,
+    "lyt": _read_ext_lyt,
+    "ltr": _read_ext_ltr,
+}
+
+
 def read_resource(  # noqa: C901, PLR0911, PLR0912
     source: SOURCE_TYPES,
     resource_type: ResourceType | None = None,
@@ -69,37 +192,27 @@ def read_resource(  # noqa: C901, PLR0911, PLR0912
     if not resource_type:
         return read_unknown_resource(source)
 
-    try:  # try from extension/resource_type arg
+    try:  # dispatch by category/extension for maintainability
         ext_obj = PurePath(resource_type.extension)
         resource_ext = ext_obj.stem.lower() if "." in ext_obj.name else ext_obj.suffix.lower()[1:]
+
+        # Category-based dispatch
         if resource_type.category == "Talk Tables":
             return bytes_tlk(read_tlk(source))
-        if resource_type in {ResourceType.TGA, ResourceType.TPC}:
-            return bytes_tpc(read_tpc(source))
-        if resource_ext == "ssf":
-            return bytes_ssf(read_ssf(source))
-        if resource_ext == "2da":
-            return bytes_2da(read_2da(source))
-        if resource_ext == "lip":
-            return bytes_lip(read_lip(source))
-        if ResourceType.from_extension(resource_ext) in (ResourceType.ERF, ResourceType.MOD, ResourceType.SAV):
-            return bytes_erf(read_erf(source))
-        if resource_ext == "rim":
-            return bytes_rim(read_rim(source))
-        if resource_type.extension.upper() in GFFContent.__members__:
-            return bytes_gff(read_gff(source))
-        if resource_ext == "ncs":
-            return bytes(bytes_ncs(read_ncs(source)))
-        if resource_ext == "mdl":
-            return bytes_mdl(read_mdl(source))
-        if resource_ext == "vis":
-            return bytes_vis(read_vis(source))
-        if resource_ext == "lyt":
-            return bytes_lyt(read_lyt(source))
-        if resource_ext == "ltr":
-            return bytes_ltr(read_ltr(source))
         if resource_type.category == "Walkmeshes":
             return bytes_bwm(read_bwm(source))
+        if resource_type in {ResourceType.TGA, ResourceType.TPC}:
+            return bytes_tpc(read_tpc(source))
+
+        # Extension-based dispatch (O(1) lookup, single place to add new types)
+        handler = _READ_RESOURCE_BY_EXT.get(resource_ext)
+        if handler is not None:
+            return handler(source)
+
+        if ResourceType.from_extension(resource_ext) in (ResourceType.ERF, ResourceType.MOD, ResourceType.SAV):
+            return bytes_erf(read_erf(source))
+        if resource_type.extension.upper() in GFFContent.__members__:
+            return bytes_gff(read_gff(source))
     except Exception as e:  # pylint: disable=W0718  # noqa: BLE001
         new_err = ValueError(f"Could not load resource '{source_path}' as resource type '{resource_type}")
         print((new_err.__class__.__name__, str(new_err)))
@@ -112,34 +225,9 @@ def read_resource(  # noqa: C901, PLR0911, PLR0912
 def read_unknown_resource(  # noqa: PLR0911
     source: SOURCE_TYPES,
 ) -> bytes:
-    with suppress(OSError, ValueError):
-        return bytes_tlk(read_tlk(source))
-    with suppress(OSError, ValueError):
-        return bytes_ssf(read_ssf(source))
-    with suppress(OSError, ValueError):
-        return bytes_2da(read_2da(source))
-    with suppress(OSError, ValueError):
-        return bytes_lip(read_lip(source))
-    with suppress(OSError, ValueError):
-        return bytes_tpc(read_tpc(source))
-    with suppress(OSError, ValueError):
-        return bytes_erf(read_erf(source))
-    with suppress(OSError, ValueError):
-        return bytes_rim(read_rim(source))
-    with suppress(OSError, ValueError):
-        return bytes(bytes_ncs(read_ncs(source)))
-    with suppress(OSError, ValueError):
-        return bytes_gff(read_gff(source))
-    with suppress(OSError, ValueError):
-        return bytes_mdl(read_mdl(source))
-    with suppress(OSError, ValueError):
-        return bytes_vis(read_vis(source))
-    with suppress(OSError, ValueError):
-        return bytes_lyt(read_lyt(source))
-    with suppress(OSError, ValueError):
-        return bytes_ltr(read_ltr(source))
-    with suppress(OSError, ValueError):
-        return bytes_bwm(read_bwm(source))
+    read_result = _try_read_with(_UNKNOWN_RESOURCE_READERS, source)
+    if read_result is not None:
+        return read_result
     msg = "Source resource data not recognized as any kotor file formats."
     raise ValueError(msg)
 
@@ -160,34 +248,9 @@ def dismantle_generic(  # noqa: PLR0911, C901, PLR0912, ANN201
     -------
         A deconstructed_gff
     """
-    if isinstance(generic, ARE):
-        return dismantle_are(generic)
-    if isinstance(generic, DLG):
-        return dismantle_dlg(generic)
-    if isinstance(generic, GIT):
-        return dismantle_git(generic)
-    if isinstance(generic, IFO):
-        return dismantle_ifo(generic)
-    if isinstance(generic, JRL):
-        return dismantle_jrl(generic)
-    if isinstance(generic, PTH):
-        return dismantle_pth(generic)
-    if isinstance(generic, UTC):
-        return dismantle_utc(generic)
-    if isinstance(generic, UTD):
-        return dismantle_utd(generic)
-    if isinstance(generic, UTE):
-        return dismantle_ute(generic)
-    if isinstance(generic, UTM):
-        return dismantle_utm(generic)
-    if isinstance(generic, UTP):
-        return dismantle_utp(generic)
-    if isinstance(generic, UTS):
-        return dismantle_uts(generic)
-    if isinstance(generic, UTT):
-        return dismantle_utt(generic)
-    if isinstance(generic, UTW):
-        return dismantle_utw(generic)
+    for generic_type, dismantler in _GENERIC_DISMANTLERS:
+        if isinstance(generic, generic_type):
+            return dismantler(generic)
     if isinstance(generic, GFF):
         return generic  # Guess whoever called this didn't get the memo.
     raise TypeError(f"Could not dismantle generic, invalid object passed ({generic}) of type '{type(generic).__name__}' was unexpected.")
@@ -198,32 +261,7 @@ def resource_to_bytes(  # noqa: PLR0912, C901, PLR0911
 ) -> bytes:
     if isinstance(resource, GFF_GENERICS):
         return bytes_gff(dismantle_generic(resource))
-    if isinstance(resource, BWM):
-        return bytes_bwm(resource)
-    if isinstance(resource, GFF):
-        return bytes_gff(resource)
-    if isinstance(resource, ERF):
-        return bytes_erf(resource)
-    if isinstance(resource, LIP):
-        return bytes_lip(resource)
-    if isinstance(resource, LTR):
-        return bytes_ltr(resource)
-    if isinstance(resource, LYT):
-        return bytes_lyt(resource)
-    if isinstance(resource, MDL):
-        return bytes_mdl(resource)
-    if isinstance(resource, NCS):
-        return bytes(bytes_ncs(resource))
-    if isinstance(resource, RIM):
-        return bytes_rim(resource)
-    if isinstance(resource, SSF):
-        return bytes_ssf(resource)
-    if isinstance(resource, TLK):
-        return bytes_tlk(resource)
-    if isinstance(resource, TPC):
-        return bytes_tpc(resource)
-    if isinstance(resource, TwoDA):
-        return bytes_2da(resource)
-    if isinstance(resource, VIS):
-        return bytes_vis(resource)
+    for resource_type, serializer in _RESOURCE_SERIALIZERS:
+        if isinstance(resource, resource_type):
+            return serializer(resource)
     raise TypeError(f"Invalid resource {resource} of type '{type(resource).__name__}' passed to `resource_to_bytes`.")

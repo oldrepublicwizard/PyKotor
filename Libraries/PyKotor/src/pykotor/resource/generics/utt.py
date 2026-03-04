@@ -1,3 +1,5 @@
+"""UTT (trigger) generic: GFF-based trigger definitions, scripts, and trap settings."""
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING

@@ -1,3 +1,5 @@
+"""Background thread for fetching toolset update info without blocking the UI."""
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any

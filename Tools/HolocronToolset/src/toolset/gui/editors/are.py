@@ -1,3 +1,5 @@
+"""ARE (area) editor: room/track/obstacle layout, north axis, wind, and module integration."""
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
@@ -16,6 +18,7 @@ from pykotor.resource.formats.lyt import read_lyt
 from pykotor.resource.generics.are import ARE, ARENorthAxis, AREWindPower, dismantle_are, read_are
 from pykotor.resource.type import ResourceType
 from toolset.data.installation import HTInstallation
+from toolset.gui.common.interaction.camera import calculate_zoom_strength, handle_standard_2d_camera_movement
 from toolset.gui.common.localization import translate as tr
 from toolset.gui.dialogs.edit.locstring import LocalizedStringDialog
 from toolset.gui.editor import Editor
@@ -89,14 +92,17 @@ class AREEditor(Editor):
         self.ui.tagGenerateButton.clicked.connect(self.generate_tag)
 
         self.ui.mapAxisSelect.currentIndexChanged.connect(self.redoMinimap)
-        self.ui.mapWorldX1Spin.valueChanged.connect(self.redoMinimap)
-        self.ui.mapWorldX2Spin.valueChanged.connect(self.redoMinimap)
-        self.ui.mapWorldY1Spin.valueChanged.connect(self.redoMinimap)
-        self.ui.mapWorldY2Spin.valueChanged.connect(self.redoMinimap)
-        self.ui.mapImageX1Spin.valueChanged.connect(self.redoMinimap)
-        self.ui.mapImageX2Spin.valueChanged.connect(self.redoMinimap)
-        self.ui.mapImageY1Spin.valueChanged.connect(self.redoMinimap)
-        self.ui.mapImageY2Spin.valueChanged.connect(self.redoMinimap)
+        for signal in (
+            self.ui.mapWorldX1Spin.valueChanged,
+            self.ui.mapWorldX2Spin.valueChanged,
+            self.ui.mapWorldY1Spin.valueChanged,
+            self.ui.mapWorldY2Spin.valueChanged,
+            self.ui.mapImageX1Spin.valueChanged,
+            self.ui.mapImageX2Spin.valueChanged,
+            self.ui.mapImageY1Spin.valueChanged,
+            self.ui.mapImageY2Spin.valueChanged,
+        ):
+            signal.connect(self.redoMinimap)
 
         # Minimap renderer input: match other WalkmeshRenderer users (PTH/BWM).
         self.ui.minimapRenderer.sig_mouse_moved.connect(self.on_minimap_mouse_moved)
@@ -111,10 +117,47 @@ class AREEditor(Editor):
         assert self._installation is not None, "Installation is not set"
         self.relevant_script_resnames: list[str] = sorted(iter({res.resname().lower() for res in self._installation.get_relevant_resources(ResourceType.NCS, self._filepath)}))
 
-        self.ui.onEnterSelect.populate_combo_box(self.relevant_script_resnames)
-        self.ui.onExitSelect.populate_combo_box(self.relevant_script_resnames)
-        self.ui.onHeartbeatSelect.populate_combo_box(self.relevant_script_resnames)
-        self.ui.onUserDefinedSelect.populate_combo_box(self.relevant_script_resnames)
+        for combo_box in self._script_combo_boxes():
+            combo_box.populate_combo_box(self.relevant_script_resnames)
+
+    def _script_combo_boxes(self) -> tuple[QWidget, ...]:
+        """Return all script combobox widgets used by this editor."""
+        return (
+            self.ui.onEnterSelect,
+            self.ui.onExitSelect,
+            self.ui.onHeartbeatSelect,
+            self.ui.onUserDefinedSelect,
+        )
+
+    def _script_value_pairs(self, are: ARE) -> tuple[tuple[QWidget, ResRef], ...]:
+        """Map script combobox widgets to ARE script values."""
+        return (
+            (self.ui.onEnterSelect, are.on_enter),
+            (self.ui.onExitSelect, are.on_exit),
+            (self.ui.onHeartbeatSelect, are.on_heartbeat),
+            (self.ui.onUserDefinedSelect, are.on_user_defined),
+        )
+
+    def _setup_reference_field(
+        self,
+        field: QWidget,
+        resource_types: list[ResourceType],
+        reference_type: str,
+        tooltip_text: str,
+    ) -> None:
+        """Configure context menu reference search behavior for a script widget."""
+        assert self._installation is not None
+        line_edit = field.lineEdit() if hasattr(field, "lineEdit") else None
+        if line_edit is not None:
+            line_edit.setMaxLength(16)
+
+        self._installation.setup_file_context_menu(
+            field,
+            resource_types,
+            enable_reference_search=True,
+            reference_search_type=reference_type,
+        )
+        field.setToolTip(tr(tooltip_text))
 
     def _setup_installation(self, installation: HTInstallation):
         self._installation = installation
@@ -144,20 +187,13 @@ class AREEditor(Editor):
         self.ui.lightningCheck.setEnabled(installation.tsl)
 
         # Setup context menus for script fields with reference search enabled
-        script_fields: list[QWidget] = [
-            self.ui.onEnterSelect,
-            self.ui.onExitSelect,
-            self.ui.onHeartbeatSelect,
-            self.ui.onUserDefinedSelect,
-        ]
-        # Set maxLength for FilterComboBox script fields (ResRefs are max 16 characters)
-        for field in script_fields:
-            line_edit = field.lineEdit() if hasattr(field, "lineEdit") else None
-            if line_edit is not None:
-                line_edit.setMaxLength(16)
-        for field in script_fields:
-            installation.setup_file_context_menu(field, [ResourceType.NSS, ResourceType.NCS], enable_reference_search=True, reference_search_type="script")
-            field.setToolTip(tr("Right-click to find references to this script in the installation."))
+        for field in self._script_combo_boxes():
+            self._setup_reference_field(
+                field,
+                [ResourceType.NSS, ResourceType.NCS],
+                "script",
+                "Right-click to find references to this script in the installation.",
+            )
 
     def load(
         self,
@@ -294,10 +330,8 @@ class AREEditor(Editor):
         self.ui.dirtSize3Spin.setValue(are.dirty_size_3)
 
         # Scripts
-        self.ui.onEnterSelect.set_combo_box_text(str(are.on_enter))
-        self.ui.onExitSelect.set_combo_box_text(str(are.on_exit))
-        self.ui.onHeartbeatSelect.set_combo_box_text(str(are.on_heartbeat))
-        self.ui.onUserDefinedSelect.set_combo_box_text(str(are.on_user_defined))
+        for script_widget, script_value in self._script_value_pairs(are):
+            script_widget.set_combo_box_text(str(script_value))
 
         # Comments
         self.ui.commentsEdit.setPlainText(are.comment)
@@ -407,13 +441,23 @@ class AREEditor(Editor):
         are.dirty_size_3 = self.ui.dirtSize3Spin.value()
 
         # Scripts
-        are.on_enter = ResRef(self.ui.onEnterSelect.currentText())
-        are.on_exit = ResRef(self.ui.onExitSelect.currentText())
-        are.on_heartbeat = ResRef(self.ui.onHeartbeatSelect.currentText())
-        are.on_user_defined = ResRef(self.ui.onUserDefinedSelect.currentText())
+        for attr_name, script_widget in (
+            ("on_enter", self.ui.onEnterSelect),
+            ("on_exit", self.ui.onExitSelect),
+            ("on_heartbeat", self.ui.onHeartbeatSelect),
+            ("on_user_defined", self.ui.onUserDefinedSelect),
+        ):
+            setattr(are, attr_name, ResRef(script_widget.currentText()))
 
         # Comments
         are.comment = self.ui.commentsEdit.toPlainText()
+
+        # Moon fog: no UI; preserve from loaded ARE so GFF roundtrip keeps MoonFogNear/MoonFogFar etc.
+        if self._loaded_are is not None:
+            are.moon_fog = self._loaded_are.moon_fog
+            are.moon_fog_near = self._loaded_are.moon_fog_near
+            are.moon_fog_far = self._loaded_are.moon_fog_far
+            are.moon_fog_color = self._loaded_are.moon_fog_color
 
         # Remaining.
         are.rooms = self._rooms
@@ -438,14 +482,12 @@ class AREEditor(Editor):
     def on_minimap_mouse_moved(self, screen: Vector2, delta: Vector2, buttons: set[int], keys: set[int]):
         # Pan/rotate controls mirror `BWMEditor` (Ctrl+drag) and respect module designer sensitivities.
         world_delta: Vector2 = self.ui.minimapRenderer.to_world_delta(delta.x, delta.y)
-        if Qt.MouseButton.LeftButton in buttons and Qt.Key.Key_Control in keys:  # type: ignore[attr-defined]
-            self.ui.minimapRenderer.do_cursor_lock(screen)
-            move_sens = ModuleDesignerSettings().moveCameraSensitivity2d / 100
-            self.ui.minimapRenderer.camera.nudge_position(-world_delta.x * move_sens, -world_delta.y * move_sens)
-        elif Qt.MouseButton.MiddleButton in buttons and Qt.Key.Key_Control in keys:  # type: ignore[attr-defined]
-            self.ui.minimapRenderer.do_cursor_lock(screen)
-            rotate_sens = ModuleDesignerSettings().rotateCameraSensitivity2d / 1000
-            self.ui.minimapRenderer.camera.nudge_rotation((delta.x / 50) * rotate_sens)
+        move_sens = ModuleDesignerSettings().moveCameraSensitivity2d / 100
+        rotate_sens = ModuleDesignerSettings().rotateCameraSensitivity2d / 1000
+        
+        handle_standard_2d_camera_movement(
+            self.ui.minimapRenderer, screen, delta, world_delta, buttons, keys, move_sens, rotate_sens
+        )
 
     def on_minimap_mouse_scrolled(self, delta: Vector2, buttons: set[int], keys: set[int]):
         if not delta.y:
@@ -477,13 +519,6 @@ class AREEditor(Editor):
     def generate_tag(self):
         self.ui.tagEdit.setText("newarea" if self._resname is None or self._resname == "" else self._resname)
 
-
-def calculate_zoom_strength(delta_y: float, sens_setting: int) -> float:
-    # Mirrors `BWMEditor.calculate_zoom_strength` / `PTHEditor.calculate_zoom_strength`.
-    m = 0.00202
-    b = 1
-    factor_in = m * sens_setting + b
-    return 1 / abs(factor_in) if delta_y < 0 else abs(factor_in)
 
 if __name__ == "__main__":
     import sys

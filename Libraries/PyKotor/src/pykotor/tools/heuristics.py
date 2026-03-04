@@ -1,3 +1,5 @@
+"""Game/path heuristics: detect KotOR 1 vs 2 and installation type from directory contents."""
+
 from __future__ import annotations
 
 from pathlib import Path

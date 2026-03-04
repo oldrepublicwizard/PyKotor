@@ -109,6 +109,8 @@ def _validate_stack_operations(ncs: NCS, issues: list[str]) -> None:
 def _validate_control_flow(ncs: NCS, issues: list[str]) -> None:
     """Validate control flow instructions."""
     instructions = ncs.instructions
+    # O(1) lookup for jump target index instead of O(n) list.index() per instruction
+    instr_to_index: dict[int, int] = {id(instr): i for i, instr in enumerate(instructions)}
 
     for i, instr in enumerate(instructions):
         if instr.ins_type in (NCSInstructionType.JMP, NCSInstructionType.JZ, NCSInstructionType.JNZ, NCSInstructionType.JSR):
@@ -117,7 +119,7 @@ def _validate_control_flow(ncs: NCS, issues: list[str]) -> None:
                 continue
 
             # Check jump target bounds
-            target_index = instructions.index(instr.jump)
+            target_index = instr_to_index.get(id(instr.jump), -1)
             if target_index < 0 or target_index >= len(instructions):
                 issues.append(f"Jump instruction at position {i} targets invalid location {target_index}")
                 continue

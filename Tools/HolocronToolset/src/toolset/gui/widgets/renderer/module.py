@@ -1,4 +1,10 @@
+"""Module/area renderer widget for KotOR LYT and walkmesh (BWM) with OpenGL.
+
+Used by the module designer and level editor to display and interact with layout and walkmesh.
+"""
 from __future__ import annotations
+
+import math
 
 from collections import deque
 from copy import copy, deepcopy
@@ -9,6 +15,7 @@ import qtpy
 
 from qtpy import QtCore
 from qtpy.QtCore import QMetaObject, QThread, QTimer, Qt
+from qtpy.QtGui import QColor, QPainter, QPen, QPolygonF
 from qtpy.QtWidgets import (
     QApplication,
     QMessageBox,
@@ -21,12 +28,15 @@ from pykotor.resource.formats.bwm.bwm_data import BWM
 from pykotor.resource.formats.lyt.lyt_data import LYT
 from pykotor.resource.generics.git import GITInstance
 from pykotor.resource.type import ResourceType
-from utility.common.geometry import Vector2, Vector3
+from utility.common.geometry import Vector2, Vector3, Vector4
 from utility.error_handling import assert_with_variable_trace
 
 if TYPE_CHECKING:
     from glm import vec3  # pyright: ignore[reportMissingImports]
-    from qtpy.QtCore import QPoint  # pyright: ignore[reportAttributeAccessIssue]
+    from qtpy.QtCore import (
+        QPoint,  # pyright: ignore[reportAttributeAccessIssue]
+        QPointF,  # pyright: ignore[reportAttributeAccessIssue]
+    )
     from qtpy.QtGui import QFocusEvent, QKeyEvent, QMouseEvent, QOpenGLContext, QResizeEvent, QWheelEvent
     from qtpy.QtWidgets import QWidget
 
@@ -139,6 +149,20 @@ class ModuleRenderer(QOpenGLWidget):
         self._frame_stats: FrameStats = FrameStats()
         self._initializing = False  # Flag to prevent resize events during initialization
         self._gl_initialized = False  # Track if initializeGL has been called
+        self._selected_walkmesh_face: tuple[BWM, int, Vector3] | None = None
+        self._selected_walkmesh_edge: tuple[BWM, int, int, Vector3] | None = None
+        self._selected_walkmesh_vertex: tuple[BWM, int, int, Vector3] | None = None
+        self._walkmesh_vertex_drag_axis: str | None = None
+        self._walkmesh_vertex_hover_axis: str | None = None
+        self._selected_object_position: Vector3 | None = None
+        self._object_gizmo_mode: str = "translate"
+        self._object_gizmo_drag_axis: str | None = None
+        self._object_gizmo_hover_axis: str | None = None
+        self._drop_preview_world: Vector3 | None = None
+        self._drop_preview_label: str | None = None
+        self._vis_overlay_points: dict[int, Vector3] = {}
+        self._vis_overlay_matrix: dict[int, set[int]] = {}
+        self._show_vis_overlay: bool = True
 
     @property
     def scene(self) -> Scene:
@@ -472,6 +496,10 @@ class ModuleRenderer(QOpenGLWidget):
 
         # Main render pass
         self.scene.render()
+        self._draw_walkmesh_selection_overlay()
+        self._draw_object_gizmo_overlay()
+        self._draw_vis_overlay()
+        self._draw_drop_preview_overlay()
         self._frame_stats.frame_rendered()
 
         # Update cached mouse world position from the *current* depth buffer.
@@ -488,6 +516,569 @@ class ModuleRenderer(QOpenGLWidget):
             except Exception:  # noqa: BLE001
                 # If context is lost during teardown, keep last cached value.
                 pass
+
+    def set_walkmesh_selection(
+        self,
+        *,
+        face: tuple[BWM, int, Vector3] | None,
+        edge: tuple[BWM, int, int, Vector3] | None,
+        vertex: tuple[BWM, int, int, Vector3] | None,
+        drag_axis: str | None = None,
+    ) -> None:
+        self._selected_walkmesh_face = face
+        self._selected_walkmesh_edge = edge
+        self._selected_walkmesh_vertex = vertex
+        self._walkmesh_vertex_drag_axis = drag_axis
+        if vertex is None:
+            self._walkmesh_vertex_hover_axis = None
+        self.update()
+
+    def set_drop_preview(self, world: Vector3 | None, label: str | None = None) -> None:
+        if world is None:
+            self._drop_preview_world = None
+            self._drop_preview_label = None
+        else:
+            self._drop_preview_world = Vector3(world.x, world.y, world.z)
+            self._drop_preview_label = label
+        self.update()
+
+    def set_object_gizmo(self, position: Vector3 | None, *, mode: str = "translate", drag_axis: str | None = None) -> None:
+        if position is None:
+            self._selected_object_position = None
+            self._object_gizmo_mode = "translate"
+            self._object_gizmo_drag_axis = None
+            self._object_gizmo_hover_axis = None
+        else:
+            self._selected_object_position = Vector3(position.x, position.y, position.z)
+            self._object_gizmo_mode = "rotate" if mode == "rotate" else "translate"
+            self._object_gizmo_drag_axis = drag_axis
+            if drag_axis is not None:
+                self._object_gizmo_hover_axis = drag_axis
+        self.update()
+
+    def set_vis_overlay_data(self, room_positions: dict[int, Vector3], vis_matrix: dict[int, set[int]]) -> None:
+        self._vis_overlay_points = {
+            room_id: Vector3(position.x, position.y, position.z)
+            for room_id, position in room_positions.items()
+        }
+        self._vis_overlay_matrix = {
+            room_id: set(targets)
+            for room_id, targets in vis_matrix.items()
+        }
+        self.update()
+
+    def set_show_vis_overlay(self, enabled: bool) -> None:
+        self._show_vis_overlay = enabled
+        self.update()
+
+    def _selected_walkmesh_vertex_local_object(self) -> Vector3 | None:
+        selection = self._selected_walkmesh_vertex
+        if selection is None:
+            return None
+
+        walkmesh, face_index, vertex_index, _ = selection
+        if not (0 <= face_index < len(walkmesh.faces)):
+            return None
+        if vertex_index not in (0, 1, 2):
+            return None
+
+        face = walkmesh.faces[face_index]
+        return [face.v1, face.v2, face.v3][vertex_index]
+
+    def _selected_walkmesh_vertex_world(self) -> Vector3 | None:
+        selection = self._selected_walkmesh_vertex
+        local_vertex = self._selected_walkmesh_vertex_local_object()
+        if selection is None or local_vertex is None:
+            return None
+        _, _, _, room_offset = selection
+        return Vector3(
+            local_vertex.x + room_offset.x,
+            local_vertex.y + room_offset.y,
+            local_vertex.z + room_offset.z,
+        )
+
+    def _walkmesh_vertex_gizmo_size(self, vertex: Vector3) -> float:
+        if self._scene is None:
+            return 0.6
+        camera = self.scene.camera
+        distance = math.sqrt(
+            (camera.x - vertex.x) ** 2
+            + (camera.y - vertex.y) ** 2
+            + (camera.z - vertex.z) ** 2
+        )
+        return max(0.45, min(2.0, distance * 0.08))
+
+    def _walkmesh_vertex_gizmo_lines(self, vertex: Vector3) -> dict[str, tuple[Vector3, Vector3]]:
+        size = self._walkmesh_vertex_gizmo_size(vertex)
+        return {
+            "x": (vertex, Vector3(vertex.x + size, vertex.y, vertex.z)),
+            "y": (vertex, Vector3(vertex.x, vertex.y + size, vertex.z)),
+            "z": (vertex, Vector3(vertex.x, vertex.y, vertex.z + size)),
+        }
+
+    def _object_gizmo_lines(self, position: Vector3) -> dict[str, tuple[Vector3, Vector3]]:
+        size = self._walkmesh_vertex_gizmo_size(position)
+        return {
+            "x": (position, Vector3(position.x + size, position.y, position.z)),
+            "y": (position, Vector3(position.x, position.y + size, position.z)),
+            "z": (position, Vector3(position.x, position.y, position.z + size)),
+        }
+
+    def _object_rotate_gizmo_radii(self, position: Vector3) -> dict[str, float]:
+        center = self._project_world_to_screen(position)
+        if center is None:
+            return {"x": 34.0, "y": 44.0, "z": 54.0}
+
+        x_end = self._project_world_to_screen(self._object_gizmo_lines(position)["x"][1])
+        base_radius = 42.0
+        if x_end is not None:
+            base_radius = max(24.0, math.hypot(x_end.x() - center.x(), x_end.y() - center.y()))
+        return {
+            "x": base_radius * 0.85,
+            "y": base_radius * 1.00,
+            "z": base_radius * 1.15,
+        }
+
+    @staticmethod
+    def _point_segment_distance_screen(point: QPointF, start: QPointF, end: QPointF) -> float:
+        seg_x = end.x() - start.x()
+        seg_y = end.y() - start.y()
+        seg_len_sq = seg_x * seg_x + seg_y * seg_y
+        if seg_len_sq <= 1e-9:
+            return math.hypot(point.x() - start.x(), point.y() - start.y())
+
+        t = ((point.x() - start.x()) * seg_x + (point.y() - start.y()) * seg_y) / seg_len_sq
+        t = max(0.0, min(1.0, t))
+        proj_x = start.x() + t * seg_x
+        proj_y = start.y() + t * seg_y
+        return math.hypot(point.x() - proj_x, point.y() - proj_y)
+
+    def walkmesh_vertex_gizmo_handle(self, screen_x: float, screen_y: float, *, max_distance_px: float = 12.0) -> str | None:
+        vertex = self._selected_walkmesh_vertex_world()
+        if vertex is None:
+            return None
+
+        point = QtCore.QPointF(float(screen_x), float(screen_y))
+        lines = self._walkmesh_vertex_gizmo_lines(vertex)
+        best_axis: str | None = None
+        best_distance = float("inf")
+
+        for axis, (start_world, end_world) in lines.items():
+            start_screen = self._project_world_to_screen(start_world)
+            end_screen = self._project_world_to_screen(end_world)
+            if start_screen is None or end_screen is None:
+                continue
+
+            distance = self._point_segment_distance_screen(point, start_screen, end_screen)
+            if distance < best_distance:
+                best_distance = distance
+                best_axis = axis
+
+        if best_axis is None or best_distance > max_distance_px:
+            return None
+        return best_axis
+
+    def object_gizmo_handle(self, screen_x: float, screen_y: float, *, max_distance_px: float = 12.0) -> str | None:
+        position = self._selected_object_position
+        if position is None:
+            return None
+
+        if self._object_gizmo_mode == "rotate":
+            center = self._project_world_to_screen(position)
+            if center is None:
+                return None
+            point = QtCore.QPointF(float(screen_x), float(screen_y))
+            radial_distance = math.hypot(point.x() - center.x(), point.y() - center.y())
+            best_axis: str | None = None
+            best_distance = float("inf")
+            for axis, radius in self._object_rotate_gizmo_radii(position).items():
+                distance = abs(radial_distance - radius)
+                if distance < best_distance:
+                    best_distance = distance
+                    best_axis = axis
+            if best_axis is None or best_distance > max_distance_px:
+                return None
+            return best_axis
+
+        point = QtCore.QPointF(float(screen_x), float(screen_y))
+        lines = self._object_gizmo_lines(position)
+        best_axis: str | None = None
+        best_distance = float("inf")
+
+        for axis, (start_world, end_world) in lines.items():
+            start_screen = self._project_world_to_screen(start_world)
+            end_screen = self._project_world_to_screen(end_world)
+            if start_screen is None or end_screen is None:
+                continue
+
+            distance = self._point_segment_distance_screen(point, start_screen, end_screen)
+            if distance < best_distance:
+                best_distance = distance
+                best_axis = axis
+
+        if best_axis is None or best_distance > max_distance_px:
+            return None
+        return best_axis
+
+    def _project_world_to_screen(self, point: Vector3) -> QPointF | None:
+        if self._scene is None:
+            return None
+
+        view = self.scene.camera.view()
+        projection = self.scene.camera.projection()
+        clip = projection * (view * Vector4(point.x, point.y, point.z, 1.0))
+        w = clip.w
+        if abs(w) <= 1e-7:
+            return None
+        if w < 0:
+            return None
+
+        ndc_x = clip.x / w
+        ndc_y = clip.y / w
+        ndc_z = clip.z / w
+        if ndc_z < -1.0 or ndc_z > 1.0:
+            return None
+
+        screen_x = (ndc_x * 0.5 + 0.5) * float(self.width())
+        screen_y = (1.0 - (ndc_y * 0.5 + 0.5)) * float(self.height())
+        return QtCore.QPointF(screen_x, screen_y)
+
+    def _draw_walkmesh_selection_overlay(self) -> None:
+        selected = self._selected_walkmesh_face
+        if selected is None:
+            return
+
+        walkmesh, face_index, room_offset = selected
+        if not (0 <= face_index < len(walkmesh.faces)):
+            return
+
+        face = walkmesh.faces[face_index]
+        face_points = [
+            self._project_world_to_screen(Vector3(face.v1.x + room_offset.x, face.v1.y + room_offset.y, face.v1.z + room_offset.z)),
+            self._project_world_to_screen(Vector3(face.v2.x + room_offset.x, face.v2.y + room_offset.y, face.v2.z + room_offset.z)),
+            self._project_world_to_screen(Vector3(face.v3.x + room_offset.x, face.v3.y + room_offset.y, face.v3.z + room_offset.z)),
+        ]
+        if any(point is None for point in face_points):
+            return
+
+        p1, p2, p3 = face_points
+        assert p1 is not None and p2 is not None and p3 is not None
+
+        painter = QPainter(self)
+        try:
+            painter.setRenderHint(QPainter.RenderHint.Antialiasing, True)
+
+            polygon = QPolygonF([p1, p2, p3])
+            painter.setBrush(QColor(255, 200, 0, 70))
+            painter.setPen(QPen(QColor(255, 215, 0, 220), 2.0))
+            painter.drawPolygon(polygon)
+
+            adjacencies = walkmesh.adjacencies(face)
+            perimeter_pen = QPen(QColor(255, 150, 0, 210), 2.0)
+            perimeter_pen.setStyle(Qt.PenStyle.DashLine)
+            edge_points: list[tuple[Vector3, Vector3]] = [
+                (
+                    Vector3(face.v1.x + room_offset.x, face.v1.y + room_offset.y, face.v1.z + room_offset.z),
+                    Vector3(face.v2.x + room_offset.x, face.v2.y + room_offset.y, face.v2.z + room_offset.z),
+                ),
+                (
+                    Vector3(face.v2.x + room_offset.x, face.v2.y + room_offset.y, face.v2.z + room_offset.z),
+                    Vector3(face.v3.x + room_offset.x, face.v3.y + room_offset.y, face.v3.z + room_offset.z),
+                ),
+                (
+                    Vector3(face.v3.x + room_offset.x, face.v3.y + room_offset.y, face.v3.z + room_offset.z),
+                    Vector3(face.v1.x + room_offset.x, face.v1.y + room_offset.y, face.v1.z + room_offset.z),
+                ),
+            ]
+            for edge_index, adjacency in enumerate(adjacencies):
+                if adjacency is not None:
+                    continue
+                start_vertex, end_vertex = edge_points[edge_index]
+                start_point = self._project_world_to_screen(start_vertex)
+                end_point = self._project_world_to_screen(end_vertex)
+                if start_point is None or end_point is None:
+                    continue
+                painter.setPen(perimeter_pen)
+                painter.drawLine(start_point, end_point)
+
+            if self._selected_walkmesh_edge is not None:
+                _, edge_face_index, edge_index, _ = self._selected_walkmesh_edge
+                if edge_face_index == face_index and 0 <= edge_index <= 2:
+                    start_vertex, end_vertex = edge_points[edge_index]
+                    start_point = self._project_world_to_screen(start_vertex)
+                    end_point = self._project_world_to_screen(end_vertex)
+                    if start_point is not None and end_point is not None:
+                        selected_edge_color = QColor(255, 165, 0, 245) if adjacencies[edge_index] is None else QColor(0, 220, 255, 245)
+                        painter.setPen(QPen(selected_edge_color, 3.0))
+                        painter.drawLine(start_point, end_point)
+
+                        face_center = Vector3(
+                            (face.v1.x + face.v2.x + face.v3.x) / 3.0,
+                            (face.v1.y + face.v2.y + face.v3.y) / 3.0,
+                            (face.v1.z + face.v2.z + face.v3.z) / 3.0,
+                        )
+                        edge_midpoint = Vector3(
+                            (start_vertex.x + end_vertex.x) / 2.0,
+                            (start_vertex.y + end_vertex.y) / 2.0,
+                            (start_vertex.z + end_vertex.z) / 2.0,
+                        )
+                        edge_dx = end_vertex.x - start_vertex.x
+                        edge_dy = end_vertex.y - start_vertex.y
+                        edge_length = math.hypot(edge_dx, edge_dy)
+                        if edge_length > 1e-6:
+                            normal_x = -edge_dy / edge_length
+                            normal_y = edge_dx / edge_length
+                            to_center_x = face_center.x - edge_midpoint.x
+                            to_center_y = face_center.y - edge_midpoint.y
+                            if normal_x * to_center_x + normal_y * to_center_y > 0.0:
+                                normal_x = -normal_x
+                                normal_y = -normal_y
+
+                            arrow_scale = max(0.3, min(1.0, edge_length * 0.3))
+                            arrow_tip_world = Vector3(
+                                edge_midpoint.x + normal_x * arrow_scale,
+                                edge_midpoint.y + normal_y * arrow_scale,
+                                edge_midpoint.z,
+                            )
+                            arrow_base_screen = self._project_world_to_screen(edge_midpoint)
+                            arrow_tip_screen = self._project_world_to_screen(arrow_tip_world)
+                            if arrow_base_screen is not None and arrow_tip_screen is not None:
+                                painter.setPen(QPen(QColor(255, 80, 80, 235), 2.0))
+                                painter.drawLine(arrow_base_screen, arrow_tip_screen)
+
+                                dir_x = arrow_tip_screen.x() - arrow_base_screen.x()
+                                dir_y = arrow_tip_screen.y() - arrow_base_screen.y()
+                                dir_len = math.hypot(dir_x, dir_y)
+                                if dir_len > 1e-6:
+                                    ux = dir_x / dir_len
+                                    uy = dir_y / dir_len
+                                    side_x = -uy
+                                    side_y = ux
+                                    head_len = 8.0
+                                    head_w = 4.0
+                                    left = QtCore.QPointF(
+                                        arrow_tip_screen.x() - ux * head_len + side_x * head_w,
+                                        arrow_tip_screen.y() - uy * head_len + side_y * head_w,
+                                    )
+                                    right = QtCore.QPointF(
+                                        arrow_tip_screen.x() - ux * head_len - side_x * head_w,
+                                        arrow_tip_screen.y() - uy * head_len - side_y * head_w,
+                                    )
+                                    painter.setBrush(QColor(255, 80, 80, 235))
+                                    painter.drawPolygon(QPolygonF([arrow_tip_screen, left, right]))
+
+            if self._selected_walkmesh_vertex is not None:
+                _, vertex_face_index, vertex_index, _ = self._selected_walkmesh_vertex
+                if vertex_face_index == face_index and 0 <= vertex_index <= 2:
+                    local_vertex = [face.v1, face.v2, face.v3][vertex_index]
+                    vertex = Vector3(
+                        local_vertex.x + room_offset.x,
+                        local_vertex.y + room_offset.y,
+                        local_vertex.z + room_offset.z,
+                    )
+                    vertex_point = self._project_world_to_screen(vertex)
+                    if vertex_point is not None:
+                        painter.setBrush(QColor(255, 64, 160, 220))
+                        painter.setPen(QPen(QColor(255, 225, 245, 255), 2.0))
+                        painter.drawEllipse(vertex_point, 5.0, 5.0)
+
+                        line_colors: dict[str, QColor] = {
+                            "x": QColor(255, 96, 96, 230),
+                            "y": QColor(96, 255, 120, 230),
+                            "z": QColor(96, 170, 255, 230),
+                        }
+                        active_axis = self._walkmesh_vertex_drag_axis
+                        hover_axis = self._walkmesh_vertex_hover_axis
+                        for axis, (start_world, end_world) in self._walkmesh_vertex_gizmo_lines(vertex).items():
+                            start_screen = self._project_world_to_screen(start_world)
+                            end_screen = self._project_world_to_screen(end_world)
+                            if start_screen is None or end_screen is None:
+                                continue
+                            is_active = axis == active_axis
+                            is_hover = axis == hover_axis
+                            pen_width = 4.0 if is_active else 3.5 if is_hover else 2.5
+                            pen = QPen(line_colors[axis], pen_width)
+                            painter.setPen(pen)
+                            painter.drawLine(start_screen, end_screen)
+                            painter.setBrush(line_colors[axis])
+                            tip_radius = 3.0 if is_active else 2.8 if is_hover else 2.5
+                            painter.drawEllipse(end_screen, tip_radius, tip_radius)
+        finally:
+            painter.end()
+
+    def _draw_drop_preview_overlay(self) -> None:
+        world = self._drop_preview_world
+        if world is None:
+            return
+
+        screen_point = self._project_world_to_screen(world)
+        if screen_point is None:
+            return
+
+        painter = QPainter(self)
+        try:
+            painter.setRenderHint(QPainter.RenderHint.Antialiasing, True)
+
+            ring_pen = QPen(QColor(120, 230, 255, 230), 2.0)
+            painter.setPen(ring_pen)
+            painter.setBrush(QColor(120, 230, 255, 40))
+            painter.drawEllipse(screen_point, 10.0, 10.0)
+
+            cross_pen = QPen(QColor(120, 230, 255, 220), 1.8)
+            painter.setPen(cross_pen)
+            painter.drawLine(
+                QtCore.QPointF(screen_point.x() - 6.0, screen_point.y()),
+                QtCore.QPointF(screen_point.x() + 6.0, screen_point.y()),
+            )
+            painter.drawLine(
+                QtCore.QPointF(screen_point.x(), screen_point.y() - 6.0),
+                QtCore.QPointF(screen_point.x(), screen_point.y() + 6.0),
+            )
+
+            if self._drop_preview_label:
+                text_pos = QtCore.QPointF(screen_point.x() + 12.0, screen_point.y() - 12.0)
+                painter.setPen(QPen(QColor(210, 245, 255, 240), 1.0))
+                painter.drawText(text_pos, self._drop_preview_label)
+        finally:
+            painter.end()
+
+    def _draw_object_gizmo_overlay(self) -> None:
+        position = self._selected_object_position
+        if position is None:
+            return
+
+        center_screen = self._project_world_to_screen(position)
+        if center_screen is None:
+            return
+
+        painter = QPainter(self)
+        try:
+            painter.setRenderHint(QPainter.RenderHint.Antialiasing, True)
+
+            painter.setBrush(QColor(255, 255, 255, 210))
+            painter.setPen(QPen(QColor(20, 20, 20, 180), 1.0))
+            painter.drawEllipse(center_screen, 3.5, 3.5)
+
+            line_colors: dict[str, QColor] = {
+                "x": QColor(255, 96, 96, 230),
+                "y": QColor(96, 255, 120, 230),
+                "z": QColor(96, 170, 255, 230),
+            }
+            active_axis = self._object_gizmo_drag_axis
+            hover_axis = self._object_gizmo_hover_axis
+            if self._object_gizmo_mode == "rotate":
+                for axis, radius in self._object_rotate_gizmo_radii(position).items():
+                    is_active = axis == active_axis
+                    is_hover = axis == hover_axis
+                    pen_width = 4.4 if is_active else 3.5 if is_hover else 2.4
+                    alpha = 250 if is_active else 235 if is_hover else 205
+                    color = QColor(line_colors[axis])
+                    color.setAlpha(alpha)
+                    painter.setPen(QPen(color, pen_width))
+                    painter.setBrush(Qt.BrushStyle.NoBrush)
+                    painter.drawEllipse(center_screen, radius, radius)
+            else:
+                for axis, (start_world, end_world) in self._object_gizmo_lines(position).items():
+                    start_screen = self._project_world_to_screen(start_world)
+                    end_screen = self._project_world_to_screen(end_world)
+                    if start_screen is None or end_screen is None:
+                        continue
+                    is_active = axis == active_axis
+                    is_hover = axis == hover_axis
+                    pen_width = 4.2 if is_active else 3.4 if is_hover else 2.4
+                    painter.setPen(QPen(line_colors[axis], pen_width))
+                    painter.drawLine(start_screen, end_screen)
+                    painter.setBrush(line_colors[axis])
+                    tip_radius = 3.2 if is_active else 2.9 if is_hover else 2.5
+                    painter.drawEllipse(end_screen, tip_radius, tip_radius)
+        finally:
+            painter.end()
+
+    def _draw_vis_overlay(self) -> None:
+        if not self._show_vis_overlay:
+            return
+        if len(self._vis_overlay_points) < 2 or not self._vis_overlay_matrix:
+            return
+
+        painter = QPainter(self)
+        try:
+            painter.setRenderHint(QPainter.RenderHint.Antialiasing, True)
+
+            bidirectional_pen = QPen(QColor(80, 180, 255, 175), 2.0)
+            one_way_pen = QPen(QColor(255, 170, 70, 195), 2.0)
+            one_way_pen.setStyle(Qt.PenStyle.DashLine)
+            one_way_fill = QColor(255, 170, 70, 215)
+
+            seen_pairs: set[tuple[int, int]] = set()
+            for src_room_id, visible_targets in self._vis_overlay_matrix.items():
+                src_world = self._vis_overlay_points.get(src_room_id)
+                if src_world is None:
+                    continue
+
+                for dst_room_id in visible_targets:
+                    dst_world = self._vis_overlay_points.get(dst_room_id)
+                    if dst_world is None or dst_room_id == src_room_id:
+                        continue
+
+                    pair = (min(src_room_id, dst_room_id), max(src_room_id, dst_room_id))
+                    if pair in seen_pairs:
+                        continue
+                    seen_pairs.add(pair)
+
+                    src_has_dst = dst_room_id in self._vis_overlay_matrix.get(src_room_id, set())
+                    dst_has_src = src_room_id in self._vis_overlay_matrix.get(dst_room_id, set())
+
+                    src_screen = self._project_world_to_screen(src_world)
+                    dst_screen = self._project_world_to_screen(dst_world)
+                    if src_screen is None or dst_screen is None:
+                        continue
+
+                    is_bidirectional = src_has_dst and dst_has_src
+                    painter.setPen(bidirectional_pen if is_bidirectional else one_way_pen)
+                    painter.drawLine(src_screen, dst_screen)
+
+                    if is_bidirectional:
+                        continue
+
+                    direction_start = src_screen if src_has_dst else dst_screen
+                    direction_end = dst_screen if src_has_dst else src_screen
+
+                    dx = direction_end.x() - direction_start.x()
+                    dy = direction_end.y() - direction_start.y()
+                    length = math.hypot(dx, dy)
+                    if length <= 1e-6:
+                        continue
+
+                    ux = dx / length
+                    uy = dy / length
+                    px = -uy
+                    py = ux
+
+                    arrow_len = 10.0
+                    arrow_width = 6.0
+                    t = 0.60
+                    tip = QtCore.QPointF(
+                        direction_start.x() + dx * t,
+                        direction_start.y() + dy * t,
+                    )
+                    base = QtCore.QPointF(
+                        tip.x() - ux * arrow_len,
+                        tip.y() - uy * arrow_len,
+                    )
+                    left = QtCore.QPointF(
+                        base.x() + px * arrow_width * 0.5,
+                        base.y() + py * arrow_width * 0.5,
+                    )
+                    right = QtCore.QPointF(
+                        base.x() - px * arrow_width * 0.5,
+                        base.y() - py * arrow_width * 0.5,
+                    )
+
+                    painter.setPen(Qt.PenStyle.NoPen)
+                    painter.setBrush(one_way_fill)
+                    painter.drawPolygon(QPolygonF([tip, left, right]))
+        finally:
+            painter.end()
 
     def loop(self):
         """Repaints and checks for keyboard input on mouse press.
@@ -521,6 +1112,115 @@ class ModuleRenderer(QOpenGLWidget):
         """Return the renderer backend identifier (for tests/diagnostics)."""
         return "pyopengl"
 
+    def _pick_walkmesh_face(self, x: float, y: float) -> tuple[BWM, BWMFace, Vector3] | None:
+        if self._module is None:
+            return None
+
+        layout = self._scene.layout if self._scene is not None else None
+        best: tuple[BWM, BWMFace, Vector3] | None = None
+        for module_resource in self._module.resources.values():
+            if module_resource.restype() is not ResourceType.WOK:
+                continue
+            walkmesh_resource = module_resource.resource()
+            if walkmesh_resource is None:
+                continue
+            assert isinstance(walkmesh_resource, BWM), assert_with_variable_trace(isinstance(walkmesh_resource, BWM))
+            room_offset = Vector3(0.0, 0.0, 0.0)
+            if layout is not None:
+                room = layout.find_room_by_model(module_resource.resname())
+                if room is not None:
+                    room_offset = Vector3(room.position.x, room.position.y, room.position.z)
+            local_x = x - room_offset.x
+            local_y = y - room_offset.y
+            over = walkmesh_resource.faceAt(local_x, local_y)
+            if over is None:
+                continue
+            if best is None:
+                best = (walkmesh_resource, over, room_offset)
+                continue
+            if not best[1].material.walkable() and over.material.walkable():
+                best = (walkmesh_resource, over, room_offset)
+
+        return best
+
+    def walkmesh_face(self, x: float, y: float) -> tuple[BWM, int, Vector3] | None:
+        picked = self._pick_walkmesh_face(x, y)
+        if picked is None:
+            return None
+        walkmesh, face, room_offset = picked
+        face_index = next((index for index, candidate in enumerate(walkmesh.faces) if candidate is face), -1)
+        if face_index < 0:
+            return None
+        return walkmesh, face_index, room_offset
+
+    @staticmethod
+    def _point_segment_distance_2d(point_x: float, point_y: float, start: Vector3, end: Vector3) -> float:
+        segment_dx = end.x - start.x
+        segment_dy = end.y - start.y
+        segment_length_sq = segment_dx * segment_dx + segment_dy * segment_dy
+        if segment_length_sq <= 1e-9:
+            return math.hypot(point_x - start.x, point_y - start.y)
+
+        t = ((point_x - start.x) * segment_dx + (point_y - start.y) * segment_dy) / segment_length_sq
+        t = max(0.0, min(1.0, t))
+        projection_x = start.x + t * segment_dx
+        projection_y = start.y + t * segment_dy
+        return math.hypot(point_x - projection_x, point_y - projection_y)
+
+    def walkmesh_edge(self, x: float, y: float, *, max_distance: float = 0.35) -> tuple[BWM, int, int, Vector3] | None:
+        picked_face = self.walkmesh_face(x, y)
+        if picked_face is None:
+            return None
+
+        walkmesh, face_index, room_offset = picked_face
+        if not (0 <= face_index < len(walkmesh.faces)):
+            return None
+        face = walkmesh.faces[face_index]
+
+        edge_vertices: list[tuple[Vector3, Vector3]] = [
+            (face.v1, face.v2),
+            (face.v2, face.v3),
+            (face.v3, face.v1),
+        ]
+        best_edge_index = -1
+        best_distance = float("inf")
+        local_x = x - room_offset.x
+        local_y = y - room_offset.y
+        for edge_index, (start_vertex, end_vertex) in enumerate(edge_vertices):
+            distance = self._point_segment_distance_2d(local_x, local_y, start_vertex, end_vertex)
+            if distance < best_distance:
+                best_distance = distance
+                best_edge_index = edge_index
+
+        if best_edge_index < 0 or best_distance > max_distance:
+            return None
+        return walkmesh, face_index, best_edge_index, room_offset
+
+    def walkmesh_vertex(self, x: float, y: float, *, max_distance: float = 0.30) -> tuple[BWM, int, int, Vector3] | None:
+        picked_face = self.walkmesh_face(x, y)
+        if picked_face is None:
+            return None
+
+        walkmesh, face_index, room_offset = picked_face
+        if not (0 <= face_index < len(walkmesh.faces)):
+            return None
+        face = walkmesh.faces[face_index]
+
+        vertices: list[Vector3] = [face.v1, face.v2, face.v3]
+        best_vertex_index = -1
+        best_distance = float("inf")
+        local_x = x - room_offset.x
+        local_y = y - room_offset.y
+        for vertex_index, vertex in enumerate(vertices):
+            distance = math.hypot(local_x - vertex.x, local_y - vertex.y)
+            if distance < best_distance:
+                best_distance = distance
+                best_vertex_index = vertex_index
+
+        if best_vertex_index < 0 or best_distance > max_distance:
+            return None
+        return walkmesh, face_index, best_vertex_index, room_offset
+
     def walkmesh_point(
         self,
         x: float,
@@ -545,23 +1245,8 @@ class ModuleRenderer(QOpenGLWidget):
             - Checks if the found face is walkable, and overrides any previous less walkable face
             - Returns a Vector3 with the input x,y coords and either the face z height or default z if no face.
         """
-        face: BWMFace | None = None
-        assert self._module is not None
-        for module_resource in self._module.resources.values():
-            if module_resource.restype() is not ResourceType.WOK:
-                continue
-            walkmesh_resource = module_resource.resource()
-            if walkmesh_resource is None:
-                continue
-            assert isinstance(walkmesh_resource, BWM), assert_with_variable_trace(isinstance(walkmesh_resource, BWM))
-            over: BWMFace | None = walkmesh_resource.faceAt(x, y)
-            if over is None:
-                continue
-            if face is None:  # noqa: SIM114
-                face = over
-            elif not face.material.walkable() and over.material.walkable():
-                face = over
-
+        picked = self._pick_walkmesh_face(x, y)
+        face = None if picked is None else picked[1]
         z: float = default_z if face is None else face.determine_z(x, y)
         return Vector3(x, y, z)
 
@@ -674,6 +1359,22 @@ class ModuleRenderer(QOpenGLWidget):
         # mouse response for look rotation.
         if self.free_cam or (monotonic() - self._mouse_press_time) > 0.06:
             self.sig_mouse_moved.emit(screen, screenDelta, world, self._mouse_down, self._keys_down)
+        if self._selected_walkmesh_vertex is not None:
+            hovered_axis = self.walkmesh_vertex_gizmo_handle(screen.x, screen.y)
+            if hovered_axis != self._walkmesh_vertex_hover_axis:
+                self._walkmesh_vertex_hover_axis = hovered_axis
+                self.update()
+        elif self._walkmesh_vertex_hover_axis is not None:
+            self._walkmesh_vertex_hover_axis = None
+            self.update()
+        if self._selected_object_position is not None:
+            hovered_axis = self.object_gizmo_handle(screen.x, screen.y)
+            if hovered_axis != self._object_gizmo_hover_axis:
+                self._object_gizmo_hover_axis = hovered_axis
+                self.update()
+        elif self._object_gizmo_hover_axis is not None:
+            self._object_gizmo_hover_axis = None
+            self.update()
         self._mouse_prev = screen  # Always assign mouse_prev after emitting: allows signal handlers (e.g. ModuleDesigner, GITEditor) to handle cursor lock.
 
     def mousePressEvent(self, e: QMouseEvent):  # pyright: ignore[reportIncompatibleMethodOverride]

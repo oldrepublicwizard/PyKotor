@@ -1,3 +1,5 @@
+"""DLG list widget item: QListWidgetItem that holds a DLGLink for the link list view."""
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any

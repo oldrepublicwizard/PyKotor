@@ -1,3 +1,5 @@
+"""LIP editor package: lip sync editor and batch processor for LIP files."""
+
 from __future__ import annotations
 
 from .lip_editor import LIPEditor  # noqa: F403, TID252

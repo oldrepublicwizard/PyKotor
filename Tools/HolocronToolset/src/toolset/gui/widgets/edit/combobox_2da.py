@@ -1,3 +1,5 @@
+"""2DA-backed combo box: row lookup, optional filter, and installation 2DA loading."""
+
 #!/usr/bin/env python3
 from __future__ import annotations
 
@@ -13,13 +15,14 @@ from qtpy.QtWidgets import (
     QMessageBox,
 )
 
+from toolset.data.installation import HTInstallation
+
 if TYPE_CHECKING:
     from qtpy.QtCore import QAbstractItemModel, QPoint
     from qtpy.QtGui import QColor, QPaintEvent
     from qtpy.QtWidgets import QWidget
 
     from pykotor.resource.formats.twoda import TwoDA
-    from toolset.data.installation import HTInstallation
 
 
 _ROW_INDEX_DATA_ROLE: int = QtCore.Qt.ItemDataRole.UserRole + 4

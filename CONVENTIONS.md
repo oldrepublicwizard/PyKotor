@@ -6,6 +6,7 @@
 - Give attributes types in __init__ immediately.
 - Wrap each arg to a newline in a function if it has more than 2 args.
 - Don't use title-case types from the typing module, this includes Optional and Union. Use `from __future__ import annotations` to allow type hints to be evaluated at runtime (e.g. `str | None`).
+- Don't use `getattr`/`hasattr` unless absolutely necessary; prefer explicit typed access/branching because reflective attribute access is not static type-hint friendly.
 - Prefer fast-exit functions over nested conditionals.
 - Inside loops, prefer negated guard + `continue` over wrapping the main body in a nested positive conditional when this reduces indentation.
 - Consider how the program will continue if an exception is raised unexpectedly, and ensure that it does so gracefully.
@@ -14,3 +15,10 @@
 - For repeated behavior across editors/windows (e.g., GIT editor, Module Designer, Indoor Builder), extract shared helpers/pipelines into `toolset.gui.common` instead of copying logic.
 - Prefer small, composable helper functions for UI pipelines (populate widgets, scale preview images, toggle checkbox groups) and keep window classes orchestration-focused.
 - Keep side-effect boundaries explicit: helper functions should either mutate UI state or compute values, not both unless clearly documented.
+
+## Additional typing/performance conventions
+
+- Do not use `dataclass` for performance-sensitive/editor data carriers in Toolset code; prefer `TypedDict`, explicit classes, or tuple/dict structures as appropriate.
+- Do not use `Any` when a concrete type, `Protocol`, or callable signature can be expressed.
+- For imports that can create cyclical dependencies, import inside a `TYPE_CHECKING` block (for type-only references) or inside the function scope (for runtime use).
+- Define `TypedDict` class definitions inside a `TYPE_CHECKING` block.

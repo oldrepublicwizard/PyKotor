@@ -1,3 +1,5 @@
+"""UTE (encounter) editor: creature list, spawn points, and difficulty."""
+
 from __future__ import annotations
 
 from copy import deepcopy
@@ -17,7 +19,7 @@ from toolset.gui.editor import Editor
 if TYPE_CHECKING:
     import os
 
-    from qtpy.QtWidgets import QTableWidgetItem, QWidget
+    from qtpy.QtWidgets import QWidget
 
     from pykotor.resource.formats.gff.gff_data import GFF
     from pykotor.resource.formats.twoda.twoda_data import TwoDA
@@ -79,12 +81,44 @@ class UTEEditor(Editor):
             - Connects the addCreatureButton clicked signal to addCreature handler
             - Connects the removeCreatureButton clicked signal to remove_selectedCreature handler.
         """
-        self.ui.tagGenerateButton.clicked.connect(self.generate_tag)
-        self.ui.resrefGenerateButton.clicked.connect(self.generate_resref)
-        self.ui.infiniteRespawnCheckbox.stateChanged.connect(self.set_infinite_respawn)
-        self.ui.spawnSelect.currentIndexChanged.connect(self.set_continuous)
-        self.ui.addCreatureButton.clicked.connect(self.add_creature)
-        self.ui.removeCreatureButton.clicked.connect(self.remove_selected_creature)
+        signal_connections = [
+            (self.ui.tagGenerateButton.clicked, self.generate_tag),
+            (self.ui.resrefGenerateButton.clicked, self.generate_resref),
+            (self.ui.infiniteRespawnCheckbox.stateChanged, self.set_infinite_respawn),
+            (self.ui.spawnSelect.currentIndexChanged, self.set_continuous),
+            (self.ui.addCreatureButton.clicked, self.add_creature),
+            (self.ui.removeCreatureButton.clicked, self.remove_selected_creature),
+        ]
+        for signal, handler in signal_connections:
+            signal.connect(handler)
+
+    def _script_combo_boxes(self) -> list[FilterComboBox]:
+        """Return all script combo boxes used by this editor."""
+        return [
+            self.ui.onEnterSelect,
+            self.ui.onExitSelect,
+            self.ui.onExhaustedEdit,
+            self.ui.onHeartbeatSelect,
+            self.ui.onUserDefinedSelect,
+        ]
+
+    def _script_value_pairs(self, ute: UTE) -> list[tuple[FilterComboBox, ResRef]]:
+        """Map script combo boxes to UTE script values."""
+        return [
+            (self.ui.onEnterSelect, ute.on_entered),
+            (self.ui.onExitSelect, ute.on_exit),
+            (self.ui.onExhaustedEdit, ute.on_exhausted),
+            (self.ui.onHeartbeatSelect, ute.on_heartbeat),
+            (self.ui.onUserDefinedSelect, ute.on_user_defined),
+        ]
+
+    def _setup_script_reference_field(self, combo_box: FilterComboBox) -> None:
+        """Configure script combo reference search behavior and length limits."""
+        assert self._installation is not None
+        self._installation.setup_file_context_menu(combo_box, [ResourceType.NSS, ResourceType.NCS])
+        line_edit = combo_box.lineEdit()
+        if line_edit is not None:
+            line_edit.setMaxLength(16)
 
     def _setup_installation(
         self,
@@ -108,31 +142,18 @@ class UTEEditor(Editor):
 
         difficulties: TwoDA | None = installation.ht_get_cache_2da(HTInstallation.TwoDA_ENC_DIFFICULTIES)
         self.ui.difficultySelect.clear()
-        self.ui.difficultySelect.set_items(difficulties.get_column("label"))
+        if difficulties is not None:
+            self.ui.difficultySelect.set_items(difficulties.get_column("label"))
         self.ui.difficultySelect.set_context(difficulties, installation, HTInstallation.TwoDA_ENC_DIFFICULTIES)
 
         factions: TwoDA | None = installation.ht_get_cache_2da(HTInstallation.TwoDA_FACTIONS)
         self.ui.factionSelect.clear()
-        self.ui.factionSelect.set_items(factions.get_column("label"))
+        if factions is not None:
+            self.ui.factionSelect.set_items(factions.get_column("label"))
         self.ui.factionSelect.set_context(factions, installation, HTInstallation.TwoDA_FACTIONS)
 
-        self._installation.setup_file_context_menu(self.ui.onEnterSelect, [ResourceType.NSS, ResourceType.NCS])
-        self._installation.setup_file_context_menu(self.ui.onExitSelect, [ResourceType.NSS, ResourceType.NCS])
-        self._installation.setup_file_context_menu(self.ui.onExhaustedEdit, [ResourceType.NSS, ResourceType.NCS])
-        self._installation.setup_file_context_menu(self.ui.onHeartbeatSelect, [ResourceType.NSS, ResourceType.NCS])
-        self._installation.setup_file_context_menu(self.ui.onUserDefinedSelect, [ResourceType.NSS, ResourceType.NCS])
-        # Set maxLength for FilterComboBox script fields (ResRefs are max 16 characters)
-        script_combo_boxes = [
-            self.ui.onEnterSelect,
-            self.ui.onExitSelect,
-            self.ui.onExhaustedEdit,
-            self.ui.onHeartbeatSelect,
-            self.ui.onUserDefinedSelect,
-        ]
-        for combo_box in script_combo_boxes:
-            line_edit = combo_box.lineEdit()
-            if line_edit is not None:
-                line_edit.setMaxLength(16)
+        for combo_box in self._script_combo_boxes():
+            self._setup_script_reference_field(combo_box)
         self.relevant_creature_resnames = sorted(iter({res.resname().lower() for res in self._installation.get_relevant_resources(ResourceType.UTC, self._filepath)}))
 
     def load(
@@ -178,8 +199,7 @@ class UTEEditor(Editor):
         self.ui.respawnCountSpin.setValue(ute.respawns)
 
         # Creatures
-        for _ in range(self.ui.creatureTable.rowCount()):
-            self.ui.creatureTable.removeRow(0)
+        self.ui.creatureTable.setRowCount(0)
         for creature in ute.creatures:
             self.add_creature(
                 resname=str(creature.resref),
@@ -189,19 +209,13 @@ class UTEEditor(Editor):
             )
 
         # Scripts
-        self.ui.onEnterSelect.set_combo_box_text(str(ute.on_entered))
-        self.ui.onExitSelect.set_combo_box_text(str(ute.on_exit))
-        self.ui.onExhaustedEdit.set_combo_box_text(str(ute.on_exhausted))
-        self.ui.onHeartbeatSelect.set_combo_box_text(str(ute.on_heartbeat))
-        self.ui.onUserDefinedSelect.set_combo_box_text(str(ute.on_user_defined))
+        for combo_box, value in self._script_value_pairs(ute):
+            combo_box.set_combo_box_text(str(value))
 
         self.relevant_script_resnames = sorted(iter({res.resname().lower() for res in self._installation.get_relevant_resources(ResourceType.NCS, self._filepath)}))
 
-        self.ui.onEnterSelect.populate_combo_box(self.relevant_script_resnames)
-        self.ui.onExitSelect.populate_combo_box(self.relevant_script_resnames)
-        self.ui.onExhaustedEdit.populate_combo_box(self.relevant_script_resnames)
-        self.ui.onHeartbeatSelect.populate_combo_box(self.relevant_script_resnames)
-        self.ui.onUserDefinedSelect.populate_combo_box(self.relevant_script_resnames)
+        for combo_box in self._script_combo_boxes():
+            combo_box.populate_combo_box(self.relevant_script_resnames)
 
         # Comments
         self.ui.commentsEdit.setPlainText(ute.comment)
@@ -253,11 +267,14 @@ class UTEEditor(Editor):
             ute.creatures.append(creature)
 
         # Scripts
-        ute.on_entered = ResRef(self.ui.onEnterSelect.currentText())
-        ute.on_exit = ResRef(self.ui.onExitSelect.currentText())
-        ute.on_exhausted = ResRef(self.ui.onExhaustedEdit.currentText())
-        ute.on_heartbeat = ResRef(self.ui.onHeartbeatSelect.currentText())
-        ute.on_user_defined = ResRef(self.ui.onUserDefinedSelect.currentText())
+        for attr_name, combo_box in (
+            ("on_entered", self.ui.onEnterSelect),
+            ("on_exit", self.ui.onExitSelect),
+            ("on_exhausted", self.ui.onExhaustedEdit),
+            ("on_heartbeat", self.ui.onHeartbeatSelect),
+            ("on_user_defined", self.ui.onUserDefinedSelect),
+        ):
+            setattr(ute, attr_name, ResRef(combo_box.currentText()))
 
         # Comments
         ute.comment = self.ui.commentsEdit.toPlainText()

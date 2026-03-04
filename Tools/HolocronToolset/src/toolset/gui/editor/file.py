@@ -1,3 +1,5 @@
+"""Editor file operations: open/save dialogs and load-from-module for resource editors."""
+
 from __future__ import annotations
 
 from pathlib import Path

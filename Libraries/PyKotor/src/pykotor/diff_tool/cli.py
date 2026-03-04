@@ -244,44 +244,46 @@ def execute_cli(cmdline_args: Namespace):
         # Use direct file-to-file diff for unified output
         from pykotor.tslpatcher.diff.engine import DiffContext, diff_data
 
-        path1, path2 = resolved_paths
+        path1 = resolved_paths[0]
+        path2 = resolved_paths[1]
+        assert isinstance(path1, Path)
+        assert isinstance(path2, Path)
+
         context = DiffContext(
             file1_rel=Path(
                 os.path.relpath(
-                    os.path.dirname(path1.path() if isinstance(path1, Installation) else path1),
-                    path1.path() if isinstance(path1, Installation) else path1,
+                    os.path.dirname(path1),
+                    path1,
                 )
             ),
             file2_rel=Path(
                 os.path.relpath(
-                    os.path.dirname(path2.path() if isinstance(path2, Installation) else path2),
-                    path2.path() if isinstance(path2, Installation) else path2,
+                    os.path.dirname(path2),
+                    path2,
                 )
             ),
             ext=(
-                (path1.path() if isinstance(path1, Installation) else path1).suffix.casefold().lstrip(".").strip()
-                or (path2.path() if isinstance(path2, Installation) else path2).suffix.casefold().lstrip(".").strip()
+                path1.suffix.casefold().lstrip(".").strip()
+                or path2.suffix.casefold().lstrip(".").strip()
             ),
-            resname=(path1.path() if isinstance(path1, Installation) else path1).name,
-            file1_location_type="Installation" if isinstance(path1, Installation) else "Path",
-            file2_location_type="Installation" if isinstance(path2, Installation) else "Path",
-            file1_filepath=(path1.path() if isinstance(path1, Installation) else path1),
-            file2_filepath=(path2.path() if isinstance(path2, Installation) else path2),
-            file1_installation=path1 if isinstance(path1, Installation) else None,
-            file2_installation=path2 if isinstance(path2, Installation) else None,
+            resname=path1.name,
+            file1_location_type="Path",
+            file2_location_type="Path",
+            file1_filepath=path1,
+            file2_filepath=path2,
+            file1_installation=None,
+            file2_installation=None,
         )
 
         try:
             result = diff_data(
-                (path1.path() if isinstance(path1, Installation) else path1).read_bytes(),
-                (path2.path() if isinstance(path2, Installation) else path2).read_bytes(),
+                path1.read_bytes(),
+                path2.read_bytes(),
                 context,
                 log_func=print,
                 compare_hashes=not bool(cmdline_args.compare_hashes),
                 format_type="unified",
             )
-            path1 = path1.path() if isinstance(path1, Installation) else path1
-            path2 = path2.path() if isinstance(path2, Installation) else path2
             if result:
                 print(f"{path1} MATCHES {path2}")
             else:

@@ -1,3 +1,5 @@
+"""Save game editor: slot list, character/inventory/metadata, and save folder I/O."""
+
 from __future__ import annotations
 
 from datetime import timedelta
@@ -130,70 +132,82 @@ class SaveGameEditor(Editor):
         QShortcut("Ctrl+S", self).activated.connect(self.save)
 
         # Save Info signals
-        self.ui.lineEditSaveName.editingFinished.connect(self.on_save_info_changed)
-        self.ui.lineEditAreaName.editingFinished.connect(self.on_save_info_changed)
-        self.ui.lineEditLastModule.editingFinished.connect(self.on_save_info_changed)
-        self.ui.spinBoxTimePlayed.editingFinished.connect(self.on_save_info_changed)
-        self.ui.lineEditPCName.editingFinished.connect(self.on_save_info_changed)
-        self.ui.lineEditPortrait0.editingFinished.connect(self.on_save_info_changed)
-        self.ui.lineEditPortrait1.editingFinished.connect(self.on_save_info_changed)
-        self.ui.lineEditPortrait2.editingFinished.connect(self.on_save_info_changed)
-        self.ui.checkBoxCheatUsed.stateChanged.connect(self.on_save_info_changed)
-        self.ui.spinBoxGameplayHint.editingFinished.connect(self.on_save_info_changed)
-        self.ui.spinBoxStoryHint.editingFinished.connect(self.on_save_info_changed)
-        self.ui.lineEditLive1.editingFinished.connect(self.on_save_info_changed)
-        self.ui.lineEditLive2.editingFinished.connect(self.on_save_info_changed)
-        self.ui.lineEditLive3.editingFinished.connect(self.on_save_info_changed)
-        self.ui.lineEditLive4.editingFinished.connect(self.on_save_info_changed)
-        self.ui.lineEditLive5.editingFinished.connect(self.on_save_info_changed)
-        self.ui.lineEditLive6.editingFinished.connect(self.on_save_info_changed)
-        self.ui.spinBoxLiveContent.editingFinished.connect(self.on_save_info_changed)
+        for signal in (
+            self.ui.lineEditSaveName.editingFinished,
+            self.ui.lineEditAreaName.editingFinished,
+            self.ui.lineEditLastModule.editingFinished,
+            self.ui.spinBoxTimePlayed.editingFinished,
+            self.ui.lineEditPCName.editingFinished,
+            self.ui.lineEditPortrait0.editingFinished,
+            self.ui.lineEditPortrait1.editingFinished,
+            self.ui.lineEditPortrait2.editingFinished,
+            self.ui.checkBoxCheatUsed.stateChanged,
+            self.ui.spinBoxGameplayHint.editingFinished,
+            self.ui.spinBoxStoryHint.editingFinished,
+            self.ui.lineEditLive1.editingFinished,
+            self.ui.lineEditLive2.editingFinished,
+            self.ui.lineEditLive3.editingFinished,
+            self.ui.lineEditLive4.editingFinished,
+            self.ui.lineEditLive5.editingFinished,
+            self.ui.lineEditLive6.editingFinished,
+            self.ui.spinBoxLiveContent.editingFinished,
+        ):
+            signal.connect(self.on_save_info_changed)
 
         # Party Table signals
-        self.ui.spinBoxGold.editingFinished.connect(self.on_party_table_changed)
-        self.ui.spinBoxXPPool.editingFinished.connect(self.on_party_table_changed)
-        self.ui.spinBoxComponents.editingFinished.connect(self.on_party_table_changed)
-        self.ui.spinBoxChemicals.editingFinished.connect(self.on_party_table_changed)
-        self.ui.spinBoxTimePlayedPT.editingFinished.connect(self.on_party_table_changed)
-        self.ui.checkBoxCheatUsedPT.stateChanged.connect(self.on_party_table_changed)
-        self.ui.spinBoxControlledNPC.editingFinished.connect(self.on_party_table_changed)
-        self.ui.spinBoxAIState.editingFinished.connect(self.on_party_table_changed)
-        self.ui.spinBoxFollowState.editingFinished.connect(self.on_party_table_changed)
-        self.ui.checkBoxSoloMode.stateChanged.connect(self.on_party_table_changed)
-        self.ui.spinBoxLastGUIPanel.editingFinished.connect(self.on_party_table_changed)
-        self.ui.spinBoxJournalSortOrder.editingFinished.connect(self.on_party_table_changed)
-        self.ui.tableWidgetAvailableNPCs.itemChanged.connect(self.on_party_table_changed)
-        self.ui.tableWidgetInfluence.itemChanged.connect(self.on_party_table_changed)
+        for signal in (
+            self.ui.spinBoxGold.editingFinished,
+            self.ui.spinBoxXPPool.editingFinished,
+            self.ui.spinBoxComponents.editingFinished,
+            self.ui.spinBoxChemicals.editingFinished,
+            self.ui.spinBoxTimePlayedPT.editingFinished,
+            self.ui.checkBoxCheatUsedPT.stateChanged,
+            self.ui.spinBoxControlledNPC.editingFinished,
+            self.ui.spinBoxAIState.editingFinished,
+            self.ui.spinBoxFollowState.editingFinished,
+            self.ui.checkBoxSoloMode.stateChanged,
+            self.ui.spinBoxLastGUIPanel.editingFinished,
+            self.ui.spinBoxJournalSortOrder.editingFinished,
+            self.ui.tableWidgetAvailableNPCs.itemChanged,
+            self.ui.tableWidgetInfluence.itemChanged,
+        ):
+            signal.connect(self.on_party_table_changed)
 
         # Global variables signals
-        self.ui.tableWidgetBooleans.itemChanged.connect(self.on_global_var_changed)
-        self.ui.tableWidgetNumbers.itemChanged.connect(self.on_global_var_changed)
-        self.ui.tableWidgetStrings.itemChanged.connect(self.on_global_var_changed)
-        self.ui.tableWidgetLocations.itemChanged.connect(self.on_global_var_changed)
+        for signal in (
+            self.ui.tableWidgetBooleans.itemChanged,
+            self.ui.tableWidgetNumbers.itemChanged,
+            self.ui.tableWidgetStrings.itemChanged,
+            self.ui.tableWidgetLocations.itemChanged,
+        ):
+            signal.connect(self.on_global_var_changed)
 
         # Character signals
         self.ui.listWidgetCharacters.currentRowChanged.connect(self.on_character_selected)
-        self.ui.lineEditCharName.editingFinished.connect(self.on_character_data_changed)
-        self.ui.spinBoxCharHP.editingFinished.connect(self.on_character_data_changed)
-        self.ui.spinBoxCharMaxHP.editingFinished.connect(self.on_character_data_changed)
-        self.ui.spinBoxCharFP.editingFinished.connect(self.on_character_data_changed)
-        self.ui.spinBoxCharMaxFP.editingFinished.connect(self.on_character_data_changed)
-        self.ui.spinBoxCharXP.editingFinished.connect(self.on_character_data_changed)
-        self.ui.checkBoxCharMin1HP.stateChanged.connect(self.on_character_data_changed)
-        self.ui.spinBoxCharGoodEvil.editingFinished.connect(self.on_character_data_changed)
-        self.ui.spinBoxCharSTR.editingFinished.connect(self.on_character_data_changed)
-        self.ui.spinBoxCharDEX.editingFinished.connect(self.on_character_data_changed)
-        self.ui.spinBoxCharCON.editingFinished.connect(self.on_character_data_changed)
-        self.ui.spinBoxCharINT.editingFinished.connect(self.on_character_data_changed)
-        self.ui.spinBoxCharWIS.editingFinished.connect(self.on_character_data_changed)
-        self.ui.spinBoxCharCHA.editingFinished.connect(self.on_character_data_changed)
-        self.ui.spinBoxCharPortraitId.editingFinished.connect(self.on_character_data_changed)
-        self.ui.spinBoxCharAppearanceType.editingFinished.connect(self.on_character_data_changed)
-        self.ui.comboBoxCharGender.currentIndexChanged.connect(self.on_character_data_changed)
-        self.ui.spinBoxCharSoundset.editingFinished.connect(self.on_character_data_changed)
-        self.ui.tableWidgetSkills.itemChanged.connect(self.on_character_data_changed)
-        self.ui.tableWidgetCharClasses.itemChanged.connect(self.on_character_data_changed)
-        self.ui.listWidgetCharFeats.itemChanged.connect(self.on_character_data_changed)
+        for signal in (
+            self.ui.lineEditCharName.editingFinished,
+            self.ui.spinBoxCharHP.editingFinished,
+            self.ui.spinBoxCharMaxHP.editingFinished,
+            self.ui.spinBoxCharFP.editingFinished,
+            self.ui.spinBoxCharMaxFP.editingFinished,
+            self.ui.spinBoxCharXP.editingFinished,
+            self.ui.checkBoxCharMin1HP.stateChanged,
+            self.ui.spinBoxCharGoodEvil.editingFinished,
+            self.ui.spinBoxCharSTR.editingFinished,
+            self.ui.spinBoxCharDEX.editingFinished,
+            self.ui.spinBoxCharCON.editingFinished,
+            self.ui.spinBoxCharINT.editingFinished,
+            self.ui.spinBoxCharWIS.editingFinished,
+            self.ui.spinBoxCharCHA.editingFinished,
+            self.ui.spinBoxCharPortraitId.editingFinished,
+            self.ui.spinBoxCharAppearanceType.editingFinished,
+            self.ui.comboBoxCharGender.currentIndexChanged,
+            self.ui.spinBoxCharSoundset.editingFinished,
+            self.ui.tableWidgetSkills.itemChanged,
+            self.ui.tableWidgetCharClasses.itemChanged,
+            self.ui.listWidgetCharFeats.itemChanged,
+        ):
+            signal.connect(self.on_character_data_changed)
 
         # Cached modules signals
         self.ui.pushButtonOpenModuleResource.clicked.connect(self.on_open_module_resource)

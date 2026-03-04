@@ -1,3 +1,5 @@
+"""DXT decompression: DXT1/DXT3/DXT5 block decode to RGB/RGBA."""
+
 from __future__ import annotations
 
 

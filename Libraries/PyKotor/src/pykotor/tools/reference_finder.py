@@ -12,7 +12,7 @@ import fnmatch
 import re
 
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Callable
+from typing import TYPE_CHECKING, Any, Callable
 
 from pykotor.common.stream import BinaryReader
 from pykotor.resource.formats.gff import GFFFieldType, GFFList, GFFStruct, read_gff
@@ -43,6 +43,46 @@ class ReferenceSearchResult:
     matched_value: str
     file_type: str
     byte_offset: int | None = None
+
+
+def _field_type_int(field_type: GFFFieldType | int) -> int:
+    """Convert a GFF field type enum/int to integer form for fast comparisons."""
+    return field_type.value if isinstance(field_type, GFFFieldType) else field_type
+
+
+def _safe_read_gff(resource: FileResource) -> GFF | None:
+    """Safely read a GFF file, returning None on failure."""
+    try:
+        return read_gff(resource.data())
+    except (ValueError, OSError):
+        return None
+
+
+def _build_field_path(path_prefix: str, label: str) -> str:
+    """Build a field path string, handling empty prefix."""
+    return f"{path_prefix}.{label}" if path_prefix else label
+
+
+def _recurse_nested_gff_field(
+    field_type_int: int,
+    value: Any,
+    label: str,
+    path_prefix: str,
+    recurse_struct: Callable[[GFFStruct, str], None],
+    *,
+    struct_type: int,
+    list_type: int,
+) -> None:
+    """Recurse into nested GFF Struct/List fields."""
+    if field_type_int == struct_type and isinstance(value, GFFStruct):
+        new_path = _build_field_path(path_prefix, label)
+        recurse_struct(value, new_path)
+    elif field_type_int == list_type and isinstance(value, GFFList):
+        base_path = _build_field_path(path_prefix, label)
+        for idx, item in enumerate(value):
+            if isinstance(item, GFFStruct):
+                list_path = f"{base_path}[{idx}]"
+                recurse_struct(item, list_path)
 
 
 def find_script_references(
@@ -240,69 +280,52 @@ def find_resref_references(
     if field_types is None:
         field_types = {GFFFieldType.ResRef}
 
-    # Build search pattern
     search_pattern = _build_search_pattern(resref, partial_match, case_sensitive)
 
-    results: list[ReferenceSearchResult] = []
-
-    exclude_types = {ResourceType.NCS} if search_ncs else None
-
-    # Cache parsed GFF files by FileResource to avoid re-parsing the same file
-    # This handles cases where the same resource appears multiple times in the installation iterator
-    # (e.g., in both override and modules). This is an O(n) -> O(1) optimization for parsing.
-    gff_cache: dict[FileResource, GFF | None] = {}
-
-    # Search GFF files
-    for resource in installation:
-        if not _should_search_resource(resource, file_pattern, file_types, exclude_types):
-            continue
-
-        restype = resource.restype()
-        if restype.is_gff():
-            file_type = restype.extension.upper()
-            if file_types and file_type not in file_types:
-                continue
-
-            # Check cache first - if we've already parsed this resource, reuse the parsed GFF
-            if resource in gff_cache:
-                cached_gff = gff_cache[resource]
-                if cached_gff is not None:
-                    gff_results = _search_gff_for_resref_with_gff(
-                        resource,
-                        cached_gff,
-                        resref,
-                        search_pattern,
-                        field_names,
-                        field_types,
-                        file_type,
-                        case_sensitive,
-                        logger,
-                    )
-                    results.extend(gff_results)
-            else:
-                # Parse the GFF file and cache it
-                try:
-                    gff = read_gff(resource.data())
-                    gff_cache[resource] = gff
-                    gff_results = _search_gff_for_resref_with_gff(
-                        resource,
-                        gff,
-                        resref,
-                        search_pattern,
-                        field_names,
-                        field_types,
-                        file_type,
-                        case_sensitive,
-                        logger,
-                    )
-                    results.extend(gff_results)
-                except (ValueError, OSError):
-                    gff_cache[resource] = None
-
-        # Search NCS files if requested
-        if search_ncs and restype is ResourceType.NCS:
-            ncs_results = _search_ncs_for_string(resource, resref, search_pattern, case_sensitive, logger)
-            results.extend(ncs_results)
+    if search_ncs:
+        gff_resources, ncs_resources = _partition_resources_by_gff_and_ncs(
+            installation,
+            file_pattern=file_pattern,
+            file_types=file_types,
+        )
+        results = _search_gff_resources_with_cache(
+            installation,
+            file_pattern=file_pattern,
+            file_types=file_types,
+            exclude_types=None,
+            search_with_gff=lambda resource, gff, file_type: _search_gff_for_resref_with_gff(
+                resource,
+                gff,
+                resref,
+                search_pattern,
+                field_names,
+                field_types,
+                file_type,
+                case_sensitive,
+                logger,
+            ),
+            resources=gff_resources,
+        )
+        for resource in ncs_resources:
+            results.extend(_search_ncs_for_string(resource, resref, search_pattern, case_sensitive, logger))
+    else:
+        results = _search_gff_resources_with_cache(
+            installation,
+            file_pattern=file_pattern,
+            file_types=file_types,
+            exclude_types={ResourceType.NCS},
+            search_with_gff=lambda resource, gff, file_type: _search_gff_for_resref_with_gff(
+                resource,
+                gff,
+                resref,
+                search_pattern,
+                field_names,
+                field_types,
+                file_type,
+                case_sensitive,
+                logger,
+            ),
+        )
 
     return results
 
@@ -342,63 +365,25 @@ def find_field_value_references(
     if field_types is None:
         field_types = {GFFFieldType.String, GFFFieldType.ResRef}
 
-    # Build search pattern
     search_pattern: re.Pattern[str] = _build_search_pattern(search_value, partial_match, case_sensitive)
 
-    results: list[ReferenceSearchResult] = []
-
-    # Cache parsed GFF files by FileResource to avoid re-parsing the same file
-    # This handles cases where the same resource appears multiple times in the installation iterator
-    # (e.g., in both override and modules). This is an O(n) -> O(1) optimization for parsing.
-    gff_cache: dict[FileResource, GFF | None] = {}
-
-    for resource in installation:
-        if not _should_search_resource(resource, file_pattern, file_types, None):
-            continue
-
-        restype = resource.restype()
-        if restype.is_gff():
-            file_type = restype.extension.upper()
-            if file_types and file_type not in file_types:
-                continue
-
-            # Check cache first - if we've already parsed this resource, reuse the parsed GFF
-            if resource in gff_cache:
-                cached_gff = gff_cache[resource]
-                if cached_gff is not None:
-                    gff_results = _search_gff_for_value_with_gff(
-                        resource,
-                        cached_gff,
-                        search_value,
-                        search_pattern,
-                        field_names,
-                        field_types,
-                        file_type,
-                        case_sensitive,
-                        logger,
-                    )
-                    results.extend(gff_results)
-            else:
-                # Parse the GFF file and cache it
-                try:
-                    gff = read_gff(resource.data())
-                    gff_cache[resource] = gff
-                    gff_results = _search_gff_for_value_with_gff(
-                        resource,
-                        gff,
-                        search_value,
-                        search_pattern,
-                        field_names,
-                        field_types,
-                        file_type,
-                        case_sensitive,
-                        logger,
-                    )
-                    results.extend(gff_results)
-                except (ValueError, OSError):
-                    gff_cache[resource] = None
-
-    return results
+    return _search_gff_resources_with_cache(
+        installation,
+        file_pattern=file_pattern,
+        file_types=file_types,
+        exclude_types=None,
+        search_with_gff=lambda resource, gff, file_type: _search_gff_for_value_with_gff(
+            resource,
+            gff,
+            search_value,
+            search_pattern,
+            field_names,
+            field_types,
+            file_type,
+            case_sensitive,
+            logger,
+        ),
+    )
 
 
 def _build_search_pattern(value: str, partial_match: bool, case_sensitive: bool) -> re.Pattern[str]:
@@ -430,6 +415,116 @@ def _should_search_resource(
     return True
 
 
+def _search_gff_resources_with_cache(
+    installation: Installation,
+    *,
+    file_pattern: str | None,
+    file_types: set[str] | None,
+    exclude_types: set[ResourceType] | None,
+    search_with_gff: Callable[[FileResource, GFF, str], list[ReferenceSearchResult]],
+    resources: list[FileResource] | None = None,
+) -> list[ReferenceSearchResult]:
+    """Search GFF resources with a per-call parse cache to avoid repeated read_gff work.
+
+    When resources is provided, installation is not iterated (single-pass use with NCS search).
+    """
+    results: list[ReferenceSearchResult] = []
+    gff_cache: dict[FileResource, GFF | None] = {}
+    iterable = resources if resources is not None else installation
+
+    for resource in iterable:
+        if resources is None:
+            if not _should_search_resource(resource, file_pattern, file_types, exclude_types):
+                continue
+
+        restype = resource.restype()
+        if not restype.is_gff():
+            continue
+
+        file_type = restype.extension.upper()
+        if file_types and file_type not in file_types:
+            continue
+
+        if resource not in gff_cache:
+            gff_cache[resource] = _safe_read_gff(resource)
+
+        cached_gff = gff_cache[resource]
+        if cached_gff is None:
+            continue
+
+        results.extend(search_with_gff(resource, cached_gff, file_type))
+
+    return results
+
+
+def _partition_resources_by_gff_and_ncs(
+    installation: Installation,
+    *,
+    file_pattern: str | None,
+    file_types: set[str] | None,
+) -> tuple[list[FileResource], list[FileResource]]:
+    """Single pass over installation: return (gff_resources, ncs_resources) for ref search."""
+    gff_list: list[FileResource] = []
+    ncs_list: list[FileResource] = []
+
+    for resource in installation:
+        if file_pattern and not fnmatch.fnmatch(resource.filename().lower(), file_pattern.lower()):
+            continue
+        restype = resource.restype()
+        if file_types and restype.extension.upper() not in file_types:
+            continue
+        if restype == ResourceType.NCS:
+            ncs_list.append(resource)
+        elif restype.is_gff():
+            gff_list.append(resource)
+
+    return gff_list, ncs_list
+
+
+def _is_value_match(
+    candidate: str,
+    target: str,
+    search_pattern: re.Pattern[str],
+    *,
+    case_sensitive: bool,
+    is_partial: bool,
+) -> bool:
+    """Return whether candidate matches target using fast direct checks then regex fallback."""
+    if not case_sensitive:
+        candidate_cmp = candidate.lower()
+        target_cmp = target.lower()
+        direct_match = target_cmp in candidate_cmp if is_partial else candidate_cmp == target_cmp
+    else:
+        direct_match = target in candidate if is_partial else candidate == target
+
+    return direct_match or bool(search_pattern.search(candidate))
+
+
+def _append_gff_match_result(
+    results: list[ReferenceSearchResult],
+    *,
+    resource: FileResource,
+    path_prefix: str,
+    label: str,
+    matched_value: str,
+    file_type: str,
+    logger: Callable[[str], None] | None,
+    search_term: str,
+) -> None:
+    """Append a GFF match result and emit optional log entry."""
+    field_path = _build_field_path(path_prefix, label)
+    results.append(
+        ReferenceSearchResult(
+            file_resource=resource,
+            field_path=field_path,
+            matched_value=matched_value,
+            file_type=file_type,
+        ),
+    )
+    if logger is not None:
+        logger(f"Found '{search_term}' in {resource.filename()} at {field_path}")
+
+
 def _search_gff_for_resref(
     resource: FileResource,
     resref: str,
@@ -441,9 +536,8 @@ def _search_gff_for_resref(
     logger: Callable[[str], None] | None,
 ) -> list[ReferenceSearchResult]:
     """Search a GFF file for ResRef references."""
-    try:
-        gff = read_gff(resource.data())
-    except (ValueError, OSError):
+    gff = _safe_read_gff(resource)
+    if gff is None:
         return []
     return _search_gff_for_resref_with_gff(resource, gff, resref, search_pattern, field_names, field_types, file_type, case_sensitive, logger)
 
@@ -462,8 +556,6 @@ def _search_gff_for_resref_with_gff(
     """Search a parsed GFF file for ResRef references."""
     results: list[ReferenceSearchResult] = []
 
-    # Pre-compute search value for direct comparison (faster than regex when possible)
-    search_lower = resref.lower() if not case_sensitive else resref
     # Detect if this is a partial match pattern (no word boundaries)
     pattern_str = search_pattern.pattern
     is_partial = "\\b" not in pattern_str
@@ -475,32 +567,14 @@ def _search_gff_for_resref_with_gff(
     LIST_TYPE = 15  # GFFFieldType.List
     RESREF_TYPE = 11  # GFFFieldType.ResRef
     STRING_TYPE = 10  # GFFFieldType.String
-
-    def recurse_nested(
-        field_type: GFFFieldType,
-        value: Any,
-        label: str,
-        path_prefix: str,
-    ) -> None:
-        """Helper to recurse into nested structures (Struct/List)."""
-        # Use integer comparison for performance
-        field_type_int = field_type.value if isinstance(field_type, GFFFieldType) else field_type
-        if field_type_int == STRUCT_TYPE and isinstance(value, GFFStruct):
-            new_path = f"{path_prefix}.{label}" if path_prefix else label
-            recurse_struct(value, new_path)
-        elif field_type_int == LIST_TYPE and isinstance(value, GFFList):
-            base_path = f"{path_prefix}.{label}" if path_prefix else label
-            for idx, item in enumerate(value):
-                if isinstance(item, GFFStruct):
-                    list_path = f"{base_path}[{idx}]"
-                    recurse_struct(item, list_path)
+    field_type_ints = {_field_type_int(ft) for ft in field_types}
 
     def recurse_struct(gff_struct: GFFStruct, path_prefix: str = "") -> None:
         """Recursively search GFF struct for ResRef matches."""
         # Use direct field access instead of iteration when possible for better performance
         for label, field_type, value in gff_struct:
             # Use integer comparison for field type (optimization)
-            field_type_int = field_type.value if isinstance(field_type, GFFFieldType) else field_type
+            field_type_int = _field_type_int(field_type)
 
             # Check field name filter
             name_matches = field_names is None or label in field_names
@@ -509,12 +583,28 @@ def _search_gff_for_resref_with_gff(
 
             # If name doesn't match, only recurse into nested structures
             if not name_matches:
-                recurse_nested(field_type, value, label, path_prefix)
+                _recurse_nested_gff_field(
+                    field_type_int,
+                    value,
+                    label,
+                    path_prefix,
+                    recurse_struct,
+                    struct_type=STRUCT_TYPE,
+                    list_type=LIST_TYPE,
+                )
                 continue
 
             # If type doesn't match, only recurse into nested structures
             if not type_matches:
-                recurse_nested(field_type, value, label, path_prefix)
+                _recurse_nested_gff_field(
+                    field_type_int,
+                    value,
+                    label,
+                    path_prefix,
+                    recurse_struct,
+                    struct_type=STRUCT_TYPE,
+                    list_type=LIST_TYPE,
+                )
                 continue
 
             # At this point, we know the field name and type match - check the value
@@ -528,43 +618,47 @@ def _search_gff_for_resref_with_gff(
 
             # If we couldn't extract a string value, recurse and continue
             if resref_str is None:
-                recurse_nested(field_type, value, label, path_prefix)
+                _recurse_nested_gff_field(
+                    field_type_int,
+                    value,
+                    label,
+                    path_prefix,
+                    recurse_struct,
+                    struct_type=STRUCT_TYPE,
+                    list_type=LIST_TYPE,
+                )
                 continue
 
-            # Fast path: direct comparison for exact matches (avoid regex when possible)
-            match_found = False
-            if not case_sensitive:
-                resref_lower = resref_str.lower()
-                if is_partial:
-                    match_found = search_lower in resref_lower
-                else:
-                    match_found = resref_lower == search_lower
-            else:
-                if is_partial:
-                    match_found = resref in resref_str
-                else:
-                    match_found = resref_str == resref
-
-            # Only use regex if direct comparison didn't match (regex is slower)
-            if not match_found:
-                match_found = bool(search_pattern.search(resref_str))
+            match_found = _is_value_match(
+                resref_str,
+                resref,
+                search_pattern,
+                case_sensitive=case_sensitive,
+                is_partial=is_partial,
+            )
 
             if match_found:
-                # Defer string path building until we have a match
-                field_path = f"{path_prefix}.{label}" if path_prefix else label
-                results.append(
-                    ReferenceSearchResult(
-                        file_resource=resource,
-                        field_path=field_path,
-                        matched_value=resref_str,
-                        file_type=file_type,
-                    ),
+                _append_gff_match_result(
+                    results,
+                    resource=resource,
+                    path_prefix=path_prefix,
+                    label=label,
+                    matched_value=resref_str,
+                    file_type=file_type,
+                    logger=logger,
+                    search_term=resref,
                 )
-                if logger is not None:
-                    logger(f"Found '{resref}' in {resource.filename()} at {field_path}")
 
             # Recurse into nested structures (only once, not multiple times)
-            recurse_nested(field_type, value, label, path_prefix)
+            _recurse_nested_gff_field(
+                field_type_int,
+                value,
+                label,
+                path_prefix,
+                recurse_struct,
+                struct_type=STRUCT_TYPE,
+                list_type=LIST_TYPE,
+            )
 
     recurse_struct(gff.root)
     return results
@@ -581,9 +675,8 @@ def _search_gff_for_value(
     logger: Callable[[str], None] | None,
 ) -> list[ReferenceSearchResult]:
     """Search a GFF file for string/value references."""
-    try:
-        gff = read_gff(resource.data())
-    except (ValueError, OSError):
+    gff = _safe_read_gff(resource)
+    if gff is None:
         return []
     return _search_gff_for_value_with_gff(
         resource=resource,
@@ -612,8 +705,6 @@ def _search_gff_for_value_with_gff(
     """Search a parsed GFF file for string/value references."""
     results: list[ReferenceSearchResult] = []
 
-    # Pre-compute search value for direct comparison (faster than regex when possible)
-    search_lower = search_value.lower() if not case_sensitive else search_value
     # Detect if this is a partial match pattern (no word boundaries)
     pattern_str = search_pattern.pattern
     is_partial = "\\b" not in pattern_str
@@ -626,33 +717,14 @@ def _search_gff_for_value_with_gff(
     RESREF_TYPE = 11  # GFFFieldType.ResRef
     STRING_TYPE = 10  # GFFFieldType.String
     # Convert field_types set to integers for faster comparison
-    field_type_ints = {ft.value if isinstance(ft, GFFFieldType) else ft for ft in field_types}
-
-    def recurse_nested(
-        field_type: GFFFieldType,
-        value: Any,
-        label: str,
-        path_prefix: str,
-    ) -> None:
-        """Helper to recurse into nested structures (Struct/List)."""
-        # Use integer comparison for performance
-        field_type_int = field_type.value if isinstance(field_type, GFFFieldType) else field_type
-        if field_type_int == STRUCT_TYPE and isinstance(value, GFFStruct):
-            new_path = f"{path_prefix}.{label}" if path_prefix else label
-            recurse_struct(value, new_path)
-        elif field_type_int == LIST_TYPE and isinstance(value, GFFList):
-            base_path = f"{path_prefix}.{label}" if path_prefix else label
-            for idx, item in enumerate(value):
-                if isinstance(item, GFFStruct):
-                    list_path = f"{base_path}[{idx}]"
-                    recurse_struct(item, list_path)
+    field_type_ints = {_field_type_int(ft) for ft in field_types}
 
     def recurse_struct(gff_struct: GFFStruct, path_prefix: str = "") -> None:
         """Recursively search GFF struct for value matches."""
         # Use direct field access instead of iteration when possible for better performance
         for label, field_type, value in gff_struct:
             # Use integer comparison for field type (optimization)
-            field_type_int = field_type.value if isinstance(field_type, GFFFieldType) else field_type
+            field_type_int = _field_type_int(field_type)
 
             # Check field name filter
             name_matches = field_names is None or label in field_names
@@ -661,12 +733,28 @@ def _search_gff_for_value_with_gff(
 
             # If name doesn't match, only recurse into nested structures
             if not name_matches:
-                recurse_nested(field_type, value, label, path_prefix)
+                _recurse_nested_gff_field(
+                    field_type_int,
+                    value,
+                    label,
+                    path_prefix,
+                    recurse_struct,
+                    struct_type=STRUCT_TYPE,
+                    list_type=LIST_TYPE,
+                )
                 continue
 
             # If type doesn't match, only recurse into nested structures
             if not type_matches:
-                recurse_nested(field_type, value, label, path_prefix)
+                _recurse_nested_gff_field(
+                    field_type_int,
+                    value,
+                    label,
+                    path_prefix,
+                    recurse_struct,
+                    struct_type=STRUCT_TYPE,
+                    list_type=LIST_TYPE,
+                )
                 continue
 
             # At this point, we know the field name and type match - check the value
@@ -680,43 +768,47 @@ def _search_gff_for_value_with_gff(
 
             # If we couldn't extract a string value, recurse and continue
             if value_str is None:
-                recurse_nested(field_type, value, label, path_prefix)
+                _recurse_nested_gff_field(
+                    field_type_int,
+                    value,
+                    label,
+                    path_prefix,
+                    recurse_struct,
+                    struct_type=STRUCT_TYPE,
+                    list_type=LIST_TYPE,
+                )
                 continue
 
-            # Fast path: direct comparison for exact matches (avoid regex when possible)
-            match_found = False
-            if not case_sensitive:
-                value_lower = value_str.lower()
-                if is_partial:
-                    match_found = search_lower in value_lower
-                else:
-                    match_found = value_lower == search_lower
-            else:
-                if is_partial:
-                    match_found = search_value in value_str
-                else:
-                    match_found = value_str == search_value
-
-            # Only use regex if direct comparison didn't match (regex is slower)
-            if not match_found:
-                match_found = bool(search_pattern.search(value_str))
+            match_found = _is_value_match(
+                value_str,
+                search_value,
+                search_pattern,
+                case_sensitive=case_sensitive,
+                is_partial=is_partial,
+            )
 
             if match_found:
-                # Defer string path building until we have a match
-                field_path = f"{path_prefix}.{label}" if path_prefix else label
-                results.append(
-                    ReferenceSearchResult(
-                        file_resource=resource,
-                        field_path=field_path,
-                        matched_value=value_str,
-                        file_type=file_type,
-                    ),
+                _append_gff_match_result(
+                    results,
+                    resource=resource,
+                    path_prefix=path_prefix,
+                    label=label,
+                    matched_value=value_str,
+                    file_type=file_type,
+                    logger=logger,
+                    search_term=search_value,
                 )
-                if logger is not None:
-                    logger(f"Found '{search_value}' in {resource.filename()} at {field_path}")
 
             # Recurse into nested structures (only once, not multiple times)
-            recurse_nested(field_type, value, label, path_prefix)
+            _recurse_nested_gff_field(
+                field_type_int,
+                value,
+                label,
+                path_prefix,
+                recurse_struct,
+                struct_type=STRUCT_TYPE,
+                list_type=LIST_TYPE,
+            )
 
     recurse_struct(gff.root)
     return results

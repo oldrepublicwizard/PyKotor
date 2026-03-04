@@ -1,3 +1,5 @@
+"""Toolset utils: Qt key/mouse string conversion, QSettings org, archive helpers."""
+
 from __future__ import annotations
 
 from pathlib import Path

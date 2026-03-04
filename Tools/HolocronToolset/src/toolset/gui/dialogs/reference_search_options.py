@@ -9,6 +9,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 import qtpy
+
 from qtpy.QtCore import Qt
 from qtpy.QtWidgets import QCheckBox, QDialog
 

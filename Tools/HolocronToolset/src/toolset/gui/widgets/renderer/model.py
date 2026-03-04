@@ -1,3 +1,5 @@
+"""Single-model preview widget (OpenGL) for GIT instances in the module designer."""
+
 from __future__ import annotations
 
 import math
@@ -6,16 +8,15 @@ from typing import TYPE_CHECKING, cast
 
 import qtpy
 
-from loggerplus import RobustLogger
 from qtpy.QtCore import (
     QPoint,
     QTimer,
-    Qt,
     Signal,  # pyright: ignore[reportPrivateImportUsage]
 )
 from qtpy.QtGui import QCursor
 from qtpy.QtWidgets import QOpenGLWidget  # pyright: ignore[reportPrivateImportUsage]
 
+from loggerplus import RobustLogger
 from pykotor.gl import vec3
 from pykotor.gl.models.read_mdl import gl_load_mdl
 from pykotor.gl.scene import RenderObject, Scene
@@ -26,6 +27,9 @@ from utility.common.geometry import Vector2, Vector3
 from utility.error_handling import assert_with_variable_trace
 
 if TYPE_CHECKING:
+    from qtpy.QtCore import (
+        Qt,  # pyright: ignore[reportPrivateImportUsage]
+    )
     from qtpy.QtGui import QCloseEvent, QFocusEvent, QKeyEvent, QKeySequence, QMouseEvent, QResizeEvent, QWheelEvent
     from qtpy.QtWidgets import QWidget
 
@@ -425,19 +429,19 @@ class ModelRenderer(QOpenGLWidget):
 class ModelRendererControls:
     @property
     def moveCameraSensitivity3d(self) -> float:
-        return cast(float, ModuleDesignerSettings().moveCameraSensitivity3d)
+        return cast("float", ModuleDesignerSettings().moveCameraSensitivity3d)
 
     @moveCameraSensitivity3d.setter
     def moveCameraSensitivity3d(self, value: float): ...
     @property
     def zoomCameraSensitivity3d(self) -> float:
-        return cast(float, ModuleDesignerSettings().zoomCameraSensitivity3d)
+        return cast("float", ModuleDesignerSettings().zoomCameraSensitivity3d)
 
     @zoomCameraSensitivity3d.setter
     def zoomCameraSensitivity3d(self, value: float): ...
     @property
     def rotateCameraSensitivity3d(self) -> float:
-        return cast(float, ModuleDesignerSettings().rotateCameraSensitivity3d)
+        return cast("float", ModuleDesignerSettings().rotateCameraSensitivity3d)
 
     @rotateCameraSensitivity3d.setter
     def rotateCameraSensitivity3d(self, value: float): ...

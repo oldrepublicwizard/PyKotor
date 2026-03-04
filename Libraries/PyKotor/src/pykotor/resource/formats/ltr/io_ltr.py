@@ -1,3 +1,5 @@
+"""Binary LTR (letter) read/write: Markov chain tables for random name generation."""
+
 from __future__ import annotations
 
 import itertools

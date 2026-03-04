@@ -1,3 +1,5 @@
+"""LYT (layout) package: room/track/obstacle/door layout and ASCII I/O for modules."""
+
 from __future__ import annotations
 
 from pykotor.resource.formats.lyt.lyt_data import (

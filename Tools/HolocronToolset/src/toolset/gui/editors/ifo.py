@@ -6,7 +6,6 @@ from typing import TYPE_CHECKING
 
 from qtpy.QtWidgets import QComboBox, QLineEdit
 
-from pykotor.common.language import LocalizedString
 from pykotor.common.misc import ResRef
 from pykotor.resource.formats.gff import write_gff
 from pykotor.resource.generics.ifo import IFO, dismantle_ifo, read_ifo
@@ -18,6 +17,7 @@ from toolset.gui.editor import Editor
 if TYPE_CHECKING:
     import os
 
+    from pykotor.common.language import LocalizedString
     from toolset.data.installation import HTInstallation
 
 
@@ -55,33 +55,42 @@ class IFOEditor(Editor):
     def _setup_signals(self):
         """Connect UI signals to handler methods."""
         # Basic info fields
-        self.ui.tagEdit.textChanged.connect(self.on_value_changed)
         self.ui.tagGenerateButton.clicked.connect(self.generate_tag)
-        self.ui.voIdEdit.textChanged.connect(self.on_value_changed)
-        self.ui.hakEdit.textChanged.connect(self.on_value_changed)
-        self.ui.creatorIdSpin.valueChanged.connect(self.on_value_changed)
-        self.ui.versionSpin.valueChanged.connect(self.on_value_changed)
+        for signal in (
+            self.ui.tagEdit.textChanged,
+            self.ui.voIdEdit.textChanged,
+            self.ui.hakEdit.textChanged,
+            self.ui.creatorIdSpin.valueChanged,
+            self.ui.versionSpin.valueChanged,
+        ):
+            signal.connect(self.on_value_changed)
 
         # Module name and description - connect to editing finished signal
         self.ui.modNameEdit.sig_editing_finished.connect(self.on_mod_name_changed)
         self.ui.descriptionEdit.sig_editing_finished.connect(self.on_description_changed)
 
         # Entry point fields
-        self.ui.entryAreaEdit.textChanged.connect(self.on_value_changed)
-        self.ui.entryXSpin.valueChanged.connect(self.on_value_changed)
-        self.ui.entryYSpin.valueChanged.connect(self.on_value_changed)
-        self.ui.entryZSpin.valueChanged.connect(self.on_value_changed)
+        for signal in (
+            self.ui.entryAreaEdit.textChanged,
+            self.ui.entryXSpin.valueChanged,
+            self.ui.entryYSpin.valueChanged,
+            self.ui.entryZSpin.valueChanged,
+        ):
+            signal.connect(self.on_value_changed)
         self.ui.entryDirectionSpin.valueChanged.connect(self.on_entry_direction_changed)
 
         # Time settings (deprecated but still supported)
-        self.ui.dawnHourSpin.valueChanged.connect(self.on_value_changed)
-        self.ui.duskHourSpin.valueChanged.connect(self.on_value_changed)
-        self.ui.timeScaleSpin.valueChanged.connect(self.on_value_changed)
-        self.ui.startMonthSpin.valueChanged.connect(self.on_value_changed)
-        self.ui.startDaySpin.valueChanged.connect(self.on_value_changed)
-        self.ui.startHourSpin.valueChanged.connect(self.on_value_changed)
-        self.ui.startYearSpin.valueChanged.connect(self.on_value_changed)
-        self.ui.xpScaleSpin.valueChanged.connect(self.on_value_changed)
+        for signal in (
+            self.ui.dawnHourSpin.valueChanged,
+            self.ui.duskHourSpin.valueChanged,
+            self.ui.timeScaleSpin.valueChanged,
+            self.ui.startMonthSpin.valueChanged,
+            self.ui.startDaySpin.valueChanged,
+            self.ui.startHourSpin.valueChanged,
+            self.ui.startYearSpin.valueChanged,
+            self.ui.xpScaleSpin.valueChanged,
+        ):
+            signal.connect(self.on_value_changed)
 
         # Script fields - map UI names to IFO attribute names
         self._script_field_mapping = {
@@ -110,9 +119,12 @@ class IFOEditor(Editor):
                 widget.textChanged.connect(self.on_value_changed)
 
         # Advanced settings
-        self.ui.expansionPackSpin.valueChanged.connect(self.on_value_changed)
-        self.ui.minGameVerEdit.textChanged.connect(self.on_value_changed)
-        self.ui.cacheNSSDataCheck.stateChanged.connect(self.on_value_changed)
+        for signal in (
+            self.ui.expansionPackSpin.valueChanged,
+            self.ui.minGameVerEdit.textChanged,
+            self.ui.cacheNSSDataCheck.stateChanged,
+        ):
+            signal.connect(self.on_value_changed)
 
         # Area list management (if implemented)
         self.ui.addAreaButton.clicked.connect(self.add_area)
@@ -148,45 +160,16 @@ class IFOEditor(Editor):
         self.ui.descriptionEdit.set_installation(installation)
 
         # Setup script field context menus and reference search
-        script_field_names: list[str] = [
-            "onHeartbeatEdit",
-            "onLoadEdit",
-            "onStartEdit",
-            "onEnterEdit",
-            "onLeaveEdit",
-            "onActivateItemEdit",
-            "onAcquireItemEdit",
-            "onUnacquireItemEdit",
-            "onPlayerDeathEdit",
-            "onPlayerDyingEdit",
-            "onPlayerLevelupEdit",
-            "onPlayerRespawnEdit",
-            "onUserDefinedEdit",
-            "onPlayerRestEdit",
-            "startMovieEdit",
-        ]
-
-        script_fields: list[QComboBox | None] = [
-            getattr(self.ui, name, None)
-            for name in script_field_names
-        ]
+        script_fields: list[QComboBox | QLineEdit] = self._script_widgets()
 
         for field in script_fields:
-            if field is None:
-                continue
             installation.setup_file_context_menu(
                 field,
                 [ResourceType.NSS, ResourceType.NCS],
                 enable_reference_search=True,
                 reference_search_type="script",
             )
-            tooltip = field.toolTip() or ""
-            if "Right-click" not in tooltip:
-                field.setToolTip(
-                    tr("Right-click to find references to this script in the installation.")
-                    if not tooltip
-                    else f"{tooltip}\n\n{tr('Right-click to find references to this script in the installation.')}",
-                )
+            self._append_reference_tooltip(field, tr("Right-click to find references to this script in the installation."))
             # Set maxLength for FilterComboBox script fields (ResRefs are max 16 characters)
             line_edit: QLineEdit | None = field.lineEdit() if hasattr(field, "lineEdit") else None
             if line_edit is not None:
@@ -201,13 +184,29 @@ class IFOEditor(Editor):
 
         from toolset.gui.common.widgets.combobox import FilterComboBox
 
-        for ui_name in self._script_field_mapping.keys():
-            widget = getattr(self.ui, ui_name)
+        for widget in self._script_widgets():
             if isinstance(widget, FilterComboBox):
                 widget.populate_combo_box(relevant_scripts)
             elif isinstance(widget, (QComboBox,)):
                 widget.clear()
                 widget.addItems([""] + relevant_scripts)
+
+    def _script_widgets(self) -> list[QComboBox | QLineEdit]:
+        """Return valid script widgets from the script field mapping."""
+        widgets: list[QComboBox | QLineEdit] = []
+        for ui_name in self._script_field_mapping:
+            widget = getattr(self.ui, ui_name, None)
+            if widget is not None:
+                widgets.append(widget)
+        return widgets
+
+    @staticmethod
+    def _append_reference_tooltip(field: QComboBox | QLineEdit, helper_text: str) -> None:
+        """Append reference-search helper text only once to an existing tooltip."""
+        tooltip = field.toolTip() or ""
+        if "Right-click" in tooltip:
+            return
+        field.setToolTip(helper_text if not tooltip else f"{tooltip}\n\n{helper_text}")
 
     def generate_tag(self):
         """Generate tag from module name/resref."""

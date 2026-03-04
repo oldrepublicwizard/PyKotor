@@ -1,3 +1,9 @@
+"""Path and file-type helpers for KotOR resources.
+
+This module provides normalized path/suffix handling and predicates for
+common KotOR file extensions (NSS, MOD, ERF, RIM, BIF, etc.) used across
+tools and resource loading.
+"""
 from __future__ import annotations
 
 from pathlib import PurePath
@@ -33,86 +39,101 @@ def normalize_stem(
     return str_repr
 
 
+def _normalized_suffix(filepath: os.PathLike | str) -> str:
+    return PurePath(normalize_ext(filepath)).suffix.lower()
+
+
+def _lower_path_str(filepath: os.PathLike | str) -> str:
+    """Return a lowercase string representation for path suffix checks."""
+    return filepath.lower() if isinstance(filepath, str) else str(filepath).lower()
+
+
+def _has_suffix(filepath: os.PathLike | str, suffix: str | tuple[str, ...]) -> bool:
+    """Fast suffix matching helper that avoids repeated conversion boilerplate."""
+    return _lower_path_str(filepath).endswith(suffix)
+
+
+# Multi-suffix sets for capsule/storage checks; single source of truth for maintainability.
+_SUFFIX_ERF_TYPES: frozenset[str] = frozenset({".erf", ".mod", ".sav"})
+_SUFFIX_CAPSULE: frozenset[str] = frozenset({".erf", ".mod", ".rim", ".sav"})
+_SUFFIX_STORAGE: frozenset[str] = frozenset({".erf", ".mod", ".sav", ".rim", ".bif"})
+
+
+def _suffix_in(filepath: os.PathLike | str, suffixes: frozenset[str]) -> bool:
+    """True if the path's normalized suffix is in the given set (O(1) lookup)."""
+    return _normalized_suffix(filepath) in suffixes
+
+
+def is_file_type(filepath: os.PathLike | str, ext: str) -> bool:
+    """Check if filepath has the specified file extension (case-insensitive)."""
+    return _normalized_suffix(filepath) == f".{ext.lower()}"
+
+
 def is_nss_file(
     filepath: os.PathLike | str,
 ) -> bool:
     """Returns true if the given filename has a NSS file extension."""
-    return PurePath(normalize_ext(filepath)).suffix.lower() == ".nss"
+    return is_file_type(filepath, "nss")
 
 
 def is_mod_file(
     filepath: os.PathLike | str,
 ) -> bool:
     """Returns true if the given filename has a MOD file extension."""
-    return PurePath(normalize_ext(filepath)).suffix.lower() == ".mod"
+    return is_file_type(filepath, "mod")
 
 
 def is_erf_file(
     filepath: os.PathLike | str,
 ) -> bool:
     """Returns true if the given filename has a ERF file extension."""
-    return PurePath(normalize_ext(filepath)).suffix.lower() == ".erf"
+    return is_file_type(filepath, "erf")
 
 
 def is_sav_file(
     filepath: os.PathLike | str,
 ) -> bool:
     """Returns true if the given filename has a SAV file extension."""
-    return PurePath(normalize_ext(filepath)).suffix.lower() == ".sav"
+    return is_file_type(filepath, "sav")
 
 
 def is_any_erf_type_file(
     filepath: os.PathLike | str,
 ) -> bool:
     """Returns true if the given filename has either an ERF, MOD, or SAV file extension."""
-    return PurePath(normalize_ext(filepath)).suffix.lower() in (".erf", ".mod", ".sav")
+    return _suffix_in(filepath, _SUFFIX_ERF_TYPES)
 
 
 def is_rim_file(
     filepath: os.PathLike | str,
 ) -> bool:
     """Returns true if the given filename has a RIM file extension."""
-    return PurePath(normalize_ext(filepath)).suffix.lower() == ".rim"
+    return _normalized_suffix(filepath) == ".rim"
 
 
 def is_bif_file(
     filepath: os.PathLike | str,
 ) -> bool:
     """Returns true if the given filename has a BIF file extension."""
-    # Fast path: use string operations instead of PurePath for better performance
-    if isinstance(filepath, str):
-        lower_path = filepath.lower()
-        return lower_path.endswith(".bif")
-    # For Path objects, use the suffix property directly (already optimized)
-    return str(filepath).lower().endswith(".bif")
+    return _has_suffix(filepath, ".bif")
 
 
 def is_bzf_file(
     filepath: os.PathLike | str,
 ) -> bool:
     """Returns true if the given filename has a BZF file extension (lzma-compressed bif archive usually used on iOS)."""
-    # Fast path: use string operations instead of PurePath for better performance
-    if isinstance(filepath, str):
-        return filepath.lower().endswith(".bzf")
-    return str(filepath).lower().endswith(".bzf")
+    return _has_suffix(filepath, ".bzf")
 
 
 def is_capsule_file(
     filepath: os.PathLike | str,
 ) -> bool:
     """Returns true if the given filename has either an ERF, MOD, SAV, or RIM file extension."""
-    # Fast path: use string operations instead of PurePath for better performance
-    # Check common extensions directly without creating path objects
-    if isinstance(filepath, str):
-        lower_path = filepath.lower()
-        return lower_path.endswith((".erf", ".mod", ".rim", ".sav"))
-    # For Path objects, use string conversion (faster than PurePath)
-    lower_path = str(filepath).lower()
-    return lower_path.endswith((".erf", ".mod", ".rim", ".sav"))
+    return _suffix_in(filepath, _SUFFIX_CAPSULE)
 
 
 def is_storage_file(
     filepath: os.PathLike | str,
 ) -> bool:
     """Returns true if the given filename has either an ERF, MOD, SAV, RIM, or BIF file extension."""
-    return PurePath(normalize_ext(filepath)).suffix.lower() in {".erf", ".mod", ".sav", ".rim", ".bif"}
+    return _suffix_in(filepath, _SUFFIX_STORAGE)

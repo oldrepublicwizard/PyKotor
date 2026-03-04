@@ -1,3 +1,5 @@
+"""UTS (sound) generic: GFF-based sound object definitions and audio settings."""
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING

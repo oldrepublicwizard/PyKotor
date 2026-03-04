@@ -1,3 +1,5 @@
+"""NWScript built-in definitions: KotOR/TSL constants and function signatures for NSS/NCS."""
+
 from __future__ import annotations
 
 from pykotor.common.script import DataType, ScriptConstant, ScriptFunction, ScriptParam

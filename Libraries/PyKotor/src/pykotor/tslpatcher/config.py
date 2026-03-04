@@ -1,3 +1,5 @@
+"""TSLPatcher config: LogLevel, PatcherConfig, and INI parsing for changes.ini."""
+
 from __future__ import annotations
 
 from configparser import ConfigParser

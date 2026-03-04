@@ -1,3 +1,5 @@
+"""BZF (compressed BIF) support: LZMA-compressed BIF resource reading."""
+
 from __future__ import annotations
 
 import lzma

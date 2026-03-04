@@ -1,11 +1,11 @@
+"""Indoor builder undo: room add/remove/move and property changes."""
+
 from __future__ import annotations
 
-
 from copy import deepcopy
-from typing import Callable
+from typing import TYPE_CHECKING, Callable
 
 import qtpy
-
 
 if qtpy.QT5:
     from qtpy.QtWidgets import QUndoCommand  # type: ignore[reportPrivateImportUsage]
@@ -15,10 +15,13 @@ else:
     raise ValueError(f"Invalid QT_API: '{qtpy.API_NAME}'")
 
 from pykotor.common.indoorkit import KitComponent, KitComponentHook
-from pykotor.common.indoormap import EmbeddedKit, IndoorMap, IndoorMapRoom
+from pykotor.common.indoormap import IndoorMapRoom
 from pykotor.resource.formats.bwm import BWM  # type: ignore[reportPrivateImportUsage]
-from utility.common.geometry import SurfaceMaterial, Vector3
+from utility.common.geometry import Vector3
 
+if TYPE_CHECKING:
+    from pykotor.common.indoormap import EmbeddedKit, IndoorMap
+    from utility.common.geometry import SurfaceMaterial
 
 # =============================================================================
 # Undo/Redo Commands

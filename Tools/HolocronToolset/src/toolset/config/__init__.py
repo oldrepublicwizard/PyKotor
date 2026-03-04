@@ -1,3 +1,5 @@
+"""Toolset config: version, update checks, and program info."""
+
 from __future__ import annotations
 
 from toolset.config.config_version import (

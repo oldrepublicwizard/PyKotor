@@ -1,3 +1,5 @@
+"""DLG node editor: graph nodes, links, selection, and context menus."""
+
 from __future__ import annotations
 
 from dataclasses import dataclass

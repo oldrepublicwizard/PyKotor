@@ -1,3 +1,5 @@
+"""Bitmap font grid: cell coordinates and dimensions for texture atlases."""
+
 from __future__ import annotations
 
 import math

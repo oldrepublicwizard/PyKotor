@@ -1,3 +1,5 @@
+"""Capsule (ERF/RIM) abstraction: LazyCapsule and in-memory load/save for archives."""
+
 from __future__ import annotations
 
 from pathlib import Path

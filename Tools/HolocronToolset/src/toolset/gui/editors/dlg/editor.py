@@ -1,3 +1,5 @@
+"""DLG editor: tree/graph views, node/link editing, search, and GFF sync for dialog resources."""
+
 from __future__ import annotations
 
 import json
@@ -78,6 +80,7 @@ if TYPE_CHECKING:
 
     from pykotor.resource.formats.twoda.twoda_data import TwoDA
     from pykotor.resource.generics.dlg import DLGAnimation, DLGNode, DLGStunt
+    from pykotor.tools.reference_finder import ReferenceSearchResult
     from toolset.uic.qtpy.editors.dlg import Ui_MainWindow
 
 
@@ -286,6 +289,74 @@ class DLGEditor(Editor):
         while self.ui.computerSelect.count() > max_computer:
             self.ui.computerSelect.removeItem(self.ui.computerSelect.count() - 1)
 
+    def _connect_param_widgets(
+        self,
+        spin_widgets: Iterable[QSpinBox],
+        text_widgets: Iterable[QLineEdit],
+        not_checkbox: QCheckBox | None = None,
+    ) -> None:
+        """Connect parameter widget change signals to ``on_node_update``.
+
+        Args:
+            spin_widgets: Numeric parameter widgets.
+            text_widgets: Text parameter widgets.
+            not_checkbox: Optional conditional NOT checkbox.
+        """
+        for widget in spin_widgets:
+            widget.valueChanged.connect(self.on_node_update)
+        for widget in text_widgets:
+            widget.textEdited.connect(self.on_node_update)
+        if not_checkbox is not None:
+            not_checkbox.stateChanged.connect(self.on_node_update)
+
+    def _set_tooltips_for_widgets(self, widgets: Iterable[QWidget], tooltip: str) -> None:
+        """Set the same tooltip for multiple widgets."""
+        for widget in widgets:
+            widget.setToolTip(tooltip)
+
+    def _batch_connect_param_groups(self) -> None:
+        """Batch connect parameter widgets for script and condition groups."""
+        self._connect_param_widgets([
+            self.ui.script1Param1Spin,
+            self.ui.script1Param2Spin,
+            self.ui.script1Param3Spin,
+            self.ui.script1Param4Spin,
+            self.ui.script1Param5Spin,
+        ], [
+            self.ui.script1Param6Edit,
+        ])
+        self._connect_param_widgets([
+            self.ui.script2Param1Spin,
+            self.ui.script2Param2Spin,
+            self.ui.script2Param3Spin,
+            self.ui.script2Param4Spin,
+            self.ui.script2Param5Spin,
+        ], [
+            self.ui.script2Param6Edit,
+        ])
+        self._connect_param_widgets(
+            [
+                self.ui.condition1Param1Spin,
+                self.ui.condition1Param2Spin,
+                self.ui.condition1Param3Spin,
+                self.ui.condition1Param4Spin,
+                self.ui.condition1Param5Spin,
+            ],
+            [self.ui.condition1Param6Edit],
+            self.ui.condition1NotCheckbox,
+        )
+        self._connect_param_widgets(
+            [
+                self.ui.condition2Param1Spin,
+                self.ui.condition2Param2Spin,
+                self.ui.condition2Param3Spin,
+                self.ui.condition2Param4Spin,
+                self.ui.condition2Param5Spin,
+            ],
+            [self.ui.condition2Param6Edit],
+            self.ui.condition2NotCheckbox,
+        )
+
     def _setup_signals(self):  # noqa: PLR0915
         """Connects UI signals to update node/link on change."""
         self.ui.actionReloadTree.triggered.connect(lambda: self._load_dlg(self.core_dlg))
@@ -325,10 +396,10 @@ A ResRef to a script, where the entry point is its <code>main()</code> function.
 <br><br>
 <i>Right-click for more options</i>
 """
-        self.ui.script1Label.setToolTip(script_text_entry_tooltip)
-        self.ui.script2Label.setToolTip(script_text_entry_tooltip)
-        self.ui.script1ResrefEdit.setToolTip(script_text_entry_tooltip)
-        self.ui.script2ResrefEdit.setToolTip(script_text_entry_tooltip)
+        self._set_tooltips_for_widgets(
+            [self.ui.script1Label, self.ui.script2Label, self.ui.script1ResrefEdit, self.ui.script2ResrefEdit],
+            script_text_entry_tooltip,
+        )
         self.ui.script1ResrefEdit.currentTextChanged.connect(self.on_node_update)
         self.ui.script2ResrefEdit.currentTextChanged.connect(self.on_node_update)
 
@@ -339,10 +410,10 @@ Should return 1 or 0, representing a boolean.
 <br><br>
 <i>Right-click for more options</i>
 """
-        self.ui.conditional1Label.setToolTip(conditional_text_entry_tooltip)
-        self.ui.conditional2Label.setToolTip(conditional_text_entry_tooltip)
-        self.ui.condition1ResrefEdit.setToolTip(conditional_text_entry_tooltip)
-        self.ui.condition2ResrefEdit.setToolTip(conditional_text_entry_tooltip)
+        self._set_tooltips_for_widgets(
+            [self.ui.conditional1Label, self.ui.conditional2Label, self.ui.condition1ResrefEdit, self.ui.condition2ResrefEdit],
+            conditional_text_entry_tooltip,
+        )
         self.ui.condition1ResrefEdit.currentTextChanged.connect(self.on_node_update)
         self.ui.condition2ResrefEdit.currentTextChanged.connect(self.on_node_update)
 
@@ -357,32 +428,10 @@ Should return 1 or 0, representing a boolean.
 
         self.ui.speakerEdit.textEdited.connect(self.on_node_update)
         self.ui.listenerEdit.textEdited.connect(self.on_node_update)
-        self.ui.script1Param1Spin.valueChanged.connect(self.on_node_update)
-        self.ui.script1Param2Spin.valueChanged.connect(self.on_node_update)
-        self.ui.script1Param3Spin.valueChanged.connect(self.on_node_update)
-        self.ui.script1Param4Spin.valueChanged.connect(self.on_node_update)
-        self.ui.script1Param5Spin.valueChanged.connect(self.on_node_update)
-        self.ui.script1Param6Edit.textEdited.connect(self.on_node_update)
-        self.ui.script2Param1Spin.valueChanged.connect(self.on_node_update)
-        self.ui.script2Param2Spin.valueChanged.connect(self.on_node_update)
-        self.ui.script2Param3Spin.valueChanged.connect(self.on_node_update)
-        self.ui.script2Param4Spin.valueChanged.connect(self.on_node_update)
-        self.ui.script2Param5Spin.valueChanged.connect(self.on_node_update)
-        self.ui.script2Param6Edit.textEdited.connect(self.on_node_update)
-        self.ui.condition1Param1Spin.valueChanged.connect(self.on_node_update)
-        self.ui.condition1Param2Spin.valueChanged.connect(self.on_node_update)
-        self.ui.condition1Param3Spin.valueChanged.connect(self.on_node_update)
-        self.ui.condition1Param4Spin.valueChanged.connect(self.on_node_update)
-        self.ui.condition1Param5Spin.valueChanged.connect(self.on_node_update)
-        self.ui.condition1Param6Edit.textEdited.connect(self.on_node_update)
-        self.ui.condition1NotCheckbox.stateChanged.connect(self.on_node_update)
-        self.ui.condition2Param1Spin.valueChanged.connect(self.on_node_update)
-        self.ui.condition2Param2Spin.valueChanged.connect(self.on_node_update)
-        self.ui.condition2Param3Spin.valueChanged.connect(self.on_node_update)
-        self.ui.condition2Param4Spin.valueChanged.connect(self.on_node_update)
-        self.ui.condition2Param5Spin.valueChanged.connect(self.on_node_update)
-        self.ui.condition2Param6Edit.textEdited.connect(self.on_node_update)
-        self.ui.condition2NotCheckbox.stateChanged.connect(self.on_node_update)
+        
+        # Wire script/condition parameter change signals
+        self._batch_connect_param_groups()
+        
         self.ui.emotionSelect.currentIndexChanged.connect(self.on_node_update)
         self.ui.expressionSelect.currentIndexChanged.connect(self.on_node_update)
         self.ui.soundCheckbox.toggled.connect(self.on_node_update)
@@ -1160,13 +1209,27 @@ Should return 1 or 0, representing a boolean.
         self.ui.entryDelaySpin.setValue(dlg.delay_entry)
         self.ui.replyDelaySpin.setValue(dlg.delay_reply)
         relevant_script_resnames: list[str] = sorted({res.resname().lower() for res in self._installation.get_relevant_resources(ResourceType.NCS, self._filepath)})
-        self.ui.script2ResrefEdit.populate_combo_box(relevant_script_resnames)
-        self.ui.condition2ResrefEdit.populate_combo_box(relevant_script_resnames)
-        self.ui.script1ResrefEdit.populate_combo_box(relevant_script_resnames)
-        self.ui.condition1ResrefEdit.populate_combo_box(relevant_script_resnames)
-        self.ui.onEndEdit.populate_combo_box(relevant_script_resnames)
-        self.ui.onAbortCombo.populate_combo_box(relevant_script_resnames)
+        for widget in self._script_resref_widgets():
+            widget.populate_combo_box(relevant_script_resnames)
         self.ui.cameraModelSelect.populate_combo_box(sorted({res.resname().lower() for res in self._installation.get_relevant_resources(ResourceType.MDL, self._filepath)}))
+
+    def _script_resref_widgets(self):
+        """Return all script resref combo-box widgets used by the editor."""
+        return (
+            self.ui.script2ResrefEdit,
+            self.ui.condition2ResrefEdit,
+            self.ui.script1ResrefEdit,
+            self.ui.condition1ResrefEdit,
+            self.ui.onEndEdit,
+            self.ui.onAbortCombo,
+        )
+
+    @staticmethod
+    def _set_combobox_max_length(combo_box, max_length: int = 16) -> None:
+        """Set combobox line-edit max length when a line edit is available."""
+        line_edit = combo_box.lineEdit()
+        if line_edit is not None:
+            line_edit.setMaxLength(max_length)
 
     def restart_void_edit_timer(self):
         """Restarts the timer whenever text is changed."""
@@ -1289,9 +1352,7 @@ Should return 1 or 0, representing a boolean.
             self.ui.cameraModelSelect,
         ]
         for combo_box in resref_combo_boxes:
-            line_edit = combo_box.lineEdit()
-            if line_edit is not None:
-                line_edit.setMaxLength(16)
+            self._set_combobox_max_length(combo_box, 16)
         installation.setup_file_context_menu(self.ui.script1ResrefEdit, [ResourceType.NSS, ResourceType.NCS])
         if installation.game().is_k1():
             required: list[str] = [HTInstallation.TwoDA_VIDEO_EFFECTS, HTInstallation.TwoDA_DIALOG_ANIMS]
@@ -1312,13 +1373,15 @@ Should return 1 or 0, representing a boolean.
         self.ui.soundComboBox.populate_combo_box(self.all_sounds)  # noqa: SLF001
         self.ui.ambientTrackCombo.populate_combo_box(self.all_music)
         self.ui.ambientTrackCombo.set_button_delegate("Play", lambda text: self.play_sound(text))
-        installation.setup_file_context_menu(self.ui.cameraModelSelect, [ResourceType.MDL], [SearchLocation.CHITIN, SearchLocation.OVERRIDE])
-        installation.setup_file_context_menu(self.ui.ambientTrackCombo, [ResourceType.WAV, ResourceType.MP3], [SearchLocation.MUSIC])
-        installation.setup_file_context_menu(self.ui.soundComboBox, [ResourceType.WAV, ResourceType.MP3], [SearchLocation.SOUND, SearchLocation.VOICE])
-        installation.setup_file_context_menu(self.ui.voiceComboBox, [ResourceType.WAV, ResourceType.MP3], [SearchLocation.VOICE])
-        installation.setup_file_context_menu(self.ui.condition1ResrefEdit, [ResourceType.NSS, ResourceType.NCS])
-        installation.setup_file_context_menu(self.ui.onEndEdit, [ResourceType.NSS, ResourceType.NCS])
-        installation.setup_file_context_menu(self.ui.onAbortCombo, [ResourceType.NSS, ResourceType.NCS])
+        for widget, restypes, search_locations in (
+            (self.ui.cameraModelSelect, [ResourceType.MDL], [SearchLocation.CHITIN, SearchLocation.OVERRIDE]),
+            (self.ui.ambientTrackCombo, [ResourceType.WAV, ResourceType.MP3], [SearchLocation.MUSIC]),
+            (self.ui.soundComboBox, [ResourceType.WAV, ResourceType.MP3], [SearchLocation.SOUND, SearchLocation.VOICE]),
+            (self.ui.voiceComboBox, [ResourceType.WAV, ResourceType.MP3], [SearchLocation.VOICE]),
+        ):
+            installation.setup_file_context_menu(widget, restypes, search_locations)
+        for widget in (self.ui.condition1ResrefEdit, self.ui.onEndEdit, self.ui.onAbortCombo):
+            installation.setup_file_context_menu(widget, [ResourceType.NSS, ResourceType.NCS])
 
         vid_effects: TwoDA | None = installation.ht_get_cache_2da(HTInstallation.TwoDA_VIDEO_EFFECTS)
         if vid_effects is not None:
@@ -2010,7 +2073,7 @@ Should return 1 or 0, representing a boolean.
         if self._installation is None:
             return
 
-        from pykotor.tools.reference_finder import ReferenceSearchResult, find_conversation_references
+        from pykotor.tools.reference_finder import find_conversation_references
         from toolset.gui.dialogs.asyncloader import AsyncLoader
         from toolset.gui.dialogs.reference_search_options import ReferenceSearchOptions
         from toolset.gui.dialogs.search import FileResults

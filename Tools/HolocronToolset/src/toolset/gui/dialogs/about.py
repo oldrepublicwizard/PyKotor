@@ -1,3 +1,5 @@
+"""About dialog: toolset name, version, and credits from LOCAL_PROGRAM_INFO."""
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING

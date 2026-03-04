@@ -61,6 +61,44 @@ def path_separator_for_data(os_name: str) -> str:
     return ";" if os_name == "Windows" else ":"
 
 
+def add_flag_values(flag_name: str, values: list[str], buffer: list[str]) -> None:
+    """Append repeated PyInstaller flag values in --flag=value format."""
+    for value in values:
+        buffer.append(f"--{flag_name}={value}")
+
+
+def compute_final_executable(
+    distpath: Path,
+    name: str,
+    os_name: str,
+    *,
+    windowed: bool = False,
+) -> Path:
+    """Compute the final binary path from build metadata."""
+    if os_name == "Windows":
+        return distpath / f"{name}.exe"
+    if os_name == "Mac" and windowed:
+        return distpath / f"{name}.app"
+    return distpath / name
+
+
+def normalize_add_data(entries: list[str], expected_separator: str) -> list[str]:
+    """Validate and normalize --add-data entries for the current platform."""
+    normalized: list[str] = []
+    for entry in entries:
+        if expected_separator not in entry:
+            raise SystemExit(
+                f"Invalid --add-data entry '{entry}': missing '{expected_separator}' separator"
+            )
+        source, destination = entry.split(expected_separator, 1)
+        if not source or not destination:
+            raise SystemExit(
+                f"Invalid --add-data entry '{entry}': source and destination are required"
+            )
+        normalized.append(f"{source}{expected_separator}{destination}")
+    return normalized
+
+
 def read_pyproject_toml(tool_path: Path) -> dict[str, Any]:
     """Read and parse pyproject.toml from tool directory."""
     pyproject_path = tool_path / "pyproject.toml"

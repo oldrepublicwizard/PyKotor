@@ -1,3 +1,5 @@
+"""Inventory dialog: edit creature/placeable/store item list with 2DA and icons."""
+
 from __future__ import annotations
 
 from pathlib import Path
@@ -5,7 +7,6 @@ from typing import TYPE_CHECKING, NamedTuple, cast
 
 import qtpy
 
-from loggerplus import RobustLogger  # pyright: ignore[reportMissingTypeStubs]
 from qtpy import QtCore
 from qtpy.QtCore import (
     QSize,
@@ -26,6 +27,7 @@ from qtpy.QtWidgets import (
     QWidget,
 )
 
+from loggerplus import RobustLogger  # pyright: ignore[reportMissingTypeStubs]
 from pykotor.common.misc import EquipmentSlot, InventoryItem, ResRef
 from pykotor.extract.capsule import Capsule
 from pykotor.extract.installation import SearchLocation
@@ -767,10 +769,10 @@ class ItemBuilderWorker(QThread):
     def run(self):
         queries: list[ResourceIdentifier] = []
         if self._installation.cache_core_items is None:
-            queries.extend(resource.identifier() for resource in self._installation.core_resources() if resource.restype() is ResourceType.UTI)
-        queries.extend(resource.identifier() for resource in self._installation.override_resources() if resource.restype() is ResourceType.UTI)
+            queries.extend(resource.identifier() for resource in self._installation.core_resources() if resource.restype() == ResourceType.UTI)
+        queries.extend(resource.identifier() for resource in self._installation.override_resources() if resource.restype() == ResourceType.UTI)
         for capsule in self._capsules:
-            queries.extend(resource.identifier() for resource in capsule if resource.restype() is ResourceType.UTI)
+            queries.extend(resource.identifier() for resource in capsule if resource.restype() == ResourceType.UTI)
         results: dict[ResourceIdentifier, ResourceResult | None] = self._installation.resources(
             queries,
             [

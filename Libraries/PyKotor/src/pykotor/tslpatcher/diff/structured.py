@@ -128,29 +128,28 @@ class StructuredDiffEngine:
     ) -> list[ColumnDiff]:
         """Compare 2DA columns."""
         column_diffs: list[ColumnDiff] = []
-
-        left_headers = set(left_2da.get_headers())
-        right_headers = set(right_2da.get_headers())
+        left_header_list = left_2da.get_headers()
+        right_header_list = right_2da.get_headers()
+        left_header_to_index = {h: i for i, h in enumerate(left_header_list)}
+        right_header_to_index = {h: i for i, h in enumerate(right_header_list)}
+        left_headers = set(left_header_to_index)
+        right_headers = set(right_header_to_index)
 
         # Added columns
-        added_columns = right_headers - left_headers
-        for col_name in added_columns:
-            col_index = right_2da.get_headers().index(col_name)
+        for col_name in right_headers - left_headers:
             column_diffs.append(
                 ColumnDiff(
-                    column_index=col_index,
+                    column_index=right_header_to_index[col_name],
                     column_name=col_name,
                     diff_type=DiffType.ADDED,
                 )
             )
 
         # Removed columns
-        removed_columns = left_headers - right_headers
-        for col_name in removed_columns:
-            col_index = left_2da.get_headers().index(col_name)
+        for col_name in left_headers - right_headers:
             column_diffs.append(
                 ColumnDiff(
-                    column_index=col_index,
+                    column_index=left_header_to_index[col_name],
                     column_name=col_name,
                     diff_type=DiffType.REMOVED,
                 )

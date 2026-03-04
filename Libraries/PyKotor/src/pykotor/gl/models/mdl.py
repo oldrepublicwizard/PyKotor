@@ -1,3 +1,5 @@
+"""MDL (model) GL representation: load binary MDL, build node hierarchy, and render with OpenGL."""
+
 from __future__ import annotations
 
 import ctypes

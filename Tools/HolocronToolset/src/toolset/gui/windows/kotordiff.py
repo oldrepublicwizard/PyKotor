@@ -17,14 +17,16 @@ from qtpy.QtWidgets import (
     QFileDialog,
     QMainWindow,
     QMessageBox,
-    QWidget,
 )
 
-from pykotor.extract.installation import Installation
 from pykotor.diff_tool.app import DiffConfig, run_application
+from pykotor.extract.installation import Installation
 
 if TYPE_CHECKING:
-    from qtpy.QtWidgets import QLineEdit
+    from qtpy.QtWidgets import (
+        QLineEdit,
+        QWidget,
+    )
 
     from toolset.data.installation import HTInstallation
 
@@ -160,10 +162,9 @@ class KotorDiffWindow(QMainWindow):
 
         # Set current installation as default for path 1
         if is_first and self._active_installation:
-            for i in range(installation_combo.count()):
-                if installation_combo.itemData(i) == self._active_installation:
-                    installation_combo.setCurrentIndex(i)
-                    break
+            idx = installation_combo.findData(self._active_installation)
+            if idx >= 0:
+                installation_combo.setCurrentIndex(idx)
 
         # Connect radio buttons
         installation_radio.toggled.connect(installation_combo.setEnabled)
@@ -232,15 +233,11 @@ class KotorDiffWindow(QMainWindow):
 
             if use_installation:
                 installation_radio.setChecked(True)
-                # Find and set the installation
-                for i in range(combo.count()):
-                    if combo.itemText(i) == installation_name:
-                        combo.setCurrentIndex(i)
-                        break
-                else:
-                    # If not found, set as text
-                    if installation_name:
-                        combo.setCurrentText(installation_name)
+                idx = combo.findText(installation_name) if installation_name else -1
+                if idx >= 0:
+                    combo.setCurrentIndex(idx)
+                elif installation_name:
+                    combo.setCurrentText(installation_name)
             else:
                 custom_radio.setChecked(True)
                 edit.setText(custom_path)

@@ -1,3 +1,5 @@
+"""TSLPatcher namespace: changes.ini/info.rtf filenames and data folder path."""
+
 from __future__ import annotations
 
 from pathlib import PurePath

@@ -1,3 +1,5 @@
+"""OpenGL shaders: compile vertex/fragment source, uniform upload, and KOTOR/plain/picker shader strings."""
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING

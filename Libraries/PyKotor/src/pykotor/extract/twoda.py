@@ -1,3 +1,8 @@
+"""2DA lookup and column definitions for KotOR installations.
+
+LookupResult2DA and column classes (K1ResRef2DAColumns, ABSColumns2DA, etc.) are used
+to resolve resrefs and IDs to 2DA file paths and row data during extraction and tooling.
+"""
 from __future__ import annotations
 
 from dataclasses import dataclass

@@ -1,3 +1,5 @@
+"""BGRA/RGBA pixel conversion: grey, RGB swap, and channel reorder for TPC."""
+
 from __future__ import annotations
 
 

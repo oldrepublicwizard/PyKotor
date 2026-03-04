@@ -1,3 +1,5 @@
+"""PTH (path) generic: GFF-based waypoints and path connections for pathfinding."""
+
 from __future__ import annotations
 
 from copy import copy

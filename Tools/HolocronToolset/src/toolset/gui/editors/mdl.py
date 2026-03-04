@@ -1,3 +1,5 @@
+"""MDL (model) editor: load/save from installation or archive, no 3D preview."""
+
 from __future__ import annotations
 
 from pathlib import Path
@@ -73,7 +75,7 @@ class MDLEditor(Editor):
         mdl_data: bytes | None = None
         mdx_data: bytes | None = None
 
-        if restype is ResourceType.MDL:
+        if restype == ResourceType.MDL:
             mdl_data = data
             mdl_filepath = p_filepath.with_suffix(".mdl")
             mdx_filepath = p_filepath.with_suffix(".mdx")
@@ -87,7 +89,7 @@ class MDLEditor(Editor):
                 mdx_data = rim.get(resref, ResourceType.MDX)
             elif is_bif_file(p_filepath.name):
                 mdx_data = self._installation.resource(resref, ResourceType.MDX, [SearchLocation.CHITIN]).data
-        elif restype is ResourceType.MDX:
+        elif restype == ResourceType.MDX:
             mdx_data = data
             if p_filepath.suffix.lower() == ".mdx" and mdl_filepath.exists() and mdl_filepath.is_file():
                 mdl_data = mdl_filepath.read_bytes()

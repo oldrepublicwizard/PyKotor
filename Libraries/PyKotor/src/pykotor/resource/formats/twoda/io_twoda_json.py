@@ -1,3 +1,5 @@
+"""JSON read/write for 2DA; used for tooling and round-trip."""
+
 from __future__ import annotations
 
 import json

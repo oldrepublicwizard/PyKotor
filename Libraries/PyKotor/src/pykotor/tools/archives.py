@@ -112,6 +112,27 @@ def matches_filter(text: str, pattern: str) -> bool:
     return pattern.lower() in text.lower()
 
 
+def _iter_filtered_resources(
+    resources: Iterator[ArchiveResource],
+    *,
+    filter_pattern: str | None,
+    resource_filter: Callable[[ArchiveResource], bool] | None,
+    fallback_resref: Callable[[int], str],
+) -> Iterator[tuple[ArchiveResource, str, str]]:
+    """Yield filtered resources with normalized resref and extension."""
+    for index, resource in enumerate(resources):
+        resref = resource.resref.get() if resource.resref else fallback_resref(index)
+
+        if resource_filter is not None:
+            if not resource_filter(resource):
+                continue
+        elif filter_pattern and not matches_filter(resref, filter_pattern):
+            continue
+
+        ext = resource.restype.extension if resource.restype else "bin"
+        yield resource, resref, ext
+
+
 def extract_erf(
     erf_path: Path,
     output_dir: Path,
@@ -147,19 +168,13 @@ def extract_erf(
     """
     erf_data = read_erf(erf_path)
 
-    for resource in erf_data:
-        resref = resource.resref.get() if resource.resref else "unknown"
-
-        # Apply filters
-        if resource_filter is not None:
-            if not resource_filter(resource):
-                continue
-        elif filter_pattern and not matches_filter(resref, filter_pattern):
-            continue
-
-        ext = resource.restype.extension if resource.restype else "bin"
+    for resource, resref, ext in _iter_filtered_resources(
+        iter(erf_data),
+        filter_pattern=filter_pattern,
+        resource_filter=resource_filter,
+        fallback_resref=lambda _index: "unknown",
+    ):
         output_file = output_dir / f"{resref}.{ext}"
-
         yield resource, output_file
 
 
@@ -198,19 +213,13 @@ def extract_rim(
     """
     rim_data = read_rim(rim_path)
 
-    for resource in rim_data:
-        resref = resource.resref.get() if resource.resref else "unknown"
-
-        # Apply filters
-        if resource_filter is not None:
-            if not resource_filter(resource):
-                continue
-        elif filter_pattern and not matches_filter(resref, filter_pattern):
-            continue
-
-        ext = resource.restype.extension if resource.restype else "bin"
+    for resource, resref, ext in _iter_filtered_resources(
+        iter(rim_data),
+        filter_pattern=filter_pattern,
+        resource_filter=resource_filter,
+        fallback_resref=lambda _index: "unknown",
+    ):
         output_file = output_dir / f"{resref}.{ext}"
-
         yield resource, output_file
 
 
@@ -254,19 +263,13 @@ def extract_bif(
     with bif_path.open("rb") as bif_file:
         bif_data = read_bif(bif_file, key_source=key_source)
 
-    for i, resource in enumerate(bif_data):
-        resref = resource.resref.get() if resource.resref else f"resource_{i:05d}"
-
-        # Apply filters
-        if resource_filter is not None:
-            if not resource_filter(resource):
-                continue
-        elif filter_pattern and not matches_filter(resref, filter_pattern):
-            continue
-
-        ext = resource.restype.extension if resource.restype else "bin"
+    for resource, resref, ext in _iter_filtered_resources(
+        iter(bif_data),
+        filter_pattern=filter_pattern,
+        resource_filter=resource_filter,
+        fallback_resref=lambda index: f"resource_{index:05d}",
+    ):
         output_file = output_dir / f"{resref}.{ext}"
-
         yield resource, output_file
 
 
@@ -346,6 +349,14 @@ def extract_key_bif(
             yield resource, output_file, bif_path
 
 
+def _list_archive(
+    path: Path,
+    read_archive: Callable[[Path], Iterator[ArchiveResource]],
+) -> Iterator[ArchiveResource]:
+    """Yield all resources from an archive using the given reader. Shared helper for list_erf/list_rim."""
+    yield from read_archive(path)
+
+
 def list_erf(erf_path: Path) -> Iterator[ArchiveResource]:
     """List all resources in an ERF/MOD/SAV/HAK archive.
 
@@ -357,8 +368,7 @@ def list_erf(erf_path: Path) -> Iterator[ArchiveResource]:
     ------
         ArchiveResource objects for each resource in the archive
     """
-    erf_data = read_erf(erf_path)
-    yield from erf_data
+    return _list_archive(erf_path, read_erf)
 
 
 def list_rim(rim_path: Path) -> Iterator[ArchiveResource]:
@@ -372,8 +382,7 @@ def list_rim(rim_path: Path) -> Iterator[ArchiveResource]:
     ------
         ArchiveResource objects for each resource in the archive
     """
-    rim_data = read_rim(rim_path)
-    yield from rim_data
+    return _list_archive(rim_path, read_rim)
 
 
 def list_bif(

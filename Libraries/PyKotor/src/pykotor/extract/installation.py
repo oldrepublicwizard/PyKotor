@@ -1,3 +1,5 @@
+"""Installation abstraction: game path, resource search, capsules, and 2DA/TLK/KEY."""
+
 from __future__ import annotations
 
 import itertools
@@ -640,16 +642,17 @@ class Installation:
             self.load_override(rel_folderpath)
 
         identifier: ResourceIdentifier = ResourceIdentifier.from_path(filepath)
-        if identifier.restype is ResourceType.INVALID:
+        if identifier.restype == ResourceType.INVALID:
             RobustLogger().error(f"Cannot reload override file. Invalid KOTOR resource: {identifier!r}")
             return
         resource = FileResource(*identifier.unpack(), filepath.stat().st_size, 0, filepath)
 
         override_list: list[FileResource] = self._override_data[rel_folderpath]
-        if resource not in override_list:
-            override_list.append(resource)
-        else:
-            override_list[override_list.index(resource)] = resource
+        for i, r in enumerate(override_list):
+            if r == resource:
+                override_list[i] = resource
+                return
+        override_list.append(resource)
 
     def load_streammusic(self):
         """Reloads the list of resources in the streammusic folder linked to the Installation."""
@@ -1747,7 +1750,7 @@ class Installation:
 
         def get_txi_from_list(case_resname: str, resource_list: list[FileResource]) -> str:
             txi_resource: FileResource | None = next(
-                (resource for resource in resource_list if resource.restype() is ResourceType.TXI and resource.identifier().lower_resname == case_resname),
+                (resource for resource in resource_list if resource.restype() == ResourceType.TXI and resource.identifier().lower_resname == case_resname),
                 None,
             )
             if txi_resource is not None:
@@ -1769,7 +1772,7 @@ class Installation:
             return contents
 
         def build_result(resource: FileResource, txi_resource: FileResource | None) -> tuple[ResourceResult, str]:
-            txi_text = decode_txi_resource(txi_resource) if resource.restype() is ResourceType.TGA else ""
+            txi_text = decode_txi_resource(txi_resource) if resource.restype() == ResourceType.TGA else ""
             result = ResourceResult(resource.resname(), resource.restype(), resource.filepath(), resource.data())
             result.set_file_resource(resource)
             return result, txi_text
@@ -1792,7 +1795,7 @@ class Installation:
                     key = resource.identifier().lower_resname
                     if rtype in texture_types:
                         tex_first.setdefault(key, resource)
-                    elif rtype is ResourceType.TXI:
+                    elif rtype == ResourceType.TXI:
                         txi_first.setdefault(key, resource)
                 self._texture_list_cache[list_id] = (tex_first, txi_first)
 
@@ -1812,7 +1815,7 @@ class Installation:
                     data = capsule.resource(resname, tformat)
                     if data is None:
                         data = info.data()
-                    txi_text = get_txi_from_list(resname_lower, capsule_resources) if tformat is ResourceType.TGA else ""
+                    txi_text = get_txi_from_list(resname_lower, capsule_resources) if tformat == ResourceType.TGA else ""
                     result = ResourceResult(info.resname(), info.restype(), capsule.filepath(), data)
                     result.set_file_resource(info)
                     return result, txi_text
@@ -1830,7 +1833,7 @@ class Installation:
                         continue
                     data = file.read_bytes()
                     txi_text = ""
-                    if restype is ResourceType.TGA:
+                    if restype == ResourceType.TGA:
                         txi_path = file.with_suffix(".txi")
                         if txi_path.is_file():
                             txi_text = decode_txi(txi_path.read_bytes())
@@ -2053,7 +2056,7 @@ class Installation:
                 textures[resname] = None
                 continue
             tpc = read_tpc(result.data)
-            if result.restype is ResourceType.TGA and txi_text:
+            if result.restype == ResourceType.TGA and txi_text:
                 tpc.txi = txi_text
             textures[resname] = tpc
         return textures
@@ -2641,7 +2644,7 @@ class Installation:
             RobustLogger().exception(f"Could not build capsule for 'Modules/{module_filename}'")
             return root
 
-        area_resource: FileResource | None = next((resource for resource in relevant_capsule.resources() if resource.restype() is ResourceType.ARE), None)
+        area_resource: FileResource | None = next((resource for resource in relevant_capsule.resources() if resource.restype() == ResourceType.ARE), None)
         try:
             if area_resource is not None:
                 are: GFF = read_gff(area_resource.data())
@@ -2727,8 +2730,8 @@ class Installation:
 
         try:
             return next(
-                (resource.resname() for resource in relevant_capsule.resources() if resource.restype() is ResourceType.GIT),
-                next((resource.resname() for resource in relevant_capsule.resources() if resource.restype() is ResourceType.ARE), quick_id(module_filename)),
+                (resource.resname() for resource in relevant_capsule.resources() if resource.restype() == ResourceType.GIT),
+                next((resource.resname() for resource in relevant_capsule.resources() if resource.restype() == ResourceType.ARE), quick_id(module_filename)),
             )
         except Exception:  # noqa: BLE001
             RobustLogger().exception("Error occurred while recursing nested resources in func module_id()")

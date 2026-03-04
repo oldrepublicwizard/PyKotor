@@ -1,3 +1,5 @@
+"""Cutscene model dialog: edit DLG stunt (cutscene model) name and ID."""
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING

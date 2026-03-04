@@ -502,10 +502,8 @@ class BWM(ComparableMixin):
 
         # Build mapping from walkable face index to overall face index
         # This is needed because adjacencies use overall face indices, but we iterate over walkable faces
-        walkable_to_overall: dict[int, int] = {}
-        for walkable_idx, walkable_face in enumerate(walkable):
-            overall_idx = self._index_by_identity(walkable_face)
-            walkable_to_overall[walkable_idx] = overall_idx
+        walkable_to_overall: dict[int, int] = {walkable_idx: self._index_by_identity(walkable_face) for walkable_idx, walkable_face in enumerate(walkable)}
+        overall_to_walkable: dict[int, int] = {overall_idx: walkable_idx for walkable_idx, overall_idx in walkable_to_overall.items()}
 
         visited: set[int] = set()
         edges: list[BWMEdge] = []
@@ -522,7 +520,7 @@ class BWM(ComparableMixin):
             perimeter_length: int = 0
             while next_face != -1:
                 # Find the walkable face index for this overall face index to access adjacencies
-                walkable_idx_for_face = next((w_idx for w_idx, o_idx in walkable_to_overall.items() if o_idx == next_face), None)
+                walkable_idx_for_face = overall_to_walkable.get(next_face)
                 if walkable_idx_for_face is not None:
                     adj_edge: BWMAdjacency | None = adjacencies[walkable_idx_for_face][next_edge]
                     if adj_edge is not None:

@@ -18,7 +18,6 @@ from typing import TYPE_CHECKING
 
 from holopazaak.ai.strategies import (
     AIAction,
-    AIStrategy,
     EasyAI,
     ExpertAI,
     HardAI,
@@ -29,6 +28,9 @@ from holopazaak.game.card import Card, CardType
 from holopazaak.game.player import Player
 
 if TYPE_CHECKING:
+    from holopazaak.ai.strategies import (
+        AIStrategy,
+    )
     from holopazaak.data.opponents import OpponentProfile
     from holopazaak.game.engine import PazaakGame
 

@@ -25,13 +25,17 @@ from enum import Enum, auto
 from typing import TYPE_CHECKING, Callable
 
 from holopazaak.game.card import (
-    Card,
     CardType,
     apply_double_card_effect,
     apply_flip_card_effect,
     create_main_deck_card,
 )
-from holopazaak.game.player import Player
+
+if TYPE_CHECKING:
+    from holopazaak.game.card import (
+        Card,
+    )
+    from holopazaak.game.player import Player
 
 
 class GamePhase(Enum):

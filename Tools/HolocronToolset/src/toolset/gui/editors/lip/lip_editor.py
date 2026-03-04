@@ -1,3 +1,5 @@
+"""LIP (lip sync) editor: keyframe list, waveform, and LIP read/write for the toolset."""
+
 from __future__ import annotations
 
 import wave
@@ -7,14 +9,12 @@ from typing import TYPE_CHECKING, Any, Optional, cast
 import qtpy
 
 from qtpy.QtCore import QTimer, QUrl, Qt
-from qtpy.QtGui import QGuiApplication, QKeyEvent, QKeySequence, QPalette
+from qtpy.QtGui import QGuiApplication, QKeySequence, QPalette
 from qtpy.QtMultimedia import QAudioOutput, QMediaPlayer
 from qtpy.QtWidgets import (
     QAction,  # pyright: ignore[reportPrivateImportUsage]
     QApplication,  # pyright: ignore[reportPrivateImportUsage]
     QFileDialog,
-    QLabel,
-    QListWidgetItem,
     QMenu,
     QMessageBox,
     QShortcut,  # pyright: ignore[reportPrivateImportUsage]
@@ -30,7 +30,11 @@ if TYPE_CHECKING:
     import os
 
     from qtpy.QtCore import QPoint
-    from qtpy.QtGui import QAction
+    from qtpy.QtGui import QAction, QKeyEvent
+    from qtpy.QtWidgets import (
+        QLabel,
+        QListWidgetItem,
+    )
 
     from toolset.data.installation import HTInstallation
 

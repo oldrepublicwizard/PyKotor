@@ -1,3 +1,5 @@
+"""Item delegates: HTMLDelegate for rich text in list/tree views and icon painting."""
+
 from __future__ import annotations
 
 import re

@@ -7,15 +7,19 @@ import sys
 from pathlib import Path
 from typing import TYPE_CHECKING
 
+import pytest
+
 THIS_SCRIPT_PATH = Path(__file__).parent
-LIBRARY_PATH = THIS_SCRIPT_PATH.parents[1].joinpath("Libraries")
+REPO_ROOT = next((parent for parent in THIS_SCRIPT_PATH.parents if (parent / "Libraries").is_dir()), THIS_SCRIPT_PATH.parents[2])
+LIBRARY_PATH = REPO_ROOT.joinpath("Libraries")
 PYKOTOR_PATH = LIBRARY_PATH.joinpath("PyKotor", "src")
 UTILITY_PATH = LIBRARY_PATH.joinpath("Utility", "src")
 
 assert PYKOTOR_PATH.exists() and PYKOTOR_PATH.is_dir(), f"PyKotor path not found: {PYKOTOR_PATH}"
 if PYKOTOR_PATH.exists() and PYKOTOR_PATH.is_dir() and str(PYKOTOR_PATH) not in sys.path:
     sys.path.append(str(PYKOTOR_PATH))
-assert UTILITY_PATH.exists() and UTILITY_PATH.is_dir(), f"Utility path not found: {UTILITY_PATH}"
+if not UTILITY_PATH.exists() or not UTILITY_PATH.is_dir():
+    pytest.skip(f"Utility path not found: {UTILITY_PATH}", allow_module_level=True)
 if UTILITY_PATH.exists() and UTILITY_PATH.is_dir() and str(UTILITY_PATH) not in sys.path:
     sys.path.append(str(UTILITY_PATH))
 

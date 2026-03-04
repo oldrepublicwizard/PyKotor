@@ -33,12 +33,16 @@ except ImportError:
     WebSocketServerProtocol = Any  # type: ignore[misc]
 
 from holopazaak.network.protocol import (
-    GameMessage,
     MessageType,
     create_message,
     msg_error,
     parse_message,
 )
+
+if TYPE_CHECKING:
+    from holopazaak.network.protocol import (
+        GameMessage,
+    )
 
 # Configure logging
 logging.basicConfig(

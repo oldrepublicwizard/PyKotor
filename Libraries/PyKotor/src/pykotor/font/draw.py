@@ -1,3 +1,5 @@
+"""Font drawing: PIL-based bitmap font rendering and TXI font info for KotOR text."""
+
 from __future__ import annotations
 
 import math

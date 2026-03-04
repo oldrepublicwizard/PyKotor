@@ -1,3 +1,5 @@
+"""Load indoor kits for the toolset with optional Qt component preview images."""
+
 from __future__ import annotations
 
 from pathlib import Path
@@ -5,12 +7,13 @@ from typing import TYPE_CHECKING
 
 from qtpy.QtGui import QImage
 
-from pykotor.common.indoorkit import Kit
 from pykotor.tools import indoorkit as indoorkit_tools
 from toolset.data.indoorkit.qt_preview import ensure_component_image
 
 if TYPE_CHECKING:
     import os
+
+    from pykotor.common.indoorkit import Kit
 
 
 def load_kits(path: "os.PathLike | str") -> tuple[list[Kit], list[tuple[str, Path, str]]]:

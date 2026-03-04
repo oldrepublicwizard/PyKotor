@@ -1,3 +1,5 @@
+"""JRL (journal) editor: quest entries, categories, and priority."""
+
 from __future__ import annotations
 
 from enum import Enum, auto

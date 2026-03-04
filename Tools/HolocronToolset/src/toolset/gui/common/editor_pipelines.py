@@ -1,13 +1,17 @@
+"""Editor UI pipelines: exclusive checkbox selection and module-root combobox population."""
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING, Sequence
 
 from qtpy.QtCore import QSize, Qt
-from qtpy.QtGui import QImage, QPixmap
+from qtpy.QtGui import QPixmap
 
 if TYPE_CHECKING:
-    from pykotor.common.modulekit import ModuleKitManager
+    from qtpy.QtGui import QImage
     from qtpy.QtWidgets import QCheckBox, QComboBox, QLabel
+
+    from pykotor.common.modulekit import ModuleKitManager
 
 
 def set_exclusive_checkbox_selection(active_checkbox: QCheckBox, checkboxes: Sequence[QCheckBox]) -> None:

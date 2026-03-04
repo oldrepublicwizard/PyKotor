@@ -1,3 +1,5 @@
+"""ASCII MDL read/write: human-readable model format for editing and debugging."""
+
 from __future__ import annotations
 
 import io
@@ -2636,8 +2638,9 @@ class MDLAsciiReader(ResourceReader):
         for node in self._nodes:
             node.children = []
 
-        # Build name-to-node lookup for hierarchy resolution
+        # Build name-to-node and node-to-index lookups for O(1) hierarchy resolution
         by_name = {n.name.lower(): n for n in self._nodes if n.name}
+        node_to_index = {id(n): i for i, n in enumerate(self._nodes)}
 
         # Build parent-child relationships (matching MDLOps: )
         for node in self._nodes:
@@ -2647,8 +2650,7 @@ class MDLAsciiReader(ResourceReader):
             parent_name: str | None = node.__dict__.get("_parent_name")
             if isinstance(parent_name, str) and parent_name in by_name:
                 parent_node = by_name[parent_name]
-                # Update parent_id to match resolved parent
-                node.parent_id = self._nodes.index(parent_node) if parent_node in self._nodes else -1
+                node.parent_id = node_to_index.get(id(parent_node), -1)
             elif node.parent_id >= 0 and node.parent_id < len(self._nodes):
                 # Fall back to index-based resolution
                 parent_node = self._nodes[node.parent_id]

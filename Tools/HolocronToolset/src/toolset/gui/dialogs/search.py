@@ -1,3 +1,5 @@
+"""Reference search dialog: run reference finder and open results in editors."""
+
 from __future__ import annotations
 
 from dataclasses import dataclass

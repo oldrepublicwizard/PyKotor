@@ -1,3 +1,5 @@
+"""NCS compile/decompile and format detection: NSS parser, bytecode I/O, optimizers."""
+
 from __future__ import annotations
 
 import base64
@@ -84,7 +86,7 @@ def write_ncs(
     ------
         ValueError: If an unsupported file format was given.
     """
-    if file_format is ResourceType.NCS:
+    if file_format == ResourceType.NCS:
         NCSBinaryWriter(ncs, target).write()
     else:
         msg = "Unsupported format specified; use NCS."

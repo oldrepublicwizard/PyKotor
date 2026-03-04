@@ -1,3 +1,5 @@
+"""OpenGL texture handling: load TPC/mipmaps, upload to GPU, and DXT decompression."""
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING

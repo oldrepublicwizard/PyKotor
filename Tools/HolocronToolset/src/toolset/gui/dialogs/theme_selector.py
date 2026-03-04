@@ -1,3 +1,5 @@
+"""Theme selector dialog: pick application theme and style with live preview."""
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING

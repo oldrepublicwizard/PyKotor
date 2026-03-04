@@ -1,3 +1,8 @@
+"""TSLPatcher token memory for 2DA and TLK placeholders.
+
+PatcherMemory holds 2DAMEMORY# and StrRef# token values; TokenUsage subclasses
+resolve tokens to concrete paths/indices when generating patched output.
+"""
 from __future__ import annotations
 
 from abc import ABC, abstractmethod

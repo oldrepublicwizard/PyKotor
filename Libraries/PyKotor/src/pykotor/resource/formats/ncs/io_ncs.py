@@ -1,3 +1,5 @@
+"""Binary NCS (NWScript compiled script) read/write and VM validation."""
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING

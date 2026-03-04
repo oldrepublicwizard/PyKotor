@@ -1,3 +1,5 @@
+"""KEY/BIF index types and KEYDataFile abstraction for archive resources keyed by BIF."""
+
 from __future__ import annotations
 
 import struct

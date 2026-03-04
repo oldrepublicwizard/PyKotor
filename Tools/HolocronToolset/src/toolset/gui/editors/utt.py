@@ -1,3 +1,5 @@
+"""UTT (trigger) editor: geometry, script, and locstring fields."""
+
 from __future__ import annotations
 
 from copy import deepcopy
@@ -66,8 +68,59 @@ class UTTEditor(Editor):
         self.new()
 
     def _setup_signals(self):
-        self.ui.tagGenerateButton.clicked.connect(self.generate_tag)
-        self.ui.resrefGenerateButton.clicked.connect(self.generate_resref)
+        for signal, handler in (
+            (self.ui.tagGenerateButton.clicked, self.generate_tag),
+            (self.ui.resrefGenerateButton.clicked, self.generate_resref),
+        ):
+            signal.connect(handler)
+
+    def _script_combo_boxes(self):
+        """Return all script combo boxes used by this editor."""
+        return [
+            self.ui.onClickEdit,
+            self.ui.onDisarmEdit,
+            self.ui.onEnterSelect,
+            self.ui.onExitSelect,
+            self.ui.onTrapTriggeredEdit,
+            self.ui.onHeartbeatSelect,
+            self.ui.onUserDefinedSelect,
+        ]
+
+    def _script_value_pairs(self, utt: UTT):
+        """Map script combo widgets to UTT script values."""
+        return [
+            (self.ui.onClickEdit, utt.on_click),
+            (self.ui.onDisarmEdit, utt.on_disarm),
+            (self.ui.onEnterSelect, utt.on_enter),
+            (self.ui.onExitSelect, utt.on_exit),
+            (self.ui.onHeartbeatSelect, utt.on_heartbeat),
+            (self.ui.onTrapTriggeredEdit, utt.on_trap_triggered),
+            (self.ui.onUserDefinedSelect, utt.on_user_defined),
+        ]
+
+    def _setup_reference_field(
+        self,
+        widget,
+        resource_types: list[ResourceType],
+        reference_type: str,
+        tooltip_text: str,
+        *,
+        set_max_length: bool = False,
+    ) -> None:
+        """Configure context-menu reference search behavior for a widget."""
+        assert self._installation is not None
+        self._installation.setup_file_context_menu(
+            widget,
+            resource_types,
+            enable_reference_search=True,
+            reference_search_type=reference_type,
+        )
+        widget.setToolTip(tr(tooltip_text))
+
+        if set_max_length and hasattr(widget, "lineEdit"):
+            line_edit = widget.lineEdit()
+            if line_edit is not None:
+                line_edit.setMaxLength(16)
 
     def _setup_installation(
         self,
@@ -80,65 +133,37 @@ class UTTEditor(Editor):
         factions: TwoDA | None = installation.ht_get_cache_2da(HTInstallation.TwoDA_FACTIONS)
         traps: TwoDA | None = installation.ht_get_cache_2da(HTInstallation.TwoDA_TRAPS)
 
-        if cursors:
-            self.ui.cursorSelect.set_context(cursors, installation, HTInstallation.TwoDA_CURSORS)
-        if factions:
-            self.ui.factionSelect.set_context(factions, installation, HTInstallation.TwoDA_FACTIONS)
-        if traps:
-            self.ui.trapSelect.set_context(traps, installation, HTInstallation.TwoDA_TRAPS)
-
-        if cursors:
-            self.ui.cursorSelect.set_items(cursors.get_column("label"))
-        if factions:
-            self.ui.factionSelect.set_items(factions.get_column("label"))
-        if traps:
-            self.ui.trapSelect.set_items(traps.get_column("label"))
+        for widget, twoda, twoda_name in (
+            (self.ui.cursorSelect, cursors, HTInstallation.TwoDA_CURSORS),
+            (self.ui.factionSelect, factions, HTInstallation.TwoDA_FACTIONS),
+            (self.ui.trapSelect, traps, HTInstallation.TwoDA_TRAPS),
+        ):
+            if twoda:
+                widget.set_context(twoda, installation, twoda_name)
+                widget.set_items(twoda.get_column("label"))
 
         self.relevant_script_resnames: list[str] = sorted(iter({res.resname().lower() for res in self._installation.get_relevant_resources(ResourceType.NCS, self._filepath)}))
 
-        self.ui.onClickEdit.populate_combo_box(self.relevant_script_resnames)
-        installation.setup_file_context_menu(self.ui.onClickEdit, [ResourceType.NCS, ResourceType.NSS], enable_reference_search=True, reference_search_type="script")
-        self.ui.onClickEdit.setToolTip(tr("Right-click to find references to this script in the installation."))
-        self.ui.onDisarmEdit.populate_combo_box(self.relevant_script_resnames)
-        installation.setup_file_context_menu(self.ui.onDisarmEdit, [ResourceType.NCS, ResourceType.NSS], enable_reference_search=True, reference_search_type="script")
-        self.ui.onDisarmEdit.setToolTip(tr("Right-click to find references to this script in the installation."))
-        self.ui.onEnterSelect.populate_combo_box(self.relevant_script_resnames)
-        installation.setup_file_context_menu(self.ui.onEnterSelect, [ResourceType.NCS, ResourceType.NSS], enable_reference_search=True, reference_search_type="script")
-        self.ui.onEnterSelect.setToolTip(tr("Right-click to find references to this script in the installation."))
-        self.ui.onExitSelect.populate_combo_box(self.relevant_script_resnames)
-        installation.setup_file_context_menu(self.ui.onExitSelect, [ResourceType.NCS, ResourceType.NSS], enable_reference_search=True, reference_search_type="script")
-        self.ui.onExitSelect.setToolTip(tr("Right-click to find references to this script in the installation."))
-        self.ui.onTrapTriggeredEdit.populate_combo_box(self.relevant_script_resnames)
-        installation.setup_file_context_menu(self.ui.onTrapTriggeredEdit, [ResourceType.NCS, ResourceType.NSS], enable_reference_search=True, reference_search_type="script")
-        self.ui.onTrapTriggeredEdit.setToolTip(tr("Right-click to find references to this script in the installation."))
-        self.ui.onHeartbeatSelect.populate_combo_box(self.relevant_script_resnames)
-        installation.setup_file_context_menu(self.ui.onHeartbeatSelect, [ResourceType.NCS, ResourceType.NSS], enable_reference_search=True, reference_search_type="script")
-        self.ui.onHeartbeatSelect.setToolTip(tr("Right-click to find references to this script in the installation."))
-        self.ui.onUserDefinedSelect.populate_combo_box(self.relevant_script_resnames)
-        installation.setup_file_context_menu(self.ui.onUserDefinedSelect, [ResourceType.NCS, ResourceType.NSS], enable_reference_search=True, reference_search_type="script")
-        self.ui.onUserDefinedSelect.setToolTip(tr("Right-click to find references to this script in the installation."))
-        # Set maxLength for FilterComboBox script fields (ResRefs are max 16 characters)
-        script_combo_boxes = [
-            self.ui.onClickEdit,
-            self.ui.onDisarmEdit,
-            self.ui.onEnterSelect,
-            self.ui.onExitSelect,
-            self.ui.onTrapTriggeredEdit,
-            self.ui.onHeartbeatSelect,
-            self.ui.onUserDefinedSelect,
-        ]
-        for combo_box in script_combo_boxes:
-            line_edit = combo_box.lineEdit()
-            if line_edit is not None:
-                line_edit.setMaxLength(16)
+        for combo_box in self._script_combo_boxes():
+            combo_box.populate_combo_box(self.relevant_script_resnames)
+            self._setup_reference_field(
+                combo_box,
+                [ResourceType.NCS, ResourceType.NSS],
+                "script",
+                "Right-click to find references to this script in the installation.",
+                set_max_length=True,
+            )
 
         # Setup reference search for Tag field
-        installation.setup_file_context_menu(self.ui.tagEdit, [], enable_reference_search=True, reference_search_type="tag")
-        self.ui.tagEdit.setToolTip(tr("Right-click to find references to this tag in the installation."))
+        self._setup_reference_field(self.ui.tagEdit, [], "tag", "Right-click to find references to this tag in the installation.")
 
         # Setup reference search for TemplateResRef field
-        installation.setup_file_context_menu(self.ui.resrefEdit, [], enable_reference_search=True, reference_search_type="template_resref")
-        self.ui.resrefEdit.setToolTip(tr("Right-click to find references to this template resref in the installation."))
+        self._setup_reference_field(
+            self.ui.resrefEdit,
+            [],
+            "template_resref",
+            "Right-click to find references to this template resref in the installation.",
+        )
 
     def load(
         self,
@@ -190,13 +215,8 @@ class UTTEditor(Editor):
         self.ui.trapSelect.setCurrentIndex(utt.trap_type)
 
         # Scripts
-        self.ui.onClickEdit.set_combo_box_text(str(utt.on_click))
-        self.ui.onDisarmEdit.set_combo_box_text(str(utt.on_disarm))
-        self.ui.onEnterSelect.set_combo_box_text(str(utt.on_enter))
-        self.ui.onExitSelect.set_combo_box_text(str(utt.on_exit))
-        self.ui.onHeartbeatSelect.set_combo_box_text(str(utt.on_heartbeat))
-        self.ui.onTrapTriggeredEdit.set_combo_box_text(str(utt.on_trap_triggered))
-        self.ui.onUserDefinedSelect.set_combo_box_text(str(utt.on_user_defined))
+        for combo_box, value in self._script_value_pairs(utt):
+            combo_box.set_combo_box_text(str(value))
 
         # Comments
         self.ui.commentsEdit.setPlainText(utt.comment)
@@ -235,13 +255,16 @@ class UTTEditor(Editor):
         utt.trap_type = self.ui.trapSelect.currentIndex()
 
         # Scripts
-        utt.on_click = ResRef(self.ui.onClickEdit.currentText())
-        utt.on_disarm = ResRef(self.ui.onDisarmEdit.currentText())
-        utt.on_enter = ResRef(self.ui.onEnterSelect.currentText())
-        utt.on_exit = ResRef(self.ui.onExitSelect.currentText())
-        utt.on_heartbeat = ResRef(self.ui.onHeartbeatSelect.currentText())
-        utt.on_trap_triggered = ResRef(self.ui.onTrapTriggeredEdit.currentText())
-        utt.on_user_defined = ResRef(self.ui.onUserDefinedSelect.currentText())
+        for attr_name, combo_box in (
+            ("on_click", self.ui.onClickEdit),
+            ("on_disarm", self.ui.onDisarmEdit),
+            ("on_enter", self.ui.onEnterSelect),
+            ("on_exit", self.ui.onExitSelect),
+            ("on_heartbeat", self.ui.onHeartbeatSelect),
+            ("on_trap_triggered", self.ui.onTrapTriggeredEdit),
+            ("on_user_defined", self.ui.onUserDefinedSelect),
+        ):
+            setattr(utt, attr_name, ResRef(combo_box.currentText()))
 
         # Comments
         utt.comment = self.ui.commentsEdit.toPlainText()

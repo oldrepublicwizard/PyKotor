@@ -1,3 +1,5 @@
+"""Async loader dialog: progress bar and optional cancel for long-running tasks."""
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any, Callable, Generic, TypeVar
@@ -9,7 +11,7 @@ from qtpy.QtCore import (
     Signal,  # pyright: ignore[reportPrivateImportUsage]  # pyright: ignore[reportPrivateImportUsage]
 )
 from qtpy.QtGui import QColor, QPalette
-from qtpy.QtWidgets import QApplication, QDialog, QLabel, QMessageBox, QSizePolicy, QVBoxLayout
+from qtpy.QtWidgets import QApplication, QDialog, QMessageBox, QSizePolicy, QVBoxLayout
 
 from loggerplus import RobustLogger  # pyright: ignore[reportMissingTypeStubs]  # pyright: ignore[reportMissingTypeStubs]
 from toolset.gui.common.widgets.progressbar import AnimatedProgressBar
@@ -19,7 +21,7 @@ if TYPE_CHECKING:
     from multiprocessing import Process, Queue
 
     from qtpy.QtGui import QCloseEvent
-    from qtpy.QtWidgets import QWidget
+    from qtpy.QtWidgets import QLabel, QWidget
     from typing_extensions import Literal  # pyright: ignore[reportMissingModuleSource]  # pyright: ignore[reportMissingModuleSource]
 
 T = TypeVar("T")

@@ -1,6 +1,4 @@
-from __future__ import annotations
-
-"""Indoor-kit data model (headless).
+"""Indoor-kit data model.
 
 This module contains the **classes** for the Holocron indoor-kit format:
 - `Kit`, `KitComponent`, `KitDoor`, `KitComponentHook`
@@ -14,6 +12,8 @@ Design rule (repo convention):
 
 Toolset/Qt-specific behavior (e.g. QImage previews) must live outside this module.
 """
+
+from __future__ import annotations
 
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, NamedTuple

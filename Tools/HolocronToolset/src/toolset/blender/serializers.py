@@ -12,6 +12,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Any
 
 if TYPE_CHECKING:
+    from pykotor.common.indoormap import IndoorMap, IndoorMapRoom
     from pykotor.resource.formats.bwm import BWM  # pyright: ignore[reportMissingImports]
     from pykotor.resource.formats.lyt import LYT, LYTDoorHook, LYTObstacle, LYTRoom, LYTTrack  # pyright: ignore[reportMissingImports]
     from pykotor.resource.generics.git import (  # pyright: ignore[reportMissingImports]
@@ -19,7 +20,6 @@ if TYPE_CHECKING:
         GITInstance,
     )
     from utility.common.geometry import Vector3, Vector4
-    from pykotor.common.indoormap import IndoorMap, IndoorMapRoom
 
 
 def serialize_vector3(v: Vector3) -> dict[str, float]:

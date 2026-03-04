@@ -1,3 +1,5 @@
+"""Program info and update re-exports: LOCAL_PROGRAM_INFO JSON and config entry point."""
+
 from __future__ import annotations
 
 from typing import Any

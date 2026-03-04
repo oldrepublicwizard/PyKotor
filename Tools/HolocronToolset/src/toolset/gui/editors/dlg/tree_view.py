@@ -1,3 +1,5 @@
+"""DLG tree view: node/link display, drag-drop, and context menu for the DLG editor."""
+
 from __future__ import annotations
 
 import json

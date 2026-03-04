@@ -1,3 +1,5 @@
+"""NCS package: bytecode data, I/O, compilers, decompiler, and optimizers."""
+
 from __future__ import annotations
 from pykotor.resource.formats.ncs.ncs_data import (
     NCS,

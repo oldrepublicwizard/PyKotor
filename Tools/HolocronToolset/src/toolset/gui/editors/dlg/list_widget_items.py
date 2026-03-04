@@ -1,3 +1,5 @@
+"""DLG list widget for link items: add/edit/remove and sync with DLGLink."""
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any

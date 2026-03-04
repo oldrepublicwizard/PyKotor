@@ -1,3 +1,5 @@
+"""Toolset settings: QSettings-backed properties and type (de)serialization for editors."""
+
 from __future__ import annotations
 
 from typing import Any, Generic, TypeVar

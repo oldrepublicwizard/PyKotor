@@ -118,7 +118,7 @@ def validate_capsule(
     try:
         for resource in container:
             RobustLogger().info(f"Validating '{resource.resref}.{resource.restype}'")
-            if resource.restype is ResourceType.NCS:  # FIXME(th3w1zard1): This is a workaround for a current read_ncs bug.
+            if resource.restype == ResourceType.NCS:  # FIXME(th3w1zard1): This is a workaround for a current read_ncs bug.
                 new_container.set_data(str(resource.resref), resource.restype, resource.data)
                 continue
             try:
@@ -176,31 +176,31 @@ def validate_resource(  # noqa: C901, PLR0911, PLR0912
             return bytes_gff(read_gff(data))
         if restype in (ResourceType.WOK, ResourceType.PWK, ResourceType.DWK):
             return bytes_bwm(read_bwm(data))
-        if restype is ResourceType.ERF:
+        if restype == ResourceType.ERF:
             return bytes_erf(read_erf(data))
-        if restype is ResourceType.RIM:
+        if restype == ResourceType.RIM:
             return bytes_rim(read_rim(data))
-        if restype is ResourceType.LIP:
+        if restype == ResourceType.LIP:
             return bytes_lip(read_lip(data))
-        if restype is ResourceType.LTR:
+        if restype == ResourceType.LTR:
             return bytes_ltr(read_ltr(data))
-        if restype is ResourceType.LYT:
+        if restype == ResourceType.LYT:
             return bytes_lyt(read_lyt(data))
-        if restype is ResourceType.MDL:
+        if restype == ResourceType.MDL:
             return bytes_mdl(read_mdl(data))
-        if restype is ResourceType.NCS:
+        if restype == ResourceType.NCS:
             return bytes_ncs(read_ncs(data))
-        if restype is ResourceType.SSF:
+        if restype == ResourceType.SSF:
             return bytes_ssf(read_ssf(data))
-        if restype is ResourceType.TLK:
+        if restype == ResourceType.TLK:
             return bytes_tlk(read_tlk(data))
         if restype in (ResourceType.TPC, ResourceType.TGA):
             return bytes_tpc(read_tpc(data))
-        if restype is ResourceType.TwoDA:
+        if restype == ResourceType.TwoDA:
             return bytes_2da(read_2da(data))
-        if restype is ResourceType.TXI:
+        if restype == ResourceType.TXI:
             return data.decode(encoding="ascii", errors="ignore").encode(encoding="ascii")
-        if restype is ResourceType.VIS:
+        if restype == ResourceType.VIS:
             return bytes_vis(read_vis(data))
         # unknown resource.
         # return data
@@ -222,35 +222,35 @@ def validate_gff(  # noqa: C901, PLR0911, PLR0912
         gff: GFF - The gff to validate.
         restype: ResourceType - the expected type of resource this is.
     """
-    if restype is ResourceType.ARE:
+    if restype == ResourceType.ARE:
         return bytes_are(construct_are(gff))
-    if restype is ResourceType.DLG:
+    if restype == ResourceType.DLG:
         return bytes_dlg(construct_dlg(gff))
-    if restype is ResourceType.GIT:
+    if restype == ResourceType.GIT:
         return bytes_git(construct_git(gff))
-    if restype is ResourceType.IFO:
+    if restype == ResourceType.IFO:
         return bytes_ifo(construct_ifo(gff))
-    if restype is ResourceType.JRL:
+    if restype == ResourceType.JRL:
         return bytes_jrl(construct_jrl(gff))
-    if restype is ResourceType.PTH:
+    if restype == ResourceType.PTH:
         return bytes_pth(construct_pth(gff))
-    if restype is ResourceType.UTC:
+    if restype == ResourceType.UTC:
         return bytes_utc(construct_utc(gff))
-    if restype is ResourceType.UTD:
+    if restype == ResourceType.UTD:
         return bytes_utd(construct_utd(gff))
-    if restype is ResourceType.UTE:
+    if restype == ResourceType.UTE:
         return bytes_ute(construct_ute(gff))
-    if restype is ResourceType.UTI:
+    if restype == ResourceType.UTI:
         return bytes_uti(construct_uti(gff))
-    if restype is ResourceType.UTM:
+    if restype == ResourceType.UTM:
         return bytes_utm(construct_utm(gff))
-    if restype is ResourceType.UTS:
+    if restype == ResourceType.UTS:
         return bytes_uts(construct_uts(gff))
-    if restype is ResourceType.UTP:
+    if restype == ResourceType.UTP:
         return bytes_utp(construct_utp(gff))
-    if restype is ResourceType.UTT:
+    if restype == ResourceType.UTT:
         return bytes_utt(construct_utt(gff))
-    if restype is ResourceType.UTW:
+    if restype == ResourceType.UTW:
         return bytes_utw(construct_utw(gff))
 
     RobustLogger().warning(f"Unrecognized GFF of type '{restype}' will not be reconstructed!")

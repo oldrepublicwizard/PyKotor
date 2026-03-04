@@ -1,3 +1,5 @@
+"""Script (NSS/NCS) dialogs and permission messages: compile/decompile UI and registry spoofing."""
+
 from __future__ import annotations
 
 import os
@@ -219,7 +221,7 @@ def _prompt_additional_include_dirs(  # noqa: PLR0913
             if file.stem.lower() not in source_nss_lowercase and file.stem.lower() not in stderr.lower():
                 continue  # Skip any files in the include_path that aren't referenced by the script (faster)
 
-            if ResourceIdentifier.from_path(file).restype is not ResourceType.NSS:
+            if ResourceIdentifier.from_path(file).restype != ResourceType.NSS:
                 log.debug("%s is not an NSS script, skipping...", file.name)
                 continue
             if not file.is_file():

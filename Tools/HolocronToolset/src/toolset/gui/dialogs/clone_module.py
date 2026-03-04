@@ -1,3 +1,5 @@
+"""Clone module dialog: copy a module (MOD/RIM) to a new name with optional overwrite."""
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING, NamedTuple

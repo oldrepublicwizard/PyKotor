@@ -24,6 +24,7 @@
     "${workspaceFolder}/Tools/KotorDiff/src"
   ],
   "cursorpyright.analysis.typeCheckingMode": "basic",
+  "dotnet.defaultSolution": "disable",
   "editor.inlineSuggest.enabled": true,
   "editor.quickSuggestions": {
     "comments": true,
@@ -73,6 +74,7 @@
   ],
   "mypy.runUsingActiveInterpreter": true,
   "pylint.enabled": false,
+  "python-envs.defaultEnvManager": "ms-python.python:system",
   "python-envs.pythonProjects": [],
   "python.analysis.autoImportCompletions": true,
   "python.analysis.enablePytestSupport": true,
@@ -125,7 +127,5 @@
       "-NoLogo"
     ],
     "path": "pwsh.exe"
-  },
-  "python-envs.defaultEnvManager": "ms-python.python:system",
-  "dotnet.defaultSolution": "disable"
+  }
 }

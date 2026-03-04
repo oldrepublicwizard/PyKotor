@@ -11,17 +11,19 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from enum import Enum
-from pathlib import Path
 from typing import TYPE_CHECKING, Any, Callable
 
 from loggerplus import RobustLogger
-from toolset.blender.ipc_client import BlenderCommands, BlenderIPCClient, get_ipc_client
+from toolset.blender.ipc_client import BlenderCommands, get_ipc_client
 from toolset.blender.serializers import serialize_module_data
 
 if TYPE_CHECKING:
+    from pathlib import Path
+
     from pykotor.resource.formats.bwm import BWM
     from pykotor.resource.formats.lyt import LYT
     from pykotor.resource.generics.git import GIT, GITInstance
+    from toolset.blender.ipc_client import BlenderIPCClient
 
 
 class BlenderEditorMode(Enum):

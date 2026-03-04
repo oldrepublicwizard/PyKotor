@@ -18,16 +18,19 @@ from typing import TYPE_CHECKING
 from loggerplus import RobustLogger
 from pykotor.common.indoorkit import Kit, KitComponent, KitComponentHook, KitDoor
 from pykotor.common.module import Module
-from pykotor.resource.formats.bwm import BWM, BWMFace, read_bwm
+from pykotor.resource.formats.bwm import BWM, read_bwm
 from pykotor.resource.generics.utd import UTD
 from pykotor.resource.type import ResourceType
 from pykotor.tools.kit import _extract_doorhooks_from_bwm  # NOTE: shared logic (function)
-from utility.common.geometry import SurfaceMaterial, Vector3
+from utility.common.geometry import Vector3
 
 if TYPE_CHECKING:
     from pykotor.extract.installation import Installation
     from pykotor.resource.formats.bwm import BWMEdge
     from pykotor.resource.formats.lyt import LYT, LYTRoom
+
+
+_MODULE_DISPLAY_EXTENSIONS: tuple[str, ...] = (".mod", "_s.rim", ".rim", "_dlg.erf", "_adx.rim", "_a.rim")
 
 
 class ModuleKit(Kit):
@@ -52,6 +55,8 @@ class ModuleKit(Kit):
         self._installation: Installation = installation
         self._loaded: bool = False
         self._module: Module | None = None
+        self._lyt_room_indexes: dict[str, int] | None = None
+        self._door_lookup_by_name: dict[str, KitDoor] | None = None
 
         # Duck-typed marker used by Toolset/CLI to know this kit is module-backed.
         self.is_module_kit: bool = True
@@ -93,6 +98,7 @@ class ModuleKit(Kit):
         # Create a default door for hooks
         default_door: KitDoor = self._create_default_door()
         self.doors.append(default_door)
+        self._refresh_doors_lookup()
 
         # Extract rooms from LYT
         lyt_room_to_component: dict[int, KitComponent] = {}
@@ -101,6 +107,7 @@ class ModuleKit(Kit):
             if component is not None:
                 self.components.append(component)
                 lyt_room_to_component[room_idx] = component
+        self._refresh_lyt_room_lookup(lyt_data)
 
         # Also load any doorhooks from LYT as potential hook points
         self._process_lyt_doorhooks(lyt_data, lyt_room_to_component)
@@ -111,6 +118,23 @@ class ModuleKit(Kit):
         utd.resref.set_data("sw_door")
         utd.tag = "module_door"
         return KitDoor(utdK1=utd, utdK2=utd, width=2.0, height=3.0)
+
+    def _refresh_lyt_room_lookup(self, lyt_data: LYT) -> None:
+        """Build a fast room name lookup map for this LYT."""
+        self._lyt_room_indexes = {f"room{idx}": idx for idx in range(len(lyt_data.rooms))}
+        self._lyt_room_indexes.update(
+            {
+                (lyt_room.model or f"room{idx}").lower(): idx
+                for idx, lyt_room in enumerate(lyt_data.rooms)
+            },
+        )
+
+    def _refresh_doors_lookup(self) -> None:
+        """Build a fast door lookup map from lower-case resrefs."""
+        self._door_lookup_by_name = {}
+        for door in self.doors:
+            self._door_lookup_by_name[door.utdK1.resref.get().lower()] = door
+            self._door_lookup_by_name[door.utdK2.resref.get().lower()] = door
 
     def _component_from_lyt_room(
         self,
@@ -125,6 +149,7 @@ class ModuleKit(Kit):
         """
         model_name = (lyt_room.model or f"room{idx}").lower()
         component_id = f"{model_name}_{idx}"
+        room_position = lyt_room.position
 
         # Try to get the walkmesh (WOK) for this room
         bwm = self._get_room_walkmesh(model_name)
@@ -154,7 +179,7 @@ class ModuleKit(Kit):
         # Then when building, process_bwm will add the position back correctly.
         if bwm.faces:
             try:
-                bwm.translate(-lyt_room.position.x, -lyt_room.position.y, -lyt_room.position.z)
+                bwm.translate(-room_position.x, -room_position.y, -room_position.z)
             except Exception as e:
                 # Defensive: if translation fails, log but don't crash
                 # This should never happen, but protects against edge cases
@@ -178,25 +203,9 @@ class ModuleKit(Kit):
 
         component = KitComponent(kit=self, name=component_name, component_id=component_id, bwm=bwm, mdl=mdl, mdx=mdx)
         # Persist the original room placement so extract/build roundtrips can preserve layout.
-        component.default_position = Vector3(lyt_room.position.x, lyt_room.position.y, lyt_room.position.z)  # type: ignore[attr-defined]
+        component.default_position = Vector3(room_position.x, room_position.y, room_position.z)  # type: ignore[attr-defined]
 
-        doorhooks = _extract_doorhooks_from_bwm(bwm, num_doors=len(self.doors))
-
-        # Create KitComponentHook objects from extracted doorhooks
-        for doorhook in doorhooks:
-            position = Vector3(float(doorhook["x"]), float(doorhook["y"]), float(doorhook["z"]))
-            rotation = float(doorhook["rotation"])
-            door_index = int(doorhook["door"])
-            edge = int(doorhook["edge"])
-
-            # Get the door for this hook (use default door if index is invalid)
-            if 0 <= door_index < len(self.doors):
-                door = self.doors[door_index]
-            else:
-                door = default_door
-
-            hook = KitComponentHook(position, rotation, edge, door)
-            component.hooks.append(hook)
+        self._append_extracted_bwm_hooks(component, bwm, default_door)
 
         return component
 
@@ -208,12 +217,7 @@ class ModuleKit(Kit):
 
         Returns the parsed walkmesh (BWM) exactly as read from the module's WOK resource.
         """
-        if self._module is None:
-            return None
-        res = self._module.resource(model_name, ResourceType.WOK)
-        if res is None:
-            return None
-        data: bytes | None = res.data()
+        data = self._get_module_resource_data(model_name, ResourceType.WOK)
         if not data:
             return None
         if isinstance(data, BWM):
@@ -229,37 +233,41 @@ class ModuleKit(Kit):
         model_name: str,
         restype: ResourceType,
     ) -> bytes | None:
+        """Return raw model payload for the requested room resource type."""
+        data = self._get_module_resource_data(model_name, restype)
+        if not data:
+            return None
+        return bytes(data) if isinstance(data, (bytes, bytearray)) else None
+
+    def _get_module_resource_data(
+        self,
+        model_name: str,
+        restype: ResourceType,
+    ) -> bytes | BWM | None:
+        """Read module resource payload with shared null/empty handling."""
         if self._module is None:
             return None
         res = self._module.resource(model_name, restype)
         if res is None:
             return None
         data = res.data()
-        if not data:
-            return None
-        # ModuleResource.data() returns bytes for capsule-backed files.
-        return bytes(data) if isinstance(data, (bytes, bytearray)) else None
+        return data if data else None
 
-    def _create_placeholder_bwm(self) -> BWM:
-        """Create a placeholder BWM with a single quad."""
-        bwm = BWM()
-
-        # Create a 10x10 unit square walkmesh at origin
-        size = 5.0
-        v1 = Vector3(-size, -size, 0.0)
-        v2 = Vector3(size, -size, 0.0)
-        v3 = Vector3(size, size, 0.0)
-        v4 = Vector3(-size, size, 0.0)
-
-        face1 = BWMFace(v1, v2, v3)
-        face1.material = SurfaceMaterial.STONE
-        face2 = BWMFace(v1, v3, v4)
-        face2.material = SurfaceMaterial.STONE
-
-        bwm.faces.append(face1)
-        bwm.faces.append(face2)
-
-        return bwm
+    def _append_extracted_bwm_hooks(
+        self,
+        component: KitComponent,
+        bwm: BWM,
+        default_door: KitDoor,
+    ) -> None:
+        """Create component hooks from doorhook markers extracted from BWM."""
+        doorhooks = _extract_doorhooks_from_bwm(bwm, num_doors=len(self.doors))
+        for doorhook in doorhooks:
+            position = Vector3(float(doorhook["x"]), float(doorhook["y"]), float(doorhook["z"]))
+            rotation = float(doorhook["rotation"])
+            door_index = int(doorhook["door"])
+            edge = int(doorhook["edge"])
+            door = self.doors[door_index] if 0 <= door_index < len(self.doors) else default_door
+            component.hooks.append(KitComponentHook(position, rotation, edge, door))
 
     def _process_lyt_doorhooks(
         self,
@@ -280,19 +288,8 @@ class ModuleKit(Kit):
             return
 
         for doorhook in lyt_data.doorhooks:
-            room_name_lower: str = doorhook.room.lower()
-
-            # Find the LYT room that matches this doorhook's room name
-            lyt_room_match: LYTRoom | None = None
-            room_idx: int | None = None
-            for idx, lyt_room in enumerate(lyt_data.rooms):
-                room_model: str = (lyt_room.model or "").lower()
-                if room_model == room_name_lower or room_name_lower == f"room{idx}":
-                    lyt_room_match = lyt_room
-                    room_idx = idx
-                    break
-
-            if lyt_room_match is None or room_idx is None:
+            room_idx = self._find_lyt_room_index(lyt_data, doorhook.room)
+            if room_idx is None:
                 RobustLogger().warning(
                     "Doorhook references room '%s' which doesn't exist in LYT for module '%s'",
                     doorhook.room,
@@ -326,12 +323,7 @@ class ModuleKit(Kit):
             closest_edge: int | None = self._find_closest_edge(matching_component.bwm, local_position)
             edge_index: int = 0 if closest_edge is None else closest_edge
 
-            door: KitDoor = self.doors[0] if self.doors else self._create_default_door()
-            door_name_lower: str = doorhook.door.lower()
-            for existing_door in self.doors:
-                if existing_door.utdK1.resref.get().lower() == door_name_lower or existing_door.utdK2.resref.get().lower() == door_name_lower:
-                    door = existing_door
-                    break
+            door = self._resolve_matching_door(doorhook.door)
 
             hook = KitComponentHook(
                 position=local_position,
@@ -340,6 +332,39 @@ class ModuleKit(Kit):
                 door=door,
             )
             matching_component.hooks.append(hook)
+
+    @staticmethod
+    def _edge_points(
+        face,
+        local_edge_index: int,
+    ) -> tuple[Vector3, Vector3]:
+        """Return the face vertices for a face-local edge index."""
+        if local_edge_index == 0:
+            return face.v1, face.v2
+        if local_edge_index == 1:
+            return face.v2, face.v3
+        return face.v3, face.v1
+
+    def _find_lyt_room_index(
+        self,
+        lyt_data: LYT,
+        room_name: str,
+    ) -> int | None:
+        """Resolve a doorhook room name to the corresponding LYT room index."""
+        if self._lyt_room_indexes is None:
+            self._refresh_lyt_room_lookup(lyt_data)
+        return self._lyt_room_indexes.get(room_name.lower())
+
+    def _resolve_matching_door(
+        self,
+        door_name: str,
+    ) -> KitDoor:
+        """Resolve door by resref name, falling back to default module door."""
+        default_door = self.doors[0] if self.doors else self._create_default_door()
+        door_name_lower = door_name.lower()
+        if self._door_lookup_by_name is None:
+            self._refresh_doors_lookup()
+        return self._door_lookup_by_name.get(door_name_lower, default_door)
 
     def _find_closest_edge(
         self,
@@ -350,6 +375,7 @@ class ModuleKit(Kit):
         if not edges:
             return None
 
+        face_to_index: dict[int, int] = {id(f): i for i, f in enumerate(bwm.faces)}
         min_distance: float = float("inf")
         closest_edge_index: int | None = None
 
@@ -358,15 +384,7 @@ class ModuleKit(Kit):
             # NOTE: `edge.index` is a GLOBAL edge index computed as `face_index * 3 + local_edge_index`.
             local_edge_index: int = edge.index % 3
 
-            if local_edge_index == 0:
-                v1 = face.v1
-                v2 = face.v2
-            elif local_edge_index == 1:
-                v1 = face.v2
-                v2 = face.v3
-            else:  # local_edge_index == 2
-                v1 = face.v3
-                v2 = face.v1
+            v1, v2 = self._edge_points(face, local_edge_index)
 
             edge_vec: Vector3 = Vector3(v2.x - v1.x, v2.y - v1.y, 0.0)
             point_vec: Vector3 = Vector3(position.x - v1.x, position.y - v1.y, 0.0)
@@ -388,11 +406,12 @@ class ModuleKit(Kit):
 
             if distance < min_distance:
                 min_distance = distance
-                face_index: int = next((i for i, f in enumerate(bwm.faces) if f is face), -1)
-                if face_index == -1:
+                face_index: int | None = face_to_index.get(id(face))
+                if face_index is None:
                     try:
                         face_index = bwm.faces.index(face)
                     except ValueError:
+                        RobustLogger().warning("Encountered unmatched face object while resolving closest edge; skipping this edge.")
                         continue
                 closest_edge_index = face_index * 3 + local_edge_index
 
@@ -429,15 +448,7 @@ class ModuleKitManager:
         Returns:
             List of module root names (without extensions).
         """
-        seen_roots: set[str] = set()
-        roots: list[str] = []
-
-        for module_filename in self.get_module_names():
-            root = self._installation.get_module_root(module_filename)
-            if root not in seen_roots:
-                seen_roots.add(root)
-                roots.append(root)
-
+        roots = {self._installation.get_module_root(module_filename) for module_filename in self.get_module_names()}
         return sorted(roots)
 
     def get_module_display_name(self, module_root: str) -> str:
@@ -449,12 +460,9 @@ class ModuleKitManager:
         Returns:
             Display name combining root and area name if available.
         """
-        module_names: dict[str, str | None] = self.get_module_names()
-        for ext in (".mod", "_s.rim", ".rim", "_dlg.erf", "_adx.rim", "_a.rim"):
-            filename: str = f"{module_root}{ext}"
-            if filename not in module_names:
-                continue
-            area_name: str | None = module_names[filename]
+        module_names = self.get_module_names()
+        for filename in (f"{module_root}{ext}" for ext in _MODULE_DISPLAY_EXTENSIONS):
+            area_name: str | None = module_names.get(filename)
             if area_name is None:
                 continue
             return f"{module_root.upper()} - {area_name}"

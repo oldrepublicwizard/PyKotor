@@ -1,3 +1,5 @@
+"""Binary BIF/BZF read/write: resource table and optional LZMA payload for BZF."""
+
 from __future__ import annotations
 
 import lzma

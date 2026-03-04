@@ -1,3 +1,5 @@
+"""Boundary mesh rendering: OpenGL VAO/VBO for walkmesh and other boundary geometry."""
+
 from __future__ import annotations
 
 import ctypes

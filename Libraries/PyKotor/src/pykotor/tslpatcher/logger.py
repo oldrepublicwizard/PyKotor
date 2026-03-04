@@ -1,3 +1,5 @@
+"""TSLPatcher logging: PatchLogger, LogType, and patch log entries for install/uninstall."""
+
 from __future__ import annotations
 
 import sys

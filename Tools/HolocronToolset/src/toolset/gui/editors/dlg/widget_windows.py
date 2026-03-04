@@ -1,3 +1,5 @@
+"""DLG editor dialog widgets: reference chooser, list windows, and link list items."""
+
 from __future__ import annotations
 
 import weakref
@@ -22,7 +24,7 @@ if TYPE_CHECKING:
     import weakref
 
     from qtpy.QtCore import QObject
-    from qtpy.QtWidgets import QPushButton
+    from qtpy.QtWidgets import QListWidget, QPushButton
 
     from pykotor.resource.generics.dlg import DLGLink
     from toolset.gui.editors.dlg.editor import DLGEditor
@@ -55,7 +57,6 @@ class ReferenceChooserDialog(QDialog):
         self.editor: DLGEditor = parent
 
         # Replace QListWidget with custom DLGListWidget
-        from qtpy.QtWidgets import QListWidget
 
         list_widget_placeholder: QListWidget | None = self.ui.listWidget
         if list_widget_placeholder is not None:

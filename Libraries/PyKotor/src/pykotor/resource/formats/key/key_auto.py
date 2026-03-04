@@ -1,3 +1,5 @@
+"""KEY (bif index) format detection and read/write dispatch for KotOR installations."""
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING

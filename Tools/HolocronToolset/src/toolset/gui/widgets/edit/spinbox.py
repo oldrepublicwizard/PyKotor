@@ -1,3 +1,5 @@
+"""GFF field spin box: int field editor with special value text and commit-on-blur."""
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING

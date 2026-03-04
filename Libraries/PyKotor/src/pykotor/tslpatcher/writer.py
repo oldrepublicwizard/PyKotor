@@ -89,6 +89,19 @@ if TYPE_CHECKING:
     from pykotor.tslpatcher.mods.tlk import ModifyTLK
     from pykotor.tslpatcher.mods.twoda import RowValue
 
+
+def _parse_field_array_part(part: str) -> tuple[str, int] | None:
+    """Parse a GFF path part like 'ItemList[0]' into (field_label, index). Returns None if not array syntax."""
+    lb = part.find("[")
+    if lb == -1:
+        return None
+    rb = part.find("]", lb + 1)
+    if rb == -1:
+        return None
+    return (part[:lb], int(part[lb + 1 : rb]))
+    return None
+
+
 # ---------------------------------------------------------------------------
 # INI Escaping Utilities
 # ---------------------------------------------------------------------------
@@ -2013,7 +2026,8 @@ class IncrementalTSLPatchDataWriter:
                 self.log_func("Full traceback:")
                 for line in traceback.format_exc().splitlines():
                     self.log_func(f"  {line}")
-                return
+                # Still add to INI so the section is generated and user can fix the file manually
+                # Fall through to add to install folder, write INI section, and track modification
 
         # Add to install folders
         self._add_to_install_folder(destination, actual_filename)
@@ -3208,10 +3222,9 @@ class IncrementalTSLPatchDataWriter:
         current = struct
 
         for i, part in enumerate(parts):
-            if "[" in part and "]" in part:
-                # Array access like "ItemList[0]"
-                field_label = part[: part.index("[")]
-                index = int(part[part.index("[") + 1 : part.index("]")])
+            parsed = _parse_field_array_part(part)
+            if parsed is not None:
+                field_label, index = parsed
                 # Get the field from current struct
                 for field_label_check, field_type, field_value in current:
                     if field_label_check == field_label and field_type == GFFFieldType.List and isinstance(field_value, GFFList):
@@ -3221,6 +3234,7 @@ class IncrementalTSLPatchDataWriter:
                         return False
                 else:
                     return False
+                continue
             # Regular field access
             if i == len(parts) - 1:
                 # Last part - check if it has the StrRef
@@ -3400,10 +3414,9 @@ class IncrementalTSLPatchDataWriter:
         current = struct
 
         for i, part in enumerate(parts):
-            if "[" in part and "]" in part:
-                # Array access like "ItemList[0]"
-                field_label = part[: part.index("[")]
-                index = int(part[part.index("[") + 1 : part.index("]")])
+            parsed = _parse_field_array_part(part)
+            if parsed is not None:
+                field_label, index = parsed
                 # Get the field from current struct
                 for field_label_check, field_type, field_value in current:
                     if field_label_check == field_label and field_type == GFFFieldType.List and isinstance(field_value, GFFList):
@@ -3413,6 +3426,7 @@ class IncrementalTSLPatchDataWriter:
                         return False
                 else:
                     return False
+                continue
             # Regular field access
             if i == len(parts) - 1:
                 # Last part - check if it has the row index
@@ -3733,7 +3747,7 @@ class IncrementalTSLPatchDataWriter:
                 restype: ResourceType = identifier.restype
 
                 # 2DA files
-                if restype is ResourceType.TwoDA:
+                if restype == ResourceType.TwoDA:
                     existing_mod: Modifications2DA | None = next((m for m in self.all_modifications.twoda if m.sourcefile == filename), None)
                     is_new_mod: bool = existing_mod is None
                     if existing_mod is None:
@@ -3765,7 +3779,7 @@ class IncrementalTSLPatchDataWriter:
                         self.written_sections.add(filename)
 
                 # SSF files
-                elif restype is ResourceType.SSF:
+                elif restype == ResourceType.SSF:
                     existing_ssf_mod: ModificationsSSF | None = next((m for m in self.all_modifications.ssf if m.sourcefile == filename), None)
                     is_new_ssf_mod: bool = existing_ssf_mod is None
                     if existing_ssf_mod is None:
@@ -4197,9 +4211,16 @@ class IncrementalTSLPatchDataWriter:
         section_idx: int | None = None
         next_section_idx: int | None = None
 
-        all_sections = ["[TLKList]", "[InstallList]", "[2DAList]", "[GFFList]", "[CompileList]", "[SSFList]", "[HACKList]"]
-        current_section_pos = all_sections.index(section_marker)
-        next_section_marker: str | None = all_sections[current_section_pos + 1] if current_section_pos + 1 < len(all_sections) else None
+        section_order = ["[TLKList]", "[InstallList]", "[2DAList]", "[GFFList]", "[CompileList]", "[SSFList]", "[HACKList]"]
+        section_to_position = {name: idx for idx, name in enumerate(section_order)}
+        current_section_pos = section_to_position.get(section_marker)
+        if current_section_pos is None:
+            _log_debug(f"Section marker {section_marker} not recognized, appending to end")
+            content_to_add = "\n".join(new_lines) + "\n"
+            with self.ini_path.open("a", encoding="utf-8") as f:
+                f.write(content_to_add)
+            return
+        next_section_marker: str | None = section_order[current_section_pos + 1] if current_section_pos + 1 < len(section_order) else None
 
         for i, line in enumerate(lines):
             if line == section_marker:

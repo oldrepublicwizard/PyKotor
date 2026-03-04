@@ -24,11 +24,15 @@ except ImportError:
     WebSocketClientProtocol = Any  # type: ignore[misc]
 
 from holopazaak.network.protocol import (
-    GameMessage,
     MessageType,
     create_message,
     parse_message,
 )
+
+if TYPE_CHECKING:
+    from holopazaak.network.protocol import (
+        GameMessage,
+    )
 
 logger = logging.getLogger(__name__)
 

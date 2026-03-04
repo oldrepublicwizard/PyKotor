@@ -1,3 +1,5 @@
+"""Insert instance dialog: pick template (UTC/UTD/UTE/UTP/UTS/UTM/UTT/UTW) and add to GIT."""
+
 from __future__ import annotations
 
 from pathlib import Path
@@ -150,21 +152,21 @@ class InsertInstanceDialog(QDialog):
         elif self.ui.createResourceRadio.isChecked():
             self.resname = self.ui.resrefEdit.text()
             self.filepath = Path(self.ui.locationSelect.currentData())
-            if self._restype is ResourceType.UTC:
+            if self._restype == ResourceType.UTC:
                 self.data = bytes_utc(UTC())
-            elif self._restype is ResourceType.UTP:
+            elif self._restype == ResourceType.UTP:
                 self.data = bytes_utp(UTP())
-            elif self._restype is ResourceType.UTD:
+            elif self._restype == ResourceType.UTD:
                 self.data = bytes_utd(UTD())
-            elif self._restype is ResourceType.UTE:
+            elif self._restype == ResourceType.UTE:
                 self.data = bytes_ute(UTE())
-            elif self._restype is ResourceType.UTT:
+            elif self._restype == ResourceType.UTT:
                 self.data = bytes_utt(UTT())
-            elif self._restype is ResourceType.UTS:
+            elif self._restype == ResourceType.UTS:
                 self.data = bytes_uts(UTS())
-            elif self._restype is ResourceType.UTM:
+            elif self._restype == ResourceType.UTM:
                 self.data = bytes_utm(UTM())
-            elif self._restype is ResourceType.UTW:
+            elif self._restype == ResourceType.UTW:
                 self.data = bytes_utw(UTW())
             else:
                 self.data = b""
@@ -212,15 +214,15 @@ class InsertInstanceDialog(QDialog):
             resource: FileResource = selected_items[0].data(Qt.ItemDataRole.UserRole)
             summary_text: str = self.generate_resource_summary(resource)
             self.ui.dynamicTextLabel.setText(summary_text)
-            if resource.restype() is ResourceType.UTC and self.global_settings.showPreviewUTC:
+            if resource.restype() == ResourceType.UTC and self.global_settings.showPreviewUTC:
                 self.ui.previewRenderer.set_creature(read_utc(resource.data()))
             else:
                 mdl_data: bytes | None = None
                 mdx_data: bytes | None = None
-                if resource.restype() is ResourceType.UTD and self.global_settings.showPreviewUTD:
+                if resource.restype() == ResourceType.UTD and self.global_settings.showPreviewUTD:
                     modelname: str = door.get_model(read_utd(resource.data()), self._installation)
                     self.set_render_model(modelname)
-                elif resource.restype() is ResourceType.UTP and self.global_settings.showPreviewUTP:
+                elif resource.restype() == ResourceType.UTP and self.global_settings.showPreviewUTP:
                     modelname: str = placeable.get_model(read_utp(resource.data()), self._installation)
                     self.set_render_model(modelname)
                 elif resource.restype() in (ResourceType.MDL, ResourceType.MDX) and any(
@@ -231,7 +233,7 @@ class InsertInstanceDialog(QDialog):
                     )
                 ):
                     data = resource.data()
-                    if resource.restype() is ResourceType.MDL:
+                    if resource.restype() == ResourceType.MDL:
                         mdl_data = data
                         if is_any_erf_type_file(resource.filepath().name):
                             erf = read_erf(resource.filepath())
@@ -245,7 +247,7 @@ class InsertInstanceDialog(QDialog):
                                 mdx_data = mdx_res.data
                         else:
                             mdx_data = resource.filepath().with_suffix(".mdx").read_bytes()
-                    elif resource.restype() is ResourceType.MDX:
+                    elif resource.restype() == ResourceType.MDX:
                         mdx_data = data
                         if is_any_erf_type_file(resource.filepath().name):
                             erf = read_erf(resource.filepath())

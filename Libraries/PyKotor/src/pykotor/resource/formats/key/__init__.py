@@ -1,4 +1,5 @@
-# Import necessary components from the key format modules
+"""KEY package: chitin.key data, BIF/KEY entries, and binary I/O."""
+
 from __future__ import annotations
 from pykotor.resource.formats.key.io_key import KEYBinaryReader, KEYBinaryWriter
 from pykotor.resource.formats.key.key_auto import detect_key, read_key, write_key, bytes_key

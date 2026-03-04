@@ -1,3 +1,5 @@
+"""ERF/MOD/SAV/HAK format detection and read/write dispatch."""
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING

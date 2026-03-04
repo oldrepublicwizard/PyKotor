@@ -1,14 +1,17 @@
+"""Indoor kit download: fetch and install kit archives for the builder."""
+
 from __future__ import annotations
 
 import json
 import shutil
 import zipfile
+
 from pathlib import Path
 from tempfile import TemporaryDirectory
-from typing import Any, cast
+from typing import TYPE_CHECKING, Any, cast
 
 from qtpy.QtCore import Qt
-from qtpy.QtWidgets import QDialog, QFormLayout, QMessageBox, QPushButton, QWidget
+from qtpy.QtWidgets import QDialog, QFormLayout, QMessageBox, QPushButton
 
 from toolset.config import get_remote_toolset_update_info, is_remote_version_newer
 from toolset.gui.common.filters import NoScrollEventFilter
@@ -18,6 +21,9 @@ from utility.error_handling import format_exception_with_variables
 from utility.misc import is_debug_mode
 from utility.system.os_helper import is_frozen
 from utility.updater.github import download_github_release_asset
+
+if TYPE_CHECKING:
+    from qtpy.QtWidgets import QWidget
 
 
 class KitDownloader(QDialog):
@@ -214,7 +220,7 @@ class KitDownloader(QDialog):
         for i in range(layout.rowCount()):
             item = layout.itemAt(i, QFormLayout.ItemRole.FieldRole)
             if item and isinstance(item.widget(), QPushButton):
-                button: QPushButton = cast(QPushButton, item.widget())
+                button: QPushButton = cast("QPushButton", item.widget())
                 button.setText("Already Downloaded")
                 button.setEnabled(False)
 

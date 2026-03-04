@@ -1,3 +1,5 @@
+"""Chitin (chitin.key + BIF) loader: read-only access to game resource index and data."""
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING

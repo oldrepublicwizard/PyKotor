@@ -1,3 +1,5 @@
+"""Edit animation dialog: set DLG node animation from 2DA row."""
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING

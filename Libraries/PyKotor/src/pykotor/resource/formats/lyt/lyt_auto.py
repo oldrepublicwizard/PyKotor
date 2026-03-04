@@ -1,3 +1,5 @@
+"""LYT (layout) format detection and read/write dispatch (ASCII)."""
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
@@ -58,7 +60,7 @@ def write_lyt(
         PermissionError: If the file could not be written to the specified destination.
         ValueError: If the specified format was unsupported.
     """
-    if file_format is ResourceType.LYT:
+    if file_format == ResourceType.LYT:
         LYTAsciiWriter(lyt, target).write()
     else:
         msg = "Unsupported format specified; use LYT."

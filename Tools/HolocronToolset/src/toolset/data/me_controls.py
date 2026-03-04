@@ -1,3 +1,7 @@
+"""Module editor input: key bindings, mouse handling, and control schemes.
+
+Used by the module/level editor (e.g. ModuleRenderer) for camera and selection.
+"""
 from __future__ import annotations
 
 import json

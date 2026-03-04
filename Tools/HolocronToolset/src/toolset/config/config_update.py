@@ -1,3 +1,5 @@
+"""Update checks: fetch GitHub release info, compare versions, and parse release JSON."""
+
 from __future__ import annotations
 
 import base64
@@ -12,8 +14,9 @@ try:
 except ImportError:
     requests = None  # type: ignore[assignment, unused-ignore]
 
-from loggerplus import RobustLogger  # type: ignore[import-untyped]  # pyright: ignore[reportMissingTypeStubs]
 from qtpy.QtWidgets import QMessageBox
+
+from loggerplus import RobustLogger  # type: ignore[import-untyped]  # pyright: ignore[reportMissingTypeStubs]
 
 # LOCAL_PROGRAM_INFO is imported inside functions to avoid circular import
 # config.py imports from config_update, so we can't import config.py at module level

@@ -1,3 +1,5 @@
+"""PTH (path) editor: waypoints and path graph with 2D camera for module designer."""
+
 from __future__ import annotations
 
 import traceback
@@ -5,30 +7,29 @@ import traceback
 from contextlib import suppress
 from typing import TYPE_CHECKING, Any
 
-from qtpy.QtCore import Qt
-from qtpy.QtGui import QColor, QKeySequence
-from qtpy.QtWidgets import QApplication, QHBoxLayout, QLabel, QMenu, QMessageBox, QWidget
+from qtpy.QtWidgets import QApplication, QMenu, QMessageBox, QWidget
 
 from loggerplus import RobustLogger
-from pykotor.common.misc import Color
 from pykotor.extract.installation import SearchLocation
 from pykotor.resource.formats.bwm import read_bwm
 from pykotor.resource.formats.lyt import read_lyt
 from pykotor.resource.generics.pth import PTH, bytes_pth, read_pth
 from pykotor.resource.type import ResourceType
 from toolset.data.misc import ControlItem
+from toolset.gui.common.interaction.camera import calculate_zoom_strength
+from toolset.gui.common.walkmesh_materials import get_walkmesh_material_colors
 from toolset.gui.editor import Editor
 from toolset.gui.widgets.settings.editor_settings.git import GITSettings
 from toolset.gui.widgets.settings.widgets.module_designer import ModuleDesignerSettings
-from utility.common.geometry import SurfaceMaterial, Vector2
+from utility.common.geometry import Vector2
 
 if TYPE_CHECKING:
     import os
 
     from collections.abc import Callable
 
-    from qtpy.QtCore import QPoint
-    from qtpy.QtGui import QKeyEvent, QMouseEvent
+    from qtpy.QtCore import QPoint, Qt
+    from qtpy.QtGui import QColor, QKeyEvent, QKeySequence, QMouseEvent
     from qtpy.QtWidgets import (
         QAction,  # pyright: ignore[reportPrivateImportUsage]
         QClipboard,
@@ -40,7 +41,7 @@ if TYPE_CHECKING:
     from pykotor.resource.formats.lyt import LYT
     from pykotor.resource.generics.git import GITInstance
     from toolset.data.installation import HTInstallation
-    from utility.common.geometry import Vector3
+    from utility.common.geometry import SurfaceMaterial, Vector3
 
 
 class CustomStdout:
@@ -152,33 +153,8 @@ class PTHEditor(Editor):
 
         self.settings: GITSettings = GITSettings()
 
-        def intColorToQColor(num_color: int) -> QColor:
-            color: Color = Color.from_rgba_integer(num_color)
-            return QColor(int(color.r * 255), int(color.g * 255), int(color.b * 255), int(color.a * 255))
+        self.material_colors: dict[SurfaceMaterial, QColor] = get_walkmesh_material_colors()
 
-        self.material_colors: dict[SurfaceMaterial, QColor] = {
-            SurfaceMaterial.UNDEFINED: intColorToQColor(self.settings.undefinedMaterialColour),
-            SurfaceMaterial.OBSCURING: intColorToQColor(self.settings.obscuringMaterialColour),
-            SurfaceMaterial.DIRT: intColorToQColor(self.settings.dirtMaterialColour),
-            SurfaceMaterial.GRASS: intColorToQColor(self.settings.grassMaterialColour),
-            SurfaceMaterial.STONE: intColorToQColor(self.settings.stoneMaterialColour),
-            SurfaceMaterial.WOOD: intColorToQColor(self.settings.woodMaterialColour),
-            SurfaceMaterial.WATER: intColorToQColor(self.settings.waterMaterialColour),
-            SurfaceMaterial.NON_WALK: intColorToQColor(self.settings.nonWalkMaterialColour),
-            SurfaceMaterial.TRANSPARENT: intColorToQColor(self.settings.transparentMaterialColour),
-            SurfaceMaterial.CARPET: intColorToQColor(self.settings.carpetMaterialColour),
-            SurfaceMaterial.METAL: intColorToQColor(self.settings.metalMaterialColour),
-            SurfaceMaterial.PUDDLES: intColorToQColor(self.settings.puddlesMaterialColour),
-            SurfaceMaterial.SWAMP: intColorToQColor(self.settings.swampMaterialColour),
-            SurfaceMaterial.MUD: intColorToQColor(self.settings.mudMaterialColour),
-            SurfaceMaterial.LEAVES: intColorToQColor(self.settings.leavesMaterialColour),
-            SurfaceMaterial.LAVA: intColorToQColor(self.settings.lavaMaterialColour),
-            SurfaceMaterial.BOTTOMLESS_PIT: intColorToQColor(self.settings.bottomlessPitMaterialColour),
-            SurfaceMaterial.DEEP_WATER: intColorToQColor(self.settings.deepWaterMaterialColour),
-            SurfaceMaterial.DOOR: intColorToQColor(self.settings.doorMaterialColour),
-            SurfaceMaterial.NON_WALK_GRASS: intColorToQColor(self.settings.nonWalkGrassMaterialColour),
-            SurfaceMaterial.TRIGGER: intColorToQColor(self.settings.nonWalkGrassMaterialColour),
-        }
         self.nameBuffer: dict[ResourceIdentifier, str] = {}
         self.tagBuffer: dict[ResourceIdentifier, str] = {}
 
@@ -422,14 +398,6 @@ class PTHEditor(Editor):
         self.ui.renderArea.keyReleaseEvent(e)
 
     # endregion
-
-
-def calculate_zoom_strength(delta_y: float, sensSetting: int) -> float:
-    m = 0.00202
-    b = 1
-    factor_in = m * sensSetting + b
-    return 1 / abs(factor_in) if delta_y < 0 else abs(factor_in)
-
 
 class PTHControlScheme:
     def __init__(self, editor: PTHEditor):

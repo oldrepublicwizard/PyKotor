@@ -1,3 +1,5 @@
+"""DXT block manipulation: rotate and flip DXT1/DXT3/DXT5 texture data."""
+
 from __future__ import annotations
 
 

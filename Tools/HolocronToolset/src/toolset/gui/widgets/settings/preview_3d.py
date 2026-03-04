@@ -1,3 +1,5 @@
+"""3D preview settings: QSettings-backed options for model renderer (e.g. UTC visibility)."""
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING

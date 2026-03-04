@@ -1,39 +1,43 @@
+"""Indoor builder 2D renderer: draw rooms and components for the canvas."""
+
 from __future__ import annotations
 
 import math
 
-from dataclasses import dataclass
 from copy import deepcopy
+from dataclasses import dataclass
 from typing import TYPE_CHECKING, Callable
 
 import qtpy
 
 from qtpy import QtCore
-from qtpy.QtCore import QPoint, QPointF, QRectF, QTimer, Qt
-from qtpy.QtGui import QColor, QImage, QKeyEvent, QMouseEvent, QPainter, QPainterPath, QPen, QTransform, QWheelEvent
+from qtpy.QtCore import QPointF, QRectF, QTimer, Qt
+from qtpy.QtGui import QColor, QPainter, QPainterPath, QPen, QPolygonF, QTransform
 from qtpy.QtWidgets import (
     QApplication,
     QWidget,
 )
 
-
 if qtpy.QT5:
     from qtpy.QtGui import QCloseEvent, QPaintEvent
     from qtpy.QtWidgets import QUndoStack  # type: ignore[reportPrivateImportUsage]
 elif qtpy.QT6:
-    from qtpy.QtGui import QPaintEvent, QUndoStack  # type: ignore[assignment]  # pyright: ignore[reportPrivateImportUsage]
 
     try:
         from qtpy.QtGui import QCloseEvent
     except ImportError:
         # Fallback for Qt6 where QCloseEvent may be in QtCore
-        from qtpy.QtCore import QCloseEvent  # type: ignore[assignment, attr-defined, no-redef]
+        pass  # type: ignore[assignment, attr-defined, no-redef]
 else:
     raise ValueError(f"Invalid QT_API: '{qtpy.API_NAME}'")
 
-from pykotor.common.indoorkit import KitComponent, KitComponentHook
+from pykotor.common.indoorkit import KitComponentHook
 from pykotor.common.indoormap import IndoorMap, IndoorMapRoom
-from pykotor.resource.formats.bwm import BWM  # type: ignore[reportPrivateImportUsage]
+from toolset.gui.common.marquee import (
+    MARQUEE_MOVE_THRESHOLD_PIXELS,
+    draw_marquee_rect,
+)
+from toolset.gui.common.snapping import snap_value
 from toolset.gui.windows.indoor_builder.builder import SnapResult
 from toolset.gui.windows.indoor_builder.constants import (
     BACKGROUND_COLOR,
@@ -64,9 +68,6 @@ from toolset.gui.windows.indoor_builder.constants import (
     HOOK_SNAP_DISCONNECT_BASE_THRESHOLD,
     HOOK_SNAP_DISCONNECT_SCALE_FACTOR,
     HOOK_SNAP_SCALE_FACTOR,
-    MARQUEE_BORDER_COLOR,
-    MARQUEE_FILL_COLOR,
-    MARQUEE_MOVE_THRESHOLD_PIXELS,
     MAX_CAMERA_ZOOM,
     MIN_CAMERA_ZOOM,
     POSITION_CHANGE_EPSILON,
@@ -92,9 +93,14 @@ from toolset.gui.windows.indoor_builder.constants import (
 from utility.common.geometry import SurfaceMaterial, Vector2, Vector3
 
 if TYPE_CHECKING:
-    from qtpy.QtGui import QFocusEvent
+    from qtpy.QtCore import QCloseEvent, QPoint
+    from qtpy.QtGui import QFocusEvent, QImage, QKeyEvent, QMouseEvent, QPaintEvent, QUndoStack, QWheelEvent
 
-    from pykotor.resource.formats.bwm import BWMFace  # pyright: ignore[reportMissingImports]
+    from pykotor.common.indoorkit import KitComponent
+    from pykotor.resource.formats.bwm import (
+        BWM,
+        BWMFace,  # pyright: ignore[reportMissingImports]
+    )
 
 
 # =============================================================================
@@ -217,6 +223,8 @@ class IndoorMapRenderer(QWidget):
         # Walkmesh visualization
         self._material_colors: dict[SurfaceMaterial, QColor] = {}
         self._colorize_materials: bool = False
+        self._vis_matrix: dict[int, set[int]] = {}
+        self._show_vis_overlay: bool = True
         # Walkable materials - must match SurfaceMaterial.walkable() exactly (see geometry.py)
         # Using SurfaceMaterial enum values for clarity and maintainability
         self._walkable_values: set[SurfaceMaterial] = {
@@ -395,6 +403,14 @@ class IndoorMapRenderer(QWidget):
         self._colorize_materials = enabled
         self.mark_dirty()
 
+    def set_vis_matrix(self, vis_matrix: dict[int, set[int]]):
+        self._vis_matrix = {room_id: set(targets) for room_id, targets in vis_matrix.items()}
+        self.mark_dirty()
+
+    def set_show_vis_overlay(self, enabled: bool):
+        self._show_vis_overlay = enabled
+        self.mark_dirty()
+
     def set_snap_to_grid(self, enabled: bool):
         self.snap_to_grid = enabled
         self.mark_dirty()
@@ -494,8 +510,8 @@ class IndoorMapRenderer(QWidget):
         if not self.snap_to_grid:
             return pos
         return Vector3(
-            round(pos.x / self.grid_size) * self.grid_size,
-            round(pos.y / self.grid_size) * self.grid_size,
+            snap_value(pos.x, self.grid_size),
+            snap_value(pos.y, self.grid_size),
             pos.z,
         )
 
@@ -1231,23 +1247,94 @@ class IndoorMapRenderer(QWidget):
         painter.drawLine(QPointF(coords.x - line_len, coords.y), QPointF(coords.x + line_len, coords.y))
 
     def _draw_marquee(self, painter: QPainter):
-        """Draw the marquee selection rectangle."""
+        """Draw the marquee selection rectangle (shared style via toolset.gui.common.marquee)."""
         if not self._marquee_active:
             return
-
-        # Reset transform to draw in screen coords
         painter.resetTransform()
+        draw_marquee_rect(painter, self._marquee_start, self._marquee_end)
 
-        # Calculate rectangle
-        x1, y1 = self._marquee_start.x, self._marquee_start.y
-        x2, y2 = self._marquee_end.x, self._marquee_end.y
+    def _draw_vis_overlay(self, painter: QPainter):
+        if not self._show_vis_overlay or len(self._map.rooms) < 2 or not self._vis_matrix:
+            return
 
-        rect = QRectF(min(x1, x2), min(y1, y2), abs(x2 - x1), abs(y2 - y1))
+        room_by_id: dict[int, IndoorMapRoom] = {id(room): room for room in self._map.rooms}
+        selected_ids = {id(room) for room in self._selected_rooms}
+        filter_to_selection = bool(selected_ids)
+        seen_pairs: set[tuple[int, int]] = set()
 
-        # Draw semi-transparent fill
-        painter.setBrush(QColor(MARQUEE_FILL_COLOR[0], MARQUEE_FILL_COLOR[1], MARQUEE_FILL_COLOR[2], MARQUEE_FILL_COLOR[3]))
-        painter.setPen(QPen(QColor(MARQUEE_BORDER_COLOR[0], MARQUEE_BORDER_COLOR[1], MARQUEE_BORDER_COLOR[2], MARQUEE_BORDER_COLOR[3]), 1, Qt.PenStyle.DashLine))
-        painter.drawRect(rect)
+        line_width = max(1.0, (CONNECTION_LINE_WIDTH_SCALE * 0.7) / max(self._cam_scale, 1e-6))
+        bidirectional_pen = QPen(QColor(80, 180, 255, 175), line_width)
+        one_way_pen = QPen(QColor(255, 170, 70, 195), line_width)
+        one_way_pen.setStyle(Qt.PenStyle.DashLine)
+        one_way_fill = QColor(255, 170, 70, 215)
+        arrow_len = max(3.5, 9.0 / max(self._cam_scale, 1e-6))
+        arrow_width = arrow_len * 0.6
+
+        for src_room_id, visible_targets in self._vis_matrix.items():
+            src_room = room_by_id.get(src_room_id)
+            if src_room is None:
+                continue
+
+            for dst_room_id in visible_targets:
+                dst_room = room_by_id.get(dst_room_id)
+                if dst_room is None or dst_room is src_room:
+                    continue
+
+                pair = (min(src_room_id, dst_room_id), max(src_room_id, dst_room_id))
+                if pair in seen_pairs:
+                    continue
+                seen_pairs.add(pair)
+
+                if filter_to_selection and src_room_id not in selected_ids and dst_room_id not in selected_ids:
+                    continue
+
+                src_has_dst = dst_room_id in self._vis_matrix.get(src_room_id, set())
+                dst_has_src = src_room_id in self._vis_matrix.get(dst_room_id, set())
+                src_point = QPointF(src_room.position.x, src_room.position.y)
+                dst_point = QPointF(dst_room.position.x, dst_room.position.y)
+
+                is_bidirectional = src_has_dst and dst_has_src
+                painter.setPen(bidirectional_pen if is_bidirectional else one_way_pen)
+                painter.drawLine(src_point, dst_point)
+
+                if is_bidirectional:
+                    continue
+
+                direction_start = src_point if src_has_dst else dst_point
+                direction_end = dst_point if src_has_dst else src_point
+
+                dx = direction_end.x() - direction_start.x()
+                dy = direction_end.y() - direction_start.y()
+                length = math.hypot(dx, dy)
+                if length <= 1e-6:
+                    continue
+
+                ux = dx / length
+                uy = dy / length
+                px = -uy
+                py = ux
+
+                t = 0.60
+                tip = QPointF(
+                    direction_start.x() + dx * t,
+                    direction_start.y() + dy * t,
+                )
+                base = QPointF(
+                    tip.x() - ux * arrow_len,
+                    tip.y() - uy * arrow_len,
+                )
+                left = QPointF(
+                    base.x() + px * arrow_width * 0.5,
+                    base.y() + py * arrow_width * 0.5,
+                )
+                right = QPointF(
+                    base.x() - px * arrow_width * 0.5,
+                    base.y() - py * arrow_width * 0.5,
+                )
+
+                painter.setPen(Qt.PenStyle.NoPen)
+                painter.setBrush(one_way_fill)
+                painter.drawPolygon(QPolygonF([tip, left, right]))
 
     def _build_face(self, face: BWMFace) -> QPainterPath:
         v1 = Vector2(face.v1.x, face.v1.y)
@@ -1287,6 +1374,10 @@ class IndoorMapRenderer(QWidget):
         for room in self._map.rooms:
             self._draw_room_walkmesh(painter, room)
 
+        self._draw_vis_overlay(painter)
+
+        # Draw hooks (magnets)
+        for room in self._map.rooms:
             # Draw hooks (magnets)
             if not self.hide_magnets:
                 for hook_index, hook in enumerate(room.component.hooks):

@@ -1,3 +1,5 @@
+"""Binary MDL/MDX loading: read node hierarchy, meshes, and animations into GL models."""
+
 from __future__ import annotations
 
 import struct

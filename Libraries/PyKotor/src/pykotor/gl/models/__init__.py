@@ -1,3 +1,5 @@
+"""GL models package: Boundary, Cube, Mesh, Node, MDL loading, and vertex format utilities."""
+
 from __future__ import annotations
 
 from pykotor.gl.models.boundary import Boundary

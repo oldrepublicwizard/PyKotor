@@ -1,3 +1,5 @@
+"""UTE (encounter) generic: GFF-based encounter definitions and spawn lists."""
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING

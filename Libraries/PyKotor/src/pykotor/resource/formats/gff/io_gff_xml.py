@@ -1,3 +1,5 @@
+"""XML read/write for GFF; uses defusedxml when available for safe parsing."""
+
 from __future__ import annotations
 
 import base64

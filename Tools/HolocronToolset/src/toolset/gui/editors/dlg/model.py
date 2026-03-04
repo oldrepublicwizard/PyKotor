@@ -1,3 +1,5 @@
+"""DLG tree model: Qt model for DLG nodes/links, drag-drop, and sync with GFF."""
+
 from __future__ import annotations
 
 import json

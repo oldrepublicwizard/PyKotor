@@ -1,3 +1,5 @@
+"""SSF XML read/write: sound set (strref to wave) in XML for tooling and round-trip."""
+
 from __future__ import annotations
 
 from contextlib import suppress

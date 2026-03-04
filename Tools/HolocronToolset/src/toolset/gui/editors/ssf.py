@@ -1,10 +1,11 @@
+"""SSF (sound set) editor: map sound events to TLK StrRefs for creatures."""
+
 from __future__ import annotations
 
 from dataclasses import dataclass
 from typing import TYPE_CHECKING
 
 from qtpy.QtCore import QEvent, QObject, QPoint
-from qtpy.QtGui import QCloseEvent
 from qtpy.QtWidgets import (
     QFileDialog,
     QMenu,
@@ -22,6 +23,7 @@ from toolset.gui.editor import Editor
 if TYPE_CHECKING:
     import os
 
+    from qtpy.QtGui import QCloseEvent
     from qtpy.QtWidgets import QLineEdit, QSpinBox, QToolButton, QWidget
 
     from pykotor.extract.talktable import StringResult

@@ -1,3 +1,5 @@
+"""TXI (texture info) binary reader/writer and coordinate modes."""
+
 from __future__ import annotations
 
 from enum import IntEnum

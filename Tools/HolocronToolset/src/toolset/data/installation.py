@@ -1,3 +1,5 @@
+"""Holocron Toolset installation wrapper: game path, resources, 2DA/talktable, and UI helpers."""
+
 from __future__ import annotations
 
 import os
@@ -17,11 +19,9 @@ from qtpy.QtWidgets import (
     QDialog,
     QLineEdit,
     QMenu,
-    QWidget,
 )
 
 from loggerplus import RobustLogger  # pyright: ignore[reportMissingTypeStubs]
-from pykotor.extract.capsule import Capsule
 from pykotor.extract.chitin import Chitin
 from pykotor.extract.file import FileResource, ResourceIdentifier
 from pykotor.extract.installation import Installation, SearchLocation
@@ -37,17 +37,24 @@ from toolset.utils.window import add_window
 
 if TYPE_CHECKING:
     from qtpy.QtGui import QStandardItemModel
-    from qtpy.QtWidgets import QPlainTextEdit
+    from qtpy.QtWidgets import (
+        QPlainTextEdit,
+        QWidget,
+    )
     from typing_extensions import (  # pyright: ignore[reportMissingModuleSource]
         Literal,
         Self,
     )
 
+    from pykotor.extract.capsule import Capsule
     from pykotor.extract.file import LocationResult, ResourceResult
     from pykotor.resource.formats.tpc import TPC
     from pykotor.resource.formats.tpc.tpc_data import TPCMipmap
     from pykotor.resource.formats.twoda import TwoDA
     from pykotor.resource.generics.uti import UTI
+    from pykotor.tools.reference_finder import (
+        ReferenceSearchResult,
+    )
 
 
 class HTInstallation(Installation):
@@ -616,7 +623,6 @@ class HTInstallation(Installation):
             search_type: Type of search ("script", "tag", "template_resref", "conversation", "resref", or None)
         """
         from pykotor.tools.reference_finder import (
-            ReferenceSearchResult,
             find_conversation_references,
             find_resref_references,
             find_script_references,

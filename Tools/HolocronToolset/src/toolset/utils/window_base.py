@@ -1,15 +1,15 @@
+"""Compatibility wrappers around the canonical window registry in `toolset.utils.window`."""
+
 from __future__ import annotations
 
-from pathlib import Path
 from typing import TYPE_CHECKING
 
 from toolset.utils.window import add_recent_file as _add_recent_file, add_window as _add_window
 
 if TYPE_CHECKING:
+    from pathlib import Path
+
     from qtpy.QtWidgets import QDialog, QMainWindow
-
-
-"""Compatibility wrappers around the canonical window registry in `toolset.utils.window`."""
 
 
 def add_window(

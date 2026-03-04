@@ -1,3 +1,5 @@
+"""Main application window: menu, file tree, editor area, and status bar."""
+
 from __future__ import annotations
 
 import errno
@@ -17,7 +19,6 @@ from qtpy import QtCore
 from qtpy.QtCore import (
     QCoreApplication,
     QFileSystemWatcher,
-    QMimeData,
     QSortFilterProxyModel,
     QThread,
     QTimer,
@@ -98,6 +99,7 @@ if TYPE_CHECKING:
     from qtpy import QtGui
     from qtpy.QtCore import (
         QAbstractItemModel,
+        QMimeData,  # pyright: ignore[reportPrivateImportUsage]
         QModelIndex,  # pyright: ignore[reportPrivateImportUsage]
         QPoint,
     )
@@ -147,12 +149,15 @@ def run_module_designer(
     )
     # Standardized resource path format
     icon_path = ":/images/icons/sith.png"
+    icon_pixmap = QPixmap(icon_path)
 
     # Debugging: Check if the resource path is accessible
-    if not QPixmap(icon_path).isNull():
+    if not icon_pixmap.isNull():
+        icon = QIcon(icon_pixmap)
         designerUi.log.debug(f"HT main window Icon loaded successfully from {icon_path}")
-        designerUi.setWindowIcon(QIcon(QPixmap(icon_path)))
-        cast("QApplication", QApplication.instance()).setWindowIcon(QIcon(QPixmap(icon_path)))
+        designerUi.setWindowIcon(icon)
+        app_instance = cast("QApplication", QApplication.instance())
+        app_instance.setWindowIcon(icon)
     else:
         print(f"Failed to load HT main window icon from {icon_path}")
     add_window(designerUi, show=False)
@@ -296,51 +301,67 @@ class ToolWindow(QMainWindow):
         self._pending_override_changes.clear()
         self._watcher_debounce_timer.stop()
 
+    def _watched_root_paths(self) -> tuple[str, str] | None:
+        """Return normalized lowercase module/override root paths for active install."""
+        if self.active is None:
+            return None
+        module_path = os.path.normpath(str(self.active.module_path())).lower()
+        override_path = os.path.normpath(str(self.active.override_path())).lower()
+        return module_path, override_path
+
+    @staticmethod
+    def _append_unique_path(paths: list[str], normalized_path: str) -> None:
+        """Append path to pending list only when not already tracked."""
+        if normalized_path not in paths:
+            paths.append(normalized_path)
+
+    def _queue_watcher_change(self, path: str, *, contains_match: bool) -> None:
+        """Classify changed path and enqueue it for debounced refresh handling."""
+        roots = self._watched_root_paths()
+        if roots is None:
+            return
+        module_path, override_path = roots
+        normalized_path = os.path.normpath(path).lower()
+
+        module_match = module_path in normalized_path if contains_match else normalized_path == module_path or normalized_path.startswith(module_path)
+        override_match = override_path in normalized_path if contains_match else normalized_path == override_path or normalized_path.startswith(override_path)
+
+        if module_match:
+            self._append_unique_path(self._pending_module_changes, normalized_path)
+        elif override_match:
+            self._append_unique_path(self._pending_override_changes, normalized_path)
+
+        self._watcher_debounce_timer.start()
+
+    def _refresh_pending_changes(self, pending_paths: list[str], *, label: str, refresh_func: Callable[..., Any]) -> None:
+        """Run refresh callback for pending paths and clear the tracked queue."""
+        if not pending_paths:
+            return
+        RobustLogger().info("Auto-refreshing %s list due to %d file changes", label, len(pending_paths))
+        refresh_func(reload=True)
+        pending_paths.clear()
+
+    @Slot(str)
+    def _on_file_system_event(self, path: str, *, is_directory: bool) -> None:
+        """Unified handler for file system change events (both directories and files).
+        
+        Args:
+            path: The file system path that changed
+            is_directory: True if the event is for a directory change, False for file change
+        """
+        event_type = "directory" if is_directory else "file"
+        RobustLogger().debug("File watcher detected %s change: %s", event_type, os.path.normpath(path))
+        self._queue_watcher_change(path, contains_match=not is_directory)
+
     @Slot(str)
     def _on_watched_directory_changed(self, path: str):
         """Handle directory change events from QFileSystemWatcher."""
-        if self.active is None:
-            return
-
-        normalized_path = os.path.normpath(path)
-        module_path = os.path.normpath(str(self.active.module_path()))
-        override_path = os.path.normpath(str(self.active.override_path()))
-
-        RobustLogger().debug(f"File watcher detected directory change: {normalized_path}")
-
-        # Determine which type of change this is
-        if normalized_path.lower() == module_path.lower() or normalized_path.lower().startswith(module_path.lower()):
-            if normalized_path not in self._pending_module_changes:
-                self._pending_module_changes.append(normalized_path)
-        elif normalized_path.lower() == override_path.lower() or normalized_path.lower().startswith(override_path.lower()):
-            if normalized_path not in self._pending_override_changes:
-                self._pending_override_changes.append(normalized_path)
-
-        # Reset debounce timer
-        self._watcher_debounce_timer.start()
+        self._on_file_system_event(path, is_directory=True)
 
     @Slot(str)
     def _on_watched_file_changed(self, path: str):
         """Handle file change events from QFileSystemWatcher."""
-        if self.active is None:
-            return
-
-        normalized_path = os.path.normpath(path)
-        module_path = os.path.normpath(str(self.active.module_path()))
-        override_path = os.path.normpath(str(self.active.override_path()))
-
-        RobustLogger().debug(f"File watcher detected file change: {normalized_path}")
-
-        # Determine which type of change this is
-        if module_path.lower() in normalized_path.lower():
-            if normalized_path not in self._pending_module_changes:
-                self._pending_module_changes.append(normalized_path)
-        elif override_path.lower() in normalized_path.lower():
-            if normalized_path not in self._pending_override_changes:
-                self._pending_override_changes.append(normalized_path)
-
-        # Reset debounce timer
-        self._watcher_debounce_timer.start()
+        self._on_file_system_event(path, is_directory=False)
 
     @Slot()
     def _process_pending_file_changes(self):
@@ -364,36 +385,43 @@ class ToolWindow(QMainWindow):
             # Window is not focused - auto-refresh
             self._auto_refresh_changes(has_module_changes, has_override_changes)
 
-    def _show_refresh_dialog(self, has_module_changes: bool, has_override_changes: bool):
-        """Show a dialog asking the user if they want to refresh after file changes."""
-        from toolset.gui.common.localization import translate as local_tr
-
-        # Build list of changed files for details
+    def _pending_change_details(self, *, has_module_changes: bool, has_override_changes: bool) -> str:
+        """Build detailed refresh-dialog text listing changed files by section."""
         changed_files: list[str] = []
+        sections: tuple[tuple[bool, str, list[str]], ...] = (
+            (has_module_changes, "=== Modules Directory ===", self._pending_module_changes),
+            (has_override_changes, "=== Override Directory ===", self._pending_override_changes),
+        )
+        for include, heading, paths in sections:
+            if not include:
+                continue
+            changed_files.append(heading)
+            changed_files.extend(f"  {Path(path).name}" for path in paths)
+        return "\n".join(changed_files)
 
-        if has_module_changes:
-            changed_files.append("=== Modules Directory ===")
-            for path in self._pending_module_changes:
-                changed_files.append(f"  {Path(path).name}")
-
-        if has_override_changes:
-            changed_files.append("=== Override Directory ===")
-            for path in self._pending_override_changes:
-                changed_files.append(f"  {Path(path).name}")
-
-        # Build message
+    @staticmethod
+    def _changed_sections_text(*, has_module_changes: bool, has_override_changes: bool, local_tr: Callable[[str], str]) -> str:
+        """Build localized changed-section summary text for refresh prompt."""
         changes_desc: list[str] = []
         if has_module_changes:
             changes_desc.append(local_tr("Modules"))
         if has_override_changes:
             changes_desc.append(local_tr("Override"))
+        return ", ".join(changes_desc)
+
+    def _show_refresh_dialog(self, has_module_changes: bool, has_override_changes: bool):
+        """Show a dialog asking the user if they want to refresh after file changes."""
+        from toolset.gui.common.localization import translate as local_tr
+
+        changed_files_text = self._pending_change_details(has_module_changes=has_module_changes, has_override_changes=has_override_changes)
+        changes_desc_text = self._changed_sections_text(has_module_changes=has_module_changes, has_override_changes=has_override_changes, local_tr=local_tr)
 
         msg_box = QMessageBox(self)
         msg_box.setWindowTitle(local_tr("File Changes Detected"))
         msg_box.setText(
-            local_tr("Changes were detected in the following directories:") + "\n" + ", ".join(changes_desc) + "\n\n" + local_tr("Would you like to refresh the file lists?")
+            local_tr("Changes were detected in the following directories:") + "\n" + changes_desc_text + "\n\n" + local_tr("Would you like to refresh the file lists?")
         )
-        msg_box.setDetailedText("\n".join(changed_files))
+        msg_box.setDetailedText(changed_files_text)
         msg_box.setStandardButtons(QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No)
         msg_box.setDefaultButton(QMessageBox.StandardButton.Yes)
         msg_box.setIcon(QMessageBox.Icon.Question)
@@ -410,14 +438,30 @@ class ToolWindow(QMainWindow):
     def _auto_refresh_changes(self, has_module_changes: bool, has_override_changes: bool):
         """Auto-refresh the appropriate lists based on detected changes."""
         if has_module_changes:
-            RobustLogger().info(f"Auto-refreshing module list due to {len(self._pending_module_changes)} file changes")
-            self.refresh_module_list(reload=True)
-            self._pending_module_changes.clear()
+            self._refresh_pending_changes(self._pending_module_changes, label="module", refresh_func=self.refresh_module_list)
 
         if has_override_changes:
-            RobustLogger().info(f"Auto-refreshing override list due to {len(self._pending_override_changes)} file changes")
-            self.refresh_override_list(reload=True)
-            self._pending_override_changes.clear()
+            self._refresh_pending_changes(self._pending_override_changes, label="override", refresh_func=self.refresh_override_list)
+
+    def _show_message(self, icon: QMessageBox.Icon, title: str, text: str) -> None:
+        """Show a basic modal message box with icon/title/text."""
+        msg_box = QMessageBox(self)
+        msg_box.setIcon(icon)
+        msg_box.setWindowTitle(title)
+        msg_box.setText(text)
+        msg_box.exec()
+
+    def _show_info_message(self, title: str, text: str) -> None:
+        """Show informational message dialog."""
+        self._show_message(QMessageBox.Icon.Information, title, text)
+
+    def _show_warning_message(self, title: str, text: str) -> None:
+        """Show warning message dialog."""
+        self._show_message(QMessageBox.Icon.Warning, title, text)
+
+    def _show_error_message(self, title: str, text: str) -> None:
+        """Show error message dialog."""
+        self._show_message(QMessageBox.Icon.Critical, title, text)
 
     def _initUi(self):
         """Initialize Holocron Toolset main window UI."""
@@ -585,12 +629,8 @@ class ToolWindow(QMainWindow):
             assert self.active is not None
             module_data = self.ui.modulesWidget.ui.sectionCombo.currentData(Qt.ItemDataRole.UserRole)
             if not module_data:
-                from qtpy.QtWidgets import QMessageBox
-
                 from toolset.gui.common.localization import translate as tr
-
-                QMessageBox.warning(
-                    self,
+                self._show_warning_message(
                     tr("No Module Selected"),
                     tr("Please select a module from the Modules tab before opening the Level Builder."),
                 )
@@ -625,22 +665,7 @@ class ToolWindow(QMainWindow):
         self.ui.actionSettings.triggered.connect(self.open_settings_dialog)
         self.ui.actionExit.triggered.connect(lambda *args: self.close() and None or None)
 
-        self.ui.actionNewTLK.triggered.connect(lambda: add_window(TLKEditor(self, self.active)))
-        self.ui.actionNewDLG.triggered.connect(lambda: add_window(DLGEditor(self, self.active)))
-        self.ui.actionNewNSS.triggered.connect(lambda: add_window(NSSEditor(self, self.active)))
-        self.ui.actionNewUTC.triggered.connect(lambda: add_window(UTCEditor(self, self.active)))  # type: ignore[arg-type]
-        self.ui.actionNewUTP.triggered.connect(lambda: add_window(UTPEditor(self, self.active)))  # type: ignore[arg-type]
-        self.ui.actionNewUTD.triggered.connect(lambda: add_window(UTDEditor(self, self.active)))  # type: ignore[arg-type]
-        self.ui.actionNewUTI.triggered.connect(lambda: add_window(UTIEditor(self, self.active)))  # type: ignore[arg-type]
-        self.ui.actionNewUTT.triggered.connect(lambda: add_window(UTTEditor(self, self.active)))
-        self.ui.actionNewUTM.triggered.connect(lambda: add_window(UTMEditor(self, self.active)))
-        self.ui.actionNewUTW.triggered.connect(lambda: add_window(UTWEditor(self, self.active)))
-        self.ui.actionNewUTE.triggered.connect(lambda: add_window(UTEEditor(self, self.active)))
-        self.ui.actionNewUTS.triggered.connect(lambda: add_window(UTSEditor(self, self.active)))  # type: ignore[arg-type]
-        self.ui.actionNewGFF.triggered.connect(lambda: add_window(GFFEditor(self, self.active)))
-        self.ui.actionNewERF.triggered.connect(lambda: add_window(ERFEditor(self, self.active)))
-        self.ui.actionNewTXT.triggered.connect(lambda: add_window(TXTEditor(self, self.active)))
-        self.ui.actionNewSSF.triggered.connect(lambda: add_window(SSFEditor(self, self.active)))
+        self._connect_new_resource_actions()
         self.ui.actionCloneModule.triggered.connect(lambda: add_window(CloneModuleDialog(self, self.active, self.installations)))  # type: ignore[arg-type]
 
         self.ui.actionModuleDesigner.triggered.connect(self.open_module_designer)
@@ -654,9 +679,7 @@ class ToolWindow(QMainWindow):
         self.ui.actionInstructions.triggered.connect(self.open_instructions_window)
         self.ui.actionHelpUpdates.triggered.connect(self.update_manager.check_for_updates)
         self.ui.actionHelpAbout.triggered.connect(self.open_about_dialog)
-        self.ui.actionDiscordDeadlyStream.triggered.connect(lambda: open_link("https://discord.com/invite/bRWyshn"))
-        self.ui.actionDiscordKotOR.triggered.connect(lambda: open_link("http://discord.gg/kotor"))
-        self.ui.actionDiscordHolocronToolset.triggered.connect(lambda: open_link("https://discord.gg/3ME278a9tQ"))
+        self._connect_discord_actions()
 
         # Setup Theme button to open theme selector dialog
         # Replace menuTheme with a button action
@@ -683,6 +706,51 @@ class ToolWindow(QMainWindow):
         # self._fs_modules_widget: ResourceFileSystemWidget | None = None
         # self._fs_override_widget: ResourceFileSystemWidget | None = None
         # self._fs_saves_widget: ResourceFileSystemWidget | None = None
+
+    def _connect_new_resource_actions(self) -> None:
+        """Connect File->New actions to their editor windows."""
+        action_editor_pairs: tuple[tuple[QAction, type[Any]], ...] = (
+            (self.ui.actionNewTLK, TLKEditor),
+            (self.ui.actionNewDLG, DLGEditor),
+            (self.ui.actionNewNSS, NSSEditor),
+            (self.ui.actionNewUTC, UTCEditor),
+            (self.ui.actionNewUTP, UTPEditor),
+            (self.ui.actionNewUTD, UTDEditor),
+            (self.ui.actionNewUTI, UTIEditor),
+            (self.ui.actionNewUTT, UTTEditor),
+            (self.ui.actionNewUTM, UTMEditor),
+            (self.ui.actionNewUTW, UTWEditor),
+            (self.ui.actionNewUTE, UTEEditor),
+            (self.ui.actionNewUTS, UTSEditor),
+            (self.ui.actionNewGFF, GFFEditor),
+            (self.ui.actionNewERF, ERFEditor),
+            (self.ui.actionNewTXT, TXTEditor),
+            (self.ui.actionNewSSF, SSFEditor),
+        )
+        for action, editor_class in action_editor_pairs:
+            action.triggered.connect(lambda checked=False, cls=editor_class: add_window(cast("Any", cls)(self, self.active)))
+
+    def _connect_discord_actions(self) -> None:
+        """Connect Discord menu actions to their destination URLs."""
+        action_links: tuple[tuple[QAction, str], ...] = (
+            (self.ui.actionDiscordDeadlyStream, "https://discord.com/invite/bRWyshn"),
+            (self.ui.actionDiscordKotOR, "http://discord.gg/kotor"),
+            (self.ui.actionDiscordHolocronToolset, "https://discord.gg/3ME278a9tQ"),
+        )
+        for action, url in action_links:
+            action.triggered.connect(lambda checked=False, target=url: open_link(target))
+
+    def _set_kotor_action_icon(self, action: QAction, icon_name: str, version: str, *, enabled: bool) -> None:
+        """Set K1/K2 icon variant and enabled-state for a menu action."""
+        icon_path = f":/images/icons/k{version}/{icon_name}.png"
+        action.setIcon(QIcon(QPixmap(icon_path)))
+        action.setEnabled(enabled)
+
+    @staticmethod
+    def _set_actions_enabled(actions: tuple[QAction, ...], *, enabled: bool) -> None:
+        """Apply the same enabled state to a group of actions."""
+        for action in actions:
+            action.setEnabled(enabled)
 
     @Slot(bool)
     def _open_theme_dialog(
@@ -797,64 +865,89 @@ class ToolWindow(QMainWindow):
         if language.value in self._language_actions:
             self._language_actions[language.value].setChecked(True)
 
+    def _set_menu_titles(self, titles: tuple[tuple[str, str], ...]) -> None:
+        """Apply translated titles to menu objects by UI attribute name."""
+        for attr_name, label in titles:
+            cast("Any", getattr(self.ui, attr_name)).setTitle(tr(label))
+
+    def _set_action_texts(self, labels: tuple[tuple[str, str], ...]) -> None:
+        """Apply translated text to QAction objects by UI attribute name."""
+        for attr_name, label in labels:
+            cast("Any", getattr(self.ui, attr_name)).setText(tr(label))
+
+    def _set_tab_texts(self, labels: tuple[tuple[int, str], ...]) -> None:
+        """Apply translated labels to main resource tabs."""
+        for index, label in labels:
+            self.ui.resourceTabs.setTabText(index, tr(label))
+
     def apply_translations(self):
         """Apply translations to all UI strings in the main window."""
-        # Translate menu titles
-        self.ui.menuFile.setTitle(tr("File"))
-        self.ui.menuEdit.setTitle(tr("Edit"))
-        self.ui.menuTools.setTitle(tr("Tools"))
-        self.ui.menuTheme.setTitle(tr("Theme"))
-        self.ui.menuLanguage.setTitle(tr("Language"))
-        self.ui.menuHelp.setTitle(tr("Help"))
-        self.ui.menuNew.setTitle(tr("New"))
-        self.ui.menuRecentFiles.setTitle(tr("Recent Files"))
-        self.ui.menuDiscord.setTitle(tr("Discord"))
+        self._set_menu_titles(
+            (
+                ("menuFile", "File"),
+                ("menuEdit", "Edit"),
+                ("menuTools", "Tools"),
+                ("menuTheme", "Theme"),
+                ("menuLanguage", "Language"),
+                ("menuHelp", "Help"),
+                ("menuNew", "New"),
+                ("menuRecentFiles", "Recent Files"),
+                ("menuDiscord", "Discord"),
+            )
+        )
 
-        # Translate menu actions
-        self.ui.actionExit.setText(tr("Exit"))
-        self.ui.actionSettings.setText(tr("Settings"))
-        self.ui.actionHelpAbout.setText(tr("About"))
-        self.ui.actionInstructions.setText(tr("Instructions"))
-        self.ui.actionHelpUpdates.setText(tr("Check For Updates"))
-        self.ui.actionEditTLK.setText(tr("Edit Talk Table"))
-        self.ui.actionEditJRL.setText(tr("Edit Journal"))
-        self.ui.actionModuleDesigner.setText(tr("Module Designer"))
-        self.ui.actionIndoorMapBuilder.setText(tr("Indoor Map Builder"))
-        self.ui.actionKotorDiff.setText(tr("KotorDiff"))
-        self.ui.actionTSLPatchDataEditor.setText(tr("TSLPatchData Editor"))
-        self.ui.actionFileSearch.setText(tr("File Search"))
-        self.ui.actionCloneModule.setText(tr("Clone Module"))
+        self._set_action_texts(
+            (
+                ("actionExit", "Exit"),
+                ("actionSettings", "Settings"),
+                ("actionHelpAbout", "About"),
+                ("actionInstructions", "Instructions"),
+                ("actionHelpUpdates", "Check For Updates"),
+                ("actionEditTLK", "Edit Talk Table"),
+                ("actionEditJRL", "Edit Journal"),
+                ("actionModuleDesigner", "Module Designer"),
+                ("actionIndoorMapBuilder", "Indoor Map Builder"),
+                ("actionKotorDiff", "KotorDiff"),
+                ("actionTSLPatchDataEditor", "TSLPatchData Editor"),
+                ("actionFileSearch", "File Search"),
+                ("actionCloneModule", "Clone Module"),
+            )
+        )
         # self.ui.actionLegacyLayout.setText(tr("Legacy Layout"))
-        self.ui.actionDiscordHolocronToolset.setText(tr("Holocron Toolset"))
-        self.ui.actionDiscordKotOR.setText(tr("KOTOR Community Portal"))
-        self.ui.actionDiscordDeadlyStream.setText(tr("Deadly Stream"))
+        self._set_action_texts(
+            (
+                ("actionDiscordHolocronToolset", "Holocron Toolset"),
+                ("actionDiscordKotOR", "KOTOR Community Portal"),
+                ("actionDiscordDeadlyStream", "Deadly Stream"),
+                ("actionNewDLG", "Dialog"),
+                ("actionNewUTC", "Creature"),
+                ("actionNewUTI", "Item"),
+                ("actionNewUTD", "Door"),
+                ("actionNewUTP", "Placeable"),
+                ("actionNewUTM", "Merchant"),
+                ("actionNewUTE", "Encounter"),
+                ("actionNewUTT", "Trigger"),
+                ("actionNewUTW", "Waypoint"),
+                ("actionNewUTS", "Sound"),
+                ("actionNewNSS", "Script"),
+                ("actionNewTLK", "TalkTable"),
+                ("actionNewGFF", "GFF"),
+                ("actionNewERF", "ERF"),
+                ("actionNewTXT", "TXT"),
+                ("actionNewSSF", "SSF"),
+            )
+        )
 
-        # Translate new resource actions
-        self.ui.actionNewDLG.setText(tr("Dialog"))
-        self.ui.actionNewUTC.setText(tr("Creature"))
-        self.ui.actionNewUTI.setText(tr("Item"))
-        self.ui.actionNewUTD.setText(tr("Door"))
-        self.ui.actionNewUTP.setText(tr("Placeable"))
-        self.ui.actionNewUTM.setText(tr("Merchant"))
-        self.ui.actionNewUTE.setText(tr("Encounter"))
-        self.ui.actionNewUTT.setText(tr("Trigger"))
-        self.ui.actionNewUTW.setText(tr("Waypoint"))
-        self.ui.actionNewUTS.setText(tr("Sound"))
-        self.ui.actionNewNSS.setText(tr("Script"))
-        self.ui.actionNewTLK.setText(tr("TalkTable"))
-        self.ui.actionNewGFF.setText(tr("GFF"))
-        self.ui.actionNewERF.setText(tr("ERF"))
-        self.ui.actionNewTXT.setText(tr("TXT"))
-        self.ui.actionNewSSF.setText(tr("SSF"))
+        self._set_tab_texts(
+            (
+                (0, "Core"),
+                (1, "Saves"),
+                (2, "Modules"),
+                (3, "Override"),
+                (4, "Textures"),
+            )
+        )
 
-        # Translate tab titles
-        self.ui.resourceTabs.setTabText(0, tr("Core"))
-        self.ui.resourceTabs.setTabText(1, tr("Saves"))
-        self.ui.resourceTabs.setTabText(2, tr("Modules"))
-        self.ui.resourceTabs.setTabText(3, tr("Override"))
-        self.ui.resourceTabs.setTabText(4, tr("Textures"))
-
-        # Translate buttons
         self.ui.openButton.setText(tr("Open Selected"))
         self.ui.extractButton.setText(tr("Extract Selected"))
         self.ui.openSaveEditorButton.setText(tr("Open Save Editor"))
@@ -1130,12 +1223,12 @@ class ToolWindow(QMainWindow):
             editor.show()
 
         except Exception as e:
-            QMessageBox.critical(
-                self,
+            from toolset.gui.common.localization import translate as tr, translate_formatted as trf
+            self._show_error_message(
                 tr("Error Opening Save Editor"),
                 trf("Failed to open save editor:\n{error}", error=str(e)),
             )
-            RobustLogger().exception(f"Failed to open save editor for '{save_path}'")
+            RobustLogger().exception(f"Failed to open save editor for '{save_path}'") 
 
     def on_override_file_updated(
         self,
@@ -1558,69 +1651,39 @@ class ToolWindow(QMainWindow):
 
     # region Menu Bar
     def update_menus(self):
+        """Update action icons and enabled-state based on active installation."""
         version = "x" if self.active is None else "2" if self.active.tsl else "1"
 
-        dialog_icon_path = f":/images/icons/k{version}/dialog.png"
-        self.ui.actionNewDLG.setIcon(QIcon(QPixmap(dialog_icon_path)))  # pyright: ignore[reportArgumentType]  # type: ignore[arg-type]
-        self.ui.actionNewDLG.setEnabled(self.active is not None)
+        active_required = self.active is not None
+        new_action_icon_specs: tuple[tuple[QAction, str, bool], ...] = (
+            (self.ui.actionNewDLG, "dialog", active_required),
+            (self.ui.actionNewTLK, "tlk", True),
+            (self.ui.actionNewNSS, "script", active_required),
+            (self.ui.actionNewUTC, "creature", active_required),
+            (self.ui.actionNewUTP, "placeable", active_required),
+            (self.ui.actionNewUTD, "door", active_required),
+            (self.ui.actionNewUTI, "item", active_required),
+            (self.ui.actionNewUTS, "sound", active_required),
+            (self.ui.actionNewUTT, "trigger", active_required),
+            (self.ui.actionNewUTM, "merchant", active_required),
+            (self.ui.actionNewUTW, "waypoint", active_required),
+            (self.ui.actionNewUTE, "encounter", active_required),
+        )
+        for action, icon_name, enabled in new_action_icon_specs:
+            self._set_kotor_action_icon(action, icon_name, version, enabled=enabled)
 
-        tlk_icon_path = f":/images/icons/k{version}/tlk.png"
-        self.ui.actionNewTLK.setIcon(QIcon(QPixmap(tlk_icon_path)))  # pyright: ignore[reportArgumentType]  # type: ignore[arg-type]
-        self.ui.actionNewTLK.setEnabled(True)
-
-        script_icon_path = f":/images/icons/k{version}/script.png"
-        self.ui.actionNewNSS.setIcon(QIcon(QPixmap(script_icon_path)))  # pyright: ignore[reportArgumentType]  # type: ignore[arg-type]
-        self.ui.actionNewNSS.setEnabled(self.active is not None)
-
-        creature_icon_path = f":/images/icons/k{version}/creature.png"
-        self.ui.actionNewUTC.setIcon(QIcon(QPixmap(creature_icon_path)))  # pyright: ignore[reportArgumentType]  # type: ignore[arg-type]
-        self.ui.actionNewUTC.setEnabled(self.active is not None)
-
-        placeable_icon_path = f":/images/icons/k{version}/placeable.png"
-        self.ui.actionNewUTP.setIcon(QIcon(QPixmap(placeable_icon_path)))  # pyright: ignore[reportArgumentType]  # type: ignore[arg-type]
-        self.ui.actionNewUTP.setEnabled(self.active is not None)
-
-        door_icon_path = f":/images/icons/k{version}/door.png"
-        self.ui.actionNewUTD.setIcon(QIcon(QPixmap(door_icon_path)))  # pyright: ignore[reportArgumentType]  # type: ignore[arg-type]
-        self.ui.actionNewUTD.setEnabled(self.active is not None)
-
-        item_icon_path = f":/images/icons/k{version}/item.png"
-        self.ui.actionNewUTI.setIcon(QIcon(QPixmap(item_icon_path)))  # pyright: ignore[reportArgumentType]  # type: ignore[arg-type]
-        self.ui.actionNewUTI.setEnabled(self.active is not None)
-
-        sound_icon_path = f":/images/icons/k{version}/sound.png"
-        self.ui.actionNewUTS.setIcon(QIcon(QPixmap(sound_icon_path)))  # pyright: ignore[reportArgumentType]  # type: ignore[arg-type]
-        self.ui.actionNewUTS.setEnabled(self.active is not None)
-
-        trigger_icon_path = f":/images/icons/k{version}/trigger.png"
-        self.ui.actionNewUTT.setIcon(QIcon(QPixmap(trigger_icon_path)))  # pyright: ignore[reportArgumentType]  # type: ignore[arg-type]
-        self.ui.actionNewUTT.setEnabled(self.active is not None)
-
-        merchant_icon_path = f":/images/icons/k{version}/merchant.png"
-        self.ui.actionNewUTM.setIcon(QIcon(QPixmap(merchant_icon_path)))  # pyright: ignore[reportArgumentType]  # type: ignore[arg-type]
-        self.ui.actionNewUTM.setEnabled(self.active is not None)
-
-        waypoint_icon_path = f":/images/icons/k{version}/waypoint.png"
-        self.ui.actionNewUTW.setIcon(QIcon(QPixmap(waypoint_icon_path)))  # pyright: ignore[reportArgumentType]  # type: ignore[arg-type]
-        self.ui.actionNewUTW.setEnabled(self.active is not None)
-
-        encounter_icon_path = f":/images/icons/k{version}/encounter.png"
-        self.ui.actionNewUTE.setIcon(QIcon(QPixmap(encounter_icon_path)))  # pyright: ignore[reportArgumentType]  # type: ignore[arg-type]
-        self.ui.actionNewUTE.setEnabled(self.active is not None)
-
-        self.ui.actionEditTLK.setEnabled(self.active is not None)
-        self.ui.actionEditJRL.setEnabled(self.active is not None)
-        self.ui.actionFileSearch.setEnabled(self.active is not None)
-        self.ui.actionModuleDesigner.setEnabled(self.active is not None)
-        self.ui.actionIndoorMapBuilder.setEnabled(self.active is not None)
-
-        # KotorDiff is always available
-        self.ui.actionKotorDiff.setEnabled(True)
-
-        # TSLPatchData editor is always available
-        self.ui.actionTSLPatchDataEditor.setEnabled(True)
-
-        self.ui.actionCloneModule.setEnabled(self.active is not None)
+        self._set_actions_enabled(
+            (
+                self.ui.actionEditTLK,
+                self.ui.actionEditJRL,
+                self.ui.actionFileSearch,
+                self.ui.actionModuleDesigner,
+                self.ui.actionIndoorMapBuilder,
+                self.ui.actionCloneModule,
+            ),
+            enabled=active_required,
+        )
+        self._set_actions_enabled((self.ui.actionKotorDiff, self.ui.actionTSLPatchDataEditor), enabled=True)
 
     def debounce_module_designer_load(self):
         """Prevents users from spamming the start button, which could easily result in a bad crash."""
@@ -2189,18 +2252,18 @@ class ToolWindow(QMainWindow):
         if not filepath_str or not filepath_str.strip():
             return
         r_save_filepath = Path(filepath_str)
+
+        def _show_saved_info(title: str, message_template: str) -> None:
+            self._show_info_message(title, trf(message_template, r_save_filepath=r_save_filepath))
+
         try:
             if is_mod_file(r_save_filepath):
                 if capsule_type == "mod":
                     write_erf(read_erf(c_filepath), r_save_filepath)
-                    QMessageBox(QMessageBox.Icon.Information, tr("Module Saved"), trf("Module saved to '{r_save_filepath}'", r_save_filepath=r_save_filepath)).exec()
+                    _show_saved_info(tr("Module Saved"), "Module saved to '{r_save_filepath}'")
                 else:
                     module.rim_to_mod(r_save_filepath, self.active.module_path(), module_name, self.active.game())
-                    QMessageBox(
-                        QMessageBox.Icon.Information,
-                        tr("Module Built"),
-                        trf("Module built from relevant RIMs/ERFs and saved to '{r_save_filepath}'", r_save_filepath=r_save_filepath),
-                    ).exec()
+                    _show_saved_info(tr("Module Built"), "Module built from relevant RIMs/ERFs and saved to '{r_save_filepath}'")
                 return
 
             erf_or_rim: ERF | RIM = read_erf(c_filepath) if is_any_erf_type_file(c_filepath) else read_rim(c_filepath)
@@ -2208,20 +2271,18 @@ class ToolWindow(QMainWindow):
                 if isinstance(erf_or_rim, ERF):
                     erf_or_rim = erf_or_rim.to_rim()
                 write_rim(erf_or_rim, r_save_filepath)
-                QMessageBox(QMessageBox.Icon.Information, tr("RIM Saved"), trf("Resource Image File saved to '{r_save_filepath}'", r_save_filepath=r_save_filepath)).exec()
+                _show_saved_info(tr("RIM Saved"), "Resource Image File saved to '{r_save_filepath}'")
 
             elif is_any_erf_type_file(r_save_filepath):
                 if isinstance(erf_or_rim, RIM):
                     erf_or_rim = erf_or_rim.to_erf()
                 erf_or_rim.erf_type = ERFType.from_extension(r_save_filepath)
                 write_erf(erf_or_rim, r_save_filepath)
-                QMessageBox(
-                    QMessageBox.Icon.Information, tr("ERF Saved"), trf("Encapsulated Resource File saved to '{r_save_filepath}'", r_save_filepath=r_save_filepath)
-                ).exec()
+                _show_saved_info(tr("ERF Saved"), "Encapsulated Resource File saved to '{r_save_filepath}'")
 
         except Exception as e:  # noqa: BLE001  # pylint: disable=broad-exception-caught
             RobustLogger().exception("Error extracting capsule file '%s'", module_name)
-            QMessageBox(QMessageBox.Icon.Critical, tr("Error saving capsule file"), str((e.__class__.__name__, str(e)))).exec()
+            self._show_error_message(tr("Error saving capsule file"), str((e.__class__.__name__, str(e))))
 
     def build_extract_save_paths(
         self,
@@ -2261,9 +2322,9 @@ class ToolWindow(QMainWindow):
 
             # Determine the main file save path based on UI checks
             main_save_path: Path = base_path
-            if resource.restype() is ResourceType.TPC and self.ui.tpcDecompileCheckbox.isChecked():
+            if resource.restype() == ResourceType.TPC and self.ui.tpcDecompileCheckbox.isChecked():
                 main_save_path = main_save_path.with_suffix(".tga")
-            elif resource.restype() is ResourceType.MDL and self.ui.mdlDecompileCheckbox.isChecked():
+            elif resource.restype() == ResourceType.MDL and self.ui.mdlDecompileCheckbox.isChecked():
                 main_save_path = main_save_path.with_suffix(".mdl.ascii")
             else:
                 main_save_path = main_save_path.with_suffix(f".{identifier.restype.extension}")
@@ -2283,7 +2344,7 @@ class ToolWindow(QMainWindow):
             used_filenames.add(main_save_path.name)
 
             # For TPC resources, also check TXI file conflicts if that option is enabled
-            if resource.restype() is ResourceType.TPC and self.ui.tpcTxiCheckbox.isChecked():
+            if resource.restype() == ResourceType.TPC and self.ui.tpcTxiCheckbox.isChecked():
                 txi_path: Path = main_save_path.with_suffix(".txi")
                 txi_filename: str = txi_path.name
                 if txi_filename in used_filenames:
@@ -2296,7 +2357,7 @@ class ToolWindow(QMainWindow):
                 used_filenames.add(txi_path.name)
 
             # For MDL resources, check potential texture subfolder conflicts if texture extraction is enabled
-            if resource.restype() is ResourceType.MDL and self.ui.mdlTexturesCheckbox.isChecked():
+            if resource.restype() == ResourceType.MDL and self.ui.mdlTexturesCheckbox.isChecked():
                 model_subfolder_name: str = f"model_{base_name}"
                 if model_subfolder_name in used_filenames:
                     conflict_count = resource_conflict_counts.get(base_name, 0)
@@ -2365,53 +2426,12 @@ class ToolWindow(QMainWindow):
             loader.exec()
 
             # quick main thread/ui check.
-            if QThread.currentThread() != cast(QApplication, QApplication.instance()).thread():
+            if QThread.currentThread() != cast("QApplication", QApplication.instance()).thread():
                 print("on_extract_resources: Not on main thread, returning")
                 return
 
-            num_errors = len(loader.errors)
-            num_successes = len(resource_save_paths) - num_errors
-
-            # Always show one message box, with both successes and errors listed intuitively.
-            if num_errors or num_successes:
-                if num_errors and num_successes > 0:
-                    title = tr("Extraction completed with some errors.")
-                    summary = trf(
-                        "Saved {success_count} files to {path}.\nFailed to save {error_count} files.",
-                        success_count=num_successes,
-                        error_count=num_errors,
-                        path=folder_path,
-                    )
-                elif num_errors:
-                    title = tr("Failed to extract all items.")
-                    summary = trf("Failed to save all {count} files!", count=num_errors)
-                else:
-                    title = tr("Extraction successful.")
-                    summary = trf(
-                        "Successfully saved {count} files to {path}",
-                        count=len(resource_save_paths),
-                        path=folder_path,
-                    )
-
-                msg_box = QMessageBox(
-                    QMessageBox.Icon.Information,
-                    title,
-                    summary,
-                    flags=(Qt.WindowType.Dialog | Qt.WindowType.WindowTitleHint | Qt.WindowType.WindowCloseButtonHint | Qt.WindowType.WindowStaysOnTopHint),
-                )
-                details_lines: list[str] = []
-                if num_successes > 0:
-                    details_lines.append(tr("Saved files:"))
-                    for p in resource_save_paths.values():
-                        details_lines.append(f"   {p}")
-                if num_errors:
-                    if details_lines:
-                        details_lines.append("")  # blank line
-                    details_lines.append(tr("Errors:"))
-                    for e in loader.errors:
-                        details_lines.append(f"   {e.__class__.__name__}: {e}")
-                msg_box.setDetailedText("\n".join(details_lines))
-                msg_box.exec()
+            from toolset.gui.common.extraction_feedback import show_extraction_results
+            show_extraction_results(self, resource_save_paths, loader.errors, folder_path)
         elif isinstance(resource_widget, ResourceList) and is_capsule_file(resource_widget.ui.sectionCombo.currentData(Qt.ItemDataRole.UserRole)):
             module_name = resource_widget.ui.sectionCombo.currentData(Qt.ItemDataRole.UserRole)
             self._save_capsule_from_tool_ui(module_name)
@@ -2429,9 +2449,9 @@ class ToolWindow(QMainWindow):
         )
         r_folderpath: Path = save_path.parent
         data: bytes = resource.data()
-        if resource.restype() is ResourceType.MDX and self.ui.mdlDecompileCheckbox.isChecked():
+        if resource.restype() == ResourceType.MDX and self.ui.mdlDecompileCheckbox.isChecked():
             return
-        if resource.restype() is ResourceType.TPC:
+        if resource.restype() == ResourceType.TPC:
             tpc: TPC = read_tpc(data, txi_source=save_path)
             try:
                 if self.ui.tpcTxiCheckbox.isChecked():
@@ -2443,7 +2463,7 @@ class ToolWindow(QMainWindow):
                     data = self._decompile_tpc(tpc)
             except Exception as e:  # noqa: BLE001  # pylint: disable=broad-exception-caught
                 loader.errors.append(e)
-        if resource.restype() is ResourceType.MDL:
+        if resource.restype() == ResourceType.MDL:
             if self.ui.mdlTexturesCheckbox.isChecked():
                 self._extract_mdl_textures(resource, r_folderpath, loader, data, seen_resources)  # pyright: ignore[reportArgumentType]
             if self.ui.mdlDecompileCheckbox.isChecked():
@@ -2611,7 +2631,7 @@ class ToolWindow(QMainWindow):
                 open_resource_editor(file_res, self.active, self)
             except (ValueError, OSError) as e:
                 etype, msg = (e.__class__.__name__, str(e))
-                QMessageBox(QMessageBox.Icon.Critical, f"Failed to open file ({etype})", msg).exec()
+                self._show_error_message(f"Failed to open file ({etype})", msg)
 
     # endregion
 

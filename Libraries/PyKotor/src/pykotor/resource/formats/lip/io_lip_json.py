@@ -1,3 +1,5 @@
+"""JSON read/write for LIP (lip sync) keyframes; used for tooling and round-trip."""
+
 from __future__ import annotations
 
 import json

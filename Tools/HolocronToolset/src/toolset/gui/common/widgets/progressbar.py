@@ -1,3 +1,5 @@
+"""Custom progress bar with optional shimmer animation and style-safe content rect."""
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING

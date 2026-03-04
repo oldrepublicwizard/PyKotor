@@ -1,3 +1,5 @@
+"""Filter and sort proxy models, and filter widgets for spinboxes/combos/sliders."""
+
 from __future__ import annotations
 
 from abc import abstractmethod

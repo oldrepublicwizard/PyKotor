@@ -1,3 +1,5 @@
+"""Help path resolution: base paths and file lookup for packaged/wiki/xoreos help."""
+
 from __future__ import annotations
 
 from pathlib import Path

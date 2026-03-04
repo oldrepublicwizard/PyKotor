@@ -147,11 +147,15 @@ class RIM(BiowareArchive):
         from pykotor.resource.formats.rim.io_rim import RIMBinaryWriter  # noqa: PLC0415
 
         entry_count = len(self._resources)
-        offset_to_keys = RIMBinaryWriter.FILE_HEADER_SIZE
-        data_start = offset_to_keys + RIMBinaryWriter.KEY_ELEMENT_SIZE * entry_count
+        data_start = RIMBinaryWriter.FILE_HEADER_SIZE + RIMBinaryWriter.KEY_ELEMENT_SIZE * entry_count
 
-        resource_index = self._resources.index(resource)
-        return data_start + sum(len(res.data) for res in self._resources[:resource_index])
+        offset = data_start
+        for res in self._resources:
+            if res == resource:
+                return offset
+            offset += len(res.data)
+        msg = "Resource is not present in RIM resource list"
+        raise ValueError(msg)
 
     def __eq__(self, other: object):
         from pykotor.resource.formats.erf.erf_data import ERF  # Prevent circular imports  # noqa: PLC0415

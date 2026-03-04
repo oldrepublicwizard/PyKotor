@@ -1,3 +1,5 @@
+"""DLG state tracking: variable changes, node/link visits, and script execution."""
+
 from __future__ import annotations
 
 from dataclasses import dataclass, field

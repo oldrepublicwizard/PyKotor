@@ -221,7 +221,7 @@ class TestFileDialogDragInitiation(DragDropTestBase):
 
     def setUp(self) -> None:
         """Set up dialog for testing."""
-        from utility.gui.qt.widgets.extended_dialogs.qfiledialog_extended import (
+        from utility.gui.qt.filesystem.qfiledialogextended.qfiledialogextended import (
             QFileDialogExtended,
         )
 
@@ -285,7 +285,7 @@ class TestFileDialogDropAcceptance(DragDropTestBase):
 
     def setUp(self) -> None:
         """Set up dialog for testing."""
-        from utility.gui.qt.widgets.extended_dialogs.qfiledialog_extended import (
+        from utility.gui.qt.filesystem.qfiledialogextended.qfiledialogextended import (
             QFileDialogExtended,
         )
 
@@ -349,7 +349,7 @@ class TestFileDialogDragFeedback(DragDropTestBase):
 
     def setUp(self) -> None:
         """Set up dialog for testing."""
-        from utility.gui.qt.widgets.extended_dialogs.qfiledialog_extended import (
+        from utility.gui.qt.filesystem.qfiledialogextended.qfiledialogextended import (
             QFileDialogExtended,
         )
 
@@ -386,7 +386,7 @@ class TestExplorerDragInitiation(DragDropTestBase):
 
     def setUp(self) -> None:
         """Set up explorer for testing."""
-        from utility.gui.qt.widgets.item_explorer import FileSystemExplorerWidget
+        from utility.gui.qt.filesystem.qfileexplorer.explorer import FileSystemExplorerWidget
 
         self.explorer = FileSystemExplorerWidget()
         self.explorer.navigate(str(self.source_dir))
@@ -436,7 +436,7 @@ class TestExplorerDropZones(DragDropTestBase):
 
     def setUp(self) -> None:
         """Set up explorer for testing."""
-        from utility.gui.qt.widgets.item_explorer import FileSystemExplorerWidget
+        from utility.gui.qt.filesystem.qfileexplorer.explorer import FileSystemExplorerWidget
 
         self.explorer = FileSystemExplorerWidget()
         self.explorer.navigate(str(self.dest_dir))
@@ -490,7 +490,7 @@ class TestExplorerCopyMoveOperations(DragDropTestBase):
 
     def setUp(self) -> None:
         """Set up explorer for testing."""
-        from utility.gui.qt.widgets.item_explorer import FileSystemExplorerWidget
+        from utility.gui.qt.filesystem.qfileexplorer.explorer import FileSystemExplorerWidget
 
         self.explorer = FileSystemExplorerWidget()
         self.explorer.navigate(str(self.source_dir))
@@ -550,7 +550,7 @@ class TestCrossWidgetDragDrop(DragDropTestBase):
 
     def setUp(self) -> None:
         """Set up multiple widgets for testing."""
-        from utility.gui.qt.widgets.item_explorer import FileSystemExplorerWidget
+        from utility.gui.qt.filesystem.qfileexplorer.explorer import FileSystemExplorerWidget
 
         self.explorer1 = FileSystemExplorerWidget()
         self.explorer1.navigate(str(self.source_dir))
@@ -599,7 +599,7 @@ class TestSidebarDragDrop(DragDropTestBase):
 
     def setUp(self) -> None:
         """Set up explorer for testing."""
-        from utility.gui.qt.widgets.item_explorer import FileSystemExplorerWidget
+        from utility.gui.qt.filesystem.qfileexplorer.explorer import FileSystemExplorerWidget
 
         self.explorer = FileSystemExplorerWidget()
         self.explorer.navigate(str(self.source_dir))
@@ -658,7 +658,7 @@ class TestDragScrollBehavior(DragDropTestBase):
 
     def setUp(self) -> None:
         """Set up explorer for testing."""
-        from utility.gui.qt.widgets.item_explorer import FileSystemExplorerWidget
+        from utility.gui.qt.filesystem.qfileexplorer.explorer import FileSystemExplorerWidget
 
         self.explorer = FileSystemExplorerWidget()
         self.explorer.navigate(str(self.source_dir))

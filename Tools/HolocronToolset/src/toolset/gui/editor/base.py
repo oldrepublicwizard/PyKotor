@@ -1,3 +1,5 @@
+"""Base editor: common file/save/close, recent, and resource loading for all editors."""
+
 from __future__ import annotations
 
 import tempfile
@@ -22,7 +24,6 @@ from qtpy.QtGui import QAction, QIcon, QPixmap
 from qtpy.QtWidgets import (
     QApplication,
     QFileDialog,
-    QLineEdit,
     QMainWindow,
     QMenu,
     QMessageBox,
@@ -62,6 +63,7 @@ if TYPE_CHECKING:
     from qtpy.QtCore import QRect
     from qtpy.QtGui import QScreen, _QAction
     from qtpy.QtWidgets import (
+        QLineEdit,
         QMenuBar,
         QWidget,
         _QMenu,
@@ -453,7 +455,7 @@ class Editor(QMainWindow):
 
         rim: RIM = read_rim(self._filepath)
 
-        if self._restype is ResourceType.MDL:
+        if self._restype == ResourceType.MDL:
             rim.set_data(self._resname, ResourceType.MDX, data_ext)
 
         rim.set_data(self._resname, self._restype, data)
@@ -493,11 +495,11 @@ class Editor(QMainWindow):
             r_parent_filepath = self._filepath.parent
 
         det_restype: ResourceType = ResourceType.from_extension(r_parent_filepath.suffix)
-        if det_restype is ResourceType.RIM:
+        if det_restype == ResourceType.RIM:
             bioware_archive = read_rim(self._filepath)
-        elif det_restype is ResourceType.ERF:
+        elif det_restype == ResourceType.ERF:
             bioware_archive = read_erf(self._filepath)
-        elif det_restype is ResourceType.BIF:
+        elif det_restype == ResourceType.BIF:
             bioware_archive = read_bif(self._filepath)
         else:
             raise ValueError(f"Unexpected resource type: {det_restype}")
@@ -516,7 +518,7 @@ class Editor(QMainWindow):
                 msg: str = f"You must save the ERFEditor for '{capsule_path.relative_to(r_parent_filepath)}' to before modifying its nested resources. Do so and try again."
                 raise ValueError(msg)
 
-            bioware_archive = read_rim(nested_erf_or_rim_data) if ResourceType.from_extension(capsule_path.suffix) is ResourceType.RIM else read_erf(nested_erf_or_rim_data)
+            bioware_archive = read_rim(nested_erf_or_rim_data) if ResourceType.from_extension(capsule_path.suffix) == ResourceType.RIM else read_erf(nested_erf_or_rim_data)
             nested_capsules.append((capsule_path, bioware_archive))
 
         this_erf_or_rim = None
@@ -553,7 +555,7 @@ class Editor(QMainWindow):
             erf = ERF(erftype)
         erf.erf_type = erftype
 
-        if self._restype is ResourceType.MDL:
+        if self._restype == ResourceType.MDL:
             erf.set_data(self._resname, ResourceType.MDX, data_ext)
 
         erf.set_data(self._resname, self._restype, data)
@@ -569,7 +571,7 @@ class Editor(QMainWindow):
         data_ext: bytes,
     ):
         self._filepath.write_bytes(data)
-        if self._restype is ResourceType.MDL:
+        if self._restype == ResourceType.MDL:
             self._filepath.with_suffix(".mdx").write_bytes(data_ext)
         self.sig_saved_file.emit(str(self._filepath), self._resname, self._restype, bytes(data))
 

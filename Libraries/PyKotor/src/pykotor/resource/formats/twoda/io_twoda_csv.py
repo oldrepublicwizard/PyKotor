@@ -1,3 +1,5 @@
+"""CSV read/write for 2DA; first column is row label, rest are data columns."""
+
 from __future__ import annotations
 
 import csv

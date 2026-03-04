@@ -1,3 +1,5 @@
+"""Binary GFF (Generic File Format) read/write: V3.2 and common field types."""
+
 from __future__ import annotations
 
 import struct
@@ -342,6 +344,7 @@ class GFFBinaryWriter(ResourceWriter):
         self._list_indices_writer: BinaryWriter = BinaryWriter.to_bytearray()
 
         self._labels: list[str] = []
+        self._label_to_index: dict[str, int] = {}  # O(1) label lookup when writing
 
         self._struct_count: int = 0
         self._field_count: int = 0
@@ -500,7 +503,10 @@ class GFFBinaryWriter(ResourceWriter):
         self,
         label: str,
     ) -> int:
-        if label in self._labels:
-            return self._labels.index(label)
+        idx = self._label_to_index.get(label)
+        if idx is not None:
+            return idx
         self._labels.append(label)
-        return len(self._labels) - 1
+        new_idx = len(self._labels) - 1
+        self._label_to_index[label] = new_idx
+        return new_idx

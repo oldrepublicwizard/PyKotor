@@ -1,15 +1,17 @@
 from toolset.gui.windows.indoor_builder.builder import (
+    IndoorMapBuilder,
+    SnapResult,
+)
+from toolset.gui.windows.indoor_builder.undo_commands import (
     AddRoomCommand,
     DeleteRoomsCommand,
     DuplicateRoomsCommand,
     FlipRoomsCommand,
-    IndoorMapBuilder,
     MoveRoomsCommand,
     MoveWarpCommand,
-    RoomClipboardData,
     RotateRoomsCommand,
-    SnapResult,
 )
+from toolset.gui.common.indoor_builder_ops import RoomClipboardData
 from toolset.gui.windows.indoor_builder.renderer import IndoorMapRenderer
 from toolset.gui.windows.indoor_builder.kit_downloader import KitDownloader
 from toolset.gui.windows.indoor_builder.constants import (

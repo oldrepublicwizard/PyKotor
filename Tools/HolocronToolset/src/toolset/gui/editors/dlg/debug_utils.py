@@ -1,3 +1,5 @@
+"""DLG debug helpers: object repr and graph export for node/link inspection."""
+
 from __future__ import annotations
 
 import inspect

@@ -1,3 +1,5 @@
+"""Module Designer settings widget: camera, grid, instance labels, and key bindings."""
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
@@ -38,10 +40,48 @@ class ModuleDesignerWidget(SettingsWidget):
 
         self.settings: ModuleDesignerSettings = ModuleDesignerSettings()
 
+        from qtpy.QtWidgets import QLabel
+
+        from toolset.gui.widgets.set_bind import SetBindWidget
         from toolset.uic.qtpy.widgets.settings import module_designer
 
         self.ui = module_designer.Ui_Form()
         self.ui.setupUi(self)
+
+        if not hasattr(self.ui, "walkmeshVertexDragXAxis3dBindEdit"):
+            row = self.ui.formLayout.rowCount()
+
+            x_label = QLabel("Walkmesh Vertex Drag X", self.ui.tab3DControls)
+            x_label.setMinimumSize(110, 0)
+            x_label.setStyleSheet("QLabel:hover { color: #555;}")
+            x_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+            x_label.setObjectName("walkmeshVertexDragXAxis3dLabel")
+            self.ui.walkmeshVertexDragXAxis3dBindEdit = SetBindWidget(parent=self.ui.tab3DControls)
+            self.ui.walkmeshVertexDragXAxis3dBindEdit.setObjectName("walkmeshVertexDragXAxis3dBindEdit")
+            self.ui.formLayout.setWidget(row, self.ui.formLayout.ItemRole.LabelRole, x_label)
+            self.ui.formLayout.setWidget(row, self.ui.formLayout.ItemRole.FieldRole, self.ui.walkmeshVertexDragXAxis3dBindEdit)
+
+            row += 1
+            y_label = QLabel("Walkmesh Vertex Drag Y", self.ui.tab3DControls)
+            y_label.setMinimumSize(110, 0)
+            y_label.setStyleSheet("QLabel:hover { color: #555;}")
+            y_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+            y_label.setObjectName("walkmeshVertexDragYAxis3dLabel")
+            self.ui.walkmeshVertexDragYAxis3dBindEdit = SetBindWidget(parent=self.ui.tab3DControls)
+            self.ui.walkmeshVertexDragYAxis3dBindEdit.setObjectName("walkmeshVertexDragYAxis3dBindEdit")
+            self.ui.formLayout.setWidget(row, self.ui.formLayout.ItemRole.LabelRole, y_label)
+            self.ui.formLayout.setWidget(row, self.ui.formLayout.ItemRole.FieldRole, self.ui.walkmeshVertexDragYAxis3dBindEdit)
+
+            row += 1
+            z_label = QLabel("Walkmesh Vertex Drag Z", self.ui.tab3DControls)
+            z_label.setMinimumSize(110, 0)
+            z_label.setStyleSheet("QLabel:hover { color: #555;}")
+            z_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+            z_label.setObjectName("walkmeshVertexDragZAxis3dLabel")
+            self.ui.walkmeshVertexDragZAxis3dBindEdit = SetBindWidget(parent=self.ui.tab3DControls)
+            self.ui.walkmeshVertexDragZAxis3dBindEdit.setObjectName("walkmeshVertexDragZAxis3dBindEdit")
+            self.ui.formLayout.setWidget(row, self.ui.formLayout.ItemRole.LabelRole, z_label)
+            self.ui.formLayout.setWidget(row, self.ui.formLayout.ItemRole.FieldRole, self.ui.walkmeshVertexDragZAxis3dBindEdit)
 
         self.ui.undefinedMaterialColourEdit.allowAlpha = True
         self.ui.dirtMaterialColourEdit.allowAlpha = True
@@ -322,6 +362,18 @@ class ModuleDesignerSettings(Settings):
     duplicateObject3dBind: SettingsProperty[Bind] = Settings.addSetting(
         "duplicateObject3dBind",
         ({Qt.Key.Key_Alt}, {Qt.MouseButton.LeftButton}),
+    )
+    walkmeshVertexDragXAxis3dBind: SettingsProperty[Bind] = Settings.addSetting(
+        "walkmeshVertexDragXAxis3dBind",
+        ({Qt.Key.Key_X}, set()),
+    )
+    walkmeshVertexDragYAxis3dBind: SettingsProperty[Bind] = Settings.addSetting(
+        "walkmeshVertexDragYAxis3dBind",
+        ({Qt.Key.Key_Y}, set()),
+    )
+    walkmeshVertexDragZAxis3dBind: SettingsProperty[Bind] = Settings.addSetting(
+        "walkmeshVertexDragZAxis3dBind",
+        ({Qt.Key.Key_Z}, set()),
     )
     resetCameraView3dBind: SettingsProperty[Bind] = Settings.addSetting(
         "resetCameraView3dBind",

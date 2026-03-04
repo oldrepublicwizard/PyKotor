@@ -1,3 +1,5 @@
+"""Application settings widget: font, env vars, and other app-wide options."""
+
 from __future__ import annotations
 
 import os

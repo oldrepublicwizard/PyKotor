@@ -1,12 +1,14 @@
+"""Module selection dialog: pick module (MOD/RIM) from installation or file."""
+
 from __future__ import annotations
 
 from pathlib import PurePath
 from typing import TYPE_CHECKING
 
-from loggerplus import RobustLogger  # pyright: ignore[reportMissingTypeStubs]
 from qtpy.QtCore import Qt
 from qtpy.QtWidgets import QDialog, QFileDialog, QListWidgetItem
 
+from loggerplus import RobustLogger  # pyright: ignore[reportMissingTypeStubs]
 from pykotor.common.module import Module
 
 if TYPE_CHECKING:

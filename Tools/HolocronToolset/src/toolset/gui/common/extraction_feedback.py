@@ -4,15 +4,18 @@ from pathlib import Path
 from typing import TYPE_CHECKING
 
 from qtpy.QtCore import Qt
-from qtpy.QtWidgets import QMessageBox, QWidget
+from qtpy.QtWidgets import QMessageBox
 
 from loggerplus import RobustLogger
 
+if TYPE_CHECKING:
+    from qtpy.QtWidgets import QWidget
+
 
 def show_extraction_results(
-    parent: QWidget | None,
+    parent: "QWidget | None",
     successful_paths: dict[object, Path],
-    failed_extractions: dict[Path, Exception] | None = None,
+    failed_extractions: dict[Path, Exception] | list[Exception] | None = None,
     folder_path: Path | None = None,
 ) -> None:
     """Show a dialog with extraction results.
@@ -21,13 +24,19 @@ def show_extraction_results(
     ----
         parent: Parent widget for the dialog
         successful_paths: Dictionary mapping resources to successfully saved paths
-        failed_extractions: Dictionary mapping paths to exceptions for failed extractions
+        failed_extractions: Dictionary mapping paths to exceptions, or list of exceptions without path info
         folder_path: The folder path where files were extracted (for display)
     """
+    # Normalize failed_extractions to dict format
     if failed_extractions is None:
-        failed_extractions = {}
+        failed_extractions_dict: dict[Path, Exception] = {}
+    elif isinstance(failed_extractions, list):
+        # Convert list to a dict with dummy paths for display
+        failed_extractions_dict = {Path(f"<unknown {i}>"): exc for i, exc in enumerate(failed_extractions)}
+    else:
+        failed_extractions_dict = failed_extractions
 
-    num_errors = len(failed_extractions)
+    num_errors = len(failed_extractions_dict)
     num_successes = len(successful_paths)
 
     # Don't show dialog if nothing happened
@@ -74,8 +83,12 @@ def show_extraction_results(
         if details_lines:
             details_lines.append("")  # blank line
         details_lines.append(tr("Errors:"))
-        for file_path, exc in failed_extractions.items():
-            details_lines.append(f"   {file_path}: {exc.__class__.__name__}: {exc}")
+        for file_path, exc in failed_extractions_dict.items():
+            # If file_path is a dummy path (from list conversion), just show the exception
+            if str(file_path).startswith("<unknown"):
+                details_lines.append(f"   {exc.__class__.__name__}: {exc}")
+            else:
+                details_lines.append(f"   {file_path}: {exc.__class__.__name__}: {exc}")
 
     if details_lines:
         msg_box.setDetailedText("\n".join(details_lines))

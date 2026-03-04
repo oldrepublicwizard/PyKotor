@@ -1,3 +1,5 @@
+"""ASCII LYT (layout) read/write: rooms, tracks, obstacles, door hooks."""
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING

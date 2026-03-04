@@ -80,10 +80,10 @@ def write_wav(
 ):
     """Writes the WAV data to the target location.
 
-    If file_format is ResourceType.WAV, the data will be obfuscated based on
+    If file_format == ResourceType.WAV, the data will be obfuscated based on
     the WAV's type (SFX adds header, VO is unchanged) for game compatibility.
 
-    If file_format is ResourceType.WAV_DEOB, writes clean RIFF/WAVE format
+    If file_format == ResourceType.WAV_DEOB, writes clean RIFF/WAVE format
     playable by standard media players.
 
     Args:
@@ -95,7 +95,7 @@ def write_wav(
         IsADirectoryError: If the specified path is a directory.
         PermissionError: If the file could not be written.
     """
-    if file_format is ResourceType.WAV:
+    if file_format == ResourceType.WAV:
         WAVBinaryWriter(wav, target).write()
     else:
         WAVStandardWriter(wav, target).write()
@@ -107,8 +107,8 @@ def bytes_wav(
 ) -> bytes:
     """Returns the WAV data as a bytes object.
 
-    If file_format is ResourceType.WAV, returns obfuscated format for game use.
-    If file_format is ResourceType.WAV_DEOB, returns clean playable format.
+    If file_format == ResourceType.WAV, returns obfuscated format for game use.
+    If file_format == ResourceType.WAV_DEOB, returns clean playable format.
 
     Args:
         wav: The target WAV object.

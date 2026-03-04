@@ -20,12 +20,20 @@ import pytest
 import math
 import os
 import time
+import importlib
 from pathlib import Path
 from types import SimpleNamespace
 
 import pytest
 from qtpy.QtCore import Qt
-from qtpy.QtWidgets import QApplication, QMessageBox
+from qtpy.QtWidgets import QApplication, QMessageBox, QTreeWidget
+
+mesh_mod = importlib.import_module("pykotor.gl.models.mesh")
+if not hasattr(mesh_mod, "Mesh"):
+    class _TestMeshShim:  # pragma: no cover - import compatibility shim
+        pass
+
+    mesh_mod.Mesh = _TestMeshShim
 
 # NOTE: This file's tests will have QT_QPA_PLATFORM unset by conftest.py's pytest_runtest_setup hook
 # The hook detects module designer tests and allows real display for them
@@ -65,6 +73,122 @@ PREFERRED_MODULES = [
 ]
 
 MIN_EXPECTED_FPS = 30.0
+
+
+class _DummyIndoorRenderer:
+    def __init__(self):
+        self.last_vis_matrix: dict[int, set[int]] = {}
+
+    def set_vis_matrix(self, vis_matrix: dict[int, set[int]]):
+        self.last_vis_matrix = {room_id: set(targets) for room_id, targets in vis_matrix.items()}
+
+
+def _stub_room(name: str) -> SimpleNamespace:
+    return SimpleNamespace(component=SimpleNamespace(name=name))
+
+
+def _build_vis_test_designer() -> ModuleDesigner:
+    designer = ModuleDesigner.__new__(ModuleDesigner)
+    vis_matrix = QTreeWidget()
+    vis_matrix.setColumnCount(1)
+    vis_matrix.setHeaderLabels(["From \\ To"])
+
+    designer.ui = SimpleNamespace(
+        visMatrix=vis_matrix,
+        indoorRenderer=_DummyIndoorRenderer(),
+    )
+    designer._indoor_map = SimpleNamespace(rooms=[])
+    designer._indoor_vis_matrix = {}
+    designer._indoor_vis_hover_row = -1
+    designer._indoor_vis_hover_col = -1
+    return designer
+
+
+def test_vis_matrix_is_directional_without_reverse_mirroring(qtbot):
+    designer = _build_vis_test_designer()
+    room_a = _stub_room("RoomA")
+    room_b = _stub_room("RoomB")
+    designer._indoor_map.rooms = [room_a, room_b]
+    designer._indoor_vis_matrix = {
+        id(room_a): set(),
+        id(room_b): set(),
+    }
+
+    ModuleDesigner._refresh_indoor_vis_matrix(designer)
+    matrix = designer.ui.visMatrix
+
+    row_a = matrix.topLevelItem(0)
+    assert row_a is not None
+    row_a.setCheckState(2, Qt.CheckState.Checked)
+    ModuleDesigner._on_indoor_vis_item_changed(designer, row_a, 2)
+
+    assert id(room_b) in designer._indoor_vis_matrix[id(room_a)]
+    assert id(room_a) not in designer._indoor_vis_matrix[id(room_b)]
+
+    row_b = matrix.topLevelItem(1)
+    assert row_b is not None
+    assert row_b.checkState(1) == Qt.CheckState.Unchecked
+
+
+def test_vis_matrix_headers_and_tooltips_are_directional(qtbot):
+    designer = _build_vis_test_designer()
+    room_a = _stub_room("RoomA")
+    room_b = _stub_room("RoomB")
+    designer._indoor_map.rooms = [room_a, room_b]
+    designer._indoor_vis_matrix = {
+        id(room_a): {id(room_b)},
+        id(room_b): set(),
+    }
+
+    ModuleDesigner._refresh_indoor_vis_matrix(designer)
+    matrix = designer.ui.visMatrix
+
+    assert matrix.headerItem().text(0) == "From \\ To"
+    assert matrix.headerItem().text(1).startswith("0: RoomA")
+    assert matrix.headerItem().text(2).startswith("1: RoomB")
+
+    row_a = matrix.topLevelItem(0)
+    assert row_a is not None
+    assert row_a.toolTip(0).startswith("Source room for this row: 0: RoomA")
+    assert row_a.toolTip(2).startswith("0: RoomA -> 1: RoomB")
+
+    row_b = matrix.topLevelItem(1)
+    assert row_b is not None
+    assert row_b.toolTip(1) == "1: RoomB -> 0: RoomA"
+
+
+def test_vis_matrix_hover_highlights_row_and_column(qtbot):
+    designer = _build_vis_test_designer()
+    room_a = _stub_room("RoomA")
+    room_b = _stub_room("RoomB")
+    room_c = _stub_room("RoomC")
+    designer._indoor_map.rooms = [room_a, room_b, room_c]
+    designer._indoor_vis_matrix = {
+        id(room_a): set(),
+        id(room_b): set(),
+        id(room_c): set(),
+    }
+
+    ModuleDesigner._refresh_indoor_vis_matrix(designer)
+    matrix = designer.ui.visMatrix
+    base_color = matrix.palette().base().color().name()
+
+    row_a = matrix.topLevelItem(0)
+    assert row_a is not None
+    ModuleDesigner._on_indoor_vis_item_hovered(designer, row_a, 3)  # hover A -> C
+
+    hovered_row = designer._indoor_vis_hover_row
+    hovered_col = designer._indoor_vis_hover_col
+    assert hovered_row == 0
+    assert hovered_col == 2
+
+    row0_col1 = matrix.topLevelItem(0).background(1).color().name()
+    row1_col3 = matrix.topLevelItem(1).background(3).color().name()
+    row0_col3 = matrix.topLevelItem(0).background(3).color().name()
+
+    assert row0_col1 != base_color
+    assert row1_col3 != base_color
+    assert row0_col3 != base_color
 
 
 @pytest.mark.slow

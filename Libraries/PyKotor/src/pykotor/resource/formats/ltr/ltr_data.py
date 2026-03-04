@@ -124,6 +124,8 @@ class LTR(ComparableMixin):
     """
 
     CHARACTER_SET = string.ascii_lowercase + "'-"
+    # O(1) lookup for character index; avoids repeated list.index() in hot paths.
+    _CHAR_INDEX: dict[str, int] = {c: i for i, c in enumerate(string.ascii_lowercase + "'-")}
     NUM_CHARACTERS = 28
 
     BINARY_TYPE = ResourceType.LTR
@@ -226,7 +228,7 @@ class LTR(ComparableMixin):
 
             # Generate second character using double-letter start probabilities (indexed by first char)
             for char in LTR.CHARACTER_SET:
-                index = LTR.CHARACTER_SET.index(name[-1])
+                index = LTR._CHAR_INDEX[name[-1]]
                 if LTR._chance() < self._doubles[index].get_start(char):
                     name += char
                     break
@@ -237,8 +239,8 @@ class LTR(ComparableMixin):
 
             # Generate third character using triple-letter start probabilities (indexed by first two chars)
             for char in LTR.CHARACTER_SET:
-                index1 = LTR.CHARACTER_SET.index(name[-2])
-                index2 = LTR.CHARACTER_SET.index(name[-1])
+                index1 = LTR._CHAR_INDEX[name[-2]]
+                index2 = LTR._CHAR_INDEX[name[-1]]
                 if LTR._chance() < self._triples[index1][index2].get_start(char):
                     name += char
                     break
@@ -259,8 +261,8 @@ class LTR(ComparableMixin):
 
                     # Select final character using triple-letter end probabilities
                     for char in LTR.CHARACTER_SET:
-                        index1 = LTR.CHARACTER_SET.index(name[-2])
-                        index2 = LTR.CHARACTER_SET.index(name[-1])
+                        index1 = LTR._CHAR_INDEX[name[-2]]
+                        index2 = LTR._CHAR_INDEX[name[-1]]
                         if prob < self._triples[index1][index2].get_end(char):
                             name += char
                             return name.capitalize()
@@ -269,8 +271,8 @@ class LTR(ComparableMixin):
 
                 # Generate next character using triple-letter middle probabilities
                 for char in LTR.CHARACTER_SET:
-                    index1 = LTR.CHARACTER_SET.index(name[-2])
-                    index2 = LTR.CHARACTER_SET.index(name[-1])
+                    index1 = LTR._CHAR_INDEX[name[-2]]
+                    index2 = LTR._CHAR_INDEX[name[-1]]
                     if prob < self._triples[index1][index2].get_middle(char):
                         name += char
                         break
@@ -312,7 +314,7 @@ class LTR(ComparableMixin):
         char: str,
         chance: float,
     ):
-        self._doubles[LTR.CHARACTER_SET.index(previous1)].set_start(char, chance)
+        self._doubles[LTR._CHAR_INDEX[previous1]].set_start(char, chance)
 
     def set_doubles_middle(
         self,
@@ -320,7 +322,7 @@ class LTR(ComparableMixin):
         char: str,
         chance: float,
     ):
-        self._doubles[LTR.CHARACTER_SET.index(previous1)].set_middle(char, chance)
+        self._doubles[LTR._CHAR_INDEX[previous1]].set_middle(char, chance)
 
     def set_doubles_end(
         self,
@@ -328,7 +330,7 @@ class LTR(ComparableMixin):
         char: str,
         chance: float,
     ):
-        self._doubles[LTR.CHARACTER_SET.index(previous1)].set_end(char, chance)
+        self._doubles[LTR._CHAR_INDEX[previous1]].set_end(char, chance)
 
     def set_triples_start(
         self,
@@ -337,7 +339,7 @@ class LTR(ComparableMixin):
         char: str,
         chance: float,
     ):
-        self._triples[LTR.CHARACTER_SET.index(previous2)][LTR.CHARACTER_SET.index(previous1)].set_start(char, chance)
+        self._triples[LTR._CHAR_INDEX[previous2]][LTR._CHAR_INDEX[previous1]].set_start(char, chance)
 
     def set_triples_middle(
         self,
@@ -346,7 +348,7 @@ class LTR(ComparableMixin):
         char: str,
         chance: float,
     ):
-        self._triples[LTR.CHARACTER_SET.index(previous2)][LTR.CHARACTER_SET.index(previous1)].set_middle(char, chance)
+        self._triples[LTR._CHAR_INDEX[previous2]][LTR._CHAR_INDEX[previous1]].set_middle(char, chance)
 
     def set_triples_end(
         self,
@@ -355,7 +357,7 @@ class LTR(ComparableMixin):
         char: str,
         chance: float,
     ):
-        self._triples[LTR.CHARACTER_SET.index(previous2)][LTR.CHARACTER_SET.index(previous1)].set_end(char, chance)
+        self._triples[LTR._CHAR_INDEX[previous2]][LTR._CHAR_INDEX[previous1]].set_end(char, chance)
 
 
 class LTRBlock(ComparableMixin):
@@ -458,7 +460,7 @@ class LTRBlock(ComparableMixin):
             msg = "The chance specified must be between 0.0 and 1.0 inclusive."
             raise ValueError(msg)
 
-        char_id = LTR.CHARACTER_SET.index(char)
+        char_id = LTR._CHAR_INDEX[char]
         self._start[char_id] = chance
 
     def set_middle(
@@ -488,7 +490,7 @@ class LTRBlock(ComparableMixin):
             msg = "The chance specified must be between 0.0 and 1.0 inclusive."
             raise ValueError(msg)
 
-        char_id = LTR.CHARACTER_SET.index(char)
+        char_id = LTR._CHAR_INDEX[char]
         self._middle[char_id] = chance
 
     def set_end(
@@ -518,7 +520,7 @@ class LTRBlock(ComparableMixin):
             msg = "The chance specified must be between 0.0 and 1.0 inclusive."
             raise ValueError(msg)
 
-        char_id = LTR.CHARACTER_SET.index(char)
+        char_id = LTR._CHAR_INDEX[char]
         self._end[char_id] = chance
 
     def get_start(
@@ -548,7 +550,7 @@ class LTRBlock(ComparableMixin):
             msg = "The character specified was invalid."
             raise IndexError(msg)
 
-        char_id = LTR.CHARACTER_SET.index(char)
+        char_id = LTR._CHAR_INDEX[char]
         return self._start[char_id]
 
     def get_middle(
@@ -578,7 +580,7 @@ class LTRBlock(ComparableMixin):
             msg = "The character specified was invalid."
             raise IndexError(msg)
 
-        char_id = LTR.CHARACTER_SET.index(char)
+        char_id = LTR._CHAR_INDEX[char]
         return self._middle[char_id]
 
     def get_end(
@@ -608,5 +610,5 @@ class LTRBlock(ComparableMixin):
             msg = "The character specified was invalid."
             raise IndexError(msg)
 
-        char_id = LTR.CHARACTER_SET.index(char)
+        char_id = LTR._CHAR_INDEX[char]
         return self._end[char_id]

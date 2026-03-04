@@ -1,3 +1,5 @@
+"""Module designer controls: tool buttons and mode toggles for the 2D view."""
+
 from __future__ import annotations
 
 import math
@@ -6,18 +8,19 @@ import time
 from copy import deepcopy
 from typing import TYPE_CHECKING
 
-from loggerplus import RobustLogger  # pyright: ignore[reportMissingTypeStubs]
 from qtpy import QtCore
 from qtpy.QtCore import QPoint, Qt
 
+from loggerplus import RobustLogger  # pyright: ignore[reportMissingTypeStubs]
 from pykotor.gl.scene import Scene
 from pykotor.gl.scene.camera_controller import CameraController, CameraControllerSettings, InputState
-from pykotor.resource.generics.git import GITCamera, GITCreature, GITDoor, GITInstance, GITPlaceable, GITStore, GITWaypoint
+from pykotor.resource.generics.git import GITCamera, GITInstance
 from toolset.data.misc import ControlItem
-from toolset.gui.editors.git import DuplicateCommand, _GeometryMode, _InstanceMode, calculate_zoom_strength
+from toolset.gui.common.interaction.camera import calculate_zoom_strength
+from toolset.gui.editors.git import DuplicateCommand, _GeometryMode, _InstanceMode
 from toolset.gui.widgets.settings.widgets.module_designer import ModuleDesignerSettings
 from toolset.utils.misc import BUTTON_TO_INT
-from utility.common.geometry import Vector2, Vector3, Vector4
+from utility.common.geometry import Vector2, Vector3
 
 if TYPE_CHECKING:
     from pykotor.gl.scene import Scene
@@ -281,9 +284,9 @@ class ModuleDesignerControls3d:
                 if not self.editor.is_drag_rotating:
                     self.editor.is_drag_rotating = True
                     for instance in self.editor.selected_instances:
-                        if not isinstance(instance, (GITCamera, GITCreature, GITDoor, GITPlaceable, GITStore, GITWaypoint)):
+                        if not self.editor._is_rotatable_instance(instance):  # noqa: SLF001
                             continue
-                        self.editor.initial_rotations[instance] = Vector4(*instance.orientation) if isinstance(instance, GITCamera) else instance.bearing
+                        self.editor._capture_initial_rotation_for_transform(instance)  # noqa: SLF001
                 self.editor.rotate_selected(processed_dx, processed_dy)
                 return
 
@@ -291,9 +294,9 @@ class ModuleDesignerControls3d:
                 if not self.editor.is_drag_rotating:
                     self.editor.is_drag_rotating = True
                     for instance in self.editor.selected_instances:
-                        if not isinstance(instance, (GITCamera, GITCreature, GITDoor, GITPlaceable, GITStore, GITWaypoint)):
+                        if not self.editor._is_rotatable_instance(instance):  # noqa: SLF001
                             continue
-                        self.editor.initial_rotations[instance] = Vector4(*instance.orientation) if isinstance(instance, GITCamera) else instance.bearing
+                        self.editor._capture_initial_rotation_for_transform(instance)  # noqa: SLF001
                 self.editor.rotate_selected(processed_dx, processed_dy)
                 return
 
@@ -722,9 +725,9 @@ class ModuleDesignerControls2d:
                 RobustLogger().debug("rotateSelected instance in 2d")
                 selection: list[GITInstance] = self.editor.selected_instances  # noqa: SLF001
                 for instance in selection:
-                    if not isinstance(instance, (GITCamera, GITCreature, GITDoor, GITPlaceable, GITStore, GITWaypoint)):
+                    if not self.editor._is_rotatable_instance(instance):  # noqa: SLF001
                         continue  # doesn't support rotations.
-                    self.editor.initial_rotations[instance] = Vector4(*instance.orientation) if isinstance(instance, GITCamera) else instance.bearing
+                    self.editor._capture_initial_rotation_for_transform(instance)  # noqa: SLF001
             self._mode.rotate_selected_to_point(world.x, world.y)
 
     def on_mouse_pressed(
@@ -747,8 +750,7 @@ class ModuleDesignerControls2d:
                 RobustLogger().debug("on_mouse_pressed, select_underneath found one or more instances under mouse.")
                 self.editor.set_selection([self.renderer.instances_under_mouse()[-1]])
             else:
-                RobustLogger().debug("on_mouse_pressed, select_underneath did not find any instances.")
-                self.editor.set_selection([])
+                self.renderer.start_marquee(screen)
 
     def on_keyboard_pressed(
         self,

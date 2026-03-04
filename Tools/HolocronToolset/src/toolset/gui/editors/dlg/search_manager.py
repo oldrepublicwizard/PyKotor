@@ -1,3 +1,5 @@
+"""DLG search: categories, result model, and node/link text search."""
+
 from __future__ import annotations
 
 from dataclasses import dataclass

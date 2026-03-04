@@ -1,13 +1,13 @@
+"""Installation list widget: add/edit/remove KotOR installations and default game selection."""
+
 from __future__ import annotations
 
 import os
 import uuid
+
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, ClassVar
 
-from loggerplus import RobustLogger, get_log_directory
-from pykotor.common.misc import Game
-from pykotor.tools.path import CaseAwarePath, find_kotor_paths_from_default
 from qtpy.QtCore import (
     QModelIndex,
     QSettings,
@@ -16,6 +16,9 @@ from qtpy.QtCore import (
 from qtpy.QtGui import QStandardItem, QStandardItemModel
 from qtpy.QtWidgets import QWidget
 
+from loggerplus import RobustLogger, get_log_directory
+from pykotor.common.misc import Game
+from pykotor.tools.path import CaseAwarePath, find_kotor_paths_from_default
 from toolset.data.settings import Settings
 
 if TYPE_CHECKING:

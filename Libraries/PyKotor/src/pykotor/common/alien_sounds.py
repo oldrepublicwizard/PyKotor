@@ -1,3 +1,5 @@
+"""Alien (Wookiee, etc.) sound ResRef set for KotOR 1 and TSL."""
+
 from __future__ import annotations
 
 ALIEN_SOUNDS = {  # Same in k1 and tsl.

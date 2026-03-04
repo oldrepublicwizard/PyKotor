@@ -1,3 +1,5 @@
+"""Environment variables settings: Qt env vars editor with presets and documentation links."""
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING, NamedTuple

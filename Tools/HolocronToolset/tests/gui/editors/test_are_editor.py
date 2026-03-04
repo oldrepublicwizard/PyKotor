@@ -228,19 +228,19 @@ def test_are_editor_manipulate_alpha_test_spin(qtbot: QtBot, installation: HTIns
     original_data = are_file.read_bytes()
     editor.load(are_file, "tat001", ResourceType.ARE, original_data)
 
-    # Test various values
-    test_values = [0, 1, 50, 100, 255]
+    # alpha_test is a float 0.0-1.0 in ARE (GFF AlphaTest); UI spin is 0.0-1.0
+    test_values = [0.0, 0.2, 0.5, 1.0]
     for val in test_values:
         editor.ui.alphaTestSpin.setValue(val)
 
-        # Save and verify
+        # Save and verify (GFF stores float32 so use approx)
         data, _ = editor.build()
         modified_are = read_are(data)
-        assert modified_are.alpha_test == val
+        assert modified_are.alpha_test == pytest.approx(val)
 
         # Load back and verify
         editor.load(are_file, "tat001", ResourceType.ARE, data)
-        assert editor.ui.alphaTestSpin.value() == val
+        assert editor.ui.alphaTestSpin.value() == pytest.approx(val)
 
 
 def test_are_editor_manipulate_stealth_xp_checkbox(qtbot: QtBot, installation: HTInstallation, test_files_dir: Path):
@@ -1140,7 +1140,7 @@ def test_are_editor_manipulate_all_basic_fields_combination(qtbot: QtBot, instal
     editor.ui.envmapEdit.setText("test_envmap")
     editor.ui.disableTransitCheck.setChecked(True)
     editor.ui.unescapableCheck.setChecked(True)
-    editor.ui.alphaTestSpin.setValue(128)
+    editor.ui.alphaTestSpin.setValue(0.5)  # ARE alpha_test is float 0.0-1.0
     editor.ui.stealthCheck.setChecked(True)
     editor.ui.stealthMaxSpin.setValue(500)
     editor.ui.stealthLossSpin.setValue(25)
@@ -1154,7 +1154,7 @@ def test_are_editor_manipulate_all_basic_fields_combination(qtbot: QtBot, instal
     assert modified_are.default_envmap == ResRef("test_envmap")
     assert modified_are.disable_transit
     assert modified_are.unescapable
-    assert modified_are.alpha_test == 128
+    assert modified_are.alpha_test == pytest.approx(0.5)
     assert modified_are.stealth_xp
     assert modified_are.stealth_xp_max == 500
     assert modified_are.stealth_xp_loss == 25
@@ -1330,7 +1330,7 @@ def test_are_editor_save_load_roundtrip_with_modifications(qtbot: QtBot, install
 
     # Make modifications
     editor.ui.tagEdit.setText("modified_roundtrip")
-    editor.ui.alphaTestSpin.setValue(200)
+    editor.ui.alphaTestSpin.setValue(0.78)  # ARE alpha_test is float 0.0-1.0
     editor.ui.fogEnabledCheck.setChecked(True)
     editor.ui.fogNearSpin.setValue(10.0)
     editor.ui.fogFarSpin.setValue(200.0)
@@ -1345,7 +1345,7 @@ def test_are_editor_save_load_roundtrip_with_modifications(qtbot: QtBot, install
 
     # Verify modifications preserved
     assert editor.ui.tagEdit.text() == "modified_roundtrip"
-    assert editor.ui.alphaTestSpin.value() == 200
+    assert editor.ui.alphaTestSpin.value() == pytest.approx(0.78)
     assert editor.ui.fogEnabledCheck.isChecked()
     assert editor.ui.fogNearSpin.value() == 10.0
     assert editor.ui.fogFarSpin.value() == 200.0
@@ -1378,7 +1378,9 @@ def test_are_editor_multiple_save_load_cycles(qtbot: QtBot, installation: HTInst
     for cycle in range(5):
         # Modify
         editor.ui.tagEdit.setText(f"cycle_{cycle}")
-        editor.ui.alphaTestSpin.setValue(50 + cycle * 10)
+        # ARE alpha_test is float 0.0-1.0; use 0.2, 0.4, 0.6, 0.8, 1.0
+        val = 0.2 + cycle * 0.2
+        editor.ui.alphaTestSpin.setValue(val)
 
         # Save
         data, _ = editor.build()
@@ -1386,14 +1388,14 @@ def test_are_editor_multiple_save_load_cycles(qtbot: QtBot, installation: HTInst
 
         # Verify
         assert saved_are.tag == f"cycle_{cycle}"
-        assert saved_are.alpha_test == 50 + cycle * 10
+        assert saved_are.alpha_test == pytest.approx(val)
 
         # Load back
         editor.load(are_file, "tat001", ResourceType.ARE, data)
 
         # Verify loaded
         assert editor.ui.tagEdit.text() == f"cycle_{cycle}"
-        assert editor.ui.alphaTestSpin.value() == 50 + cycle * 10
+        assert editor.ui.alphaTestSpin.value() == pytest.approx(val)
 
 
 # ============================================================================
@@ -1455,7 +1457,7 @@ def test_are_editor_maximum_values(qtbot: QtBot, installation: HTInstallation, t
 
     # Set all to maximums
     editor.ui.tagEdit.setText("x" * 32)  # Max tag length
-    editor.ui.alphaTestSpin.setValue(255)
+    editor.ui.alphaTestSpin.setValue(1.0)  # ARE alpha_test is float 0.0-1.0
     editor.ui.stealthMaxSpin.setValue(9999)
     editor.ui.stealthLossSpin.setValue(9999)
     editor.ui.mapZoomSpin.setValue(100)
@@ -1470,7 +1472,7 @@ def test_are_editor_maximum_values(qtbot: QtBot, installation: HTInstallation, t
     data, _ = editor.build()
     modified_are = read_are(data)
 
-    assert modified_are.alpha_test == 255
+    assert modified_are.alpha_test == pytest.approx(1.0)
     assert modified_are.stealth_xp_max == 9999
     assert modified_are.shadow_opacity == 255
 
@@ -1593,7 +1595,7 @@ def test_are_editor_gff_roundtrip_with_modifications(qtbot: QtBot, installation:
 
     # Make modifications
     editor.ui.tagEdit.setText("modified_gff_test")
-    editor.ui.alphaTestSpin.setValue(150)
+    editor.ui.alphaTestSpin.setValue(0.6)  # ARE alpha_test is float 0.0-1.0
     editor.ui.fogEnabledCheck.setChecked(True)
 
     # Save
@@ -1606,7 +1608,7 @@ def test_are_editor_gff_roundtrip_with_modifications(qtbot: QtBot, installation:
     # Verify it's valid ARE
     modified_are = read_are(data)
     assert modified_are.tag == "modified_gff_test"
-    assert modified_are.alpha_test == 150
+    assert modified_are.alpha_test == pytest.approx(0.6)
     assert modified_are.fog_enabled
 
 
@@ -1629,7 +1631,7 @@ def test_are_editor_new_file_creation(qtbot: QtBot, installation: HTInstallation
     if editor.ui.cameraStyleSelect.count() > 0:
         editor.ui.cameraStyleSelect.setCurrentIndex(0)
     editor.ui.envmapEdit.setText("default_env")
-    editor.ui.alphaTestSpin.setValue(100)
+    editor.ui.alphaTestSpin.setValue(0.4)  # ARE alpha_test is float 0.0-1.0
     editor.ui.fogEnabledCheck.setChecked(True)
     editor.ui.fogColorEdit.set_color(Color(0.5, 0.5, 0.5))
     editor.ui.commentsEdit.setPlainText("New area comment")
@@ -1640,7 +1642,7 @@ def test_are_editor_new_file_creation(qtbot: QtBot, installation: HTInstallation
 
     assert new_are.name.get(Language.ENGLISH, Gender.MALE) == "New Area"
     assert new_are.tag == "new_area"
-    assert new_are.alpha_test == 100
+    assert new_are.alpha_test == pytest.approx(0.4)
     assert new_are.fog_enabled
     assert new_are.comment == "New area comment"
 

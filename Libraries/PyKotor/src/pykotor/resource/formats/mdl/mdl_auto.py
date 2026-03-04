@@ -1,3 +1,5 @@
+"""MDL/MDX format detection and auto read/write dispatch (binary and ASCII)."""
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
@@ -97,9 +99,9 @@ def read_mdl(
     if file_format is None:
         file_format = detect_mdl(source, offset)
 
-    if file_format is ResourceType.MDL:
+    if file_format == ResourceType.MDL:
         return MDLBinaryReader(source, offset, size or 0, source_ext, offset_ext, size_ext).load()
-    if file_format is ResourceType.MDL_ASCII:
+    if file_format == ResourceType.MDL_ASCII:
         return MDLAsciiReader(source, offset, size or 0).load()
 
     msg = "Failed to determine the format of the MDL file."
@@ -151,7 +153,7 @@ def read_mdl_fast(
     """
     file_format = detect_mdl(source, offset)
 
-    if file_format is ResourceType.MDL:
+    if file_format == ResourceType.MDL:
         # NOTE:
         # This API is used in performance-sensitive contexts and is benchmarked in tests.
         # Full parsing (read_mdl) can create a lot of cyclic garbage; if GC kicks in during the
@@ -177,7 +179,7 @@ def read_mdl_fast(
         finally:
             if was_enabled:
                 gc.enable()
-    if file_format is ResourceType.MDL_ASCII:
+    if file_format == ResourceType.MDL_ASCII:
         # ASCII doesn't support fast loading, fall back to regular loading
         return MDLAsciiReader(source, offset, size or 0).load()
     msg = "Failed to determine the format of the MDL file."
@@ -205,11 +207,11 @@ def write_mdl(
         PermissionError: If the file could not be written to the specified destination.
         ValueError: If the specified format was unsupported.
     """
-    if file_format is ResourceType.MDL:
+    if file_format == ResourceType.MDL:
         # Only write MDX if an explicit target is provided.
         # Writing MDX into the same target as MDL corrupts in-memory callers (e.g., bytearray buffers).
         MDLBinaryWriter(mdl, target, target_ext).write()
-    elif file_format is ResourceType.MDL_ASCII:
+    elif file_format == ResourceType.MDL_ASCII:
         MDLAsciiWriter(mdl, target).write()
     else:
         msg = "Unsupported format specified; use MDL or MDL_ASCII."

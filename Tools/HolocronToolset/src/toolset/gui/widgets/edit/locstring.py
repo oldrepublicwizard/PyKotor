@@ -1,3 +1,5 @@
+"""LocalizedString line edit widget: inline locstring display and edit dialog trigger."""
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING

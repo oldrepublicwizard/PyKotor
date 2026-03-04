@@ -1,3 +1,5 @@
+"""Binary ERF (encapsulated resource) read/write: header, key list, resource data."""
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING

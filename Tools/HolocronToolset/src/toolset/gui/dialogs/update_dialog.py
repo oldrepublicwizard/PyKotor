@@ -1,3 +1,5 @@
+"""Update dialog: show release notes, compare versions, and start the update process."""
+
 from __future__ import annotations
 
 import platform

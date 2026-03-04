@@ -1,3 +1,5 @@
+"""Main window widgets: file tree, editor stack, and async resource loading."""
+
 from __future__ import annotations
 
 import contextlib
@@ -28,7 +30,7 @@ from qtpy.QtWidgets import QAbstractItemView, QApplication, QFileDialog, QHeader
 
 from loggerplus import RobustLogger  # type: ignore[import-untyped, note]  # pyright: ignore[reportMissingTypeStubs]
 from pykotor.extract.file import FileResource
-from pykotor.resource.formats.tpc import TPC, TPCMipmap, TPCTextureFormat, read_tpc, write_tpc
+from pykotor.resource.formats.tpc import TPC, TPCTextureFormat, read_tpc, write_tpc
 from pykotor.resource.type import ResourceType
 from toolset.data.installation import HTInstallation
 from toolset.gui.dialogs.load_from_location_result import ResourceItems
@@ -39,8 +41,9 @@ from toolset.gui.widgets.texture_preview import load_resource_preview_mipmap, qi
 if TYPE_CHECKING:
     from qtpy.QtCore import QAbstractItemModel, QModelIndex, QRect
     from qtpy.QtGui import QMouseEvent, QResizeEvent, QShowEvent
-    from qtpy.QtWidgets import QMenu, QScrollBar
+    from qtpy.QtWidgets import QScrollBar
 
+    from pykotor.resource.formats.tpc import TPCMipmap
     from pykotor.resource.formats.tpc.tpc_data import TPC
     from toolset.data.installation import HTInstallation
     from utility.gui.qt.widgets.itemviews.listview import RobustListView

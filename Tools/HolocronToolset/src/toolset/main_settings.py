@@ -1,3 +1,5 @@
+"""Pre-init and application settings: QSettings and app-wide defaults before QApplication."""
+
 from __future__ import annotations
 
 import os

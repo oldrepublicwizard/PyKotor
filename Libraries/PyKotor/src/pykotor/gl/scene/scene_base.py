@@ -1,3 +1,5 @@
+"""Scene base: module designer scene graph, GIT resolution, and instance rendering."""
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any, ClassVar, TypeVar
@@ -75,6 +77,18 @@ SEARCH_ORDER: list[SearchLocation] = [SearchLocation.OVERRIDE, SearchLocation.CH
 
 class SceneBase:
     SPECIAL_MODELS: ClassVar[list[str]] = ["waypoint", "store", "sound", "camera", "trigger", "encounter", "unknown"]
+    _TWODA_TABLES: ClassVar[dict[str, str]] = {
+        "table_doors": "genericdoors",
+        "table_placeables": "placeables",
+        "table_creatures": "appearance",
+        "table_heads": "heads",
+        "table_baseitems": "baseitems",
+    }
+    table_doors: TwoDA
+    table_placeables: TwoDA
+    table_creatures: TwoDA
+    table_heads: TwoDA
+    table_baseitems: TwoDA
 
     def __init__(
         self,
@@ -98,8 +112,17 @@ class SceneBase:
         self.textures: CaseInsensitiveDict[Texture] = CaseInsensitiveDict()
         self.textures["NULL"] = Texture.from_color()
         self.models: CaseInsensitiveDict[Model] = CaseInsensitiveDict()
+        self.table_doors = TwoDA()
+        self.table_placeables = TwoDA()
+        self.table_creatures = TwoDA()
+        self.table_heads = TwoDA()
+        self.table_baseitems = TwoDA()
 
-        self.cursor: RenderObject = RenderObject("cursor")
+        # World-space anchor under the mouse ray (legacy name: "cursor").
+        # IMPORTANT: This is *not* the camera/view focus point.
+        self.mouse_world_anchor: RenderObject = RenderObject("cursor")
+        # Backwards-compatible alias used by the toolset code.
+        self.cursor: RenderObject = self.mouse_world_anchor
         self.objects: dict[Any, RenderObject] = {}
 
         self.selection: list[RenderObject] = []
@@ -286,11 +309,44 @@ class SceneBase:
         self.hide_encounter_boundaries: bool = True
         self.backface_culling: bool = True
         self.use_lightmap: bool = True
-        self.show_cursor: bool = True
+        # Visibility of the 3D axis gizmo that marks the camera focal point.
+        # Historical API name is `show_cursor`; keep that alias for compatibility.
+        self._show_focus_point_gizmo: bool = True
 
     @property
     def is_shutdown(self) -> bool:
         return self._shutdown
+
+    @property
+    def show_focus_point_gizmo(self) -> bool:
+        """Show/hide the camera focal-point gizmo."""
+        return self._show_focus_point_gizmo
+
+    @show_focus_point_gizmo.setter
+    def show_focus_point_gizmo(self, value: bool) -> None:
+        self._show_focus_point_gizmo = bool(value)
+
+    @property
+    def show_cursor(self) -> bool:
+        """Legacy alias for `show_focus_point_gizmo`.
+
+        The name predates current behavior and is kept for API compatibility.
+        It now controls the *camera focal-point gizmo* visibility, not a mouse cursor.
+        """
+        return self._show_focus_point_gizmo
+
+    @show_cursor.setter
+    def show_cursor(self, value: bool) -> None:
+        self._show_focus_point_gizmo = bool(value)
+
+    def camera_focal_point(self) -> Vector3:
+        """Return the world-space camera focal/orbit point.
+
+        This is the current view focus used by camera orbit logic.
+        It is intentionally separate from `self.cursor`/`self.mouse_world_anchor`,
+        which track mouse-projected world coordinates for placement operations.
+        """
+        return Vector3(self.camera.x, self.camera.y, self.camera.z)
 
     def shutdown(self, *, wait: bool = False):
         """Release non-GL resources and stop background workers.
@@ -341,11 +397,8 @@ class SceneBase:
                 return TwoDA()
             return read_2da(resource.data)
 
-        self.table_doors = load_2da("genericdoors")
-        self.table_placeables = load_2da("placeables")
-        self.table_creatures = load_2da("appearance")
-        self.table_heads = load_2da("heads")
-        self.table_baseitems = load_2da("baseitems")
+        for attr_name, filename in self._TWODA_TABLES.items():
+            setattr(self, attr_name, load_2da(filename))
 
     def get_creature_render_object(  # noqa: C901
         self,

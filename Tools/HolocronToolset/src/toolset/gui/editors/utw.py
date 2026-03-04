@@ -1,3 +1,5 @@
+"""UTW (waypoint) editor: locstring name and linked module waypoint."""
+
 from __future__ import annotations
 
 from copy import deepcopy
@@ -65,13 +67,35 @@ class UTWEditor(Editor):
         self.new()
 
     def _setup_signals(self):
-        self.ui.tagGenerateButton.clicked.connect(self.generate_tag)
-        self.ui.resrefGenerateButton.clicked.connect(self.generate_resref)
-        self.ui.noteChangeButton.clicked.connect(self.change_note)
+        for signal, handler in (
+            (self.ui.tagGenerateButton.clicked, self.generate_tag),
+            (self.ui.resrefGenerateButton.clicked, self.generate_resref),
+            (self.ui.noteChangeButton.clicked, self.change_note),
+        ):
+            signal.connect(handler)
 
     def _setup_installation(self, installation: HTInstallation):
         self._installation = installation
         self.ui.nameEdit.set_installation(installation)
+
+    def _set_map_note_locstring(self, locstring: LocalizedString):
+        self._load_locstring(self.ui.noteEdit, locstring)  # pyright: ignore[reportArgumentType]
+
+    def _get_map_note_locstring(self) -> LocalizedString:
+        try:
+            return self.ui.noteEdit.locstring  # type: ignore[return-value]
+        except AttributeError:
+            return LocalizedString(self.ui.noteEdit.text())
+
+    def _load_basic_fields(self, utw: UTW):
+        self.ui.nameEdit.set_locstring(utw.name)
+        self.ui.tagEdit.setText(utw.tag)
+        self.ui.resrefEdit.setText(str(utw.resref))
+
+    def _save_basic_fields(self, utw: UTW):
+        utw.name = self.ui.nameEdit.locstring()
+        utw.tag = self.ui.tagEdit.text()
+        utw.resref = ResRef(self.ui.resrefEdit.text())
 
     def load(
         self,
@@ -98,14 +122,12 @@ class UTWEditor(Editor):
         self._utw: UTW = utw
 
         # Basic (Tag "", LocalizedName empty, TemplateResRef blank per K1 0x005c7f30)
-        self.ui.nameEdit.set_locstring(utw.name)
-        self.ui.tagEdit.setText(utw.tag)
-        self.ui.resrefEdit.setText(str(utw.resref))
+        self._load_basic_fields(utw)
 
         # Advanced (HasMapNote 0, MapNoteEnabled 0, MapNote empty per K1 LoadWaypoint)
         self.ui.isNoteCheckbox.setChecked(utw.has_map_note)
         self.ui.noteEnabledCheckbox.setChecked(utw.map_note_enabled)
-        self._load_locstring(self.ui.noteEdit, utw.map_note)  # pyright: ignore[reportArgumentType]
+        self._set_map_note_locstring(utw.map_note)
 
         # Comments (toolset-only; default "")
         self.ui.commentsEdit.setPlainText(utw.comment)
@@ -121,15 +143,10 @@ class UTWEditor(Editor):
         """
         utw: UTW = deepcopy(self._utw)
 
-        utw.name = self.ui.nameEdit.locstring()
-        utw.tag = self.ui.tagEdit.text()
-        utw.resref = ResRef(self.ui.resrefEdit.text())
+        self._save_basic_fields(utw)
         utw.has_map_note = self.ui.isNoteCheckbox.isChecked()
         utw.map_note_enabled = self.ui.noteEnabledCheckbox.isChecked()
-        try:
-            utw.map_note = self.ui.noteEdit.locstring  # FIXME:
-        except AttributeError:
-            utw.map_note = LocalizedString(self.ui.noteEdit.text())  # ALSO FIXME:
+        utw.map_note = self._get_map_note_locstring()
         utw.comment = self.ui.commentsEdit.toPlainText()
 
         data = bytearray()
@@ -142,25 +159,28 @@ class UTWEditor(Editor):
         super().new()
         self._loadUTW(UTW())
 
-    def change_name(self):
+    def _edit_locstring(self, current: LocalizedString, apply_func) -> None:
+        """Open a localized string dialog and apply result when accepted."""
         assert self._installation is not None
-        dialog = LocalizedStringDialog(self, self._installation, self.ui.nameEdit.locstring())
+        dialog = LocalizedStringDialog(self, self._installation, current)
         if dialog.exec():
-            self._load_locstring(self.ui.nameEdit.ui.locstringText, dialog.locstring)  # pyright: ignore[reportArgumentType]
+            apply_func(dialog.locstring)
+
+    def change_name(self):
+        self._edit_locstring(
+            self.ui.nameEdit.locstring(),
+            lambda locstring: self._load_locstring(self.ui.nameEdit.ui.locstringText, locstring),  # pyright: ignore[reportArgumentType]
+        )
 
     def change_note(self):
-        assert self._installation is not None
-        try:
-            dialog = LocalizedStringDialog(self, self._installation, self.ui.noteEdit.locstring)  # pyright: ignore[reportArgumentType]
-        except AttributeError:
-            dialog = LocalizedStringDialog(self, self._installation, self.ui.noteEdit.text())  # pyright: ignore[reportArgumentType]
-        if dialog.exec():
-            self._load_locstring(self.ui.noteEdit, dialog.locstring)  # pyright: ignore[reportArgumentType]
+        self._edit_locstring(self._get_map_note_locstring(), self._set_map_note_locstring)
 
     def generate_tag(self):
-        if not self.ui.resrefEdit.text():
+        resref_edit_text = self.ui.resrefEdit.text()
+        if not resref_edit_text or not resref_edit_text.strip():
             self.generate_resref()
-        self.ui.tagEdit.setText(self.ui.resrefEdit.text())
+            resref_edit_text = self.ui.resrefEdit.text()
+        self.ui.tagEdit.setText(resref_edit_text)
 
     def generate_resref(self):
         if self._resname:

@@ -255,7 +255,6 @@ def pick_installation_interactive() -> HTInstallation | None:
     Returns:
         HTInstallation if user selected one, None if cancelled.
     """
-    from qtpy.QtCore import Qt  # noqa: PLC0415
     from qtpy.QtWidgets import (  # noqa: PLC0415
         QComboBox,
         QDialog,

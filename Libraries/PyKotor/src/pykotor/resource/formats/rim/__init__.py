@@ -1,3 +1,5 @@
+"""RIM package: RIM archive data and binary I/O (read_rim, write_rim, bytes_rim)."""
+
 from __future__ import annotations
 from pykotor.resource.formats.rim.rim_data import RIM, RIMResource
 from pykotor.resource.formats.rim.io_rim import (

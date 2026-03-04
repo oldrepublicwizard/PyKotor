@@ -12,11 +12,12 @@ from typing import TYPE_CHECKING
 
 from qtpy.QtGui import QColor, QImage, QPainter, QPainterPath
 
-from utility.common.geometry import SurfaceMaterial, Vector3
+from utility.common.geometry import SurfaceMaterial
 
 if TYPE_CHECKING:
     from pykotor.common.indoorkit import KitComponent
     from pykotor.resource.formats.bwm import BWM
+    from utility.common.geometry import Vector3
 
 
 def ensure_component_image(component: KitComponent) -> QImage:

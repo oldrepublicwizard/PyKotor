@@ -1,3 +1,5 @@
+"""Async resource loading: texture/model loading in process pool with progress callbacks."""
+
 from __future__ import annotations
 
 import multiprocessing

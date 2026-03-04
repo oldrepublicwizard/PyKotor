@@ -1,3 +1,5 @@
+"""Toolset startup: frozen check, crash handler, and application entry (main_init)."""
+
 from __future__ import annotations
 
 import atexit
@@ -37,8 +39,9 @@ def on_app_crash(
     if issubclass(etype, KeyboardInterrupt):
         sys.__excepthook__(etype, exc, tback)
         return
-    from loggerplus import RobustLogger  # noqa: PLC0415
     import time  # noqa: PLC0415
+
+    from loggerplus import RobustLogger  # noqa: PLC0415
 
     logger = RobustLogger()
     logger.critical("Uncaught exception", exc_info=(etype, exc, tback))
@@ -267,7 +270,8 @@ def main_init():
     if is_main_process:
         try:
             multiprocessing.set_start_method(
-                "spawn", force=False
+                "spawn",
+                force=False,
             )  # 'spawn' is default on windows, linux/mac defaults to most likely 'fork' which breaks the built-in updater.
         except RuntimeError:
             # Start method already set, ignore
@@ -342,7 +346,6 @@ def last_resort_cleanup():
     This function should be registered with atexit as early as possible.
     """
     from loggerplus import RobustLogger  # pyright: ignore[reportMissingTypeStubs]
-
     from utility.system.app_process.shutdown import gracefully_shutdown_threads, start_shutdown_process
 
     RobustLogger().info("Fully shutting down Holocron Toolset...")

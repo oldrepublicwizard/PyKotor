@@ -1,3 +1,5 @@
+"""Walkmesh editor dialog: edit BWM faces, materials, and LYT room links in 2D."""
+
 from __future__ import annotations
 
 import math
@@ -321,14 +323,14 @@ class WalkmeshEditor(QWidget):
         for room in self.lyt.rooms:
             self.rooms_list.addItem(QListWidgetItem(room.model))
 
-        for track in self.lyt.tracks:
-            self.tracks_list.addItem(QListWidgetItem(f"Track {self.lyt.tracks.index(track)}"))
+        for i, track in enumerate(self.lyt.tracks):
+            self.tracks_list.addItem(QListWidgetItem(f"Track {i}"))
 
-        for obstacle in self.lyt.obstacles:
-            self.obstacles_list.addItem(QListWidgetItem(f"Obstacle {self.lyt.obstacles.index(obstacle)}"))
+        for i, obstacle in enumerate(self.lyt.obstacles):
+            self.obstacles_list.addItem(QListWidgetItem(f"Obstacle {i}"))
 
-        for doorhook in self.lyt.doorhooks:
-            self.doorhooks_list.addItem(QListWidgetItem(f"Door Hook {self.lyt.doorhooks.index(doorhook)}"))
+        for i, doorhook in enumerate(self.lyt.doorhooks):
+            self.doorhooks_list.addItem(QListWidgetItem(f"Door Hook {i}"))
 
     def update_scene(self):
         self.scene.clear()
@@ -556,13 +558,14 @@ class TrackPropertiesDialog(QDialog):
         self.start_room_combo = self.ui.startRoomCombo
         self.end_room_combo = self.ui.endRoomCombo
 
+        room_to_index = {id(r): i for i, r in enumerate(self.rooms)}
         for room in self.rooms:
             self.start_room_combo.addItem(room.model, room)
             self.end_room_combo.addItem(room.model, room)
 
         if track:
-            start_index: int = self.rooms.index(track.start_room)
-            end_index: int = self.rooms.index(track.end_room)
+            start_index = room_to_index.get(id(track.start_room), 0)
+            end_index = room_to_index.get(id(track.end_room), 0)
             self.start_room_combo.setCurrentIndex(start_index)
             self.end_room_combo.setCurrentIndex(end_index)
 
@@ -649,11 +652,12 @@ class DoorHookPropertiesDialog(QDialog):
         self.pos_z = self.ui.posZ
         self.orientation = self.ui.orientationSpinBox
 
+        room_to_index = {id(r): i for i, r in enumerate(self.rooms)}
         for room in self.rooms:
             self.room_combo.addItem(room.model, room)
 
         if doorhook is not None:
-            room_index: int = self.rooms.index(doorhook.room)
+            room_index = room_to_index.get(id(doorhook.room), 0)
             self.room_combo.setCurrentIndex(room_index)
             self.pos_x.setValue(doorhook.position.x)
             self.pos_y.setValue(doorhook.position.y)

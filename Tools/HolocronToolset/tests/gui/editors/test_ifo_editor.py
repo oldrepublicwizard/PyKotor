@@ -1557,7 +1557,7 @@ def test_ifo_editor_load_from_installation(qtbot: QtBot, installation: HTInstall
     qtbot.addWidget(editor)
 
     # Try to find an IFO file in the installation
-    ifo_resources = [res for res in installation if res.restype() is ResourceType.IFO]
+    ifo_resources = [res for res in installation if res.restype() == ResourceType.IFO]
     if not ifo_resources:
         pytest.skip("No IFO files found in installation")
 
@@ -1648,7 +1648,7 @@ def test_ifo_editor_real_file_roundtrip_comprehensive(qtbot: QtBot, installation
     # Get a real IFO file
     ifo_files = list(test_files_dir.glob("*.ifo")) + list(test_files_dir.rglob("*.ifo"))
     if not ifo_files:
-        ifo_resources = [res for res in installation if res.restype() is ResourceType.IFO]
+        ifo_resources = [res for res in installation if res.restype() == ResourceType.IFO]
         if not ifo_resources:
             pytest.skip("No IFO files available for testing")
 
@@ -1722,7 +1722,7 @@ def test_ifo_editor_real_file_all_fields_manipulation(qtbot: QtBot, installation
     # Get a real IFO file
     ifo_files = list(test_files_dir.glob("*.ifo")) + list(test_files_dir.rglob("*.ifo"))
     if not ifo_files:
-        ifo_resources = [res for res in installation if res.restype() is ResourceType.IFO]
+        ifo_resources = [res for res in installation if res.restype() == ResourceType.IFO]
         if not ifo_resources:
             pytest.skip("No IFO files available")
         ifo_resource = ifo_resources[0]
@@ -1816,7 +1816,7 @@ def test_ifo_editor_real_file_gff_integrity(qtbot: QtBot, installation: HTInstal
     # Get a real IFO file
     ifo_files = list(test_files_dir.glob("*.ifo")) + list(test_files_dir.rglob("*.ifo"))
     if not ifo_files:
-        ifo_resources = [res for res in installation if res.restype() is ResourceType.IFO]
+        ifo_resources = [res for res in installation if res.restype() == ResourceType.IFO]
         if not ifo_resources:
             pytest.skip("No IFO files available")
         ifo_resource = ifo_resources[0]
@@ -1869,7 +1869,7 @@ def test_ifo_editor_real_file_stress_cycles(qtbot: QtBot, installation: HTInstal
     # Get a real IFO file
     ifo_files = list(test_files_dir.glob("*.ifo")) + list(test_files_dir.rglob("*.ifo"))
     if not ifo_files:
-        ifo_resources = [res for res in installation if res.restype() is ResourceType.IFO]
+        ifo_resources = [res for res in installation if res.restype() == ResourceType.IFO]
         if not ifo_resources:
             pytest.skip("No IFO files available")
         ifo_resource = ifo_resources[0]

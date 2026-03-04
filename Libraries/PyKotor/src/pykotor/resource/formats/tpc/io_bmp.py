@@ -1,3 +1,5 @@
+"""BMP (Windows Bitmap) write for TPC: export first mipmap as RGB24 BMP."""
+
 from __future__ import annotations
 
 import struct

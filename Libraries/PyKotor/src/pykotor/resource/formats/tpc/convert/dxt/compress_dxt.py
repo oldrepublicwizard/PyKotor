@@ -1,3 +1,5 @@
+"""DXT compression: RGB/RGBA to DXT1/DXT3/DXT5 block encode."""
+
 from __future__ import annotations
 
 

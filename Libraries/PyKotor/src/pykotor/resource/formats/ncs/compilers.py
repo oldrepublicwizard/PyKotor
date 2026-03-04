@@ -1,3 +1,5 @@
+"""NCS compilers: inbuilt (native) and external (nwnnsscomp) NSS-to-NCS compilation."""
+
 from __future__ import annotations
 
 import subprocess

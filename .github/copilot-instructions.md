@@ -95,6 +95,7 @@ python Tools\KotorDiff\src\__main__.py
 - Use: `open-project %USERPROFILE%\Odyssey.gpr` before game engine analyses.
 
 **Read First**
+- CONVENTIONS.md – root coding conventions and typing/performance rules.
 - README.md – overview, features, quick install.
 - docs/SETUP.md – dev environment, dependency managers, testing.
 - docs/QUICK_START.md – targeted test commands for TSLPatcher.

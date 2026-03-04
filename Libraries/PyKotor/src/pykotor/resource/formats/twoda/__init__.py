@@ -1,3 +1,5 @@
+"""2DA package: TwoDA data, rows, and binary/CSV/JSON I/O."""
+
 from __future__ import annotations
 from pykotor.resource.formats.twoda.twoda_data import TwoDA, TwoDARow
 from pykotor.resource.formats.twoda.io_twoda import (

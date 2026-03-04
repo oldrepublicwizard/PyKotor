@@ -1,3 +1,5 @@
+"""2DA format detection and auto read/write dispatch (binary, CSV, JSON)."""
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
@@ -93,15 +95,15 @@ def read_2da(
     if file_format is None:
         file_format = detect_2da(source, offset)
 
-    if file_format is ResourceType.INVALID:
+    if file_format == ResourceType.INVALID:
         msg = "Failed to determine the format of the 2DA file."
         raise ValueError(msg)
 
-    if file_format is ResourceType.TwoDA:
+    if file_format == ResourceType.TwoDA:
         return TwoDABinaryReader(source, offset, size or 0).load()
-    if file_format is ResourceType.TwoDA_CSV:
+    if file_format == ResourceType.TwoDA_CSV:
         return TwoDACSVReader(source, offset, size or 0).load()
-    if file_format is ResourceType.TwoDA_JSON:
+    if file_format == ResourceType.TwoDA_JSON:
         return TwoDAJSONReader(source, offset, size or 0).load()
     msg = "detect_2da failed unexpectedly"
     raise ValueError(msg)
@@ -128,11 +130,11 @@ def write_2da(
         PermissionError: If the file could not be written to the specified destination.
         ValueError: If the specified format was unsupported.
     """
-    if file_format is ResourceType.TwoDA:
+    if file_format == ResourceType.TwoDA:
         TwoDABinaryWriter(twoda, target).write()
-    elif file_format is ResourceType.TwoDA_CSV:
+    elif file_format == ResourceType.TwoDA_CSV:
         TwoDACSVWriter(twoda, target).write()
-    elif file_format is ResourceType.TwoDA_JSON:
+    elif file_format == ResourceType.TwoDA_JSON:
         TwoDAJSONWriter(twoda, target).write()
     else:
         msg = "Unsupported format specified; use TwoDA, TwoDA_CSV or TwoDA_JSON."

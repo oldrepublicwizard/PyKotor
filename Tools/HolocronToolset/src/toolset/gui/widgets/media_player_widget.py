@@ -1,11 +1,13 @@
+"""Media player widget: play/pause, seek, volume, and waveform for WAV/audio in the toolset."""
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
 import qtpy
 
-from qtpy.QtCore import QBuffer, QPoint, QTimer, Qt, Signal
-from qtpy.QtGui import QKeyEvent, QKeySequence, QWheelEvent
+from qtpy.QtCore import QBuffer, QPoint, Qt, Signal
+from qtpy.QtGui import QKeySequence
 from qtpy.QtMultimedia import QMediaPlayer
 from qtpy.QtWidgets import (
     QStyle,
@@ -13,7 +15,8 @@ from qtpy.QtWidgets import (
 )
 
 if TYPE_CHECKING:
-    from qtpy.QtGui import QMouseEvent, QShowEvent
+    from qtpy.QtCore import QTimer
+    from qtpy.QtGui import QKeyEvent, QMouseEvent, QShowEvent, QWheelEvent
     from qtpy.QtMultimedia import QAudioOutput
 
 

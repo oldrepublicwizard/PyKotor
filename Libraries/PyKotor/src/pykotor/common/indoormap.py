@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 """Indoor map data model + headless builder (no Qt).
 
 This module defines the **core** Holocron `.indoor` model and the routines needed to build a
@@ -11,6 +9,8 @@ Design rule (repo convention):
 
 Toolset keeps Qt rendering and widgets elsewhere (e.g. generating QImage previews / minimaps).
 """
+
+from __future__ import annotations
 
 import base64
 import itertools
@@ -141,6 +141,7 @@ class EmbeddedKit(Kit):
 
 
 def _ensure_embedded_kit(kits: list[Kit]) -> EmbeddedKit:
+    """Return existing embedded kit or create/replace it in kits list."""
     existing = next((k for k in kits if getattr(k, "id", "") == _EMBEDDED_KIT_ID), None)
     if isinstance(existing, EmbeddedKit):
         return existing
@@ -222,19 +223,19 @@ class IndoorMap(ComparableMixin):
                 position: Vector3 = room1.hook_position(hook1)
                 rotation: float = hook1.rotation + room1.rotation
                 if connection is not None:
-                    for other_hook_index, other_room in enumerate(connection.hooks):
-                        if other_room == room1:
-                            other_hook: KitComponentHook = connection.component.hooks[other_hook_index]
-                            if hook1.door.width < other_hook.door.width:
-                                door = other_hook.door
-                                hook2 = hook1
-                                hook1 = other_hook
-                                room2 = room1
-                                room1 = connection
-                            else:
-                                hook2 = connection.component.hooks[other_hook_index]
-                                room2 = connection
-                                rotation = hook2.rotation + room2.rotation
+                    other_hook_index = self._connected_hook_index(connection, room1)
+                    if other_hook_index is not None:
+                        other_hook: KitComponentHook = connection.component.hooks[other_hook_index]
+                        if hook1.door.width < other_hook.door.width:
+                            door = other_hook.door
+                            hook2 = hook1
+                            hook1 = other_hook
+                            room2 = room1
+                            room1 = connection
+                        else:
+                            hook2 = connection.component.hooks[other_hook_index]
+                            room2 = connection
+                            rotation = hook2.rotation + room2.rotation
 
                 if position not in points:
                     points.append(position)
@@ -252,6 +253,14 @@ class IndoorMap(ComparableMixin):
                     insertions.append(door_insertion)
 
         return insertions
+
+    @staticmethod
+    def _connected_hook_index(connection: IndoorMapRoom, room: IndoorMapRoom) -> int | None:
+        """Return hook index in `connection` that points back to `room`."""
+        for other_hook_index, other_room in enumerate(connection.hooks):
+            if other_room == room:
+                return other_hook_index
+        return None
 
     def _target_is_k2(
         self,
@@ -273,42 +282,56 @@ class IndoorMap(ComparableMixin):
             modelname = f"{self.module_id}_room{i}"
             self.vis.add_room(modelname)
 
+    @staticmethod
+    def _iter_padding_models(component: KitComponent):
+        """Iterate all top/side padding models referenced by a kit component."""
+        for door_padding_dict in list(component.kit.top_padding.values()) + list(component.kit.side_padding.values()):
+            yield from door_padding_dict.values()
+
+    def _sorted_used_kits(self) -> list[Kit]:
+        """Return used kits in deterministic id order."""
+        return sorted(self.used_kits, key=lambda kit: kit.id)
+
+    def _set_tga_txi(self, resname: str, tga_data: bytes | bytearray, txi_data: bytes | bytearray = b"") -> None:
+        """Write paired texture payloads (`TGA` + `TXI`) for a resource name."""
+        assert self.mod is not None
+        self.mod.set_data(resname, ResourceType.TGA, bytes(tga_data))
+        self.mod.set_data(resname, ResourceType.TXI, bytes(txi_data))
+
     def process_room_components(self):
         for room in self.rooms:
             self.used_rooms.add(room.component)
         for kit_room in self.used_rooms:
             self.scan_mdls.add(kit_room.mdl)
             self.used_kits.add(kit_room.kit)
-            for door_padding_dict in list(kit_room.kit.top_padding.values()) + list(kit_room.kit.side_padding.values()):
-                for padding_model in door_padding_dict.values():
-                    self.scan_mdls.add(padding_model.mdl)
+            for padding_model in self._iter_padding_models(kit_room):
+                self.scan_mdls.add(padding_model.mdl)
 
     def handle_textures(self):
         assert self.mod is not None
         # Deterministic iteration: sets are unordered and can change rename indices across runs.
         for mdl in sorted(self.scan_mdls):
             # Deterministic rename order is required for stable `.indoor -> .mod` rebuilds.
-            for texture in (t for t in sorted(model.iterate_textures(mdl)) if t not in self.tex_renames):
-                renamed = f"{self.module_id}_tex{len(self.tex_renames.keys())}"
+            # Sort only textures not yet renamed to avoid redundant work.
+            for texture in sorted(t for t in model.iterate_textures(mdl) if t not in self.tex_renames):
+                renamed = f"{self.module_id}_tex{len(self.tex_renames)}"
                 self.tex_renames[texture] = renamed
-                for kit in sorted(self.used_kits, key=lambda k: k.id):
+                for kit in self._sorted_used_kits():
                     if texture not in kit.textures:
                         continue
-                    self.mod.set_data(renamed, ResourceType.TGA, kit.textures[texture])
-                    self.mod.set_data(renamed, ResourceType.TXI, kit.txis.get(texture, b""))
+                    self._set_tga_txi(renamed, kit.textures[texture], kit.txis.get(texture, b""))
 
     def handle_lightmaps(
         self,
         installation: Installation,
     ):
-        assert self.mod is not None
+        _ = installation
         # The toolset tries kit lightmaps first, then installation. We keep the same behavior.
-        for kit in sorted(self.used_kits, key=lambda k: k.id):
+        for kit in self._sorted_used_kits():
             for lightmap_name in sorted(kit.lightmaps.keys()):
                 lightmap_data = kit.lightmaps[lightmap_name]
                 # Ensure TXI for lightmaps is also placed
-                self.mod.set_data(lightmap_name, ResourceType.TGA, lightmap_data)
-                self.mod.set_data(lightmap_name, ResourceType.TXI, kit.txis.get(lightmap_name, b""))
+                self._set_tga_txi(lightmap_name, lightmap_data, kit.txis.get(lightmap_name, b""))
 
         # Additionally, later `process_lightmaps` will pull missing lightmaps from installation if needed.
 
@@ -333,6 +356,34 @@ class IndoorMap(ComparableMixin):
         mdl_converted: bytes | bytearray = model.convert_to_k2(mdl_transformed) if target_tsl else model.convert_to_k1(mdl_transformed)
         return mdl_converted, mdx
 
+    def _ensure_lightmap_tga(self, renamed: str, lightmap: str, installation: Installation) -> None:
+        """Populate missing lightmap TGA from installation texture sources."""
+        assert self.mod is not None
+        if self.mod.has(renamed, ResourceType.TGA):
+            return
+
+        tex = installation.texture(
+            lightmap,
+            [
+                SearchLocation.CHITIN,
+                SearchLocation.OVERRIDE,
+                SearchLocation.TEXTURES_TPA,
+                SearchLocation.TEXTURES_TPB,
+                SearchLocation.TEXTURES_TPC,
+                SearchLocation.TEXTURES_GUI,
+            ],
+        )
+        if tex is None:
+            return
+
+        tex = tex.copy()
+        fmt = tex.format()
+        if fmt in (TPCTextureFormat.BGR, TPCTextureFormat.DXT1, TPCTextureFormat.Greyscale):
+            tex.convert(TPCTextureFormat.RGB)
+        elif fmt in (TPCTextureFormat.BGRA, TPCTextureFormat.DXT3, TPCTextureFormat.DXT5):
+            tex.convert(TPCTextureFormat.RGBA)
+        self.mod.set_data(renamed, ResourceType.TGA, bytes_tpc(tex, ResourceType.TGA))
+
     def process_lightmaps(
         self,
         mdl_data: bytes | bytearray,
@@ -347,34 +398,11 @@ class IndoorMap(ComparableMixin):
             lm_renames[lightmap.lower()] = renamed
 
             # Prefer kit-copied lightmaps already in mod; else try installation for texture + txi.
-            tga_in_mod = self.mod.get(renamed, ResourceType.TGA) if self.mod.has(renamed, ResourceType.TGA) else None
-            if tga_in_mod is None:
-                tex = installation.texture(
-                    lightmap,
-                    [
-                        SearchLocation.CHITIN,
-                        SearchLocation.OVERRIDE,
-                        SearchLocation.TEXTURES_TPA,
-                        SearchLocation.TEXTURES_TPB,
-                        SearchLocation.TEXTURES_TPC,
-                        SearchLocation.TEXTURES_GUI,
-                    ],
-                )
-                if tex is not None:
-                    # Convert to RGBA and store as TGA
-                    tex = tex.copy()
-                    fmt = tex.format()
-                    if fmt in (TPCTextureFormat.BGR, TPCTextureFormat.DXT1, TPCTextureFormat.Greyscale):
-                        tex.convert(TPCTextureFormat.RGB)
-                    elif fmt in (TPCTextureFormat.BGRA, TPCTextureFormat.DXT3, TPCTextureFormat.DXT5):
-                        tex.convert(TPCTextureFormat.RGBA)
-                    self.mod.set_data(renamed, ResourceType.TGA, bytes_tpc(tex, ResourceType.TGA))
+            self._ensure_lightmap_tga(renamed, lightmap, installation)
         return model.change_lightmaps(mdl_data, lm_renames)
 
     def process_bwm(self, room: IndoorMapRoom) -> BWM:
-        bwm: BWM = deepcopy(room.base_walkmesh())
-        bwm.flip(room.flip_x, room.flip_y)
-        bwm.rotate(room.rotation)
+        bwm: BWM = room.walkmesh()
         # IMPORTANT (engine behavior):
         # The game does not apply LYT room transforms to *binary* room walkmeshes at runtime.
         # Module WOKs are effectively consumed in world coordinates, so we must bake the room transform
@@ -385,8 +413,7 @@ class IndoorMap(ComparableMixin):
         # - `CSWCollisionMesh__TransformToWorld` only runs when `field9_0x4c == 0`
         # - `CSWSRoom__TransformToWorld` calls `TransformToWorld` (but it is a no-op for binary meshes)
         #
-        # Therefore: translate by LYT position during build to keep walkmesh aligned with the room model.
-        bwm.translate(room.position.x, room.position.y, room.position.z)
+        # Therefore: walkmesh must be transformed to world space during build.
         return bwm
 
     def add_model_resources(
@@ -422,13 +449,7 @@ class IndoorMap(ComparableMixin):
             self.vis.add_room(model_name)
 
     def _compute_bounds(self) -> tuple[Vector2, Vector2]:
-        walkmeshes: list[BWM] = []
-        for room in self.rooms:
-            bwm = deepcopy(room.base_walkmesh())
-            bwm.flip(room.flip_x, room.flip_y)
-            bwm.rotate(room.rotation)
-            bwm.translate(room.position.x, room.position.y, room.position.z)
-            walkmeshes.append(bwm)
+        walkmeshes: list[BWM] = [room.walkmesh() for room in self.rooms]
 
         bbmin = Vector3(1000000, 1000000, 1000000)
         bbmax = Vector3(-1000000, -1000000, -1000000)
@@ -507,17 +528,74 @@ class IndoorMap(ComparableMixin):
             door.tag = door_resname
             door.position = insertion.position
             door.bearing = math.radians(insertion.rotation)
-            if insertion.room2 is not None:
-                # Linked door
-                door.linked_to_module = ResRef(self.module_id)
-                door.linked_to = door_resname
-                door.linked_to_flags = GITModuleLink.ToDoor
-            else:
-                door.linked_to_flags = GITModuleLink.NoLink
+            self._configure_git_door_link(door, door_resname, insertion)
             self.git.doors.append(door)
 
-            utd = insertion.door.utdK2 if target_tsl else insertion.door.utdK1
+            utd = self._door_utd_for_target(insertion, target_tsl)
             self.mod.set_data(door_resname, ResourceType.UTD, bytes_utd(utd))
+
+    def _configure_git_door_link(self, door: GITDoor, door_resname: str, insertion: DoorInsertion) -> None:
+        """Configure door linkage fields for static or linked insertions."""
+        if insertion.room2 is None:
+            door.linked_to_flags = GITModuleLink.NoLink
+            return
+        door.linked_to_module = ResRef(self.module_id)
+        door.linked_to = door_resname
+        door.linked_to_flags = GITModuleLink.ToDoor
+
+    @staticmethod
+    def _door_utd_for_target(insertion: DoorInsertion, target_tsl: bool) -> UTD:
+        """Return K1/K2 door template based on target game selection."""
+        return insertion.door.utdK2 if target_tsl else insertion.door.utdK1
+
+    def _initialize_build_state(self) -> None:
+        """Reset and allocate transient build objects for module generation."""
+        self.mod = ERF(ERFType.MOD)
+        self.lyt = LYT()
+        self.vis = VIS()
+        self.are = ARE()
+        self.ifo = IFO()
+        self.git = GIT()
+        self.room_names.clear()
+        self.tex_renames.clear()
+        self.total_lm = 0
+        self.used_rooms.clear()
+        self.used_kits.clear()
+        self.scan_mdls.clear()
+
+    def _build_room_resources(
+        self,
+        room: IndoorMapRoom,
+        modelname: str,
+        installation: Installation,
+        target_tsl: bool,
+    ) -> None:
+        """Emit per-room model, walkmesh, and static resources into build state."""
+        assert self.lyt is not None
+        self.room_names[room] = modelname
+        self.lyt.rooms.append(LYTRoom(modelname, room.position))
+        self.add_static_resources(room)
+
+        mdl, mdx = self.process_model(room, installation, target_tsl)
+        mdl = self.process_lightmaps(mdl, installation)
+        self.add_model_resources(modelname, mdl, mdx)
+
+        bwm = self.process_bwm(room)
+        self.add_bwm_resource(modelname, bwm)
+
+    def _apply_loadscreen_override(self, loadscreen_path: os.PathLike | str | None) -> None:
+        """Apply optional custom loadscreen payload when file exists."""
+        if loadscreen_path is None:
+            return
+        assert self.mod is not None
+        from pathlib import Path  # noqa: PLC0415
+
+        load_path = Path(loadscreen_path)
+        if not load_path.is_file():
+            return
+        data = load_path.read_bytes()
+        restype = ResourceType.TGA if load_path.suffix.lower() == ".tga" else ResourceType.TPC
+        self.mod.set_data(f"load_{self.module_id}", restype, data)
 
     def finalize_module_data(self):
         assert self.mod is not None, "mod is None"
@@ -526,11 +604,15 @@ class IndoorMap(ComparableMixin):
         assert self.are is not None, "are is None"
         assert self.git is not None, "git is None"
         assert self.ifo is not None, "ifo is None"
-        self.mod.set_data(self.module_id, ResourceType.LYT, bytes_lyt(self.lyt))
-        self.mod.set_data(self.module_id, ResourceType.VIS, bytes_vis(self.vis))
-        self.mod.set_data(self.module_id, ResourceType.ARE, bytes_are(self.are))
-        self.mod.set_data(self.module_id, ResourceType.GIT, bytes_git(self.git))
-        self.mod.set_data("module", ResourceType.IFO, bytes_ifo(self.ifo))
+        payloads = (
+            (self.module_id, ResourceType.LYT, bytes_lyt(self.lyt)),
+            (self.module_id, ResourceType.VIS, bytes_vis(self.vis)),
+            (self.module_id, ResourceType.ARE, bytes_are(self.are)),
+            (self.module_id, ResourceType.GIT, bytes_git(self.git)),
+            ("module", ResourceType.IFO, bytes_ifo(self.ifo)),
+        )
+        for resname, restype, data in payloads:
+            self.mod.set_data(resname, restype, data)
 
         # NOTE: We intentionally do NOT embed the `.indoor` JSON into the built module.
         # Roundtrip correctness must come from reconstructing state from game resources
@@ -545,18 +627,7 @@ class IndoorMap(ComparableMixin):
         game_override: Game | None = None,
         loadscreen_path: os.PathLike | str | None = None,
     ):
-        self.mod = ERF(ERFType.MOD)
-        self.lyt = LYT()
-        self.vis = VIS()
-        self.are = ARE()
-        self.ifo = IFO()
-        self.git = GIT()
-        self.room_names.clear()
-        self.tex_renames.clear()
-        self.total_lm = 0
-        self.used_rooms.clear()
-        self.used_kits.clear()
-        self.scan_mdls.clear()
+        self._initialize_build_state()
 
         target_tsl: bool = self._target_is_k2(installation, game_override)
 
@@ -568,30 +639,12 @@ class IndoorMap(ComparableMixin):
         # Process each room
         for i, room in enumerate(self.rooms):
             modelname = f"{self.module_id}_room{i}"
-            self.room_names[room] = modelname
-            self.lyt.rooms.append(LYTRoom(modelname, room.position))
-            self.add_static_resources(room)
-
-            mdl, mdx = self.process_model(room, installation, target_tsl)
-            mdl = model.change_textures(mdl, self.tex_renames)
-            mdl = self.process_lightmaps(mdl, installation)
-            self.add_model_resources(modelname, mdl, mdx)
-
-            bwm = self.process_bwm(room)
-            self.add_bwm_resource(modelname, bwm)
+            self._build_room_resources(room, modelname, installation, target_tsl)
 
         self.process_skybox(kits)
         self.generate_and_set_minimap()
 
-        # Loadscreen override
-        if loadscreen_path is not None:
-            from pathlib import Path  # noqa: PLC0415
-
-            load_path = Path(loadscreen_path)
-            if load_path.is_file():
-                data = load_path.read_bytes()
-                restype = ResourceType.TGA if load_path.suffix.lower() == ".tga" else ResourceType.TPC
-                self.mod.set_data(f"load_{self.module_id}", restype, data)
+        self._apply_loadscreen_override(loadscreen_path)
 
         self.handle_door_insertions(target_tsl)
         bounds: tuple[Vector2, Vector2] = self._compute_bounds()
@@ -620,41 +673,14 @@ class IndoorMap(ComparableMixin):
 
         embedded_components: dict[str, EmbeddedComponentDataDict] = {}
         for room in self.rooms:
-            room_data: RoomDataDict = {
-                "position": [*room.position],
-                "rotation": room.rotation,
-                "flip_x": room.flip_x,
-                "flip_y": room.flip_y,
-                "kit": room.component.kit.id,
-                "component": room.component.id,
-            }
-            # Implicit ModuleKit support: persist the module root used to resolve the kit.
-            if isinstance(room.component.kit, ModuleKit):
-                room_data["module_root"] = room.component.kit.module_root
-            if room.walkmesh_override is not None:
-                room_data["walkmesh_override"] = base64.b64encode(bytes_bwm(room.walkmesh_override)).decode("ascii")
+            room_data = self._room_to_data(room)
             data["rooms"].append(room_data)
 
             # Persist embedded components (used by Toolset merge-room workflows).
             if room.component.kit.id == _EMBEDDED_KIT_ID:
                 cid = str(room.component.id)
                 if cid not in embedded_components:
-                    embedded_component: EmbeddedComponentDataDict = {
-                        "id": cid,
-                        "name": str(room.component.name),
-                        "bwm": base64.b64encode(bytes_bwm(room.component.bwm)).decode("ascii"),
-                        "mdl": base64.b64encode(bytes(room.component.mdl)).decode("ascii"),
-                        "mdx": base64.b64encode(bytes(room.component.mdx)).decode("ascii"),
-                        "hooks": [
-                            {
-                                "position": [*h.position],
-                                "rotation": h.rotation,
-                                "edge": h.edge,
-                            }
-                            for h in room.component.hooks
-                        ],
-                    }
-                    embedded_components[cid] = embedded_component
+                    embedded_components[cid] = self._embedded_component_to_data(room.component)
 
         if embedded_components:
             # JSON-friendly list form for stable ordering.
@@ -683,100 +709,222 @@ class IndoorMap(ComparableMixin):
         module_kit_manager: ModuleKitManager | None = None,
     ) -> list[MissingRoomInfo]:
         missing_rooms: list[MissingRoomInfo] = []
+        logger = RobustLogger()
 
-        name_dict = data["name"]
-        if isinstance(name_dict, dict):
-            self.name = LocalizedString(name_dict["stringref"])
-            for substring_id in (key for key in name_dict if str(key).isnumeric()):
-                language, gender = LocalizedString.substring_pair(int(substring_id))
-                self.name.set_data(language, gender, name_dict[substring_id])  # type: ignore[index]
-
-        self.lighting.r = data["lighting"][0]
-        self.lighting.g = data["lighting"][1]
-        self.lighting.b = data["lighting"][2]
+        self._load_localized_name(data["name"])
+        self._apply_lighting_data(data["lighting"])
 
         self.module_id = data.get("warp", data.get("module_id", "test01"))
         self.skybox = data.get("skybox", "")
         self.target_game_type = data.get("target_game_type", None)
 
         # Load any embedded components first, so room references can resolve.
-        embedded_list = data.get("embedded_components") or []
-        if embedded_list:
-            ek = _ensure_embedded_kit(kits)
-            # Replace components by id to keep the kit stable across multiple loads.
-            existing_by_id: dict[str, KitComponent] = {c.id: c for c in ek.components}
-            for comp_data in embedded_list:
-                try:
-                    comp_id = str(comp_data["id"])
-                    name = str(comp_data.get("name") or comp_id)
-                    bwm_raw = base64.b64decode(comp_data["bwm"])
-                    mdl_raw = base64.b64decode(comp_data.get("mdl", "")) if comp_data.get("mdl") else b""
-                    mdx_raw = base64.b64decode(comp_data.get("mdx", "")) if comp_data.get("mdx") else b""
-                    bwm_obj = read_bwm(bwm_raw)
-                except Exception as exc:  # noqa: BLE001
-                    RobustLogger().warning("Failed to load embedded component '%s': %s", comp_data.get("id"), exc)
-                    continue
-
-                comp = KitComponent(kit=ek, name=name, component_id=comp_id, bwm=bwm_obj, mdl=mdl_raw, mdx=mdx_raw)
-                comp.hooks.clear()
-                for h in comp_data.get("hooks", []):
-                    try:
-                        pos = h["position"]
-                        hook = KitComponentHook(
-                            position=Vector3(float(pos[0]), float(pos[1]), float(pos[2])),
-                            rotation=float(h.get("rotation", 0.0)),
-                            edge=int(h.get("edge", 0)),
-                            door=ek.doors[0],
-                        )
-                        comp.hooks.append(hook)
-                    except Exception:  # noqa: BLE001
-                        continue
-
-                if comp_id in existing_by_id:
-                    # Replace in-place to keep list order stable.
-                    idx = ek.components.index(existing_by_id[comp_id])
-                    ek.components[idx] = comp
-                    existing_by_id[comp_id] = comp
-                else:
-                    ek.components.append(comp)
-                    existing_by_id[comp_id] = comp
+        self._load_embedded_components(data.get("embedded_components") or [], kits, logger)
 
         for room_data in data.get("rooms", []):
             kit_id = room_data["kit"]
             comp_id = room_data["component"]
-            s_kit: Kit | None = next((k for k in kits if k.id == kit_id), None)
+            s_kit = self._resolve_room_kit(room_data, kit_id, kits, module_kit_manager)
             if s_kit is None:
-                if module_kit_manager is not None:
-                    module_root = str(room_data.get("module_root") or kit_id)
-                    mk = module_kit_manager.get_module_kit(module_root)
-                    if mk.ensure_loaded():
-                        s_kit = mk
-                if s_kit is None:
-                    RobustLogger().warning("Kit '%s' is missing, skipping room.", kit_id)
-                    missing_rooms.append(MissingRoomInfo(kit_name=kit_id, component_name=comp_id, reason="kit_missing"))
-                    continue
-            s_component: KitComponent | None = next((c for c in s_kit.components if c.id == comp_id), None)
+                logger.warning("Kit '%s' is missing, skipping room.", kit_id)
+                self._record_missing_room(missing_rooms, kit_name=kit_id, component_name=comp_id, reason="kit_missing")
+                continue
+            s_component = self._find_component_by_id(s_kit, comp_id)
             if s_component is None:
-                RobustLogger().warning("Component '%s' is missing in kit '%s', skipping room.", comp_id, s_kit.id)
-                missing_rooms.append(MissingRoomInfo(kit_name=kit_id, component_name=comp_id, reason="component_missing"))
+                logger.warning("Component '%s' is missing in kit '%s', skipping room.", comp_id, s_kit.id)
+                self._record_missing_room(missing_rooms, kit_name=kit_id, component_name=comp_id, reason="component_missing")
                 continue
 
-            room = IndoorMapRoom(
-                s_component,
-                Vector3(room_data["position"][0], room_data["position"][1], room_data["position"][2]),
-                float(room_data["rotation"]),
-                flip_x=bool(room_data.get("flip_x", False)),
-                flip_y=bool(room_data.get("flip_y", False)),
-            )
-            if "walkmesh_override" in room_data:
-                try:
-                    raw_bwm = base64.b64decode(room_data["walkmesh_override"])
-                    room.walkmesh_override = read_bwm(raw_bwm)
-                except Exception as exc:  # noqa: BLE001
-                    RobustLogger().warning("Failed to read walkmesh override for room '%s': %s", room.component.id, exc)
+            room = self._parse_room_instance(room_data, s_component, logger)
             self.rooms.append(room)
 
         return missing_rooms
+
+    @staticmethod
+    def _find_component_by_id(kit: Kit, component_id: str) -> KitComponent | None:
+        return next((c for c in kit.components if c.id == component_id), None)
+
+    @staticmethod
+    def _b64_ascii(raw: bytes) -> str:
+        """Encode binary payload as ASCII base64 text."""
+        return base64.b64encode(raw).decode("ascii")
+
+    @classmethod
+    def _room_to_data(cls, room: IndoorMapRoom) -> RoomDataDict:
+        """Serialize room instance into JSON-compatible room payload."""
+        room_data: RoomDataDict = {
+            "position": [*room.position],
+            "rotation": room.rotation,
+            "flip_x": room.flip_x,
+            "flip_y": room.flip_y,
+            "kit": room.component.kit.id,
+            "component": room.component.id,
+        }
+        if isinstance(room.component.kit, ModuleKit):
+            room_data["module_root"] = room.component.kit.module_root
+        if room.walkmesh_override is not None:
+            room_data["walkmesh_override"] = cls._b64_ascii(bytes_bwm(room.walkmesh_override))
+        return room_data
+
+    @classmethod
+    def _embedded_component_to_data(cls, component: KitComponent) -> EmbeddedComponentDataDict:
+        """Serialize embedded component and hooks into JSON-compatible payload."""
+        return {
+            "id": str(component.id),
+            "name": str(component.name),
+            "bwm": cls._b64_ascii(bytes_bwm(component.bwm)),
+            "mdl": cls._b64_ascii(bytes(component.mdl)),
+            "mdx": cls._b64_ascii(bytes(component.mdx)),
+            "hooks": [
+                {
+                    "position": [*h.position],
+                    "rotation": h.rotation,
+                    "edge": h.edge,
+                }
+                for h in component.hooks
+            ],
+        }
+
+    def _load_localized_name(self, name_data: NameDataDict | dict[str, Any]) -> None:
+        """Populate localized module name from serialized name payload."""
+        if not isinstance(name_data, dict):
+            return
+        self.name = LocalizedString(name_data["stringref"])
+        for substring_id in (key for key in name_data if str(key).isnumeric()):
+            language, gender = LocalizedString.substring_pair(int(substring_id))
+            self.name.set_data(language, gender, name_data[substring_id])  # type: ignore[index]
+
+    def _apply_lighting_data(self, lighting: list[float]) -> None:
+        """Apply serialized RGB lighting values to map state."""
+        self.lighting.r = lighting[0]
+        self.lighting.g = lighting[1]
+        self.lighting.b = lighting[2]
+
+    @staticmethod
+    def _record_missing_room(
+        missing_rooms: list[MissingRoomInfo],
+        *,
+        kit_name: str,
+        component_name: str | None,
+        reason: str,
+    ) -> None:
+        """Append a normalized missing-room record."""
+        missing_rooms.append(MissingRoomInfo(kit_name=kit_name, component_name=component_name, reason=reason))
+
+    @classmethod
+    def _load_embedded_components(
+        cls,
+        embedded_list: list[EmbeddedComponentDataDict],
+        kits: list[Kit],
+        logger: RobustLogger,
+    ) -> None:
+        """Load embedded components and upsert them in the embedded kit."""
+        if not embedded_list:
+            return
+        ek = _ensure_embedded_kit(kits)
+        # id -> index into ek.components for O(1) lookup when upserting
+        id_to_index: dict[str, int] = {c.id: i for i, c in enumerate(ek.components)}
+        for comp_data in embedded_list:
+            comp = cls._parse_embedded_component(comp_data, ek, logger)
+            if comp is None:
+                continue
+            comp_id = comp.id
+            if comp_id in id_to_index:
+                ek.components[id_to_index[comp_id]] = comp
+            else:
+                id_to_index[comp_id] = len(ek.components)
+                ek.components.append(comp)
+
+    @staticmethod
+    def _apply_walkmesh_override(
+        room: IndoorMapRoom,
+        room_data: RoomDataDict,
+        logger: RobustLogger,
+    ) -> None:
+        """Decode and apply optional room walkmesh override from JSON payload."""
+        if "walkmesh_override" not in room_data:
+            return
+        try:
+            raw_bwm = base64.b64decode(room_data["walkmesh_override"])
+            room.walkmesh_override = read_bwm(raw_bwm)
+        except Exception as exc:  # noqa: BLE001
+            logger.warning("Failed to read walkmesh override for room '%s': %s", room.component.id, exc)
+
+    @classmethod
+    def _parse_room_instance(
+        cls,
+        room_data: RoomDataDict,
+        component: KitComponent,
+        logger: RobustLogger,
+    ) -> IndoorMapRoom:
+        """Construct `IndoorMapRoom` from serialized room payload and component."""
+        room = IndoorMapRoom(
+            component,
+            Vector3(room_data["position"][0], room_data["position"][1], room_data["position"][2]),
+            float(room_data["rotation"]),
+            flip_x=bool(room_data.get("flip_x", False)),
+            flip_y=bool(room_data.get("flip_y", False)),
+        )
+        cls._apply_walkmesh_override(room, room_data, logger)
+        return room
+
+    @staticmethod
+    def _decode_optional_base64(value: str | None) -> bytes:
+        """Decode optional base64 field, returning empty bytes when absent."""
+        return base64.b64decode(value) if value else b""
+
+    @staticmethod
+    def _resolve_room_kit(
+        room_data: RoomDataDict,
+        kit_id: str,
+        kits: list[Kit],
+        module_kit_manager: ModuleKitManager | None,
+    ) -> Kit | None:
+        """Resolve room kit from explicit list, then fallback to module kit manager."""
+        selected_kit: Kit | None = next((k for k in kits if k.id == kit_id), None)
+        if selected_kit is not None or module_kit_manager is None:
+            return selected_kit
+
+        module_root = str(room_data.get("module_root") or kit_id)
+        module_kit = module_kit_manager.get_module_kit(module_root)
+        if module_kit.ensure_loaded():
+            return module_kit
+        return None
+
+    @classmethod
+    def _parse_embedded_component(
+        cls,
+        comp_data: EmbeddedComponentDataDict,
+        embedded_kit: EmbeddedKit,
+        logger: RobustLogger,
+    ) -> KitComponent | None:
+        """Parse embedded component payload into a runtime `KitComponent`."""
+        try:
+            comp_id = str(comp_data["id"])
+            name = str(comp_data.get("name") or comp_id)
+            bwm_raw = base64.b64decode(comp_data["bwm"])
+            mdl_raw = cls._decode_optional_base64(comp_data.get("mdl"))
+            mdx_raw = cls._decode_optional_base64(comp_data.get("mdx"))
+            bwm_obj = read_bwm(bwm_raw)
+        except Exception as exc:  # noqa: BLE001
+            logger.warning("Failed to load embedded component '%s': %s", comp_data.get("id"), exc)
+            return None
+
+        component = KitComponent(kit=embedded_kit, name=name, component_id=comp_id, bwm=bwm_obj, mdl=mdl_raw, mdx=mdx_raw)
+        component.hooks.clear()
+        for hook_data in comp_data.get("hooks", []):
+            try:
+                pos = hook_data["position"]
+                hook = KitComponentHook(
+                    position=Vector3(float(pos[0]), float(pos[1]), float(pos[2])),
+                    rotation=float(hook_data.get("rotation", 0.0)),
+                    edge=int(hook_data.get("edge", 0)),
+                    door=embedded_kit.doors[0],
+                )
+                component.hooks.append(hook)
+            except Exception:  # noqa: BLE001
+                continue
+        return component
 
     def reset(self):
         self.rooms.clear()
@@ -895,8 +1043,7 @@ class IndoorMapRoom(ComparableMixin):
 
     def rebuild_connections(self, rooms: list[IndoorMapRoom]):
         self.hooks = [None] * len(self.component.hooks)
-        for hook in self.component.hooks:
-            hook_index = self.component.hooks.index(hook)
+        for hook_index, hook in enumerate(self.component.hooks):
             hook_pos = self.hook_position(hook)
             for other_room in (r for r in rooms if r is not self):
                 for other_hook in other_room.component.hooks:

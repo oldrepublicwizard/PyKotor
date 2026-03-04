@@ -1,3 +1,5 @@
+"""TXT (plain text) editor: view/edit text files with encoding detection."""
+
 from __future__ import annotations
 
 import os

@@ -1,3 +1,5 @@
+"""GIT (module instance) editor settings: colors, key bindings, and instance labels."""
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING

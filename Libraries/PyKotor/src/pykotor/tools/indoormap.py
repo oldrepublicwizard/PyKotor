@@ -36,12 +36,219 @@ if TYPE_CHECKING:
 
     from pykotor.common.indoorkit import Kit, KitComponent
     from pykotor.common.misc import Game
-    from pykotor.common.module import ModuleResource
     from pykotor.common.modulekit import ModuleKit
     from pykotor.resource.formats.bwm import BWM
-    from pykotor.resource.formats.lyt import LYT
+    from pykotor.resource.formats.lyt import LYT, LYTRoom
     from pykotor.resource.generics.are import ARE
     from pykotor.resource.generics.ifo import IFO
+
+
+def _resolve_installation(
+    installation_path: os.PathLike | str,
+    installation: Installation | None,
+) -> Installation:
+    """Return injected installation or build one from path."""
+    return installation if installation is not None else Installation(CaseAwarePath(installation_path))
+
+
+def _resolve_module_kit_manager(
+    installation: Installation,
+    module_kit_manager: ModuleKitManager | None,
+) -> ModuleKitManager:
+    """Return injected module-kit manager or create a default one."""
+    return module_kit_manager if module_kit_manager is not None else ModuleKitManager(installation)
+
+
+def _load_module_kit_or_raise(module_kit_manager: ModuleKitManager, module_root: str) -> ModuleKit:
+    """Load module-backed kit and raise when it cannot be fully resolved."""
+    kit = module_kit_manager.get_module_kit(module_root)
+    if not kit.ensure_loaded():
+        msg = f"Failed to load module '{module_root}' as ModuleKit"
+        raise ValueError(msg)
+    return kit
+
+
+def _collect_unique_room_kits(indoor_map: IndoorMap) -> list[Kit]:
+    """Collect unique kits referenced by indoor rooms preserving room order."""
+    kits: list[Kit] = []
+    seen: set[str] = set()
+    for room in indoor_map.rooms:
+        kit = room.component.kit
+        if kit.id in seen:
+            continue
+        seen.add(kit.id)
+        kits.append(kit)
+    return kits
+
+
+def _append_indoor_room(
+    indoor: IndoorMap,
+    component: KitComponent,
+    position: Vector3,
+    *,
+    rotation: float = 0.0,
+    flip_x: bool = False,
+    flip_y: bool = False,
+) -> None:
+    """Append a new indoor room instance using explicit transform fields."""
+    indoor.rooms.append(IndoorMapRoom(component, Vector3(position.x, position.y, position.z), rotation=rotation, flip_x=flip_x, flip_y=flip_y))
+
+
+def _components_by_vertex_count(kits: list[Kit]) -> dict[int, list[KitComponent]]:
+    """Index components by walkmesh vertex count for fast candidate prefiltering."""
+    components: list[KitComponent] = [comp for kit in kits for comp in kit.components]
+    by_vert_count: dict[int, list[KitComponent]] = {}
+    for comp in components:
+        vcount = len(comp.bwm.vertices())
+        by_vert_count.setdefault(vcount, []).append(comp)
+    return by_vert_count
+
+
+def _first_lyt_payload(erf) -> tuple[bytes | None, str | None]:
+    lyt_bytes: bytes | None = None
+    lyt_resref: str | None = None
+    for resource in erf:
+        if resource.restype != ResourceType.LYT:
+            continue
+        payload = resource.data() if callable(getattr(resource, "data", None)) else resource.data  # type: ignore[truthy-function]
+        lyt_bytes = bytes(payload)
+        lyt_resref = str(resource.resref).lower()
+        break
+    return lyt_bytes, lyt_resref
+
+
+def _copy_points(points: list[Vector3]) -> list[Vector3]:
+    """Return value-copy of points to keep transform helpers side-effect free."""
+    return [Vector3(p.x, p.y, p.z) for p in points]
+
+
+def _append_rooms_by_index(indoor: IndoorMap, lyt: LYT, components: list[KitComponent]) -> None:
+    """Append rooms by index-aligned LYT-room/component ordering."""
+    for i, room in enumerate(lyt.rooms):
+        _append_indoor_room(indoor, components[i], room.position)
+
+
+def _module_layout_or_raise(module: Module, module_name: str) -> LYT:
+    """Return parsed module LYT or raise a consistent extraction error."""
+    lyt_res = module.layout()
+    lyt = None if lyt_res is None else lyt_res.resource()
+    if lyt is None:
+        raise ValueError(f"Module '{module_name}' has no LYT layout; cannot extract rooms.")
+    return lyt
+
+
+def _module_resource_bytes(module: Module, resname: str, restype: ResourceType) -> bytes | None:
+    """Return resource payload as bytes when present in module container."""
+    module_res = module.resource(resname, restype)
+    if module_res is None:
+        return None
+    data = module_res.data()
+    return None if data is None else bytes(data)
+
+
+def _best_transform_match(
+    candidates: list[KitComponent],
+    instance_bwm: BWM,
+    *,
+    max_rms: float,
+) -> _RoomTransformMatch | None:
+    """Pick the lowest-RMS transform match from candidate kit components."""
+    best_match: _RoomTransformMatch | None = None
+    for comp in candidates:
+        inferred = infer_room_transform_bwm(comp.bwm, instance_bwm, max_rms=max_rms)
+        if inferred is None:
+            continue
+        flip_x, flip_y, rot_deg, translation, err = inferred
+        match = _RoomTransformMatch(comp, flip_x, flip_y, rot_deg, translation, err)
+        if best_match is None or match.rms_error < best_match.rms_error:
+            best_match = match
+    return best_match
+
+
+def _module_room_wok_bwm(module: Module, model_name: str) -> BWM | None:
+    """Read and parse module room WOK into a BWM object."""
+    wok_data = _module_resource_bytes(module, model_name, ResourceType.WOK)
+    return None if wok_data is None else read_bwm(wok_data)
+
+
+def _best_room_component_match(
+    by_vert_count: dict[int, list[KitComponent]],
+    instance_bwm: BWM,
+    *,
+    max_rms: float,
+) -> _RoomTransformMatch | None:
+    """Find best component match by using vertex-count bucket then RMS fit."""
+    candidates = by_vert_count.get(len(instance_bwm.vertices()), [])
+    if not candidates:
+        return None
+    return _best_transform_match(candidates, instance_bwm, max_rms=max_rms)
+
+
+def _module_are_ifo(module: Module) -> tuple[ARE | None, IFO | None]:
+    """Return optional ARE/IFO resources from module."""
+    are_res = module.are()
+    ifo_res = module.ifo()
+    return (
+        None if are_res is None else are_res.resource(),
+        None if ifo_res is None else ifo_res.resource(),
+    )
+
+
+def _apply_indoor_metadata(indoor: IndoorMap, module: Module, are: ARE | None, ifo: IFO | None) -> None:
+    """Apply module id, area lighting/name, and warp point to indoor map."""
+    indoor.module_id = module.module_id() or "test01"
+    if are is not None:
+        indoor.name = are.name
+        indoor.lighting = are.dynamic_light
+    if ifo is not None:
+        indoor.warp_point = ifo.entry_position
+
+
+def _is_builder_sky_room(model_name: str, module_id: str) -> bool:
+    """Return True when room model is the synthetic builder sky room."""
+    return model_name.lower() == f"{module_id}_sky".lower()
+
+
+def _record_unmatched_room(unmatched: list[str], model_name: str) -> None:
+    """Track an unmatched room model name during reverse extraction."""
+    unmatched.append(model_name)
+
+
+def _resolve_extraction_kits(
+    module_name: str,
+    kits_path: os.PathLike | str,
+    module_kit_manager: ModuleKitManager | None,
+) -> list[Kit]:
+    """Load explicit kits and optionally append an implicit module kit."""
+    kits = load_kits(kits_path) if str(kits_path) else []
+    if module_kit_manager is None:
+        return kits
+    module_root: str = Installation.get_module_root(module_name)
+    try:
+        kits.append(_load_module_kit_or_raise(module_kit_manager, module_root))
+    except ValueError:
+        pass
+    return kits
+
+
+def _room_from_transform_match(room: LYTRoom, best_match: _RoomTransformMatch, instance_bwm: BWM) -> IndoorMapRoom:
+    """Create IndoorMapRoom from best transform match with optional override walkmesh."""
+    room_obj = IndoorMapRoom(
+        best_match.component,
+        position=Vector3(room.position.x, room.position.y, room.position.z),
+        rotation=best_match.rotation_deg,
+        flip_x=best_match.flip_x,
+        flip_y=best_match.flip_y,
+    )
+    pos_from_fit: Vector3 = best_match.translation
+    lyt_pos: Vector3 = Vector3(room.position.x, room.position.y, room.position.z)
+    if pos_from_fit.distance(lyt_pos) > 1e-3:
+        override: BWM = deepcopy(instance_bwm)
+        override.translate(-lyt_pos.x, -lyt_pos.y, -lyt_pos.z)
+        override.rotate(-best_match.rotation_deg)
+        override.flip(best_match.flip_x, best_match.flip_y)
+        room_obj.walkmesh_override = override
+    return room_obj
 
 
 def build_mod_from_indoor_file(
@@ -55,7 +262,7 @@ def build_mod_from_indoor_file(
     loadscreen_path: os.PathLike | str | None = None,
 ) -> None:
     """Build a `.mod` from an `.indoor` file using **explicit kits** from disk."""
-    installation = Installation(CaseAwarePath(installation_path))
+    installation = _resolve_installation(installation_path, None)
     kits = load_kits(kits_path)
     indoor_map = IndoorMap()
     indoor_map.load(Path(indoor_path).read_bytes(), kits)
@@ -76,10 +283,8 @@ def build_mod_from_indoor_file_modulekit(
     module_kit_manager: ModuleKitManager | None = None,
 ) -> None:
     """Build a `.mod` from an `.indoor` file using **implicit ModuleKit** (no on-disk kits)."""
-    if installation is None:
-        installation = Installation(CaseAwarePath(installation_path))
-    if module_kit_manager is None:
-        module_kit_manager = ModuleKitManager(installation)
+    installation = _resolve_installation(installation_path, installation)
+    module_kit_manager = _resolve_module_kit_manager(installation, module_kit_manager)
     indoor_map = IndoorMap()
     missing = indoor_map.load(Path(indoor_path).read_bytes(), [], module_kit_manager)
     if missing:
@@ -87,15 +292,8 @@ def build_mod_from_indoor_file_modulekit(
         raise ValueError(msg)
     if module_id:
         indoor_map.module_id = module_id
-    # For implicit-kit builds, just pass the kits referenced by the rooms (deduped by id).
-    kits: list[Kit] = []
-    seen: set[str] = set()
-    for room in indoor_map.rooms:
-        kit = room.component.kit
-        if kit.id in seen:
-            continue
-        seen.add(kit.id)
-        kits.append(kit)
+    # For implicit-kit builds, pass only the kits referenced by rooms.
+    kits = _collect_unique_room_kits(indoor_map)
     indoor_map.build(installation, kits, output_mod_path, game_override=game, loadscreen_path=loadscreen_path)
 
 
@@ -112,23 +310,16 @@ def extract_indoor_from_module_as_modulekit(
 
     This is the “implicit-kit extraction” path, used by `pykotorcli indoor-extract --implicit-kit`.
     """
-    if logger is None:
-        logger = RobustLogger()
+    logger = logger or RobustLogger()
 
     module_root = Path(module_name).stem.lower()
-    if installation is None:
-        installation = Installation(CaseAwarePath(installation_path))
-    if module_kit_manager is None:
-        module_kit_manager = ModuleKitManager(installation)
-    kit = module_kit_manager.get_module_kit(module_root)
-    if not kit.ensure_loaded():
-        msg = f"Failed to load module '{module_root}' as ModuleKit"
-        raise ValueError(msg)
+    installation = _resolve_installation(installation_path, installation)
+    module_kit_manager = _resolve_module_kit_manager(installation, module_kit_manager)
+    kit = _load_module_kit_or_raise(module_kit_manager, module_root)
 
     indoor = IndoorMap(module_id=module_root)
     for comp in kit.components:
-        pos = comp.default_position
-        indoor.rooms.append(IndoorMapRoom(comp, Vector3(pos.x, pos.y, pos.z), rotation=0.0, flip_x=False, flip_y=False))
+        _append_indoor_room(indoor, comp, comp.default_position)
     indoor.rebuild_room_connections()
     logger.debug("ModuleKit extraction produced %d room(s) for '%s'", len(indoor.rooms), module_root)
     return indoor
@@ -157,34 +348,21 @@ def extract_indoor_from_module_file_against_modulekit(
 
     This matches the common "extract -> build" pipeline where the room ordering is preserved.
     """
-    if logger is None:
-        logger = RobustLogger()
+    logger = logger or RobustLogger()
 
     module_path = Path(module_file)
 
     erf = read_erf(module_path)
-    lyt_bytes: bytes | None = None
-    lyt_resref: str | None = None
-    for res in erf:
-        if res.restype == ResourceType.LYT:
-            payload = res.data() if callable(getattr(res, "data", None)) else res.data  # type: ignore[truthy-function]
-            lyt_bytes = bytes(payload)
-            lyt_resref = str(res.resref).lower()
-            break
+    lyt_bytes, lyt_resref = _first_lyt_payload(erf)
     if lyt_bytes is None:
         msg = f"Module file has no LYT: {module_path}"
         raise ValueError(msg)
 
     lyt = read_lyt(lyt_bytes)
 
-    if installation is None:
-        installation = Installation(CaseAwarePath(installation_path))
-    if module_kit_manager is None:
-        module_kit_manager = ModuleKitManager(installation)
-    kit = module_kit_manager.get_module_kit(module_root.lower())
-    if not kit.ensure_loaded():
-        msg = f"Failed to load module '{module_root}' as ModuleKit"
-        raise ValueError(msg)
+    installation = _resolve_installation(installation_path, installation)
+    module_kit_manager = _resolve_module_kit_manager(installation, module_kit_manager)
+    kit = _load_module_kit_or_raise(module_kit_manager, module_root.lower())
 
     if len(lyt.rooms) != len(kit.components):
         msg = f"Room count mismatch for file '{module_path.name}': lyt={len(lyt.rooms)} kit={len(kit.components)}"
@@ -194,9 +372,7 @@ def extract_indoor_from_module_file_against_modulekit(
     # is the true module id/root, while the file name may include extra suffixes.
     out_module_id = (lyt_resref or module_path.stem).lower()
     indoor = IndoorMap(module_id=out_module_id)
-    for i, room in enumerate(lyt.rooms):
-        comp = kit.components[i]
-        indoor.rooms.append(IndoorMapRoom(comp, Vector3(room.position.x, room.position.y, room.position.z), rotation=0.0, flip_x=False, flip_y=False))
+    _append_rooms_by_index(indoor, lyt, kit.components)
 
     indoor.rebuild_room_connections()
     logger.debug("Module-file extraction produced %d room(s) for '%s' against ModuleKit '%s'", len(indoor.rooms), module_path.name, module_root)
@@ -216,6 +392,7 @@ def extract_indoor_from_module_files(
 
 
 def _centroid(points: list[Vector3]) -> Vector3:
+    """Return centroid of points, or origin for empty collections."""
     if not points:
         return Vector3.from_null()
     sx = sum(p.x for p in points)
@@ -226,8 +403,9 @@ def _centroid(points: list[Vector3]) -> Vector3:
 
 
 def _apply_flip(points: list[Vector3], flip_x: bool, flip_y: bool) -> list[Vector3]:
+    """Apply optional mirror transform in local XY axes."""
     if not flip_x and not flip_y:
-        return [Vector3(p.x, p.y, p.z) for p in points]
+        return _copy_points(points)
     out: list[Vector3] = []
     for p in points:
         out.append(Vector3(-p.x if flip_x else p.x, -p.y if flip_y else p.y, p.z))
@@ -238,8 +416,9 @@ def _apply_rotate_z(
     points: list[Vector3],
     rotation_deg: float,
 ) -> list[Vector3]:
+    """Rotate points around Z axis by degrees."""
     if abs(rotation_deg) < 1e-12:
-        return [Vector3(p.x, p.y, p.z) for p in points]
+        return _copy_points(points)
     cos = math.cos(math.radians(rotation_deg))
     sin = math.sin(math.radians(rotation_deg))
     out: list[Vector3] = []
@@ -252,12 +431,14 @@ def _apply_translate(
     points: list[Vector3],
     translation: Vector3,
 ) -> list[Vector3]:
+    """Translate points by XYZ offset."""
     if translation.x == 0 and translation.y == 0 and translation.z == 0:
-        return [Vector3(p.x, p.y, p.z) for p in points]
+        return _copy_points(points)
     return [Vector3(p.x + translation.x, p.y + translation.y, p.z + translation.z) for p in points]
 
 
 def _rms_error(a: list[Vector3], b: list[Vector3]) -> float:
+    """Compute RMS distance between paired point sets."""
     if len(a) != len(b) or not a:
         return float("inf")
     acc = 0.0
@@ -289,7 +470,6 @@ def infer_room_transform(
     if len(base_vertices) != len(instance_vertices) or not base_vertices:
         return None
 
-    _base_centroid: Vector3 = _centroid(base_vertices)
     inst_centroid: Vector3 = _centroid(instance_vertices)
 
     best: tuple[bool, bool, float, Vector3, float] | None = None
@@ -405,46 +585,20 @@ def extract_indoor_from_module_name(
         - Builds the indoor map.
         - Returns the indoor map.
     """
-    if logger is None:
-        logger = RobustLogger()
+    logger = logger or RobustLogger()
 
-    installation: Installation = Installation(CaseAwarePath(installation_path))
-    kits: list[Kit] = []
-    if str(kits_path):
-        kits = load_kits(kits_path)
-    if module_kit_manager is not None:
-        module_root: str = Installation.get_module_root(module_name)
-        mk: ModuleKit = module_kit_manager.get_module_kit(module_root)
-        if mk.ensure_loaded():
-            kits.append(mk)
+    installation = _resolve_installation(installation_path, None)
+    kits = _resolve_extraction_kits(module_name, kits_path, module_kit_manager)
 
     module = Module(module_name, installation, use_dot_mod=True)
-    lyt_res: ModuleResource[LYT] | None = module.layout()
-    if lyt_res is None or lyt_res.resource() is None:
-        raise ValueError(f"Module '{module_name}' has no LYT layout; cannot extract rooms.")
-    lyt: LYT | None = lyt_res.resource()
-    if lyt is None:
-        raise ValueError(f"Module '{module_name}' has no LYT layout; cannot extract rooms.")
-
-    are_res: ModuleResource[ARE] | None = module.are()
-    are: ARE | None = None if are_res is None else are_res.resource()
-    ifo_res: ModuleResource[IFO] | None = module.ifo()
-    ifo: IFO | None = None if ifo_res is None else ifo_res.resource()
+    lyt = _module_layout_or_raise(module, module_name)
+    are, ifo = _module_are_ifo(module)
 
     indoor: IndoorMap = IndoorMap()
-    indoor.module_id = module.module_id() or "test01"
-    if are is not None:
-        indoor.name = are.name
-        indoor.lighting = are.dynamic_light
-    if ifo is not None:
-        indoor.warp_point = ifo.entry_position
+    _apply_indoor_metadata(indoor, module, are, ifo)
 
     # Build candidate pool once; prefilter by vertex count.
-    components: list[KitComponent] = [comp for kit in kits for comp in kit.components]
-    by_vert_count: dict[int, list[KitComponent]] = {}
-    for comp in components:
-        vcount = len(comp.bwm.vertices())
-        by_vert_count.setdefault(vcount, []).append(comp)
+    by_vert_count = _components_by_vertex_count(kits)
 
     unmatched: list[str] = []
 
@@ -452,60 +606,21 @@ def extract_indoor_from_module_name(
         model_name: str = room.model
 
         # Skip known builder sky room; we attempt to infer skybox later.
-        if model_name.lower() == f"{indoor.module_id}_sky".lower():
+        if _is_builder_sky_room(model_name, indoor.module_id):
             continue
 
-        wok_res: ModuleResource[bytes] | None = module.resource(model_name, ResourceType.WOK)
-        if wok_res is None:
-            unmatched.append(model_name)
-            continue
-        wok_data: bytes | None = wok_res.data()
-        if wok_data is None:
-            unmatched.append(model_name)
-            continue
-        instance_bwm: BWM = read_bwm(wok_data)
-        instance_vertices: list[Vector3] = instance_bwm.vertices()
-        candidates: list[KitComponent] = by_vert_count.get(len(instance_vertices), [])
-        if not candidates:
-            unmatched.append(model_name)
+        instance_bwm = _module_room_wok_bwm(module, model_name)
+        if instance_bwm is None:
+            _record_unmatched_room(unmatched, model_name)
             continue
 
-        best_match: _RoomTransformMatch | None = None
-        for comp in candidates:
-            inferred = infer_room_transform_bwm(comp.bwm, instance_bwm, max_rms=max_rms)
-            if inferred is None:
-                continue
-            flip_x, flip_y, rot_deg, translation, err = inferred
-            match = _RoomTransformMatch(comp, flip_x, flip_y, rot_deg, translation, err)
-            if best_match is None or match.rms_error < best_match.rms_error:
-                best_match = match
+        best_match = _best_room_component_match(by_vert_count, instance_bwm, max_rms=max_rms)
 
         if best_match is None:
-            unmatched.append(model_name)
+            _record_unmatched_room(unmatched, model_name)
             continue
 
-        room_obj = IndoorMapRoom(
-            best_match.component,
-            position=Vector3(room.position.x, room.position.y, room.position.z),
-            rotation=best_match.rotation_deg,
-            flip_x=best_match.flip_x,
-            flip_y=best_match.flip_y,
-        )
-
-        # If the fitted translation doesn't match LYT position closely, treat it as a walkmesh override
-        # and force the indoor room position to LYT position (source of truth for placement).
-        # We also store an override walkmesh in local space so a rebuild reproduces the original WOK.
-        pos_from_fit: Vector3 = best_match.translation
-        lyt_pos: Vector3 = Vector3(room.position.x, room.position.y, room.position.z)
-        if pos_from_fit.distance(lyt_pos) > 1e-3:
-            # compute local override by inverting the transform
-            override: BWM = deepcopy(instance_bwm)
-            override.translate(-lyt_pos.x, -lyt_pos.y, -lyt_pos.z)
-            override.rotate(-best_match.rotation_deg)
-            override.flip(best_match.flip_x, best_match.flip_y)
-            room_obj.walkmesh_override = override
-
-        indoor.rooms.append(room_obj)
+        indoor.rooms.append(_room_from_transform_match(room, best_match, instance_bwm))
 
     if unmatched:
         msg = f"Failed to match {len(unmatched)} LYT room(s) to any kit component: {', '.join(unmatched[:10])}"

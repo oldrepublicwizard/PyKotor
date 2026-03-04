@@ -1,3 +1,5 @@
+"""Common KotOR types: ResRef, LocalizedString, enums (Game, Gender, Language, etc.), and helpers."""
+
 from __future__ import annotations
 
 import warnings

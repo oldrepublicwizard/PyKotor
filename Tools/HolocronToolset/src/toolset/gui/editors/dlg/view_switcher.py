@@ -1,3 +1,5 @@
+"""DLG view switcher: toggle between tree view and node graph view."""
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING, ClassVar

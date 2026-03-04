@@ -1,3 +1,5 @@
+"""Resource format base: ComparableMixin and path setup for format I/O modules."""
+
 from __future__ import annotations
 
 import logging

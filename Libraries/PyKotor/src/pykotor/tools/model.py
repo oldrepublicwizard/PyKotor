@@ -99,167 +99,149 @@ def rename(
     return data[:20] + name.ljust(32, "\0").encode("ascii") + data[52:]
 
 
+def _traverse_mesh_nodes(reader: BinaryReader) -> Generator[int, Any, None]:
+    """Traverse the model tree and yield offsets of mesh nodes.
+
+    Args:
+    ----
+        reader: BinaryReader positioned at the model data
+
+    Yields:
+    ------
+        int: Offset of each mesh node in the data
+    """
+    reader.seek(168)
+    root_offset: int = reader.read_uint32()
+
+    nodes: deque[int] = deque([root_offset])
+    while nodes:
+        node_offset: int = nodes.popleft()
+        reader.seek(node_offset)
+        node_id: int = reader.read_uint32()
+
+        reader.seek(node_offset + 44)
+        child_offsets_offset: int = reader.read_uint32()
+        child_offsets_count: int = reader.read_uint32()
+
+        reader.seek(child_offsets_offset)
+        nodes.extend(reader.read_uint32() for _ in range(child_offsets_count))
+
+        if node_id & _NODE_TYPE_MESH:
+            yield node_offset
+
+
 def iterate_textures_and_lightmaps(
     data: bytes,
 ) -> Generator[str, Any, None]:
+    """Iterate over all unique texture and lightmap names in the model.
+
+    Args:
+    ----
+        data: The model data bytes
+
+    Yields:
+    ------
+        str: Unique texture or lightmap names (lowercased)
+    """
     seen_names: set[str] = set()
 
     with BinaryReader.from_bytes(data, 12) as reader:
-        reader.seek(168)
-        root_offset: int = reader.read_uint32()
+        for node_offset in _traverse_mesh_nodes(reader):
+            # Extract texture name
+            reader.seek(node_offset + 168)
+            name: str = reader.read_string(32, encoding="ascii", errors="ignore").strip().lower()
+            if name and name != "null" and name not in seen_names and name != "dirt":
+                seen_names.add(name)
+                yield name
 
-        nodes: deque[int] = deque([root_offset])
-        while nodes:
-            node_offset: int = nodes.popleft()
-            reader.seek(node_offset)
-            node_id: int = reader.read_uint32()
-
-            reader.seek(node_offset + 44)
-            child_offsets_offset: int = reader.read_uint32()
-            child_offsets_count: int = reader.read_uint32()
-
-            reader.seek(child_offsets_offset)
-            nodes.extend(reader.read_uint32() for _ in range(child_offsets_count))
-
-            if node_id & 32:
-                # Extract texture name
-                reader.seek(node_offset + 168)
-                name: str = reader.read_string(32, encoding="ascii", errors="ignore").strip().lower()
-                if name and name != "null" and name not in seen_names and name != "dirt":
-                    seen_names.add(name)
-                    yield name
-
-                # Extract lightmap name
-                reader.seek(node_offset + 200)
-                name = reader.read_string(32, encoding="ascii", errors="ignore").strip().lower()
-                if name and name != "null" and name not in seen_names:
-                    seen_names.add(name)
-                    yield name
+            # Extract lightmap name
+            reader.seek(node_offset + 200)
+            name = reader.read_string(32, encoding="ascii", errors="ignore").strip().lower()
+            if name and name != "null" and name not in seen_names:
+                seen_names.add(name)
+                yield name
 
 
 def iterate_textures(
     data: bytes,
 ) -> Generator[str, Any, None]:
+    """Iterate over all unique texture names in the model.
+
+    Args:
+    ----
+        data: The model data bytes
+
+    Yields:
+    ------
+        str: Unique texture names (lowercased)
+    """
     texture_caseset: set[str] = set()
 
     with BinaryReader.from_bytes(data, 12) as reader:
-        reader.seek(168)
-        root_offset: int = reader.read_uint32()
-
-        nodes: list[int] = [root_offset]
-        while nodes:
-            node_offset: int = nodes.pop()
-            reader.seek(node_offset)
-            node_id: int = reader.read_uint32()
-
-            reader.seek(node_offset + 44)
-            child_offsets_offset: int = reader.read_uint32()
-            child_offsets_count: int = reader.read_uint32()
-
-            reader.seek(child_offsets_offset)
-            nodes.extend(reader.read_uint32() for _ in range(child_offsets_count))
-            if node_id & 32:
-                reader.seek(node_offset + 168)
-                texture = reader.read_string(32, encoding="ascii", errors="ignore").strip()
-                if (
-                    texture
-                    and texture != "NULL"
-                    and texture.lower() not in texture_caseset
-                    and texture.lower() != "dirt"  # TODO(th3w1zard1): determine if the game really prevents the literal resname of 'dirt'.
-                ):
-                    texture_caseset.add(texture.lower())
-                    yield texture.lower()
+        for node_offset in _traverse_mesh_nodes(reader):
+            reader.seek(node_offset + 168)
+            texture = reader.read_string(32, encoding="ascii", errors="ignore").strip()
+            if (
+                texture
+                and texture != "NULL"
+                and texture.lower() not in texture_caseset
+                and texture.lower() != "dirt"
+            ):
+                texture_caseset.add(texture.lower())
+                yield texture.lower()
 
 
 def iterate_lightmaps(
     data: bytes | bytearray,
 ) -> Generator[str, Any, None]:
+    """Iterate over all unique lightmap names in the model.
+
+    Args:
+    ----
+        data: The model data bytes
+
+    Yields:
+    ------
+        str: Unique lightmap names
+    """
     lightmaps_caseset: set[str] = set()
     with BinaryReader.from_bytes(data, 12) as reader:
-        reader.seek(168)
-        root_offset: int = reader.read_uint32()
-
-        nodes: list[int] = [root_offset]
-        while nodes:
-            node_offset: int = nodes.pop()
-            reader.seek(node_offset)
-            node_id: int = reader.read_uint32()
-
-            reader.seek(node_offset + 44)
-            child_offsets_offset: int = reader.read_uint32()
-            child_offsets_count: int = reader.read_uint32()
-
-            reader.seek(child_offsets_offset)
-            nodes.extend(reader.read_uint32() for _ in range(child_offsets_count))
-            if node_id & 32:
-                reader.seek(node_offset + 200)
-                lightmap: str = reader.read_string(32, encoding="ascii", errors="ignore").strip()
-                lowercase_lightmap: str = lightmap.lower()
-                if lightmap and lightmap != "NULL" and lowercase_lightmap not in lightmaps_caseset:
-                    lightmaps_caseset.add(lowercase_lightmap)
-                    yield lightmap
+        for node_offset in _traverse_mesh_nodes(reader):
+            reader.seek(node_offset + 200)
+            lightmap: str = reader.read_string(32, encoding="ascii", errors="ignore").strip()
+            lowercase_lightmap: str = lightmap.lower()
+            if lightmap and lightmap != "NULL" and lowercase_lightmap not in lightmaps_caseset:
+                lightmaps_caseset.add(lowercase_lightmap)
+                yield lightmap
 
 
 def change_textures(
     data: bytes | bytearray,
     textures: dict[str, str],
 ) -> bytes | bytearray:
-    parsed_data: bytearray = bytearray(data)
-    offsets: dict[str, list[int]] = {}
-
-    textures_ins: dict[str, str] = {old_texture.lower(): new_texture.lower() for old_texture, new_texture in textures.items()}
-    textures = textures_ins
-
-    with BinaryReader.from_bytes(parsed_data, 12) as reader:
-        reader.seek(168)
-        root_offset: int = reader.read_uint32()
-
-        nodes: list[int] = [root_offset]
-        while nodes:
-            node_offset: int = nodes.pop()
-            reader.seek(node_offset)
-            node_id: int = reader.read_uint32()
-
-            reader.seek(node_offset + 44)
-            child_offsets_offset: int = reader.read_uint32()
-            child_offsets_count: int = reader.read_uint32()
-
-            reader.seek(child_offsets_offset)
-            nodes.extend(reader.read_uint32() for _ in range(child_offsets_count))
-            if node_id & 32:
-                reader.seek(node_offset + 168)
-                texture: str = reader.read_string(32).lower()
-
-                if texture in textures:
-                    if texture in offsets:
-                        offsets[texture].append(node_offset + 168)
-                    else:
-                        offsets[texture] = [node_offset + 168]
-
-        for texture, offsets_list in offsets.items():
-            for offset in offsets_list:
-                new_offset: int = offset + 12
-                parsed_data = (
-                    parsed_data[:new_offset]
-                    + struct.pack(
-                        "32s",
-                        textures[texture].ljust(32, "\0").encode("ascii"),
-                    )
-                    + parsed_data[new_offset + 32 :]
-                )
-
-    return bytes(parsed_data)
+    return _change_mesh_string_field(data, textures, field_offset=168)
 
 
 def change_lightmaps(
     data: bytes | bytearray,
     textures: dict[str, str],
 ) -> bytes | bytearray:
+    return _change_mesh_string_field(data, textures, field_offset=200)
+
+
+def _change_mesh_string_field(
+    data: bytes | bytearray,
+    replacements: dict[str, str],
+    *,
+    field_offset: int,
+) -> bytes:
+    """Replace a 32-byte mesh string field (texture/lightmap) in all mesh nodes."""
     parsed_data: bytearray = bytearray(data)
     offsets: dict[str, list[int]] = {}
 
-    textures_ins: dict[str, str] = {old_texture.lower(): new_texture.lower() for old_texture, new_texture in textures.items()}
-    textures = textures_ins
+    normalized_replacements: dict[str, str] = {
+        old_value.lower(): new_value.lower() for old_value, new_value in replacements.items()
+    }
 
     with BinaryReader.from_bytes(parsed_data, 12) as reader:
         reader.seek(168)
@@ -278,23 +260,23 @@ def change_lightmaps(
             reader.seek(child_offsets_offset)
             nodes.extend(reader.read_uint32() for _i in range(child_offsets_count))
             if node_id & 32:
-                reader.seek(node_offset + 200)
-                texture: str = reader.read_string(32).lower()
+                reader.seek(node_offset + field_offset)
+                field_value: str = reader.read_string(32).lower()
 
-                if texture in textures:
-                    if texture in offsets:
-                        offsets[texture].append(node_offset + 200)
+                if field_value in normalized_replacements:
+                    if field_value in offsets:
+                        offsets[field_value].append(node_offset + field_offset)
                     else:
-                        offsets[texture] = [node_offset + 200]
+                        offsets[field_value] = [node_offset + field_offset]
 
-        for texture, offsets_list in offsets.items():
+        for original_value, offsets_list in offsets.items():
             for offset in offsets_list:
                 actual_offset: int = offset + 12
                 parsed_data = (
                     parsed_data[:actual_offset]
                     + struct.pack(
                         "32s",
-                        textures[texture].ljust(32, "\0").encode("ascii"),
+                        normalized_replacements[original_value].ljust(32, "\0").encode("ascii"),
                     )
                     + parsed_data[actual_offset + 32 :]
                 )

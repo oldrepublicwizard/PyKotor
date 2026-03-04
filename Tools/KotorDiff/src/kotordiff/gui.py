@@ -13,7 +13,6 @@ import tkinter as tk
 
 from contextlib import suppress
 from pathlib import Path
-from threading import Event
 from tkinter import filedialog, messagebox, ttk
 from typing import TYPE_CHECKING, cast
 
@@ -44,6 +43,8 @@ from pykotor.tslpatcher.logger import LogType  # noqa: E402
 from utility.gui.tkinter.base_app import ThemedApp  # noqa: E402
 
 if TYPE_CHECKING:
+    from threading import Event
+
     from pykotor.tslpatcher.logger import PatchLog
 
 CURRENT_VERSION = pykotor_version

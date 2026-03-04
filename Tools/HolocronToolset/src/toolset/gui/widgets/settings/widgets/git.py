@@ -1,3 +1,5 @@
+"""GIT (module instances) settings widget: walkmesh material colors and instance display options."""
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING

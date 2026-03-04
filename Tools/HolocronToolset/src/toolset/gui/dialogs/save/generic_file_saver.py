@@ -5,10 +5,10 @@ import shutil
 from pathlib import Path
 from typing import TYPE_CHECKING, Generic, Literal, Sequence, TypeVar, Union
 
-from loggerplus import RobustLogger
 from qtpy.QtCore import Qt
 from qtpy.QtWidgets import QFileDialog, QMessageBox
 
+from loggerplus import RobustLogger
 from pykotor.extract.file import FileResource, ResourceIdentifier, ResourceResult
 from pykotor.resource.formats.erf.erf_data import ERFResource
 from pykotor.resource.formats.rim.rim_data import RIMResource

@@ -1,3 +1,7 @@
+"""Version string conversion between toolset tags and semantic versions.
+
+Used when matching or displaying Holocron Toolset version from git tags (e.g. v1.2.3-toolset).
+"""
 from __future__ import annotations
 
 

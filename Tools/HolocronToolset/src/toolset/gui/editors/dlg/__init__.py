@@ -1,3 +1,5 @@
+"""DLG editor package: tree view, model, search, node editor, and widget windows."""
+
 from __future__ import annotations
 from .tree_view import DropPosition, DropTarget, DLGTreeView, install_immediate_tooltip  # noqa: F403, TID252
 from .editor import DLGEditor  # noqa: F403, TID252

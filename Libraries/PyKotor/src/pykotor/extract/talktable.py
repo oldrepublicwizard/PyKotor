@@ -1,3 +1,5 @@
+"""Talk table (dialog.tlk): read-only StrRef lookup and string/sound results."""
+
 from __future__ import annotations
 
 from pathlib import Path

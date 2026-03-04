@@ -1,3 +1,5 @@
+"""GFF format detection and auto read/write dispatch (binary, JSON, XML)."""
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
@@ -94,15 +96,15 @@ def read_gff(
     if file_format is None:
         file_format = detect_gff(source, offset)
 
-    if file_format is ResourceType.GFF:
+    if file_format == ResourceType.GFF:
         return GFFBinaryReader(source, offset, size or 0).load()
-    if file_format is ResourceType.GFF_XML:
+    if file_format == ResourceType.GFF_XML:
         return GFFXMLReader(source, offset, size or 0).load()
-    if file_format is ResourceType.GFF_JSON:
+    if file_format == ResourceType.GFF_JSON:
         return GFFJSONReader(source, offset, size or 0).load()
 
     msg = "Failed to determine the format of the GFF file."
-    # if file_format is ResourceType.INVALID:
+    # if file_format == ResourceType.INVALID:
     raise ValueError(msg)
 
 

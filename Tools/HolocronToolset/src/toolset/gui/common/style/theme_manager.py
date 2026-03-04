@@ -1,3 +1,5 @@
+"""Theme manager: load/save themes, apply stylesheets, and style factory selection."""
+
 from __future__ import annotations
 
 import importlib

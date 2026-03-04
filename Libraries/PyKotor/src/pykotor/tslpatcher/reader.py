@@ -1,3 +1,5 @@
+"""TSLPatcher changes.ini reader: parse INI and build modification structures."""
+
 from __future__ import annotations
 
 import base64
@@ -834,17 +836,19 @@ class ConfigReader:
         """
         value: FieldValue = cls.field_value_from_unknown(str_value)
         lower_key: str = key.lower()
-        if "(strref)" in lower_key:
+        strref_pos = lower_key.find("(strref)")
+        lang_pos = lower_key.find("(lang")
+        if strref_pos != -1:
             value = FieldValueConstant(LocalizedStringDelta(value))
-            key = key[: lower_key.index("(strref)")]
+            key = key[:strref_pos]
 
-        elif "(lang" in lower_key:
-            substring_id = int(key[lower_key.index("(lang") + 5 : -1])
+        elif lang_pos != -1:
+            substring_id = int(key[lang_pos + 5 : -1])
             language, gender = LocalizedString.substring_pair(substring_id)
             locstring = LocalizedStringDelta()
             locstring.set_data(language, gender, str_value)
             value = FieldValueConstant(locstring)
-            key = key[: lower_key.index("(lang")]
+            key = key[:lang_pos]
 
         elif lower_key.startswith("2damemory"):
             lower_str_value: str = str_value.lower()

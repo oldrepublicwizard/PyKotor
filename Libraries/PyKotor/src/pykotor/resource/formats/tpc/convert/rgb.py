@@ -1,3 +1,5 @@
+"""RGB/RGBA/grey pixel conversion for TPC and texture pipelines."""
+
 from __future__ import annotations
 
 

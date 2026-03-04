@@ -239,13 +239,16 @@ class ERF(BiowareArchive):
         return hash((self.erf_type, tuple(self._resources), self.is_save, self.description_strref))
 
     def get_resource_offset(self, resource: ArchiveResource) -> int:
+        """Return the byte offset of a resource's data in serialized archive order."""
         from pykotor.resource.formats.erf.io_erf import ERFBinaryWriter
 
         entry_count = len(self._resources)
-        offset_to_keys = ERFBinaryWriter.FILE_HEADER_SIZE
-        data_start = offset_to_keys + ERFBinaryWriter.KEY_ELEMENT_SIZE * entry_count
+        data_start = ERFBinaryWriter.FILE_HEADER_SIZE + ERFBinaryWriter.KEY_ELEMENT_SIZE * entry_count
 
-        resource_index = self._resources.index(resource)
-        offset = data_start + sum(len(res.data) for res in self._resources[:resource_index])
+        offset = data_start
+        for res in self._resources:
+            if res == resource:
+                return offset
+            offset += len(res.data)
+        raise ValueError("Resource is not present in ERF resource list")
 
-        return offset

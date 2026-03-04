@@ -1,3 +1,5 @@
+"""FAC (faction) editor: faction list, reputation, and parent relationships."""
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
@@ -8,7 +10,6 @@ from qtpy.QtWidgets import QMenu, QShortcut, QTreeView
 from pykotor.resource.formats.gff import write_gff
 from pykotor.resource.generics.fac import FAC, FACFaction, FACReputation, dismantle_fac, read_fac
 from pykotor.resource.type import ResourceType
-from toolset.data.installation import HTInstallation
 from toolset.gui.editor import Editor
 
 if TYPE_CHECKING:
@@ -16,6 +17,8 @@ if TYPE_CHECKING:
 
     from qtpy.QtCore import QItemSelection, QPoint
     from qtpy.QtWidgets import QWidget
+
+    from toolset.data.installation import HTInstallation
 
 
 class FACEditor(Editor):
@@ -326,6 +329,7 @@ class FACEditor(Editor):
     def remove_faction(self, faction_item: QStandardItem):
         """Remove a faction from the FAC."""
         faction: FACFaction = faction_item.data()
+        faction_id = self._fac.factions.index(faction)
         self._faction_model.removeRow(faction_item.row())
         self._fac.factions.remove(faction)
 
@@ -333,7 +337,7 @@ class FACEditor(Editor):
         to_remove = [
             rep_item
             for rep_item in [self._reputation_model.item(i) for i in range(self._reputation_model.rowCount())]
-            if rep_item is not None and (rep_item.data().faction_id1 == self._fac.factions.index(faction) or rep_item.data().faction_id2 == self._fac.factions.index(faction))
+            if rep_item is not None and (rep_item.data().faction_id1 == faction_id or rep_item.data().faction_id2 == faction_id)
         ]
         for rep_item in to_remove:
             if rep_item is not None:

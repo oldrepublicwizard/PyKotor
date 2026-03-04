@@ -1,3 +1,5 @@
+"""Save-to-module dialog: choose ResRef and resource type when saving into a MOD/RIM."""
+
 from __future__ import annotations
 
 from qtpy.QtCore import Qt
@@ -24,7 +26,7 @@ class SaveToModuleDialog(QDialog):
 
         from toolset.uic.qtpy.dialogs.save_to_module import Ui_Dialog
 
-        self.ui = Ui_Dialog()
+        self.ui: Ui_Dialog = Ui_Dialog()
         self.ui.setupUi(self)
 
         # Setup event filter to prevent scroll wheel interaction with controls

@@ -1,3 +1,5 @@
+"""Cube geometry: AABB wireframe or solid cube for GL (e.g. instance bounds)."""
+
 from __future__ import annotations
 
 import ctypes

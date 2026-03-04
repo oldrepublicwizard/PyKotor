@@ -1,3 +1,5 @@
+"""TSLPatcher uninstall: revert override folder and restore from backups."""
+
 from __future__ import annotations
 
 import os

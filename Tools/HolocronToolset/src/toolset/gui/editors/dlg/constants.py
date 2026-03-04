@@ -1,3 +1,4 @@
+"""Qt item data roles and MIME types used by the DLG editor (tree/list widgets)."""
 from __future__ import annotations
 
 from qtpy.QtCore import Qt

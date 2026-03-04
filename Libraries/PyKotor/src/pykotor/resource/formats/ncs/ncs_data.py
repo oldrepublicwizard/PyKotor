@@ -335,11 +335,12 @@ class NCS(ComparableMixin):
         if not self.instructions:
             return "NCS(instructions=[])"
 
-        # Show first few instructions for compact representation
+        # O(1) jump index lookup; avoids repeated list.index() in loop
+        inst_to_idx = {id(inst): i for i, inst in enumerate(self.instructions)}
         max_preview: int = 3
         inst_reprs: list[str] = []
         for i, inst in enumerate(self.instructions[:max_preview]):
-            jump_idx = self.instructions.index(inst.jump) if inst.jump else None
+            jump_idx = inst_to_idx.get(id(inst.jump)) if inst.jump else None
             jump_str = f"->#{jump_idx}" if jump_idx is not None else ""
             args_str = f"({', '.join(repr(arg) for arg in inst.args)})" if inst.args else ""
             inst_reprs.append(f"#{i}: {inst.ins_type.name}{args_str}{jump_str}")
@@ -355,15 +356,12 @@ class NCS(ComparableMixin):
         if not self.instructions:
             return "NCS (empty - no instructions)"
 
+        inst_to_idx = {id(inst): i for i, inst in enumerate(self.instructions)}
         lines = [f"NCS with {len(self.instructions)} instructions:"]
         for i, inst in enumerate(self.instructions):
-            # Find jump target index if present
-            jump_idx: int | str | None = None
-            if inst.jump:
-                try:
-                    jump_idx = self.instructions.index(inst.jump)
-                except ValueError:
-                    jump_idx = "?"
+            jump_idx: int | str | None = (
+                inst_to_idx.get(id(inst.jump), "?") if inst.jump else None
+            )
 
             # Format instruction
             inst_name = inst.ins_type.name.ljust(15)
@@ -375,9 +373,10 @@ class NCS(ComparableMixin):
         return "\n".join(lines)
 
     def print(self):
+        inst_to_idx = {id(inst): i for i, inst in enumerate(self.instructions)}
         for i, instruction in enumerate(self.instructions):
             if instruction.jump:
-                jump_index = self.instructions.index(instruction.jump)
+                jump_index = inst_to_idx.get(id(instruction.jump), -1)
                 print(f"{i}:\t{instruction.ins_type.name.ljust(8)}\t--> {jump_index}")
             else:
                 print(f"{i}:\t{instruction.ins_type.name.ljust(8)} {instruction.args}")

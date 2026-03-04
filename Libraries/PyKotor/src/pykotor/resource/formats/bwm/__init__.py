@@ -1,5 +1,6 @@
-from __future__ import annotations
+"""BWM (walkmesh) package: faces, edges, adjacency and binary I/O for module geometry."""
 
+from __future__ import annotations
 
 from pykotor.resource.formats.bwm.bwm_auto import bytes_bwm, read_bwm, write_bwm
 from pykotor.resource.formats.bwm.bwm_data import (

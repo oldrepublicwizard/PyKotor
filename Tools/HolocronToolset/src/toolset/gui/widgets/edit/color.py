@@ -1,3 +1,5 @@
+"""Color edit widget: RGBA spin and color picker dialog for PyKotor Color."""
+
 from __future__ import annotations
 
 from qtpy.QtGui import QColor, QImage, QPixmap

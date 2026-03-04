@@ -1,3 +1,5 @@
+"""Main settings dialog: tree of setting categories and apply/cancel."""
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING

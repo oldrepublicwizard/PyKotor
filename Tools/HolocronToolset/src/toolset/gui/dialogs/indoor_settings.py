@@ -1,3 +1,5 @@
+"""Indoor map settings dialog: edit global options (name, north axis, etc.) for an indoor map."""
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING

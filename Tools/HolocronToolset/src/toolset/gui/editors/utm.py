@@ -1,3 +1,5 @@
+"""UTM (merchant) editor: store inventory, markdown, and locstring name."""
+
 from __future__ import annotations
 
 from copy import deepcopy
@@ -94,17 +96,55 @@ class UTMEditor(Editor):
         self._installation = installation
         self.ui.nameEdit.set_installation(installation)
 
-        # Setup reference search for script field
-        self._installation.setup_file_context_menu(self.ui.onOpenEdit, [ResourceType.NSS, ResourceType.NCS], enable_reference_search=True, reference_search_type="script")
-        self.ui.onOpenEdit.setToolTip(tr("Right-click to find references to this script in the installation."))
+        for widget, resource_types, reference_type, tooltip_text in (
+            (
+                self.ui.onOpenEdit,
+                [ResourceType.NSS, ResourceType.NCS],
+                "script",
+                "Right-click to find references to this script in the installation.",
+            ),
+            (
+                self.ui.tagEdit,
+                [],
+                "tag",
+                "Right-click to find references to this tag in the installation.",
+            ),
+            (
+                self.ui.resrefEdit,
+                [],
+                "template_resref",
+                "Right-click to find references to this template resref in the installation.",
+            ),
+        ):
+            self._setup_reference_field(widget, resource_types, reference_type, tooltip_text)
 
-        # Setup reference search for Tag field
-        self._installation.setup_file_context_menu(self.ui.tagEdit, [], enable_reference_search=True, reference_search_type="tag")
-        self.ui.tagEdit.setToolTip(tr("Right-click to find references to this tag in the installation."))
+    def _setup_reference_field(
+        self,
+        widget,
+        resource_types: list[ResourceType],
+        reference_type: str,
+        tooltip_text: str,
+    ) -> None:
+        """Configure context-menu reference search behavior for a widget."""
+        assert self._installation is not None
+        self._installation.setup_file_context_menu(
+            widget,
+            resource_types,
+            enable_reference_search=True,
+            reference_search_type=reference_type,
+        )
+        widget.setToolTip(tr(tooltip_text))
 
-        # Setup reference search for TemplateResRef field
-        self._installation.setup_file_context_menu(self.ui.resrefEdit, [], enable_reference_search=True, reference_search_type="template_resref")
-        self.ui.resrefEdit.setToolTip(tr("Right-click to find references to this template resref in the installation."))
+    @staticmethod
+    def _store_flags_to_index(can_buy: bool, can_sell: bool) -> int:
+        """Convert store buy/sell flags to combobox index representation."""
+        return (int(can_buy) + int(can_sell) * 2) - 1
+
+    @staticmethod
+    def _index_to_store_flags(index: int) -> tuple[bool, bool]:
+        """Convert combobox index representation to store buy/sell flags."""
+        flags = index + 1
+        return bool(flags & 1), bool(flags & 2)
 
     def load(
         self,
@@ -141,7 +181,7 @@ class UTMEditor(Editor):
         self.ui.markUpSpin.setValue(utm.mark_up)
         self.ui.markDownSpin.setValue(utm.mark_down)
         self.ui.onOpenEdit.setText(str(utm.on_open))
-        self.ui.storeFlagSelect.setCurrentIndex((int(utm.can_buy) + int(utm.can_sell) * 2) - 1)
+        self.ui.storeFlagSelect.setCurrentIndex(self._store_flags_to_index(utm.can_buy, utm.can_sell))
 
         # Comments
         self.ui.commentsEdit.setPlainText(utm.comment)
@@ -165,8 +205,7 @@ class UTMEditor(Editor):
         utm.mark_up = self.ui.markUpSpin.value()
         utm.mark_down = self.ui.markDownSpin.value()
         utm.on_open = ResRef(self.ui.onOpenEdit.text())
-        utm.can_buy = bool((self.ui.storeFlagSelect.currentIndex() + 1) & 1)
-        utm.can_sell = bool((self.ui.storeFlagSelect.currentIndex() + 1) & 2)
+        utm.can_buy, utm.can_sell = self._index_to_store_flags(self.ui.storeFlagSelect.currentIndex())
 
         # Comments
         utm.comment = self.ui.commentsEdit.toPlainText()
@@ -197,19 +236,28 @@ class UTMEditor(Editor):
         else:
             self.ui.resrefEdit.setText("m00xx_mer_000")
 
-    def open_inventory(self):
-        capsules: list[Capsule] = []
+    def _related_module_capsules(self) -> list[Capsule]:
+        """Return sibling module capsules related to the current resource path."""
+        assert self._installation is not None
 
+        root: str = Module.filepath_to_root(self._filepath)
+        case_root = root.casefold()
+        filepath_str = str(self._filepath)
+        module_names: CaseInsensitiveDict[str] = self._installation.module_names()
+
+        capsule_paths: list[str] = [
+            path
+            for path in module_names
+            if case_root in path and path != filepath_str
+        ]
+        return [Capsule(self._installation.module_path() / path) for path in capsule_paths]
+
+    def open_inventory(self):
         try:
-            root: str = Module.filepath_to_root(self._filepath)
-            case_root = root.casefold()
-            assert self._installation is not None
-            module_names: CaseInsensitiveDict[str] = self._installation.module_names()
-            filepath_str = str(self._filepath)
-            capsulesPaths: list[str] = [path for path in module_names if case_root in path and path != filepath_str]
-            capsules.extend([Capsule(self._installation.module_path() / path) for path in capsulesPaths])
+            capsules = self._related_module_capsules()
         except Exception as e:  # noqa: BLE001
             print(format_exception_with_variables(e, message="This exception has been suppressed."))
+            capsules = []
 
         inventoryEditor = InventoryEditor(
             self,

@@ -1,3 +1,5 @@
+"""GitHub fork selector: choose Holocron Toolset fork for updates and release checks."""
+
 from __future__ import annotations
 
 import base64
@@ -11,14 +13,16 @@ from contextlib import suppress
 from pathlib import PurePosixPath
 from typing import TYPE_CHECKING, Any, Sequence
 
+import requests
+import requests.structures
+
 # Handle optional requests dependency
 try:
     import requests
 except ImportError:
     # For type checking, we need a dummy type for requests.structures
     if TYPE_CHECKING:
-        import requests
-        import requests.structures
+        pass
     else:
 
         class CaseInsensitiveDict:  # noqa: PYI024

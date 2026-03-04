@@ -1,3 +1,5 @@
+"""Localized string editor dialog: edit StrRef, gender/variant, and TLK integration."""
+
 from __future__ import annotations
 
 import os

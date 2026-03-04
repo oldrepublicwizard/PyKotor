@@ -1,3 +1,5 @@
+"""Windows registry paths and game installation detection for KotOR (Steam, GOG, disc)."""
+
 from __future__ import annotations
 
 import os
@@ -17,22 +19,6 @@ if TYPE_CHECKING:
 
     from typing_extensions import Literal, Self  # pyright: ignore[reportMissingModuleSource]
 
-
-"""Windows registry paths and game installation detection.
-
-References:
-----------
-        Based on swkotor.exe ERF structure:
-        - CExoEncapsulatedFile::CExoEncapsulatedFile @ 0x0040ef90 - Constructor for encapsulated file
-        - CExoKeyTable::AddEncapsulatedContents @ 0x0040f3c0 - Adds ERF/MOD/SAV contents to key table
-        Original BioWare engine binaries
-        Derivations and Other Implementations:
-        ----------
-        https://github.com/th3w1zard1/HoloPatcher.NET/tree/master/src/HoloPatcher/Util/RegistryHelper.cs (C# registry helper)
-
-
-    Note: Registry paths vary between Steam, GOG, and disc releases on different architectures
-"""
 
 KOTOR_REG_PATHS: dict[Game, dict[ProcessorArchitecture, list[tuple[str, str]]]] = {
     Game.K1: {

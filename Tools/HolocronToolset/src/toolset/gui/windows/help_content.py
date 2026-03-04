@@ -1,8 +1,9 @@
+"""Help content widget: render markdown/HTML and sync with help tree selection."""
+
 from __future__ import annotations
 
 # Try to import defusedxml, fallback to ElementTree if not available
 from pathlib import Path
-
 from xml.etree import ElementTree as ET
 
 try:  # sourcery skip: remove-redundant-exception, simplify-single-exception-tuple
@@ -14,12 +15,12 @@ except (ImportError, ModuleNotFoundError):
 
 from typing import TYPE_CHECKING, Any, Callable
 
-from loggerplus import RobustLogger
-from utility.system.os_helper import is_frozen
 from qtpy import QtCore
 from qtpy.QtWidgets import QTreeWidgetItem
 
+from loggerplus import RobustLogger
 from toolset.gui.windows.help_paths import get_help_file_path
+from utility.system.os_helper import is_frozen
 
 if TYPE_CHECKING:
     from toolset.gui.windows.help_window import HelpWindow

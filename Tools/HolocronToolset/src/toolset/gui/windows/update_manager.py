@@ -1,17 +1,19 @@
+"""Update manager: check for updates, download, and run installer in a separate process."""
+
 from __future__ import annotations
 
+import multiprocessing
 import platform
 import sys
 
 from concurrent.futures import ProcessPoolExecutor
-import multiprocessing
 from multiprocessing import Process, Queue
 from typing import TYPE_CHECKING, Any
 
-from loggerplus import RobustLogger  # pyright: ignore[reportMissingTypeStubs]
-from qtpy.QtCore import Qt, QTimer
+from qtpy.QtCore import QTimer, Qt
 from qtpy.QtWidgets import QApplication, QMessageBox
 
+from loggerplus import RobustLogger  # pyright: ignore[reportMissingTypeStubs]
 from toolset.config import CURRENT_VERSION, get_remote_toolset_update_info, is_remote_version_newer
 from toolset.gui.dialogs.select_update import ProgressDialog, UpdateDialog, run_progress_dialog
 from toolset.gui.widgets.settings.installations import GlobalSettings

@@ -6,7 +6,15 @@ import time
 
 from pathlib import Path
 
-from qasync import asyncSlot  # pyright: ignore[reportMissingTypeStubs]
+try:
+    from qasync import asyncSlot  # pyright: ignore[reportMissingTypeStubs]
+except ModuleNotFoundError:
+    def asyncSlot(*_args, **_kwargs):
+        def decorator(func):
+            return func
+
+        return decorator
+
 from qtpy.QtCore import QObject, Signal  # pyright: ignore[reportPrivateImportUsage]
 
 

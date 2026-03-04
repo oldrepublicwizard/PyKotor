@@ -108,13 +108,14 @@ class TestTSLPatcherFromDiff(unittest.TestCase):
                 obj = read_ssf(content.encode(), file_format=plaintext_format)
                 write_ssf(obj, modded_dir / filename, ResourceType.SSF)
 
-        # Run diff
+        # Run diff (use_incremental_writer=True so INI and files are written to tslpatchdata)
         config_diff = DiffConfig(
             paths=[vanilla_dir, modded_dir],
             tslpatchdata_path=self.tslpatchdata_path,
             ini_filename="changes.ini",
             compare_hashes=True,
             logging_enabled=False,
+            use_incremental_writer=True,
         )
         run_application(config_diff)
 
@@ -255,6 +256,7 @@ class TestTSLPatcherFromDiff(unittest.TestCase):
             [test.2da_changerow_0]
             RowIndex=1
             Col1=X
+            2DAMEMORY0=RowIndex
             """
         ).strip()
         config = self._setupIniAndConfig(expected_ini)

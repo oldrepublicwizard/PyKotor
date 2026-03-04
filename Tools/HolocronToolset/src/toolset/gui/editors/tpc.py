@@ -1,3 +1,5 @@
+"""TPC (texture) editor: image preview, mip levels, and export."""
+
 from __future__ import annotations
 
 import warnings

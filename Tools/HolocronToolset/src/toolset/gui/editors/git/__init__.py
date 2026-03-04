@@ -1,5 +1,5 @@
 from toolset.gui.editors.git.git import GITEditor
-from toolset.gui.editors.git.controls import GITControlScheme, calculate_zoom_strength
+from toolset.gui.editors.git.controls import GITControlScheme
 from toolset.gui.editors.git.mode import (
     _GeometryMode,
     _InstanceMode,
@@ -21,7 +21,6 @@ from toolset.gui.editors.git.undo import (
 
 __all__ = [
     "GITEditor",
-    "calculate_zoom_strength",
     "_GeometryMode",
     "_InstanceMode",
     "_Mode",

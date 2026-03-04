@@ -112,39 +112,22 @@ class WAVEditor(Editor):
         player = self.mediaPlayer.player  # pyright: ignore[reportAttributeAccessIssue]
 
         # Disconnect any existing connections to avoid duplicates
-        try:
-            player.durationChanged.disconnect()
-        except TypeError:
-            pass  # No connections to disconnect
-        try:
-            player.positionChanged.disconnect()
-        except TypeError:
-            pass
-        try:
-            player.mediaStatusChanged.disconnect()
-        except TypeError:
-            pass
-        if qtpy.QT5:
-            try:
-                player.error.disconnect()  # type: ignore[attr-defined]
-            except TypeError:
-                pass  # No connections to disconnect
-        else:
-            try:
-                player.errorOccurred.disconnect()  # type: ignore[attr-defined]
-            except TypeError:
-                pass  # No connections to disconnect
+        signal_pairs = [
+            (player.durationChanged, self._on_duration_changed),
+            (player.positionChanged, self._on_position_changed),
+            (player.mediaStatusChanged, self._on_media_status_changed),
+        ]
+        error_signal = player.error if qtpy.QT5 else player.errorOccurred  # type: ignore[attr-defined]
+        signal_pairs.append((error_signal, self._on_player_error))
 
-        # Connect signals
-        player.durationChanged.connect(self._on_duration_changed)
-        player.positionChanged.connect(self._on_position_changed)
-        player.mediaStatusChanged.connect(self._on_media_status_changed)
+        for signal, handler in signal_pairs:
+            try:
+                signal.disconnect()
+            except TypeError:
+                pass
 
-        # Error handling differs between Qt5 and Qt6
-        if qtpy.QT5:
-            player.error.connect(self._on_player_error)  # type: ignore[attr-defined]
-        else:
-            player.errorOccurred.connect(self._on_player_error)  # type: ignore[attr-defined]
+        for signal, handler in signal_pairs:
+            signal.connect(handler)
 
     # =========================================================================
     # Format Detection

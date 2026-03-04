@@ -1,3 +1,5 @@
+"""TSLPatcher install/uninstall: apply mods to capsules and create backups."""
+
 from __future__ import annotations
 
 import os

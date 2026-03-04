@@ -1,3 +1,5 @@
+"""Texture browser widget: list TPCs from installation and emit selection."""
+
 from __future__ import annotations
 
 import os

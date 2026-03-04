@@ -6,10 +6,10 @@ from typing import TYPE_CHECKING, Any, cast
 
 import qtpy
 
-from loggerplus import RobustLogger
 from qtpy.QtCore import QBuffer, QIODevice, QTimer, QUrl
 from qtpy.QtMultimedia import QMediaPlayer
 
+from loggerplus import RobustLogger
 from pykotor.extract.installation import SearchLocation
 from utility.system.os_helper import remove_any
 

@@ -1,3 +1,5 @@
+"""JRL (journal) generic: GFF-based quest and save-game journal data."""
+
 from __future__ import annotations
 
 from enum import IntEnum

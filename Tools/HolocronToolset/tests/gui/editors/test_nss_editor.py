@@ -782,9 +782,6 @@ def test_nss_editor_outline_view_populated(qtbot: QtBot, installation: HTInstall
     # Set complex script
     editor.ui.codeEdit.setPlainText(complex_nss_script)
 
-    # Update outline
-    editor._update_outline()
-
     # Outline should have items (functions, variables, etc.)
     assert editor.ui.outlineView.topLevelItemCount() >= 0  # May have items
 
@@ -796,7 +793,6 @@ def test_nss_editor_outline_navigation(qtbot: QtBot, installation: HTInstallatio
     editor.new()
 
     editor.ui.codeEdit.setPlainText(complex_nss_script)
-    editor._update_outline()
 
     # Try to navigate to first item in outline
     if editor.ui.outlineView.topLevelItemCount() > 0:

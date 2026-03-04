@@ -1,3 +1,5 @@
+"""UTI (item) generic: GFF-based item definitions and properties."""
+
 from __future__ import annotations
 
 from copy import deepcopy
@@ -13,8 +15,8 @@ if TYPE_CHECKING:
     from pykotor.resource.formats.gff.gff_data import GFFStruct
     from pykotor.resource.type import SOURCE_TYPES, TARGET_TYPES
 
+# Base item IDs considered armor per 2DA files.
 ARMOR_BASE_ITEMS: set[int] = {35, 36, 37, 38, 39, 40, 41, 42, 43, 53, 58, 63, 64, 65, 69, 71, 85, 89, 98, 100, 102, 103}
-""" Base Item IDs that are considered armor as per the 2DA files. """
 
 
 class UTI:

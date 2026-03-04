@@ -306,59 +306,59 @@ def convert_gff_game(
     log_output(f"Converting {resource.path_ident().parent}/{resource.path_ident().name} to {to_game.name}")
     generic: Any
     try:
-        if resource.restype() is ResourceType.ARE:
+        if resource.restype() == ResourceType.ARE:
             generic = read_are(resource.data(), offset=0, size=resource.size())
             write_are(generic, converted_data, to_game)
 
-        elif resource.restype() is ResourceType.DLG:
+        elif resource.restype() == ResourceType.DLG:
             generic = read_dlg(resource.data(), offset=0, size=resource.size())
             write_dlg(generic, converted_data, to_game)
 
-        elif resource.restype() is ResourceType.GIT:
+        elif resource.restype() == ResourceType.GIT:
             generic = read_git(resource.data(), offset=0, size=resource.size())
             write_git(generic, converted_data, to_game)
 
-        elif resource.restype() is ResourceType.JRL:
+        elif resource.restype() == ResourceType.JRL:
             generic = read_jrl(resource.data(), offset=0, size=resource.size())
             write_jrl(generic, converted_data, game=to_game)
 
-        elif resource.restype() is ResourceType.PTH:
+        elif resource.restype() == ResourceType.PTH:
             generic = read_pth(resource.data(), offset=0, size=resource.size())
             write_pth(generic, converted_data, game=to_game)
 
-        elif resource.restype() is ResourceType.UTC:
+        elif resource.restype() == ResourceType.UTC:
             generic = read_utc(resource.data(), offset=0, size=resource.size())
             write_utc(generic, converted_data, game=to_game)
 
-        elif resource.restype() is ResourceType.UTD:
+        elif resource.restype() == ResourceType.UTD:
             generic = read_utd(resource.data(), offset=0, size=resource.size())
             write_utd(generic, converted_data, game=to_game)
 
-        elif resource.restype() is ResourceType.UTE:
+        elif resource.restype() == ResourceType.UTE:
             generic = read_ute(resource.data(), offset=0, size=resource.size())
             write_ute(generic, converted_data, game=to_game)
 
-        elif resource.restype() is ResourceType.UTI:
+        elif resource.restype() == ResourceType.UTI:
             generic = read_uti(resource.data(), offset=0, size=resource.size())
             write_uti(generic, converted_data, game=to_game)
 
-        elif resource.restype() is ResourceType.UTM:
+        elif resource.restype() == ResourceType.UTM:
             generic = read_utm(resource.data(), offset=0, size=resource.size())
             write_utm(generic, converted_data, game=to_game)
 
-        elif resource.restype() is ResourceType.UTP:
+        elif resource.restype() == ResourceType.UTP:
             generic = read_utp(resource.data(), offset=0, size=resource.size())
             write_utp(generic, converted_data, game=to_game)
 
-        elif resource.restype() is ResourceType.UTS:
+        elif resource.restype() == ResourceType.UTS:
             generic = read_uts(resource.data(), offset=0, size=resource.size())
             write_uts(generic, converted_data, game=to_game)
 
-        elif resource.restype() is ResourceType.UTT:
+        elif resource.restype() == ResourceType.UTT:
             generic = read_utt(resource.data(), offset=0, size=resource.size())
             write_utt(generic, converted_data, game=to_game)
 
-        elif resource.restype() is ResourceType.UTW:
+        elif resource.restype() == ResourceType.UTW:
             generic = read_utw(resource.data(), offset=0, size=resource.size())
             write_utw(generic, converted_data, game=to_game)
 
@@ -636,7 +636,7 @@ def patch_erf_or_rim(
         elif isinstance(patched_data, TPC):
             log_output(f"Adding patched TPC resource '{resource.resname()}' to {new_filename}")
             txi_resource: FileResource | None = next(
-                (res for res in resources if res.resname() == resource.resname() and res.restype() is ResourceType.TXI),
+                (res for res in resources if res.resname() == resource.resname() and res.restype() == ResourceType.TXI),
                 None,
             )
             if txi_resource:
@@ -704,7 +704,7 @@ def patch_install(install_path: os.PathLike | str):
             res_ident = ResourceIdentifier.from_path(module_name)
             filename = str(res_ident)
             filepath = k_install.path().joinpath("Modules", filename)
-            if res_ident.restype is ResourceType.RIM:
+            if res_ident.restype == ResourceType.RIM:
                 if filepath.with_suffix(".mod").is_file():
                     log_output(f"Skipping {filepath}, a .mod already exists at this path.")
                     continue
@@ -715,7 +715,7 @@ def patch_install(install_path: os.PathLike | str):
 
             elif res_ident.restype.name in (ResourceType.ERF, ResourceType.MOD, ResourceType.SAV):
                 new_erf = ERF(ERFType.from_extension(filepath.suffix))
-                if res_ident.restype is ResourceType.SAV:
+                if res_ident.restype == ResourceType.SAV:
                     new_erf.is_save = True
                 new_erf_filename = patch_erf_or_rim(resources, module_name, new_erf)
                 log_output(f"Saving '{new_erf_filename}'")

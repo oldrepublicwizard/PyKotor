@@ -287,6 +287,123 @@
             </property>
            </widget>
           </item>
+          <item row="8" column="0">
+           <widget class="QLabel" name="label_plot">
+            <property name="text">
+             <string>Plot:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="8" column="1">
+           <widget class="QCheckBox" name="plotCheckbox">
+            <property name="toolTip">
+             <string>Plot (GFF: Plot). Boolean. If set, the item cannot be dropped or sold. Engine reads via ReadFieldCExoString/BOOL in LoadDataFromGff. Used for key quest items.</string>
+            </property>
+            <property name="text">
+             <string/>
+            </property>
+           </widget>
+          </item>
+          <item row="9" column="0">
+           <widget class="QLabel" name="label_charges">
+            <property name="text">
+             <string>Charges:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="9" column="1">
+           <widget class="QSpinBox" name="chargesSpin">
+            <property name="minimum">
+             <number>0</number>
+            </property>
+            <property name="maximum">
+             <number>255</number>
+            </property>
+            <property name="toolTip">
+             <string>Charges (GFF: Charges). Number of uses remaining for usable items (e.g. medpacs). Engine reads in LoadDataFromGff.</string>
+            </property>
+           </widget>
+          </item>
+          <item row="10" column="0">
+           <widget class="QLabel" name="label_stack">
+            <property name="text">
+             <string>Stack Size:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="10" column="1">
+           <widget class="QSpinBox" name="stackSpin">
+            <property name="minimum">
+             <number>1</number>
+            </property>
+            <property name="maximum">
+             <number>255</number>
+            </property>
+            <property name="toolTip">
+             <string>Stack Size (GFF: StackSize). Number of items in this stack. Engine reads in LoadDataFromGff.</string>
+            </property>
+           </widget>
+          </item>
+          <item row="11" column="0">
+           <widget class="QLabel" name="label_modelVar">
+            <property name="text">
+             <string>Model Variation:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="11" column="1">
+           <widget class="QSpinBox" name="modelVarSpin">
+            <property name="minimum">
+             <number>0</number>
+            </property>
+            <property name="maximum">
+             <number>255</number>
+            </property>
+            <property name="toolTip">
+             <string>Model Variation (GFF: ModelVariation). Picks which model variant is used for this base item. Affects 3D preview.</string>
+            </property>
+           </widget>
+          </item>
+          <item row="12" column="0">
+           <widget class="QLabel" name="label_bodyVar">
+            <property name="text">
+             <string>Body Variation:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="12" column="1">
+           <widget class="QSpinBox" name="bodyVarSpin">
+            <property name="minimum">
+             <number>0</number>
+            </property>
+            <property name="maximum">
+             <number>255</number>
+            </property>
+            <property name="toolTip">
+             <string>Body Variation. Body part variant for the model.</string>
+            </property>
+           </widget>
+          </item>
+          <item row="13" column="0">
+           <widget class="QLabel" name="label_textureVar">
+            <property name="text">
+             <string>Texture Variation:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="13" column="1">
+           <widget class="QSpinBox" name="textureVarSpin">
+            <property name="minimum">
+             <number>0</number>
+            </property>
+            <property name="maximum">
+             <number>255</number>
+            </property>
+            <property name="toolTip">
+             <string>Texture Variation (GFF: TextureVar). Texture variant for the model. Affects 3D preview.</string>
+            </property>
+           </widget>
+          </item>
          </layout>
         </item>
        </layout>
