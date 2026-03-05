@@ -1377,6 +1377,18 @@ class IncrementalTSLPatchDataWriter:
         current_content: str = self.ini_path.read_text(encoding="utf-8")
         return current_content.splitlines()
 
+    def _write_ini_lines(self, lines: list[str]) -> None:
+        """Write lines back to the INI file with proper formatting.
+
+        Args:
+        ----
+            lines: Lines to write to the INI file
+        """
+        new_content: str = "\n".join(lines)
+        if not new_content.endswith("\n"):
+            new_content += "\n"
+        self.ini_path.write_text(new_content, encoding="utf-8")
+
     def register_tlk_modification_with_source(
         self,
         tlk_mod: ModificationsTLK,
@@ -4036,10 +4048,7 @@ class IncrementalTSLPatchDataWriter:
         lines.insert(insert_idx, file_line)
 
         # Write back
-        new_content: str = "\n".join(lines)
-        if not new_content.endswith("\n"):
-            new_content += "\n"
-        self.ini_path.write_text(new_content, encoding="utf-8")
+        self._write_ini_lines(lines)
         _log_verbose(f"Added File{file_index}={filename} to {folder_section}")
 
     def _insert_folder_section(self, folder_num: int, dest_folder: str) -> None:
@@ -4070,10 +4079,7 @@ class IncrementalTSLPatchDataWriter:
             new_lines = ["", folder_section, ""]
             lines[insert_idx:insert_idx] = new_lines
 
-        new_content = "\n".join(lines)
-        if not new_content.endswith("\n"):
-            new_content += "\n"
-        self.ini_path.write_text(new_content, encoding="utf-8")
+        self._write_ini_lines(lines)
         _log_verbose(f"Created {folder_section} section")
 
     def _mark_install_list_dirty(self) -> None:
@@ -4305,10 +4311,7 @@ class IncrementalTSLPatchDataWriter:
         lines[insert_idx:insert_idx] = new_lines
 
         # Write back
-        new_content = "\n".join(lines)
-        if not new_content.endswith("\n"):
-            new_content += "\n"
-        self.ini_path.write_text(new_content, encoding="utf-8")
+        self._write_ini_lines(lines)
         _log_debug(f"Inserted {len(new_lines)} lines into {section_marker}")
 
     def _write_to_ini(
