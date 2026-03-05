@@ -480,8 +480,8 @@ class ConfigReader:
 
                 modification_ids_dict = CaseInsensitiveDict(self.ini[modification_id])
                 manipulation: Modify2DA | None = self.discern_2da(key, modification_id, modification_ids_dict)
-                if not manipulation:  # TODO(th3w1zard1): Does this denote an error occurred? If so we should raise.
-                    continue
+                if manipulation is None:
+                    raise ValueError(f"Unknown or invalid 2DA modification key '{key}' in section '{modification_id}'")
                 modifications.modifiers.append(manipulation)
 
     def load_ssf_list(self):

@@ -57,6 +57,7 @@ from toolset.gui.dialogs.save.to_rim import RimSaveDialog, RimSaveOption
 from toolset.data.installation import HTInstallation
 from toolset.gui.widgets.installation_toolbar import StandaloneWindowMixin
 from toolset.gui.widgets.settings.installations import GlobalSettings, InstallationsWidget
+from toolset.utils.window import TOOLSET_WINDOWS
 from ui import stylesheet_resources  # noqa: PLC0415, F401, I001  # pylint: disable=C0415
 from utility.error_handling import assert_with_variable_trace, format_exception_with_variables
 from utility.system.os_helper import remove_any
@@ -937,9 +938,20 @@ class Editor(QMainWindow, StandaloneWindowMixin):
         nested_capsules: list[tuple[PurePath, ERF | RIM]] = [(c_filepath, erf_or_rim)]
         for capsule_path in reversed(nested_paths[:-1]):
             nested_erf_or_rim_data = erf_or_rim.get(capsule_path.stem, ResourceType.from_extension(capsule_path.suffix))
-            if nested_erf_or_rim_data is None:  # TODO(th3w1zard1): loop through all windows and send hotkey ctrl+s?
-                msg = f"You must save the ERFEditor for '{capsule_path.relative_to(c_parent_filepath)}' to before modifying its nested resources. Do so and try again."
-                raise ValueError(msg)
+            if nested_erf_or_rim_data is None:
+                # Save all open editors to ensure nested resources are available
+                for window in TOOLSET_WINDOWS:
+                    if hasattr(window, 'save') and hasattr(window, '_filepath') and window._filepath is not None:
+                        try:
+                            window.save()
+                        except Exception as e:
+                            self._logger.warning(f"Failed to save editor {window.__class__.__name__}: {e}")
+                # Re-read the capsule after saving
+                erf_or_rim = read_rim(c_filepath) if ResourceType.from_extension(c_parent_filepath.suffix) == ResourceType.RIM else read_erf(c_filepath)
+                nested_erf_or_rim_data = erf_or_rim.get(capsule_path.stem, ResourceType.from_extension(capsule_path.suffix))
+                if nested_erf_or_rim_data is None:
+                    msg = f"You must save the ERFEditor for '{capsule_path.relative_to(c_parent_filepath)}' before modifying its nested resources. Do so and try again."
+                    raise ValueError(msg)
 
             erf_or_rim = read_rim(nested_erf_or_rim_data) if ResourceType.from_extension(capsule_path.suffix) == ResourceType.RIM else read_erf(nested_erf_or_rim_data)
             nested_capsules.append((capsule_path, erf_or_rim))

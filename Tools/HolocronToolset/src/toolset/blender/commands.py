@@ -20,11 +20,25 @@ from toolset.utils.misc import safe_callback_execution
 
 if TYPE_CHECKING:
     from pathlib import Path
+    from typing import TypedDict
 
     from pykotor.resource.formats.bwm import BWM
     from pykotor.resource.formats.lyt import LYT
     from pykotor.resource.generics.git import GIT, GITObject
     from toolset.blender.ipc_client import BlenderIPCClient
+
+    class InstanceData(TypedDict, total=False):
+        """Data structure for instance information."""
+        type: str
+        resref: str
+        # Add other fields as needed
+
+    class InstanceProperties(TypedDict, total=False):
+        """Data structure for instance properties."""
+        location: list[float]
+        rotation: list[float]
+        scale: list[float]
+        # Add other properties as needed
 
 
 def requires_connection(default_return_value: Any = False, check_session: bool = False) -> Callable:
@@ -99,8 +113,8 @@ class BlenderEditorController:
         # Event callbacks
         self._selection_callbacks: list[Callable[[list[int]], None]] = []
         self._transform_callbacks: list[Callable[[int, dict | None, dict | None], None]] = []
-        self._instance_callbacks: list[Callable[[str, dict[str, Any]], None]] = []
-        self._instance_update_callbacks: list[Callable[[int, dict[str, Any]], None]] = []
+        self._instance_callbacks: list[Callable[[str, InstanceData], None]] = []
+        self._instance_update_callbacks: list[Callable[[int, InstanceProperties], None]] = []
         self._context_menu_callbacks: list[Callable[[list[int]], None]] = []
 
         # Register for Blender events

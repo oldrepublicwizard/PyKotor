@@ -51,7 +51,7 @@ def _get_tk_root() -> Tk:
     return tk._default_root  # pyright: ignore[reportAttributeAccessIssue]  # noqa: SLF001
 
 
-def askdirectory(  # noqa: ANN201
+def askdirectory(
     *,
     initialdir: os.PathLike | str | None = None,
     mustexist: bool | None = None,
@@ -212,7 +212,7 @@ def askopenfiles(  # noqa: PLR0913
         return tuple(open(file, mode) for file in result) if result else None  # noqa: PTH123, SIM115
 
 
-def asksaveasfile(  # noqa: PLR0913, ANN201
+def asksaveasfile(  # noqa: PLR0913
     mode: str = "w",
     *,
     confirmoverwrite: bool | None = None,

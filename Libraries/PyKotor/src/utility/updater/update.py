@@ -245,24 +245,37 @@ class LibUpdate:
         self._is_downloading = False
         return self._download_status
 
-    def _extract_update(self):
-        self.log.info("Main extraction, starting in working dir '%s'", self.update_folder)
+    def _find_archive_path(self) -> Path | None:
+        """Find the first existing archive path from the list of archive names.
+
+        Returns
+        -------
+            Path | None: The path to the first existing archive, or None if none found.
+        """
         with ChDir(self.update_folder):
-            archive_path: Path | None = None
             for archive_name in self.get_archive_names():
                 archive_path = Path.cwd().joinpath(archive_name).absolute()
                 if archive_path.is_file():
-                    self.log.info("Found archive %s", archive_name)
-                    break
-                self.log.warning("Archive not found, attempting to find it via similar extensions")
-                for ext in (".gz", ".tar", ".zip", ".bz2"):
-                    test_path = archive_path.with_suffix(ext)
-                    if test_path.is_file():
-                        self.log.info("Found archive %s", test_path.name)
-                        self._recursive_extract(test_path)
-                        return
+                    return archive_path
+        return None
+
+    def _extract_update(self):
+        self.log.info("Main extraction, starting in working dir '%s'", self.update_folder)
+        with ChDir(self.update_folder):
+            archive_path = self._find_archive_path()
             if archive_path is not None:
+                self.log.info("Found archive %s", archive_path.name)
                 self._recursive_extract(archive_path)
+            else:
+                self.log.warning("Archive not found, attempting to find it via similar extensions")
+                for archive_name in self.get_archive_names():
+                    base_path = Path.cwd().joinpath(archive_name).absolute()
+                    for ext in (".gz", ".tar", ".zip", ".bz2"):
+                        test_path = base_path.with_suffix(ext)
+                        if test_path.is_file():
+                            self.log.info("Found archive %s", test_path.name)
+                            self._recursive_extract(test_path)
+                            return
 
     @classmethod
     def _recursive_extract(
@@ -349,11 +362,7 @@ class LibUpdate:
     def _is_downloaded(self) -> bool | None:
         """Checks if latest update is already downloaded."""
         # TODO(th3w1zard1): Compare file hashes to ensure security
-        with ChDir(self.update_folder):
-            for archive_name in self.get_archive_names():
-                if Path(archive_name).is_file():
-                    return True
-        return False
+        return self._find_archive_path() is not None
 
     def _full_update(self) -> bool:
         self.log.debug("Starting full update")
