@@ -42,6 +42,7 @@ from typing import TYPE_CHECKING, Any, ClassVar, Sequence, TypeVar
 
 from packaging.version import Version
 
+from utility.string_util import normalize_string
 from utility.system.win32.com.com_types import GUID
 from utility.system.win32.hresult import HRESULT
 from utility.system.win32.winapi.device_iocontrol import FSCTL
@@ -1957,7 +1958,7 @@ class TestWindowsFSCTLResult(unittest.TestCase):
         path_str = str(WindowsPath(path).resolve())
         for proc in psutil.process_iter(["pid", "name"]):
             try:
-                handle_gen = (h for h in proc.open_files() if path_str.lower().strip() == h.path.lower().strip())
+                handle_gen = (h for h in proc.open_files() if normalize_string(path_str) == normalize_string(h.path))
                 next(handle_gen)
             except (StopIteration, psutil.AccessDenied):  # noqa: S112, PERF203
                 continue
