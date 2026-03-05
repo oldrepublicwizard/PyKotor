@@ -206,6 +206,69 @@ def find_template_resref_references(
     )
 
 
+def find_quest_journal_references(
+    installation: Installation,
+    quest_tag: str,
+    *,
+    partial_match: bool = False,
+    case_sensitive: bool = False,
+    file_pattern: str | None = None,
+    file_types: set[str] | None = None,
+    logger: Callable[[str], None] | None = None,
+) -> list[ReferenceSearchResult]:
+    """Find all DLG nodes and scripts that reference a quest tag.
+
+    Searches for:
+    - DLG GFF files where a node's ``Quest`` string field equals ``quest_tag``
+      (dialogue nodes use AddJournalQuestEntry via the Quest/QuestEntry fields)
+    - NCS/NSS script bytecode where the tag string appears as a constant
+
+    Args:
+    ----
+        installation: The installation to search
+        quest_tag: The quest tag to search for (e.g. "tar_mq01")
+        partial_match: If True, allow partial matches
+        case_sensitive: If True, perform case-sensitive matching
+        file_pattern: Optional file pattern to filter results
+        file_types: Optional set of file type abbreviations to search
+        logger: Optional logging function
+
+    Returns:
+    -------
+        List of ReferenceSearchResult objects
+    """
+    dlg_results = find_field_value_references(
+        installation=installation,
+        search_value=quest_tag,
+        field_names={"Quest"},
+        field_types={GFFFieldType.String},
+        partial_match=partial_match,
+        case_sensitive=case_sensitive,
+        file_pattern=file_pattern,
+        file_types=file_types if file_types is not None else {"DLG"},
+        logger=logger,
+    )
+    script_results = find_resref_references(
+        installation=installation,
+        resref=quest_tag,
+        field_types={GFFFieldType.String},
+        search_ncs=True,
+        partial_match=partial_match,
+        case_sensitive=case_sensitive,
+        file_pattern=file_pattern,
+        file_types=file_types if file_types is not None else {"NCS", "NSS"},
+        logger=logger,
+    )
+    seen: set[tuple[str, str, str]] = set()
+    combined: list[ReferenceSearchResult] = []
+    for r in dlg_results + script_results:
+        key = (str(r.file_resource.filepath()), r.field_path, r.matched_value)
+        if key not in seen:
+            seen.add(key)
+            combined.append(r)
+    return combined
+
+
 def find_conversation_references(
     installation: Installation,
     conversation_resref: str,

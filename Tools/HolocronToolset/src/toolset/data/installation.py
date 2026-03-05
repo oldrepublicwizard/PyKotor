@@ -433,7 +433,7 @@ class HTInstallation(Installation):
         order: list[SearchLocation] | None = None,
         enable_reference_search: bool = False,
         reference_search_type: Literal[
-            "script", "tag", "template_resref", "conversation", "resref"
+            "script", "tag", "template_resref", "conversation", "resref", "quest"
         ]
         | None = None,
     ) -> None:
@@ -526,7 +526,7 @@ class HTInstallation(Installation):
                 checked: bool = False,
                 search_text: str = widget_text.strip(),
                 search_type: Literal[
-                    "script", "tag", "template_resref", "conversation", "resref"
+                    "script", "tag", "template_resref", "conversation", "resref", "quest"
                 ] = reference_search_type or "resref",
             ) -> None:
                 """Find references to the given search text and type."""
@@ -546,7 +546,7 @@ class HTInstallation(Installation):
         order: list[SearchLocation] | None = None,
         enable_reference_search: bool = False,
         reference_search_type: Literal[
-            "script", "tag", "template_resref", "conversation", "resref"
+            "script", "tag", "template_resref", "conversation", "resref", "quest"
         ]
         | None = None,
     ):
@@ -610,7 +610,7 @@ class HTInstallation(Installation):
         parent_widget: QWidget,
         search_text: str,
         search_type: Literal[
-            "script", "tag", "template_resref", "conversation", "resref"
+            "script", "tag", "template_resref", "conversation", "resref", "quest"
         ]
         | None = None,
     ) -> None:
@@ -624,6 +624,7 @@ class HTInstallation(Installation):
         """
         from pykotor.tools.reference_finder import (
             find_conversation_references,
+            find_quest_journal_references,
             find_resref_references,
             find_script_references,
             find_tag_references,
@@ -679,6 +680,16 @@ class HTInstallation(Installation):
 
             if search_type == "conversation":
                 return find_conversation_references(
+                    self,
+                    search_text,
+                    partial_match=partial_match,
+                    case_sensitive=case_sensitive,
+                    file_pattern=file_pattern,
+                    file_types=file_types,
+                )
+
+            if search_type == "quest":
+                return find_quest_journal_references(
                     self,
                     search_text,
                     partial_match=partial_match,
