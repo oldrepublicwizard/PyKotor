@@ -199,7 +199,7 @@ def _parse_resolution_spec(resolution: str) -> list[ResolutionTarget]:
         msg = "Resolution is required."
         raise ValueError(msg)
 
-    parts = [spec_part.strip() for spec_part in spec.split(",") if spec_part.strip()]
+    parts = [part for spec_part in spec.split(",") if (part := spec_part.strip())]
     if not parts:
         msg = "No valid resolutions provided."
         raise ValueError(msg)

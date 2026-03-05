@@ -212,7 +212,8 @@ def _open_resource_editor_impl(  # noqa: C901, PLR0913, PLR0912, PLR0915
             data = resource.data()
         except Exception:  # noqa: BLE001
             RobustLogger().exception("Exception occurred in _open_resource_editor_impl")
-            QMessageBox(QMessageBox.Icon.Critical, tr("Failed to get the file data."), tr("An error occurred while attempting to read the data of the file.")).exec()
+            from toolset.gui.helpers.message_box import show_error_message
+            show_error_message(tr("Failed to get the file data."), tr("An error occurred while attempting to read the data of the file."))
             return None, None
         restype = resource.restype()
         resname = resource.resname()
@@ -277,14 +278,8 @@ def _open_resource_editor_impl(  # noqa: C901, PLR0913, PLR0912, PLR0915
             return None, None
         editor = _instantiate_editor(NSSEditor)
     elif restype == ResourceType.BIK:
-        QMessageBox(
-            QMessageBox.Icon.Information,
-            tr("Unsupported file type"),
-            tr("BIK video preview is not supported yet in the Toolset editor."),
-            QMessageBox.StandardButton.Ok,
-            parent_window_widget,
-            flags=_TOP_LEVEL_MESSAGE_FLAGS,
-        ).show()
+        from toolset.gui.helpers.message_box import show_info_message
+        show_info_message(tr("Unsupported file type"), tr("BIK video preview is not supported yet in the Toolset editor."), parent_window_widget)
         return None, None
     else:
         # Handle target_type mappings with GFF specialization logic
@@ -340,14 +335,8 @@ def _open_resource_editor_impl(  # noqa: C901, PLR0913, PLR0912, PLR0915
         editor = TXTEditor(None)
 
     if editor is None:
-        QMessageBox(
-            QMessageBox.Icon.Critical,
-            tr("Failed to open file"),
-            trf("The selected file format '{format}' is not yet supported.", format=str(restype)),
-            QMessageBox.StandardButton.Ok,
-            parent_window_widget,
-            flags=_TOP_LEVEL_MESSAGE_FLAGS,
-        ).show()
+        from toolset.gui.helpers.message_box import show_error_message
+        show_error_message(tr("Failed to open file"), trf("The selected file format '{format}' is not yet supported.", format=str(restype)), parent_window_widget)
         return None, None
 
     try:
@@ -369,14 +358,8 @@ def _open_resource_editor_impl(  # noqa: C901, PLR0913, PLR0912, PLR0915
             head = bytes(data[:16])
             if head:
                 data_signature = f"\n\nData signature (first 16 bytes): {head.hex(' ')}"
-        QMessageBox(
-            QMessageBox.Icon.Critical,
-            tr("An unexpected error has occurred"),
-            f"{(e.__class__.__name__, str(e))}{data_signature}",
-            QMessageBox.StandardButton.Ok,
-            parent_window_widget,
-            flags=_TOP_LEVEL_MESSAGE_FLAGS,
-        ).show()
+        from toolset.gui.helpers.message_box import show_error_message
+        show_error_message(tr("An unexpected error has occurred"), f"{(e.__class__.__name__, str(e))}{data_signature}", parent_window_widget)
         return None, None
     else:
         return filepath, editor
@@ -398,14 +381,8 @@ def open_resource_editor_from_path(
     path = Path(filepath) if not isinstance(filepath, Path) else filepath
     if not path.is_file():
         RobustLogger().warning("open_resource_editor_from_path: not a file: %s", path)
-        QMessageBox(
-            QMessageBox.Icon.Warning,
-            tr("File not found"),
-            trf("The path is not a file: {path}", path=str(path)),
-            QMessageBox.StandardButton.Ok,
-            parent_window if isinstance(parent_window, QWidget) else None,
-            flags=_TOP_LEVEL_MESSAGE_FLAGS,
-        ).show()
+        from toolset.gui.helpers.message_box import show_warning_message
+        show_warning_message(tr("File not found"), trf("The path is not a file: {path}", path=str(path)), parent_window if isinstance(parent_window, QWidget) else None)
         return None, None
     resource = FileResource.from_path(path)
     return open_resource_editor(

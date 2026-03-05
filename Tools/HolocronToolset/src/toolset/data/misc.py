@@ -44,8 +44,8 @@ class ControlItem:
             bool: Whether the input is satisfied.
         """
         no_buttons: bool = self.mouse is None
-        any_buttons: bool = self.mouse is not None and len(self.mouse) == 0
-        any_keys: bool = len(self.keys) == 0
+        any_buttons: bool = self.mouse is not None and not self.mouse
+        any_keys: bool = not self.keys
         if exact_keys_and_buttons:
             mouse_equal: bool = self.mouse == buttons
             mouse_satisfied: bool = no_buttons or any_buttons or mouse_equal

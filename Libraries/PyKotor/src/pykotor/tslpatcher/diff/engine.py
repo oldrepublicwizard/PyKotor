@@ -1092,7 +1092,7 @@ class DiffContext:
 
 def is_text_content(data: bytes) -> bool:
     """Heuristically determine if data is text content."""
-    if len(data) == 0:
+    if not data:
         return True
 
     with suppress(UnicodeDecodeError):

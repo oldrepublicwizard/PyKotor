@@ -13,6 +13,34 @@ if TYPE_CHECKING:
     from typing_extensions import Literal
 
 
+def _normalize_result(result: str | None) -> str:
+    """Normalize a dialog result, returning empty string if None or empty/whitespace.
+
+    Args:
+    ----
+        result: The result string from a dialog
+
+    Returns:
+    -------
+        str: The normalized result or empty string
+    """
+    return "" if not result or not result.strip() else result
+
+
+def _normalize_result_list(result: list[str] | None) -> str:
+    """Normalize a dialog result list, returning empty string if None or first item is empty/whitespace.
+
+    Args:
+    ----
+        result: The result list from a dialog
+
+    Returns:
+    -------
+        str: The first item normalized or empty string
+    """
+    return "" if not result or not result[0].strip() else result[0]
+
+
 def _get_tk_root() -> Tk:
     import tkinter as tk
 
@@ -39,13 +67,13 @@ def askdirectory(  # noqa: ANN201
             title=title,
             parent=_get_tk_root() if parent is None else parent,
         )
-        return "" if not result or not result.strip() else result
+        return _normalize_result(result)
     except Exception:  # noqa: BLE001
         RobustLogger().warning("Tkinter's filedialog.askdirectory() threw an exception!", exc_info=True)
         from utility.system.win32.com.windialogs import open_folder_dialog
 
         result = open_folder_dialog(title, None if initialdir is None else str(initialdir))
-        return "" if not result or not result[0].strip() else result[0]
+        return _normalize_result_list(result)
 
 
 def askopenfile(  # noqa: PLR0913
@@ -107,7 +135,7 @@ def askopenfilename(  # noqa: PLR0913
             parent=_get_tk_root() if parent is None else parent,
             typevariable=typevariable,
         )
-        return "" if not result or not result.strip() else result
+        return _normalize_result(result)
     except Exception:  # noqa: BLE001
         RobustLogger().warning("Tkinter's filedialog.askopenfilename() threw an exception!", exc_info=True)
         from utility.system.win32.com.windialogs import open_file_dialog
@@ -118,7 +146,7 @@ def askopenfilename(  # noqa: PLR0913
             filetypes,
             defaultextension,
         )
-        return "" if not result or not result[0].strip() else result[0]
+        return _normalize_result_list(result)
 
 
 def askopenfilenames(  # noqa: PLR0913
@@ -248,7 +276,7 @@ def asksaveasfilename(  # noqa: PLR0913
             title=title,
             typevariable=typevariable,
         )
-        return "" if not result or not result.strip() else result
+        return _normalize_result(result)
     except Exception:  # noqa: BLE001
         RobustLogger().warning("Tkinter's filedialog.asksaveasfilename() threw an exception!", exc_info=True)
         from utility.system.win32.com.windialogs import save_file_dialog
@@ -260,7 +288,7 @@ def asksaveasfilename(  # noqa: PLR0913
             default_extension=defaultextension,
             overwrite_prompt=True if confirmoverwrite is None else confirmoverwrite,
         )
-        return "" if not result or not result[0].strip() else result[0]
+        return _normalize_result_list(result)
 
 
 if __name__ == "__main__":

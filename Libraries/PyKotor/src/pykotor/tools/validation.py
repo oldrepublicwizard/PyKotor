@@ -400,7 +400,7 @@ def validate_installation(
             if not found:
                 missing_files.append(f"{twoda_name}.2da")
 
-    valid = len(errors) == 0 and len(missing_files) == 0
+    valid = not errors and not missing_files
 
     return {
         "valid": valid,
