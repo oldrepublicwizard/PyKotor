@@ -18,6 +18,7 @@ from pykotor.tools.path import CaseAwarePath
 from pykotor.tslpatcher.config import LogLevel
 from pykotor.tslpatcher.logger import PatchLogger
 from pykotor.tslpatcher.memory import NoTokenUsage, TokenUsage2DA, TokenUsageTLK
+from utility.string_util import normalize_string
 from pykotor.tslpatcher.mods.gff import (
     AddFieldGFF,
     AddStructToListGFF,
@@ -1414,7 +1415,7 @@ class ConfigReader:
         store_tlk: dict[int, RowValue] = {}
 
         for modifier, value in modifiers.items():
-            lower_modifier: str = modifier.lower().strip()
+            lower_modifier: str = normalize_string(modifier)
             lower_value: str = value.lower()
 
             is_store_2da: bool = lower_modifier.startswith("2damemory") and len(lower_modifier) > len("2damemory") and modifier[len("2damemory") :].isdigit()

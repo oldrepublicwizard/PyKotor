@@ -16,6 +16,7 @@ from typing import TYPE_CHECKING, Any, Callable
 from loggerplus import RobustLogger
 from toolset.blender.ipc_client import BlenderCommands, get_ipc_client
 from toolset.blender.serializers import serialize_module_data
+from toolset.utils.misc import safe_callback_execution
 
 if TYPE_CHECKING:
     from pathlib import Path
@@ -794,11 +795,12 @@ class BlenderEditorController:
                 if instance_id is not None:
                     instance_ids.append(instance_id)
 
-        for callback in self._selection_callbacks:
-            try:
-                callback(instance_ids)
-            except Exception as e:
-                self._logger.error(f"Error in selection callback: {e}")
+        safe_callback_execution(
+            self._selection_callbacks,
+            instance_ids,
+            logger=self._logger,
+            callback_type="selection",
+        )
 
     def _on_transform_changed(self, event):
         """Handle transform changed event from Blender."""
@@ -826,11 +828,14 @@ class BlenderEditorController:
         if instance_id is None:
             return
 
-        for callback in self._transform_callbacks:
-            try:
-                callback(instance_id, position, rotation)
-            except Exception as e:
-                self._logger.error(f"Error in transform callback: {e}")
+        safe_callback_execution(
+            self._transform_callbacks,
+            instance_id,
+            position,
+            rotation,
+            logger=self._logger,
+            callback_type="transform",
+        )
 
     def _on_instance_added(self, event):
         """Handle instance added event from Blender."""
@@ -852,11 +857,13 @@ class BlenderEditorController:
                     self._session.instance_to_object[instance_id] = object_name
                     self._session.object_to_instance[object_name] = instance_id
 
-        for callback in self._instance_callbacks:
-            try:
-                callback("added", event.params)
-            except Exception as e:
-                self._logger.error(f"Error in instance callback: {e}")
+        safe_callback_execution(
+            self._instance_callbacks,
+            "added",
+            event.params,
+            logger=self._logger,
+            callback_type="instance",
+        )
 
     def _on_instance_removed(self, event):
         """Handle instance removed event from Blender."""
@@ -878,11 +885,13 @@ class BlenderEditorController:
             if runtime_key is not None:
                 self.unbind_runtime_instance(runtime_key)
 
-        for callback in self._instance_callbacks:
-            try:
-                callback("removed", {"name": object_name, "id": instance_id, "runtime_id": runtime_id})
-            except Exception as e:
-                self._logger.error(f"Error in instance callback: {e}")
+        safe_callback_execution(
+            self._instance_callbacks,
+            "removed",
+            {"name": object_name, "id": instance_id, "runtime_id": runtime_id},
+            logger=self._logger,
+            callback_type="instance",
+        )
 
     def _on_instance_updated(self, event):
         """Handle property updates sent from Blender."""
@@ -908,11 +917,13 @@ class BlenderEditorController:
         if instance_id is None:
             return
 
-        for callback in self._instance_update_callbacks:
-            try:
-                callback(instance_id, properties)
-            except Exception as e:
-                self._logger.error(f"Error in instance update callback: {e}")
+        safe_callback_execution(
+            self._instance_update_callbacks,
+            instance_id,
+            properties,
+            logger=self._logger,
+            callback_type="instance update",
+        )
 
     def _on_context_menu_requested(self, event):
         """Handle context-menu requests from Blender."""
@@ -937,11 +948,12 @@ class BlenderEditorController:
                 if instance_id is not None:
                     instance_ids.append(instance_id)
 
-        for callback in self._context_menu_callbacks:
-            try:
-                callback(instance_ids)
-            except Exception as e:
-                self._logger.error(f"Error in context menu callback: {e}")
+        safe_callback_execution(
+            self._context_menu_callbacks,
+            instance_ids,
+            logger=self._logger,
+            callback_type="context menu",
+        )
 
 
 # Global controller instance

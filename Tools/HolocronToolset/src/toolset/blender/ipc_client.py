@@ -16,6 +16,7 @@ from enum import Enum
 from typing import TYPE_CHECKING, Any, Callable
 
 from loggerplus import RobustLogger
+from toolset.utils.misc import safe_callback_execution
 
 if TYPE_CHECKING:
     from collections.abc import Sequence
@@ -298,11 +299,12 @@ class BlenderIPCClient:
         """Update connection state and notify callbacks."""
         if self._state != state:
             self._state = state
-            for callback in self._state_callbacks:
-                try:
-                    callback(state)
-                except Exception as e:
-                    self._logger.error(f"Error in state callback: {e}")
+            safe_callback_execution(
+                self._state_callbacks,
+                state,
+                logger=self._logger,
+                callback_type="state",
+            )
 
     def _receive_loop(self):
         """Background thread for receiving messages."""
@@ -368,18 +370,20 @@ class BlenderIPCClient:
     def _dispatch_event(self, event: IPCEvent):
         """Dispatch an event to registered callbacks."""
         callbacks = self._event_callbacks.get(event.method, [])
-        for callback in callbacks:
-            try:
-                callback(event)
-            except Exception as e:
-                self._logger.error(f"Error in event callback for {event.method}: {e}")
+        safe_callback_execution(
+            callbacks,
+            event,
+            logger=self._logger,
+            callback_type=f"event ({event.method})",
+        )
 
         # Also dispatch to wildcard listeners
-        for callback in self._event_callbacks.get("*", []):
-            try:
-                callback(event)
-            except Exception as e:
-                self._logger.error(f"Error in wildcard event callback: {e}")
+        safe_callback_execution(
+            self._event_callbacks.get("*", []),
+            event,
+            logger=self._logger,
+            callback_type="wildcard event",
+        )
 
     def _heartbeat_loop(self):
         """Background thread for sending keepalive pings."""

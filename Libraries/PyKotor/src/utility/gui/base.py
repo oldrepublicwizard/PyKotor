@@ -3,6 +3,8 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Any
 
+from utility.string_util import normalize_string
+
 
 @dataclass
 class UserCommunication:
@@ -20,7 +22,7 @@ class UserCommunication:
     def askquestion(self, title: str, message: str, *args, **kwargs) -> bool:
         print(f"{title}\n{message}")
         while True:
-            response = input("(y/N)").lower().strip()
+            response = normalize_string(input("(y/N)"))
             if response in {"yes", "y"}:
                 return True
             if response in {"no", "n"}:

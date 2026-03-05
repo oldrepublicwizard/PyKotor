@@ -9,6 +9,7 @@ from typing import TYPE_CHECKING
 
 from pykotor.common.misc import Game
 from pykotor.extract.installation import Installation
+from utility.string_util import normalize_string
 
 if TYPE_CHECKING:
     from pathlib import Path
@@ -32,7 +33,7 @@ def parse_game_argument(game_arg: str | None) -> Game | None:
     if not game_arg:
         return None
 
-    game_lower = game_arg.lower().strip()
+    game_lower = normalize_string(game_arg)
     if game_lower in K1_ALIASES:
         return Game.K1
     if game_lower in K2_ALIASES:

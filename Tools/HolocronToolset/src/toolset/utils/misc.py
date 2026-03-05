@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from pathlib import Path
-from typing import TYPE_CHECKING, TypeVar
+from typing import TYPE_CHECKING, Any, Callable, TypeVar
 
 import qtpy
 
@@ -331,6 +331,31 @@ def get_resource_from_file(
         raise ValueError(msg)
 
     return data
+
+
+def safe_callback_execution(
+    callbacks: list[Callable[..., Any]],
+    *args: Any,
+    logger: Any = None,
+    callback_type: str = "callback",
+    **kwargs: Any,
+) -> None:
+    """Execute callbacks safely with shared exception handling.
+
+    Args:
+    ----
+        callbacks: Callback callables to invoke.
+        *args: Positional args passed to each callback.
+        logger: Optional logger with an ``error`` method.
+        callback_type: Label used in error messages.
+        **kwargs: Keyword args passed to each callback.
+    """
+    for callback in callbacks:
+        try:
+            callback(*args, **kwargs)
+        except Exception as e:  # noqa: BLE001
+            if logger is not None:
+                logger.error(f"Error in {callback_type} callback: {e}")
 
 
 if __name__ == "__main__":  # quick test

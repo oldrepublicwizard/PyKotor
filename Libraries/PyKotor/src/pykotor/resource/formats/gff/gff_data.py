@@ -66,6 +66,7 @@ from pykotor.resource.type import ResourceType
 from utility.common.geometry import Vector3, Vector4
 from utility.common.misc_string.util import format_text
 from utility.error_handling import safe_repr  # pyright: ignore[reportMissingImports]
+from utility.string_util import normalize_string
 
 if TYPE_CHECKING:
     import os
@@ -190,7 +191,7 @@ class GFFContent(Enum):
             if content_enum in res_contents:
                 gff_extensions.add("res")
                 continue
-            gff_extensions.add(content_enum.value.lower().strip())
+            gff_extensions.add(normalize_string(content_enum.value))
         return gff_extensions
 
     @classmethod
@@ -201,7 +202,7 @@ class GFFContent(Enum):
             if content_enum in res_contents:
                 gff_restypes.add(ResourceType.RES)
                 continue
-            gff_restypes.add(ResourceType.from_extension(content_enum.value.lower().strip()).target_type())
+            gff_restypes.add(ResourceType.from_extension(normalize_string(content_enum.value)).target_type())
         return gff_restypes
 
     @classmethod
@@ -314,9 +315,9 @@ def _infer_gff_content_from_path(path: PureWindowsPath | str | None) -> GFFConte
         return None
     first = parts[0]
     if "." in first:
-        ext = first.split(".")[-1].lower().strip()
+        ext = normalize_string(first.split(".")[-1])
         for content in GFFContent:
-            if content.value.lower().strip() == ext:
+            if normalize_string(content.value) == ext:
                 return content
     return None
 
