@@ -135,3 +135,12 @@ Tools/HolocronToolset/src/toolset/wiki/
 docs/reva_roadmap/
 vendor/kotor_re_things/
 vendor/kotor_re_things/
+agentdecompile_projects/my_project.gpr
+agentdecompile_projects/my_project.lock
+agentdecompile_projects/my_project.lock~
+agentdecompile_projects/my_project.rep/project.prp
+agentdecompile_projects/my_project.rep/idata/~index.dat
+agentdecompile_projects/my_project.rep/user/~index.dat
+agentdecompile_projects/my_project.rep/versioned/~index.dat
+Libraries/PyKotor/pytest_result.txt
+tmp_danm13_rebuilt*.mod
