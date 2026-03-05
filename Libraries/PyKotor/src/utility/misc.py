@@ -301,11 +301,11 @@ def get_file_attributes(
 
         # Check if file is archived (based on extension)
         archive_extensions = {".tar", ".gz", ".bz2", ".xz", ".zip", ".7z", ".rar"}
-        attributes["is_archive"] = path.suffix.lower() in archive_extensions
+        attributes["is_archive"] = get_normalized_extension(path) in archive_extensions
 
         # Check if file is compressed (based on extension)
         compressed_extensions = {".gz", ".bz2", ".xz", ".zip", ".7z", ".rar"}
-        attributes["is_compressed"] = path.suffix.lower() in compressed_extensions
+        attributes["is_compressed"] = get_normalized_extension(path) in compressed_extensions
 
         # Check if file is encrypted (based on extension, not reliable)
         encrypted_extensions = {".gpg", ".enc", ".asc"}
@@ -421,3 +421,17 @@ def is_valid_path(path: Path | str | None) -> bool:
         True if path is not None and exists, False otherwise
     """
     return path is not None and Path(path).exists()
+
+
+def get_normalized_extension(path: Path | str) -> str:
+    """Get the file extension in lowercase.
+
+    Args:
+    ----
+        path: The file path
+
+    Returns:
+    -------
+        The file extension in lowercase (e.g., '.txt', '.mdl')
+    """
+    return Path(path).suffix.lower()
