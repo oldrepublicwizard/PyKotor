@@ -35,6 +35,23 @@ def _run_apple_script(script: str) -> str:
     return result.stdout.strip()
 
 
+def _format_file_types_for_applescript(filetypes: list[tuple[str, str | list[str]]]) -> str:
+    """Format file types for AppleScript file dialogs.
+
+    Args:
+    ----
+        filetypes: List of (description, extensions) tuples
+
+    Returns:
+    -------
+        Formatted file types string for AppleScript
+    """
+    return ", ".join([
+        f'"{ft[1]}"' if isinstance(ft[1], str) else "{" + ", ".join([f'"{ext}"' for ext in ft[1]]) + "}"
+        for ft in filetypes
+    ])
+
+
 def _run_cocoa_dialog(  # noqa: C901, PLR0913
     dialog_type: str,
     title: str | None = None,
@@ -192,7 +209,7 @@ def askopenfile(  # noqa: PLR0913
                     script += f' default location POSIX file "{initialdir}"'
 
                 if filetypes:
-                    file_types_str = ", ".join([f'"{ft[1]}"' if isinstance(ft[1], str) else "{" + ", ".join([f'"{ext}"' for ext in ft[1]]) + "}" for ft in filetypes])
+                    file_types_str = _format_file_types_for_applescript(filetypes)
                     script += f" of type {{{file_types_str}}}"
 
                 script += ")"
@@ -247,7 +264,7 @@ def askopenfilename(  # noqa: PLR0913
                     script += f' default location POSIX file "{initialdir}"'
 
                 if filetypes:
-                    file_types_str = ", ".join([f'"{ft[1]}"' if isinstance(ft[1], str) else "{" + ", ".join([f'"{ext}"' for ext in ft[1]]) + "}" for ft in filetypes])
+                    file_types_str = _format_file_types_for_applescript(filetypes)
                     script += f" of type {{{file_types_str}}}"
 
                 script += ")"
@@ -300,7 +317,7 @@ def askopenfilenames(  # noqa: PLR0913
                 if initialdir:
                     script += f' default location POSIX file "{initialdir}"'
                 if filetypes:
-                    file_types_str = ", ".join([f'"{ft[1]}"' if isinstance(ft[1], str) else "{" + ", ".join([f'"{ext}"' for ext in ft[1]]) + "}" for ft in filetypes])
+                    file_types_str = _format_file_types_for_applescript(filetypes)
                     script += f" of type {{{file_types_str}}}"
                 script += " with multiple selections allowed"
                 script += "\nreturn files as POSIX path"
@@ -353,7 +370,7 @@ def askopenfiles(  # noqa: PLR0913
                 if initialdir:
                     script += f' default location POSIX file "{initialdir}"'
                 if filetypes:
-                    file_types_str = ", ".join([f'"{ft[1]}"' if isinstance(ft[1], str) else "{" + ", ".join([f'"{ext}"' for ext in ft[1]]) + "}" for ft in filetypes])
+                    file_types_str = _format_file_types_for_applescript(filetypes)
                     script += f" of type {{{file_types_str}}}"
                 script += " with multiple selections allowed"
                 script += "\nreturn files as POSIX path"
