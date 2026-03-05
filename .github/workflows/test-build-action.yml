@@ -2,6 +2,9 @@ name: Test Build Action - Local
 
 on: workflow_dispatch
 
+permissions:
+  contents: read
+
 jobs:
   test-build-action:
     runs-on: windows-latest

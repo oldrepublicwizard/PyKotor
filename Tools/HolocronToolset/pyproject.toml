@@ -22,7 +22,7 @@ toolset = [
 name = "holocrontoolset"
 description = "A PyQt-backed program with a collection of tools and editors that make it easy to work with kotor files"
 version = "4.0.0b18"
-requires-python = ">=3.8"
+requires-python = ">=3.10"
 dependencies = [
   "certifi>=2021.10.8",
   "comtypes>=1.4.0; sys_platform == \"win32\"",
@@ -32,8 +32,7 @@ dependencies = [
   "Markdown>=3.4.4; python_version>=\"3.9\"",
   "numpy>=1.19.0,<1.25.0; python_version<\"3.9\"",
   "numpy>=1.19.0; python_version>=\"3.9\"",
-  "Pillow>=9.5; python_implementation == 'CPython'",
-  "Pillow>10,<11.1.0; python_implementation == 'PyPy'",
+  "Pillow>=12.1.1",
   "pykotor[encodings,extra,font,gl,updater]>=2.3.0",
   "PyQt5-Qt5>=5.15; python_version==\"3.8\"",
   "PyQt5-sip>=12.10; python_version==\"3.8\"",
@@ -49,11 +48,9 @@ dependencies = [
   "PySide6; python_implementation == 'PyPy' and python_version >= '3.9'",
   "PySide6>=6.10.1; python_implementation == 'PyPy' and python_version >= '3.9'",
   "qtpy>=2.4.3",
-  "requests>=2.25.0,<2.32.0; python_version<\"3.9\"",
-  "requests>=2.25.0; python_version>=\"3.9\"",
+  "requests>=2.32.4",
   "send2trash>=1.8.3",
-  "urllib3>=1.26.0,<2.0.0; python_version<\"3.9\"",
-  "urllib3>=1.26.0; python_version>=\"3.9\"",
+  "urllib3>=2.6.3",
 ]
 authors = [{ name = "Nick Hugi" }, { name = "th3w1zard1" }]
 maintainers = [{ name = "th3w1zard1", email = "boden.crouch@gmail.com" }]
@@ -175,7 +172,7 @@ keywords = [
 ]
 
 [tool.poetry.dependencies]
-python = "^3.8"
+python = "^3.10"
 pykotor = { version = "^2.3.0", extras = ["encodings", "extra", "font", "gl", "updater"] }
 certifi = ">=2021.10.8"
 comtypes = { version = ">=1.4.0", markers = "sys_platform == 'win32'" }
@@ -189,10 +186,7 @@ numpy = [
   { version = ">=1.19.0,<1.25.0", markers = "python_version < \"3.9\"" },
   { version = ">=1.19.0", markers = "python_version >= \"3.9\"" },
 ]
-Pillow = [
-  { version = ">=9.5", markers = "python_implementation == 'CPython'" },
-  { version = ">10,<11.1.0", markers = "python_implementation == 'PyPy'" },
-]
+Pillow = { version = ">=12.1.1" }
 PyQt5 = { version = ">=5.15", markers = "python_version == \"3.8\"" }
 PyQt5-Qt5 = { version = ">=5.15", markers = "python_version == \"3.8\"" }
 PyQt5-sip = { version = ">=12.10", markers = "python_version == \"3.8\"" }
@@ -212,15 +206,9 @@ PySide6 = { version = ">=6.10.1", markers = "python_implementation == 'PyPy' and
 PySide6_Addons = { version = ">=6.10.1", markers = "python_implementation == 'PyPy' and python_version >= '3.9'" }
 PySide6_Essentials = { version = ">=6.10.1", markers = "python_implementation == 'PyPy' and python_version >= '3.9'" }
 qtpy = ">=2.4.3"
-requests = [
-  { version = ">=2.25.0,<2.32.0", markers = "python_version < \"3.9\"" },
-  { version = ">=2.25.0", markers = "python_version >= \"3.9\"" },
-]
+requests = ">=2.32.4"
 send2trash = ">=1.8.3"
-urllib3 = [
-  { version = ">=1.26.0,<2.0.0", markers = "python_version < \"3.9\"" },
-  { version = ">=1.26.0", markers = "python_version >= \"3.9\"" },
-]
+urllib3 = ">=2.6.3"
 
 [tool.poetry.group.dev.dependencies]
 pytest-qt = ">=4.2.0"

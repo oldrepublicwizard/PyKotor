@@ -6,6 +6,9 @@ on:
       - '*'
       - '!bleeding-edge'
 
+permissions:
+  contents: write
+
 jobs:
   merge:
     runs-on: ubuntu-latest

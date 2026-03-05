@@ -613,11 +613,29 @@ def download_github_file(
     if isinstance(url_or_repo, tuple):
         owner, repo = url_or_repo
         base_url = f"https://api.github.com/repos/{owner}/{repo}"
-    elif "https://api.github.com/repos/" in url_or_repo:
-        base_url = url_or_repo.rsplit("/", 1)[0]
     else:
-        owner, repo = url_or_repo.split("/")[-2:]
-        base_url = f"https://api.github.com/repos/{owner}/{repo}"
+        parsed = urlparse(url_or_repo)
+        host = parsed.netloc
+        path = parsed.path or ""
+        if host == "api.github.com" and path.startswith("/repos/"):
+            # Strip trailing path segments to keep only /repos/<owner>/<repo>
+            path_parts = path.split("/")
+            if len(path_parts) >= 4:
+                owner_part, repo_part = path_parts[2], path_parts[3]
+                base_url = f"https://api.github.com/repos/{owner_part}/{repo_part}"
+            else:
+                raise ValueError(f"Invalid GitHub API URL format: {url_or_repo!r}")
+        elif host in ("github.com", "raw.githubusercontent.com"):
+            parts = [p for p in path.split("/") if p]
+            if len(parts) >= 2:
+                owner_part, repo_part = parts[0], parts[1]
+                base_url = f"https://api.github.com/repos/{owner_part}/{repo_part}"
+            else:
+                raise ValueError(f"Cannot extract owner/repo from GitHub URL: {url_or_repo!r}")
+        else:
+            raise ValueError(
+                f"URL must be a github.com, raw.githubusercontent.com, or api.github.com URL, got: {url_or_repo!r}"
+            )
 
     if repo_path is not None:
         api_url = f"{base_url}/contents/{PurePath(repo_path).as_posix()}"

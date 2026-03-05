@@ -3,8 +3,7 @@
 setuptools>=67.8.0
 deep_translator==1.11.4
 deepl-cli==2.2.0
-requests>=2.25.0,<2.32.0; python_version<"3.9"
-requests>=2.25.0; python_version>="3.9"
+requests>=2.32.4
 opencv-contrib-python==4.13.0.90
 notify-py==0.3.43
 playwright>=1.30.0,<1.59

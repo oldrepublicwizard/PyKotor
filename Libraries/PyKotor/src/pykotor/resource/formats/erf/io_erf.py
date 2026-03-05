@@ -103,8 +103,27 @@ class ERFBinaryReader(ResourceReader):
             # If keys are at 160, resources are after (entry_count * 24)
             offset_to_resources = offset_to_keys + (entry_count * 24)
 
+        # Guard against obviously corrupt headers before any seeking/allocation.
+        _MAX_SANE_COUNT = 65536  # No legitimate ERF/MOD contains more than this many entries
+        _MAX_SANE_LANG_COUNT = 32
+
+        if entry_count > _MAX_SANE_COUNT:
+            msg = f"ERF entry_count {entry_count} exceeds sanity limit; file may be malformed or truncated."
+            raise ValueError(msg)
+
+        if offset_to_keys >= self._size and entry_count > 0:
+            msg = f"ERF offset_to_keys {offset_to_keys} is beyond file size {self._size}; file is malformed."
+            raise ValueError(msg)
+
+        if offset_to_resources >= self._size and entry_count > 0:
+            msg = f"ERF offset_to_resources {offset_to_resources} is beyond file size {self._size}; file is malformed."
+            raise ValueError(msg)
+
         # Read Localized Strings
         if language_count > 0 and offset_to_localized_strings > 0:
+            if language_count > _MAX_SANE_LANG_COUNT:
+                msg = f"ERF language_count {language_count} exceeds sanity limit; file may be malformed."
+                raise ValueError(msg)
             self._reader.seek(offset_to_localized_strings)
             block_end = offset_to_localized_strings + localized_string_size
             # The count is number of entries, not bytes. But the entries are variable size.
@@ -114,6 +133,11 @@ class ERFBinaryReader(ResourceReader):
                     break
                 lang_id = self._reader.read_uint32()
                 str_size = self._reader.read_uint32()
+                # Guard against absurdly large string sizes in corrupt files.
+                remaining_block = block_end - self._reader.position()
+                if str_size > remaining_block:
+                    msg = f"ERF localized string size {str_size} exceeds remaining block size {remaining_block}."
+                    raise ValueError(msg)
                 # Use windows-1252 as safe default for legacy BioWare strings
                 text = self._reader.read_string(str_size, encoding="windows-1252")
                 self._erf.localized_strings[lang_id] = text

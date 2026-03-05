@@ -31,6 +31,9 @@ jobs:
           if [[ "$PR_TITLE" =~ ^Merge\ .+\ into\ .+$ ]]; then
             echo "Skipping semantic PR check for merge PR: $PR_TITLE"
             echo "skip_check=true" >> $GITHUB_OUTPUT
+          elif [[ "$PR_TITLE" == "Development environment setup" ]]; then
+            echo "Skipping semantic PR check for automated environment setup PR title: $PR_TITLE"
+            echo "skip_check=true" >> $GITHUB_OUTPUT
           else
             echo "skip_check=false" >> $GITHUB_OUTPUT
           fi

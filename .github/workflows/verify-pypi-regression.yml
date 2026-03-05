@@ -34,6 +34,9 @@ concurrency:
 env:
   PYPI_SOURCE: ${{ inputs.pypi_source || 'pypi' }}
 
+permissions:
+  contents: read
+
 jobs:
   test-pykotor-core:
     name: PyKotor Core - Python ${{ matrix.python-version }} (${{ matrix.os }})
