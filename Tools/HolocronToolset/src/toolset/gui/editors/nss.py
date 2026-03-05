@@ -235,6 +235,22 @@ class NSSEditor(Editor):
 
         self.new()
 
+    def _create_list_item_with_data(self, text: str, data):
+        """Create a QListWidgetItem with text and user data.
+
+        Args:
+        ----
+            text: The display text for the item
+            data: The data to store in the item
+
+        Returns:
+        -------
+            QListWidgetItem: The created item
+        """
+        item = QListWidgetItem(text)
+        item.setData(Qt.ItemDataRole.UserRole, data)
+        return item
+
     def _setup_bookmarks(self):
         self.ui.bookmarkTree.setHeaderLabels(["Line", "Description"])
         self.ui.bookmarkTree.itemDoubleClicked.connect(self._goto_bookmark)
@@ -346,8 +362,7 @@ class NSSEditor(Editor):
         self.ui.snippetList.clear()
         for snippet in snippets:
             if isinstance(snippet, dict) and "name" in snippet and "content" in snippet:
-                item = QListWidgetItem(snippet["name"])
-                item.setData(Qt.ItemDataRole.UserRole, snippet["content"])
+                item = self._create_list_item_with_data(snippet["name"], snippet["content"])
                 self.ui.snippetList.addItem(item)
 
         # Also update snippet search
@@ -372,8 +387,7 @@ class NSSEditor(Editor):
         content, ok = QInputDialog.getMultiLineText(self, "Add Snippet", "Enter snippet content:")
         if not ok:
             return
-        item = QListWidgetItem(name)
-        item.setData(Qt.ItemDataRole.UserRole, content)
+        item = self._create_list_item_with_data(name, content)
         self.ui.snippetList.addItem(item)
         self._save_snippets()
 
@@ -921,8 +935,7 @@ class NSSEditor(Editor):
             has_error = True
 
         for function in self.functions:
-            item = QListWidgetItem(function.name)
-            item.setData(Qt.ItemDataRole.UserRole, function)
+            item = self._create_list_item_with_data(function.name, function)
             try:
                 self.ui.functionList.addItem(item)
             except RuntimeError:  # wrapped C/C++ object of type 'QListWidget' has been deleted
@@ -930,8 +943,7 @@ class NSSEditor(Editor):
                 has_error = True
 
         for constant in self.constants:
-            item = QListWidgetItem(constant.name)
-            item.setData(Qt.ItemDataRole.UserRole, constant)
+            item = self._create_list_item_with_data(constant.name, constant)
             try:
                 self.ui.constantList.addItem(item)
             except RuntimeError:  # wrapped C/C++ object of type 'QListWidget' has been deleted

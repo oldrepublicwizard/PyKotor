@@ -94,23 +94,37 @@ class InsertInstanceDialog(QDialog):
             self.ui.locationSelect.addItem(str(capsule.filepath()), capsule.filepath())
         self.ui.locationSelect.setCurrentIndex(self.ui.locationSelect.count() - 1)
 
+    def _create_resource_list_item(self, resource, *, foreground_brush=None):
+        """Create a QListWidgetItem for a resource with tooltip and data.
+
+        Args:
+        ----
+            resource: The resource to create item for
+            foreground_brush: Optional brush for foreground color
+
+        Returns:
+        -------
+            QListWidgetItem: The created item
+        """
+        item = QListWidgetItem(resource.resname())
+        item.setToolTip(str(resource.filepath()))
+        item.setData(Qt.ItemDataRole.UserRole, resource)
+        if foreground_brush is not None:
+            item.setForeground(foreground_brush)
+        return item
+
     def _setup_resource_list(self):
         palette: QPalette = self.palette()  # Get the current application palette if needed
         text_color: QColor = palette.color(QPalette.ColorRole.WindowText)
         for resource in self._installation.core_resources():
             if resource.restype() == self._restype:
-                item = QListWidgetItem(resource.resname())
-                item.setToolTip(str(resource.filepath()))
-                item.setData(Qt.ItemDataRole.UserRole, resource)
+                item = self._create_resource_list_item(resource)
                 self.ui.resourceList.addItem(item)
 
         for capsule in self._module.capsules():
             for resource in (resource for resource in capsule if resource.restype() == self._restype):
                 if resource.restype() == self._restype:
-                    item = QListWidgetItem(resource.resname())
-                    item.setToolTip(str(resource.filepath()))
-                    item.setForeground(QBrush(text_color))
-                    item.setData(Qt.ItemDataRole.UserRole, resource)
+                    item = self._create_resource_list_item(resource, foreground_brush=QBrush(text_color))
                     self.ui.resourceList.addItem(item)
 
         if self.ui.resourceList.count():

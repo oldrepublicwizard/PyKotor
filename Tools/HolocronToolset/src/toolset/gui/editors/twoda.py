@@ -300,7 +300,7 @@ class _RemoveRowsCommand(QUndoCommand):
             row_data = []
             for col in range(self._model.columnCount()):
                 it = self._model.item(row_idx, col)
-                row_data.append(it.clone() if it is not None else QStandardItem(""))
+                row_data.append(it.clone() if it is not None else self._create_empty_item())
             self._saved_rows.append(row_data)
             self._model.removeRow(row_idx)
         self._editor.reset_vertical_headers()
@@ -326,7 +326,7 @@ class _InsertColumnCommand(QUndoCommand):
         self._editor._reconstruct_menu(self._editor._get_headers_list())
 
     def redo(self):
-        self._model.insertColumn(self._col, [QStandardItem("") for _ in range(self._model.rowCount())])
+        self._model.insertColumn(self._col, self._create_empty_items(self._model.rowCount()))
         self._model.setHorizontalHeaderItem(self._col, QStandardItem(self._header))
         self._editor._reconstruct_menu(self._editor._get_headers_list())
 
@@ -1769,6 +1769,33 @@ class TwoDAEditor(Editor):
         toolbar.addAction(self.ui.actionZoomIn)
         toolbar.addAction(self.ui.actionZoomOut)
         toolbar.addAction(self.ui.actionZoomReset)
+
+    def _create_empty_item(self, text: str = "") -> QStandardItem:
+        """Create a QStandardItem with optional text.
+
+        Args:
+        ----
+            text: The text to set in the item (default empty string)
+
+        Returns:
+        -------
+            QStandardItem: The created item
+        """
+        return QStandardItem(text)
+
+    def _create_empty_items(self, count: int, text: str = "") -> list[QStandardItem]:
+        """Create multiple empty QStandardItems.
+
+        Args:
+        ----
+            count: Number of items to create
+            text: The text to set in each item (default empty string)
+
+        Returns:
+        -------
+            List of QStandardItem objects
+        """
+        return [QStandardItem(text) for _ in range(count)]
 
     def _reposition_add_row_button(self):
         """Reposition the add row button below the last visible row."""
