@@ -365,6 +365,54 @@ class RawBinaryReader:
         self._position += len(data)
         return data
 
+    def _read_integer(
+        self,
+        size: int,
+        format_char: str,
+        *,
+        big: bool = False,
+    ) -> int:
+        """Generic method to read an integer of specified size and format.
+
+        Args:
+        ----
+            size: Number of bytes to read
+            format_char: Struct format character (e.g., 'B', 'b', 'H', 'h', etc.)
+            big: Read bytes as big endian
+
+        Returns:
+        -------
+            The unpacked integer value
+        """
+        self.exceed_check(size)
+        data = self._stream.read(size) or b""
+        self._position += len(data)
+        return struct.unpack(f"{_endian_char(big)}{format_char}", data)[0]
+
+    def _read_float(
+        self,
+        size: int,
+        format_char: str,
+        *,
+        big: bool = False,
+    ) -> float:
+        """Generic method to read a floating point number of specified size and format.
+
+        Args:
+        ----
+            size: Number of bytes to read
+            format_char: Struct format character (e.g., 'f', 'd')
+            big: Read bytes as big endian
+
+        Returns:
+        -------
+            The unpacked float value
+        """
+        self.exceed_check(size)
+        data = self._stream.read(size) or b""
+        self._position += len(data)
+        return struct.unpack(f"{_endian_char(big)}{format_char}", data)[0]
+
     def read_uint8(
         self,
         *,
@@ -380,17 +428,14 @@ class RawBinaryReader:
         -------
             An integer from the stream.
         """
-        self.exceed_check(1)
-        data = self._stream.read(1) or b""
-        self._position += len(data)
-        return struct.unpack(f"{_endian_char(big)}B", data)[0]
+        return self._read_integer(1, "B", big=big)
 
     def read_int8(
         self,
         *,
         big: bool = False,
     ) -> int:
-        """Reads an signed 8-bit integer from the stream.
+        """Reads a signed 8-bit integer from the stream.
 
         Args:
         ----
@@ -400,10 +445,7 @@ class RawBinaryReader:
         -------
             An integer from the stream.
         """
-        self.exceed_check(1)
-        data = self._stream.read(1) or b""
-        self._position += len(data)
-        return struct.unpack(f"{_endian_char(big)}b", data)[0]
+        return self._read_integer(1, "b", big=big)
 
     def read_uint16(
         self,
@@ -420,17 +462,14 @@ class RawBinaryReader:
         -------
             An integer from the stream.
         """
-        self.exceed_check(2)
-        data = self._stream.read(2) or b""
-        self._position += len(data)
-        return struct.unpack(f"{_endian_char(big)}H", data)[0]
+        return self._read_integer(2, "H", big=big)
 
     def read_int16(
         self,
         *,
         big: bool = False,
     ) -> int:
-        """Reads an signed 16-bit integer from the stream.
+        """Reads a signed 16-bit integer from the stream.
 
         Args:
         ----
@@ -440,10 +479,7 @@ class RawBinaryReader:
         -------
             An integer from the stream.
         """
-        self.exceed_check(2)
-        data = self._stream.read(2) or b""
-        self._position += len(data)
-        return struct.unpack(f"{_endian_char(big)}h", data)[0]
+        return self._read_integer(2, "h", big=big)
 
     def read_uint32(
         self,
@@ -490,10 +526,7 @@ class RawBinaryReader:
         -------
             An integer from the stream.
         """
-        self.exceed_check(4)
-        data = self._stream.read(4) or b""
-        self._position += len(data)
-        return struct.unpack(f"{_endian_char(big)}i", data)[0]
+        return self._read_integer(4, "i", big=big)
 
     def read_uint64(
         self,
@@ -510,10 +543,7 @@ class RawBinaryReader:
         -------
             An integer from the stream.
         """
-        self.exceed_check(8)
-        data = self._stream.read(8) or b""
-        self._position += len(data)
-        return struct.unpack(f"{_endian_char(big)}Q", data)[0]
+        return self._read_integer(8, "Q", big=big)
 
     def read_int64(
         self,
@@ -530,16 +560,13 @@ class RawBinaryReader:
         -------
             An integer from the stream.
         """
-        self.exceed_check(8)
-        data = self._stream.read(8) or b""
-        self._position += len(data)
-        return struct.unpack(f"{_endian_char(big)}q", data)[0]
+        return self._read_integer(8, "q", big=big)
 
     def read_single(
         self,
         *,
         big: bool = False,
-    ) -> int:
+    ) -> float:
         """Reads a 32-bit floating point number from the stream.
 
         Args:
@@ -548,18 +575,15 @@ class RawBinaryReader:
 
         Returns:
         -------
-            An float from the stream.
+            A float from the stream.
         """
-        self.exceed_check(4)
-        data = self._stream.read(4) or b""
-        self._position += len(data)
-        return struct.unpack(f"{_endian_char(big)}f", data)[0]
+        return self._read_float(4, "f", big=big)
 
     def read_double(
         self,
         *,
         big: bool = False,
-    ) -> int:
+    ) -> float:
         """Reads a 64-bit floating point number from the stream.
 
         Args:
@@ -568,12 +592,9 @@ class RawBinaryReader:
 
         Returns:
         -------
-            An float from the stream.
+            A float from the stream.
         """
-        self.exceed_check(8)
-        data = self._stream.read(8) or b""
-        self._position += len(data)
-        return struct.unpack(f"{_endian_char(big)}d", data)[0]
+        return self._read_float(8, "d", big=big)
 
     def read_vector2(
         self,
@@ -1358,6 +1379,40 @@ class RawBinaryWriterFile(RawBinaryWriter):
         """
         return self._stream.tell() - self._offset
 
+    def _write_integer(
+        self,
+        value: int,
+        format_char: str,
+        *,
+        big: bool = False,
+    ):
+        """Generic method to write an integer with specified format.
+
+        Args:
+        ----
+            value: The value to be written
+            format_char: Struct format character (e.g., 'B', 'b', 'H', 'h', etc.)
+            big: Write bytes as big endian
+        """
+        self._stream.write(struct.pack(f"{_endian_char(big)}{format_char}", value))
+
+    def _write_float(
+        self,
+        value: float,
+        format_char: str,
+        *,
+        big: bool = False,
+    ):
+        """Generic method to write a float with specified format.
+
+        Args:
+        ----
+            value: The value to be written
+            format_char: Struct format character (e.g., 'f', 'd')
+            big: Write bytes as big endian
+        """
+        self._stream.write(struct.pack(f"{_endian_char(big)}{format_char}", value))
+
     def write_uint8(
         self,
         value: int,
@@ -1371,7 +1426,7 @@ class RawBinaryWriterFile(RawBinaryWriter):
             value: The value to be written.
             big: Write int bytes as big endian.
         """
-        self._stream.write(struct.pack(f"{_endian_char(big)}B", value))
+        self._write_integer(value, "B", big=big)
 
     def write_int8(
         self,
@@ -1386,7 +1441,7 @@ class RawBinaryWriterFile(RawBinaryWriter):
             value: The value to be written.
             big: Write int bytes as big endian.
         """
-        self._stream.write(struct.pack(f"{_endian_char(big)}b", value))
+        self._write_integer(value, "b", big=big)
 
     def write_uint16(
         self,
@@ -1401,7 +1456,7 @@ class RawBinaryWriterFile(RawBinaryWriter):
             value: The value to be written.
             big: Write int bytes as big endian.
         """
-        self._stream.write(struct.pack(f"{_endian_char(big)}H", value))
+        self._write_integer(value, "H", big=big)
 
     def write_int16(
         self,
@@ -1416,7 +1471,7 @@ class RawBinaryWriterFile(RawBinaryWriter):
             value: The value to be written.
             big: Write int bytes as big endian.
         """
-        self._stream.write(struct.pack(f"{_endian_char(big)}h", value))
+        self._write_integer(value, "h", big=big)
 
     def write_uint32(
         self,
@@ -1454,7 +1509,7 @@ class RawBinaryWriterFile(RawBinaryWriter):
             value: The value to be written.
             big: Write int bytes as big endian.
         """
-        self._stream.write(struct.pack(f"{_endian_char(big)}i", value))
+        self._write_integer(value, "i", big=big)
 
     def write_uint64(
         self,
@@ -1469,7 +1524,7 @@ class RawBinaryWriterFile(RawBinaryWriter):
             value: The value to be written.
             big: Write int bytes as big endian.
         """
-        self._stream.write(struct.pack(f"{_endian_char(big)}Q", value))
+        self._write_integer(value, "Q", big=big)
 
     def write_int64(
         self,
@@ -1484,7 +1539,7 @@ class RawBinaryWriterFile(RawBinaryWriter):
             value: The value to be written.
             big: Write int bytes as big endian.
         """
-        self._stream.write(struct.pack(f"{_endian_char(big)}q", value))
+        self._write_integer(value, "q", big=big)
 
     def write_single(
         self,
@@ -1492,18 +1547,18 @@ class RawBinaryWriterFile(RawBinaryWriter):
         *,
         big: bool = False,
     ):
-        """Writes an 32-bit floating point number to the stream.
+        """Writes a 32-bit floating point number to the stream.
 
         Args:
         ----
             value: The value to be written.
-            big: Write int bytes as big endian.
+            big: Write bytes as big endian.
         """
-        self._stream.write(struct.pack(f"{_endian_char(big)}f", value))
+        self._write_float(value, "f", big=big)
 
     def write_double(
         self,
-        value: int,
+        value: float,
         *,
         big: bool = False,
     ):
@@ -1514,7 +1569,7 @@ class RawBinaryWriterFile(RawBinaryWriter):
             value: The value to be written.
             big: Write bytes as big endian.
         """
-        self._stream.write(struct.pack(f"{_endian_char(big)}d", value))
+        self._write_float(value, "d", big=big)
 
     def write_vector2(
         self,
