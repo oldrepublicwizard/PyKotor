@@ -24,7 +24,7 @@ from typing_extensions import Literal
 
 from loggerplus import RobustLogger
 from utility.gui.qt.common.filesystem.file_properties_dialog import FileProperties
-from utility.misc import generate_hash, get_file_attributes
+from utility.misc import generate_hash, get_file_attributes, is_valid_path
 from utility.system.os_helper import get_size_on_disk
 
 if TYPE_CHECKING:
@@ -518,7 +518,7 @@ class FileOperations:
 
         with zipfile.ZipFile(archive_path, "w", zipfile.ZIP_DEFLATED) as archive:
             for path in paths:
-                if path is None or not path.exists():
+                if not is_valid_path(path):
                     continue
                 if path.is_file():
                     archive.write(path, arcname=path.name)
@@ -547,7 +547,7 @@ class FileOperations:
         mode: Literal["w:gz", "w"] = "w:gz" if archive_path.name.casefold().endswith((".tar.gz", ".tgz")) else "w"
         with tarfile.open(archive_path, mode) as archive:
             for path in paths:
-                if path is None or not path.exists():
+                if not is_valid_path(path):
                     continue
                 archive.add(path, arcname=path.name)
                 compressed_size += sum(f.stat().st_size for f in path.rglob("*") if f.is_file())

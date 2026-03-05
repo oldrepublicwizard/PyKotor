@@ -32,6 +32,7 @@ from qtpy.QtWidgets import (
 )
 
 from loggerplus import RobustLogger  # pyright: ignore[reportMissingTypeStubs]
+from utility.misc import is_valid_path
 
 if TYPE_CHECKING:
     from qtpy.QtCore import QModelIndex
@@ -351,7 +352,7 @@ class EnhancedPreviewPane(QWidget):
         self._current_path = path
         self._clear_metadata()
 
-        if path is None or not path.exists():
+        if not is_valid_path(path):
             self._content_widget.hide()
             self._placeholder_label.show()
             self._placeholder_label.setText("Select a file to preview")

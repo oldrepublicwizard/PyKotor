@@ -38,6 +38,7 @@ from pykotor.extract.installation import SearchLocation
 from pykotor.resource.formats.bwm import bytes_bwm, read_bwm
 from pykotor.resource.formats.erf import read_erf
 from pykotor.resource.formats.rim import read_rim
+from utility.misc import is_valid_path
 from pykotor.resource.formats.tpc import read_tpc, write_tpc
 from pykotor.resource.generics.utd import read_utd
 from pykotor.resource.type import ResourceType
@@ -207,7 +208,7 @@ def _find_existing_with_extensions(
     extensions: list[str],
 ) -> Path | None:
     """Find the first existing ``stem + extension`` candidate in a base path."""
-    if base_path is None or not base_path.exists():
+    if not is_valid_path(base_path):
         return None
 
     for ext in extensions:

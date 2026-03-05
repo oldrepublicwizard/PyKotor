@@ -25,6 +25,7 @@ from typing import TYPE_CHECKING, TypedDict
 from pykotor.extract.file import ResourceIdentifier
 from pykotor.extract.installation import SearchLocation
 from pykotor.resource.type import ResourceType
+from utility.misc import is_valid_path
 
 if TYPE_CHECKING:
     from pykotor.common.module import Module
@@ -269,9 +270,9 @@ def investigate_module_structure(
     main_rim_path = rims_path / f"{module_name}.rim" if rims_path.exists() else None
     data_rim_path = rims_path / f"{module_name}_s.rim" if rims_path.exists() else None
 
-    if main_rim_path is None or not main_rim_path.exists():
+    if not is_valid_path(main_rim_path):
         main_rim_path = modules_path / f"{module_name}.rim" if modules_path.exists() else None
-    if data_rim_path is None or not data_rim_path.exists():
+    if not is_valid_path(data_rim_path):
         data_rim_path = modules_path / f"{module_name}_s.rim" if modules_path.exists() else None
 
     # Read RIM files

@@ -407,3 +407,17 @@ def to_kwargs(
         except StopIteration as e:  # noqa: PERF203
             raise ValueError("Too many positional arguments for the available keyword arguments.") from e  # noqa: B904
     return dict(kwargs)
+
+
+def is_valid_path(path: Path | str | None) -> bool:
+    """Check if a path is valid (not None and exists).
+
+    Args:
+    ----
+        path: The path to validate
+
+    Returns:
+    -------
+        True if path is not None and exists, False otherwise
+    """
+    return path is not None and Path(path).exists()
