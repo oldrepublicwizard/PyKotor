@@ -21,6 +21,7 @@ from utility.system.os_helper import get_app_dir, get_mac_dot_app_dir, is_frozen
 from utility.system.path import ChDir
 from utility.updater.downloader import FileDownloader, download_mega_file_url
 from utility.updater.restarter import RestartStrategy, Restarter, UpdateStrategy
+from utility.misc import get_normalized_extension
 
 if TYPE_CHECKING:
     from logging import Logger
@@ -275,7 +276,7 @@ class LibUpdate:
             raise PermissionError(errno.EACCES, os.strerror(errno.EACCES), str(archive_path))
 
         log.debug(f"(recursive) Extracting '{archive_path}'...")  # noqa: G004
-        archive_ext = archive_path.suffix.lower()
+        archive_ext = get_normalized_extension(archive_path)
         if archive_ext in {".gz", ".bz2", ".tar"}:
             cls.extract_tar(archive_path, recursive_extract=True)
         elif archive_ext == ".zip":
@@ -312,7 +313,7 @@ class LibUpdate:
                         log.warning("Expected '%s' to exist after extraction, but it does not.", sanitized_path)
                     if not recursive_extract:
                         continue
-                    if sanitized_path.suffix.lower() in {".gz", ".bz2", ".tar", ".zip"} and sanitized_path.is_file():
+                    if get_normalized_extension(sanitized_path) in {".gz", ".bz2", ".tar", ".zip"} and sanitized_path.is_file():
                         cls._recursive_extract(sanitized_path)
         except Exception as err:  # pragma: no cover
             log = RobustLogger()
@@ -339,7 +340,7 @@ class LibUpdate:
                         log.info("Successfully extracted '%s'", extracted_path)
                     else:
                         log.warning("Expected '%s' to exist after extraction, but it does not.", extracted_path)
-                    if extracted_path.suffix.lower() in {".gz", ".bz2", ".tar", ".zip"} and extracted_path.is_file():
+                    if get_normalized_extension(extracted_path) in {".gz", ".bz2", ".tar", ".zip"} and extracted_path.is_file():
                         cls._recursive_extract(extracted_path)
         except Exception as err:  # pragma: no cover
             log.debug(err, exc_info=True)
@@ -508,7 +509,7 @@ class AppUpdate(LibUpdate):  # pragma: no cover
     def _unix_restart(self):
         self.log.debug("Restarting %s", self.filename)
         app_path: Path = Path(self._current_app_dir, self.filename)
-        if platform.system() == "Darwin" and app_path.suffix.lower() == ".app":
+        if platform.system() == "Darwin" and get_normalized_extension(app_path) == ".app":
             self.log.debug(f"Must be a .app bundle: '{app_path}'")  # noqa: G004
             mac_app_binary_dir: Path = app_path.joinpath("Contents", "MacOS")
 
