@@ -42,30 +42,30 @@ jobs:
           test_mode = os.environ.get("ACT_TEST_MODE", "").lower() == "true"
           test_tool = os.environ.get("ACT_TEST_TOOL", "").strip()
 
-            tools = json.loads(subprocess.check_output([
-              "python3",
-              ".github/scripts/discover_tools.py",
-              "--format",
-              "json",
-            ], text=True))
+          tools = json.loads(subprocess.check_output([
+            "python3",
+            ".github/scripts/discover_tools.py",
+            "--format",
+            "json",
+          ], text=True))
 
-            # In test mode, only process the specified tool (or first tool if none specified)
-            if test_mode:
-              if test_tool:
-                tools = [
-                  t for t in tools
-                  if test_tool.lower() in {
-                    t["directory"].lower(),
-                    (t.get("build_name") or t.get("name") or t["directory"]).lower(),
-                  }
-                ]
-              else:
-                tools = tools[:1]
+          # In test mode, only process the specified tool (or first tool if none specified)
+          if test_mode:
+            if test_tool:
+              tools = [
+                t for t in tools
+                if test_tool.lower() in {
+                  t["directory"].lower(),
+                  (t.get("build_name") or t.get("name") or t["directory"]).lower(),
+                }
+              ]
+            else:
+              tools = tools[:1]
 
           print("Detected tools:")
-            for t in tools:
-              build_name = (t.get("build_name") or t.get("name") or t["directory"]).lower()
-              print(f" - {t['display_name']} (build: {build_name})")
+          for t in tools:
+            build_name = (t.get("build_name") or t.get("name") or t["directory"]).lower()
+            print(f" - {t['display_name']} (build: {build_name})")
 
           tools_json = json.dumps(tools)
           print(f"Tools matrix JSON: {tools_json}")
@@ -94,29 +94,29 @@ jobs:
 
           # Generate full matrix
           full_matrix = []
-            for tool in tools:
-              build_name = (tool.get("build_name") or tool.get("name") or tool["directory"]).lower()
-              for os_name in os_runners:
-                  for py_ver in python_versions:
-                      for arch in architectures:
-                          # Skip unsupported combinations
-                          if os_name in ["ubuntu-latest", "macos-latest"] and arch == "x86":
-                              continue
-                          # Only add Windows entries to full_matrix (for VC redist URLs)
-                          # Other OS entries are handled by the main matrix
-                            if os_name == "windows-latest":
-                              full_matrix.append({
-                                  "tool": tool,
-                                  "os": os_name,
-                                  "python-version": py_ver,
-                                  "architecture": arch,
-                                "build_name": build_name,
-                                "qt_version": "pyqt6",
-                                  "arch": arch,
-                                  "vc_redist2015": f"https://download.microsoft.com/download/9/3/F/93FCF1E7-E6A4-478B-96E7-D4B285925B00/vc_redist.{'x86' if arch == 'x86' else 'x64'}.exe",
-                                  "vc_redist-latest": f"https://aka.ms/vs/17/release/vc_redist.{'x86' if arch == 'x86' else 'x64'}.exe",
-                                  "vc_redist2019": f"https://aka.ms/vs/17/release/vc_redist.{'x86' if arch == 'x86' else 'x64'}.exe"
-                              })
+          for tool in tools:
+            build_name = (tool.get("build_name") or tool.get("name") or tool["directory"]).lower()
+            for os_name in os_runners:
+              for py_ver in python_versions:
+                for arch in architectures:
+                  # Skip unsupported combinations
+                  if os_name in ["ubuntu-latest", "macos-latest"] and arch == "x86":
+                    continue
+                  # Only add Windows entries to full_matrix (for VC redist URLs)
+                  # Other OS entries are handled by the main matrix
+                  if os_name == "windows-latest":
+                    full_matrix.append({
+                      "tool": tool,
+                      "os": os_name,
+                      "python-version": py_ver,
+                      "architecture": arch,
+                      "build_name": build_name,
+                      "qt_version": "pyqt6",
+                      "arch": arch,
+                      "vc_redist2015": f"https://download.microsoft.com/download/9/3/F/93FCF1E7-E6A4-478B-96E7-D4B285925B00/vc_redist.{'x86' if arch == 'x86' else 'x64'}.exe",
+                      "vc_redist-latest": f"https://aka.ms/vs/17/release/vc_redist.{'x86' if arch == 'x86' else 'x64'}.exe",
+                      "vc_redist2019": f"https://aka.ms/vs/17/release/vc_redist.{'x86' if arch == 'x86' else 'x64'}.exe"
+                    })
 
           full_matrix_json = json.dumps(full_matrix)
           full_matrix_json_clean = full_matrix_json.replace("\n", "").replace("\r", "")

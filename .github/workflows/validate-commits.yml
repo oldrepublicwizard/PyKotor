@@ -4,9 +4,9 @@ permissions:
 
 on:
   push:
-    branches: [ main, develop ]
+    branches: [ master, main, develop ]
   pull_request:
-    branches: [ main, develop ]
+    branches: [ master, main, develop ]
 
 jobs:
   validate:
@@ -19,6 +19,4 @@ jobs:
           fetch-depth: 0
 
       - name: Validate commit messages
-        uses: wagoid/commitlint-github-action@v5
-        with:
-          configFile: .commitlintrc.json
+        uses: wagoid/commitlint-github-action@v6
