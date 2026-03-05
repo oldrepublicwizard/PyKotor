@@ -78,6 +78,7 @@ from pykotor.tslpatcher.mods.twoda import (  # noqa: PLC0415
 )
 from utility.common.geometry import Vector3, Vector4
 from utility.common.more_collections import CaseInsensitiveDict
+from utility.misc import get_normalized_extension
 
 if TYPE_CHECKING:
     from pykotor.extract.file import FileResource
@@ -2393,7 +2394,7 @@ class IncrementalTSLPatchDataWriter:
             if name_lower.endswith(".mod"):
                 return 1
             return 2  # .rim/_s.rim/_dlg.erf
-        if "data" in parent_names_lower or filepath.suffix.lower() == ".bif":
+        if "data" in parent_names_lower or get_normalized_extension(filepath) == ".bif":
             return 3
         # Files directly in installation root treated as Override priority
         if filepath.parent == installation.path():

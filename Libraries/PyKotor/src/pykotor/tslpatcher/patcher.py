@@ -26,6 +26,8 @@ from pykotor.tslpatcher.memory import PatcherMemory
 from pykotor.tslpatcher.mods.install import InstallFile, create_backup
 from pykotor.tslpatcher.mods.nss import ModificationsNSS, MutableString
 from pykotor.tslpatcher.mods.template import OverrideType
+from utility.string_util import normalize_string
+from utility.misc import get_normalized_extension
 
 if TYPE_CHECKING:
     from threading import Event
@@ -274,7 +276,8 @@ class ModInstaller:
                 return self.load_resource_file(output_container_path / patch.saveas)
             return capsule.resource(*ResourceIdentifier.from_path(patch.saveas).unpack())
         except OSError as e:
-            self.log.add_error(f"Could not load source file to {patch.action.lower().strip()}:{os.linesep}{(e.__class__.__name__, str(e))}")
+            action_normalized = normalize_string(patch.action)
+            self.log.add_error(f"Could not load source file to {action_normalized}:{os.linesep}{(e.__class__.__name__, str(e))}")
             return None
 
     def handle_modrim_shadow(
@@ -308,7 +311,7 @@ class ModInstaller:
                 - For rename, renames the file with incrementing number if filename exists.
                 - For warn, logs a warning that the file is shadowing the mod's changes.
         """
-        override_type: str = patch.override_type.lower().strip()
+        override_type: str = normalize_string(patch.override_type)
         if not override_type or override_type == OverrideType.IGNORE:
             return
 
@@ -445,7 +448,8 @@ class ModInstaller:
 
                 data_to_patch: bytes | None = self.lookup_resource(patch, output_container_path, exists, capsule)
                 if data_to_patch is None:
-                    self.log.add_error(f"Could not locate resource to {patch.action.lower().strip()}: '{patch.sourcefile}'")
+                    action_normalized = normalize_string(patch.action)
+                    self.log.add_error(f"Could not locate resource to {action_normalized}: '{patch.sourcefile}'")
                     continue
                 if not data_to_patch:
                     self.log.add_note(f"'{patch.sourcefile}' has no content/data and is completely empty.")
@@ -508,7 +512,7 @@ class ModInstaller:
             shutil.rmtree(temp_script_folder, ignore_errors=True)
         temp_script_folder.mkdir(exist_ok=True, parents=True)
         for file in self.mod_path.iterdir():
-            if file.suffix.lower() != ".nss" or not file.is_file():
+            if get_normalized_extension(file) != ".nss" or not file.is_file():
                 continue
             shutil.copy(file, temp_script_folder)
 
@@ -516,7 +520,7 @@ class ModInstaller:
         scripts_list: list[CaseAwarePath] = [*set(temp_script_folder.iterdir())]
         log.add_verbose(f"Preprocessing #StrRef# and #2DAMEMORY# tokens for all {len(scripts_list)} scripts, before running [CompileList]")
         for script in temp_script_folder.iterdir():
-            if script.suffix.lower() != ".nss" or not script.is_file():
+            if get_normalized_extension(script) != ".nss" or not script.is_file():
                 continue
             log.add_verbose(f"Parsing tokens in '{script.name}'...")
             with script.open(mode="rb") as f:
