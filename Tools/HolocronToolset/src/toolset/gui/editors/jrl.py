@@ -134,6 +134,10 @@ class JRLEditor(Editor):
         item.setData(data)
         return item
 
+    def _show_no_tag_warning(self):
+        """Show a warning message when a quest has no tag set."""
+        QMessageBox(QMessageBox.Icon.Warning, "No Tag", "This quest has no tag set.", parent=self).exec()
+
     def _setup_installation(self, installation: HTInstallation):
         self._installation = installation
         self.ui.categoryNameEdit.set_installation(installation)
@@ -650,7 +654,7 @@ class JRLEditor(Editor):
         quest: JRLQuest = quest_item.data()
         tag = quest.tag or ""
         if not tag:
-            QMessageBox(QMessageBox.Icon.Warning, "No Tag", "This quest has no tag set.", parent=self).exec()
+            self._show_no_tag_warning()
             return
         installation._find_references(self, tag, "quest")
 
@@ -662,7 +666,7 @@ class JRLEditor(Editor):
         quest: JRLQuest = quest_item.data()
         tag = quest.tag or ""
         if not tag:
-            QMessageBox(QMessageBox.Icon.Warning, "No Tag", "This quest has no tag set.", parent=self).exec()
+            self._show_no_tag_warning()
             return
         installation._find_references(self, tag, "quest")
 
@@ -674,7 +678,7 @@ class JRLEditor(Editor):
         quest: JRLQuest = quest_item.data()
         tag = quest.tag or ""
         if not tag:
-            QMessageBox(QMessageBox.Icon.Warning, "No Tag", "This quest has no tag set.", parent=self).exec()
+            self._show_no_tag_warning()
             return
         installation._find_references(self, tag, "tag")
 
