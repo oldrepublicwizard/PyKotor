@@ -13,6 +13,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING, Any, TypeVar
 
 from loggerplus import RobustLogger
+from utility.string_util import is_non_empty_string
 
 if TYPE_CHECKING:
     from types import ModuleType
@@ -370,7 +371,7 @@ def debug_reload_pymodules(checked: bool = False):
         if is_standard_library_module(loaded_module):
             continue
         file_path: str | None = getattr(loaded_module, "__file__", None)
-        if not file_path or not file_path.strip():
+        if not is_non_empty_string(file_path):
             continue
         if is_site_packages_module(file_path):
             continue

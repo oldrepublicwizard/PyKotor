@@ -18,7 +18,8 @@ if TYPE_CHECKING:
     from collections.abc import Iterable
     from xml.etree.ElementTree import Element
 
-    from typing_extensions import Buffer, Literal, Self, SupportsIndex
+from utility.string_util import is_non_empty_string
+from typing_extensions import Buffer, Literal, Self, SupportsIndex
 
 T = TypeVar("T")
 U = TypeVar("U")
@@ -337,15 +338,15 @@ def indent(
     """
     i: str = "\n" + level * "  "
     if len(elem):
-        if not elem.text or not elem.text.strip():
+        if not is_non_empty_string(elem.text):
             elem.text = f"{i}  "
-        if not elem.tail or not elem.tail.strip():
+        if not is_non_empty_string(elem.tail):
             elem.tail = i
         for e in elem:
             indent(e, level + 1)
-        if not elem.tail or not elem.tail.strip():
+        if not is_non_empty_string(elem.tail):
             elem.tail = i
-    elif level and (not elem.tail or not elem.tail.strip()):
+    elif level and not is_non_empty_string(elem.tail):
         elem.tail = i
 
 

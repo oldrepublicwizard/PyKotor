@@ -29,6 +29,7 @@ from pykotor.resource.type import ResourceType
 from pykotor.tools.misc import is_capsule_file, is_erf_file, is_mod_file
 from pykotor.tools.path import CaseAwarePath
 from utility.common.more_collections import CaseInsensitiveDict
+from utility.string_util import is_non_empty_string
 
 if TYPE_CHECKING:
     import io
@@ -1021,7 +1022,7 @@ class Installation:
         -------
             A list of FileResources.
         """
-        if not filename or not filename.strip():
+        if not is_non_empty_string(filename):
             return []
         if filename not in self._modules:
             print(f"Module '{filename}' not found in the installation!", file=sys.stderr)
@@ -1051,7 +1052,7 @@ class Installation:
         -------
             A list of FileResources.
         """
-        if not filename or not filename.strip():
+        if not is_non_empty_string(filename):
             return []
         if filename not in self._lips:
             print(f"Lip '{filename}' not found in the installation!", file=sys.stderr)
@@ -1079,7 +1080,7 @@ class Installation:
         -------
             A list of FileResources from the 'texturepacks' folder of the Installation.
         """
-        if not filename or not filename.strip():
+        if not is_non_empty_string(filename):
             return []
         if filename not in self._texturepacks:
             print(f"Texturepack '{filename}' not found in the installation!", file=sys.stderr)

@@ -646,12 +646,11 @@ class ModuleDesigner(QMainWindow, BlenderEditorMixin, StandaloneWindowMixin):
 
         # Only show confirmation dialog if there are unsaved changes
         if self.has_unsaved_changes():
-            reply = QMessageBox.question(
-                self,
+            from toolset.gui.helpers.message_box import ask_question
+            reply = ask_question(
                 tr("Confirm Exit"),
                 tr("Really quit the module designer? You may lose unsaved changes."),
-                QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
-                QMessageBox.StandardButton.No,
+                self,
             )
 
             if reply != QMessageBox.StandardButton.Yes:

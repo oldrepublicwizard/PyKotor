@@ -33,6 +33,20 @@ def insert_newlines(
     return new_string
 
 
+def is_non_empty_string(value: str | None) -> bool:
+    """Check if a string is not None, not empty, and not just whitespace.
+
+    Args:
+    ----
+        value: The string value to check
+
+    Returns:
+    -------
+        True if the string is non-empty and contains non-whitespace characters
+    """
+    return value is not None and bool(value.strip())
+
+
 def ireplace(
     original: str,
     target: str,

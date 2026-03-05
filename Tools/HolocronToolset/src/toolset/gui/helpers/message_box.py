@@ -53,3 +53,18 @@ def show_error_message(
         QMessageBox.StandardButton.Ok,
         parent,
     ).exec()
+
+
+def ask_question(
+    title: str,
+    text: str,
+    parent: QWidget | None = None,
+) -> QMessageBox.StandardButton:
+    """Show a question dialog and return the user's response."""
+    return QMessageBox.question(
+        parent,
+        title,
+        text,
+        QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
+        QMessageBox.StandardButton.No,
+    )
