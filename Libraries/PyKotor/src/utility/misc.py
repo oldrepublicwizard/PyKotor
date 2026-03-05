@@ -445,3 +445,17 @@ def ensure_directory_exists(path: Path | str) -> None:
         path: The directory path to ensure exists
     """
     Path(path).mkdir(parents=True, exist_ok=True)
+
+
+def format_exception_message(exception: Exception) -> str:
+    """Format an exception into a consistent string format.
+
+    Args:
+    ----
+        exception: The exception to format
+
+    Returns:
+    -------
+        Formatted exception message as "ExceptionClass: message"
+    """
+    return f"{exception.__class__.__name__}: {exception}"

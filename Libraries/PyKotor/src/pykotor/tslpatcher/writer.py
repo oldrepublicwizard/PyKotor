@@ -78,7 +78,7 @@ from pykotor.tslpatcher.mods.twoda import (  # noqa: PLC0415
 )
 from utility.common.geometry import Vector3, Vector4
 from utility.common.more_collections import CaseInsensitiveDict
-from utility.misc import ensure_directory_exists
+from utility.misc import ensure_directory_exists, format_exception_message
 from utility.misc import get_normalized_extension
 
 if TYPE_CHECKING:
@@ -1360,7 +1360,7 @@ class IncrementalTSLPatchDataWriter:
             exception: The exception that occurred
             indent_lines: Whether to indent traceback lines with "  "
         """
-        self.log_func(f"[Error] Failed to {operation} {filename}: {exception.__class__.__name__}: {exception}")
+        self.log_func(f"[Error] Failed to {operation} {filename}: {format_exception_message(exception)}")
         if indent_lines:
             self.log_func("Full traceback:")
             for line in traceback.format_exc().splitlines():
@@ -1419,7 +1419,7 @@ class IncrementalTSLPatchDataWriter:
                 # Binary file
                 dest_path.write_bytes(data)
         except Exception as e:  # noqa: BLE001
-            self.log_func(f"[Warning] Failed to use io function for {file_ext}, using binary write: {e.__class__.__name__}: {e}")
+            self.log_func(f"[Warning] Failed to use io function for {file_ext}, using binary write: {format_exception_message(e)}")
             dest_path.write_bytes(data)
 
     def register_tlk_modification_with_source(
@@ -2440,7 +2440,7 @@ class IncrementalTSLPatchDataWriter:
                                 #         {"byte_offset": location.byte_offset},
                                 #     )
                         except Exception as e:  # noqa: BLE001
-                            _log_debug(f"Error processing StrRef reference: {e.__class__.__name__}: {e}")
+                            _log_debug(f"Error processing StrRef reference: {format_exception_message(e)}")
                             import traceback
 
                             traceback.print_exc()
@@ -2618,7 +2618,7 @@ class IncrementalTSLPatchDataWriter:
                             #     )
 
                     except Exception as e:
-                        self.log_func(f"[Warning] Error processing resource {resource_filename}: {e.__class__.__name__}: {e}")
+                        self.log_func(f"[Warning] Error processing resource {resource_filename}: {format_exception_message(e)}")
                         self.log_func(traceback.format_exc())
 
             except Exception as e:
@@ -2717,7 +2717,7 @@ class IncrementalTSLPatchDataWriter:
                         field_paths,
                     )
                 except Exception as e:  # noqa: BLE001
-                    _log_debug(f"Error processing 2DA row reference: {e.__class__.__name__}: {e}")
+                    _log_debug(f"Error processing 2DA row reference: {format_exception_message(e)}")
 
     def _find_and_patch_single_2da_row(
         self,
@@ -2781,7 +2781,7 @@ class IncrementalTSLPatchDataWriter:
                         found_count += 1
 
                 except Exception as e:
-                    _log_debug(f"Error scanning resource for 2DA refs: {e.__class__.__name__}: {e}")
+                    _log_debug(f"Error scanning resource for 2DA refs: {format_exception_message(e)}")
 
             self.log_func(f"Found {found_count} file(s) referencing {twoda_filename} row {row_index}")
 
@@ -2815,7 +2815,7 @@ class IncrementalTSLPatchDataWriter:
                                 found_count += 1
 
                         except Exception as e:
-                            _log_debug(f"Error scanning file for 2DA refs: {e.__class__.__name__}: {e}")
+                            _log_debug(f"Error scanning file for 2DA refs: {format_exception_message(e)}")
 
             elif source.is_file():
                 try:
@@ -2837,7 +2837,7 @@ class IncrementalTSLPatchDataWriter:
                             )
                             found_count += 1
                 except Exception as e:
-                    self.log_func(f"[Warning] Error scanning file: {e.__class__.__name__}: {e}")
+                    self.log_func(f"[Warning] Error scanning file: {format_exception_message(e)}")
 
             self.log_func(f"Found {found_count} file(s) referencing {twoda_filename} row {row_index}")
 
@@ -2865,7 +2865,7 @@ class IncrementalTSLPatchDataWriter:
                             row_index = idx
                             break
                 except Exception as e:
-                    _log_debug(f"Error reading 2DA for label lookup: {e.__class__.__name__}: {e}")
+                    _log_debug(f"Error reading 2DA for label lookup: {format_exception_message(e)}")
         elif isinstance(source, Path):
             twoda_path = source / twoda_filename if source.is_dir() else source
             if twoda_path.exists():
@@ -2877,7 +2877,7 @@ class IncrementalTSLPatchDataWriter:
                             row_index = idx
                             break
                 except Exception as e:
-                    _log_debug(f"Error reading 2DA for label lookup: {e.__class__.__name__}: {e}")
+                    _log_debug(f"Error reading 2DA for label lookup: {format_exception_message(e)}")
 
         if row_index is None:
             self.log_func(f"  Could not find row with label '{row_label}' in {twoda_filename}")
@@ -2899,7 +2899,7 @@ class IncrementalTSLPatchDataWriter:
             gff = read_gff(data)
             self._scan_gff_for_2da_row(gff.root, field_names, row_index, "", field_paths)
         except Exception as e:
-            _log_debug(f"Error reading GFF for 2DA row search: {e.__class__.__name__}: {e}")
+            _log_debug(f"Error reading GFF for 2DA row search: {format_exception_message(e)}")
         return field_paths
 
     def _scan_gff_for_2da_row(
@@ -2931,7 +2931,7 @@ class IncrementalTSLPatchDataWriter:
                         self._scan_gff_for_2da_row(list_struct, field_names, row_index, list_path, field_paths)
 
             except Exception as e:
-                _log_debug(f"Error scanning GFF field for 2DA row: {e.__class__.__name__}: {e}")
+                _log_debug(f"Error scanning GFF field for 2DA row: {format_exception_message(e)}")
 
     def _create_immediate_gff_2da_patches(
         self,
