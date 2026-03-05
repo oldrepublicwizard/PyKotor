@@ -78,7 +78,7 @@ from pykotor.tslpatcher.mods.twoda import (  # noqa: PLC0415
 )
 from utility.common.geometry import Vector3, Vector4
 from utility.common.more_collections import CaseInsensitiveDict
-from utility.misc import ensure_directory_exists, format_exception_message
+from utility.misc import ensure_directory_exists, format_exception_message, is_installation_path
 from utility.misc import get_normalized_extension
 
 if TYPE_CHECKING:
@@ -1435,7 +1435,7 @@ class IncrementalTSLPatchDataWriter:
             source_path: The installation or folder path this TLK came from
             source_index: Index of the source (0=first/vanilla, 1=second/modded, etc.)
         """
-        is_installation: bool = isinstance(source_path, Installation)
+        is_installation: bool = is_installation_path(source_path)
 
         wrapped = TLKModificationWithSource(
             modification=tlk_mod,
@@ -1463,7 +1463,7 @@ class IncrementalTSLPatchDataWriter:
         Returns:
             Formatted path with source prefix (e.g., "swkotor/data/2da.bif/planetary.2da")
         """
-        if isinstance(source, Installation):
+        if is_installation_path(source):
             installation_path = source.path()
             source_folder = installation_path.name if installation_path else "unknown"
         elif isinstance(source, Path):
@@ -2290,7 +2290,7 @@ class IncrementalTSLPatchDataWriter:
             global _global_strref_caches  # noqa: PLW0602
 
             for source, strref_token_pairs in strrefs_to_search.items():
-                if not isinstance(source, Installation):
+                if not is_installation_path(source):
                     # Path-based sources - fall back to individual processing
                     for old_strref, new_token_id in strref_token_pairs:
                         self._find_and_patch_single_strref(source, old_strref, new_token_id)
@@ -2359,7 +2359,7 @@ class IncrementalTSLPatchDataWriter:
                         # Multiple instances within the SAME installation - pick highest priority
                         # All instances are from the same source installation, so prioritization
                         # is safe (Override > Modules > Chitin within that installation)
-                        if isinstance(source, Installation):
+                        if is_installation_path(source):
                             installation_source = source  # Type narrowing
                             best_result: StrRefSearchResult = min(results_group, key=lambda r: self._get_resource_priority(r.resource, installation_source))
                             best_priority = self._get_resource_priority(best_result.resource, installation_source)
@@ -2500,7 +2500,7 @@ class IncrementalTSLPatchDataWriter:
             token_id: The token ID to use in linking patches
         """
         # If it's an Installation, use the dedicated function from talktable.py
-        if isinstance(source, Installation):
+        if is_installation_path(source):
             from pykotor.tools.reference_cache import (  # noqa: PLC0415
                 GFFRefLocation,
                 SSFRefLocation,
@@ -2753,7 +2753,7 @@ class IncrementalTSLPatchDataWriter:
         self.log_func(f"  Looking for fields: {', '.join(field_names)}")
 
         # If Installation, scan all GFF files
-        if isinstance(source, Installation):
+        if is_installation_path(source):
             self.log_func(f"Searching Installation for references to {twoda_filename} row {row_index}...")
             found_count = 0
 
@@ -2855,7 +2855,7 @@ class IncrementalTSLPatchDataWriter:
 
         # Try to load the 2DA and find the row index
         row_index: int | None = None
-        if isinstance(source, Installation):
+        if is_installation_path(source):
             resource = source.resource(twoda_filename.replace(".2da", ""), ResourceType.TwoDA)
             if resource and resource.data:
                 try:

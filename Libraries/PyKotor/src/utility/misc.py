@@ -459,3 +459,18 @@ def format_exception_message(exception: Exception) -> str:
         Formatted exception message as "ExceptionClass: message"
     """
     return f"{exception.__class__.__name__}: {exception}"
+
+
+def is_installation_path(path: object) -> bool:
+    """Check if a path object is an Installation instance.
+
+    Args:
+    ----
+        path: The path object to check
+
+    Returns:
+    -------
+        True if the path is an Installation instance, False otherwise
+    """
+    from pykotor.extract.installation import Installation  # Import here to avoid circular imports
+    return isinstance(path, Installation)
