@@ -37,21 +37,34 @@ class PatchLogger:
 
         self.patches_completed: int = 0
 
+    def _filter_logs_by_type(self, log_type: LogType) -> list[PatchLog]:
+        """Filter logs by their type.
+
+        Args:
+        ----
+            log_type: The LogType to filter by
+
+        Returns:
+        -------
+            list[PatchLog]: List of logs matching the specified type
+        """
+        return [pl for pl in self.all_logs if pl.log_type == log_type]
+
     @property
     def verbose_logs(self) -> list[PatchLog]:
-        return [pl for pl in self.all_logs if pl.log_type == LogType.VERBOSE]
+        return self._filter_logs_by_type(LogType.VERBOSE)
 
     @property
     def notes(self) -> list[PatchLog]:
-        return [pl for pl in self.all_logs if pl.log_type == LogType.NOTE]
+        return self._filter_logs_by_type(LogType.NOTE)
 
     @property
     def warnings(self) -> list[PatchLog]:
-        return [pl for pl in self.all_logs if pl.log_type == LogType.WARNING]
+        return self._filter_logs_by_type(LogType.WARNING)
 
     @property
     def errors(self) -> list[PatchLog]:
-        return [pl for pl in self.all_logs if pl.log_type == LogType.ERROR]
+        return self._filter_logs_by_type(LogType.ERROR)
 
     def complete_patch(self):
         self.patches_completed += 1
