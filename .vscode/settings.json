@@ -12,7 +12,11 @@
   "[xml]": {
     "editor.tabSize": 2
   },
+  "chat.mcp.discovery.enabled": {
+    "cursor-workspace": true
+  },
   "cmake.ignoreCMakeListsMissing": true,
+  "cursorpyright.analysis.autoImportCompletions": true,
   "cursorpyright.analysis.extraPaths": [
     "${workspaceFolder}/Libraries/PyKotor/src",
     "${workspaceFolder}/Tools/BatchPatcher/src",
@@ -39,10 +43,10 @@
     "**/.history/**": true
   },
   "files.watcherExclude": {
-    "**/.git/**": true
+    "**/.history/**": true
   },
   "github-actions.workflows.pinned.workflows": [
-    ".github/workflows/publish_and_test_pykotor.yml"
+    ".github/workflows/publish_pykotor.yml"
   ],
   "launch": {
     "compounds": [],
@@ -61,7 +65,6 @@
   ],
   "mypy-type-checker.importStrategy": "fromEnvironment",
   "mypy-type-checker.preferDaemon": true,
-  "mypy-type-checker.reportingScope": "workspace",
   "mypy.extraArguments": [
     "--exclude=./.venv",
     "--exclude=tests/results",
@@ -127,6 +130,5 @@
       "-NoLogo"
     ],
     "path": "pwsh.exe"
-  },
-  "cursorpyright.analysis.autoImportCompletions": true
+  }
 }
