@@ -310,17 +310,17 @@ jobs:
           else
             NOTES="## $DISPLAY_NAME v$VERSION
 
-### Changes
+          ### Changes
 
-- See commit history for details
+          - See commit history for details
 
-### Installation
+          ### Installation
 
-Download the appropriate archive for your platform:
-- **Windows x64**: \`${DISPLAY_NAME}_Windows_x64.zip\`
-- **Windows x86**: \`${DISPLAY_NAME}_Windows_x86.zip\`
-- **Linux x64**: \`${DISPLAY_NAME}_Linux_x64.zip\`
-- **macOS x64**: \`${DISPLAY_NAME}_Mac_x64.zip\`"
+          Download the appropriate archive for your platform:
+          - **Windows x64**: \`${DISPLAY_NAME}_Windows_x64.zip\`
+          - **Windows x86**: \`${DISPLAY_NAME}_Windows_x86.zip\`
+          - **Linux x64**: \`${DISPLAY_NAME}_Linux_x64.zip\`
+          - **macOS x64**: \`${DISPLAY_NAME}_Mac_x64.zip\`"
           fi
 
           # Save to file to preserve newlines
