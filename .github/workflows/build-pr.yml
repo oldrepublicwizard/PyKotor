@@ -147,8 +147,8 @@ jobs:
                   "has_config": find_config_file(tool_dir, tool_name_lower) is not None,
               }
 
-                all_tool_infos.append(tool_info)
-                if tool_changed:
+              all_tool_infos.append(tool_info)
+              if tool_changed:
                   changed_tools.append(tool_info)
 
           # Check for Libraries/ changes
@@ -158,7 +158,7 @@ jobs:
           compile_changed = any(f.startswith('compile/') for f in changed_files)
 
           # If libraries or compile changed, mark all tools as affected
-            if libraries_changed or compile_changed:
+          if libraries_changed or compile_changed:
               changed_tools = list(all_tool_infos)
 
           # Filter by workflow input if provided
@@ -189,7 +189,7 @@ jobs:
           print(f"  Libraries changed: {libraries_changed}")
           print(f"  Compile scripts changed: {compile_changed}")
           print(f"  Tools affected: {len(changed_tools)}")
-            for tool in changed_tools:
+          for tool in changed_tools:
               print(f"    - {tool['display_name']} (build_name: {tool['build_name']})")
           print(f"  Any tool affected: {any_tool}")
 
