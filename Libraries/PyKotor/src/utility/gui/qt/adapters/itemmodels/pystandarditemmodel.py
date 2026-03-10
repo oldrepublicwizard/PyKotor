@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import sys
 
-from typing import TYPE_CHECKING, Any, Iterable, cast, overload
+from typing import TYPE_CHECKING, Any, Dict, Iterable, cast, overload
 
 from qtpy.QtCore import QAbstractItemModel, QByteArray, QDataStream, QIODevice, QMimeData, QModelIndex, QVariant, Qt
 from qtpy.QtGui import QIcon

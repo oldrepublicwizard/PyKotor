@@ -15,6 +15,8 @@ significantly speeding up repeated TSLPatcher data generation.
 
 from __future__ import annotations
 
+import importlib.util
+
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, Any, Callable
 
@@ -163,9 +165,6 @@ def save_diff_cache(
                 dst.parent.mkdir(parents=True, exist_ok=True)
                 dst.write_bytes(src.read_bytes())
 
-    # Save metadata to YAML
-    import importlib.util
-
     if importlib.util.find_spec("yaml") is not None:
         import yaml
 
@@ -194,6 +193,11 @@ def load_diff_cache(
     """
     if log_func is None:
         log_func = print
+
+    if importlib.util.find_spec("yaml") is None:
+        raise RuntimeError("Loading diff cache requires PyYAML to be installed.")
+
+    import yaml
 
     cache_data = yaml.safe_load(cache_file.read_text(encoding="utf-8"))
     cache = DiffCache.from_dict(cache_data)

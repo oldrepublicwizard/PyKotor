@@ -21,6 +21,7 @@ from qtpy.QtCore import (
     QPersistentModelIndex,
     QSettings,
     QSize,
+    Signal,
     QUrl,
     Qt,
 )
@@ -831,6 +832,7 @@ class QFileDialogPrivate:
         # Match C++: #if QT_CONFIG(messagebox) } else { ... #endif
         else:
             # Match C++: QString message = QFileDialog::tr("%1\nDirectory not found.\nPlease verify the correct directory name was given.");
+            q = self._public
             message_template = q.tr("%1\nDirectory not found.\nPlease verify the correct directory name was given.")
             # Match C++: QMessageBox::warning(q, q->windowTitle(), message.arg(path2));
             message = message_template.replace("%1", path2)

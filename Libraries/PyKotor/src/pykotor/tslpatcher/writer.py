@@ -2287,8 +2287,6 @@ class IncrementalTSLPatchDataWriter:
             )
 
             # Use global cache to persist across all method calls
-            global _global_strref_caches  # noqa: PLW0602
-
             for source, strref_token_pairs in strrefs_to_search.items():
                 if not is_installation_path(source):
                     # Path-based sources - fall back to individual processing

@@ -85,7 +85,7 @@ def main():
     cmdline_args = parse_args()
 
     # Determine if we should run in CLI mode
-    force_cli = has_cli_paths(cmdline_args) and not getattr(cmdline_args, "gui", False) and app_class is None
+    force_cli = has_cli_paths(cmdline_args) and not getattr(cmdline_args, "gui", False)
 
     if force_cli:
         # CLI mode - paths were provided

@@ -72,7 +72,6 @@ THREAD_LOCAL.is_logging = False
 
 @contextmanager
 def logging_context():
-    global LOGGING_LOCK  # noqa: PLW0602
     with LOGGING_LOCK:
         prev_state = getattr(THREAD_LOCAL, "is_logging", False)
         THREAD_LOCAL.is_logging = True

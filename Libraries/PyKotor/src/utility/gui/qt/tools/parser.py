@@ -126,6 +126,11 @@ from qtpy.QtWidgets import (
 from utility.gui.qt.tools.qt_meta import determine_type, get_qt_meta_type
 
 try:
+    from qtpy.QtCore import QRegExp
+except ImportError:
+    QRegExp = QRegularExpression
+
+try:
     from qtpy.QtGui import QMatrix
 except ImportError:
     if not TYPE_CHECKING:

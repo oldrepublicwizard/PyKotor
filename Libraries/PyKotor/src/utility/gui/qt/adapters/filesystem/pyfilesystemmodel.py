@@ -24,6 +24,7 @@ from qtpy.QtCore import (
     QModelIndex,
     QMutexLocker,
     QTimer,
+    QTimeZone,
     QUrl,
     QVariant,
     Qt,
@@ -79,9 +80,7 @@ if toolset_path.exists():
     if __name__ == "__main__":
         os.chdir(toolset_path)
 
-from qtpy.QtCore import (
-    QDateTime,  # pyright: ignore[reportPrivateImportUsage]  # noqa: E402  # noqa: E402  # noqa: E402
-)
+from qtpy.QtCore import QDateTime  # pyright: ignore[reportPrivateImportUsage]  # noqa: E402
 
 from utility.gui.qt.adapters.filesystem.pyfileinfogatherer import PyFileInfoGatherer  # noqa: E402
 from utility.gui.qt.adapters.filesystem.pyfilesystemmodelsorter import PyFileSystemModelSorter  # noqa: E402
@@ -93,7 +92,6 @@ if TYPE_CHECKING:
         QObject,
         QRegularExpression,
         QTimerEvent,
-        Signal,  # pyright: ignore[reportPrivateImportUsage]  # noqa: E402  # noqa: E402  # noqa: E402
     )
     from qtpy.QtWidgets import QScrollBar
     from typing_extensions import Literal

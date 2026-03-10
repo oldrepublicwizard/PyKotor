@@ -512,7 +512,7 @@ class MDLLoader:
         # AABB meshes are typically invisible (no rendering)
         # They're used for collision detection and pathfinding
         #
-        return node_np
+        return aabb_np
 
     def _convert_light_node(self, mdl_node: MDLNode) -> NodePath:
         """Convert a light node to Panda3D.

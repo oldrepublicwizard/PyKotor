@@ -95,11 +95,10 @@ class FileSystemInformation:
 
     @classmethod
     def from_statfs(cls, filepath: str) -> FileSystemInformation:
-        # Statfs implementation placeholder
-        fs_info = statfs(filepath)
+        fs_info = os.statvfs(filepath)
         return cls(
-            filesystem_type=fs_info.f_fstypename.decode(),
-            volume_name=fs_info.f_mntonname.decode(),
+            filesystem_type="unknown",
+            volume_name=os.path.abspath(filepath),
             volume_uuid=None,  # Placeholder, could be retrieved via volume APIs
             total_blocks=fs_info.f_blocks,
             free_blocks=fs_info.f_bfree,

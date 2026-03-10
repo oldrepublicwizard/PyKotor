@@ -106,8 +106,6 @@ def adjust_pointer_depth(  # noqa: C901, ANN201
         CPointer: A custom pointer to the object with the specified depth.
             or obj: the real object at the end of the pointer trail.
     """
-    global PREVENT_GC  # noqa: PLW0602
-
     # Step 1: Dereference the pointers to get the actual data.
     actual_obj = obj
     while isinstance(actual_obj, PointerType):

@@ -155,6 +155,8 @@ class SimplePyHWND:
     def unregister_class(self):
         """Unregister the window class."""
         if self._class_atom is not None:
+            import win32gui
+
             win32gui.UnregisterClass(self._class_atom, windll.kernel32.GetModuleHandleW(None))
 
     def create_window(self) -> int:

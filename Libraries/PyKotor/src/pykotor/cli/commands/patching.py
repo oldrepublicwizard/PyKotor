@@ -34,6 +34,12 @@ from pykotor.tools.patching import (
     patch_install,
 )
 
+try:
+    from batchpatcher.translate.language_translator import TranslationOption, Translator
+except ImportError:
+    TranslationOption = None
+    Translator = None
+
 if TYPE_CHECKING:
     from argparse import Namespace
 

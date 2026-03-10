@@ -112,7 +112,7 @@ def scan_all_mesh_nodes(data: bytes, max_scan: int = 200000) -> list[tuple[int, 
                 # Validate by checking vertex count is reasonable
                 if node_info.get("vertex_count", 0) < 100000:
                     nodes.append((offset, node_info))
-        except:
+        except Exception:
             pass
         offset += 4  # Scan in 4-byte increments
 
@@ -173,8 +173,8 @@ def main():
         print("\n=== Mesh Nodes Comparison ===")
         print(f"{'NodeID':<8} {'Type':<6} {'Verts(PK)':<12} {'Verts(MO)':<12} {'VOffset(PK)':<12} {'VOffset(MO)':<12} {'FaceOff(PK)':<12} {'FaceOff(MO)':<12}")
 
-        pk_nodes_list = traverse_nodes(pykotor_mdl, pk_root, pk_nodes)
-        mo_nodes_list = traverse_nodes(mdlops_mdl, mo_root, mo_nodes)
+        pk_nodes_list = traverse_nodes_linear(pykotor_mdl, pk_root, pk_nodes)
+        mo_nodes_list = traverse_nodes_linear(mdlops_mdl, mo_root, mo_nodes)
 
         total_pk_verts = 0
         total_mo_verts = 0

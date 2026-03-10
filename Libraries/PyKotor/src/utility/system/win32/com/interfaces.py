@@ -279,7 +279,7 @@ class IShellItem2(IShellItem):
             HRESULT,
             "GetPropertyStoreWithCreateObject",
             (["in"], c_uint, "flags"),
-            (["in"], POINTER(IUnknown), "punkCreateObject"),
+            (["in"], POINTER(comtypes.IUnknown), "punkCreateObject"),
             (["in"], POINTER(GUID), "riid"),
             (["out"], POINTER(c_void_p), "ppv"),
         ),
