@@ -6,7 +6,7 @@ from datetime import timedelta
 from pathlib import Path
 from typing import TYPE_CHECKING, Any
 
-from qtpy.QtCore import Qt  # pyright: ignore[reportAttributeAccessIssue]
+from qtpy.QtCore import QPoint, Qt  # pyright: ignore[reportAttributeAccessIssue]
 from qtpy.QtGui import QImage, QPixmap, QStandardItem, QStandardItemModel
 from qtpy.QtWidgets import (
     QCheckBox,

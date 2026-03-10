@@ -1227,8 +1227,6 @@ def test_open_dir_navigates_in_app(qtbot, dialog_factory, temp_test_dir):
     current_dir = dialog.directory().absolutePath() if hasattr(dialog.directory(), "absolutePath") else dialog.directory().path()
     assert str(subdir) in current_dir
 
-    assert current is not None
-
 
 def test_set_directory_url_invalid(qtbot, dialog_factory):
     """Test setting invalid directory URL."""

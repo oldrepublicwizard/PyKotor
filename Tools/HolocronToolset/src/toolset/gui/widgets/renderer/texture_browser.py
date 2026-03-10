@@ -9,6 +9,7 @@ from typing import TYPE_CHECKING
 from qtpy.QtCore import QSize, Qt, Signal  # pyright: ignore[reportPrivateImportUsage]
 from qtpy.QtGui import QIcon, QPixmap
 from qtpy.QtWidgets import QFileDialog, QListWidget, QListWidgetItem, QWidget
+from toolset.gui.common.localization import translate as tr
 
 if TYPE_CHECKING:
     from os import PathLike
@@ -35,9 +36,6 @@ class TextureBrowser(QWidget):
 
         self.textures: dict[str, QPixmap] = {}  # Map texture names to pixmaps
         self.selected_texture: str | None = None
-
-        # Get references to UI widgets
-        from toolset.gui.common.localization import translate as tr
 
         self.ui.importButton.setText(tr("Import Texture"))
         self.ui.importButton.clicked.connect(self.import_texture_dialog)

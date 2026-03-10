@@ -23,7 +23,7 @@ except ImportError:
 
 from qtpy.QtCore import QThread, Qt
 from qtpy.QtGui import QColor, QFont, QPalette
-from qtpy.QtWidgets import QApplication, QDialog, QMessageBox, QStyle
+from qtpy.QtWidgets import QApplication, QDialog, QMessageBox, QStyle, QWidget
 
 from loggerplus import RobustLogger
 from toolset.config import LOCAL_PROGRAM_INFO, is_remote_version_newer, toolset_tag_to_version, version_to_toolset_tag

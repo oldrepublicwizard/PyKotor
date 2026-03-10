@@ -6,7 +6,7 @@ import unittest
 from typing import cast
 from unittest.mock import patch
 
-from qtpy.QtCore import QModelIndex
+from qtpy.QtCore import QModelIndex, QTimer
 from qtpy.QtGui import QStandardItem, QStandardItemModel
 from qtpy.QtWidgets import QAbstractItemView, QApplication, QColumnView, QListView, QTableView, QTreeView
 

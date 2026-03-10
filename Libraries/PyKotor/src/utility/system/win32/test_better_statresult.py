@@ -2194,9 +2194,9 @@ class TestWindowsFSCTLResult(unittest.TestCase):
 
     def test_usn_journal(self):
         file_info = CompleteFileInfo.from_path(self.test_file_path)
-        assert isinstance(file_info.usn_journal, WindowsUsnJournal), "Failed to retrieve USN journal."
-        assert isinstance(file_info.usn_journal.usn_journal_data, bytes), "USN journal data should be bytes."
-        assert len(file_info.usn_journal.usn_journal_data) > 0, "USN journal data should not be empty."
+        assert isinstance(file_info.usn_journal, UsnJournalData), "Failed to retrieve USN journal."
+        assert isinstance(file_info.usn_journal.record_length, int), "USN journal record length should be an integer."
+        assert file_info.usn_journal.record_length > 0, "USN journal record length should be positive."
 
     def test_resources(self):
         file_info = CompleteFileInfo.from_path(self.test_file_path)

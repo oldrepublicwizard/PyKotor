@@ -67,7 +67,7 @@ from pykotor.resource.formats.lyt.lyt_auto import write_lyt
 from pykotor.resource.formats.lyt.lyt_data import LYT, LYTDoorHook, LYTRoom
 from pykotor.resource.resource_auto import BWM
 from toolset.data.lyt_structures import ExtendedLYTObstacle, ExtendedLYTTrack
-from toolset.gui.common.localization import translate as tr
+from toolset.gui.common.localization import translate as tr, translate_format as trf
 from toolset.gui.dialogs.lyt_dialogs import DoorHookPropertiesDialog, ObstaclePropertiesDialog, RoomPropertiesDialog, TrackPropertiesDialog
 from toolset.gui.editors.lyt import LYTEditor
 from toolset.gui.widgets.renderer.lyt_renderer import LYTRenderer

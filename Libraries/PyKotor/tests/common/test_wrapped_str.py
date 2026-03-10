@@ -2,6 +2,8 @@ from __future__ import annotations
 
 import unittest
 
+from typing import Any
+
 from utility.common.misc_string.mutable_str import WrappedStr
 
 

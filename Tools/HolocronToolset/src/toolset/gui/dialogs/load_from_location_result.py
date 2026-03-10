@@ -22,7 +22,7 @@ from typing import TYPE_CHECKING, Any, Callable, List, cast
 
 import send2trash
 
-from qtpy.QtCore import QUrl, Qt
+from qtpy.QtCore import QModelIndex, QRect, QUrl, Qt
 from qtpy.QtGui import QDesktopServices, QKeySequence
 from qtpy.QtWidgets import (
     QAction,

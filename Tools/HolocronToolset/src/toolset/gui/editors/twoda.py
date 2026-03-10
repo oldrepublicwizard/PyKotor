@@ -19,9 +19,11 @@ from qtpy.QtWidgets import (
     QGridLayout,
     QLabel,
     QLineEdit,
+    QListWidgetItem,
     QMessageBox,
     QPushButton,
     QShortcut,  # pyright: ignore[reportPrivateImportUsage]
+    QVBoxLayout,
     )
 
 from pykotor.resource.formats.twoda import TwoDA, read_2da, write_2da
@@ -3555,7 +3557,7 @@ class TwoDAEditor(Editor):
             for r in range(start_row, -1, -1):
                 for c in range(start_col if r == start_row else cols - 1, -1, -1):
                     item = self.source_model.item(r, c)
-                    if item and _matches(item.text()):
+                    if item and self._text_matches(item.text(), find_text, match_case, match_whole_cell):
                         idx = self.proxy_model.mapFromSource(self.source_model.index(r, c))
                         self.ui.twodaTable.setCurrentIndex(idx)
                         self.ui.twodaTable.scrollTo(idx, self.ui.twodaTable.ScrollHint.EnsureVisible)

@@ -43,6 +43,9 @@ from toolset.gui.widgets.renderer.texture_browser import TextureBrowser
 from toolset.uic.qtpy.editors.lyt import Ui_LYTEditor
 from utility.common.geometry import Vector2, Vector3, Vector4
 
+ExtendedLYTRoom = LYTRoom
+ExtendedLYTTrack = LYTTrack
+
 if TYPE_CHECKING:
     from concurrent.futures import Future
 

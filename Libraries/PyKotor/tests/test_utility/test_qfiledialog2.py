@@ -409,7 +409,7 @@ class TestQFileDialog2(unittest.TestCase):
         q_layout: QLayout | None = fd.layout()
         assert q_layout is not None, "Layout was not found"
         old_ms: QSize = q_layout.minimumSize()
-        history: QHistoryModel = fd.history()
+        history: list[str] = fd.history()
         history.append(QDir.toNativeSeparators("/verylongdirectory/aaaaaaaaaabbbbbbbbcccccccccccddddddddddddddeeeeeeeeeeeeffffffffffgggtggggggggghhhhhhhhiiiiiijjjk"))
         fd.setHistory(history)
         fd.show()
