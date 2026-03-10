@@ -10,6 +10,9 @@ on:
         required: true
         type: string
 
+permissions:
+  contents: read
+
 jobs:
   release-notes:
     name: Generate Release Notes
