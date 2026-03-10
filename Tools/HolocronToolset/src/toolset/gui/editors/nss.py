@@ -235,22 +235,6 @@ class NSSEditor(Editor):
 
         self.new()
 
-    def _create_list_item_with_data(self, text: str, data):
-        """Create a QListWidgetItem with text and user data.
-
-        Args:
-        ----
-            text: The display text for the item
-            data: The data to store in the item
-
-        Returns:
-        -------
-            QListWidgetItem: The created item
-        """
-        item = QListWidgetItem(text)
-        item.setData(Qt.ItemDataRole.UserRole, data)
-        return item
-
     def _setup_bookmarks(self):
         self.ui.bookmarkTree.setHeaderLabels(["Line", "Description"])
         self.ui.bookmarkTree.itemDoubleClicked.connect(self._goto_bookmark)
@@ -362,7 +346,8 @@ class NSSEditor(Editor):
         self.ui.snippetList.clear()
         for snippet in snippets:
             if isinstance(snippet, dict) and "name" in snippet and "content" in snippet:
-                item = self._create_list_item_with_data(snippet["name"], snippet["content"])
+                item = QListWidgetItem(snippet["name"])
+                item.setData(Qt.ItemDataRole.UserRole, snippet["content"])
                 self.ui.snippetList.addItem(item)
 
         # Also update snippet search
@@ -387,7 +372,8 @@ class NSSEditor(Editor):
         content, ok = QInputDialog.getMultiLineText(self, "Add Snippet", "Enter snippet content:")
         if not ok:
             return
-        item = self._create_list_item_with_data(name, content)
+        item = QListWidgetItem(name)
+        item.setData(Qt.ItemDataRole.UserRole, content)
         self.ui.snippetList.addItem(item)
         self._save_snippets()
 
@@ -935,7 +921,8 @@ class NSSEditor(Editor):
             has_error = True
 
         for function in self.functions:
-            item = self._create_list_item_with_data(function.name, function)
+            item = QListWidgetItem(function.name)
+            item.setData(Qt.ItemDataRole.UserRole, function)
             try:
                 self.ui.functionList.addItem(item)
             except RuntimeError:  # wrapped C/C++ object of type 'QListWidget' has been deleted
@@ -943,7 +930,8 @@ class NSSEditor(Editor):
                 has_error = True
 
         for constant in self.constants:
-            item = self._create_list_item_with_data(constant.name, constant)
+            item = QListWidgetItem(constant.name)
+            item.setData(Qt.ItemDataRole.UserRole, constant)
             try:
                 self.ui.constantList.addItem(item)
             except RuntimeError:  # wrapped C/C++ object of type 'QListWidget' has been deleted
@@ -1261,20 +1249,6 @@ class NSSEditor(Editor):
         cursor.insertText(content)
         self.ui.codeEdit.setTextCursor(cursor)
 
-    def _matches_case_insensitive(self, str1: str, str2: str) -> bool:
-        """Check if two strings match in a case-insensitive manner.
-
-        Args:
-        ----
-            str1: First string to compare
-            str2: Second string to compare
-
-        Returns:
-        -------
-            bool: True if strings match case-insensitively, False otherwise
-        """
-        return str1.lower() == str2.lower()
-
     def go_to_definition(self):
         """Go to definition of symbol under cursor."""
         cursor: QTextCursor = self.ui.codeEdit.textCursor()
@@ -1300,7 +1274,7 @@ class NSSEditor(Editor):
             else:
                 identifier = item_text.strip()
 
-            if self._matches_case_insensitive(identifier, word):
+            if identifier.lower() == word.lower():
                 obj: Any = tree_item.data(0, Qt.ItemDataRole.UserRole)
                 if obj:
                     self.ui.codeEdit.on_outline_item_double_clicked(tree_item, 0)  # pyright: ignore[reportArgumentType]
@@ -1317,7 +1291,7 @@ class NSSEditor(Editor):
                     child_identifier = child_text.split(":", 1)[1].strip()
                 else:
                     child_identifier = child_text.strip()
-                if self._matches_case_insensitive(child_identifier, word):
+                if child_identifier.lower() == word.lower():
                     # Go to parent definition
                     self.ui.codeEdit.on_outline_item_double_clicked(tree_item, 0)  # pyright: ignore[reportArgumentType]
                     found = True
@@ -1329,13 +1303,13 @@ class NSSEditor(Editor):
         if not found:
             # Check functions
             for func in self.functions:
-                if self._matches_case_insensitive(func.name, word):
+                if func.name.lower() == word.lower():
                     # Show in constants/learn tab
                     self.ui.panelTabs.setCurrentWidget(self.ui.learnTab)
                     # Try to find and select in function list
                     for i in range(self.ui.functionList.count()):
                         list_item: QListWidgetItem | None = self.ui.functionList.item(i)
-                        if list_item and self._matches_case_insensitive(list_item.text(), word):
+                        if list_item and list_item.text().lower() == word.lower():
                             self.ui.functionList.setCurrentItem(list_item)
                             self.ui.functionList.scrollToItem(list_item)
                             QMessageBox.information(
@@ -1349,11 +1323,11 @@ class NSSEditor(Editor):
 
             # Check constants
             for const in self.constants:
-                if self._matches_case_insensitive(const.name, word):
+                if const.name.lower() == word.lower():
                     self.ui.panelTabs.setCurrentWidget(self.ui.learnTab)
                     for i in range(self.ui.constantList.count()):
                         list_item = self.ui.constantList.item(i)
-                        if list_item and self._matches_case_insensitive(list_item.text(), word):
+                        if list_item and list_item.text().lower() == word.lower():
                             self.ui.constantList.setCurrentItem(list_item)
                             self.ui.constantList.scrollToItem(list_item)
                             QMessageBox.information(

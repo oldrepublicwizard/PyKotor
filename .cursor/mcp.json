@@ -1,28 +1,15 @@
 {
   "mcpServers": {
-		"agentdecompile-proxy": {
-			"type": "stdio",
-			"command": "uvx",
-			"args": [
-				"--refresh",
-				"--from",
-        "git+https://github.com/bolabaden/agentdecompile",
-				"agentdecompile-server",
-				"--transport",
-				"stdio",
-				"--server-host",
-				"170.9.241.140",
-				"--backend-url",
-				"http://170.9.241.140:8080",
-				"--server-port",
-				"13100",
-				"--server-username",
-				"OpenKotOR",
-				"--server-password",
-				"MuchaShakaPaka",
-				"--ghidra-server-repository",
-				"Odyssey"
-			]
-		}
+    "ai-context": {
+      "type": "stdio",
+      "command": "uvx",
+      "args": [
+        "--refresh",
+        "--from",
+        "git+https://github.com/doobidoo/mcp-memory-service",
+        "memory",
+        "server"
+      ]
+    }
   }
 }

@@ -183,26 +183,6 @@ class AREEditor(Editor):
         )
         field.setToolTip(tr(tooltip_text))
 
-    def _set_tsl_controls_visibility(self, visible: bool):
-        """Set visibility and enabled state for TSL-specific controls.
-
-        Args:
-        ----
-            visible: Whether TSL controls should be visible/enabled
-        """
-        tsl_controls = [
-            self.ui.dirtGroup,
-            self.ui.grassEmissiveEdit,
-            self.ui.grassEmissiveLabel,
-            self.ui.snowCheck,
-            self.ui.rainCheck,
-            self.ui.lightningCheck,
-        ]
-        for control in tsl_controls:
-            control.setVisible(visible)
-            if hasattr(control, 'setEnabled'):
-                control.setEnabled(visible)
-
     def _setup_installation(self, installation: HTInstallation):
         self._installation = installation
 
@@ -220,7 +200,15 @@ class AREEditor(Editor):
         for label in cameras.get_column("name"):
             self.ui.cameraStyleSelect.addItem(label.title())
 
-        self._set_tsl_controls_visibility(installation.tsl)
+        self.ui.dirtGroup.setVisible(installation.tsl)
+        self.ui.grassEmissiveEdit.setVisible(installation.tsl)
+        self.ui.grassEmissiveLabel.setVisible(installation.tsl)
+        self.ui.snowCheck.setVisible(installation.tsl)
+        self.ui.snowCheck.setEnabled(installation.tsl)
+        self.ui.rainCheck.setVisible(installation.tsl)
+        self.ui.rainCheck.setEnabled(installation.tsl)
+        self.ui.lightningCheck.setVisible(installation.tsl)
+        self.ui.lightningCheck.setEnabled(installation.tsl)
 
         # Setup context menus for script fields with reference search enabled
         for field in self._script_combo_boxes():
