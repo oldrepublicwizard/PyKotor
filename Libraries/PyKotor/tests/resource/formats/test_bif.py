@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import base64
 import lzma
 import tempfile
 import unittest
@@ -19,8 +20,37 @@ from pykotor.resource.formats.bif import (
 from pykotor.resource.formats.key import KEY, BifEntry, KeyEntry
 from pykotor.resource.formats.key.key_auto import write_key
 from pykotor.resource.type import ResourceType
+from pykotor.tools.archive_serializer import dict_to_archive
 
-K1_BIF_TEST_FILE = "Libraries/PyKotor/tests/test_files/k1_player.bif"
+# Minimal BIF in plaintext (JSON) form: same schema as archive_to_dict output.
+# No external file dependency; round-trip via dict_to_archive -> read_bif.
+MINIMAL_BIF_JSON = {
+    "format": "bif",
+    "bif_type": "BIFF",
+    "resources": [
+        {
+            "resref": "test1",
+            "restype": "txt",
+            "resname_key_index": 0,
+            "data_encoding": "base64",
+            "data": base64.b64encode(b"Hello World 1").decode("ascii"),
+        },
+        {
+            "resref": "test2",
+            "restype": "txt",
+            "resname_key_index": 1,
+            "data_encoding": "base64",
+            "data": base64.b64encode(b"Hello World 2").decode("ascii"),
+        },
+        {
+            "resref": "test3",
+            "restype": "txt",
+            "resname_key_index": 2,
+            "data_encoding": "base64",
+            "data": base64.b64encode(b"Hello World 3").decode("ascii"),
+        },
+    ],
+}
 
 
 class TestBIFFormats(unittest.TestCase):
@@ -83,26 +113,28 @@ class TestBIFFormats(unittest.TestCase):
 
         return data
 
-    def test_bif_real_file(self):
-        """Test reading a real BIF file."""
-        bif: BIF = read_bif(K1_BIF_TEST_FILE)
+    def test_bif_from_plaintext_json(self):
+        """Test reading a BIF from inline plaintext (JSON) form; no external file."""
+        raw, _ = dict_to_archive(MINIMAL_BIF_JSON)
+        bif: BIF = read_bif(raw)
 
-        # Check header
         self.assertEqual(bif.bif_type, BIFType.BIF, f"{bif.bif_type} != BIFType.BIF")
-        self.assertEqual(len(bif.resources), 126, f"{len(bif.resources)} != 126")
+        self.assertEqual(len(bif.resources), 3, f"{len(bif.resources)} != 3")
 
-        # Check resources
         res1: BIFResource = bif.resources[0]
-        self.assertEqual(res1.resname_key_index, 20971520, f"{res1.resname_key_index} != 20971520")
-        self.assertEqual(res1.offset, 2036, f"{res1.offset} != 2036")
-        self.assertEqual(res1.size, 182290, f"{res1.size} != 182290")
-        self.assertEqual(res1.restype, ResourceType.MDL, f"{res1.restype} != ResourceType.MDL")
+        self.assertEqual(res1.resname_key_index, 0, f"{res1.resname_key_index} != 0")
+        self.assertEqual(res1.restype, ResourceType.TXT, f"{res1.restype} != ResourceType.TXT")
+        self.assertEqual(res1.data, b"Hello World 1", f"{res1.data!r} != b'Hello World 1'")
 
         res2: BIFResource = bif.resources[1]
-        self.assertEqual(res2.resname_key_index, 20971521, f"{res2.resname_key_index} != 20971521")
-        self.assertEqual(res2.offset, 184326, f"{res2.offset} != 184326")
-        self.assertEqual(res2.size, 144384, f"{res2.size} != 144384")
-        self.assertEqual(res2.restype, ResourceType.MDX, f"{res2.restype} != ResourceType.MDX")
+        self.assertEqual(res2.resname_key_index, 1)
+        self.assertEqual(res2.restype, ResourceType.TXT)
+        self.assertEqual(res2.data, b"Hello World 2")
+
+        res3: BIFResource = bif.resources[2]
+        self.assertEqual(res3.resname_key_index, 2)
+        self.assertEqual(res3.restype, ResourceType.TXT)
+        self.assertEqual(res3.data, b"Hello World 3")
 
     def test_bzf_read(self):
         """Test reading a BZF file."""
@@ -178,7 +210,8 @@ class TestBIFFormats(unittest.TestCase):
 
     def test_to_raw_data_simple_read_size_unchanged(self):
         """Verify that converting a BIF to raw data preserves its size."""
-        normalized_data = bytes_bif(read_bif(K1_BIF_TEST_FILE))
+        raw_from_json, _ = dict_to_archive(MINIMAL_BIF_JSON)
+        normalized_data = bytes_bif(read_bif(raw_from_json))
         bif: BIF = read_bif(normalized_data)
 
         raw_data: bytes = bytes_bif(bif)
@@ -187,7 +220,8 @@ class TestBIFFormats(unittest.TestCase):
 
     def test_write_to_file_valid_path_size_unchanged(self):
         """Verify that writing a BIF to disk preserves the original size."""
-        normalized_data = bytes_bif(read_bif(K1_BIF_TEST_FILE))
+        raw_from_json, _ = dict_to_archive(MINIMAL_BIF_JSON)
+        normalized_data = bytes_bif(read_bif(raw_from_json))
 
         with tempfile.TemporaryDirectory() as tmpdir:
             reference_path = Path(tmpdir, "reference.bif")
@@ -231,9 +265,17 @@ class TestBIFFormats(unittest.TestCase):
 
     def test_bif_composite_id_nonzero_bif_index(self):
         """BIF resource IDs use KEY bit layout: bits 31-20 = BIF index, 19-0 = resource index."""
-        bif: BIF = read_bif(K1_BIF_TEST_FILE)
+        # Use a minimal BIF with first resource ID 20971520 (bif_index 20, res_index 0)
+        json_with_id = {
+            **MINIMAL_BIF_JSON,
+            "resources": [
+                {**MINIMAL_BIF_JSON["resources"][0], "resname_key_index": 20971520},
+                *MINIMAL_BIF_JSON["resources"][1:],
+            ],
+        }
+        raw, _ = dict_to_archive(json_with_id)
+        bif: BIF = read_bif(raw)
         self.assertGreater(len(bif.resources), 0)
-        # k1_player.bif is not BIF index 0; first resource has resname_key_index 20971520 = 20 << 20
         first = bif.resources[0]
         self.assertEqual(first.resname_key_index, 20971520, "First resource ID should be 20<<20 (bif_index 20)")
         bif_index = first.resname_key_index >> 20

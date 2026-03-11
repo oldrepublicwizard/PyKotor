@@ -6,8 +6,8 @@ from dataclasses import dataclass, field
 from pathlib import PurePath
 from typing import TYPE_CHECKING, Iterator
 
-from pykotor.common.misc import ResRef
 from loggerplus import RobustLogger  # pyright: ignore[reportMissingTypeStubs, reportMissingModuleSource]
+from pykotor.common.misc import ResRef
 from pykotor.resource.type import ResourceType
 from pykotor.tools.path import CaseAwarePath
 

@@ -174,3 +174,39 @@ def cmd_tlk2json(args: Namespace, logger: Logger) -> int:
     input_path = pathlib.Path(args.input)
     output_path = pathlib.Path(args.output) if args.output else input_path.with_suffix(".json")
     return _run_conversion(input_path, output_path, convert_tlk_to_json, logger)
+
+
+def cmd_archive_to_json(args: Namespace, logger: Logger) -> int:
+    """Convert archive (ERF/RIM/MOD/SAV/BIF) to JSON with plaintext resources."""
+    from pykotor.tools.archive_serializer import convert_archive_to_json
+
+    input_path = pathlib.Path(args.input)
+    output_path = pathlib.Path(args.output) if args.output else input_path.with_suffix(".json")
+    key_path = pathlib.Path(args.key_file) if getattr(args, "key_file", None) else (input_path.parent / "chitin.key")
+    try:
+        convert_archive_to_json(
+            input_path,
+            output_path,
+            key_path=key_path if key_path.exists() else None,
+            embed_plaintext=not getattr(args, "no_plaintext", False),
+        )
+        logger.info(f"Converted {input_path.name} to {output_path.name}")  # noqa: G004
+    except Exception:
+        logger.exception(f"Failed to convert {input_path}")  # noqa: G004
+        return 1
+    return 0
+
+
+def cmd_json_to_archive(args: Namespace, logger: Logger) -> int:
+    """Convert JSON from capsule2json back to binary capsule (ERF/RIM/BIF)."""
+    from pykotor.tools.archive_serializer import convert_json_to_archive
+
+    input_path = pathlib.Path(args.input)
+    output_path = pathlib.Path(args.output)
+    try:
+        convert_json_to_archive(input_path, output_path)
+        logger.info(f"Converted {input_path.name} to {output_path.name}")  # noqa: G004
+    except Exception:
+        logger.exception(f"Failed to convert {input_path}")  # noqa: G004
+        return 1
+    return 0

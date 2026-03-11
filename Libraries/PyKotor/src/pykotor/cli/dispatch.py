@@ -7,6 +7,7 @@ from typing import TYPE_CHECKING
 from pykotor.cli.argparser import create_parser
 from pykotor.cli.commands import (
     cmd_2da2csv,
+    cmd_archive_to_json,
     cmd_assemble,
     cmd_batch_patch,
     cmd_cat,
@@ -31,6 +32,7 @@ from pykotor.cli.commands import (
     cmd_install,
     cmd_investigate_module,
     cmd_json2gff,
+    cmd_json_to_archive,
     cmd_key_pack,
     cmd_kit_generate,
     cmd_launch,
@@ -127,6 +129,10 @@ def cli_main(argv: Sequence[str]) -> int:  # noqa: PLR0911, PLR0912, PLR0915
             return cmd_2da2csv(args, logger)
         if args.command == "csv22da":
             return cmd_csv22da(args, logger)
+        if args.command == "capsule2json":
+            return cmd_archive_to_json(args, logger)
+        if args.command == "json2capsule":
+            return cmd_json_to_archive(args, logger)
         # Script tools
         if args.command == "decompile":
             return cmd_decompile(args, logger)

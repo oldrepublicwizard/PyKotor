@@ -102,6 +102,7 @@ from toolset.gui.common.localization import translate as tr, translate_format as
 from toolset.gui.common.status_bar_utils import format_status_bar_keys_and_buttons
 from toolset.gui.common.walkmesh_materials import get_walkmesh_material_colors
 from toolset.gui.widgets.installation_toolbar import InstallationToolbar, StandaloneWindowMixin
+from toolset.gui.widgets.settings.installations import GlobalSettings
 from toolset.gui.dialogs.asyncloader import AsyncLoader
 from toolset.gui.windows.help import HelpWindow
 from toolset.gui.windows.indoor_builder.constants import (
@@ -120,8 +121,10 @@ from toolset.gui.windows.indoor_builder.constants import (
 )
 from toolset.gui.windows.indoor_builder.undo_commands import (
     AddRoomCommand,
+    MapSettingsChangedCommand,
     PaintWalkmeshCommand,
     ResetWalkmeshCommand,
+    _snapshot_map_settings,
 )
 from utility.common.geometry import SurfaceMaterial, Vector2, Vector3
 from utility.system.os_helper import is_frozen
@@ -216,6 +219,7 @@ class IndoorMapBuilder(QMainWindow, BlenderEditorMixin, StandaloneWindowMixin):
 
         # Clipboard for copy/paste
         self._clipboard: list[RoomClipboardData] = []
+        self._pending_module_after_installation: str | None = None
 
         from toolset.uic.qtpy.windows.indoor_builder import Ui_MainWindow
 
@@ -293,6 +297,10 @@ class IndoorMapBuilder(QMainWindow, BlenderEditorMixin, StandaloneWindowMixin):
             self._setup_modules()
             self._sync_toolbar_installation_from_left()
             self._refresh_window_title()
+            if self._pending_module_after_installation is not None and isinstance(self._installation, HTInstallation):
+                mod = self._pending_module_after_installation
+                self._pending_module_after_installation = None
+                QTimer.singleShot(0, lambda: self.load_module_from_name(mod))
         except Exception:
             self.log.exception("Failed to refresh after installation switch")
 
@@ -313,6 +321,36 @@ class IndoorMapBuilder(QMainWindow, BlenderEditorMixin, StandaloneWindowMixin):
         if layout is not None:
             layout.addWidget(self._installation_toolbar)
         QTimer.singleShot(0, self._sync_toolbar_installation_from_left)
+
+    def _sync_module_combo_to_current_map(self) -> None:
+        """Select the current map's module_id in the left and toolbar module combos if present."""
+        module_id = getattr(self._map, "module_id", None) or ""
+        if not module_id:
+            return
+        for combo in (self.ui.moduleSelect, self.ui.toolbarModuleCombo):
+            idx = combo.findData(module_id)
+            if idx >= 0:
+                combo.setCurrentIndex(idx)
+
+    def _resolve_installation_and_module_from_path(self, file_path: Path) -> tuple[str | None, str | None]:
+        """If file_path is a .mod under a configured installation's Modules dir, return (installation_name, module_root); else (None, None)."""
+        try:
+            resolved = file_path.resolve()
+            if resolved.suffix.lower() != ".mod":
+                return (None, None)
+            modules_dir = resolved.parent
+            settings = GlobalSettings()
+            for name, config in settings.installations().items():
+                inst_path = Path(config.path).resolve()
+                expected_modules = inst_path / "Modules"
+                try:
+                    if modules_dir == expected_modules.resolve():
+                        return (name, resolved.stem)
+                except (OSError, RuntimeError):
+                    continue
+        except Exception:
+            pass
+        return (None, None)
 
     def _sync_toolbar_installation_from_left(self) -> None:
         """Copy installation list and selection from left panel to toolbar combo (no signal loops)."""
@@ -361,7 +399,12 @@ class IndoorMapBuilder(QMainWindow, BlenderEditorMixin, StandaloneWindowMixin):
 
         dialog = SettingsDialog(self)
         dialog.setWindowTitle(tr("Settings"))
-        # Default to Module Designer / keybind page if available
+        # Default to Module Designer (keybind) page
+        dialog.ui.settingsStack.setCurrentWidget(dialog.page_dict["Module Designer"])
+        dialog.previous_page = "Module Designer"
+        items = dialog.ui.settingsTree.findItems("Module Designer", Qt.MatchFlag.MatchExactly | Qt.MatchFlag.MatchRecursive, 0)
+        if items:
+            dialog.ui.settingsTree.setCurrentItem(items[0])
         dialog.exec()
 
     def _get_semantic_colors(self) -> dict[str, str]:
@@ -565,23 +608,22 @@ class IndoorMapBuilder(QMainWindow, BlenderEditorMixin, StandaloneWindowMixin):
         self.ui.gameTypeSelect.blockSignals(False)
 
     def _on_settings_changed(self):
-        """Read toolbar settings into _map and mark document modified."""
+        """Read toolbar settings into _map and push undo command."""
+        old_snapshot = _snapshot_map_settings(self._map)
         self._map.name = self.ui.nameEdit.locstring()
         self._map.lighting = self.ui.colorEdit.color()
         self._map.module_id = self.ui.warpCodeEdit.text()
         self._map.skybox = self.ui.skyboxSelect.currentData()
         self._map.target_game_type = self.ui.gameTypeSelect.currentData()
-        from qtpy.QtWidgets import QUndoCommand  # pyright: ignore[reportPrivateImportUsage]
-
-        class SettingsChangedCommand(QUndoCommand):
-            def __init__(self):
-                super().__init__("Settings Changed")
-
-            def undo(self): ...
-            def redo(self): ...
-
-        if not self._undo_stack.canUndo():
-            self._undo_stack.push(SettingsChangedCommand())
+        new_snapshot = _snapshot_map_settings(self._map)
+        self._undo_stack.push(
+            MapSettingsChangedCommand(
+                self._map,
+                old_snapshot,
+                new_snapshot,
+                self._update_settings_ui,
+            ),
+        )
         self._refresh_window_title()
 
     def _setup_walkmesh_painter(self):
@@ -1465,6 +1507,7 @@ class IndoorMapBuilder(QMainWindow, BlenderEditorMixin, StandaloneWindowMixin):
                 self._undo_stack.clear()
                 self._undo_stack.setClean()  # Mark as clean after loading
                 self._update_settings_ui()
+                self._sync_module_combo_to_current_map()
                 self._refresh_window_title()
 
                 if missing_rooms:
@@ -1477,15 +1520,12 @@ class IndoorMapBuilder(QMainWindow, BlenderEditorMixin, StandaloneWindowMixin):
                 ).exec()
 
     def open_mod(self):
-        """Open a `.mod` file by locating it in the active installation and loading by module name.
+        """Open a `.mod` file by locating it in an installation and loading by module name.
 
-        We intentionally do not support embedded `.indoor` payloads inside modules; the map must be
-        reconstructible from real module resources.
+        Resolves which configured installation contains the file; if found, switches to that
+        installation (if needed) and loads the module. We do not support embedded .indoor
+        payloads; the map must be reconstructible from real module resources.
         """
-        if not isinstance(self._installation, HTInstallation):
-            QMessageBox.warning(self, tr("No Installation"), tr("Please select an installation first."))
-            return
-
         filepath, _ = QFileDialog.getOpenFileName(self, tr("Open Module"), "", "Module (*.mod);;All Files (*)")
         if not filepath or not str(filepath).strip():
             return
@@ -1495,22 +1535,39 @@ class IndoorMapBuilder(QMainWindow, BlenderEditorMixin, StandaloneWindowMixin):
             QMessageBox.warning(self, tr("Invalid File"), trf("File not found:\n{mod_path}", mod_path=mod_path))
             return
 
-        # Only possible if the module exists in the active installation.
-        try:
-            install_modules_dir = Path(self._installation.module_path())
-            if mod_path.parent.resolve() == install_modules_dir.resolve():
-                self.load_module_from_name(mod_path.stem)
-                return
-        except Exception:
-            pass
+        inst_name, module_root = self._resolve_installation_and_module_from_path(mod_path)
+        if inst_name is None or module_root is None:
+            QMessageBox.warning(
+                self,
+                tr("Cannot Open Module"),
+                tr(
+                    "This .mod is not inside any configured installation's Modules folder.\n\nTip: add the installation in Settings or copy the .mod into an installation's Modules folder."
+                ),
+            )
+            return
 
-        QMessageBox.warning(
-            self,
-            tr("Cannot Open Module"),
-            tr(
-                "This .mod is not inside the active installation's Modules folder, so the Toolset cannot resolve its resources.\n\nTip: copy it into the active installation's Modules folder, then re-open."
-            ),
-        )
+        if self._installation_toolbar is None:
+            QMessageBox.warning(self, tr("No Installation"), tr("Please select an installation first."))
+            return
+
+        left = self._installation_toolbar.installation_combo
+        current_key = left.currentData()
+        if current_key == inst_name:
+            self.load_module_from_name(module_root)
+            return
+
+        self._pending_module_after_installation = module_root
+        for i in range(left.count()):
+            if left.itemData(i) == inst_name:
+                self._installation_toolbar._in_update = True
+                try:
+                    left.setCurrentIndex(i)
+                finally:
+                    self._installation_toolbar._in_update = False
+                break
+        else:
+            self._pending_module_after_installation = None
+            QMessageBox.warning(self, tr("Cannot Open Module"), tr("Resolved installation is not in the list."))
 
     def _show_missing_rooms_dialog(
         self,
@@ -1670,6 +1727,7 @@ class IndoorMapBuilder(QMainWindow, BlenderEditorMixin, StandaloneWindowMixin):
             self._undo_stack.setClean()
             self._filepath = ""  # Clear filepath since this is extracted, not loaded from file
             self._update_settings_ui()
+            self._sync_module_combo_to_current_map()
             self._refresh_window_title()
 
             # Show success message
@@ -2085,10 +2143,13 @@ class IndoorMapBuilder(QMainWindow, BlenderEditorMixin, StandaloneWindowMixin):
         buttons: set[int | Qt.MouseButton],
         keys: set[int | Qt.Key],
     ):
+        # Use event keys; fallback to current keyboard modifiers for reliable Ctrl+scroll zoom
+        ctrl_from_keys = Qt.Key.Key_Control in keys
+        ctrl_from_mods = bool(QApplication.keyboardModifiers() & Qt.KeyboardModifier.ControlModifier)
         handle_indoor_scroll(
             self.ui.mapRenderer,
             delta_y=delta.y,
-            ctrl_pressed=Qt.Key.Key_Control in keys,
+            ctrl_pressed=ctrl_from_keys or ctrl_from_mods,
             zoom_factor_from_delta=lambda value: calculate_zoom_strength(value, ZOOM_WHEEL_SENSITIVITY),
         )
         self._refresh_status_bar(screen=None, buttons=buttons, keys=keys)  # type: ignore[reportArgumentType]

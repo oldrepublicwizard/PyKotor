@@ -22,6 +22,7 @@ from __future__ import annotations
 import argparse
 import os
 import sys
+import traceback
 
 from contextlib import suppress
 from pathlib import Path
@@ -501,6 +502,7 @@ def launch_app(
         )
     except (KeyError, ImportError, AssertionError, AttributeError, ValueError) as e:
         print(f"Error creating app window: {e}", file=sys.stderr)
+        traceback.print_exc(file=sys.stderr)
         return 1
 
     window.show()

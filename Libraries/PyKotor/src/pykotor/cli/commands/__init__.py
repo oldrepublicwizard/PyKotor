@@ -11,10 +11,12 @@ from pykotor.cli.commands.create_installation import cmd_create_installation
 from pykotor.cli.commands.extract import cmd_extract
 from pykotor.cli.commands.format_convert import (
     cmd_2da2csv,
+    cmd_archive_to_json,
     cmd_csv22da,
     cmd_gff2json,
     cmd_gff2xml,
     cmd_json2gff,
+    cmd_json_to_archive,
     cmd_ssf2xml,
     cmd_tlk2json,
     cmd_tlk2xml,
@@ -67,6 +69,7 @@ from pykotor.cli.commands.validation import (
 
 __all__ = [
     "cmd_2da2csv",
+    "cmd_archive_to_json",
     "cmd_assemble",
     "cmd_batch_patch",
     "cmd_cat",
@@ -91,6 +94,7 @@ __all__ = [
     "cmd_install",
     "cmd_investigate_module",
     "cmd_json2gff",
+    "cmd_json_to_archive",
     "cmd_key_pack",
     "cmd_kit_generate",
     "cmd_launch",

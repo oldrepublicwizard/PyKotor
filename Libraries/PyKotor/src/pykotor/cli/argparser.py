@@ -126,7 +126,7 @@ def _organize_commands_by_category() -> dict[str, list[str]]:
     """Organize commands into logical categories for better help display."""
     categories = {
         "Build & Development": ["init", "list", "unpack", "convert", "compile", "pack", "install", "launch", "serve", "play", "test"],
-        "Format Conversion": ["gff2xml", "xml2gff", "gff2json", "json2gff", "tlk2xml", "xml2tlk", "tlk2json", "ssf2xml", "xml2ssf", "2da2csv", "csv22da"],
+        "Format Conversion": ["gff2xml", "xml2gff", "gff2json", "json2gff", "tlk2xml", "xml2tlk", "tlk2json", "ssf2xml", "xml2ssf", "2da2csv", "csv22da", "capsule2json", "json2capsule"],
         "Script Tools": ["decompile", "disassemble", "assemble"],
         "Resource Tools": ["texture-convert", "sound-convert", "model-convert"],
         "Archive Operations": [
@@ -494,6 +494,16 @@ Extract files from Bioware archive formats including:
     csv2da_parser.add_argument("--output", "-o", dest="output", help="Output 2DA file")
     csv2da_parser.add_argument("--delimiter", default=",", help="CSV delimiter")
     csv2da_parser.add_argument("--headers", action="store_true", default=True, help="CSV has headers")
+
+    capsule2json_parser = subparsers.add_parser("capsule2json", help="Convert capsule (ERF, RIM, MOD, SAV, BIF) to JSON with plaintext resources")
+    capsule2json_parser.add_argument("input", help="Input capsule file (.erf, .rim, .mod, .sav, .bif)")
+    capsule2json_parser.add_argument("--output", "-o", dest="output", help="Output JSON file")
+    capsule2json_parser.add_argument("--key-file", help="KEY file for BIF (default: chitin.key beside BIF)")
+    capsule2json_parser.add_argument("--no-plaintext", action="store_true", help="Embed all resources as base64 (no GFF/TLK/2DA conversion)")
+
+    json2capsule_parser = subparsers.add_parser("json2capsule", help="Convert JSON from capsule2json back to binary (ERF/RIM/BIF)")
+    json2capsule_parser.add_argument("input", help="Input JSON file")
+    json2capsule_parser.add_argument("--output", "-o", dest="output", required=True, help="Output capsule file")
 
     # Script tools
     decompile_parser = subparsers.add_parser("decompile", help="Decompile NCS bytecode to NSS source")

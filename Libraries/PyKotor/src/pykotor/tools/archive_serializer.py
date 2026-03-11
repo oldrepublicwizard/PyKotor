@@ -5,7 +5,7 @@ Converts ERF, RIM, MOD, SAV, and BIF to a JSON-serializable dict (and back) so t
 - Resources that have a plaintext format (GFF→JSON, TLK→JSON, 2DA→JSON, etc.) are
   embedded as that format; others are base64.
 
-CLI: use archive-to-json and json-to-archive commands.
+CLI: use capsule2json and json2capsule commands.
 """
 
 from __future__ import annotations
@@ -142,14 +142,21 @@ def archive_to_dict(
         path = Path(source)
         data = path.read_bytes()
 
-    suffix = path.suffix.lower() if path else ""
-    if is_erf_file(path or "") or (isinstance(source, bytes) and data[:4] in (b"ERF ", b"MOD ", b"SAV ", b"HAK ")):
+    if path and is_erf_file(path):
         return _erf_to_dict(data, embed_plaintext=embed_plaintext)
-    if is_rim_file(path or "") or (isinstance(source, bytes) and data[:4] == b"RIM "):
+    if path and is_rim_file(path):
         return _rim_to_dict(data, embed_plaintext=embed_plaintext)
-    if is_bif_file(path or "") or (isinstance(source, bytes) and data[:4] in (b"BIFF", b"BZF ")):
+    if path and is_bif_file(path):
         key_bytes = key_source.read_bytes() if key_source and key_source.exists() else None
         return _bif_to_dict(data, key_bytes=key_bytes, embed_plaintext=embed_plaintext)
+    if isinstance(source, bytes) or path is None:
+        if data[:4] in (b"ERF ", b"MOD ", b"SAV ", b"HAK "):
+            return _erf_to_dict(data, embed_plaintext=embed_plaintext)
+        if data[:4] == b"RIM ":
+            return _rim_to_dict(data, embed_plaintext=embed_plaintext)
+        if data[:4] in (b"BIFF", b"BZF "):
+            key_bytes = key_source.read_bytes() if key_source and key_source.exists() else None
+            return _bif_to_dict(data, key_bytes=key_bytes, embed_plaintext=embed_plaintext)
     raise ValueError(f"Unsupported archive type: {path or 'bytes'}")
 
 
@@ -210,8 +217,6 @@ def _bif_to_dict(
     key_bytes: bytes | None = None,
     embed_plaintext: bool = True,
 ) -> dict[str, Any]:
-    from pykotor.resource.formats.bif.bif_auto import read_bif
-
     bif = read_bif(BytesIO(data), key_source=BytesIO(key_bytes) if key_bytes else None)
     resources = []
     for res in bif.resources:
@@ -282,7 +287,7 @@ def _dict_to_rim(data: dict[str, Any]) -> bytes:
 
 def _dict_to_bif(data: dict[str, Any]) -> bytes:
     bif_type_str = data.get("bif_type", "BIFF")
-    bif_type = BIFType.BIF if bif_type_str == "BIFF" else BIFType.BZF
+    bif_type = BIFType.BZF if bif_type_str == "BZF " else BIFType.BIF
     bif = BIF(bif_type=bif_type)
     for r in data.get("resources", []):
         resref = r["resref"]
@@ -292,9 +297,9 @@ def _dict_to_bif(data: dict[str, Any]) -> bytes:
         payload = r["data"]
         raw = _plaintext_to_resource_bytes(enc, payload, restype)
         bif.set_data(ResRef(resref), restype, raw, res_id=res_id)
-    out = BytesIO()
+    out: bytearray = bytearray()
     write_bif(bif, out)
-    return out.getvalue()
+    return bytes(out)
 
 
 def convert_archive_to_json(

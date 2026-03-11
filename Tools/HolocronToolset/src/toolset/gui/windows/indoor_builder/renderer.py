@@ -10,7 +10,6 @@ from typing import TYPE_CHECKING, Callable, ClassVar
 
 import qtpy
 
-from qtpy import QtCore
 from qtpy.QtCore import QPointF, QRectF, QTimer, Qt, Signal
 from qtpy.QtGui import QColor, QPainter, QPainterPath, QPalette, QPen, QPolygonF, QTransform
 from qtpy.QtWidgets import (

@@ -64,13 +64,13 @@ def open_manage_installations_dialog(
             on_save()
 
 
-class InstallationToolbar(QWidget):
+class InstallationToolbar(QWidget, Ui_Form):
     """Reusable installation/folder-path strip; layout from installation_toolbar.ui."""
 
     installation_changed = Signal(object)  # HTInstallation | None
     folder_paths_changed = Signal(object)  # dict[str, Path | None]
 
-    # Set by Ui_Form().setupUi(self)
+    # Set by setupUi(self) from Ui_Form
     installationCombo: QComboBox
     reloadBtn: QPushButton
     manageBtn: QPushButton
@@ -97,7 +97,7 @@ class InstallationToolbar(QWidget):
         self._saved_installations: dict[str, dict[str, str | bool]] = {}
         self._in_update = False
 
-        Ui_Form().setupUi(self)
+        self.setupUi(self)
         self.mode_group = QButtonGroup(self)
         self.mode_group.addButton(self.modeFullRadio)
         self.mode_group.addButton(self.modeFolderRadio)

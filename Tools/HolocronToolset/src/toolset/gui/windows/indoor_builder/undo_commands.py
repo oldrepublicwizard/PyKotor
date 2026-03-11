@@ -15,17 +15,74 @@ else:
     raise ValueError(f"Invalid QT_API: '{qtpy.API_NAME}'")
 
 from pykotor.common.indoorkit import KitComponent, KitComponentHook
-from pykotor.common.indoormap import IndoorMapRoom
+from pykotor.common.indoormap import IndoorMap, IndoorMapRoom
+from pykotor.common.language import LocalizedString
+from pykotor.common.misc import Color
 from pykotor.resource.formats.bwm import BWM  # type: ignore[reportPrivateImportUsage]
 from utility.common.geometry import Vector3
 
 if TYPE_CHECKING:
-    from pykotor.common.indoormap import EmbeddedKit, IndoorMap
+    from pykotor.common.indoormap import EmbeddedKit
     from utility.common.geometry import SurfaceMaterial
+
+# Map settings snapshot: (name, lighting, module_id, skybox, target_game_type)
+_MapSettingsSnapshot = tuple[
+    LocalizedString,
+    Color,
+    str,
+    str,
+    bool | None,
+]
+
+
+def _snapshot_map_settings(indoor_map: IndoorMap) -> _MapSettingsSnapshot:
+    """Copy current map settings for undo/redo. Caller must not mutate returned refs."""
+    return (
+        deepcopy(indoor_map.name),
+        Color(indoor_map.lighting.r, indoor_map.lighting.g, indoor_map.lighting.b, indoor_map.lighting.a),
+        indoor_map.module_id,
+        indoor_map.skybox,
+        indoor_map.target_game_type,
+    )
+
+
+def _apply_map_settings(indoor_map: IndoorMap, snapshot: _MapSettingsSnapshot) -> None:
+    """Apply a settings snapshot to the map (used by undo/redo)."""
+    indoor_map.name = deepcopy(snapshot[0])
+    indoor_map.lighting = Color(snapshot[1].r, snapshot[1].g, snapshot[1].b, snapshot[1].a)
+    indoor_map.module_id = snapshot[2]
+    indoor_map.skybox = snapshot[3]
+    indoor_map.target_game_type = snapshot[4]
+
 
 # =============================================================================
 # Undo/Redo Commands
 # =============================================================================
+
+
+class MapSettingsChangedCommand(QUndoCommand):
+    """Undo command for map settings (name, lighting, module_id, skybox, target_game_type)."""
+
+    def __init__(
+        self,
+        indoor_map: IndoorMap,
+        old_snapshot: _MapSettingsSnapshot,
+        new_snapshot: _MapSettingsSnapshot,
+        update_ui_cb: Callable[[], None],
+    ):
+        super().__init__("Settings Changed")
+        self.indoor_map = indoor_map
+        self.old_snapshot = old_snapshot
+        self.new_snapshot = new_snapshot
+        self._update_ui_cb = update_ui_cb
+
+    def undo(self) -> None:
+        _apply_map_settings(self.indoor_map, self.old_snapshot)
+        self._update_ui_cb()
+
+    def redo(self) -> None:
+        _apply_map_settings(self.indoor_map, self.new_snapshot)
+        self._update_ui_cb()
 
 
 class AddRoomCommand(QUndoCommand):
