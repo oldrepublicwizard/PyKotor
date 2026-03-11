@@ -417,6 +417,26 @@ Extract files from Bioware archive formats including:
     create_archive_parser.add_argument("--type", help="Archive type (ERF, MOD, SAV, RIM)")
     create_archive_parser.add_argument("--filter", help="Filter files by pattern (supports wildcards)")
 
+    # create-installation command
+    create_install_parser = subparsers.add_parser(
+        "create-installation",
+        aliases=["scaffold-installation"],
+        help="Scaffold a minimal KotOR installation layout (empty but structurally valid)",
+    )
+    create_install_parser.add_argument("path", help="Destination directory for the installation")
+    create_install_parser.add_argument(
+        "--game",
+        "-g",
+        default="k1",
+        choices=["k1", "kotor", "kotor1", "k2", "tsl", "kotor2"],
+        help="Target game: k1/kotor/kotor1 for KotOR I, k2/tsl/kotor2 for KotOR II (default: k1)",
+    )
+    create_install_parser.add_argument(
+        "--force",
+        action="store_true",
+        help="Remove and recreate the destination if it already contains an installation",
+    )
+
     # Format conversion commands
     gff2xml_parser = subparsers.add_parser("gff2xml", help="Convert GFF to XML")
     gff2xml_parser.add_argument("input", help="Input GFF file")

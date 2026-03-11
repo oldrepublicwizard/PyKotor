@@ -7,6 +7,7 @@ from pykotor.cli.commands.compile import cmd_compile
 from pykotor.cli.commands.config import cmd_config
 from pykotor.cli.commands.convert import cmd_convert
 from pykotor.cli.commands.create_archive import cmd_create_archive
+from pykotor.cli.commands.create_installation import cmd_create_installation
 from pykotor.cli.commands.extract import cmd_extract
 from pykotor.cli.commands.format_convert import (
     cmd_2da2csv,
@@ -76,6 +77,7 @@ __all__ = [
     "cmd_config",
     "cmd_convert",
     "cmd_create_archive",
+    "cmd_create_installation",
     "cmd_csv22da",
     "cmd_decompile",
     "cmd_diff",

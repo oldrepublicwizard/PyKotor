@@ -2,9 +2,12 @@
 
 from __future__ import annotations
 
+import atexit
 import os
 import runpy
+import shutil
 import sys
+import tempfile
 from pathlib import Path
 
 
@@ -52,11 +55,10 @@ LIBS_PATH = REPO_ROOT / "Libraries"
 TOOLSET_SRC = (TOOLS_PATH / "HolocronToolset" / "src").resolve()
 KOTORDIFF_SRC = (TOOLS_PATH / "KotorDiff" / "src").resolve()
 PYKOTOR_PATH = (LIBS_PATH / "PyKotor" / "src").resolve()
-PYKOTOR_TESTS_PATH = (LIBS_PATH / "PyKotor" / "tests").resolve()
 UTILITY_PATH = (LIBS_PATH / "Utility" / "src").resolve()
 PYKOTORGL_PATH = (LIBS_PATH / "PyKotorGL" / "src").resolve()
 
-for p in (TOOLSET_SRC, KOTORDIFF_SRC, PYKOTOR_PATH, PYKOTOR_TESTS_PATH, UTILITY_PATH, PYKOTORGL_PATH):
+for p in (TOOLSET_SRC, KOTORDIFF_SRC, PYKOTOR_PATH, UTILITY_PATH, PYKOTORGL_PATH):
     if p.exists() and str(p) not in sys.path:
         sys.path.insert(0, str(p))
 
@@ -103,11 +105,22 @@ _api_name = {"pyqt6": "PyQt6", "pyqt5": "PyQt5", "pyside6": "PySide6", "pyside2"
 os.environ["QT_API"] = _api_name
 
 import pytest
-from _fake_install import build_minimal_k1_installation, build_minimal_k2_installation
 from pykotor.common.misc import Game
+from pykotor.tools.create_installation import create_minimal_installation
 from pykotor.tools.heuristics import determine_game
 from toolset.data.installation import HTInstallation
 from toolset.main_settings import setup_pre_init_settings
+
+
+_SESSION_TEMP_DIR: Path | None = None
+
+
+def _get_or_create_session_temp_dir() -> Path:
+    global _SESSION_TEMP_DIR  # noqa: PLW0603
+    if _SESSION_TEMP_DIR is None:
+        _SESSION_TEMP_DIR = Path(tempfile.mkdtemp(prefix="pykotor_test_install_"))
+        atexit.register(shutil.rmtree, _SESSION_TEMP_DIR, True)
+    return _SESSION_TEMP_DIR
 
 
 def _resolve_or_create_game_path(label: str) -> str:
@@ -121,18 +134,13 @@ def _resolve_or_create_game_path(label: str) -> str:
         if candidate.is_dir() and (candidate / "chitin.key").exists() and determine_game(candidate) == expected:
             return str(candidate)
 
-    synthetic = build_minimal_k1_installation() if label == "k1" else build_minimal_k2_installation()
+    synthetic = create_minimal_installation(_get_or_create_session_temp_dir() / label, Game.K1 if label == "k1" else Game.K2)
     if label == "k1":
         os.environ["K1_PATH"] = str(synthetic)
     else:
         os.environ["K2_PATH"] = str(synthetic)
         os.environ["TSL_PATH"] = str(synthetic)
     return str(synthetic)
-
-
-# Prime env vars early so module-level skipIf checks can use fake installs.
-_resolve_or_create_game_path("k1")
-_resolve_or_create_game_path("k2")
 
 
 def pytest_configure(config: pytest.Config):

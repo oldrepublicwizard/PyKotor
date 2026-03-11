@@ -14,15 +14,13 @@ from __future__ import annotations
 
 import os
 import sys
+import atexit
+import shutil
+import tempfile
 
 from pathlib import Path
 
 import pytest
-
-from _fake_install import (
-    build_minimal_k1_installation,
-    build_minimal_k2_installation,
-)
 
 # Ensure the vendored PyKotor + Utility sources in this repo are used instead of any
 # globally-installed copies that may exist on the machine running the tests.
@@ -34,7 +32,19 @@ for _p in (_PYKOTOR_SRC, _UTILITY_SRC):
         sys.path.insert(0, _ps)
 
 from pykotor.common.misc import Game
+from pykotor.tools.create_installation import create_minimal_installation
 from pykotor.tools.heuristics import determine_game
+
+
+_SESSION_TEMP_DIR: Path | None = None
+
+
+def _get_or_create_session_temp_dir() -> Path:
+    global _SESSION_TEMP_DIR  # noqa: PLW0603
+    if _SESSION_TEMP_DIR is None:
+        _SESSION_TEMP_DIR = Path(tempfile.mkdtemp(prefix="pykotor_test_install_"))
+        atexit.register(shutil.rmtree, _SESSION_TEMP_DIR, True)
+    return _SESSION_TEMP_DIR
 
 
 def _normalize_game_from_label(label: str) -> Game | None:
@@ -63,20 +73,15 @@ def _resolve_or_create_install_path(label: str, env_path: str | None) -> Path:
                 return candidate
 
     if label == "k1":
-        synthetic = build_minimal_k1_installation()
+        synthetic = create_minimal_installation(_get_or_create_session_temp_dir() / "k1", Game.K1)
     else:
-        synthetic = build_minimal_k2_installation()
+        synthetic = create_minimal_installation(_get_or_create_session_temp_dir() / "k2", Game.K2)
 
     # Keep skipIf/env-based tests alive by exporting the resolved path.
     os.environ["K1_PATH" if label == "k1" else "K2_PATH"] = str(synthetic)
     if label == "k2":
         os.environ["TSL_PATH"] = str(synthetic)
     return synthetic
-
-
-# Prime env vars early so module-level skipIf checks in tests can use fake installs.
-_resolve_or_create_install_path("k1", os.environ.get("K1_PATH"))
-_resolve_or_create_install_path("k2", os.environ.get("TSL_PATH") or os.environ.get("K2_PATH"))
 
 
 def pytest_collection_modifyitems(config: pytest.Config, items: list[pytest.Item]) -> None:  # noqa: ARG001

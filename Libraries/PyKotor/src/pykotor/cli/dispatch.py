@@ -17,6 +17,7 @@ from pykotor.cli.commands import (
     cmd_config,
     cmd_convert,
     cmd_create_archive,
+    cmd_create_installation,
     cmd_csv22da,
     cmd_decompile,
     cmd_diff,
@@ -101,6 +102,8 @@ def cli_main(argv: Sequence[str]) -> int:  # noqa: PLR0911, PLR0912, PLR0915
             return cmd_list_archive(args, logger)
         if args.command in ("create-archive", "pack-archive"):
             return cmd_create_archive(args, logger)
+        if args.command in ("create-installation", "scaffold-installation"):
+            return cmd_create_installation(args, logger)
         # Format conversions
         if args.command == "gff2xml":
             return cmd_gff2xml(args, logger)
