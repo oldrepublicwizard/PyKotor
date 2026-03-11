@@ -57,6 +57,12 @@ The following documents are official Bioware Aurora Engine file format specifica
 
 The following information describes the resource system used by **KotOR and TSL**. While KotOR is derived from the Aurora engine (Neverwinter Nights) and shares the same resource system, this section focuses on **KotOR-specific** behavior and file locations. Some details (like `nwn.ini`) are NWN-specific and are noted as such.
 
+#### Application lifecycle (KotOR and TSL)
+
+Both games use the same high-level flow: the executable initializes an application manager, creates a server (game world) and client (rendering, input, UI), then runs a main loop that pumps window messages, updates the render window, and drives the Aurora/Odyssey subsystems. Resource loading follows the resolution order below; the resource manager services requests from override, then module/ERF, then KEY/BIF. Reinitializing the Aurora engine (e.g. after resolution or display changes) reloads or refreshes core subsystems while preserving the same client/server split. Scripts (NCS) and dialogues (DLG) run in the server context; the client handles display, camera, and input and receives updates from the server.
+
+**Client and server:** The Odyssey engine (like Aurora) separates a **server** (game world, rules, scripts, resources) from a **client** (rendering, input, UI). The server owns area state, creatures, items, and script execution; the client displays the world and sends input. This split is important for modding and for understanding [NCS execution](NCS-File-Format) and [resource resolution](KEY-File-Format).
+
 #### Important Files
 
 - **[`chitin.key`](KEY-File-Format)**: Master index file that maps resource names to [BIF archives](BIF-File-Format) locations. Given a resource name, [chitin.key](KEY-File-Format) can be used to locate the master data file ([BIF](BIF-File-Format)) containing the resource.
