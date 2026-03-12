@@ -69,3 +69,9 @@ This works after a successful `uv sync --all-packages --all-extras`. **Python 3.
 ## Learned Workspace Facts
 
 - Holocron UI workflow is compile-first: change `.ui` → run convertui → then use `self.ui.<name>` in code; defensive getattr for UI is prohibited in `.cursorrules`.
+
+### Reverse engineering (agdec-http MCP)
+
+- Binary analysis tools (list-functions, search-everything, match-function, create-label, etc.) require a Ghidra project with at least one program **open/loaded**. If `list-project-files` returns Count: 0 or tools report "No program loaded", open the project and load a binary in Ghidra first; then MCP tools can target programs by project path (e.g. `/TSL/k2_win_gog_aspyr_swkotor2.exe`).
+- When matching K1→K2, prefer search-everything and address/size/call-graph over match-function (which often returns wrong mappings). Apply labels from layout and cross-binary comparison.
+- Wiki documentation stays conceptual only; no tool names or raw RE dumps in `.md`. Document resource resolution and engine behavior; link format pages to [KEY-File-Format](wiki/KEY-File-Format.md) for resolution order.
