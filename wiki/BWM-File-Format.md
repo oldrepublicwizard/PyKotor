@@ -21,7 +21,7 @@ Walkmeshes serve multiple critical functions in KotOR:
 - **Spatial Queries**: AABB trees enable efficient ray casting (mouse clicks, projectiles) and point-in-triangle tests (determining which face a character stands on)
 - **Area Transitions**: Edge transitions link walkmeshes to door connections and area boundaries, enabling seamless movement between rooms
 
-**Related formats:** BWM files are used in conjunction with [GFF ARE files](GFF-File-Format#are-area) which define area properties and contain references to walkmesh files.
+**Related formats:** BWM files are used in conjunction with [GFF ARE files](GFF-File-Format#are-area) which define area properties and contain references to walkmesh files. WOK/PWK/DWK files are resolved using the same [resource resolution order](KEY-File-Format#key-file-purpose) as other resources (override, MOD/SAV, KEY/BIF).
 
 **Game Engine Implementation**: See [Game Engine BWM/AABB Implementation](Game-Engine-BWM-AABB-Implementation) for detailed analysis of how the original KOTOR engine handles BWM files, based on reverse-engineered source code.
 
@@ -29,30 +29,48 @@ Walkmeshes serve multiple critical functions in KotOR:
 
 ## Table of Contents
 
-- [File Structure Overview](#file-structure-overview)
-- [Binary Format](#binary-format)
-  - [File Header](#file-header)
-  - [Walkmesh Properties](#walkmesh-properties)
-  - [Data Table Offsets](#data-table-offsets)
-  - [Vertices](#vertices)
-  - [Faces](#faces)
-  - [Materials](#materials)
-  - [Derived Data](#derived-data)
-  - [AABB Tree](#aabb-tree)
-  - [Walkable Adjacencies](#walkable-adjacencies)
-  - [Edges](#edges)
-  - [Perimeters](#perimeters)
-- [ASCII Format](#ascii-format)
-  - [Format Structure](#format-structure)
-  - [Parsing Process](#parsing-process)
-  - [Field Specifications](#field-specifications)
-  - [Implementation Notes](#implementation-notes)
-- [Runtime Model](#runtime-model)
-  - [BWM Class](#bwm-class)
-  - [BWMFace Class](#bwmface-class)
-  - [BWMEdge Class](#bwmedge-class)
-  - [BWMNodeAABB Class](#bwmnodeaabb-class)
-  - [BWMAdjacency Class](#bwmadjacency-class)
+- [KotOR BWM File Format Documentation](#kotor-bwm-file-format-documentation)
+  - [What is a BWM File?](#what-is-a-bwm-file)
+  - [Table of Contents](#table-of-contents)
+  - [File Structure Overview](#file-structure-overview)
+  - [Binary Format](#binary-format)
+    - [File Header](#file-header)
+    - [Walkmesh Properties](#walkmesh-properties)
+    - [Data Table Offsets](#data-table-offsets)
+    - [Vertices](#vertices)
+    - [Faces](#faces)
+    - [Materials](#materials)
+    - [Derived Data](#derived-data)
+    - [AABB Tree](#aabb-tree)
+    - [Walkable Adjacencies](#walkable-adjacencies)
+    - [Edges](#edges)
+    - [Perimeters](#perimeters)
+  - [ASCII Format](#ascii-format)
+    - [Format Structure](#format-structure)
+      - [Grammar](#grammar)
+      - [Example File](#example-file)
+    - [Parsing Process](#parsing-process)
+      - [Line Reading](#line-reading)
+      - [Whitespace Handling](#whitespace-handling)
+    - [Field Specifications](#field-specifications)
+      - [1. Node Block](#1-node-block)
+      - [2. Position Field](#2-position-field)
+      - [3. Orientation Field](#3-orientation-field)
+      - [4. Vertices Block](#4-vertices-block)
+      - [5. Faces Block](#5-faces-block)
+      - [6. AABB Block](#6-aabb-block)
+    - [Implementation Notes](#implementation-notes)
+      - [Critical Requirements](#critical-requirements)
+      - [Error Handling](#error-handling)
+      - [Line Buffer](#line-buffer)
+      - [Whitespace](#whitespace)
+      - [Engine References](#engine-references)
+  - [Runtime Model](#runtime-model)
+    - [BWM Class](#bwm-class)
+    - [BWMFace Class](#bwmface-class)
+    - [BWMEdge Class](#bwmedge-class)
+    - [BWMNodeAABB Class](#bwmnodeaabb-class)
+    - [BWMAdjacency Class](#bwmadjacency-class)
 
 ---
 
@@ -494,6 +512,10 @@ The transition value comes from the face's Trans1, Trans2, or Trans3 property, d
 - Edge 0 (V1->V2): Uses face.Trans1
 - Edge 1 (V2->V3): Uses face.Trans2
 - Edge 2 (V3->V1): Uses face.Trans3
+
+The transition value is a **0-based room index** corresponding to the order rooms appear in the module's LYT file. The first room listed in the LYT is index 0, the second is index 1, and so on.
+
+**Both rooms must reference each other.** If Room A has a perimeter edge with a transition pointing to Room B's index, Room B must have a matching perimeter edge at that boundary pointing back to Room A's index. Without reciprocal transitions the engine cannot route the player across the boundary. Each room keeps its own walkmesh (WOK); room walkmeshes are never merged across rooms — the boundary is traversed via the paired transition edges.
 
 When the indoor map builder processes a room's walkmesh, it remaps transitions from dummy indices (from the kit component) to actual room indices (in the built module).
 
@@ -1004,12 +1026,16 @@ A BWMFace is a single triangle in a walkmesh. It represents one small piece of t
 
 **How are Transitions Used?**
 
-Transitions tell the game which rooms or areas are connected at each edge of the triangle. When you place a door in the indoor map builder, it uses transitions to know where doors should go. The transition value is an index into the list of rooms in the module.
+Transitions tell the game which rooms or areas are connected at each edge of the triangle. When you place a door in the indoor map builder, it uses transitions to know where doors should go. The transition value is a **0-based room index** corresponding to the order rooms appear in the module's LYT file (first room = 0, second = 1, etc.).
+
+Transition values are only meaningful on **perimeter edges** — edges of walkable faces that have no adjacent walkable neighbour within the same walkmesh. Setting a transition on an internal (non-boundary) edge has no effect. Do not merge walkmeshes across rooms to achieve adjacency; each room retains its own walkmesh and the crossing happens through paired perimeter transitions.
 
 For example:
 
 - If Trans1 = 5, it means edge 0 connects to room index 5
 - If Trans1 = null, it means edge 0 has no connection (is a boundary or wall)
+
+**Both rooms must carry reciprocal transitions.** Room A pointing to Room B's index and Room B pointing back to Room A's index is required for the engine to allow two-way traversal. If only one side is set then the player cannot cross in at least one direction.
 
 When the indoor map builder processes a room's walkmesh, it remaps transitions from dummy indices (from the kit component) to actual room indices (in the built module).
 

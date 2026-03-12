@@ -2,7 +2,7 @@
 
 This document provides a detailed description of the MDL/MDX file format used in Knights of the Old Republic (KotOR) games. The MDL (model) and MDX (model Extension) files together define 3D models, including [geometry](MDL-MDX-File-Format#geometry-header), [animations](MDL-MDX-File-Format#animation-header), and other related data.
 
-**Related formats:** models are referenced by [GFF files](GFF-File-Format) such as [UTC (Creature)](GFF-File-Format#utc-creature), [UTI (Item)](GFF-File-Format#uti-item), and [UTP (Placeable)](GFF-File-Format#utp-placeable) templates. models may also use [TPC texture files](TPC-File-Format) and [TXI texture info files](TXI-File-Format). MDL/MDX files are loaded via the same [resource resolution order](KEY-File-Format#key-file-purpose) as other resources (override, MOD/SAV, KEY/BIF).
+**Related formats:** models are referenced by [GFF files](GFF-File-Format) such as [UTC (Creature)](GFF-File-Format#utc-creature), [UTI (Item)](GFF-File-Format#uti-item), and [UTP (Placeable)](GFF-File-Format#utp-placeable) templates. models may also embed names of [TPC Textures](TPC-File-Format), [TXI Texture Info Files](TXI-File-Format) and [TGA Textures](TGA-File-Format) in the [MDX](MDL-MDX-File-Format) file. MDL/MDX files are loaded via the same [resource resolution order](KEY-File-Format#key-file-purpose) as other resources (override, MOD/SAV, KEY/BIF).
 
 ## Table Of Contents
 
