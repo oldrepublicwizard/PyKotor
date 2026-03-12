@@ -57,6 +57,7 @@ The KEY file only manages [BIF](BIF-File-Format) resources (step 4). Higher-prio
 
 **See Also:**
 
+- [Home](Home#resource-resolution-order) - Application lifecycle and resource resolution overview
 - [BIF File Format](BIF-File-Format) - Archive format indexed by KEY files
 - [ERF File Format](ERF-File-Format) - Self-contained alternative to KEY+[BIF](BIF-File-Format)
 - [Bioware Aurora KeyBIF Format](Bioware-Aurora-KeyBIF) - Official BioWare specification
