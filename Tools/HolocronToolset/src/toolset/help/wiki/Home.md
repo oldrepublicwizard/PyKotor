@@ -285,60 +285,60 @@ This language ID usually is represented as an enum. It is equivalent within all 
   - [UTS (Sound)](GFF-UTS)
   - [UTT (Trigger)](GFF-UTT)
   - [UTW (Waypoint)](GFF-UTW)
-- [LIP File Format](LIP-File-Format) ← [LIP](LIP-File-Format) sync format
-- [LTR File Format](LTR-File-Format) ← Letter format
-- [LYT File Format](LYT-File-Format) ← Layout format
-- [NCS File Format](NCS-File-Format) ← NwScript Compiled Script format
-- [NSS File Format](NSS-File-Format) ← NwScript Source format (nwscript.nss, function/constant definitions)
-- [RIM File Format](ERF-File-Format) ← Resource index Manifest format
-- [SSF File Format](SSF-File-Format) ← [sound set files](SSF-File-Format) format
-- [TLK File Format](TLK-File-Format) ← [Talk Table](TLK-File-Format) format
-- [TPC File Format](TPC-File-Format) ← [texture](TPC-File-Format) Pack Container format
-- [TXI File Format](TXI-File-Format) ← [texture](TPC-File-Format) Info format
-- [VIS File Format](VIS-File-Format) ← Visibility format
-- [WAV File Format](WAV-File-Format) ← Wave audio format
+- [LIP File Format](LIP-File-Format) ← [LIP](LIP-File-Format) Synchronization Format
+- [LTR File Format](LTR-File-Format) ← Letter Format
+- [LYT File Format](LYT-File-Format) ← Layout Format
+- [NCS File Format](NCS-File-Format) ← NwScript Compiled Script Format
+- [NSS File Format](NSS-File-Format) ← NwScript Source Format (nwscript.nss, function/constant definitions) (see also [NSS File Format](NSS-File-Format))
+- [RIM File Format](RIM-File-Format) ← Resource Index Manifest Format (see also [ERF File Format](ERF-File-Format))
+- [SSF File Format](SSF-File-Format) ← [Sound Set Files (SSF)](SSF-File-Format) format (see also [Bioware Aurora SSF Format](Bioware-Aurora-SSF))
+- [TLK File Format](TLK-File-Format) ← [Talk Table](TLK-File-Format) Format
+- [TPC File Format](TPC-File-Format) ← [Texture Pack Container (TPC)](TPC-File-Format) Format
+- [TXI File Format](TXI-File-Format) ← [Texture Info (TXI)](TXI-File-Format) Format
+- [VIS File Format](VIS-File-Format) ← [Visibility (VIS)](VIS-File-Format) Format
+- [WAV File Format](WAV-File-Format) ← [Wave (WAV)](WAV-File-Format) Audio Format (see also [Bioware Aurora WAV Format](Bioware-Aurora-WAV))
 
 ### Internal Documentation
 
-- [HoloPatcher](HoloPatcher-README-for-mod-developers.)
-- [Explanations on HoloPatcher Internal Logic](Explanations-on-HoloPatcher-Internal-Logic)
+- [HoloPatcher](HoloPatcher-README-for-mod-developers.) - README for mod developers
+- [Explanations on HoloPatcher Internal Logic](Explanations-on-HoloPatcher-Internal-Logic) - Explanations on HoloPatcher internal logic
 
 ## Vendor Implementations
 
-PyKotor includes many vendor submodules that provide alternative implementations of KotOR tools and engines. These serve as reference implementations and enable comparison of different approaches to the same problems.
+PyKotor includes many vendor submodules that provide alternative implementations of *KotOR* tools and engines. These serve as reference implementations and enable comparison of different approaches to the same problems.
 
 ### Engine Reimplementations
 
-Complete game engine rewrites that can load and play KotOR:
+Complete game engine rewrites that can load and play *KotOR*:
 
-- **[xoreos](https://github.com/xoreos/xoreos)** - C++ reimplementation of BioWare's Aurora/Odyssey/Eclipse engine, supports multiple BioWare games including KotOR. ([Mirror: th3w1zard1/xoreos](https://github.com/th3w1zard1/xoreos))
+- **[xoreos](https://github.com/xoreos/xoreos)** - C++ reimplementation of BioWare's Aurora/Odyssey/Eclipse engine, supports multiple BioWare games including *KotOR*. ([Mirror: th3w1zard1/xoreos](https://github.com/th3w1zard1/xoreos))
 - **[reone](https://github.com/seedhartha/reone)** - Modern C++ KotOR engine with OpenGL rendering. Focus on performance and clean architecture. ([Mirror: th3w1zard1/reone](https://github.com/th3w1zard1/reone))
-- **[KotOR.js](https://github.com/KobaltBlu/KotOR.js)** - TypeScript/JavaScript engine running in browsers via WebGL. Enables playing KotOR directly in web browsers. ([Mirror: th3w1zard1/KotOR.js](https://github.com/th3w1zard1/KotOR.js))
+- **[KotOR.js](https://github.com/KobaltBlu/KotOR.js)** - TypeScript/JavaScript engine running in browsers via WebGL. Enables playing *KotOR* directly in web browsers. ([Mirror: th3w1zard1/KotOR.js](https://github.com/th3w1zard1/KotOR.js))
 - **[NorthernLights](https://github.com/lachjames/NorthernLights)** - .NET/C# engine implementation with Unity integration capabilities (based on KotOR-Unity project with further improvements) ([Mirror: th3w1zard1/NorthernLights](https://github.com/th3w1zard1/NorthernLights))
 - **[KotOR-Unity](https://github.com/reubenduncan/KotOR-Unity)** - Unity-based KotOR engine rewrite. Leverages Unity's rendering and physics. ([Mirror: th3w1zard1/KotOR-Unity](https://github.com/th3w1zard1/KotOR-Unity))
 
 ### file format Libraries
 
-Libraries focused on reading/writing KotOR file formats:
+Libraries focused on reading/writing *KotOR* file formats:
 
 - **[xoreos-tools](https://github.com/xoreos/xoreos-tools)** - Command-line tools for extracting and converting Aurora file formats ([Mirror: th3w1zard1/xoreos-tools](https://github.com/th3w1zard1/xoreos-tools))
-- **[Kotor.NET](https://github.com/NickHugi/Kotor.NET)** - .NET library for KotOR file formats with builder APIs
+- **[Kotor.NET](https://github.com/NickHugi/Kotor.NET)** - .NET library for *KotOR* file formats with builder APIs
 
 ### 3D Modeling Tools
 
-Tools for working with KotOR 3D [models](MDL-MDX-File-Format) and [textures](TPC-File-Format):
+Tools for working with *KotOR* 3D [models](MDL-MDX-File-Format) and [textures](TPC-File-Format):
 
 - **[kotorblender](https://github.com/OldRepublicDevs/kotorblender)** - Blender add-on for importing/exporting KotOR [MDL files](MDL-MDX-File-Format), [LYT layouts](LYT-File-Format), [PTH paths](GFF-PTH), and [walkmeshes](BWM-File-Format) with active Holocron Toolset bridge support (see [Blender Integration](Blender-Integration))
 - **[mdlops](https://github.com/ndixUR/mdlops)** - Legacy Python [MDL](MDL-MDX-File-Format) toolkit for [model](MDL-MDX-File-Format) conversions ([Mirror: th3w1zard1/mdlops](https://github.com/th3w1zard1/mdlops))
-- **[tga2tpc](https://github.com/ndixUR/tga2tpc)** - Standalone TGA to [TPC](TPC-File-Format) [texture](TPC-File-Format) converter ([Mirror: th3w1zard1/tga2tpc](https://github.com/th3w1zard1/tga2tpc))
+- **[tga2tpc](https://github.com/ndixUR/tga2tpc)** - Standalone TGA to [TPC](TPC-File-Format) [Texture Pack Container (TPC)](TPC-File-Format) converter ([Mirror: th3w1zard1/tga2tpc](https://github.com/th3w1zard1/tga2tpc))
 - **[DLZ-Tool](https://github.com/LaneDibello/DLZ-Tool)** - DLZ file decompression tool ([Mirror: th3w1zard1/DLZ-Tool](https://github.com/th3w1zard1/DLZ-Tool))
 - **[WalkmeshVisualizer](https://github.com/glasnonck/WalkmeshVisualizer)** - [walkmesh](BWM-File-Format) viewing and debugging tool ([Mirror: th3w1zard1/WalkmeshVisualizer](https://github.com/th3w1zard1/WalkmeshVisualizer))
 
 ### Script Development
 
-Tools for writing and editing NWScript:
+Tools for writing and editing [NwScript](NSS-File-Format):
 
-- **[HoloLSP](https://github.com/th3w1zard1/HoloLSP)** - Language Server Protocol implementation for NWScript
+- **[HoloLSP](https://github.com/th3w1zard1/HoloLSP)** - Language Server Protocol implementation for [NwScript](NSS-File-Format)
 (enables IDE integration)
 - **[nwscript-mode.el](https://github.com/implicit-image/nwscript-mode.el)** - Emacs major mode for NWScript editing ([Mirror: th3w1zard1/nwscript-mode.el](https://github.com/th3w1zard1/nwscript-mode.el))
 - **[Vanilla_KOTOR_Script_Source](https://github.com/KOTORCommunityPatches/Vanilla_KOTOR_Script_Source)** - Decompiled vanilla KotOR scripts for reference ([Mirror: th3w1zard1/Vanilla_KOTOR_Script_Source](https://github.com/th3w1zard1/Vanilla_KOTOR_Script_Source))

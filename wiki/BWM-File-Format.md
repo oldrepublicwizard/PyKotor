@@ -81,11 +81,15 @@ Repositories (original first, mirror second): **[reone](https://github.com/seedh
       - [Whitespace](#whitespace)
       - [Engine References](#engine-references)
   - [Runtime Model](#runtime-model)
+    - [Identity-aware indexing](#identity-aware-indexing)
     - [BWM Class](#bwm-class)
     - [BWMFace Class](#bwmface-class)
     - [BWMEdge Class](#bwmedge-class)
     - [BWMNodeAABB Class](#bwmnodeaabb-class)
     - [BWMAdjacency Class](#bwmadjacency-class)
+  - [PyKotor implementation notes](#pykotor-implementation-notes)
+    - [Binary layout summary](#binary-layout-summary)
+    - [Contributor tips](#contributor-tips)
 
 ---
 
@@ -992,7 +996,13 @@ The engine handles errors by:
 
 ## Runtime Model
 
-The runtime model provides high-level, in-memory representations of walkmesh data that are easier to work with than raw binary structures. These classes abstract away the binary format details and provide convenient methods for common operations.
+The runtime model provides high-level, in-memory representations of walkmesh data that are easier to work with than raw binary structures. These classes abstract away the binary format details and provide convenient methods for common operations. The format derives from BioWare’s Aurora / Neverwinter Nights engine and is used by both KotOR games.
+
+**PyKotor implementation:** The canonical in-memory types live in [`pykotor.resource.formats.bwm`](https://github.com/OldRepublicDevs/PyKotor/tree/master/Libraries/PyKotor/src/pykotor/resource/formats/bwm): [`BWM`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/bwm/bwm_data.py) (ordered `faces` list, hooks, helpers for geometry, adjacency, perimeters, AABB), [`BWMFace`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/bwm/bwm_data.py), [`BWMEdge`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/bwm/bwm_data.py), [`BWMNodeAABB`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/bwm/bwm_data.py). Adjacency is derived from geometry (two walkable faces are adjacent when they share the same two vertex objects along an edge). Perimeters are boundary edges (no walkable neighbour), with `final=True` marking the end of a perimeter loop.
+
+### Identity-aware indexing
+
+Faces and vertices implement **value-based equality** for comparison and tests. When computing global edge indices or serialising to binary, the code must recover list positions by **identity** (`is`), not by value. The helper `_index_by_identity` guarantees the correct face index even when faces compare equal by value. **Never use `list.index(face)`** in these code paths, or indices can be wrong and the binary output can become inconsistent. All index lookups during serialisation in PyKotor use identity-based searches to match the runtime model.
 
 ### BWM Class
 
@@ -1169,6 +1179,38 @@ Adjacency is always bidirectional. If face A's edge connects to face B's edge, t
 - Face B's adjacency points to face A
 
 This ensures pathfinding can traverse in both directions along shared edges.
+
+---
+
+## PyKotor implementation notes
+
+This section summarises the binary layout and contributor-level details for the PyKotor BWM implementation. For the full binary and ASCII specification, see the sections above.
+
+### Binary layout summary
+
+[`BWMBinaryReader`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/bwm/io_bwm.py) and [`BWMBinaryWriter`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/bwm/io_bwm.py) convert between BWM instances and the on-disk format. The major sections are:
+
+1. **Header**: `"BWM "` magic + `"V1.0"` version.
+2. **Walkmesh properties**: type (`BWMType`), hook vectors, absolute/relative positions.
+3. **Vertices**: float32 triplets.
+4. **Faces**: triplets of uint32 vertex indices.
+5. **Materials**: uint32 surface material per face.
+6. **Derived data**: face normals (float32) and planar distances (float32).
+7. **AABB nodes**: bounds, optional face index (or `0xFFFFFFFF`), significant plane, left/right child indices (1-based, or `0xFFFFFFFF`).
+8. **Walkable adjacencies**: three 32-bit ints per walkable face; `-1` indicates no neighbour.
+9. **Edges**: `(edge_index, transition)` pairs for perimeter edges where `edge_index = face_index * 3 + local_edge_index`.
+10. **Perimeters**: 1-based indices into the edge array for edges flagged as final.
+
+All index lookups during serialisation use identity-based searches (`is`) to ensure consistency with the runtime model (see [Identity-aware indexing](#identity-aware-indexing)).
+
+### Contributor tips
+
+- **Index mapping**: Use `_index_by_identity` (or equivalent identity-based iteration) when mapping faces back to indices. Value-based equality can and will collide.
+- **Transition fields**: Treat `trans1`/`trans2`/`trans3` as optional metadata only. They do not define adjacency and should not be used to deduce unique faces.
+- **Vertex identity**: The walkmesh logic assumes vertices are shared by object identity. Avoid cloning `Vector3` instances arbitrarily unless you also update all references.
+- **Writer/reader sync**: When adding new features, keep the binary writer sections in sync with the reader; each count/offset must match the actual packed data length.
+
+**Code reference:** [`bwm_data.py`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/bwm/bwm_data.py) (runtime model), [`io_bwm.py`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/bwm/io_bwm.py) (binary I/O), [`io_bwm_ascii.py`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/bwm/io_bwm_ascii.py) (ASCII I/O), and unit tests in `tests/test_pykotor/resource/formats/test_wok.py`.
 
 ---
 

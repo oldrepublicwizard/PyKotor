@@ -6,17 +6,17 @@ Goal: explain the practical workflow for adding, reusing, moving, and debugging 
 
 Use this guide when you are trying to do any of the following:
 
-- reuse an existing room model in a new place
-- add a brand-new room to an existing module
-- make two rooms connect so the player can actually walk between them
-- replace fake door textures with real door transitions
-- understand which files matter when indoor area modding goes wrong
+- Reuse an existing room model in a new place
+- Add a brand-new room to an existing module
+- Make two rooms connect so the player can actually walk between them
+- Replace fake door textures with real door transitions
+- Understand which files matter when indoor area modding goes wrong
 
 This guide is intentionally written as a workflow document rather than a binary format reference. For the underlying format details, use the linked reference pages.
 
 ### Quick start
 
-In short: extract the area's LYT, VIS, and the room models and walkmeshes you need → load the area via the **layout workflow** (Area Tools), not by importing a single room model → edit the seam and **roomlinks** for both sides → enable **Export WOK File** when exporting → compile ASCII back to binary → test in-game. Transition IDs in the walkmesh are 0-based **room indices** from the LYT order; see [BWM File Format — Edges](BWM-File-Format#edges) and [LYT File Format — Room definitions](LYT-File-Format#room-definitions).
+In short: extract the area's **[LYT](LYT-File-Format)**, **[VIS](VIS-File-Format)**, and the room models and walkmeshes you need → load the area via the **layout workflow** (Area Tools), not by importing a single room model → edit the seam and **roomlinks** for both sides → enable **Export WOK File** when exporting → compile ASCII back to binary → test in-game. Transition IDs in the walkmesh are 0-based **room indices** from the **[LYT](LYT-File-Format)** order; see [BWM File Format — Edges](BWM-File-Format#edges) and [LYT File Format — Room definitions](LYT-File-Format#room-definitions).
 
 ## Before you start
 
@@ -32,23 +32,23 @@ It is almost never just one isolated mesh-editing task.
 
 You do not need every tool in existence, but you do need a workflow that covers four jobs:
 
-1. Extract the area's room resources
-2. Load or edit the area with layout awareness
-3. Export updated walkmesh data
-4. Compile edited ASCII back to binary
+1. Extract the area's *room resources*.
+2. Load or edit the area with layout awareness.
+3. Export updated *walkmesh* data.
+4. Compile edited ASCII back to binary.
 
 In the source material, the most repeatedly recommended combination is:
 
 - **KOTORMax** For area/layout-aware editing and roomlink work
-- **MDLEdit** for ASCII and binary conversion
+- **MDLEdit** for *ASCII* and binary conversion
 
 You may still use *Blender* with *KotorBlender* (specifically use [**KotorBlender**](https://github.com/OldRepublicDevs/kotorblender) as [seedhartha's](https://github.com/seedhartha) repo is no longer maintained). or other tools for geometry work, but if your specific goal is **make room crossing actually function**, the current evidence still points back to a roomlink-capable workflow.
 
 **You're ready when:**
 
-- [ ] You have a working folder with the area's LYT, VIS, and the room models and walkmeshes you need (see [LYT File Format](LYT-File-Format), [VIS File Format](VIS-File-Format), [BWM File Format](BWM-File-Format)).
+- [ ] You have a working folder with the area's **[LYT](LYT-File-Format)**, **[VIS](VIS-File-Format)**, and the room models and walkmeshes you need (see [LYT File Format](LYT-File-Format), [VIS File Format](VIS-File-Format), [BWM File Format](BWM-File-Format)).
 - [ ] Room models you will edit are (or can be) converted to ASCII for the layout workflow.
-- [ ] KOTORMax (or another layout-capable workflow) and MDLEdit (or a modern ASCII compiler) are available.
+- [ ] **KOTORMax** (or another layout-capable workflow) and **[MDLEdit](https://deadlystream.com/files/file/1150-mdledit/)** (or a modern ASCII compiler) are available.
 
 ## Quick Glossary
 
@@ -56,7 +56,7 @@ These terms get mixed together a lot, so it helps to separate them early.
 
 ### Room
 
-A room is one positioned area chunk in the [LYT](LYT-File-Format). In indoor modules, each room usually has its own model and its own walkmesh.
+A room is one positioned area chunk in the **[LYT](LYT-File-Format)**. In indoor modules, each room usually has its own model and its own *walkmesh*.
 
 ### Walkmesh *seam*
 
@@ -68,22 +68,22 @@ This is the logic that says "if the player crosses this edge, they move into roo
 
 ### *Door hook*
 
-A [LYT](LYT-File-Format) *door hook* is a placement reference. It is **not** the same thing as a *roomlink*, and it is **not** the thing that makes crossing work.
+A **[LYT](LYT-File-Format)** *door hook* is a placement reference. It is **not** the same thing as a *roomlink*, and it is **not** the thing that makes crossing work.
 
 ### AABB
 
-For indoor room work, AABB matters because room models can contain collision-related AABB data in the [MDL](MDL-MDX-File-Format). The [WOK](BWM-File-Format) still carries the main pathfinding and room transition information.
+For indoor room work, AABB matters because room models can contain collision-related AABB data in the **[MDL](MDL-MDX-File-Format)**. The **[WOK](BWM-File-Format)** still carries the main pathfinding and room transition information.
 
 ## The mental model first
 
 Before touching tools, keep this model in mind:
 
-1. A room's **visual model** is the room [MDL/MDX](MDL-MDX-File-Format).
-2. A room's **main gameplay walkmesh** is the [WOK](BWM-File-Format).
+1. A room's **visual model** is the room **[MDL/MDX](MDL-MDX-File-Format)**.
+2. A room's **main gameplay walkmesh** is the **[WOK](BWM-File-Format)**.
 3. A room can also contain **AABB collision data inside the MDL**, which matters for camera collision and related engine behavior.
-4. The [LYT](LYT-File-Format) places rooms into the area and establishes their order.
-5. The [VIS](VIS-File-Format) decides which rooms are visible from which other rooms.
-6. The **roomlinks / *transition edges*** in the walkmesh decide whether crossing an edge moves the player into another room.
+4. The **[LYT](LYT-File-Format)** places rooms into the area and establishes their order.
+5. The **[VIS](VIS-File-Format)** decides which rooms are visible from which other rooms.
+6. The **roomlinks / *transition edges*** in the *walkmesh* decide whether crossing an edge moves the player into another room.
 
 The biggest trap is assuming that visual alignment is enough. It is not. Two rooms can line up perfectly in 3D space and still fail in-game because the transition data is wrong.
 
@@ -91,38 +91,38 @@ The biggest trap is assuming that visual alignment is enough. It is not. Two roo
 
 This section explains in plain terms what each piece does and how they fit together. For full format details and field-by-field descriptions, use the linked reference pages.
 
-**Models (MDL/MDX)** — The room’s visible geometry: walls, floor, ceiling, and any embedded collision boxes (AABB) the engine uses for things like camera collision. The model says *what the room looks like* and where its origin is. It does **not** by itself define where the player can walk or how rooms connect. For more information, see [MDL/MDX File Format](MDL-MDX-File-Format).
+**Models (**[MDL/MDX](MDL-MDX-File-Format)**)** — The room’s visible geometry: walls, floor, ceiling, and any embedded collision boxes (AABB) the engine uses for things like camera collision. The model says *what the room looks like* and where its origin is. It does **not** by itself define where the player can walk or how rooms connect. For more information, see [MDL/MDX File Format](MDL-MDX-File-Format).
 
-**Walkmeshes (WOK)** — A separate, simplified “floor” made of triangles that defines where the player and NPCs can stand and walk. Each room has its own WOK. The walkmesh stores which edges are boundaries and, on those edges, a **transition ID** (a number pointing to another room). When the player crosses a boundary edge, the engine uses that ID to move them into the correct room. So the walkmesh answers *where you can walk* and *which room you enter when you cross a seam*. For more information, see [BWM File Format](BWM-File-Format).
+**Walkmeshes (**[WOK](BWM-File-Format)**)** — A separate, simplified “floor” made of triangles that defines where the player and NPCs can stand and walk. Each room has its own **[WOK](BWM-File-Format)**. The *walkmesh* stores which edges are boundaries and, on those edges, a **transition ID** (a number pointing to another room). When the player crosses a boundary edge, the engine uses that ID to move them into the correct room. So the *walkmesh* answers *where you can walk* and *which room you enter when you cross a seam*. For more information, see [BWM File Format](BWM-File-Format).
 
-**Layout (LYT)** — A text file that lists every room in the area and its position (and rotation) in world space. The **order** of rooms in this list is what the game uses as the room index: first room = 0, second = 1, and so on. Those same numbers are the transition IDs stored in the walkmesh. So the LYT answers *where each room is* and *what number identifies each room* for transitions. For more information, see [LYT File Format](LYT-File-Format).
+**Layout (**[LYT](LYT-File-Format)**)** — A text file that lists every room in the area and its position (and rotation) in world space. The **order** of rooms in this list is what the game uses as the room index: first room = 0, second = 1, and so on. Those same numbers are the transition IDs stored in the *walkmesh*. So the **[LYT](LYT-File-Format)** answers *where each room is* and *what number identifies each room* for transitions. For more information, see [LYT File Format](LYT-File-Format).
 
-**Visibility (VIS)** — A file that describes which rooms are visible from which other rooms. The engine uses it to avoid drawing rooms that are behind walls or too far away. It affects only **what is drawn**, not collision or walking. Getting the layout and walkmesh right is more important first; VIS can be simplified or omitted while you debug crossing. For more information, see [VIS File Format](VIS-File-Format).
+**Visibility (**[VIS](VIS-File-Format)**)** — A file that describes which rooms are visible from which other rooms. The engine uses it to avoid drawing rooms that are behind walls or too far away. It affects only **what is drawn**, not collision or walking. Getting the layout and *walkmesh* right is more important first; **[VIS](VIS-File-Format)** can be simplified or omitted while you debug crossing. For more information, see [VIS File Format](VIS-File-Format).
 
-**How they work together** — The LYT places each room model and its WOK in the world. When you cross the boundary between two rooms, the walkmesh’s transition ID (which matches the LYT room order) tells the engine which room you entered. The VIS file then controls which of those rooms are rendered from your current position. All four have to be consistent for an area to look and behave correctly.
+**How they work together** — The **[LYT](LYT-File-Format)** places each room model and its **[WOK](BWM-File-Format)** in the world. When you cross the boundary between two rooms, the *walkmesh’s* transition ID (which matches the **[LYT](LYT-File-Format)** room order) tells the engine which room you entered. The **[VIS](VIS-File-Format)** file then controls which of those rooms are rendered from your current position. All four have to be consistent for an area to look and behave correctly.
 
 **Format and implementation reference** — The wiki has full specifications and PyKotor implementation code for each format:
 
 | What | Format reference | PyKotor implementation |
 |------|------------------|------------------------|
-| Walkmeshes (WOK) | [BWM File Format](BWM-File-Format) | [`resource/formats/bwm/`](https://github.com/OldRepublicDevs/PyKotor/tree/master/Libraries/PyKotor/src/pykotor/resource/formats/bwm) |
-| Layout | [LYT File Format](LYT-File-Format) | [`resource/formats/lyt/`](https://github.com/OldRepublicDevs/PyKotor/tree/master/Libraries/PyKotor/src/pykotor/resource/formats/lyt) |
-| Visibility | [VIS File Format](VIS-File-Format) | [`resource/formats/vis/`](https://github.com/OldRepublicDevs/PyKotor/tree/master/Libraries/PyKotor/src/pykotor/resource/formats/vis) |
-| Room Models | [MDL/MDX File Format](MDL-MDX-File-Format) | [`resource/formats/mdl/`](https://github.com/OldRepublicDevs/PyKotor/tree/master/Libraries/PyKotor/src/pykotor/resource/formats/mdl) |
+| Walkmeshes (**[WOK](BWM-File-Format)**) | [BWM File Format](BWM-File-Format) | [`resource/formats/bwm/`](https://github.com/OldRepublicDevs/PyKotor/tree/master/Libraries/PyKotor/src/pykotor/resource/formats/bwm) |
+| Layout (**[LYT](LYT-File-Format)**) | [LYT File Format](LYT-File-Format) | [`resource/formats/lyt/`](https://github.com/OldRepublicDevs/PyKotor/tree/master/Libraries/PyKotor/src/pykotor/resource/formats/lyt) |
+| Visibility (**[VIS](VIS-File-Format)**) | [VIS File Format](VIS-File-Format) | [`resource/formats/vis/`](https://github.com/OldRepublicDevs/PyKotor/tree/master/Libraries/PyKotor/src/pykotor/resource/formats/vis) |
+| Room Models (**[MDL/MDX](MDL-MDX-File-Format)**) | [MDL/MDX File Format](MDL-MDX-File-Format) | [`resource/formats/mdl/`](https://github.com/OldRepublicDevs/PyKotor/tree/master/Libraries/PyKotor/src/pykotor/resource/formats/mdl) |
 
 ## The files that matter
 
 ### Room model: **[MDL/MDX](MDL-MDX-File-Format)**
 
-The room model contains the visible geometry. In practice, room models may also carry **embedded walkmesh/AABB data** used by the engine for **camera collision** and related spatial queries. **Camera collision will not work correctly without this embedded data** in the room MDL.
+The room model contains the visible geometry. In practice, room models may also carry **embedded walkmesh/AABB data** used by the engine for **camera collision** and related spatial queries. **Camera collision will not work correctly without this embedded data** in the room **[MDL/MDX](MDL-MDX-File-Format)**.
 
-Indoor areas therefore have **two** walkmesh-related data sources: the standalone **[WOK](BWM-File-Format)** file (pathfinding, room transitions, adjacency, perimeters) and the **Walkmesh/AABB data inside the room MDL** (camera collision and related client-side behavior). The Odyssey engine reuses architecture from the Aurora/NWN codebase, which was originally built for client–server multiplayer; traces of that separation remain in the executable (e.g. in debug strings and code paths). In practice, the WOK is the primary source for pathfinding and room-to-room transitions, while the MDL-embedded data is required for correct *camera collision*. Both must be consistent for full correctness. For more detail, see [BWM File Format](BWM-File-Format) and [MDL/MDX File Format](MDL-MDX-File-Format) (AABB mesh nodes).
+Indoor areas therefore have **two** walkmesh-related data sources: the standalone **[WOK](BWM-File-Format)** file (pathfinding, room transitions, adjacency, perimeters) and the **Walkmesh/AABB data inside the room MDL** (camera collision and related client-side behavior). The *Odyssey* engine reuses architecture from the Aurora/NWN codebase, which was originally built for client–server multiplayer; traces of that separation remain in the executable (e.g. in debug strings and code paths). In practice, the **[WOK](BWM-File-Format)** is the primary source for pathfinding and room-to-room transitions, while the **[MDL/MDX](MDL-MDX-File-Format)**-embedded data is required for correct *camera collision*. Both must be consistent for full correctness. For more detail, see [BWM File Format](BWM-File-Format) and [MDL/MDX File Format](MDL-MDX-File-Format) (AABB mesh nodes).
 
 ### Room walkmesh: **[WOK](BWM-File-Format)**
 
 The **[WOK](BWM-File-Format)** is the main area walkmesh. It contains walkable faces, **adjacency data**, **perimeter edges**, and **transition IDs** that tell the engine which neighboring room a boundary edge leads to.
 
-**Materials and *Walkability*** — Each face has a material index that references [surfacemat.2da](2DA-surfacemat). That table defines the surface type and, in the **walk** column, whether the face is walkable. Non-walkable materials are used for walls and blocked regions; walkable materials define the floor and traversable thresholds.
+**Materials and *Walkability*** — Each face has a material index that references [`surfacemat.2da`](2DA-surfacemat). That table defines the surface type and, in the **walk** column, whether the face is walkable. Non-walkable materials are used for walls and blocked regions; walkable materials define the floor and traversable thresholds.
 
 **Adjacency and Perimeter** — The **[WOK](BWM-File-Format)** stores a **list of *adjacent* walkable faces** *per face* (which faces share which edges). From this, the engine reconstructs which faces touch and on which sides. An edge that has **no** adjacent walkable face is a **perimeter edge** — a boundary of the walkable region. The **perimeter list** works with this adjacency data to define closed boundary loops. A perimeter edge that forms the **room boundary** (one the player can walk across) carries a **transition ID**: the **0-based index of the adjacent room** in the area’s room list — i.e. the order of that room in the **[LYT](LYT-File-Format)**. For full binary layout, see [BWM File Format](BWM-File-Format) (adjacencies, edges, perimeters).
 
@@ -832,15 +832,20 @@ These sources informed the workflow described here and are worth reading when yo
 
 - **WOK world coordinates:** When building a module (e.g. with the Indoor Map Builder), the exported area WOK must be written with **world_coords** set appropriately after applying the LYT room transform; otherwise the player can spawn with no valid walkable face. See [Indoor Map Builder Implementation Guide](Indoor-Map-Builder-Implementation-Guide).
 - **Room-local coordinates:** For raycasts or point-in-walkmesh tests in world space, the engine and some tooling expect **room-local** coordinates for the **[WOK](BWM-File-Format)** (world position minus the **[LYT](LYT-File-Format)** room position). Do not assume world-space coordinates match the **[WOK](BWM-File-Format)** vertex space.
-- **Transition fields in code:** In PyKotor, `trans1`/`trans2`/`trans3` on *walkmesh* faces are transition metadata, not adjacency. For scripting or tooling that maps faces to indices, use identity-based lookups, not value-based. See the project’s `docs/walkmesh.md` for details.
+- **Transition fields in code:** In PyKotor, `trans1`/`trans2`/`trans3` on walkmesh faces are transition metadata, not adjacency. For scripting or tooling that maps faces to indices, use identity-based lookups, not value-based. See [BWM File Format — Identity-aware indexing and PyKotor implementation notes](BWM-File-Format#identity-aware-indexing) for details.
 
 ### See also
 
-- [Area Modding and Room Transitions](Area-Modding-and-Room-Transitions)
-- [BWM File Format](BWM-File-Format)
-- [MDL/MDX File Format](MDL-MDX-File-Format)
-- [LYT File Format](LYT-File-Format)
-- [VIS File Format](VIS-File-Format)
 - [2DA surfacemat](2DA-surfacemat)
+- [Area Modding and Room Transitions](Area-Modding-and-Room-Transitions)
 - [Blender Integration](Blender-Integration)
+- [BWM File Format](BWM-File-Format)
+- [GFF-ARE](GFF-ARE)
+- [GFF-GIT](GFF-GIT)
+- [Indoor Area Room Layout and Walkmesh Guide](Indoor-Area-Room-Layout-and-Walkmesh-Guide)
+- [Indoor Map Builder Implementation Guide](Indoor-Map-Builder-Implementation-Guide)
 - [Indoor Map Builder User Guide](Indoor-Map-Builder-User-Guide)
+- [Kit-Structure-Documentation](Kit-Structure-Documentation)
+- [LYT File Format](LYT-File-Format)
+- [MDL/MDX File Format](MDL-MDX-File-Format)
+- [VIS File Format](VIS-File-Format)

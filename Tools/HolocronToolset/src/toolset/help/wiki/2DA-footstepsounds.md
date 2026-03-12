@@ -2,7 +2,7 @@
 
 Part of the [2DA File Format Documentation](2DA-File-Format).
 
-**Engine Usage**: Defines footstep sound effects for different surface types and footstep types. The engine uses this file to play appropriate footstep sounds based on the surface [material](MDL-MDX-File-Format#trimesh-header) and creature footstep type.
+**Engine Usage**: Defines footstep sound effects for different surface types and footstep types. The engine uses this file to play appropriate footstep sounds based on the surface material and creature footstep type.
 
 **Row index**: Footstep type ID (integer)
 

@@ -1240,21 +1240,21 @@ The complete column structure is defined in reone's placeables parser:
 **HolocronToolset:**
 
 - [`Tools/HolocronToolset/src/toolset/data/installation.py:66`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Tools/HolocronToolset/src/toolset/data/installation.py#L66) - HTInstallation.TwoDA_PLACEABLES constant
-- [`Tools/HolocronToolset/src/toolset/gui/editors/utp.py:52`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Tools/HolocronToolset/src/toolset/gui/editors/utp.py#L52) - placeables.2da cache initialization comment
-- [`Tools/HolocronToolset/src/toolset/gui/editors/utp.py:62`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Tools/HolocronToolset/src/toolset/gui/editors/utp.py#L62) - placeables.2da cache loading
-- [`Tools/HolocronToolset/src/toolset/gui/editors/utp.py:121-131`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Tools/HolocronToolset/src/toolset/gui/editors/utp.py#L121-L131) - placeables.2da usage in appearance selection combobox
-- [`Tools/HolocronToolset/src/toolset/gui/editors/utp.py:471`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Tools/HolocronToolset/src/toolset/gui/editors/utp.py#L471) - placeables.2da usage for [model](MDL-MDX-File-Format) name lookup
+- [`Tools/HolocronToolset/src/toolset/gui/editors/utp.py:52`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Tools/HolocronToolset/src/toolset/gui/editors/utp.py#L52) - `placeables.2da` cache initialization comment
+- [`Tools/HolocronToolset/src/toolset/gui/editors/utp.py:62`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Tools/HolocronToolset/src/toolset/gui/editors/utp.py#L62) - `placeables.2da` cache loading
+- [`Tools/HolocronToolset/src/toolset/gui/editors/utp.py:121-131`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Tools/HolocronToolset/src/toolset/gui/editors/utp.py#L121-L131) - `placeables.2da` usage in appearance selection combobox
+- [`Tools/HolocronToolset/src/toolset/gui/editors/utp.py:471`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Tools/HolocronToolset/src/toolset/gui/editors/utp.py#L471) - `placeables.2da` usage for [model](MDL-MDX-File-Format) name lookup
 
 **Vendor Implementations:**
 
 - [`vendor/reone/src/libs/resource/parser/2da/placeables.cpp:29-49`](https://github.com/th3w1zard1/reone/blob/master/src/libs/resource/parser/2da/placeables.cpp#L29-L49) - Complete column parsing implementation with all column names
-- [`vendor/reone/src/libs/game/object/placeable.cpp:59-60`](https://github.com/th3w1zard1/reone/blob/master/src/libs/game/object/placeable.cpp#L59-L60) - Placeable loading from [2DA](2DA-File-Format)
+- [`vendor/reone/src/libs/game/object/placeable.cpp:59-60`](https://github.com/th3w1zard1/reone/blob/master/src/libs/game/object/placeable.cpp#L59-L60) - **[Placeable](GFF-UTP)** loading from **[2DA](2DA-File-Format)**
 
 ---
 
-### [genericdoors.2da](2DA-genericdoors)
+### [`genericdoors.2da`](2DA-genericdoors)
 
-**Engine Usage**: Defines door types with their [models](MDL-MDX-File-Format), [animations](MDL-MDX-File-Format#animation-header), and properties. The engine uses this file when loading doors in areas, determining which [model](MDL-MDX-File-Format) to display and how the door behaves.
+**Engine Usage**: Defines door types with their **[models ([MDL/MDX](MDL-MDX-File-Format))**], [Animations (**[MDL/MDX](MDL-MDX-File-Format#animation-header))**], and **Properties**. The engine uses this file when loading doors in areas, determining which **[model ([MDL/MDX](MDL-MDX-File-Format))**] to display and how the door behaves.
 
 **Row index**: Door type ID (integer)
 
@@ -1306,9 +1306,9 @@ The complete column structure is defined in reone's genericdoors parser:
 **HolocronToolset:**
 
 - [`Tools/HolocronToolset/src/toolset/data/installation.py:67`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Tools/HolocronToolset/src/toolset/data/installation.py#L67) - HTInstallation.TwoDA_DOORS constant
-- [`Tools/HolocronToolset/src/toolset/gui/editors/utd.py:60`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Tools/HolocronToolset/src/toolset/gui/editors/utd.py#L60) - genericdoors.2da cache loading
-- [`Tools/HolocronToolset/src/toolset/gui/editors/utd.py:117-123`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Tools/HolocronToolset/src/toolset/gui/editors/utd.py#L117-L123) - genericdoors.2da usage in appearance selection combobox
-- [`Tools/HolocronToolset/src/toolset/gui/editors/utd.py:409`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Tools/HolocronToolset/src/toolset/gui/editors/utd.py#L409) - genericdoors.2da usage for [model](MDL-MDX-File-Format) name lookup
+- [`Tools/HolocronToolset/src/toolset/gui/editors/utd.py:60`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Tools/HolocronToolset/src/toolset/gui/editors/utd.py#L60) - `genericdoors.2da` cache loading
+- [`Tools/HolocronToolset/src/toolset/gui/editors/utd.py:117-123`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Tools/HolocronToolset/src/toolset/gui/editors/utd.py#L117-L123) - `genericdoors.2da` usage in appearance selection combobox
+- [`Tools/HolocronToolset/src/toolset/gui/editors/utd.py:409`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Tools/HolocronToolset/src/toolset/gui/editors/utd.py#L409) - `genericdoors.2da` usage for [model](MDL-MDX-File-Format) name lookup
 
 **Vendor Implementations:**
 
@@ -1317,7 +1317,7 @@ The complete column structure is defined in reone's genericdoors parser:
 
 ---
 
-### [doortypes.2da](2DA-doortypes)
+### [`doortypes.2da`](2DA-doortypes)
 
 **Engine Usage**: Defines door type configurations and their properties. The engine uses this file to determine door type names, [models](MDL-MDX-File-Format), and behaviors.
 
@@ -1334,12 +1334,12 @@ The complete column structure is defined in reone's genericdoors parser:
 
 **References**:
 
-- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:78`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L78) - [StrRef](TLK-File-Format#string-references-strref) column definition for doortypes.2da
-- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:177`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L177) - [model](MDL-MDX-File-Format) *ResRef* column definition for doortypes.2da
+- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:78`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L78) - [StrRef](TLK-File-Format#string-references-strref) column definition for `doortypes.2da`
+- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:177`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L177) - [model](MDL-MDX-File-Format) *ResRef* column definition for `doortypes.2da`
 
 ---
 
-### [soundset.2da](2DA-soundset)
+### [`soundset.2da`](2DA-soundset)
 
 **Engine Usage**: Maps sound set IDs to voice set assignments for characters. The engine uses this file to determine which voice lines to play for characters based on their sound set.
 
@@ -1372,76 +1372,76 @@ The complete column structure is defined in reone's genericdoors parser:
 
 **Vendor Implementations:**
 
-- [`vendor/reone/src/libs/game/object/creature.cpp:1347-1354`](https://github.com/th3w1zard1/reone/blob/master/src/libs/game/object/creature.cpp#L1347-L1354) - Sound set loading from [2DA](2DA-File-Format)
+- [`vendor/reone/src/libs/game/object/creature.cpp:1347-1354`](https://github.com/th3w1zard1/reone/blob/master/src/libs/game/object/creature.cpp#L1347-L1354) - Sound set loading from [**[2DA](2DA-File-Format)**](2DA-File-Format)
 
 ---
 
 ## Visual Effects & [animations](MDL-MDX-File-Format#animation-header) 2DA files
 
-### [visualeffects.2da](2DA-visualeffects)
+### [`visualeffects.2da`](2DA-visualeffects)
 
-**Engine Usage**: Defines visual effects (particle effects, impact effects, environmental effects) with their durations, [models](MDL-MDX-File-Format), and properties. The engine uses this file when playing visual effects for spells, combat, and environmental events.
+**Engine Usage**: Defines visual effects (particle effects, impact effects, environmental effects) with their durations, [**[models](MDL-MDX-File-Format)**](MDL-MDX-File-Format), and properties. The engine uses this file when playing visual effects for spells, combat, and environmental events.
 
 **Row index**: Visual effect ID (integer)
 
 **Column structure**:
 
-| Column Name | type | Description |
+| Column Name | Type | Description |
 |------------|------|-------------|
-| `label` | string | Visual effect label |
-| `name` | [StrRef](TLK-File-Format#string-references-strref) | string reference for effect name |
-| `model` | ResRef (optional) | Effect [model](MDL-MDX-File-Format) *ResRef* |
-| `impactmodel` | ResRef (optional) | Impact [model](MDL-MDX-File-Format) *ResRef* |
-| `impactorient` | Integer | Impact orientation |
-| `impacttype` | Integer | Impact type identifier |
-| `duration` | Float | Effect duration in seconds |
-| `durationvariance` | Float | Duration variance |
-| `loop` | Boolean | Whether effect loops |
-| `render` | Boolean | Whether effect is rendered |
-| `renderhint` | Integer | Render hint flags |
+| `label` | *String* | Visual effect label |
+| `name` | [StrRef](TLK-File-Format#string-references-strref) | *String* reference for effect name |
+| `model` | *ResRef* (optional) | Effect [**[model](MDL-MDX-File-Format)**](MDL-MDX-File-Format) *ResRef* |
+| `impactmodel` | *ResRef* (optional) | Impact [**[model](MDL-MDX-File-Format)**](MDL-MDX-File-Format) *ResRef* |
+| `impactorient` | *Integer* | Impact orientation |
+| `impacttype` | *Integer* | Impact type identifier |
+| `duration` | *Float* | Effect duration in seconds |
+| `durationvariance` | *Float* | Duration variance |
+| `loop` | *Boolean* | Whether effect loops |
+| `render` | *Boolean* | Whether effect is rendered |
+| `renderhint` | *Integer* | Render hint flags |
 | `sound` | ResRef (optional) | Sound effect *ResRef* |
-| `sounddelay` | Float | Sound delay in seconds |
-| `soundvariance` | Float | Sound variance |
-| `soundloop` | Boolean | Whether sound loops |
-| `soundvolume` | Float | Sound volume (0.0-1.0) |
-| `light` | Boolean | Whether effect emits light |
-| `lightcolor` | string | Light color RGB values |
-| `lightintensity` | Float | Light intensity |
-| `lightradius` | Float | Light radius |
-| `lightpulse` | Boolean | Whether light pulses |
-| `lightpulselength` | Float | Light pulse length |
-| `lightfade` | Boolean | Whether light fades |
-| `lightfadelength` | Float | Light fade length |
-| `lightfadestart` | Float | Light fade start time |
-| `lightfadeend` | Float | Light fade end time |
-| `lightshadow` | Boolean | Whether light casts shadows |
-| `lightshadowradius` | Float | Light shadow radius |
-| `lightshadowintensity` | Float | Light shadow intensity |
-| `lightshadowcolor` | string | Light shadow color RGB values |
-| `lightshadowfade` | Boolean | Whether light shadow fades |
-| `lightshadowfadelength` | Float | Light shadow fade length |
-| `lightshadowfadestart` | Float | Light shadow fade start time |
-| `lightshadowfadeend` | Float | Light shadow fade end time |
-| `lightshadowpulse` | Boolean | Whether light shadow pulses |
-| `lightshadowpulselength` | Float | Light shadow pulse length |
-| `lightshadowpulseintensity` | Float | Light shadow pulse intensity |
-| `lightshadowpulsecolor` | string | Light shadow pulse color RGB values |
-| `lightshadowpulsefade` | Boolean | Whether light shadow pulse fades |
-| `lightshadowpulsefadelength` | Float | Light shadow pulse fade length |
-| `lightshadowpulsefadestart` | Float | Light shadow pulse fade start time |
-| `lightshadowpulsefadeend` | Float | Light shadow pulse fade end time |
-| `lightshadowpulsefadeintensity` | Float | Light shadow pulse fade intensity |
-| `lightshadowpulsefadecolor` | string | Light shadow pulse fade color RGB values |
-| `lightshadowpulsefadepulse` | Boolean | Whether light shadow pulse fade pulses |
-| `lightshadowpulsefadepulselength` | Float | Light shadow pulse fade pulse length |
-| `lightshadowpulsefadepulseintensity` | Float | Light shadow pulse fade pulse intensity |
-| `lightshadowpulsefadepulsecolor` | string | Light shadow pulse fade pulse color RGB values |
-| `lightshadowpulsefadepulsefade` | Boolean | Whether light shadow pulse fade pulse fades |
-| `lightshadowpulsefadepulsefadelength` | Float | Light shadow pulse fade pulse fade length |
-| `lightshadowpulsefadepulsefadestart` | Float | Light shadow pulse fade pulse fade start time |
-| `lightshadowpulsefadepulsefadeend` | Float | Light shadow pulse fade pulse fade end time |
-| `lightshadowpulsefadepulsefadeintensity` | Float | Light shadow pulse fade pulse fade intensity |
-| `lightshadowpulsefadepulsefadecolor` | string | Light shadow pulse fade pulse fade color RGB values |
+| `sounddelay` | *Float* | Sound delay in seconds |
+| `soundvariance` | *Float* | Sound variance |
+| `soundloop` | *Boolean* | Whether sound loops |
+| `soundvolume` | *Float* | Sound volume (0.0-1.0) |
+| `light` | *Boolean* | Whether effect emits light |
+| `lightcolor` | *String* | Light color RGB values |
+| `lightintensity` | *Float* | Light intensity |
+| `lightradius` | *Float* | Light radius |
+| `lightpulse` | *Boolean* | Whether light pulses |
+| `lightpulselength` | *Float* | Light pulse length |
+| `lightfade` | *Boolean* | Whether light fades |
+| `lightfadelength` | *Float* | Light fade length |
+| `lightfadestart` | *Float* | Light fade start time |
+| `lightfadeend` | *Float* | Light fade end time |
+| `lightshadow` | *Boolean* | Whether light casts shadows |
+| `lightshadowradius` | *Float* | Light shadow radius |
+| `lightshadowintensity` | *Float* | Light shadow intensity |
+| `lightshadowcolor` | *String* | Light shadow color RGB values |
+| `lightshadowfade` | *Boolean* | Whether light shadow fades |
+| `lightshadowfadelength` | *Float* | Light shadow fade length |
+| `lightshadowfadestart` | *Float* | Light shadow fade start time |
+| `lightshadowfadeend` | *Float* | Light shadow fade end time |
+| `lightshadowpulse` | *Boolean* | Whether light shadow pulses |
+| `lightshadowpulselength` | *Float* | Light shadow pulse length |
+| `lightshadowpulseintensity` | *Float* | Light shadow pulse intensity |
+| `lightshadowpulsecolor` | *String* | Light shadow pulse color RGB values |
+| `lightshadowpulsefade` | *Boolean* | Whether light shadow pulse fades |
+| `lightshadowpulsefadelength` | *Float* | Light shadow pulse fade length |
+| `lightshadowpulsefadestart` | *Float* | Light shadow pulse fade start time |
+| `lightshadowpulsefadeend` | *Float* | Light shadow pulse fade end time |
+| `lightshadowpulsefadeintensity` | *Float* | Light shadow pulse fade intensity |
+| `lightshadowpulsefadecolor` | *String* | Light shadow pulse fade color RGB values |
+| `lightshadowpulsefadepulse` | *Boolean* | Whether light shadow pulse fade pulses |
+| `lightshadowpulsefadepulselength` | *Float* | Light shadow pulse fade pulse length |
+| `lightshadowpulsefadepulseintensity` | *Float* | Light shadow pulse fade pulse intensity |
+| `lightshadowpulsefadepulsecolor` | *String* | Light shadow pulse fade pulse color RGB values |
+| `lightshadowpulsefadepulsefade` | *Boolean* | Whether light shadow pulse fade pulse fades |
+| `lightshadowpulsefadepulsefadelength` | *Float* | Light shadow pulse fade pulse fade length |
+| `lightshadowpulsefadepulsefadestart` | *Float* | Light shadow pulse fade pulse fade start time |
+| `lightshadowpulsefadepulsefadeend` | *Float* | Light shadow pulse fade pulse fade end time |
+| `lightshadowpulsefadepulsefadeintensity` | *Float* | Light shadow pulse fade pulse fade intensity |
+| `lightshadowpulsefadepulsefadecolor` | *String* | Light shadow pulse fade pulse fade color RGB values |
 
 **Note**: The `visualeffects.2da` file may contain many optional columns for advanced lighting and shadow effects.
 
@@ -1453,7 +1453,7 @@ The complete column structure is defined in reone's genericdoors parser:
 
 ---
 
-### [portraits.2da](2DA-portraits)
+### [`portraits.2da`](2DA-portraits)
 
 **Engine Usage**: Maps portrait IDs to portrait image ResRefs for character selection screens and character sheets. The engine uses this file to display character portraits in the UI.
 
@@ -1461,15 +1461,15 @@ The complete column structure is defined in reone's genericdoors parser:
 
 **Column structure**:
 
-| Column Name | type | Description |
+| Column Name | Type | Description |
 |------------|------|-------------|
-| `label` | string | Portrait label |
+| `label` | *String* | Portrait label |
 | `baseresref` | *ResRef* | Base portrait image *ResRef* |
-| `appearancenumber` | Integer | Associated appearance ID |
-| `appearance_s` | Integer | Small appearance ID |
-| `appearance_l` | Integer | Large appearance ID |
-| `forpc` | Boolean | Whether portrait is for player character |
-| `sex` | Integer | Gender (0=male, 1=female) |
+| `appearancenumber` | *Integer* | Associated appearance ID |
+| `appearance_s` | *Integer* | Small appearance ID |
+| `appearance_l` | *Integer* | Large appearance ID |
+| `forpc` | *Boolean* | Whether portrait is for player character |
+| `sex` | *Integer* | Gender (0=male, 1=female) |
 
 **References**:
 
@@ -1500,7 +1500,7 @@ The complete column structure is defined in reone's genericdoors parser:
 
 ---
 
-### heads.2da
+### `heads.2da`
 
 **Engine Usage**: Defines head [models](MDL-MDX-File-Format) and [textures](TPC-File-Format) for player characters and NPCs. The engine uses this file when loading character heads, determining which 3D [model](MDL-MDX-File-Format) and [textures](TPC-File-Format) to apply.
 
@@ -1508,16 +1508,16 @@ The complete column structure is defined in reone's genericdoors parser:
 
 **Column structure**:
 
-| Column Name | type | Description |
+| Column Name | Type | Description |
 |------------|------|-------------|
-| `head` | ResRef (optional) | Head [model](MDL-MDX-File-Format) *ResRef* |
-| `headtexe` | ResRef (optional) | Head [texture](TPC-File-Format) E *ResRef* |
-| `headtexg` | ResRef (optional) | Head [texture](TPC-File-Format) G *ResRef* |
-| `headtexve` | ResRef (optional) | Head [texture](TPC-File-Format) VE *ResRef* |
-| `headtexvg` | ResRef (optional) | Head [texture](TPC-File-Format) VG *ResRef* |
-| `headtexvve` | ResRef (optional) | Head [texture](TPC-File-Format) VVE *ResRef* |
-| `headtexvvve` | ResRef (optional) | Head [texture](TPC-File-Format) VVVE *ResRef* |
-| `alttexture` | ResRef (optional) | Alternative [texture](TPC-File-Format) *ResRef* |
+| `head` | *ResRef* (optional) | Head [model](MDL-MDX-File-Format) *ResRef* |
+| `headtexe` | *ResRef* (optional) | Head [texture](TPC-File-Format) E *ResRef* |
+| `headtexg` | *ResRef* (optional) | Head [texture](TPC-File-Format) G *ResRef* |
+| `headtexve` | *ResRef* (optional) | Head [texture](TPC-File-Format) VE *ResRef* |
+| `headtexvg` | *ResRef* (optional) | Head [texture](TPC-File-Format) VG *ResRef* |
+| `headtexvve` | *ResRef* (optional) | Head [texture](TPC-File-Format) VVE *ResRef* |
+| `headtexvvve` | *ResRef* (optional) | Head [texture](TPC-File-Format) VVVE *ResRef* |
+| `alttexture` | *ResRef* (optional) | Alternative [texture](TPC-File-Format) *ResRef* |
 
 **Column Details**:
 
@@ -1541,7 +1541,7 @@ The complete column structure is defined in reone's heads parser:
 
 ## Progression Tables 2DA files
 
-### classpowergain.2da
+### `classpowergain.2da`
 
 **Engine Usage**: Defines Force power progression by class and level. The engine uses this file to determine which Force powers are available to each class at each level.
 
@@ -1549,18 +1549,18 @@ The complete column structure is defined in reone's heads parser:
 
 **Column structure**:
 
-| Column Name | type | Description |
+| Column Name | Type | Description |
 |------------|------|-------------|
-| `level` | Integer | Character level |
-| `jedi_guardian` | Integer | Jedi Guardian power gain |
-| `jedi_consular` | Integer | Jedi Consular power gain |
-| `jedi_sentinel` | Integer | Jedi Sentinel power gain |
-| `soldier` | Integer | Soldier power gain |
-| `scout` | Integer | Scout power gain |
-| `scoundrel` | Integer | Scoundrel power gain |
-| `jedi_guardian_prestige` | Integer (optional) | Jedi Guardian prestige power gain |
-| `jedi_consular_prestige` | Integer (optional) | Jedi Consular prestige power gain |
-| `jedi_sentinel_prestige` | Integer (optional) | Jedi Sentinel prestige power gain |
+| `level` | *Integer* | Character level |
+| `jedi_guardian` | *Integer* | Jedi Guardian power gain |
+| `jedi_consular` | *Integer* | Jedi Consular power gain |
+| `jedi_sentinel` | *Integer* | Jedi Sentinel power gain |
+| `soldier` | *Integer* | Soldier power gain |
+| `scout` | *Integer* | Scout power gain |
+| `scoundrel` | *Integer* | Scoundrel power gain |
+| `jedi_guardian_prestige` | *Integer* (optional) | Jedi Guardian prestige power gain |
+| `jedi_consular_prestige` | *Integer* (optional) | Jedi Consular prestige power gain |
+| `jedi_sentinel_prestige` | *Integer* (optional) | Jedi Sentinel prestige power gain |
 
 ---
 
@@ -1698,17 +1698,17 @@ Similar name generation files exist for other species:
 
 ---
 
-### footstepsounds.2da
+### `footstepsounds.2da`
 
-**Engine Usage**: Defines footstep sound effects for different surface types and footstep types. The engine uses this file to play appropriate footstep sounds based on the surface [material](MDL-MDX-File-Format#trimesh-header) and creature footstep type.
+**Engine Usage**: Defines footstep sound effects for different surface types and footstep types. The engine uses this file to play appropriate footstep sounds based on the surface material and creature footstep type.
 
 **Row index**: Footstep type ID (integer)
 
-**Column structure**:
+**Column Structure**:
 
-| Column Name | type | Description |
+| Column Name | Type | Description |
 |------------|------|-------------|
-| `label` | string | Footstep type label |
+| `label` | string | Footstep Type Label |
 | `dirt0`, `dirt1`, `dirt2` | ResRef (optional) | Dirt surface footstep sounds |
 | `grass0`, `grass1`, `grass2` | ResRef (optional) | Grass surface footstep sounds |
 | `stone0`, `stone1`, `stone2` | ResRef (optional) | Stone surface footstep sounds |
@@ -1722,17 +1722,17 @@ Similar name generation files exist for other species:
 
 **PyKotor:**
 
-- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:188-198`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L188-L198) - Sound *ResRef* column definitions for footstepsounds.2da (K1: rolling, dirt0-2, grass0-2, stone0-2, wood0-2, water0-2, carpet0-2, metal0-2, puddles0-2, leaves0-2, force1-3)
-- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:380-390`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L380-L390) - Sound *ResRef* column definitions for footstepsounds.2da (K2: rolling, dirt0-2, grass0-2, stone0-2, wood0-2, water0-2, carpet0-2, metal0-2, puddles0-2, leaves0-2, force1-3)
+- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:188-198`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L188-L198) - Sound *ResRef* column definitions for `footstepsounds.2da` (K1: rolling, dirt0-2, grass0-2, stone0-2, wood0-2, water0-2, carpet0-2, metal0-2, puddles0-2, leaves0-2, force1-3)
+- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:380-390`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L380-L390) - Sound *ResRef* column definitions for `footstepsounds.2da` (K2: rolling, dirt0-2, grass0-2, stone0-2, wood0-2, water0-2, carpet0-2, metal0-2, puddles0-2, leaves0-2, force1-3)
 
 **Vendor Implementations:**
 
-- [`vendor/reone/src/libs/game/footstepsounds.cpp:31-57`](https://github.com/th3w1zard1/reone/blob/master/src/libs/game/footstepsounds.cpp#L31-L57) - Footstep sounds loading from [2DA](2DA-File-Format)
-- [`vendor/reone/src/libs/game/object/creature.cpp:106`](https://github.com/th3w1zard1/reone/blob/master/src/libs/game/object/creature.cpp#L106) - Footstep type usage from [appearance.2da](2DA-appearance)
+- [`vendor/reone/src/libs/game/footstepsounds.cpp:31-57`](https://github.com/th3w1zard1/reone/blob/master/src/libs/game/footstepsounds.cpp#L31-L57) - Footstep sounds loading from [**[2DA](2DA-File-Format)**](2DA-File-Format)
+- [`vendor/reone/src/libs/game/object/creature.cpp:106`](https://github.com/th3w1zard1/reone/blob/master/src/libs/game/object/creature.cpp#L106) - Footstep type usage from [`appearance.2da`](2DA-appearance)
 
 ---
 
-### prioritygroups.2da
+### `prioritygroups.2da`
 
 **Engine Usage**: Defines priority groups for sound effects, determining which sounds take precedence when multiple sounds are playing. The engine uses this file to calculate sound priority values.
 
@@ -1747,11 +1747,11 @@ Similar name generation files exist for other species:
 
 **References**:
 
-- [`vendor/reone/src/libs/game/object/sound.cpp:92-96`](https://github.com/th3w1zard1/reone/blob/master/src/libs/game/object/sound.cpp#L92-L96) - Priority group loading from [2DA](2DA-File-Format)
+- [`vendor/reone/src/libs/game/object/sound.cpp:92-96`](https://github.com/th3w1zard1/reone/blob/master/src/libs/game/object/sound.cpp#L92-L96) - Priority group loading from [**[2DA](2DA-File-Format)**](2DA-File-Format)
 
 ---
 
-### repute.2da
+### `repute.2da`
 
 **Engine Usage**: Defines reputation values between different factions. The engine uses this file to determine whether creatures are enemies, friends, or neutral to each other based on their faction relationships.
 
@@ -1764,74 +1764,74 @@ Similar name generation files exist for other species:
 | `label` | string | Faction label |
 | Additional columns | Integer | Reputation values for each faction (column names match faction labels) |
 
-**Note**: The `repute.2da` file is a square [matrix](BWM-File-Format#walkable-adjacencies) where each row represents a faction, and each column (after `label`) represents the reputation value toward another faction. Reputation values typically range from 0-100, where values below 50 are enemies, above 50 are friends, and 50 is neutral.
+**Note**: The `repute.2da` file is a square [matrix](BWM-File-Format#walkable-adjacencies) where each row represents a faction, and each column (after `label`) represents the reputation value toward another faction. Reputation values typically range from `0-100`, where values below `50` are enemies, above `50` are friends, and `50` is neutral.
 
 **References**:
 
 **PyKotor:**
 
-- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:460`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L460) - TwoDARegistry.FACTIONS constant definition (maps to "repute")
-- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:526-527`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L526-L527) - [GFF](GFF-File-Format) field mapping: "FactionID" and "Faction" -> repute.2da
-- [`Libraries/PyKotor/src/pykotor/extract/savedata.py:92`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/savedata.py#L92) - REPUTE.fac documentation comment
-- [`Libraries/PyKotor/src/pykotor/extract/savedata.py:1593`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/savedata.py#L1593) - REPUTE.fac file check comment
-- [`Libraries/PyKotor/src/pykotor/extract/savedata.py:1627`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/savedata.py#L1627) - REPUTE.fac documentation
-- [`Libraries/PyKotor/src/pykotor/extract/savedata.py:1667`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/savedata.py#L1667) - REPUTE_IDENTIFIER constant definition
-- [`Libraries/PyKotor/src/pykotor/extract/savedata.py:1683-1684`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/savedata.py#L1683-L1684) - repute [GFF](GFF-File-Format) field initialization
-- [`Libraries/PyKotor/src/pykotor/extract/savedata.py:1759-1761`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/savedata.py#L1759-L1761) - REPUTE.fac parsing
-- [`Libraries/PyKotor/src/pykotor/extract/savedata.py:1795-1796`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/savedata.py#L1795-L1796) - REPUTE.fac writing
+- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:460`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L460) - TwoDARegistry.FACTIONS constant definition (maps to `repute.2da`)
+- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:526-527`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L526-L527) - [GFF](GFF-File-Format) field mapping: `FactionID` and `Faction` -> `repute.2da`
+- [`Libraries/PyKotor/src/pykotor/extract/savedata.py:92`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/savedata.py#L92) - `REPUTE.fac` documentation comment
+- [`Libraries/PyKotor/src/pykotor/extract/savedata.py:1593`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/savedata.py#L1593) - `REPUTE.fac` file check comment
+- [`Libraries/PyKotor/src/pykotor/extract/savedata.py:1627`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/savedata.py#L1627) - `REPUTE.fac` documentation
+- [`Libraries/PyKotor/src/pykotor/extract/savedata.py:1667`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/savedata.py#L1667) - `REPUTE_IDENTIFIER` constant definition
+- [`Libraries/PyKotor/src/pykotor/extract/savedata.py:1683-1684`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/savedata.py#L1683-L1684) - `repute` [GFF](GFF-File-Format) field initialization
+- [`Libraries/PyKotor/src/pykotor/extract/savedata.py:1759-1761`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/savedata.py#L1759-L1761) - `REPUTE.fac` parsing
+- [`Libraries/PyKotor/src/pykotor/extract/savedata.py:1795-1796`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/savedata.py#L1795-L1796) - `REPUTE.fac` writing
 
 **HolocronToolset:**
 
 - [`Tools/HolocronToolset/src/toolset/data/installation.py:59`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Tools/HolocronToolset/src/toolset/data/installation.py#L59) - HTInstallation.TwoDA_FACTIONS constant
-- [`Tools/HolocronToolset/src/toolset/gui/editors/utc.py:239`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Tools/HolocronToolset/src/toolset/gui/editors/utc.py#L239) - repute.2da included in batch cache for [UTC](GFF-File-Format#utc-creature) editor
-- [`Tools/HolocronToolset/src/toolset/gui/editors/utc.py:253-280`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Tools/HolocronToolset/src/toolset/gui/editors/utc.py#L253-L280) - repute.2da usage in faction selection combobox
-- [`Tools/HolocronToolset/src/toolset/gui/editors/utp.py:121-128`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Tools/HolocronToolset/src/toolset/gui/editors/utp.py#L121-L128) - repute.2da usage in [UTP](GFF-File-Format#utp-placeable) editor
-- [`Tools/HolocronToolset/src/toolset/gui/editors/utd.py:117-124`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Tools/HolocronToolset/src/toolset/gui/editors/utd.py#L117-L124) - repute.2da usage in [UTD](GFF-File-Format#utd-door) editor
-- [`Tools/HolocronToolset/src/toolset/gui/editors/ute.py:106-109`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Tools/HolocronToolset/src/toolset/gui/editors/ute.py#L106-L109) - repute.2da usage in [UTE](GFF-File-Format#ute-encounter) editor
-- [`Tools/HolocronToolset/src/toolset/gui/editors/utt.py:72-78`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Tools/HolocronToolset/src/toolset/gui/editors/utt.py#L72-L78) - repute.2da usage in [UTT](GFF-File-Format#utt-trigger) editor
+- [`Tools/HolocronToolset/src/toolset/gui/editors/utc.py:239`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Tools/HolocronToolset/src/toolset/gui/editors/utc.py#L239) - `repute.2da` included in batch cache for [UTC](GFF-File-Format#utc-creature) editor
+- [`Tools/HolocronToolset/src/toolset/gui/editors/utc.py:253-280`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Tools/HolocronToolset/src/toolset/gui/editors/utc.py#L253-L280) - `repute.2da` usage in faction selection combobox
+- [`Tools/HolocronToolset/src/toolset/gui/editors/utp.py:121-128`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Tools/HolocronToolset/src/toolset/gui/editors/utp.py#L121-L128) - `repute.2da` usage in [UTP](GFF-File-Format#utp-placeable) editor
+- [`Tools/HolocronToolset/src/toolset/gui/editors/utd.py:117-124`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Tools/HolocronToolset/src/toolset/gui/editors/utd.py#L117-L124) - `repute.2da` usage in [UTD](GFF-File-Format#utd-door) editor
+- [`Tools/HolocronToolset/src/toolset/gui/editors/ute.py:106-109`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Tools/HolocronToolset/src/toolset/gui/editors/ute.py#L106-L109) - `repute.2da` usage in [UTE](GFF-File-Format#ute-encounter) editor
+- [`Tools/HolocronToolset/src/toolset/gui/editors/utt.py:72-78`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Tools/HolocronToolset/src/toolset/gui/editors/utt.py#L72-L78) - `repute.2da` usage in [UTT](GFF-File-Format#utt-trigger) editor
 
 **Vendor Implementations:**
 
-- [`vendor/reone/src/libs/game/reputes.cpp:36-62`](https://github.com/th3w1zard1/reone/blob/master/src/libs/game/reputes.cpp#L36-L62) - Repute [matrix](BWM-File-Format#walkable-adjacencies) loading from [2DA](2DA-File-Format)
+- [`vendor/reone/src/libs/game/reputes.cpp:36-62`](https://github.com/th3w1zard1/reone/blob/master/src/libs/game/reputes.cpp#L36-L62) - Repute [matrix](BWM-File-Format#walkable-adjacencies) loading from [**[2DA](2DA-File-Format)**](2DA-File-Format)
 
 ---
 
-### surfacemat.2da
+### `surfacemat.2da`
 
-**Engine Usage**: Defines surface [material](MDL-MDX-File-Format#trimesh-header) properties for [walkmesh](BWM-File-Format) surfaces, including walkability, line of sight blocking, and grass rendering. The engine uses this file to determine surface behavior during pathfinding and rendering.
+**Engine Usage**: Defines surface material properties for [**[Walkmesh (**[BWM/WOK](BWM-File-Format)**)**](BWM-File-Format) surfaces, including walkability, line of sight blocking, and grass rendering. The engine uses this file to determine surface behavior during pathfinding and rendering.
 
-**Row index**: Surface [material](MDL-MDX-File-Format#trimesh-header) ID (integer)
+**Row index**: Surface Material ID (integer)
 
 **Column structure**:
 
-| Column Name | type | Description |
+| Column Name | Type | Description |
 |------------|------|-------------|
-| `label` | string | Surface [material](MDL-MDX-File-Format#trimesh-header) label |
-| `walk` | Boolean | Whether surface is walkable |
-| `walkcheck` | Boolean | Whether walk check applies |
-| `lineofsight` | Boolean | Whether surface blocks line of sight |
-| `grass` | Boolean | Whether surface has grass rendering |
-| `sound` | string | Sound type identifier for footstep sounds |
+| `label` | *String* | Surface Material label |
+| `walk` | *Boolean* | Whether surface is walkable |
+| `walkcheck` | *Boolean* | Whether walk check applies |
+| `lineofsight` | *Boolean* | Whether surface blocks line of sight |
+| `grass` | *Boolean* | Whether surface has grass rendering |
+| `sound` | *String* | Sound *ResRef* identifier for footstep sounds |
 
 **References**:
 
 **PyKotor:**
 
-- [`Libraries/PyKotor/src/pykotor/resource/formats/mdl/io_mdl.py:21`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/mdl/io_mdl.py#L21) - SurfaceMaterial import
-- [`Libraries/PyKotor/src/pykotor/resource/formats/mdl/mdl_types.py:9`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/mdl/mdl_types.py#L9) - SurfaceMaterial import
-- [`Libraries/PyKotor/src/pykotor/resource/formats/mdl/mdl_types.py:412`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/mdl/mdl_types.py#L412) - SurfaceMaterial.GRASS default value
+- [`Libraries/PyKotor/src/pykotor/resource/formats/mdl/io_mdl.py:21`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/mdl/io_mdl.py#L21) - `SurfaceMaterial` import
+- [`Libraries/PyKotor/src/pykotor/resource/formats/mdl/mdl_types.py:9`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/mdl/mdl_types.py#L9) - `SurfaceMaterial` import
+- [`Libraries/PyKotor/src/pykotor/resource/formats/mdl/mdl_types.py:412`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/mdl/mdl_types.py#L412) - `SurfaceMaterial.GRASS` default value
 - [`Libraries/PyKotor/src/pykotor/resource/formats/bwm/bwm_data.py:47`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/bwm/bwm_data.py#L47) - SurfaceMaterial ID per [face](MDL-MDX-File-Format#face-structure) documentation
 - [`Libraries/PyKotor/src/pykotor/resource/formats/bwm/bwm_data.py:784`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/bwm/bwm_data.py#L784) - SurfaceMaterial ID field documentation
-- [`Libraries/PyKotor/src/pykotor/resource/formats/mdl/mdl_data.py:1578`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/mdl/mdl_data.py#L1578) - Comment referencing surfacemat.2da for [walkmesh](BWM-File-Format) surface [material](MDL-MDX-File-Format#trimesh-header)
-- [`Libraries/PyKotor/src/pykotor/resource/formats/bwm/io_bwm.py:160`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/bwm/io_bwm.py#L160) - SurfaceMaterial parsing from [BWM](BWM-File-Format)
+- [`Libraries/PyKotor/src/pykotor/resource/formats/mdl/mdl_data.py:1578`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/mdl/mdl_data.py#L1578) - Comment referencing `surfacemat.2da` for [**[Walkmesh (**[BWM/WOK](BWM-File-Format)**)**](BWM-File-Format) surface material
+- [`Libraries/PyKotor/src/pykotor/resource/formats/bwm/io_bwm.py:160`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/bwm/io_bwm.py#L160) - `SurfaceMaterial` parsing from [**[BWM](BWM-File-Format)**](BWM-File-Format)
 
 **Vendor Implementations:**
 
-- [`vendor/reone/src/libs/game/surfaces.cpp:29-44`](https://github.com/th3w1zard1/reone/blob/master/src/libs/game/surfaces.cpp#L29-L44) - Surface [material](MDL-MDX-File-Format#trimesh-header) loading from [2DA](2DA-File-Format)
+- [`vendor/reone/src/libs/game/surfaces.cpp:29-44`](https://github.com/th3w1zard1/reone/blob/master/src/libs/game/surfaces.cpp#L29-L44) - surface material loading from [**[2DA](2DA-File-Format)**](2DA-File-Format)
 
 ---
 
-### loadscreenhints.2da
+### `loadscreenhints.2da`
 
 **Engine Usage**: Defines loading screen hints displayed during area transitions. The engine uses this file to show helpful tips and hints to players while loading.
 
@@ -1839,49 +1839,49 @@ Similar name generation files exist for other species:
 
 **Column structure**:
 
-| Column Name | type | Description |
+| Column Name | Type | Description |
 |------------|------|-------------|
-| `label` | string | Hint label |
-| `strref` | [StrRef](TLK-File-Format#string-references-strref) | string reference for hint text |
+| `label` | *String* | Hint label |
+| `strref` | [StrRef](TLK-File-Format#string-references-strref) | *String* reference for hint text |
 
 **References**:
 
-- [`vendor/xoreos/src/engines/kotor/gui/loadscreen/loadscreen.cpp:45`](https://github.com/th3w1zard1/xoreos/blob/master/src/engines/kotor/gui/loadscreen/loadscreen.cpp#L45) - Loading screen hints TODO comment (KotOR-specific)
+- [`vendor/xoreos/src/engines/kotor/gui/loadscreen/loadscreen.cpp:45`](https://github.com/th3w1zard1/xoreos/blob/master/src/engines/kotor/gui/loadscreen/loadscreen.cpp#L45) - Loading screen hints ***TODO*** comment (*KotOR*-specific)
 
 ---
 
-### bodybag.2da
+### `bodybag.2da`
 
-**Engine Usage**: Defines body bag appearances for creatures when they die. The engine uses this file to determine which appearance to use for the body bag container that appears when a creature is killed.
+**Engine Usage**: Defines *body bag appearances* for creatures when they die. The engine uses this file to determine which appearance to use for the body bag container that appears when a creature is killed.
 
 **Row index**: Body Bag ID (integer)
 
 **Column structure**:
 
-| Column Name | type | Description |
+| Column Name | Type | Description |
 |------------|------|-------------|
-| `label` | string | Body bag label |
-| `name` | [StrRef](TLK-File-Format#string-references-strref) | string reference for body bag name |
-| `appearance` | Integer | Appearance ID for the body bag [model](MDL-MDX-File-Format) |
-| `corpse` | Boolean | Whether the body bag represents a corpse |
+| `label` | *String* | Body bag label |
+| `name` | *[StrRef](TLK-File-Format#string-references-strref)* | *String* reference for body bag name |
+| `appearance` | *Integer* | Appearance ID for the body bag [model](MDL-MDX-File-Format) |
+| `corpse` | *Boolean* | Whether the body bag represents a corpse |
 
 **References**:
 
 **PyKotor:**
 
-- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:536`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L536) - [GFF](GFF-File-Format) field mapping: "BodyBag" -> bodybag.2da
+- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:536`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L536) - [GFF](GFF-File-Format) field mapping: "BodyBag" -> `bodybag.2da`
 - [`Libraries/PyKotor/src/pykotor/resource/generics/utc.py:296-298`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/utc.py#L296-L298) - [UTC](GFF-File-Format#utc-creature) bodybag_id field documentation (not used by game engine)
-- [`Libraries/PyKotor/src/pykotor/resource/generics/utc.py:438`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/utc.py#L438) - [UTC](GFF-File-Format#utc-creature) bodybag_id field initialization
-- [`Libraries/PyKotor/src/pykotor/resource/generics/utc.py:555-556`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/utc.py#L555-L556) - BodyBag field parsing from [UTC](GFF-File-Format#utc-creature) GFF (deprecated)
-- [`Libraries/PyKotor/src/pykotor/resource/generics/utc.py:944`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/utc.py#L944) - BodyBag field writing to [UTC](GFF-File-Format#utc-creature) [GFF](GFF-File-Format)
-- [`Libraries/PyKotor/src/pykotor/resource/generics/utp.py:105`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/utp.py#L105) - [UTP](GFF-File-Format#utp-placeable) bodybag_id field documentation
-- [`Libraries/PyKotor/src/pykotor/resource/generics/utp.py:179`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/utp.py#L179) - [UTP](GFF-File-Format#utp-placeable) bodybag_id field initialization
-- [`Libraries/PyKotor/src/pykotor/resource/generics/utp.py:254`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/utp.py#L254) - BodyBag field parsing from [UTP](GFF-File-Format#utp-placeable) [GFF](GFF-File-Format)
-- [`Libraries/PyKotor/src/pykotor/resource/generics/utp.py:341`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/utp.py#L341) - BodyBag field writing to [UTP](GFF-File-Format#utp-placeable) [GFF](GFF-File-Format)
+- [`Libraries/PyKotor/src/pykotor/resource/generics/utc.py:438`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/utc.py#L438) - [UTC](GFF-File-Format#utc-creature) `bodybag_id` field initialization
+- [`Libraries/PyKotor/src/pykotor/resource/generics/utc.py:555-556`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/utc.py#L555-L556) - `BodyBag` field parsing from [UTC](GFF-File-Format#utc-creature) [GFF](GFF-File-Format)
+- [`Libraries/PyKotor/src/pykotor/resource/generics/utc.py:944`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/utc.py#L944) - `BodyBag` field writing to [UTC](GFF-File-Format#utc-creature) [GFF](GFF-File-Format)
+- [`Libraries/PyKotor/src/pykotor/resource/generics/utp.py:105`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/utp.py#L105) - [UTP](GFF-File-Format#utp-placeable) `bodybag_id` field documentation
+- [`Libraries/PyKotor/src/pykotor/resource/generics/utp.py:179`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/utp.py#L179) - [UTP](GFF-File-Format#utp-placeable) `bodybag_id` field initialization
+- [`Libraries/PyKotor/src/pykotor/resource/generics/utp.py:254`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/utp.py#L254) - `BodyBag` field parsing from [UTP](GFF-File-Format#utp-placeable) [GFF](GFF-File-Format)
+- [`Libraries/PyKotor/src/pykotor/resource/generics/utp.py:341`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/utp.py#L341) - `BodyBag` field writing to [UTP](GFF-File-Format#utp-placeable) [GFF](GFF-File-Format)
 
 **Vendor Implementations:**
 
-- [`vendor/reone/src/libs/game/object/creature.cpp:1357-1366`](https://github.com/th3w1zard1/reone/blob/master/src/libs/game/object/creature.cpp#L1357-L1366) - Body bag loading from [2DA](2DA-File-Format)
+- [`vendor/reone/src/libs/game/object/creature.cpp:1357-1366`](https://github.com/th3w1zard1/reone/blob/master/src/libs/game/object/creature.cpp#L1357-L1366) - Body bag loading from [**[2DA](2DA-File-Format)**](2DA-File-Format)
 
 ---
 

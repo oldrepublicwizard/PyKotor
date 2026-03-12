@@ -8,49 +8,53 @@ Part of the [GFF File Format Documentation](GFF-File-Format).
 
 **Reference**: [`Libraries/PyKotor/src/pykotor/resource/generics/utp.py`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/utp.py)
 
+A placeable is an object that can be placed in the game world. It can be a container, a furniture, a switch, a workbench, or an interactive environmental object.
+
+But as far as Odyssey is concerned, a door is nearly exactly the same as a placeable in memory. Probably subclasses a placeable class in their OOP src code to be honest.
+
 ## Core Identity fields
 
-| field | type | Description |
+| Field | Type | Description |
 | ----- | ---- | ----------- |
-| `TemplateResRef` | *ResRef* | Template identifier for this placeable |
-| `Tag` | [CExoString](GFF-File-Format#gff-data-types) | Unique tag for script references |
-| `LocName` | [CExoLocString](GFF-File-Format#gff-data-types) | Placeable name (localized) |
-| `Description` | [CExoLocString](GFF-File-Format#gff-data-types) | Placeable description |
+| `TemplateResRef` | *ResRef* | Template identifier for this Placeable |
+| `Tag` | [CExoString](GFF-File-Format#gff-data-types) | Unique **Tag** for script references |
+| `LocName` | [CExoLocString](GFF-File-Format#gff-data-types) | *Placeable* name (localized) |
+| `Description` | [CExoLocString](GFF-File-Format#gff-data-types) | *Placeable* description |
 | `Comment` | [CExoString](GFF-File-Format#gff-data-types) | Developer comment/notes |
 
-## Appearance & type
+## Appearance & Type
 
-| field | type | Description |
+| Field | Type | Description |
 | ----- | ---- | ----------- |
-| `Appearance` | DWord | index into [`placeables.2da`](2DA-placeables) |
-| `Type` | Byte | Placeable type category |
-| `AnimationState` | Byte | Current [animation](MDL-MDX-File-Format#animation-header) state |
+| `Appearance` | *DWord* | index into [`placeables.2da`](2DA-placeables) |
+| `Type` | *Byte* | *Placeable* type category |
+| `AnimationState` | *Byte* | Current [animation](MDL-MDX-File-Format#animation-header) state |
 
 **Appearance System:**
 
-- [`placeables.2da`](2DA-placeables) defines [models](MDL-MDX-File-Format), lighting, and sounds
-- Appearance determines visual [model](MDL-MDX-File-Format) and interaction [animation](MDL-MDX-File-Format#animation-header)
-- type influences behavior (container, switch, generic)
+- [`placeables.2da`](2DA-placeables) defines **[models ([MDL/MDX](MDL-MDX-File-Format))**], **[lighting](MDL-MDX-File-Format#lighting-header)**, and **[sounds](MDL-MDX-File-Format#sound-header)**
+- Appearance determines visual **[model ([MDL/MDX](MDL-MDX-File-Format))**] and interaction **[animation](MDL-MDX-File-Format#animation-header)**
+- Type influences behavior (container, switch, generic)
 
 ## Inventory System
 
-| field | type | Description |
+| Field | Type | Description |
 | ----- | ---- | ----------- |
-| `HasInventory` | Byte | Placeable contains items |
-| `ItemList` | List | Items in inventory |
-| `BodyBag` | Byte | Container for corpse loot |
+| `HasInventory` | *[byte](GFF-File-Format#gff-data-types)* | *Placeable* contains items |
+| `ItemList` | *[List](GFF-File-Format#gff-data-types)* | Items in inventory |
+| `BodyBag` | *[byte](GFF-File-Format#gff-data-types)* | Container for corpse loot |
 
 **ItemList Struct fields:**
 
-- `InventoryRes` (*ResRef*): [UTI](GFF-File-Format#uti-item) template *ResRef*
-- `Repos_PosX` (Word): Grid X position (optional)
-- `Repos_Posy` (Word): Grid Y position (optional)
-- `Dropable` (Byte): Can drop item
+- `InventoryRes` (*[ResRef](GFF-File-Format#gff-data-types)*): [UTI](GFF-File-Format#uti-item) template *ResRef*
+- `Repos_PosX` (*[Word](GFF-File-Format#gff-data-types)*): Grid X position (optional)
+- `Repos_Posy` (*[Word](GFF-File-Format#gff-data-types)*): Grid Y position (optional)
+- `Dropable` (*[Byte](GFF-File-Format#gff-data-types)*): Can drop item
 
 **Container Behavior:**
 
-- **HasInventory=1**: Can be looted
-- **BodyBag=1**: Corpse container (special loot rules)
+- **`HasInventory=1`**: Can be looted
+- **`BodyBag=1`**: Corpse container (special loot rules)
 - ItemList populated on placeable instantiation
 - Empty containers can still be interacted with
 
@@ -58,109 +62,109 @@ Part of the [GFF File Format Documentation](GFF-File-Format).
 
 | field | type | Description |
 | ----- | ---- | ----------- |
-| `Locked` | Byte | Placeable is currently locked |
-| `Lockable` | Byte | Can be locked/unlocked |
-| `KeyRequired` | Byte | Requires specific [KEY](KEY-File-Format) item |
-| `KeyName` | [CExoString](GFF-File-Format#gff-data-types) | Tag of required [KEY](KEY-File-Format) [item](GFF-File-Format#uti-item) |
-| `AutoRemoveKey` | Byte | [KEY](KEY-File-Format) consumed on use |
-| `OpenLockDC` | Byte | Security skill DC to pick lock |
-| `CloseLockDC` (KotOR2) | [byte](https://en.wikipedia.org/wiki/Byte) | Security DC to lock |
-| `OpenLockDiff` (KotOR2) | Int | Additional difficulty modifier |
-| `OpenLockDiffMod` (KotOR2) | Int | Modifier to difficulty |
+| `Locked` | *[Byte](GFF-File-Format#gff-data-types)* | Placeable is currently locked |
+| `Lockable` | *[Byte](GFF-File-Format#gff-data-types)* | Can be locked/unlocked |
+| `KeyRequired` | *[Byte](GFF-File-Format#gff-data-types)* *Boolean* (0 or 1) | Requires specific [KEY](KEY-File-Format) item |
+| `KeyName` | [CExoString](GFF-File-Format#gff-data-types) | Tag of required [KEY](KEY-File-Format) item. |
+| `AutoRemoveKey` | *[Byte](GFF-File-Format#gff-data-types)* *Boolean* (0 or 1) | [KEY](KEY-File-Format) consumed on use |
+| `OpenLockDC` | *[Byte](GFF-File-Format#gff-data-types)* *Integer* | Security skill DC to pick lock |
+| `CloseLockDC` (KotOR2) | *[Byte](GFF-File-Format#gff-data-types)* *Integer* (signed) | Security DC to lock |
+| `OpenLockDiff` (KotOR2) | *[Int](GFF-File-Format#gff-data-types)* *Integer* (signed) | Additional difficulty modifier |
+| `OpenLockDiffMod` (KotOR2) | *[Int](GFF-File-Format#gff-data-types)* *Integer* (signed) | Modifier to difficulty |
 
 **Lock Mechanics:**
 
-- Identical to [UTD](GFF-File-Format#utd-door) door locking system
+- Identical to **[UTD](GFF-UTD)** door locking system
 - Prevents access to inventory
-- Can be picked or opened with [KEY](KEY-File-Format)
+- Can be picked or opened with **[KEY](KEY-File-Format)**
 
 ## Hit Points & Durability
 
-| field | type | Description |
+| Field | Type | Description |
 | ----- | ---- | ----------- |
-| `HP` | Short | Maximum hit points |
-| `CurrentHP` | Short | Current hit points |
-| `Hardness` | Byte | Damage reduction |
-| `Min1HP` (KotOR2) | [byte](https://en.wikipedia.org/wiki/Byte) | Cannot drop below 1 HP |
-| `Fort` | Byte | Fortitude save (usually 0) |
-| `Ref` | Byte | Reflex save (usually 0) |
-| `Will` | Byte | Will save (usually 0) |
+| `HP` | *[Short](GFF-File-Format#gff-data-types)* | Maximum hit points |
+| `CurrentHP` | *[Short](GFF-File-Format#gff-data-types)* | Current hit points |
+| `Hardness` | *[Byte](GFF-File-Format#gff-data-types)* | Damage reduction |
+| `Min1HP` (KotOR2) | *[Byte](GFF-File-Format#gff-data-types)* *Boolean* (0 or 1) | Cannot drop below 1 HP |
+| `Fort` | *[Byte](GFF-File-Format#gff-data-types)* *Integer* (signed) | *Fortitude* save (usually 0) |
+| `Ref` | *[Byte](GFF-File-Format#gff-data-types)* *Integer* (signed) | *Reflex* save (usually 0) |
+| `Will` | *[Byte](GFF-File-Format#gff-data-types)* *Integer* (signed) | *Will* save (usually 0) |
 
 **Destructible Placeables:**
 
-- Containers, crates, and terminals can have HP
+- Containers, crates, and terminals can have **HP**
 - Some placeables reveal items when destroyed
-- Hardness reduces incoming damage
+- **Hardness** reduces incoming damage
 
 ## Interaction & Behavior
 
-| field | type | Description |
+| Field | Type | Description |
 | ----- | ---- | ----------- |
-| `Plot` | Byte | Plot-critical (cannot be destroyed) |
-| `Static` | Byte | Static geometry (no interaction) |
-| `Useable` | Byte | Can be clicked/used |
-| `Conversation` | *ResRef* | [Dialog](GFF-DLG) file when used |
-| `Faction` | Word | Faction identifier |
-| `PartyInteract` | Byte | Requires party member selection |
-| `NotBlastable` (KotOR2) | [byte](https://en.wikipedia.org/wiki/Byte) | Immune to area damage |
+| `Plot` | *[Byte](GFF-File-Format#gff-data-types)* *Boolean* (0 or 1) | Plot-critical (cannot be destroyed). |
+| `Static` | *[Byte](GFF-File-Format#gff-data-types)* *Boolean* (0 or 1) | Static geometry (no interaction). |
+| `Useable` | *[Byte](GFF-File-Format#gff-data-types)* *Boolean* (0 or 1) | Can be clicked/used. |
+| `Conversation` | *ResRef* | [Dialog](GFF-DLG) file when used. |
+| `Faction` | *Word* | Faction identifier. |
+| `PartyInteract` | *[Byte](GFF-File-Format#gff-data-types)* *Boolean* (0 or 1) | Requires party member selection. |
+| `NotBlastable` (KotOR2) | *[Byte](GFF-File-Format#gff-data-types)* *Boolean* (0 or 1) | Immune to area damage. |
 
 **Usage Patterns:**
 
-- **Useable=0**: Cannot be directly interacted with
-- **Conversation**: Triggers dialog on use (terminals, panels)
-- **PartyInteract**: Shows party selection [GUI](GFF-File-Format#gui-graphical-user-interface)
-- **Static**: Pure visual element, no gameplay
+- **`Useable=0`**: Cannot be directly interacted with
+- **`Conversation`**: Triggers dialog on use (terminals, panels)
+- **`PartyInteract`**: Shows party selection [GUI](GFF-File-Format#gui-graphical-user-interface)
+- **`Static`**: Pure visual element, no gameplay
 
 ## Script Hooks
 
 | field | type | Description |
 | ----- | ---- | ----------- |
-| `OnClosed` | *ResRef* | Fires when container closes |
-| `OnDamaged` | *ResRef* | Fires when placeable takes damage |
-| `OnDeath` | *ResRef* | Fires when placeable is destroyed |
-| `OnDisarm` | *ResRef* | Fires when trap is disarmed |
-| `OnEndDialogue` | *ResRef* | Fires when conversation ends |
-| `OnHeartbeat` | *ResRef* | Fires periodically |
-| `OnInvDisturbed` | *ResRef* | Fires when inventory changed |
-| `OnLock` | *ResRef* | Fires when locked |
-| `OnMeleeAttacked` | *ResRef* | Fires when attacked in melee |
-| `OnOpen` | *ResRef* | Fires when opened |
-| `OnSpellCastAt` | *ResRef* | Fires when spell cast at placeable |
-| `OnUnlock` | *ResRef* | Fires when unlocked |
-| `OnUsed` | *ResRef* | Fires when used/clicked |
-| `OnUserDefined` | *ResRef* | Fires on user-defined events |
-| `OnFailToOpen` (KotOR2) | *ResRef* | Fires when opening fails |
+| `OnClosed` | *[ResRef](GFF-File-Format#gff-data-types)* | Fires when container closes. |
+| `OnDamaged` | *[ResRef](GFF-File-Format#gff-data-types)* | Fires when placeable takes damage. |
+| `OnDeath` | *[ResRef](GFF-File-Format#gff-data-types)* | Fires when placeable is destroyed. |
+| `OnDisarm` | *[ResRef](GFF-File-Format#gff-data-types)* | Fires when trap is disarmed. |
+| `OnEndDialogue` | *[ResRef](GFF-File-Format#gff-data-types)* | Fires when conversation ends. |
+| `OnHeartbeat` | *[ResRef](GFF-File-Format#gff-data-types)* | Fires periodically. |
+| `OnInvDisturbed` | *[ResRef](GFF-File-Format#gff-data-types)* | Fires when inventory changed. |
+| `OnLock` | *[ResRef](GFF-File-Format#gff-data-types)* | Fires when locked. |
+| `OnMeleeAttacked` | *[ResRef](GFF-File-Format#gff-data-types)* | Fires when attacked in melee. |
+| `OnOpen` | *[ResRef](GFF-File-Format#gff-data-types)* | Fires when opened. |
+| `OnSpellCastAt` | *[ResRef](GFF-File-Format#gff-data-types)* | Fires when spell cast at placeable. |
+| `OnUnlock` | *[ResRef](GFF-File-Format#gff-data-types)* | Fires when unlocked. |
+| `OnUsed` | *[ResRef](GFF-File-Format#gff-data-types)* | Fires when used/clicked. |
+| `OnUserDefined` | *[ResRef](GFF-File-Format#gff-data-types)* | Fires on user-defined events. |
+| `OnFailToOpen` (KotOR2) | *[ResRef](GFF-File-Format#gff-data-types)* | Fires when opening fails. |
 
 ## Trap System
 
-| field | type | Description |
+| Field | Type | Description |
 | ----- | ---- | ----------- |
-| `TrapDetectable` | Byte | Trap can be detected |
-| `TrapDetectDC` | Byte | Awareness DC to detect trap |
-| `TrapDisarmable` | Byte | Trap can be disarmed |
-| `DisarmDC` | Byte | Security DC to disarm trap |
-| `TrapFlag` | Byte | Trap is active |
-| `TrapOneShot` | Byte | Trap triggers only once |
-| `TrapType` | Byte | index into [`traps.2da`](2DA-traps) ([trap definitions](2DA-traps)) |
+| `TrapDetectable` | *[Byte](GFF-File-Format#gff-data-types)* *Boolean* (0 or 1) | Trap can be detected. |
+| `TrapDetectDC` | *[Byte](GFF-File-Format#gff-data-types)* *Integer* (signed) | Awareness DC to detect trap. |
+| `TrapDisarmable` | *[Byte](GFF-File-Format#gff-data-types)* *Boolean* (0 or 1) | Trap can be disarmed. |
+| `DisarmDC` | *[Byte](GFF-File-Format#gff-data-types)* *Integer* (signed) | Security DC to disarm trap. |
+| `TrapFlag` | *[Byte](GFF-File-Format#gff-data-types)* *Boolean* (0 or 1) | Trap is active. |
+| `TrapOneShot` | *[Byte](GFF-File-Format#gff-data-types)* *Boolean* (0 or 1) | Trap triggers only once. |
+| `TrapType` | *[Byte](GFF-File-Format#gff-data-types)* *Integer* (signed) | index into [`traps.2da`](2DA-traps) ([trap definitions](2DA-traps)). |
 
 **Trap Behavior:**
 
-- Identical to door trap system
-- Triggers on placeable use
+- Identical to **[UTD](GFF-UTD)** door trap system
+- Triggers on **[Placeable](GFF-UTP)** use
 - Common on containers and terminals
 
 ## Visual Customization
 
-| field | type | Description |
+| Field | Type | Description |
 | ----- | ---- | ----------- |
-| `PortraitId` | Word | Portrait icon identifier |
-| `PaletteID` | Byte | Toolset palette category |
+| `PortraitId` | *[Word](GFF-File-Format#gff-data-types)* | Portrait icon identifier |
+| `PaletteID` | *[Byte](GFF-File-Format#gff-data-types)* | Toolset palette category |
 
 **[model](MDL-MDX-File-Format) & Lighting:**
 
-- Appearance determines [model](MDL-MDX-File-Format) and light color
+- **Appearance** determines **[model](MDL-MDX-File-Format)** and light color
 - Some placeables have animated components
-- Light properties defined in [`placeables.2da`](2DA-placeables)
+- Light properties defined in **[`placeables.2da`](2DA-placeables)**
 
 ## Implementation Notes
 
@@ -169,55 +173,55 @@ Part of the [GFF File Format Documentation](GFF-File-Format).
 **Containers:**
 
 - Footlockers, crates, corpses
-- Have inventory (ItemList populated)
+- Have inventory **`ItemList`** populated
 - Can be locked, trapped, destroyed
-- `HasInventory=1`, `BodyBag` flag for corpses
+- **`HasInventory=1`**, **`BodyBag=1`** flag for corpses
 
 **Switches & Terminals:**
 
 - Trigger scripts or conversations
 - No inventory typically
-- `Useable=1`, `Conversation` or scripts set
+- **`Useable=1`**, **`Conversation`** property set to **[DLG](GFF-DLG)** file or scripts set
 - Common for puzzle activation
 
 **Workbenches:**
 
 - Special placeable type for crafting
 - Opens crafting interface on use
-- Defined by type or Appearance
+- Defined by **`Type`** or **`Appearance`**
 
 **Furniture:**
 
 - Non-interactive decoration
-- `Static=1` or `Useable=0`
+- **`Static=1`** *Boolean* (0 or 1) or **`Useable=0`** *Boolean* (0 or 1)
 - Pure visual elements
 
 **Environmental Objects:**
 
 - Explosive containers, power generators
 - Can be destroyed with effects
-- Often have HP and OnDeath scripts
+- Often have **HP** and **`OnDeath`** scripts
 
 **Instantiation Flow:**
 
-1. **Template Load**: [GFF](GFF-File-Format) parsed from [UTP](GFF-File-Format#utp-placeable)
-2. **Appearance Setup**: [model](MDL-MDX-File-Format) loaded from [`placeables.2da`](2DA-placeables)
-3. **Inventory Population**: ItemList instantiated
+1. **Template Load**: **[GFF](GFF-File-Format)** parsed from **[UTP](GFF-File-Format#utp-placeable)**
+2. **Appearance Setup**: **[model ([MDL/MDX](MDL-MDX-File-Format))**] loaded from **[`placeables.2da`](2DA-placeables)**
+3. **Inventory Population**: **`ItemList`** instantiated
 4. **Lock State**: Locked status applied
 5. **Trap Activation**: Trap armed if configured
 6. **Script Registration**: Event handlers registered
 
 **Container Loot:**
 
-- ItemList defines initial inventory
+- **`ItemList`** defines initial inventory
 - Random loot can be added via script
-- OnInvDisturbed fires when items taken
+- **`OnInvDisturbed`** fires when items taken
 - BodyBag containers have special loot rules
 
 **Conversation Placeables:**
 
 - Terminals, control panels, puzzle interfaces
-- Conversation property set to [DLG](GFF-DLG) file
+- **`Conversation`** property set to **[DLG](GFF-DLG)** file
 - Use triggers dialog instead of direct interaction
 - Dialog can have conditional responses
 
@@ -231,7 +235,7 @@ Part of the [GFF File Format Documentation](GFF-File-Format).
 
 **Corpses:**
 
-- BodyBag flag set
+- **`BodyBag=1`** flag set
 - Contain enemy loot
 - Disappear when looted (usually)
 
@@ -244,19 +248,19 @@ Part of the [GFF File Format Documentation](GFF-File-Format).
 **Switches:**
 
 - Activate doors, puzzles, machinery
-- Fire OnUsed script
-- Visual feedback [animation](MDL-MDX-File-Format#animation-header)
+- Fire **`OnUsed`** script
+- Visual feedback **[animation](MDL-MDX-File-Format#animation-header)**
 
 **Workbenches:**
 
 - Crafting interface activation
 - Lab stations, upgrade benches
-- Special type value
+- Special **`Type`** value
 
 **Decorative Objects:**
 
 - No gameplay interaction
-- Static or non-useable
+- **`Static=1`** *Boolean* (0 or 1) or **`Useable=0`** *Boolean* (0 or 1) (Static or non-useable)
 - Environmental detail
 
 **Mines (Special Case):**

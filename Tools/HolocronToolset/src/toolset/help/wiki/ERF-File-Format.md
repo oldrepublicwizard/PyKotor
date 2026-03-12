@@ -41,10 +41,10 @@ ERF files are self-contained containers that store both resource names ([ResRefs
 
 **See Also:**
 
-- [BIF File Format](BIF-File-Format) - Alternative container format used with [KEY](KEY-File-Format) files
+- [BIF File Format](BIF-File-Format) - Alternative container format used with KEY files
 - [KEY File Format](KEY-File-Format) - index file for [BIF containers](BIF-File-Format)
 - [GFF File Format](GFF-File-Format) - Common content type stored in ERF containers
-- RIM File Format - Similar container format for area resources
+- [RIM File Format](RIM-File-Format) - Resource Index Manifest file format
 
 ---
 
@@ -52,26 +52,26 @@ ERF files are self-contained containers that store both resource names ([ResRefs
 
 ### File Header
 
-The file header is 160 bytes in size:
+The *file header* is 160 bytes in size:
 
 | Name                      | type    | offset | size | Description                                    |
 | ------------------------- | ------- | ------ | ---- | ---------------------------------------------- |
-| file type                 | [char](GFF-File-Format#gff-data-types) | 0 (0x00) | 4    | `"ERF "`, `"MOD "`, `"SAV "`, or `"HAK "`     |
-| file Version              | [char](GFF-File-Format#gff-data-types) | 4 (0x04) | 4    | Always `"V1.0"`                                 |
-| Language count            | UInt32  | 8 (0x08) | 4    | Number of localized string entries             |
-| Localized string size     | UInt32  | 12 (0x0C) | 4    | Total size of localized string data in bytes   |
-| Entry count               | UInt32  | 16 (0x10) | 4    | Number of resources in the container              |
-| offset to Localized string List | UInt32 | 20 (0x14) | 4 | offset to localized string entries             |
-| offset to [KEY](KEY-File-Format) List        | UInt32  | 24 (0x18) | 4    | offset to [KEY](KEY-File-Format) entries array                    |
-| offset to Resource List   | UInt32  | 28 (0x1C) | 4    | offset to resource entries array                |
-| Build Year                | UInt32  | 32 (0x20) | 4    | Build year (years since 1900)                   |
-| Build Day                 | UInt32  | 36 (0x24) | 4    | Build day (days since Jan 1)                   |
-| Description [StrRef](TLK-File-Format#string-references-strref)        | UInt32  | 40 (0x28) | 4    | [TLK](TLK-File-Format) string reference for description           |
-| Reserved                  | [byte](https://en.wikipedia.org/wiki/Byte) | 44 (0x2C)  | 116  | Padding (usually zeros)                         |
+| **File Type**                 | [char](GFF-File-Format#gff-data-types) | 0 (0x00) | 4    | `"ERF "`, `"MOD "`, `"SAV "`, or `"HAK "`     |
+| **File Version**              | [char](GFF-File-Format#gff-data-types) | 4 (0x04) | 4    | Always `"V1.0"`                                 |
+| **Language count**            | *UInt32*  | 8 (0x08) | 4    | Number of localized string entries             |
+| **Localized string size**     | *UInt32*  | 12 (0x0C) | 4    | Total size of localized string data in bytes   |
+| **Entry count**               | *UInt32*  | 16 (0x10) | 4    | Number of resources in the container              |
+| **offset to Localized string List** | *UInt32* | 20 (0x14) | 4 | offset to localized string entries             |
+| **offset to KEY List**        | *UInt32*  | 24 (0x18) | 4    | offset to KEY entries array                    |
+| **offset to Resource List**   | *UInt32*  | 28 (0x1C) | 4    | offset to resource entries array                |
+| **Build Year**                | *UInt32*  | 32 (0x20) | 4    | Build year (years since 1900)                   |
+| **Build Day**                 | *UInt32*  | 36 (0x24) | 4    | Build day (days since Jan 1)                   |
+| **Description [StrRef](TLK-File-Format#string-references-strref)**        | *UInt32*  | 40 (0x28) | 4    | [TLK](TLK-File-Format) string reference for description           |
+| **Reserved**                  | *[byte](https://en.wikipedia.org/wiki/Byte)* | 44 (0x2C)  | 116  | Padding (usually zeros)                         |
 
 **Build Date Fields:**
 
-The Build Year and Build Day fields timestamp when the ERF file was created:
+The **Build Year** and **Build Day** fields timestamp when the ERF file was created:
 
 - **Build Year**: Years since 1900 (e.g., `103` = year 2003)
 - **Build Day**: Day of year (1-365/366, with January 1 = day 1)
@@ -89,7 +89,7 @@ Most mod tools either zero out these fields or set them to the current date when
 
 **Description [StrRef](TLK-File-Format#string-references-strref) values by file type:**
 
-The Description [StrRef](TLK-File-Format#string-references-strref) field (offset 0x0028 / 0x28) varies depending on the ERF variant:
+The **Description [StrRef](TLK-File-Format#string-references-strref)** field (offset 0x0028 / 0x28) varies depending on the ERF variant:
 
 - **MOD files**: `0xFFFFFFFF` (-1) is the standard for BioWare modules.
   - *Exception*: TSL LIPS files consistently use `0xCDCDCDCD` (Debug Fill).
@@ -105,13 +105,13 @@ The Description [StrRef](TLK-File-Format#string-references-strref) field (offset
 
 ### Localized String List
 
-Localized strings provide descriptions in multiple languages:
+The *Localized string list* provides descriptions in multiple languages:
 
 | Name         | type    | size | Description                                                      |
 | ------------ | ------- | ---- | ---------------------------------------------------------------- |
-| Language ID  | UInt32  | 4    | Language identifier (see Language enum)                          |
-| string size  | UInt32  | 4    | Length of string in bytes                                       |
-| string data  | [char](GFF-File-Format#gff-data-types)[]  | N    | `windows-1252` encoded text                     |
+| **Language ID**  | *UInt32*  | 4    | Language identifier (see Language enum)                          |
+| **String Size**  | *UInt32*  | 4    | Length of string in bytes                                       |
+| **String Data**  | [char](GFF-File-Format#gff-data-types)[]  | N    | `windows-1252` encoded text                     |
 
 **Localized string Usage:**
 
@@ -128,40 +128,40 @@ ERF localized strings provide multi-language descriptions for the container itse
 
 **Important Notes:**
 
-- Most ERF files have zero localized strings (Language count = 0)
-- MOD files may include localized module names for the load screen
+- Most *ERF* files have zero localized strings (*Language count* = 0)
+- *MOD* files may include localized module names for the load screen
 - **Engine Behavior**: The game engine's resource loader (`CExoKeyTable::AddEncapsulatedContents`) **ignores** these fields. They are likely used only by the specific UI components (like the Module Selection screen).
 - **Encoding**: Strings should be encoded as `windows-1252` (CP1252) to support legacy BioWare character sets.
-- The Description [StrRef](TLK-File-Format#string-references-strref) field (in header) provides an alternative via [TLK](TLK-File-Format) reference
+- The **Description [StrRef](TLK-File-Format#string-references-strref)** field (in header) provides an alternative via [TLK](TLK-File-Format) reference
 
 **Reference**: [`vendor/reone/src/libs/resource/format/erfreader.cpp:47-65`](https://github.com/th3w1zard1/reone/blob/master/src/libs/resource/format/erfreader.cpp#L47-L65)
 
-### [KEY](KEY-File-Format) List
+### KEY List
 
-Each [KEY](KEY-File-Format) entry is 24 bytes and maps ResRefs to resource indices:
+Each **KEY** entry is 24 bytes and maps **[ResRefs](GFF-File-Format#gff-data-types)** to resource indices:
 
 | Name        | type     | offset | size | Description                                                      |
 | ----------- | -------- | ------ | ---- | ---------------------------------------------------------------- |
-| *ResRef*      | [char](GFF-File-Format#gff-data-types) | 0 (0x00) | 16   | Resource filename (null-padded, max 16 chars)                    |
-| Resource ID | UInt32   | 16 (0x10) | 4    | index into resource list                                         |
-| Resource type | [uint16](GFF-File-Format#gff-data-types) | 20 (0x14) | 2    | Resource type identifier                                         |
-| Unused      | [uint16](GFF-File-Format#gff-data-types)   | 22 (0x16) | 2    | Padding                                                           |
+| **ResRef**      | [char](GFF-File-Format#gff-data-types) | 0 (0x00) | 16   | Resource filename (null-padded, max 16 chars)                    |
+| **Resource ID** | UInt32   | 16 (0x10) | 4    | index into resource list                                         |
+| **Resource Type** | [uint16](GFF-File-Format#gff-data-types) | 20 (0x14) | 2    | Resource type identifier                                         |
+| **Unused**      | [uint16](GFF-File-Format#gff-data-types)   | 22 (0x16) | 2    | Padding                                                           |
 
 ***ResRef* Padding Notes:**
 
 Resource names are padded with NULL bytes to 16 characters, but are not necessarily [null-terminated](https://en.cppreference.com/w/c/string/byte). If a resource name is exactly 16 characters long, no [null terminator](https://en.cppreference.com/w/c/string/byte) exists. Resource names can be mixed case, though most are lowercase in practice.
 
 **Reference**: [`vendor/Kotor.NET/Kotor.NET/Formats/KotorERF/ERFBinaryStructure.cs:115-168`](https://github.com/th3w1zard1/Kotor.NET/blob/master/Kotor.NET/Formats/KotorERF/ERFBinaryStructure.cs#L115-L168)  
-**Reference**: [`vendor/xoreos-docs/specs/torlack/mod.html`](https://github.com/th3w1zard1/xoreos-docs/blob/master/specs/torlack/mod.html) - Resource structure details and *ResRef* padding notes
+**Reference**: [`vendor/xoreos-docs/specs/torlack/mod.html`](https://github.com/th3w1zard1/xoreos-docs/blob/master/specs/torlack/mod.html) - Resource structure details and **ResRef** padding notes
 
 ### Resource List
 
 Each resource entry is 8 bytes:
 
-| Name          | type   | offset | size | Description                                                      |
+| Name          | Type   | Offset | Size | Description                                                      |
 | ------------- | ------ | ------ | ---- | ---------------------------------------------------------------- |
-| offset to data | UInt32 | 0 (0x00) | 4    | offset to resource data in file                                  |
-| Resource size | UInt32 | 4 (0x04) | 4    | size of resource data in bytes                                   |
+| Offset to Data | *UInt32* | 0 (0x00) | 4    | offset to resource data in file                                  |
+| Resource Size | *UInt32* | 4 (0x04) | 4    | size of resource data in bytes                                   |
 
 **Reference**: [`vendor/Kotor.NET/Kotor.NET/Formats/KotorERF/ERFBinaryStructure.cs:119-120`](https://github.com/th3w1zard1/Kotor.NET/blob/master/Kotor.NET/Formats/KotorERF/ERFBinaryStructure.cs#L119-L120)
 
@@ -169,13 +169,13 @@ Each resource entry is 8 bytes:
 
 Resource data is stored at the offsets specified in the resource list:
 
-| Name         | type   | Description                                                      |
+| Name         | Type   | Description                                                      |
 | ------------ | ------ | ---------------------------------------------------------------- |
-| Resource data | [byte](https://en.wikipedia.org/wiki/Byte)[] | Raw binary data for each resource                               |
+| Resource Data | *[byte](https://en.wikipedia.org/wiki/Byte)* | Raw binary data for each resource                               |
 
-### MOD/NWM file format Quirk: Blank data Block
+### MOD/NWM File Format Quirk: Blank Data Block
 
-**Note**: For MOD and NWM files only, there exists an unusual block of data between the resource structures ([KEY](KEY-File-Format) List) and the position structures (Resource List). This block is 8 bytes per resource and appears to be all NULL bytes in practice. This data block is not referenced by any offset in the ERF file header, which is uncharacteristic of BioWare's file format design.
+**Note**: For *MOD* files only, there exists an unusual block of data between the resource structures (KEY List) and the position structures (Resource List). This block is 8 bytes per resource and appears to be all NULL bytes in practice. This data block is not referenced by any offset in the ERF *file header*, which is uncharacteristic of BioWare's file format design.
 
 **Reference**: [`vendor/xoreos-docs/specs/torlack/mod.html`](https://github.com/th3w1zard1/xoreos-docs/blob/master/specs/torlack/mod.html) - "Strange Blank data" section documenting this MOD/NWM-specific quirk
 
@@ -183,34 +183,34 @@ Resource data is stored at the offsets specified in the resource list:
 
 ## ERF Variants
 
-ERF files come in several variants based on file type:
+ERF files come in several variants based on *file type*:
 
-| file type | Extension | Description                                                      |
+| File Type | Extension | Description                                                      |
 | --------- | --------- | ---------------------------------------------------------------- |
 | ERF       | `.erf`    | Generic encapsulated resource file                               |
 | MOD       | `.mod`    | Module file (contains area resources)                            |
-| SAV       | `.sav`    | Save game file (contains saved game state)                       |
+| SAV       | `.sav`    | Save game file (contains saved game state)                       | 
 
-All variants use the same binary format structure, differing only in the file type signature.
+All variants use the same binary format structure, differing only in the *file type signature*.
 
 ### MOD Files (module containers)
 
-MOD files package all resources needed for a game module (level/area):
+*MOD* files package all resources needed for a game module (level/area):
 
 **Typical Contents:**
 
-- Area layouts (`.are`, `.git`)
-- Module information (`.ifo`)
-- Dialogs and scripts (`.dlg`, `.ncs`)
-- Module-specific [2DA](2DA-File-Format) overrides
-- Character templates (`.utc`, `.utp`, `.utd`)
-- Waypoints and triggers (`.utw`, `.utt`)
+- *Area* layouts (`.are`, `.git`)
+- *Module* information (`.ifo`)
+- *Dialogs* and scripts (`.dlg`, `.ncs`)
+- *Module*-specific [2DA](2DA-File-Format) overrides
+- *Character* templates (`.utc`, `.utp`, `.utd`)
+- *Waypoints* and triggers (`.utw`, `.utt`)
 
-The game loads MOD files from the `modules/` directory. When entering a module, the engine mounts the MOD container and prioritizes its resources over [BIF files](BIF-File-Format) but below the `override/` folder.
+The game loads *MOD* files from the `modules/` directory. When entering a module, the engine mounts the *MOD* container and prioritizes its resources over [BIF files](BIF-File-Format) but below the `override/` folder.
 
 ### SAV Files (save game containers)
 
-SAV files store complete game state:
+*SAV* files store complete game state:
 
 **Contents:**
 
@@ -221,14 +221,14 @@ SAV files store complete game state:
 - Quick bar configurations
 - Portrait images
 
-Save files preserve the state of all modified resources. When a placeable is looted or a door opened, the updated `.git` resource is stored in the SAV file.
+Save files preserve the state of all modified resources. When a placeable is looted or a door opened, the updated `.git` resource is stored in the *SAV* file.
 
 ### ERF Files (Generic Containers)
 
 Generic ERF files serve miscellaneous purposes:
 
 - [texture](TPC-File-Format) packs
-- Audio replacement packs
+- *Audio* replacement packs
 - Campaign-specific resources
 - Developer test containers
 
@@ -244,27 +244,27 @@ Reverse engineering of the game engine (specifically `CExoKeyTable::AddEncapsula
 
 The engine's resource manager is surprisingly strict, reading the 160-byte header but **ignoring** most fields. It only validates/uses:
 
-- **file type** and **Version** (Verified against expected values)
+- **File Type** and **Version** (Verified against expected values)
 - **Entry Count** (Used to allocate memory for the key table)
-- **offset to [KEY](KEY-File-Format) List** (Used to seek to the key data)
+- **Offset to KEY List** (Used to seek to the *KEY* entries array)
 
 The following fields are **parsed but ignored** by the resource manager (though they may be used by the UI/Menus):
 
-- `Language count` and `Localized string size`
-- `offset to Localized string List`
-- `Build Year` and `Build Day`
-- `Description [StrRef](TLK-File-Format#string-references-strref)`
+- **Language Count** and **Localized string size**
+- **Offset to Localized string List**
+- **Build Year** and **Build Day**
+- **Description [StrRef](TLK-File-Format#string-references-strref)**
 
 ### Save Game Detection
 
-Contrary to popular belief, the engine does **not** identify Save Games based on the file type signature (`SAV` vs `ERF`) or the `Description StrRef` being `0`.
+Contrary to popular belief, the engine does **not** identify Save Games based on the file type signature (*SAV* vs *ERF*) or the **Description [StrRef](TLK-File-Format#string-references-strref)** being `0`.
 
 - **Mechanism**: The engine distinguishes save games based on **file context** (loading from the `saves/` directory) and the resource system usage (aliasing `SAVES:` path).
-- **Implication**: Setting `Description StrRef` to `0` in a `MOD` file does *not* make it a save file. Legitimate modules (e.g., `unk_m41` series) use `0` as their StrRef.
+- **Implication**: Setting **Description [StrRef](TLK-File-Format#string-references-strref)** to `0` in a *MOD* file does *not* make it a save file. Legitimate modules (e.g., `unk_m41` series) use `0` as their **StrRef**.
 
 ### TSL Specific Quirks
 
-- **LIPS MODs**: In *Knights of the Old Republic II: The Sith Lords*, MOD files related to lip-syncing (`lips_*.mod`) consistently use `0xCDCDCDCD` for the `Description StrRef`. This value (`-842150451`) is a common "uninitialized memory" fill pattern in Microsoft C++ debug runtimes, suggesting these files were built with a debug version of the toolset.
+- **LIPS MODs**: In *Knights of the Old Republic II: The Sith Lords*, *MOD* files related to lip-syncing (`lips_*.mod`) consistently use `0xCDCDCDCD` for the **Description [StrRef](TLK-File-Format#string-references-strref)**. This value (`0xCDCDCDCD` or `-842150451`) is a common "uninitialized memory" fill pattern in Microsoft C++ debug runtimes, suggesting these files were built with a debug version of the toolset.
 
 ---
 
@@ -278,4 +278,15 @@ Contrary to popular belief, the engine does **not** identify Save Games based on
 
 ---
 
-This documentation aims to provide a comprehensive overview of the KotOR ERF file format, focusing on the detailed file structure and data formats used within the games.
+This documentation aims to provide a comprehensive overview of the *KotOR* *ERF* file format, focusing on the detailed file structure and data formats used within the games.
+
+## See Also
+
+- [BIF File Format](BIF-File-Format) - Container format used with [KEY File Format](KEY-File-Format) files
+- [KEY File Format](KEY-File-Format) - Index for [BIF containers](BIF-File-Format) and resource resolution
+- [GFF File Format](GFF-File-Format) - Common content type stored in *ERF* containers
+- [RIM File Format](RIM-File-Format) - Resource Index Manifest file format
+
+---
+
+This documentation aims to provide a comprehensive overview of the *KotOR* *ERF* file format, focusing on the detailed file structure and data formats used within the games.
