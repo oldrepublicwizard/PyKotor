@@ -43,6 +43,8 @@ When the game needs a resource, it searches in this order:
 
 The KEY file only manages [BIF](BIF-File-Format) resources (step 4). Higher-priority locations can override KEY-indexed resources without modifying the KEY file.
 
+**How a resource request is satisfied:** The engine’s resource manager resolves a “demand” by first checking whether the resource is already loaded or cached. If not, it routes the request to one of several back ends depending on where the resource lives: directory (override or filesystem), encapsulated archive (MOD/ERF), resource file, or image (BIF). Each back end is responsible for opening the correct file or archive and returning the data; the KEY is used only when the source is the BIF image set. So override and MOD/ERF are tried before any KEY/BIF lookup.
+
 **Implementation:** [`Libraries/PyKotor/src/pykotor/resource/formats/key/`](https://github.com/OldRepublicDevs/PyKotor/tree/master/Libraries/PyKotor/src/pykotor/resource/formats/key/)
 
 **Vendor References:**

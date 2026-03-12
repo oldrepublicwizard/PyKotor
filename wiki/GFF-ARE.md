@@ -2,7 +2,7 @@
 
 Part of the [GFF File Format Documentation](GFF-File-Format).
 
-ARE files define static [area properties](GFF-File-Format#are-area) including lighting, weather, ambient audio, grass rendering, fog settings, script hooks, and minimap data. are files contain environmental and atmospheric data for game areas, while dynamic object placement is handled by [GIT](GFF-File-Format#git-game-instance-template) files.
+ARE files define static [area properties](GFF-File-Format#are-area) including lighting, weather, ambient audio, grass rendering, fog settings, script hooks, and minimap data. are files contain environmental and atmospheric data for game areas, while dynamic object placement is handled by [GIT](GFF-File-Format#git-game-instance-template) files. When the engine loads an area it reads the ARE for metadata and lighting, then loads the area [walkmesh (WOK)](BWM-File-Format) and other resources (e.g. [GIT](GFF-GIT), [LYT](LYT-File-Format), [VIS](VIS-File-Format)) referenced by or associated with the area, using the usual [resource resolution order](KEY-File-Format#key-file-purpose).
 
 **Official Bioware Documentation:** For the authoritative Bioware Aurora Engine are format specification, see [Bioware Aurora Area File Format](Bioware-Aurora-AreaFile).
 
