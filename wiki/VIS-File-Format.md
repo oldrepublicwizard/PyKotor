@@ -1,6 +1,6 @@
 # KotOR VIS files format Documentation
 
-VIS (Visibility) files describe which module rooms can be seen from other rooms. They drive the engine's occlusion culling so that only [geometry](MDL-MDX-File-Format#geometry-header) visible from the player's current room is rendered, reducing draw calls and overdraw.
+VIS (Visibility) files describe which module rooms can be seen from other rooms. They drive the engine's occlusion culling so that only [geometry](MDL-MDX-File-Format#geometry-header) visible from the player's current room is rendered, reducing draw calls and overdraw. VIS files are loaded with the same [resource resolution order](KEY-File-Format#key-file-purpose) as other resources (override, MOD/SAV, KEY/BIF).
 
 ## Table of Contents
 

@@ -1,6 +1,6 @@
 # KotOR TPC file format Documentation
 
-TPC (texture Pack Container) is KotOR's native texture format. It supports paletteless RGB/RGBA, greyscale, and block-compressed DXT1/DXT3/DXT5 data, optional mipmaps, cube maps, and [flipbook animations](TXI-File-Format#animation-and-flipbooks) controlled by companion [TXI files](TXI-File-Format).
+TPC (texture Pack Container) is KotOR's native texture format. It supports paletteless RGB/RGBA, greyscale, and block-compressed DXT1/DXT3/DXT5 data, optional mipmaps, cube maps, and [flipbook animations](TXI-File-Format#animation-and-flipbooks) controlled by companion [TXI files](TXI-File-Format). TPC files are resolved using the same [resource resolution order](KEY-File-Format#key-file-purpose) as other resources (override, MOD/SAV, KEY/BIF).
 
 ## Table of Contents
 
