@@ -1,39 +1,60 @@
 # CExoResMan Resource Manager
 
-This page documents the core resource manager used by both KotOR I and II.  All functions listed below were reverse-engineered from the game executables.
+This page documents core `CExoResMan` behaviors shared by KotOR I and II.
 
 ## Overview
-The `CExoResMan` class provides a unified interface for locating and loading game resources (textures, models, scripts, etc.) from a variety of storage formats:
+`CExoResMan` is the engine's central resource broker. It resolves resources from multiple backing stores and normalizes them into `CRes` objects that higher-level systems can consume.
 
-* **Directories** on disk
-* **Encapsulated archives** (BIF/ERF)
-* **Image resources** (raw binary blobs)
-* **Resource files** (ERF modules)
+Storage backends used by service paths:
 
-Every lookup path follows the same basic structure:
+- Directory trees
+- Encapsulated stores (ERF/BIF-like containers)
+- Image-based stores
+- Per-module resource files
 
-1. Check the `CRes` structure for flags or already-cached data.
-2. Compute a hash or index key using helper calls (`0x005e9b60`/`0x005e9b90`).
-3. Iterate the relevant table until a match is found.
-4. Call into the resource-specific loader via virtual methods.
-5. Update the `CRes` object and optionally fire callbacks.
+Unified flow used by lookup/service routines:
 
-## Key methods
+1. Validate `CRes` state/flags and early-exit if already loaded or invalid.
+2. Hash/index into a key table and walk collision chains.
+3. Dispatch to backend-specific reader methods (often virtual calls).
+4. Populate `CRes` data pointers/length and update status flags.
+5. Register/queue state with manager lists for async/continued servicing.
 
-- `GetResOfType` – returns a `CExoStringList` of resource names by type.
-- `AddResourceDirectory`/`AddResourceImageFile` – register search paths.
-- `ServiceFromDirectory`/`ServiceFromEncapsulated`/`ServiceFromImage`/`ServiceFromResFile` – core lookup routines for each storage type.
-- `CancelRequest`/`Demand` – control reference counting and cancellation.
-- `Exists` – quick existence test that fills a timestamp pointer.
-- `Update` – periodic maintenance, may refresh internal caches.
-- `ReadRaw` – fetch raw bytes; dispatches to the appropriate service method.
-- `WipeDirectory` – internal utility used when a directory is removed.
+## Key methods and addresses
 
-All routines are documented with their decompiled pseudocode in the source code comment above.
+- GetResOfType @ (/K1/k1_win_gog_swkotor.exe @ 0x00407390, /TSL/k2_win_gog_aspyr_swkotor2.exe @ TODO: Find this address)
+- AddResourceImageFile @ (/K1/k1_win_gog_swkotor.exe @ 0x004087c0, /TSL/k2_win_gog_aspyr_swkotor2.exe @ TODO: Find this address)
+- AddResourceDirectory @ (/K1/k1_win_gog_swkotor.exe @ 0x00408800, /TSL/k2_win_gog_aspyr_swkotor2.exe @ TODO: Find this address)
+- RemoveResourceImageFile @ (/K1/k1_win_gog_swkotor.exe @ 0x00408830, /TSL/k2_win_gog_aspyr_swkotor2.exe @ TODO: Find this address)
+- RemoveResourceDirectory @ (/K1/k1_win_gog_swkotor.exe @ 0x004088d0, /TSL/k2_win_gog_aspyr_swkotor2.exe @ TODO: Find this address)
+- UpdateDirectoryKeyTable @ (/K1/k1_win_gog_swkotor.exe @ 0x004088e0, /TSL/k2_win_gog_aspyr_swkotor2.exe @ TODO: Find this address)
+- CancelRequest @ (/K1/k1_win_gog_swkotor.exe @ 0x004088f0, /TSL/k2_win_gog_aspyr_swkotor2.exe @ TODO: Find this address)
+- Demand @ (/K1/k1_win_gog_swkotor.exe @ 0x004089f0, /TSL/k2_win_gog_aspyr_swkotor2.exe @ TODO: Find this address)
+- Exists @ (/K1/k1_win_gog_swkotor.exe @ 0x00408bc0, /TSL/k2_win_gog_aspyr_swkotor2.exe @ TODO: Find this address)
+- Update @ (/K1/k1_win_gog_swkotor.exe @ 0x00408d40, /TSL/k2_win_gog_aspyr_swkotor2.exe @ TODO: Find this address)
+- ReadRaw @ (/K1/k1_win_gog_swkotor.exe @ 0x00408e30, /TSL/k2_win_gog_aspyr_swkotor2.exe @ TODO: Find this address)
+- WipeDirectory @ (/K1/k1_win_gog_swkotor.exe @ 0x00408e90, /TSL/k2_win_gog_aspyr_swkotor2.exe @ TODO: Find this address)
+- ServiceFromDirectory @ (/K1/k1_win_gog_swkotor.exe @ 0x004078f0, /TSL/k2_win_gog_aspyr_swkotor2.exe @ TODO: Find this address)
+- ServiceFromEncapsulated @ (/K1/k1_win_gog_swkotor.exe @ 0x00407bd0, /TSL/k2_win_gog_aspyr_swkotor2.exe @ TODO: Find this address)
+- ServiceFromImage @ (/K1/k1_win_gog_swkotor.exe @ 0x00407d50, /TSL/k2_win_gog_aspyr_swkotor2.exe @ TODO: Find this address)
+- ServiceFromResFile @ (/K1/k1_win_gog_swkotor.exe @ 0x00407e00, /TSL/k2_win_gog_aspyr_swkotor2.exe @ TODO: Find this address)
 
-## Notes for contributors
-- When adding new resource types, mimic the existing hash/lookup pattern.
-- Ensure that resource tables are updated on both K1 and TSL; the engines are nearly identical.
-- See the `2DA-File-Format.md` page for how key tables are structured.
+## Behavioral notes from decompilation
 
-(Additional research pending: cross-reference with actual BIF/ERF parsing functions in the codebase.)
+- `Demand` selects one of four backend service routines by top bits in the packed resource key, then increments retain counts for successful demands.
+- `CancelRequest` decrements active reference counters and tears down pending backend handles when request count reaches zero.
+- `ReadRaw` is a compact dispatcher that routes raw reads to backend-specific raw reader routines.
+- `Update` services pending async requests and transitions request flags as load operations complete.
+- `Exists` wraps key-table lookup and can emit metadata (stored in the out-pointer when provided).
+
+## Relationships to file-format docs
+
+- [BIF-File-Format.md](BIF-File-Format.md)
+- [Bioware-Aurora-ERF.md](Bioware-Aurora-ERF.md)
+- [2DA-File-Format.md](2DA-File-Format.md)
+
+## Investigation TODOs
+
+- TODO: Re-open TSL program in AgentDecompile backend and resolve all `TODO: Find this address` entries.
+- TODO: Map virtual calls used by `ServiceFromEncapsulated`/`ServiceFromResFile` to concrete reader class names.
+- TODO: Add caller/callee graph snapshots for `Demand` and `Update`.
