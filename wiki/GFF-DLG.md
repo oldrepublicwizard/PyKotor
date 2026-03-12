@@ -6,6 +6,8 @@ Part of the [GFF File Format Documentation](GFF-File-Format).
 
 **Official Bioware Documentation:** For the authoritative Bioware Aurora Engine Conversation format specification, see [Bioware Aurora Conversation Format](Bioware-Aurora-Conversation).
 
+DLG files are loaded with the same [resource resolution order](KEY-File-Format#key-file-purpose) as other resources (override, MOD/SAV, KEY/BIF).
+
 **Reference**: [`Libraries/PyKotor/src/pykotor/resource/generics/dlg/`](https://github.com/OldRepublicDevs/PyKotor/tree/master/Libraries/PyKotor/src/pykotor/resource/generics/dlg/)
 
 ## Conversation Properties
