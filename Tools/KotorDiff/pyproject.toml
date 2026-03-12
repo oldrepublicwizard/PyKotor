@@ -41,7 +41,7 @@ classifiers = [
   "Topic :: Utilities",
   "Environment :: Console",
 ]
-dependencies = ["pykotor[encodings,updater]>=2.3.1"]
+dependencies = ["pykotor[encodings,updater]>=2.3.2"]
 
 [project.scripts]
 kotordiff = "kotordiff.__main__:main"
@@ -78,7 +78,7 @@ keywords = [
 
 [tool.poetry.dependencies]
 python = "^3.8"
-pykotor = { version = "^2.3.1", extras = ["encodings", "updater"] }
+pykotor = { version = "^2.3.2", extras = ["encodings", "updater"] }
 
 [tool.poetry.scripts]
 kotordiff = "kotordiff.__main__:main"
