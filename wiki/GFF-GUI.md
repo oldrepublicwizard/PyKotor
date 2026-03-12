@@ -2,7 +2,7 @@
 
 Part of the [GFF File Format Documentation](GFF-File-Format).
 
-GUI files define the layout and behavior of the user interface. They are [GFF files](GFF-File-Format) describing hierarchies of panels, buttons, labels, and other controls.
+GUI files define the layout and behavior of the user interface. They are [GFF files](GFF-File-Format) describing hierarchies of panels, buttons, labels, and other controls. GUI files are loaded with the same [resource resolution order](KEY-File-Format#key-file-purpose) as other resources (override, MOD/SAV, KEY/BIF).
 
 **Reference**: [`Libraries/PyKotor/src/pykotor/resource/generics/gui.py`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/gui.py)
 

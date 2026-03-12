@@ -2,7 +2,7 @@
 
 Part of the [GFF File Format Documentation](GFF-File-Format).
 
-UTW files define [waypoint templates](GFF-File-Format#utw-waypoint). Waypoints are invisible markers used for spawn points, navigation targets, map notes, and reference points for scripts.
+UTW files define [waypoint templates](GFF-File-Format#utw-waypoint). Waypoints are invisible markers used for spawn points, navigation targets, map notes, and reference points for scripts. UTW files are loaded with the same [resource resolution order](KEY-File-Format#key-file-purpose) as other resources (override, MOD/SAV, KEY/BIF).
 
 ## Documentation References
 

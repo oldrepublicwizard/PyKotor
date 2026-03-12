@@ -2,7 +2,7 @@
 
 Part of the [GFF File Format Documentation](GFF-File-Format).
 
-UTE files define [encounter templates](GFF-File-Format#ute-encounter) which spawn creatures when triggered by the player. Encounters handle spawning logic, difficulty scaling, respawning, and faction settings for groups of enemies or neutral creatures.
+UTE files define [encounter templates](GFF-File-Format#ute-encounter) which spawn creatures when triggered by the player. Encounters handle spawning logic, difficulty scaling, respawning, and faction settings for groups of enemies or neutral creatures. UTE files are loaded with the same [resource resolution order](KEY-File-Format#key-file-purpose) as other resources (override, MOD/SAV, KEY/BIF).
 
 **Official Bioware Documentation:** For the authoritative Bioware Aurora Engine Encounter format specification, see [Bioware Aurora Encounter Format](Bioware-Aurora-Encounter).
 

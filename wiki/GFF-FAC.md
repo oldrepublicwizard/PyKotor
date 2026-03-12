@@ -1,6 +1,6 @@
 # FAC (Faction) File Format
 
-FAC files are GFF-based format files that store faction definitions and reputation relationships between factions in KotOR modules. The file is typically named `repute.fac` in modules.
+FAC files are GFF-based format files that store faction definitions and reputation relationships between factions in KotOR modules. The file is typically named `repute.fac` in modules. FAC files are loaded with the same [resource resolution order](KEY-File-Format#key-file-purpose) as other resources (override, MOD/SAV, KEY/BIF).
 
 **Official BioWare Documentation:** For the authoritative BioWare Aurora Engine Faction Format specification, see [Bioware Aurora Faction Format](Bioware-Aurora-Faction.md).
 

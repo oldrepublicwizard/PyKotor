@@ -2,7 +2,7 @@
 
 Part of the [GFF File Format Documentation](GFF-File-Format).
 
-UTD files define [door templates](GFF-File-Format#utd-door) for all interactive doors in the game world. Doors can be locked, require keys, have hit points, conversations, and various gameplay interactions.
+UTD files define [door templates](GFF-File-Format#utd-door) for all interactive doors in the game world. Doors can be locked, require keys, have hit points, conversations, and various gameplay interactions. UTD files are loaded with the same [resource resolution order](KEY-File-Format#key-file-purpose) as other resources (override, MOD/SAV, KEY/BIF).
 
 **Official Bioware Documentation:** For the authoritative Bioware Aurora Engine Door/Placeable format specification, see [Bioware Aurora Door/Placeable GFF Format](Bioware-Aurora-DoorPlaceableGFF).
 

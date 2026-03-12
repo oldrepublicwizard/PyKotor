@@ -2,7 +2,7 @@
 
 Part of the [GFF File Format Documentation](GFF-File-Format).
 
-UTT files define [trigger templates](GFF-File-Format#utt-trigger) for invisible volumes that fire scripts when entered, exited, or used. Triggers are essential for area transitions, cutscenes, traps, and game logic.
+UTT files define [trigger templates](GFF-File-Format#utt-trigger) for invisible volumes that fire scripts when entered, exited, or used. Triggers are essential for area transitions, cutscenes, traps, and game logic. UTT files are loaded with the same [resource resolution order](KEY-File-Format#key-file-purpose) as other resources (override, MOD/SAV, KEY/BIF).
 
 **Official Bioware Documentation:** For the authoritative Bioware Aurora Engine Trigger format specification, see [Bioware Aurora Trigger Format](Bioware-Aurora-Trigger).
 
