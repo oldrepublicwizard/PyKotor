@@ -73,6 +73,8 @@ Both games use the same high-level flow: the executable initializes an applicati
 
 #### Resource Resolution Order
 
+The engine satisfies every resource request (by [ResRef](GFF-File-Format#gff-data-types) and type) in this order. See [KEY File Format](KEY-File-Format#key-file-purpose) for how demand flows through the resource manager.
+
 1. Override folder (`override/`)
 2. Currently loaded MOD/[ERF files](ERF-File-Format)
 3. Currently loaded SAV file (if in-game)
