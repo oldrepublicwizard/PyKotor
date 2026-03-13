@@ -15,8 +15,11 @@ from pykotor.gl.compat import (
     GL_DEPTH_BUFFER_BIT,
     GL_DEPTH_COMPONENT,
     GL_DEPTH_TEST,
+    GL_FILL,
     GL_FLOAT,
+    GL_FRONT_AND_BACK,
     GL_LEQUAL,
+    GL_LINE,
     GL_ONE_MINUS_SRC_ALPHA,
     GL_SRC_ALPHA,
     GL_UNSIGNED_INT_8_8_8_8,
@@ -27,6 +30,7 @@ from pykotor.gl.compat import (
     glDepthFunc,
     glDisable,
     glEnable,
+    glPolygonMode,
     glReadPixels,
 )
 from pykotor.gl.glm_compat import Vector3 as GlmVector3, Vector4, mat4, unProject
@@ -245,12 +249,18 @@ class Scene(SceneBase):
             # Render regular objects (models)
             assert self._cached_regular_objects is not None
             identity = mat4()  # Create once, reuse
-            for obj in self._cached_regular_objects:
-                if self.enable_frustum_culling and not self._is_object_visible(obj):
-                    self.culling_stats.record_object(visible=False)
-                    continue
-                self.culling_stats.record_object(visible=True)
-                self._render_object(self.shader, obj, identity)
+            if self.use_wireframe:
+                glPolygonMode(GL_FRONT_AND_BACK, GL_LINE)
+            try:
+                for obj in self._cached_regular_objects:
+                    if self.enable_frustum_culling and not self._is_object_visible(obj):
+                        self.culling_stats.record_object(visible=False)
+                        continue
+                    self.culling_stats.record_object(visible=True)
+                    self._render_object(self.shader, obj, identity)
+            finally:
+                if self.use_wireframe:
+                    glPolygonMode(GL_FRONT_AND_BACK, GL_FILL)
 
             # Setup plain shader for special objects (once)
             glEnable(GL_BLEND)
@@ -269,16 +279,18 @@ class Scene(SceneBase):
                 self.culling_stats.record_object(visible=True)
                 self._render_object(self.plain_shader, obj, identity)
 
-            # Draw bounding box for selected objects
+            # Draw bounding box for selected objects (only RenderObjects have cube/boundary)
             self.plain_shader.set_vector4("color", Vector4(1.0, 0.0, 0.0, 0.4))
             for obj in self.selection:
-                obj.cube(self).draw(self.plain_shader, obj.transform())
+                if hasattr(obj, "cube"):
+                    obj.cube(self).draw(self.plain_shader, obj.transform())
 
             # Draw boundary for selected objects
             glDisable(GL_CULL_FACE)
             self.plain_shader.set_vector4("color", Vector4(0.0, 1.0, 0.0, 0.8))
             for obj in self.selection:
-                obj.boundary(self).draw(self.plain_shader, obj.transform())
+                if hasattr(obj, "boundary"):
+                    obj.boundary(self).draw(self.plain_shader, obj.transform())
 
             # Draw non-selected boundaries (only if visible and enabled)
             if not self.hide_sound_boundaries:
@@ -516,7 +528,7 @@ class Scene(SceneBase):
             self._picker_render_object(obj, identity)
 
     def _picker_render_object(self, obj: RenderObject, transform: mat4):
-        if self.should_hide_obj(obj):
+        if self.should_hide_obj(obj) and not self.pick_include_hidden:
             return
 
         model: Model = self.model(obj.model)

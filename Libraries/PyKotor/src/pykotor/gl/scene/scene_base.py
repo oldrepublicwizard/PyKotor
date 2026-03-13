@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from concurrent.futures import Future
 from typing import TYPE_CHECKING, Any, ClassVar, TypeVar
 
 from loggerplus import RobustLogger
@@ -40,6 +41,8 @@ from pykotor.gl.models.read_mdl import gl_load_stitched_model
 from pykotor.gl.scene import Camera, RenderObject
 from pykotor.gl.scene.async_loader import (
     AsyncResourceLoader,
+    IntermediateModel,
+    IntermediateTexture,
     create_model_from_intermediate,
     create_texture_from_intermediate,
 )
@@ -148,7 +151,7 @@ class SceneBase:
 
         # Pre-compute search location lists to avoid creating new lists on every call
         # Include all texture packs so creature/world textures resolve correctly.
-        texture_search_locs = [
+        texture_search_locs: list[SearchLocation] = [
             SearchLocation.OVERRIDE,
             SearchLocation.TEXTURES_TPA,
             SearchLocation.TEXTURES_TPB,
@@ -203,7 +206,7 @@ class SceneBase:
 
             # Single call: find texture by trying all supported texture restypes.
             # This avoids extra location() calls while still reporting the real restype (TPC/TGA/DDS).
-            restypes = list(getattr(self.installation, "TEXTURES_TYPES", (ResourceType.TPC, ResourceType.TGA, ResourceType.DDS)))
+            restypes: list[ResourceType] = list(getattr(self.installation, "TEXTURES_TYPES", (ResourceType.TPC, ResourceType.TGA, ResourceType.DDS)))
             found_loc = None
             found_restype = None
             locs_by_query = self.installation.locations(([name], restypes), list(texture_search_locs))
@@ -293,10 +296,10 @@ class SceneBase:
             model_location_resolver=_resolve_model_location,
         )
         # Type narrowing: async_loader is guaranteed to be non-None after assignment
-        assert self.async_loader is not None  # Type narrowing for type checker
+        assert self.async_loader is not None, "AsyncResourceLoader is not initialized" # Type narrowing for type checker
         self.async_loader.start()
-        self._pending_texture_futures: dict[str, Any] = {}  # name -> Future
-        self._pending_model_futures: dict[str, Any] = {}  # name -> Future
+        self._pending_texture_futures: dict[str, Future[tuple[str, IntermediateTexture | None, str | None]]] = {}  # name -> Future
+        self._pending_model_futures: dict[str, Future[tuple[str, IntermediateModel | None, str | None]]] = {}  # name -> Future
 
         self.hide_creatures: bool = False
         self.hide_placeables: bool = False
@@ -312,6 +315,9 @@ class SceneBase:
         self.hide_encounter_boundaries: bool = True
         self.backface_culling: bool = True
         self.use_lightmap: bool = True
+        self.use_wireframe: bool = False
+        # When True, picker includes objects hidden by type (e.g. hide_creatures) so they can be selected.
+        self.pick_include_hidden: bool = False
         # Visibility of the 3D axis gizmo that marks the camera focal point.
         # Historical API name is `show_cursor`; keep that alias for compatibility.
         self._show_focus_point_gizmo: bool = True

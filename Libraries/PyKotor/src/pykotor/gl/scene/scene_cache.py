@@ -286,11 +286,12 @@ class SceneCache:
             )
 
         # --- Detect removed GIT objects and clean them from the render list ---
-        # Old approach: copy(scene.objects) + 9 isinstance + `in` list checks (O(n²)) per frame.
-        # Optimized: build a frozenset of all live GIT instances once, then do O(1) lookups.
+        # Build frozenset of live instances (required every frame for correctness).
         _live_instances: frozenset[GITInstance | LYTRoom] = frozenset(scene.git.instances()) | frozenset(scene.layout.rooms)
-        _to_remove: list[GITInstance | LYTRoom] = [obj for obj in scene.objects if obj not in _live_instances]
-        for obj in _to_remove:
-            del scene.objects[obj]
+        # Only run the remove pass when there may be dead objects (avoids list comp + del loop most frames).
+        if len(scene.objects) > len(_live_instances) or any(k not in _live_instances for k in scene.objects):
+            _to_remove: list[GITInstance | LYTRoom] = [obj for obj in scene.objects if obj not in _live_instances]
+            for obj in _to_remove:
+                del scene.objects[obj]
 
     # _del_git_objects removed - replaced by frozenset-based O(1) lookup in build_cache.

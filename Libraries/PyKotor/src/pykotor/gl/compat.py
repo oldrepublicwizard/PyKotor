@@ -83,6 +83,12 @@ if HAS_PYOPENGL:
         GL_BGRA,
         GL_UNSIGNED_INT_8_8_8_8,
     )
+    from OpenGL.GL import (  # pyright: ignore[reportMissingImports]
+        GL_FILL,
+        GL_FRONT_AND_BACK,
+        GL_LINE,
+        glPolygonMode,
+    )
 else:
     glReadPixels = missing_gl_func("glReadPixels")
     glClear = missing_gl_func("glClear")
@@ -106,3 +112,7 @@ else:
     GL_FLOAT = missing_constant("GL_FLOAT")
     GL_BGRA = missing_constant("GL_BGRA")
     GL_UNSIGNED_INT_8_8_8_8 = missing_constant("GL_UNSIGNED_INT_8_8_8_8")
+    GL_FILL = missing_constant("GL_FILL")
+    GL_FRONT_AND_BACK = missing_constant("GL_FRONT_AND_BACK")
+    GL_LINE = missing_constant("GL_LINE")
+    glPolygonMode = missing_gl_func("glPolygonMode")

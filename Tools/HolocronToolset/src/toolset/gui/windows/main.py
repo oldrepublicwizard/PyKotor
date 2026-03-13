@@ -154,6 +154,7 @@ def run_module_designer(
     # before any buffer operations, which causes issues with PyOpenGL's lazy loading
     fmt.setProfile(QSurfaceFormat.OpenGLContextProfile.CompatibilityProfile)
     fmt.setSamples(4)  # Enable multisampling for antialiasing
+    fmt.setSwapInterval(1)  # Vsync: cap frame rate to display refresh, reduce tearing
     QSurfaceFormat.setDefaultFormat(fmt)
 
     app = QApplication([])

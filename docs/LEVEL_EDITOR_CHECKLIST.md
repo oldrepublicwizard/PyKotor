@@ -364,6 +364,17 @@ Based on the Forge merge plan, these are the **critical path** items to implemen
 | `module_designer.py` | Added `_handle_resource_drop(resource, screen_pos)` — maps resource type to GIT class, resolves world position via `screen_to_world_from_depth_buffer` (with cursor fallback), pre-sets resref, calls `add_instance()` | ✅ Done |
 | `module_designer.py` | Added `QAbstractItemView` + `QEvent` to runtime imports | ✅ Done |
 
+### Implementation Log (Module Designer Full Fix — mode, layout, snap, viz, drag-drop, camera, render)
+
+| Area | Behavior |
+|---|---|
+| **Mode combobox** | `modeSelector` is synced with `_editor_mode`; `_apply_mode_visibility(mode)` runs on startup and after module load so tabs and renderers match the current mode. Layout → lytTab + layoutTab, indoorRenderer + _lyt_renderer visible; Walkmesh → walkmeshTab. |
+| **Layout tab population** | **Modules**: `_module_kit_manager` is created when an installation is set; `_setup_indoor_modules()` populates `moduleKitSelect`; when no installation, shows "(Select an installation for module kits)". **Kits**: `get_kits_path()` points to `Tools/HolocronToolset/kits` (repo root); `_setup_indoor_kits()` loads from that path. Create a `kits` folder with README if missing. |
+| **Snap scope** | **Toolbar** (Object/Walkmesh only): `snapCheck` / `snapSizeSpin` = grid snap for move/place; `rotSnapCheck` / `rotSnapDegreeSpin` = rotation snap. Applied in gizmo drag, move_selected, rotate_selected, inspector position/bearing, resource drop, add-at-cursor, duplicate. **Layout tab**: indoor renderer uses its own snap (snapToGridCheck, gridSizeSpin, rotSnapSpin) for room placement only. |
+| **Drag-drop** | **Resources**: drag from resource tree → drop on **3D** (mainRenderer) or **2D** (flatRenderer); world position from depth/cursor (3D) or flatRenderer.to_world_coords (2D); walkmesh snap for creatures/waypoints. **Room pieces**: select component in Layout tab → click on **indoor 2D** or **3D** view to place; placement updates LYT and invalidates rooms; LYT/walkmesh generation on build. |
+| **Visibility vs pickability** | Type toggles (Creatures, Doors, etc.) control **visibility** only. **Pick hidden** checkbox (Object mode): when on, 3D picker and 2D `_instances_under_mouse` include hidden types so they can be selected. When off, only visible types are pickable. |
+| **Camera / render loop** | Single update path: renderer `loop()` calls `_loop_callback(delta_time)` (CameraController.update with accumulated mouse deltas) then `update()`. Delta time from elapsed time; vsync via `QSurfaceFormat.setSwapInterval(1)` (module designer process). `SceneCache.build_cache()` runs every frame in the render path; dead-object removal is conditional to reduce allocations when nothing was removed. |
+
 1. ~~Integrate indoor builder room-layout logic into `module_designer.py` as "Layout Mode"~~ ✅ **DONE** — EditorMode enum, mode selector combo, `_on_mode_changed`, `_apply_mode_visibility`, indoor state in `__init__`, kit/module selectors, indoor renderer wired up
 2. Retire standalone `indoor_builder.ui` — _deferred until all builder.py logic fully ported_
 3. ~~Add mode selector toolbar (Layout/Object/Walkmesh/Lighting/Terrain/NavMesh)~~ ✅ **DONE** — Mode selector combo in toolbar with Object/Layout/Walkmesh modes; tab visibility toggles per mode

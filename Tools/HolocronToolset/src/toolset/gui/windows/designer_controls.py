@@ -169,6 +169,10 @@ class ModuleDesignerControls3d:
         # Initialize camera controller with settings
         self._camera_controller: CameraController | None = None
         self._last_input_state: InputState = InputState()
+        self._accumulated_mouse_dx: float = 0.0
+        self._accumulated_mouse_dy: float = 0.0
+        self._last_camera_buttons: set[Qt.MouseButton] = set()
+        self._last_camera_keys: set[Qt.Key] = set()
 
     def _get_camera_controller(self) -> CameraController:
         """Get or create the camera controller."""
@@ -181,6 +185,8 @@ class ModuleDesignerControls3d:
                 smoothing_factor=0.1,
                 enable_acceleration=True,
                 speed_boost_multiplier=self.settings.boostedMoveCameraSensitivity3d / self.settings.moveCameraSensitivity3d,
+                shift_for_fine_control=True,
+                fine_control_multiplier=0.25,
             )
             assert self.renderer.scene is not None, "self.renderer.scene is None"
             self._camera_controller = CameraController(
@@ -247,6 +253,9 @@ class ModuleDesignerControls3d:
         buttons: set[Qt.MouseButton],
         keys: set[Qt.Key],
     ):
+        self._last_camera_buttons = set(buttons)
+        self._last_camera_keys = set(keys)
+
         # Process input through smoothing and acceleration
         processed_dx, processed_dy = self._process_input(screen_delta)
         _processed_delta = Vector2(processed_dx, processed_dy)
@@ -318,38 +327,13 @@ class ModuleDesignerControls3d:
                     instance.position = Vector3(x, y, z)
                 return
 
-        # Camera controls
-        # Ctrl+Left drag and Middle drag both use the same plane pan (exact same behavior)
+        # Camera controls: accumulate raw deltas for CameraController.update() in the render loop (smoothing)
         plane_pan_satisfied = move_camera_plane_satisfied or move_xy_camera_satisfied
         if plane_pan_satisfied or rotate_camera_satisfied or zoom_camera_satisfied:
             self.editor.do_cursor_lock(screen, center_mouse=False, do_rotations=False)
-
-            # Scale movement based on distance for consistent feel
-            assert self.renderer.scene is not None, "self.renderer.scene is None"
-            distance_scale = max(0.5, self.renderer.scene.camera.distance * 0.05)
-            base_move_strength = self.settings.moveCameraSensitivity3d / 1000.0
-            move_strength = base_move_strength * distance_scale
-
-            if plane_pan_satisfied:
-                upward = processed_dy * self.renderer.scene.camera.upward(ignore_xy=False)
-                sideward = processed_dx * self.renderer.scene.camera.sideward()
-                self.renderer.scene.camera.z -= (upward.z + sideward.z) * move_strength  # pyright: ignore[reportAttributeAccessIssue]
-                self.renderer.scene.camera.y -= (upward.y + sideward.y) * move_strength  # pyright: ignore[reportAttributeAccessIssue]
-                self.renderer.scene.camera.x -= (upward.x + sideward.x) * move_strength  # pyright: ignore[reportAttributeAccessIssue]
-
-            if rotate_camera_satisfied:
-                rotate_strength = self.settings.rotateCameraSensitivity3d / 5000.0
-                self.renderer.rotate_camera(
-                    -processed_dx * rotate_strength,
-                    processed_dy * rotate_strength,
-                    clamp_rotations=True,
-                )
-
-            if zoom_camera_satisfied:
-                zoom_strength = self.settings.zoomCameraSensitivity3d / 2000.0
-                distance_factor = max(0.1, self.renderer.scene.camera.distance * 0.1)
-                self.renderer.scene.camera.distance -= processed_dy * zoom_strength * distance_factor
-                self.renderer.scene.camera.distance = max(0.5, min(500.0, self.renderer.scene.camera.distance))
+            self._accumulated_mouse_dx += screen_delta.x
+            self._accumulated_mouse_dy += screen_delta.y
+            return
 
     def on_mouse_pressed(
         self,
@@ -379,6 +363,32 @@ class ModuleDesignerControls3d:
 
     def on_keyboard_released(self, buttons: set[Qt.MouseButton], keys: set[Qt.Key]):
         self.editor.handle_undo_redo_from_long_action_finished()
+
+    def update_camera_from_input(self, delta_time: float) -> None:
+        """Update camera via CameraController with accumulated mouse deltas (called from render loop)."""
+        if self.renderer.scene is None:
+            return
+        dx = self._accumulated_mouse_dx
+        dy = self._accumulated_mouse_dy
+        self._accumulated_mouse_dx = 0.0
+        self._accumulated_mouse_dy = 0.0
+        buttons = self._last_camera_buttons
+        keys = self._last_camera_keys
+        input_state = InputState(
+            mouse_delta_x=dx,
+            mouse_delta_y=dy,
+            left_button=Qt.MouseButton.LeftButton in buttons,
+            middle_button=Qt.MouseButton.MiddleButton in buttons,
+            right_button=Qt.MouseButton.RightButton in buttons,
+            shift_held=Qt.Key.Key_Shift in keys,
+            ctrl_held=Qt.Key.Key_Control in keys,
+            alt_held=Qt.Key.Key_Alt in keys,
+        )
+        controller = self._get_camera_controller()
+        if dx == 0 and dy == 0 and not (input_state.left_button or input_state.middle_button or input_state.right_button):
+            controller.sync_from_camera()
+        else:
+            controller.update(input_state, delta_time)
 
     def _duplicate_selected_instance(self):
         # TODO(th3w1zard1): Seems the code throughout is designed for multi-selections, yet nothing uses it. Probably disabled due to a bug or planned for later.

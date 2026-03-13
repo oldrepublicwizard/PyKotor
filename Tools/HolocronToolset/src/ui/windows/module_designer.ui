@@ -379,6 +379,19 @@
        </widget>
       </item>
       <item>
+       <widget class="QCheckBox" name="walkmeshEdgesCheck">
+        <property name="toolTip">
+         <string>Show walkmesh edges in 2D view (Object/Walkmesh modes)</string>
+        </property>
+        <property name="text">
+         <string>Walkmesh edges</string>
+        </property>
+        <property name="checked">
+         <bool>false</bool>
+        </property>
+       </widget>
+      </item>
+      <item>
        <widget class="QCheckBox" name="backfaceCheck">
         <property name="maximumSize">
          <size>
@@ -878,6 +891,19 @@
         </property>
         <property name="checked">
          <bool>true</bool>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QCheckBox" name="pickHiddenCheck">
+        <property name="toolTip">
+         <string>Allow selecting instances that are hidden by type (e.g. creatures when Creatures is unchecked)</string>
+        </property>
+        <property name="text">
+         <string>Pick hidden</string>
+        </property>
+        <property name="checked">
+         <bool>false</bool>
         </property>
        </widget>
       </item>

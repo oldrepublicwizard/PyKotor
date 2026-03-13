@@ -154,11 +154,13 @@ if TYPE_CHECKING:
 
 
 def get_kits_path() -> Path:
+    """Return the path to the indoor kits directory (Tools/HolocronToolset/kits when run from repo)."""
     if is_frozen():
         kits_path = Path("./kits").absolute()
     else:
+        # From .../HolocronToolset/src/toolset/gui/windows/indoor_builder/builder.py -> parents[5] = HolocronToolset root
         this_file_path = Path(__file__).absolute()
-        kits_path = this_file_path.parents[2].joinpath("kits").absolute()
+        kits_path = this_file_path.parents[5].joinpath("kits").absolute()
     return kits_path
 
 

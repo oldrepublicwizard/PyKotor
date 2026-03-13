@@ -542,7 +542,7 @@ class ModuleDesigner(QMainWindow, BlenderEditorMixin, StandaloneWindowMixin):
         # Setup event filter to prevent scroll wheel interaction with controls
         from toolset.gui.common.filters import NoScrollEventFilter
 
-        self._no_scroll_filter = NoScrollEventFilter(self)
+        self._no_scroll_filter: NoScrollEventFilter = NoScrollEventFilter(self)
         self._no_scroll_filter.setup_filter(parent_widget=self)
 
         self._init_ui()
@@ -601,8 +601,13 @@ class ModuleDesigner(QMainWindow, BlenderEditorMixin, StandaloneWindowMixin):
         # --- Active tool (Select / Move / Rotate) ---
         self._active_tool: int = EditorTool.SELECT
 
-        # Connect mode selector
+        # Connect mode selector and sync combo to initial mode
         self.ui.modeSelector.currentIndexChanged.connect(self._on_mode_changed)
+        self.ui.modeSelector.blockSignals(True)
+        try:
+            self.ui.modeSelector.setCurrentIndex(EditorMode.OBJECT)
+        finally:
+            self.ui.modeSelector.blockSignals(False)
         # Start in Object mode — hide indoor-only UI elements
         self._apply_mode_visibility(EditorMode.OBJECT)
 
@@ -666,18 +671,23 @@ class ModuleDesigner(QMainWindow, BlenderEditorMixin, StandaloneWindowMixin):
             return
         self._installation = installation
         try:
+            self._module_kit_manager = ModuleKitManager(installation)
+        except Exception:
+            self.log.warning("Failed to initialize ModuleKitManager, module kits will be unavailable")
+            self._module_kit_manager = None
+        try:
             self._populate_module_combo()
             self._setup_indoor_modules()
             self._refresh_window_title()
         except Exception:
             self.log.exception("Failed to refresh after installation switch")
 
-    def showEvent(self, a0: QShowEvent):
+    def showEvent(self, a0: QShowEvent) -> None:
         if self.ui.mainRenderer._scene is None:  # noqa: SLF001
             return  # Don't show the window if the scene isn't ready, otherwise the gl context stuff will start prematurely.
         super().showEvent(a0)
 
-    def closeEvent(self, event: QCloseEvent):  # pyright: ignore[reportIncompatibleMethodOverride]
+    def closeEvent(self, event: QCloseEvent) -> None:  # pyright: ignore[reportIncompatibleMethodOverride]
         from toolset.gui.common.localization import translate as tr
 
         # Only show confirmation dialog if there are unsaved changes
@@ -699,7 +709,7 @@ class ModuleDesigner(QMainWindow, BlenderEditorMixin, StandaloneWindowMixin):
             self.stop_blender_mode()
         event.accept()  # Let the window close
 
-    def _setup_signals(self):
+    def _setup_signals(self) -> None:
         self.ui.actionOpen.triggered.connect(self.open_module_with_dialog)
         self.ui.actionSave.triggered.connect(self.save_git)
         self.ui.actionSettings.triggered.connect(self.open_settings_dialog)
@@ -735,6 +745,7 @@ class ModuleDesigner(QMainWindow, BlenderEditorMixin, StandaloneWindowMixin):
         instance_visibility_checkboxes = self._instance_visibility_checkboxes()
         for checkbox in instance_visibility_checkboxes:
             checkbox.toggled.connect(self.update_toggles)
+        self.ui.pickHiddenCheck.toggled.connect(self.update_toggles)
         self.ui.backfaceCheck.toggled.connect(self.update_toggles)
         self.ui.lightmapCheck.toggled.connect(self.update_toggles)
         self.ui.cursorCheck.toggled.connect(self.update_toggles)
@@ -742,6 +753,10 @@ class ModuleDesigner(QMainWindow, BlenderEditorMixin, StandaloneWindowMixin):
         self.ui.roomBoundariesCheck.toggled.connect(lambda _: self.ui.flatRenderer.update())
         self.ui.flatGridCheck.toggled.connect(lambda value: setattr(self.ui.flatRenderer, "show_grid", value))
         self.ui.flatGridCheck.toggled.connect(lambda _: self.ui.flatRenderer.update())
+        self.ui.walkmeshEdgesCheck.toggled.connect(
+            lambda checked: setattr(self.ui.flatRenderer, "hide_walkmesh_edges", not checked),
+        )
+        self.ui.walkmeshEdgesCheck.toggled.connect(lambda _: self.ui.flatRenderer.update())
 
         for checkbox in instance_visibility_checkboxes:
             checkbox.mouseDoubleClickEvent = (  # type: ignore[method-assign]  # pyright: ignore[reportAttributeAccessIssue, reportArgumentType]
@@ -795,7 +810,7 @@ class ModuleDesigner(QMainWindow, BlenderEditorMixin, StandaloneWindowMixin):
     # Tool Palette
     # =========================================================================
 
-    def _setup_tool_buttons(self):
+    def _setup_tool_buttons(self) -> None:
         """Create a mutually-exclusive button group for Select / Move / Rotate."""
         from qtpy.QtWidgets import QButtonGroup  # noqa: PLC0415
 
@@ -809,7 +824,7 @@ class ModuleDesigner(QMainWindow, BlenderEditorMixin, StandaloneWindowMixin):
         self.ui.toolMoveBtn.clicked.connect(lambda: self._set_active_tool(EditorTool.MOVE))
         self.ui.toolRotateBtn.clicked.connect(lambda: self._set_active_tool(EditorTool.ROTATE))
 
-    def _set_active_tool(self, tool: int):
+    def _set_active_tool(self, tool: int) -> None:
         """Switch the active manipulation tool and update the toolbar state."""
         self._active_tool = tool
         # Ensure the matching button is visually checked
@@ -824,7 +839,7 @@ class ModuleDesigner(QMainWindow, BlenderEditorMixin, StandaloneWindowMixin):
     # Status Bar
     # =========================================================================
 
-    def _setup_status_bar(self):
+    def _setup_status_bar(self) -> None:
         """Add persistent labels to the status bar showing mode, tool, and selection info."""
         from qtpy.QtWidgets import QLabel  # noqa: PLC0415
 
@@ -1102,13 +1117,15 @@ class ModuleDesigner(QMainWindow, BlenderEditorMixin, StandaloneWindowMixin):
         inst = self.selected_instances[0]
         old_pos = Vector3(inst.position.x, inst.position.y, inst.position.z)
         new_pos = Vector3(
-            self.ui.propXSpin.value(),
-            self.ui.propYSpin.value(),
-            self.ui.propZSpin.value(),
+            self._snap_to_grid(self.ui.propXSpin.value()),
+            self._snap_to_grid(self.ui.propYSpin.value()),
+            self._snap_to_grid(self.ui.propZSpin.value()),
         )
         self.undo_stack.push(MoveCommand(inst, old_pos, new_pos))
         inst.position = new_pos
         self._invalidate_scene_and_update_renderers()
+        if self.ui.snapCheck.isChecked():
+            self._show_status_message(f"Position snapped to grid ({self.ui.snapSizeSpin.value():.2f} m)", 1500)
 
     def _on_inspector_bearing_changed(self):
         """Handle bearing spinbox changes from the inspector panel."""
@@ -1119,8 +1136,11 @@ class ModuleDesigner(QMainWindow, BlenderEditorMixin, StandaloneWindowMixin):
         inst = self.selected_instances[0]
         if not hasattr(inst, "bearing"):
             return
-        inst.bearing = math.radians(self.ui.propBearingSpin.value())
+        degrees = self._snap_rotation(self.ui.propBearingSpin.value())
+        inst.bearing = math.radians(degrees)
         self._invalidate_scene_and_update_renderers()
+        if self.ui.rotSnapCheck.isChecked():
+            self._show_status_message(f"Rotation snapped to {self.ui.rotSnapDegreeSpin.value():.0f}°", 1500)
 
     def _on_inspector_open_blueprint(self):
         """Open the blueprint editor for the selected instance."""
@@ -1140,9 +1160,11 @@ class ModuleDesigner(QMainWindow, BlenderEditorMixin, StandaloneWindowMixin):
         self.ui.resourceTree.setDragDropMode(QAbstractItemView.DragDropMode.DragOnly)
         # Track which resource is being dragged
         self.ui.resourceTree.itemPressed.connect(self._on_resource_tree_item_pressed)
-        # Accept drops on the 3D renderer
+        # Accept drops on the 3D and 2D viewports (resources: tree → 3D or 2D)
         self.ui.mainRenderer.setAcceptDrops(True)
         self.ui.mainRenderer.installEventFilter(self)
+        self.ui.flatRenderer.setAcceptDrops(True)
+        self.ui.flatRenderer.installEventFilter(self)
 
     def _on_resource_tree_item_pressed(self, item: QTreeWidgetItem) -> None:
         """Cache the ModuleResource when the user begins pressing an item (pre-drag)."""
@@ -1238,23 +1260,52 @@ class ModuleDesigner(QMainWindow, BlenderEditorMixin, StandaloneWindowMixin):
             elif etype == QEvent.Type.DragLeave:
                 self._dragged_resource = None
                 self.ui.mainRenderer.set_drop_preview(None)
+        elif obj is self.ui.flatRenderer and self._dragged_resource is not None:
+            etype = event.type()
+            if etype in (QEvent.Type.DragEnter, QEvent.Type.DragMove):
+                event.acceptProposedAction()  # type: ignore[union-attr]
+                return True
+            if etype == QEvent.Type.Drop:
+                drop_event = event  # type: ignore[assignment]
+                pos = drop_event.pos()  # type: ignore[union-attr]
+                world_pos = self.ui.flatRenderer.to_world_coords(pos.x(), pos.y())
+                self._handle_resource_drop_at_world(self._dragged_resource, world_pos)
+                self._dragged_resource = None
+                event.acceptProposedAction()  # type: ignore[union-attr]
+                return True
+            if etype == QEvent.Type.DragLeave:
+                self._dragged_resource = None
         elif obj is self.ui.visMatrix.viewport() and event.type() == QEvent.Type.Leave:
             self._indoor_vis_hover_row = -1
             self._indoor_vis_hover_col = -1
             self._apply_indoor_vis_hover_highlight()
         return super().eventFilter(obj, event)  # type: ignore[arg-type]
 
-    def _handle_resource_drop(self, resource: ModuleResource, screen_pos: QPoint) -> None:
-        """Spawn a new GIT instance for *resource* at the world position under *screen_pos*.
-
-        If the resource type does not map to a spawnable GIT class (e.g. items), this is a no-op.
-        """
+    def _handle_resource_drop_at_world(self, resource: ModuleResource, world_pos: Vector3) -> None:
+        """Spawn a new GIT instance for *resource* at *world_pos* (used by 3D and 2D drop)."""
         git_class = _RESTYPE_TO_GIT_CLASS.get(resource.restype())
         if git_class is None:
             self._show_status_message(f"Cannot spawn '{resource.restype()}' resources as GIT instances.", 3000)
             return
+        if self.ui.snapCheck.isChecked():
+            world_pos = Vector3(
+                self._snap_to_grid(world_pos.x),
+                self._snap_to_grid(world_pos.y),
+                self._snap_to_grid(world_pos.z),
+            )
+        instance: GITInstance = git_class(world_pos.x, world_pos.y, world_pos.z)
+        instance.resref = ResRef(resource.resname())  # type: ignore[union-attr]
+        walkmesh_snap = isinstance(instance, (GITCreature, GITWaypoint))
+        self.add_instance(instance, walkmesh_snap=walkmesh_snap)
+        if self.ui.snapCheck.isChecked():
+            self._show_status_message(f"Placed and snapped to grid ({self.ui.snapSizeSpin.value():.2f} m)", 2000)
 
-        # Determine world position: try depth-buffer first, fall back to scene cursor
+    def _handle_resource_drop(self, resource: ModuleResource, screen_pos: QPoint) -> None:
+        """Spawn a new GIT instance for *resource* at the world position under *screen_pos* (3D viewport).
+
+        Drag-drop design: (1) Resources: drag from resource tree → drop on 3D or 2D viewport.
+        (2) Room pieces: place via Layout tab (select component, click on indoor 2D or 3D view).
+        """
         world_pos = Vector3(0.0, 0.0, 0.0)
         scene = self.ui.mainRenderer._scene
         if scene is not None:
@@ -1262,15 +1313,7 @@ class ModuleDesigner(QMainWindow, BlenderEditorMixin, StandaloneWindowMixin):
                 world_pos = scene.screen_to_world_from_depth_buffer(screen_pos.x(), screen_pos.y())
             except Exception:  # noqa: BLE001
                 world_pos = Vector3(scene.cursor.position().x, scene.cursor.position().y, scene.cursor.position().z)
-
-        # Create instance, pre-set its resref so InsertInstanceDialog can auto-select it
-        instance: GITInstance = git_class(world_pos.x, world_pos.y, world_pos.z)
-        instance.resref = ResRef(resource.resname())  # type: ignore[union-attr]
-
-        # add_instance will show InsertInstanceDialog so the user confirms / picks location
-        # Pass walkmesh_snap=True so creatures land on surfaces correctly
-        walkmesh_snap = isinstance(instance, (GITCreature, GITWaypoint))
-        self.add_instance(instance, walkmesh_snap=walkmesh_snap)
+        self._handle_resource_drop_at_world(resource, world_pos)
 
     # =========================================================================
     # Editor Mode Switching
@@ -1328,6 +1371,7 @@ class ModuleDesigner(QMainWindow, BlenderEditorMixin, StandaloneWindowMixin):
         git_toggle_widgets = self._instance_visibility_checkboxes()
         for w in git_toggle_widgets:
             w.setVisible(is_object)
+        self.ui.pickHiddenCheck.setVisible(is_object)
 
         # --- Left panel tab visibility ---
         # Show only the tabs relevant to the active mode to save space.
@@ -1386,6 +1430,7 @@ class ModuleDesigner(QMainWindow, BlenderEditorMixin, StandaloneWindowMixin):
         self.ui.rotSnapCheck.setVisible(tool_visible)
         self.ui.rotSnapDegreeSpin.setVisible(tool_visible)
         self.ui.snapSeparator.setVisible(tool_visible)
+        self.ui.walkmeshEdgesCheck.setVisible(tool_visible)
 
     def _switch_left_panel_to(self, tab_object_name: str):
         """Switch left panel to a specific tab by its objectName."""
@@ -1432,6 +1477,9 @@ class ModuleDesigner(QMainWindow, BlenderEditorMixin, StandaloneWindowMixin):
         """Populate the module kit selector with available game modules."""
         try:
             populate_module_root_combobox(self.ui.moduleKitSelect, self._module_kit_manager)
+            if self._module_kit_manager is None:
+                self.ui.moduleKitSelect.clear()
+                self.ui.moduleKitSelect.addItem("(Select an installation for module kits)")
         except Exception:
             self.log.warning("Failed to populate module kit list")
 
@@ -2572,12 +2620,17 @@ class ModuleDesigner(QMainWindow, BlenderEditorMixin, StandaloneWindowMixin):
             lyt.rooms.append(LYTRoom(model_name, room.position))
         self.rebuild_layout_tree()
 
-    def _indoor_place_new_room(self, component: KitComponent):
-        """Place a new room at the cursor position with undo support."""
+    def _indoor_place_new_room(self, component: KitComponent, position: Vector3 | None = None):
+        """Place a new room at the given position or the indoor renderer cursor, with undo support.
+
+        Used for both Layout 2D (indoorRenderer click) and 3D viewport placement when position
+        is passed from a 3D click.
+        """
         renderer = self.ui.indoorRenderer
+        pos = position if position is not None else Vector3(*renderer.cursor_point)
         room = IndoorMapRoom(
             component,
-            Vector3(*renderer.cursor_point),
+            pos,
             renderer.cursor_rotation,
             flip_x=renderer.cursor_flip_x,
             flip_y=renderer.cursor_flip_y,
@@ -3646,6 +3699,9 @@ class ModuleDesigner(QMainWindow, BlenderEditorMixin, StandaloneWindowMixin):
         # Mark initial state as clean (no unsaved changes)
         self._mark_clean_state()
 
+        # Re-apply mode visibility so tabs and renderers match current mode after load
+        self._apply_mode_visibility(self._editor_mode)
+
         if _profile_startup is not None:
             startup_ms = (time.perf_counter() - _profile_startup) * 1000
             init_renderer_ms = _profile_init_renderer_duration * 1000 if _profile_init_renderer_duration is not None else 0.0
@@ -4117,8 +4173,8 @@ class ModuleDesigner(QMainWindow, BlenderEditorMixin, StandaloneWindowMixin):
                 continue
 
             struct_index: int = git.index(instance)
-            icon = QIcon(icon_mapping.get(cls, icon_mapping[GITInstance]))
-            font = self.ui.instanceTree.font()
+            icon = QIcon(icon_mapping.get(cls, icon_mapping[GITInstance]))  # pyright: ignore[reportArgumentType, reportCallIssue]
+            font: QFont = self.ui.instanceTree.font()
 
             if isinstance(instance, GITCamera):
                 name = f"Camera #{instance.camera_id}"
@@ -4141,7 +4197,7 @@ class ModuleDesigner(QMainWindow, BlenderEditorMixin, StandaloneWindowMixin):
                     name = module_resource.localized_name() or resname
                     tag = instance.tag
                 elif isinstance(instance, GITWaypoint):
-                    name = self._installation.string(instance.name)
+                    name = self._installation.string(instance.name)  # pyright: ignore[reportOptionalMemberAccess]
                     tag = instance.tag
                 elif module_resource:
                     name = module_resource.localized_name() or resname
@@ -4552,11 +4608,15 @@ class ModuleDesigner(QMainWindow, BlenderEditorMixin, StandaloneWindowMixin):
         }
 
         self._apply_instance_visibility_toggles(scene, hidden_by_instance_type)
+        scene.pick_include_hidden = self.ui.pickHiddenCheck.isChecked()
+        self.ui.flatRenderer.pick_include_hidden = self.ui.pickHiddenCheck.isChecked()
 
+        wireframe = self._viewport_shading_mode == 2
         self.ui.mainRenderer.apply_render_overrides(
             backface_culling=self.ui.backfaceCheck.isChecked(),
             use_lightmap=self.ui.lightmapCheck.isChecked(),
             show_cursor=self.ui.cursorCheck.isChecked(),
+            wireframe=wireframe,
         )
 
         # Sync to Blender if active
@@ -4665,9 +4725,15 @@ class ModuleDesigner(QMainWindow, BlenderEditorMixin, StandaloneWindowMixin):
             self.log.warning("Cannot add instance at cursor while Blender mode controls rendering.")
             return
 
-        instance.position.x = scene.cursor.position().x
-        instance.position.y = scene.cursor.position().y
-        instance.position.z = scene.cursor.position().z
+        if self.ui.snapCheck.isChecked():
+            instance.position.x = self._snap_to_grid(scene.cursor.position().x)
+            instance.position.y = self._snap_to_grid(scene.cursor.position().y)
+            instance.position.z = self._snap_to_grid(scene.cursor.position().z)
+            self._show_status_message(f"Snapped to grid ({self.ui.snapSizeSpin.value():.2f} m)", 1500)
+        else:
+            instance.position.x = scene.cursor.position().x
+            instance.position.y = scene.cursor.position().y
+            instance.position.z = scene.cursor.position().z
 
         if not isinstance(instance, GITCamera):
             assert self._module is not None
@@ -4987,7 +5053,15 @@ class ModuleDesigner(QMainWindow, BlenderEditorMixin, StandaloneWindowMixin):
         new_instances: list[GITObject] = []
         for inst in self.selected_instances:
             clone = deepcopy(inst)
-            clone.position = Vector3(clone.position.x + OFFSET, clone.position.y + OFFSET, clone.position.z)
+            raw_x, raw_y, raw_z = clone.position.x + OFFSET, clone.position.y + OFFSET, clone.position.z
+            if self.ui.snapCheck.isChecked():
+                clone.position = Vector3(
+                    self._snap_to_grid(raw_x),
+                    self._snap_to_grid(raw_y),
+                    self._snap_to_grid(raw_z),
+                )
+            else:
+                clone.position = Vector3(raw_x, raw_y, raw_z)
             git_resource.add(clone)
             new_instances.append(clone)
             # Sync to Blender
@@ -5000,7 +5074,11 @@ class ModuleDesigner(QMainWindow, BlenderEditorMixin, StandaloneWindowMixin):
         self._show_status_message(f"Duplicated {len(new_instances)} instance(s)")
 
     def _snap_to_grid(self, value: float) -> float:
-        """Snap a coordinate value to the nearest grid increment if snapping is enabled."""
+        """Snap a coordinate value to the nearest grid increment if snapping is enabled.
+
+        Toolbar snap (Snap / Rot Snap) applies to Object and Walkmesh modes only; Layout tab
+        uses its own snap options (snapToGridCheck, gridSizeSpin, rotSnapSpin) for room placement.
+        """
         return snap_value(value, self.ui.snapSizeSpin.value(), enabled=self.ui.snapCheck.isChecked())
 
     def _snap_rotation(self, degrees: float) -> float:
@@ -5039,6 +5117,8 @@ class ModuleDesigner(QMainWindow, BlenderEditorMixin, StandaloneWindowMixin):
             # Sync to Blender if not already syncing from Blender
             if self.is_blender_mode() and self._blender_controller is not None and not self._transform_sync_in_progress:
                 self._blender_controller.update_instance_position(instance, new_x, new_y, new_z)
+        if self.selected_instances and self.ui.snapCheck.isChecked():
+            self._show_status_message(f"Snapped to grid ({self.ui.snapSizeSpin.value():.2f} m)", 1500)
 
     def rotate_selected(self, x: float, y: float):
         if self.ui.lockInstancesCheck.isChecked():
@@ -5068,6 +5148,8 @@ class ModuleDesigner(QMainWindow, BlenderEditorMixin, StandaloneWindowMixin):
                         instance,
                         bearing=instance.bearing,
                     )
+        if self.selected_instances and self.ui.rotSnapCheck.isChecked():
+            self._show_status_message(f"Rotation snapped to {self.ui.rotSnapDegreeSpin.value():.0f}°", 1500)
 
     # endregion
 
@@ -5244,6 +5326,28 @@ class ModuleDesigner(QMainWindow, BlenderEditorMixin, StandaloneWindowMixin):
 
     def on_3d_mouse_pressed(self, screen: Vector2, buttons: set[Qt.MouseButton], keys: set[Qt.Key]):
         self.update_status_bar(screen, buttons, keys, self.ui.mainRenderer)
+        # Layout mode: place room piece in 3D when a component is selected and user left-clicks
+        if (
+            self._editor_mode == EditorMode.LAYOUT
+            and Qt.MouseButton.LeftButton in buttons
+            and self.ui.indoorRenderer.cursor_component is not None
+        ):
+            scene = self.ui.mainRenderer._scene
+            if scene is not None:
+                try:
+                    world_pos = scene.screen_to_world_from_depth_buffer(int(screen.x), int(screen.y))
+                except Exception:  # noqa: BLE001
+                    world_pos = Vector3(
+                        scene.cursor.position().x,
+                        scene.cursor.position().y,
+                        scene.cursor.position().z,
+                    )
+                comp = self.ui.indoorRenderer.cursor_component
+                self._indoor_place_new_room(comp, world_pos)
+                if Qt.Key.Key_Shift not in keys:
+                    self._indoor_clear_placement_mode()
+                self._show_status_message(f"Room placed: {comp.name}", 2000)
+                return
         if (
             self._editor_mode == EditorMode.OBJECT
             and self._active_tool == EditorTool.ROTATE
@@ -5442,6 +5546,7 @@ class ModuleDesigner(QMainWindow, BlenderEditorMixin, StandaloneWindowMixin):
         self.show()
         self.activateWindow()
 
+        self.ui.mainRenderer._loop_callback = self._controls3d.update_camera_from_input
         self.update_toggles()
         if self.selected_instances:
             self.set_selection(list(self.selected_instances))
@@ -6202,20 +6307,23 @@ class ModuleDesigner(QMainWindow, BlenderEditorMixin, StandaloneWindowMixin):
         return False
 
     def _cycle_viewport_shading(self):
-        """Cycle viewport shading: Lightmapped → Solid → back.
+        """Cycle viewport shading: Lightmapped → Solid → Wireframe → Lightmapped ...
 
-        Updates the lightmapCheck UI checkbox to match.
+        Updates the lightmapCheck UI checkbox to match; mode 2 enables wireframe.
         """
-        self._viewport_shading_mode = (self._viewport_shading_mode + 1) % 2
-        labels = ["Lightmapped", "Solid"]
+        self._viewport_shading_mode = (self._viewport_shading_mode + 1) % 3
+        labels = ["Lightmapped", "Solid", "Wireframe"]
         mode_label = labels[self._viewport_shading_mode]
 
         if self._viewport_shading_mode == 0:
-            # Lightmapped
             self.ui.lightmapCheck.setChecked(True)
+            self.ui.mainRenderer.apply_render_overrides(use_lightmap=True, wireframe=False)
         elif self._viewport_shading_mode == 1:
-            # Solid (no lightmap)
             self.ui.lightmapCheck.setChecked(False)
+            self.ui.mainRenderer.apply_render_overrides(use_lightmap=False, wireframe=False)
+        else:
+            self.ui.lightmapCheck.setChecked(False)
+            self.ui.mainRenderer.apply_render_overrides(use_lightmap=False, wireframe=True)
 
         self._show_status_message(f"Viewport Shading: {mode_label}")
 

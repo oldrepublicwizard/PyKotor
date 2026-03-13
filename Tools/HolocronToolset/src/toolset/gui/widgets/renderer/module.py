@@ -365,6 +365,7 @@ class ModuleRenderer(QOpenGLWidget):
         backface_culling: bool | None = None,
         use_lightmap: bool | None = None,
         show_cursor: bool | None = None,
+        wireframe: bool | None = None,
     ) -> None:
         """Apply renderer overlay/display toggles to the active scene."""
         if self.scene is None:
@@ -375,6 +376,8 @@ class ModuleRenderer(QOpenGLWidget):
             self.scene.use_lightmap = use_lightmap
         if show_cursor is not None:
             self.scene.show_cursor = show_cursor
+        if wireframe is not None:
+            self.scene.use_wireframe = wireframe
         self.update()
 
     def get_lyt(self) -> LYT | None:
@@ -1098,10 +1101,20 @@ class ModuleRenderer(QOpenGLWidget):
 
         Processing Logic:
         ----------------
+            - Calls optional _loop_callback(delta_time) for camera/input updates (e.g. CameraController smoothing)
             - Always repaints to ensure smooth rendering
             - Checks if mouse is over object and keyboard keys are pressed
             - Emits keyboardPressed signal with mouse/key info
         """
+        import time as _time
+        now = _time.perf_counter()
+        delta_time = now - getattr(self, "_last_loop_time", now)
+        self._last_loop_time = now
+        if delta_time > 0.1:
+            delta_time = 0.1
+        callback = getattr(self, "_loop_callback", None)
+        if callable(callback):
+            callback(delta_time)
         # Use update() instead of repaint() - this schedules a repaint rather than
         # forcing an immediate synchronous paint. Qt will batch multiple update()
         # calls into a single paint, which is more efficient.
@@ -1368,10 +1381,9 @@ class ModuleRenderer(QOpenGLWidget):
         # requires depth reads (and previously an extra render pass). The cached value is
         # refreshed once per frame in `paintGL` using the already-rendered depth buffer.
         world: Vector3 = self._mouse_world
-        # Debounce: suppress drag signals for 60 ms after a mouse-button press to prevent
-        # accidental drags. In free-cam mode we never debounce — the user needs immediate
-        # mouse response for look rotation.
-        if self.free_cam or (monotonic() - self._mouse_press_time) > 0.06:
+        # Debounce: suppress drag signals for 20 ms after a mouse-button press to prevent
+        # accidental drags while allowing short, precise camera drags. In free-cam we never debounce.
+        if self.free_cam or (monotonic() - self._mouse_press_time) > 0.02:
             self.sig_mouse_moved.emit(screen, screenDelta, world, self._mouse_down, self._keys_down)
         if self._selected_walkmesh_vertex is not None:
             hovered_axis = self.walkmesh_vertex_gizmo_handle(screen.x, screen.y)

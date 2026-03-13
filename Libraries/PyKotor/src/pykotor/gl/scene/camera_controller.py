@@ -103,8 +103,11 @@ class CameraControllerSettings:
     enable_acceleration: bool = True
     acceleration_power: float = 1.5  # Power curve for input acceleration
 
-    # Speed boost (shift key)
+    # Speed boost (shift key) when not using fine control
     speed_boost_multiplier: float = 3.0
+    # When True, Shift reduces sensitivity for fine adjustments (Blender/Unity style). When False, Shift boosts speed.
+    shift_for_fine_control: bool = True
+    fine_control_multiplier: float = 0.25
 
     # Fly mode settings
     fly_speed: float = 10.0
@@ -184,14 +187,18 @@ class CameraController:
             camera: The camera to control.
             settings: Optional settings. Uses defaults if not provided.
         """
-        self.camera = camera
-        self.settings = settings or CameraControllerSettings()
-        self.state = CameraState()
-        self.mode = CameraMode.NONE
+        self.camera: Camera = camera
+        self.settings: CameraControllerSettings = settings or CameraControllerSettings()
+        self.state: CameraState = CameraState()
+        self.mode: CameraMode = CameraMode.NONE
 
         # Sync initial state
         self.state.sync_to_camera(camera)
         self.state.last_update_time = time.time()
+
+    def sync_from_camera(self) -> None:
+        """Sync controller state from the current camera (e.g. after snap-to-selection)."""
+        self.state.sync_to_camera(self.camera)
 
     def update(self, input_state: InputState, delta_time: float | None = None) -> None:
         """Update the camera based on input state.
@@ -302,6 +309,8 @@ class CameraController:
         if self.settings.orbit_invert_y:
             dy = -dy
 
+        if self.settings.shift_for_fine_control and input_state.shift_held:
+            sensitivity *= self.settings.fine_control_multiplier
         # Update target rotation
         self.state.target_yaw += dx * sensitivity
         self.state.target_pitch += dy * sensitivity
@@ -324,8 +333,9 @@ class CameraController:
         distance_scale = max(0.1, self.state.current_distance * 0.1)
         sensitivity = self.settings.pan_sensitivity * 0.002 * distance_scale
 
-        # Apply speed boost
-        if input_state.shift_held:
+        if self.settings.shift_for_fine_control and input_state.shift_held:
+            sensitivity *= self.settings.fine_control_multiplier
+        elif input_state.shift_held:
             sensitivity *= self.settings.speed_boost_multiplier
 
         # Apply acceleration
@@ -363,8 +373,9 @@ class CameraController:
         """Process zoom from mouse drag (right mouse button)."""
         sensitivity = self.settings.zoom_sensitivity * 0.01
 
-        # Apply speed boost
-        if input_state.shift_held:
+        if self.settings.shift_for_fine_control and input_state.shift_held:
+            sensitivity *= self.settings.fine_control_multiplier
+        elif input_state.shift_held:
             sensitivity *= self.settings.speed_boost_multiplier
 
         # Use vertical mouse movement for zoom

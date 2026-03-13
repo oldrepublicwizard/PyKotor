@@ -218,6 +218,7 @@ class WalkmeshRenderer(QWidget):
         self.hide_waypoints: bool = True
         self.hide_cameras: bool = True
         self.hide_spawn_points: bool = True
+        self.pick_include_hidden: bool = False
         self.show_room_boundaries: bool = True
         self.show_grid: bool = False
         self.grid_size: float = 1.0
@@ -1130,7 +1131,7 @@ class WalkmeshRenderer(QWidget):
             icon_rotation = math.pi + self.camera.rotation()
             icon_scale = 1 / 16
 
-            non_camera_groups = (
+            non_camera_groups: list[tuple[list[GITInstance], QPixmap]] = (  # pyright: ignore[reportAssignmentType]
                 ([] if self.hide_creatures else self._git.creatures, self._pixmap_creature),
                 ([] if self.hide_doors else self._git.doors, self._pixmap_door),
                 ([] if self.hide_placeables else self._git.placeables, self._pixmap_placeable),
@@ -1350,6 +1351,37 @@ class WalkmeshRenderer(QWidget):
         self.sig_marquee_select.emit((min_x, min_y, max_x, max_y), additive)
         self.update()
 
+    def _update_hits_under_point(self, coords: Vector2) -> None:
+        """Refresh _instances_under_mouse and related hit lists for the given screen point. Used by move and press."""
+        self._instances_under_mouse = []
+        self._geom_points_under_mouse = []
+        self._spawn_points_under_mouse = []
+        self._path_nodes_under_mouse = []
+        world: Vector2 = Vector2.from_vector3(self.to_world_coords(coords.x, coords.y))
+        if self._git is not None:
+            instances: list[GITObject] = self._git.instances()
+            selected_instances = self.instance_selection.all()
+            for instance in instances:
+                position = Vector2(instance.position.x, instance.position.y)
+                visible_or_pickable = self.is_instance_visible(instance) or self.pick_include_hidden
+                if position.distance(world) <= 1 and visible_or_pickable:
+                    self.sig_instance_hovered.emit(instance)
+                    self._instances_under_mouse.append(instance)
+                if self._should_collect_geom_points(instance, selected_instances) and isinstance(instance, (GITEncounter, GITTrigger)):
+                    for point in instance.geometry:
+                        pworld: Vector2 = Vector2.from_vector3(instance.position + point)
+                        if pworld.distance(world) <= 0.5:  # noqa: PLR2004
+                            self._geom_points_under_mouse.append(GeomPoint(instance, point))
+                if isinstance(instance, GITEncounter) and not self.hide_spawn_points:
+                    for spawn in instance.spawn_points:
+                        pworld = Vector2(spawn.x, spawn.y)
+                        if pworld.distance(world) <= 0.75:  # noqa: PLR2004
+                            self._spawn_points_under_mouse.append(EncounterSpawnPoint(instance, spawn))
+        if self._pth is not None:
+            for point in self._pth:
+                if point.distance(world) <= self._path_node_size:
+                    self._path_nodes_under_mouse.append(point)
+
     def wheelEvent(self, e: QWheelEvent):  # pyright: ignore[reportIncompatibleMethodOverride]
         keys_to_emit: set[int | Qt.Key] = self._keys_down | keyboard_modifiers_to_qt_keys(e.modifiers())
         self.sig_mouse_scrolled.emit(Vector2(e.angleDelta().x(), e.angleDelta().y()), self._mouse_down, keys_to_emit)
@@ -1370,38 +1402,7 @@ class WalkmeshRenderer(QWidget):
             self.update()
             return
 
-        self._instances_under_mouse = []
-        self._geom_points_under_mouse = []
-        self._spawn_points_under_mouse = []
-        self._path_nodes_under_mouse = []
-
-        world: Vector2 = Vector2.from_vector3(self.to_world_coords(coords.x, coords.y))  # Mouse pos in world
-
-        if self._git is not None:
-            instances: list[GITObject] = self._git.instances()
-            selected_instances = self.instance_selection.all()
-            for instance in instances:
-                position = Vector2(instance.position.x, instance.position.y)
-                if position.distance(world) <= 1 and self.is_instance_visible(instance):
-                    self.sig_instance_hovered.emit(instance)
-                    self._instances_under_mouse.append(instance)
-
-                if self._should_collect_geom_points(instance, selected_instances) and isinstance(instance, (GITEncounter, GITTrigger)):
-                    for point in instance.geometry:
-                        pworld: Vector2 = Vector2.from_vector3(instance.position + point)
-                        if pworld.distance(world) <= 0.5:  # noqa: PLR2004
-                            self._geom_points_under_mouse.append(GeomPoint(instance, point))
-
-                if isinstance(instance, GITEncounter) and not self.hide_spawn_points:
-                    for spawn in instance.spawn_points:
-                        pworld = Vector2(spawn.x, spawn.y)
-                        if pworld.distance(world) <= 0.75:  # noqa: PLR2004
-                            self._spawn_points_under_mouse.append(EncounterSpawnPoint(instance, spawn))
-
-        if self._pth is not None:
-            for point in self._pth:
-                if point.distance(world) <= self._path_node_size:
-                    self._path_nodes_under_mouse.append(point)
+        self._update_hits_under_point(coords)
 
     def focusOutEvent(self, e: QFocusEvent):  # pyright: ignore[reportIncompatibleMethodOverride]
         if self._marquee_active:
@@ -1415,13 +1416,14 @@ class WalkmeshRenderer(QWidget):
         super().mousePressEvent(e)
         if e is None:
             return
-        button: int | Qt.MouseButton = e.button()
-        self._mouse_down.add(button)
         coords = (
             Vector2(e.x(), e.y())  # pyright: ignore[reportAttributeAccessIssue]
             if qtpy.QT5
             else Vector2(e.position().toPoint().x(), e.position().toPoint().y())
         )
+        self._update_hits_under_point(coords)
+        button: int | Qt.MouseButton = e.button()
+        self._mouse_down.add(button)
         self.sig_mouse_pressed.emit(coords, self._mouse_down, self._keys_down)
 
     def mouseReleaseEvent(self, e: QMouseEvent):  # pyright: ignore[reportIncompatibleMethodOverride]
