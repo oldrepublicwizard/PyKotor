@@ -388,20 +388,19 @@ class Module:  # noqa: PLR0904
           * Initializes module resources
           * Loads IFO, ARE, GIT files
           * Sets up module area and objects
-        - LoadModuleInProgress @ 0x004c5720 - Module loading progress handler (347 bytes, 7 callees)
-        - LoadModuleFinish @ 0x004c5880 - Module loading completion handler (245 bytes, 9 callees)
-        - UnloadModule @ 0x004b9240 - Unloads module (850 bytes, 32 callees)
+        - LoadModuleInProgress (/K1/k1_win_gog_swkotor.exe @ 0x004c5720, /K2/k2_win_gog_aspyr_swkotor2.exe: TODO: Find this address) - Module loading progress handler (347 bytes, 7 callees)
+        - LoadModuleFinish (/K1/k1_win_gog_swkotor.exe @ 0x004c5880, /K2/k2_win_gog_aspyr_swkotor2.exe: TODO: Find this address) - Module loading completion handler (245 bytes, 9 callees)
+        - UnloadModule (/K1/k1_win_gog_swkotor.exe @ 0x004b9240, /K2/k2_win_gog_aspyr_swkotor2.exe: TODO: Find this address) - Unloads module (850 bytes, 32 callees)
         - FUN_004094a0 - Module archive loader (loads .rim, _s.rim, _adx.rim files)
           * Handles module archive file discovery
           * Loads main .rim, data _s.rim, and extended _adx.rim archives
-        - "MODULES:" string @ 0x0073d90c - Module list identifier
-        - "Module" string @ 0x007442a8 - Module identifier
-        - "CSWSSCRIPTEVENT_EVENTTYPE_ON_MODULE_LOAD" @ 0x007446e4 - Module load event
-        - "CSWSSCRIPTEVENT_EVENTTYPE_ON_MODULE_START" @ 0x00744710 - Module start event
-        - "ModuleList" @ 0x00745044, "GetModuleList" @ 0x00745050 - Module list functions
-        - "ModuleRunning" @ 0x00745060, "ModuleLoaded" @ 0x00745078 - Module state strings
-        - "modulesave" @ 0x00745128, "ModuleName" @ 0x00745134 - Module save/name strings
-        - Original BioWare Odyssey Engine (swkotor.exe, swkotor2.exe)
+        - "MODULES:" string (/K1/k1_win_gog_swkotor.exe @ 0x0073d90c, /K2/k2_win_gog_aspyr_swkotor2.exe: TODO: Find this address) - Module list identifier
+        - "Module" string (/K1/k1_win_gog_swkotor.exe @ 0x007442a8, /K2/k2_win_gog_aspyr_swkotor2.exe: TODO: Find this address) - Module identifier
+        - "CSWSSCRIPTEVENT_EVENTTYPE_ON_MODULE_LOAD" (/K1/k1_win_gog_swkotor.exe @ 0x007446e4, /K2/k2_win_gog_aspyr_swkotor2.exe: TODO: Find this address) - Module load event
+        - "CSWSSCRIPTEVENT_EVENTTYPE_ON_MODULE_START" (/K1/k1_win_gog_swkotor.exe @ 0x00744710, /K2/k2_win_gog_aspyr_swkotor2.exe: TODO: Find this address) - Module start event
+        - "ModuleList" (/K1/k1_win_gog_swkotor.exe @ 0x00745044, /K2/k2_win_gog_aspyr_swkotor2.exe: TODO: Find this address), "GetModuleList" (/K1/k1_win_gog_swkotor.exe @ 0x00745050, /K2/k2_win_gog_aspyr_swkotor2.exe: TODO: Find this address) - Module list functions
+        - "ModuleRunning" (/K1/k1_win_gog_swkotor.exe @ 0x00745060, /K2/k2_win_gog_aspyr_swkotor2.exe: TODO: Find this address), "ModuleLoaded" (/K1/k1_win_gog_swkotor.exe @ 0x00745078, /K2/k2_win_gog_aspyr_swkotor2.exe: TODO: Find this address) - Module state strings
+        - "modulesave" (/K1/k1_win_gog_swkotor.exe @ 0x00745128, /K2/k2_win_gog_aspyr_swkotor2.exe: TODO: Find this address), "ModuleName" (/K1/k1_win_gog_swkotor.exe @ 0x00745134, /K2/k2_win_gog_aspyr_swkotor2.exe: TODO: Find this address) - Module save/name strings
 
     Attributes:
     ----------
@@ -913,12 +912,12 @@ class Module:  # noqa: PLR0904
         for identifier, locations in texture_search.items():
             if not locations:
                 continue
-            # location_paths = [str(loc.filepath) for loc in locations]
-            # if len(location_paths) <= 3:
-            #    paths_str = ', '.join(location_paths)
-            # else:
-            #    paths_str = ', '.join(location_paths[:3]) + f', ... and {len(location_paths) - 3} more'
-            # RobustLogger().debug(f"Adding {len(locations)} texture location(s) for '{identifier.resname}.{identifier.restype.extension}' to '{display_name}': {paths_str}")
+            location_paths = [str(loc.filepath) for loc in locations]
+            if len(location_paths) <= 3:
+               paths_str = ', '.join(location_paths)
+            else:
+               paths_str = ', '.join(location_paths[:3]) + f', ... and {len(location_paths) - 3} more'
+            RobustLogger().debug(f"Adding {len(locations)} texture location(s) for '{identifier.resname}.{identifier.restype.extension}' to '{display_name}': {paths_str}")
             self.add_locations(identifier.resname, identifier.restype, (location.filepath for location in locations)).activate()
 
         # Finally iterate through all resources we may have missed.
@@ -1010,7 +1009,7 @@ class Module:  # noqa: PLR0904
             not locations  # vvv skip dirt.tpc, some constant from the model-ascii data vvv
             and (resname != "dirt" or restype != ResourceType.TPC)
         ):
-            RobustLogger().warning("No locations found for '%s.%s' which are intended to add to module '%s'", resname, restype, self._root)
+            RobustLogger().warning("No locations found for '%s.%s' which are intended to add to module '%s'", resname, restype.extension, self._root)
         module_resource: ModuleResource | None = self.resource(resname, restype)
         if module_resource is None:
             module_resource = ModuleResource(resname, restype, self._installation, self._root)
@@ -1764,10 +1763,9 @@ class Module:  # noqa: PLR0904
         References:
         ----------
         Based on swkotor.exe GFF/ARE structure:
-        - CSWSArea::LoadAreaHeader @ 0x00508c50 - Loads area header from GFF
-        - C2DA::Load2DArray @ 0x004143b0 - Loads 2DA file from resource
-        - CResGFF::CreateGFFFile @ 0x00411260 - Creates GFF file structure
-        Original BioWare engine binaries
+        - CSWSArea::LoadAreaHeader (/K1/k1_win_gog_swkotor.exe @ 0x00508c50, /K2/k2_win_gog_aspyr_swkotor2.exe: TODO: Find this address) - Loads area header from GFF
+        - C2DA::Load2DArray (/K1/k1_win_gog_swkotor.exe @ 0x004143b0, /K2/k2_win_gog_aspyr_swkotor2.exe: TODO: Find this address) - Loads 2DA file from resource
+        - CResGFF::CreateGFFFile (/K1/k1_win_gog_swkotor.exe @ 0x00411260, /K2/k2_win_gog_aspyr_swkotor2.exe: TODO: Find this address) - Creates GFF file structure
         wiki/2DA-loadscreens.md - loadscreens.2da structure and bmpresref column
 
 

@@ -375,7 +375,7 @@ class LazyCapsule(FileResource):
         reader.seek(offset_to_keys)
 
         for _ in range(entry_count):
-            resref = reader.read_string(16)
+            resref = reader.read_string(16).rstrip("\0")
             resrefs.append(resref)
             resids.append(reader.read_uint32())
             restype = reader.read_uint16()
@@ -425,7 +425,7 @@ class LazyCapsule(FileResource):
         reader.seek(offset_to_entries)
 
         for _ in range(entry_count):
-            resref = reader.read_string(16)
+            resref = reader.read_string(16).rstrip("\0")
             restype = ResourceType.from_id(reader.read_uint32())
             reader.skip(4)
             offset = reader.read_uint32()

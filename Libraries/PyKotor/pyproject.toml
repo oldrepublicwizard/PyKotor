@@ -132,6 +132,7 @@ updater = [
   "requests>=2.23.0,<2.32.5; python_version < \"3.9\"",
   "requests>=2.32.4; python_version >= \"3.9\"",
 ]
+render = ["matplotlib>=3.5"]
 
 [project.scripts]
 pykotor = "pykotor.cli.__main__:main"

@@ -5,10 +5,9 @@ by different rendering backends.
 
 References:
 ----------
-        Original BioWare engine binaries (from swkotor.exe, swkotor2.exe)
-        Original BioWare engine binaries
-        Derivations and Other Implementations:
-        ----------
+
+    Derivations and Other Implementations:
+    -------------------------------------
         https://github.com/th3w1zard1/KotOR.js/tree/master/src/odyssey/controllers
 
 

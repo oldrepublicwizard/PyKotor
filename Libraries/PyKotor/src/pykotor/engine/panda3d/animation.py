@@ -150,10 +150,9 @@ class Panda3DPositionController(Panda3DAnimationController):
 
         References:
         ----------
-        Original BioWare engine binaries (from swkotor.exe, swkotor2.exe)
-        Original BioWare engine binaries
-        Derivations and Other Implementations:
-        ----------
+
+    Derivations and Other Implementations:
+    -------------------------------------
         https://github.com/th3w1zard1/KotOR.js/tree/master/src/odyssey/controllers/PositionController.ts:106-117
 
 
@@ -225,10 +224,9 @@ class Panda3DOrientationController(Panda3DAnimationController):
 
         References:
         ----------
-        Original BioWare engine binaries (from swkotor.exe, swkotor2.exe)
-        Original BioWare engine binaries
-        Derivations and Other Implementations:
-        ----------
+
+    Derivations and Other Implementations:
+    -------------------------------------
         https://github.com/th3w1zard1/KotOR.js/tree/master/src/odyssey/controllers/OrientationController.ts:86-87
 
 
@@ -412,10 +410,9 @@ def create_panda3d_controller(mdl_controller: MDLController) -> Panda3DAnimation
 
     References:
     ----------
-        Original BioWare engine binaries (from swkotor.exe, swkotor2.exe)
-        Original BioWare engine binaries
-        Derivations and Other Implementations:
-        ----------
+
+    Derivations and Other Implementations:
+    -------------------------------------
         https://github.com/th3w1zard1/KotOR.js/tree/master/src/odyssey/controllers/OdysseyControllerFactory.ts:36-150
         Libraries/PyKotor/src/pykotor/resource/formats/mdl/mdl_types.py:148-206
 

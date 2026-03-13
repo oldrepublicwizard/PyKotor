@@ -5,11 +5,15 @@ from __future__ import annotations
 import io
 import os
 
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any, cast
 
 from pykotor.resource.formats.bwm.io_bwm import BWMBinaryReader, BWMBinaryWriter
 from pykotor.resource.formats.bwm.io_bwm_ascii import BWMAsciiReader, BWMAsciiWriter
 from pykotor.resource.type import ResourceType
+from pykotor.tools.walkmesh_render_ascii import (
+    BWM_VALIDATION_DIAGRAM_MAGIC,  # noqa: F401  # pyright: ignore[reportUnusedImport]
+    render_bwm_to_ascii_diagrams,
+)
 
 if TYPE_CHECKING:
     from pykotor.resource.formats.bwm.bwm_data import BWM
@@ -17,6 +21,10 @@ if TYPE_CHECKING:
 
 PEEK_SIZE = 256
 BWM_MAGIC = b"BWM "
+
+__all__ = [
+    "BWM_VALIDATION_DIAGRAM_MAGIC",  # re-exported for pykotor.resource.formats.bwm
+]
 
 
 def _get_bwm_peek(
@@ -40,10 +48,10 @@ def _get_bwm_peek(
             return f.read(PEEK_SIZE if size is None else min(size, PEEK_SIZE))
     # Stream-like: read then rewind
     stream = source
-    peek = stream.read(PEEK_SIZE)  # type: ignore[union-attr]
+    peek = stream.read(PEEK_SIZE)
     if hasattr(stream, "seek"):
-        stream.seek(0)  # type: ignore[union-attr]
-    return peek if isinstance(peek, bytes) else bytes(peek)
+        stream.seek(0)
+    return peek if isinstance(peek, bytes) else bytes(peek)  # pyright: ignore[reportArgumentType]
 
 
 def _read_full_source(
@@ -64,12 +72,12 @@ def _read_full_source(
         path = os.fspath(source) if isinstance(source, os.PathLike) else os.path.normpath(source)
         with open(path, "rb") as f:  # noqa: PTH123
             f.seek(offset)
-            return f.read() if size is None else f.read(size)
+            return f.read() if size is None else f.read(size)  # pyright: ignore[reportCallIssue]
     stream = source
     if hasattr(stream, "seek"):
-        stream.seek(offset)  # type: ignore[union-attr]
-    out = stream.read() if size is None else stream.read(size)  # type: ignore[union-attr]
-    return out if isinstance(out, bytes) else bytes(out)
+        stream.seek(offset)
+    out = stream.read() if size is None else stream.read(size)  # pyright: ignore[reportCallIssue]
+    return out if isinstance(out, bytes) else bytes(out)  # pyright: ignore[reportArgumentType]
 
 
 def _is_ascii_bwm(peek: bytes) -> bool:
@@ -132,6 +140,7 @@ def write_bwm(
     file_format: ResourceType = ResourceType.WOK,
     *,
     regenerate_derived: bool = True,
+    logger: Any | None = None,
 ):
     """Writes the WOK data to the target location with the specified format (WOK only).
 
@@ -141,6 +150,7 @@ def write_bwm(
         target: The location to write the data to.
         file_format: The file format.
         regenerate_derived: If True (default), enforce transition invariant and assert before writing.
+        logger: Optional logger for write-phase progress (e.g. INFO messages).
 
     Raises:
     ------
@@ -150,7 +160,7 @@ def write_bwm(
         AssertionError: If regenerate_derived is True and invariant fails after enforce.
     """
     if file_format == ResourceType.WOK:
-        BWMBinaryWriter(wok, target, regenerate_derived=regenerate_derived).write()
+        BWMBinaryWriter(wok, target, regenerate_derived=regenerate_derived, logger=logger).write()
     else:
         msg = "Unsupported format specified; use WOK."
         raise ValueError(msg)
@@ -174,6 +184,58 @@ def write_bwm_ascii(
         ValueError: If the data is invalid.
     """
     BWMAsciiWriter(wok, target).write()
+
+
+def write_bwm_validation_diagram(
+    bwm: BWM,
+    target: TARGET_TYPES,
+    *,
+    max_physical_width: int = 200,
+    max_physical_height: int = 120,
+    use_color: bool = True,
+) -> None:
+    """Writes the BWM validation diagram (structured ASCII) to the target.
+
+    Format: first line is BWM_VALIDATION_DIAGRAM_MAGIC; then Summary, Legend,
+    Top-down map (5x5 blocks per cell, transition IDs and arrows, ANSI colors),
+    and Transitions sections. Use .diagram or .txt extension when writing to a path.
+
+    Args:
+    ----
+        bwm: The BWM instance to summarize.
+        target: Where to write (path, stream, or bytearray).
+        max_physical_width: Maximum character width of the map (logical cols = this/5).
+        max_physical_height: Maximum character height of the map (logical rows = this/5).
+        use_color: If True, embed ANSI color codes (walkable=blue, etc.).
+
+    Raises:
+    ------
+        IsADirectoryError: If the target is a directory.
+        PermissionError: If the file could not be written.
+    """
+    from pykotor.common.stream import BinaryWriter
+
+    lines: list[str] = render_bwm_to_ascii_diagrams(
+        bwm,
+        width=max_physical_width,
+        height=max_physical_height,
+        use_color=use_color,
+    )
+    data: bytes = ("\n".join(lines) + "\n").encode("utf-8")
+    if isinstance(target, (os.PathLike, str)):
+        path: str = os.fspath(target) if isinstance(target, os.PathLike) else os.path.normpath(target)
+        with open(path, "wb") as f:  # noqa: PTH123
+            f.write(data)
+    elif isinstance(target, bytearray):
+        target.extend(data)
+    elif isinstance(target, BinaryWriter):
+        target.write_bytes(data)
+    elif isinstance(target, io.TextIOBase):
+        target.write(data.decode("utf-8"))
+    elif isinstance(target, io.BytesIO):
+        cast(io.BytesIO, target).write(data)
+    else:
+        raise ValueError(f"Unsupported target type: {type(target)}")
 
 
 def bytes_bwm(

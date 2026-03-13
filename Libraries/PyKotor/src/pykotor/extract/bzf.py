@@ -39,10 +39,9 @@ class BZFFile:
 
     References:
     ----------
-        Original BioWare engine binaries (from swkotor.exe, swkotor2.exe)
-        Original BioWare engine binaries
-        Derivations and Other Implementations:
-        ----------
+
+    Derivations and Other Implementations:
+    -------------------------------------
         https://github.com/th3w1zard1/KotOR-Bioware-Libs/tree/master/BIF.pm (Perl BIF/BZF implementation)
         Missing Features:
         ----------------

@@ -30,7 +30,8 @@ import pytest
 
 from pykotor.cli.dispatch import cli_main
 from pykotor.resource.formats.bwm import read_bwm
-from pykotor.resource.formats.bwm.bwm_data import BWM, BWMType
+from pykotor.resource.formats.bwm.bwm_data import BWM, BWMType, BWMFace
+from utility.common.geometry import SurfaceMaterial, Vector3
 
 THIS_DIR = pathlib.Path(__file__).resolve().parent
 # THIS_DIR = Libraries/PyKotor/tests/cli; parent = tests; parents[3] = repo root
@@ -213,3 +214,25 @@ def test_walkmesh_rebuild_missing_input_returns_nonzero() -> None:
     """walkmesh-rebuild with missing input file returns non-zero."""
     exit_code = _run_cli(["walkmesh-rebuild", "/nonexistent/path.wok"])
     assert exit_code != 0
+
+
+def test_render_bwm_to_pngs_writes_four_views(tmp_path: pathlib.Path) -> None:
+    """render_bwm_to_pngs writes 4 PNGs when matplotlib is available."""
+    pytest.importorskip("matplotlib")
+    from pykotor.tools.walkmesh_render import render_bwm_to_pngs
+
+    bwm = BWM()
+    bwm.walkmesh_type = BWMType.AreaModel
+    face = BWMFace(
+        Vector3(0.0, 0.0, 0.0),
+        Vector3(2.0, 0.0, 0.0),
+        Vector3(0.0, 2.0, 0.0),
+    )
+    face.material = SurfaceMaterial.DIRT
+    bwm.faces = [face]
+    output_stem = tmp_path / "out"
+    paths = render_bwm_to_pngs(bwm, output_stem)
+    assert len(paths) == 4
+    for p in paths:
+        assert p.exists(), f"Expected file {p}"
+        assert p.stat().st_size > 0, f"Expected non-empty file {p}"

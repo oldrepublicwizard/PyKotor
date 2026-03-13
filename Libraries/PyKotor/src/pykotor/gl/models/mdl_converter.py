@@ -9,10 +9,9 @@ should be handled in the respective backend modules.
 
 References:
 ----------
-        Original BioWare engine binaries (from swkotor.exe, swkotor2.exe)
-        Original BioWare engine binaries
-        Derivations and Other Implementations:
-        ----------
+
+    Derivations and Other Implementations:
+    -------------------------------------
         https://github.com/th3w1zard1/KotOR.js/tree/master/src/three/odyssey/OdysseyModel3D.ts:150-400
         Libraries/PyKotor/src/pykotor/common/geometry_utils.py - Geometry utilities
 
@@ -99,10 +98,9 @@ def get_node_type_priority(mdl_node: "MDLNode") -> int:
 
     References:
     ----------
-        Original BioWare engine binaries (from swkotor.exe, swkotor2.exe)
-        Original BioWare engine binaries
-        Derivations and Other Implementations:
-        ----------
+
+    Derivations and Other Implementations:
+    -------------------------------------
         https://github.com/th3w1zard1/KotOR.js/tree/master/src/three/odyssey/OdysseyModel3D.ts:987-1004
 
 
@@ -182,10 +180,9 @@ def should_reverse_winding_order(backend: str = "opengl") -> bool:
 
     References:
     ----------
-        Original BioWare engine binaries (from swkotor.exe, swkotor2.exe)
-        Original BioWare engine binaries
-        Derivations and Other Implementations:
-        ----------
+
+    Derivations and Other Implementations:
+    -------------------------------------
         https://github.com/th3w1zard1/KotOR.js/tree/master/src/three/odyssey/OdysseyModel3D.ts:1169 (Three.js handles it)
 
 

@@ -1760,10 +1760,9 @@ class MDLAnimation(ComparableMixin):
 
     References:
     ----------
-        Original BioWare engine binaries (from swkotor.exe, swkotor2.exe)
-        Original BioWare engine binaries
-        Derivations and Other Implementations:
-        ----------
+
+    Derivations and Other Implementations:
+    -------------------------------------
         https://github.com/th3w1zard1/kotorblender/tree/master/io_scene_kotor/format/mdl/reader.py:653-699 (animation loading)
         https://github.com/th3w1zard1/mdlops/tree/master/MDLOpsM.pm:4052-4090 (animation reading from ASCII)
 
@@ -1882,10 +1881,9 @@ class MDLEvent(ComparableMixin):
 
     References:
     ----------
-        Original BioWare engine binaries (from swkotor.exe, swkotor2.exe)
-        Original BioWare engine binaries
-        Derivations and Other Implementations:
-        ----------
+
+    Derivations and Other Implementations:
+    -------------------------------------
         https://github.com/th3w1zard1/kotorblender/tree/master/io_scene_kotor/format/mdl/reader.py:686-698 (event loading)
         https://github.com/th3w1zard1/mdlops/tree/master/MDLOpsM.pm:4078-4081 (event parsing from ASCII)
 
@@ -1936,10 +1934,9 @@ class MDLNode(ComparableMixin):
 
     References:
     ----------
-        Original BioWare engine binaries (from swkotor.exe, swkotor2.exe)
-        Original BioWare engine binaries
-        Derivations and Other Implementations:
-        ----------
+
+    Derivations and Other Implementations:
+    -------------------------------------
         https://github.com/th3w1zard1/kotorblender/tree/master/io_scene_kotor/format/mdl/reader.py:406-582
         https://github.com/th3w1zard1/kotorblender/tree/master/io_scene_kotor/scene/model.py:103-297
         https://github.com/th3w1zard1/KotOR.js/tree/master/src/odyssey/OdysseyModelNode.ts:31-464
@@ -2161,10 +2158,9 @@ class MDLLight(ComparableMixin):
 
     References:
     ----------
-        Original BioWare engine binaries (from swkotor.exe, swkotor2.exe)
-        Original BioWare engine binaries
-        Derivations and Other Implementations:
-        ----------
+
+    Derivations and Other Implementations:
+    -------------------------------------
         https://github.com/th3w1zard1/kotorblender/tree/master/io_scene_kotor/scene/modelnode/light.py:33-124 (light properties)
 
 
@@ -2328,10 +2324,9 @@ class MDLEmitter(ComparableMixin):
 
     References:
     ----------
-        Original BioWare engine binaries (from swkotor.exe, swkotor2.exe)
-        Original BioWare engine binaries
-        Derivations and Other Implementations:
-        ----------
+
+    Derivations and Other Implementations:
+    -------------------------------------
         https://github.com/th3w1zard1/kotorblender/tree/master/io_scene_kotor/scene/modelnode/emitter.py:27-305 (emitter properties)
         Update Modes (update field):
         ---------------------------
@@ -2558,10 +2553,9 @@ class MDLReference(ComparableMixin):
 
     References:
     ----------
-        Original BioWare engine binaries (from swkotor.exe, swkotor2.exe)
-        Original BioWare engine binaries
-        Derivations and Other Implementations:
-        ----------
+
+    Derivations and Other Implementations:
+    -------------------------------------
         https://github.com/th3w1zard1/kotorblender/tree/master/io_scene_kotor/scene/modelnode/reference.py:25-57
 
 
@@ -2627,10 +2621,9 @@ class MDLMesh(ComparableMixin):
 
     References:
     ----------
-        Original BioWare engine binaries (from swkotor.exe, swkotor2.exe)
-        Original BioWare engine binaries
-        Derivations and Other Implementations:
-        ----------
+
+    Derivations and Other Implementations:
+    -------------------------------------
         https://github.com/th3w1zard1/kotorblender/tree/master/io_scene_kotor/format/mdl/reader.py:415-466 (trimesh loading)
         https://github.com/th3w1zard1/mdlops/tree/master/MDLOpsM.pm:1600-1750 (mesh processing)
         Key Features:
@@ -2816,10 +2809,9 @@ class MDLSkin(MDLMesh):
 
     References:
     ----------
-        Original BioWare engine binaries (from swkotor.exe, swkotor2.exe)
-        Original BioWare engine binaries
-        Derivations and Other Implementations:
-        ----------
+
+    Derivations and Other Implementations:
+    -------------------------------------
         https://github.com/th3w1zard1/kotorblender/tree/master/io_scene_kotor/format/mdl/reader.py:468-485 (skin loading)
         https://github.com/th3w1zard1/mdlops/tree/master/MDLOpsM.pm:1755-1820 (skin node processing)
 
@@ -2981,10 +2973,9 @@ class MDLDangly(MDLMesh):
 
     References:
     ----------
-        Original BioWare engine binaries (from swkotor.exe, swkotor2.exe)
-        Original BioWare engine binaries
-        Derivations and Other Implementations:
-        ----------
+
+    Derivations and Other Implementations:
+    -------------------------------------
         https://github.com/th3w1zard1/kotorblender/tree/master/io_scene_kotor/format/mdl/reader.py:487-497 (dangly loading)
         https://github.com/th3w1zard1/mdlops/tree/master/MDLOpsM.pm:1823-1870 (dangly node processing)
 
@@ -3043,10 +3034,9 @@ class MDLAABBNode:
 
     References:
     ----------
-        Original BioWare engine binaries (from swkotor.exe, swkotor2.exe)
-        Original BioWare engine binaries
-        Derivations and Other Implementations:
-        ----------
+
+    Derivations and Other Implementations:
+    -------------------------------------
         https://github.com/th3w1zard1/mdlops/tree/master/MDLOpsM.pm:233 (template: "ffffffllll" = 40 bytes)
         https://github.com/th3w1zard1/mdlops/tree/master/MDLOpsM.pm:1440-1466 (readaabb recursive reading)
         https://github.com/th3w1zard1/mdlops/tree/master/MDLOpsM.pm:1471-1513 (writeaabb recursive writing)
@@ -3085,10 +3075,9 @@ class MDLWalkmesh(ComparableMixin):
 
     References:
     ----------
-        Original BioWare engine binaries (from swkotor.exe, swkotor2.exe)
-        Original BioWare engine binaries
-        Derivations and Other Implementations:
-        ----------
+
+    Derivations and Other Implementations:
+    -------------------------------------
         https://github.com/th3w1zard1/kotorblender/tree/master/io_scene_kotor/format/mdl/reader.py:499-520 (AABB loading)
         https://github.com/th3w1zard1/mdlops/tree/master/MDLOpsM.pm:1873-1935 (walkmesh/AABB processing)
 
@@ -3138,10 +3127,9 @@ class MDLSaber(ComparableMixin):
 
     References:
     ----------
-        Original BioWare engine binaries (from swkotor.exe, swkotor2.exe)
-        Original BioWare engine binaries
-        Derivations and Other Implementations:
-        ----------
+
+    Derivations and Other Implementations:
+    -------------------------------------
         https://github.com/th3w1zard1/kotorblender/tree/master/io_scene_kotor/format/mdl/reader.py:522-540 (saber loading)
         https://github.com/th3w1zard1/mdlops/tree/master/MDLOpsM.pm:1937-2010 (saber node processing)
 
@@ -3226,10 +3214,9 @@ class MDLBoneVertex(ComparableMixin):
 
     References:
     ----------
-        Original BioWare engine binaries (from swkotor.exe, swkotor2.exe)
-        Original BioWare engine binaries
-        Derivations and Other Implementations:
-        ----------
+
+    Derivations and Other Implementations:
+    -------------------------------------
         https://github.com/th3w1zard1/kotorblender/tree/master/io_scene_kotor/format/mdl/reader.py:478-485 (bone weight loading)
         https://github.com/th3w1zard1/mdlops/tree/master/MDLOpsM.pm:1785-1800 (vertex skinning data)
 
@@ -3467,10 +3454,9 @@ class MDLController(ComparableMixin):
 
     References:
     ----------
-        Original BioWare engine binaries (from swkotor.exe, swkotor2.exe)
-        Original BioWare engine binaries
-        Derivations and Other Implementations:
-        ----------
+
+    Derivations and Other Implementations:
+    -------------------------------------
         https://github.com/th3w1zard1/mdlops/tree/master/MDLOpsM.pm:1649-1778
         https://github.com/th3w1zard1/mdlops/tree/master/MDLOpsM.pm:1704-1710 (bit 4)
         https://github.com/th3w1zard1/mdlops/tree/master/MDLOpsM.pm:3764-3802

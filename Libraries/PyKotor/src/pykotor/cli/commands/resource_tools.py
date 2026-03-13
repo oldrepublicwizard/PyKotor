@@ -6,6 +6,7 @@ using PyKotor utilities.
 
 from __future__ import annotations
 
+import os
 import pathlib
 import sys
 
@@ -151,9 +152,9 @@ def cmd_walkmesh_rebuild(args: Namespace, logger: Logger) -> int:
 
     try:
         # ---- Input and format ----
-        input_size = input_path.stat().st_size
+        input_size: int = input_path.stat().st_size
         with input_path.open("rb") as f:
-            peek = f.read(min(256, input_size))
+            peek: bytes = f.read(min(256, input_size))
         if len(peek) >= 4 and peek[:4] == b"BWM ":
             format_name = "binary (BWM magic)"
         elif peek.decode("latin-1", errors="ignore").lstrip().startswith("node"):
@@ -179,9 +180,7 @@ def cmd_walkmesh_rebuild(args: Namespace, logger: Logger) -> int:
         )
 
         def _count_transitions(w: BWM) -> int:
-            return sum(
-                1 for f in w.faces for t in (f.trans1, f.trans2, f.trans3) if t is not None
-            )
+            return sum(1 for f in w.faces for t in (f.trans1, f.trans2, f.trans3) if t is not None)
 
         trans_before = _count_transitions(bwm)
         if trans_before:
@@ -200,8 +199,7 @@ def cmd_walkmesh_rebuild(args: Namespace, logger: Logger) -> int:
             if trans_after:
                 if cleared:
                     logger.info(  # noqa: G004
-                        f"Transitions: {trans_before} → {trans_after} (cleared {cleared} from internal edges). "
-                        f"{trans_after} arrow(s) on perimeter, pointing inward."
+                        f"Transitions: {trans_before} -> {trans_after} (cleared {cleared} from internal edges). {trans_after} arrow(s) on perimeter, pointing inward."
                     )
                 else:
                     logger.info(f"Transitions: {trans_after} on perimeter (all valid). Arrows point inward.")  # noqa: G004
@@ -213,13 +211,56 @@ def cmd_walkmesh_rebuild(args: Namespace, logger: Logger) -> int:
         else:
             logger.info("Transitions: preserved (placeable/door walkmesh).")  # noqa: G004
 
+        # ---- Validation diagram (before write_bwm: writer mutates bwm.faces) ----
+        if getattr(args, "render_png", False):
+            verbose: bool = getattr(args, "verbose", False)
+            if not verbose:
+                os.environ.setdefault("MPLBACKEND", "Agg")
+                import logging as _logging
+
+                _logging.getLogger("matplotlib").setLevel(_logging.WARNING)
+            try:
+                from pykotor.tools.walkmesh_render import render_bwm_to_pngs
+            except ImportError:
+                logger.info("matplotlib not installed; writing qualitative ASCII validation diagrams instead of PNGs.")
+                from pykotor.resource.formats.bwm.bwm_auto import write_bwm_validation_diagram
+                from pykotor.tools.walkmesh_render_ascii import render_bwm_to_ascii_diagrams
+
+                diagram_path = output_path.parent / f"{output_path.stem}.diagram"
+                write_bwm_validation_diagram(bwm, diagram_path)
+                logger.info(f"Wrote validation diagram: {diagram_path}")  # noqa: G004
+                for line in render_bwm_to_ascii_diagrams(bwm):
+                    logger.info(line)
+            else:
+                output_stem: pathlib.Path = output_path.parent / output_path.stem
+                try:
+                    paths: list[pathlib.Path] = render_bwm_to_pngs(bwm, output_stem)
+                    logger.info(
+                        "Wrote %s validation PNG(s): %s",
+                        len(paths),
+                        ", ".join(str(p) for p in paths),
+                    )
+                except (ValueError, TypeError) as e:
+                    logger.warning(
+                        "PNG render failed (%s); writing ASCII validation diagram instead.",
+                        e,
+                    )
+                    from pykotor.resource.formats.bwm.bwm_auto import write_bwm_validation_diagram
+                    from pykotor.tools.walkmesh_render_ascii import render_bwm_to_ascii_diagrams
+
+                    diagram_path = output_path.parent / f"{output_path.stem}.diagram"
+                    write_bwm_validation_diagram(bwm, diagram_path)
+                    logger.info(f"Wrote validation diagram: {diagram_path}")  # noqa: G004
+                    for line in render_bwm_to_ascii_diagrams(bwm):
+                        logger.info(line)
+
         # ---- Write ----
         logger.info(f"Writing: {output_path}")  # noqa: G004
         sys.stdout.flush()
         sys.stderr.flush()
-        write_bwm(bwm, output_path)
+        write_bwm(bwm, output_path, logger=logger)
         out_size = output_path.stat().st_size
-        logger.info(f"Wrote {out_size} bytes → {output_path}")  # noqa: G004
+        logger.info(f"Wrote {out_size} bytes -> {output_path}")  # noqa: G004
 
         if getattr(args, "ascii", False):
             ascii_path = output_path.with_suffix(output_path.suffix + ".ascii")
@@ -229,6 +270,9 @@ def cmd_walkmesh_rebuild(args: Namespace, logger: Logger) -> int:
         logger.error(f"Transition invariant failed (perimeter-only transitions): {e}")  # noqa: G004
         return 1
     except Exception:
+        import traceback
+
+        traceback.print_exc()
         logger.exception(f"Failed to rebuild walkmesh {input_path}")  # noqa: G004
         return 1
     return 0

@@ -6,10 +6,9 @@ utilities from Libraries/PyKotor.
 
 References:
 ----------
-        Original BioWare engine binaries (from swkotor.exe, swkotor2.exe)
-        Original BioWare engine binaries
-        Derivations and Other Implementations:
-        ----------
+
+    Derivations and Other Implementations:
+    -------------------------------------
         https://github.com/th3w1zard1/KotOR.js/tree/master/src/Game.ts
         Libraries/PyKotor/src/pykotor/common/module_loader.py - Backend-agnostic loading
 
@@ -43,10 +42,9 @@ class ModuleLoader:
 
     References:
     ----------
-        Original BioWare engine binaries (from swkotor.exe, swkotor2.exe)
-        Original BioWare engine binaries
-        Derivations and Other Implementations:
-        ----------
+
+    Derivations and Other Implementations:
+    -------------------------------------
         https://github.com/th3w1zard1/KotOR.js/tree/master/src/Game.ts:100-300
         Libraries/PyKotor/src/pykotor/common/module_loader.py - Data extraction
 

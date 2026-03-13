@@ -2680,10 +2680,9 @@ def _compress_quaternion(quat: Vector4) -> int:
 
     References:
     ----------
-        Original BioWare engine binaries (from swkotor.exe, swkotor2.exe)
-        Original BioWare engine binaries
-        Derivations and Other Implementations:
-        ----------
+
+    Derivations and Other Implementations:
+    -------------------------------------
         https://github.com/th3w1zard1/kotorblender/tree/master/io_scene_kotor/format/mdl/reader.py:850-868 (decompression)
         Inverse operation derived from decompression algorithm
 

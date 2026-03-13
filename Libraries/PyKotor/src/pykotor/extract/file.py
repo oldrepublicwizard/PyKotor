@@ -211,7 +211,7 @@ def _read_erf_resources(reader: BinaryReader, capsule_data: bytes) -> list[tuple
 
     reader.seek(offset_to_keys)
     for _ in range(entry_count):
-        resref = reader.read_string(16)
+        resref = reader.read_string(16).rstrip("\0")
         resrefs.append(resref)
         reader.skip(4)  # resid
         restype = reader.read_uint16()
@@ -247,7 +247,7 @@ def _read_rim_resources(reader: BinaryReader, capsule_data: bytes) -> list[tuple
 
     reader.seek(offset_to_entries)
     for _ in range(entry_count):
-        resref = reader.read_string(16)
+        resref = reader.read_string(16).rstrip("\0")
         restype = ResourceType.from_id(reader.read_uint32())
         reader.skip(4)
         offset = reader.read_uint32()

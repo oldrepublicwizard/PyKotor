@@ -51,10 +51,9 @@ class KEYWriter:
 
     References:
     ----------
-        Original BioWare engine binaries (from swkotor.exe, swkotor2.exe)
-        Original BioWare engine binaries
-        Derivations and Other Implementations:
-        ----------
+
+    Derivations and Other Implementations:
+    -------------------------------------
         https://github.com/th3w1zard1/Kotor.NET/tree/master/Kotor.NET/Formats/KotorKEY/KEY.cs (KEY structure)
         https://github.com/th3w1zard1/KotOR.js/tree/master/src/resource/KEYObject.ts (KEY loading)
 
@@ -98,10 +97,9 @@ class KEYWriter:
 
         References:
         ----------
-        Original BioWare engine binaries (from swkotor.exe, swkotor2.exe)
-        Original BioWare engine binaries
-        Derivations and Other Implementations:
-        ----------
+
+    Derivations and Other Implementations:
+    -------------------------------------
         https://github.com/th3w1zard1/Kotor.NET/tree/master/Kotor.NET/Formats/KotorKEY/KEYReader.cs (KEY reading)
         KEY file format: 8-byte signature, BIF count, resource count, offsets, timestamps
 

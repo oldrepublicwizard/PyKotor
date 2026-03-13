@@ -51,14 +51,14 @@ KotOR I (swkotor.exe):
         - Used for orientation parsing in walkmesh nodes
 
 KotOR II / TSL (swkotor2.exe):
-    - 0x00577860 - FUN_00577860 (main ASCII parser, equivalent to LoadMeshText, 3882 bytes, 650 lines)
+    - (/K2/k2_win_gog_aspyr_swkotor2.exe @ 0x00577860 - FUN_00577860 (main ASCII parser, equivalent to LoadMeshText, 3882 bytes, 650 lines)
         - Functionally identical to K1 LoadMeshText
         - Same parsing logic, format structure, and behavior
         - Minor code size difference (650 vs 715 lines) due to compiler optimizations
-    - 0x005573e0 - FUN_005573e0 (line reader helper, equivalent to LoadMeshString, 95 bytes, 26 lines)
+    - (/K2/k2_win_gog_aspyr_swkotor2.exe @ 0x005573e0 - FUN_005573e0 (line reader helper, equivalent to LoadMeshString, 95 bytes, 26 lines)
         - Functionally identical to K1 LoadMeshString
         - Same line reading logic and buffer management
-    - 0x004da020 - Quaternion::Quaternion(Vector, float) constructor (equivalent)
+    - (/K2/k2_win_gog_aspyr_swkotor2.exe @ 0x004da020 - Quaternion::Quaternion(Vector, float) constructor (equivalent)
         - Same quaternion construction logic as K1
 
 Both implementations are functionally identical with the same parsing logic, format structure,

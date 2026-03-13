@@ -668,10 +668,9 @@ class BWM(ComparableMixin):
 
         References:
         ----------
-        Original BioWare engine binaries (from swkotor.exe, swkotor2.exe)
-        Original BioWare engine binaries
-        Derivations and Other Implementations:
-        ----------
+
+    Derivations and Other Implementations:
+    -------------------------------------
         https://github.com/th3w1zard1/KotOR.js/tree/master/src/odyssey/OdysseyWalkMesh.ts:603-614 (raycast using THREE.js)
 
 
@@ -922,10 +921,9 @@ class BWM(ComparableMixin):
 
         References:
         ----------
-        Original BioWare engine binaries (from swkotor.exe, swkotor2.exe)
-        Original BioWare engine binaries
-        Derivations and Other Implementations:
-        ----------
+
+    Derivations and Other Implementations:
+    -------------------------------------
         https://github.com/th3w1zard1/KotOR.js/tree/master/src/odyssey/OdysseyWalkMesh.ts:478-495 (pointInFace2d)
         https://github.com/th3w1zard1/KotOR.js/tree/master/src/odyssey/OdysseyWalkMesh.ts:526-533 (isPointInsideTriangle2d)
 
@@ -983,10 +981,9 @@ class BWM(ComparableMixin):
 
         References:
         ----------
-        Original BioWare engine binaries (from swkotor.exe, swkotor2.exe)
-        Original BioWare engine binaries
-        Derivations and Other Implementations:
-        ----------
+
+    Derivations and Other Implementations:
+    -------------------------------------
         https://github.com/th3w1zard1/KotOR.js/tree/master/src/odyssey/OdysseyWalkMesh.ts:549-599 (getAABBCollisionFaces)
         https://github.com/th3w1zard1/KotOR.js/tree/master/src/odyssey/OdysseyWalkMesh.ts:497-504 (isPointWalkable)
         Libraries/PyKotor/src/utility/common/geometry.py:1270-1292 (Face.determine_z)
@@ -1043,10 +1040,9 @@ class BWM(ComparableMixin):
 
         References:
         ----------
-        Original BioWare engine binaries (from swkotor.exe, swkotor2.exe)
-        Original BioWare engine binaries
-        Derivations and Other Implementations:
-        ----------
+
+    Derivations and Other Implementations:
+    -------------------------------------
         https://github.com/th3w1zard1/KotOR.js/tree/master/src/odyssey/OdysseyWalkMesh.ts:601-640 (getAdjacentFaces)
         https://github.com/th3w1zard1/KotOR.js/tree/master/src/odyssey/OdysseyWalkMesh.ts:549-599 (getAABBCollisionFaces)
 
@@ -1522,10 +1518,9 @@ class BWMFace(Face, ComparableMixin):
 
     References:
     ----------
-        Original BioWare engine binaries (from swkotor.exe, swkotor2.exe)
-        Original BioWare engine binaries
-        Derivations and Other Implementations:
-        ----------
+
+    Derivations and Other Implementations:
+    -------------------------------------
         https://github.com/th3w1zard1/KotOR.js/tree/master/src/three/odyssey/OdysseyFace3.ts
         https://github.com/th3w1zard1/kotorblender/tree/master/io_scene_kotor/scene/material.py
         Binary Format (per face):
@@ -1638,10 +1633,9 @@ class BWMNodeAABB(ComparableMixin):
 
     References:
     ----------
-        Original BioWare engine binaries (from swkotor.exe, swkotor2.exe)
-        Original BioWare engine binaries
-        Derivations and Other Implementations:
-        ----------
+
+    Derivations and Other Implementations:
+    -------------------------------------
         https://github.com/th3w1zard1/KotOR.js/tree/master/src/odyssey/OdysseyWalkMesh.ts:44 (aabbNodes array)
         https://github.com/th3w1zard1/KotOR.js/tree/master/src/interface/odyssey/IOdysseyModelAABBNode.ts
         Binary Format (per AABB node, 32 bytes):
@@ -1779,10 +1773,9 @@ class BWMAdjacency(ComparableMixin):
 
     References:
     ----------
-        Original BioWare engine binaries (from swkotor.exe, swkotor2.exe)
-        Original BioWare engine binaries
-        Derivations and Other Implementations:
-        ----------
+
+    Derivations and Other Implementations:
+    -------------------------------------
         https://github.com/th3w1zard1/KotOR.js/tree/master/src/odyssey/OdysseyWalkMesh.ts:45 (walkableFacesEdgesAdjacencyMatrix)
 
 
@@ -1837,10 +1830,9 @@ class BWMEdge(ComparableMixin):
 
     References:
     ----------
-        Original BioWare engine binaries (from swkotor.exe, swkotor2.exe)
-        Original BioWare engine binaries
-        Derivations and Other Implementations:
-        ----------
+
+    Derivations and Other Implementations:
+    -------------------------------------
         https://github.com/th3w1zard1/KotOR.js/tree/master/src/odyssey/WalkmeshEdge.ts:15-110
         https://github.com/th3w1zard1/KotOR.js/tree/master/src/odyssey/OdysseyWalkMesh.ts:46 (edges Map)
 

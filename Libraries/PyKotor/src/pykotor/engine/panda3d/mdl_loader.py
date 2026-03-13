@@ -143,10 +143,9 @@ class MDLLoader:
 
         References:
         ----------
-        Original BioWare engine binaries (from swkotor.exe, swkotor2.exe)
-        Original BioWare engine binaries
-        Derivations and Other Implementations:
-        ----------
+
+    Derivations and Other Implementations:
+    -------------------------------------
         https://github.com/th3w1zard1/KotOR.js/tree/master/src/three/odyssey/OdysseyModel3D.ts:938-1134
 
 
@@ -292,10 +291,9 @@ class MDLLoader:
 
         References:
         ----------
-        Original BioWare engine binaries (from swkotor.exe, swkotor2.exe)
-        Original BioWare engine binaries
-        Derivations and Other Implementations:
-        ----------
+
+    Derivations and Other Implementations:
+    -------------------------------------
         https://github.com/th3w1zard1/KotOR.js/tree/master/src/three/odyssey/OdysseyModel3D.ts:1259-1263
 
 
@@ -369,10 +367,9 @@ class MDLLoader:
 
         References:
         ----------
-        Original BioWare engine binaries (from swkotor.exe, swkotor2.exe)
-        Original BioWare engine binaries
-        Derivations and Other Implementations:
-        ----------
+
+    Derivations and Other Implementations:
+    -------------------------------------
         https://github.com/th3w1zard1/KotOR.js/tree/master/src/three/odyssey/OdysseyModel3D.ts:1202-1205
 
 
@@ -440,10 +437,9 @@ class MDLLoader:
 
         References:
         ----------
-        Original BioWare engine binaries (from swkotor.exe, swkotor2.exe)
-        Original BioWare engine binaries
-        Derivations and Other Implementations:
-        ----------
+
+    Derivations and Other Implementations:
+    -------------------------------------
         https://github.com/th3w1zard1/KotOR.js/tree/master/src/three/odyssey/OdysseyModel3D.ts:1476-1479
         Libraries/PyKotor/src/pykotor/resource/formats/mdl/mdl_data.py:1447-1505 - MDLSaber structure
 
@@ -490,10 +486,9 @@ class MDLLoader:
 
         References:
         ----------
-        Original BioWare engine binaries (from swkotor.exe, swkotor2.exe)
-        Original BioWare engine binaries
-        Derivations and Other Implementations:
-        ----------
+
+    Derivations and Other Implementations:
+    -------------------------------------
         https://github.com/th3w1zard1/KotOR.js/tree/master/src/three/odyssey/OdysseyModel3D.ts:1212-1243
 
 
@@ -599,10 +594,9 @@ class MDLLoader:
 
         References:
         ----------
-        Original BioWare engine binaries (from swkotor.exe, swkotor2.exe)
-        Original BioWare engine binaries
-        Derivations and Other Implementations:
-        ----------
+
+    Derivations and Other Implementations:
+    -------------------------------------
         https://github.com/th3w1zard1/KotOR.js/tree/master/src/three/odyssey/OdysseyModel3D.ts:998-1004
         Libraries/PyKotor/src/pykotor/resource/formats/mdl/mdl_data.py:842-1051 - MDLEmitter structure
 
@@ -659,10 +653,9 @@ class MDLLoader:
 
         References:
         ----------
-        Original BioWare engine binaries (from swkotor.exe, swkotor2.exe)
-        Original BioWare engine binaries
-        Derivations and Other Implementations:
-        ----------
+
+    Derivations and Other Implementations:
+    -------------------------------------
         https://github.com/th3w1zard1/KotOR.js/tree/master/src/three/odyssey/OdysseyModel3D.ts:1006-1027
 
 
@@ -681,10 +674,9 @@ class MDLLoader:
 
         References:
         ----------
-        Original BioWare engine binaries (from swkotor.exe, swkotor2.exe)
-        Original BioWare engine binaries
-        Derivations and Other Implementations:
-        ----------
+
+    Derivations and Other Implementations:
+    -------------------------------------
         https://github.com/th3w1zard1/KotOR.js/tree/master/src/three/odyssey/OdysseyModel3D.ts:1012-1026
 
 

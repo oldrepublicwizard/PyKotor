@@ -424,20 +424,20 @@ class Installation:
             self._log.info("The '%s' folder did not exist when loading the installation at '%s', skipping...", r_path.name, self._path)
             return {}
 
-        str_path = str(r_path)
+        str_path: str = str(r_path)
         self._log.debug("Loading '%s' resources dict from installation...", os.path.relpath(str_path, self._path))
-        files_iter = r_path.rglob("*") if recurse else r_path.iterdir()
+        files_iter: Iterable[Path] = r_path.rglob("*") if recurse else r_path.iterdir()
 
         resources_dict: dict[str, list[FileResource]] = {}
         str_path = str(r_path)
 
         for file in files_iter:
-            resource_list = self._build_resource_list(file, capsule_check)
+            resource_list: list[FileResource] | None = self._build_resource_list(file, capsule_check)
             if resource_list is None:
                 continue
             resources_dict[file.name] = resource_list
         if not resources_dict:
-            RobustLogger().warning(f"No resources found at '{str_path}' when loading the installation, skipping...")
+            self._log.debug("No resources found at '%s' when loading the installation, skipping...", str_path)
         return resources_dict
 
     def load_resources_list(
@@ -482,7 +482,7 @@ class Installation:
             RobustLogger().exception(f"Error scanning directory '{str_path}'", exc_info=e)
 
         if not resources_list:
-            RobustLogger().warning(f"No resources found at '{str_path}' when loading the installation, skipping...")
+            self._log.debug("No resources found at '%s' when loading the installation, skipping...", str_path)
         return resources_list
 
     def load_chitin(self):
@@ -690,7 +690,7 @@ class Installation:
             if not folder_path.is_dir():
                 return files
             stack: list[str] = [str(folder_path)]
-            install_path_str = str(self.path())
+            install_path_str: str = str(self.path())
             file_count = 0
             # Only update progress every 100 files to reduce logging overhead
             PROGRESS_UPDATE_INTERVAL = 100

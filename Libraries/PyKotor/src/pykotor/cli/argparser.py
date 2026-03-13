@@ -578,6 +578,19 @@ Extract files from Bioware archive formats including:
     walkmesh_rebuild_parser.add_argument("input", help="Input walkmesh file (.wok, .dwk, .pwk, or .ascii)")
     walkmesh_rebuild_parser.add_argument("--output", "-o", dest="output", help="Output path (default: overwrite input or infer from .ascii)")
     walkmesh_rebuild_parser.add_argument("--ascii", action="store_true", help="Also write an ASCII version of the rebuilt walkmesh")
+    walkmesh_rebuild_parser.add_argument(
+        "--render-png",
+        action="store_true",
+        dest="render_png",
+        help="Write 3–4 validation PNGs of the rebuilt walkmesh (requires matplotlib; install with: pip install pykotor[render] or uv sync --extra render)",
+    )
+    walkmesh_rebuild_parser.add_argument(
+        "--verbose",
+        "-v",
+        action="store_true",
+        dest="verbose",
+        help="Show verbose output (e.g. matplotlib DEBUG) when using --render-png",
+    )
 
     walkmesh_convert_parser = subparsers.add_parser("walkmesh-convert", help="Convert walkmesh BWM/WOK <-> ASCII")
     walkmesh_convert_parser.add_argument("--input", "-i", required=True, help="Input walkmesh file (.wok, .dwk, .pwk, or .ascii)")

@@ -22,7 +22,7 @@ name = "pykotor-workspace"
 authors = [{ name = "Nick Hugi" }, { name = "th3w1zard1" }]
 maintainers = [{ name = "th3w1zard1", email = "boden.crouch@gmail.com" }]
 dependencies = [
-  "pykotor>=2.3.2",
+  "pykotor[render]>=2.3.2",
   "holocrontoolset",
 ]
 description = "PyKotor workspace - meta-package for PyKotor ecosystem"
@@ -349,8 +349,8 @@ holocrontoolset = {workspace = true}
 holopatcher = {workspace = true}
 holopazaak = {workspace = true}
 kotordiff = {workspace = true}
-pykotor = {workspace = true}
 pykotorcli = {workspace = true}
+pykotor = { workspace = true }
 
 [tool.uv.workspace]
 members = [
