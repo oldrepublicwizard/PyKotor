@@ -38,7 +38,7 @@ remoteVersionNewer = is_remote_version_newer
 # This file is the source of truth for updates.
 LOCAL_PROGRAM_INFO: dict[str, Any] = {
     # <---JSON_START--->#{
-    "currentVersion": "4.0.0b21",
+    "currentVersion": "4.0.0b22",
     "toolsetLatestVersion": "3.1.1",
     "toolsetLatestBetaVersion": "3.1.1",
     "updateInfoLink": "https://api.github.com/repos/th3w1zard1/PyKotor/contents/Tools/HolocronToolset/src/toolset/config/config_info.py",
