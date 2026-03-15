@@ -69,13 +69,13 @@ class UTPEditor(Editor):
 
         from toolset.uic.qtpy.editors.utp import Ui_MainWindow
 
-        self.ui = Ui_MainWindow()
+        self.ui: Ui_MainWindow = Ui_MainWindow()
         self.ui.setupUi(self)
 
         # Setup event filter to prevent scroll wheel interaction with controls
         from toolset.gui.common.filters import NoScrollEventFilter
 
-        self._no_scroll_filter = NoScrollEventFilter(self)
+        self._no_scroll_filter: NoScrollEventFilter = NoScrollEventFilter(self)
         self._no_scroll_filter.setup_filter(parent_widget=self)
 
         self._setup_menus()
@@ -93,7 +93,8 @@ class UTPEditor(Editor):
         self.setSizePolicy(QSizePolicy.Policy.MinimumExpanding, QSizePolicy.Policy.MinimumExpanding)
 
     def _on_installation_changed(self, installation: HTInstallation | None) -> None:
-        if installation is None:
+        # InstallationToolbar can emit during base-class init before self.ui exists.
+        if installation is None or not hasattr(self, "ui"):
             return
         self._setup_installation(installation)
         self.update3dPreview()
