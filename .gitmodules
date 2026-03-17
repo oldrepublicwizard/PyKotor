@@ -30,3 +30,6 @@
 [submodule "Tools/KitGenerator"]
 	path = Tools/KitGenerator
 	url = https://github.com/OldRepublicDevs/KitGenerator.git
+[submodule "Tools/KotorDiff"]
+	path = Tools/KotorDiff
+	url = https://github.com/OldRepublicDevs/KotorDiff.git
