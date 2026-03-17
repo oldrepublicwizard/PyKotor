@@ -12,3 +12,6 @@
 # KOTOR Modding Tools
 # ===============================
 
+[submodule "Tools/BatchPatcher"]
+	path = Tools/BatchPatcher
+	url = https://github.com/OldRepublicDevs/BatchPatcher.git
