@@ -42,12 +42,6 @@
 [submodule "Tools/GModular"]
 	path = Tools/GModular
 	url = https://github.com/CrispyW0nton/GModular
-[submodule "Kotor-Unity-Project"]
-	path = Kotor-Unity-Project
-	url = https://github.com/CrispyW0nton/Kotor-Unity-Project
-[submodule "Kotor-3D-Model-Converter"]
-	path = Kotor-3D-Model-Converter
-	url = https://github.com/CrispyW0nton/Kotor-3D-Model-Converter
 [submodule "Tools/Kotor-3D-Model-Converter"]
 	path = Tools/Kotor-3D-Model-Converter
 	url = https://github.com/CrispyW0nton/Kotor-3D-Model-Converter
