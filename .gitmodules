@@ -27,3 +27,6 @@
 [submodule "Tools/HoloPazaak"]
 	path = Tools/HoloPazaak
 	url = https://github.com/OldRepublicDevs/HoloPazaak.git
+[submodule "Tools/KitGenerator"]
+	path = Tools/KitGenerator
+	url = https://github.com/OldRepublicDevs/KitGenerator.git
