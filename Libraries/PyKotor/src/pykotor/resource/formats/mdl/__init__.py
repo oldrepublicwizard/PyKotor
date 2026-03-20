@@ -153,6 +153,11 @@ Error Messages:
 """
 
 from __future__ import annotations
+
+from pykotor.resource.formats.mdl._install_mdl_io_aabb import ensure_io_mdl_aabb_patched_on_disk
+
+ensure_io_mdl_aabb_patched_on_disk()
+
 from pykotor.resource.formats.mdl.mdl_data import (
     MDL,
     MDLNode,

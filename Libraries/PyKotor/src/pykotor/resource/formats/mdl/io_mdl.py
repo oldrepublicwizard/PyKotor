@@ -2869,6 +2869,7 @@ class MDLBinaryReader:
         size_ext: int = 0,
         game: Game = Game.K2,
         fast_load: bool = False,
+        skip_aabb: bool = False,
     ):
         self._reader: BinaryReader = BinaryReader.from_auto(source, offset)
 
@@ -2878,6 +2879,7 @@ class MDLBinaryReader:
         self._reader.set_offset(self._reader.offset() + 12)
 
         self._fast_load: bool = fast_load
+        self._skip_aabb: bool = skip_aabb
         self.game: Game = game
 
     def load(
@@ -3032,8 +3034,8 @@ class MDLBinaryReader:
             if node.aabb is None:
                 node.aabb = MDLWalkmesh()
 
-            # Read AABB tree if offset is valid
-            if bin_node.trimesh and bin_node.trimesh.offset_to_aabb > 0:
+            # Read AABB tree if offset is valid (skip when recovering from corrupt walkmesh trees)
+            if not self._skip_aabb and bin_node.trimesh and bin_node.trimesh.offset_to_aabb > 0:
                 # Read AABB tree recursively (depth-first, matching MDLOps)
                 #
                 def _read_aabb_recursive(
@@ -3045,20 +3047,25 @@ class MDLBinaryReader:
                     Returns:
                         (count, nodes): Number of nodes read and list of AABB nodes
                     """
-                    if offset == 0 or offset >= reader.size() or offset + 40 > reader.size():
+                    # Reject invalid offsets: 0, negative (e.g. -1 / 0xFFFFFFFF leaf sentinel),
+                    # and out-of-bounds. Some game/custom MDLs use -1 for "no child" instead of 0.
+                    if offset <= 0 or offset >= reader.size() or offset + 40 > reader.size():
                         return (0, [])
 
-                    reader.seek(offset)
-                    # Read 6 floats (bounding box min/max)
-                    bbox_min: Vector3 = reader.read_vector3()
-                    bbox_max: Vector3 = reader.read_vector3()
-                    # Read 4 int32s: left child offset, right child offset, face index, unknown
-                    # NOTE: Child offsets in the file are stored as (absolute_offset - 12), but since
-                    # BinaryReader has set_offset(+12) applied, these can be used directly.
-                    left_child: int = reader.read_int32()
-                    right_child: int = reader.read_int32()
-                    face_index: int = reader.read_int32()
-                    unknown: int = reader.read_int32()
+                    try:
+                        reader.seek(offset)
+                        # Read 6 floats (bounding box min/max)
+                        bbox_min: Vector3 = reader.read_vector3()
+                        bbox_max: Vector3 = reader.read_vector3()
+                        # Read 4 int32s: left child offset, right child offset, face index, unknown
+                        # NOTE: Child offsets in the file are stored as (absolute_offset - 12), but since
+                        # BinaryReader has set_offset(+12) applied, these can be used directly.
+                        left_child: int = reader.read_int32()
+                        right_child: int = reader.read_int32()
+                        face_index: int = reader.read_int32()
+                        unknown: int = reader.read_int32()
+                    except OSError:
+                        return (0, [])
 
                     aabb_node = MDLAABBNode(
                         bbox_min=bbox_min,
@@ -3072,13 +3079,18 @@ class MDLBinaryReader:
                     nodes = [aabb_node]
                     count = 1
 
-                    # If this is a branch node (face_index == -1), recursively read children
+                    # If this is a branch node (face_index == -1), recursively read children.
+                    # Valid child offsets are positive and within the MDX stream; 0 and -1 (and
+                    # other garbage) mean no child — do not seek.
+                    def _aabb_child_ok(off: int) -> bool:
+                        return 0 < off < reader.size() and off + 40 <= reader.size()
+
                     if face_index == -1:
-                        if left_child != 0:
+                        if _aabb_child_ok(left_child):
                             child_count, child_nodes = _read_aabb_recursive(reader, left_child)
                             count += child_count
                             nodes.extend(child_nodes)
-                        if right_child != 0:
+                        if _aabb_child_ok(right_child):
                             child_count, child_nodes = _read_aabb_recursive(reader, right_child)
                             count += child_count
                             nodes.extend(child_nodes)

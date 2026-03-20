@@ -4,7 +4,7 @@ requires = ["setuptools>=67.8.0", "wheel"]
 
 [project]
 name = "pykotor"
-version = "2.3.3"
+version = "2.3.9"
 description = "Read, modify and write files used by KotOR's game engine."
 authors = [{ name = "Nick Hugi" }, { name = "th3w1zard1" }]
 maintainers = [{ name = "th3w1zard1", email = "boden.crouch@gmail.com" }]
@@ -148,7 +148,7 @@ Repository = "https://github.com/OldRepublicDevs/PyKotor.git"
 # Poetry configuration
 [tool.poetry]
 name = "pykotor"
-version = "2.3.3"
+version = "2.3.9"
 description = "Read, modify and write files used by KotOR's game engine."
 authors = ["Nick Hugi", "th3w1zard1 <boden.crouch@gmail.com>"]
 maintainers = ["th3w1zard1 <boden.crouch@gmail.com>"]

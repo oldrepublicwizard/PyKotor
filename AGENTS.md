@@ -42,6 +42,10 @@ QT_QPA_PLATFORM=offscreen uv run pytest --import-mode=importlib -m "not gui and 
 - **HoloPatcher**: `uv run holopatcher --help`
 - **KotorDiff**: `uv run kotordiff --help`
 
+### MDL editor crash (seek -1 / KOQ200 walkmesh)
+
+**KOQ200 / AABB seek(-1):** On **`import pykotor`**, **`pykotor/__init__.py`** patches **`sysconfig.get_path("purelib")/pykotor/.../io_mdl.py`** with **`attrib -R`** + atomic replace (plain **`write_text`** fails on uv read-only wheels). **`sitecustomize.py`** does the same before imports. One-shot: **`uv tool run holocrontoolset`’s Python** → **`python scripts/sitecustomize_koq_mdl.py`** (must print **`AABB fix present: True`**) **or** **`scripts/apply_pykotor_mdl_aabb_fix.py`**. Then restart Holocron.
+
 ### Dependency sync
 
 Run `CXX=g++ uv sync --all-packages --all-extras` (not bare `uv sync`) to install all workspace members (HolocronToolset, HoloPatcher, etc.) and dev extras (ruff, pytest plugins, type stubs). Bare `uv sync` only installs the root meta-package.
