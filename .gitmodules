@@ -9,15 +9,9 @@
 
 
 # ===============================
-# KOTOR Modding Tools
+# Tools
 # ===============================
 
-[submodule "Tools/BatchPatcher"]
-	path = Tools/BatchPatcher
-	url = https://github.com/OldRepublicDevs/BatchPatcher.git
-[submodule "Tools/HolocronAI"]
-	path = Tools/HolocronAI
-	url = https://github.com/OldRepublicDevs/HolocronAI.git
 [submodule "Tools/HolocronToolset"]
 	path = Tools/HolocronToolset
 	url = https://github.com/OldRepublicDevs/HolocronToolset.git
@@ -27,9 +21,6 @@
 [submodule "Tools/HoloPazaak"]
 	path = Tools/HoloPazaak
 	url = https://github.com/OldRepublicDevs/HoloPazaak.git
-[submodule "Tools/KitGenerator"]
-	path = Tools/KitGenerator
-	url = https://github.com/OldRepublicDevs/KitGenerator.git
 [submodule "Tools/KotorDiff"]
 	path = Tools/KotorDiff
 	url = https://github.com/OldRepublicDevs/KotorDiff.git
