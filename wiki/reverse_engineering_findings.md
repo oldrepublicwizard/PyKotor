@@ -86,13 +86,13 @@ The engine uses `CExoResMan` as the central resource management system supportin
 - `FIXED` (0x00000000): KEY/BIF files (chitin.key + data/*.bif)
 - `DIRECTORY` (0x80000000): Loose files in directories
 - `ERF` (0x40000000): ERF/RIM containers (modules/*.rim, modules/*.erf)
-- `RIM` (0x20000000): RIM (Resource Index Manifest) containers (e.g. texture packs; naming per MacOS symbols, see [PyKotor#47](https://github.com/OldRepublicDevs/PyKotor/issues/47))
+- `RIM` (0x20000000): RIM (Resource Image) containers (e.g. texture packs; naming per MacOS symbols / `AddResourceImageFile()`, see [PyKotor#47](https://github.com/OldRepublicDevs/PyKotor/issues/47))
 
 **Key Functions:**
 
 - `CExoResMan::AddKeyTable()`: Loads container tables with type flags
 - `CExoResMan::ReadResource()`: Loads resources from containers
-- `AddResourceImageFile()` calls `AddKeyTable(..., RIM, 0)` for texture packs (RIM = Resource Index Manifest)
+- `AddResourceImageFile()` calls `AddKeyTable(..., RIM, 0)` for texture packs (RIM = Resource Image)
 
 **GFF Structure (from CResGFF analysis):**
 

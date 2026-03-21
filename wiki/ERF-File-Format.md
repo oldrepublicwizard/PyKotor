@@ -304,7 +304,7 @@ Contrary to popular belief, the engine does **not** identify Save Games based on
 - [BIF File Format](BIF-File-Format) - Container format used with [KEY](KEY-File-Format) files
 - [KEY File Format](KEY-File-Format) - Index for [BIF containers](BIF-File-Format) and resource resolution
 - [GFF File Format](GFF-File-Format) - Common content type stored in ERF containers
-- [RIM-File-Format](RIM-File-Format) - RIM (Resource Index Manifest) container format; similar structure to ERF for area resources
+- [RIM-File-Format](RIM-File-Format) - RIM (Resource Image) container format; similar structure to ERF for area resources
 
 ---
 

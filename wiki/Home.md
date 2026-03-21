@@ -335,7 +335,7 @@ This language ID usually is represented as an enum. It is equivalent within all 
 - [LYT File Format](LYT-File-Format) ← Layout format
 - [NCS File Format](NCS-File-Format) ← NwScript Compiled Script format
 - [NSS File Format](NSS-File-Format) ← NwScript Source format (nwscript.nss, function/constant definitions)
-- [RIM File Format](ERF-File-Format) ← Resource Index Manifest format
+- [RIM File Format](ERF-File-Format) ← Resource Image format
 - [SSF File Format](SSF-File-Format) ← [sound set files](SSF-File-Format) format
 - [TLK File Format](TLK-File-Format) ← [Talk Table](TLK-File-Format) format
 - [TPC File Format](TPC-File-Format) ← [texture](TPC-File-Format) Pack Container format

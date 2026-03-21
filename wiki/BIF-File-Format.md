@@ -236,7 +236,7 @@ The *Resource ID* in the *BIF* file matches the *Resource ID* in the [KEY File](
 
 - [KEY-File-Format](KEY-File-Format) -- *BIF* indexing and resource resolution
 - [ERF-File-Format](ERF-File-Format) -- *ERF/MOD* containers; [GFF-File-Format](GFF-File-Format) -- *GFF* resources in *BIF*
-- [RIM-File-Format](RIM-File-Format) -- RIM (Resource Index Manifest) containers
+- [RIM-File-Format](RIM-File-Format) -- RIM (Resource Image) containers
 - [Bioware-Aurora-KeyBIF](Bioware-Aurora-KeyBIF) -- *Aurora* *KEY/BIF* specification
 
 ---
