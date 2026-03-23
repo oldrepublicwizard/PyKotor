@@ -107,12 +107,13 @@ Edit only `Tools/HolocronToolset/src/ui/`. Never edit `uic/`. Run `convertui.py`
 
 ### dotnet test (KPatcher / .NET sibling checkouts)
 
-When running **`dotnet test`** (for example the vendored **KPatcher** tree under `vendor/` or a sibling clone), **do not** call `dotnet test` directly in agent workflows. Use KPatcher’s timeout wrappers so the test host is **killed** after a wall-clock limit:
+**Never** call bare **`dotnet test`** from agents or CI. Use KPatcher’s wrappers only; run **once** per check — **do not** poll a run for hours. If exit **124** or the run does not finish in one invocation, **find the bottleneck**.
 
-- **Windows (from KPatcher root):** `.\scripts\DotnetTest.ps1 KPatcher.sln -c Debug`
-- **Unix:** `./scripts/dotnet-test.sh KPatcher.sln -c Debug` (requires GNU `timeout` or `gtimeout`)
+- **Windows (KPatcher root):** `.\scripts\DotnetTest.ps1 KPatcher.sln -c Debug`
+- **Unix:** `./scripts/dotnet-test.sh KPatcher.sln -c Debug` (GNU `timeout` / `gtimeout`)
+- **GitHub Actions:** `pwsh -NoProfile -File ./scripts/DotnetTest.ps1 …` (same script on Linux/macOS/Windows agents)
 
-**Never exceed 10 minutes total** for `dotnet test`: wrapper wall clock is **capped at 600 seconds**; **`DOTNET_TEST_TIMEOUT_SECONDS`** cannot raise that ceiling. Exit **124** = timeout — **mandatory bottleneck analysis** (profile, trace, speed up); do not disable or skip tests as the primary fix.
+**Never exceed 10 minutes total** (wrapper **capped at 600s**; env cannot raise it). **`KPatcher.Tests`** ships **`Default.runsettings`** excluding **`Category=DeNCSRoundTrip`** so default runs stay under the cap; exhaustive harness: **`tests/KPatcher.Tests/Exhaustive.runsettings`**. Exit **124** = mandatory bottleneck analysis; do not disable tests as the primary fix.
 
 
 **Useful Commands (Examples)**
