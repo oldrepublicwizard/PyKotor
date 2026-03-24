@@ -6,6 +6,18 @@ Part of the [NSS File Format Documentation](NSS-File-Format).
 
 This document provides detailed documentation for NWScript item management functions. These functions allow scripts to create items, manage inventory, equip/unequip items, and manipulate item properties.
 
+## Implementation cross-reference
+
+Item **templates** on disk are [UTI](GFF-UTI) resources (GFF). **Runtime** APIs below operate on instantiated item objects after the engine resolves the template.
+
+- **PyKotor:** generic binary GFF I/O — [`GFFBinaryReader.load` L79+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/gff/io_gff.py#L79); UTI field helpers — [`resource/generics/uti.py`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/uti.py). NSS → NCS toolchain — [`resource/formats/ncs/compiler/`](https://github.com/OldRepublicDevs/PyKotor/tree/master/Libraries/PyKotor/src/pykotor/resource/formats/ncs/compiler).
+
+- **reone:** script routines in [`main.cpp`](https://github.com/modawan/reone/blob/master/src/libs/game/script/routine/impl/main.cpp) — e.g. [`GetItemPossessedBy` L336–L351](https://github.com/modawan/reone/blob/master/src/libs/game/script/routine/impl/main.cpp#L336-L351), [`CreateItemOnObject` L353–L368](https://github.com/modawan/reone/blob/master/src/libs/game/script/routine/impl/main.cpp#L353-L368); K1 routine registration around [L6898–L6899](https://github.com/modawan/reone/blob/master/src/libs/game/script/routine/impl/main.cpp#L6898-L6899), K2/TSL extended signatures around [L7454–L7455](https://github.com/modawan/reone/blob/master/src/libs/game/script/routine/impl/main.cpp#L7454-L7455). Stack helpers: [`GetItemStackSize` L1408+](https://github.com/modawan/reone/blob/master/src/libs/game/script/routine/impl/main.cpp#L1408), [`SetItemStackSize` L1521+](https://github.com/modawan/reone/blob/master/src/libs/game/script/routine/impl/main.cpp#L1521), [`GetItemInSlot` L1557+](https://github.com/modawan/reone/blob/master/src/libs/game/script/routine/impl/main.cpp#L1557). *(Numeric **routine IDs** in NSS docs follow the game’s `nwscript.nss`; reone’s internal `insert(n, …)` indices match that table but can differ from other write-ups.)*
+
+- **KotOR.js:** routine definitions in [`NWScriptDefK1.ts` L383+ / L396+](https://github.com/KobaltBlu/KotOR.js/blob/master/src/nwscript/NWScriptDefK1.ts#L383-L396) (`GetItemPossessedBy`, `CreateItemOnObject`); search the same file for related item/inventory symbols.
+
+- **Kotor.NET:** GFF tree for UTI and all GFF types — [`GFF.cs` L18+](https://github.com/NickHugi/Kotor.NET/blob/master/Kotor.NET/Formats/KotorGFF/GFF.cs#L18).
+
 ---
 
 ## Item Management Fundamentals
@@ -38,7 +50,7 @@ Items can be equipped in specific inventory slots. Different item types go in di
 
 #### Function Signature
 
-```nss
+```c
 object CreateItemOnObject(string sItemTemplate, object oTarget = OBJECT_SELF, int nStackSize = 1, int bHideMessage = 0);
 ```
 
@@ -60,18 +72,18 @@ Creates an item from a template and adds it to the target object's inventory (cr
 
 #### Usage Examples
 
-```nss
+```c
 // Create item in self's inventory
 object oItem = CreateItemOnObject("g_w_lghtsbr01", OBJECT_SELF);
 ```
 
-```nss
+```c
 // Create item in PC's inventory
 object oPC = GetFirstPC();
 object oItem = CreateItemOnObject("g_i_medpac01", oPC, 5); // Stack of 5
 ```
 
-```nss
+```c
 // Create item in placeable container
 object oContainer = GetObjectByTag("chest");
 CreateItemOnObject("g_w_vibroblade01", oContainer);
@@ -79,7 +91,7 @@ CreateItemOnObject("g_w_vibroblade01", oContainer);
 
 **Pattern: Conditional Item Creation**
 
-```nss
+```c
 // Create different items based on condition
 string sItemTemplate;
 if (GetGlobalNumber("Lightsaber_Color") == 0) {
@@ -94,8 +106,8 @@ CreateItemOnObject(sItemTemplate, GetFirstPC(), 1, 1);
 
 **Pattern: Create and Equip**
 
-```nss
-// From vendor/Vanilla_KOTOR_Script_Source/TSL/Vanilla/Modules/950COR_Coruscant_(cutscene)/a_createpcsaber.nss
+```c
+// From KOTORCommunityPatches/Vanilla_KOTOR_Script_Source/TSL/Vanilla/Modules/950COR_Coruscant_(cutscene)/a_createpcsaber.nss
 object oLightsaber = CreateItemOnObject("g_w_lghtsbr10", GetFirstPC(), 1, 1);
 object oRobe = CreateItemOnObject("a_robe_08", GetFirstPC(), 1, 1);
 AssignCommand(GetFirstPC(), ActionEquipItem(oLightsaber, INVENTORY_SLOT_RIGHTWEAPON, 0));
@@ -119,7 +131,7 @@ AssignCommand(GetFirstPC(), ActionEquipItem(oRobe, INVENTORY_SLOT_BODY, 0));
 
 #### Function Signature
 
-```nss
+```c
 object GetItemPossessedBy(object oCreature, string sItemTag);
 ```
 
@@ -139,7 +151,7 @@ Gets an item with the specified tag from a creature's inventory (including equip
 
 #### Usage Examples
 
-```nss
+```c
 // Find item in PC's inventory
 object oItem = GetItemPossessedBy(GetFirstPC(), "my_custom_item");
 if (GetIsObjectValid(oItem)) {
@@ -149,8 +161,8 @@ if (GetIsObjectValid(oItem)) {
 
 **Pattern: Remove Item from Player**
 
-```nss
-// From vendor/Vanilla_KOTOR_Script_Source/TSL/Vanilla/Data/Scripts/a_take_item.nss
+```c
+// From KOTORCommunityPatches/Vanilla_KOTOR_Script_Source/TSL/Vanilla/Data/Scripts/a_take_item.nss
 object oItem = GetItemPossessedBy(GetPartyLeader(), "quest_item");
 if (GetIsObjectValid(oItem)) {
     int nStackSize = GetItemStackSize(oItem);
@@ -171,7 +183,7 @@ if (GetIsObjectValid(oItem)) {
 
 #### Function Signature
 
-```nss
+```c
 object GetItemPossessor(object oItem);
 ```
 
@@ -190,7 +202,7 @@ Gets the creature or placeable that possesses (has in inventory) the specified i
 
 #### Usage Examples
 
-```nss
+```c
 // Find who has an item
 object oItem = GetObjectByTag("special_item");
 object oOwner = GetItemPossessor(oItem);
@@ -207,7 +219,7 @@ if (GetIsObjectValid(oOwner)) {
 
 #### Function Signature
 
-```nss
+```c
 object GetItemInSlot(int nInventorySlot, object oCreature = OBJECT_SELF);
 ```
 
@@ -240,7 +252,7 @@ Gets the item equipped in a specific inventory slot on a creature.
 
 #### Usage Examples
 
-```nss
+```c
 // Get equipped weapon
 object oWeapon = GetItemInSlot(INVENTORY_SLOT_RIGHTWEAPON, GetFirstPC());
 if (GetIsObjectValid(oWeapon)) {
@@ -248,7 +260,7 @@ if (GetIsObjectValid(oWeapon)) {
 }
 ```
 
-```nss
+```c
 // Get all equipped items
 object oHead = GetItemInSlot(INVENTORY_SLOT_HEAD, GetFirstPC());
 object oBody = GetItemInSlot(INVENTORY_SLOT_BODY, GetFirstPC());
@@ -257,8 +269,8 @@ object oWeapon = GetItemInSlot(INVENTORY_SLOT_RIGHTWEAPON, GetFirstPC());
 
 **Pattern: Store Equipment Before Change**
 
-```nss
-// From vendor/Vanilla_KOTOR_Script_Source/TSL/Vanilla/Modules/950COR_Coruscant_(cutscene)/a_createpcsaber.nss
+```c
+// From KOTORCommunityPatches/Vanilla_KOTOR_Script_Source/TSL/Vanilla/Modules/950COR_Coruscant_(cutscene)/a_createpcsaber.nss
 object oBodyItem = GetItemInSlot(INVENTORY_SLOT_BODY, GetFirstPC());
 object oLWeapItem = GetItemInSlot(INVENTORY_SLOT_LEFTWEAPON, GetFirstPC());
 object oRWeapItem = GetItemInSlot(INVENTORY_SLOT_RIGHTWEAPON, GetFirstPC());
@@ -277,7 +289,7 @@ object oHeadItem = GetItemInSlot(INVENTORY_SLOT_HEAD, GetFirstPC());
 
 #### Function Signature
 
-```nss
+```c
 void ActionEquipItem(object oItem, int nInventorySlot, int bInstant = FALSE);
 ```
 
@@ -293,7 +305,7 @@ Queues an action to equip an item into a specific inventory slot. The item must 
 
 #### Usage Examples
 
-```nss
+```c
 // Equip item from inventory
 object oItem = GetItemPossessedBy(GetFirstPC(), "g_w_lghtsbr01");
 if (GetIsObjectValid(oItem)) {
@@ -301,7 +313,7 @@ if (GetIsObjectValid(oItem)) {
 }
 ```
 
-```nss
+```c
 // Create and equip immediately
 object oItem = CreateItemOnObject("g_w_vibroblade01", GetFirstPC());
 ActionEquipItem(oItem, INVENTORY_SLOT_RIGHTWEAPON, TRUE); // Instant equip
@@ -309,7 +321,7 @@ ActionEquipItem(oItem, INVENTORY_SLOT_RIGHTWEAPON, TRUE); // Instant equip
 
 **Pattern: Create and Equip Sequence**
 
-```nss
+```c
 // Create item and equip it
 object oLightsaber = CreateItemOnObject("g_w_lghtsbr01", GetFirstPC(), 1, 1);
 AssignCommand(GetFirstPC(), ActionEquipItem(oLightsaber, INVENTORY_SLOT_RIGHTWEAPON, 0));
@@ -329,7 +341,7 @@ AssignCommand(GetFirstPC(), ActionEquipItem(oLightsaber, INVENTORY_SLOT_RIGHTWEA
 
 #### Function Signature
 
-```nss
+```c
 void ActionUnequipItem(object oItem, int bInstant = FALSE);
 ```
 
@@ -344,7 +356,7 @@ Queues an action to unequip an item. The item remains in inventory but is no lon
 
 #### Usage Examples
 
-```nss
+```c
 // Unequip current weapon
 object oWeapon = GetItemInSlot(INVENTORY_SLOT_RIGHTWEAPON, GetFirstPC());
 if (GetIsObjectValid(oWeapon)) {
@@ -352,7 +364,7 @@ if (GetIsObjectValid(oWeapon)) {
 }
 ```
 
-```nss
+```c
 // Unequip all equipment
 object oHead = GetItemInSlot(INVENTORY_SLOT_HEAD, GetFirstPC());
 object oBody = GetItemInSlot(INVENTORY_SLOT_BODY, GetFirstPC());
@@ -373,7 +385,7 @@ if (GetIsObjectValid(oWeapon)) ActionUnequipItem(oWeapon, TRUE);
 
 #### Function Signature
 
-```nss
+```c
 void ActionGiveItem(object oItem, object oGiveTo);
 ```
 
@@ -388,7 +400,7 @@ Queues an action to give an item to another creature. The item is transferred fr
 
 #### Usage Examples
 
-```nss
+```c
 // Give item to NPC
 object oItem = GetItemPossessedBy(GetFirstPC(), "quest_item");
 object oNPC = GetObjectByTag("merchant");
@@ -397,7 +409,7 @@ ActionGiveItem(oItem, oNPC);
 
 **Pattern: Store Equipment**
 
-```nss
+```c
 // Store equipped items in a placeable
 object oWeapon = GetItemInSlot(INVENTORY_SLOT_RIGHTWEAPON, GetFirstPC());
 object oStorage = GetObjectByTag("storage_chest");
@@ -412,7 +424,7 @@ AssignCommand(GetFirstPC(), ActionGiveItem(oWeapon, oStorage));
 
 #### Function Signature
 
-```nss
+```c
 void ActionTakeItem(object oItem, object oTakeFrom);
 ```
 
@@ -427,7 +439,7 @@ Queues an action to take an item from another creature or placeable. The item is
 
 #### Usage Examples
 
-```nss
+```c
 // Take item from NPC
 object oNPC = GetObjectByTag("merchant");
 object oItem = GetItemPossessedBy(oNPC, "quest_item");
@@ -442,7 +454,7 @@ ActionTakeItem(oItem, oNPC);
 
 #### Function Signature
 
-```nss
+```c
 void ActionPickUpItem(object oItem);
 ```
 
@@ -456,7 +468,7 @@ Queues an action to pick up an item from the ground. The item is added to the cr
 
 #### Usage Examples
 
-```nss
+```c
 // Pick up item from ground
 object oItem = GetObjectByTag("dropped_item");
 ActionPickUpItem(oItem);
@@ -470,7 +482,7 @@ ActionPickUpItem(oItem);
 
 #### Function Signature
 
-```nss
+```c
 void ActionPutDownItem(object oItem);
 ```
 
@@ -484,7 +496,7 @@ Queues an action to drop an item on the ground at the creature's feet. The item 
 
 #### Usage Examples
 
-```nss
+```c
 // Drop item on ground
 object oItem = GetItemPossessedBy(GetFirstPC(), "unwanted_item");
 ActionPutDownItem(oItem);
@@ -500,7 +512,7 @@ ActionPutDownItem(oItem);
 
 #### Function Signature
 
-```nss
+```c
 int GetItemStackSize(object oItem);
 ```
 
@@ -519,7 +531,7 @@ Gets the stack size (quantity) of an item. Stackable items (like medpacs, grenad
 
 #### Usage Examples
 
-```nss
+```c
 // Check stack size
 object oItem = GetItemPossessedBy(GetFirstPC(), "g_i_medpac01");
 if (GetIsObjectValid(oItem)) {
@@ -532,8 +544,8 @@ if (GetIsObjectValid(oItem)) {
 
 **Pattern: Remove Quantity from Stack**
 
-```nss
-// From vendor/Vanilla_KOTOR_Script_Source/TSL/Vanilla/Data/Scripts/a_take_item.nss
+```c
+// From KOTORCommunityPatches/Vanilla_KOTOR_Script_Source/TSL/Vanilla/Data/Scripts/a_take_item.nss
 object oItem = GetItemPossessedBy(GetPartyLeader(), "quest_item");
 if (GetIsObjectValid(oItem)) {
     int nStackSize = GetItemStackSize(oItem);
@@ -554,7 +566,7 @@ if (GetIsObjectValid(oItem)) {
 
 #### Function Signature
 
-```nss
+```c
 void SetItemStackSize(object oItem, int nStackSize);
 ```
 
@@ -569,7 +581,7 @@ Sets the stack size (quantity) of an item. The stack size determines how many of
 
 #### Usage Examples
 
-```nss
+```c
 // Set stack size
 object oItem = GetItemPossessedBy(GetFirstPC(), "g_i_medpac01");
 SetItemStackSize(oItem, 10);
@@ -577,7 +589,7 @@ SetItemStackSize(oItem, 10);
 
 **Pattern: Increment Stack Size**
 
-```nss
+```c
 // Add to existing stack
 object oItem = GetItemPossessedBy(GetFirstPC(), "g_i_medpac01");
 if (GetIsObjectValid(oItem)) {
@@ -588,8 +600,8 @@ if (GetIsObjectValid(oItem)) {
 
 **Pattern: Safe Stack Size Modification**
 
-```nss
-// From vendor/Vanilla_KOTOR_Script_Source/K1/Modules/M26AD_Manaan_Docking_Bay_manm26ad/k_man_com43.nss
+```c
+// From KOTORCommunityPatches/Vanilla_KOTOR_Script_Source/K1/Modules/M26AD_Manaan_Docking_Bay_manm26ad/k_man_com43.nss
 int nCurrent = GetItemStackSize(oItem);
 if (nAmount > 0) {
     SetItemStackSize(oItem, nCurrent + nAmount); // Add to stack
@@ -645,7 +657,7 @@ if (nAmount > 0) {
 
 ### Pattern: Create and Equip Item
 
-```nss
+```c
 // Create item and equip it
 object oItem = CreateItemOnObject("g_w_lghtsbr01", GetFirstPC(), 1, 1);
 AssignCommand(GetFirstPC(), ActionEquipItem(oItem, INVENTORY_SLOT_RIGHTWEAPON, 0));
@@ -653,7 +665,7 @@ AssignCommand(GetFirstPC(), ActionEquipItem(oItem, INVENTORY_SLOT_RIGHTWEAPON, 0
 
 ### Pattern: Remove Item from Stack
 
-```nss
+```c
 // Remove quantity from stack safely
 object oItem = GetItemPossessedBy(GetFirstPC(), "stackable_item");
 if (GetIsObjectValid(oItem)) {
@@ -669,7 +681,7 @@ if (GetIsObjectValid(oItem)) {
 
 ### Pattern: Check and Equip Weapon
 
-```nss
+```c
 // Check if weapon equipped, if not equip one
 object oWeapon = GetItemInSlot(INVENTORY_SLOT_RIGHTWEAPON, GetFirstPC());
 if (!GetIsObjectValid(oWeapon)) {
@@ -683,7 +695,7 @@ if (!GetIsObjectValid(oWeapon)) {
 
 ### Pattern: Store All Equipment
 
-```nss
+```c
 // Store all equipped items in a container
 object oStorage = GetObjectByTag("storage_chest");
 object oPC = GetFirstPC();

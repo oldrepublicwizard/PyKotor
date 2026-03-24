@@ -16,6 +16,6 @@ Part of the [2DA File Format Documentation](2DA-File-Format).
 
 **References**:
 
-- **[KotOR.js](https://github.com/KobaltBlu/KotOR.js)** ([Mirror: th3w1zard1/KotOR.js](https://github.com/th3w1zard1/KotOR.js)): [`src/engine/rules/SWRuleSet.ts:66-74`](https://github.com/KobaltBlu/KotOR.js/blob/master/src/engine/rules/SWRuleSet.ts#L66-L74) - Difficulty options initialization from [2DA](2DA-File-Format)
+- **[KotOR.js](https://github.com/KobaltBlu/KotOR.js)**: [`src/engine/rules/SWRuleSet.ts:66-74`](https://github.com/KobaltBlu/KotOR.js/blob/master/src/engine/rules/SWRuleSet.ts#L66-L74) - Difficulty options initialization from [2DA](2DA-File-Format)
 
 ---

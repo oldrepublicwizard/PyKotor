@@ -175,7 +175,7 @@ This document provides a detailed description of the 2DA (Two-Dimensional array)
     - [areaeffects.2da](#areaeffects2da)
   - [Implementation Details](#implementation-details)
     - [PyKotor Implementation](#pykotor-implementation)
-    - [Vendor Implementations](#vendor-implementations)
+    - [Other implementations](#other-implementations)
 
 ---
 
@@ -231,9 +231,9 @@ This document provides a detailed description of the 2DA (Two-Dimensional array)
 
 **Cross-reference (other implementations):**
 
-- **[reone](https://github.com/modawan/reone)** (upstream [seedhartha/reone](https://github.com/modawan/reone)): [`src/libs/resource/format/2dareader.cpp`](https://github.com/modawan/reone/blob/master/src/libs/resource/format/2dareader.cpp)
+- **[reone](https://github.com/modawan/reone)**: [`src/libs/resource/format/2dareader.cpp`](https://github.com/modawan/reone/blob/master/src/libs/resource/format/2dareader.cpp)
 - **[KotOR.js](https://github.com/KobaltBlu/KotOR.js)**: [`src/resource/TwoDAObject.ts`](https://github.com/KobaltBlu/KotOR.js/blob/master/src/resource/TwoDAObject.ts)
-- **[Kotor.NET](https://github.com/NickHugi/Kotor.NET)**: [`Kotor.NET/Formats/Kotor2DA/Kotor2DA.cs`](https://github.com/NickHugi/Kotor.NET/blob/master/Kotor.NET/Formats/Kotor2DA/Kotor2DA.cs)
+- **[Kotor.NET](https://github.com/NickHugi/Kotor.NET)**: [`TwoDA.cs` L16+](https://github.com/NickHugi/Kotor.NET/blob/master/Kotor.NET/Formats/Kotor2DA/TwoDA.cs#L16) (in-memory table), [`TwoDABinaryStructure.cs` L12+](https://github.com/NickHugi/Kotor.NET/blob/master/Kotor.NET/Formats/Kotor2DA/TwoDABinaryStructure.cs#L12) (`V2.b` binary layout)
 - **[xoreos](https://github.com/xoreos/xoreos)**: [`src/aurora/2dafile.cpp`](https://github.com/xoreos/xoreos/blob/master/src/aurora/2dafile.cpp)
 - **[KotOR-Unity](https://github.com/reubenduncan/KotOR-Unity)**: [`Assets/Scripts/FileObjects/2DAObject.cs`](https://github.com/reubenduncan/KotOR-Unity/blob/master/Assets/Scripts/FileObjects/2DAObject.cs)
 - **[kotor](https://github.com/reubenduncan/kotor)**: [`docs/2da.md`](https://github.com/reubenduncan/kotor/blob/master/docs/2da.md) — basic format overview
@@ -2279,7 +2279,7 @@ Similar name generation files exist for other species:
 
 **Vendor Implementations:**
 
-- [`vendor/NorthernLights/Assets/Scripts/Systems/StateSystem.cs:282-294`](https://github.com/th3w1zard1/NorthernLights/blob/master/Assets/Scripts/Systems/StateSystem.cs#L282-L294) - Global variable initialization from [2DA](2DA-File-Format)
+- [`NorthernLights/Assets/Scripts/Systems/StateSystem.cs:282-294`](https://github.com/lachjames/NorthernLights/blob/master/Assets/Scripts/Systems/StateSystem.cs#L282-L294) - Global variable initialization from [2DA](2DA-File-Format)
 
 ---
 
@@ -3065,7 +3065,7 @@ The following 2DA files are used for item property parameter and cost calculatio
 
 - **[KotOR.js](https://github.com/KobaltBlu/KotOR.js)**: [`src/engine/rules/SWRuleSet.ts:143-150`](https://github.com/KobaltBlu/KotOR.js/blob/master/src/engine/rules/SWRuleSet.ts#L143-L150) - Effect icon initialization from [2DA](2DA-File-Format)
 - **[KotOR.js](https://github.com/KobaltBlu/KotOR.js)**: [`src/nwscript/NWScriptDefK1.ts:6441-6446`](https://github.com/KobaltBlu/KotOR.js/blob/master/src/nwscript/NWScriptDefK1.ts#L6441-L6446) - SetEffectIcon function
-- [`vendor/NorthernLights/nwscript.nss:4678`](https://github.com/th3w1zard1/NorthernLights/blob/master/nwscript.nss#L4678) - Comment referencing effecticon.2da
+- [`NorthernLights/nwscript.nss:4678`](https://github.com/lachjames/NorthernLights/blob/master/nwscript.nss#L4678) - Comment referencing effecticon.2da
 
 ---
 
@@ -3088,7 +3088,7 @@ The following 2DA files are used for item property parameter and cost calculatio
 
 - **[KotOR.js](https://github.com/KobaltBlu/KotOR.js)**: [`src/engine/rules/SWRuleSet.ts:178-185`](https://github.com/KobaltBlu/KotOR.js/blob/master/src/engine/rules/SWRuleSet.ts#L178-L185) - Pazaak decks initialization from [2DA](2DA-File-Format)
 - **[KotOR.js](https://github.com/KobaltBlu/KotOR.js)**: [`src/nwscript/NWScriptDefK1.ts:4438`](https://github.com/KobaltBlu/KotOR.js/blob/master/src/nwscript/NWScriptDefK1.ts#L4438) - StartPazaakGame function comment
-- [`vendor/NorthernLights/nwscript.nss:3847`](https://github.com/th3w1zard1/NorthernLights/blob/master/nwscript.nss#L3847) - Comment referencing PazaakDecks.2da
+- [`NorthernLights/nwscript.nss:3847`](https://github.com/lachjames/NorthernLights/blob/master/nwscript.nss#L3847) - Comment referencing PazaakDecks.2da
 
 ---
 
@@ -3146,7 +3146,7 @@ The following 2DA files are used for item property parameter and cost calculatio
 
 **References**:
 
-- [`vendor/NorthernLights/nwscript.nss:949`](https://github.com/th3w1zard1/NorthernLights/blob/master/nwscript.nss#L949) - Comment referencing poison.2da constants
+- [`NorthernLights/nwscript.nss:949`](https://github.com/lachjames/NorthernLights/blob/master/nwscript.nss#L949) - Comment referencing poison.2da constants
 - **[KotOR.js](https://github.com/KobaltBlu/KotOR.js)**: [`src/nwscript/NWScriptDefK1.ts:3194-3199`](https://github.com/KobaltBlu/KotOR.js/blob/master/src/nwscript/NWScriptDefK1.ts#L3194-L3199) - EffectPoison function
 
 ---
@@ -3166,7 +3166,7 @@ The following 2DA files are used for item property parameter and cost calculatio
 
 **References**:
 
-- [`vendor/NorthernLights/nwscript.nss:3858`](https://github.com/th3w1zard1/NorthernLights/blob/master/nwscript.nss#L3858) - Comment referencing FeedBackText.2da
+- [`NorthernLights/nwscript.nss:3858`](https://github.com/lachjames/NorthernLights/blob/master/nwscript.nss#L3858) - Comment referencing FeedBackText.2da
 - **[KotOR.js](https://github.com/KobaltBlu/KotOR.js)**: [`src/nwscript/NWScriptDefK1.ts:4464-4465`](https://github.com/KobaltBlu/KotOR.js/blob/master/src/nwscript/NWScriptDefK1.ts#L4464-L4465) - DisplayFeedBackText function
 
 ---
@@ -3186,7 +3186,7 @@ The following 2DA files are used for item property parameter and cost calculatio
 
 **References**:
 
-- **[Kotor.NET](https://github.com/NickHugi/Kotor.NET)**: [`Kotor.NET/Kotor.NET/Tables/Appearance.cs:58-60`](https://github.com/NickHugi/Kotor.NET/blob/master/Kotor.NET/Tables/Appearance.cs#L58-L60) - Comment referencing appearancesndset.2da for SoundAppTypeID
+- **[Kotor.NET](https://github.com/NickHugi/Kotor.NET)**: [`Appearance.cs` L56–L60](https://github.com/NickHugi/Kotor.NET/blob/master/Kotor.NET/Tables/Appearance.cs#L56-L60) — `SoundAppTypeID` maps into `appearancesndset.2da`
 
 ---
 
@@ -3454,7 +3454,7 @@ The following 2DA files are used for item property parameter and cost calculatio
 
 - **reone**: [`2dareader.cpp`](https://github.com/modawan/reone/blob/master/src/libs/resource/format/2dareader.cpp), [`2dawriter.cpp`](https://github.com/modawan/reone/blob/master/src/libs/resource/format/2dawriter.cpp), [`2da.cpp`](https://github.com/modawan/reone/blob/master/src/libs/resource/2da.cpp)
 - **KotOR.js**: [`TwoDAObject.ts` L69–L145](https://github.com/KobaltBlu/KotOR.js/blob/master/src/resource/TwoDAObject.ts#L69-L145), [`TwoDAManager.ts` L21–L37](https://github.com/KobaltBlu/KotOR.js/blob/master/src/managers/TwoDAManager.ts#L21-L37)
-- **Kotor.NET**: [`TwoDABinaryStructure.cs`](https://github.com/NickHugi/Kotor.NET/blob/master/Kotor.NET/Formats/Kotor2DA/TwoDABinaryStructure.cs), [`Kotor2DA.cs`](https://github.com/NickHugi/Kotor.NET/blob/master/Kotor.NET/Formats/Kotor2DA/Kotor2DA.cs)
+- **Kotor.NET**: [`TwoDABinaryStructure.cs` L12+](https://github.com/NickHugi/Kotor.NET/blob/master/Kotor.NET/Formats/Kotor2DA/TwoDABinaryStructure.cs#L12) (`FileRoot` / `FileHeader`), [`TwoDA.cs` L16+](https://github.com/NickHugi/Kotor.NET/blob/master/Kotor.NET/Formats/Kotor2DA/TwoDA.cs#L16)
 - **xoreos**: [`2dafile.cpp`](https://github.com/xoreos/xoreos/blob/master/src/aurora/2dafile.cpp)
 - **KotOR-Unity**: [`2DAObject.cs` L23–L105](https://github.com/reubenduncan/KotOR-Unity/blob/master/Assets/Scripts/FileObjects/2DAObject.cs#L23-L105)
 

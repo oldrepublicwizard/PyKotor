@@ -1,5 +1,9 @@
 # Mod Creation Best Practices
 
+## Philosophy: a contributable toolchain, not a tool monoculture
+
+KotOR modding has historically been **fragmented**: different tools, version quirks, and oral tradition. [PyKotor](https://github.com/OldRepublicDevs/PyKotor) exists so formats, patchers, and editors can be **improved in the open** and documented here in one place. That does **not** mean you must stop using KotOR Tool, K-GFF, or any workflow that already ships your mod—use what works, and use **installers** (TSLPatcher INI) when you need merges instead of blind overwrites. See also the toolchain overview on [Home](Home#documentation).
+
 This page provides common workaround strategies and community-backed guidance for KotOR/TSL mod creation. For tool syntax and installation, see [HoloPatcher README for Mod Developers](HoloPatcher-README-for-mod-developers) and [TSLPatcher's Official Readme](TSLPatcher's-Official-Readme). The practices below are drawn from long-standing community consensus on [DeadlyStream](https://deadlystream.com), [LucasForums archives](https://lucasforumsarchive.com), and tool documentation.
 
 ## File priority and where to put your files

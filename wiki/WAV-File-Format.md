@@ -80,7 +80,7 @@ KotOR voice-over WAVs add a `"fact"` chunk with a 32-bit sample count, which PyK
 
 **Vendor Implementations:**
 
-- **[reone](https://github.com/seedhartha/reone)** ([Mirror: th3w1zard1/reone](https://github.com/th3w1zard1/reone)): [`src/libs/audio/format/wavreader.cpp`](https://github.com/seedhartha/reone/blob/master/src/libs/audio/format/wavreader.cpp) - WAV/SFX header and RIFF parsing
+- **[reone](https://github.com/modawan/reone)**: [`src/libs/audio/format/wavreader.cpp`](https://github.com/modawan/reone/blob/master/src/libs/audio/format/wavreader.cpp) - WAV/SFX header and RIFF parsing
 
 ---
 
@@ -99,9 +99,9 @@ External tooling such as SithCodec and `SWKotOR-Audio-Encoder` implement the sam
 - **Binary Reader/Writer:** [`Libraries/PyKotor/src/pykotor/resource/formats/wav/io_wav.py`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/wav/io_wav.py)  
 - **data [model](MDL-MDX-File-Format):** [`Libraries/PyKotor/src/pykotor/resource/formats/wav/wav_data.py`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/wav/wav_data.py)  
 - **Reference Implementations:**  
-  - **[reone](https://github.com/seedhartha/reone)** ([Mirror: th3w1zard1/reone](https://github.com/th3w1zard1/reone)): [`src/libs/audio/format/wavreader.cpp`](https://github.com/seedhartha/reone/blob/master/src/libs/audio/format/wavreader.cpp)  
-  - **[SithCodec](https://github.com/BBBrassil/SithCodec)** ([Mirror: th3w1zard1/SithCodec](https://github.com/th3w1zard1/SithCodec)) - encoding/decoding utility  
-  - **[SWKotOR-Audio-Encoder](https://github.com/LoranRendel/SWKotOR-Audio-Encoder)** ([Mirror: th3w1zard1/SWKotOR-Audio-Encoder](https://github.com/th3w1zard1/SWKotOR-Audio-Encoder))  
+  - **[reone](https://github.com/modawan/reone)**: [`src/libs/audio/format/wavreader.cpp`](https://github.com/modawan/reone/blob/master/src/libs/audio/format/wavreader.cpp)  
+  - **[SithCodec](https://github.com/BBBrassil/SithCodec)** - encoding/decoding utility  
+  - **[SWKotOR-Audio-Encoder](https://github.com/LoranRendel/SWKotOR-Audio-Encoder)**  
 
 With this structure, WAV assets authored in PyKotor will play identically in the base game and in the other vendor tools.
 

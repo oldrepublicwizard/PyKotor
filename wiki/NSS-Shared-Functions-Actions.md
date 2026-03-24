@@ -4,7 +4,21 @@ Part of the [NSS File Format Documentation](NSS-File-Format).
 
 **Category:** Shared Functions (K1 & TSL)
 
-This document provides detailed documentation for NWScript action functions. Actions are queued behaviors that execute sequentially on objects (typically creatures). Actions are non-blocking - they are added to an object's action queue and executed asynchronously.
+This document provides detailed documentation for *NWScript* action functions. Actions are queued behaviors that execute sequentially on objects (typically creatures). Actions are non-blocking - they are added to an object's action queue and executed asynchronously.
+
+## Implementation cross-reference
+
+The **action queue** is engine state on creatures/objects; NWScript APIs enqueue actions; the engine drains the queue over time.
+
+- **PyKotor:** NSS → NCS — [`resource/formats/ncs/compiler/`](https://github.com/OldRepublicDevs/PyKotor/tree/master/Libraries/PyKotor/src/pykotor/resource/formats/ncs/compiler) ([`parser.py` L1+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/ncs/compiler/parser.py#L1)).
+
+- **reone:** script routines — [`main.cpp` L130–L141](https://github.com/modawan/reone/blob/master/src/libs/game/script/routine/impl/main.cpp#L130-L141), [L143–L154](https://github.com/modawan/reone/blob/master/src/libs/game/script/routine/impl/main.cpp#L143-L154); action helpers — [`action.cpp` L344–L354](https://github.com/modawan/reone/blob/master/src/libs/game/script/routine/impl/action.cpp#L344-L354); creature movement / blocking — [`creature.cpp` L251–L254](https://github.com/modawan/reone/blob/master/src/libs/game/object/creature.cpp#L251-L254), [L281–L283](https://github.com/modawan/reone/blob/master/src/libs/game/object/creature.cpp#L281-L283).
+
+- **KotOR.js:** action implementations under [`src/actions/`](https://github.com/KobaltBlu/KotOR.js/tree/master/src/actions) (e.g. [`ActionDoCommand.ts`](https://github.com/KobaltBlu/KotOR.js/blob/master/src/actions/ActionDoCommand.ts), [`ActionPlayAnimation.ts` L56–L62](https://github.com/KobaltBlu/KotOR.js/blob/master/src/actions/ActionPlayAnimation.ts#L56-L62)).
+
+- **Kotor.NET:** resource and script tooling — [Kotor.NET](https://github.com/NickHugi/Kotor.NET); GFF trees — [`GFF.cs` L18+](https://github.com/NickHugi/Kotor.NET/blob/master/Kotor.NET/Formats/KotorGFF/GFF.cs#L18).
+
+Per-function **Implementation Reference** notes later in this page remain valid; this section is the hub link.
 
 ---
 
@@ -37,7 +51,7 @@ All actions are added to an object's **action queue**. The queue processes actio
 
 #### Function Signature
 
-```nss
+```c
 void ClearAllActions();
 ```
 
@@ -49,13 +63,13 @@ Clears all actions from the caller's action queue and stops movement immediately
 
 #### Usage Examples
 
-```nss
+```c
 // Stop current actions and prepare for new ones
 ClearAllActions();
 ActionPlayAnimation(ANIMATION_LOOPING_PAUSE, 1.0, -1.0);
 ```
 
-```nss
+```c
 // Clear actions on another object
 object oNPC = GetObjectByTag("my_npc");
 AssignCommand(oNPC, ClearAllActions());
@@ -63,7 +77,7 @@ AssignCommand(oNPC, ClearAllActions());
 
 #### Implementation Reference
 
-- [`vendor/reone/src/libs/game/object/creature.cpp:251-254`](https://github.com/th3w1zard1/reone/blob/master/src/libs/game/object/creature.cpp#L251-L254) - Sets movement type to None
+- [`reone/src/libs/game/object/creature.cpp:251-254`](https://github.com/modawan/reone/blob/master/src/libs/game/object/creature.cpp#L251-L254) - Sets movement type to None
 
 ---
 
@@ -74,7 +88,7 @@ AssignCommand(oNPC, ClearAllActions());
 
 #### Function Signature
 
-```nss
+```c
 void AssignCommand(object oActionSubject, action aActionToAssign);
 ```
 
@@ -89,14 +103,14 @@ Queues an action to execute on a different object. This is the primary way to ma
 
 #### Usage Examples
 
-```nss
+```c
 // Make an NPC move to a waypoint
 object oNPC = GetObjectByTag("guard");
 object oWaypoint = GetObjectByTag("wp_guard_spot");
 AssignCommand(oNPC, ActionMoveToObject(oWaypoint, FALSE, 1.0));
 ```
 
-```nss
+```c
 // Chain multiple actions on another object
 object oNPC = GetObjectByTag("patrol_guard");
 AssignCommand(oNPC, ClearAllActions());
@@ -108,7 +122,7 @@ AssignCommand(oNPC, ActionPlayAnimation(ANIMATION_LOOPING_PAUSE, 1.0, -1.0));
 
 **Pattern: Execute Action After Movement**
 
-```nss
+```c
 object oNPC = GetObjectByTag("npc");
 AssignCommand(oNPC, ActionMoveToObject(oTarget, FALSE, 1.0));
 DelayCommand(2.0, AssignCommand(oNPC, ActionSpeakString("I've arrived!", TALKVOLUME_TALK)));
@@ -116,14 +130,14 @@ DelayCommand(2.0, AssignCommand(oNPC, ActionSpeakString("I've arrived!", TALKVOL
 
 **Pattern: Clear Actions on Another Object**
 
-```nss
+```c
 AssignCommand(oNPC, ClearAllActions());
 DelayCommand(0.2, AssignCommand(oNPC, ActionPlayAnimation(ANIMATION_LOOPING_TALK_NORMAL, 1.0, -1.0)));
 ```
 
 #### Implementation Reference
 
-- [`vendor/reone/src/libs/game/script/routine/impl/main.cpp:130-141`](https://github.com/th3w1zard1/reone/blob/master/src/libs/game/script/routine/impl/main.cpp#L130-L141)
+- [`reone/src/libs/game/script/routine/impl/main.cpp:130-141`](https://github.com/modawan/reone/blob/master/src/libs/game/script/routine/impl/main.cpp#L130-L141)
 
 ---
 
@@ -134,7 +148,7 @@ DelayCommand(0.2, AssignCommand(oNPC, ActionPlayAnimation(ANIMATION_LOOPING_TALK
 
 #### Function Signature
 
-```nss
+```c
 void DelayCommand(float fSeconds, action aActionToDelay);
 ```
 
@@ -149,12 +163,12 @@ Delays execution of an action by a specified number of seconds. The delayed acti
 
 #### Usage Examples
 
-```nss
+```c
 // Delay a single action
 DelayCommand(2.0, ActionSpeakString("This happens after 2 seconds", TALKVOLUME_TALK));
 ```
 
-```nss
+```c
 // Delay with AssignCommand for another object
 object oNPC = GetObjectByTag("npc");
 DelayCommand(1.5, AssignCommand(oNPC, ActionPlayAnimation(ANIMATION_LOOPING_TALK_NORMAL, 1.0, -1.0)));
@@ -162,8 +176,8 @@ DelayCommand(1.5, AssignCommand(oNPC, ActionPlayAnimation(ANIMATION_LOOPING_TALK
 
 **Pattern: Staggered Party Movement**
 
-```nss
-// From vendor/Vanilla_KOTOR_Script_Source/TSL/Vanilla/Data/Scripts/a_move_party.nss
+```c
+// From Vanilla_KOTOR_Script_Source/TSL/Vanilla/Data/Scripts/a_move_party.nss
 int i;
 for(i = 1; i < 4; i++) {
     object oPC = GetPartyMemberByIndex(i - 1);
@@ -178,7 +192,7 @@ for(i = 1; i < 4; i++) {
 
 #### Implementation Reference
 
-- [`vendor/reone/src/libs/game/script/routine/impl/main.cpp:143-154`](https://github.com/th3w1zard1/reone/blob/master/src/libs/game/script/routine/impl/main.cpp#L143-L154)
+- [`reone/src/libs/game/script/routine/impl/main.cpp:143-154`](https://github.com/modawan/reone/blob/master/src/libs/game/script/routine/impl/main.cpp#L143-L154)
 
 ---
 
@@ -189,7 +203,7 @@ for(i = 1; i < 4; i++) {
 
 #### Function Signature
 
-```nss
+```c
 void ActionDoCommand(action aActionToDo);
 ```
 
@@ -203,14 +217,14 @@ Wraps a non-action function (or complex expression) so it can be queued as an ac
 
 #### Usage Examples
 
-```nss
+```c
 // Set facing as part of action queue
 ActionMoveToLocation(lDestination, FALSE);
 ActionDoCommand(SetFacing(GetFacingFromLocation(lDestination)));
 ActionPlayAnimation(ANIMATION_LOOPING_PAUSE, 1.0, -1.0);
 ```
 
-```nss
+```c
 // Set local variables during action sequence
 ActionMoveToObject(oTarget, FALSE, 1.0);
 ActionDoCommand(SetLocalInt(OBJECT_SELF, "HasArrived", 1));
@@ -218,8 +232,8 @@ ActionDoCommand(SetLocalInt(OBJECT_SELF, "HasArrived", 1));
 
 **Pattern: Face Target After Movement**
 
-```nss
-// From vendor/K1_Community_Patch/Source/cp_inc_k1.nss
+```c
+// From K1_Community_Patch/Source/cp_inc_k1.nss
 void CP_ReturnToBase(location lLoc, int bRun = FALSE) {
     ClearAllActions();
     ActionMoveToLocation(lLoc, bRun);
@@ -230,7 +244,7 @@ void CP_ReturnToBase(location lLoc, int bRun = FALSE) {
 
 #### Implementation Reference
 
-- [`vendor/KotOR.js/src/actions/ActionDoCommand.ts`](https://github.com/th3w1zard1/KotOR.js/blob/master/src/actions/ActionDoCommand.ts)
+- [`KotOR.js/src/actions/ActionDoCommand.ts`](https://github.com/KobaltBlu/KotOR.js/blob/master/src/actions/ActionDoCommand.ts)
 
 ---
 
@@ -242,7 +256,7 @@ void CP_ReturnToBase(location lLoc, int bRun = FALSE) {
 
 #### Function Signature
 
-```nss
+```c
 void ActionMoveToObject(object oMoveTo, int bRun = FALSE, float fRange = 1.0);
 ```
 
@@ -258,13 +272,13 @@ Moves the caller to a target object. The movement follows the walkmesh and avoid
 
 #### Usage Examples
 
-```nss
+```c
 // Walk to an NPC
 object oTarget = GetObjectByTag("merchant");
 ActionMoveToObject(oTarget, FALSE, 1.5);
 ```
 
-```nss
+```c
 // Run to a waypoint
 object oWaypoint = GetWaypointByTag("wp_meeting");
 ActionMoveToObject(oWaypoint, TRUE, 0.5);
@@ -284,7 +298,7 @@ ActionMoveToObject(oWaypoint, TRUE, 0.5);
 
 #### Function Signature
 
-```nss
+```c
 void ActionMoveToLocation(location lDestination, int bRun = FALSE);
 ```
 
@@ -299,13 +313,13 @@ Moves the caller to a specific location. The movement follows the walkmesh to th
 
 #### Usage Examples
 
-```nss
+```c
 // Move to a specific location
 location lTarget = Location(GetArea(OBJECT_SELF), Vector(10.0, 20.0, 0.0), 0.0);
 ActionMoveToLocation(lTarget, FALSE);
 ```
 
-```nss
+```c
 // Move to a waypoint's location
 object oWP = GetWaypointByTag("wp_meeting");
 ActionMoveToLocation(GetLocation(oWP), TRUE);
@@ -319,7 +333,7 @@ ActionMoveToLocation(GetLocation(oWP), TRUE);
 
 #### Function Signature
 
-```nss
+```c
 void ActionForceMoveToObject(object oMoveTo, int bRun, float fRange, float fTimeout);
 ```
 
@@ -336,7 +350,7 @@ Forces movement to an object with a timeout. Unlike `ActionMoveToObject`, this a
 
 #### Usage Examples
 
-```nss
+```c
 // Force move with 30 second timeout
 object oTarget = GetObjectByTag("quest_target");
 ActionForceMoveToObject(oTarget, FALSE, 1.0, 30.0);
@@ -344,8 +358,8 @@ ActionForceMoveToObject(oTarget, FALSE, 1.0, 30.0);
 
 **Pattern: Move PC to Cutscene Position**
 
-```nss
-// From vendor/Vanilla_KOTOR_Script_Source/TSL/TSLRCM/Modules/306NAR_Nar_Shaddaa_Entertainment_Promenade/a_hit_move.nss
+```c
+// From Vanilla_KOTOR_Script_Source/TSL/TSLRCM/Modules/306NAR_Nar_Shaddaa_Entertainment_Promenade/a_hit_move.nss
 object oPC = GetFirstPC();
 object oHitman = GetObjectByTag("Hitman", 0);
 AssignCommand(oPC, ClearAllActions());
@@ -361,7 +375,7 @@ AssignCommand(oPC, DelayCommand(0.8, SetFacingPoint(GetPosition(oHitman))));
 
 #### Function Signature
 
-```nss
+```c
 void ActionJumpToObject(object oToJumpTo, int bWalkStraightLineToPoint = TRUE);
 ```
 
@@ -376,13 +390,13 @@ Instantly teleports (jumps) the caller to a target object's position. Does not f
 
 #### Usage Examples
 
-```nss
+```c
 // Instant jump to waypoint
 object oWP = GetWaypointByTag("wp_teleport");
 ActionJumpToObject(oWP, FALSE);
 ```
 
-```nss
+```c
 // Jump after walking closer (for cutscenes)
 ActionJumpToObject(oTarget, TRUE);
 ```
@@ -397,7 +411,7 @@ ActionJumpToObject(oTarget, TRUE);
 
 #### Function Signature
 
-```nss
+```c
 void ActionWait(float fSeconds);
 ```
 
@@ -411,14 +425,14 @@ Waits for a specified duration before continuing to the next action in the queue
 
 #### Usage Examples
 
-```nss
+```c
 // Wait before speaking
 ActionPlayAnimation(ANIMATION_LOOPING_TALK_NORMAL, 1.0, -1.0);
 ActionWait(3.0);
 ActionPlayAnimation(ANIMATION_LOOPING_PAUSE, 1.0, -1.0);
 ```
 
-```nss
+```c
 // Wait with random duration
 int nRandom = Random(5) + 3; // 3-8 seconds
 ActionWait(IntToFloat(nRandom));
@@ -427,7 +441,7 @@ ActionForceMoveToObject(oNextWaypoint, FALSE, 2.5, 30.0);
 
 #### Implementation Reference
 
-- [`vendor/reone/src/libs/game/script/routine/impl/action.cpp:344-354`](https://github.com/th3w1zard1/reone/blob/master/src/libs/game/script/routine/impl/action.cpp#L344-L354)
+- [`reone/src/libs/game/script/routine/impl/action.cpp:344-354`](https://github.com/modawan/reone/blob/master/src/libs/game/script/routine/impl/action.cpp#L344-L354)
 
 ---
 
@@ -439,7 +453,7 @@ ActionForceMoveToObject(oNextWaypoint, FALSE, 2.5, 30.0);
 
 #### Function Signature
 
-```nss
+```c
 void ActionPlayAnimation(int nAnimation, float fSpeed, float fDurationSeconds);
 ```
 
@@ -473,20 +487,20 @@ Causes the action subject to play an animation. This action is queued and execut
 
 #### Usage Examples
 
-```nss
+```c
 // Basic looping animation
 ClearAllActions();
 ActionPlayAnimation(ANIMATION_LOOPING_PAUSE, 1.0, -1.0);
 ```
 
-```nss
+```c
 // Animation on another object with delay
 object oNPC = GetObjectByTag("npc");
 AssignCommand(oNPC, ClearAllActions());
 DelayCommand(0.2, AssignCommand(oNPC, ActionPlayAnimation(ANIMATION_LOOPING_TALK_NORMAL, 1.0, -1.0)));
 ```
 
-```nss
+```c
 // Brief timed animation
 ClearAllActions();
 ActionPlayAnimation(ANIMATION_LOOPING_PAUSE, 1.0, 0.1);
@@ -494,8 +508,8 @@ ActionPlayAnimation(ANIMATION_LOOPING_PAUSE, 1.0, 0.1);
 
 #### Implementation References
 
-- [`vendor/reone/src/libs/game/object/creature.cpp:281-283`](https://github.com/th3w1zard1/reone/blob/master/src/libs/game/object/creature.cpp#L281-L283) - Movement blocking check
-- [`vendor/KotOR.js/src/actions/ActionPlayAnimation.ts:56-62`](https://github.com/th3w1zard1/KotOR.js/blob/master/src/actions/ActionPlayAnimation.ts#L56-L62) - Animation validation
+- [`reone/src/libs/game/object/creature.cpp:281-283`](https://github.com/modawan/reone/blob/master/src/libs/game/object/creature.cpp#L281-L283) - Movement blocking check
+- [`KotOR.js/src/actions/ActionPlayAnimation.ts:56-62`](https://github.com/KobaltBlu/KotOR.js/blob/master/src/actions/ActionPlayAnimation.ts#L56-L62) - Animation validation
 
 ---
 
@@ -507,7 +521,7 @@ ActionPlayAnimation(ANIMATION_LOOPING_PAUSE, 1.0, 0.1);
 
 #### Function Signature
 
-```nss
+```c
 void ActionSpeakString(string sStringToSpeak, int nTalkVolume);
 ```
 
@@ -526,12 +540,12 @@ Makes the caller speak a string with a specified volume level. The action comple
 
 #### Usage Examples
 
-```nss
+```c
 // Simple speak action
 ActionSpeakString("Hello there!", TALKVOLUME_TALK);
 ```
 
-```nss
+```c
 // Speak after moving
 ActionMoveToObject(oTarget, FALSE, 1.0);
 ActionSpeakString("I've arrived!", TALKVOLUME_TALK);
@@ -545,7 +559,7 @@ ActionSpeakString("I've arrived!", TALKVOLUME_TALK);
 
 #### Function Signature
 
-```nss
+```c
 void ActionSpeakStringByStrRef(int nStrRef, int nTalkVolume);
 ```
 
@@ -560,7 +574,7 @@ Makes the caller speak a string from the talk table (TLK file) using a string re
 
 #### Usage Examples
 
-```nss
+```c
 // Speak using string reference
 ActionSpeakStringByStrRef(12345, TALKVOLUME_TALK);
 ```
@@ -587,7 +601,7 @@ The following action functions are also available but less commonly used. They f
 
 ### Pattern: Clear, Move, Animate
 
-```nss
+```c
 ClearAllActions();
 ActionMoveToObject(oTarget, FALSE, 1.0);
 ActionDoCommand(SetFacingPoint(GetPosition(oTarget)));
@@ -597,7 +611,7 @@ ActionSpeakString("Hello!", TALKVOLUME_TALK);
 
 ### Pattern: Staggered Actions with Delay
 
-```nss
+```c
 // Execute actions on multiple objects with delays
 int i;
 for(i = 0; i < 3; i++) {
@@ -608,7 +622,7 @@ for(i = 0; i < 3; i++) {
 
 ### Pattern: Conditional Action Sequences
 
-```nss
+```c
 ClearAllActions();
 if (GetLocalInt(OBJECT_SELF, "HasMetPC") == 1) {
     ActionSpeakString("Welcome back!", TALKVOLUME_TALK);

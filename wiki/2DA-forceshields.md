@@ -15,6 +15,6 @@ Part of the [2DA File Format Documentation](2DA-File-Format).
 
 **References**:
 
-- **[KotOR.js](https://github.com/KobaltBlu/KotOR.js)** ([Mirror: th3w1zard1/KotOR.js](https://github.com/th3w1zard1/KotOR.js)): [`src/nwscript/NWScriptDefK1.ts:5552`](https://github.com/KobaltBlu/KotOR.js/blob/master/src/nwscript/NWScriptDefK1.ts#L5552) - Force shield lookup from [2DA](2DA-File-Format)
+- **[KotOR.js](https://github.com/KobaltBlu/KotOR.js)**: [`NWScriptDefK1.ts` L5552](https://github.com/KobaltBlu/KotOR.js/blob/master/src/nwscript/NWScriptDefK1.ts#L5552) — Force shield lookup from [2DA](2DA-File-Format)
 
 ---

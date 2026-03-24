@@ -389,7 +389,7 @@ LocalizedName=StrRef0  ; Token gets replaced with actual stringref
 
 **In [NSS](NSS-File-Format) Scripts (CompileList)**:
 
-```nss
+```c
 // Script compilation will replace #StrRef# tokens
 void main() {
     // #StrRef0# token gets replaced with actual stringref during compilation

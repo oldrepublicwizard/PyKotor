@@ -19,7 +19,7 @@ Part of the [2DA File Format Documentation](2DA-File-Format).
 
 **References**:
 
-- [`vendor/reone/src/libs/game/object/item.cpp:164-171`](https://github.com/th3w1zard1/reone/blob/master/src/libs/game/object/item.cpp#L164-L171) - Ammunition type loading from [2DA](2DA-File-Format)
+- [reone `item.cpp` L164–L171](https://github.com/modawan/reone/blob/master/src/libs/game/object/item.cpp#L164-L171) — ammunition type loading from [2DA](2DA-File-Format)
 
 ### See also
 

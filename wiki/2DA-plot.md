@@ -29,8 +29,8 @@ Part of the [2DA File Format Documentation](2DA-File-Format).
 
 **Vendor Implementations:**
 
-- [`vendor/KotOR.js/src/managers/JournalManager.ts:58-64`](https://github.com/th3w1zard1/KotOR.js/blob/master/src/managers/JournalManager.ts#L58-L64) - Plot/quest experience lookup from [2DA](2DA-File-Format)
-- [`vendor/KotOR.js/src/managers/JournalManager.ts:101-104`](https://github.com/th3w1zard1/KotOR.js/blob/master/src/managers/JournalManager.ts#L101-L104) - Plot existence check from [2DA](2DA-File-Format)
-- [`vendor/KotOR.js/src/nwscript/NWScriptDefK1.ts:7845-7848`](https://github.com/th3w1zard1/KotOR.js/blob/master/src/nwscript/NWScriptDefK1.ts#L7845-L7848) - Plot table access for quest experience
+- [`KotOR.js/src/managers/JournalManager.ts:58-64`](https://github.com/KobaltBlu/KotOR.js/blob/master/src/managers/JournalManager.ts#L58-L64) - Plot/quest experience lookup from [2DA](2DA-File-Format)
+- [`KotOR.js/src/managers/JournalManager.ts:101-104`](https://github.com/KobaltBlu/KotOR.js/blob/master/src/managers/JournalManager.ts#L101-L104) - Plot existence check from [2DA](2DA-File-Format)
+- [`KotOR.js/src/nwscript/NWScriptDefK1.ts:7845-7848`](https://github.com/KobaltBlu/KotOR.js/blob/master/src/nwscript/NWScriptDefK1.ts#L7845-L7848) - Plot table access for quest experience
 
 ---

@@ -34,8 +34,8 @@ The complete column structure is defined in reone's heads parser:
 
 **References**:
 
-- [`vendor/reone/src/libs/resource/parser/2da/heads.cpp:29-39`](https://github.com/th3w1zard1/reone/blob/master/src/libs/resource/parser/2da/heads.cpp#L29-L39) - Complete column parsing implementation with all column names
-- [`vendor/reone/src/libs/game/object/creature.cpp:1223-1228`](https://github.com/th3w1zard1/reone/blob/master/src/libs/game/object/creature.cpp#L1223-L1228) - Head loading from [2DA](2DA-File-Format)
+- [`reone/src/libs/resource/parser/2da/heads.cpp:29-39`](https://github.com/modawan/reone/blob/master/src/libs/resource/parser/2da/heads.cpp#L29-L39) - Complete column parsing implementation with all column names
+- [`reone/src/libs/game/object/creature.cpp:1223-1228`](https://github.com/modawan/reone/blob/master/src/libs/game/object/creature.cpp#L1223-L1228) - Head loading from [2DA](2DA-File-Format)
 
 ### See also
 

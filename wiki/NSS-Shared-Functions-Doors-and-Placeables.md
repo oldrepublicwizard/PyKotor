@@ -40,7 +40,7 @@ Placeables are interactive objects in the game world:
 
 #### Function Signature
 
-```nss
+```c
 void ActionOpenDoor(object oDoor);
 ```
 
@@ -54,13 +54,13 @@ Queues an action to open a door. The creature will move to the door and open it 
 
 #### Usage Examples
 
-```nss
+```c
 // Open door
 object oDoor = GetObjectByTag("door_01");
 ActionOpenDoor(oDoor);
 ```
 
-```nss
+```c
 // Open door for another creature
 object oNPC = GetObjectByTag("guard");
 object oDoor = GetObjectByTag("gate");
@@ -69,7 +69,7 @@ AssignCommand(oNPC, ActionOpenDoor(oDoor));
 
 **Pattern: Conditional Door Opening**
 
-```nss
+```c
 // Open door if unlocked
 object oDoor = GetObjectByTag("secret_door");
 if (!GetLocked(oDoor)) {
@@ -93,7 +93,7 @@ if (!GetLocked(oDoor)) {
 
 #### Function Signature
 
-```nss
+```c
 void ActionCloseDoor(object oDoor);
 ```
 
@@ -107,13 +107,13 @@ Queues an action to close a door. The creature will move to the door and close i
 
 #### Usage Examples
 
-```nss
+```c
 // Close door
 object oDoor = GetObjectByTag("door_01");
 ActionCloseDoor(oDoor);
 ```
 
-```nss
+```c
 // Close all doors in area
 object oDoor1 = GetObjectByTag("door_01");
 object oDoor2 = GetObjectByTag("door_02");
@@ -131,7 +131,7 @@ ActionCloseDoor(oDoor2);
 
 #### Function Signature
 
-```nss
+```c
 int GetLocked(object oTarget);
 ```
 
@@ -150,7 +150,7 @@ Gets the locked state of a door or placeable object.
 
 #### Usage Examples
 
-```nss
+```c
 // Check if door is locked
 object oDoor = GetObjectByTag("treasure_door");
 if (GetLocked(oDoor)) {
@@ -163,7 +163,7 @@ if (GetLocked(oDoor)) {
 
 **Pattern: Conditional Based on Lock State**
 
-```nss
+```c
 // Different behavior based on lock state
 object oContainer = GetObjectByTag("chest");
 if (GetLocked(oContainer)) {
@@ -183,7 +183,7 @@ if (GetLocked(oContainer)) {
 
 #### Function Signature
 
-```nss
+```c
 void SetLocked(object oTarget, int bLocked);
 ```
 
@@ -198,13 +198,13 @@ Sets the locked state of a door or placeable object.
 
 #### Usage Examples
 
-```nss
+```c
 // Lock a door
 object oDoor = GetObjectByTag("vault_door");
 SetLocked(oDoor, TRUE);
 ```
 
-```nss
+```c
 // Unlock a door
 object oDoor = GetObjectByTag("prison_door");
 SetLocked(oDoor, FALSE);
@@ -212,7 +212,7 @@ SetLocked(oDoor, FALSE);
 
 **Pattern: Lock After Event**
 
-```nss
+```c
 // Lock door after player enters
 void main() {
     object oEntering = GetEnteringObject();
@@ -234,7 +234,7 @@ void main() {
 
 #### Function Signature
 
-```nss
+```c
 void ActionInteractObject(object oPlaceable);
 ```
 
@@ -252,13 +252,13 @@ Queues an action to interact with (use) a placeable object. The behavior depends
 
 #### Usage Examples
 
-```nss
+```c
 // Interact with placeable
 object oTerminal = GetObjectByTag("computer_terminal");
 ActionInteractObject(oTerminal);
 ```
 
-```nss
+```c
 // Open container
 object oChest = GetObjectByTag("treasure_chest");
 if (!GetLocked(oChest)) {
@@ -268,7 +268,7 @@ if (!GetLocked(oChest)) {
 
 **Pattern: Conditional Placeable Interaction**
 
-```nss
+```c
 // Interact if unlocked
 object oContainer = GetObjectByTag("locked_box");
 if (!GetLocked(oContainer)) {
@@ -294,7 +294,7 @@ if (!GetLocked(oContainer)) {
 
 #### Function Signature
 
-```nss
+```c
 object GetLastUsedBy();
 ```
 
@@ -309,7 +309,7 @@ Gets the last object that used the placeable or door that is calling this functi
 
 #### Usage Examples
 
-```nss
+```c
 // In a placeable's OnUsed script
 void main() {
     object oUser = GetLastUsedBy();
@@ -322,7 +322,7 @@ void main() {
 
 **Pattern: User-Specific Behavior**
 
-```nss
+```c
 // Different behavior based on who used it
 void main() {
     object oUser = GetLastUsedBy();
@@ -350,7 +350,7 @@ void main() {
 
 #### Function Signature
 
-```nss
+```c
 object GetClickingObject();
 ```
 
@@ -365,7 +365,7 @@ Gets the object that last clicked on the caller. This is identical to `GetEnteri
 
 #### Usage Examples
 
-```nss
+```c
 // In a trigger's OnClick script
 void main() {
     object oClicker = GetClickingObject();
@@ -392,7 +392,7 @@ void main() {
 
 #### Function Signature
 
-```nss
+```c
 int GetIsDoorActionPossible(object oTargetDoor, int nDoorAction);
 ```
 
@@ -412,7 +412,7 @@ Checks if a specific door action can be performed on a door. Useful for checking
 
 #### Usage Examples
 
-```nss
+```c
 // Check if door can be opened
 object oDoor = GetObjectByTag("door_01");
 if (GetIsDoorActionPossible(oDoor, DOOR_ACTION_OPEN)) {
@@ -428,7 +428,7 @@ if (GetIsDoorActionPossible(oDoor, DOOR_ACTION_OPEN)) {
 
 #### Function Signature
 
-```nss
+```c
 void DoDoorAction(object oTargetDoor, int nDoorAction);
 ```
 
@@ -443,13 +443,13 @@ Performs a specific door action on a door. This is a direct action (not queued) 
 
 #### Usage Examples
 
-```nss
+```c
 // Open door directly
 object oDoor = GetObjectByTag("door_01");
 DoDoorAction(oDoor, DOOR_ACTION_OPEN);
 ```
 
-```nss
+```c
 // Lock door directly
 DoDoorAction(oDoor, DOOR_ACTION_LOCK);
 ```
@@ -474,7 +474,7 @@ Standard door action constants:
 
 ### Pattern: Locked Door Check
 
-```nss
+```c
 // Check lock state before opening
 object oDoor = GetObjectByTag("door_01");
 if (GetLocked(oDoor)) {
@@ -496,7 +496,7 @@ if (GetLocked(oDoor)) {
 
 ### Pattern: Placeable OnUsed Script
 
-```nss
+```c
 // In placeable's OnUsed script
 void main() {
     object oUser = GetLastUsedBy();
@@ -514,7 +514,7 @@ void main() {
 
 ### Pattern: Conditional Container Access
 
-```nss
+```c
 // Check container state before opening
 object oChest = GetObjectByTag("treasure_chest");
 if (GetLocked(oChest)) {
@@ -532,7 +532,7 @@ if (GetLocked(oChest)) {
 
 ### Pattern: Door State Management
 
-```nss
+```c
 // Manage door state based on events
 void main() {
     object oEntering = GetEnteringObject();

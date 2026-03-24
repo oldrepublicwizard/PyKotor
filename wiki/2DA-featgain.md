@@ -15,7 +15,7 @@ Part of the [2DA File Format Documentation](2DA-File-Format).
 
 **References**:
 
-- [`vendor/KotOR.js/src/engine/rules/SWRuleSet.ts:101-105`](https://github.com/th3w1zard1/KotOR.js/blob/master/src/engine/rules/SWRuleSet.ts#L101-L105) - Feat gain initialization from [2DA](2DA-File-Format)
+- [`KotOR.js/src/engine/rules/SWRuleSet.ts:101-105`](https://github.com/KobaltBlu/KotOR.js/blob/master/src/engine/rules/SWRuleSet.ts#L101-L105) - Feat gain initialization from [2DA](2DA-File-Format)
 
 ### See also
 

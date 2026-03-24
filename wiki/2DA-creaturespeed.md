@@ -16,6 +16,6 @@ Part of the [2DA File Format Documentation](2DA-File-Format).
 
 **References**:
 
-- **[KotOR.js](https://github.com/KobaltBlu/KotOR.js)** ([Mirror: th3w1zard1/KotOR.js](https://github.com/th3w1zard1/KotOR.js)): [`src/module/ModuleCreature.ts:2875-2887`](https://github.com/KobaltBlu/KotOR.js/blob/master/src/module/ModuleCreature.ts#L2875-L2887) - Creature speed lookup from [2DA](2DA-File-Format)
+- **[KotOR.js](https://github.com/KobaltBlu/KotOR.js)**: [`ModuleCreature.ts` L2875–L2887](https://github.com/KobaltBlu/KotOR.js/blob/master/src/module/ModuleCreature.ts#L2875-L2887) - Creature speed lookup from [2DA](2DA-File-Format)
 
 ---

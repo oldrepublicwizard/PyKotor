@@ -22,7 +22,7 @@ This page documents style and structure conventions for the PyKotor wiki. Follow
 ## Links
 
 - **Internal links:** Use extension-less targets (no `.md` suffix), e.g. `[Concepts overview](Concepts)`, `[resource resolution](Concepts#resource-resolution-order)`, or `[KEY File Purpose](KEY-File-Format#key-file-purpose)`. Wrong: `](KEY-File-Format.md)`.
-- **External links:** Use HTTPS when possible. For GitHub repos that have a mirror at th3w1zard1, use the format: **original repo link first**, then `([Mirror: th3w1zard1/reponame](https://github.com/th3w1zard1/reponame))`. Apply this in all **Vendor References**, **Vendor Implementations**, and tool lists (see [Home](Home) lines 383–407 and [NSS-File-Format](NSS-File-Format), [KEY-File-Format](KEY-File-Format), [NCS-File-Format](NCS-File-Format) for examples). If the project is original under th3w1zard1 (no upstream), link once without a mirror parenthetical. Validate external permalinks (e.g. GitHub line links) before adding; broken links reduce trust and tooling reliability.
+- **External links:** Use HTTPS. Prefer **canonical** repository URLs ([modawan/reone](https://github.com/modawan/reone), [KobaltBlu/KotOR.js](https://github.com/KobaltBlu/KotOR.js), [NickHugi/Kotor.NET](https://github.com/NickHugi/Kotor.NET), [xoreos/xoreos](https://github.com/xoreos/xoreos), [OldRepublicDevs/PyKotor](https://github.com/OldRepublicDevs/PyKotor), etc.); do not duplicate legacy mirror links. Use headings **Cross-reference** or **Implementation (PyKotor)** instead of “Vendor” where you list implementations. When citing code, use stable line anchors on the canonical repo. Validate permalinks before adding; broken links reduce trust.
 - **Link text:** Use the page or section title or a short descriptive phrase, not "click here" or "this document".
 
 ## See also
@@ -32,7 +32,7 @@ This page documents style and structure conventions for the PyKotor wiki. Follow
 
 ## Content
 
-- **Goal:** This wiki aims to be **complete, comprehensive, accurate, specific, and accessible** for any use--modders, developers, and researchers. Prefer linking to canonical pages (KEY-File-Format, GFF-File-Format, official BioWare specs) and to PyKotor/vendor code; cite community sources (DeadlyStream, LucasForums archives) where they add consensus or history.
+- **Goal:** This wiki aims to be **complete, comprehensive, accurate, specific, and accessible** for any use--modders, developers, and researchers. Prefer linking to canonical pages (KEY-File-Format, GFF-File-Format, official BioWare specs) and to **PyKotor** ([OldRepublicDevs/PyKotor](https://github.com/OldRepublicDevs/PyKotor)) plus other implementation repos (reone, KotOR.js, Kotor.NET, xoreos, etc.); cite community sources (DeadlyStream, LucasForums archives) where they add consensus or history.
 - **One page per format or tool:** Keep each page focused on one format, one tool feature, or one task.
 - **Link to official specs:** For formats with an official BioWare (or other) specification, link to it and document only extensions, quirks, or tool-specific behavior.
 - **Single source of truth (SSOT):** Do not duplicate long specs or repeated concepts. Link to the canonical page instead:
@@ -44,7 +44,7 @@ This page documents style and structure conventions for the PyKotor wiki. Follow
   - **Override folder:** [Concepts](Concepts#override-folder) or [resource resolution order](Concepts#resource-resolution-order).
 - **Section order (long format pages):** Use a consistent order: Overview → Structure / fields → Examples (optional) → See also. Add a short on-page table of contents at the top where it helps navigation.
 - **Format reference pages:** Include a clear **Structure / fields** (or equivalent) section. Where the format has a fixed or deterministic layout, state total length, offset base (e.g. "offsets from file start"), or byte ranges so that parsers and validators can use the page reliably.
-- **Implementation and references:** On format and tool pages, add **Implementation** (PyKotor paths) and **Reference** (vendor, specs) sections where missing. Use PyKotor link form: `[path](https://github.com/OldRepublicDevs/PyKotor/blob/master/path#Lx-Ly)`. For vendor links: original repo first, then `(Mirror: th3w1zard1/repo)(url)` when a mirror exists; if the project is th3w1zard1-original with no upstream, one link only. **BWM exception:** On BWM-related pages, optional **Implementation (PyKotor)** must be labeled **non-normative**; normative spec stays RE + pipelines per [authoritative BWM policy](https://github.com/OldRepublicDevs/PyKotor/blob/main/docs/solutions/documentation/authoritative-bwm-wiki-from-re-and-pipelines.md).
+- **Implementation and references:** On format and tool pages, add **Implementation (PyKotor)** and **Cross-reference** (other repos, specs) where missing. PyKotor link form: `[symbol Lx+](https://github.com/OldRepublicDevs/PyKotor/blob/master/path#Lx)` with line anchors when practical. Prefer canonical repos (modawan/reone, KobaltBlu/KotOR.js, NickHugi/Kotor.NET, xoreos/*, etc.); avoid duplicate mirror links. **BWM exception:** On BWM-related pages, optional **Implementation (PyKotor)** must be labeled **non-normative**; normative spec stays RE + pipelines per [authoritative BWM policy](https://github.com/OldRepublicDevs/PyKotor/blob/main/docs/solutions/documentation/authoritative-bwm-wiki-from-re-and-pipelines.md).
 - **Cross-links:** Formats loaded by ResRef should link to [Concepts](Concepts#resource-resolution-order) for resolution order and to [KEY-File-Format](KEY-File-Format) for the KEY/BIF index format; link to [GFF-File-Format](GFF-File-Format#gff-data-types) for ResRef where relevant.
 - **Semantic claims:** Prefer an evidence-backed voice for engine or layout facts (RE, vendor tools, labeled **K1**/**TSL**/**both**, stable community links). When evidence is missing, use **inferred** or **unknown** rather than stating as fact. PyKotor code documents **library** behavior; do not use it alone to assert engine truth unless policy explicitly allows (see BWM exception above).
 - **Community and historical context:** When adding or refining format or tool pages, link to [Community sources and archives](Home#community-sources-and-archives) (DeadlyStream, LucasForums Container, Mixmojo) where relevant for consensus, tutorials, or historical discussion.
@@ -124,6 +124,26 @@ Goal: one sentence describing what the reader will achieve.
 ### See also
 
 - [Related guide](Installing-Mods-with-HoloPatcher)
+```
+
+### Tutorial (embedded walkthrough on an existing page)
+
+Use this when adding a **P0/P1-style** section to a guide (e.g. HoloPatcher readme, Concepts, KotorDiff)—**do not** create a new wiki file for a short walkthrough.
+
+```markdown
+## [Walkthrough title]
+
+**Goal:** One sentence.
+
+**Prerequisites:** Links to tools + SSOT pages.
+
+**Steps:** Numbered, linking out to syntax pages instead of duplicating them.
+
+**Verify in-game:** Concrete check (load module, UI spot, etc.).
+
+**Alternatives:** Other tools or workflows (KotOR Tool, manual override, CLI-only).
+
+**Common failures:** Install path mistakes, duplicate merges, wrong capsule vs override—link to Concepts / Installing guides.
 ```
 
 ### See also

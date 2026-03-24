@@ -4,7 +4,7 @@
 
 *PLT* ([Texture](TPC-File-Format) Palette File) is a variant [Texture](TPC-File-Format) format used in **Neverwinter Nights** that allows runtime color palette selection. Instead of fixed colors, *PLT* files store palette group indices and color indices that reference external palette files, enabling dynamic color customization for character [models](MDL-MDX-File-Format) (skin, hair, armor colors, etc.).
 
-**Vendor References:** *PLT* is not used in KotOR; documentation and implementation references are from the [xoreos](https://github.com/xoreos/xoreos) project ([Mirror: th3w1zard1/xoreos](https://github.com/th3w1zard1/xoreos)) and **[xoreos-docs](https://github.com/xoreos/xoreos-docs)** ([Mirror: th3w1zard1/xoreos-docs](https://github.com/th3w1zard1/xoreos-docs)). See [Implementation Details](#implementation-details) below for specific file links.
+**Vendor References:** *PLT* is not used in KotOR; documentation and implementation references are from the [xoreos](https://github.com/xoreos/xoreos) project and **[xoreos-docs](https://github.com/xoreos/xoreos-docs)**. See [Implementation Details](#implementation-details) below for specific file links.
 
 ## Table of Contents
 
@@ -34,7 +34,7 @@ At runtime, the game:
 2. Uses the palette index (supplied by the content creator) to select a row in the palette file
 3. Uses the color index from the *PLT* file to retrieve the final color value
 
-**Reference**: **[xoreos-docs](https://github.com/xoreos/xoreos-docs)** ([Mirror: th3w1zard1/xoreos-docs](https://github.com/th3w1zard1/xoreos-docs)): [`specs/torlack/plt.html`](https://github.com/xoreos/xoreos-docs/blob/master/specs/torlack/plt.html) - Tim Smith (Torlack)'s reverse-engineered *PLT* format documentation
+**Reference**: **[xoreos-docs](https://github.com/xoreos/xoreos-docs)**: [`specs/torlack/plt.html`](https://github.com/xoreos/xoreos-docs/blob/master/specs/torlack/plt.html) - Tim Smith (Torlack)'s reverse-engineered *PLT* format documentation
 
 ---
 
@@ -59,7 +59,7 @@ There are ten palette groups, each corresponding to a different [Material](MDL-M
 
 **Palette File Structure**: Each palette file contains 256 rows (one for each palette index `0-255`), with each row containing 256 color values (one for each color index `0-255`).
 
-**Reference**: **[xoreos-docs](https://github.com/xoreos/xoreos-docs)** ([Mirror: th3w1zard1/xoreos-docs](https://github.com/th3w1zard1/xoreos-docs)): [`specs/torlack/plt.html`](https://github.com/xoreos/xoreos-docs/blob/master/specs/torlack/plt.html) - Palette Groups Table and Description
+**Reference**: **[xoreos-docs](https://github.com/xoreos/xoreos-docs)**: [`specs/torlack/plt.html`](https://github.com/xoreos/xoreos-docs/blob/master/specs/torlack/plt.html) - Palette Groups Table and Description
 
 ### Color Resolution Process
 
@@ -77,7 +77,7 @@ To determine the final color for a pixel in a *PLT* [texture](TPC-File-Format):
 - The game loads `pal_armor01.jpg` and reads row 5, column 128
 - The RGB value at that position becomes the pixel's color
 
-**Reference**: **[xoreos-docs](https://github.com/xoreos/xoreos-docs)** ([Mirror: th3w1zard1/xoreos-docs](https://github.com/th3w1zard1/xoreos-docs)): [`specs/torlack/plt.html`](https://github.com/xoreos/xoreos-docs/blob/master/specs/torlack/plt.html) - Color Resolution Example
+**Reference**: **[xoreos-docs](https://github.com/xoreos/xoreos-docs)**: [`specs/torlack/plt.html`](https://github.com/xoreos/xoreos-docs/blob/master/specs/torlack/plt.html) - Color Resolution Example
 
 ---
 
@@ -96,7 +96,7 @@ The *PLT* file header is 24 bytes:
 | Width     | UInt32  | 16 (0x0010) | 4    | [texture](TPC-File-Format) width in pixels                         |
 | Height    | UInt32  | 20 (0x0014) | 4    | [texture](TPC-File-Format) height in pixels                       |
 
-**Reference**: **[xoreos-docs](https://github.com/xoreos/xoreos-docs)** ([Mirror: th3w1zard1/xoreos-docs](https://github.com/th3w1zard1/xoreos-docs)): [`specs/torlack/plt.html`](https://github.com/xoreos/xoreos-docs/blob/master/specs/torlack/plt.html) - PLT file header structure
+**Reference**: **[xoreos-docs](https://github.com/xoreos/xoreos-docs)**: [`specs/torlack/plt.html`](https://github.com/xoreos/xoreos-docs/blob/master/specs/torlack/plt.html) - PLT file header structure
 
 ### Pixel Data
 
@@ -111,7 +111,7 @@ Each pixel entry is 2 bytes:
 
 **Pixel Data Layout**: Pixels are stored row by row, left to right, top to bottom. The total pixel data size is `width × height × 2` bytes.
 
-**Reference**: **[xoreos-docs](https://github.com/xoreos/xoreos-docs)** ([Mirror: th3w1zard1/xoreos-docs](https://github.com/th3w1zard1/xoreos-docs)): [`specs/torlack/plt.html`](https://github.com/xoreos/xoreos-docs/blob/master/specs/torlack/plt.html) - Pixel Data Structure
+**Reference**: **[xoreos-docs](https://github.com/xoreos/xoreos-docs)**: [`specs/torlack/plt.html`](https://github.com/xoreos/xoreos-docs/blob/master/specs/torlack/plt.html) - Pixel Data Structure
 
 ---
 
@@ -119,7 +119,7 @@ Each pixel entry is 2 bytes:
 
 **KotOR vs Neverwinter Nights**:
 
-- **Neverwinter Nights**: *PLT* files are actively used for character customization. The [xoreos](https://github.com/xoreos/xoreos) engine includes a complete *PLT* implementation ([`src/graphics/aurora/pltfile.cpp`](https://github.com/xoreos/xoreos/blob/master/src/graphics/aurora/pltfile.cpp)) that is used in *NWN*'s creature system ([`src/engines/nwn/creature.cpp`](https://github.com/xoreos/xoreos/blob/master/src/engines/nwn/creature.cpp)); ([Mirror: th3w1zard1/xoreos](https://github.com/th3w1zard1/xoreos)).
+- **Neverwinter Nights**: *PLT* files are actively used for character customization. The [xoreos](https://github.com/xoreos/xoreos) engine includes a complete *PLT* implementation ([`src/graphics/aurora/pltfile.cpp`](https://github.com/xoreos/xoreos/blob/master/src/graphics/aurora/pltfile.cpp)) that is used in *NWN*'s creature system ([`src/engines/nwn/creature.cpp`](https://github.com/xoreos/xoreos/blob/master/src/engines/nwn/creature.cpp));.
 
 - **KotOR**: While the *PLT* resource type (`0x0006`) is defined in *KotOR*'s resource type system, ***PLT* files are not actually used in *KotOR* games**. *KotOR* uses standard [TPC](TPC-File-Format) [Textures](TPC-File-Format) for all [Textures](TPC-File-Format), including character [Models](MDL-MDX-File-Format). No *KotOR*-specific implementations load or parse *PLT* files.
 
@@ -129,9 +129,9 @@ Each pixel entry is 2 bytes:
 2. *NWN*-derived tools may need to understand *PLT* when working with *KotOR* resources
 3. Many remaining *PLT* files exist in both *K1* and *TSL*'s data and installations, remnant of the prior games/engines.
 
-**Reference**: **[xoreos-docs](https://github.com/xoreos/xoreos-docs)** ([Mirror: th3w1zard1/xoreos-docs](https://github.com/th3w1zard1/xoreos-docs)): [`specs/torlack/plt.html`](https://github.com/xoreos/xoreos-docs/blob/master/specs/torlack/plt.html) - Complete *PLT* format specification  
-**Reference**: **[xoreos](https://github.com/xoreos/xoreos)** ([Mirror: th3w1zard1/xoreos](https://github.com/th3w1zard1/xoreos)): [`src/graphics/aurora/pltfile.cpp`](https://github.com/xoreos/xoreos/blob/master/src/graphics/aurora/pltfile.cpp) - *xoreos* *PLT* implementation (*NWN*-specific)  
-**Reference**: **[xoreos](https://github.com/xoreos/xoreos)** ([Mirror: th3w1zard1/xoreos](https://github.com/th3w1zard1/xoreos)): [`src/engines/nwn/creature.cpp:573-589`](https://github.com/xoreos/xoreos/blob/master/src/engines/nwn/creature.cpp#L573-L589) - *Neverwinter Nights* creature *PLT* usage
+**Reference**: **[xoreos-docs](https://github.com/xoreos/xoreos-docs)**: [`specs/torlack/plt.html`](https://github.com/xoreos/xoreos-docs/blob/master/specs/torlack/plt.html) - Complete *PLT* format specification  
+**Reference**: **[xoreos](https://github.com/xoreos/xoreos)**: [`src/graphics/aurora/pltfile.cpp`](https://github.com/xoreos/xoreos/blob/master/src/graphics/aurora/pltfile.cpp) - *xoreos* *PLT* implementation (*NWN*-specific)  
+**Reference**: **[xoreos](https://github.com/xoreos/xoreos)**: [`src/engines/nwn/creature.cpp:573-589`](https://github.com/xoreos/xoreos/blob/master/src/engines/nwn/creature.cpp#L573-L589) - *Neverwinter Nights* creature *PLT* usage
 
 ### See also
 

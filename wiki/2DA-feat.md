@@ -83,11 +83,10 @@ The following columns are accessed by the reone engine:
 
 - [`Tools/HolocronToolset/src/toolset/data/installation.py:63`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Tools/HolocronToolset/src/toolset/data/installation.py#L63) - HTInstallation.TwoDA_FEATS constant
 
-**Vendor Implementations:**
+**Cross-reference:**
 
-- **[reone](https://github.com/seedhartha/reone)** ([Mirror: th3w1zard1/reone](https://github.com/th3w1zard1/reone)): [`src/libs/game/d20/feats.cpp:32-58`](https://github.com/seedhartha/reone/blob/master/src/libs/game/d20/feats.cpp#L32-L58) - Feat loading from [2DA](2DA-File-Format) with column access
-- **[KotOR.js](https://github.com/KobaltBlu/KotOR.js)** ([Mirror: th3w1zard1/KotOR.js](https://github.com/th3w1zard1/KotOR.js)): [`src/talents/TalentFeat.ts:36-53`](https://github.com/KobaltBlu/KotOR.js/blob/master/src/talents/TalentFeat.ts#L36-L53) - Feat structure with additional columns
-- **[KotOR.js](https://github.com/KobaltBlu/KotOR.js)** ([Mirror: th3w1zard1/KotOR.js](https://github.com/th3w1zard1/KotOR.js)): [`src/talents/TalentFeat.ts:122-132`](https://github.com/KobaltBlu/KotOR.js/blob/master/src/talents/TalentFeat.ts#L122-L132) - Feat loading from [2DA](2DA-File-Format)
+- **[reone](https://github.com/modawan/reone)**: [`feats.cpp` L32–L58](https://github.com/modawan/reone/blob/master/src/libs/game/d20/feats.cpp#L32-L58)
+- **[KotOR.js](https://github.com/KobaltBlu/KotOR.js)**: [`TalentFeat.ts` L36–L53](https://github.com/KobaltBlu/KotOR.js/blob/master/src/talents/TalentFeat.ts#L36-L53), [L122–L132](https://github.com/KobaltBlu/KotOR.js/blob/master/src/talents/TalentFeat.ts#L122-L132)
 
 ### See also
 

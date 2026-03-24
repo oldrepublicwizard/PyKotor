@@ -2,7 +2,7 @@
 
 *Official Bioware Aurora Documentation*
 
-**Source:** This documentation is extracted from the official BioWare Aurora Engine GFF Format PDF, archived in [`vendor/xoreos-docs/specs/bioware/GFF_Format.pdf`](https://github.com/th3w1zard1/xoreos-docs/blob/master/specs/bioware/GFF_Format.pdf). The original documentation was published on the now-defunct nwn.bioware.com developer site.
+**Source:** Extracted from the official BioWare Aurora Engine GFF Format PDF, archived in [xoreos-docs `specs/bioware/GFF_Format.pdf`](https://github.com/xoreos/xoreos-docs/blob/master/specs/bioware/GFF_Format.pdf). Original from the defunct nwn.bioware.com developer site.
 
 ---
 

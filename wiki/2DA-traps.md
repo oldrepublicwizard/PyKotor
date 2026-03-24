@@ -38,9 +38,8 @@ Part of the [2DA File Format Documentation](2DA-File-Format).
 
 **Vendor Implementations:**
 
-- **[reone](https://github.com/seedhartha/reone)** ([Mirror: th3w1zard1/reone](https://github.com/th3w1zard1/reone)): [`src/libs/game/object/trigger.cpp:75-78`](https://github.com/seedhartha/reone/blob/master/src/libs/game/object/trigger.cpp#L75-L78) - Trap type loading from [2DA](2DA-File-Format)
-- **[KotOR.js](https://github.com/KobaltBlu/KotOR.js)** ([Mirror: th3w1zard1/KotOR.js](https://github.com/th3w1zard1/KotOR.js)): [`src/module/ModuleTrigger.ts:605-611`](https://github.com/KobaltBlu/KotOR.js/blob/master/src/module/ModuleTrigger.ts#L605-L611) - Trap loading from [2DA](2DA-File-Format)
-- **[KotOR.js](https://github.com/KobaltBlu/KotOR.js)** ([Mirror: th3w1zard1/KotOR.js](https://github.com/th3w1zard1/KotOR.js)): [`src/module/ModuleObject.ts:1822`](https://github.com/KobaltBlu/KotOR.js/blob/master/src/module/ModuleObject.ts#L1822) - Trap lookup from [2DA](2DA-File-Format)
+- **[reone](https://github.com/modawan/reone)**: [`trigger.cpp` L75–L78](https://github.com/modawan/reone/blob/master/src/libs/game/object/trigger.cpp#L75-L78) — Trap type loading from [2DA](2DA-File-Format)
+- **[KotOR.js](https://github.com/KobaltBlu/KotOR.js)**: [`ModuleTrigger.ts` L605–L611](https://github.com/KobaltBlu/KotOR.js/blob/master/src/module/ModuleTrigger.ts#L605-L611), [`ModuleObject.ts` L1822](https://github.com/KobaltBlu/KotOR.js/blob/master/src/module/ModuleObject.ts#L1822) — Trap loading/lookup from [2DA](2DA-File-Format)
 
 ### See also
 

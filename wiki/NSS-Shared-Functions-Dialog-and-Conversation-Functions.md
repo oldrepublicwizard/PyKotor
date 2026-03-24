@@ -6,6 +6,18 @@ Part of the [NSS File Format Documentation](NSS-File-Format).
 
 This document provides detailed documentation for NWScript dialog and conversation functions. These functions allow scripts to start conversations, get conversation participants, handle conversation events, and make NPCs speak.
 
+## Implementation cross-reference
+
+Dialogs are [GFF-DLG](GFF-DLG) resources; runtime APIs below interact with the **conversation system** and DLG state.
+
+- **PyKotor:** NSS → NCS — [`resource/formats/ncs/compiler/`](https://github.com/OldRepublicDevs/PyKotor/tree/master/Libraries/PyKotor/src/pykotor/resource/formats/ncs/compiler); DLG I/O — [`resource/formats/gff/`](https://github.com/OldRepublicDevs/PyKotor/tree/master/Libraries/PyKotor/src/pykotor/resource/formats/gff) (see [GFF-File-Format](GFF-File-Format)).
+
+- **reone:** conversation start action — [`startconversation.cpp`](https://github.com/modawan/reone/blob/master/src/libs/game/action/startconversation.cpp); broader script routines — [`main.cpp`](https://github.com/modawan/reone/blob/master/src/libs/game/script/routine/impl/main.cpp).
+
+- **KotOR.js:** search [`NWScriptDefK1.ts`](https://github.com/KobaltBlu/KotOR.js/blob/master/src/nwscript/NWScriptDefK1.ts) for routine names such as `BeginConversation`, `ActionStartConversation`; DLG runtime overlaps the engine’s dialog module.
+
+- **Kotor.NET:** GFF / DLG handling — [`GFF.cs` L18+](https://github.com/NickHugi/Kotor.NET/blob/master/Kotor.NET/Formats/KotorGFF/GFF.cs#L18).
+
 ---
 
 ## Starting Conversations
@@ -16,7 +28,7 @@ This document provides detailed documentation for NWScript dialog and conversati
 
 #### Function Signature
 
-```nss
+```c
 int BeginConversation(string sResRef = "", object oObjectToDialog = OBJECT_INVALID);
 ```
 
@@ -38,21 +50,21 @@ Starts a conversation dialog tree. **This function is typically called from an O
 
 #### Usage Examples
 
-```nss
+```c
 // OnDialog script - use default conversation
 void main() {
     BeginConversation();
 }
 ```
 
-```nss
+```c
 // OnDialog script - use specific dialog file
 void main() {
     BeginConversation("my_custom_dialog");
 }
 ```
 
-```nss
+```c
 // OnDialog script - start conversation with specific object
 void main() {
     object oPC = GetFirstPC();
@@ -75,7 +87,7 @@ void main() {
 
 #### Function Signature
 
-```nss
+```c
 void ActionStartConversation(
     object oObjectToConverse,
     string sDialogResRef = "",
@@ -116,19 +128,19 @@ Queues an action to start a conversation with a target object. The creature will
 
 #### Usage Examples
 
-```nss
+```c
 // Basic conversation start
 object oNPC = GetObjectByTag("merchant");
 ActionStartConversation(oNPC);
 ```
 
-```nss
+```c
 // Start conversation with specific dialog file
 object oNPC = GetObjectByTag("quest_giver");
 ActionStartConversation(oNPC, "quest_dialog");
 ```
 
-```nss
+```c
 // Start conversation ignoring range (for cutscenes)
 object oBoss = GetObjectByTag("final_boss");
 ActionStartConversation(oBoss, "", FALSE, CONVERSATION_TYPE_CINEMATIC, TRUE);
@@ -136,8 +148,8 @@ ActionStartConversation(oBoss, "", FALSE, CONVERSATION_TYPE_CINEMATIC, TRUE);
 
 **Pattern: Cutscene Conversation**
 
-```nss
-// From vendor/Vanilla_KOTOR_Script_Source/TSL/Vanilla/Modules/904MAL_Malachor_V_Trayus_Core/k_def_death01_ls.nss
+```c
+// From Vanilla_KOTOR_Script_Source/TSL/Vanilla/Modules/904MAL_Malachor_V_Trayus_Core/k_def_death01_ls.nss
 object oKreia = GetObjectByTag("kreia", 0);
 AssignCommand(oKreia, ActionJumpToObject(GetObjectByTag("sp_kreia", 0), 1));
 DelayCommand(0.2, AssignCommand(oKreia, 
@@ -146,8 +158,8 @@ DelayCommand(0.2, AssignCommand(oKreia,
 
 **Pattern: Object Starts Conversation with Itself**
 
-```nss
-// From vendor/Vanilla_KOTOR_Script_Source/TSL/Vanilla/Modules/905MAL_Malachor_V_Trayus_Crescent/a_cellopen.nss
+```c
+// From Vanilla_KOTOR_Script_Source/TSL/Vanilla/Modules/905MAL_Malachor_V_Trayus_Crescent/a_cellopen.nss
 object oNPC = GetObjectByTag("npc_tag");
 AssignCommand(oNPC, ClearAllActions());
 AssignCommand(oNPC, ActionStartConversation(oNPC, "", 0, 0, 0, "", "", "", "", "", "", 0, 0xFFFFFFFF, 0xFFFFFFFF, 0));
@@ -155,7 +167,7 @@ AssignCommand(oNPC, ActionStartConversation(oNPC, "", 0, 0, 0, "", "", "", "", "
 
 #### Implementation Reference
 
-- [`vendor/reone/src/libs/game/action/startconversation.cpp`](https://github.com/th3w1zard1/reone/blob/master/src/libs/game/action/startconversation.cpp)
+- [`reone/src/libs/game/action/startconversation.cpp`](https://github.com/modawan/reone/blob/master/src/libs/game/action/startconversation.cpp)
 - Conversation starts when actor reaches within 4.0 meters of target (unless `bIgnoreStartRange` is `TRUE`)
 
 ---
@@ -168,7 +180,7 @@ AssignCommand(oNPC, ActionStartConversation(oNPC, "", 0, 0, 0, "", "", "", "", "
 
 #### Function Signature
 
-```nss
+```c
 object GetLastSpeaker();
 ```
 
@@ -183,7 +195,7 @@ Gets the object that is speaking in the current conversation. **Use this in conv
 
 #### Usage Examples
 
-```nss
+```c
 // In a conversation script - get the NPC speaking
 void main() {
     object oSpeaker = GetLastSpeaker();
@@ -194,7 +206,7 @@ void main() {
 }
 ```
 
-```nss
+```c
 // Check if speaker is specific NPC
 void main() {
     object oSpeaker = GetLastSpeaker();
@@ -219,7 +231,7 @@ void main() {
 
 #### Function Signature
 
-```nss
+```c
 int GetIsInConversation(object oObject = OBJECT_SELF);
 ```
 
@@ -238,14 +250,14 @@ Returns `TRUE` if the specified object is currently in a conversation.
 
 #### Usage Examples
 
-```nss
+```c
 // Check if self is in conversation
 if (GetIsInConversation()) {
     // Do something only during conversation
 }
 ```
 
-```nss
+```c
 // Check if NPC is busy talking
 object oNPC = GetObjectByTag("merchant");
 if (GetIsInConversation(oNPC)) {
@@ -263,7 +275,7 @@ ActionStartConversation(oNPC);
 
 #### Function Signature
 
-```nss
+```c
 int GetIsConversationActive();
 ```
 
@@ -278,7 +290,7 @@ Returns `TRUE` if any conversation is currently active in the game.
 
 #### Usage Examples
 
-```nss
+```c
 // Check if any conversation is active
 if (GetIsConversationActive()) {
     // Don't start new conversation while one is active
@@ -294,7 +306,7 @@ if (GetIsConversationActive()) {
 
 #### Function Signature
 
-```nss
+```c
 void EventConversation();
 ```
 
@@ -304,7 +316,7 @@ Triggers the OnConversation event script on the caller. Used to execute conversa
 
 #### Usage Examples
 
-```nss
+```c
 // Trigger conversation event
 EventConversation();
 ```
@@ -325,7 +337,7 @@ EventConversation();
 
 #### Function Signature
 
-```nss
+```c
 void SpeakString(string sStringToSpeak, int nTalkVolume = TALKVOLUME_TALK);
 ```
 
@@ -344,17 +356,17 @@ Makes the caller speak a string immediately. This is a **non-queued function** (
 
 #### Usage Examples
 
-```nss
+```c
 // Simple speak
 SpeakString("Hello there!", TALKVOLUME_TALK);
 ```
 
-```nss
+```c
 // Whisper
 SpeakString("Psst... over here.", TALKVOLUME_WHISPER);
 ```
 
-```nss
+```c
 // Shout
 SpeakString("Charge!", TALKVOLUME_SHOUT);
 ```
@@ -372,7 +384,7 @@ SpeakString("Charge!", TALKVOLUME_SHOUT);
 
 #### Function Signature
 
-```nss
+```c
 void ActionSpeakString(string sStringToSpeak, int nTalkVolume = TALKVOLUME_TALK);
 ```
 
@@ -387,13 +399,13 @@ Queues an action to speak a string. The action completes when the speech finishe
 
 #### Usage Examples
 
-```nss
+```c
 // Queue speaking action
 ActionSpeakString("I'll say this after moving.", TALKVOLUME_TALK);
 ActionMoveToObject(oTarget, FALSE, 1.0);
 ```
 
-```nss
+```c
 // Speak on another object
 object oNPC = GetObjectByTag("guard");
 AssignCommand(oNPC, ActionSpeakString("Halt!", TALKVOLUME_SHOUT));
@@ -407,7 +419,7 @@ AssignCommand(oNPC, ActionSpeakString("Halt!", TALKVOLUME_SHOUT));
 
 #### Function Signature
 
-```nss
+```c
 void ActionSpeakStringByStrRef(int nStrRef, int nTalkVolume = TALKVOLUME_TALK);
 ```
 
@@ -422,7 +434,7 @@ Queues an action to speak a string from the talk table (TLK file) using a string
 
 #### Usage Examples
 
-```nss
+```c
 // Speak using string reference
 ActionSpeakStringByStrRef(12345, TALKVOLUME_TALK);
 ```
@@ -435,7 +447,7 @@ ActionSpeakStringByStrRef(12345, TALKVOLUME_TALK);
 
 #### Function Signature
 
-```nss
+```c
 void BarkString(object oCreature, int strRef);
 ```
 
@@ -450,7 +462,7 @@ Makes a creature bark (speak a one-liner) using a string reference from the TLK 
 
 #### Usage Examples
 
-```nss
+```c
 // Make NPC bark
 object oNPC = GetObjectByTag("guard");
 BarkString(oNPC, 10001);
@@ -464,7 +476,7 @@ BarkString(oNPC, 10001);
 
 #### Function Signature
 
-```nss
+```c
 void SpeakOneLinerConversation(string sDialogResRef, object oTokenTarget = OBJECT_INVALID);
 ```
 
@@ -479,7 +491,7 @@ Speaks a one-liner from a dialog file. The dialog file should have a single star
 
 #### Usage Examples
 
-```nss
+```c
 // Speak one-liner from dialog
 SpeakOneLinerConversation("guard_barks");
 ```
@@ -494,7 +506,7 @@ SpeakOneLinerConversation("guard_barks");
 
 #### Function Signature
 
-```nss
+```c
 void ActionPauseConversation();
 ```
 
@@ -504,7 +516,7 @@ Queues an action to pause the current conversation. The conversation can be resu
 
 #### Usage Examples
 
-```nss
+```c
 // Pause conversation
 ActionPauseConversation();
 ```
@@ -517,7 +529,7 @@ ActionPauseConversation();
 
 #### Function Signature
 
-```nss
+```c
 void ActionResumeConversation();
 ```
 
@@ -527,7 +539,7 @@ Queues an action to resume a paused conversation.
 
 #### Usage Examples
 
-```nss
+```c
 // Resume paused conversation
 ActionResumeConversation();
 ```
@@ -538,7 +550,7 @@ ActionResumeConversation();
 
 ### Pattern: Start Conversation After Movement
 
-```nss
+```c
 // Move to NPC then start conversation
 object oNPC = GetObjectByTag("quest_giver");
 ClearAllActions();
@@ -548,7 +560,7 @@ DelayCommand(1.0, ActionStartConversation(oNPC));
 
 ### Pattern: Conditional Conversation
 
-```nss
+```c
 // Start different conversations based on condition
 object oNPC = GetObjectByTag("merchant");
 if (GetLocalInt(oNPC, "HasMetPC") == 1) {
@@ -561,7 +573,7 @@ if (GetLocalInt(oNPC, "HasMetPC") == 1) {
 
 ### Pattern: Conversation in Cutscene
 
-```nss
+```c
 // Setup for cutscene conversation
 object oBoss = GetObjectByTag("boss");
 object oPC = GetFirstPC();
@@ -582,7 +594,7 @@ DelayCommand(1.0, AssignCommand(oBoss,
 
 ### Pattern: OnDialog Script
 
-```nss
+```c
 // Typical OnDialog script
 void main() {
     // Use default conversation or specific one
@@ -597,7 +609,7 @@ void main() {
 
 ### Pattern: Conversation Script (Dialog Node Script)
 
-```nss
+```c
 // Script attached to a dialog node
 void main() {
     object oSpeaker = GetLastSpeaker();

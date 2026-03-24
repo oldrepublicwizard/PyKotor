@@ -41,7 +41,7 @@ Kits are collections of reusable indoor map components for the Holocron Toolset.
     - [Component-Based Kits](#component-based-kits)
     - [texture-Only Kits](#texture-only-kits)
   - [Game Engine Compatibility](#game-engine-compatibility)
-  - [Vendor Implementation References](#vendor-implementation-references)
+  - [Cross-reference: engine implementations](#cross-reference-engine-implementations)
     - [Door Walkmesh (DWK) Extraction](#door-walkmesh-dwk-extraction)
     - [Placeable Walkmesh (PWK) Extraction](#placeable-walkmesh-pwk-extraction)
     - [room model and Component Identification](#room-model-and-component-identification)
@@ -457,7 +457,7 @@ Doors have 3 [walkmesh](BWM-File-Format) states that define pathfinding behavior
 
 **Reference**: [`Libraries/PyKotor/src/pykotor/tools/kit.py:1090-1174`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/tools/kit.py#L1090-L1174)
 
-**Game Engine Reference**: [`vendor/reone/src/libs/game/object/door.cpp:80-94`](https://github.com/OldRepublicDevs/PyKotor/blob/master/vendor/reone/src/libs/game/object/door.cpp#L80-L94)
+**Game Engine Reference (reone):** [`door.cpp` L80–L94](https://github.com/modawan/reone/blob/master/src/libs/game/object/door.cpp#L80-L94) — attaches closed/open [DWK](BWM-File-Format) walkmeshes to the door model scene node
 
 ---
 
@@ -491,7 +491,7 @@ Placeables have [walkmeshes](BWM-File-Format) that define their collision bounda
 
 **Reference**: [`Libraries/PyKotor/src/pykotor/tools/kit.py:1176-1251`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/tools/kit.py#L1176-L1251)
 
-**Game Engine Reference**: [`vendor/reone/src/libs/game/object/placeable.cpp:73`](https://github.com/OldRepublicDevs/PyKotor/blob/master/vendor/reone/src/libs/game/object/placeable.cpp#L73)
+**Game Engine Reference (reone):** [`placeable.cpp` L77–L80](https://github.com/modawan/reone/blob/master/src/libs/game/object/placeable.cpp#L77-L80) — loads [PWK](BWM-File-Format) for the resolved placeable model (`ResType::Pwk`)
 
 ---
 
@@ -840,20 +840,20 @@ Kits are designed to be compatible with the KOTOR game engine's resource resolut
 
 ---
 
-## Vendor Implementation References
+## Cross-reference: engine implementations
 
-The kit extraction process is based on reverse-engineered implementations from multiple game engine reimplementations. This section documents how vendor implementations handle the same operations and any discrepancies.
+The kit extraction process is aligned with open-source engine code ([reone](https://github.com/modawan/reone), [KotOR.js](https://github.com/KobaltBlu/KotOR.js)) and PyKotor’s kit tools. This section compares how those codebases handle the same operations and notes discrepancies.
 
 ### Door Walkmesh ([DWK](BWM-File-Format)) Extraction
 
-**reone Implementation** (`vendor/reone/src/libs/game/object/door.cpp:80-98`):
+**reone** ([`door.cpp` L80–L98](https://github.com/modawan/reone/blob/master/src/libs/game/object/door.cpp#L80-L98)):
 
 - Doors load 3 [walkmesh](BWM-File-Format) states: `{modelName}0.dwk` (closed), `{modelName}1.dwk` (open1), `{modelName}2.dwk` (open2)
 - [walkmeshes](BWM-File-Format) are loaded via `_services.resource.walkmeshes.get(modelName + "0", ResType::Dwk)`
 - Each [walkmesh](BWM-File-Format) state is stored as a separate `WalkmeshSceneNode` with enabled/disabled state based on door state
 - **PyKotor Implementation**: Matches reone exactly - extracts all 3 [DWK](BWM-File-Format) states using the same naming convention
 
-**KotOR.js Implementation** (`vendor/KotOR.js/src/module/ModuleDoor.ts:990-1003`):
+**KotOR.js** ([`ModuleDoor.ts` L990–L1003](https://github.com/KobaltBlu/KotOR.js/blob/master/src/module/ModuleDoor.ts#L990-L1003)):
 
 - Only loads the closed state [walkmesh](BWM-File-Format): `ResourceLoader.loadResource(ResourceTypes['dwk'], resRef+'0')`
 - Open states are handled dynamically through collision state updates, not separate [walkmesh](BWM-File-Format) files
@@ -864,13 +864,13 @@ The kit extraction process is based on reverse-engineered implementations from m
 
 ### Placeable Walkmesh ([PWK](BWM-File-Format)) Extraction
 
-**reone Implementation** (`vendor/reone/src/libs/game/object/placeable.cpp:73-76`):
+**reone** ([`placeable.cpp` L77–L80](https://github.com/modawan/reone/blob/master/src/libs/game/object/placeable.cpp#L77-L80)):
 
 - Placeables load a single [walkmesh](BWM-File-Format): `_services.resource.walkmeshes.get(modelName, ResType::Pwk)`
 - [walkmesh](BWM-File-Format) is stored as a `WalkmeshSceneNode` attached to the placeable's scene [node](MDL-MDX-File-Format#node-structures)
 - **PyKotor Implementation**: Matches reone exactly - extracts [PWK](BWM-File-Format) using [model](MDL-MDX-File-Format) name directly
 
-**KotOR.js Implementation** (`vendor/KotOR.js/src/module/ModulePlaceable.ts:682-698`):
+**KotOR.js** ([`ModulePlaceable.ts` `loadWalkmesh` L665–L682](https://github.com/KobaltBlu/KotOR.js/blob/master/src/module/ModulePlaceable.ts#L665-L682)):
 
 - Loads [walkmesh](BWM-File-Format): `ResourceLoader.loadResource(ResourceTypes['pwk'], resRef)`
 - Creates `OdysseyWalkMesh` from binary data and attaches to [model](MDL-MDX-File-Format)
@@ -881,7 +881,7 @@ The kit extraction process is based on reverse-engineered implementations from m
 
 ### [room model](LYT-File-Format#room-definitions) and Component Identification
 
-**reone Implementation** (`vendor/reone/src/libs/game/object/area.cpp:305-376`):
+**reone** ([`area.cpp` L305–L375](https://github.com/modawan/reone/blob/master/src/libs/game/object/area.cpp#L305-L375)):
 
 - Loads [LYT file](LYT-File-Format) via `_services.resource.layouts.get(_name)`
 - Iterates through `layout->rooms` to get [room model](LYT-File-Format#room-definitions) names
@@ -890,7 +890,7 @@ The kit extraction process is based on reverse-engineered implementations from m
 - Rooms are identified as [MDL](MDL-MDX-File-Format) [models](MDL-MDX-File-Format) with corresponding [WOK files](BWM-File-Format) from [LYT](LYT-File-Format)
 - **PyKotor Implementation**: Matches reone exactly - uses [LYT](LYT-File-Format) to identify [room models](LYT-File-Format#room-definitions), then resolves [MDL](MDL-MDX-File-Format)/[MDX](MDL-MDX-File-Format)/[WOK](BWM-File-Format)
 
-**KotOR.js Implementation** (`vendor/KotOR.js/src/module/ModuleRoom.ts:331-342`):
+**KotOR.js** ([`ModuleRoom.ts` L338–L342](https://github.com/KobaltBlu/KotOR.js/blob/master/src/module/ModuleRoom.ts#L338-L342); [`loadWalkmesh` L360–L367](https://github.com/KobaltBlu/KotOR.js/blob/master/src/module/ModuleRoom.ts#L360-L367)):
 
 - Loads [walkmesh](BWM-File-Format): `ResourceLoader.loadResource(ResourceTypes['wok'], resRef)`
 - Creates `OdysseyWalkMesh` from binary data and attaches to [room model](LYT-File-Format#room-definitions)
@@ -901,14 +901,14 @@ The kit extraction process is based on reverse-engineered implementations from m
 
 ### Door [model](MDL-MDX-File-Format) Resolution
 
-**reone Implementation** (`vendor/reone/src/libs/game/object/door.cpp`):
+**reone** ([`door.cpp` `loadFromBlueprint` L59+](https://github.com/modawan/reone/blob/master/src/libs/game/object/door.cpp#L59)):
 
 - Door [models](MDL-MDX-File-Format) are resolved from [UTD](GFF-File-Format#utd-door) files using `genericdoors.2da`
 - The `appearance_id` field in [UTD](GFF-File-Format#utd-door) maps to a row in `genericdoors.2da`
 - The `modelname` column in that row provides the door [model](MDL-MDX-File-Format) name
 - **PyKotor Implementation**: Matches reone exactly - uses `door_tools.get_model()` which reads `genericdoors.2da`
 
-**KotOR.js Implementation** (`vendor/KotOR.js/src/module/ModuleDoor.ts`):
+**KotOR.js** ([`ModuleDoor.ts` L1062–L1063](https://github.com/KobaltBlu/KotOR.js/blob/master/src/module/ModuleDoor.ts#L1062-L1063) — `GenericType` from [UTD](GFF-File-Format#utd-door); see also [`getGenericType` / appearance](https://github.com/KobaltBlu/KotOR.js/blob/master/src/module/ModuleDoor.ts#L224-L237)):
 
 - Door [models](MDL-MDX-File-Format) are resolved similarly using `[genericdoors.2da](2DA-genericdoors)`
 - The appearance ID from [UTD](GFF-File-Format#utd-door) is used to lookup [model](MDL-MDX-File-Format) name
@@ -918,14 +918,14 @@ The kit extraction process is based on reverse-engineered implementations from m
 
 ### Placeable [model](MDL-MDX-File-Format) Resolution
 
-**reone Implementation** (`vendor/reone/src/libs/game/object/placeable.cpp`):
+**reone** ([`placeable.cpp` `loadFromBlueprint` L50+](https://github.com/modawan/reone/blob/master/src/libs/game/object/placeable.cpp#L50)):
 
 - Placeable [models](MDL-MDX-File-Format) are resolved from [UTP](GFF-File-Format#utp-placeable) files using `placeables.2da`
 - The `appearance_id` field in [UTP](GFF-File-Format#utp-placeable) maps to a row in `placeables.2da`
 - The `modelname` column in that row provides the placeable [model](MDL-MDX-File-Format) name
 - **PyKotor Implementation**: Matches reone exactly - uses `placeable_tools.get_model()` which reads `placeables.2da`
 
-**KotOR.js Implementation** (`vendor/KotOR.js/src/module/ModulePlaceable.ts`):
+**KotOR.js** ([`ModulePlaceable.ts` L729–L732](https://github.com/KobaltBlu/KotOR.js/blob/master/src/module/ModulePlaceable.ts#L729-L732) — `Appearance` → `placeableAppearance`; [L575](https://github.com/KobaltBlu/KotOR.js/blob/master/src/module/ModulePlaceable.ts#L575) — `modelname`):
 
 - Placeable [models](MDL-MDX-File-Format) are resolved similarly using `placeables.2da`
 - The appearance ID from [UTP](GFF-File-Format#utp-placeable) is used to lookup [model](MDL-MDX-File-Format) name
@@ -948,13 +948,13 @@ The kit extraction process is based on reverse-engineered implementations from m
 
 ### Resource Resolution Priority
 
-**reone Implementation** (`vendor/reone/src/libs/resource/provider/`):
+**reone** ([`src/libs/resource/provider/`](https://github.com/modawan/reone/tree/master/src/libs/resource/provider)):
 
 - Resource resolution follows KOTOR priority: Override → Modules → Chitin
 - `.mod` files take precedence over `.rim` files in Modules directory
 - **PyKotor Implementation**: Matches reone exactly - uses same priority order via `_get_resource_priority()`
 
-**KotOR.js Implementation** (`vendor/KotOR.js/src/loaders/ResourceLoader.ts`):
+**KotOR.js** ([`ResourceLoader.ts` L22+](https://github.com/KobaltBlu/KotOR.js/blob/master/src/loaders/ResourceLoader.ts#L22)):
 
 - Resource resolution follows similar priority order
 - Override folder checked first, then modules, then chitin
@@ -964,14 +964,14 @@ The kit extraction process is based on reverse-engineered implementations from m
 
 ### [BWM](BWM-File-Format)/[WOK](BWM-File-Format) [walkmesh](BWM-File-Format) Handling
 
-**reone Implementation** (`vendor/reone/src/libs/graphics/walkmesh.cpp`):
+**reone** ([`walkmesh.cpp` L1+](https://github.com/modawan/reone/blob/master/src/libs/graphics/walkmesh.cpp#L1)):
 
 - [walkmeshes](BWM-File-Format) are loaded from [WOK](BWM-File-Format)/[BWM files](BWM-File-Format)
 - [face](MDL-MDX-File-Format#face-structure) [materials](MDL-MDX-File-Format#trimesh-header) determine walkability ([materials](MDL-MDX-File-Format#trimesh-header) 1, 3, 4, 5, 6, 9, 10, 11, 12, 13, 14, 16, 18, 20, 21, 22 are walkable)
 - [edge](BWM-File-Format#edges-wok-only) transitions indicate door connections
 - **PyKotor Implementation**: Matches reone - uses same walkable [material](MDL-MDX-File-Format#trimesh-header) values for minimap generation
 
-**KotOR.js Implementation** (`vendor/KotOR.js/src/odyssey/OdysseyWalkMesh.ts`):
+**KotOR.js** ([`OdysseyWalkMesh.ts` L24+](https://github.com/KobaltBlu/KotOR.js/blob/master/src/odyssey/OdysseyWalkMesh.ts#L24)):
 
 - [walkmeshes](BWM-File-Format) are loaded from [WOK](BWM-File-Format) binary data
 - [face](MDL-MDX-File-Format#face-structure) [materials](MDL-MDX-File-Format#trimesh-header) and walk types determine walkability
@@ -985,13 +985,13 @@ The kit extraction process is based on reverse-engineered implementations from m
 
 ### [module archives](ERF-File-Format) Loading
 
-**reone Implementation** (`vendor/reone/src/libs/resource/provider/`):
+**reone** ([`src/libs/resource/provider/`](https://github.com/modawan/reone/tree/master/src/libs/resource/provider)):
 
 - Supports RIM and [ERF file](ERF-File-Format) formats
 - `.mod` files ([ERF](ERF-File-Format) format) take precedence over `.rim` files
 - **PyKotor Implementation**: Matches reone exactly - prioritizes `.mod` files over `.rim` files
 
-**KotOR.js Implementation** (`vendor/KotOR.js/src/loaders/ResourceLoader.ts`):
+**KotOR.js** ([`ResourceLoader.ts` L22+](https://github.com/KobaltBlu/KotOR.js/blob/master/src/loaders/ResourceLoader.ts#L22)):
 
 - Supports RIM and [ERF file](ERF-File-Format) formats
 - Module loading follows same priority order

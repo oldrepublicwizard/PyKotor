@@ -4,7 +4,7 @@
 
 > **Note**: This official BioWare documentation was originally written for **Neverwinter Nights**, but the common GFF structures are **identical in KotOR**. All structures, fields, and behaviors described here apply to KotOR as well. The examples may reference NWN-specific features, but the core format is the same.
 
-**Source:** This documentation is extracted from the official BioWare Aurora Engine CommonGFFStructs PDF, archived in **[xoreos-docs](https://github.com/xoreos/xoreos-docs)** ([Mirror: th3w1zard1/xoreos-docs](https://github.com/th3w1zard1/xoreos-docs)): [`specs/bioware/CommonGFFStructs.pdf`](https://github.com/xoreos/xoreos-docs/blob/master/specs/bioware/CommonGFFStructs.pdf). The original documentation was published on the now-defunct *nwn.bioware.com* developer site.
+**Source:** Extracted from the official BioWare Aurora Engine CommonGFFStructs PDF, archived in [xoreos-docs](https://github.com/xoreos/xoreos-docs) [`specs/bioware/CommonGFFStructs.pdf`](https://github.com/xoreos/xoreos-docs/blob/master/specs/bioware/CommonGFFStructs.pdf). Original from the defunct *nwn.bioware.com* developer site.
 
 ---
 

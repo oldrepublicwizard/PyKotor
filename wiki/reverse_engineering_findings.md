@@ -782,8 +782,7 @@ Based on this analysis, our *PyKotor/HolocronToolset* implementation **MUST**:
 
 ### References
 
-- *`vendor/swkotor.c`* — Decompiled game engine source
-- *`vendor/swkotor.h`* — Decompiled game engine headers
+- *`swkotor.c`* / *`swkotor.h`* — Decompiled engine source/headers used alongside local RE work (not part of the PyKotor distribution)
 - [BWM-File-Format](BWM-File-Format.md) — **Format specification** (binary layout, header, vertices, faces, AABB, adjacency, edges, perimeters). This section covers engine-side behavior only; the BWM wiki is the canonical format reference.
 
 ## Using agdec for further analysis

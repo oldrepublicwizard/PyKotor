@@ -11,10 +11,10 @@ Part of the [2DA File Format Documentation](2DA-File-Format).
 | Column Name | type | Description |
 |------------|------|-------------|
 | `label` | string | Keymap entry label |
-| Additional columns | Various | [KEY](KEY-File-Format) mappings for different contexts (ingame, [GUI](GFF-File-Format#gui-graphical-user-interface), dialog, minigame, freelook, movie) |
+| Additional Columns | Various | [KEY](KEY-File-Format) mappings for different contexts (ingame, [GUI](GFF-File-Format#gui-graphical-user-interface), dialog, minigame, freelook, movie) |
 
 **References**:
 
-- [`KobaltBlu/KotOR.js` `KeyMapper.ts` L293–L299](https://github.com/KobaltBlu/KotOR.js/blob/master/src/controls/KeyMapper.ts#L293-L299) - Keymap initialization from [2DA](2DA-File-Format)
+- [`KotOR.js/src/controls/KeyMapper.ts:293-299`](https://github.com/KobaltBlu/KotOR.js/blob/master/src/controls/KeyMapper.ts#L293-L299) - Keymap initialization from [2DA](2DA-File-Format)
 
 ---

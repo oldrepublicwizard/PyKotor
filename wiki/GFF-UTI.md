@@ -14,18 +14,19 @@ UTI files define [item templates](GFF-File-Format#uti-item) for all objects in c
 
 **PyKotor:**
 
-- [`Libraries/PyKotor/src/pykotor/resource/generics/uti.py`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/uti.py) - UTI [GFF](GFF-File-Format) parsing and field definitions
+- [`uti.py` `UTI` L22+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/uti.py#L22) — UTI [GFF](GFF-File-Format) field model and `read_uti` / `write_uti` helpers in the same module
 
 **HolocronToolset:**
 
 - [`Tools/HolocronToolset/src/toolset/gui/editors/uti.py`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Tools/HolocronToolset/src/toolset/gui/editors/uti.py) - Item (UTI) editor
 
-**Vendor Implementations:**
+**Cross-reference (other implementations):**
 
-- **[reone](https://github.com/seedhartha/reone)** ([Mirror: th3w1zard1/reone](https://github.com/th3w1zard1/reone)): [`src/libs/resource/gff.cpp`](https://github.com/seedhartha/reone/blob/master/src/libs/resource/gff.cpp) - C++ GFF reader (UTI uses generic GFF structure)
-- **[KotOR.js](https://github.com/KobaltBlu/KotOR.js)** ([Mirror: th3w1zard1/KotOR.js](https://github.com/th3w1zard1/KotOR.js)): [`src/resource/GFFObject.ts`](https://github.com/KobaltBlu/KotOR.js/blob/master/src/resource/GFFObject.ts) - TypeScript GFF parser
-- **[Kotor.NET](https://github.com/NickHugi/Kotor.NET)** ([Mirror: th3w1zard1/Kotor.NET](https://github.com/th3w1zard1/Kotor.NET)): [`Kotor.NET/Formats/KotorGFF/GFF.cs`](https://github.com/NickHugi/Kotor.NET/blob/master/Kotor.NET/Formats/KotorGFF/GFF.cs) - .NET GFF reader/writer (UTI uses generic GFF structure)
-- **[xoreos](https://github.com/xoreos/xoreos)** ([Mirror: th3w1zard1/xoreos](https://github.com/th3w1zard1/xoreos)) - Generic Aurora GFF implementation; UTI loaded as GFF in engine
+- **[reone](https://github.com/modawan/reone)**: [`gff.cpp`](https://github.com/modawan/reone/blob/master/src/libs/resource/gff.cpp), [`gffreader.cpp`](https://github.com/modawan/reone/blob/master/src/libs/resource/format/gffreader.cpp) — C++ GFF reader (UTI uses generic GFF structure)
+- **[KotOR.js](https://github.com/KobaltBlu/KotOR.js)**: [`GFFObject.ts` L24+](https://github.com/KobaltBlu/KotOR.js/blob/master/src/resource/GFFObject.ts#L24) — TypeScript GFF parser
+- **[Kotor.NET](https://github.com/NickHugi/Kotor.NET)**: [`GFF.cs` L18+](https://github.com/NickHugi/Kotor.NET/blob/master/Kotor.NET/Formats/KotorGFF/GFF.cs#L18) — .NET GFF reader/writer (UTI uses generic GFF structure)
+- **[PyKotor](https://github.com/OldRepublicDevs/PyKotor)** (binary GFF): [`GFFBinaryReader.load` L79+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/gff/io_gff.py#L79) — same pipeline as other GFF types
+- **[xoreos](https://github.com/xoreos/xoreos)** — generic Aurora GFF; UTI loaded as GFF in engine
 
 ## Core Identity fields
 

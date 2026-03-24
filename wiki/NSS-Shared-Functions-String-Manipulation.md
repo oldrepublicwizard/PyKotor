@@ -38,7 +38,7 @@ String functions are used for:
 
 #### Function Signature
 
-```nss
+```c
 int GetStringLength(string sString);
 ```
 
@@ -57,13 +57,13 @@ Gets the length (number of characters) of a string.
 
 #### Usage Examples
 
-```nss
+```c
 // Get string length
 string sText = "Hello World";
 int nLength = GetStringLength(sText); // Returns 11
 ```
 
-```nss
+```c
 // Check if string is empty
 string sInput = GetGlobalString("PlayerInput");
 if (GetStringLength(sInput) == 0) {
@@ -73,7 +73,7 @@ if (GetStringLength(sInput) == 0) {
 
 **Pattern: Validate String**
 
-```nss
+```c
 // Validate non-empty string
 string sName = GetGlobalString("PlayerName");
 if (GetStringLength(sName) > 0) {
@@ -92,7 +92,7 @@ if (GetStringLength(sName) > 0) {
 
 #### Function Signature
 
-```nss
+```c
 string GetStringUpperCase(string sString);
 ```
 
@@ -111,13 +111,13 @@ Converts all characters in a string to uppercase.
 
 #### Usage Examples
 
-```nss
+```c
 // Convert to uppercase
 string sText = "hello world";
 string sUpper = GetStringUpperCase(sText); // Returns "HELLO WORLD"
 ```
 
-```nss
+```c
 // Case-insensitive comparison
 string sInput = "Yes";
 string sUpper = GetStringUpperCase(sInput);
@@ -134,7 +134,7 @@ if (sUpper == "YES") {
 
 #### Function Signature
 
-```nss
+```c
 string GetStringLowerCase(string sString);
 ```
 
@@ -153,7 +153,7 @@ Converts all characters in a string to lowercase.
 
 #### Usage Examples
 
-```nss
+```c
 // Convert to lowercase
 string sText = "HELLO WORLD";
 string sLower = GetStringLowerCase(sText); // Returns "hello world"
@@ -161,7 +161,7 @@ string sLower = GetStringLowerCase(sText); // Returns "hello world"
 
 **Pattern: Case-Insensitive Comparison**
 
-```nss
+```c
 // Compare strings ignoring case
 string sInput = "Yes";
 string sLower = GetStringLowerCase(sInput);
@@ -180,7 +180,7 @@ if (sLower == "yes") {
 
 #### Function Signature
 
-```nss
+```c
 string GetSubString(string sString, int nStart, int nCount);
 ```
 
@@ -201,13 +201,13 @@ Extracts a substring from a string, starting at a specific position and taking a
 
 #### Usage Examples
 
-```nss
+```c
 // Extract substring
 string sText = "Hello World";
 string sSub = GetSubString(sText, 0, 5); // Returns "Hello"
 ```
 
-```nss
+```c
 // Extract middle portion
 string sText = "Hello World";
 string sSub = GetSubString(sText, 6, 5); // Returns "World"
@@ -215,7 +215,7 @@ string sSub = GetSubString(sText, 6, 5); // Returns "World"
 
 **Pattern: Extract Prefix**
 
-```nss
+```c
 // Extract first N characters
 string sTag = "npc_merchant_01";
 string sPrefix = GetSubString(sTag, 0, 4); // Returns "npc_"
@@ -223,7 +223,7 @@ string sPrefix = GetSubString(sTag, 0, 4); // Returns "npc_"
 
 **Pattern: Parse String Data**
 
-```nss
+```c
 // Extract data from formatted string
 string sData = "Item:123:Description";
 string sItem = GetSubString(sData, 5, 3); // Extract "123"
@@ -244,7 +244,7 @@ string sItem = GetSubString(sData, 5, 3); // Extract "123"
 
 #### Function Signature
 
-```nss
+```c
 string GetStringLeft(string sString, int nCount);
 ```
 
@@ -264,13 +264,13 @@ Gets the first `nCount` characters from the left (beginning) of a string.
 
 #### Usage Examples
 
-```nss
+```c
 // Get left portion
 string sText = "Hello World";
 string sLeft = GetStringLeft(sText, 5); // Returns "Hello"
 ```
 
-```nss
+```c
 // Extract prefix
 string sTag = "npc_merchant";
 string sPrefix = GetStringLeft(sTag, 4); // Returns "npc_"
@@ -278,7 +278,7 @@ string sPrefix = GetStringLeft(sTag, 4); // Returns "npc_"
 
 **Pattern: Check String Prefix**
 
-```nss
+```c
 // Check if string starts with prefix
 string sTag = "npc_merchant";
 string sPrefix = GetStringLeft(sTag, 4);
@@ -295,7 +295,7 @@ if (sPrefix == "npc_") {
 
 #### Function Signature
 
-```nss
+```c
 string GetStringRight(string sString, int nCount);
 ```
 
@@ -315,13 +315,13 @@ Gets the last `nCount` characters from the right (end) of a string.
 
 #### Usage Examples
 
-```nss
+```c
 // Get right portion
 string sText = "Hello World";
 string sRight = GetStringRight(sText, 5); // Returns "World"
 ```
 
-```nss
+```c
 // Extract suffix
 string sTag = "item_sword_01";
 string sSuffix = GetStringRight(sTag, 2); // Returns "01"
@@ -329,7 +329,7 @@ string sSuffix = GetStringRight(sTag, 2); // Returns "01"
 
 **Pattern: Extract File Extension**
 
-```nss
+```c
 // Extract extension from filename
 string sFile = "script.nss";
 string sExt = GetStringRight(sFile, 3); // Returns "nss"
@@ -345,7 +345,7 @@ string sExt = GetStringRight(sFile, 3); // Returns "nss"
 
 #### Function Signature
 
-```nss
+```c
 int FindSubString(string sString, string sSubString);
 ```
 
@@ -365,13 +365,13 @@ Finds the position of a substring within a string. Returns the index of the firs
 
 #### Usage Examples
 
-```nss
+```c
 // Find substring
 string sText = "Hello World";
 int nPos = FindSubString(sText, "World"); // Returns 6
 ```
 
-```nss
+```c
 // Check if substring exists
 string sTag = "npc_merchant_01";
 int nPos = FindSubString(sTag, "merchant");
@@ -382,7 +382,7 @@ if (nPos >= 0) {
 
 **Pattern: Check if String Contains Substring**
 
-```nss
+```c
 // Check if string contains specific text
 string sName = GetName(GetFirstPC());
 if (FindSubString(sName, "Revan") >= 0) {
@@ -392,7 +392,7 @@ if (FindSubString(sName, "Revan") >= 0) {
 
 **Pattern: Extract After Substring**
 
-```nss
+```c
 // Extract text after a marker
 string sData = "Item:123:Description";
 int nPos = FindSubString(sData, ":");
@@ -418,7 +418,7 @@ if (nPos >= 0) {
 
 #### Function Signature
 
-```nss
+```c
 string InsertString(string sDestination, string sString, int nPosition);
 ```
 
@@ -439,13 +439,13 @@ Inserts a string into another string at a specified position.
 
 #### Usage Examples
 
-```nss
+```c
 // Insert string
 string sText = "Hello World";
 string sNew = InsertString(sText, "Beautiful ", 6); // Returns "Hello Beautiful World"
 ```
 
-```nss
+```c
 // Insert at beginning
 string sText = "World";
 string sNew = InsertString(sText, "Hello ", 0); // Returns "Hello World"
@@ -453,7 +453,7 @@ string sNew = InsertString(sText, "Hello ", 0); // Returns "Hello World"
 
 **Pattern: Build Dynamic String**
 
-```nss
+```c
 // Build string by inserting parts
 string sMessage = "Welcome!";
 string sName = GetName(GetFirstPC());
@@ -476,7 +476,7 @@ string sFinal = InsertString(sMessage, sName + " ", 8); // "Welcome [Name]!"
 
 #### Function Signature
 
-```nss
+```c
 int StringToInt(string sString);
 ```
 
@@ -495,13 +495,13 @@ Converts a string to an integer. Parses the numeric value from the string.
 
 #### Usage Examples
 
-```nss
+```c
 // Convert string to int
 string sNumber = "123";
 int nValue = StringToInt(sNumber); // Returns 123
 ```
 
-```nss
+```c
 // Parse number from formatted string
 string sData = "Level:15";
 int nPos = FindSubString(sData, ":");
@@ -513,7 +513,7 @@ if (nPos >= 0) {
 
 **Pattern: Parse Numeric Data**
 
-```nss
+```c
 // Extract and convert number
 string sGlobal = GetGlobalString("QuestProgress");
 int nProgress = StringToInt(sGlobal);
@@ -536,7 +536,7 @@ if (nProgress > 0) {
 
 #### Function Signature
 
-```nss
+```c
 string IntToString(int nInteger);
 ```
 
@@ -554,7 +554,7 @@ Converts an integer to a string representation.
 
 #### Usage Examples
 
-```nss
+```c
 // Convert int to string
 int nLevel = 15;
 string sLevel = IntToString(nLevel); // Returns "15"
@@ -562,7 +562,7 @@ string sLevel = IntToString(nLevel); // Returns "15"
 
 **Pattern: Build Dynamic Messages**
 
-```nss
+```c
 // Include numbers in messages
 int nHP = GetCurrentHitPoints(GetFirstPC());
 int nMaxHP = GetMaxHitPoints(GetFirstPC());
@@ -572,7 +572,7 @@ SpeakString(sMessage, TALKVOLUME_TALK);
 
 **Pattern: Format Quest Progress**
 
-```nss
+```c
 // Format progress string
 int nProgress = GetGlobalNumber("QuestProgress");
 string sProgress = "Progress: " + IntToString(nProgress) + "%";
@@ -586,7 +586,7 @@ string sProgress = "Progress: " + IntToString(nProgress) + "%";
 
 #### Function Signature
 
-```nss
+```c
 float StringToFloat(string sString);
 ```
 
@@ -605,13 +605,13 @@ Converts a string to a float. Parses the numeric value from the string.
 
 #### Usage Examples
 
-```nss
+```c
 // Convert string to float
 string sNumber = "123.45";
 float fValue = StringToFloat(sNumber); // Returns 123.45
 ```
 
-```nss
+```c
 // Parse float from string
 string sData = "Distance:12.5";
 int nPos = FindSubString(sData, ":");
@@ -629,7 +629,7 @@ if (nPos >= 0) {
 
 #### Function Signature
 
-```nss
+```c
 string FloatToString(float fFloat, int nWidth = 0, int nDecimals = 0);
 ```
 
@@ -649,13 +649,13 @@ Converts a float to a string representation with optional formatting.
 
 #### Usage Examples
 
-```nss
+```c
 // Convert float to string
 float fValue = 123.456;
 string sValue = FloatToString(fValue); // Returns "123.456"
 ```
 
-```nss
+```c
 // Format with decimals
 float fValue = 123.456;
 string sValue = FloatToString(fValue, 0, 2); // Returns "123.46" (rounded)
@@ -663,7 +663,7 @@ string sValue = FloatToString(fValue, 0, 2); // Returns "123.46" (rounded)
 
 **Pattern: Format Distance**
 
-```nss
+```c
 // Format distance with 1 decimal
 float fDist = GetDistanceBetween(OBJECT_SELF, oTarget);
 string sDist = FloatToString(fDist, 0, 1);
@@ -676,7 +676,7 @@ SpeakString("Distance: " + sDist + " meters", TALKVOLUME_TALK);
 
 ### Pattern: Parse Formatted String
 
-```nss
+```c
 // Parse "Key:Value" format
 string sData = "Level:15";
 int nPos = FindSubString(sData, ":");
@@ -689,7 +689,7 @@ if (nPos >= 0) {
 
 ### Pattern: Case-Insensitive Comparison
 
-```nss
+```c
 // Compare strings ignoring case
 string sInput = "Yes";
 string sLower = GetStringLowerCase(sInput);
@@ -700,7 +700,7 @@ if (sLower == "yes" || sLower == "y") {
 
 ### Pattern: Extract File Extension
 
-```nss
+```c
 // Get file extension
 string sFile = "script.nss";
 int nPos = FindSubString(sFile, ".");
@@ -711,7 +711,7 @@ if (nPos >= 0) {
 
 ### Pattern: Build Dynamic Dialogue
 
-```nss
+```c
 // Build dynamic message with variables
 string sName = GetName(GetFirstPC());
 int nLevel = GetHitDice(GetFirstPC());
@@ -721,7 +721,7 @@ SpeakString(sMessage, TALKVOLUME_TALK);
 
 ### Pattern: Validate String Format
 
-```nss
+```c
 // Check if string matches expected format
 string sTag = "npc_merchant_01";
 string sPrefix = GetStringLeft(sTag, 4);
@@ -780,7 +780,7 @@ Strings in NWScript are immutable:
 
 **Concatenation:**
 
-```nss
+```c
 string s1 = "Hello";
 string s2 = "World";
 string s3 = s1 + " " + s2; // "Hello World"
@@ -788,7 +788,7 @@ string s3 = s1 + " " + s2; // "Hello World"
 
 **Comparison:**
 
-```nss
+```c
 if (s1 == s2) {
     // Strings are equal (case-sensitive)
 }
@@ -796,7 +796,7 @@ if (s1 == s2) {
 
 **Empty String Check:**
 
-```nss
+```c
 if (GetStringLength(s) == 0) {
     // String is empty
 }

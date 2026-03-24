@@ -6,21 +6,22 @@ NSS (NWScript Source) files contain human-readable NWScript source code that com
 
 **Related formats:** NSS compiles to [NCS](NCS-File-Format); scripts are triggered by [DLG](GFF-DLG), [UTC](GFF-File-Format#utc-creature), [UTD](GFF-UTD), [UTP](GFF-UTP), [IFO](GFF-IFO), and reference [2DA](2DA-File-Format) data.
 
-**Implementation:** [`Libraries/PyKotor/src/pykotor/resource/formats/ncs/`](https://github.com/OldRepublicDevs/PyKotor/tree/master/Libraries/PyKotor/src/pykotor/resource/formats/ncs/)
+**Implementation (PyKotor):** NSS compiles to [NCS](NCS-File-Format) via the in-tree compiler — [`InbuiltNCSCompiler.compile_script` L51+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/ncs/compilers.py#L51), [`compile_nss` L128+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/ncs/ncs_auto.py#L128); CLI wiring [`use_builtin_compiler` / `cmd_compile`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/cli/commands/compile.py#L66); parser [`NssParser` L80+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/ncs/compiler/parser.py#L80). Definitions: [`ScriptConstant` / `ScriptFunction` L21+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/common/script.py#L21), [`KOTOR_CONSTANTS` L12+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/common/scriptdefs.py#L12), [`KOTOR_FUNCTIONS` L3268+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/common/scriptdefs.py#L3268), [`KOTOR_LIBRARY` L5+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/common/scriptlib.py#L5). Bytecode I/O: [NCS-File-Format](NCS-File-Format) (`io_ncs.py`, `ncs_data.py`).
 
-**Vendor Script Compilers:**
+**Cross-reference (other compilers and tooling):**
 
-- **[xoreos-tools](https://github.com/xoreos/xoreos-tools)** - NWScript compiler and decompiler (`src/nwscript/`) ([Mirror: th3w1zard1/xoreos-tools](https://github.com/th3w1zard1/xoreos-tools))
-- **[KotOR-Scripting-Tool](https://github.com/KobaltBlu/KotOR-Scripting-Tool)** - Visual NWScript IDE with integrated compiler ([Mirror: th3w1zard1/KotOR-Scripting-Tool](https://github.com/th3w1zard1/KotOR-Scripting-Tool))
-- **[HoloLSP](https://github.com/th3w1zard1/HoloLSP)** - Language Server Protocol implementation for NWScript (canonical repo)
-- **[nwscript-mode.el](https://github.com/implicit-image/nwscript-mode.el)** - Emacs major mode for NWScript editing ([Mirror: th3w1zard1/nwscript-mode.el](https://github.com/th3w1zard1/nwscript-mode.el))
+- **[xoreos-tools](https://github.com/xoreos/xoreos-tools)** — NWScript compiler/decompiler ([`src/nwscript/`](https://github.com/xoreos/xoreos-tools/tree/master/src/nwscript))
+- **[KotOR-Scripting-Tool](https://github.com/th3w1zard1/KotOR-Scripting-Tool)** — Visual NWScript IDE with integrated compiler
+- **[HoloLSP](https://github.com/th3w1zard1/HoloLSP)** — LSP for NWScript ([`server/src/`](https://github.com/th3w1zard1/HoloLSP/tree/main/server/src) on branch `main`)
+- **[nwscript-mode.el](https://github.com/implicit-image/nwscript-mode.el)** — Emacs major mode for NWScript
 
-**Vendor Script Implementations:**
+**Cross-reference (runtimes and script corpora):**
 
-- **[xoreos](https://github.com/xoreos/xoreos)** - Complete NWScript virtual machine implementation (`src/engines/nwscript/`) ([Mirror: th3w1zard1/xoreos](https://github.com/th3w1zard1/xoreos))
-- **[reone](https://github.com/seedhartha/reone)** - Script execution engine (`src/libs/script/`) ([Mirror: th3w1zard1/reone](https://github.com/th3w1zard1/reone))
-- **[KotOR.js](https://github.com/KobaltBlu/KotOR.js)** - TypeScript NWScript interpreter (`src/nwscript/`) ([Mirror: th3w1zard1/KotOR.js](https://github.com/th3w1zard1/KotOR.js))
-- **[Vanilla_KOTOR_Script_Source](https://github.com/KOTORCommunityPatches/Vanilla_KOTOR_Script_Source)** - Decompiled vanilla KotOR scripts for reference ([Mirror: th3w1zard1/Vanilla_KOTOR_Script_Source](https://github.com/th3w1zard1/Vanilla_KOTOR_Script_Source))
+- **[xoreos](https://github.com/xoreos/xoreos)** — NWScript VM ([`src/aurora/nwscript/`](https://github.com/xoreos/xoreos/tree/master/src/aurora/nwscript))
+- **[reone](https://github.com/modawan/reone)** — Script VM ([`VirtualMachine` L41+](https://github.com/modawan/reone/blob/master/include/reone/script/virtualmachine.h#L41), [`virtualmachine.cpp` L36+](https://github.com/modawan/reone/blob/master/src/libs/script/virtualmachine.cpp#L36); tree [`src/libs/script/`](https://github.com/modawan/reone/tree/master/src/libs/script))
+- **[KotOR.js](https://github.com/KobaltBlu/KotOR.js)** — NCS load/execute and defs ([`NWScript` class L39+](https://github.com/KobaltBlu/KotOR.js/blob/master/src/nwscript/NWScript.ts#L39), tree [`src/nwscript/`](https://github.com/KobaltBlu/KotOR.js/tree/master/src/nwscript))
+- **[Kotor.NET](https://github.com/NickHugi/Kotor.NET)** — [`NCS` L9+](https://github.com/NickHugi/Kotor.NET/blob/master/Kotor.NET/Formats/KotorNCS/NCS.cs#L9) (`Kotor.NET/Formats/KotorNCS/`)
+- **[Vanilla_KOTOR_Script_Source](https://github.com/KOTORCommunityPatches/Vanilla_KOTOR_Script_Source)** — Decompiled vanilla KotOR scripts and `nwscript.nss` references
 
 ## Table of Contents
 
@@ -3036,7 +3037,7 @@ PyKotor implements `nwscript.nss` definitions in three Python modules:
    - Parses the included source code
    - Merges functions and constants into the current scope
 
-**Reference:** [`Libraries/PyKotor/src/pykotor/common/script.py`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/common/script.py) (data structures), [`Libraries/PyKotor/src/pykotor/common/scriptdefs.py`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/common/scriptdefs.py) (function/constant definitions), [`Libraries/PyKotor/src/pykotor/common/scriptlib.py`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/common/scriptlib.py) (library files)
+**Reference:** [`script.py` L21+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/common/script.py#L21) (data structures), [`KOTOR_CONSTANTS` L12+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/common/scriptdefs.py#L12) / [`KOTOR_FUNCTIONS` L3268+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/common/scriptdefs.py#L3268) (constants and function signatures), [`scriptlib.py` L5+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/common/scriptlib.py#L5) (`#include` library text), [`compilers.py` `InbuiltNCSCompiler` L28+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/ncs/compilers.py#L28), [`parser.py` `NssParser` L80+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/ncs/compiler/parser.py#L80)
 
 ---
 
@@ -3499,7 +3500,7 @@ See Visual Effects (VFX) for detailed documentation.
 
 **Source Code**:
 
-```nss
+```c
 //:: k_inc_cheat
 /*
     This will be localized area for all
@@ -3563,7 +3564,7 @@ void CH_SetPlanetaryGlobal(int nPlanetConstant)
 
 **Source Code**:
 
-```nss
+```c
 #include "k_inc_generic"
 #include "k_inc_utility"
 int ROMANCE_DONE = 4;
@@ -3627,7 +3628,7 @@ int GetElisePlotNeverStared();
 
 **Source Code**:
 
-```nss
+```c
 //::///////////////////////////////////////////////
 //:: KOTOR Debug Include
 //:: k_inc_debug
@@ -3691,7 +3692,7 @@ void Db_MyPrintString(string sString)
 
 **Source Code**:
 
-```nss
+```c
 //::///////////////////////////////////////////////
 //:: KOTOR Treasure drop Include
 //:: k_inc_drop
@@ -3755,7 +3756,7 @@ void DR_CreateRandomTreasure(object oTarget = OBJECT_SELF)
 
 **Source Code**:
 
-```nss
+```c
 //:: k_inc_ebonhawk
 /*
      Ebon Hawk include file
@@ -3819,7 +3820,7 @@ void EBO_PlayRenderSequence();
 
 **Source Code**:
 
-```nss
+```c
 #include "k_inc_utility"
 #include "k_inc_generic"
 string sTraskTag = "end_trask";
@@ -3883,7 +3884,7 @@ object GetTrask();
 
 **Source Code**:
 
-```nss
+```c
 //::///////////////////////////////////////////////
 //:: Name k_inc_endgame
 //:: Copyright (c) 2001 Bioware Corp.
@@ -3947,7 +3948,7 @@ void ST_PlayBastilaLight()
 
 **Source Code**:
 
-```nss
+```c
 //:: k_inc_force
 /*
     v1.0
@@ -4011,7 +4012,7 @@ void SP_MyPrintString(string sString);
 
 **Source Code**:
 
-```nss
+```c
 //:: k_inc_generic
 /*
     v1.5
@@ -4075,7 +4076,7 @@ int SW_FLAG_FORMATION_POSITION_1 = 50;   //POSSIBLE CUT
 
 **Source Code**:
 
-```nss
+```c
 //:: k_inc_gensupport
 /*
     v1.0
@@ -4139,7 +4140,7 @@ int SW_COMBO_SITH_SCYTHE = 27;
 
 **Source Code**:
 
-```nss
+```c
 //::///////////////////////////////////////////////
 //:: Include
 //:: k_inc_kas
@@ -4203,7 +4204,7 @@ void SetJaarakConfessedGlobal(int bValue)
 
 **Source Code**:
 
-```nss
+```c
 //::///////////////////////////////////////////////
 //:: k_inc_lev
 //:: Copyright (c) 2001 Bioware Corp.
@@ -4267,7 +4268,7 @@ void LEV_CleanupDeadObjects(object oArea)
 
 **Source Code**:
 
-```nss
+```c
 //:: Name
 /*
      Desc
@@ -4331,7 +4332,7 @@ int KoltoDestroyed();
 
 **Source Code**:
 
-```nss
+```c
 //:: Stunt/Render Include
 /*
      This Include File runs
@@ -4395,7 +4396,7 @@ string ST_GetTakeOffRender();
 
 **Source Code**:
 
-```nss
+```c
 //:: k_inc_switch
 /*
      A simple include defining all of the
@@ -4448,7 +4449,7 @@ int KOTOR_MISC_DETERMINE_COMBAT_ROUND_ON_INDEX_ZERO  = 3003;
 
 **Source Code**:
 
-```nss
+```c
 //::///////////////////////////////////////////////
 //:: k_inc_tar
 //:: k_inc_tar
@@ -4512,7 +4513,7 @@ void TAR_StripCharacter(object oTarget,object oDest);
 
 **Source Code**:
 
-```nss
+```c
 //::///////////////////////////////////////////////
 //:: Include
 //:: k_inc_tat
@@ -4576,7 +4577,7 @@ int GetSharinaAccusedGurkeGlobal()
 
 **Source Code**:
 
-```nss
+```c
 //:: k_inc_treasure
 /*
      contains code for filling containers using treasure tables
@@ -4640,7 +4641,7 @@ int SWTR_InRange(int i,int iLow,int iHigh)
 
 **Source Code**:
 
-```nss
+```c
 //::///////////////////////////////////////////////
 //:: k_inc_unk
 //:: Copyright (c) 2001 Bioware Corp.
@@ -4704,7 +4705,7 @@ void UNK_MarkForCleanup(object obj)
 
 **Source Code**:
 
-```nss
+```c
 //:: k_inc_utility
 /*
     common functions used throughout various scripts
@@ -4768,7 +4769,7 @@ int IsIntelligenceHigh();
 
 **Source Code**:
 
-```nss
+```c
 //:: k_inc_walkways
 /*
     v1.0
@@ -4832,7 +4833,7 @@ int GN_CheckWalkWays(object oTarget);
 
 **Source Code**:
 
-```nss
+```c
 //:: k_inc_zones
 /*
      Zone including for controlling
@@ -4902,7 +4903,7 @@ void ZN_CatalogFollowers()
 
 **Source Code**:
 
-```nss
+```c
 
 //:: a_global_inc
 /*
@@ -4930,7 +4931,7 @@ void main()
 
 **Source Code**:
 
-```nss
+```c
 // a_influence_inc
 /* Parameter Count: 2
 Increases an NPC's influence.
@@ -4994,7 +4995,7 @@ ModifyInfluence (nNPC, nInfluenceChange);
 
 **Source Code**:
 
-```nss
+```c
 // a_localn_inc
 // Parameter Count: 2
 // Param1 - The local number # to increment (range 12-31)
@@ -5032,7 +5033,7 @@ void main()
 
 **Source Code**:
 
-```nss
+```c
 //:: k_inc_cheat
 /*
     This will be localized area for all
@@ -5096,7 +5097,7 @@ void CH_SetPlanetaryGlobal(int nPlanetConstant)
 
 **Source Code**:
 
-```nss
+```c
 //::///////////////////////////////////////////////
 //:: KOTOR Debug Include
 //:: k_inc_debug
@@ -5160,7 +5161,7 @@ void Db_MyPrintString(string sString)
 
 **Source Code**:
 
-```nss
+```c
 //:: k_inc_disguise
 /*
     This script contains all functions necessary to add and
@@ -5219,7 +5220,7 @@ void RemoveDisguises() {
 
 **Source Code**:
 
-```nss
+```c
 //::///////////////////////////////////////////////
 //:: KOTOR Treasure drop Include
 //:: k_inc_drop
@@ -5283,7 +5284,7 @@ void DR_CreateRandomTreasure(object oTarget = OBJECT_SELF)
 
 **Source Code**:
 
-```nss
+```c
 // k_inc_fab
 /*
     Ferret's Wacky Include Script - YAY
@@ -5347,7 +5348,7 @@ void FAB_PCPort( object oWP )
 
 **Source Code**:
 
-```nss
+```c
 //:: k_inc_fakecombat
 /*
      routines for doing fake combat
@@ -5411,7 +5412,7 @@ void DoFakeAttack(object oTarget,int bLethal)
 
 **Source Code**:
 
-```nss
+```c
 //:: k_inc_force
 /*
     v1.0
@@ -5475,7 +5476,7 @@ void SP_MyPrintString(string sString);
 
 **Source Code**:
 
-```nss
+```c
 //:: k_inc_generic
 /*
     v1.5
@@ -5539,7 +5540,7 @@ int SW_FLAG_EVENT_ON_HEARTBEAT   = 28;
 
 **Source Code**:
 
-```nss
+```c
 //:: k_inc_gensupport
 /*
     v1.0
@@ -5603,7 +5604,7 @@ int SW_COMBO_SITH_DRAIN = 23;
 
 **Source Code**:
 
-```nss
+```c
 
 //:: k_inc_glob_party
 /*
@@ -5667,7 +5668,7 @@ string GetNPCTag( int nNPC )
 
 **Source Code**:
 
-```nss
+```c
 
 //:: Script Name
 /*
@@ -5731,7 +5732,7 @@ void ClearEnemies()
 
 **Source Code**:
 
-```nss
+```c
 
 //:: k_inc_item_gen.nss
 /*
@@ -5795,7 +5796,7 @@ int GetIsEquipmentNeeded()
 
 **Source Code**:
 
-```nss
+```c
 //Richard Taylor
 //OEI 08/08/04
 //Various functions to help with killing creatures in
@@ -5859,7 +5860,7 @@ void DamagingExplosion( object oCreature, int nDelay, int nDamage )
 
 **Source Code**:
 
-```nss
+```c
 //:: a_q_cryst_change
 /*
 Takes the quest crystal the player has, if any.
@@ -5903,7 +5904,7 @@ int GetCrystalLevel()
 
 **Source Code**:
 
-```nss
+```c
 // Gives the player the next component needed for the HK quest.
 // kds, 09/06/04
 #include "k_inc_treas_k2"
@@ -5940,7 +5941,7 @@ CreateItemOnObject( sItem, oRecipient, 1 );
 
 **Source Code**:
 
-```nss
+```c
 //:: k_inc_switch
 /*
      A simple include defining all of the
@@ -5999,7 +6000,7 @@ int KOTOR2_MISC_PC_COMBAT_FORFEIT                    = 4001;
 
 **Source Code**:
 
-```nss
+```c
 #include "k_inc_q_crystal"
 #include "k_inc_treasure"
 /*
@@ -6063,7 +6064,7 @@ Droid Items - 500
 
 **Source Code**:
 
-```nss
+```c
 //:: k_inc_treasure
 /*
      contains code for filling containers using treasure tables
@@ -6127,7 +6128,7 @@ int SWTR_InRange(int i,int iLow,int iHigh)
 
 **Source Code**:
 
-```nss
+```c
 //:: k_inc_utility
 /*
     common functions used throughout various scripts
@@ -6191,7 +6192,7 @@ int IsIntelligenceHigh();
 
 **Source Code**:
 
-```nss
+```c
 //:: k_inc_walkways
 /*
     v1.0
@@ -6255,7 +6256,7 @@ int SW_FLAG_USE_WAYPOINT_ANIMATION = 109;
 
 **Source Code**:
 
-```nss
+```c
 //:: k_inc_zones
 /*
      Zone including for controlling
@@ -6319,7 +6320,7 @@ void ZN_CatalogFollowers()
 
 **Source Code**:
 
-```nss
+```c
 
 //:: Script Name
 /*
@@ -6387,12 +6388,12 @@ void DoSpecialSpawnIn(object pObject)
 
 **Function Call Resolution:**
 
-```nss
+```c
 // Source code
 int result = GetGlobalNumber("K_QUEST_COMPLETED");
 ```
 
-```nss
+```c
 // Compiler looks up "GetGlobalNumber" in KOTOR_FUNCTIONS
 // Finds it at index 159 (routine number)
 // Generates: ACTION 159 with 1 argument (string "K_QUEST_COMPLETED")
@@ -6400,12 +6401,12 @@ int result = GetGlobalNumber("K_QUEST_COMPLETED");
 
 **Constant Resolution:**
 
-```nss
+```c
 // Source code
 if (nPlanet == PLANET_TARIS) { ... }
 ```
 
-```nss
+```c
 // Compiler looks up PLANET_TARIS in KOTOR_CONSTANTS
 // Finds value: 1
 // Generates: CONSTI 1 (pushes integer 1 onto stack)
@@ -6459,13 +6460,13 @@ Modders have developed several strategies for working with commented-out element
 
 The notorious K2 syntax error in `SetOrientOnClick` can be fixed by changing:
 
-```nss
+```c
 void SetOrientOnClick( object = OBJECT_SELF, ... )
 ```
 
 to:
 
-```nss
+```c
 void SetOrientOnClick( object oCreature = OBJECT_SELF, ... )
 ```
 
@@ -6513,39 +6514,38 @@ In summary, while no one has publicly shared a "uncomment everything" patch (lik
 
 **Parsing nwscript.nss:**
 
-- [`vendor/reone/src/apps/dataminer/routines.cpp:149-184`](https://github.com/th3w1zard1/reone/blob/master/src/apps/dataminer/routines.cpp) - Parses nwscript.nss using regex patterns for constants and functions
-- [`vendor/reone/src/apps/dataminer/routines.cpp:382-427`](https://github.com/th3w1zard1/reone/blob/master/src/apps/dataminer/routines.cpp) - Extracts functions from nwscript.nss in chitin.key for K1 and K2
-- [`vendor/xoreos-tools/src/nwscript/actions.cpp`](https://github.com/th3w1zard1/xoreos-tools/blob/master/src/nwscript/actions.cpp) - Actions data parsing for decompilation
-- [`vendor/xoreos-tools/src/nwscript/ncsfile.cpp`](https://github.com/th3w1zard1/xoreos-tools/blob/master/src/nwscript/ncsfile.cpp) - [NCS file](NCS-File-Format) parsing with actions data integration
-- [`vendor/NorthernLights/Assets/Scripts/ncs/nwscript_actions.cs`](https://github.com/th3w1zard1/NorthernLights/blob/master/Assets/Scripts/ncs/nwscript_actions.cs) - Unity C# actions table
-- [`vendor/NorthernLights/Assets/Scripts/ncs/nwscript.cs`](https://github.com/th3w1zard1/NorthernLights/blob/master/Assets/Scripts/ncs/nwscript.cs) - Unity C# NWScript class
-- [`vendor/KotOR-Scripting-Tool/NWN Script/NWScriptParser.cs`](https://github.com/th3w1zard1/KotOR-Scripting-Tool/blob/master/NWN%20Script/NWScriptParser.cs) - C# parser for nwscript.nss
+- [`reone/src/apps/dataminer/routines.cpp:149-184`](https://github.com/modawan/reone/blob/master/src/apps/dataminer/routines.cpp) - Parses nwscript.nss using regex patterns for constants and functions
+- [`reone/src/apps/dataminer/routines.cpp:382-427`](https://github.com/modawan/reone/blob/master/src/apps/dataminer/routines.cpp) - Extracts functions from nwscript.nss in chitin.key for K1 and K2
+- [`xoreos-tools/src/nwscript/actions.cpp`](https://github.com/xoreos/xoreos-tools/blob/master/src/nwscript/actions.cpp) - Actions data parsing for decompilation
+- [`xoreos-tools/src/nwscript/ncsfile.cpp`](https://github.com/xoreos/xoreos-tools/blob/master/src/nwscript/ncsfile.cpp) - [NCS file](NCS-File-Format) parsing with actions data integration
+- [`NorthernLights/Assets/Scripts/ncs/nwscript_actions.cs`](https://github.com/lachjames/NorthernLights/blob/master/Assets/Scripts/ncs/nwscript_actions.cs) - Unity C# actions table
+- [`NorthernLights/Assets/Scripts/ncs/nwscript.cs`](https://github.com/lachjames/NorthernLights/blob/master/Assets/Scripts/ncs/nwscript.cs) - Unity C# NWScript class
+- [`KotOR-Scripting-Tool/NWN Script/NWScriptParser.cs`](https://github.com/th3w1zard1/KotOR-Scripting-Tool/blob/master/NWN%20Script/NWScriptParser.cs) - C# parser for nwscript.nss
 
 **Function Definitions:**
 
-- [`vendor/KotOR.js/src/nwscript/NWScript.ts`](https://github.com/th3w1zard1/KotOR.js/blob/master/src/nwscript/NWScript.ts) - TypeScript function definitions
-- [`vendor/KotOR.js/src/nwscript/NWScriptDefK1.ts`](https://github.com/th3w1zard1/KotOR.js/blob/master/src/nwscript/NWScriptDefK1.ts) - KotOR 1 definitions
-- [`vendor/KotOR.js/src/nwscript/NWScriptDefK2.ts`](https://github.com/th3w1zard1/KotOR.js/blob/master/src/nwscript/NWScriptDefK2.ts) - KotOR 2 definitions
-- [`vendor/KotOR.js/src/nwscript/NWScriptParser.ts`](https://github.com/th3w1zard1/KotOR.js/blob/master/src/nwscript/NWScriptParser.ts) - TypeScript parser for nwscript.nss
-- [`vendor/KotOR.js/src/nwscript/NWScriptInstructionSet.ts`](https://github.com/th3w1zard1/KotOR.js/blob/master/src/nwscript/NWScriptInstructionSet.ts) - Instruction set definitions
-- [`vendor/KotOR.js/src/nwscript/NWScriptConstants.ts`](https://github.com/th3w1zard1/KotOR.js/blob/master/src/nwscript/NWScriptConstants.ts) - Constant definitions
-- [`vendor/HoloLSP/server/src/nwscript/`](https://github.com/th3w1zard1/HoloLSP/blob/master/server/src/nwscript/) - Language server definitions
-- [`vendor/HoloLSP/server/src/nwscript-parser.ts`](https://github.com/th3w1zard1/HoloLSP/blob/master/server/src/nwscript-parser.ts) - Language server parser
-- [`vendor/HoloLSP/server/src/nwscript-lexer.ts`](https://github.com/th3w1zard1/HoloLSP/blob/master/server/src/nwscript-lexer.ts) - Language server lexer
-- [`vendor/HoloLSP/server/src/nwscript-ast.ts`](https://github.com/th3w1zard1/HoloLSP/blob/master/server/src/nwscript-ast.ts) - Language server AST
-- [`vendor/HoloLSP/syntaxes/nwscript.tmLanguage.json`](https://github.com/th3w1zard1/HoloLSP/blob/master/syntaxes/nwscript.tmLanguage.json) - TextMate syntax definition
-- [`vendor/nwscript-mode.el/nwscript-mode.el`](https://github.com/th3w1zard1/nwscript-mode.el/blob/master/nwscript-mode.el) - Emacs mode for NWScript
-- [`vendor/nwscript-ts-mode/`](https://github.com/th3w1zard1/nwscript-ts-mode) - TypeScript mode for NWScript
+- [`KotOR.js/src/nwscript/NWScript.ts`](https://github.com/KobaltBlu/KotOR.js/blob/master/src/nwscript/NWScript.ts) - TypeScript function definitions
+- [`KotOR.js/src/nwscript/NWScriptDefK1.ts`](https://github.com/KobaltBlu/KotOR.js/blob/master/src/nwscript/NWScriptDefK1.ts) - KotOR 1 definitions
+- [`KotOR.js/src/nwscript/NWScriptDefK2.ts`](https://github.com/KobaltBlu/KotOR.js/blob/master/src/nwscript/NWScriptDefK2.ts) - KotOR 2 definitions
+- [`KotOR.js/src/nwscript/compiler/NWScriptParser.ts` L65+](https://github.com/KobaltBlu/KotOR.js/blob/master/src/nwscript/compiler/NWScriptParser.ts#L65) — Parser for `nwscript.nss` / NSS (engine types, constants, actions)
+- [`KotOR.js/src/nwscript/NWScriptInstructionSet.ts`](https://github.com/KobaltBlu/KotOR.js/blob/master/src/nwscript/NWScriptInstructionSet.ts) - Instruction set definitions
+- [`KotOR.js/src/nwscript/NWScriptConstants.ts`](https://github.com/KobaltBlu/KotOR.js/blob/master/src/nwscript/NWScriptConstants.ts) - Constant definitions
+- [`HoloLSP/server/src/nwscript-parser.ts` L52+](https://github.com/th3w1zard1/HoloLSP/blob/main/server/src/nwscript-parser.ts#L52) — `NWScriptParser` (recursive descent)
+- [`HoloLSP/server/src/nwscript-lexer.ts` L9+](https://github.com/th3w1zard1/HoloLSP/blob/main/server/src/nwscript-lexer.ts#L9) — `TokenType` / `NWScriptLexer`
+- [`HoloLSP/server/src/nwscript-ast.ts` L7+](https://github.com/th3w1zard1/HoloLSP/blob/main/server/src/nwscript-ast.ts#L7) — AST nodes (`Program`, `FunctionDeclaration`, …)
+- [`HoloLSP/syntaxes/nwscript.tmLanguage.json` L1+](https://github.com/th3w1zard1/HoloLSP/blob/main/syntaxes/nwscript.tmLanguage.json#L1) — TextMate grammar
+- [`nwscript-mode.el/nwscript-mode.el`](https://github.com/implicit-image/nwscript-mode.el/blob/master/nwscript-mode.el) - Emacs mode for NWScript
+- [`nwscript-ts-mode/`](https://github.com/th3w1zard1/nwscript-ts-mode) - TypeScript mode for NWScript
 
 **Original Sources:**
 
-- [`vendor/Vanilla_KOTOR_Script_Source`](https://github.com/th3w1zard1/Vanilla_KOTOR_Script_Source) - Original KotOR script sources including nwscript.nss
-- [`vendor/Vanilla_KOTOR_Script_Source/K1/Data/scripts.bif/`](https://github.com/th3w1zard1/Vanilla_KOTOR_Script_Source/tree/master/K1/Data/scripts.bif) - KotOR 1 script sources from [BIF](BIF-File-Format)
-- [`vendor/Vanilla_KOTOR_Script_Source/TSL/Vanilla/Data/Scripts/`](https://github.com/th3w1zard1/Vanilla_KOTOR_Script_Source/tree/master/TSL/Vanilla/Data/Scripts) - KotOR 2 script sources
-- [`vendor/KotOR-Scripting-Tool/NWN Script/k1/nwscript.nss`](https://github.com/th3w1zard1/KotOR-Scripting-Tool/blob/master/NWN%20Script/k1/nwscript.nss) - KotOR 1 nwscript.nss
-- [`vendor/KotOR-Scripting-Tool/NWN Script/k2/nwscript.nss`](https://github.com/th3w1zard1/KotOR-Scripting-Tool/blob/master/NWN%20Script/k2/nwscript.nss) - KotOR 2 nwscript.nss
-- [`vendor/NorthernLights/Scripts/k1_nwscript.nss`](https://github.com/th3w1zard1/NorthernLights/blob/master/Scripts/k1_nwscript.nss) - KotOR 1 nwscript.nss (NorthernLights)
-- [`vendor/NorthernLights/Scripts/k2_nwscript.nss`](https://github.com/th3w1zard1/NorthernLights/blob/master/Scripts/k2_nwscript.nss) - KotOR 2 nwscript.nss (NorthernLights)
+- [`Vanilla_KOTOR_Script_Source`](https://github.com/KOTORCommunityPatches/Vanilla_KOTOR_Script_Source) - Original KotOR script sources including nwscript.nss
+- [`Vanilla_KOTOR_Script_Source/K1/Data/scripts.bif/`](https://github.com/KOTORCommunityPatches/Vanilla_KOTOR_Script_Source/tree/master/K1/Data/scripts.bif) - KotOR 1 script sources from [BIF](BIF-File-Format)
+- [`Vanilla_KOTOR_Script_Source/TSL/Vanilla/Data/Scripts/`](https://github.com/KOTORCommunityPatches/Vanilla_KOTOR_Script_Source/tree/master/TSL/Vanilla/Data/Scripts) - KotOR 2 script sources
+- [`KotOR-Scripting-Tool/NWN Script/k1/nwscript.nss`](https://github.com/th3w1zard1/KotOR-Scripting-Tool/blob/master/NWN%20Script/k1/nwscript.nss) - KotOR 1 nwscript.nss
+- [`KotOR-Scripting-Tool/NWN Script/k2/nwscript.nss`](https://github.com/th3w1zard1/KotOR-Scripting-Tool/blob/master/NWN%20Script/k2/nwscript.nss) - KotOR 2 nwscript.nss
+- [`NorthernLights/Scripts/k1_nwscript.nss`](https://github.com/lachjames/NorthernLights/blob/master/Scripts/k1_nwscript.nss) - KotOR 1 nwscript.nss (NorthernLights)
+- [`NorthernLights/Scripts/k2_nwscript.nss`](https://github.com/lachjames/NorthernLights/blob/master/Scripts/k2_nwscript.nss) - KotOR 2 nwscript.nss (NorthernLights)
 
 **PyKotor Implementation:**
 
@@ -6556,118 +6556,120 @@ In summary, while no one has publicly shared a "uncomment everything" patch (lik
 
 **Other Implementations:**
 
-- [`vendor/Kotor.NET/Kotor.NET/Formats/KotorNCS/NCS.cs`](https://github.com/th3w1zard1/Kotor.NET/blob/master/Kotor.NET/Formats/KotorNCS/NCS.cs) - C# [NCS](NCS-File-Format) format with actions data support
-- [`vendor/KotORModSync/KOTORModSync.Core/Data/NWScriptHeader.cs`](https://github.com/th3w1zard1/KotORModSync/blob/master/KOTORModSync.Core/Data/NWScriptHeader.cs) - C# NWScript header parser
-- [`vendor/KotORModSync/KOTORModSync.Core/Data/NWScriptFileReader.cs`](https://github.com/th3w1zard1/KotORModSync/blob/master/KOTORModSync.Core/Data/NWScriptFileReader.cs) - C# NWScript file reader
+- [`NCS.cs` L9+](https://github.com/NickHugi/Kotor.NET/blob/master/Kotor.NET/Formats/KotorNCS/NCS.cs#L9) — C# [NCS](NCS-File-Format) model (`Kotor.NET/Formats/KotorNCS/`)
+- [`KotORModSync/KOTORModSync.Core/Data/NWScriptHeader.cs`](https://github.com/th3w1zard1/KotORModSync/blob/master/KOTORModSync.Core/Data/NWScriptHeader.cs) - C# NWScript header parser
+- [`KotORModSync/KOTORModSync.Core/Data/NWScriptFileReader.cs`](https://github.com/th3w1zard1/KotORModSync/blob/master/KOTORModSync.Core/Data/NWScriptFileReader.cs) - C# NWScript file reader
 
 **NWScript VM and Execution:**
 
-- [`vendor/reone/src/libs/script/format/ncsreader.cpp`](https://github.com/th3w1zard1/reone/blob/master/src/libs/script/format/ncsreader.cpp) - [NCS](NCS-File-Format) bytecode reader
-- [`vendor/reone/src/libs/script/format/ncswriter.cpp`](https://github.com/th3w1zard1/reone/blob/master/src/libs/script/format/ncswriter.cpp) - [NCS](NCS-File-Format) bytecode writer
-- [`vendor/xoreos/src/aurora/nwscript/`](https://github.com/th3w1zard1/xoreos/tree/master/src/aurora/nwscript) - NWScript VM implementation
-- [`vendor/xoreos/src/aurora/nwscript/ncsfile.cpp`](https://github.com/th3w1zard1/xoreos/blob/master/src/aurora/nwscript/ncsfile.cpp) - [NCS file](NCS-File-Format) parsing and execution
-- [`vendor/xoreos/src/aurora/nwscript/object.h`](https://github.com/th3w1zard1/xoreos/blob/master/src/aurora/nwscript/object.h) - NWScript object type definitions
-- [`vendor/xoreos/src/engines/kotorbase/object.h`](https://github.com/th3w1zard1/xoreos/blob/master/src/engines/kotorbase/object.h) - KotOR object implementation
-- [`vendor/NorthernLights/Assets/Scripts/ncs/control.cs`](https://github.com/th3w1zard1/NorthernLights/blob/master/Assets/Scripts/ncs/control.cs) - Unity C# [NCS](NCS-File-Format) VM control
-- [`vendor/NorthernLights/Assets/Scripts/ncs/NCSReader.cs`](https://github.com/th3w1zard1/NorthernLights/blob/master/Assets/Scripts/ncs/NCSReader.cs) - Unity C# [NCS](NCS-File-Format) reader
-- [`vendor/KotOR.js/src/odyssey/controllers/NWScriptController.ts`](https://github.com/th3w1zard1/KotOR.js/blob/master/src/odyssey/controllers/NWScriptController.ts) - TypeScript NWScript VM [controller](MDL-MDX-File-Format)
-- [`vendor/KotOR.js/src/nwscript/NWScriptInstance.ts`](https://github.com/th3w1zard1/KotOR.js/blob/master/src/nwscript/NWScriptInstance.ts) - TypeScript NWScript instance
-- [`vendor/KotOR.js/src/nwscript/NWScriptStack.ts`](https://github.com/th3w1zard1/KotOR.js/blob/master/src/nwscript/NWScriptStack.ts) - TypeScript stack implementation
-- [`vendor/KotOR.js/src/nwscript/NWScriptSubroutine.ts`](https://github.com/th3w1zard1/KotOR.js/blob/master/src/nwscript/NWScriptSubroutine.ts) - TypeScript subroutine handling
+- [`reone/src/libs/script/format/ncsreader.cpp`](https://github.com/modawan/reone/blob/master/src/libs/script/format/ncsreader.cpp) - [NCS](NCS-File-Format) bytecode reader
+- [`reone/src/libs/script/format/ncswriter.cpp`](https://github.com/modawan/reone/blob/master/src/libs/script/format/ncswriter.cpp) - [NCS](NCS-File-Format) bytecode writer
+- [`xoreos/src/aurora/nwscript/`](https://github.com/xoreos/xoreos/tree/master/src/aurora/nwscript) - NWScript VM implementation
+- [`xoreos/src/aurora/nwscript/ncsfile.cpp`](https://github.com/xoreos/xoreos/blob/master/src/aurora/nwscript/ncsfile.cpp) - [NCS file](NCS-File-Format) parsing and execution
+- [`xoreos/src/aurora/nwscript/object.h`](https://github.com/xoreos/xoreos/blob/master/src/aurora/nwscript/object.h) - NWScript object type definitions
+- [`xoreos/src/engines/kotorbase/object.h`](https://github.com/xoreos/xoreos/blob/master/src/engines/kotorbase/object.h) - KotOR object implementation
+- [`NorthernLights/Assets/Scripts/ncs/control.cs`](https://github.com/lachjames/NorthernLights/blob/master/Assets/Scripts/ncs/control.cs) - Unity C# [NCS](NCS-File-Format) VM control
+- [`NorthernLights/Assets/Scripts/ncs/NCSReader.cs`](https://github.com/lachjames/NorthernLights/blob/master/Assets/Scripts/ncs/NCSReader.cs) - Unity C# [NCS](NCS-File-Format) reader
+- [`KotOR.js/src/nwscript/NWScript.ts` L39+](https://github.com/KobaltBlu/KotOR.js/blob/master/src/nwscript/NWScript.ts#L39) — TypeScript NCS container (`NWScript.Load`, instruction map, `newInstance`)
+- [`KotOR.js/src/nwscript/NWScriptInstance.ts`](https://github.com/KobaltBlu/KotOR.js/blob/master/src/nwscript/NWScriptInstance.ts) - TypeScript NWScript instance
+- [`KotOR.js/src/nwscript/NWScriptStack.ts`](https://github.com/KobaltBlu/KotOR.js/blob/master/src/nwscript/NWScriptStack.ts) - TypeScript stack implementation
+- [`KotOR.js/src/nwscript/NWScriptSubroutine.ts`](https://github.com/KobaltBlu/KotOR.js/blob/master/src/nwscript/NWScriptSubroutine.ts) - TypeScript subroutine handling
 
 **Documentation and Specifications:**
 
-- [`vendor/xoreos-docs/`](https://github.com/th3w1zard1/xoreos-docs) - xoreos documentation including format specifications
-- [`vendor/xoreos-docs/specs/torlack/ncs.html`](https://github.com/th3w1zard1/xoreos-docs/blob/master/specs/torlack/ncs.html) - [NCS](NCS-File-Format) format specification (if available)
+- [`xoreos-docs/`](https://github.com/xoreos/xoreos-docs) - xoreos documentation including format specifications
+- [`xoreos-docs/specs/torlack/ncs.html`](https://github.com/xoreos/xoreos-docs/blob/master/specs/torlack/ncs.html) - [NCS](NCS-File-Format) format specification (if available)
 
 **NWScript Language Support:**
 
-- [`vendor/HoloLSP/server/src/kotor-definitions.ts`](https://github.com/th3w1zard1/HoloLSP/blob/master/server/src/kotor-definitions.ts) - KotOR function and constant definitions for language server
-- [`vendor/HoloLSP/server/src/nwscript-runtime.ts`](https://github.com/th3w1zard1/HoloLSP/blob/master/server/src/nwscript-runtime.ts) - NWScript runtime definitions
-- [`vendor/HoloLSP/server/src/server.ts`](https://github.com/th3w1zard1/HoloLSP/blob/master/server/src/server.ts) - Language server implementation with NWScript support
+- [`HoloLSP/server/src/kotor-definitions.ts` L4+](https://github.com/th3w1zard1/HoloLSP/blob/main/server/src/kotor-definitions.ts#L4) — KotOR function/constant typings (generated from PyKotor `scriptdefs.py`, per file header)
+- [`HoloLSP/server/src/nwscript-runtime.ts` L6+](https://github.com/th3w1zard1/HoloLSP/blob/main/server/src/nwscript-runtime.ts#L6) — NWScript runtime / interpreter integration
+- [`HoloLSP/server/src/server.ts` L1+](https://github.com/th3w1zard1/HoloLSP/blob/main/server/src/server.ts#L1) — Language server entry (completions, diagnostics, NWScript)
 
 **NWScript Parsing and Compilation:**
 
-- [`vendor/xoreos-tools/src/nwscript/decompiler.cpp`](https://github.com/th3w1zard1/xoreos-tools/blob/master/src/nwscript/decompiler.cpp) - [NCS](NCS-File-Format) decompiler implementation
+- [`xoreos-tools/src/nwscript/decompiler.cpp`](https://github.com/xoreos/xoreos-tools/blob/master/src/nwscript/decompiler.cpp) - [NCS](NCS-File-Format) decompiler implementation
 
 **NWScript Execution:**
 
-- [`vendor/reone/src/libs/script/execution/`](https://github.com/th3w1zard1/reone/tree/master/src/libs/script/execution) - NWScript VM execution engine
-- [`vendor/reone/src/libs/script/vm/`](https://github.com/th3w1zard1/reone/tree/master/src/libs/script/vm) - Virtual machine implementation
-- [`vendor/xoreos/src/aurora/nwscript/execution.cpp`](https://github.com/th3w1zard1/xoreos/blob/master/src/aurora/nwscript/execution.cpp) - NWScript execution engine
-- [`vendor/xoreos/src/aurora/nwscript/variable.cpp`](https://github.com/th3w1zard1/xoreos/blob/master/src/aurora/nwscript/variable.cpp) - Variable handling
-- [`vendor/xoreos/src/aurora/nwscript/function.cpp`](https://github.com/th3w1zard1/xoreos/blob/master/src/aurora/nwscript/function.cpp) - Function call handling
-- [`vendor/NorthernLights/Assets/Scripts/ncs/control.cs`](https://github.com/th3w1zard1/NorthernLights/blob/master/Assets/Scripts/ncs/control.cs) - Unity C# [NCS](NCS-File-Format) VM control and execution
-- [`vendor/KotOR.js/src/nwscript/NWScriptController.ts`](https://github.com/th3w1zard1/KotOR.js/blob/master/src/nwscript/NWScriptController.ts) - TypeScript NWScript [controller](MDL-MDX-File-Format) and execution
+- [`reone/src/libs/script/virtualmachine.cpp` L36+](https://github.com/modawan/reone/blob/master/src/libs/script/virtualmachine.cpp#L36) — Script VM (`VirtualMachine` implementation)
+- [`reone/include/reone/script/virtualmachine.h` L41+](https://github.com/modawan/reone/blob/master/include/reone/script/virtualmachine.h#L41) — `VirtualMachine` declaration
+- [`reone/src/libs/script/program.cpp` L28+](https://github.com/modawan/reone/blob/master/src/libs/script/program.cpp#L28) — `ScriptProgram` bytecode container (`add`, instruction helpers)
+- [`xoreos/src/aurora/nwscript/execution.cpp`](https://github.com/xoreos/xoreos/blob/master/src/aurora/nwscript/execution.cpp) - NWScript execution engine
+- [`xoreos/src/aurora/nwscript/variable.cpp`](https://github.com/xoreos/xoreos/blob/master/src/aurora/nwscript/variable.cpp) - Variable handling
+- [`xoreos/src/aurora/nwscript/function.cpp`](https://github.com/xoreos/xoreos/blob/master/src/aurora/nwscript/function.cpp) - Function call handling
+- [`NorthernLights/Assets/Scripts/ncs/control.cs`](https://github.com/lachjames/NorthernLights/blob/master/Assets/Scripts/ncs/control.cs) - Unity C# [NCS](NCS-File-Format) VM control and execution
+- [`KotOR.js/src/nwscript/NWScriptInstance.ts` L32+](https://github.com/KobaltBlu/KotOR.js/blob/master/src/nwscript/NWScriptInstance.ts#L32) — Per-script execution state (`run` / `runScript`, stack, instruction stepping)
 
 **Routine Implementations:**
 
-- [`vendor/reone/src/libs/script/routine/main/`](https://github.com/th3w1zard1/reone/tree/master/src/libs/script/routine/main) - Main routine implementations
-- [`vendor/reone/src/libs/script/routine/action/`](https://github.com/th3w1zard1/reone/tree/master/src/libs/script/routine/action) - Action routine implementations
-- [`vendor/reone/src/libs/script/routine/effect/`](https://github.com/th3w1zard1/reone/tree/master/src/libs/script/routine/effect) - Effect routine implementations
-- [`vendor/xoreos/src/engines/kotorbase/script/routines.cpp`](https://github.com/th3w1zard1/xoreos/blob/master/src/engines/kotorbase/script/routines.cpp) - KotOR-specific routine implementations
+- [`reone/src/libs/script/routine/main/`](https://github.com/modawan/reone/tree/master/src/libs/script/routine/main) - Main routine implementations
+- [`reone/src/libs/script/routine/action/`](https://github.com/modawan/reone/tree/master/src/libs/script/routine/action) - Action routine implementations
+- [`reone/src/libs/script/routine/effect/`](https://github.com/modawan/reone/tree/master/src/libs/script/routine/effect) - Effect routine implementations
+- [`xoreos/src/engines/kotorbase/script/routines.cpp`](https://github.com/xoreos/xoreos/blob/master/src/engines/kotorbase/script/routines.cpp) - KotOR-specific routine implementations
 
 **NWScript type System:**
 
-- [`vendor/xoreos/src/aurora/nwscript/types.h`](https://github.com/th3w1zard1/xoreos/blob/master/src/aurora/nwscript/types.h) - NWScript type definitions
-- [`vendor/xoreos/src/aurora/nwscript/types.cpp`](https://github.com/th3w1zard1/xoreos/blob/master/src/aurora/nwscript/types.cpp) - type system implementation
-- [`vendor/KotOR.js/src/enums/nwscript/NWScriptDataType.ts`](https://github.com/th3w1zard1/KotOR.js/blob/master/src/enums/nwscript/NWScriptDataType.ts) - TypeScript data type enumerations
-- [`vendor/KotOR.js/src/enums/nwscript/NWScriptTypes.ts`](https://github.com/th3w1zard1/KotOR.js/blob/master/src/enums/nwscript/NWScriptTypes.ts) - TypeScript type definitions
+- [`xoreos/src/aurora/nwscript/types.h`](https://github.com/xoreos/xoreos/blob/master/src/aurora/nwscript/types.h) - NWScript type definitions
+- [`xoreos/src/aurora/nwscript/types.cpp`](https://github.com/xoreos/xoreos/blob/master/src/aurora/nwscript/types.cpp) - type system implementation
+- [`KotOR.js/src/enums/nwscript/NWScriptDataType.ts`](https://github.com/KobaltBlu/KotOR.js/blob/master/src/enums/nwscript/NWScriptDataType.ts) - TypeScript data type enumerations
+- [`KotOR.js/src/enums/nwscript/NWScriptTypes.ts`](https://github.com/KobaltBlu/KotOR.js/blob/master/src/enums/nwscript/NWScriptTypes.ts) - TypeScript type definitions
 
 **NWScript Events:**
 
-- [`vendor/KotOR.js/src/nwscript/events/NWScriptEvent.ts`](https://github.com/th3w1zard1/KotOR.js/blob/master/src/nwscript/events/NWScriptEvent.ts) - Event handling
-- [`vendor/KotOR.js/src/nwscript/events/NWScriptEventFactory.ts`](https://github.com/th3w1zard1/KotOR.js/blob/master/src/nwscript/events/NWScriptEventFactory.ts) - Event factory
-- [`vendor/KotOR.js/src/enums/nwscript/NWScriptEventType.ts`](https://github.com/th3w1zard1/KotOR.js/blob/master/src/enums/nwscript/NWScriptEventType.ts) - Event type enumerations
+- [`KotOR.js/src/nwscript/events/NWScriptEvent.ts`](https://github.com/KobaltBlu/KotOR.js/blob/master/src/nwscript/events/NWScriptEvent.ts) - Event handling
+- [`KotOR.js/src/nwscript/events/NWScriptEventFactory.ts`](https://github.com/KobaltBlu/KotOR.js/blob/master/src/nwscript/events/NWScriptEventFactory.ts) - Event factory
+- [`KotOR.js/src/enums/nwscript/NWScriptEventType.ts`](https://github.com/KobaltBlu/KotOR.js/blob/master/src/enums/nwscript/NWScriptEventType.ts) - Event type enumerations
 
 **NWScript Bytecode:**
 
-- [`vendor/KotOR.js/src/nwscript/NWScriptOPCodes.ts`](https://github.com/th3w1zard1/KotOR.js/blob/master/src/nwscript/NWScriptOPCodes.ts) - Opcode definitions
-- [`vendor/KotOR.js/src/nwscript/NWScriptInstruction.ts`](https://github.com/th3w1zard1/KotOR.js/blob/master/src/nwscript/NWScriptInstruction.ts) - Instruction handling
-- [`vendor/KotOR.js/src/nwscript/NWScriptInstructionInfo.ts`](https://github.com/th3w1zard1/KotOR.js/blob/master/src/nwscript/NWScriptInstructionInfo.ts) - Instruction information
-- [`vendor/KotOR.js/src/enums/nwscript/NWScriptByteCode.ts`](https://github.com/th3w1zard1/KotOR.js/blob/master/src/enums/nwscript/NWScriptByteCode.ts) - Bytecode enumerations
+- [`KotOR.js/src/nwscript/NWScriptOPCodes.ts`](https://github.com/KobaltBlu/KotOR.js/blob/master/src/nwscript/NWScriptOPCodes.ts) - Opcode definitions
+- [`KotOR.js/src/nwscript/NWScriptInstruction.ts`](https://github.com/KobaltBlu/KotOR.js/blob/master/src/nwscript/NWScriptInstruction.ts) - Instruction handling
+- [`KotOR.js/src/nwscript/NWScriptInstructionInfo.ts`](https://github.com/KobaltBlu/KotOR.js/blob/master/src/nwscript/NWScriptInstructionInfo.ts) - Instruction information
+- [`KotOR.js/src/enums/nwscript/NWScriptByteCode.ts`](https://github.com/KobaltBlu/KotOR.js/blob/master/src/enums/nwscript/NWScriptByteCode.ts) - Bytecode enumerations
 
 **NWScript Stack:**
 
-- [`vendor/KotOR.js/src/nwscript/NWScriptStack.ts`](https://github.com/th3w1zard1/KotOR.js/blob/master/src/nwscript/NWScriptStack.ts) - Stack implementation
-- [`vendor/KotOR.js/src/nwscript/NWScriptStackVariable.ts`](https://github.com/th3w1zard1/KotOR.js/blob/master/src/nwscript/NWScriptStackVariable.ts) - Stack variable handling
+- [`KotOR.js/src/nwscript/NWScriptStack.ts`](https://github.com/KobaltBlu/KotOR.js/blob/master/src/nwscript/NWScriptStack.ts) - Stack implementation
+- [`KotOR.js/src/nwscript/NWScriptStackVariable.ts`](https://github.com/KobaltBlu/KotOR.js/blob/master/src/nwscript/NWScriptStackVariable.ts) - Stack variable handling
 
 **NWScript Interface Definitions:**
 
-- [`vendor/KotOR.js/src/interface/nwscript/INWScriptStoreState.ts`](https://github.com/th3w1zard1/KotOR.js/blob/master/src/interface/nwscript/INWScriptStoreState.ts) - Store state interface
-- [`vendor/KotOR.js/src/interface/nwscript/INWScriptDefAction.ts`](https://github.com/th3w1zard1/KotOR.js/blob/master/src/interface/nwscript/INWScriptDefAction.ts) - Action definition interface
+- [`KotOR.js/src/interface/nwscript/INWScriptStoreState.ts`](https://github.com/KobaltBlu/KotOR.js/blob/master/src/interface/nwscript/INWScriptStoreState.ts) - Store state interface
+- [`KotOR.js/src/interface/nwscript/INWScriptDefAction.ts`](https://github.com/KobaltBlu/KotOR.js/blob/master/src/interface/nwscript/INWScriptDefAction.ts) - Action definition interface
 
 **NWScript AST and Parsing:**
 
-- [`vendor/KotOR.js/src/nwscript/AST/nwscript.jison.ts`](https://github.com/th3w1zard1/KotOR.js/blob/master/src/nwscript/AST/nwscript.jison.ts) - Jison parser grammar
-- [`vendor/HoloLSP/server/src/nwscript-ast.ts`](https://github.com/th3w1zard1/HoloLSP/blob/master/server/src/nwscript-ast.ts) - Abstract syntax tree definitions
+- [`KotOR.js/src/nwscript/compiler/NWScriptCompiler.ts` L95+](https://github.com/KobaltBlu/KotOR.js/blob/master/src/nwscript/compiler/NWScriptCompiler.ts#L95) — NSS → NCS compiler pipeline (`NWScriptCompiler`)
+- [`KotOR.js/src/nwscript/compiler/ASTTypes.ts` L4+](https://github.com/KobaltBlu/KotOR.js/blob/master/src/nwscript/compiler/ASTTypes.ts#L4) — Compiler AST node types (`ProgramNode`, `FunctionNode`, …)
+- [`HoloLSP/server/src/nwscript-ast.ts` L7+](https://github.com/th3w1zard1/HoloLSP/blob/main/server/src/nwscript-ast.ts#L7) — LSP-side AST definitions
 
 **Game-Specific NWScript Extensions:**
 
-- [`vendor/xoreos/src/engines/kotorbase/script/routines.cpp`](https://github.com/th3w1zard1/xoreos/blob/master/src/engines/kotorbase/script/routines.cpp) - KotOR-specific routine implementations
-- [`vendor/xoreos/src/engines/nwn/script/functions_action.cpp`](https://github.com/th3w1zard1/xoreos/blob/master/src/engines/nwn/script/functions_action.cpp) - NWN action function implementations
-- [`vendor/NorthernLights/Assets/Scripts/ncs/constants.cs`](https://github.com/th3w1zard1/NorthernLights/blob/master/Assets/Scripts/ncs/constants.cs) - NWScript constant definitions
-- [`vendor/reone/src/libs/game/script/routines.cpp`](https://github.com/th3w1zard1/reone/blob/master/src/libs/game/script/routines.cpp) - Game-specific routine implementations
-- [`vendor/reone/include/reone/game/script/routines.h`](https://github.com/th3w1zard1/reone/blob/master/include/reone/game/script/routines.h) - Game routine header
-- [`vendor/xoreos-tools/src/nwscript/subroutine.cpp`](https://github.com/th3w1zard1/xoreos-tools/blob/master/src/nwscript/subroutine.cpp) - Subroutine handling
-- [`vendor/xoreos-tools/src/nwscript/subroutine.h`](https://github.com/th3w1zard1/xoreos-tools/blob/master/src/nwscript/subroutine.h) - Subroutine header
-- [`vendor/xoreos/src/engines/kotorbase/types.h`](https://github.com/th3w1zard1/xoreos/blob/master/src/engines/kotorbase/types.h) - KotOR type definitions including base item types
-- [`vendor/KotOR.js/src/module/Module.ts`](https://github.com/th3w1zard1/KotOR.js/blob/master/src/module/Module.ts) - Module loading and management
-- [`vendor/KotOR.js/src/module/ModuleArea.ts`](https://github.com/th3w1zard1/KotOR.js/blob/master/src/module/ModuleArea.ts) - Area management and transitions
-- [`vendor/xoreos/src/engines/nwn/module.cpp`](https://github.com/th3w1zard1/xoreos/blob/master/src/engines/nwn/module.cpp) - NWN module implementation
-- [`vendor/xoreos/src/engines/nwn2/module.cpp`](https://github.com/th3w1zard1/xoreos/blob/master/src/engines/nwn2/module.cpp) - NWN2 module implementation
-- [`vendor/xoreos/src/engines/nwn2/module.h`](https://github.com/th3w1zard1/xoreos/blob/master/src/engines/nwn2/module.h) - NWN2 module header
-- [`vendor/xoreos/src/engines/dragonage2/script/functions_module.cpp`](https://github.com/th3w1zard1/xoreos/blob/master/src/engines/dragonage2/script/functions_module.cpp) - Dragon Age 2 module functions
-- [`vendor/xoreos/src/engines/nwn/script/functions_effect.cpp`](https://github.com/th3w1zard1/xoreos/blob/master/src/engines/nwn/script/functions_effect.cpp) - NWN effect function implementations
-- [`vendor/xoreos/src/engines/nwn/script/functions_object.cpp`](https://github.com/th3w1zard1/xoreos/blob/master/src/engines/nwn/script/functions_object.cpp) - NWN object function implementations
-- [`vendor/xoreos/src/engines/nwn2/script/functions.cpp`](https://github.com/th3w1zard1/xoreos/blob/master/src/engines/nwn2/script/functions.cpp) - NWN2 function implementations
-- [`vendor/reone/src/libs/script/routine/action/`](https://github.com/th3w1zard1/reone/tree/master/src/libs/script/routine/action) - Action routine implementations
-- [`vendor/reone/src/libs/script/routine/effect/`](https://github.com/th3w1zard1/reone/tree/master/src/libs/script/routine/effect) - Effect routine implementations
-- [`vendor/reone/src/libs/script/routine/object/`](https://github.com/th3w1zard1/reone/tree/master/src/libs/script/routine/object) - Object routine implementations
-- [`vendor/reone/src/libs/script/routine/party/`](https://github.com/th3w1zard1/reone/tree/master/src/libs/script/routine/party) - Party routine implementations
-- [`vendor/reone/src/libs/script/routine/combat/`](https://github.com/th3w1zard1/reone/tree/master/src/libs/script/routine/combat) - Combat routine implementations
-- [`vendor/NorthernLights/Assets/Scripts/ncs/nwscript_actions.cs`](https://github.com/th3w1zard1/NorthernLights/blob/master/Assets/Scripts/ncs/nwscript_actions.cs) - Complete actions table mapping routine numbers to function names
-- [`vendor/NorthernLights/Assets/Scripts/Systems/AuroraActions/AuroraAction.cs`](https://github.com/th3w1zard1/NorthernLights/blob/master/Assets/Scripts/Systems/AuroraActions/AuroraAction.cs) - Action system implementation
+- [`xoreos/src/engines/kotorbase/script/routines.cpp`](https://github.com/xoreos/xoreos/blob/master/src/engines/kotorbase/script/routines.cpp) - KotOR-specific routine implementations
+- [`xoreos/src/engines/nwn/script/functions_action.cpp`](https://github.com/xoreos/xoreos/blob/master/src/engines/nwn/script/functions_action.cpp) - NWN action function implementations
+- [`NorthernLights/Assets/Scripts/ncs/constants.cs`](https://github.com/lachjames/NorthernLights/blob/master/Assets/Scripts/ncs/constants.cs) - NWScript constant definitions
+- [`reone/src/libs/game/script/routines.cpp`](https://github.com/modawan/reone/blob/master/src/libs/game/script/routines.cpp) - Game-specific routine implementations
+- [`reone/include/reone/game/script/routines.h`](https://github.com/modawan/reone/blob/master/include/reone/game/script/routines.h) - Game routine header
+- [`xoreos-tools/src/nwscript/subroutine.cpp`](https://github.com/xoreos/xoreos-tools/blob/master/src/nwscript/subroutine.cpp) - Subroutine handling
+- [`xoreos-tools/src/nwscript/subroutine.h`](https://github.com/xoreos/xoreos-tools/blob/master/src/nwscript/subroutine.h) - Subroutine header
+- [`xoreos/src/engines/kotorbase/types.h`](https://github.com/xoreos/xoreos/blob/master/src/engines/kotorbase/types.h) - KotOR type definitions including base item types
+- [`KotOR.js/src/module/Module.ts`](https://github.com/KobaltBlu/KotOR.js/blob/master/src/module/Module.ts) - Module loading and management
+- [`KotOR.js/src/module/ModuleArea.ts`](https://github.com/KobaltBlu/KotOR.js/blob/master/src/module/ModuleArea.ts) - Area management and transitions
+- [`xoreos/src/engines/nwn/module.cpp`](https://github.com/xoreos/xoreos/blob/master/src/engines/nwn/module.cpp) - NWN module implementation
+- [`xoreos/src/engines/nwn2/module.cpp`](https://github.com/xoreos/xoreos/blob/master/src/engines/nwn2/module.cpp) - NWN2 module implementation
+- [`xoreos/src/engines/nwn2/module.h`](https://github.com/xoreos/xoreos/blob/master/src/engines/nwn2/module.h) - NWN2 module header
+- [`xoreos/src/engines/dragonage2/script/functions_module.cpp`](https://github.com/xoreos/xoreos/blob/master/src/engines/dragonage2/script/functions_module.cpp) - Dragon Age 2 module functions
+- [`xoreos/src/engines/nwn/script/functions_effect.cpp`](https://github.com/xoreos/xoreos/blob/master/src/engines/nwn/script/functions_effect.cpp) - NWN effect function implementations
+- [`xoreos/src/engines/nwn/script/functions_object.cpp`](https://github.com/xoreos/xoreos/blob/master/src/engines/nwn/script/functions_object.cpp) - NWN object function implementations
+- [`xoreos/src/engines/nwn2/script/functions.cpp`](https://github.com/xoreos/xoreos/blob/master/src/engines/nwn2/script/functions.cpp) - NWN2 function implementations
+- [`reone/src/libs/script/routine/action/`](https://github.com/modawan/reone/tree/master/src/libs/script/routine/action) - Action routine implementations
+- [`reone/src/libs/script/routine/effect/`](https://github.com/modawan/reone/tree/master/src/libs/script/routine/effect) - Effect routine implementations
+- [`reone/src/libs/script/routine/object/`](https://github.com/modawan/reone/tree/master/src/libs/script/routine/object) - Object routine implementations
+- [`reone/src/libs/script/routine/party/`](https://github.com/modawan/reone/tree/master/src/libs/script/routine/party) - Party routine implementations
+- [`reone/src/libs/script/routine/combat/`](https://github.com/modawan/reone/tree/master/src/libs/script/routine/combat) - Combat routine implementations
+- [`NorthernLights/Assets/Scripts/ncs/nwscript_actions.cs`](https://github.com/lachjames/NorthernLights/blob/master/Assets/Scripts/ncs/nwscript_actions.cs) - Complete actions table mapping routine numbers to function names
+- [`NorthernLights/Assets/Scripts/Systems/AuroraActions/AuroraAction.cs`](https://github.com/lachjames/NorthernLights/blob/master/Assets/Scripts/Systems/AuroraActions/AuroraAction.cs) - Action system implementation
 
 ---
 

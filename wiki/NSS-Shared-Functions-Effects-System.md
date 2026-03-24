@@ -6,6 +6,18 @@ Part of the [NSS File Format Documentation](NSS-File-Format).
 
 This document provides detailed documentation for the NWScript effects system. Effects are modifiers that can be applied to objects (typically creatures) to change their properties, deal damage, heal, apply status conditions, and more.
 
+## Implementation cross-reference
+
+Effects are **runtime** modifiers: scripts build `effect` values and the engine applies them (e.g. via `ApplyEffectToObject`) to object state.
+
+- **PyKotor:** NSS → NCS — [`resource/formats/ncs/compiler/`](https://github.com/OldRepublicDevs/PyKotor/tree/master/Libraries/PyKotor/src/pykotor/resource/formats/ncs/compiler) (grammar/AST in [`parser.py` L1+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/ncs/compiler/parser.py#L1)); HoloPatcher `[CompileList]` / `[NCSList]` handling — [`pykotor/tslpatcher/mods/ncs.py`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/tslpatcher/mods/ncs.py#L1).
+
+- **reone:** applying effects to objects — [`object.cpp` L257–L271](https://github.com/modawan/reone/blob/master/src/libs/game/object.cpp#L257-L271); routine bindings live in [`main.cpp`](https://github.com/modawan/reone/blob/master/src/libs/game/script/routine/impl/main.cpp) (search for effect-related routine names in-tree).
+
+- **KotOR.js:** routine definitions — [`NWScriptDefK1.ts`](https://github.com/KobaltBlu/KotOR.js/blob/master/src/nwscript/NWScriptDefK1.ts) (e.g. [`ApplyEffectToObject` L2735–L2759](https://github.com/KobaltBlu/KotOR.js/blob/master/src/nwscript/NWScriptDefK1.ts#L2735-L2759)).
+
+- **Kotor.NET:** GFF and resource I/O used alongside scripted content — [`GFF.cs` L18+](https://github.com/NickHugi/Kotor.NET/blob/master/Kotor.NET/Formats/KotorGFF/GFF.cs#L18).
+
 ---
 
 ## Effects System Fundamentals
@@ -40,7 +52,7 @@ Effects are temporary or permanent modifications to objects. They are **created*
 
 #### Function Signature
 
-```nss
+```c
 void ApplyEffectToObject(int nDurationType, effect eEffect, object oTarget, float fDuration = 0.0);
 ```
 
@@ -81,19 +93,19 @@ Applies an effect to a target object with the specified duration type. This is t
 
 #### Usage Examples
 
-```nss
+```c
 // Instant damage effect
 effect eDamage = EffectDamage(25, DAMAGE_TYPE_FIRE);
 ApplyEffectToObject(DURATION_TYPE_INSTANT, eDamage, oTarget, 0.0);
 ```
 
-```nss
+```c
 // Temporary speed increase (30 seconds)
 effect eSpeed = EffectMovementSpeedIncrease(50); // +50% speed
 ApplyEffectToObject(DURATION_TYPE_TEMPORARY, eSpeed, oTarget, 30.0);
 ```
 
-```nss
+```c
 // Permanent ability increase
 effect eStr = EffectAbilityIncrease(ABILITY_STRENGTH, 2);
 ApplyEffectToObject(DURATION_TYPE_PERMANENT, eStr, oTarget, 0.0);
@@ -101,8 +113,8 @@ ApplyEffectToObject(DURATION_TYPE_PERMANENT, eStr, oTarget, 0.0);
 
 **Pattern: Conditional Duration**
 
-```nss
-// From vendor/Vanilla_KOTOR_Script_Source/TSL/Vanilla/Data/Scripts/a_speed_set.nss
+```c
+// From Vanilla_KOTOR_Script_Source/TSL/Vanilla/Data/Scripts/a_speed_set.nss
 effect eEffect;
 if(nChange < 0)
     eEffect = EffectMovementSpeedDecrease(-nChange);
@@ -117,8 +129,8 @@ else
 
 #### Implementation Reference
 
-- [`vendor/KotOR.js/src/nwscript/NWScriptDefK1.ts:2735-2759`](https://github.com/th3w1zard1/KotOR.js/blob/master/src/nwscript/NWScriptDefK1.ts#L2735-L2759)
-- [`vendor/reone/src/libs/game/object.cpp:257-271`](https://github.com/th3w1zard1/reone/blob/master/src/libs/game/object.cpp#L257-L271)
+- [`KotOR.js/src/nwscript/NWScriptDefK1.ts:2735-2759`](https://github.com/KobaltBlu/KotOR.js/blob/master/src/nwscript/NWScriptDefK1.ts#L2735-L2759)
+- [`reone/src/libs/game/object.cpp:257-271`](https://github.com/modawan/reone/blob/master/src/libs/game/object.cpp#L257-L271)
 
 ---
 
@@ -130,7 +142,7 @@ else
 
 #### Function Signature
 
-```nss
+```c
 effect EffectDamage(int nDamageAmount, int nDamageType = DAMAGE_TYPE_UNIVERSAL, int nDamagePower = DAMAGE_POWER_NORMAL);
 ```
 
@@ -168,13 +180,13 @@ Creates a damage effect that deals damage to a target when applied. The damage i
 
 #### Usage Examples
 
-```nss
+```c
 // Basic fire damage
 effect eDamage = EffectDamage(25, DAMAGE_TYPE_FIRE);
 ApplyEffectToObject(DURATION_TYPE_INSTANT, eDamage, oTarget, 0.0);
 ```
 
-```nss
+```c
 // Physical slashing damage with save
 if (!ReflexSave(oTarget, nDC, SAVE_TYPE_REFLEX, oCaster)) {
     ApplyEffectToObject(DURATION_TYPE_INSTANT, 
@@ -187,8 +199,8 @@ if (!ReflexSave(oTarget, nDC, SAVE_TYPE_REFLEX, oCaster)) {
 
 **Pattern: Area Damage with Save**
 
-```nss
-// From vendor/Vanilla_KOTOR_Script_Source/TSL/Vanilla/Modules/411DXN_Dxun_Sith_Tomb/k_def_user_heal.nss
+```c
+// From Vanilla_KOTOR_Script_Source/TSL/Vanilla/Modules/411DXN_Dxun_Sith_Tomb/k_def_user_heal.nss
 object oShapeObject = GetFirstObjectInShape(4, 4.0, location1, 0, 65, [0.0,0.0,0.0]);
 while (GetIsObjectValid(oShapeObject) && (int4 > 0)) {
     if (oShapeObject != OBJECT_SELF) {
@@ -209,8 +221,8 @@ while (GetIsObjectValid(oShapeObject) && (int4 > 0)) {
 
 #### Implementation Reference
 
-- [`vendor/reone/src/libs/game/script/routine/impl/effect.cpp:149-162`](https://github.com/th3w1zard1/reone/blob/master/src/libs/game/script/routine/impl/effect.cpp#L149-L162)
-- [`vendor/KotOR.js/src/effects/EffectDamage.ts`](https://github.com/th3w1zard1/KotOR.js/blob/master/src/effects/EffectDamage.ts)
+- [`reone/src/libs/game/script/routine/impl/effect.cpp:149-162`](https://github.com/modawan/reone/blob/master/src/libs/game/script/routine/impl/effect.cpp#L149-L162)
+- [`KotOR.js/src/effects/EffectDamage.ts`](https://github.com/KobaltBlu/KotOR.js/blob/master/src/effects/EffectDamage.ts)
 
 ---
 
@@ -220,7 +232,7 @@ while (GetIsObjectValid(oShapeObject) && (int4 > 0)) {
 
 #### Function Signature
 
-```nss
+```c
 effect EffectHeal(int nDamageToHeal);
 ```
 
@@ -236,13 +248,13 @@ Creates a healing effect that restores hit points to a target. Must be applied a
 
 #### Usage Examples
 
-```nss
+```c
 // Simple healing
 effect eHeal = EffectHeal(50);
 ApplyEffectToObject(DURATION_TYPE_INSTANT, eHeal, oTarget, 0.0);
 ```
 
-```nss
+```c
 // Full healing (heal to max HP)
 int nHealAmount = GetMaxHitPoints(OBJECT_SELF) - GetCurrentHitPoints(OBJECT_SELF);
 if (nHealAmount > 0) {
@@ -253,8 +265,8 @@ if (nHealAmount > 0) {
 
 **Pattern: Full Healing**
 
-```nss
-// From vendor/Vanilla_KOTOR_Script_Source/TSL/Vanilla/Modules/403DXN_Dxun_Mandalorian_Ruins/k_circle_damage.nss
+```c
+// From Vanilla_KOTOR_Script_Source/TSL/Vanilla/Modules/403DXN_Dxun_Mandalorian_Ruins/k_circle_damage.nss
 DelayCommand(1.0, ApplyEffectToObject(DURATION_TYPE_INSTANT, 
     EffectHeal((GetMaxHitPoints(OBJECT_SELF) - GetCurrentHitPoints(OBJECT_SELF))), 
     OBJECT_SELF, 0.0));
@@ -262,7 +274,7 @@ DelayCommand(1.0, ApplyEffectToObject(DURATION_TYPE_INSTANT,
 
 #### Implementation Reference
 
-- [`vendor/reone/src/libs/game/script/routine/impl/effect.cpp:138-147`](https://github.com/th3w1zard1/reone/blob/master/src/libs/game/script/routine/impl/effect.cpp#L138-L147)
+- [`reone/src/libs/game/script/routine/impl/effect.cpp:138-147`](https://github.com/modawan/reone/blob/master/src/libs/game/script/routine/impl/effect.cpp#L138-L147)
 
 ---
 
@@ -274,7 +286,7 @@ DelayCommand(1.0, ApplyEffectToObject(DURATION_TYPE_INSTANT,
 
 #### Function Signature
 
-```nss
+```c
 effect EffectKnockdown();
 ```
 
@@ -284,12 +296,12 @@ Creates a knockdown effect that knocks the target prone. Typically used with `DU
 
 #### Usage Examples
 
-```nss
+```c
 // Temporary knockdown (5 seconds)
 ApplyEffectToObject(DURATION_TYPE_TEMPORARY, EffectKnockdown(), oTarget, 5.0);
 ```
 
-```nss
+```c
 // Knockdown after failed save
 if (!FortitudeSave(oTarget, nDC, SAVE_TYPE_FORTITUDE, oCaster)) {
     ApplyEffectToObject(DURATION_TYPE_TEMPORARY, EffectKnockdown(), oTarget, 3.0);
@@ -304,7 +316,7 @@ if (!FortitudeSave(oTarget, nDC, SAVE_TYPE_FORTITUDE, oCaster)) {
 
 #### Function Signature
 
-```nss
+```c
 effect EffectParalyze();
 ```
 
@@ -314,12 +326,12 @@ Creates a paralyze effect that immobilizes the target. Target cannot move or tak
 
 #### Usage Examples
 
-```nss
+```c
 // Temporary paralyze (10 seconds)
 ApplyEffectToObject(DURATION_TYPE_TEMPORARY, EffectParalyze(), oTarget, 10.0);
 ```
 
-```nss
+```c
 // Permanent paralyze (until removed)
 ApplyEffectToObject(DURATION_TYPE_PERMANENT, EffectParalyze(), oTarget, 0.0);
 ```
@@ -332,7 +344,7 @@ ApplyEffectToObject(DURATION_TYPE_PERMANENT, EffectParalyze(), oTarget, 0.0);
 
 #### Function Signature
 
-```nss
+```c
 effect EffectDeath(int nSpectacularDeath = 0, int nDisplayFeedback = 1);
 ```
 
@@ -347,12 +359,12 @@ Creates a death effect that kills the target. Must be applied as `DURATION_TYPE_
 
 #### Usage Examples
 
-```nss
+```c
 // Standard death
 ApplyEffectToObject(DURATION_TYPE_INSTANT, EffectDeath(0, 1), oTarget, 0.0);
 ```
 
-```nss
+```c
 // Spectacular death
 ApplyEffectToObject(DURATION_TYPE_INSTANT, EffectDeath(1, 1), oTarget, 0.0);
 ```
@@ -365,7 +377,7 @@ ApplyEffectToObject(DURATION_TYPE_INSTANT, EffectDeath(1, 1), oTarget, 0.0);
 
 #### Function Signature
 
-```nss
+```c
 effect EffectResurrection(int nHitPointPercent = 100);
 ```
 
@@ -379,12 +391,12 @@ Creates a resurrection effect that revives a dead creature. Must be applied as `
 
 #### Usage Examples
 
-```nss
+```c
 // Full resurrection (100% HP)
 ApplyEffectToObject(DURATION_TYPE_INSTANT, EffectResurrection(100), oTarget, 0.0);
 ```
 
-```nss
+```c
 // Resurrection at 50% HP
 ApplyEffectToObject(DURATION_TYPE_INSTANT, EffectResurrection(50), oTarget, 0.0);
 ```
@@ -399,7 +411,7 @@ ApplyEffectToObject(DURATION_TYPE_INSTANT, EffectResurrection(50), oTarget, 0.0)
 
 #### Function Signature
 
-```nss
+```c
 effect EffectAbilityIncrease(int nAbilityToIncrease, int nModifyBy);
 ```
 
@@ -420,13 +432,13 @@ Creates an effect that increases an ability score. Commonly used with `DURATION_
 
 #### Usage Examples
 
-```nss
+```c
 // Permanent +2 Strength (item effect)
 ApplyEffectToObject(DURATION_TYPE_PERMANENT, 
     EffectAbilityIncrease(ABILITY_STRENGTH, 2), oTarget, 0.0);
 ```
 
-```nss
+```c
 // Temporary +4 Dexterity (spell/buff, 60 seconds)
 ApplyEffectToObject(DURATION_TYPE_TEMPORARY, 
     EffectAbilityIncrease(ABILITY_DEXTERITY, 4), oTarget, 60.0);
@@ -440,7 +452,7 @@ ApplyEffectToObject(DURATION_TYPE_TEMPORARY,
 
 #### Function Signature
 
-```nss
+```c
 effect EffectAbilityDecrease(int nAbility, int nModifyBy);
 ```
 
@@ -455,7 +467,7 @@ Creates an effect that decreases an ability score. Typically used with `DURATION
 
 #### Usage Examples
 
-```nss
+```c
 // Temporary -2 Strength debuff (30 seconds)
 ApplyEffectToObject(DURATION_TYPE_TEMPORARY, 
     EffectAbilityDecrease(ABILITY_STRENGTH, 2), oTarget, 30.0);
@@ -471,7 +483,7 @@ ApplyEffectToObject(DURATION_TYPE_TEMPORARY,
 
 #### Function Signature
 
-```nss
+```c
 effect EffectMovementSpeedIncrease(int nNewSpeedPercent);
 ```
 
@@ -487,13 +499,13 @@ Creates an effect that increases movement speed. `nNewSpeedPercent` is the new s
 
 #### Usage Examples
 
-```nss
+```c
 // Temporary +50% speed (30 seconds)
 ApplyEffectToObject(DURATION_TYPE_TEMPORARY, 
     EffectMovementSpeedIncrease(150), oTarget, 30.0);
 ```
 
-```nss
+```c
 // Permanent speed boost (item/feat)
 ApplyEffectToObject(DURATION_TYPE_PERMANENT, 
     EffectMovementSpeedIncrease(125), oTarget, 0.0);
@@ -507,7 +519,7 @@ ApplyEffectToObject(DURATION_TYPE_PERMANENT,
 
 #### Function Signature
 
-```nss
+```c
 effect EffectMovementSpeedDecrease(int nPercentChange);
 ```
 
@@ -521,7 +533,7 @@ Creates an effect that decreases movement speed. `nPercentChange` is the amount 
 
 #### Usage Examples
 
-```nss
+```c
 // Temporary -50% speed (10 seconds)
 ApplyEffectToObject(DURATION_TYPE_TEMPORARY, 
     EffectMovementSpeedDecrease(50), oTarget, 10.0);
@@ -537,7 +549,7 @@ ApplyEffectToObject(DURATION_TYPE_TEMPORARY,
 
 #### Function Signature
 
-```nss
+```c
 void ClearAllEffects(object oTarget = OBJECT_SELF);
 ```
 
@@ -547,7 +559,7 @@ Removes all effects from the target object. Useful for resetting state or removi
 
 #### Usage Examples
 
-```nss
+```c
 // Remove all effects from self
 ClearAllEffects();
 
@@ -563,7 +575,7 @@ ClearAllEffects(oTarget);
 
 #### Function Signature
 
-```nss
+```c
 void RemoveEffect(object oTarget, effect eEffect);
 ```
 
@@ -573,7 +585,7 @@ Removes a specific effect from the target. Requires the effect to have been prev
 
 #### Usage Examples
 
-```nss
+```c
 // Store effect and remove it later
 effect eBuff = EffectAbilityIncrease(ABILITY_STRENGTH, 2);
 ApplyEffectToObject(DURATION_TYPE_PERMANENT, eBuff, oTarget, 0.0);
@@ -587,7 +599,7 @@ RemoveEffect(oTarget, eBuff);
 
 ### Pattern: Damage with Save
 
-```nss
+```c
 int nDC = 15; // Difficulty class
 int nDamage = 50;
 int nHalfDamage = 25;
@@ -603,7 +615,7 @@ if (!ReflexSave(oTarget, nDC, SAVE_TYPE_REFLEX, oCaster)) {
 
 ### Pattern: Temporary Buff/Debuff
 
-```nss
+```c
 // Apply temporary effect
 effect eBuff = EffectAbilityIncrease(ABILITY_STRENGTH, 4);
 ApplyEffectToObject(DURATION_TYPE_TEMPORARY, eBuff, oTarget, 60.0);
@@ -611,7 +623,7 @@ ApplyEffectToObject(DURATION_TYPE_TEMPORARY, eBuff, oTarget, 60.0);
 
 ### Pattern: Permanent Item Effect
 
-```nss
+```c
 // Item applies permanent stat boost
 effect eStat = EffectAbilityIncrease(ABILITY_CONSTITUTION, 2);
 ApplyEffectToObject(DURATION_TYPE_PERMANENT, eStat, oTarget, 0.0);
@@ -619,7 +631,7 @@ ApplyEffectToObject(DURATION_TYPE_PERMANENT, eStat, oTarget, 0.0);
 
 ### Pattern: Healing to Full HP
 
-```nss
+```c
 int nHealAmount = GetMaxHitPoints(oTarget) - GetCurrentHitPoints(oTarget);
 if (nHealAmount > 0) {
     ApplyEffectToObject(DURATION_TYPE_INSTANT, 

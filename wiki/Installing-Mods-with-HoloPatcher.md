@@ -11,6 +11,10 @@ HoloPatcher aims to offer a user experience identical to TSLPatcher. Follow thes
 **Choose Installation Option:** If the mod provides multiple installation options (indicated by a namespaces.ini file), select your preferred option from the first dropdown menu.
 After configuring, click 'install' to initiate the patching process.
 
+## KotORModSync (optional)
+
+**KotORModSync** ([`th3w1zard1/KotORModSync`](https://github.com/th3w1zard1/KotORModSync)) helps manage **many mods** or **multiple install targets** (profiles, sync between folders, team handoffs). It is **complementary** to HoloPatcher: you still need a valid TSLPatcher/HoloPatcher INI workflow for merges inside `tslpatchdata`. If you only install a handful of mods, following each mod’s readme + HoloPatcher is enough; if you maintain parallel installs or large lists, ModSync can reduce manual bookkeeping. See [HoloPatcher README for Mod Developers](HoloPatcher-README-for-mod-developers) (first-mod walkthrough section) for author-side packaging context.
+
 ## Reverting Mod Installations
 
 To undo the modifications made by a recent mod installation:

@@ -16,7 +16,7 @@ This document provides detailed documentation for NWScript object query and mani
 
 #### Function Signature
 
-```nss
+```c
 int GetIsObjectValid(object oObject);
 ```
 
@@ -35,7 +35,7 @@ Checks if an object is valid (exists and is accessible). **Always use this funct
 
 #### Usage Examples
 
-```nss
+```c
 // Validate object before use
 object oNPC = GetObjectByTag("merchant");
 if (GetIsObjectValid(oNPC)) {
@@ -43,7 +43,7 @@ if (GetIsObjectValid(oNPC)) {
 }
 ```
 
-```nss
+```c
 // Check if object exists before operations
 object oTarget = GetNearestCreature(CREATURE_TYPE_REPUTATION, REPUTATION_TYPE_ENEMY);
 if (GetIsObjectValid(oTarget)) {
@@ -55,7 +55,7 @@ if (GetIsObjectValid(oTarget)) {
 
 **Pattern: Always Validate Objects**
 
-```nss
+```c
 // Standard pattern for object queries
 object oResult = GetObjectByTag("my_object");
 if (GetIsObjectValid(oResult)) {
@@ -82,7 +82,7 @@ if (GetIsObjectValid(oResult)) {
 
 #### Function Signature
 
-```nss
+```c
 object GetObjectByTag(string sTag, int nNth = 0);
 ```
 
@@ -102,7 +102,7 @@ Finds an object by its tag. Tags are unique identifiers assigned to objects in t
 
 #### Usage Examples
 
-```nss
+```c
 // Get first object with tag
 object oNPC = GetObjectByTag("merchant");
 if (GetIsObjectValid(oNPC)) {
@@ -110,15 +110,15 @@ if (GetIsObjectValid(oNPC)) {
 }
 ```
 
-```nss
+```c
 // Get specific instance (second object with tag)
 object oWaypoint = GetObjectByTag("wp_patrol", 1);
 ```
 
 **Pattern: Find Object and Validate**
 
-```nss
-// From vendor/Vanilla_KOTOR_Script_Source/TSL/Vanilla/Modules/904MAL_Malachor_V_Trayus_Core/k_def_death01_ls.nss
+```c
+// From Vanilla_KOTOR_Script_Source/TSL/Vanilla/Modules/904MAL_Malachor_V_Trayus_Core/k_def_death01_ls.nss
 object oKreia = GetObjectByTag("kreia", 0);
 if (GetIsObjectValid(oKreia)) {
     AssignCommand(oKreia, ClearAllActions());
@@ -143,7 +143,7 @@ if (GetIsObjectValid(oKreia)) {
 
 #### Function Signature
 
-```nss
+```c
 object GetNearestCreature(
     int nFirstCriteriaType,
     int nFirstCriteriaValue,
@@ -184,7 +184,7 @@ Finds the nearest creature matching specified criteria. This is the primary func
 
 #### Usage Examples
 
-```nss
+```c
 // Find nearest enemy
 object oEnemy = GetNearestCreature(CREATURE_TYPE_REPUTATION, REPUTATION_TYPE_ENEMY);
 if (GetIsObjectValid(oEnemy)) {
@@ -192,12 +192,12 @@ if (GetIsObjectValid(oEnemy)) {
 }
 ```
 
-```nss
+```c
 // Find nearest living creature
 object oAlive = GetNearestCreature(CREATURE_TYPE_IS_ALIVE, TRUE);
 ```
 
-```nss
+```c
 // Find nearest enemy to specific target
 object oPC = GetFirstPC();
 object oEnemy = GetNearestCreature(CREATURE_TYPE_REPUTATION, REPUTATION_TYPE_ENEMY, oPC);
@@ -205,7 +205,7 @@ object oEnemy = GetNearestCreature(CREATURE_TYPE_REPUTATION, REPUTATION_TYPE_ENE
 
 **Pattern: Find Enemy for Combat**
 
-```nss
+```c
 // Standard combat AI pattern
 object oEnemy = GetNearestCreature(CREATURE_TYPE_REPUTATION, REPUTATION_TYPE_ENEMY);
 if (GetIsObjectValid(oEnemy) && !GetIsInCombat()) {
@@ -216,7 +216,7 @@ if (GetIsObjectValid(oEnemy) && !GetIsInCombat()) {
 
 **Pattern: Multiple Criteria**
 
-```nss
+```c
 // Find nearest living enemy
 object oTarget = GetNearestCreature(
     CREATURE_TYPE_REPUTATION, REPUTATION_TYPE_ENEMY,
@@ -229,31 +229,31 @@ object oTarget = GetNearestCreature(
 
 **Find Nearest Enemy:**
 
-```nss
+```c
 GetNearestCreature(CREATURE_TYPE_REPUTATION, REPUTATION_TYPE_ENEMY)
 ```
 
 **Find Nearest Ally:**
 
-```nss
+```c
 GetNearestCreature(CREATURE_TYPE_REPUTATION, REPUTATION_TYPE_FRIEND)
 ```
 
 **Find Nearest Living Creature:**
 
-```nss
+```c
 GetNearestCreature(CREATURE_TYPE_IS_ALIVE, TRUE)
 ```
 
 **Find Nearest Dead Creature:**
 
-```nss
+```c
 GetNearestCreature(CREATURE_TYPE_IS_DEAD, TRUE)
 ```
 
 #### Implementation Reference
 
-- [`vendor/xoreos/src/engines/kotorbase/script/functions_object.cpp:220-234`](https://github.com/th3w1zard1/xoreos/blob/master/src/engines/kotorbase/script/functions_object.cpp#L220-L234)
+- [`xoreos/src/engines/kotorbase/script/functions_object.cpp:220-234`](https://github.com/xoreos/xoreos/blob/master/src/engines/kotorbase/script/functions_object.cpp#L220-L234)
 
 ---
 
@@ -265,7 +265,7 @@ GetNearestCreature(CREATURE_TYPE_IS_DEAD, TRUE)
 
 #### Function Signature
 
-```nss
+```c
 float GetDistanceBetween(object oObjectA, object oObjectB);
 ```
 
@@ -285,7 +285,7 @@ Gets the 3D distance (in meters) between two objects. Uses full 3D distance calc
 
 #### Usage Examples
 
-```nss
+```c
 // Check distance to target
 object oTarget = GetNearestCreature(CREATURE_TYPE_REPUTATION, REPUTATION_TYPE_ENEMY);
 if (GetIsObjectValid(oTarget)) {
@@ -297,7 +297,7 @@ if (GetIsObjectValid(oTarget)) {
 }
 ```
 
-```nss
+```c
 // Check if within range
 object oNPC = GetObjectByTag("merchant");
 if (GetIsObjectValid(oNPC)) {
@@ -317,7 +317,7 @@ if (GetIsObjectValid(oNPC)) {
 
 #### Function Signature
 
-```nss
+```c
 float GetDistanceBetween2D(object oObjectA, object oObjectB);
 ```
 
@@ -337,7 +337,7 @@ Gets the 2D distance (in meters) between two objects, ignoring height (Z-axis). 
 
 #### Usage Examples
 
-```nss
+```c
 // Check horizontal distance (ignoring height differences)
 float fDist2D = GetDistanceBetween2D(OBJECT_SELF, oTarget);
 if (fDist2D <= 5.0) {
@@ -360,7 +360,7 @@ if (fDist2D <= 5.0) {
 
 #### Function Signature
 
-```nss
+```c
 location GetLocation(object oObject);
 ```
 
@@ -379,7 +379,7 @@ Gets the location (position + facing) of an object. Locations include X, Y, Z co
 
 #### Usage Examples
 
-```nss
+```c
 // Get object's location
 object oWaypoint = GetObjectByTag("wp_spawn");
 location lSpawn = GetLocation(oWaypoint);
@@ -388,7 +388,7 @@ location lSpawn = GetLocation(oWaypoint);
 ActionMoveToLocation(lSpawn, FALSE);
 ```
 
-```nss
+```c
 // Get PC location
 location lPCLoc = GetLocation(GetFirstPC());
 ```
@@ -401,7 +401,7 @@ location lPCLoc = GetLocation(GetFirstPC());
 
 #### Function Signature
 
-```nss
+```c
 location Location(vector vPosition, float fOrientation);
 ```
 
@@ -420,14 +420,14 @@ Creates a location from a position vector and orientation angle. Used to create 
 
 #### Usage Examples
 
-```nss
+```c
 // Create custom location
 vector vPos = Vector(10.0, 20.0, 0.0);
 location lCustom = Location(vPos, 90.0); // Face north
 ActionMoveToLocation(lCustom, FALSE);
 ```
 
-```nss
+```c
 // Create location from object's position with custom facing
 object oTarget = GetObjectByTag("target");
 vector vPos = GetPosition(oTarget);
@@ -442,7 +442,7 @@ location lFacing = Location(vPos, 180.0); // Face west
 
 #### Function Signature
 
-```nss
+```c
 vector GetPosition(object oObject);
 ```
 
@@ -461,12 +461,12 @@ Gets the position vector (X, Y, Z coordinates) of an object.
 
 #### Usage Examples
 
-```nss
+```c
 // Get object position
 vector vPos = GetPosition(GetFirstPC());
 ```
 
-```nss
+```c
 // Calculate offset position
 vector vMyPos = GetPosition(OBJECT_SELF);
 vector vOffset = Vector(vPos.x + 5.0, vPos.y, vPos.z);
@@ -481,7 +481,7 @@ location lNew = Location(vOffset, GetFacing(OBJECT_SELF));
 
 #### Function Signature
 
-```nss
+```c
 vector GetPositionFromLocation(location lLocation);
 ```
 
@@ -499,7 +499,7 @@ Extracts the position vector from a location object.
 
 #### Usage Examples
 
-```nss
+```c
 // Extract position from location
 location lLoc = GetLocation(oTarget);
 vector vPos = GetPositionFromLocation(lLoc);
@@ -515,7 +515,7 @@ vector vPos = GetPositionFromLocation(lLoc);
 
 #### Function Signature
 
-```nss
+```c
 string GetTag(object oObject);
 ```
 
@@ -534,7 +534,7 @@ Gets the tag of an object. Tags are unique identifiers assigned in the game edit
 
 #### Usage Examples
 
-```nss
+```c
 // Get object's tag
 object oNPC = GetNearestCreature(CREATURE_TYPE_REPUTATION, REPUTATION_TYPE_ENEMY);
 if (GetIsObjectValid(oNPC)) {
@@ -551,7 +551,7 @@ if (GetIsObjectValid(oNPC)) {
 
 #### Function Signature
 
-```nss
+```c
 string GetName(object oObject);
 ```
 
@@ -570,7 +570,7 @@ Gets the display name of an object (as shown to the player).
 
 #### Usage Examples
 
-```nss
+```c
 // Get object's display name
 string sName = GetName(GetFirstPC());
 SpeakString("Hello, " + sName + "!", TALKVOLUME_TALK);
@@ -584,7 +584,7 @@ SpeakString("Hello, " + sName + "!", TALKVOLUME_TALK);
 
 #### Function Signature
 
-```nss
+```c
 object GetArea(object oObject = OBJECT_SELF);
 ```
 
@@ -603,12 +603,12 @@ Gets the area (module area) that contains the specified object.
 
 #### Usage Examples
 
-```nss
+```c
 // Get current area
 object oArea = GetArea();
 ```
 
-```nss
+```c
 // Get area of specific object
 object oNPC = GetObjectByTag("npc");
 object oNPCArea = GetArea(oNPC);
@@ -624,7 +624,7 @@ object oNPCArea = GetArea(oNPC);
 
 #### Function Signature
 
-```nss
+```c
 void DestroyObject(object oDestroy, float fDelay = 0.0, int bNoFade = FALSE, float fDelayUntilFade = 0.0);
 ```
 
@@ -641,20 +641,20 @@ Destroys (removes) an object from the game world. The object is permanently remo
 
 #### Usage Examples
 
-```nss
+```c
 // Immediate destruction
 object oItem = GetObjectByTag("temp_item");
 DestroyObject(oItem);
 ```
 
-```nss
+```c
 // Delayed destruction with fade
 DestroyObject(oTarget, 2.0, FALSE, 1.0);
 ```
 
 **Pattern: Destroy After Cutscene**
 
-```nss
+```c
 // Destroy object after cutscene completes
 DelayCommand(5.0, DestroyObject(GetObjectByTag("cutscene_prop"), 0.0, FALSE, 0.0));
 ```
@@ -675,7 +675,7 @@ DelayCommand(5.0, DestroyObject(GetObjectByTag("cutscene_prop"), 0.0, FALSE, 0.0
 
 #### Function Signature
 
-```nss
+```c
 object GetWaypointByTag(string sTag);
 ```
 
@@ -694,7 +694,7 @@ Finds a waypoint object by its tag. Waypoints are invisible markers used for mov
 
 #### Usage Examples
 
-```nss
+```c
 // Get waypoint and move to it
 object oWP = GetWaypointByTag("wp_meeting");
 if (GetIsObjectValid(oWP)) {
@@ -702,7 +702,7 @@ if (GetIsObjectValid(oWP)) {
 }
 ```
 
-```nss
+```c
 // Get waypoint location
 object oWP = GetWaypointByTag("wp_spawn");
 location lSpawn = GetLocation(oWP);
@@ -714,7 +714,7 @@ location lSpawn = GetLocation(oWP);
 
 ### Pattern: Find and Validate Object
 
-```nss
+```c
 // Standard pattern for object queries
 object oResult = GetObjectByTag("my_object");
 if (GetIsObjectValid(oResult)) {
@@ -727,7 +727,7 @@ if (GetIsObjectValid(oResult)) {
 
 ### Pattern: Find Nearest Enemy
 
-```nss
+```c
 // Find and attack nearest enemy
 object oEnemy = GetNearestCreature(CREATURE_TYPE_REPUTATION, REPUTATION_TYPE_ENEMY);
 if (GetIsObjectValid(oEnemy)) {
@@ -743,7 +743,7 @@ if (GetIsObjectValid(oEnemy)) {
 
 ### Pattern: Distance Check Before Action
 
-```nss
+```c
 // Only interact if within range
 object oNPC = GetObjectByTag("merchant");
 if (GetIsObjectValid(oNPC)) {
@@ -758,7 +758,7 @@ if (GetIsObjectValid(oNPC)) {
 
 ### Pattern: Find Multiple Objects
 
-```nss
+```c
 // Find all objects with same tag
 int i = 0;
 object oObj = GetObjectByTag("spawn_point", i);

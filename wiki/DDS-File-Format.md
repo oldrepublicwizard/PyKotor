@@ -15,10 +15,10 @@ This page documents how PyKotor interprets both formats and how it aligns with r
 
 Repositories (original first, mirror second):
 
-- **[xoreos](https://github.com/xoreos/xoreos)** ([Mirror: th3w1zard1/xoreos](https://github.com/th3w1zard1/xoreos))
-- **[xoreos-tools](https://github.com/xoreos/xoreos-tools)** ([Mirror: th3w1zard1/xoreos-tools](https://github.com/th3w1zard1/xoreos-tools))
-- **[xoreos](https://github.com/xoreos/xoreos)**: [`src/graphics/images/dds.cpp`](https://github.com/xoreos/xoreos/blob/master/src/graphics/images/dds.cpp) - Engine DDS loading (standard and BioWare variant). ([Mirror: th3w1zard1/xoreos](https://github.com/th3w1zard1/xoreos/blob/master/src/graphics/images/dds.cpp))
-- **[xoreos-tools](https://github.com/xoreos/xoreos-tools)**: [`src/images/dds.cpp`](https://github.com/xoreos/xoreos-tools/blob/master/src/images/dds.cpp) - Command-line DDS conversion tools. ([Mirror: th3w1zard1/xoreos-tools](https://github.com/th3w1zard1/xoreos-tools/blob/master/src/images/dds.cpp))
+- **[xoreos](https://github.com/xoreos/xoreos)**
+- **[xoreos-tools](https://github.com/xoreos/xoreos-tools)**
+- **[xoreos](https://github.com/xoreos/xoreos)**: [`src/graphics/images/dds.cpp`](https://github.com/xoreos/xoreos/blob/master/src/graphics/images/dds.cpp) - Engine DDS loading (standard and BioWare variant).
+- **[xoreos-tools](https://github.com/xoreos/xoreos-tools)**: [`src/images/dds.cpp`](https://github.com/xoreos/xoreos-tools/blob/master/src/images/dds.cpp) - Command-line DDS conversion tools.
 
 **For mod developers:** DDS is an alternative texture format; *KotOR* typically uses [TPC](TPC-File-Format). See [HoloPatcher README for Mod Developers](HoloPatcher-README-for-mod-developers).
 
@@ -46,7 +46,7 @@ Repositories (original first, mirror second):
 Implementation reference:
 
 - `Libraries/PyKotor/src/pykotor/resource/formats/tpc/io_dds.py` (standard DDS path and format mapping)
-- **[xoreos](https://github.com/xoreos/xoreos)** ([Mirror: th3w1zard1/xoreos](https://github.com/th3w1zard1/xoreos)): [`src/graphics/images/dds.cpp`](https://github.com/xoreos/xoreos/blob/master/src/graphics/images/dds.cpp) and **[xoreos-tools](https://github.com/xoreos/xoreos-tools)** ([Mirror: th3w1zard1/xoreos-tools](https://github.com/th3w1zard1/xoreos-tools)): [`src/images/dds.cpp`](https://github.com/xoreos/xoreos-tools/blob/master/src/images/dds.cpp) (baseline behaviour and [mask](GFF-File-Format#gff-data-types) checks)
+- **[xoreos](https://github.com/xoreos/xoreos)**: [`src/graphics/images/dds.cpp`](https://github.com/xoreos/xoreos/blob/master/src/graphics/images/dds.cpp) and **[xoreos-tools](https://github.com/xoreos/xoreos-tools)**: [`src/images/dds.cpp`](https://github.com/xoreos/xoreos-tools/blob/master/src/images/dds.cpp) (baseline behaviour and [mask](GFF-File-Format#gff-data-types) checks)
 
 ### BioWare DDS variant
 
@@ -69,7 +69,7 @@ Implementation reference:
 **Implementation Reference:**
 
 - `Libraries/PyKotor/src/pykotor/resource/formats/tpc/io_dds.py` (BioWare header path)
-- **[xoreos](https://github.com/xoreos/xoreos)** ([Mirror: th3w1zard1/xoreos](https://github.com/th3w1zard1/xoreos)): [`src/graphics/images/dds.cpp`](https://github.com/xoreos/xoreos/blob/master/src/graphics/images/dds.cpp) (BioWare branch for comparison).
+- **[xoreos](https://github.com/xoreos/xoreos)**: [`src/graphics/images/dds.cpp`](https://github.com/xoreos/xoreos/blob/master/src/graphics/images/dds.cpp) (BioWare branch for comparison).
 
 ### Writer Behaviour (PyKotor)
 

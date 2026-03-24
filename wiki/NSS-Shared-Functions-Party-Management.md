@@ -47,7 +47,7 @@ Party members are identified by NPC constants:
 
 #### Function Signature
 
-```nss
+```c
 object GetPartyMemberByIndex(int nIndex);
 ```
 
@@ -66,19 +66,19 @@ Gets the party member at a specific index. The party leader is always at index 0
 
 #### Usage Examples
 
-```nss
+```c
 // Get party leader
 object oLeader = GetPartyMemberByIndex(0);
 ```
 
-```nss
+```c
 // Get first companion
 object oCompanion1 = GetPartyMemberByIndex(1);
 ```
 
 **Pattern: Iterate Through Party**
 
-```nss
+```c
 // Loop through all party members
 int i = 0;
 object oMember = GetPartyMemberByIndex(i);
@@ -110,7 +110,7 @@ while (GetIsObjectValid(oMember)) {
 
 #### Function Signature
 
-```nss
+```c
 int IsObjectPartyMember(object oCreature);
 ```
 
@@ -129,7 +129,7 @@ Checks if a creature is currently a member of the active party.
 
 #### Usage Examples
 
-```nss
+```c
 // Check if NPC is in party
 object oNPC = GetObjectByTag("Bastila");
 if (IsObjectPartyMember(oNPC)) {
@@ -139,8 +139,8 @@ if (IsObjectPartyMember(oNPC)) {
 
 **Pattern: Area Entry with Party Check**
 
-```nss
-// From vendor/K1_Community_Patch/Source/k_pman_init02.nss
+```c
+// From K1_Community_Patch/Source/k_pman_init02.nss
 void main() {
     object oEntering = GetEnteringObject();
     
@@ -153,7 +153,7 @@ void main() {
 
 **Pattern: Conditional Based on Party Membership**
 
-```nss
+```c
 // Check party composition
 object oNPC = GetObjectByTag("Jolee");
 if (IsObjectPartyMember(oNPC)) {
@@ -179,7 +179,7 @@ if (IsObjectPartyMember(oNPC)) {
 
 #### Function Signature
 
-```nss
+```c
 int AddPartyMember(int nNPC, object oCreature);
 ```
 
@@ -199,7 +199,7 @@ Adds a creature to the party. The creature must be available and the party must 
 
 #### Usage Examples
 
-```nss
+```c
 // Add NPC to party
 object oBastila = GetObjectByTag("Bastila");
 int nResult = AddPartyMember(NPC_BASTILA, oBastila);
@@ -210,7 +210,7 @@ if (nResult) {
 
 **Pattern: Add Party Member After Event**
 
-```nss
+```c
 // Add party member after quest completion
 if (GetGlobalBoolean("Quest_Completed")) {
     object oCompanion = GetObjectByTag("new_companion");
@@ -235,7 +235,7 @@ if (GetGlobalBoolean("Quest_Completed")) {
 
 #### Function Signature
 
-```nss
+```c
 int RemovePartyMember(int nNPC);
 ```
 
@@ -254,7 +254,7 @@ Removes a creature from the party by NPC constant. The creature is removed from 
 
 #### Usage Examples
 
-```nss
+```c
 // Remove NPC from party
 int nResult = RemovePartyMember(NPC_BASTILA);
 if (nResult) {
@@ -264,7 +264,7 @@ if (nResult) {
 
 **Pattern: Conditional Party Removal**
 
-```nss
+```c
 // Remove party member based on condition
 if (GetGlobalBoolean("Bastila_Left")) {
     RemovePartyMember(NPC_BASTILA);
@@ -288,7 +288,7 @@ if (GetGlobalBoolean("Bastila_Left")) {
 
 #### Function Signature
 
-```nss
+```c
 int SetPartyLeader(int nNPC);
 ```
 
@@ -307,15 +307,15 @@ Changes the party leader to the specified NPC constant. The party leader is the 
 
 #### Usage Examples
 
-```nss
+```c
 // Set player as party leader
 SetPartyLeader(NPC_PLAYER);
 ```
 
 **Pattern: Reset Leader After Cutscene**
 
-```nss
-// From vendor/K1_Community_Patch/Source/k_pman_init02.nss
+```c
+// From K1_Community_Patch/Source/k_pman_init02.nss
 void main() {
     // Ensure player is party leader before cutscene
     SetPartyLeader(NPC_PLAYER);
@@ -326,7 +326,7 @@ void main() {
 
 **Pattern: Switch Leader to NPC**
 
-```nss
+```c
 // Temporarily switch leader to NPC for dialogue
 SetPartyLeader(NPC_BASTILA);
 // Start conversation with NPC as leader
@@ -348,7 +348,7 @@ SetPartyLeader(NPC_PLAYER);
 
 ### Pattern: Check Party Composition
 
-```nss
+```c
 // Check which party members are present
 object oBastila = GetObjectByTag("Bastila");
 object oHK47 = GetObjectByTag("HK47");
@@ -360,7 +360,7 @@ if (IsObjectPartyMember(oBastila) && IsObjectPartyMember(oHK47)) {
 
 ### Pattern: Iterate Through All Party Members
 
-```nss
+```c
 // Loop through party and perform action on each
 int i = 0;
 object oMember = GetPartyMemberByIndex(i);
@@ -379,7 +379,7 @@ while (GetIsObjectValid(oMember) && i < 3) {
 
 ### Pattern: Get Party Member Helper Function
 
-```nss
+```c
 // Helper function to safely get party member
 object GetPartyMember(int nIndex) {
     object oMember = GetPartyMemberByIndex(nIndex);
@@ -392,7 +392,7 @@ object GetPartyMember(int nIndex) {
 
 ### Pattern: Party-Based Conditional Logic
 
-```nss
+```c
 // Different behavior based on party composition
 object oJolee = GetObjectByTag("Jolee");
 if (IsObjectPartyMember(oJolee)) {

@@ -31,10 +31,10 @@ LYT (Layout) files define how area [room models](LYT-File-Format#room-definition
 
 **Cross-reference (other implementations):**
 
-- **[reone](https://github.com/modawan/reone)** (upstream [seedhartha/reone](https://github.com/seedhartha/reone)): [`src/libs/resource/format/lytreader.cpp`](https://github.com/modawan/reone/blob/master/src/libs/resource/format/lytreader.cpp)
-- **[xoreos](https://github.com/xoreos/xoreos)**: [`src/aurora/lytfile.cpp`](https://github.com/xoreos/xoreos/blob/master/src/aurora/lytfile.cpp)
-- **[KotOR.js](https://github.com/KobaltBlu/KotOR.js)**: [`src/resource/LYTObject.ts`](https://github.com/KobaltBlu/KotOR.js/blob/master/src/resource/LYTObject.ts)
-- **[Kotor.NET](https://github.com/NickHugi/Kotor.NET)**: [`Kotor.NET/Formats/KotorLYT/LYT.cs`](https://github.com/NickHugi/Kotor.NET/blob/master/Kotor.NET/Formats/KotorLYT/LYT.cs)
+- **[reone](https://github.com/modawan/reone)**: [`lytreader.cpp` `LytReader::load` L27+](https://github.com/modawan/reone/blob/master/src/libs/resource/format/lytreader.cpp#L27), [`processLine` L37+](https://github.com/modawan/reone/blob/master/src/libs/resource/format/lytreader.cpp#L37)
+- **[xoreos](https://github.com/xoreos/xoreos)**: [`lytfile.cpp`](https://github.com/xoreos/xoreos/blob/master/src/aurora/lytfile.cpp)
+- **[KotOR.js](https://github.com/KobaltBlu/KotOR.js)**: [`LYTObject.ts` L19+](https://github.com/KobaltBlu/KotOR.js/blob/master/src/resource/LYTObject.ts#L19), [`_parse` L95+](https://github.com/KobaltBlu/KotOR.js/blob/master/src/resource/LYTObject.ts#L95)
+- **[Kotor.NET](https://github.com/NickHugi/Kotor.NET)**: [`LYT.cs` L11+](https://github.com/NickHugi/Kotor.NET/blob/master/Kotor.NET/Formats/KotorLYT/LYT.cs#L11) (in-memory room/door/track/obstacle DTOs)
 
 ### See also
 
@@ -77,7 +77,7 @@ Rooms are case-insensitive; PyKotor lowercases entries for caching and resource 
 
 **Vendor Implementations:**
 
-- **[reone](https://github.com/seedhartha/reone)** ([Mirror: th3w1zard1/reone](https://github.com/th3w1zard1/reone)): [`src/libs/resource/format/lytreader.cpp:37-77`](https://github.com/seedhartha/reone/blob/master/src/libs/resource/format/lytreader.cpp#L37-L77) - Room definitions parsing
+- **[reone](https://github.com/modawan/reone)**: [`src/libs/resource/format/lytreader.cpp:37-77`](https://github.com/modawan/reone/blob/master/src/libs/resource/format/lytreader.cpp#L37-L77) - Room definitions parsing
 
 ### Track Definitions
 
@@ -212,10 +212,10 @@ doorhookcount <N>
 - **Parser:** [`Libraries/PyKotor/src/pykotor/resource/formats/lyt/io_lyt.py`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/lyt/io_lyt.py)  
 - **data [model](MDL-MDX-File-Format):** [`Libraries/PyKotor/src/pykotor/resource/formats/lyt/lyt_data.py`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/lyt/lyt_data.py)  
 - **Reference Implementations:**  
-  - **[reone](https://github.com/modawan/reone)**: [`src/libs/resource/format/lytreader.cpp`](https://github.com/modawan/reone/blob/master/src/libs/resource/format/lytreader.cpp)  
-  - **[xoreos](https://github.com/xoreos/xoreos)**: [`src/aurora/lytfile.cpp`](https://github.com/xoreos/xoreos/blob/master/src/aurora/lytfile.cpp)  
-  - **[KotOR.js](https://github.com/KobaltBlu/KotOR.js)**: [`src/resource/LYTObject.ts`](https://github.com/KobaltBlu/KotOR.js/blob/master/src/resource/LYTObject.ts)  
-  - **[Kotor.NET](https://github.com/NickHugi/Kotor.NET)**: [`Kotor.NET/Formats/KotorLYT/LYT.cs`](https://github.com/NickHugi/Kotor.NET/blob/master/Kotor.NET/Formats/KotorLYT/LYT.cs)  
+  - **[reone](https://github.com/modawan/reone)**: [`lytreader.cpp` L27+](https://github.com/modawan/reone/blob/master/src/libs/resource/format/lytreader.cpp#L27)  
+  - **[xoreos](https://github.com/xoreos/xoreos)**: [`lytfile.cpp`](https://github.com/xoreos/xoreos/blob/master/src/aurora/lytfile.cpp)  
+  - **[KotOR.js](https://github.com/KobaltBlu/KotOR.js)**: [`LYTObject.ts` L19+](https://github.com/KobaltBlu/KotOR.js/blob/master/src/resource/LYTObject.ts#L19)  
+  - **[Kotor.NET](https://github.com/NickHugi/Kotor.NET)**: [`LYT.cs` L11+](https://github.com/NickHugi/Kotor.NET/blob/master/Kotor.NET/Formats/KotorLYT/LYT.cs#L11)  
 
 All of the projects listed above agree on the plain-text token sequence; KotOR-Unity and NorthernLights consume the same format without introducing additional metadata.
 

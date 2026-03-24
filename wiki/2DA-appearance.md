@@ -117,9 +117,9 @@ The `appearance.2da` file contains a comprehensive set of columns for character 
 
 **Vendor Implementations:**
 
-- [`vendor/reone/src/libs/resource/parser/2da/appearance.cpp:28-125`](https://github.com/th3w1zard1/reone/blob/master/src/libs/resource/parser/2da/appearance.cpp#L28-L125) - Complete column parsing implementation with all column names
-- [`vendor/reone/src/libs/game/object/creature.cpp:98-107`](https://github.com/th3w1zard1/reone/blob/master/src/libs/game/object/creature.cpp#L98-L107) - Appearance loading and column usage
-- [`vendor/reone/src/libs/game/object/creature.cpp:1156-1228`](https://github.com/th3w1zard1/reone/blob/master/src/libs/game/object/creature.cpp#L1156-L1228) - [model](MDL-MDX-File-Format) and [texture](TPC-File-Format) column access
+- [`reone/src/libs/resource/parser/2da/appearance.cpp:28-125`](https://github.com/modawan/reone/blob/master/src/libs/resource/parser/2da/appearance.cpp#L28-L125) - Complete column parsing implementation with all column names
+- [`reone/src/libs/game/object/creature.cpp:98-107`](https://github.com/modawan/reone/blob/master/src/libs/game/object/creature.cpp#L98-L107) - Appearance loading and column usage
+- [`reone/src/libs/game/object/creature.cpp:1156-1228`](https://github.com/modawan/reone/blob/master/src/libs/game/object/creature.cpp#L1156-L1228) - [model](MDL-MDX-File-Format) and [texture](TPC-File-Format) column access
 
 ### See also
 

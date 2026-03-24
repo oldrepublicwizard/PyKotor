@@ -16,6 +16,6 @@ Part of the [2DA File Format Documentation](2DA-File-Format).
 
 **References**:
 
-- [`vendor/KotOR.js/src/module/Module.ts:663-669`](https://github.com/th3w1zard1/KotOR.js/blob/master/src/module/Module.ts#L663-L669) - Module save inclusion check from [2DA](2DA-File-Format)
+- [`KotOR.js/src/module/Module.ts:663-669`](https://github.com/KobaltBlu/KotOR.js/blob/master/src/module/Module.ts#L663-L669) - Module save inclusion check from [2DA](2DA-File-Format)
 
 ---

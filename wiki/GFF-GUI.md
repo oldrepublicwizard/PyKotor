@@ -432,7 +432,7 @@ All controls share these base properties:
 - Parent visibility affects children (hidden parent hides children)
 - Z-order: Children render above parents, later controls render above earlier ones (rendering order determined by control list order)
 
-**Reference**: **[reone](https://github.com/seedhartha/reone)** ([Mirror: th3w1zard1/reone](https://github.com/th3w1zard1/reone)): [`src/libs/gui/gui.cpp:80-92`](https://github.com/seedhartha/reone/blob/master/src/libs/gui/gui.cpp#L80-L92) shows children are added to parent controls, and [`src/libs/gui/control.cpp:192-194`](https://github.com/seedhartha/reone/blob/master/src/libs/gui/control.cpp#L192-L194) shows children are updated/rendered in order
+**Reference**: **[reone](https://github.com/modawan/reone)**: [`src/libs/gui/gui.cpp:80-92`](https://github.com/modawan/reone/blob/master/src/libs/gui/gui.cpp#L80-L92) shows children are added to parent controls, and [`src/libs/gui/control.cpp:192-194`](https://github.com/modawan/reone/blob/master/src/libs/gui/control.cpp#L192-L194) shows children are updated/rendered in order
 
 **Positioning System:**
 
@@ -442,7 +442,7 @@ All controls share these base properties:
 - Negative coordinates allowed (positioning outside parent bounds)
 - Root control EXTENT defines [GUI](GFF-File-Format#gui-graphical-user-interface) bounds
 
-**Reference**: **[reone](https://github.com/seedhartha/reone)** ([Mirror: th3w1zard1/reone](https://github.com/th3w1zard1/reone)): [`include/reone/gui/gui.h:38-39`](https://github.com/seedhartha/reone/blob/master/include/reone/gui/gui.h#L38-L39) defines `kDefaultResolutionX = 640` and `kDefaultResolutionY = 480`
+**Reference**: **[reone](https://github.com/modawan/reone)**: [`include/reone/gui/gui.h:38-39`](https://github.com/modawan/reone/blob/master/include/reone/gui/gui.h#L38-L39) defines `kDefaultResolutionX = 640` and `kDefaultResolutionY = 480`
 
 **color System:**
 
@@ -453,7 +453,7 @@ All controls share these base properties:
 - KotOR 2 default text color: RGB(0.102, 0.698, 0.549) - teal (exact values from engine)
 - Default highlight color: RGB(1.0, 1.0, 0.0) - yellow
 
-**Reference**: **[KotOR.js](https://github.com/KobaltBlu/KotOR.js)** ([Mirror: th3w1zard1/KotOR.js](https://github.com/th3w1zard1/KotOR.js)): [`src/gui/GUIControl.ts:188-194`](https://github.com/KobaltBlu/KotOR.js/blob/master/src/gui/GUIControl.ts#L188-L194) defines default colors for KotOR 1 and 2
+**Reference**: **[KotOR.js](https://github.com/KobaltBlu/KotOR.js)**: [`src/gui/GUIControl.ts:188-194`](https://github.com/KobaltBlu/KotOR.js/blob/master/src/gui/GUIControl.ts#L188-L194) defines default colors for KotOR 1 and 2
 
 **Border Rendering:**
 

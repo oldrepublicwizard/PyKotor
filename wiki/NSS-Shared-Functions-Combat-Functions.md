@@ -16,7 +16,7 @@ This document provides detailed documentation for NWScript combat-related functi
 
 #### Function Signature
 
-```nss
+```c
 int GetIsInCombat(object oCreature = OBJECT_SELF, int bOnlyCountReal = FALSE);
 ```
 
@@ -36,14 +36,14 @@ Returns `TRUE` if the specified creature is currently in combat. Used to check c
 
 #### Usage Examples
 
-```nss
+```c
 // Check if self is in combat
 if (GetIsInCombat()) {
     // Do something during combat
 }
 ```
 
-```nss
+```c
 // Check if specific creature is in combat
 object oEnemy = GetNearestCreature(CREATURE_TYPE_REPUTATION, REPUTATION_TYPE_ENEMY);
 if (GetIsInCombat(oEnemy)) {
@@ -53,7 +53,7 @@ if (GetIsInCombat(oEnemy)) {
 
 **Pattern: Check Combat Before Action**
 
-```nss
+```c
 // Only attack if not already in combat
 if (!GetIsInCombat()) {
     object oTarget = GetNearestCreature(CREATURE_TYPE_REPUTATION, REPUTATION_TYPE_ENEMY);
@@ -71,7 +71,7 @@ if (!GetIsInCombat()) {
 
 #### Function Signature
 
-```nss
+```c
 void CancelCombat(object oCreature = OBJECT_SELF);
 ```
 
@@ -85,12 +85,12 @@ Cancels combat for the specified creature, ending their combat state. The creatu
 
 #### Usage Examples
 
-```nss
+```c
 // Cancel own combat
 CancelCombat();
 ```
 
-```nss
+```c
 // Cancel combat for specific creature (e.g., cutscene)
 object oNPC = GetObjectByTag("boss");
 CancelCombat(oNPC);
@@ -100,8 +100,8 @@ ClearAllActions(oNPC);
 
 **Pattern: End Combat for Cutscene**
 
-```nss
-// From vendor/Vanilla_KOTOR_Script_Source/TSL/Vanilla/Modules/904MAL_Malachor_V_Trayus_Core/k_def_death01_ls.nss
+```c
+// From Vanilla_KOTOR_Script_Source/TSL/Vanilla/Modules/904MAL_Malachor_V_Trayus_Core/k_def_death01_ls.nss
 object oKreia = GetObjectByTag("kreia", 0);
 AssignCommand(oKreia, ClearAllEffects());
 AssignCommand(oKreia, ClearAllActions());
@@ -121,7 +121,7 @@ AssignCommand(GetFirstPC(), ClearAllEffects());
 
 #### Function Signature
 
-```nss
+```c
 object GetAttackTarget(object oCreature = OBJECT_SELF);
 ```
 
@@ -140,7 +140,7 @@ Gets the current attack target of the specified creature. **Only works when the 
 
 #### Usage Examples
 
-```nss
+```c
 // Get current attack target
 object oTarget = GetAttackTarget();
 if (GetIsObjectValid(oTarget)) {
@@ -148,7 +148,7 @@ if (GetIsObjectValid(oTarget)) {
 }
 ```
 
-```nss
+```c
 // Check if attacking specific target
 object oEnemy = GetObjectByTag("boss");
 if (GetAttackTarget() == oEnemy) {
@@ -158,7 +158,7 @@ if (GetAttackTarget() == oEnemy) {
 
 **Pattern: Check Current Target**
 
-```nss
+```c
 if (GetIsInCombat()) {
     object oCurrentTarget = GetAttackTarget();
     if (GetIsObjectValid(oCurrentTarget)) {
@@ -183,7 +183,7 @@ if (GetIsInCombat()) {
 
 #### Function Signature
 
-```nss
+```c
 object GetLastAttacker(object oAttackee = OBJECT_SELF);
 ```
 
@@ -202,7 +202,7 @@ Gets the last creature that attacked the specified target. Useful for retaliatio
 
 #### Usage Examples
 
-```nss
+```c
 // Get last attacker
 object oAttacker = GetLastAttacker();
 if (GetIsObjectValid(oAttacker)) {
@@ -211,7 +211,7 @@ if (GetIsObjectValid(oAttacker)) {
 }
 ```
 
-```nss
+```c
 // Check if attacked by specific creature
 object oEnemy = GetObjectByTag("hated_enemy");
 if (GetLastAttacker() == oEnemy) {
@@ -228,7 +228,7 @@ if (GetLastAttacker() == oEnemy) {
 
 #### Function Signature
 
-```nss
+```c
 object GetFirstAttacker(object oCreature = OBJECT_SELF);
 ```
 
@@ -254,7 +254,7 @@ Gets the first creature in the attacker list for the specified creature. Used to
 
 #### Function Signature
 
-```nss
+```c
 int GetLastAttackType(object oCreature = OBJECT_SELF);
 ```
 
@@ -292,7 +292,7 @@ Gets the type of the creature's last attack. **Only works when the creature is i
 
 #### Function Signature
 
-```nss
+```c
 int GetLastAttackMode(object oCreature = OBJECT_SELF);
 ```
 
@@ -321,7 +321,7 @@ Gets the combat mode of the creature's last attack. **Only works when the creatu
 
 #### Function Signature
 
-```nss
+```c
 int GetLastAttackResult(object oAttacker = OBJECT_SELF);
 ```
 
@@ -347,7 +347,7 @@ Gets the result of the attacker's last attack attempt.
 
 #### Function Signature
 
-```nss
+```c
 void ActionAttack(object oAttackee, int bPassive = FALSE);
 ```
 
@@ -362,7 +362,7 @@ Queues an attack action on the specified target. The creature will attempt to at
 
 #### Usage Examples
 
-```nss
+```c
 // Basic attack
 object oEnemy = GetNearestCreature(CREATURE_TYPE_REPUTATION, REPUTATION_TYPE_ENEMY);
 if (GetIsObjectValid(oEnemy)) {
@@ -372,8 +372,8 @@ if (GetIsObjectValid(oEnemy)) {
 
 **Pattern: AI Combat Routine**
 
-```nss
-// From vendor/K1_Community_Patch/Source/k_inc_generic.nss
+```c
+// From K1_Community_Patch/Source/k_inc_generic.nss
 if (GetIsObjectValid(oIntruder)) {
     ClearAllActions();
     ActionAttack(oIntruder);
@@ -390,7 +390,7 @@ if (GetIsObjectValid(oIntruder)) {
 
 **Pattern: Attack Nearest Enemy**
 
-```nss
+```c
 if (!GetIsInCombat()) {
     object oEnemy = GetNearestCreature(CREATURE_TYPE_REPUTATION, REPUTATION_TYPE_ENEMY);
     if (GetIsObjectValid(oEnemy)) {
@@ -408,7 +408,7 @@ if (!GetIsInCombat()) {
 
 #### Function Signature
 
-```nss
+```c
 void SurrenderToEnemies(object oCreature = OBJECT_SELF);
 ```
 
@@ -422,7 +422,7 @@ Makes the creature surrender to enemies, ending combat and making them non-hosti
 
 #### Usage Examples
 
-```nss
+```c
 // Surrender self
 SurrenderToEnemies();
 
@@ -438,7 +438,7 @@ CancelCombat(oNPC);
 
 ### Pattern: Combat Detection and Response
 
-```nss
+```c
 // Heartbeat script that responds to combat
 void main() {
     if (GetIsInCombat()) {
@@ -452,7 +452,7 @@ void main() {
 
 ### Pattern: End Combat for Cutscene
 
-```nss
+```c
 // Stop combat and prepare for cutscene
 CancelCombat(OBJECT_SELF);
 CancelCombat(oTarget);
@@ -463,7 +463,7 @@ ClearAllEffects();
 
 ### Pattern: Conditional Combat
 
-```nss
+```c
 // Only enter combat if certain conditions met
 if (GetLocalInt(OBJECT_SELF, "CanFight") == 1 && !GetIsInCombat()) {
     object oEnemy = GetNearestCreature(CREATURE_TYPE_REPUTATION, REPUTATION_TYPE_ENEMY);
@@ -476,7 +476,7 @@ if (GetLocalInt(OBJECT_SELF, "CanFight") == 1 && !GetIsInCombat()) {
 
 ### Pattern: Retaliate on Attack
 
-```nss
+```c
 // Heartbeat script - attack whoever attacked you
 void main() {
     object oAttacker = GetLastAttacker();

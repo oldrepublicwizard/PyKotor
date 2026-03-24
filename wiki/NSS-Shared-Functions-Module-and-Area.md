@@ -32,7 +32,7 @@ When objects enter or exit areas/triggers, event scripts are fired:
 
 #### Function Signature
 
-```nss
+```c
 object GetArea(object oTarget = OBJECT_SELF);
 ```
 
@@ -51,18 +51,18 @@ Gets the area object that contains the specified object. Every object in the gam
 
 #### Usage Examples
 
-```nss
+```c
 // Get current area
 object oArea = GetArea();
 ```
 
-```nss
+```c
 // Get area of specific object
 object oNPC = GetObjectByTag("npc");
 object oNPCArea = GetArea(oNPC);
 ```
 
-```nss
+```c
 // Check if object is in same area
 object oPC = GetFirstPC();
 object oTarget = GetObjectByTag("target");
@@ -73,7 +73,7 @@ if (GetArea(oPC) == GetArea(oTarget)) {
 
 **Pattern: Area-Specific Script Logic**
 
-```nss
+```c
 // Run logic only if in specific area
 object oCurrentArea = GetArea();
 string sAreaTag = GetTag(oCurrentArea);
@@ -92,7 +92,7 @@ if (sAreaTag == "tar_uppercity") {
 
 #### Function Signature
 
-```nss
+```c
 object GetEnteringObject();
 ```
 
@@ -112,7 +112,7 @@ This function is typically used in `OnEnter` event scripts.
 
 #### Usage Examples
 
-```nss
+```c
 // In a trigger's OnEnter script
 void main() {
     object oEntering = GetEnteringObject();
@@ -125,8 +125,8 @@ void main() {
 
 **Pattern: Area Entry Detection**
 
-```nss
-// From vendor/K1_Community_Patch/Source/k_pman_init02.nss
+```c
+// From K1_Community_Patch/Source/k_pman_init02.nss
 void main() {
     object oEntering = GetEnteringObject();
     object oPC = GetFirstPC();
@@ -140,7 +140,7 @@ void main() {
 
 **Pattern: PC Entry Check**
 
-```nss
+```c
 // Common pattern in area entry scripts
 object oEntering = GetEnteringObject();
 if (GetIsPC(oEntering)) {
@@ -163,7 +163,7 @@ if (GetIsPC(oEntering)) {
 
 #### Function Signature
 
-```nss
+```c
 object GetExitingObject();
 ```
 
@@ -180,7 +180,7 @@ This function is typically used in `OnExit` event scripts.
 
 #### Usage Examples
 
-```nss
+```c
 // In a trigger's OnExit script
 void main() {
     object oExiting = GetExitingObject();
@@ -193,7 +193,7 @@ void main() {
 
 **Pattern: Area Exit Detection**
 
-```nss
+```c
 // Track when PC leaves area
 void main() {
     object oExiting = GetExitingObject();
@@ -221,7 +221,7 @@ void main() {
 
 #### Function Signature
 
-```nss
+```c
 object GetFirstPC();
 ```
 
@@ -238,12 +238,12 @@ This is the most common way to get a reference to the player character in script
 
 #### Usage Examples
 
-```nss
+```c
 // Get player character
 object oPC = GetFirstPC();
 ```
 
-```nss
+```c
 // Common pattern: get PC and check validity
 object oPC = GetFirstPC();
 if (GetIsObjectValid(oPC)) {
@@ -254,7 +254,7 @@ if (GetIsObjectValid(oPC)) {
 
 **Pattern: PC Interaction**
 
-```nss
+```c
 // Start conversation with PC
 object oPC = GetFirstPC();
 object oNPC = GetObjectByTag("merchant");
@@ -263,7 +263,7 @@ AssignCommand(oNPC, ActionStartConversation(oPC));
 
 **Pattern: PC Location Check**
 
-```nss
+```c
 // Check PC's location
 object oPC = GetFirstPC();
 object oTarget = GetObjectByTag("npc");
@@ -287,7 +287,7 @@ if (fDistance <= 5.0) {
 
 ### Pattern: Area Entry Detection
 
-```nss
+```c
 // In area's OnEnter script
 void main() {
     object oEntering = GetEnteringObject();
@@ -306,7 +306,7 @@ void main() {
 
 ### Pattern: Trigger-Based Events
 
-```nss
+```c
 // In trigger's OnEnter script
 void main() {
     object oEntering = GetEnteringObject();
@@ -324,7 +324,7 @@ void main() {
 
 ### Pattern: Area-Specific Logic
 
-```nss
+```c
 // Check current area and run area-specific code
 object oCurrentArea = GetArea();
 string sAreaTag = GetTag(oCurrentArea);
@@ -338,7 +338,7 @@ if (sAreaTag == "tar_uppercity") {
 
 ### Pattern: PC Validation Before Actions
 
-```nss
+```c
 // Always validate PC before using
 object oPC = GetFirstPC();
 if (GetIsObjectValid(oPC)) {
@@ -371,7 +371,7 @@ if (GetIsObjectValid(oPC)) {
 
 #### Function Signature
 
-```nss
+```c
 object GetModule();
 ```
 
@@ -386,7 +386,7 @@ Gets the module object. The module object represents the overall game module.
 
 #### Usage Examples
 
-```nss
+```c
 // Get module object
 object oModule = GetModule();
 ```
@@ -399,7 +399,7 @@ object oModule = GetModule();
 
 #### Function Signature
 
-```nss
+```c
 void StartNewModule(string sModuleName, string sWayPoint = "", string sMovie1 = "", string sMovie2 = "", string sMovie3 = "", string sMovie4 = "", string sMovie5 = "", string sMovie6 = "");
 ```
 
@@ -415,17 +415,17 @@ Transitions to a new module. This loads a different module file (`.mod`). The cu
 
 #### Usage Examples
 
-```nss
+```c
 // Transition to new module
 StartNewModule("new_module");
 ```
 
-```nss
+```c
 // Transition to module with waypoint
 StartNewModule("new_module", "wp_entry");
 ```
 
-```nss
+```c
 // Transition with cutscene
 StartNewModule("new_module", "wp_entry", "intro_cutscene.bik");
 ```

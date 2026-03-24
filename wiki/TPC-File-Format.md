@@ -36,15 +36,15 @@ This layout is identical across PyKotor, Reone, Xoreos, KotOR.js, and the origin
 
 **Vendor References:**
 
-Repositories (original first, mirror second): **[reone](https://github.com/seedhartha/reone)** ([Mirror: th3w1zard1/reone](https://github.com/th3w1zard1/reone)), **[xoreos](https://github.com/xoreos/xoreos)** ([Mirror: th3w1zard1/xoreos](https://github.com/th3w1zard1/xoreos)), **[KotOR.js](https://github.com/KobaltBlu/KotOR.js)** ([Mirror: th3w1zard1/KotOR.js](https://github.com/th3w1zard1/KotOR.js)), **[KotOR-Unity](https://github.com/reubenduncan/KotOR-Unity)** ([Mirror: th3w1zard1/KotOR-Unity](https://github.com/th3w1zard1/KotOR-Unity)), **[NorthernLights](https://github.com/lachjames/NorthernLights)** ([Mirror: th3w1zard1/NorthernLights](https://github.com/th3w1zard1/NorthernLights)), **[tga2tpc](https://github.com/ndixUR/tga2tpc)** ([Mirror: th3w1zard1/tga2tpc](https://github.com/th3w1zard1/tga2tpc)), **[xoreos-tools](https://github.com/xoreos/xoreos-tools)** ([Mirror: th3w1zard1/xoreos-tools](https://github.com/th3w1zard1/xoreos-tools)).
+Repositories (original first, mirror second): **[reone](https://github.com/modawan/reone)**, **[xoreos](https://github.com/xoreos/xoreos)**, **[KotOR.js](https://github.com/KobaltBlu/KotOR.js)**, **[KotOR-Unity](https://github.com/reubenduncan/KotOR-Unity)**, **[NorthernLights](https://github.com/lachjames/NorthernLights)**, **[tga2tpc](https://github.com/ndixUR/tga2tpc)**, **[xoreos-tools](https://github.com/xoreos/xoreos-tools)**.
 
-- **[reone](https://github.com/seedhartha/reone)** ([Mirror: th3w1zard1/reone](https://github.com/th3w1zard1/reone)): [`src/libs/graphics/format/tpcreader.cpp`](https://github.com/seedhartha/reone/blob/master/src/libs/graphics/format/tpcreader.cpp) - Complete C++ TPC decoder with DXT decompression
-- **[xoreos](https://github.com/xoreos/xoreos)** ([Mirror: th3w1zard1/xoreos](https://github.com/th3w1zard1/xoreos)): [`src/graphics/images/tpc.cpp`](https://github.com/xoreos/xoreos/blob/master/src/graphics/images/tpc.cpp) - Generic Aurora TPC implementation (shared format)
-- **[KotOR.js](https://github.com/KobaltBlu/KotOR.js)** ([Mirror: th3w1zard1/KotOR.js](https://github.com/th3w1zard1/KotOR.js)): [`src/resource/TPCObject.ts`](https://github.com/KobaltBlu/KotOR.js/blob/master/src/resource/TPCObject.ts) - TypeScript TPC loader with WebGL texture upload
-- **[KotOR-Unity](https://github.com/reubenduncan/KotOR-Unity)** ([Mirror: th3w1zard1/KotOR-Unity](https://github.com/th3w1zard1/KotOR-Unity)): [`Assets/Scripts/FileObjects/TextureResource.cs`](https://github.com/reubenduncan/KotOR-Unity/blob/master/Assets/Scripts/FileObjects/TextureResource.cs) - C# Unity TPC loader with cube map support
-- **[NorthernLights](https://github.com/lachjames/NorthernLights)** ([Mirror: th3w1zard1/NorthernLights](https://github.com/th3w1zard1/NorthernLights)): [`src/Graphics/Textures/TPC.cs`](https://github.com/lachjames/NorthernLights/blob/master/src/Graphics/Textures/TPC.cs) - .NET TPC reader with [animation](MDL-MDX-File-Format#animation-header) support
-- **[tga2tpc](https://github.com/ndixUR/tga2tpc)** ([Mirror: th3w1zard1/tga2tpc](https://github.com/th3w1zard1/tga2tpc)) - Standalone TGA to TPC conversion tool
-- **[xoreos-tools](https://github.com/xoreos/xoreos-tools)** ([Mirror: th3w1zard1/xoreos-tools](https://github.com/th3w1zard1/xoreos-tools)): [`src/images/tpc.cpp`](https://github.com/xoreos/xoreos-tools/blob/master/src/images/tpc.cpp) - Command-line TPC extraction and conversion
+- **[reone](https://github.com/modawan/reone)**: [`src/libs/graphics/format/tpcreader.cpp`](https://github.com/modawan/reone/blob/master/src/libs/graphics/format/tpcreader.cpp) - Complete C++ TPC decoder with DXT decompression
+- **[xoreos](https://github.com/xoreos/xoreos)**: [`src/graphics/images/tpc.cpp`](https://github.com/xoreos/xoreos/blob/master/src/graphics/images/tpc.cpp) - Generic Aurora TPC implementation (shared format)
+- **[KotOR.js](https://github.com/KobaltBlu/KotOR.js)**: [`src/resource/TPCObject.ts`](https://github.com/KobaltBlu/KotOR.js/blob/master/src/resource/TPCObject.ts) - TypeScript TPC loader with WebGL texture upload
+- **[KotOR-Unity](https://github.com/reubenduncan/KotOR-Unity)**: [`Assets/Scripts/FileObjects/TextureResource.cs`](https://github.com/reubenduncan/KotOR-Unity/blob/master/Assets/Scripts/FileObjects/TextureResource.cs) - C# Unity TPC loader with cube map support
+- **[NorthernLights](https://github.com/lachjames/NorthernLights)**: [`src/Graphics/Textures/TPC.cs`](https://github.com/lachjames/NorthernLights/blob/master/src/Graphics/Textures/TPC.cs) - .NET TPC reader with [animation](MDL-MDX-File-Format#animation-header) support
+- **[tga2tpc](https://github.com/ndixUR/tga2tpc)** - Standalone TGA to TPC conversion tool
+- **[xoreos-tools](https://github.com/xoreos/xoreos-tools)**: [`src/images/tpc.cpp`](https://github.com/xoreos/xoreos-tools/blob/master/src/images/tpc.cpp) - Command-line TPC extraction and conversion
 
 ### See also
 
@@ -141,10 +141,10 @@ TPC supports the following encodings (documented in `TPCTextureFormat`):
 - **Binary Reader/Writer:** [`Libraries/PyKotor/src/pykotor/resource/formats/tpc/io_tpc.py`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/tpc/io_tpc.py)  
 - **data [model](MDL-MDX-File-Format) & Conversion Utilities:** [`Libraries/PyKotor/src/pykotor/resource/formats/tpc/tpc_data.py`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/tpc/tpc_data.py)  
 - **Reference Implementations:**  
-  - **[reone](https://github.com/seedhartha/reone)** ([Mirror: th3w1zard1/reone](https://github.com/th3w1zard1/reone)): [`src/libs/graphics/format/tpcreader.cpp`](https://github.com/seedhartha/reone/blob/master/src/libs/graphics/format/tpcreader.cpp)  
-  - **[xoreos-tools](https://github.com/xoreos/xoreos-tools)** ([Mirror: th3w1zard1/xoreos-tools](https://github.com/th3w1zard1/xoreos-tools)): [`src/images/tpc.cpp`](https://github.com/xoreos/xoreos-tools/blob/master/src/images/tpc.cpp)  
-  - **[tga2tpc](https://github.com/ndixUR/tga2tpc)** ([Mirror: th3w1zard1/tga2tpc](https://github.com/th3w1zard1/tga2tpc))
-  - **[KotOR.js](https://github.com/KobaltBlu/KotOR.js)** ([Mirror: th3w1zard1/KotOR.js](https://github.com/th3w1zard1/KotOR.js)): [`src/loaders/TextureLoader.ts`](https://github.com/KobaltBlu/KotOR.js/blob/master/src/loaders/TextureLoader.ts)  
+  - **[reone](https://github.com/modawan/reone)**: [`src/libs/graphics/format/tpcreader.cpp`](https://github.com/modawan/reone/blob/master/src/libs/graphics/format/tpcreader.cpp)  
+  - **[xoreos-tools](https://github.com/xoreos/xoreos-tools)**: [`src/images/tpc.cpp`](https://github.com/xoreos/xoreos-tools/blob/master/src/images/tpc.cpp)  
+  - **[tga2tpc](https://github.com/ndixUR/tga2tpc)**
+  - **[KotOR.js](https://github.com/KobaltBlu/KotOR.js)**: [`src/loaders/TextureLoader.ts`](https://github.com/KobaltBlu/KotOR.js/blob/master/src/loaders/TextureLoader.ts)  
 
 All of the engines listed above treat the header and mipmap data identically. The only notable difference is that KotOR.js stores textures as WebGL-friendly blobs internally, but it imports/exports the same TPC binary format.
 

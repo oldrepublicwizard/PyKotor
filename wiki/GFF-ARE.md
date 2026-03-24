@@ -22,9 +22,9 @@ ARE files define static [area properties](GFF-File-Format#are-area) including li
 
 **Vendor Implementations:**
 
-- **[reone](https://github.com/seedhartha/reone)** ([Mirror: th3w1zard1/reone](https://github.com/th3w1zard1/reone)): [`src/libs/resource/parser/are.cpp`](https://github.com/seedhartha/reone/blob/master/src/libs/resource/parser/are.cpp) - C++ ARE parser (if present; otherwise generic GFF reader)
-- **[xoreos](https://github.com/xoreos/xoreos)** ([Mirror: th3w1zard1/xoreos](https://github.com/th3w1zard1/xoreos)) - Aurora ARE loading via generic GFF; area metadata and lighting
-- **[KotOR.js](https://github.com/KobaltBlu/KotOR.js)** ([Mirror: th3w1zard1/KotOR.js](https://github.com/th3w1zard1/KotOR.js)) - TypeScript GFF parser used for ARE and other GFF types
+- **[reone](https://github.com/modawan/reone)**: [`src/libs/resource/parser/are.cpp`](https://github.com/modawan/reone/blob/master/src/libs/resource/parser/are.cpp) - C++ ARE parser (if present; otherwise generic GFF reader)
+- **[xoreos](https://github.com/xoreos/xoreos)** - Aurora ARE loading via generic GFF; area metadata and lighting
+- **[KotOR.js](https://github.com/KobaltBlu/KotOR.js)** - TypeScript GFF parser used for ARE and other GFF types
 
 ## Core Identity fields
 
@@ -268,7 +268,7 @@ The game engine uses a linear [transformation](BWM-File-Format#adjacencies-wok-o
 
 **Mathematical Formula (World --> Map [texture](TPC-File-Format) coordinates):**
 
-Reference: **[reone](https://github.com/seedhartha/reone)** ([Mirror: th3w1zard1/reone](https://github.com/th3w1zard1/reone)): [`src/libs/game/gui/map.cpp`](https://github.com/seedhartha/reone/blob/master/src/libs/game/gui/map.cpp) - `getMapPosition()`
+Reference: **[reone](https://github.com/modawan/reone)**: [`src/libs/game/gui/map.cpp`](https://github.com/modawan/reone/blob/master/src/libs/game/gui/map.cpp) - `getMapPosition()`
 
 For **NorthAxis 0 or 1** (PositiveY or NegativeY):
 
@@ -364,8 +364,8 @@ When rendering the minimap [texture](TPC-File-Format) over the [walkmesh](BWM-Fi
 
 **Reference Implementations:**
 
-- **[reone](https://github.com/seedhartha/reone)** ([Mirror: th3w1zard1/reone](https://github.com/th3w1zard1/reone)): [`src/libs/game/gui/map.cpp`](https://github.com/seedhartha/reone/blob/master/src/libs/game/gui/map.cpp) - `getMapPosition()` function
-- **[reone](https://github.com/seedhartha/reone)** ([Mirror: th3w1zard1/reone](https://github.com/th3w1zard1/reone)): [`src/libs/resource/parser/gff/are.cpp`](https://github.com/seedhartha/reone/blob/master/src/libs/resource/parser/gff/are.cpp) - are parsing
+- **[reone](https://github.com/modawan/reone)**: [`src/libs/game/gui/map.cpp`](https://github.com/modawan/reone/blob/master/src/libs/game/gui/map.cpp) - `getMapPosition()` function
+- **[reone](https://github.com/modawan/reone)**: [`src/libs/resource/parser/gff/are.cpp`](https://github.com/modawan/reone/blob/master/src/libs/resource/parser/gff/are.cpp) - are parsing
 - `Libraries/PyKotor/src/pykotor/resource/generics/are.py` - PyKotor are implementation
 - `Tools/HolocronToolset/src/toolset/gui/widgets/renderer/[walkmesh](BWM-File-Format).py` - Minimap rendering
 
@@ -598,8 +598,8 @@ The blue walkable area rendered in editors comes from the walkmesh ([BWM file](B
 
 **Reference Code Locations:**
 
-- **Reone Forward [transformation](BWM-File-Format#adjacencies-wok-only)**: **[reone](https://github.com/seedhartha/reone)** ([Mirror: th3w1zard1/reone](https://github.com/th3w1zard1/reone)): [`src/libs/game/gui/map.cpp:174-199`](https://github.com/seedhartha/reone/blob/master/src/libs/game/gui/map.cpp#L174-L199) - `getMapPosition()`
-- **Reone are Parsing**: **[reone](https://github.com/seedhartha/reone)** ([Mirror: th3w1zard1/reone](https://github.com/th3w1zard1/reone)): [`src/libs/resource/parser/gff/are.cpp:284-297`](https://github.com/seedhartha/reone/blob/master/src/libs/resource/parser/gff/are.cpp#L284-L297) - Map struct parsing
+- **Reone Forward [transformation](BWM-File-Format#adjacencies-wok-only)**: **[reone](https://github.com/modawan/reone)**: [`src/libs/game/gui/map.cpp:174-199`](https://github.com/modawan/reone/blob/master/src/libs/game/gui/map.cpp#L174-L199) - `getMapPosition()`
+- **Reone are Parsing**: **[reone](https://github.com/modawan/reone)**: [`src/libs/resource/parser/gff/are.cpp:284-297`](https://github.com/modawan/reone/blob/master/src/libs/resource/parser/gff/are.cpp#L284-L297) - Map struct parsing
 - **PyKotor are Class**: `Libraries/PyKotor/src/pykotor/resource/generics/are.py:250-260` - Map coordinate storage
 - **PyKotor Minimap Rendering**: `Tools/HolocronToolset/src/toolset/gui/widgets/renderer/[walkmesh](BWM-File-Format).py:555-603` - [texture](TPC-File-Format) rendering implementation
 

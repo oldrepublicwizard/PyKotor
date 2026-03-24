@@ -15,7 +15,7 @@ Part of the [2DA File Format Documentation](2DA-File-Format).
 
 **References**:
 
-- [`vendor/NorthernLights/nwscript.nss:3858`](https://github.com/th3w1zard1/NorthernLights/blob/master/nwscript.nss#L3858) - Comment referencing FeedBackText.2da
-- [`vendor/KotOR.js/src/nwscript/NWScriptDefK1.ts:4464-4465`](https://github.com/th3w1zard1/KotOR.js/blob/master/src/nwscript/NWScriptDefK1.ts#L4464-L4465) - DisplayFeedBackText function
+- [`NorthernLights/nwscript.nss:3858`](https://github.com/lachjames/NorthernLights/blob/master/nwscript.nss#L3858) - Comment referencing FeedBackText.2da
+- [`KotOR.js/src/nwscript/NWScriptDefK1.ts:4464-4465`](https://github.com/KobaltBlu/KotOR.js/blob/master/src/nwscript/NWScriptDefK1.ts#L4464-L4465) - DisplayFeedBackText function
 
 ---

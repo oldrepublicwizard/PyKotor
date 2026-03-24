@@ -41,7 +41,7 @@ Hit Points (HP) represent a creature's health:
 
 #### Function Signature
 
-```nss
+```c
 int GetAbilityScore(int nAbility, object oCreature = OBJECT_SELF);
 ```
 
@@ -67,7 +67,7 @@ Gets the base ability score of a creature. Returns the actual ability score valu
 
 #### Usage Examples
 
-```nss
+```c
 // Get PC's Strength
 int nSTR = GetAbilityScore(ABILITY_STRENGTH, GetFirstPC());
 if (nSTR >= 16) {
@@ -75,7 +75,7 @@ if (nSTR >= 16) {
 }
 ```
 
-```nss
+```c
 // Check multiple abilities
 int nINT = GetAbilityScore(ABILITY_INTELLIGENCE, GetFirstPC());
 int nWIS = GetAbilityScore(ABILITY_WISDOM, GetFirstPC());
@@ -87,7 +87,7 @@ if (nINT >= 14 || nWIS >= 14) {
 
 **Pattern: Ability-Based Dialogue**
 
-```nss
+```c
 // Use ability scores for dialogue options
 int nCHA = GetAbilityScore(ABILITY_CHARISMA, GetFirstPC());
 if (nCHA >= 15) {
@@ -109,7 +109,7 @@ if (nCHA >= 15) {
 
 #### Function Signature
 
-```nss
+```c
 int GetAbilityModifier(int nAbility, object oCreature = OBJECT_SELF);
 ```
 
@@ -145,12 +145,12 @@ Gets the ability modifier for a creature. The modifier is calculated as `(Abilit
 
 #### Usage Examples
 
-```nss
+```c
 // Get Strength modifier (affects melee damage)
 int nSTRMod = GetAbilityModifier(ABILITY_STRENGTH, GetFirstPC());
 ```
 
-```nss
+```c
 // Calculate expected damage with modifier
 int nBaseDamage = 10;
 int nSTRMod = GetAbilityModifier(ABILITY_STRENGTH, GetFirstPC());
@@ -159,7 +159,7 @@ int nTotalDamage = nBaseDamage + nSTRMod;
 
 **Pattern: Skill Check with Modifier**
 
-```nss
+```c
 // Calculate effective skill rank (base + modifier)
 int nBaseSkill = GetSkillRank(SKILL_REPAIR, GetFirstPC());
 int nINTMod = GetAbilityModifier(ABILITY_INTELLIGENCE, GetFirstPC());
@@ -182,7 +182,7 @@ int nEffectiveSkill = nBaseSkill + nINTMod;
 
 #### Function Signature
 
-```nss
+```c
 int GetCurrentHitPoints(object oObject = OBJECT_SELF);
 ```
 
@@ -201,7 +201,7 @@ Gets the current hit points (health) of a creature or object. When HP reaches 0,
 
 #### Usage Examples
 
-```nss
+```c
 // Check PC's current HP
 int nHP = GetCurrentHitPoints(GetFirstPC());
 if (nHP < 50) {
@@ -209,7 +209,7 @@ if (nHP < 50) {
 }
 ```
 
-```nss
+```c
 // Check if creature is alive
 int nHP = GetCurrentHitPoints(OBJECT_SELF);
 if (nHP <= 0) {
@@ -219,7 +219,7 @@ if (nHP <= 0) {
 
 **Pattern: Health Percentage Check**
 
-```nss
+```c
 // Check health as percentage
 int nCurrentHP = GetCurrentHitPoints(GetFirstPC());
 int nMaxHP = GetMaxHitPoints(GetFirstPC());
@@ -232,7 +232,7 @@ if (fPercent < 25.0) {
 
 **Pattern: Combat Health Monitoring**
 
-```nss
+```c
 // Check health during combat
 int nHP = GetCurrentHitPoints(OBJECT_SELF);
 int nMaxHP = GetMaxHitPoints(OBJECT_SELF);
@@ -256,7 +256,7 @@ if (nHP < (nMaxHP / 2)) {
 
 #### Function Signature
 
-```nss
+```c
 int GetMaxHitPoints(object oObject = OBJECT_SELF);
 ```
 
@@ -275,14 +275,14 @@ Gets the maximum hit points (health capacity) of a creature or object. This is t
 
 #### Usage Examples
 
-```nss
+```c
 // Get max HP
 int nMaxHP = GetMaxHitPoints(GetFirstPC());
 ```
 
 **Pattern: Full Heal**
 
-```nss
+```c
 // Heal to full HP
 object oTarget = GetFirstPC();
 int nCurrentHP = GetCurrentHitPoints(oTarget);
@@ -297,7 +297,7 @@ if (nHealAmount > 0) {
 
 **Pattern: Health Percentage**
 
-```nss
+```c
 // Calculate health percentage
 int nCurrent = GetCurrentHitPoints(GetFirstPC());
 int nMax = GetMaxHitPoints(GetFirstPC());
@@ -330,7 +330,7 @@ if (fPercent >= 75.0) {
 
 #### Function Signature
 
-```nss
+```c
 int GetCurrentForcePoints(object oObject = OBJECT_SELF);
 ```
 
@@ -349,7 +349,7 @@ Gets the current Force Points (FP) of a creature. Force Points are used to cast 
 
 #### Usage Examples
 
-```nss
+```c
 // Check Force Points
 int nFP = GetCurrentForcePoints(GetFirstPC());
 if (nFP < 10) {
@@ -365,7 +365,7 @@ if (nFP < 10) {
 
 #### Function Signature
 
-```nss
+```c
 int GetMaxForcePoints(object oObject = OBJECT_SELF);
 ```
 
@@ -384,7 +384,7 @@ Gets the maximum Force Points (FP) of a creature. Max FP is determined by Wisdom
 
 #### Usage Examples
 
-```nss
+```c
 // Check max Force Points
 int nMaxFP = GetMaxForcePoints(GetFirstPC());
 ```
@@ -408,7 +408,7 @@ int nMaxFP = GetMaxForcePoints(GetFirstPC());
 
 ### Pattern: Ability Check for Dialogue
 
-```nss
+```c
 // Use ability scores to unlock dialogue options
 int nINT = GetAbilityScore(ABILITY_INTELLIGENCE, GetFirstPC());
 int nWIS = GetAbilityScore(ABILITY_WISDOM, GetFirstPC());
@@ -420,7 +420,7 @@ if (nINT >= 14 || nWIS >= 14) {
 
 ### Pattern: Health-Based Behavior
 
-```nss
+```c
 // Change behavior based on health percentage
 int nCurrent = GetCurrentHitPoints(OBJECT_SELF);
 int nMax = GetMaxHitPoints(OBJECT_SELF);
@@ -435,7 +435,7 @@ if (fPercent < 25.0) {
 
 ### Pattern: Heal to Full
 
-```nss
+```c
 // Heal creature to maximum HP
 object oTarget = GetFirstPC();
 int nCurrent = GetCurrentHitPoints(oTarget);
@@ -450,7 +450,7 @@ if (nHeal > 0) {
 
 ### Pattern: Calculate Derived Stats
 
-```nss
+```c
 // Calculate effective defense (base + modifier)
 int nBaseDefense = 10;
 int nDEXMod = GetAbilityModifier(ABILITY_DEXTERITY, GetFirstPC());

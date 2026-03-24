@@ -15,8 +15,8 @@ Part of the [2DA File Format Documentation](2DA-File-Format).
 
 **References**:
 
-- [`vendor/KotOR.js/src/engine/rules/SWRuleSet.ts:143-150`](https://github.com/th3w1zard1/KotOR.js/blob/master/src/engine/rules/SWRuleSet.ts#L143-L150) - Effect icon initialization from [2DA](2DA-File-Format)
-- [`vendor/KotOR.js/src/nwscript/NWScriptDefK1.ts:6441-6446`](https://github.com/th3w1zard1/KotOR.js/blob/master/src/nwscript/NWScriptDefK1.ts#L6441-L6446) - SetEffectIcon function
-- [`vendor/NorthernLights/nwscript.nss:4678`](https://github.com/th3w1zard1/NorthernLights/blob/master/nwscript.nss#L4678) - Comment referencing effecticon.2da
+- [`KotOR.js/src/engine/rules/SWRuleSet.ts:143-150`](https://github.com/KobaltBlu/KotOR.js/blob/master/src/engine/rules/SWRuleSet.ts#L143-L150) - Effect icon initialization from [2DA](2DA-File-Format)
+- [`KotOR.js/src/nwscript/NWScriptDefK1.ts:6441-6446`](https://github.com/KobaltBlu/KotOR.js/blob/master/src/nwscript/NWScriptDefK1.ts#L6441-L6446) - SetEffectIcon function
+- [`NorthernLights/nwscript.nss:4678`](https://github.com/lachjames/NorthernLights/blob/master/nwscript.nss#L4678) - Comment referencing effecticon.2da
 
 ---

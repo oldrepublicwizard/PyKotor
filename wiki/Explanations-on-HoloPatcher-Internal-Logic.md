@@ -6,6 +6,30 @@ Generally speaking, HoloPatcher is composed of three main parts:
 - the [ConfigReader](https://github.com/OldRepublicDevs/PyKotor/blob/92f5fb81a7b9642085c67b7b48ddd50f2df4378d/Libraries/PyKotor/src/pykotor/tslpatcher/reader.py#L129)
 - the [Patcher](https://github.com/OldRepublicDevs/PyKotor/blob/92f5fb81a7b9642085c67b7b48ddd50f2df4378d/Libraries/PyKotor/src/pykotor/tslpatcher/patcher.py) (see [The Patch Routine](#the-patch-routine))
 
+## Toolchain flow (high-level)
+
+End-to-end story: **Holocron Toolset** (and other editors) produce assets; **HoloPatcher** INI describes install and merge steps; **players** run HoloPatcher against the **game root**; **PyKotor CLI** and **KotorDiff** support headless packaging and regression diffs; **KotORModSync** optionally helps manage multi-mod setups. This stack is **complementary**—not a requirement to drop other tools. Reader-facing overview and “when to use what”: [Home — KotOR modding toolchain](Home#documentation).
+
+```mermaid
+flowchart LR
+  subgraph author [Author]
+    HT[HolocronToolset]
+    HPINI[HoloPatcher_INI]
+  end
+  subgraph automate [Automate_CI]
+    CLI[PyKotor_CLI]
+    KD[KotorDiff]
+  end
+  subgraph player [Player]
+    HPRun[HoloPatcher_install]
+    MS[ModSync_optional]
+  end
+  HT --> HPINI
+  HPINI --> HPRun
+  CLI --> KD
+  HPRun --> MS
+```
+
 # UI/Interface
 
 source code @ [Tools/HoloPatcher/src](https://github.com/OldRepublicDevs/PyKotor/blob/92f5fb81a7b9642085c67b7b48ddd50f2df4378d/Tools/HoloPatcher/src/holopatcher/__main__.py)

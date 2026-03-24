@@ -66,10 +66,9 @@ The following columns are accessed by the reone engine:
 - [`Tools/HolocronToolset/src/toolset/gui/editors/utc.py:256`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Tools/HolocronToolset/src/toolset/gui/editors/utc.py#L256) - classes.2da loading from cache
 - [`Tools/HolocronToolset/src/toolset/gui/editors/utc.py:291-298`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Tools/HolocronToolset/src/toolset/gui/editors/utc.py#L291-L298) - classes.2da usage in class selection comboboxes and label population
 
-**Vendor Implementations:**
+**Cross-reference:**
 
-- **[reone](https://github.com/seedhartha/reone)** ([Mirror: th3w1zard1/reone](https://github.com/th3w1zard1/reone)): [`src/libs/game/d20/class.cpp:34-56`](https://github.com/seedhartha/reone/blob/master/src/libs/game/d20/class.cpp#L34-L56) - Class loading from [2DA](2DA-File-Format) with column access
-- **[reone](https://github.com/seedhartha/reone)** ([Mirror: th3w1zard1/reone](https://github.com/th3w1zard1/reone)): [`src/libs/game/d20/class.cpp:58-86`](https://github.com/seedhartha/reone/blob/master/src/libs/game/d20/class.cpp#L58-L86) - Class skills, saving throws, and attack bonuses loading
+- **[reone](https://github.com/modawan/reone)**: [`class.cpp` L34–L56](https://github.com/modawan/reone/blob/master/src/libs/game/d20/class.cpp#L34-L56), [L58–L86](https://github.com/modawan/reone/blob/master/src/libs/game/d20/class.cpp#L58-L86)
 
 ### See also
 

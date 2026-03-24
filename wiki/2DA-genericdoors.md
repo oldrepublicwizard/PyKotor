@@ -60,7 +60,7 @@ The complete column structure is defined in reone's genericdoors parser:
 
 **Vendor Implementations:**
 
-- **[reone](https://github.com/seedhartha/reone)** ([Mirror: th3w1zard1/reone](https://github.com/th3w1zard1/reone)): [`src/libs/resource/parser/2da/genericdoors.cpp:29-41`](https://github.com/seedhartha/reone/blob/master/src/libs/resource/parser/2da/genericdoors.cpp#L29-L41) - Complete column parsing implementation with all column names
-- **[reone](https://github.com/seedhartha/reone)** ([Mirror: th3w1zard1/reone](https://github.com/th3w1zard1/reone)): [`src/libs/game/object/door.cpp:66-67`](https://github.com/seedhartha/reone/blob/master/src/libs/game/object/door.cpp#L66-L67) - Door loading from [2DA](2DA-File-Format)
+- **[reone](https://github.com/modawan/reone)**: [`src/libs/resource/parser/2da/genericdoors.cpp:29-41`](https://github.com/modawan/reone/blob/master/src/libs/resource/parser/2da/genericdoors.cpp#L29-L41) - Complete column parsing implementation with all column names
+- **[reone](https://github.com/modawan/reone)**: [`src/libs/game/object/door.cpp:66-67`](https://github.com/modawan/reone/blob/master/src/libs/game/object/door.cpp#L66-L67) - Door loading from [2DA](2DA-File-Format)
 
 ---

@@ -54,3 +54,6 @@ Copy all files into your game's **override** folder. In-game, use the cheat **gi
 - [TPC-File-Format](TPC-File-Format) -- Textures
 - [Mod Creation Best Practices](Mod-Creation-Best-Practices) -- Override and compatibility
 - [Concepts](Concepts#override-folder) -- Override folder
+- [Home — toolchain overview](Home#documentation) -- When to use HoloPatcher vs CLI vs diff tools
+- [HoloPatcher README for Mod Developers](HoloPatcher-README-for-mod-developers) -- Shipping a patcher-based mod
+- [Concepts — module packaging](Concepts#module-packaging-for-mod-authors-override-vs-modules) -- When override alone is not enough

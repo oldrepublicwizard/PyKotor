@@ -31,7 +31,7 @@ Part of the [2DA File Format Documentation](2DA-File-Format).
 
 **Vendor Implementations:**
 
-- [`vendor/reone/src/libs/game/object/creature.cpp:1357-1366`](https://github.com/th3w1zard1/reone/blob/master/src/libs/game/object/creature.cpp#L1357-L1366) - Body bag loading from [2DA](2DA-File-Format)
+- [`reone/src/libs/game/object/creature.cpp:1357-1366`](https://github.com/modawan/reone/blob/master/src/libs/game/object/creature.cpp#L1357-L1366) - Body bag loading from [2DA](2DA-File-Format)
 
 ### See also
 

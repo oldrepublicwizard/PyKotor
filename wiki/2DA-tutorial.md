@@ -15,7 +15,6 @@ Part of the [2DA File Format Documentation](2DA-File-Format).
 
 **References**:
 
-- [`vendor/KotOR.js/src/managers/PartyManager.ts:180-187`](https://github.com/th3w1zard1/KotOR.js/blob/master/src/managers/PartyManager.ts#L180-L187) - Tutorial window tracker initialization from [2DA](2DA-File-Format)
-- [`vendor/KotOR.js/src/managers/PartyManager.ts:438`](https://github.com/th3w1zard1/KotOR.js/blob/master/src/managers/PartyManager.ts#L438) - Tutorial table access
+- **[KotOR.js](https://github.com/KobaltBlu/KotOR.js)**: [`PartyManager.ts` L180–L187](https://github.com/KobaltBlu/KotOR.js/blob/master/src/managers/PartyManager.ts#L180-L187), [L438](https://github.com/KobaltBlu/KotOR.js/blob/master/src/managers/PartyManager.ts#L438)
 
 ---

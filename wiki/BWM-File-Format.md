@@ -17,9 +17,9 @@ A BWM file stores a triangular mesh used for collision, pathfinding, and spatial
 
 ## Glossary (format-only)
 
-- **BWM** — Binary WalkMesh; the file format and its header.
-- **world_coords** — Header field at 0x08: `0` = local (PWK/DWK), `1` = world (WOK).
-- **AABB tree** — Axis-aligned bounding box tree; present only in WOK; used for spatial queries; root index stored in header.
+- **BWM** — Binary/BioWare WalkMesh; the file format and its header.
+- **World Coordinates** — Header field at 0x08: `0` = local (PWK/DWK), `1` = world (WOK).
+- **AABB Tree** — Axis-aligned bounding box tree; present only in WOK; used for spatial queries; root index stored in header.
 - **Adjacency** — For each walkable face edge, the index of the neighboring face/edge or -1; stored as `face_index*3 + edge_index`.
 - **Edge** — Boundary edge with optional transition ID; 8 bytes (encoded edge index + transition).
 - **Perimeter** — Closed loop of edges; stored as 1-based end indices into the edge array.

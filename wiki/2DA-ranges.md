@@ -16,8 +16,8 @@ Part of the [2DA File Format Documentation](2DA-File-Format).
 
 **References**:
 
-- **[reone](https://github.com/seedhartha/reone)** ([Mirror: th3w1zard1/reone](https://github.com/th3w1zard1/reone)): [`src/libs/game/object/creature.cpp:1398-1406`](https://github.com/seedhartha/reone/blob/master/src/libs/game/object/creature.cpp#L1398-L1406) - Perception range loading from [2DA](2DA-File-Format)
-- **[KotOR.js](https://github.com/KobaltBlu/KotOR.js)** ([Mirror: th3w1zard1/KotOR.js](https://github.com/th3w1zard1/KotOR.js)): [`src/module/ModuleCreature.ts:3178-3187`](https://github.com/KobaltBlu/KotOR.js/blob/master/src/module/ModuleCreature.ts#L3178-L3187) - Perception range access from [2DA](2DA-File-Format)
+- **[reone](https://github.com/modawan/reone)**: [`src/libs/game/object/creature.cpp:1398-1406`](https://github.com/modawan/reone/blob/master/src/libs/game/object/creature.cpp#L1398-L1406) - Perception range loading from [2DA](2DA-File-Format)
+- **[KotOR.js](https://github.com/KobaltBlu/KotOR.js)**: [`src/module/ModuleCreature.ts:3178-3187`](https://github.com/KobaltBlu/KotOR.js/blob/master/src/module/ModuleCreature.ts#L3178-L3187) - Perception range access from [2DA](2DA-File-Format)
 
 ### See also
 

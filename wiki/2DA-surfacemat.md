@@ -31,6 +31,6 @@ Part of the [2DA File Format Documentation](2DA-File-Format).
 
 **Vendor Implementations:**
 
-- [`vendor/reone/src/libs/game/surfaces.cpp:29-44`](https://github.com/th3w1zard1/reone/blob/master/src/libs/game/surfaces.cpp#L29-L44) - Surface material loading from [**[2DA](2DA-File-Format)**](2DA-File-Format)
+- [`reone/src/libs/game/surfaces.cpp:29-44`](https://github.com/modawan/reone/blob/master/src/libs/game/surfaces.cpp#L29-L44) - Surface material loading from [**[2DA](2DA-File-Format)**](2DA-File-Format)
 
 ---

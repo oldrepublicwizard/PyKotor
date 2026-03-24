@@ -35,7 +35,7 @@ Part of the [2DA File Format Documentation](2DA-File-Format).
 
 **Vendor Implementations:**
 
-- [`vendor/reone/src/libs/game/camerastyles.cpp:29-42`](https://github.com/th3w1zard1/reone/blob/master/src/libs/game/camerastyles.cpp#L29-L42) - Camera style loading from [2DA](2DA-File-Format)
-- [`vendor/reone/src/libs/game/object/area.cpp:140-148`](https://github.com/th3w1zard1/reone/blob/master/src/libs/game/object/area.cpp#L140-L148) - Camera style usage in areas
+- [`reone/src/libs/game/camerastyles.cpp:29-42`](https://github.com/modawan/reone/blob/master/src/libs/game/camerastyles.cpp#L29-L42) - Camera style loading from [2DA](2DA-File-Format)
+- [`reone/src/libs/game/object/area.cpp:140-148`](https://github.com/modawan/reone/blob/master/src/libs/game/object/area.cpp#L140-L148) - Camera style usage in areas
 
 ---

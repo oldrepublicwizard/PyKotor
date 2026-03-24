@@ -32,15 +32,14 @@ TXI ([texture](TPC-File-Format) Info) files are compact ASCII descriptors that a
 - Commands are case-insensitive but conventionally lowercase. values can be integers, floats, booleans (`0`/`1`), [ResRefs](GFF-File-Format#gff-data-types), or multi-line coordinate tables.  
 - A single TXI can be appended to the end of a `.tpc` file (as Bioware does) or shipped as a sibling `.txi` file; the parser treats both identically.  
 
-**Implementation:** [`Libraries/PyKotor/src/pykotor/resource/formats/txi/`](https://github.com/OldRepublicDevs/PyKotor/tree/master/Libraries/PyKotor/src/pykotor/resource/formats/txi)
+**Implementation (PyKotor):** ASCII/binary TXI parse loop [`TXIBinaryReader.load` L43+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/txi/io_txi.py#L43); in-memory [`TXI` L94+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/txi/txi_data.py#L94), [`TXICommand` L721+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/txi/txi_data.py#L721).
 
-**Vendor References:**
+**Cross-reference:**
 
-- [`vendor/reone/src/libs/graphics/format/txireader.cpp`](https://github.com/th3w1zard1/reone/blob/master/src/libs/graphics/format/txireader.cpp) - Complete C++ TXI parser implementation
-- [`vendor/xoreos/src/graphics/images/txi.cpp`](https://github.com/th3w1zard1/xoreos/blob/master/src/graphics/images/txi.cpp) - Generic Aurora TXI implementation (shared format)
-- [`vendor/KotOR.js/src/resource/TXIObject.ts`](https://github.com/th3w1zard1/KotOR.js/blob/master/src/resource/TXIObject.ts) - TypeScript TXI parser with metadata extraction
-- [`vendor/KotOR.js/src/enums/graphics/txi/`](https://github.com/th3w1zard1/KotOR.js/tree/master/src/enums/graphics/txi) - TXI command enumerations
-- [`vendor/KotOR-Unity/Assets/Scripts/Resource/TXI.cs`](https://github.com/th3w1zard1/KotOR-Unity/blob/master/Assets/Scripts/Resource/TXI.cs) - C# Unity TXI loader
+- **[reone](https://github.com/modawan/reone)** — [`TxiReader::load` L28+](https://github.com/modawan/reone/blob/master/src/libs/graphics/format/txireader.cpp#L28), [`processLine` L55+](https://github.com/modawan/reone/blob/master/src/libs/graphics/format/txireader.cpp#L55)
+- **[xoreos](https://github.com/xoreos/xoreos)** — [`src/graphics/images/txi.cpp` L1+](https://github.com/xoreos/xoreos/blob/master/src/graphics/images/txi.cpp#L1) (Aurora TXI)
+- **[KotOR.js](https://github.com/KobaltBlu/KotOR.js)** — [`TXI` L16+](https://github.com/KobaltBlu/KotOR.js/blob/master/src/resource/TXI.ts#L16); command enums [`src/enums/graphics/txi/`](https://github.com/KobaltBlu/KotOR.js/tree/master/src/enums/graphics/txi)
+- **[KotOR-Unity](https://github.com/reubenduncan/KotOR-Unity)** — [`TXI.cs` L1+](https://github.com/reubenduncan/KotOR-Unity/blob/master/Assets/Scripts/Resource/TXI.cs#L1)
 
 ### See also
 
@@ -97,7 +96,7 @@ Each line encodes a UV triplet; UV coordinates follow standard UV mapping conven
 
 | Command | Description |
 | ------- | ----------- |
-| `blending` | Selects additive or punchthrough blending (see [`TXIBlending.ts`](https://github.com/th3w1zard1/KotOR.js/blob/master/src/enums/graphics/txi/TXIBlending.ts)). |
+| `blending` | Selects additive or punchthrough blending (see [`TXIBlending.ts`](https://github.com/KobaltBlu/KotOR.js/blob/master/src/enums/graphics/txi/TXIBlending.ts)). |
 | `decal` | Toggles decal rendering so polygons project onto [geometry](MDL-MDX-File-Format#geometry-header). |
 | `isbumpmap`, `isdiffusebumpmap`, `isspecularbumpmap` | flag the [texture](TPC-File-Format) as a bump/normal map; controls how [material](MDL-MDX-File-Format#trimesh-header) shaders sample it. |
 | `bumpmaptexture`, `bumpyshinytexture`, `envmaptexture`, `bumpmapscaling` | Supply companion [textures](TPC-File-Format) and scales for per-pixel lighting. |
@@ -128,7 +127,7 @@ KotOR’s bitmap fonts use TXI commands to describe glyph boxes:
 | `upperleftcoords`, `lowerrightcoords` | arrays of UV coordinates for each glyph corner. |
 | `codepage`, `isdoublebyte`, `dbmapping` | Support multi-[byte](https://en.wikipedia.org/wiki/Byte) font atlases (Asian locales). |
 
-KotOR.js exposes identical structures in [`src/resource/TXI.ts`](https://github.com/th3w1zard1/KotOR.js/blob/master/src/resource/TXI.ts#L16-L255), ensuring the coordinates here match the engine’s expectations.
+KotOR.js exposes identical structures in [`src/resource/TXI.ts`](https://github.com/KobaltBlu/KotOR.js/blob/master/src/resource/TXI.ts#L16-L255), ensuring the coordinates here match the engine’s expectations.
 
 ### Streaming and Platform Hints
 
@@ -178,12 +177,12 @@ Many TXI files in the game installation are **empty** (0 bytes). These empty TXI
 
 ## Implementation Details
 
-- **Parser:** [`Libraries/PyKotor/src/pykotor/resource/formats/txi/io_txi.py`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/txi/io_txi.py)  
-- **data [model](MDL-MDX-File-Format):** [`Libraries/PyKotor/src/pykotor/resource/formats/txi/txi_data.py`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/txi/txi_data.py)  
-- **Reference Implementations:**  
-  - [`vendor/reone/src/libs/graphics/format/txireader.cpp`](https://github.com/th3w1zard1/reone/blob/master/src/libs/graphics/format/txireader.cpp)  
-  - [`vendor/KotOR.js/src/resource/TXI.ts`](https://github.com/th3w1zard1/KotOR.js/blob/master/src/resource/TXI.ts)  
-  - [`vendor/tga2tpc`](https://github.com/th3w1zard1/tga2tpc) (original Bioware converter)  
+- **Parser:** [`io_txi.py` `TXIBinaryReader.load` L43+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/txi/io_txi.py#L43)  
+- **Data model:** [`txi_data.py` `TXI` L94+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/txi/txi_data.py#L94)  
+- **Reference implementations:**  
+  - [reone `txireader.cpp` L28+](https://github.com/modawan/reone/blob/master/src/libs/graphics/format/txireader.cpp#L28)  
+  - [KotOR.js `TXI.ts` L16+](https://github.com/KobaltBlu/KotOR.js/blob/master/src/resource/TXI.ts#L16)  
+  - [tga2tpc](https://github.com/th3w1zard1/tga2tpc) (texture conversion tooling)  
 
 These sources all interpret commands the same way, so the tables above map directly to the behavior you will observe in-game.
 

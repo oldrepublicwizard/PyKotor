@@ -1,7 +1,7 @@
 # Blender Integration
 
 This page documents the current Blender-backed workflow for Holocron Toolset and the upstream
-**[kotorblender](https://github.com/ndixUR/kotorblender)** ([Mirror: th3w1zard1/kotorblender](https://github.com/th3w1zard1/kotorblender); community fork: [OldRepublicDevs/kotorblender](https://github.com/OldRepublicDevs/kotorblender)) add-on.
+**[kotorblender](https://github.com/OldRepublicDevs/kotorblender)** ([Mirror: th3w1zard1/kotorblender](https://github.com/th3w1zard1/kotorblender); community fork: [OldRepublicDevs/kotorblender](https://github.com/OldRepublicDevs/kotorblender)) add-on.
 
 ## Goals
 
@@ -25,9 +25,9 @@ The Toolset no longer assumes a bundled vendor checkout of `kotorblender`.
 Instead it now supports the following source discovery order:
 
 1. A custom `io_scene_kotor` source path from the `KOTORBLENDER_SOURCE_PATH` environment variable
-2. A local repository checkout such as `vendor/kotorblender/io_scene_kotor`
+2. A local checkout of [kotorblender](https://github.com/OldRepublicDevs/kotorblender) (for example `io_scene_kotor/` at repo root)
 3. An adjacent checkout such as `kotorblender/io_scene_kotor`
-4. An auto-downloaded cache of the upstream [kotorblender](https://github.com/ndixUR/kotorblender) ([Mirror: th3w1zard1/kotorblender](https://github.com/th3w1zard1/kotorblender); community fork: [OldRepublicDevs/kotorblender](https://github.com/OldRepublicDevs/kotorblender)) GitHub repository
+4. An auto-downloaded cache of the upstream [kotorblender](https://github.com/OldRepublicDevs/kotorblender) ([Mirror: th3w1zard1/kotorblender](https://github.com/th3w1zard1/kotorblender); community fork: [OldRepublicDevs/kotorblender](https://github.com/OldRepublicDevs/kotorblender)) GitHub repository
 
 When the Toolset installs the add-on, it also injects a **Holocron IPC overlay** into the installed
 `io_scene_kotor` package. This overlay hosts the Toolset’s JSON-RPC bridge inside *Blender* without

@@ -103,8 +103,7 @@ The following columns are accessed by the reone engine:
 
 **Vendor Implementations:**
 
-- [`vendor/reone/src/libs/game/object/item.cpp:126-136`](https://github.com/th3w1zard1/reone/blob/master/src/libs/game/object/item.cpp#L126-L136) - Base item column access
-- [`vendor/reone/src/libs/game/object/item.cpp:160-171`](https://github.com/th3w1zard1/reone/blob/master/src/libs/game/object/item.cpp#L160-L171) - Ammunition type lookup from baseitems.2da
+- **[reone](https://github.com/modawan/reone)**: [`item.cpp` L126–L136](https://github.com/modawan/reone/blob/master/src/libs/game/object/item.cpp#L126-L136), [L160–L171](https://github.com/modawan/reone/blob/master/src/libs/game/object/item.cpp#L160-L171)
 
 ### See also
 

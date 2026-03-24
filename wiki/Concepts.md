@@ -38,6 +38,26 @@ The **override folder** is the directory named `override` in your KotOR or TSL g
 
 [**ERF** (Encapsulated Resource File)](ERF-File-Format) is a container format that stores both *ResRef*s and resource data in one file. [**MOD**](ERF-File-Format) files (e.g. `module_name.mod`) are ERFs used for modules; [**SAV**](ERF-File-Format) for saves. [**RIM**](RIM-File-Format) (resource image) is the **stock** module archive format (`.rim`, often paired with `_s.rim` in the PC versions of the game); it uses a **different** on-disk layout than ERF--see [RIM-File-Format](RIM-File-Format) and [RIM versus ERF](ERF-File-Format#rim-versus-erf). When a module is loaded, the engine can satisfy resource requests from the active [MOD](ERF-File-Format) and/or [RIM](RIM-File-Format) set before falling back to [**KEY**](KEY-File-Format)/[**BIF**](BIF-File-Format); a `.mod` in `modules/` typically overrides the matching `.rim` pair. Module-specific content ([area GFFs](GFF-ARE), [module 2DAs](2DA-File-Format), etc.) ships in [RIM](RIM-File-Format) archives or is packed into a MOD for mods; global content is often placed in override. See [ERF-File-Format](ERF-File-Format), [RIM-File-Format](RIM-File-Format), and [Resource resolution order](#resource-resolution-order) above.
 
+### Module packaging for mod authors (override vs `modules/`)
+
+**Goal:** Choose where packaged files land so the engine loads them at the right scope.
+
+| Delivery | Typical use | Notes |
+| -------- | ----------- | ----- |
+| **`override/`** | Global scripts, textures, 2DAs, TLK, GFF templates used in many modules | Highest precedence vs BIF; last writer wins if two mods use the same ResRef+type—prefer [2DAList](TSLPatcher-2DAList-Syntax) / [TLKList](TSLPatcher-TLKList-Syntax) merges |
+| **`Modules/*.mod`** | Module-scoped capsule (ERF-type [MOD](ERF-File-Format)) | Often overrides the vanilla `.rim` pair for that module name when present |
+| **Vanilla `.rim` / `_s.rim`** | Stock module archives ([RIM](RIM-File-Format)) | Mods usually ship a `.mod` instead of editing RIMs in place |
+
+**Prerequisites:** Game root layout; [InstallList](TSLPatcher-InstallList-Syntax) paths in INI relative to game root.
+
+**Steps (conceptual):** (1) Decide if each resource is global or module-only. (2) For module content, build a `.mod` (Holocron, PyKotor CLI pack, etc.) or use InstallList to write into `modules/`. (3) For global content, use `override/` or merge into shared 2DA/TLK via patch lists.
+
+**Verify in-game:** Load a save in the target module; confirm resources resolve (see [resource resolution order](#resource-resolution-order)).
+
+**Alternatives:** Holocron Module Designer vs CLI `pack`; drop files manually into `override/` for quick tests (not for distribution if merges are needed).
+
+**Common failures:** Installing to `override/` when the resource must be inside the module capsule; duplicate 2DA rows from reinstalling the same patcher option without restore—see [Installing Mods with HoloPatcher](Installing-Mods-with-HoloPatcher).
+
 ## [**GFF** (Generic File Format)](GFF-File-Format)
 
 [**GFF**](GFF-File-Format) is BioWare’s binary format for structured game data: areas (ARE), creatures (UTC), items (UTI), dialogues (DLG), placeables (UTP), and many others. Files are hierarchical (structs, fields, lists). The same GFF layout is used across Aurora/Odyssey games; KotOR and TSL use specific GFF types and field meanings. Modders edit GFF with tools (KotOR Tool, Holocron Toolset, K-GFF) or via [TSLPatcher/HoloPatcher `[GFFList]` implementation](TSLPatcher-GFFList-Syntax). See [GFF-File-Format](GFF-File-Format), [Bioware-Aurora-GFF](Bioware-Aurora-GFF).
@@ -72,7 +92,7 @@ Use this table as the **wiki SSOT** for numeric IDs and typical text encodings. 
 
 **Reference**:
 
-- **[xoreos-docs](https://github.com/xoreos/xoreos-docs)** ([Mirror: th3w1zard1/xoreos-docs](https://github.com/th3w1zard1/xoreos-docs))
+- **[xoreos-docs](https://github.com/xoreos/xoreos-docs)**
 - [`specs/torlack/basics.html`](https://github.com/xoreos/xoreos-docs/blob/master/specs/torlack/basics.html) — Torlack’s Aurora basics (NWN-focused; IDs apply to *KotOR*).
 
 ### See also

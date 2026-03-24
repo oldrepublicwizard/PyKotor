@@ -6,11 +6,13 @@ HoloPatcher is a rewrite of TSLPatcher written in Python, utilizing the PyKotor 
 
 **Implementation:** [`Libraries/PyKotor/src/pykotor/tslpatcher/`](https://github.com/OldRepublicDevs/PyKotor/tree/master/Libraries/PyKotor/src/pykotor/tslpatcher/)
 
-**Vendor Mod Installers:**
+**Other mod installers and managers:**
 
-- **[TSLPatcher](https://github.com/Fair-Strides/TSLPatcher)** - Original Perl TSLPatcher by stoffe (reference implementation) ([Mirror: th3w1zard1/TSLPatcher-1](https://github.com/th3w1zard1/TSLPatcher-1))
-- **[Kotor-Patch-Manager](https://github.com/LaneDibello/Kotor-Patch-Manager)** - Alternative mod manager with different patching approach ([Mirror: th3w1zard1/Kotor-Patch-Manager](https://github.com/th3w1zard1/Kotor-Patch-Manager))
-- **[KotORModSync](https://github.com/th3w1zard1/KotORModSync)** - Mod synchronization and installation tool (canonical repo)
+- **[TSLPatcher](https://github.com/Fair-Strides/TSLPatcher)** - Original Perl TSLPatcher by stoffe (reference implementation)
+- **[Kotor-Patch-Manager](https://github.com/LaneDibello/Kotor-Patch-Manager)** - Alternative mod manager with different patching approach
+- **[KotORModSync](https://github.com/th3w1zard1/KotORModSync)** - Multi-mod workflows, profiles, and install orchestration (complements HoloPatcher; does not replace INI patch semantics)
+
+**KotORModSync in practice:** Use HoloPatcher (or equivalent) to **apply** each mod’s `tslpatchdata` to a game root. Use **KotORModSync** when you need help **tracking**, ordering, or syncing many installs across folders or team members. It is **not** a drop-in substitute for reading `[2DAList]` / `[TLKList]` rules—those remain defined by TSLPatcher/HoloPatcher INI. Repository: [`th3w1zard1/KotORModSync`](https://github.com/th3w1zard1/KotORModSync) (verify file paths on the repo default branch before adding deep `#L` links in the wiki).
 
 **Related PyKotor Tools:**
 
@@ -24,6 +26,27 @@ HoloPatcher is a rewrite of TSLPatcher written in Python, utilizing the PyKotor 
 - [TSLPatcher 2DAList Syntax](TSLPatcher-2DAList-Syntax) - [2DA](2DA-File-Format) patching
 - [TSLPatcher GFFList Syntax](TSLPatcher-GFFList-Syntax) - [GFF](GFF-File-Format) patching
 - [Mod Creation Best Practices](Mod-Creation-Best-Practices) - General modding guidelines
+
+## Walkthrough: first HoloPatcher mod (TLK + 2DA + InstallList)
+
+**Goal:** Ship a minimal TSLPatcher-compatible package that adds a dialog string, touches one [2DA](2DA-File-Format) row, and installs one loose file—without overwriting whole vanilla tables.
+
+**Prerequisites:** [TSLPatcher's Official Readme](TSLPatcher's-Official-Readme) skim; [InstallList](TSLPatcher-InstallList-Syntax), [TLKList](TSLPatcher-TLKList-Syntax), [2DAList](TSLPatcher-2DAList-Syntax) open for syntax; HoloPatcher pointed at a **test** game copy.
+
+**Steps:**
+
+1. **Layout:** `YourMod/tslpatchdata/changes.ini` plus any side files (e.g. `mymod.tlk` fragment, source 2DA snippet, loose file to copy).
+2. **TLK:** In `[TLKList]`, reference a TLK patch file and add or modify rows per [TSLPatcher TLKList Syntax](TSLPatcher-TLKList-Syntax). Prefer **merge** operations over replacing entire `dialog.tlk` unless you intend a total replacement (replace-style examples appear under **[TLK](TLK-File-Format) replacements** in [HoloPatcher changes](#holopatcher-changes--new-features) below).
+3. **2DA:** In `[2DAList]`, target a small change (e.g. append one row to a non-critical table in the test install) using [TSLPatcher 2DAList Syntax](TSLPatcher-2DAList-Syntax). Use `2DAMEMORY`/labels so later steps can reference row indices if needed.
+4. **InstallList:** Add `[InstallList]` entries to copy **one** file (e.g. a test `.nss` or texture) into `override/` or `modules/` per [TSLPatcher InstallList Syntax](TSLPatcher-InstallList-Syntax).
+5. **Namespaces:** If you offer variants, add `namespaces.ini`; otherwise a single `changes.ini` is enough.
+6. **Install:** Run HoloPatcher with game root + mod folder; review the log for merge errors.
+
+**Verify in-game:** Confirm the loose file appears where expected; confirm 2DA/TLK changes (e.g. new StrRef shows in a test DLG or a row appears in the edited table via tool inspection).
+
+**Alternatives:** For learning GFF-only flows, follow [Tutorial: Creating a new store](Tutorial-Creating-a-New-Store) in Holocron; for headless builds use [CLI quickstart](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/CLI_QUICKSTART.md).
+
+**Common failures:** Pointing the patcher at `override/` instead of **game root**; reinstalling the same option without [restore backup](Installing-Mods-with-HoloPatcher) (duplicate 2DA rows); wrong relative paths in InstallList—see [Mod Creation Best Practices](Mod-Creation-Best-Practices#tslpatcher-setup-and-2datlk-merging).
 
 ## HoloPatcher changes & New Features
 

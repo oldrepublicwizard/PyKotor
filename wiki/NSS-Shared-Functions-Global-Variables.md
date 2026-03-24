@@ -37,7 +37,7 @@ Global variables are defined in the `globalcat.2da` file, which specifies:
 
 #### Function Signature
 
-```nss
+```c
 int GetGlobalNumber(string sIdentifier);
 ```
 
@@ -56,7 +56,7 @@ Gets the value of a global number variable. Global numbers are stored as signed 
 
 #### Usage Examples
 
-```nss
+```c
 // Get global number
 int nQuestProgress = GetGlobalNumber("MyQuest_Progress");
 if (nQuestProgress >= 3) {
@@ -64,7 +64,7 @@ if (nQuestProgress >= 3) {
 }
 ```
 
-```nss
+```c
 // Check quest state
 int nLightsaber = GetGlobalNumber("904MAL_Lightsaber");
 if (nLightsaber == 3) {
@@ -75,8 +75,8 @@ if (nLightsaber == 3) {
 
 **Pattern: Quest Tracking**
 
-```nss
-// From vendor/Vanilla_KOTOR_Script_Source/TSL/Vanilla/Modules/904MAL_Malachor_V_Trayus_Core/k_def_death01_ls.nss
+```c
+// From Vanilla_KOTOR_Script_Source/TSL/Vanilla/Modules/904MAL_Malachor_V_Trayus_Core/k_def_death01_ls.nss
 int nLightsaber = GetGlobalNumber("904MAL_Lightsaber");
 if (nLightsaber == 3) {
     // Quest completed
@@ -98,7 +98,7 @@ if (nLightsaber == 3) {
 
 #### Function Signature
 
-```nss
+```c
 void SetGlobalNumber(string sIdentifier, int nValue);
 ```
 
@@ -113,12 +113,12 @@ Sets the value of a global number variable. **Value must be in range -128 to +12
 
 #### Usage Examples
 
-```nss
+```c
 // Set global number
 SetGlobalNumber("MyQuest_Progress", 1);
 ```
 
-```nss
+```c
 // Increment global (manual)
 int nCurrent = GetGlobalNumber("Counter");
 if (nCurrent < 127) {
@@ -139,7 +139,7 @@ if (nCurrent < 127) {
 
 #### Function Signature
 
-```nss
+```c
 void IncrementGlobalNumber(string sIdentifier, int nAmount);
 ```
 
@@ -156,20 +156,20 @@ Increments a global number by the specified amount. Convenience function that au
 
 #### Usage Examples
 
-```nss
+```c
 // Increment by 1
 IncrementGlobalNumber("MyQuest_Progress", 1);
 ```
 
-```nss
+```c
 // Increment by specific amount
 IncrementGlobalNumber("Counter", 5);
 ```
 
 **Pattern: Quest Progress Tracking**
 
-```nss
-// From vendor/Vanilla_KOTOR_Script_Source/TSL/Vanilla/Modules/904MAL_Malachor_V_Trayus_Core/k_def_death01_ls.nss
+```c
+// From Vanilla_KOTOR_Script_Source/TSL/Vanilla/Modules/904MAL_Malachor_V_Trayus_Core/k_def_death01_ls.nss
 IncrementGlobalNumber("904MAL_Lightsaber", 1);
 if (GetGlobalNumber("904MAL_Lightsaber") == 3) {
     // Trigger event after 3 increments
@@ -190,7 +190,7 @@ if (GetGlobalNumber("904MAL_Lightsaber") == 3) {
 
 #### Function Signature
 
-```nss
+```c
 void DecrementGlobalNumber(string sIdentifier, int nAmount);
 ```
 
@@ -207,12 +207,12 @@ Decrements a global number by the specified amount. Convenience function that au
 
 #### Usage Examples
 
-```nss
+```c
 // Decrement by 1
 DecrementGlobalNumber("Lives_Remaining", 1);
 ```
 
-```nss
+```c
 // Decrement by specific amount
 DecrementGlobalNumber("Health_Points", 10);
 ```
@@ -232,7 +232,7 @@ DecrementGlobalNumber("Health_Points", 10);
 
 #### Function Signature
 
-```nss
+```c
 int GetGlobalBoolean(string sIdentifier);
 ```
 
@@ -251,14 +251,14 @@ Gets the value of a global boolean variable. Returns `TRUE` (1) or `FALSE` (0).
 
 #### Usage Examples
 
-```nss
+```c
 // Check global boolean
 if (GetGlobalBoolean("Quest_Completed")) {
     // Quest is complete
 }
 ```
 
-```nss
+```c
 // Check if flag is set
 int bHasMetNPC = GetGlobalBoolean("HasMetMerchant");
 if (!bHasMetNPC) {
@@ -275,7 +275,7 @@ if (!bHasMetNPC) {
 
 #### Function Signature
 
-```nss
+```c
 void SetGlobalBoolean(string sIdentifier, int nValue);
 ```
 
@@ -290,17 +290,17 @@ Sets the value of a global boolean variable. Any non-zero value is treated as `T
 
 #### Usage Examples
 
-```nss
+```c
 // Set global boolean
 SetGlobalBoolean("Quest_Completed", TRUE);
 ```
 
-```nss
+```c
 // Set flag
 SetGlobalBoolean("HasMetNPC", TRUE);
 ```
 
-```nss
+```c
 // Clear flag
 SetGlobalBoolean("Temporary_Flag", FALSE);
 ```
@@ -315,7 +315,7 @@ SetGlobalBoolean("Temporary_Flag", FALSE);
 
 #### Function Signature
 
-```nss
+```c
 string GetGlobalString(string sIdentifier);
 ```
 
@@ -334,7 +334,7 @@ Gets the value of a global string variable. Strings can store arbitrary text dat
 
 #### Usage Examples
 
-```nss
+```c
 // Get global string
 string sPlayerName = GetGlobalString("Player_CustomName");
 if (sPlayerName != "") {
@@ -342,7 +342,7 @@ if (sPlayerName != "") {
 }
 ```
 
-```nss
+```c
 // Store and retrieve save data
 SetGlobalString("LastArea", "Taris_UpperCity");
 string sLastArea = GetGlobalString("LastArea");
@@ -356,7 +356,7 @@ string sLastArea = GetGlobalString("LastArea");
 
 #### Function Signature
 
-```nss
+```c
 void SetGlobalString(string sIdentifier, string sValue);
 ```
 
@@ -371,12 +371,12 @@ Sets the value of a global string variable.
 
 #### Usage Examples
 
-```nss
+```c
 // Set global string
 SetGlobalString("Player_CustomName", "Revan");
 ```
 
-```nss
+```c
 // Store location name
 SetGlobalString("LastVisitedArea", "Dantooine_Enclave");
 ```
@@ -391,7 +391,7 @@ SetGlobalString("LastVisitedArea", "Dantooine_Enclave");
 
 #### Function Signature
 
-```nss
+```c
 location GetGlobalLocation(string sIdentifier);
 ```
 
@@ -410,7 +410,7 @@ Gets the value of a global location variable. Locations store position (X, Y, Z)
 
 #### Usage Examples
 
-```nss
+```c
 // Get saved location
 location lSavedLocation = GetGlobalLocation("LastSafeLocation");
 if (GetIsObjectValid(lSavedLocation)) {
@@ -426,7 +426,7 @@ if (GetIsObjectValid(lSavedLocation)) {
 
 #### Function Signature
 
-```nss
+```c
 void SetGlobalLocation(string sIdentifier, location lValue);
 ```
 
@@ -441,7 +441,7 @@ Sets the value of a global location variable.
 
 #### Usage Examples
 
-```nss
+```c
 // Save current location
 location lCurrent = GetLocation(GetFirstPC());
 SetGlobalLocation("LastSafeLocation", lCurrent);
@@ -453,7 +453,7 @@ SetGlobalLocation("LastSafeLocation", lCurrent);
 
 ### Pattern: Quest Progress Tracking
 
-```nss
+```c
 // Track quest progress with global number
 int nProgress = GetGlobalNumber("Quest_Progress");
 if (nProgress < 5) {
@@ -468,7 +468,7 @@ if (nProgress < 5) {
 
 ### Pattern: Flag-Based Logic
 
-```nss
+```c
 // Use boolean flags for state tracking
 if (!GetGlobalBoolean("HasMetMerchant")) {
     // First interaction
@@ -482,7 +482,7 @@ if (!GetGlobalBoolean("HasMetMerchant")) {
 
 ### Pattern: Counter with Range Check
 
-```nss
+```c
 // Safe counter increment
 int nCurrent = GetGlobalNumber("ItemCount");
 if (nCurrent < 127) {
@@ -495,7 +495,7 @@ if (nCurrent < 127) {
 
 ### Pattern: Quest Completion Tracking
 
-```nss
+```c
 // Mark quest as complete
 SetGlobalBoolean("Quest_Completed", TRUE);
 SetGlobalNumber("Quest_CompletionCount", GetGlobalNumber("Quest_CompletionCount") + 1);

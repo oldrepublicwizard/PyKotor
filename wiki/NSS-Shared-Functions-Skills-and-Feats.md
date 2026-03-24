@@ -45,7 +45,7 @@ Feats are typically acquired at level-up or through special events.
 
 #### Function Signature
 
-```nss
+```c
 int GetSkillRank(int nSkill, object oTarget = OBJECT_SELF);
 ```
 
@@ -74,7 +74,7 @@ Gets the skill rank (proficiency level) of a creature in a specific skill. Retur
 
 #### Usage Examples
 
-```nss
+```c
 // Check PC's Persuade skill
 int nPersuade = GetSkillRank(SKILL_PERSUADE, GetFirstPC());
 if (nPersuade >= 10) {
@@ -82,7 +82,7 @@ if (nPersuade >= 10) {
 }
 ```
 
-```nss
+```c
 // Check Repair skill
 int nRepair = GetSkillRank(SKILL_REPAIR, OBJECT_SELF);
 if (nRepair >= 5) {
@@ -92,7 +92,7 @@ if (nRepair >= 5) {
 
 **Pattern: Skill Check for Dialogue**
 
-```nss
+```c
 // Use skill rank to determine dialogue options
 int nPersuade = GetSkillRank(SKILL_PERSUADE, GetFirstPC());
 int nAwareness = GetSkillRank(SKILL_AWARENESS, GetFirstPC());
@@ -120,7 +120,7 @@ if (nPersuade >= 15) {
 
 #### Function Signature
 
-```nss
+```c
 int GetHasFeat(int nFeat, object oCreature = OBJECT_SELF);
 ```
 
@@ -140,14 +140,14 @@ Checks if a creature has a specific feat. Feats represent special abilities, pro
 
 #### Usage Examples
 
-```nss
+```c
 // Check if creature has lightsaber proficiency
 if (GetHasFeat(FEAT_WEAPON_PROF_LIGHTSABER, GetFirstPC())) {
     // Can use lightsabers
 }
 ```
 
-```nss
+```c
 // Check combat feat
 if (GetHasFeat(FEAT_FLURRY, OBJECT_SELF)) {
     // Has Flurry feat - can use special attack
@@ -156,7 +156,7 @@ if (GetHasFeat(FEAT_FLURRY, OBJECT_SELF)) {
 
 **Pattern: Conditional Based on Feats**
 
-```nss
+```c
 // Check multiple feats for class detection
 if (GetHasFeat(FEAT_WEAPON_PROF_LIGHTSABER, GetFirstPC())) {
     // Jedi character
@@ -198,7 +198,7 @@ if (GetHasFeat(FEAT_WEAPON_PROF_LIGHTSABER, GetFirstPC())) {
 
 #### Function Signature
 
-```nss
+```c
 int GetHitDice(object oCreature = OBJECT_SELF);
 ```
 
@@ -217,7 +217,7 @@ Gets the total character level (hit dice) of a creature. This is the sum of all 
 
 #### Usage Examples
 
-```nss
+```c
 // Check PC's level
 int nLevel = GetHitDice(GetFirstPC());
 if (nLevel >= 15) {
@@ -227,8 +227,8 @@ if (nLevel >= 15) {
 
 **Pattern: Level-Based Conditional**
 
-```nss
-// From vendor/Vanilla_KOTOR_Script_Source/TSL/Vanilla/Data/Scripts/c_pc_level.nss
+```c
+// From Vanilla_KOTOR_Script_Source/TSL/Vanilla/Data/Scripts/c_pc_level.nss
 int nCompareAmount = GetScriptParameter(1);
 int nLevel = GetHitDice(GetFirstPC());
 
@@ -241,7 +241,7 @@ if (nLevel >= nCompareAmount) {
 
 **Pattern: Level-Based XP Rewards**
 
-```nss
+```c
 // Award XP based on level
 int nLevel = GetHitDice(GetFirstPC());
 int nXPAmount = nLevel * 15; // 15 XP per level
@@ -262,7 +262,7 @@ GiveXPToCreature(GetFirstPC(), nXPAmount);
 
 #### Function Signature
 
-```nss
+```c
 void GiveXPToCreature(object oCreature, int nXPAward);
 ```
 
@@ -277,14 +277,14 @@ Awards experience points (XP) to a creature. The creature may level up if they h
 
 #### Usage Examples
 
-```nss
+```c
 // Award fixed XP amount
 GiveXPToCreature(GetFirstPC(), 500);
 ```
 
 **Pattern: Level-Based XP Rewards**
 
-```nss
+```c
 // Award XP based on level
 int nLevel = GetHitDice(GetFirstPC());
 int nXPAmount = nLevel * 15;
@@ -293,7 +293,7 @@ GiveXPToCreature(GetFirstPC(), nXPAmount);
 
 **Pattern: Quest Completion Reward**
 
-```nss
+```c
 // Award XP for completing a quest
 object oPC = GetFirstPC();
 int nBaseXP = 1000;
@@ -335,7 +335,7 @@ GiveXPToCreature(oPC, nBaseXP + nBonusXP);
 
 ### Pattern: Skill Check for Dialogue Options
 
-```nss
+```c
 // Use multiple skill checks for dialogue branching
 int nPersuade = GetSkillRank(SKILL_PERSUADE, GetFirstPC());
 int nIntimidate = GetSkillRank(SKILL_AWARENESS, GetFirstPC()); // Awareness used for Intimidate in KotOR
@@ -351,7 +351,7 @@ if (nPersuade >= 15) {
 
 ### Pattern: Feat-Based Equipment Restrictions
 
-```nss
+```c
 // Check feats before allowing equipment
 object oItem = CreateItemOnObject("heavy_armor", GetFirstPC());
 if (GetHasFeat(FEAT_ARMOUR_PROF_HEAVY, GetFirstPC())) {
@@ -364,7 +364,7 @@ if (GetHasFeat(FEAT_ARMOUR_PROF_HEAVY, GetFirstPC())) {
 
 ### Pattern: Level-Based Scaling
 
-```nss
+```c
 // Scale rewards or difficulty based on level
 int nLevel = GetHitDice(GetFirstPC());
 int nReward = 100 * nLevel; // Reward scales with level
@@ -373,7 +373,7 @@ GiveXPToCreature(GetFirstPC(), nReward);
 
 ### Pattern: Skill-Based Success Chance
 
-```nss
+```c
 // Determine success based on skill rank
 int nRepair = GetSkillRank(SKILL_REPAIR, GetFirstPC());
 int nDC = 15; // Difficulty class
@@ -451,7 +451,7 @@ For multi-class characters:
 
 Skills and feats are commonly used in dialogue conditional scripts:
 
-```nss
+```c
 // Dialogue conditional script example
 int StartingConditional() {
     object oPC = GetFirstPC();

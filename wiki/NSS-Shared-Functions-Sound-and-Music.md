@@ -36,7 +36,7 @@ Music tracks are defined in `ambientmusic.2da`. Each area can have:
 
 #### Function Signature
 
-```nss
+```c
 void PlaySound(string sSoundName);
 ```
 
@@ -50,12 +50,12 @@ Plays a sound effect. The sound is played immediately from the caller's position
 
 #### Usage Examples
 
-```nss
+```c
 // Play sound effect
 PlaySound("explosion01");
 ```
 
-```nss
+```c
 // Play sound from object
 object oNPC = GetObjectByTag("npc");
 AssignCommand(oNPC, PlaySound("footstep01"));
@@ -63,7 +63,7 @@ AssignCommand(oNPC, PlaySound("footstep01"));
 
 **Pattern: Sound on Event**
 
-```nss
+```c
 // Play sound when object is used
 void main() {
     object oUser = GetLastUsedBy();
@@ -90,7 +90,7 @@ void main() {
 
 #### Function Signature
 
-```nss
+```c
 void MusicBackgroundPlay(object oArea);
 ```
 
@@ -104,7 +104,7 @@ Starts playing the background music for an area. The music plays the day track b
 
 #### Usage Examples
 
-```nss
+```c
 // Play area music
 object oArea = GetArea();
 MusicBackgroundPlay(oArea);
@@ -112,7 +112,7 @@ MusicBackgroundPlay(oArea);
 
 **Pattern: Start Music on Area Entry**
 
-```nss
+```c
 // In area's OnEnter script
 void main() {
     object oArea = GetArea();
@@ -128,7 +128,7 @@ void main() {
 
 #### Function Signature
 
-```nss
+```c
 void MusicBackgroundStop(object oArea);
 ```
 
@@ -142,7 +142,7 @@ Stops the background music for an area.
 
 #### Usage Examples
 
-```nss
+```c
 // Stop area music
 object oArea = GetArea();
 MusicBackgroundStop(oArea);
@@ -150,7 +150,7 @@ MusicBackgroundStop(oArea);
 
 **Pattern: Stop Music for Cutscene**
 
-```nss
+```c
 // Stop music before cutscene
 object oArea = GetArea();
 MusicBackgroundStop(oArea);
@@ -167,7 +167,7 @@ DelayCommand(10.0, MusicBackgroundPlay(oArea));
 
 #### Function Signature
 
-```nss
+```c
 void MusicBackgroundChangeDay(object oArea, int nTrack);
 ```
 
@@ -182,7 +182,7 @@ Changes the day music track for an area. The track number refers to an entry in 
 
 #### Usage Examples
 
-```nss
+```c
 // Change day music track
 object oArea = GetArea();
 MusicBackgroundChangeDay(oArea, 5); // Track 5 from ambientmusic.2da
@@ -190,7 +190,7 @@ MusicBackgroundChangeDay(oArea, 5); // Track 5 from ambientmusic.2da
 
 **Pattern: Dynamic Music Change**
 
-```nss
+```c
 // Change music based on quest state
 object oArea = GetArea();
 if (GetGlobalBoolean("Quest_Completed")) {
@@ -209,7 +209,7 @@ MusicBackgroundPlay(oArea);
 
 #### Function Signature
 
-```nss
+```c
 void MusicBackgroundChangeNight(object oArea, int nTrack);
 ```
 
@@ -224,7 +224,7 @@ Changes the night music track for an area. The track number refers to an entry i
 
 #### Usage Examples
 
-```nss
+```c
 // Change night music track
 object oArea = GetArea();
 MusicBackgroundChangeNight(oArea, 7);
@@ -238,7 +238,7 @@ MusicBackgroundChangeNight(oArea, 7);
 
 #### Function Signature
 
-```nss
+```c
 int MusicBackgroundGetDayTrack(object oArea);
 ```
 
@@ -257,7 +257,7 @@ Gets the current day music track number for an area.
 
 #### Usage Examples
 
-```nss
+```c
 // Get current day track
 object oArea = GetArea();
 int nTrack = MusicBackgroundGetDayTrack(oArea);
@@ -271,7 +271,7 @@ int nTrack = MusicBackgroundGetDayTrack(oArea);
 
 #### Function Signature
 
-```nss
+```c
 int MusicBackgroundGetNightTrack(object oArea);
 ```
 
@@ -290,7 +290,7 @@ Gets the current night music track number for an area.
 
 #### Usage Examples
 
-```nss
+```c
 // Get current night track
 object oArea = GetArea();
 int nNightTrack = MusicBackgroundGetNightTrack(oArea);
@@ -304,7 +304,7 @@ int nNightTrack = MusicBackgroundGetNightTrack(oArea);
 
 #### Function Signature
 
-```nss
+```c
 int MusicBackgroundGetBattleTrack(object oArea);
 ```
 
@@ -323,7 +323,7 @@ Gets the battle music track number for an area. Battle music plays automatically
 
 #### Usage Examples
 
-```nss
+```c
 // Get battle track
 object oArea = GetArea();
 int nBattleTrack = MusicBackgroundGetBattleTrack(oArea);
@@ -337,7 +337,7 @@ int nBattleTrack = MusicBackgroundGetBattleTrack(oArea);
 
 #### Function Signature
 
-```nss
+```c
 void MusicBackgroundSetDelay(object oArea, int nDelay);
 ```
 
@@ -352,7 +352,7 @@ Sets the delay (in milliseconds) before background music starts playing in an ar
 
 #### Usage Examples
 
-```nss
+```c
 // Set music delay (in milliseconds)
 object oArea = GetArea();
 MusicBackgroundSetDelay(oArea, 5000); // Wait 5 seconds (5000ms) before music starts
@@ -372,7 +372,7 @@ MusicBackgroundPlay(oArea);
 
 #### Function Signature
 
-```nss
+```c
 void MusicBattlePlay(object oArea);
 ```
 
@@ -386,7 +386,7 @@ Starts playing the battle music for an area. Battle music typically plays automa
 
 #### Usage Examples
 
-```nss
+```c
 // Play battle music
 object oArea = GetArea();
 MusicBattlePlay(oArea);
@@ -400,7 +400,7 @@ MusicBattlePlay(oArea);
 
 #### Function Signature
 
-```nss
+```c
 void MusicBattleStop(object oArea);
 ```
 
@@ -414,7 +414,7 @@ Stops the battle music for an area.
 
 #### Usage Examples
 
-```nss
+```c
 // Stop battle music
 object oArea = GetArea();
 MusicBattleStop(oArea);
@@ -428,7 +428,7 @@ MusicBattleStop(oArea);
 
 #### Function Signature
 
-```nss
+```c
 void MusicBattleChange(object oArea, int nTrack);
 ```
 
@@ -443,7 +443,7 @@ Changes the battle music track for an area. The track number refers to an entry 
 
 #### Usage Examples
 
-```nss
+```c
 // Change battle music track
 object oArea = GetArea();
 MusicBattleChange(oArea, 20); // Boss battle music
@@ -459,7 +459,7 @@ MusicBattleChange(oArea, 20); // Boss battle music
 
 #### Function Signature
 
-```nss
+```c
 void AmbientSoundPlay(object oArea);
 ```
 
@@ -473,7 +473,7 @@ Starts playing the ambient sound for an area. Ambient sounds are environmental a
 
 #### Usage Examples
 
-```nss
+```c
 // Play ambient sound
 object oArea = GetArea();
 AmbientSoundPlay(oArea);
@@ -487,7 +487,7 @@ AmbientSoundPlay(oArea);
 
 #### Function Signature
 
-```nss
+```c
 void AmbientSoundStop(object oArea);
 ```
 
@@ -501,7 +501,7 @@ Stops the ambient sound for an area.
 
 #### Usage Examples
 
-```nss
+```c
 // Stop ambient sound
 object oArea = GetArea();
 AmbientSoundStop(oArea);
@@ -515,7 +515,7 @@ AmbientSoundStop(oArea);
 
 #### Function Signature
 
-```nss
+```c
 void AmbientSoundChangeDay(object oArea, int nTrack);
 ```
 
@@ -530,7 +530,7 @@ Changes the day ambient sound track for an area.
 
 #### Usage Examples
 
-```nss
+```c
 // Change day ambient sound
 object oArea = GetArea();
 AmbientSoundChangeDay(oArea, 2);
@@ -544,7 +544,7 @@ AmbientSoundChangeDay(oArea, 2);
 
 #### Function Signature
 
-```nss
+```c
 void AmbientSoundChangeNight(object oArea, int nTrack);
 ```
 
@@ -559,7 +559,7 @@ Changes the night ambient sound track for an area.
 
 #### Usage Examples
 
-```nss
+```c
 // Change night ambient sound
 object oArea = GetArea();
 AmbientSoundChangeNight(oArea, 3);
@@ -573,7 +573,7 @@ AmbientSoundChangeNight(oArea, 3);
 
 #### Function Signature
 
-```nss
+```c
 void AmbientSoundSetDayVolume(object oArea, int nVolume);
 ```
 
@@ -588,7 +588,7 @@ Sets the volume for the day ambient sound in an area.
 
 #### Usage Examples
 
-```nss
+```c
 // Set day ambient volume
 object oArea = GetArea();
 AmbientSoundSetDayVolume(oArea, 75); // 75% volume
@@ -602,7 +602,7 @@ AmbientSoundSetDayVolume(oArea, 75); // 75% volume
 
 #### Function Signature
 
-```nss
+```c
 void AmbientSoundSetNightVolume(object oArea, int nVolume);
 ```
 
@@ -617,7 +617,7 @@ Sets the volume for the night ambient sound in an area.
 
 #### Usage Examples
 
-```nss
+```c
 // Set night ambient volume
 object oArea = GetArea();
 AmbientSoundSetNightVolume(oArea, 50); // 50% volume
@@ -633,7 +633,7 @@ AmbientSoundSetNightVolume(oArea, 50); // 50% volume
 
 #### Function Signature
 
-```nss
+```c
 float GetStrRefSoundDuration(int nStrRef);
 ```
 
@@ -652,14 +652,14 @@ Gets the duration (in seconds) of the sound attached to a string reference. Stri
 
 #### Usage Examples
 
-```nss
+```c
 // Get sound duration
 float fDuration = GetStrRefSoundDuration(12345);
 ```
 
 **Pattern: Delay Based on Voice Duration**
 
-```nss
+```c
 // Wait for voice line to finish
 int nStrRef = 12345;
 float fDuration = GetStrRefSoundDuration(nStrRef);
@@ -673,7 +673,7 @@ DelayCommand(fDuration + 0.5, DoSomething()); // Wait for voice + buffer
 
 ### Pattern: Dynamic Music Based on Events
 
-```nss
+```c
 // Change music based on quest progress
 object oArea = GetArea();
 if (GetGlobalBoolean("BossBattle_Started")) {
@@ -687,7 +687,7 @@ if (GetGlobalBoolean("BossBattle_Started")) {
 
 ### Pattern: Stop Music for Cutscene
 
-```nss
+```c
 // Stop music before important cutscene
 object oArea = GetArea();
 MusicBackgroundStop(oArea);
@@ -703,7 +703,7 @@ DelayCommand(5.0, AmbientSoundPlay(oArea));
 
 ### Pattern: Adjust Ambient Volume
 
-```nss
+```c
 // Lower ambient sound for dialogue
 object oArea = GetArea();
 int nOriginalVolume = 100; // Store original if needed
@@ -715,7 +715,7 @@ DelayCommand(10.0, AmbientSoundSetDayVolume(oArea, 100));
 
 ### Pattern: Sound Effects for Events
 
-```nss
+```c
 // Play sound when door opens
 void main() {
     object oDoor = GetObjectByTag("vault_door");

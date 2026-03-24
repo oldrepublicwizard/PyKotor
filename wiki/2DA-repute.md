@@ -41,7 +41,7 @@ Part of the [2DA File Format Documentation](2DA-File-Format).
 
 **Vendor Implementations:**
 
-- [`vendor/reone/src/libs/game/reputes.cpp:36-62`](https://github.com/th3w1zard1/reone/blob/master/src/libs/game/reputes.cpp#L36-L62) - Repute [matrix](BWM-File-Format#adjacencies-wok-only) loading from [2DA](2DA-File-Format)
+- [`reone/src/libs/game/reputes.cpp:36-62`](https://github.com/modawan/reone/blob/master/src/libs/game/reputes.cpp#L36-L62) - Repute [matrix](BWM-File-Format#adjacencies-wok-only) loading from [2DA](2DA-File-Format)
 
 ### See also
 

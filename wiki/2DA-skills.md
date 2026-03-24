@@ -52,9 +52,8 @@ The following columns are accessed by the reone engine:
 
 **Vendor Implementations:**
 
-- [`vendor/reone/src/libs/game/d20/skills.cpp:32-48`](https://github.com/th3w1zard1/reone/blob/master/src/libs/game/d20/skills.cpp#L32-L48) - Skill loading from [2DA](2DA-File-Format)
-- [`vendor/reone/src/libs/game/d20/class.cpp:58-65`](https://github.com/th3w1zard1/reone/blob/master/src/libs/game/d20/class.cpp#L58-L65) - Class skill checking using dynamic column names
-- [`vendor/KotOR.js/src/talents/TalentSkill.ts:38-49`](https://github.com/th3w1zard1/KotOR.js/blob/master/src/talents/TalentSkill.ts#L38-L49) - Skill loading from [2DA](2DA-File-Format) with droidcanuse and npccanuse columns
+- **[reone](https://github.com/modawan/reone)**: [`skills.cpp` L32–L48](https://github.com/modawan/reone/blob/master/src/libs/game/d20/skills.cpp#L32-L48), [`class.cpp` L58–L65](https://github.com/modawan/reone/blob/master/src/libs/game/d20/class.cpp#L58-L65)
+- **[KotOR.js](https://github.com/KobaltBlu/KotOR.js)**: [`TalentSkill.ts` L38–L49](https://github.com/KobaltBlu/KotOR.js/blob/master/src/talents/TalentSkill.ts#L38-L49)
 
 ### See also
 

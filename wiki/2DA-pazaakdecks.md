@@ -15,8 +15,8 @@ Part of the [2DA File Format Documentation](2DA-File-Format).
 
 **References**:
 
-- [`vendor/KotOR.js/src/engine/rules/SWRuleSet.ts:178-185`](https://github.com/th3w1zard1/KotOR.js/blob/master/src/engine/rules/SWRuleSet.ts#L178-L185) - Pazaak decks initialization from [2DA](2DA-File-Format)
-- [`vendor/KotOR.js/src/nwscript/NWScriptDefK1.ts:4438`](https://github.com/th3w1zard1/KotOR.js/blob/master/src/nwscript/NWScriptDefK1.ts#L4438) - StartPazaakGame function comment
-- [`vendor/NorthernLights/nwscript.nss:3847`](https://github.com/th3w1zard1/NorthernLights/blob/master/nwscript.nss#L3847) - Comment referencing PazaakDecks.2da
+- [`KotOR.js/src/engine/rules/SWRuleSet.ts:178-185`](https://github.com/KobaltBlu/KotOR.js/blob/master/src/engine/rules/SWRuleSet.ts#L178-L185) - Pazaak decks initialization from [2DA](2DA-File-Format)
+- [`KotOR.js/src/nwscript/NWScriptDefK1.ts:4438`](https://github.com/KobaltBlu/KotOR.js/blob/master/src/nwscript/NWScriptDefK1.ts#L4438) - StartPazaakGame function comment
+- [`NorthernLights/nwscript.nss:3847`](https://github.com/lachjames/NorthernLights/blob/master/nwscript.nss#L3847) - Comment referencing PazaakDecks.2da
 
 ---

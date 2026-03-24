@@ -46,7 +46,7 @@ Local variables use **numeric indices** instead of string names:
 
 #### Function Signature
 
-```nss
+```c
 int GetLocalNumber(object oObject, int nIndex);
 ```
 
@@ -66,7 +66,7 @@ Gets the value of a local number variable on an object. Local numbers use indice
 
 #### Usage Examples
 
-```nss
+```c
 // Get local number from self
 int nQuestState = GetLocalNumber(OBJECT_SELF, 12);
 if (nQuestState == 1) {
@@ -74,7 +74,7 @@ if (nQuestState == 1) {
 }
 ```
 
-```nss
+```c
 // Get local number from another object
 object oNPC = GetObjectByTag("merchant");
 int nTalkCount = GetLocalNumber(oNPC, 12);
@@ -82,7 +82,7 @@ int nTalkCount = GetLocalNumber(oNPC, 12);
 
 **Pattern: Check Object State**
 
-```nss
+```c
 // Check if object has been interacted with
 int nInteracted = GetLocalNumber(OBJECT_SELF, 12);
 if (nInteracted == 0) {
@@ -105,7 +105,7 @@ if (nInteracted == 0) {
 
 #### Function Signature
 
-```nss
+```c
 void SetLocalNumber(object oObject, int nIndex, int nValue);
 ```
 
@@ -121,12 +121,12 @@ Sets the value of a local number variable on an object. **Value must be in range
 
 #### Usage Examples
 
-```nss
+```c
 // Set local number on self
 SetLocalNumber(OBJECT_SELF, 12, 5);
 ```
 
-```nss
+```c
 // Set local number on another object
 object oNPC = GetObjectByTag("npc");
 SetLocalNumber(oNPC, 12, 1);
@@ -134,7 +134,7 @@ SetLocalNumber(oNPC, 12, 1);
 
 **Pattern: Increment Local Number**
 
-```nss
+```c
 // Increment a counter
 int nCurrent = GetLocalNumber(OBJECT_SELF, 12);
 SetLocalNumber(OBJECT_SELF, 12, nCurrent + 1);
@@ -142,8 +142,8 @@ SetLocalNumber(OBJECT_SELF, 12, nCurrent + 1);
 
 **Pattern: Script Parameter Helper**
 
-```nss
-// From vendor/Vanilla_KOTOR_Script_Source/TSL/Vanilla/Data/Scripts/a_localn_set.nss
+```c
+// From Vanilla_KOTOR_Script_Source/TSL/Vanilla/Data/Scripts/a_localn_set.nss
 int nParam1 = GetScriptParameter(1);
 int nParam2 = GetScriptParameter(2);
 SetLocalNumber(OBJECT_SELF, nParam1, nParam2);
@@ -165,7 +165,7 @@ SetLocalNumber(OBJECT_SELF, nParam1, nParam2);
 
 #### Function Signature
 
-```nss
+```c
 int GetLocalBoolean(object oObject, int nIndex);
 ```
 
@@ -185,7 +185,7 @@ Gets the value of a local boolean variable on an object. Local booleans use indi
 
 #### Usage Examples
 
-```nss
+```c
 // Get local boolean from self
 int bHasTalked = GetLocalBoolean(OBJECT_SELF, 20);
 if (!bHasTalked) {
@@ -194,7 +194,7 @@ if (!bHasTalked) {
 }
 ```
 
-```nss
+```c
 // Check flag on another object
 object oNPC = GetObjectByTag("merchant");
 if (GetLocalBoolean(oNPC, 20)) {
@@ -204,8 +204,8 @@ if (GetLocalBoolean(oNPC, 20)) {
 
 **Pattern: One-Time Events**
 
-```nss
-// From vendor/Vanilla_KOTOR_Script_Source/TSL/Vanilla/Modules/904MAL_Malachor_V_Trayus_Core/k_def_death01_ls.nss
+```c
+// From Vanilla_KOTOR_Script_Source/TSL/Vanilla/Modules/904MAL_Malachor_V_Trayus_Core/k_def_death01_ls.nss
 if (!GetLocalBoolean(OBJECT_SELF, 50)) {
     SetLocalBoolean(OBJECT_SELF, 50, 1);
     // Do one-time event
@@ -220,7 +220,7 @@ if (!GetLocalBoolean(OBJECT_SELF, 50)) {
 
 #### Function Signature
 
-```nss
+```c
 void SetLocalBoolean(object oObject, int nIndex, int nValue);
 ```
 
@@ -236,17 +236,17 @@ Sets the value of a local boolean variable on an object. Any non-zero value is t
 
 #### Usage Examples
 
-```nss
+```c
 // Set local boolean on self
 SetLocalBoolean(OBJECT_SELF, 20, TRUE);
 ```
 
-```nss
+```c
 // Clear flag
 SetLocalBoolean(OBJECT_SELF, 20, FALSE);
 ```
 
-```nss
+```c
 // Set flag on another object
 object oNPC = GetObjectByTag("npc");
 SetLocalBoolean(oNPC, 20, TRUE);
@@ -262,7 +262,7 @@ SetLocalBoolean(oNPC, 20, TRUE);
 
 #### Function Signature
 
-```nss
+```c
 string GetLocalString(object oObject, int nIndex);
 ```
 
@@ -282,7 +282,7 @@ Gets the value of a local string variable on an object. Local strings use indice
 
 #### Usage Examples
 
-```nss
+```c
 // Get local string
 string sName = GetLocalString(OBJECT_SELF, 0);
 if (sName != "") {
@@ -298,7 +298,7 @@ if (sName != "") {
 
 #### Function Signature
 
-```nss
+```c
 void SetLocalString(object oObject, int nIndex, string sValue);
 ```
 
@@ -314,7 +314,7 @@ Sets the value of a local string variable on an object.
 
 #### Usage Examples
 
-```nss
+```c
 // Store data in local string
 SetLocalString(OBJECT_SELF, 0, "CustomName");
 ```
@@ -329,7 +329,7 @@ SetLocalString(OBJECT_SELF, 0, "CustomName");
 
 #### Function Signature
 
-```nss
+```c
 object GetLocalObject(object oObject, int nIndex);
 ```
 
@@ -349,7 +349,7 @@ Gets the value of a local object variable. Stores a reference to another object.
 
 #### Usage Examples
 
-```nss
+```c
 // Store and retrieve object reference
 object oTarget = GetNearestCreature(CREATURE_TYPE_REPUTATION, REPUTATION_TYPE_ENEMY);
 SetLocalObject(OBJECT_SELF, 0, oTarget);
@@ -369,7 +369,7 @@ if (GetIsObjectValid(oStored)) {
 
 #### Function Signature
 
-```nss
+```c
 void SetLocalObject(object oObject, int nIndex, object oValue);
 ```
 
@@ -385,7 +385,7 @@ Sets the value of a local object variable.
 
 #### Usage Examples
 
-```nss
+```c
 // Store object reference
 SetLocalObject(OBJECT_SELF, 0, oTarget);
 ```
@@ -396,7 +396,7 @@ SetLocalObject(OBJECT_SELF, 0, oTarget);
 
 ### Pattern: First-Time Interaction
 
-```nss
+```c
 // Check if NPC has been talked to
 int bHasTalked = GetLocalBoolean(OBJECT_SELF, 20);
 if (!bHasTalked) {
@@ -409,7 +409,7 @@ if (!bHasTalked) {
 
 ### Pattern: Quest State Tracking
 
-```nss
+```c
 // Track quest progress on NPC
 int nQuestState = GetLocalNumber(OBJECT_SELF, 12);
 if (nQuestState == 0) {
@@ -423,7 +423,7 @@ if (nQuestState == 0) {
 
 ### Pattern: Interaction Counter
 
-```nss
+```c
 // Count interactions
 int nInteractions = GetLocalNumber(OBJECT_SELF, 12);
 nInteractions++;
@@ -436,7 +436,7 @@ if (nInteractions >= 3) {
 
 ### Pattern: Store Object Reference
 
-```nss
+```c
 // Store target for later use
 object oEnemy = GetNearestCreature(CREATURE_TYPE_REPUTATION, REPUTATION_TYPE_ENEMY);
 if (GetIsObjectValid(oEnemy)) {
