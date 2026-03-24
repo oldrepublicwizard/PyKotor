@@ -29,8 +29,7 @@ Part of the [2DA File Format Documentation](2DA-File-Format).
 
 **Vendor Implementations:**
 
-- [`vendor/reone/src/libs/game/footstepsounds.cpp:31-57`](https://github.com/th3w1zard1/reone/blob/master/src/libs/game/footstepsounds.cpp#L31-L57) - Footstep sounds loading from [2DA](2DA-File-Format)
-- [`vendor/reone/src/libs/game/object/creature.cpp:106`](https://github.com/th3w1zard1/reone/blob/master/src/libs/game/object/creature.cpp#L106) - Footstep type usage from [appearance.2da](2DA-appearance)
+- **[reone](https://github.com/modawan/reone)**: [`footstepsounds.cpp` L31–L57](https://github.com/modawan/reone/blob/master/src/libs/game/footstepsounds.cpp#L31-L57), [`creature.cpp` L106](https://github.com/modawan/reone/blob/master/src/libs/game/object/creature.cpp#L106)
 
 ### See also
 

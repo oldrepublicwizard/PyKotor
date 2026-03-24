@@ -43,7 +43,7 @@ Part of the [2DA File Format Documentation](2DA-File-Format).
 
 **Vendor Implementations:**
 
-- **[reone](https://github.com/seedhartha/reone)** ([Mirror: th3w1zard1/reone](https://github.com/th3w1zard1/reone)): [`src/libs/game/portraits.cpp:33-51`](https://github.com/seedhartha/reone/blob/master/src/libs/game/portraits.cpp#L33-L51) - Portrait loading from [2DA](2DA-File-Format) with all column access
+- **[reone](https://github.com/modawan/reone)**: [`src/libs/game/portraits.cpp` L33–L51](https://github.com/modawan/reone/blob/master/src/libs/game/portraits.cpp#L33-L51) — Portrait loading from [2DA](2DA-File-Format)
 
 ### See also
 

@@ -73,8 +73,7 @@ The complete column structure is defined in reone's placeables parser:
 
 **Vendor Implementations:**
 
-- [`vendor/reone/src/libs/resource/parser/2da/placeables.cpp:29-49`](https://github.com/th3w1zard1/reone/blob/master/src/libs/resource/parser/2da/placeables.cpp#L29-L49) - Complete column parsing implementation with all column names
-- [`vendor/reone/src/libs/game/object/placeable.cpp:59-60`](https://github.com/th3w1zard1/reone/blob/master/src/libs/game/object/placeable.cpp#L59-L60) - Placeable loading from [2DA](2DA-File-Format)
+- **[reone](https://github.com/modawan/reone)**: [`placeables.cpp` L29–L49](https://github.com/modawan/reone/blob/master/src/libs/resource/parser/2da/placeables.cpp#L29-L49), [`placeable.cpp` L59–L60](https://github.com/modawan/reone/blob/master/src/libs/game/object/placeable.cpp#L59-L60)
 
 ### See also
 
