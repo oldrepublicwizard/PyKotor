@@ -21,13 +21,16 @@ LTR (Letter) resources store third-order Markov chain probability tables that th
 
 ## File Structure Overview
 
-- KotOR always uses the **28-character alphabet** (`a–z` plus `'` and `-`). **Neverwinter Nights (NWN) used 26 characters**; the header explicitly stores the count. This is a **KotOR-specific difference** from NWN.  
-- *LTR* files are binary and consist of a short header followed by three probability tables (singles, doubles, triples) stored as contiguous float arrays.
+- KotOR always uses the **28-character alphabet** (`a–z` plus `'` and `-`). **Neverwinter Nights (NWN) used 26 characters**; the header stores the count. This is a **KotOR-specific difference** from NWN.
+- *LTR* files are binary: a short header (see below) followed by three probability tables (singles, doubles, triples) stored as contiguous **float32** arrays (cumulative probabilities in vanilla data).
 
-**Implementations**
+**Cross-reference implementations (line anchors are against `master` and may drift):**
 
-- [`Libraries/PyKotor/src/pykotor/resource/formats/ltr/`](https://github.com/OldRepublicDevs/PyKotor/tree/master/Libraries/PyKotor/src/pykotor/resource/formats/ltr).
-- Field offsets below trace directly to the reader implementations in [`vendor/reone/src/libs/resource/format/ltrreader.cpp`](https://github.com/th3w1zard1/reone/blob/master/src/libs/resource/format/ltrreader.cpp#L27-L74), [`vendor/xoreos/src/aurora/ltrfile.cpp`](https://github.com/th3w1zard1/xoreos/blob/master/src/aurora/ltrfile.cpp#L135-L168), and [`vendor/KotOR.js/src/resource/LTRObject.ts`](https://github.com/th3w1zard1/KotOR.js/blob/master/src/resource/LTRObject.ts#L61-L117).  
+- **PyKotor** — on-disk layout and offsets in module docstring: [`ltr_data.py` L1–L50](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/ltr/ltr_data.py#L1-L50); `LTR` model + `generate()`: [`ltr_data.py` L64–L288](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/ltr/ltr_data.py#L64-L288); binary I/O: [`LTRBinaryReader.load` L55–L113](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/ltr/io_ltr.py#L55-L113), [`LTRBinaryWriter.write` L125–L156](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/ltr/io_ltr.py#L125-L156).
+- **[reone](https://github.com/modawan/reone)** ([historical upstream / mirror: seedhartha/reone](https://github.com/seedhartha/reone)): [`ltrreader.cpp` `LtrReader::load` L27–L61](https://github.com/modawan/reone/blob/master/src/libs/resource/format/ltrreader.cpp#L27-L61) (8-byte `"LTR V1.0"` signature, `uint8` letter count, nested `readLetterSet` L63–L79); struct layout [`include/reone/resource/ltr.h` L24–L48](https://github.com/modawan/reone/blob/master/include/reone/resource/ltr.h#L24-L48).
+- **[xoreos](https://github.com/xoreos/xoreos)**: [`src/aurora/ltrfile.cpp`](https://github.com/xoreos/xoreos/blob/master/src/aurora/ltrfile.cpp), [`ltrfile.h` L57–L76](https://github.com/xoreos/xoreos/blob/master/src/aurora/ltrfile.h#L57-L76).
+- **[KotOR.js](https://github.com/KobaltBlu/KotOR.js)**: [`LTRObject.ts` `readBuffer` L51–L124](https://github.com/KobaltBlu/KotOR.js/blob/master/src/resource/LTRObject.ts#L51-L124) (`LTR_HEADER_LENGTH = 9`); runtime name roll [`getName` L128–L210](https://github.com/KobaltBlu/KotOR.js/blob/master/src/resource/LTRObject.ts#L128-L210).
+- **[Kotor.NET](https://github.com/NickHugi/Kotor.NET)** — check [`Kotor.NET/Formats/`](https://github.com/NickHugi/Kotor.NET/tree/master/Kotor.NET/Formats) for LTR support in your checkout (paths have changed across branches; no stable permalink verified from this wiki revision).
 
 ---
 
@@ -35,21 +38,16 @@ LTR (Letter) resources store third-order Markov chain probability tables that th
 
 ### Header
 
-Header is 12 bytes long.
+The header is **9 bytes** for standard Aurora/KotOR *LTR* (not 12): 4-byte type, 4-byte version, 1-byte letter count. PyKotor and reone both read **8 bytes** of signature as the literal string **`LTR V1.0`** (no separate padding), then the letter count.
 
 | Name         | type    | offset | size | Description |
 | ------------ | ------- | ------ | ---- | ----------- |
-| File Type    | [char](GFF-File-Format#gff-data-types) | 0 (0x00)   | 4    | Always `"LTR "`. |
-| File Version | [char](GFF-File-Format#gff-data-types) | 4 (0x04)   | 4    | Always `"V1.0"`. |
-| Letter Count | [uint8](GFF-File-Format#gff-data-types)   | 8 (0x08)   | 1    | Must be 26 or 28 (KotOR uses 28). |
-
-**References**
-
-- [`vendor/reone/src/libs/resource/format/ltrreader.cpp:27-38`](https://github.com/th3w1zard1/reone/blob/master/src/libs/resource/format/ltrreader.cpp#L27-L38) - *LTR* header parsing.
+| File Type + Version | [char](GFF-File-Format#gff-data-types) | 0 (0x00)   | 8    | ASCII `"LTR V1.0"` (see [`io_ltr.py` L66–L76](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/ltr/io_ltr.py#L66-L76), [reone `ltrreader.cpp` L28](https://github.com/modawan/reone/blob/master/src/libs/resource/format/ltrreader.cpp#L28)). |
+| Letter Count | [uint8](GFF-File-Format#gff-data-types)   | 8 (0x08)   | 1    | Must be **28** for KotOR (PyKotor enforces this: [`io_ltr.py` L81–L84](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/ltr/io_ltr.py#L81-L84)). |
 
 ### Single-Letter Block
 
-Immediately after the header, the **single-letter** probabilities are stored as three arrays of `letter_count` floats (*start*, *middle*, *end*). For the KotOR alphabet that is `28 × 3 × 4 = 336` bytes.
+Immediately after the header, the **single-letter** probabilities are stored as three arrays of `letter_count` floats (*start*, *middle*, *end*). For KotOR (`letter_count == 28`) that is `28 × 3 × 4 = 336` bytes.
 
 | Section | Entries | Description |
 | ------- | ------- | ----------- |
@@ -61,54 +59,45 @@ Immediately after the header, the **single-letter** probabilities are stored as 
 
 For each character in the alphabet there is a **double-letter** block (context length 1). Each block repeats the same *start/middle/end* layout (28 floats each).
 
-Total size: `28 (letters) × 3 (position arrays) × 28 (values) × 4 bytes = 9,408 bytes`.
+Total size (KotOR): `28 × 3 × 28 × 4 = 9,408` bytes.
 
 ### Triple-Letter Blocks
 
 The **triple-letter** section encodes 2-character context. There are `letter_count × letter_count` blocks, each with *start/middle/end* arrays of 28 floats.
 
-Total size: `28 × 28 × 3 × 28 × 4 = 73,472 bytes`.
+Total size (KotOR): `28 × 28 × 3 × 28 × 4 = 263,424` bytes.
 
-**References**
-
-- [`Libraries/PyKotor/src/pykotor/resource/formats/ltr/ltr_data.py:18-44`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/ltr/ltr_data.py#L18-L44) - Block layout and sizes
+**Layout offsets (28-letter, float32):** singles begin at byte **9** (immediately after header). Doubles begin at `9 + 28×3×4 = 345` (`0x159`). Triples begin at `345 + 28×28×3×4 = 9,753` (`0x2619`). (Some older notes and comments used different hex offsets—trust the byte counts and reader loops in [`io_ltr.py` L88–L108](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/ltr/io_ltr.py#L88-L108).)
 
 ---
 
 ## Probability Blocks
 
-Each block is represented by the `LTRBlock` class in PyKotor, mirroring the `LetterSet` structs in the reverse-engineered engines. Blocks store cumulative probabilities (monotonically increasing floats) that are compared against random roll values.
+Each block is represented by the `LTRBlock` class in PyKotor ([`ltr_data.py` `LTRBlock` L363+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/ltr/ltr_data.py#L363-L615)), mirroring `LetterSet` / `Ltr::LetterSet` in reone and xoreos. Blocks store **cumulative** probabilities (monotonically increasing floats) that are compared against random roll values.
 
-- **Singles (`_singles`)**: No context; used for the very first character.  
-- **Doubles (`_doubles`)**: Indexed by the previous character; used for the second character.  
+- **Singles (`_singles`)**: No context; used for the very first character.
+- **Doubles (`_doubles`)**: Indexed by the previous character; used for the second character.
 - **Triples (`_triples`)**: Two-dimensional array indexed by the previous two characters; used for every character after the second.
 
-**References**
-
-- [`vendor/reone/include/reone/resource/ltr.h:24-48`](https://github.com/th3w1zard1/reone/blob/master/include/reone/resource/ltr.h#L24-L48) - LTR block struct
-- [`vendor/xoreos/src/aurora/ltrfile.h:57-76`](https://github.com/th3w1zard1/xoreos/blob/master/src/aurora/ltrfile.h#L57-L76) - Probability block layout
+**References:** [reone `ltr.h` L24–L48](https://github.com/modawan/reone/blob/master/include/reone/resource/ltr.h#L24-L48); [xoreos `ltrfile.h` L57–L76](https://github.com/xoreos/xoreos/blob/master/src/aurora/ltrfile.h#L57-L76).
 
 ---
 
 ## Name Generation Process
 
-The runtime algorithm (implemented in PyKotor, Reone, Xoreos, KotOR.js, and Kotor.NET) follows these steps:
+The runtime algorithm (PyKotor, reone, xoreos, KotOR.js, etc.) follows the same broad steps:
 
-1. **Seed/Random Setup** – optional deterministic seed for reproducible results.  
-2. **First Character** – roll against `_singles.start`.  
-3. **Second Character** – roll against `_doubles[index(previous)], start`.  
-4. **Third Character** – roll against `_triples[index(prev2)][index(prev1)].start`.  
-5. **Subsequent Characters** – roll against `_triples` middle probabilities; termination decisions use `_triples` end probabilities plus heuristics to avoid overly short names.  
-6. **Post-processing** – capitalize and ensure minimum length; retries occur if probabilities fail to produce a valid sequence.
+1. **Seed/Random Setup** – optional deterministic seed for reproducible results (PyKotor: [`LTR.generate` L170–L288](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/ltr/ltr_data.py#L170-L288)).
+2. **First Character** – roll against single-letter *start* weights.
+3. **Second Character** – roll against double-letter *start* for the previous letter.
+4. **Third Character** – roll against triple-letter *start* for the previous two letters.
+5. **Subsequent Characters** – roll against triple-letter *middle*; termination uses triple-letter *end* plus length heuristics (compare KotOR.js [`getName` L173–L200](https://github.com/KobaltBlu/KotOR.js/blob/master/src/resource/LTRObject.ts#L173-L200) with PyKotor [`generate` L252–L285](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/ltr/ltr_data.py#L252-L285)).
+6. **Post-processing** – capitalize / minimum length; retries on failed rolls.
 
 **References**
 
-- [`Libraries/PyKotor/src/pykotor/resource/formats/ltr/ltr_data.py:166-283`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/ltr/ltr_data.py#L166-L283).
-- **Binary Reader/Writer:** [`Libraries/PyKotor/src/pykotor/resource/formats/ltr/io_ltr.py`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/ltr/io_ltr.py)  
-- **data [model](MDL-MDX-File-Format):** [`Libraries/PyKotor/src/pykotor/resource/formats/ltr/ltr_data.py`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/ltr/ltr_data.py)  
-- [`vendor/reone/src/libs/resource/format/ltrreader.cpp`](https://github.com/th3w1zard1/reone/blob/master/src/libs/resource/format/ltrreader.cpp)  
-- [`vendor/xoreos/src/aurora/ltrfile.cpp`](https://github.com/th3w1zard1/xoreos/blob/master/src/aurora/ltrfile.cpp)  
-- [`vendor/KotOR.js/src/resource/LTRObject.ts`](https://github.com/th3w1zard1/KotOR.js/blob/master/src/resource/LTRObject.ts)  
-- [`vendor/Kotor.NET/Kotor.NET/Formats/KotorLTR/LTR.cs`](https://github.com/th3w1zard1/Kotor.NET/blob/master/Kotor.NET/Formats/KotorLTR/LTR.cs)  
+- Community C reference: [mtijanic `nwnltr.c`](https://github.com/mtijanic/nwn-misc/blob/master/nwnltr.c) (NWN lineage; KotOR uses 28 letters).
+- PyKotor: [`ltr_data.py` `generate` L170–L288](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/ltr/ltr_data.py#L170-L288); I/O [`io_ltr.py` L55–L156](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/ltr/io_ltr.py#L55-L156).
+- [reone `ltrreader.cpp` L27–L79](https://github.com/modawan/reone/blob/master/src/libs/resource/format/ltrreader.cpp#L27-L79); [xoreos `ltrfile.cpp`](https://github.com/xoreos/xoreos/blob/master/src/aurora/ltrfile.cpp); [KotOR.js `LTRObject.ts` L51–L210](https://github.com/KobaltBlu/KotOR.js/blob/master/src/resource/LTRObject.ts#L51-L210).
 
-Because PyKotor uses the structure described in the cited implementations, *LTR* resources can be exchanged with those toolchains without conversion steps.
+Because PyKotor matches the binary layout described above, *LTR* resources round-trip with the other cited implementations for **28-letter** KotOR tables.

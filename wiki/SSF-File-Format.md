@@ -19,6 +19,8 @@ This document provides a detailed description of the SSF (sound set files) file 
 
 ---
 
+
+
 ## File structure overview
 
 SSF files define **28** logical sound slots (indices `0`–`27`) that creatures use for battle cries, selection lines, grunts, UI feedback, etc. Each slot holds a [StrRef](TLK-File-Format#string-references-strref) into [`dialog.tlk`](TLK-File-Format) (or `-1` / `0xFFFFFFFF` for “no sound”). SSF files load through the same [resource resolution order](Concepts#resource-resolution-order) as other resources (override, MOD/SAV, KEY/BIF).
@@ -59,7 +61,7 @@ The file header is 12 bytes in size:
 
 ### Sound Table
 
-After the header, the file contains a contiguous array of **little-endian int32** StrRefs. **KotOR uses the first 28 entries** (indices `0`–`27`) as in the [Sound event types](#sound-event-types) table. `-1` or `0xFFFFFFFF` means “no sound” for that slot.
+After the header, the file contains a contiguous array of **little-endian int32** StrRefs. **KotOR uses the first 28 entries** (indices `0`–`27`) as in the **Sound event types** table below. `-1` or `0xFFFFFFFF` means “no sound” for that slot.
 
 Some files and tools use **40** uint32 entries (extra trailing `-1` words). Treat anything beyond index **27** as padding unless you have a specific toolchain that assigns meaning to it.
 

@@ -21,7 +21,7 @@ This document provides a detailed description of the BIF (BioWare index file) fi
 
 ## File structure overview
 
-BIF files work in tandem with [KEY files](KEY-File-Format) which provide the filename-to-resource mappings. BIF files contain only resource IDs, types, and data - the actual filenames ([ResRefs](GFF-File-Format#gff-data-types)) are stored in the [KEY file](KEY-File-Format). BIF files are [container containers](ERF-File-Format) that store the bulk of game resources.
+BIF files work in tandem with [KEY files](KEY-File-Format) which provide the filename-to-resource mappings. BIF files contain only resource IDs, types, and data - the actual filenames ([ResRefs](GFF-File-Format#gff-data-types)) are stored in the [KEY file](KEY-File-Format). BIF files are [containers](ERF-File-Format) that store the bulk of game resources.
 
 ### BIF Usage in KotOR
 
@@ -40,15 +40,14 @@ The [modular structure](https://en.wikipedia.org/wiki/Modular_programming) allow
 
 **Implementation:** [`Libraries/PyKotor/src/pykotor/resource/formats/bif/`](https://github.com/OldRepublicDevs/PyKotor/tree/master/Libraries/PyKotor/src/pykotor/resource/formats/bif/)
 
-**Vendor References:**
+**Cross-reference implementations (line anchors are against `master` and may drift):**
 
-Repositories (original first, mirror second): **[reone](https://github.com/seedhartha/reone)** ([Mirror: th3w1zard1/reone](https://github.com/th3w1zard1/reone)), **[xoreos](https://github.com/xoreos/xoreos)** ([Mirror: th3w1zard1/xoreos](https://github.com/th3w1zard1/xoreos)), **[KotOR.js](https://github.com/KobaltBlu/KotOR.js)** ([Mirror: th3w1zard1/KotOR.js](https://github.com/th3w1zard1/KotOR.js)), **[Kotor.NET](https://github.com/NickHugi/Kotor.NET)** ([Mirror: th3w1zard1/Kotor.NET](https://github.com/th3w1zard1/Kotor.NET)), **[xoreos-tools](https://github.com/xoreos/xoreos-tools)** ([Mirror: th3w1zard1/xoreos-tools](https://github.com/th3w1zard1/xoreos-tools)), **[bioware-kaitai-formats](https://github.com/OldRepublicDevs/bioware-kaitai-formats)** - Kaitai Struct format specs for BIF and other BioWare formats (no mirror).
-
-- **[reone](https://github.com/seedhartha/reone)** ([Mirror: th3w1zard1/reone](https://github.com/th3w1zard1/reone)): [`src/libs/resource/format/bifreader.cpp`](https://github.com/seedhartha/reone/blob/master/src/libs/resource/format/bifreader.cpp) - Complete C++ BIF reader implementation
-- **[xoreos](https://github.com/xoreos/xoreos)** ([Mirror: th3w1zard1/xoreos](https://github.com/th3w1zard1/xoreos)): [`src/aurora/biffile.cpp`](https://github.com/xoreos/xoreos/blob/master/src/aurora/biffile.cpp) - Generic Aurora BIF implementation (shared format across KotOR, NWN, and other Aurora games)
-- **[KotOR.js](https://github.com/KobaltBlu/KotOR.js)** ([Mirror: th3w1zard1/KotOR.js](https://github.com/th3w1zard1/KotOR.js)): [`src/resource/BIFObject.ts`](https://github.com/KobaltBlu/KotOR.js/blob/master/src/resource/BIFObject.ts) - TypeScript BIF parser with decompression
-- **[Kotor.NET](https://github.com/NickHugi/Kotor.NET)** ([Mirror: th3w1zard1/Kotor.NET](https://github.com/th3w1zard1/Kotor.NET)): [`Kotor.NET/Formats/KotorBIF/`](https://github.com/NickHugi/Kotor.NET/tree/master/Kotor.NET/Formats/KotorBIF) - .NET BIF reader/writer
-- **[xoreos-tools](https://github.com/xoreos/xoreos-tools)** ([Mirror: th3w1zard1/xoreos-tools](https://github.com/th3w1zard1/xoreos-tools)): [`src/aurora/biffile.cpp`](https://github.com/xoreos/xoreos-tools/blob/master/src/aurora/biffile.cpp) - Command-line BIF extraction tools
+- **PyKotor** — layout (header + variable entries + BZF note): [`bif_data.py` module docstring L1–L40](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/bif/bif_data.py#L1-L40); `BIFType` / `BIFResource` / `BIF`: [`bif_data.py` L60–L569](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/bif/bif_data.py#L60-L569); binary I/O: [`BIFBinaryReader`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/bif/io_bif.py#L51-L180) (`load` L83–L89, signature L91–L109, header L111–L120, resource table L122–L155, payload L157–L179), [`BIFBinaryWriter`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/bif/io_bif.py#L183-L256); raw LZMA helper for BZF: [`_decompress_bzf_payload` L20–L48](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/bif/io_bif.py#L20-L48).
+- **[reone](https://github.com/modawan/reone)** ([historical upstream / mirror: seedhartha/reone](https://github.com/seedhartha/reone)): [`bifreader.cpp` `BifReader::load` L27–L31](https://github.com/modawan/reone/blob/master/src/libs/resource/format/bifreader.cpp#L27-L31) (expects an 8-byte signature: `BIFFV1` plus one trailing ASCII space), [`loadHeader` L34–L41](https://github.com/modawan/reone/blob/master/src/libs/resource/format/bifreader.cpp#L34-L41), [`loadResources` L43–L50](https://github.com/modawan/reone/blob/master/src/libs/resource/format/bifreader.cpp#L43-L50), [`readResourceEntry` L52–L67](https://github.com/modawan/reone/blob/master/src/libs/resource/format/bifreader.cpp#L52-L67).
+- **[xoreos](https://github.com/xoreos/xoreos)** / **[xoreos-tools](https://github.com/xoreos/xoreos-tools)**: [`biffile.cpp`](https://github.com/xoreos/xoreos/blob/master/src/aurora/biffile.cpp) — Aurora-family BIF (fixed vs variable resource handling, KEY merge helpers).
+- **[KotOR.js](https://github.com/KobaltBlu/KotOR.js)**: [`BIFObject.ts` `readFromDisk` L84–L115](https://github.com/KobaltBlu/KotOR.js/blob/master/src/resource/BIFObject.ts#L84-L115) — reads 20-byte header and 16-byte variable rows; [`getResourceBuffer` L164–L177](https://github.com/KobaltBlu/KotOR.js/blob/master/src/resource/BIFObject.ts#L164-L177).
+- **[Kotor.NET](https://github.com/NickHugi/Kotor.NET)**: [`BIFBinaryStructure.cs` `FileRoot` / `FileHeader` / `VariableResource` L16–L65](https://github.com/NickHugi/Kotor.NET/blob/master/Kotor.NET/Formats/KotorBIF/BIFBinaryStructure.cs#L16-L65) — header skips the fixed-resource `uint32` with `BaseStream.Position += 4` before reading `OffsetToResources` (same on-disk layout as PyKotor/reone).
+- **[bioware-kaitai-formats](https://github.com/OldRepublicDevs/bioware-kaitai-formats)** — Kaitai Struct specs for BIF and related BioWare containers.
 
 ---
 
@@ -68,16 +67,9 @@ The file header is 20 bytes in size:
 
 **Note on Fixed Resources:** The "Fixed Resource count" field is a legacy holdover from *Neverwinter Nights* (not used in *KotOR*) where some resource types had predetermined sizes. In *KotOR*, this field is always `0` and fixed resource tables are never used. All resources are stored in the variable resource table regardless of their size.
 
-**Note on header Variations**: [`vendor/xoreos-docs/specs/torlack/bif.html`](https://github.com/th3w1zard1/xoreos-docs/blob/master/specs/torlack/bif.html) (Tim Smith/Torlack's reverse-engineered documentation) shows the field at offset `0x000C` as "Unknown value" rather than "Fixed Resource count". This reflects the field's historical ambiguity, but in practice it serves as the fixed resource count (always `0` in *KotOR*).
+**Note on header Variations**: [xoreos-docs Torlack `bif.html`](https://github.com/xoreos/xoreos-docs/blob/master/specs/torlack/bif.html) shows the field at offset `0x000C` as “Unknown value” rather than “Fixed Resource count”. In *KotOR* it is always `0`; PyKotor **rejects** `fixed_res_count > 0` ([`io_bif.py` L117–L120](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/bif/io_bif.py#L117-L120)).
 
-**References**
-
-**Vendor Implementations:**
-
-- [`vendor/xoreos/src/aurora/biffile.cpp:64-67`](https://github.com/xoreos/xoreos/blob/master/src/aurora/biffile.cpp#L64-L67) - Checks fixed resource count is 0
-- [`vendor/reone/src/libs/resource/format/bifreader.cpp:34`](https://github.com/th3w1zard1/reone/blob/master/src/libs/resource/format/bifreader.cpp#L34) - Header parsing
-- [`vendor/Kotor.NET/Kotor.NET/Formats/KotorBIF/BIFBinaryStructure.cs:13-67`](https://github.com/th3w1zard1/Kotor.NET/blob/master/Kotor.NET/Formats/KotorBIF/BIFBinaryStructure.cs#L13-L67) - .NET BIF binary structure
-- [`vendor/xoreos-docs/specs/torlack/bif.html`](https://github.com/th3w1zard1/xoreos-docs/blob/master/specs/torlack/bif.html) - Tim Smith (Torlack)'s reverse-engineered BIF format documentation
+**References:** [xoreos `biffile.cpp` L64–L67](https://github.com/xoreos/xoreos/blob/master/src/aurora/biffile.cpp#L64-L67) (fixed count must be 0); [reone `loadHeader` L34–L41](https://github.com/modawan/reone/blob/master/src/libs/resource/format/bifreader.cpp#L34-L41); [Kotor.NET `FileHeader` L35–L47](https://github.com/NickHugi/Kotor.NET/blob/master/Kotor.NET/Formats/KotorBIF/BIFBinaryStructure.cs#L35-L47); [Torlack `bif.html`](https://github.com/xoreos/xoreos-docs/blob/master/specs/torlack/bif.html).
 
 ### Variable Resource Table
 
@@ -94,13 +86,7 @@ Each variable resource entry is 16 bytes:
 
 Entries are read sequentially from the variable resource table. The table is located at the offset specified in the file header. Each entry is exactly 16 bytes, allowing efficient sequential reading.
 
-**References**
-
-**Vendor Implementations:**
-
-- [`vendor/reone/src/libs/resource/format/bifreader.cpp:50-63`](https://github.com/th3w1zard1/reone/blob/master/src/libs/resource/format/bifreader.cpp#L50-L63) - Variable resource entry reading order
-- [`vendor/Kotor.NET/Kotor.NET/Formats/KotorBIF/BIFBinaryStructure.cs:51-65`](https://github.com/th3w1zard1/Kotor.NET/blob/master/Kotor.NET/Formats/KotorBIF/BIFBinaryStructure.cs#L51-L65) - Entry structure
-- [`vendor/xoreos/src/aurora/biffile.cpp:84-96`](https://github.com/xoreos/xoreos/blob/master/src/aurora/biffile.cpp#L84-L96) - Reading with version-specific handling
+**References:** [reone `readResourceEntry` L52–L67](https://github.com/modawan/reone/blob/master/src/libs/resource/format/bifreader.cpp#L52-L67); [Kotor.NET `VariableResource` L49–L64](https://github.com/NickHugi/Kotor.NET/blob/master/Kotor.NET/Formats/KotorBIF/BIFBinaryStructure.cs#L49-L64); [xoreos `biffile.cpp` L84–L96](https://github.com/xoreos/xoreos/blob/master/src/aurora/biffile.cpp#L84-L96); PyKotor table loop [`io_bif.py` L122–L141](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/bif/io_bif.py#L122-L141).
 
 ### Resource Data
 
@@ -134,9 +120,9 @@ The engine reads resources through the following process:
 **Vendor Implementations:**
 
 - [`vendor/xoreos/src/aurora/biffile.cpp:84-96`](https://github.com/xoreos/xoreos/blob/master/src/aurora/biffile.cpp#L84-L96) - Variable resource entry reading
-- [`vendor/reone/src/libs/resource/format/bifreader.cpp:41-48`](https://github.com/th3w1zard1/reone/blob/master/src/libs/resource/format/bifreader.cpp#L41-L48) - Resource table loading
+- [reone `loadResources` L43–L50](https://github.com/modawan/reone/blob/master/src/libs/resource/format/bifreader.cpp#L43-L50) — resource table load
 - [`vendor/xoreos/src/aurora/biffile.cpp:99-123`](https://github.com/xoreos/xoreos/blob/master/src/aurora/biffile.cpp#L99-L123) - mergeKEY process combining KEY and BIF
-- [`vendor/xoreos-docs/specs/torlack/bif.html`](https://github.com/th3w1zard1/xoreos-docs/blob/master/specs/torlack/bif.html) - Resource structure details (Resource ID, offset, length, type)
+- [xoreos-docs Torlack `bif.html`](https://github.com/xoreos/xoreos-docs/blob/master/specs/torlack/bif.html) — resource row semantics (ID, offset, length, type)
 
 **Resource IDs:**
 
@@ -150,12 +136,7 @@ The *Resource ID* in the *BIF* file's *variable resource table* must match the *
 - Resource index: `0x29` (41st resource in the *BIF*)
 - BIF index: `0x004` (4th *BIF* file in the [KEY](KEY-File-Format)'s *BIF* table)
 
-**References**
-
-**Vendor Implementations:**
-
-- [`vendor/xoreos-docs/specs/torlack/key.html:154-168`](https://github.com/th3w1zard1/xoreos-docs/blob/master/specs/torlack/key.html#L154-L168) - Resource ID encoding
-- [`vendor/reone/src/libs/resource/format/bifreader.cpp:50-54`](https://github.com/th3w1zard1/reone/blob/master/src/libs/resource/format/bifreader.cpp#L50-L54) - Resource ID reading from BIF entries
+**References:** [KEY File Format](KEY-File-Format#resource-id-encoding); [Torlack `key.html`](https://github.com/xoreos/xoreos-docs/blob/master/specs/torlack/key.html) (worked examples); [reone `readResourceEntry` L54–L56](https://github.com/modawan/reone/blob/master/src/libs/resource/format/bifreader.cpp#L54-L56) (reads `id` field from each 16-byte row).
 
 ---
 
@@ -196,16 +177,7 @@ The *BZF* format wraps a complete *BIF* file in LZMA compression:
 
 The *BZF* wrapper is completely transparent to the game engine - once decompressed in memory, the resource access patterns are identical to standard BIF files. Tools should decompress *BZF* files before reading resource entries, as the variable resource table offsets are relative to the decompressed BIF structure.
 
-**References**
-
-**PyKotor:**
-
-- [`Libraries/PyKotor/src/pykotor/resource/formats/bif/bif_data.py:45-52`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/bif/bif_data.py#L45-L52) - *BZF* compression details
-
-**Vendor Implementations:**
-
-- [`vendor/xoreos/src/aurora/biffile.h:56-60`](https://github.com/xoreos/xoreos/blob/master/src/aurora/biffile.h#L56-L60) - *BZF* as compressed *BIF* (Android/iOS)
-- [`vendor/reone/src/libs/resource/format/bifreader.cpp:27-30`](https://github.com/th3w1zard1/reone/blob/master/src/libs/resource/format/bifreader.cpp#L27-L30) - *BIF* signature detection
+**References:** PyKotor documents the BZF wrapper in [`bif_data.py` L35–L39](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/bif/bif_data.py#L35-L39); decompression path [`io_bif.py` L162–L169](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/bif/io_bif.py#L162-L169) + [`_decompress_bzf_payload` L20–L48](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/bif/io_bif.py#L20-L48). **Version string:** `BIFBinaryReader` accepts the second 4-byte field as either `V1` plus two trailing ASCII spaces (the usual `"V1  "` layout) or `V1.1` in the 8-byte signature for **both** BIF and BZF ([`io_bif.py` L107–L109](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/bif/io_bif.py#L107-L109)); some distributions describe mobile BZF as `V1.0` in prose—verify against real headers if a file fails to load. [xoreos `biffile.h` L56–L60](https://github.com/xoreos/xoreos/blob/master/src/aurora/biffile.h#L56-L60); [reone `BifReader::load` L27–L31](https://github.com/modawan/reone/blob/master/src/libs/resource/format/bifreader.cpp#L27-L31).
 
 ---
 

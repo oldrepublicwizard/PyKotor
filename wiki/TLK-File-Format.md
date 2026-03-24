@@ -28,16 +28,14 @@ TLK files store localized strings in a binary format. The game loads `dialog.tlk
 
 **Implementation:** [`Libraries/PyKotor/src/pykotor/resource/formats/tlk/`](https://github.com/OldRepublicDevs/PyKotor/tree/master/Libraries/PyKotor/src/pykotor/resource/formats/tlk/)
 
-**Vendor References:**
+**Cross-reference implementations (line anchors are against `master` and may drift):**
 
-Repositories (original first, mirror second): **[reone](https://github.com/seedhartha/reone)** ([Mirror: th3w1zard1/reone](https://github.com/th3w1zard1/reone)), **[xoreos](https://github.com/xoreos/xoreos)** ([Mirror: th3w1zard1/xoreos](https://github.com/th3w1zard1/xoreos)), **[KotOR.js](https://github.com/KobaltBlu/KotOR.js)** ([Mirror: th3w1zard1/KotOR.js](https://github.com/th3w1zard1/KotOR.js)), **[KotOR-Unity](https://github.com/reubenduncan/KotOR-Unity)** ([Mirror: th3w1zard1/KotOR-Unity](https://github.com/th3w1zard1/KotOR-Unity)), **[Kotor.NET](https://github.com/NickHugi/Kotor.NET)** ([Mirror: th3w1zard1/Kotor.NET](https://github.com/th3w1zard1/Kotor.NET)), **[xoreos-tools](https://github.com/xoreos/xoreos-tools)** ([Mirror: th3w1zard1/xoreos-tools](https://github.com/th3w1zard1/xoreos-tools)).
-
-- **[reone](https://github.com/seedhartha/reone)** ([Mirror: th3w1zard1/reone](https://github.com/th3w1zard1/reone)): [`src/libs/resource/format/tlkreader.cpp`](https://github.com/seedhartha/reone/blob/master/src/libs/resource/format/tlkreader.cpp) - Complete C++ TLK reader implementation
-- **[xoreos](https://github.com/xoreos/xoreos)** ([Mirror: th3w1zard1/xoreos](https://github.com/th3w1zard1/xoreos)): [`src/aurora/talktable.cpp`](https://github.com/xoreos/xoreos/blob/master/src/aurora/talktable.cpp) - Generic Aurora Talk Table implementation (shared format)
-- **[KotOR.js](https://github.com/KobaltBlu/KotOR.js)** ([Mirror: th3w1zard1/KotOR.js](https://github.com/th3w1zard1/KotOR.js)): [`src/resource/TLKObject.ts`](https://github.com/KobaltBlu/KotOR.js/blob/master/src/resource/TLKObject.ts) - TypeScript TLK parser with localization support
-- **[KotOR-Unity](https://github.com/reubenduncan/KotOR-Unity)** ([Mirror: th3w1zard1/KotOR-Unity](https://github.com/th3w1zard1/KotOR-Unity)): [`Assets/Scripts/FileObjects/TLKObject.cs`](https://github.com/reubenduncan/KotOR-Unity/blob/master/Assets/Scripts/FileObjects/TLKObject.cs) - C# Unity TLK loader
-- **[Kotor.NET](https://github.com/NickHugi/Kotor.NET)** ([Mirror: th3w1zard1/Kotor.NET](https://github.com/th3w1zard1/Kotor.NET)): [`Kotor.NET/Formats/KotorTLK/`](https://github.com/NickHugi/Kotor.NET/tree/master/Kotor.NET/Formats/KotorTLK) - .NET TLK reader/writer with builder API
-- **[xoreos-tools](https://github.com/xoreos/xoreos-tools)** ([Mirror: th3w1zard1/xoreos-tools](https://github.com/th3w1zard1/xoreos-tools)): [`src/aurora/talktable.cpp`](https://github.com/xoreos/xoreos-tools/blob/master/src/aurora/talktable.cpp) - Command-line TLK extraction and editing tools
+- **PyKotor** — binary layout in module docstring: [`tlk_data.py` L1–L39](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/tlk/tlk_data.py#L1-L39); `TLK` / `TLKEntry`: [`tlk_data.py` L54–L282](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/tlk/tlk_data.py#L54-L282), [`L285–L420`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/tlk/tlk_data.py#L285-L420); read path (Kaitai + legacy 40-byte rows): [`io_tlk.py` `_load_tlk_from_kaitai` L32–L63](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/tlk/io_tlk.py#L32-L63), [`_load_tlk_legacy` L66–L120](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/tlk/io_tlk.py#L66-L120), [`TLKBinaryReader.load` L149–L156](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/tlk/io_tlk.py#L149-L156); write path: [`TLKBinaryWriter` L168–L219](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/tlk/io_tlk.py#L168-L219) (`_write_file_header` L183–L192, `_write_entry` L194–L219).
+- **[reone](https://github.com/modawan/reone)** ([historical upstream / mirror: seedhartha/reone](https://github.com/seedhartha/reone)): [`tlkreader.cpp` `TlkReader::load` L34–L43](https://github.com/modawan/reone/blob/master/src/libs/resource/format/tlkreader.cpp#L34-L43) (8-byte `"TLK V3.0"` signature + language/count/offset), [`loadStrings` L45–L71](https://github.com/modawan/reone/blob/master/src/libs/resource/format/tlkreader.cpp#L45-L71) (40-byte rows, **lowercases** sound ResRef); flag constants L28–L32.
+- **[xoreos](https://github.com/xoreos/xoreos)** / **[xoreos-tools](https://github.com/xoreos/xoreos-tools)**: [`talktable.cpp`](https://github.com/xoreos/xoreos/blob/master/src/aurora/talktable.cpp) — Aurora talk table (shared with other Aurora titles).
+- **[KotOR.js](https://github.com/KobaltBlu/KotOR.js)**: [`TLKObject.ts` `LoadFromBuffer` L51–L96](https://github.com/KobaltBlu/KotOR.js/blob/master/src/resource/TLKObject.ts#L51-L96) — 20-byte header then per-entry metadata; note the last field before text is read with `readUInt32()` while the on-disk field is a **float** sound length—compare PyKotor [`struct.unpack("<f", ...)` L106](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/tlk/io_tlk.py#L106).
+- **[KotOR-Unity](https://github.com/reubenduncan/KotOR-Unity)**: [`TLKObject.cs`](https://github.com/reubenduncan/KotOR-Unity/blob/master/Assets/Scripts/FileObjects/TLKObject.cs).
+- **[Kotor.NET](https://github.com/NickHugi/Kotor.NET)**: [`TLKBinaryStructure.cs` `FileHeader` / `StringData` / `FileRoot` L16–L130](https://github.com/NickHugi/Kotor.NET/blob/master/Kotor.NET/Formats/KotorTLK/TLKBinaryStructure.cs#L16-L130).
 
 ### See also
 
@@ -62,11 +60,7 @@ The file header is 20 bytes in size:
 | string count        | [int32](GFF-File-Format#gff-data-types)   | 12 (0x0C) | 4    | Number of string entries in the file           |
 | string Entries offset | [int32](GFF-File-Format#gff-data-types) | 16 (0x10) | 4    | offset to string entries array (typically 20)  |
 
-**References**
-
-**Vendor Implementations:**
-
-- **[reone](https://github.com/seedhartha/reone)** ([Mirror: th3w1zard1/reone](https://github.com/th3w1zard1/reone)): [`src/libs/resource/format/tlkreader.cpp:31-84`](https://github.com/seedhartha/reone/blob/master/src/libs/resource/format/tlkreader.cpp#L31-L84) - File header parsing
+**References:** [reone `TlkReader::load` L34–L43](https://github.com/modawan/reone/blob/master/src/libs/resource/format/tlkreader.cpp#L34-L43); PyKotor header parse [`_load_tlk_legacy` L71–L75](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/tlk/io_tlk.py#L71-L75) / Kaitai path [`_load_tlk_from_kaitai` L35–L44](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/tlk/io_tlk.py#L35-L44); [Kotor.NET `FileHeader` L66–L76](https://github.com/NickHugi/Kotor.NET/blob/master/Kotor.NET/Formats/KotorTLK/TLKBinaryStructure.cs#L66-L76); [KotOR.js `LoadFromBuffer` L59–L64](https://github.com/KobaltBlu/KotOR.js/blob/master/src/resource/TLKObject.ts#L59-L64).
 
 ### String data table
 
@@ -82,11 +76,7 @@ The string data table contains metadata for each string entry. Each entry is 40 
 | string size       | UInt32    | 32 (0x20) | 4    | Length of string text in bytes                                  |
 | Sound Length      | float     | 36 (0x24) | 4    | Duration of voice-over audio in seconds                         |
 
-**References**
-
-**Vendor Implementations:**
-
-- **[Kotor.NET](https://github.com/NickHugi/Kotor.NET)** ([Mirror: th3w1zard1/Kotor.NET](https://github.com/th3w1zard1/Kotor.NET)): [`Kotor.NET/Formats/KotorTLK/TLKBinaryStructure.cs:57-90`](https://github.com/NickHugi/Kotor.NET/blob/master/Kotor.NET/Formats/KotorTLK/TLKBinaryStructure.cs#L57-L90) - String data table structure
+**References:** [Kotor.NET `StringData` L92–L129](https://github.com/NickHugi/Kotor.NET/blob/master/Kotor.NET/Formats/KotorTLK/TLKBinaryStructure.cs#L92-L129); PyKotor row decode [`_load_tlk_legacy` L96–L112](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/tlk/io_tlk.py#L96-L112); [reone `loadStrings` L45–L69](https://github.com/modawan/reone/blob/master/src/libs/resource/format/tlkreader.cpp#L45-L69); [KotOR.js `LoadFromBuffer` L65–L75](https://github.com/KobaltBlu/KotOR.js/blob/master/src/resource/TLKObject.ts#L65-L75).
 
 **flag bits:**
 
@@ -129,11 +119,7 @@ string text is stored at the offset specified in the string data table entry. Th
 
 Each TLK entry contains:
 
-**References**
-
-**PyKotor:**
-
-- [`Libraries/PyKotor/src/pykotor/resource/formats/tlk/tlk_data.py`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/tlk/tlk_data.py) - TLKEntry and TLK implementation
+**References:** PyKotor `TLK` / `TLKEntry` — [`tlk_data.py` L54–L420](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/tlk/tlk_data.py#L54-L420); entry serialization — [`io_tlk.py` `_write_entry` L194–L219](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/tlk/io_tlk.py#L194-L219).
 
 | Attribute        | type   | Description                                                      |
 | ---------------- | ------ | ---------------------------------------------------------------- |
@@ -207,15 +193,16 @@ Windows-1252 is a single-byte encoding (256 code points) and is often loosely ca
 
 ## Implementation Details
 
-**Binary Reading**: [`Libraries/PyKotor/src/pykotor/resource/formats/tlk/io_tlk.py:19-115`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/tlk/io_tlk.py#L19-L115)
+| Layer | PyKotor (`master`) |
+| ----- | ------------------- |
+| Layout spec (docstring) | [`tlk_data.py` L1–L39](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/tlk/tlk_data.py#L1-L39) |
+| `TLK` / `TLKEntry` | [`tlk_data.py` L54–L420](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/tlk/tlk_data.py#L54-L420) |
+| Binary read | [`io_tlk.py` L32–L156](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/tlk/io_tlk.py#L32-L156) (`TLKBinaryReader` L123–L156) |
+| Binary write | [`io_tlk.py` L159–L219](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/tlk/io_tlk.py#L159-L219) |
 
-**Binary Writing**: [`Libraries/PyKotor/src/pykotor/resource/formats/tlk/io_tlk.py:117-178`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/tlk/io_tlk.py#L117-L178)
+**Kotor.NET:** [`TLKBinaryStructure.cs` L16–L130](https://github.com/NickHugi/Kotor.NET/blob/master/Kotor.NET/Formats/KotorTLK/TLKBinaryStructure.cs#L16-L130).
 
-**TLK Class**: [`Libraries/PyKotor/src/pykotor/resource/formats/tlk/tlk_data.py:56-291`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/tlk/tlk_data.py#L56-L291)
-
-**Kotor.NET** (C#):
-
-- structure: **[Kotor.NET](https://github.com/NickHugi/Kotor.NET)** ([Mirror: th3w1zard1/Kotor.NET](https://github.com/th3w1zard1/Kotor.NET)): [`Kotor.NET/Formats/KotorTLK/TLKBinaryStructure.cs`](https://github.com/NickHugi/Kotor.NET/blob/master/Kotor.NET/Formats/KotorTLK/TLKBinaryStructure.cs)
+See **Cross-reference implementations** under [File structure overview](#file-structure-overview) for reone, xoreos, KotOR.js, and KotOR-Unity.
 
 ### See also
 
