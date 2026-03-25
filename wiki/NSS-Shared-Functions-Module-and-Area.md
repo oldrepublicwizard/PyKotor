@@ -6,6 +6,18 @@ Part of the [NSS File Format Documentation](NSS-File-Format).
 
 This document provides detailed documentation for NWScript module and area functions. These functions allow scripts to get area information, detect area transitions, access the player character, and manage module/area state.
 
+## Implementation cross-reference
+
+Area/module routines are registered like other NWScript calls; **routine IDs** follow `nwscript.nss`.
+
+- **PyKotor:** NSS → NCS — [`resource/formats/ncs/compiler/`](https://github.com/OldRepublicDevs/PyKotor/tree/master/Libraries/PyKotor/src/pykotor/resource/formats/ncs/compiler); routine tables — [`scriptdefs.py`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/common/scriptdefs.py), [`scriptlib.py`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/common/scriptlib.py).
+
+- **reone:** [`main.cpp`](https://github.com/modawan/reone/blob/master/src/libs/game/script/routine/impl/main.cpp) — e.g. [`GetAreaUnescapable` L250+](https://github.com/modawan/reone/blob/master/src/libs/game/script/routine/impl/main.cpp#L250), [`GetArea` L276+](https://github.com/modawan/reone/blob/master/src/libs/game/script/routine/impl/main.cpp#L276), [`GetEnteringObject` L287+](https://github.com/modawan/reone/blob/master/src/libs/game/script/routine/impl/main.cpp#L287), [`GetExitingObject` L296+](https://github.com/modawan/reone/blob/master/src/libs/game/script/routine/impl/main.cpp#L296); K1 `insert` [L6892–L6893](https://github.com/modawan/reone/blob/master/src/libs/game/script/routine/impl/main.cpp#L6892-L6893), TSL [L7448–L7449](https://github.com/modawan/reone/blob/master/src/libs/game/script/routine/impl/main.cpp#L7448-L7449).
+
+- **KotOR.js:** [`NWScriptDefK1.ts`](https://github.com/KobaltBlu/KotOR.js/blob/master/src/nwscript/NWScriptDefK1.ts) — e.g. [`GetArea` L325+](https://github.com/KobaltBlu/KotOR.js/blob/master/src/nwscript/NWScriptDefK1.ts#L325), [`GetEnteringObject` L334+](https://github.com/KobaltBlu/KotOR.js/blob/master/src/nwscript/NWScriptDefK1.ts#L334), [`GetExitingObject` L343+](https://github.com/KobaltBlu/KotOR.js/blob/master/src/nwscript/NWScriptDefK1.ts#L343).
+
+- **Kotor.NET:** [`NCS.cs` L9+](https://github.com/NickHugi/Kotor.NET/blob/master/Kotor.NET/Formats/KotorNCS/NCS.cs#L9).
+
 ---
 
 ## Module and Area Fundamentals

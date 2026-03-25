@@ -40,6 +40,7 @@ TXI ([texture](TPC-File-Format) Info) files are compact ASCII descriptors that a
 - **[xoreos](https://github.com/xoreos/xoreos)** — [`src/graphics/images/txi.cpp` L1+](https://github.com/xoreos/xoreos/blob/master/src/graphics/images/txi.cpp#L1) (Aurora TXI)
 - **[KotOR.js](https://github.com/KobaltBlu/KotOR.js)** — [`TXI` L16+](https://github.com/KobaltBlu/KotOR.js/blob/master/src/resource/TXI.ts#L16); command enums [`src/enums/graphics/txi/`](https://github.com/KobaltBlu/KotOR.js/tree/master/src/enums/graphics/txi)
 - **[KotOR-Unity](https://github.com/reubenduncan/KotOR-Unity)** — [`TXI.cs` L1+](https://github.com/reubenduncan/KotOR-Unity/blob/master/Assets/Scripts/Resource/TXI.cs#L1)
+- **[Kotor.NET](https://github.com/NickHugi/Kotor.NET)** — [`Kotor.NET/Formats/KotorTXI/TXI.cs` L8+](https://github.com/NickHugi/Kotor.NET/blob/master/Kotor.NET/Formats/KotorTXI/TXI.cs#L8) (modifier DTOs / `RawString()` helpers); [`TXIReader.cs` L13+](https://github.com/NickHugi/Kotor.NET/blob/master/Kotor.NET/Formats/KotorTXI/TXIReader.cs#L13) (reader scaffold; verify behavior on default branch before relying on `Read()`)
 
 ### See also
 

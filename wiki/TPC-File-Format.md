@@ -46,6 +46,11 @@ Repositories (original first, mirror second): **[reone](https://github.com/modaw
 - **[tga2tpc](https://github.com/ndixUR/tga2tpc)** - Standalone TGA to TPC conversion tool
 - **[xoreos-tools](https://github.com/xoreos/xoreos-tools)**: [`src/images/tpc.cpp`](https://github.com/xoreos/xoreos-tools/blob/master/src/images/tpc.cpp) - Command-line TPC extraction and conversion
 
+### Community context (workflow)
+
+- Deadly Stream - [Mod installation order and TGA vs. TPC files](https://deadlystream.com/topic/11056-mod-installation-order-and-tga-vs-tpc-files/) (forum discussion; pair with [Concepts](Concepts#resource-resolution-order) for authoritative override/MOD order).
+- Deadly Stream - [TOOL: tga2tpc](https://deadlystream.com/topic/5732-tooltga2pc/) / [tga2tpc file hub](https://deadlystream.com/files/file/1152-tga2tpc/) - practical notes (e.g. some **animated** frame aspect ratios reported to misbehave when converting TGA to TPC; verify in-game). For TPC to TGA or inspection, prefer Holocron/PyKotor, xoreos-tools, or other readers listed under **Vendor References** above.
+
 ### See also
 
 - [TXI File Format](TXI-File-Format) - Metadata companion for TPC textures
@@ -69,7 +74,8 @@ Repositories (original first, mirror second): **[reone](https://github.com/modaw
 
 **PyKotor:**
 
-- [`Libraries/PyKotor/src/pykotor/resource/formats/tpc/io_tpc.py:112-167`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/tpc/io_tpc.py#L112-L167) - Header read/write
+- [`io_tpc.py` L132-L186 (`TPCBinaryReader.load`)](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/tpc/io_tpc.py#L132-L186) - header fields, compressed/uncompressed size handling, optional TXI footer string
+- [`io_tpc.py` L419-L427 (`TPCBinaryWriter.write`)](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/tpc/io_tpc.py#L419-L427) - header serialization
 
 ---
 
@@ -118,7 +124,7 @@ TPC supports the following encodings (documented in `TPCTextureFormat`):
 
 **PyKotor:**
 
-- [`Libraries/PyKotor/src/pykotor/resource/formats/tpc/io_tpc.py:138-285`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/tpc/io_tpc.py#L138-L285) - Cube map and layer handling
+- [`io_tpc.py` L158-L304](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/tpc/io_tpc.py#L158-L304) - cube-map detection, layer/mipmap read loop, BGRA deswizzle, `_normalize_cubemaps`
 
 ---
 
@@ -132,7 +138,7 @@ TPC supports the following encodings (documented in `TPCTextureFormat`):
 
 **PyKotor:**
 
-- [`Libraries/PyKotor/src/pykotor/resource/formats/tpc/io_tpc.py:159-188`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/tpc/io_tpc.py#L159-L188) - TXI footer parsing
+- [`io_tpc.py` L179-L197](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/tpc/io_tpc.py#L179-L197) - TXI footer string read and `is_animated` flag
 
 ---
 

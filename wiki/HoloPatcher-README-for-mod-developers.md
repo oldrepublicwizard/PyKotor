@@ -14,6 +14,8 @@ HoloPatcher is a rewrite of TSLPatcher written in Python, utilizing the PyKotor 
 
 **KotORModSync in practice:** Use HoloPatcher (or equivalent) to **apply** each mod’s `tslpatchdata` to a game root. Use **KotORModSync** when you need help **tracking**, ordering, or syncing many installs across folders or team members. It is **not** a drop-in substitute for reading `[2DAList]` / `[TLKList]` rules—those remain defined by TSLPatcher/HoloPatcher INI. Repository: [`th3w1zard1/KotORModSync`](https://github.com/th3w1zard1/KotORModSync) (verify file paths on the repo default branch before adding deep `#L` links in the wiki).
 
+**Community context:** End users and mod authors often coordinate around [Deadly Stream — HoloPatcher](https://deadlystream.com/files/file/2243-holopatcher/) (downloads + discussion). Large distributions such as [KOTOR 1 Community Patch](https://deadlystream.com/files/file/1258-kotor-1-community-patch/) illustrate real-world HoloPatcher packaging and release notes—use for **workflow** and player expectations; use this wiki and [TSLPatcher syntax](TSLPatcher's-Official-Readme) pages for **INI semantics** SSOT.
+
 **Related PyKotor Tools:**
 
 - [`Tools/HolocronToolset/`](https://github.com/OldRepublicDevs/PyKotor/tree/master/Tools/HolocronToolset) - Integrated HoloPatcher [GUI](GFF-File-Format#gui-graphical-user-interface)

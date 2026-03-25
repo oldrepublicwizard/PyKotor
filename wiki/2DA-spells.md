@@ -88,19 +88,21 @@ The following columns are accessed by the reone engine:
 - [`Libraries/PyKotor/src/pykotor/extract/twoda.py:327`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L327) - [StrRef](TLK-File-Format#string-references-strref) column definitions for spells.2da (K2: name, spelldesc)
 - [`Libraries/PyKotor/src/pykotor/extract/twoda.py:239`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L239) - Script *ResRef* column definition for spells.2da (impactscript)
 - [`Libraries/PyKotor/src/pykotor/extract/twoda.py:432`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L432) - Script *ResRef* column definition for spells.2da (K2: impactscript)
-- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:465`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L465) - TwoDARegistry.POWERS constant definition
+- [`TwoDARegistry.POWERS` L709](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L709) — `spells` resref (`Load2DArrays_Spells()`)
 - [`Libraries/PyKotor/src/pykotor/extract/twoda.py:558-560`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L558-L560) - [GFF](GFF-File-Format) field mapping: "Subtype", "SpellId", and "Spell" -> spells.2da
 - [`Libraries/PyKotor/src/pykotor/common/scriptdefs.py:9380-9381`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/common/scriptdefs.py#L9380-L9381) - GetLastForcePowerUsed function comment referencing spells.2da
 - [`Libraries/PyKotor/src/pykotor/common/scriptlib.py:5676`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/common/scriptlib.py#L5676) - Debug print referencing spells.2da ID
 
 **HolocronToolset:**
 
-- [`Tools/HolocronToolset/src/toolset/data/installation.py:64`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Tools/HolocronToolset/src/toolset/data/installation.py#L64) - HTInstallation.TwoDA_POWERS constant
+- [`powers.2da` toolset reference](https://github.com/OldRepublicDevs/HolocronToolset/blob/master/src/toolset/data/installation.py#L110)
 
 **Cross-reference:**
 
 - **[reone](https://github.com/modawan/reone)**: [`spells.cpp` L32–L48](https://github.com/modawan/reone/blob/master/src/libs/game/d20/spells.cpp#L32-L48)
 - **[KotOR.js](https://github.com/KobaltBlu/KotOR.js)**: [`TalentSpell.ts` L16–L44](https://github.com/KobaltBlu/KotOR.js/blob/master/src/talents/TalentSpell.ts#L16-L44), [L42–L53](https://github.com/KobaltBlu/KotOR.js/blob/master/src/talents/TalentSpell.ts#L42-L53)
+
+**Community context (historical):** [LucasForums Archive — spells.2da, compatibility and TSL Patcher](https://www.lucasforumsarchive.com/thread/205823-spells2da-compatibility-and-tsl-patcher) (2010) discusses editing `forbiditemmask` per row and why **shipping a whole replacement `spells.2da`** collides with other mods—illustrates the problem [TSLPatcher 2DAList](TSLPatcher-2DAList-Syntax) / HoloPatcher merges solve. Thread is **workflow memory**, not authoritative column semantics (use this page + [2DA-File-Format](2DA-File-Format)).
 
 ### See also
 

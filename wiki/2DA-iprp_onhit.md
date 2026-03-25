@@ -15,7 +15,17 @@ Part of the [2DA File Format Documentation](2DA-File-Format).
 
 **References**:
 
-- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:487`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L487) - TwoDARegistry definition
-- [`Tools/HolocronToolset/src/toolset/data/installation.py:86`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Tools/HolocronToolset/src/toolset/data/installation.py#L86) - HTInstallation constant
+**PyKotor**
+
+- [`TwoDARegistry.IPRP_ONHIT` L697](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L697) — `iprp_onhit` (`Load2DArrays_OnHit()`)
+- [`read_2da` L67+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/twoda/twoda_auto.py#L67)
+
+**HolocronToolset**
+
+- [`HTInstallation.TwoDA_IPRP_ONHIT` L98](https://github.com/OldRepublicDevs/PyKotor/blob/master/Tools/HolocronToolset/src/toolset/data/installation.py#L98)
+
+**Cross-reference (other implementations)**
+
+- **[reone](https://github.com/modawan/reone)** / **[KotOR.js](https://github.com/KobaltBlu/KotOR.js)** / **[Kotor.NET](https://github.com/NickHugi/Kotor.NET)** — search for `iprp_onhit` when adding anchors.
 
 ---

@@ -23,6 +23,8 @@ NSS (NWScript Source) files contain human-readable NWScript source code that com
 - **[Kotor.NET](https://github.com/NickHugi/Kotor.NET)** — [`NCS` L9+](https://github.com/NickHugi/Kotor.NET/blob/master/Kotor.NET/Formats/KotorNCS/NCS.cs#L9) (`Kotor.NET/Formats/KotorNCS/`)
 - **[Vanilla_KOTOR_Script_Source](https://github.com/KOTORCommunityPatches/Vanilla_KOTOR_Script_Source)** — Decompiled vanilla KotOR scripts and `nwscript.nss` references
 
+**Community (scripts):** For NWScript help, modder threads, and tooling chatter, search [Deadly Stream](https://deadlystream.com) forums (index: [Tutorials](https://deadlystream.com/forum/25-tutorials/)) and see the hub list on [Home — community sources and archives](Home#community-sources-and-archives). **Historical compile workflow:** LucasForums Archive — [How to compile scripts?](https://www.lucasforumsarchive.com/thread/143681) (nwnnsscomp-era notes; pair with PyKotor/Holocron compilers in **Implementation (PyKotor)** above). **Dated tutorial series:** Deadly Stream — [[TUTORIAL] KotOR Modding Tutorial Series](https://deadlystream.com/topic/6886-tutorial-kotor-modding-tutorial-series/) (author warns some tools are outdated; prefer Holocron Toolset + this wiki for current paths). Treat forum posts as **peer guidance**, not proof of bytecode or engine behavior—verify against this wiki and the implementations above.
+
 ## Table of Contents
 
 <!-- TOC_START -->
@@ -3265,7 +3267,7 @@ See [Skills and Feats](NSS-Shared-Functions-Skills-and-Feats) for detailed docum
 
 ### Sound and Music Functions
 
-See [Sound and Music Functions](NSS-Shared-Functions-Sound-and-Music-Functions) for detailed documentation.
+See [Sound and Music Functions](NSS-Shared-Functions-Sound-and-Music) for detailed documentation.
 
 ## K1-Only Functions
 
@@ -3289,7 +3291,7 @@ See [Class System](NSS-TSL-Only-Functions-Class-System) for detailed documentati
 
 ### Combat Functions
 
-See [Combat Functions](NSS-TSL-Only-Functions-Combat-Functions) for detailed documentation.
+Shared combat routines: [NSS-Shared-Functions-Combat-Functions](NSS-Shared-Functions-Combat-Functions). TSL category index: [NSS-TSL-Only-Functions-Combat-Functions](NSS-TSL-Only-Functions-Combat-Functions).
 
 ### Dialog and Conversation Functions
 
@@ -3400,7 +3402,7 @@ See [Skills and Feats](NSS-TSL-Only-Functions-Skills-and-Feats) for detailed doc
 
 ### Sound and Music Functions
 
-See [Sound and Music Functions](NSS-TSL-Only-Functions-Sound-and-Music-Functions) for detailed documentation.
+Shared routines: [NSS-Shared-Functions-Sound-and-Music](NSS-Shared-Functions-Sound-and-Music). This **TSL-Only** heading also covers UI-related symbols listed in the [table of contents](#tsl-only-functions) (`DisplayDatapad`, `DisplayMessageBox`, `PlayOverlayAnimation`); see [NSS-TSL-Only-Functions-Sound-and-Music-Functions](NSS-TSL-Only-Functions-Sound-and-Music-Functions) for that index note.
 
 ## Shared Constants (K1 & TSL)
 
@@ -3440,7 +3442,7 @@ See [Planet Constants](NSS-Shared-Constants-Planet-Constants) for detailed docum
 
 ### Visual Effects (VFX)
 
-See Visual Effects (VFX) for detailed documentation.
+See [Visual Effects (VFX)](NSS-Shared-Constants-Visual-Effects-%28VFX%29) for detailed documentation.
 
 ## K1-Only Constants
 
@@ -3484,7 +3486,7 @@ See [Planet Constants](NSS-TSL-Only-Constants-Planet-Constants) for detailed doc
 
 ### Visual Effects (VFX)
 
-See Visual Effects (VFX) for detailed documentation.
+Shared VFX constants: [NSS-Shared-Constants-Visual-Effects-(VFX)](NSS-Shared-Constants-Visual-Effects-%28VFX%29). TSL category index: [NSS-TSL-Only-Constants-Visual-Effects-(VFX)](NSS-TSL-Only-Constants-Visual-Effects-%28VFX%29).
 
 ## KOTOR Library files
 

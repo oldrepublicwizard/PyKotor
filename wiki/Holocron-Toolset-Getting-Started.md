@@ -36,6 +36,7 @@ You're now ready to start modding!
 
 ### See also
 
+- [Holocron Toolset: Core Resources](Holocron-Toolset-Core-Resources) -- **Core** tab (KEY/BIF), PyKotor `Chitin` / KEY reader links, community threads
 - [Blender Integration](Blender-Integration) -- Use Blender with KotOR models and layouts
 - [Indoor Map Builder User Guide](Indoor-Map-Builder-User-Guide) -- Build new areas from kits
 - [Mod Creation Best Practices](Mod-Creation-Best-Practices) -- Override, merging, and compatibility

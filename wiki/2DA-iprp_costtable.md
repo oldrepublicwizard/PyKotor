@@ -15,8 +15,18 @@ Part of the [2DA File Format Documentation](2DA-File-Format).
 
 **References**:
 
-- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:477`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L477) - TwoDARegistry definition
-- [`Tools/HolocronToolset/src/toolset/data/installation.py:76`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Tools/HolocronToolset/src/toolset/data/installation.py#L76) - HTInstallation constant
-- [`Tools/HolocronToolset/src/toolset/gui/editors/uti.py:486-496`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Tools/HolocronToolset/src/toolset/gui/editors/uti.py#L486-L496) - Cost table lookup in item editor
+**PyKotor**
+
+- [`TwoDARegistry.IPRP_COSTTABLE` L693](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L693) — `iprp_costtable` (`LoadIPRPCostTables()`)
+- [`read_2da` L67+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/twoda/twoda_auto.py#L67)
+
+**HolocronToolset**
+
+- [`HTInstallation.TwoDA_IPRP_COSTTABLE` L94](https://github.com/OldRepublicDevs/PyKotor/blob/master/Tools/HolocronToolset/src/toolset/data/installation.py#L94)
+- [`uti.py` cost table lookup L486–L496](https://github.com/OldRepublicDevs/PyKotor/blob/master/Tools/HolocronToolset/src/toolset/gui/editors/uti.py#L486-L496)
+
+**Cross-reference (other implementations)**
+
+- **[reone](https://github.com/modawan/reone)** / **[KotOR.js](https://github.com/KobaltBlu/KotOR.js)** / **[Kotor.NET](https://github.com/NickHugi/Kotor.NET)** — search for `iprp_costtable` when adding anchors.
 
 ---

@@ -4,7 +4,25 @@ Part of the [GFF File Format Documentation](GFF-File-Format).
 
 PTH files define pathfinding data for modules, distinct from the navigation mesh ([walkmesh](BWM-File-Format)). They store a network of waypoints and connections used for high-level AI navigation planning. PTH files are loaded with the same [resource resolution order](Concepts#resource-resolution-order) as other resources (override, MOD/SAV, KEY/BIF).
 
-**Reference**: [`Libraries/PyKotor/src/pykotor/resource/generics/pth.py`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/pth.py)
+**For mod developers:** PTH editing in Holocron is covered in [Holocron Toolset: PTH Editor](Holocron-Toolset-PTH-Editor) (when present in your build). General GFF patching uses the [TSLPatcher GFFList Syntax Guide](TSLPatcher-GFFList-Syntax).
+
+## References
+
+**PyKotor:**
+
+- [`pth.py` `PTH` L19+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/pth.py#L19), [`PTHEdge` L125+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/pth.py#L125) — path graph model (points + connections)
+- [`construct_pth` L151+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/pth.py#L151), [`read_pth` L223+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/pth.py#L223), [`write_pth` L232+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/pth.py#L232) — GFF ↔ `PTH` round-trip
+- [`gff_data.py` `GFFContent.PTH` L167](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/gff/gff_data.py#L167) — four-character GFF type id
+- [`io_gff.py` `GFFBinaryReader.load` L82+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/gff/io_gff.py#L82) — binary GFF decode (shared with other GFF types)
+
+**Cross-reference (other implementations):**
+
+- **[reone](https://github.com/modawan/reone)**: [`gff.cpp`](https://github.com/modawan/reone/blob/master/src/libs/resource/gff.cpp), [`gffreader.cpp`](https://github.com/modawan/reone/blob/master/src/libs/resource/format/gffreader.cpp) — generic GFF reader (PTH as GFF)
+- **[KotOR.js](https://github.com/KobaltBlu/KotOR.js)**: [`GFFObject.ts` L24+](https://github.com/KobaltBlu/KotOR.js/blob/master/src/resource/GFFObject.ts#L24) — TypeScript GFF parser
+- **[Kotor.NET](https://github.com/NickHugi/Kotor.NET)**: [`GFF.cs` L18+](https://github.com/NickHugi/Kotor.NET/blob/master/Kotor.NET/Formats/KotorGFF/GFF.cs#L18) — managed GFF reader/writer
+- **[xoreos](https://github.com/xoreos/xoreos)** — Aurora GFF pipeline
+
+**Community / engine context:** PTH is **not** the walkmesh; normative walkmesh discussion stays on [BWM-File-Format](BWM-File-Format) and repo `docs/solutions/documentation/authoritative-bwm-wiki-from-re-and-pipelines.md`. For player movement and AI pathing **workflow**, see [Home — Community sources](Home#community-sources-and-archives).
 
 ## Path Points
 

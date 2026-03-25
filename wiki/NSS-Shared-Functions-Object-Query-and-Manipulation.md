@@ -6,6 +6,18 @@ Part of the [NSS File Format Documentation](NSS-File-Format).
 
 This document provides detailed documentation for NWScript object query and manipulation functions. These functions allow scripts to find objects, check object validity, get object properties, and manipulate objects in the game world.
 
+## Implementation cross-reference
+
+Object query routines are registered with the script VM like other NWScript calls; **routine IDs** on this page follow `nwscript.nss` (K1/TSL). Always pair tag/nearest lookups with [`GetIsObjectValid`](NSS-Shared-Functions-Object-Query-and-Manipulation#getisobjectvalid) before use.
+
+- **PyKotor:** NSS → NCS — [`resource/formats/ncs/compiler/`](https://github.com/OldRepublicDevs/PyKotor/tree/master/Libraries/PyKotor/src/pykotor/resource/formats/ncs/compiler); routine metadata — [`scriptdefs.py` L3579+ (`GetIsObjectValid`)](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/common/scriptdefs.py#L3579), [L4727+ (`GetObjectByTag`)](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/common/scriptdefs.py#L4727), [L4953+ (`GetNearestObject`)](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/common/scriptdefs.py#L4953) (first K1 block).
+
+- **reone:** [`main.cpp`](https://github.com/modawan/reone/blob/master/src/libs/game/script/routine/impl/main.cpp) — [`GetIsObjectValid` L427+](https://github.com/modawan/reone/blob/master/src/libs/game/script/routine/impl/main.cpp#L427), [`GetObjectByTag` L1921+](https://github.com/modawan/reone/blob/master/src/libs/game/script/routine/impl/main.cpp#L1921), [`GetNearestObject` L2165+](https://github.com/modawan/reone/blob/master/src/libs/game/script/routine/impl/main.cpp#L2165); K1 `insert` — [`GetIsObjectValid` L6903](https://github.com/modawan/reone/blob/master/src/libs/game/script/routine/impl/main.cpp#L6903), [`GetObjectByTag` L7026](https://github.com/modawan/reone/blob/master/src/libs/game/script/routine/impl/main.cpp#L7026), [`GetNearestObject` L7045](https://github.com/modawan/reone/blob/master/src/libs/game/script/routine/impl/main.cpp#L7045) (TSL second block around [L7459](https://github.com/modawan/reone/blob/master/src/libs/game/script/routine/impl/main.cpp#L7459) / [L7582](https://github.com/modawan/reone/blob/master/src/libs/game/script/routine/impl/main.cpp#L7582) / [L7601](https://github.com/modawan/reone/blob/master/src/libs/game/script/routine/impl/main.cpp#L7601)).
+
+- **KotOR.js:** [`NWScriptDefK1.ts`](https://github.com/KobaltBlu/KotOR.js/blob/master/src/nwscript/NWScriptDefK1.ts) — [`GetIsObjectValid` L638](https://github.com/KobaltBlu/KotOR.js/blob/master/src/nwscript/NWScriptDefK1.ts#L638), [`GetObjectByTag` L2538](https://github.com/KobaltBlu/KotOR.js/blob/master/src/nwscript/NWScriptDefK1.ts#L2538), [`GetNearestObject` L2857](https://github.com/KobaltBlu/KotOR.js/blob/master/src/nwscript/NWScriptDefK1.ts#L2857).
+
+- **Kotor.NET:** NCS bytecode layout — [`NCS.cs` L9+](https://github.com/NickHugi/Kotor.NET/blob/master/Kotor.NET/Formats/KotorNCS/NCS.cs#L9).
+
 ---
 
 ## Object Validation

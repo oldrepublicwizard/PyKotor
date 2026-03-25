@@ -15,8 +15,18 @@ Part of the [2DA File Format Documentation](2DA-File-Format).
 
 **References**:
 
-- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:476`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L476) - TwoDARegistry definition
-- [`Tools/HolocronToolset/src/toolset/data/installation.py:75`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Tools/HolocronToolset/src/toolset/data/installation.py#L75) - HTInstallation constant
-- [`Tools/HolocronToolset/src/toolset/gui/editors/uti.py:517-558`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Tools/HolocronToolset/src/toolset/gui/editors/uti.py#L517-L558) - Parameter table lookup in item editor
+**PyKotor**
+
+- [`TwoDARegistry.IPRP_PARAMTABLE` L698](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L698) — `iprp_paramtable` (`LoadIPRPParamTables()`)
+- [`read_2da` L67+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/twoda/twoda_auto.py#L67)
+
+**HolocronToolset**
+
+- [`HTInstallation.TwoDA_IPRP_PARAMTABLE` L99](https://github.com/OldRepublicDevs/PyKotor/blob/master/Tools/HolocronToolset/src/toolset/data/installation.py#L99)
+- [`uti.py` parameter table lookup L517–L558](https://github.com/OldRepublicDevs/PyKotor/blob/master/Tools/HolocronToolset/src/toolset/gui/editors/uti.py#L517-L558)
+
+**Cross-reference (other implementations)**
+
+- **[reone](https://github.com/modawan/reone)** / **[KotOR.js](https://github.com/KobaltBlu/KotOR.js)** / **[Kotor.NET](https://github.com/NickHugi/Kotor.NET)** — search for `iprp_paramtable` when adding anchors.
 
 ---

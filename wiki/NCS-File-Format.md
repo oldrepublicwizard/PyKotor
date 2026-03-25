@@ -6,15 +6,25 @@ NCS files contain compiled NWScript bytecode used in **KotOR and TSL**. Scripts 
 
 **Related formats:** NCS is produced from [NSS](NSS-File-Format); triggered by [DLG](GFF-DLG), [GIT](GFF-File-Format#git-game-instance-template), [UTC](GFF-File-Format#utc-creature), [UTD](GFF-UTD), [UTP](GFF-UTP), and [IFO](GFF-IFO) script hooks.
 
-**Implementation (PyKotor):** [`resource/formats/ncs/`](https://github.com/OldRepublicDevs/PyKotor/tree/master/Libraries/PyKotor/src/pykotor/resource/formats/ncs/) — binary read [`NCSBinaryReader.load` L56+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/ncs/io_ncs.py#L56), write [`NCSBinaryWriter.write` L493+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/ncs/io_ncs.py#L493); data model [`NCS` L254+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/ncs/ncs_data.py#L254), [`NCSInstruction` L637+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/ncs/ncs_data.py#L637); interpreter [`compiler/interpreter.py`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/ncs/compiler/interpreter.py); decompiler [`decompiler.py`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/ncs/decompiler.py).
+**Implementation (PyKotor):**
+
+- [`resource/formats/ncs/`](https://github.com/OldRepublicDevs/PyKotor/tree/master/Libraries/PyKotor/src/pykotor/resource/formats/ncs/)
+- binary read [`NCSBinaryReader.load` L56+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/ncs/io_ncs.py#L56)
+- write [`NCSBinaryWriter.write` L493+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/ncs/io_ncs.py#L493)
+- data model [`NCS` L254+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/ncs/ncs_data.py#L254)
+- [`NCSInstruction` L637+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/ncs/ncs_data.py#L637)
+- interpreter [`compiler/interpreter.py`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/ncs/compiler/interpreter.py)
+- decompiler [`decompiler.py`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/ncs/decompiler.py)
+
 
 **Cross-reference (other implementations):**
 
-- **[xoreos](https://github.com/xoreos/xoreos)**: [`src/aurora/nwscript/ncsfile.cpp`](https://github.com/xoreos/xoreos/blob/master/src/aurora/nwscript/ncsfile.cpp) — VM + decompilation
+- **[xoreos](https://github.com/xoreos/xoreos)**: [`src/aurora/nwscript/ncsfile.cpp`](https://github.com/xoreos/xoreos/blob/master/src/aurora/nwscript/ncsfile.cpp) ([Mirror: th3w1zard1/xoreos`]  VM + decompilation
 - **[xoreos-tools](https://github.com/xoreos/xoreos-tools)**: [`src/nwscript/ncsfile.cpp`](https://github.com/xoreos/xoreos-tools/blob/master/src/nwscript/ncsfile.cpp)
 - **[reone](https://github.com/modawan/reone)**: [`src/libs/script/format/ncsreader.cpp`](https://github.com/modawan/reone/blob/master/src/libs/script/format/ncsreader.cpp)
 - **[KotOR.js](https://github.com/KobaltBlu/KotOR.js)**: [`NWScriptInstance.ts` L32+](https://github.com/KobaltBlu/KotOR.js/blob/master/src/nwscript/NWScriptInstance.ts#L32) (script VM instance / `run` loop)
 - **[NorthernLights](https://github.com/lachjames/NorthernLights)**: [`Assets/Scripts/ncs/NCSReader.cs`](https://github.com/lachjames/NorthernLights/blob/master/Assets/Scripts/ncs/NCSReader.cs)
+- **[Kotor.NET](https://github.com/NickHugi/Kotor.NET)**: [`Kotor.NET/Formats/KotorNCS/NCS.cs` L9+](https://github.com/NickHugi/Kotor.NET/blob/master/Kotor.NET/Formats/KotorNCS/NCS.cs#L9)
 - **[Vanilla_KOTOR_Script_Source](https://github.com/KOTORCommunityPatches/Vanilla_KOTOR_Script_Source)** — decompiled scripts
 
 ## Table of Contents
@@ -69,6 +79,7 @@ NCS files contain compiled NWScript bytecode used in **KotOR and TSL**. Scripts 
 - **[xoreos](https://github.com/xoreos/xoreos)**: [`ncsfile.cpp` L342–L350](https://github.com/xoreos/xoreos/blob/master/src/aurora/nwscript/ncsfile.cpp#L342-L350)
 - **[xoreos-tools](https://github.com/xoreos/xoreos-tools)**: [`ncsfile.cpp` L116–L125](https://github.com/xoreos/xoreos-tools/blob/master/src/nwscript/ncsfile.cpp#L116-L125)
 - **[reone](https://github.com/modawan/reone)**: [`ncsreader.cpp` L28–L40](https://github.com/modawan/reone/blob/master/src/libs/script/format/ncsreader.cpp#L28-L40)
+- **[Kotor.NET](https://github.com/NickHugi/Kotor.NET)**: [`NCS.cs` L9+](https://github.com/NickHugi/Kotor.NET/blob/master/Kotor.NET/Formats/KotorNCS/NCS.cs#L9)
 - **Torlack** — [xoreos-docs `specs/torlack/ncs.html`](https://github.com/xoreos/xoreos-docs/blob/master/specs/torlack/ncs.html)
 
 ### Stack-Based Virtual Machine

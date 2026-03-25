@@ -16,15 +16,22 @@ DLG files are loaded with the same [resource resolution order](Concepts#resource
 
 **PyKotor:**
 
-- [`Libraries/PyKotor/src/pykotor/resource/generics/dlg/`](https://github.com/OldRepublicDevs/PyKotor/tree/master/Libraries/PyKotor/src/pykotor/resource/generics/dlg/) - DLG [GFF](GFF-File-Format) parsing, links, and Twine I/O
+- [`dlg/base.py` `DLG` L36+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/dlg/base.py#L36) — in-memory dialog graph ([entries](GFF-File-Format#dlg-dialogue), replies, links, metadata)
+- [`dlg/io/gff.py` `construct_dlg` L29+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/dlg/io/gff.py#L29), [`read_dlg` L566+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/dlg/io/gff.py#L566), [`write_dlg` L593+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/dlg/io/gff.py#L593) — GFF ↔ `DLG` round-trip
+- [`gff_data.py` `GFFContent.DLG` L160](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/gff/gff_data.py#L160) — four-character GFF type id
+- [`io_gff.py` `GFFBinaryReader.load` L82+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/gff/io_gff.py#L82) — binary GFF decode (shared with other GFF types)
+- Twine interchange (optional): [`dlg/io/twine.py`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/dlg/io/twine.py) — `read_twine` / `write_twine`
 
 **HolocronToolset:**
 
-- Dialogue (DLG) editor
+- Dialogue (DLG) editor — see [Holocron Toolset: Getting Started](Holocron-Toolset-Getting-Started) for where the GUI exposes DLG editing.
 
-**Vendor Implementations:**
+**Cross-reference (other implementations):**
 
-- reone/xoreos conversation (DLG) GFF parsers
+- **[reone](https://github.com/modawan/reone)**: [`gff.cpp`](https://github.com/modawan/reone/blob/master/src/libs/resource/gff.cpp), [`gffreader.cpp`](https://github.com/modawan/reone/blob/master/src/libs/resource/format/gffreader.cpp) — C++ GFF reader (DLG uses generic GFF structure)
+- **[KotOR.js](https://github.com/KobaltBlu/KotOR.js)**: [`DLGObject.ts` `DLGObject` L31+](https://github.com/KobaltBlu/KotOR.js/blob/master/src/resource/DLGObject.ts#L31) — dialog runtime over [`GFFObject.ts` L24+](https://github.com/KobaltBlu/KotOR.js/blob/master/src/resource/GFFObject.ts#L24)
+- **[Kotor.NET](https://github.com/NickHugi/Kotor.NET)**: [`GFF.cs` L18+](https://github.com/NickHugi/Kotor.NET/blob/master/Kotor.NET/Formats/KotorGFF/GFF.cs#L18) — .NET GFF reader/writer (DLG uses generic GFF structure)
+- **[xoreos](https://github.com/xoreos/xoreos)** — generic Aurora GFF; DLG loaded as GFF in engine
 
 ## Conversation Properties
 

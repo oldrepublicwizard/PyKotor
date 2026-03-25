@@ -12,15 +12,21 @@ GUI files define the layout and behavior of the user interface. They are [GFF fi
 
 **PyKotor:**
 
-- [`Libraries/PyKotor/src/pykotor/resource/generics/gui.py`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/gui.py) - GUI [GFF](GFF-File-Format) parsing and control tree
+- [`gui.py` `GUI` L154+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/gui.py#L154), [`GUIControl` L100+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/gui.py#L100) — control tree model (`GUIButton`, `GUIPanel`, `GUIListBox`, …)
+- [`construct_gui` L349+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/gui.py#L349), [`read_gui` L1060+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/gui.py#L1060), [`write_gui` L1078+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/gui.py#L1078) — GFF ↔ `GUI` round-trip
+- [`gff_data.py` `GFFContent.GUI` L163](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/gff/gff_data.py#L163) — four-character GFF type id
+- [`io_gff.py` `GFFBinaryReader.load` L82+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/gff/io_gff.py#L82) — binary GFF decode (shared with other GFF types)
 
 **HolocronToolset:**
 
-- GUI editor
+- GUI editor in the toolset — see [Holocron Toolset: Getting Started](Holocron-Toolset-Getting-Started).
 
-**Vendor Implementations:**
+**Cross-reference (other implementations):**
 
-- reone/xoreos GFF parsers (GUI/UI structs)
+- **[reone](https://github.com/modawan/reone)**: [`gff.cpp`](https://github.com/modawan/reone/blob/master/src/libs/resource/gff.cpp), [`gffreader.cpp`](https://github.com/modawan/reone/blob/master/src/libs/resource/format/gffreader.cpp) — C++ GFF reader (GUI uses generic GFF structure)
+- **[KotOR.js](https://github.com/KobaltBlu/KotOR.js)**: [`GFFObject.ts` L24+](https://github.com/KobaltBlu/KotOR.js/blob/master/src/resource/GFFObject.ts#L24) — TypeScript GFF parser (GUI as GFF)
+- **[Kotor.NET](https://github.com/NickHugi/Kotor.NET)**: [`GFF.cs` L18+](https://github.com/NickHugi/Kotor.NET/blob/master/Kotor.NET/Formats/KotorGFF/GFF.cs#L18) — .NET GFF reader/writer (GUI uses generic GFF structure)
+- **[xoreos](https://github.com/xoreos/xoreos)** — generic Aurora GFF; GUI loaded as GFF in engine
 
 ## Core Identity fields
 

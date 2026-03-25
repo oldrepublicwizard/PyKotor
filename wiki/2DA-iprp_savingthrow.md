@@ -15,7 +15,17 @@ Part of the [2DA File Format Documentation](2DA-File-Format).
 
 **References**:
 
-- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:486`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L486) - TwoDARegistry definition
-- [`Tools/HolocronToolset/src/toolset/data/installation.py:85`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Tools/HolocronToolset/src/toolset/data/installation.py#L85) - HTInstallation constant
+**PyKotor**
+
+- [`TwoDARegistry.IPRP_SAVINGTHROW` L701](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L701) — `iprp_savingthrow` (`LoadIPRPCostTables()`)
+- [`read_2da` L67+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/twoda/twoda_auto.py#L67)
+
+**HolocronToolset**
+
+- [`HTInstallation.TwoDA_IPRP_SAVINGTHROW` L102](https://github.com/OldRepublicDevs/PyKotor/blob/master/Tools/HolocronToolset/src/toolset/data/installation.py#L102)
+
+**Cross-reference (other implementations)**
+
+- **[reone](https://github.com/modawan/reone)** / **[KotOR.js](https://github.com/KobaltBlu/KotOR.js)** / **[Kotor.NET](https://github.com/NickHugi/Kotor.NET)** — search for `iprp_savingthrow` when adding anchors.
 
 ---

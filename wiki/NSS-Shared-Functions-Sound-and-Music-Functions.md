@@ -1,9 +1,3 @@
-# Sound and Music Functions
+# Sound and Music Functions (redirect)
 
-Part of the [NSS File Format Documentation](NSS-File-Format).
-
-**Category:** Shared Functions (K1 & TSL)
-
-
-See Sound and Music Functions for detailed documentation.
-
+The canonical page for shared (K1 and TSL) NWScript sound and music routines is **[NSS-Shared-Functions-Sound-and-Music](NSS-Shared-Functions-Sound-and-Music)**. This filename is kept so older links and bookmarks keep resolving.

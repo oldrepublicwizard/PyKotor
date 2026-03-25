@@ -6,6 +6,18 @@ Part of the [NSS File Format Documentation](NSS-File-Format).
 
 This document provides detailed documentation for NWScript local variable functions. Local variables are stored on individual objects (creatures, placeables, etc.) and are used for object-specific state tracking.
 
+## Implementation cross-reference
+
+Local slots are indexed per object (see index ranges below). **Routine IDs** follow `nwscript.nss` (K1/TSL). *Note:* some wiki TOCs list these routines under [Other Functions](NSS-Shared-Functions-Other-Functions) for historical grouping—behavior is documented here.
+
+- **PyKotor:** NSS → NCS — [`resource/formats/ncs/compiler/`](https://github.com/OldRepublicDevs/PyKotor/tree/master/Libraries/PyKotor/src/pykotor/resource/formats/ncs/compiler); routine metadata — [`scriptdefs.py` L8243+ (`GetLocalNumber`)](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/common/scriptdefs.py#L8243), [L8250+ (`SetLocalNumber`)](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/common/scriptdefs.py#L8250) (first K1 block; search the same file for `GetLocalBoolean` / `SetLocalBoolean` / string locals).
+
+- **reone:** [`main.cpp`](https://github.com/modawan/reone/blob/master/src/libs/game/script/routine/impl/main.cpp) — [`GetLocalNumber` L5207+](https://github.com/modawan/reone/blob/master/src/libs/game/script/routine/impl/main.cpp#L5207), [`SetLocalNumber` L5218+](https://github.com/modawan/reone/blob/master/src/libs/game/script/routine/impl/main.cpp#L5218); K1 `insert` — [`GetLocalNumber` L7349](https://github.com/modawan/reone/blob/master/src/libs/game/script/routine/impl/main.cpp#L7349), [`SetLocalNumber` L7350](https://github.com/modawan/reone/blob/master/src/libs/game/script/routine/impl/main.cpp#L7350).
+
+- **KotOR.js:** [`NWScriptDefK1.ts`](https://github.com/KobaltBlu/KotOR.js/blob/master/src/nwscript/NWScriptDefK1.ts) — [`GetLocalNumber` L7526](https://github.com/KobaltBlu/KotOR.js/blob/master/src/nwscript/NWScriptDefK1.ts#L7526), [`SetLocalNumber` L7539](https://github.com/KobaltBlu/KotOR.js/blob/master/src/nwscript/NWScriptDefK1.ts#L7539).
+
+- **Kotor.NET:** NCS bytecode layout — [`NCS.cs` L9+](https://github.com/NickHugi/Kotor.NET/blob/master/Kotor.NET/Formats/KotorNCS/NCS.cs#L9).
+
 ---
 
 ## Local Variables Fundamentals

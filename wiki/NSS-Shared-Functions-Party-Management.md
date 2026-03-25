@@ -6,6 +6,18 @@ Part of the [NSS File Format Documentation](NSS-File-Format).
 
 This document provides detailed documentation for NWScript party management functions. These functions allow scripts to add/remove party members, check party membership, get party members by index, and manage the party leader.
 
+## Implementation cross-reference
+
+Party routines are engine-facing; **routine IDs** follow `nwscript.nss` (K1/TSL).
+
+- **PyKotor:** NSS → NCS — [`resource/formats/ncs/compiler/`](https://github.com/OldRepublicDevs/PyKotor/tree/master/Libraries/PyKotor/src/pykotor/resource/formats/ncs/compiler); routine metadata — [`scriptdefs.py`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/common/scriptdefs.py).
+
+- **reone:** [`main.cpp`](https://github.com/modawan/reone/blob/master/src/libs/game/script/routine/impl/main.cpp) — e.g. [`GetPartyMemberCount` L1188+](https://github.com/modawan/reone/blob/master/src/libs/game/script/routine/impl/main.cpp#L1188), [`AddAvailableNPCByTemplate` L5317+](https://github.com/modawan/reone/blob/master/src/libs/game/script/routine/impl/main.cpp#L5317); K1 `insert` [`GetPartyMemberCount` L6973](https://github.com/modawan/reone/blob/master/src/libs/game/script/routine/impl/main.cpp#L6973), [`AddAvailableNPCByTemplate` L7359](https://github.com/modawan/reone/blob/master/src/libs/game/script/routine/impl/main.cpp#L7359); TSL [`L7529`](https://github.com/modawan/reone/blob/master/src/libs/game/script/routine/impl/main.cpp#L7529), [`L7915`](https://github.com/modawan/reone/blob/master/src/libs/game/script/routine/impl/main.cpp#L7915).
+
+- **KotOR.js:** [`NWScriptDefK1.ts`](https://github.com/KobaltBlu/KotOR.js/blob/master/src/nwscript/NWScriptDefK1.ts) — e.g. [`GetPartyMemberCount` L1600+](https://github.com/KobaltBlu/KotOR.js/blob/master/src/nwscript/NWScriptDefK1.ts#L1600) (search the file for `AddAvailableNPC`, `GetPartyMember`, etc.).
+
+- **Kotor.NET:** [`NCS.cs` L9+](https://github.com/NickHugi/Kotor.NET/blob/master/Kotor.NET/Formats/KotorNCS/NCS.cs#L9).
+
 ---
 
 ## Party Management Fundamentals

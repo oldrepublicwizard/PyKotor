@@ -23,6 +23,7 @@ This page documents style and structure conventions for the PyKotor wiki. Follow
 
 - **Internal links:** Use extension-less targets (no `.md` suffix), e.g. `[Concepts overview](Concepts)`, `[resource resolution](Concepts#resource-resolution-order)`, or `[KEY File Purpose](KEY-File-Format#key-file-purpose)`. Wrong: `](KEY-File-Format.md)`.
 - **External links:** Use HTTPS. Prefer **canonical** repository URLs ([modawan/reone](https://github.com/modawan/reone), [KobaltBlu/KotOR.js](https://github.com/KobaltBlu/KotOR.js), [NickHugi/Kotor.NET](https://github.com/NickHugi/Kotor.NET), [xoreos/xoreos](https://github.com/xoreos/xoreos), [OldRepublicDevs/PyKotor](https://github.com/OldRepublicDevs/PyKotor), etc.); do not duplicate legacy mirror links. Use headings **Cross-reference** or **Implementation (PyKotor)** instead of “Vendor” where you list implementations. When citing code, use stable line anchors on the canonical repo. Validate permalinks before adding; broken links reduce trust.
+- **Community (Deadly Stream, LucasForums Archive, etc.):** Prefer **specific** thread or `/files/file/...` URLs over bare site homepages. Add **one short sentence** of synthesis (what the reader gets from the link); do not paste long quotes. If advice may be version-specific (TSLPatcher vs HoloPatcher), say so. For install-order or tool debates, mention **approximate era** when the thread is archival.
 - **Link text:** Use the page or section title or a short descriptive phrase, not "click here" or "this document".
 
 ## See also

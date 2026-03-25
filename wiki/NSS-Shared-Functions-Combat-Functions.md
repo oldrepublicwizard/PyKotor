@@ -6,6 +6,18 @@ Part of the [NSS File Format Documentation](NSS-File-Format).
 
 This document provides detailed documentation for NWScript combat-related functions. These functions allow scripts to check combat status, cancel combat, get combat information, and initiate attacks.
 
+## Implementation cross-reference
+
+Combat routines are registered with the script VM like other NWScript calls; **routine IDs** on this page follow `nwscript.nss` (K1/TSL).
+
+- **PyKotor:** NSS → NCS — [`resource/formats/ncs/compiler/`](https://github.com/OldRepublicDevs/PyKotor/tree/master/Libraries/PyKotor/src/pykotor/resource/formats/ncs/compiler); routine metadata — search [`scriptdefs.py`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/common/scriptdefs.py) / [`scriptlib.py`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/common/scriptlib.py) for the function name.
+
+- **reone:** [`main.cpp`](https://github.com/modawan/reone/blob/master/src/libs/game/script/routine/impl/main.cpp) — e.g. [`GetAttackTarget` L2925+](https://github.com/modawan/reone/blob/master/src/libs/game/script/routine/impl/main.cpp#L2925), [`GetIsInCombat` L2969+](https://github.com/modawan/reone/blob/master/src/libs/game/script/routine/impl/main.cpp#L2969); K1 `insert` registrations around [L7120–L7124](https://github.com/modawan/reone/blob/master/src/libs/game/script/routine/impl/main.cpp#L7120-L7124), TSL extended signatures around [L7676–L7680](https://github.com/modawan/reone/blob/master/src/libs/game/script/routine/impl/main.cpp#L7676-L7680). *(Add other combat symbols by searching the same file.)*
+
+- **KotOR.js:** [`NWScriptDefK1.ts`](https://github.com/KobaltBlu/KotOR.js/blob/master/src/nwscript/NWScriptDefK1.ts) — e.g. [`GetAttackTarget` L3892+](https://github.com/KobaltBlu/KotOR.js/blob/master/src/nwscript/NWScriptDefK1.ts#L3892), [`GetIsInCombat` L3936+](https://github.com/KobaltBlu/KotOR.js/blob/master/src/nwscript/NWScriptDefK1.ts#L3936).
+
+- **Kotor.NET:** NCS structure — [`NCS.cs` L9+](https://github.com/NickHugi/Kotor.NET/blob/master/Kotor.NET/Formats/KotorNCS/NCS.cs#L9); browse `Kotor.NET` solution for tooling around scripts and combat if needed.
+
 ---
 
 ## Combat Status Functions

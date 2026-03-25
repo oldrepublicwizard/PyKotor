@@ -1095,14 +1095,14 @@ The following columns are accessed by the reone engine:
 - [`Libraries/PyKotor/src/pykotor/extract/twoda.py:327`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L327) - [StrRef](TLK-File-Format#string-references-strref) column definitions for spells.2da (K2: name, spelldesc)
 - [`Libraries/PyKotor/src/pykotor/extract/twoda.py:239`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L239) - Script *ResRef* column definition for spells.2da (impactscript)
 - [`Libraries/PyKotor/src/pykotor/extract/twoda.py:432`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L432) - Script *ResRef* column definition for spells.2da (K2: impactscript)
-- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:465`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L465) - TwoDARegistry.POWERS constant definition
+- [`TwoDARegistry.POWERS` L709](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L709) — `spells` resref (`Load2DArrays_Spells()`)
 - [`Libraries/PyKotor/src/pykotor/extract/twoda.py:558-560`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L558-L560) - [GFF](GFF-File-Format) field mapping: "Subtype", "SpellId", and "Spell" -> spells.2da
 - [`Libraries/PyKotor/src/pykotor/common/scriptdefs.py:9380-9381`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/common/scriptdefs.py#L9380-L9381) - GetLastForcePowerUsed function comment referencing spells.2da
 - [`Libraries/PyKotor/src/pykotor/common/scriptlib.py:5676`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/common/scriptlib.py#L5676) - Debug print referencing spells.2da ID
 
 **HolocronToolset:**
 
-- [`Tools/HolocronToolset/src/toolset/data/installation.py:64`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Tools/HolocronToolset/src/toolset/data/installation.py#L64) - HTInstallation.TwoDA_POWERS constant
+- [`HTInstallation.TwoDA_POWERS` L110](https://github.com/OldRepublicDevs/PyKotor/blob/master/Tools/HolocronToolset/src/toolset/data/installation.py#L110)
 
 **Vendor Implementations:**
 
@@ -2588,11 +2588,11 @@ The following 2DA files are used for item property parameter and cost calculatio
 
 **PyKotor:**
 
-- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:476`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L476) - TwoDARegistry definition
+- [`TwoDARegistry.IPRP_PARAMTABLE` L698](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L698) — `iprp_paramtable` (`LoadIPRPParamTables()`)
 
 **HolocronToolset:**
 
-- [`Tools/HolocronToolset/src/toolset/data/installation.py:75`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Tools/HolocronToolset/src/toolset/data/installation.py#L75) - HTInstallation constant
+- [`HTInstallation.TwoDA_IPRP_PARAMTABLE` L99](https://github.com/OldRepublicDevs/PyKotor/blob/master/Tools/HolocronToolset/src/toolset/data/installation.py#L99)
 - [`Tools/HolocronToolset/src/toolset/gui/editors/uti.py:517-558`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Tools/HolocronToolset/src/toolset/gui/editors/uti.py#L517-L558) - Parameter table lookup in item editor
 
 ---
@@ -2614,11 +2614,11 @@ The following 2DA files are used for item property parameter and cost calculatio
 
 **PyKotor:**
 
-- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:477`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L477) - TwoDARegistry definition
+- [`TwoDARegistry.IPRP_COSTTABLE` L693](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L693) — `iprp_costtable` (`LoadIPRPCostTables()`)
 
 **HolocronToolset:**
 
-- [`Tools/HolocronToolset/src/toolset/data/installation.py:76`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Tools/HolocronToolset/src/toolset/data/installation.py#L76) - HTInstallation constant
+- [`HTInstallation.TwoDA_IPRP_COSTTABLE` L94](https://github.com/OldRepublicDevs/PyKotor/blob/master/Tools/HolocronToolset/src/toolset/data/installation.py#L94)
 - [`Tools/HolocronToolset/src/toolset/gui/editors/uti.py:486-496`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Tools/HolocronToolset/src/toolset/gui/editors/uti.py#L486-L496) - Cost table lookup in item editor
 
 ---
@@ -2640,11 +2640,11 @@ The following 2DA files are used for item property parameter and cost calculatio
 
 **PyKotor:**
 
-- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:478`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L478) - TwoDARegistry definition
+- [`TwoDARegistry.IPRP_ABILITIES` L688](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L688) — `iprp_abilities` (`Load2DArrays_IPRPAbilities()`)
 
 **HolocronToolset:**
 
-- [`Tools/HolocronToolset/src/toolset/data/installation.py:77`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Tools/HolocronToolset/src/toolset/data/installation.py#L77) - HTInstallation constant
+- [`HTInstallation.TwoDA_IPRP_ABILITIES` L89](https://github.com/OldRepublicDevs/PyKotor/blob/master/Tools/HolocronToolset/src/toolset/data/installation.py#L89)
 
 ---
 
@@ -2665,11 +2665,11 @@ The following 2DA files are used for item property parameter and cost calculatio
 
 **PyKotor:**
 
-- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:479`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L479) - TwoDARegistry definition
+- [`TwoDARegistry.IPRP_ALIGNGRP` L690](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L690) — `iprp_aligngrp` (`LoadIPRPCostTables()`)
 
 **HolocronToolset:**
 
-- [`Tools/HolocronToolset/src/toolset/data/installation.py:78`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Tools/HolocronToolset/src/toolset/data/installation.py#L78) - HTInstallation constant
+- [`HTInstallation.TwoDA_IPRP_ALIGNGRP` L91](https://github.com/OldRepublicDevs/PyKotor/blob/master/Tools/HolocronToolset/src/toolset/data/installation.py#L91)
 
 ---
 
@@ -2690,11 +2690,11 @@ The following 2DA files are used for item property parameter and cost calculatio
 
 **PyKotor:**
 
-- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:480`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L480) - TwoDARegistry definition
+- [`TwoDARegistry.IPRP_COMBATDAM` L692](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L692) — canonical `iprp_combatdam` resref (`LoadIPRPCostTables()`)
 
 **HolocronToolset:**
 
-- [`Tools/HolocronToolset/src/toolset/data/installation.py:79`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Tools/HolocronToolset/src/toolset/data/installation.py#L79) - HTInstallation constant
+- [`HTInstallation.TwoDA_IPRP_COMBATDAM` L93](https://github.com/OldRepublicDevs/PyKotor/blob/master/Tools/HolocronToolset/src/toolset/data/installation.py#L93)
 
 ---
 
@@ -2715,11 +2715,11 @@ The following 2DA files are used for item property parameter and cost calculatio
 
 **PyKotor:**
 
-- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:481`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L481) - TwoDARegistry definition
+- [`TwoDARegistry.IPRP_DAMAGETYPE` L694](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L694) — `iprp_damagetype` (`LoadIPRPCostTables()`)
 
 **HolocronToolset:**
 
-- [`Tools/HolocronToolset/src/toolset/data/installation.py:80`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Tools/HolocronToolset/src/toolset/data/installation.py#L80) - HTInstallation constant
+- [`HTInstallation.TwoDA_IPRP_DAMAGETYPE` L95](https://github.com/OldRepublicDevs/PyKotor/blob/master/Tools/HolocronToolset/src/toolset/data/installation.py#L95)
 
 ---
 
@@ -2740,11 +2740,11 @@ The following 2DA files are used for item property parameter and cost calculatio
 
 **PyKotor:**
 
-- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:482`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L482) - TwoDARegistry definition
+- [`TwoDARegistry.IPRP_PROTECTION` L699](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L699) — `iprp_protection` (`LoadIPRPCostTables()`)
 
 **HolocronToolset:**
 
-- [`Tools/HolocronToolset/src/toolset/data/installation.py:81`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Tools/HolocronToolset/src/toolset/data/installation.py#L81) - HTInstallation constant
+- [`HTInstallation.TwoDA_IPRP_PROTECTION` L100](https://github.com/OldRepublicDevs/PyKotor/blob/master/Tools/HolocronToolset/src/toolset/data/installation.py#L100)
 
 ---
 
@@ -2765,11 +2765,11 @@ The following 2DA files are used for item property parameter and cost calculatio
 
 **PyKotor:**
 
-- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:483`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L483) - TwoDARegistry definition
+- [`TwoDARegistry.IPRP_ACMODTYPE` L689](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L689) — `iprp_acmodtype` (`LoadIPRPCostTables()`)
 
 **HolocronToolset:**
 
-- [`Tools/HolocronToolset/src/toolset/data/installation.py:82`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Tools/HolocronToolset/src/toolset/data/installation.py#L82) - HTInstallation constant
+- [`HTInstallation.TwoDA_IPRP_ACMODTYPE` L90](https://github.com/OldRepublicDevs/PyKotor/blob/master/Tools/HolocronToolset/src/toolset/data/installation.py#L90)
 
 ---
 
@@ -2790,11 +2790,11 @@ The following 2DA files are used for item property parameter and cost calculatio
 
 **PyKotor:**
 
-- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:484`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L484) - TwoDARegistry definition
+- [`TwoDARegistry.IPRP_IMMUNITY` L695](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L695) — `iprp_immunity` (`LoadIPRPCostTables()`)
 
 **HolocronToolset:**
 
-- [`Tools/HolocronToolset/src/toolset/data/installation.py:83`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Tools/HolocronToolset/src/toolset/data/installation.py#L83) - HTInstallation constant
+- [`HTInstallation.TwoDA_IPRP_IMMUNITY` L96](https://github.com/OldRepublicDevs/PyKotor/blob/master/Tools/HolocronToolset/src/toolset/data/installation.py#L96)
 
 ---
 
@@ -2815,11 +2815,11 @@ The following 2DA files are used for item property parameter and cost calculatio
 
 **PyKotor:**
 
-- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:485`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L485) - TwoDARegistry definition
+- [`TwoDARegistry.IPRP_SAVEELEMENT` L700](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L700) — `iprp_saveelement` (`LoadIPRPCostTables()`)
 
 **HolocronToolset:**
 
-- [`Tools/HolocronToolset/src/toolset/data/installation.py:84`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Tools/HolocronToolset/src/toolset/data/installation.py#L84) - HTInstallation constant
+- [`HTInstallation.TwoDA_IPRP_SAVEELEMENT` L101](https://github.com/OldRepublicDevs/PyKotor/blob/master/Tools/HolocronToolset/src/toolset/data/installation.py#L101)
 
 ---
 
@@ -2840,11 +2840,11 @@ The following 2DA files are used for item property parameter and cost calculatio
 
 **PyKotor:**
 
-- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:486`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L486) - TwoDARegistry definition
+- [`TwoDARegistry.IPRP_SAVINGTHROW` L701](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L701) — `iprp_savingthrow` (`LoadIPRPCostTables()`)
 
 **HolocronToolset:**
 
-- [`Tools/HolocronToolset/src/toolset/data/installation.py:85`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Tools/HolocronToolset/src/toolset/data/installation.py#L85) - HTInstallation constant
+- [`HTInstallation.TwoDA_IPRP_SAVINGTHROW` L102](https://github.com/OldRepublicDevs/PyKotor/blob/master/Tools/HolocronToolset/src/toolset/data/installation.py#L102)
 
 ---
 
@@ -2865,11 +2865,11 @@ The following 2DA files are used for item property parameter and cost calculatio
 
 **PyKotor:**
 
-- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:487`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L487) - TwoDARegistry definition
+- [`TwoDARegistry.IPRP_ONHIT` L697](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L697) — `iprp_onhit` (`Load2DArrays_OnHit()`)
 
 **HolocronToolset:**
 
-- [`Tools/HolocronToolset/src/toolset/data/installation.py:86`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Tools/HolocronToolset/src/toolset/data/installation.py#L86) - HTInstallation constant
+- [`HTInstallation.TwoDA_IPRP_ONHIT` L98](https://github.com/OldRepublicDevs/PyKotor/blob/master/Tools/HolocronToolset/src/toolset/data/installation.py#L98)
 
 ---
 
@@ -2890,11 +2890,11 @@ The following 2DA files are used for item property parameter and cost calculatio
 
 **PyKotor:**
 
-- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:488`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L488) - TwoDARegistry definition
+- [`TwoDARegistry.IPRP_AMMOTYPE` L691](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L691) — `iprp_ammotype` (`LoadIPRPCostTables()`)
 
 **HolocronToolset:**
 
-- [`Tools/HolocronToolset/src/toolset/data/installation.py:87`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Tools/HolocronToolset/src/toolset/data/installation.py#L87) - HTInstallation constant
+- [`HTInstallation.TwoDA_IPRP_AMMOTYPE` L92](https://github.com/OldRepublicDevs/PyKotor/blob/master/Tools/HolocronToolset/src/toolset/data/installation.py#L92)
 
 ---
 
@@ -2917,11 +2917,11 @@ The following 2DA files are used for item property parameter and cost calculatio
 
 **PyKotor:**
 
-- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:489`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L489) - TwoDARegistry definition
+- [`TwoDARegistry.IPRP_MONSTERHIT` L696](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L696) — `iprp_mosterhit` (`LoadIPRPCostTables()`)
 
 **HolocronToolset:**
 
-- [`Tools/HolocronToolset/src/toolset/data/installation.py:88`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Tools/HolocronToolset/src/toolset/data/installation.py#L88) - HTInstallation constant
+- [`HTInstallation.TwoDA_IPRP_MONSTERHIT` L97](https://github.com/OldRepublicDevs/PyKotor/blob/master/Tools/HolocronToolset/src/toolset/data/installation.py#L97)
 
 ---
 
@@ -2942,11 +2942,11 @@ The following 2DA files are used for item property parameter and cost calculatio
 
 **PyKotor:**
 
-- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:490`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L490) - TwoDARegistry definition
+- [`TwoDARegistry.IPRP_WALK` L702](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L702) — `iprp_walk` (`LoadIPRPCostTables()`)
 
 **HolocronToolset:**
 
-- [`Tools/HolocronToolset/src/toolset/data/installation.py:89`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Tools/HolocronToolset/src/toolset/data/installation.py#L89) - HTInstallation constant
+- [`HTInstallation.TwoDA_IPRP_WALK` L103](https://github.com/OldRepublicDevs/PyKotor/blob/master/Tools/HolocronToolset/src/toolset/data/installation.py#L103)
 
 ---
 
@@ -2965,7 +2965,14 @@ The following 2DA files are used for item property parameter and cost calculatio
 
 **References**:
 
-- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:579`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L579) - [GFF](GFF-File-Format) field mapping: "LightColor" -> iprp_lightcol.2da
+**PyKotor:**
+
+- [`_GFF_FIELD_TO_2DA` — `"LightColor"` → `iprp_lightcol` L774](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L774) — [GFF](GFF-File-Format) field wiring (UTI / item property context)
+- [`TwoDARegistry` docstring — `iprp_lightcol` / `Load2DArrays_LightColor()` L600](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L600)
+
+**HolocronToolset:**
+
+- No `HTInstallation.TwoDA_IPRP_LIGHTCOL` in [`installation.py`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Tools/HolocronToolset/src/toolset/data/installation.py); cite PyKotor `twoda.py` above for resref proof.
 
 ---
 
@@ -2984,7 +2991,14 @@ The following 2DA files are used for item property parameter and cost calculatio
 
 **References**:
 
-- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:580`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L580) - [GFF](GFF-File-Format) field mapping: "MonsterDamage" -> iprp_monstdam.2da
+**PyKotor:**
+
+- [`twoda.py` `_GFF_FIELD_TO_2DA` — `"MonsterDamage"` → `iprp_monstdam` L779](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L779)
+- [`read_2da` L67+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/twoda/twoda_auto.py#L67) — generic 2DA reader
+
+**Note:** Unlike `iprp_combatdam`, there is no separate `TwoDARegistry.IPRP_MONSTDAM` constant—the file is reached via the **MonsterDamage** GFF field mapping above and via **[itemprops.2da](2DA-itemprops)** cost-table wiring.
+
+**See:** [2DA-iprp_monstdam](2DA-iprp_monstdam) — expanded stub page (combat vs monster damage, cross-links).
 
 ---
 

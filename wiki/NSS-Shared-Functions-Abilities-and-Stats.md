@@ -6,6 +6,18 @@ Part of the [NSS File Format Documentation](NSS-File-Format).
 
 This document provides detailed documentation for NWScript ability and stat functions. These functions allow scripts to check ability scores, modifiers, hit points, and other character statistics.
 
+## Implementation cross-reference
+
+Ability routines are registered with the script VM like other NWScript calls; **routine IDs** on this page follow `nwscript.nss` (K1/TSL).
+
+- **PyKotor:** NSS → NCS — [`resource/formats/ncs/compiler/`](https://github.com/OldRepublicDevs/PyKotor/tree/master/Libraries/PyKotor/src/pykotor/resource/formats/ncs/compiler); routine metadata — [`scriptdefs.py` L4295+ (`GetAbilityScore`)](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/common/scriptdefs.py#L4295), [L5724+ (`GetAbilityModifier`)](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/common/scriptdefs.py#L5724) (first K1 block; TSL duplicates appear later in the same file).
+
+- **reone:** [`main.cpp`](https://github.com/modawan/reone/blob/master/src/libs/game/script/routine/impl/main.cpp) — [`GetAbilityScore` L1419+](https://github.com/modawan/reone/blob/master/src/libs/game/script/routine/impl/main.cpp#L1419), [`GetAbilityModifier` L3077+](https://github.com/modawan/reone/blob/master/src/libs/game/script/routine/impl/main.cpp#L3077); K1 `insert` registrations — [`GetAbilityScore` L6981](https://github.com/modawan/reone/blob/master/src/libs/game/script/routine/impl/main.cpp#L6981), [`GetAbilityModifier` L7134](https://github.com/modawan/reone/blob/master/src/libs/game/script/routine/impl/main.cpp#L7134) (TSL registers a second block around [L7537](https://github.com/modawan/reone/blob/master/src/libs/game/script/routine/impl/main.cpp#L7537) / [L7690](https://github.com/modawan/reone/blob/master/src/libs/game/script/routine/impl/main.cpp#L7690)). *(Numeric **routine IDs** in NSS docs follow the game’s `nwscript.nss`; reone’s `insert(n, …)` indices align with that table.)*
+
+- **KotOR.js:** [`NWScriptDefK1.ts`](https://github.com/KobaltBlu/KotOR.js/blob/master/src/nwscript/NWScriptDefK1.ts) — [`GetAbilityScore` L1779](https://github.com/KobaltBlu/KotOR.js/blob/master/src/nwscript/NWScriptDefK1.ts#L1779), [`GetAbilityModifier` L4045](https://github.com/KobaltBlu/KotOR.js/blob/master/src/nwscript/NWScriptDefK1.ts#L4045).
+
+- **Kotor.NET:** NCS bytecode layout — [`NCS.cs` L9+](https://github.com/NickHugi/Kotor.NET/blob/master/Kotor.NET/Formats/KotorNCS/NCS.cs#L9).
+
 ---
 
 ## Abilities and Stats Fundamentals

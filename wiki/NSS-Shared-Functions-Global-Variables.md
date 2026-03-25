@@ -6,6 +6,18 @@ Part of the [NSS File Format Documentation](NSS-File-Format).
 
 This document provides detailed documentation for NWScript global variable functions. Global variables are stored at the campaign/save game level and persist across areas and sessions.
 
+## Implementation cross-reference
+
+Global identifiers are declared in [globalcat.2da](2DA-globalcat); the script VM maps `GetGlobal*` / `SetGlobal*` to those rows. **Routine IDs** below follow `nwscript.nss` (K1/TSL).
+
+- **PyKotor:** NSS → NCS — [`resource/formats/ncs/compiler/`](https://github.com/OldRepublicDevs/PyKotor/tree/master/Libraries/PyKotor/src/pykotor/resource/formats/ncs/compiler); routine metadata — [`scriptdefs.py` L7519+ (`GetGlobalNumber`)](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/common/scriptdefs.py#L7519), [L7526+ (`SetGlobalNumber`)](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/common/scriptdefs.py#L7526), [L4685+ (`GetGlobalString`)](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/common/scriptdefs.py#L4685), [L4442+ (`SetGlobalString`)](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/common/scriptdefs.py#L4442) (first K1 block).
+
+- **reone:** [`main.cpp`](https://github.com/modawan/reone/blob/master/src/libs/game/script/routine/impl/main.cpp) — [`GetGlobalNumber` L5060+](https://github.com/modawan/reone/blob/master/src/libs/game/script/routine/impl/main.cpp#L5060), [`SetGlobalNumber` L5071+](https://github.com/modawan/reone/blob/master/src/libs/game/script/routine/impl/main.cpp#L5071); K1 `insert` — [`GetGlobalNumber` L7336](https://github.com/modawan/reone/blob/master/src/libs/game/script/routine/impl/main.cpp#L7336), [`SetGlobalNumber` L7337](https://github.com/modawan/reone/blob/master/src/libs/game/script/routine/impl/main.cpp#L7337) (TSL second block follows the same routine IDs later in the file).
+
+- **KotOR.js:** [`NWScriptDefK1.ts`](https://github.com/KobaltBlu/KotOR.js/blob/master/src/nwscript/NWScriptDefK1.ts) — [`GetGlobalNumber` L6697](https://github.com/KobaltBlu/KotOR.js/blob/master/src/nwscript/NWScriptDefK1.ts#L6697), [`SetGlobalNumber` L6706](https://github.com/KobaltBlu/KotOR.js/blob/master/src/nwscript/NWScriptDefK1.ts#L6706).
+
+- **Kotor.NET:** NCS bytecode layout — [`NCS.cs` L9+](https://github.com/NickHugi/Kotor.NET/blob/master/Kotor.NET/Formats/KotorNCS/NCS.cs#L9).
+
 ---
 
 ## Global Variables Fundamentals

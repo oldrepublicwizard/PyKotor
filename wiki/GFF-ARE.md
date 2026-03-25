@@ -14,17 +14,23 @@ ARE files define static [area properties](GFF-File-Format#are-area) including li
 
 **PyKotor:**
 
-- [`Libraries/PyKotor/src/pykotor/resource/generics/are.py`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/are.py) - ARE [GFF](GFF-File-Format) parsing and field definitions
+- [`are.py` `ARE` L21+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/are.py#L21) — in-memory area model (lighting, fog, scripts, rooms, etc.)
+- [`construct_are` L409+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/are.py#L409), [`read_are` L807+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/are.py#L807), [`write_are` L833+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/are.py#L833) — GFF ↔ `ARE` round-trip
+- [`gff_data.py` `GFFContent.ARE` L159](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/gff/gff_data.py#L159) — four-character GFF type id
+- [`io_gff.py` `GFFBinaryReader.load` L82+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/gff/io_gff.py#L82) — binary GFF decode (shared with other GFF types)
 
 **HolocronToolset:**
 
-- [`Tools/HolocronToolset/src/toolset/gui/editors/are.py`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Tools/HolocronToolset/src/toolset/gui/editors/are.py) - Area (ARE) editor
+- [`are.py` (Area editor)](https://github.com/OldRepublicDevs/PyKotor/blob/master/Tools/HolocronToolset/src/toolset/gui/editors/are.py) — GUI for ARE fields; see [Holocron Toolset: Module Editor](Holocron-Toolset-Module-Editor) for module workflow.
 
-**Vendor Implementations:**
+**Cross-reference (other implementations):**
 
-- **[reone](https://github.com/modawan/reone)**: [`src/libs/resource/parser/are.cpp`](https://github.com/modawan/reone/blob/master/src/libs/resource/parser/are.cpp) - C++ ARE parser (if present; otherwise generic GFF reader)
-- **[xoreos](https://github.com/xoreos/xoreos)** - Aurora ARE loading via generic GFF; area metadata and lighting
-- **[KotOR.js](https://github.com/KobaltBlu/KotOR.js)** - TypeScript GFF parser used for ARE and other GFF types
+- **[reone](https://github.com/modawan/reone)**: [`gff.cpp`](https://github.com/modawan/reone/blob/master/src/libs/resource/gff.cpp), [`gffreader.cpp`](https://github.com/modawan/reone/blob/master/src/libs/resource/format/gffreader.cpp) — C++ GFF reader (ARE uses generic GFF structure); area-specific parsing may live under [`src/libs/resource/parser/`](https://github.com/modawan/reone/tree/master/src/libs/resource/parser) when present
+- **[KotOR.js](https://github.com/KobaltBlu/KotOR.js)**: [`GFFObject.ts` L24+](https://github.com/KobaltBlu/KotOR.js/blob/master/src/resource/GFFObject.ts#L24) — TypeScript GFF parser (ARE as GFF)
+- **[Kotor.NET](https://github.com/NickHugi/Kotor.NET)**: [`GFF.cs` L18+](https://github.com/NickHugi/Kotor.NET/blob/master/Kotor.NET/Formats/KotorGFF/GFF.cs#L18) — .NET GFF reader/writer (ARE uses generic GFF structure)
+- **[xoreos](https://github.com/xoreos/xoreos)** — Aurora ARE via generic GFF pipeline
+
+**Community context (workflow):** Area + walkmesh + module packaging discussions appear across Deadly Stream and forums—see [Home — Community sources](Home#community-sources-and-archives) and [Area Modding and Room Transitions](Area-Modding-and-Room-Transitions). **BWM / walkmesh normative claims** follow [BWM-File-Format](BWM-File-Format) + repo `docs/solutions/documentation/authoritative-bwm-wiki-from-re-and-pipelines.md`, not forum posts alone.
 
 ## Core Identity fields
 

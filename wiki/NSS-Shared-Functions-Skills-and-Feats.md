@@ -6,6 +6,18 @@ Part of the [NSS File Format Documentation](NSS-File-Format).
 
 This document provides detailed documentation for NWScript skill and feat functions. These functions allow scripts to check skill ranks, verify feat acquisition, manage character levels, and award experience points.
 
+## Implementation cross-reference
+
+Skill/feat checks are standard script routines; **routine IDs** follow `nwscript.nss`.
+
+- **PyKotor:** NSS → NCS — [`resource/formats/ncs/compiler/`](https://github.com/OldRepublicDevs/PyKotor/tree/master/Libraries/PyKotor/src/pykotor/resource/formats/ncs/compiler); routine tables — [`scriptdefs.py`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/common/scriptdefs.py).
+
+- **reone:** [`main.cpp`](https://github.com/modawan/reone/blob/master/src/libs/game/script/routine/impl/main.cpp) — e.g. [`GetHasFeat` L2656+](https://github.com/modawan/reone/blob/master/src/libs/game/script/routine/impl/main.cpp#L2656), [`GetSkillRank` L2912+](https://github.com/modawan/reone/blob/master/src/libs/game/script/routine/impl/main.cpp#L2912); K1 `insert` [`GetHasFeat` L7095](https://github.com/modawan/reone/blob/master/src/libs/game/script/routine/impl/main.cpp#L7095), [`GetSkillRank` L7119](https://github.com/modawan/reone/blob/master/src/libs/game/script/routine/impl/main.cpp#L7119); TSL [`L7651`](https://github.com/modawan/reone/blob/master/src/libs/game/script/routine/impl/main.cpp#L7651), [`L7675`](https://github.com/modawan/reone/blob/master/src/libs/game/script/routine/impl/main.cpp#L7675).
+
+- **KotOR.js:** [`NWScriptDefK1.ts`](https://github.com/KobaltBlu/KotOR.js/blob/master/src/nwscript/NWScriptDefK1.ts) — e.g. [`GetHasFeat` L3565+](https://github.com/KobaltBlu/KotOR.js/blob/master/src/nwscript/NWScriptDefK1.ts#L3565), [`GetSkillRank` L3879+](https://github.com/KobaltBlu/KotOR.js/blob/master/src/nwscript/NWScriptDefK1.ts#L3879).
+
+- **Kotor.NET:** [`NCS.cs` L9+](https://github.com/NickHugi/Kotor.NET/blob/master/Kotor.NET/Formats/KotorNCS/NCS.cs#L9).
+
 ---
 
 ## Skills and Feats Fundamentals

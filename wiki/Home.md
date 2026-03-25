@@ -74,7 +74,7 @@ Installation, tool use, and step-by-step guides:
 
 **Scripting (NWScript):** Function and constant reference for writing scripts. Full index and all routine/constant pages: [NSS File Format](NSS-File-Format). Quick links to major categories:
 
-- [NSS Shared Functions: Actions](NSS-Shared-Functions-Actions) · [Combat](NSS-Shared-Functions-Combat-Functions) · [Dialog and conversation](NSS-Shared-Functions-Dialog-and-Conversation-Functions) · [Effects](NSS-Shared-Functions-Effects-System) · [Item management](NSS-Shared-Functions-Item-Management) · [Module and area](NSS-Shared-Functions-Module-and-Area) · [Party](NSS-Shared-Functions-Party-Management) · [Skills and feats](NSS-Shared-Functions-Skills-and-Feats)
+- [NSS Shared Functions: Actions](NSS-Shared-Functions-Actions) · [Combat](NSS-Shared-Functions-Combat-Functions) · [Dialog and conversation](NSS-Shared-Functions-Dialog-and-Conversation-Functions) · [Effects](NSS-Shared-Functions-Effects-System) · [Item management](NSS-Shared-Functions-Item-Management) · [Module and area](NSS-Shared-Functions-Module-and-Area) · [Party](NSS-Shared-Functions-Party-Management) · [Skills and feats](NSS-Shared-Functions-Skills-and-Feats) · [Sound and music](NSS-Shared-Functions-Sound-and-Music) · [String manipulation](NSS-Shared-Functions-String-Manipulation) · [Globals](NSS-Shared-Functions-Global-Variables) · [Locals](NSS-Shared-Functions-Local-Variables) · [Alignment](NSS-Shared-Functions-Alignment-System) · [Class](NSS-Shared-Functions-Class-System) · [PC / SWMG](NSS-Shared-Functions-Player-Character-Functions) · [Item properties](NSS-Shared-Functions-Item-Properties) · [Other](NSS-Shared-Functions-Other-Functions)
 - [NSS Shared Constants: Ability](NSS-Shared-Constants-Ability-Constants) · [Object type](NSS-Shared-Constants-Object-Type-Constants) · [Class type](NSS-Shared-Constants-Class-Type-Constants) · [Visual effects](NSS-Shared-Constants-Visual-Effects-%28VFX%29)
 - [NSS K1-Only constants and functions](NSS-K1-Only-Constants-NPC-Constants) (see [NSS File Format](NSS-File-Format) for full K1 index)
 - [NSS TSL-Only constants and functions](NSS-TSL-Only-Functions-Combat-Functions) (see [NSS File Format](NSS-File-Format) for full TSL index)
@@ -244,9 +244,16 @@ For **complete, comprehensive, and accurate** wiki coverage, the following commu
 
 **Further reading (community):**
 
+- [Deadly Stream — HoloPatcher (file hub + discussion)](https://deadlystream.com/files/file/2243-holopatcher/) -- Primary distribution entry for HoloPatcher; user threads on install issues
+- [Deadly Stream -- TOOL: HoloPatcher (Mod Releases thread)](https://deadlystream.com/topic/9807-toolholopatcher/) -- Jan 2023 release thread (Cortisol): user Q&A on installs and merges—**workflow context only**; pair with [2DAList](TSLPatcher-2DAList-Syntax) / [HoloPatcher readme](HoloPatcher-README-for-mod-developers) for authoritative syntax
+- [Deadly Stream — KOTOR 1 Community Patch](https://deadlystream.com/files/file/1258-kotor-1-community-patch/) -- Large mod example; release notes discuss HoloPatcher vs legacy TSLPatcher packaging (verify current readme for your version)
+- [Deadly Stream — What's in your Override folder?](https://deadlystream.com/topic/7279-whats-in-your-override-folder/) -- Player/mod list discussion (pair with [Concepts — override](Concepts#override-folder))
 - [DeadlyStream: Help setting up TSLPatcher](https://deadlystream.com/topic/5785-help-setting-up-the-tslpatcher-for-mods/) -- TSLPatcher setup
 - [DeadlyStream: TSL Patcher, TLKEd, and accessories](https://deadlystream.com/files/file/1039-tsl-patcher-tlked-and-accessories/) -- Modding tools
 - [DeadlyStream: Modding tools category](https://deadlystream.com/files/category/17-modding-tools/) -- Tool releases
+- [Deadly Stream — Tutorials forum](https://deadlystream.com/forum/25-tutorials/) -- Curated tutorials (cross-check dates and tools against [Holocron Toolset: Getting Started](Holocron-Toolset-Getting-Started))
+- [Deadly Stream — [TUTORIAL] KotOR Modding Tutorial Series](https://deadlystream.com/topic/6886-tutorial-kotor-modding-tutorial-series/) -- Broad intro (some tools superseded; Holocron + wiki SSOT for formats)
+- [LucasForums Archive — How to compile scripts?](https://www.lucasforumsarchive.com/thread/143681) -- Historical NSS compile thread (nwnnsscomp); use with [NSS File Format — Implementation](NSS-File-Format) / Holocron compiler today
 - [LucasForums Archive: TSLPatcher v1.2.10b1](https://www.lucasforumsarchive.com/thread/149285-tslpatcher-v1210b1-mod-installer/) -- Original TSLPatcher thread (see also [TSLPatcher Thread Complete](TSLPatcher_Thread_Complete) in this wiki)
 - [LucasForums Archive: Editing / Modding](https://lucasforumsarchive.com/forum/521) -- Holowan Laboratories and tutorials
 

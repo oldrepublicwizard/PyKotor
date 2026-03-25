@@ -6,6 +6,20 @@ Part of the [NSS File Format Documentation](NSS-File-Format).
 
 This document provides detailed documentation for NWScript sound and music functions. These functions allow scripts to play sounds, manage background music tracks, control ambient sounds, and adjust audio volumes.
 
+## Implementation cross-reference
+
+Sound and music routines are registered with the script VM like other NWScript calls; **routine IDs** on this page follow `nwscript.nss` (K1/TSL). **Data:** area music tracks are driven by [ambientmusic.2da](2DA-ambientmusic) and ARE/GIT fields (see [2DA-File-Format — ambientmusic](2DA-File-Format#ambientmusic2da)); `.wav` resrefs for `PlaySound` must exist as game resources. Sound *sets* for creatures use [SSF](SSF-File-Format).
+
+- **PyKotor:** NSS → NCS — [`resource/formats/ncs/compiler/`](https://github.com/OldRepublicDevs/PyKotor/tree/master/Libraries/PyKotor/src/pykotor/resource/formats/ncs/compiler); routine metadata — [`scriptdefs.py` L3607+ (`PlaySound`)](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/common/scriptdefs.py#L3607), [L6402+ (`MusicBackgroundPlay`)](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/common/scriptdefs.py#L6402) (first K1 block).
+
+- **reone:** [`main.cpp`](https://github.com/modawan/reone/blob/master/src/libs/game/script/routine/impl/main.cpp) — [`PlaySound` L448+](https://github.com/modawan/reone/blob/master/src/libs/game/script/routine/impl/main.cpp#L448), [`MusicBackgroundPlay` L3850+](https://github.com/modawan/reone/blob/master/src/libs/game/script/routine/impl/main.cpp#L3850); K1 `insert` — [`PlaySound` L6905](https://github.com/modawan/reone/blob/master/src/libs/game/script/routine/impl/main.cpp#L6905), [`MusicBackgroundPlay` L7213](https://github.com/modawan/reone/blob/master/src/libs/game/script/routine/impl/main.cpp#L7213) (TSL second block [L7461](https://github.com/modawan/reone/blob/master/src/libs/game/script/routine/impl/main.cpp#L7461) / [L7769](https://github.com/modawan/reone/blob/master/src/libs/game/script/routine/impl/main.cpp#L7769)).
+
+- **KotOR.js:** [`NWScriptDefK1.ts`](https://github.com/KobaltBlu/KotOR.js/blob/master/src/nwscript/NWScriptDefK1.ts) — [`PlaySound` L693](https://github.com/KobaltBlu/KotOR.js/blob/master/src/nwscript/NWScriptDefK1.ts#L693), [`MusicBackgroundPlay` L5149](https://github.com/KobaltBlu/KotOR.js/blob/master/src/nwscript/NWScriptDefK1.ts#L5149).
+
+- **Kotor.NET:** NCS bytecode layout — [`NCS.cs` L9+](https://github.com/NickHugi/Kotor.NET/blob/master/Kotor.NET/Formats/KotorNCS/NCS.cs#L9).
+
+- **Community (workflow):** Deadly Stream — [[TUTORIAL] KotOR Modding Tutorial Series](https://deadlystream.com/topic/6886-tutorial-kotor-modding-tutorial-series/) (2020+; author notes some tools are outdated—prefer [Holocron Toolset](Holocron-Toolset-Getting-Started) and this wiki). Example mod touching area music: [Complete music overhaul (SWTOR style)](https://deadlystream.com/files/file/2708-complete-music-overhaul-swtor-style/) (illustrates `ambientmusic.2da` / packaging context—verify against [2DA-ambientmusic](2DA-ambientmusic)).
+
 ---
 
 ## Sound and Music Fundamentals

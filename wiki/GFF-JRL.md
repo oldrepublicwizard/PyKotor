@@ -14,15 +14,21 @@ Part of the [GFF File Format Documentation](GFF-File-Format).
 
 **PyKotor:**
 
-- [`Libraries/PyKotor/src/pykotor/resource/generics/jrl.py`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/jrl.py) - JRL [GFF](GFF-File-Format) parsing and field definitions
+- [`jrl.py` `JRL` L18+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/jrl.py#L18), [`JRLQuest` L38+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/jrl.py#L38), [`JRLEntry` L71+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/jrl.py#L71) — quest / entry model
+- [`construct_jrl` L103+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/jrl.py#L103), [`read_jrl` L173+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/jrl.py#L173), [`write_jrl` L182+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/jrl.py#L182) — GFF ↔ `JRL` round-trip
+- [`gff_data.py` `GFFContent.JRL` L166](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/gff/gff_data.py#L166) — four-character GFF type id
+- [`io_gff.py` `GFFBinaryReader.load` L82+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/gff/io_gff.py#L82) — binary GFF decode (shared with other GFF types)
 
 **HolocronToolset:**
 
-- Journal (JRL) editing in dialogue and module context
+- Journal (JRL) editing in dialogue and module context — see [Holocron Toolset: Getting Started](Holocron-Toolset-Getting-Started), [Module Editor](Holocron-Toolset-Module-Editor).
 
-**Vendor Implementations:**
+**Cross-reference (other implementations):**
 
-- reone/xoreos journal (JRL) GFF parsers
+- **[reone](https://github.com/modawan/reone)**: [`gff.cpp`](https://github.com/modawan/reone/blob/master/src/libs/resource/gff.cpp), [`gffreader.cpp`](https://github.com/modawan/reone/blob/master/src/libs/resource/format/gffreader.cpp) — C++ GFF reader (JRL uses generic GFF structure)
+- **[KotOR.js](https://github.com/KobaltBlu/KotOR.js)**: [`GFFObject.ts` L24+](https://github.com/KobaltBlu/KotOR.js/blob/master/src/resource/GFFObject.ts#L24) — TypeScript GFF parser (JRL as GFF)
+- **[Kotor.NET](https://github.com/NickHugi/Kotor.NET)**: [`GFF.cs` L18+](https://github.com/NickHugi/Kotor.NET/blob/master/Kotor.NET/Formats/KotorGFF/GFF.cs#L18) — .NET GFF reader/writer (JRL uses generic GFF structure)
+- **[xoreos](https://github.com/xoreos/xoreos)** — generic Aurora GFF; JRL loaded as GFF in engine
 
 ## Quest structure
 

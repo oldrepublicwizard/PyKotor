@@ -6,6 +6,20 @@ Part of the [NSS File Format Documentation](NSS-File-Format).
 
 This document provides detailed documentation for NWScript door and placeable functions. These functions allow scripts to open/close doors, interact with placeables, check lock states, and manage door/placeable interactions.
 
+## Implementation cross-reference
+
+Door **templates** on disk are [UTD](GFF-UTD) resources (GFF); placeables use [UTP](GFF-UTP). **Runtime** APIs below query or queue actions on instantiated objects. Queued open/close actions also appear under [NSS-Shared-Functions-Actions](NSS-Shared-Functions-Actions) (`ActionOpenDoor`, `ActionCloseDoor`, etc.).
+
+- **PyKotor:** binary GFF I/O — [`io_gff.py` L79+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/gff/io_gff.py#L79); NSS → NCS — [`resource/formats/ncs/compiler/`](https://github.com/OldRepublicDevs/PyKotor/tree/master/Libraries/PyKotor/src/pykotor/resource/formats/ncs/compiler); [`scriptdefs.py` L6528+ (`GetIsOpen`)](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/common/scriptdefs.py#L6528) (first K1 block).
+
+- **reone:** [`main.cpp`](https://github.com/modawan/reone/blob/master/src/libs/game/script/routine/impl/main.cpp) — [`GetIsOpen` L4008+](https://github.com/modawan/reone/blob/master/src/libs/game/script/routine/impl/main.cpp#L4008); K1 `insert` — [`GetIsOpen` L7231](https://github.com/modawan/reone/blob/master/src/libs/game/script/routine/impl/main.cpp#L7231) (TSL second block [L7787](https://github.com/modawan/reone/blob/master/src/libs/game/script/routine/impl/main.cpp#L7787)).
+
+- **KotOR.js:** [`NWScriptDefK1.ts` — `GetIsOpen` L5317](https://github.com/KobaltBlu/KotOR.js/blob/master/src/nwscript/NWScriptDefK1.ts#L5317); search the same file for `ActionOpenDoor` / `ActionCloseDoor`.
+
+- **Kotor.NET:** GFF types — [`GFF.cs` L18+](https://github.com/NickHugi/Kotor.NET/blob/master/Kotor.NET/Formats/KotorGFF/GFF.cs#L18); NCS bytecode — [`NCS.cs` L9+](https://github.com/NickHugi/Kotor.NET/blob/master/Kotor.NET/Formats/KotorNCS/NCS.cs#L9).
+
+- **Community (workflow):** Deadly Stream — [Couple of Scripts [TSL]](https://deadlystream.com/topic/8048-couple-of-scripts-tsl/) (2009) — dialogue-driven door unlock patterns and scripting questions; **historical**—verify behavior against your game build and [Concepts](Concepts).
+
 ---
 
 ## Doors and Placeables Fundamentals

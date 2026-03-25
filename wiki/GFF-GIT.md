@@ -2,11 +2,31 @@
 
 Part of the [GFF File Format Documentation](GFF-File-Format).
 
-[GIT files](GFF-File-Format#git-game-instance-template) store dynamic instance data for areas, defining where creatures, doors, placeables, triggers, waypoints, stores, encounters, sounds, and cameras are positioned in the game world. While are files define static environmental properties, [GIT files](GFF-File-Format#git-game-instance-template) contain all runtime object placement and instance-specific properties. GIT files are loaded with the same [resource resolution order](Concepts#resource-resolution-order) as other resources (override, MOD/SAV, KEY/BIF).
+[GIT files](GFF-File-Format#git-game-instance-template) store dynamic instance data for areas, defining where creatures, doors, placeables, triggers, waypoints, stores, encounters, sounds, and cameras are positioned in the game world. While [ARE](GFF-ARE) files define static environmental properties, [GIT files](GFF-File-Format#git-game-instance-template) hold **instance lists** and **root-level audio/music ints** used when the area loads. GIT files are loaded with the same [resource resolution order](Concepts#resource-resolution-order) as other resources (override, MOD/SAV, KEY/BIF).
 
-**Reference**: [`Libraries/PyKotor/src/pykotor/resource/generics/git.py`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/git.py)
+## References
 
-## [area properties](GFF-File-Format#are-area)
+**PyKotor:**
+
+- [`git.py` `GIT` L53+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/git.py#L53) — root GIT model and instance subclasses (`GITCreature`, `GITDoor`, …)
+- [`construct_git` L1148+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/git.py#L1148), [`read_git` L1541+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/git.py#L1541), [`write_git` L1550+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/git.py#L1550) — GFF ↔ `GIT` round-trip (includes root ambient/music field wiring in `construct_git` / `dismantle_git`)
+- [`gff_data.py` `GFFContent.GIT` L162](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/gff/gff_data.py#L162) — four-character GFF type id
+- [`io_gff.py` `GFFBinaryReader.load` L82+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/gff/io_gff.py#L82) — binary GFF decode (shared with other GFF types)
+
+**HolocronToolset:**
+
+- [`git/git.py` (GIT / instance editor)](https://github.com/OldRepublicDevs/PyKotor/blob/master/Tools/HolocronToolset/src/toolset/gui/editors/git/git.py) — see [Holocron Toolset: Module Editor](Holocron-Toolset-Module-Editor), [Module Resources](Holocron-Toolset-Module-Resources).
+
+**Cross-reference (other implementations):**
+
+- **[reone](https://github.com/modawan/reone)**: [`gff.cpp`](https://github.com/modawan/reone/blob/master/src/libs/resource/gff.cpp), [`gffreader.cpp`](https://github.com/modawan/reone/blob/master/src/libs/resource/format/gffreader.cpp) — C++ GFF reader (GIT uses generic GFF structure)
+- **[KotOR.js](https://github.com/KobaltBlu/KotOR.js)**: [`GFFObject.ts` L24+](https://github.com/KobaltBlu/KotOR.js/blob/master/src/resource/GFFObject.ts#L24) — TypeScript GFF parser (GIT as GFF)
+- **[Kotor.NET](https://github.com/NickHugi/Kotor.NET)**: [`GFF.cs` L18+](https://github.com/NickHugi/Kotor.NET/blob/master/Kotor.NET/Formats/KotorGFF/GFF.cs#L18) — .NET GFF reader/writer (GIT uses generic GFF structure)
+- **[xoreos](https://github.com/xoreos/xoreos)** — generic Aurora GFF; GIT loaded as GFF in engine
+
+## Root properties (ambient audio and music)
+
+These fields are stored on the **GIT root** (see PyKotor `construct_git` / `dismantle_git` around the `Properties` struct in [`git.py`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/git.py)). They overlap conceptually with music/ambient columns on [ARE](GFF-ARE); treat [ARE](GFF-ARE) as the place for **static area metadata** (lighting, fog, minimap, hooks) and this section as **GIT-carried ints** the engine reads with the instance template.
 
 | field | type | Description |
 | ----- | ---- | ----------- |

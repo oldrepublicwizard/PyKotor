@@ -26,6 +26,8 @@ The game resolves resources in a fixed order. Understanding this order is essent
 
 **Merging 2DA files:** When multiple mods change the same 2DA (e.g. `spells.2da`, `appearance.2da`), raw overwrites would make only one mod's changes take effect. TSLPatcher can **merge** 2DA changes: it adds or updates rows based on your 2DAList instructions so that several mods' additions coexist. Configure your mod's 2DAList (and optionally TLKList for string references) so that your rows are appended or matched by key column; the patcher then merges instead of replacing the whole file. See [TSLPatcher 2DAList Syntax](TSLPatcher-2DAList-Syntax) for exact syntax.
 
+**Community (HoloPatcher vs TSLPatcher merges):** [Deadly Stream -- TOOL: HoloPatcher](https://deadlystream.com/topic/9807-toolholopatcher/) (release discussion) complements the wiki's [HoloPatcher README for Mod Developers](HoloPatcher-README-for-mod-developers); treat threads as **workflow context**, not a substitute for `[2DAList]` syntax on this wiki.
+
 **Merging TLK (dialog.tlk):** Similarly, TLKList allows adding or changing string entries without wiping the rest of the TLK. Use TLKList so that your mod's new StrRefs are appended and existing entries are updated only where intended. See [TSLPatcher TLKList Syntax](TSLPatcher-TLKList-Syntax).
 
 **GFF merging:** TSLPatcher GFFList can add or edit structs and fields in GFF files (e.g. adding a new item to a 2DA or editing a creature template). It cannot remove structs; for that, use a script-based workaround (see below) or a tool that supports deletion.
@@ -145,5 +147,8 @@ label=YavinHgrDoor1
 - [NSS File Format](NSS-File-Format) -- Scripting; [NCS](NCS-File-Format) bytecode
 - [Installing Mods with HoloPatcher](Installing-Mods-with-HoloPatcher) -- End-user mod installation
 - [Community sources and archives](Home#community-sources-and-archives) -- DeadlyStream, LucasForums archives for tutorials and community knowledge
+- [Deadly Stream — HoloPatcher](https://deadlystream.com/files/file/2243-holopatcher/) -- User-facing tool hub and install discussions (complement [Installing Mods with HoloPatcher](Installing-Mods-with-HoloPatcher))
+- [LucasForums Archive — TSLPatcher v1.2.10b1 thread](https://www.lucasforumsarchive.com/thread/149285-tslpatcher-v1210b1-mod-installer/) -- Historical installer context (see also [TSLPatcher Thread Complete](TSLPatcher_Thread_Complete))
+- [Deadly Stream -- TOOL: HoloPatcher](https://deadlystream.com/topic/9807-toolholopatcher/) -- Release thread (2DA merge / installer workflow context)
 - [Concepts](Concepts#resource-resolution-order) -- Resource resolution order; [KEY-File-Format](KEY-File-Format) -- KEY/BIF index format
 - [TSLPatcher 2DAList Syntax](TSLPatcher-2DAList-Syntax), [TSLPatcher TLKList Syntax](TSLPatcher-TLKList-Syntax), [TSLPatcher GFFList Syntax](TSLPatcher-GFFList-Syntax) -- Merging and patching

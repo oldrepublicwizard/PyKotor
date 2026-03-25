@@ -25,7 +25,7 @@ UTI files define [item templates](GFF-File-Format#uti-item) for all objects in c
 - **[reone](https://github.com/modawan/reone)**: [`gff.cpp`](https://github.com/modawan/reone/blob/master/src/libs/resource/gff.cpp), [`gffreader.cpp`](https://github.com/modawan/reone/blob/master/src/libs/resource/format/gffreader.cpp) — C++ GFF reader (UTI uses generic GFF structure)
 - **[KotOR.js](https://github.com/KobaltBlu/KotOR.js)**: [`GFFObject.ts` L24+](https://github.com/KobaltBlu/KotOR.js/blob/master/src/resource/GFFObject.ts#L24) — TypeScript GFF parser
 - **[Kotor.NET](https://github.com/NickHugi/Kotor.NET)**: [`GFF.cs` L18+](https://github.com/NickHugi/Kotor.NET/blob/master/Kotor.NET/Formats/KotorGFF/GFF.cs#L18) — .NET GFF reader/writer (UTI uses generic GFF structure)
-- **[PyKotor](https://github.com/OldRepublicDevs/PyKotor)** (binary GFF): [`GFFBinaryReader.load` L79+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/gff/io_gff.py#L79) — same pipeline as other GFF types
+- **[PyKotor](https://github.com/OldRepublicDevs/PyKotor)** (binary GFF): [`GFFBinaryReader.load` L82+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/gff/io_gff.py#L82) — same pipeline as other GFF types
 - **[xoreos](https://github.com/xoreos/xoreos)** — generic Aurora GFF; UTI loaded as GFF in engine
 
 ## Core Identity fields

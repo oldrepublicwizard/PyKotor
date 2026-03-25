@@ -6,6 +6,18 @@ Part of the [NSS File Format Documentation](NSS-File-Format).
 
 This document provides detailed documentation for NWScript string manipulation functions. These functions allow scripts to work with text data, extract substrings, search within strings, convert case, and perform type conversions.
 
+## Implementation cross-reference
+
+String routines are registered with the script VM like other NWScript calls; **routine IDs** on this page follow `nwscript.nss` (K1/TSL). They are used heavily with [TLK](TLK-File-Format) entries and dialog-related APIs on [NSS-Shared-Functions-Dialog-and-Conversation-Functions](NSS-Shared-Functions-Dialog-and-Conversation-Functions).
+
+- **PyKotor:** NSS → NCS — [`resource/formats/ncs/compiler/`](https://github.com/OldRepublicDevs/PyKotor/tree/master/Libraries/PyKotor/src/pykotor/resource/formats/ncs/compiler); routine metadata — [`scriptdefs.py` L3706+ (`GetStringLength`)](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/common/scriptdefs.py#L3706), [L3713+ (`GetStringUpperCase`)](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/common/scriptdefs.py#L3713) (first K1 block; search the same file for other `GetString*` / `String*` symbols).
+
+- **reone:** [`main.cpp`](https://github.com/modawan/reone/blob/master/src/libs/game/script/routine/impl/main.cpp) — [`GetStringLength` L547+](https://github.com/modawan/reone/blob/master/src/libs/game/script/routine/impl/main.cpp#L547), [`GetStringUpperCase` L557+](https://github.com/modawan/reone/blob/master/src/libs/game/script/routine/impl/main.cpp#L557); K1 `insert` — [`GetStringLength` L6916](https://github.com/modawan/reone/blob/master/src/libs/game/script/routine/impl/main.cpp#L6916), [`GetStringUpperCase` L6917](https://github.com/modawan/reone/blob/master/src/libs/game/script/routine/impl/main.cpp#L6917) (TSL second block [L7472](https://github.com/modawan/reone/blob/master/src/libs/game/script/routine/impl/main.cpp#L7472) / [L7473](https://github.com/modawan/reone/blob/master/src/libs/game/script/routine/impl/main.cpp#L7473)).
+
+- **KotOR.js:** [`NWScriptDefK1.ts`](https://github.com/KobaltBlu/KotOR.js/blob/master/src/nwscript/NWScriptDefK1.ts) — [`GetStringLength` L899](https://github.com/KobaltBlu/KotOR.js/blob/master/src/nwscript/NWScriptDefK1.ts#L899), [`GetStringUpperCase` L908](https://github.com/KobaltBlu/KotOR.js/blob/master/src/nwscript/NWScriptDefK1.ts#L908).
+
+- **Kotor.NET:** NCS bytecode layout — [`NCS.cs` L9+](https://github.com/NickHugi/Kotor.NET/blob/master/Kotor.NET/Formats/KotorNCS/NCS.cs#L9).
+
 ---
 
 ## String Manipulation Fundamentals

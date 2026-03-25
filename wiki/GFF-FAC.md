@@ -12,12 +12,30 @@ FAC files are GFF-based format files that store faction definitions and reputati
 
 A Faction is a control system for determining how game objects interact with each other in terms of friendly, neutral, and hostile reactions. Faction information is stored in the `repute.fac` file in a module or savegame. This file uses BioWare's Generic File Format (GFF), and the GFF FileType string in the header of `repute.fac` is `"FAC "`.
 
-**Implementation:** [`Libraries/PyKotor/src/pykotor/resource/generics/fac.py`](https://github.com/OldRepublicDevs/PyKotor/tree/master/Libraries/PyKotor/src/pykotor/resource/generics/fac.py)
-
 **Related Files:**
 
 - `repute.2da` - Default faction standings (see [2DA File Format](2DA-File-Format))
 - `repadjust.2da` - Reputation adjustment values (see [2DA File Format](2DA-File-Format))
+
+## References
+
+**PyKotor:**
+
+- [`fac.py` `FACFaction` L16+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/fac.py#L16), [`FACReputation` L40+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/fac.py#L40), [`FAC` L64+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/fac.py#L64) — in-memory faction / reputation model
+- [`construct_fac` L125+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/fac.py#L125), [`read_fac` L260+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/fac.py#L260), [`write_fac` L281+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/fac.py#L281) — GFF ↔ `FAC` round-trip
+- [`gff_data.py` `GFFContent.FAC` L161](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/gff/gff_data.py#L161) — four-character GFF type id
+- [`io_gff.py` `GFFBinaryReader.load` L82+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/gff/io_gff.py#L82) — binary GFF decode (shared with other GFF types)
+
+**HolocronToolset:**
+
+- Faction / `repute.fac` editing where exposed in the module or GFF workflow — see [Holocron Toolset: Getting Started](Holocron-Toolset-Getting-Started).
+
+**Cross-reference (other implementations):**
+
+- **[reone](https://github.com/modawan/reone)**: [`gff.cpp`](https://github.com/modawan/reone/blob/master/src/libs/resource/gff.cpp), [`gffreader.cpp`](https://github.com/modawan/reone/blob/master/src/libs/resource/format/gffreader.cpp) — C++ GFF reader (FAC uses generic GFF structure)
+- **[KotOR.js](https://github.com/KobaltBlu/KotOR.js)**: [`GFFObject.ts` L24+](https://github.com/KobaltBlu/KotOR.js/blob/master/src/resource/GFFObject.ts#L24) — TypeScript GFF parser (FAC as GFF)
+- **[Kotor.NET](https://github.com/NickHugi/Kotor.NET)**: [`GFF.cs` L18+](https://github.com/NickHugi/Kotor.NET/blob/master/Kotor.NET/Formats/KotorGFF/GFF.cs#L18) — .NET GFF reader/writer (FAC uses generic GFF structure)
+- **[xoreos](https://github.com/xoreos/xoreos)** — generic Aurora GFF; FAC loaded as GFF in engine
 
 ---
 

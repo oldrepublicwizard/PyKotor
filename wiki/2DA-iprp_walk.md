@@ -15,7 +15,17 @@ Part of the [2DA File Format Documentation](2DA-File-Format).
 
 **References**:
 
-- [`Libraries/PyKotor/src/pykotor/extract/twoda.py:490`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L490) - TwoDARegistry definition
-- [`Tools/HolocronToolset/src/toolset/data/installation.py:89`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Tools/HolocronToolset/src/toolset/data/installation.py#L89) - HTInstallation constant
+**PyKotor**
+
+- [`TwoDARegistry.IPRP_WALK` L702](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py#L702) — `iprp_walk` (`LoadIPRPCostTables()`)
+- [`read_2da` L67+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/twoda/twoda_auto.py#L67)
+
+**HolocronToolset**
+
+- [`HTInstallation.TwoDA_IPRP_WALK` L103](https://github.com/OldRepublicDevs/PyKotor/blob/master/Tools/HolocronToolset/src/toolset/data/installation.py#L103)
+
+**Cross-reference (other implementations)**
+
+- **[reone](https://github.com/modawan/reone)** / **[KotOR.js](https://github.com/KobaltBlu/KotOR.js)** / **[Kotor.NET](https://github.com/NickHugi/Kotor.NET)** — search for `iprp_walk` when adding anchors.
 
 ---

@@ -14,15 +14,21 @@ IFO files define module-level metadata including entry configuration, expansion 
 
 **PyKotor:**
 
-- [`Libraries/PyKotor/src/pykotor/resource/generics/ifo.py`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/ifo.py) - IFO [GFF](GFF-File-Format) parsing and field definitions
+- [`ifo.py` `IFO` L18+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/ifo.py#L18) — IFO [GFF](GFF-File-Format) field model
+- [`construct_ifo` L115+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/ifo.py#L115), [`read_ifo` L262+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/ifo.py#L262), [`write_ifo` L271+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/ifo.py#L271)
+- [`gff_data.py` `GFFContent.IFO` L164](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/gff/gff_data.py#L164) — four-character GFF type id
+- Binary GFF pipeline: [`GFFBinaryReader.load` L82+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/gff/io_gff.py#L82)
 
 **HolocronToolset:**
 
-- Module/IFO editing (entry point, area list, script hooks)
+- Module / IFO editing (entry point, area list, script hooks) — see [Holocron Toolset: Getting Started](Holocron-Toolset-Getting-Started), [Module Editor](Holocron-Toolset-Module-Editor), and [Module Resources](Holocron-Toolset-Module-Resources) where the GUI exposes IFO-related fields.
 
-**Vendor Implementations:**
+**Cross-reference (other implementations):**
 
-- reone/xoreos IFO (module info) GFF parsers
+- **[reone](https://github.com/modawan/reone)**: [`gff.cpp`](https://github.com/modawan/reone/blob/master/src/libs/resource/gff.cpp), [`gffreader.cpp`](https://github.com/modawan/reone/blob/master/src/libs/resource/format/gffreader.cpp) — C++ GFF reader (IFO uses generic GFF structure)
+- **[KotOR.js](https://github.com/KobaltBlu/KotOR.js)**: [`GFFObject.ts` L24+](https://github.com/KobaltBlu/KotOR.js/blob/master/src/resource/GFFObject.ts#L24) — TypeScript GFF parser
+- **[Kotor.NET](https://github.com/NickHugi/Kotor.NET)**: [`GFF.cs` L18+](https://github.com/NickHugi/Kotor.NET/blob/master/Kotor.NET/Formats/KotorGFF/GFF.cs#L18) — .NET GFF reader/writer (IFO uses generic GFF structure)
+- **[xoreos](https://github.com/xoreos/xoreos)** — generic Aurora GFF; IFO loaded as GFF in engine
 
 ## Core Module Identity
 
