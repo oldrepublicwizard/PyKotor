@@ -634,8 +634,12 @@ import os
 
 from typing import TYPE_CHECKING, ClassVar, cast
 
+import kaitaistruct
+
 from pykotor.common.misc import Color, Game
 from pykotor.common.stream import BinaryReader, BinaryWriter
+from pykotor.kaitai_generated.mdl import Mdl
+from pykotor.kaitai_generated.mdx import Mdx
 from pykotor.resource.formats.mdl.mdl_data import (
     MDL,
     MDLAnimation,
@@ -676,7 +680,7 @@ MDL_FAST_LOAD_FLAGS = {
 
 
 class _ModelHeader:
-    SIZE: ClassVar[Literal[0xC4]] = 196
+    SIZE: ClassVar[int] = 196
 
     def __init__(self):
         self.geometry: _GeometryHeader = _GeometryHeader()
@@ -798,24 +802,24 @@ class _ModelHeader:
 
 
 class _GeometryHeader:
-    SIZE: ClassVar[Literal[0x50]] = 80
+    SIZE: ClassVar[int] = 80
 
-    K1_FUNCTION_POINTER0: ClassVar[Literal[0x413670]] = 4273776
-    K2_FUNCTION_POINTER0: ClassVar[Literal[0x416310]] = 4285200
-    K1_ANIM_FUNCTION_POINTER0: ClassVar[Literal[0x4134F0]] = 4273392
-    K2_ANIM_FUNCTION_POINTER0: ClassVar[Literal[0x416190]] = 4284816
+    K1_FUNCTION_POINTER0: ClassVar[int] = 4273776
+    K2_FUNCTION_POINTER0: ClassVar[int] = 4285200
+    K1_ANIM_FUNCTION_POINTER0: ClassVar[int] = 4273392
+    K2_ANIM_FUNCTION_POINTER0: ClassVar[int] = 4284816
 
-    K1_FUNCTION_POINTER1: ClassVar[Literal[0x405520]] = 4216096
-    K2_FUNCTION_POINTER1: ClassVar[Literal[0x405600]] = 4216320
-    K1_ANIM_FUNCTION_POINTER1: ClassVar[Literal[0x43ECE0]] = 4451552
-    K2_ANIM_FUNCTION_POINTER1: ClassVar[Literal[0x4503B0]] = 4522928
+    K1_FUNCTION_POINTER1: ClassVar[int] = 4216096
+    K2_FUNCTION_POINTER1: ClassVar[int] = 4216320
+    K1_ANIM_FUNCTION_POINTER1: ClassVar[int] = 4451552
+    K2_ANIM_FUNCTION_POINTER1: ClassVar[int] = 4522928
 
-    GEOM_TYPE_ROOT: ClassVar[Literal[2]] = 2
-    GEOM_TYPE_ANIM: ClassVar[Literal[5]] = 5
+    GEOM_TYPE_ROOT: ClassVar[int] = 2
+    GEOM_TYPE_ANIM: ClassVar[int] = 5
 
     # MDLOps uses these specific padding bytes when compiling ASCII to binary.
     # Using the same values ensures byte-level parity with MDLOps output.
-    MDLOPS_PADDING: ClassVar[Literal[b"\x31\x96\xbd"]] = b"\x31\x96\xbd"
+    MDLOPS_PADDING: ClassVar[bytes] = b"\x31\x96\xbd"
 
     def __init__(self):
         self.function_pointer0: int = 0
@@ -863,7 +867,7 @@ class _GeometryHeader:
 
 
 class _AnimationHeader:
-    SIZE: ClassVar[Literal[0x88]] = _GeometryHeader.SIZE + 56
+    SIZE: ClassVar[int] = _GeometryHeader.SIZE + 56
 
     def __init__(self):
         self.geometry: _GeometryHeader = _GeometryHeader()
@@ -957,7 +961,7 @@ class _Animation:
 
 
 class _EventStructure:
-    SIZE: ClassVar[Literal[0x24]] = 36
+    SIZE: ClassVar[int] = 36
 
     def __init__(self):
         self.activation_time: float = 0.0
@@ -980,7 +984,7 @@ class _EventStructure:
 
 
 class _Controller:
-    SIZE: ClassVar[Literal[0x10]] = 16
+    SIZE: ClassVar[int] = 16
 
     def __init__(self):
         self.type_id: int = 0
@@ -1018,7 +1022,7 @@ class _Controller:
 
 
 class _Node:
-    SIZE: ClassVar[Literal[0x50]] = 80
+    SIZE: ClassVar[int] = 80
 
     _dangly_constraints: list[MDLConstraint] | None = None
     _aabb_nodes: list[MDLAABBNode] | None = None
@@ -1659,35 +1663,35 @@ class _NodeHeader:
 class _MDXDataFlags:
     # NOTE: These constants mirror MDLOps' MDX_* bitfield definitions.
     # See `
-    VERTEX: Literal[0x00000001] = 0x00000001
-    TEX0: Literal[0x00000002] = 0x00000002
-    TEX1: Literal[0x00000004] = 0x00000004
-    TEX2: Literal[0x00000008] = 0x00000008
-    TEX3: Literal[0x00000010] = 0x00000010
-    NORMAL: Literal[0x00000020] = 0x00000020
-    COLOR: Literal[0x00000040] = 0x00000040
-    TANGENT_SPACE: Literal[0x00000080] = 0x00000080
+    VERTEX: int = 0x00000001
+    TEX0: int = 0x00000002
+    TEX1: int = 0x00000004
+    TEX2: int = 0x00000008
+    TEX3: int = 0x00000010
+    NORMAL: int = 0x00000020
+    COLOR: int = 0x00000040
+    TANGENT_SPACE: int = 0x00000080
 
 
 class _TrimeshHeader:
     # MDLOps defines these as 332 (K1) and 340 (K2).
     # See ` `$structs{'subhead'}{'33k1'}` and `'33k2'`.
-    K1_SIZE: Literal[0x14C] = 332
-    K2_SIZE: Literal[0x154] = 340
+    K1_SIZE: int = 332
+    K2_SIZE: int = 340
 
-    K1_FUNCTION_POINTER0: Literal[0x405750] = 4216656
-    K2_FUNCTION_POINTER0: Literal[0x405830] = 4216880
-    K1_SKIN_FUNCTION_POINTER0: Literal[0x405710] = 4216592
-    K2_SKIN_FUNCTION_POINTER0: Literal[0x4057F0] = 4216816
-    K1_DANGLY_FUNCTION_POINTER0: Literal[0x405740] = 4216640
-    K2_DANGLY_FUNCTION_POINTER0: Literal[0x405820] = 4216864
+    K1_FUNCTION_POINTER0: int = 4216656
+    K2_FUNCTION_POINTER0: int = 4216880
+    K1_SKIN_FUNCTION_POINTER0: int = 4216592
+    K2_SKIN_FUNCTION_POINTER0: int = 4216816
+    K1_DANGLY_FUNCTION_POINTER0: int = 4216640
+    K2_DANGLY_FUNCTION_POINTER0: int = 4216864
 
-    K1_FUNCTION_POINTER1: Literal[0x405760] = 4216672
-    K2_FUNCTION_POINTER1: Literal[0x405840] = 4216896
-    K1_SKIN_FUNCTION_POINTER1: Literal[0x405720] = 4216608
-    K2_SKIN_FUNCTION_POINTER1: Literal[0x405800] = 4216832
-    K1_DANGLY_FUNCTION_POINTER1: Literal[0x405730] = 4216624
-    K2_DANGLY_FUNCTION_POINTER1: Literal[0x405810] = 4216848
+    K1_FUNCTION_POINTER1: int = 4216672
+    K2_FUNCTION_POINTER1: int = 4216896
+    K1_SKIN_FUNCTION_POINTER1: int = 4216608
+    K2_SKIN_FUNCTION_POINTER1: int = 4216832
+    K1_DANGLY_FUNCTION_POINTER1: int = 4216624
+    K2_DANGLY_FUNCTION_POINTER1: int = 4216848
 
     def __init__(self):
         self.function_pointer0: int = 0
@@ -2899,6 +2903,27 @@ class MDLBinaryReader(BiowareResource):
         """
         self._mdl: MDL = MDL()
         self._names: list[str] = []
+
+        stream = self._reader.get_stream()
+        abs_mdl_start = self._reader.offset() - 12
+        stream_pos = stream.tell()
+        try:
+            stream.seek(abs_mdl_start)
+            prefix = stream.read(208)
+            if len(prefix) >= 208:
+                Mdl.from_bytes(prefix)
+        except kaitaistruct.KaitaiStructError:
+            pass
+        finally:
+            stream.seek(stream_pos)
+
+        if self._reader_ext is not None and self._reader_ext.remaining() > 0:
+            mdx_data = self._reader_ext.read_all()
+            try:
+                Mdx.from_bytes(mdx_data)
+            except kaitaistruct.KaitaiStructError:
+                pass
+            self._reader_ext = BinaryReader.from_bytes(mdx_data, 0)
 
         model_header: _ModelHeader = _ModelHeader().read(self._reader)
 
@@ -4350,13 +4375,28 @@ class MDLBinaryWriter(BiowareResource):
                     idxs = (-1.0, -1.0, -1.0, -1.0)
                     wts = (0.0, 0.0, 0.0, 0.0)
                 else:
-                    idxs = tuple(float(x) for x in vb.vertex_indices)
-                    raw_weights = tuple(float(x) for x in vb.vertex_weights)
+                    idxs = (
+                        float(vb.vertex_indices[0]),
+                        float(vb.vertex_indices[1]),
+                        float(vb.vertex_indices[2]),
+                        float(vb.vertex_indices[3]),
+                    )
+                    raw_weights = (
+                        float(vb.vertex_weights[0]),
+                        float(vb.vertex_weights[1]),
+                        float(vb.vertex_weights[2]),
+                        float(vb.vertex_weights[3]),
+                    )
                     total = raw_weights[0] + raw_weights[1] + raw_weights[2] + raw_weights[3]
                     if total and abs(total - 1.0) > 1e-4:
                         # Normalize to sum to 1.0 like MDLOps postprocessnodes
                         inv = 1.0 / total
-                        wts = tuple(w * inv for w in raw_weights)
+                        wts = (
+                            raw_weights[0] * inv,
+                            raw_weights[1] * inv,
+                            raw_weights[2] * inv,
+                            raw_weights[3] * inv,
+                        )
                     else:
                         wts = raw_weights
                 for x in idxs:
