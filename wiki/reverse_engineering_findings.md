@@ -210,6 +210,70 @@ void SetupOpenGL() {
 - `AddModel()`: Cache management
 - `MaxTree::AsModel()`: Tree to [model](MDL-MDX-File-Format.md) conversion
 
+#### MDL/MDX read pipeline
+
+Binary MDL/MDX loading is a small synchronous pipeline in both games. The top-level loader clears the current-model context, delegates file parsing to `IODispatcher`, converts the parsed tree into a `Model` when possible, and then deduplicates against the global model cache by case-insensitive model name.
+
+- `LoadModel()` @ (/K1/K1_win_gog_swkotor.exe @ 0x00464200, /TSL/K2_win_gog_aspyr.swkotor2.exe @ 0x0047a570)
+   - Saves and restores the global `CurrentModel` context.
+   - Returns early on null input.
+   - Calls `IODispatcher::GetRef()` @ (/K1/K1_win_gog_swkotor.exe @ 0x004a0580, /TSL/K2_win_gog_aspyr.swkotor2.exe @ 0x004cda00) followed by `IODispatcher::ReadSync()` @ (/K1/K1_win_gog_swkotor.exe @ 0x004a15d0, /TSL/K2_win_gog_aspyr.swkotor2.exe @ 0x004cead0).
+   - Converts the returned `MaxTree` with `MaxTree::AsModel()` @ (/K1/K1_win_gog_swkotor.exe @ 0x0043e1c0, /TSL/K2_win_gog_aspyr.swkotor2.exe @ 0x0044ff90).
+   - Compares the new model name against `modelsList` with `__stricmp()` @ (/K1/K1_win_gog_swkotor.exe @ 0x0070acaf, /TSL/K2_win_gog_aspyr.swkotor2.exe @ 0x0077e24f); if a duplicate is found, the newly created model is destroyed and the cached model is returned instead.
+
+- `IODispatcher::ReadSync()` @ (/K1/K1_win_gog_swkotor.exe @ 0x004a15d0, /TSL/K2_win_gog_aspyr.swkotor2.exe @ 0x004cead0)
+   - Stack-allocates an `Input` object and delegates to `Input::Read()` @ (/K1/K1_win_gog_swkotor.exe @ 0x004a1260, /TSL/K2_win_gog_aspyr.swkotor2.exe @ 0x004ce780).
+   - This is the handoff from resource I/O into MDL/MDX parsing proper.
+
+- `Input::Read()` @ (/K1/K1_win_gog_swkotor.exe @ 0x004a1260, /TSL/K2_win_gog_aspyr.swkotor2.exe @ 0x004ce780)
+   - Dispatches into the binary parser (`InputBinary::Read`) for the normal MDL/MDX path.
+   - K1 still exposes helper paths used by ASCII MDL support, including `AurResGetNextLine()` @ (/K1/K1_win_gog_swkotor.exe @ 0x0044bfa0, /TSL/K2_win_gog_aspyr.swkotor2.exe @ TODO: Find this address), `AurResGet()` @ (/K1/K1_win_gog_swkotor.exe @ 0x0044c740, /TSL/K2_win_gog_aspyr.swkotor2.exe @ 0x00460db0), and `FuncInterp()` @ (/K1/K1_win_gog_swkotor.exe @ 0x0044c1f0, /TSL/K2_win_gog_aspyr.swkotor2.exe @ TODO: Find this address); the corresponding ASCII branch is not exposed the same way in TSL.
+
+- `MaxTree::AsModel()` @ (/K1/K1_win_gog_swkotor.exe @ 0x0043e1c0, /TSL/K2_win_gog_aspyr.swkotor2.exe @ 0x0044ff90)
+   - Implements a strict type gate: only trees whose low 7 bits encode model type `2` are treated as `Model` instances.
+   - This function sits on many call paths beyond the loader itself, including model lookup, mesh processing, parser exits, and vertex-array construction.
+
+#### Higher-level object model loaders
+
+The generic MDL/MDX reader is wrapped by object-specific loaders for creatures, placeables, and related gameplay objects. Those wrappers are where animation-base selection, attachment hookup, callback registration, and error reporting are handled.
+
+- `CSWCCreature::LoadModel` / `CSWCCreature::LoadModel_Internal` @ (/K1/K1_win_gog_swkotor.exe @ 0x0061b380, /TSL/K2_win_gog_aspyr.swkotor2.exe @ 0x00669ea0)
+   - Chooses or reuses an animation-base object, then asks that object to load the requested model resource.
+   - K1 keeps the main logic inline; TSL splits the work so a wrapper routes into a larger internal implementation.
+   - Both games support several animation-base layouts (standard, head, wield, head+wield). TSL additionally includes a two-weapon path and expands the object layout with extra cache and callback state.
+   - Special attachment values trigger extra setup for weapon/attachment nodes; the `headconjure` dummy is used for spell-visual placement, with TSL performing more explicit follow-up calculations.
+   - Failure is reported through the format string `"CSWCCreature::LoadModel(): Failed to load creature model '%s'."` @ (/K1/K1_win_gog_swkotor.exe @ 0x0074f85c, /TSL/K2_win_gog_aspyr.swkotor2.exe @ 0x007c82fc).
+
+- `RegisterCallbacks()` / headconjure callback setup @ (/K1/K1_win_gog_swkotor.exe @ 0x0061ab40, /TSL/K2_win_gog_aspyr.swkotor2.exe @ 0x00693fe0)
+   - Creature model loading also binds animation and sound callbacks such as `snd_Footstep`, `snd_hitground`, `SwingShort`, `Clash`, `blur_start`, and `GetPath`.
+   - K1 keeps the full registration logic in the same function used by the headconjure path; TSL separates the simpler general registration path from the specialized headconjure registration helper @ (/K1/K1_win_gog_swkotor.exe @ 0x0061ab40, /TSL/K2_win_gog_aspyr.swkotor2.exe @ 0x00669570).
+
+- `CSWCPlaceable::LoadModel()` @ (/K1/K1_win_gog_swkotor.exe @ 0x006823f0, /TSL/K2_win_gog_aspyr.swkotor2.exe @ 0x006d9721)
+   - Lazily constructs a placeable-specific animation base, loads the model, attaches it to the object, and derives hit-detection names from the resource name.
+   - The hard-coded `"_head_hit"` suffix participates in the collision / hit-node naming convention used by higher-level object setup.
+
+- `CSWCCreature::UnloadModel()` @ (/K1/K1_win_gog_swkotor.exe @ 0x0060c8e0, /TSL/K2_win_gog_aspyr.swkotor2.exe @ TODO: Find this address)
+   - Unloads the active animation base through virtual cleanup and destructor calls, then clears the stored pointer.
+   - The equivalent TSL cleanup path likely exists but was not mapped to the same standalone function yet.
+
+#### Resource wrappers and support functions
+
+- `CResMDL::CResMDL()` @ (/K1/K1_win_gog_swkotor.exe @ 0x005cea50, /TSL/K2_win_gog_aspyr.swkotor2.exe @ TODO: Find this address)
+   - Initializes the MDL resource wrapper on top of the generic `CRes` base class.
+
+- `CResMDL::~CResMDL()` @ (/K1/K1_win_gog_swkotor.exe @ 0x005cea80, /TSL/K2_win_gog_aspyr.swkotor2.exe @ 0x00435200)
+- `CResMDL` deleting destructor @ (/K1/K1_win_gog_swkotor.exe @ 0x005cea90, /TSL/K2_win_gog_aspyr.swkotor2.exe @ 0x00447740)
+   - These follow the usual resource-wrapper lifetime pattern: restore the class vtable for destruction, destroy the base `CRes` state, and optionally free the allocation when invoked as a deleting destructor.
+
+- `CResRef::CopyToString()` / `CResRef::GetResRefStr()` @ (/K1/K1_win_gog_swkotor.exe @ 0x00405f70, /TSL/K2_win_gog_aspyr.swkotor2.exe @ 0x00406050)
+   - Resource names are surfaced through a small circular-buffer scheme rather than freshly allocated strings, which explains why many load-failure paths can safely format resource names without introducing extra ownership complexity.
+
+- `".mdl"` string constant @ (/K1/K1_win_gog_swkotor.exe @ 0x00740ca8, /TSL/K2_win_gog_aspyr.swkotor2.exe @ 0x007b8d28)
+   - Referenced by parser and add-in-animation paths when constructing or validating MDL resource names.
+
+- `"Model %s nor the default model %s could be loaded."` @ (/K1/K1_win_gog_swkotor.exe @ 0x00751c70, /TSL/K2_win_gog_aspyr.swkotor2.exe @ 0x007cad14)
+   - Generic fallback-load failure string used when both the requested model and its default substitute fail.
+
 <a id="bwm-walkmesh-aabb-engine-implementation-analysis"></a>
 
 ## BWM / walkmesh / AABB (engine implementation analysis)
