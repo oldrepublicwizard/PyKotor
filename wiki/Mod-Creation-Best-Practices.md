@@ -6,6 +6,8 @@ KotOR modding has historically been **fragmented**: different tools, version qui
 
 This page provides common workaround strategies and community-backed guidance for KotOR/TSL mod creation. For tool syntax and installation, see [HoloPatcher README for Mod Developers](HoloPatcher-README-for-mod-developers) and [TSLPatcher's Official Readme](TSLPatcher's-Official-Readme). The practices below are drawn from long-standing community consensus on [DeadlyStream](https://deadlystream.com), [LucasForums archives](https://lucasforumsarchive.com), and tool documentation.
 
+**Historical context (LucasForums Archive):** The original [TSLPatcher v1.2.10b1 release thread](https://www.lucasforumsarchive.com/thread/149285-tslpatcher-v1210b1-mod-installer) documents the Perl-era installer design; use **HoloPatcher** and this wiki’s TSLPatcher-syntax pages for current semantics. For early standalone GFF editing culture, see [K-GFF v1.3.0](https://www.lucasforumsarchive.com/thread/149407) (pair with [GFF-File-Format](GFF-File-Format) historical tooling paragraph and [Holocron Toolset](Holocron-Toolset-Getting-Started) today).
+
 ## File priority and where to put your files
 
 The game resolves resources in a fixed order. Understanding this order is essential for knowing where to place your mod's files and how conflicts arise.
@@ -95,6 +97,7 @@ void DestroyPlaceablesAndCreaturesInArea(location oLoc1, int nShape, float areaS
 
 ## Testing and compatibility
 
+- **Textures (TGA vs TPC, install order):** Players often debate override order for texture stacks—see [Deadly Stream — mod installation order and TGA vs TPC](https://deadlystream.com/topic/11056-mod-installation-order-and-tga-vs-tpc-files/) for **workflow context**; format SSOT remains [TPC-File-Format](TPC-File-Format) and [Concepts — resource resolution](Concepts#resource-resolution-order).
 - **Install order:** Many mods depend on load order (override and MOD order). Document recommended order in your mod’s readme; when using TSLPatcher/HoloPatcher, merging 2DA/TLK reduces order sensitivity for those files.
 - **Clean install:** Test on a clean game install or a known-good backup so conflicts are attributable to your mod or to a specific combination.
 - **Reversion:** Use the patcher’s backup/restore (e.g. HoloPatcher “Uninstall Mod/Restore Backup”) before reinstalling or switching options; installing twice without reverting can duplicate 2DA rows or TLK entries and cause crashes. See [Installing Mods with HoloPatcher](Installing-Mods-with-HoloPatcher).

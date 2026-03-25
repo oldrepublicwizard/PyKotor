@@ -14,15 +14,19 @@ Part of the [GFF File Format Documentation](GFF-File-Format).
 
 **PyKotor:**
 
-- [`Libraries/PyKotor/src/pykotor/resource/generics/utp.py`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/utp.py) - UTP [GFF](GFF-File-Format) parsing and field definitions
+- [`utp.py` `UTP` L19+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/utp.py#L19) — in-memory placeable template (inventory, traps, HP, scripts)
+- [`construct_utp` L227+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/utp.py#L227), [`read_utp` L405+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/utp.py#L405), [`write_utp` L414+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/utp.py#L414) — GFF ↔ `UTP` round-trip
+- [`gff_data.py` `GFFContent.UTP` L154](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/gff/gff_data.py#L154) — four-character GFF type id
+- [`io_gff.py` `GFFBinaryReader.load` L82+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/gff/io_gff.py#L82) — binary GFF decode (shared with other GFF types)
 
-**HolocronToolset:**
+**Cross-reference (other implementations):**
 
-- Placeable editor (instance placement and UTP editing in module)
+- **[reone](https://github.com/modawan/reone)**: [`gff.cpp`](https://github.com/modawan/reone/blob/master/src/libs/resource/gff.cpp), [`gffreader.cpp`](https://github.com/modawan/reone/blob/master/src/libs/resource/format/gffreader.cpp) — generic GFF reader (UTP shares door/placeable patterns with UTD)
+- **[KotOR.js](https://github.com/KobaltBlu/KotOR.js)**: [`GFFObject.ts` L24+](https://github.com/KobaltBlu/KotOR.js/blob/master/src/resource/GFFObject.ts#L24) — TypeScript GFF parser
+- **[Kotor.NET](https://github.com/NickHugi/Kotor.NET)**: [`GFF.cs` L18+](https://github.com/NickHugi/Kotor.NET/blob/master/Kotor.NET/Formats/KotorGFF/GFF.cs#L18) — managed GFF reader/writer
+- **[xoreos](https://github.com/xoreos/xoreos)** — Aurora GFF pipeline
 
-**Vendor Implementations:**
-
-- reone/xoreos GFF parsers (door/placeable shared struct)
+**Community context (workflow):** Placeable and container modding threads on Deadly Stream complement [GFF-GIT](GFF-GIT) placement—see [Home — Community sources](Home#community-sources-and-archives). **UTP fields** follow this page + BioWare + PyKotor.
 
 ## Core Identity fields
 

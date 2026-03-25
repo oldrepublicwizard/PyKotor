@@ -8,7 +8,7 @@ KotOR exposes item property checks via NWScript (e.g. `GetItemHasItemProperty`).
 
 ## Implementation cross-reference
 
-- **PyKotor:** GFF I/O for UTI — [`io_gff.py` L79+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/gff/io_gff.py#L79), [`resource/generics/uti.py`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/uti.py); NSS metadata — [`scriptdefs.py` L6208+ (`GetItemHasItemProperty`)](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/common/scriptdefs.py#L6208).
+- **PyKotor:** GFF I/O for UTI — [`io_gff.py` `GFFBinaryReader.load` L82+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/gff/io_gff.py#L82), [`resource/generics/uti.py`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/uti.py); NSS metadata — [`scriptdefs.py` L6208+ (`GetItemHasItemProperty`)](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/common/scriptdefs.py#L6208).
 
 - **reone:** [`main.cpp`](https://github.com/modawan/reone/blob/master/src/libs/game/script/routine/impl/main.cpp) — [`GetItemHasItemProperty` L3648+](https://github.com/modawan/reone/blob/master/src/libs/game/script/routine/impl/main.cpp#L3648); K1 `insert` — [L7191](https://github.com/modawan/reone/blob/master/src/libs/game/script/routine/impl/main.cpp#L7191).
 

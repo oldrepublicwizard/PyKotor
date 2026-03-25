@@ -14,15 +14,23 @@ UTC files define [creature templates](GFF-File-Format#utc-creature) including NP
 
 **PyKotor:**
 
-- [`Libraries/PyKotor/src/pykotor/resource/generics/utc.py`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/utc.py) - UTC [GFF](GFF-File-Format) parsing and field definitions
+- [`utc.py` `UTC` L36+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/utc.py#L36) — in-memory creature model (classes, feats, inventory, appearance, scripts)
+- [`construct_utc` L494+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/utc.py#L494), [`read_utc` L982+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/utc.py#L982), [`write_utc` L992+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/utc.py#L992) — GFF ↔ `UTC` round-trip
+- [`gff_data.py` `GFFContent.UTC` L150](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/gff/gff_data.py#L150) — four-character GFF type id
+- [`io_gff.py` `GFFBinaryReader.load` L82+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/gff/io_gff.py#L82) — binary GFF decode (shared with other GFF types)
 
 **HolocronToolset:**
 
-- Creature/UTC editor (instance placement and UTC editing in module)
+- [`utc.py` (creature / UTC editor)](https://github.com/OldRepublicDevs/PyKotor/blob/master/Tools/HolocronToolset/src/toolset/gui/editors/utc.py) — GUI for UTC fields and creature templates in modules
 
-**Vendor Implementations:**
+**Cross-reference (other implementations):**
 
-- reone/xoreos creature (GFF) parsers
+- **[reone](https://github.com/modawan/reone)**: [`gff.cpp`](https://github.com/modawan/reone/blob/master/src/libs/resource/gff.cpp), [`gffreader.cpp`](https://github.com/modawan/reone/blob/master/src/libs/resource/format/gffreader.cpp) — generic GFF reader (UTC as GFF)
+- **[KotOR.js](https://github.com/KobaltBlu/KotOR.js)**: [`GFFObject.ts` L24+](https://github.com/KobaltBlu/KotOR.js/blob/master/src/resource/GFFObject.ts#L24) — TypeScript GFF parser
+- **[Kotor.NET](https://github.com/NickHugi/Kotor.NET)**: [`GFF.cs` L18+](https://github.com/NickHugi/Kotor.NET/blob/master/Kotor.NET/Formats/KotorGFF/GFF.cs#L18) — managed GFF reader/writer
+- **[xoreos](https://github.com/xoreos/xoreos)** — Aurora GFF pipeline
+
+**Community context (workflow):** Creature editing and appearance threads are common on Deadly Stream—see [Home — Community sources](Home#community-sources-and-archives). Use forums for **workflow**; **UTC field layout** follows this page, BioWare spec, and PyKotor.
 
 ## Core Identity fields
 

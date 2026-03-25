@@ -4,7 +4,7 @@ Part of the [GFF File Format Documentation](GFF-File-Format).
 
 PTH files define pathfinding data for modules, distinct from the navigation mesh ([walkmesh](BWM-File-Format)). They store a network of waypoints and connections used for high-level AI navigation planning. PTH files are loaded with the same [resource resolution order](Concepts#resource-resolution-order) as other resources (override, MOD/SAV, KEY/BIF).
 
-**For mod developers:** PTH editing in Holocron is covered in [Holocron Toolset: PTH Editor](Holocron-Toolset-PTH-Editor) (when present in your build). General GFF patching uses the [TSLPatcher GFFList Syntax Guide](TSLPatcher-GFFList-Syntax).
+**For mod developers:** General GFF patching uses the [TSLPatcher GFFList Syntax Guide](TSLPatcher-GFFList-Syntax). For Holocron workflows, start from [Holocron Toolset: Getting Started](Holocron-Toolset-Getting-Started) and module/path tooling pages linked from [Home](Home).
 
 ## References
 

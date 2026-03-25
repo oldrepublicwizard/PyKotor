@@ -14,15 +14,19 @@ UTD files define [door templates](GFF-File-Format#utd-door) for all interactive 
 
 **PyKotor:**
 
-- [`Libraries/PyKotor/src/pykotor/resource/generics/utd.py`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/utd.py) - UTD [GFF](GFF-File-Format) parsing and field definitions
+- [`utd.py` `UTD` L18+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/utd.py#L18) — in-memory door template (locks, keys, traps, scripts)
+- [`construct_utd` L396+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/utd.py#L396), [`read_utd` L546+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/utd.py#L546), [`write_utd` L555+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/utd.py#L555) — GFF ↔ `UTD` round-trip
+- [`gff_data.py` `GFFContent.UTD` L151](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/gff/gff_data.py#L151) — four-character GFF type id
+- [`io_gff.py` `GFFBinaryReader.load` L82+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/gff/io_gff.py#L82) — binary GFF decode (shared with other GFF types)
 
-**HolocronToolset:**
+**Cross-reference (other implementations):**
 
-- Door editor (instance placement and UTD editing in module)
+- **[reone](https://github.com/modawan/reone)**: [`gff.cpp`](https://github.com/modawan/reone/blob/master/src/libs/resource/gff.cpp), [`gffreader.cpp`](https://github.com/modawan/reone/blob/master/src/libs/resource/format/gffreader.cpp) — generic GFF reader (UTD shares door/placeable patterns with UTP)
+- **[KotOR.js](https://github.com/KobaltBlu/KotOR.js)**: [`GFFObject.ts` L24+](https://github.com/KobaltBlu/KotOR.js/blob/master/src/resource/GFFObject.ts#L24) — TypeScript GFF parser
+- **[Kotor.NET](https://github.com/NickHugi/Kotor.NET)**: [`GFF.cs` L18+](https://github.com/NickHugi/Kotor.NET/blob/master/Kotor.NET/Formats/KotorGFF/GFF.cs#L18) — managed GFF reader/writer
+- **[xoreos](https://github.com/xoreos/xoreos)** — Aurora GFF pipeline
 
-**Vendor Implementations:**
-
-- reone/xoreos GFF parsers (door/placeable shared struct)
+**Community context (workflow):** Door scripting and trap wiring appear in mod threads—see [NSS — Doors and placeables](NSS-Shared-Functions-Doors-and-Placeables) and [Home — Community sources](Home#community-sources-and-archives). **UTD fields** stay anchored here + BioWare + PyKotor.
 
 ## Core Identity fields
 

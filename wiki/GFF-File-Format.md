@@ -82,7 +82,7 @@ GFF is BioWare's universal container format for structured game data. Think of i
 
 Every `.utc` ([UTC](GFF-File-Format#utc-creature)), `.uti` ([UTI](GFF-File-Format#uti-item)), `.dlg` ([DLG](GFF-File-Format#dlg-dialogue)), `.are` (are), and dozens of other KotOR file types are GFF files with different file type signatures and field schemas.
 
-**Implementation (PyKotor):** [`resource/formats/gff/`](https://github.com/OldRepublicDevs/PyKotor/tree/master/Libraries/PyKotor/src/pykotor/resource/formats/gff/) — binary read [`GFFBinaryReader.load` L79+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/gff/io_gff.py#L79), write [`GFFBinaryWriter.write` L345+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/gff/io_gff.py#L345); data model [`GFF` L509+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/gff/gff_data.py#L509), [`GFFStruct` L689+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/gff/gff_data.py#L689); XML/JSON/Twine variants in `io_gff_xml`, `io_gff_json`, `io_gff_twine`.
+**Implementation (PyKotor):** [`resource/formats/gff/`](https://github.com/OldRepublicDevs/PyKotor/tree/master/Libraries/PyKotor/src/pykotor/resource/formats/gff/) — binary read [`GFFBinaryReader.load` L82+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/gff/io_gff.py#L82), write [`GFFBinaryWriter.write` L355+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/gff/io_gff.py#L355); data model [`GFF` L509+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/gff/gff_data.py#L509), [`GFFStruct` L689+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/gff/gff_data.py#L689); XML/JSON/Twine variants in `io_gff_xml`, `io_gff_json`, `io_gff_twine`.
 
 **Cross-reference (other implementations):**
 
@@ -128,7 +128,7 @@ The file header is 56 bytes in size:
 | List indices offset  | UInt32  | 48 (0x30) | 4    | offset to list indices array                  |
 | List indices count   | UInt32  | 52 (0x34) | 4    | Number of list indices                        |
 
-**References:** PyKotor [`io_gff.py` L79+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/gff/io_gff.py#L79); [reone](https://github.com/modawan/reone) [`gffreader.cpp` L30–L44](https://github.com/modawan/reone/blob/master/src/libs/resource/format/gffreader.cpp#L30-L44).
+**References:** PyKotor [`io_gff.py` `GFFBinaryReader.load` L82+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/gff/io_gff.py#L82); [reone](https://github.com/modawan/reone) [`gffreader.cpp` L30–L44](https://github.com/modawan/reone/blob/master/src/libs/resource/format/gffreader.cpp#L30-L44).
 
 ### Label array
 
@@ -436,7 +436,7 @@ Complex types require accessing data from the field data section:
 
 | Component | PyKotor path | Line reference |
 |-----------|--------------|----------------|
-| Binary read | `io_gff.py` | [`GFFBinaryReader.load` L79+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/gff/io_gff.py#L79) |
+| Binary read | `io_gff.py` | [`GFFBinaryReader.load` L82+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/gff/io_gff.py#L82) |
 | Binary write | `io_gff.py` | [`GFFBinaryWriter.write` L345+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/gff/io_gff.py#L345) |
 | GFF data model | `gff_data.py` | [`GFF` L509+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/gff/gff_data.py#L509) |
 | GFFStruct | `gff_data.py` | [L689+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/gff/gff_data.py#L689) |

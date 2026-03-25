@@ -42,7 +42,7 @@ Each list element is a struct with (at minimum) the fields PyKotor reads and wri
 - [`utm.py` `UTM` L18+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/utm.py#L18) — dataclass + engine-oriented docstring (`CSWSStore::LoadStore` / `SaveStore` K1 addresses).
 - [`construct_utm` L147–L185](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/utm.py#L147-L185), [`dismantle_utm` L188–L221](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/utm.py#L188-L221).
 - [`read_utm` / `write_utm` / `bytes_utm` L224–L253](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/utm.py#L224-L253).
-- Binary GFF pipeline (same as other generics): [`io_gff.py` `GFFBinaryReader.load` L79+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/gff/io_gff.py#L79).
+- Binary GFF pipeline (same as other generics): [`io_gff.py` `GFFBinaryReader.load` L82+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/gff/io_gff.py#L82).
 
 **Cross-reference (other implementations)**
 

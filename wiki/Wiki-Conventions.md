@@ -50,6 +50,15 @@ This page documents style and structure conventions for the PyKotor wiki. Follow
 - **Semantic claims:** Prefer an evidence-backed voice for engine or layout facts (RE, vendor tools, labeled **K1**/**TSL**/**both**, stable community links). When evidence is missing, use **inferred** or **unknown** rather than stating as fact. PyKotor code documents **library** behavior; do not use it alone to assert engine truth unless policy explicitly allows (see BWM exception above).
 - **Community and historical context:** When adding or refining format or tool pages, link to [Community sources and archives](Home#community-sources-and-archives) (DeadlyStream, LucasForums Container, Mixmojo) where relevant for consensus, tutorials, or historical discussion.
 
+## External research and community link harvesting
+
+When batch-adding **Deadly Stream**, **LucasForums Archive**, or **PCGamingWiki** citations:
+
+- **Deadly Stream indexers:** Some automated `site:deadlystream.com` searches return **no rows** even when content exists. Prefer **known high-signal URLs** (then scrape or open in a browser): HoloPatcher [file 2243](https://deadlystream.com/files/file/2243-holopatcher/), [topic 9807](https://deadlystream.com/topic/9807-toolholopatcher/), override discussion [7279](https://deadlystream.com/topic/7279-whats-in-your-override-folder/), K1 Community Patch [1258](https://deadlystream.com/files/file/1258-kotor-1-community-patch/), tutorials [forum](https://deadlystream.com/forum/25-tutorials/). Retry queries **without** `site:` and filter results for `deadlystream.com` when discovery is blocked.
+- **LucasForums Archive:** Use `site:lucasforumsarchive.com` with short KotOR + tool keywords (TSLPatcher, `spells.2da`, StreamVoice); pair archival threads with **current** HoloPatcher/wiki links so readers are not stranded on obsolete steps.
+- **PCGamingWiki:** Use for **player** paths, widescreen, and OS quirks only—never as authority for Bioware binary layout ([Concepts](Concepts), [KEY-File-Format](KEY-File-Format), format pages are SSOT).
+- **Logging:** Record **empty** vs **successful** query patterns in PR descriptions or maintainer notes when doing large wiki batches (helps the next editor avoid repeating dead searches).
+
 ## Verification
 
 - After changing internal links to extension-less form, confirm in the wiki UI that links resolve correctly. If the wiki renderer requires `.md`, document that here and do not remove extensions.
