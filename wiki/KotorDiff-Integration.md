@@ -65,8 +65,8 @@ Module capsules may be `.rim` ([RIM File Format](Container-Formats#rim)), `.mod`
 
 - [TSLPatcher's Official Readme](TSLPatcher's-Official-Readme) -- TSLPatcher overview
 - [HoloPatcher README for Mod Developers](HoloPatcher#mod-developers) -- Patching workflow
-- [KEY-File-Format](Container-Formats#key) -- Resource resolution
-- [ERF-File-Format](Container-Formats#erf)
-- [RIM-File-Format](Container-Formats#rim)
+- [Container-Formats#key](Container-Formats#key) -- Resource resolution
+- [Container-Formats#erf](Container-Formats#erf)
+- [Container-Formats#rim](Container-Formats#rim)
 - [GFF-File-Format](GFF-File-Format) -- Diffed resources and module capsules
-- [TLK-File-Format](Audio-and-Localization-Formats#tlk) -- StrRef handling in incremental output
+- [Audio-and-Localization-Formats#tlk](Audio-and-Localization-Formats#tlk) -- StrRef handling in incremental output

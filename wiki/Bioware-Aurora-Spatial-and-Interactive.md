@@ -884,7 +884,7 @@ Index into placeables.2da
 - [GFF-GIT](GFF-Module-and-Area#git) -- Door and placeable instances
 - [2DA-placeables](2DA-File-Format#placeables2da)
 - [2DA-doortypes](2DA-File-Format#doortypes2da) -- Appearance tables
-- [KEY-File-Format](Container-Formats#key) -- Resource resolution
+- [Container-Formats#key](Container-Formats#key) -- Resource resolution
 
 
 ---
@@ -1771,7 +1771,7 @@ load the polygon correctly and without errors.
 - [GFF-File-Format](GFF-File-Format) -- GFF structure
 - [GFF-GIT](GFF-Module-and-Area#git) -- Trigger instances
 - [NSS-File-Format](NSS-File-Format) -- Trigger scripts
-- [KEY-File-Format](Container-Formats#key) -- Resource resolution
+- [Container-Formats#key](Container-Formats#key) -- Resource resolution
 
 
 ---
@@ -1971,7 +1971,7 @@ Structs document.
 - [GFF-File-Format](GFF-File-Format) -- GFF structure
 - [GFF-GIT](GFF-Module-and-Area#git) -- Waypoint instances
 - [GFF-PTH](GFF-Spatial-Objects#pth) -- Path data
-- [KEY-File-Format](Container-Formats#key) -- Resource resolution
+- [Container-Formats#key](Container-Formats#key) -- Resource resolution
 
 
 ---
@@ -2456,7 +2456,7 @@ default VolumeVrtn
 - [GFF-File-Format](GFF-File-Format) -- GFF structure
 - [WAV-File-Format](Audio-and-Localization-Formats#wav) -- Audio resources
 - [GFF-GIT](GFF-Module-and-Area#git) -- Sound instances
-- [KEY-File-Format](Container-Formats#key) -- Resource resolution
+- [Container-Formats#key](Container-Formats#key) -- Resource resolution
 
 
 ---
@@ -2874,7 +2874,7 @@ Format document.
 - [2DA-encdifficulty](2DA-File-Format#encdifficulty2da) -- Difficulty table
 - [GFF-GIT](GFF-Module-and-Area#git) -- Encounter instances
 - [Bioware-Aurora-Trigger](Bioware-Aurora-Spatial-and-Interactive#trigger) -- Geometry rules
-- [KEY-File-Format](Container-Formats#key) -- Resource resolution
+- [Container-Formats#key](Container-Formats#key) -- Resource resolution
 
 
 ---

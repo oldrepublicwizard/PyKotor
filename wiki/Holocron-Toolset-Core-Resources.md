@@ -45,8 +45,8 @@ Holocron builds on PyKotor’s **installation** and **chitin** stack: `chitin.ke
 
 ### See also
 
-- [KEY-File-Format](Container-Formats#key)
-- [BIF-File-Format](Container-Formats#bif) — how core resources are indexed and stored
+- [Container-Formats#key](Container-Formats#key)
+- [Container-Formats#bif](Container-Formats#bif) — how core resources are indexed and stored
 - [Concepts](Concepts) — resource resolution order
 - [Holocron Toolset: Getting Started](Holocron-Toolset-Getting-Started) — paths, first launch, screenshots
 - [Mod-Creation-Best-Practices](Mod-Creation-Best-Practices) — override vs patcher workflows

@@ -226,7 +226,7 @@ Use this when adding a **P0/P1-style** section to a guide (e.g. HoloPatcher read
 - [Home](Home) -- Wiki overview and format index
 - [Concepts](Concepts) -- Resource resolution, ResRef, override, BIF/KEY, MOD/ERF, GFF, 2DA, language IDs
 - [Resource formats and resolution](Resource-Formats-and-Resolution) -- Format index, type ID table, resolution hub
-- [KEY-File-Format](Container-Formats#key)
+- [Container-Formats#key](Container-Formats#key)
 - [GFF-File-Format](GFF-File-Format)
 - [2DA-File-Format](2DA-File-Format) -- Canonical format pages
 - [TSLPatcher's-Official-Readme](TSLPatcher's-Official-Readme)

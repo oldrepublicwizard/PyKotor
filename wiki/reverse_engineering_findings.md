@@ -300,39 +300,39 @@ This module handles reading and writing binary MDL/MDX format files used in KotO
 
 **I/O and parsing functions:**
 
-- **LoadModel** @ (K1: 0x00464200, TSL: 0x0047a570)
+- **LoadModel** @  (/K1/k1_win_gog_swkotor.exe: 0x00464200, TSL: 0x0047a570)
   - Main model loader entry point (172 bytes, 6 callees, 2 callers).
   - Signature: `Model * __cdecl LoadModel(int param_1, undefined4 param_2)`
   - Logic:
     1. Saves `CurrentModel` to the stack.
     2. Returns `NULL` if `param_1` is `0`.
     3. Sets `CurrentModel` to `NULL`.
-    4. Gets the `IODispatcher` singleton via `IODispatcher::GetRef()` @ (K1: 0x004a0580, TSL: 0x004cda00).
-    5. Calls `IODispatcher::ReadSync()` @ (K1: 0x004a15d0, TSL: 0x004cead0) with `param_1` and `param_2`.
-    6. `ReadSync()` creates an `Input` object and calls `Input::Read()` @ (K1: 0x004a1260, TSL: 0x004ce780).
+    4. Gets the `IODispatcher` singleton via `IODispatcher::GetRef()` @  (/K1/k1_win_gog_swkotor.exe: 0x004a0580, TSL: 0x004cda00).
+    5. Calls `IODispatcher::ReadSync()` @  (/K1/k1_win_gog_swkotor.exe: 0x004a15d0, TSL: 0x004cead0) with `param_1` and `param_2`.
+    6. `ReadSync()` creates an `Input` object and calls `Input::Read()` @  (/K1/k1_win_gog_swkotor.exe: 0x004a1260, TSL: 0x004ce780).
     7. `Input::Read()` calls `InputBinary::Read()`, which parses the binary MDL/MDX format.
-    8. The returned `MaxTree*` is converted to `Model*` via `MaxTree::AsModel()` @ (K1: 0x0043e1c0, TSL: 0x0044ff90).
+    8. The returned `MaxTree*` is converted to `Model*` via `MaxTree::AsModel()` @  (/K1/k1_win_gog_swkotor.exe: 0x0043e1c0, TSL: 0x0044ff90).
     9. `MaxTree::AsModel()` checks for `MODEL_TYPE` and returns the cast pointer or `NULL`.
     10. On success, the loader scans `modelsList.data` for a duplicate by comparing model names with `__stricmp()`.
     11. If a duplicate exists, the new model is destroyed and the cached model is returned.
     12. Otherwise, the newly loaded model is returned.
     13. `CurrentModel` is restored before return.
   - Callees:
-    - `~Model()` @ (K1: 0x0043f790, TSL: 0x004527d0) for duplicate cleanup.
-    - `IODispatcher::GetRef()` @ (K1: 0x004a0580, TSL: 0x004cda00) for singleton access.
-    - `MaxTree::AsModel()` @ (K1: 0x0043e1c0, TSL: 0x0044ff90) for the type check and cast.
-    - `__stricmp()` @ (K1: 0x0070acaf, TSL: 0x0077e24f) for case-insensitive model-name comparison.
-    - `operator.delete()` @ (K1: 0x0044aec0, TSL: 0x0045f520) for deallocation.
-    - `IODispatcher::ReadSync()` @ (K1: 0x004a15d0, TSL: 0x004cead0), which reaches:
-      - `Input::Read()` @ (K1: 0x004a1260, TSL: 0x004ce780)
+    - `~Model()` @  (/K1/k1_win_gog_swkotor.exe: 0x0043f790, TSL: 0x004527d0) for duplicate cleanup.
+    - `IODispatcher::GetRef()` @  (/K1/k1_win_gog_swkotor.exe: 0x004a0580, TSL: 0x004cda00) for singleton access.
+    - `MaxTree::AsModel()` @  (/K1/k1_win_gog_swkotor.exe: 0x0043e1c0, TSL: 0x0044ff90) for the type check and cast.
+    - `__stricmp()` @  (/K1/k1_win_gog_swkotor.exe: 0x0070acaf, TSL: 0x0077e24f) for case-insensitive model-name comparison.
+    - `operator.delete()` @  (/K1/k1_win_gog_swkotor.exe: 0x0044aec0, TSL: 0x0045f520) for deallocation.
+    - `IODispatcher::ReadSync()` @  (/K1/k1_win_gog_swkotor.exe: 0x004a15d0, TSL: 0x004cead0), which reaches:
+      - `Input::Read()` @  (/K1/k1_win_gog_swkotor.exe: 0x004a1260, TSL: 0x004ce780)
       - `InputBinary::Read()`
-      - `AurResGetNextLine()` @ (K1: 0x0044bfa0, TSL: N/A - ASCII MDL format not supported in TSL)
-      - `AurResGet()` @ (K1: 0x0044c740, TSL: 0x00460db0)
-      - `FuncInterp()` @ (K1: 0x0044c1f0, TSL: N/A - ASCII MDL format not supported in TSL)
+      - `AurResGetNextLine()` @  (/K1/k1_win_gog_swkotor.exe: 0x0044bfa0, TSL: N/A - ASCII MDL format not supported in TSL)
+      - `AurResGet()` @  (/K1/k1_win_gog_swkotor.exe: 0x0044c740, TSL: 0x00460db0)
+      - `FuncInterp()` @  (/K1/k1_win_gog_swkotor.exe: 0x0044c1f0, TSL: N/A - ASCII MDL format not supported in TSL)
   - Callers:
-    - `NewCAurObject()` @ (K1: 0x00449cc0, TSL: 0x0045e2e0) -> `LoadModel()` @ (K1: 0x00449d9d, TSL: 0x0047a570)
+    - `NewCAurObject()` @  (/K1/k1_win_gog_swkotor.exe: 0x00449cc0, TSL: 0x0045e2e0) -> `LoadModel()` @  (/K1/k1_win_gog_swkotor.exe: 0x00449d9d, TSL: 0x0047a570)
       - Used by `HideWieldedItems()`, `LoadSpellVisual()`, `LoadConjureVisual()`, `AddObstacle()`, `SetWeather()`, `LoadVisualEffect()`, `SetGunModel()`, `SpawnRooms()`, `CollapsePartTree()`, `FireGunCallback()`, `LoadAnimatedCamera()`, `SetPlayer()`, `LoadModel()`, `LoadModelAttachment()`, `AddEnemy()`, `LoadLight()`, `AddGun()`, `CreateReferenceObjects()`, `ChunkyParticle()`, `CreateMuzzleFlash()`, `SpawnPartsForTile()`, `SetProjectileVelAndAccel()`, `SpawnHitVisuals()`, `LoadArea()`, `SpawnVisualEffect()`, `AddPlaceableObjectLight()`, `LoadBeam()`, `ApplyShadowBlob()`, `AddModel()`, and `SpawnRoom()`.
-    - `LoadAddInAnimations()` @ (K1: 0x00440890, TSL: 0x004538d0) -> `LoadModel()` @ (K1: 0x004408f7, TSL: 0x0047a570)
+    - `LoadAddInAnimations()` @  (/K1/k1_win_gog_swkotor.exe: 0x00440890, TSL: 0x004538d0) -> `LoadModel()` @  (/K1/k1_win_gog_swkotor.exe: 0x004408f7, TSL: 0x0047a570)
       - Searches with `FindModel(param_1)`.
       - Appends `.mdl` if no cached model is found.
       - Opens the file and synchronizes animation trees with `MaxTree::SynchronizeTree()`.
@@ -341,7 +341,7 @@ This module handles reading and writing binary MDL/MDX format files used in KotO
     - Accesses the global `modelsList` cache.
     - TSL does not expose the same easy-to-match address pattern; the higher-level loaders may have absorbed part of this logic.
 
-- **IODispatcher::ReadSync** @ (K1: 0x004a15d0, TSL: 0x004cead0)
+- **IODispatcher::ReadSync** @  (/K1/k1_win_gog_swkotor.exe: 0x004a15d0, TSL: 0x004cead0)
   - Synchronous I/O dispatcher for model files (36 bytes).
   - Signature: `void __thiscall IODispatcher::ReadSync(IODispatcher *this, FILE *param_1, FILE *param_2)`
   - Logic:
@@ -349,15 +349,15 @@ This module handles reading and writing binary MDL/MDX format files used in KotO
     2. Calls `Input::Read(local_10, param_1, param_2)`.
     3. Defers all actual MDL/MDX parsing to `Input::Read()`.
   - Callees:
-    - `Input::Read()` @ (K1: 0x004a1260, TSL: 0x004ce780)
+    - `Input::Read()` @  (/K1/k1_win_gog_swkotor.exe: 0x004a1260, TSL: 0x004ce780)
     - `InputBinary::Read()`
-    - `AurResGetNextLine()` @ (K1: 0x0044bfa0, TSL: N/A - ASCII MDL format not supported in TSL)
-    - `AurResGet()` @ (K1: 0x0044c740, TSL: 0x00460db0)
-    - `FuncInterp()` @ (K1: 0x0044c1f0, TSL: N/A - ASCII MDL format not supported in TSL)
+    - `AurResGetNextLine()` @  (/K1/k1_win_gog_swkotor.exe: 0x0044bfa0, TSL: N/A - ASCII MDL format not supported in TSL)
+    - `AurResGet()` @  (/K1/k1_win_gog_swkotor.exe: 0x0044c740, TSL: 0x00460db0)
+    - `FuncInterp()` @  (/K1/k1_win_gog_swkotor.exe: 0x0044c1f0, TSL: N/A - ASCII MDL format not supported in TSL)
   - Callers:
-    - `LoadModel()` @ (K1: 0x00464200, TSL: 0x0047a570)
+    - `LoadModel()` @  (/K1/k1_win_gog_swkotor.exe: 0x00464200, TSL: 0x0047a570)
 
-- **MaxTree::AsModel** @ (K1: 0x0043e1c0, TSL: 0x0044ff90)
+- **MaxTree::AsModel** @  (/K1/k1_win_gog_swkotor.exe: 0x0043e1c0, TSL: 0x0044ff90)
   - Type-check-and-cast helper (16 bytes, 88 callers).
   - Signature: `Model * __thiscall MaxTree::AsModel(MaxTree *this)`
   - Logic:
@@ -365,11 +365,11 @@ This module handles reading and writing binary MDL/MDX format files used in KotO
     2. Uses a bitwise mask to return either `this` cast to `Model*` or `NULL`.
     3. Equivalent high-level form: `return ((this->type & 0x7f) == 2) ? (Model*)this : NULL;`
   - Representative callers:
-    - `ProcessSkinSeams()` @ (K1: 0x004392b6, TSL: 0x0044a920) and its in-function call sites.
-    - `FindModel()` @ (K1: 0x00464176, TSL: 0x0047a480).
-    - `LoadModel()` @ (K1: 0x00464236, TSL: 0x0047a570).
-    - `BuildVertexArrays()` @ (K1: 0x00478b50, TSL: 0x00495620) and its in-function call sites.
-    - `Input::Read()` @ (K1: 0x004a1435, TSL: 0x004ce8c0) and related in-function call sites.
+    - `ProcessSkinSeams()` @  (/K1/k1_win_gog_swkotor.exe: 0x004392b6, TSL: 0x0044a920) and its in-function call sites.
+    - `FindModel()` @  (/K1/k1_win_gog_swkotor.exe: 0x00464176, TSL: 0x0047a480).
+    - `LoadModel()` @  (/K1/k1_win_gog_swkotor.exe: 0x00464236, TSL: 0x0047a570).
+    - `BuildVertexArrays()` @  (/K1/k1_win_gog_swkotor.exe: 0x00478b50, TSL: 0x00495620) and its in-function call sites.
+    - `Input::Read()` @  (/K1/k1_win_gog_swkotor.exe: 0x004a1435, TSL: 0x004ce8c0) and related in-function call sites.
 
 **Function discovery methodology:**
 
@@ -390,7 +390,7 @@ Functions are located through:
 ##### CSWCCreature::LoadModel / LoadModel_Internal
 
 - Address: (K1: 0x0061b380, TSL: 0x00669ea0)
-- VTable entry: `CSWCCreature_LoadModel_vtable_entry` @ (K1: 0x0074f670, TSL: 0x007c8040)
+- VTable entry: `CSWCCreature_LoadModel_vtable_entry` @  (/K1/k1_win_gog_swkotor.exe: 0x0074f670, TSL: 0x007c8040)
 - Signatures:
   - K1: `undefined4 __thiscall CSWCCreature::LoadModel(CSWCCreature *this, undefined4 *param_1, undefined4 param_2, char param_3)`
   - TSL: `undefined4 __thiscall CSWCCreature::LoadModel_Internal(int param_1, undefined4 *param_2, undefined4 param_3, char param_4)`
@@ -408,14 +408,14 @@ Functions are located through:
   8. Register callbacks, enable animation state, and apply size-class-dependent animation settings.
   9. Return `1` on success and `0` on failure.
 - Anim-base allocation cases:
-  - `0`: standard anim base via `CSWCAnimBase::CSWCAnimBase()` @ (K1: 0x0069dfb0, TSL: 0x006f8340)
-  - `1`: head anim base via `CSWCAnimBaseHead::CSWCAnimBaseHead()` @ (K1: 0x0069bb80, TSL: 0x006f5e60)
-  - `2`: wield anim base via `CSWCAnimBaseWield::CSWCAnimBaseWield()` @ (K1: 0x00699dd0, TSL: 0x006f41b0)
-  - `3`: head+wield anim base via `CSWCAnimBaseHeadWield::CSWCAnimBaseHeadWield()` @ (K1: 0x00698ec0, TSL: 0x006f32a0)
-  - `0x0b`: TSL-only two-weapon anim base via `CSWCAnimBaseTW::CSWCAnimBaseTW()` @ (K1: 0x0069cbd0, TSL: 0x006f6fb0)
+  - `0`: standard anim base via `CSWCAnimBase::CSWCAnimBase()` @  (/K1/k1_win_gog_swkotor.exe: 0x0069dfb0, TSL: 0x006f8340)
+  - `1`: head anim base via `CSWCAnimBaseHead::CSWCAnimBaseHead()` @  (/K1/k1_win_gog_swkotor.exe: 0x0069bb80, TSL: 0x006f5e60)
+  - `2`: wield anim base via `CSWCAnimBaseWield::CSWCAnimBaseWield()` @  (/K1/k1_win_gog_swkotor.exe: 0x00699dd0, TSL: 0x006f41b0)
+  - `3`: head+wield anim base via `CSWCAnimBaseHeadWield::CSWCAnimBaseHeadWield()` @  (/K1/k1_win_gog_swkotor.exe: 0x00698ec0, TSL: 0x006f32a0)
+  - `0x0b`: TSL-only two-weapon anim base via `CSWCAnimBaseTW::CSWCAnimBaseTW()` @  (/K1/k1_win_gog_swkotor.exe: 0x0069cbd0, TSL: 0x006f6fb0)
 - Special-case handling:
   - `param_3 == -1` triggers the `headconjure` path.
-  - That path calls `RegisterCallbacks_Headconjure()` @ (K1: 0x0061ab40, TSL: 0x00669570), looks up the `headconjure` dummy node, and derives a fallback/default vertical placement value when the dummy is missing.
+  - That path calls `RegisterCallbacks_Headconjure()` @  (/K1/k1_win_gog_swkotor.exe: 0x0061ab40, TSL: 0x00669570), looks up the `headconjure` dummy node, and derives a fallback/default vertical placement value when the dummy is missing.
   - Both games use callback registration, but TSL adds a cached callback path and uses `SetCallbackTarget()` @ (K1: N/A, TSL: 0x005056f0) instead of K1's direct registration flow.
 - Size-class interpolation:
   - TSL adds interpolation logic driven by `FloatConstant_0_0125`, `FloatConstant_0_65`, `FloatConstant_0_05`, and `FloatConstant_0_01`.
@@ -428,20 +428,20 @@ Functions are located through:
   - TSL introduces callback caching at `param_1 + 0xf8` and cached field state at `param_1 + 0x370` / `param_1 + 0x374`.
   - TSL adds explicit size-class interpolation work not present in K1.
 - Notable helper functions and callees:
-  - `operator_new()` @ (K1: 0x006fa7e6, TSL: 0x0076d9f6)
-  - `CSWAnimBase::Set()` @ (K1: 0x00698e30, TSL: 0x006f3210)
-  - `RegisterCallbacks()` @ (K1: 0x0061ab40, TSL: 0x00693fe0)
-  - `CResRef::CopyToString()` @ (K1: 0x00405f70, TSL: 0x00406050)
-  - `CResRef::GetResRefStr()` @ (K1: 0x00405fe0, TSL: N/A)
-  - `sprintf()` @ (K1: 0x006fadb0, TSL: 0x0076dac2)
+  - `operator_new()` @  (/K1/k1_win_gog_swkotor.exe: 0x006fa7e6, TSL: 0x0076d9f6)
+  - `CSWAnimBase::Set()` @  (/K1/k1_win_gog_swkotor.exe: 0x00698e30, TSL: 0x006f3210)
+  - `RegisterCallbacks()` @  (/K1/k1_win_gog_swkotor.exe: 0x0061ab40, TSL: 0x00693fe0)
+  - `CResRef::CopyToString()` @  (/K1/k1_win_gog_swkotor.exe: 0x00405f70, TSL: 0x00406050)
+  - `CResRef::GetResRefStr()` @  (/K1/k1_win_gog_swkotor.exe: 0x00405fe0, TSL: N/A)
+  - `sprintf()` @  (/K1/k1_win_gog_swkotor.exe: 0x006fadb0, TSL: 0x0076dac2)
 - Important string and data references:
-  - Error string @ (K1: 0x0074f85c, TSL: 0x007c82fc): `CSWCCreature::LoadModel(): Failed to load creature model '%s'.`
+  - Error string @  (/K1/k1_win_gog_swkotor.exe: 0x0074f85c, TSL: 0x007c82fc): `CSWCCreature::LoadModel(): Failed to load creature model '%s'.`
   - `headconjure` @ (K1: inline at 0x0061b676, TSL: 0x007c82f0)
-  - `_head_hit` @ (K1: 0x00753918, TSL: 0x007ccaf8)
-  - `snd_Footstep` @ (K1: 0x0074f838, TSL: 0x007c82d0)
-  - `snd_hitground` @ (K1: 0x0074f824, TSL: 0x007c82bc)
-  - `GameObjectType_Constant_5` @ (K1: 0x00746634, TSL: 0x007beaec)
-  - `FloatConstant_0_125` @ (K1: 0x0073f400, TSL: 0x007b7428)
+  - `_head_hit` @  (/K1/k1_win_gog_swkotor.exe: 0x00753918, TSL: 0x007ccaf8)
+  - `snd_Footstep` @  (/K1/k1_win_gog_swkotor.exe: 0x0074f838, TSL: 0x007c82d0)
+  - `snd_hitground` @  (/K1/k1_win_gog_swkotor.exe: 0x0074f824, TSL: 0x007c82bc)
+  - `GameObjectType_Constant_5` @  (/K1/k1_win_gog_swkotor.exe: 0x00746634, TSL: 0x007beaec)
+  - `FloatConstant_0_125` @  (/K1/k1_win_gog_swkotor.exe: 0x0073f400, TSL: 0x007b7428)
   - `FloatConstant_0_0125` @ (K1: inline `0x3c888889`, TSL: 0x007c82ec)
   - `FloatConstant_1_0` @ (K1: inline `0x3f800000`, TSL: 0x007b5774)
   - `FloatConstant_0_65` @ (K1: inline `0x3d266666`, TSL: 0x007c82e8)
@@ -460,10 +460,10 @@ Functions are located through:
   - Returns `1` on success and `0` on load failure.
 - Representative callees:
   - `operator_new()`
-  - `CResRef::CopyToString()` @ (K1: 0x00405f70, TSL: 0x00406050)
-  - `CSWCAnimBasePlaceable::CSWCAnimBasePlaceable()` @ (K1: 0x006e4e50, TSL: 0x00755970)
-  - `CExoString::SubString()` @ (K1: 0x005e6270, TSL: 0x00631330)
-  - `CExoString::operator+()` @ (K1: 0x005e5d10, TSL: 0x00630dd0)
+  - `CResRef::CopyToString()` @  (/K1/k1_win_gog_swkotor.exe: 0x00405f70, TSL: 0x00406050)
+  - `CSWCAnimBasePlaceable::CSWCAnimBasePlaceable()` @  (/K1/k1_win_gog_swkotor.exe: 0x006e4e50, TSL: 0x00755970)
+  - `CExoString::SubString()` @  (/K1/k1_win_gog_swkotor.exe: 0x005e6270, TSL: 0x00631330)
+  - `CExoString::operator+()` @  (/K1/k1_win_gog_swkotor.exe: 0x005e5d10, TSL: 0x00630dd0)
 
 ##### CSWCCreature::UnloadModel
 
@@ -476,11 +476,11 @@ Functions are located through:
 
 **Resource management functions:**
 
-- `CResMDL::CResMDL` @ (K1: 0x005cea50, TSL: N/A)
+- `CResMDL::CResMDL` @  (/K1/k1_win_gog_swkotor.exe: 0x005cea50, TSL: N/A)
   - Initializes the `CResMDL` vtable, calls the base `CRes::CRes()` constructor, clears state, and zeros the data pointer/size fields.
-- `CResMDL::~CResMDL` @ (K1: 0x005cea80, TSL: 0x00435200)
+- `CResMDL::~CResMDL` @  (/K1/k1_win_gog_swkotor.exe: 0x005cea80, TSL: 0x00435200)
   - Restores the `CResMDL` vtable and then calls `CRes::~CRes()`.
-- `CResMDL::~CResMDL` deleting destructor @ (K1: 0x005cea90, TSL: 0x00447740)
+- `CResMDL::~CResMDL` deleting destructor @  (/K1/k1_win_gog_swkotor.exe: 0x005cea90, TSL: 0x00447740)
   - Calls the non-deleting destructor and conditionally frees the object when the delete flag is set.
 
 **Error messages:**
@@ -494,7 +494,7 @@ Functions are located through:
 
 **String references:**
 
-- `.mdl` @ (K1: 0x00740ca8, TSL: 0x007b8d28)
+- `.mdl` @  (/K1/k1_win_gog_swkotor.exe: 0x00740ca8, TSL: 0x007b8d28)
   - Referenced by `Input::Read()` and `LoadAddInAnimations()` when constructing/opening model paths.
 
 **References:**

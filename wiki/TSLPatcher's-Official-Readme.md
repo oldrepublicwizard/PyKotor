@@ -1180,6 +1180,7 @@ You: Changes applied to [2DA](2DA-File-Format) tables or [GFF files](GFF-File-Fo
 Me: Make sure you don't have copies of those files within sub-folders of your override folder.
 The TSLPatcher only looks for files to modify in the override folder itself, not in sub-folders.
 
+<a id="44-failed-installation--reverting-files"></a>
 ### 4.4. Failed installation – reverting files
 
 You: Something went wrong during Mod installation. How do I undo the changes that have
@@ -1612,5 +1613,5 @@ And finally thanks to YOU, for enduring my English and reading all the way down 
 - [Installing Mods with HoloPatcher](HoloPatcher#installing-mods) -- End-user installation
 - [GFF File Format](GFF-File-Format) -- Patched GFF resources
 - [2DA-File-Format](2DA-File-Format) -- Patched table resources
-- [TLK-File-Format](Audio-and-Localization-Formats#tlk) -- Patched talk-table resources
+- [Audio-and-Localization-Formats#tlk](Audio-and-Localization-Formats#tlk) -- Patched talk-table resources
 - [Community sources and archives](Home#community-sources-and-archives) -- DeadlyStream, LucasForums archives for setup help and history

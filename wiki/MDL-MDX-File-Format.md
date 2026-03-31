@@ -108,52 +108,230 @@ KotOR models are defined using two files:
 
 **Documentation sources:** Layout merges cchargin (mdl_info), [xoreos-docs](https://github.com/xoreos/xoreos-docs) (`kotor_mdl.html`, `torlack/binmdl.html`), and implementations below. Where sources disagree, PyKotor and [MDL-Implementation-Verification-Report](#mdl-format-implementation-verification-report) are treated as authoritative.
 
-### PyKotor code structure (Python)
+### PyKotor Code Structure (Python)
 
 - **Runtime model classes**: `mdl_data.py` (`MDL`, `MDLNode`, `MDLMesh`, `MDLAnimation`, controllers, etc.)
 - **Binary I/O**: `io_mdl.py`
 - **ASCII I/O**: `io_mdl_ascii.py`
 - **Enums/flags**: `mdl_types.py`
 
-**Cross-reference (other implementations):**
-
-- **[reone](https://github.com/modawan/reone)**:
-
-  - [`mdlreader.cpp`](https://github.com/modawan/reone/blob/master/src/libs/graphics/format/mdlreader.cpp)
-  - [`model.h`](https://github.com/modawan/reone/blob/master/include/reone/graphics/model.h)
-- **[xoreos](https://github.com/xoreos/xoreos)**: [`model.cpp`](https://github.com/xoreos/xoreos/blob/master/src/graphics/aurora/model.cpp)
-- **[KotOR.js](https://github.com/KobaltBlu/KotOR.js)**:
-
-  - [`OdysseyModel.ts` L32+](https://github.com/KobaltBlu/KotOR.js/blob/ea9491d5c783364cf285f178434b84405bee3608/src/odyssey/OdysseyModel.ts#L32) (binary MDL/MDX decode)
-
-    - [`FromBuffers` L207–L210](https://github.com/KobaltBlu/KotOR.js/blob/ea9491d5c783364cf285f178434b84405bee3608/src/odyssey/OdysseyModel.ts#L207-L210)
-  - [`OdysseyModel3D.ts` L53+](https://github.com/KobaltBlu/KotOR.js/blob/ea9491d5c783364cf285f178434b84405bee3608/src/three/odyssey/OdysseyModel3D.ts#L53) (Three.js scene graph build)
-- **[Kotor.NET](https://github.com/NickHugi/Kotor.NET)**: [`Kotor.NET/Formats/`](https://github.com/NickHugi/Kotor.NET/tree/master/Kotor.NET/Formats) (model-related types alongside other KotOR formats)
-- **[KotOR-Unity](https://github.com/reubenduncan/KotOR-Unity)**: [`AuroraModel.cs`](https://github.com/reubenduncan/KotOR-Unity/blob/master/Assets/Scripts/FileObjects/AuroraModel.cs)
-- **[NorthernLights](https://github.com/lachjames/NorthernLights)**: [`src/Model/`](https://github.com/lachjames/NorthernLights/tree/master/src/Model)
-- **[kotorblender](https://github.com/OldRepublicDevs/kotorblender)**: [`io_scene_kotor/format/mdl/`](https://github.com/OldRepublicDevs/kotorblender/tree/master/io_scene_kotor/format/mdl)
-- **[mdlops](https://github.com/ndixUR/mdlops)**: [`mdlops/`](https://github.com/ndixUR/mdlops/tree/master/mdlops) — reference Perl layout ([`MDLOpsM.pm`](https://github.com/ndixUR/mdlops/blob/master/MDLOpsM.pm))
-- **[xoreos-tools](https://github.com/xoreos/xoreos-tools)**: [`model.cpp`](https://github.com/xoreos/xoreos-tools/blob/master/src/aurora/model.cpp)
+Comparable implementations exist across reone's reader and runtime model types, xoreos's Aurora model loader, KotOR.js's binary decoder and Three.js scene builder, Kotor.NET's format layer, KotOR-Unity's `AuroraModel`, NorthernLights' model package, kotorblender's importer, mdlops' Perl reference layout, and xoreos-tools' exporter-facing model code, so most structural claims on this page can be checked against multiple independent parsers rather than a single reverse-engineering note ([`mdlreader.cpp`](https://github.com/modawan/reone/blob/master/src/libs/graphics/format/mdlreader.cpp), [`model.h`](https://github.com/modawan/reone/blob/master/include/reone/graphics/model.h), [`model.cpp`](https://github.com/xoreos/xoreos/blob/master/src/graphics/aurora/model.cpp), [`OdysseyModel.ts` L32-L210](https://github.com/KobaltBlu/KotOR.js/blob/ea9491d5c783364cf285f178434b84405bee3608/src/odyssey/OdysseyModel.ts#L32-L210), [`OdysseyModel3D.ts` L53-L120](https://github.com/KobaltBlu/KotOR.js/blob/ea9491d5c783364cf285f178434b84405bee3608/src/three/odyssey/OdysseyModel3D.ts#L53-L120), [`Kotor.NET/Formats/`](https://github.com/NickHugi/Kotor.NET/tree/master/Kotor.NET/Formats), [`AuroraModel.cs`](https://github.com/reubenduncan/KotOR-Unity/blob/master/Assets/Scripts/FileObjects/AuroraModel.cs), [`src/Model/`](https://github.com/lachjames/NorthernLights/tree/master/src/Model), [`io_scene_kotor/format/mdl/`](https://github.com/OldRepublicDevs/kotorblender/tree/master/io_scene_kotor/format/mdl), [`MDLOpsM.pm`](https://github.com/ndixUR/mdlops/blob/master/MDLOpsM.pm), [`xoreos-tools/src/aurora/model.cpp`](https://github.com/xoreos/xoreos-tools/blob/master/src/aurora/model.cpp)).
 
 ### Rendering notes (depth + alpha)
 
 Some MDL meshes use layered geometry and masked textures (for example: thin planes laid over other geometry). Renderers typically use:
 
-- **Depth testing**: enabled while drawing 3D meshes.  
-  **Reference**: xoreos enables depth testing in its renderer ([**xoreos**](https://github.com/xoreos/xoreos): [`src/graphics/graphics.cpp`](https://github.com/xoreos/xoreos/blob/f36b681b2a38799ddd6fce0f252b6d7fa781dfc2/src/graphics/graphics.cpp#L433)).  
-  **Reference**: OpenGL `glEnable(GL_DEPTH_TEST)` ([Khronos refpage](https://registry.khronos.org/OpenGL-Refpages/gl4/html/glEnable.xhtml)) and `glDepthFunc` ([Khronos refpage](https://registry.khronos.org/OpenGL-Refpages/gl4/html/glDepthFunc.xhtml)).
+- **Depth testing**: enabled while drawing 3D meshes, as seen in xoreos's renderer setup and in the standard OpenGL depth-test pipeline (`glEnable(GL_DEPTH_TEST)` plus `glDepthFunc`) ([`src/graphics/graphics.cpp` L433](https://github.com/xoreos/xoreos/blob/f36b681b2a38799ddd6fce0f252b6d7fa781dfc2/src/graphics/graphics.cpp#L433), [Khronos `glEnable`](https://registry.khronos.org/OpenGL-Refpages/gl4/html/glEnable.xhtml), [Khronos `glDepthFunc`](https://registry.khronos.org/OpenGL-Refpages/gl4/html/glDepthFunc.xhtml)).
 
-- **Alpha cutout / alpha testing**: masked texels are rejected before contributing to the framebuffer (commonly handled as fixed-function alpha test in legacy pipelines, or as a fragment-shader discard).  
-  **Reference**: xoreos toggles `GL_ALPHA_TEST` around Aurora model rendering ([**xoreos**](https://github.com/xoreos/xoreos): [`src/graphics/aurora/modelnode.cpp`](https://github.com/xoreos/xoreos/blob/f36b681b2a38799ddd6fce0f252b6d7fa781dfc2/src/graphics/aurora/modelnode.cpp#L755-L771)).  
-  **Reference**: OpenGL `glAlphaFunc` (legacy) ([Khronos refpage](https://registry.khronos.org/OpenGL-Refpages/gl2.1/xhtml/glAlphaFunc.xml)).  
-  **Reference** (PyKotorGL preview — alpha cutoff in the fragment shader and standard alpha blending):
+- **Alpha cutout / alpha testing**: masked texels are rejected before contributing to the framebuffer, whether via legacy `GL_ALPHA_TEST` as in xoreos or via shader-side cutoff logic such as the PyKotorGL preview path; the equivalent fixed-function API reference is `glAlphaFunc` ([`src/graphics/aurora/modelnode.cpp` L755-L771](https://github.com/xoreos/xoreos/blob/f36b681b2a38799ddd6fce0f252b6d7fa781dfc2/src/graphics/aurora/modelnode.cpp#L755-L771), [Khronos `glAlphaFunc`](https://registry.khronos.org/OpenGL-Refpages/gl2.1/xhtml/glAlphaFunc.xml), [`shader.py`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/gl/shader/shader.py), [`scene.py`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/gl/scene/scene.py)).
 
-  - [`Libraries/PyKotor/src/pykotor/gl/shader/shader.py`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/gl/shader/shader.py)
-  - [`Libraries/PyKotor/src/pykotor/gl/scene/scene.py`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/gl/scene/scene.py)
+- **Alpha blending**: a conventional blend function when drawing textures with meaningful alpha, usually `GL_SRC_ALPHA` against `GL_ONE_MINUS_SRC_ALPHA` as in xoreos and the standard OpenGL blend model ([`src/graphics/graphics.cpp` L438](https://github.com/xoreos/xoreos/blob/f36b681b2a38799ddd6fce0f252b6d7fa781dfc2/src/graphics/graphics.cpp#L438), [Khronos `glBlendFunc`](https://registry.khronos.org/OpenGL-Refpages/gl4/html/glBlendFunc.xhtml)).
 
-- **Alpha blending**: a conventional blend function when drawing textures with meaningful alpha.  
-  **Reference**: xoreos uses `glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)` ([**xoreos**](https://github.com/xoreos/xoreos): [`src/graphics/graphics.cpp`](https://github.com/xoreos/xoreos/blob/f36b681b2a38799ddd6fce0f252b6d7fa781dfc2/src/graphics/graphics.cpp#L438)).  
-  **Reference**: OpenGL `glBlendFunc` ([Khronos refpage](https://registry.khronos.org/OpenGL-Refpages/gl4/html/glBlendFunc.xhtml)).
+**Additional Documentation Sources:**
+
+- **[xoreos-docs](https://github.com/xoreos/xoreos-docs)**: [`specs/kotor_mdl.html`](https://github.com/xoreos/xoreos-docs/blob/master/specs/kotor_mdl.html) - Partial KotOR model format specification
+- **[xoreos-docs](https://github.com/xoreos/xoreos-docs)**: [`specs/torlack/binmdl.html`](https://github.com/xoreos/xoreos-docs/blob/master/specs/torlack/binmdl.html) - Tim Smith (Torlack)'s binary model format documentation for Aurora engine models
+
+### See also
+
+- [TPC File Format](Texture-Formats#tpc) - [texture](Texture-Formats#tpc) format referenced by MDL [materials](MDL-MDX-File-Format#trimesh-header)
+- [TXI File Format](Texture-Formats#txi) - [texture](Texture-Formats#tpc) metadata used with MDL [textures](MDL-MDX-File-Format#tpc)
+- [BWM File Format](Level-Layout-Formats#bwm) - [walkmesh](Level-Layout-Formats#bwm) format ([WOK files](Level-Layout-Formats#bwm)) paired with room models
+- [GFF File Format](GFF-File-Format) — templates that reference models, for example:
+
+  - [UTC](GFF-File-Format#utc-creature)
+  - [UTP](GFF-File-Format#utp-placeable)
+  - Other UT* and GFF types as needed
+- [LYT File Format](Level-Layout-Formats#lyt) - [layout files](Level-Layout-Formats#lyt) positioning models in areas
+
+The MDL file begins with a file header, followed by a model header, [geometry](MDL-MDX-File-Format#geometry-header) header, and various [Node](MDL-MDX-File-Format#node-structures) structures. offsets within the MDL file are typically relative to the start of the file, excluding the first 12 bytes (the file header).
+
+Below is an overview of the typical layout:
+
+```plaintext
++-----------------------------+
+| MDL File Header             |
++-----------------------------+
+| Model Header                |
++-----------------------------+
+| Geometry Header             |
++-----------------------------+
+| Name Header                 |
++-----------------------------+
+| Animations                  |
++-----------------------------+
+| Nodes                       |
++-----------------------------+
+```
+
+---
+
+## file headers
+
+### MDL file header
+
+The MDL file header is 12 bytes in size and contains the following fields:
+
+| Name         | type    | offset | Description            |
+| ------------ | ------- | ------ | ---------------------- |
+| Unused       | UInt32  | 0 0 (0x0)     | Always set to `0`.     |
+| MDL size     | UInt32  | 4 4 (0x4)     | size of the MDL file.  |
+| MDX size     | UInt32  | 8 8 (0x8)     | size of the MDX file.  |
+
+This 12-byte stub is consistent across mdlops' layout constant, reone's reader, kotorblender's importer, the historical `kotor/docs/mdl.md` notes, and KotOR.js's loader, which additionally shows the practical consequence of the paired sizes: MDL and MDX are loaded together and cached as one model asset ([`MDLOpsM.pm` L162](https://github.com/ndixUR/mdlops/blob/7e40846d36acb5118e2e9feb2fd53620c29be540/MDLOpsM.pm#L162), [`mdlmdxreader.cpp` L56-L59](https://github.com/modawan/reone/blob/61531089341caf5827abbc54346c8c959b03d449/src/libs/graphics/format/mdlmdxreader.cpp#L56-L59), [`reader.py` L100-L104](https://github.com/OldRepublicDevs/kotorblender/blob/404c42bc4f36b1f60b643eda0cd17c81ba5ca7d4/io_scene_kotor/format/mdl/reader.py#L100-L104), [marfsama `docs/mdl.md`](https://github.com/marfsama/kotor/blob/8bff4078ab521ba9cd034bad22c3eae362da30a6/docs/mdl.md), [mirror `docs/mdl.md`](https://github.com/th3w1zard1/kotor/blob/8bff4078ab521ba9cd034bad22c3eae362da30a6/docs/mdl.md)).
+
+### model header
+
+The model header is 116 bytes in size and immediately follows the [geometry](MDL-MDX-File-Format#geometry-header) header. Together with the [geometry](MDL-MDX-File-Format#geometry-header) Header (80 bytes), the combined structure is 196 bytes from the start of the MDL data section (offset 12 in the file).
+
+| Name                         | type            | offset | Description                                                                 |
+| ---------------------------- | --------------- | ------ | --------------------------------------------------------------------------- |
+| Classification               | [uint8](GFF-File-Format#gff-data-types)           | 0 0 (0x0)     | model classification type (see [Model Classification Flags](#model-classification-flags)). |
+| Subclassification            | [uint8](GFF-File-Format#gff-data-types)           | 1 1 (0x1)     | model subclassification value.                                              |
+| Unknown                      | [uint8](GFF-File-Format#gff-data-types)           | 2 2 (0x2)     | Purpose unknown (possibly smoothing-related).                               |
+| Affected By Fog              | [uint8](GFF-File-Format#gff-data-types)           | 3 3 (0x3)     | `0`: Not affected by fog, `1`: Affected by fog.                             |
+| Child model count            | UInt32          | 4 4 (0x4)     | Number of child models.                                                     |
+| [animation](MDL-MDX-File-Format#animation-header) array offset       | UInt32          | 8 8 (0x8)     | offset to the [animation](MDL-MDX-File-Format#animation-header) array.                                              |
+| [animation](MDL-MDX-File-Format#animation-header) count              | UInt32          | 12 12 (0xC)    | Number of [animations](MDL-MDX-File-Format#animation-header).                                                       |
+| [animation](MDL-MDX-File-Format#animation-header) Count (duplicate)  | UInt32          | 16 16 (0x10)    | Duplicate value of [animation](MDL-MDX-File-Format#animation-header) count.                                         |
+| Parent model pointer         | UInt32          | 20 20 (0x14)    | pointer to parent model (context-dependent).                                |
+| [Bounding Box](MDL-MDX-File-Format#model-header) Min             | float        | 24 24 (0x18)    | Minimum coordinates of the [bounding box](MDL-MDX-File-Format#model-header) (X, Y, Z).                          |
+| [Bounding Box](MDL-MDX-File-Format#model-header) Max             | float        | 36 36 (0x24)    | Maximum coordinates of the [bounding box](MDL-MDX-File-Format#model-header) (X, Y, Z).                          |
+| Radius                       | float           | 48 48 (0x30)    | Radius of the model's bounding sphere.                                      |
+| [animation](MDL-MDX-File-Format#animation-header) scale              | float           | 52 52 (0x34)    | scale factor for animations (typically 1.0).                                |
+| Supermodel Name              | [byte](https://en.wikipedia.org/wiki/Byte)        | 56 56 (0x38)    | Name of the supermodel ([null-terminated string](https://en.cppreference.com/w/c/string/byte)).                            |
+| Super Root Offset            | UInt32          | 88 88 (0x58)    | offset to super root node (for model inheritance).                          |
+| Unknown                      | UInt32          | 92 92 (0x5C)    | Unknown field from Names array header. Purpose unknown but preserved for format compatibility. |
+| MDX Size                     | UInt32          | 96 96 (0x60)    | Size of the MDX file data.                                                  |
+| MDX Offset                   | UInt32          | 100 100 (0x64)   | offset to MDX data within the MDX file.                                     |
+| Name Offsets Offset          | UInt32          | 104 104 (0x68)   | offset to name offsets array.                                               |
+| Name Offsets Count           | UInt32          | 108 108 (0x6C)   | Number of name offsets.                                                     |
+| Name Offsets Count (duplicate) | UInt32        | 112 112 (0x70)   | Duplicate value of name offsets count.                                      |
+
+**Note:** The model header immediately follows the geometry header. The supermodel name field (offset 56) is used to reference parent models for inheritance. If the value is "null", it should be treated as empty. The fields from offset 88 88 (0x58) onward are often called the "Names array header" (cchargin); the model header is one contiguous 116-byte block after the geometry header. That interpretation is the common one across PyKotor's `_ModelHeader`, mdlops' structure and parse logic, reone's reader, kotorblender's importer, mdlops' classification constants, xoreos-docs' field table, and cchargin's original notes ([`io_mdl.py`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/mdl/io_mdl.py), [`MDLOpsM.pm` L164](https://github.com/ndixUR/mdlops/blob/7e40846d36acb5118e2e9feb2fd53620c29be540/MDLOpsM.pm#L164), [`MDLOpsM.pm` L786-L805](https://github.com/ndixUR/mdlops/blob/7e40846d36acb5118e2e9feb2fd53620c29be540/MDLOpsM.pm#L786-L805), [`mdlmdxreader.cpp` L72-L88](https://github.com/modawan/reone/blob/61531089341caf5827abbc54346c8c959b03d449/src/libs/graphics/format/mdlmdxreader.cpp#L72-L88), [`reader.py` L131-L150](https://github.com/OldRepublicDevs/kotorblender/blob/404c42bc4f36b1f60b643eda0cd17c81ba5ca7d4/io_scene_kotor/format/mdl/reader.py#L131-L150), [`MDLOpsM.pm` L238-L240](https://github.com/ndixUR/mdlops/blob/7e40846d36acb5118e2e9feb2fd53620c29be540/MDLOpsM.pm#L238-L240), [`xoreos-docs/specs/kotor_mdl.html`](https://github.com/xoreos/xoreos-docs/blob/master/specs/kotor_mdl.html), [`kotor/mdl_info.html`](https://web.container.org/web/20151002081059/https://home.comcast.net/~cchargin/kotor/mdl_info.html)).
+
+## Table Of Contents
+
+- MDL/MDX — 3D Model Format
+  - Table Of Contents
+  - [File Structure Overview](#file-structure-overview)
+  - [File Headers](#file-headers)
+    - [MDL File Header](#mdl-file-header)
+    - [Model Header](#model-header)
+    - [Geometry Header](#geometry-header)
+    - [Names Header](#names-header)
+    - [Animation Header](#animation-header)
+    - [Event Structure](#event-structure)
+  - [Node Structures](#node-structures)
+    - [Node Header](#node-header)
+    - [Trimesh Header](#trimesh-header)
+    - [Danglymesh Header](#danglymesh-header)
+    - [Skinmesh Header](#skinmesh-header)
+    - [Lightsaber Header](#lightsaber-header)
+    - [Light Header](#light-header)
+    - [Emitter Header](#emitter-header)
+    - [Reference Header](#reference-header)
+  - [Controllers](#controllers)
+    - [Controller Structure](#controller-structure)
+  - [Additional Controller Types](#additional-controller-types)
+    - [Light Controllers](#light-controllers)
+    - [Emitter Controllers](#emitter-controllers)
+    - [Mesh Controllers](#mesh-controllers)
+  - [Node Types](#node-types)
+    - [Node Type Bitmasks](#node-type-bitmasks)
+    - [Common Node Type Combinations](#common-node-type-combinations)
+  - [MDX Data Format](#mdx-data-format)
+    - [MDX Data Bitmap Masks](#mdx-data-bitmap-masks)
+    - [Skin Mesh Specific Data](#skin-mesh-specific-data)
+  - [Vertex And Face Data](#vertex-and-face-data)
+    - [Vertex Structure](#vertex-structure)
+    - [Face Structure](#face-structure)
+    - [Vertex Index Arrays](#vertex-index-arrays)
+  - [Vertex Data Processing](#vertex-data-processing)
+    - [Vertex Normal Calculation](#vertex-normal-calculation)
+    - [Tangent Space Calculation](#tangent-space-calculation)
+  - [Model Classification Flags](#model-classification-flags)
+  - [File Identification](#file-identification)
+    - [Binary Vs ASCII Format](#binary-vs-ascii-format)
+    - [KotOR 1 Vs KotOR 2 Models](#kotor-1-vs-kotor-2-models)
+  - [Model Hierarchy](#model-hierarchy)
+    - [Node Relationships](#node-relationships)
+    - [Node Transformations](#node-transformations)
+  - [Smoothing Groups](#smoothing-groups)
+  - [Binary Model Format Details (Aurora Engine - KotOR)](#binary-model-format-details-aurora-engine---kotor)
+    - [Binary Model File Layout](#binary-model-file-layout)
+    - [Pointers And Arrays In Binary Models](#pointers-and-arrays-in-binary-models)
+    - [Model Routines And Node Type Identification](#model-routines-and-node-type-identification)
+    - [Part Numbers](#part-numbers)
+    - [Controller Data Storage](#controller-data-storage)
+    - [Bezier Interpolation](#bezier-interpolation)
+    - [AABB (Axis-Aligned Bounding Box) Mesh Nodes](#aabb-axis-aligned-bounding-box-mesh-nodes)
+  - [ASCII MDL Format](#ascii-mdl-format)
+    - [Model Header Section](#model-header-section)
+    - [Geometry Section](#geometry-section)
+    - [Node Definitions](#node-definitions)
+    - [Animation Data](#animation-data)
+  - [Controller Data Formats](#controller-data-formats)
+    - [Single Controllers](#single-controllers)
+    - [Keyed Controllers](#keyed-controllers)
+    - [Special Controller Cases](#special-controller-cases)
+  - [Skin Meshes And Skeletal Animation](#skin-meshes-and-skeletal-animation)
+    - [Bone Mapping And Lookup Tables](#bone-mapping-and-lookup-tables)
+      - [Bone Map (`bonemap`)](#bone-map-bonemap)
+      - [Bone Serial And Node Number Lookups](#bone-serial-and-node-number-lookups)
+    - [Vertex Skinning](#vertex-skinning)
+      - [Bone Weight Format (MDX)](#bone-weight-format-mdx)
+      - [Vertex Transformation](#vertex-transformation)
+    - [Bind Pose Data](#bind-pose-data)
+      - [QBones (Quaternion Rotations)](#qbones-quaternion-rotations)
+      - [TBones (Translation Vectors)](#tbones-translation-vectors)
+      - [Bone Matrix Computation](#bone-matrix-computation)
+  - [Additional References](#additional-references)
+    - [Editors](#editors)
+    - [See Also](#see-also)
+
+---
+
+## File Structure Overview
+
+KotOR models are defined using two files:
+
+- **MDL**: Contains the primary model data, including:
+
+  - [geometry](MDL-MDX-File-Format#geometry-header)
+  - [Node](MDL-MDX-File-Format#node-structures) structures
+- **MDX**: Contains additional [Mesh](MDL-MDX-File-Format#trimesh-header) data, such as [vertex](MDL-MDX-File-Format#vertex-structure) buffers.
+
+**Implementation (PyKotor):**
+
+- package: [`resource/formats/mdl/`](https://github.com/OldRepublicDevs/PyKotor/tree/master/Libraries/PyKotor/src/pykotor/resource/formats/mdl/)
+- binary read [`MDLBinaryReader.load` L2886+](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/formats/mdl/io_mdl.py#L2886)
+- data model [`MDL` L1337+](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/formats/mdl/mdl_data.py#L1337)
+- [`MDLNode` L1928+](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/formats/mdl/mdl_data.py#L1928)
+- ASCII in `io_mdl_ascii.py`
+- engine-level cross-checks: [MDL-Implementation-Verification-Report](#mdl-format-implementation-verification-report)
+- [MDL-ASCII-Support-Engine-Analysis](#ascii-mdl-support-in-swkotorexe-k1-and-swkotor2exe-tsl---low-level-analysis)
+
+**Documentation sources:** Layout merges cchargin (mdl_info), [xoreos-docs](https://github.com/xoreos/xoreos-docs) (`kotor_mdl.html`, `torlack/binmdl.html`), and implementations below. Where sources disagree, PyKotor and [MDL-Implementation-Verification-Report](#mdl-format-implementation-verification-report) are treated as authoritative.
+
+### PyKotor Code Structure (Python)
+
+- **Runtime model classes**: `mdl_data.py` (`MDL`, `MDLNode`, `MDLMesh`, `MDLAnimation`, controllers, etc.)
+- **Binary I/O**: `io_mdl.py`
+- **ASCII I/O**: `io_mdl_ascii.py`
+- **Enums/flags**: `mdl_types.py`
+
+Comparable implementations exist across reone's reader and runtime model types, xoreos's Aurora model loader, KotOR.js's binary decoder and Three.js scene builder, Kotor.NET's format layer, KotOR-Unity's `AuroraModel`, NorthernLights' model package, kotorblender's importer, mdlops' Perl reference layout, and xoreos-tools' exporter-facing model code, so most structural claims on this page can be checked against multiple independent parsers rather than a single reverse-engineering note ([`mdlreader.cpp`](https://github.com/modawan/reone/blob/master/src/libs/graphics/format/mdlreader.cpp), [`model.h`](https://github.com/modawan/reone/blob/master/include/reone/graphics/model.h), [`model.cpp`](https://github.com/xoreos/xoreos/blob/master/src/graphics/aurora/model.cpp), [`OdysseyModel.ts` L32-L210](https://github.com/KobaltBlu/KotOR.js/blob/ea9491d5c783364cf285f178434b84405bee3608/src/odyssey/OdysseyModel.ts#L32-L210), [`OdysseyModel3D.ts` L53-L120](https://github.com/KobaltBlu/KotOR.js/blob/ea9491d5c783364cf285f178434b84405bee3608/src/three/odyssey/OdysseyModel3D.ts#L53), [`Kotor.NET/Formats/`](https://github.com/NickHugi/Kotor.NET/tree/master/Kotor.NET/Formats), [`AuroraModel.cs`](https://github.com/reubenduncan/KotOR-Unity/blob/master/Assets/Scripts/FileObjects/AuroraModel.cs), [`src/Model/`](https://github.com/lachjames/NorthernLights/tree/master/src/Model), [`io_scene_kotor/format/mdl/`](https://github.com/OldRepublicDevs/kotorblender/tree/master/io_scene_kotor/format/mdl), [`MDLOpsM.pm`](https://github.com/ndixUR/mdlops/blob/master/MDLOpsM.pm), [`xoreos-tools/src/aurora/model.cpp`](https://github.com/xoreos/xoreos-tools/blob/master/src/aurora/model.cpp)).
+
+### Rendering notes (depth + alpha)
+
+Some MDL meshes use layered geometry and masked textures (for example: thin planes laid over other geometry). Renderers typically use:
+
+- **Depth testing**: enabled while drawing 3D meshes, as seen in xoreos's renderer setup and in the standard OpenGL depth-test pipeline (`glEnable(GL_DEPTH_TEST)` plus `glDepthFunc`) ([`src/graphics/graphics.cpp` L433](https://github.com/xoreos/xoreos/blob/f36b681b2a38799ddd6fce0f252b6d7fa781dfc2/src/graphics/graphics.cpp#L433), [Khronos `glEnable`](https://registry.khronos.org/OpenGL-Refpages/gl4/html/glEnable.xhtml), [Khronos `glDepthFunc`](https://registry.khronos.org/OpenGL-Refpages/gl4/html/glDepthFunc.xhtml)).
+
+- **Alpha cutout / alpha testing**: masked texels are rejected before contributing to the framebuffer, whether via legacy `GL_ALPHA_TEST` as in xoreos or via shader-side cutoff logic such as the PyKotorGL preview path; the equivalent fixed-function API reference is `glAlphaFunc` ([`src/graphics/aurora/modelnode.cpp` L755-L771](https://github.com/xoreos/xoreos/blob/f36b681b2a38799ddd6fce0f252b6d7fa781dfc2/src/graphics/aurora/modelnode.cpp#L755-L771), [Khronos `glAlphaFunc`](https://registry.khronos.org/OpenGL-Refpages/gl2.1/xhtml/glAlphaFunc.xml), [`shader.py`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/gl/shader/shader.py), [`scene.py`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/gl/scene/scene.py)).
+
+- **Alpha blending**: a conventional blend function when drawing textures with meaningful alpha, usually `GL_SRC_ALPHA` against `GL_ONE_MINUS_SRC_ALPHA` as in xoreos and the standard OpenGL blend model ([`src/graphics/graphics.cpp` L438](https://github.com/xoreos/xoreos/blob/f36b681b2a38799ddd6fce0f252b6d7fa781dfc2/src/graphics/graphics.cpp#L438), [Khronos `glBlendFunc`](https://registry.khronos.org/OpenGL-Refpages/gl4/html/glBlendFunc.xhtml)).
 
 **Additional Documentation Sources:**
 
@@ -206,14 +384,7 @@ The MDL file header is 12 bytes in size and contains the following fields:
 | MDL size     | UInt32  | 4 (0x4)     | size of the MDL file.  |
 | MDX size     | UInt32  | 8 (0x8)     | size of the MDX file.  |
 
-**Reference**: [`mdlops/MDLOpsM.pm:162`](https://github.com/ndixUR/mdlops/blob/7e40846d36acb5118e2e9feb2fd53620c29be540/MDLOpsM.pm#L162) - file header structure definition  
-**Reference**: [`reone/src/libs/graphics/format/mdlmdxreader.cpp:56-59`](https://github.com/modawan/reone/blob/61531089341caf5827abbc54346c8c959b03d449/src/libs/graphics/format/mdlmdxreader.cpp#L56-L59) - file header reading  
-**Reference**: [`kotorblender/io_scene_kotor/format/mdl/reader.py:100-104`](https://github.com/OldRepublicDevs/kotorblender/blob/404c42bc4f36b1f60b643eda0cd17c81ba5ca7d4/io_scene_kotor/format/mdl/reader.py#L100-L104) - file header reading  
-**Reference**: **`kotor/docs/mdl.md`** — [Node](MDL-MDX-File-Format#node-structures) chunk structure analysis
-
-- Upstream (marfsama/kotor): <https://github.com/marfsama/kotor/blob/8bff4078ab521ba9cd034bad22c3eae362da30a6/docs/mdl.md>
-- Mirror (th3w1zard1/kotor): <https://github.com/th3w1zard1/kotor/blob/8bff4078ab521ba9cd034bad22c3eae362da30a6/docs/mdl.md>
-**Reference**: [`KotOR.js` `MDLLoader.ts` L96–L124](https://github.com/KobaltBlu/KotOR.js/blob/ea9491d5c783364cf285f178434b84405bee3608/src/loaders/MDLLoader.ts#L96-L124) — `load()` loads MDL/MDX in parallel and caches `OdysseyModel` instances
+This 12-byte stub is consistent across mdlops' layout constant, reone's reader, kotorblender's importer, the historical `kotor/docs/mdl.md` notes, and KotOR.js's loader, which additionally shows the practical consequence of the paired sizes: MDL and MDX are loaded together and cached as one model asset ([`MDLOpsM.pm` L162](https://github.com/ndixUR/mdlops/blob/7e40846d36acb5118e2e9feb2fd53620c29be540/MDLOpsM.pm#L162), [`mdlmdxreader.cpp` L56-L59](https://github.com/modawan/reone/blob/61531089341caf5827abbc54346c8c959b03d449/src/libs/graphics/format/mdlmdxreader.cpp#L56-L59), [`reader.py` L100-L104](https://github.com/OldRepublicDevs/kotorblender/blob/404c42bc4f36b1f60b643eda0cd17c81ba5ca7d4/io_scene_kotor/format/mdl/reader.py#L100-L104), [marfsama `docs/mdl.md`](https://github.com/marfsama/kotor/blob/8bff4078ab521ba9cd034bad22c3eae362da30a6/docs/mdl.md), [mirror `docs/mdl.md`](https://github.com/th3w1zard1/kotor/blob/8bff4078ab521ba9cd034bad22c3eae362da30a6/docs/mdl.md), [`MDLLoader.ts` L96-L124](https://github.com/KobaltBlu/KotOR.js/blob/ea9491d5c783364cf285f178434b84405bee3608/src/loaders/MDLLoader.ts#L96-L124)).
 
 ### model header
 
@@ -243,16 +414,7 @@ The model header is 116 bytes in size and immediately follows the [geometry](MDL
 | Name Offsets Count           | UInt32          | 108 (0x6C)   | Number of name offsets.                                                     |
 | Name Offsets Count (duplicate) | UInt32        | 112 (0x70)   | Duplicate value of name offsets count.                                      |
 
-**Reference**: [`Libraries/PyKotor/src/pykotor/resource/formats/mdl/io_mdl.py`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/mdl/io_mdl.py) - model header reading (`_ModelHeader`, 116 bytes after geometry)  
-**Reference**: [`mdlops/MDLOpsM.pm:164`](https://github.com/ndixUR/mdlops/blob/7e40846d36acb5118e2e9feb2fd53620c29be540/MDLOpsM.pm#L164) - model header structure definition
-**Reference**: [`mdlops/MDLOpsM.pm:786-805`](https://github.com/ndixUR/mdlops/blob/7e40846d36acb5118e2e9feb2fd53620c29be540/MDLOpsM.pm#L786-L805) - model header reading and parsing
-**Reference**: [`reone/src/libs/graphics/format/mdlmdxreader.cpp:72-88`](https://github.com/modawan/reone/blob/61531089341caf5827abbc54346c8c959b03d449/src/libs/graphics/format/mdlmdxreader.cpp#L72-L88) - model header reading
-**Reference**: [`kotorblender/io_scene_kotor/format/mdl/reader.py:131-150`](https://github.com/OldRepublicDevs/kotorblender/blob/404c42bc4f36b1f60b643eda0cd17c81ba5ca7d4/io_scene_kotor/format/mdl/reader.py#L131-L150) - model header reading
-**Reference**: [`mdlops/MDLOpsM.pm:238-240`](https://github.com/ndixUR/mdlops/blob/7e40846d36acb5118e2e9feb2fd53620c29be540/MDLOpsM.pm#L238-L240) - model classification constants definition
-**Reference**: [`xoreos-docs/specs/kotor_mdl.html`](https://github.com/xoreos/xoreos-docs/blob/master/specs/kotor_mdl.html) - model header field-by-field breakdown (88 bytes total)
-**Reference**: [`kotor/mdl_info.html`](https://web.container.org/web/20151002081059/https://home.comcast.net/~cchargin/kotor/mdl_info.html) - Original cchargin MDL format documentation (includes Names array header fields)
-
-**Note:** The model header immediately follows the geometry header. The supermodel name field (offset 56) is used to reference parent models for inheritance. If the value is "null", it should be treated as empty. The fields from offset 88 (0x58) onward are often called the "Names array header" (cchargin); the model header is one contiguous 116-byte block after the geometry header.
+**Note:** The model header immediately follows the geometry header. The supermodel name field (offset 56) is used to reference parent models for inheritance. If the value is "null", it should be treated as empty. The fields from offset 88 (0x58) onward are often called the "Names array header" (cchargin); the model header is one contiguous 116-byte block after the geometry header. That interpretation is the common one across PyKotor's `_ModelHeader`, mdlops' structure and parse logic, reone's reader, kotorblender's importer, mdlops' classification constants, xoreos-docs' field table, and cchargin's original notes ([`io_mdl.py`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/mdl/io_mdl.py), [`MDLOpsM.pm` L164](https://github.com/ndixUR/mdlops/blob/7e40846d36acb5118e2e9feb2fd53620c29be540/MDLOpsM.pm#L164), [`MDLOpsM.pm` L786-L805](https://github.com/ndixUR/mdlops/blob/7e40846d36acb5118e2e9feb2fd53620c29be540/MDLOpsM.pm#L786-L805), [`mdlmdxreader.cpp` L72-L88](https://github.com/modawan/reone/blob/61531089341caf5827abbc54346c8c959b03d449/src/libs/graphics/format/mdlmdxreader.cpp#L72-L88), [`reader.py` L131-L150](https://github.com/OldRepublicDevs/kotorblender/blob/404c42bc4f36b1f60b643eda0cd17c81ba5ca7d4/io_scene_kotor/format/mdl/reader.py#L131-L150), [`MDLOpsM.pm` L238-L240](https://github.com/ndixUR/mdlops/blob/7e40846d36acb5118e2e9feb2fd53620c29be540/MDLOpsM.pm#L238-L240), [`xoreos-docs/specs/kotor_mdl.html`](https://github.com/xoreos/xoreos-docs/blob/master/specs/kotor_mdl.html), [`kotor/mdl_info.html`](https://web.container.org/web/20151002081059/https://home.comcast.net/~cchargin/kotor/mdl_info.html)).
 
 ### geometry header
 
@@ -271,15 +433,7 @@ The geometry header is 80 bytes in size and is located at offset 12 in the file 
 | [geometry](MDL-MDX-File-Format#geometry-header) type               | [uint8](GFF-File-Format#gff-data-types)       | 76 (0x4C)    | type of [geometry](MDL-MDX-File-Format#geometry-header) header: `0x01`: Basic [geometry](MDL-MDX-File-Format#geometry-header) header (not in models), `0x02`: model [geometry](MDL-MDX-File-Format#geometry-header), `0x05`: [animation](MDL-MDX-File-Format#animation-header) [geometry](MDL-MDX-File-Format#geometry-header). If bit 7 (0x80) is set, the model is a compiled binary model loaded from disk and converted to absolute addresses.                    |
 | Padding                     | [uint8](GFF-File-Format#gff-data-types)    | 77 (0x4D)    | Padding bytes for alignment.                                                                    |
 
-Total length of geometry header: 80 bytes. Many implementations (e.g. PyKotor [`io_mdl.py`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/mdl/io_mdl.py)) treat bytes 48–75 as a single 28-byte unknown block rather than separate array definitions and reference count.
-
-**Reference**: [`Libraries/PyKotor/src/pykotor/resource/formats/mdl/io_mdl.py`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/mdl/io_mdl.py) - [geometry](MDL-MDX-File-Format#geometry-header) header reading (`_GeometryHeader`)  
-**Reference**: [`mdlops/MDLOpsM.pm:163`](https://github.com/ndixUR/mdlops/blob/7e40846d36acb5118e2e9feb2fd53620c29be540/MDLOpsM.pm#L163) - [geometry](MDL-MDX-File-Format#geometry-header) header structure definition  
-**Reference**: [`mdlops/MDLOpsM.pm:770-784`](https://github.com/ndixUR/mdlops/blob/7e40846d36acb5118e2e9feb2fd53620c29be540/MDLOpsM.pm#L770-L784) - [geometry](MDL-MDX-File-Format#geometry-header) header reading  
-**Reference**: [`mdlops/MDLOpsM.pm:437-461`](https://github.com/ndixUR/mdlops/blob/7e40846d36acb5118e2e9feb2fd53620c29be540/MDLOpsM.pm#L437-L461) - Version detection using function pointer  
-**Reference**: [`reone/src/libs/graphics/format/mdlmdxreader.cpp:61-70`](https://github.com/modawan/reone/blob/61531089341caf5827abbc54346c8c959b03d449/src/libs/graphics/format/mdlmdxreader.cpp#L61-L70) - [geometry](MDL-MDX-File-Format#geometry-header) header reading  
-**Reference**: [`kotorblender/io_scene_kotor/format/mdl/reader.py:106-129`](https://github.com/OldRepublicDevs/kotorblender/blob/404c42bc4f36b1f60b643eda0cd17c81ba5ca7d4/io_scene_kotor/format/mdl/reader.py#L106-L129) - [geometry](MDL-MDX-File-Format#geometry-header) header reading  
-**Reference**: [`xoreos-docs/specs/kotor_mdl.html`](https://github.com/xoreos/xoreos-docs/blob/master/specs/kotor_mdl.html) - [geometry](MDL-MDX-File-Format#geometry-header) header field-by-field breakdown (80 bytes total)
+Total length of geometry header: 80 bytes. Many implementations, including PyKotor, treat bytes 48-75 as a single 28-byte unknown block rather than separate array definitions and reference count; that simplification still lines up with mdlops' structure definition and parser, its version-detection logic, reone's header read, kotorblender's importer, and xoreos-docs' 80-byte breakdown ([`io_mdl.py`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/mdl/io_mdl.py), [`MDLOpsM.pm` L163](https://github.com/ndixUR/mdlops/blob/7e40846d36acb5118e2e9feb2fd53620c29be540/MDLOpsM.pm#L163), [`MDLOpsM.pm` L770-L784](https://github.com/ndixUR/mdlops/blob/7e40846d36acb5118e2e9feb2fd53620c29be540/MDLOpsM.pm#L770-L784), [`MDLOpsM.pm` L437-L461](https://github.com/ndixUR/mdlops/blob/7e40846d36acb5118e2e9feb2fd53620c29be540/MDLOpsM.pm#L437-L461), [`mdlmdxreader.cpp` L61-L70](https://github.com/modawan/reone/blob/61531089341caf5827abbc54346c8c959b03d449/src/libs/graphics/format/mdlmdxreader.cpp#L61-L70), [`reader.py` L106-L129](https://github.com/OldRepublicDevs/kotorblender/blob/404c42bc4f36b1f60b643eda0cd17c81ba5ca7d4/io_scene_kotor/format/mdl/reader.py#L106-L129), [`xoreos-docs/specs/kotor_mdl.html`](https://github.com/xoreos/xoreos-docs/blob/master/specs/kotor_mdl.html)).
 
 ### Names header
 
@@ -295,14 +449,7 @@ The Names header is located at file offset 180 (28 bytes). It contains metadata 
 | Names count         | UInt32  | 20 (0x14)    | Number of [Node](MDL-MDX-File-Format#node-structures) names in the array.                                          |
 | Names Count (dup)   | UInt32  | 24 (0x18)    | Duplicate value of names count.                                             |
 
-**Reference**: [`mdlops/MDLOpsM.pm:165`](https://github.com/ndixUR/mdlops/blob/7e40846d36acb5118e2e9feb2fd53620c29be540/MDLOpsM.pm#L165) - Names header structure definition  
-**Reference**: [`mdlops/MDLOpsM.pm:810-843`](https://github.com/ndixUR/mdlops/blob/7e40846d36acb5118e2e9feb2fd53620c29be540/MDLOpsM.pm#L810-L843) - Names header and name array reading  
-**Reference**: [`reone/src/libs/graphics/format/mdlmdxreader.cpp:88,98-99`](https://github.com/modawan/reone/blob/61531089341caf5827abbc54346c8c959b03d449/src/libs/graphics/format/mdlmdxreader.cpp#L88-L99) - Names header reading and [Node](MDL-MDX-File-Format#node-structures) name parsing  
-**Reference**: [`reone/src/libs/graphics/format/mdlmdxreader.cpp:128-133`](https://github.com/modawan/reone/blob/61531089341caf5827abbc54346c8c959b03d449/src/libs/graphics/format/mdlmdxreader.cpp#L128-L133) - [Node](MDL-MDX-File-Format#node-structures) name array reading with lowercase conversion  
-**Reference**: [`xoreos-docs/specs/kotor_mdl.html`](https://github.com/xoreos/xoreos-docs/blob/master/specs/kotor_mdl.html) - Names header field-by-field breakdown (28 bytes total). Notes that names are stored in the array one after the other, separated only by null values.  
-**Reference**: [`Libraries/PyKotor/src/pykotor/resource/formats/mdl/io_mdl.py`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/mdl/io_mdl.py) - Names reading (`_load_names`): array of 4-byte values then packed null-terminated string block.
-
-**Note:** At the "Names array offset" the file contains an array of N 4-byte values (offsets or indices, one per name). Immediately after that array, the [Node](MDL-MDX-File-Format#node-structures) name strings are stored back-to-back, each a [null-terminated](https://en.cppreference.com/w/c/string/byte) string (max 32 bytes), with no per-name offsets in the string block. Parsers typically convert names to lowercase. Some implementations read only the packed string block (in order) and ignore the 4-byte value array.
+**Note:** At the "Names array offset" the file contains an array of N 4-byte values (offsets or indices, one per name). Immediately after that array, the [Node](MDL-MDX-File-Format#node-structures) name strings are stored back-to-back, each a [null-terminated](https://en.cppreference.com/w/c/string/byte) string (max 32 bytes), with no per-name offsets in the string block. Parsers typically convert names to lowercase. Some implementations read only the packed string block (in order) and ignore the 4-byte value array. That behavior is visible in mdlops' header and array parser, reone's name parsing and lowercase normalization, xoreos-docs' packed-string note, and PyKotor's `_load_names` implementation ([`MDLOpsM.pm` L165](https://github.com/ndixUR/mdlops/blob/7e40846d36acb5118e2e9feb2fd53620c29be540/MDLOpsM.pm#L165), [`MDLOpsM.pm` L810-L843](https://github.com/ndixUR/mdlops/blob/7e40846d36acb5118e2e9feb2fd53620c29be540/MDLOpsM.pm#L810-L843), [`mdlmdxreader.cpp` L88-L99](https://github.com/modawan/reone/blob/61531089341caf5827abbc54346c8c959b03d449/src/libs/graphics/format/mdlmdxreader.cpp#L88-L99), [`mdlmdxreader.cpp` L128-L133](https://github.com/modawan/reone/blob/61531089341caf5827abbc54346c8c959b03d449/src/libs/graphics/format/mdlmdxreader.cpp#L128-L133), [`xoreos-docs/specs/kotor_mdl.html`](https://github.com/xoreos/xoreos-docs/blob/master/specs/kotor_mdl.html), [`io_mdl.py`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/mdl/io_mdl.py)).
 
 ### animation header
 
@@ -319,11 +466,7 @@ Each animation begins with a [Geometry Header](MDL-MDX-File-Format#geometry-head
 | Event Count (dup)     | UInt32          | 128 (0x80)   | Duplicate value of event count.                            |
 | Unknown               | UInt32          | 132 (0x84)   | Purpose unknown.                                           |
 
-**Reference**: [`mdlops/MDLOpsM.pm:169`](https://github.com/ndixUR/mdlops/blob/7e40846d36acb5118e2e9feb2fd53620c29be540/MDLOpsM.pm#L169) - [animation](MDL-MDX-File-Format#animation-header) header structure definition  
-**Reference**: [`mdlops/MDLOpsM.pm:1339-1363`](https://github.com/ndixUR/mdlops/blob/7e40846d36acb5118e2e9feb2fd53620c29be540/MDLOpsM.pm#L1339-L1363) - [animation](MDL-MDX-File-Format#animation-header) header reading  
-**Reference**: [`reone/src/libs/graphics/format/mdlmdxreader.cpp:106-107`](https://github.com/modawan/reone/blob/61531089341caf5827abbc54346c8c959b03d449/src/libs/graphics/format/mdlmdxreader.cpp#L106-L107) - [animation](MDL-MDX-File-Format#animation-header) reading  
-**Reference**: [`kotorblender/io_scene_kotor/format/mdl/reader.py:650-691`](https://github.com/OldRepublicDevs/kotorblender/blob/404c42bc4f36b1f60b643eda0cd17c81ba5ca7d4/io_scene_kotor/format/mdl/reader.py#L650-L691) - [animation](MDL-MDX-File-Format#animation-header) loading and event processing  
-**Reference**: [`xoreos-docs/specs/kotor_mdl.html`](https://github.com/xoreos/xoreos-docs/blob/master/specs/kotor_mdl.html) - [animation](MDL-MDX-File-Format#animation-header) header field-by-field breakdown (56 bytes, follows [geometry](MDL-MDX-File-Format#geometry-header) header)
+The 56-byte animation-header layout is corroborated by mdlops' structure and read logic, reone's parser, kotorblender's animation loader, and xoreos-docs' field table, all of which treat it as an 80-byte animation geometry header followed by this event-aware metadata block ([`MDLOpsM.pm` L169](https://github.com/ndixUR/mdlops/blob/7e40846d36acb5118e2e9feb2fd53620c29be540/MDLOpsM.pm#L169), [`MDLOpsM.pm` L1339-L1363](https://github.com/ndixUR/mdlops/blob/7e40846d36acb5118e2e9feb2fd53620c29be540/MDLOpsM.pm#L1339-L1363), [`mdlmdxreader.cpp` L106-L107](https://github.com/modawan/reone/blob/61531089341caf5827abbc54346c8c959b03d449/src/libs/graphics/format/mdlmdxreader.cpp#L106-L107), [`reader.py` L650-L691](https://github.com/OldRepublicDevs/kotorblender/blob/404c42bc4f36b1f60b643eda0cd17c81ba5ca7d4/io_scene_kotor/format/mdl/reader.py#L650-L691), [`xoreos-docs/specs/kotor_mdl.html`](https://github.com/xoreos/xoreos-docs/blob/master/specs/kotor_mdl.html)).
 
 ### Event structure
 
@@ -334,9 +477,7 @@ Each [animation](MDL-MDX-File-Format#animation-header) event is 36 bytes in size
 | Activation Time | float     | 0 (0x0)     | Time in seconds when the event triggers during [animation](MDL-MDX-File-Format#animation-header) playback. Field #1 in [`xoreos-docs/specs/kotor_mdl.html`](https://github.com/xoreos/xoreos-docs/blob/master/specs/kotor_mdl.html) event structure ("activation time?").   |
 | Event Name      | [byte](https://en.wikipedia.org/wiki/Byte)  | 4 (0x4)     | Name of the event ([null-terminated string](https://en.cppreference.com/w/c/string/byte), e.g., "detonate"). Field #2 in [`xoreos-docs/specs/kotor_mdl.html`](https://github.com/xoreos/xoreos-docs/blob/master/specs/kotor_mdl.html) event structure ("event").        |
 
-**Reference**: [`mdlops/MDLOpsM.pm:170`](https://github.com/ndixUR/mdlops/blob/7e40846d36acb5118e2e9feb2fd53620c29be540/MDLOpsM.pm#L170) - Event structure definition  
-**Reference**: [`mdlops/MDLOpsM.pm:1365`](https://github.com/ndixUR/mdlops/blob/7e40846d36acb5118e2e9feb2fd53620c29be540/MDLOpsM.pm#L1365) - [animation](MDL-MDX-File-Format#animation-header) events reading  
-**Reference**: [`reone/src/libs/graphics/format/mdlmdxreader.cpp`](https://github.com/modawan/reone/blob/master/src/libs/graphics/format/mdlmdxreader.cpp) - [animation](MDL-MDX-File-Format#animation-header) event processing in reone implementation
+mdlops defines and reads the same 36-byte event structure, while reone processes the decoded events during animation import, so the minimal `(time, name)` interpretation here is supported by both layout-level and runtime implementations ([`MDLOpsM.pm` L170](https://github.com/ndixUR/mdlops/blob/7e40846d36acb5118e2e9feb2fd53620c29be540/MDLOpsM.pm#L170), [`MDLOpsM.pm` L1365](https://github.com/ndixUR/mdlops/blob/7e40846d36acb5118e2e9feb2fd53620c29be540/MDLOpsM.pm#L1365), [`mdlmdxreader.cpp`](https://github.com/modawan/reone/blob/master/src/libs/graphics/format/mdlmdxreader.cpp)).
 
 ---
 
@@ -366,17 +507,7 @@ The Node Header is 80 bytes in size and is present in all node types. It defines
 | [Controller](MDL-MDX-File-Format#controllers) data count    | UInt32      | 72 (0x48)    | Number of floats in [Controller](MDL-MDX-File-Format#controllers) data array. Field #21 in [`xoreos-docs/specs/kotor_mdl.html`](https://github.com/xoreos/xoreos-docs/blob/master/specs/kotor_mdl.html) node header structure ("number of items in array in item 14").                                         |
 | [Controller](MDL-MDX-File-Format#controllers) data count    | UInt32      | 76 (0x4C)    | Duplicate value of [Controller](MDL-MDX-File-Format#controllers) data count. Field #22 in [`xoreos-docs/specs/kotor_mdl.html`](https://github.com/xoreos/xoreos-docs/blob/master/specs/kotor_mdl.html) node header structure ("duplicate of item 15").                                          |
 
-**Reference**: [`mdlops/MDLOpsM.pm:172`](https://github.com/ndixUR/mdlops/blob/7e40846d36acb5118e2e9feb2fd53620c29be540/MDLOpsM.pm#L172) - [Node](MDL-MDX-File-Format#node-structures) header structure definition  
-**Reference**: [`mdlops/MDLOpsM.pm:1590-1622`](https://github.com/ndixUR/mdlops/blob/7e40846d36acb5118e2e9feb2fd53620c29be540/MDLOpsM.pm#L1590-L1622) - [Node](MDL-MDX-File-Format#node-structures) header reading  
-**Reference**: [`reone/src/libs/graphics/format/mdlmdxreader.cpp:135-150`](https://github.com/modawan/reone/blob/61531089341caf5827abbc54346c8c959b03d449/src/libs/graphics/format/mdlmdxreader.cpp#L135-L150) - [Node](MDL-MDX-File-Format#node-structures) header reading  
-**Reference**: [`kotorblender/io_scene_kotor/format/mdl/reader.py:189-250`](https://github.com/OldRepublicDevs/kotorblender/blob/404c42bc4f36b1f60b643eda0cd17c81ba5ca7d4/io_scene_kotor/format/mdl/reader.py#L189-L250) - [Node](MDL-MDX-File-Format#node-structures) header reading and [Node](MDL-MDX-File-Format#node-structures) type processing  
-**Reference**: [`reone/src/libs/graphics/format/mdlmdxreader.cpp:153-155`](https://github.com/modawan/reone/blob/61531089341caf5827abbc54346c8c959b03d449/src/libs/graphics/format/mdlmdxreader.cpp#L153-L155) - Unsupported [Node](MDL-MDX-File-Format#node-structures) flags validation  
-**Reference**: **`kotor/docs/mdl.md:9-27`** — [Node](MDL-MDX-File-Format#node-structures) chunk structure analysis with [byte](https://en.wikipedia.org/wiki/Byte)-level layout
-
-- Upstream (marfsama/kotor): <https://github.com/marfsama/kotor/blob/8bff4078ab521ba9cd034bad22c3eae362da30a6/docs/mdl.md#L9-L27>
-- Mirror (th3w1zard1/kotor): <https://github.com/th3w1zard1/kotor/blob/8bff4078ab521ba9cd034bad22c3eae362da30a6/docs/mdl.md#L9-L27>
-
-**Note:** The orientation [quaternion](MDL-MDX-File-Format#node-header) is stored in W, X, Y, Z order. The [Node](MDL-MDX-File-Format#node-structures) index (offset 2) is a sequential identifier used for [Node](MDL-MDX-File-Format#node-structures) lookup. [Controllers](MDL-MDX-File-Format#controllers) are stored separately from the [Node](MDL-MDX-File-Format#node-structures) structure and referenced via offsets.
+**Note:** The orientation [quaternion](MDL-MDX-File-Format#node-header) is stored in W, X, Y, Z order. The [Node](MDL-MDX-File-Format#node-structures) index (offset 2) is a sequential identifier used for [Node](MDL-MDX-File-Format#node-structures) lookup. [Controllers](MDL-MDX-File-Format#controllers) are stored separately from the [Node](MDL-MDX-File-Format#node-structures) structure and referenced via offsets. That 80-byte base header is described consistently by mdlops' layout and parser, reone's reader and flag validation, kotorblender's node importer, and the original `kotor/docs/mdl.md` byte-level notes preserved in both upstream and mirror repositories ([`MDLOpsM.pm` L172](https://github.com/ndixUR/mdlops/blob/7e40846d36acb5118e2e9feb2fd53620c29be540/MDLOpsM.pm#L172), [`MDLOpsM.pm` L1590-L1622](https://github.com/ndixUR/mdlops/blob/7e40846d36acb5118e2e9feb2fd53620c29be540/MDLOpsM.pm#L1590-L1622), [`mdlmdxreader.cpp` L135-L155](https://github.com/modawan/reone/blob/61531089341caf5827abbc54346c8c959b03d449/src/libs/graphics/format/mdlmdxreader.cpp#L135-L155), [`reader.py` L189-L250](https://github.com/OldRepublicDevs/kotorblender/blob/404c42bc4f36b1f60b643eda0cd17c81ba5ca7d4/io_scene_kotor/format/mdl/reader.py#L189-L250), [marfsama `docs/mdl.md#L9-L27`](https://github.com/marfsama/kotor/blob/8bff4078ab521ba9cd034bad22c3eae362da30a6/docs/mdl.md#L9-L27), [mirror `docs/mdl.md#L9-L27`](https://github.com/th3w1zard1/kotor/blob/8bff4078ab521ba9cd034bad22c3eae362da30a6/docs/mdl.md#L9-L27)).
 
 ### Trimesh header
 
@@ -467,9 +598,7 @@ The Danglymesh header extends the Trimesh header with 28 additional bytes for ph
 | Period                 | float   | 352/360    | Oscillation period in seconds.                                                   |
 | Unknown                | UInt32  | 356/364    | Purpose unknown. Field #7 in [`xoreos-docs/specs/kotor_mdl.html`](https://github.com/xoreos/xoreos-docs/blob/master/specs/kotor_mdl.html) danglymesh header structure.                                                                 |
 
-**Reference**: [`mdlops/MDLOpsM.pm:289`](https://github.com/ndixUR/mdlops/blob/7e40846d36acb5118e2e9feb2fd53620c29be540/MDLOpsM.pm#L289) - Danglymesh header structure definition  
-**Reference**: [`reone/src/libs/graphics/format/mdlmdxreader.cpp:297-320`](https://github.com/modawan/reone/blob/61531089341caf5827abbc54346c8c959b03d449/src/libs/graphics/format/mdlmdxreader.cpp#L297-L320) - Danglymesh constraint and [vertex](MDL-MDX-File-Format#vertex-structure) position reading  
-**Reference**: [`xoreos-docs/specs/kotor_mdl.html`](https://github.com/xoreos/xoreos-docs/blob/master/specs/kotor_mdl.html) - Danglymesh header structure with field-by-field breakdown
+This extension shape and constraint-array behavior match across mdlops, reone's reader, and xoreos-docs' field map ([`MDLOpsM.pm` L289](https://github.com/ndixUR/mdlops/blob/7e40846d36acb5118e2e9feb2fd53620c29be540/MDLOpsM.pm#L289), [`mdlmdxreader.cpp` L297-L320](https://github.com/modawan/reone/blob/61531089341caf5827abbc54346c8c959b03d449/src/libs/graphics/format/mdlmdxreader.cpp#L297-L320), [`xoreos-docs/specs/kotor_mdl.html`](https://github.com/xoreos/xoreos-docs/blob/master/specs/kotor_mdl.html)).
 
 ### Skinmesh header
 
@@ -498,10 +627,7 @@ For a worked example of bone indices in MDX, bone map array lookup, and node num
 - [Bone map (bonemap)](#bone-map-bonemap)
 - [Vertex skinning](#vertex-skinning)
 
-**Reference**: [`Libraries/PyKotor/src/pykotor/resource/formats/mdl/io_mdl.py`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/mdl/io_mdl.py) - Skinmesh header and bone map reading  
-**Reference**: [`mdlops/MDLOpsM.pm:181,193`](https://github.com/ndixUR/mdlops/blob/7e40846d36acb5118e2e9feb2fd53620c29be540/MDLOpsM.pm#L181-L193) - Skinmesh header structure definitions for K1 and K2  
-**Reference**: [`reone/src/libs/graphics/format/mdlmdxreader.cpp:263-295`](https://github.com/modawan/reone/blob/61531089341caf5827abbc54346c8c959b03d449/src/libs/graphics/format/mdlmdxreader.cpp#L263-L295) - Skinmesh header reading and bone [matrix](Level-Layout-Formats#adjacencies-wok-only) computation  
-**Reference**: [`kotorblender/io_scene_kotor/format/mdl/reader.py:508-529`](https://github.com/OldRepublicDevs/kotorblender/blob/404c42bc4f36b1f60b643eda0cd17c81ba5ca7d4/io_scene_kotor/format/mdl/reader.py#L508-L529) - Skinmesh bone map and bind pose processing
+The K1/K2 size split and skeletal-offset semantics are corroborated by PyKotor, mdlops, reone, and kotorblender, including the bone-map and bind-pose workflow used by importers ([`io_mdl.py`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/mdl/io_mdl.py), [`MDLOpsM.pm` L181](https://github.com/ndixUR/mdlops/blob/7e40846d36acb5118e2e9feb2fd53620c29be540/MDLOpsM.pm#L181), [`MDLOpsM.pm` L193](https://github.com/ndixUR/mdlops/blob/7e40846d36acb5118e2e9feb2fd53620c29be540/MDLOpsM.pm#L193), [`mdlmdxreader.cpp` L263-L295](https://github.com/modawan/reone/blob/61531089341caf5827abbc54346c8c959b03d449/src/libs/graphics/format/mdlmdxreader.cpp#L263-L295), [`reader.py` L508-L529](https://github.com/OldRepublicDevs/kotorblender/blob/404c42bc4f36b1f60b643eda0cd17c81ba5ca7d4/io_scene_kotor/format/mdl/reader.py#L508-L529)).
 
 ### Lightsaber header
 
@@ -516,8 +642,7 @@ The Lightsaber header extends the Trimesh header with 20 additional bytes for li
 | Unknown 1              | UInt32  | 344/352    | Purpose unknown.                                                                 |
 | Unknown 2              | UInt32  | 348/356    | Purpose unknown.                                                                 |
 
-**Reference**: [`mdlops/MDLOpsM.pm:2081`](https://github.com/ndixUR/mdlops/blob/7e40846d36acb5118e2e9feb2fd53620c29be540/MDLOpsM.pm#L2081) - Lightsaber header structure definition  
-**Reference**: [`reone/src/libs/graphics/format/mdlmdxreader.cpp:327-378`](https://github.com/modawan/reone/blob/61531089341caf5827abbc54346c8c959b03d449/src/libs/graphics/format/mdlmdxreader.cpp#L327-L378) - Lightsaber [vertex](MDL-MDX-File-Format#vertex-structure) data reading and reorganization
+mdlops and reone both model this as a fixed lightsaber extension with dedicated MDL offsets for blade vertex data, and reone additionally documents runtime regrouping logic used by its renderer ([`MDLOpsM.pm` L2081](https://github.com/ndixUR/mdlops/blob/7e40846d36acb5118e2e9feb2fd53620c29be540/MDLOpsM.pm#L2081), [`mdlmdxreader.cpp` L327-L378](https://github.com/modawan/reone/blob/61531089341caf5827abbc54346c8c959b03d449/src/libs/graphics/format/mdlmdxreader.cpp#L327-L378)).
 
 ### Light header
 
@@ -547,9 +672,7 @@ The Light header follows the [Node](MDL-MDX-File-Format#node-structures) header 
 | Flare                       | UInt32  | 88 (0x58)    | `1` if lens flare effect enabled, `0` otherwise.                                 |
 | Fading Light                | UInt32  | 92 (0x5C)    | `1` if light intensity fades with distance, `0` otherwise.                       |
 
-**Reference**: [`mdlops/MDLOpsM.pm:175`](https://github.com/ndixUR/mdlops/blob/7e40846d36acb5118e2e9feb2fd53620c29be540/MDLOpsM.pm#L175) - Light header structure definition  
-**Reference**: [`reone/src/libs/graphics/format/mdlmdxreader.cpp`](https://github.com/modawan/reone/blob/master/src/libs/graphics/format/mdlmdxreader.cpp) - Light [Node](MDL-MDX-File-Format#node-structures) reading (see light processing)  
-**Reference**: [`kotorblender/io_scene_kotor/format/mdl/reader.py:227-250`](https://github.com/OldRepublicDevs/kotorblender/blob/404c42bc4f36b1f60b643eda0cd17c81ba5ca7d4/io_scene_kotor/format/mdl/reader.py#L227-L250) - Light header reading and flare list processing
+The flare-array fields and light behavior flags are consistent with mdlops' structure, reone's node reader, and kotorblender's flare-import path ([`MDLOpsM.pm` L175](https://github.com/ndixUR/mdlops/blob/7e40846d36acb5118e2e9feb2fd53620c29be540/MDLOpsM.pm#L175), [`mdlmdxreader.cpp`](https://github.com/modawan/reone/blob/master/src/libs/graphics/format/mdlmdxreader.cpp), [`reader.py` L227-L250](https://github.com/OldRepublicDevs/kotorblender/blob/404c42bc4f36b1f60b643eda0cd17c81ba5ca7d4/io_scene_kotor/format/mdl/reader.py#L227-L250)).
 
 TODO: Document the ASCII MDLOps `flarecolorshifts` block (keyword + per-entry data layout) once at least 3 independent sources are collected.
 
@@ -589,37 +712,29 @@ The Reference header follows the [Node](MDL-MDX-File-Format#node-structures) hea
 | model *ResRef*  | [byte](https://en.wikipedia.org/wiki/Byte) | 0 (0x0)     | Referenced model resource name without extension ([null-terminated](https://en.cppreference.com/w/c/string/byte)).              |
 | Reattachable  | UInt32   | 32 (0x20)    | `1` if model can be detached and reattached dynamically, `0` if permanent.       |
 
-**Reference**: [`mdlops/MDLOpsM.pm:178,190`](https://github.com/ndixUR/mdlops/blob/7e40846d36acb5118e2e9feb2fd53620c29be540/MDLOpsM.pm#L178-L190) - Reference header structure definitions for K1 and K2  
-**Reference**: [`reone/src/libs/graphics/format/mdlmdxreader.cpp:179-180`](https://github.com/modawan/reone/blob/61531089341caf5827abbc54346c8c959b03d449/src/libs/graphics/format/mdlmdxreader.cpp#L179-L180) - Reference [Node](MDL-MDX-File-Format#node-structures) reading  
-**Reference**: [`kotorblender/io_scene_kotor/format/mdl/reader.py:311-316`](https://github.com/OldRepublicDevs/kotorblender/blob/404c42bc4f36b1f60b643eda0cd17c81ba5ca7d4/io_scene_kotor/format/mdl/reader.py#L311-L316) - Reference header reading
+The reference-node layout is stable across mdlops K1/K2 declarations and is parsed similarly by reone and kotorblender when loading linked model resources ([`MDLOpsM.pm` L178](https://github.com/ndixUR/mdlops/blob/7e40846d36acb5118e2e9feb2fd53620c29be540/MDLOpsM.pm#L178), [`MDLOpsM.pm` L190](https://github.com/ndixUR/mdlops/blob/7e40846d36acb5118e2e9feb2fd53620c29be540/MDLOpsM.pm#L190), [`mdlmdxreader.cpp` L179-L180](https://github.com/modawan/reone/blob/61531089341caf5827abbc54346c8c959b03d449/src/libs/graphics/format/mdlmdxreader.cpp#L179-L180), [`reader.py` L311-L316](https://github.com/OldRepublicDevs/kotorblender/blob/404c42bc4f36b1f60b643eda0cd17c81ba5ca7d4/io_scene_kotor/format/mdl/reader.py#L311-L316)).
 
 ---
 
-## controllers
+## Controllers
 
 ### `Controller` structure
 
 Each `Controller` is 16 bytes in size and defines [animation](MDL-MDX-File-Format#animation-header) data for a [Node](MDL-MDX-File-Format#node-structures) property over time. `Controllers` reference shared keyframe/data arrays stored separately in the model.
 
-| Name              | type     | offset | Description                                                                                    |
+| Name              | Type     | Offset | Description                                                                                    |
 | ----------------- | -------- | ------ | ---------------------------------------------------------------------------------------------- |
-| type              | UInt32   | 0 (0x0)     | `Controller` type identifier (e.g., 8=position, 20=orientation, 36=scale).                       |
+| Type              | UInt32   | 0 (0x0)     | `Controller` type identifier (e.g., 8=position, 20=orientation, 36=scale).                       |
 | Unknown           | [uint16](GFF-File-Format#gff-data-types)   | 4 (0x4)     | Purpose unknown, typically `0xFFFF`.                                                           |
 | Row count         | [uint16](GFF-File-Format#gff-data-types)   | 6 (0x6)     | Number of keyframe rows (timepoints) for this controller.                                      |
-| Time index        | [uint16](GFF-File-Format#gff-data-types)   | 8 (0x8)     | index into [Controller](MDL-MDX-File-Format#controllers) data array where time values begin.                                      |
-| data index        | [uint16](GFF-File-Format#gff-data-types)   | 10 (0xA)    | index into [Controller](MDL-MDX-File-Format#controllers) data array where property values begin.                                  |
-| Column count      | [uint8](GFF-File-Format#gff-data-types)    | 12 (0xC)    | Number of float values per keyframe (e.g., 3 for position XYZ, 4 for [quaternion](MDL-MDX-File-Format#node-header) WXYZ).        |
+| Time Index        | [uint16](GFF-File-Format#gff-data-types)   | 8 (0x8)     | index into [Controller](MDL-MDX-File-Format#controllers) data array where time values begin.                                      |
+| Data Index        | [uint16](GFF-File-Format#gff-data-types)   | 10 (0xA)    | index into [Controller](MDL-MDX-File-Format#controllers) data array where property values begin.                                  |
+| Column Count      | [uint8](GFF-File-Format#gff-data-types)    | 12 (0xC)    | Number of float values per keyframe (e.g., 3 for position XYZ, 4 for [quaternion](MDL-MDX-File-Format#node-header) WXYZ).        |
 | Padding           | [uint8](GFF-File-Format#gff-data-types) | 13 (0xD)    | Padding bytes for 16-[byte](https://en.wikipedia.org/wiki/Byte) alignment.                                                           |
 
 **Note:** If bit 4 (value 0x10) is set in the column count [byte](https://en.wikipedia.org/wiki/Byte), the [Controller](MDL-MDX-File-Format#controllers) uses Bezier interpolation and stores 3× the data per keyframe (value, in-tangent, out-tangent).
 
-**Reference**: [`mdlops/MDLOpsM.pm:199`](https://github.com/ndixUR/mdlops/blob/7e40846d36acb5118e2e9feb2fd53620c29be540/MDLOpsM.pm#L199) - [Controller](MDL-MDX-File-Format#controllers) structure definition  
-**Reference**: [`mdlops/MDLOpsM.pm:1633-1676`](https://github.com/ndixUR/mdlops/blob/7e40846d36acb5118e2e9feb2fd53620c29be540/MDLOpsM.pm#L1633-L1676) - [Controller](MDL-MDX-File-Format#controllers) reading and parsing  
-**Reference**: [`mdlops/MDLOpsM.pm:1678-1733`](https://github.com/ndixUR/mdlops/blob/7e40846d36acb5118e2e9feb2fd53620c29be540/MDLOpsM.pm#L1678-L1733) - [Controller](MDL-MDX-File-Format#controllers) data reading with Bezier and compressed [quaternion](MDL-MDX-File-Format#node-header) detection  
-**Reference**: [`reone/src/libs/graphics/format/mdlmdxreader.cpp:150`](https://github.com/modawan/reone/blob/61531089341caf5827abbc54346c8c959b03d449/src/libs/graphics/format/mdlmdxreader.cpp#L150) - [Controller](MDL-MDX-File-Format#controllers) array reading  
-**Reference**: [`kotorblender/io_scene_kotor/format/mdl/reader.py:441-483`](https://github.com/OldRepublicDevs/kotorblender/blob/404c42bc4f36b1f60b643eda0cd17c81ba5ca7d4/io_scene_kotor/format/mdl/reader.py#L441-L483) — [Controller](MDL-MDX-File-Format#controllers) reading and processing for [mesh](MDL-MDX-File-Format#trimesh-header), light, and emitter [Controllers](MDL-MDX-File-Format#controllers)
-
-**Note:** [Controllers](MDL-MDX-File-Format#controllers) are stored in a shared data array, allowing multiple [nodes](MDL-MDX-File-Format#node-structures) to reference the same [Controller](MDL-MDX-File-Format#controllers) data. The Time index and data index are offsets into the [Controller](MDL-MDX-File-Format#controllers) data array, not absolute file offsets. [Controllers](MDL-MDX-File-Format#controllers) with row count of 0 represent constant (non-animated) values. Orientation (rotation) is stored as a [quaternion](MDL-MDX-File-Format#node-header) in W, X, Y, Z order.
+**Note:** [Controllers](MDL-MDX-File-Format#controllers) are stored in a shared data array, allowing multiple [nodes](MDL-MDX-File-Format#node-structures) to reference the same [Controller](MDL-MDX-File-Format#controllers) data. The Time index and data index are offsets into the [Controller](MDL-MDX-File-Format#controllers) data array, not absolute file offsets. [Controllers](MDL-MDX-File-Format#controllers) with row count of 0 represent constant (non-animated) values. Orientation (rotation) is stored as a [quaternion](MDL-MDX-File-Format#node-header) in W, X, Y, Z order. This shared-array model, plus Bezier and compressed-quaternion handling, is documented in mdlops and reflected in reone and kotorblender readers ([`MDLOpsM.pm` L199](https://github.com/ndixUR/mdlops/blob/7e40846d36acb5118e2e9feb2fd53620c29be540/MDLOpsM.pm#L199), [`MDLOpsM.pm` L1633-L1676](https://github.com/ndixUR/mdlops/blob/7e40846d36acb5118e2e9feb2fd53620c29be540/MDLOpsM.pm#L1633-L1676), [`MDLOpsM.pm` L1678-L1733](https://github.com/ndixUR/mdlops/blob/7e40846d36acb5118e2e9feb2fd53620c29be540/MDLOpsM.pm#L1678-L1733), [`mdlmdxreader.cpp` L150](https://github.com/modawan/reone/blob/61531089341caf5827abbc54346c8c959b03d449/src/libs/graphics/format/mdlmdxreader.cpp#L150), [`reader.py` L441-L483](https://github.com/OldRepublicDevs/kotorblender/blob/404c42bc4f36b1f60b643eda0cd17c81ba5ca7d4/io_scene_kotor/format/mdl/reader.py#L441-L483)).
 
 #### Controller data layout (example)
 
@@ -630,12 +745,12 @@ Controller data is variable-length and laid out according to each controller's r
 
 Raw data (floats): `0 1 0 0 0 1 2 3 0 1 0 0 0 1 0 0 0 1`. Interpreted:
 
-| Controller 1 (position) | time | X | Y | Z |
+| Controller 1 (position) | Time | X | Y | Z |
 | ----------------------- | ---- | - | - | - |
 | Key 0 | 0 | 0 | 0 | 0 |
 | Key 1 | 1 | 1 | 2 | 3 |
 
-| Controller 2 (orientation, quaternion WXYZ) | time | X | Y | Z | W |
+| Controller 2 (orientation, quaternion WXYZ) | Time | X | Y | Z | W |
 | ------------------------------------------ | ---- | - | - | - | - |
 | Key 0 | 0 | 0 | 0 | 0 | 1 |
 | Key 1 | 1 | 0 | 0 | 0 | 1 |
@@ -648,7 +763,7 @@ Raw data (floats): `0 1 0 0 0 1 2 3 0 1 0 0 0 1 0 0 0 1`. Interpreted:
 
 [Controllers](MDL-MDX-File-Format#controllers) specific to light [nodes](MDL-MDX-File-Format#node-structures):
 
-| type | Description                      |
+| Type | Description                      |
 | ---- | -------------------------------- |
 | 76   | Color (light color)              |
 | 88   | Radius (light radius)            |
@@ -656,7 +771,7 @@ Raw data (floats): `0 1 0 0 0 1 2 3 0 1 0 0 0 1 0 0 0 1`. Interpreted:
 | 100  | Vertical Displacement            |
 | 140  | Multiplier (light intensity)     |
 
-**Reference**: [`mdlops/MDLOpsM.pm:342-346`](https://github.com/ndixUR/mdlops/blob/7e40846d36acb5118e2e9feb2fd53620c29be540/MDLOpsM.pm#L342-L346) - Light [Controller](MDL-MDX-File-Format#controllers) Type Definitions
+These light-controller IDs follow the mdlops type table used by most downstream tooling for semantic labeling ([`MDLOpsM.pm` L342-L346](https://github.com/ndixUR/mdlops/blob/7e40846d36acb5118e2e9feb2fd53620c29be540/MDLOpsM.pm#L342-L346)).
 
 ### Emitter [Controllers](MDL-MDX-File-Format#controllers)
 
@@ -713,9 +828,7 @@ Raw data (floats): `0 1 0 0 0 1 2 3 0 1 0 0 0 1 0 0 0 1`. Interpreted:
 | `392`  | Color Start                         |
 | `502`  | Emitter Detonate                    |
 
-
-**Reference**: [`mdlops/MDLOpsM.pm:348-407`](https://github.com/ndixUR/mdlops/blob/7e40846d36acb5118e2e9feb2fd53620c29be540/MDLOpsM.pm#L348-L407) - Emitter [Controller](MDL-MDX-File-Format#controllers) type definitions (based on fx_flame01.MDL analysis)  
-**Reference**: [`xoreos-docs/specs/torlack/binmdl.html`](https://github.com/xoreos/xoreos-docs/blob/master/specs/torlack/binmdl.html) - Comprehensive emitter [Controller](MDL-MDX-File-Format#controllers) list with all [Controller](MDL-MDX-File-Format#controllers) types and their [Node](MDL-MDX-File-Format#node-structures) usage
+These emitter-controller IDs are the practical union of mdlops' in-the-wild definitions and Torlack's broader xoreos-docs catalog ([`MDLOpsM.pm` L348-L407](https://github.com/ndixUR/mdlops/blob/7e40846d36acb5118e2e9feb2fd53620c29be540/MDLOpsM.pm#L348-L407), [`xoreos-docs/specs/torlack/binmdl.html`](https://github.com/xoreos/xoreos-docs/blob/master/specs/torlack/binmdl.html)).
 
 ### [Mesh](MDL-MDX-File-Format#trimesh-header) [Controllers](MDL-MDX-File-Format#controllers)
 
@@ -726,7 +839,7 @@ Raw data (floats): `0 1 0 0 0 1 2 3 0 1 0 0 0 1 0 0 0 1`. Interpreted:
 | `100`  | SelfIllumColor (self-illumination color) |
 | `128`  | Alpha (transparency)              |
 
-**Reference**: [`xoreos-docs/specs/torlack/binmdl.html`](https://github.com/xoreos/xoreos-docs/blob/master/specs/torlack/binmdl.html) - Mesh [Controller](MDL-MDX-File-Format#controllers) types (SelfIllumColor, Alpha) for all [Mesh](MDL-MDX-File-Format#trimesh-header) [nodes](MDL-MDX-File-Format#node-structures)
+Torlack's table remains the clearest published source for these mesh-wide controller semantics across trimesh-family node types ([`xoreos-docs/specs/torlack/binmdl.html`](https://github.com/xoreos/xoreos-docs/blob/master/specs/torlack/binmdl.html)).
 
 ---
 
@@ -750,9 +863,7 @@ Raw data (floats): `0 1 0 0 0 1 2 3 0 1 0 0 0 1 0 0 0 1`. Interpreted:
 #define NODE_HAS_SABER     0x00000800
 ```
 
-**Reference**: [`mdlops/MDLOpsM.pm:287-324`](https://github.com/ndixUR/mdlops/blob/7e40846d36acb5118e2e9feb2fd53620c29be540/MDLOpsM.pm#L287-L324) - [Node](MDL-MDX-File-Format#node-structures) Type [Bitmask](GFF-File-Format#gff-data-types) definitions and constants  
-**Reference**: [`reone/src/libs/graphics/format/mdlmdxreader.cpp`](https://github.com/modawan/reone/blob/master/src/libs/graphics/format/mdlmdxreader.cpp) - [Node](MDL-MDX-File-Format#node-structures) Type flag checking (see MdlNodeFlags usage)  
-**Reference**: [`kotorblender/io_scene_kotor/format/mdl/reader.py`](https://github.com/OldRepublicDevs/kotorblender/blob/master/io_scene_kotor/format/mdl/reader.py) - [Node](MDL-MDX-File-Format#node-structures) type detection and processing
+These bitmask constants are consistent with mdlops' canonical definitions and with how both reone and kotorblender dispatch node-type parsing from flags at runtime ([`MDLOpsM.pm` L287-L324](https://github.com/ndixUR/mdlops/blob/7e40846d36acb5118e2e9feb2fd53620c29be540/MDLOpsM.pm#L287-L324), [`mdlmdxreader.cpp`](https://github.com/modawan/reone/blob/master/src/libs/graphics/format/mdlmdxreader.cpp), [`reader.py`](https://github.com/OldRepublicDevs/kotorblender/blob/master/io_scene_kotor/format/mdl/reader.py)).
 
 ### Common [Node](MDL-MDX-File-Format#node-structures) Type Combinations
 
@@ -797,11 +908,7 @@ The `MDX Data Flags` field in the Trimesh header uses [bitmask](GFF-File-Format#
 
 **Note:** The bone weight and bone index flags (`0x00000800`, `0x00001000`) are not actually stored in the *MDX* data flags field but are used internally by parsers to track skin [Mesh](MDL-MDX-File-Format#trimesh-header) [vertex](MDL-MDX-File-Format#vertex-structure) data presence.
 
-**Reference**: [`mdlops/MDLOpsM.pm:260-285`](https://github.com/ndixUR/mdlops/blob/7e40846d36acb5118e2e9feb2fd53620c29be540/MDLOpsM.pm#L260-L285) - *MDX* data bitmap definitions and row structure  
-**Reference**: [`mdlops/MDLOpsM.pm:2324-2404`](https://github.com/ndixUR/mdlops/blob/7e40846d36acb5118e2e9feb2fd53620c29be540/MDLOpsM.pm#L2324-L2404) - MDX data reading with interleaved [vertex](MDL-MDX-File-Format#vertex-structure) attributes  
-**Reference**: [`reone/src/libs/graphics/format/mdlmdxreader.cpp:255-262`](https://github.com/modawan/reone/blob/61531089341caf5827abbc54346c8c959b03d449/src/libs/graphics/format/mdlmdxreader.cpp#L255-L262) - MDX [vertex](MDL-MDX-File-Format#vertex-structure) layout definition  
-**Reference**: [`reone/src/libs/graphics/format/mdlmdxreader.cpp:380-384`](https://github.com/modawan/reone/blob/61531089341caf5827abbc54346c8c959b03d449/src/libs/graphics/format/mdlmdxreader.cpp#L380-L384) - MDX [vertex](MDL-MDX-File-Format#vertex-structure) data reading  
-**Reference**: [`KotOR.js/src/enums/odyssey/OdysseyModelMDXFlag.ts`](https://github.com/KobaltBlu/KotOR.js/blob/master/src/enums/odyssey/OdysseyModelMDXFlag.ts) - MDX flag enumeration definitions
+The bitmap and interleaved-row model here follows mdlops' definitions and reader logic, matches reone's MDX stride handling, and maps cleanly to KotOR.js flag enums used by modern loaders ([`MDLOpsM.pm` L260-L285](https://github.com/ndixUR/mdlops/blob/7e40846d36acb5118e2e9feb2fd53620c29be540/MDLOpsM.pm#L260-L285), [`MDLOpsM.pm` L2324-L2404](https://github.com/ndixUR/mdlops/blob/7e40846d36acb5118e2e9feb2fd53620c29be540/MDLOpsM.pm#L2324-L2404), [`mdlmdxreader.cpp` L255-L262](https://github.com/modawan/reone/blob/61531089341caf5827abbc54346c8c959b03d449/src/libs/graphics/format/mdlmdxreader.cpp#L255-L262), [`mdlmdxreader.cpp` L380-L384](https://github.com/modawan/reone/blob/61531089341caf5827abbc54346c8c959b03d449/src/libs/graphics/format/mdlmdxreader.cpp#L380-L384), [`OdysseyModelMDXFlag.ts`](https://github.com/KobaltBlu/KotOR.js/blob/master/src/enums/odyssey/OdysseyModelMDXFlag.ts)).
 
 **Note:** MDX [vertex](MDL-MDX-File-Format#vertex-structure) data is stored in an interleaved format based on the MDX [vertex](MDL-MDX-File-Format#vertex-structure) size. Each [vertex](MDL-MDX-File-Format#vertex-structure) attribute is accessed via its relative offset within the [vertex](MDL-MDX-File-Format#vertex-structure) stride. The [vertex](MDL-MDX-File-Format#vertex-structure) data is read from the MDX files starting at the MDX data offset specified in the Trimesh header.
 
@@ -815,9 +922,7 @@ For skin [meshes](MDL-MDX-File-Format#trimesh-header), additional [vertex](MDL-M
 
 The MDX data for skin [meshes](MDL-MDX-File-Format#trimesh-header) is interleaved based on the MDX [vertex](MDL-MDX-File-Format#vertex-structure) size and the active flags. The bone weight and bone index data are stored as separate attributes and accessed via their respective offsets.
 
-**Reference**: [`mdlops/MDLOpsM.pm:2374-2395`](https://github.com/ndixUR/mdlops/blob/7e40846d36acb5118e2e9feb2fd53620c29be540/MDLOpsM.pm#L2374-L2395) - Skin [Mesh](MDL-MDX-File-Format#trimesh-header) bone weight processing in MDX data  
-**Reference**: [`reone/src/libs/graphics/format/mdlmdxreader.cpp:263-295`](https://github.com/modawan/reone/blob/61531089341caf5827abbc54346c8c959b03d449/src/libs/graphics/format/mdlmdxreader.cpp#L263-L295) - Skin [Mesh](MDL-MDX-File-Format#trimesh-header) header and bone data reading  
-**Reference**: [`kotorblender/io_scene_kotor/format/mdl/reader.py:508-529`](https://github.com/OldRepublicDevs/kotorblender/blob/404c42bc4f36b1f60b643eda0cd17c81ba5ca7d4/io_scene_kotor/format/mdl/reader.py#L508-L529) - Skin [Mesh](MDL-MDX-File-Format#trimesh-header) bone map and bone [Node](MDL-MDX-File-Format#node-structures) processing
+This skinning layout is corroborated by mdlops' MDX decode path, reone's bone-data reader, and kotorblender's bone-map import handling ([`MDLOpsM.pm` L2374-L2395](https://github.com/ndixUR/mdlops/blob/7e40846d36acb5118e2e9feb2fd53620c29be540/MDLOpsM.pm#L2374-L2395), [`mdlmdxreader.cpp` L263-L295](https://github.com/modawan/reone/blob/61531089341caf5827abbc54346c8c959b03d449/src/libs/graphics/format/mdlmdxreader.cpp#L263-L295), [`reader.py` L508-L529](https://github.com/OldRepublicDevs/kotorblender/blob/404c42bc4f36b1f60b643eda0cd17c81ba5ca7d4/io_scene_kotor/format/mdl/reader.py#L508-L529)).
 
 **Note:** Bone weights are stored as 4 floats per vertex and should sum to 1.0. Bone indices are stored as 4 floats but are cast to [uint16](GFF-File-Format#gff-data-types) when used. A weight of 0.0 indicates no influence from that bone. The bone indices reference the bone map array, which maps to skeleton bone numbers.
 
@@ -851,18 +956,10 @@ Each face (triangle) is defined by:
 | [vertex](MDL-MDX-File-Format#vertex-structure) 2            | [uint16](GFF-File-Format#gff-data-types)  | index of the second [vertex](MDL-MDX-File-Format#vertex-structure).                      |
 | [vertex](MDL-MDX-File-Format#vertex-structure) 3            | [uint16](GFF-File-Format#gff-data-types)  | index of the third [vertex](MDL-MDX-File-Format#vertex-structure).                       |
 
-**Reference**: [`mdlops/MDLOpsM.pm`](https://github.com/ndixUR/mdlops/blob/master/MDLOpsM.pm) - [face](MDL-MDX-File-Format#face-structure) structure reading (see [face](MDL-MDX-File-Format#face-structure) array processing)  
-**Reference**: [`reone/src/libs/graphics/format/mdlmdxreader.cpp:390-409`](https://github.com/modawan/reone/blob/61531089341caf5827abbc54346c8c959b03d449/src/libs/graphics/format/mdlmdxreader.cpp#L390-L409) - [face](MDL-MDX-File-Format#face-structure) structure reading  
-**Reference**: [`kotorblender/io_scene_kotor/format/mdl/reader.py:530-540`](https://github.com/OldRepublicDevs/kotorblender/blob/404c42bc4f36b1f60b643eda0cd17c81ba5ca7d4/io_scene_kotor/format/mdl/reader.py#L530-L540) - [face](MDL-MDX-File-Format#face-structure) structure reading  
-**Reference**: **`kotor/docs/mdl.md:36-42`** — [face](MDL-MDX-File-Format#face-structure) structure analysis
+The face payload interpretation aligns across mdlops, reone, and kotorblender, and matches the archived `kotor/docs/mdl.md` triangle-layout description ([`MDLOpsM.pm`](https://github.com/ndixUR/mdlops/blob/master/MDLOpsM.pm), [`mdlmdxreader.cpp` L390-L409](https://github.com/modawan/reone/blob/61531089341caf5827abbc54346c8c959b03d449/src/libs/graphics/format/mdlmdxreader.cpp#L390-L409), [`reader.py` L530-L540](https://github.com/OldRepublicDevs/kotorblender/blob/404c42bc4f36b1f60b643eda0cd17c81ba5ca7d4/io_scene_kotor/format/mdl/reader.py#L530-L540), [marfsama `docs/mdl.md#L36-L42`](https://github.com/marfsama/kotor/blob/8bff4078ab521ba9cd034bad22c3eae362da30a6/docs/mdl.md#L36-L42), [mirror `docs/mdl.md#L36-L42`](https://github.com/th3w1zard1/kotor/blob/8bff4078ab521ba9cd034bad22c3eae362da30a6/docs/mdl.md#L36-L42)).
 
-- Upstream (marfsama/kotor): <https://github.com/marfsama/kotor/blob/8bff4078ab521ba9cd034bad22c3eae362da30a6/docs/mdl.md#L36-L42>
-- Mirror (th3w1zard1/kotor): <https://github.com/th3w1zard1/kotor/blob/8bff4078ab521ba9cd034bad22c3eae362da30a6/docs/mdl.md#L36-L42>
 
-**Reference**: **`kotor/docs/mdl.md:52-63`** — Typical [Node](MDL-MDX-File-Format#node-structures) hierarchy structure for creatures, players, and areas
-
-- Upstream (marfsama/kotor): <https://github.com/marfsama/kotor/blob/8bff4078ab521ba9cd034bad22c3eae362da30a6/docs/mdl.md#L52-L63>
-- Mirror (th3w1zard1/kotor): <https://github.com/th3w1zard1/kotor/blob/8bff4078ab521ba9cd034bad22c3eae362da30a6/docs/mdl.md#L52-L63>
+Historical hierarchy examples used by many reverse-engineering notes are preserved in the same archived source for creature/player/area node trees ([marfsama `docs/mdl.md#L52-L63`](https://github.com/marfsama/kotor/blob/8bff4078ab521ba9cd034bad22c3eae362da30a6/docs/mdl.md#L52-L63), [mirror `docs/mdl.md#L52-L63`](https://github.com/th3w1zard1/kotor/blob/8bff4078ab521ba9cd034bad22c3eae362da30a6/docs/mdl.md#L52-L63)).
 
 **Note:** [face](MDL-MDX-File-Format#face-structure) normals are precomputed and stored with each [face](MDL-MDX-File-Format#face-structure). The plane coefficient (D) is the distance from the origin to the plane along the normal. [face](MDL-MDX-File-Format#face-structure) [adjacency](Level-Layout-Formats#adjacencies-wok-only) indices are used for smooth shading and culling optimization. The [material](MDL-MDX-File-Format#trimesh-header) index references entries in `surfacemat.2da` for surface properties.
 
@@ -876,48 +973,42 @@ The Trimesh header contains arrays for organizing [vertex](MDL-MDX-File-Format#v
 
 The [vertex](MDL-MDX-File-Format#vertex-structure) indices themselves are stored as [uint16](GFF-File-Format#gff-data-types) values and reference positions in the [vertex](MDL-MDX-File-Format#vertex-structure) coordinate array (either in MDL or MDX depending on the [Mesh](MDL-MDX-File-Format#trimesh-header) type).
 
-**Reference**: [`mdlops/MDLOpsM.pm:221-227`](https://github.com/ndixUR/mdlops/blob/7e40846d36acb5118e2e9feb2fd53620c29be540/MDLOpsM.pm#L221-L227) - [vertex](MDL-MDX-File-Format#vertex-structure) index array structure definitions  
-**Reference**: **`kotor/docs/mdl.md:17-21`** — [vertex](MDL-MDX-File-Format#vertex-structure) index array layout analysis
-
-- Upstream (marfsama/kotor): <https://github.com/marfsama/kotor/blob/8bff4078ab521ba9cd034bad22c3eae362da30a6/docs/mdl.md#L17-L21>
-- Mirror (th3w1zard1/kotor): <https://github.com/th3w1zard1/kotor/blob/8bff4078ab521ba9cd034bad22c3eae362da30a6/docs/mdl.md#L17-L21>
-**Reference**: [`reone/src/libs/graphics/format/mdlmdxreader.cpp:201-214`](https://github.com/modawan/reone/blob/61531089341caf5827abbc54346c8c959b03d449/src/libs/graphics/format/mdlmdxreader.cpp#L201-L214) - [vertex](MDL-MDX-File-Format#vertex-structure) index array reading
+The count/offset/inverted-counter interpretation agrees with mdlops, the archived `kotor/docs/mdl.md` notes, and reone's index-array reader implementation ([`MDLOpsM.pm` L221-L227](https://github.com/ndixUR/mdlops/blob/7e40846d36acb5118e2e9feb2fd53620c29be540/MDLOpsM.pm#L221-L227), [marfsama `docs/mdl.md#L17-L21`](https://github.com/marfsama/kotor/blob/8bff4078ab521ba9cd034bad22c3eae362da30a6/docs/mdl.md#L17-L21), [mirror `docs/mdl.md#L17-L21`](https://github.com/th3w1zard1/kotor/blob/8bff4078ab521ba9cd034bad22c3eae362da30a6/docs/mdl.md#L17-L21), [`mdlmdxreader.cpp` L201-L214](https://github.com/modawan/reone/blob/61531089341caf5827abbc54346c8c959b03d449/src/libs/graphics/format/mdlmdxreader.cpp#L201-L214)).
 
 ---
 
-## [vertex](MDL-MDX-File-Format#vertex-structure) data Processing
+## [Vertex](MDL-MDX-File-Format#vertex-structure) Data Processing
 
-### [vertex](MDL-MDX-File-Format#vertex-structure) Normal Calculation
+### [Vertex](MDL-MDX-File-Format#vertex-structure) Normal Calculation
 
-[vertex](MDL-MDX-File-Format#vertex-structure) normals are computed using surrounding [face](MDL-MDX-File-Format#face-structure) normals, with optional weighting methods:
+[Vertex](MDL-MDX-File-Format#vertex-structure) normals are computed using surrounding [Face](MDL-MDX-File-Format#face-structure) normals, with optional weighting methods:
 
-1. **Area Weighting**: [faces](MDL-MDX-File-Format#face-structure) contribute to the [vertex](MDL-MDX-File-Format#vertex-structure) normal based on their surface area.
+1. **Area Weighting**: [faces](MDL-MDX-File-Format#face-structure) contribute to the [Vertex](MDL-MDX-File-Format#vertex-structure) normal based on their surface area.
 
    ```c
    area = 0.5f * length(cross(edge1, edge2))
    weighted_normal = face_normal * area
    ```
 
-   **Reference**: [`mdlops/MDLOpsM.pm:465-488`](https://github.com/ndixUR/mdlops/blob/7e40846d36acb5118e2e9feb2fd53620c29be540/MDLOpsM.pm#L465-L488) - Heron's formula implementation
+  This area-weighting method follows mdlops' Heron's-formula implementation for triangle contribution ([`MDLOpsM.pm` L465-L488](https://github.com/ndixUR/mdlops/blob/7e40846d36acb5118e2e9feb2fd53620c29be540/MDLOpsM.pm#L465-L488)).
    Uses Heron's formula for area calculation.
 
-2. **Angle Weighting**: [faces](MDL-MDX-File-Format#face-structure) contribute based on the angle at the [vertex](MDL-MDX-File-Format#vertex-structure).
+2. **Angle Weighting**: [Faces](MDL-MDX-File-Format#face-structure) contribute based on the angle at the [Vertex](MDL-MDX-File-Format#vertex-structure).
 
    ```c
    angle = arccos(dot(normalize(v1 - v0), normalize(v2 - v0)))
    weighted_normal = face_normal * angle
    ```
 
-3. **Crease Angle Limiting**: [faces](MDL-MDX-File-Format#face-structure) are excluded if the angle between their normals exceeds a threshold (e.g., 60 degrees).
+3. **Crease Angle Limiting**: [Faces](MDL-MDX-File-Format#face-structure) are excluded if the angle between their normals exceeds a threshold (e.g., 60 degrees).
 
 ### Tangent Space Calculation
 
-For normal/bump mapping, tangent and bitangent vectors are calculated per [face](MDL-MDX-File-Format#face-structure). KotOR uses a specific tangent space convention that differs from standard implementations.
+For normal/bump mapping, tangent and bitangent vectors are calculated per [Face](MDL-MDX-File-Format#face-structure). KotOR uses a specific tangent space convention that differs from standard implementations.
 
-**Reference**: [`mdlops/MDLOpsM.pm:5470-5596`](https://github.com/ndixUR/mdlops/blob/7e40846d36acb5118e2e9feb2fd53620c29be540/MDLOpsM.pm#L5470-L5596) - Complete tangent space calculation  
-**Based on**: [OpenGL Tutorial - Normal Mapping](http://www.opengl-tutorial.org/intermediate-tutorials/tutorial-13-normal-mapping/) with KotOR-specific modifications
+This tangent-space procedure is derived from mdlops' full implementation and adapts the common OpenGL normal-mapping approach to KotOR behavior ([`MDLOpsM.pm` L5470-L5596](https://github.com/ndixUR/mdlops/blob/7e40846d36acb5118e2e9feb2fd53620c29be540/MDLOpsM.pm#L5470-L5596), [OpenGL Tutorial - Normal Mapping](http://www.opengl-tutorial.org/intermediate-tutorials/tutorial-13-normal-mapping/)).
 
-1. **Per-[face](MDL-MDX-File-Format#face-structure) Tangent and Bitangent**:
+1. **Per-[Face](MDL-MDX-File-Format#face-structure) Tangent and Bitangent**:
 
    ```c
    deltaPos1 = v1 - v0;
@@ -950,8 +1041,8 @@ For normal/bump mapping, tangent and bitangent vectors are calculated per [face]
 
 2. **KotOR-Specific Handedness Correction**:
 
-   **Important**: KotOR expects tangent space to NOT form a right-handed coordinate system.
-   **Reference**: [`mdlops/MDLOpsM.pm:5570-5587`](https://github.com/ndixUR/mdlops/blob/7e40846d36acb5118e2e9feb2fd53620c29be540/MDLOpsM.pm#L5570-L5587)
+   **Important**: *KotOR* expects tangent space to **NOT** form a right-handed coordinate system.
+  Verified in mdlops' handedness correction block ([`MDLOpsM.pm` L5570-L5587](https://github.com/ndixUR/mdlops/blob/7e40846d36acb5118e2e9feb2fd53620c29be540/MDLOpsM.pm#L5570-L5587)).
 
    ```c
    // KotOR wants dot(cross(N,T), B) < 0 (NOT right-handed)
@@ -960,9 +1051,9 @@ For normal/bump mapping, tangent and bitangent vectors are calculated per [face]
    }
    ```
 
-3. **[texture](Texture-Formats#tpc) Mirroring Detection and Correction**:
+3. **[Texture](Texture-Formats#tpc) Mirroring Detection and Correction**:
 
-   **Reference**: [`mdlops/MDLOpsM.pm:5588-5596`](https://github.com/ndixUR/mdlops/blob/7e40846d36acb5118e2e9feb2fd53620c29be540/MDLOpsM.pm#L5588-L5596)
+  Mirroring detection and sign correction are implemented in mdlops as shown here ([`MDLOpsM.pm` L5588-L5596](https://github.com/ndixUR/mdlops/blob/7e40846d36acb5118e2e9feb2fd53620c29be540/MDLOpsM.pm#L5588-L5596)).
 
    ```c
    // Detect texture mirroring via UV triangle orientation
@@ -975,54 +1066,53 @@ For normal/bump mapping, tangent and bitangent vectors are calculated per [face]
    }
    ```
 
-4. **Per-[vertex](MDL-MDX-File-Format#vertex-structure) Tangent Space**: Averaged from connected [face](MDL-MDX-File-Format#face-structure) tangents and bitangents, using the same weighting methods as normals.
+4. **Per-[Vertex](MDL-MDX-File-Format#vertex-structure) Tangent Space**: Averaged from connected [Face](MDL-MDX-File-Format#face-structure) tangents and bitangents, using the same weighting methods as normals.
 
 ---
 
-## model Classification flags
+## Model Classification Flags
 
 The model header's Classification byte (offset 0 in model header, offset 92 from MDL data start) uses these values to categorize the model type:
 
-| Classification | value | Description                                                    |
+| Classification | Value | Description                                                    |
 | -------------- | ----- | -------------------------------------------------------------- |
 | Other          | 0x00  | Uncategorized or generic model.                                |
 | Effect         | 0x01  | Visual effect model (particles, beams, explosions).            |
-| Tile           | 0x02  | Tileset/environmental [geometry](MDL-MDX-File-Format#geometry-header) model.                          |
+| Tile           | 0x02  | Tileset/environmental [Geometry](MDL-MDX-File-Format#geometry-header) model.                          |
 | Character      | 0x04  | Character or creature model (player, NPC, creature).           |
-| Door           | 0x08  | Door model with open/close [animations](MDL-MDX-File-Format#animation-header).                         |
+| Door           | 0x08  | Door model with open/close [Animations](MDL-MDX-File-Format#animation-header).                         |
 | Lightsaber     | 0x10  | Lightsaber weapon model with dynamic blade.                    |
 | Placeable      | 0x20  | Placeable object model (furniture, containers, switches).      |
 | Flyer          | 0x40  | Flying vehicle or creature model.                              |
 
-**Note:** These values are not [bitmask](GFF-File-Format#gff-data-types) flags and should not be combined. Each model has exactly one classification value.
+**Note:** These values are not [bitmask](GFF-File-Format#gff-data-types) flags and should ***not*** be combined. Each model has exactly ***one*** classification value.
 
 ---
 
-## file Identification
+## File Identification
 
 ### Binary vs ASCII format
 
 - **Binary model**: The first 4 bytes are all zeros (`0x00000000`).
 - **ASCII model**: The first 4 bytes contain non-zero values (text header).
 
-**Reference**: [`mdlops/MDLOpsM.pm:412-435`](https://github.com/ndixUR/mdlops/blob/7e40846d36acb5118e2e9feb2fd53620c29be540/MDLOpsM.pm#L412-L435) - Binary vs ASCII format detection  
-**Reference**: [`kotorblender/io_scene_kotor/format/mdl/reader.py:100-102`](https://github.com/OldRepublicDevs/kotorblender/blob/404c42bc4f36b1f60b643eda0cd17c81ba5ca7d4/io_scene_kotor/format/mdl/reader.py#L100-L102) - Binary format validation
+Both mdlops and kotorblender use this same first-word check to distinguish binary and ASCII model inputs ([`MDLOpsM.pm` L412-L435](https://github.com/ndixUR/mdlops/blob/7e40846d36acb5118e2e9feb2fd53620c29be540/MDLOpsM.pm#L412-L435), [`reader.py` L100-L102](https://github.com/OldRepublicDevs/kotorblender/blob/404c42bc4f36b1f60b643eda0cd17c81ba5ca7d4/io_scene_kotor/format/mdl/reader.py#L100-L102)).
 
 ### KotOR 1 vs KotOR 2 models
 
-The game version can be determined by examining Function pointer 0 in the [geometry](MDL-MDX-File-Format#geometry-header) Header (offset 12 in file, offset 0 in MDL data):
+The game version can be determined by examining Function pointer 0 in the [Geometry](MDL-MDX-File-Format#geometry-header) Header (offset 12 in file, offset 0 in MDL data):
 
-| Platform/Version    | [geometry](MDL-MDX-File-Format#geometry-header) Function Ptr | [animation](MDL-MDX-File-Format#animation-header) Function Ptr |
+| Platform/Version    | [Geometry](MDL-MDX-File-Format#geometry-header) Function Ptr | [Animation](MDL-MDX-File-Format#animation-header) Function Ptr |
 | ------------------- | --------------------- | ---------------------- |
-| KotOR 1 (PC)        | `4273776` (0x413750)  | `4273392` (0x4135D0)   |
-| KotOR 2 (PC)        | `4285200` (0x416610)  | `4284816` (0x416490)   |
-| KotOR 1 (Xbox)      | `4254992` (0x40EE90)  | `4254608` (0x40ED10)   |
-| KotOR 2 (Xbox)      | `4285872` (0x416950)  | `4285488` (0x4167D0)   |
+| KotOR 1 (PC)        | `4273776` (0x413670)  | `4273392` (0x4134F0)   |    
+| KotOR 2 (PC)        | `4285200` (0x416310)  | `4284816` (0x416190)   |
+| KotOR 1 (Xbox)      | `4254992` (0x40ED10)  | `4254608` (0x40EB90)   |
+| KotOR 2 (Xbox)      | `4285872` (0x4165B0)  | `4285488` (0x416430)   |
 
 **Usage:** Parsers should check this value to determine:
 
 - Whether the model is from KotOR 1 or KotOR 2 (affects Trimesh header size: 332 vs 340 bytes)
-- Whether this is a model [geometry](MDL-MDX-File-Format#geometry-header) header (`0x00`) or [animation](MDL-MDX-File-Format#animation-header) [geometry](MDL-MDX-File-Format#geometry-header) header (`0x01`)
+- Whether this is a model [Geometry](MDL-MDX-File-Format#geometry-header) header (`0x00`) or [Animation](MDL-MDX-File-Format#animation-header) [Geometry](MDL-MDX-File-Format#geometry-header) header (`0x01`)
 
 **References:**
 
@@ -1033,24 +1123,24 @@ The game version can be determined by examining Function pointer 0 in the [geome
 
 ---
 
-## model Hierarchy
+## Model Hierarchy
 
 ### [Node](MDL-MDX-File-Format#node-structures) Relationships
 
 - Each [Node](MDL-MDX-File-Format#node-structures) can have a parent [Node](MDL-MDX-File-Format#node-structures), forming a hierarchy.
-- The root [Node](MDL-MDX-File-Format#node-structures) is referenced in the [geometry](MDL-MDX-File-Format#geometry-header) header.
-- [nodes](MDL-MDX-File-Format#node-structures) inherit [transformations](Level-Layout-Formats#adjacencies-wok-only) from their parents.
+- The root [Node](MDL-MDX-File-Format#node-structures) is referenced in the [Geometry](MDL-MDX-File-Format#geometry-header) header.
+- [Nodes](MDL-MDX-File-Format#node-structures) inherit [Transformations](Level-Layout-Formats#adjacencies-wok-only) from their parents.
 
-### [Node](MDL-MDX-File-Format#node-structures) [transformations](Level-Layout-Formats#adjacencies-wok-only)
+### [Node](MDL-MDX-File-Format#node-structures) [Transformations](Level-Layout-Formats#adjacencies-wok-only)
 
-1. **position Transform**:
+1. **Position Transform**:
    - Stored in [Controller](MDL-MDX-File-Format#controllers) type `8`.
    - Accumulated through the [Node](MDL-MDX-File-Format#node-structures) hierarchy.
    - Applied as translation after orientation.
 
-2. **orientation Transform**:
+2. **Orientation Transform**:
    - Stored in [Controller](MDL-MDX-File-Format#controllers) type `20`.
-   - Uses [quaternion](MDL-MDX-File-Format#node-header) multiplication.
+   - Uses [Quaternion](MDL-MDX-File-Format#node-header) multiplication.
    - Applied before position translation.
 
 ---
@@ -1060,14 +1150,13 @@ The game version can be determined by examining Function pointer 0 in the [geome
 - **Automatic Smoothing**: Groups are created based on [face](MDL-MDX-File-Format#face-structure) connectivity and normal angles.
 - **Threshold Angles**: [faces](MDL-MDX-File-Format#face-structure) with normals within a certain angle are grouped.
 
-**Reference**: [`mdlops/MDLOpsM.pm`](https://github.com/ndixUR/mdlops/blob/master/MDLOpsM.pm) - Smoothing group calculation (see version history notes about cross-[Mesh](MDL-MDX-File-Format#trimesh-header) smoothing using world-space normals)  
-**Reference**: [`mdlops/MDLOpsM.pm:92-93`](https://github.com/ndixUR/mdlops/blob/7e40846d36acb5118e2e9feb2fd53620c29be540/MDLOpsM.pm#L92-L93) - Version history notes on cross-[Mesh](MDL-MDX-File-Format#trimesh-header) smoothing improvements
+This smoothing behavior follows mdlops' smoothing-group implementation and its version-history notes on cross-mesh world-space smoothing improvements ([`MDLOpsM.pm`](https://github.com/ndixUR/mdlops/blob/master/MDLOpsM.pm), [`MDLOpsM.pm` L92-L93](https://github.com/ndixUR/mdlops/blob/7e40846d36acb5118e2e9feb2fd53620c29be540/MDLOpsM.pm#L92-L93)).
 
 ---
 
-## Binary model format Details (Aurora Engine - KotOR)
+## Binary Model Format Details
 
-> **Note**: The binary model format described in this section is **shared across Aurora engine games** (KotOR, Neverwinter Nights, etc.). The information is derived from Tim Smith (Torlack)'s reverse-engineered specifications and xoreos-docs, which originally documented Neverwinter Nights but applies to KotOR as well. All field descriptions and structures in this section are **applicable to KotOR models**.
+> **Note**: The binary model format described in this section is **shared across most Bioware engine family games (Aurora, Odyssey, Eclipse, Infinity)**. The information is derived from Tim Smith (Torlack)'s reverse-engineered specifications and xoreos-docs, which originally documented Neverwinter Nights but applies to KotOR as well. All field descriptions and structures in this section are **applicable to KotOR models**.
 
 **Source**: [`xoreos-docs/specs/torlack/binmdl.html`](https://github.com/xoreos/xoreos-docs/blob/master/specs/torlack/binmdl.html) - Tim Smith's binary model format documentation  
 **Source**: [`xoreos-docs/specs/kotor_mdl.html`](https://github.com/xoreos/xoreos-docs/blob/master/specs/kotor_mdl.html) - Partial KotOR-specific model format notes
@@ -1080,20 +1169,20 @@ The binary model file structure consists of three main sections:
 2. **model data**: Contains all [Node](MDL-MDX-File-Format#node-structures) structures, [geometry](MDL-MDX-File-Format#geometry-header) headers, and [animation](MDL-MDX-File-Format#animation-header) data
 3. **Raw data**: Contains [vertex](MDL-MDX-File-Format#vertex-structure) buffers, [texture](Texture-Formats#tpc) coordinates, and other per-[vertex](MDL-MDX-File-Format#vertex-structure) data
 
-**Reference**: [`xoreos-docs/specs/torlack/binmdl.html`](https://github.com/xoreos/xoreos-docs/blob/master/specs/torlack/binmdl.html) - Binary model file structure overview
+This three-part layout summary follows Torlack's canonical binary-model write-up in xoreos-docs ([`xoreos-docs/specs/torlack/binmdl.html`](https://github.com/xoreos/xoreos-docs/blob/master/specs/torlack/binmdl.html)).
 
-### pointers and arrays in Binary models
+### Pointers and Arrays in Binary Models
 
 Binary model files use two types of pointers:
 
-- **model data pointers**: 32-bit offsets from the start of the model data section. A value of `0` represents a NULL pointer.
-- **Raw data pointers**: 32-bit offsets from the start of the raw data section. A value of `0xFFFFFFFF` (or `-1` signed) represents a NULL pointer, since offset `0` is a valid position in raw data.
+- **Model Data Pointers**: 32-bit offsets from the start of the model data section. A value of `0` represents a NULL pointer.
+- **Raw Data Pointers**: 32-bit offsets from the start of the raw data section. A value of `0xFFFFFFFF` (or `-1` signed) represents a NULL pointer, since offset `0` is a valid position in raw data.
 
 **Note**: After loading from disk, these offsets can be converted to actual memory pointers on 32-bit address processors, improving runtime performance.
 
-arrays in binary models consist of three elements:
+Arrays in binary models consist of three elements:
 
-| offset | type   | Description                                    |
+| Offset | Type   | Description                                    |
 | ------ | ------ | ---------------------------------------------- |
 | 0x0000 | UInt32 | pointer/offset to the first element            |
 | 0x0004 | UInt32 | Number of used entries in the array            |
@@ -1101,15 +1190,15 @@ arrays in binary models consist of three elements:
 
 For binary model files, the number of used entries and allocated entries are always the same. During runtime or compilation, these values may differ as arrays grow dynamically.
 
-**Reference**: [`xoreos-docs/specs/torlack/binmdl.html`](https://github.com/xoreos/xoreos-docs/blob/master/specs/torlack/binmdl.html) - arrays and pointers explanation
+Pointer semantics and triple-field array headers are described in the same Torlack specification ([`xoreos-docs/specs/torlack/binmdl.html`](https://github.com/xoreos/xoreos-docs/blob/master/specs/torlack/binmdl.html)).
 
-### model Routines and [Node](MDL-MDX-File-Format#node-structures) type Identification
+### Model Routines and [Node](MDL-MDX-File-Format#node-structures) type Identification
 
 **Important**: Early reverse-engineering efforts incorrectly used "tokens" (six 4-[byte](https://en.wikipedia.org/wiki/Byte) values at the start of [nodes](MDL-MDX-File-Format#node-structures)) to identify [Node](MDL-MDX-File-Format#node-structures) types. These values are actually function routine addresses from the Win32/NT image loader (which loads images at `0x0041000`), and should **not** be relied upon for [Node](MDL-MDX-File-Format#node-structures) type identification.
 
 The proper method to identify [Node](MDL-MDX-File-Format#node-structures) types is using the **32-bit [bitmask](GFF-File-Format#gff-data-types)** stored in each [Node](MDL-MDX-File-Format#node-structures) header (offset 0x006C in the [Node](MDL-MDX-File-Format#node-structures) structure). This [bitmask](GFF-File-Format#gff-data-types) identifies which structures make up the [Node](MDL-MDX-File-Format#node-structures).
 
-**Reference**: [`xoreos-docs/specs/torlack/binmdl.html`](https://github.com/xoreos/xoreos-docs/blob/master/specs/torlack/binmdl.html) - model routines and [Node](MDL-MDX-File-Format#node-structures) type identification
+Torlack's notes explicitly call out this token-vs-bitmask distinction and recommend bitmask-based node-type identification ([`xoreos-docs/specs/torlack/binmdl.html`](https://github.com/xoreos/xoreos-docs/blob/master/specs/torlack/binmdl.html)).
 
 ### Part Numbers
 
@@ -1119,20 +1208,20 @@ Part numbers are values assigned to [nodes](MDL-MDX-File-Format#node-structures)
 - If no supermodel exists, part numbers remain as assigned during compilation.
 - After [animation](MDL-MDX-File-Format#animation-header) [geometry](MDL-MDX-File-Format#geometry-header) compilation, the same process matches [animation](MDL-MDX-File-Format#animation-header) [nodes](MDL-MDX-File-Format#node-structures) against the main model geometry (not the supermodel).
 
-**Reference**: [`xoreos-docs/specs/torlack/binmdl.html`](https://github.com/xoreos/xoreos-docs/blob/master/specs/torlack/binmdl.html) - Part numbers explanation
+Part-number reassignment behavior is documented in Torlack's binary-model analysis ([`xoreos-docs/specs/torlack/binmdl.html`](https://github.com/xoreos/xoreos-docs/blob/master/specs/torlack/binmdl.html)).
 
-### [Controller](MDL-MDX-File-Format#controllers) data Storage
+### [Controller](MDL-MDX-File-Format#controllers) Data Storage
 
 [Controllers](MDL-MDX-File-Format#controllers) are stored as two arrays in the model data:
 
-1. **[Controller](MDL-MDX-File-Format#controllers) structure array**: Contains metadata about each controller (type, row count, data indices)
-2. **Float array**: Contains the actual [Controller](MDL-MDX-File-Format#controllers) data (time keys and property values)
+1. **[Controller](MDL-MDX-File-Format#controllers) Structure Array**: Contains metadata about each controller (type, row count, data indices)
+2. **Float Array**: Contains the actual [Controller](MDL-MDX-File-Format#controllers) data (time keys and property values)
 
 All time keys are stored contiguously, followed by all data values stored contiguously. For example, if a keyed [Controller](MDL-MDX-File-Format#controllers) has 3 rows with time keys starting at float index 5, the time keys would be at indices 5, 6, and 7.
 
 **Note**: [Controllers](MDL-MDX-File-Format#controllers) that aren't time-keyed are still stored as if they are time-keyed but with a single row and a time [KEY](Container-Formats#key) value of zero. It's impossible to distinguish between a non-keyed [Controller](MDL-MDX-File-Format#controllers) and a keyed [Controller](MDL-MDX-File-Format#controllers) with one row at time zero.
 
-**Reference**: [`xoreos-docs/specs/torlack/binmdl.html`](https://github.com/xoreos/xoreos-docs/blob/master/specs/torlack/binmdl.html) - [Controller](MDL-MDX-File-Format#controllers) structure and data storage
+This storage model for controller metadata plus float payloads is captured in Torlack's specification ([`xoreos-docs/specs/torlack/binmdl.html`](https://github.com/xoreos/xoreos-docs/blob/master/specs/torlack/binmdl.html)).
 
 ### Bezier Interpolation
 
@@ -1140,10 +1229,10 @@ Bezier interpolation provides smooth, non-linear [animation](MDL-MDX-File-Format
 
 **Note**: At the time of [`xoreos-docs/specs/kotor_mdl.html`](https://github.com/xoreos/xoreos-docs/blob/master/specs/kotor_mdl.html) documentation, it was unclear if any BioWare models actually use bezier interpolation or if the rendering engine supports it. However, the format specification includes support for it.
 
-**Reference**: [`xoreos-docs/specs/torlack/binmdl.html`](https://github.com/xoreos/xoreos-docs/blob/master/specs/torlack/binmdl.html) - Bezier interpolation notes  
+Bezier support details come from Torlack's interpolation notes ([`xoreos-docs/specs/torlack/binmdl.html`](https://github.com/xoreos/xoreos-docs/blob/master/specs/torlack/binmdl.html)).
 **See Also**: Controller Data Formats - Bezier Interpolation section below for ASCII format details
 
-### AABB (Axis-Aligned [bounding box](MDL-MDX-File-Format#model-header)) [Mesh](MDL-MDX-File-Format#trimesh-header) [nodes](MDL-MDX-File-Format#node-structures)
+### AABB (Axis-Aligned [Bounding Box](MDL-MDX-File-Format#model-header)) [Mesh](MDL-MDX-File-Format#trimesh-header) [Nodes](MDL-MDX-File-Format#node-structures)
 
 [AABB](Level-Layout-Formats#aabb-tree-wok-only) [Mesh](MDL-MDX-File-Format#trimesh-header) [nodes](MDL-MDX-File-Format#node-structures) provide collision detection capabilities. The [AABB](Level-Layout-Formats#aabb-tree-wok-only) structure uses a binary tree for efficient collision queries:
 
@@ -1165,7 +1254,7 @@ The plane [bitmask](GFF-File-Format#gff-data-types) indicates which axis plane i
 - `0x10` = Negative Y
 - `0x20` = Negative Z
 
-**Reference**: [`xoreos-docs/specs/torlack/binmdl.html`](https://github.com/xoreos/xoreos-docs/blob/master/specs/torlack/binmdl.html) - [AABB](Level-Layout-Formats#aabb-tree-wok-only) [Node](MDL-MDX-File-Format#node-structures) structure
+This AABB node layout and split-plane bitmask mapping follow Torlack's AABB section ([`xoreos-docs/specs/torlack/binmdl.html`](https://github.com/xoreos/xoreos-docs/blob/master/specs/torlack/binmdl.html)).
 
 **Room models:** Room models can contain AABB nodes used for **camera collision**; the standalone [WOK](Level-Layout-Formats#bwm) holds the main pathfinding and transition data. For room/walkmesh context and troubleshooting room crossing, see:
 
@@ -1174,11 +1263,11 @@ The plane [bitmask](GFF-File-Format#gff-data-types) indicates which axis plane i
 
 ---
 
-## ASCII MDL format
+## ASCII MDL Format
 
 KotOR models can be represented in an ASCII format, which is human-readable.
 
-### model header Section
+### Model Header Section
 
 ```plaintext
 newmodel <model_name>
@@ -1188,7 +1277,7 @@ ignorefog <0_or_1>
 setanimationscale <scale_factor>
 ```
 
-### [geometry](MDL-MDX-File-Format#geometry-header) Section
+### [Geometry](MDL-MDX-File-Format#geometry-header) Section
 
 ```plaintext
 beginmodelgeom <model_name>
@@ -1209,7 +1298,7 @@ node <node_type> <node_name>
 endnode
 ```
 
-### [animation](MDL-MDX-File-Format#animation-header) data
+### [Animation](MDL-MDX-File-Format#animation-header) Data
 
 ```plaintext
 newanim <animation_name> <model_name>
@@ -1225,8 +1314,7 @@ doneanim <animation_name> <model_name>
 ```
 
 ---
-
-## [Controller](MDL-MDX-File-Format#controllers) data formats
+## [Controller](MDL-MDX-File-Format#controllers) Data Formats
 
 ### Single [Controllers](MDL-MDX-File-Format#controllers)
 
@@ -1236,8 +1324,7 @@ For constant values that don't change over time:
 <controller_name> <value>
 ```
 
-**Reference**: [`mdlops/MDLOpsM.pm:3734-3754`](https://github.com/ndixUR/mdlops/blob/7e40846d36acb5118e2e9feb2fd53620c29be540/MDLOpsM.pm#L3734-L3754) - Single [Controller](MDL-MDX-File-Format#controllers) reading  
-**Example**: `position 0.0 1.5 0.0` (static position at X=0, Y=1.5, Z=0)
+mdlops documents this constant-value controller path directly in its single-controller reader flow ([`MDLOpsM.pm` L3734-L3754](https://github.com/ndixUR/mdlops/blob/7e40846d36acb5118e2e9feb2fd53620c29be540/MDLOpsM.pm#L3734-L3754)). **Example**: `position 0.0 1.5 0.0` (static position at X=0, Y=1.5, Z=0)
 
 ### Keyed [Controllers](MDL-MDX-File-Format#controllers)
 
@@ -1252,7 +1339,7 @@ For animated values that change over time:
   endlist
   ```
 
-  **Reference**: [`mdlops/MDLOpsM.pm:3760-3802`](https://github.com/ndixUR/mdlops/blob/7e40846d36acb5118e2e9feb2fd53620c29be540/MDLOpsM.pm#L3760-L3802) - Keyed [Controller](MDL-MDX-File-Format#controllers) reading  
+  mdlops' keyed-controller parser matches this linear keyframe list structure ([`MDLOpsM.pm` L3760-L3802](https://github.com/ndixUR/mdlops/blob/7e40846d36acb5118e2e9feb2fd53620c29be540/MDLOpsM.pm#L3760-L3802)).
   **Example**:
 
   ```plaintext
@@ -1267,7 +1354,7 @@ For animated values that change over time:
 
 - **Bezier Interpolation**:
 
-  **Reference**: [`mdlops/MDLOpsM.pm:1704-1710, 1721-1756`](https://github.com/ndixUR/mdlops/blob/7e40846d36acb5118e2e9feb2fd53620c29be540/MDLOpsM.pm#L1704-L1756) - Bezier flag detection and data reading  
+  mdlops shows both the Bezier flag detection and expanded keyframe data shape used for this mode ([`MDLOpsM.pm` L1704-L1710](https://github.com/ndixUR/mdlops/blob/7e40846d36acb5118e2e9feb2fd53620c29be540/MDLOpsM.pm#L1704-L1710), [`MDLOpsM.pm` L1721-L1756](https://github.com/ndixUR/mdlops/blob/7e40846d36acb5118e2e9feb2fd53620c29be540/MDLOpsM.pm#L1721-L1756)).
   **format**: Each [keyframe](MDL-MDX-File-Format#controller-structure) stores 3 values per column: (value, in_tangent, out_tangent)
 
   ```plaintext
@@ -1292,9 +1379,9 @@ For animated values that change over time:
 
 ### Special [Controller](MDL-MDX-File-Format#controllers) Cases
 
-1. **Compressed [quaternion](MDL-MDX-File-Format#node-header) orientation** (`MDLControllerType.ORIENTATION` with column_count=2):
+1. **Compressed [Quaternion](MDL-MDX-File-Format#node-header) Orientation** (`MDLControllerType.ORIENTATION` with column_count=2):
 
-   **Reference**: [`mdlops/MDLOpsM.pm:1714-1719`](https://github.com/ndixUR/mdlops/blob/7e40846d36acb5118e2e9feb2fd53620c29be540/MDLOpsM.pm#L1714-L1719) - Compressed [quaternion](MDL-MDX-File-Format#node-header) detection  
+  mdlops identifies this compressed-orientation case by the controller layout itself ([`MDLOpsM.pm` L1714-L1719](https://github.com/ndixUR/mdlops/blob/7e40846d36acb5118e2e9feb2fd53620c29be540/MDLOpsM.pm#L1714-L1719)).
    **format**: Single 32-bit packed value instead of 4 floats
 
    ```python
@@ -1307,19 +1394,19 @@ For animated values that change over time:
    Decompression: [`kotorblender/io_scene_kotor/format/mdl/reader.py:850-868`](https://github.com/OldRepublicDevs/kotorblender/blob/404c42bc4f36b1f60b643eda0cd17c81ba5ca7d4/io_scene_kotor/format/mdl/reader.py#L850-L868)
    **Decompression**: Extract bits using [bitmasks](GFF-File-Format#gff-data-types), divide by effective range (1023 for X/Y, 511 for Z), then subtract 1.0 to map to [-1, 1] range.
 
-2. **position Delta Encoding** (ASCII only):
+2. **Position Delta Encoding** (ASCII only):
 
-   **Reference**: [`mdlops/MDLOpsM.pm:3788-3793`](https://github.com/ndixUR/mdlops/blob/7e40846d36acb5118e2e9feb2fd53620c29be540/MDLOpsM.pm#L3788-L3793)  
+  mdlops applies this as a geometry-position delta during ASCII import ([`MDLOpsM.pm` L3788-L3793](https://github.com/ndixUR/mdlops/blob/7e40846d36acb5118e2e9feb2fd53620c29be540/MDLOpsM.pm#L3788-L3793)).
    In ASCII format [animations](MDL-MDX-File-Format#animation-header), position [Controller](MDL-MDX-File-Format#controllers) values are stored as deltas from the [geometry](MDL-MDX-File-Format#geometry-header) [Node](MDL-MDX-File-Format#node-structures)'s static position.
 
    ```python
    animated_position = geometry_position + position_controller_value
    ```
 
-3. **Angle-Axis to [quaternion](MDL-MDX-File-Format#node-header) Conversion** (ASCII only):
+3. **Angle-Axis to [Quaternion](MDL-MDX-File-Format#node-header) Conversion** (ASCII only):
 
-   **Reference**: [`mdlops/MDLOpsM.pm:3718-3728, 3787`](https://github.com/ndixUR/mdlops/blob/7e40846d36acb5118e2e9feb2fd53620c29be540/MDLOpsM.pm#L3718-L3787)  
-   ASCII orientation [Controllers](MDL-MDX-File-Format#controllers) use angle-axis representation `[x, y, z, angle]` which is converted to [quaternion](MDL-MDX-File-Format#node-header) `[x, y, z, w]` on import:
+  mdlops also documents the angle-axis to quaternion conversion path used by ASCII orientation controllers ([`MDLOpsM.pm` L3718-L3728](https://github.com/ndixUR/mdlops/blob/7e40846d36acb5118e2e9feb2fd53620c29be540/MDLOpsM.pm#L3718-L3728), [`MDLOpsM.pm` L3787](https://github.com/ndixUR/mdlops/blob/7e40846d36acb5118e2e9feb2fd53620c29be540/MDLOpsM.pm#L3787)).
+   ASCII orientation [Controllers](MDL-MDX-File-Format#controllers) use angle-axis representation `[x, y, z, angle]` which is converted to [Quaternion](MDL-MDX-File-Format#node-header) `[x, y, z, w]` on import:
 
    ```c
    sin_a = sin(angle / 2);
@@ -1331,14 +1418,13 @@ For animated values that change over time:
 
 ---
 
-## Skin [meshes](MDL-MDX-File-Format#trimesh-header) and Skeletal [animation](MDL-MDX-File-Format#animation-header)
+## Skin [Meshes](MDL-MDX-File-Format#trimesh-header) and Skeletal [Animation](MDL-MDX-File-Format#animation-header)
 
 ### Bone Mapping and Lookup Tables
 
 Skinned [meshes](MDL-MDX-File-Format#trimesh-header) require bone mapping to connect [Mesh](MDL-MDX-File-Format#trimesh-header) [vertices](MDL-MDX-File-Format#vertex-structure) to skeleton bones across model parts.
 
-**Reference**: [`reone/src/libs/graphics/format/mdlmdxreader.cpp:703-723`](https://github.com/modawan/reone/blob/61531089341caf5827abbc54346c8c959b03d449/src/libs/graphics/format/mdlmdxreader.cpp#L703-L723) - `prepareSkinMeshes()` bone lookup preparation  
-**Reference**: [`kotorblender/io_scene_kotor/format/mdl/reader.py:517-522`](https://github.com/OldRepublicDevs/kotorblender/blob/404c42bc4f36b1f60b643eda0cd17c81ba5ca7d4/io_scene_kotor/format/mdl/reader.py#L517-L522) - Bone map to [Node](MDL-MDX-File-Format#node-structures) mapping
+Both reone and kotorblender explicitly build these lookup mappings before skinning evaluation (`prepareSkinMeshes` and equivalent bone-map to node remap logic) ([`mdlmdxreader.cpp` L703-L723](https://github.com/modawan/reone/blob/61531089341caf5827abbc54346c8c959b03d449/src/libs/graphics/format/mdlmdxreader.cpp#L703-L723), [`reader.py` L517-L522](https://github.com/OldRepublicDevs/kotorblender/blob/404c42bc4f36b1f60b643eda0cd17c81ba5ca7d4/io_scene_kotor/format/mdl/reader.py#L517-L522)).
 
 #### Bone Map (`bonemap`)
 
@@ -1373,10 +1459,7 @@ Bone map array:
 - The remaining bone indices (`-1`) indicate no other [nodes](MDL-MDX-File-Format#node-structures) affect this [vertex](MDL-MDX-File-Format#vertex-structure).
 - The total of the bone weights for a [vertex](MDL-MDX-File-Format#vertex-structure) must equal 1.0.
 
-**Reference**: [`mdlops/MDLOpsM.pm:1518`](https://github.com/ndixUR/mdlops/blob/7e40846d36acb5118e2e9feb2fd53620c29be540/MDLOpsM.pm#L1518) - Bone map processing for skin [nodes](MDL-MDX-File-Format#node-structures)  
-**Reference**: [`reone/src/libs/graphics/format/mdlmdxreader.cpp:276`](https://github.com/modawan/reone/blob/61531089341caf5827abbc54346c8c959b03d449/src/libs/graphics/format/mdlmdxreader.cpp#L276) - Bone map array reading  
-**Reference**: [`kotorblender/io_scene_kotor/format/mdl/reader.py:509-516`](https://github.com/OldRepublicDevs/kotorblender/blob/404c42bc4f36b1f60b643eda0cd17c81ba5ca7d4/io_scene_kotor/format/mdl/reader.py#L509-L516) - Bone map reading with Xbox platform handling  
-**Reference**: [`xoreos-docs/specs/kotor_mdl.html`](https://github.com/xoreos/xoreos-docs/blob/master/specs/kotor_mdl.html) - Detailed bone map explanation with example
+This mapping behavior is consistent across mdlops, reone, kotorblender (including platform quirks), and the xoreos-docs worked example ([`MDLOpsM.pm` L1518](https://github.com/ndixUR/mdlops/blob/7e40846d36acb5118e2e9feb2fd53620c29be540/MDLOpsM.pm#L1518), [`mdlmdxreader.cpp` L276](https://github.com/modawan/reone/blob/61531089341caf5827abbc54346c8c959b03d449/src/libs/graphics/format/mdlmdxreader.cpp#L276), [`reader.py` L509-L516](https://github.com/OldRepublicDevs/kotorblender/blob/404c42bc4f36b1f60b643eda0cd17c81ba5ca7d4/io_scene_kotor/format/mdl/reader.py#L509-L516), [`xoreos-docs/specs/kotor_mdl.html`](https://github.com/xoreos/xoreos-docs/blob/master/specs/kotor_mdl.html)).
 
 #### Bone Serial and [Node](MDL-MDX-File-Format#node-structures) Number Lookups
 
@@ -1400,14 +1483,11 @@ def prepare_bone_lookups(skin_mesh, all_nodes):
         skin_mesh.bone_node_number[bone_idx] = bone_node.node_id
 ```
 
-### [vertex](MDL-MDX-File-Format#vertex-structure) Skinning
+### [Vertex](MDL-MDX-File-Format#vertex-structure) Skinning
 
-Each [vertex](MDL-MDX-File-Format#vertex-structure) can be influenced by up to 4 bones with normalized weights.
+Each [Vertex](MDL-MDX-File-Format#vertex-structure) can be influenced by up to 4 bones with normalized weights.
 
-**References**:
-
-- [`reone/src/libs/graphics/format/mdlmdxreader.cpp:261-268`](https://github.com/modawan/reone/blob/61531089341caf5827abbc54346c8c959b03d449/src/libs/graphics/format/mdlmdxreader.cpp#L261-L268) - Bone weight/index reading
-- [`kotorblender/io_scene_kotor/format/mdl/reader.py:478-485`](https://github.com/OldRepublicDevs/kotorblender/blob/404c42bc4f36b1f60b643eda0cd17c81ba5ca7d4/io_scene_kotor/format/mdl/reader.py#L478-L485) - Skinning data structure
+This four-slot skinning layout is reflected directly in reone and kotorblender loader code paths that read paired bone index and weight slices per vertex ([`mdlmdxreader.cpp` L261-L268](https://github.com/modawan/reone/blob/61531089341caf5827abbc54346c8c959b03d449/src/libs/graphics/format/mdlmdxreader.cpp#L261-L268), [`reader.py` L478-L485](https://github.com/OldRepublicDevs/kotorblender/blob/404c42bc4f36b1f60b643eda0cd17c81ba5ca7d4/io_scene_kotor/format/mdl/reader.py#L478-L485)).
 
 #### Bone Weight Format (MDX)
 
@@ -1418,14 +1498,12 @@ Per-[vertex](MDL-MDX-File-Format#vertex-structure) data stored in MDX files:
 
 **Layout**:
 
-```plaintext
-Offset   Type        Description
-+0       float[4]    Bone indices (cast to uint16)
-+16      float[4]    Bone weights (normalized to sum to 1.0)
-```
+| Offset | Type | Description |
+|---:|:----|:------------|
+| +0 | float[4] | Bone indices (cast to uint16) |
+| +16 | float[4] | Bone weights (normalized to sum to 1.0) |
 
-**Reference**: [`mdlops/MDLOpsM.pm:2374-2395`](https://github.com/ndixUR/mdlops/blob/7e40846d36acb5118e2e9feb2fd53620c29be540/MDLOpsM.pm#L2374-L2395) - Bone weight and index reading from MDX  
-**Reference**: [`reone/src/libs/graphics/format/mdlmdxreader.cpp:266-267`](https://github.com/modawan/reone/blob/61531089341caf5827abbc54346c8c959b03d449/src/libs/graphics/format/mdlmdxreader.cpp#L266-L267) - Bone weight and index offset reading
+Both mdlops and reone implement this exact per-vertex pair of index and weight slices in the MDX stream ([`MDLOpsM.pm` L2374-L2395](https://github.com/ndixUR/mdlops/blob/7e40846d36acb5118e2e9feb2fd53620c29be540/MDLOpsM.pm#L2374-L2395), [`mdlmdxreader.cpp` L266-L267](https://github.com/modawan/reone/blob/61531089341caf5827abbc54346c8c959b03d449/src/libs/graphics/format/mdlmdxreader.cpp#L266-L267)).
 
 #### [vertex](MDL-MDX-File-Format#vertex-structure) [transformation](Level-Layout-Formats#adjacencies-wok-only)
 
@@ -1448,14 +1526,11 @@ for (int i = 0; i < 4; i++) {
 skinned_normal = normalize(skinned_normal);
 ```
 
-### Bind Pose data
+### Bind Pose Data
 
-**References**:
+Bind-pose arrays for skin meshes are represented explicitly in mdlops, where per-bone transforms are parsed and retained for later matrix construction ([`MDLOpsM.pm` L1760-L1768](https://github.com/ndixUR/mdlops/blob/7e40846d36acb5118e2e9feb2fd53620c29be540/MDLOpsM.pm#L1760-L1768)); this matches the skin-mesh expectation that bind transforms are stored per bone.
 
-- [`mdlops/MDLOpsM.pm:1760-1768`](https://github.com/ndixUR/mdlops/blob/7e40846d36acb5118e2e9feb2fd53620c29be540/MDLOpsM.pm#L1760-L1768) - Bind pose arrays
-- Skin [Mesh](MDL-MDX-File-Format#trimesh-header) stores bind pose transforms for each bone
-
-#### QBones ([quaternion](MDL-MDX-File-Format#node-header) rotations)
+#### QBones ([quaternion](MDL-MDX-File-Format#node-header) Rotations)
 
 array of [quaternions](MDL-MDX-File-Format#node-header) representing each bone's bind pose orientation:
 
@@ -1465,8 +1540,7 @@ struct QBone {
 };
 ```
 
-**Reference**: [`mdlops/MDLOpsM.pm:1760-1768`](https://github.com/ndixUR/mdlops/blob/7e40846d36acb5118e2e9feb2fd53620c29be540/MDLOpsM.pm#L1760-L1768) - QBones array reading  
-**Reference**: [`reone/src/libs/graphics/format/mdlmdxreader.cpp:277-287`](https://github.com/modawan/reone/blob/61531089341caf5827abbc54346c8c959b03d449/src/libs/graphics/format/mdlmdxreader.cpp#L277-L287) - QBones reading and bone [matrix](Level-Layout-Formats#adjacencies-wok-only) computation
+QBones parsing and matrix-prep usage are documented in both mdlops and reone ([`MDLOpsM.pm` L1760-L1768](https://github.com/ndixUR/mdlops/blob/7e40846d36acb5118e2e9feb2fd53620c29be540/MDLOpsM.pm#L1760-L1768), [`mdlmdxreader.cpp` L277-L287](https://github.com/modawan/reone/blob/61531089341caf5827abbc54346c8c959b03d449/src/libs/graphics/format/mdlmdxreader.cpp#L277-L287)).
 
 #### TBones (Translation vectors)
 
@@ -1478,10 +1552,9 @@ struct TBone {
 };
 ```
 
-**Reference**: [`mdlops/MDLOpsM.pm:1760-1768`](https://github.com/ndixUR/mdlops/blob/7e40846d36acb5118e2e9feb2fd53620c29be540/MDLOpsM.pm#L1760-L1768) - TBones array reading  
-**Reference**: [`reone/src/libs/graphics/format/mdlmdxreader.cpp:278,285-286`](https://github.com/modawan/reone/blob/61531089341caf5827abbc54346c8c959b03d449/src/libs/graphics/format/mdlmdxreader.cpp#L278-L286) - TBones reading and bone [matrix](Level-Layout-Formats#adjacencies-wok-only) computation
+TBones follow the same bind-pose array handling seen in mdlops and reone's bone matrix computation path ([`MDLOpsM.pm` L1760-L1768](https://github.com/ndixUR/mdlops/blob/7e40846d36acb5118e2e9feb2fd53620c29be540/MDLOpsM.pm#L1760-L1768), [`mdlmdxreader.cpp` L278](https://github.com/modawan/reone/blob/61531089341caf5827abbc54346c8c959b03d449/src/libs/graphics/format/mdlmdxreader.cpp#L278), [`mdlmdxreader.cpp` L285-L286](https://github.com/modawan/reone/blob/61531089341caf5827abbc54346c8c959b03d449/src/libs/graphics/format/mdlmdxreader.cpp#L285-L286)).
 
-#### Bone [matrix](Level-Layout-Formats#adjacencies-wok-only) Computation
+#### Bone [Matrix](Level-Layout-Formats#adjacencies-wok-only) Computation
 
 ```c
 mat4 computeBoneMatrix(int bone_idx, Animation anim, float time) {
@@ -1500,7 +1573,7 @@ mat4 computeBoneMatrix(int bone_idx, Animation anim, float time) {
 }
 ```
 
-**Note**: KotOR uses left-handed coordinate system, ensure proper [matrix](Level-Layout-Formats#adjacencies-wok-only) conventions.
+**Note**: KotOR uses left-handed coordinate system, ensure proper [Matrix](Level-Layout-Formats#adjacencies-wok-only) conventions.
 
 ---
 
@@ -1708,7 +1781,7 @@ Construction sets `CResMDL_vtable`, forwards to `CRes::CRes`, zeroes state flag 
 
 **YES**, ASCII MDL format is supported in **BOTH** `swkotor.exe` (K1) **AND** `swkotor2.exe` (TSL). The support is implemented through a line-by-line text parser that interprets ASCII commands and applies them to a model structure.
 
-## Entry Point: `Input::Read` @ (K1: 0x004a14b0, TSL: 0x004ce9d0)
+## Entry Point: `Input::Read` @ (/K1/k1_win_gog_swkotor.exe: 0x004a14b0, TSL: 0x004ce9d0)
 
 The main entry point for MDL loading is `Input::Read`, which performs format detection:
 
@@ -1778,7 +1851,7 @@ return uVar8;
 - Trims trailing whitespace (newlines, carriage returns, tabs, spaces)
 - Each line is interpreted as a function call via `FuncInterp()`
 
-## Line Reading: `AurResGetNextLine` @ (K1: 0x0044bfa0, TSL: 0x00460610)
+## Line Reading: `AurResGetNextLine` @ (/K1/k1_win_gog_swkotor.exe: 0x0044bfa0, /TSL/k2_win_gog_aspyr_swkotor2.exe: 0x00460610)
 
 ```c
 void AurResGetNextLine(void) {
@@ -1796,7 +1869,7 @@ void AurResGetNextLine(void) {
 
 **Purpose:** Retrieves the next line from either a file or resource stream.
 
-## Function Interpreter: `FuncInterp` @ (K1: 0x0044c1f0, TSL: 0x00460860)
+## Function Interpreter: `FuncInterp` @ (/K1/k1_win_gog_swkotor.exe: 0x0044c1f0, TSL: 0x00460860)
 
 `FuncInterp` is a general-purpose script interpreter that:
 
@@ -1832,7 +1905,7 @@ void AurResGetNextLine(void) {
 
 ## Model Field Parsing: `ModelParseField` → `Model::InternalParseField`
 
-### `ModelParseField` @ (K1: 0x0043e1e0, TSL: N/A)
+### `ModelParseField` @ (/K1/k1_win_gog_swkotor.exe: 0x0043e1e0, TSL: N/A)
 
 ```c
 void __cdecl ModelParseField(Model *param_1,char *param_2) {
@@ -1843,7 +1916,7 @@ void __cdecl ModelParseField(Model *param_1,char *param_2) {
 
 **Purpose:** Wrapper that calls `Model::InternalParseField` to parse a single field line.
 
-### `Model::InternalParseField` @ (K1: 0x00465560, TSL: N/A)
+### `Model::InternalParseField` @ (/K1/k1_win_gog_swkotor.exe: 0x00465560, TSL: N/A)
 
 This function parses ASCII field names and applies them to model nodes. Key field types:
 
@@ -1956,7 +2029,7 @@ The ASCII MDL support in TSL is implemented identically to K1, but with differen
 
 **Conclusion:** Both K1 and TSL support ASCII MDL format with identical parsing logic.
 
-## Implementation evidence
+## Implementation Evidence
 
 ### K1 (swkotor.exe)
 
@@ -1996,7 +2069,7 @@ This report compares the Python MDL/MDX implementation in `pykotor.resource.form
 
 ### Engine Implementation
 
-- **Reset() @ (K1: 0x004a1030, TSL: 0x004ce550)**: Parses model structure from binary data
+- **Reset() @ (/K1/k1_win_gog_swkotor.exe: 0x004a1030, TSL: 0x004ce550)**: Parses model structure from binary data
 - Reads model name at offset 0x88 (K1) / 0x22 (TSL) - corresponds to `geometry.model_name`
 - Reads parent model pointer at offset 0x64 (K1) / 0x19 (TSL) - corresponds to `parent_model_pointer`
 - Reads MDX data buffer offset at 0xac (K1) / 0x2b (TSL) - corresponds to `mdx_data_buffer_offset`
@@ -2023,7 +2096,7 @@ This report compares the Python MDL/MDX implementation in `pykotor.resource.form
 
 ### Engine Implementation
 
-- **ResetMdlNode() @ (K1: 0x004a0900)**: Processes nodes based on `node_type` field
+- **ResetMdlNode() @ (/K1/k1_win_gog_swkotor.exe: 0x004a0900)**: Processes nodes based on `node_type` field
 - Node type is determined by flag combinations stored in the first byte of the node
 - Uses `param_1->node_type` to determine which Reset function to call
 
@@ -2046,15 +2119,15 @@ This report compares the Python MDL/MDX implementation in `pykotor.resource.form
 
 ### Engine Implementation
 
-- **MdlNode::AsMdlNodeTriMesh @ (K1: 0x0043e400, TSL: 0x004501d0)**:
+- **MdlNode::AsMdlNodeTriMesh @ (/K1/k1_win_gog_swkotor.exe: 0x0043e400, TSL: 0x004501d0)**:
   - Checks `(*param_1 & 0x21) == 0x21` (HEADER + MESH flags)
-- **MdlNode::AsMdlNodeDanglyMesh @ (K1: 0x0043e380, TSL: 0x00450150)**:
+- **MdlNode::AsMdlNodeDanglyMesh @ (/K1/k1_win_gog_swkotor.exe: 0x0043e380, TSL: 0x00450150)**:
   - Checks `(*param_1 & 0x121) == 0x121` (HEADER + MESH + DANGLY flags)
-- **MdlNode::AsMdlNodeSkin @ (K1: 0x0043e3f0, TSL: 0x004501c0)**:
+- **MdlNode::AsMdlNodeSkin @ (/K1/k1_win_gog_swkotor.exe: 0x0043e3f0, TSL: 0x004501c0)**:
   - Checks `(*param_1 & 0x61) == 0x61` (HEADER + MESH + SKIN flags)
-- **MdlNode::AsMdlNodeAABB @ (K1: 0x0043e340, TSL: 0x00450110)**:
+- **MdlNode::AsMdlNodeAABB @ (/K1/k1_win_gog_swkotor.exe: 0x0043e340, TSL: 0x00450110)**:
   - Checks `(*param_1 & 0x221) == 0x221` (HEADER + MESH + AABB flags)
-- **MdlNode::AsMdlNodeLightsaber @ (K1: 0x0043e3a0, TSL: 0x00450170)**:
+- **MdlNode::AsMdlNodeLightsaber @ (/K1/k1_win_gog_swkotor.exe: 0x0043e3a0, TSL: 0x00450170)**:
   - Checks `(*param_1 & 0x821) == 0x821` (HEADER + MESH + SABER flags)
 
 ### Python Implementation
@@ -2156,7 +2229,7 @@ This report compares the Python MDL/MDX implementation in `pykotor.resource.form
 
 ### Engine Implementation
 
-- **ResetAnimation() @ (K1: 0x004a0060)**: Processes animation data
+- **ResetAnimation() @ (/K1/k1_win_gog_swkotor.exe: 0x004a0060)**: Processes animation data
 - Controllers are stored with type_id, row_count, column_count, and data arrays
 - Compressed quaternions use uint32 encoding
 
@@ -2178,7 +2251,7 @@ This report compares the Python MDL/MDX implementation in `pykotor.resource.form
 
 ### Engine Implementation
 
-- **PartTriMesh::PartTriMesh @ (K1: 0x00445840, TSL: 0x00459be0)**: Creates tri-mesh part from MDL node
+- **PartTriMesh::PartTriMesh @ (/K1/k1_win_gog_swkotor.exe: 0x00445840, TSL: 0x00459be0)**: Creates tri-mesh part from MDL node
 - Reads vertex data, face data, texture coordinates from MDX file
 - Different sizes for K1 (332 bytes) vs TSL (340 bytes)
 
@@ -2201,7 +2274,7 @@ This report compares the Python MDL/MDX implementation in `pykotor.resource.form
 
 ### Engine Implementation
 
-- **LoadModel @ (K1: 0x00464200, TSL: 0x0047a570)**: Main entry point
+- **LoadModel @ (/K1/k1_win_gog_swkotor.exe: 0x00464200, TSL: 0x0047a570)**: Main entry point
 - Calls IODispatcher::ReadSync()
 - Checks for duplicate models by name
 - Returns cached model if duplicate found

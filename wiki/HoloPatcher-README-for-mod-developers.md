@@ -72,6 +72,7 @@ Start with [TSLPatcher's Official Readme](TSLPatcher's-Official-Readme) if you n
 
 **Common failures:** pointing the patcher at `override/` instead of the **game root**, reinstalling the same option without [restore backup](Installing-Mods-with-HoloPatcher), and shipping bad relative paths in InstallList. See [Mod Creation Best Practices](Mod-Creation-Best-Practices#tslpatcher-setup-and-2datlk-merging).
 
+<a id="holopatcher-changes--new-features"></a>
 ## HoloPatcher changes & New Features
 
 ### [TLK](Audio-and-Localization-Formats#tlk) replacements
@@ -131,5 +132,5 @@ In short, HACKList writes unsigned WORD values (two bytes each) to the [NCS](NCS
 - [TSLPatcher TLKList](TSLPatcher-TLKList-Syntax)
 - [TSLPatcher SSFList](TSLPatcher-SSFList-Syntax) -- Other patch lists
 - [Explanations on HoloPatcher Internal Logic](Explanations-on-HoloPatcher-Internal-Logic) -- Implementation
-- [KEY-File-Format](Container-Formats#key) -- Resource resolution
+- [Container-Formats#key](Container-Formats#key) -- Resource resolution
 - [Community sources and archives](Home#community-sources-and-archives) -- DeadlyStream, LucasForums for patching workflows

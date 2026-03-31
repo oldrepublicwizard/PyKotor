@@ -39,26 +39,7 @@ UTI files define [item templates](GFF-File-Format#uti-item) for all objects in c
   - [MDL](MDL-MDX-File-Format) ([model](MDL-MDX-File-Format) geometry)
   - [TPC](Texture-Formats#tpc) ([texture](Texture-Formats#tpc) data)
 
-## Implementation evidence
-
-**PyKotor:**
-
-- [`uti.py` `UTI` L22+](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/generics/uti.py#L22) — UTI [GFF](GFF-File-Format) field model and `read_uti` / `write_uti` helpers in the same module
-
-**HolocronToolset:**
-
-- [`Tools/HolocronToolset/src/toolset/gui/editors/uti.py`](https://github.com/OldRepublicDevs/HolocronToolset/src/toolset/gui/editors/uti.py) - Item (UTI) editor
-
-**Cross-reference (other implementations):**
-
-- **[reone](https://github.com/modawan/reone)** — C++ GFF reader (UTI uses generic GFF structure):
-
-  - [`gff.cpp`](https://github.com/modawan/reone/blob/master/src/libs/resource/gff.cpp)
-  - [`gffreader.cpp`](https://github.com/modawan/reone/blob/master/src/libs/resource/format/gffreader.cpp)
-- **[KotOR.js](https://github.com/KobaltBlu/KotOR.js)**: [`GFFObject.ts` L24+](https://github.com/KobaltBlu/KotOR.js/blob/ea9491d5c783364cf285f178434b84405bee3608/src/resource/GFFObject.ts#L24) — TypeScript GFF parser
-- **[Kotor.NET](https://github.com/NickHugi/Kotor.NET)**: [`GFF.cs` L18+](https://github.com/NickHugi/Kotor.NET/blob/6dca4a6a1af2fee6e36befb9a6f127c8ba04d3e2/Kotor.NET/Formats/KotorGFF/GFF.cs#L18) — .NET GFF reader/writer (UTI uses generic GFF structure)
-- **[PyKotor](https://github.com/OldRepublicDevs/PyKotor)** (binary GFF): [`GFFBinaryReader.load` L82+](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/formats/gff/io_gff.py#L82) — same pipeline as other GFF types
-- **[xoreos](https://github.com/xoreos/xoreos)** — generic Aurora GFF; UTI loaded as GFF in engine
+PyKotor models UTI templates with the dedicated [`UTI` data class and `read_uti` / `write_uti` helpers](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/generics/uti.py#L22) on top of the shared binary [`GFFBinaryReader.load`](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/formats/gff/io_gff.py#L82) pipeline, while Holocron Toolset exposes the same item fields through its [`uti.py` editor](https://github.com/OldRepublicDevs/HolocronToolset/src/toolset/gui/editors/uti.py). Other toolchains keep UTI in the generic GFF family as well, including reone's [`gff.cpp`](https://github.com/modawan/reone/blob/master/src/libs/resource/gff.cpp) and [`gffreader.cpp`](https://github.com/modawan/reone/blob/master/src/libs/resource/format/gffreader.cpp), KotOR.js's [`GFFObject.ts`](https://github.com/KobaltBlu/KotOR.js/blob/ea9491d5c783364cf285f178434b84405bee3608/src/resource/GFFObject.ts#L24), Kotor.NET's [`GFF.cs`](https://github.com/NickHugi/Kotor.NET/blob/6dca4a6a1af2fee6e36befb9a6f127c8ba04d3e2/Kotor.NET/Formats/KotorGFF/GFF.cs#L18), and xoreos's Aurora GFF stack.
 
 ## Core Identity fields
 
@@ -347,25 +328,7 @@ Each list element is a struct with (at minimum) the fields PyKotor reads and wri
 | `Repos_PosX` | uint16 | Repository grid X (writer uses slot index — [`dismantle_utm` L211](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/generics/utm.py#L211)). |
 | `Repos_PosY` | uint16 | Repository grid Y (writer uses `0` — same block). |
 
-## Implementation evidence
-
-**PyKotor**
-
-- [`utm.py` `UTM` L18+](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/generics/utm.py#L18) — dataclass + engine-oriented docstring (`CSWSStore::LoadStore` / `SaveStore` K1 addresses).
-- [`construct_utm` L147–L185](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/generics/utm.py#L147-L185)
-- [`dismantle_utm` L188–L221](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/generics/utm.py#L188-L221)
-- [`read_utm` / `write_utm` / `bytes_utm` L224–L253](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/generics/utm.py#L224-L253).
-- Binary GFF pipeline (same as other generics): [`io_gff.py` `GFFBinaryReader.load` L82+](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/formats/gff/io_gff.py#L82).
-
-**Cross-reference (other implementations)**
-
-- **[reone](https://github.com/modawan/reone)**:
-
-  - [`gffreader.cpp`](https://github.com/modawan/reone/blob/master/src/libs/resource/format/gffreader.cpp)
-  - [`gff.cpp`](https://github.com/modawan/reone/blob/master/src/libs/resource/gff.cpp) — generic GFF reader (UTM is a typed GFF root).
-- **[KotOR.js](https://github.com/KobaltBlu/KotOR.js)** — [`GFFObject.ts` L24+](https://github.com/KobaltBlu/KotOR.js/blob/ea9491d5c783364cf285f178434b84405bee3608/src/resource/GFFObject.ts#L24) — TypeScript GFF parser for all BioWare struct types including merchant templates.
-- **[Kotor.NET](https://github.com/NickHugi/Kotor.NET)** — [`Resources/KotorUTM/UTM.cs` L13–L35](https://github.com/NickHugi/Kotor.NET/blob/6dca4a6a1af2fee6e36befb9a6f127c8ba04d3e2/Kotor.NET/Resources/KotorUTM/UTM.cs#L13-L35) — `UTM` / `UTMItem` field model; pair with [`Formats/KotorGFF/GFF.cs` L18+](https://github.com/NickHugi/Kotor.NET/blob/6dca4a6a1af2fee6e36befb9a6f127c8ba04d3e2/Kotor.NET/Formats/KotorGFF/GFF.cs#L18) for container I/O.
-- **[xoreos](https://github.com/xoreos/xoreos)** — Aurora GFF stack; UTM treated as GFF instance like other templates.
+PyKotor documents and round-trips merchant templates through [`UTM`, `construct_utm`, `dismantle_utm`, `read_utm`, and `write_utm`](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/generics/utm.py#L18) on top of the shared [`GFFBinaryReader.load`](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/formats/gff/io_gff.py#L82) path, and the same merchant-root-as-GFF approach appears in reone's [`gffreader.cpp`](https://github.com/modawan/reone/blob/master/src/libs/resource/format/gffreader.cpp) and [`gff.cpp`](https://github.com/modawan/reone/blob/master/src/libs/resource/gff.cpp), KotOR.js's [`GFFObject.ts`](https://github.com/KobaltBlu/KotOR.js/blob/ea9491d5c783364cf285f178434b84405bee3608/src/resource/GFFObject.ts#L24), Kotor.NET's [`UTM.cs`](https://github.com/NickHugi/Kotor.NET/blob/6dca4a6a1af2fee6e36befb9a6f127c8ba04d3e2/Kotor.NET/Resources/KotorUTM/UTM.cs#L13-L35) plus [`GFF.cs`](https://github.com/NickHugi/Kotor.NET/blob/6dca4a6a1af2fee6e36befb9a6f127c8ba04d3e2/Kotor.NET/Formats/KotorGFF/GFF.cs#L18), and xoreos's Aurora GFF loader stack.
 
 ### See also
 
@@ -373,7 +336,7 @@ Each list element is a struct with (at minimum) the fields PyKotor reads and wri
 - [GFF-GIT](GFF-Module-and-Area#git) — store **instances** in areas
 - [GFF-UTI](GFF-Items-and-Economy#uti) — item templates referenced by `InventoryRes`
 - [Bioware-Aurora-Store](Bioware-Aurora-Items-Economy-and-Narrative#store) — Aurora store documentation
-- [KEY-File-Format](Container-Formats#key) — resource resolution
+- [Container-Formats#key](Container-Formats#key) — resource resolution
 
 
 ---
@@ -403,34 +366,7 @@ Part of the [GFF File Format Documentation](GFF-File-Format).
 - [NCS](NCS-File-Format) (journal API)
 - [2DA](2DA-File-Format) (e.g. journal.2da for XP)
 
-## Implementation evidence
-
-**PyKotor:**
-
-- [`jrl.py` `JRL` L18+](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/generics/jrl.py#L18)
-- [`JRLQuest` L38+](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/generics/jrl.py#L38)
-- [`JRLEntry` L71+](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/generics/jrl.py#L71) — quest / entry model
-- [`construct_jrl` L103+](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/generics/jrl.py#L103)
-- [`read_jrl` L173+](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/generics/jrl.py#L173)
-- [`write_jrl` L182+](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/generics/jrl.py#L182) — GFF ↔ `JRL` round-trip
-- [`gff_data.py` `GFFContent.JRL` L166](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/formats/gff/gff_data.py#L166) — four-character GFF type id
-- [`io_gff.py` `GFFBinaryReader.load` L82+](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/formats/gff/io_gff.py#L82) — binary GFF decode (shared with other GFF types)
-
-**HolocronToolset:**
-
-- Journal (JRL) editing in dialogue and module context — see:
-  - [Holocron Toolset: Getting Started](Holocron-Toolset-Getting-Started)
-  - [Module Editor](Holocron-Toolset-Module-Editor)
-
-**Cross-reference (other implementations):**
-
-- **[reone](https://github.com/modawan/reone)** — C++ GFF reader (JRL uses generic GFF structure):
-
-  - [`gff.cpp`](https://github.com/modawan/reone/blob/master/src/libs/resource/gff.cpp)
-  - [`gffreader.cpp`](https://github.com/modawan/reone/blob/master/src/libs/resource/format/gffreader.cpp)
-- **[KotOR.js](https://github.com/KobaltBlu/KotOR.js)**: [`GFFObject.ts` L24+](https://github.com/KobaltBlu/KotOR.js/blob/ea9491d5c783364cf285f178434b84405bee3608/src/resource/GFFObject.ts#L24) — TypeScript GFF parser (JRL as GFF)
-- **[Kotor.NET](https://github.com/NickHugi/Kotor.NET)**: [`GFF.cs` L18+](https://github.com/NickHugi/Kotor.NET/blob/6dca4a6a1af2fee6e36befb9a6f127c8ba04d3e2/Kotor.NET/Formats/KotorGFF/GFF.cs#L18) — .NET GFF reader/writer (JRL uses generic GFF structure)
-- **[xoreos](https://github.com/xoreos/xoreos)** — generic Aurora GFF; JRL loaded as GFF in engine
+PyKotor represents journals through [`JRL`, `JRLQuest`, `JRLEntry`, `construct_jrl`, `read_jrl`, and `write_jrl`](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/generics/jrl.py#L18), tags them as [`GFFContent.JRL`](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/formats/gff/gff_data.py#L166), and decodes them through the same shared [`GFFBinaryReader.load`](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/formats/gff/io_gff.py#L82) path that Holocron Toolset builds on in its dialogue and module editors. Other implementations also keep JRL inside the generic GFF family, including reone's [`gff.cpp`](https://github.com/modawan/reone/blob/master/src/libs/resource/gff.cpp) and [`gffreader.cpp`](https://github.com/modawan/reone/blob/master/src/libs/resource/format/gffreader.cpp), KotOR.js's [`GFFObject.ts`](https://github.com/KobaltBlu/KotOR.js/blob/ea9491d5c783364cf285f178434b84405bee3608/src/resource/GFFObject.ts#L24), Kotor.NET's [`GFF.cs`](https://github.com/NickHugi/Kotor.NET/blob/6dca4a6a1af2fee6e36befb9a6f127c8ba04d3e2/Kotor.NET/Formats/KotorGFF/GFF.cs#L18), and xoreos's Aurora reader stack.
 
 ## Quest structure
 
@@ -513,32 +449,7 @@ A Faction is a control system for determining how game objects interact with eac
 - `repute.2da` - Default faction standings (see [2DA File Format](2DA-File-Format))
 - `repadjust.2da` - Reputation adjustment values (see [2DA File Format](2DA-File-Format))
 
-## Implementation evidence
-
-**PyKotor:**
-
-- [`fac.py` `FACFaction` L16+](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/generics/fac.py#L16)
-- [`FACReputation` L40+](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/generics/fac.py#L40)
-- [`FAC` L64+](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/generics/fac.py#L64) — in-memory faction / reputation model
-- [`construct_fac` L125+](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/generics/fac.py#L125)
-- [`read_fac` L260+](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/generics/fac.py#L260)
-- [`write_fac` L281+](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/generics/fac.py#L281) — GFF ↔ `FAC` round-trip
-- [`gff_data.py` `GFFContent.FAC` L161](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/formats/gff/gff_data.py#L161) — four-character GFF type id
-- [`io_gff.py` `GFFBinaryReader.load` L82+](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/formats/gff/io_gff.py#L82) — binary GFF decode (shared with other GFF types)
-
-**HolocronToolset:**
-
-- Faction / `repute.fac` editing where exposed in the module or GFF workflow — see [Holocron Toolset: Getting Started](Holocron-Toolset-Getting-Started).
-
-**Cross-reference (other implementations):**
-
-- **[reone](https://github.com/modawan/reone)** — C++ GFF reader (FAC uses generic GFF structure):
-
-  - [`gff.cpp`](https://github.com/modawan/reone/blob/master/src/libs/resource/gff.cpp)
-  - [`gffreader.cpp`](https://github.com/modawan/reone/blob/master/src/libs/resource/format/gffreader.cpp)
-- **[KotOR.js](https://github.com/KobaltBlu/KotOR.js)**: [`GFFObject.ts` L24+](https://github.com/KobaltBlu/KotOR.js/blob/ea9491d5c783364cf285f178434b84405bee3608/src/resource/GFFObject.ts#L24) — TypeScript GFF parser (FAC as GFF)
-- **[Kotor.NET](https://github.com/NickHugi/Kotor.NET)**: [`GFF.cs` L18+](https://github.com/NickHugi/Kotor.NET/blob/6dca4a6a1af2fee6e36befb9a6f127c8ba04d3e2/Kotor.NET/Formats/KotorGFF/GFF.cs#L18) — .NET GFF reader/writer (FAC uses generic GFF structure)
-- **[xoreos](https://github.com/xoreos/xoreos)** — generic Aurora GFF; FAC loaded as GFF in engine
+PyKotor describes module faction state with [`FACFaction`, `FACReputation`, `FAC`, `construct_fac`, `read_fac`, and `write_fac`](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/generics/fac.py#L16), labels the root as [`GFFContent.FAC`](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/formats/gff/gff_data.py#L161), and parses it through the shared [`GFFBinaryReader.load`](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/formats/gff/io_gff.py#L82); Holocron Toolset exposes the same `repute.fac` data where its module and generic GFF workflows surface faction editing. Other engines again keep FAC as ordinary GFF, including reone's [`gff.cpp`](https://github.com/modawan/reone/blob/master/src/libs/resource/gff.cpp) and [`gffreader.cpp`](https://github.com/modawan/reone/blob/master/src/libs/resource/format/gffreader.cpp), KotOR.js's [`GFFObject.ts`](https://github.com/KobaltBlu/KotOR.js/blob/ea9491d5c783364cf285f178434b84405bee3608/src/resource/GFFObject.ts#L24), Kotor.NET's [`GFF.cs`](https://github.com/NickHugi/Kotor.NET/blob/6dca4a6a1af2fee6e36befb9a6f127c8ba04d3e2/Kotor.NET/Formats/KotorGFF/GFF.cs#L18), and xoreos's Aurora stack.
 
 ---
 

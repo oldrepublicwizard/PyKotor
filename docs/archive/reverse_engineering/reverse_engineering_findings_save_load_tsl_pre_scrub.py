@@ -1,13 +1,7 @@
-"""TSL (K2) save/load flow: 1:1 with k2_win_gog_aspyr_swkotor2.exe behavior.
+"""Archived TSL save/load helper module.
 
-This module implements the exact sequence of operations performed by the TSL
-binary during save and load. Every step and order matches the engine as
-documented in docs/reva_roadmap/SAVE_LOAD_ENGINE_BEHAVIOR.md and
-KOTOR_SAVE_LOAD_TSL_RE_REPORT.md.
-
-Use run_tsl_save_flow() and run_tsl_load_flow() for engine-identical sequence.
-Same high-level order as K1; offsets and path constants differ (0x1f0b4 table,
-0x100fc load, 0x1f254/0x1f33c/0x1f344 flags). K2-specific: PIFO.ifo, galaxy map.
+The executable-derived findings that previously lived in this module docstring were
+consolidated into ``wiki/reverse_engineering_findings.md``.
 """
 
 from __future__ import annotations

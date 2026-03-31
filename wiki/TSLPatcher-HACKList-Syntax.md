@@ -54,7 +54,7 @@ The `[HACKList]` section declares [NCS files](NCS-File-Format) to modify. Each e
 
 ### Top-Level Keys in [HACKList]
 
-| [KEY](KEY-File-Format) | type | Default | Description |
+| [KEY](Container-Formats#key) | type | Default | Description |
 |-----|------|---------|-------------|
 | `!DefaultDestination` | string | `override` | Default destination for all [NCS files](NCS-File-Format) in this section |
 | `!DefaultSourceFolder` | string | `.` | Default source folder for [NCS files](NCS-File-Format). This is a relative path from `mod_path`, which is typically the `tslpatchdata` folder (the parent directory of the `changes.ini` file). The default value `.` refers to the `tslpatchdata` folder itself. Path resolution: `mod_path / !DefaultSourceFolder / filename` |
@@ -74,10 +74,10 @@ Each [NCS file](NCS-File-Format) requires its own section (e.g., `[myscript.ncs]
 **Destination values:**
 
 - `override` or empty: Save to the Override folder
-- `Modules\module.mod`: Insert into an [ERF](ERF-File-Format)/MOD/[RIM](RIM-File-Format) container
+- `Modules\module.mod`: Insert into an [ERF](Container-Formats#erf)/MOD/[RIM](Container-Formats#rim) container
 - Use backslashes for path separators
 
-**Important:** The `ReplaceFile` [KEY](KEY-File-Format) in HACKList does NOT use an exclamation point prefix. This is unique to HACKList compared to other patch lists.
+**Important:** The `ReplaceFile` [KEY](Container-Formats#key) in HACKList does NOT use an exclamation point prefix. This is unique to HACKList compared to other patch lists.
 
 ## Token types and data Sizes
 
@@ -102,8 +102,8 @@ offset=type:value
 | `u8:123` | u8 | 1 [byte](https://en.wikipedia.org/wiki/Byte) | 8-bit unsigned integer (0-255) |
 | `u16:12345` | u16 | 2 bytes | 16-bit unsigned integer (0-65535) |
 | `u32:123456` | u32 | 4 bytes | 32-bit unsigned integer |
-| `StrRef0` | [StrRef](TLK-File-Format#string-references-strref) | Varies* | Reference to [TLK](TLK-File-Format) string from memory |
-| `StrRefN` | strref32 | 4 bytes | 32-bit signed [TLK](TLK-File-Format) reference (CONSTI) |
+| `StrRef0` | [StrRef](Audio-and-Localization-Formats#string-references-strref) | Varies* | Reference to [TLK](Audio-and-Localization-Formats#tlk) string from memory |
+| `StrRefN` | strref32 | 4 bytes | 32-bit signed [TLK](Audio-and-Localization-Formats#tlk) reference (CONSTI) |
 | `2DAMEMORY1` | 2damemory | Varies* | Reference to [2DA](2DA-File-Format) memory value |
 | `2DAMEMORYN` | 2damemory32 | 4 bytes | 32-bit signed [2DA](2DA-File-Format) reference (CONSTI) |
 
@@ -117,7 +117,7 @@ All multi-[byte](https://en.wikipedia.org/wiki/Byte) values are written in **[bi
 
 **Historical Background:** TSLPatcher originally distinguished between `strref` and `strref32` (and `2damemory` vs `2damemory32`), but PyKotor's implementation unifies these:
 
-- `[StrRef](TLK-File-Format#string-references-strref)#` tokens are automatically handled as 32-bit values
+- `[StrRef](Audio-and-Localization-Formats#string-references-strref)#` tokens are automatically handled as 32-bit values
 - `2DAMEMORY#` tokens are automatically handled as 32-bit values
 
 If you need legacy 16-bit compatibility, use explicit type specifiers like `u16:StrRef5`, though this is not typically necessary.
@@ -126,7 +126,7 @@ If you need legacy 16-bit compatibility, use explicit type specifiers like `u16:
 
 HACKList integrates seamlessly with TSLPatcher's memory token system, allowing dynamic value injection from other patch sections.
 
-### [StrRef](TLK-File-Format#string-references-strref) Tokens
+### [StrRef](Audio-and-Localization-Formats#string-references-strref) Tokens
 
 Reference values stored in TLKList memory:
 
@@ -145,7 +145,7 @@ File0=myscript.ncs
 
 **Use Cases:**
 
-- Injecting dynamically-added [dialog.tlk](TLK-File-Format) string references
+- Injecting dynamically-added [dialog.tlk](Audio-and-Localization-Formats#tlk) string references
 - Patching scripts to reference custom text entries
 - Updating hardcoded string IDs to mod-added entries
 
@@ -258,7 +258,7 @@ File0=combat_script.ncs
 0x50=u16:50
 ```
 
-### Example 2: Injecting Dynamic [TLK](TLK-File-Format) Reference
+### Example 2: Injecting Dynamic [TLK](Audio-and-Localization-Formats#tlk) Reference
 
 Inject a dynamically-added string reference:
 
@@ -342,7 +342,7 @@ ReplaceFile=1
 
 ### Example 6: Saving to Container
 
-Save modified scripts to a [module container](ERF-File-Format):
+Save modified scripts to a [module container](Container-Formats#erf):
 
 ```ini
 [HACKList]
@@ -362,7 +362,7 @@ ReplaceFile=1
 
 *DeNCS* provides comprehensive [NCS](NCS-File-Format) disassembly capabilities for locating exact [byte](https://en.wikipedia.org/wiki/Byte) offsets. Understanding its output is essential for `[HACKList]` usage.
 
-### [KEY](KEY-File-Format) DeNCS Features
+### [KEY](Container-Formats#key) DeNCS Features
 
 - **Instruction-level disassembly**: See each bytecode instruction
 - **offset mapping**: Exact [byte](https://en.wikipedia.org/wiki/Byte) positions for each instruction
@@ -424,7 +424,7 @@ The jump offset is a 4-[byte](https://en.wikipedia.org/wiki/Byte) signed integer
 
 ### 1. Updating Hardcoded string References
 
-Many vanilla scripts have hardcoded [StrRef](TLK-File-Format#string-references-strref) values. HACKList lets you redirect them to mod-added entries:
+Many vanilla scripts have hardcoded [StrRef](Audio-and-Localization-Formats#string-references-strref) values. HACKList lets you redirect them to mod-added entries:
 
 ```ini
 [TLKList]
@@ -555,7 +555,7 @@ File0=buggy_script.ncs
 
 ### Archival Insertion Issues
 
-**Problem:** Modified script not appearing in [ERF](ERF-File-Format)/MOD/[RIM](RIM-File-Format) container
+**Problem:** Modified script not appearing in [ERF](Container-Formats#erf)/MOD/[RIM](Container-Formats#rim) container
 
 **Solutions:**
 
@@ -610,7 +610,7 @@ I have no idea why this is the exclusive instance of Stoffe's variables that doe
 
 - PyKotor's HACKList implementation is compatible with TSLPatcher v1.2.10b+
 - All [NCS](NCS-File-Format) versions V1.0 are supported
-- Container insertion works for [ERF](ERF-File-Format), MOD, and [RIM](RIM-File-Format) formats
+- Container insertion works for [ERF](Container-Formats#erf), MOD, and [RIM](Container-Formats#rim) formats
 - Memory tokens from TLKList and 2DAList are fully supported
 - `!FieldPath` is **not** supported (only numeric values)
 

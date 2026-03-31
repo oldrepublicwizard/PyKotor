@@ -59,33 +59,7 @@ GFF string fields are normalized before comparison to avoid false positives from
 
 See `_normalize_string_for_compare()` in `gff_data.py`.
 
-## Reva Engine Research (Ghidra)
-
-To verify construct/dismantle correctness and document engine behavior for each field in `Libraries/PyKotor/src/pykotor/resource/generics/`, the **Reva MCP server** must have both executables loaded in a Ghidra project:
-
-1. **swkotor.exe** (KotOR I)
-2. **swkotor2.exe** (KotOR II / TSL)
-
-### Requirements
-
-- Open project: `C:\Users\boden\PyKotorGhidraProject.gpr` (or equivalent)
-- Import both `swkotor.exe` and `swkotor2.exe`
-- Run auto-analysis
-- Connect the Reva MCP server to this project
-
-### Research Tasks (when Reva is available)
-
-For **each** generic format (UTE, UTC, UTI, UTD, UTM, UTP, UTS, UTT, UTW, etc.):
-
-1. Use `list-functions` / `get-functions` to find load/read/parse functions
-2. Decompile and inspect how each field is read and what defaults apply
-3. Document findings in `construct_<format>` / `dismantle_<format>` as inline comments
-4. Verify field types and defaults for **both** K1 and TSL
-
-### Known Engine References (from prior research)
-
-- **UTE**: `CSWSEncounter::LoadEncounter` (K1: 0x00593830, TSL: TODO), `ReadEncounterFromGff` (K1: 0x00592430, TSL: TODO)
-- **UTE CreatureList**: ResRef, CR, SingleSpawn, Appearance; GuaranteedCount is K2-only, default 0
+Confirmed executable-derived generic-field findings are centralized in `wiki/reverse_engineering_findings.md`.
 
 ## Default and Ignorable Fields
 

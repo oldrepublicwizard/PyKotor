@@ -33,32 +33,7 @@ UTC files define [creature templates](GFF-File-Format#utc-creature) including NP
 - [TPC](Texture-Formats#tpc)
 - [GFF-UTI](GFF-Items-and-Economy#uti) (inventory items)
 
-## Implementation evidence
-
-**PyKotor:**
-
-- [`utc.py` `UTC` L36+](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/generics/utc.py#L36) — in-memory creature model (classes, feats, inventory, appearance, scripts)
-- [`construct_utc` L494+](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/generics/utc.py#L494)
-- [`read_utc` L982+](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/generics/utc.py#L982)
-- [`write_utc` L992+](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/generics/utc.py#L992) — GFF ↔ `UTC` round-trip
-- [`gff_data.py` `GFFContent.UTC` L150](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/formats/gff/gff_data.py#L150) — four-character GFF type id
-- [`io_gff.py` `GFFBinaryReader.load` L82+](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/formats/gff/io_gff.py#L82) — binary GFF decode (shared with other GFF types)
-
-**HolocronToolset:**
-
-- [`utc.py` (creature / UTC editor)](https://github.com/OldRepublicDevs/HolocronToolset/src/toolset/gui/editors/utc.py) — GUI for UTC fields and creature templates in modules
-
-**Cross-reference (other implementations):**
-
-- **[reone](https://github.com/modawan/reone)** — generic GFF reader (UTC as GFF):
-
-  - [`gff.cpp`](https://github.com/modawan/reone/blob/master/src/libs/resource/gff.cpp)
-  - [`gffreader.cpp`](https://github.com/modawan/reone/blob/master/src/libs/resource/format/gffreader.cpp)
-- **[KotOR.js](https://github.com/KobaltBlu/KotOR.js)**: [`GFFObject.ts` L24+](https://github.com/KobaltBlu/KotOR.js/blob/ea9491d5c783364cf285f178434b84405bee3608/src/resource/GFFObject.ts#L24) — TypeScript GFF parser
-- **[Kotor.NET](https://github.com/NickHugi/Kotor.NET)**: [`GFF.cs` L18+](https://github.com/NickHugi/Kotor.NET/blob/6dca4a6a1af2fee6e36befb9a6f127c8ba04d3e2/Kotor.NET/Formats/KotorGFF/GFF.cs#L18) — managed GFF reader/writer
-- **[xoreos](https://github.com/xoreos/xoreos)** — Aurora GFF pipeline
-
-**Community context (workflow):** Creature editing and appearance threads are common on Deadly Stream—see [Home — Community sources](Home#community-sources-and-archives). Use forums for **workflow**; **UTC field layout** follows this page, BioWare spec, and PyKotor.
+UTC support in PyKotor is implemented by the in-memory `UTC` model and GFF reader/writer pipeline ([`utc.py` L36+](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/generics/utc.py#L36), [`construct_utc` L494+](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/generics/utc.py#L494), [`read_utc` L982+](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/generics/utc.py#L982), [`write_utc` L992+](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/generics/utc.py#L992)). UTC is identified as `GFFContent.UTC` in the shared GFF type map and uses the common binary GFF loader ([`gff_data.py` L150](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/formats/gff/gff_data.py#L150), [`io_gff.py` L82+](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/formats/gff/io_gff.py#L82)). The Holocron Toolset exposes these fields in its creature editor ([`toolset/gui/editors/utc.py`](https://github.com/OldRepublicDevs/HolocronToolset/src/toolset/gui/editors/utc.py)), and other engines parse UTC through their generic GFF stacks ([reone `gff.cpp`](https://github.com/modawan/reone/blob/master/src/libs/resource/gff.cpp), [reone `gffreader.cpp`](https://github.com/modawan/reone/blob/master/src/libs/resource/format/gffreader.cpp), [KotOR.js `GFFObject.ts` L24+](https://github.com/KobaltBlu/KotOR.js/blob/ea9491d5c783364cf285f178434b84405bee3608/src/resource/GFFObject.ts#L24), [Kotor.NET `GFF.cs` L18+](https://github.com/NickHugi/Kotor.NET/blob/6dca4a6a1af2fee6e36befb9a6f127c8ba04d3e2/Kotor.NET/Formats/KotorGFF/GFF.cs#L18)). For practical creature-editing workflow examples and troubleshooting, the community index at [Home](Home#community-sources-and-archives) links to current forum threads.
 
 ## Core Identity fields
 
@@ -285,31 +260,7 @@ DLG files are loaded with the same [resource resolution order](Concepts#resource
 - [GFF-JRL](GFF-Items-and-Economy#jrl) — journal updates
 - [MDL](MDL-MDX-File-Format) — camera models
 
-## Implementation evidence
-
-**PyKotor:**
-
-- [`dlg/base.py` `DLG` L36+](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/generics/dlg/base.py#L36) — in-memory dialog graph ([entries](GFF-File-Format#dlg-dialogue), replies, links, metadata)
-- [`dlg/io/gff.py` `construct_dlg` L29+](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/generics/dlg/io/gff.py#L29)
-- [`read_dlg` L566+](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/generics/dlg/io/gff.py#L566)
-- [`write_dlg` L593+](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/generics/dlg/io/gff.py#L593) — GFF ↔ `DLG` round-trip
-- [`gff_data.py` `GFFContent.DLG` L160](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/formats/gff/gff_data.py#L160) — four-character GFF type id
-- [`io_gff.py` `GFFBinaryReader.load` L82+](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/formats/gff/io_gff.py#L82) — binary GFF decode (shared with other GFF types)
-- Twine interchange (optional): [`dlg/io/twine.py`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/dlg/io/twine.py) — `read_twine` / `write_twine`
-
-**HolocronToolset:**
-
-- Dialogue (DLG) editor — see [Holocron Toolset: Getting Started](Holocron-Toolset-Getting-Started) for where the GUI exposes DLG editing.
-
-**Cross-reference (other implementations):**
-
-- **[reone](https://github.com/modawan/reone)** — C++ GFF reader (DLG uses generic GFF structure):
-
-  - [`gff.cpp`](https://github.com/modawan/reone/blob/master/src/libs/resource/gff.cpp)
-  - [`gffreader.cpp`](https://github.com/modawan/reone/blob/master/src/libs/resource/format/gffreader.cpp)
-- **[KotOR.js](https://github.com/KobaltBlu/KotOR.js)**: [`DLGObject.ts` `DLGObject` L31+](https://github.com/KobaltBlu/KotOR.js/blob/ea9491d5c783364cf285f178434b84405bee3608/src/resource/DLGObject.ts#L31) — dialog runtime over [`GFFObject.ts` L24+](https://github.com/KobaltBlu/KotOR.js/blob/ea9491d5c783364cf285f178434b84405bee3608/src/resource/GFFObject.ts#L24)
-- **[Kotor.NET](https://github.com/NickHugi/Kotor.NET)**: [`GFF.cs` L18+](https://github.com/NickHugi/Kotor.NET/blob/6dca4a6a1af2fee6e36befb9a6f127c8ba04d3e2/Kotor.NET/Formats/KotorGFF/GFF.cs#L18) — .NET GFF reader/writer (DLG uses generic GFF structure)
-- **[xoreos](https://github.com/xoreos/xoreos)** — generic Aurora GFF; DLG loaded as GFF in engine
+PyKotor implements DLG as a graph of entries, replies, and links with GFF-based read/write support ([`dlg/base.py` L36+](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/generics/dlg/base.py#L36), [`construct_dlg` L29+](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/generics/dlg/io/gff.py#L29), [`read_dlg` L566+](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/generics/dlg/io/gff.py#L566), [`write_dlg` L593+](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/generics/dlg/io/gff.py#L593)). DLG is identified as `GFFContent.DLG` and decoded by the shared GFF binary reader ([`gff_data.py` L160](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/formats/gff/gff_data.py#L160), [`io_gff.py` L82+](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/formats/gff/io_gff.py#L82)). PyKotor also supports optional Twine interchange for dialogue authoring flows ([`dlg/io/twine.py`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/dlg/io/twine.py)). The Holocron Toolset exposes DLG editing in the GUI workflow ([Holocron Toolset: Getting Started](Holocron-Toolset-Getting-Started)), and other engines/tools load DLG through generic GFF or dialogue-specific wrappers ([reone `gff.cpp`](https://github.com/modawan/reone/blob/master/src/libs/resource/gff.cpp), [reone `gffreader.cpp`](https://github.com/modawan/reone/blob/master/src/libs/resource/format/gffreader.cpp), [KotOR.js `DLGObject.ts` L31+](https://github.com/KobaltBlu/KotOR.js/blob/ea9491d5c783364cf285f178434b84405bee3608/src/resource/DLGObject.ts#L31), [KotOR.js `GFFObject.ts` L24+](https://github.com/KobaltBlu/KotOR.js/blob/ea9491d5c783364cf285f178434b84405bee3608/src/resource/GFFObject.ts#L24), [Kotor.NET `GFF.cs` L18+](https://github.com/NickHugi/Kotor.NET/blob/6dca4a6a1af2fee6e36befb9a6f127c8ba04d3e2/Kotor.NET/Formats/KotorGFF/GFF.cs#L18)).
 
 ## Conversation Properties
 

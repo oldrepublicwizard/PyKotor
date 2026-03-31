@@ -24,7 +24,7 @@ The practices below follow both the current toolchain and long-running community
 
 The game resolves resources in a fixed order. Understanding this order is essential for knowing where to place your mod's files and how conflicts arise.
 
-**Resolution order (summary):** The engine checks (1) the **override folder** (`override/`), (2) currently loaded **MOD/ERF** files (e.g. modules in the Modules folder), (3) the current **save game** when in-game, then (4) **KEY/BIF** (vanilla game data). So override and MOD content take precedence over vanilla BIFs. See [Concepts](Concepts#resource-resolution-order) for the full sequence and how the resource manager satisfies requests; [KEY-File-Format](Container-Formats#key) documents the KEY binary layout.
+**Resolution order (summary):** The engine checks (1) the **override folder** (`override/`), (2) currently loaded **MOD/ERF** files (e.g. modules in the Modules folder), (3) the current **save game** when in-game, then (4) **KEY/BIF** (vanilla game data). So override and MOD content take precedence over vanilla BIFs. See [Concepts](Concepts#resource-resolution-order) for the full sequence and how the resource manager satisfies requests; [Container-Formats#key](Container-Formats#key) documents the KEY binary layout.
 
 **Where to put files:**
 

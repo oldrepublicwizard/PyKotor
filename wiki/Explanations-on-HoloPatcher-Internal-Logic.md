@@ -200,4 +200,4 @@ source code @ [tslpatcher.mods.template](https://github.com/OldRepublicDevs/PyKo
 - [TSLPatcher's Official Readme](TSLPatcher's-Official-Readme) — TSLPatcher syntax
 - [TSLPatcher GFFList Syntax](TSLPatcher-GFFList-Syntax)
 - [TSLPatcher InstallList Syntax](TSLPatcher-InstallList-Syntax)
-- [KEY-File-Format](Container-Formats#key) — Resource resolution
+- [Container-Formats#key](Container-Formats#key) — Resource resolution

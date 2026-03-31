@@ -237,23 +237,15 @@ A GFF file contains 7 distinct sections — 1 fixed-size header, 5 arrays of fix
 
 **Figure 3.1: GFF File Structure**
 
-```text
-┌──────────────────────┐  ← Start of File
-│         Header          │
-├──────────────────────┤  ← StructOffset
-│       Struct Array      │
-├──────────────────────┤  ← FieldOffset
-│       Field Array       │
-├──────────────────────┤  ← LabelOffset
-│       Label Array       │
-├──────────────────────┤  ← FieldDataOffset
-│     Field Data Block    │
-├──────────────────────┤  ← FieldIndicesOffset
-│   Field Indices Array   │
-├──────────────────────┤  ← ListIndicesOffset
-│   List Indices Array    │
-└──────────────────────┘
-```
+| Section | Start Position | Description |
+|---------|---|---|
+| Header | Start of File | Fixed-size header containing metadata |
+| Struct Array | StructOffset | Array of struct definitions |
+| Field Array | FieldOffset | Array of field definitions |
+| Label Array | LabelOffset | Array of field labels |
+| Field Data Block | FieldDataOffset | Raw block of all complex-type field data |
+| Field Indices Array | FieldIndicesOffset | Indices into Field Array for struct field lookups |
+| List Indices Array | ListIndicesOffset | Indices into Struct Array for list element lookups |
 ### 3.2. Header
 
 The GFF header contains a number of values, all of them DWORDs (32-bit unsigned integers). The header contains offset information for all the other sections in the GFF file. Values in the header are as follows, and arranged in the order listed:
@@ -296,14 +288,14 @@ The Struct Array looks like this:
 
 **Figure 3.3: Struct Array**
 
-```text
-Struct 0  (Top-Level Struct)   ← always present (Struct ID = 0xFFFFFFFF)
-Struct 1
-Struct 2
-. . .
-Struct N-1
-                               N = Header.StructCount (always ≥ 1)
-```
+| Position | Content | Notes |
+|---|---|---|
+| 0 | Top-Level Struct | Always present; Struct ID = `0xFFFFFFFF`; contains all other data |
+| 1 | Struct 1 | First nested struct |
+| 2 | Struct 2 | Second nested struct |
+| ... | ... | |
+| N-1 | Struct N-1 | Last struct |
+| | **Total: N structs** | N = Header.StructCount (always ≥ 1) |
 
 Physically, a GFF Struct contains the values listed in the table below. All of them are DWORDs.
 
@@ -325,13 +317,14 @@ The Field Array contains all the Fields in the GFF file except for the Top-Level
 
 **Figure 3.4: Field Array**
 
-```text
-Field 0
-Field 1
-Field 2
-. . .
-Field N-1                  N = Header.FieldCount
-```
+| Position | Content | Notes |
+|---|---|---|
+| 0 | Field 0 | First field |
+| 1 | Field 1 | Second field |
+| 2 | Field 2 | Third field |
+| ... | ... | |
+| N-1 | Field N-1 | Last field |
+| | **Total: N fields** | N = Header.FieldCount |
 
 Each Field contains the values listed in the table below. All of the values are DWORDs.
 
@@ -390,13 +383,14 @@ Also, the Fields belonging to a Struct must all use different Labels. It is perm
 
 **Figure 3.5: Label Array**
 
-```text
-Label 0
-Label 1
-Label 2
-. . .
-Label N-1                  N = Header.LabelCount
-```
+| Position | Content | Notes |
+|---|---|---|
+| 0 | Label 0 | First label |
+| 1 | Label 1 | Second label |
+| 2 | Label 2 | Third label |
+| ... | ... | |
+| N-1 | Label N-1 | Last label |
+| | **Total: N labels** | N = Header.LabelCount |
 
 ### 3.6. Field Data Block
 
@@ -420,17 +414,15 @@ A List is an array of Structs, and being array, its length is variable. The form
 
 **Figure 3.8: List Format**
 
-```text
-┌──────────────┐
-│ Size (DWORD) │  ← number of Struct indices that follow
-├──────────────┤
-│   Index 0    │  ─┬  Each Index is a DWORD pointing into
-│   Index 1    │   │  the Struct Array.
-│   Index 2    │   │
-│    . . .     │   │
-│  Index N-1   │  ─┘  N = Size
-└──────────────┘
-```
+| Field | Type | Description |
+|---|---|---|
+| Size | DWORD | Number of Struct indices that follow |
+| Index 0 | DWORD | Pointer to first struct in Struct Array |
+| Index 1 | DWORD | Pointer to second struct in Struct Array |
+| Index 2 | DWORD | Pointer to third struct in Struct Array |
+| ... | ... | |
+| Index N-1 | DWORD | Pointer to last struct in Struct Array |
+| | **Where N** | **= Size** |
 
 The first DWORD is the Size of the List, and it specifies how many Struct elements the List contains.
 There are Size DWORDS after that, each one an index into the Struct Array.
@@ -460,17 +452,14 @@ A CExoString is a simple character string datatype. The figure below shows the l
 
 **Figure 4.4: CExoString Format**
 
-```text
-┌──────────────┐
-│ Size (DWORD) │  ← number of characters (no null terminator)
-├──────────────┤
-│   char 0     │  ─┬
-│   char 1     │   │  N bytes of character data
-│   char 2     │   │  (1 byte each, no null terminator)
-│    . . .     │   │
-│   char N-1   │  ─┘  N = Size
-└──────────────┘
-```
+| Field | Type | Size | Description |
+|---|---|---|---|
+| Size | DWORD | 4 bytes | Number of characters (no null terminator) |
+| char 0 | CHAR | 1 byte | First character |
+| char 1 | CHAR | 1 byte | Second character |
+| ... | ... | ... | |
+| char N-1 | CHAR | 1 byte | Last character |
+| | **Total** | **N + 4 bytes** | **N = Size** |
 
 A CExoString begins with a single DWORD (4-byte unsigned integer) which stores the string's Size. It specifies how many characters are in the string. This character-count does not include a null terminator. If we let N equal the number stored in Size, then the next N bytes after the Size are the characters that make up the string. There is no null terminator.
 
@@ -488,17 +477,14 @@ The diagram below shows the structure of a CResRef stored in a GFF:
 
 **Figure 4.5: CResRef Format**
 
-```text
-┌──────────────┐
-│  Size (1 byte)│  ← number of characters (max 16, no null terminator)
-├──────────────┤
-│   char 0     │  ─┬
-│   char 1     │   │  N characters (1 byte each)
-│   char 2     │   │
-│    . . .     │   │
-│   char N-1   │  ─┘  N = Size (≤ 16)
-└──────────────┘
-```
+| Field | Type | Size | Description |
+|---|---|---|---|
+| Size | BYTE | 1 byte | Number of characters (max 16, no null terminator) |
+| char 0 | CHAR | 1 byte | First character |
+| char 1 | CHAR | 1 byte | Second character |
+| ... | ... | ... | |
+| char N-1 | CHAR | 1 byte | Last character |
+| | **Total** | **N + 1 bytes** | **N = Size (≤ 16)** |
 
 The first byte is a Size, an unsigned value specifying the number of characters to follow. The Size is 16 at most. The character string contains no null terminator.
 
@@ -510,20 +496,16 @@ The figure below shows the layout of a CExoLocString.
 
 **Figure 4.6a: CExoLocString Format**
 
-```text
-┌───────────────────┐
-│ Total Size (4-byte DWORD) │  ← total bytes after this field
-├───────────────────┤
-│ StringRef (4-byte DWORD)  │  ← index into dialog.tlk (0xFFFFFFFF = invalid)
-├───────────────────┤
-│ StringCount (4-byte DWORD)│  ← number of SubStrings that follow
-├───────────────────┤
-│     SubString 0           │  ─┬
-│     SubString 1           │   │  N SubStrings
-│      . . .               │   │
-│     SubString N-1         │  ─┘  N = StringCount
-└───────────────────┘
-```
+| Field | Type | Description |
+|---|---|---|
+| Total Size | DWORD | Total bytes after this field |
+| StringRef | DWORD | Index into dialog.tlk (0xFFFFFFFF = invalid) |
+| StringCount | DWORD | Number of SubStrings that follow |
+| SubString 0 | Variable | First substring |
+| SubString 1 | Variable | Second substring |
+| ... | ... | |
+| SubString N-1 | Variable | Last substring |
+| | **Where N** | **= StringCount** |
 
 A CExoLocString begins with a single DWORD (4-byte unsigned integer) which stores the total number of bytes in the CExoLocString, not including the first 4 size bytes.
 
@@ -535,18 +517,15 @@ A LocString SubString has almost the same format as a CExoString, but includes a
 
 **Figure 4.6b: CExoLocString SubString Format**
 
-```text
-┌────────────────────┐
-│ StringID    (4-byte INT)  │  ← = 2 × LanguageID + Gender (0=masc, 1=fem)
-├────────────────────┤
-│ StringLength(4-byte INT)  │  ← number of characters (no null terminator)
-├────────────────────┤
-│   char 0 (1 byte)        │  ─┬  N bytes of character data
-│   char 1                 │   │
-│    . . .                 │   │
-│   char N-1               │  ─┘  N = StringLength
-└────────────────────┘
-```
+| Field | Type | Size | Description |
+|---|---|---|---|
+| StringID | INT | 4 bytes | Calculated as: (2 × LanguageID) + Gender (0=masculine, 1=feminine) |
+| StringLength | INT | 4 bytes | Number of characters (no null terminator) |
+| char 0 | CHAR | 1 byte | First character |
+| char 1 | CHAR | 1 byte | Second character |
+| ... | ... | ... | |
+| char N-1 | CHAR | 1 byte | Last character |
+| | **Total** | **N + 8 bytes** | **N = StringLength** |
 
 The StringID stored in a GFF file does not match up exactly to the LanguageIDs shown in Table 2.2b. Instead, it is 2 times the Language ID, plus the Gender (0 for neutral or masculine, 1 for feminine).
 
@@ -557,17 +536,14 @@ Void data is an arbitrary sequence of bytes to be interpreted by the application
 
 **Figure 4.7: VOID Format**
 
-```text
-┌──────────────┐
-│ Size (DWORD) │  ← number of data bytes
-├──────────────┤
-│   byte 0     │  ─┬
-│   byte 1     │   │  N bytes of raw data
-│   byte 2     │   │
-│    . . .     │   │
-│   byte N-1   │  ─┘  N = Size
-└──────────────┘
-```
+| Field | Type | Size | Description |
+|---|---|---|---|
+| Size | DWORD | 4 bytes | Number of data bytes |
+| byte 0 | RAW | 1 byte | First byte of raw data |
+| byte 1 | RAW | 1 byte | Second byte of raw data |
+| ... | ... | ... | |
+| byte N-1 | RAW | 1 byte | Last byte of raw data |
+| | **Total** | **N + 4 bytes** | **N = Size** |
 
 Size is a DWORD containing the number of bytes of data. The data itself is contained in the N bytes that follow, where N is equal to the Size value.
 
@@ -592,7 +568,7 @@ The starting address of a List is specified in its Field's `DataOrDataOffset` va
 - [GFF-IFO](GFF-Module-and-Area#ifo)
 - [GFF-UTI](GFF-Items-and-Economy#uti)
 - [GFF-UTC](GFF-Creature-and-Dialogue#utc) -- KotOR GFF-based resources
-- [KEY-File-Format](Container-Formats#key) -- Resource resolution
+- [Container-Formats#key](Container-Formats#key) -- Resource resolution
 - [TSLPatcher GFFList Syntax](TSLPatcher-GFF-Syntax#gfflist-syntax) -- Patching GFF
 
 
@@ -745,7 +721,7 @@ Try to ensure that no existing data, in a 2da or otherwise, references the starr
 - [2DA-File-Format](2DA-File-Format) -- KotOR 2DA implementation and column reference
 - [TSLPatcher HACKList Syntax](TSLPatcher-Install-and-Hack-Syntax#hacklist-syntax)
 - [TSLPatcher 2DAList Syntax](TSLPatcher-Data-Syntax#2dalist-syntax) -- Patching 2DA
-- [KEY-File-Format](Container-Formats#key) -- Resource resolution
+- [Container-Formats#key](Container-Formats#key) -- Resource resolution
 
 
 ---
@@ -778,7 +754,8 @@ The following terms are used in this document to refer to integer types:
 
 - `WORD`: 16-bit (2-byte) unsigned integer
 - `DWORD`: 32-bit (4-byte) unsigned integer
-1.2. Resource Management
+
+### 1.2. Resource Management
 The game and toolset both use the same resource management system for requesting game
 resources (ie., files).
 Any resource can be obtained simply by specifying a ResRef (filename restricted to 16 characters
@@ -885,17 +862,12 @@ A Key file is an index of all the resources contained within a set of BIF files.
 
 **Figure 2.1: Key File Structure**
 
-```text
-┌───────────────────┐  ← Start of File
-│       Header            │
-├───────────────────┤  ← OffsetToFileTable
-│      File Table         │
-├───────────────────┤
-│    Filename Table       │
-├───────────────────┤  ← OffsetToKeyTable
-│   Key Entries Table     │
-└───────────────────┘
-```
+| Section | Start Position | Description |
+|---|---|---|
+| Header | Start of File | File metadata and offsets |
+| File Table | OffsetToFileTable | List of BIF file entries |
+| Filename Table | (follows File Table) | Filenames of all referenced BIF files |
+| Key Entries Table | OffsetToKeyTable | Resource entries for all BIF contents |
 
 ### 2.2. Header
 
@@ -960,19 +932,13 @@ A BIF contains multiple resources (files). It does not contain information about
 
 **Figure 3.1: BIF File Structure**
 
-```text
-┌─────────────────────┐  ← Start of File
-│         Header         │
-├─────────────────────┤  ← Variable TableOffset
-│ Variable Resource Table│
-├─────────────────────┤
-│  Fixed Resource Table  │
-├─────────────────────┤
-│ Variable Resource Data │
-├─────────────────────┤
-│  Fixed Resource Data   │
-└─────────────────────┘
-```
+| Section | Start Position | Description |
+|---|---|---|
+| Header | Start of File | File metadata and offsets |
+| Variable Resource Table | Variable TableOffset | Entries describing variable resources |
+| Fixed Resource Table | (follows Variable Table) | Entries describing fixed resources (if any) |
+| Variable Resource Data | (follows Fixed Table) | Raw data for variable resources |
+| Fixed Resource Data | (follows Variable Data) | Raw data for fixed resources |
 
 ### 3.2. Header
 
@@ -1024,11 +990,11 @@ Fixed Resource Parts (as defined in the fixed resource table).
 
 ### See also
 
-- [KEY-File-Format](Container-Formats#key) -- KotOR KEY implementation and resolution order
-- [BIF-File-Format](Container-Formats#bif) -- KotOR BIF implementation
+- [Container-Formats#key](Container-Formats#key) -- KotOR KEY implementation and resolution order
+- [Container-Formats#bif](Container-Formats#bif) -- KotOR BIF implementation
 - [Resource formats and resolution](Resource-Formats-and-Resolution#resource-type-identifiers) -- KotOR wiki hex / label resource type table
-- [ERF-File-Format](Container-Formats#erf) -- MOD / generic ERF containers
-- [RIM-File-Format](Container-Formats#rim) -- module RIM archives
+- [Container-Formats#erf](Container-Formats#erf) -- MOD / generic ERF containers
+- [Container-Formats#rim](Container-Formats#rim) -- module RIM archives
 - [GFF-File-Format](GFF-File-Format) -- GFF resources
 
 
@@ -1063,19 +1029,13 @@ BioWare Aurora Engine/Toolset files that use the ERF format include the followin
 
 **Figure: Global ERF Structure**
 
-```text
-┌───────────────────────────┐  ← Start of File
-│          Header           │
-├───────────────────────────┤  ← OffsetToLocalizedString
-│   Localized String List   │
-├───────────────────────────┤  ← OffsetToKeyList
-│          Key List         │
-├───────────────────────────┤  ← OffsetToResourceList
-│       Resource List       │
-├───────────────────────────┤
-│       Resource Data       │
-└───────────────────────────┘
-```
+| Section | Start Position | Description |
+|---|---|---|
+| Header | Start of File | File metadata, language count, and offsets |
+| Localized String List | OffsetToLocalizedString | Module/file descriptions in multiple languages |
+| Key List | OffsetToKeyList | Filenames and resource types of all contained files |
+| Resource List | OffsetToResourceList | Offsets and sizes of all resources in the data block |
+| Resource Data | (follows Resource List) | Raw binary data for all resources |
 
 ### ERF Header Format
 
@@ -1259,10 +1219,10 @@ and BIF File Format document for a table containing `ResType` values and their m
 
 ### See also
 
-- [ERF-File-Format](Container-Formats#erf) -- KotOR ERF/MOD implementation      
-- [RIM-File-Format](Container-Formats#rim) -- resource image (module RIM archives)
-- [KEY-File-Format](Container-Formats#key)
-- [BIF-File-Format](Container-Formats#bif) -- Resource resolution and BIF layout
+- [Container-Formats#erf](Container-Formats#erf) -- KotOR ERF/MOD implementation      
+- [Container-Formats#rim](Container-Formats#rim) -- resource image (module RIM archives)
+- [Container-Formats#key](Container-Formats#key)
+- [Container-Formats#bif](Container-Formats#bif) -- Resource resolution and BIF layout
 - [Resource formats and resolution](Resource-Formats-and-Resolution#resource-type-identifiers) -- ResType / hex resource type ID table
 - [GFF-File-Format](GFF-File-Format) -- GFF resources inside ERF modules        
 
@@ -1378,15 +1338,11 @@ there should be a `customspells.tlk` and `customspellsF.tlk` file.
 
 **Figure 3.1: TLK File Structure**
 
-```text
-┌────────────────────────┐  ← Start of File
-│         Header         │
-├────────────────────────┤  ← StringEntriesOffset (from Header)
-│   String Data Table    │
-├────────────────────────┤  ← StringDataOffset
-│   String Entry Table   │
-└────────────────────────┘
-```
+| Section | Start Position | Description |
+|---|---|---|
+| Header | Start of File | File version, language ID, and string count |
+| String Data Table | (follows Header) | Metadata entries describing each string (flags, offsets, sizes) |
+| String Entry Table | StringEntriesOffset | Raw text data for all strings |
 
 ### 3.2. Header
 
@@ -1467,9 +1423,9 @@ null-terminated strings. As soon as one string ends, the next one begins.
 
 ### See also
 
-- [TLK-File-Format](Audio-and-Localization-Formats#tlk) -- KotOR TLK implementation
+- [Audio-and-Localization-Formats#tlk](Audio-and-Localization-Formats#tlk) -- KotOR TLK implementation
 - [TSLPatcher TLKList Syntax](TSLPatcher-Data-Syntax#tlklist-syntax) -- Modifying TLK
-- [KEY-File-Format](Container-Formats#key) -- Resource resolution
+- [Container-Formats#key](Container-Formats#key) -- Resource resolution
 
 
 ---
@@ -1483,7 +1439,7 @@ null-terminated strings. As soon as one string ends, the next one begins.
 
 **Source:** This documentation is extracted from the official BioWare Aurora Engine SSF Format PDF, archived in [`xoreos-docs/specs/bioware/SSF_Format.pdf`](https://github.com/xoreos/xoreos-docs/blob/master/specs/bioware/SSF_Format.pdf). The original documentation was published on the now-defunct *nwn.bioware.com* developer site.
 
-**KotOR wiki SSOT (modding):** KotOR uses a **12-byte** header, version **`V1.1`**, and a **28-slot** StrRef table (many writers emit **40** uint32 words including padding). Binary layout, slot names, **[SSFList](TSLPatcher-GFF-Syntax#ssflist-syntax)** patching, and implementation permalinks (PyKotor, reone, KotOR.js, Kotor.NET) are maintained in **[SSF-File-Format](Audio-and-Localization-Formats#ssf)**. Treat this PDF as **historical BioWare / NWN-oriented** reference; verify KotOR-specific claims there before relying on NWN-era entry counts or tooling notes alone.
+**KotOR wiki SSOT (modding):** KotOR uses a **12-byte** header, version **`V1.1`**, and a **28-slot** StrRef table (many writers emit **40** uint32 words including padding). Binary layout, slot names, **[SSFList](TSLPatcher-GFF-Syntax#ssflist-syntax)** patching, and implementation permalinks (PyKotor, reone, KotOR.js, Kotor.NET) are maintained in **[Audio-and-Localization-Formats#ssf](Audio-and-Localization-Formats#ssf)**. Treat this PDF as **historical BioWare / NWN-oriented** reference; verify KotOR-specific claims there before relying on NWN-era entry counts or tooling notes alone.
 
 ---
 
@@ -1505,15 +1461,11 @@ The figure below shows the overall layout of a SSF.
 
 **Figure 2: SSF File Structure**
 
-```text
-┌────────────────────┐  ← Start of File
-│       Header       │  (Table Position)
-├────────────────────┤  ← TableOffset (from Header)
-│    Entry Table     │
-├────────────────────┤  ← Data Start
-│    Data Table      │
-└────────────────────┘
-```
+| Section | Start Position | Description |
+|---|---|---|
+| Header | Start of File | File version, entry count, and table offset |
+| Entry Table | TableOffset (from Header) | Array of byte offsets to each data entry |
+| Data Table | (follows Entry Table) | ResRef/StringRef pairs for soundset entries |
 
 ## 3. Header Format
 
@@ -1544,20 +1496,14 @@ The figure below shows what the Entry Table looks like. The file header specifie
 
 **Figure 4: Entry Table**
 
-```text
-┌──────────────────┐
-│     Entry 0      │
-├──────────────────┤
-│     Entry 1      │
-├──────────────────┤
-│     Entry 2      │
-├──────────────────┤
-│      . . .       │
-├──────────────────┤
-│    Entry N-1     │
-└──────────────────┘
-  N = EntryCount from the header
-```
+| Position | Content | Notes |
+|---|---|---|
+| 0 | Entry 0 | Byte offset to first data entry |
+| 1 | Entry 1 | Byte offset to second data entry |
+| 2 | Entry 2 | Byte offset to third data entry |
+| ... | ... | |
+| N-1 | Entry N-1 | Byte offset to last data entry |
+| | **Total: N entries** | N = EntryCount from the header |
 
 ## 5. Data Table
 
@@ -1569,20 +1515,14 @@ The figure below shows the layout of the Data Table.
 
 **Figure 5: Data Table**
 
-```text
-┌──────────────────┐
-│      Data 0      │
-├──────────────────┤
-│      Data 1      │
-├──────────────────┤
-│      Data 2      │
-├──────────────────┤
-│      . . .       │
-├──────────────────┤
-│     Data N-1     │
-└──────────────────┘
-  N = EntryCount from the header
-```
+| Position | Content | Notes |
+|---|---|---|
+| 0 | Data 0 | First soundset entry (ResRef + StringRef) |
+| 1 | Data 1 | Second soundset entry (ResRef + StringRef) |
+| 2 | Data 2 | Third soundset entry (ResRef + StringRef) |
+| ... | ... | |
+| N-1 | Data N-1 | Last soundset entry (ResRef + StringRef) |
+| | **Total: N entries** | N = EntryCount from the header |
 
 Each data object in the Data Table has the structure given in the table below.
 
@@ -1713,11 +1653,11 @@ are displayed during player character creation.
 
 ### See also
 
-- [SSF-File-Format](Audio-and-Localization-Formats#ssf) -- KotOR SSF implementation
+- [Audio-and-Localization-Formats#ssf](Audio-and-Localization-Formats#ssf) -- KotOR SSF implementation
 - [GFF-File-Format](GFF-File-Format) -- GFF structure
 - [TSLPatcher SSFList Syntax](TSLPatcher-GFF-Syntax#ssflist-syntax) -- Modifying SSF
-- [TLK-File-Format](Audio-and-Localization-Formats#tlk) -- StrRef
-- [KEY-File-Format](Container-Formats#key) -- Resource resolution
+- [Audio-and-Localization-Formats#tlk](Audio-and-Localization-Formats#tlk) -- StrRef
+- [Container-Formats#key](Container-Formats#key) -- Resource resolution
 
 
 ---
@@ -1820,9 +1760,9 @@ silently use a blank string.
 ### See also
 
 - [GFF-File-Format](GFF-File-Format) -- CExoLocString in GFF
-- [TLK-File-Format](Audio-and-Localization-Formats#tlk) -- Talk table and StrRef
+- [Audio-and-Localization-Formats#tlk](Audio-and-Localization-Formats#tlk) -- Talk table and StrRef
 - [Bioware-Aurora-TalkTable](Bioware-Aurora-Core-Formats#talktable) -- Aurora talk table spec
-- [KEY-File-Format](Container-Formats#key) -- Resource resolution
+- [Container-Formats#key](Container-Formats#key) -- Resource resolution
 
 
 ---

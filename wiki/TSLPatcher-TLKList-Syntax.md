@@ -1,25 +1,25 @@
 # TSLPatcher TLKList Syntax Documentation
 
-This guide explains how to modify [TLK files](TLK-File-Format) using TSLPatcher syntax. For the complete [TLK file](TLK-File-Format) format specification, see [TLK File Format](TLK-File-Format). For general TSLPatcher information, see [TSLPatcher's Official Readme](TSLPatcher's-Official-Readme). For HoloPatcher-specific information, see [HoloPatcher README for Mod Developers](HoloPatcher-README-for-mod-developers).
+This guide explains how to modify [TLK files](Audio-and-Localization-Formats#tlk) using TSLPatcher syntax. For the complete [TLK file](Audio-and-Localization-Formats#tlk) format specification, see [TLK File Format](Audio-and-Localization-Formats#tlk). For general TSLPatcher information, see [TSLPatcher's Official Readme](TSLPatcher's-Official-Readme). For HoloPatcher-specific information, see [HoloPatcher README for Mod Developers](HoloPatcher-README-for-mod-developers).
 
 ## Overview
 
-The `[TLKList]` section in TSLPatcher's changes.ini file enables you to modify TLK ([Talk Table](TLK-File-Format)) files used throughout KotOR. [TLK files](TLK-File-Format) store all in-game text strings and their associated voiceover sound references. The most important [TLK file](TLK-File-Format) is [`dialog.tlk`](TLK-File-Format), which contains all dialog, item descriptions, conversations, and other text displayed in the game.
+The `[TLKList]` section in TSLPatcher's changes.ini file enables you to modify TLK ([Talk Table](Audio-and-Localization-Formats#tlk)) files used throughout KotOR. [TLK files](Audio-and-Localization-Formats#tlk) store all in-game text strings and their associated voiceover sound references. The most important [TLK file](Audio-and-Localization-Formats#tlk) is [`dialog.tlk`](Audio-and-Localization-Formats#tlk), which contains all dialog, item descriptions, conversations, and other text displayed in the game.
 
-TSLPatcher was designed by Stoffe with an **append-only philosophy** for [TLK](TLK-File-Format) modifications. This design maximizes mod compatibility by non-destructively adding new entries to the end of [`dialog.tlk`](TLK-File-Format), allowing multiple mods to safely coexist without conflicts.
+TSLPatcher was designed by Stoffe with an **append-only philosophy** for [TLK](Audio-and-Localization-Formats#tlk) modifications. This design maximizes mod compatibility by non-destructively adding new entries to the end of [`dialog.tlk`](Audio-and-Localization-Formats#tlk), allowing multiple mods to safely coexist without conflicts.
 
-## Benefits of [TLK](TLK-File-Format) Modification
+## Benefits of [TLK](Audio-and-Localization-Formats#tlk) Modification
 
-TSLPatcher's [TLK](TLK-File-Format) modification system provides several [KEY](KEY-File-Format) advantages:
+TSLPatcher's [TLK](Audio-and-Localization-Formats#tlk) modification system provides several [KEY](Container-Formats#key) advantages:
 
-- **Avoid distributing large files**: The [`dialog.tlk`](TLK-File-Format) file is approximately 10 MB. Instead of distributing the entire modified file, TSLPatcher allows you to add only your new entries, significantly reducing mod file size.
+- **Avoid distributing large files**: The [`dialog.tlk`](Audio-and-Localization-Formats#tlk) file is approximately 10 MB. Instead of distributing the entire modified file, TSLPatcher allows you to add only your new entries, significantly reducing mod file size.
 
 - **Memory system integration**: TSLPatcher keeps StrRefs of newly added entries in memory, allowing you to insert those StrRefs as needed into:
   - [2DA](2DA-File-Format) tables
   - [GFF files](GFF-File-Format)
-  For example, if you add the name of a new force power to [`dialog.tlk`](TLK-File-Format), TSLPatcher can memorize the [StrRef](TLK-File-Format#string-references-strref) the name string ended up as, and insert that value into the "name" column in `spells.2da`.
+  For example, if you add the name of a new force power to [`dialog.tlk`](Audio-and-Localization-Formats#tlk), TSLPatcher can memorize the [StrRef](Audio-and-Localization-Formats#string-references-strref) the name string ended up as, and insert that value into the "name" column in `spells.2da`.
 
-- **Cross-section token usage**: [StrRef](TLK-File-Format#string-references-strref) tokens created in `[TLKList]` can be used throughout other sections:
+- **Cross-section token usage**: [StrRef](Audio-and-Localization-Formats#string-references-strref) tokens created in `[TLKList]` can be used throughout other sections:
   - In `[2DAList]` to assign stringrefs to [2DA](2DA-File-Format) cells
   - In `[GFFList]` to assign stringrefs to [GFF](GFF-File-Format) fields (including ExoLocString fields)
   - In `[CompileList]` scripts where `#StrRef#` tokens are replaced during compilation
@@ -27,25 +27,25 @@ TSLPatcher's [TLK](TLK-File-Format) modification system provides several [KEY](K
 
 ## Glossary
 
-- **TLK ([Talk Table](TLK-File-Format))**: Binary file format storing text strings and voiceover references. The primary file is [`dialog.tlk`](TLK-File-Format).
+- **TLK ([Talk Table](Audio-and-Localization-Formats#tlk))**: Binary file format storing text strings and voiceover references. The primary file is [`dialog.tlk`](Audio-and-Localization-Formats#tlk).
 
-- **StringRef ([StrRef](TLK-File-Format#string-references-strref))**: Short for "string Reference", this is a numeric identifier/index for an entry in a [TLK file](TLK-File-Format). StringRefs start at 0 and increment sequentially. Example: StringRef 12345 refers to the 12346th entry in a [TLK file](TLK-File-Format). The [StrRef](TLK-File-Format#string-references-strref) is the identifier number that the game engine uses to retrieve text strings from [`dialog.tlk`](TLK-File-Format).
+- **StringRef ([StrRef](Audio-and-Localization-Formats#string-references-strref))**: Short for "string Reference", this is a numeric identifier/index for an entry in a [TLK file](Audio-and-Localization-Formats#tlk). StringRefs start at 0 and increment sequentially. Example: StringRef 12345 refers to the 12346th entry in a [TLK file](Audio-and-Localization-Formats#tlk). The [StrRef](Audio-and-Localization-Formats#string-references-strref) is the identifier number that the game engine uses to retrieve text strings from [`dialog.tlk`](Audio-and-Localization-Formats#tlk).
 
-- **[KEY](KEY-File-Format)**: The left side of the `=` symbol in an INI entry (e.g., `StrRef0`, `AppendFile0`)
+- **[KEY](Container-Formats#key)**: The left side of the `=` symbol in an INI entry (e.g., `StrRef0`, `AppendFile0`)
 
-- **value**: The right side of the `=` symbol in an INI entry. In `[TLKList]`, values specify the index into [TLK](TLK-File-Format) source files to read from.
+- **value**: The right side of the `=` symbol in an INI entry. In `[TLKList]`, values specify the index into [TLK](Audio-and-Localization-Formats#tlk) source files to read from.
 
 - **Token**: A placeholder like `StrRef0` or `StrRef1` that gets replaced with an actual StringRef during patching.
 
-- **Append**: Non-destructive operation that adds new entries to the end of [`dialog.tlk`](TLK-File-Format). This is TSLPatcher's primary and recommended method.
+- **Append**: Non-destructive operation that adds new entries to the end of [`dialog.tlk`](Audio-and-Localization-Formats#tlk). This is TSLPatcher's primary and recommended method.
 
-- **Replace**: Destructive operation that overwrites existing entries in [`dialog.tlk`](TLK-File-Format). **Should ONLY be used for fixing grammar, spelling, or typographical errors in existing game content.** See [Replace Functionality Warning](#replace-functionality-warning) for details.
+- **Replace**: Destructive operation that overwrites existing entries in [`dialog.tlk`](Audio-and-Localization-Formats#tlk). **Should ONLY be used for fixing grammar, spelling, or typographical errors in existing game content.** See [Replace Functionality Warning](#replace-functionality-warning) for details.
 
 - **append.tlk**: Default source file containing new strings to append. Created using TalkEd.exe (see [Creating TLK Files](#creating-tlk-files)). Located in `tslpatchdata` folder.
 
 - **appendf.tlk**: Feminine/non-English localized version of `append.tlk`. Used exclusively for KotOR1 Polish localization. Must have exactly the same number of entries as `append.tlk`. See [Localized Versions](#localized-versions) for details.
 
-- **dialog.tlk**: The game's main [TLK file](TLK-File-Format) containing all in-game text (typically ~10 MB). Modified files are written to the game's root directory (not override folder). TSLPatcher allows you to add new entries without distributing the entire large file.
+- **dialog.tlk**: The game's main [TLK file](Audio-and-Localization-Formats#tlk) containing all in-game text (typically ~10 MB). Modified files are written to the game's root directory (not override folder). TSLPatcher allows you to add new entries without distributing the entire large file.
 
 ## Table of Contents
 
@@ -73,7 +73,7 @@ TSLPatcher's [TLK](TLK-File-Format) modification system provides several [KEY](K
 
 ⚠️ **CRITICAL: Replace functionality should ONLY be used for fixing grammar, spelling, or typographical errors in existing game content.**
 
-TSLPatcher was designed by Stoffe to be **append-only** for [TLK](TLK-File-Format) modifications. The original TSLPatcher exclusively appended new entries to the end of [`dialog.tlk`](TLK-File-Format) and never replaced existing entries. This design was intentional to maximize mod compatibility:
+TSLPatcher was designed by Stoffe to be **append-only** for [TLK](Audio-and-Localization-Formats#tlk) modifications. The original TSLPatcher exclusively appended new entries to the end of [`dialog.tlk`](Audio-and-Localization-Formats#tlk) and never replaced existing entries. This design was intentional to maximize mod compatibility:
 
 ### Why Replace Should Be Avoided for New Content
 
@@ -85,9 +85,9 @@ TSLPatcher was designed by Stoffe to be **append-only** for [TLK](TLK-File-Forma
 ### Why Append Works Better
 
 - **Non-destructive**: Appending preserves all existing game text, preventing conflicts between mods
-- **Dynamic indexing**: Uses tokens (`[StrRef](TLK-File-Format#string-references-strref)#`) to handle variable stringref assignments without hard-coding indices
+- **Dynamic indexing**: Uses tokens (`[StrRef](Audio-and-Localization-Formats#string-references-strref)#`) to handle variable stringref assignments without hard-coding indices
 - **Mod stacking**: Multiple mods can safely add entries without interfering with each other
-- **Compatibility**: Avoids the need to distribute full [`dialog.tlk`](TLK-File-Format) files (10+ MB), reducing mod size
+- **Compatibility**: Avoids the need to distribute full [`dialog.tlk`](Audio-and-Localization-Formats#tlk) files (10+ MB), reducing mod size
 
 ### Acceptable Uses of Replace
 
@@ -98,19 +98,19 @@ TSLPatcher was designed by Stoffe to be **append-only** for [TLK](TLK-File-Forma
 
 ### When NOT to Use Replace
 
-- ❌ Adding new content (use AppendFile or [StrRef](TLK-File-Format#string-references-strref) syntax instead)
+- ❌ Adding new content (use AppendFile or [StrRef](Audio-and-Localization-Formats#string-references-strref) syntax instead)
 - ❌ Modifying existing text for flavor/preference
 - ❌ Any scenario where append would work
 
 **For all new content, always use the append-based syntaxes described in [Entry Syntax](#entry-syntax).**
 
-## Creating [TLK](TLK-File-Format) files
+## Creating [TLK](Audio-and-Localization-Formats#tlk) files
 
-To use custom [dialog.tlk](TLK-File-Format) entries in your mod, you must create source [TLK files](TLK-File-Format) containing your new strings:
+To use custom [dialog.tlk](Audio-and-Localization-Formats#tlk) entries in your mod, you must create source [TLK files](Audio-and-Localization-Formats#tlk) containing your new strings:
 
 ### Using TalkEd.exe
 
-1. **Create a new [TLK file](TLK-File-Format)**: Use TalkEd.exe (a [TLK](TLK-File-Format) editor tool) to create a new [TLK file](TLK-File-Format)
+1. **Create a new [TLK file](Audio-and-Localization-Formats#tlk)**: Use TalkEd.exe (a [TLK](Audio-and-Localization-Formats#tlk) editor tool) to create a new [TLK file](Audio-and-Localization-Formats#tlk)
 2. **Add your entries**: Add all your new text strings and voiceover sound references to this file
 3. **Save as append.tlk**: Name the file exactly `append.tlk` (case-sensitive)
 4. **Place in tslpatchdata**: Save `append.tlk` in the `tslpatchdata` folder
@@ -129,15 +129,15 @@ If you are using a non-English version of KotOR1 that has a `dialogf.tlk` file (
 
 ### Using ChangeEdit (Optional)
 
-The ChangeEdit application provides a user-friendly [GUI](GFF-File-Format#gui-graphical-user-interface) interface for configuring [TLK](TLK-File-Format) entries without manually editing the INI file:
+The ChangeEdit application provides a user-friendly [GUI](GFF-File-Format#gui-graphical-user-interface) interface for configuring [TLK](Audio-and-Localization-Formats#tlk) entries without manually editing the INI file:
 
-1. **Open append.tlk**: In ChangeEdit, navigate to the "[TLK](TLK-File-Format) Entries" section in the tree view
+1. **Open append.tlk**: In ChangeEdit, navigate to the "[TLK](Audio-and-Localization-Formats#tlk) Entries" section in the tree view
 2. **Load file**: Press the "Open append.tlk file..." button on top of the right list
 3. **View entries**: This lists all your custom text entries in the list to the right
-4. **Select entries**: Select an entry you wish TSLPatcher to add to [`dialog.tlk`](TLK-File-Format)
+4. **Select entries**: Select an entry you wish TSLPatcher to add to [`dialog.tlk`](Audio-and-Localization-Formats#tlk)
 5. **Add to list**: Press the left arrow icon (←) to add the entry to the list on the left
 6. **Token creation**: Take note of the value in the left column, which should look like `StrRef0` for the first entry, with an incrementing number (`StrRef1`, `StrRef2`, etc.) for each subsequent entry
-7. **Use tokens**: This token (e.g., `StrRef0`) is what you'll use in other sections to assign the resulting [StrRef](TLK-File-Format#string-references-strref) value:
+7. **Use tokens**: This token (e.g., `StrRef0`) is what you'll use in other sections to assign the resulting [StrRef](Audio-and-Localization-Formats#string-references-strref) value:
    - [2DA](2DA-File-Format) cells (`[2DAList]`)
    - [GFF](GFF-File-Format) fields (`[GFFList]`)
 
@@ -158,7 +158,7 @@ The ChangeEdit application provides a user-friendly [GUI](GFF-File-Format#gui-gr
 StrRef0=0
 StrRef1=1
 
-; Append from custom file (Useful if you have a LOT of TLK entries and want to organize within multiple [TLK files](TLK-File-Format))
+; Append from custom file (Useful if you have a LOT of TLK entries and want to organize within multiple [TLK files](Audio-and-Localization-Formats#tlk))
 AppendFile0=custom_entries.tlk
 
 [custom_entries.tlk]
@@ -166,10 +166,10 @@ AppendFile0=custom_entries.tlk
 1=11
 ```
 
-**[KEY](KEY-File-Format) Points:**
+**[KEY](Container-Formats#key) Points:**
 
 - All examples use **append** operations - the recommended approach
-- values specify which [StrRef](TLK-File-Format#string-references-strref) indices to read from source files
+- values specify which [StrRef](Audio-and-Localization-Formats#string-references-strref) indices to read from source files
 
 ## Configuration Keys
 
@@ -177,14 +177,14 @@ AppendFile0=custom_entries.tlk
 
 - **type**: String (path)
 - **Default**: `.` (kotor game installation path root)
-- **Description**: Default destination folder for [TLK files](TLK-File-Format) when not overridden
+- **Description**: Default destination folder for [TLK files](Audio-and-Localization-Formats#tlk) when not overridden
 - **Example**: `!DefaultDestination=override`
 
 ### `!DefaultSourceFolder`
 
 - **type**: String (path)
 - **Default**: `.` (tslpatchdata folder)
-- **Description**: Default folder to search for [TLK](TLK-File-Format) source files (e.g., `append.tlk`). This is a relative path from `mod_path`, which is typically the `tslpatchdata` folder (the parent directory of the `changes.ini` file). The default value `.` refers to the `tslpatchdata` folder itself.
+- **Description**: Default folder to search for [TLK](Audio-and-Localization-Formats#tlk) source files (e.g., `append.tlk`). This is a relative path from `mod_path`, which is typically the `tslpatchdata` folder (the parent directory of the `changes.ini` file). The default value `.` refers to the `tslpatchdata` folder itself.
 - **Path Resolution**: files are resolved as `mod_path / !DefaultSourceFolder / filename`. When `mod_path = "C:/Mod/tslpatchdata"`:
   - `!DefaultSourceFolder=.` resolves to e.g. `"C:/Mod/tslpatchdata"`
   - `!DefaultSourceFolder=tlk_files` resolves to e.g. `"C:/Mod/tslpatchdata/tlk_files"`
@@ -194,14 +194,14 @@ AppendFile0=custom_entries.tlk
 
 - **type**: String (filename)
 - **Default**: `append.tlk`
-- **Description**: Name of the [TLK file](TLK-File-Format) to use when appending entries via [StrRef](TLK-File-Format#string-references-strref) syntax
+- **Description**: Name of the [TLK file](Audio-and-Localization-Formats#tlk) to use when appending entries via [StrRef](Audio-and-Localization-Formats#string-references-strref) syntax
 - **Example**: `!SourceFile=my_strings.tlk`
 
 ### `!SourceFileF`
 
 - **type**: String (filename)
 - **Default**: `appendf.tlk`
-- **Description**: Name of the [TLK file](TLK-File-Format) to use for feminine/non-English localized versions (exclusively KotOR1 Polish)
+- **Description**: Name of the [TLK file](Audio-and-Localization-Formats#tlk) to use for feminine/non-English localized versions (exclusively KotOR1 Polish)
 - **Version Added**: 1.2.8b6
 - **Note**: Must have exactly the same number of entries as `!SourceFile`. Each index in `appendf.tlk` maps directly to the same index in `append.tlk`. If a string has no specific feminine form, put the same text in both files.
 - **Example**: `!SourceFileF=my_strings_f.tlk`
@@ -210,29 +210,29 @@ AppendFile0=custom_entries.tlk
 
 The following keys are **NOT** supported in `[TLKList]`:
 
-- `!ReplaceFile` - Not applicable to [TLK files](TLK-File-Format)
-- `!OverrideType` - Not applicable to [TLK files](TLK-File-Format)
+- `!ReplaceFile` - Not applicable to [TLK files](Audio-and-Localization-Formats#tlk)
+- `!OverrideType` - Not applicable to [TLK files](Audio-and-Localization-Formats#tlk)
 
 ## Entry Syntax
 
 The `[TLKList]` section supports two primary entry syntax patterns, both using **append** operations:
 
-1. **[StrRef](TLK-File-Format#string-references-strref) Entries** - Append from the default source file (`append.tlk`)
-2. **AppendFile Syntax** - Append from custom [TLK files](TLK-File-Format) with flexible mappings
+1. **[StrRef](Audio-and-Localization-Formats#string-references-strref) Entries** - Append from the default source file (`append.tlk`)
+2. **AppendFile Syntax** - Append from custom [TLK files](Audio-and-Localization-Formats#tlk) with flexible mappings
 
 ### How Token Creation Works
 
-**Important**: Tokens are created from the **value** (the number on the right side of `=`). For `StrRef<number>=<number>` entries, the number in the [KEY](KEY-File-Format) and value must match, and this matching number determines the token name.
+**Important**: Tokens are created from the **value** (the number on the right side of `=`). For `StrRef<number>=<number>` entries, the number in the [KEY](Container-Formats#key) and value must match, and this matching number determines the token name.
 
 - `StrRef0=0` creates token `StrRef0` (reads index 0 from `append.tlk`)
 - `StrRef5=5` creates token `StrRef5` (reads index 5 from `append.tlk`)
-- For AppendFile subsections, `10=10` creates token `StrRef10` (reads index 10 from the source [TLK](TLK-File-Format))
+- For AppendFile subsections, `10=10` creates token `StrRef10` (reads index 10 from the source [TLK](Audio-and-Localization-Formats#tlk))
 
-The token name `[StrRef](TLK-File-Format#string-references-strref)<number>` is created from the matching number, and this token stores the new stringref that gets appended to [`dialog.tlk`](TLK-File-Format) for use in other sections.
+The token name `[StrRef](Audio-and-Localization-Formats#string-references-strref)<number>` is created from the matching number, and this token stores the new stringref that gets appended to [`dialog.tlk`](Audio-and-Localization-Formats#tlk) for use in other sections.
 
-### [StrRef](TLK-File-Format#string-references-strref) Entries
+### [StrRef](Audio-and-Localization-Formats#string-references-strref) Entries
 
-**Purpose**: Append new entries to [`dialog.tlk`](TLK-File-Format) from the default source file (`append.tlk`)
+**Purpose**: Append new entries to [`dialog.tlk`](Audio-and-Localization-Formats#tlk) from the default source file (`append.tlk`)
 
 **Syntax**:
 
@@ -242,11 +242,11 @@ StrRef<number>=<number>
 
 **Parameters**:
 
-- `<number>` - The index into `append.tlk` (or `!SourceFile`) to read from. This number must match in both the [KEY](KEY-File-Format) and value.
+- `<number>` - The index into `append.tlk` (or `!SourceFile`) to read from. This number must match in both the [KEY](Container-Formats#key) and value.
 
 **Behavior**:
 
-- Appends a new entry to the end of [`dialog.tlk`](TLK-File-Format) (non-destructive)
+- Appends a new entry to the end of [`dialog.tlk`](Audio-and-Localization-Formats#tlk) (non-destructive)
 - Reads text and sound from `append.tlk` at the specified index
 - The new entry receives the next available stringref automatically
 - Creates token `StrRef<number>` from the matching number (see [How Token Creation Works](#how-token-creation-works))
@@ -263,7 +263,7 @@ StrRef2=2  ; Reads index 2 from append.tlk, creates token StrRef2
 
 ### AppendFile Syntax
 
-**Purpose**: Add entries from a custom [TLK file](TLK-File-Format) using index mappings
+**Purpose**: Add entries from a custom [TLK file](Audio-and-Localization-Formats#tlk) using index mappings
 
 **Syntax**:
 
@@ -273,13 +273,13 @@ AppendFile<anything>=<tlk_filename>
 
 **Parameters**:
 
-- `<tlk_filename>` - Name of a [TLK file](TLK-File-Format) in the source folder OR name of a subsection in the INI
+- `<tlk_filename>` - Name of a [TLK file](Audio-and-Localization-Formats#tlk) in the source folder OR name of a subsection in the INI
 
 **Behavior**:
 
 - Creates a **new section** `[<tlk_filename>]` if the file doesn't exist in source
-- Maps entries from the source [TLK](TLK-File-Format) to [`dialog.tlk`](TLK-File-Format) using the subsection mappings
-- All entries are **added** (not replaced) to [`dialog.tlk`](TLK-File-Format)
+- Maps entries from the source [TLK](Audio-and-Localization-Formats#tlk) to [`dialog.tlk`](Audio-and-Localization-Formats#tlk) using the subsection mappings
+- All entries are **added** (not replaced) to [`dialog.tlk`](Audio-and-Localization-Formats#tlk)
 - For AppendFile, entries are appended and tokens are created from the mapping values
 
 **Subsection Syntax**:
@@ -292,7 +292,7 @@ StrRef<token_identifier>=StrRef<source_index>  ; Alternative explicit syntax
 
 **Subsection Parameters**:
 
-- `<source_index>` - The index into the source [TLK file](TLK-File-Format) to read from. Token `StrRef{source_index}` is created from this value. The number in the [KEY](KEY-File-Format) should match the number in the value for clarity.
+- `<source_index>` - The index into the source [TLK file](Audio-and-Localization-Formats#tlk) to read from. Token `StrRef{source_index}` is created from this value. The number in the [KEY](Container-Formats#key) should match the number in the value for clarity.
 
 **Examples**:
 
@@ -309,13 +309,13 @@ AppendFile0=planets.tlk  ; Creates subsection [planets.tlk] for mappings
 **Important Notes**:
 
 - The `<anything>` in `AppendFile<anything>` is arbitrary and ignored
-- The subsection `[planets.tlk]` can define mappings using numeric indices or `[StrRef](TLK-File-Format#string-references-strref)` syntax
+- The subsection `[planets.tlk]` can define mappings using numeric indices or `[StrRef](Audio-and-Localization-Formats#string-references-strref)` syntax
 
 ## Localized Versions
 
 ### KotOR1 Polish Localization
 
-KotOR1 Polish edition uses both [`dialog.tlk`](TLK-File-Format) and `dialogf.tlk` files. If your mod supports this localization:
+KotOR1 Polish edition uses both [`dialog.tlk`](Audio-and-Localization-Formats#tlk) and `dialogf.tlk` files. If your mod supports this localization:
 
 1. **Create both files**: Create `append.tlk` (masculine/standard) and `appendf.tlk` (feminine/localized)
 2. **Match entry counts**: Both files must have exactly the same number of entries
@@ -336,13 +336,13 @@ When TSLPatcher processes entries, it automatically uses `appendf.tlk` when the 
 
 ### Non-English Localization Notes
 
-- **KotOR2**: Does not use `dialogf.tlk` - only [`dialog.tlk`](TLK-File-Format) is used
-- **Other Languages**: Currently only KotOR1 Polish uses the dual-[TLK](TLK-File-Format) system
+- **KotOR2**: Does not use `dialogf.tlk` - only [`dialog.tlk`](Audio-and-Localization-Formats#tlk) is used
+- **Other Languages**: Currently only KotOR1 Polish uses the dual-[TLK](Audio-and-Localization-Formats#tlk) system
 - **Entry Matching**: The strict requirement for matching entry counts ensures proper localization mapping
 
 ## Memory System
 
-When [TLK](TLK-File-Format) entries are **added** via append operations, TSLPatcher stores them in memory for use in other patch sections.
+When [TLK](Audio-and-Localization-Formats#tlk) entries are **added** via append operations, TSLPatcher stores them in memory for use in other patch sections.
 
 ### Memory Storage
 
@@ -358,9 +358,9 @@ memory.memory_str[token_identifier] = new_stringref
 
 ### Token Creation from values
 
-Tokens are created from the matching number in both the [KEY](KEY-File-Format) and value. See [How Token Creation Works](#how-token-creation-works) for details. After processing, tokens are available for use in other sections like `[2DAList]`, `[GFFList]`, and `[CompileList]`.
+Tokens are created from the matching number in both the [KEY](Container-Formats#key) and value. See [How Token Creation Works](#how-token-creation-works) for details. After processing, tokens are available for use in other sections like `[2DAList]`, `[GFFList]`, and `[CompileList]`.
 
-### Using [TLK](TLK-File-Format) Memory in Other Sections
+### Using [TLK](Audio-and-Localization-Formats#tlk) Memory in Other Sections
 
 **In [2DA files](2DA-File-Format)**:
 
@@ -418,7 +418,7 @@ TSLPatcher Execution Order (v1.2.8+):
 6. [SSFList]         - Modify soundset files
 ```
 
-**Note**: In TSLPatcher v1.2.8b0 (2006-08-06), the processing order was changed so that [TLK](TLK-File-Format) Appending happens before Install List. According to the official change log, this allows [MOD](ERF-File-Format), [ERF](ERF-File-Format), or [RIM](RIM-File-Format) files to be placed in their proper locations before later sections run, so modified files can be saved into those container files. Those later sections include:
+**Note**: In TSLPatcher v1.2.8b0 (2006-08-06), the processing order was changed so that [TLK](Audio-and-Localization-Formats#tlk) Appending happens before Install List. According to the official change log, this allows [MOD](Container-Formats#erf), [ERF](Container-Formats#erf), or [RIM](Container-Formats#rim) files to be placed in their proper locations before later sections run, so modified files can be saved into those container files. Those later sections include:
 
 - [GFF](GFF-File-Format) patching
 - Script compilation
@@ -440,34 +440,34 @@ HoloPatcher Execution Order:
 7. [SSFList]         - Modify soundset files
 ```
 
-**Important Compatibility Note**: This is a **backwards-compatible discrepancy** between TSLPatcher and HoloPatcher. HoloPatcher processes InstallList before TLKList to allow users to install a base [`dialog.tlk`](TLK-File-Format) file (or other files) via InstallList, which can then be modified by [TLK](TLK-File-Format) appending operations. This order provides greater flexibility for mod workflows.
+**Important Compatibility Note**: This is a **backwards-compatible discrepancy** between TSLPatcher and HoloPatcher. HoloPatcher processes InstallList before TLKList to allow users to install a base [`dialog.tlk`](Audio-and-Localization-Formats#tlk) file (or other files) via InstallList, which can then be modified by [TLK](Audio-and-Localization-Formats#tlk) appending operations. This order provides greater flexibility for mod workflows.
 
 ### Analysis: Order Comparison
 
 **TSLPatcher's reasoning** (TLKList --> InstallList):
 
-- Allows [MOD](ERF-File-Format), [ERF](ERF-File-Format), and [RIM](RIM-File-Format) files to be placed before sections that save into them ([GFF](GFF-File-Format) and Compile)
+- Allows [MOD](Container-Formats#erf), [ERF](Container-Formats#erf), and [RIM](Container-Formats#rim) files to be placed before sections that save into them ([GFF](GFF-File-Format) and Compile)
 
 **HoloPatcher's reasoning** (InstallList --> TLKList):
 
-- ✅ **More flexible**: Users can install a custom base [`dialog.tlk`](TLK-File-Format) file via InstallList, then [TLK](TLK-File-Format) appending modifies it
-- ✅ **Better for testing**: Allows installing known-good [TLK files](TLK-File-Format) before appending new entries
-- ✅ **Preserves dependencies**: [TLK](TLK-File-Format) entries are still processed before sections that reference them:
+- ✅ **More flexible**: Users can install a custom base [`dialog.tlk`](Audio-and-Localization-Formats#tlk) file via InstallList, then [TLK](Audio-and-Localization-Formats#tlk) appending modifies it
+- ✅ **Better for testing**: Allows installing known-good [TLK files](Audio-and-Localization-Formats#tlk) before appending new entries
+- ✅ **Preserves dependencies**: [TLK](Audio-and-Localization-Formats#tlk) entries are still processed before sections that reference them:
   - [2DA](2DA-File-Format)
   - [GFF](GFF-File-Format)
   - Compile
-  - [SSF](SSF-File-Format)
+  - [SSF](Audio-and-Localization-Formats#ssf)
 - ✅ **More intuitive**: file installation happens first, then modifications are applied
 
 **Critical Timing** (applies to both TSLPatcher and HoloPatcher):
 
-- [TLK](TLK-File-Format) entries are added to the destination target [`dialog.tlk`](TLK-File-Format) **before** these modifications run:
+- [TLK](Audio-and-Localization-Formats#tlk) entries are added to the destination target [`dialog.tlk`](Audio-and-Localization-Formats#tlk) **before** these modifications run:
 
   - [2DA](2DA-File-Format)
   - [GFF](GFF-File-Format)
-- This ensures stringrefs/[TLK](TLK-File-Format) entries are available when referenced by other sections
-- Script compilation happens **after** [TLK](TLK-File-Format) processing, so `#[StrRef](TLK-File-Format#string-references-strref)#` tokens can be resolved
-- Tokens are substituted after [TLK](TLK-File-Format) entries have been appended in:
+- This ensures stringrefs/[TLK](Audio-and-Localization-Formats#tlk) entries are available when referenced by other sections
+- Script compilation happens **after** [TLK](Audio-and-Localization-Formats#tlk) processing, so `#[StrRef](Audio-and-Localization-Formats#string-references-strref)#` tokens can be resolved
+- Tokens are substituted after [TLK](Audio-and-Localization-Formats#tlk) entries have been appended in:
 
   - [2DA](2DA-File-Format)
   - [GFF](GFF-File-Format)
@@ -475,15 +475,15 @@ HoloPatcher Execution Order:
 
 ## file structure
 
-### [TLK](TLK-File-Format) file format
+### [TLK](Audio-and-Localization-Formats#tlk) file format
 
-A [TLK file](TLK-File-Format) is a binary format containing:
+A [TLK file](Audio-and-Localization-Formats#tlk) is a binary format containing:
 
 - **header**: file type (`TLK`), version (`V3.0`), language ID, string count, entries offset
 - **Entry headers**: flags, sound ResRef (16 bytes), volume/pitch variance (unused), text offset, text length, sound length (unused)
 - **Text data**: Actual string content stored at the specified offsets
 
-**[TLK](TLK-File-Format) Entry structure**:
+**[TLK](Audio-and-Localization-Formats#tlk) Entry structure**:
 
 ```python
 class TLKEntry:
@@ -494,20 +494,20 @@ class TLKEntry:
 
 **string Length Limitations**:
 
-- **TSLPatcher v1.2.8b6 and later**: Can handle [TLK](TLK-File-Format) entries with strings of **any size** (no practical limit)
+- **TSLPatcher v1.2.8b6 and later**: Can handle [TLK](Audio-and-Localization-Formats#tlk) entries with strings of **any size** (no practical limit)
 - **Earlier versions**: Had a bug that prevented proper handling of strings longer than 4096 characters
 - If you encounter issues with long strings, ensure you're using TSLPatcher v1.2.8b6 or later. HoloPatcher does **NOT** have this bug.
 
-### KotOR [TLK](TLK-File-Format) files
+### KotOR [TLK](Audio-and-Localization-Formats#tlk) files
 
 **Standard files**:
 
-- [`dialog.tlk`](TLK-File-Format) - Main English dialog (always present in game directory)
+- [`dialog.tlk`](Audio-and-Localization-Formats#tlk) - Main English dialog (always present in game directory)
 
 **Localized Versions** (exclusively KotOR1 Polish):
 
 - `dialogf.tlk` - Feminine/non-English localized version
-- Must match the number of entries in [`dialog.tlk`](TLK-File-Format) exactly
+- Must match the number of entries in [`dialog.tlk`](Audio-and-Localization-Formats#tlk) exactly
 
 **Entry indices**:
 
@@ -517,9 +517,9 @@ class TLKEntry:
 
 ## Complete Examples
 
-### Example 1: Simple Append with [StrRef](TLK-File-Format#string-references-strref)
+### Example 1: Simple Append with [StrRef](Audio-and-Localization-Formats#string-references-strref)
 
-Add new string entries from `append.tlk` to [`dialog.tlk`](TLK-File-Format):
+Add new string entries from `append.tlk` to [`dialog.tlk`](Audio-and-Localization-Formats#tlk):
 
 ```ini
 [TLKList]
@@ -530,11 +530,11 @@ StrRef2=2
 
 **files**: `tslpatchdata/append.tlk` contains entries 0, 1, 2 with your custom text
 
-**Result**: Each entry from `append.tlk` is appended to [`dialog.tlk`](TLK-File-Format) and assigned the next available stringref (e.g., 123456, 123457, 123458). These new stringrefs are stored in memory as tokens `StrRef0`, `StrRef1`, `StrRef2` for use in other sections.
+**Result**: Each entry from `append.tlk` is appended to [`dialog.tlk`](Audio-and-Localization-Formats#tlk) and assigned the next available stringref (e.g., 123456, 123457, 123458). These new stringrefs are stored in memory as tokens `StrRef0`, `StrRef1`, `StrRef2` for use in other sections.
 
 ### Example 2: Append with Custom file
 
-Add entries from a custom [TLK file](TLK-File-Format) using index mappings:
+Add entries from a custom [TLK file](Audio-and-Localization-Formats#tlk) using index mappings:
 
 ```ini
 [TLKList]
@@ -548,7 +548,7 @@ AppendFile0=planets.tlk
 
 **files**: `tslpatchdata/planets.tlk` contains entries at indices 10, 11, 12, etc.
 
-**Result**: Each entry from `planets.tlk` is appended to [`dialog.tlk`](TLK-File-Format) and tokens `StrRef10`, `StrRef11`, `StrRef12` are created (from the values, not the keys).
+**Result**: Each entry from `planets.tlk` is appended to [`dialog.tlk`](Audio-and-Localization-Formats#tlk) and tokens `StrRef10`, `StrRef11`, `StrRef12` are created (from the values, not the keys).
 
 ### Example 3: Combined Append Operations
 
@@ -661,13 +661,13 @@ StrRef2=2
 
 ### Error: "Invalid syntax found in [TLKList]"
 
-**Cause**: Unrecognized [KEY](KEY-File-Format) format
+**Cause**: Unrecognized [KEY](Container-Formats#key) format
 
 **Solutions**:
 
-- Check for typos in [KEY](KEY-File-Format) names
-- Ensure you're using one of the supported syntaxes: `[StrRef](TLK-File-Format#string-references-strref)<key>=<value>` or `AppendFile<key>=<value>`
-- Verify the [KEY](KEY-File-Format) matches the expected pattern
+- Check for typos in [KEY](Container-Formats#key) names
+- Ensure you're using one of the supported syntaxes: `[StrRef](Audio-and-Localization-Formats#string-references-strref)<key>=<value>` or `AppendFile<key>=<value>`
+- Verify the [KEY](Container-Formats#key) matches the expected pattern
 
 **Correct Syntaxes**:
 
@@ -681,13 +681,13 @@ AppendFile0=file.tlk
 AppendFile1=another.tlk
 ```
 
-### Error: "Could not parse '[KEY](KEY-File-Format)=value' in [TLKList]"
+### Error: "Could not parse '[KEY](Container-Formats#key)=value' in [TLKList]"
 
 **Cause**: Invalid numeric values or malformed entries
 
 **Solutions**:
 
-- Ensure values are valid integers for [StrRef](TLK-File-Format#string-references-strref) mappings and for AppendFile mappings
+- Ensure values are valid integers for [StrRef](Audio-and-Localization-Formats#string-references-strref) mappings and for AppendFile mappings
 - Check that numeric keys can be parsed as integers if using numeric format
 - Verify no extra spaces or invalid characters
 
@@ -707,7 +707,7 @@ StrRef=0  ; Missing numeric part in key
 
 ### Error: "Section [filename] not found"
 
-**Cause**: Referenced [TLK file](TLK-File-Format) or subsection doesn't exist
+**Cause**: Referenced [TLK file](Audio-and-Localization-Formats#tlk) or subsection doesn't exist
 
 **Solutions**:
 
@@ -719,16 +719,16 @@ StrRef=0  ; Missing numeric part in key
   0=1
   ```
 
-- Or ensure the file exists in the source folder if using external [TLK files](TLK-File-Format)
+- Or ensure the file exists in the source folder if using external [TLK files](Audio-and-Localization-Formats#tlk)
 - Check `!DefaultSourceFolder` path is correct
 
-### Error: "Cannot replace nonexistent stringref in [dialog.tlk](TLK-File-Format)"
+### Error: "Cannot replace nonexistent stringref in [dialog.tlk](Audio-and-Localization-Formats#tlk)"
 
 **Cause**: Trying to replace an entry that doesn't exist (if using replace functionality)
 
 **Solutions**:
 
-- For new content, use append syntax (`[StrRef](TLK-File-Format#string-references-strref)` or `AppendFile`) instead of replace
+- For new content, use append syntax (`[StrRef](Audio-and-Localization-Formats#string-references-strref)` or `AppendFile`) instead of replace
 - Verify the stringref number is correct if you must use replace for error fixing
 - Remember: **Always use append for new content** - see [Replace Functionality Warning](#replace-functionality-warning)
 
@@ -745,7 +745,7 @@ StrRef0=0  ; Appends new entry, creates token StrRef0
 **Solutions**:
 
 - Check file paths: `!DefaultSourceFolder` and file locations
-- Verify [TLK file](TLK-File-Format) format: must be valid binary [TLK](TLK-File-Format)
+- Verify [TLK file](Audio-and-Localization-Formats#tlk) format: must be valid binary [TLK](Audio-and-Localization-Formats#tlk)
 - Check file encoding: should be UTF-8 or cp1252
 - Ensure the file is in the tslpatchdata folder (or specified source folder)
 - Review the log for processing errors
@@ -817,26 +817,26 @@ StrRef2=2
 ; ... 200 more lines becomes hard to manage
 ```
 
-### Issue: Write-Protected [dialog.tlk](TLK-File-Format)
+### Issue: Write-Protected [dialog.tlk](Audio-and-Localization-Formats#tlk)
 
-**Cause**: Some systems have [`dialog.tlk`](TLK-File-Format) set to read-only or write-protected
+**Cause**: Some systems have [`dialog.tlk`](Audio-and-Localization-Formats#tlk) set to read-only or write-protected
 
 **Solutions**:
 
-- Check file permissions on [`dialog.tlk`](TLK-File-Format) in the game directory
+- Check file permissions on [`dialog.tlk`](Audio-and-Localization-Formats#tlk) in the game directory
 - Run TSLPatcher with administrator privileges if needed
 - Ensure the game is not running when installing mods
 - Check if antivirus software is blocking file modification
 
-**Note**: TSLPatcher v1.2.8b8 fixed a bug where installation would stop when [`dialog.tlk`](TLK-File-Format) was write-protected. If using an older version, ensure the file is writable.
+**Note**: TSLPatcher v1.2.8b8 fixed a bug where installation would stop when [`dialog.tlk`](Audio-and-Localization-Formats#tlk) was write-protected. If using an older version, ensure the file is writable.
 
 ## Best Practices
 
 ### 1. Organization
 
-- Group related entries in separate [TLK files](TLK-File-Format)
+- Group related entries in separate [TLK files](Audio-and-Localization-Formats#tlk)
 - Use descriptive file names: `npcs.tlk`, `items.tlk`, `planets.tlk`
-- Keep the main INI clean with AppendFile/[StrRef](TLK-File-Format#string-references-strref) references
+- Keep the main INI clean with AppendFile/[StrRef](Audio-and-Localization-Formats#string-references-strref) references
 - Document which tokens correspond to which content
 
 ### 2. Token Management
@@ -858,24 +858,24 @@ StrRef2=2
 
 ### 4. Testing
 
-- Verify all [TLK files](TLK-File-Format) are valid before packaging
+- Verify all [TLK files](Audio-and-Localization-Formats#tlk) are valid before packaging
 - Check stringref assignments in logs
 - Test with multiple mods installed to check compatibility
-- Use `KotorDiff` to compare before/after [`dialog.tlk`](TLK-File-Format)
+- Use `KotorDiff` to compare before/after [`dialog.tlk`](Audio-and-Localization-Formats#tlk)
 - Verify tokens are correctly created and accessible
 
 ### 5. file Management
 
-- **Create with TalkEd.exe**: Use TalkEd.exe to create and edit your source [TLK](TLK-File-Format) files (see [Creating TLK Files](#creating-tlk-files))
-- **Keep source [TLK files](TLK-File-Format) readable**: Use JSON export for debugging if your [TLK](TLK-File-Format) editor supports it
+- **Create with TalkEd.exe**: Use TalkEd.exe to create and edit your source [TLK](Audio-and-Localization-Formats#tlk) files (see [Creating TLK Files](#creating-tlk-files))
+- **Keep source [TLK files](Audio-and-Localization-Formats#tlk) readable**: Use JSON export for debugging if your [TLK](Audio-and-Localization-Formats#tlk) editor supports it
 - **Maintain consistent naming**: Always use `append.tlk` and `appendf.tlk` (or set `!SourceFile`/`!SourceFileF` if using custom names)
-- **Version control**: Keep [TLK files](TLK-File-Format) separately from other mod files for easier management
+- **Version control**: Keep [TLK files](Audio-and-Localization-Formats#tlk) separately from other mod files for easier management
 - **Match entry counts**: If using localized versions, ensure `append.tlk` and `appendf.tlk` have **exactly the same number of entries**
-- **file size considerations**: The [`dialog.tlk`](TLK-File-Format) file is ~10 MB, but you only need to distribute small `append.tlk` files with your mod
+- **file size considerations**: The [`dialog.tlk`](Audio-and-Localization-Formats#tlk) file is ~10 MB, but you only need to distribute small `append.tlk` files with your mod
 
 ### 6. Localization
 
-- **KotOR1 Polish only**: The dual-[TLK](TLK-File-Format) system ([`dialog.tlk`](TLK-File-Format) + `dialogf.tlk`) is exclusively for KotOR1 Polish localization
+- **KotOR1 Polish only**: The dual-[TLK](Audio-and-Localization-Formats#tlk) system ([`dialog.tlk`](Audio-and-Localization-Formats#tlk) + `dialogf.tlk`) is exclusively for KotOR1 Polish localization
 - **Maintain parallel files**: If supporting Polish, maintain both `append.tlk` and `appendf.tlk`
 - **Exact entry matching**: Entry counts must match exactly between `append.tlk` and `appendf.tlk`
 - **Map indices**: Each index must correspond between the two files (index 0 --> index 0, index 1 --> index 1, etc.)
@@ -887,7 +887,7 @@ StrRef2=2
 ### 7. Key/value Clarity
 
 - Keys appear on the left side of `=`, values on the right
-- For `[StrRef](TLK-File-Format#string-references-strref)<number>=<number>`, numbers must match for proper token creation
+- For `[StrRef](Audio-and-Localization-Formats#string-references-strref)<number>=<number>`, numbers must match for proper token creation
 - Use consistent numbering for readability
 
 ## Reference
@@ -896,7 +896,7 @@ StrRef2=2
 
 | Pattern | Syntax | Purpose | Replacement |
 |---------|--------|---------|-------------|
-| [StrRef](TLK-File-Format#string-references-strref) | `[StrRef](TLK-File-Format#string-references-strref)<number>=<number>` | Append from default file | No |
+| [StrRef](Audio-and-Localization-Formats#string-references-strref) | `[StrRef](Audio-and-Localization-Formats#string-references-strref)<number>=<number>` | Append from default file | No |
 | AppendFile | `AppendFile<anything>=<filename>` | Append from custom file | No |
 
 ### Memory System Reference
@@ -911,7 +911,7 @@ StrRef2=2
 # Memory: memory.memory_str[10] = new_stringref (from dialog.tlk append)
 ```
 
-**[KEY](KEY-File-Format) Points**:
+**[KEY](Container-Formats#key) Points**:
 
 - See [How Token Creation Works](#how-token-creation-works) for token lifecycle
 - See [Memory System](#memory-system) for StrRef retention
@@ -923,24 +923,24 @@ StrRef2=2
 ### Processing Flow
 
 1. Parse [TLKList] section
-2. Load source [TLK files](TLK-File-Format) from `!SourceFile`/`!SourceFileF` e.g. `!SourceFile=append.tlk`
-3. For each [StrRef](TLK-File-Format#string-references-strref) entry:
-   - Parse: *[KEY](KEY-File-Format)* (ignored), *value* (source index)
+2. Load source [TLK files](Audio-and-Localization-Formats#tlk) from `!SourceFile`/`!SourceFileF` e.g. `!SourceFile=append.tlk`
+3. For each [StrRef](Audio-and-Localization-Formats#string-references-strref) entry:
+   - Parse: *[KEY](Container-Formats#key)* (ignored), *value* (source index)
    - Load entry from source file at *value* index
    - Append to dialog.tlk (gets new stringref)
-   - Create token [StrRef](TLK-File-Format#string-references-strref){value} from *value* to store the new stringref
+   - Create token [StrRef](Audio-and-Localization-Formats#string-references-strref){value} from *value* to store the new stringref
 4. For each AppendFile entry:
    - Parse: Key (part after the word 'append' is ignored), *value* (filename) e.g. `AppendFile0=some_append_contents.tlk`
    - Parse subsection [filename] mappings
    - For each mapping:
-     - Parse: *[KEY](KEY-File-Format)* (ignored), *value* (source index)
+     - Parse: *[KEY](Container-Formats#key)* (ignored), *value* (source index)
      - Load entry from referenced file at *value* index
      - Append to dialog.tlk (gets new stringref)
-     - Create token [StrRef](TLK-File-Format#string-references-strref){value} from *value* to store the new stringref
+     - Create token [StrRef](Audio-and-Localization-Formats#string-references-strref){value} from *value* to store the new stringref
 5. Tokens are now available for substitution in:
-   - [2DAList] sections (2DAMEMORY#=[StrRef](TLK-File-Format#string-references-strref)#)
-   - [GFFList] sections (FieldName=[StrRef](TLK-File-Format#string-references-strref)#)
-   - [CompileList] scripts (#[StrRef](TLK-File-Format#string-references-strref)# tokens)
+   - [2DAList] sections (2DAMEMORY#=[StrRef](Audio-and-Localization-Formats#string-references-strref)#)
+   - [GFFList] sections (FieldName=[StrRef](Audio-and-Localization-Formats#string-references-strref)#)
+   - [CompileList] scripts (#[StrRef](Audio-and-Localization-Formats#string-references-strref)# tokens)
 
 ### Token Substitution Examples
 
@@ -955,26 +955,26 @@ StrRef2=2
 **TSLPatcher v1.2.8b6 (2006-10-03)**:
 
 - Added optional `!SourceFile` and `!SourceFileF` keys to the `[TLKList]` section
-- If present, these can be used to set an alternative name of the [TLK file](TLK-File-Format) to use
+- If present, these can be used to set an alternative name of the [TLK file](Audio-and-Localization-Formats#tlk) to use
 - If left out, default values are `append.tlk` and `appendf.tlk` as before
-- **Fixed bug**: Previously couldn't handle [TLK](TLK-File-Format) entries with strings longer than 4096 characters - now supports strings of any size
+- **Fixed bug**: Previously couldn't handle [TLK](Audio-and-Localization-Formats#tlk) entries with strings longer than 4096 characters - now supports strings of any size
 
 **TSLPatcher v1.2.8b0 (2006-08-06)**:
 
-- Changed processing order: [TLK](TLK-File-Format) Appending now happens before Install List
-- This allows [MOD](ERF-File-Format), [ERF](ERF-File-Format), or [RIM](RIM-File-Format) files to be placed before [GFF](GFF-File-Format) and script compilation sections run
+- Changed processing order: [TLK](Audio-and-Localization-Formats#tlk) Appending now happens before Install List
+- This allows [MOD](Container-Formats#erf), [ERF](Container-Formats#erf), or [RIM](Container-Formats#rim) files to be placed before [GFF](GFF-File-Format) and script compilation sections run
 
 **TSLPatcher v1.2.8b8 (2006-12-02)**:
 
-- Fixed bug that caused TSLPatcher to stop installation into games where the [`dialog.tlk`](TLK-File-Format) file was write-protected
+- Fixed bug that caused TSLPatcher to stop installation into games where the [`dialog.tlk`](Audio-and-Localization-Formats#tlk) file was write-protected
 
 ### See also
 
-- [TLK-File-Format](TLK-File-Format) -- Talk table structure and StrRef
+- [Audio-and-Localization-Formats#tlk](Audio-and-Localization-Formats#tlk) -- Talk table structure and StrRef
 - [TSLPatcher's Official Readme](TSLPatcher's-Official-Readme) -- General TSLPatcher and ChangeEdit
 - [TSLPatcher 2DAList Syntax](TSLPatcher-2DAList-Syntax)
   - Merge rows in [2DA](2DA-File-Format) tables
-  - Pipe memorized [StrRef](TLK-File-Format#string-references-strref) tokens into those cells
+  - Pipe memorized [StrRef](Audio-and-Localization-Formats#string-references-strref) tokens into those cells
 - [TSLPatcher GFFList Syntax](TSLPatcher-GFFList-Syntax) -- Modify [GFF](GFF-File-Format) with StrRef tokens
 - [TSLPatcher SSFList Syntax](TSLPatcher-SSFList-Syntax) -- Modify soundset files with StrRef tokens
 - [TSLPatcher InstallList Syntax](TSLPatcher-InstallList-Syntax) -- Install files and script compilation

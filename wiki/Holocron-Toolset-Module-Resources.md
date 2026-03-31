@@ -21,6 +21,6 @@ The "Module" tab allows you to navigate through the various module files through
 
 - [Holocron Toolset: Core Resources](Holocron-Toolset-Core-Resources) -- Core resource tab
 - [Holocron Toolset: Override Resources](Holocron-Toolset-Override-Resources) -- Override resource tab
-- [ERF-File-Format](Container-Formats#erf) -- MOD / generic ERF container format
-- [RIM-File-Format](Container-Formats#rim) -- Stock `.rim` / `_s.rim` module archives ([vs. ERF](Container-Formats#rim-versus-erf))
+- [Container-Formats#erf](Container-Formats#erf) -- MOD / generic ERF container format
+- [Container-Formats#rim](Container-Formats#rim) -- Stock `.rim` / `_s.rim` module archives ([vs. ERF](Container-Formats#rim-versus-erf))
 - [Concepts](Concepts#mod-erf-rim) -- MOD, ERF, RIM, and resource resolution

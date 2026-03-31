@@ -74,6 +74,6 @@ Run that fix before troubleshooting deeper compatibility issues on iOS. A surpri
 - [TSLPatcher-2DAList-Syntax](TSLPatcher-2DAList-Syntax) -- Exact author-facing 2DAList semantics
 - [TSLPatcher-GFFList-Syntax](TSLPatcher-GFFList-Syntax) -- Exact author-facing GFFList semantics
 - [Mod Creation Best Practices](Mod-Creation-Best-Practices) -- Workarounds and compatibility
-- [KEY-File-Format](Container-Formats#key) -- Resource resolution and override order
+- [Container-Formats#key](Container-Formats#key) -- Resource resolution and override order
 - [2DA-File-Format](2DA-File-Format) -- Game data tables (e.g. appearance.2da)
 - [Community sources and archives](Home#community-sources-and-archives) -- External player-support and historical sources

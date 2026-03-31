@@ -15,7 +15,7 @@ This reads `docs/reva_roadmap/agdec_cache/k1_save_load_cache.json`, runs codegen
 ## Building the cache
 
 **Option A: get-function (MCP)**  
-Call `get-function` for each address and merge into one JSON. Addresses (K1): `00401080`, `004b2520`, `004ae6e0`, `004ae6f0`, `004b58a0`, `004ba640`, `004b95b0`. Save as `docs/reva_roadmap/agdec_cache/k1_save_load_cache.json` with keys: `program`, `program_path`, `source`, `functions` (list of `{address, name, signature, callees}`).
+Call `get-function` for each required save/load entry point and merge the results into one JSON. Save as `docs/reva_roadmap/agdec_cache/k1_save_load_cache.json` with keys: `program`, `program_path`, `source`, `functions` (list of `{address, name, signature, callees}`). The canonical address list now lives in `wiki/reverse_engineering_findings.md`.
 
 **Option B: execute-script (MCP)**  
 Run `export_save_load_functions.py` via `execute-script` with `program_path: "/K1/k1_win_gog_swkotor.exe"`. The script assigns to `__result__` a dict with `program` and `functions`. Serialize that to the same JSON path. Note: in some environments `currentProgram` may be the program object directly (not callable).

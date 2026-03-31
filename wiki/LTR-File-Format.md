@@ -111,14 +111,7 @@ The runtime algorithm (PyKotor, reone, xoreos, KotOR.js, etc.) follows the same 
 5. **Subsequent Characters** – roll against triple-letter *middle*; termination uses triple-letter *end* plus length heuristics (compare KotOR.js [`getName` L173–L200](https://github.com/KobaltBlu/KotOR.js/blob/ea9491d5c783364cf285f178434b84405bee3608/src/resource/LTRObject.ts#L173-L200) with PyKotor [`generate` L252–L285](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/formats/ltr/ltr_data.py#L252-L285)).
 6. **Post-processing** – capitalize / minimum length; retries on failed rolls.
 
-**References**
-
-- Community C reference: [mtijanic `nwnltr.c`](https://github.com/mtijanic/nwn-misc/blob/master/nwnltr.c) (NWN lineage; KotOR uses 28 letters).
-- PyKotor generate — [`ltr_data.py` `generate` L170–L288](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/formats/ltr/ltr_data.py#L170-L288)
-- PyKotor I/O — [`io_ltr.py` L55–L156](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/formats/ltr/io_ltr.py#L55-L156)
-- [reone `ltrreader.cpp` L27–L79](https://github.com/modawan/reone/blob/61531089341caf5827abbc54346c8c959b03d449/src/libs/resource/format/ltrreader.cpp#L27-L79)
-- [xoreos `ltrfile.cpp`](https://github.com/xoreos/xoreos/blob/master/src/aurora/ltrfile.cpp)
-- [KotOR.js `LTRObject.ts` L51–L210](https://github.com/KobaltBlu/KotOR.js/blob/ea9491d5c783364cf285f178434b84405bee3608/src/resource/LTRObject.ts#L51-L210).
+This generation pipeline matches the older NWN-lineage C reference ([mtijanic `nwnltr.c`](https://github.com/mtijanic/nwn-misc/blob/master/nwnltr.c)), PyKotor's reader and generator ([`io_ltr.py` L55-L156](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/formats/ltr/io_ltr.py#L55-L156), [`ltr_data.py` `generate` L170-L288](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/formats/ltr/ltr_data.py#L170-L288)), reone's LTR parser ([ltrreader.cpp L27-L79](https://github.com/modawan/reone/blob/61531089341caf5827abbc54346c8c959b03d449/src/libs/resource/format/ltrreader.cpp#L27-L79)), xoreos's Aurora implementation ([ltrfile.cpp](https://github.com/xoreos/xoreos/blob/master/src/aurora/ltrfile.cpp)), and KotOR.js's LTR object logic ([LTRObject.ts L51-L210](https://github.com/KobaltBlu/KotOR.js/blob/ea9491d5c783364cf285f178434b84405bee3608/src/resource/LTRObject.ts#L51-L210)).
 
 Because PyKotor matches the binary layout described above, *LTR* resources round-trip with the other cited implementations for **28-letter** KotOR tables.
 

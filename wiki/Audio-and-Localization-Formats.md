@@ -256,7 +256,7 @@ See **Cross-reference implementations** under [File structure overview](#file-st
 - [NSS-File-Format](NSS-File-Format) -- Script strings
 - [Bioware-Aurora-TalkTable](Bioware-Aurora-Core-Formats#talktable) -- Aurora talk table spec
 - [Concepts](Concepts#resource-resolution-order) -- Resource resolution
-- [KEY-File-Format](Container-Formats#key) -- KEY/BIF index
+- [Container-Formats#key](Container-Formats#key) -- KEY/BIF index
 - [Community sources and archives](Home#community-sources-and-archives) -- DeadlyStream, forums for TLK/StrRef modding
 
 ---
@@ -442,15 +442,7 @@ LIP is always paired with a [WAV](Audio-and-Localization-Formats#wav) of matchin
 - data model in `lip_data.py`
 - XML/JSON in `io_lip_xml`, `io_lip_json`
 
-**Cross-reference (other implementations):**
-
-- **[reone](https://github.com/modawan/reone)**: [`lipreader.cpp` L27+](https://github.com/modawan/reone/blob/61531089341caf5827abbc54346c8c959b03d449/src/libs/graphics/format/lipreader.cpp#L27) — C++ LIP parser
-- **[xoreos](https://github.com/xoreos/xoreos)**: [`lipfile.cpp`](https://github.com/xoreos/xoreos/blob/master/src/aurora/lipfile.cpp) — Aurora LIP
-- **[KotOR.js](https://github.com/KobaltBlu/KotOR.js)**:
-
-  - [`LIPObject.ts` L26+](https://github.com/KobaltBlu/KotOR.js/blob/ea9491d5c783364cf285f178434b84405bee3608/src/resource/LIPObject.ts#L26)
-  - [`readBinary` L112–L136](https://github.com/KobaltBlu/KotOR.js/blob/ea9491d5c783364cf285f178434b84405bee3608/src/resource/LIPObject.ts#L112-L136) — header + keyframe table
-- **[Kotor.NET](https://github.com/NickHugi/Kotor.NET)**: [`LIP.cs` L11+](https://github.com/NickHugi/Kotor.NET/blob/6dca4a6a1af2fee6e36befb9a6f127c8ba04d3e2/Kotor.NET/Formats/KotorLIP/LIP.cs#L11) — in-memory LIP / viseme DTOs
+Comparable LIP implementations include reone's C++ parser ([lipreader.cpp L27+](https://github.com/modawan/reone/blob/61531089341caf5827abbc54346c8c959b03d449/src/libs/graphics/format/lipreader.cpp#L27)), xoreos's Aurora reader ([lipfile.cpp](https://github.com/xoreos/xoreos/blob/master/src/aurora/lipfile.cpp)), KotOR.js's LIP object and binary reader ([LIPObject.ts L26+](https://github.com/KobaltBlu/KotOR.js/blob/ea9491d5c783364cf285f178434b84405bee3608/src/resource/LIPObject.ts#L26), [`readBinary` L112-L136](https://github.com/KobaltBlu/KotOR.js/blob/ea9491d5c783364cf285f178434b84405bee3608/src/resource/LIPObject.ts#L112-L136)), and Kotor.NET's in-memory DTO layer ([LIP.cs L11+](https://github.com/NickHugi/Kotor.NET/blob/6dca4a6a1af2fee6e36befb9a6f127c8ba04d3e2/Kotor.NET/Formats/KotorLIP/LIP.cs#L11)).
 
 ### See also
 
@@ -471,11 +463,7 @@ LIP is always paired with a [WAV](Audio-and-Localization-Formats#wav) of matchin
 | Sound Length  | [float32](GFF-File-Format#gff-data-types) | 8 (0x08)   | 4    | Duration in seconds (must equal [WAV](Audio-and-Localization-Formats#wav) length) |
 | Entry count   | UInt32  | 12 (0x0C)   | 4    | Number of [keyframes](MDL-MDX-File-Format#controller-structure) immediately following |
 
-**References**
-
-**Cross-reference:**
-
-- **[reone](https://github.com/modawan/reone)**: [`lipreader.cpp` L27–L42](https://github.com/modawan/reone/blob/61531089341caf5827abbc54346c8c959b03d449/src/libs/graphics/format/lipreader.cpp#L27-L42) — LIP header parsing
+The LIP header layout is corroborated by reone's parser ([lipreader.cpp L27-L42](https://github.com/modawan/reone/blob/61531089341caf5827abbc54346c8c959b03d449/src/libs/graphics/format/lipreader.cpp#L27-L42)).
 
 ### [keyframe](MDL-MDX-File-Format#controller-structure) Table
 
@@ -494,11 +482,7 @@ LIP is always paired with a [WAV](Audio-and-Localization-Formats#wav) of matchin
   - [KotOR.js](https://github.com/KobaltBlu/KotOR.js)
   - [Kotor.NET](https://github.com/NickHugi/Kotor.NET)
 
-**References**
-
-**Cross-reference:**
-
-- **[KotOR.js](https://github.com/KobaltBlu/KotOR.js)**: [`LIPObject.ts` `readBinary` L112–L136](https://github.com/KobaltBlu/KotOR.js/blob/ea9491d5c783364cf285f178434b84405bee3608/src/resource/LIPObject.ts#L112-L136) — keyframe table parsing
+KotOR.js's binary reader shows the same contiguous keyframe-table decode ([`LIPObject.ts` `readBinary` L112-L136](https://github.com/KobaltBlu/KotOR.js/blob/ea9491d5c783364cf285f178434b84405bee3608/src/resource/LIPObject.ts#L112-L136)).
 
 ---
 
@@ -525,34 +509,20 @@ KotOR reuses the 16-shape Preston Blair [phoneme](https://en.wikipedia.org/wiki/
 | 14 | **L** | Tongue forward ("l", "r") |
 | 15 | **KG** | Back of tongue raised ("k", "g", "h") |
 
-**Reference:** [`Libraries/PyKotor/src/pykotor/resource/formats/lip/lip_data.py:50-169`](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/formats/lip/lip_data.py#L50-L169)
+PyKotor's [`LIPShape` table and related phoneme helpers](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/formats/lip/lip_data.py#L50-L169) define the same core viseme set used throughout the surrounding LIP tooling ecosystem.
 
 ---
 
 ## [animation](MDL-MDX-File-Format#animation-header) Rules
 
-- **[Interpolation](https://en.wikipedia.org/wiki/Interpolation):** The engine interpolates between consecutive [keyframes](https://en.wikipedia.org/wiki/Key_frame)
-- PyKotor exposes `LIP.get_shapes()` to compute the left/right [visemes](https://en.wikipedia.org/wiki/Viseme) plus blend factor.
-  **Reference:** [`Libraries/PyKotor/src/pykotor/resource/formats/lip/lip_data.py:342-385`](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/formats/lip/lip_data.py#L342-L385)
-- **Sorting:** When adding frames, PyKotor removes existing entries at the same timestamp and keeps the list sorted.  
-  **Reference:** [`Libraries/PyKotor/src/pykotor/resource/formats/lip/lip_data.py:305-323`](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/formats/lip/lip_data.py#L305-L323)
-- **Duration Alignment:** LIP `length` is updated to the max timestamp so exported [animations](MDL-MDX-File-Format#animation-header) stay aligned with their [WAV](Audio-and-Localization-Formats#wav) line.  
-  **Reference:** [`Libraries/PyKotor/src/pykotor/resource/formats/lip/lip_data.py:267-323`](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/formats/lip/lip_data.py#L267-L323)
+- **[Interpolation](https://en.wikipedia.org/wiki/Interpolation):** The engine interpolates between consecutive [keyframes](https://en.wikipedia.org/wiki/Key_frame), and PyKotor's [`LIP.get_shapes()`](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/formats/lip/lip_data.py#L342-L385) computes the left and right [visemes](https://en.wikipedia.org/wiki/Viseme) plus blend factor from that timeline.
+- **Sorting:** When adding frames, PyKotor [removes existing entries at the same timestamp and keeps the list sorted](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/formats/lip/lip_data.py#L305-L323).
+- **Duration Alignment:** PyKotor updates [`LIP.length` to the maximum timestamp](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/formats/lip/lip_data.py#L267-L323) so exported [animations](MDL-MDX-File-Format#animation-header) stay aligned with their [WAV](Audio-and-Localization-Formats#wav) line.
 - **Generation:** Automated pipelines (MDLOps, KotORBlender) map phonemes to visemes via `LIPShape.from_phoneme()`, and the same mapping table appears in the vendor projects referenced above to keep authoring tools consistent.  
 
 ---
 
-## Cross-reference: implementations
-
-- **Binary Reader:** [`Libraries/PyKotor/src/pykotor/resource/formats/lip/io_lip.py`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/lip/io_lip.py)  
-- **data [model](MDL-MDX-File-Format):** [`Libraries/PyKotor/src/pykotor/resource/formats/lip/lip_data.py`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/lip/lip_data.py)  
-- **Reference implementations:**  
-  - **[reone](https://github.com/modawan/reone)** [`lipreader.cpp` L27+](https://github.com/modawan/reone/blob/61531089341caf5827abbc54346c8c959b03d449/src/libs/graphics/format/lipreader.cpp#L27)
-  - **[xoreos](https://github.com/xoreos/xoreos)** [`lipfile.cpp`](https://github.com/xoreos/xoreos/blob/master/src/aurora/lipfile.cpp)
-  - **[KotOR.js](https://github.com/KobaltBlu/KotOR.js)** [`LIPObject.ts` L26+](https://github.com/KobaltBlu/KotOR.js/blob/ea9491d5c783364cf285f178434b84405bee3608/src/resource/LIPObject.ts#L26)
-  - **[Kotor.NET](https://github.com/NickHugi/Kotor.NET)** [`LIP.cs` L11+](https://github.com/NickHugi/Kotor.NET/blob/6dca4a6a1af2fee6e36befb9a6f127c8ba04d3e2/Kotor.NET/Formats/KotorLIP/LIP.cs#L11)
-
-The references above implement the same header layout and [keyframe](MDL-MDX-File-Format#controller-structure) encoding, ensuring PyKotor stays compatible with the other toolchains.
+PyKotor's LIP reader and data model ([io_lip.py](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/lip/io_lip.py), [lip_data.py](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/lip/lip_data.py)) stay aligned with the same header and keyframe encoding used by reone ([lipreader.cpp L27+](https://github.com/modawan/reone/blob/61531089341caf5827abbc54346c8c959b03d449/src/libs/graphics/format/lipreader.cpp#L27)), xoreos ([lipfile.cpp](https://github.com/xoreos/xoreos/blob/master/src/aurora/lipfile.cpp)), KotOR.js ([LIPObject.ts L26+](https://github.com/KobaltBlu/KotOR.js/blob/ea9491d5c783364cf285f178434b84405bee3608/src/resource/LIPObject.ts#L26)), and Kotor.NET ([LIP.cs L11+](https://github.com/NickHugi/Kotor.NET/blob/6dca4a6a1af2fee6e36befb9a6f127c8ba04d3e2/Kotor.NET/Formats/KotorLIP/LIP.cs#L11)).
 
 
 ---

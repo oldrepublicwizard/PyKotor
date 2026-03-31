@@ -1,4 +1,4 @@
-# Texture Formats
+﻿# Texture Formats
 
 The KotOR engine uses several texture formats, each serving a different purpose in the rendering pipeline. **TPC** (Texture Pack Container) is the primary compressed texture format shipped with the game — most visual assets the player sees are TPC files inside BIF archives ([`TPC` L494](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/formats/tpc/tpc_data.py#L494), [reone `TpcReader::load` L32](https://github.com/modawan/reone/blob/61531089341caf5827abbc54346c8c959b03d449/src/libs/graphics/format/tpcreader.cpp#L32)). **DDS** (DirectDraw Surface) textures appear in two variants: the standard DirectX format used by modding tools and ports, and a BioWare-specific headerless variant inherited from the Aurora engine ([`TPCDDSReader` L49](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/formats/tpc/io_dds.py#L49), [xoreos `dds.cpp`](https://github.com/xoreos/xoreos/blob/master/src/graphics/images/dds.cpp)). **PLT** (Palette Texture) files support the dye-channel system that lets the engine recolor armor and clothing at runtime without duplicating texture data ([xoreos-docs `specs/torlack/plt.html`](https://github.com/xoreos/xoreos-docs/blob/master/specs/torlack/plt.html), [Kaitai `PLT.ksy`](https://github.com/OldRepublicDevs/bioware-kaitai-formats/blob/master/formats/PLT/PLT.ksy)). **TXI** files are plain-text sidecar metadata that control rendering properties such as blending, animation frames, and environment mapping ([`TXI` L52](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/formats/txi/txi_data.py#L52), [`TXICommand` L613](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/formats/txi/txi_data.py#L613)).
 
@@ -37,7 +37,8 @@ The engine resolves DDS textures through the standard [resource resolution order
 
 ---
 
-PyKotor reads both variants via [\TPCDDSReader.load\ L191+](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/formats/tpc/io_dds.py#L191) (class [\TPCDDSReader\ L49+](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/formats/tpc/io_dds.py#L49)) and writes standard DDS via [\TPCDDSWriter\ L351+](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/formats/tpc/io_dds.py#L351), routed through [\	pc_auto.py\](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/tpc/tpc_auto.py) via \ResourceType.DDS\ detection. The same structure is decoded by [xoreos \src/graphics/images/dds.cpp\](https://github.com/xoreos/xoreos/blob/master/src/graphics/images/dds.cpp) (engine, both variants) and [xoreos-tools \src/images/dds.cpp\](https://github.com/xoreos/xoreos-tools/blob/master/src/images/dds.cpp) (command-line conversion). Reone has no standalone DDS reader and loads all textures through [TPC via \TpcReader::load\ L32+](https://github.com/modawan/reone/blob/61531089341caf5827abbc54346c8c959b03d449/src/libs/graphics/format/tpcreader.cpp#L32). KotOR.js follows the TPC path via [\TPCObject.ts\](https://github.com/KobaltBlu/KotOR.js/blob/master/src/resource/TPCObject.ts) and [\TextureLoader.ts\](https://github.com/KobaltBlu/KotOR.js/blob/master/src/loaders/TextureLoader.ts); Kotor.NET manages textures under [\Kotor.NET/Formats/KotorTPC/\](https://github.com/NickHugi/Kotor.NET/tree/master/Kotor.NET/Formats/KotorTPC) with no separate DDS project. DDS is primarily a tool interchange format — KotOR ships textures as [TPC](Texture-Formats#tpc) — but DDS files in the override folder are fully supported. For mod workflows see [HoloPatcher for mod developers](HoloPatcher#mod-developers); related formats: [TPC](Texture-Formats#tpc), [TXI](Texture-Formats#txi).
+PyKotor reads both variants via [`TPCDDSReader.load` L191+](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/formats/tpc/io_dds.py#L191) (class [`TPCDDSReader` L49+](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/formats/tpc/io_dds.py#L49)) and writes standard DDS via [`TPCDDSWriter` L351+](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/formats/tpc/io_dds.py#L351), routed through [`tpc_auto.py`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/tpc/tpc_auto.py) via `ResourceType.DDS` detection. The same structure is decoded by [xoreos `src/graphics/images/dds.cpp`](https://github.com/xoreos/xoreos/blob/master/src/graphics/images/dds.cpp) (engine, both variants) and [xoreos-tools `src/images/dds.cpp`](https://github.com/xoreos/xoreos-tools/blob/master/src/images/dds.cpp) (command-line conversion). Reone has no standalone DDS reader and loads all textures through [TPC via `TpcReader::load` L32+](https://github.com/modawan/reone/blob/61531089341caf5827abbc54346c8c959b03d449/src/libs/graphics/format/tpcreader.cpp#L32). KotOR.js follows the TPC path via [`TPCObject.ts`](https://github.com/KobaltBlu/KotOR.js/blob/master/src/resource/TPCObject.ts) and [`TextureLoader.ts`](https://github.com/KobaltBlu/KotOR.js/blob/master/src/loaders/TextureLoader.ts); Kotor.NET manages textures under [`Kotor.NET/Formats/KotorTPC/`](https://github.com/NickHugi/Kotor.NET/tree/master/Kotor.NET/Formats/KotorTPC) with no separate DDS project. DDS is primarily a tool interchange format — KotOR ships textures as [TPC](Texture-Formats#tpc) — but DDS files in the override folder are fully supported. For mod workflows see [HoloPatcher for mod developers](HoloPatcher#mod-developers); related formats: [TPC](Texture-Formats#tpc), [TXI](Texture-Formats#txi).
+
 ### Standard DDS (DX7+ container)
 
 - Magic: `DDS` followed by a 124-[byte](https://en.wikipedia.org/wiki/Byte) header.
@@ -55,12 +56,7 @@ PyKotor reads both variants via [\TPCDDSReader.load\ L191+](https://github.com/O
     - 16-bit RGB 5-6-5 (`F800/07E0/001F/0`) --> converted to RGB
   - Cubemap detection via `dwCaps2 & 0x00000200`; faces counted from `dwCaps2 & 0x0000FC00`.
 - Each mip size is computed with the format-aware block sizing from `TPCTextureFormat.get_size`.
-- data layouts that are not directly usable (4444, 1555, 565) are expanded into RGBA/RGB before storing in the `TPC` object.
-
-Implementation reference:
-
-- **PyKotor** — [`io_dds.py`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/tpc/io_dds.py) (standard DDS path and format mapping)
-- **[xoreos](https://github.com/xoreos/xoreos)**: [`src/graphics/images/dds.cpp`](https://github.com/xoreos/xoreos/blob/master/src/graphics/images/dds.cpp) and **[xoreos-tools](https://github.com/xoreos/xoreos-tools)**: [`src/images/dds.cpp`](https://github.com/xoreos/xoreos-tools/blob/master/src/images/dds.cpp) (baseline behaviour and [mask](GFF-File-Format#gff-data-types) checks)
+- Data layouts not directly usable (4444, 1555, 565) are expanded into RGBA/RGB before storing in the `TPC` object. PyKotor implements this in [`io_dds.py`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/tpc/io_dds.py) (standard DDS path and format mapping); [xoreos `dds.cpp`](https://github.com/xoreos/xoreos/blob/master/src/graphics/images/dds.cpp) and [xoreos-tools `dds.cpp`](https://github.com/xoreos/xoreos-tools/blob/master/src/images/dds.cpp) implement the same [mask](GFF-File-Format#gff-data-types) checks.
 
 ### BioWare DDS variant
 
@@ -75,15 +71,7 @@ Implementation reference:
 | mipmap count    | Inferred            | Determined by computing expected mip sizes until reading all data                             |
 | palette/layout  | n/a                 | Always compressed; no palettes or alternative pixel layouts supported                         |
 
-**Notes:**
-
-- No file magic is present in this format.
-- Payload is always compressed data (DXT1 or DXT5); there is no support for palettes or uncompressed formats.
-
-**Implementation Reference:**
-
-- **PyKotor** — [`io_dds.py`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/tpc/io_dds.py) (BioWare header path)
-- **[xoreos](https://github.com/xoreos/xoreos)**: [`src/graphics/images/dds.cpp`](https://github.com/xoreos/xoreos/blob/master/src/graphics/images/dds.cpp) (BioWare branch for comparison).
+No file magic is present in this format. Payload is always compressed data (DXT1 or DXT5); there is no support for palettes or uncompressed formats. PyKotor implements the BioWare header path in [`io_dds.py`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/tpc/io_dds.py); the same BioWare branch is available in [xoreos `dds.cpp`](https://github.com/xoreos/xoreos/blob/master/src/graphics/images/dds.cpp) for comparison.
 
 ### Writer Behaviour (PyKotor)
 
@@ -153,7 +141,7 @@ TPC (texture Pack Container) is KotOR's native texture format. It supports palet
   - [Mipmaps, Layers, and Animation](#mipmaps-layers-and-animation)
   - [Cube Maps](#cube-maps)
   - [TXI Metadata](#txi-metadata)
-  - [Implementation Details](#implementation-details)
+  - [Cross-reference: implementations](#cross-reference-implementations)
 
 ---
 
@@ -171,51 +159,9 @@ TPC (texture Pack Container) is KotOR's native texture format. It supports palet
 | 128 (0x80)   | --    | texture data (per layer, per mipmap) |
 | ...    | --    | Optional ASCII [TXI](Texture-Formats#txi) footer |
 
-This layout is identical across:
+This structure is parsed identically by [PyKotor](https://github.com/OldRepublicDevs/PyKotor/tree/master/Libraries/PyKotor/src/pykotor/resource/formats/tpc), [reone](https://github.com/modawan/reone) ([`tpcreader.cpp`](https://github.com/modawan/reone/blob/master/src/libs/graphics/format/tpcreader.cpp)), [xoreos](https://github.com/xoreos/xoreos) ([`tpc.cpp`](https://github.com/xoreos/xoreos/blob/master/src/graphics/images/tpc.cpp)), [KotOR.js](https://github.com/KobaltBlu/KotOR.js) ([`TPCObject.ts`](https://github.com/KobaltBlu/KotOR.js/blob/master/src/resource/TPCObject.ts)), [KotOR-Unity](https://github.com/reubenduncan/KotOR-Unity) ([`TextureResource.cs`](https://github.com/reubenduncan/KotOR-Unity/blob/master/Assets/Scripts/FileObjects/TextureResource.cs)), [NorthernLights](https://github.com/lachjames/NorthernLights) ([`TPC.cs`](https://github.com/lachjames/NorthernLights/blob/master/src/Graphics/Textures/TPC.cs)), [xoreos-tools](https://github.com/xoreos/xoreos-tools) ([`tpc.cpp`](https://github.com/xoreos/xoreos-tools/blob/master/src/images/tpc.cpp)), and the original BioWare tools. The standalone [tga2tpc](https://deadlystream.com/files/file/1152-tga2tpc/) converter ([upstream](https://github.com/ndixUR/tga2tpc/tree/758f3dbd155356408abc36508b1e10fa4a83f22a) / [mirror](https://github.com/th3w1zard1/tga2tpc/tree/758f3dbd155356408abc36508b1e10fa4a83f22a)) also reads this header to produce TPC output.
 
-- PyKotor
-- [reone](https://github.com/modawan/reone)
-- [xoreos](https://github.com/xoreos/xoreos)
-- [KotOR.js](https://github.com/KobaltBlu/KotOR.js)
-- the original BioWare tools
-
-These engines consume the same header:
-
-- [KotOR-Unity](https://github.com/reubenduncan/KotOR-Unity)
-- [NorthernLights](https://github.com/lachjames/NorthernLights)
-
-**Implementation:** [`Libraries/PyKotor/src/pykotor/resource/formats/tpc/`](https://github.com/OldRepublicDevs/PyKotor/tree/master/Libraries/PyKotor/src/pykotor/resource/formats/tpc)
-
-**Vendor References:**
-
-Repository roots (file-level links follow in the bullets below):
-
-- **[reone](https://github.com/modawan/reone)**
-- **[xoreos](https://github.com/xoreos/xoreos)**
-- **[KotOR.js](https://github.com/KobaltBlu/KotOR.js)**
-- **[KotOR-Unity](https://github.com/reubenduncan/KotOR-Unity)**
-- **[NorthernLights](https://github.com/lachjames/NorthernLights)**
-- **tga2tpc**
-  - Upstream (ndixUR/tga2tpc): <https://github.com/ndixUR/tga2tpc/tree/758f3dbd155356408abc36508b1e10fa4a83f22a>
-  - Mirror (th3w1zard1/tga2tpc): <https://github.com/th3w1zard1/tga2tpc/tree/758f3dbd155356408abc36508b1e10fa4a83f22a>
-- **[xoreos-tools](https://github.com/xoreos/xoreos-tools)**
-
-- **[reone](https://github.com/modawan/reone)**: [`src/libs/graphics/format/tpcreader.cpp`](https://github.com/modawan/reone/blob/master/src/libs/graphics/format/tpcreader.cpp) - Complete C++ TPC decoder with DXT decompression
-- **[xoreos](https://github.com/xoreos/xoreos)**: [`src/graphics/images/tpc.cpp`](https://github.com/xoreos/xoreos/blob/master/src/graphics/images/tpc.cpp) - Generic Aurora TPC implementation (shared format)
-- **[KotOR.js](https://github.com/KobaltBlu/KotOR.js)**: [`src/resource/TPCObject.ts`](https://github.com/KobaltBlu/KotOR.js/blob/master/src/resource/TPCObject.ts) - TypeScript TPC loader with WebGL texture upload
-- **[KotOR-Unity](https://github.com/reubenduncan/KotOR-Unity)**: [`Assets/Scripts/FileObjects/TextureResource.cs`](https://github.com/reubenduncan/KotOR-Unity/blob/master/Assets/Scripts/FileObjects/TextureResource.cs) - C# Unity TPC loader with cube map support
-- **[NorthernLights](https://github.com/lachjames/NorthernLights)**: [`src/Graphics/Textures/TPC.cs`](https://github.com/lachjames/NorthernLights/blob/master/src/Graphics/Textures/TPC.cs) - .NET TPC reader with [animation](MDL-MDX-File-Format#animation-header) support
-- **tga2tpc** — standalone TGA to TPC conversion tool (see upstream / mirror tree permalinks in the list above)
-- **[xoreos-tools](https://github.com/xoreos/xoreos-tools)**: [`src/images/tpc.cpp`](https://github.com/xoreos/xoreos-tools/blob/master/src/images/tpc.cpp) - Command-line TPC extraction and conversion
-
-### Community context (workflow)
-
-- Deadly Stream - [Mod installation order and TGA vs. TPC files](https://deadlystream.com/topic/11056-mod-installation-order-and-tga-vs-tpc-files/) (forum discussion; pair with [Concepts](Concepts#resource-resolution-order) for authoritative override/MOD order).
-- Deadly Stream - [TOOL: tga2tpc](https://deadlystream.com/topic/5732-tooltga2pc/) / [tga2tpc file hub](https://deadlystream.com/files/file/1152-tga2tpc/) — practical notes (e.g. some **animated** frame aspect ratios reported to misbehave when converting TGA to TPC; verify in-game). For TPC to TGA or inspection, prefer:
-
-  - Holocron / PyKotor
-  - [xoreos-tools](https://github.com/xoreos/xoreos-tools)
-  - other readers listed under **Vendor References** above
+For community discussion of TGA vs. TPC workflows, see [Mod installation order and TGA vs. TPC files on Deadly Stream](https://deadlystream.com/topic/11056-mod-installation-order-and-tga-vs-tpc-files/) (pair with [Concepts](Concepts#resource-resolution-order) for authoritative override/MOD order). The [tga2tpc tool](https://deadlystream.com/topic/5732-tooltga2pc/) ([file hub](https://deadlystream.com/files/file/1152-tga2tpc/)) converts TGA to TPC; some animated frame aspect ratios are reported to misbehave when converting — verify in-game. For TPC-to-TGA or inspection, prefer Holocron/PyKotor, [xoreos-tools](https://github.com/xoreos/xoreos-tools), or other readers listed above.
 
 ### See also
 
@@ -236,10 +182,6 @@ Repository roots (file-level links follow in the bullets below):
 | `mipmap_count` | Number of mip levels per layer (minimum 1). |
 | Reserved | 0x72 bytes reserved; KotOR stores platform hints here but all implementations skip them. |
 
-**References**
-
-**PyKotor:**
-
 - [`io_tpc.py` L132-L186 (`TPCBinaryReader.load`)](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/formats/tpc/io_tpc.py#L132-L186) - header fields, compressed/uncompressed size handling, optional TXI footer string
 - [`io_tpc.py` L419-L427 (`TPCBinaryWriter.write`)](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/formats/tpc/io_tpc.py#L419-L427) - header serialization
 
@@ -247,7 +189,7 @@ Repository roots (file-level links follow in the bullets below):
 
 ## Pixel formats
 
-TPC supports the following encodings (documented in `TPCTextureFormat`):
+TPC supports the following encodings (documented in [`TPCTextureFormat` L54–L178](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/formats/tpc/tpc_data.py#L54-L178)):
 
 | Encoding | Description | Notes |
 | -------- | ----------- | ----- |
@@ -258,25 +200,13 @@ TPC supports the following encodings (documented in `TPCTextureFormat`):
 | DXT1 | Block-compressed (4×4 blocks, 8 bytes) | Detected via `data_size` and encoding flags |
 | DXT3/DXT5 | Block-compressed (4×4 blocks, 16 bytes) | Chosen based on `pixel_type` and compression flag |
 
-**References**
-
-**PyKotor:**
-
-- [`Libraries/PyKotor/src/pykotor/resource/formats/tpc/tpc_data.py:54-178`](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/formats/tpc/tpc_data.py#L54-L178) - Pixel format and encoding
-
 ---
 
 ## Mipmaps, Layers, and [animation](MDL-MDX-File-Format#animation-header)
 
 - Each texture can have multiple **layers** (used for cube maps or animated flipbooks).  
 - Every layer stores `mipmap_count` levels. For uncompressed textures, each level’s size equals `width × height × bytes_per_pixel`; for DXT formats it equals the block size calculation.  
-- Animated textures rely on [TXI](Texture-Formats#txi) fields (`proceduretype cycle`, `numx`, `numy`, `fps`). PyKotor splits the sprite sheet into layers and recalculates mip counts per frame.  
-
-**References**
-
-**PyKotor:**
-
-- [`Libraries/PyKotor/src/pykotor/resource/formats/tpc/io_tpc.py:216-285`](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/formats/tpc/io_tpc.py#L216-L285) - Mipmaps and layers
+- Animated textures rely on [TXI](Texture-Formats#txi) fields (`proceduretype cycle`, `numx`, `numy`, `fps`). PyKotor splits the sprite sheet into layers and recalculates mip counts per frame ([`io_tpc.py` L216-L285](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/formats/tpc/io_tpc.py#L216-L285)).
 
 ---
 
@@ -284,13 +214,7 @@ TPC supports the following encodings (documented in `TPCTextureFormat`):
 
 - Detected when the stored height is exactly six times the width for compressed textures (`DXT1/DXT5`).  
 - PyKotor normalizes cube [faces](MDL-MDX-File-Format#face-structure) after reading (deswizzle + rotation) so that [face](MDL-MDX-File-Format#face-structure) ordering matches the high-level texture API.  
-- Reone and KotOR.js use the same inference logic, so the cube-map detection below mirrors their behavior.
-
-**References**
-
-**PyKotor:**
-
-- [`io_tpc.py` L158-L304](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/formats/tpc/io_tpc.py#L158-L304) - cube-map detection, layer/mipmap read loop, BGRA deswizzle, `_normalize_cubemaps`
+- Reone and KotOR.js use the same inference logic, so the cube-map detection below mirrors their behavior ([`io_tpc.py` L158–L304](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/formats/tpc/io_tpc.py#L158-L304) — cube-map detection, layer/mipmap read loop, BGRA deswizzle, `_normalize_cubemaps`).
 
 ---
 
@@ -298,17 +222,11 @@ TPC supports the following encodings (documented in `TPCTextureFormat`):
 
 - If bytes remain after the texture payload, they are treated as ASCII [TXI](Texture-Formats#txi) content.  
 - [TXI](Texture-Formats#txi) commands drive [animations](MDL-MDX-File-Format#animation-header), environment mapping, font metrics, downsampling directives, etc. See the [TXI File Format](Texture-Formats#txi) document for exhaustive command descriptions.  
-- PyKotor automatically parses the [TXI](Texture-Formats#txi) footer and exposes `TPC.txi` plus convenience flags (`is_animated`, `is_cube_map`).  
-
-**References**
-
-**PyKotor:**
-
-- [`io_tpc.py` L179-L197](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/formats/tpc/io_tpc.py#L179-L197) - TXI footer string read and `is_animated` flag
+- PyKotor automatically parses the [TXI](Texture-Formats#txi) footer and exposes `TPC.txi` plus convenience flags (`is_animated`, `is_cube_map`) via [`io_tpc.py` L179–L197](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/formats/tpc/io_tpc.py#L179-L197).
 
 ---
 
-## Implementation Details
+## Cross-reference: implementations
 
 - **Binary Reader/Writer:** [`Libraries/PyKotor/src/pykotor/resource/formats/tpc/io_tpc.py`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/tpc/io_tpc.py)  
 - **data [model](MDL-MDX-File-Format) & Conversion Utilities:** [`Libraries/PyKotor/src/pykotor/resource/formats/tpc/tpc_data.py`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/tpc/tpc_data.py)  
@@ -345,22 +263,7 @@ All of the engines listed above treat the header and mipmap data identically. Th
 
 *PLT* ([Texture](Texture-Formats#tpc) Palette File) is a variant [Texture](Texture-Formats#tpc) format used in **Neverwinter Nights** that allows runtime color palette selection. Instead of fixed colors, *PLT* files store palette group indices and color indices that reference external palette files, enabling dynamic color customization for character [models](MDL-MDX-File-Format) (skin, hair, armor colors, etc.).
 
-**Resource type SSOT:** KotOR's primary on-disk texture types (`TPC` `0x07D1`, `DDS` `0x07F1`, etc.) are tabulated on [Resource formats and resolution](Resource-Formats-and-Resolution#resource-type-identifiers). **`PLT` / `0x0006`** is an Aurora legacy id present in shared type tables; it is **not** a KotOR shipping format—see this page and [TPC File Format](Texture-Formats#tpc) for what the games actually load.
-
-**Cross-reference implementations (line anchors are against `master` and may drift):**
-
-- **PyKotor**:
-
-  - [`ResourceType.PLT` L247+](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/type.py#L247) (Aurora type id **6**, NWN-oriented metadata)
-  - [`kaitai_generated/plt.py` L11+](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/kaitai_generated/plt.py#L11) (documentation-only generated layout)
-- **[xoreos](https://github.com/xoreos/xoreos)** — NWN *PLT* loader [`src/graphics/aurora/pltfile.cpp` L1+](https://github.com/xoreos/xoreos/blob/f36b681b2a38799ddd6fce0f252b6d7fa781dfc2/src/graphics/aurora/pltfile.cpp#L1); creature usage [`creature.cpp` L573-L589](https://github.com/xoreos/xoreos/blob/f36b681b2a38799ddd6fce0f252b6d7fa781dfc2/src/engines/nwn/creature.cpp#L573-L589). Torlack spec: [xoreos-docs `specs/torlack/plt.html`](https://github.com/xoreos/xoreos-docs/blob/master/specs/torlack/plt.html).
-- **[reone](https://github.com/modawan/reone)** ([historical upstream / mirror: seedhartha/reone](https://github.com/modawan/reone)) — KotOR pipeline uses **TPC**, not PLT ([`TpcReader::load` L32+](https://github.com/modawan/reone/blob/61531089341caf5827abbc54346c8c959b03d449/src/libs/graphics/format/tpcreader.cpp#L32)).
-- **[KotOR.js](https://github.com/KobaltBlu/KotOR.js)**
-
-  - [`TPCObject.ts`](https://github.com/KobaltBlu/KotOR.js/blob/master/src/resource/TPCObject.ts) — runtime [textures](Texture-Formats#tpc)
-  - [`TextureLoader.ts`](https://github.com/KobaltBlu/KotOR.js/blob/master/src/loaders/TextureLoader.ts) — texture loading
-  - No KotOR PLT path (TPC pipeline only).
-- **[Kotor.NET](https://github.com/NickHugi/Kotor.NET)** — managed textures under [`Kotor.NET/Formats/KotorTPC/`](https://github.com/NickHugi/Kotor.NET/tree/master/Kotor.NET/Formats/KotorTPC); no `KotorPLT` on the default branch.
+**Resource type SSOT:** KotOR's primary on-disk texture types (`TPC` `0x07D1`, `DDS` `0x07F1`, etc.) are tabulated on [Resource formats and resolution](Resource-Formats-and-Resolution#resource-type-identifiers). **`PLT` / `0x0006`** is an Aurora legacy id present in shared type tables; it is **not** a KotOR shipping format—see this page and [TPC File Format](Texture-Formats#tpc) for what the games actually load. PyKotor registers the legacy type id in [`ResourceType.PLT` L247+](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/type.py#L247) and provides a documentation-only Kaitai layout in [`kaitai_generated/plt.py` L11+](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/kaitai_generated/plt.py#L11). Xoreos implements NWN PLT loading in [`src/graphics/aurora/pltfile.cpp` L1+](https://github.com/xoreos/xoreos/blob/f36b681b2a38799ddd6fce0f252b6d7fa781dfc2/src/graphics/aurora/pltfile.cpp#L1) with creature usage in [`creature.cpp` L573–L589](https://github.com/xoreos/xoreos/blob/f36b681b2a38799ddd6fce0f252b6d7fa781dfc2/src/engines/nwn/creature.cpp#L573-L589) (Torlack spec: [xoreos-docs `specs/torlack/plt.html`](https://github.com/xoreos/xoreos-docs/blob/master/specs/torlack/plt.html)). Reone, KotOR.js, and Kotor.NET all use TPC for KotOR textures and have no PLT path.
 
 ## Table of Contents
 
@@ -373,7 +276,7 @@ All of the engines listed above treat the header and mipmap data identically. Th
   - [Binary Format](#binary-format)
     - [File Header](#file-header)
     - [Pixel Data](#pixel-data)
-  - [Implementation Details](#implementation-details)
+  - [Cross-reference: implementations](#cross-reference-implementations)
 
 ---
 
@@ -389,8 +292,6 @@ At runtime, the game:
 1. Loads the appropriate palette file for the selected palette group
 2. Uses the palette index (supplied by the content creator) to select a row in the palette file
 3. Uses the color index from the *PLT* file to retrieve the final color value
-
-**Reference**: **[xoreos-docs](https://github.com/xoreos/xoreos-docs)**: [`specs/torlack/plt.html`](https://github.com/xoreos/xoreos-docs/blob/master/specs/torlack/plt.html) - Tim Smith (Torlack)'s reverse-engineered *PLT* format documentation
 
 ---
 
@@ -413,9 +314,7 @@ There are ten palette groups, each corresponding to a different [Material](MDL-M
 | 8           | Tattoo 1  | Primary tattoo/body paint colors               | `pal_tattoo01.jpg`   |
 | 9           | Tattoo 2  | Secondary tattoo/body paint colors             | `pal_tattoo01.jpg`   |
 
-**Palette File Structure**: Each palette file contains 256 rows (one for each palette index `0-255`), with each row containing 256 color values (one for each color index `0-255`).
-
-**Reference**: **[xoreos-docs](https://github.com/xoreos/xoreos-docs)**: [`specs/torlack/plt.html`](https://github.com/xoreos/xoreos-docs/blob/master/specs/torlack/plt.html) - Palette Groups Table and Description
+**Palette File Structure**: Each palette file contains 256 rows (one for each palette index `0-255`), with each row containing 256 color values (one for each color index `0-255`); the full table of group names and example palette files is specified in [xoreos-docs `specs/torlack/plt.html`](https://github.com/xoreos/xoreos-docs/blob/master/specs/torlack/plt.html).
 
 ### Color Resolution Process
 
@@ -432,8 +331,6 @@ To determine the final color for a pixel in a *PLT* [texture](Texture-Formats#tp
 - If the content creator selected palette index `5` for *Metal 1*
 - The game loads `pal_armor01.jpg` and reads row 5, column 128
 - The RGB value at that position becomes the pixel's color
-
-**Reference**: **[xoreos-docs](https://github.com/xoreos/xoreos-docs)**: [`specs/torlack/plt.html`](https://github.com/xoreos/xoreos-docs/blob/master/specs/torlack/plt.html) - Color Resolution Example
 
 ---
 
@@ -452,8 +349,6 @@ The *PLT* file header is 24 bytes:
 | Width     | UInt32  | 16 (0x0010) | 4    | [texture](Texture-Formats#tpc) width in pixels                         |
 | Height    | UInt32  | 20 (0x0014) | 4    | [texture](Texture-Formats#tpc) height in pixels                       |
 
-**Reference**: **[xoreos-docs](https://github.com/xoreos/xoreos-docs)**: [`specs/torlack/plt.html`](https://github.com/xoreos/xoreos-docs/blob/master/specs/torlack/plt.html) - PLT file header structure
-
 ### Pixel Data
 
 Following the header, pixel data is stored as an array of 2-[Bytes](https://en.wikipedia.org/wiki/Byte) structures. There are `width × height` pixel entries.
@@ -465,13 +360,11 @@ Each pixel entry is 2 bytes:
 | Color Index       | [UInt8](GFF-File-Format#gff-data-types)  | 0 (0x0000) | 1    | color index (`0-255`) within the selected palette |
 | Palette Group Index | [UInt8](GFF-File-Format#gff-data-types) | 1 (0x0001) | 1    | Palette group index (`0-9`)                      |
 
-**Pixel Data Layout**: Pixels are stored row by row, left to right, top to bottom. The total pixel data size is `width × height × 2` bytes.
-
-**Reference**: **[xoreos-docs](https://github.com/xoreos/xoreos-docs)**: [`specs/torlack/plt.html`](https://github.com/xoreos/xoreos-docs/blob/master/specs/torlack/plt.html) - Pixel Data Structure
+**Pixel Data Layout**: Pixels are stored row by row, left to right, top to bottom. The total pixel data size is `width × height × 2` bytes; the complete binary layout is specified in [xoreos-docs `specs/torlack/plt.html`](https://github.com/xoreos/xoreos-docs/blob/master/specs/torlack/plt.html).
 
 ---
 
-## Implementation Details
+## Cross-reference: implementations
 
 **KotOR vs Neverwinter Nights**:
 
@@ -484,10 +377,6 @@ Each pixel entry is 2 bytes:
 1. The resource type exists in *KotOR*'s resource system (shared *Aurora* engine heritage)
 2. *NWN*-derived tools may need to understand *PLT* when working with *KotOR* resources
 3. Many remaining *PLT* files exist in both *K1* and *TSL*'s data and installations, remnant of the prior games/engines.
-
-**Reference**: **[xoreos-docs](https://github.com/xoreos/xoreos-docs)**: [`specs/torlack/plt.html`](https://github.com/xoreos/xoreos-docs/blob/master/specs/torlack/plt.html) - Complete *PLT* format specification  
-**Reference**: **[xoreos](https://github.com/xoreos/xoreos)**: [`src/graphics/aurora/pltfile.cpp`](https://github.com/xoreos/xoreos/blob/master/src/graphics/aurora/pltfile.cpp) - *xoreos* *PLT* implementation (*NWN*-specific)  
-**Reference**: **[xoreos](https://github.com/xoreos/xoreos)**: [`creature.cpp` L573-L589](https://github.com/xoreos/xoreos/blob/f36b681b2a38799ddd6fce0f252b6d7fa781dfc2/src/engines/nwn/creature.cpp#L573-L589) - *Neverwinter Nights* creature *PLT* usage
 
 ### See also
 
@@ -505,20 +394,7 @@ Each pixel entry is 2 bytes:
 
 # KotOR TXI file format Documentation
 
-TXI ([texture](Texture-Formats#tpc) Info) files are compact ASCII descriptors that attach metadata to [TPC](Texture-Formats#tpc) [textures](Texture-Formats#tpc). They control mipmap usage, filtering, [flipbook animation](#animation-and-flipbooks), environment mapping, font atlases, and platform-specific downsampling. Every TXI file is parsed at runtime to configure how a [TPC](Texture-Formats#tpc) image is rendered. TXI files are resolved using the same [resource resolution order](Concepts#resource-resolution-order) as other resources (override, MOD/SAV, KEY/BIF).
-
-**For mod developers:**
-
-- TXI is often embedded in [TPC](Texture-Formats#tpc) or shipped as a sibling `.txi`.
-- See [HoloPatcher README for Mod Developers](HoloPatcher#mod-developers).
-
-**Related formats:**
-
-- Accompanies [TPC](Texture-Formats#tpc) textures
-- Referenced from:
-
-  - [MDL/MDX](MDL-MDX-File-Format)
-  - [GFF-GUI](GFF-GUI)
+TXI ([texture](Texture-Formats#tpc) Info) files are compact ASCII descriptors that attach metadata to [TPC](Texture-Formats#tpc) [textures](Texture-Formats#tpc). They control mipmap usage, filtering, [flipbook animation](#animation-and-flipbooks), environment mapping, font atlases, and platform-specific downsampling. Every TXI file is parsed at runtime to configure how a [TPC](Texture-Formats#tpc) image is rendered. TXI files are resolved using the same [resource resolution order](Concepts#resource-resolution-order) as other resources (override, MOD/SAV, KEY/BIF). TXI is typically embedded in a [TPC](Texture-Formats#tpc) or shipped as a sibling `.txi` file alongside the texture (see [HoloPatcher: mod packaging](HoloPatcher#mod-developers)); it accompanies [TPC](Texture-Formats#tpc) textures and is referenced from [MDL/MDX](MDL-MDX-File-Format) surface materials and [GFF-GUI](GFF-GUI) interface elements.
 
 ## Table of Contents
 
@@ -536,7 +412,7 @@ TXI ([texture](Texture-Formats#tpc) Info) files are compact ASCII descriptors th
     - [Streaming and Platform Hints](#streaming-and-platform-hints)
   - [Relationship to TPC textures](#relationship-to-tpc-textures)
     - [Empty TXI files](#empty-txi-files)
-  - [Implementation Details](#implementation-details)
+  - [Cross-reference: implementations](#cross-reference-implementations-1)
 
 ---
 
@@ -708,7 +584,7 @@ Many TXI files in the game installation are **empty** (0 bytes). These empty TXI
 
 ---
 
-## Implementation Details
+## Cross-reference: implementations
 
 - **Parser:** [`io_txi.py` `TXIBinaryReader.load` L43+](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/formats/txi/io_txi.py#L43)  
 - **Data model:** [`txi_data.py` `TXI` L94+](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/formats/txi/txi_data.py#L94)  

@@ -856,7 +856,7 @@ Module designer's comment
 - [GFF-GIT](GFF-Module-and-Area#git) -- Instance data
 - [GFF-File-Format](GFF-File-Format) -- GFF structure
 - [Bioware-Aurora-GFF](Bioware-Aurora-Core-Formats#gff) -- Aurora GFF spec
-- [KEY-File-Format](Container-Formats#key) -- Resource resolution
+- [Container-Formats#key](Container-Formats#key) -- Resource resolution
 
 
 ---
@@ -1422,9 +1422,9 @@ List of scripting variables and their values. See Section 3 of the Common GFF St
 ### See also
 
 - [GFF-IFO](GFF-Module-and-Area#ifo) -- KotOR module info implementation
-- [ERF-File-Format](Container-Formats#erf) -- MOD/SAV containers
+- [Container-Formats#erf](Container-Formats#erf) -- MOD/SAV containers
 - [GFF-File-Format](GFF-File-Format) -- GFF structure
-- [KEY-File-Format](Container-Formats#key) -- Resource resolution
+- [Container-Formats#key](Container-Formats#key) -- Resource resolution
 
 
 ---
@@ -2101,7 +2101,7 @@ MetaType
 - [GFF-IFO](GFF-Module-and-Area#ifo)
 - [GFF-ARE](GFF-Module-and-Area#are)
 - [GFF-UTC](GFF-Creature-and-Dialogue#utc) -- GFF files referencing common structs
-- [KEY-File-Format](Container-Formats#key) -- Resource resolution
+- [Container-Formats#key](Container-Formats#key) -- Resource resolution
 
 
 ---
@@ -2839,7 +2839,7 @@ Present only if the tileset has height transitions.
 
 - [GFF-File-Format](GFF-File-Format) -- GFF structure
 - [Bioware-Aurora-GFF](Bioware-Aurora-Core-Formats#gff) -- Aurora GFF spec
-- [KEY-File-Format](Container-Formats#key) -- Resource resolution
+- [Container-Formats#key](Container-Formats#key) -- Resource resolution
 - [TSLPatcher-GFFList-Syntax](TSLPatcher-GFF-Syntax#gfflist-syntax) -- Patching GFF
 
 

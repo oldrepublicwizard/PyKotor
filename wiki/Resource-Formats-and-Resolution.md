@@ -261,7 +261,7 @@ The table below is the wiki SSOT for resource type IDs. Loose files such as `.ut
 ### See also
 
 - [Concepts](Concepts) — Override, BIF/KEY, MOD/ERF/RIM, GFF, 2DA, language IDs
-- [KEY-File-Format](Container-Formats#key) — KEY binary layout and index role
+- [Container-Formats#key](Container-Formats#key) — KEY binary layout and index role
 - [Mod-Creation-Best-Practices](Mod-Creation-Best-Practices#file-priority-and-where-to-put-your-files) — Where to install files
 - [Home](Home) — Wiki hub
 - [Reverse Engineering Findings — Resource Management System](reverse_engineering_findings#resource-management-system) — Engine `CExoResMan` / resource loading (conceptual)

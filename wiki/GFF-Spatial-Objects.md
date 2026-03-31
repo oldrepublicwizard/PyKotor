@@ -956,7 +956,7 @@ Forum posts explain **workflow**; **UTS field tables** stay anchored here + BioW
 - [Bioware-Aurora-SoundObject](Bioware-Aurora-Spatial-and-Interactive#soundobject) -- Aurora sound spec
 - [WAV-File-Format](Audio-and-Localization-Formats#wav) -- Audio resources
 - [GFF-GIT](GFF-Module-and-Area#git) -- Sound instances in areas
-- [KEY-File-Format](Container-Formats#key) -- Resource resolution
+- [Container-Formats#key](Container-Formats#key) -- Resource resolution
 
 
 ---

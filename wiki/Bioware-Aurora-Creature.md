@@ -3737,4 +3737,4 @@ range.
 - [2DA-classes](2DA-File-Format#classes2da)
 - [2DA-racialtypes](2DA-File-Format#racialtypes2da)
 - [2DA-ranges](2DA-File-Format#ranges2da) -- Creature 2DA refs
-- [KEY-File-Format](Container-Formats#key) -- Resource resolution
+- [Container-Formats#key](Container-Formats#key) -- Resource resolution

@@ -310,6 +310,6 @@ Struct's own Comment.
 - [GFF-DLG](GFF-Creature-and-Dialogue#dlg) -- KotOR dialogue implementation
 - [NSS-File-Format](NSS-File-Format)
 - [NCS-File-Format](NCS-File-Format) -- Scripts in dialogue
-- [TLK-File-Format](Audio-and-Localization-Formats#tlk) -- Strings
+- [Audio-and-Localization-Formats#tlk](Audio-and-Localization-Formats#tlk) -- Strings
 - [GFF-File-Format](GFF-File-Format) -- GFF structure
-- [KEY-File-Format](Container-Formats#key) -- Resource resolution
+- [Container-Formats#key](Container-Formats#key) -- Resource resolution

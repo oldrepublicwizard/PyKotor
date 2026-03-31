@@ -1,33 +1,7 @@
-"""K1 save/load flow: 1:1 with k1_win_gog_swkotor.exe behavior.
+"""Archived save/load helper module.
 
-Exhaustive Python equivalent of SaveGame @ 004b58a0, LoadGame @ 004ba640,
-DoSaveGameScreenShot @ 00401080, HasEnoughDiskSpaceForSaveGame @ 004b2520,
-and callees GetFreeDiskSpace @ 004067b0, CreateDirectory2 @ 004068c0,
-GetDirectorySize @ 005e6650, CleanDirectory @ 00409460. Comments and labels
-use exact binary names and addresses; no renaming.
-
-K2/TSL binary (k2_win_gog_aspyr_swkotor2.exe) equivalent functions:
-  Save: StallEventSaveGame @ 007b7980 (same high-level sequence as K1).
-  Load: LoadGame flow FUN_007b2f00; SetLoadBarProgress 0040da90; LoadTableInfo 00701d10 @ [this+0x1f0b4];
-  Load 006535d0 @ [this+0x100fc]; AddResourceDirectory 0061aff0; RemoveResourceDirectory 0061b070;
-  LoadModule 007b4fd0; flags [this+0x1f254], [this+0x1f33c], [this+0x1f344].
-  DoSaveGameScreenShot TSL @ 0040e0f0 (load-bar step store; screenshot in save path).
-See docs/reva_roadmap/KOTOR_SAVE_LOAD_TSL_RE_REPORT.md.
-
-Use run_save_flow(entry, game_install_path) / run_load_flow(entry, game_install_path) to
-dispatch by game via pykotor.tools.heuristics.determine_game(); K1 uses this module,
-K2/TSL uses save_load_flow_tsl (run_tsl_save_flow / run_tsl_load_flow).
-
-Call graph (see docs/reva_roadmap/K1_SAVE_LOAD_CALL_GRAPH.md):
-  SaveGame @ 004b58a0 callees: GetFreeDiskSpace 004067b0, CreateDirectory2 004068c0,
-  CleanDirectory 00409460, DoSaveGameScreenShot 00401080, SendServerToPlayerSaveLoad_Status 0056cb80,
-  SendServerToPlayerLoadBar_StartStallEvent 0056c8b0, GetDirectorySize 005e6650, GetAliasPath 005e6890,
-  operator!= 005e5390 (path 0x73d71c), GetModule 005ed530, SetCameraForScreenShot 00638e80,
-  AurSaveGameSnapshot 00420f20 (via DoSaveGameScreenShot), CStr 005e5670, ~CExoString 005e5c20, etc.
-  LoadGame @ 004ba640 callees: SetLoadBarProgress 005edd40, SetLoadStep 005edfd0,
-  AddResourceDirectory 00408800, LoadTableInfo 00565d20 @ [this+0x1b770], Load 0052ade0 @ [this+0x100fc],
-  RemoveResourceDirectory 004088d0, LoadModule 004b95b0.
-  HasEnoughDiskSpaceForSaveGame @ 004b2520: (free >> 14) >= 0x640 => K1_MIN_FREE_BYTES_ENGINE.
+The executable-derived findings that previously lived in this module docstring were
+consolidated into ``wiki/reverse_engineering_findings.md``.
 """
 
 from __future__ import annotations

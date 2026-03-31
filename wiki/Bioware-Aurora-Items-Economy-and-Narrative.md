@@ -1969,7 +1969,7 @@ Armor type. Use as column name in weaponsounds.2da.
 - [GFF-File-Format](GFF-File-Format) -- GFF types
 - [2DA-baseitems](2DA-File-Format#baseitems2da)
 - [2DA-ammunitiontypes](2DA-File-Format#ammunitiontypes2da) -- Item/ammo 2DA
-- [KEY-File-Format](Container-Formats#key) -- Resource resolution
+- [Container-Formats#key](Container-Formats#key) -- Resource resolution
 
 
 ---
@@ -2250,7 +2250,7 @@ Structs document.
 - [GFF-File-Format](GFF-File-Format) -- GFF structure
 - [GFF-UTI](GFF-Items-and-Economy#uti) -- Item format
 - [GFF-GIT](GFF-Module-and-Area#git) -- Store instances
-- [KEY-File-Format](Container-Formats#key) -- Resource resolution
+- [Container-Formats#key](Container-Formats#key) -- Resource resolution
 
 
 ---
@@ -2374,7 +2374,7 @@ category.
 - [GFF-JRL](GFF-Items-and-Economy#jrl) -- KotOR journal implementation
 - [GFF-File-Format](GFF-File-Format) -- GFF structure
 - [NSS-File-Format](NSS-File-Format) -- Journal scripting
-- [KEY-File-Format](Container-Formats#key) -- Resource resolution
+- [Container-Formats#key](Container-Formats#key) -- Resource resolution
 
 
 ---
@@ -2696,7 +2696,7 @@ standing toward the perpetrator by this amount.
 - [GFF-FAC](GFF-Items-and-Economy#fac) -- KotOR faction implementation
 - [GFF-File-Format](GFF-File-Format) -- GFF structure
 - [2DA-repute](2DA-File-Format#repute2da) -- Reputation table
-- [KEY-File-Format](Container-Formats#key) -- Resource resolution
+- [Container-Formats#key](Container-Formats#key) -- Resource resolution
 
 
 ---

@@ -29,7 +29,7 @@ The engine combines LYT spatial data with [MDL/MDX](MDL-MDX-File-Format) geometr
     - [Obstacle Definitions](#obstacle-definitions)
     - [Door Hooks](#door-hooks)
   - [Coordinate system](#coordinate-system)
-  - [Implementation Details](#implementation-details)
+  - [Cross-reference: implementations](#cross-reference-implementations)
 
 ---
 
@@ -173,7 +173,7 @@ doorhookcount <N>
 
 ---
 
-## Implementation Details
+## Cross-reference: implementations
 
 - **Parser:** [`Libraries/PyKotor/src/pykotor/resource/formats/lyt/io_lyt.py`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/lyt/io_lyt.py)  
 - **data [model](MDL-MDX-File-Format):** [`Libraries/PyKotor/src/pykotor/resource/formats/lyt/lyt_data.py`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/lyt/lyt_data.py)  
@@ -213,7 +213,7 @@ VIS pairs with [LYT](Level-Layout-Formats#lyt) (which defines room placement) an
     - [Parent Lines](#parent-lines)
     - [Child Lines](#child-lines)
   - [Runtime Behavior](#runtime-behavior)
-  - [Implementation Details](#implementation-details)
+  - [Cross-reference: implementations](#cross-reference-implementations-1)
 
 ---
 
@@ -265,12 +265,7 @@ room012 3
 
 - Each child line begins with two spaces followed by the visible room name.  
 - There is no explicit delimiter; the parser trims whitespace.  
-- A parent can list itself to force always-rendered rooms (rare but valid).  
-
-**References:**
-
-- [Format overview](#format-overview) (cross-reference implementations)
-- [Implementation Details](#implementation-details)
+- A parent can list itself to force always-rendered rooms (rare but valid) ([`VISAsciiReader.load` L45-L88](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/formats/vis/io_vis.py#L45-L88), [reone `visreader.cpp` L29-L61](https://github.com/modawan/reone/blob/61531089341caf5827abbc54346c8c959b03d449/src/libs/resource/format/visreader.cpp#L29-L61)).
 
 ---
 
@@ -304,7 +299,7 @@ PyKotor’s `VIS` class stores the data as a `dict[str, set[str]]`, exposing hel
 
 ---
 
-## Implementation Details
+## Cross-reference: implementations
 
 | Layer | PyKotor (`master`) | Other repos |
 | ----- | ------------------- | ----------- |
