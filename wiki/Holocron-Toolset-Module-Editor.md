@@ -1,8 +1,6 @@
 # Holocron Toolset: Module Editor
 
-*This page is merged from the toolset in-app help (Tools/HolocronToolset/src/toolset/help/tools/).*
-
-The Module Editor (Module Designer) is designed to make editing Modules easier through the use of both a 3D and 2D viewport. Open it from the Main Window via **Tools** → **Module Designer**.
+The Module Editor is the primary workspace for editing module content in 3D or 2D. It renders the area geometry, placed objects, waypoints, triggers, and other spatial data from the currently loaded module, and lets you select, move, rotate, duplicate, and delete instances directly in the viewport. Open it from the Main Window via **Tools** → **Module Designer**.
 
 ## Controls
 

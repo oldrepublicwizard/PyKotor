@@ -1,6 +1,6 @@
 # Area Modding and Room Transitions
 
-This page explains why you sometimes cannot walk between rooms in a module and what must agree for room crossing to work. It is a conceptual hub; for format details see the related pages below.
+For the player to walk between rooms in a module, several data files must agree: the LYT must place the rooms, the VIS must declare visibility, walkmeshes must provide navigable triangles at the doorway, and the GIT/ARE must reference the correct room models. When any of these are missing or mismatched, the player hits an invisible wall or falls through the floor.
 
 ## What must agree for room crossing
 

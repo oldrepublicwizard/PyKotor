@@ -1,43 +1,16 @@
-# KotOR GFF file format Documentation
+# GFF — Generic File Format
 
-This document describes the GFF (Generic File Format) used in Knights of the Old Republic (KotOR) and The Sith Lords (TSL). GFF is BioWare's binary container for structured game data: areas, creatures, items, dialogues, placeables, triggers, and more. **Audience:** modders editing or creating GFF-based resources, and developers implementing read/write support.
+The Generic File Format (GFF) is the all-purpose binary container used to store structured game data in Knights of the Old Republic and The Sith Lords. Nearly every non-script, non-texture resource the engine reads at runtime is a GFF file: area definitions, creature templates, item blueprints, dialogue trees, journal entries, placeables, triggers, waypoints, and user interface layouts. The format was designed for rapid iteration — new fields can be added to any resource type without breaking backward compatibility, because readers simply skip labels they do not recognize.
 
-**Official Bioware Documentation:** For the authoritative Bioware Aurora Engine GFF format specification, see:
+GFF is shared across BioWare's Aurora engine family. The [official BioWare GFF specification](Bioware-Aurora-Core-Formats#gff) documents the format as it was designed; this page documents the format as KotOR and TSL actually use it, including field schemas, type-specific layouts, and practical modding considerations. For the common GFF struct schemas shared across area and module files, see [Bioware Aurora Common GFF Structs](Bioware-Aurora-Module-and-Area#commongffstructs).
 
-- [Bioware Aurora GFF Format](Bioware-Aurora-Core-Formats#gff)
-- [Bioware Aurora Common GFF Structs](Bioware-Aurora-Module-and-Area#commongffstructs)
+Like all game resources, GFF files are resolved through the standard [resource resolution order](Concepts#resource-resolution-order): the engine checks the [override folder](Concepts#override-folder) first, then the active [MOD/ERF](Container-Formats#erf) module capsule, then [KEY/BIF](Container-Formats#key) base data. Modders can therefore shadow any vanilla GFF by placing a replacement in override or inside a module `.mod` file (see [Mod Creation Best Practices](Mod-Creation-Best-Practices#file-priority-and-where-to-put-your-files)). For merge-safe field-level edits, use [TSLPatcher/HoloPatcher GFFList syntax](TSLPatcher-GFF-Syntax#gfflist-syntax) instead of full-file replacement.
 
-**For mod developers:**
-
-- To modify GFF files in your mods, see the [TSLPatcher GFFList Syntax Guide](TSLPatcher-GFF-Syntax#gfflist-syntax).
-- For general modding information, see [HoloPatcher README for Mod Developers](HoloPatcher#mod-developers).
-
-**Related formats:**
-
-- [2DA files](2DA-File-Format) — configuration data
-- [TLK files](Audio-and-Localization-Formats#tlk) — text strings
-- [MDL/MDX files](MDL-MDX-File-Format) — 3D [models](MDL-MDX-File-Format)
-- [NCS files](NCS-File-Format) — scripts
-
-Loading any GFF (ARE, DLG, UTC, UTI, etc.) uses the same [resource resolution order](Concepts#resource-resolution-order) as other resources:
-
-- [override](Concepts#override-folder)
-- Loaded MOD/SAV (see [ERF](Container-Formats#erf))
-- [KEY/BIF](Container-Formats#key)
-
-**Modder note:** Tools like KotOR Tool, K-GFF, and Holocron Toolset edit GFF; TSLPatcher/HoloPatcher [GFFList](TSLPatcher-GFF-Syntax#gfflist-syntax) can add or modify fields but not remove structs—see [Mod-Creation-Best-Practices](Mod-Creation-Best-Practices#removing-gff-structs-when-patchers-cannot) for script-based removal. [Concepts](Concepts) defines GFF and related terms.
-
-**Historical tooling:**
-
-- LucasForums Archive — [K-GFF (GFF editor) v1.3.0 thread](https://www.lucasforumsarchive.com/thread/149407)
-- Deadly Stream — dated community context (this wiki + Holocron remain the practical references for format semantics):
-
-  - [TOOL: K-GFF](https://deadlystream.com/topic/3770-toolk-gff/)
-  - [file listing](https://deadlystream.com/files/file/719-k-gff/)
+GFF files work alongside [2DA](2DA-File-Format) configuration tables, [TLK](Audio-and-Localization-Formats#tlk) localized strings, [MDL/MDX](MDL-MDX-File-Format) 3D models, and [NCS](NCS-File-Format) compiled scripts. Historical editors include K-GFF ([LucasForums thread](https://www.lucasforumsarchive.com/thread/149407), [Deadly Stream listing](https://deadlystream.com/files/file/719-k-gff/)) and KotOR Tool; for current editing, use [Holocron Toolset](Holocron-Toolset-Getting-Started).
 
 ## Table of Contents
 
-- [KotOR GFF file format Documentation](#kotor-gff-file-format-documentation)
+- GFF — Generic File Format
   - Table of Contents
   - [File structure overview](#file-structure-overview)
     - [GFF as a Universal Container](#gff-as-a-universal-container)
@@ -83,19 +56,18 @@ Loading any GFF (ARE, DLG, UTC, UTI, etc.) uses the same [resource resolution or
 
 ## File structure overview
 
-GFF files use a hierarchical structure with structs containing fields, which can be simple values or nested structs and lists. The format supports version V3.2 (KotOR) and later versions (V3.3, V4.0, V4.1) used in other BioWare games.
+A GFF file is a hierarchical tree of structs, fields, and lists. Each struct contains named fields; each field holds either a simple value (integer, float, string) or a reference to a nested struct or list of structs. This recursive design means the same binary container can represent a creature with an inventory of items, a dialogue tree with branching replies, or an area definition with dozens of placed objects — all without changing the file format itself.
 
-### GFF as a Universal Container
+### GFF as a universal container
 
-GFF is BioWare's universal container format for structured game data. Think of it as a binary JSON or XML with strong typing:
+The format provides several properties that made it practical for rapid game development:
 
-**Advantages:**
+- **Type safety**: every field carries an explicit data type, so readers can validate structure without external schemas.
+- **Compact binary encoding**: significantly smaller than equivalent XML or JSON, which mattered for CD-based distribution.
+- **Direct memory mapping**: the offset-based layout allows fast load without full parsing.
+- **Backward and forward compatibility**: readers skip unknown labels, so adding a new field to a creature template does not break older tools or saves.
 
-- **type Safety**: Each field has an explicit data type (unlike text formats)
-- **Compact**: Binary encoding is much smaller than equivalent XML/JSON
-- **Fast**: Direct memory mapping without parsing overhead
-- **Hierarchical**: Natural representation of nested game data
-- **Extensible**: New fields can be added without breaking compatibility
+The engine uses the four-character file type signature (e.g. `UTC `, `DLG `, `ARE `) plus the version tag `V3.2` to identify GFF content. The same binary layout serves all of these resource types:
 
 **Common Uses:**
 
@@ -542,5 +514,3 @@ Complex types require accessing data from the field data section:
 - [Community sources and archives](Home#community-sources-and-archives) -- DeadlyStream, forums for GFF structure and modding
 
 ---
-
-This documentation aims to provide a comprehensive overview of the KotOR GFF file format, focusing on the detailed file structure and data formats used within the games.

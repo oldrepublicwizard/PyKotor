@@ -1,6 +1,6 @@
 # Indoor Map Builder — Implementation Guide
 
-This page documents **HolocronToolset** Indoor Map Builder behavior at a technical level: what files it emits, how they relate to engine formats, and where to read the code. For end-user workflow, see the [Indoor Map Builder User Guide](Indoor-Map-Builder-User-Guide).
+The Indoor Map Builder emits a complete module from a visual room layout: LYT, VIS, ARE, GIT, IFO, walkmeshes, and a MOD/RIM capsule. This guide explains what files it produces, how they relate to engine formats, and where to read the code. For end-user workflow, see the [Indoor Map Builder User Guide](Indoor-Map-Builder-User-Guide).
 
 ## Outputs and formats
 

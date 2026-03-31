@@ -1,7 +1,5 @@
 # Tutorial: Creating a new store
 
-*This tutorial is merged from the Holocron Toolset in-app help (Tools/HolocronToolset/src/toolset/help/tutorials/).*
-
 This tutorial adds a new store the player can buy from or sell to by creating a merchant (UTM), an NPC with dialog, a dialog file (DLG), and a script that opens the store. The NPC is placed on the Ebon Hawk.
 
 ## Step 1: Create the merchant file (UTM)

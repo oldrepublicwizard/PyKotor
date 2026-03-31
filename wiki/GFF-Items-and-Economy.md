@@ -1,6 +1,6 @@
 # GFF Types: Items and Economy
 
-This page groups related GFF-based resource types for convenient reference. Each section below documents a specific GFF type used in KotOR I and II.
+Items, merchants, journals, and factions form the game’s economy and progression systems. UTI defines every equippable or consumable object, UTM describes store inventories and pricing, JRL tracks quest progress visible to the player, and FAC controls inter-faction hostility and friendship.
 
 ## Contents
 

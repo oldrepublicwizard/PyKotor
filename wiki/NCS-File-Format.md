@@ -1,23 +1,8 @@
-# KotOR NCS files format Documentation
+# NCS — Compiled Script Bytecode
 
-NCS files contain compiled NWScript bytecode used in **KotOR and TSL**. Scripts run inside a stack-based virtual machine **shared across Aurora engine games** (KotOR, Neverwinter Nights, etc.). KotOR inherits the same format with minor opcode additions for game-specific systems. **This documentation focuses on KotOR-specific behavior**, though the core format is shared with Neverwinter Nights. In the Odyssey engine, script execution runs in the **server** (game world) context: triggers, dialogues, and engine calls operate on the server; the client receives state updates and handles display and input. NCS files are loaded with the same [resource resolution order](Concepts#resource-resolution-order) as other resources (override, MOD/SAV, KEY/BIF).
+NCS files contain compiled NWScript bytecode — the executable form of the scripting language that drives game logic in Knights of the Old Republic and The Sith Lords. Scripts control dialogue branching, trigger responses, combat behavior, cutscene sequencing, and virtually every dynamic system in the game. The bytecode runs inside a stack-based virtual machine inherited from the Aurora engine, where the "server" context (game world simulation) executes scripts and the client handles display and input.
 
-**For mod developers:**
-
-- Scripts are compiled from [NSS](NSS-File-Format) source.
-- See the NSS/NCS toolset and [HoloPatcher README for Mod Developers](HoloPatcher#mod-developers).
-
-**Related formats:**
-
-- Produced from [NSS](NSS-File-Format)
-- Triggered by script hooks on:
-
-  - [DLG](GFF-Creature-and-Dialogue#dlg)
-  - [GIT](GFF-File-Format#git-game-instance-template)
-  - [UTC](GFF-File-Format#utc-creature)
-  - [UTD](GFF-Spatial-Objects#utd)
-  - [UTP](GFF-Spatial-Objects#utp)
-  - [IFO](GFF-Module-and-Area#ifo)
+The format is shared across Aurora engine games (Neverwinter Nights, Jade Empire, etc.), though KotOR adds game-specific action routines. This page documents KotOR-specific behavior. Scripts are compiled from [NSS](NSS-File-Format) source code and triggered by script hooks on [GFF](GFF-File-Format) resources — [DLG](GFF-Creature-and-Dialogue#dlg) dialogue files, [GIT](GFF-File-Format#git-game-instance-template) area instances, [UTC](GFF-File-Format#utc-creature) creatures, [UTD](GFF-Spatial-Objects#utd) doors, [UTP](GFF-Spatial-Objects#utp) placeables, and [IFO](GFF-Module-and-Area#ifo) module definitions. Like all resources, NCS files are resolved through the standard [resource resolution order](Concepts#resource-resolution-order) (override → MOD/SAV → KEY/BIF).
 
 **Implementation (PyKotor):**
 
@@ -43,7 +28,7 @@ NCS files contain compiled NWScript bytecode used in **KotOR and TSL**. Scripts 
 
 ## Table of Contents
 
-- [KotOR NCS Files Format Documentation](#kotor-ncs-files-format-documentation)
+- NCS — Compiled Script Bytecode
   - Table of Contents
   - [File Structure Overview](#file-structure-overview)
     - [Stack-Based Virtual Machine](#stack-based-virtual-machine)

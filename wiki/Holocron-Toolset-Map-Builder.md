@@ -1,8 +1,6 @@
 # Holocron Toolset: Map Builder (Indoor Map Builder)
 
-*This page is merged from the toolset in-app help (Tools/HolocronToolset/src/toolset/help/tools/).*
-
-The Map Builder (Indoor Map Builder) creates new areas with unique layouts from existing room models. Open it from the Main Window via **Tools** → **Indoor Map Builder**.
+The Map Builder creates new playable areas from existing room models without 3D modeling tools. Open it from the Main Window via **Tools** → **Indoor Map Builder**.
 
 You select models and insert them into the map; models can be attached to each other (shown by a green line between connections). When the layout is ready, **File** → **Build** outputs a module file to the game's `Modules/` folder, ready to warp into.
 

@@ -1,6 +1,6 @@
 # KotOR/TSL modding and engine concepts
 
-This page is the canonical shared vocabulary for the rest of the wiki. It explains how the games find resources, what ResRefs and resource types mean, and why override, module capsules, and KEY/BIF behave the way they do. If a later page talks about precedence, module packaging, or merge safety, it should point back here instead of re-explaining the rules.
+The Odyssey engine resolves every resource request through a fixed priority chain: override folder, then module capsules (MOD/SAV/ERF/RIM), then KEY/BIF base archives. Understanding this chain — along with ResRefs, resource types, and the difference between template data and instance data — is essential for any modding work. Other wiki pages reference the definitions here rather than re-explaining the rules.
 
 ## Verified against implementations
 

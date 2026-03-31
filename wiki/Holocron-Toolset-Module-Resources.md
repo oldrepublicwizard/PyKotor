@@ -1,10 +1,8 @@
-# Holocron Toolset: Module resources
-
-*This page is merged from the toolset in-app help (Tools/HolocronToolset/src/toolset/help/).*
+# Holocron Toolset: Module Resources
 
 ## Module resources
 
-Module resources refer to the resources stored in the game's module files. These can be found in the `/modules/` directory of your game directory and behave like zip files (in the sense of storing multiple files into a single file), carrying the extensions ERF, MOD, or [RIM](Container-Formats#rim). Module resources can only be accessed by the specific module they are stored in.
+Module resources are the files stored inside the game's module archives. These can be found in the `/modules/` directory of your game directory and behave like zip files (in the sense of storing multiple files into a single file), carrying the extensions ERF, MOD, or [RIM](Container-Formats#rim). Module resources can only be accessed by the specific module they are stored in.
 
 Resources contained in the module files can be directly edited and saved through the toolset without having to extract them. However, this is an irreversible operation so if you are editing files shipped directly with the game be sure to make backups otherwise you will need to reinstall the whole game.
 

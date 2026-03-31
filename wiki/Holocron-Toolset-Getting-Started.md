@@ -1,7 +1,5 @@
 # Holocron Toolset: Getting Started
 
-*This page is merged from the toolset in-app help (Tools/HolocronToolset/src/toolset/help/).*
-
 ## What is Holocron Toolset?
 
 Holocron Toolset is an application designed to edit the game files for the KotOR games. It comes with file editors specialized for nearly every file type used with the game. Packaged in the toolset is also a 3D module editor for editing existing maps plus a "Map Builder" tool (Indoor Map Builder) which allows the user to create brand new layouts for maps using existing rooms.

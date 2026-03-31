@@ -1,6 +1,6 @@
 # GFF Types: Creature and Dialogue
 
-This page groups related GFF-based resource types for convenient reference. Each section below documents a specific GFF type used in KotOR I and II.
+Creature templates and dialogue trees are the two GFF types that most directly define how characters behave and speak. A UTC stores everything about a creature — stats, appearance, inventory, scripts — while DLG encodes branching conversation logic with conditions, animations, and voice-over references.
 
 ## Contents
 

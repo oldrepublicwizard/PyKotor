@@ -1,6 +1,6 @@
 # Texture Formats
 
-This page groups related KotOR file format specifications. Each section documents a specific binary format used in KotOR I and II.
+The KotOR engine uses several texture formats, each serving a different purpose in the rendering pipeline. **TPC** (Texture Pack Container) is the primary compressed texture format shipped with the game — most visual assets the player sees are TPC files inside BIF archives. **DDS** (DirectDraw Surface) textures appear in two variants: the standard DirectX format used by modding tools and ports, and a BioWare-specific headerless variant inherited from the Aurora engine. **PLT** (Palette Texture) files support the dye-channel system that lets the engine recolor armor and clothing at runtime without duplicating texture data. **TXI** files are plain-text sidecar metadata that control rendering properties such as blending, animation frames, and environment mapping.
 
 ## Contents
 
@@ -13,29 +13,18 @@ This page groups related KotOR file format specifications. Each section document
 
 <a id="dds"></a>
 
-# KotOR DDS file format Documentation
+# DDS — DirectDraw Surface
 
-*DirectDraw Surface* (DDS) [textures](Texture-Formats#tpc) appear in two flavours across Odyssey engine content:
+DirectDraw Surface (DDS) textures appear in two variants across Odyssey engine content:
 
-- **Standard DirectX DDS** (header magic `0x44445320`, 124-byte header) used by downstream tools/ports.
-- **BioWare DDS variant** (no magic; width/height/bpp/dataSize leading integers) used in *KotOR* and *Neverwinter Nights* game assets (shared Aurora engine format).
+- **Standard DirectX DDS** (header magic `0x44445320`, 124-byte header) — used by modding tools, ports, and external texture editors.
+- **BioWare DDS variant** (no magic; width/height/bpp/dataSize leading integers) — the headerless format used in KotOR and Neverwinter Nights game assets, inherited from the Aurora engine.
 
-This page documents how PyKotor interprets both formats and how it aligns with reference implementations:
-
-- [xoreos](https://github.com/xoreos/xoreos)
-- [xoreos-tools](https://github.com/xoreos/xoreos-tools)
-
-When the engine or tools load DDS by ResRef, they use the same [resource resolution order](Concepts#resource-resolution-order) as other resources:
-
-- [override](Concepts#override-folder)
-- [MOD/ERF/SAV](Container-Formats#erf)
-- [KEY/BIF](Container-Formats#key)
-
-Hex type id **`0x07F1`** is listed under [Resource type identifiers](Resource-Formats-and-Resolution#resource-type-identifiers).
+The engine resolves DDS textures through the standard [resource resolution order](Concepts#resource-resolution-order) (override → [MOD/ERF/SAV](Container-Formats#erf) → [KEY/BIF](Container-Formats#key)). Hex type ID **`0x07F1`** is listed under [Resource Type Identifiers](Resource-Formats-and-Resolution#resource-type-identifiers).
 
 ## Table of Contents
 
-- KotOR DDS file format Documentation
+- DDS — DirectDraw Surface
   - Table of Contents
   - [Standard DDS (DX7+ container)](#standard-dds-dx7-container)
   - [BioWare DDS variant](#bioware-dds-variant)
@@ -189,7 +178,7 @@ TPC (texture Pack Container) is KotOR's native texture format. It supports palet
 
 ## Table of Contents
 
-- KotOR TPC File Format Documentation
+- TPC — Texture Pack Container
   - Table of Contents
   - File Structure Overview
   - [Header Layout](#header-layout)
@@ -408,7 +397,7 @@ All of the engines listed above treat the header and mipmap data identically. Th
 
 ## Table of Contents
 
-- KotOR PLT file format Documentation (NWN legacy)
+- PLT — Palette Texture (NWN legacy)
   - Table of Contents
   - [File Structure Overview](#file-structure-overview)
   - [Palette System](#palette-system)
@@ -542,8 +531,6 @@ Each pixel entry is 2 bytes:
 
 ---
 
-This documentation aims to provide a comprehensive overview of the *PLT* file format, focusing on the detailed file structure and palette system used in *Neverwinter Nights* (part of the BioWare *Aurora* engine family).
-
 
 ---
 
@@ -568,7 +555,7 @@ TXI ([texture](Texture-Formats#tpc) Info) files are compact ASCII descriptors th
 
 ## Table of Contents
 
-- KotOR TXI file format Documentation
+- TXI — Texture Information
   - Table of Contents
   - [Format overview](#format-overview)
   - [Syntax](#syntax)

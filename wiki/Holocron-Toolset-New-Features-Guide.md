@@ -1,7 +1,5 @@
 # Holocron Toolset: New Features Quick Guide
 
-*This page is migrated from the toolset in-app help (Tools/HolocronToolset/src/toolset/help/wiki/).*
-
 **10 powerful new features now available**
 
 ---

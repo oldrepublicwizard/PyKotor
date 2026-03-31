@@ -1,6 +1,6 @@
 # HoloPatcher
 
-This page groups HoloPatcher documentation for both mod developers and end users.
+HoloPatcher is PyKotor’s cross-platform reimplementation of the TSLPatcher mod installer. It reads the same `changes.ini` / `tslpatchdata` folder layout that TSLPatcher uses, applies GFF, 2DA, TLK, and file-copy operations, and works on Windows, macOS, and Linux. The sections below cover both the mod-developer authoring workflow and the end-user installation process.
 
 ## Contents
 

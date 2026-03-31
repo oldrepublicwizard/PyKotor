@@ -1,6 +1,6 @@
 # Container Formats
 
-This page groups related KotOR file format specifications. Each section documents a specific binary format used in KotOR I and II.
+The KotOR engine organizes game resources into a layered archive system. At the base layer, **KEY** files provide a master index that maps resource names and types to locations inside **BIF** archives — this is how the engine finds shipped game data. Above that, **ERF** files (and their **MOD** and **SAV** variants) act as self-contained capsules for module-specific or save-specific content. **RIM** files serve a similar purpose for the stock module data shipped on the original discs. Together, these four formats implement the storage side of the [resource resolution order](Concepts#resource-resolution-order) described on [Concepts](Concepts).
 
 ## Contents
 
@@ -13,13 +13,15 @@ This page groups related KotOR file format specifications. Each section document
 
 <a id="key"></a>
 
-# KotOR KEY file format Documentation
+# KEY — Resource Key Index
 
-This document provides a detailed description of the KEY (KEY Table) file format used in Knights of the Old Republic (KotOR) games. KEY files serve as the master index for all [BIF files](Container-Formats#bif) in the game.
+The KEY file is the master index for the game's base resource system. A single file — `chitin.key` — maps every resource name ([ResRef](Concepts#resref-resource-reference)) and resource type to a specific entry inside one of the game's [BIF archives](Container-Formats#bif). When the engine needs a vanilla resource that is not shadowed by the [override folder](Concepts#override-folder) or an active [MOD/ERF](Container-Formats#erf), it consults this index to find the correct BIF and the offset within it.
+
+Mods do not normally edit the KEY file. Instead, they place content in the override folder or inside a module `.mod` capsule so the engine finds it before falling back to the KEY/BIF baseline. See [Concepts — Resource Resolution Order](Concepts#resource-resolution-order) and [Mod Creation Best Practices — File Priority](Mod-Creation-Best-Practices#file-priority-and-where-to-put-your-files).
 
 ## Table of Contents
 
-- KotOR KEY File format Documentation
+- KEY — Resource Key Index
   - Table of Contents
   - [File structure overview](#file-structure-overview)
     - [KEY File Purpose](#key-file-purpose)
@@ -278,20 +280,18 @@ See **Cross-reference implementations** under [File structure overview](#file-st
 
 ---
 
-This documentation aims to provide a comprehensive overview of the *KotOR KEY* File Format, focusing on the detailed file structure and data formats used within the games.
-
 
 ---
 
 <a id="bif"></a>
 
-# KotOR BIF file format Documentation
+# BIF — BioWare Index File
 
-This document provides a detailed description of the BIF (BioWare index file) file format used in Knights of the Old Republic (KotOR) games. BIF files are [container containers](Container-Formats#erf) that store the bulk of game resources.
+BIF files hold the bulk of the game's read-only resources — models, textures, scripts, templates, and two-dimensional arrays. A single BIF can contain thousands of entries of mixed types, packed sequentially with a lightweight variable-resource table at the front. BIF files never store filenames; the companion [KEY file](Container-Formats#key) maps each ResRef and ResourceType pair to a BIF index and resource offset, so the engine can locate any asset with one KEY lookup followed by a single BIF seek.
 
 ## Table of Contents
 
-- KotOR BIF file format Documentation
+- BIF — BioWare Index File
   - Table of Contents
   - [File structure overview](#file-structure-overview)
     - [BIF Usage in KotOR](#bif-usage-in-kotor)
@@ -539,20 +539,18 @@ The *Resource ID* in the *BIF* file matches the *Resource ID* in the [KEY File](
 
 ---
 
-This documentation aims to provide a comprehensive overview of the *KotOR* *BIF* file format, focusing on the detailed file structure and data formats used within the games.
-
 
 ---
 
 <a id="erf"></a>
 
-# KotOR ERF file format Documentation
+# ERF — Encapsulated Resource File
 
-This document provides a detailed description of the ERF (Encapsulated Resource file) file format used in Knights of the Old Republic (KotOR) games. ERF files are self-contained containers used for modules, save games, [texture](Texture-Formats#tpc) packs, and hak paks. Shipped modules also use **[RIM](Container-Formats#rim)** (resource image) archives; RIM is a **different** binary layout—see [RIM versus ERF](#rim-versus-erf) and the dedicated [RIM File Format](Container-Formats#rim) page.
+ERF is a self-contained resource archive: every entry carries its own ResRef and type, so no external KEY file is needed. The engine uses ERF (and its signature variants MOD, SAV, HAK) for module content, saved games, override packs, and any other bundle that must travel as a single file. The header includes an optional localized-string list — primarily used in SAV files to store the save-game description — followed by a key list pointing into a contiguous data block. Shipped modules also use **[RIM](Container-Formats#rim)** archives, which solve the same naming problem with a simpler binary layout; see [RIM versus ERF](#rim-versus-erf) and the dedicated [RIM section](Container-Formats#rim).
 
 ## Table of Contents
 
-- KotOR ERF file format Documentation
+- ERF — Encapsulated Resource File
   - Table of Contents
   - [File Structure Overview](#file-structure-overview)
   - [RIM versus ERF](#rim-versus-erf)
@@ -947,16 +945,14 @@ See also **Cross-reference** at the [top of this page](#file-structure-overview)
 
 ---
 
-This documentation aims to provide a comprehensive overview of the KotOR ERF file format, focusing on the detailed file structure and data formats used within the games.
-
 
 ---
 
 <a id="rim"></a>
 
-# KotOR RIM file format
+# RIM — Resource Image
 
-This document describes the **RIM** (**resource image**) container used in *Knights of the Old Republic* and *The Sith Lords*. RIM files ship with the game under `modules/` (and related paths) and hold the same kinds of resources as [ERF/MOD](Container-Formats#erf) archives, but use a **smaller, simpler binary layout** than generic [ERF](Container-Formats#erf). Typical capsule contents include:
+RIM is the lightweight module archive shipped with the base game. Like [ERF](Container-Formats#erf), each entry carries a ResRef and type, but the binary layout is intentionally simpler: no localized-string list, no compression, just a flat resource table and contiguous data. The engine loads RIM files from `modules/` and treats them identically to ERF during [resource resolution](Concepts#resource-resolution-order) — a `.mod` in the same directory shadows the corresponding `.rim` pair when present. Typical capsule contents include:
 
 - [GFF](GFF-File-Format)
 - [2DA](2DA-File-Format)

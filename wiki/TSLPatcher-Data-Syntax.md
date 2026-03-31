@@ -1,6 +1,6 @@
 # TSLPatcher Data Syntax
 
-This page groups related TSLPatcher `changes.ini` syntax references. Each section documents a specific section type used in TSLPatcher/HoloPatcher mod configurations.
+TSLPatcher’s `changes.ini` can patch 2DA tables and TLK string databases alongside GFF edits. The sections below document the `[2DAList]` and `[TLKList]` directive syntax that HoloPatcher and TSLPatcher both support.
 
 ## Contents
 

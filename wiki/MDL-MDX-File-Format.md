@@ -1,25 +1,12 @@
-# KotOR MDL/MDX file format Documentation
+# MDL/MDX — 3D Model Format
 
-This document provides a detailed description of the MDL/MDX file format used in Knights of the Old Republic (KotOR) games. The MDL (model) and MDX (model Extension) files together define 3D models. Major subsystems include:
+The MDL (Model) and MDX (Model Extension) files together define every 3D model in Knights of the Old Republic and The Sith Lords — characters, placeables, doors, area rooms, lightsaber blades, particle effects, and GUI elements. The MDL file contains the node hierarchy, animation data, and structural metadata; the MDX file contains the raw vertex buffer data (positions, normals, texture coordinates, bone weights) that the renderer consumes directly. This split lets the engine memory-map vertex data efficiently while keeping the logical model structure in a parseable tree.
 
-- [geometry](MDL-MDX-File-Format#geometry-header)
-- [animations](MDL-MDX-File-Format#animation-header)
-- Other related data described in the sections below
-
-**Related formats:**
-
-- [GFF files](GFF-File-Format) reference models from templates such as:
-
-  - [UTC (Creature)](GFF-File-Format#utc-creature)
-  - [UTI (Item)](GFF-File-Format#uti-item)
-  - [UTP (Placeable)](GFF-File-Format#utp-placeable)
-
-- [MDX](MDL-MDX-File-Format) may embed [TPC](Texture-Formats#tpc) / [TXI](Texture-Formats#txi) names (TGA sources are often converted to TPC for the engine)
-- Loaded via the same [resource resolution order](Concepts#resource-resolution-order) as other resources (override → MOD/SAV → KEY/BIF)
+Models are referenced by [ResRef](Concepts#resref-resource-reference) from [GFF](GFF-File-Format) templates such as [UTC](GFF-File-Format#utc-creature) creatures, [UTI](GFF-File-Format#uti-item) items, and [UTP](GFF-File-Format#utp-placeable) placeables. Area room models are positioned by [LYT](Level-Layout-Formats#lyt) layout files and paired with [BWM](Level-Layout-Formats#bwm) walkmesh data. Textures are referenced by name and resolved as [TPC](Texture-Formats#tpc) or [TGA](Texture-Formats#txi) through the standard [resource resolution order](Concepts#resource-resolution-order) (override → MOD/SAV → KEY/BIF).
 
 ## Table Of Contents
 
-- KotOR MDL/MDX File Format Documentation
+- MDL/MDX — 3D Model Format
   - Table Of Contents
   - [File Structure Overview](#file-structure-overview)
   - [File Headers](#file-headers)
@@ -1541,10 +1528,6 @@ mat4 computeBoneMatrix(int bone_idx, Animation anim, float time) {
 - [MDLOps Perl Module](https://github.com/ndixUR/mdlops/blob/master/MDLOpsM.pm) - Complete Perl implementation with ASCII and binary format support
 - [reone MDL/MDX Reader](https://github.com/modawan/reone/blob/master/src/libs/graphics/format/mdlmdxreader.cpp) - C++ implementation for game engine
 - [KotorBlender MDL Reader](https://github.com/OldRepublicDevs/kotorblender/blob/master/io_scene_kotor/format/mdl/reader.py) - Python implementation for Blender import
-
----
-
-This documentation aims to provide a comprehensive and structured overview of the KotOR MDL/MDX files format, focusing on the detailed file structure and data formats used within the games.
 
 ---
 

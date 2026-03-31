@@ -1,14 +1,6 @@
-# [GUI](GFF-File-Format#gui-graphical-user-interface)
+# GUI — Graphical User Interface
 
-Part of the [GFF File Format Documentation](GFF-File-Format).
-
-GUI files define the layout and behavior of the user interface. They are [GFF files](GFF-File-Format) describing hierarchies of panels, buttons, labels, and other controls. GUI files are loaded with the same [resource resolution order](Concepts#resource-resolution-order) as other resources (override, MOD/SAV, KEY/BIF).
-
-**For mod developers:**
-
-- To edit GUI layout in the toolset, use the GUI editor.
-- For mod patches, see [TSLPatcher GFFList Syntax](TSLPatcher-GFF-Syntax#gfflist-syntax).
-- [HoloPatcher README for Mod Developers](HoloPatcher#mod-developers).
+GUI files define the layout and behavior of every in-game interface screen — menus, HUD elements, dialog panels, and character sheets. Each GUI is a [GFF](GFF-File-Format) tree describing a hierarchy of panels, buttons, labels, sliders, and other controls, with properties controlling position, size, textures, and event bindings.
 
 **Related formats:**
 

@@ -1,6 +1,6 @@
 # GFF Types: Module and Area
 
-This page groups related GFF-based resource types for convenient reference. Each section below documents a specific GFF type used in KotOR I and II.
+Every playable location is assembled from three core GFF files: ARE defines the area’s static properties (rooms, ambient sound, lighting), GIT holds all dynamic instance data (creature spawns, placeables, triggers placed in the area), and IFO ties the module together with entry points, area references, and global module state.
 
 ## Contents
 

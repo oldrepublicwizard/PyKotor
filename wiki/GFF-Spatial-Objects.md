@@ -1,6 +1,6 @@
 # GFF Types: Spatial Objects
 
-This page groups related GFF-based resource types for convenient reference. Each section below documents a specific GFF type used in KotOR I and II.
+Spatial objects are the building blocks placed into areas via the GIT (Game Instance) file. Each type defines a template — doors, placeables, triggers, encounters, sound emitters, and waypoints — that the engine instantiates at specific coordinates when the module loads.
 
 ## Contents
 

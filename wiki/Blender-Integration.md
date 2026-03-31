@@ -1,6 +1,6 @@
 # Blender Integration
 
-This page documents the current Blender-backed workflow for Holocron Toolset and the **kotorblender** add-on (canonical **[OldRepublicDevs/kotorblender](https://github.com/OldRepublicDevs/kotorblender)**; **th3w1zard1** hosts a mirror).
+Holocron Toolset uses Blender with the **kotorblender** add-on (canonical **[OldRepublicDevs/kotorblender](https://github.com/OldRepublicDevs/kotorblender)**; **th3w1zard1** hosts a mirror) for 3D model import/export.
 
 - Upstream (OldRepublicDevs/kotorblender): <https://github.com/OldRepublicDevs/kotorblender/tree/404c42bc4f36b1f60b643eda0cd17c81ba5ca7d4>
 - Mirror (th3w1zard1/kotorblender): <https://github.com/th3w1zard1/kotorblender/tree/afae04c9172f30ab765891315d9d11224ab57426>

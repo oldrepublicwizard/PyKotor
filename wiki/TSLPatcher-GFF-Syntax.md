@@ -1,6 +1,6 @@
 # TSLPatcher GFF Syntax
 
-This page groups related TSLPatcher `changes.ini` syntax references. Each section documents a specific section type used in TSLPatcher/HoloPatcher mod configurations.
+TSLPatcher’s `changes.ini` modifies GFF-based game files at install time — adding, replacing, or patching fields without overwriting the entire resource. The sections below document the `[GFFList]` and `[SSFList]` directive syntax that HoloPatcher and TSLPatcher both support.
 
 ## Contents
 

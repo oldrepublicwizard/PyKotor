@@ -1,6 +1,6 @@
 # Audio and Localization Formats
 
-This page groups related KotOR file format specifications. Each section documents a specific binary format used in KotOR I and II.
+The KotOR engine handles text, voice, and character sound effects through a set of interconnected formats. **TLK** (Talk Table) files store every localized string the game displays or speaks — dialogue lines, item names, journal entries, feedback messages. **SSF** (Sound Set File) files map character combat and movement sounds to TLK entries. **LIP** files drive facial animation timing to match spoken dialogue. **WAV** files provide the raw audio data. Together, these formats implement the localization and voice-over pipeline that runs from authored content through to in-game playback.
 
 ## Contents
 
@@ -13,24 +13,15 @@ This page groups related KotOR file format specifications. Each section document
 
 <a id="tlk"></a>
 
-# KotOR TLK file format Documentation
+# TLK — Talk Table
 
-This document provides a detailed description of the TLK (Talk Table) file format used in Knights of the Old Republic (KotOR) games. TLK files contain all text strings used in the game, both written and spoken, enabling easy localization by providing a lookup table from string reference numbers ([StrRef](Audio-and-Localization-Formats#string-references-strref)) to localized text and associated voice-over audio files.
+The Talk Table is the game's central string database. Every piece of text the player sees — dialogue, item descriptions, journal entries, feedback messages, character names — is stored in `dialog.tlk` and accessed by a numeric index called a [StrRef](Audio-and-Localization-Formats#string-references-strref). This design makes localization straightforward: translating the game means replacing one file rather than hunting through thousands of individual resources. Each entry can also reference a voice-over sound file ([ResRef](Concepts#resref-resource-reference)), so the engine can play spoken audio alongside the displayed text.
 
-**For mod developers:**
-
-- To modify TLK files in your mods, see the [TSLPatcher TLKList Syntax Guide](TSLPatcher-Data-Syntax#tlklist-syntax).
-- For general modding information, see [HoloPatcher README for Mod Developers](HoloPatcher#mod-developers).
-
-**Related formats:**
-
-- [GFF files](GFF-File-Format) — especially [DLG](GFF-File-Format#dlg-dialogue) / [dialogue files](GFF-File-Format#dlg-dialogue)
-- [2DA files](2DA-File-Format) — item names and descriptions
-- [SSF files](Audio-and-Localization-Formats#ssf) — character sound sets
+To modify TLK entries in a mod, use [TSLPatcher/HoloPatcher TLKList syntax](TSLPatcher-Data-Syntax#tlklist-syntax) — this appends new entries or patches existing ones without replacing the entire file, which is critical for mod compatibility. TLK entries are referenced from [GFF](GFF-File-Format) resources (especially [DLG](GFF-File-Format#dlg-dialogue) dialogue files), [2DA](2DA-File-Format) tables, and [SSF](Audio-and-Localization-Formats#ssf) sound sets.
 
 ## Table of Contents
 
-- KotOR TLK File Format Documentation
+- TLK — Talk Table
   - [File Structure Overview](#file-structure-overview)
   - [Binary Format](#binary-format)
     - [File Header](#file-header)
@@ -270,29 +261,20 @@ See **Cross-reference implementations** under [File structure overview](#file-st
 
 ---
 
-This documentation aims to provide a comprehensive overview of the KotOR TLK file format, focusing on the detailed file structure and data formats used within the games.
-
 
 ---
 
 <a id="ssf"></a>
 
-# KotOR SSF file format Documentation
+# SSF — Sound Set File
 
-This document provides a detailed description of the SSF (sound set files) file format used in Knights of the Old Republic (KotOR) games. SSF files contain mappings from sound event types to string references ([StrRefs](Audio-and-Localization-Formats#string-references-strref)) in the [TLK file](Audio-and-Localization-Formats#tlk).
+SSF files map 28 creature sound events — battle cries, selection acknowledgements, pain grunts, death screams — to [StrRef](Audio-and-Localization-Formats#string-references-strref) indices into [`dialog.tlk`](Audio-and-Localization-Formats#tlk). Each creature template references an SSF by ResRef, and the engine plays the associated voice-over line whenever the corresponding event fires. Slots that store `-1` (`0xFFFFFFFF`) produce no sound.
 
-**For mod developers:**
-
-- To modify SSF files in your mods, see the [TSLPatcher SSFList Syntax Guide](TSLPatcher-GFF-Syntax#ssflist-syntax).
-- For general modding information, see [HoloPatcher README for Mod Developers](HoloPatcher#mod-developers).
-
-**Related formats:**
-
-- [TLK files](Audio-and-Localization-Formats#tlk) supply [StrRefs](Audio-and-Localization-Formats#string-references-strref) for each sound slot; those resolve to the spoken / UI text for the line
+To modify SSF files in mods, see the [TSLPatcher SSFList syntax guide](TSLPatcher-GFF-Syntax#ssflist-syntax). SSF StrRefs resolve through the same [TLK](Audio-and-Localization-Formats#tlk) string table used for dialogue and UI text.
 
 ## Table of Contents
 
-- KotOR SSF File Format Documentation
+- SSF — Sound Set File
   - Table of Contents
   - [File structure overview](#file-structure-overview)
   - [Binary Format](#binary-format)
@@ -413,38 +395,20 @@ Indices are fixed; **do not reorder**. PyKotor names are authoritative for this 
 
 ---
 
-This documentation aims to provide a comprehensive overview of the KotOR SSF file format, focusing on the detailed file structure and data formats used within the games.
-
 
 ---
 
 <a id="lip"></a>
 
-# KotOR LIP file format Documentation
+# LIP — Lip Synchronization
 
-LIP (LIP Synchronization) files drive mouth [animation](MDL-MDX-File-Format#animation-header) for voiced dialogue. Each file contains a compact series of [keyframes](MDL-MDX-File-Format#controller-structure) that map timestamps to discrete viseme (mouth shape) indices so that the engine can interpolate character LIP movement while playing the companion [WAV](Audio-and-Localization-Formats#wav) line. LIP files are loaded with the same [resource resolution order](Concepts#resource-resolution-order) as other resources (override, MOD/SAV, KEY/BIF).
+LIP files drive mouth animation for voiced dialogue. Each file stores a compact series of keyframes that pair a timestamp (in seconds) with a viseme index (0–15), and the engine interpolates between them while playing the companion [WAV](Audio-and-Localization-Formats#wav) voice line. The LIP `length` field must match the WAV playback duration exactly, or the mouth animation will desynchronize. LIP files load through the same [resource resolution order](Concepts#resource-resolution-order) as other game assets.
 
-**For mod developers:**
-
-- LIP is paired with [WAV](Audio-and-Localization-Formats#wav) voice-over.
-
-**See also:**
-
-- [TLK](Audio-and-Localization-Formats#tlk)
-- [DLG](GFF-Creature-and-Dialogue#dlg)
-- [HoloPatcher README for Mod Developers](HoloPatcher#mod-developers)
-
-**Related formats:**
-
-- Referenced from:
-
-  - [TLK](Audio-and-Localization-Formats#tlk) (voice-over)
-  - [DLG](GFF-Creature-and-Dialogue#dlg)
-- Duration must match the companion [WAV](Audio-and-Localization-Formats#wav)
+LIP is always paired with a [WAV](Audio-and-Localization-Formats#wav) of matching ResRef. Dialogue nodes in [DLG](GFF-Creature-and-Dialogue#dlg) trigger the voice line, which in turn triggers the LIP animation on the speaking creature model.
 
 ## Table of Contents
 
-- KotOR LIP File Format Documentation
+- LIP — Lip Synchronization
   - Table of Contents
   - [File Structure Overview](#file-structure-overview)
   - [Binary format](#binary-format)
@@ -642,7 +606,7 @@ See [HoloPatcher README for Mod Developers](HoloPatcher#mod-developers).
 
 ## Table of Contents
 
-- KotOR WAV File Format Documentation
+- WAV — Audio
   - Table of Contents
   - File Types
   - [Standard RIFF/WAVE Structure](#standard-riffwave-structure)

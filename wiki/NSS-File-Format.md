@@ -1,24 +1,8 @@
-# KotOR NSS files format Documentation
+# NSS — NWScript Source
 
-NSS (NWScript Source) files contain human-readable NWScript source code that compiles to [NCS bytecode](NCS-File-Format). The `nwscript.nss` file defines all engine-exposed functions and constants available to scripts. KotOR 1 and KotOR 2 each have their own `nwscript.nss` with game-specific functions and constants. When the game or tools load NSS by ResRef, they use the same [resource resolution order](Concepts#resource-resolution-order) as other resources (override, MOD/SAV, KEY/BIF).
+NSS files contain human-readable NWScript source code — the scripting language that controls game logic in Knights of the Old Republic and The Sith Lords. The engine does not execute NSS directly; source files are compiled to [NCS bytecode](NCS-File-Format) before they can run. The master include file `nwscript.nss` defines all engine-exposed functions and constants available to scripts; KotOR and TSL each ship their own version with game-specific additions.
 
-**For mod developers:**
-
-- NSS compiles to [NCS](NCS-File-Format).
-- Use the toolset compiler or HoloLSP.
-- See [HoloPatcher README for Mod Developers](HoloPatcher#mod-developers).
-
-**Related formats:**
-
-- Compiles to [NCS](NCS-File-Format)
-- Scripts triggered from:
-
-  - [DLG](GFF-Creature-and-Dialogue#dlg)
-  - [UTC](GFF-File-Format#utc-creature)
-  - [UTD](GFF-Spatial-Objects#utd)
-  - [UTP](GFF-Spatial-Objects#utp)
-  - [IFO](GFF-Module-and-Area#ifo)
-- Often reads [2DA](2DA-File-Format) data
+NWScript is a C-like language with strong typing, automatic garbage collection for strings, and a fixed set of engine action routines. Scripts interact with the game world through these action routines — spawning creatures, modifying objects, running dialogue branches, applying effects — and are triggered from [GFF](GFF-File-Format) resources: [DLG](GFF-Creature-and-Dialogue#dlg) dialogue files, [UTC](GFF-File-Format#utc-creature) creatures, [UTD](GFF-Spatial-Objects#utd) doors, [UTP](GFF-Spatial-Objects#utp) placeables, and [IFO](GFF-Module-and-Area#ifo) module definitions. Scripts also commonly read [2DA](2DA-File-Format) configuration data at runtime. Like all resources, NSS files are resolved through the standard [resource resolution order](Concepts#resource-resolution-order) (override → MOD/SAV → KEY/BIF).
 
 **Implementation (PyKotor):**
 
@@ -70,7 +54,7 @@ NSS (NWScript Source) files contain human-readable NWScript source code that com
 ## Table of Contents
 
 <!-- TOC_START -->
-- [KotOR NSS File Format Documentation](#kotor-nss-files-format-documentation)
+- NSS — NWScript Source
   - Table of Contents
   - [PyKotor Implementation](#pykotor-implementation)
     - [Compilation Integration](#compilation-integration)

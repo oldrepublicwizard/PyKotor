@@ -1,21 +1,12 @@
-# KotOR LTR files format Documentation
+# LTR — Letter Probability Tables
 
-LTR (Letter) resources store third-order Markov chain probability tables that the game uses to procedurally generate NPC names. The data encodes likelihoods for characters appearing at the start, middle, and end of names given zero, one, or two-character context. LTR files are loaded with the same [Resource Resolution Order](Concepts#resource-resolution-order) as other resources:
+LTR (Letter) files store the probability tables the engine uses to procedurally generate NPC names. The data is a third-order Markov chain: given zero, one, or two characters of context, the tables encode the likelihood of each possible next character appearing at the start, middle, or end of a name. This lets the engine produce random names that sound plausible for a given species or culture without hardcoding a name list.
 
-- `override/`
-- [`.erf/.mod/.sav`](Container-Formats#erf)
-- [`.rim`](Container-Formats#rim)
-- [`KEY`](Container-Formats#key)
-- [`BIF`](Container-Formats#bif)
-
-**For mod developers:**
-
-- *LTR* is used by the engine for random name generation.
-- See [HoloPatcher README for Mod Developers](HoloPatcher#mod-developers).
+KotOR's LTR files use a **28-character alphabet** (`a`–`z` plus `'` and `-`), which is a KotOR-specific extension of the 26-character alphabet used in Neverwinter Nights. The alphabet size is stored in the file header, so readers can handle either variant. Like all resources, LTR files are resolved through the standard [resource resolution order](Concepts#resource-resolution-order) (override → [MOD/ERF/SAV](Container-Formats#erf) → [KEY/BIF](Container-Formats#key)).
 
 ## Table of Contents
 
-- KotOR LTR files format Documentation
+- LTR — Letter Probability Tables
   - Table of Contents
   - [File Structure Overview](#file-structure-overview)
   - [Binary Format](#binary-format)

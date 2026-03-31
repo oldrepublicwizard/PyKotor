@@ -1,31 +1,14 @@
-# KotOR 2DA file format Documentation
+# 2DA — Two-Dimensional Array
 
-This document provides a detailed description of the 2DA (Two-Dimensional array) file format used in **Knights of the Old Republic (KotOR)** and **Knights of the Old Republic II: The Sith Lords (KotOR 2)**. 2DA files store tabular game data in a spreadsheet-like format, containing configuration data for nearly all game systems: items, Force powers, creatures, skills, feats, and many other game mechanics.
+The Two-Dimensional Array (2DA) format is the engine's primary configuration mechanism. Nearly every tunable game system — character classes, feats, Force powers, item properties, appearance models, sound sets, combat formulas — is driven by 2DA tables that the engine reads at startup. Each 2DA file is a simple spreadsheet: rows indexed by number, columns indexed by label, and cell values that are either strings, integers, or the special `****` token meaning "no value." The format is compact enough to ship on disc and simple enough that modders can edit tables with a text editor, but the binary V2.b encoding used in shipped game data provides faster load times than the older ASCII V2.0 format.
 
-**Official Bioware Documentation:** For the authoritative Bioware Aurora Engine 2DA format specification, see [Bioware Aurora 2DA Format](Bioware-Aurora-Core-Formats#2da).
+The [official BioWare 2DA specification](Bioware-Aurora-Core-Formats#2da) documents the format as originally designed for the Aurora engine. This page documents how KotOR and TSL actually use it, including per-table column semantics and engine behavior. To modify 2DA tables in a mod without overwriting the entire file, use [TSLPatcher/HoloPatcher 2DAList syntax](TSLPatcher-Data-Syntax#2dalist-syntax). 2DA tables are referenced from [GFF](GFF-File-Format) resources such as [UTC](GFF-File-Format#utc-creature) creature templates, [UTI](GFF-File-Format#uti-item) item blueprints, and [UTP](GFF-File-Format#utp-placeable) placeable definitions, and they often store [StrRef](Audio-and-Localization-Formats#string-references-strref) indices into [TLK](Audio-and-Localization-Formats#tlk) string tables for player-visible text.
 
-**For mod developers:**
-
-- To modify 2DA files in your mods, see the [TSLPatcher 2DAList Syntax Guide](TSLPatcher-Data-Syntax#2dalist-syntax).
-- For general modding information, see [HoloPatcher README for Mod Developers](HoloPatcher#mod-developers).
-
-**Related formats:**
-
-- Referenced from [GFF files](GFF-File-Format), commonly:
-
-  - [UTC (Creature)](GFF-File-Format#utc-creature)
-  - [UTI (Item)](GFF-File-Format#uti-item)
-  - [UTP (Placeable)](GFF-File-Format#utp-placeable) templates
-
-- Often store [StrRefs](Audio-and-Localization-Formats#string-references-strref) into [TLK files](Audio-and-Localization-Formats#tlk) for text strings
-
-**Important**: While the 2DA file format structure is shared across BioWare's Aurora, Odyssey, and probably even Eclipse's engines (including Neverwinter Nights, Dragon Age, and Jade Empire), this documentation focuses exclusively on KotOR and KotOR 2. All 2DA file examples, column structures, and engine usage descriptions are specific to these games. References to vendor implementations are marked as either *KotOR*-specific or generic *Aurora* engine code (shared format).
-
-**Document structure:** This document is the single source of truth for KotOR/TSL 2DA format and table-specific column semantics. Individual 2DA table documentation is inlined here. Use the table of contents below to jump to a specific table.
+**Important**: While the 2DA binary layout is shared across BioWare's Aurora, Odyssey, and Eclipse engines, all column structures and engine usage descriptions on this page are specific to KotOR and KotOR II.
 
 ## Table of Contents
 
-- [KotOR 2DA file format Documentation](#kotor-2da-file-format-documentation)
+- 2DA — Two-Dimensional Array
   - Table of Contents
   - [file structure Overview](#file-structure-overview)
   - [Format](#format)
@@ -3555,5 +3538,3 @@ The following 2DA files are used for item property parameter and cost calculatio
 - [Community sources and archives](Home#community-sources-and-archives) -- DeadlyStream, forums for 2DA modding and column references
 
 ---
-
-This documentation aims to provide a comprehensive overview of the KotOR 2DA file format, focusing on the detailed file structure and data formats used within the games.

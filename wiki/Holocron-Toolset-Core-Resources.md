@@ -1,8 +1,6 @@
 # Holocron Toolset: Core Resources
 
-*This page is merged from the toolset in-app help (Tools/HolocronToolset/src/toolset/help/).*
-
-The **Core** tab shows resources loaded from the game's read-only base archives:
+The **Core** tab displays resources from the game's read-only base archives — the same vanilla data that ships on disc:
 
 - [KEY](Container-Formats#key)
 - [BIF](Container-Formats#bif)

@@ -1,6 +1,6 @@
 # TSLPatcher Install and Hack Syntax
 
-This page groups related TSLPatcher `changes.ini` syntax references. Each section documents a specific section type used in TSLPatcher/HoloPatcher mod configurations.
+TSLPatcher’s `changes.ini` can copy files into the game directory and binary-patch executables alongside the GFF, 2DA, and TLK operations covered on sibling pages. The sections below document the `[InstallList]` and `[HACKList]` directive syntax that HoloPatcher and TSLPatcher both support.
 
 ## Contents
 

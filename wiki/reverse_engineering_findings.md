@@ -2,7 +2,7 @@
 
 ## Overview
 
-This page documents engine behavior derived from analysis of `swkotor.exe` and `swkotor2.exe` that matters to PyKotor, Holocron Toolset, HoloPatcher, and advanced KotOR modding. It preserves useful conclusions: subsystem roles, loading behavior, important classes, and the places where the games behave in ways that tools need to respect.
+Engine behavior derived from analysis of `swkotor.exe` and `swkotor2.exe` that matters to PyKotor, Holocron Toolset, HoloPatcher, and advanced KotOR modding. Covers subsystem roles, loading behavior, important classes, and the places where the games behave in ways that tools need to respect.
 
 ## Verified against implementations and analysis targets
 
