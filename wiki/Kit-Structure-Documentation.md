@@ -1153,4 +1153,11 @@ To achieve high granularity coordinate matching, the tests should be enhanced to
 
 ---
 
-This documentation provides a comprehensive overview of the kit structure and how kits are used in the Holocron Toolset for generating indoor maps.
+### See also
+
+- [Indoor Map Builder User Guide](Indoor-Map-Builder-User-Guide) -- End-user guide for building indoor areas
+- [Indoor Map Builder Implementation Guide](Indoor-Map-Builder-Implementation-Guide) -- Code-level implementation details
+- [Indoor Area Room Layout and Walkmesh Guide](Indoor-Area-Room-Layout-and-Walkmesh-Guide) -- LYT, VIS, BWM workflow
+- [Level Layout Formats](Level-Layout-Formats) -- LYT, VIS, BWM binary format reference
+- [Holocron Toolset Map Builder](Holocron-Toolset-Map-Builder) -- Map Builder tool documentation
+- [Texture Formats](Texture-Formats) -- TPC, TGA, DDS texture handling

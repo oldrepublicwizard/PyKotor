@@ -1,6 +1,6 @@
 # Wiki conventions
 
-This page documents style and structure conventions for the PyKotor wiki. Follow these when adding or editing pages. These conventions apply to all edits—whether made by a human or by an AI agent—so that the wiki stays consistent and both can use it effectively.
+All PyKotor wiki edits — whether by a human or by an AI agent — follow these style and structure conventions. Apply them when adding or editing any page.
 
 ## Wiki contents and entry points
 

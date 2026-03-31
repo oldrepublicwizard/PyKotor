@@ -166,21 +166,11 @@ label=YavinHgrDoor1
 
 ### See also
 
-- [HoloPatcher README for Mod Developers](HoloPatcher#mod-developers) -- Mod tooling and workflow
-- [TSLPatcher's Official Readme](TSLPatcher's-Official-Readme) -- TSLPatcher installation and usage
-- [GFF File Format](GFF-File-Format) -- GFF structure
-- [GIT](GFF-File-Format#git-game-instance-template)
-- [UTC](GFF-File-Format#utc-creature)
-- [UTP](GFF-Spatial-Objects#utp)
-- [NSS File Format](NSS-File-Format) -- Scripting
-- [NCS](NCS-File-Format) bytecode
-- [Installing Mods with HoloPatcher](HoloPatcher#installing-mods) -- End-user mod installation
-- [Community sources and archives](Home#community-sources-and-archives) -- DeadlyStream, LucasForums archives for tutorials and community knowledge
-- [Deadly Stream — HoloPatcher](https://deadlystream.com/files/file/2243-holopatcher/) -- User-facing tool hub and install discussions (complement [Installing Mods with HoloPatcher](HoloPatcher#installing-mods))
-- [LucasForums Archive — TSLPatcher v1.2.10b1 thread](https://www.lucasforumsarchive.com/thread/149285-tslpatcher-v1210b1-mod-installer/) -- Historical installer context (see also [TSLPatcher Thread Complete](TSLPatcher_Thread_Complete))
-- [Deadly Stream -- TOOL: HoloPatcher](https://deadlystream.com/topic/9807-toolholopatcher/) -- Release thread (2DA merge / installer workflow context)
-- [Concepts](Concepts#resource-resolution-order) -- Resource resolution order
-- [KEY-File-Format](Container-Formats#key) -- KEY/BIF index format
-- [TSLPatcher 2DAList Syntax](TSLPatcher-Data-Syntax#2dalist-syntax)
-- [TSLPatcher TLKList Syntax](TSLPatcher-Data-Syntax#tlklist-syntax)
-- [TSLPatcher GFFList Syntax](TSLPatcher-GFF-Syntax#gfflist-syntax) -- Merging and patching
+- [HoloPatcher README for Mod Developers](HoloPatcher#mod-developers) -- Mod packaging and testing workflow
+- [TSLPatcher's Official Readme](TSLPatcher's-Official-Readme) -- Preserved legacy installer reference
+- [Concepts](Concepts#resource-resolution-order) -- Resource resolution order and override precedence
+- [GFF File Format](GFF-File-Format) -- Binary GFF container and typed resource overview
+- [TSLPatcher 2DAList Syntax](TSLPatcher-Data-Syntax#2dalist-syntax) -- 2DA merge syntax
+- [TSLPatcher GFFList Syntax](TSLPatcher-GFF-Syntax#gfflist-syntax) -- GFF field patching syntax
+- [Installing Mods with HoloPatcher](HoloPatcher#installing-mods) -- End-user installation guide
+- [NSS File Format](NSS-File-Format) -- Scripting reference

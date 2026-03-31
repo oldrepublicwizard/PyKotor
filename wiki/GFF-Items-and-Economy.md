@@ -730,3 +730,12 @@ write_fac(fac, "output/repute.fac")
 
 
 ---
+
+### See also
+
+- [GFF File Format](GFF-File-Format) -- Binary container format and GFF family overview
+- [GFF Creature and Dialogue](GFF-Creature-and-Dialogue) -- UTC and DLG types
+- [GFF Spatial Objects](GFF-Spatial-Objects) -- Placeables, doors, triggers, encounters, waypoints
+- [GFF Module and Area](GFF-Module-and-Area) -- ARE, GIT, IFO module data
+- [Bioware Aurora Items Economy and Narrative](Bioware-Aurora-Items-Economy-and-Narrative) -- Official specification
+- [Concepts](Concepts) -- Resource resolution and shared vocabulary
