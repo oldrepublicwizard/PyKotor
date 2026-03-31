@@ -65,7 +65,10 @@ This “-v1.00 / -co” form is **not** the same as the PyKotor V1 config above;
 ## 2. TSLPatcher (tk102 custom, ~2006)
 
 **Identification:** SHA256 `539EB689D2E0D3751AEED273385865278BEF6696C46BC0CAB116B40C3B2FE820`  
-**Reference:** PyKotor `KnownExternalCompilers.TSLPATCHER`; TSLPatcher’s Official Readme (tk102’s modified nwnnsscomp for TSLPatcher 1.2.7b4+).
+**Reference:**
+
+- PyKotor `KnownExternalCompilers.TSLPATCHER`
+- TSLPatcher’s Official Readme (tk102’s modified nwnnsscomp for TSLPatcher 1.2.7b4+)
 
 ### Compile
 
@@ -98,7 +101,11 @@ This “-v1.00 / -co” form is **not** the same as the PyKotor V1 config above;
 ## 3. KOTOR Tool (Fred Tetra)
 
 **Identification:** SHA256 `E36AA3172173B654AE20379888EDDC9CF45C62FBEB7AB05061C57B52961C824D`  
-**Reference:** PyKotor `KnownExternalCompilers.KOTOR_TOOL`; SourceForge kotortoolset (nwnnsscomp-kotor 1.02 / 1.05); Fred Tetra, v1.02 (March 2005) added game selection.
+**Reference:**
+
+- PyKotor `KnownExternalCompilers.KOTOR_TOOL`
+- SourceForge kotortoolset (nwnnsscomp-kotor 1.02 / 1.05)
+- Fred Tetra, v1.02 (March 2005) added game selection
 
 ### Compile
 
@@ -139,7 +146,10 @@ This “-v1.00 / -co” form is **not** the same as the PyKotor V1 config above;
 ## 4. KOTOR Scripting Tool (James Goad / KobaltBlu)
 
 **Identification:** SHA256 `B7344408A47BE8780816CF68F5A171A09640AB47AD1A905B7F87DE30A50A0A92`  
-**Reference:** PyKotor `KnownExternalCompilers.KOTOR_SCRIPTING_TOOL`; GitHub KobaltBlu/KotOR-Scripting-Tool (GUI around nwnnsscomp).
+**Reference:**
+
+- PyKotor `KnownExternalCompilers.KOTOR_SCRIPTING_TOOL`
+- GitHub KobaltBlu/KotOR-Scripting-Tool (GUI around nwnnsscomp)
 
 ### Compile / Decompile
 
