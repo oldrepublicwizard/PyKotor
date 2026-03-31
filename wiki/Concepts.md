@@ -1,6 +1,6 @@
 # KotOR/TSL modding and engine concepts
 
-The Odyssey engine resolves every resource request through a fixed priority chain: override folder, then module capsules (MOD/SAV/ERF/RIM), then KEY/BIF base archives [[`SearchLocation` enum](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/installation.py#L65-L110)]. Understanding this chain — along with ResRefs, resource types, and the difference between template data and instance data — is essential for any modding work. Other wiki pages reference the definitions here rather than re-explaining the rules.
+The Odyssey engine resolves every resource request through a fixed priority chain: override folder, then module capsules (MOD/SAV/ERF/RIM), then KEY/BIF base archives [[`SearchLocation` enum](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/installation.py#L65-L110)]. Understanding this chain — along with ResRefs, resource types, and the difference between template data and instance data — is essential for any modding work. Other wiki pages reference the definitions here rather than re-explaining the rules. Open reimplementations describe the same shape from a different angle: xoreos's KotOR engine page lists initial module and area loading plus room-room visibility evaluation as core milestones, while xoreos-tools splits archive, GFF, TLK, and 2DA utilities along the same format boundaries modders work with daily [[Knights of the Old Republic](https://wiki.xoreos.org/index.php?title=Knights_of_the_Old_Republic), [Running xoreos-tools](https://wiki.xoreos.org/index.php/Running_xoreos-tools)].
 
 ## Cross-reference: source modules
 
@@ -32,7 +32,7 @@ The engine first checks whether the resource is already loaded or cached. If not
 
 ### Role of the [**KEY**](Container-Formats#key) file
 
-The [**KEY**](Container-Formats#key) file (normally `chitin.key`) is the master index for vanilla archive data [[`key_data.py`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/key/key_data.py#L1-L55)]. It maps a ResRef and resource type to a specific BIF archive and an entry inside that archive. It does not define the whole resolution order; it only enables the vanilla-data fallback stage.
+The [**KEY**](Container-Formats#key) file (normally `chitin.key`) is the master index for vanilla archive data [[`key_data.py`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/key/key_data.py#L1-L55)]. It maps a ResRef and resource type to a specific BIF archive and an entry inside that archive. It does not define the whole resolution order; it only enables the vanilla-data fallback stage. xoreos's `unkeybif` page phrases the same idea in practical extraction terms: the KEY carries names and types, the BIF carries payloads, and extracting everything indexed by a KEY requires the corresponding BIF set to be treated as one unit [[Unkeybif](https://wiki.xoreos.org/index.php?title=Unkeybif)].
 
 That distinction matters for authors. If your mod ships a file in `override/`, or a resource in a module `.mod`, the engine can find it before ever consulting `chitin.key`.
 
@@ -94,7 +94,7 @@ The canonical **hex resource type ID** table (*Aurora* / *Odyssey* family, inclu
 
 Language IDs are a small integer enum [[`Language` enum](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/common/language.py#L13-L50) · [`tlk_data.py` binary spec](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/tlk/tlk_data.py#L1-L35)] shared across *Infinity*/*Aurora*/*Odyssey*/*Eclipse*-era engines (TLK headers, [ERF](Container-Formats#erf) localized string lists, [GFF](GFF-File-Format) `LocalizedString` substrings, etc.). Newer *BioWare* titles added values but usually stay backward compatible with 0–5.
 
-Use this table as the **wiki SSOT** for numeric IDs and typical text encodings. Official *BioWare* PDFs duplicate the same numbering in places like [Bioware-Aurora-TalkTable](Bioware-Aurora-Core-Formats#talktable) and [Bioware-Aurora-LocalizedStrings](Bioware-Aurora-Core-Formats#localizedstrings).
+Use this table as the **wiki SSOT** for numeric IDs and typical text encodings. Official *BioWare* PDFs duplicate the same numbering in places like [Bioware-Aurora-TalkTable](Bioware-Aurora-Core-Formats#talktable) and [Bioware-Aurora-LocalizedStrings](Bioware-Aurora-Core-Formats#localizedstrings). xoreos's TLK language matrix reaches the same KotOR mapping and is worth keeping in view because its `tlk2xml` tool has to be told either the game or the encoding; the format family does not provide enough information to autodetect text encoding safely across BioWare titles [[TLK language IDs and encodings](https://wiki.xoreos.org/index.php?title=TLK_language_IDs_and_encodings), [Tlk2xml](https://wiki.xoreos.org/index.php?title=Tlk2xml)].
 
 | Language | ID | Typical encoding | Description |
 | -------- | -- | ---------------- | ----- |
