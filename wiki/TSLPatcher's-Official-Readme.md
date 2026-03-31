@@ -8,7 +8,7 @@ _This page is a preserved primary-source artifact. Keep the original documentati
 
   Last changed 2007-09-19
 
-<https://lucasforumscontainer.com/thread/149285-tslpatcher-v1210b1-mod-installer> <mirror>[TSLPatcher Thread Complete Container](TSLPatcher_Thread_Complete)</mirror>
+<https://lucasforumscontainer.com/thread/149285-tslpatcher-v1210b1-mod-installer>
 
 ## Table of Contents
 
@@ -1605,7 +1605,6 @@ And finally thanks to YOU, for enduring my English and reading all the way down 
 
 ### See also
 
-- [TSLPatcher Thread Complete](TSLPatcher_Thread_Complete) -- LucasForums thread container (Stoffe’s posts, changelogs)
 - [TSLPatcher GFFList Syntax](TSLPatcher-GFF-Syntax#gfflist-syntax) -- GFF patching
 - [TSLPatcher HACKList Syntax](TSLPatcher-Install-and-Hack-Syntax#hacklist-syntax) -- 2DA and plain-text hacks
 - [HoloPatcher README for Mod Developers](HoloPatcher#mod-developers) -- HoloPatcher usage

@@ -80,7 +80,6 @@ Run that fix before troubleshooting deeper compatibility issues on iOS. A surpri
 
 - [HoloPatcher README for Mod Developers](HoloPatcher-README-for-mod-developers) -- Mod development and patching syntax
 - [TSLPatcher's Official Readme](TSLPatcher's-Official-Readme) -- Preserved legacy source for original TSLPatcher behavior
-- [TSLPatcher_Thread_Complete](TSLPatcher_Thread_Complete) -- Preserved historical release and discussion archive
 - [TSLPatcher-InstallList-Syntax](TSLPatcher-InstallList-Syntax) -- Exact author-facing InstallList semantics
 - [TSLPatcher-TLKList-Syntax](TSLPatcher-TLKList-Syntax) -- Exact author-facing TLKList semantics
 - [TSLPatcher-2DAList-Syntax](TSLPatcher-2DAList-Syntax) -- Exact author-facing 2DAList semantics
