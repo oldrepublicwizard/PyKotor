@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Rewrite flat `import foo` to `from . import foo` for vendored kaitai_generated."""
+"""Rewrite flat `import foo` to `from . import foo` for generated ``bioware_kaitai_formats``."""
 from __future__ import annotations
 
 import re
@@ -8,9 +8,12 @@ from pathlib import Path
 
 
 def main() -> None:
-    root = Path(__file__).resolve().parent.parent / "Libraries/PyKotor/src/pykotor/kaitai_generated"
+    root = (
+        Path(__file__).resolve().parent.parent
+        / "Libraries/bioware-kaitai-formats/src/bioware_kaitai_formats"
+    )
     if not root.is_dir():
-        print(f"Missing {root}", file=sys.stderr)
+        print(f"Missing {root} (use bioware-kaitai-formats package)", file=sys.stderr)
         sys.exit(1)
     local_mods = {
         p.stem
