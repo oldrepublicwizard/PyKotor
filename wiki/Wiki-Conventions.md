@@ -75,7 +75,7 @@ This page documents style and structure conventions for the PyKotor wiki. Follow
 - **Section order (long format pages):** Use a consistent order: Overview → Structure / fields → Examples (optional) → See also. Add a short on-page table of contents at the top where it helps navigation.
 - **Format reference pages:** Include a clear **Structure / fields** (or equivalent) section. Where the format has a fixed or deterministic layout, state total length, offset base (e.g. "offsets from file start"), or byte ranges so that parsers and validators can use the page reliably.
 - **Preserved-source exception:** Do not apply ordinary rewrite/template cleanup to preserved source documents such as `Bioware-Aurora-*` pages or [TSLPatcher's-Official-Readme](TSLPatcher's-Official-Readme). Those pages are intentionally retained as source artifacts; put modern explanation in companion pages instead.
-- **Implementation and references:** On format and tool pages, add **Implementation (PyKotor)** and **Cross-reference** (other repos, specs) where missing. PyKotor link form: `[symbol Lx+](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/path#Lx)` with line anchors when practical. Prefer canonical repos; avoid duplicate mirror links.
+- **Implementation and references:** On format and tool pages, add **Implementation (PyKotor)** and **Cross-reference** (other repos, specs) subsections within the relevant type or topic section — not as a catch-all block at the bottom of the page. PyKotor link form: `[symbol Lx+](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/path#Lx)` with line anchors when practical. Prefer canonical repos; avoid duplicate mirror links. See [Citation and evidence placement](#citation-and-evidence-placement) for the distinction between inline evidence and navigation.
 
   - modawan/reone
   - KobaltBlu/KotOR.js
@@ -86,6 +86,40 @@ This page documents style and structure conventions for the PyKotor wiki. Follow
 - **Cross-links:** Formats loaded by ResRef should link to [Concepts](Concepts#resource-resolution-order) for resolution order and to [KEY-File-Format](Container-Formats#key) for the KEY/BIF index format; link to [GFF-File-Format](GFF-File-Format#gff-data-types) for ResRef where relevant.
 - **Semantic claims:** Prefer an evidence-backed voice for engine or layout facts (RE, vendor tools, labeled **K1**/**TSL**/**both**, stable community links). When evidence is missing, use **inferred** or **unknown** rather than stating as fact. PyKotor code documents **library** behavior; do not use it alone to assert engine truth unless policy explicitly allows (see BWM exception above).
 - **Community and historical context:** When adding or refining format or tool pages, link to [Community sources and archives](Home#community-sources-and-archives) (DeadlyStream, LucasForums Container, Mixmojo) where relevant for consensus, tutorials, or historical discussion.
+
+## Citation and evidence placement
+
+This wiki separates three kinds of outbound links. They serve different purposes and must not be conflated.
+
+### Navigation links
+
+Navigation links connect pages for discovery: **See also** sections, family hubs, parent-page references, and "where to go next" pointers. They tell the reader where related content lives. They do not prove anything.
+
+### Evidence citations
+
+Evidence citations back a factual claim. Every non-trivial factual statement, behavioral claim, or workflow recommendation must be followed immediately by its supporting citation — in the same sentence or paragraph. Acceptable forms:
+
+- Inline descriptive links whose position makes the source attachment unambiguous (e.g. "the engine resolves override first ([`pykotor.extract.installation`](https://github.com/...))").
+- Numeric or short parenthetical markers directly after the claim.
+
+Unacceptable forms on reader-facing pages:
+
+- A paragraph of assertions followed later by a detached **References** or **Sources** section.
+- A **See also** list used as implicit proof for body text.
+- Raw URLs after a section without explaining what they verify.
+- An uncited summary paragraph followed only by a generic page-level source header.
+
+When rewriting a page that has a useful bottom source list, redistribute those links to the paragraphs they support. If a source link does not support any retained claim, remove it.
+
+### Archive-support source inventories
+
+Canonical reference pages (GFF type references, format specs) may keep per-section **Implementation** and **Cross-reference** blocks that list code-level entry points grouped by project. These are not bottom-page dumps — they sit inside the section for the specific type or format they document and serve contributors who need to trace a claim back to code.
+
+Archive and evidence-index pages may also retain structured source inventories. These pages are not ordinary reader-facing documentation; they exist for provenance and traceability.
+
+### When evidence is missing
+
+When no source backs a claim, use explicit uncertainty language ("inferred", "unverified", "community consensus suggests") rather than stating it as established fact. Do not leave claims silently uncited.
 
 ## External research and community link harvesting
 
@@ -141,6 +175,7 @@ Run `markdownlint-cli2` on touched files per CI config in the main repo. Contrib
 - [ ] No duplicated long specs; link to canonical page (Concepts, KEY-File-Format, GFF-File-Format) instead.
 - [ ] If overlapping pages exist on the same topic, one page is clearly exhaustive and the current page either defers to it or owns a genuinely distinct scope.
 - [ ] Any summarized content preserves the reader-critical distinctions from the fuller page and does not silently omit unique information.
+- [ ] Factual claims have inline citations (same sentence or paragraph), not detached bottom reference dumps. See [Citation and evidence placement](#citation-and-evidence-placement).
 - [ ] Format pages: use Reference template; include Structure/fields and, when relevant, length or offset base.
 - [ ] If the topic relies on preserved source material such as `Bioware-Aurora-*` or [TSLPatcher's-Official-Readme](TSLPatcher's-Official-Readme), keep the preserved page intact and put new interpretation in a companion page instead.
 

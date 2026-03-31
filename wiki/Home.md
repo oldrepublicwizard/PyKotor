@@ -36,35 +36,7 @@ That split is deliberate. The goal is not “use only PyKotor tools forever”; 
 
 ## Verified against implementations
 
-The claims on this landing page and the linked concept pages are not based on one codebase or one forum post. They are cross-checked against active tooling and independent parsers.
-
-- **PyKotor**
-  - [`pykotor.extract.installation`](https://github.com/OldRepublicDevs/PyKotor/blob/main/Libraries/PyKotor/src/pykotor/extract/installation.py)
-  - [`pykotor.extract.chitin`](https://github.com/OldRepublicDevs/PyKotor/blob/main/Libraries/PyKotor/src/pykotor/extract/chitin.py)
-  - [`pykotor.resource.formats.key.io_key`](https://github.com/OldRepublicDevs/PyKotor/blob/main/Libraries/PyKotor/src/pykotor/resource/formats/key/io_key.py)
-  - [`pykotor.resource.formats.bif.io_bif`](https://github.com/OldRepublicDevs/PyKotor/blob/main/Libraries/PyKotor/src/pykotor/resource/formats/bif/io_bif.py)
-  - [`pykotor.resource.formats.erf.io_erf`](https://github.com/OldRepublicDevs/PyKotor/blob/main/Libraries/PyKotor/src/pykotor/resource/formats/erf/io_erf.py)
-  - [`pykotor.resource.formats.rim.io_rim`](https://github.com/OldRepublicDevs/PyKotor/blob/main/Libraries/PyKotor/src/pykotor/resource/formats/rim/io_rim.py)
-  - [`pykotor.resource.formats.tlk.io_tlk`](https://github.com/OldRepublicDevs/PyKotor/blob/main/Libraries/PyKotor/src/pykotor/resource/formats/tlk/io_tlk.py)
-  - [`pykotor.resource.formats.twoda.io_twoda`](https://github.com/OldRepublicDevs/PyKotor/blob/main/Libraries/PyKotor/src/pykotor/resource/formats/twoda/io_twoda.py)
-- **reone**
-  - [`src/libs/resource/director.cpp`](https://github.com/modawan/reone/blob/main/src/libs/resource/director.cpp)
-  - [`src/libs/resource/resources.cpp`](https://github.com/modawan/reone/blob/main/src/libs/resource/resources.cpp)
-  - [`src/libs/resource/format/keyreader.cpp`](https://github.com/modawan/reone/blob/main/src/libs/resource/format/keyreader.cpp)
-  - [`src/libs/resource/format/bifreader.cpp`](https://github.com/modawan/reone/blob/main/src/libs/resource/format/bifreader.cpp)
-  - [`src/libs/resource/format/erfreader.cpp`](https://github.com/modawan/reone/blob/main/src/libs/resource/format/erfreader.cpp)
-- **KotOR.js**
-  - [`src/loaders/ResourceLoader.ts`](https://github.com/KobaltBlu/KotOR.js/blob/main/src/loaders/ResourceLoader.ts)
-  - [`src/resource/KEYObject.ts`](https://github.com/KobaltBlu/KotOR.js/blob/main/src/resource/KEYObject.ts)
-  - [`src/resource/BIFObject.ts`](https://github.com/KobaltBlu/KotOR.js/blob/main/src/resource/BIFObject.ts)
-  - [`src/managers/TwoDAManager.ts`](https://github.com/KobaltBlu/KotOR.js/blob/main/src/managers/TwoDAManager.ts)
-  - [`src/managers/TLKManager.ts`](https://github.com/KobaltBlu/KotOR.js/blob/main/src/managers/TLKManager.ts)
-- **Kotor.NET**
-  - [`Kotor.NET/Formats/KotorKEY/KEYBinaryStructure.cs`](https://github.com/NickHugi/Kotor.NET/blob/main/Kotor.NET/Formats/KotorKEY/KEYBinaryStructure.cs)
-  - [`Kotor.NET/Formats/KotorBIF/BIFBinaryStructure.cs`](https://github.com/NickHugi/Kotor.NET/blob/main/Kotor.NET/Formats/KotorBIF/BIFBinaryStructure.cs)
-  - [`Kotor.NET/Formats/KotorTLK/TLKBinaryStructure.cs`](https://github.com/NickHugi/Kotor.NET/blob/main/Kotor.NET/Formats/KotorTLK/TLKBinaryStructure.cs)
-  - [`Kotor.NET/Formats/Kotor2DA/TwoDABinaryReader.cs`](https://github.com/NickHugi/Kotor.NET/blob/main/Kotor.NET/Formats/Kotor2DA/TwoDABinaryReader.cs)
-  - [`Kotor.NET/ResourceContainers/Chitin.cs`](https://github.com/NickHugi/Kotor.NET/blob/main/Kotor.NET/ResourceContainers/Chitin.cs)
+The format and behavior claims on this wiki are cross-checked against multiple independent codebases, not based on a single source or forum post. The primary verification targets are [PyKotor](https://github.com/OldRepublicDevs/PyKotor), [reone](https://github.com/modawan/reone), [KotOR.js](https://github.com/KobaltBlu/KotOR.js), and [Kotor.NET](https://github.com/NickHugi/Kotor.NET). Individual format and concept pages carry their own per-claim source links; see [Concepts](Concepts#verified-against-implementations) for the detailed module-level verification list.
 
 ## Learning paths
 
