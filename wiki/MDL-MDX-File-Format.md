@@ -116,10 +116,10 @@ KotOR models are defined using two files:
 - data model [`MDL` L1337+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/mdl/mdl_data.py#L1337)
 - [`MDLNode` L1928+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/mdl/mdl_data.py#L1928)
 - ASCII in `io_mdl_ascii.py`
-- engine-level cross-checks: [MDL-Implementation-Verification-Report](MDL-Implementation-Verification-Report.md)
-- [MDL-ASCII-Support-Engine-Analysis](MDL-ASCII-Support-Engine-Analysis.md)
+- engine-level cross-checks: [MDL-Implementation-Verification-Report](#mdl-format-implementation-verification-report)
+- [MDL-ASCII-Support-Engine-Analysis](#ascii-mdl-support-in-swkotorexe-k1-and-swkotor2exe-tsl---low-level-analysis)
 
-**Documentation sources:** Layout merges cchargin (mdl_info), [xoreos-docs](https://github.com/xoreos/xoreos-docs) (`kotor_mdl.html`, `torlack/binmdl.html`), and implementations below. Where sources disagree, PyKotor and [MDL-Implementation-Verification-Report](MDL-Implementation-Verification-Report.md) are treated as authoritative.
+**Documentation sources:** Layout merges cchargin (mdl_info), [xoreos-docs](https://github.com/xoreos/xoreos-docs) (`kotor_mdl.html`, `torlack/binmdl.html`), and implementations below. Where sources disagree, PyKotor and [MDL-Implementation-Verification-Report](#mdl-format-implementation-verification-report) are treated as authoritative.
 
 ### PyKotor code structure (Python)
 
@@ -1545,3 +1545,749 @@ mat4 computeBoneMatrix(int bone_idx, Animation anim, float time) {
 ---
 
 This documentation aims to provide a comprehensive and structured overview of the KotOR MDL/MDX files format, focusing on the detailed file structure and data formats used within the games.
+
+---
+
+## Appendix: Engine Analysis
+
+The following sections contain detailed reverse-engineering analysis of the MDL/MDX loading pipeline in both game engines.
+
+---
+
+#### MDL/MDX read pipeline
+
+This subsection ties the **Model Loading System** bullets above to concrete engine behavior for binary [MDL/MDX](MDL-MDX-File-Format.md): the MDL side carries hierarchy, animation, and metadata; the companion MDX stream carries mesh payload. Addresses below are for the common **K1** (`k1_win_gog_swkotor.exe`) / **TSL** (`swkotor2.exe`) builds used in this doc—re-verify in your own binary.
+
+##### Low-level file load (`LoadModel` → `Input::Read`)
+
+**End-to-end flow**
+
+1. `LoadModel` saves `CurrentModel`, bails if the primary handle/param is null, clears `CurrentModel`, and obtains `IODispatcher` via `IODispatcher::GetRef()`.
+2. `IODispatcher::ReadSync()` builds a stack `Input` and calls `Input::Read()` with the MDL/MDX `FILE*` pair.
+3. `Input::Read()` dispatches to `InputBinary::Read()` for the binary format; **K1** may also drive an ASCII MDL path (`AurResGetNextLine`, `FuncInterp` for animation curves). **TSL** decompilation shows no ASCII MDL support on those paths.
+4. Parsing yields a `MaxTree*`; `MaxTree::AsModel()` keeps only nodes whose type matches `MODEL_TYPE` (`(type & 0x7f) == 2`), otherwise NULL.
+5. On success, `LoadModel` walks `modelsList` and compares tree names with `__stricmp`. A duplicate name destroys the freshly loaded `Model` and returns the cached instance; otherwise the new model is returned. `CurrentModel` is restored; failure returns NULL.
+
+**Key symbols (VA)**
+
+| Role | K1 | TSL |
+|------|-----|-----|
+| `LoadModel` | `0x00464200` | `0x0047a570` |
+| `IODispatcher::GetRef` | `0x004a0580` | `0x004cda00` |
+| `IODispatcher::ReadSync` | `0x004a15d0` | `0x004cead0` |
+| `Input::Read` | `0x004a1260` | `0x004ce780` |
+| `MaxTree::AsModel` | `0x0043e1c0` | `0x0044ff90` |
+| `FindModel` (cache lookup) | `0x00464176` | `0x0047a480` |
+| `~Model` (duplicate path) | `0x0043f790` | `0x004527d0` |
+| `operator delete` (duplicate path) | `0x0044aec0` | `0x0045f520` |
+| `__stricmp` | `0x0070acaf` | `0x0077e24f` |
+
+**`IODispatcher::ReadSync`** (~36 bytes): allocates a 12-byte `Input` on the stack and forwards to `Input::Read`; sole direct caller is `LoadModel`.
+
+**`MaxTree::AsModel`** (~16 bytes, ~88 call sites): branchless equivalent of `return ((type & 0x7f) == 2) ? (Model*)this : NULL`. Representative call sites include `ProcessSkinSeams` (e.g. K1 `0x004392b6` / `0x00439986`, TSL `0x0044a920`), `FindModel`, `LoadModel`, `BuildVertexArrays` (K1 `0x00478b50`, TSL `0x00495620`), and several sites inside `Input::Read` (K1 `0x004a1362`–`0x004a1503`, TSL `0x004ce8c0`).
+
+**`Input::Read` collaborators**
+
+- `InputBinary::Read()` — binary MDL/MDX parser.
+- `AurResGetNextLine` — K1 `0x0044bfa0`; **TSL:** not present (ASCII MDL path absent).
+- `AurResGet` — K1 `0x0044c740`, TSL `0x00460db0` (resource byte access).
+- `FuncInterp` — K1 `0x0044c1f0`; **TSL:** not used (ASCII/curve path).
+
+**Who calls `LoadModel`**
+
+- `NewCAurObject` — K1 `0x00449cc0`, TSL `0x0045e2e0` (call at K1 `0x00449d9d`, TSL `0x0047a570`). Indirectly used from many engine subsystems (examples from xref work: `HideWieldedItems`, `LoadSpellVisual`, `LoadConjureVisual`, `AddObstacle`, `SetWeather`, `LoadVisualEffect`, `SetGunModel`, `SpawnRooms`, `CollapsePartTree`, `FireGunCallback`, `LoadAnimatedCamera`, `SetPlayer`, `LoadModel`, `LoadModelAttachment`, `AddEnemy`, `LoadLight`, `AddGun`, `CreateReferenceObjects`, `ChunkyParticle`, `CreateMuzzleFlash`, `SpawnPartsForTile`, `SetProjectileVelAndAccel`, `SpawnHitVisuals`, `LoadArea`, `SpawnVisualEffect`, `AddPlaceableObjectLight`, `LoadBeam`, `ApplyShadowBlob`, `AddModel`, `SpawnRoom`, etc.).
+- `LoadAddInAnimations` (Gob) — K1 `0x00440890`, TSL `0x004538d0` (call at K1 `0x004408f7`, TSL `0x0047a570`): `FindModel` first; if missing, append `".mdl"` and open; then `LoadModel` on the `FILE*`; tree merge via `MaxTree::SynchronizeTree()`.
+
+**Globals / caches:** `CurrentModel` (thread-context style global in notes) and `modelsList` (model pointer list).
+
+**Matching note:** The table addresses above come from direct symbol/decompilation work on these builds. A stricter pattern hunt (e.g. K1-style `__stricmp` + `modelsList` shape) can still miss after TSL refactors even when the same logical entry point exists—always confirm in the binary you have loaded.
+
+##### How model I/O was located
+
+1. String cross-references (extensions, error text, dummy-node names).
+2. Caller/callee walks from `LoadModel` / `Input::Read`.
+3. VTable slots for virtual loaders on `CSWCAnimBase*`.
+4. Imported runtime (`__stricmp`, heap allocators).
+5. Decompilation pattern matching between K1 and TSL.
+
+##### Attaching MDL data to creatures (`CSWCCreature`)
+
+**VTable discovery:** data label `CSWCCreature_LoadModel_vtable_entry` at K1 `0x0074f670` / TSL `0x007c8040` points to the implementation at K1 `0x0061b380` / TSL `0x00669ea0` (`LoadModel_Internal` in TSL naming).
+
+**K1 vs TSL packaging**
+
+- **K1:** `CSWCCreature::LoadModel` is a single ~842-byte function at `0x0061b380` (~10 callees in the original notes).
+- **TSL:** Core logic lives in `CSWCCreature::LoadModel_Internal` ~1379 bytes at `0x00669ea0` (~11 callees) with SEH setup via `__CxxFrameHandler3` (K1 `0x00728076`, TSL `0x0079cc86`). A separate ~43-byte `CSWCCreature::LoadModel` at `0x0066a0f0` formats errors (sprintf path) when `LoadModel_Internal` falls through the anim-base `switch` default—do not confuse it with the K1 monolith at the same logical role.
+
+**Creature-side flow (merged K1 + TSL)**
+
+1. **Optional cache restore (TSL emphasis):** TSL checks cached anim base at creature offset `0x370` and cached `field159` at `0x374`; on hit, swaps into active `anim_base` at `0x68` and clears caches. K1 uses the older `field158_0x358` / `field159_0x35c` layout documented in the original decompilation.
+2. **Reuse fast path:** If an `anim_base` already exists and its type byte at offset `0x31` matches the requested anim-base kind, jump to loading the model resource (shared label region K1 ~`0x0061b5a7`, TSL ~`0x0066a0c8`).
+3. **Otherwise** destroy the existing base (`vtable&#91;0&#93;(1)`) and allocate a new one from the anim-base kind (`param_4` / `param_3` in different Ghidra views).
+
+**Anim-base constructor matrix**
+
+| Kind (byte) | Class | K1 `operator new` size | TSL size | Constructor (K1 / TSL) |
+|-------------|--------|-------------------------|----------|-------------------------|
+| `0` | `CSWCAnimBase` | `0xF0` | `0xFC` (+12) | `0x0069dfb0` / `0x006f8340` |
+| `1` | `CSWCAnimBaseHead` | `0x1C4` | `0x1D0` | `0x0069bb80` / `0x006f5e60` |
+| `2` | `CSWCAnimBaseWield` | `0x1D0` | `0x1DC` | `0x00699dd0` / `0x006f41b0` |
+| `3` | `CSWCAnimBaseHeadWield` | `0x220` | `0x22C` | `0x00698ec0` / `0x006f32a0` |
+| `0x0B` | `CSWCAnimBaseTW` (two-weapon) | — | `0x180` | **TSL only:** `0x0069cbd0` / `0x006f6fb0`; sets vtable `CSWCAnimBaseTW_vtable` K1 `0x00754e58` / TSL `0x007ce078`, type id `0x0B` at `0x31`, clears flags/fields per notes |
+
+Head/Wield/HeadWield paths adjust the returned pointer using the vtable’s embedded offset (`*(int*)(*vtable + 4) + this` pattern in decompilation). After construction, `CSWAnimBase::Set` (K1 `0x00698e30`, TSL `0x006f3210`) is invoked four times with constants `1216.0f`, `6600.0f`, `0.9f`, `3.3f` (IEEE `0x44e74000`, `0x45ce4000`, `0x3f6ccccd`, `0x40533333`) into offsets `+4`, `+8`, `+0xC`, `+0x10`.
+
+1. **Load binary model:** virtual slot **3** (byte offset `0x0C`) on the anim base—`anim_base->vtable&#91;3&#93;(resRef, …)` in the shorter K1 description, equivalent to the `vtable&#91;0x0C&#93;` call in the TSL line-by-line notes. Failure returns `0` after formatting `sprintf`/`vswprintf` wrappers (K1 `0x006fadb0`, TSL `0x0076dac2`) with `"CSWCCreature::LoadModel(): Failed to load creature model '%s'."` (string K1 `0x0074f85c`, TSL `0x007c82fc`; call sites K1 `0x0061b5cf`, TSL `0x0066a0f0`). ResRef text comes from `CResRef::GetResRefStr` K1 `0x00405fe0` (buffer/index globals K1 `0x007a3d00` / `0x007a3d48`) or `CResRef::CopyToString` K1 `0x00405f70` / TSL `0x00406050` (TSL buffer/index `0x008286e0` / `0x00828728`) using a 4-deep, 17-byte stride circular cache (`BufferIndex = (BufferIndex + 1) & 0x80000003`, four `uint32` ResRef dwords + NUL).
+
+2. **Special negative `param_3` values (`-1` … `-4`):** obtain an attachment via virtual slot **2** (byte offset `0x08`) with the special code; if present, `attachment->vtable&#91;0x74&#93;(creature)` and `attachment->vtable&#91;0x7c&#93;(GAME_OBJECT_TYPES)` where `GAME_OBJECT_TYPES` is the constant `5` at K1 `0x00746634` / TSL `0x007beaec` (K1 label `GAME_OBJECT_TYPES_00746634`).
+
+3. **`param_3 == -1` (headconjure):** default quaternion `{0,0,0,1}`; `RegisterCallbacks_Headconjure` (K1 `0x0061ab40`, TSL `0x00669570`, ~532 bytes) pulls a handler from `anim_base->vtable&#91;8&#93;(0xFF)` and registers sixteen combat/footstep callbacks through `handler->vtable&#91;0x28&#93;`, each with distance `10000.0f` (`0x461c3c00`), storing function pointers into creature fields `0x404`–`0x444`. **K1:** `RegisterCallbacks_Headconjure` is the same symbol as the full `RegisterCallbacks`. **TSL:** the day-to-day `RegisterCallbacks` shrinks to `0x00693fe0` (~100 bytes) and is a different function.
+
+4. **Dummy node `"headconjure"`:** virtual slot **40** (byte offset `0xA0`) searches the name (literal near K1 `0x0061b676`, string ref TSL `0x007c82f0`; related `"Bheadconjure"` K1 `0x0074f84f`). Missing dummy forces creature float at `0xA4` to `3.2f` (`0x40066666`); otherwise `0xA4` = `height - height * 0.125f` using float constant K1 `0x0073f400` / TSL `0x007b7428` (`FLOAT_0073f400` in K1). TSL-only helpers also reference `"headconjure"` (`FindDummyNode` `0x00702e20`, `SetupImpactRootNodes` `0x00701870`, `SetupHeadHitDetection` `0x00700da0`, `ValidateConjureDummyNodes` `0x006f8590`, `SetupSpellCastingVisuals` `0x006efe40`, `LoadCreatureVisualData` `0x006a5490`, `InitializeConjureVisuals` `0x006efaf0`—names from REVA/Ghidra).
+
+5. **General callback registration:** `RegisterCallbacks` K1 `0x0061ab40`, TSL `0x00693fe0`. **K1:** same body as headconjure registration (direct `anim_base->vtable&#91;8&#93;(0xFF)` then `handler->vtable&#91;0x28&#93;` fan-out). **TSL:** if callback cache at creature `0xF8` is NULL and flag at `0xE4` is zero, resolve handler via `GetObjectTypeID` (`0x004dc2e0`) + `GetObjectByTypeID` (`0x004dc650`, registry pointer at `CallbackRegistry + 8` data `0x008283d4`), `handler->vtable&#91;0x10&#93;()` for the object, cache to `0xF8`, then `SetCallbackTarget` (`0x005056f0`). Success enables animation plumbing: `callback->vtable&#91;0x30&#93;()`, optional `anim_base->vtable&#91;0x18C&#93;(1)` / `vtable&#91;0x1A0&#93;(0)` based on animation fields `+0x24C` / `+0x254`, then `anim_base->vtable&#91;0x1A0&#93;(1)`.
+
+6. **Creature size class:** read `short` at `*(creature->base + 0x310) + 0x80`; feed to `anim_base->vtable&#91;0x168&#93;(sizeClass)` (slot **90**, byte `0x168`). If size class `< 0x3D` and `< 0x29`, apply interpolation using constants `0.0125f` (K1 inline `0x3c888889`, TSL data `0x007c82ec`), `1.0f` (`0x3f800000` / TSL `0x007b5774`), `0.65f` (`0x3d266666` / TSL `0x007c82e8`), `0.05f` (`0x3d4ccccd` / TSL `0x007b9700`), `0.01f` (`0x3c23d70a` / TSL `0x007b5f88`). **TSL-only** helper `SizeClassValidationFunction` at `0x0051f0b0` pairs with data `SizeClassConstant_5` at `0x007c514c`; K1 inlines the policy without that helper.
+
+**TSL structural deltas vs K1 (checklist)**
+
+1. Extra anim-base branch `0x0B` / `CSWCAnimBaseTW`.
+2. All four classic anim-base allocations grow by **+12** bytes.
+3. Wider creature layout: active `anim_base` at `+0x68`; caches `+0x370` / `+0x374`; callback cache `+0xF8`, flag `+0xE4`.
+4. Some vtable indices diverge for “find dummy”, “set size class”, “enable animation”, and animation guard calls (`0x18C` / `0x1A0` in TSL notes) even where destructor/load/attachment slots stay aligned (`0x0`, `0x8`, `0xC`, `0x74`, `0x7C`).
+5. String and helper symbol names differ (`FUN_*`); expect address shifts on other builds.
+
+**`RegisterCallbacks_Headconjure` event names and storage (K1 / TSL string VA, creature slot)**
+
+| Callback key | K1 string | TSL string | Creature offset | Engine thunk (K1 / TSL) |
+|--------------|-----------|------------|-----------------|-------------------------|
+| `snd_Footstep` | `0x0074f838` | `0x007c82d0` | `0x3EC` | — |
+| `hit` | `0x0074f834` | `0x007c82cc` | `0x3F0` | — |
+| `snd_hitground` | `0x0074f824` | `0x007c82bc` | `0x3F8` | `HitGroundEvent` `0x0060b400` / `0x00657590` |
+| `SwingShort` | `0x0074f48c` | `0x007c7e00` | `0x3FC` | `0x00610c90` / `0x0065d0c0` |
+| `SwingLong` | `0x0074f498` | `0x007c7e0c` | `0x400` | `0x00610d10` / `0x0065d140` |
+| `SwingTwirl` | `0x0074f4a4` | `0x007c7e18` | `0x404` | `0x00610d90` / `0x0065d1c0` |
+| `Clash` | `0x0074f4b0` | `0x007c7e24` | `0x408` | `HitClashEvent` `0x00610e10` / `0x0065d240` |
+| `Contact` | `0x0074f81c` | `0x007c82b4` | `0x40C` | `HitContactEvent` `0x00610e90` / `0x0065d2c0` |
+| `HitParry` | `0x0074f810` | `0x007c82a8` | `0x410` | `HitParryEvent` `0x00610ec0` / `0x0065d2f0` |
+| `blur_start` | `0x0074f804` | `0x007c829c` | `0x414` | `Blur` `0x00449ab0` / `0x00664030` |
+| `blur_end` | `0x0074f7f8` | `0x007c8290` | `0x418` | `Unblur` `0x00616a10` / `0x00664040` |
+| `doneattack01` | `0x0074f7e8` | `0x007c8280` | `0x41C` | shares `Unblur` |
+| `doneattack02` | `0x0074f7d8` | `0x007c8270` | `0x420` | shares `Unblur` |
+| `GetPersonalRadius` | `0x00742f30` | `0x007bb13c` | `0x424` | `0x0060e120` / `0x0065a330` |
+| `GetCreatureRadius` | `0x00742f1c` | `0x007bb128` | `0x428` | `0x0060e170` / `0x0065a380` |
+| `GetPath` | `0x00742f14` | `0x007bb120` | `0x42C` | `0x0060e1c0` / `0x0065a3d0` |
+
+**Constructor internals (summary)**
+
+- `CSWCAnimBase` (~409 bytes): vtable `CSWCAnimBase_vtable` K1 `0x00754f60` / TSL `0x007ce180`; five empty `CResRef`/`CExoString` fields via `CResRef::operator=` / `CExoString_InitFromString` (`0x00406290` / `0x00406350`); default quaternion via `Quaternion` ctor K1 `0x004ac960` or `Quaternion_Set` TSL `0x004da020`; scale `1.0f`; active flag byte `0x37 = 1`.
+- `CSWCAnimBaseHead`: vtable K1 `0x00754e40` / TSL `0x007ce060`; nested `CSWCAnimBaseTW` at `+0x50`; base vtable pointer written via vtable offset field (K1 computes from first vtable dword; TSL uses constant `0x007cdf68`); extra empty strings at `+0x1C`, `+0x30`; type byte `0xC4 = 1`; scale cap `+0x48 = INF (0x7f000000)`.
+- `CSWCAnimBaseWield`: vtable K1 `0x00754d00` / TSL `0x007cdf20`; nested TW at `+0x5C`; base vtable K1 `0x00754c08` / TSL `0x007cde28`; strings at `+4`, `+0x14`, `+0x24`, `+0x2C`; type `0xC4 = 2`; clears six words around `0x34`–`0x54`.
+- `CSWCAnimBaseHeadWield`: vtable K1 `0x00754bf0` / TSL `0x007cde10`; embeds head/wield sub-vtables at `+0x188` / `+0x1d4` (`0x00754be8`/`0x00754be0` vs TSL `0x007cde08`/`0x007cde00`); constructs TW at `+8`, then head, then wield; type `0xC4 = 3`.
+- `CSWCAnimBaseTW`: builds base first; vtable `0x00754e58` / `0x007ce078`; four empty ResRefs/strings at packed offsets `0x4A`–`0x59`; type id `0x31 = 0x0B`; clears flag words `0x5E`/`0x5F` and five dwords `0x3F`–`0x43`.
+
+**Misc creature unload**
+
+- `CSWCCreature::UnloadModel` — K1 `0x0060c8e0` (~42 bytes): if `anim_base`, call virtual unload slot **30** (byte `0x78`), then `vtable&#91;0&#93;(1)`, clear pointer. **TSL:** not located as a standalone symbol (likely inlined or refactored).
+
+##### Placeable model attach (`CSWCPlaceable::LoadModel`)
+
+- **VA:** K1 `0x006823f0`, TSL `0x006d9721` (~504 bytes, ~10 callees).
+- **Flow:** If `object.anim_base` is NULL, `operator new` `0xF0` bytes and construct `CSWCAnimBasePlaceable` (K1 `0x006e4e50`, TSL `0x00755970`). Virtual slot **3** loads the `CResRef`; failure returns `0`. Slot **2** fetches attachment; when non-NULL, `vtable[29]` (`0x74`) and `vtable[31]` (`0x7C`) mirror the creature attachment setup. Build hit-detection name via `CResRef::CopyToString`, `CExoString::SubString` from index 4, append `"_head_hit"` (also see string table K1 `0x00753918` / TSL `0x007ccaf8` referenced from TSL-only setup helpers `SetupHeadHitDetection` `0x00700da0`, `SetupGroundAndImpactCallbacks` `0x00705d20`, `SetupHitDetectionCallbacks` `0x007052a0`).
+- **Callees (representative):** `operator new` K1 `0x006fa7e6`, `CResRef::CopyToString`, `CExoString` ctor/`CStr`/`SubString`/`operator+`/`operator=`/`~CExoString` at the `0x005e5xxx` / TSL `0x00630xxx` cluster listed in the legacy notes.
+
+##### `CResMDL` resource object
+
+| Method | K1 | TSL |
+|--------|-----|-----|
+| `CResMDL::CResMDL` | `0x005cea50` (~36 bytes) | Not surfaced (likely inlined) |
+| `~CResMDL` (base dtor) | `0x005cea80` | `0x00435200` |
+| `~CResMDL` (deleting dtor) | `0x005cea90` | `0x00447740` |
+
+Construction sets `CResMDL_vtable`, forwards to `CRes::CRes`, zeroes state flag at `+0x28`, `size`, and `data`. Non-deleting destructor restores vtable then `CRes::~CRes` (K1 references `CResMDL_vtable` `@0x0074c404`). Deleting destructor calls the base dtor, optionally `_free`s when the low bit of the flag is set. **K1 callers** include `LoadMesh` `@0x0059680c` and `SetResRef` `@0x00710270`.
+
+##### Log strings, fallbacks, and file extensions
+
+- `"CSWCCreature::LoadModel(): Failed to load creature model '%s'."` — K1 `0x0074f85c`, TSL `0x007c82fc` (see creature section for call sites and ResRef string helpers).
+- `"Model %s nor the default model %s could be loaded."` — K1 `0x00751c70`, TSL `0x007cad14` (requested + default ResRef names).
+- `".mdl"` — K1 `0x00740ca8`, TSL `0x007b8d28`; referenced from `Input::Read` extension checks (K1 `0x004a13ba` / `0x004a1465`, TSL `0x004ce8c0`) and `LoadAddInAnimations` (K1 `0x004408ce`, TSL `0x004538d0`).
+
+**Provenance:** Reverse engineering of `k1_win_gog_swkotor.exe` and `swkotor2.exe` MDL/MDX and creature/placeable attach paths—addresses cross-checked with string xrefs, call graphs, and decompilation rather than live tool transcripts.
+
+---
+
+# ASCII MDL Support in swkotor.exe (K1) and swkotor2.exe (TSL) - Low-Level Analysis
+
+**Last Updated:** 2026-01-XX  
+**Status:** Both K1 and TSL support ASCII MDL format (TSL support was previously undocumented)
+
+## Executive Summary
+
+**YES**, ASCII MDL format is supported in **BOTH** `swkotor.exe` (K1) **AND** `swkotor2.exe` (TSL). The support is implemented through a line-by-line text parser that interprets ASCII commands and applies them to a model structure.
+
+## Entry Point: `Input::Read` @ (K1: 0x004a14b0, TSL: 0x004ce9d0)
+
+The main entry point for MDL loading is `Input::Read`, which performs format detection:
+
+### Step 1: Format Detection (Lines 17-26)
+
+```c
+data = (FILE *)AurResGet(param_1);
+if ((data != (FILE *)0x0) && (pFVar4 = AurResGetDataBytes(4,(FILE **)data), pFVar4 != (FILE *)0x0)) {
+    if (*(char *)&pFVar4->_ptr == '\0') {
+        // BINARY PATH: First byte is null (0x00)
+        AurResFreeDataBytes((int *)data,pFVar4);
+        ppFVar5 = (FILE **)AurResGet(param_2);
+        this_00 = InputBinary::Read((InputBinary *)this,data,ppFVar5,'\0');
+        pMVar6 = MaxTree::AsModel(this_00);
+        return (ulong)pMVar6;
+    }
+    // ASCII PATH: First byte is NOT null
+    AurResFreeDataBytes((int *)data,pFVar4);
+```
+
+**Key Logic:**
+
+- Reads first 4 bytes of the file
+- Checks if first byte is `'\0'` (null byte)
+- **If null**: Routes to binary MDL parser (`InputBinary::Read`)
+- **If NOT null**: Routes to ASCII MDL parser
+
+### Step 2: ASCII Parsing Loop (Lines 28-46)
+
+```c
+uVar2 = CurrentModel;  // Save current model context
+pcVar7 = (char *)AurResGetNextLine();  // Get first line
+while (pcVar7 != (char *)0x0) {
+    // Skip leading whitespace (spaces and tabs)
+    for (; (*pcVar7 == ' ' || (*pcVar7 == '\t')); pcVar7 = pcVar7 + 1) {
+    }
+    
+    // Process non-empty, non-comment lines
+    if ((*pcVar7 != '\0') && (pcVar3 = pcVar7, *pcVar7 != '#')) {
+        // Trim trailing whitespace (newlines, carriage returns, tabs, spaces)
+        do {
+            pcVar9 = pcVar3;
+            pcVar3 = pcVar9 + 1;
+        } while (*pcVar9 != '\0');
+        while ((pcVar9 = pcVar9 + -1, pcVar7 <= pcVar9 &&
+               ((((cVar1 = *pcVar9, cVar1 == '\n' || (cVar1 == '\r')) || (cVar1 == '\t')) ||
+                (cVar1 == ' '))))) {
+            *pcVar9 = '\0';
+        }
+        
+        // INTERPRET THE LINE AS A FUNCTION CALL
+        FuncInterp(pcVar7);
+    }
+    pcVar7 = (char *)AurResGetNextLine();  // Get next line
+}
+AurResFree((FILE **)data,0);
+uVar8 = CurrentModel;
+CurrentModel = uVar2;  // Restore previous model context
+return uVar8;
+```
+
+**Key Features:**
+
+- Line-by-line processing via `AurResGetNextLine()`
+- Skips leading whitespace
+- Skips comment lines (starting with `#`)
+- Trims trailing whitespace (newlines, carriage returns, tabs, spaces)
+- Each line is interpreted as a function call via `FuncInterp()`
+
+## Line Reading: `AurResGetNextLine` @ (K1: 0x0044bfa0, TSL: 0x00460610)
+
+```c
+void AurResGetNextLine(void) {
+    if (resources.size == 0) {
+        return;
+    }
+    if (*(int *)resources.data[resources.size + -1] != 0) {
+        getnextline_file((void *)0x0);  // Read from file
+        return;
+    }
+    getnextline_res();  // Read from resource
+    return;
+}
+```
+
+**Purpose:** Retrieves the next line from either a file or resource stream.
+
+## Function Interpreter: `FuncInterp` @ (K1: 0x0044c1f0, TSL: 0x00460860)
+
+`FuncInterp` is a general-purpose script interpreter that:
+
+1. **Parses function names** from the input line (lines 228-242)
+   - Extracts the first word (function name) before `=` or space
+   - Example: `"position = 1.0 2.0 3.0"` → function name: `"position"`
+
+2. **Looks up function in callback table** (line 248 in K1, line 249 in TSL)
+
+   ```c
+   // K1:
+   piVar12 = (int *)FindConCallBack(local_c080);
+   // TSL:
+   piVar12 = (int *)FUN_00460200(local_c080);  // FindConCallBack equivalent
+   ```
+
+   - `FindConCallBack` searches a global callback table (`consoleFuncs` in K1, `DAT_0082d4b8` array in TSL)
+   - Returns a function pointer if found, NULL otherwise
+
+3. **Calls the function** (line 272)
+
+   ```c
+   (**(code **)(*piVar12 + 4))();
+   ```
+
+   - Invokes the function via function pointer
+
+4. **Handles nested expressions** (lines 124-217)
+   - Supports bracket notation `[expression]` for nested function calls
+   - Recursively calls `FuncInterp` on bracketed expressions
+
+**Important:** `FuncInterp` is a **general script interpreter**, not MDL-specific. It relies on registered callbacks to handle specific commands.
+
+## Model Field Parsing: `ModelParseField` → `Model::InternalParseField`
+
+### `ModelParseField` @ (K1: 0x0043e1e0, TSL: N/A)
+
+```c
+void __cdecl ModelParseField(Model *param_1,char *param_2) {
+    Model::InternalParseField(param_1,param_2);
+    return;
+}
+```
+
+**Purpose:** Wrapper that calls `Model::InternalParseField` to parse a single field line.
+
+### `Model::InternalParseField` @ (K1: 0x00465560, TSL: N/A)
+
+This function parses ASCII field names and applies them to model nodes. Key field types:
+
+#### Node-Level Fields (via `MdlNode::InternalParseField`)
+
+1. **Position** (lines 20-24, 30-40)
+   - Format: `position = <x> <y> <z>`
+   - Example: `position = 1.0 2.0 3.0`
+   - Also supports animated: `positionkey`, `positionbezierkey`
+
+2. **Orientation** (lines 25-29, 67-77, 78-102)
+   - Format: `orientation = <w> <x> <y> <z>` (quaternion)
+   - Also supports animated: `orientationkey`, `orientationbezierkey`
+
+3. **Scale** (lines 112-147)
+   - Format: `scale = <value>`
+   - Also supports animated: `scalekey`, `scalebezierkey`
+
+4. **Parent** (lines 150-168)
+   - Format: `parent = <node_name>` or `parent = NULL`
+   - Establishes parent-child relationships in the node hierarchy
+
+5. **Wire Color** (lines 107-111)
+   - Format: `wirecolor = <r> <g> <b>`
+
+#### Node-Type-Specific Fields
+
+Different node types have specialized `InternalParseField` implementations:
+
+- **MdlNodeEmitter** @ 0x004658b0: Parses emitter-specific fields like `p2p`, `bounce`, `texture`, `blurlength`, etc.
+- **MdlNodeLight**: Parses light-specific fields
+- **MdlNodeTriMesh**: Parses mesh-specific fields
+- **MdlNodeSkin**: Parses skin-specific fields
+- **MdlNodeDangly**: Parses dangly-specific fields
+
+## How It All Connects
+
+1. **Model Creation**: When a model is loaded via binary path, `InputBinary::Reset` sets up the model structure and registers `ModelParseField` as the field parser (line 90 of `Reset`):
+
+   ```c
+   *(code **)param_1 = ModelDestructor;
+   *(code **)(param_1 + 4) = ModelParseField;  // Register parser
+   InsertModel((Model *)param_1);
+   ```
+
+2. **ASCII Parsing**: When ASCII path is taken:
+   - `Input::Read` reads lines via `AurResGetNextLine()`
+   - Each line is passed to `FuncInterp()`
+   - `FuncInterp()` looks up the function name in the callback table
+   - If the function is registered (e.g., as a console command that calls `ModelParseField`), it gets executed
+   - The function applies the parsed values to `CurrentModel`
+
+3. **CurrentModel Global**: The global variable `CurrentModel` (address 0x007fbae4) maintains the active model context during parsing.
+
+## Format Specification (Inferred from Code)
+
+Based on the parsing logic, ASCII MDL files appear to follow this structure:
+
+```
+# Comments start with #
+# Each line is a function call: <function_name> = <arguments>
+
+# Model-level commands (if any)
+# Node definitions
+node_name {
+    position = <x> <y> <z>
+    orientation = <w> <x> <y> <z>
+    scale = <value>
+    parent = <parent_name>
+    # Node-type-specific fields...
+}
+
+# Animation controllers
+positionkey = <time> <x> <y> <z>
+orientationkey = <time> <w> <x> <y> <z>
+# etc.
+```
+
+## TSL (swkotor2.exe) Status
+
+**TSL DOES support ASCII MDL** (previously undocumented):
+
+The ASCII MDL support in TSL is implemented identically to K1, but with different function addresses:
+
+### Key Functions in TSL
+
+1. **`Input::Read`** @ 0x004ce9d0
+   - **NOT** 0x004ce780 (that's `InputBinary::Read`)
+   - Contains the same format detection logic (check first byte for null)
+   - Routes to ASCII parser if first byte is NOT null
+   - Uses `FUN_00460610()` (AurResGetNextLine) and `FUN_00460860()` (FuncInterp)
+
+2. **`AurResGetNextLine`** @ 0x00460610
+   - Equivalent to K1's 0x0044bfa0
+   - Reads lines from resource or file
+
+3. **`FuncInterp`** @ 0x00460860
+   - Equivalent to K1's 0x0044c1f0
+   - Parses function names and calls registered callbacks
+
+4. **`FindConCallBack`** @ 0x00460200
+   - Equivalent to K1's 0x0044bb90
+   - Looks up function names in callback table
+
+### Differences from K1
+
+- Function addresses are different (expected due to code reorganization)
+- Global variable names differ (e.g., `DAT_008804bc` instead of `CurrentModel`)
+- Internal data structures may have different layouts, but the logic is identical
+
+**Conclusion:** Both K1 and TSL support ASCII MDL format with identical parsing logic.
+
+## References
+
+### K1 (swkotor.exe)
+
+- `Input::Read` @ 0x004a14b0
+- `AurResGetNextLine` @ 0x0044bfa0
+- `FuncInterp` @ 0x0044c1f0
+- `ModelParseField` @ 0x0043e1e0
+- `Model::InternalParseField` @ 0x00465560
+- `MdlNode::InternalParseField` @ 0x00465560
+- `MdlNodeEmitter::InternalParseField` @ 0x004658b0
+- `FindConCallBack` @ 0x0044bb90
+- `CurrentModel` global @ 0x007fbae4
+
+### TSL (swkotor2.exe)
+
+- `Input::Read` @ 0x004ce9d0 (NOT 0x004ce780, which is `InputBinary::Read`)
+- `AurResGetNextLine` @ 0x00460610
+- `FuncInterp` @ 0x00460860
+- `FindConCallBack` @ 0x00460200
+- `CurrentModel` global @ 0x008804bc (DAT_008804bc)
+- `InputBinary::Read` @ 0x004ce780
+- `IODispatcher::ReadSync` @ 0x004cead0 (single param) and 0x004ceaf0 (two params)
+
+---
+
+# MDL Format Implementation Verification Report
+
+## Executive Summary
+
+This report compares the Python MDL/MDX implementation in `pykotor.resource.formats.mdl` against the actual game engine implementations in `swkotor.exe` (K1) and `swkotor2.exe` (TSL) using RE analysis.
+
+**Status**: ✅ **Mostly Correct** - The implementation matches the engine logic with minor documentation clarifications needed.
+
+---
+
+## 1. Model Header Reading (_ModelHeader)
+
+### Engine Implementation
+
+- **Reset() @ (K1: 0x004a1030, TSL: 0x004ce550)**: Parses model structure from binary data
+- Reads model name at offset 0x88 (K1) / 0x22 (TSL) - corresponds to `geometry.model_name`
+- Reads parent model pointer at offset 0x64 (K1) / 0x19 (TSL) - corresponds to `parent_model_pointer`
+- Reads MDX data buffer offset at 0xac (K1) / 0x2b (TSL) - corresponds to `mdx_data_buffer_offset`
+- Reads MDX size at 0xb0 (K1) / 0x2c (TSL) - corresponds to `mdx_size`
+- Processes animations at offset 0x58 (K1) / 0x16 (TSL) - corresponds to `offset_to_animations`
+- Processes root node at offset 0x28 (K1) / 0x0a (TSL) - corresponds to `root_node_offset`
+
+### Python Implementation
+
+**Location**: `io_mdl.py:675-793` (_ModelHeader class)
+
+✅ **VERIFIED CORRECT**:
+
+- All field offsets match engine implementation
+- Field types match (uint8, uint32, Vector3, float, string)
+- Reading order matches engine parsing order
+- Clamping of animation_count and name_offsets_count to 0x7FFFFFFF is correct (prevents signed integer overflow)
+
+**Docstring Accuracy**: ✅ Correct - References match actual engine addresses
+
+---
+
+## 2. Node Header Reading (_NodeHeader)
+
+### Engine Implementation
+
+- **ResetMdlNode() @ (K1: 0x004a0900)**: Processes nodes based on `node_type` field
+- Node type is determined by flag combinations stored in the first byte of the node
+- Uses `param_1->node_type` to determine which Reset function to call
+
+### Python Implementation
+
+**Location**: `io_mdl.py:1554-1655` (_NodeHeader class)
+
+✅ **VERIFIED CORRECT**:
+
+- Reads 4 uint16 fields (type_id, padding0, node_id, name_id) - matches MDLOps template "SSSS"
+- Reads position (Vector3) and orientation (Vector4) correctly
+- Reads offset arrays correctly
+- Clamping of children_count and controller_data_length to 0x7FFFFFFF is correct
+
+**Docstring Accuracy**: ✅ Correct - MDLOps template documented correctly
+
+---
+
+## 3. Node Flag Detection and Type Assignment
+
+### Engine Implementation
+
+- **MdlNode::AsMdlNodeTriMesh @ (K1: 0x0043e400, TSL: 0x004501d0)**:
+  - Checks `(*param_1 & 0x21) == 0x21` (HEADER + MESH flags)
+- **MdlNode::AsMdlNodeDanglyMesh @ (K1: 0x0043e380, TSL: 0x00450150)**:
+  - Checks `(*param_1 & 0x121) == 0x121` (HEADER + MESH + DANGLY flags)
+- **MdlNode::AsMdlNodeSkin @ (K1: 0x0043e3f0, TSL: 0x004501c0)**:
+  - Checks `(*param_1 & 0x61) == 0x61` (HEADER + MESH + SKIN flags)
+- **MdlNode::AsMdlNodeAABB @ (K1: 0x0043e340, TSL: 0x00450110)**:
+  - Checks `(*param_1 & 0x221) == 0x221` (HEADER + MESH + AABB flags)
+- **MdlNode::AsMdlNodeLightsaber @ (K1: 0x0043e3a0, TSL: 0x00450170)**:
+  - Checks `(*param_1 & 0x821) == 0x821` (HEADER + MESH + SABER flags)
+
+### Python Implementation
+
+**Location**: `io_mdl.py:3033-3261` (_load_node method)
+
+✅ **VERIFIED CORRECT**:
+
+- Checks flags in correct priority order (AABB first, then LIGHT, EMITTER, REFERENCE, then MESH variants)
+- Node type assignment matches engine logic:
+  - AABB nodes: `if bin_node.header.type_id & MDLNodeFlags.AABB`
+  - Light nodes: `if bin_node.header.type_id & MDLNodeFlags.LIGHT`
+  - Emitter nodes: `if bin_node.header.type_id & MDLNodeFlags.EMITTER`
+  - Reference nodes: `if bin_node.header.type_id & MDLNodeFlags.REFERENCE`
+  - Skin nodes: `if bin_node.header.type_id & MDLNodeFlags.SKIN`
+  - Dangly nodes: `if bin_node.header.type_id & MDLNodeFlags.DANGLY`
+  - Trimesh nodes: Default for MESH without other flags
+
+**Note**: The Python code checks individual flags (e.g., `MDLNodeFlags.MESH`) rather than flag combinations (e.g., `0x21`). This is **functionally correct** because:
+
+1. HEADER flag is always present when reading a valid node
+2. The flag checks are done in priority order, so combinations are handled correctly
+3. The engine's `AsMdlNode*` functions check combinations for type safety, but the Python code's approach is equivalent
+
+**Docstring Accuracy**: ✅ Correct - Flag combinations documented in `mdl_types.py:77-103`
+
+---
+
+## 4. AABB/Walkmesh Reading
+
+### Engine Implementation
+
+- **ResetAABBTree()**: Called from ResetMdlNode() for AABB nodes
+- Reads AABB tree recursively (depth-first traversal)
+- Each AABB node: 6 floats (bbox min/max) + 4 int32s (left child, right child, face index, unknown)
+
+### Python Implementation
+
+**Location**: `io_mdl.py:3063-3114` (_read_aabb_recursive function)
+
+✅ **VERIFIED CORRECT**:
+
+- Recursive depth-first traversal matches engine
+- Reads 6 floats (bbox_min, bbox_max) correctly
+- Reads 4 int32s (left_child, right_child, face_index, unknown) correctly
+- Handles face_index == -1 as branch node indicator
+- Proper bounds checking before reading
+
+**Docstring Accuracy**: ✅ Correct - Structure documented correctly
+
+---
+
+## 5. Name Table Parsing (_load_names)
+
+### Engine Implementation
+
+- Names are stored as null-terminated strings in a contiguous block
+- Name offsets array points into the names block
+- Reset() function processes name offsets at offset 0xbc (K1) / 0x2f (TSL)
+
+### Python Implementation
+
+**Location**: `io_mdl.py:2974-3011` (_load_names method)
+
+✅ **VERIFIED CORRECT**:
+
+- Reads name_indexes as signed int32s (matches MDLOps)
+- Calculates names_size correctly: `offset_to_animations - (offset_to_name_offsets + (4 * name_indexes_count))`
+- Parses null-terminated strings correctly
+- Handles edge cases (null_pos == -1, current_pos >= len)
+
+**Docstring Accuracy**: ✅ Correct - Logic matches engine behavior
+
+---
+
+## 6. Node Reading Order (_get_node_order)
+
+### Engine Implementation
+
+- ResetMdlNode() processes nodes recursively
+- Children are processed via ResetMdlNodeParts() which iterates through child array
+
+### Python Implementation
+
+**Location**: `io_mdl.py:3013-3031` (_get_node_order method)
+
+✅ **VERIFIED CORRECT**:
+
+- Recursive traversal matches engine
+- Reads name_index from node header correctly
+- Handles child_array_offset and child_array_length correctly
+- Validates offsets (not 0 or 0xFFFFFFFF)
+
+**Docstring Accuracy**: ✅ Correct - Traversal order matches engine
+
+---
+
+## 7. Controller and Animation Reading
+
+### Engine Implementation
+
+- **ResetAnimation() @ (K1: 0x004a0060)**: Processes animation data
+- Controllers are stored with type_id, row_count, column_count, and data arrays
+- Compressed quaternions use uint32 encoding
+
+### Python Implementation
+
+**Location**: `io_mdl.py:989-1050` (_Controller class), `915-960` (_Animation class)
+
+✅ **VERIFIED CORRECT**:
+
+- Reads controller type_id, unknown0, row_count, column_count correctly
+- Handles compressed quaternions (type 20, column_count 2) correctly
+- Animation header reading matches engine structure
+
+**Docstring Accuracy**: ✅ Correct - Controller types documented in `mdl_types.py:138-260`
+
+---
+
+## 8. Geometry/Mesh Reading (_TrimeshHeader)
+
+### Engine Implementation
+
+- **PartTriMesh::PartTriMesh @ (K1: 0x00445840, TSL: 0x00459be0)**: Creates tri-mesh part from MDL node
+- Reads vertex data, face data, texture coordinates from MDX file
+- Different sizes for K1 (332 bytes) vs TSL (340 bytes)
+
+### Python Implementation
+
+**Location**: `io_mdl.py:1783-2089` (_TrimeshHeader class)
+
+✅ **VERIFIED CORRECT**:
+
+- K1_SIZE = 332 bytes, K2_SIZE = 340 bytes (matches engine)
+- Reads all fields in correct order
+- Handles MDX data offsets correctly
+- Texture reading logic matches engine
+
+**Docstring Accuracy**: ✅ Correct - Sizes and offsets documented correctly
+
+---
+
+## 9. LoadModel Function Documentation
+
+### Engine Implementation
+
+- **LoadModel @ (K1: 0x00464200, TSL: 0x0047a570)**: Main entry point
+- Calls IODispatcher::ReadSync()
+- Checks for duplicate models by name
+- Returns cached model if duplicate found
+
+### Python Implementation Documentation
+
+**Location**: `io_mdl.py:1-500` (docstring)
+
+✅ **VERIFIED CORRECT**:
+
+- Function addresses match engine
+- Logic description matches decompiled code
+- Callees and callers documented correctly
+- Differences between K1 and TSL documented
+
+**Docstring Accuracy**: ✅ Correct - Comprehensive documentation matches engine behavior
+
+---
+
+## 10. Issues Found
+
+### Minor Issues
+
+1. **Flag Combination Checking** (Informational, not a bug):
+   - The Python code checks individual flags (e.g., `MDLNodeFlags.MESH`) rather than combinations (e.g., `0x21`)
+   - This is functionally correct but could be more explicit about requiring HEADER flag
+   - **Recommendation**: Add comment clarifying that HEADER is always present when reading valid nodes
+
+2. **Offset Documentation** (Clarification needed):
+   - Some docstrings reference offsets relative to file start, others relative to structure start
+   - **Recommendation**: Clarify in docstrings whether offsets are file-relative or structure-relative
+
+### No Critical Issues Found
+
+All major logic blocks match the engine implementation correctly.
+
+---
+
+## 11. Recommendations
+
+1. ✅ **Keep current implementation** - Logic is correct
+2. 📝 **Add clarifying comments** about HEADER flag always being present
+3. 📝 **Clarify offset documentation** (file-relative vs structure-relative)
+4. ✅ **Docstrings are accurate** - All addresses and references verified
+
+---
+
+## 12. Verification Methodology
+
+1. Opened Ghidra project with both K1 and TSL executables
+2. Located key functions via cross-reference search
+3. Decompiled functions and compared with Python implementation
+4. Verified field offsets, data types, and reading order
+5. Checked flag combinations and node type detection logic
+6. Verified recursive traversal patterns
+
+---
+
+## Conclusion
+
+The Python MDL/MDX implementation is **functionally correct** and matches the game engine behavior. All critical logic blocks have been verified against the actual engine code. The implementation correctly handles:
+
+- ✅ Model header parsing
+- ✅ Node structure reading
+- ✅ Flag-based node type detection
+- ✅ AABB tree traversal
+- ✅ Name table parsing
+- ✅ Controller and animation data
+- ✅ Geometry/mesh data
+- ✅ K1 vs TSL differences
+
+**REVA status: Completed - Analyzed both K1 and TSL :)**
