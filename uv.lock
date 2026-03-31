@@ -21,6 +21,7 @@ resolution-markers = [
 
 [manifest]
 members = [
+    "bioware-kaitai-formats",
     "holocrontoolset",
     "holopatcher",
     "holopazaak",
@@ -86,6 +87,28 @@ sdist = { url = "https://files.pythonhosted.org/packages/2a/cb/486f912d6171bc574
 wheels = [
     { url = "https://files.pythonhosted.org/packages/a2/ee/3fd29bf416eb4f1c5579cf12bf393ae954099258abd7bde03c4f9716ef6b/autoflake-2.3.1-py3-none-any.whl", hash = "sha256:3ae7495db9084b7b32818b4140e6dc4fc280b712fb414f5b8fe57b0a8e85a840", size = 32483, upload-time = "2024-03-13T03:41:26.969Z" },
 ]
+
+[[package]]
+name = "bioware-kaitai-formats"
+version = "0.1.0"
+source = { editable = "Libraries/bioware-kaitai-formats" }
+dependencies = [
+    { name = "kaitaistruct" },
+]
+
+[package.optional-dependencies]
+dev = [
+    { name = "pytest" },
+    { name = "pytest-timeout" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "kaitaistruct", specifier = ">=0.11" },
+    { name = "pytest", marker = "extra == 'dev'", specifier = ">=7.0" },
+    { name = "pytest-timeout", marker = "extra == 'dev'", specifier = ">=2.4.0" },
+]
+provides-extras = ["dev"]
 
 [[package]]
 name = "certifi"
@@ -2956,6 +2979,7 @@ name = "pykotor"
 version = "2.3.11"
 source = { editable = "Libraries/PyKotor" }
 dependencies = [
+    { name = "bioware-kaitai-formats" },
     { name = "defusedxml" },
     { name = "kaitaistruct" },
     { name = "ply" },
@@ -3071,6 +3095,7 @@ requires-dist = [
     { name = "astroid", marker = "python_full_version >= '3.9' and extra == 'dev'", specifier = ">=3.2.0" },
     { name = "astroid", marker = "python_full_version < '3.9' and extra == 'dev'", specifier = ">=3.2.0,<3.5.0" },
     { name = "autoflake", marker = "extra == 'dev'", specifier = ">=2.3.1" },
+    { name = "bioware-kaitai-formats", editable = "Libraries/bioware-kaitai-formats" },
     { name = "certifi", marker = "extra == 'updater'", specifier = ">=2021.10.8" },
     { name = "charset-normalizer", marker = "python_full_version >= '3.9' and extra == 'encodings'", specifier = ">=2.0" },
     { name = "charset-normalizer", marker = "python_full_version < '3.9' and extra == 'encodings'", specifier = ">=2.0,<3.4" },
