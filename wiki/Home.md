@@ -40,24 +40,16 @@ The format and behavior claims on this wiki are cross-checked against multiple i
 
 ## Learning paths
 
-- **New player:** [Installing Mods with HoloPatcher](HoloPatcher#installing-mods) → [Concepts](Concepts#resource-resolution-order) → [Community sources and archives](#community-sources-and-archives)
-- **First mod author:** [HoloPatcher README for Mod Developers](HoloPatcher#mod-developers) → [Mod Creation Best Practices](Mod-Creation-Best-Practices) → the format pages you actually touch
-- **Tool author or contributor:** [Resource formats and resolution](Resource-Formats-and-Resolution) → [Reverse Engineering Findings](reverse_engineering_findings) → [Wiki Conventions](Wiki-Conventions)
+- **New player:** [Installing Mods with HoloPatcher](HoloPatcher#installing-mods) → [Concepts](Concepts#resource-resolution-order) → [Resource formats and resolution](Resource-Formats-and-Resolution)
+- **First mod author:** [HoloPatcher README for Mod Developers](HoloPatcher#mod-developers) → [Mod Creation Best Practices](Mod-Creation-Best-Practices) → [TSLPatcher data syntax](TSLPatcher-Data-Syntax)
+- **Tool author or contributor:** [Resource formats and resolution](Resource-Formats-and-Resolution) → [Reverse Engineering Findings](reverse_engineering_findings) → the relevant archive or preserved-source page only when you need provenance
 
-### For End Users
+## Workflow guides
 
-- [Installing Mods with HoloPatcher](HoloPatcher#installing-mods)
-
-### Guides and tutorials
-
-Installation, tool use, and step-by-step guides:
-
-- [Mod Creation Best Practices](Mod-Creation-Best-Practices)
-- [HoloPatcher README for Mod Developers](HoloPatcher#mod-developers)
-- [HoloPatcher Feature Coverage Overview](HoloPatcher#internal-logic)
-- [TSLPatcher's Official Readme](TSLPatcher's-Official-Readme)
-- [TSLPatcher Thread Complete Container](TSLPatcher_Thread_Complete)
-- **[TSLPatcher InstallList Syntax Guide](TSLPatcher-Install-and-Hack-Syntax#installlist-syntax)** -- File installation
+- [Installing Mods with HoloPatcher](HoloPatcher#installing-mods) for player-facing install and troubleshooting steps
+- [Mod Creation Best Practices](Mod-Creation-Best-Practices) for compatibility, packaging, and release discipline
+- [HoloPatcher README for Mod Developers](HoloPatcher#mod-developers) for the modern patcher-authoring workflow
+- [TSLPatcher data syntax](TSLPatcher-Data-Syntax), [TSLPatcher GFF syntax](TSLPatcher-GFF-Syntax), and [TSLPatcher install and hack syntax](TSLPatcher-Install-and-Hack-Syntax) when you need exact INI section behavior
 
 ## Preserved source documents
 

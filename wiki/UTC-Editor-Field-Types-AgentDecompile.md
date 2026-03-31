@@ -36,7 +36,7 @@ All of the following are read with `CResGFF::ReadFieldSHORT(param_2, "FieldName"
 
 ## Save bonuses (SHORT, used as signed byte)
 
-Read in (/K1/k1_win_gog_swkotor.exe: `ReadStatsFromGff` with `CResGFF::ReadFieldSHORT(param_2, "willbonus", …)`, `"fortbonus"`, `"refbonus"`; default is `(short)(char)this->will_bonus` (etc.), so the engine treats the value as signed-byte range. Written with `WriteFieldSHORT` with `(short)(char)value` in `SaveStats`. Effective range -128–127., /TSL/k2_win_gog_aspyr_swkotor2.exe: TODO: )
+Read in (/K1/k1_win_gog_swkotor.exe: `ReadStatsFromGff` with `CResGFF::ReadFieldSHORT(param_2, "willbonus", …)`, `"fortbonus"`, `"refbonus"`; default is `(short)(char)this->will_bonus` (etc.), so the engine treats the value as signed-byte range. Written with `WriteFieldSHORT` with `(short)(char)value` in `SaveStats`. Effective range -128–127., /TSL/k2_win_gog_aspyr_swkotor2.exe: `CSWSCreatureStats::ReadStatsFromGff` @ 0x006ec350 contains the same field names and signed-byte behavior for `fortbonus`, `refbonus`, and `willbonus`.)
 
 | GFF Field   | UI Control   | Type  | Min  | Max |
 |------------|--------------|-------|-----|-----|
@@ -114,9 +114,9 @@ Field types and ranges were determined by inspecting the creature-stats reader i
 
 ## Verification (Reva)
 
-Verified against (/K1/k1_win_gog_swkotor.exe: `CSWSCreatureStats::ReadStatsFromGff` -- K1 @ 0x005afce0, /TSL/k2_win_gog_aspyr_swkotor2.exe: TODO: ) via PyKotor-RE. Function: (`CSWSCreatureStats::ReadStatsFromGff` -- `/K1/k1_win_gog_swkotor.exe` @ 0x005afce0, `/TSL/k2_win_gog_aspyr_swkotor2.exe` @ 0x006ec350`).
+Verified against (/K1/k1_win_gog_swkotor.exe: `CSWSCreatureStats::ReadStatsFromGff` @ 0x005afce0, /TSL/k2_win_gog_aspyr_swkotor2.exe: `CSWSCreatureStats::ReadStatsFromGff` @ 0x006ec350) via PyKotor-RE.
 
-**(/K1/k1_win_gog_swkotor.exe, `/TSL/k2_win_gog_aspyr_swkotor2.exe`: TODO: ) confirmations:**
+**(/K1/k1_win_gog_swkotor.exe @ 0x005afce0, /TSL/k2_win_gog_aspyr_swkotor2.exe @ 0x006ec350) confirmations:**
 
 - **Gender:** `ReadFieldBYTE(…, "Gender", …)` then `if (4 < bVar7) bVar7 = 4` --> effective 0–4.
 - **GoodEvil:** `ReadFieldBYTE(…, "GoodEvil", …)` then `if (100 < uVar12) uVar12 = 100` --> effective 0–100.
@@ -130,7 +130,7 @@ Verified against (/K1/k1_win_gog_swkotor.exe: `CSWSCreatureStats::ReadStatsFromG
 - **ClassLevel:** `ReadFieldSHORT` in `ClassList` element.
 - **PerceptionRange:** `ReadFieldBYTE(…, "PerceptionRange", …, 0xb)`; invalid index can return 0x5f5.
 
-(/TSL/k2_win_gog_aspyr_swkotor2.exe: TODO: ) `ReadStatsFromGff` contains the same field names; `BlindSpot` and `MultiplierSet` strings exist in TSL executable. Editor min/max and tooltips match the above.
+(/TSL/k2_win_gog_aspyr_swkotor2.exe @ 0x006ec350) `ReadStatsFromGff` contains the same field names; `BlindSpot` and `MultiplierSet` strings exist in the TSL executable. Editor min/max and tooltips match the above.
 
 ## FeatList and ClassList (Powers)
 

@@ -12,9 +12,16 @@ Engine behavior derived from analysis of `swkotor.exe` and `swkotor2.exe` that m
 - **KotOR.js:** `src/loaders/ResourceLoader.ts`, `src/resource/KEYObject.ts`, `src/resource/BIFObject.ts`
 - **Kotor.NET:** `Kotor.NET/ResourceContainers/Chitin.cs`, `Kotor.NET/ResourceContainers/Capsule.cs`, `Kotor.NET/Formats/*`
 
+## Start with the summary you need
+
+- Read [Resource Management System](#resource-management-system) when you need container precedence, override behavior, or loader routing that affects extraction and install tooling.
+- Read [Scripting Engine](#scripting-engine-nwscript-virtual-machine) when you need VM behavior behind [NCS](NCS-File-Format) or [NSS](NSS-File-Format).
+- Read [BWM / walkmesh / AABB](#bwm-walkmesh-aabb-engine-implementation-analysis) when you need engine-side walkmesh behavior behind [Level Layout Formats](Level-Layout-Formats#bwm).
+- Use the archive pages listed at the end of this document only when you need provenance, raw implementation references, or migrated notes that are too detailed for the synthesis sections here.
+
 <a id="pykotor-resource-formats-symbols"></a>
 
-### PyKotor resource/formats symbols
+### Contributor appendices
 
 For PyKotor-facing migrated implementation notes that were removed from library docstrings, see [reverse_engineering_findings_py_kotor_migrated_docstrings](reverse_engineering_findings_py_kotor_migrated_docstrings). This anchor exists so related companion pages can link back to a stable landing point in this hub.
 
@@ -147,9 +154,7 @@ This lines up with the behavior documented on [Concepts](Concepts#resource-resol
 
 - When extending RE notes for new resource types, follow the same hash/lookup pattern described above.
 - Cross-check both K1 and TSL; the engines are nearly identical but addresses differ.
-- [2DA-File-Format](2DA-File-Format.md) documents table layout; pair with [KEY-File-Format](Container-Formats#key), [BIF-File-Format](Container-Formats#bif), and [ERF-File-Format](Container-Formats#erf) for container-level behaviour.
-
-Open work: map these methods to the exact BIF/ERF/KEY parser routines in a loaded binary and keep this section aligned with those findings.
+- [2DA-File-Format](2DA-File-Format) documents table layout; pair with [KEY-File-Format](Container-Formats#key), [BIF-File-Format](Container-Formats#bif), and [ERF-File-Format](Container-Formats#erf) for container-level behaviour.
 
 **GFF Structure (from `CResGFF` analysis):**
 
@@ -182,10 +187,10 @@ The engine's `CreateGFFFile` function is hardcoded to only create V3.2 GFF files
 **Key Functions:**
 
 - `CResRef::CopyToString()`: Converts ResRef to string
-- `CResGFF::ReadFieldCResRef()`: Reads ResRef fields from [GFF](GFF-File-Format.md)
-- `CResGFF::WriteFieldCResRef()`: Writes ResRef fields to [GFF](GFF-File-Format.md)
-- `CreateGFFFile()`: Creates [GFF](GFF-File-Format.md) files with specified type/version
-- `WriteGFFFile()`: Serializes [GFF](GFF-File-Format.md) to disk
+- `CResGFF::ReadFieldCResRef()`: Reads ResRef fields from [GFF](GFF-File-Format)
+- `CResGFF::WriteFieldCResRef()`: Writes ResRef fields to [GFF](GFF-File-Format)
+- `CreateGFFFile()`: Creates [GFF](GFF-File-Format) files with specified type/version
+- `WriteGFFFile()`: Serializes [GFF](GFF-File-Format) to disk
 
 ### Graphics and Rendering System
 
@@ -223,10 +228,10 @@ void SetupOpenGL() {
 
 **Key Functions:**
 
-- `LoadModel()`: Main [model](MDL-MDX-File-Format.md) loading function
-- `FindModel()`: [Model](MDL-MDX-File-Format.md) cache lookup
+- `LoadModel()`: Main [model](MDL-MDX-File-Format) loading function
+- `FindModel()`: [Model](MDL-MDX-File-Format) cache lookup
 - `AddModel()`: Cache management
-- `MaxTree::AsModel()`: Tree to [model](MDL-MDX-File-Format.md) conversion
+- `MaxTree::AsModel()`: Tree to [model](MDL-MDX-File-Format) conversion
 
 #### MDL/MDX read pipeline
 
@@ -1290,7 +1295,7 @@ C2DA__GetINTEntry(Rules->internal->all_2DAs->surfacemat, surface_material_id, &w
 
 The game reads *walkability* from `surfacemat.2da` at runtime!
 
-**Key Insight**: *Material walkability* is **NOT** hardcoded - it's *data-driven* via [2DA files](2DA-File-Format.md).
+**Key Insight**: *Material walkability* is **NOT** hardcoded - it's *data-driven* via [2DA files](2DA-File-Format).
 
 ---
 
@@ -1440,8 +1445,8 @@ To extend these findings or verify behavior against a specific binary:
 
 1. **Open a game binary in Ghidra:** Load `/K1/k1_win_gog_swkotor.exe`, `/TSL/k2_win_gog_aspyr_swkotor2.exe` into a Ghidra project. Ensure the program is **loaded and analyzed** (e.g. Auto Analysis complete); agdec tools require an open program to query.
 2. **Use the agdec MCP server:** With the binary loaded, tools such as `list-functions`, `search-strings`, `list-exports`, and `list-cross-references` can map entry points, locate format-related strings (e.g. "KEY ", "GFF ", "NCS "), and trace call graphs. This is useful for confirming which functions read KEY/BIF, parse GFF or 2DA, or execute NCS.
-3. **Match findings to format docs:** Cross-reference addresses and function names with vendor implementations (e.g. reone, xoreos) and with this wiki’s format pages. Document engine-specific quirks (e.g. alignment, field order) in the relevant format page; for geometry/walkmesh, align with [BWM / walkmesh / AABB](reverse_engineering_findings.md#bwm-walkmesh-aabb-engine-implementation-analysis) and [BWM-File-Format](Level-Layout-Formats#bwm).
-4. **Community and archives:** For historical RE notes and tool discussions, see [Community sources and archives](Home.md#community-sources-and-archives) (DeadlyStream, LucasForums archives). Wiki content stays conceptual; do not paste raw RE dumps or tool names into format pages—link to this document (especially [Resource Management System](reverse_engineering_findings.md#resource-management-system)) for engine-level detail.
+3. **Match findings to format docs:** Cross-reference addresses and function names with vendor implementations (e.g. reone, xoreos) and with this wiki’s format pages. Document engine-specific quirks (e.g. alignment, field order) in the relevant format page; for geometry/walkmesh, align with [BWM / walkmesh / AABB](#bwm-walkmesh-aabb-engine-implementation-analysis) and [BWM-File-Format](Level-Layout-Formats#bwm).
+4. **Community and archives:** For historical RE notes and tool discussions, see [Community sources and archives](Home#community-sources-and-archives) (DeadlyStream, LucasForums archives). Wiki content stays conceptual; do not paste raw RE dumps or tool names into format pages—link to this document (especially [Resource Management System](#resource-management-system)) for engine-level detail.
 
 ## Tools Used
 
@@ -1457,14 +1462,16 @@ To extend these findings or verify behavior against a specific binary:
 
 ### See also
 
-- [BWM-File-Format](Level-Layout-Formats#bwm) -- BWM binary layout (canonical format); [Indoor Map Builder Implementation Guide](Indoor-Map-Builder-Implementation-Guide.md), [Kit-Structure-Documentation](Kit-Structure-Documentation.md) -- Walkmesh extraction
+- [BWM-File-Format](Level-Layout-Formats#bwm) -- BWM binary layout (canonical format); [Indoor Map Builder Implementation Guide](Indoor-Map-Builder-Implementation-Guide), [Kit-Structure-Documentation](Kit-Structure-Documentation) -- Walkmesh extraction
 - [KEY-File-Format](Container-Formats#key), [BIF-File-Format](Container-Formats#bif), [ERF-File-Format](Container-Formats#erf) -- Containers and resolution with KEY/BIF
-- [NCS-File-Format](NCS-File-Format.md), [NSS-File-Format](NSS-File-Format.md) -- Script execution; [MDL-MDX-File-Format](MDL-MDX-File-Format.md) -- Model loading
-- [GFF-File-Format](GFF-File-Format.md), [2DA-File-Format](2DA-File-Format.md) -- Engine data formats
-- [Concepts](Concepts.md) -- Resource resolution, ResRef, override folder
-- [Community sources and archives](Home.md#community-sources-and-archives) -- DeadlyStream, LucasForums for RE and tool history
+- [NCS-File-Format](NCS-File-Format), [NSS-File-Format](NSS-File-Format) -- Script execution; [MDL-MDX-File-Format](MDL-MDX-File-Format) -- Model loading
+- [GFF-File-Format](GFF-File-Format), [2DA-File-Format](2DA-File-Format) -- Engine data formats
+- [Concepts](Concepts) -- Resource resolution, ResRef, override folder
+- [Community sources and archives](Home#community-sources-and-archives) -- DeadlyStream, LucasForums for RE and tool history
 
-### Implementation evidence archives
+### Contributor archive entry points
+
+These pages preserve raw implementation references and migrated notes. They are supporting evidence for contributors, not the first-stop path for ordinary format or workflow questions.
 
 The pages below preserve executable-level analysis and code-level entry points for each PyKotor subsystem:
 

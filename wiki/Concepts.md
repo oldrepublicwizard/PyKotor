@@ -63,23 +63,15 @@ The practical rule is that module-scoped content belongs here, not in global ove
 
 ### Module packaging for mod authors (override vs `modules/`)
 
-**Goal:** Choose where packaged files land so the engine loads them at the right scope.
-
 | Delivery | Typical use | Notes |
 | -------- | ----------- | ----- |
 | **`override/`** | Global scripts, textures, 2DAs, TLK, GFF templates used in many modules | Highest precedence vs BIF; last writer wins if two mods use the same ResRef+type—prefer [2DAList](TSLPatcher-Data-Syntax#2dalist-syntax) / [TLKList](TSLPatcher-Data-Syntax#tlklist-syntax) merges |
 | **`Modules/*.mod`** | Module-scoped capsule (ERF-type [MOD](Container-Formats#erf)) | Often overrides the vanilla `.rim` pair for that module name when present |
 | **Vanilla `.rim` / `_s.rim`** | Stock module archives ([RIM](Container-Formats#rim)) | Mods usually ship a `.mod` instead of editing RIMs in place |
 
-**Prerequisites:** Game root layout; [InstallList](TSLPatcher-Install-and-Hack-Syntax#installlist-syntax) paths in INI relative to game root.
+Choose scope first, then choose the packaging target. If the resource should affect many modules, ship it to `override/` or merge it through patch lists. If the resource belongs to one module, build or patch a `.mod` so the files stay capsule-scoped instead of leaking into the global override.
 
-**Steps (conceptual):** (1) Decide if each resource is global or module-only. (2) For module content, build a `.mod` (Holocron, PyKotor CLI pack, etc.) or use InstallList to write into `modules/`. (3) For global content, use `override/` or merge into shared 2DA/TLK via patch lists.
-
-**Verify in-game:** Load a save in the target module; confirm resources resolve (see [resource resolution order](#resource-resolution-order)).
-
-**Alternatives:** Holocron Module Designer vs CLI `pack`; drop files manually into `override/` for quick tests (not for distribution if merges are needed).
-
-**Common failures:** Installing to `override/` when the resource must be inside the module capsule; duplicate 2DA rows from reinstalling the same patcher option without restore—see [Installing Mods with HoloPatcher](HoloPatcher#installing-mods).
+For distribution work, the usual failure modes are scope mistakes rather than format mistakes: shipping a module-only resource to `override/`, or reinstalling patcher options until duplicate 2DA rows accumulate. Use [Installing Mods with HoloPatcher](HoloPatcher#installing-mods) for player-facing restore and troubleshooting guidance, and use the [resource resolution order](#resource-resolution-order) on this page to decide where the resource belongs.
 
 ## [**GFF** (Generic File Format)](GFF-File-Format)
 

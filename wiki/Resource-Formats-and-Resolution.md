@@ -28,7 +28,26 @@ The table below is the wiki SSOT for resource type IDs. Loose files such as `.ut
 
 ## Resource Type Identifiers
 
-*KotOR* uses numeric resource type IDs inherited from the *Aurora* line and extended for *Odyssey* and *Eclipse*. The table below lists types seen across *BioWare* engines; many rows are unused in *KotOR* (marked in the **Description** column).
+*KotOR* uses numeric resource type IDs inherited from the *Aurora* line and extended for *Odyssey* and *Eclipse*. Most day-to-day modding work only touches a small subset of those IDs; the concise table below covers the common KotOR-facing types, while the full Aurora-family table stays available for archive completeness and tool-author cross-checking.
+
+### Common KotOR resource types
+
+| Resource | Type ID | Typical use |
+| -------- | ------- | ----------- |
+| [2DA](2DA-File-Format) | 0x07E1 | Gameplay tables, progression data, and shared configuration |
+| [ARE](GFF-Module-and-Area#are) | 0x07DC | Area metadata |
+| [DLG](GFF-Creature-and-Dialogue#dlg) | 0x07ED | Dialog trees and conversation state |
+| [ERF](Container-Formats#erf) / [MOD](Container-Formats#erf) / [SAV](Container-Formats#erf) | 0x270D / 0x07DB / 0x0809 | Capsule-style module and save containers |
+| [GFF](GFF-File-Format) | 0x07F5 | Structured binary data used by many resource families |
+| [GIT](GFF-Module-and-Area#git) / [IFO](GFF-Module-and-Area#ifo) | 0x07E7 / 0x07DE | Module instance state and module metadata |
+| [MDL](MDL-MDX-File-Format) | 0x07D2 | Models and model hierarchy data |
+| [NCS](NCS-File-Format) / [NSS](NSS-File-Format) | 0x07DA / 0x07D9 | Compiled and source NWScript |
+| [TLK](Audio-and-Localization-Formats#tlk) | 0x07E2 | Localized talk table strings |
+| [TGA](https://en.wikipedia.org/wiki/Truevision_TGA) / [DDS](Texture-Formats#dds) / [TXI](Texture-Formats#txi) | 0x0003 / 0x07F1 / 0x07E6 | Common texture payloads and texture metadata |
+| [UTC](GFF-Creature-and-Dialogue#utc) / [UTI](GFF-Items-and-Economy#uti) / [UTP](GFF-Spatial-Objects#utp) | 0x07EB / 0x07E9 / 0x07FC | Creature, item, and placeable templates |
+| [WOK](Level-Layout-Formats#bwm) / [VIS](Level-Layout-Formats#vis) / [LYT](Level-Layout-Formats#lyt) | 0x07E0 / format page / format page | Walkmesh, visibility, and room layout data |
+
+### Full Aurora-family table
 
 | Resource Name | Type ID | Description                                    |
 | ------------- | ------- | ---------------------------------------------- |
