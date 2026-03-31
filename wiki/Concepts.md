@@ -91,7 +91,7 @@ The practical rule is that module-scoped content belongs here, not in global ove
 
 **Historical forum example:** Veterans debated `spells.2da` edits vs multi-mod compatibility in [LucasForums Archive — spells.2da, compatibility and TSL Patcher](https://www.lucasforumsarchive.com/thread/205823-spells2da-compatibility-and-tsl-patcher) (2010); the takeaway for authors is still **merge-aware installers** and row-level patches, not dropping a monolithic override—see [2DA-spells](2DA-File-Format#spells2da) **Community context**.
 
-**Campaign globals (scripting):** NWScript `GetGlobal*` / `SetGlobal*` identifiers are declared in [globalcat.2da](2DA-File-Format#globalcat2da). Value limits and usage patterns are summarized on [NSS — Global Variables](NSS-Shared-Functions-Global-Variables). Treat forum threads on “quest globals” as **workflow hints**—verify names exist in `globalcat.2da` or your installer’s expectations.
+**Campaign globals (scripting):** NWScript `GetGlobal*` / `SetGlobal*` identifiers are declared in [globalcat.2da](2DA-File-Format#globalcat2da). Value limits and usage patterns are summarized on [NSS — Global Variables](NSS-File-Format#global-variables). Treat forum threads on “quest globals” as **workflow hints**—verify names exist in `globalcat.2da` or your installer’s expectations.
 
 ## Resource Type Identifiers
 

@@ -44,7 +44,7 @@ UTD files define [door templates](GFF-File-Format#utd-door) for all interactive 
 
 **Community context (workflow):** Door scripting and trap wiring appear in mod threads. See:
 
-- [NSS — Doors and placeables](NSS-Shared-Functions-Doors-and-Placeables)
+- [NSS — Actions](NSS-File-Format#actions) (door scripting functions)
 - [Home — Community sources](Home#community-sources-and-archives)
 
 **UTD fields** stay anchored here + BioWare + PyKotor.
