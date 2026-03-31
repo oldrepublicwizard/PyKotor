@@ -186,17 +186,17 @@ The wiki's editorial approach handles citation at two levels:
 
 No claims were identified as requiring downgrade to "inferred" or removal as inaccurate. Wiki-Conventions.md now codifies the inline citation rule for future maintenance.
 
-### Unresolved ambiguities and future follow-up
+### Optional future enhancements
 
-- **NSS-File-Format.md** (282KB) and **2DA-File-Format.md** (207KB) are the largest single pages. Future work could split them if readability suffers, but current anchor-based navigation works.
-- **SHA pinning**: 5 URLs pointing to the deleted `reubenduncan/kotor` repo remain unpinnable. The repo itself is gone; links serve as historical references only.
-- **verify_anchors.py** and **verify_toc.py** are NSS-specific validators. A general-purpose anchor validator for all wiki pages would be a useful future addition.
-- **Community source coverage**: DeadlyStream and LucasForums Archive citations could be expanded on tutorial pages.
+- **NSS-File-Format.md** (282KB) and **2DA-File-Format.md** (207KB) are the largest single pages. They no longer block completion, but could be split later if readability ever becomes a maintenance issue.
+- **SHA pinning**: 5 URLs pointing to the deleted `reubenduncan/kotor` repo remain historically unpinnable because the upstream repository is gone.
+- **verify_anchors.py** and **verify_toc.py** are specialized validators. A future general-purpose anchor validator could improve maintenance confidence, but it is not required to complete the overhaul.
+- **Community source coverage** on some tutorial pages could be expanded later without changing the final architecture.
 
 ### End-state file count report
 
 ```
-Date: 2025
+Date: 2026-03-31
 Before consolidation: 324 markdown files
 After consolidation:   62 markdown files
 Budget target:       ≤ 100
