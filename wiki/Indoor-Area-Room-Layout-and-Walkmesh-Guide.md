@@ -7,12 +7,20 @@ This guide ties together **indoor module** authoring: room layout, walkmesh tran
 1. **Layout** — Define rooms and transforms in **[LYT](LYT-File-Format)**. Room order determines indices used elsewhere.
 2. **Walkmesh** — Each room needs a **[BWM](BWM-File-Format)** (WOK) with correct **transition** indices matching the LYT room index for doorways and crossings. See [Transitions and Door Placement](BWM-File-Format#transitions-and-door-placement).
 3. **Visibility** — **[VIS](VIS-File-Format)** describes which rooms can see which; keep it in sync with the LYT room names.
-4. **Area data** — **[GFF ARE](GFF-ARE)** and the rest of the module set follow normal module layout; resolution order is described under [Concepts — Resource resolution](Concepts#resource-resolution-order) and [Resource Formats and Resolution](Resource-Formats-and-Resolution).
+4. **Area data** — **[GFF ARE](GFF-Module-and-Area#are)** and the rest of the module set follow normal module layout. Resolution order is described under:
+
+   - [Concepts — Resource resolution](Concepts#resource-resolution-order)
+   - [Resource Formats and Resolution](Resource-Formats-and-Resolution)
 
 ## Tooling
 
-- **Holocron Indoor Map Builder** — [User Guide](Indoor-Map-Builder-User-Guide), [Implementation Guide](Indoor-Map-Builder-Implementation-Guide).
-- **Community tools** — KOTORMax, kotorblender, kaurora; tradeoffs and links are summarized in [Area Modding and Room Transitions](Area-Modding-and-Room-Transitions) and [Blender Integration](Blender-Integration).
+- **Holocron Indoor Map Builder**
+  - [User Guide](Indoor-Map-Builder-User-Guide)
+  - [Implementation Guide](Indoor-Map-Builder-Implementation-Guide)
+- **Community tools** — KOTORMax, kotorblender, kaurora; tradeoffs and links are summarized in:
+
+  - [Area Modding and Room Transitions](Area-Modding-and-Room-Transitions)
+  - [Blender Integration](Blender-Integration)
 
 ## Troubleshooting
 

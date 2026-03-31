@@ -2,9 +2,23 @@
 
 LIP (LIP Synchronization) files drive mouth [animation](MDL-MDX-File-Format#animation-header) for voiced dialogue. Each file contains a compact series of [keyframes](MDL-MDX-File-Format#controller-structure) that map timestamps to discrete viseme (mouth shape) indices so that the engine can interpolate character LIP movement while playing the companion [WAV](WAV-File-Format) line. LIP files are loaded with the same [resource resolution order](Concepts#resource-resolution-order) as other resources (override, MOD/SAV, KEY/BIF).
 
-**For mod developers:** LIP is paired with [WAV](WAV-File-Format) voice-over; see [TLK](TLK-File-Format), [DLG](GFF-DLG), and [HoloPatcher README for Mod Developers](HoloPatcher-README-for-mod-developers).
+**For mod developers:**
 
-**Related formats:** LIP is referenced by [TLK](TLK-File-Format) (voice-over) and [DLG](GFF-DLG); duration must match the companion [WAV](WAV-File-Format).
+- LIP is paired with [WAV](WAV-File-Format) voice-over.
+
+**See also:**
+
+- [TLK](TLK-File-Format)
+- [DLG](GFF-Creature-and-Dialogue#dlg)
+- [HoloPatcher README for Mod Developers](HoloPatcher-README-for-mod-developers)
+
+**Related formats:**
+
+- Referenced from:
+
+  - [TLK](TLK-File-Format) (voice-over)
+  - [DLG](GFF-Creature-and-Dialogue#dlg)
+- Duration must match the companion [WAV](WAV-File-Format)
 
 ## Table of Contents
 
@@ -26,22 +40,37 @@ LIP (LIP Synchronization) files drive mouth [animation](MDL-MDX-File-Format#anim
 - LIP files are always binary (`"LIP V1.0"` signature) and contain only [animation](MDL-MDX-File-Format#animation-header) data.  
 - They are paired with [WAV](WAV-File-Format) voice-over resources of identical duration; the LIP `length` field must match the [WAV](WAV-File-Format) `data` playback time for glitch-free [animation](MDL-MDX-File-Format#animation-header).  
 - [keyframes](MDL-MDX-File-Format#controller-structure) are sorted chronologically and store a timestamp (float seconds) plus a 1-[byte](https://en.wikipedia.org/wiki/Byte) viseme index (0–15).  
-- The layout is identical across **[reone](https://github.com/modawan/reone)**, **[xoreos](https://github.com/xoreos/xoreos)**, **[Kotor.NET](https://github.com/NickHugi/Kotor.NET)**, **[KotOR.js](https://github.com/KobaltBlu/KotOR.js)**, and **mdlops**, so the header/[keyframe](MDL-MDX-File-Format#controller-structure) offsets below are cross-confirmed against those implementations.  
+- The layout is identical across these implementations (header / [keyframe](MDL-MDX-File-Format#controller-structure) offsets below are cross-confirmed):
 
-**Implementation (PyKotor):** [`resource/formats/lip/`](https://github.com/OldRepublicDevs/PyKotor/tree/master/Libraries/PyKotor/src/pykotor/resource/formats/lip/) — binary read [`LIPBinaryReader.load` L95+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/lip/io_lip.py#L95), write [`LIPBinaryWriter.write` L117+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/lip/io_lip.py#L117); data model in `lip_data.py`; XML/JSON in `io_lip_xml`, `io_lip_json`.
+  - [reone](https://github.com/modawan/reone)
+  - [xoreos](https://github.com/xoreos/xoreos)
+  - [Kotor.NET](https://github.com/NickHugi/Kotor.NET)
+  - [KotOR.js](https://github.com/KobaltBlu/KotOR.js)
+  - [mdlops](https://github.com/ndixUR/mdlops) (Perl reference implementation)  
+
+**Implementation (PyKotor):**
+
+- package: [`resource/formats/lip/`](https://github.com/OldRepublicDevs/PyKotor/tree/master/Libraries/PyKotor/src/pykotor/resource/formats/lip/)
+- binary read [`LIPBinaryReader.load` L95+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/lip/io_lip.py#L95)
+- write [`LIPBinaryWriter.write` L117+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/lip/io_lip.py#L117)
+- data model in `lip_data.py`
+- XML/JSON in `io_lip_xml`, `io_lip_json`
 
 **Cross-reference (other implementations):**
 
 - **[reone](https://github.com/modawan/reone)**: [`lipreader.cpp` L27+](https://github.com/modawan/reone/blob/master/src/libs/graphics/format/lipreader.cpp#L27) — C++ LIP parser
 - **[xoreos](https://github.com/xoreos/xoreos)**: [`lipfile.cpp`](https://github.com/xoreos/xoreos/blob/master/src/aurora/lipfile.cpp) — Aurora LIP
-- **[KotOR.js](https://github.com/KobaltBlu/KotOR.js)**: [`LIPObject.ts` L26+](https://github.com/KobaltBlu/KotOR.js/blob/master/src/resource/LIPObject.ts#L26), [`readBinary` L112–L136](https://github.com/KobaltBlu/KotOR.js/blob/master/src/resource/LIPObject.ts#L112-L136) — header + keyframe table
+- **[KotOR.js](https://github.com/KobaltBlu/KotOR.js)**:
+
+  - [`LIPObject.ts` L26+](https://github.com/KobaltBlu/KotOR.js/blob/master/src/resource/LIPObject.ts#L26)
+  - [`readBinary` L112–L136](https://github.com/KobaltBlu/KotOR.js/blob/master/src/resource/LIPObject.ts#L112-L136) — header + keyframe table
 - **[Kotor.NET](https://github.com/NickHugi/Kotor.NET)**: [`LIP.cs` L11+](https://github.com/NickHugi/Kotor.NET/blob/master/Kotor.NET/Formats/KotorLIP/LIP.cs#L11) — in-memory LIP / viseme DTOs
 
 ### See also
 
 - [TLK File Format](TLK-File-Format) - [Talk Table](TLK-File-Format) containing voice-over references
 - [WAV File Format](WAV-File-Format) - Audio format paired with LIP files
-- [GFF-DLG](GFF-DLG) - [dialogue files](GFF-File-Format#dlg-dialogue) that trigger LIP [animations](MDL-MDX-File-Format#animation-header)
+- [GFF-DLG](GFF-Creature-and-Dialogue#dlg) - [dialogue files](GFF-File-Format#dlg-dialogue) that trigger LIP [animations](MDL-MDX-File-Format#animation-header)
 
 ---
 
@@ -72,7 +101,12 @@ LIP (LIP Synchronization) files drive mouth [animation](MDL-MDX-File-Format#anim
 | Shape      | [uint8](GFF-File-Format#gff-data-types)   | 4 (0x04)               | 1    | Viseme index (`0–15`) |
 
 - Entries are stored sequentially and **must** be sorted ascending by timestamp.  
-- Libraries average multiple implementations to validate this layout ([reone](https://github.com/modawan/reone), [xoreos](https://github.com/xoreos/xoreos), [KotOR.js](https://github.com/KobaltBlu/KotOR.js), [Kotor.NET](https://github.com/NickHugi/Kotor.NET)).  
+- Libraries average multiple implementations to validate this layout:
+
+  - [reone](https://github.com/modawan/reone)
+  - [xoreos](https://github.com/xoreos/xoreos)
+  - [KotOR.js](https://github.com/KobaltBlu/KotOR.js)
+  - [Kotor.NET](https://github.com/NickHugi/Kotor.NET)
 
 **References**
 
@@ -111,7 +145,8 @@ KotOR reuses the 16-shape Preston Blair [phoneme](https://en.wikipedia.org/wiki/
 
 ## [animation](MDL-MDX-File-Format#animation-header) Rules
 
-- **[Interpolation](https://en.wikipedia.org/wiki/Interpolation):** The engine interpolates between consecutive [keyframes](https://en.wikipedia.org/wiki/Key_frame); PyKotor exposes `LIP.get_shapes()` to compute the left/right [visemes](https://en.wikipedia.org/wiki/Viseme) plus blend factor.  
+- **[Interpolation](https://en.wikipedia.org/wiki/Interpolation):** The engine interpolates between consecutive [keyframes](https://en.wikipedia.org/wiki/Key_frame)
+- PyKotor exposes `LIP.get_shapes()` to compute the left/right [visemes](https://en.wikipedia.org/wiki/Viseme) plus blend factor.
   **Reference:** [`Libraries/PyKotor/src/pykotor/resource/formats/lip/lip_data.py:342-385`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/lip/lip_data.py#L342-L385)
 - **Sorting:** When adding frames, PyKotor removes existing entries at the same timestamp and keeps the list sorted.  
   **Reference:** [`Libraries/PyKotor/src/pykotor/resource/formats/lip/lip_data.py:305-323`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/lip/lip_data.py#L305-L323)

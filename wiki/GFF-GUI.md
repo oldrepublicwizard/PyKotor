@@ -4,16 +4,27 @@ Part of the [GFF File Format Documentation](GFF-File-Format).
 
 GUI files define the layout and behavior of the user interface. They are [GFF files](GFF-File-Format) describing hierarchies of panels, buttons, labels, and other controls. GUI files are loaded with the same [resource resolution order](Concepts#resource-resolution-order) as other resources (override, MOD/SAV, KEY/BIF).
 
-**For mod developers:** To edit GUI layout in the toolset, use the GUI editor; for mod patches see [TSLPatcher GFFList Syntax](TSLPatcher-GFFList-Syntax) and [HoloPatcher README for Mod Developers](HoloPatcher-README-for-mod-developers).
+**For mod developers:**
 
-**Related formats:** GUI references [TPC](TPC-File-Format)/TGA textures, [TLK](TLK-File-Format) for text; used by the engine for menus and HUD.
+- To edit GUI layout in the toolset, use the GUI editor.
+- For mod patches, see [TSLPatcher GFFList Syntax](TSLPatcher-GFFList-Syntax).
+- [HoloPatcher README for Mod Developers](HoloPatcher-README-for-mod-developers).
+
+**Related formats:**
+
+- [TPC](TPC-File-Format) / TGA textures
+- [TLK](TLK-File-Format) for text
+- Engine use: menus and HUD
 
 ## References
 
 **PyKotor:**
 
-- [`gui.py` `GUI` L154+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/gui.py#L154), [`GUIControl` L100+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/gui.py#L100) — control tree model (`GUIButton`, `GUIPanel`, `GUIListBox`, …)
-- [`construct_gui` L349+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/gui.py#L349), [`read_gui` L1060+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/gui.py#L1060), [`write_gui` L1078+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/gui.py#L1078) — GFF ↔ `GUI` round-trip
+- [`gui.py` `GUI` L154+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/gui.py#L154)
+- [`GUIControl` L100+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/gui.py#L100) — control tree model (`GUIButton`, `GUIPanel`, `GUIListBox`, …)
+- [`construct_gui` L349+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/gui.py#L349)
+- [`read_gui` L1060+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/gui.py#L1060)
+- [`write_gui` L1078+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/gui.py#L1078) — GFF ↔ `GUI` round-trip
 - [`gff_data.py` `GFFContent.GUI` L163](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/gff/gff_data.py#L163) — four-character GFF type id
 - [`io_gff.py` `GFFBinaryReader.load` L82+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/gff/io_gff.py#L82) — binary GFF decode (shared with other GFF types)
 
@@ -23,7 +34,10 @@ GUI files define the layout and behavior of the user interface. They are [GFF fi
 
 **Cross-reference (other implementations):**
 
-- **[reone](https://github.com/modawan/reone)**: [`gff.cpp`](https://github.com/modawan/reone/blob/master/src/libs/resource/gff.cpp), [`gffreader.cpp`](https://github.com/modawan/reone/blob/master/src/libs/resource/format/gffreader.cpp) — C++ GFF reader (GUI uses generic GFF structure)
+- **[reone](https://github.com/modawan/reone)** — C++ GFF reader (GUI uses generic GFF structure):
+
+  - [`gff.cpp`](https://github.com/modawan/reone/blob/master/src/libs/resource/gff.cpp)
+  - [`gffreader.cpp`](https://github.com/modawan/reone/blob/master/src/libs/resource/format/gffreader.cpp)
 - **[KotOR.js](https://github.com/KobaltBlu/KotOR.js)**: [`GFFObject.ts` L24+](https://github.com/KobaltBlu/KotOR.js/blob/master/src/resource/GFFObject.ts#L24) — TypeScript GFF parser (GUI as GFF)
 - **[Kotor.NET](https://github.com/NickHugi/Kotor.NET)**: [`GFF.cs` L18+](https://github.com/NickHugi/Kotor.NET/blob/master/Kotor.NET/Formats/KotorGFF/GFF.cs#L18) — .NET GFF reader/writer (GUI uses generic GFF structure)
 - **[xoreos](https://github.com/xoreos/xoreos)** — generic Aurora GFF; GUI loaded as GFF in engine
@@ -103,9 +117,9 @@ All controls share these base properties:
 
 | field | type | Description |
 | ----- | ---- | ----------- |
-| `CORNER` | *ResRef* | Corner texture ([TPC](TPC-File-Format)/TGA) |
-| `EDGE` | *ResRef* | [edge](BWM-File-Format#edges-wok-only) texture ([TPC](TPC-File-Format)/TGA) |
-| `FILL` | *ResRef* | Fill/background texture ([TPC](TPC-File-Format)/TGA) |
+| `CORNER` | *ResRef* | Corner texture ([TPC](TPC-File-Format) or TGA) |
+| `EDGE` | *ResRef* | [edge](BWM-File-Format#edges-wok-only) texture ([TPC](TPC-File-Format) or TGA) |
+| `FILL` | *ResRef* | Fill/background texture ([TPC](TPC-File-Format) or TGA) |
 | `FILLSTYLE` | [int32](GFF-File-Format#gff-data-types) | Fill rendering style (-1=None, 0=Empty, 1=Solid, 2=[texture](TPC-File-Format)) |
 | `DIMENSION` | [int32](GFF-File-Format#gff-data-types) | Border thickness in pixels |
 | `INNEROFFSET` | [int32](GFF-File-Format#gff-data-types) | Inner padding X-axis (pixels) |
@@ -128,7 +142,7 @@ All controls share these base properties:
 | ----- | ---- | ----------- |
 | `TEXT` | [CExoString](GFF-File-Format#gff-data-types) | Direct text content (overrides [StrRef](TLK-File-Format#string-references-strref) if set) |
 | `STRREF` | DWord | [TLK](TLK-File-Format) string reference (0xFFFFFFFF = unused) |
-| `FONT` | *ResRef* | Font [texture](TPC-File-Format) resource ([TPC](TPC-File-Format)/TGA) |
+| `FONT` | *ResRef* | Font [texture](TPC-File-Format) resource ([TPC](TPC-File-Format) or TGA) |
 | `ALIGNMENT` | [int32](GFF-File-Format#gff-data-types) | Text alignment flags (bitfield) |
 | `COLOR` | vector | Text color (RGB, 0.0-1.0) |
 | `PULSING` | [byte](GFF-File-Format#gff-data-types) | Pulsing [animation](MDL-MDX-File-Format#animation-header) flag (0=off, 1=on) |
@@ -472,7 +486,7 @@ All controls share these base properties:
 
 **Text Rendering:**
 
-- Fonts are [texture](TPC-File-Format)-based ([TPC](TPC-File-Format)/TGA files with character grid)
+- Fonts are [texture](TPC-File-Format)-based ([TPC](TPC-File-Format) or TGA files with character grid)
 - Each character has fixed width/height in font [texture](TPC-File-Format)
 - TEXT field takes precedence over [StrRef](TLK-File-Format#string-references-strref) if both set
 - [StrRef](TLK-File-Format#string-references-strref) references [dialog.tlk](TLK-File-Format) for localized strings
@@ -553,6 +567,7 @@ All controls share these base properties:
 ### See also
 
 - [GFF-File-Format](GFF-File-Format) -- Generic format underlying GUI
-- [TPC File Format](TPC-File-Format), [TXI File Format](TXI-File-Format) - Textures used by GUI controls
+- [TPC File Format](TPC-File-Format) — textures used by GUI controls
+- [TXI File Format](TXI-File-Format) — companion metadata for those textures
 - [TLK File Format](TLK-File-Format) - String references for GUI text
 - [NCS File Format](NCS-File-Format) - Scripts that drive GUI behavior

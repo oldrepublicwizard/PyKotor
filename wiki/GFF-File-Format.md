@@ -395,19 +395,19 @@ GFF files are used as containers for various game resource types. Each generic t
 
 ### ARE (Area)
 
-See [ARE (Area)](GFF-ARE) for detailed documentation.
+See [ARE (Area)](GFF-Module-and-Area#are) for detailed documentation.
 
 ### DLG (Dialogue)
 
-See [DLG (Dialogue)](GFF-DLG) for detailed documentation.
+See [DLG (Dialogue)](GFF-Creature-and-Dialogue#dlg) for detailed documentation.
 
 ### FAC (Faction)
 
-See [FAC (Faction)](GFF-FAC) for detailed documentation.
+See [FAC (Faction)](GFF-Items-and-Economy#fac) for detailed documentation.
 
 ### GIT (game instance template)
 
-See [GIT (Game Instance Template)](GFF-GIT) for detailed documentation.
+See [GIT (Game Instance Template)](GFF-Module-and-Area#git) for detailed documentation.
 
 ### GUI (Graphical User Interface)
 
@@ -415,51 +415,51 @@ See [GUI (Graphical User Interface)](GFF-GUI) for detailed documentation.
 
 ### IFO (module info)
 
-See [IFO (Module Info)](GFF-IFO) for detailed documentation.
+See [IFO (Module Info)](GFF-Module-and-Area#ifo) for detailed documentation.
 
 ### JRL (Journal)
 
-See [JRL (Journal)](GFF-JRL) for detailed documentation.
+See [JRL (Journal)](GFF-Items-and-Economy#jrl) for detailed documentation.
 
 ### PTH (Path)
 
-See [PTH (Path)](GFF-PTH) for detailed documentation.
+See [PTH (Path)](GFF-Spatial-Objects#pth) for detailed documentation.
 
 ### UTC (Creature)
 
-See [UTC (Creature)](GFF-UTC) for detailed documentation.
+See [UTC (Creature)](GFF-Creature-and-Dialogue#utc) for detailed documentation.
 
 ### UTD (Door)
 
-See [UTD (Door)](GFF-UTD) for detailed documentation.
+See [UTD (Door)](GFF-Spatial-Objects#utd) for detailed documentation.
 
 ### UTE (Encounter)
 
-See [UTE (Encounter)](GFF-UTE) for detailed documentation.
+See [UTE (Encounter)](GFF-Spatial-Objects#ute) for detailed documentation.
 
 ### UTI (Item)
 
-See [UTI (Item)](GFF-UTI) for detailed documentation.
+See [UTI (Item)](GFF-Items-and-Economy#uti) for detailed documentation.
 
 ### UTM (Merchant)
 
-See [UTM (Merchant)](GFF-UTM) for detailed documentation.
+See [UTM (Merchant)](GFF-Items-and-Economy#utm) for detailed documentation.
 
 ### UTP (Placeable)
 
-See [UTP (Placeable)](GFF-UTP) for detailed documentation.
+See [UTP (Placeable)](GFF-Spatial-Objects#utp) for detailed documentation.
 
 ### UTS (Sound)
 
-See [UTS (Sound)](GFF-UTS) for detailed documentation.
+See [UTS (Sound)](GFF-Spatial-Objects#uts) for detailed documentation.
 
 ### UTT (Trigger)
 
-See [UTT (Trigger)](GFF-UTT) for detailed documentation.
+See [UTT (Trigger)](GFF-Spatial-Objects#utt) for detailed documentation.
 
 ### UTW (Waypoint)
 
-See [UTW (Waypoint)](GFF-UTW) for detailed documentation.
+See [UTW (Waypoint)](GFF-Spatial-Objects#utw) for detailed documentation.
 
 ## Alternative Terminology (Historical)
 
@@ -529,11 +529,11 @@ Complex types require accessing data from the field data section:
 
 ### See also
 
-- [GFF-ARE](GFF-ARE)
-- [GFF-DLG](GFF-DLG)
-- [GFF-IFO](GFF-IFO)
-- [GFF-UTI](GFF-UTI)
-- [GFF-UTC](GFF-UTC)
+- [GFF-ARE](GFF-Module-and-Area#are)
+- [GFF-DLG](GFF-Creature-and-Dialogue#dlg)
+- [GFF-IFO](GFF-Module-and-Area#ifo)
+- [GFF-UTI](GFF-Items-and-Economy#uti)
+- [GFF-UTC](GFF-Creature-and-Dialogue#utc)
 - [GIT](GFF-File-Format#git-game-instance-template) -- GFF-based game resources
 - [TSLPatcher GFFList Syntax](TSLPatcher-GFFList-Syntax) -- Patching GFF via HoloPatcher/TSLPatcher
 - [Resource formats and resolution](Resource-Formats-and-Resolution#resource-type-identifiers) -- Hex resource type IDs (ResRef + type in archives)

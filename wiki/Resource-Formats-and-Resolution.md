@@ -66,46 +66,46 @@ The table below is the wiki SSOT for resource type IDs. Loose files such as `.ut
 | [NSS](NSS-File-Format)           | 0x07D9  | *NWScript* source code (see [NSS File Format](NSS-File-Format))                            |
 | [NCS](NCS-File-Format)           | 0x07DA  | *Compiled NWScript* bytecode (see [NCS File Format](NCS-File-Format))                     |
 | [MOD](ERF-File-Format)           | 0x07DB  | [*Module* ERF archive/container](ERF-File-Format)                         |
-| [ARE](GFF-File-Format#are-area)           | 0x07DC  | *Area* definition (see [GFF-ARE](GFF-ARE))                                 |
+| [ARE](GFF-File-Format#are-area)           | 0x07DC  | *Area* definition (see [GFF-ARE](GFF-Module-and-Area#are))                                 |
 | SET           | 0x07DD  | Unknown.  Not used in *KotOR*                               |
-| [IFO](GFF-File-Format#ifo-module-info)           | 0x07DE  | *Module* InFOrmation (see [GFF-IFO](GFF-IFO))                              |
-| BIC           | 0x07DF  | BlueprInt Creature. *KotOR* supports these but nobody uses them, use [UTC](GFF-UTC) instead.                  |
+| [IFO](GFF-File-Format#ifo-module-info)           | 0x07DE  | *Module* InFOrmation (see [GFF-IFO](GFF-Module-and-Area#ifo))                              |
+| BIC           | 0x07DF  | BlueprInt Creature. *KotOR* supports these but nobody uses them, use [UTC](GFF-Creature-and-Dialogue#utc) instead.                  |
 | [WOK](BWM-File-Format)           | 0x07E0  | *Walkmesh* (see [BWM File Format](BWM-File-Format))                                |
 | [2DA](2DA-File-Format)           | 0x07E1  | *Two-Dimensional Array* data (see [2DA File Format](2DA-File-Format))                      |
 | [TLK](TLK-File-Format)           | 0x07E2  | *Talk Table* (Localized Strings, see [TLK File Format](TLK-File-Format))                 |
 | [TXI](TXI-File-Format)           | 0x07E6  | [TeXture Information](TXI-File-Format)                            |
-| [GIT](GFF-File-Format#git-game-instance-template)           | 0x07E7  | [Game Instance Template](GFF-File-Format#git-game-instance-template) (see [GFF-GIT](GFF-GIT))                          |
-| BTI           | 0x07E8  | Blueprint Template Item. *KotOR* supports these but nobody uses them, use [UTI](GFF-UTI) instead.                 |
-| [UTI](GFF-File-Format#uti-item)           | 0x07E9  | [item templates](GFF-File-Format#uti-item) (see [GFF-UTI](GFF-UTI))                                   |
-| BTC           | 0x07EA  | Blueprint Template Creature. *KotOR* supports these but nobody uses them, use [UTC](GFF-UTC) instead.                |
-| [UTC](GFF-File-Format#utc-creature)           | 0x07EB  | [Creature Template](GFF-File-Format#utc-creature) (see [GFF-UTC](GFF-UTC))                               |
-| [DLG](GFF-File-Format#dlg-dialogue)           | 0x07ED  | Dialogue/conversation (see [GFF-DLG](GFF-DLG))                           |
+| [GIT](GFF-File-Format#git-game-instance-template)           | 0x07E7  | [Game Instance Template](GFF-File-Format#git-game-instance-template) (see [GFF-GIT](GFF-Module-and-Area#git))                          |
+| BTI           | 0x07E8  | Blueprint Template Item. *KotOR* supports these but nobody uses them, use [UTI](GFF-Items-and-Economy#uti) instead.                 |
+| [UTI](GFF-File-Format#uti-item)           | 0x07E9  | [item templates](GFF-File-Format#uti-item) (see [GFF-UTI](GFF-Items-and-Economy#uti))                                   |
+| BTC           | 0x07EA  | Blueprint Template Creature. *KotOR* supports these but nobody uses them, use [UTC](GFF-Creature-and-Dialogue#utc) instead.                |
+| [UTC](GFF-File-Format#utc-creature)           | 0x07EB  | [Creature Template](GFF-File-Format#utc-creature) (see [GFF-UTC](GFF-Creature-and-Dialogue#utc))                               |
+| [DLG](GFF-File-Format#dlg-dialogue)           | 0x07ED  | Dialogue/conversation (see [GFF-DLG](GFF-Creature-and-Dialogue#dlg))                           |
 | [ITP](Bioware-Aurora-Module-and-Area#paletteitp)           | 0x07EE  | *ITP* format (see [Bioware-Aurora-PaletteITP](Bioware-Aurora-Module-and-Area#paletteitp)).                         |
-| BTT           | 0x07EF  | *Blueprint Template Trigger*. *KotOR* supports these but nobody uses them, use [UTT](GFF-UTT) instead.                 |
-| [UTT](GFF-File-Format#utt-trigger)           | 0x07F0  | *Trigger Template* (see [GFF-UTT](GFF-UTT)).                                |
+| BTT           | 0x07EF  | *Blueprint Template Trigger*. *KotOR* supports these but nobody uses them, use [UTT](GFF-Spatial-Objects#utt) instead.                 |
+| [UTT](GFF-File-Format#utt-trigger)           | 0x07F0  | *Trigger Template* (see [GFF-UTT](GFF-Spatial-Objects#utt)).                                |
 | DDS           | 0x07F1  | *DirectDraw Surface Texture* (see [DDS File Format](DDS-File-Format)).                                |
-| [UTS](GFF-File-Format#uts-sound)           | 0x07F3  | *Sound Template* (see [GFF-UTS](GFF-UTS)).                                |
+| [UTS](GFF-File-Format#uts-sound)           | 0x07F3  | *Sound Template* (see [GFF-UTS](GFF-Spatial-Objects#uts)).                                |
 | LTR           | 0x07F4  | *Letter Format* (see [LTR File Format](LTR-File-Format)). Not used in *KotOR*                                |
 | [GFF](GFF-File-Format)           | 0x07F5  | Generic file format (container, see [GFF File Format](GFF-File-Format))                 |
 | [FAC](GFF-File-Format#fac-faction)           | 0x07F6  | Faction                               |
 | BTE           | 0x07F7  | Blueprint encounter                   |
-| [UTE](GFF-File-Format#ute-encounter)           | 0x07F8  | [encounter template](GFF-File-Format#ute-encounter) (see [GFF-UTE](GFF-UTE))                              |
+| [UTE](GFF-File-Format#ute-encounter)           | 0x07F8  | [encounter template](GFF-File-Format#ute-encounter) (see [GFF-UTE](GFF-Spatial-Objects#ute))                              |
 | BTD           | 0x07F9  | Blueprint door    Not used in *KotOR*     |
-| [UTD](GFF-File-Format#utd-door)           | 0x07FA  | [door templates](GFF-File-Format#utd-door) (see [GFF-UTD](GFF-UTD))                                   |
+| [UTD](GFF-File-Format#utd-door)           | 0x07FA  | [door templates](GFF-File-Format#utd-door) (see [GFF-UTD](GFF-Spatial-Objects#utd))                                   |
 | BTP           | 0x07FB  | Blueprint placeable   Not used in *KotOR*  |
-| [UTP](GFF-File-Format#utp-placeable)           | 0x07FC  | [placeable templates](GFF-File-Format#utp-placeable) (see [GFF-UTP](GFF-UTP))                              |
+| [UTP](GFF-File-Format#utp-placeable)           | 0x07FC  | [placeable templates](GFF-File-Format#utp-placeable) (see [GFF-UTP](GFF-Spatial-Objects#utp))                              |
 | DTF           | 0x07FD  | Unknown  Not used in *KotOR*                                |
 | GIC           | 0x07FE  | Unknown  Not used in *KotOR*                                |
 | [GUI](GFF-File-Format#gui-graphical-user-interface)           | 0x07FF  | User interface definition (see [GFF-GUI](GFF-GUI))                       |
 | CSS           | 0x0800  | Unknown  Not used in *KotOR*                                |
 | CCS           | 0x0801  | Unknown  Not used in *KotOR*                                |
-| BTM           | 0x0802  | Blueprint merchant.  *KotOR* supports these but nobody uses them, use [UTM](GFF-UTM) instead.              |
-| [UTM](GFF-File-Format#utm-merchant)           | 0x0803  | [Merchant/store template](GFF-File-Format#utm-merchant) (see [GFF-UTM](GFF-UTM))                         |
+| BTM           | 0x0802  | Blueprint merchant.  *KotOR* supports these but nobody uses them, use [UTM](GFF-Items-and-Economy#utm) instead.              |
+| [UTM](GFF-File-Format#utm-merchant)           | 0x0803  | [Merchant/store template](GFF-File-Format#utm-merchant) (see [GFF-UTM](GFF-Items-and-Economy#utm))                         |
 | [DWK](BWM-File-Format)           | 0x0804  | [Door walkmesh](BWM-File-Format) (see [BWM File Format](BWM-File-Format))                                |
 | [PWK](BWM-File-Format)           | 0x0805  | [Placeable walkmesh](BWM-File-Format) (see [BWM File Format](BWM-File-Format))                                |
 | BTG           | 0x0806  | Blueprint trigger  Not used in *KotOR*       |
 | UTG           | 0x0807  | Unknown            Not used in *KotOR*   |
-| [JRL](GFF-File-Format#jrl-journal)           | 0x0808  | Journal/quest log (see [GFF-JRL](GFF-JRL))                               |
+| [JRL](GFF-File-Format#jrl-journal)           | 0x0808  | Journal/quest log (see [GFF-JRL](GFF-Items-and-Economy#jrl))                               |
 | SAV           | 0x0809  | [Save game containers](ERF-File-Format) (see [ERF File Format](ERF-File-Format))                               |
 | [UTW](GFF-File-Format#utw-waypoint)           | 0x080A  | [Waypoint Template](GFF-File-Format#utw-waypoint)                               |
 | 4PC           | 0x080B  | Unknown  Not used in *KotOR*          |
@@ -225,22 +225,22 @@ The table below is the wiki SSOT for resource type IDs. Loose files such as `.ut
 - [ERF File Format](ERF-File-Format) ← Encapsulated Resource format (MOD, SAV, HAK; [RIM comparison](ERF-File-Format#rim-versus-erf))
 - **[Kit Structure Documentation](Kit-Structure-Documentation)** ← Complete reference for indoor kit structure and generation
 - [GFF File Format](GFF-File-Format) ← Generic file Format (see also [Official Bioware GFF Documentation](Bioware-Aurora-Core-Formats#gff))
-  - [ARE (Area)](GFF-ARE)
-  - [DLG (Dialogue)](GFF-DLG)
-  - [GIT (Game Instance Template)](GFF-GIT)
+  - [ARE (Area)](GFF-Module-and-Area#are)
+  - [DLG (Dialogue)](GFF-Creature-and-Dialogue#dlg)
+  - [GIT (Game Instance Template)](GFF-Module-and-Area#git)
   - [GUI (Graphical User Interface)](GFF-GUI)
-  - [IFO (Module Info)](GFF-IFO)
-  - [JRL (Journal)](GFF-JRL)
-  - [PTH (Path)](GFF-PTH)
-  - [UTC (Creature)](GFF-UTC)
-  - [UTD (Door)](GFF-UTD)
-  - [UTE (Encounter)](GFF-UTE)
-  - [UTI (Item)](GFF-UTI)
-  - [UTM (Merchant)](GFF-UTM)
-  - [UTP (Placeable)](GFF-UTP)
-  - [UTS (Sound)](GFF-UTS)
-  - [UTT (Trigger)](GFF-UTT)
-  - [UTW (Waypoint)](GFF-UTW)
+  - [IFO (Module Info)](GFF-Module-and-Area#ifo)
+  - [JRL (Journal)](GFF-Items-and-Economy#jrl)
+  - [PTH (Path)](GFF-Spatial-Objects#pth)
+  - [UTC (Creature)](GFF-Creature-and-Dialogue#utc)
+  - [UTD (Door)](GFF-Spatial-Objects#utd)
+  - [UTE (Encounter)](GFF-Spatial-Objects#ute)
+  - [UTI (Item)](GFF-Items-and-Economy#uti)
+  - [UTM (Merchant)](GFF-Items-and-Economy#utm)
+  - [UTP (Placeable)](GFF-Spatial-Objects#utp)
+  - [UTS (Sound)](GFF-Spatial-Objects#uts)
+  - [UTT (Trigger)](GFF-Spatial-Objects#utt)
+  - [UTW (Waypoint)](GFF-Spatial-Objects#utw)
 - [DDS File Format](DDS-File-Format) ← DirectDraw Surface texture format
 - [LIP File Format](LIP-File-Format) ← [LIP](LIP-File-Format) sync format
 - [LTR File Format](LTR-File-Format) ← [Letter](LTR-File-Format) format

@@ -9,10 +9,16 @@ A typical build produces module resources consistent with engine expectations:
 - **[LYT](LYT-File-Format)** — Room list, transforms, and door hooks; room **index** matches **walkmesh transition IDs** (see [BWM](BWM-File-Format#transitions-and-door-placement)).
 - **[VIS](VIS-File-Format)** — Parent/child visibility between rooms.
 - **Walkmeshes ([BWM](BWM-File-Format))** — Per-room WOK with materials, adjacency, and transition edges.
-- **[GFF ARE](GFF-ARE)** and related module resources — Area metadata used with the layout.
+- **[GFF ARE](GFF-Module-and-Area#are)** and related module resources — Area metadata used with the layout.
 - **Textures** — Often emitted as TGA (and related TXI) where the pipeline expects uncompressed sources; see PyKotor and toolset texture helpers under `pykotor.tools`.
 
-Packaging into a playable override or module follows normal **[ERF](ERF-File-Format)** / **[RIM](RIM-File-Format)** / MOD conventions; see [Resource Formats and Resolution](Resource-Formats-and-Resolution).
+Packaging into a playable override or module follows normal archive conventions:
+
+- **[ERF](ERF-File-Format)**
+- **[RIM](RIM-File-Format)**
+- MOD (see [ERF](ERF-File-Format))
+
+See [Resource Formats and Resolution](Resource-Formats-and-Resolution).
 
 ## Kit and template layout
 

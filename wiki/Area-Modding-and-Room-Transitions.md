@@ -28,7 +28,7 @@ Do not merge walkmeshes across rooms: each room has its own WOK. Crossing is don
 
 ## Doors (conceptual)
 
-Real doors (that open and allow crossing) require: a door model, a door walkmesh (DWK) with closed/open states, the correct surface material on the threshold, and roomlinks connecting both rooms. Door walkmesh node naming (e.g. `_wg_closed`, `_wg_open1`, `_wg_open2`) matters for the engine. Dynamic elements (doors, placeables, creatures, triggers, transitions) are defined in the [GIT](GFF-GIT), not in the LYT; LYT door hooks only provide suggested positions for placing doors.
+Real doors (that open and allow crossing) require: a door model, a door walkmesh (DWK) with closed/open states, the correct surface material on the threshold, and roomlinks connecting both rooms. Door walkmesh node naming (e.g. `_wg_closed`, `_wg_open1`, `_wg_open2`) matters for the engine. Dynamic elements (doors, placeables, creatures, triggers, transitions) are defined in the [GIT](GFF-Module-and-Area#git), not in the LYT; LYT door hooks only provide suggested positions for placing doors.
 
 ## Community tooling / Further reading
 

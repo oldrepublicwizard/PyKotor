@@ -3731,7 +3731,7 @@ range.
 
 ### See also
 
-- [GFF-UTC](GFF-UTC) -- Creature GFF in KotOR
+- [GFF-UTC](GFF-Creature-and-Dialogue#utc) -- Creature GFF in KotOR
 - [GFF-File-Format](GFF-File-Format) -- GFF types
 - [2DA-appearance](2DA-File-Format#appearance2da)
 - [2DA-classes](2DA-File-Format#classes2da)

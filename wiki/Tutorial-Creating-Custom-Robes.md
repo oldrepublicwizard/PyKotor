@@ -50,7 +50,7 @@ Copy all files into your game's **override** folder. In-game, use the cheat **gi
 
 ### See also
 
-- [GFF-UTI](GFF-UTI) -- Item (UTI) format
+- [GFF-UTI](GFF-Items-and-Economy#uti) -- Item (UTI) format
 - [TPC-File-Format](TPC-File-Format) -- Textures
 - [Mod Creation Best Practices](Mod-Creation-Best-Practices) -- Override and compatibility
 - [Concepts](Concepts#override-folder) -- Override folder

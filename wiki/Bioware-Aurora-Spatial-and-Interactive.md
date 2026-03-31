@@ -878,10 +878,10 @@ Index into placeables.2da
 
 ### See also
 
-- [GFF-UTD](GFF-UTD)
-- [GFF-UTP](GFF-UTP) -- KotOR door and placeable implementation
+- [GFF-UTD](GFF-Spatial-Objects#utd)
+- [GFF-UTP](GFF-Spatial-Objects#utp) -- KotOR door and placeable implementation
 - [GFF-File-Format](GFF-File-Format) -- GFF structure
-- [GFF-GIT](GFF-GIT) -- Door and placeable instances
+- [GFF-GIT](GFF-Module-and-Area#git) -- Door and placeable instances
 - [2DA-placeables](2DA-File-Format#placeables2da)
 - [2DA-doortypes](2DA-File-Format#doortypes2da) -- Appearance tables
 - [KEY-File-Format](KEY-File-Format) -- Resource resolution
@@ -1767,9 +1767,9 @@ load the polygon correctly and without errors.
 
 ### See also
 
-- [GFF-UTT](GFF-UTT) -- KotOR trigger implementation
+- [GFF-UTT](GFF-Spatial-Objects#utt) -- KotOR trigger implementation
 - [GFF-File-Format](GFF-File-Format) -- GFF structure
-- [GFF-GIT](GFF-GIT) -- Trigger instances
+- [GFF-GIT](GFF-Module-and-Area#git) -- Trigger instances
 - [NSS-File-Format](NSS-File-Format) -- Trigger scripts
 - [KEY-File-Format](KEY-File-Format) -- Resource resolution
 
@@ -1967,10 +1967,10 @@ Structs document.
 
 ### See also
 
-- [GFF-UTW](GFF-UTW) -- KotOR waypoint implementation
+- [GFF-UTW](GFF-Spatial-Objects#utw) -- KotOR waypoint implementation
 - [GFF-File-Format](GFF-File-Format) -- GFF structure
-- [GFF-GIT](GFF-GIT) -- Waypoint instances
-- [GFF-PTH](GFF-PTH) -- Path data
+- [GFF-GIT](GFF-Module-and-Area#git) -- Waypoint instances
+- [GFF-PTH](GFF-Spatial-Objects#pth) -- Path data
 - [KEY-File-Format](KEY-File-Format) -- Resource resolution
 
 
@@ -2452,10 +2452,10 @@ default VolumeVrtn
 
 ### See also
 
-- [GFF-UTS](GFF-UTS) -- KotOR sound object implementation
+- [GFF-UTS](GFF-Spatial-Objects#uts) -- KotOR sound object implementation
 - [GFF-File-Format](GFF-File-Format) -- GFF structure
 - [WAV-File-Format](WAV-File-Format) -- Audio resources
-- [GFF-GIT](GFF-GIT) -- Sound instances
+- [GFF-GIT](GFF-Module-and-Area#git) -- Sound instances
 - [KEY-File-Format](KEY-File-Format) -- Resource resolution
 
 
@@ -2869,10 +2869,10 @@ Format document.
 
 ### See also
 
-- [GFF-UTE](GFF-UTE) -- KotOR encounter implementation
+- [GFF-UTE](GFF-Spatial-Objects#ute) -- KotOR encounter implementation
 - [GFF-File-Format](GFF-File-Format) -- GFF structure
 - [2DA-encdifficulty](2DA-File-Format#encdifficulty2da) -- Difficulty table
-- [GFF-GIT](GFF-GIT) -- Encounter instances
+- [GFF-GIT](GFF-Module-and-Area#git) -- Encounter instances
 - [Bioware-Aurora-Trigger](Bioware-Aurora-Spatial-and-Interactive#trigger) -- Geometry rules
 - [KEY-File-Format](KEY-File-Format) -- Resource resolution
 

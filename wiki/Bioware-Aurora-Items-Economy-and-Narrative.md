@@ -1965,7 +1965,7 @@ Armor type. Use as column name in weaponsounds.2da.
 
 ### See also
 
-- [GFF-UTI](GFF-UTI) -- Item GFF in KotOR
+- [GFF-UTI](GFF-Items-and-Economy#uti) -- Item GFF in KotOR
 - [GFF-File-Format](GFF-File-Format) -- GFF types
 - [2DA-baseitems](2DA-File-Format#baseitems2da)
 - [2DA-ammunitiontypes](2DA-File-Format#ammunitiontypes2da) -- Item/ammo 2DA
@@ -2246,10 +2246,10 @@ Structs document.
 
 ### See also
 
-- [GFF-UTM](GFF-UTM) -- KotOR merchant implementation
+- [GFF-UTM](GFF-Items-and-Economy#utm) -- KotOR merchant implementation
 - [GFF-File-Format](GFF-File-Format) -- GFF structure
-- [GFF-UTI](GFF-UTI) -- Item format
-- [GFF-GIT](GFF-GIT) -- Store instances
+- [GFF-UTI](GFF-Items-and-Economy#uti) -- Item format
+- [GFF-GIT](GFF-Module-and-Area#git) -- Store instances
 - [KEY-File-Format](KEY-File-Format) -- Resource resolution
 
 
@@ -2371,7 +2371,7 @@ category.
 
 ### See also
 
-- [GFF-JRL](GFF-JRL) -- KotOR journal implementation
+- [GFF-JRL](GFF-Items-and-Economy#jrl) -- KotOR journal implementation
 - [GFF-File-Format](GFF-File-Format) -- GFF structure
 - [NSS-File-Format](NSS-File-Format) -- Journal scripting
 - [KEY-File-Format](KEY-File-Format) -- Resource resolution
@@ -2693,7 +2693,7 @@ standing toward the perpetrator by this amount.
 
 ### See also
 
-- [GFF-FAC](GFF-FAC) -- KotOR faction implementation
+- [GFF-FAC](GFF-Items-and-Economy#fac) -- KotOR faction implementation
 - [GFF-File-Format](GFF-File-Format) -- GFF structure
 - [2DA-repute](2DA-File-Format#repute2da) -- Reputation table
 - [KEY-File-Format](KEY-File-Format) -- Resource resolution

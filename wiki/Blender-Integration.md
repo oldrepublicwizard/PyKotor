@@ -1,7 +1,9 @@
 # Blender Integration
 
-This page documents the current Blender-backed workflow for Holocron Toolset and the upstream
-**[kotorblender](https://github.com/OldRepublicDevs/kotorblender)** ([Mirror: th3w1zard1/kotorblender](https://github.com/th3w1zard1/kotorblender); community fork: [OldRepublicDevs/kotorblender](https://github.com/OldRepublicDevs/kotorblender)) add-on.
+This page documents the current Blender-backed workflow for Holocron Toolset and the **kotorblender** add-on (canonical **[OldRepublicDevs/kotorblender](https://github.com/OldRepublicDevs/kotorblender)**; **th3w1zard1** hosts a mirror).
+
+- Upstream (OldRepublicDevs/kotorblender): <https://github.com/OldRepublicDevs/kotorblender/tree/404c42bc4f36b1f60b643eda0cd17c81ba5ca7d4>
+- Mirror (th3w1zard1/kotorblender): <https://github.com/th3w1zard1/kotorblender/tree/afae04c9172f30ab765891315d9d11224ab57426>
 
 ## Goals
 
@@ -27,7 +29,7 @@ Instead it now supports the following source discovery order:
 1. A custom `io_scene_kotor` source path from the `KOTORBLENDER_SOURCE_PATH` environment variable
 2. A local checkout of [kotorblender](https://github.com/OldRepublicDevs/kotorblender) (for example `io_scene_kotor/` at repo root)
 3. An adjacent checkout such as `kotorblender/io_scene_kotor`
-4. An auto-downloaded cache of the upstream [kotorblender](https://github.com/OldRepublicDevs/kotorblender) ([Mirror: th3w1zard1/kotorblender](https://github.com/th3w1zard1/kotorblender); community fork: [OldRepublicDevs/kotorblender](https://github.com/OldRepublicDevs/kotorblender)) GitHub repository
+4. An auto-downloaded cache of the upstream [kotorblender](https://github.com/OldRepublicDevs/kotorblender) GitHub repository (same upstream / mirror permalinks as in the intro above).
 
 When the Toolset installs the add-on, it also injects a **Holocron IPC overlay** into the installed
 `io_scene_kotor` package. This overlay hosts the Toolset’s JSON-RPC bridge inside *Blender* without
@@ -161,5 +163,6 @@ QT_QPA_PLATFORM=offscreen uv run pytest --import-mode=importlib \
 - [Indoor Map Builder Implementation Guide](Indoor-Map-Builder-Implementation-Guide) -- Implementation Details
 - [BWM File Format](BWM-File-Format) -- Walkmesh Format
 - [MDL/MDX File Format](MDL-MDX-File-Format) -- Model Format
-- [LYT-File-Format](LYT-File-Format) -- Room Layout; [GFF-GIT](GFF-GIT) -- Instance Data
+- [LYT-File-Format](LYT-File-Format) -- Room Layout
+- [GFF-GIT](GFF-Module-and-Area#git) -- Instance Data
 - [Community sources and archives](Home#community-sources-and-archives) -- DeadlyStream, forums for *MDL/LYT* workflows and *kotorblender*

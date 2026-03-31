@@ -1,21 +1,47 @@
 # KotOR WAV file format Documentation
 
-KotOR stores both standard WAV voice-over lines and Bioware-obfuscated sound-effect files. Voice-over assets are regular RIFF containers with PCM headers, while SFX assets prepend a 470-[byte](https://en.wikipedia.org/wiki/Byte) custom block before the RIFF data. PyKotor handles both variants transparently. WAV files are resolved using the same [resource resolution order](Concepts#resource-resolution-order) as other resources ([override](Concepts#override-folder), [MOD/ERF/SAV](ERF-File-Format), [KEY/BIF](KEY-File-Format)). Hex type id **`0x0004`** is listed under [Resource type identifiers](Resource-Formats-and-Resolution#resource-type-identifiers).
+KotOR stores both standard WAV voice-over lines and Bioware-obfuscated sound-effect files. Voice-over assets are regular RIFF containers with PCM headers, while SFX assets prepend a 470-[byte](https://en.wikipedia.org/wiki/Byte) custom block before the RIFF data. PyKotor handles both variants transparently. WAV files are resolved using the same [resource resolution order](Concepts#resource-resolution-order) as other resources:
+
+- [override](Concepts#override-folder)
+- [MOD/ERF/SAV](ERF-File-Format)
+- [KEY/BIF](KEY-File-Format)
+
+Hex type id **`0x0004`** is listed under [Resource type identifiers](Resource-Formats-and-Resolution#resource-type-identifiers).
 
 **Implementation (PyKotor)**
 
-- **Binary reader/writer:** [`io_wav.py`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/wav/io_wav.py) — [`WAVBinaryReader` L100+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/wav/io_wav.py#L100), [`load` L148+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/wav/io_wav.py#L148) (SFX obfuscation + RIFF); [`WAVBinaryWriter` L302+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/wav/io_wav.py#L302); RIFF parse helper [`_parse_riff_wave_from_kaitai` L56+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/wav/io_wav.py#L56).
+- **Binary reader/writer:**
+
+  - [`io_wav.py`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/wav/io_wav.py)
+  - [`WAVBinaryReader` L100+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/wav/io_wav.py#L100)
+  - [`load` L148+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/wav/io_wav.py#L148) (SFX obfuscation + RIFF)
+  - [`WAVBinaryWriter` L302+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/wav/io_wav.py#L302)
+  - RIFF parse helper [`_parse_riff_wave_from_kaitai` L56+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/wav/io_wav.py#L56)
 - **Data model:** [`wav_data.py`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/wav/wav_data.py).
 
 **Cross-reference implementations (line anchors are against `master` and may drift):**
 
 - **[reone](https://github.com/modawan/reone)** ([historical upstream / mirror: seedhartha/reone](https://github.com/modawan/reone)) — [`wavreader.cpp` — `WavReader::load` L32+](https://github.com/modawan/reone/blob/master/src/libs/audio/format/wavreader.cpp#L32) (470-byte SFX signature `FF F3 60 C4` then seek `0x1DA`, RIFF/`fmt`/`data`, MP3-in-WAV edge case).
 - **[KotOR.js](https://github.com/KobaltBlu/KotOR.js)** — [`AudioFile.ts`](https://github.com/KobaltBlu/KotOR.js/blob/master/src/audio/AudioFile.ts) — SFX probe [`fakeHeaderTest` / `riffHeaderTest` L12-L13](https://github.com/KobaltBlu/KotOR.js/blob/master/src/audio/AudioFile.ts#L12-L13), strip 470-byte prefix [`processFile` L118-L124](https://github.com/KobaltBlu/KotOR.js/blob/master/src/audio/AudioFile.ts#L118-L124), MP3-in-WAV `riffSize == 50` branch [L131-L137](https://github.com/KobaltBlu/KotOR.js/blob/master/src/audio/AudioFile.ts#L131-L137).
-- **[Kotor.NET](https://github.com/NickHugi/Kotor.NET)** — no dedicated `KotorWAV` reader on the default branch; creature sound **StrRefs** (resolved to `.wav` via [TLK](TLK-File-Format) at runtime) are modeled in [`Kotor.NET/Formats/KotorSSF/SSF.cs` L12+](https://github.com/NickHugi/Kotor.NET/blob/master/Kotor.NET/Formats/KotorSSF/SSF.cs#L12). For byte-level RIFF/SFX layout, prefer **PyKotor**, **reone**, and **KotOR.js** above.
+- **[Kotor.NET](https://github.com/NickHugi/Kotor.NET)** — no dedicated `KotorWAV` reader on the default branch; creature sound **StrRefs** (resolved to `.wav` via [TLK](TLK-File-Format) at runtime) are modeled in [`Kotor.NET/Formats/KotorSSF/SSF.cs` L12+](https://github.com/NickHugi/Kotor.NET/blob/master/Kotor.NET/Formats/KotorSSF/SSF.cs#L12). For byte-level RIFF/SFX layout, prefer the implementations above:
 
-**For mod developers:** WAV files are referenced by [TLK](TLK-File-Format) (voice-over) and [SSF](SSF-File-Format); see [HoloPatcher README for Mod Developers](HoloPatcher-README-for-mod-developers).
+  - PyKotor (`io_wav.py` in this section)
+  - [reone](https://github.com/modawan/reone)
+  - [KotOR.js](https://github.com/KobaltBlu/KotOR.js)
 
-**Related formats:** WAV is referenced by [TLK](TLK-File-Format) (StrRef --> sound), [SSF](SSF-File-Format), [LIP](LIP-File-Format), and [DLG](GFF-DLG) (VO_ResRef).
+**For mod developers:** WAV files are referenced from:
+
+- [TLK](TLK-File-Format) (voice-over)
+- [SSF](SSF-File-Format)
+
+See [HoloPatcher README for Mod Developers](HoloPatcher-README-for-mod-developers).
+
+**Related formats:**
+
+- [TLK](TLK-File-Format) (StrRef → sound)
+- [SSF](SSF-File-Format)
+- [LIP](LIP-File-Format)
+- [DLG](GFF-Creature-and-Dialogue#dlg) (`VO_ResRef`)
 
 ## Table of Contents
 
@@ -128,6 +154,6 @@ With this structure, WAV assets authored in PyKotor will play identically in the
 - [TLK File Format](TLK-File-Format) - Talk table that references WAV voice-over
 - [SSF File Format](SSF-File-Format) - Sound set files that reference WAV via StrRef
 - [LIP File Format](LIP-File-Format) - Lip-sync paired with WAV dialogue
-- [GFF-DLG](GFF-DLG) - Dialogue files that reference WAV (VO_ResRef)
+- [GFF-DLG](GFF-Creature-and-Dialogue#dlg) - Dialogue files that reference WAV (VO_ResRef)
 
 ---

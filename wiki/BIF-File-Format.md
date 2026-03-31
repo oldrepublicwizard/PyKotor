@@ -32,7 +32,7 @@ BIF containers are the primary storage mechanism for game assets. The game organ
 - `data/sounds.bif`: Audio files ([WAV](WAV-File-Format))
 - `data/2da.bif`: Game data tables ([2DA files](2DA-File-Format))
 - `data/scripts.bif`: Compiled scripts ([NCS](NCS-File-Format))
-- `data/dialogs.bif`: Conversation files ([DLG](GFF-DLG))
+- `data/dialogs.bif`: Conversation files ([DLG](GFF-Creature-and-Dialogue#dlg))
 - `data/lips.bif`: [LIP](LIP-File-Format)-sync [animation](MDL-MDX-File-Format#animation-header) data ([LIP](LIP-File-Format))
 - Additional platform-specific BIFs (e.g., `dataxbox/`, `data_mac/`)
 

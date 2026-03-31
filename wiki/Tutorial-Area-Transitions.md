@@ -96,6 +96,6 @@ You should be able to move between the Jedi Enclave and the new module via the d
 - [Indoor Map Builder User Guide](Indoor-Map-Builder-User-Guide) -- Building Modules
 - [Area Modding and Room Transitions](Area-Modding-and-Room-Transitions) -- LYT/VIS/WOK concepts; Deadly Stream workflows (e.g. [Adding Rooms to a Module](https://deadlystream.com/topic/8517-adding-existing-rooms-to-a-module/)) are **community context**, not engine SSOT
 - [GFF-UTD](GFF-File-Format#utd-door) -- Door instances and links
-- [GFF-UTT](GFF-UTT) -- Trigger format
+- [GFF-UTT](GFF-Spatial-Objects#utt) -- Trigger format
 - [GFF-UTW](GFF-File-Format#utw-waypoint) -- Waypoints
 - [GFF-GIT](GFF-File-Format#git-game-instance-template) -- Placing instances

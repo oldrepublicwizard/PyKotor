@@ -1,10 +1,19 @@
 # KotOR LYT files format Documentation
 
-LYT (Layout) files define how area [room models](LYT-File-Format#room-definitions) are positioned inside a module. They are plain-text descriptors that list room placements, swoop-track props, obstacles, and door hook transforms. The engine combines this data with [MDL](MDL-MDX-File-Format)/[MDX](MDL-MDX-File-Format) [geometry](MDL-MDX-File-Format#geometry-header) to assemble the final area. LYT files are loaded with the same [resource resolution order](Concepts#resource-resolution-order) as other resources (override, MOD/SAV, KEY/BIF).
+LYT (Layout) files define how area [room models](LYT-File-Format#room-definitions) are positioned inside a module. They are plain-text descriptors that list room placements, swoop-track props, obstacles, and door hook transforms. The engine combines this data with [MDL](MDL-MDX-File-Format) and [MDX](MDL-MDX-File-Format) [geometry](MDL-MDX-File-Format#geometry-header) to assemble the final area. LYT files are loaded with the same [resource resolution order](Concepts#resource-resolution-order) as other resources (override, MOD/SAV, KEY/BIF).
 
-**For mod developers:** LYT is edited in the module/area layout tools; see [Indoor Map Builder Implementation Guide](Indoor-Map-Builder-Implementation-Guide) and [HoloPatcher README for Mod Developers](HoloPatcher-README-for-mod-developers).
+**For mod developers:**
 
-**Related formats:** LYT references [MDL/MDX](MDL-MDX-File-Format) room models, [BWM](BWM-File-Format) (WOK) walkmeshes, [VIS](VIS-File-Format), and [GFF-ARE](GFF-ARE).
+- LYT is edited in the module/area layout tools.
+- See [Indoor Map Builder Implementation Guide](Indoor-Map-Builder-Implementation-Guide).
+- See [HoloPatcher README for Mod Developers](HoloPatcher-README-for-mod-developers).
+
+**Related formats:**
+
+- [MDL/MDX](MDL-MDX-File-Format) room models
+- [BWM](BWM-File-Format) (WOK) walkmeshes
+- [VIS](VIS-File-Format)
+- [GFF-ARE](GFF-Module-and-Area#are)
 
 ## Table of Contents
 
@@ -25,15 +34,33 @@ LYT (Layout) files define how area [room models](LYT-File-Format#room-definition
 
 - LYT files are [ASCII](https://en.wikipedia.org/wiki/ASCII) text with a deterministic order: `beginlayout`, optional sections, then `donelayout`.  
 - Every section declares a count and then lists entries on subsequent lines.  
-- All implementations ([reone](https://github.com/modawan/reone), [xoreos](https://github.com/xoreos/xoreos), [KotOR.js](https://github.com/KobaltBlu/KotOR.js), [Kotor.NET](https://github.com/NickHugi/Kotor.NET)) parse identical tokens; KotOR-Unity mirrors the same structure.
+- Implementations that parse the same token stream:
 
-**Implementation (PyKotor):** [`Libraries/PyKotor/src/pykotor/resource/formats/lyt/`](https://github.com/OldRepublicDevs/PyKotor/tree/master/Libraries/PyKotor/src/pykotor/resource/formats/lyt) — read [`LYTAsciiReader.load` L60+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/lyt/io_lyt.py#L60), write [`LYTAsciiWriter.write` L150+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/lyt/io_lyt.py#L150); data model [`LYT` L64+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/lyt/lyt_data.py#L64).
+  - [reone](https://github.com/modawan/reone)
+  - [xoreos](https://github.com/xoreos/xoreos)
+  - [KotOR.js](https://github.com/KobaltBlu/KotOR.js)
+  - [Kotor.NET](https://github.com/NickHugi/Kotor.NET)
+
+  [KotOR-Unity](https://github.com/reubenduncan/KotOR-Unity) mirrors the same structure.
+
+**Implementation (PyKotor):**
+
+- package: [`Libraries/PyKotor/src/pykotor/resource/formats/lyt/`](https://github.com/OldRepublicDevs/PyKotor/tree/master/Libraries/PyKotor/src/pykotor/resource/formats/lyt)
+- read [`LYTAsciiReader.load` L60+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/lyt/io_lyt.py#L60)
+- write [`LYTAsciiWriter.write` L150+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/lyt/io_lyt.py#L150)
+- data model [`LYT` L64+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/lyt/lyt_data.py#L64)
 
 **Cross-reference (other implementations):**
 
-- **[reone](https://github.com/modawan/reone)**: [`lytreader.cpp` `LytReader::load` L27+](https://github.com/modawan/reone/blob/master/src/libs/resource/format/lytreader.cpp#L27), [`processLine` L37+](https://github.com/modawan/reone/blob/master/src/libs/resource/format/lytreader.cpp#L37)
+- **[reone](https://github.com/modawan/reone)**:
+
+  - [`lytreader.cpp` `LytReader::load` L27+](https://github.com/modawan/reone/blob/master/src/libs/resource/format/lytreader.cpp#L27)
+  - [`processLine` L37+](https://github.com/modawan/reone/blob/master/src/libs/resource/format/lytreader.cpp#L37)
 - **[xoreos](https://github.com/xoreos/xoreos)**: [`lytfile.cpp`](https://github.com/xoreos/xoreos/blob/master/src/aurora/lytfile.cpp)
-- **[KotOR.js](https://github.com/KobaltBlu/KotOR.js)**: [`LYTObject.ts` L19+](https://github.com/KobaltBlu/KotOR.js/blob/master/src/resource/LYTObject.ts#L19), [`_parse` L95+](https://github.com/KobaltBlu/KotOR.js/blob/master/src/resource/LYTObject.ts#L95)
+- **[KotOR.js](https://github.com/KobaltBlu/KotOR.js)**:
+
+  - [`LYTObject.ts` L19+](https://github.com/KobaltBlu/KotOR.js/blob/master/src/resource/LYTObject.ts#L19)
+  - [`_parse` L95+](https://github.com/KobaltBlu/KotOR.js/blob/master/src/resource/LYTObject.ts#L95)
 - **[Kotor.NET](https://github.com/NickHugi/Kotor.NET)**: [`LYT.cs` L11+](https://github.com/NickHugi/Kotor.NET/blob/master/Kotor.NET/Formats/KotorLYT/LYT.cs#L11) (in-memory room/door/track/obstacle DTOs)
 
 ### See also
@@ -41,7 +68,7 @@ LYT (Layout) files define how area [room models](LYT-File-Format#room-definition
 - [MDL/MDX File Format](MDL-MDX-File-Format) - [room models](LYT-File-Format#room-definitions) referenced by LYT entries
 - [BWM File Format](BWM-File-Format) - Walkmeshes ([WOK](BWM-File-Format) files) loaded alongside LYT rooms
 - [VIS File Format](VIS-File-Format) - Visibility graph for areas with LYT rooms
-- [GFF-ARE](GFF-ARE) - [area files](GFF-File-Format#are-area) that load LYT layouts
+- [GFF-ARE](GFF-Module-and-Area#are) - [area files](GFF-File-Format#are-area) that load LYT layouts
 - [Indoor Map Builder Implementation Guide](Indoor-Map-Builder-Implementation-Guide) - Uses LYT format for generated modules
 
 ---
@@ -66,12 +93,15 @@ donelayout
 | Token | Description |
 | ----- | ----------- |
 | `roomcount` | Declares how many rooms follow. |
-| `<room_model>` | *ResRef* of the [MDL/MDX](MDL-MDX-File-Format)/[WOK](BWM-File-Format) triple (max 16 chars, no spaces). |
+| `<room_model>` | *ResRef* of the [MDL](MDL-MDX-File-Format), [MDX](MDL-MDX-File-Format), and [WOK](BWM-File-Format) triple (max 16 chars, no spaces). |
 | `<x y z>` | World-space position for the room’s origin. |
 
 Rooms are case-insensitive; PyKotor lowercases entries for caching and resource lookup. **Room order in the LYT defines the 0-based room index** used as the **transition ID** in [BWM](BWM-File-Format) perimeter edges. Changing room order or adding/removing rooms invalidates existing transition indices in walkmeshes; see [Area Modding and Room Transitions](Area-Modding-and-Room-Transitions).
 
-**For mod developers:** Loading a **layout** (LYT, optionally with [VIS](VIS-File-Format) and room models) establishes the room context needed for placement and **roomlink/transition editing**. Loading only individual room models without the layout does not provide that context. For more on room crossing and reassigning roomlinks, see [Area Modding and Room Transitions](Area-Modding-and-Room-Transitions).
+**For mod developers:**
+
+- Loading a **layout** (LYT, optionally with [VIS](VIS-File-Format) and room models) establishes the room context needed for placement and **roomlink/transition editing**. Loading only individual room models without the layout does not provide that context.
+- For more on room crossing and reassigning roomlinks, see [Area Modding and Room Transitions](Area-Modding-and-Room-Transitions).
 
 **References**
 
@@ -197,7 +227,8 @@ doorhookcount <N>
 
 - Units are meters in the same left-handed coordinate system as [MDL](MDL-MDX-File-Format) [models](MDL-MDX-File-Format).  
 - PyKotor validates that room ResRefs and hook targets are lowercase and conform to resource naming restrictions.  
-- The engine expects rooms to be pre-aligned so that adjoining doors share positions/rotations; [VIS files](VIS-File-Format) then control visibility between those rooms.  
+- The engine expects rooms to be pre-aligned so that adjoining doors share positions/rotations
+- [VIS files](VIS-File-Format) then control visibility between those rooms.
 
 **References**
 
@@ -224,6 +255,6 @@ All of the projects listed above agree on the plain-text token sequence; KotOR-U
 - [MDL/MDX File Format](MDL-MDX-File-Format) - Room models referenced by LYT entries
 - [BWM File Format](BWM-File-Format) - Walkmeshes (WOK) loaded alongside LYT rooms
 - [VIS File Format](VIS-File-Format) - Visibility graph for areas with LYT rooms
-- [GFF-ARE](GFF-ARE) - Area files that load LYT layouts
+- [GFF-ARE](GFF-Module-and-Area#are) - Area files that load LYT layouts
 - [Indoor Map Builder Implementation Guide](Indoor-Map-Builder-Implementation-Guide) - Uses LYT for generated modules
 

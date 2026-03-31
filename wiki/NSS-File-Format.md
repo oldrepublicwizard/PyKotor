@@ -13,11 +13,11 @@ NSS (NWScript Source) files contain human-readable NWScript source code that com
 - Compiles to [NCS](NCS-File-Format)
 - Scripts triggered from:
 
-  - [DLG](GFF-DLG)
+  - [DLG](GFF-Creature-and-Dialogue#dlg)
   - [UTC](GFF-File-Format#utc-creature)
-  - [UTD](GFF-UTD)
-  - [UTP](GFF-UTP)
-  - [IFO](GFF-IFO)
+  - [UTD](GFF-Spatial-Objects#utd)
+  - [UTP](GFF-Spatial-Objects#utp)
+  - [IFO](GFF-Module-and-Area#ifo)
 - Often reads [2DA](2DA-File-Format) data
 
 **Implementation (PyKotor):**
@@ -6769,6 +6769,6 @@ See [Other Constants](NSS-File-Format#other-constants) for detailed documentatio
 - [NCS File Format](NCS-File-Format) -- Compiled NWScript bytecode
 - [NSS Shared Functions - Actions](NSS-File-Format#actions) -- Action functions
 - [NSS Shared Constants](NSS-File-Format#object-type-constants) -- Object type and script constants
-- [GFF-DLG](GFF-DLG) -- Dialogue files that trigger NCS scripts
+- [GFF-DLG](GFF-Creature-and-Dialogue#dlg) -- Dialogue files that trigger NCS scripts
 - [2DA File Format](2DA-File-Format) -- Game data tables referenced by scripts
 - [Home](Home#community-sources-and-archives) -- Community sources and archives

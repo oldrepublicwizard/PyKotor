@@ -2,9 +2,22 @@
 
 NCS files contain compiled NWScript bytecode used in **KotOR and TSL**. Scripts run inside a stack-based virtual machine **shared across Aurora engine games** (KotOR, Neverwinter Nights, etc.). KotOR inherits the same format with minor opcode additions for game-specific systems. **This documentation focuses on KotOR-specific behavior**, though the core format is shared with Neverwinter Nights. In the Odyssey engine, script execution runs in the **server** (game world) context: triggers, dialogues, and engine calls operate on the server; the client receives state updates and handles display and input. NCS files are loaded with the same [resource resolution order](Concepts#resource-resolution-order) as other resources (override, MOD/SAV, KEY/BIF).
 
-**For mod developers:** Scripts are compiled from [NSS](NSS-File-Format) source; see the NSS/NCS toolset and [HoloPatcher README for Mod Developers](HoloPatcher-README-for-mod-developers).
+**For mod developers:**
 
-**Related formats:** NCS is produced from [NSS](NSS-File-Format); triggered by [DLG](GFF-DLG), [GIT](GFF-File-Format#git-game-instance-template), [UTC](GFF-File-Format#utc-creature), [UTD](GFF-UTD), [UTP](GFF-UTP), and [IFO](GFF-IFO) script hooks.
+- Scripts are compiled from [NSS](NSS-File-Format) source.
+- See the NSS/NCS toolset and [HoloPatcher README for Mod Developers](HoloPatcher-README-for-mod-developers).
+
+**Related formats:**
+
+- Produced from [NSS](NSS-File-Format)
+- Triggered by script hooks on:
+
+  - [DLG](GFF-Creature-and-Dialogue#dlg)
+  - [GIT](GFF-File-Format#git-game-instance-template)
+  - [UTC](GFF-File-Format#utc-creature)
+  - [UTD](GFF-Spatial-Objects#utd)
+  - [UTP](GFF-Spatial-Objects#utp)
+  - [IFO](GFF-Module-and-Area#ifo)
 
 **Implementation (PyKotor):**
 
@@ -19,7 +32,8 @@ NCS files contain compiled NWScript bytecode used in **KotOR and TSL**. Scripts 
 
 **Cross-reference (other implementations):**
 
-- **[xoreos](https://github.com/xoreos/xoreos)**: [`src/aurora/nwscript/ncsfile.cpp`](https://github.com/xoreos/xoreos/blob/master/src/aurora/nwscript/ncsfile.cpp) ([Mirror: th3w1zard1/xoreos`]  VM + decompilation
+- **[xoreos](https://github.com/xoreos/xoreos)**: [`src/aurora/nwscript/ncsfile.cpp`](https://github.com/xoreos/xoreos/blob/f36b681b2a38799ddd6fce0f252b6d7fa781dfc2/src/aurora/nwscript/ncsfile.cpp) — VM + decompilation
+  - Mirror (th3w1zard1/xoreos): <https://github.com/th3w1zard1/xoreos/blob/f36b681b2a38799ddd6fce0f252b6d7fa781dfc2/src/aurora/nwscript/ncsfile.cpp>
 - **[xoreos-tools](https://github.com/xoreos/xoreos-tools)**: [`src/nwscript/ncsfile.cpp`](https://github.com/xoreos/xoreos-tools/blob/master/src/nwscript/ncsfile.cpp)
 - **[reone](https://github.com/modawan/reone)**: [`src/libs/script/format/ncsreader.cpp`](https://github.com/modawan/reone/blob/master/src/libs/script/format/ncsreader.cpp)
 - **[KotOR.js](https://github.com/KobaltBlu/KotOR.js)**: [`NWScriptInstance.ts` L32+](https://github.com/KobaltBlu/KotOR.js/blob/master/src/nwscript/NWScriptInstance.ts#L32) (script VM instance / `run` loop)
@@ -68,14 +82,25 @@ NCS files contain compiled NWScript bytecode used in **KotOR and TSL**. Scripts 
 
 - The *VM* executes sequential instructions; control-flow opcodes (`JMP`, `JZ`, `JSR`) adjust the instruction pointer.  
 - *KotOR* introduces no custom container sections--scripts are a flat stream.  
-- All major reverse-engineered engines ([reone](https://github.com/modawan/reone), [xoreos](https://github.com/xoreos/xoreos), [NorthernLights](https://github.com/lachjames/NorthernLights), and others) decode the same structure; ***KotOR.js*** runs bytecode through its NWScript stack machine ([`NWScriptInstance.ts` L32+](https://github.com/KobaltBlu/KotOR.js/blob/master/src/nwscript/NWScriptInstance.ts#L32), [`NWScriptStack.ts` L31+](https://github.com/KobaltBlu/KotOR.js/blob/master/src/nwscript/NWScriptStack.ts#L31)) with the same per-opcode [*byte*](https://en.wikipedia.org/wiki/Byte) layout as native VMs.
-- The program size marker at offset 8 (`0x42`) is not a real instruction but a metadata field containing the total file size. Execution begins at offset 13 (*0x0D*) after the header.
+- All major reverse-engineered engines decode the same structure, including:
 
-**References:**
+  - [reone](https://github.com/modawan/reone)
+  - [xoreos](https://github.com/xoreos/xoreos)
+  - [NorthernLights](https://github.com/lachjames/NorthernLights)
+  - other stacks referenced on this page and [Home](Home#cross-reference-other-tools-and-engines)
+
+- ***KotOR.js*** runs bytecode through its NWScript stack machine:
+
+  - [`NWScriptInstance.ts` L32+](https://github.com/KobaltBlu/KotOR.js/blob/master/src/nwscript/NWScriptInstance.ts#L32)
+  - [`NWScriptStack.ts` L31+](https://github.com/KobaltBlu/KotOR.js/blob/master/src/nwscript/NWScriptStack.ts#L31)
+  - Per-opcode [*byte*](https://en.wikipedia.org/wiki/Byte) layout matches native VMs
+- The program size marker at offset 8 (`0x42`) is not a real instruction but a metadata field containing the total file size. Execution begins at offset 13 (*0x0D*) after the header.
 
 **Cross-reference:**
 
-- **PyKotor** — header read in [`io_ncs.py` NCSBinaryReader.load](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/ncs/io_ncs.py#L56)
+- **PyKotor**:
+
+  - header read: [`NCSBinaryReader.load` L56+](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/ncs/io_ncs.py#L56) (`io_ncs.py`)
 - **[xoreos](https://github.com/xoreos/xoreos)**: [`ncsfile.cpp` L342–L350](https://github.com/xoreos/xoreos/blob/master/src/aurora/nwscript/ncsfile.cpp#L342-L350)
 - **[xoreos-tools](https://github.com/xoreos/xoreos-tools)**: [`ncsfile.cpp` L116–L125](https://github.com/xoreos/xoreos-tools/blob/master/src/nwscript/ncsfile.cpp#L116-L125)
 - **[reone](https://github.com/modawan/reone)**: [`ncsreader.cpp` L28–L40](https://github.com/modawan/reone/blob/master/src/libs/script/format/ncsreader.cpp#L28-L40)
@@ -127,7 +152,15 @@ graph TD
 - **structure Recognition**: 12-[*Byte*](https://en.wikipedia.org/wiki/Byte) copies --> vectors (z, y, x order), other multiples of 4 --> custom structures
 - **Variable Naming**: Generate names from type + position or infer from usage patterns
 
-**Reference:** [xoreos](https://github.com/xoreos/xoreos) [`ncsfile.cpp` L105–L172](https://github.com/xoreos/xoreos/blob/master/src/aurora/nwscript/ncsfile.cpp#L105-L172) (SP/BP), [L389–L394](https://github.com/xoreos/xoreos/blob/master/src/aurora/nwscript/ncsfile.cpp#L389-L394) (globals), [L1039–L1060](https://github.com/xoreos/xoreos/blob/master/src/aurora/nwscript/ncsfile.cpp#L1039-L1060) (SAVEBP/RESTOREBP); [reone](https://github.com/modawan/reone) [`ncsreader.cpp` L52–L97](https://github.com/modawan/reone/blob/master/src/libs/script/format/ncsreader.cpp#L52-L97); [xoreos-tools](https://github.com/xoreos/xoreos-tools) [`ncsfile.cpp`](https://github.com/xoreos/xoreos-tools/blob/master/src/nwscript/ncsfile.cpp); [KotOR.js](https://github.com/KobaltBlu/KotOR.js) [`NWScriptInstance.ts` L32+](https://github.com/KobaltBlu/KotOR.js/blob/master/src/nwscript/NWScriptInstance.ts#L32); [NorthernLights](https://github.com/lachjames/NorthernLights) [`NCSReader.cs` (`NCSFile`) L8+](https://github.com/lachjames/NorthernLights/blob/master/Assets/Scripts/ncs/NCSReader.cs#L8)
+**Reference:**
+
+- [xoreos](https://github.com/xoreos/xoreos) [`ncsfile.cpp` L105–L172](https://github.com/xoreos/xoreos/blob/master/src/aurora/nwscript/ncsfile.cpp#L105-L172) (SP/BP)
+- [xoreos](https://github.com/xoreos/xoreos) [L389–L394](https://github.com/xoreos/xoreos/blob/master/src/aurora/nwscript/ncsfile.cpp#L389-L394) (globals)
+- [xoreos](https://github.com/xoreos/xoreos) [L1039–L1060](https://github.com/xoreos/xoreos/blob/master/src/aurora/nwscript/ncsfile.cpp#L1039-L1060) (SAVEBP/RESTOREBP)
+- [reone](https://github.com/modawan/reone) [`ncsreader.cpp` L52–L97](https://github.com/modawan/reone/blob/master/src/libs/script/format/ncsreader.cpp#L52-L97)
+- [xoreos-tools](https://github.com/xoreos/xoreos-tools) [`ncsfile.cpp`](https://github.com/xoreos/xoreos-tools/blob/master/src/nwscript/ncsfile.cpp)
+- [KotOR.js](https://github.com/KobaltBlu/KotOR.js) [`NWScriptInstance.ts` L32+](https://github.com/KobaltBlu/KotOR.js/blob/master/src/nwscript/NWScriptInstance.ts#L32)
+- [NorthernLights](https://github.com/lachjames/NorthernLights) [`NCSReader.cs` (`NCSFile`) L8+](https://github.com/lachjames/NorthernLights/blob/master/Assets/Scripts/ncs/NCSReader.cs#L8)
 
 ---
 
@@ -153,7 +186,14 @@ All implementations validate:
 
 **Reject file if any validation fails.**
 
-**Reference:** [`reone/src/libs/script/format/ncsreader.cpp:28-40`](https://github.com/modawan/reone/blob/master/src/libs/script/format/ncsreader.cpp#L28-L40) (Header Reading and Validation), [`xoreos/src/aurora/nwscript/ncsfile.cpp:333-350`](https://github.com/xoreos/xoreos/blob/master/src/aurora/nwscript/ncsfile.cpp#L333-L350) (includes validation of 66 (`0x42`) marker), [`xoreos-tools/src/nwscript/ncsfile.cpp:106-125`](https://github.com/xoreos/xoreos-tools/blob/master/src/nwscript/ncsfile.cpp#L106-L125) (Header Parsing Utilities), [`NorthernLights/Assets/Scripts/ncs/NCSReader.cs:876-886`](https://github.com/lachjames/NorthernLights/blob/master/Assets/Scripts/ncs/NCSReader.cs#L876-L886) (66 (`0x42`) marker handling), [`NCS.cs` L9+](https://github.com/NickHugi/Kotor.NET/blob/master/Kotor.NET/Formats/KotorNCS/NCS.cs#L9) (Header Reading), [`Libraries/PyKotor/src/pykotor/resource/formats/ncs/io_ncs.py:62-93`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/ncs/io_ncs.py#L62-L93) (NCS Instruction Definitions)
+**Reference:**
+
+- [`reone/src/libs/script/format/ncsreader.cpp:28-40`](https://github.com/modawan/reone/blob/master/src/libs/script/format/ncsreader.cpp#L28-L40) (header reading and validation)
+- [`xoreos/src/aurora/nwscript/ncsfile.cpp:333-350`](https://github.com/xoreos/xoreos/blob/master/src/aurora/nwscript/ncsfile.cpp#L333-L350) (includes validation of 66 (`0x42`) marker)
+- [`xoreos-tools/src/nwscript/ncsfile.cpp:106-125`](https://github.com/xoreos/xoreos-tools/blob/master/src/nwscript/ncsfile.cpp#L106-L125) (header parsing utilities)
+- [`NorthernLights/Assets/Scripts/ncs/NCSReader.cs:876-886`](https://github.com/lachjames/NorthernLights/blob/master/Assets/Scripts/ncs/NCSReader.cs#L876-L886) (66 (`0x42`) marker handling)
+- [`NCS.cs` L9+](https://github.com/NickHugi/Kotor.NET/blob/master/Kotor.NET/Formats/KotorNCS/NCS.cs#L9) (header reading)
+- [`Libraries/PyKotor/src/pykotor/resource/formats/ncs/io_ncs.py:62-93`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/ncs/io_ncs.py#L62-L93) (NCS instruction definitions)
 
 ---
 
@@ -230,7 +270,13 @@ The qualifier [*byte*](https://en.wikipedia.org/wiki/Byte) system allows the sam
 
 *Vectors* types are special: they occupy 3 stack positions (12 bytes) but are treated as a single composite type. When operations involve *vectors*, all three [*float*](GFF-File-Format#gff-data-types) components are processed together.
 
-**Reference:** [`reone/src/libs/script/format/ncsreader.cpp:42-190`](https://github.com/modawan/reone/blob/master/src/libs/script/format/ncsreader.cpp#L42-L190), [`xoreos/src/aurora/nwscript/ncsfile.h:131-177`](https://github.com/xoreos/xoreos/blob/master/src/aurora/nwscript/ncsfile.h#L131-L177), [`NCS.cs` L9+](https://github.com/NickHugi/Kotor.NET/blob/master/Kotor.NET/Formats/KotorNCS/NCS.cs#L9), [`NorthernLights/Assets/Scripts/ncs/NCSReader.cs`](https://github.com/lachjames/NorthernLights/blob/master/Assets/Scripts/ncs/NCSReader.cs), [`NWScriptInstruction.ts` L79+](https://github.com/KobaltBlu/KotOR.js/blob/master/src/nwscript/NWScriptInstruction.ts#L79)
+**Reference:**
+
+- [`reone/src/libs/script/format/ncsreader.cpp:42-190`](https://github.com/modawan/reone/blob/master/src/libs/script/format/ncsreader.cpp#L42-L190)
+- [`xoreos/src/aurora/nwscript/ncsfile.h:131-177`](https://github.com/xoreos/xoreos/blob/master/src/aurora/nwscript/ncsfile.h#L131-L177)
+- [`NCS.cs` L9+](https://github.com/NickHugi/Kotor.NET/blob/master/Kotor.NET/Formats/KotorNCS/NCS.cs#L9)
+- [`NorthernLights/Assets/Scripts/ncs/NCSReader.cs`](https://github.com/lachjames/NorthernLights/blob/master/Assets/Scripts/ncs/NCSReader.cs)
+- [`NWScriptInstruction.ts` L79+](https://github.com/KobaltBlu/KotOR.js/blob/master/src/nwscript/NWScriptInstruction.ts#L79)
 
 ### Arguments
 
@@ -291,8 +337,16 @@ Jump offsets are **relative to the start of the jump instruction itself**, not t
 
 All multi-[*byte*](https://en.wikipedia.org/wiki/Byte) values in NCS files are stored in **[big-endian](https://en.wikipedia.org/wiki/Endianness)** ([network byte order](https://en.wikipedia.org/wiki/Endianness#Networking)):
 
-- 16-bit values ([*uint16*](GFF-File-Format#gff-data-types), [*int16*](GFF-File-Format#gff-data-types)): Most significant [*byte*](https://en.wikipedia.org/wiki/Byte) first
-- 32-bit values ([*uint32*](GFF-File-Format#gff-data-types), [*int32*](GFF-File-Format#gff-data-types), [*float32*](GFF-File-Format#gff-data-types)): Most significant [*byte*](https://en.wikipedia.org/wiki/Byte) first
+- 16-bit values — most significant [*byte*](https://en.wikipedia.org/wiki/Byte) first:
+
+  - [*uint16*](GFF-File-Format#gff-data-types)
+  - [*int16*](GFF-File-Format#gff-data-types)
+
+- 32-bit values — most significant [*byte*](https://en.wikipedia.org/wiki/Byte) first:
+
+  - [*uint32*](GFF-File-Format#gff-data-types)
+  - [*int32*](GFF-File-Format#gff-data-types)
+  - [*float32*](GFF-File-Format#gff-data-types)
 - This applies to: offsets, sizes, constants, jump targets, and all numeric arguments
 
 **Instruction Parsing:**
@@ -324,7 +378,15 @@ All multi-[*byte*](https://en.wikipedia.org/wiki/Byte) values: [big-endian](http
 
 Static sizing enables: *instruction* list building, jump target resolution, code coverage, static analysis
 
-**Reference:** [`xoreos/src/aurora/nwscript/ncsfile.cpp:194-1649`](https://github.com/xoreos/xoreos/blob/master/src/aurora/nwscript/ncsfile.cpp#L194-L1649), [`reone/src/libs/script/format/ncsreader.cpp:42-190`](https://github.com/modawan/reone/blob/master/src/libs/script/format/ncsreader.cpp#L42-L190), [`NCS.cs` L9+](https://github.com/NickHugi/Kotor.NET/blob/master/Kotor.NET/Formats/KotorNCS/NCS.cs#L9), [`NorthernLights/Assets/Scripts/ncs/NCSReader.cs`](https://github.com/lachjames/NorthernLights/blob/master/Assets/Scripts/ncs/NCSReader.cs), [`xoreos-tools/src/nwscript/ncsfile.cpp`](https://github.com/xoreos/xoreos-tools/blob/master/src/nwscript/ncsfile.cpp), [`NWScriptInstance.ts` L32+](https://github.com/KobaltBlu/KotOR.js/blob/master/src/nwscript/NWScriptInstance.ts#L32), [`xoreos/src/aurora/nwscript/ncsfile.h:86-280`](https://github.com/xoreos/xoreos/blob/master/src/aurora/nwscript/ncsfile.h#L86-L280)
+**Reference:**
+
+- [`xoreos/src/aurora/nwscript/ncsfile.cpp:194-1649`](https://github.com/xoreos/xoreos/blob/master/src/aurora/nwscript/ncsfile.cpp#L194-L1649)
+- [`reone/src/libs/script/format/ncsreader.cpp:42-190`](https://github.com/modawan/reone/blob/master/src/libs/script/format/ncsreader.cpp#L42-L190)
+- [`NCS.cs` L9+](https://github.com/NickHugi/Kotor.NET/blob/master/Kotor.NET/Formats/KotorNCS/NCS.cs#L9)
+- [`NorthernLights/Assets/Scripts/ncs/NCSReader.cs`](https://github.com/lachjames/NorthernLights/blob/master/Assets/Scripts/ncs/NCSReader.cs)
+- [`xoreos-tools/src/nwscript/ncsfile.cpp`](https://github.com/xoreos/xoreos-tools/blob/master/src/nwscript/ncsfile.cpp)
+- [`NWScriptInstance.ts` L32+](https://github.com/KobaltBlu/KotOR.js/blob/master/src/nwscript/NWScriptInstance.ts#L32)
+- [`xoreos/src/aurora/nwscript/ncsfile.h:86-280`](https://github.com/xoreos/xoreos/blob/master/src/aurora/nwscript/ncsfile.h#L86-L280)
 
 ### Instruction Encoding Examples
 
@@ -457,7 +519,14 @@ Bytes: [0x1F][0x00][0xFF][0xFF][0xFF][0xF0]
 
 **Examples:** *offset* -4 = *position* 1 (top), -8 = *position* 2, vector (12B) at -12 = *positions* 1-3
 
-**Reference:** [`xoreos/src/aurora/nwscript/ncsfile.cpp:458-545`](https://github.com/xoreos/xoreos/blob/master/src/aurora/nwscript/ncsfile.cpp#L458-L545), [`reone/src/libs/script/format/ncsreader.cpp:52-97`](https://github.com/modawan/reone/blob/master/src/libs/script/format/ncsreader.cpp#L52-L97), [`xoreos/src/aurora/nwscript/ncsfile.cpp:105-172`](https://github.com/xoreos/xoreos/blob/master/src/aurora/nwscript/ncsfile.cpp#L105-L172), [`NCS.cs` L9+](https://github.com/NickHugi/Kotor.NET/blob/master/Kotor.NET/Formats/KotorNCS/NCS.cs#L9), [`NorthernLights/Assets/Scripts/ncs/NCSReader.cs`](https://github.com/lachjames/NorthernLights/blob/master/Assets/Scripts/ncs/NCSReader.cs), [`NWScriptInstance.ts` L32+](https://github.com/KobaltBlu/KotOR.js/blob/master/src/nwscript/NWScriptInstance.ts#L32)
+**Reference:**
+
+- [`xoreos/src/aurora/nwscript/ncsfile.cpp:458-545`](https://github.com/xoreos/xoreos/blob/master/src/aurora/nwscript/ncsfile.cpp#L458-L545)
+- [`reone/src/libs/script/format/ncsreader.cpp:52-97`](https://github.com/modawan/reone/blob/master/src/libs/script/format/ncsreader.cpp#L52-L97)
+- [`xoreos/src/aurora/nwscript/ncsfile.cpp:105-172`](https://github.com/xoreos/xoreos/blob/master/src/aurora/nwscript/ncsfile.cpp#L105-L172)
+- [`NCS.cs` L9+](https://github.com/NickHugi/Kotor.NET/blob/master/Kotor.NET/Formats/KotorNCS/NCS.cs#L9)
+- [`NorthernLights/Assets/Scripts/ncs/NCSReader.cs`](https://github.com/lachjames/NorthernLights/blob/master/Assets/Scripts/ncs/NCSReader.cs)
+- [`NWScriptInstance.ts` L32+](https://github.com/KobaltBlu/KotOR.js/blob/master/src/nwscript/NWScriptInstance.ts#L32)
 
 **Constants:**
 
@@ -472,7 +541,14 @@ All use opcode `0x04`, *qualifier* determines type:
 
 **Behavior:** Read value --> Create immutable constant entry --> Push onto stack (*SP*+4) --> Remains until consumed/removed
 
-**Reference:** [`xoreos/src/aurora/nwscript/ncsfile.cpp:500-545`](https://github.com/xoreos/xoreos/blob/master/src/aurora/nwscript/ncsfile.cpp#L500-L545), [`reone/src/libs/script/format/ncsreader.cpp:60-73`](https://github.com/modawan/reone/blob/master/src/libs/script/format/ncsreader.cpp#L60-L73), [`NCS.cs` L9+](https://github.com/NickHugi/Kotor.NET/blob/master/Kotor.NET/Formats/KotorNCS/NCS.cs#L9), [`NorthernLights/Assets/Scripts/ncs/NCSReader.cs`](https://github.com/lachjames/NorthernLights/blob/master/Assets/Scripts/ncs/NCSReader.cs), [`xoreos-tools/src/nwscript/ncsfile.cpp`](https://github.com/xoreos/xoreos-tools/blob/master/src/nwscript/ncsfile.cpp), [`NWScriptDef.ts` L12+](https://github.com/KobaltBlu/KotOR.js/blob/master/src/nwscript/NWScriptDef.ts#L12)
+**Reference:**
+
+- [`xoreos/src/aurora/nwscript/ncsfile.cpp:500-545`](https://github.com/xoreos/xoreos/blob/master/src/aurora/nwscript/ncsfile.cpp#L500-L545)
+- [`reone/src/libs/script/format/ncsreader.cpp:60-73`](https://github.com/modawan/reone/blob/master/src/libs/script/format/ncsreader.cpp#L60-L73)
+- [`NCS.cs` L9+](https://github.com/NickHugi/Kotor.NET/blob/master/Kotor.NET/Formats/KotorNCS/NCS.cs#L9)
+- [`NorthernLights/Assets/Scripts/ncs/NCSReader.cs`](https://github.com/lachjames/NorthernLights/blob/master/Assets/Scripts/ncs/NCSReader.cs)
+- [`xoreos-tools/src/nwscript/ncsfile.cpp`](https://github.com/xoreos/xoreos-tools/blob/master/src/nwscript/ncsfile.cpp)
+- [`NWScriptDef.ts` L12+](https://github.com/KobaltBlu/KotOR.js/blob/master/src/nwscript/NWScriptDef.ts#L12)
 
 **Arithmetic Operations:**
 
@@ -515,7 +591,11 @@ All arithmetic operations consume operands from the top of the stack and place t
 - The size field for structure comparisons must be a multiple of 4 to maintain alignment
 - string comparisons compare string pointers (4-[*byte*](https://en.wikipedia.org/wiki/Byte) values), not string contents directly
 
-**Reference:** [`xoreos/src/aurora/nwscript/ncsfile.cpp:712-768`](https://github.com/xoreos/xoreos/blob/master/src/aurora/nwscript/ncsfile.cpp#L712-L768) (Comparison OPCode Implementation), [`reone/src/libs/script/format/ncsreader.cpp:102-105`](https://github.com/modawan/reone/blob/master/src/libs/script/format/ncsreader.cpp#L102-L105) (Comparison Instruction Parsing), [`NCS.cs` L9+](https://github.com/NickHugi/Kotor.NET/blob/master/Kotor.NET/Formats/KotorNCS/NCS.cs#L9) (Comparison Operation Handling)
+**Reference:**
+
+- [`xoreos/src/aurora/nwscript/ncsfile.cpp:712-768`](https://github.com/xoreos/xoreos/blob/master/src/aurora/nwscript/ncsfile.cpp#L712-L768) (Comparison OPCode Implementation)
+- [`reone/src/libs/script/format/ncsreader.cpp:102-105`](https://github.com/modawan/reone/blob/master/src/libs/script/format/ncsreader.cpp#L102-L105) (Comparison Instruction Parsing)
+- [`NCS.cs` L9+](https://github.com/NickHugi/Kotor.NET/blob/master/Kotor.NET/Formats/KotorNCS/NCS.cs#L9) (Comparison Operation Handling)
 
 **Control Flow:**
 
@@ -561,7 +641,14 @@ During decompilation, *DESTRUCT* identifies structure field accesses (preserved 
 
 **Examples:** *JMP* @100 +20 --> 120, *JZ* @200 -16 --> 184, *JSR* @300 +50 --> 350 (*return addr* 306)
 
-**Reference:** [`xoreos/src/aurora/nwscript/ncsfile.cpp:712-768`](https://github.com/xoreos/xoreos/blob/master/src/aurora/nwscript/ncsfile.cpp#L712-L768), [`reone/src/libs/script/format/ncsreader.cpp:81-91`](https://github.com/modawan/reone/blob/master/src/libs/script/format/ncsreader.cpp#L81-L91), [`NCS.cs` L9+](https://github.com/NickHugi/Kotor.NET/blob/master/Kotor.NET/Formats/KotorNCS/NCS.cs#L9), [`NorthernLights/Assets/Scripts/ncs/NCSReader.cs`](https://github.com/lachjames/NorthernLights/blob/master/Assets/Scripts/ncs/NCSReader.cs), [`xoreos-tools/src/nwscript/ncsfile.cpp`](https://github.com/xoreos/xoreos-tools/blob/master/src/nwscript/ncsfile.cpp), [`KotOR.js/src/nwscript/NWScript.ts` L39+](https://github.com/KobaltBlu/KotOR.js/blob/master/src/nwscript/NWScript.ts#L39)
+**Reference:**
+
+- [`xoreos/src/aurora/nwscript/ncsfile.cpp:712-768`](https://github.com/xoreos/xoreos/blob/master/src/aurora/nwscript/ncsfile.cpp#L712-L768)
+- [`reone/src/libs/script/format/ncsreader.cpp:81-91`](https://github.com/modawan/reone/blob/master/src/libs/script/format/ncsreader.cpp#L81-L91)
+- [`NCS.cs` L9+](https://github.com/NickHugi/Kotor.NET/blob/master/Kotor.NET/Formats/KotorNCS/NCS.cs#L9)
+- [`NorthernLights/Assets/Scripts/ncs/NCSReader.cs`](https://github.com/lachjames/NorthernLights/blob/master/Assets/Scripts/ncs/NCSReader.cs)
+- [`xoreos-tools/src/nwscript/ncsfile.cpp`](https://github.com/xoreos/xoreos-tools/blob/master/src/nwscript/ncsfile.cpp)
+- [`KotOR.js/src/nwscript/NWScript.ts` L39+](https://github.com/KobaltBlu/KotOR.js/blob/master/src/nwscript/NWScript.ts#L39)
 
 **Engine Function Calls:**
 
@@ -577,7 +664,13 @@ The decompiler parses this file to build a lookup table mapping *routine numbers
 
 **See [NSS File Format](NSS-File-Format) for complete documentation of nwscript.nss, function definitions, and KotOR-specific functions/constants.**
 
-**Reference:** [`xoreos/src/aurora/nwscript/ncsfile.cpp:643-660`](https://github.com/xoreos/xoreos/blob/master/src/aurora/nwscript/ncsfile.cpp#L643-L660) (ACTION opcode implementation), [`reone/src/libs/script/format/ncsreader.cpp:74-77`](https://github.com/modawan/reone/blob/master/src/libs/script/format/ncsreader.cpp#L74-L77) (ACTION instruction parsing), [`NCS.cs` L9+](https://github.com/NickHugi/Kotor.NET/blob/master/Kotor.NET/Formats/KotorNCS/NCS.cs#L9) (ACTION instruction handling), [`NorthernLights/Assets/Scripts/ncs/NCSReader.cs`](https://github.com/lachjames/NorthernLights/blob/master/Assets/Scripts/ncs/NCSReader.cs) (engine function call processing), [`xoreos-tools/src/nwscript/ncsfile.cpp`](https://github.com/xoreos/xoreos-tools/blob/master/src/nwscript/ncsfile.cpp) (actions data parsing for decompilation)
+**Reference:**
+
+- [`xoreos/src/aurora/nwscript/ncsfile.cpp:643-660`](https://github.com/xoreos/xoreos/blob/master/src/aurora/nwscript/ncsfile.cpp#L643-L660) (ACTION opcode implementation)
+- [`reone/src/libs/script/format/ncsreader.cpp:74-77`](https://github.com/modawan/reone/blob/master/src/libs/script/format/ncsreader.cpp#L74-L77) (ACTION instruction parsing)
+- [`NCS.cs` L9+](https://github.com/NickHugi/Kotor.NET/blob/master/Kotor.NET/Formats/KotorNCS/NCS.cs#L9) (ACTION instruction handling)
+- [`NorthernLights/Assets/Scripts/ncs/NCSReader.cs`](https://github.com/lachjames/NorthernLights/blob/master/Assets/Scripts/ncs/NCSReader.cs) (engine function call processing)
+- [`xoreos-tools/src/nwscript/ncsfile.cpp`](https://github.com/xoreos/xoreos-tools/blob/master/src/nwscript/ncsfile.cpp) (actions data parsing for decompilation)
 
 **Special Instructions:**
 
@@ -591,7 +684,13 @@ The decompiler parses this file to build a lookup table mapping *routine numbers
 - `NOP` (0x2D) is a no-operation instruction that does nothing. It is typically used as a placeholder by debuggers or during script compilation. The *qualifier* is typically `0x00`.
 - The program size marker (0x42) at offset 8 is never executed as an instruction. It is a metadata field that all implementations check before parsing the instruction stream. If this byte is not `0x42`, implementations should reject the file as invalid.
 
-**Reference:** [`xoreos/src/aurora/nwscript/ncsfile.cpp:342-350`](https://github.com/xoreos/xoreos/blob/master/src/aurora/nwscript/ncsfile.cpp#L342-L350) (header validation including 0x42 check), [`xoreos-docs/specs/torlack/ncs.html`](https://github.com/xoreos/xoreos-docs/blob/master/specs/torlack/ncs.html) (Torlack's original NCS specification), [`NorthernLights/Assets/Scripts/ncs/NCSReader.cs:876-886`](https://github.com/lachjames/NorthernLights/blob/master/Assets/Scripts/ncs/NCSReader.cs#L876-L886) (0x42 marker handling), [`NCS.cs` L9+](https://github.com/NickHugi/Kotor.NET/blob/master/Kotor.NET/Formats/KotorNCS/NCS.cs#L9) (NOP instruction handling), [`Libraries/PyKotor/src/pykotor/resource/formats/ncs/ncs_data.py:144-242`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/ncs/ncs_data.py#L144-L242) (instruction definitions)
+**Reference:**
+
+- [`xoreos/src/aurora/nwscript/ncsfile.cpp:342-350`](https://github.com/xoreos/xoreos/blob/master/src/aurora/nwscript/ncsfile.cpp#L342-L350) (header validation including 0x42 check)
+- [`xoreos-docs/specs/torlack/ncs.html`](https://github.com/xoreos/xoreos-docs/blob/master/specs/torlack/ncs.html) (Torlack's original NCS specification)
+- [`NorthernLights/Assets/Scripts/ncs/NCSReader.cs:876-886`](https://github.com/lachjames/NorthernLights/blob/master/Assets/Scripts/ncs/NCSReader.cs#L876-L886) (0x42 marker handling)
+- [`NCS.cs` L9+](https://github.com/NickHugi/Kotor.NET/blob/master/Kotor.NET/Formats/KotorNCS/NCS.cs#L9) (NOP instruction handling)
+- [`Libraries/PyKotor/src/pykotor/resource/formats/ncs/ncs_data.py:144-242`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/ncs/ncs_data.py#L144-L242) (instruction definitions)
 
 ---
 
@@ -645,7 +744,13 @@ The *offset* is a signed 32-bit integer stored in [*big-endian*](https://en.wiki
 
 **Jump Resolution:** offsets resolved to absolute instruction pointers during parsing. PyKotor's `NCS` class stores direct instruction references in `jump` attribute for control-flow graph traversal. format: Signed 32-bit [big-endian](https://en.wikipedia.org/wiki/Endianness), `target = instruction_addr + offset`, forward (+) or backward (-).
 
-**Reference:** [`Libraries/PyKotor/src/pykotor/resource/formats/ncs/ncs_data.py:244-421`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/ncs/ncs_data.py#L244-L421) (instruction data model with *jump* resolution), [`Libraries/PyKotor/src/pykotor/resource/formats/ncs/io_ncs.py:262-269`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/ncs/io_ncs.py#L262-L269) (jump offset reading), [`reone/src/libs/script/format/ncsreader.cpp:81-85`](https://github.com/modawan/reone/blob/master/src/libs/script/format/ncsreader.cpp#L81-L85) (jump instruction parsing), [`xoreos/src/aurora/nwscript/ncsfile.cpp:712-768`](https://github.com/xoreos/xoreos/blob/master/src/aurora/nwscript/ncsfile.cpp#L712-L768) (jump instruction execution), [`NCS.cs` L9+](https://github.com/NickHugi/Kotor.NET/blob/master/Kotor.NET/Formats/KotorNCS/NCS.cs#L9) (jump instruction handling)
+**Reference:**
+
+- [`Libraries/PyKotor/src/pykotor/resource/formats/ncs/ncs_data.py:244-421`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/ncs/ncs_data.py#L244-L421) (instruction data model with *jump* resolution)
+- [`Libraries/PyKotor/src/pykotor/resource/formats/ncs/io_ncs.py:262-269`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/ncs/io_ncs.py#L262-L269) (jump offset reading)
+- [`reone/src/libs/script/format/ncsreader.cpp:81-85`](https://github.com/modawan/reone/blob/master/src/libs/script/format/ncsreader.cpp#L81-L85) (jump instruction parsing)
+- [`xoreos/src/aurora/nwscript/ncsfile.cpp:712-768`](https://github.com/xoreos/xoreos/blob/master/src/aurora/nwscript/ncsfile.cpp#L712-L768) (jump instruction execution)
+- [`NCS.cs` L9+](https://github.com/NickHugi/Kotor.NET/blob/master/Kotor.NET/Formats/KotorNCS/NCS.cs#L9) (jump instruction handling)
 
 ---
 
@@ -694,13 +799,21 @@ Core analyses: Stack tracking (variable assignments/reads via copy ops), Control
 - **Reference Counting**: Track usage per stack instance, zero refs + unassigned = placeholder
 - **Return values**: Track separately, identified from stack state before *RETN*/**JSR*
 
-**Reference:** [`xoreos-tools/src/nwscript/ncsfile.cpp`](https://github.com/xoreos/xoreos-tools/blob/master/src/nwscript/ncsfile.cpp), [`xoreos-tools/src/nwscript/decompiler.cpp`](https://github.com/xoreos/xoreos-tools/blob/master/src/nwscript/decompiler.cpp), [`reone/src/libs/script/format/ncsreader.cpp`](https://github.com/modawan/reone/blob/master/src/libs/script/format/ncsreader.cpp), [`NCS.cs` L9+](https://github.com/NickHugi/Kotor.NET/blob/master/Kotor.NET/Formats/KotorNCS/NCS.cs#L9), [`xoreos/src/aurora/nwscript/ncsfile.cpp`](https://github.com/xoreos/xoreos/blob/master/src/aurora/nwscript/ncsfile.cpp), [`nadrino/kotor-savegame-editor/src/formats/ncs.ts`](https://github.com/nadrino/kotor-savegame-editor/blob/master/src/formats/ncs.ts), [`NorthernLights/Assets/Scripts/ncs/NCSDecompiler.cs`](https://github.com/lachjames/NorthernLights/blob/master/Assets/Scripts/ncs/NCSDecompiler.cs)
+**Reference:**
+
+- [`xoreos-tools/src/nwscript/ncsfile.cpp`](https://github.com/xoreos/xoreos-tools/blob/master/src/nwscript/ncsfile.cpp)
+- [`xoreos-tools/src/nwscript/decompiler.cpp`](https://github.com/xoreos/xoreos-tools/blob/master/src/nwscript/decompiler.cpp)
+- [`reone/src/libs/script/format/ncsreader.cpp`](https://github.com/modawan/reone/blob/master/src/libs/script/format/ncsreader.cpp)
+- [`NCS.cs` L9+](https://github.com/NickHugi/Kotor.NET/blob/master/Kotor.NET/Formats/KotorNCS/NCS.cs#L9)
+- [`xoreos/src/aurora/nwscript/ncsfile.cpp`](https://github.com/xoreos/xoreos/blob/master/src/aurora/nwscript/ncsfile.cpp)
+- [`nadrino/kotor-savegame-editor/src/formats/ncs.ts`](https://github.com/nadrino/kotor-savegame-editor/blob/master/src/formats/ncs.ts)
+- [`NorthernLights/Assets/Scripts/ncs/NCSDecompiler.cs`](https://github.com/lachjames/NorthernLights/blob/master/Assets/Scripts/ncs/NCSDecompiler.cs)
 
 ### See also
 
 - [NSS File Format](NSS-File-Format) - NWScript source that compiles to *NCS*
-- [GFF-DLG](GFF-DLG) - Dialogue files that trigger *NCS* scripts
-- [GFF-UTC](GFF-UTC) - Creature Templates with Script Hooks
-- [GFF-UTD](GFF-UTD) - Door Templates with Script Hooks
-- [GFF-UTP](GFF-UTP) - Placeable Templates with Script Hooks
-- [GFF-IFO](GFF-IFO) - Module Information Resource
+- [GFF-DLG](GFF-Creature-and-Dialogue#dlg) - Dialogue files that trigger *NCS* scripts
+- [GFF-UTC](GFF-Creature-and-Dialogue#utc) - Creature Templates with Script Hooks
+- [GFF-UTD](GFF-Spatial-Objects#utd) - Door Templates with Script Hooks
+- [GFF-UTP](GFF-Spatial-Objects#utp) - Placeable Templates with Script Hooks
+- [GFF-IFO](GFF-Module-and-Area#ifo) - Module Information Resource

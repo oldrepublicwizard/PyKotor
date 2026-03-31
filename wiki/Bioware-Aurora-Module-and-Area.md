@@ -852,8 +852,8 @@ Module designer's comment
 
 ### See also
 
-- [GFF-ARE](GFF-ARE) -- KotOR area implementation
-- [GFF-GIT](GFF-GIT) -- Instance data
+- [GFF-ARE](GFF-Module-and-Area#are) -- KotOR area implementation
+- [GFF-GIT](GFF-Module-and-Area#git) -- Instance data
 - [GFF-File-Format](GFF-File-Format) -- GFF structure
 - [Bioware-Aurora-GFF](Bioware-Aurora-Core-Formats#gff) -- Aurora GFF spec
 - [KEY-File-Format](KEY-File-Format) -- Resource resolution
@@ -1421,7 +1421,7 @@ List of scripting variables and their values. See Section 3 of the Common GFF St
 
 ### See also
 
-- [GFF-IFO](GFF-IFO) -- KotOR module info implementation
+- [GFF-IFO](GFF-Module-and-Area#ifo) -- KotOR module info implementation
 - [ERF-File-Format](ERF-File-Format) -- MOD/SAV containers
 - [GFF-File-Format](GFF-File-Format) -- GFF structure
 - [KEY-File-Format](KEY-File-Format) -- Resource resolution
@@ -2098,9 +2098,9 @@ MetaType
 
 - [Bioware-Aurora-GFF](Bioware-Aurora-Core-Formats#gff) -- Aurora GFF spec
 - [GFF-File-Format](GFF-File-Format) -- KotOR GFF implementation
-- [GFF-IFO](GFF-IFO)
-- [GFF-ARE](GFF-ARE)
-- [GFF-UTC](GFF-UTC) -- GFF files referencing common structs
+- [GFF-IFO](GFF-Module-and-Area#ifo)
+- [GFF-ARE](GFF-Module-and-Area#are)
+- [GFF-UTC](GFF-Creature-and-Dialogue#utc) -- GFF files referencing common structs
 - [KEY-File-Format](KEY-File-Format) -- Resource resolution
 
 

@@ -136,7 +136,7 @@ Data tables are stored in this order (offsets in header must match):
 Door and room transitions are expressed using area layout data, including:
 
 - [LYT-File-Format](LYT-File-Format)
-- [GFF-ARE](GFF-ARE)
+- [GFF-ARE](GFF-Module-and-Area#are)
 - Related module and area resources
 
 In the BWM file, each **edge** record carries only a **transition ID** integer; interpreting that ID is engine and layout specific, not defined further by the BWM binary layout alone. See the next section for the on-disk field.
@@ -180,6 +180,6 @@ CLI helper: [`pykotor walkmesh-rebuild`](https://github.com/OldRepublicDevs/PyKo
 
 - [Reverse Engineering Findings — BWM / walkmesh / AABB](reverse_engineering_findings#bwm-walkmesh-aabb-engine-implementation-analysis) — Engine behavior, coordinate handling, AABB traversal.
 - [2DA-surfacemat](2DA-File-Format#surfacemat2da) — Material IDs and walkability.
-- [GFF-ARE](GFF-ARE) — Area files that reference WOK/PWK/DWK.
+- [GFF-ARE](GFF-Module-and-Area#are) — Area files that reference WOK/PWK/DWK.
 - [LYT-File-Format](LYT-File-Format) — Room layout; transition ID semantics.
 - [MDL-MDX-File-Format](MDL-MDX-File-Format) — Room MDLs can contain separate AABB/walkmesh data for camera collision.

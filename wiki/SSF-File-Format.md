@@ -66,7 +66,7 @@ SSF files define **28** logical sound slots (indices `0`–`27`) that creatures 
 - [TSLPatcher SSFList Syntax](TSLPatcher-SSFList-Syntax) - Modding SSF files with TSLPatcher
 - [TLK File Format](TLK-File-Format) - [Talk Table](TLK-File-Format) containing actual sound references
 - [Bioware Aurora SSF Format](Bioware-Aurora-Core-Formats#ssf) - Official BioWare specification
-- [GFF-UTC](GFF-UTC) - [creature templates](GFF-File-Format#utc-creature) that reference SSF files
+- [GFF-UTC](GFF-Creature-and-Dialogue#utc) - [creature templates](GFF-File-Format#utc-creature) that reference SSF files
 - [2DA-soundset](2DA-File-Format#soundset2da) - Sound set definitions table
 
 ---
