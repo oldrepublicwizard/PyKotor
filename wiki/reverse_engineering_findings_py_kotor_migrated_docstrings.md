@@ -2,7 +2,7 @@
 
 PyKotor's `resource/formats/` modules mirror executable-level parsing rules for the binary resource formats used by KotOR and TSL. The sections below preserve function addresses, call chains, struct layouts, and runtime behavior derived from disassembly of both executables.
 
-For the condensed RVA lookup tables, see [Appendix: PyKotor resource/formats symbols](reverse_engineering_findings.md#pykotor-resource-formats-symbols). For the companion MDL binary I/O analysis, see [MDL module engine notes](reverse_engineering_findings_py_kotor_migrated_io_mdl.md).
+For the condensed RVA lookup tables, see [Appendix: PyKotor resource/formats symbols](reverse_engineering_findings#pykotor-resource-formats-symbols). For the companion MDL binary I/O analysis, see [MDL module engine notes](reverse_engineering_findings_py_kotor_migrated_io_mdl).
 
 ---
 
