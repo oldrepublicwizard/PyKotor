@@ -21,12 +21,10 @@ class JRL:
     JRL files are GFF-based. Module JRL uses Categories/EntryList (quest/entry definitions).
     Save-game journal uses JNL_SortOrder and JNL_Entries (JNL_PlotID, JNL_State, JNL_Date, JNL_Time).
 
-    References (REVA):
-    ------------------
-        LoadJournal (save format) @ (K1: 0x004f17d0, TSL: 0x006fd830). K1: CSWSCreature::LoadJournal;
-        reads JNL_Entries, JNL_SortOrder (INT), JNL_PlotID (""), JNL_State/JNL_Date/JNL_Time (0).
-        Caller: K1 LoadCharacterFromIFO @ 0x00561e30; TSL caller FUN_00701d10 @ 0x00701d10.
-        Module format (Categories/EntryList) is toolset-defined; same defaults in both games.
+    Save-game journal uses ``JNL_*`` lists/fields; module quests use ``Categories`` /
+    ``EntryList``. Defaults for missing fields match observed retail for the save format;
+    module layout is primarily toolset-driven. Symbol/address detail is migrated to
+    ``wiki/reverse_engineering_findings.md``.
     """
 
     BINARY_TYPE = ResourceType.JRL
@@ -105,19 +103,12 @@ def construct_jrl(gff: GFF) -> JRL:
 
     Defaults when field missing: Categories optional (empty list); per-category Comment "",
     Name empty, PlanetID/PlotIndex/Priority 0, Tag ""; per-entry End 0, ID 0, Text empty,
-    XP_Percentage 0.0. Omit OK. Save format JNL_* (LoadJournal): JNL_PlotID "", JNL_State/JNL_Date/JNL_Time 0.
-
-    Reference functions (5 K1, 5 TSL):
-    K1: (1) CSWSCreature::LoadJournal @ 0x004f17d0 (JNL_Entries, JNL_SortOrder, JNL_PlotID/State/Date/Time),
-    (2) LoadCharacterFromIFO @ 0x00561e30 (caller), (3) CResGFF::GetList JNL_Entries,
-    (4) ReadFieldINT JNL_SortOrder, (5) ReadFieldCExoString JNL_PlotID default "".
-    TSL: (1) FUN_006fd830 @ 0x006fd830 (same JNL_* read), (2) FUN_00701d10 @ 0x00701d10 (caller),
-    (3)-(5) same semantics. Module Categories/EntryList not parsed by engine; defaults from toolset.
+    XP_Percentage 0.0. For save-format ``JNL_*`` fields, observed defaults include empty plot id
+    and zero state/date/time when absent.
     """
     jrl = JRL()
 
-    # Categories list (module format). Empty if missing. K1 LoadJournal @ 0x004f17d0, TSL @ 0x006fd830 read JNL_* (save); Categories toolset-defined. Omit OK.
-    # Comment "", Name empty, PlanetID/PlotIndex 0, Priority 0 (HIGHEST in enum), Tag "". K1/TSL convention. Omit OK.
+    # Categories (module format): empty list if missing; per-quest defaults as acquire() below.
     for category_struct in gff.root.acquire("Categories", GFFList()):
         quest = JRLQuest()
         jrl.quests.append(quest)
@@ -128,7 +119,7 @@ def construct_jrl(gff: GFF) -> JRL:
         quest.priority = JRLQuestPriority(category_struct.acquire("Priority", 0))
         quest.tag = category_struct.acquire("Tag", "")
 
-        # EntryList: End BYTE 0, ID 0, Text empty, XP_Percentage 0.0. K1 LoadJournal @ 0x004f17d0, TSL @ 0x006fd830 JNL_State/JNL_Date/JNL_Time default 0. Omit OK.
+        # EntryList: defaults 0 / empty / 0.0 when fields absent.
         for entry_struct in category_struct.acquire("EntryList", GFFList()):
             entry = JRLEntry()
             quest.entries.append(entry)
@@ -148,7 +139,7 @@ def dismantle_jrl(  # TODO: store original list indices and sort.
 ) -> GFF:
     gff = GFF(GFFContent.JRL)
 
-    # Write same defaults as construct_jrl. Categories/EntryList; Comment "", PlanetID/PlotIndex/Priority 0, End/ID 0, XP_Percentage 0.0. K1 LoadJournal @ 0x004f17d0 (JNL_* save); TSL: same journal path. Omit OK.
+    # Same field defaults as construct_jrl / observed retail reads.
     category_list: GFFList = gff.root.set_list("Categories", GFFList())
     for i, quest in enumerate(jrl.quests):
         category_struct = category_list.add(i)

@@ -1,6 +1,6 @@
 # TSLPatcher GFFList Syntax Documentation
 
-This guide explains how to modify [GFF files](GFF-File-Format) using TSLPatcher syntax. For the complete [GFF file](GFF-File-Format) format specification, see [GFF File Format](GFF-File-Format). For general TSLPatcher information, see [TSLPatcher's Official Readme](TSLPatcher's-Official-Readme). For HoloPatcher-specific information, see [HoloPatcher README for Mod Developers](HoloPatcher-README-for-mod-developers.).
+This guide explains how to modify [GFF files](GFF-File-Format) using TSLPatcher syntax. For the complete [GFF file](GFF-File-Format) format specification, see [GFF File Format](GFF-File-Format). For general TSLPatcher information, see [TSLPatcher's Official Readme](TSLPatcher's-Official-Readme). For HoloPatcher-specific information, see [HoloPatcher README for Mod Developers](HoloPatcher-README-for-mod-developers).
 
 ## Overview
 
@@ -59,7 +59,10 @@ Label=
 TypeId=7
 ```
 
-5. Use tokens when a value comes from earlier steps ([TLK](TLK-File-Format)/[2DA](2DA-File-Format)) (e.g. `ModelVariation=2DAMEMORY5`):
+5. Use tokens when a value comes from earlier steps:
+
+   - [TLK](Audio-and-Localization-Formats#tlk) entries (for example [StrRef](Audio-and-Localization-Formats#string-references-strref) tokens)
+   - [2DA](2DA-File-Format) memory tokens
 
 ```ini
 ModelVariation=2DAMEMORY5
@@ -74,12 +77,12 @@ That's it. The rest of this page explains the knobs and dials you'll use as your
 - Paths use backslashes (`\`) to separate hierarchy levels: `Parent\Child\Field`
 - Lists use numbers (`\0`, `\1`, `\2`, etc.) to index elements: `RepliesList\0\Text` (e.g. `RepliesList\0\Text=Hello`)
 - Localized strings use parentheses on the field name:
-  - `(strref)` --> set the [dialog.tlk](TLK-File-Format) reference (e.g. `Description(strref)=10`)
-  - `(lang0)`..`(lang9)` --> set per-language text (e.g. `Description(lang0)=Hello`)
+- `(strref)` --> set the [dialog.tlk](Audio-and-Localization-Formats#tlk) reference
+  - `(lang0)`..`(lang9)` --> set per-language text
 - vectors: `Position=1.5|2.0|3.0`, `Orientation=0.0|0.0|0.0|1.0`
 - Tokens as values:
-  - `[StrRef](TLK-File-Format#string-references-strref)#` --> a [TLK](TLK-File-Format) token you set elsewhere (e.g. `Description=StrRef10`)
-  - `2DAMEMORY#` --> a [2DA](2DA-File-Format) token you set elsewhere (e.g. `ModelVariation=2DAMEMORY5`)
+  - `[StrRef](Audio-and-Localization-Formats#string-references-strref)#` --> a [TLK](Audio-and-Localization-Formats#tlk) token you set elsewhere
+  - `2DAMEMORY#` --> a [2DA](2DA-File-Format) token you set elsewhere
 - Tokens for dynamic field targets and list indices:
   - In AddField: `2DAMEMORY#=ListIndex` saves where a struct was inserted
   - `2DAMEMORY#=!FieldPath` saves the full path to a field you just added
@@ -140,12 +143,12 @@ Each [GFF file](GFF-File-Format) requires its own section (e.g., `[example.dlg]`
 | `!SourceFile` | string | Same as section name | Alternative source filename (useful for multiple setup options using different source files) |
 | `!ReplaceFile` | 0/1 | 0 | If `1`, overwrite existing file before applying modifications. If `0` (default), modify the existing file in place. |
 | `!SaveAs` | string | Same as section name | Alternative filename to save as (useful for renaming files during installation) |
-| `!OverrideType` | string | `ignore` | How to handle existing files in Override when destination is an [ERF](ERF-File-Format)/RIM container. Valid values: `ignore` (default), `warn` (log warning), `rename` (prefix with `old_`) |
+| `!OverrideType` | string | `ignore` | How to handle existing files in Override when destination is an [ERF](Container-Formats#erf) or [RIM](Container-Formats#rim) container. Valid values: `ignore` (default), `warn` (log warning), `rename` (prefix with `old_`) |
 
 **Destination values:**
 
 - `override` or empty: Save to the Override folder
-- `Modules\module.mod`: Insert into an [ERF](ERF-File-Format)/MOD/RIM container (use backslashes for path separators)
+- `Modules\module.mod`: Insert into a module capsule ([MOD](Container-Formats#erf), [ERF](Container-Formats#erf), or [RIM](Container-Formats#rim); use backslashes for path separators)
 - Container paths must be relative to the game folder root
 
 **Source file Resolution:**
@@ -187,12 +190,12 @@ Orientation=0.0|0.0|0.0|1.0
 - Use numeric indices for list elements: `ListName\0\Field`
 - Case-sensitive labels
 - Parenthesis syntax for complex types:
-  - `FieldName(strref)` for localized string [StrRef](TLK-File-Format#string-references-strref)
+  - `FieldName(strref)` for localized string [StrRef](Audio-and-Localization-Formats#string-references-strref)
   - `FieldName(lang0)` through `FieldName(lang9)` for language/gender strings
 
 **Supported Memory Token formats:**
 
-- `[StrRef](TLK-File-Format#string-references-strref)#` - References [TLK](TLK-File-Format) memory token
+- `[StrRef](Audio-and-Localization-Formats#string-references-strref)#` - References [TLK](Audio-and-Localization-Formats#tlk) memory token
 - `2DAMEMORY#` - References [2DA](2DA-File-Format) memory token
 
 ## Adding New Fields
@@ -214,12 +217,12 @@ Value=123
 
 | key | type | Required | Description |
 |-----|------|----------|-------------|
-| `FieldType` | string | Yes | One of: [byte](https://en.wikipedia.org/wiki/Byte), [char](GFF-File-Format#gff-data-types), Word, Short, DWORD, Int, Int64, [double](GFF-File-Format#gff-data-types), [float](GFF-File-Format#gff-data-types), ExoString, *ResRef*, ExoLocString, Binary, Struct, List, orientation, position |
+| `FieldType` | string | Yes | One of the following keywords (case as shown in tools):<br>- [byte](https://en.wikipedia.org/wiki/Byte)<br>- [char](GFF-File-Format#gff-data-types)<br>- Word, Short, DWORD, Int, Int64<br>- double, float<br>- ExoString, *ResRef*, ExoLocString<br>- Binary, Struct, List<br>- orientation, position |
 | `Label` | string | Yes* | field name (max 16 alphanumeric characters, no spaces). Must be unique within the same STRUCT parent. |
 | `Path` | string | No | field location in [GFF](GFF-File-Format) hierarchy. Empty string (`Path=`) means root level. For nested AddField sections, if `Path` is empty or not specified, it inherits the path from the parent AddField. Use backslashes to separate hierarchy levels. |
 | `Value` | varies | Conditional | field value (see field types below). Not used for Struct, List, or ExoLocString types. |
-| `[StrRef](TLK-File-Format#string-references-strref)` | int/string | LocString only | [TLK](TLK-File-Format) stringref value, `[StrRef](TLK-File-Format#string-references-strref)#` token, `2DAMEMORY#` token, or `-1` (no dialog.tlk reference) |
-| `TypeId` | int/string | Struct only | Struct type ID (numeric), `ListIndex` (auto-set to list index), `[StrRef](TLK-File-Format#string-references-strref)#` token, or `2DAMEMORY#` token |
+| `[StrRef](Audio-and-Localization-Formats#string-references-strref)` | int/string | LocString only | [TLK](Audio-and-Localization-Formats#tlk) stringref value, `[StrRef](Audio-and-Localization-Formats#string-references-strref)#` token, `2DAMEMORY#` token, or `-1` (no dialog.tlk reference) |
+| `TypeId` | int/string | Struct only | Struct type ID (numeric), `ListIndex` (auto-set to list index), `[StrRef](Audio-and-Localization-Formats#string-references-strref)#` token, or `2DAMEMORY#` token |
 | `lang#` | string | LocString only | Localized string entries where `#` is the language+gender ID (0-9). Use `<#LF#>` for linefeeds. |
 | `AddField#` | string | No | Reference to another section for nested field addition |
 | `2DAMEMORY#` | string | No | Store field path (`!FieldPath`), list index (`ListIndex`), or copy from another token (`2DAMEMORY#`) |
@@ -627,9 +630,9 @@ TypeId=5
    - `2DAMEMORY#=!FieldPath` - Store field path
    - `2DAMEMORY#=2DAMEMORY#` - Copy token value
 
-### [StrRef](TLK-File-Format#string-references-strref) Tokens
+### [StrRef](Audio-and-Localization-Formats#string-references-strref) Tokens
 
-Reference [TLK](TLK-File-Format) entries:
+Reference [TLK](Audio-and-Localization-Formats#tlk) entries:
 
 ```ini
 [example.uti]
@@ -974,15 +977,15 @@ lang0=My Custom Quests
 
 ### Localized String Syntax
 
-- **[StrRef](TLK-File-Format#string-references-strref)** vs lang#: Use `FieldName(strref)=...` for the [StrRef](TLK-File-Format#string-references-strref) value, and `FieldName(lang#)=...` for text substrings. Don't mix them on the same key.
+- **[StrRef](Audio-and-Localization-Formats#string-references-strref) vs lang#**: Use `FieldName(strref)=...` for the [StrRef](Audio-and-Localization-Formats#string-references-strref) value, and `FieldName(lang#)=...` for text substrings. Don't mix them on the same [KEY](Container-Formats#key).
 - **Multiple substrings**: You can set multiple `lang#` entries for the same field (e.g., `lang0=English`, `lang2=French`).
 - **Line breaks**: Use `<#LF#>` for linefeeds in `lang#` values, not literal newlines.
 
 ### Memory Tokens
 
 - **Token initialization**: Tokens must be set before use. Using `2DAMEMORY5` before assignment results in an error.
-- **Execution order**: Within GFFList, `AddField` sections run before field modifications. Store `!FieldPath` when creating fields, then use the token to modify them.
-- **Token scope**: `[StrRef](TLK-File-Format#string-references-strref)#` tokens are created in TLKList and available to GFFList. `2DAMEMORY#` tokens are file-scoped unless explicitly copied.
+- **Execution order**: Within GFFList, AddField sections run before field modifications. Store `!FieldPath` when creating fields, then use the token to modify them.
+- **Token scope**: `[StrRef](Audio-and-Localization-Formats#string-references-strref)#` tokens are created in TLKList and available to GFFList. `2DAMEMORY#` tokens are file-scoped unless explicitly copied.
 
 ### Path and Source Configuration
 
@@ -1016,12 +1019,12 @@ Understanding execution order is crucial when your edits depend on earlier token
 
 **Standard Execution Order:**
 
-1. **TLKList**: Appends entries to [`dialog.tlk`](TLK-File-Format), creates `[StrRef](TLK-File-Format#string-references-strref)#` memory tokens
-2. **InstallList**: Copies files to destination ([ERF](ERF-File-Format)/RIM containers may be created here)
-3. **2DAList**: Modifies [2DA](2DA-File-Format) files, creates `2DAMEMORY#` memory tokens
-4. **GFFList**: Modifies [GFF](GFF-File-Format) files (can use `[StrRef](TLK-File-Format#string-references-strref)#` and `2DAMEMORY#` memory tokens)
-5. **CompileList**: Preprocesses [NSS](NSS-File-Format) scripts (replaces `#[StrRef](TLK-File-Format#string-references-strref)#` and `#2DAMEMORY#` tokens), then compiles
-6. **HACKList**: Applies binary patches to [NCS](NCS-File-Format) files
+1. **TLKList**: Appends entries to [dialog.tlk](Audio-and-Localization-Formats#tlk), creates `[StrRef](Audio-and-Localization-Formats#string-references-strref)#` tokens
+2. **InstallList**: Copies files to destination ([ERF](Container-Formats#erf) or [RIM](Container-Formats#rim) containers may be created here)
+3. **2DAList**: Modifies [2DA files](2DA-File-Format), creates `2DAMEMORY#` tokens
+4. **GFFList**: Modifies [GFF](GFF-File-Format) files (can use `[StrRef](Audio-and-Localization-Formats#string-references-strref)#` and `2DAMEMORY#` tokens)
+5. **CompileList**: Preprocesses [NSS](NSS-File-Format) scripts (replaces `#[StrRef](Audio-and-Localization-Formats#string-references-strref)#` and `#2DAMEMORY#` tokens), then compiles
+6. **HACKList**: Applies binary patches to [NCS files](NCS-File-Format)
 7. **SSFList**: Modifies soundset files
 
 **Within GFFList Section:**
@@ -1034,9 +1037,9 @@ Modifications within a single [GFF](GFF-File-Format) file are processed in order
 
 **Best Practices:**
 
-- **Add before modify**: Use `AddField` sections to create structures, store their paths with `2DAMEMORY#=!FieldPath`, then modify them using those tokens
-- **Token dependencies**: Ensure memory tokens are set before use. `2DAMEMORY#` memory tokens from `2DAList` are available to `[GFFList]`
-- **Container handling**: If patching files into [ERF](ERF-File-Format)/[RIM](RIM-File-Format) containers, the container must exist (created by [`[InstallList]`](TSLPatcher-InstallList-Syntax)) or be built automatically by the patcher
+- **Add before modify**: Use AddField to create structures, store their paths with `2DAMEMORY#=!FieldPath`, then modify them using those tokens
+- **Token dependencies**: Ensure tokens are set before use. `2DAMEMORY#` tokens from 2DAList are available to GFFList
+- **Container handling**: If patching files into [ERF](Container-Formats#erf) or [RIM](Container-Formats#rim) containers, the container must exist (created by InstallList) or be built automatically by the patcher
 
 **Important Notes:**
 
@@ -1376,12 +1379,54 @@ Label=Value
 Value=2DAMEMORY20
 ```
 
+<<<<<<< HEAD
+=======
+## Best Practices
+
+1. Unique labels across each [GFF](GFF-File-Format) hierarchy level
+2. Prefer memory tokens for dynamic values
+3. List indices start at 0
+4. Backslash path separators for nested paths
+5. Case-sensitive field names
+6. Verify file structure with a [GFF](GFF-File-Format) editor
+7. Sort complex nested structures for clarity
+8. Use meaningful identifiers for AddField sections
+
+## Error Handling
+
+Common mistakes:
+
+- Modifying non-existent fields
+- Invalid FieldType
+- Missing required keys
+- Circular memory references
+- Invalid 2DAMEMORY/[StrRef](Audio-and-Localization-Formats#string-references-strref) syntax
+
+PyKotor validates configuration and logs errors during INI loading and patching.
+
+## Compatibility
+
+Tested on:
+
+- HoloPatcher
+- TSLPatcher v1.2.10b
+- PyKotor’s TSLPatcher implementation
+- KotOR1/KotOR2 [GFF files](GFF-File-Format)
+
+field type compatibility:
+
+- All standard types supported
+- Nested structures supported
+- Memory tokens supported
+- Dynamic paths supported
+
+>>>>>>> 5be92464342446d66dc3d86baf7cd406f19d5b2d
 ## Additional Resources
 
 ### Documentation
 
 - [TSLPatcher Official Readme](TSLPatcher's-Official-Readme) - Original TSLPatcher documentation
-- [HoloPatcher README for Mod Developers](HoloPatcher-README-for-mod-developers.) - HoloPatcher-specific features and improvements
+- [HoloPatcher README for Mod Developers](HoloPatcher-README-for-mod-developers) - HoloPatcher-specific features and improvements
 
 ### Source Code References
 
@@ -1418,10 +1463,10 @@ Common [GFF](GFF-File-Format)-based file types you can modify:
 - **[1.2.10b](TSLPatcher's-Official-Readme#change-log-for-version-1210b1-rel)** (2007-09-19): Fixed ExoLocString substring linefeed handling (use `<#LF#>` for newlines)
 - **[1.2.9b](TSLPatcher's-Official-Readme#change-log-for-version-129b-rel)** (2007-08-13): Changed behavior when adding duplicate fields--now modifies existing field instead of skipping
 - **[1.2.8b10](TSLPatcher's-Official-Readme#change-log-for-version-128b10-rel)** (2006-12-10): Bug fixes for required file checks
-- **[1.2.8b6](TSLPatcher's-Official-Readme#change-log-for-version-128b6-rel)** (2006-10-03): Added `!OverrideType` support for [ERF](ERF-File-Format)/RIM destinations
+- **[1.2.8b6](TSLPatcher's-Official-Readme#change-log-for-version-128b6-rel)** (2006-10-03): Added `!OverrideType` support for [ERF](Container-Formats#erf) and [RIM](Container-Formats#rim) destinations
 - **[1.2.7b9](TSLPatcher's-Official-Readme#change-log-for-version-127b9-rel)** (2006-07-23): **Dynamic field paths** - Added `!FieldPath` support for storing and using field paths via `2DAMEMORY#` tokens
 - **[1.2.7b4](TSLPatcher's-Official-Readme#change-log-for-version-127b4-rel)** (2006-05-11): Multiple setups support improvements
-- **[1.2.6b3](TSLPatcher's-Official-Readme#change-log-for-version-126b3-rel)** (2006-03-09): [SSF](SSF-File-Format) soundset file modification support added
+- **[1.2.6b3](TSLPatcher's-Official-Readme#change-log-for-version-126b3-rel)** (2006-03-09): [SSF](Audio-and-Localization-Formats#ssf) soundset file modification support added
 - **[1.2a](TSLPatcher's-Official-Readme#change-log-for-version-12a-rel)** (2006-01-10): **AddField support** - Initial support for adding new fields to [GFF files](GFF-File-Format)
 
 ### HoloPatcher Extensions
@@ -1434,7 +1479,7 @@ Common [GFF](GFF-File-Format)-based file types you can modify:
 - [TSLPatcher's Official Readme](TSLPatcher's-Official-Readme) -- TSLPatcher overview and change log
 - [TSLPatcher HACKList Syntax](TSLPatcher-HACKList-Syntax) -- 2DA and text patching
 - [HoloPatcher README for Mod Developers](HoloPatcher-README-for-mod-developers) -- HoloPatcher usage
-- [KEY-File-Format](KEY-File-Format) -- Resource resolution and override order
+- [Container-Formats#key](Container-Formats#key) -- Resource resolution and override order
 - [Community sources and archives](Home#community-sources-and-archives) -- DeadlyStream, LucasForums for GFF modding examples
 
 ---

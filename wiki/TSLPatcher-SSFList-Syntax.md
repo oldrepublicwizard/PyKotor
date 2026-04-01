@@ -1,10 +1,10 @@
 # TSLPatcher SSFList Syntax Documentation
 
-This guide explains how to modify [SSF files](SSF-File-Format) using TSLPatcher syntax. For the complete [SSF file](SSF-File-Format) format specification, see [SSF File Format](SSF-File-Format). For general TSLPatcher information, see [TSLPatcher's Official Readme](TSLPatcher's-Official-Readme). For HoloPatcher-specific information, see [HoloPatcher README for Mod Developers](HoloPatcher-README-for-mod-developers.).
+This guide explains how to modify [SSF files](Audio-and-Localization-Formats#ssf) using TSLPatcher syntax. For the complete [SSF file](Audio-and-Localization-Formats#ssf) format specification, see [SSF File Format](Audio-and-Localization-Formats#ssf). For general TSLPatcher information, see [TSLPatcher's Official Readme](TSLPatcher's-Official-Readme). For HoloPatcher-specific information, see [HoloPatcher README for Mod Developers](HoloPatcher-README-for-mod-developers).
 
 ## Overview
 
-The `[SSFList]` section in TSLPatcher's changes.ini file enables you to modify SSF ([sound set files](SSF-File-Format)) files that define sound string references for characters. [SSF files](SSF-File-Format) contain 28 predefined sound slots that map to specific character audio cues such as battle cries, select sounds, attack grunts, pain reactions, and various action-based sound effects.
+The `[SSFList]` section in TSLPatcher's changes.ini file enables you to modify SSF ([sound set files](Audio-and-Localization-Formats#ssf)) files that define sound string references for characters. [SSF files](Audio-and-Localization-Formats#ssf) contain 28 predefined sound slots that map to specific character audio cues such as battle cries, select sounds, attack grunts, pain reactions, and various action-based sound effects.
 
 ## Table of Contents
 
@@ -37,7 +37,7 @@ Attack 1=StrRef10
 Death=100
 ```
 
-The `[SSFList]` section declares [SSF files](SSF-File-Format) to patch. Each entry references another section with the same name as the filename.
+The `[SSFList]` section declares [SSF files](Audio-and-Localization-Formats#ssf) to patch. Each entry references another section with the same name as the filename.
 
 ## file-Level Configuration
 
@@ -45,35 +45,35 @@ The `[SSFList]` section declares [SSF files](SSF-File-Format) to patch. Each ent
 
 | key | type | Default | Description |
 |-----|------|---------|-------------|
-| `!DefaultDestination` | string | `Override` | Default destination for all [SSF files](SSF-File-Format) in this section |
-| `!DefaultSourceFolder` | string | `.` | Default source folder for [SSF files](SSF-File-Format). This is a relative path from `mod_path`, which is typically the `tslpatchdata` folder (the parent directory of the `changes.ini` file). The default value `.` refers to the `tslpatchdata` folder itself. Path resolution: `mod_path / !DefaultSourceFolder / filename` |
+| `!DefaultDestination` | string | `Override` | Default destination for all [SSF files](Audio-and-Localization-Formats#ssf) in this section |
+| `!DefaultSourceFolder` | string | `.` | Default source folder for [SSF files](Audio-and-Localization-Formats#ssf). This is a relative path from `mod_path`, which is typically the `tslpatchdata` folder (the parent directory of the `changes.ini` file). The default value `.` refers to the `tslpatchdata` folder itself. Path resolution: `mod_path / !DefaultSourceFolder / filename` |
 
 ### file Section Configuration
 
-Each [SSF file](SSF-File-Format) requires its own section (e.g., `[example.ssf]`).
+Each [SSF file](Audio-and-Localization-Formats#ssf) requires its own section (e.g., `[example.ssf]`).
 
 | Key | type | Default | Description |
 |-----|------|---------|-------------|
 | `!Destination` | string | Inherited from `!DefaultDestination` | Where to save the modified file (`Override` or `path\to\file.mod`) |
-| `!SourceFolder` | string | Inherited from `!DefaultSourceFolder` | Source folder for the [SSF file](SSF-File-Format). Relative path from `mod_path` (typically the tslpatchdata folder). When `.`, refers to the tslpatchdata folder itself. |
+| `!SourceFolder` | string | Inherited from `!DefaultSourceFolder` | Source folder for the [SSF file](Audio-and-Localization-Formats#ssf). Relative path from `mod_path` (typically the tslpatchdata folder). When `.`, refers to the tslpatchdata folder itself. |
 | `!SourceFile` | string | Same as section name | Alternative source filename |
 | `!ReplaceFile` | 0/1 | 0 | Overwrite existing file before modifications |
 
 **Destination values:**
 
 - `Override` or empty: Save to the Override folder
-- `Modules\module.mod`: Insert into an [ERF](ERF-File-Format)/MOD/RIM container
+- `Modules\module.mod`: Insert into a [MOD](Container-Formats#erf), [ERF](Container-Formats#erf), or [RIM](Container-Formats#rim) container
 - Use backslashes for path separators
 
 **Replace file Behavior:**
 
-- If `FileN=filename.ssf` is used: The [SSF file](SSF-File-Format) will be checked if it exists in the target destination. If it exists, it will be modified in place. If it doesn't exist, a copy from tslpatchdata will be made and modified.
-- If `ReplaceN=filename.ssf` is used: The [SSF file](SSF-File-Format) will be copied from tslpatchdata to the target destination (overwriting any existing file with the same name) and then modified.
+- If `FileN=filename.ssf` is used: The [SSF file](Audio-and-Localization-Formats#ssf) will be checked if it exists in the target destination. If it exists, it will be modified in place. If it doesn't exist, a copy from tslpatchdata will be made and modified.
+- If `ReplaceN=filename.ssf` is used: The [SSF file](Audio-and-Localization-Formats#ssf) will be copied from tslpatchdata to the target destination (overwriting any existing file with the same name) and then modified.
 - If `!ReplaceFile=1` is set in the file section: Same behavior as `ReplaceN`, taking priority over the `FileN` vs `ReplaceN` syntax.
 
 ## Sound Entry Modifiers
 
-Each line in the [SSF file](SSF-File-Format) section defines a sound entry to modify. The format is:
+Each line in the [SSF file](Audio-and-Localization-Formats#ssf) section defines a sound entry to modify. The format is:
 
 ```ini
 [SoundName]=Value
@@ -84,7 +84,7 @@ Where:
 - `SoundName` is one of the 28 predefined sound entry names (see [Available Sound Entries](#available-sound-entries))
 - `Value` can be:
   - A numeric stringref value
-  - A `[StrRef](TLK-File-Format#string-references-strref)#` token referencing [TLK](TLK-File-Format) memory
+  - A `[StrRef](Audio-and-Localization-Formats#string-references-strref)#` token referencing [TLK](Audio-and-Localization-Formats#tlk) memory
   - A `2DAMEMORY#` token referencing [2DA](2DA-File-Format) memory
 
 ### value Syntax Examples
@@ -113,11 +113,14 @@ Pain 1=-1
 
 ## Memory Token System
 
-SSFList supports both [TLK](TLK-File-Format) and [2DA](2DA-File-Format) memory tokens for dynamic stringref assignment.
+SSFList supports memory tokens for dynamic stringref assignment from:
 
-### [StrRef](TLK-File-Format#string-references-strref) Tokens
+- [TLK](Audio-and-Localization-Formats#tlk)
+- [2DA](2DA-File-Format)
 
-`[StrRef](TLK-File-Format#string-references-strref)#` tokens reference TLK (Talk) memory tokens that have been set elsewhere in changes.ini (typically from TLKList entries). When the [SSF file](SSF-File-Format) is patched, the stored [StrRef](TLK-File-Format#string-references-strref) value from memory will be used.
+### [StrRef](Audio-and-Localization-Formats#string-references-strref) Tokens
+
+`[StrRef](Audio-and-Localization-Formats#string-references-strref)#` tokens reference TLK (Talk) memory tokens that have been set elsewhere in changes.ini (typically from TLKList entries). When the [SSF file](Audio-and-Localization-Formats#ssf) is patched, the stored [StrRef](Audio-and-Localization-Formats#string-references-strref) value from memory will be used.
 
 ```ini
 [example.ssf]
@@ -130,7 +133,7 @@ Attack 1=StrRef12
 
 **Syntax:** `StrRef` followed immediately by a numeric token ID
 
-**When to use:** When you want the sound entry to reference a dialog entry you've added to the game's [TLK file](TLK-File-Format).
+**When to use:** When you want the sound entry to reference a dialog entry you've added to the game's [TLK file](Audio-and-Localization-Formats#tlk).
 
 ### 2DAMEMORY Tokens
 
@@ -153,7 +156,7 @@ Pain 1=2DAMEMORY10
 
 Both token types are resolved during patch application:
 
-1. TLK Memory (`[StrRef](TLK-File-Format#string-references-strref)#`): Returns the stored integer stringref value
+1. TLK Memory (`[StrRef](Audio-and-Localization-Formats#string-references-strref)#`): Returns the stored integer stringref value
 2. 2DA Memory (`2DAMEMORY#`): Returns the stored integer value (converted from string)
 3. Constant values: Used directly as integer stringref values
 
@@ -161,7 +164,7 @@ If a token references an uninitialized memory slot, the behavior is undefined an
 
 ## Available Sound Entries
 
-[SSF files](SSF-File-Format) contain exactly 28 sound slots. The following table lists all available sound entry names:
+[SSF files](Audio-and-Localization-Formats#ssf) contain exactly 28 sound slots. The following table lists all available sound entry names:
 
 | Sound Entry Name | ID | Enum value | Description |
 |------------------|----|----|-------------|
@@ -214,9 +217,9 @@ Attack 1=50004
 Death=50005
 ```
 
-### Example 2: Using [TLK](TLK-File-Format) Memory Tokens
+### Example 2: Using [TLK](Audio-and-Localization-Formats#tlk) Memory Tokens
 
-This example uses [StrRef](TLK-File-Format#string-references-strref) tokens to dynamically reference dialog entries added to the [TLK file](TLK-File-Format):
+This example uses [StrRef](Audio-and-Localization-Formats#string-references-strref) tokens to dynamically reference dialog entries added to the [TLK file](Audio-and-Localization-Formats#tlk):
 
 ```ini
 [TLKList]
@@ -235,7 +238,7 @@ Pain 1=StrRef1002
 
 ### Example 3: Using [2DA](2DA-File-Format) Memory Tokens
 
-This example uses 2DAMEMORY tokens to reference row indices from a custom [appearance.2da](2DA-appearance) table:
+This example uses 2DAMEMORY tokens to reference row indices from a custom [appearance.2da](2DA-File-Format#appearance2da) table:
 
 ```ini
 [2DAList]
@@ -370,9 +373,9 @@ Rejoin party=50111
 Poisoned=50120
 ```
 
-### Example 7: Modifying [SSF](SSF-File-Format) files in Containers
+### Example 7: Modifying [SSF](Audio-and-Localization-Formats#ssf) files in Containers
 
-This example shows how to patch [SSF files](SSF-File-Format) that are stored in [ERF](ERF-File-Format)/MOD/RIM container files:
+This example shows how to patch [SSF files](Audio-and-Localization-Formats#ssf) that are stored in [MOD](Container-Formats#erf), [ERF](Container-Formats#erf), or [RIM](Container-Formats#rim) container files:
 
 ```ini
 [SSFList]
@@ -389,7 +392,7 @@ Death=60004
 **Important:** When patching files in containers, ensure that:
 
 1. The container file exists in the game directory
-2. The [SSF file](SSF-File-Format) already exists in that container (or use ReplaceN to force overwrite)
+2. The [SSF file](Audio-and-Localization-Formats#ssf) already exists in that container (or use ReplaceN to force overwrite)
 3. Use backslashes for path separators in `!Destination`
 
 ### Example 8: Clearing Sound Entries
@@ -421,7 +424,7 @@ Selected 3=12347
 
 ### Combining Multiple Token types
 
-You can mix different value types within the same [SSF file](SSF-File-Format) section:
+You can mix different value types within the same [SSF file](Audio-and-Localization-Formats#ssf) section:
 
 ```ini
 [SSFList]
@@ -462,12 +465,12 @@ Battlecry 1=20001
 
 ### Compatibility Notes
 
-- [SSF files](SSF-File-Format) are binary format files with version "V1.1"
+- [SSF files](Audio-and-Localization-Formats#ssf) are binary format files with version "V1.1"
 - All stringref values are stored as 32-bit unsigned integers
 - The game engine interprets negative values (-1) as "no sound"
-- [SSF files](SSF-File-Format) have a fixed structure with exactly 28 sound slots
-- Empty or unset sound slots default to -1 when a new [SSF](SSF-File-Format) is created
-- PyKotor/TSLPatcher loads existing [SSF files](SSF-File-Format) from the override folder or specified container if they exist
+- [SSF files](Audio-and-Localization-Formats#ssf) have a fixed structure with exactly 28 sound slots
+- Empty or unset sound slots default to -1 when a new [SSF](Audio-and-Localization-Formats#ssf) is created
+- PyKotor/TSLPatcher loads existing [SSF files](Audio-and-Localization-Formats#ssf) from the override folder or specified container if they exist
 
 ## Troubleshooting
 
@@ -476,11 +479,11 @@ Battlecry 1=20001
 **Problem:** Sound entries not applying
 
 - **Solution:** Verify that the sound entry name matches exactly (including spaces) from the [Available Sound Entries](#available-sound-entries) table
-- **Solution:** Ensure the [SSF file](SSF-File-Format) exists in the specified source location (tslpatchdata folder)
+- **Solution:** Ensure the [SSF file](Audio-and-Localization-Formats#ssf) exists in the specified source location (tslpatchdata folder)
 
 **Problem:** Token values not resolving
 
-- **Solution:** Ensure [TLK](TLK-File-Format) memory tokens ([StrRef](TLK-File-Format#string-references-strref)#) are set before SSFList section runs
+- **Solution:** Ensure [TLK](Audio-and-Localization-Formats#tlk) memory tokens ([StrRef](Audio-and-Localization-Formats#string-references-strref)#) are set before SSFList section runs
 - **Solution:** Ensure [2DA](2DA-File-Format) memory tokens (2DAMEMORY#) are set before SSFList section runs
 - **Solution:** Verify token IDs match between where they're set and where they're used
 
@@ -500,7 +503,7 @@ Battlecry 1=20001
 
 - **Solution:** Verify the container file exists in the game directory
 - **Solution:** Use backslashes (not forward slashes) in !Destination paths
-- **Solution:** Ensure the [SSF file](SSF-File-Format) already exists in the container if not using ReplaceN syntax
+- **Solution:** Ensure the [SSF file](Audio-and-Localization-Formats#ssf) already exists in the container if not using ReplaceN syntax
 
 ### Installation Order
 
@@ -520,7 +523,7 @@ This means that memory tokens set in TLKList and 2DAList will be available when 
 
 **Binary format:**
 
-- header: "[SSF](SSF-File-Format) " (4 bytes)
+- header: "[SSF](Audio-and-Localization-Formats#ssf) " (4 bytes)
 - Version: "V1.1" (4 bytes)
 - offset to sound data: 4 bytes (UInt32)
 - Sound entries: 28 x 4 bytes (UInt32 each) = 112 bytes
@@ -529,24 +532,29 @@ This means that memory tokens set in TLKList and 2DAList will be available when 
 
 **Default values:**
 
-- All sound entries default to -1 in a new [SSF file](SSF-File-Format)
+- All sound entries default to -1 in a new [SSF file](Audio-and-Localization-Formats#ssf)
 - Replacement behavior defaults to modifying existing files when possible
 - Destination defaults to Override folder
 - Source folder defaults to tslpatchdata root (`.`)
 
 **Supported Operations:**
 
-- Read existing [SSF files](SSF-File-Format) from Override or containers
-- Write modified [SSF files](SSF-File-Format) to Override or containers
+- Read existing [SSF files](Audio-and-Localization-Formats#ssf) from Override or containers
+- Write modified [SSF files](Audio-and-Localization-Formats#ssf) to Override or containers
 - Modify any of the 28 sound entry stringrefs
-- Support for [TLK](TLK-File-Format) and [2DA](2DA-File-Format) memory token resolution
+- Memory token resolution for:
+
+  - [TLK](Audio-and-Localization-Formats#tlk)
+  - [2DA](2DA-File-Format)
 - Replace file or modify existing file modes
 
 ### See also
 
-- [SSF-File-Format](SSF-File-Format) -- Sound set structure
-- [TSLPatcher TLKList Syntax](TSLPatcher-TLKList-Syntax) -- StrRef tokens; [TSLPatcher 2DAList Syntax](TSLPatcher-2DAList-Syntax) -- Token usage
-- [TSLPatcher's Official Readme](TSLPatcher's-Official-Readme); [HoloPatcher README for Mod Developers](HoloPatcher-README-for-mod-developers)
+- [Audio-and-Localization-Formats#ssf](Audio-and-Localization-Formats#ssf) -- Sound set structure
+- [TSLPatcher TLKList Syntax](TSLPatcher-TLKList-Syntax) -- StrRef tokens
+- [TSLPatcher 2DAList Syntax](TSLPatcher-2DAList-Syntax) -- Token usage
+- [TSLPatcher's Official Readme](TSLPatcher's-Official-Readme)
+- [HoloPatcher README for Mod Developers](HoloPatcher-README-for-mod-developers)
 - [Community sources and archives](Home#community-sources-and-archives) -- DeadlyStream, LucasForums for soundset modding
 
 ---

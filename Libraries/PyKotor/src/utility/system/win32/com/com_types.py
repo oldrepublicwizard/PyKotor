@@ -124,7 +124,7 @@ class GUID(*inherit):
     def __repr__(self):
         return f'GUID("{self!s}")'
 
-    def __str__(self):  # sourcery skip: remove-unreachable-code
+    def __str__(self):
         # return f"{{{self.Data1:08X}-{self.Data2:04X}-{self.Data3:04X}-{self.Data4[0]:02X}{self.Data4[1]:02X}-{self.Data4[2]:02X}{self.Data4[3]:02X}{self.Data4[4]:02X}{self.Data4[5]:02X}{self.Data4[6]:02X}{self.Data4[7]:02X}}}"
         # Comment out above line to use ole32.StringFromCLSID directly.
         p = c_wchar_p()
@@ -206,7 +206,7 @@ class GUID(*inherit):
         d3: int | None = None,
         d4: tuple[int, int, int, int, int, int, int, int] | int | bytes | None = None,
         *args,
-    ) -> tuple[int, int, int, bytes]:  # sourcery skip: low-code-quality
+    ) -> tuple[int, int, int, bytes]:
         # Null GUID
         if not d1 and not d2 and not d3 and not d4 and not args:
             return 0, 0, 0, b""

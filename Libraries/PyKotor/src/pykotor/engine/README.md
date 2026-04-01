@@ -292,7 +292,7 @@ This engine is part of the PyKotor project. Contributions should:
 - **PyKotor Contributors** - MDL format implementation
 - **reone Team** - C++ engine reference architecture
 - **KotOR.js Team** - Three.js implementation reference
-- **mdlops** - Format reverse engineering and algorithms
+- **mdlops** - Format research and algorithms
 - **BioWare** - Original KotOR games
 
 ---

@@ -510,17 +510,9 @@ def cmd_grep(
 ) -> int:
     """Search for patterns in files.
 
-    Supports text files and structured formats (GFF, 2DA, TLK).
-
-    References:
-    ----------
-        KotOR I (swkotor.exe) / KotOR II (swkotor2.exe):
-            - GFF structures are loaded via CResGFF class throughout the engine
-            - See individual resource format files (uti.py, utc.py, utp.py, dlg/base.py, etc.) for specific GFF field references
-            - 2DA structures loaded via C2DA class (see 2da/io_2da.py for references)
-            - TLK structures loaded via CTlkTable class (see pykotor.resource.formats.tlk.tlk_data for K1/TSL addresses)
-
-
+    Supports text files and structured formats (GFF, 2DA, TLK). Former **References**
+    naming retail loaders and TLK address stubs: ``wiki/reverse_engineering_findings.md``
+    (*cli/commands/utility_commands.py*).
     """
     file_path = pathlib.Path(args.file)
 
@@ -600,18 +592,7 @@ def cmd_merge(
     """Merge two GFF files.
 
     Merges fields from source file into target file, adding missing fields.
-    Currently only supports GFF files.
-
-    References:
-    ----------
-        KotOR I (swkotor.exe) / KotOR II (swkotor2.exe):
-            - GFF structures are loaded via CResGFF class throughout the engine
-            - See individual resource format files (uti.py, utc.py, utp.py, dlg/base.py, etc.) for specific GFF field references
-            - 2DA structures loaded via C2DA class (see 2da/io_2da.py for references)
-            - TLK structures loaded via CTlkTable class (see pykotor.resource.formats.tlk.tlk_data for K1/TSL addresses)
-        Libraries/PyKotor/src/pykotor/resource/formats/gff/gff_data.py - GFFStruct.merge()
-
-
+    Currently only supports GFF files. Uses ``GFFStruct.merge`` from ``gff_data``.
     """
     target_path = pathlib.Path(args.target)
     source_path = pathlib.Path(args.source)

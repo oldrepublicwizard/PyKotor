@@ -5,8 +5,7 @@ defined in pykotor.engine.
 
 References:
 ----------
-        Original BioWare engine binaries (from swkotor.exe, swkotor2.exe)
-        Original BioWare engine binaries
+        Observed retail KotOR I and KotOR II behavior.
         Libraries/PyKotor/src/pykotor/engine - Abstract interfaces
 
 

@@ -16,8 +16,7 @@ The implementation is intentionally self-contained and converts through the
 
 References:
 ----------
-        Original BioWare engine binaries (from swkotor.exe, swkotor2.exe)
-        Original BioWare engine binaries
+        Observed in retail KotOR I and TSL.
         TPC format specification
 
 

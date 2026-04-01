@@ -733,7 +733,6 @@ namespace CSharpKOTOR.Common.Script
     /// <summary>
     /// NWScript constant and function definitions for KOTOR and TSL.
     /// Generated from k1_nwscript.nss and k2_nwscript.nss (k2 is the same as tsl) using generate_scriptdefs_csharp.py.
-    /// Matching PyKotor implementation at Libraries/PyKotor/src/pykotor/common/scriptdefs.py
     /// </summary>
     public static class ScriptDefs
     {

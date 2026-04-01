@@ -4,7 +4,7 @@
 
 > **Note**: This official BioWare documentation was originally written for **Neverwinter Nights**, but the Creature (UTC) format is **identical in KotOR**. All structures, fields, and behaviors described here apply to KotOR as well. The examples may reference NWN-specific features, but the core format is the same.
 
-**Source:** This documentation is extracted from the official BioWare Aurora Engine Creature Format PDF, archived in [`vendor/xoreos-docs/specs/bioware/Creature_Format.pdf`](https://github.com/th3w1zard1/xoreos-docs/blob/master/specs/bioware/Creature_Format.pdf). The original documentation was published on the now-defunct nwn.bioware.com developer site.
+**Source:** This documentation is extracted from the official BioWare Aurora Engine Creature Format PDF, archived in [`xoreos-docs/specs/bioware/Creature_Format.pdf`](https://github.com/xoreos/xoreos-docs/blob/master/specs/bioware/Creature_Format.pdf). The original documentation was published on the now-defunct nwn.bioware.com developer site.
 
 ---
 
@@ -3731,5 +3731,10 @@ range.
 
 ### See also
 
-- [GFF-UTC](GFF-UTC) -- Creature GFF in KotOR; [GFF-File-Format](GFF-File-Format) -- GFF types
-- [2DA-appearance](2DA-appearance), [2DA-classes](2DA-classes), [2DA-racialtypes](2DA-racialtypes), [2DA-ranges](2DA-ranges) -- Creature 2DA refs; [KEY-File-Format](KEY-File-Format) -- Resource resolution
+- [GFF-UTC](GFF-Creature-and-Dialogue#utc) -- Creature GFF in KotOR
+- [GFF-File-Format](GFF-File-Format) -- GFF types
+- [2DA-appearance](2DA-File-Format#appearance2da)
+- [2DA-classes](2DA-File-Format#classes2da)
+- [2DA-racialtypes](2DA-File-Format#racialtypes2da)
+- [2DA-ranges](2DA-File-Format#ranges2da) -- Creature 2DA refs
+- [Container-Formats#key](Container-Formats#key) -- Resource resolution

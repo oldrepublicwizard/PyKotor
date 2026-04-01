@@ -1,17 +1,11 @@
 """Texture loading utilities for Panda3D.
 
-This module provides TPC texture loading functionality for the Panda3D engine.
+Loads KotOR ``TPC`` resources into Panda3D ``Texture`` objects (format conversion,
+mipmap handling). Retail TPC constructor / attribute layout notes previously cited
+here are migrated to ``wiki/reverse_engineering_findings.md`` (*engine/panda3d —
+TPC loading*).
 
-References:
-----------
-        Based on swkotor.exe TPC structure:
-        - CResTPC::CResTPC @ 0x00712ea0 - TPC resource constructor
-        - GetTPCAttrib @ 0x00712ef0 - Gets TPC texture attributes
-        - TPC texture loading and format conversion functions
-
-        Libraries/PyKotor/src/pykotor/resource/formats/tpc - TPC format
-
-
+See ``pykotor.resource.formats.tpc`` for the on-disk TPC model.
 """
 
 from __future__ import annotations
@@ -36,15 +30,6 @@ def load_tpc(tpc: TPC) -> Texture:
     Returns:
     -------
         Panda3D Texture object
-
-    References:
-    ----------
-        Based on swkotor.exe TPC structure:
-        - CResTPC::CResTPC @ 0x00712ea0 - TPC resource constructor
-        - GetTPCAttrib @ 0x00712ef0 - Gets TPC texture attributes
-        - TPC texture loading and format conversion functions
-
-        Libraries/PyKotor/src/pykotor/resource/formats/tpc - TPC format
 
     """
     mipmap = tpc.get(0, 0)

@@ -63,14 +63,6 @@ def cmd_texture_convert(args: Namespace, logger: Logger) -> int:
 def cmd_sound_convert(args: Namespace, logger: Logger) -> int:
     """Convert sound files (WAV<->clean WAV).
 
-    References:
-    ----------
-        Based on swkotor.exe audio format:
-        - WAV file loading with SFX header deobfuscation
-        - "RIFF" format identifier @ 0x0074d324
-        - "STREAMWAVES" directory @ 0x0074df34
-
-
     """
     input_path = pathlib.Path(args.input)
     output_path = pathlib.Path(args.output) if args.output else input_path.with_suffix(".wav")
@@ -94,18 +86,6 @@ def cmd_sound_convert(args: Namespace, logger: Logger) -> int:
 
 def cmd_model_convert(args: Namespace, logger: Logger) -> int:
     """Convert model files (MDL<->ASCII).
-
-    References:
-    ----------
-        Based on swkotor.exe model format:
-        - LoadModel @ 0x00464200, @ 0x0061b380, @ 0x006823f0, @ 0x006842e0, @ 0x006903d0, @ 0x006910d0 - Model loading functions
-        - UnloadModel @ 0x0060c8e0, @ 0x00646650, @ 0x006825f0 - Model unloading functions
-
-        Derivations and Other Implementations:
-        ----------
-        https://github.com/th3w1zard1/mdlops/tree/master/
-        https://github.com/th3w1zard1/kotorblender/tree/master/
-
 
     """
     input_path = pathlib.Path(args.input)

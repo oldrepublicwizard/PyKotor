@@ -9,6 +9,8 @@ from __future__ import annotations
 from enum import IntEnum
 from typing import TYPE_CHECKING
 
+from pykotor.resource.formats._base import BiowareResource
+
 if TYPE_CHECKING:
     from typing_extensions import Self
 
@@ -56,7 +58,7 @@ class NCSTypeCode(IntEnum):
     INVALID = 0xFF  # -1 in signed byte
 
 
-class NCSType:
+class NCSType(BiowareResource):
     """Represents a type in the NCS type system.
 
     Provides type information, size calculations, and type conversion utilities.

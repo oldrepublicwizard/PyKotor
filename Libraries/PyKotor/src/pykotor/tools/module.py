@@ -82,15 +82,7 @@ def clone_module(  # noqa: C901, PLR0915, PLR0912, PLR0913
 
     References:
     ----------
-        Based on swkotor.exe ERF structure:
-        - See pykotor.resource.formats.erf.erf_data for addresses (K1 + TSL TODO). CExoEncapsulatedFile, AddEncapsulatedContents.
-        Original BioWare engine binaries
-        Derivations and Other Implementations:
-        ----------
-        https://github.com/th3w1zard1/TSLPatcher/tree/master/TSLPatcher.pl (unfinished perl rewrite of TSLPatcher) (Module installation/cloning logic)
-        https://github.com/th3w1zard1/HoloPatcher.NET/tree/master/src/TSLPatcher.Core/Patcher/ModInstaller.cs (Module handling)
-
-
+        Observed retail KotOR ERF/RIM module packaging (see ``pykotor.resource.formats.erf``).
         Note: Module cloning is PyKotor-specific functionality
     """
     old_module = Module(root, installation)
@@ -122,7 +114,7 @@ def clone_module(  # noqa: C901, PLR0915, PLR0912, PLR0913
     else:
         RobustLogger().warning(f"No ARE found in module to be cloned: '{root}'")
 
-    if keep_pathing:  # sourcery skip: extract-method
+    if keep_pathing:
         pth_res: ModuleResource[PTH] | None = old_module.pth()
         pth: PTH | None = None if pth_res is None else pth_res.resource()
         if pth is not None:

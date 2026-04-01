@@ -1,14 +1,14 @@
 # Holocron Toolset: Map Builder (Indoor Map Builder)
 
-*This page is merged from the toolset in-app help (Tools/HolocronToolset/src/toolset/help/tools/).*
+The Map Builder creates new playable indoor areas from existing room models, without requiring Blender or any other external 3D modeling tool. Use it when you want to build a new interior area — a Sith tomb, a space station corridor, a cantina back room — by snapping together pre-made room pieces from the game's own model library.
 
-The Map Builder (Indoor Map Builder) creates new areas with unique layouts from existing room models. Open it from the Main Window via **Tools** → **Indoor Map Builder**.
+Open it from the Main Window via **Tools** → **Indoor Map Builder**.
 
-You select models and insert them into the map; models can be attached to each other (shown by a green line between connections). When the layout is ready, **File** → **Build** outputs a module file to the game's module folder, ready to warp into.
+**Typical workflow:** Select a kit (a set of room models from a specific game area) → place rooms on the canvas → snap connections between them (shown as green lines) → **File** → **Build** to output a ready-to-play module to the game's `Modules/` folder.
 
 ## Kits
 
-Kits are collections of models from specific game areas. The toolset does not ship with kits; you must download them first (prompted when the window opens, or **File** → **Download Kits**).
+Kits are collections of room models extracted from specific game areas. The toolset does not ship with kits; download them when first prompted (or via **File** → **Download Kits**). See [Kit Structure Documentation](Kit-Structure-Documentation) for the file format details.
 
 ## Controls
 
@@ -27,7 +27,9 @@ Kits are collections of models from specific game areas. The toolset does not sh
 
 ### See also
 
+- [Holocron Toolset: Module editor](Holocron-Toolset-Module-Editor) -- Editing module contents
+- [Holocron Toolset: Getting started](Holocron-Toolset-Getting-Started) -- Installation and first launch
 - [Indoor Map Builder User Guide](Indoor-Map-Builder-User-Guide) -- Full guide: rooms, doors, walkmeshes, building
 - [Indoor Map Builder Implementation Guide](Indoor-Map-Builder-Implementation-Guide) -- Technical details
 - [Kit Structure Documentation](Kit-Structure-Documentation) -- Kit layout and generation
-- [BWM-File-Format](BWM-File-Format) -- Walkmesh format used by built modules
+- [Level-Layout-Formats#bwm](Level-Layout-Formats#bwm) -- Walkmesh format used by built modules

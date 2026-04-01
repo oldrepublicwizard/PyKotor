@@ -1,7 +1,5 @@
 # Holocron Toolset: Getting Started
 
-*This page is merged from the toolset in-app help (Tools/HolocronToolset/src/toolset/help/).*
-
 ## What is Holocron Toolset?
 
 Holocron Toolset is an application designed to edit the game files for the KotOR games. It comes with file editors specialized for nearly every file type used with the game. Packaged in the toolset is also a 3D module editor for editing existing maps plus a "Map Builder" tool (Indoor Map Builder) which allows the user to create brand new layouts for maps using existing rooms.
@@ -14,28 +12,29 @@ Before you get started it is highly recommended configuring paths for the game d
 
 If you select a game from the dropdown menu without a path being set, you will be prompted to choose a folder. Pick the root folder for each game (containing the swkotor.exe/swkotor2.exe file).
 
-![Select game folder](https://raw.githubusercontent.com/OldRepublicDevs/PyKotor/master/Tools/HolocronToolset/src/toolset/help/images/introduction_1-gettingStarted=1.png)
+![Select game folder](https://raw.githubusercontent.com/OldRepublicDevs/HolocronToolset/refs/heads/master/src/toolset/help/images/introduction_1-gettingStarted=1.png)
 
 ### Option 2
 
 Paths can be manually configured through the settings menu.
 
-![Settings](https://raw.githubusercontent.com/OldRepublicDevs/PyKotor/master/Tools/HolocronToolset/src/toolset/help/images/introduction_1-gettingStarted=2.png)
+![Settings](https://raw.githubusercontent.com/OldRepublicDevs/HolocronToolset/refs/heads/master/src/toolset/help/images/introduction_1-gettingStarted=2.png)
 
 In a file explorer you will want to locate the root folder for each game (containing the swkotor.exe/swkotor2.exe file) and copy the path. Then select the respective game in the settings and paste the path to the directory.
 
-![Paste path](https://raw.githubusercontent.com/OldRepublicDevs/PyKotor/master/Tools/HolocronToolset/src/toolset/help/images/introduction_1-gettingStarted=3.png)
+![Paste path](https://raw.githubusercontent.com/OldRepublicDevs/HolocronToolset/refs/heads/master/src/toolset/help/images/introduction_1-gettingStarted=3.png)
 
 ## Selecting a game
 
 Once you have configured your game paths, when you select a game from the dropdown menu the application will load the game data and the disabled menus on the window will now become accessible:
 
-![Game loaded](https://raw.githubusercontent.com/OldRepublicDevs/PyKotor/master/Tools/HolocronToolset/src/toolset/help/images/introduction_1-gettingStarted=4.png)
+![Game loaded](https://raw.githubusercontent.com/OldRepublicDevs/HolocronToolset/refs/heads/master/src/toolset/help/images/introduction_1-gettingStarted=4.png)
 
 You're now ready to start modding!
 
 ### See also
 
+- [Holocron Toolset: Core Resources](Holocron-Toolset-Core-Resources) -- **Core** tab (KEY/BIF), PyKotor `Chitin` / KEY reader links, community threads
 - [Blender Integration](Blender-Integration) -- Use Blender with KotOR models and layouts
 - [Indoor Map Builder User Guide](Indoor-Map-Builder-User-Guide) -- Build new areas from kits
 - [Mod Creation Best Practices](Mod-Creation-Best-Practices) -- Override, merging, and compatibility

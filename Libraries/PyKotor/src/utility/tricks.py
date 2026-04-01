@@ -35,7 +35,7 @@ def safe_type_getattr(
 
 
 def safe_object_getattr(
-    cls: type,
+    cls: type | ModuleType,
     name: str,
 ) -> Any | object:
     try:
@@ -88,27 +88,27 @@ def fallback_unknown_getmro(unk: Any) -> tuple[type, ...] | object:
 def safe_isinstance(
     obj: Any,
     cls: type,
-) -> bool | object:  # sourcery skip: assign-if-exp, reintroduce-else
+) -> bool | object:
     assert isinstance(cls, type)
     obj_cls_mro: tuple[type, ...] | object = fallback_unknown_getmro(obj)
     try:
-        return cls in obj_cls_mro  # pyright: ignore[reportOperatorIssue]
+        return cls in obj_cls_mro  # type: ignore[operator]  # pyright: ignore[reportOperatorIssue]
     except Exception:  # noqa: BLE001
         return SENTINEL
 
 
-def safe_dir(obj_or_cls: Any) -> list[str]:  # sourcery skip: assign-if-exp, reintroduce-else
+def safe_dir(obj_or_cls: Any) -> list[str]:
     obj_or_cls_dict: dict[str, Any] | object = fallback_unknown_getattr(obj_or_cls, "__dict__")
     if obj_or_cls_dict is SENTINEL:
         return []
-    return list(obj_or_cls_dict.keys())  # pyright: ignore[reportAttributeAccessIssue]
+    return list(obj_or_cls_dict.keys())  # type: ignore[union-attr]  # pyright: ignore[reportAttributeAccessIssue]
 
 
 def inherits_type_or_object(obj: object | type) -> bool | object:
     """Determine if an object inherits from type or object without invoking custom methods."""
     cls_mro: tuple[type, ...] | object = fallback_unknown_getmro(obj)
     with contextlib.suppress(Exception):
-        return type in cls_mro or object in cls_mro  # pyright: ignore[reportOperatorIssue]
+        return type in cls_mro or object in cls_mro  # type: ignore[operator]  # pyright: ignore[reportOperatorIssue]
     return SENTINEL
 
 
@@ -121,13 +121,13 @@ def is_heap_type(cls: Any) -> bool | None:
 
 def get_app_start_time() -> float:
     """Get the start time of the Python interpreter."""
-    if platform.system() == "Windows":
+    if platform.system() == "Windows" or os.name == "nt":
         return win_get_interpreter_start_time()
     # On Unix-based systems, read /proc/self/stat for process start time
     with open("/proc/self/stat", errors="replace") as f:  # noqa: PTH123
         fields: list[str] = f.read().split()
         start_time_ticks: int = int(fields[21])
-        clock_ticks_per_second: int = os.sysconf(os.sysconf_names["SC_CLK_TCK"])
+        clock_ticks_per_second: int = os.sysconf(os.sysconf_names["SC_CLK_TCK"])  # type: ignore[attr-defined]  # pyright: ignore[reportAttributeAccessIssue]
         start_time: float = start_time_ticks / clock_ticks_per_second
         return time.time() - (time.time() - start_time)
 
@@ -229,8 +229,8 @@ def reimport_dependencies(
 def find_importing_modules(
     target_module_name: str,
 ) -> list[ModuleType]:
-    importing_modules: list[ModuleType] = [  # pyright: ignore[reportAssignmentType]
-        name
+    importing_modules: list[ModuleType] = [
+        module
         for name, module in sys.modules.items()
         if (module and hasattr(module, "__file__") and target_module_name in sys.modules and target_module_name in module.__dict__.values())
     ]
@@ -265,7 +265,7 @@ def debug_reload_pymodules(checked: bool = False):
                 if safe_isinstance(old_class, type):
                     new_class = safe_object_getattr(new_module, attr_name)  # pyright: ignore[reportArgumentType]
                     if safe_isinstance(new_class, type):
-                        class_map[id(old_class)] = new_class  # pyright: ignore[reportArgumentType]
+                        class_map[id(old_class)] = new_class  # type: ignore[assignment]  # pyright: ignore[reportArgumentType]
             except AttributeError:  # noqa: S112, PERF203
                 continue
 
@@ -283,7 +283,7 @@ def debug_reload_pymodules(checked: bool = False):
             except TypeError as e:  # noqa: F841
                 ...  # print(f"Failed to update instance of type '{obj_cls.__name__}': {e}", file=sys.__stderr__)
             except Exception as e:  # noqa: BLE001
-                print(f"Unexpected error occurred while updating instance of {obj_cls.__name__}: {e}", file=sys.__stderr__)  # pyright: ignore[reportAttributeAccessIssue]
+                print(f"Unexpected error occurred while updating instance of {obj_cls.__name__}: {e}", file=sys.__stderr__)  # type: ignore[union-attr]  # pyright: ignore[reportAttributeAccessIssue]
 
         # Track visited objects to avoid infinite recursion
         visited = set()
@@ -373,13 +373,13 @@ def debug_reload_pymodules(checked: bool = False):
         file_path: str | None = getattr(loaded_module, "__file__", None)
         if not is_non_empty_string(file_path):
             continue
-        if is_site_packages_module(file_path):
+        if is_site_packages_module(file_path):  # type: ignore[arg-type]  # pyright: ignore[reportArgumentType]
             continue
         if name.startswith(("pydevconsole", "debugpy", "pydevd", "_pydevd", "_pydev", "pydev_ipython", "__main__", "__mp_main__")):
             continue
         try:
             # Check if the module has changed on disk
-            last_file_modified_time = get_last_modified_time(file_path)
+            last_file_modified_time = get_last_modified_time(file_path)  # type: ignore[arg-type]  # pyright: ignore[reportArgumentType]
             current_mtime = fallback_unknown_getattr(loaded_module, "__mtime__")
             if current_mtime is SENTINEL:
                 current_mtime = app_start_time
@@ -393,7 +393,7 @@ def debug_reload_pymodules(checked: bool = False):
                 if reloaded_module is not None:
                     importing_modules = find_importing_modules(name)
                     for importing_module_name in importing_modules:
-                        importing_module = sys.modules[importing_module_name]  # pyright: ignore[reportArgumentType]
+                        importing_module = sys.modules[importing_module_name]  # type: ignore[arg-type, index]  # pyright: ignore[reportArgumentType]
                         reimport_dependencies(reloaded_module, importing_module)
                         loaded_module.__dict__.update(reloaded_module.__dict__)
                 if logic_to_use == -1:
@@ -403,7 +403,7 @@ def debug_reload_pymodules(checked: bool = False):
                         old_attribute = getattr(loaded_module, attribute_name)
                         if isinstance(old_attribute, type) and old_attribute not in BUILTIN_TYPES:  # check if it's a class and not a builtin type
                             new_attribute = getattr(reloaded_module, attribute_name)
-                            quick_update_class_instances(old_attribute, new_attribute)  # pyright: ignore[reportArgumentType]
+                            quick_update_class_instances(old_attribute, new_attribute)  # type: ignore[arg-type]  # pyright: ignore[reportArgumentType]
             else:
                 reloaded_module = importlib.reload(loaded_module)
                 safe_object_setattr(reloaded_module, "__mtime__", last_file_modified_time)
@@ -411,7 +411,7 @@ def debug_reload_pymodules(checked: bool = False):
                     old_attribute = getattr(loaded_module, attribute_name)
                     if isinstance(old_attribute, type) and old_attribute not in BUILTIN_TYPES:  # check if it's a class and not a builtin type
                         new_attribute = getattr(reloaded_module, attribute_name)
-                        quick_update_class_instances(old_attribute, new_attribute)  # pyright: ignore[reportArgumentType]
+                        quick_update_class_instances(old_attribute, new_attribute)  # type: ignore[arg-type]  # pyright: ignore[reportArgumentType]
             sys.modules[name] = reloaded_module
         except TypeError as e:  # noqa: F841
             ...
@@ -419,7 +419,7 @@ def debug_reload_pymodules(checked: bool = False):
             RobustLogger().warning(f"Cannot reload built-in module: {name}, falling back to alternative method!!")
             # Fallback to manual reload
             try:
-                with Path(file_path).open("r") as f:
+                with Path(file_path).open("r") as f:  # type: ignore[arg-type]  # pyright: ignore[reportArgumentType]
                     exec(f.read(), loaded_module.__dict__)
                     RobustLogger().debug(f"Manually reloaded '{name}' from '{file_path}'.")
             except Exception as e:  # noqa: BLE001

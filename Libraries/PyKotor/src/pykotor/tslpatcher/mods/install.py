@@ -81,7 +81,7 @@ def create_backup(
             log.add_note(f"Backing up '{destination_file_str}'...")
             if subdirectory_backup_path:
                 subdirectory_backup_path.mkdir(exist_ok=True, parents=True)
-            try:  # sourcery skip: remove-redundant-exception
+            try:
                 shutil.copy(destination_filepath, backup_filepath)
             except (OSError, PermissionError) as e:
                 log.add_warning(f"Failed to create backup of '{destination_file_str}': {(e.__class__.__name__, str(e))}")

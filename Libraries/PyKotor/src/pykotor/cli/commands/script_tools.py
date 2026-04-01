@@ -1,7 +1,8 @@
 """Script utility command implementations for Pykotorcli.
 
-This module provides CLI commands for working with NCS bytecode (decompile,
-disassemble, assemble) using PyKotor utilities.
+Commands for NCS bytecode (decompile to NSS, disassemble to text, assemble NSS to NCS).
+Former per-command **References** naming retail NCS loaders are migrated to
+``wiki/reverse_engineering_findings.md`` (*cli/commands/script_tools.py*).
 """
 
 from __future__ import annotations
@@ -21,13 +22,7 @@ if TYPE_CHECKING:
 
 
 def cmd_decompile(args: Namespace, logger: RobustLogger) -> int:
-    """Decompile NCS bytecode to NSS source code.
-
-    References:
-    ----------
-        See pykotor.resource.formats.ncs.ncs_data for engine addresses (K1 + TSL TODO).
-        CResNCS::CResNCS, HandleBNCSMessage, ExecuteCommandExecuteScript.
-    """
+    """Decompile NCS bytecode to NSS source code."""
     input_path = pathlib.Path(args.input)
     output_path = pathlib.Path(args.output) if args.output else input_path.with_suffix(".nss")
 
@@ -43,13 +38,7 @@ def cmd_decompile(args: Namespace, logger: RobustLogger) -> int:
 
 
 def cmd_disassemble(args: Namespace, logger: RobustLogger) -> int:
-    """Disassemble NCS bytecode to text representation.
-
-    References:
-    ----------
-        See pykotor.resource.formats.ncs.ncs_data for engine addresses (K1 + TSL TODO).
-        CResNCS::CResNCS, HandleBNCSMessage, ExecuteCommandExecuteScript.
-    """
+    """Disassemble NCS bytecode to text representation."""
     input_path = pathlib.Path(args.input)
     output_path = pathlib.Path(args.output) if args.output else input_path.with_suffix(".txt")
 
@@ -69,11 +58,6 @@ def cmd_assemble(args: Namespace, logger: RobustLogger) -> int:
 
     This command uses PyKotor's built-in compiler. For external compiler support,
     use the 'compile' command which supports both built-in and external compilers.
-
-    References:
-    ----------
-        See pykotor.resource.formats.ncs.ncs_data for engine addresses (K1 + TSL TODO).
-        Libraries/PyKotor/src/pykotor/resource/formats/ncs/compilers.py - Built-in compiler.
     """
     input_path = pathlib.Path(args.input)
     output_path = pathlib.Path(args.output) if args.output else input_path.with_suffix(".ncs")

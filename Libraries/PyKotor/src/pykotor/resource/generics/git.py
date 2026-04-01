@@ -1,4 +1,8 @@
-"""GIT (game instance) generic: GFF-based area instance data (creatures, doors, placeables, etc.)."""
+"""GIT (game instance) generic: GFF-based area instance data (creatures, doors, placeables, etc.).
+
+Third-party GitHub URL lines removed from this module are archived at
+``wiki/reverse_engineering_findings_generics_git_github_urls_pre_scrub.md``.
+"""
 
 from __future__ import annotations
 
@@ -60,18 +64,10 @@ class GIT:
 
     References:
     ----------
-        Based on swkotor.exe GIT structure:
-        - CSWSArea::LoadGIT @ 0x0050dd80 - Loads GIT file from GFF structure
-          * Creates CResGFF with "GIT " type and resource ref
-          * Reads top-level struct
-          * Loads: LoadCreatures, LoadItems, LoadDoors, LoadTriggers, LoadEncounters, LoadWaypoints, LoadSounds, LoadPlaceables, LoadStores, LoadAreaEffects, LoadProperties, LoadMaps, LoadPlaceableCameras
-          * Reads UseTemplates, CurrentWeather, WeatherStarted fields
-        - CSWSArea::SaveGIT @ 0x0050ba00 - Saves GIT file to GFF structure
-          * Calls CResGFF::CreateGFFFile with "GIT " type and "V2.0" version
-          * Writes area properties, creatures, doors, placeables, triggers, waypoints, stores, encounters, sounds, cameras
-        - "GIT " resource type @ 0x00747b70 - GIT format identifier
-        https://github.com/th3w1zard1/Kotor.NET/tree/master/Kotor.NET/Resources/KotorGIT/GIT.cs (GIT class and AreaProperties class)
-        https://github.com/th3w1zard1/KotOR_IO/tree/master/KotOR_IO/File Formats/GFF FileTypes/GIT.cs (GIT class)
+        Observed retail KotOR GIT GFF: type tag ``GIT `` / ``V2.0``, top-level lists for area
+        instances (creatures, doors, triggers, waypoints, placeables, stores, encounters, sounds,
+        cameras) and ``AreaProperties`` for ambient and music fields.
+        Archived third-party URL lines: ``wiki/reverse_engineering_findings_generics_git_github_urls_pre_scrub.md``.
 
     """
 
@@ -122,7 +118,6 @@ class GIT:
     _INSTANCE_TYPE_MAP: dict[type[GITCreature | GITDoor | GITEncounter | GITPlaceable | GITSound | GITStore | GITTrigger | GITWaypoint | GITCamera], str] | None = None
 
     def __init__(self):
-        # https://github.com/th3w1zard1/Kotor.NET/tree/master/Kotor.NET/Resources/KotorGIT/GIT.cs:29-37
         # Area audio properties (ambient sounds, music, environment audio)
         self.ambient_sound_id: int = 0  # AmbientSndDay (day ambient sound ID)
         self.ambient_volume: int = 0  # AmbientSndDayVol (day ambient volume)
@@ -480,12 +475,7 @@ class GITCamera(GITObject):
 
     References:
     ----------
-        Based on swkotor.exe GIT structure:
-        - CSWSArea::LoadGIT @ 0x0050dd80 - Loads GIT file for area instances
-        - CSWSArea::SaveGIT @ 0x0050ba00 - Saves GIT file for area instances
-        - CResGFF::CreateGFFFile @ 0x00411260 - Creates GFF file structure
-        https://github.com/th3w1zard1/Kotor.NET/tree/master/Kotor.NET/Resources/KotorGIT/GIT.cs (CameraInfo class)
-
+        Observed retail KotOR GIT GFF schema (see class docstring for overview).
     """
 
     GFF_STRUCT_ID = 14
@@ -503,30 +493,23 @@ class GITCamera(GITObject):
     ):
         super().__init__(x, y, z)
 
-        # https://github.com/th3w1zard1/Kotor.NET/tree/master/Kotor.NET/Resources/KotorGIT/GIT.cs:42
         # Unique camera identifier (CameraID field)
         self.camera_id: int = camera_id
 
-        # https://github.com/th3w1zard1/Kotor.NET/tree/master/Kotor.NET/Resources/KotorGIT/GIT.cs:48
         # Field of view angle in degrees (FieldOfView field)
         self.fov: float = 45
 
-        # https://github.com/th3w1zard1/Kotor.NET/tree/master/Kotor.NET/Resources/KotorGIT/GIT.cs:47
         # Camera height offset (Height field)
         self.height: float = 0.0
 
-        # https://github.com/th3w1zard1/Kotor.NET/tree/master/Kotor.NET/Resources/KotorGIT/GIT.cs:45
         # Microphone range for audio occlusion (MicRange field)
         self.mic_range: float = 0.0
 
-        # https://github.com/th3w1zard1/Kotor.NET/tree/master/Kotor.NET/Resources/KotorGIT/GIT.cs:46
         # Camera pitch angle in radians (Pitch field)
         self.pitch: float = 0.0
 
-        # https://github.com/th3w1zard1/Kotor.NET/tree/master/Kotor.NET/Resources/KotorGIT/GIT.cs:46
-        # Camera orientation quaternion (Orientation field, glm::quat)
-        # NOTE: PyKotor converts from Euler angles, reone stores as quaternion directly
-        # Discrepancy: PyKotor uses Vector4 quaternion, reone uses glm::quat
+        # Orientation: PyKotor builds a Vector4 quaternion from yaw/roll/pitch here.
+        # Archived third-party line refs and representation notes: wiki *resource/generics/git.py — GITCamera*.
         self.orientation: Vector4 = Vector4.from_euler(
             math.pi / 2 - yaw,
             roll,
@@ -585,11 +568,7 @@ class GITCreature(GITInstance):
 
     References:
     ----------
-        Based on swkotor.exe GIT structure:
-        - CSWSArea::LoadGIT @ 0x0050dd80 - Loads GIT file for area instances
-        - CSWSArea::SaveGIT @ 0x0050ba00 - Saves GIT file for area instances
-        - CResGFF::CreateGFFFile @ 0x00411260 - Creates GFF file structure
-        https://github.com/th3w1zard1/Kotor.NET/tree/master/Kotor.NET/Resources/KotorGIT/GIT.cs (CreatureInfo class)
+        Observed retail KotOR GIT GFF schema (see class docstring for overview).
 
     """
 
@@ -604,7 +583,6 @@ class GITCreature(GITInstance):
     ):
         super().__init__(x, y, z)
 
-        # https://github.com/th3w1zard1/Kotor.NET/tree/master/Kotor.NET/Resources/KotorGIT/GIT.cs:53-57
         # Creature bearing/rotation angle (computed from XOrientation/YOrientation)
         # NOTE: PyKotor computes bearing from XOrientation/YOrientation using Vector2.angle()
         # Reference: git.py:977 (bearing = Vector2(rot_x, rot_y).angle() - math.pi / 2)
@@ -660,11 +638,7 @@ class GITDoor(GITInstance):
 
     References:
     ----------
-        Based on swkotor.exe GIT structure:
-        - CSWSArea::LoadGIT @ 0x0050dd80 - Loads GIT file for area instances
-        - CSWSArea::SaveGIT @ 0x0050ba00 - Saves GIT file for area instances
-        - CResGFF::CreateGFFFile @ 0x00411260 - Creates GFF file structure
-        https://github.com/th3w1zard1/Kotor.NET/tree/master/Kotor.NET/Resources/KotorGIT/GIT.cs (DoorInfo class)
+        Observed retail KotOR GIT GFF schema (see class docstring for overview).
 
     """
 
@@ -679,32 +653,25 @@ class GITDoor(GITInstance):
     ):
         super().__init__(x, y, z)
 
-        # https://github.com/th3w1zard1/Kotor.NET/tree/master/Kotor.NET/Resources/KotorGIT/GIT.cs:72
         # Door bearing/rotation angle (Bearing field)
         self.bearing: float = 0.0
 
-        # https://github.com/th3w1zard1/Kotor.NET/tree/master/Kotor.NET/Resources/KotorGIT/GIT.cs:73-74
         # Color tweak for door appearance (TweakColor/UseTweakColor fields)
         # NOTE: TODO comment indicates tweak color needs fixing in dismantle/construct
         self.tweak_color: Color | None = None  # TODO: fix tweak color in dismantle/construct
 
-        # https://github.com/th3w1zard1/Kotor.NET/tree/master/Kotor.NET/Resources/KotorGIT/GIT.cs:66
         # Tag of linked door/waypoint (LinkedTo field)
         self.linked_to: str = ""
 
-        # https://github.com/th3w1zard1/Kotor.NET/tree/master/Kotor.NET/Resources/KotorGIT/GIT.cs:67
         # Link type flags (LinkedToFlags field: 0=NoLink, 1=ToDoor, 2=ToWaypoint)
         self.linked_to_flags: GITModuleLink = GITModuleLink.NoLink
 
-        # https://github.com/th3w1zard1/Kotor.NET/tree/master/Kotor.NET/Resources/KotorGIT/GIT.cs:65
         # ResRef of linked module (LinkedToModule field)
         self.linked_to_module: ResRef = ResRef.from_blank()
 
-        # https://github.com/th3w1zard1/Kotor.NET/tree/master/Kotor.NET/Resources/KotorGIT/GIT.cs:68
         # Localized transition destination name (TransitionDestin field)
         self.transition_destination: LocalizedString = LocalizedString.from_invalid()
 
-        # https://github.com/th3w1zard1/Kotor.NET/tree/master/Kotor.NET/Resources/KotorGIT/GIT.cs:64
         # Door tag identifier (Tag field)
         self.tag: str = ""
 
@@ -1148,7 +1115,7 @@ class GITWaypoint(GITInstance):
 def construct_git(
     gff: GFF,
 ) -> GIT:
-    """REVA GIT load path:
+    """Build a ``GIT`` from a parsed GFF (retail KotOR GIT schema).
 
     Args:
     ----
@@ -1158,18 +1125,15 @@ def construct_git(
     -------
         GIT: The constructed GIT object.
 
-    K1 LoadGIT @ 0x0050dd80 (LoadArea 0x0050e1d7)
-        → LoadProperties 0x00507490 (GetStructFromStruct AreaProperties)
-        → CSWSAmbientSound::Load @ 0x005c95f0 (ReadFieldINT MusicDelay/MusicDay/MusicNight/MusicBattle/AmbientSndDay/AmbientSndNight/AmbientSndDayVol/AmbientSndNitVol default current/0)
-        → LoadCreatures/LoadDoors/LoadTriggers/LoadEncounters/LoadWaypoints/LoadSounds/LoadPlaceables/LoadStores/LoadPlaceableCameras.
-    TSL Aspyr LoadGIT @ 0x0071ae10.
+    It has been observed that missing ``AreaProperties`` or instance lists deserialize with
+    the same defaults applied here (ambient/music ints, empty lists, per-field acquire defaults).
     """
     git = GIT()
 
     root = gff.root
-    # AreaProperties: K1 LoadProperties 0x00507490 GetStructFromStruct(AreaProperties); CSWSAmbientSound::Load 0x005c95f0 ReadFieldINT defaults 0/current. Omit struct → use defaults.
+    # AreaProperties: retail defaults for ambient/music when struct missing.
     properties_struct = root.acquire("AreaProperties", GFFStruct())
-    # AmbientSndDayVol/AmbientSndDay/EnvAudio/MusicDay/MusicBattle/MusicDelay: K1 0x005c95f0 ReadFieldINT default 0. Omit OK.
+    # Ambient/music INT fields default to 0 when omitted.
     git.ambient_volume = properties_struct.acquire("AmbientSndDayVol", 0)
     git.ambient_sound_id = properties_struct.acquire("AmbientSndDay", 0)
     git.env_audio = properties_struct.acquire("EnvAudio", 0)
@@ -1177,7 +1141,7 @@ def construct_git(
     git.music_battle_id = properties_struct.acquire("MusicBattle", 0)
     git.music_delay = properties_struct.acquire("MusicDelay", 0)
 
-    # CameraList: K1 LoadGIT 0x0050dd80 → LoadPlaceableCameras; list omit → empty. Per-struct: CameraID 0, FieldOfView/Height/MicRange/Pitch 0.0, Orientation/Position null. Omit OK.
+    # CameraList: defaults per shipped GIT schema when list or fields omitted.
     for camera_struct in _iterate_gff_list(gff.root, "CameraList"):
         camera = GITCamera()
         git.cameras.append(camera)
@@ -1190,7 +1154,7 @@ def construct_git(
         camera.position = camera_struct.acquire("Position", Vector3.from_null())
         camera.pitch = camera_struct.acquire("Pitch", 0.0)
 
-    # Creature List: K1 LoadGIT 0x0050dd80 → LoadCreatures. TemplateResRef blank, X/Y/ZPosition 0.0, X/YOrientation 0.0. Omit list → empty. Omit OK.
+    # Creature List: blank template, zero position/orientation when omitted.
     for creature_struct in _iterate_gff_list(gff.root, "Creature List"):
         creature = GITCreature()
         git.creatures.append(creature)
@@ -1204,7 +1168,7 @@ def construct_git(
         )
         creature.bearing = Vector2(rot_x, rot_y).angle() - math.pi / 2
 
-    # Door List: K1 LoadGIT 0x0050dd80 → LoadDoors. Bearing 0.0, Tag/LinkedTo "", TemplateResRef/LinkedToModule blank, LinkedToFlags 0, TransitionDestin invalid, X/Y/Z 0.0, UseTweakColor 0. Omit OK.
+    # Door List: neutral defaults for placement, links, and tweak color when omitted.
     for door_struct in _iterate_gff_list(gff.root, "Door List"):
         door = GITDoor()
         git.doors.append(door)
@@ -1221,7 +1185,7 @@ def construct_git(
         tweak_enabled = door_struct.acquire("UseTweakColor", 0)
         door.tweak_color = Color.from_bgr_integer(door_struct.acquire("TweakColor", 0)) if tweak_enabled else None
 
-    # Encounter List: K1 LoadGIT 0x0050dd80 → LoadEncounters. X/Y/ZPosition 0.0, TemplateResRef blank; Geometry omit → default triangle; SpawnPointList X/Y/Z/Orientation 0.0. Omit OK.
+    # Encounter List: zeroed placement, optional geometry/spawn lists with zero defaults.
     for encounter_struct in _iterate_gff_list(gff.root, "Encounter List"):
         x = encounter_struct.acquire("XPosition", 0.0)
         y = encounter_struct.acquire("YPosition", 0.0)
@@ -1249,7 +1213,7 @@ def construct_git(
             spawn.orientation = spawn_struct.acquire("Orientation", 0.0)
             encounter.spawn_points.append(spawn)
 
-    # Placeable List: K1 LoadGIT 0x0050dd80 → LoadPlaceables. TemplateResRef blank, X/Y/Z 0.0, Bearing 0.0, UseTweakColor 0. Omit OK.
+    # Placeable List: blank template, zero transform, no tweak color when omitted.
     for placeable_struct in _iterate_gff_list(gff.root, "Placeable List"):
         placeable = GITPlaceable()
         git.placeables.append(placeable)
@@ -1264,7 +1228,7 @@ def construct_git(
         tweak_int = placeable_struct.acquire("TweakColor", 0)
         placeable.tweak_color = Color.from_bgr_integer(tweak_int) if tweak_enabled else None
 
-    # SoundList: K1 LoadGIT 0x0050dd80 → LoadSounds. TemplateResRef blank, X/Y/ZPosition 0.0. Omit OK.
+    # SoundList: blank template, zero position when omitted.
     for sound_struct in _iterate_gff_list(gff.root, "SoundList"):
         sound = GITSound()
         git.sounds.append(sound)
@@ -1274,7 +1238,7 @@ def construct_git(
         sound.position.y = sound_struct.acquire("YPosition", 0.0)
         sound.position.z = sound_struct.acquire("ZPosition", 0.0)
 
-    # StoreList: K1 LoadGIT 0x0050dd80 → LoadStores. ResRef blank, X/Y/ZPosition 0.0, X/YOrientation 0.0. Omit OK.
+    # StoreList: blank ResRef, zero position/orientation when omitted.
     for store_struct in _iterate_gff_list(gff.root, "StoreList"):
         store = GITStore()
         git.stores.append(store)
@@ -1290,7 +1254,7 @@ def construct_git(
         )
         store.bearing = Vector2(rot_x, rot_y).angle() - math.pi / 2
 
-    # TriggerList: K1 LoadGIT 0x0050dd80 → LoadTriggers. TemplateResRef/Tag/LinkedTo/LinkedToModule blank, LinkedToFlags 0, X/Y/ZPosition 0.0; Geometry omit → default triangle. Omit OK.
+    # TriggerList: blank linkage fields, zero position, optional geometry with zero defaults.
     for trigger_struct in _iterate_gff_list(gff.root, "TriggerList"):
         trigger = GITTrigger()
         git.triggers.append(trigger)
@@ -1314,7 +1278,7 @@ def construct_git(
                     z = geometry_struct.acquire("PointZ", 0.0)
                     trigger.geometry.append(Vector3(x, y, z))
 
-    # WaypointList: K1 LoadGIT 0x0050dd80 → LoadWaypoints. LocalizedName/Tag invalid/blank, TemplateResRef blank, X/Y/ZPosition 0.0, HasMapNote 0, X/YOrientation 0.0. Omit OK.
+    # WaypointList: invalid/blank name and tag, zero transform, map note off when omitted.
     for waypoint_struct in _iterate_gff_list(gff.root, "WaypointList"):
         waypoint = GITWaypoint()
         git.waypoints.append(waypoint)
@@ -1350,15 +1314,14 @@ def dismantle_git(
     *,
     use_deprecated: bool = True,
 ) -> GFF:
-    """REVA GIT write path: K1 SaveGIT @ 0x0050ba00 (SaveModuleInProgress 0x004c3bf9) → SaveProperties 0x00506090 (AddStructToStruct AreaProperties),
-    CSWSAmbientSound::Save @ 0x005c96e0 (WriteFieldINT MusicDelay/MusicDay/MusicNight/MusicBattle/AmbientSndDay/AmbientSndNight/AmbientSndDayVol/AmbientSndNitVol). TSL SaveGIT analogous."""
+    """Serialize ``GIT`` back to a GFF (retail KotOR GIT schema; K1 and TSL share list labels)."""
     gff = GFF(GFFContent.GIT)
     root = gff.root
 
-    # UseTemplates: K1 LoadGIT 0x0050dd80 ReadFieldBYTE default 0; SaveGIT 0x0050ba00 writes 1. Omit OK.
+    # UseTemplates: retail loads 0 when omitted; this writer sets 1 to match toolset convention.
     root.set_uint8("UseTemplates", 1)
 
-    # AreaProperties: K1 SaveProperties 0x00506090 AddStructToStruct(AreaProperties,100); CSWSAmbientSound::Save 0x005c96e0 writes INT fields. Defaults 0.
+    # AreaProperties: struct id 100; ambient/music ints mirror ``construct_git`` defaults.
     properties_struct = GFFStruct(100)
     properties_struct.set_int32("AmbientSndDayVol", git.ambient_volume)
     properties_struct.set_int32("AmbientSndDay", git.ambient_sound_id)
@@ -1371,7 +1334,7 @@ def dismantle_git(
     properties_struct.set_int32("MusicDelay", git.music_delay)
     root.set_struct("AreaProperties", properties_struct)
 
-    # CameraList/Creature List/Door List/Encounter List/Placeable List/SoundList/StoreList/TriggerList/WaypointList: K1 SaveGIT 0x0050ba00 writes each list; list omit → empty. Defaults per type.
+    # Instance lists: emit one GFF list per section; empty Python lists become empty GFF lists.
     camera_list = root.set_list("CameraList", GFFList())
     for camera in git.cameras:
         camera_struct = camera_list.add(GITCamera.GFF_STRUCT_ID)

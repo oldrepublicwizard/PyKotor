@@ -6,7 +6,7 @@ if TYPE_CHECKING:
     from typing_extensions import Self
 
 
-def is_string_like(obj: Any) -> bool:  # sourcery skip: use-fstring-for-concatenation
+def is_string_like(obj: Any) -> bool:
     try:
         _ = obj + ""
     except Exception:  # pylint: disable=W0718  # noqa: BLE001

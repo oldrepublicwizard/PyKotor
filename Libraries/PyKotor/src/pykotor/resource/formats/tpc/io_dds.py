@@ -16,6 +16,10 @@ import struct
 from dataclasses import dataclass
 from typing import TYPE_CHECKING
 
+import kaitaistruct
+
+from pykotor.common.stream import BinaryReader
+from bioware_kaitai_formats.dds import Dds
 from pykotor.resource.formats.tpc.tpc_data import TPC, TPCLayer, TPCMipmap, TPCTextureFormat
 from pykotor.resource.type import ResourceReader, ResourceWriter, autoclose
 
@@ -187,6 +191,13 @@ class TPCDDSReader(ResourceReader):
     def load(self, *, auto_close: bool = True) -> TPC:
         """Load DDS data into a TPC instance."""
         self._tpc = TPC()
+        data = self._reader.read_all()
+        try:
+            Dds.from_bytes(data)
+        except kaitaistruct.KaitaiStructError:
+            pass
+        self._reader = BinaryReader.from_bytes(data, 0)
+
         start_pos = self._reader.position()
         magic = self._reader.read_uint32(big=True)
         if magic == self.MAGIC:

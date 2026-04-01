@@ -107,7 +107,7 @@ def LoadCOMFunctionPointers(dialog_type: type[IFileDialog | IFileOpenDialog | IF
     comFuncPtrs.hShell32 = comFuncPtrs.load_library("shell32.dll")
 
     # Get function pointers
-    if comFuncPtrs.hOle32:  # sourcery skip: extract-method
+    if comFuncPtrs.hOle32:
         PFN_CoInitialize: type[_FuncPointer] = WINFUNCTYPE(HRESULT, POINTER(dialog_type))
         PFN_CoUninitialize: type[_FuncPointer] = WINFUNCTYPE(None)
         PFN_CoCreateInstance: type[_FuncPointer] = WINFUNCTYPE(HRESULT, POINTER(GUID), c_void_p, c_ulong, POINTER(GUID), POINTER(POINTER(dialog_type)))
@@ -227,7 +227,7 @@ def configure_file_dialog(  # noqa: PLR0913, PLR0912, C901, PLR0915
     default_extension: str | None = None,
     dialog_interfaces: list[comtypes.IUnknown | comtypes.COMObject] | None = None,
     hwnd: HWND | int | None = None,
-) -> list[str] | None:  # sourcery skip: low-code-quality
+) -> list[str] | None:
     comFuncs: COMFunctionPointers = LoadCOMFunctionPointers(type(file_dialog))
     cookies = []
     if dialog_interfaces:
@@ -343,7 +343,7 @@ def open_file_and_folder_dialog(  # noqa: C901, PLR0913, PLR0912
     default_no_minimode: bool = False,
     force_preview_pane_on: bool = False,
     ok_button_text: str | None = None,
-) -> list[str] | None:  # sourcery skip: low-code-quality
+) -> list[str] | None:
     """Opens a file dialog to select files.
 
     Args:
@@ -451,7 +451,7 @@ def open_file_dialog(  # noqa: C901, PLR0913, PLR0912
     default_no_minimode: bool = False,
     force_preview_pane_on: bool = False,
     ok_button_text: str | None = None,
-) -> list[str] | None:  # sourcery skip: low-code-quality
+) -> list[str] | None:
     """Opens a file dialog to select files.
 
     Args:
@@ -555,7 +555,7 @@ def save_file_dialog(  # noqa: C901, PLR0913, PLR0912
     default_no_minimode: bool = False,
     force_preview_pane_on: bool = False,
     ok_button_text: str | None = None,
-) -> list[str] | None:  # sourcery skip: low-code-quality
+) -> list[str] | None:
     """Opens a file dialog to save a file.
 
     Args:
@@ -656,7 +656,7 @@ def open_folder_dialog(  # noqa: C901, PLR0913, PLR0912
     default_no_minimode: bool = False,
     force_preview_pane_on: bool = False,
     ok_button_text: str | None = None,
-) -> list[str] | None:  # sourcery skip: low-code-quality
+) -> list[str] | None:
     """Opens a dialog to select folders.
 
     Args:

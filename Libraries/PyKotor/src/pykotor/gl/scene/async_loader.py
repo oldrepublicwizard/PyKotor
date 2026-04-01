@@ -77,6 +77,10 @@ class IntermediateModel(NamedTuple):
     max_point: tuple[float, float, float]
 
 
+def _rgba_has_transparency(rgba_data: bytes) -> bool:
+    return any(alpha < 255 for alpha in rgba_data[3::4])
+
+
 # ===== Combined IO + Parsing Workers (Child Process) =====
 # CRITICAL: NO Installation objects here! Only raw file IO + parsing
 
@@ -203,18 +207,16 @@ def _parse_texture_data(
             txi = getattr(tpc, "_txi", None)  # noqa: SLF001
             txi_features = getattr(txi, "features", None)
             blend_mode = int((getattr(txi_features, "blending", 0) if txi_features is not None else 0) or 0)
-            has_alpha = mm.tpc_format in (TPCTextureFormat.DXT3, TPCTextureFormat.DXT5, TPCTextureFormat.RGBA)
-            base_cutoff = 0.01 if has_alpha and blend_mode != 1 else 0.0
-            alpha_cutoff = base_cutoff
-            if blend_mode == 2:
-                alphamean = getattr(txi_features, "alphamean", None) if txi_features is not None else None
-                alpha_cutoff = max(alpha_cutoff, float(alphamean) if alphamean is not None else 0.1)
-
             if mm.tpc_format != TPCTextureFormat.RGBA:
                 tpc.convert(TPCTextureFormat.RGBA)
                 mm = tpc.get(0, 0)
 
             rgba_data = bytes(mm.data)
+            has_alpha = _rgba_has_transparency(rgba_data)
+            alpha_cutoff = 0.01 if has_alpha and blend_mode != 1 else 0.0
+            if blend_mode == 2:
+                alphamean = getattr(txi_features, "alphamean", None) if txi_features is not None else None
+                alpha_cutoff = max(alpha_cutoff, float(alphamean) if alphamean is not None else 0.1)
             return (
                 name,
                 IntermediateTexture(
@@ -234,16 +236,18 @@ def _parse_texture_data(
             from pykotor.resource.formats.tpc.tga import read_tga
 
             img = read_tga(io.BytesIO(tex_bytes))
+            rgba_data = bytes(img.data)
+            has_alpha = _rgba_has_transparency(rgba_data)
             return (
                 name,
                 IntermediateTexture(
                     width=img.width,
                     height=img.height,
-                    rgba_data=bytes(img.data),
+                    rgba_data=rgba_data,
                     mipmap_count=1,
                     blend_mode=0,
-                    alpha_cutoff=0.01,
-                    has_alpha=True,
+                    alpha_cutoff=0.01 if has_alpha else 0.0,
+                    has_alpha=has_alpha,
                 ),
                 None,
             )
@@ -261,6 +265,7 @@ def _parse_texture_data(
                 tpc_from_dds.convert(TPCTextureFormat.RGBA)
                 mm = tpc_from_dds.get(0, 0)
             rgba_data = bytes(mm.data)
+            has_alpha = _rgba_has_transparency(rgba_data)
             return (
                 name,
                 IntermediateTexture(
@@ -269,8 +274,8 @@ def _parse_texture_data(
                     rgba_data=rgba_data,
                     mipmap_count=1,
                     blend_mode=0,
-                    alpha_cutoff=0.01,
-                    has_alpha=True,
+                    alpha_cutoff=0.01 if has_alpha else 0.0,
+                    has_alpha=has_alpha,
                 ),
                 None,
             )

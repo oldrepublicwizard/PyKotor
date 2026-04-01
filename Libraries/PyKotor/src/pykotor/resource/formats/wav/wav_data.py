@@ -8,28 +8,15 @@ KotOR Audio Format Reference:
     - VO files (streamvoice): Usually standard RIFF/WAVE with PCM or IMA ADPCM
     - Music with MP3: RIFF header with size=50, skip 58 bytes, then MP3 data
 
-References:
+Observed retail behavior:
 ----------
-        Based on unified K1 (swkotor.exe) and TSL (swkotor2.exe) WAV/audio structure.
-        Addresses: (K1: swkotor.exe, TSL: swkotor2.exe — verify/fill TSL via REVA when available).
-
-        - ".wav" extension string: K1: 0x0074d308, TSL: TODO
-        - "wav" resource type string: K1: 0x0074d32c, TSL: TODO
-        - "wave" string (wave format identifier): K1: 0x0073f064, TSL: TODO
-        - "RIFF" string: K1: 0x0074d324, TSL: TODO
-        - "STREAMWAVES" string: K1: 0x0074df34, TSL: TODO
-        - "HD0:STREAMWAVES\\%s" path format: K1: 0x0074a7f4, TSL: TODO
-        - "HD0:STREAMMUSIC\\%s" path format: K1: 0x0074c304, TSL: TODO
-        - ".\\streamwaves", "d:\\streamwaves" paths: K1: 0x0074df40, 0x0074df50, TSL: TODO
-        Format notes: SFX 470-byte header (0xFF 0xF3 0x60 0xC4); MP3-in-WAV riffSize 50, skip 58 bytes.
-        Derivations and Other Implementations:
-        ----------
-        https://github.com/th3w1zard1/KotOR.js/tree/master/src/audio/AudioFile.ts:9-162
-
+        KotOR I and TSL reuse the same stream-voice / stream-music directory layout and RIFF
+        conventions summarized above.
 
 """
 
 from __future__ import annotations
+from pykotor.resource.formats._base import BiowareResource
 
 from enum import IntEnum
 
@@ -39,13 +26,6 @@ from pykotor.resource.type import ResourceType
 class WaveEncoding(IntEnum):
     """Wave encoding types used by Bioware.
 
-        References:
-        ----------
-            Original BioWare engine binaries (TODO: Verify with REVA when available)
-
-    Derivations and Other Implementations:
-    -------------------------------------
-        - https://github.com/th3w1zard1/KotOR.js/tree/master/src/enums/audio/AudioFileWaveEncoding.ts
     """
 
     PCM = 0x01  # Linear PCM (uncompressed)
@@ -71,7 +51,7 @@ class WAVType(IntEnum):
     SFX = 2  # Sound effects WAV (streammusic/sounds with 470-byte header)
 
 
-class WAV:
+class WAV(BiowareResource):
     """Represents a WAV file.
 
     Attributes:

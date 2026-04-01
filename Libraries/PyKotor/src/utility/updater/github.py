@@ -104,7 +104,6 @@ class AbstractAPIResult(ABC):  # noqa: B024
 
     @classmethod
     def resolve_type(cls, type_str: str):
-        # sourcery skip: assign-if-exp, reintroduce-else
         def resolve(node):
             if isinstance(node, ast.Name):
                 # Map 'list', 'dict' to typing versions when used in type annotations

@@ -19,7 +19,7 @@ class FACFaction:
     Attributes:
     ----------
         name: Name of the faction.
-            Reference: Bioware-Aurora-Faction.md - FactionName field (CExoString)
+            Reference: Bioware-Aurora-Faction.md — FactionName (string field)
 
         global_effect: Whether all members of this faction immediately change their standings
             if one member changes standings.
@@ -67,41 +67,9 @@ class FAC:
     FAC files are GFF-based format files that store faction definitions and reputation
     relationships between factions. The file is typically named "repute.fac" in modules.
 
-    References:
-    ----------
-        KotOR I (swkotor.exe):
-            - 0x004c3960 - CSWSModule::SaveModuleFAC (378 bytes, 69 lines)
-                - Main FAC GFF writer entry point
-                - Saves faction data to GFF structure
-                - Function signature: SaveModuleFAC(void)
-                - Called from SaveModuleStart (0x004c8960)
-            - 0x0052b5c0 - CFactionManager::LoadFactionsFromSaveGame (455 bytes, 86 lines)
-                - Main FAC GFF parser entry point for FactionList
-                - Loads factions from GFF structure
-                - Function signature: LoadFactionsFromSaveGame(CFactionManager* this, CResGFF* param_1, CResList* param_2)
-                - Called from LoadModuleStart (0x004c9050)
-            - 0x0052bbe0 - CFactionManager::LoadReputationsFromSaveGame (253 bytes, 44 lines)
-                - Main FAC GFF parser entry point for RepList
-                - Loads reputation relationships from GFF structure
-                - Function signature: LoadReputationsFromSaveGame(CFactionManager* this, CResGFF* param_1, CResList* param_2)
-                - Called from LoadModuleStart (0x004c9050)
-            - 0x0052b790 - CFactionManager::SaveFactions (146 bytes, 29 lines)
-                - Saves FactionList to GFF structure
-                - Writes FactionName (CExoString), FactionParentID (DWORD), FactionGlobal (WORD)
-            - 0x0052b830 - CFactionManager::SaveReputations (169 bytes, 39 lines)
-                - Saves RepList to GFF structure
-                - Writes FactionID1 (DWORD), FactionID2 (DWORD), FactionRep (DWORD)
-            - Reads FactionList (GFFList):
-                - FactionName (CExoString) - faction name
-                - FactionParentID (DWORD) - parent faction index (0xFFFFFFFF for standard factions)
-                - FactionGlobal (WORD) - global effect flag (1 = global, 0 = individual)
-            - Reads RepList (GFFList):
-                - FactionID1 (DWORD) - first faction index
-                - FactionID2 (DWORD) - second faction index
-                - FactionRep (DWORD) - reputation value (0-100, clamped)
-        KotOR II / TSL (swkotor2.exe):
-            - Functionally identical to K1 implementation
-            - Same GFF structure and parsing logic
+    On disk, FAC is a GFF with root lists ``FactionList`` and ``RepList`` as used by retail
+    modules (typically ``repute.fac``). Load/save behavior matches observed KotOR I and TSL
+    usage; symbol-level notes are migrated to ``wiki/reverse_engineering_findings.md``.
 
     Attributes:
     ----------
@@ -139,39 +107,15 @@ def construct_fac(
 
     root = gff.root
 
-    # FactionList (GFFList): root list of faction structs. Omit → empty list; engine skips load.
-    # K1 LoadModuleStart @ 0x004c9050 GetList(gff, &local_80, struct, "FactionList") then LoadFactionsFromSaveGame
-    # K1 LoadFactionsFromSaveGame @ 0x0052b5c0 GetListCount(param_2), GetListElement per index
-    # K1 SaveModuleFAC @ 0x004c3960 AddList(this_00, &local_20, struct, "FactionList"); SaveFactions(this, this_00, &local_20)
-    # TSL Aspyr LoadModuleStart @ 0x0072aaa0 GetList "FactionList" then FUN_007ef390 (LoadFactionsFromSaveGame)
-    # TSL Aspyr FUN_007ef390 @ 0x007ef390 GetListCount(param_2), GetListElement; FUN_007ef910 @ 0x007ef910 writes list
-    # TSL Legacy FUN_005acf30 @ 0x005acf30 GetListCount; FUN_005ad100 @ 0x005ad100 AddListElement per faction
+    # FactionList: omit or empty → no factions loaded (observed retail).
     faction_list: GFFList = root.acquire("FactionList", GFFList())
     for i, faction_struct in enumerate(faction_list):
         faction = FACFaction()
-        # FactionName (CExoString): default "" when missing. Omit → engine uses ""; ResolveFactionName still runs.
-        # K1 LoadFactionsFromSaveGame @ 0x0052b5c0 ReadFieldCExoString(..., "FactionName", &local_4c, &local_28) with local_28 = CExoString("")
-        # K1 SaveFactions @ 0x0052b790 WriteFieldCExoString(this_00, &param_1, &pCVar1->name, "FactionName")
-        # TSL Aspyr FUN_007ef390 @ 0x007ef390 ReadFieldCExoString(..., "FactionName", &local_1c, &local_40) CExoString("")
-        # TSL Aspyr FUN_007ef910 @ 0x007ef910 WriteFieldCExoString(..., "FactionName")
-        # TSL Legacy FUN_005acf30 @ 0x005acf30 ReadField (FUN_00412fe0) "FactionName" default local_28 = ""
-        # TSL Legacy FUN_005ad100 @ 0x005ad100 FUN_00413a90(..., "FactionName")
+        # FactionName: default "" when absent (observed retail).
         faction.name = faction_struct.acquire("FactionName", "")
-        # FactionGlobal (WORD): default 0 when present; when field MISSING engine uses 1 (global). Omit → treat as global.
-        # K1 LoadFactionsFromSaveGame @ 0x0052b5c0 ReadFieldWORD(..., "FactionGlobal", &local_4c, 0); if (local_4c==0) local_44=1
-        # K1 SaveFactions @ 0x0052b790 WriteFieldWORD(this_00, &param_1, pCVar1->global, "FactionGlobal")
-        # TSL Aspyr FUN_007ef390 @ 0x007ef390 ReadFieldWORD(..., 0); if (local_1c==0) local_18=1
-        # TSL Aspyr FUN_007ef910 @ 0x007ef910 WriteFieldWORD(..., "FactionGlobal")
-        # TSL Legacy FUN_005acf30 @ 0x005acf30 ReadField (FUN_00412c60) default 0; if local_4c==0 local_44=1
-        # TSL Legacy FUN_005ad100 @ 0x005ad100 FUN_004137e0(..., "FactionGlobal")
+        # FactionGlobal: stored as WORD; when the field is absent the game treats the faction as global (observed retail).
         faction.global_effect = bool(faction_struct.acquire("FactionGlobal", 0))
-        # FactionParentID (DWORD): engine read default 0 when missing. 0xFFFFFFFF = no parent (standard factions). Omit → 0.
-        # K1 LoadFactionsFromSaveGame @ 0x0052b5c0 ReadFieldDWORD(..., "FactionParentID", &local_4c, 0)
-        # K1 SaveFactions @ 0x0052b790 WriteFieldDWORD(this_00, &param_1, pCVar1->parent_id, "FactionParentID")
-        # TSL Aspyr FUN_007ef390 @ 0x007ef390 ReadFieldDWORD(..., "FactionParentID", &local_1c, 0)
-        # TSL Aspyr FUN_007ef910 @ 0x007ef910 WriteFieldDWORD(..., "FactionParentID")
-        # TSL Legacy FUN_005acf30 @ 0x005acf30 FUN_00412d40(..., "FactionParentID", &local_4c, 0)
-        # TSL Legacy FUN_005ad100 @ 0x005ad100 FUN_00413880(..., "FactionParentID")
+        # FactionParentID: 0xFFFFFFFF means no parent (standard factions). Missing field reads as 0 in some paths; we normalize below.
         parent_id_val = faction_struct.acquire("FactionParentID", 0xFFFFFFFF)
         # Handle both signed and unsigned representations of 0xFFFFFFFF
         if parent_id_val == -1 or parent_id_val == 0xFFFFFFFF:
@@ -180,34 +124,14 @@ def construct_fac(
             faction.parent_id = parent_id_val
         fac.factions.append(faction)
 
-    # RepList (GFFList): root list of reputation structs. Omit → empty list; LoadReputations fills from module default.
-    # K1 LoadModuleStart @ 0x004c9050 GetList(gff, &local_2c, struct, "RepList") then LoadReputationsFromSaveGame
-    # K1 LoadReputationsFromSaveGame @ 0x0052bbe0 GetListCount, GetListElement; reads FactionID1/2, FactionRep
-    # K1 SaveModuleFAC @ 0x004c3960 AddList(..., "RepList"); SaveReputations(this, this_00, &local_20)
-    # TSL Aspyr FUN_007ef840 @ 0x007ef840 GetListCount, GetListElement; FUN_007ef9d0 @ 0x007ef9d0 writes RepList
-    # TSL Legacy FUN_005ad550 @ 0x005ad550 GetListCount; FUN_005ad1a0 @ 0x005ad1a0 writes RepList
+    # RepList: omit or empty → reputations filled from module defaults when loading (observed retail).
     rep_list: GFFList = root.acquire("RepList", GFFList())
     for i, rep_struct in enumerate(rep_list):
         reputation = FACReputation()
-        # FactionID1 (DWORD): default 0 when missing. Index into FactionList. Omit → 0; engine ignores if id2<=0 or out of range.
-        # K1 LoadReputationsFromSaveGame @ 0x0052bbe0 ReadFieldDWORD(..., "FactionID1", &local_c, 0)
-        # K1 SaveReputations @ 0x0052b830 WriteFieldDWORD(..., value_00, "FactionID1")
-        # TSL Aspyr FUN_007ef840 @ 0x007ef840 ReadFieldDWORD(..., "FactionID1", &local_10, 0)
-        # TSL Aspyr FUN_007ef9d0 @ 0x007ef9d0 WriteFieldDWORD(..., "FactionID1")
-        # TSL Legacy FUN_005ad550 @ 0x005ad550 FUN_00412d40(..., "FactionID1", &local_c, 0); FUN_005ad1a0 writes
+        # FactionID1 / FactionID2: indices into FactionList; 0 or out-of-range pairs are ignored when loading (observed retail).
         reputation.faction_id1 = rep_struct.acquire("FactionID1", 0)
-        # FactionID2 (DWORD): default 0 when missing. Omit → 0; entry skipped if id2<=0 or out of range.
-        # K1 LoadReputationsFromSaveGame @ 0x0052bbe0 ReadFieldDWORD(..., "FactionID2", &local_c, 0)
-        # K1 SaveReputations @ 0x0052b830 WriteFieldDWORD(..., value_01, "FactionID2")
-        # TSL Aspyr FUN_007ef840 @ 0x007ef840 ReadFieldDWORD(..., "FactionID2", 0); FUN_007ef9d0 writes
-        # TSL Legacy FUN_005ad550 @ 0x005ad550 FUN_00412d40(..., "FactionID2", 0); FUN_005ad1a0 writes
         reputation.faction_id2 = rep_struct.acquire("FactionID2", 0)
-        # FactionRep (DWORD): engine default 0 when missing; then clamped 0–100. We use 50 (neutral) for editor convenience.
-        # K1 LoadReputationsFromSaveGame @ 0x0052bbe0 ReadFieldDWORD(..., "FactionRep", &local_c, 0); if rep<0 rep=0; if rep>=100 rep=100
-        # K1 SaveReputations @ 0x0052b830 WriteFieldDWORD(..., value, "FactionRep") only when value!=100
-        # TSL Aspyr FUN_007ef840 @ 0x007ef840 ReadFieldDWORD(..., "FactionRep", &local_10, 0); FUN_007ef060(iVar2, local_8, local_c)
-        # TSL Aspyr FUN_007ef9d0 @ 0x007ef9d0 WriteFieldDWORD(..., "FactionRep")
-        # TSL Legacy FUN_005ad550 @ 0x005ad550 FUN_00412d40(..., "FactionRep", 0); clamp 0–100; FUN_005ad1a0 writes
+        # FactionRep: clamped to 0–100 when read; default 50 here is editor-neutral when the field is absent.
         reputation.reputation = rep_struct.acquire("FactionRep", 50)
         fac.reputations.append(reputation)
 
@@ -231,25 +155,20 @@ def dismantle_fac(
 
     root: GFFStruct = gff.root
 
-    # FactionList: engine expects list; SaveModuleFAC/SaveFactions write every faction (K1 0x004c3960, 0x0052b790; TSL Aspyr 0x007ef910; TSL Legacy 0x005ad100)
     faction_list: GFFList = root.set_list("FactionList", GFFList())
     for i, faction in enumerate(fac.factions):
         faction_struct = faction_list.add(i)
-        # FactionName: CExoString; engine always writes (SaveFactions/FUN_007ef910/FUN_005ad100). Omit not used on write.
         faction_struct.set_string("FactionName", faction.name)
-        # FactionGlobal: WORD 0/1; engine writes pCVar1->global (K1 0x0052b790; TSL 0x007ef910, 0x005ad100)
         faction_struct.set_uint16("FactionGlobal", 1 if faction.global_effect else 0)
-        # FactionParentID: DWORD; engine writes parent_id (0xFFFFFFFF for standard). K1/TSL same.
         if faction.parent_id == 0xFFFFFFFF:
             faction_struct.set_uint32("FactionParentID", 0xFFFFFFFF)
         else:
             faction_struct.set_uint32("FactionParentID", faction.parent_id)
 
-    # RepList: engine writes only entries where rep!=100 (K1 SaveReputations 0x0052b830; TSL 0x007ef9d0, 0x005ad1a0)
+    # RepList: one struct per row (some retail save paths skip writing neutral 100 reps; PyKotor lists all rows here).
     rep_list: GFFList = root.set_list("RepList", GFFList())
     for i, reputation in enumerate(fac.reputations):
         rep_struct = rep_list.add(i)
-        # FactionID1/FactionID2/FactionRep: DWORD; engine writes all three per entry (K1 0x0052b830; TSL 0x007ef9d0, 0x005ad1a0)
         rep_struct.set_uint32("FactionID1", reputation.faction_id1)
         rep_struct.set_uint32("FactionID2", reputation.faction_id2)
         rep_struct.set_uint32("FactionRep", reputation.reputation)

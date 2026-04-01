@@ -4,8 +4,7 @@ This module implements the abstract ISceneGraph interface using Panda3D's NodePa
 
 References:
 ----------
-        Original BioWare engine binaries (from swkotor.exe, swkotor2.exe)
-        Original BioWare engine binaries
+        Observed retail KotOR I and KotOR II behavior.
         Libraries/PyKotor/src/pykotor/engine/scene/base.py - Abstract interface
 
 
@@ -41,8 +40,7 @@ class Panda3DSceneGraph(ISceneGraph):
 
     References:
     ----------
-        Original BioWare engine binaries (from swkotor.exe, swkotor2.exe)
-        Original BioWare engine binaries
+        Observed retail KotOR I and KotOR II behavior.
         Libraries/PyKotor/src/pykotor/engine/scene/base.py:52-181 - ISceneGraph interface
 
 

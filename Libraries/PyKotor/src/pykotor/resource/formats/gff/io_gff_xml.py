@@ -6,12 +6,14 @@ import base64
 
 from typing import TYPE_CHECKING, Any
 
+import kaitaistruct
+
 # Try to import defusedxml, fallback to ElementTree if not available
 from xml.etree import ElementTree as ET
 
 from loggerplus import RobustLogger
 
-try:  # sourcery skip: remove-redundant-exception, simplify-single-exception-tuple
+try:
     from defusedxml.ElementTree import fromstring as _fromstring
 
     ET.fromstring = _fromstring
@@ -20,6 +22,7 @@ except (ImportError, ModuleNotFoundError):
 
 
 from pykotor.common.language import LocalizedString
+from bioware_kaitai_formats.gff_xml import GffXml
 from pykotor.common.misc import ResRef
 from pykotor.resource.formats.gff.gff_data import GFF, GFFFieldType, GFFList, GFFStruct
 from pykotor.resource.type import ResourceReader, ResourceWriter, autoclose
@@ -33,20 +36,14 @@ if TYPE_CHECKING:
 class GFFXMLReader(ResourceReader):
     """Reads GFF files from XML format.
 
-    XML is a human-readable format used by xoreos-tools and other modding tools.
+    XML is a human-readable interchange format used by several modding pipelines.
     Provides easier editing than binary GFF format.
 
-    References:
-    ----------
-        Based on swkotor.exe GFF structure:
-        - CResGFF::CreateGFFFile @ 0x00411260 - Creates new GFF file with file_type and version
-        - CResGFF::WriteGFFFile @ 0x00413030 - Writes GFF data to file
-        - CResGFF::WriteGFFData @ 0x004113d0 - Writes GFF header and data sections
-        - GFFVersion string "V3.2" @ 0x0073e2c8 - Hardcoded GFF version identifier
+    Retail games read and write binary GFF with ``V3.2`` labels for KotOR data.
 
         Note: XML format is PyKotor-specific conversion format, not a standard game format.
         The engine uses binary GFF format exclusively. XML conversion allows easier editing
-        and integration with external tools like xoreos-tools.
+        and integration with external editors and converters.
 
     """
 
@@ -63,8 +60,13 @@ class GFFXMLReader(ResourceReader):
     def load(self, *, auto_close: bool = True) -> GFF:  # noqa: FBT001, FBT002, ARG002
         self._gff = GFF()
 
-        data = self._reader.read_bytes(self._reader.size()).decode()
-        xml_root: ET.Element | None = ET.fromstring(data).find("struct")  # noqa: S314
+        raw = self._reader.read_all()
+        xml_text: str
+        try:
+            xml_text = GffXml.from_bytes(raw).xml_content
+        except (kaitaistruct.KaitaiStructError, UnicodeDecodeError):
+            xml_text = raw.decode()
+        xml_root: ET.Element | None = ET.fromstring(xml_text).find("struct")  # noqa: S314
         if xml_root is None:
             raise ValueError("XML data is not valid XML")
         self._load_struct(self._gff.root, xml_root)

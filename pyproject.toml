@@ -22,7 +22,7 @@ name = "pykotor-workspace"
 authors = [{ name = "Nick Hugi" }, { name = "th3w1zard1" }]
 maintainers = [{ name = "th3w1zard1", email = "boden.crouch@gmail.com" }]
 dependencies = [
-  "pykotor[render]>=2.3.2",
+  "pykotor[render]>=2.3.11",
   "holocrontoolset",
   "numpy>=1.24.4",
   "matplotlib>=3.7.5",
@@ -32,7 +32,7 @@ keywords = ["editor", "holocron", "holopatcher", "kotor", "library", "pykotor", 
 license = {text = "LGPL-3.0-or-later License"}
 readme = {content-type = "text/markdown", file = "README.md"}
 requires-python = ">=3.8"
-version = "2.3.3"
+version = "2.3.5"
 
 [project.scripts]
 batch_patcher = "batchpatcher.__main__:main"
@@ -185,7 +185,7 @@ repository = "https://github.com/OldRepublicDevs/PyKotor.git"
 
 [tool.poetry]
 name = "pykotor-workspace"
-version = "2.3.3"
+version = "2.3.5"
 description = "PyKotor workspace - meta-package for PyKotor ecosystem"
 authors = ["Nick Hugi", "th3w1zard1 <boden.crouch@gmail.com>"]
 maintainers = ["th3w1zard1 <boden.crouch@gmail.com>"]
@@ -195,7 +195,7 @@ keywords = ["editor", "holocron", "holopatcher", "kotor", "library", "pykotor", 
 
 [tool.poetry.dependencies]
 python = "^3.8"
-pykotor = "^2.3.2"
+pykotor = "^2.3.11"
 
 [tool.poetry.scripts]
 batch_patcher = "batchpatcher.__main__:main"
@@ -353,10 +353,12 @@ holopazaak = {workspace = true}
 kotordiff = {workspace = true}
 pykotorcli = {workspace = true}
 pykotor = { workspace = true }
+bioware-kaitai-formats = { workspace = true }
 
 [tool.uv.workspace]
 members = [
   "Libraries/PyKotor",
+  "Libraries/bioware-kaitai-formats",
   "Tools/BatchPatcher",
   "Tools/HoloPatcher",
   "Tools/HoloPazaak",
@@ -429,6 +431,7 @@ exclude = [
 explicit_package_bases = true
 mypy_path = [
   "Libraries/PyKotor/src",
+  "Libraries/bioware-kaitai-formats/src",
   "Tools/BatchPatcher/src",
   "Tools/HoloPatcher/src",
   "Tools/HoloPazaak/src",
@@ -668,6 +671,7 @@ required-imports = ["from __future__ import annotations"]
   "N806"
 ]
 "Tools/HolocronToolset/src/toolset/uic/*.py" = ["ALL"]
+"Libraries/bioware-kaitai-formats/src/bioware_kaitai_formats/*.py" = ["ALL"]
 "__init__.py" = ["F401", "I001", "I002", "TID252"]
 "globalsettings.py" = ["F401", "I001"]
 "pykotor/resource/formats/ncs/compiler/*.py" = ["ALL"]

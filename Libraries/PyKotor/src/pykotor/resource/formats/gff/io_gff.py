@@ -6,8 +6,11 @@ import struct
 
 from typing import TYPE_CHECKING, Any
 
+import kaitaistruct
+
 from pykotor.common.misc import ResRef
-from pykotor.common.stream import BinaryWriter
+from pykotor.common.stream import BinaryReader, BinaryWriter
+from bioware_kaitai_formats.gff import Gff
 from pykotor.resource.formats.gff import GFF, GFFContent, GFFFieldType, GFFList, GFFStruct
 from pykotor.resource.type import ResourceReader, ResourceWriter, autoclose
 
@@ -33,30 +36,17 @@ class GFFBinaryReader(ResourceReader):
     Reads binary GFF (Generic File Format) files used throughout KotOR for structured data storage.
     Supports GFF V3.2 format. Note: V3.3, V4.0, and V4.1 are not currently supported.
 
-    References:
-    ----------
-        Based on swkotor.exe GFF structure:
-        - CResGFF::CreateGFFFile @ 0x00411260 - Creates new GFF file with file_type and version
-          * Sets file_type from 4-character string (e.g., "UTI ", "DLG ", "ARE ")
-          * Sets file_version from GFFVersion string "V3.2" @ 0x0073e2c8
-          * Creates root struct with AddStruct(this, 0xffffffff)
-        - CResGFF::WriteGFFFile @ 0x00413030 - Writes GFF data to file
-          * Opens file with "wb" mode
-          * Calls Pack() to prepare data
-          * Calls WriteGFFData() to write binary format
-        - CResGFF::WriteGFFData @ 0x004113d0 - Writes GFF header and data sections
-          * Writes 0x38 byte header
-          * Writes structs (12 bytes each)
-          * Writes fields (12 bytes each)
-          * Writes labels (16 bytes each)
-          * Writes field_data, field_indices, list_indices
-        - GFFVersion string "V3.2" @ 0x0073e2c8 - Hardcoded GFF version identifier
-        - "gff" string @ 0x0074dd00 - GFF format identifier
+    Observed behavior:
+    -----------------
+        It has been observed that retail KotOR writes new GFF files with the four-character
+        type supplied by the caller and stamps the version slot with ``V3.2``. This reader
+        therefore rejects other declared versions even though some third-party tools can
+        emit newer GFF revisions for other games.
 
     Missing Features:
     ----------------
-        - GFF V3.3, V4.0, V4.1 support (xoreos-tools supports these, KotOR likely does not)
-        - StrRef field type (reone supports this at gffreader.cpp:141-142, 199-204)
+        - GFF V3.3, V4.0, V4.1 (some third-party tools emit these; retail KotOR uses ``V3.2`` here)
+        - StrRef as a distinct GFF field type (not handled in this reader)
     """
 
     def __init__(
@@ -77,6 +67,13 @@ class GFFBinaryReader(ResourceReader):
 
     @autoclose
     def load(self, *, auto_close: bool = True) -> GFF:  # noqa: FBT001, FBT002, ARG002
+        data = self._reader.read_all()
+        try:
+            Gff.from_bytes(data)
+        except kaitaistruct.KaitaiStructError:
+            pass
+        self._reader = BinaryReader.from_bytes(data, 0)
+
         self._gff = GFF()
         file_type = self._reader.read_string(4)
         file_version = self._reader.read_string(4)
@@ -84,18 +81,6 @@ class GFFBinaryReader(ResourceReader):
         if not any(x for x in GFFContent if x.value == file_type):
             msg = "Not a valid binary GFF file."
             raise ValueError(msg)
-
-        # REVERSE ENGINEERING FINDINGS (Based on swkotor.exe GFF structure):
-        # The KOTOR engine's CResGFF::CreateGFFFile function does NOT accept a version parameter.
-        # Instead, it uses a hardcoded global variable GFFVersion (0x0073e2c8) containing "V3.2".
-        # The function copies this hardcoded version to the file header using:
-        # - CExoString::CExoString(&local_14, GFFVersion_ptr);  // Copy "V3.2" string
-        # - CExoString::operator[] to extract individual bytes [3],[2],[1],[0]
-        # - *(uint *)this->header->file_version = CONCAT31(CONCAT21(CONCAT11(cVar1,cVar2),cVar3),cVar4);
-        # This indicates little-endian storage of the hardcoded "V3.2" version as 4 bytes.
-        # The engine appears hardcoded to only create V3.2 GFF files.
-        #
-        # NOTE: xoreos-tools supports V3.2, V3.3, V4.0, V4.1 (probably for other games/engines)
 
         if file_version != "V3.2":
             msg = "The GFF version of the file is unsupported."
@@ -237,7 +222,7 @@ class GFFBinaryReader(ResourceReader):
                 resref = ResRef(self._reader.read_string(length).strip())
                 gff_struct.set_resref(label, resref)
             elif field_type_id == 12:  # GFFFieldType.LocalizedString
-                # NOTE: reone warns if count > 1, but PyKotor reads all substrings
+                # Reads every substring present (some tools warn when count > 1).
                 gff_struct.set_locstring(label, self._reader.read_locstring())
             elif field_type_id == 13:  # GFFFieldType.Binary
                 length = self._reader.read_uint32()
@@ -282,7 +267,7 @@ class GFFBinaryReader(ResourceReader):
             # Use struct.unpack directly on the 4-byte value
             float_value = struct.unpack("<f", struct.pack("<I", data_or_offset))[0]
             gff_struct.set_single(label, float_value)
-        # NOTE: StrRef field type not supported (reone supports at gffreader.cpp:141-142, 199-204)
+        # StrRef field type (id used by some Aurora-family tools) is not implemented here.
 
     def _load_list(self, gff_struct: GFFStruct, label: str, offset: int | None = None):
         if offset is None:
@@ -315,10 +300,8 @@ class GFFBinaryWriter(ResourceWriter):
 
     NOTE: V3.3, V4.0, V4.1 are NOT currently supported.
 
-    Derived Implementations:
-    ----------
-        https://github.com/seedhartha/reone/tree/master/src/libs/resource/format/gffwriter.cpp:271 (header offset calculation)
-        https://github.com/seedhartha/reone/tree/master/src/libs/resource/format/gffwriter.cpp:294-317 (struct/field/label array writing)
+    Cross-tool GFF writer ordering notes are summarized under *PyKotor package: migrated library notes*
+    in ``wiki/reverse_engineering_findings.md`` (*third-party format implementations*).
     """
 
     def __init__(

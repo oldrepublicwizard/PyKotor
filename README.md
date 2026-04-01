@@ -142,7 +142,7 @@ See individual tool documentation for detailed usage.
 ### User Documentation
 - **[Installation & Usage](https://github.com/OldRepublicDevs/PyKotor/tree/master/Libraries/PyKotor/docs)** - Detailed library documentation
 - **[Contributing Guide](CONTRIBUTING.md)** - Development setup and guidelines
-- **[Project Wiki](https://github.com/OldRepublicDevs/PyKotor/wiki)** - Community documentation
+- **[Project Wiki](https://github.com/OldRepublicDevs/PyKotor/wiki)** — community documentation (GitHub UI); clone with `git submodule update --init wiki` to edit `wiki/*.md` in-tree (see [CONTRIBUTING.md](CONTRIBUTING.md))
 - **[PowerShell Setup](POWERSHELL.md)** - Windows PowerShell configuration
 
 ### Design & Architecture

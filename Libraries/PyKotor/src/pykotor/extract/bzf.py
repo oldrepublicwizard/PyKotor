@@ -40,9 +40,6 @@ class BZFFile:
     References:
     ----------
 
-    Derivations and Other Implementations:
-    -------------------------------------
-        https://github.com/th3w1zard1/KotOR-Bioware-Libs/tree/master/BIF.pm (Perl BIF/BZF implementation)
         Missing Features:
         ----------------
         - Fixed resources not yet supported (see line 67)

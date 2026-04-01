@@ -83,9 +83,8 @@ class Scene(SceneBase):
     - Incremental cache building (only rebuilds when dirty)
     - Cached camera focus gizmo placement
 
-    Reference implementations:
-    - reone: src/graphics/renderpipeline.cpp
-    - kotor.js: src/engine/renderer.ts
+    Prior third-party source paths for the render loop were listed here; see
+    ``wiki/reverse_engineering_findings.md`` (*PyKotor GL — reference implementation paths*).
     """
 
     def __init__(

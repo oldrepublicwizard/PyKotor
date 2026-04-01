@@ -6,6 +6,9 @@ import json
 
 from typing import TYPE_CHECKING
 
+import kaitaistruct
+
+from bioware_kaitai_formats.twoda_json import TwodaJson
 from pykotor.resource.formats.twoda.twoda_data import TwoDA
 from pykotor.resource.type import ResourceReader, ResourceWriter, autoclose
 from pykotor.tools.encoding import decode_bytes_with_fallbacks
@@ -28,7 +31,12 @@ class TwoDAJSONReader(ResourceReader):
     @autoclose
     def load(self, *, auto_close: bool = True) -> TwoDA:  # noqa: FBT001, FBT002, ARG002
         self._twoda = TwoDA()
-        self._json = json.loads(decode_bytes_with_fallbacks(self._reader.read_bytes(self._reader.size())))
+        raw = self._reader.read_all()
+        try:
+            TwodaJson.from_bytes(raw)
+        except kaitaistruct.KaitaiStructError:
+            pass
+        self._json = json.loads(decode_bytes_with_fallbacks(raw))
 
         # Support both legacy format (rows with "_id" and header keys) and the
         # newer format (top-level "headers" list and rows containing "label" and "cells").

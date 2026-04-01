@@ -26,14 +26,7 @@ def determine_game(
 
     References:
     ----------
-        Based on swkotor.exe ERF structure:
-        - See pykotor.resource.formats.erf.erf_data for addresses (K1 + TSL TODO). CExoEncapsulatedFile, AddEncapsulatedContents.
-        Original BioWare engine binaries
-        Derivations and Other Implementations:
-        ----------
-        https://github.com/th3w1zard1/HoloPatcher.NET/tree/master/src/HoloPatcher/Utils (Game detection logic)
-
-
+        Observed retail KotOR install layout (executables, INI, chitin.key, module archives).
         Note: File and folder heuristics vary between Steam, GOG, and disc releases
 
     Processing Logic:

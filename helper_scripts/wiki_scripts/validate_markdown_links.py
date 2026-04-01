@@ -12,9 +12,10 @@ from __future__ import annotations
 import re
 
 from pathlib import Path
-from urllib.parse import urlparse
+from urllib.parse import unquote, urlparse
 
-REPO_ROOT = Path(__file__).parent.parent
+# wiki_scripts/ -> helper_scripts/ -> repository root
+REPO_ROOT = Path(__file__).resolve().parent.parent.parent
 WIKI_DIR = REPO_ROOT / "wiki"
 
 
@@ -23,11 +24,18 @@ def extract_links(content: str, file_path: Path) -> list[tuple[str, str, int]]:
 
     Returns: List of (link_text, link_url, line_number) tuples
     """
-    links = []
+    links: list[tuple[str, str, int]] = []
     # Pattern matches [text](url) and [text](url "title")
     pattern = r'\[([^\]]+)\]\(([^\)"]+)(?:\s+"[^"]+")?\)'
 
+    in_fence = False
     for line_num, line in enumerate(content.splitlines(), 1):
+        stripped = line.strip()
+        if stripped.startswith("```"):
+            in_fence = not in_fence
+            continue
+        if in_fence:
+            continue
         for match in re.finditer(pattern, line):
             link_text = match.group(1)
             link_url = match.group(2)
@@ -53,8 +61,14 @@ def extract_headings(content: str) -> dict[str, int]:
 
     Returns: Dict mapping normalized anchor to line number
     """
-    headings = {}
+    headings: dict[str, int] = {}
     for line_num, line in enumerate(content.splitlines(), 1):
+        # Match HTML anchors: <a id="anchor"></a> (must match test_markdown_validation.py)
+        html_anchor_match = re.search(r'<a\s+id="([^"]+)"', line)
+        if html_anchor_match:
+            anchor = html_anchor_match.group(1)
+            headings[anchor] = line_num
+
         # Match markdown headings: # Heading, ## Heading, etc.
         match = re.match(r"^(#{1,6})\s+(.+)$", line.strip())
         if match:
@@ -69,7 +83,7 @@ def extract_headings(content: str) -> dict[str, int]:
     return headings
 
 
-def validate_link(link_url: str, source_file: Path, all_files: dict[str, Path], all_headings: dict[str, dict[str, int]]) -> tuple[bool, str]:
+def validate_link(link_url: str, source_file: Path, all_files: dict[str, Path], all_headings: dict[str, dict[str, int]],) -> tuple[bool, str]:
     """Validate a single link.
 
     Returns: (is_valid, error_message)
@@ -91,8 +105,9 @@ def validate_link(link_url: str, source_file: Path, all_files: dict[str, Path], 
         # Handle relative paths
         if file_part.startswith("./"):
             file_part = file_part[2:]
+        file_part = unquote(file_part)
 
-        target_file = None
+        target_file: Path | None = None
         # Try as-is first (already in wiki directory)
         if (WIKI_DIR / file_part).exists():
             target_file = WIKI_DIR / file_part
@@ -116,6 +131,7 @@ def validate_link(link_url: str, source_file: Path, all_files: dict[str, Path], 
 
     # Validate anchor if present
     if anchor_part:
+        anchor_part = unquote(anchor_part)
         normalized_anchor = normalize_anchor(anchor_part)
         if file_key in all_headings:
             if normalized_anchor not in all_headings[file_key]:
@@ -134,8 +150,8 @@ def validate_all_links() -> dict[str, list[tuple[str, str, int, str]]]:
     Returns: Dict mapping file_path to list of (link_text, link_url, line_num, error) tuples
     """
     # Collect all files and their headings
-    all_files = {}
-    all_headings = {}
+    all_files: dict[str, Path] = {}
+    all_headings: dict[str, dict[str, int]] = {}
 
     for md_file in WIKI_DIR.glob("*.md"):
         all_files[md_file.name] = md_file
@@ -143,12 +159,12 @@ def validate_all_links() -> dict[str, list[tuple[str, str, int, str]]]:
         all_headings[md_file.name] = extract_headings(content)
 
     # Validate links
-    errors = {}
+    errors: dict[str, list[tuple[str, str, int, str]]] = {}
     for md_file in WIKI_DIR.glob("*.md"):
         content = md_file.read_text(encoding="utf-8")
         links = extract_links(content, md_file)
 
-        file_errors = []
+        file_errors: list[tuple[str, str, int, str]] = []
         for link_text, link_url, line_num in links:
             is_valid, error_msg = validate_link(link_url, md_file, all_files, all_headings)
             if not is_valid:

@@ -1,6 +1,8 @@
 """Archive creation command implementation for Pykotorcli.
 
-This module provides CLI commands for creating archives (ERF, RIM) from directories.
+Creates ERF/RIM-style capsules from directories via ``pykotor.tools.archives``.
+Former **References** naming retail executables and engine-side ERF loaders are migrated to
+``wiki/reverse_engineering_findings.md`` (*cli/commands/create_archive.py*).
 """
 
 from __future__ import annotations
@@ -18,17 +20,7 @@ if TYPE_CHECKING:
 
 
 def cmd_create_archive(args: Namespace, logger: Logger) -> int:
-    """Create an archive (ERF, RIM) from a directory of files.
-
-    References:
-    ----------
-        KotOR I (swkotor.exe) / KotOR II (swkotor2.exe):
-            - ERF structures loaded via CResERF class
-            - See Libraries/PyKotor/src/pykotor/resource/formats/erf/ for ERF format references
-            - RIM structures are similar to ERF (see erf/io_erf.py for references)
-
-
-    """
+    """Create an archive (ERF, RIM) from a directory of files."""
     input_dir = pathlib.Path(args.directory)
     output_path = pathlib.Path(args.output)
 

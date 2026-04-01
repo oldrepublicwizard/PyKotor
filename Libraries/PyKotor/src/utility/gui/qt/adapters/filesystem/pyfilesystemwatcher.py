@@ -1,21 +1,8 @@
 from __future__ import annotations
 
-import asyncio
-import concurrent.futures
-import time
-
 from pathlib import Path
 
-try:
-    from qasync import asyncSlot  # pyright: ignore[reportMissingTypeStubs]
-except ModuleNotFoundError:
-    def asyncSlot(*_args, **_kwargs):
-        def decorator(func):
-            return func
-
-        return decorator
-
-from qtpy.QtCore import QObject, Signal  # pyright: ignore[reportPrivateImportUsage]
+from qtpy.QtCore import QObject, QTimer, Signal  # pyright: ignore[reportPrivateImportUsage]
 
 
 class FileSystemWatcherError(OSError): ...
@@ -27,9 +14,10 @@ class PyFileSystemWatcher(QObject):
 
     def __init__(self, parent: QObject | None = None):
         super().__init__(parent)
-        self._stop_event = asyncio.Event()
-        self._watcher: dict[Path, tuple[float, concurrent.futures.Future | None]] = {}
-        self._executor = concurrent.futures.ProcessPoolExecutor()
+        self._watcher: dict[Path, float] = {}
+        self._timer = QTimer(self)
+        self._timer.timeout.connect(self._check_all)
+        self._timer.setInterval(100)
 
     def addPath(self, path: str):
         path_obj = Path(path)
@@ -37,16 +25,15 @@ class PyFileSystemWatcher(QObject):
             return
         if not path_obj.is_file() and not path_obj.is_dir():
             raise FileSystemWatcherError(f"Failed to add path: {path}")
-        self._watcher[path_obj] = (path_obj.stat().st_mtime, None)
-        asyncio.get_event_loop().call_soon(self._watch_path, path_obj)
+        self._watcher[path_obj] = path_obj.stat().st_mtime
+        if not self._timer.isActive():
+            self._timer.start()
 
     def removePath(self, path: str):
         path_obj = Path(path)
-        if path_obj not in self._watcher:
-            return
-        if self._watcher[path_obj][1] is not None:
-            self._watcher[path_obj][1].cancel()
-        del self._watcher[path_obj]
+        self._watcher.pop(path_obj, None)
+        if not self._watcher:
+            self._timer.stop()
 
     def files(self) -> list[str]:
         return [str(p) for p in self._watcher if p.is_file()]
@@ -54,23 +41,15 @@ class PyFileSystemWatcher(QObject):
     def directories(self) -> list[str]:
         return [str(p) for p in self._watcher if p.is_dir()]
 
-    @asyncSlot()
-    async def _watch_path(self, path: Path):
-        while not self._stop_event.is_set():
-            if path not in self._watcher:
-                return
-            last_modified, future = self._watcher[path]
-            current_modified = path.stat().st_mtime
+    def _check_all(self):
+        for path_obj, last_modified in list(self._watcher.items()):
+            try:
+                current_modified = path_obj.stat().st_mtime
+            except OSError:
+                continue
             if current_modified != last_modified:
-                self._watcher[path] = (current_modified, None)
-                if path.is_file():
-                    self.fileChanged.emit(str(path))
+                self._watcher[path_obj] = current_modified
+                if path_obj.is_file():
+                    self.fileChanged.emit(str(path_obj))
                 else:
-                    self.directoryChanged.emit(str(path))
-            if future is not None:
-                await future.result()
-            future = self._executor.submit(self._sleep, 0.1)
-            self._watcher[path] = (current_modified, future)
-
-    def _sleep(self, seconds: float):
-        time.sleep(seconds)
+                    self.directoryChanged.emit(str(path_obj))

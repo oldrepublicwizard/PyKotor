@@ -1,2985 +1,10 @@
-# KotOR NSS files format Documentation
+# NSS — NWScript Source
 
-NSS (NWScript Source) files contain human-readable NWScript source code that compiles to [NCS bytecode](NCS-File-Format). The `nwscript.nss` file defines all engine-exposed functions and constants available to scripts. KotOR 1 and KotOR 2 each have their own `nwscript.nss` with game-specific functions and constants. When the game or tools load NSS by ResRef, they use the same [resource resolution order](KEY-File-Format#key-file-purpose) as other resources (override, MOD/SAV, KEY/BIF).
+NSS files contain human-readable NWScript source code — the scripting language that controls game logic in Knights of the Old Republic and The Sith Lords ([`NssParser` L80](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/formats/ncs/compiler/parser.py#L80), [xoreos-tools `src/nwscript/`](https://github.com/xoreos/xoreos-tools/tree/master/src/nwscript)). The engine does not execute NSS directly; source files are compiled to [NCS bytecode](NCS-File-Format) before they can run ([`InbuiltNCSCompiler.compile_script` L51](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/formats/ncs/compilers.py#L51), [KotOR-Scripting-Tool](https://github.com/KobaltBlu/KotOR-Scripting-Tool)). The master include file `nwscript.nss` defines all engine-exposed functions and constants available to scripts; KotOR and TSL each ship their own version with game-specific additions ([`KOTOR_FUNCTIONS` L3268](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/common/scriptdefs.py#L3268), [`KOTOR_CONSTANTS` L12](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/common/scriptdefs.py#L12), [Vanilla_KOTOR_Script_Source](https://github.com/KOTORCommunityPatches/Vanilla_KOTOR_Script_Source)).
 
-**For mod developers:** NSS compiles to [NCS](NCS-File-Format); use the toolset compiler or HoloLSP; see [HoloPatcher README for Mod Developers](HoloPatcher-README-for-mod-developers.).
+NWScript is a C-like language with strong typing, automatic garbage collection for strings, and a fixed set of engine action routines ([reone `VirtualMachine` L41](https://github.com/modawan/reone/blob/61531089341caf5827abbc54346c8c959b03d449/include/reone/script/virtualmachine.h#L41), [xoreos `src/aurora/nwscript/`](https://github.com/xoreos/xoreos/tree/master/src/aurora/nwscript), [KotOR.js `NWScript` L39](https://github.com/KobaltBlu/KotOR.js/blob/ea9491d5c783364cf285f178434b84405bee3608/src/nwscript/NWScript.ts#L39)). Scripts interact with the game world through these action routines — spawning creatures, modifying objects, running dialogue branches, applying effects — and are triggered from [GFF](GFF-File-Format) resources: [DLG](GFF-Creature-and-Dialogue#dlg) dialogue files, [UTC](GFF-File-Format#utc-creature) creatures, [UTD](GFF-Spatial-Objects#utd) doors, [UTP](GFF-Spatial-Objects#utp) placeables, and [IFO](GFF-Module-and-Area#ifo) module definitions. Scripts also commonly read [2DA](2DA-File-Format) configuration data at runtime. Like all resources, NSS files are resolved through the standard [resource resolution order](Concepts#resource-resolution-order) (override → MOD/SAV → KEY/BIF).
 
-**Related formats:** NSS compiles to [NCS](NCS-File-Format); scripts are triggered by [DLG](GFF-DLG), [UTC](GFF-File-Format#utc-creature), [UTD](GFF-UTD), [UTP](GFF-UTP), [IFO](GFF-IFO), and reference [2DA](2DA-File-Format) data.
-
-**Implementation:** [`Libraries/PyKotor/src/pykotor/resource/formats/ncs/`](https://github.com/OldRepublicDevs/PyKotor/tree/master/Libraries/PyKotor/src/pykotor/resource/formats/ncs/)
-
-**Vendor Script Compilers:**
-
-- **[xoreos-tools](https://github.com/xoreos/xoreos-tools)** - NWScript compiler and decompiler (`src/nwscript/`) ([Mirror: th3w1zard1/xoreos-tools](https://github.com/th3w1zard1/xoreos-tools))
-- **[KotOR-Scripting-Tool](https://github.com/KobaltBlu/KotOR-Scripting-Tool)** - Visual NWScript IDE with integrated compiler ([Mirror: th3w1zard1/KotOR-Scripting-Tool](https://github.com/th3w1zard1/KotOR-Scripting-Tool))
-- **[HoloLSP](https://github.com/th3w1zard1/HoloLSP)** - Language Server Protocol implementation for NWScript (canonical repo)
-- **[nwscript-mode.el](https://github.com/implicit-image/nwscript-mode.el)** - Emacs major mode for NWScript editing ([Mirror: th3w1zard1/nwscript-mode.el](https://github.com/th3w1zard1/nwscript-mode.el))
-
-**Vendor Script Implementations:**
-
-- **[xoreos](https://github.com/xoreos/xoreos)** - Complete NWScript virtual machine implementation (`src/engines/nwscript/`) ([Mirror: th3w1zard1/xoreos](https://github.com/th3w1zard1/xoreos))
-- **[reone](https://github.com/seedhartha/reone)** - Script execution engine (`src/libs/script/`) ([Mirror: th3w1zard1/reone](https://github.com/th3w1zard1/reone))
-- **[KotOR.js](https://github.com/KobaltBlu/KotOR.js)** - TypeScript NWScript interpreter (`src/nwscript/`) ([Mirror: th3w1zard1/KotOR.js](https://github.com/th3w1zard1/KotOR.js))
-- **[Vanilla_KOTOR_Script_Source](https://github.com/KOTORCommunityPatches/Vanilla_KOTOR_Script_Source)** - Decompiled vanilla KotOR scripts for reference ([Mirror: th3w1zard1/Vanilla_KOTOR_Script_Source](https://github.com/th3w1zard1/Vanilla_KOTOR_Script_Source))
-
-## Table of Contents
-
-<!-- TOC_START -->
-- [KotOR NSS File Format Documentation](#kotor-nss-files-format-documentation)
-  - Table of Contents
-  - [PyKotor Implementation](#pykotor-implementation)
-    - [Compilation Integration](#compilation-integration)
-    - [Data Structures](#data-structures)
-  - [Shared Functions (K1 \& TSL)](#shared-functions-k1--tsl)
-    - [Abilities and Stats](#abilities-and-stats)
-      - [`GetAbilityModifier(nAbility, oCreature)` - Routine 331](NSS-Shared-Functions-Abilities-and-Stats)
-      - [`GetAbilityScore(oCreature, nAbilityType)` - Routine 139](NSS-Shared-Functions-Abilities-and-Stats)
-      - [`GetNPCSelectability(nNPC)` - Routine 709](NSS-Shared-Functions-Abilities-and-Stats)
-      - [`SetNPCSelectability(nNPC, nSelectability)` - Routine 708](NSS-Shared-Functions-Abilities-and-Stats)
-      - [`SWMG_StartInvulnerability(oFollower)` - Routine 666](NSS-Shared-Functions-Abilities-and-Stats)
-    - [Actions](#actions)
-      - [`ActionAttack(oAttackee, bPassive)` - Routine 37](NSS-Shared-Functions-Actions)
-      - [`ActionBarkString(strRef)` - Routine 700](NSS-Shared-Functions-Actions)
-      - [`ActionCastFakeSpellAtLocation(nSpell, lTarget, nProjectilePathType)` - Routine 502](NSS-Shared-Functions-Actions)
-      - [`ActionCastFakeSpellAtObject(nSpell, oTarget, nProjectilePathType)` - Routine 501](NSS-Shared-Functions-Actions)
-      - [`ActionCastSpellAtLocation(nSpell, lTargetLocation, nMetaMagic, bCheat, nProjectilePathType, bInstantSpell)` - Routine 234](NSS-Shared-Functions-Actions)
-      - [`ActionCastSpellAtObject(nSpell, oTarget, nMetaMagic, bCheat, nDomainLevel, nProjectilePathType, bInstantSpell)` - Routine 48](NSS-Shared-Functions-Actions)
-      - [`ActionCloseDoor(oDoor)` - Routine 44](NSS-Shared-Functions-Actions)
-      - [`ActionDoCommand(aActionToDo)` - Routine 294](NSS-Shared-Functions-Actions)
-      - [`ActionEquipItem(oItem, nInventorySlot, bInstant)` - Routine 32](NSS-Shared-Functions-Actions)
-      - [`ActionEquipMostDamagingMelee(oVersus, bOffHand)` - Routine 399](NSS-Shared-Functions-Actions)
-      - [`ActionEquipMostDamagingRanged(oVersus)` - Routine 400](NSS-Shared-Functions-Actions)
-      - [`ActionFollowLeader()` - Routine 730](NSS-Shared-Functions-Actions)
-      - [`ActionForceFollowObject(oFollow, fFollowDistance)` - Routine 167](NSS-Shared-Functions-Actions)
-      - [`ActionForceMoveToLocation(lDestination, bRun, fTimeout)` - Routine 382](NSS-Shared-Functions-Actions)
-      - [`ActionForceMoveToObject(oMoveTo, bRun, fRange, fTimeout)` - Routine 383](NSS-Shared-Functions-Actions)
-      - [`ActionGiveItem(oItem, oGiveTo)` - Routine 135](NSS-Shared-Functions-Actions)
-      - [`ActionInteractObject(oPlaceable)` - Routine 329](NSS-Shared-Functions-Actions)
-      - [`ActionJumpToLocation(lLocation)` - Routine 214](NSS-Shared-Functions-Actions)
-      - [`ActionJumpToObject(oToJumpTo, bWalkStraightLineToPoint)` - Routine 196](NSS-Shared-Functions-Actions)
-      - [`ActionLockObject(oTarget)` - Routine 484](NSS-Shared-Functions-Actions)
-      - [`ActionMoveAwayFromLocation(lMoveAwayFrom, bRun, fMoveAwayRange)` - Routine 360](NSS-Shared-Functions-Actions)
-      - [`ActionMoveAwayFromObject(oFleeFrom, bRun, fMoveAwayRange)` - Routine 23](NSS-Shared-Functions-Actions)
-      - [`ActionMoveToLocation(lDestination, bRun)` - Routine 21](NSS-Shared-Functions-Actions)
-      - [`ActionMoveToObject(oMoveTo, bRun, fRange)` - Routine 22](NSS-Shared-Functions-Actions)
-      - [`ActionOpenDoor(oDoor)` - Routine 43](NSS-Shared-Functions-Actions)
-      - [`ActionPauseConversation()` - Routine 205](NSS-Shared-Functions-Actions)
-      - [`ActionPickUpItem(oItem)` - Routine 34](NSS-Shared-Functions-Actions)
-      - [`ActionPlayAnimation(nAnimation, fSpeed, fDurationSeconds)` - Routine 40](NSS-Shared-Functions-Actions)
-      - [`ActionPutDownItem(oItem)` - Routine 35](NSS-Shared-Functions-Actions)
-      - [`ActionRandomWalk()` - Routine 20](NSS-Shared-Functions-Actions)
-      - [`ActionResumeConversation()` - Routine 206](NSS-Shared-Functions-Actions)
-      - [`ActionSpeakString(sStringToSpeak, nTalkVolume)` - Routine 39](NSS-Shared-Functions-Actions)
-      - [`ActionSpeakStringByStrRef(nStrRef, nTalkVolume)` - Routine 240](NSS-Shared-Functions-Actions)
-      - [`ActionStartConversation(oObjectToConverse, sDialogResRef, bPrivateConversation, nConversationType, bIgnoreStartRange, sNameObjectToIgnore1, sNameObjectToIgnore2, sNameObjectToIgnore3, sNameObjectToIgnore4, sNameObjectToIgnore5, sNameObjectToIgnore6, bUseLeader)` - Routine 204](NSS-Shared-Functions-Actions)
-      - [`ActionSurrenderToEnemies()` - Routine 379](NSS-Shared-Functions-Actions)
-      - [`ActionTakeItem(oItem, oTakeFrom)` - Routine 136](NSS-Shared-Functions-Actions)
-      - [`ActionUnequipItem(oItem, bInstant)` - Routine 33](NSS-Shared-Functions-Actions)
-      - [`ActionUnlockObject(oTarget)` - Routine 483](NSS-Shared-Functions-Actions)
-      - [`ActionUseFeat(nFeat, oTarget)` - Routine 287](NSS-Shared-Functions-Actions)
-      - [`ActionUseSkill(nSkill, oTarget, nSubSkill, oItemUsed)` - Routine 288](NSS-Shared-Functions-Actions)
-      - [`ActionUseTalentAtLocation(tChosenTalent, lTargetLocation)` - Routine 310](NSS-Shared-Functions-Actions)
-      - [`ActionUseTalentOnObject(tChosenTalent, oTarget)` - Routine 309](NSS-Shared-Functions-Actions)
-      - [`ActionWait(fSeconds)` - Routine 202](NSS-Shared-Functions-Actions)
-    - [Alignment System](#alignment-system)
-      - [`AdjustAlignment(oSubject, nAlignment, nShift)` - Routine 201](NSS-Shared-Functions-Alignment-System)
-      - [`GetAlignmentGoodEvil(oCreature)` - Routine 127](NSS-Shared-Functions-Alignment-System)
-      - [`GetFactionAverageGoodEvilAlignment(oFactionMember)` - Routine 187](NSS-Shared-Functions-Alignment-System)
-      - [`VersusAlignmentEffect(eEffect, nLawChaos, nGoodEvil)` - Routine 355](NSS-Shared-Functions-Alignment-System)
-    - [Class System](#class-system)
-      - [`AddMultiClass(nClassType, oSource)` - Routine 389](NSS-Shared-Functions-Class-System)
-      - [`GetClassByPosition(nClassPosition, oCreature)` - Routine 341](NSS-Shared-Functions-Class-System)
-      - [`GetFactionMostFrequentClass(oFactionMember)` - Routine 191](NSS-Shared-Functions-Class-System)
-      - [`GetLevelByClass(nClassType, oCreature)` - Routine 343](NSS-Shared-Functions-Class-System)
-    - [Combat Functions](#combat-functions)
-      - [`CancelCombat(oidCreature)` - Routine 54](NSS-Shared-Functions-Combat-Functions)
-      - [`CutsceneAttack(oTarget, nAnimation, nAttackResult, nDamage)` - Routine 503](NSS-Shared-Functions-Combat-Functions)
-      - [`GetAttackTarget(oCreature)` - Routine 316](NSS-Shared-Functions-Combat-Functions)
-      - [`GetAttemptedAttackTarget()` - Routine 361](NSS-Shared-Functions-Combat-Functions)
-      - [`GetFirstAttacker(oCreature)` - Routine 727](NSS-Shared-Functions-Combat-Functions)
-      - [`GetGoingToBeAttackedBy(oTarget)` - Routine 211](NSS-Shared-Functions-Combat-Functions)
-      - [`GetIsInCombat(oCreature)` - Routine 320](NSS-Shared-Functions-Combat-Functions)
-      - [`GetLastAttackAction(oAttacker)` - Routine 722](NSS-Shared-Functions-Combat-Functions)
-      - [`GetLastAttacker(oAttackee)` - Routine 36](NSS-Shared-Functions-Combat-Functions)
-      - [`GetLastAttackMode(oCreature)` - Routine 318](NSS-Shared-Functions-Combat-Functions)
-      - [`GetLastAttackResult(oAttacker)` - Routine 725](NSS-Shared-Functions-Combat-Functions)
-      - [`GetLastAttackType(oCreature)` - Routine 317](NSS-Shared-Functions-Combat-Functions)
-      - [`GetLastKiller()` - Routine 437](NSS-Shared-Functions-Other-Functions)
-      - [`GetNextAttacker(oCreature)` - Routine 728](NSS-Shared-Functions-Other-Functions)
-    - [Dialog and Conversation Functions](#dialog-and-conversation-functions)
-      - [`BarkString(oCreature, strRef)` - Routine 671](NSS-Shared-Functions-Dialog-and-Conversation-Functions)
-      - [`BeginConversation(sResRef, oObjectToDialog)` - Routine 255](NSS-Shared-Functions-Dialog-and-Conversation-Functions)
-      - [`CancelPostDialogCharacterSwitch()` - Routine 757](NSS-Shared-Functions-Dialog-and-Conversation-Functions)
-      - [`EventConversation()` - Routine 295](NSS-Shared-Functions-Dialog-and-Conversation-Functions)
-      - [`GetIsConversationActive()` - Routine 701](NSS-Shared-Functions-Dialog-and-Conversation-Functions)
-      - [`GetIsInConversation(oObject)` - Routine 445](NSS-Shared-Functions-Dialog-and-Conversation-Functions)
-      - [`GetLastConversation()` - Routine 711](NSS-Shared-Functions-Dialog-and-Conversation-Functions)
-      - [`GetLastSpeaker()` - Routine 254](NSS-Shared-Functions-Dialog-and-Conversation-Functions)
-      - [`HoldWorldFadeInForDialog()` - Routine 760](NSS-Shared-Functions-Dialog-and-Conversation-Functions)
-      - [`ResetDialogState()` - Routine 749](NSS-Shared-Functions-Dialog-and-Conversation-Functions)
-      - [`SetDialogPlaceableCamera(nCameraId)` - Routine 461](NSS-Shared-Functions-Dialog-and-Conversation-Functions)
-      - [`SetLockHeadFollowInDialog(oObject, nValue)` - Routine 506](NSS-Shared-Functions-Dialog-and-Conversation-Functions)
-      - [`SetLockOrientationInDialog(oObject, nValue)` - Routine 505](NSS-Shared-Functions-Dialog-and-Conversation-Functions)
-      - [`SpeakOneLinerConversation(sDialogResRef, oTokenTarget)` - Routine 417](NSS-Shared-Functions-Dialog-and-Conversation-Functions)
-      - [`SpeakString(sStringToSpeak, nTalkVolume)` - Routine 221](NSS-Shared-Functions-Dialog-and-Conversation-Functions)
-    - [Effects System](#effects-system)
-      - [`ActionEquipMostEffectiveArmor()` - Routine 404](NSS-Shared-Functions-Actions)
-      - [`DisableVideoEffect()` - Routine 508](NSS-Shared-Functions-Effects-System)
-      - [`EffectAbilityDecrease(nAbility, nModifyBy)` - Routine 446](NSS-Shared-Functions-Effects-System)
-      - [`EffectAbilityIncrease(nAbilityToIncrease, nModifyBy)` - Routine 80](NSS-Shared-Functions-Effects-System)
-      - [`EffectACDecrease(nValue, nModifyType, nDamageType)` - Routine 450](NSS-Shared-Functions-Effects-System)
-      - [`EffectACIncrease(nValue, nModifyType, nDamageType)` - Routine 115](NSS-Shared-Functions-Effects-System)
-      - [`EffectAreaOfEffect(nAreaEffectId, sOnEnterScript, sHeartbeatScript, sOnExitScript)` - Routine 171](NSS-Shared-Functions-Effects-System)
-      - [`EffectAssuredDeflection(nReturn)` - Routine 252](NSS-Shared-Functions-Effects-System)
-      - [`EffectAssuredHit()` - Routine 51](NSS-Shared-Functions-Effects-System)
-      - [`EffectAttackDecrease(nPenalty, nModifierType)` - Routine 447](NSS-Shared-Functions-Effects-System)
-      - [`EffectAttackIncrease(nBonus, nModifierType)` - Routine 118](NSS-Shared-Functions-Effects-System)
-      - [`EffectBeam(nBeamVisualEffect, oEffector, nBodyPart, bMissEffect)` - Routine 207](NSS-Shared-Functions-Effects-System)
-      - [`EffectBlasterDeflectionDecrease(nChange)` - Routine 470](NSS-Shared-Functions-Effects-System)
-      - [`EffectBlasterDeflectionIncrease(nChange)` - Routine 469](NSS-Shared-Functions-Effects-System)
-      - [`EffectBodyFuel()` - Routine 224](NSS-Shared-Functions-Effects-System)
-      - [`EffectChoke()` - Routine 159](NSS-Shared-Functions-Effects-System)
-      - [`EffectConcealment(nPercentage)` - Routine 458](NSS-Shared-Functions-Effects-System)
-      - [`EffectConfused()` - Routine 157](NSS-Shared-Functions-Effects-System)
-      - [`EffectCutSceneHorrified()` - Routine 754](NSS-Shared-Functions-Effects-System)
-      - [`EffectCutSceneParalyze()` - Routine 755](NSS-Shared-Functions-Effects-System)
-      - [`EffectCutSceneStunned()` - Routine 756](NSS-Shared-Functions-Effects-System)
-      - [`EffectDamage(nDamageAmount, nDamageType, nDamagePower)` - Routine 79](NSS-Shared-Functions-Effects-System)
-      - [`EffectDamageDecrease(nPenalty, nDamageType)` - Routine 448](NSS-Shared-Functions-Effects-System)
-      - [`EffectDamageForcePoints(nDamage)` - Routine 372](NSS-Shared-Functions-Effects-System)
-      - [`EffectDamageImmunityDecrease(nDamageType, nPercentImmunity)` - Routine 449](NSS-Shared-Functions-Effects-System)
-      - [`EffectDamageImmunityIncrease(nDamageType, nPercentImmunity)` - Routine 275](NSS-Shared-Functions-Effects-System)
-      - [`EffectDamageIncrease(nBonus, nDamageType)` - Routine 120](NSS-Shared-Functions-Effects-System)
-      - [`EffectDamageReduction(nAmount, nDamagePower, nLimit)` - Routine 119](NSS-Shared-Functions-Effects-System)
-      - [`EffectDamageResistance(nDamageType, nAmount, nLimit)` - Routine 81](NSS-Shared-Functions-Effects-System)
-      - [`EffectDamageShield(nDamageAmount, nRandomAmount, nDamageType)` - Routine 487](NSS-Shared-Functions-Effects-System)
-      - [`EffectDeath(nSpectacularDeath, nDisplayFeedback)` - Routine 133](NSS-Shared-Functions-Effects-System)
-      - [`EffectDisguise(nDisguiseAppearance)` - Routine 463](NSS-Shared-Functions-Effects-System)
-      - [`EffectDispelMagicAll(nCasterLevel)` - Routine 460](NSS-Shared-Functions-Effects-System)
-      - [`EffectDispelMagicBest(nCasterLevel)` - Routine 473](NSS-Shared-Functions-Effects-System)
-      - [`EffectDroidStun()` - Routine 391](NSS-Shared-Functions-Effects-System)
-      - [`EffectEntangle()` - Routine 130](NSS-Shared-Functions-Effects-System)
-      - [`EffectForceDrain(nDamage)` - Routine 675](NSS-Shared-Functions-Effects-System)
-      - [`EffectForceFizzle()` - Routine 420](NSS-Shared-Functions-Effects-System)
-      - [`EffectForceJump(oTarget, nAdvanced)` - Routine 153](NSS-Shared-Functions-Effects-System)
-      - [`EffectForcePushed()` - Routine 392](NSS-Shared-Functions-Effects-System)
-      - [`EffectForcePushTargeted(lCentre, nIgnoreTestDirectLine)` - Routine 269](NSS-Shared-Functions-Effects-System)
-      - [`EffectForceResistanceDecrease(nValue)` - Routine 454](NSS-Shared-Functions-Effects-System)
-      - [`EffectForceResistanceIncrease(nValue)` - Routine 212](NSS-Shared-Functions-Effects-System)
-      - [`EffectForceResisted(oSource)` - Routine 402](NSS-Shared-Functions-Effects-System)
-      - [`EffectForceShield(nShield)` - Routine 459](NSS-Shared-Functions-Effects-System)
-      - [`EffectFrightened()` - Routine 158](NSS-Shared-Functions-Effects-System)
-      - [`EffectHaste()` - Routine 270](NSS-Shared-Functions-Effects-System)
-      - [`EffectHeal(nDamageToHeal)` - Routine 78](NSS-Shared-Functions-Effects-System)
-      - [`EffectHealForcePoints(nHeal)` - Routine 373](NSS-Shared-Functions-Effects-System)
-      - [`EffectHitPointChangeWhenDying(fHitPointChangePerRound)` - Routine 387](NSS-Shared-Functions-Effects-System)
-      - [`EffectHorrified()` - Routine 471](NSS-Shared-Functions-Effects-System)
-      - [`EffectImmunity(nImmunityType)` - Routine 273](NSS-Shared-Functions-Effects-System)
-      - [`EffectInvisibility(nInvisibilityType)` - Routine 457](NSS-Shared-Functions-Effects-System)
-      - [`EffectKnockdown()` - Routine 134](NSS-Shared-Functions-Effects-System)
-      - [`EffectLightsaberThrow(oTarget1, oTarget2, oTarget3, nAdvancedDamage)` - Routine 702](NSS-Shared-Functions-Effects-System)
-      - [`EffectLinkEffects(eChildEffect, eParentEffect)` - Routine 199](NSS-Shared-Functions-Effects-System)
-      - [`EffectMissChance(nPercentage)` - Routine 477](NSS-Shared-Functions-Effects-System)
-      - [`EffectModifyAttacks(nAttacks)` - Routine 485](NSS-Shared-Functions-Effects-System)
-      - [`EffectMovementSpeedDecrease(nPercentChange)` - Routine 451](NSS-Shared-Functions-Effects-System)
-      - [`EffectMovementSpeedIncrease(nNewSpeedPercent)` - Routine 165](NSS-Shared-Functions-Effects-System)
-      - [`EffectParalyze()` - Routine 148](NSS-Shared-Functions-Effects-System)
-      - [`EffectPoison(nPoisonType)` - Routine 250](NSS-Shared-Functions-Effects-System)
-      - [`EffectPsychicStatic()` - Routine 676](NSS-Shared-Functions-Effects-System)
-      - [`EffectRegenerate(nAmount, fIntervalSeconds)` - Routine 164](NSS-Shared-Functions-Effects-System)
-      - [`EffectResurrection()` - Routine 82](NSS-Shared-Functions-Effects-System)
-      - [`EffectSavingThrowDecrease(nSave, nValue, nSaveType)` - Routine 452](NSS-Shared-Functions-Effects-System)
-      - [`EffectSavingThrowIncrease(nSave, nValue, nSaveType)` - Routine 117](NSS-Shared-Functions-Effects-System)
-      - [`EffectSeeInvisible()` - Routine 466](NSS-Shared-Functions-Effects-System)
-      - [`EffectSkillDecrease(nSkill, nValue)` - Routine 453](NSS-Shared-Functions-Effects-System)
-      - [`EffectSkillIncrease(nSkill, nValue)` - Routine 351](NSS-Shared-Functions-Effects-System)
-      - [`EffectSleep()` - Routine 154](NSS-Shared-Functions-Effects-System)
-      - [`EffectSpellImmunity(nImmunityToSpell)` - Routine 149](NSS-Shared-Functions-Effects-System)
-      - [`EffectSpellLevelAbsorption(nMaxSpellLevelAbsorbed, nTotalSpellLevelsAbsorbed, nSpellSchool)` - Routine 472](NSS-Shared-Functions-Effects-System)
-      - [`EffectStunned()` - Routine 161](NSS-Shared-Functions-Effects-System)
-      - [`EffectTemporaryForcePoints(nTempForce)` - Routine 156](NSS-Shared-Functions-Effects-System)
-      - [`EffectTemporaryHitpoints(nHitPoints)` - Routine 314](NSS-Shared-Functions-Effects-System)
-      - [`EffectTimeStop()` - Routine 467](NSS-Shared-Functions-Effects-System)
-      - [`EffectTrueSeeing()` - Routine 465](NSS-Shared-Functions-Effects-System)
-      - [`EffectVisualEffect(nVisualEffectId, nMissEffect)` - Routine 180](NSS-Shared-Functions-Effects-System)
-      - [`EffectWhirlWind()` - Routine 703](NSS-Shared-Functions-Effects-System)
-      - [`EnableVideoEffect(nEffectType)` - Routine 508](NSS-Shared-Functions-Effects-System)
-      - [`ExtraordinaryEffect(eEffect)` - Routine 114](NSS-Shared-Functions-Effects-System)
-      - [`GetAreaOfEffectCreator(oAreaOfEffectObject)` - Routine 264](NSS-Shared-Functions-Module-and-Area-Functions)
-      - [`GetEffectCreator(eEffect)` - Routine 91](NSS-Shared-Functions-Effects-System)
-      - [`GetEffectDurationType(eEffect)` - Routine 89](NSS-Shared-Functions-Effects-System)
-      - [`GetEffectSpellId(eSpellEffect)` - Routine 305](NSS-Shared-Functions-Effects-System)
-      - [`GetEffectSubType(eEffect)` - Routine 90](NSS-Shared-Functions-Effects-System)
-      - [`GetEffectType(eEffect)` - Routine 170](NSS-Shared-Functions-Effects-System)
-      - [`GetFirstEffect(oCreature)` - Routine 85](NSS-Shared-Functions-Effects-System)
-      - [`GetHasFeatEffect(nFeat, oObject)` - Routine 543](NSS-Shared-Functions-Effects-System)
-      - [`GetHasSpellEffect(nSpell, oObject)` - Routine 304](NSS-Shared-Functions-Effects-System)
-      - [`GetIsEffectValid(eEffect)` - Routine 88](NSS-Shared-Functions-Effects-System)
-      - [`GetIsWeaponEffective(oVersus, bOffHand)` - Routine 422](NSS-Shared-Functions-Effects-System)
-      - [`GetNextEffect(oCreature)` - Routine 86](NSS-Shared-Functions-Effects-System)
-      - [`MagicalEffect(eEffect)` - Routine 112](NSS-Shared-Functions-Effects-System)
-      - [`PlayVisualAreaEffect(nEffectID, lTarget)` - Routine 677](NSS-Shared-Functions-Effects-System)
-      - [`RemoveEffect(oCreature, eEffect)` - Routine 87](NSS-Shared-Functions-Effects-System)
-      - [`SetEffectIcon(eEffect, nIcon)` - Routine 552](NSS-Shared-Functions-Effects-System)
-      - [`SupernaturalEffect(eEffect)` - Routine 113](NSS-Shared-Functions-Effects-System)
-      - [`SWMG_SetSpeedBlurEffect(bEnabled, fRatio)` - Routine 563](NSS-Shared-Functions-Effects-System)
-      - [`VersusRacialTypeEffect(eEffect, nRacialType)` - Routine 356](NSS-Shared-Functions-Effects-System)
-      - [`VersusTrapEffect(eEffect)` - Routine 357](NSS-Shared-Functions-Effects-System)
-    - [Global Variables](#global-variables)
-      - [`GetGlobalBoolean(sIdentifier)` - Routine 578](NSS-Shared-Functions-Global-Variables)
-      - [`GetGlobalLocation(sIdentifier)` - Routine 692](NSS-Shared-Functions-Global-Variables)
-      - [`GetGlobalNumber(sIdentifier)` - Routine 580](NSS-Shared-Functions-Global-Variables)
-      - [`GetGlobalString(sIdentifier)` - Routine 194](NSS-Shared-Functions-Global-Variables)
-      - [`SetGlobalBoolean(sIdentifier, nValue)` - Routine 579](NSS-Shared-Functions-Global-Variables)
-      - [`SetGlobalFadeIn(fWait, fLength, fR, fG, fB)` - Routine 719](NSS-Shared-Functions-Global-Variables)
-      - [`SetGlobalFadeOut(fWait, fLength, fR, fG, fB)` - Routine 720](NSS-Shared-Functions-Global-Variables)
-      - [`SetGlobalLocation(sIdentifier, lValue)` - Routine 693](NSS-Shared-Functions-Global-Variables)
-      - [`SetGlobalNumber(sIdentifier, nValue)` - Routine 581](NSS-Shared-Functions-Global-Variables)
-      - [`SetGlobalString(sIdentifier, sValue)` - Routine 160](NSS-Shared-Functions-Global-Variables)
-    - [Item Management](#item-management)
-      - [`ChangeItemCost(sItem, fCostMultiplier)` - Routine 747](NSS-Shared-Functions-Item-Management)
-      - [`CreateItemOnFloor(sTemplate, lLocation, bUseAppearAnimation)` - Routine 766](NSS-Shared-Functions-Item-Management)
-      - [`CreateItemOnObject(sItemTemplate, oTarget, nStackSize)` - Routine 31](NSS-Shared-Functions-Item-Management)
-      - [`EventActivateItem(oItem, lTarget, oTarget)` - Routine 424](NSS-Shared-Functions-Item-Management)
-      - [`GetBaseItemType(oItem)` - Routine 397](NSS-Shared-Functions-Item-Management)
-      - [`GetFirstItemInInventory(oTarget)` - Routine 339](NSS-Shared-Functions-Item-Management)
-      - [`GetInventoryDisturbItem()` - Routine 353](NSS-Shared-Functions-Item-Management)
-      - [`GetItemActivated()` - Routine 439](NSS-Shared-Functions-Item-Management)
-      - [`GetItemActivatedTarget()` - Routine 442](NSS-Shared-Functions-Item-Management)
-      - [`GetItemActivatedTargetLocation()` - Routine 441](NSS-Shared-Functions-Item-Management)
-      - [`GetItemActivator()` - Routine 440](NSS-Shared-Functions-Item-Management)
-      - [`GetItemACValue(oItem)` - Routine 401](NSS-Shared-Functions-Item-Management)
-      - [`GetItemInSlot(nInventorySlot, oCreature)` - Routine 155](NSS-Shared-Functions-Item-Management)
-      - [`GetItemPossessedBy(oCreature, sItemTag)` - Routine 30](NSS-Shared-Functions-Item-Management)
-      - [`GetItemPossessor(oItem)` - Routine 29](NSS-Shared-Functions-Item-Management)
-      - [`GetItemStackSize(oItem)` - Routine 138](NSS-Shared-Functions-Item-Management)
-      - [`GetLastItemEquipped()` - Routine 52](NSS-Shared-Functions-Item-Management)
-      - [`GetModuleItemAcquired()` - Routine 282](NSS-Shared-Functions-Module-and-Area-Functions)
-      - [`GetModuleItemAcquiredFrom()` - Routine 283](NSS-Shared-Functions-Module-and-Area-Functions)
-      - [`GetModuleItemLost()` - Routine 292](NSS-Shared-Functions-Module-and-Area-Functions)
-      - [`GetModuleItemLostBy()` - Routine 293](NSS-Shared-Functions-Module-and-Area-Functions)
-      - [`GetNextItemInInventory(oTarget)` - Routine 340](NSS-Shared-Functions-Item-Management)
-      - [`GetNumStackedItems(oItem)` - Routine 475](NSS-Shared-Functions-Item-Management)
-      - [`GetSpellCastItem()` - Routine 438](NSS-Shared-Functions-Item-Management)
-      - [`SetItemNonEquippable(oItem, bNonEquippable)` - Routine 266](NSS-Shared-Functions-Item-Management)
-      - [`SetItemStackSize(oItem, nStackSize)` - Routine 150](NSS-Shared-Functions-Item-Management)
-    - [Item Properties](#item-properties)
-      - [`GetItemHasItemProperty(oItem, nProperty)` - Routine 398](NSS-Shared-Functions-Item-Management)
-    - [Local Variables](#local-variables)
-      - [`GetLocalBoolean(oObject, nIndex)` - Routine 679](NSS-Shared-Functions-Other-Functions)
-      - [`GetLocalNumber(oObject, nIndex)` - Routine 681](NSS-Shared-Functions-Other-Functions)
-      - [`SetLocalBoolean(oObject, nIndex, nValue)` - Routine 680](NSS-Shared-Functions-Other-Functions)
-      - [`SetLocalNumber(oObject, nIndex, nValue)` - Routine 682](NSS-Shared-Functions-Other-Functions)
-    - [Module and Area Functions](#module-and-area-functions)
-      - [`GetArea(oTarget)` - Routine 24](NSS-Shared-Functions-Module-and-Area-Functions)
-      - [`GetAreaUnescapable()` - Routine 15](NSS-Shared-Functions-Module-and-Area-Functions)
-      - [`GetFirstObjectInArea(oArea, nObjectFilter)` - Routine 93](NSS-Shared-Functions-Other-Functions)
-      - [`GetModule()` - Routine 242](NSS-Shared-Functions-Module-and-Area-Functions)
-      - [`GetModuleFileName()` - Routine 210](NSS-Shared-Functions-Module-and-Area-Functions)
-      - [`GetModuleName()` - Routine 561](NSS-Shared-Functions-Module-and-Area-Functions)
-      - [`GetNextObjectInArea(oArea, nObjectFilter)` - Routine 94](NSS-Shared-Functions-Other-Functions)
-      - [`SetAreaFogColor(oArea, fRed, fGreen, fBlue)` - Routine 746](NSS-Shared-Functions-Other-Functions)
-      - [`SetAreaTransitionBMP(nPredefinedAreaTransition, sCustomAreaTransitionBMP)` - Routine 203](NSS-Shared-Functions-Other-Functions)
-      - [`SetAreaUnescapable(bUnescapable)` - Routine 14](NSS-Shared-Functions-Other-Functions)
-    - [Object Query and Manipulation](#object-query-and-manipulation)
-      - [`GetNearestCreature(nFirstCriteriaType, nFirstCriteriaValue, oTarget, nNth, nSecondCriteriaType, nSecondCriteriaValue, nThirdCriteriaType, nThirdCriteriaValue)` - Routine 38](NSS-Shared-Functions-Other-Functions)
-      - [`GetNearestCreatureToLocation(nFirstCriteriaType, nFirstCriteriaValue, lLocation, nNth, nSecondCriteriaType, nSecondCriteriaValue, nThirdCriteriaType, nThirdCriteriaValue)` - Routine 226](NSS-Shared-Functions-Other-Functions)
-      - [`GetNearestObject(nObjectType, oTarget, nNth)` - Routine 227](NSS-Shared-Functions-Other-Functions)
-      - [`GetNearestObjectByTag(sTag, oTarget, nNth)` - Routine 229](NSS-Shared-Functions-Other-Functions)
-      - [`GetNearestObjectToLocation(nObjectType, lLocation, nNth)` - Routine 228](NSS-Shared-Functions-Other-Functions)
-      - [`GetNearestTrapToObject(oTarget, nTrapDetected)` - Routine 488](NSS-Shared-Functions-Other-Functions)
-      - [`GetObjectByTag(sTag, nNth)` - Routine 200](NSS-Shared-Functions-Object-Query-and-Manipulation)
-      - [`GetObjectHeard(oTarget, oSource)` - Routine 290](NSS-Shared-Functions-Object-Query-and-Manipulation)
-      - [`GetObjectSeen(oTarget, oSource)` - Routine 289](NSS-Shared-Functions-Object-Query-and-Manipulation)
-      - [`GetObjectType(oTarget)` - Routine 106](NSS-Shared-Functions-Object-Query-and-Manipulation)
-      - [`GetSpellTargetObject()` - Routine 47](NSS-Shared-Functions-Other-Functions)
-      - [`SWMG_GetObjectByName(sName)` - Routine 585](NSS-Shared-Functions-Object-Query-and-Manipulation)
-      - [`SWMG_GetObjectName(oid)` - Routine 597](NSS-Shared-Functions-Object-Query-and-Manipulation)
-    - [Other Functions](#other-functions)
-      - [`GetAC(oObject, nForFutureUse)` - Routine 116](NSS-Shared-Functions-Other-Functions)
-      - [`GetAppearanceType(oCreature)` - Routine 524](NSS-Shared-Functions-Other-Functions)
-      - [`GetAttemptedMovementTarget()` - Routine 489](NSS-Shared-Functions-Other-Functions)
-      - [`GetAttemptedSpellTarget()` - Routine 375](NSS-Shared-Functions-Other-Functions)
-      - [`GetBlockingCreature(oTarget)` - Routine 490](NSS-Shared-Functions-Other-Functions)
-      - [`GetBlockingDoor()` - Routine 336](NSS-Shared-Functions-Other-Functions)
-      - [`GetButtonMashCheck()` - Routine 267](NSS-Shared-Functions-Other-Functions)
-      - [`GetCasterLevel(oCreature)` - Routine 84](NSS-Shared-Functions-Other-Functions)
-      - [`GetCategoryFromTalent(tTalent)` - Routine 735](NSS-Shared-Functions-Other-Functions)
-      - [`GetChallengeRating(oCreature)` - Routine 494](NSS-Shared-Functions-Other-Functions)
-      - [`GetCheatCode(nCode)` - Routine 764](NSS-Shared-Functions-Other-Functions)
-      - [`GetClickingObject()` - Routine 326](NSS-Shared-Functions-Other-Functions)
-      - [`GetCommandable(oTarget)` - Routine 163](NSS-Shared-Functions-Other-Functions)
-      - [`GetCreatureHasTalent(tTalent, oCreature)` - Routine 306](NSS-Shared-Functions-Other-Functions)
-      - [`GetCreatureMovmentType(oidCreature)` - Routine 566](NSS-Shared-Functions-Other-Functions)
-      - [`GetCreatureSize(oCreature)` - Routine 479](NSS-Shared-Functions-Other-Functions)
-      - [`GetCreatureTalentBest(nCategory, nCRMax, oCreature, nInclusion, nExcludeType, nExcludeId)` - Routine 308](NSS-Shared-Functions-Other-Functions)
-      - [`GetCreatureTalentRandom(nCategory, oCreature, nInclusion)` - Routine 307](NSS-Shared-Functions-Other-Functions)
-      - [`GetCurrentAction(oObject)` - Routine 522](NSS-Shared-Functions-Other-Functions)
-      - [`GetCurrentForcePoints(oObject)` - Routine 55](NSS-Shared-Functions-Other-Functions)
-      - [`GetCurrentHitPoints(oObject)` - Routine 49](NSS-Shared-Functions-Other-Functions)
-      - [`GetCurrentStealthXP()` - Routine 474](NSS-Shared-Functions-Other-Functions)
-      - [`GetDamageDealtByType(nDamageType)` - Routine 344](NSS-Shared-Functions-Other-Functions)
-      - [`GetDifficultyModifier()` - Routine 523](NSS-Shared-Functions-Other-Functions)
-      - [`GetDistanceBetween(oObjectA, oObjectB)` - Routine 151](NSS-Shared-Functions-Other-Functions)
-      - [`GetDistanceBetween2D(oObjectA, oObjectB)` - Routine 319](NSS-Shared-Functions-Other-Functions)
-      - [`GetDistanceBetweenLocations(lLocationA, lLocationB)` - Routine 298](NSS-Shared-Functions-Other-Functions)
-      - [`GetDistanceBetweenLocations2D(lLocationA, lLocationB)` - Routine 334](NSS-Shared-Functions-Other-Functions)
-      - [`GetDistanceToObject(oObject)` - Routine 41](NSS-Shared-Functions-Other-Functions)
-      - [`GetDistanceToObject2D(oObject)` - Routine 335](NSS-Shared-Functions-Other-Functions)
-      - [`GetEncounterActive(oEncounter)` - Routine 276](NSS-Shared-Functions-Other-Functions)
-      - [`GetEncounterDifficulty(oEncounter)` - Routine 297](NSS-Shared-Functions-Other-Functions)
-      - [`GetEncounterSpawnsCurrent(oEncounter)` - Routine 280](NSS-Shared-Functions-Other-Functions)
-      - [`GetEncounterSpawnsMax(oEncounter)` - Routine 278](NSS-Shared-Functions-Other-Functions)
-      - [`GetEnteringObject()` - Routine 25](NSS-Shared-Functions-Other-Functions)
-      - [`GetExitingObject()` - Routine 26](NSS-Shared-Functions-Other-Functions)
-      - [`GetFacing(oTarget)` - Routine 28](NSS-Shared-Functions-Other-Functions)
-      - [`GetFacingFromLocation(lLocation)` - Routine 225](NSS-Shared-Functions-Other-Functions)
-      - [`GetFactionAverageLevel(oFactionMember)` - Routine 189](NSS-Shared-Functions-Other-Functions)
-      - [`GetFactionAverageReputation(oSourceFactionMember, oTarget)` - Routine 186](NSS-Shared-Functions-Other-Functions)
-      - [`GetFactionAverageXP(oFactionMember)` - Routine 190](NSS-Shared-Functions-Other-Functions)
-      - [`GetFactionBestAC(oFactionMember, bMustBeVisible)` - Routine 193](NSS-Shared-Functions-Other-Functions)
-      - [`GetFactionEqual(oFirstObject, oSecondObject)` - Routine 172](NSS-Shared-Functions-Other-Functions)
-      - [`GetFactionGold(oFactionMember)` - Routine 185](NSS-Shared-Functions-Other-Functions)
-      - [`GetFactionLeader(oMemberOfFaction)` - Routine 562](NSS-Shared-Functions-Other-Functions)
-      - [`GetFactionLeastDamagedMember(oFactionMember, bMustBeVisible)` - Routine 184](NSS-Shared-Functions-Other-Functions)
-      - [`GetFactionMostDamagedMember(oFactionMember, bMustBeVisible)` - Routine 183](NSS-Shared-Functions-Other-Functions)
-      - [`GetFactionStrongestMember(oFactionMember, bMustBeVisible)` - Routine 182](NSS-Shared-Functions-Other-Functions)
-      - [`GetFactionWeakestMember(oFactionMember, bMustBeVisible)` - Routine 181](NSS-Shared-Functions-Other-Functions)
-      - [`GetFactionWorstAC(oFactionMember, bMustBeVisible)` - Routine 192](NSS-Shared-Functions-Other-Functions)
-      - [`GetFirstFactionMember(oMemberOfFaction, bPCOnly)` - Routine 380](NSS-Shared-Functions-Other-Functions)
-      - `GetFirstInPersistentObject(oPersistentObject, nResidentObjectType, nPersistentZone)`
-      - [`GetFirstObjectInShape(nShape, fSize, lTarget, bLineOfSight, nObjectFilter, vOrigin)` - Routine 128](NSS-Shared-Functions-Other-Functions)
-      - [`GetFirstPC()` - Routine 548](NSS-Shared-Functions-Other-Functions)
-      - [`GetFortitudeSavingThrow(oTarget)` - Routine 491](NSS-Shared-Functions-Other-Functions)
-      - [`GetFoundEnemyCreature(oTarget)` - Routine 495](NSS-Shared-Functions-Other-Functions)
-      - [`GetGameDifficulty()` - Routine 513](NSS-Shared-Functions-Other-Functions)
-      - [`GetGender(oCreature)` - Routine 358](NSS-Shared-Functions-Other-Functions)
-      - [`GetGold(oTarget)` - Routine 418](NSS-Shared-Functions-Other-Functions)
-      - [`GetGoldPieceValue(oItem)` - Routine 311](NSS-Shared-Functions-Other-Functions)
-      - [`GetGoodEvilValue(oCreature)` - Routine 125](NSS-Shared-Functions-Other-Functions)
-      - [`GetHasInventory(oObject)` - Routine 570](NSS-Shared-Functions-Other-Functions)
-      - [`GetHasSpell(nSpell, oCreature)` - Routine 377](NSS-Shared-Functions-Other-Functions)
-      - [`GetHitDice(oCreature)` - Routine 166](NSS-Shared-Functions-Other-Functions)
-      - [`GetIdentified(oItem)` - Routine 332](NSS-Shared-Functions-Other-Functions)
-      - [`GetIdFromTalent(tTalent)` - Routine 363](NSS-Shared-Functions-Other-Functions)
-      - [`GetInventoryDisturbType()` - Routine 352](NSS-Shared-Functions-Other-Functions)
-      - [`GetIsDawn()` - Routine 407](NSS-Shared-Functions-Other-Functions)
-      - [`GetIsDay()` - Routine 405](NSS-Shared-Functions-Other-Functions)
-      - [`GetIsDead(oCreature)` - Routine 140](NSS-Shared-Functions-Other-Functions)
-      - [`GetIsDebilitated(oCreature)` - Routine 732](NSS-Shared-Functions-Other-Functions)
-      - [`GetIsDoorActionPossible(oTargetDoor, nDoorAction)` - Routine 337](NSS-Shared-Functions-Other-Functions)
-      - [`GetIsDusk()` - Routine 408](NSS-Shared-Functions-Other-Functions)
-      - [`GetIsEncounterCreature(oCreature)` - Routine 409](NSS-Shared-Functions-Other-Functions)
-      - [`GetIsEnemy(oTarget, oSource)` - Routine 235](NSS-Shared-Functions-Other-Functions)
-      - [`GetIsFriend(oTarget, oSource)` - Routine 236](NSS-Shared-Functions-Other-Functions)
-      - [`GetIsImmune(oCreature, nImmunityType, oVersus)` - Routine 274](NSS-Shared-Functions-Other-Functions)
-      - [`GetIsLinkImmune(oTarget, eEffect)` - Routine 390](NSS-Shared-Functions-Other-Functions)
-      - [`GetIsListening(oObject)` - Routine 174](NSS-Shared-Functions-Other-Functions)
-      - [`GetIsLiveContentAvailable(nPkg)` - Routine 748](NSS-Shared-Functions-Other-Functions)
-      - [`GetIsNeutral(oTarget, oSource)` - Routine 237](NSS-Shared-Functions-Other-Functions)
-      - [`GetIsNight()` - Routine 406](NSS-Shared-Functions-Other-Functions)
-      - [`GetIsObjectValid(oObject)` - Routine 42](NSS-Shared-Functions-Other-Functions)
-      - [`GetIsOpen(oObject)` - Routine 443](NSS-Shared-Functions-Other-Functions)
-      - [`GetIsPlaceableObjectActionPossible(oPlaceable, nPlaceableAction)` - Routine 546](NSS-Shared-Functions-Other-Functions)
-      - [`GetIsPoisoned(oObject)` - Routine 751](NSS-Shared-Functions-Other-Functions)
-      - [`GetIsTalentValid(tTalent)` - Routine 359](NSS-Shared-Functions-Other-Functions)
-      - [`GetIsTrapped(oObject)` - Routine 551](NSS-Shared-Functions-Other-Functions)
-      - [`GetJournalEntry(szPlotID)` - Routine 369](NSS-Shared-Functions-Other-Functions)
-      - [`GetJournalQuestExperience(szPlotID)` - Routine 384](NSS-Shared-Functions-Other-Functions)
-      - [`GetLastAssociateCommand(oAssociate)` - Routine 321](NSS-Shared-Functions-Other-Functions)
-      - [`GetLastClosedBy()` - Routine 260](NSS-Shared-Functions-Other-Functions)
-      - [`GetLastDamager()` - Routine 346](NSS-Shared-Functions-Combat-Functions)
-      - [`GetLastDisarmed()` - Routine 347](NSS-Shared-Functions-Other-Functions)
-      - [`GetLastDisturbed()` - Routine 348](NSS-Shared-Functions-Other-Functions)
-      - [`GetLastForcePowerUsed(oAttacker)` - Routine 723](NSS-Shared-Functions-Other-Functions)
-      - [`GetLastHostileActor(oVictim)` - Routine 556](NSS-Shared-Functions-Other-Functions)
-      - [`GetLastHostileTarget(oAttacker)` - Routine 721](NSS-Shared-Functions-Other-Functions)
-      - [`GetLastLocked()` - Routine 349](NSS-Shared-Functions-Other-Functions)
-      - [`GetLastOpenedBy()` - Routine 376](NSS-Shared-Functions-Other-Functions)
-      - [`GetLastPazaakResult()` - Routine 365](NSS-Shared-Functions-Other-Functions)
-      - [`GetLastPerceived()` - Routine 256](NSS-Shared-Functions-Other-Functions)
-      - [`GetLastPerceptionHeard()` - Routine 257](NSS-Shared-Functions-Other-Functions)
-      - [`GetLastPerceptionInaudible()` - Routine 258](NSS-Shared-Functions-Other-Functions)
-      - [`GetLastPerceptionSeen()` - Routine 259](NSS-Shared-Functions-Other-Functions)
-      - [`GetLastPerceptionVanished()` - Routine 261](NSS-Shared-Functions-Other-Functions)
-      - [`GetLastRespawnButtonPresser()` - Routine 419](NSS-Shared-Functions-Other-Functions)
-      - [`GetLastSpell()` - Routine 246](NSS-Shared-Functions-Other-Functions)
-      - [`GetLastSpellCaster()` - Routine 245](NSS-Shared-Functions-Other-Functions)
-      - [`GetLastSpellHarmful()` - Routine 423](NSS-Shared-Functions-Other-Functions)
-      - [`GetLastTrapDetected(oTarget)` - Routine 486](NSS-Shared-Functions-Other-Functions)
-      - [`GetLastUnlocked()` - Routine 350](NSS-Shared-Functions-Other-Functions)
-      - [`GetLastUsedBy()` - Routine 330](NSS-Shared-Functions-Other-Functions)
-      - [`GetLastWeaponUsed(oCreature)` - Routine 328](NSS-Shared-Functions-Other-Functions)
-      - [`GetLevelByPosition(nClassPosition, oCreature)` - Routine 342](NSS-Shared-Functions-Other-Functions)
-      - [`GetListenPatternNumber()` - Routine 195](NSS-Shared-Functions-Other-Functions)
-      - [`GetLoadFromSaveGame()` - Routine 251](NSS-Shared-Functions-Other-Functions)
-      - [`GetLocation(oObject)` - Routine 213](NSS-Shared-Functions-Other-Functions)
-      - [`GetLocked(oTarget)` - Routine 325](NSS-Shared-Functions-Other-Functions)
-      - [`GetLockKeyRequired(oObject)` - Routine 537](NSS-Shared-Functions-Other-Functions)
-      - [`GetLockKeyTag(oObject)` - Routine 538](NSS-Shared-Functions-Other-Functions)
-      - [`GetLockLockable(oObject)` - Routine 539](NSS-Shared-Functions-Other-Functions)
-      - [`GetLockLockDC(oObject)` - Routine 541](NSS-Shared-Functions-Other-Functions)
-      - [`GetLockUnlockDC(oObject)` - Routine 540](NSS-Shared-Functions-Other-Functions)
-      - [`GetMatchedSubstring(nString)` - Routine 178](NSS-Shared-Functions-Other-Functions)
-      - [`GetMatchedSubstringsCount()` - Routine 179](NSS-Shared-Functions-Other-Functions)
-      - [`GetMaxForcePoints(oObject)` - Routine 56](NSS-Shared-Functions-Other-Functions)
-      - [`GetMaxHitPoints(oObject)` - Routine 50](NSS-Shared-Functions-Other-Functions)
-      - [`GetMaxStealthXP()` - Routine 464](NSS-Shared-Functions-Other-Functions)
-      - [`GetMinOneHP(oObject)` - Routine 715](NSS-Shared-Functions-Other-Functions)
-      - [`GetMovementRate(oCreature)` - Routine 496](NSS-Shared-Functions-Other-Functions)
-      - [`GetName(oObject)` - Routine 253](NSS-Shared-Functions-Other-Functions)
-      - [`GetNextFactionMember(oMemberOfFaction, bPCOnly)` - Routine 381](NSS-Shared-Functions-Other-Functions)
-      - `GetNextInPersistentObject(oPersistentObject, nResidentObjectType, nPersistentZone)`
-      - [`GetNextObjectInShape(nShape, fSize, lTarget, bLineOfSight, nObjectFilter, vOrigin)` - Routine 129](NSS-Shared-Functions-Other-Functions)
-      - [`GetNextPC()` - Routine 548](NSS-Shared-Functions-Other-Functions)
-      - [`GetNPCAIStyle(oCreature)` - Routine 705](NSS-Shared-Functions-Abilities-and-Stats)
-      - [`GetPCLevellingUp()` - Routine 542](NSS-Shared-Functions-Player-Character-Functions)
-      - [`GetPlaceableIllumination(oPlaceable)` - Routine 545](NSS-Shared-Functions-Other-Functions)
-      - [`GetPlanetAvailable(nPlanet)` - Routine 743](NSS-Shared-Functions-Other-Functions)
-      - [`GetPlanetSelectable(nPlanet)` - Routine 741](NSS-Shared-Functions-Other-Functions)
-      - [`GetPlotFlag(oTarget)` - Routine 455](NSS-Shared-Functions-Other-Functions)
-      - [`GetPosition(oTarget)` - Routine 27](NSS-Shared-Functions-Other-Functions)
-      - [`GetPositionFromLocation(lLocation)` - Routine 223](NSS-Shared-Functions-Other-Functions)
-      - [`GetRacialType(oCreature)` - Routine 107](NSS-Shared-Functions-Other-Functions)
-      - [`GetReflexAdjustedDamage(nDamage, oTarget, nDC, nSaveType, oSaveVersus)` - Routine 299](NSS-Shared-Functions-Other-Functions)
-      - [`GetReflexSavingThrow(oTarget)` - Routine 493](NSS-Shared-Functions-Other-Functions)
-      - [`GetReputation(oSource, oTarget)` - Routine 208](NSS-Shared-Functions-Other-Functions)
-      - [`GetRunScriptVar()` - Routine 565](NSS-Shared-Functions-Other-Functions)
-      - [`GetSelectedPlanet()` - Routine 744](NSS-Shared-Functions-Other-Functions)
-      - [`GetSoloMode()` - Routine 462](NSS-Shared-Functions-Other-Functions)
-      - [`GetSpellId()` - Routine 248](NSS-Shared-Functions-Other-Functions)
-      - [`GetSpellSaveDC()` - Routine 111](NSS-Shared-Functions-Other-Functions)
-      - [`GetSpellTarget(oCreature)` - Routine 752](NSS-Shared-Functions-Other-Functions)
-      - [`GetSpellTargetLocation()` - Routine 222](NSS-Shared-Functions-Other-Functions)
-      - [`GetStandardFaction(oObject)` - Routine 713](NSS-Shared-Functions-Other-Functions)
-      - [`GetStartingLocation()` - Routine 411](NSS-Shared-Functions-Other-Functions)
-      - [`GetStealthXPDecrement()` - Routine 498](NSS-Shared-Functions-Other-Functions)
-      - [`GetStealthXPEnabled()` - Routine 481](NSS-Shared-Functions-Other-Functions)
-      - [`GetStringByStrRef(nStrRef)` - Routine 239](NSS-Shared-Functions-Other-Functions)
-      - [`GetStringLeft(sString, nCount)` - Routine 63](NSS-Shared-Functions-Other-Functions)
-      - [`GetStringLength(sString)` - Routine 59](NSS-Shared-Functions-Other-Functions)
-      - [`GetStringLowerCase(sString)` - Routine 61](NSS-Shared-Functions-Other-Functions)
-      - [`GetStringRight(sString, nCount)` - Routine 62](NSS-Shared-Functions-Other-Functions)
-      - [`GetStringUpperCase(sString)` - Routine 60](NSS-Shared-Functions-Other-Functions)
-      - [`GetSubRace(oCreature)` - Routine 497](NSS-Shared-Functions-Other-Functions)
-      - [`GetSubScreenID()` - Routine 53](NSS-Shared-Functions-Other-Functions)
-      - [`GetSubString(sString, nStart, nCount)` - Routine 65](NSS-Shared-Functions-Other-Functions)
-      - [`GetTag(oObject)` - Routine 168](NSS-Shared-Functions-Other-Functions)
-      - [`GetTimeHour()` - Routine 16](NSS-Shared-Functions-Other-Functions)
-      - [`GetTimeMillisecond()` - Routine 19](NSS-Shared-Functions-Other-Functions)
-      - [`GetTimeMinute()` - Routine 17](NSS-Shared-Functions-Other-Functions)
-      - [`GetTimeSecond()` - Routine 18](NSS-Shared-Functions-Other-Functions)
-      - [`GetTotalDamageDealt()` - Routine 345](NSS-Shared-Functions-Other-Functions)
-      - [`GetTransitionTarget(oTransition)` - Routine 198](NSS-Shared-Functions-Other-Functions)
-      - [`GetTrapBaseType(oTrapObject)` - Routine 531](NSS-Shared-Functions-Other-Functions)
-      - [`GetTrapCreator(oTrapObject)` - Routine 533](NSS-Shared-Functions-Other-Functions)
-      - [`GetTrapDetectable(oTrapObject)` - Routine 528](NSS-Shared-Functions-Other-Functions)
-      - [`GetTrapDetectDC(oTrapObject)` - Routine 536](NSS-Shared-Functions-Other-Functions)
-      - [`GetTrapDetectedBy(oTrapObject, oCreature)` - Routine 529](NSS-Shared-Functions-Other-Functions)
-      - [`GetTrapDisarmable(oTrapObject)` - Routine 527](NSS-Shared-Functions-Other-Functions)
-      - [`GetTrapDisarmDC(oTrapObject)` - Routine 535](NSS-Shared-Functions-Other-Functions)
-      - [`GetTrapFlagged(oTrapObject)` - Routine 530](NSS-Shared-Functions-Other-Functions)
-      - [`GetTrapKeyTag(oTrapObject)` - Routine 534](NSS-Shared-Functions-Other-Functions)
-      - [`GetTrapOneShot(oTrapObject)` - Routine 532](NSS-Shared-Functions-Other-Functions)
-      - [`GetTypeFromTalent(tTalent)` - Routine 362](NSS-Shared-Functions-Other-Functions)
-      - [`GetUserActionsPending()` - Routine 514](NSS-Shared-Functions-Other-Functions)
-      - [`GetUserDefinedEventNumber()` - Routine 247](NSS-Shared-Functions-Other-Functions)
-      - [`GetWasForcePowerSuccessful(oAttacker)` - Routine 726](NSS-Shared-Functions-Other-Functions)
-      - [`GetWaypointByTag(sWaypointTag)` - Routine 197](NSS-Shared-Functions-Other-Functions)
-      - [`GetWeaponRanged(oItem)` - Routine 511](NSS-Shared-Functions-Other-Functions)
-      - [`GetWillSavingThrow(oTarget)` - Routine 492](NSS-Shared-Functions-Other-Functions)
-      - [`GetXP(oCreature)` - Routine 395](NSS-Shared-Functions-Other-Functions)
-      - `Random(nMaxInteger)`
-      - [`SetAssociateListenPatterns(oTarget)` - Routine 327](NSS-Shared-Functions-Other-Functions)
-      - [`SetAvailableNPCId()` - Routine 767](NSS-Shared-Functions-Other-Functions)
-      - [`SetButtonMashCheck(nCheck)` - Routine 268](NSS-Shared-Functions-Other-Functions)
-      - [`SetCameraFacing(fDirection)` - Routine 45](NSS-Shared-Functions-Other-Functions)
-      - [`SetCameraMode(oPlayer, nCameraMode)` - Routine 504](NSS-Shared-Functions-Other-Functions)
-      - [`SetCommandable(bCommandable, oTarget)` - Routine 162](NSS-Shared-Functions-Other-Functions)
-      - [`SetCurrentStealthXP(nCurrent)` - Routine 478](NSS-Shared-Functions-Other-Functions)
-      - [`SetCustomToken(nCustomTokenNumber, sTokenValue)` - Routine 284](NSS-Shared-Functions-Other-Functions)
-      - [`SetEncounterActive(nNewValue, oEncounter)` - Routine 277](NSS-Shared-Functions-Other-Functions)
-      - [`SetEncounterDifficulty(nEncounterDifficulty, oEncounter)` - Routine 296](NSS-Shared-Functions-Other-Functions)
-      - [`SetEncounterSpawnsCurrent(nNewValue, oEncounter)` - Routine 281](NSS-Shared-Functions-Other-Functions)
-      - [`SetEncounterSpawnsMax(nNewValue, oEncounter)` - Routine 279](NSS-Shared-Functions-Other-Functions)
-      - [`SetFacing(fDirection)` - Routine 10](NSS-Shared-Functions-Other-Functions)
-      - [`SetFacingPoint(vTarget)` - Routine 143](NSS-Shared-Functions-Other-Functions)
-      - [`SetForcePowerUnsuccessful(nResult, oCreature)` - Routine 731](NSS-Shared-Functions-Other-Functions)
-      - [`SetFormation(oAnchor, oCreature, nFormationPattern, nPosition)` - Routine 729](NSS-Shared-Functions-Other-Functions)
-      - [`SetGoodEvilValue(oCreature, nAlignment)` - Routine 750](NSS-Shared-Functions-Other-Functions)
-      - [`SetIdentified(oItem, bIdentified)` - Routine 333](NSS-Shared-Functions-Other-Functions)
-      - [`SetIsDestroyable(bDestroyable, bRaiseable, bSelectableWhenDead)` - Routine 323](NSS-Shared-Functions-Other-Functions)
-      - [`SetJournalQuestEntryPicture(szPlotID, oObject, nPictureIndex, bAllPartyMemebers, bAllPlayers)` - Routine 678](NSS-Shared-Functions-Other-Functions)
-      - [`SetLightsaberPowered(oCreature, bOverride, bPowered, bShowTransition)` - Routine 421](NSS-Shared-Functions-Other-Functions)
-      - [`SetListening(oObject, bValue)` - Routine 175](NSS-Shared-Functions-Other-Functions)
-      - [`SetListenPattern(oObject, sPattern, nNumber)` - Routine 176](NSS-Shared-Functions-Other-Functions)
-      - [`SetLocked(oTarget, bLocked)` - Routine 324](NSS-Shared-Functions-Other-Functions)
-      - [`SetMapPinEnabled(oMapPin, nEnabled)` - Routine 386](NSS-Shared-Functions-Other-Functions)
-      - [`SetMaxHitPoints(oObject, nMaxHP)` - Routine 758](NSS-Shared-Functions-Other-Functions)
-      - [`SetMaxStealthXP(nMax)` - Routine 468](NSS-Shared-Functions-Other-Functions)
-      - [`SetMinOneHP(oObject, nMinOneHP)` - Routine 716](NSS-Shared-Functions-Other-Functions)
-      - [`SetNPCAIStyle(oCreature, nStyle)` - Routine 707](NSS-Shared-Functions-Abilities-and-Stats)
-      - [`SetPlaceableIllumination(oPlaceable, bIlluminate)` - Routine 544](NSS-Shared-Functions-Other-Functions)
-      - [`SetPlanetAvailable(nPlanet, bAvailable)` - Routine 742](NSS-Shared-Functions-Other-Functions)
-      - [`SetPlanetSelectable(nPlanet, bSelectable)` - Routine 740](NSS-Shared-Functions-Other-Functions)
-      - [`SetPlotFlag(oTarget, nPlotFlag)` - Routine 456](NSS-Shared-Functions-Other-Functions)
-      - [`SetReturnStrref(bShow, srStringRef, srReturnQueryStrRef)` - Routine 152](NSS-Shared-Functions-Other-Functions)
-      - [`SetSoloMode(bActivate)` - Routine 753](NSS-Shared-Functions-Other-Functions)
-      - [`SetStealthXPDecrement(nDecrement)` - Routine 499](NSS-Shared-Functions-Other-Functions)
-      - [`SetStealthXPEnabled(bEnabled)` - Routine 482](NSS-Shared-Functions-Other-Functions)
-      - [`SetTime(nHour, nMinute, nSecond, nMillisecond)` - Routine 12](NSS-Shared-Functions-Other-Functions)
-      - [`SetTrapDetectedBy(oTrap, oDetector)` - Routine 550](NSS-Shared-Functions-Other-Functions)
-      - [`SetTrapDisabled(oTrap)` - Routine 555](NSS-Shared-Functions-Other-Functions)
-      - [`SetTutorialWindowsEnabled(bEnabled)` - Routine 516](NSS-Shared-Functions-Other-Functions)
-      - [`SetXP(oCreature, nXpAmount)` - Routine 394](NSS-Shared-Functions-Other-Functions)
-    - [Party Management](#party-management)
-      - [`GetPartyAIStyle()` - Routine 704](NSS-Shared-Functions-Party-Management)
-      - [`GetPartyMemberByIndex(nIndex)` - Routine 577](NSS-Shared-Functions-Party-Management)
-      - [`GetPartyMemberCount()` - Routine 126](NSS-Shared-Functions-Party-Management)
-      - [`SetPartyAIStyle(nStyle)` - Routine 706](NSS-Shared-Functions-Party-Management)
-      - [`SetPartyLeader(nNPC)` - Routine 13](NSS-Shared-Functions-Party-Management)
-    - [Player Character Functions](#player-character-functions)
-      - [`GetIsPC(oCreature)` - Routine 217](NSS-Shared-Functions-Other-Functions)
-      - [`GetLastPlayerDied()` - Routine 291](NSS-Shared-Functions-Other-Functions)
-      - [`GetLastPlayerDying()` - Routine 410](NSS-Shared-Functions-Other-Functions)
-      - [`GetPCSpeaker()` - Routine 238](NSS-Shared-Functions-Player-Character-Functions)
-      - [`GetPlayerRestrictMode(oObject)` - Routine 83](NSS-Shared-Functions-Other-Functions)
-      - [`SetPlayerRestrictMode(bRestrict)` - Routine 58](NSS-Shared-Functions-Other-Functions)
-      - [`SWMG_GetPlayer()` - Routine 611](NSS-Shared-Functions-Player-Character-Functions)
-      - [`SWMG_GetPlayerAccelerationPerSecond()` - Routine 645](NSS-Shared-Functions-Player-Character-Functions)
-      - [`SWMG_GetPlayerInvincibility()` - Routine 642](NSS-Shared-Functions-Player-Character-Functions)
-      - [`SWMG_GetPlayerMaxSpeed()` - Routine 667](NSS-Shared-Functions-Player-Character-Functions)
-      - [`SWMG_GetPlayerMinSpeed()` - Routine 644](NSS-Shared-Functions-Player-Character-Functions)
-      - [`SWMG_GetPlayerOffset()` - Routine 641](NSS-Shared-Functions-Player-Character-Functions)
-      - [`SWMG_GetPlayerOrigin()` - Routine 655](NSS-Shared-Functions-Player-Character-Functions)
-      - [`SWMG_GetPlayerSpeed()` - Routine 643](NSS-Shared-Functions-Player-Character-Functions)
-      - [`SWMG_GetPlayerTunnelInfinite()` - Routine 717](NSS-Shared-Functions-Player-Character-Functions)
-      - [`SWMG_GetPlayerTunnelNeg()` - Routine 653](NSS-Shared-Functions-Player-Character-Functions)
-      - [`SWMG_GetPlayerTunnelPos()` - Routine 646](NSS-Shared-Functions-Player-Character-Functions)
-      - [`SWMG_IsPlayer(oid)` - Routine 600](NSS-Shared-Functions-Player-Character-Functions)
-      - [`SWMG_SetPlayerAccelerationPerSecond(fAPS)` - Routine 651](NSS-Shared-Functions-Player-Character-Functions)
-      - [`SWMG_SetPlayerInvincibility(fInvincibility)` - Routine 648](NSS-Shared-Functions-Player-Character-Functions)
-      - [`SWMG_SetPlayerMaxSpeed(fMaxSpeed)` - Routine 668](NSS-Shared-Functions-Player-Character-Functions)
-      - [`SWMG_SetPlayerMinSpeed(fMinSpeed)` - Routine 650](NSS-Shared-Functions-Player-Character-Functions)
-      - [`SWMG_SetPlayerOffset(vOffset)` - Routine 647](NSS-Shared-Functions-Player-Character-Functions)
-      - [`SWMG_SetPlayerOrigin(vOrigin)` - Routine 656](NSS-Shared-Functions-Player-Character-Functions)
-      - [`SWMG_SetPlayerSpeed(fSpeed)` - Routine 649](NSS-Shared-Functions-Player-Character-Functions)
-      - [`SWMG_SetPlayerTunnelInfinite(vInfinite)` - Routine 718](NSS-Shared-Functions-Player-Character-Functions)
-      - [`SWMG_SetPlayerTunnelNeg(vTunnel)` - Routine 654](NSS-Shared-Functions-Player-Character-Functions)
-      - [`SWMG_SetPlayerTunnelPos(vTunnel)` - Routine 652](NSS-Shared-Functions-Player-Character-Functions)
-    - [Skills and Feats](#skills-and-feats)
-      - [`GetHasFeat(nFeat, oCreature)` - Routine 285](NSS-Shared-Functions-Other-Functions)
-      - [`GetHasSkill(nSkill, oCreature)` - Routine 286](NSS-Shared-Functions-Other-Functions)
-      - [`GetLastCombatFeatUsed(oAttacker)` - Routine 724](NSS-Shared-Functions-Other-Functions)
-      - [`GetMetaMagicFeat()` - Routine 105](NSS-Shared-Functions-Other-Functions)
-      - [`GetSkillRank(nSkill, oTarget)` - Routine 315](NSS-Shared-Functions-Skills-and-Feats)
-    - [Sound and Music Functions](#sound-and-music-functions)
-      - [`GetIsPlayableRacialType(oCreature)` - Routine 312](NSS-Shared-Functions-Other-Functions)
-      - [`GetStrRefSoundDuration(nStrRef)` - Routine 571](NSS-Shared-Functions-Other-Functions)
-      - [`PlaySound(sSoundName)` - Routine 46](NSS-Shared-Functions-Sound-and-Music-Functions)
-      - [`SetMusicVolume(fVolume)` - Routine 765](NSS-Shared-Functions-Other-Functions)
-      - [`SWMG_GetSoundFrequency(oFollower, nSound)` - Routine 683](NSS-Shared-Functions-Sound-and-Music-Functions)
-      - [`SWMG_GetSoundFrequencyIsRandom(oFollower, nSound)` - Routine 685](NSS-Shared-Functions-Sound-and-Music-Functions)
-      - [`SWMG_GetSoundVolume(oFollower, nSound)` - Routine 687](NSS-Shared-Functions-Sound-and-Music-Functions)
-      - [`SWMG_PlayAnimation(oObject, sAnimName, bLooping, bQueue, bOverlay)` - Routine 586](NSS-Shared-Functions-Sound-and-Music-Functions)
-      - [`SWMG_SetSoundFrequency(oFollower, nSound, nFrequency)` - Routine 684](NSS-Shared-Functions-Sound-and-Music-Functions)
-      - [`SWMG_SetSoundFrequencyIsRandom(oFollower, nSound, bIsRandom)` - Routine 686](NSS-Shared-Functions-Sound-and-Music-Functions)
-      - [`SWMG_SetSoundVolume(oFollower, nSound, nVolume)` - Routine 688](NSS-Shared-Functions-Sound-and-Music-Functions)
-  - [K1-Only Functions](#k1-only-functions)
-    - Other Functions
-  - [TSL-Only Functions](#tsl-only-functions)
-    - [Actions](#actions)
-      - [`ActionFollowOwner(fRange)` - Routine 398](NSS-Shared-Functions-Actions)
-      - [`ActionSwitchWeapons()` - Routine 401](NSS-Shared-Functions-Actions)
-    - [Class System](#class-system)
-      - [`SetInputClass(nClass)` - Routine 342](NSS-Shared-Functions-Other-Functions)
-    - [Combat Functions](#combat-functions)
-      - [`GetCombatActionsPending(oCreature)` - Routine 315](NSS-Shared-Functions-Other-Functions)
-      - [`SetFakeCombatState(oObject, nEnable)` - Routine 791](NSS-Shared-Functions-Other-Functions)
-    - [Dialog and Conversation Functions](#dialog-and-conversation-functions)
-      - [`SetKeepStealthInDialog(nStealthState)` - Routine 507](NSS-Shared-Functions-Other-Functions)
-    - [Effects System](#effects-system)
-      - [`EffectBlind()` - Routine 778](NSS-Shared-Functions-Effects-System)
-      - [`EffectCrush()` - Routine 781](NSS-Shared-Functions-Effects-System)
-      - [`EffectDroidConfused()` - Routine 782](NSS-Shared-Functions-Effects-System)
-      - [`EffectDroidScramble()` - Routine 783](NSS-Shared-Functions-Effects-System)
-      - [`EffectFactionModifier(nNewFaction)` - Routine 784](NSS-Shared-Functions-Effects-System)
-      - [`EffectForceBody(nLevel)` - Routine 770](NSS-Shared-Functions-Effects-System)
-      - [`EffectForceSight()` - Routine 771](NSS-Shared-Functions-Effects-System)
-      - [`EffectFPRegenModifier(nPercent)` - Routine 779](NSS-Shared-Functions-Effects-System)
-      - [`EffectFury()` - Routine 777](NSS-Shared-Functions-Effects-System)
-      - [`EffectMindTrick()` - Routine 772](NSS-Shared-Functions-Effects-System)
-      - [`EffectVPRegenModifier(nPercent)` - Routine 780](NSS-Shared-Functions-Effects-System)
-      - [`RemoveEffectByExactMatch(oCreature, eEffect)` - Routine 87](NSS-Shared-Functions-Effects-System)
-      - [`RemoveEffectByID(oCreature, nEffectID)` - Routine 89](NSS-Shared-Functions-Effects-System)
-    - Global Variables
-    - Item Management
-      - [`GetItemComponent()` - Routine 771](NSS-Shared-Functions-Item-Management)
-      - [`GetItemComponentPieceValue()` - Routine 771](NSS-Shared-Functions-Item-Management)
-    - Object Query and Manipulation
-      - `GetObjectPersonalSpace(aObject)`
-    - Other Functions
-      - `AdjustCreatureAttributes(oObject, nAttribute, nAmount)`
-      - `AssignPUP(nPUP, nNPC)`
-      - `ChangeObjectAppearance(oObjectToChange, nAppearance)`
-      - `CreatureFlourishWeapon(oObject)`
-      - `DetonateMine(oMine)`
-      - `DisableHealthRegen(nFlag)`
-      - `DisableMap(nFlag)`
-      - `EnableRain(nFlag)`
-      - `EnableRendering(oObject, bEnable)`
-      - `ForceHeartbeat(oCreature)`
-      - [`GetBonusForcePoints(oCreature)` - Routine 803](NSS-Shared-Functions-Other-Functions)
-      - [`GetChemicalPieceValue()` - Routine 775](NSS-Shared-Functions-Other-Functions)
-      - [`GetChemicals()` - Routine 774](NSS-Shared-Functions-Other-Functions)
-      - `GetHealTarget(oidHealer)`
-      - [`GetInfluence(nNPC)` - Routine 795](NSS-Shared-Functions-Other-Functions)
-      - `GetIsPuppet(oPUP)`
-      - `GetIsXBox()`
-      - `GetLastForfeitViolation()`
-      - `GetPUPOwner(oPUP)`
-      - [`GetRacialSubType(oTarget)` - Routine 798](NSS-Shared-Functions-Other-Functions)
-      - `GetRandomDestination(oCreature, rangeLimit)`
-      - [`GetScriptParameter(nIndex)` - Routine 768](NSS-Shared-Functions-Other-Functions)
-      - `GetScriptStringParameter()`
-      - [`GetSpellAcquired(nSpell, oCreature)` - Routine 377](NSS-Shared-Functions-Other-Functions)
-      - `GetSpellBaseForcePointCost(nSpellID)`
-      - [`GetSpellForcePointCost()` - Routine 776](NSS-Shared-Functions-Other-Functions)
-      - `GetSpellFormMask(nSpellID)`
-      - `HasLineOfSight(vSource, vTarget, oSource, oTarget)`
-      - `IsFormActive(oCreature, nFormID)`
-      - `IsInTotalDefense(oCreature)`
-      - `IsMeditating(oCreature)`
-      - `IsRunning(oCreature)`
-      - `IsStealthed(oCreature)`
-      - `ModifyFortitudeSavingThrowBase(aObject, aModValue)`
-      - `ModifyReflexSavingThrowBase(aObject, aModValue)`
-      - `ModifyWillSavingThrowBase(aObject, aModValue)`
-      - `RemoveHeartbeat(oPlaceable)`
-      - `ResetCreatureAILevel(oObject)`
-      - `SaveNPCByObject(nNPC, oidCharacter)`
-      - `SavePUPByObject(nPUP, oidPuppet)`
-      - [`SetBonusForcePoints(oCreature, nBonusFP)` - Routine 801](NSS-Shared-Functions-Other-Functions)
-      - `SetCreatureAILevel(oObject, nPriority)`
-      - `SetCurrentForm(oCreature, nFormID)`
-      - `SetDisableTransit(nFlag)`
-      - [`SetFadeUntilScript()` - Routine 769](NSS-Shared-Functions-Other-Functions)
-      - `SetForceAlwaysUpdate(oObject, nFlag)`
-      - `SetForfeitConditions(nForfeitFlags)`
-      - `SetHealTarget(oidHealer, oidTarget)`
-      - [`SetInfluence(nNPC, nInfluence)` - Routine 796](NSS-Shared-Functions-Other-Functions)
-      - [`SetOrientOnClick(oCreature, nState)` - Routine 794](NSS-Shared-Functions-Other-Functions)
-      - `ShowDemoScreen(sTexture, nTimeout, nDisplayString, nDisplayX, nDisplayY)`
-      - `SpawnAvailablePUP(nPUP, lLocation)`
-      - `UnlockAllSongs()`
-      - `YavinHackDoorClose(oCreature)`
-    - Party Management
-      - [`AddAvailablePUPByObject(nPUP, oPuppet)`](#addavailablepupbyobjectnpup-opuppet)
-      - [`AddAvailablePUPByTemplate(nPUP, sTemplate)`](#addavailablepupbytemplatenpup-stemplate)
-      - [`AddPartyPuppet(nPUP, oidCreature)`](#addpartypuppetnpup-oidcreature)
-      - [`GetIsPartyLeader(oCharacter)`](#getispartyleaderocharacter)
-      - [`GetPartyLeader()`](#getpartyleader)
-      - [`RemoveNPCFromPartyToBase(nNPC)`](#removenpcfrompartytobasennpc)
-    - Player Character Functions
-      - `GetIsPlayerMadeCharacter(oidCharacter)`
-      - `SWMG_PlayerApplyForce(vForce)`
-    - Skills and Feats
-      - `AdjustCreatureSkills(oObject, nSkill, nAmount)`
-      - [`GetFeatAcquired(nFeat, oCreature)` - Routine 285](NSS-Shared-Functions-Skills-and-Feats)
-      - [`GetOwnerDemolitionsSkill(oObject)` - Routine 793](NSS-Shared-Functions-Other-Functions)
-      - `GetSkillRankBase(nSkill, oObject)`
-    - Sound and Music Functions
-      - `DisplayDatapad(oDatapad)`
-      - `DisplayMessageBox(nStrRef, sIcon)`
-      - `PlayOverlayAnimation(oTarget, nAnimation)`
-  - [Shared Constants (K1 \& TSL)](#shared-constants-k1--tsl)
-    - [Ability Constants](#ability-constants)
-      - `ABILITY_CHARISMA`
-      - `ABILITY_CONSTITUTION`
-      - `ABILITY_DEXTERITY`
-      - `ABILITY_INTELLIGENCE`
-      - `ABILITY_STRENGTH`
-      - `ABILITY_WISDOM`
-    - [Alignment Constants](#alignment-constants)
-      - `ALIGNMENT_ALL`
-      - `ALIGNMENT_DARK_SIDE`
-      - `ALIGNMENT_LIGHT_SIDE`
-      - `ALIGNMENT_NEUTRAL`
-      - `ITEM_PROPERTY_AC_BONUS_VS_ALIGNMENT_GROUP`
-      - `ITEM_PROPERTY_ATTACK_BONUS_VS_ALIGNMENT_GROUP`
-      - `ITEM_PROPERTY_DAMAGE_BONUS_VS_ALIGNMENT_GROUP`
-      - `ITEM_PROPERTY_ENHANCEMENT_BONUS_VS_ALIGNMENT_GROUP`
-      - `ITEM_PROPERTY_USE_LIMITATION_ALIGNMENT_GROUP`
-    - [Class Type Constants](#class-type-constants)
-      - `CLASS_TYPE_COMBATDROID`
-      - `CLASS_TYPE_EXPERTDROID`
-      - `CLASS_TYPE_INVALID`
-      - `CLASS_TYPE_JEDICONSULAR`
-      - `CLASS_TYPE_JEDIGUARDIAN`
-      - `CLASS_TYPE_JEDISENTINEL`
-      - `CLASS_TYPE_MINION`
-      - `CLASS_TYPE_SCOUNDREL`
-      - `CLASS_TYPE_SCOUT`
-      - `CLASS_TYPE_SOLDIER`
-    - [Inventory Constants](#inventory-constants)
-      - `INVENTORY_DISTURB_TYPE_ADDED`
-      - `INVENTORY_DISTURB_TYPE_REMOVED`
-      - `INVENTORY_DISTURB_TYPE_STOLEN`
-      - `INVENTORY_SLOT_BELT`
-      - `INVENTORY_SLOT_BODY`
-      - `INVENTORY_SLOT_CARMOUR`
-      - `INVENTORY_SLOT_CWEAPON_B`
-      - `INVENTORY_SLOT_CWEAPON_L`
-      - `INVENTORY_SLOT_CWEAPON_R`
-      - `INVENTORY_SLOT_HANDS`
-      - `INVENTORY_SLOT_HEAD`
-      - `INVENTORY_SLOT_IMPLANT`
-      - `INVENTORY_SLOT_LEFTARM`
-      - `INVENTORY_SLOT_LEFTWEAPON`
-      - `INVENTORY_SLOT_RIGHTARM`
-      - `INVENTORY_SLOT_RIGHTWEAPON`
-      - `NUM_INVENTORY_SLOTS`
-    - [NPC Constants](#npc-constants)
-      - `NPC_AISTYLE_AID`
-      - `NPC_AISTYLE_DEFAULT_ATTACK`
-      - `NPC_AISTYLE_GRENADE_THROWER`
-      - `NPC_AISTYLE_JEDI_SUPPORT`
-      - `NPC_AISTYLE_MELEE_ATTACK`
-      - `NPC_AISTYLE_RANGED_ATTACK`
-      - `NPC_CANDEROUS`
-      - `NPC_HK_47`
-      - `NPC_PLAYER`
-      - `NPC_T3_M4`
-    - [Object Type Constants](#object-type-constants)
-      - `OBJECT_TYPE_ALL`
-      - `OBJECT_TYPE_AREA_OF_EFFECT`
-      - `OBJECT_TYPE_CREATURE`
-      - `OBJECT_TYPE_DOOR`
-      - `OBJECT_TYPE_ENCOUNTER`
-      - `OBJECT_TYPE_INVALID`
-      - `OBJECT_TYPE_ITEM`
-      - `OBJECT_TYPE_PLACEABLE`
-      - `OBJECT_TYPE_SOUND`
-      - `OBJECT_TYPE_STORE`
-      - `OBJECT_TYPE_TRIGGER`
-      - `OBJECT_TYPE_WAYPOINT`
-    - [Other Constants](#other-constants)
-      - `AC_ARMOUR_ENCHANTMENT_BONUS`
-      - `AC_DEFLECTION_BONUS`
-      - `AC_DODGE_BONUS`
-      - `AC_NATURAL_BONUS`
-      - `AC_SHIELD_ENCHANTMENT_BONUS`
-      - `AC_VS_DAMAGE_TYPE_ALL`
-      - `ACTION_ANIMALEMPATHY`
-      - `ACTION_ATTACKOBJECT`
-      - `ACTION_CASTSPELL`
-      - `ACTION_CLOSEDOOR`
-      - `ACTION_COUNTERSPELL`
-      - `ACTION_DIALOGOBJECT`
-      - `ACTION_DISABLETRAP`
-      - `ACTION_DROPITEM`
-      - `ACTION_EXAMINETRAP`
-      - `ACTION_FLAGTRAP`
-      - `ACTION_FOLLOW`
-      - `ACTION_FOLLOWLEADER`
-      - `ACTION_HEAL`
-      - `ACTION_INVALID`
-      - `ACTION_ITEMCASTSPELL`
-      - `ACTION_LOCK`
-      - `ACTION_MOVETOPOINT`
-      - `ACTION_OPENDOOR`
-      - `ACTION_OPENLOCK`
-      - `ACTION_PICKPOCKET`
-      - `ACTION_PICKUPITEM`
-      - `ACTION_QUEUEEMPTY`
-      - `ACTION_RECOVERTRAP`
-      - `ACTION_REST`
-      - `ACTION_SETTRAP`
-      - `ACTION_SIT`
-      - `ACTION_TAUNT`
-      - `ACTION_USEOBJECT`
-      - `ACTION_WAIT`
-      - `ANIMATION_FIREFORGET_ACTIVATE`
-      - `ANIMATION_FIREFORGET_BOW`
-      - `ANIMATION_FIREFORGET_CHOKE`
-      - `ANIMATION_FIREFORGET_CUSTOM01`
-      - `ANIMATION_FIREFORGET_GREETING`
-      - `ANIMATION_FIREFORGET_HEAD_TURN_LEFT`
-      - `ANIMATION_FIREFORGET_HEAD_TURN_RIGHT`
-      - `ANIMATION_FIREFORGET_INJECT`
-      - `ANIMATION_FIREFORGET_PAUSE_BORED`
-      - `ANIMATION_FIREFORGET_PAUSE_SCRATCH_HEAD`
-      - `ANIMATION_FIREFORGET_PERSUADE`
-      - `ANIMATION_FIREFORGET_SALUTE`
-      - `ANIMATION_FIREFORGET_TAUNT`
-      - `ANIMATION_FIREFORGET_THROW_HIGH`
-      - `ANIMATION_FIREFORGET_THROW_LOW`
-      - `ANIMATION_FIREFORGET_TREAT_INJURED`
-      - `ANIMATION_FIREFORGET_USE_COMPUTER`
-      - `ANIMATION_FIREFORGET_VICTORY1`
-      - `ANIMATION_FIREFORGET_VICTORY2`
-      - `ANIMATION_FIREFORGET_VICTORY3`
-      - `ANIMATION_LOOPING_CHOKE`
-      - `ANIMATION_LOOPING_DANCE`
-      - `ANIMATION_LOOPING_DANCE1`
-      - `ANIMATION_LOOPING_DEACTIVATE`
-      - `ANIMATION_LOOPING_DEAD`
-      - `ANIMATION_LOOPING_DEAD_PRONE`
-      - `ANIMATION_LOOPING_FLIRT`
-      - `ANIMATION_LOOPING_GET_LOW`
-      - `ANIMATION_LOOPING_GET_MID`
-      - `ANIMATION_LOOPING_HORROR`
-      - `ANIMATION_LOOPING_KNEEL_TALK_ANGRY`
-      - `ANIMATION_LOOPING_KNEEL_TALK_SAD`
-      - `ANIMATION_LOOPING_LISTEN`
-      - `ANIMATION_LOOPING_LISTEN_INJURED`
-      - `ANIMATION_LOOPING_MEDITATE`
-      - `ANIMATION_LOOPING_PAUSE`
-      - `ANIMATION_LOOPING_PAUSE2`
-      - `ANIMATION_LOOPING_PAUSE3`
-      - `ANIMATION_LOOPING_PAUSE_DRUNK`
-      - `ANIMATION_LOOPING_PAUSE_TIRED`
-      - `ANIMATION_LOOPING_PRONE`
-      - `ANIMATION_LOOPING_READY`
-      - `ANIMATION_LOOPING_SLEEP`
-      - `ANIMATION_LOOPING_SPASM`
-      - `ANIMATION_LOOPING_TALK_FORCEFUL`
-      - `ANIMATION_LOOPING_TALK_INJURED`
-      - `ANIMATION_LOOPING_TALK_LAUGHING`
-      - `ANIMATION_LOOPING_TALK_NORMAL`
-      - `ANIMATION_LOOPING_TALK_PLEADING`
-      - `ANIMATION_LOOPING_TALK_SAD`
-      - `ANIMATION_LOOPING_TREAT_INJURED`
-      - `ANIMATION_LOOPING_USE_COMPUTER`
-      - `ANIMATION_LOOPING_WELD`
-      - `ANIMATION_LOOPING_WORSHIP`
-      - `ANIMATION_PLACEABLE_ACTIVATE`
-      - `ANIMATION_PLACEABLE_ANIMLOOP01`
-      - `ANIMATION_PLACEABLE_ANIMLOOP02`
-      - `ANIMATION_PLACEABLE_ANIMLOOP03`
-      - `ANIMATION_PLACEABLE_ANIMLOOP04`
-      - `ANIMATION_PLACEABLE_ANIMLOOP05`
-      - `ANIMATION_PLACEABLE_ANIMLOOP06`
-      - `ANIMATION_PLACEABLE_ANIMLOOP07`
-      - `ANIMATION_PLACEABLE_ANIMLOOP08`
-      - `ANIMATION_PLACEABLE_ANIMLOOP09`
-      - `ANIMATION_PLACEABLE_ANIMLOOP10`
-      - `ANIMATION_PLACEABLE_CLOSE`
-      - `ANIMATION_PLACEABLE_DEACTIVATE`
-      - `ANIMATION_PLACEABLE_OPEN`
-      - `ANIMATION_ROOM_SCRIPTLOOP01`
-      - `ANIMATION_ROOM_SCRIPTLOOP02`
-      - `ANIMATION_ROOM_SCRIPTLOOP03`
-      - `ANIMATION_ROOM_SCRIPTLOOP04`
-      - `ANIMATION_ROOM_SCRIPTLOOP05`
-      - `ANIMATION_ROOM_SCRIPTLOOP06`
-      - `ANIMATION_ROOM_SCRIPTLOOP07`
-      - `ANIMATION_ROOM_SCRIPTLOOP08`
-      - `ANIMATION_ROOM_SCRIPTLOOP09`
-      - `ANIMATION_ROOM_SCRIPTLOOP10`
-      - `ANIMATION_ROOM_SCRIPTLOOP11`
-      - `ANIMATION_ROOM_SCRIPTLOOP12`
-      - `ANIMATION_ROOM_SCRIPTLOOP13`
-      - `ANIMATION_ROOM_SCRIPTLOOP14`
-      - `ANIMATION_ROOM_SCRIPTLOOP15`
-      - `ANIMATION_ROOM_SCRIPTLOOP16`
-      - `ANIMATION_ROOM_SCRIPTLOOP17`
-      - `ANIMATION_ROOM_SCRIPTLOOP18`
-      - `ANIMATION_ROOM_SCRIPTLOOP19`
-      - `ANIMATION_ROOM_SCRIPTLOOP20`
-      - `AOE_MOB_BLINDING`
-      - `AOE_MOB_CIRCCHAOS`
-      - `AOE_MOB_CIRCEVIL`
-      - `AOE_MOB_CIRCGOOD`
-      - `AOE_MOB_CIRCLAW`
-      - `AOE_MOB_DRAGON_FEAR`
-      - `AOE_MOB_ELECTRICAL`
-      - `AOE_MOB_FEAR`
-      - `AOE_MOB_FIRE`
-      - `AOE_MOB_FROST`
-      - `AOE_MOB_INVISIBILITY_PURGE`
-      - `AOE_MOB_MENACE`
-      - `AOE_MOB_PROTECTION`
-      - `AOE_MOB_SILENCE`
-      - `AOE_MOB_STUN`
-      - `AOE_MOB_TYRANT_FOG`
-      - `AOE_MOB_UNEARTHLY`
-      - `AOE_MOB_UNNATURAL`
-      - `AOE_PER_CREEPING_DOOM`
-      - `AOE_PER_DARKNESS`
-      - `AOE_PER_DELAY_BLAST_FIREBALL`
-      - `AOE_PER_ENTANGLE`
-      - `AOE_PER_EVARDS_BLACK_TENTACLES`
-      - `AOE_PER_FOGACID`
-      - `AOE_PER_FOGFIRE`
-      - `AOE_PER_FOGGHOUL`
-      - `AOE_PER_FOGKILL`
-      - `AOE_PER_FOGMIND`
-      - `AOE_PER_FOGSTINK`
-      - `AOE_PER_GREASE`
-      - `AOE_PER_INVIS_SPHERE`
-      - `AOE_PER_STORM`
-      - `AOE_PER_WALLBLADE`
-      - `AOE_PER_WALLFIRE`
-      - `AOE_PER_WALLWIND`
-      - `AOE_PER_WEB`
-      - `AREA_TRANSITION_CASTLE_01`
-      - `AREA_TRANSITION_CASTLE_02`
-      - `AREA_TRANSITION_CASTLE_03`
-      - `AREA_TRANSITION_CASTLE_04`
-      - `AREA_TRANSITION_CASTLE_05`
-      - `AREA_TRANSITION_CASTLE_06`
-      - `AREA_TRANSITION_CASTLE_07`
-      - `AREA_TRANSITION_CASTLE_08`
-      - `AREA_TRANSITION_CITY`
-      - `AREA_TRANSITION_CITY_01`
-      - `AREA_TRANSITION_CITY_02`
-      - `AREA_TRANSITION_CITY_03`
-      - `AREA_TRANSITION_CITY_04`
-      - `AREA_TRANSITION_CITY_05`
-      - `AREA_TRANSITION_CRYPT`
-      - `AREA_TRANSITION_CRYPT_01`
-      - `AREA_TRANSITION_CRYPT_02`
-      - `AREA_TRANSITION_CRYPT_03`
-      - `AREA_TRANSITION_CRYPT_04`
-      - `AREA_TRANSITION_CRYPT_05`
-      - `AREA_TRANSITION_DUNGEON_01`
-      - `AREA_TRANSITION_DUNGEON_02`
-      - `AREA_TRANSITION_DUNGEON_03`
-      - `AREA_TRANSITION_DUNGEON_04`
-      - `AREA_TRANSITION_DUNGEON_05`
-      - `AREA_TRANSITION_DUNGEON_06`
-      - `AREA_TRANSITION_DUNGEON_07`
-      - `AREA_TRANSITION_DUNGEON_08`
-      - `AREA_TRANSITION_FOREST`
-      - `AREA_TRANSITION_FOREST_01`
-      - `AREA_TRANSITION_FOREST_02`
-      - `AREA_TRANSITION_FOREST_03`
-      - `AREA_TRANSITION_FOREST_04`
-      - `AREA_TRANSITION_FOREST_05`
-      - `AREA_TRANSITION_INTERIOR_01`
-      - `AREA_TRANSITION_INTERIOR_02`
-      - `AREA_TRANSITION_INTERIOR_03`
-      - `AREA_TRANSITION_INTERIOR_04`
-      - `AREA_TRANSITION_INTERIOR_05`
-      - `AREA_TRANSITION_INTERIOR_06`
-      - `AREA_TRANSITION_INTERIOR_07`
-      - `AREA_TRANSITION_INTERIOR_08`
-      - `AREA_TRANSITION_INTERIOR_09`
-      - `AREA_TRANSITION_INTERIOR_10`
-      - `AREA_TRANSITION_INTERIOR_11`
-      - `AREA_TRANSITION_INTERIOR_12`
-      - `AREA_TRANSITION_INTERIOR_13`
-      - `AREA_TRANSITION_INTERIOR_14`
-      - `AREA_TRANSITION_INTERIOR_15`
-      - `AREA_TRANSITION_INTERIOR_16`
-      - `AREA_TRANSITION_MINES_01`
-      - `AREA_TRANSITION_MINES_02`
-      - `AREA_TRANSITION_MINES_03`
-      - `AREA_TRANSITION_MINES_04`
-      - `AREA_TRANSITION_MINES_05`
-      - `AREA_TRANSITION_MINES_06`
-      - `AREA_TRANSITION_MINES_07`
-      - `AREA_TRANSITION_MINES_08`
-      - `AREA_TRANSITION_MINES_09`
-      - `AREA_TRANSITION_RANDOM`
-      - `AREA_TRANSITION_RURAL`
-      - `AREA_TRANSITION_RURAL_01`
-      - `AREA_TRANSITION_RURAL_02`
-      - `AREA_TRANSITION_RURAL_03`
-      - `AREA_TRANSITION_RURAL_04`
-      - `AREA_TRANSITION_RURAL_05`
-      - `AREA_TRANSITION_SEWER_01`
-      - `AREA_TRANSITION_SEWER_02`
-      - `AREA_TRANSITION_SEWER_03`
-      - `AREA_TRANSITION_SEWER_04`
-      - `AREA_TRANSITION_SEWER_05`
-      - `AREA_TRANSITION_USER_DEFINED`
-      - `ATTACK_BONUS_MISC`
-      - `ATTACK_BONUS_OFFHAND`
-      - `ATTACK_BONUS_ONHAND`
-      - `ATTACK_RESULT_ATTACK_FAILED`
-      - `ATTACK_RESULT_ATTACK_RESISTED`
-      - `ATTACK_RESULT_AUTOMATIC_HIT`
-      - `ATTACK_RESULT_CRITICAL_HIT`
-      - `ATTACK_RESULT_DEFLECTED`
-      - `ATTACK_RESULT_HIT_SUCCESSFUL`
-      - `ATTACK_RESULT_INVALID`
-      - `ATTACK_RESULT_MISS`
-      - `ATTACK_RESULT_PARRIED`
-      - `ATTITUDE_AGGRESSIVE`
-      - `ATTITUDE_DEFENSIVE`
-      - `ATTITUDE_NEUTRAL`
-      - `ATTITUDE_SPECIAL`
-      - `BASE_ITEM_ADHESIVE_GRENADE`
-      - `BASE_ITEM_ADRENALINE`
-      - `BASE_ITEM_AESTHETIC_ITEM`
-      - `BASE_ITEM_ARMOR_CLASS_4`
-      - `BASE_ITEM_ARMOR_CLASS_5`
-      - `BASE_ITEM_ARMOR_CLASS_6`
-      - `BASE_ITEM_ARMOR_CLASS_7`
-      - `BASE_ITEM_ARMOR_CLASS_8`
-      - `BASE_ITEM_ARMOR_CLASS_9`
-      - `BASE_ITEM_BASIC_CLOTHING`
-      - `BASE_ITEM_BELT`
-      - `BASE_ITEM_BLASTER_CARBINE`
-      - `BASE_ITEM_BLASTER_PISTOL`
-      - `BASE_ITEM_BLASTER_RIFLE`
-      - `BASE_ITEM_BOWCASTER`
-      - `BASE_ITEM_COLLAR_LIGHT`
-      - `BASE_ITEM_COMBAT_SHOTS`
-      - `BASE_ITEM_CREATURE_HIDE_ITEM`
-      - `BASE_ITEM_CREATURE_ITEM_PIERCE`
-      - `BASE_ITEM_CREATURE_ITEM_SLASH`
-      - `BASE_ITEM_CREATURE_WEAPON_SL_PRC`
-      - `BASE_ITEM_CREDITS`
-      - `BASE_ITEM_CRYOBAN_GRENADE`
-      - `BASE_ITEM_DATA_PAD`
-      - `BASE_ITEM_DISRUPTER_PISTOL`
-      - `BASE_ITEM_DISRUPTER_RIFLE`
-      - `BASE_ITEM_DOUBLE_BLADED_LIGHTSABER`
-      - `BASE_ITEM_DOUBLE_BLADED_SWORD`
-      - `BASE_ITEM_DROID_COMPUTER_SPIKE_MOUNT`
-      - `BASE_ITEM_DROID_HEAVY_PLATING`
-      - `BASE_ITEM_DROID_LIGHT_PLATING`
-      - `BASE_ITEM_DROID_MEDIUM_PLATING`
-      - `BASE_ITEM_DROID_MOTION_SENSORS`
-      - `BASE_ITEM_DROID_REPAIR_EQUIPMENT`
-      - `BASE_ITEM_DROID_SEARCH_SCOPE`
-      - `BASE_ITEM_DROID_SECURITY_SPIKE_MOUNT`
-      - `BASE_ITEM_DROID_SHIELD`
-      - `BASE_ITEM_DROID_SONIC_SENSORS`
-      - `BASE_ITEM_DROID_TARGETING_COMPUTERS`
-      - `BASE_ITEM_DROID_UTILITY_DEVICE`
-      - `BASE_ITEM_FIRE_GRENADE`
-      - `BASE_ITEM_FLASH_GRENADE`
-      - `BASE_ITEM_FOREARM_BANDS`
-      - `BASE_ITEM_FRAGMENTATION_GRENADES`
-      - `BASE_ITEM_GAMMOREAN_BATTLEAXE`
-      - `BASE_ITEM_GAUNTLETS`
-      - `BASE_ITEM_GHAFFI_STICK`
-      - `BASE_ITEM_GLOW_ROD`
-      - `BASE_ITEM_HEAVY_BLASTER`
-      - `BASE_ITEM_HEAVY_REPEATING_BLASTER`
-      - `BASE_ITEM_HOLD_OUT_BLASTER`
-      - `BASE_ITEM_IMPLANT_1`
-      - `BASE_ITEM_IMPLANT_2`
-      - `BASE_ITEM_IMPLANT_3`
-      - `BASE_ITEM_INVALID`
-      - `BASE_ITEM_ION_BLASTER`
-      - `BASE_ITEM_ION_GRENADE`
-      - `BASE_ITEM_ION_RIFLE`
-      - `BASE_ITEM_JEDI_KNIGHT_ROBE`
-      - `BASE_ITEM_JEDI_MASTER_ROBE`
-      - `BASE_ITEM_JEDI_ROBE`
-      - `BASE_ITEM_LIGHTSABER`
-      - `BASE_ITEM_LIGHTSABER_CRYSTALS`
-      - `BASE_ITEM_LONG_SWORD`
-      - `BASE_ITEM_MASK`
-      - `BASE_ITEM_MEDICAL_EQUIPMENT`
-      - `BASE_ITEM_PLOT_USEABLE_ITEMS`
-      - `BASE_ITEM_POISON_GRENADE`
-      - `BASE_ITEM_PROGRAMMING_SPIKES`
-      - `BASE_ITEM_QUARTER_STAFF`
-      - `BASE_ITEM_REPEATING_BLASTER`
-      - `BASE_ITEM_SECURITY_SPIKES`
-      - `BASE_ITEM_SHORT_LIGHTSABER`
-      - `BASE_ITEM_SHORT_SWORD`
-      - `BASE_ITEM_SONIC_GRENADE`
-      - `BASE_ITEM_SONIC_PISTOL`
-      - `BASE_ITEM_SONIC_RIFLE`
-      - `BASE_ITEM_STUN_BATON`
-      - `BASE_ITEM_STUN_GRENADES`
-      - `BASE_ITEM_THERMAL_DETONATOR`
-      - `BASE_ITEM_TORCH`
-      - `BASE_ITEM_TRAP_KIT`
-      - `BASE_ITEM_VIBRO_BLADE`
-      - `BASE_ITEM_VIBRO_DOUBLE_BLADE`
-      - `BASE_ITEM_VIBRO_SWORD`
-      - `BASE_ITEM_WOOKIE_WARBLADE`
-      - `BODY_NODE_CHEST`
-      - `BODY_NODE_HAND`
-      - `BODY_NODE_HAND_LEFT`
-      - `BODY_NODE_HAND_RIGHT`
-      - `BODY_NODE_HEAD`
-      - `CAMERA_MODE_CHASE_CAMERA`
-      - `CAMERA_MODE_STIFF_CHASE_CAMERA`
-      - `CAMERA_MODE_TOP_DOWN`
-      - `COMBAT_MODE_FLURRY_OF_BLOWS`
-      - `COMBAT_MODE_IMPROVED_POWER_ATTACK`
-      - `COMBAT_MODE_INVALID`
-      - `COMBAT_MODE_PARRY`
-      - `COMBAT_MODE_POWER_ATTACK`
-      - `COMBAT_MODE_RAPID_SHOT`
-      - `CONVERSATION_TYPE_CINEMATIC`
-      - `CONVERSATION_TYPE_COMPUTER`
-      - `CREATURE_SIZE_HUGE`
-      - `CREATURE_SIZE_INVALID`
-      - `CREATURE_SIZE_LARGE`
-      - `CREATURE_SIZE_MEDIUM`
-      - `CREATURE_SIZE_SMALL`
-      - `CREATURE_SIZE_TINY`
-      - `CREATURE_TYPE_CLASS`
-      - `CREATURE_TYPE_DOES_NOT_HAVE_SPELL_EFFECT`
-      - `CREATURE_TYPE_HAS_SPELL_EFFECT`
-      - `CREATURE_TYPE_IS_ALIVE`
-      - `CREATURE_TYPE_PERCEPTION`
-      - `CREATURE_TYPE_PLAYER_CHAR`
-      - `CREATURE_TYPE_RACIAL_TYPE`
-      - `CREATURE_TYPE_REPUTATION`
-      - `DAMAGE_BONUS_1`
-      - `DAMAGE_BONUS_1d10`
-      - `DAMAGE_BONUS_1d4`
-      - `DAMAGE_BONUS_1d6`
-      - `DAMAGE_BONUS_1d8`
-      - `DAMAGE_BONUS_2`
-      - `DAMAGE_BONUS_2d6`
-      - `DAMAGE_BONUS_3`
-      - `DAMAGE_BONUS_4`
-      - `DAMAGE_BONUS_5`
-      - `DAMAGE_POWER_ENERGY`
-      - `DAMAGE_POWER_NORMAL`
-      - `DAMAGE_POWER_PLUS_FIVE`
-      - `DAMAGE_POWER_PLUS_FOUR`
-      - `DAMAGE_POWER_PLUS_ONE`
-      - `DAMAGE_POWER_PLUS_THREE`
-      - `DAMAGE_POWER_PLUS_TWO`
-      - `DAMAGE_TYPE_ACID`
-      - `DAMAGE_TYPE_BLASTER`
-      - `DAMAGE_TYPE_BLUDGEONING`
-      - `DAMAGE_TYPE_COLD`
-      - `DAMAGE_TYPE_DARK_SIDE`
-      - `DAMAGE_TYPE_ELECTRICAL`
-      - `DAMAGE_TYPE_FIRE`
-      - `DAMAGE_TYPE_ION`
-      - `DAMAGE_TYPE_LIGHT_SIDE`
-      - `DAMAGE_TYPE_PIERCING`
-      - `DAMAGE_TYPE_SLASHING`
-      - `DAMAGE_TYPE_SONIC`
-      - `DAMAGE_TYPE_UNIVERSAL`
-      - `DIRECTION_EAST`
-      - `DIRECTION_NORTH`
-      - `DIRECTION_SOUTH`
-      - `DIRECTION_WEST`
-      - `DISGUISE_TYPE_C_BANTHA`
-      - `DISGUISE_TYPE_C_BRITH`
-      - `DISGUISE_TYPE_C_DEWBACK`
-      - `DISGUISE_TYPE_C_DRDASSASSIN`
-      - `DISGUISE_TYPE_C_DRDASTRO`
-      - `DISGUISE_TYPE_C_DRDG`
-      - `DISGUISE_TYPE_C_DRDMKFOUR`
-      - `DISGUISE_TYPE_C_DRDMKONE`
-      - `DISGUISE_TYPE_C_DRDMKTWO`
-      - `DISGUISE_TYPE_C_DRDPROBE`
-      - `DISGUISE_TYPE_C_DRDPROT`
-      - `DISGUISE_TYPE_C_DRDSENTRY`
-      - `DISGUISE_TYPE_C_DRDSPYDER`
-      - `DISGUISE_TYPE_C_DRDWAR`
-      - `DISGUISE_TYPE_C_FIRIXA`
-      - `DISGUISE_TYPE_C_GAMMOREAN`
-      - `DISGUISE_TYPE_C_GIZKA`
-      - `DISGUISE_TYPE_C_HUTT`
-      - `DISGUISE_TYPE_C_IRIAZ`
-      - `DISGUISE_TYPE_C_ITHORIAN`
-      - `DISGUISE_TYPE_C_JAWA`
-      - `DISGUISE_TYPE_C_KATAARN`
-      - `DISGUISE_TYPE_C_KHOUNDA`
-      - `DISGUISE_TYPE_C_KHOUNDB`
-      - `DISGUISE_TYPE_C_KINRATH`
-      - `DISGUISE_TYPE_C_KRAYTDRAGON`
-      - `DISGUISE_TYPE_C_MYKAL`
-      - `DISGUISE_TYPE_C_RAKGHOUL`
-      - `DISGUISE_TYPE_C_RANCOR`
-      - `DISGUISE_TYPE_C_RONTO`
-      - `DISGUISE_TYPE_C_SEABEAST`
-      - `DISGUISE_TYPE_C_SELKATH`
-      - `DISGUISE_TYPE_C_TACH`
-      - `DISGUISE_TYPE_C_TUKATA`
-      - `DISGUISE_TYPE_C_TWOHEAD`
-      - `DISGUISE_TYPE_C_VERKAAL`
-      - `DISGUISE_TYPE_C_WRAID`
-      - `DISGUISE_TYPE_COMMONER_FEM_BLACK`
-      - `DISGUISE_TYPE_COMMONER_FEM_OLD_ASIAN`
-      - `DISGUISE_TYPE_COMMONER_FEM_OLD_BLACK`
-      - `DISGUISE_TYPE_COMMONER_FEM_OLD_WHITE`
-      - `DISGUISE_TYPE_COMMONER_FEM_WHITE`
-      - `DISGUISE_TYPE_COMMONER_MAL_BLACK`
-      - `DISGUISE_TYPE_COMMONER_MAL_OLD_ASIAN`
-      - `DISGUISE_TYPE_COMMONER_MAL_OLD_BLACK`
-      - `DISGUISE_TYPE_COMMONER_MAL_OLD_WHITE`
-      - `DISGUISE_TYPE_COMMONER_MAL_WHITE`
-      - `DISGUISE_TYPE_CZERKA_OFFICER_BLACK`
-      - `DISGUISE_TYPE_CZERKA_OFFICER_OLD_ASIAN`
-      - `DISGUISE_TYPE_CZERKA_OFFICER_OLD_BLACK`
-      - `DISGUISE_TYPE_CZERKA_OFFICER_OLD_WHITE`
-      - `DISGUISE_TYPE_CZERKA_OFFICER_WHITE`
-      - `DISGUISE_TYPE_DROID_ASTRO_02`
-      - `DISGUISE_TYPE_DROID_ASTRO_03`
-      - `DISGUISE_TYPE_DROID_PROTOCOL_02`
-      - `DISGUISE_TYPE_DROID_PROTOCOL_03`
-      - `DISGUISE_TYPE_DROID_PROTOCOL_04`
-      - `DISGUISE_TYPE_DROID_WAR_02`
-      - `DISGUISE_TYPE_DROID_WAR_03`
-      - `DISGUISE_TYPE_DROID_WAR_04`
-      - `DISGUISE_TYPE_DROID_WAR_05`
-      - `DISGUISE_TYPE_ENVIRONMENTSUIT`
-      - `DISGUISE_TYPE_ENVIRONMENTSUIT_02`
-      - `DISGUISE_TYPE_GAMMOREAN_02`
-      - `DISGUISE_TYPE_GAMMOREAN_03`
-      - `DISGUISE_TYPE_GAMMOREAN_04`
-      - `DISGUISE_TYPE_HUTT_02`
-      - `DISGUISE_TYPE_HUTT_03`
-      - `DISGUISE_TYPE_HUTT_04`
-      - `DISGUISE_TYPE_ITHORIAN_02`
-      - `DISGUISE_TYPE_ITHORIAN_03`
-      - `DISGUISE_TYPE_JEDI_ASIAN_FEMALE_01`
-      - `DISGUISE_TYPE_JEDI_ASIAN_FEMALE_02`
-      - `DISGUISE_TYPE_JEDI_ASIAN_FEMALE_03`
-      - `DISGUISE_TYPE_JEDI_ASIAN_FEMALE_04`
-      - `DISGUISE_TYPE_JEDI_ASIAN_FEMALE_05`
-      - `DISGUISE_TYPE_JEDI_ASIAN_MALE_01`
-      - `DISGUISE_TYPE_JEDI_ASIAN_MALE_02`
-      - `DISGUISE_TYPE_JEDI_ASIAN_MALE_03`
-      - `DISGUISE_TYPE_JEDI_ASIAN_MALE_04`
-      - `DISGUISE_TYPE_JEDI_ASIAN_MALE_05`
-      - `DISGUISE_TYPE_JEDI_ASIAN_OLD_FEM`
-      - `DISGUISE_TYPE_JEDI_ASIAN_OLD_MALE`
-      - `DISGUISE_TYPE_JEDI_BLACK_FEMALE_01`
-      - `DISGUISE_TYPE_JEDI_BLACK_FEMALE_02`
-      - `DISGUISE_TYPE_JEDI_BLACK_FEMALE_03`
-      - `DISGUISE_TYPE_JEDI_BLACK_FEMALE_04`
-      - `DISGUISE_TYPE_JEDI_BLACK_FEMALE_05`
-      - `DISGUISE_TYPE_JEDI_BLACK_MALE_01`
-      - `DISGUISE_TYPE_JEDI_BLACK_MALE_02`
-      - `DISGUISE_TYPE_JEDI_BLACK_MALE_03`
-      - `DISGUISE_TYPE_JEDI_BLACK_MALE_04`
-      - `DISGUISE_TYPE_JEDI_BLACK_MALE_05`
-      - `DISGUISE_TYPE_JEDI_BLACK_OLD_FEM`
-      - `DISGUISE_TYPE_JEDI_BLACK_OLD_MALE`
-      - `DISGUISE_TYPE_JEDI_WHITE_FEMALE_02`
-      - `DISGUISE_TYPE_JEDI_WHITE_FEMALE_03`
-      - `DISGUISE_TYPE_JEDI_WHITE_FEMALE_04`
-      - `DISGUISE_TYPE_JEDI_WHITE_FEMALE_05`
-      - `DISGUISE_TYPE_JEDI_WHITE_MALE_02`
-      - `DISGUISE_TYPE_JEDI_WHITE_MALE_03`
-      - `DISGUISE_TYPE_JEDI_WHITE_MALE_04`
-      - `DISGUISE_TYPE_JEDI_WHITE_MALE_05`
-      - `DISGUISE_TYPE_JEDI_WHITE_OLD_FEM`
-      - `DISGUISE_TYPE_JEDI_WHITE_OLD_MALE`
-      - `DISGUISE_TYPE_KATH_HOUND_A02`
-      - `DISGUISE_TYPE_KATH_HOUND_A03`
-      - `DISGUISE_TYPE_KATH_HOUND_A04`
-      - `DISGUISE_TYPE_KATH_HOUND_B02`
-      - `DISGUISE_TYPE_KATH_HOUND_B03`
-      - `DISGUISE_TYPE_KATH_HOUND_B04`
-      - `DISGUISE_TYPE_N_ADMRLSAULKAR`
-      - `DISGUISE_TYPE_N_BITH`
-      - `DISGUISE_TYPE_N_CALONORD`
-      - `DISGUISE_TYPE_N_COMMF`
-      - `DISGUISE_TYPE_N_COMMKIDF`
-      - `DISGUISE_TYPE_N_COMMKIDM`
-      - `DISGUISE_TYPE_N_COMMM`
-      - `DISGUISE_TYPE_N_CZERLAOFF`
-      - `DISGUISE_TYPE_N_DARKJEDIF`
-      - `DISGUISE_TYPE_N_DARKJEDIM`
-      - `DISGUISE_TYPE_N_DARTHBAND`
-      - `DISGUISE_TYPE_N_DARTHMALAK`
-      - `DISGUISE_TYPE_N_DARTHREVAN`
-      - `DISGUISE_TYPE_N_DODONNA`
-      - `DISGUISE_TYPE_N_DUROS`
-      - `DISGUISE_TYPE_N_FATCOMF`
-      - `DISGUISE_TYPE_N_FATCOMM`
-      - `DISGUISE_TYPE_N_JEDICOUNTF`
-      - `DISGUISE_TYPE_N_JEDICOUNTM`
-      - `DISGUISE_TYPE_N_JEDIMALEK`
-      - `DISGUISE_TYPE_N_JEDIMEMF`
-      - `DISGUISE_TYPE_N_JEDIMEMM`
-      - `DISGUISE_TYPE_N_MANDALORIAN`
-      - `DISGUISE_TYPE_N_RAKATA`
-      - `DISGUISE_TYPE_N_REPOFF`
-      - `DISGUISE_TYPE_N_REPSOLD`
-      - `DISGUISE_TYPE_N_RODIAN`
-      - `DISGUISE_TYPE_N_SITHAPPREN`
-      - `DISGUISE_TYPE_N_SITHCOMF`
-      - `DISGUISE_TYPE_N_SITHCOMM`
-      - `DISGUISE_TYPE_N_SITHSOLDIER`
-      - `DISGUISE_TYPE_N_SMUGGLER`
-      - `DISGUISE_TYPE_N_SWOOPGANG`
-      - `DISGUISE_TYPE_N_TUSKEN`
-      - `DISGUISE_TYPE_N_TUSKENF`
-      - `DISGUISE_TYPE_N_TWILEKF`
-      - `DISGUISE_TYPE_N_TWILEKM`
-      - `DISGUISE_TYPE_N_WALRUSMAN`
-      - `DISGUISE_TYPE_N_WOOKIEF`
-      - `DISGUISE_TYPE_N_WOOKIEM`
-      - `DISGUISE_TYPE_N_YODA`
-      - `DISGUISE_TYPE_P_BASTILLA`
-      - `DISGUISE_TYPE_P_CAND`
-      - `DISGUISE_TYPE_P_CARTH`
-      - `DISGUISE_TYPE_P_FEM_A_LRG_01`
-      - `DISGUISE_TYPE_P_FEM_A_LRG_02`
-      - `DISGUISE_TYPE_P_FEM_A_LRG_03`
-      - `DISGUISE_TYPE_P_FEM_A_LRG_04`
-      - `DISGUISE_TYPE_P_FEM_A_LRG_05`
-      - `DISGUISE_TYPE_P_FEM_A_MED_01`
-      - `DISGUISE_TYPE_P_FEM_A_MED_02`
-      - `DISGUISE_TYPE_P_FEM_A_MED_03`
-      - `DISGUISE_TYPE_P_FEM_A_MED_04`
-      - `DISGUISE_TYPE_P_FEM_A_MED_05`
-      - `DISGUISE_TYPE_P_FEM_A_SML_01`
-      - `DISGUISE_TYPE_P_FEM_A_SML_02`
-      - `DISGUISE_TYPE_P_FEM_A_SML_03`
-      - `DISGUISE_TYPE_P_FEM_A_SML_04`
-      - `DISGUISE_TYPE_P_FEM_A_SML_05`
-      - `DISGUISE_TYPE_P_FEM_B_LRG_01`
-      - `DISGUISE_TYPE_P_FEM_B_LRG_02`
-      - `DISGUISE_TYPE_P_FEM_B_LRG_03`
-      - `DISGUISE_TYPE_P_FEM_B_LRG_04`
-      - `DISGUISE_TYPE_P_FEM_B_LRG_05`
-      - `DISGUISE_TYPE_P_FEM_B_MED_01`
-      - `DISGUISE_TYPE_P_FEM_B_MED_02`
-      - `DISGUISE_TYPE_P_FEM_B_MED_03`
-      - `DISGUISE_TYPE_P_FEM_B_MED_04`
-      - `DISGUISE_TYPE_P_FEM_B_MED_05`
-      - `DISGUISE_TYPE_P_FEM_B_SML_01`
-      - `DISGUISE_TYPE_P_FEM_B_SML_02`
-      - `DISGUISE_TYPE_P_FEM_B_SML_03`
-      - `DISGUISE_TYPE_P_FEM_B_SML_04`
-      - `DISGUISE_TYPE_P_FEM_B_SML_05`
-      - `DISGUISE_TYPE_P_FEM_C_LRG_01`
-      - `DISGUISE_TYPE_P_FEM_C_LRG_02`
-      - `DISGUISE_TYPE_P_FEM_C_LRG_03`
-      - `DISGUISE_TYPE_P_FEM_C_LRG_04`
-      - `DISGUISE_TYPE_P_FEM_C_LRG_05`
-      - `DISGUISE_TYPE_P_FEM_C_MED_01`
-      - `DISGUISE_TYPE_P_FEM_C_MED_02`
-      - `DISGUISE_TYPE_P_FEM_C_MED_03`
-      - `DISGUISE_TYPE_P_FEM_C_MED_04`
-      - `DISGUISE_TYPE_P_FEM_C_MED_05`
-      - `DISGUISE_TYPE_P_FEM_C_SML_01`
-      - `DISGUISE_TYPE_P_FEM_C_SML_02`
-      - `DISGUISE_TYPE_P_FEM_C_SML_03`
-      - `DISGUISE_TYPE_P_FEM_C_SML_04`
-      - `DISGUISE_TYPE_P_FEM_C_SML_05`
-      - `DISGUISE_TYPE_P_HK47`
-      - `DISGUISE_TYPE_P_JOLEE`
-      - `DISGUISE_TYPE_P_JUHANI`
-      - `DISGUISE_TYPE_P_MAL_A_LRG_01`
-      - `DISGUISE_TYPE_P_MAL_A_LRG_02`
-      - `DISGUISE_TYPE_P_MAL_A_LRG_03`
-      - `DISGUISE_TYPE_P_MAL_A_LRG_04`
-      - `DISGUISE_TYPE_P_MAL_A_LRG_05`
-      - `DISGUISE_TYPE_P_MAL_A_MED_01`
-      - `DISGUISE_TYPE_P_MAL_A_MED_02`
-      - `DISGUISE_TYPE_P_MAL_A_MED_03`
-      - `DISGUISE_TYPE_P_MAL_A_MED_04`
-      - `DISGUISE_TYPE_P_MAL_A_MED_05`
-      - `DISGUISE_TYPE_P_MAL_A_SML_01`
-      - `DISGUISE_TYPE_P_MAL_A_SML_02`
-      - `DISGUISE_TYPE_P_MAL_A_SML_03`
-      - `DISGUISE_TYPE_P_MAL_A_SML_04`
-      - `DISGUISE_TYPE_P_MAL_A_SML_05`
-      - `DISGUISE_TYPE_P_MAL_B_LRG_01`
-      - `DISGUISE_TYPE_P_MAL_B_LRG_02`
-      - `DISGUISE_TYPE_P_MAL_B_LRG_03`
-      - `DISGUISE_TYPE_P_MAL_B_LRG_04`
-      - `DISGUISE_TYPE_P_MAL_B_LRG_05`
-      - `DISGUISE_TYPE_P_MAL_B_MED_01`
-      - `DISGUISE_TYPE_P_MAL_B_MED_02`
-      - `DISGUISE_TYPE_P_MAL_B_MED_03`
-      - `DISGUISE_TYPE_P_MAL_B_MED_04`
-      - `DISGUISE_TYPE_P_MAL_B_MED_05`
-      - `DISGUISE_TYPE_P_MAL_B_SML_01`
-      - `DISGUISE_TYPE_P_MAL_B_SML_02`
-      - `DISGUISE_TYPE_P_MAL_B_SML_03`
-      - `DISGUISE_TYPE_P_MAL_B_SML_04`
-      - `DISGUISE_TYPE_P_MAL_B_SML_05`
-      - `DISGUISE_TYPE_P_MAL_C_LRG_01`
-      - `DISGUISE_TYPE_P_MAL_C_LRG_02`
-      - `DISGUISE_TYPE_P_MAL_C_LRG_03`
-      - `DISGUISE_TYPE_P_MAL_C_LRG_04`
-      - `DISGUISE_TYPE_P_MAL_C_LRG_05`
-      - `DISGUISE_TYPE_P_MAL_C_MED_01`
-      - `DISGUISE_TYPE_P_MAL_C_MED_02`
-      - `DISGUISE_TYPE_P_MAL_C_MED_03`
-      - `DISGUISE_TYPE_P_MAL_C_MED_04`
-      - `DISGUISE_TYPE_P_MAL_C_MED_05`
-      - `DISGUISE_TYPE_P_MAL_C_SML_01`
-      - `DISGUISE_TYPE_P_MAL_C_SML_02`
-      - `DISGUISE_TYPE_P_MAL_C_SML_03`
-      - `DISGUISE_TYPE_P_MAL_C_SML_04`
-      - `DISGUISE_TYPE_P_MAL_C_SML_05`
-      - `DISGUISE_TYPE_P_MISSION`
-      - `DISGUISE_TYPE_P_T3M3`
-      - `DISGUISE_TYPE_P_ZAALBAR`
-      - `DISGUISE_TYPE_RAKATA_02`
-      - `DISGUISE_TYPE_RAKATA_03`
-      - `DISGUISE_TYPE_REPUBLIC_OFFICER_MAL_BLACK`
-      - `DISGUISE_TYPE_REPUBLIC_OFFICER_MAL_OLD_ASIAN`
-      - `DISGUISE_TYPE_REPUBLIC_OFFICER_MAL_OLD_BLACK`
-      - `DISGUISE_TYPE_REPUBLIC_OFFICER_MAL_OLD_WHITE`
-      - `DISGUISE_TYPE_REPUBLIC_SOLDIER_MAL_BLACK`
-      - `DISGUISE_TYPE_REPUBLIC_SOLDIER_MAL_OLD_ASIAN`
-      - `DISGUISE_TYPE_REPUBLIC_SOLDIER_MAL_OLD_BLACK`
-      - `DISGUISE_TYPE_REPUBLIC_SOLDIER_MAL_OLD_WHITE`
-      - `DISGUISE_TYPE_RODIAN_02`
-      - `DISGUISE_TYPE_RODIAN_03`
-      - `DISGUISE_TYPE_RODIAN_04`
-      - `DISGUISE_TYPE_SELKATH_02`
-      - `DISGUISE_TYPE_SELKATH_03`
-      - `DISGUISE_TYPE_SHYRACK_01`
-      - `DISGUISE_TYPE_SHYRACK_02`
-      - `DISGUISE_TYPE_SITH_FEM_ASIAN`
-      - `DISGUISE_TYPE_SITH_FEM_BLACK`
-      - `DISGUISE_TYPE_SITH_FEM_OLD_ASIAN`
-      - `DISGUISE_TYPE_SITH_FEM_OLD_BLACK`
-      - `DISGUISE_TYPE_SITH_FEM_OLD_WHITE`
-      - `DISGUISE_TYPE_SITH_FEM_WHITE`
-      - `DISGUISE_TYPE_SITH_MAL_ASIAN`
-      - `DISGUISE_TYPE_SITH_MAL_BLACK`
-      - `DISGUISE_TYPE_SITH_MAL_OLD_ASIAN`
-      - `DISGUISE_TYPE_SITH_MAL_OLD_BLACK`
-      - `DISGUISE_TYPE_SITH_MAL_OLD_WHITE`
-      - `DISGUISE_TYPE_SITH_MAL_WHITE`
-      - `DISGUISE_TYPE_SITH_SOLDIER_03`
-      - `DISGUISE_TYPE_SWOOP_GANG_02`
-      - `DISGUISE_TYPE_SWOOP_GANG_03`
-      - `DISGUISE_TYPE_SWOOP_GANG_04`
-      - `DISGUISE_TYPE_SWOOP_GANG_05`
-      - `DISGUISE_TYPE_TEST`
-      - `DISGUISE_TYPE_TURRET`
-      - `DISGUISE_TYPE_TURRET2`
-      - `DISGUISE_TYPE_TUSKAN_RAIDER_02`
-      - `DISGUISE_TYPE_TUSKAN_RAIDER_03`
-      - `DISGUISE_TYPE_TUSKAN_RAIDER_04`
-      - `DISGUISE_TYPE_TWILEK_FEMALE_02`
-      - `DISGUISE_TYPE_TWILEK_MALE_02`
-      - `DISGUISE_TYPE_WOOKIE_FEMALE_02`
-      - `DISGUISE_TYPE_WOOKIE_FEMALE_03`
-      - `DISGUISE_TYPE_WOOKIE_FEMALE_04`
-      - `DISGUISE_TYPE_WOOKIE_FEMALE_05`
-      - `DISGUISE_TYPE_WOOKIE_MALE_02`
-      - `DISGUISE_TYPE_WOOKIE_MALE_03`
-      - `DISGUISE_TYPE_WOOKIE_MALE_04`
-      - `DISGUISE_TYPE_WOOKIE_MALE_05`
-      - `DISGUISE_TYPE_WRAID_02`
-      - `DISGUISE_TYPE_WRAID_03`
-      - `DISGUISE_TYPE_WRAID_04`
-      - `DISGUISE_TYPE_YUTHURA_BAN`
-      - `DOOR_ACTION_BASH`
-      - `DOOR_ACTION_IGNORE`
-      - `DOOR_ACTION_KNOCK`
-      - `DOOR_ACTION_OPEN`
-      - `DOOR_ACTION_UNLOCK`
-      - `DURATION_TYPE_INSTANT`
-      - `DURATION_TYPE_PERMANENT`
-      - `DURATION_TYPE_TEMPORARY`
-      - `EFFECT_TYPE_ABILITY_DECREASE`
-      - `EFFECT_TYPE_ABILITY_INCREASE`
-      - `EFFECT_TYPE_AC_DECREASE`
-      - `EFFECT_TYPE_AC_INCREASE`
-      - `EFFECT_TYPE_ARCANE_SPELL_FAILURE`
-      - `EFFECT_TYPE_AREA_OF_EFFECT`
-      - `EFFECT_TYPE_ASSUREDDEFLECTION`
-      - `EFFECT_TYPE_ASSUREDHIT`
-      - `EFFECT_TYPE_ATTACK_DECREASE`
-      - `EFFECT_TYPE_ATTACK_INCREASE`
-      - `EFFECT_TYPE_BEAM`
-      - `EFFECT_TYPE_BLINDNESS`
-      - `EFFECT_TYPE_CHARMED`
-      - `EFFECT_TYPE_CONCEALMENT`
-      - `EFFECT_TYPE_CONFUSED`
-      - `EFFECT_TYPE_CURSE`
-      - `EFFECT_TYPE_DAMAGE_DECREASE`
-      - `EFFECT_TYPE_DAMAGE_IMMUNITY_DECREASE`
-      - `EFFECT_TYPE_DAMAGE_IMMUNITY_INCREASE`
-      - `EFFECT_TYPE_DAMAGE_INCREASE`
-      - `EFFECT_TYPE_DAMAGE_REDUCTION`
-      - `EFFECT_TYPE_DAMAGE_RESISTANCE`
-      - `EFFECT_TYPE_DARKNESS`
-      - `EFFECT_TYPE_DAZED`
-      - `EFFECT_TYPE_DEAF`
-      - `EFFECT_TYPE_DISEASE`
-      - `EFFECT_TYPE_DISGUISE`
-      - `EFFECT_TYPE_DISPELMAGICALL`
-      - `EFFECT_TYPE_DISPELMAGICBEST`
-      - `EFFECT_TYPE_DOMINATED`
-      - `EFFECT_TYPE_ELEMENTALSHIELD`
-      - `EFFECT_TYPE_ENEMY_ATTACK_BONUS`
-      - `EFFECT_TYPE_ENTANGLE`
-      - `EFFECT_TYPE_FORCE_RESISTANCE_DECREASE`
-      - `EFFECT_TYPE_FORCE_RESISTANCE_INCREASE`
-      - `EFFECT_TYPE_FORCEJUMP`
-      - `EFFECT_TYPE_FRIGHTENED`
-      - `EFFECT_TYPE_HASTE`
-      - `EFFECT_TYPE_IMMUNITY`
-      - `EFFECT_TYPE_IMPROVEDINVISIBILITY`
-      - `EFFECT_TYPE_INVALIDEFFECT`
-      - `EFFECT_TYPE_INVISIBILITY`
-      - `EFFECT_TYPE_INVULNERABLE`
-      - `EFFECT_TYPE_LIGHTSABERTHROW`
-      - `EFFECT_TYPE_MISS_CHANCE`
-      - `EFFECT_TYPE_MOVEMENT_SPEED_DECREASE`
-      - `EFFECT_TYPE_MOVEMENT_SPEED_INCREASE`
-      - `EFFECT_TYPE_NEGATIVELEVEL`
-      - `EFFECT_TYPE_PARALYZE`
-      - `EFFECT_TYPE_POISON`
-      - `EFFECT_TYPE_REGENERATE`
-      - `EFFECT_TYPE_RESURRECTION`
-      - `EFFECT_TYPE_SANCTUARY`
-      - `EFFECT_TYPE_SAVING_THROW_DECREASE`
-      - `EFFECT_TYPE_SAVING_THROW_INCREASE`
-      - `EFFECT_TYPE_SEEINVISIBLE`
-      - `EFFECT_TYPE_SILENCE`
-      - `EFFECT_TYPE_SKILL_DECREASE`
-      - `EFFECT_TYPE_SKILL_INCREASE`
-      - `EFFECT_TYPE_SLEEP`
-      - `EFFECT_TYPE_SLOW`
-      - `EFFECT_TYPE_SPELL_IMMUNITY`
-      - `EFFECT_TYPE_SPELLLEVELABSORPTION`
-      - `EFFECT_TYPE_STUNNED`
-      - `EFFECT_TYPE_TEMPORARY_HITPOINTS`
-      - `EFFECT_TYPE_TIMESTOP`
-      - `EFFECT_TYPE_TRUESEEING`
-      - `EFFECT_TYPE_TURNED`
-      - `EFFECT_TYPE_ULTRAVISION`
-      - `EFFECT_TYPE_VISUAL`
-      - `ENCOUNTER_DIFFICULTY_EASY`
-      - `ENCOUNTER_DIFFICULTY_HARD`
-      - `ENCOUNTER_DIFFICULTY_IMPOSSIBLE`
-      - `ENCOUNTER_DIFFICULTY_NORMAL`
-      - `ENCOUNTER_DIFFICULTY_VERY_EASY`
-      - `FALSE`
-      - `FEAT_ADVANCED_DOUBLE_WEAPON_FIGHTING`
-      - `FEAT_ADVANCED_GUARD_STANCE`
-      - `FEAT_ADVANCED_JEDI_DEFENSE`
-      - `FEAT_AMBIDEXTERITY`
-      - `FEAT_ARMOUR_PROF_HEAVY`
-      - `FEAT_ARMOUR_PROF_LIGHT`
-      - `FEAT_ARMOUR_PROF_MEDIUM`
-      - `FEAT_BATTLE_MEDITATION`
-      - `FEAT_CAUTIOUS`
-      - `FEAT_CRITICAL_STRIKE`
-      - `FEAT_DOUBLE_WEAPON_FIGHTING`
-      - `FEAT_DROID_UPGRADE_1`
-      - `FEAT_DROID_UPGRADE_2`
-      - `FEAT_DROID_UPGRADE_3`
-      - `FEAT_EMPATHY`
-      - `FEAT_FLURRY`
-      - `FEAT_FORCE_FOCUS_ADVANCED`
-      - `FEAT_FORCE_FOCUS_ALTER`
-      - `FEAT_FORCE_FOCUS_CONTROL`
-      - `FEAT_FORCE_FOCUS_MASTERY`
-      - `FEAT_FORCE_FOCUS_SENSE`
-      - `FEAT_GEAR_HEAD`
-      - `FEAT_GREAT_FORTITUDE`
-      - `FEAT_GUARD_STANCE`
-      - `FEAT_IMPLANT_LEVEL_1`
-      - `FEAT_IMPLANT_LEVEL_2`
-      - `FEAT_IMPLANT_LEVEL_3`
-      - `FEAT_IMPROVED_CRITICAL_STRIKE`
-      - `FEAT_IMPROVED_FLURRY`
-      - `FEAT_IMPROVED_POWER_ATTACK`
-      - `FEAT_IMPROVED_POWER_BLAST`
-      - `FEAT_IMPROVED_RAPID_SHOT`
-      - `FEAT_IMPROVED_SNIPER_SHOT`
-      - `FEAT_IRON_WILL`
-      - `FEAT_JEDI_DEFENSE`
-      - `FEAT_LIGHTNING_REFLEXES`
-      - `FEAT_MASTER_CRITICAL_STRIKE`
-      - `FEAT_MASTER_GUARD_STANCE`
-      - `FEAT_MASTER_JEDI_DEFENSE`
-      - `FEAT_MASTER_POWER_ATTACK`
-      - `FEAT_MASTER_POWER_BLAST`
-      - `FEAT_MASTER_SNIPER_SHOT`
-      - `FEAT_MULTI_SHOT`
-      - `FEAT_PERCEPTIVE`
-      - `FEAT_POWER_ATTACK`
-      - `FEAT_POWER_BLAST`
-      - `FEAT_PROFICIENCY_ALL`
-      - `FEAT_RAPID_SHOT`
-      - `FEAT_SKILL_FOCUS_AWARENESS`
-      - `FEAT_SKILL_FOCUS_COMPUTER_USE`
-      - `FEAT_SKILL_FOCUS_DEMOLITIONS`
-      - `FEAT_SKILL_FOCUS_PERSUADE`
-      - `FEAT_SKILL_FOCUS_REPAIR`
-      - `FEAT_SKILL_FOCUS_SECURITY`
-      - `FEAT_SKILL_FOCUS_STEALTH`
-      - `FEAT_SKILL_FOCUS_TREAT_INJUURY`
-      - `FEAT_SNEAK_ATTACK_10D6`
-      - `FEAT_SNEAK_ATTACK_1D6`
-      - `FEAT_SNEAK_ATTACK_2D6`
-      - `FEAT_SNEAK_ATTACK_3D6`
-      - `FEAT_SNEAK_ATTACK_4D6`
-      - `FEAT_SNEAK_ATTACK_5D6`
-      - `FEAT_SNEAK_ATTACK_6D6`
-      - `FEAT_SNEAK_ATTACK_7D6`
-      - `FEAT_SNEAK_ATTACK_8D6`
-      - `FEAT_SNEAK_ATTACK_9D6`
-      - `FEAT_SNIPER_SHOT`
-      - `FEAT_TOUGHNESS`
-      - `FEAT_UNCANNY_DODGE_1`
-      - `FEAT_UNCANNY_DODGE_2`
-      - `FEAT_WEAPON_FOCUS_BLASTER`
-      - `FEAT_WEAPON_FOCUS_BLASTER_RIFLE`
-      - `FEAT_WEAPON_FOCUS_GRENADE`
-      - `FEAT_WEAPON_FOCUS_HEAVY_WEAPONS`
-      - `FEAT_WEAPON_FOCUS_LIGHTSABER`
-      - `FEAT_WEAPON_FOCUS_MELEE_WEAPONS`
-      - `FEAT_WEAPON_FOCUS_SIMPLE_WEAPONS`
-      - `FEAT_WEAPON_PROFICIENCY_BLASTER`
-      - `FEAT_WEAPON_PROFICIENCY_BLASTER_RIFLE`
-      - `FEAT_WEAPON_PROFICIENCY_GRENADE`
-      - `FEAT_WEAPON_PROFICIENCY_HEAVY_WEAPONS`
-      - `FEAT_WEAPON_PROFICIENCY_LIGHTSABER`
-      - `FEAT_WEAPON_PROFICIENCY_MELEE_WEAPONS`
-      - `FEAT_WEAPON_PROFICIENCY_SIMPLE_WEAPONS`
-      - `FEAT_WEAPON_SPECIALIZATION_BLASTER`
-      - `FEAT_WEAPON_SPECIALIZATION_BLASTER_RIFLE`
-      - `FEAT_WEAPON_SPECIALIZATION_GRENADE`
-      - `FEAT_WEAPON_SPECIALIZATION_HEAVY_WEAPONS`
-      - `FEAT_WEAPON_SPECIALIZATION_LIGHTSABER`
-      - `FEAT_WEAPON_SPECIALIZATION_MELEE_WEAPONS`
-      - `FEAT_WEAPON_SPECIALIZATION_SIMPLE_WEAPONS`
-      - `FEAT_WHIRLWIND_ATTACK`
-      - `FORCE_POWER_AFFECT_MIND`
-      - `FORCE_POWER_AFFLICTION`
-      - `FORCE_POWER_ALL_FORCE_POWERS`
-      - `FORCE_POWER_CHOKE`
-      - `FORCE_POWER_CURE`
-      - `FORCE_POWER_DEATH_FIELD`
-      - `FORCE_POWER_DOMINATE`
-      - `FORCE_POWER_DRAIN_LIFE`
-      - `FORCE_POWER_DROID_DESTROY`
-      - `FORCE_POWER_DROID_DISABLE`
-      - `FORCE_POWER_DROID_STUN`
-      - `FORCE_POWER_FEAR`
-      - `FORCE_POWER_FORCE_ARMOR`
-      - `FORCE_POWER_FORCE_AURA`
-      - `FORCE_POWER_FORCE_BREACH`
-      - `FORCE_POWER_FORCE_IMMUNITY`
-      - `FORCE_POWER_FORCE_JUMP`
-      - `FORCE_POWER_FORCE_JUMP_ADVANCED`
-      - `FORCE_POWER_FORCE_MIND`
-      - `FORCE_POWER_FORCE_PUSH`
-      - `FORCE_POWER_FORCE_SHIELD`
-      - `FORCE_POWER_FORCE_STORM`
-      - `FORCE_POWER_FORCE_WAVE`
-      - `FORCE_POWER_FORCE_WHIRLWIND`
-      - `FORCE_POWER_HEAL`
-      - `FORCE_POWER_HOLD`
-      - `FORCE_POWER_HORROR`
-      - `FORCE_POWER_INSANITY`
-      - `FORCE_POWER_KILL`
-      - `FORCE_POWER_KNIGHT_MIND`
-      - `FORCE_POWER_KNIGHT_SPEED`
-      - `FORCE_POWER_LIGHT_SABER_THROW`
-      - `FORCE_POWER_LIGHT_SABER_THROW_ADVANCED`
-      - `FORCE_POWER_LIGHTNING`
-      - `FORCE_POWER_MASTER_ALTER`
-      - `FORCE_POWER_MASTER_CONTROL`
-      - `FORCE_POWER_MASTER_SENSE`
-      - `FORCE_POWER_MIND_MASTERY`
-      - `FORCE_POWER_PLAGUE`
-      - `FORCE_POWER_REGENERATION`
-      - `FORCE_POWER_REGNERATION_ADVANCED`
-      - `FORCE_POWER_RESIST_COLD_HEAT_ENERGY`
-      - `FORCE_POWER_RESIST_FORCE`
-      - `FORCE_POWER_RESIST_POISON_DISEASE_SONIC`
-      - `FORCE_POWER_SHOCK`
-      - `FORCE_POWER_SLEEP`
-      - `FORCE_POWER_SLOW`
-      - `FORCE_POWER_SPEED_BURST`
-      - `FORCE_POWER_SPEED_MASTERY`
-      - `FORCE_POWER_STUN`
-      - `FORCE_POWER_SUPRESS_FORCE`
-      - `FORCE_POWER_WOUND`
-      - `FORMATION_LINE`
-      - `FORMATION_WEDGE`
-      - `GAME_DIFFICULTY_CORE_RULES`
-      - `GAME_DIFFICULTY_DIFFICULT`
-      - `GAME_DIFFICULTY_EASY`
-      - `GAME_DIFFICULTY_NORMAL`
-      - `GAME_DIFFICULTY_VERY_EASY`
-      - `GENDER_BOTH`
-      - `GENDER_FEMALE`
-      - `GENDER_MALE`
-      - `GENDER_NONE`
-      - `GENDER_OTHER`
-      - `GUI_PANEL_PLAYER_DEATH`
-      - `IMMUNITY_TYPE_ABILITY_DECREASE`
-      - `IMMUNITY_TYPE_AC_DECREASE`
-      - `IMMUNITY_TYPE_ATTACK_DECREASE`
-      - `IMMUNITY_TYPE_BLINDNESS`
-      - `IMMUNITY_TYPE_CHARM`
-      - `IMMUNITY_TYPE_CONFUSED`
-      - `IMMUNITY_TYPE_CRITICAL_HIT`
-      - `IMMUNITY_TYPE_CURSED`
-      - `IMMUNITY_TYPE_DAMAGE_DECREASE`
-      - `IMMUNITY_TYPE_DAMAGE_IMMUNITY_DECREASE`
-      - `IMMUNITY_TYPE_DAZED`
-      - `IMMUNITY_TYPE_DEAFNESS`
-      - `IMMUNITY_TYPE_DEATH`
-      - `IMMUNITY_TYPE_DISEASE`
-      - `IMMUNITY_TYPE_DOMINATE`
-      - `IMMUNITY_TYPE_ENTANGLE`
-      - `IMMUNITY_TYPE_FEAR`
-      - `IMMUNITY_TYPE_FORCE_RESISTANCE_DECREASE`
-      - `IMMUNITY_TYPE_KNOCKDOWN`
-      - `IMMUNITY_TYPE_MIND_SPELLS`
-      - `IMMUNITY_TYPE_MOVEMENT_SPEED_DECREASE`
-      - `IMMUNITY_TYPE_NEGATIVE_LEVEL`
-      - `IMMUNITY_TYPE_NONE`
-      - `IMMUNITY_TYPE_PARALYSIS`
-      - `IMMUNITY_TYPE_POISON`
-      - `IMMUNITY_TYPE_SAVING_THROW_DECREASE`
-      - `IMMUNITY_TYPE_SILENCE`
-      - `IMMUNITY_TYPE_SKILL_DECREASE`
-      - `IMMUNITY_TYPE_SLEEP`
-      - `IMMUNITY_TYPE_SLOW`
-      - `IMMUNITY_TYPE_SNEAK_ATTACK`
-      - `IMMUNITY_TYPE_STUN`
-      - `IMMUNITY_TYPE_TRAP`
-      - `INVALID_STANDARD_FACTION`
-      - `INVISIBILITY_TYPE_DARKNESS`
-      - `INVISIBILITY_TYPE_IMPROVED`
-      - `INVISIBILITY_TYPE_NORMAL`
-      - `ITEM_PROPERTY_ABILITY_BONUS`
-      - `ITEM_PROPERTY_AC_BONUS`
-      - `ITEM_PROPERTY_AC_BONUS_VS_DAMAGE_TYPE`
-      - `ITEM_PROPERTY_AC_BONUS_VS_RACIAL_GROUP`
-      - `ITEM_PROPERTY_ACTIVATE_ITEM`
-      - `ITEM_PROPERTY_ATTACK_BONUS`
-      - `ITEM_PROPERTY_ATTACK_BONUS_VS_RACIAL_GROUP`
-      - `ITEM_PROPERTY_ATTACK_PENALTY`
-      - `ITEM_PROPERTY_BLASTER_BOLT_DEFLECT_DECREASE`
-      - `ITEM_PROPERTY_BLASTER_BOLT_DEFLECT_INCREASE`
-      - `ITEM_PROPERTY_BONUS_FEAT`
-      - `ITEM_PROPERTY_COMPUTER_SPIKE`
-      - `ITEM_PROPERTY_DAMAGE_BONUS`
-      - `ITEM_PROPERTY_DAMAGE_BONUS_VS_RACIAL_GROUP`
-      - `ITEM_PROPERTY_DAMAGE_REDUCTION`
-      - `ITEM_PROPERTY_DAMAGE_RESISTANCE`
-      - `ITEM_PROPERTY_DAMAGE_VULNERABILITY`
-      - `ITEM_PROPERTY_DECREASED_ABILITY_SCORE`
-      - `ITEM_PROPERTY_DECREASED_AC`
-      - `ITEM_PROPERTY_DECREASED_ATTACK_MODIFIER`
-      - `ITEM_PROPERTY_DECREASED_DAMAGE`
-      - `ITEM_PROPERTY_DECREASED_SAVING_THROWS`
-      - `ITEM_PROPERTY_DECREASED_SAVING_THROWS_SPECIFIC`
-      - `ITEM_PROPERTY_DECREASED_SKILL_MODIFIER`
-      - `ITEM_PROPERTY_DROID_REPAIR_KIT`
-      - `ITEM_PROPERTY_ENHANCEMENT_BONUS`
-      - `ITEM_PROPERTY_ENHANCEMENT_BONUS_VS_RACIAL_GROUP`
-      - `ITEM_PROPERTY_EXTRA_MELEE_DAMAGE_TYPE`
-      - `ITEM_PROPERTY_EXTRA_RANGED_DAMAGE_TYPE`
-      - `ITEM_PROPERTY_FREEDOM_OF_MOVEMENT`
-      - `ITEM_PROPERTY_IMMUNITY`
-      - `ITEM_PROPERTY_IMMUNITY_DAMAGE_TYPE`
-      - `ITEM_PROPERTY_IMPROVED_FORCE_RESISTANCE`
-      - `ITEM_PROPERTY_IMPROVED_SAVING_THROW`
-      - `ITEM_PROPERTY_IMPROVED_SAVING_THROW_SPECIFIC`
-      - `ITEM_PROPERTY_KEEN`
-      - `ITEM_PROPERTY_LIGHT`
-      - `ITEM_PROPERTY_MASSIVE_CRITICALS`
-      - `ITEM_PROPERTY_MIGHTY`
-      - `ITEM_PROPERTY_MONSTER_DAMAGE`
-      - `ITEM_PROPERTY_NO_DAMAGE`
-      - `ITEM_PROPERTY_ON_HIT_PROPERTIES`
-      - `ITEM_PROPERTY_ON_MONSTER_HIT`
-      - `ITEM_PROPERTY_REGENERATION`
-      - `ITEM_PROPERTY_REGENERATION_FORCE_POINTS`
-      - `ITEM_PROPERTY_SECURITY_SPIKE`
-      - `ITEM_PROPERTY_SKILL_BONUS`
-      - `ITEM_PROPERTY_SPECIAL_WALK`
-      - `ITEM_PROPERTY_TRAP`
-      - `ITEM_PROPERTY_TRUE_SEEING`
-      - `ITEM_PROPERTY_UNLIMITED_AMMUNITION`
-      - `ITEM_PROPERTY_USE_LIMITATION_CLASS`
-      - `ITEM_PROPERTY_USE_LIMITATION_FEAT`
-      - `ITEM_PROPERTY_USE_LIMITATION_RACIAL_TYPE`
-      - `LIVE_CONTENT_PKG1`
-      - `LIVE_CONTENT_PKG2`
-      - `LIVE_CONTENT_PKG3`
-      - `LIVE_CONTENT_PKG4`
-      - `LIVE_CONTENT_PKG5`
-      - `LIVE_CONTENT_PKG6`
-      - `MOVEMENT_SPEED_DEFAULT`
-      - `MOVEMENT_SPEED_DMFAST`
-      - `MOVEMENT_SPEED_FAST`
-      - `MOVEMENT_SPEED_IMMOBILE`
-      - `MOVEMENT_SPEED_NORMAL`
-      - `MOVEMENT_SPEED_PC`
-      - `MOVEMENT_SPEED_SLOW`
-      - `MOVEMENT_SPEED_VERYFAST`
-      - `MOVEMENT_SPEED_VERYSLOW`
-      - `PARTY_AISTYLE_AGGRESSIVE`
-      - `PARTY_AISTYLE_DEFENSIVE`
-      - `PARTY_AISTYLE_PASSIVE`
-      - `PERCEPTION_HEARD`
-      - `PERCEPTION_HEARD_AND_NOT_SEEN`
-      - `PERCEPTION_NOT_HEARD`
-      - `PERCEPTION_NOT_SEEN`
-      - `PERCEPTION_NOT_SEEN_AND_NOT_HEARD`
-      - `PERCEPTION_SEEN`
-      - `PERCEPTION_SEEN_AND_HEARD`
-      - `PERCEPTION_SEEN_AND_NOT_HEARD`
-      - `PERSISTENT_ZONE_ACTIVE`
-      - `PERSISTENT_ZONE_FOLLOW`
-      - `PI`
-      - `PLACEABLE_ACTION_BASH`
-      - `PLACEABLE_ACTION_KNOCK`
-      - `PLACEABLE_ACTION_UNLOCK`
-      - `PLACEABLE_ACTION_USE`
-      - `PLAYER_CHAR_IS_PC`
-      - `PLAYER_CHAR_NOT_PC`
-      - `PLOT_O_BIG_MONSTERS`
-      - `PLOT_O_DOOM`
-      - `PLOT_O_SCARY_STUFF`
-      - `POISON_ABILITY_SCORE_AVERAGE`
-      - `POISON_ABILITY_SCORE_MILD`
-      - `POISON_ABILITY_SCORE_VIRULENT`
-      - `POISON_DAMAGE_AVERAGE`
-      - `POISON_DAMAGE_MILD`
-      - `POISON_DAMAGE_VIRULENT`
-      - `POLYMORPH_TYPE_BADGER`
-      - `POLYMORPH_TYPE_BALOR`
-      - `POLYMORPH_TYPE_BOAR`
-      - `POLYMORPH_TYPE_BROWN_BEAR`
-      - `POLYMORPH_TYPE_COW`
-      - `POLYMORPH_TYPE_DEATH_SLAAD`
-      - `POLYMORPH_TYPE_DIRE_BADGER`
-      - `POLYMORPH_TYPE_DIRE_BOAR`
-      - `POLYMORPH_TYPE_DIRE_BROWN_BEAR`
-      - `POLYMORPH_TYPE_DIRE_PANTHER`
-      - `POLYMORPH_TYPE_DIRE_WOLF`
-      - `POLYMORPH_TYPE_DOOM_KNIGHT`
-      - `POLYMORPH_TYPE_ELDER_AIR_ELEMENTAL`
-      - `POLYMORPH_TYPE_ELDER_EARTH_ELEMENTAL`
-      - `POLYMORPH_TYPE_ELDER_FIRE_ELEMENTAL`
-      - `POLYMORPH_TYPE_ELDER_WATER_ELEMENTAL`
-      - `POLYMORPH_TYPE_FIRE_GIANT`
-      - `POLYMORPH_TYPE_GIANT_SPIDER`
-      - `POLYMORPH_TYPE_HUGE_AIR_ELEMENTAL`
-      - `POLYMORPH_TYPE_HUGE_EARTH_ELEMENTAL`
-      - `POLYMORPH_TYPE_HUGE_FIRE_ELEMENTAL`
-      - `POLYMORPH_TYPE_HUGE_WATER_ELEMENTAL`
-      - `POLYMORPH_TYPE_IMP`
-      - `POLYMORPH_TYPE_IRON_GOLEM`
-      - `POLYMORPH_TYPE_PANTHER`
-      - `POLYMORPH_TYPE_PENGUIN`
-      - `POLYMORPH_TYPE_PIXIE`
-      - `POLYMORPH_TYPE_QUASIT`
-      - `POLYMORPH_TYPE_RED_DRAGON`
-      - `POLYMORPH_TYPE_SUCCUBUS`
-      - `POLYMORPH_TYPE_TROLL`
-      - `POLYMORPH_TYPE_UMBER_HULK`
-      - `POLYMORPH_TYPE_WERECAT`
-      - `POLYMORPH_TYPE_WERERAT`
-      - `POLYMORPH_TYPE_WEREWOLF`
-      - `POLYMORPH_TYPE_WOLF`
-      - `POLYMORPH_TYPE_YUANTI`
-      - `POLYMORPH_TYPE_ZOMBIE`
-      - `PROJECTILE_PATH_TYPE_ACCELERATING`
-      - `PROJECTILE_PATH_TYPE_BALLISTIC`
-      - `PROJECTILE_PATH_TYPE_DEFAULT`
-      - `PROJECTILE_PATH_TYPE_HIGH_BALLISTIC`
-      - `PROJECTILE_PATH_TYPE_HOMING`
-      - `RACIAL_TYPE_ALL`
-      - `RACIAL_TYPE_DROID`
-      - `RACIAL_TYPE_ELF`
-      - `RACIAL_TYPE_GNOME`
-      - `RACIAL_TYPE_HALFELF`
-      - `RACIAL_TYPE_HALFLING`
-      - `RACIAL_TYPE_HUMAN`
-      - `RACIAL_TYPE_INVALID`
-      - `RACIAL_TYPE_UNKNOWN`
-      - `RADIUS_SIZE_COLOSSAL`
-      - `RADIUS_SIZE_GARGANTUAN`
-      - `RADIUS_SIZE_HUGE`
-      - `RADIUS_SIZE_LARGE`
-      - `RADIUS_SIZE_MEDIUM`
-      - `RADIUS_SIZE_SMALL`
-      - `REPUTATION_TYPE_ENEMY`
-      - `REPUTATION_TYPE_FRIEND`
-      - `REPUTATION_TYPE_NEUTRAL`
-      - `SAVING_THROW_ALL`
-      - `SAVING_THROW_FORT`
-      - `SAVING_THROW_REFLEX`
-      - `SAVING_THROW_TYPE_ACID`
-      - `SAVING_THROW_TYPE_ALL`
-      - `SAVING_THROW_TYPE_BLASTER`
-      - `SAVING_THROW_TYPE_COLD`
-      - `SAVING_THROW_TYPE_DARK_SIDE`
-      - `SAVING_THROW_TYPE_DEATH`
-      - `SAVING_THROW_TYPE_DISEASE`
-      - `SAVING_THROW_TYPE_ELECTRICAL`
-      - `SAVING_THROW_TYPE_FEAR`
-      - `SAVING_THROW_TYPE_FIRE`
-      - `SAVING_THROW_TYPE_FORCE_POWER`
-      - `SAVING_THROW_TYPE_ION`
-      - `SAVING_THROW_TYPE_LIGHT_SIDE`
-      - `SAVING_THROW_TYPE_MIND_AFFECTING`
-      - `SAVING_THROW_TYPE_NONE`
-      - `SAVING_THROW_TYPE_PARALYSIS`
-      - `SAVING_THROW_TYPE_POISON`
-      - `SAVING_THROW_TYPE_SNEAK_ATTACK`
-      - `SAVING_THROW_TYPE_SONIC`
-      - `SAVING_THROW_TYPE_TRAP`
-      - `SAVING_THROW_WILL`
-      - `SHAPE_CONE`
-      - `SHAPE_CUBE`
-      - `SHAPE_SPELLCONE`
-      - `SHAPE_SPELLCYLINDER`
-      - `SHAPE_SPHERE`
-      - `SHIELD_ANTIQUE_DROID`
-      - `SHIELD_DROID_ENERGY_1`
-      - `SHIELD_DROID_ENERGY_2`
-      - `SHIELD_DROID_ENERGY_3`
-      - `SHIELD_DROID_ENVIRO_1`
-      - `SHIELD_DROID_ENVIRO_2`
-      - `SHIELD_DROID_ENVIRO_3`
-      - `SHIELD_DUELING_ECHANI`
-      - `SHIELD_DUELING_YUSANIS`
-      - `SHIELD_ECHANI`
-      - `SHIELD_ENERGY`
-      - `SHIELD_ENERGY_ARKANIAN`
-      - `SHIELD_ENERGY_SITH`
-      - `SHIELD_MANDALORIAN_MELEE`
-      - `SHIELD_MANDALORIAN_POWER`
-      - `SHIELD_PLOT_TAR_M09AA`
-      - `SHIELD_PLOT_UNK_M44AA`
-      - `SHIELD_VERPINE_PROTOTYPE`
-      - `SKILL_AWARENESS`
-      - `SKILL_COMPUTER_USE`
-      - `SKILL_DEMOLITIONS`
-      - `SKILL_MAX_SKILLS`
-      - `SKILL_PERSUADE`
-      - `SKILL_REPAIR`
-      - `SKILL_SECURITY`
-      - `SKILL_STEALTH`
-      - `SKILL_TREAT_INJURY`
-      - `sLanguage`
-      - `SPECIAL_ABILITY_BATTLE_MEDITATION`
-      - `SPECIAL_ABILITY_BODY_FUEL`
-      - `SPECIAL_ABILITY_CAMOFLAGE`
-      - `SPECIAL_ABILITY_CATHAR_REFLEXES`
-      - `SPECIAL_ABILITY_COMBAT_REGENERATION`
-      - `SPECIAL_ABILITY_DOMINATE_MIND`
-      - `SPECIAL_ABILITY_ENHANCED_SENSES`
-      - `SPECIAL_ABILITY_PSYCHIC_STANCE`
-      - `SPECIAL_ABILITY_RAGE`
-      - `SPECIAL_ABILITY_SENTINEL_STANCE`
-      - `SPECIAL_ABILITY_TAUNT`
-      - `SPECIAL_ABILITY_WARRIOR_STANCE`
-      - `SPECIAL_ABILITY_WHIRLING_DERVISH`
-      - `SPECIAL_ATTACK_CALLED_SHOT_ARM`
-      - `SPECIAL_ATTACK_CALLED_SHOT_LEG`
-      - `SPECIAL_ATTACK_DISARM`
-      - `SPECIAL_ATTACK_FLURRY_OF_BLOWS`
-      - `SPECIAL_ATTACK_IMPROVED_DISARM`
-      - `SPECIAL_ATTACK_IMPROVED_KNOCKDOWN`
-      - `SPECIAL_ATTACK_INVALID`
-      - `SPECIAL_ATTACK_KNOCKDOWN`
-      - `SPECIAL_ATTACK_RAPID_SHOT`
-      - `SPECIAL_ATTACK_SAP`
-      - `SPECIAL_ATTACK_STUNNING_FIST`
-      - `STANDARD_FACTION_ENDAR_SPIRE`
-      - `STANDARD_FACTION_FRIENDLY_1`
-      - `STANDARD_FACTION_FRIENDLY_2`
-      - `STANDARD_FACTION_GIZKA_1`
-      - `STANDARD_FACTION_GIZKA_2`
-      - `STANDARD_FACTION_GLB_XOR`
-      - `STANDARD_FACTION_HOSTILE_1`
-      - `STANDARD_FACTION_HOSTILE_2`
-      - `STANDARD_FACTION_INSANE`
-      - `STANDARD_FACTION_NEUTRAL`
-      - `STANDARD_FACTION_PREDATOR`
-      - `STANDARD_FACTION_PREY`
-      - `STANDARD_FACTION_PTAT_TUSKAN`
-      - `STANDARD_FACTION_RANCOR`
-      - `STANDARD_FACTION_SURRENDER_1`
-      - `STANDARD_FACTION_SURRENDER_2`
-      - `STANDARD_FACTION_TRAP`
-      - `SUBRACE_NONE`
-      - `SUBRACE_WOOKIE`
-      - `SUBSCREEN_ID_ABILITY`
-      - `SUBSCREEN_ID_CHARACTER_RECORD`
-      - `SUBSCREEN_ID_EQUIP`
-      - `SUBSCREEN_ID_ITEM`
-      - `SUBSCREEN_ID_MAP`
-      - `SUBSCREEN_ID_MESSAGES`
-      - `SUBSCREEN_ID_NONE`
-      - `SUBSCREEN_ID_OPTIONS`
-      - `SUBSCREEN_ID_QUEST`
-      - `SUBSKILL_EXAMINETRAP`
-      - `SUBSKILL_FLAGTRAP`
-      - `SUBSKILL_RECOVERTRAP`
-      - `SUBTYPE_EXTRAORDINARY`
-      - `SUBTYPE_MAGICAL`
-      - `SUBTYPE_SUPERNATURAL`
-      - `SWMINIGAME_TRACKFOLLOWER_SOUND_DEATH`
-      - `SWMINIGAME_TRACKFOLLOWER_SOUND_ENGINE`
-      - `TALENT_EXCLUDE_ALL_OF_TYPE`
-      - `TALENT_TYPE_FEAT`
-      - `TALENT_TYPE_FORCE`
-      - `TALENT_TYPE_SKILL`
-      - `TALENT_TYPE_SPELL`
-      - `TALKVOLUME_SHOUT`
-      - `TALKVOLUME_SILENT_SHOUT`
-      - `TALKVOLUME_SILENT_TALK`
-      - `TALKVOLUME_TALK`
-      - `TALKVOLUME_WHISPER`
-      - `TRAP_BASE_TYPE_FLASH_STUN_AVERAGE`
-      - `TRAP_BASE_TYPE_FLASH_STUN_DEADLY`
-      - `TRAP_BASE_TYPE_FLASH_STUN_MINOR`
-      - `TRAP_BASE_TYPE_FRAGMENTATION_MINE_AVERAGE`
-      - `TRAP_BASE_TYPE_FRAGMENTATION_MINE_DEADLY`
-      - `TRAP_BASE_TYPE_FRAGMENTATION_MINE_MINOR`
-      - `TRAP_BASE_TYPE_LASER_SLICING_AVERAGE`
-      - `TRAP_BASE_TYPE_LASER_SLICING_DEADLY`
-      - `TRAP_BASE_TYPE_LASER_SLICING_MINOR`
-      - `TRAP_BASE_TYPE_POISON_GAS_AVERAGE`
-      - `TRAP_BASE_TYPE_POISON_GAS_DEADLY`
-      - `TRAP_BASE_TYPE_POISON_GAS_MINOR`
-      - `TRUE`
-      - `TUTORIAL_WINDOW_RETURN_TO_BASE`
-      - `TUTORIAL_WINDOW_START_SWOOP_RACE`
-      - `VIDEO_EFFECT_FREELOOK_HK47`
-      - `VIDEO_EFFECT_FREELOOK_T3M4`
-      - `VIDEO_EFFECT_NONE`
-      - `VIDEO_EFFECT_SECURITY_CAMERA`
-    - [Planet Constants](#planet-constants)
-      - `PLANET_DANTOOINE`
-      - `PLANET_EBON_HAWK`
-      - `PLANET_KORRIBAN`
-      - `PLANET_LIVE_01`
-      - `PLANET_LIVE_02`
-      - `PLANET_LIVE_03`
-      - `PLANET_LIVE_04`
-      - `PLANET_LIVE_05`
-    - [Visual Effects (VFX)](#visual-effects-vfx)
-      - `VFX_ARD_HEAT_SHIMMER`
-      - `VFX_ARD_LIGHT_BLIND`
-      - `VFX_ARD_LIGHT_YELLOW_10`
-      - `VFX_ARD_LIGHT_YELLOW_20`
-      - `VFX_BEAM_COLD_RAY`
-      - `VFX_BEAM_DEATH_FIELD_TENTACLE`
-      - `VFX_BEAM_DRAIN_LIFE`
-      - `VFX_BEAM_DROID_DESTROY`
-      - `VFX_BEAM_DROID_DISABLE`
-      - `VFX_BEAM_FLAME_SPRAY`
-      - `VFX_BEAM_ION_RAY_01`
-      - `VFX_BEAM_ION_RAY_02`
-      - `VFX_BEAM_LIGHTNING_DARK_L`
-      - `VFX_BEAM_LIGHTNING_DARK_S`
-      - `VFX_BEAM_STUN_RAY`
-      - `VFX_COM_BLASTER_DEFLECTION`
-      - `VFX_COM_BLASTER_IMPACT`
-      - `VFX_COM_BLASTER_IMPACT_GROUND`
-      - `VFX_COM_CRITICAL_STRIKE_IMPROVED_SABER`
-      - `VFX_COM_CRITICAL_STRIKE_IMPROVED_STAFF`
-      - `VFX_COM_CRITICAL_STRIKE_MASTERY_SABER`
-      - `VFX_COM_CRITICAL_STRIKE_MASTERY_STAFF`
-      - `VFX_COM_DROID_EXPLOSION_1`
-      - `VFX_COM_DROID_EXPLOSION_2`
-      - `VFX_COM_FLURRY_IMPROVED_SABER`
-      - `VFX_COM_FLURRY_IMPROVED_STAFF`
-      - `VFX_COM_FORCE_RESISTED`
-      - `VFX_COM_JEDI_FORCE_FIZZLE`
-      - `VFX_COM_MULTI_SHOT`
-      - `VFX_COM_POWER_ATTACK_IMPROVED_SABER`
-      - `VFX_COM_POWER_ATTACK_IMPROVED_STAFF`
-      - `VFX_COM_POWER_ATTACK_MASTERY_SABER`
-      - `VFX_COM_POWER_ATTACK_MASTERY_STAFF`
-      - `VFX_COM_POWER_BLAST_IMPROVED`
-      - `VFX_COM_POWER_BLAST_MASTERY`
-      - `VFX_COM_RAPID_SHOT_IMPROVED`
-      - `VFX_COM_SNIPER_SHOT_IMPROVED`
-      - `VFX_COM_SNIPER_SHOT_MASTERY`
-      - `VFX_COM_SPARKS_BLASTER`
-      - `VFX_COM_SPARKS_LARGE`
-      - `VFX_COM_SPARKS_LIGHTSABER`
-      - `VFX_COM_SPARKS_PARRY_METAL`
-      - `VFX_COM_WHIRLWIND_STRIKE_SABER`
-      - `VFX_COM_WHIRLWIND_STRIKE_STAFF`
-      - `VFX_DUR_BODY_FUAL`
-      - `VFX_DUR_CARBONITE_CHUNKS`
-      - `VFX_DUR_CARBONITE_ENCASING`
-      - `VFX_DUR_FORCE_WHIRLWIND`
-      - `VFX_DUR_HOLD`
-      - `VFX_DUR_INVISIBILITY`
-      - `VFX_DUR_KNIGHTS_SPEED`
-      - `VFX_DUR_PSYCHIC_STATIC`
-      - `VFX_DUR_SHIELD_BLUE_01`
-      - `VFX_DUR_SHIELD_BLUE_02`
-      - `VFX_DUR_SHIELD_BLUE_03`
-      - `VFX_DUR_SHIELD_BLUE_04`
-      - `VFX_DUR_SHIELD_BLUE_MARK_I`
-      - `VFX_DUR_SHIELD_BLUE_MARK_II`
-      - `VFX_DUR_SHIELD_BLUE_MARK_IV`
-      - `VFX_DUR_SHIELD_CHROME_01`
-      - `VFX_DUR_SHIELD_CHROME_02`
-      - `VFX_DUR_SHIELD_GREEN_01`
-      - `VFX_DUR_SHIELD_RED_01`
-      - `VFX_DUR_SHIELD_RED_02`
-      - `VFX_DUR_SHIELD_RED_MARK_I`
-      - `VFX_DUR_SHIELD_RED_MARK_II`
-      - `VFX_DUR_SHIELD_RED_MARK_IV`
-      - `VFX_DUR_SPEED`
-      - `VFX_DUR_STEALTH_PULSE`
-      - `VFX_FNF_FORCE_WAVE`
-      - `VFX_FNF_GRAVITY_GENERATOR`
-      - `VFX_FNF_GRENADE_ADHESIVE`
-      - `VFX_FNF_GRENADE_CRYOBAN`
-      - `VFX_FNF_GRENADE_FRAGMENTATION`
-      - `VFX_FNF_GRENADE_ION`
-      - `VFX_FNF_GRENADE_PLASMA`
-      - `VFX_FNF_GRENADE_POISON`
-      - `VFX_FNF_GRENADE_SONIC`
-      - `VFX_FNF_GRENADE_STUN`
-      - `VFX_FNF_GRENADE_THERMAL_DETONATOR`
-      - `VFX_FNF_PLOT_MAN_SONIC_WAVE`
-      - `VFX_IMP_CHOKE`
-      - `VFX_IMP_CURE`
-      - `VFX_IMP_FLAME`
-      - `VFX_IMP_FORCE_BREACH`
-      - `VFX_IMP_FORCE_JUMP_ADVANCED`
-      - `VFX_IMP_FORCE_PUSH`
-      - `VFX_IMP_FORCE_WAVE`
-      - `VFX_IMP_FORCE_WHIRLWIND`
-      - `VFX_IMP_GRENADE_ADHESIVE_PERSONAL`
-      - `VFX_IMP_HEAL`
-      - `VFX_IMP_HEALING_SMALL`
-      - `VFX_IMP_MIND_FORCE`
-      - `VFX_IMP_MIND_KINIGHT`
-      - `VFX_IMP_MIND_MASTERY`
-      - `VFX_IMP_MIRV`
-      - `VFX_IMP_MIRV_IMPACT`
-      - `VFX_IMP_SCREEN_SHAKE`
-      - `VFX_IMP_SPEED_KNIGHT`
-      - `VFX_IMP_SPEED_MASTERY`
-      - `VFX_IMP_STUN`
-      - `VFX_IMP_SUPPRESS_FORCE`
-      - `VFX_NONE`
-      - `VFX_PRO_AFFLICT`
-      - `VFX_PRO_DEATH_FIELD`
-      - `VFX_PRO_DRAIN`
-      - `VFX_PRO_DROID_DISABLE`
-      - `VFX_PRO_DROID_KILL`
-      - `VFX_PRO_FORCE_ARMOR`
-      - `VFX_PRO_FORCE_AURA`
-      - `VFX_PRO_FORCE_SHIELD`
-      - `VFX_PRO_LIGHTNING_JEDI`
-      - `VFX_PRO_LIGHTNING_L`
-      - `VFX_PRO_LIGHTNING_L_SOUND`
-      - `VFX_PRO_LIGHTNING_S`
-      - `VFX_PRO_RESIST_ELEMENTS`
-      - `VFX_PRO_RESIST_FORCE`
-      - `VFX_PRO_RESIST_POISON`
-  - [K1-Only Constants](#k1-only-constants)
-    - NPC Constants
-      - `NPC_BASTILA`
-      - `NPC_CARTH`
-      - `NPC_JOLEE`
-      - `NPC_JUHANI`
-      - `NPC_MISSION`
-      - `NPC_ZAALBAR`
-    - Other Constants
-      - `TUTORIAL_WINDOW_MOVEMENT_KEYS`
-    - Planet Constants
-      - `PLANET_ENDAR_SPIRE`
-      - `PLANET_KASHYYYK`
-      - `PLANET_LEVIATHAN`
-      - `PLANET_MANAAN`
-      - `PLANET_STAR_FORGE`
-      - `PLANET_TARIS`
-      - `PLANET_TATOOINE`
-      - `PLANET_UNKNOWN_WORLD`
-  - [TSL-Only Constants](#tsl-only-constants)
-    - Class Type Constants
-      - `CLASS_TYPE_BOUNTYHUNTER`
-      - `CLASS_TYPE_JEDIMASTER`
-      - `CLASS_TYPE_JEDIWATCHMAN`
-      - `CLASS_TYPE_JEDIWEAPONMASTER`
-      - `CLASS_TYPE_SITHASSASSIN`
-      - `CLASS_TYPE_SITHLORD`
-      - `CLASS_TYPE_SITHMARAUDER`
-      - `CLASS_TYPE_TECHSPECIALIST`
-    - Inventory Constants
-      - `INVENTORY_SLOT_LEFTWEAPON2`
-      - `INVENTORY_SLOT_RIGHTWEAPON2`
-    - NPC Constants
-      - `NPC_AISTYLE_HEALER`
-      - `NPC_AISTYLE_MONSTER_POWERS`
-      - `NPC_AISTYLE_PARTY_AGGRO`
-      - `NPC_AISTYLE_PARTY_DEFENSE`
-      - `NPC_AISTYLE_PARTY_RANGED`
-      - `NPC_AISTYLE_PARTY_REMOTE`
-      - `NPC_AISTYLE_PARTY_STATIONARY`
-      - `NPC_AISTYLE_PARTY_SUPPORT`
-      - `NPC_AISTYLE_SKIRMISH`
-      - `NPC_AISTYLE_TURTLE`
-      - `NPC_ATTON`
-      - `NPC_BAO_DUR`
-      - `NPC_DISCIPLE`
-      - `NPC_G0T0`
-      - `NPC_HANDMAIDEN`
-      - `NPC_HANHARR`
-      - `NPC_KREIA`
-      - `NPC_MIRA`
-      - `NPC_VISAS`
-    - Other Constants
-      - `ACTION_FOLLOWOWNER`
-      - `AI_LEVEL_HIGH`
-      - `AI_LEVEL_LOW`
-      - `AI_LEVEL_NORMAL`
-      - `AI_LEVEL_VERY_HIGH`
-      - `AI_LEVEL_VERY_LOW`
-      - `ANIMATION_FIREFORGET_DIVE_ROLL`
-      - `ANIMATION_FIREFORGET_FORCE_CAST`
-      - `ANIMATION_FIREFORGET_OPEN`
-      - `ANIMATION_FIREFORGET_SCREAM`
-      - `ANIMATION_LOOPING_CHECK_BODY`
-      - `ANIMATION_LOOPING_CHOKE_WORKING`
-      - `ANIMATION_LOOPING_CLOSED`
-      - `ANIMATION_LOOPING_MEDITATE_STAND`
-      - `ANIMATION_LOOPING_RAGE`
-      - `ANIMATION_LOOPING_SIT_AND_MEDITATE`
-      - `ANIMATION_LOOPING_SIT_CHAIR`
-      - `ANIMATION_LOOPING_SIT_CHAIR_COMP1`
-      - `ANIMATION_LOOPING_SIT_CHAIR_COMP2`
-      - `ANIMATION_LOOPING_SIT_CHAIR_DRINK`
-      - `ANIMATION_LOOPING_SIT_CHAIR_PAZAK`
-      - `ANIMATION_LOOPING_STEALTH`
-      - `ANIMATION_LOOPING_UNLOCK_DOOR`
-      - `BASE_ITEM_FORCE_PIKE`
-      - `BASE_ITEM_WRIST_LAUNCHER`
-      - `EFFECT_TYPE_DROID_CONFUSED`
-      - `EFFECT_TYPE_DROIDSCRAMBLE`
-      - `EFFECT_TYPE_MINDTRICK`
-      - `FEAT_CLASS_SKILL_AWARENESS`
-      - `FEAT_CLASS_SKILL_COMPUTER_USE`
-      - `FEAT_CLASS_SKILL_DEMOLITIONS`
-      - `FEAT_CLASS_SKILL_REPAIR`
-      - `FEAT_CLASS_SKILL_SECURITY`
-      - `FEAT_CLASS_SKILL_STEALTH`
-      - `FEAT_CLASS_SKILL_TREAT_INJURY`
-      - `FEAT_CLOSE_COMBAT`
-      - `FEAT_CRAFT`
-      - `FEAT_DARK_SIDE_CORRUPTION`
-      - `FEAT_DEFLECT`
-      - `FEAT_DROID_INTERFACE`
-      - `FEAT_DUAL_STRIKE`
-      - `FEAT_EVASION`
-      - `FEAT_FIGHTING_SPIRIT`
-      - `FEAT_FINESSE_LIGHTSABERS`
-      - `FEAT_FINESSE_MELEE_WEAPONS`
-      - `FEAT_FORCE_CHAIN`
-      - `FEAT_HEROIC_RESOLVE`
-      - `FEAT_IGNORE_PAIN_1`
-      - `FEAT_IGNORE_PAIN_2`
-      - `FEAT_IGNORE_PAIN_3`
-      - `FEAT_IMPLANT_SWITCHING`
-      - `FEAT_IMPROVED_CLOSE_COMBAT`
-      - `FEAT_IMPROVED_DUAL_STRIKE`
-      - `FEAT_IMPROVED_FORCE_CAMOUFLAGE`
-      - `FEAT_IMPROVED_PRECISE_SHOT`
-      - `FEAT_INCREASE_COMBAT_DAMAGE_1`
-      - `FEAT_INCREASE_COMBAT_DAMAGE_2`
-      - `FEAT_INCREASE_COMBAT_DAMAGE_3`
-      - `FEAT_INCREASE_MELEE_DAMAGE_1`
-      - `FEAT_INCREASE_MELEE_DAMAGE_2`
-      - `FEAT_INCREASE_MELEE_DAMAGE_3`
-      - `FEAT_INNER_STRENGTH_1`
-      - `FEAT_INNER_STRENGTH_2`
-      - `FEAT_INNER_STRENGTH_3`
-      - `FEAT_KINETIC_COMBAT`
-      - `FEAT_LIGHT_SIDE_ENLIGHTENMENT`
-      - `FEAT_MANDALORIAN_COURAGE`
-      - `FEAT_MASTER_DUAL_STRIKE`
-      - `FEAT_MASTER_FORCE_CAMOUFLAGE`
-      - `FEAT_MASTER_PRECISE_SHOT`
-      - `FEAT_MASTERCRAFT_ARMOR_1`
-      - `FEAT_MASTERCRAFT_ARMOR_2`
-      - `FEAT_MASTERCRAFT_ARMOR_3`
-      - `FEAT_MASTERCRAFT_WEAPONS_1`
-      - `FEAT_MASTERCRAFT_WEAPONS_2`
-      - `FEAT_MASTERCRAFT_WEAPONS_3`
-      - `FEAT_MENTOR`
-      - `FEAT_MOBILITY`
-      - `FEAT_PERSONAL_CLOAKING_SHIELD`
-      - `FEAT_PRECISE_SHOT`
-      - `FEAT_PRECISE_SHOT_IV`
-      - `FEAT_PRECISE_SHOT_V`
-      - `FEAT_REGENERATE_FORCE_POINTS`
-      - `FEAT_REGENERATE_VITALITY_POINTS`
-      - `FEAT_SPIRIT`
-      - `FEAT_STEALTH_RUN`
-      - `FEAT_SUPERIOR_WEAPON_FOCUS_LIGHTSABER_1`
-      - `FEAT_SUPERIOR_WEAPON_FOCUS_LIGHTSABER_2`
-      - `FEAT_SUPERIOR_WEAPON_FOCUS_LIGHTSABER_3`
-      - `FEAT_SUPERIOR_WEAPON_FOCUS_TWO_WEAPON_1`
-      - `FEAT_SUPERIOR_WEAPON_FOCUS_TWO_WEAPON_2`
-      - `FEAT_SUPERIOR_WEAPON_FOCUS_TWO_WEAPON_3`
-      - `FEAT_SURVIVAL`
-      - `FEAT_TARGETING_1`
-      - `FEAT_TARGETING_10`
-      - `FEAT_TARGETING_2`
-      - `FEAT_TARGETING_3`
-      - `FEAT_TARGETING_4`
-      - `FEAT_TARGETING_5`
-      - `FEAT_TARGETING_6`
-      - `FEAT_TARGETING_7`
-      - `FEAT_TARGETING_8`
-      - `FEAT_TARGETING_9`
-      - `FEAT_WAR_VETERAN`
-      - `FORCE_POWER_BAT_MED_ENEMY`
-      - `FORCE_POWER_BATTLE_MEDITATION_PC`
-      - `FORCE_POWER_BATTLE_PRECOGNITION`
-      - `FORCE_POWER_BEAST_CONFUSION`
-      - `FORCE_POWER_BEAST_TRICK`
-      - `FORCE_POWER_BREATH_CONTROL`
-      - `FORCE_POWER_CONFUSION`
-      - `FORCE_POWER_CRUSH_OPPOSITION_I`
-      - `FORCE_POWER_CRUSH_OPPOSITION_II`
-      - `FORCE_POWER_CRUSH_OPPOSITION_III`
-      - `FORCE_POWER_CRUSH_OPPOSITION_IV`
-      - `FORCE_POWER_CRUSH_OPPOSITION_V`
-      - `FORCE_POWER_CRUSH_OPPOSITION_VI`
-      - `FORCE_POWER_DRAIN_FORCE`
-      - `FORCE_POWER_DROID_CONFUSION`
-      - `FORCE_POWER_DROID_TRICK`
-      - `FORCE_POWER_FORCE_BARRIER`
-      - `FORCE_POWER_FORCE_BODY`
-      - `FORCE_POWER_FORCE_CAMOUFLAGE`
-      - `FORCE_POWER_FORCE_CRUSH`
-      - `FORCE_POWER_FORCE_ENLIGHTENMENT`
-      - `FORCE_POWER_FORCE_REDIRECTION`
-      - `FORCE_POWER_FORCE_REPULSION`
-      - `FORCE_POWER_FORCE_SCREAM`
-      - `FORCE_POWER_FORCE_SIGHT`
-      - `FORCE_POWER_FURY`
-      - `FORCE_POWER_IMP_BAT_MED_ENEMY`
-      - `FORCE_POWER_IMPROVED_BATTLE_MEDITATION_PC`
-      - `FORCE_POWER_IMPROVED_DRAIN_FORCE`
-      - `FORCE_POWER_IMPROVED_FORCE_BARRIER`
-      - `FORCE_POWER_IMPROVED_FORCE_BODY`
-      - `FORCE_POWER_IMPROVED_FORCE_CAMOUFLAGE`
-      - `FORCE_POWER_IMPROVED_FORCE_SCREAM`
-      - `FORCE_POWER_IMPROVED_FURY`
-      - `FORCE_POWER_IMPROVED_REVITALIZE`
-      - `FORCE_POWER_INSPIRE_FOLLOWERS_I`
-      - `FORCE_POWER_INSPIRE_FOLLOWERS_II`
-      - `FORCE_POWER_INSPIRE_FOLLOWERS_III`
-      - `FORCE_POWER_INSPIRE_FOLLOWERS_IV`
-      - `FORCE_POWER_INSPIRE_FOLLOWERS_V`
-      - `FORCE_POWER_INSPIRE_FOLLOWERS_VI`
-      - `FORCE_POWER_MAS_BAT_MED_ENEMY`
-      - `FORCE_POWER_MASTER_BATTLE_MEDITATION_PC`
-      - `FORCE_POWER_MASTER_DRAIN_FORCE`
-      - `FORCE_POWER_MASTER_ENERGY_RESISTANCE`
-      - `FORCE_POWER_MASTER_FORCE_BARRIER`
-      - `FORCE_POWER_MASTER_FORCE_BODY`
-      - `FORCE_POWER_MASTER_FORCE_CAMOUFLAGE`
-      - `FORCE_POWER_MASTER_FORCE_SCREAM`
-      - `FORCE_POWER_MASTER_FURY`
-      - `FORCE_POWER_MASTER_HEAL`
-      - `FORCE_POWER_MASTER_REVITALIZE`
-      - `FORCE_POWER_MIND_TRICK`
-      - `FORCE_POWER_PRECOGNITION`
-      - `FORCE_POWER_REVITALIZE`
-      - `FORCE_POWER_WOOKIEE_RAGE_I`
-      - `FORCE_POWER_WOOKIEE_RAGE_II`
-      - `FORCE_POWER_WOOKIEE_RAGE_III`
-      - `FORFEIT_DXUN_SWORD_ONLY`
-      - `FORFEIT_NO_ARMOR`
-      - `FORFEIT_NO_FORCE_POWERS`
-      - `FORFEIT_NO_ITEM_BUT_SHIELD`
-      - `FORFEIT_NO_ITEMS`
-      - `FORFEIT_NO_LIGHTSABER`
-      - `FORFEIT_NO_RANGED`
-      - `FORFEIT_NO_WEAPONS`
-      - `FORM_FORCE_I_FOCUS`
-      - `FORM_FORCE_II_POTENCY`
-      - `FORM_FORCE_III_AFFINITY`
-      - `FORM_FORCE_IV_MASTERY`
-      - `FORM_SABER_I_SHII_CHO`
-      - `FORM_SABER_II_MAKASHI`
-      - `FORM_SABER_III_SORESU`
-      - `FORM_SABER_IV_ATARU`
-      - `FORM_SABER_V_SHIEN`
-      - `FORM_SABER_VI_NIMAN`
-      - `FORM_SABER_VII_JUYO`
-      - `IMMUNITY_TYPE_DROID_CONFUSED`
-      - `IMPLANT_AGI`
-      - `IMPLANT_END`
-      - `IMPLANT_NONE`
-      - `IMPLANT_REGEN`
-      - `IMPLANT_STR`
-      - `ITEM_PROPERTY_DAMPEN_SOUND`
-      - `ITEM_PROPERTY_DISGUISE`
-      - `ITEM_PROPERTY_DOORCUTTING`
-      - `ITEM_PROPERTY_DOORSABERING`
-      - `ITEM_PROPERTY_LIMIT_USE_BY_GENDER`
-      - `ITEM_PROPERTY_LIMIT_USE_BY_PC`
-      - `ITEM_PROPERTY_LIMIT_USE_BY_SUBRACE`
-      - `POISON_ABILITY_AND_DAMAGE_AVERAGE`
-      - `POISON_ABILITY_AND_DAMAGE_VIRULENT`
-      - `POISON_DAMAGE_KYBER_DART`
-      - `POISON_DAMAGE_KYBER_DART_HALF`
-      - `POISON_DAMAGE_NORMAL_DART`
-      - `POISON_DAMAGE_ROCKET`
-      - `PUP_OTHER1`
-      - `PUP_OTHER2`
-      - `PUP_SENSORBALL`
-      - `SHIELD_DREXL`
-      - `SHIELD_HEAT`
-      - `SHIELD_PLOT_MAN_M28AA`
-      - `STANDARD_FACTION_ONE_ON_ONE`
-      - `STANDARD_FACTION_PARTYPUPPET`
-      - `STANDARD_FACTION_SELF_LOATHING`
-      - `TRAP_BASE_TYPE_FLASH_STUN_DEVASTATING`
-      - `TRAP_BASE_TYPE_FLASH_STUN_STRONG`
-      - `TRAP_BASE_TYPE_FRAGMENTATION_MINE_DEVASTATING`
-      - `TRAP_BASE_TYPE_FRAGMENTATION_MINE_STRONG`
-      - `TRAP_BASE_TYPE_LASER_SLICING_DEVASTATING`
-      - `TRAP_BASE_TYPE_LASER_SLICING_STRONG`
-      - `TRAP_BASE_TYPE_POISON_GAS_DEVASTATING`
-      - `TRAP_BASE_TYPE_POISON_GAS_STRONG`
-      - `TRAP_BASE_TYPE_SONIC_CHARGE_AVERAGE`
-      - `TRAP_BASE_TYPE_SONIC_CHARGE_DEADLY`
-      - `TRAP_BASE_TYPE_SONIC_CHARGE_DEVASTATING`
-      - `TRAP_BASE_TYPE_SONIC_CHARGE_MINOR`
-      - `TRAP_BASE_TYPE_SONIC_CHARGE_STRONG`
-      - `TUTORIAL_WINDOW_TEMP1`
-      - `TUTORIAL_WINDOW_TEMP10`
-      - `TUTORIAL_WINDOW_TEMP11`
-      - `TUTORIAL_WINDOW_TEMP12`
-      - `TUTORIAL_WINDOW_TEMP13`
-      - `TUTORIAL_WINDOW_TEMP14`
-      - `TUTORIAL_WINDOW_TEMP15`
-      - `TUTORIAL_WINDOW_TEMP2`
-      - `TUTORIAL_WINDOW_TEMP3`
-      - `TUTORIAL_WINDOW_TEMP4`
-      - `TUTORIAL_WINDOW_TEMP5`
-      - `TUTORIAL_WINDOW_TEMP6`
-      - `TUTORIAL_WINDOW_TEMP7`
-      - `TUTORIAL_WINDOW_TEMP8`
-      - `TUTORIAL_WINDOW_TEMP9`
-      - `VIDEO_EFFECT_CLAIRVOYANCE`
-      - `VIDEO_EFFECT_CLAIRVOYANCEFULL`
-      - `VIDEO_EFFECT_FORCESIGHT`
-      - `VIDEO_EFFECT_FURY_1`
-      - `VIDEO_EFFECT_FURY_2`
-      - `VIDEO_EFFECT_FURY_3`
-      - `VIDEO_EFFECT_VISAS_FREELOOK`
-      - `VIDEO_FFECT_SECURITY_NO_LABEL`
-    - Planet Constants
-      - `PLANET_DXUN`
-      - `PLANET_HARBINGER`
-      - `PLANET_LIVE_06`
-      - `PLANET_M4_78`
-      - `PLANET_MALACHOR_V`
-      - `PLANET_NAR_SHADDAA`
-      - `PLANET_ONDERON`
-      - `PLANET_PERAGUS`
-      - `PLANET_TELOS`
-    - Visual Effects (VFX)
-      - `VFX_DUR_ELECTRICAL_SPARK`
-      - `VFX_DUR_HOLO_PROJECT`
-  - [KOTOR Library Files](#kotor-library-files)
-    - [`k_inc_cheat`](#k_inc_cheat)
-    - [`k_inc_dan`](#k_inc_dan)
-    - [`k_inc_debug`](#k_inc_debug)
-    - [`k_inc_drop`](#k_inc_drop)
-    - [`k_inc_ebonhawk`](#k_inc_ebonhawk)
-    - [`k_inc_end`](#k_inc_end)
-    - [`k_inc_endgame`](#k_inc_endgame)
-    - [`k_inc_force`](#k_inc_force)
-    - [`k_inc_generic`](#k_inc_generic)
-    - [`k_inc_gensupport`](#k_inc_gensupport)
-    - [`k_inc_kas`](#k_inc_kas)
-    - [`k_inc_lev`](#k_inc_lev)
-    - [`k_inc_man`](#k_inc_man)
-    - [`k_inc_stunt`](#k_inc_stunt)
-    - [`k_inc_switch`](#k_inc_switch)
-    - [`k_inc_tar`](#k_inc_tar)
-    - [`k_inc_tat`](#k_inc_tat)
-    - [`k_inc_treasure`](#k_inc_treasure)
-    - [`k_inc_unk`](#k_inc_unk)
-    - [`k_inc_utility`](#k_inc_utility)
-    - [`k_inc_walkways`](#k_inc_walkways)
-    - [`k_inc_zone`](#k_inc_zone)
-  - [TSL Library Files](#tsl-library-files)
-    - [`a_global_inc`](#a_global_inc)
-    - [`a_influence_inc`](#a_influence_inc)
-    - [`a_localn_inc`](#a_localn_inc)
-    - `k_inc_cheat`
-    - `k_inc_debug`
-    - [`k_inc_disguise`](#k_inc_disguise)
-    - `k_inc_drop`
-    - [`k_inc_fab`](#k_inc_fab)
-    - [`k_inc_fakecombat`](#k_inc_fakecombat)
-    - `k_inc_force`
-    - `k_inc_generic`
-    - `k_inc_gensupport`
-    - [`k_inc_glob_party`](#k_inc_glob_party)
-    - [`k_inc_hawk`](#k_inc_hawk)
-    - [`k_inc_item_gen`](#k_inc_item_gen)
-    - [`k_inc_npckill`](#k_inc_npckill)
-    - [`k_inc_q_crystal`](#k_inc_q_crystal)
-    - [`k_inc_quest_hk`](#k_inc_quest_hk)
-    - `k_inc_switch`
-    - [`k_inc_treas_k2`](#k_inc_treas_k2)
-    - `k_inc_treasure`
-    - `k_inc_utility`
-    - `k_inc_walkways`
-    - `k_inc_zone`
-    - [`k_oei_hench_inc`](#k_oei_hench_inc)
-  - [Compilation Process](#compilation-process)
-    - [Attempts to Uncomment or Modify](#attempts-to-uncomment-or-modify)
-    - [Commented-Out Elements in nwscript.nss](#commented-out-elements-in-nwscriptnss)
-    - [Common Modder Workarounds](#common-modder-workarounds)
-    - [Forum Discussions and Community Knowledge](#forum-discussions-and-community-knowledge)
-    - [Key Citations](#key-citations)
-    - [Key Examples of Commented Elements](#key-examples-of-commented-elements)
-    - [Reasons for Commented-Out Elements](#reasons-for-commented-out-elements)
-  - [Reference Implementations](#reference-implementations)
-    - Other Constants
-      - `TRUE` **(K1 \& TSL)**
-      - `FALSE` **(K1 \& TSL)**
-      - `PI` **(K1 \& TSL)**
-      - `ATTITUDE_NEUTRAL` **(K1 \& TSL)**
-      - `ATTITUDE_AGGRESSIVE` **(K1 \& TSL)**
-      - `ATTITUDE_DEFENSIVE` **(K1 \& TSL)**
-      - `ATTITUDE_SPECIAL` **(K1 \& TSL)**
-      - `RADIUS_SIZE_SMALL` **(K1 \& TSL)**
-      - `RADIUS_SIZE_MEDIUM` **(K1 \& TSL)**
-      - `RADIUS_SIZE_LARGE` **(K1 \& TSL)**
-      - `RADIUS_SIZE_HUGE` **(K1 \& TSL)**
-      - `RADIUS_SIZE_GARGANTUAN` **(K1 \& TSL)**
-      - `RADIUS_SIZE_COLOSSAL` **(K1 \& TSL)**
-      - `ATTACK_RESULT_INVALID` **(K1 \& TSL)**
-      - `ATTACK_RESULT_HIT_SUCCESSFUL` **(K1 \& TSL)**
-      - `ATTACK_RESULT_CRITICAL_HIT` **(K1 \& TSL)**
-      - `ATTACK_RESULT_AUTOMATIC_HIT` **(K1 \& TSL)**
-      - `ATTACK_RESULT_MISS` **(K1 \& TSL)**
-      - `ATTACK_RESULT_ATTACK_RESISTED` **(K1 \& TSL)**
-      - `ATTACK_RESULT_ATTACK_FAILED` **(K1 \& TSL)**
-      - `ATTACK_RESULT_PARRIED` **(K1 \& TSL)**
-      - `ATTACK_RESULT_DEFLECTED` **(K1 \& TSL)**
-      - `AOE_PER_FOGACID` **(K1 \& TSL)**
-      - `AOE_PER_FOGFIRE` **(K1 \& TSL)**
-      - `AOE_PER_FOGSTINK` **(K1 \& TSL)**
-      - `AOE_PER_FOGKILL` **(K1 \& TSL)**
-      - `AOE_PER_FOGMIND` **(K1 \& TSL)**
-      - `AOE_PER_WALLFIRE` **(K1 \& TSL)**
-      - `AOE_PER_WALLWIND` **(K1 \& TSL)**
-      - `AOE_PER_WALLBLADE` **(K1 \& TSL)**
-      - `AOE_PER_WEB` **(K1 \& TSL)**
-      - `AOE_PER_ENTANGLE` **(K1 \& TSL)**
-      - `AOE_PER_DARKNESS` **(K1 \& TSL)**
-      - `AOE_MOB_CIRCEVIL` **(K1 \& TSL)**
-      - `AOE_MOB_CIRCGOOD` **(K1 \& TSL)**
-      - `AOE_MOB_CIRCLAW` **(K1 \& TSL)**
-      - `AOE_MOB_CIRCCHAOS` **(K1 \& TSL)**
-      - `AOE_MOB_FEAR` **(K1 \& TSL)**
-      - `AOE_MOB_BLINDING` **(K1 \& TSL)**
-      - `AOE_MOB_UNEARTHLY` **(K1 \& TSL)**
-      - `AOE_MOB_MENACE` **(K1 \& TSL)**
-      - `AOE_MOB_UNNATURAL` **(K1 \& TSL)**
-      - `AOE_MOB_STUN` **(K1 \& TSL)**
-      - `AOE_MOB_PROTECTION` **(K1 \& TSL)**
-      - `AOE_MOB_FIRE` **(K1 \& TSL)**
-      - `AOE_MOB_FROST` **(K1 \& TSL)**
-      - `AOE_MOB_ELECTRICAL` **(K1 \& TSL)**
-      - `AOE_PER_FOGGHOUL` **(K1 \& TSL)**
-      - `AOE_MOB_TYRANT_FOG` **(K1 \& TSL)**
-      - `AOE_PER_STORM` **(K1 \& TSL)**
-      - `AOE_PER_INVIS_SPHERE` **(K1 \& TSL)**
-      - `AOE_MOB_SILENCE` **(K1 \& TSL)**
-      - `AOE_PER_DELAY_BLAST_FIREBALL` **(K1 \& TSL)**
-      - `AOE_PER_GREASE` **(K1 \& TSL)**
-      - `AOE_PER_CREEPING_DOOM` **(K1 \& TSL)**
-      - `AOE_PER_EVARDS_BLACK_TENTACLES` **(K1 \& TSL)**
-      - `AOE_MOB_INVISIBILITY_PURGE` **(K1 \& TSL)**
-      - `AOE_MOB_DRAGON_FEAR` **(K1 \& TSL)**
-      - `FORCE_POWER_ALL_FORCE_POWERS` **(K1 \& TSL)**
-      - `FORCE_POWER_MASTER_ALTER` **(K1 \& TSL)**
-      - `FORCE_POWER_MASTER_CONTROL` **(K1 \& TSL)**
-      - `FORCE_POWER_MASTER_SENSE` **(K1 \& TSL)**
-      - `FORCE_POWER_FORCE_JUMP_ADVANCED` **(K1 \& TSL)**
-      - `FORCE_POWER_LIGHT_SABER_THROW_ADVANCED` **(K1 \& TSL)**
-      - `FORCE_POWER_REGNERATION_ADVANCED` **(K1 \& TSL)**
-      - `FORCE_POWER_AFFECT_MIND` **(K1 \& TSL)**
-      - `FORCE_POWER_AFFLICTION` **(K1 \& TSL)**
-      - `FORCE_POWER_SPEED_BURST` **(K1 \& TSL)**
-      - `FORCE_POWER_CHOKE` **(K1 \& TSL)**
-      - `FORCE_POWER_CURE` **(K1 \& TSL)**
-      - `FORCE_POWER_DEATH_FIELD` **(K1 \& TSL)**
-      - `FORCE_POWER_DROID_DISABLE` **(K1 \& TSL)**
-      - `FORCE_POWER_DROID_DESTROY` **(K1 \& TSL)**
-      - `FORCE_POWER_DOMINATE` **(K1 \& TSL)**
-      - `FORCE_POWER_DRAIN_LIFE` **(K1 \& TSL)**
-      - `FORCE_POWER_FEAR` **(K1 \& TSL)**
-      - `FORCE_POWER_FORCE_ARMOR` **(K1 \& TSL)**
-      - `FORCE_POWER_FORCE_AURA` **(K1 \& TSL)**
-      - `FORCE_POWER_FORCE_BREACH` **(K1 \& TSL)**
-      - `FORCE_POWER_FORCE_IMMUNITY` **(K1 \& TSL)**
-      - `FORCE_POWER_FORCE_JUMP` **(K1 \& TSL)**
-      - `FORCE_POWER_FORCE_MIND` **(K1 \& TSL)**
-      - `FORCE_POWER_FORCE_PUSH` **(K1 \& TSL)**
-      - `FORCE_POWER_FORCE_SHIELD` **(K1 \& TSL)**
-      - `FORCE_POWER_FORCE_STORM` **(K1 \& TSL)**
-      - `FORCE_POWER_FORCE_WAVE` **(K1 \& TSL)**
-      - `FORCE_POWER_FORCE_WHIRLWIND` **(K1 \& TSL)**
-      - `FORCE_POWER_HEAL` **(K1 \& TSL)**
-      - `FORCE_POWER_HOLD` **(K1 \& TSL)**
-      - `FORCE_POWER_HORROR` **(K1 \& TSL)**
-      - `FORCE_POWER_INSANITY` **(K1 \& TSL)**
-      - `FORCE_POWER_KILL` **(K1 \& TSL)**
-      - `FORCE_POWER_KNIGHT_MIND` **(K1 \& TSL)**
-      - `FORCE_POWER_KNIGHT_SPEED` **(K1 \& TSL)**
-      - `FORCE_POWER_LIGHTNING` **(K1 \& TSL)**
-      - `FORCE_POWER_MIND_MASTERY` **(K1 \& TSL)**
-      - `FORCE_POWER_SPEED_MASTERY` **(K1 \& TSL)**
-      - `FORCE_POWER_PLAGUE` **(K1 \& TSL)**
-      - `FORCE_POWER_REGENERATION` **(K1 \& TSL)**
-      - `FORCE_POWER_RESIST_COLD_HEAT_ENERGY` **(K1 \& TSL)**
-      - `FORCE_POWER_RESIST_FORCE` **(K1 \& TSL)**
-      - `FORCE_POWER_SHOCK` **(K1 \& TSL)**
-      - `FORCE_POWER_SLEEP` **(K1 \& TSL)**
-      - `FORCE_POWER_SLOW` **(K1 \& TSL)**
-      - `FORCE_POWER_STUN` **(K1 \& TSL)**
-      - `FORCE_POWER_DROID_STUN` **(K1 \& TSL)**
-      - `FORCE_POWER_SUPRESS_FORCE` **(K1 \& TSL)**
-      - `FORCE_POWER_LIGHT_SABER_THROW` **(K1 \& TSL)**
-      - `FORCE_POWER_WOUND` **(K1 \& TSL)**
-      - `PERSISTENT_ZONE_ACTIVE` **(K1 \& TSL)**
-      - `PERSISTENT_ZONE_FOLLOW` **(K1 \& TSL)**
-      - `INVALID_STANDARD_FACTION` **(K1 \& TSL)**
-      - `STANDARD_FACTION_HOSTILE_1` **(K1 \& TSL)**
-      - `STANDARD_FACTION_FRIENDLY_1` **(K1 \& TSL)**
-      - `STANDARD_FACTION_HOSTILE_2` **(K1 \& TSL)**
-      - `STANDARD_FACTION_FRIENDLY_2` **(K1 \& TSL)**
-      - `STANDARD_FACTION_NEUTRAL` **(K1 \& TSL)**
-      - `STANDARD_FACTION_INSANE` **(K1 \& TSL)**
-      - `STANDARD_FACTION_PTAT_TUSKAN` **(K1 \& TSL)**
-      - `STANDARD_FACTION_GLB_XOR` **(K1 \& TSL)**
-      - `STANDARD_FACTION_SURRENDER_1` **(K1 \& TSL)**
-      - `STANDARD_FACTION_SURRENDER_2` **(K1 \& TSL)**
-      - `STANDARD_FACTION_PREDATOR` **(K1 \& TSL)**
-      - `STANDARD_FACTION_PREY` **(K1 \& TSL)**
-      - `STANDARD_FACTION_TRAP` **(K1 \& TSL)**
-      - `STANDARD_FACTION_ENDAR_SPIRE` **(K1 \& TSL)**
-      - `STANDARD_FACTION_RANCOR` **(K1 \& TSL)**
-      - `STANDARD_FACTION_GIZKA_1` **(K1 \& TSL)**
-      - `STANDARD_FACTION_GIZKA_2` **(K1 \& TSL)**
-      - `SUBSKILL_FLAGTRAP` **(K1 \& TSL)**
-      - `SUBSKILL_RECOVERTRAP` **(K1 \& TSL)**
-      - `SUBSKILL_EXAMINETRAP` **(K1 \& TSL)**
-      - `TALENT_TYPE_FORCE` **(K1 \& TSL)**
-      - `TALENT_TYPE_SPELL` **(K1 \& TSL)**
-      - `TALENT_TYPE_FEAT` **(K1 \& TSL)**
-      - `TALENT_TYPE_SKILL` **(K1 \& TSL)**
-      - `TALENT_EXCLUDE_ALL_OF_TYPE` **(K1 \& TSL)**
-      - `GUI_PANEL_PLAYER_DEATH` **(K1 \& TSL)**
-      - `POLYMORPH_TYPE_WEREWOLF` **(K1 \& TSL)**
-      - `POLYMORPH_TYPE_WERERAT` **(K1 \& TSL)**
-      - `POLYMORPH_TYPE_WERECAT` **(K1 \& TSL)**
-      - `POLYMORPH_TYPE_GIANT_SPIDER` **(K1 \& TSL)**
-      - `POLYMORPH_TYPE_TROLL` **(K1 \& TSL)**
-      - `POLYMORPH_TYPE_UMBER_HULK` **(K1 \& TSL)**
-      - `POLYMORPH_TYPE_PIXIE` **(K1 \& TSL)**
-      - `POLYMORPH_TYPE_ZOMBIE` **(K1 \& TSL)**
-      - `POLYMORPH_TYPE_RED_DRAGON` **(K1 \& TSL)**
-      - `POLYMORPH_TYPE_FIRE_GIANT` **(K1 \& TSL)**
-      - `POLYMORPH_TYPE_BALOR` **(K1 \& TSL)**
-      - `POLYMORPH_TYPE_DEATH_SLAAD` **(K1 \& TSL)**
-      - `POLYMORPH_TYPE_IRON_GOLEM` **(K1 \& TSL)**
-      - `POLYMORPH_TYPE_HUGE_FIRE_ELEMENTAL` **(K1 \& TSL)**
-      - `POLYMORPH_TYPE_HUGE_WATER_ELEMENTAL` **(K1 \& TSL)**
-      - `POLYMORPH_TYPE_HUGE_EARTH_ELEMENTAL` **(K1 \& TSL)**
-      - `POLYMORPH_TYPE_HUGE_AIR_ELEMENTAL` **(K1 \& TSL)**
-      - `POLYMORPH_TYPE_ELDER_FIRE_ELEMENTAL` **(K1 \& TSL)**
-      - `POLYMORPH_TYPE_ELDER_WATER_ELEMENTAL` **(K1 \& TSL)**
-      - `POLYMORPH_TYPE_ELDER_EARTH_ELEMENTAL` **(K1 \& TSL)**
-      - `POLYMORPH_TYPE_ELDER_AIR_ELEMENTAL` **(K1 \& TSL)**
-      - `POLYMORPH_TYPE_BROWN_BEAR` **(K1 \& TSL)**
-      - `POLYMORPH_TYPE_PANTHER` **(K1 \& TSL)**
-      - `POLYMORPH_TYPE_WOLF` **(K1 \& TSL)**
-      - `POLYMORPH_TYPE_BOAR` **(K1 \& TSL)**
-      - `POLYMORPH_TYPE_BADGER` **(K1 \& TSL)**
-      - `POLYMORPH_TYPE_PENGUIN` **(K1 \& TSL)**
-      - `POLYMORPH_TYPE_COW` **(K1 \& TSL)**
-      - `POLYMORPH_TYPE_DOOM_KNIGHT` **(K1 \& TSL)**
-      - `POLYMORPH_TYPE_YUANTI` **(K1 \& TSL)**
-      - `POLYMORPH_TYPE_IMP` **(K1 \& TSL)**
-      - `POLYMORPH_TYPE_QUASIT` **(K1 \& TSL)**
-      - `POLYMORPH_TYPE_SUCCUBUS` **(K1 \& TSL)**
-      - `POLYMORPH_TYPE_DIRE_BROWN_BEAR` **(K1 \& TSL)**
-      - `POLYMORPH_TYPE_DIRE_PANTHER` **(K1 \& TSL)**
-      - `POLYMORPH_TYPE_DIRE_WOLF` **(K1 \& TSL)**
-      - `POLYMORPH_TYPE_DIRE_BOAR` **(K1 \& TSL)**
-      - `POLYMORPH_TYPE_DIRE_BADGER` **(K1 \& TSL)**
-      - `CREATURE_SIZE_INVALID` **(K1 \& TSL)**
-      - `CREATURE_SIZE_TINY` **(K1 \& TSL)**
-      - `CREATURE_SIZE_SMALL` **(K1 \& TSL)**
-      - `CREATURE_SIZE_MEDIUM` **(K1 \& TSL)**
-      - `CREATURE_SIZE_LARGE` **(K1 \& TSL)**
-      - `CREATURE_SIZE_HUGE` **(K1 \& TSL)**
-      - `CAMERA_MODE_CHASE_CAMERA` **(K1 \& TSL)**
-      - `CAMERA_MODE_TOP_DOWN` **(K1 \& TSL)**
-      - `CAMERA_MODE_STIFF_CHASE_CAMERA` **(K1 \& TSL)**
-      - `GAME_DIFFICULTY_VERY_EASY` **(K1 \& TSL)**
-      - `GAME_DIFFICULTY_EASY` **(K1 \& TSL)**
-      - `GAME_DIFFICULTY_NORMAL` **(K1 \& TSL)**
-      - `GAME_DIFFICULTY_CORE_RULES` **(K1 \& TSL)**
-      - `GAME_DIFFICULTY_DIFFICULT` **(K1 \& TSL)**
-      - `ACTION_MOVETOPOINT` **(K1 \& TSL)**
-      - `ACTION_PICKUPITEM` **(K1 \& TSL)**
-      - `ACTION_DROPITEM` **(K1 \& TSL)**
-      - `ACTION_ATTACKOBJECT` **(K1 \& TSL)**
-      - `ACTION_CASTSPELL` **(K1 \& TSL)**
-      - `ACTION_OPENDOOR` **(K1 \& TSL)**
-      - `ACTION_CLOSEDOOR` **(K1 \& TSL)**
-      - `ACTION_DIALOGOBJECT` **(K1 \& TSL)**
-      - `ACTION_DISABLETRAP` **(K1 \& TSL)**
-      - `ACTION_RECOVERTRAP` **(K1 \& TSL)**
-      - `ACTION_FLAGTRAP` **(K1 \& TSL)**
-      - `ACTION_EXAMINETRAP` **(K1 \& TSL)**
-      - `ACTION_SETTRAP` **(K1 \& TSL)**
-      - `ACTION_OPENLOCK` **(K1 \& TSL)**
-      - `ACTION_LOCK` **(K1 \& TSL)**
-      - `ACTION_USEOBJECT` **(K1 \& TSL)**
-      - `ACTION_ANIMALEMPATHY` **(K1 \& TSL)**
-      - `ACTION_REST` **(K1 \& TSL)**
-      - `ACTION_TAUNT` **(K1 \& TSL)**
-      - `ACTION_ITEMCASTSPELL` **(K1 \& TSL)**
-      - `ACTION_COUNTERSPELL` **(K1 \& TSL)**
-      - `ACTION_HEAL` **(K1 \& TSL)**
-      - `ACTION_PICKPOCKET` **(K1 \& TSL)**
-      - `ACTION_FOLLOW` **(K1 \& TSL)**
-      - `ACTION_WAIT` **(K1 \& TSL)**
-      - `ACTION_SIT` **(K1 \& TSL)**
-      - `ACTION_FOLLOWLEADER` **(K1 \& TSL)**
-      - `ACTION_INVALID` **(K1 \& TSL)**
-      - `ACTION_QUEUEEMPTY` **(K1 \& TSL)**
-      - `SWMINIGAME_TRACKFOLLOWER_SOUND_ENGINE` **(K1 \& TSL)**
-      - `SWMINIGAME_TRACKFOLLOWER_SOUND_DEATH` **(K1 \& TSL)**
-      - `PLOT_O_DOOM` **(K1 \& TSL)**
-      - `PLOT_O_SCARY_STUFF` **(K1 \& TSL)**
-      - `PLOT_O_BIG_MONSTERS` **(K1 \& TSL)**
-      - `FORMATION_WEDGE` **(K1 \& TSL)**
-      - `FORMATION_LINE` **(K1 \& TSL)**
-      - `SUBSCREEN_ID_NONE` **(K1 \& TSL)**
-      - `SUBSCREEN_ID_EQUIP` **(K1 \& TSL)**
-      - `SUBSCREEN_ID_ITEM` **(K1 \& TSL)**
-      - `SUBSCREEN_ID_CHARACTER_RECORD` **(K1 \& TSL)**
-      - `SUBSCREEN_ID_ABILITY` **(K1 \& TSL)**
-      - `SUBSCREEN_ID_MAP` **(K1 \& TSL)**
-      - `SUBSCREEN_ID_QUEST` **(K1 \& TSL)**
-      - `SUBSCREEN_ID_OPTIONS` **(K1 \& TSL)**
-      - `SUBSCREEN_ID_MESSAGES` **(K1 \& TSL)**
-      - `SHIELD_DROID_ENERGY_1` **(K1 \& TSL)**
-      - `SHIELD_DROID_ENERGY_2` **(K1 \& TSL)**
-      - `SHIELD_DROID_ENERGY_3` **(K1 \& TSL)**
-      - `SHIELD_DROID_ENVIRO_1` **(K1 \& TSL)**
-      - `SHIELD_DROID_ENVIRO_2` **(K1 \& TSL)**
-      - `SHIELD_DROID_ENVIRO_3` **(K1 \& TSL)**
-      - `SHIELD_ENERGY` **(K1 \& TSL)**
-      - `SHIELD_ENERGY_SITH` **(K1 \& TSL)**
-      - `SHIELD_ENERGY_ARKANIAN` **(K1 \& TSL)**
-      - `SHIELD_ECHANI` **(K1 \& TSL)**
-      - `SHIELD_MANDALORIAN_MELEE` **(K1 \& TSL)**
-      - `SHIELD_MANDALORIAN_POWER` **(K1 \& TSL)**
-      - `SHIELD_DUELING_ECHANI` **(K1 \& TSL)**
-      - `SHIELD_DUELING_YUSANIS` **(K1 \& TSL)**
-      - `SHIELD_VERPINE_PROTOTYPE` **(K1 \& TSL)**
-      - `SHIELD_ANTIQUE_DROID` **(K1 \& TSL)**
-      - `SHIELD_PLOT_TAR_M09AA` **(K1 \& TSL)**
-      - `SHIELD_PLOT_UNK_M44AA` **(K1 \& TSL)**
-      - `VIDEO_EFFECT_NONE` **(K1 \& TSL)**
-      - `VIDEO_EFFECT_SECURITY_CAMERA` **(K1 \& TSL)**
-      - `VIDEO_EFFECT_FREELOOK_T3M4` **(K1 \& TSL)**
-      - `VIDEO_EFFECT_FREELOOK_HK47` **(K1 \& TSL)**
-      - `TUTORIAL_WINDOW_START_SWOOP_RACE` **(K1 \& TSL)**
-      - `TUTORIAL_WINDOW_RETURN_TO_BASE` **(K1 \& TSL)**
-      - `TUTORIAL_WINDOW_MOVEMENT_KEYS` **(K1)**
-      - `LIVE_CONTENT_PKG1` **(K1 \& TSL)**
-      - `LIVE_CONTENT_PKG2` **(K1 \& TSL)**
-      - `LIVE_CONTENT_PKG3` **(K1 \& TSL)**
-      - `LIVE_CONTENT_PKG4` **(K1 \& TSL)**
-      - `LIVE_CONTENT_PKG5` **(K1 \& TSL)**
-      - `LIVE_CONTENT_PKG6` **(K1 \& TSL)**
-      - `sLanguage` **(K1)**
-      - `FORM_MASK_FORCE_FOCUS` **(TSL)**
-      - `FORM_MASK_ENDURING_FORCE` **(TSL)**
-      - `FORM_MASK_FORCE_AMPLIFICATION` **(TSL)**
-      - `FORM_MASK_FORCE_POTENCY` **(TSL)**
-      - `FORM_MASK_REGENERATION` **(TSL)**
-      - `FORM_MASK_POWER_OF_THE_DARK_SIDE` **(TSL)**
-      - `FORCE_POWER_MASTER_ENERGY_RESISTANCE` **(TSL)**
-      - `FORCE_POWER_MASTER_HEAL` **(TSL)**
-      - `FORCE_POWER_FORCE_BARRIER` **(TSL)**
-      - `FORCE_POWER_IMPROVED_FORCE_BARRIER` **(TSL)**
-      - `FORCE_POWER_MASTER_FORCE_BARRIER` **(TSL)**
-      - `FORCE_POWER_BATTLE_MEDITATION_PC` **(TSL)**
-      - `FORCE_POWER_IMPROVED_BATTLE_MEDITATION_PC` **(TSL)**
-      - `FORCE_POWER_MASTER_BATTLE_MEDITATION_PC` **(TSL)**
-      - `FORCE_POWER_BAT_MED_ENEMY` **(TSL)**
-      - `FORCE_POWER_IMP_BAT_MED_ENEMY` **(TSL)**
-      - `FORCE_POWER_MAS_BAT_MED_ENEMY` **(TSL)**
-      - `FORCE_POWER_CRUSH_OPPOSITION_I` **(TSL)**
-      - `FORCE_POWER_CRUSH_OPPOSITION_II` **(TSL)**
-      - `FORCE_POWER_CRUSH_OPPOSITION_III` **(TSL)**
-      - `FORCE_POWER_CRUSH_OPPOSITION_IV` **(TSL)**
-      - `FORCE_POWER_CRUSH_OPPOSITION_V` **(TSL)**
-      - `FORCE_POWER_CRUSH_OPPOSITION_VI` **(TSL)**
-      - `FORCE_POWER_FORCE_BODY` **(TSL)**
-      - `FORCE_POWER_IMPROVED_FORCE_BODY` **(TSL)**
-      - `FORCE_POWER_MASTER_FORCE_BODY` **(TSL)**
-      - `FORCE_POWER_DRAIN_FORCE` **(TSL)**
-      - `FORCE_POWER_IMPROVED_DRAIN_FORCE` **(TSL)**
-      - `FORCE_POWER_MASTER_DRAIN_FORCE` **(TSL)**
-      - `FORCE_POWER_FORCE_CAMOUFLAGE` **(TSL)**
-      - `FORCE_POWER_IMPROVED_FORCE_CAMOUFLAGE` **(TSL)**
-      - `FORCE_POWER_MASTER_FORCE_CAMOUFLAGE` **(TSL)**
-      - `FORCE_POWER_FORCE_SCREAM` **(TSL)**
-      - `FORCE_POWER_IMPROVED_FORCE_SCREAM` **(TSL)**
-      - `FORCE_POWER_MASTER_FORCE_SCREAM` **(TSL)**
-      - `FORCE_POWER_FORCE_REPULSION` **(TSL)**
-      - `FORCE_POWER_FURY` **(TSL)**
-      - `FORCE_POWER_IMPROVED_FURY` **(TSL)**
-      - `FORCE_POWER_MASTER_FURY` **(TSL)**
-      - `FORCE_POWER_INSPIRE_FOLLOWERS_I` **(TSL)**
-      - `FORCE_POWER_INSPIRE_FOLLOWERS_II` **(TSL)**
-      - `FORCE_POWER_INSPIRE_FOLLOWERS_III` **(TSL)**
-      - `FORCE_POWER_INSPIRE_FOLLOWERS_IV` **(TSL)**
-      - `FORCE_POWER_INSPIRE_FOLLOWERS_V` **(TSL)**
-      - `FORCE_POWER_INSPIRE_FOLLOWERS_VI` **(TSL)**
-      - `FORCE_POWER_REVITALIZE` **(TSL)**
-      - `FORCE_POWER_IMPROVED_REVITALIZE` **(TSL)**
-      - `FORCE_POWER_MASTER_REVITALIZE` **(TSL)**
-      - `FORCE_POWER_FORCE_SIGHT` **(TSL)**
-      - `FORCE_POWER_FORCE_CRUSH` **(TSL)**
-      - `FORCE_POWER_PRECOGNITION` **(TSL)**
-      - `FORCE_POWER_BATTLE_PRECOGNITION` **(TSL)**
-      - `FORCE_POWER_FORCE_ENLIGHTENMENT` **(TSL)**
-      - `FORCE_POWER_MIND_TRICK` **(TSL)**
-      - `FORCE_POWER_CONFUSION` **(TSL)**
-      - `FORCE_POWER_BEAST_TRICK` **(TSL)**
-      - `FORCE_POWER_BEAST_CONFUSION` **(TSL)**
-      - `FORCE_POWER_DROID_TRICK` **(TSL)**
-      - `FORCE_POWER_DROID_CONFUSION` **(TSL)**
-      - `FORCE_POWER_BREATH_CONTROL` **(TSL)**
-      - `FORCE_POWER_WOOKIEE_RAGE_I` **(TSL)**
-      - `FORCE_POWER_WOOKIEE_RAGE_II` **(TSL)**
-      - `FORCE_POWER_WOOKIEE_RAGE_III` **(TSL)**
-      - `FORM_LIGHTSABER_PADAWAN_I` **(TSL)**
-      - `FORM_LIGHTSABER_PADAWAN_II` **(TSL)**
-      - `FORM_LIGHTSABER_PADAWAN_III` **(TSL)**
-      - `FORM_LIGHTSABER_DAKLEAN_I` **(TSL)**
-      - `FORM_LIGHTSABER_DAKLEAN_II` **(TSL)**
-      - `FORM_LIGHTSABER_DAKLEAN_III` **(TSL)**
-      - `FORM_LIGHTSABER_SENTINEL_I` **(TSL)**
-      - `FORM_LIGHTSABER_SENTINEL_II` **(TSL)**
-      - `FORM_LIGHTSABER_SENTINEL_III` **(TSL)**
-      - `FORM_LIGHTSABER_SODAK_I` **(TSL)**
-      - `FORM_LIGHTSABER_SODAK_II` **(TSL)**
-      - `FORM_LIGHTSABER_SODAK_III` **(TSL)**
-      - `FORM_LIGHTSABER_ANCIENT_I` **(TSL)**
-      - `FORM_LIGHTSABER_ANCIENT_II` **(TSL)**
-      - `FORM_LIGHTSABER_ANCIENT_III` **(TSL)**
-      - `FORM_LIGHTSABER_MASTER_I` **(TSL)**
-      - `FORM_LIGHTSABER_MASTER_II` **(TSL)**
-      - `FORM_LIGHTSABER_MASTER_III` **(TSL)**
-      - `FORM_CONSULAR_FORCE_FOCUS_I` **(TSL)**
-      - `FORM_CONSULAR_FORCE_FOCUS_II` **(TSL)**
-      - `FORM_CONSULAR_FORCE_FOCUS_III` **(TSL)**
-      - `FORM_CONSULAR_ENDURING_FORCE_I` **(TSL)**
-      - `FORM_CONSULAR_ENDURING_FORCE_II` **(TSL)**
-      - `FORM_CONSULAR_ENDURING_FORCE_III` **(TSL)**
-      - `FORM_CONSULAR_FORCE_AMPLIFICATION_I` **(TSL)**
-      - `FORM_CONSULAR_FORCE_AMPLIFICATION_II` **(TSL)**
-      - `FORM_CONSULAR_FORCE_AMPLIFICATION_III` **(TSL)**
-      - `FORM_CONSULAR_FORCE_SHELL_I` **(TSL)**
-      - `FORM_CONSULAR_FORCE_SHELL_II` **(TSL)**
-      - `FORM_CONSULAR_FORCE_SHELL_III` **(TSL)**
-      - `FORM_CONSULAR_FORCE_POTENCY_I` **(TSL)**
-      - `FORM_CONSULAR_FORCE_POTENCY_II` **(TSL)**
-      - `FORM_CONSULAR_FORCE_POTENCY_III` **(TSL)**
-      - `FORM_CONSULAR_REGENERATION_I` **(TSL)**
-      - `FORM_CONSULAR_REGENERATION_II` **(TSL)**
-      - `FORM_CONSULAR_REGENERATION_III` **(TSL)**
-      - `FORM_CONSULAR_POWER_OF_THE_DARK_SIDE_I` **(TSL)**
-      - `FORM_CONSULAR_POWER_OF_THE_DARK_SIDE_II` **(TSL)**
-      - `FORM_CONSULAR_POWER_OF_THE_DARK_SIDE_III` **(TSL)**
-      - `FORM_SABER_I_SHII_CHO` **(TSL)**
-      - `FORM_SABER_II_MAKASHI` **(TSL)**
-      - `FORM_SABER_III_SORESU` **(TSL)**
-      - `FORM_SABER_IV_ATARU` **(TSL)**
-      - `FORM_SABER_V_SHIEN` **(TSL)**
-      - `FORM_SABER_VI_NIMAN` **(TSL)**
-      - `FORM_SABER_VII_JUYO` **(TSL)**
-      - `FORM_FORCE_I_FOCUS` **(TSL)**
-      - `FORM_FORCE_II_POTENCY` **(TSL)**
-      - `FORM_FORCE_III_AFFINITY` **(TSL)**
-      - `FORM_FORCE_IV_MASTERY` **(TSL)**
-      - `STANDARD_FACTION_SELF_LOATHING` **(TSL)**
-      - `STANDARD_FACTION_ONE_ON_ONE` **(TSL)**
-      - `STANDARD_FACTION_PARTYPUPPET` **(TSL)**
-      - `ACTION_FOLLOWOWNER` **(TSL)**
-      - `PUP_SENSORBALL` **(TSL)**
-      - `PUP_OTHER1` **(TSL)**
-      - `PUP_OTHER2` **(TSL)**
-      - `SHIELD_PLOT_MAN_M28AA` **(TSL)**
-      - `SHIELD_HEAT` **(TSL)**
-      - `SHIELD_DREXL` **(TSL)**
-      - `VIDEO_EFFECT_CLAIRVOYANCE` **(TSL)**
-      - `VIDEO_EFFECT_FORCESIGHT` **(TSL)**
-      - `VIDEO_EFFECT_VISAS_FREELOOK` **(TSL)**
-      - `VIDEO_EFFECT_CLAIRVOYANCEFULL` **(TSL)**
-      - `VIDEO_EFFECT_FURY_1` **(TSL)**
-      - `VIDEO_EFFECT_FURY_2` **(TSL)**
-      - `VIDEO_EFFECT_FURY_3` **(TSL)**
-      - `VIDEO_FFECT_SECURITY_NO_LABEL` **(TSL)**
-      - `TUTORIAL_WINDOW_TEMP1` **(TSL)**
-      - `TUTORIAL_WINDOW_TEMP2` **(TSL)**
-      - `TUTORIAL_WINDOW_TEMP3` **(TSL)**
-      - `TUTORIAL_WINDOW_TEMP4` **(TSL)**
-      - `TUTORIAL_WINDOW_TEMP5` **(TSL)**
-      - `TUTORIAL_WINDOW_TEMP6` **(TSL)**
-      - `TUTORIAL_WINDOW_TEMP7` **(TSL)**
-      - `TUTORIAL_WINDOW_TEMP8` **(TSL)**
-      - `TUTORIAL_WINDOW_TEMP9` **(TSL)**
-      - `TUTORIAL_WINDOW_TEMP10` **(TSL)**
-      - `TUTORIAL_WINDOW_TEMP11` **(TSL)**
-      - `TUTORIAL_WINDOW_TEMP12` **(TSL)**
-      - `TUTORIAL_WINDOW_TEMP13` **(TSL)**
-      - `TUTORIAL_WINDOW_TEMP14` **(TSL)**
-      - `TUTORIAL_WINDOW_TEMP15` **(TSL)**
-      - `AI_LEVEL_VERY_HIGH` **(TSL)**
-      - `AI_LEVEL_HIGH` **(TSL)**
-      - `AI_LEVEL_NORMAL` **(TSL)**
-      - `AI_LEVEL_LOW` **(TSL)**
-      - `AI_LEVEL_VERY_LOW` **(TSL)**
-      - `IMPLANT_NONE` **(TSL)**
-      - `IMPLANT_REGEN` **(TSL)**
-      - `IMPLANT_STR` **(TSL)**
-      - `IMPLANT_END` **(TSL)**
-      - `IMPLANT_AGI` **(TSL)**
-      - `FORFEIT_NO_FORCE_POWERS` **(TSL)**
-      - `FORFEIT_NO_ITEMS` **(TSL)**
-      - `FORFEIT_NO_WEAPONS` **(TSL)**
-      - `FORFEIT_DXUN_SWORD_ONLY` **(TSL)**
-      - `FORFEIT_NO_ARMOR` **(TSL)**
-      - `FORFEIT_NO_RANGED` **(TSL)**
-      - `FORFEIT_NO_LIGHTSABER` **(TSL)**
-      - `FORFEIT_NO_ITEM_BUT_SHIELD` **(TSL)**
-  - [Cross-References](#cross-references)
-<!-- TOC_END -->
+For community guidance, modding guides, and historical compile workflows, see the [Deadly Stream Tutorials forum](https://deadlystream.com/forum/25-tutorials/) and the hub on [Home — community sources and archives](Home#community-sources-and-archives). A nwnnsscomp-era compile tutorial is archived at [LucasForums: How to compile scripts?](https://www.lucasforumsarchive.com/thread/143681), and an introductory series at [KotOR Modding Tutorial Series on Deadly Stream](https://deadlystream.com/topic/6886-tutorial-kotor-modding-tutorial-series/) (some referenced tools are outdated — prefer Holocron Toolset and this wiki for current paths). The original shipped K1 scripts are preserved in [Vanilla_KOTOR_Script_Source](https://github.com/KOTORCommunityPatches/Vanilla_KOTOR_Script_Source). Forum posts are peer guidance; verify behavioral claims against the source implementations cited on this page.
 
 ## PyKotor Implementation
 
@@ -3036,7 +61,12 @@ PyKotor implements `nwscript.nss` definitions in three Python modules:
    - Parses the included source code
    - Merges functions and constants into the current scope
 
-**Reference:** [`Libraries/PyKotor/src/pykotor/common/script.py`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/common/script.py) (data structures), [`Libraries/PyKotor/src/pykotor/common/scriptdefs.py`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/common/scriptdefs.py) (function/constant definitions), [`Libraries/PyKotor/src/pykotor/common/scriptlib.py`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/common/scriptlib.py) (library files)
+- [`script.py` L21+](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/common/script.py#L21) (data structures)
+- [`KOTOR_CONSTANTS` L12+](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/common/scriptdefs.py#L12) (constants)
+- [`KOTOR_FUNCTIONS` L3268+](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/common/scriptdefs.py#L3268) (function signatures)
+- [`scriptlib.py` L5+](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/common/scriptlib.py#L5) (`#include` library text)
+- [`compilers.py` `InbuiltNCSCompiler` L28+](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/formats/ncs/compilers.py#L28)
+- [`parser.py` `NssParser` L80+](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/formats/ncs/compiler/parser.py#L80)
 
 ---
 
@@ -3046,59 +76,59 @@ PyKotor implements `nwscript.nss` definitions in three Python modules:
 
 ### Abilities and Stats
 
-See [Abilities and Stats](NSS-Shared-Functions-Abilities-and-Stats) for detailed documentation.
+See [Abilities and Stats](NSS-File-Format#abilities-and-stats) for detailed documentation.
 
 ### Actions
 
-See [Actions](NSS-Shared-Functions-Actions) for detailed documentation.
+See [Actions](NSS-File-Format#actions) for detailed documentation.
 
 ### Alignment System
 
-See [Alignment System](NSS-Shared-Functions-Alignment-System) for detailed documentation.
+See [Alignment System](NSS-File-Format#alignment-system) for detailed documentation.
 
 ### Class System
 
-See [Class System](NSS-Shared-Functions-Class-System) for detailed documentation.
+See [Class System](NSS-File-Format#class-system) for detailed documentation.
 
 ### Combat Functions
 
-See [Combat Functions](NSS-Shared-Functions-Combat-Functions) for detailed documentation.
+See [Combat Functions](NSS-File-Format#combat-functions) for detailed documentation.
 
 ### Dialog and Conversation Functions
 
-See [Dialog and Conversation Functions](NSS-Shared-Functions-Dialog-and-Conversation-Functions) for detailed documentation.
+See [Dialog and Conversation Functions](NSS-File-Format#dialog-and-conversation-functions) for detailed documentation.
 
 ### Effects System
 
-See [Effects System](NSS-Shared-Functions-Effects-System) for detailed documentation.
+See [Effects System](NSS-File-Format#effects-system) for detailed documentation.
 
 ### Global Variables
 
-See [Global Variables](NSS-Shared-Functions-Global-Variables) for detailed documentation.
+See [Global Variables](NSS-File-Format#global-variables) for detailed documentation.
 
 ### Item Management
 
-See [Item Management](NSS-Shared-Functions-Item-Management) for detailed documentation.
+See [Item Management](NSS-File-Format#item-management) for detailed documentation.
 
 ### Item Properties
 
-See [Item Properties](NSS-Shared-Functions-Item-Properties) for detailed documentation.
+See [Item Properties](NSS-File-Format#item-properties) for detailed documentation.
 
 ### Local Variables
 
-See [Local Variables](NSS-Shared-Functions-Local-Variables) for detailed documentation.
+See [Local Variables](NSS-File-Format#local-variables) for detailed documentation.
 
 ### Module and Area Functions
 
-See [Module and Area Functions](NSS-Shared-Functions-Module-and-Area-Functions) for detailed documentation.
+See [Module and Area Functions](NSS-File-Format#module-and-area-functions) for detailed documentation.
 
 ### Object Query and Manipulation
 
-See [Object Query and Manipulation](NSS-Shared-Functions-Object-Query-and-Manipulation) for detailed documentation.
+See [Object Query and Manipulation](NSS-File-Format#object-query-and-manipulation) for detailed documentation.
 
 ### Other Functions
 
-See [Other Functions](NSS-Shared-Functions-Other-Functions) for detailed documentation.
+See [Other Functions](NSS-File-Format#other-functions) for detailed documentation.
 
 ### Party Management
 
@@ -3256,15 +286,15 @@ See [Other Functions](NSS-Shared-Functions-Other-Functions) for detailed documen
 
 ### Player Character Functions
 
-See [Player Character Functions](NSS-Shared-Functions-Player-Character-Functions) for detailed documentation.
+See [Player Character Functions](NSS-File-Format#player-character-functions) for detailed documentation.
 
 ### Skills and Feats
 
-See [Skills and Feats](NSS-Shared-Functions-Skills-and-Feats) for detailed documentation.
+See [Skills and Feats](NSS-File-Format#skills-and-feats) for detailed documentation.
 
 ### Sound and Music Functions
 
-See [Sound and Music Functions](NSS-Shared-Functions-Sound-and-Music-Functions) for detailed documentation.
+See [Sound and Music Functions](NSS-File-Format#sound-and-music-functions) for detailed documentation.
 
 ## K1-Only Functions
 
@@ -3272,7 +302,7 @@ See [Sound and Music Functions](NSS-Shared-Functions-Sound-and-Music-Functions) 
 
 ### Other Functions
 
-See [Other Functions](NSS-K1-Only-Functions-Other-Functions) for detailed documentation.
+See [Other Functions](NSS-File-Format#other-functions) for detailed documentation.
 
 ## TSL-Only Functions
 
@@ -3280,39 +310,39 @@ See [Other Functions](NSS-K1-Only-Functions-Other-Functions) for detailed docume
 
 ### Actions
 
-See [Actions](NSS-TSL-Only-Functions-Actions) for detailed documentation.
+See [Actions](NSS-File-Format#actions) for detailed documentation.
 
 ### Class System
 
-See [Class System](NSS-TSL-Only-Functions-Class-System) for detailed documentation.
+See [Class System](NSS-File-Format#class-system) for detailed documentation.
 
 ### Combat Functions
 
-See [Combat Functions](NSS-TSL-Only-Functions-Combat-Functions) for detailed documentation.
+Shared combat routines: [NSS-Shared-Functions-Combat-Functions](NSS-File-Format#combat-functions). TSL category index: [NSS-TSL-Only-Functions-Combat-Functions](NSS-File-Format#combat-functions).
 
 ### Dialog and Conversation Functions
 
-See [Dialog and Conversation Functions](NSS-TSL-Only-Functions-Dialog-and-Conversation-Functions) for detailed documentation.
+See [Dialog and Conversation Functions](NSS-File-Format#dialog-and-conversation-functions) for detailed documentation.
 
 ### Effects System
 
-See [Effects System](NSS-TSL-Only-Functions-Effects-System) for detailed documentation.
+See [Effects System](NSS-File-Format#effects-system) for detailed documentation.
 
 ### Global Variables
 
-See [Global Variables](NSS-TSL-Only-Functions-Global-Variables) for detailed documentation.
+See [Global Variables](NSS-File-Format#global-variables) for detailed documentation.
 
 ### Item Management
 
-See [Item Management](NSS-TSL-Only-Functions-Item-Management) for detailed documentation.
+See [Item Management](NSS-File-Format#item-management) for detailed documentation.
 
 ### Object Query and Manipulation
 
-See [Object Query and Manipulation](NSS-TSL-Only-Functions-Object-Query-and-Manipulation) for detailed documentation.
+See [Object Query and Manipulation](NSS-File-Format#object-query-and-manipulation) for detailed documentation.
 
 ### Other Functions
 
-See [Other Functions](NSS-TSL-Only-Functions-Other-Functions) for detailed documentation.
+See [Other Functions](NSS-File-Format#other-functions) for detailed documentation.
 
 ### Party Management
 
@@ -3391,15 +421,15 @@ See [Other Functions](NSS-TSL-Only-Functions-Other-Functions) for detailed docum
 
 ### Player Character Functions
 
-See [Player Character Functions](NSS-TSL-Only-Functions-Player-Character-Functions) for detailed documentation.
+See [Player Character Functions](NSS-File-Format#player-character-functions) for detailed documentation.
 
 ### Skills and Feats
 
-See [Skills and Feats](NSS-TSL-Only-Functions-Skills-and-Feats) for detailed documentation.
+See [Skills and Feats](NSS-File-Format#skills-and-feats) for detailed documentation.
 
 ### Sound and Music Functions
 
-See [Sound and Music Functions](NSS-TSL-Only-Functions-Sound-and-Music-Functions) for detailed documentation.
+Shared routines: [NSS-Shared-Functions-Sound-and-Music](NSS-File-Format#sound-and-music-functions). This **TSL-Only** heading also covers UI-related symbols listed in the [table of contents](#tsl-only-functions) (`DisplayDatapad`, `DisplayMessageBox`, `PlayOverlayAnimation`); see [NSS-TSL-Only-Functions-Sound-and-Music-Functions](NSS-File-Format#sound-and-music-functions) for that index note.
 
 ## Shared Constants (K1 & TSL)
 
@@ -3407,39 +437,39 @@ See [Sound and Music Functions](NSS-TSL-Only-Functions-Sound-and-Music-Functions
 
 ### Ability Constants
 
-See [Ability Constants](NSS-Shared-Constants-Ability-Constants) for detailed documentation.
+See [Ability Constants](NSS-File-Format#ability-constants) for detailed documentation.
 
 ### Alignment Constants
 
-See [Alignment Constants](NSS-Shared-Constants-Alignment-Constants) for detailed documentation.
+See [Alignment Constants](NSS-File-Format#alignment-constants) for detailed documentation.
 
 ### Class type Constants
 
-See [Class type Constants](NSS-Shared-Constants-Class-Type-Constants) for detailed documentation.
+See [Class type Constants](NSS-File-Format#class-type-constants) for detailed documentation.
 
 ### Inventory Constants
 
-See [Inventory Constants](NSS-Shared-Constants-Inventory-Constants) for detailed documentation.
+See [Inventory Constants](NSS-File-Format#inventory-constants) for detailed documentation.
 
 ### NPC Constants
 
-See [NPC Constants](NSS-Shared-Constants-NPC-Constants) for detailed documentation.
+See [NPC Constants](NSS-File-Format#npc-constants) for detailed documentation.
 
 ### Object type Constants
 
-See [Object type Constants](NSS-Shared-Constants-Object-Type-Constants) for detailed documentation.
+See [Object type Constants](NSS-File-Format#object-type-constants) for detailed documentation.
 
 ### Other Constants
 
-See [Other Constants](NSS-Shared-Constants-Other-Constants) for detailed documentation.
+See [Other Constants](NSS-File-Format#other-constants) for detailed documentation.
 
 ### Planet Constants
 
-See [Planet Constants](NSS-Shared-Constants-Planet-Constants) for detailed documentation.
+See [Planet Constants](NSS-File-Format#planet-constants) for detailed documentation.
 
 ### Visual Effects (VFX)
 
-See Visual Effects (VFX) for detailed documentation.
+Visual effect constants define particle effects, lighting, and environmental effects available through NWScript. Both K1 and TSL share a common set of VFX constants prefixed with `VFX_` that can be applied to objects, locations, and beams.
 
 ## K1-Only Constants
 
@@ -3447,15 +477,15 @@ See Visual Effects (VFX) for detailed documentation.
 
 ### NPC Constants
 
-See [NPC Constants](NSS-K1-Only-Constants-NPC-Constants) for detailed documentation.
+See [NPC Constants](NSS-File-Format#npc-constants) for detailed documentation.
 
 ### Other Constants
 
-See [Other Constants](NSS-K1-Only-Constants-Other-Constants) for detailed documentation.
+See [Other Constants](NSS-File-Format#other-constants) for detailed documentation.
 
 ### Planet Constants
 
-See [Planet Constants](NSS-K1-Only-Constants-Planet-Constants) for detailed documentation.
+See [Planet Constants](NSS-File-Format#planet-constants) for detailed documentation.
 
 ## TSL-Only Constants
 
@@ -3463,27 +493,27 @@ See [Planet Constants](NSS-K1-Only-Constants-Planet-Constants) for detailed docu
 
 ### Class type Constants
 
-See [Class type Constants](NSS-TSL-Only-Constants-Class-Type-Constants) for detailed documentation.
+See [Class type Constants](NSS-File-Format#class-type-constants) for detailed documentation.
 
 ### Inventory Constants
 
-See [Inventory Constants](NSS-TSL-Only-Constants-Inventory-Constants) for detailed documentation.
+See [Inventory Constants](NSS-File-Format#inventory-constants) for detailed documentation.
 
 ### NPC Constants
 
-See [NPC Constants](NSS-TSL-Only-Constants-NPC-Constants) for detailed documentation.
+See [NPC Constants](NSS-File-Format#npc-constants) for detailed documentation.
 
 ### Other Constants
 
-See [Other Constants](NSS-TSL-Only-Constants-Other-Constants) for detailed documentation.
+See [Other Constants](NSS-File-Format#other-constants) for detailed documentation.
 
 ### Planet Constants
 
-See [Planet Constants](NSS-TSL-Only-Constants-Planet-Constants) for detailed documentation.
+See [Planet Constants](NSS-File-Format#planet-constants) for detailed documentation.
 
 ### Visual Effects (VFX)
 
-See Visual Effects (VFX) for detailed documentation.
+TSL adds additional VFX constants beyond the shared set, including force power visual effects and expanded environmental effects specific to TSL areas.
 
 ## KOTOR Library files
 
@@ -3499,7 +529,7 @@ See Visual Effects (VFX) for detailed documentation.
 
 **Source Code**:
 
-```nss
+```c
 //:: k_inc_cheat
 /*
     This will be localized area for all
@@ -3563,7 +593,7 @@ void CH_SetPlanetaryGlobal(int nPlanetConstant)
 
 **Source Code**:
 
-```nss
+```c
 #include "k_inc_generic"
 #include "k_inc_utility"
 int ROMANCE_DONE = 4;
@@ -3627,7 +657,7 @@ int GetElisePlotNeverStared();
 
 **Source Code**:
 
-```nss
+```c
 //::///////////////////////////////////////////////
 //:: KOTOR Debug Include
 //:: k_inc_debug
@@ -3691,7 +721,7 @@ void Db_MyPrintString(string sString)
 
 **Source Code**:
 
-```nss
+```c
 //::///////////////////////////////////////////////
 //:: KOTOR Treasure drop Include
 //:: k_inc_drop
@@ -3755,7 +785,7 @@ void DR_CreateRandomTreasure(object oTarget = OBJECT_SELF)
 
 **Source Code**:
 
-```nss
+```c
 //:: k_inc_ebonhawk
 /*
      Ebon Hawk include file
@@ -3819,7 +849,7 @@ void EBO_PlayRenderSequence();
 
 **Source Code**:
 
-```nss
+```c
 #include "k_inc_utility"
 #include "k_inc_generic"
 string sTraskTag = "end_trask";
@@ -3883,7 +913,7 @@ object GetTrask();
 
 **Source Code**:
 
-```nss
+```c
 //::///////////////////////////////////////////////
 //:: Name k_inc_endgame
 //:: Copyright (c) 2001 Bioware Corp.
@@ -3947,7 +977,7 @@ void ST_PlayBastilaLight()
 
 **Source Code**:
 
-```nss
+```c
 //:: k_inc_force
 /*
     v1.0
@@ -4011,7 +1041,7 @@ void SP_MyPrintString(string sString);
 
 **Source Code**:
 
-```nss
+```c
 //:: k_inc_generic
 /*
     v1.5
@@ -4075,7 +1105,7 @@ int SW_FLAG_FORMATION_POSITION_1 = 50;   //POSSIBLE CUT
 
 **Source Code**:
 
-```nss
+```c
 //:: k_inc_gensupport
 /*
     v1.0
@@ -4139,7 +1169,7 @@ int SW_COMBO_SITH_SCYTHE = 27;
 
 **Source Code**:
 
-```nss
+```c
 //::///////////////////////////////////////////////
 //:: Include
 //:: k_inc_kas
@@ -4203,7 +1233,7 @@ void SetJaarakConfessedGlobal(int bValue)
 
 **Source Code**:
 
-```nss
+```c
 //::///////////////////////////////////////////////
 //:: k_inc_lev
 //:: Copyright (c) 2001 Bioware Corp.
@@ -4267,7 +1297,7 @@ void LEV_CleanupDeadObjects(object oArea)
 
 **Source Code**:
 
-```nss
+```c
 //:: Name
 /*
      Desc
@@ -4331,7 +1361,7 @@ int KoltoDestroyed();
 
 **Source Code**:
 
-```nss
+```c
 //:: Stunt/Render Include
 /*
      This Include File runs
@@ -4395,7 +1425,7 @@ string ST_GetTakeOffRender();
 
 **Source Code**:
 
-```nss
+```c
 //:: k_inc_switch
 /*
      A simple include defining all of the
@@ -4448,7 +1478,7 @@ int KOTOR_MISC_DETERMINE_COMBAT_ROUND_ON_INDEX_ZERO  = 3003;
 
 **Source Code**:
 
-```nss
+```c
 //::///////////////////////////////////////////////
 //:: k_inc_tar
 //:: k_inc_tar
@@ -4512,7 +1542,7 @@ void TAR_StripCharacter(object oTarget,object oDest);
 
 **Source Code**:
 
-```nss
+```c
 //::///////////////////////////////////////////////
 //:: Include
 //:: k_inc_tat
@@ -4576,7 +1606,7 @@ int GetSharinaAccusedGurkeGlobal()
 
 **Source Code**:
 
-```nss
+```c
 //:: k_inc_treasure
 /*
      contains code for filling containers using treasure tables
@@ -4640,7 +1670,7 @@ int SWTR_InRange(int i,int iLow,int iHigh)
 
 **Source Code**:
 
-```nss
+```c
 //::///////////////////////////////////////////////
 //:: k_inc_unk
 //:: Copyright (c) 2001 Bioware Corp.
@@ -4704,7 +1734,7 @@ void UNK_MarkForCleanup(object obj)
 
 **Source Code**:
 
-```nss
+```c
 //:: k_inc_utility
 /*
     common functions used throughout various scripts
@@ -4768,7 +1798,7 @@ int IsIntelligenceHigh();
 
 **Source Code**:
 
-```nss
+```c
 //:: k_inc_walkways
 /*
     v1.0
@@ -4832,7 +1862,7 @@ int GN_CheckWalkWays(object oTarget);
 
 **Source Code**:
 
-```nss
+```c
 //:: k_inc_zones
 /*
      Zone including for controlling
@@ -4902,7 +1932,7 @@ void ZN_CatalogFollowers()
 
 **Source Code**:
 
-```nss
+```c
 
 //:: a_global_inc
 /*
@@ -4930,7 +1960,7 @@ void main()
 
 **Source Code**:
 
-```nss
+```c
 // a_influence_inc
 /* Parameter Count: 2
 Increases an NPC's influence.
@@ -4994,7 +2024,7 @@ ModifyInfluence (nNPC, nInfluenceChange);
 
 **Source Code**:
 
-```nss
+```c
 // a_localn_inc
 // Parameter Count: 2
 // Param1 - The local number # to increment (range 12-31)
@@ -5032,7 +2062,7 @@ void main()
 
 **Source Code**:
 
-```nss
+```c
 //:: k_inc_cheat
 /*
     This will be localized area for all
@@ -5096,7 +2126,7 @@ void CH_SetPlanetaryGlobal(int nPlanetConstant)
 
 **Source Code**:
 
-```nss
+```c
 //::///////////////////////////////////////////////
 //:: KOTOR Debug Include
 //:: k_inc_debug
@@ -5160,7 +2190,7 @@ void Db_MyPrintString(string sString)
 
 **Source Code**:
 
-```nss
+```c
 //:: k_inc_disguise
 /*
     This script contains all functions necessary to add and
@@ -5219,7 +2249,7 @@ void RemoveDisguises() {
 
 **Source Code**:
 
-```nss
+```c
 //::///////////////////////////////////////////////
 //:: KOTOR Treasure drop Include
 //:: k_inc_drop
@@ -5283,7 +2313,7 @@ void DR_CreateRandomTreasure(object oTarget = OBJECT_SELF)
 
 **Source Code**:
 
-```nss
+```c
 // k_inc_fab
 /*
     Ferret's Wacky Include Script - YAY
@@ -5347,7 +2377,7 @@ void FAB_PCPort( object oWP )
 
 **Source Code**:
 
-```nss
+```c
 //:: k_inc_fakecombat
 /*
      routines for doing fake combat
@@ -5411,7 +2441,7 @@ void DoFakeAttack(object oTarget,int bLethal)
 
 **Source Code**:
 
-```nss
+```c
 //:: k_inc_force
 /*
     v1.0
@@ -5475,7 +2505,7 @@ void SP_MyPrintString(string sString);
 
 **Source Code**:
 
-```nss
+```c
 //:: k_inc_generic
 /*
     v1.5
@@ -5539,7 +2569,7 @@ int SW_FLAG_EVENT_ON_HEARTBEAT   = 28;
 
 **Source Code**:
 
-```nss
+```c
 //:: k_inc_gensupport
 /*
     v1.0
@@ -5603,7 +2633,7 @@ int SW_COMBO_SITH_DRAIN = 23;
 
 **Source Code**:
 
-```nss
+```c
 
 //:: k_inc_glob_party
 /*
@@ -5667,7 +2697,7 @@ string GetNPCTag( int nNPC )
 
 **Source Code**:
 
-```nss
+```c
 
 //:: Script Name
 /*
@@ -5731,7 +2761,7 @@ void ClearEnemies()
 
 **Source Code**:
 
-```nss
+```c
 
 //:: k_inc_item_gen.nss
 /*
@@ -5795,7 +2825,7 @@ int GetIsEquipmentNeeded()
 
 **Source Code**:
 
-```nss
+```c
 //Richard Taylor
 //OEI 08/08/04
 //Various functions to help with killing creatures in
@@ -5859,7 +2889,7 @@ void DamagingExplosion( object oCreature, int nDelay, int nDamage )
 
 **Source Code**:
 
-```nss
+```c
 //:: a_q_cryst_change
 /*
 Takes the quest crystal the player has, if any.
@@ -5903,7 +2933,7 @@ int GetCrystalLevel()
 
 **Source Code**:
 
-```nss
+```c
 // Gives the player the next component needed for the HK quest.
 // kds, 09/06/04
 #include "k_inc_treas_k2"
@@ -5940,7 +2970,7 @@ CreateItemOnObject( sItem, oRecipient, 1 );
 
 **Source Code**:
 
-```nss
+```c
 //:: k_inc_switch
 /*
      A simple include defining all of the
@@ -5999,7 +3029,7 @@ int KOTOR2_MISC_PC_COMBAT_FORFEIT                    = 4001;
 
 **Source Code**:
 
-```nss
+```c
 #include "k_inc_q_crystal"
 #include "k_inc_treasure"
 /*
@@ -6063,7 +3093,7 @@ Droid Items - 500
 
 **Source Code**:
 
-```nss
+```c
 //:: k_inc_treasure
 /*
      contains code for filling containers using treasure tables
@@ -6127,7 +3157,7 @@ int SWTR_InRange(int i,int iLow,int iHigh)
 
 **Source Code**:
 
-```nss
+```c
 //:: k_inc_utility
 /*
     common functions used throughout various scripts
@@ -6191,7 +3221,7 @@ int IsIntelligenceHigh();
 
 **Source Code**:
 
-```nss
+```c
 //:: k_inc_walkways
 /*
     v1.0
@@ -6255,7 +3285,7 @@ int SW_FLAG_USE_WAYPOINT_ANIMATION = 109;
 
 **Source Code**:
 
-```nss
+```c
 //:: k_inc_zones
 /*
      Zone including for controlling
@@ -6319,7 +3349,7 @@ void ZN_CatalogFollowers()
 
 **Source Code**:
 
-```nss
+```c
 
 //:: Script Name
 /*
@@ -6387,12 +3417,12 @@ void DoSpecialSpawnIn(object pObject)
 
 **Function Call Resolution:**
 
-```nss
+```c
 // Source code
 int result = GetGlobalNumber("K_QUEST_COMPLETED");
 ```
 
-```nss
+```c
 // Compiler looks up "GetGlobalNumber" in KOTOR_FUNCTIONS
 // Finds it at index 159 (routine number)
 // Generates: ACTION 159 with 1 argument (string "K_QUEST_COMPLETED")
@@ -6400,18 +3430,21 @@ int result = GetGlobalNumber("K_QUEST_COMPLETED");
 
 **Constant Resolution:**
 
-```nss
+```c
 // Source code
 if (nPlanet == PLANET_TARIS) { ... }
 ```
 
-```nss
+```c
 // Compiler looks up PLANET_TARIS in KOTOR_CONSTANTS
 // Finds value: 1
 // Generates: CONSTI 1 (pushes integer 1 onto stack)
 ```
 
-**Reference:** [`Libraries/PyKotor/src/pykotor/resource/formats/ncs/ncs_auto.py:126-205`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/ncs/ncs_auto.py), [NCS-File-Format#engine-function-calls](NCS-File-Format#engine-function-calls)
+**Reference:**
+
+- [`Libraries/PyKotor/src/pykotor/resource/formats/ncs/ncs_auto.py:126-205`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/ncs/ncs_auto.py)
+- [NCS-File-Format#example-5-engine-function-call](NCS-File-Format#example-5-engine-function-call)
 
 ---
 
@@ -6431,7 +3464,7 @@ KOTOR's `nwscript.nss` retains many NWN-era declarations but prefixes unsupporte
 
 No official BioWare documentation explains this (as KOTOR predates widespread modding support), but forum consensus attributes it to engine streamlining for single-player RPG vs. NWN's multiplayer focus.
 
-### key Examples of Commented Elements
+### [KEY](Container-Formats#key) Examples of Commented Elements
 
 | Category | Examples | Notes from nwscript.nss |
 |----------|----------|-------------------------|
@@ -6459,13 +3492,13 @@ Modders have developed several strategies for working with commented-out element
 
 The notorious K2 syntax error in `SetOrientOnClick` can be fixed by changing:
 
-```nss
+```c
 void SetOrientOnClick( object = OBJECT_SELF, ... )
 ```
 
 to:
 
-```nss
+```c
 void SetOrientOnClick( object oCreature = OBJECT_SELF, ... )
 ```
 
@@ -6473,10 +3506,12 @@ void SetOrientOnClick( object oCreature = OBJECT_SELF, ... )
 
 Modding communities actively reference these commented sections, especially on **Deadly Stream** (primary KOTOR hub), **LucasForums containers**, **Holowan Laboratories** (via MixNMojo/Mixmojo forums), and Reddit.
 
-| Forum | key Threads | Topics Covered |
+| Forum | [KEY](Container-Formats#key) threads | Topics covered |
 |-------|-------------|----------------|
-| Deadly Stream | [Script Shack](https://deadlystream.com/topic/4808-fair-strides-script-shack/page/7/), [nwscript.nss Request](https://deadlystream.com/topic/6892-nwscriptnss/) | [animations](MDL-MDX-File-Format), overrides |
-| LucasForums Container | [Syntax Error](https://www.lucasforumscontainer.com/thread/142901-syntax-error-in-kotor2-nwscriptnss), [Don't Mess with It](https://www.lucasforumscontainer.com/thread/168643-im-trying-to-change-classes2da) | Fixes, warnings |
+| Deadly Stream | [Script Shack](https://deadlystream.com/topic/4808-fair-strides-script-shack/page/7/) | [animations](MDL-MDX-File-Format)<br>overrides |
+| Deadly Stream | [nwscript.nss Request](https://deadlystream.com/topic/6892-nwscriptnss/) | [animations](MDL-MDX-File-Format)<br>overrides |
+| LucasForums Container | [Syntax Error](https://www.lucasforumscontainer.com/thread/142901-syntax-error-in-kotor2-nwscriptnss) | Fixes<br>warnings |
+| LucasForums Container | [Don't Mess with It](https://www.lucasforumscontainer.com/thread/168643-im-trying-to-change-classes2da) | Fixes<br>warnings |
 | Reddit r/kotor | [Movement Speed](https://www.reddit.com/r/kotor/comments/9dr8iy/modding_question_movement_speed_increase_in_k2/) | Effect caps |
 | Czerka R&D Wiki | [nwscript.nss](https://czerka-rd.fandom.com/wiki/Nwscript.nss) | General documentation |
 
@@ -6486,7 +3521,8 @@ Modding communities actively reference these commented sections, especially on *
 
 - **Reddit r/kotor** (2018): Thread on speed boosts quotes the commented description for `EffectMovementSpeedIncrease` (line ~165). Users test values >200% (no effect due to cap), note "turbo" cheat bypasses it partially.
 
-- **LucasForums Container** (2004-2007 threads): Multiple posts warn against editing `nwscript.nss` ("very bad idea... loads of trouble"). Syntax fix for K2 widely shared; `// disabled` snippets appear in context of `SetOrientOnClick`.
+- **LucasForums Container** (2004-2007 threads): Multiple posts warn against editing `nwscript.nss` ("very bad idea... loads of trouble"). Syntax fix for K2 widely shared
+- `// disabled` snippets appear in context of `SetOrientOnClick`.
 
 ### Attempts to Uncomment or Modify
 
@@ -6498,7 +3534,7 @@ Modding communities actively reference these commented sections, especially on *
 
 In summary, while no one has publicly shared a "uncomment everything" patch (likely futile), the modding scene thrives on careful overrides, with thousands of posts across these sites confirming the practice since 2003.
 
-### key Citations
+### [KEY](Container-Formats#key) Citations
 
 - [Deadly Stream: Fair Strides' Script Shack](https://deadlystream.com/topic/4808-fair-strides-script-shack/page/7/)
 - [Czerka Wiki: nwscript.nss](https://czerka-rd.fandom.com/wiki/Nwscript.nss)
@@ -6513,39 +3549,50 @@ In summary, while no one has publicly shared a "uncomment everything" patch (lik
 
 **Parsing nwscript.nss:**
 
-- [`vendor/reone/src/apps/dataminer/routines.cpp:149-184`](https://github.com/th3w1zard1/reone/blob/master/src/apps/dataminer/routines.cpp) - Parses nwscript.nss using regex patterns for constants and functions
-- [`vendor/reone/src/apps/dataminer/routines.cpp:382-427`](https://github.com/th3w1zard1/reone/blob/master/src/apps/dataminer/routines.cpp) - Extracts functions from nwscript.nss in chitin.key for K1 and K2
-- [`vendor/xoreos-tools/src/nwscript/actions.cpp`](https://github.com/th3w1zard1/xoreos-tools/blob/master/src/nwscript/actions.cpp) - Actions data parsing for decompilation
-- [`vendor/xoreos-tools/src/nwscript/ncsfile.cpp`](https://github.com/th3w1zard1/xoreos-tools/blob/master/src/nwscript/ncsfile.cpp) - [NCS file](NCS-File-Format) parsing with actions data integration
-- [`vendor/NorthernLights/Assets/Scripts/ncs/nwscript_actions.cs`](https://github.com/th3w1zard1/NorthernLights/blob/master/Assets/Scripts/ncs/nwscript_actions.cs) - Unity C# actions table
-- [`vendor/NorthernLights/Assets/Scripts/ncs/nwscript.cs`](https://github.com/th3w1zard1/NorthernLights/blob/master/Assets/Scripts/ncs/nwscript.cs) - Unity C# NWScript class
-- [`vendor/KotOR-Scripting-Tool/NWN Script/NWScriptParser.cs`](https://github.com/th3w1zard1/KotOR-Scripting-Tool/blob/master/NWN%20Script/NWScriptParser.cs) - C# parser for nwscript.nss
+- [`reone/src/apps/dataminer/routines.cpp:149-184`](https://github.com/modawan/reone/blob/master/src/apps/dataminer/routines.cpp) - Parses nwscript.nss using regex patterns for constants and functions
+- [`reone/src/apps/dataminer/routines.cpp:382-427`](https://github.com/modawan/reone/blob/master/src/apps/dataminer/routines.cpp) - Extracts functions from nwscript.nss in chitin.key for K1 and K2
+- [`xoreos-tools/src/nwscript/actions.cpp`](https://github.com/xoreos/xoreos-tools/blob/master/src/nwscript/actions.cpp) - Actions data parsing for decompilation
+- [`xoreos-tools/src/nwscript/ncsfile.cpp`](https://github.com/xoreos/xoreos-tools/blob/master/src/nwscript/ncsfile.cpp) - [NCS file](NCS-File-Format) parsing with actions data integration
+- [`NorthernLights/Assets/Scripts/ncs/nwscript_actions.cs`](https://github.com/lachjames/NorthernLights/blob/master/Assets/Scripts/ncs/nwscript_actions.cs) - Unity C# actions table
+- [`NorthernLights/Assets/Scripts/ncs/nwscript.cs`](https://github.com/lachjames/NorthernLights/blob/master/Assets/Scripts/ncs/nwscript.cs) - Unity C# NWScript class
+- **`KotOR-Scripting-Tool/NWN Script/NWScriptParser.cs`** - C# parser for nwscript.nss
+  - Upstream (KobaltBlu/KotOR-Scripting-Tool): <https://github.com/KobaltBlu/KotOR-Scripting-Tool/blob/ddd580e1b85e9c25bf5eea77a0b6938e396579c6/NWN%20Script/NWScriptParser.cs>
+  - Mirror (th3w1zard1/KotOR-Scripting-Tool): <https://github.com/th3w1zard1/KotOR-Scripting-Tool/blob/ddd580e1b85e9c25bf5eea77a0b6938e396579c6/NWN%20Script/NWScriptParser.cs>
 
 **Function Definitions:**
 
-- [`vendor/KotOR.js/src/nwscript/NWScript.ts`](https://github.com/th3w1zard1/KotOR.js/blob/master/src/nwscript/NWScript.ts) - TypeScript function definitions
-- [`vendor/KotOR.js/src/nwscript/NWScriptDefK1.ts`](https://github.com/th3w1zard1/KotOR.js/blob/master/src/nwscript/NWScriptDefK1.ts) - KotOR 1 definitions
-- [`vendor/KotOR.js/src/nwscript/NWScriptDefK2.ts`](https://github.com/th3w1zard1/KotOR.js/blob/master/src/nwscript/NWScriptDefK2.ts) - KotOR 2 definitions
-- [`vendor/KotOR.js/src/nwscript/NWScriptParser.ts`](https://github.com/th3w1zard1/KotOR.js/blob/master/src/nwscript/NWScriptParser.ts) - TypeScript parser for nwscript.nss
-- [`vendor/KotOR.js/src/nwscript/NWScriptInstructionSet.ts`](https://github.com/th3w1zard1/KotOR.js/blob/master/src/nwscript/NWScriptInstructionSet.ts) - Instruction set definitions
-- [`vendor/KotOR.js/src/nwscript/NWScriptConstants.ts`](https://github.com/th3w1zard1/KotOR.js/blob/master/src/nwscript/NWScriptConstants.ts) - Constant definitions
-- [`vendor/HoloLSP/server/src/nwscript/`](https://github.com/th3w1zard1/HoloLSP/blob/master/server/src/nwscript/) - Language server definitions
-- [`vendor/HoloLSP/server/src/nwscript-parser.ts`](https://github.com/th3w1zard1/HoloLSP/blob/master/server/src/nwscript-parser.ts) - Language server parser
-- [`vendor/HoloLSP/server/src/nwscript-lexer.ts`](https://github.com/th3w1zard1/HoloLSP/blob/master/server/src/nwscript-lexer.ts) - Language server lexer
-- [`vendor/HoloLSP/server/src/nwscript-ast.ts`](https://github.com/th3w1zard1/HoloLSP/blob/master/server/src/nwscript-ast.ts) - Language server AST
-- [`vendor/HoloLSP/syntaxes/nwscript.tmLanguage.json`](https://github.com/th3w1zard1/HoloLSP/blob/master/syntaxes/nwscript.tmLanguage.json) - TextMate syntax definition
-- [`vendor/nwscript-mode.el/nwscript-mode.el`](https://github.com/th3w1zard1/nwscript-mode.el/blob/master/nwscript-mode.el) - Emacs mode for NWScript
-- [`vendor/nwscript-ts-mode/`](https://github.com/th3w1zard1/nwscript-ts-mode) - TypeScript mode for NWScript
+- [`KotOR.js/src/nwscript/NWScript.ts`](https://github.com/KobaltBlu/KotOR.js/blob/master/src/nwscript/NWScript.ts) - TypeScript function definitions
+- [`KotOR.js/src/nwscript/NWScriptDefK1.ts`](https://github.com/KobaltBlu/KotOR.js/blob/master/src/nwscript/NWScriptDefK1.ts) - KotOR 1 definitions
+- [`KotOR.js/src/nwscript/NWScriptDefK2.ts`](https://github.com/KobaltBlu/KotOR.js/blob/master/src/nwscript/NWScriptDefK2.ts) - KotOR 2 definitions
+- [`KotOR.js/src/nwscript/compiler/NWScriptParser.ts` L65+](https://github.com/KobaltBlu/KotOR.js/blob/ea9491d5c783364cf285f178434b84405bee3608/src/nwscript/compiler/NWScriptParser.ts#L65) — Parser for `nwscript.nss` / NSS (engine types, constants, actions)
+- [`KotOR.js/src/nwscript/NWScriptInstructionSet.ts`](https://github.com/KobaltBlu/KotOR.js/blob/master/src/nwscript/NWScriptInstructionSet.ts) - Instruction set definitions
+- [`KotOR.js/src/nwscript/NWScriptConstants.ts`](https://github.com/KobaltBlu/KotOR.js/blob/master/src/nwscript/NWScriptConstants.ts) - Constant definitions
+- **`HoloLSP/server/src/nwscript-parser.ts` L52+** — `NWScriptParser` (recursive descent)
+  - Canonical (th3w1zard1/HoloLSP): <https://github.com/th3w1zard1/HoloLSP/blob/80f2e64bf508a6b487d8f3ecf9ab9cb6812222a2/server/src/nwscript-parser.ts#L52>
+- **`HoloLSP/server/src/nwscript-lexer.ts` L9+** — `TokenType` / `NWScriptLexer`
+  - Canonical (th3w1zard1/HoloLSP): <https://github.com/th3w1zard1/HoloLSP/blob/80f2e64bf508a6b487d8f3ecf9ab9cb6812222a2/server/src/nwscript-lexer.ts#L9>
+- **`HoloLSP/server/src/nwscript-ast.ts` L7+** — AST nodes (`Program`, `FunctionDeclaration`, …)
+  - Canonical (th3w1zard1/HoloLSP): <https://github.com/th3w1zard1/HoloLSP/blob/80f2e64bf508a6b487d8f3ecf9ab9cb6812222a2/server/src/nwscript-ast.ts#L7>
+- **`HoloLSP/syntaxes/nwscript.tmLanguage.json` L1+** — TextMate grammar
+  - Canonical (th3w1zard1/HoloLSP): <https://github.com/th3w1zard1/HoloLSP/blob/80f2e64bf508a6b487d8f3ecf9ab9cb6812222a2/syntaxes/nwscript.tmLanguage.json#L1>
+- [`nwscript-mode.el/nwscript-mode.el`](https://github.com/implicit-image/nwscript-mode.el/blob/master/nwscript-mode.el) - Emacs mode for NWScript
+- **`nwscript-ts-mode/`** - TypeScript mode for NWScript
+  - Upstream (implicit-image/nwscript-ts-mode): <https://github.com/implicit-image/nwscript-ts-mode/tree/8108740ca304d7acbb89ef5a4d9327b430d33fad>
+  - Mirror (th3w1zard1/nwscript-ts-mode): <https://github.com/th3w1zard1/nwscript-ts-mode/tree/8108740ca304d7acbb89ef5a4d9327b430d33fad>
 
 **Original Sources:**
 
-- [`vendor/Vanilla_KOTOR_Script_Source`](https://github.com/th3w1zard1/Vanilla_KOTOR_Script_Source) - Original KotOR script sources including nwscript.nss
-- [`vendor/Vanilla_KOTOR_Script_Source/K1/Data/scripts.bif/`](https://github.com/th3w1zard1/Vanilla_KOTOR_Script_Source/tree/master/K1/Data/scripts.bif) - KotOR 1 script sources from [BIF](BIF-File-Format)
-- [`vendor/Vanilla_KOTOR_Script_Source/TSL/Vanilla/Data/Scripts/`](https://github.com/th3w1zard1/Vanilla_KOTOR_Script_Source/tree/master/TSL/Vanilla/Data/Scripts) - KotOR 2 script sources
-- [`vendor/KotOR-Scripting-Tool/NWN Script/k1/nwscript.nss`](https://github.com/th3w1zard1/KotOR-Scripting-Tool/blob/master/NWN%20Script/k1/nwscript.nss) - KotOR 1 nwscript.nss
-- [`vendor/KotOR-Scripting-Tool/NWN Script/k2/nwscript.nss`](https://github.com/th3w1zard1/KotOR-Scripting-Tool/blob/master/NWN%20Script/k2/nwscript.nss) - KotOR 2 nwscript.nss
-- [`vendor/NorthernLights/Scripts/k1_nwscript.nss`](https://github.com/th3w1zard1/NorthernLights/blob/master/Scripts/k1_nwscript.nss) - KotOR 1 nwscript.nss (NorthernLights)
-- [`vendor/NorthernLights/Scripts/k2_nwscript.nss`](https://github.com/th3w1zard1/NorthernLights/blob/master/Scripts/k2_nwscript.nss) - KotOR 2 nwscript.nss (NorthernLights)
+- [`Vanilla_KOTOR_Script_Source`](https://github.com/KOTORCommunityPatches/Vanilla_KOTOR_Script_Source) - Original KotOR script sources including nwscript.nss
+- [`Vanilla_KOTOR_Script_Source/K1/Data/scripts.bif/`](https://github.com/KOTORCommunityPatches/Vanilla_KOTOR_Script_Source/tree/master/K1/Data/scripts.bif) - KotOR 1 script sources from [BIF](Container-Formats#bif)
+- [`Vanilla_KOTOR_Script_Source/TSL/Vanilla/Data/Scripts/`](https://github.com/KOTORCommunityPatches/Vanilla_KOTOR_Script_Source/tree/master/TSL/Vanilla/Data/Scripts) - KotOR 2 script sources
+- **`KotOR-Scripting-Tool/NWN Script/k1/nwscript.nss`** - KotOR 1 nwscript.nss
+  - Upstream (KobaltBlu/KotOR-Scripting-Tool): <https://github.com/KobaltBlu/KotOR-Scripting-Tool/blob/ddd580e1b85e9c25bf5eea77a0b6938e396579c6/NWN%20Script/k1/nwscript.nss>
+  - Mirror (th3w1zard1/KotOR-Scripting-Tool): <https://github.com/th3w1zard1/KotOR-Scripting-Tool/blob/ddd580e1b85e9c25bf5eea77a0b6938e396579c6/NWN%20Script/k1/nwscript.nss>
+- **`KotOR-Scripting-Tool/NWN Script/k2/nwscript.nss`** - KotOR 2 nwscript.nss
+  - Upstream (KobaltBlu/KotOR-Scripting-Tool): <https://github.com/KobaltBlu/KotOR-Scripting-Tool/blob/ddd580e1b85e9c25bf5eea77a0b6938e396579c6/NWN%20Script/k2/nwscript.nss>
+  - Mirror (th3w1zard1/KotOR-Scripting-Tool): <https://github.com/th3w1zard1/KotOR-Scripting-Tool/blob/ddd580e1b85e9c25bf5eea77a0b6938e396579c6/NWN%20Script/k2/nwscript.nss>
+- [`NorthernLights/Scripts/k1_nwscript.nss`](https://github.com/lachjames/NorthernLights/blob/master/Scripts/k1_nwscript.nss) - KotOR 1 nwscript.nss (NorthernLights)
+- [`NorthernLights/Scripts/k2_nwscript.nss`](https://github.com/lachjames/NorthernLights/blob/master/Scripts/k2_nwscript.nss) - KotOR 2 nwscript.nss (NorthernLights)
 
 **PyKotor Implementation:**
 
@@ -6556,136 +3603,150 @@ In summary, while no one has publicly shared a "uncomment everything" patch (lik
 
 **Other Implementations:**
 
-- [`vendor/Kotor.NET/Kotor.NET/Formats/KotorNCS/NCS.cs`](https://github.com/th3w1zard1/Kotor.NET/blob/master/Kotor.NET/Formats/KotorNCS/NCS.cs) - C# [NCS](NCS-File-Format) format with actions data support
-- [`vendor/KotORModSync/KOTORModSync.Core/Data/NWScriptHeader.cs`](https://github.com/th3w1zard1/KotORModSync/blob/master/KOTORModSync.Core/Data/NWScriptHeader.cs) - C# NWScript header parser
-- [`vendor/KotORModSync/KOTORModSync.Core/Data/NWScriptFileReader.cs`](https://github.com/th3w1zard1/KotORModSync/blob/master/KOTORModSync.Core/Data/NWScriptFileReader.cs) - C# NWScript file reader
+- [`NCS.cs` L9+](https://github.com/NickHugi/Kotor.NET/blob/6dca4a6a1af2fee6e36befb9a6f127c8ba04d3e2/Kotor.NET/Formats/KotorNCS/NCS.cs#L9) — C# [NCS](NCS-File-Format) model (`Kotor.NET/Formats/KotorNCS/`)
+- **`KotORModSync/KOTORModSync.Core/Data/NWScriptHeader.cs`** - C# NWScript header parser
+  - Canonical (th3w1zard1/KotORModSync): <https://github.com/th3w1zard1/KotORModSync/blob/c8b0d10ce3fd7525d593d34a3be8d151da7d3387/KOTORModSync.Core/Data/NWScriptHeader.cs>
+- **`KotORModSync/KOTORModSync.Core/Data/NWScriptFileReader.cs`** - C# NWScript file reader
+  - Canonical (th3w1zard1/KotORModSync): <https://github.com/th3w1zard1/KotORModSync/blob/c8b0d10ce3fd7525d593d34a3be8d151da7d3387/KOTORModSync.Core/Data/NWScriptFileReader.cs>
 
 **NWScript VM and Execution:**
 
-- [`vendor/reone/src/libs/script/format/ncsreader.cpp`](https://github.com/th3w1zard1/reone/blob/master/src/libs/script/format/ncsreader.cpp) - [NCS](NCS-File-Format) bytecode reader
-- [`vendor/reone/src/libs/script/format/ncswriter.cpp`](https://github.com/th3w1zard1/reone/blob/master/src/libs/script/format/ncswriter.cpp) - [NCS](NCS-File-Format) bytecode writer
-- [`vendor/xoreos/src/aurora/nwscript/`](https://github.com/th3w1zard1/xoreos/tree/master/src/aurora/nwscript) - NWScript VM implementation
-- [`vendor/xoreos/src/aurora/nwscript/ncsfile.cpp`](https://github.com/th3w1zard1/xoreos/blob/master/src/aurora/nwscript/ncsfile.cpp) - [NCS file](NCS-File-Format) parsing and execution
-- [`vendor/xoreos/src/aurora/nwscript/object.h`](https://github.com/th3w1zard1/xoreos/blob/master/src/aurora/nwscript/object.h) - NWScript object type definitions
-- [`vendor/xoreos/src/engines/kotorbase/object.h`](https://github.com/th3w1zard1/xoreos/blob/master/src/engines/kotorbase/object.h) - KotOR object implementation
-- [`vendor/NorthernLights/Assets/Scripts/ncs/control.cs`](https://github.com/th3w1zard1/NorthernLights/blob/master/Assets/Scripts/ncs/control.cs) - Unity C# [NCS](NCS-File-Format) VM control
-- [`vendor/NorthernLights/Assets/Scripts/ncs/NCSReader.cs`](https://github.com/th3w1zard1/NorthernLights/blob/master/Assets/Scripts/ncs/NCSReader.cs) - Unity C# [NCS](NCS-File-Format) reader
-- [`vendor/KotOR.js/src/odyssey/controllers/NWScriptController.ts`](https://github.com/th3w1zard1/KotOR.js/blob/master/src/odyssey/controllers/NWScriptController.ts) - TypeScript NWScript VM [controller](MDL-MDX-File-Format)
-- [`vendor/KotOR.js/src/nwscript/NWScriptInstance.ts`](https://github.com/th3w1zard1/KotOR.js/blob/master/src/nwscript/NWScriptInstance.ts) - TypeScript NWScript instance
-- [`vendor/KotOR.js/src/nwscript/NWScriptStack.ts`](https://github.com/th3w1zard1/KotOR.js/blob/master/src/nwscript/NWScriptStack.ts) - TypeScript stack implementation
-- [`vendor/KotOR.js/src/nwscript/NWScriptSubroutine.ts`](https://github.com/th3w1zard1/KotOR.js/blob/master/src/nwscript/NWScriptSubroutine.ts) - TypeScript subroutine handling
+- [`reone/src/libs/script/format/ncsreader.cpp`](https://github.com/modawan/reone/blob/master/src/libs/script/format/ncsreader.cpp) - [NCS](NCS-File-Format) bytecode reader
+- [`reone/src/libs/script/format/ncswriter.cpp`](https://github.com/modawan/reone/blob/master/src/libs/script/format/ncswriter.cpp) - [NCS](NCS-File-Format) bytecode writer
+- [`xoreos/src/aurora/nwscript/`](https://github.com/xoreos/xoreos/tree/master/src/aurora/nwscript) - NWScript VM implementation
+- [`xoreos/src/aurora/nwscript/ncsfile.cpp`](https://github.com/xoreos/xoreos/blob/master/src/aurora/nwscript/ncsfile.cpp) - [NCS file](NCS-File-Format) parsing and execution
+- [`xoreos/src/aurora/nwscript/object.h`](https://github.com/xoreos/xoreos/blob/master/src/aurora/nwscript/object.h) - NWScript object type definitions
+- [`xoreos/src/engines/kotorbase/object.h`](https://github.com/xoreos/xoreos/blob/master/src/engines/kotorbase/object.h) - KotOR object implementation
+- [`NorthernLights/Assets/Scripts/ncs/control.cs`](https://github.com/lachjames/NorthernLights/blob/master/Assets/Scripts/ncs/control.cs) - Unity C# [NCS](NCS-File-Format) VM control
+- [`NorthernLights/Assets/Scripts/ncs/NCSReader.cs`](https://github.com/lachjames/NorthernLights/blob/master/Assets/Scripts/ncs/NCSReader.cs) - Unity C# [NCS](NCS-File-Format) reader
+- [`KotOR.js/src/nwscript/NWScript.ts` L39+](https://github.com/KobaltBlu/KotOR.js/blob/ea9491d5c783364cf285f178434b84405bee3608/src/nwscript/NWScript.ts#L39) — TypeScript NCS container (`NWScript.Load`, instruction map, `newInstance`)
+- [`KotOR.js/src/nwscript/NWScriptInstance.ts`](https://github.com/KobaltBlu/KotOR.js/blob/master/src/nwscript/NWScriptInstance.ts) - TypeScript NWScript instance
+- [`KotOR.js/src/nwscript/NWScriptStack.ts`](https://github.com/KobaltBlu/KotOR.js/blob/master/src/nwscript/NWScriptStack.ts) - TypeScript stack implementation
+- [`KotOR.js/src/nwscript/NWScriptSubroutine.ts`](https://github.com/KobaltBlu/KotOR.js/blob/master/src/nwscript/NWScriptSubroutine.ts) - TypeScript subroutine handling
 
 **Documentation and Specifications:**
 
-- [`vendor/xoreos-docs/`](https://github.com/th3w1zard1/xoreos-docs) - xoreos documentation including format specifications
-- [`vendor/xoreos-docs/specs/torlack/ncs.html`](https://github.com/th3w1zard1/xoreos-docs/blob/master/specs/torlack/ncs.html) - [NCS](NCS-File-Format) format specification (if available)
+- [`xoreos-docs/`](https://github.com/xoreos/xoreos-docs) - xoreos documentation including format specifications
+- [`xoreos-docs/specs/torlack/ncs.html`](https://github.com/xoreos/xoreos-docs/blob/master/specs/torlack/ncs.html) - [NCS](NCS-File-Format) format specification (if available)
 
 **NWScript Language Support:**
 
-- [`vendor/HoloLSP/server/src/kotor-definitions.ts`](https://github.com/th3w1zard1/HoloLSP/blob/master/server/src/kotor-definitions.ts) - KotOR function and constant definitions for language server
-- [`vendor/HoloLSP/server/src/nwscript-runtime.ts`](https://github.com/th3w1zard1/HoloLSP/blob/master/server/src/nwscript-runtime.ts) - NWScript runtime definitions
-- [`vendor/HoloLSP/server/src/server.ts`](https://github.com/th3w1zard1/HoloLSP/blob/master/server/src/server.ts) - Language server implementation with NWScript support
+- **`HoloLSP/server/src/kotor-definitions.ts` L4+** — KotOR function/constant typings (generated from PyKotor `scriptdefs.py`, per file header)
+  - Canonical (th3w1zard1/HoloLSP): <https://github.com/th3w1zard1/HoloLSP/blob/80f2e64bf508a6b487d8f3ecf9ab9cb6812222a2/server/src/kotor-definitions.ts#L4>
+- **`HoloLSP/server/src/nwscript-runtime.ts` L6+** — NWScript runtime / interpreter integration
+  - Canonical (th3w1zard1/HoloLSP): <https://github.com/th3w1zard1/HoloLSP/blob/80f2e64bf508a6b487d8f3ecf9ab9cb6812222a2/server/src/nwscript-runtime.ts#L6>
+- **`HoloLSP/server/src/server.ts` L1+** — Language server entry (completions, diagnostics, NWScript)
+  - Canonical (th3w1zard1/HoloLSP): <https://github.com/th3w1zard1/HoloLSP/blob/80f2e64bf508a6b487d8f3ecf9ab9cb6812222a2/server/src/server.ts#L1>
 
 **NWScript Parsing and Compilation:**
 
-- [`vendor/xoreos-tools/src/nwscript/decompiler.cpp`](https://github.com/th3w1zard1/xoreos-tools/blob/master/src/nwscript/decompiler.cpp) - [NCS](NCS-File-Format) decompiler implementation
+- [`xoreos-tools/src/nwscript/decompiler.cpp`](https://github.com/xoreos/xoreos-tools/blob/master/src/nwscript/decompiler.cpp) - [NCS](NCS-File-Format) decompiler implementation
 
 **NWScript Execution:**
 
-- [`vendor/reone/src/libs/script/execution/`](https://github.com/th3w1zard1/reone/tree/master/src/libs/script/execution) - NWScript VM execution engine
-- [`vendor/reone/src/libs/script/vm/`](https://github.com/th3w1zard1/reone/tree/master/src/libs/script/vm) - Virtual machine implementation
-- [`vendor/xoreos/src/aurora/nwscript/execution.cpp`](https://github.com/th3w1zard1/xoreos/blob/master/src/aurora/nwscript/execution.cpp) - NWScript execution engine
-- [`vendor/xoreos/src/aurora/nwscript/variable.cpp`](https://github.com/th3w1zard1/xoreos/blob/master/src/aurora/nwscript/variable.cpp) - Variable handling
-- [`vendor/xoreos/src/aurora/nwscript/function.cpp`](https://github.com/th3w1zard1/xoreos/blob/master/src/aurora/nwscript/function.cpp) - Function call handling
-- [`vendor/NorthernLights/Assets/Scripts/ncs/control.cs`](https://github.com/th3w1zard1/NorthernLights/blob/master/Assets/Scripts/ncs/control.cs) - Unity C# [NCS](NCS-File-Format) VM control and execution
-- [`vendor/KotOR.js/src/nwscript/NWScriptController.ts`](https://github.com/th3w1zard1/KotOR.js/blob/master/src/nwscript/NWScriptController.ts) - TypeScript NWScript [controller](MDL-MDX-File-Format) and execution
+- [`reone/src/libs/script/virtualmachine.cpp` L36+](https://github.com/modawan/reone/blob/61531089341caf5827abbc54346c8c959b03d449/src/libs/script/virtualmachine.cpp#L36) — Script VM (`VirtualMachine` implementation)
+- [`reone/include/reone/script/virtualmachine.h` L41+](https://github.com/modawan/reone/blob/61531089341caf5827abbc54346c8c959b03d449/include/reone/script/virtualmachine.h#L41) — `VirtualMachine` declaration
+- [`reone/src/libs/script/program.cpp` L28+](https://github.com/modawan/reone/blob/61531089341caf5827abbc54346c8c959b03d449/src/libs/script/program.cpp#L28) — `ScriptProgram` bytecode container (`add`, instruction helpers)
+- [`xoreos/src/aurora/nwscript/execution.cpp`](https://github.com/xoreos/xoreos/blob/master/src/aurora/nwscript/execution.cpp) - NWScript execution engine
+- [`xoreos/src/aurora/nwscript/variable.cpp`](https://github.com/xoreos/xoreos/blob/master/src/aurora/nwscript/variable.cpp) - Variable handling
+- [`xoreos/src/aurora/nwscript/function.cpp`](https://github.com/xoreos/xoreos/blob/master/src/aurora/nwscript/function.cpp) - Function call handling
+- [`NorthernLights/Assets/Scripts/ncs/control.cs`](https://github.com/lachjames/NorthernLights/blob/master/Assets/Scripts/ncs/control.cs) - Unity C# [NCS](NCS-File-Format) VM control and execution
+- [`KotOR.js/src/nwscript/NWScriptInstance.ts` L32+](https://github.com/KobaltBlu/KotOR.js/blob/ea9491d5c783364cf285f178434b84405bee3608/src/nwscript/NWScriptInstance.ts#L32) — Per-script execution state (`run` / `runScript`, stack, instruction stepping)
 
 **Routine Implementations:**
 
-- [`vendor/reone/src/libs/script/routine/main/`](https://github.com/th3w1zard1/reone/tree/master/src/libs/script/routine/main) - Main routine implementations
-- [`vendor/reone/src/libs/script/routine/action/`](https://github.com/th3w1zard1/reone/tree/master/src/libs/script/routine/action) - Action routine implementations
-- [`vendor/reone/src/libs/script/routine/effect/`](https://github.com/th3w1zard1/reone/tree/master/src/libs/script/routine/effect) - Effect routine implementations
-- [`vendor/xoreos/src/engines/kotorbase/script/routines.cpp`](https://github.com/th3w1zard1/xoreos/blob/master/src/engines/kotorbase/script/routines.cpp) - KotOR-specific routine implementations
+- [`reone/src/libs/script/routine/main/`](https://github.com/modawan/reone/tree/master/src/libs/script/routine/main) - Main routine implementations
+- [`reone/src/libs/script/routine/action/`](https://github.com/modawan/reone/tree/master/src/libs/script/routine/action) - Action routine implementations
+- [`reone/src/libs/script/routine/effect/`](https://github.com/modawan/reone/tree/master/src/libs/script/routine/effect) - Effect routine implementations
+- [`xoreos/src/engines/kotorbase/script/routines.cpp`](https://github.com/xoreos/xoreos/blob/master/src/engines/kotorbase/script/routines.cpp) - KotOR-specific routine implementations
 
 **NWScript type System:**
 
-- [`vendor/xoreos/src/aurora/nwscript/types.h`](https://github.com/th3w1zard1/xoreos/blob/master/src/aurora/nwscript/types.h) - NWScript type definitions
-- [`vendor/xoreos/src/aurora/nwscript/types.cpp`](https://github.com/th3w1zard1/xoreos/blob/master/src/aurora/nwscript/types.cpp) - type system implementation
-- [`vendor/KotOR.js/src/enums/nwscript/NWScriptDataType.ts`](https://github.com/th3w1zard1/KotOR.js/blob/master/src/enums/nwscript/NWScriptDataType.ts) - TypeScript data type enumerations
-- [`vendor/KotOR.js/src/enums/nwscript/NWScriptTypes.ts`](https://github.com/th3w1zard1/KotOR.js/blob/master/src/enums/nwscript/NWScriptTypes.ts) - TypeScript type definitions
+- [`xoreos/src/aurora/nwscript/types.h`](https://github.com/xoreos/xoreos/blob/master/src/aurora/nwscript/types.h) - NWScript type definitions
+- [`xoreos/src/aurora/nwscript/types.cpp`](https://github.com/xoreos/xoreos/blob/master/src/aurora/nwscript/types.cpp) - type system implementation
+- [`KotOR.js/src/enums/nwscript/NWScriptDataType.ts`](https://github.com/KobaltBlu/KotOR.js/blob/master/src/enums/nwscript/NWScriptDataType.ts) - TypeScript data type enumerations
+- [`KotOR.js/src/enums/nwscript/NWScriptTypes.ts`](https://github.com/KobaltBlu/KotOR.js/blob/master/src/enums/nwscript/NWScriptTypes.ts) - TypeScript type definitions
 
 **NWScript Events:**
 
-- [`vendor/KotOR.js/src/nwscript/events/NWScriptEvent.ts`](https://github.com/th3w1zard1/KotOR.js/blob/master/src/nwscript/events/NWScriptEvent.ts) - Event handling
-- [`vendor/KotOR.js/src/nwscript/events/NWScriptEventFactory.ts`](https://github.com/th3w1zard1/KotOR.js/blob/master/src/nwscript/events/NWScriptEventFactory.ts) - Event factory
-- [`vendor/KotOR.js/src/enums/nwscript/NWScriptEventType.ts`](https://github.com/th3w1zard1/KotOR.js/blob/master/src/enums/nwscript/NWScriptEventType.ts) - Event type enumerations
+- [`KotOR.js/src/nwscript/events/NWScriptEvent.ts`](https://github.com/KobaltBlu/KotOR.js/blob/master/src/nwscript/events/NWScriptEvent.ts) - Event handling
+- [`KotOR.js/src/nwscript/events/NWScriptEventFactory.ts`](https://github.com/KobaltBlu/KotOR.js/blob/master/src/nwscript/events/NWScriptEventFactory.ts) - Event factory
+- [`KotOR.js/src/enums/nwscript/NWScriptEventType.ts`](https://github.com/KobaltBlu/KotOR.js/blob/master/src/enums/nwscript/NWScriptEventType.ts) - Event type enumerations
 
 **NWScript Bytecode:**
 
-- [`vendor/KotOR.js/src/nwscript/NWScriptOPCodes.ts`](https://github.com/th3w1zard1/KotOR.js/blob/master/src/nwscript/NWScriptOPCodes.ts) - Opcode definitions
-- [`vendor/KotOR.js/src/nwscript/NWScriptInstruction.ts`](https://github.com/th3w1zard1/KotOR.js/blob/master/src/nwscript/NWScriptInstruction.ts) - Instruction handling
-- [`vendor/KotOR.js/src/nwscript/NWScriptInstructionInfo.ts`](https://github.com/th3w1zard1/KotOR.js/blob/master/src/nwscript/NWScriptInstructionInfo.ts) - Instruction information
-- [`vendor/KotOR.js/src/enums/nwscript/NWScriptByteCode.ts`](https://github.com/th3w1zard1/KotOR.js/blob/master/src/enums/nwscript/NWScriptByteCode.ts) - Bytecode enumerations
+- [`KotOR.js/src/nwscript/NWScriptOPCodes.ts`](https://github.com/KobaltBlu/KotOR.js/blob/master/src/nwscript/NWScriptOPCodes.ts) - Opcode definitions
+- [`KotOR.js/src/nwscript/NWScriptInstruction.ts`](https://github.com/KobaltBlu/KotOR.js/blob/master/src/nwscript/NWScriptInstruction.ts) - Instruction handling
+- [`KotOR.js/src/nwscript/NWScriptInstructionInfo.ts`](https://github.com/KobaltBlu/KotOR.js/blob/master/src/nwscript/NWScriptInstructionInfo.ts) - Instruction information
+- [`KotOR.js/src/enums/nwscript/NWScriptByteCode.ts`](https://github.com/KobaltBlu/KotOR.js/blob/master/src/enums/nwscript/NWScriptByteCode.ts) - Bytecode enumerations
 
 **NWScript Stack:**
 
-- [`vendor/KotOR.js/src/nwscript/NWScriptStack.ts`](https://github.com/th3w1zard1/KotOR.js/blob/master/src/nwscript/NWScriptStack.ts) - Stack implementation
-- [`vendor/KotOR.js/src/nwscript/NWScriptStackVariable.ts`](https://github.com/th3w1zard1/KotOR.js/blob/master/src/nwscript/NWScriptStackVariable.ts) - Stack variable handling
+- [`KotOR.js/src/nwscript/NWScriptStack.ts`](https://github.com/KobaltBlu/KotOR.js/blob/master/src/nwscript/NWScriptStack.ts) - Stack implementation
+- [`KotOR.js/src/nwscript/NWScriptStackVariable.ts`](https://github.com/KobaltBlu/KotOR.js/blob/master/src/nwscript/NWScriptStackVariable.ts) - Stack variable handling
 
 **NWScript Interface Definitions:**
 
-- [`vendor/KotOR.js/src/interface/nwscript/INWScriptStoreState.ts`](https://github.com/th3w1zard1/KotOR.js/blob/master/src/interface/nwscript/INWScriptStoreState.ts) - Store state interface
-- [`vendor/KotOR.js/src/interface/nwscript/INWScriptDefAction.ts`](https://github.com/th3w1zard1/KotOR.js/blob/master/src/interface/nwscript/INWScriptDefAction.ts) - Action definition interface
+- [`KotOR.js/src/interface/nwscript/INWScriptStoreState.ts`](https://github.com/KobaltBlu/KotOR.js/blob/master/src/interface/nwscript/INWScriptStoreState.ts) - Store state interface
+- [`KotOR.js/src/interface/nwscript/INWScriptDefAction.ts`](https://github.com/KobaltBlu/KotOR.js/blob/master/src/interface/nwscript/INWScriptDefAction.ts) - Action definition interface
 
 **NWScript AST and Parsing:**
 
-- [`vendor/KotOR.js/src/nwscript/AST/nwscript.jison.ts`](https://github.com/th3w1zard1/KotOR.js/blob/master/src/nwscript/AST/nwscript.jison.ts) - Jison parser grammar
-- [`vendor/HoloLSP/server/src/nwscript-ast.ts`](https://github.com/th3w1zard1/HoloLSP/blob/master/server/src/nwscript-ast.ts) - Abstract syntax tree definitions
+- [`KotOR.js/src/nwscript/compiler/NWScriptCompiler.ts` L95+](https://github.com/KobaltBlu/KotOR.js/blob/ea9491d5c783364cf285f178434b84405bee3608/src/nwscript/compiler/NWScriptCompiler.ts#L95) — NSS → NCS compiler pipeline (`NWScriptCompiler`)
+- [`KotOR.js/src/nwscript/compiler/ASTTypes.ts` L4+](https://github.com/KobaltBlu/KotOR.js/blob/ea9491d5c783364cf285f178434b84405bee3608/src/nwscript/compiler/ASTTypes.ts#L4) — Compiler AST node types (`ProgramNode`, `FunctionNode`, …)
+- **`HoloLSP/server/src/nwscript-ast.ts` L7+** — LSP-side AST definitions
+  - Canonical (th3w1zard1/HoloLSP): <https://github.com/th3w1zard1/HoloLSP/blob/80f2e64bf508a6b487d8f3ecf9ab9cb6812222a2/server/src/nwscript-ast.ts#L7>
 
 **Game-Specific NWScript Extensions:**
 
-- [`vendor/xoreos/src/engines/kotorbase/script/routines.cpp`](https://github.com/th3w1zard1/xoreos/blob/master/src/engines/kotorbase/script/routines.cpp) - KotOR-specific routine implementations
-- [`vendor/xoreos/src/engines/nwn/script/functions_action.cpp`](https://github.com/th3w1zard1/xoreos/blob/master/src/engines/nwn/script/functions_action.cpp) - NWN action function implementations
-- [`vendor/NorthernLights/Assets/Scripts/ncs/constants.cs`](https://github.com/th3w1zard1/NorthernLights/blob/master/Assets/Scripts/ncs/constants.cs) - NWScript constant definitions
-- [`vendor/reone/src/libs/game/script/routines.cpp`](https://github.com/th3w1zard1/reone/blob/master/src/libs/game/script/routines.cpp) - Game-specific routine implementations
-- [`vendor/reone/include/reone/game/script/routines.h`](https://github.com/th3w1zard1/reone/blob/master/include/reone/game/script/routines.h) - Game routine header
-- [`vendor/xoreos-tools/src/nwscript/subroutine.cpp`](https://github.com/th3w1zard1/xoreos-tools/blob/master/src/nwscript/subroutine.cpp) - Subroutine handling
-- [`vendor/xoreos-tools/src/nwscript/subroutine.h`](https://github.com/th3w1zard1/xoreos-tools/blob/master/src/nwscript/subroutine.h) - Subroutine header
-- [`vendor/xoreos/src/engines/kotorbase/types.h`](https://github.com/th3w1zard1/xoreos/blob/master/src/engines/kotorbase/types.h) - KotOR type definitions including base item types
-- [`vendor/KotOR.js/src/module/Module.ts`](https://github.com/th3w1zard1/KotOR.js/blob/master/src/module/Module.ts) - Module loading and management
-- [`vendor/KotOR.js/src/module/ModuleArea.ts`](https://github.com/th3w1zard1/KotOR.js/blob/master/src/module/ModuleArea.ts) - Area management and transitions
-- [`vendor/xoreos/src/engines/nwn/module.cpp`](https://github.com/th3w1zard1/xoreos/blob/master/src/engines/nwn/module.cpp) - NWN module implementation
-- [`vendor/xoreos/src/engines/nwn2/module.cpp`](https://github.com/th3w1zard1/xoreos/blob/master/src/engines/nwn2/module.cpp) - NWN2 module implementation
-- [`vendor/xoreos/src/engines/nwn2/module.h`](https://github.com/th3w1zard1/xoreos/blob/master/src/engines/nwn2/module.h) - NWN2 module header
-- [`vendor/xoreos/src/engines/dragonage2/script/functions_module.cpp`](https://github.com/th3w1zard1/xoreos/blob/master/src/engines/dragonage2/script/functions_module.cpp) - Dragon Age 2 module functions
-- [`vendor/xoreos/src/engines/nwn/script/functions_effect.cpp`](https://github.com/th3w1zard1/xoreos/blob/master/src/engines/nwn/script/functions_effect.cpp) - NWN effect function implementations
-- [`vendor/xoreos/src/engines/nwn/script/functions_object.cpp`](https://github.com/th3w1zard1/xoreos/blob/master/src/engines/nwn/script/functions_object.cpp) - NWN object function implementations
-- [`vendor/xoreos/src/engines/nwn2/script/functions.cpp`](https://github.com/th3w1zard1/xoreos/blob/master/src/engines/nwn2/script/functions.cpp) - NWN2 function implementations
-- [`vendor/reone/src/libs/script/routine/action/`](https://github.com/th3w1zard1/reone/tree/master/src/libs/script/routine/action) - Action routine implementations
-- [`vendor/reone/src/libs/script/routine/effect/`](https://github.com/th3w1zard1/reone/tree/master/src/libs/script/routine/effect) - Effect routine implementations
-- [`vendor/reone/src/libs/script/routine/object/`](https://github.com/th3w1zard1/reone/tree/master/src/libs/script/routine/object) - Object routine implementations
-- [`vendor/reone/src/libs/script/routine/party/`](https://github.com/th3w1zard1/reone/tree/master/src/libs/script/routine/party) - Party routine implementations
-- [`vendor/reone/src/libs/script/routine/combat/`](https://github.com/th3w1zard1/reone/tree/master/src/libs/script/routine/combat) - Combat routine implementations
-- [`vendor/NorthernLights/Assets/Scripts/ncs/nwscript_actions.cs`](https://github.com/th3w1zard1/NorthernLights/blob/master/Assets/Scripts/ncs/nwscript_actions.cs) - Complete actions table mapping routine numbers to function names
-- [`vendor/NorthernLights/Assets/Scripts/Systems/AuroraActions/AuroraAction.cs`](https://github.com/th3w1zard1/NorthernLights/blob/master/Assets/Scripts/Systems/AuroraActions/AuroraAction.cs) - Action system implementation
+- [`xoreos/src/engines/kotorbase/script/routines.cpp`](https://github.com/xoreos/xoreos/blob/master/src/engines/kotorbase/script/routines.cpp) - KotOR-specific routine implementations
+- [`xoreos/src/engines/nwn/script/functions_action.cpp`](https://github.com/xoreos/xoreos/blob/master/src/engines/nwn/script/functions_action.cpp) - NWN action function implementations
+- [`NorthernLights/Assets/Scripts/ncs/constants.cs`](https://github.com/lachjames/NorthernLights/blob/master/Assets/Scripts/ncs/constants.cs) - NWScript constant definitions
+- [`reone/src/libs/game/script/routines.cpp`](https://github.com/modawan/reone/blob/master/src/libs/game/script/routines.cpp) - Game-specific routine implementations
+- [`reone/include/reone/game/script/routines.h`](https://github.com/modawan/reone/blob/master/include/reone/game/script/routines.h) - Game routine header
+- [`xoreos-tools/src/nwscript/subroutine.cpp`](https://github.com/xoreos/xoreos-tools/blob/master/src/nwscript/subroutine.cpp) - Subroutine handling
+- [`xoreos-tools/src/nwscript/subroutine.h`](https://github.com/xoreos/xoreos-tools/blob/master/src/nwscript/subroutine.h) - Subroutine header
+- [`xoreos/src/engines/kotorbase/types.h`](https://github.com/xoreos/xoreos/blob/master/src/engines/kotorbase/types.h) - KotOR type definitions including base item types
+- [`KotOR.js/src/module/Module.ts`](https://github.com/KobaltBlu/KotOR.js/blob/master/src/module/Module.ts) - Module loading and management
+- [`KotOR.js/src/module/ModuleArea.ts`](https://github.com/KobaltBlu/KotOR.js/blob/master/src/module/ModuleArea.ts) - Area management and transitions
+- [`xoreos/src/engines/nwn/module.cpp`](https://github.com/xoreos/xoreos/blob/master/src/engines/nwn/module.cpp) - NWN module implementation
+- [`xoreos/src/engines/nwn2/module.cpp`](https://github.com/xoreos/xoreos/blob/master/src/engines/nwn2/module.cpp) - NWN2 module implementation
+- [`xoreos/src/engines/nwn2/module.h`](https://github.com/xoreos/xoreos/blob/master/src/engines/nwn2/module.h) - NWN2 module header
+- [`xoreos/src/engines/dragonage2/script/functions_module.cpp`](https://github.com/xoreos/xoreos/blob/master/src/engines/dragonage2/script/functions_module.cpp) - Dragon Age 2 module functions
+- [`xoreos/src/engines/nwn/script/functions_effect.cpp`](https://github.com/xoreos/xoreos/blob/master/src/engines/nwn/script/functions_effect.cpp) - NWN effect function implementations
+- [`xoreos/src/engines/nwn/script/functions_object.cpp`](https://github.com/xoreos/xoreos/blob/master/src/engines/nwn/script/functions_object.cpp) - NWN object function implementations
+- [`xoreos/src/engines/nwn2/script/functions.cpp`](https://github.com/xoreos/xoreos/blob/master/src/engines/nwn2/script/functions.cpp) - NWN2 function implementations
+- [`reone/src/libs/script/routine/action/`](https://github.com/modawan/reone/tree/master/src/libs/script/routine/action) - Action routine implementations
+- [`reone/src/libs/script/routine/effect/`](https://github.com/modawan/reone/tree/master/src/libs/script/routine/effect) - Effect routine implementations
+- [`reone/src/libs/script/routine/object/`](https://github.com/modawan/reone/tree/master/src/libs/script/routine/object) - Object routine implementations
+- [`reone/src/libs/script/routine/party/`](https://github.com/modawan/reone/tree/master/src/libs/script/routine/party) - Party routine implementations
+- [`reone/src/libs/script/routine/combat/`](https://github.com/modawan/reone/tree/master/src/libs/script/routine/combat) - Combat routine implementations
+- [`NorthernLights/Assets/Scripts/ncs/nwscript_actions.cs`](https://github.com/lachjames/NorthernLights/blob/master/Assets/Scripts/ncs/nwscript_actions.cs) - Complete actions table mapping routine numbers to function names
+- [`NorthernLights/Assets/Scripts/Systems/AuroraActions/AuroraAction.cs`](https://github.com/lachjames/NorthernLights/blob/master/Assets/Scripts/Systems/AuroraActions/AuroraAction.cs) - Action system implementation
 
 ---
 
 ### Other Constants
 
-See [Other Constants](NSS-TSL-Only-Constants-Other-Constants) for detailed documentation.
+See [Other Constants](NSS-File-Format#other-constants) for detailed documentation.
 
-## Cross-References
+## Related systems
 
 - **[NCS File Format](NCS-File-Format)**: Compiled bytecode format that NSS compiles to
-- **[GFF File Format](GFF-File-Format)**: Scripts [ARE](GFF-File-Format) stored in [GFF](GFF-File-Format) files ([UTC](GFF-File-Format), [UTD](GFF-File-Format), etc.)
-- **[KEY File Format](KEY-File-Format)**: nwscript.nss is stored in [chitin.key](KEY-File-Format)
+- **[GFF File Format](GFF-File-Format)**: Scripts are stored in [GFF](GFF-File-Format) templates such as:
+
+  - [UTC](GFF-File-Format#utc-creature)
+  - [UTD](GFF-File-Format#utd-door)
+  - [UTP](GFF-File-Format#utp-placeable)
+  - [IFO](GFF-File-Format#ifo-module-info)
+  - (see [GFF File Format](GFF-File-Format) for the full type index)
+- **[KEY File Format](Container-Formats#key)**: nwscript.nss is stored in [chitin.key](Container-Formats#key)
 
 ### See also
 
 - [NCS File Format](NCS-File-Format) -- Compiled NWScript bytecode
-- [NSS Shared Functions - Actions](NSS-Shared-Functions-Actions) -- Action functions
-- [NSS Shared Constants](NSS-Shared-Constants-Object-Type-Constants) -- Object type and script constants
-- [GFF-DLG](GFF-DLG) -- Dialogue files that trigger NCS scripts
+- [NSS Shared Functions - Actions](NSS-File-Format#actions) -- Action functions
+- [NSS Shared Constants](NSS-File-Format#object-type-constants) -- Object type and script constants
+- [GFF-DLG](GFF-Creature-and-Dialogue#dlg) -- Dialogue files that trigger NCS scripts
 - [2DA File Format](2DA-File-Format) -- Game data tables referenced by scripts
 - [Home](Home#community-sources-and-archives) -- Community sources and archives

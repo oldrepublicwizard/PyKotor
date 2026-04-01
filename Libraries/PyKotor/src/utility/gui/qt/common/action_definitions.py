@@ -337,6 +337,14 @@ class FileExplorerActions:
         self.actions: dict[ActionKey, QAction] = {}
         self._create_actions()
 
+    def get_action(self, name: str) -> QAction | None:
+        """Return the :class:`QAction` for ``name`` (``ActionKey`` value, e.g. ``\"open\"``)."""
+        try:
+            key = ActionKey(name)
+        except ValueError:
+            return None
+        return self.actions.get(key)
+
     def _create_actions(self):
         """Create QAction instances from declarative definitions."""
         for key, definition in self.ACTION_DEFINITIONS.items():

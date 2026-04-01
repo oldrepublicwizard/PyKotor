@@ -4,19 +4,12 @@ Talk Table (TLK) files contain all text strings used in the game, both written a
 They enable easy localization by providing a lookup table from string reference numbers (StrRef)
 to localized text and associated voice-over audio files.
 
-References:
+Observed retail behavior:
 ----------
-    Based on unified K1 (swkotor.exe) and TSL (swkotor2.exe) TLK structure.
-    Addresses: (K1: swkotor.exe, TSL: swkotor2.exe — verify/fill TSL via REVA when available).
-
-    - CTlkTable::CTlkTable (talk table manager constructor): K1: 0x0041d8d0, TSL: TODO
-    - CTlkTable::AddFile (adds TLK file to table; loads .tlk and .tlkf): K1: 0x0041d920, TSL: TODO
-    - CTlkFile::CTlkFile (TLK file reader constructor): K1: 0x0041d810, TSL: TODO
-    - TLK resource type "TLK ": K1: 0x0073ecb0, TSL: TODO
-    - "tlk" extension string: K1: 0x0074dd40, TSL: TODO
-    - CResTLK::CResTLK, LoadTLK, GetString — see engine TLK loading. "TLK " (first 4 bytes), "V3.0"/"V4.0" (bytes 4–7), "dialog.tlk" default.
-    - Original BioWare engine binaries (swkotor.exe, swkotor2.exe)
-    TLK file format specification
+    KotOR I and TSL ship a primary ``dialog.tlk`` (plus optional companion files in some builds).
+    The games resolve in-game text and VO hooks through StrRefs that index rows in the binary
+    table layout below. It has been observed that the default table uses the ``TLK `` magic,
+    ``V3.0`` version for KotOR-era titles, and the on-disk row layout described here.
 
 Binary Format:
 -------------
@@ -58,27 +51,16 @@ class TLK(ComparableMixin):
     numbers (StrRef) to localized text and optional voice-over audio files. The game loads
     dialog.tlk at startup and references strings throughout the game using StrRef numbers.
 
-    References:
-    ----------
-    See module docstring for engine addresses (K1 + TSL TODO). CResTLK::CResTLK, LoadTLK, GetString; "TLK ", "V3.0"/"V4.0"; Language ID @ 0x08, String Count @ 0x0C, String Entries Offset @ 0x10, String Data Table @ 0x14 (40 bytes/entry); "dialog.tlk". Original BioWare engine binaries (swkotor.exe, swkotor2.exe).
-    TLK file format specification
-
-
+    On-disk layout (KotOR ``V3.0`` talk tables): file type ``TLK `` at offset 0, version
+    ``V3.0`` at 4, language id at 8, string count at 0x0C, string-entry base offset at 0x10,
+    then the 40-byte fixed records followed by pooled string bytes.
 
     Attributes:
     ----------
         entries: List of TLKEntry objects indexed by StrRef
-            Reference: TSLPatcher/TLK.pm:63-79 (string lookup by index)
-            Reference: https://github.com/th3w1zard1/Kotor.NET/tree/master/TLKBinaryStructure.cs:16 (StringData list)
-            Reference: https://github.com/th3w1zard1/KotOR_IO/tree/master/TLK.cs:93 (String_Data_Table)
-            StrRef numbers are array indices (0-based)
-            Game uses StrRef -1 to indicate no string reference
 
         language: Language identifier for this talk table
-            Reference: https://github.com/th3w1zard1/Kotor.NET/tree/master/TLKBinaryStructure.cs:63 (LanguageID field)
-            Reference: https://github.com/th3w1zard1/KotOR_IO/tree/master/TLK.cs:84 (LanguageID property)
-            Reference: TSLPatcher/TLK.pm:42-44 (version check for V4.0)
-            NOTE: Game ignores this field in KotOR, always uses dialog.tlk
+            NOTE: Game itself ignores this field in KotOR, always uses dialog.tlk
             Used primarily for modding tools to identify language
     """
 
@@ -93,8 +75,6 @@ class TLK(ComparableMixin):
         # List of string entries indexed by StrRef (0-based array index)
         self.entries: list[TLKEntry] = []
 
-        # https://github.com/th3w1zard1/Kotor.NET/tree/master/Kotor.NET/Formats/KotorTLK/TLKBinaryStructure.cs:63
-        # https://github.com/th3w1zard1/KotOR_IO/tree/master/KotOR_IO/File Formats/TLK.cs:84
         # Language ID field - unused by game but present in file format
         self.language: Language = language  # game does not use this field
 
@@ -288,17 +268,8 @@ class TLKEntry(ComparableMixin):
     Each entry represents one localized string that can be referenced by its StrRef (array index).
     Entries contain the text content and an optional reference to a voice-over audio file.
 
-    References:
-    ----------
-        Original BioWare engine binaries (from swkotor.exe, swkotor2.exe)
-        Original BioWare engine binaries
-        Derivations and Other Implementations:
-        ----------
-        https://github.com/th3w1zard1/TSLPatcher/tree/master/lib/site/Bioware/TLK.pm:76-79
-        https://github.com/th3w1zard1/Kotor.NET/tree/master/Kotor.NET/Formats/KotorTLK/TLKBinaryStructure.cs:92-130
-        https://github.com/th3w1zard1/KotOR_IO/tree/master/KotOR_IO/File
-        Binary Format (40 bytes):
-        ------------------------
+    Binary Format (40 bytes):
+    ------------------------
         Offset | Size | Type   | Description
         -------|------|--------|-------------
         0x00   | 4    | uint32 | Flags (bit 0=text, bit 1=sound, bit 2=sound length)
@@ -309,30 +280,19 @@ class TLKEntry(ComparableMixin):
         0x20   | 4    | int32  | String Size (length in bytes)
         0x24   | 4    | float  | Sound Length (seconds)
 
-
-        Reference: https://github.com/th3w1zard1/Kotor.NET/tree/master/TLKBinaryStructure.cs:92-130, KotOR_IO/TLK.cs:194-200
-
     Attributes:
     ----------
         text: The localized text string
-            Reference: TSLPatcher/TLK.pm:76-79 (string reading from offset)
-            Reference: https://github.com/th3w1zard1/Kotor.NET/tree/master/TLKBinaryStructure.cs:36-37 (StringEntries list)
-            Reference: https://github.com/th3w1zard1/KotOR_IO/tree/master/TLK.cs:191 (StringText property)
             Encoding: ASCII for English, language-specific for others
             Can contain special tokens like <CUSTOM0>, <FullName>, etc.
 
         voiceover: Reference to voice-over WAV file (ResRef)
-            Reference: https://github.com/th3w1zard1/Kotor.NET/tree/master/TLKBinaryStructure.cs:97 (SoundResRef property)
-            Reference: https://github.com/th3w1zard1/KotOR_IO/tree/master/TLK.cs:197 (SoundResRef field, 16 chars)
             Max 16 characters, stored as null-terminated string in binary
             If empty/blank, no voice-over is associated with this entry
             Game looks for WAV files in StreamVoice/ or StreamWaves/ folders
 
         sound_length: Duration of voice-over audio in seconds
-            Reference: https://github.com/th3w1zard1/Kotor.NET/tree/master/TLKBinaryStructure.cs:102 (Length property, float)
-            Reference: https://github.com/th3w1zard1/KotOR_IO/tree/master/TLK.cs:206 (SoundLength field)
             NOTE: Unused by KotOR game engine, but present in file format
-            Primarily used by modding tools for audio synchronization
     """
 
     COMPARABLE_FIELDS = ("text", "voiceover")
@@ -342,20 +302,12 @@ class TLKEntry(ComparableMixin):
         text: str,
         voiceover: ResRef,
     ):
-        # https://github.com/th3w1zard1/Kotor.NET/tree/master/Kotor.NET/Formats/KotorTLK/TLKBinaryStructure.cs:36-37
-        # https://github.com/th3w1zard1/KotOR_IO/tree/master/KotOR_IO/File Formats/TLK.cs:191
-        # https://github.com/th3w1zard1/TSLPatcher/tree/master/lib/site/Bioware/TLK.pm:76-79
         # Localized text string (encoding depends on language)
         self.text: str = text
-
-        # https://github.com/th3w1zard1/Kotor.NET/tree/master/Kotor.NET/Formats/KotorTLK/TLKBinaryStructure.cs:97
-        # https://github.com/th3w1zard1/KotOR_IO/tree/master/KotOR_IO/File Formats/TLK.cs:197
 
         # Voice-over WAV file reference (max 16 chars)
         self.voiceover: ResRef = voiceover
 
-        # https://github.com/th3w1zard1/Kotor.NET/tree/master/Kotor.NET/Formats/KotorTLK/TLKBinaryStructure.cs:102
-        # https://github.com/th3w1zard1/KotOR_IO/tree/master/KotOR_IO/File Formats/TLK.cs:206
         # Duration of voice-over in seconds (unused by game, but present in format)
         self.sound_length: int = 0  # This remains a regular attribute
 

@@ -3125,6 +3125,13 @@ class QFileDialogTreeView(QTreeView):
         self.setDragDropMode(QAbstractItemView.DragDropMode.InternalMove)
 
     def _d_ptr(self) -> QFileDialogPrivate:
+        # Walk ancestors to find the widget that owns _private (in case the
+        # tree view has been reparented to an intermediate container widget).
+        widget = self.parent()
+        while widget is not None:
+            if hasattr(widget, "_private"):
+                return typing.cast("PublicQFileDialog", widget)._private  # noqa: SLF001
+            widget = widget.parent()
         return typing.cast("PublicQFileDialog", self.parent())._private  # noqa: SLF001
 
     def keyPressEvent(

@@ -5,7 +5,7 @@ KotOR.js walkmesh port: see .cursor/plans/kotorjs_walkmesh_port_plan.md
 This module translates between on-disk WOK/BWM files and the in-memory BWM model
 defined in `bwm_data.py`. The binary layout mirrors the game's expectations:
 
-- Header:  "BWM " + "V1.0" + walkMeshType (4) + reserved (48) + position (12) + 16x uint32 (KotOR.js 1:1)
+- Header:  "BWM " + "V1.0" + walkMeshType (4) + four hook float3 (48) + position (12) + 16x uint32
 - Vertex array (float32 triplets)
 - Face indices (uint32 triplets into the vertex array)
 - Materials per face (uint32 SurfaceMaterial id)
@@ -31,6 +31,10 @@ import struct
 from logging import Logger
 from typing import TYPE_CHECKING
 
+import kaitaistruct
+
+from pykotor.common.stream import BinaryReader
+from bioware_kaitai_formats.bwm import Bwm
 from pykotor.resource.formats.bwm.bwm_data import (  # noqa: E402
     BWM,
     BWMFace,
@@ -48,16 +52,145 @@ if TYPE_CHECKING:
     from pykotor.resource.type import SOURCE_TYPES, TARGET_TYPES
 
 
+def _load_bwm_from_kaitai(data: bytes) -> BWM:
+    """Load walkmesh via Kaitai (geometry + materials); edges read with legacy uint32 rules."""
+    parsed = Bwm.from_bytes(data)
+    wok = BWM()
+    wp = parsed.walkmesh_properties
+    wok.walkmesh_type = BWMType(wp.walkmesh_type)
+    r1, r2, a1, a2, pos = (
+        wp.relative_use_position_1,
+        wp.relative_use_position_2,
+        wp.absolute_use_position_1,
+        wp.absolute_use_position_2,
+        wp.position,
+    )
+    wok.relative_hook1 = Vector3(r1.x, r1.y, r1.z)
+    wok.relative_hook2 = Vector3(r2.x, r2.y, r2.z)
+    wok.absolute_hook1 = Vector3(a1.x, a1.y, a1.z)
+    wok.absolute_hook2 = Vector3(a2.x, a2.y, a2.z)
+    wok.position = Vector3(pos.x, pos.y, pos.z)
+
+    va = parsed.vertices
+    vertices: list[Vector3] = (
+        [Vector3(v.x, v.y, v.z) for v in va.vertices]
+        if va is not None
+        else []
+    )
+
+    faces: list[BWMFace] = []
+    fi = parsed.face_indices
+    if fi is not None:
+        for tri in fi.faces:
+            v1, v2, v3 = vertices[tri.v1_index], vertices[tri.v2_index], vertices[tri.v3_index]
+            faces.append(BWMFace(v1, v2, v3))
+
+    ma = parsed.materials
+    if ma is not None:
+        for face, material_id in zip(faces, ma.materials):
+            face.material = SurfaceMaterial(material_id)
+
+    dto = parsed.data_table_offsets
+    br = BinaryReader.from_bytes(data, 0)
+    if dto.edge_count > 0:
+        br.seek(dto.edge_offset)
+        for _ in range(dto.edge_count):
+            edge_index = br.read_uint32()
+            transition = br.read_uint32()
+            if transition != 0xFFFFFFFF:
+                face_index = edge_index // 3
+                trans_index = edge_index % 3
+                if trans_index == 0:
+                    faces[face_index].trans1 = transition
+                elif trans_index == 1:
+                    faces[face_index].trans2 = transition
+                elif trans_index == 2:
+                    faces[face_index].trans3 = transition
+
+    wok.faces = faces
+    return wok
+
+
+def _load_bwm_legacy(reader: BinaryReader) -> BWM:
+    """Original BWM reader (Kaitai fallback)."""
+    wok = BWM()
+
+    file_type = reader.read_string(4)
+    file_version = reader.read_string(4)
+
+    if file_type != "BWM ":
+        msg = f"Not a valid binary BWM file. Expected 'BWM ', got '{file_type}' (hex: {file_type.encode('latin1').hex()})"
+        raise ValueError(msg)
+
+    if file_version != "V1.0":
+        msg = f"Unsupported BWM version: got '{file_version}', expected 'V1.0'"
+        raise ValueError(msg)
+
+    wok.walkmesh_type = BWMType(reader.read_uint32())
+    wok.relative_hook1 = reader.read_vector3()
+    wok.relative_hook2 = reader.read_vector3()
+    wok.absolute_hook1 = reader.read_vector3()
+    wok.absolute_hook2 = reader.read_vector3()
+    wok.position = reader.read_vector3()
+
+    vertices_count = reader.read_uint32()
+    vertices_offset = reader.read_uint32()
+    face_count = reader.read_uint32()
+    indices_offset = reader.read_uint32()
+    materials_offset = reader.read_uint32()
+    _ = reader.read_uint32()
+    _ = reader.read_uint32()
+    _ = reader.read_uint32()
+    _ = reader.read_uint32()
+    _ = reader.read_uint32()
+    _ = reader.read_uint32()
+    _ = reader.read_uint32()
+    edges_count = reader.read_uint32()
+    edges_offset = reader.read_uint32()
+    _ = reader.read_uint32()
+    _ = reader.read_uint32()
+
+    reader.seek(vertices_offset)
+    vertices: list[Vector3] = [reader.read_vector3() for _ in range(vertices_count)]
+    faces: list[BWMFace] = []
+    reader.seek(indices_offset)
+    for _ in range(face_count):
+        i1, i2, i3 = (
+            reader.read_uint32(),
+            reader.read_uint32(),
+            reader.read_uint32(),
+        )
+        faces.append(BWMFace(vertices[i1], vertices[i2], vertices[i3]))
+
+    reader.seek(materials_offset)
+    for face in faces:
+        material_id = reader.read_uint32()
+        face.material = SurfaceMaterial(material_id)
+
+    reader.seek(edges_offset)
+    for _ in range(edges_count):
+        edge_index = reader.read_uint32()
+        transition = reader.read_uint32()
+        if transition != 0xFFFFFFFF:
+            face_index = edge_index // 3
+            trans_index = edge_index % 3
+            if trans_index == 0:
+                faces[face_index].trans1 = transition
+            elif trans_index == 1:
+                faces[face_index].trans2 = transition
+            elif trans_index == 2:
+                faces[face_index].trans3 = transition
+
+    wok.faces = faces
+    return wok
+
+
 class BWMBinaryReader(ResourceReader):
     """Reads BWM/WOK (Walkmesh) files.
 
     Walkmesh files define collision geometry for areas, including walkable surfaces,
     adjacencies, AABB trees for spatial queries, and edge transitions.
 
-    References:
-    ----------
-        Original BioWare engine binaries (from swkotor.exe, swkotor2.exe)
-        Original BioWare engine binaries
     """
 
     def __init__(
@@ -113,90 +246,11 @@ class BWMBinaryReader(ResourceReader):
             - Applies per-edge transitions to faces
             - Populates BWM.faces
         """
-        # Reference: KotOR.js src/odyssey/OdysseyWalkMesh.ts:294-395 (readBinary)
-        self._wok = BWM()
-
-        file_type = self._reader.read_string(4)
-        file_version = self._reader.read_string(4)
-
-        if file_type != "BWM ":
-            msg = f"Not a valid binary BWM file. Expected 'BWM ', got '{file_type}' (hex: {file_type.encode('latin1').hex()})"
-            raise ValueError(msg)
-
-        if file_version != "V1.0":
-            msg = f"Unsupported BWM version: got '{file_version}', expected 'V1.0'"
-            raise ValueError(msg)
-
-        # Reference: KotOR.js src/odyssey/OdysseyWalkMesh.ts:492-514 (readHeader), 876-918 (header write).
-        # KotOR.js layout: walkMeshType (4), reserved (48), position (12); no hook vectors in file.
-        self._wok.walkmesh_type = BWMType(self._reader.read_uint32())
-        _ = self._reader.read_bytes(48)  # KotOR.js reserved; not stored (writer emits 48 zeros)
-        self._wok.position = self._reader.read_vector3()
-        # BWM keeps relative_hook1/2, absolute_hook1/2 for API compat; leave as default (from_null)
-
-        vertices_count = self._reader.read_uint32()
-        vertices_offset = self._reader.read_uint32()
-        face_count = self._reader.read_uint32()
-        indices_offset = self._reader.read_uint32()
-        materials_offset = self._reader.read_uint32()
-        _normals_offset = self._reader.read_uint32()
-        _planar_distances_offset = self._reader.read_uint32()
-
-        _aabb_count = self._reader.read_uint32()
-        _aabb_offset = self._reader.read_uint32()
-        _aabb_root = self._reader.read_uint32()
-        _adjacencies_count = self._reader.read_uint32()
-        _adjacencies_offset = self._reader.read_uint32()
-        edges_count = self._reader.read_uint32()
-        edges_offset = self._reader.read_uint32()
-        _perimeters_count = self._reader.read_uint32()
-        _perimeters_offset = self._reader.read_uint32()
-
-        self._reader.seek(vertices_offset)
-        vertices: list[Vector3] = [self._reader.read_vector3() for _ in range(vertices_count)]
-        faces: list[BWMFace] = []
-        self._reader.seek(indices_offset)
-        for _ in range(face_count):
-            i1, i2, i3 = (
-                self._reader.read_uint32(),
-                self._reader.read_uint32(),
-                self._reader.read_uint32(),
-            )
-            v1, v2, v3 = vertices[i1], vertices[i2], vertices[i3]
-            faces.append(BWMFace(v1, v2, v3))
-
-        walkable_count: int = 0
-        self._reader.seek(materials_offset)
-        for face in faces:
-            material_id: int = self._reader.read_uint32()
-            face.material = SurfaceMaterial(material_id)
-            if face.material.walkable():
-                walkable_count += 1
-
-        # Reference: KotOR.js src/odyssey/OdysseyWalkMesh.ts:379-385 (edges Map, index + transition).
-        # Read edges table (transition mapping) and apply transitions to faces.
-        self._reader.seek(edges_offset)
-        edges_table: list[tuple[int, int]] = []
-        for _ in range(edges_count):
-            edge_index: int = self._reader.read_uint32()
-            transition: int = self._reader.read_uint32()
-            edges_table.append((edge_index, transition))
-
-            if transition != 0xFFFFFFFF:
-                face_index: int = edge_index // 3
-                trans_index: int = edge_index % 3
-                if trans_index == 0:
-                    faces[face_index].trans1 = transition
-                elif trans_index == 1:
-                    faces[face_index].trans2 = transition
-                elif trans_index == 2:
-                    faces[face_index].trans3 = transition
-
-        # NOTE: We intentionally do not preserve any raw binary tables (AABB/adjacency/perimeter tables).
-        # The writer regenerates these structures from geometry.
-
-        self._wok.faces = faces
-
+        data = self._reader.read_all()
+        try:
+            self._wok = _load_bwm_from_kaitai(data)
+        except kaitaistruct.KaitaiStructError:
+            self._wok = _load_bwm_legacy(BinaryReader.from_bytes(data, 0))
         return self._wok
 
 
@@ -313,21 +367,22 @@ class BWMBinaryWriter(ResourceWriter):
             aabb_data += struct.pack("I", aabb.sigplane.value)
             # Find AABB indices by object identity
             # CRITICAL FIX: Use 0-based indices (not 1-based) for AABB children
-            # The game engine (swkotor.exe/swkotor2.exe) reads these as direct array indices.
+            # Retail parsers treat these as zero-based array indices into the AABB table.
             #
-            # Reference: wiki/BWM-File-Format.md - AABB Tree section - Vendor Discrepancy
+            # Reference: wiki/BWM-File-Format.md (AABB tree; zero-based child indices).
             left_idx = 0xFFFFFFFF if aabb.left is None else next(i for i, a in enumerate(aabbs) if a is aabb.left)
             right_idx = 0xFFFFFFFF if aabb.right is None else next(i for i, a in enumerate(aabbs) if a is aabb.right)
             aabb_data += struct.pack("I", left_idx)
             aabb_data += struct.pack("I", right_idx)
 
         _log(f"write: aabb_data size={len(aabb_data)} bytes")
-        # Reference: KotOR.js src/odyssey/OdysseyWalkMesh.ts:968-991 (adjacency matrix write).
+        # Adjacency matrix layout: see wiki reverse_engineering_findings (*io_bwm.py — adjacency note*).
         adjacency_offset = aabb_offset + len(aabb_data)
         _log("write: packing adjacency (walkable faces)")
         adjacency_data = bytearray()
-        for face in walkable:
-            adjancencies: tuple[BWMAdjacency | None, BWMAdjacency | None, BWMAdjacency | None] = self._wok.adjacencies(face)
+        _adjacency_batch: list[tuple[BWMAdjacency | None, BWMAdjacency | None, BWMAdjacency | None]] = self._wok.walkable_adjacency_tuples(walkable)
+        for face_idx, face in enumerate(walkable):
+            adjancencies: tuple[BWMAdjacency | None, BWMAdjacency | None, BWMAdjacency | None] = _adjacency_batch[face_idx]
             indexes: list[int] = []
             for adjacency in adjancencies:
                 if adjacency is None:
@@ -345,7 +400,6 @@ class BWMBinaryWriter(ResourceWriter):
         # Get perimeter edges from the walkmesh
         # NOTE: edges() returns perimeter edges based on walkable face indices
         # We need to map these to the reordered face list (walkable + unwalkable)
-        # Reference: https://github.com/th3w1zard1/kotorblender/tree/master/io_scene_kotor/format/bwm/writer.py:275-307
         perimeter_edges: list[BWMEdge] = self._wok.edges()
         _log(f"write: perimeter_edges count={len(perimeter_edges)}")
 
@@ -423,11 +477,14 @@ class BWMBinaryWriter(ResourceWriter):
         perimeters_count_out = len(perimeters)
         _log(f"write: perimeter_data size={len(perimeter_data)} bytes")
 
-        # Reference: KotOR.js src/odyssey/OdysseyWalkMesh.ts:876-918 (header write: fileType, version, walkMeshType, 48 zeros, position).
-        _log("write: writing header (magic, type, reserved, position, counts, offsets)")
+        # Reference: wiki/BWM-File-Format.md — walkMeshType, four hook float3s, position (64 bytes).
+        _log("write: writing header (magic, type, hooks, position, counts, offsets)")
         self._writer.write_string("BWM V1.0")
         self._writer.write_uint32(self._wok.walkmesh_type.value)
-        self._writer.write_bytes(bytes(48))  # KotOR.js reserved; no hook vectors in file
+        self._writer.write_vector3(self._wok.relative_hook1)
+        self._writer.write_vector3(self._wok.relative_hook2)
+        self._writer.write_vector3(self._wok.absolute_hook1)
+        self._writer.write_vector3(self._wok.absolute_hook2)
         self._writer.write_vector3(self._wok.position)
 
         self._writer.write_uint32(len(vertices))

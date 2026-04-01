@@ -3,9 +3,9 @@ from __future__ import annotations
 import unittest
 
 from pykotor.resource.formats.tpc.convert.dxt.compress_dxt import rgb_to_dxt1
-from pykotor.resource.formats.tpc.convert.dxt.decompress_dxt import dxt1_to_rgb
+from pykotor.resource.formats.tpc.convert.dxt.decompress_dxt import dxt1_to_rgb, dxt1_to_rgba
 from pykotor.resource.formats.tpc.convert.rgb import rgb_to_rgba
-from pykotor.resource.formats.tpc.tpc_data import TPC
+from pykotor.resource.formats.tpc.tpc_data import TPC, TPCLayer, TPCMipmap, TPCTextureFormat
 
 
 class TestTPCData(unittest.TestCase):
@@ -14,6 +14,7 @@ class TestTPCData(unittest.TestCase):
         # Real DXT1 block data representing actual texture patterns
         self.dxt1_red: bytes = bytes.fromhex("00F800F800000000")  # Pure red DXT1 block with pure red indices
         self.dxt1_gradient: bytes = bytes.fromhex("F80007E0A4A4A4A4")  # Red-green gradient
+        self.dxt1_transparent: bytes = bytes.fromhex("E00700F8FFFFFFFF")
 
     def test_dxt1_decompression_accuracy(self):
         """Test DXT1 decompression with real texture data"""
@@ -77,6 +78,25 @@ class TestTPCData(unittest.TestCase):
 
         compressed = rgb_to_dxt1(rgb_data, width, height)
         self.assertEqual(len(compressed), 32)  # 4 DXT1 blocks
+
+    def test_dxt1_rgba_preserves_one_bit_alpha(self):
+        """DXT1 transparent blocks must decode with zero alpha."""
+        result = dxt1_to_rgba(self.dxt1_transparent, 4, 4)
+
+        self.assertEqual(len(result), 4 * 4 * 4)
+        self.assertTrue(all(alpha == 0 for alpha in result[3::4]))
+
+    def test_tpc_convert_dxt1_to_rgba_preserves_transparency(self):
+        """TPC mipmap conversion must keep DXT1 cutout transparency."""
+        layer = TPCLayer([TPCMipmap(4, 4, TPCTextureFormat.DXT1, bytearray(self.dxt1_transparent))])
+        self.tpc.layers = [layer]
+        self.tpc._format = TPCTextureFormat.DXT1  # noqa: SLF001
+
+        self.tpc.convert(TPCTextureFormat.RGBA)
+
+        mipmap = self.tpc.layers[0].mipmaps[0]
+        self.assertEqual(mipmap.tpc_format, TPCTextureFormat.RGBA)
+        self.assertTrue(all(alpha == 0 for alpha in mipmap.data[3::4]))
 
 
 if __name__ == "__main__":

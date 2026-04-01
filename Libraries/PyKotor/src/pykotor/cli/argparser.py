@@ -379,7 +379,10 @@ def create_parser(prog: str | None = None) -> ArgumentParser:  # noqa: PLR0915
         launch_parser.add_argument("--modDescription", help="Set Mod_Description in module.ifo")
         launch_parser.add_argument("--abortOnCompileError", action="store_true", help="Abort launching if errors encountered during compilation")
         launch_parser.add_argument("--packUnchanged", action="store_true", help="Continue packing if there are no changed files")
-        launch_parser.add_argument("--gameBin", help="Path to the swkotor binary file")
+        launch_parser.add_argument(
+            "--gameBin",
+            help="Path to the game's main Windows executable (retail installs use vendor-specific names; see wiki if needed)",
+        )
         launch_parser.add_argument("--serverBin", help="Path to the kotor server binary file (if applicable)")
 
     # extract command

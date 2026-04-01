@@ -5,10 +5,7 @@ attempting to parse and reconstruct valid data structures.
 
 References:
 ----------
-        Based on swkotor.exe GFF structure:
-        - CResGFF::CreateGFFFile @ 0x00411260 - Creates GFF file structure
-        - CResGFF::WriteGFFFile @ 0x00413030 - Writes GFF data to file
-        Original BioWare engine binaries
+        Observed retail KotOR GFF structure (salvage aligns with on-disk GFF layout).
 
 
     Note: Salvage operations try to recover data when primary parsing fails

@@ -1,6 +1,6 @@
 # Ghidra Code Browser: An Authoritative Walkthrough
 
-This guide introduces the Ghidra Code Browser and core concepts for reverse engineering: the symbol tree, data type manager, listing, decompiler, function signatures, calling conventions (cdecl, fastcall, stdcall, thiscall), structures, vtables, template classes, and common decompile pitfalls. The following sections use a Windows binary (KOTOR one) as the example.
+The Ghidra Code Browser provides a disassembly listing, decompiler, symbol tree, and data type manager — everything needed to reverse-engineer a binary. The sections below cover function signatures, calling conventions (cdecl, fastcall, stdcall, thiscall), structures, vtables, template classes, and common decompile pitfalls, using a Windows KotOR binary as the running example.
 
 ---
 
@@ -331,6 +331,13 @@ Unaffected EBX and return value from vtable call
 ## 16. Closing
 
 This concludes the walkthrough. For more detail, consult the official Ghidra documentation and community resources.
+
+### See also
+
+- [Reverse engineering findings](reverse_engineering_findings) — Engine behavior synthesis from K1 and TSL binaries
+- [UTC Editor field types (AgentDecompile)](UTC-Editor-Field-Types-AgentDecompile) — RE findings for creature editor fields
+- [NCS bytecode format](NCS-File-Format) — Compiled script format encountered during binary analysis
+- [MDL/MDX model format](MDL-MDX-File-Format) — 3D model structures visible in decompiled engine code
 
 ---
 

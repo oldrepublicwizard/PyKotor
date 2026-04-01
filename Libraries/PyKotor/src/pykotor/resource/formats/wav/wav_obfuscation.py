@@ -19,14 +19,11 @@ External code should use the public API in `wav_auto.py`.
 
 References:
 ----------
-        See wav_data module docstring for engine addresses (K1 + TSL TODO). SFX magic 0xFF 0xF3 0x60 0xC4, seek 0x1DA; riffSize 50 → MP3.
+        Retail SFX streams often prefix a 470-byte obfuscated header (magic bytes ``FF F3 60 C4``)
+        before a normal RIFF/WAVE payload; some music uses a short RIFF wrapper around raw MP3
+        when the declared RIFF size is 50.
         - fakeHeaderTest = [0xFF, 0xF3, 0x60, 0xC4] → skip 470 bytes
         - riffSize == 50 → skip 58 bytes → MP3
-        Derivations and Other Implementations:
-        ----------
-        https://github.com/th3w1zard1/KotOR.js/tree/master/src/audio/AudioFile.ts:9-162
-
-
 """
 
 from __future__ import annotations
@@ -76,7 +73,6 @@ def detect_audio_format(data: bytes) -> tuple[DeobfuscationResult, int]:
 
     References:
 
-        https://github.com/th3w1zard1/KotOR.js/tree/master/src/audio/AudioFile.ts:111-146
     """
     if len(data) < 12:
         return DeobfuscationResult.STANDARD, 0
@@ -99,7 +95,6 @@ def detect_audio_format(data: bytes) -> tuple[DeobfuscationResult, int]:
         # Read the riffSize (bytes 4-8)
         riff_size = struct.unpack("<I", data[4:8])[0]
 
-        # Reference: https://github.com/th3w1zard1/KotOR.js/tree/master/src/audio/AudioFile.ts:134
         # if(riffSize == 50) → MP3 wrapped in WAV
         if riff_size == MP3_IN_WAV_RIFF_SIZE:
             return DeobfuscationResult.MP3_IN_WAV, MP3_IN_WAV_HEADER_SIZE
@@ -130,7 +125,6 @@ def deobfuscate_audio(data: bytes) -> bytes:
 
     References:
 
-        https://github.com/th3w1zard1/KotOR.js/tree/master/src/audio/AudioFile.ts:111-162
     """
     format_type, skip_size = detect_audio_format(data)
 

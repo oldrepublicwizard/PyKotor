@@ -8,12 +8,99 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
+import kaitaistruct
+
 from pykotor.common.misc import ResRef
+from pykotor.common.stream import BinaryReader
+from bioware_kaitai_formats.key import Key
 from pykotor.resource.formats.key.key_data import KEY, BifEntry, KeyEntry
 from pykotor.resource.type import ResourceReader, ResourceType, ResourceWriter, autoclose
 
 if TYPE_CHECKING:
     from pykotor.resource.type import SOURCE_TYPES, TARGET_TYPES
+
+_KEY_VERSIONS_LEGACY = (KEY.FILE_VERSION, "V1.1")
+
+
+def _load_key_from_kaitai(data: bytes) -> KEY:
+    parsed = Key.from_bytes(data)
+    key = KEY()
+    key.file_type = parsed.file_type
+    key.file_version = parsed.file_version
+    key.build_year = parsed.build_year
+    key.build_day = parsed.build_day
+    ft = parsed.file_table
+    if ft is not None and ft.entries:
+        for fe in ft.entries:
+            bif = BifEntry()
+            bif.filesize = fe.file_size
+            bif.filename = fe.filename.rstrip("\0").replace("\\", "/").lstrip("/")
+            bif.drives = fe.drives
+            key.bif_entries.append(bif)
+    kt = parsed.key_table
+    if kt is not None and kt.entries:
+        for ke in kt.entries:
+            entry = KeyEntry()
+            resref_str = ke.resref.split("\0", 1)[0].rstrip("\0").lower()
+            entry.resref = ResRef(resref_str)
+            entry.restype = ResourceType.from_id(int(ke.resource_type))
+            entry.resource_id = ke.resource_id
+            key.key_entries.append(entry)
+    key.build_lookup_tables()
+    return key
+
+
+def _load_key_legacy(reader: BinaryReader) -> KEY:
+    key = KEY()
+
+    key.file_type = reader.read_string(4)
+    key.file_version = reader.read_string(4)
+
+    if key.file_type != KEY.FILE_TYPE:
+        msg = f"Invalid KEY file type: {key.file_type}"
+        raise ValueError(msg)
+
+    if key.file_version not in _KEY_VERSIONS_LEGACY:
+        msg = f"Unsupported KEY version: {key.file_version}"
+        raise ValueError(msg)
+
+    bif_count: int = reader.read_uint32()
+    key_count: int = reader.read_uint32()
+    file_table_offset: int = reader.read_uint32()
+    key_table_offset: int = reader.read_uint32()
+
+    key.build_year = reader.read_uint32()
+    key.build_day = reader.read_uint32()
+
+    reader.skip(32)
+
+    reader.seek(file_table_offset)
+    for _ in range(bif_count):
+        bif = BifEntry()
+        bif.filesize = reader.read_uint32()
+        filename_offset: int = reader.read_uint32()
+        filename_size: int = reader.read_uint16()
+        bif.drives = reader.read_uint16()
+
+        current_pos: int = reader.position()
+
+        reader.seek(filename_offset)
+        bif.filename = reader.read_string(filename_size).rstrip("\0").replace("\\", "/").lstrip("/")
+
+        reader.seek(current_pos)
+        key.bif_entries.append(bif)
+
+    reader.seek(key_table_offset)
+    for _ in range(key_count):
+        entry = KeyEntry()
+        resref_str = reader.read_string(16).rstrip("\0").lower()
+        entry.resref = ResRef(resref_str)
+        entry.restype = ResourceType.from_id(reader.read_uint16())
+        entry.resource_id = reader.read_uint32()
+        key.key_entries.append(entry)
+
+    key.build_lookup_tables()
+    return key
 
 
 class KEYBinaryReader(ResourceReader):
@@ -22,33 +109,16 @@ class KEYBinaryReader(ResourceReader):
     KEY files index game resources stored in BIF files. They contain references to BIF files
     and resource entries that map ResRefs to locations within those BIF files.
 
-    References:
+    Observed retail behavior:
     ----------
-        Based on swkotor.exe KEY structure:
-        - CExoKeyTable::CExoKeyTable @ 0x0040d030 - Key table constructor (157 bytes, 2 callees)
-          * Initializes key table structure
-          * Sets up BIF file list and resource entry table
-        - CExoKeyTable::AddKeyTable @ 0x00406e20 - Adds key table (478 bytes, 14 callees)
-          * Loads KEY file and adds to resource manager
-          * Parses KEY file header, BIF entries, and key entries
-        - CExoKeyTable::AddKeyTableContents @ 0x0040fb80 - Adds key table contents (1529 bytes, 24 callees)
-          * Loads BIF files referenced in KEY table
-          * Registers resources from BIF files in key table
-          * Handles BIF file location and validation
-        - CExoKeyTable::LocateBifFile @ 0x0040d200 - Locates BIF file (194 bytes)
-          * Searches for BIF file in resource directories
-          * Validates BIF file exists and is accessible
-        - CExoKeyTable::GetKeyEntryFromTable @ 0x004071a0 - Gets key entry from table (143 bytes, 3 callees)
-        - CExoKeyTable::DestroyTable @ 0x0040d2e0 - Destroys key table (418 bytes, 7 callees)
-        - "BIF" string @ 0x0073d8dc - BIF file type identifier
-        - "CExoKeyTable::DestroyTable: Resource %s still in demand during table deletion" @ 0x0073e0d8 - Error message
-        - "CExoKeyTable::AddKey: Duplicate Resource " @ 0x0073e184 - Duplicate resource error
-        - KEY file format: "KEY " type, "V1.0" version, BIF count, key count, file table offset, key table offset
+        The PC builds mmap ``chitin.key`` (and related tables) at startup, walking BIF entries
+        before resolving individual resources. Duplicate-key and teardown edge cases match the
+        Aurora family.
 
         Missing Features:
         ----------------
-        - ResRef lowercasing (reone lowercases resrefs)
-        - Resource ID decomposition (reone decomposes resource_id into bif_index/resource_index)
+        - ResRef lowercasing (not applied consistently here; some tools normalize case)
+        - Resource ID split into BIF index / resource index (packed id handling is minimal)
 
     """
 
@@ -64,67 +134,11 @@ class KEYBinaryReader(ResourceReader):
     @autoclose
     def load(self, *, auto_close: bool = True) -> KEY:  # noqa: FBT001, FBT002, ARG002
         """Load KEY data from source."""
-
-        # Read signature
-        self.key.file_type = self._reader.read_string(4)
-        self.key.file_version = self._reader.read_string(4)
-
-        if self.key.file_type != KEY.FILE_TYPE:
-            msg = f"Invalid KEY file type: {self.key.file_type}"
-            raise ValueError(msg)
-
-        if self.key.file_version != KEY.FILE_VERSION:
-            msg = f"Unsupported KEY version: {self.key.file_version}"
-            raise ValueError(msg)
-
-        # Read counts and offsets
-        bif_count: int = self._reader.read_uint32()
-        key_count: int = self._reader.read_uint32()
-        file_table_offset: int = self._reader.read_uint32()
-        key_table_offset: int = self._reader.read_uint32()
-
-        # Read build info
-        self.key.build_year = self._reader.read_uint32()
-        self.key.build_day = self._reader.read_uint32()
-
-        # there's 32 bytes of reserved bytes here.
-
-        # Read file table
-        self._reader.seek(file_table_offset)
-        for _ in range(bif_count):
-            bif: BifEntry = BifEntry()
-            bif.filesize = self._reader.read_uint32()
-            filename_offset: int = self._reader.read_uint32()
-            filename_size: int = self._reader.read_uint16()
-            bif.drives = self._reader.read_uint16()
-
-            # Save current position
-            current_pos: int = self._reader.position()
-
-            # Read filename
-            self._reader.seek(filename_offset)
-            bif.filename = self._reader.read_string(filename_size).rstrip("\0").replace("\\", "/").lstrip("/")
-
-            # Restore position
-            self._reader.seek(current_pos)
-            self.key.bif_entries.append(bif)
-
-        # Read key table
-        self._reader.seek(key_table_offset)
-        for _ in range(key_count):
-            entry: KeyEntry = KeyEntry()
-
-            # reone lowercases resref at line 46
-            resref_str = self._reader.read_string(16).rstrip("\0").lower()
-            entry.resref = ResRef(resref_str)
-            entry.restype = ResourceType.from_id(self._reader.read_uint16())
-
-            # NOTE: reone decomposes resource_id into bif_index/resource_index, PyKotor stores as-is
-            entry.resource_id = self._reader.read_uint32()
-            self.key.key_entries.append(entry)
-
-        self.key.build_lookup_tables()
-
+        data = self._reader.read_all()
+        try:
+            self.key = _load_key_from_kaitai(data)
+        except kaitaistruct.KaitaiStructError:
+            self.key = _load_key_legacy(BinaryReader.from_bytes(data, 0))
         return self.key
 
 

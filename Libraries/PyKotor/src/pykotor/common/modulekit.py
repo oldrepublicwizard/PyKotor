@@ -17,6 +17,7 @@ from typing import TYPE_CHECKING
 
 from loggerplus import RobustLogger
 from pykotor.common.indoorkit import Kit, KitComponent, KitComponentHook, KitDoor
+from pykotor.common.misc import ResRef
 from pykotor.common.module import Module
 from pykotor.resource.formats.bwm import BWM, read_bwm
 from pykotor.resource.generics.utd import UTD
@@ -247,7 +248,10 @@ class ModuleKit(Kit):
         """Read module resource payload with shared null/empty handling."""
         if self._module is None:
             return None
-        res = self._module.resource(model_name, restype)
+        try:
+            res = self._module.resource(model_name, restype)
+        except ResRef.InvalidFormatError:
+            return None
         if res is None:
             return None
         data = res.data()

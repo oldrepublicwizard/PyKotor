@@ -11,9 +11,8 @@ Controls design inspired by:
 - Unity Scene View (alt+left orbit, alt+middle pan, scroll zoom)
 - Unreal Engine Viewport controls
 
-Reference implementations:
-- reone: src/graphics/camera.cpp
-- kotor.js: src/engine/orbitalcamera.ts
+Prior third-party source paths for camera behavior were listed here; see
+``wiki/reverse_engineering_findings.md`` (*PyKotor GL — reference implementation paths*).
 """
 
 from __future__ import annotations

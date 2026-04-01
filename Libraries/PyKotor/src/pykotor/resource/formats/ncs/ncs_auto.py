@@ -22,7 +22,7 @@ from pykotor.resource.type import ResourceType
 
 logger = logging.getLogger(__name__)
 
-LibraryLookupType = Union[Sequence[Union[str, Path, os.PathLike[str]]], str, Path, os.PathLike[str], None]
+LibraryLookupType = Union[Sequence[Union[str, Path, os.PathLike]], str, Path, os.PathLike, None]
 
 if TYPE_CHECKING:
     from ply import yacc  # type: ignore[import]  # pyright: ignore[reportMissingTypeStubs]

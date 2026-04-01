@@ -4,11 +4,88 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
+import kaitaistruct
+
+from pykotor.common.stream import BinaryReader
+from bioware_kaitai_formats.rim import Rim
 from pykotor.resource.formats.rim.rim_data import RIM
 from pykotor.resource.type import ResourceReader, ResourceType, ResourceWriter, autoclose
 
 if TYPE_CHECKING:
     from pykotor.resource.type import SOURCE_TYPES, TARGET_TYPES
+
+
+def _rim_resource_type_id(entry: Rim.ResourceEntry) -> int:
+    return int(entry.resource_type)
+
+
+def _load_rim_from_kaitai(data: bytes) -> RIM:
+    parsed = Rim.from_bytes(data)
+    rim = RIM()
+    table = parsed.resource_entry_table
+    if table is None or not table.entries:
+        return rim
+    for entry in table.entries:
+        resref = entry.resref.split("\0", 1)[0]
+        resref = resref.rstrip("\0")
+        restype = ResourceType.from_id(_rim_resource_type_id(entry))
+        raw = entry.data
+        resdata = bytes(raw) if raw is not None else b""
+        rim.set_data(resref, restype, resdata)
+    return rim
+
+
+def _load_rim_legacy(reader: BinaryReader) -> RIM:
+    rim = RIM()
+
+    file_type = reader.read_string(4)
+    file_version = reader.read_string(4)
+
+    if file_type != "RIM ":
+        msg = "The RIM file type that was loaded was unrecognized."
+        raise ValueError(msg)
+
+    if file_version != "V1.0":
+        msg = "The RIM version that was loaded is not supported."
+        raise ValueError(msg)
+
+    reader.skip(4)  # Skip 0x08 (4 bytes)
+    entry_count = reader.read_uint32()  # 0x0C
+    offset_to_keys = reader.read_uint32()  # 0x10
+    reader.skip(4)  # RIM header: reserved field at file offset 0x14 (see rim_data layout table)
+
+    if offset_to_keys == 0:
+        offset_to_keys = 120
+
+    _read_rim_entries(rim, reader, entry_count, offset_to_keys, reader.size())
+    return rim
+
+
+def _read_rim_entries(rim: RIM, reader: BinaryReader, entry_count: int, offset_to_keys: int, stream_size: int):
+    resrefs: list[str] = []
+    resids: list[int] = []
+    restypes: list[int] = []
+    resoffsets: list[int] = []
+    ressizes: list[int] = []
+
+    if entry_count > 0 and offset_to_keys >= stream_size:
+        msg = "The RIM file is malformed: offset to keys is out of bounds."
+        raise ValueError(msg)
+
+    if offset_to_keys < stream_size:
+        reader.seek(offset_to_keys)
+        for _ in range(entry_count):
+            resref_str = reader.read_string(16).rstrip("\0")
+            resrefs.append(resref_str)
+            restypes.append(reader.read_uint32())
+            resids.append(reader.read_uint32())
+            resoffsets.append(reader.read_uint32())
+            ressizes.append(reader.read_uint32())
+
+        for i in range(len(resrefs)):
+            reader.seek(resoffsets[i])
+            resdata = reader.read_bytes(ressizes[i])
+            rim.set_data(resrefs[i], ResourceType.from_id(restypes[i]), resdata)
 
 
 class RIMBinaryReader(ResourceReader):
@@ -19,15 +96,14 @@ class RIMBinaryReader(ResourceReader):
 
     References:
     ----------
-        See rim_data module docstring. Unified K1/TSL: AddResourceImageContents (K1: 0x0040f990), CExoEncapsulatedFile::CExoEncapsulatedFile (K1: 0x0040ef90), AddEncapsulatedContents (K1: 0x0040f3c0), RIM leak string (K1: 0x0073d8a8); TSL: TODO.
+        RIM IO mirrors the on-disk layout described in ``rim_data``.
 
         Note: RIM files use similar structure to ERF files but are read-only templates.
         The engine loads RIM files as module blueprints and exports to ERF for runtime mutation.
         Missing Features:
         ----------------
-        - ResRef lowercasing (reone lowercases resrefs at rimreader.cpp:47)
-        - Field order difference: PyKotor reads restype, resids, resoffsets, ressizes
-        vs reone which reads resRef, type (uint16), skips 6 bytes, offset, size
+        - ResRef lowercasing (not applied on read)
+        - Other readers may permute header/table field order; this module follows ``rim_data``.
 
     """
 
@@ -42,59 +118,12 @@ class RIMBinaryReader(ResourceReader):
 
     @autoclose
     def load(self, *, auto_close: bool = True) -> RIM:  # noqa: FBT001, FBT002, ARG002
-        self._rim = RIM()
-
-        file_type = self._reader.read_string(4)
-        file_version = self._reader.read_string(4)
-
-        if file_type != "RIM ":
-            msg = "The RIM file type that was loaded was unrecognized."
-            raise ValueError(msg)
-
-        if file_version != "V1.0":
-            msg = "The RIM version that was loaded is not supported."
-            raise ValueError(msg)
-
-        self._reader.skip(4)  # Skip 0x08 (4 bytes)
-        entry_count = self._reader.read_uint32()  # 0x0C
-        offset_to_keys = self._reader.read_uint32()  # 0x10
-
-        # Resilience: Vanilla files have 0 for offsets, meaning "Implicit" (Header + Keys)
-        # If 0, we calculate them (Header size 120). If non-zero, we respect the file's values.
-        if offset_to_keys == 0:
-            offset_to_keys = 120
-
-        self._read_entries(entry_count, offset_to_keys)
-
+        data = self._reader.read_all()
+        try:
+            self._rim = _load_rim_from_kaitai(data)
+        except kaitaistruct.KaitaiStructError:
+            self._rim = _load_rim_legacy(BinaryReader.from_bytes(data, 0))
         return self._rim
-
-    def _read_entries(self, entry_count: int, offset_to_keys: int):
-        resrefs: list[str] = []
-        resids: list[int] = []
-        restypes: list[int] = []
-        resoffsets: list[int] = []
-        ressizes: list[int] = []
-
-        if entry_count > 0 and offset_to_keys >= self._size:
-            msg = "The RIM file is malformed: offset to keys is out of bounds."
-            raise ValueError(msg)
-
-        if offset_to_keys < self._size:
-            self._reader.seek(offset_to_keys)
-            for _ in range(entry_count):
-                # reone lowercases resref at line 47, but we preserve case for round-trip fidelity
-                # NOTE: Field order differs - PyKotor reads restype before resids, reone reads differently
-                resref_str = self._reader.read_string(16).rstrip("\0")
-                resrefs.append(resref_str)
-                restypes.append(self._reader.read_uint32())
-                resids.append(self._reader.read_uint32())
-                resoffsets.append(self._reader.read_uint32())
-                ressizes.append(self._reader.read_uint32())
-
-            for i in range(len(resrefs)):
-                self._reader.seek(resoffsets[i])
-                resdata = self._reader.read_bytes(ressizes[i])
-                self._rim.set_data(resrefs[i], ResourceType.from_id(restypes[i]), resdata)
 
 
 class RIMBinaryWriter(ResourceWriter):

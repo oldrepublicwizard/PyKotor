@@ -1,10 +1,12 @@
 # TSLPatcher HACKList Syntax Documentation
 
-This guide explains how to modify [NCS files](NCS-File-Format) directly using TSLPatcher syntax. For the complete [NCS file](NCS-File-Format) format specification, see [NCS File Format](NCS-File-Format). For general TSLPatcher information, see [TSLPatcher's Official Readme](TSLPatcher's-Official-Readme). For HoloPatcher-specific information, see [HoloPatcher README for Mod Developers](HoloPatcher-README-for-mod-developers.#hacklist-editing-ncs-directly).
+This guide explains how to modify [NCS files](NCS-File-Format) directly using TSLPatcher syntax. For the complete [NCS file](NCS-File-Format) format specification, see [NCS File Format](NCS-File-Format). For general TSLPatcher information, see [TSLPatcher's Official Readme](TSLPatcher's-Official-Readme). For HoloPatcher-specific information, see [HoloPatcher README for Mod Developers](HoloPatcher-README-for-mod-developers#hacklist-editing-ncs-directly).
 
 ## Overview
 
 The `[HACKList]` section in TSLPatcher's `changes.ini` file enables you to modify compiled [NCS files](NCS-File-Format) (NWScript bytecode, historically called "Neverwinter Compiled Script" but used identically in **KotOR**) directly at the binary level. This advanced feature allows precise [byte](https://en.wikipedia.org/wiki/Byte)-level modifications to script files without recompiling from [NSS](NSS-File-Format) source code, making it ideal for:
+
+In PyKotor's current implementation, HACKList is a first-class emitted section: `TSLPatcherINISerializer.serialize()` writes it explicitly via `_serialize_hack_list()` after the earlier data and structure passes, but `TSLPatchDataGenerator.generate_all_files()` does not synthesize NCS payloads the way it does TLK, 2DA, GFF, or SSF resources. In practice that means HACKList normally operates on compiled scripts that already exist in `tslpatchdata`, are copied in as install assets, or are produced by the compile-stage workflow before the binary patch pass runs [[`TSLPatcherINISerializer.serialize()`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/tslpatcher/writer.py#L222-L285), [`_serialize_hack_list`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/tslpatcher/writer.py#L1034-L1092), [`TSLPatchDataGenerator.generate_all_files()`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/tslpatcher/diff/generator.py#L93-L140), [Deadly Stream TSLPatcher page](https://deadlystream.com/files/file/1039-tsl-patcher-tlked-and-accessories/)].
 
 - Patching numerical values in existing compiled scripts
 - Injecting dynamically-generated string references ([StrRef](TLK-File-Format#string-references-strref)) and [2DA](2DA-File-Format) memory values ([2DAMEMORY](2DA-File-Format#2damemory-memory-tokens))
@@ -85,10 +87,10 @@ Each [NCS file](NCS-File-Format) requires its own section (e.g., `[myscript.ncs]
 **Destination values:**
 
 - `override` or empty: Save to the Override folder
-- `Modules\module.mod`: Insert into an [ERF](ERF-File-Format)/MOD/RIM container
+- `Modules\module.mod`: Insert into an [ERF](Container-Formats#erf)/MOD/[RIM](Container-Formats#rim) container
 - Use backslashes for path separators
 
-**Important:** The `ReplaceFile` key in HACKList does NOT use an exclamation point prefix. This is unique to HACKList compared to other patch lists.
+**Important:** The `ReplaceFile` [KEY](Container-Formats#key) in HACKList does NOT use an exclamation point prefix. This is unique to HACKList compared to other patch lists.
 
 ## Token Types and Data Sizes Syntax
 
@@ -113,8 +115,8 @@ offset=type:value
 | `u8:123` | u8 | 1 [byte](https://en.wikipedia.org/wiki/Byte) | 8-bit unsigned integer (0-255) |
 | `u16:12345` | u16 | 2 bytes | 16-bit unsigned integer (0-65535) |
 | `u32:123456` | u32 | 4 bytes | 32-bit unsigned integer |
-| `StrRef0` | [StrRef](TLK-File-Format#string-references-strref) | Varies* | Reference to [TLK](TLK-File-Format) string from memory |
-| `StrRefN` | strref32 | 4 bytes | 32-bit signed [TLK](TLK-File-Format) reference (CONSTI) |
+| `StrRef0` | [StrRef](Audio-and-Localization-Formats#string-references-strref) | Varies* | Reference to [TLK](Audio-and-Localization-Formats#tlk) string from memory |
+| `StrRefN` | strref32 | 4 bytes | 32-bit signed [TLK](Audio-and-Localization-Formats#tlk) reference (CONSTI) |
 | `2DAMEMORY1` | 2damemory | Varies* | Reference to [2DA](2DA-File-Format) memory value |
 | `2DAMEMORYN` | 2damemory32 | 4 bytes | 32-bit signed [2DA](2DA-File-Format) reference (CONSTI) |
 
@@ -128,7 +130,7 @@ All multi-[byte](https://en.wikipedia.org/wiki/Byte) values are written in **[bi
 
 **Historical Background:** TSLPatcher originally distinguished between `strref` and `strref32` (and `2damemory` vs `2damemory32`), but PyKotor's implementation unifies these:
 
-- `[StrRef](TLK-File-Format#string-references-strref)#` tokens are automatically handled as 32-bit values
+- `[StrRef](Audio-and-Localization-Formats#string-references-strref)#` tokens are automatically handled as 32-bit values
 - `2DAMEMORY#` tokens are automatically handled as 32-bit values
 
 If you need legacy 16-bit compatibility, use explicit type specifiers like `u16:StrRef5`, though this is not typically necessary.
@@ -137,7 +139,7 @@ If you need legacy 16-bit compatibility, use explicit type specifiers like `u16:
 
 `[HACKList]` section integrates seamlessly with TSLPatcher's memory token system, allowing dynamic value injection from other patch sections.
 
-### *StrRef* Tokens
+### [StrRef](Audio-and-Localization-Formats#string-references-strref) Tokens
 
 Reference values stored in [`[TLKList]`](TSLPatcher-TLKList-Syntax) section memory:
 
@@ -156,7 +158,7 @@ File0=myscript.ncs
 
 **Use Cases:**
 
-- Injecting dynamically-added [dialog.tlk](TLK-File-Format) string references
+- Injecting dynamically-added [dialog.tlk](Audio-and-Localization-Formats#tlk) string references
 - Patching scripts to reference custom text entries
 - Updating hardcoded string IDs to mod-added entries
 
@@ -271,7 +273,7 @@ File0=combat_script.ncs
 0x50=u16:50
 ```
 
-### Example 2: Injecting Dynamic [TLK](TLK-File-Format) Reference
+### Example 2: Injecting Dynamic [TLK](Audio-and-Localization-Formats#tlk) Reference
 
 Inject a dynamically-added [StrRef](TLK-File-Format#string-references-strref) value:
 
@@ -355,7 +357,7 @@ ReplaceFile=1
 
 ### Example 6: Saving to Container ([`!DefaultDestination`](TSLPatcher-InstallList-Syntax#defaultdestination-syntax))
 
-Save modified scripts to a [module container](ERF-File-Format) (e.g. `Modules\mymod.mod`):
+Save modified scripts to a [module container](Container-Formats#erf):
 
 ```ini
 [HACKList]
@@ -371,40 +373,7 @@ ReplaceFile=1
 0x60=StrRef5
 ```
 
-### Common Instruction Patterns
-
-Many scripts follow predictable patterns you can target:
-
-**Setting a constant value:**
-
-```ncs
-CONSTI <value>
-CPDOWNSP -4
-```
-
-This pushes a 4-[byte](https://en.wikipedia.org/wiki/Byte) integer onto the stack. The value is at **offset +1**.
-
-**Calling a Function:**
-
-```ncs
-ACTION <function_pointer>
-```
-
-The function pointer is a 4-[byte](https://en.wikipedia.org/wiki/Byte) address at **offset +1**.
-
-**Conditional jumps:**
-
-```ncs
-JZ <offset>
-```
-
-The jump offset is a 4-[byte](https://en.wikipedia.org/wiki/Byte) signed integer at **offset +1**.
-
-## Common Use Cases
-
-### 1. Updating Hardcoded *StrRef* References
-
-Many vanilla scripts have hardcoded [StrRef](TLK-File-Format#string-references-strref) values. `[HACKList]` lets you redirect them to mod-added entries:
+Many vanilla scripts have hardcoded [StrRef](Audio-and-Localization-Formats#string-references-strref) values. HACKList lets you redirect them to mod-added entries:
 
 ```ini
 [TLKList]
@@ -535,7 +504,7 @@ File0=buggy_script.ncs
 
 ### Archival Insertion Issues ([`!Destination`](TSLPatcher-InstallList-Syntax#destination-syntax))
 
-**Problem:** Modified script not appearing in [ERF/MOD](ERF-File-Format)/[RIM](RIM-File-Format) container
+**Problem:** Modified script not appearing in [ERF](Container-Formats#erf)/MOD/[RIM](Container-Formats#rim) container
 
 **Solutions:**
 
@@ -590,9 +559,9 @@ This probably came about because HACKList was created well before TSLPatcher as 
 
 - PyKotor's [`[HACKList]`](TSLPatcher-HACKList-Syntax) implementation is compatible with TSLPatcher v1.2.10b+
 - All [NCS](NCS-File-Format) versions V1.0 are supported
-- Container insertion works for [ERF/MOD](ERF-File-Format)/[RIM](RIM-File-Format) formats
-- Memory tokens from [`[TLKList]`](TSLPatcher-TLKList-Syntax) and [`[2DAList]`](TSLPatcher-2DAList-Syntax) are fully supported
-- [`!FieldPath`](TSLPatcher-GFFList-Syntax#fieldpath-syntax) is **not** supported (only numeric values)
+- Container insertion works for [ERF](Container-Formats#erf), MOD, and [RIM](Container-Formats#rim) formats
+- Memory tokens from TLKList and 2DAList are fully supported
+- `!FieldPath` is **not** supported (only numeric values)
 
 ### See also
 

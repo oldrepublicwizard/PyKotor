@@ -5,17 +5,7 @@ Handles field additions, modifications, list operations, and struct manipulation
 
 References:
 ----------
-        Based on swkotor.exe GFF structure:
-        - CResGFF::CreateGFFFile @ 0x00411260 - Creates GFF file structure
-        - CResGFF::WriteGFFFile @ 0x00413030 - Writes GFF data to file
-        Original BioWare engine binaries
-        Derivations and Other Implementations:
-        ----------
-        https://github.com/th3w1zard1/TSLPatcher/tree/master/TSLPatcher.pl (unfinished perl rewrite of TSLPatcher)
-        https://github.com/th3w1zard1/HoloPatcher.NET/tree/master/src/TSLPatcher.Core/Mods/GFF/
-        https://github.com/th3w1zard1/Kotor.NET/tree/master/Kotor.NET.Patcher/
-
-
+        Observed retail KotOR GFF serialization behavior.
 """
 
 from __future__ import annotations

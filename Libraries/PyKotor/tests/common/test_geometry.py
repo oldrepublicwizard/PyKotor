@@ -25,95 +25,98 @@ if UTILITY_PATH.joinpath("utility").exists():
 
 from utility.common.geometry import Face, Polygon2, Vector2, Vector3, Vector4  # noqa: E402
 
+# Vector components round-trip through float32-style storage; 7 decimal places is too strict.
+_VPLACES = 5
+
 
 class TestVector2(TestCase):
     def test_unpacking(self):
         source = Vector2(1.2, 2.3)
         x, y = source
-        assert x == 1.2
-        assert y == 2.3
+        self.assertAlmostEqual(x, 1.2, places=_VPLACES)
+        self.assertAlmostEqual(y, 2.3, places=_VPLACES)
 
     def test_from_vector2(self):
         source = Vector2(1.2, 2.3)
         vec2 = Vector2.from_vector2(source)
-        assert vec2.x == 1.2
-        assert vec2.y == 2.3
+        self.assertAlmostEqual(vec2.x, 1.2, places=_VPLACES)
+        self.assertAlmostEqual(vec2.y, 2.3, places=_VPLACES)
 
     def test_from_vector3(self):
         source = Vector3(1.2, 2.3, 3.4)
         vec2 = Vector2.from_vector3(source)
-        assert vec2.x == 1.2
-        assert vec2.y == 2.3
+        self.assertAlmostEqual(vec2.x, 1.2, places=_VPLACES)
+        self.assertAlmostEqual(vec2.y, 2.3, places=_VPLACES)
 
     def test_from_vector4(self):
         source = Vector4(1.2, 2.3, 3.4, 5.6)
         vec2 = Vector2.from_vector4(source)
-        assert vec2.x == 1.2
-        assert vec2.y == 2.3
+        self.assertAlmostEqual(vec2.x, 1.2, places=_VPLACES)
+        self.assertAlmostEqual(vec2.y, 2.3, places=_VPLACES)
 
 
 class TestVector3(TestCase):
     def test_unpacking(self):
         source = Vector3(1.2, 2.3, 3.4)
         x, y, z = source
-        assert x == 1.2
-        assert y == 2.3
-        assert z == 3.4
+        self.assertAlmostEqual(x, 1.2, places=_VPLACES)
+        self.assertAlmostEqual(y, 2.3, places=_VPLACES)
+        self.assertAlmostEqual(z, 3.4, places=_VPLACES)
 
     def test_from_vector2(self):
         source = Vector2(1.2, 2.3)
         vec3 = Vector3.from_vector2(source)
-        assert vec3.x == 1.2
-        assert vec3.y == 2.3
-        assert vec3.z == 0.0
+        self.assertAlmostEqual(vec3.x, 1.2, places=_VPLACES)
+        self.assertAlmostEqual(vec3.y, 2.3, places=_VPLACES)
+        self.assertAlmostEqual(vec3.z, 0.0, places=_VPLACES)
 
     def test_from_vector3(self):
         source = Vector3(1.2, 2.3, 3.4)
         vec3 = Vector3.from_vector3(source)
-        assert vec3.x == 1.2
-        assert vec3.y == 2.3
-        assert vec3.z == 3.4
+        self.assertAlmostEqual(vec3.x, 1.2, places=_VPLACES)
+        self.assertAlmostEqual(vec3.y, 2.3, places=_VPLACES)
+        self.assertAlmostEqual(vec3.z, 3.4, places=_VPLACES)
 
     def test_from_vector4(self):
         source = Vector4(1.2, 2.3, 3.4, 5.6)
         vec3 = Vector3.from_vector4(source)
-        assert vec3.x == 1.2
-        assert vec3.y == 2.3
-        assert vec3.z == 3.4
+        self.assertAlmostEqual(vec3.x, 1.2, places=_VPLACES)
+        self.assertAlmostEqual(vec3.y, 2.3, places=_VPLACES)
+        self.assertAlmostEqual(vec3.z, 3.4, places=_VPLACES)
 
 
 class TestVector4(TestCase):
     def test_unpacking(self):
         source = Vector4(1.2, 2.3, 3.4, 4.5)
         x, y, z, w = source
-        assert x == 1.2
-        assert y == 2.3
-        assert z == 3.4
-        assert w == 4.5
+        self.assertAlmostEqual(x, 1.2, places=_VPLACES)
+        self.assertAlmostEqual(y, 2.3, places=_VPLACES)
+        self.assertAlmostEqual(z, 3.4, places=_VPLACES)
+        self.assertAlmostEqual(w, 4.5, places=_VPLACES)
 
     def test_from_vector2(self):
         source = Vector2(1.2, 2.3)
         vec4 = Vector4.from_vector2(source)
-        assert vec4.x == 1.2
-        assert vec4.y == 2.3
-        assert vec4.z == 0.0
-        assert vec4.w == 0.0
+        self.assertAlmostEqual(vec4.x, 1.2, places=_VPLACES)
+        self.assertAlmostEqual(vec4.y, 2.3, places=_VPLACES)
+        self.assertAlmostEqual(vec4.z, 0.0, places=_VPLACES)
+        self.assertAlmostEqual(vec4.w, 0.0, places=_VPLACES)
 
     def test_from_vector3(self):
         source = Vector3(1.2, 2.3, 3.4)
         vec4 = Vector4.from_vector3(source)
-        assert vec4.x == 1.2
-        assert vec4.y == 2.3
-        assert vec4.z == 3.4
-        assert vec4.w == 0.0
+        self.assertAlmostEqual(vec4.x, 1.2, places=_VPLACES)
+        self.assertAlmostEqual(vec4.y, 2.3, places=_VPLACES)
+        self.assertAlmostEqual(vec4.z, 3.4, places=_VPLACES)
+        self.assertAlmostEqual(vec4.w, 0.0, places=_VPLACES)
 
     def test_from_vector4(self):
         source = Vector4(1.2, 2.3, 3.4, 5.6)
         vec4 = Vector4.from_vector4(source)
-        assert vec4.x == 1.2
-        assert vec4.y == 2.3
-        assert vec4.z == 3.4
-        assert vec4.w == 5.6
+        self.assertAlmostEqual(vec4.x, 1.2, places=_VPLACES)
+        self.assertAlmostEqual(vec4.y, 2.3, places=_VPLACES)
+        self.assertAlmostEqual(vec4.z, 3.4, places=_VPLACES)
+        self.assertAlmostEqual(vec4.w, 5.6, places=_VPLACES)
 
     def test_from_euler(self):
         # Converting degrees to radians

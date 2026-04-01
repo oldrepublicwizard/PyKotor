@@ -8,8 +8,7 @@ This module provides functions for:
 
 References:
 ----------
-        Original BioWare engine binaries (from swkotor.exe, swkotor2.exe)
-        Original BioWare engine binaries
+        Observed retail KotOR I and KotOR II behavior.
         scripts/kotor/check_txi_files.py - TXI file checking
         scripts/kotor/check_missing_resources.py - Missing resource checking
         scripts/kotor/investigate_module_structure.py - Module investigation

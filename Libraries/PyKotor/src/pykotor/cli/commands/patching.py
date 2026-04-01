@@ -7,15 +7,9 @@ This module provides CLI commands for batch patching operations:
 - Setting dialogs as unskippable
 - Batch patching installations, folders, and files
 
-References:
-----------
-        KotOR I (swkotor.exe) / KotOR II (swkotor2.exe):
-            - GFF structures are loaded via CResGFF class throughout the engine
-            - See individual resource format files (uti.py, utc.py, utp.py, dlg/base.py, etc.) for specific GFF field references
-            - DLG: See gff_data module docstring for LoadDialog (K1: 0x005a2ae0); Skippable (BYTE) field see dlg/base.py
-        Tools/BatchPatcher/src/batchpatcher/__main__.py - Original implementation
-        Libraries/PyKotor/src/pykotor/tools/patching.py - Core patching functions
-
+Batch patch flows use ``pykotor.tools.patching`` (originating from Tools/BatchPatcher).
+Former module **References** (retail executable names and GFF/DLG loader notes with addresses)
+are migrated to ``wiki/reverse_engineering_findings.md`` (*cli/commands/patching.py*).
 """
 
 from __future__ import annotations

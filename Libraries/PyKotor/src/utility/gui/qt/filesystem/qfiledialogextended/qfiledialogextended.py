@@ -13,6 +13,7 @@ from qtpy.QtCore import (
     Qt,
 )
 from qtpy.QtWidgets import (  # pyright: ignore[reportPrivateImportUsage]
+    QAbstractItemView,
     QApplication,
     QFileSystemModel,
     QLayoutItem,
@@ -225,7 +226,6 @@ class QFileDialogExtended(AdapterQFileDialog):
         relative import and, as a last resort, log a warning and continue
         without the enhanced delegate (so the dialog remains usable).
         """
-        Windows11ItemDelegate = None
         try:
             # Preferred: absolute import (works when package is on sys.path)
             from utility.gui.qt.widgets.itemviews.file_size_delegate import (
@@ -257,6 +257,8 @@ class QFileDialogExtended(AdapterQFileDialog):
     def connect_signals(self):
         self.ui.treeView.setContextMenuPolicy(Qt.ContextMenuPolicy.CustomContextMenu)  # pyright: ignore[reportArgumentType]
         self.ui.listView.setContextMenuPolicy(Qt.ContextMenuPolicy.CustomContextMenu)  # pyright: ignore[reportArgumentType]
+        self.ui.treeView.setSelectionMode(QAbstractItemView.SelectionMode.ExtendedSelection)  # pyright: ignore[reportArgumentType]
+        self.ui.listView.setSelectionMode(QAbstractItemView.SelectionMode.ExtendedSelection)  # pyright: ignore[reportArgumentType]
 
         def show_context_menu(pos: QPoint, view: QListView | QTreeView):
             index = view.indexAt(pos)
@@ -297,7 +299,6 @@ class QFileDialogExtended(AdapterQFileDialog):
         # Try to import the widget robustly; running the file directly can
         # result in package resolution issues, so provide a fallback and
         # degrade gracefully if unavailable.
-        SearchFilterWidget = None
         try:
             from utility.gui.qt.widgets.widgets.search_filter import (
                 SearchFilterWidget,  # type: ignore
@@ -310,7 +311,7 @@ class QFileDialogExtended(AdapterQFileDialog):
                     RobustLogger.getLogger(__name__).warning("SearchFilterWidget not available; continuing without search filter", exc_info=True)
                 except Exception:
                     pass
-                self.search_filter: SearchFilterWidget = None
+                self.search_filter: SearchFilterWidget | None = None
                 return
 
         self.search_filter = SearchFilterWidget(self)
@@ -320,7 +321,6 @@ class QFileDialogExtended(AdapterQFileDialog):
 
     def _setup_preview_pane(self) -> None:
         """Set up the Windows 11-style preview pane on the right side of the splitter."""
-        EnhancedPreviewPane = None
         try:
             from utility.gui.qt.common.filesystem.enhanced_preview_pane import (
                 EnhancedPreviewPane,  # type: ignore
@@ -335,7 +335,7 @@ class QFileDialogExtended(AdapterQFileDialog):
                     RobustLogger.getLogger(__name__).warning("EnhancedPreviewPane not available; preview pane disabled", exc_info=True)
                 except Exception:
                     pass
-                self.preview_pane: EnhancedPreviewPane = None
+                self.preview_pane: EnhancedPreviewPane | None = None
                 self._preview_pane_visible = False
                 return
 
@@ -362,16 +362,17 @@ class QFileDialogExtended(AdapterQFileDialog):
             visible = not self._preview_pane_visible
 
         self._preview_pane_visible = visible
-        if visible:
-            self.preview_pane.show()
-            # Update preview with current selection
-            self._update_preview_from_selection()
-        else:
-            self.preview_pane.hide()
+        if self.preview_pane is not None:
+            if visible:
+                self.preview_pane.show()
+                # Update preview with current selection
+                self._update_preview_from_selection()
+            else:
+                self.preview_pane.hide()
 
     def _update_preview_from_selection(self) -> None:
         """Update the preview pane based on current selection."""
-        if not self._preview_pane_visible:
+        if not self._preview_pane_visible or self.preview_pane is None:
             return
 
         view = self.currentView()
@@ -561,20 +562,28 @@ class QFileDialogExtended(AdapterQFileDialog):
     def _on_search_text_changed(self, text: str) -> None:
         self.proxy_model.setFilterFixedString(text)
         # Update search highlighting in the item delegate
-        if hasattr(self, "_item_delegate"):
+        if hasattr(self, "_item_delegate") and self._item_delegate is not None:
             self._item_delegate.search_text = text
             # Force repaint to show highlighting
-            self.ui.listView.viewport().update()
-            self.ui.treeView.viewport().update()
+            listPort = self.ui.listView.viewport()
+            if listPort is not None:
+                listPort.update()
+            treePort = self.ui.treeView.viewport()
+            if treePort is not None:
+                treePort.update()
 
     def _on_search_requested(self, text: str) -> None:
         self.proxy_model.setFilterFixedString(text)
         # Update search highlighting in the item delegate
-        if hasattr(self, "_item_delegate"):
+        if hasattr(self, "_item_delegate") and self._item_delegate is not None:
             self._item_delegate.search_text = text
             # Force repaint to show highlighting
-            self.ui.listView.viewport().update()
-            self.ui.treeView.viewport().update()
+            listPort = self.ui.listView.viewport()
+            if listPort is not None:
+                listPort.update()
+            treePort = self.ui.treeView.viewport()
+            if treePort is not None:
+                treePort.update()
 
     def _on_directory_changed(self, directory: str) -> None:
         self.address_bar.update_path(Path(directory))
@@ -586,12 +595,16 @@ class QFileDialogExtended(AdapterQFileDialog):
         self.currentChanged.connect(self._on_current_changed_for_preview)
 
         # Connect view selection model changes
-        self.ui.listView.selectionModel().selectionChanged.connect(lambda: self._update_preview_from_selection())
-        self.ui.treeView.selectionModel().selectionChanged.connect(lambda: self._update_preview_from_selection())
+        listViewSelModel = self.ui.listView.selectionModel()
+        if listViewSelModel is not None:
+            listViewSelModel.selectionChanged.connect(lambda: self._update_preview_from_selection())
+        treeViewSelModel = self.ui.treeView.selectionModel()
+        if treeViewSelModel is not None:
+            treeViewSelModel.selectionChanged.connect(lambda: self._update_preview_from_selection())
 
     def _on_current_changed_for_preview(self, path: str) -> None:
         """Handle currentChanged signal for preview pane update."""
-        if self._preview_pane_visible and path:
+        if self._preview_pane_visible and path and self.preview_pane is not None:
             self.preview_pane.set_file(Path(path))
 
     def _apply_windows11_styling(self) -> None:
@@ -963,9 +976,9 @@ class QFileDialogExtended(AdapterQFileDialog):
     def setDirectory(self, directory: str | None) -> None: ...
     @overload
     def setDirectory(self, adirectory: QDir) -> None: ...
-    def setDirectory(self, directory: str | QDir) -> None:  # type: ignore[override]
-        super().setDirectory(directory)
-        if hasattr(self, "address_bar"):
+    def setDirectory(self, directory: str | QDir | None) -> None:  # type: ignore[misc]  # pyright: ignore[reportInconsistentOverload]
+        super().setDirectory(directory)  # type: ignore[f]
+        if hasattr(self, "address_bar") and self.address_bar is not None:
             self.address_bar.update_path(Path(self.directory().absolutePath()))
 
     def setDirectoryUrl(self, directory: QUrl) -> None:

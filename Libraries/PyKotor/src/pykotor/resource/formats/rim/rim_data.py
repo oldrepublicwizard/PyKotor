@@ -5,17 +5,11 @@ RIM files are similar to ERF files but are read-only from the game's perspective
 loads RIM files as templates for modules and exports them to ERF format for runtime mutation.
 RIM files store all resources inline with metadata, making them self-contained archives.
 
-References:
+Observed retail behavior:
 ----------
-        Based on unified K1/TSL RIM structure (shared encapsulation with ERF). Addresses: K1: swkotor.exe, TSL: TODO (verify via REVA).
-        - CExoResourceImageFile::AddResourceImageContents (reads RIM headers; Header=120, Count @ 0x0C, Keys @ 0x10, KeySize=32): K1: 0x0040f990, TSL: TODO
-        - CExoEncapsulatedFile::CExoEncapsulatedFile: K1: 0x0040ef90, TSL: TODO
-        - CExoKeyTable::AddEncapsulatedContents: K1: 0x0040f3c0, TSL: TODO
-        - "Table being rebuilt, this RIM is being leaked: %s": K1: 0x0073d8a8, TSL: TODO
-        Note: RIM files use similar structure to ERF files but are read-only templates.
-        The engine loads RIM files as module blueprints and exports to ERF for runtime mutation.
-        RIM files in original game often use "Implicit Offsets" where the offset to keys (0x10)
-        is 0, implying it starts immediately after the 120-byte header.
+        RIM capsules share the same 120-byte header layout as other Aurora image modules; the
+        resource table often uses implicit offsets (``0`` means keys start right after the
+        header).         Retail builds treat these as read-mostly templates layered like ERF data.
 
         RIM file format specification
         Binary Format:
@@ -63,16 +57,6 @@ class RIMResource(ArchiveResource):
     resource type within the archive metadata. RIM resources are typically read-only from
     the game's perspective, as RIM files serve as module templates.
 
-    References:
-    ----------
-        See module docstring (K1/TSL addresses). CExoEncapsulatedFile::CExoEncapsulatedFile (K1: 0x0040ef90), CExoKeyTable::AddEncapsulatedContents (K1: 0x0040f3c0); TSL: TODO.
-        Derivations and Other Implementations:
-        ----------
-        https://github.com/th3w1zard1/Kotor.NET/tree/master/Kotor.NET/Formats/KotorRIM/RIMBinaryStructure.cs:88-119
-        https://github.com/th3w1zard1/KotOR_IO/tree/master/KotOR_IO/File
-
-
-
     Attributes:
     ----------
         All inherited from ArchiveResource (resref, restype, data, size)
@@ -80,8 +64,6 @@ class RIMResource(ArchiveResource):
     """
 
     def __init__(self, resref: ResRef, restype: ResourceType, data: bytes):
-        # https://github.com/th3w1zard1/Kotor.NET/tree/master/Kotor.NET/Formats/KotorRIM/RIMBinaryStructure.cs:104-108
-        # https://github.com/th3w1zard1/KotOR_IO/tree/master/KotOR_IO/File Formats/RIM.cs:63-64
         # ResRef stored in Resource Entry (16 bytes, null-padded)
         # ResourceType stored in Resource Entry (4 bytes, uint32)
         # Resource data referenced via offset and size fields
@@ -95,16 +77,6 @@ class RIM(BiowareArchive):
     files but serve a different purpose - providing immutable resource templates that the game
     engine reads and exports to ERF format for runtime use. RIM files can also be extensions
     to other RIM files (marked with 'x' in filename).
-
-    References:
-    ----------
-        See module docstring (K1/TSL addresses). CExoEncapsulatedFile::CExoEncapsulatedFile, CExoKeyTable::AddEncapsulatedContents; TSL: TODO.
-        Derivations and Other Implementations:
-        ----------
-        https://github.com/th3w1zard1/Kotor.NET/tree/master/Kotor.NET/Formats/KotorRIM/RIMBinaryStructure.cs:13-53
-        https://github.com/th3w1zard1/KotOR_IO/tree/master/KotOR_IO/File
-
-
 
     Attributes:
     ----------

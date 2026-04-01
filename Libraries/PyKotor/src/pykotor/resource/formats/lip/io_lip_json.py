@@ -6,6 +6,9 @@ import json
 
 from typing import TYPE_CHECKING, Any
 
+import kaitaistruct
+
+from bioware_kaitai_formats.lip_json import LipJson
 from pykotor.resource.formats.lip.lip_data import LIP, LIPShape
 from pykotor.resource.type import ResourceReader, ResourceWriter, autoclose
 from pykotor.tools.encoding import decode_bytes_with_fallbacks
@@ -31,7 +34,7 @@ class LIPJSONReader(ResourceReader):
 
     References:
     ----------
-        See lip_data module docstring for engine addresses (K1 + TSL TODO).
+        Binary layout reference: ``lip_data``.
 
         Note: JSON format is PyKotor-specific, not a standard game format
 
@@ -50,7 +53,12 @@ class LIPJSONReader(ResourceReader):
     @autoclose
     def load(self, *, auto_close: bool = True) -> LIP:  # noqa: FBT001, FBT002, ARG002
         self._lip = LIP()
-        self._json = json.loads(decode_bytes_with_fallbacks(self._reader.read_bytes(self._reader.size())))
+        raw = self._reader.read_all()
+        try:
+            LipJson.from_bytes(raw)
+        except kaitaistruct.KaitaiStructError:
+            pass
+        self._json = json.loads(decode_bytes_with_fallbacks(raw))
 
         if "lip" not in self._json:
             msg = "The JSON file that was loaded was not a valid LIP."

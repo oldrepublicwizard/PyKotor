@@ -4,9 +4,13 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
+import kaitaistruct
+
 from loggerplus import RobustLogger
 from pykotor.common.language import LocalizedString
 from pykotor.common.misc import EquipmentSlot, Game, InventoryItem, ResRef
+from pykotor.common.stream import BinaryReader
+from bioware_kaitai_formats.gff import Gff
 from pykotor.resource.formats.gff import (
     GFF,
     GFFContent,
@@ -15,6 +19,12 @@ from pykotor.resource.formats.gff import (
     bytes_gff,
     read_gff,
     write_gff,
+)
+from pykotor.resource.formats.gff.gff_auto import (
+    _adjust_offset_after_utf8_bom,
+    _classify_gff_peek,
+    _locate_binary_gff_header,
+    _locate_binary_gff_header_structural,
 )
 from pykotor.resource.type import ResourceType
 
@@ -29,270 +39,147 @@ class UTC:
     UTC files are GFF-based format files that store creature definitions including
     stats, appearance, inventory, feats, and script hooks.
 
-    References:
-    ----------
-        CSWSCreature::LoadCreature @ (K1: 0x00500350, TSL: 0x0068ccb0)
-        Main UTC GFF parser; called from LoadCreatures (K1: 0x00504a70, TSL: 0x0071b140) and LoadLimboCreatures (K1: 0x004c8c70).
-        CSWSCreatureStats::ReadStatsFromGff @ (K1: 0x005afce0, TSL: 0x006ec350) — reads stats/appearance (called by LoadCreature; K1 LoadCreatureData @ 0x00560e60 calls it).
-        Root defaults when field missing: AreaId 0, CreatureSize 3, IsDestroyable/IsRaiseable/DeadSelectable 1,
-        Animation 10000, AmbientAnimState/CreatnScrptFird/PM_IsDisguised/Listening 0, scripts ResRef ""; stats 0 or 0.0.
-        TSL adds: BonusForcePoints 7, AssignedPup -1, PlayerCreated 0, ForceAlwaysUpdate 0.
+    On-disk layout: root flags and script ResRefs; a stats sub-structure with localized names,
+    race/gender/appearance, abilities, HP/FP, skills (eight ranks), ``ClassList`` (levels and
+    known powers), ``FeatList``, equipped slots, and ``ItemList``. It has been observed that
+    missing fields use the defaults applied in ``construct_utc`` (e.g. creature size 3, several
+    boolean flags 1, animation id 10000, blank script ResRefs, numeric zeros). TSL adds
+    extra root fields (bonus Force, puppet assignment, etc.). Loader symbols/addresses are
+    migrated to ``wiki/reverse_engineering_findings.md``.
 
-        GFF Field Structure (from LoadCreature and ReadStatsFromGff analysis):
-            - Root struct fields:
-                - "AreaId" (DWORD) - Area identifier
-                - "DetectMode" (BYTE) - Detect mode flag
-                - "StealthMode" (BYTE) - Stealth mode flag
-                - "CreatureSize" (INT32) - Creature size (default 3)
-                - "IsDestroyable" (BYTE) - Whether creature is destroyable (default 1)
-                - "IsRaiseable" (BYTE) - Whether creature is raiseable (default 1)
-                - "DeadSelectable" (BYTE) - Whether dead creature is selectable (default 1)
-                - "AmbientAnimState" (BYTE) - Ambient animation state
-                - "Animation" (INT32) - Animation ID (default 10000)
-                - "CreatnScrptFird" (BYTE) - Creation script fired flag
-                - "PM_IsDisguised" (BYTE) - Player module is disguised flag
-                - "PM_Appearance" (WORD) - Player module appearance (if disguised)
-                - "Listening" (BYTE) - Listening flag
-            - Stats struct fields (from ReadStatsFromGff):
-                - "FirstName" (CExoLocString) - First name
-                - "LastName" (CExoLocString) - Last name
-                - "Gender" (BYTE) - Gender identifier
-                - "Race" (BYTE) - Race identifier
-                - "Subrace" (BYTE) - Subrace identifier
-                - "PerceptionRange" (FLOAT) - Perception range
-                - Additional stat fields (STR, DEX, CON, INT, WIS, CHA, etc.)
-            - Script fields:
-                - "ScriptHeartbeat" (CResRef) - Heartbeat script
-                - "ScriptOnNotice" (CResRef) - On notice script
-                - "ScriptSpellAt" (CResRef) - Spell at script
-                - "ScriptAttacked" (CResRef) - Attacked script
-                - "ScriptDamaged" (CResRef) - Damaged script
-                - "ScriptEndRound" (CResRef) - End round script
-                - "ScriptDialogue" (CResRef) - Dialogue script
-                - "ScriptSpawn" (CResRef) - Spawn script
-                - "ScriptRested" (CResRef) - Rested script
-                - "ScriptDeath" (CResRef) - Death script
-                - "ScriptUserDefine" (CResRef) - User defined script
-                - "ScriptOnBlocked" (CResRef) - On blocked script
-            - Item fields:
-                - "ItemList" (GFFList) - List of inventory items
-            - Spell fields:
-                - "SpellList" (GFFList) - List of known spells
-
-        Note: UTC files are GFF format files with specific structure definitions (GFFContent.UTC)
-
-    Derivations and Other Implementations:
-    ----------
-        https://github.com/th3w1zard1/KotOR-dotNET/tree/master/AuroraParsers/UTCObject.cs (UTC parser)
-        https://github.com/th3w1zard1/KotOR.js/tree/master/src/module/ModuleCreature.ts (Creature module object)
-        https://github.com/th3w1zard1/Kotor.NET/tree/master/Kotor.NET/Resources/KotorUTC/UTC.cs (UTC class definition)
+    Note: UTC uses ``GFFContent.UTC``. ``read_utc`` validates the wire shape with
+    ``kaitai_generated.gff.Gff`` so the GFF header type is ``UTC `` before ``read_gff`` /
+    ``construct_utc``.
+    Third-party GitHub URL lines from class and attribute docstrings are archived at
+    ``wiki/reverse_engineering_findings_generics_utc_github_urls_pre_scrub.md``.
 
     Attributes:
     ----------
         resref: "TemplateResRef" field. The resource reference for this creature template.
-            Reference: https://github.com/th3w1zard1/Kotor.NET/tree/master/UTC.cs:15 (ResRef property)
-            Reference: https://github.com/th3w1zard1/KotOR.js/tree/master/ModuleCreature.ts:73 (inherited from ModuleObject)
 
         tag: "Tag" field. The tag identifier for this creature.
-            Reference: https://github.com/th3w1zard1/Kotor.NET/tree/master/UTC.cs:18 (Tag property)
 
         comment: "Comment" field. Developer comment for this creature.
-            Reference: https://github.com/th3w1zard1/Kotor.NET/tree/master/UTC.cs:19 (Comment property)
-            Reference: https://github.com/th3w1zard1/KotOR.js/tree/master/ModuleCreature.ts:96 (comment field)
 
         conversation: "Conversation" field. ResRef to the dialog file for this creature.
-            Reference: https://github.com/th3w1zard1/Kotor.NET/tree/master/UTC.cs:16 (Conversation property)
 
         first_name: "FirstName" field. Localized first name of the creature.
-            Reference: https://github.com/th3w1zard1/Kotor.NET/tree/master/UTC.cs:21 (FirstName property)
 
         last_name: "LastName" field. Localized last name of the creature.
-            Reference: https://github.com/th3w1zard1/Kotor.NET/tree/master/UTC.cs:22 (LastName property)
 
         subrace_id: "SubraceIndex" field. Subrace index identifier.
-            Reference: https://github.com/th3w1zard1/Kotor.NET/tree/master/UTC.cs:25 (SubraceID property)
 
         perception_id: "PerceptionRange" field. Perception range value.
-            Reference: https://github.com/th3w1zard1/Kotor.NET/tree/master/UTC.cs:27 (PerceptionID property)
 
         race_id: "Race" field. Race identifier.
-            Reference: https://github.com/th3w1zard1/Kotor.NET/tree/master/UTC.cs:24 (RaceID property)
 
         appearance_id: "Appearance_Type" field. Appearance type identifier.
-            Reference: https://github.com/th3w1zard1/Kotor.NET/tree/master/UTC.cs:28 (AppearanceID property)
 
         gender_id: "Gender" field. Gender identifier.
-            Reference: https://github.com/th3w1zard1/Kotor.NET/tree/master/UTC.cs:29 (GenderID property)
 
         faction_id: "FactionID" field. Faction identifier.
-            Reference: https://github.com/th3w1zard1/Kotor.NET/tree/master/UTC.cs:30 (FactionID property)
 
         walkrate_id: "WalkRate" field. Walk rate identifier.
-            Reference: https://github.com/th3w1zard1/Kotor.NET/tree/master/UTC.cs:31 (WalkRateID property)
 
         soundset_id: "SoundSetFile" field. Soundset file identifier.
-            Reference: https://github.com/th3w1zard1/Kotor.NET/tree/master/UTC.cs:32 (SoundsetID property)
 
         portrait_id: "PortraitId" field. Portrait identifier.
-            Reference: https://github.com/th3w1zard1/Kotor.NET/tree/master/UTC.cs:26 (PortraitID property)
 
         body_variation: "BodyVariation" field. Body variation index.
-            Reference: https://github.com/th3w1zard1/Kotor.NET/tree/master/UTC.cs:38 (BodyVariation property)
-            Reference: https://github.com/th3w1zard1/KotOR.js/tree/master/ModuleCreature.ts:82 (bodyVariation field)
 
         texture_variation: "TextureVar" field. Texture variation index.
-            Reference: https://github.com/th3w1zard1/Kotor.NET/tree/master/UTC.cs:39 (TextureVariation property)
 
         not_reorienting: "NotReorienting" field. Whether creature should not reorient.
-            Reference: https://github.com/th3w1zard1/Kotor.NET/tree/master/UTC.cs:41 (NotReorientating property)
 
         party_interact: "PartyInteract" field. Whether party members can interact.
-            Reference: https://github.com/th3w1zard1/Kotor.NET/tree/master/UTC.cs:42 (PartyInteract property)
 
         no_perm_death: "NoPermDeath" field. Whether creature cannot permanently die.
-            Reference: https://github.com/th3w1zard1/Kotor.NET/tree/master/UTC.cs:43 (NoPermanentDeath property)
 
         min1_hp: "Min1HP" field. Whether creature HP cannot go below 1.
-            Reference: https://github.com/th3w1zard1/Kotor.NET/tree/master/UTC.cs:44 (Min1HP property)
 
         plot: "Plot" field. Whether creature is plot-critical.
-            Reference: https://github.com/th3w1zard1/Kotor.NET/tree/master/UTC.cs:45 (Plot property)
 
         interruptable: "Interruptable" field. Whether creature can be interrupted.
-            Reference: https://github.com/th3w1zard1/Kotor.NET/tree/master/UTC.cs:46 (Interruptable property)
 
         is_pc: "IsPC" field. Whether creature is a player character.
-            Reference: https://github.com/th3w1zard1/Kotor.NET/tree/master/UTC.cs:47 (IsPC property)
 
         disarmable: "Disarmable" field. Whether creature can be disarmed.
-            Reference: https://github.com/th3w1zard1/Kotor.NET/tree/master/UTC.cs:48 (Disarmable property)
-            Reference: https://github.com/th3w1zard1/KotOR.js/tree/master/ModuleCreature.ts:100 (disarmable field)
 
         alignment: "GoodEvil" field. Alignment value (good/evil axis).
-            Reference: https://github.com/th3w1zard1/Kotor.NET/tree/master/UTC.cs:52 (Alignment property)
 
         challenge_rating: "ChallengeRating" field. Challenge rating value.
-            Reference: https://github.com/th3w1zard1/Kotor.NET/tree/master/UTC.cs:54 (ChallengeRating property)
-            Reference: https://github.com/th3w1zard1/KotOR.js/tree/master/ModuleCreature.ts:94 (challengeRating field)
 
         blindspot: "BlindSpot" field. Blind spot value. KotOR 2 Only.
-            Reference: https://github.com/th3w1zard1/Kotor.NET/tree/master/UTC.cs:55 (Blindspot property)
 
         multiplier_set: "MultiplierSet" field. Multiplier set identifier. KotOR 2 Only.
-            Reference: https://github.com/th3w1zard1/Kotor.NET/tree/master/UTC.cs:56 (MultiplierSet property)
 
         natural_ac: "NaturalAC" field. Natural armor class value.
-            Reference: https://github.com/th3w1zard1/Kotor.NET/tree/master/UTC.cs:58 (NaturalAC property)
 
         reflex_bonus: "refbonus" field. Reflex save bonus.
-            Reference: https://github.com/th3w1zard1/Kotor.NET/tree/master/UTC.cs:59 (ReflexBonus property)
-            Reference: https://github.com/th3w1zard1/KotOR.js/tree/master/ModuleCreature.ts:91 (refbonus field)
 
         willpower_bonus: "willbonus" field. Will save bonus.
-            Reference: https://github.com/th3w1zard1/Kotor.NET/tree/master/UTC.cs:60 (WillBonus property)
-            Reference: https://github.com/th3w1zard1/KotOR.js/tree/master/ModuleCreature.ts:92 (willbonus field)
 
         fortitude_bonus: "fortbonus" field. Fortitude save bonus.
-            Reference: https://github.com/th3w1zard1/Kotor.NET/tree/master/UTC.cs:61 (FortitudeBonus property)
-            Reference: https://github.com/th3w1zard1/KotOR.js/tree/master/ModuleCreature.ts:90 (fortbonus field)
 
         strength: "Str" field. Strength ability score.
-            Reference: https://github.com/th3w1zard1/Kotor.NET/tree/master/UTC.cs:79 (Strength property)
-            Reference: https://github.com/th3w1zard1/KotOR.js/tree/master/ModuleCreature.ts:88 (str field)
 
         dexterity: "Dex" field. Dexterity ability score.
-            Reference: https://github.com/th3w1zard1/Kotor.NET/tree/master/UTC.cs:80 (Dexterity property)
-            Reference: https://github.com/th3w1zard1/KotOR.js/tree/master/ModuleCreature.ts:86 (dex field)
 
         constitution: "Con" field. Constitution ability score.
-            Reference: https://github.com/th3w1zard1/Kotor.NET/tree/master/UTC.cs:81 (Constitution property)
-            Reference: https://github.com/th3w1zard1/KotOR.js/tree/master/ModuleCreature.ts:85 (con field)
 
         intelligence: "Int" field. Intelligence ability score.
-            Reference: https://github.com/th3w1zard1/Kotor.NET/tree/master/UTC.cs:82 (Intelligence property)
-            Reference: https://github.com/th3w1zard1/KotOR.js/tree/master/ModuleCreature.ts:87 (int field)
 
         wisdom: "Wis" field. Wisdom ability score.
-            Reference: https://github.com/th3w1zard1/Kotor.NET/tree/master/UTC.cs:83 (Wisdom property)
-            Reference: https://github.com/th3w1zard1/KotOR.js/tree/master/ModuleCreature.ts:89 (wis field)
 
         charisma: "Cha" field. Charisma ability score.
-            Reference: https://github.com/th3w1zard1/Kotor.NET/tree/master/UTC.cs:84 (Charisma property)
-            Reference: https://github.com/th3w1zard1/KotOR.js/tree/master/ModuleCreature.ts:84 (cha field)
 
         current_hp: "CurrentHitPoints" field. Current hit points.
-            Reference: https://github.com/th3w1zard1/Kotor.NET/tree/master/UTC.cs:64 (CurrentHP property)
-            Reference: https://github.com/th3w1zard1/KotOR.js/tree/master/ModuleCreature.ts:98 (currentHitPoints field)
 
         max_hp: "MaxHitPoints" field. Maximum hit points.
-            Reference: https://github.com/th3w1zard1/Kotor.NET/tree/master/UTC.cs:65 (MaxHP property)
 
         hp: "HitPoints" field. Base hit points.
-            Reference: https://github.com/th3w1zard1/Kotor.NET/tree/master/UTC.cs:63 (HP property)
 
         fp: "CurrentForce" field. Current force points.
-            Reference: https://github.com/th3w1zard1/Kotor.NET/tree/master/UTC.cs:67 (FP property)
-            Reference: https://github.com/th3w1zard1/KotOR.js/tree/master/ModuleCreature.ts:97 (currentForce field)
 
         max_fp: "ForcePoints" field. Maximum force points.
-            Reference: https://github.com/th3w1zard1/Kotor.NET/tree/master/UTC.cs:68 (MaxFP property)
 
         on_end_dialog: "ScriptEndDialogu" field. Script to run when dialog ends.
-            Reference: https://github.com/th3w1zard1/Kotor.NET/tree/master/UTC.cs:87 (OnEndDialog property)
 
         on_blocked: "ScriptOnBlocked" field. Script to run when blocked.
-            Reference: https://github.com/th3w1zard1/Kotor.NET/tree/master/UTC.cs:88 (OnBlocked property)
 
         on_heartbeat: "ScriptHeartbeat" field. Script to run on heartbeat.
-            Reference: https://github.com/th3w1zard1/Kotor.NET/tree/master/UTC.cs:89 (OnHeartbeat property)
 
         on_notice: "ScriptOnNotice" field. Script to run when noticing something.
-            Reference: https://github.com/th3w1zard1/Kotor.NET/tree/master/UTC.cs:90 (OnNotice property)
 
         on_spell: "ScriptSpellAt" field. Script to run when spell is cast at creature.
-            Reference: https://github.com/th3w1zard1/Kotor.NET/tree/master/UTC.cs:91 (OnSpell property)
 
         on_attacked: "ScriptAttacked" field. Script to run when attacked.
-            Reference: https://github.com/th3w1zard1/Kotor.NET/tree/master/UTC.cs:92 (OnAttack property)
 
         on_damaged: "ScriptDamaged" field. Script to run when damaged.
-            Reference: https://github.com/th3w1zard1/Kotor.NET/tree/master/UTC.cs:93 (OnDamaged property)
 
         on_disturbed: "ScriptDisturbed" field. Script to run when disturbed.
-            Reference: https://github.com/th3w1zard1/Kotor.NET/tree/master/UTC.cs:94 (OnDisturbed property)
 
         on_end_round: "ScriptEndRound" field. Script to run at end of combat round.
-            Reference: https://github.com/th3w1zard1/Kotor.NET/tree/master/UTC.cs:95 (OnEndRound property)
 
         on_dialog: "ScriptDialogue" field. Script to run when dialog starts.
-            Reference: https://github.com/th3w1zard1/Kotor.NET/tree/master/UTC.cs:96 (OnDialog property)
 
         on_spawn: "ScriptSpawn" field. Script to run when creature spawns.
-            Reference: https://github.com/th3w1zard1/Kotor.NET/tree/master/UTC.cs:97 (OnSpawn property)
 
         on_rested: "ScriptRested" field. Script to run when creature rests. Not used by engine.
-            Reference: https://github.com/th3w1zard1/Kotor.NET/tree/master/UTC.cs:98 (OnRested property)
 
         on_death: "ScriptDeath" field. Script to run when creature dies.
-            Reference: https://github.com/th3w1zard1/Kotor.NET/tree/master/UTC.cs:99 (OnDeath property)
 
         on_user_defined: "ScriptUserDefine" field. Script to run on user-defined event.
-            Reference: https://github.com/th3w1zard1/Kotor.NET/tree/master/UTC.cs:100 (OnUserDefined property)
 
         ignore_cre_path: "IgnoreCrePath" field. Whether to ignore creature pathfinding. KotOR 2 Only.
-            Reference: https://github.com/th3w1zard1/Kotor.NET/tree/master/UTC.cs:49 (IgnoreCreaturePath property)
 
         hologram: "Hologram" field. Whether creature is a hologram. KotOR 2 Only.
-            Reference: https://github.com/th3w1zard1/Kotor.NET/tree/master/UTC.cs:50 (Hologram property)
 
         palette_id: "PaletteID" field. Palette identifier. Used in toolset only.
-            Reference: https://github.com/th3w1zard1/Kotor.NET/tree/master/UTC.cs:36 (PaletteID property)
 
         bodybag_id: "BodyBag" field. Body bag identifier. Not used by the game engine.
-            Reference: https://github.com/th3w1zard1/Kotor.NET/tree/master/UTC.cs:81 (bodyBag field)
 
         deity: "Deity" field. Deity name. Not used by the game engine.
-            Reference: https://github.com/th3w1zard1/Kotor.NET/tree/master/UTC.cs:99 (deity field)
 
         description: "Description" field. Localized description. Not used by the game engine.
 
@@ -303,7 +190,6 @@ class UTC:
         subrace_name: "Subrace" field. Subrace name. Not used by the game engine.
 
         classes: List of UTCClass objects representing creature classes and levels.
-            Reference: https://github.com/th3w1zard1/Kotor.NET/tree/master/UTC.cs:101+ (Classes property)
 
         feats: List of feat identifiers.
 
@@ -426,23 +312,9 @@ class UTC:
 class UTCClass:
     """Represents a creature class with its level and known powers.
 
-    References:
-    ----------
-        KotOR I (swkotor.exe):
-            - 0x005afce0 - CSWSCreatureStats::ReadStatsFromGff (7835 bytes, 1103 lines)
-                - Loads ClassList from UTC GFF structure
-                - Function signature: ReadStatsFromGff(CSWSCreatureStats* this, CResGFF* param_1, CResStruct* param_2, CSWSCreatureAppearanceInfo* param_3)
-                - Called from LoadCreature (0x00500350) and LoadFromTemplate (0x00502820)
-            - Reads ClassList (GFFList) at line 459:
-                - Class (INT) - class identifier
-                - ClassLevel (SHORT) - class level
-                - SpellsPerDayList (GFFList) - spells per day list (for Jedi classes):
-                    - NumSpellsLeft (BYTE) - number of spells left
-                - KnownList0, KnownList1, KnownList2 (GFFList) - known spells/powers lists
-        KotOR II / TSL (swkotor2.exe):
-            - Functionally identical to K1 implementation
-            - Same GFF structure and parsing logic
-
+    ``ClassList`` entries store class id, level, per-day spell counts, and known power lists
+    as in the UTC GFF schema (same observed layout in KotOR I and TSL). Binary-level detail is
+    migrated to ``wiki/reverse_engineering_findings.md``.
 
     Attributes:
     ----------
@@ -482,21 +354,12 @@ class UTCClass:
 def construct_utc(
     gff: GFF,
 ) -> UTC:
-    """Build UTC from GFF. Defaults when field missing: 0/0.0/""/blank ResRef/false; lists empty. Omit OK.
-
-    Reference functions (5 K1, 5 TSL):
-    K1: (1) LoadCreature @ 0x00500350 (root/stats/scripts/items), (2) LoadCreatures @ 0x00504a70 (caller),
-    (3) LoadLimboCreatures @ 0x004c8c70 (caller), (4) ReadStatsFromGff @ 0x005afce0 (stats/skills/classes),
-    (5) ReadItemsFromGff @ 0x004ffda0 (Equip_ItemList/ItemList). TSL: (1) LoadCreature @ 0x0068ccb0,
-    (2) LoadCreatures @ 0x0071b140 (caller), (3) FUN_007306a0 (caller), (4) ReadStatsFromGff @ 0x006ec350,
-    (5) same item read path. All fields optional when missing.
-    """
+    """Build UTC from GFF. Missing fields use 0 / 0.0 / empty / blank ResRef / false; lists default empty (observed retail)."""
     utc = UTC()
 
     root = gff.root
-    # Root: TemplateResRef/Tag/Comment/Conversation ""; FirstName/LastName empty. K1 LoadCreature @ 0x00500350, TSL @ 0x0068ccb0 ReadField* defaults. Omit OK.
+    # Root identity: empty strings / blank ResRefs when absent.
 
-    # https://github.com/th3w1zard1/Kotor.NET/tree/master/Kotor.NET/Resources/KotorUTC/UTC.cs:15 (ResRef property)
     utc.resref = root.acquire("TemplateResRef", ResRef.from_blank())
 
     utc.tag = root.acquire("Tag", "", str)
@@ -505,12 +368,11 @@ def construct_utc(
 
     utc.conversation = root.acquire("Conversation", ResRef.from_blank())
 
-    # https://github.com/th3w1zard1/Kotor.NET/tree/master/Kotor.NET/Resources/KotorUTC/UTC.cs:21 (FirstName property)
     utc.first_name = root.acquire("FirstName", LocalizedString.from_invalid())
 
     utc.last_name = root.acquire("LastName", LocalizedString.from_invalid())
 
-    # Stats/appearance: Race, Gender, Appearance_Type, FactionID, etc. default 0. ReadStatsFromGff @ (K1: 0x005afce0, TSL: 0x006ec350).
+    # Stats/appearance: numeric fields default 0 when absent.
     utc.subrace_id = root.acquire("SubraceIndex", 0)
 
     utc.perception_id = root.acquire("PerceptionRange", 0)
@@ -595,7 +457,7 @@ def construct_utc(
 
     utc.charisma = root.acquire("Cha", 0)
 
-    # HP/FP: CurrentHitPoints, MaxHitPoints, HitPoints, ForcePoints, CurrentForce default 0. K1 ReadStatsFromGff @ 0x005afce0, TSL @ 0x006ec350. Omit OK.
+    # HP/FP fields: 0 when absent.
     utc.current_hp = root.acquire("CurrentHitPoints", 0)
 
     utc.max_hp = root.acquire("MaxHitPoints", 0)
@@ -606,7 +468,7 @@ def construct_utc(
 
     utc.fp = root.acquire("CurrentForce", 0)
 
-    # Script hooks: ResRefs default blank when missing. ReadScriptsFromGff (called from LoadCreature); K1/TSL same.
+    # Script hooks: blank ResRef when absent.
     utc.on_end_dialog = root.acquire("ScriptEndDialogu", ResRef.from_blank())
 
     utc.on_blocked = root.acquire("ScriptOnBlocked", ResRef.from_blank())
@@ -635,7 +497,7 @@ def construct_utc(
 
     utc.on_user_defined = root.acquire("ScriptUserDefine", ResRef.from_blank())
 
-    # SkillList: 8 structs, Rank 0 each. K1 ReadStatsFromGff @ 0x005afce0, TSL @ 0x006ec350. Omit OK; engine expects 8 entries.
+    # SkillList: eight entries, rank 0 when absent (retail expects eight rows).
     # Skill order: [0] Computer Use, [1] Demolitions, [2] Stealth, [3] Awareness,
     #              [4] Persuade, [5] Repair, [6] Security, [7] Treat Injury
     if not root.exists("SkillList") or root.what_type("SkillList") != GFFFieldType.List:
@@ -657,7 +519,6 @@ def construct_utc(
         skill_list.add(7).set_uint8("Rank", 0)  # Treat Injury
     skill_list_acquired: GFFList = root.acquire("SkillList", GFFList())
 
-    # https://github.com/th3w1zard1/Kotor.NET/tree/master/Kotor.NET/Resources/KotorUTC/UTCCompiler.cs:96 (skillList.Get(0).Get("Rank")) (skillList.Get(0)
     # Parse each skill from SkillList array by index
     if skill_list_acquired.at(0) is not None:
         skill_struct = skill_list_acquired.at(0)
@@ -693,13 +554,13 @@ def construct_utc(
         assert skill_struct is not None, "SkillList[7] struct is None"
         utc.treat_injury = skill_struct.acquire("Rank", 0)  # Skill index 7: Treat Injury
 
-    # Discrepancy: Some KotOR 1 UTC files contain more than 8 skill entries (up to 20)
-    # PyKotor preserves extra skills in _extra_unimplemented_skills for round-trip compatibility
-    # NOTE: reone and Kotor.NET only parse the first 8 skills, ignoring extras
+    # Some KotOR 1 UTC files contain more than eight skill rows (up to 20). PyKotor preserves
+    # extras in _extra_unimplemented_skills for round-trip. Third-party templates that cap at eight
+    # skills are noted in wiki *resource/generics/utc.py — SkillList*.
     if len(skill_list_acquired._structs) > 8:
         utc._extra_unimplemented_skills = [skill_struct.acquire("Rank", 0) for skill_struct in skill_list_acquired._structs[8:]]
 
-    # ClassList: Class 0, ClassLevel 0; KnownList0 Spell 0. K1 ReadStatsFromGff @ 0x005afce0, TSL @ 0x006ec350. Omit OK.
+    # ClassList: class id/level 0; empty power lists when absent.
     class_list: GFFList = root.acquire("ClassList", GFFList())
     for class_struct in class_list:
         class_id = class_struct.acquire("Class", 0)  # Class type identifier (e.g., 0=Soldier, 1=Scout)
@@ -716,7 +577,7 @@ def construct_utc(
 
         utc.classes.append(utc_class)
 
-    # FeatList: Feat 0. K1 LoadCreature @ 0x00500350, TSL @ 0x0068ccb0. Omit OK.
+    # FeatList: feat id 0 per row when absent.
     feat_list: GFFList = root.acquire("FeatList", GFFList())
     for index, feat_struct in enumerate(feat_list):
         feat_id_thing: int = feat_struct.acquire("Feat", 0)  # Feat identifier
@@ -724,7 +585,7 @@ def construct_utc(
         # PyKotor-specific: Preserve original order for round-trip compatibility
         utc._original_feat_mapping[feat_id_thing] = index
 
-    # Equip_ItemList: EquippedRes blank, Dropable 0. K1 ReadItemsFromGff @ 0x004ffda0, TSL same. Omit OK.
+    # Equip_ItemList: blank ResRef, Dropable 0 when absent.
     equipment_list: GFFList = root.acquire("Equip_ItemList", GFFList())
     for equipment_struct in equipment_list:
         # struct_id maps to EquipmentSlot enum (e.g., 0=Right Hand, 1=Left Hand, 2=Armor)
@@ -733,7 +594,7 @@ def construct_utc(
         droppable = bool(equipment_struct.acquire("Dropable", 0))  # Whether item can be dropped
         utc.equipment[slot] = InventoryItem(resref, droppable)
 
-    # ItemList: InventoryRes blank, Dropable 0. K1 ReadItemsFromGff @ 0x004ffda0, TSL same. Omit OK.
+    # ItemList: blank ResRef, Dropable 0 when absent.
     item_list: GFFList = root.acquire("ItemList", GFFList())
     for item_struct in item_list:
         resref = item_struct.acquire("InventoryRes", ResRef.from_blank())  # Item ResRef
@@ -749,16 +610,11 @@ def dismantle_utc(
     *,
     use_deprecated: bool = True,
 ) -> GFF:
-    """Build UTC GFF from UTC. Write values match engine read defaults.
-
-    Reference functions: same as construct_utc (K1 LoadCreature @ 0x00500350, LoadCreatures @ 0x00504a70,
-    ReadStatsFromGff @ 0x005afce0; TSL LoadCreature @ 0x0068ccb0, LoadCreatures @ 0x0071b140,
-    ReadStatsFromGff @ 0x006ec350).
-    """
+    """Build UTC GFF from UTC. Written values mirror the construct path / observed retail."""
     gff = GFF(GFFContent.UTC)
 
     root = gff.root
-    # Root fields: same defaults as engine ReadField* when missing (0, 0.0, "", blank ResRef). K1 LoadCreature @ 0x00500350, TSL @ 0x0068ccb0; ReadStatsFromGff @ (K1: 0x005afce0, TSL: 0x006ec350). Omit OK.
+    # Root fields: same defaults as on read (0, 0.0, "", blank ResRef).
     root.set_resref("TemplateResRef", utc.resref)
     root.set_string("Tag", utc.tag)
     root.set_string("Comment", utc.comment)
@@ -914,11 +770,65 @@ def dismantle_utc(
     return gff
 
 
+def _validate_utc_kaitai_binary(
+    source: SOURCE_TYPES,
+    offset: int,
+    size: int | None,
+) -> None:
+    """If ``source`` resolves to binary GFF, parse with ``Gff`` and require header type ``UTC ``.
+
+    XML/JSON GFF paths are skipped. On ``KaitaiStructError``, fall through so ``read_gff`` reports errors.
+    Mirrors ``read_gff`` header/BOM handling so the validated slice matches ``GFFBinaryReader``.
+    """
+    offset_adj, size_adj = _adjust_offset_after_utf8_bom(source, offset, size)
+    try:
+        with BinaryReader.from_auto(source, offset_adj) as reader:
+            chunk_len = min(512, max(0, reader.remaining()))
+            peek = reader.read_bytes(chunk_len)
+    except (FileNotFoundError, PermissionError, IsADirectoryError):
+        raise
+    except OSError:
+        return
+
+    header_off = _locate_binary_gff_header(peek)
+    if header_off is None:
+        header_off = _locate_binary_gff_header_structural(source, offset_adj, size_adj)
+
+    promoted_binary = False
+    file_format = _classify_gff_peek(peek)
+    if file_format == ResourceType.INVALID and header_off is not None:
+        file_format = ResourceType.GFF
+        promoted_binary = True
+    if file_format == ResourceType.GFF and header_off is not None and (promoted_binary or header_off > 0):
+        offset_adj += header_off
+        if size_adj is not None:
+            size_adj = max(0, size_adj - header_off)
+
+    if file_format != ResourceType.GFF:
+        return
+
+    try:
+        with BinaryReader.from_auto(source, offset_adj, size_adj) as reader:
+            payload = reader.read_all()
+    except OSError:
+        return
+
+    try:
+        parsed = Gff.from_bytes(payload)
+    except kaitaistruct.KaitaiStructError:
+        return
+
+    if parsed.header.file_type != "UTC ":
+        msg = "Not a valid binary UTC file: GFF header file type is not 'UTC '."
+        raise ValueError(msg)
+
+
 def read_utc(
     source: SOURCE_TYPES,
     offset: int = 0,
     size: int | None = None,
 ) -> UTC:
+    _validate_utc_kaitai_binary(source, offset, size)
     gff: GFF = read_gff(source, offset, size)
     return construct_utc(gff)
 

@@ -1,4 +1,8 @@
-"""ASCII MDL read/write: human-readable model format for editing and debugging."""
+"""ASCII MDL read/write: human-readable model format for editing and debugging.
+
+Third-party GitHub URL lines removed from this module are archived at
+``wiki/reverse_engineering_findings_io_mdl_ascii_github_urls_pre_scrub.md``.
+"""
 
 from __future__ import annotations
 
@@ -8,7 +12,10 @@ import re
 from math import acos, cos, sin, sqrt
 from typing import TYPE_CHECKING, cast
 
+import kaitaistruct
+
 from pykotor.common.misc import Color
+from bioware_kaitai_formats.mdl_ascii import MdlAscii
 from pykotor.resource.formats.mdl.mdl_data import (
     MDL,
     MDLAABBNode,
@@ -44,7 +51,6 @@ if TYPE_CHECKING:
 _FACE_SURFACE_MASK = 0x1F
 _FACE_SMOOTH_SHIFT = 5
 
-# Node type constants matching mdlops (https://github.com/th3w1zard1/mdlops/tree/master/MDLOpsM.pm:313-323)
 NODE_DUMMY = 1
 NODE_LIGHT = 3
 NODE_EMITTER = 5
@@ -55,7 +61,6 @@ NODE_DANGLYMESH = 289
 NODE_AABB = 545
 NODE_SABER = 2081
 
-# Node flag constants matching mdlops (https://github.com/th3w1zard1/mdlops/tree/master/MDLOpsM.pm:301-311)
 NODE_HAS_HEADER = 0x0001
 NODE_HAS_LIGHT = 0x0002
 NODE_HAS_EMITTER = 0x0004
@@ -66,7 +71,6 @@ NODE_HAS_DANGLY = 0x0100
 NODE_HAS_AABB = 0x0200
 NODE_HAS_SABER = 0x0800
 
-# Controller name mappings matching mdlops (https://github.com/th3w1zard1/mdlops/tree/master/MDLOpsM.pm:325-407)
 _CONTROLLER_NAMES: dict[int, dict[int, str]] = {
     NODE_HAS_HEADER: {
         8: "position",
@@ -204,7 +208,6 @@ def _unpack_face_material(face: MDLFace) -> tuple[int, int]:
 
     Binary MDL packs multiple flags in the 32-bit material field:
     - Bits 0-4  : Surface material (surfacemat.2da index)
-      Reference: https://github.com/th3w1zard1/mdlops/tree/master/MDLOpsM.pm:2254-2256
     - Bits 5-31 : Smoothing group and vendor specific flags (MDLOps uses this to
       preserve smoothgroup numbers when exporting ASCII, see mdlops:1292-1300).
 
@@ -221,13 +224,9 @@ def _unpack_face_material(face: MDLFace) -> tuple[int, int]:
 
     References:
     ----------
-        Original BioWare engine binaries (from swkotor.exe, swkotor2.exe)
-        Original BioWare engine binaries (MDL face material and smoothing from swkotor.exe, swkotor2.exe)
+        Observed in retail KotOR I and TSL.
+        Observed in retail KotOR I and TSL MDL/MDX payloads (face materials and smoothing groups).
 
-    Derivations and Other Implementations:
-    ----------
-        https://github.com/th3w1zard1/mdlops/tree/master/MDLOpsM.pm:1292-1300 - Smoothing stored via material ID
-        https://github.com/th3w1zard1/mdlops/tree/master/MDLOpsM.pm:2254-2256 - Notes on smoothgroup numbering
     """
     # MDLOps ASCII uses a separate per-face smoothing mask field (4th column) and a separate
     # material id field (last column). To keep roundtrips lossless we store:
@@ -258,7 +257,6 @@ def _pack_face_material(
 def _aa_to_quaternion(aa: list[float]) -> list[float]:
     """Convert angle-axis to quaternion (x, y, z, w).
 
-    Reference: https://github.com/th3w1zard1/mdlops/tree/master/MDLOpsM.pm:3718-3728
 
     Args:
         aa: Angle-axis representation [x, y, z, angle]
@@ -300,7 +298,6 @@ def _quaternion_to_aa(q: list[float]) -> list[float]:
 def _normalize_vector(vec: list[float]) -> list[float]:
     """Normalize a 3D vector.
 
-    Reference: https://github.com/th3w1zard1/mdlops/tree/master/MDLOpsM.pm:3623-3653
 
     Args:
         vec: 3D vector [x, y, z]
@@ -317,7 +314,6 @@ def _normalize_vector(vec: list[float]) -> list[float]:
 class MDLAsciiWriter(ResourceWriter):
     """Writer for ASCII MDL files.
 
-    Reference: https://github.com/th3w1zard1/mdlops/tree/master/MDLOpsM.pm:3004-3900 (writeasciimdl)
     """
 
     def __init__(
@@ -352,7 +348,6 @@ class MDLAsciiWriter(ResourceWriter):
     ) -> None:  # noqa: FBT001, FBT002, ARG002
         """Write MDL data to ASCII format.
 
-        Reference: https://github.com/th3w1zard1/mdlops/tree/master/MDLOpsM.pm:3004-3900 (writeasciimdl)
         """
         mdl = self._mdl
         self.write_line(0, "# ASCII MDL")
@@ -384,7 +379,6 @@ class MDLAsciiWriter(ResourceWriter):
         self.write_line(0, "endmodelgeom " + mdl.name)
         self.write_line(0, "")
 
-        # Write animations if any (https://github.com/th3w1zard1/mdlops/tree/master/MDLOpsM.pm:3488-3560)
         if mdl.anims:
             for anim in mdl.anims:
                 self._write_animation(anim, mdl.name)
@@ -432,8 +426,29 @@ class MDLAsciiWriter(ResourceWriter):
         # NODE_REFERENCE=17, NODE_TRIMESH=33, NODE_SKIN=97, NODE_DANGLYMESH=289,
         # NODE_AABB=545, NODE_SABER=2081
         #
+        # Prefer MDLNode.node_type when it is authoritative. After binary load, emitter/light/reference
+        # nodes may still carry an empty MDLMesh (HEADER|MESH|EMITTER), which would otherwise fall
+        # through to "dummy" when only type_id is considered.
         #
-        if type_id == 1:  # NODE_DUMMY
+        if node.node_type == MDLNodeType.EMITTER:
+            node_type_str = "emitter"
+        elif node.node_type == MDLNodeType.LIGHT:
+            node_type_str = "light"
+        elif node.node_type == MDLNodeType.REFERENCE:
+            node_type_str = "reference"
+        elif node.node_type == MDLNodeType.SKIN:
+            node_type_str = "trimesh" if self._convert_skin else "skin"
+        elif node.node_type == MDLNodeType.DANGLYMESH:
+            node_type_str = "danglymesh"
+        elif node.node_type == MDLNodeType.AABB:
+            node_type_str = "aabb"
+        elif node.node_type == MDLNodeType.SABER:
+            node_type_str = "lightsaber"
+        elif node.node_type == MDLNodeType.TRIMESH:
+            node_type_str = "trimesh"
+        elif node.node_type == MDLNodeType.CAMERA:
+            node_type_str = "camera"
+        elif type_id == 1:  # NODE_DUMMY
             node_type_str = "dummy"
         elif type_id == 3:  # NODE_LIGHT
             node_type_str = "light"
@@ -664,12 +679,10 @@ class MDLAsciiWriter(ResourceWriter):
     ) -> None:
         """Write light data.
 
-        Reference: https://github.com/th3w1zard1/mdlops/tree/master/MDLOpsM.pm:3228-3266
         """
         # Light color/radius/multiplier are controller properties, not direct attributes.
         # They are written via controllers in the node's controller list.
 
-        # Write flare data arrays if present (https://github.com/th3w1zard1/mdlops/tree/master/MDLOpsM.pm:3235-3256)
         has_flares: bool = bool(
             light.flare
             and (
@@ -681,29 +694,24 @@ class MDLAsciiWriter(ResourceWriter):
         )
 
         if has_flares:
-            # Write lensflares count (https://github.com/th3w1zard1/mdlops/tree/master/MDLOpsM.pm:3233)
             if light.flare_positions:
                 self.write_line(indent, f"lensflares {len(light.flare_positions)}")
 
-            # Write texturenames (https://github.com/th3w1zard1/mdlops/tree/master/MDLOpsM.pm:3235-3239)
             if light.flare_textures and len(light.flare_textures) > 0:
                 self.write_line(indent, f"texturenames {len(light.flare_textures)}")
                 for texture in light.flare_textures:
                     self.write_line(indent + 1, texture)
 
-            # Write flarepositions (https://github.com/th3w1zard1/mdlops/tree/master/MDLOpsM.pm:3240-3244)
             if light.flare_positions and len(light.flare_positions) > 0:
                 self.write_line(indent, f"flarepositions {len(light.flare_positions)}")
                 for pos in light.flare_positions:
                     self.write_line(indent + 1, f"{pos:.7g}")
 
-            # Write flaresizes (https://github.com/th3w1zard1/mdlops/tree/master/MDLOpsM.pm:3245-3249)
             if light.flare_sizes and len(light.flare_sizes) > 0:
                 self.write_line(indent, f"flaresizes {len(light.flare_sizes)}")
                 for size in light.flare_sizes:
                     self.write_line(indent + 1, f"{size:.7g}")
 
-            # Write flarecolorshifts (https://github.com/th3w1zard1/mdlops/tree/master/MDLOpsM.pm:3250-3256)
             if light.flare_color_shifts and len(light.flare_color_shifts) > 0:
                 self.write_line(indent, f"flarecolorshifts {len(light.flare_color_shifts)}")
                 for color_shift in light.flare_color_shifts:
@@ -728,7 +736,6 @@ class MDLAsciiWriter(ResourceWriter):
     ) -> None:
         """Write emitter data.
 
-        Reference: https://github.com/th3w1zard1/mdlops/tree/master/MDLOpsM.pm:3268-3307
         """
         self.write_line(indent, f"deadspace {emitter.dead_space:.7g}")
         self.write_line(indent, f"blastRadius {emitter.blast_radius:.7g}")
@@ -737,26 +744,19 @@ class MDLAsciiWriter(ResourceWriter):
         self.write_line(indent, f"controlptsmoothing {emitter.control_point_smoothing:.7g}")
         self.write_line(indent, f"xgrid {emitter.x_grid}")
         self.write_line(indent, f"ygrid {emitter.y_grid}")
-        # mdlops writes spawntype (https://github.com/th3w1zard1/mdlops/tree/master/MDLOpsM.pm:3278)
         self.write_line(indent, f"spawntype {emitter.spawn_type}")
-        # mdlops writes render/update/blend as strings (https://github.com/th3w1zard1/mdlops/tree/master/MDLOpsM.pm:3279-3281)
         self.write_line(indent, f"update {emitter.update}")
         self.write_line(indent, f"render {emitter.render}")
         self.write_line(indent, f"blend {emitter.blend}")
         self.write_line(indent, f"texture {emitter.texture}")
         if emitter.chunk_name:
             self.write_line(indent, f"chunkname {emitter.chunk_name}")
-        # mdlops writes twosidedtex as integer (https://github.com/th3w1zard1/mdlops/tree/master/MDLOpsM.pm:3286)
         self.write_line(indent, f"twosidedtex {emitter.two_sided_texture}")
-        # mdlops writes loop as integer (https://github.com/th3w1zard1/mdlops/tree/master/MDLOpsM.pm:3287)
         self.write_line(indent, f"loop {emitter.loop}")
         self.write_line(indent, f"renderorder {emitter.render_order}")
-        # mdlops writes m_bFrameBlending as integer (https://github.com/th3w1zard1/mdlops/tree/master/MDLOpsM.pm:3289)
         self.write_line(indent, f"m_bFrameBlending {emitter.frame_blender}")
-        # mdlops writes m_sDepthTextureName as string (https://github.com/th3w1zard1/mdlops/tree/master/MDLOpsM.pm:3290)
         self.write_line(indent, f"m_sDepthTextureName {emitter.depth_texture or ''}")
 
-        # Write emitter flags (https://github.com/th3w1zard1/mdlops/tree/master/MDLOpsM.pm:3295-3307)
         from pykotor.resource.formats.mdl.mdl_types import MDLEmitterFlags
 
         flags = emitter.flags
@@ -864,7 +864,6 @@ class MDLAsciiWriter(ResourceWriter):
     def _write_animation(self, anim: MDLAnimation, model_name: str) -> None:
         """Write animation data.
 
-        Reference: https://github.com/th3w1zard1/mdlops/tree/master/MDLOpsM.pm:3488-3560
         """
         self.write_line(0, "")
         self.write_line(0, f"newanim {anim.name} {model_name}")
@@ -876,7 +875,6 @@ class MDLAsciiWriter(ResourceWriter):
         if anim.root_model:
             self.write_line(1, f"animroot {anim.root_model}")
 
-        # Write events (https://github.com/th3w1zard1/mdlops/tree/master/MDLOpsM.pm:3496-3503)
         if anim.events:
             for event in anim.events:
                 t = float(event.activation_time)
@@ -884,7 +882,6 @@ class MDLAsciiWriter(ResourceWriter):
                 t_str = f"{t:.1f}" if t.is_integer() else f"{t:.7g}"
                 self.write_line(1, f"event {t_str} {event.name}")
 
-        # Write animation nodes (https://github.com/th3w1zard1/mdlops/tree/master/MDLOpsM.pm:3504-3555)
         # Animation nodes are written as "node dummy <node_name>" with controllers
         # Build a mapping from animation nodes to their parents for parent writing
         parent_map: dict[str, MDLNode | None] = {}
@@ -927,18 +924,14 @@ class MDLAsciiWriter(ResourceWriter):
     ) -> None:
         """Write an animation node with its controllers.
 
-        Reference: https://github.com/th3w1zard1/mdlops/tree/master/MDLOpsM.pm:3507-3554
         Animation nodes are written as "node dummy <node_name>" regardless of actual type.
         """
-        # Animation nodes are always written as "dummy" type (https://github.com/th3w1zard1/mdlops/tree/master/MDLOpsM.pm:3507)
         self.write_line(indent, f"node dummy {node.name}")
 
-        # Write parent if this node has one (https://github.com/th3w1zard1/mdlops/tree/master/MDLOpsM.pm:3508)
         # In MDLOps, parent is a model node index, but we use the parent node's name
         if parent and parent.name:
             self.write_line(indent + 1, f"parent {parent.name}")
 
-        # Write controllers (https://github.com/th3w1zard1/mdlops/tree/master/MDLOpsM.pm:3510-3553)
         for controller in node.controllers:
             self._write_controller(indent + 1, node, controller)
 
@@ -973,7 +966,6 @@ def _parse_float_robust(value: str) -> float:
 class MDLAsciiReader(ResourceReader):
     """Reader for ASCII MDL files matching mdlops implementation exactly.
 
-    Reference: https://github.com/th3w1zard1/mdlops/tree/master/MDLOpsM.pm:3916-5970 (readasciimdl)
     """
 
     def __init__(
@@ -1016,17 +1008,19 @@ class MDLAsciiReader(ResourceReader):
         Returns:
             The loaded MDL instance
 
-        Reference: https://github.com/th3w1zard1/mdlops/tree/master/MDLOpsM.pm:3916-5970
         """
         self._mdl = MDL()
 
         # Read bytes and decode to text
-        data = self._reader.read_bytes(self._reader.size())
-        text_content = decode_bytes_with_fallbacks(data)
+        raw = self._reader.read_all()
+        try:
+            MdlAscii.from_bytes(raw)
+        except kaitaistruct.KaitaiStructError:
+            pass
+        text_content = decode_bytes_with_fallbacks(raw)
         text_reader = io.StringIO(text_content)
         self._line_iterator = iter(text_reader)
 
-        # Set defaults matching mdlops (https://github.com/th3w1zard1/mdlops/tree/master/MDLOpsM.pm:4017-4024)
         self._mdl.name = ""
         self._mdl.supermodel = "null"
         self._mdl.fog = False
@@ -1044,7 +1038,6 @@ class MDLAsciiReader(ResourceReader):
                 continue
             self._saw_any_content = True
 
-            # Model header parsing (https://github.com/th3w1zard1/mdlops/tree/master/MDLOpsM.pm:4071-4097)
             if re.match(r"^\s*newmodel\s+(\S+)", line, re.IGNORECASE):
                 match = re.match(r"^\s*newmodel\s+(\S+)", line, re.IGNORECASE)
                 if match is not None:
@@ -1153,7 +1146,6 @@ class MDLAsciiReader(ResourceReader):
     def _parse_node(self, line: str) -> None:
         """Parse a node declaration.
 
-        Reference: https://github.com/th3w1zard1/mdlops/tree/master/MDLOpsM.pm:4132-4210
         """
         match = re.match(r"^\s*node\s+(\S+)\s+(\S+)", line, re.IGNORECASE)
         if not match:
@@ -1162,7 +1154,6 @@ class MDLAsciiReader(ResourceReader):
         node_type_str = match.group(1).lower()
         node_name = match.group(2)
 
-        # Handle saber prefix (https://github.com/th3w1zard1/mdlops/tree/master/MDLOpsM.pm:4134-4140)
         if node_name.startswith("2081__"):
             node_type_str = "lightsaber"
             node_name = node_name[6:]
@@ -1298,7 +1289,6 @@ class MDLAsciiReader(ResourceReader):
     ) -> None:
         """Parse data within a node.
 
-        Reference: https://github.com/th3w1zard1/mdlops/tree/master/MDLOpsM.pm:4222-4644
         """
         if not self._current_node:
             return
@@ -1449,7 +1439,6 @@ class MDLAsciiReader(ResourceReader):
     ) -> bool:
         """Parse a controller declaration or data.
 
-        Reference: https://github.com/th3w1zard1/mdlops/tree/master/MDLOpsM.pm:3809-3835, 3734-3802
         """
         if self._current_node is None:
             return False
@@ -1463,7 +1452,6 @@ class MDLAsciiReader(ResourceReader):
         # Controller *IDs* overlap between node types, but controller *names* are distinct in
         # MDLOps ASCII. So it's safe to detect by name regardless of node flags.
 
-        # Check for keyed controllers (https://github.com/th3w1zard1/mdlops/tree/master/MDLOpsM.pm:3760-3802)
         for flag_type in {
             NODE_HAS_LIGHT,
             NODE_HAS_EMITTER,
@@ -1551,7 +1539,6 @@ class MDLAsciiReader(ResourceReader):
     ) -> bool:
         """Parse mesh-specific data.
 
-        Reference: https://github.com/th3w1zard1/mdlops/tree/master/MDLOpsM.pm:4304-4413
         """
         if self._current_node is None:
             return False
@@ -1559,8 +1546,14 @@ class MDLAsciiReader(ResourceReader):
         # AABB nodes can have mesh data - create mesh on-demand if needed
         #
         if self._current_node.mesh is None and self._current_node.node_type == MDLNodeType.AABB:
-            # Check if this line contains mesh data (verts/faces/tverts)
-            if re.match(r"^\s*(verts|faces|tverts|tverts1|lightmaptverts)", line, re.IGNORECASE):
+            # MDLOps emits mesh header lines (bmin/bmax/radius/...) before verts. If we delay
+            # mesh creation until "verts", the scalar line "radius <f>" is parsed by
+            # _parse_controller as a light radius controller (type 88), shifting binary layout.
+            if re.match(
+                r"^\s*(verts|faces|tverts|tverts1|lightmaptverts|bmin|bmax|radius|average|area|surfacearea|ambient|diffuse|transparencyhint|bitmap|lightmap|render|shadow|beaming|backgroundgeometry|rotatetexture|lightmapped|inv_count)\b",
+                line,
+                re.IGNORECASE,
+            ):
                 self._current_node.mesh = MDLMesh()
 
         if self._current_node.mesh is None:
@@ -1805,7 +1798,6 @@ class MDLAsciiReader(ResourceReader):
     def _parse_task_data(self, line: str) -> bool:
         """Parse data for current task (verts, faces, tverts, etc.).
 
-        Reference: https://github.com/th3w1zard1/mdlops/tree/master/MDLOpsM.pm:4459-4643
         """
         if not self._current_node:
             return False
@@ -1821,7 +1813,6 @@ class MDLAsciiReader(ResourceReader):
 
         if self._task == "verts":
             # Parse vertex: "index x y z [nx ny nz] [u v] [u2 v2]"
-            # Reference: https://github.com/th3w1zard1/mdlops/tree/master/MDLOpsM.pm:4468-4471
             parts = line.split()
             # Unit test fixtures also allow a compact form without an explicit index: "x y z"
             if len(parts) == 3:
@@ -1869,7 +1860,6 @@ class MDLAsciiReader(ResourceReader):
 
         elif self._task == "faces":
             # Parse face: "index v1 v2 v3 material smoothing [t1 t2 t3]"
-            # Reference: https://github.com/th3w1zard1/mdlops/tree/master/MDLOpsM.pm:4472-4549
             # Support both normal format and magnusll format with extra tvert indices
             parts = line.split()
             # MDLOps commonly emits *8 integers per face*:
@@ -2005,7 +1995,6 @@ class MDLAsciiReader(ResourceReader):
 
         elif self._task == "tverts":
             # Parse texture vertex: "index u v"
-            # Reference: https://github.com/th3w1zard1/mdlops/tree/master/MDLOpsM.pm:4551-4554
             parts = line.split()
             # Unit test fixtures also allow compact form without an explicit index: "u v"
             if len(parts) == 2:
@@ -2030,7 +2019,6 @@ class MDLAsciiReader(ResourceReader):
 
         elif self._task == "tverts1":
             # Parse texture vertex for second texture: "index u v"
-            # Reference: https://github.com/th3w1zard1/mdlops/tree/master/MDLOpsM.pm:4555-4558
             parts = line.split()
             if len(parts) == 2:
                 idx = self._task_count
@@ -2059,7 +2047,6 @@ class MDLAsciiReader(ResourceReader):
     ) -> bool:
         """Parse skin mesh data (bones, weights).
 
-        Reference: https://github.com/th3w1zard1/mdlops/tree/master/MDLOpsM.pm:4595-4619
         """
         if self._current_node is None:
             return False
@@ -2100,7 +2087,6 @@ class MDLAsciiReader(ResourceReader):
         # Parse bones data
         if self._task == "bones":
             # Format: "index bone_idx qx qy qz qw tx ty tz"
-            # Reference: https://github.com/th3w1zard1/mdlops/tree/master/MDLOpsM.pm:1765-1768
             parts = line.split()
             if len(parts) >= 9:
                 idx = int(parts[0])
@@ -2130,7 +2116,6 @@ class MDLAsciiReader(ResourceReader):
         # Parse weights data
         if self._task == "weights":
             # Format: "bone1 weight1 [bone2 weight2] [bone3 weight3] [bone4 weight4]"
-            # Reference: https://github.com/th3w1zard1/mdlops/tree/master/MDLOpsM.pm:4595-4619
             parts = line.split()
             if len(parts) >= 2:
                 # Parse bone-weight pairs *in encounter order*.
@@ -2178,7 +2163,6 @@ class MDLAsciiReader(ResourceReader):
     ) -> bool:
         """Parse dangly mesh data (constraints).
 
-        Reference: https://github.com/th3w1zard1/mdlops/tree/master/MDLOpsM.pm:4438-4442, 4620-4623
         """
         if self._current_node is None:
             return False
@@ -2204,7 +2188,6 @@ class MDLAsciiReader(ResourceReader):
         # Parse constraints data
         if self._task == "constraints":
             # Format: "index type target target_node"
-            # Reference: https://github.com/th3w1zard1/mdlops/tree/master/MDLOpsM.pm:4620-4623
             parts = line.split()
             if len(parts) >= 4:
                 constraint = MDLConstraint()
@@ -2225,7 +2208,6 @@ class MDLAsciiReader(ResourceReader):
     ) -> bool:
         """Parse light node data.
 
-        Reference: https://github.com/th3w1zard1/mdlops/tree/master/MDLOpsM.pm:4238-4261
         """
         if self._current_node is None or self._current_node.light is None:
             return False
@@ -2362,14 +2344,12 @@ class MDLAsciiReader(ResourceReader):
     def _parse_emitter_data(self, line: str) -> bool:
         """Parse emitter node data.
 
-        Reference: https://github.com/th3w1zard1/mdlops/tree/master/MDLOpsM.pm:4098-4108
         """
         if not self._current_node or not self._current_node.emitter:
             return False
 
         emitter = self._current_node.emitter
 
-        # Emitter properties matching mdlops (https://github.com/th3w1zard1/mdlops/tree/master/MDLOpsM.pm:3991-4012)
         if re.match(r"^\s*deadspace\s+(\S+)", line, re.IGNORECASE):
             match = re.match(r"^\s*deadspace\s+(\S+)", line, re.IGNORECASE)
             if match is not None:
@@ -2461,7 +2441,6 @@ class MDLAsciiReader(ResourceReader):
                 emitter.depth_texture = match.group(1)
             return True
 
-        # Emitter flags (https://github.com/th3w1zard1/mdlops/tree/master/MDLOpsM.pm:3998-4012)
         emitter_flags = {
             "p2p": 0x0001,
             "p2p_sel": 0x0002,
@@ -2495,7 +2474,6 @@ class MDLAsciiReader(ResourceReader):
     ) -> bool:
         """Parse reference node data.
 
-        Reference: https://github.com/th3w1zard1/mdlops/tree/master/MDLOpsM.pm:4262-4265
         """
         if self._current_node is None or self._current_node.reference is None:
             return False
@@ -2522,7 +2500,6 @@ class MDLAsciiReader(ResourceReader):
     ) -> bool:
         """Parse saber node data.
 
-        Reference: https://github.com/th3w1zard1/mdlops/tree/master/MDLOpsM.pm:1937-2010
         """
         if self._current_node is None or self._current_node.saber is None:
             return False
@@ -2579,20 +2556,17 @@ class MDLAsciiReader(ResourceReader):
     ) -> bool:
         """Parse walkmesh/AABB node data.
 
-        Reference: https://github.com/th3w1zard1/mdlops/tree/master/MDLOpsM.pm:4443-4447, 4624-4627
         """
         if self._current_node is None or self._current_node.aabb is None:
             return False
 
         walkmesh = self._current_node.aabb
 
-        # Parse aabb declaration
-        if re.match(r"^\s*aabb", line, re.IGNORECASE):
-            # MDLOps format: "aabb" declaration on one line, data lines follow
-            #
-            # Data format: 6 floats (bbox_min.xyz, bbox_max.xyz) + 1 int (face_index)
-            #
+        # Parse aabb declaration (MDLOps: "aabb <count>" then one data line per AABB node).
+        match_aabb_decl = re.match(r"^\s*aabb\s+(\d+)\s*$", line, re.IGNORECASE)
+        if match_aabb_decl is not None:
             self._task = "aabb"
+            self._task_total = int(match_aabb_decl.group(1))
             self._task_count = 0
             return True
 
@@ -2614,6 +2588,8 @@ class MDLAsciiReader(ResourceReader):
                 )
                 walkmesh.aabbs.append(aabb_node)
                 self._task_count += 1
+                if self._task_count >= self._task_total:
+                    self._task = ""
                 return True
 
         return False
@@ -2621,7 +2597,6 @@ class MDLAsciiReader(ResourceReader):
     def _build_node_hierarchy(self) -> None:
         """Build the node hierarchy from parent relationships.
 
-        Reference: https://github.com/th3w1zard1/mdlops/tree/master/MDLOpsM.pm:4222-4237
         """
         if self._nodes is None:
             return
@@ -2650,6 +2625,7 @@ class MDLAsciiReader(ResourceReader):
                 explicit_root = only
 
         # Single top-level node not named "root" / model name: treat as child of implicit root (e.g. test dummy)
+        # Multiple top-level nodes also require the implicit container root so none of them are lost.
         use_implicit_root = False
         if (
             explicit_root is None
@@ -2657,6 +2633,8 @@ class MDLAsciiReader(ResourceReader):
             and top_level_nodes[0].name
             and top_level_nodes[0].name.lower() not in ("root", (self._mdl.name or "").lower())
         ):
+            use_implicit_root = True
+        elif explicit_root is None and len(top_level_nodes) > 1:
             use_implicit_root = True
 
         if explicit_root is not None:
@@ -2672,8 +2650,8 @@ class MDLAsciiReader(ResourceReader):
         # Build name-to-node lookup for hierarchy resolution
         by_name: dict[str, MDLNode] = {n.name.lower(): n for n in self._nodes if n.name}
 
-        # MDLOps uses node 0 as the starting point when no explicit root and not using implicit root
-        if self._nodes and not use_implicit_root and explicit_root is None:
+        # If the ASCII never identifies a top-level node, fall back to the first parsed node.
+        if self._nodes and not use_implicit_root and explicit_root is None and not top_level_nodes:
             self._mdl.root = self._nodes[0]
             self._mdl.root.children = []
 

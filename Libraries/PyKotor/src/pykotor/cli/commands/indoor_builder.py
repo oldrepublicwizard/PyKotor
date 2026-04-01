@@ -371,8 +371,8 @@ def cmd_indoor_extract(args: Namespace, logger: RobustLogger) -> int:  # noqa: P
     """Extract a .indoor file from a composite module.
 
     This command extracts module data from composite files (_s.rim/.rim/_dlg.erf)
-    and converts it to a .indoor JSON file. This is a complex reverse-engineering
-    process that attempts to match module rooms back to their source kits.
+    and converts it to a .indoor JSON file. It is a messy, heuristic reconstruction:
+    walkmeshes get matched back to kit pieces by geometry fit, not by a neat table in the data.
 
     Args:
     ----

@@ -1,6 +1,7 @@
 """NSS (NWScript) parser: PLY yacc grammar and AST construction."""
 
 from __future__ import annotations
+from pykotor.resource.formats._base import BiowareResource
 
 from pathlib import Path
 from typing import TYPE_CHECKING, NoReturn, Sequence, cast
@@ -76,7 +77,7 @@ else:
     from pykotor.common.script import DataType
 
 
-class NssParser:
+class NssParser(BiowareResource):
     """NSS (NWScript Source) parser.
 
     Parses tokenized NSS source code into an abstract syntax tree (AST) using
@@ -85,11 +86,7 @@ class NssParser:
 
     References:
     ----------
-        Original BioWare engine binaries (from swkotor.exe, swkotor2.exe)
-        Original BioWare engine binaries
-        Derivations and Other Implementations:
-        ----------
-        https://github.com/th3w1zard1/KotOR.js/tree/master/src/nwscript/NWScriptCompiler.ts (Parser integration)
+        Observed in retail KotOR I and TSL.
         PLY (Python Lex-Yacc) library for parser generation
 
     """

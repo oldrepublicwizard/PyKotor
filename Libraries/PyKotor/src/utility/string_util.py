@@ -563,7 +563,7 @@ def striprtf(text: str) -> str:  # noqa: C901, PLR0915, PLR0912
     return "".join(out)
 
 
-def is_string_like(obj: Any) -> bool:  # sourcery skip: use-fstring-for-concatenation
+def is_string_like(obj: Any) -> bool:
     try:
         _ = obj + ""
     except Exception:  # pylint: disable=W0718  # noqa: BLE001
@@ -573,15 +573,15 @@ def is_string_like(obj: Any) -> bool:  # sourcery skip: use-fstring-for-concaten
 
 
 class StrType(type):
-    def __instancecheck__(cls, instance):  # sourcery skip: instance-method-first-arg-name
-        instance_type = instance.__class__
-        mro = instance_type.__mro__
+    def __instancecheck__(cls, instance: object) -> bool:
+        instance_type: type = instance.__class__
+        mro: tuple[type, ...] = instance_type.__mro__
         if cls in {str, WrappedStr}:
             return instance_type in {WrappedStr, str} or WrappedStr in mro or str in mro
         return cls in mro
 
-    def __subclasscheck__(cls, subclass):  # sourcery skip: instance-method-first-arg-name
-        mro = subclass.__mro__
+    def __subclasscheck__(cls, subclass: type) -> bool:
+        mro: tuple[type, ...] = subclass.__mro__
         if cls in {str, WrappedStr}:
             return subclass in {WrappedStr, str} or WrappedStr in mro or str in mro
         return cls in mro
@@ -591,13 +591,13 @@ StrictStr = TypeVar("StrictStr", bound=str)
 
 
 class WrappedStr(str):  # (metaclass=StrType):  # noqa: PLR0904
-    __slots__: tuple[str, ...] = ("_content",)
+    __slots__: tuple[str, ...] = ("_content", "__dict__")
 
     @classmethod
     def _assert_str_type(
         cls: type[Self],
         var: object,
-    ) -> str:  # sourcery skip: remove-unnecessary-cast
+    ) -> str:
         if var is None:
             return None  # type: ignore[return-value]
         if not isinstance(var, (cls, str)):
@@ -1272,7 +1272,7 @@ class CaseInsensitiveWrappedStr(WrappedStr):
     def _coerce_str(
         cls,
         item: Any,
-    ) -> str:  # sourcery skip: assign-if-exp, reintroduce-else
+    ) -> str:
         if isinstance(item, WrappedStr):
             return str(item._content).casefold()  # noqa: SLF001
         if isinstance(item, str):
@@ -1383,7 +1383,7 @@ class CaseInsensitiveWrappedStr(WrappedStr):
         __start=None,
         __end=None,
         /,
-    ):  # sourcery skip: remove-unnecessary-cast
+    ):
         return self._lower_content.rfind(self._coerce_str(__sub), __start, __end)
 
     def rsplit(

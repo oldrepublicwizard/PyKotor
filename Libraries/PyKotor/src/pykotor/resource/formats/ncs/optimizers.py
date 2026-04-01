@@ -25,8 +25,7 @@ class RemoveNopOptimizer(NCSOptimizer):
 
     References:
     ----------
-        Original BioWare engine binaries (from swkotor.exe, swkotor2.exe)
-        Original BioWare engine binaries
+        Observed in retail KotOR I and TSL.
         Standard compiler optimization techniques (dead code elimination)
 
         Note: NOP removal is a common bytecode optimization

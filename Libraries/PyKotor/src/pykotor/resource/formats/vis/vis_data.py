@@ -5,19 +5,11 @@ This is used for occlusion culling optimization - the game engine only renders r
 that are marked as visible from the player's current room. VIS files are ASCII text
 files with a simple format: parent room names followed by indented child room names.
 
-References:
+Observed retail behavior:
 ----------
-        Based on unified K1 (swkotor.exe) and TSL (swkotor2.exe) VIS structure.
-        Addresses: (K1: swkotor.exe, TSL: swkotor2.exe — verify/fill TSL via REVA when available).
+        KotOR I and TSL load ASCII ``*.vis`` files next to module rooms so the renderer can skip
+        mutually occluded cells.
 
-        - LoadVisibility / Scene::LoadVisibility — loads VIS file for area visibility culling; parses ASCII format; builds room visibility map.
-          K1: 0x004568d0, TSL: TODO
-        - "%s/%s.VIS" format string (VIS file path format): K1: 0x007415e8, TSL: TODO
-        - ".vis" extension: K1: 0x00741604, TSL: TODO
-        Derivations and Other Implementations:
-        ----------
-        https://github.com/th3w1zard1/KotOR.js/tree/master/src/resource/VISObject.ts:33-276
-        https://github.com/th3w1zard1/KotOR.js/tree/master/src/interface/module/IVISRoom.ts
         ASCII Format:
         ------------
         Parent Room Line:
@@ -61,32 +53,14 @@ class VIS(ComparableMixin):
     the VIS file are rendered. This prevents rendering rooms that are occluded
     by walls or geometry, improving performance.
 
-    References:
-    ----------
-        Based on swkotor.exe VIS structure:
-        - Scene::LoadVisibility @ 0x004568d0 - Loads VIS file for area visibility culling
-          * Parses ASCII VIS file format
-          * Builds room visibility map for occlusion culling
-          * Stores parent-child room relationships
-        - "%s/%s.VIS" format string @ 0x007415e8 - VIS file path format
-        - ".vis" extension @ 0x00741604 - VIS file extension identifier
-
-        Derivations and Other Implementations:
-        ----------
-        https://github.com/th3w1zard1/KotOR.js/tree/master/src/resource/VISObject.ts:34 (rooms Map)
-
-
-
     Attributes:
     ----------
         _rooms: Set of all room names defined in this VIS file
-            Reference: https://github.com/th3w1zard1/KotOR.js/tree/master/VISObject.ts:34,118 (rooms Map, room.name)
             Room names are stored lowercase for case-insensitive comparison
             Each room name corresponds to a room model/area in the module
             Used to validate room existence before setting visibility
 
         _visibility: Dictionary mapping observer rooms to sets of visible rooms
-            Reference: https://github.com/th3w1zard1/KotOR.js/tree/master/VISObject.ts:99 (currentRoom.rooms array)
             Key: Observer room name (room player is currently in)
             Value: Set of room names visible from the observer room
             If room A is in _visibility[room B], then room A is visible from room B
@@ -98,11 +72,9 @@ class VIS(ComparableMixin):
     COMPARABLE_FIELDS = ("_visibility",)
 
     def __init__(self):
-        # https://github.com/th3w1zard1/KotOR.js/tree/master/src/resource/VISObject.ts:34,118
         # Set of all room names (stored lowercase for case-insensitive comparison)
         self._rooms: set[str] = set()
 
-        # https://github.com/th3w1zard1/KotOR.js/tree/master/src/resource/VISObject.ts:99
         # Dictionary: observer room -> set of visible rooms
         # Used for occlusion culling (only render visible rooms)
         self._visibility: dict[str, set[str]] = {}

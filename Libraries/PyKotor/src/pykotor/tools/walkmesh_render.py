@@ -10,6 +10,13 @@ from __future__ import annotations
 import math
 import pathlib
 
+import matplotlib
+
+# Headless PNG export only: Qt backends (e.g. qtagg under pytest + QT_QPA_PLATFORM) can leave
+# mplot3d Poly3DCollection with an empty projected segment list and trigger ValueError in
+# art3d.py ("not enough values to unpack (expected 5, got 0)") during draw/savefig.
+matplotlib.use("Agg")
+
 import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib.figure import Figure
@@ -168,9 +175,17 @@ def render_bwm_to_pngs(
             coll = Poly3DCollection(tri_verts, facecolors=face_colors, alpha=0.6, edgecolors="none")
             ax.add_collection3d(coll)
         if draw_edges:
-            edge_verts = [t for t in tri_verts]
-            edge_coll = Poly3DCollection(edge_verts, facecolors="none", edgecolors=EDGE_COLOR, linewidths=0.8)
-            ax.add_collection3d(edge_coll)
+            # Poly3DCollection with facecolors="none" only triggers an mplot3d bug on some matplotlib
+            # versions (empty depth-sort in art3d.Poly3DCollection.do_3d_projection). Draw triangle
+            # outlines as line segments instead.
+            tri_edge_segs: list[tuple[tuple[float, float, float], tuple[float, float, float]]] = []
+            for t in tri_verts:
+                p0, p1, p2 = t[0], t[1], t[2]
+                tri_edge_segs.append((tuple(p0), tuple(p1)))
+                tri_edge_segs.append((tuple(p1), tuple(p2)))
+                tri_edge_segs.append((tuple(p2), tuple(p0)))
+            if tri_edge_segs:
+                ax.add_collection3d(Line3DCollection(tri_edge_segs, colors=EDGE_COLOR, linewidths=0.8))
         if grid_lines:
             lc = Line3DCollection(grid_lines, colors=GRID_COLOR, linewidths=0.5)
             ax.add_collection3d(lc)

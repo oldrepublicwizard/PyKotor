@@ -163,15 +163,7 @@ class Installation:
 
     References:
     ----------
-        Based on swkotor.exe GFF structure:
-        - CResGFF::CreateGFFFile @ 0x00411260 - Creates GFF file structure
-        Original BioWare engine binaries
-        Derivations and Other Implementations:
-        ----------
-        https://github.com/th3w1zard1/KotOR.js/tree/master/src/loaders/ (Resource loading patterns)
-
-
-
+        Observed retail KotOR GFF resource usage during installation scans.
     Note: Installation path detection may differ between platforms (Windows registry vs manual path)
     """  # noqa: E501
 
@@ -614,7 +606,7 @@ class Installation:
             self._override_data = {}
 
         for folder in target_dirs:
-            try:  # sourcery skip: remove-redundant-exception, simplify-single-exception-tuple
+            try:
                 relative_folder: str = folder.relative_to(override_path).as_posix()  # '.' if folder is the same as override_path
                 self._override_data[relative_folder] = self.load_resources_list(folder, recurse=True)
             except Exception:  # noqa: BLE001
@@ -841,7 +833,6 @@ class Installation:
         return self._find_resource_folderpath(("streamvoice", "streamwaves"))
 
     def save_locations(self) -> list[Path]:
-        # sourcery skip: assign-if-exp, extract-method
         """Returns a list of existing save locations (paths where save files can be found)."""
         save_paths: list[Path] = [self._find_resource_folderpath("saves", optional=True)]
         if self.game().is_k2():
@@ -2819,7 +2810,7 @@ class Installation:
         *,
         use_hardcoded: bool = True,
         use_alternate: bool = False,
-    ) -> str:  # sourcery skip: assign-if-exp, remove-unreachable-code
+    ) -> str:
         """Returns an identifier for the module that matches the filename/IFO/ARE resname.
 
         NOTE: Since this is only used for sorting currently, does not parse Mod_Area_list or Mod_VO_ID.

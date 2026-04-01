@@ -4,6 +4,11 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
+import kaitaistruct
+
+from pykotor.common.stream import BinaryReader
+from bioware_kaitai_formats.ncs import Ncs
+from bioware_kaitai_formats.ncs_minimal import NcsMinimal
 from pykotor.resource.formats.ncs.ncs_data import (
     NCS,
     NCSByteCode,
@@ -28,13 +33,11 @@ class NCSBinaryReader(ResourceReader):
     NCS files contain compiled bytecode for NWScript, the scripting language used in KotOR.
     Instructions include operations, constants, function calls, jumps, and control flow.
 
-    References:
+    Observed retail behavior:
     ----------
-        See ncs_data module docstring for full engine addresses (K1 + TSL TODO).
-        CResNCS::CResNCS (K1: 0x005d4c30), destructors (0x005d4c50, 0x005d4c90), ReadScriptFile (0x005d2260),
-        ReadScriptsFromGff (0x004ebf20), ExecuteCommandExecuteScript (0x00535b70). NCS format: "NCS " type, "V1.0", magic 0x42.
-        Note: Engine loads NCS as resources and executes via NWScript VM.
-
+        KotOR loads ``NCS `` resources with a ``V1.0`` tag, leading opcode byte ``0x42``, and
+        the stack-machine bytecode stream described in ``ncs_data``. Scripts may be read from
+        standalone files or embedded GFF fields before execution.
 
     """
 
@@ -72,37 +75,53 @@ class NCSBinaryReader(ResourceReader):
             - Adds the instructions to the NCS object
             - Optionally closes the reader.
         """
+        data = self._reader.read_all()
+        parsed_ncs: Ncs | None = None
+        try:
+            parsed_ncs = Ncs.from_bytes(data)
+        except kaitaistruct.KaitaiStructError:
+            try:
+                NcsMinimal.from_bytes(data)
+            except kaitaistruct.KaitaiStructError:
+                pass
+
         self._ncs = NCS()
-
-        file_type = self._reader.read_string(4)
-        file_version = self._reader.read_string(4)
-
-        if file_type != "NCS ":
-            msg = "The file type that was loaded is invalid."
-            raise ValueError(msg)
-
-        if file_version != "V1.0":
-            msg = "The NCS version that was loaded is not supported."
-            raise ValueError(msg)
-
         self._instructions = {}  # offset -> instruction
         self._jumps = []
 
-        # Read the header fields
+        actual_file_size = len(data)
 
-        magic_byte = self._reader.read_uint8()  # Position 8
-        total_size = self._reader.read_uint32(big=True)  # Positions 9-12: Total file size
+        if parsed_ncs is not None:
+            total_size = parsed_ncs.file_size
+            if total_size > actual_file_size:
+                msg = f"NCS size field ({total_size}) is larger than actual file size ({actual_file_size}). File may be corrupted or truncated."
+                raise ValueError(msg)
+            self._reader = BinaryReader.from_bytes(data, 0)
+            self._reader.seek(NCS_HEADER_SIZE)
+        else:
+            self._reader = BinaryReader.from_bytes(data, 0)
 
-        # Validate header
-        if magic_byte != NCS_HEADER_MAGIC_BYTE:
-            msg = f"Invalid NCS header magic byte: expected 0x{NCS_HEADER_MAGIC_BYTE:02X}, got 0x{magic_byte:02X}"
-            raise ValueError(msg)
+            file_type = self._reader.read_string(4)
+            file_version = self._reader.read_string(4)
 
-        # Validate size field
-        actual_file_size = self._reader.size()
-        if total_size > actual_file_size:
-            msg = f"NCS size field ({total_size}) is larger than actual file size ({actual_file_size}). File may be corrupted or truncated."
-            raise ValueError(msg)
+            if file_type != "NCS ":
+                msg = "The file type that was loaded is invalid."
+                raise ValueError(msg)
+
+            if file_version != "V1.0":
+                msg = "The NCS version that was loaded is not supported."
+                raise ValueError(msg)
+
+            magic_byte = self._reader.read_uint8()  # Position 8
+            total_size = self._reader.read_uint32(big=True)  # Positions 9-12: Total file size
+
+            if magic_byte != NCS_HEADER_MAGIC_BYTE:
+                msg = f"Invalid NCS header magic byte: expected 0x{NCS_HEADER_MAGIC_BYTE:02X}, got 0x{magic_byte:02X}"
+                raise ValueError(msg)
+
+            if total_size > actual_file_size:
+                msg = f"NCS size field ({total_size}) is larger than actual file size ({actual_file_size}). File may be corrupted or truncated."
+                raise ValueError(msg)
 
         # Check for empty or minimal NCS files
         if total_size <= NCS_HEADER_SIZE:

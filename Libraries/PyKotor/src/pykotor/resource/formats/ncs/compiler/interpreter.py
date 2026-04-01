@@ -1,6 +1,7 @@
 """NCS bytecode interpreter: execute NCS for testing and script debugging."""
 
 from __future__ import annotations
+from pykotor.resource.formats._base import BiowareResource
 
 import logging
 import struct
@@ -28,7 +29,7 @@ else:
     from pykotor.common.scriptdefs import KOTOR_FUNCTIONS, TSL_FUNCTIONS
 
 
-class Interpreter:
+class Interpreter(BiowareResource):
     """NCS bytecode interpreter for testing and debugging.
 
     Executes NCS bytecode instructions to test script behavior. Partially implemented
@@ -37,11 +38,6 @@ class Interpreter:
 
     References:
     ----------
-
-    Derivations and Other Implementations:
-    -------------------------------------
-        https://github.com/th3w1zard1/KotOR.js/tree/master/src/odyssey/controllers/ (Runtime script execution)
-
 
         Note: Interpreter is PyKotor-specific for testing, not a full runtime implementation
     """
@@ -524,7 +520,7 @@ class Interpreter:
         self._mocks.pop(function_name)
 
 
-class ObjectHeap:
+class ObjectHeap(BiowareResource):
     """Manages object references for non-primitive types in the NCS stack.
 
     This implements a handle-based object management system where non-primitive
@@ -651,7 +647,7 @@ class ObjectHeap:
         return len(self._objects)
 
 
-class StackV2:
+class StackV2(BiowareResource):
     """Byte-accurate stack implementation for NCS bytecode execution.
 
     This class simulates the NWScript VM stack using a bytearray to store
@@ -982,7 +978,7 @@ class StackV2:
         log.debug("StackV2 cleared: freed %s bytes, %s objects", stack_size, heap_size)
 
 
-class Stack:
+class Stack(BiowareResource):
     def __init__(self):
         self._stack: list[StackObject] = []
         self._bp: int = 0
@@ -1797,7 +1793,7 @@ class Stack:
     def store_state(self): ...
 
 
-class StackObject:
+class StackObject(BiowareResource):
     def __init__(self, data_type: DataType, value: float | str | bool | object):  # noqa: FBT001
         self.data_type: DataType = data_type
         self.value = value
@@ -1832,7 +1828,7 @@ class StackSnapshot(NamedTuple):
     stack: list[StackObject]
 
 
-class EngineRoutineMock:
+class EngineRoutineMock(BiowareResource):
     def __init__(self, function: ScriptFunction, mock: Callable):
         self.function: ScriptFunction = function
         self.mock: Callable = mock

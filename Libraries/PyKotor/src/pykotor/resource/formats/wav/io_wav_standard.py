@@ -8,7 +8,7 @@ This module's writer produces clean RIFF/WAVE output regardless of input format.
 
 References:
 ----------
-        See wav_data module docstring for engine addresses (K1 + TSL TODO). Standard RIFF/WAVE format specification
+        Standard RIFF/WAVE layout; KotOR-specific quirks are summarized in ``wav_data`` / ``io_wav``.
 
 """
 

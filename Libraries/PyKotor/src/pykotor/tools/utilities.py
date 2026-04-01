@@ -6,11 +6,7 @@ and can be used by any application that needs these utilities.
 
 References:
 ----------
-        Based on swkotor.exe resource formats:
-        - CResGFF::CreateGFFFile @ 0x00411260 - Creates new GFF file
-        - CResGFF::WriteGFFFile @ 0x00413030 - Writes GFF data to file
-        - CTlkTable::AddFile @ 0x0041d920 - Adds TLK file to table
-        - Load2DArray @ 0x004143b0 - Loads 2DA array data
+        Observed retail KotOR GFF, TLK, and 2DA resource handling.
         Tools/diff operations/ - File diffing implementation
         Libraries/PyKotor/src/pykotor/tslpatcher/diff/ - Structured diff engine
 
@@ -134,9 +130,7 @@ def diff_files(
 
     References:
     ----------
-        Based on swkotor.exe GFF structure:
-        - CResGFF::CreateGFFFile @ 0x00411260 - Creates GFF file structure
-        - CResGFF::WriteGFFFile @ 0x00413030 - Writes GFF data to file
+        Observed retail KotOR GFF read/write behavior.
         Tools/diff operations/src/kotordiff/differ.py
         Libraries/PyKotor/src/pykotor/tslpatcher/diff/structured.py
 
@@ -227,9 +221,7 @@ def grep_in_file(
 
     References:
     ----------
-        Based on swkotor.exe GFF structure:
-        - CResGFF::CreateGFFFile @ 0x00411260 - Creates GFF file structure
-        - CResGFF::WriteGFFFile @ 0x00413030 - Writes GFF data to file
+        Observed retail KotOR GFF read/write behavior.
 
 
     """
@@ -329,9 +321,7 @@ def get_file_stats(file_path: Path) -> dict[str, int | str]:
 
     References:
     ----------
-        Based on swkotor.exe GFF structure:
-        - CResGFF::CreateGFFFile @ 0x00411260 - Creates GFF file structure
-        - CResGFF::WriteGFFFile @ 0x00413030 - Writes GFF data to file
+        Observed retail KotOR GFF read/write behavior.
 
 
     """
@@ -373,9 +363,7 @@ def validate_file(file_path: Path) -> tuple[bool, str]:
 
     References:
     ----------
-        Based on swkotor.exe GFF structure:
-        - CResGFF::CreateGFFFile @ 0x00411260 - Creates GFF file structure
-        - CResGFF::WriteGFFFile @ 0x00413030 - Writes GFF data to file
+        Observed retail KotOR GFF read/write behavior.
 
 
     """

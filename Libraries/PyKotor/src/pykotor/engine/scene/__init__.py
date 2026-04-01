@@ -1,15 +1,7 @@
-"""Abstract scene graph interfaces.
+"""Abstract scene graph interfaces for rendering backends.
 
-This module provides abstract base classes for scene graph management that can be
-implemented by different rendering backends.
-
-References:
-----------
-        Based on swkotor.exe scene graph:
-        - Scene management and rendering pipeline
-        - Area loading and room visibility (VIS files)
-
-
+Scene graph contracts used by PyKotor tooling (area load, VIS-driven room sets, etc.).
+Executable-specific scene internals are documented only in ``wiki/reverse_engineering_findings.md``.
 """
 
 from __future__ import annotations

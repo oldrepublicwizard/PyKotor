@@ -2,20 +2,12 @@
 
 TPC is KotOR's proprietary texture format supporting various compression and color formats.
 
-References:
+Observed retail behavior:
 ----------
-        Based on unified K1 (swkotor.exe) and TSL (swkotor2.exe) TPC structure.
-        Addresses: (K1: swkotor.exe, TSL: swkotor2.exe — verify/fill TSL via REVA when available).
-
-        - CResTPC::CResTPC (TPC resource constructor): K1: 0x00712ea0, TSL: TODO
-        - CResTPC::~CResTPC (destructor): K1: 0x00712ee0, TSL: TODO
-        - GetTPCAttrib (TPC texture attributes): K1: 0x00712ef0, TSL: TODO
-        - LoadTexturePack: K1: 0x0070cf30, TSL: TODO
-        - UnloadTexturePack: K1: 0x0070cf80, TSL: TODO
-        - ReadTextureHeader: K1: 0x0070ece0, 0x00710430, 0x00710810, TSL: TODO
-        - CreateProcessedTexture: K1: 0x00424dd0, TSL: TODO
-        Note: TPC supports DXT1, DXT3, DXT5, and uncompressed RGB/RGBA formats.
-        TPC is KotOR's proprietary texture format used for all game textures.
+        KotOR loads textures from ``.tpc`` resources (and related sidecar metadata) using the
+        proprietary header + mip chain layout this package models. It has been observed that
+        retail data uses DXT1/DXT3/DXT5 and uncompressed RGB/RGBA payloads consistent with
+        other Aurora-era titles.
 
 """
 
@@ -26,7 +18,7 @@ from enum import IntEnum, auto
 from typing import TYPE_CHECKING
 
 from loggerplus import RobustLogger
-from pykotor.resource.formats._base import ComparableMixin
+from pykotor.resource.formats._base import BiowareResource, ComparableMixin
 from pykotor.resource.formats.tpc.convert.bgra import (
     bgr_to_bgra,
     bgr_to_grey,
@@ -47,6 +39,7 @@ from pykotor.resource.formats.tpc.convert.dxt.compress_dxt import (
 )
 from pykotor.resource.formats.tpc.convert.dxt.decompress_dxt import (
     dxt1_to_rgb,
+    dxt1_to_rgba,
     dxt3_to_rgba,
     dxt5_to_rgba,
 )
@@ -222,7 +215,7 @@ class TPCTextureFormat(IntEnum):
 
 
 @dataclass
-class TPCMipmap:
+class TPCMipmap(BiowareResource):
     """A single mipmap level in a TPC texture."""
 
     width: int
@@ -357,15 +350,19 @@ class TPCMipmap:
             elif target is TPCTextureFormat.RGB:
                 self.data = rgb_data
             elif target is TPCTextureFormat.RGBA:
-                self.data = rgb_to_rgba(rgb_data)
+                dxt1_rgba_data = dxt1_to_rgba(self.data, self.width, self.height)
+                self.data = dxt1_rgba_data
             elif target is TPCTextureFormat.BGRA:
-                self.data = rgba_to_bgra(rgb_to_rgba(rgb_data))
+                dxt1_rgba_data = dxt1_to_rgba(self.data, self.width, self.height)
+                self.data = rgba_to_bgra(dxt1_rgba_data)
             elif target is TPCTextureFormat.Greyscale:
                 self.data = rgb_to_grey(rgb_data)
             elif target is TPCTextureFormat.DXT3:
-                self.data = rgba_to_dxt3(rgb_to_rgba(rgb_data), self.width, self.height)
+                dxt1_rgba_data = dxt1_to_rgba(self.data, self.width, self.height)
+                self.data = rgba_to_dxt3(dxt1_rgba_data, self.width, self.height)
             elif target is TPCTextureFormat.DXT5:
-                self.data = rgba_to_dxt5(rgb_to_rgba(rgb_data), self.width, self.height)
+                dxt1_rgba_data = dxt1_to_rgba(self.data, self.width, self.height)
+                self.data = rgba_to_dxt5(dxt1_rgba_data, self.width, self.height)
 
         elif self.tpc_format == TPCTextureFormat.DXT3:
             rgba_data: bytearray = dxt3_to_rgba(self.data, self.width, self.height)
@@ -409,7 +406,7 @@ class TPCMipmap:
 
 
 @dataclass
-class TPCLayer:
+class TPCLayer(BiowareResource):
     """A layer in a TPC texture, containing mipmaps."""
 
     mipmaps: list[TPCMipmap] = field(default_factory=list)

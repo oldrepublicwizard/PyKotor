@@ -1,13 +1,15 @@
-"""TSL (K2) save/load flow: 1:1 with k2_win_gog_aspyr_swkotor2.exe behavior.
+"""TSL (K2) save/load flow helpers aligned with observed retail The Sith Lords sequencing.
 
-This module implements the exact sequence of operations performed by the TSL
-binary during save and load. Every step and order matches the engine as
-documented in docs/reva_roadmap/SAVE_LOAD_ENGINE_BEHAVIOR.md and
-KOTOR_SAVE_LOAD_TSL_RE_REPORT.md.
+High-level ordering matches K1 (disk check, directory creation, optional screenshot,
+then core save components). TSL-specific file roles (for example PIFO / galaxy map)
+are handled by ``SaveFolderEntry`` when the game is K2.
 
-Use run_tsl_save_flow() and run_tsl_load_flow() for engine-identical sequence.
-Same high-level order as K1; offsets and path constants differ (0x1f0b4 table,
-0x100fc load, 0x1f254/0x1f33c/0x1f344 flags). K2-specific: PIFO.ifo, galaxy map.
+Internal engine labels, structure offsets, and the disassembly-derived load sequence
+previously referenced in this module are **migrated** to ``wiki/reverse_engineering_findings.md``
+under *PyKotor package: migrated library notes* → ``extract/save_load_flow_tsl.py``.
+
+Use ``run_tsl_save_flow`` and ``run_tsl_load_flow`` from ``run_save_flow`` / ``run_load_flow``
+when ``determine_game`` selects K2.
 """
 
 from __future__ import annotations
@@ -21,13 +23,13 @@ if TYPE_CHECKING:
 
 
 def get_free_disk_space_tsl(path: Path) -> int:
-    """Return free bytes on the filesystem for path. TSL uses this before save."""
+    """Return free bytes on the filesystem for path."""
     stat = shutil.disk_usage(path)
     return stat.free
 
 
 def create_directory_tsl(path: Path) -> bool:
-    """Create directory and parents. Returns True if created or exists. TSL: CreateDirectory2."""
+    """Create directory and parents. Returns True if created or exists."""
     try:
         path.mkdir(parents=True, exist_ok=True)
         return True
@@ -41,11 +43,10 @@ def run_tsl_save_flow(
     min_free_bytes: int = 1024 * 1024,
     write_components: bool = True,
 ) -> int:
-    """Execute the TSL StallEventSaveGame-equivalent flow. Returns 1 on success, 0 on failure.
+    """Execute the TSL-shaped save flow. Returns 1 on success, 0 on failure.
 
-    Sequence matches K1 conceptually: disk check, create dir, path build,
-    status/stall (no-op), screenshot, clear state. K2-specific files (PIFO.ifo,
-    galaxy map) are written by SaveFolderEntry when game=K2.
+    Sequence: disk check, create save directory, optional screenshot write,
+    then persist core components (see ``SaveFolderEntry.save`` paths).
     """
     save_path = entry.save_path
     root = Path(save_path).parent
@@ -72,12 +73,9 @@ def run_tsl_save_flow(
 
 
 def run_tsl_load_flow(entry: SaveFolderEntry) -> Any:
-    """Execute the exact TSL LoadGame flow (FUN_007b2f00). Returns load result (entry).
+    """Execute the TSL-shaped load flow and return ``entry``.
 
-    Sequence: SetLoadBarProgress(1, 0xa); SetLoadStep(0xa,0), (0x14,1), (0x17,2), (0x17,3), (0x17,4);
-    build path; AddResourceDirectory; LoadTableInfo([this+0x1f0b4]); Load([this+0x100fc]);
-    RemoveResourceDirectory; set flags; LoadModule. Python order: partytable (table),
-    save_info + globals (load), sav (LoadModule), screenshot.
+    Loads party table, save info, globals, nested capsule, then optional screenshot bytes.
     """
     entry.partytable.load()
     entry.save_info.load()

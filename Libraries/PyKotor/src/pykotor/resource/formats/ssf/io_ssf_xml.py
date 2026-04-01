@@ -4,10 +4,12 @@ from __future__ import annotations
 
 from contextlib import suppress
 
+import kaitaistruct
+
 # Try to import defusedxml, fallback to ElementTree if not available
 from xml.etree import ElementTree
 
-try:  # sourcery skip: remove-redundant-exception, simplify-single-exception-tuple
+try:
     from defusedxml.ElementTree import fromstring as _fromstring
 
     ElementTree.fromstring = _fromstring
@@ -16,6 +18,7 @@ except (ImportError, ModuleNotFoundError):
 
 from typing import TYPE_CHECKING
 
+from bioware_kaitai_formats.ssf_xml import SsfXml
 from pykotor.resource.formats.ssf.ssf_data import SSF, SSFSound
 from pykotor.resource.type import ResourceReader, ResourceWriter, autoclose
 from pykotor.tools.encoding import decode_bytes_with_fallbacks
@@ -30,14 +33,7 @@ class SSFXMLReader(ResourceReader):
 
     XML is a human-readable format for easier editing of sound set files.
 
-    References:
-    ----------
-        Based on swkotor.exe SSF structure:
-        - CResSSF::CResSSF @ 0x006db650 - Constructor for SSF resource
-        - CResSSF::~CResSSF @ 0x006db670, @ 0x006db6b0 - Destructors for SSF resource
-        - SSF file format: "SSF " type, "V1.1" version
-
-        Note: XML format is PyKotor-specific conversion format, not a standard game format.
+    Note: XML format is PyKotor-specific conversion format, not a standard game format.
         The engine uses binary SSF format exclusively. XML conversion allows easier editing
         and integration with external tools.
     """
@@ -55,7 +51,12 @@ class SSFXMLReader(ResourceReader):
     def load(self, *, auto_close: bool = True) -> SSF:  # noqa: FBT001, FBT002, ARG002
         self._ssf = SSF()
 
-        data = decode_bytes_with_fallbacks(self._reader.read_bytes(self._reader.size()))
+        raw = self._reader.read_all()
+        try:
+            SsfXml.from_bytes(raw)
+        except kaitaistruct.KaitaiStructError:
+            pass
+        data = decode_bytes_with_fallbacks(raw)
         xml_root = ElementTree.fromstring(data)  # noqa: S314
 
         for child in xml_root:

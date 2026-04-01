@@ -4,11 +4,170 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
+import kaitaistruct
+
+from pykotor.common.stream import BinaryReader
+from bioware_kaitai_formats.erf import Erf
 from pykotor.resource.formats.erf.erf_data import ERF, ERFType
 from pykotor.resource.type import ResourceReader, ResourceType, ResourceWriter, autoclose
 
 if TYPE_CHECKING:
     from pykotor.resource.type import SOURCE_TYPES, TARGET_TYPES
+
+_MAX_SANE_COUNT = 65536
+_MAX_SANE_LANG_COUNT = 32
+
+
+def _load_erf_from_kaitai(data: bytes) -> ERF:
+    parsed = Erf.from_bytes(data)
+    h = parsed.header
+    file_size = len(data)
+    erf_type: ERFType | None = next((x for x in ERFType if x.value == h.file_type), None)
+    if erf_type is None:
+        msg = f"Not a valid ERF file: '{h.file_type}'"
+        raise ValueError(msg)
+    erf = ERF(erf_type)
+    entry_count = h.entry_count
+    offset_to_keys = h.offset_to_key_list
+    offset_to_resources = h.offset_to_resource_list
+    offset_to_localized_strings = h.offset_to_localized_string_list
+    language_count = h.language_count
+
+    erf.build_year = h.build_year
+    erf.build_day = h.build_day
+    erf.description_strref = int(h.description_strref)
+
+    if entry_count > _MAX_SANE_COUNT:
+        msg = f"ERF entry_count {entry_count} exceeds sanity limit; file may be malformed or truncated."
+        raise ValueError(msg)
+
+    if offset_to_keys >= file_size and entry_count > 0:
+        msg = f"ERF offset_to_keys {offset_to_keys} is beyond file size {file_size}; file is malformed."
+        raise ValueError(msg)
+
+    if offset_to_resources >= file_size and entry_count > 0:
+        msg = f"ERF offset_to_resources {offset_to_resources} is beyond file size {file_size}; file is malformed."
+        raise ValueError(msg)
+
+    if language_count > 0 and offset_to_localized_strings > 0:
+        if language_count > _MAX_SANE_LANG_COUNT:
+            msg = f"ERF language_count {language_count} exceeds sanity limit; file may be malformed."
+            raise ValueError(msg)
+        lsl = parsed.localized_string_list
+        if lsl is not None:
+            for e in lsl.entries:
+                erf.localized_strings[e.language_id] = e.string_data
+
+    kl = parsed.key_list
+    rl = parsed.resource_list
+    if entry_count == 0:
+        return erf
+    if kl is None or rl is None or len(kl.entries) != entry_count or len(rl.entries) != entry_count:
+        msg = "ERF key/resource list size mismatch."
+        raise ValueError(msg)
+
+    for i in range(entry_count):
+        ke = kl.entries[i]
+        resref_str = ke.resref.split("\0", 1)[0].rstrip("\0")
+        restype_id = int(ke.resource_type)
+        off = int(rl.entries[i].offset_to_data)
+        sz = int(rl.entries[i].resource_size)
+        if off + sz > file_size:
+            msg = f"ERF resource {i} extends past file (offset={off}, size={sz}, file={file_size})."
+            raise ValueError(msg)
+        erf.set_data(resref_str, ResourceType.from_id(restype_id), data[off : off + sz])
+
+    return erf
+
+
+def _load_erf_legacy(reader: BinaryReader, file_size: int) -> ERF:
+    file_type: str = reader.read_string(4)
+    file_version: str = reader.read_string(4)
+
+    if file_version != "V1.0":
+        msg = f"ERF version '{file_version}' is unsupported."
+        raise ValueError(msg)
+
+    erf_type: ERFType | None = next(
+        (x for x in ERFType if x.value == file_type),
+        None,
+    )
+    if erf_type is None:
+        msg = f"Not a valid ERF file: '{file_type}'"
+        raise ValueError(msg)
+
+    erf = ERF(erf_type)
+
+    language_count: int = reader.read_uint32()
+    localized_string_size: int = reader.read_uint32()
+    entry_count: int = reader.read_uint32()
+    offset_to_localized_strings: int = reader.read_uint32()
+    offset_to_keys: int = reader.read_uint32()
+    offset_to_resources: int = reader.read_uint32()
+
+    erf.build_year = reader.read_uint32()
+    erf.build_day = reader.read_uint32()
+    erf.description_strref = reader.read_uint32()
+
+    if offset_to_keys == 0:
+        offset_to_keys = 160
+
+    if offset_to_resources == 0:
+        offset_to_resources = offset_to_keys + (entry_count * 24)
+
+    if entry_count > _MAX_SANE_COUNT:
+        msg = f"ERF entry_count {entry_count} exceeds sanity limit; file may be malformed or truncated."
+        raise ValueError(msg)
+
+    if offset_to_keys >= file_size and entry_count > 0:
+        msg = f"ERF offset_to_keys {offset_to_keys} is beyond file size {file_size}; file is malformed."
+        raise ValueError(msg)
+
+    if offset_to_resources >= file_size and entry_count > 0:
+        msg = f"ERF offset_to_resources {offset_to_resources} is beyond file size {file_size}; file is malformed."
+        raise ValueError(msg)
+
+    if language_count > 0 and offset_to_localized_strings > 0:
+        if language_count > _MAX_SANE_LANG_COUNT:
+            msg = f"ERF language_count {language_count} exceeds sanity limit; file may be malformed."
+            raise ValueError(msg)
+        reader.seek(offset_to_localized_strings)
+        block_end = offset_to_localized_strings + localized_string_size
+        for _ in range(language_count):
+            if reader.position() >= block_end:
+                break
+            lang_id = reader.read_uint32()
+            str_size = reader.read_uint32()
+            remaining_block = block_end - reader.position()
+            if str_size > remaining_block:
+                msg = f"ERF localized string size {str_size} exceeds remaining block size {remaining_block}."
+                raise ValueError(msg)
+            text = reader.read_string(str_size, encoding="windows-1252")
+            erf.localized_strings[lang_id] = text
+
+    resrefs: list[str] = []
+    restypes: list[int] = []
+    reader.seek(offset_to_keys)
+    for _ in range(entry_count):
+        resref_str = reader.read_string(16).rstrip("\0")
+        resrefs.append(resref_str)
+        reader.read_uint32()
+        restypes.append(reader.read_uint16())
+        reader.skip(2)
+
+    resoffsets: list[int] = []
+    ressizes: list[int] = []
+    reader.seek(offset_to_resources)
+    for _ in range(entry_count):
+        resoffsets.append(reader.read_uint32())
+        ressizes.append(reader.read_uint32())
+
+    for i in range(entry_count):
+        reader.seek(resoffsets[i])
+        resdata: bytes = reader.read_bytes(ressizes[i])
+        erf.set_data(resrefs[i], ResourceType.from_id(restypes[i]), resdata)
+
+    return erf
 
 
 class ERFBinaryReader(ResourceReader):
@@ -17,15 +176,6 @@ class ERFBinaryReader(ResourceReader):
     ERF files are container formats that store multiple game resources. Used for MOD files,
     save games, and other resource collections.
 
-    References:
-    ----------
-        Based on unified K1/TSL ERF structure. See erf_data module docstring; addresses (K1: swkotor.exe, TSL: TODO via REVA).
-        - CExoResourceImageFile::AddResourceImageContents (reads RIM headers; Header=120, Count @ 0x0C, Keys @ 0x10, KeySize=32): K1: 0x0040f990, TSL: TODO
-        - CExoEncapsulatedFile::CExoEncapsulatedFile: K1: 0x0040ef90, TSL: TODO
-        - CExoKeyTable::AddEncapsulatedContents: K1: 0x0040f3c0, TSL: TODO. Validates "MOD V1.0"; header 160 bytes; Type [0x00], Version [0x04], EntryCount [0x10], KeyOffset [0x18].
-        - "MOD V1.0" string: K1: 0x0074539c, TSL: TODO
-        - "Table being rebuilt, this RIM is being leaked: %s": K1: 0x0073d8a8, TSL: TODO
-
     Note:
     ----
         ERF files are container formats that store multiple game resources. Used for MOD files,
@@ -33,8 +183,8 @@ class ERFBinaryReader(ResourceReader):
 
     Missing Features: TODO: address
     ----------------
-        - ResRef lowercasing (reone lowercases at erfreader.cpp:63)
-        - ERF password/decryption support (xoreos-tools supports at unerf.cpp:108-145)
+        - ResRef lowercasing (not applied on read)
+        - Password-protected / encrypted ERF variants (some external tools support these)
 
     """
 
@@ -67,105 +217,11 @@ class ERFBinaryReader(ResourceReader):
             - Read resources section into lists of offsets and sizes
             - Seek to each resource and read data into ERF object.
         """
-        file_type: str = self._reader.read_string(4)
-        file_version: str = self._reader.read_string(4)
-
-        if file_version != "V1.0":
-            msg = f"ERF version '{file_version}' is unsupported."
-            raise ValueError(msg)
-
-        erf_type: ERFType | None = next(
-            (x for x in ERFType if x.value == file_type),
-            None,
-        )
-        if erf_type is None:
-            msg = f"Not a valid ERF file: '{file_type}'"
-            raise ValueError(msg)
-
-        self._erf = ERF(erf_type)
-
-        language_count: int = self._reader.read_uint32()
-        localized_string_size: int = self._reader.read_uint32()
-        entry_count: int = self._reader.read_uint32()
-        offset_to_localized_strings: int = self._reader.read_uint32()
-        offset_to_keys: int = self._reader.read_uint32()
-        offset_to_resources: int = self._reader.read_uint32()
-
-        self._erf.build_year = self._reader.read_uint32()
-        self._erf.build_day = self._reader.read_uint32()
-        self._erf.description_strref = self._reader.read_uint32()
-
-        # Resilience: Some ERF/MOD files might use implicit 160 offset if these are 0
-        if offset_to_keys == 0:
-            offset_to_keys = 160
-
-        if offset_to_resources == 0:
-            # If keys are at 160, resources are after (entry_count * 24)
-            offset_to_resources = offset_to_keys + (entry_count * 24)
-
-        # Guard against obviously corrupt headers before any seeking/allocation.
-        _MAX_SANE_COUNT = 65536  # No legitimate ERF/MOD contains more than this many entries
-        _MAX_SANE_LANG_COUNT = 32
-
-        if entry_count > _MAX_SANE_COUNT:
-            msg = f"ERF entry_count {entry_count} exceeds sanity limit; file may be malformed or truncated."
-            raise ValueError(msg)
-
-        if offset_to_keys >= self._size and entry_count > 0:
-            msg = f"ERF offset_to_keys {offset_to_keys} is beyond file size {self._size}; file is malformed."
-            raise ValueError(msg)
-
-        if offset_to_resources >= self._size and entry_count > 0:
-            msg = f"ERF offset_to_resources {offset_to_resources} is beyond file size {self._size}; file is malformed."
-            raise ValueError(msg)
-
-        # Read Localized Strings
-        if language_count > 0 and offset_to_localized_strings > 0:
-            if language_count > _MAX_SANE_LANG_COUNT:
-                msg = f"ERF language_count {language_count} exceeds sanity limit; file may be malformed."
-                raise ValueError(msg)
-            self._reader.seek(offset_to_localized_strings)
-            block_end = offset_to_localized_strings + localized_string_size
-            # The count is number of entries, not bytes. But the entries are variable size.
-            # Entry: [LangID (4)][Size (4)][String (Size)]
-            for _ in range(language_count):
-                if self._reader.position() >= block_end:
-                    break
-                lang_id = self._reader.read_uint32()
-                str_size = self._reader.read_uint32()
-                # Guard against absurdly large string sizes in corrupt files.
-                remaining_block = block_end - self._reader.position()
-                if str_size > remaining_block:
-                    msg = f"ERF localized string size {str_size} exceeds remaining block size {remaining_block}."
-                    raise ValueError(msg)
-                # Use windows-1252 as safe default for legacy BioWare strings
-                text = self._reader.read_string(str_size, encoding="windows-1252")
-                self._erf.localized_strings[lang_id] = text
-
-        resrefs: list[str] = []
-        resids: list[int] = []
-        restypes: list[int] = []
-        self._reader.seek(offset_to_keys)
-        for _ in range(entry_count):
-            # reone lowercases resrefs at line 63, but we preserve case for round-trip fidelity
-            resref_str = self._reader.read_string(16).rstrip("\0")
-            resrefs.append(resref_str)
-            resids.append(self._reader.read_uint32())
-            restypes.append(self._reader.read_uint16())
-            self._reader.skip(2)
-
-        resoffsets: list[int] = []
-        ressizes: list[int] = []
-        self._reader.seek(offset_to_resources)
-        for _ in range(entry_count):
-            resoffsets.append(self._reader.read_uint32())
-            ressizes.append(self._reader.read_uint32())
-
-        for i in range(entry_count):
-            self._reader.seek(resoffsets[i])
-            resdata: bytes = self._reader.read_bytes(ressizes[i])
-            self._erf.set_data(resrefs[i], ResourceType.from_id(restypes[i]), resdata)
-
+        data = self._reader.read_all()
+        try:
+            self._erf = _load_erf_from_kaitai(data)
+        except kaitaistruct.KaitaiStructError:
+            self._erf = _load_erf_legacy(BinaryReader.from_bytes(data, 0), len(data))
         return self._erf
 
 

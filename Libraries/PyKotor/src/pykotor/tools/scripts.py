@@ -6,8 +6,7 @@ tool-agnostic and can be used by any application that needs to work with scripts
 
 References:
 ----------
-        Original BioWare engine binaries (from swkotor.exe, swkotor2.exe)
-        Original BioWare engine binaries
+        Observed retail KotOR I and KotOR II behavior.
 
 
 """
@@ -64,8 +63,7 @@ def decompile_ncs_to_nss(
 
     References:
     ----------
-        Original BioWare engine binaries (from swkotor.exe, swkotor2.exe)
-        Original BioWare engine binaries
+        Observed retail KotOR I and KotOR II behavior.
 
 
     """
@@ -99,8 +97,7 @@ def disassemble_ncs(
 
     References:
     ----------
-        Original BioWare engine binaries (from swkotor.exe, swkotor2.exe)
-        Original BioWare engine binaries
+        Observed retail KotOR I and KotOR II behavior.
 
 
     """

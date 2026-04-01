@@ -115,10 +115,10 @@ def cached_splitdrive(path: os.PathLike | str) -> tuple[str, str]:
 
 
 class PurePathType(type):
-    def __instancecheck__(cls, instance: object) -> bool:  # sourcery skip: instance-method-first-arg-name
+    def __instancecheck__(cls, instance: object) -> bool:
         return cls.__subclasscheck__(instance.__class__)
 
-    def __subclasscheck__(cls, subclass: type) -> bool:  # sourcery skip: instance-method-first-arg-name
+    def __subclasscheck__(cls, subclass: type) -> bool:
         return pathlib_to_override(cls) in pathlib_to_override(subclass).__mro__
 
 
@@ -143,7 +143,6 @@ class PurePath(pathlib.PurePath, metaclass=PurePathType):  # type: ignore[misc]
 
     # pylint: disable-all
     def __new__(cls, *args, **kwargs) -> Self:
-        # sourcery skip: remove-unreachable-code
         if cls is PurePath:
             cls = PureWindowsPath if os.name == "nt" else PurePosixPath  # type: ignore[assignment]  # noqa: PLW0642
         # disable caching for now by making it unreachable, remove below line to re-enable.
@@ -224,7 +223,7 @@ class PurePath(pathlib.PurePath, metaclass=PurePathType):  # type: ignore[misc]
         str_path: str,
         *,
         slash: str = os.sep,
-    ) -> str:  # sourcery skip: assign-if-exp, reintroduce-else
+    ) -> str:
         """Normalizes a path string.
 
         This differs from os.path.normpath in various ways, e.g. it leaves '..' parts intact just like pathlib.PurePath does.
@@ -596,7 +595,7 @@ class Path(PurePath, pathlib.Path):  # type: ignore[misc]
                         ...
                 return self.get_highest_permission() >= mode  # check against os.access
 
-            if self.is_dir():  # sourcery skip: extract-method
+            if self.is_dir():
                 test_path: Path = self / f"pyk_{uuid.uuid4().hex}.tmp"
                 test_path.touch()
                 if open_mode is not None:
@@ -752,7 +751,6 @@ class Path(PurePath, pathlib.Path):  # type: ignore[misc]
             hide_window: bool = True,
             block_until_complete: bool = True,
         ):
-            # sourcery skip: extract-method
             with TemporaryDirectory() as tempdir:
                 # Ensure the script path is absolute
                 script_path: Path = cls(tempdir, "temp_script.bat").absolute()  # pyright: ignore[reportGeneralTypeIssues]

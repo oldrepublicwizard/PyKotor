@@ -50,3 +50,34 @@ def test_parse_texture_data_tpc_without_txi_does_not_error(monkeypatch: pytest.M
     assert intermediate is not None
     assert intermediate.blend_mode == 0
     assert intermediate.has_alpha is True
+
+
+def test_parse_texture_data_dxt1_cutout_without_txi_preserves_alpha(monkeypatch: pytest.MonkeyPatch):
+    """DXT1 textures with 1-bit alpha must be marked as alpha-tested even without TXI."""
+    from pykotor.gl.scene import async_loader
+    from pykotor.resource.formats.tpc.tpc_data import TPC, TPCLayer, TPCMipmap, TPCTextureFormat
+    from pykotor.resource.type import ResourceType
+
+    tpc = TPC()
+    tpc.layers = [
+        TPCLayer([
+            TPCMipmap(
+                4,
+                4,
+                TPCTextureFormat.DXT1,
+                bytearray(bytes.fromhex("E00700F8FFFFFFFF")),
+            )
+        ])
+    ]
+    tpc._format = TPCTextureFormat.DXT1  # noqa: SLF001
+    tpc._txi = None  # noqa: SLF001
+
+    monkeypatch.setattr(async_loader, "read_tpc", lambda _b: tpc)
+
+    name, intermediate, error = async_loader._parse_texture_data("tree", b"not a real tpc", ResourceType.TPC)
+    assert error is None
+    assert name == "tree"
+    assert intermediate is not None
+    assert intermediate.has_alpha is True
+    assert intermediate.alpha_cutoff == 0.01
+    assert all(alpha == 0 for alpha in intermediate.rgba_data[3::4])

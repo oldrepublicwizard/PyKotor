@@ -113,7 +113,6 @@ class LibUpdate:
 
     @property
     def filename(self) -> str:
-        # sourcery skip: assign-if-exp, switch, use-fstring-for-concatenation
         # TODO(th3w1zard1): allow customization of this in the constructor.
         if is_frozen():  # The application is frozen with PyInstaller
             return Path(sys.executable).name

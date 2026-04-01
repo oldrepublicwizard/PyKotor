@@ -1,17 +1,19 @@
 # TSLPatcher Documentation
 
+_This page is a preserved primary-source artifact. Keep the original documentation intact and use modern narrative pages such as [HoloPatcher README for Mod Developers](HoloPatcher#mod-developers) and the dedicated syntax guides to summarize current usage around it rather than rewriting this source in place._
+
   TSLPatcher v1.2.10b1
 
   ChangeEdit v1.0.5b1
 
   Last changed 2007-09-19
 
-<https://lucasforumscontainer.com/thread/149285-tslpatcher-v1210b1-mod-installer> <mirror>[TSLPatcher Thread Complete Container](TSLPatcher_Thread_Complete)</mirror>
+<https://lucasforumscontainer.com/thread/149285-tslpatcher-v1210b1-mod-installer>
 
 ## Table of Contents
 
 - [TSLPatcher Documentation](#tslpatcher-documentation)
-  - Table of Contents
+  - [Table of Contents](#table-of-contents)
   - [1. About TSLPatcher](#1-about-tslpatcher)
     - [1.1 What can TSLPatcher help with?](#11-what-can-tslpatcher-help-with)
     - [1.2. What can TSLPatcher NOT help with?](#12-what-can-tslpatcher-not-help-with)
@@ -28,34 +30,34 @@
       - [3.1.8. Required error msg](#318-required-error-msg)
       - [3.1.9. Ask for Game folder](#319-ask-for-game-folder)
     - [3.2. TLK Entries](#32-tlk-entries)
-    - [3.3. 2DA Files](#33-2da-files)
-      - [3.3.1. Way 1: Compare Files for differences and fabricate modifiers](#331-way-1-compare-files-for-differences-and-fabricate-modifiers)
+    - [3.3. 2DA files](#33-2da-files)
+      - [3.3.1. Way 1: Compare files for differences and fabricate modifiers](#331-way-1-compare-files-for-differences-and-fabricate-modifiers)
       - [3.3.2. Way 2: Specify the changes to be made by hand](#332-way-2-specify-the-changes-to-be-made-by-hand)
-        - [3.3.2.1. Add 2da line](#3321-add-2da-line)
+        - [3.3.2.1. Add 2DA line](#3321-add-2da-line)
           - [3.3.2.1.1. Special "columns"](#33211-special-columns)
           - [3.3.2.1.2. About 2DAMEMORY tokens](#33212-about-2damemory-tokens)
-        - [3.3.2.2. Modify 2da line](#3322-modify-2da-line)
+        - [3.3.2.2. Modify 2DA line](#3322-modify-2da-line)
           - [3.3.2.2.1. About 2DAMEMORY tokens](#33221-about-2damemory-tokens)
-        - [3.3.2.3. Copy 2da line](#3323-copy-2da-line)
+        - [3.3.2.3. Copy 2DA line](#3323-copy-2da-line)
           - [3.3.2.3.1. Special "columns"](#33231-special-columns)
           - [3.3.2.3.2. About 2DAMEMORY tokens](#33232-about-2damemory-tokens)
-        - [3.3.2.4. Add 2da column](#3324-add-2da-column)
+        - [3.3.2.4. Add 2DA column](#3324-add-2da-column)
           - [3.3.2.4.1. About 2DAMEMORY tokens](#33241-about-2damemory-tokens)
-    - [3.4. GFF Files](#34-gff-files)
-      - [3.4.1. Modifying existing GFF Fields](#341-modifying-existing-gff-fields)
-      - [3.4.2. Adding new GFF Fields](#342-adding-new-gff-fields)
-        - [3.4.2.1. Field Type](#3421-field-type)
+    - [3.4. GFF files](#34-gff-files)
+      - [3.4.1. Modifying existing GFF fields](#341-modifying-existing-gff-fields)
+      - [3.4.2. Adding new GFF fields](#342-adding-new-gff-fields)
+        - [3.4.2.1. field type](#3421-field-type)
         - [3.4.2.2. Label](#3422-label)
         - [3.4.2.3. Path](#3423-path)
-        - [3.4.2.4. Value](#3424-value)
+        - [3.4.2.4. value](#3424-value)
         - [3.4.2.5. StrRef](#3425-strref)
-        - [3.4.2.6. Type Id](#3426-type-id)
+        - [3.4.2.6. type Id](#3426-type-id)
         - [3.4.2.7. Localized strings](#3427-localized-strings)
-        - [3.4.2.8. Index token](#3428-index-token)
+        - [3.4.2.8. index token](#3428-index-token)
         - [3.4.2.9. Path token](#3429-path-token)
         - [3.4.2.10. Sub-fields](#34210-sub-fields)
-      - [3.4.3. Compare two [GFF files](GFF-File-Format) for differences to create modifiers](#343-compare-two-[GFF](GFF-File-Format)-files-for-differences-to-create-modifiers)
-    - [3.5. Install Files](#35-install-files)
+      - [3.4.3. Compare two GFF files for differences to create modifiers](#343-compare-two-gff-files-for-differences-to-create-modifiers)
+    - [3.5. Install files](#35-install-files)
     - [3.6. Script Source](#36-script-source)
     - [3.7. Soundset files](#37-soundset-files)
     - [3.8. Setup List](#38-setup-list)
@@ -89,6 +91,7 @@
     - [Change Log for Version 1.1.6 (REL)](#change-log-for-version-116-rel)
     - [Change Log for Version 1.1.2 (REL)](#change-log-for-version-112-rel)
   - [6. Special Thanks](#6-special-thanks)
+    - [See also](#see-also)
 
 ## 1. About TSLPatcher
 
@@ -97,7 +100,10 @@ SWKotORII:The Sith Lords game (though it will work with SWKotOR1 as well). Its p
 intended use is as an installer-type of application to distribute with Mods to make them easier
 to install and make compatible with other Mods.
 
-**Modder quick reference:** Point TSLPatcher at your **game root directory** (the folder containing `swkotor.exe` or `swkotor2.exe` and the `override` folder), not at the override folder itself. Use 2DAList and TLKList to **merge** 2DA and TLK changes so multiple mods can coexist; raw file copies overwrite. Make sure "Make Backups" is enabled so you can revert. If using Steam Workshop (e.g. TSLRCM), direct TSLPatcher to the Workshop mod folder when installing mods that must merge with it. For concepts (override, resource order, ResRef), see [Concepts](Concepts) and [Mod-Creation-Best-Practices](Mod-Creation-Best-Practices).
+**Modder quick reference:** Point TSLPatcher at your **game root directory** (the folder containing `swkotor.exe` or `swkotor2.exe` and the `override` folder), not at the override folder itself. Use 2DAList and TLKList to **merge** 2DA and TLK changes so multiple mods can coexist; raw file copies overwrite. Make sure "Make Backups" is enabled so you can revert. If using Steam Workshop (e.g. TSLRCM), direct TSLPatcher to the Workshop mod folder when installing mods that must merge with it. For concepts (override, resource order, ResRef), see:
+
+- [Concepts](Concepts)
+- [Mod-Creation-Best-Practices](Mod-Creation-Best-Practices)
 
 It does not claim to be the "Ultimate Mod Installer". While it can be useful for many types of
 MODs, it will not help in all situations. See the bullet list below to for some examples to see  if
@@ -107,7 +113,7 @@ you can gain anything from using it with your Mod.
 
 A few things:
 
-- It allows you to add new entries to the [dialog.tlk](TLK-File-Format) file without distributing the whole 10 MB
+- It allows you to add new entries to the [dialog.tlk](Audio-and-Localization-Formats#tlk) file without distributing the whole 10 MB
 file.
 
 - It allows you to add new lines to [2DA files](2DA-File-Format) that may already exist within the override folder,
@@ -127,42 +133,56 @@ allows you to update fields that refer to lines in a [2DA file](2DA-File-Format)
 TSLPatcher has added dynamically.
 
 - It allows you to keep StrRefs of the new entries the TSLPatcher has added in memory, and
-insert those StrRefs into [2DA](2DA-File-Format) and [GFF files](GFF-File-Format) as needed. For example, if you have added the
-name of a new force power to [dialog.tlk](TLK-File-Format), the TSLPatcher may memorize the [StrRef](TLK-File-Format#string-references-strref) the name
-string ended up as, and insert that value in the "name" column in [spells.2da](2DA-spells).
+insert those StrRefs into downstream files as needed:
+  - [2DA](2DA-File-Format)
+  - [GFF](GFF-File-Format)
+  For example, if you have added the
+name of a new force power to [dialog.tlk](Audio-and-Localization-Formats#tlk), the TSLPatcher may memorize the [StrRef](Audio-and-Localization-Formats#string-references-strref) the name
+string ended up as, and insert that value in the "name" column in [spells.2da](2DA-File-Format#spells2da).
 
 - It allows you to keep cell values from [2DA files](2DA-File-Format) as well as the line number of newly added
 rows in memory, and insert those values into other [2DA files](2DA-File-Format) or [GFF](GFF-File-Format) files. For example, if
-you add a new row to [appearance.2da](2DA-appearance), the TSLPatcher may memorize the line number that
+you add a new row to [appearance.2da](2DA-File-Format#appearance2da), the TSLPatcher may memorize the line number that
 row was added as, and insert that number as Appearance_type value in a Creature template
 (.[UTC](GFF-File-Format#utc-creature)) file.
 
-- It allows you to insert new fields into [GFF](GFF-File-Format)-format files (UT*, [DLG](GFF-File-Format#dlg-dialogue), [JRL](GFF-File-Format#jrl-journal) etc...) present in the
-override folder and either assign the value directly or fetch it from a memorized [StrRef](TLK-File-Format#string-references-strref) or
-[2DA](2DA-File-Format) value. For example you could use it to insert new [journal entries](GFF-File-Format#jrl-journal) into a custom
+- It allows you to insert new fields into [GFF](GFF-File-Format)-format files present in the
+override folder and either assign the value directly or fetch it from a memorized [StrRef](Audio-and-Localization-Formats#string-references-strref) or
+[2DA](2DA-File-Format) value.
+  - Common [GFF](GFF-File-Format) templates include:
+    - UT* (doors, creatures, placeables, triggers, etc.)
+    - [DLG](GFF-File-Format#dlg-dialogue)
+    - [JRL](GFF-File-Format#jrl-journal)
+    - Other GFF-backed resources shipped with mods
+
+  For example you could use it to insert new [journal entries](GFF-File-Format#jrl-journal) into a custom
 global.jrl file that another mod has already put in override.
 
 - If used in combination with the nwnnsscomp.exe utility (by Edward T. Smith and KotORified
-by tk102) it can replace tokens placed within script source files with the proper memorized
-[StrRef](TLK-File-Format#string-references-strref) or [2DA](2DA-File-Format) values before compiling those scripts and putting the resulting [NCS files](NCS-File-Format) in
+by tk102) it can replace tokens placed within script source files with memorized values before compiling those scripts and putting the resulting [NCS files](NCS-File-Format) in
 the user's Override folder.
+  - Supported token classes include:
+    - [StrRef](Audio-and-Localization-Formats#string-references-strref) memory values
+    - [2DA](2DA-File-Format) memory values
 
 For example it could be used to make the parameter to a ChangeObjectAppearance() script
 function call point to the correct line number of a row TSLPatcher has added to
-[appearance.2da](2DA-appearance). Or it could be used to make sure the parameter to BarkString() is the correct
-[StrRef](TLK-File-Format#string-references-strref) of a [dialog.tlk](TLK-File-Format) entry that has just been added.
+[appearance.2da](2DA-File-Format#appearance2da). Or it could be used to make sure the parameter to BarkString() is the correct
+[StrRef](Audio-and-Localization-Formats#string-references-strref) of a [dialog.tlk](Audio-and-Localization-Formats#tlk) entry that has just been added.
 
 - It allows you to put other files it does not need to modify in the necessary folders within the
 game folder. I.e. it could make sure that .MOD files go in the Modules folder, .WAVs go in
 the proper StreamVoice/StreamSounds/StreamMusic folder, other files get put in Override etc.
 
-- It allows you to modify [GFF files](GFF-File-Format) that already exist in either the override folder or an [ERF](ERF-File-Format) or
-RIM format container file within the game folder or any of its sub-folders. You can also insert
-new [GFF files](GFF-File-Format) into any such files.
+- It allows you to modify [GFF files](GFF-File-Format) that already exist in the override folder or inside module capsules under the game tree. You can also insert new [GFF files](GFF-File-Format) into those destinations.
+  - Supported capsule kinds:
+    - [ERF](Container-Formats#erf)
+    - [RIM](Container-Formats#rim)
 
-- It allows you to insert recompiled [NCS files](NCS-File-Format) into an [ERF](ERF-File-Format) or RIM format container file within
-the game folder or any of its sub-folders, or overwrite any [NCS file](NCS-File-Format) with the same name
-already existing at the destination.
+- It allows you to insert recompiled [NCS files](NCS-File-Format) into module capsules under the game folder or any sub-folder, or overwrite any [NCS file](NCS-File-Format) with the same name already present at the destination.
+  - Supported capsule kinds:
+    - [ERF](Container-Formats#erf)
+    - [RIM](Container-Formats#rim)
 
 ### 1.2. What can TSLPatcher NOT help with?
 
@@ -182,8 +202,10 @@ file being present in different sub-folders (or the user mistakenly placing the 
 associated files in a subfolder within the override folder). It will only look for files to modify
 directly in the override folder.
 
-- It is currently unable to modify files inside [BIF](BIF-File-Format) format files. Only files located in the
-override folder and [ERF](ERF-File-Format) or RIM format container files can be modified.
+- It is currently unable to modify files inside [BIF](Container-Formats#bif) format files. Only files located in these places can be modified:
+  - The override folder
+  - [ERF](Container-Formats#erf) capsules
+  - [RIM](Container-Formats#rim) capsules
 
 ## 2. Setup Instructions
 
@@ -204,7 +226,7 @@ people understand they should run it to install the mod.
 TSLPatcher to work with. These files will be copied to override and then modified if the file
 did not already exist in the user's override folder. Put these files in the tslpatchdata folder.
 
-2.6.If your mod needs to use custom [dialog.tlk](TLK-File-Format) entries, use TalkEd.exe to create a new [TLK file](TLK-File-Format).
+2.6.If your mod needs to use custom [dialog.tlk](Audio-and-Localization-Formats#tlk) entries, use TalkEd.exe to create a new [TLK file](Audio-and-Localization-Formats#tlk).
 
 Add your new entries to this file and name it exactly append.tlk.
 
@@ -242,11 +264,11 @@ well if you wish.
 2.10.Last but not Least: Test that your installer works as you intended before you release your
 
 mod! If you don't want to risk ruining your install, you can create a fake install location by
-creating a new folder and copying the [dialog.tlk](TLK-File-Format) file into this folder, and create an override
+creating a new folder and copying the [dialog.tlk](Audio-and-Localization-Formats#tlk) file into this folder, and create an override
 folder next to it. Copy any modified files you want to use for testing into this "override"
 folder.
 
-The TSLPatcher only checks for the existence of [dialog.tlk](TLK-File-Format) in the folder selected for
+The TSLPatcher only checks for the existence of [dialog.tlk](Audio-and-Localization-Formats#tlk) in the folder selected for
 installation to ensure that it is a "valid" install location. As such you should be able to install
 your mod into this new folder. Carefully examine the resulting files in this fake override
 folder to make sure everything has ended up as you intended. It is easy to make mistakes,
@@ -288,8 +310,8 @@ button will display (hopefully) useful information about that feature in ChangeE
 **Important:**
 Keep in mind as you read on that all files and modifiers are processed in the
 order they are listed. This usually doesn't matter, but if several modifiers
-depend on each other (i.e. a new row in [portraits.2da](2DA-portraits) refer to a new row in
-[appearance.2da](2DA-appearance) which refer to a new row in heads.2da), then the sequence
+depend on each other (i.e. a new row in [portraits.2da](2DA-File-Format#portraits2da) refer to a new row in
+[appearance.2da](2DA-File-Format#appearance2da) which refer to a new row in heads.2da), then the sequence
 things are added becomes important.
 
 The different sections are:
@@ -384,17 +406,17 @@ changes.ini file.
 
 ### 3.2. TLK Entries
 
-If you created an append.tlk file with custom [dialog.tlk](TLK-File-Format) entries in step 2.5 above, this is where you
-configure the Patcher to apply them to the [dialog.tlk](TLK-File-Format) file.
+If you created an append.tlk file with custom [dialog.tlk](Audio-and-Localization-Formats#tlk) entries in step 2.5 above, this is where you
+configure the Patcher to apply them to the [dialog.tlk](Audio-and-Localization-Formats#tlk) file.
 
 Press the Open append.tlk file... button on top of the right list in the window. This will list all
 your custom text entries in the  list to the right. Select an entry you wish the TSLPatcher to add
-to [dialog.tlk](TLK-File-Format) and press the left arrow icon. The entry will be added to the list to the left. Take note
+to [dialog.tlk](Audio-and-Localization-Formats#tlk) and press the left arrow icon. The entry will be added to the list to the left. Take note
 of the value in the left column which should look like StrRef0 for the first entry, with an
 incrementing number for each entry you add. This is the "Token" you will use in the [2DA](2DA-File-Format) and
-[GFF](GFF-File-Format) sections to assign the resulting [StrRef](TLK-File-Format#string-references-strref) value for this entry to a [2DA](2DA-File-Format) cell  or [GFF](GFF-File-Format) field.
+[GFF](GFF-File-Format) sections to assign the resulting [StrRef](Audio-and-Localization-Formats#string-references-strref) value for this entry to a [2DA](2DA-File-Format) cell  or [GFF](GFF-File-Format) field.
 
-([StrRef](TLK-File-Format#string-references-strref) is short for string Reference, and is an identifier number for an entry in the [dialog.tlk](TLK-File-Format)
+([StrRef](Audio-and-Localization-Formats#string-references-strref) is short for string Reference, and is an identifier number for an entry in the [dialog.tlk](Audio-and-Localization-Formats#tlk)
 file.)
 
 ### 3.3. 2DA files
@@ -406,11 +428,11 @@ tree view and select Add [2DA](2DA-File-Format) file in the context menu.
 
 You will then be prompted for the name of the file to modify. Check your spelling carefully,
 type the name in all lowercase letters and be sure to include the .2da extension. E.g. if you want
-to modify the [appearance.2da](2DA-appearance) file, type in [appearance.2da](2DA-appearance) in the box and click OK. Then
+to modify the [appearance.2da](2DA-File-Format#appearance2da) file, type in [appearance.2da](2DA-File-Format#appearance2da) in the box and click OK. Then
 select the newly added file in the tree view.
 
 The right panel will now show an empty Modifier list (since you haven't added any yet). When
-the list contains entries, you can [double](GFF-File-Format#gff-data-types)-click one of them to edit that Modifier.
+the list contains entries, you can double-click one of them to edit that Modifier.
 
 There are now two possible ways to proceed:
 
@@ -429,13 +451,13 @@ knowledge of how those values are used. Thus, if there are any fields that
 should have special token values assigned, you will have to go through the
 fabricated modifiers and add those tokens by hand.
 For example, if the Compare function added a modifier for a new line in
-[spells.2da](2DA-spells), you will have to manually assign the proper [StrRef](TLK-File-Format#string-references-strref)# tokens to
-the name and desc columns to point to your new custom [dialog.tlk](TLK-File-Format) entries (see
+[spells.2da](2DA-File-Format#spells2da), you will have to manually assign the proper [StrRef](Audio-and-Localization-Formats#string-references-strref)# tokens to
+the name and desc columns to point to your new custom [dialog.tlk](Audio-and-Localization-Formats#tlk) entries (see
 section 3.2 above), and you will have to assign the high() token to the
 forcefriendly or forcehostile column.
 
 At any rate, you should look through the modifiers that have been created for you and check
-that everything appears to be in order. To view or edit a Modifier, [double](GFF-File-Format#gff-data-types)-click it in the list. See
+that everything appears to be in order. To view or edit a Modifier, double-click it in the list. See
 section 3.3.2 below for more information on how the [2DA](2DA-File-Format) Modifier editor windows work.
 
 #### 3.3.2. Way 2: Specify the changes to be made by hand
@@ -490,7 +512,7 @@ that opens to load all the column labels. This is useful to save you the trouble
 source for errors) of having to type in the column names yourself. Next, select the name of the
 column to assign a value to in the drop down list.
 
-If you have any custom [StrRef](TLK-File-Format#string-references-strref)# or 2DAMEMORY# (more about those below) tokens set you
+If you have any custom [StrRef](Audio-and-Localization-Formats#string-references-strref)# or 2DAMEMORY# (more about those below) tokens set you
 wish to use, or need to use any of the built-in special tokens, all (thus far) assigned tokens will
 be listed in the value drop down list. You can, of course, type in the value you wish the row to
 have in the selected column directly in the value box. If you set the value to high(), the
@@ -547,7 +569,7 @@ Press the Load... button to the right of the Column box to load all the column l
 file to save you the trouble (and potential source for errors) of having to type in the column
 names yourself. Then select the name of the column to assign a value to in the drop down list.
 
-If you have any custom [StrRef](TLK-File-Format#string-references-strref)# or 2DAMEMORY# tokens set you wish to use, or want  to use
+If you have any custom [StrRef](Audio-and-Localization-Formats#string-references-strref)# or 2DAMEMORY# tokens set you wish to use, or want  to use
 any of the built-in special tokens, all (thus far) assigned tokens will be listed in the value drop
 down list. You can, of course, type in the value you wish the row to have in the selected column
 directly in the value input box. If you set the value to high(), the TSLPatcher will find the
@@ -604,7 +626,7 @@ dialog that opens to load all the column labels. This is useful to save you the 
 potential source for errors) of having to type in the column names yourself. Next, select the
 name of the column to assign a new value to in the drop down list.
 
-If you have any custom [StrRef](TLK-File-Format#string-references-strref)# or 2DAMEMORY# tokens set you wish to use, or need to use
+If you have any custom [StrRef](Audio-and-Localization-Formats#string-references-strref)# or 2DAMEMORY# tokens set you wish to use, or need to use
 any of the built-in special tokens, all (thus far) assigned tokens will be listed in the value drop
 down list. You can, of course, type in the value you wish the row to have in the selected column
 directly in the value input box. If you set the value to high(), the TSLPatcher will find the
@@ -651,7 +673,7 @@ You may then assign values to rows for your new column. Select if you want to id
 row by the RowIndex (i.e. line number) or the RowLabel (leftmost column in KotORTool's
 [2DA](2DA-File-Format) Editor).
 
-If you have any custom [StrRef](TLK-File-Format#string-references-strref)# or 2DAMEMORY# tokens set you wish to use, or need to use
+If you have any custom [StrRef](Audio-and-Localization-Formats#string-references-strref)# or 2DAMEMORY# tokens set you wish to use, or need to use
 any of the built-in special tokens, all (so far) assigned tokens will be listed in the value drop
 down list. You can, of course, type in the value you wish the row to have in the selected column
 directly in the value box.
@@ -694,13 +716,13 @@ modifying existing files) or should be saved (if adding new files). There are tw
 
 2) If the Destination box is set to the relative path (within the game folder) and name of an
 
-[ERF](ERF-File-Format)/MOD/RIM container file, the modified [GFF file](GFF-File-Format) will be modified (if already existing) or
+[MOD](Container-Formats#erf), [ERF](Container-Formats#erf), or [RIM](Container-Formats#rim) container file, the modified [GFF file](GFF-File-Format) will be modified (if already existing) or
 inserted (if not already existing or the Replace setting is set) into this container file instead of
 being placed in the override folder.
 
 **Important:**
-If you set an [ERF](ERF-File-Format)/RIM file to save your modified files in you must specify the
-relative path from the game folder to where the [ERF](ERF-File-Format)/RIM file is located. If, for
+If you set an [ERF](Container-Formats#erf) or [RIM](Container-Formats#rim) file to save your modified files in you must specify the
+relative path from the game folder to where the [ERF](Container-Formats#erf) or [RIM](Container-Formats#rim) file is located. If, for
 example, you want to modify a [GFF file](GFF-File-Format) within the file myarea.mod located in
 the Modules folder, you would set the Destination to Modules\\myarea.mod.
 
@@ -726,7 +748,7 @@ file could not be found you will be prompted to select one to load.
 In the value box, enter the new value you wish the field to have. Take care to only enter data of a
 type that the type of field can handle. Trying to assign a text string to an INT field is not a good
 
-idea, for example. If you wish to assign a value stored in a [StrRef](TLK-File-Format#string-references-strref)# or 2DAMEMORY# token to a
+idea, for example. If you wish to assign a value stored in a [StrRef](Audio-and-Localization-Formats#string-references-strref)# or 2DAMEMORY# token to a
 field, all (so far) assigned tokens are listed in the drop down list, so you can  select the relevant
 token there.
 
@@ -738,9 +760,9 @@ A few complex field types requires a somewhat more arcane procedure to specify t
 value:
 
 ExoLocString fields will require you to append a directive to what to edit at the end of
-the field label, since they are made up of one [StrRef](TLK-File-Format#string-references-strref) value and optionally one or several
+the field label, since they are made up of one [StrRef](Audio-and-Localization-Formats#string-references-strref) value and optionally one or several
 sub-strings. If your ExoLocString field has the label Comments, you would assign a new
-[StrRef](TLK-File-Format#string-references-strref) value to it by typing Comments([StrRef](TLK-File-Format#string-references-strref)) in the [GFF](GFF-File-Format) field box. For the
+[StrRef](Audio-and-Localization-Formats#string-references-strref) value to it by typing Comments([StrRef](Audio-and-Localization-Formats#string-references-strref)) in the [GFF](GFF-File-Format) field box. For the
 substrings you add lang followed by the language+gender ID number of the string, like:
 Comments(lang0) to modify the English localized string the Comments field.
 
@@ -792,7 +814,7 @@ input fields may be dimmed down or enabled.
 
 ##### 3.4.2.2. Label
 
-type in the label of your new field here. A label is an identifier key used to retrieve the value
+type in the label of your new field here. A label is an identifier [KEY](Container-Formats#key) used to retrieve the value
 from the [GFF file](GFF-File-Format). A label can be at most 16 characters long, may only contain alphanumerical
 characters and no spaces. Labels must be unique on each level of the [GFF](GFF-File-Format) tree (i.e. within the
 same STRUCT), but may be named identically in separate parts of the field tree. All fields must
@@ -813,16 +835,16 @@ only contain STRUCT fields, while STRUCT field can contain fields of any type.
 This is where you assign what value you wish your new field to have. Be careful to only enter
 values that will fit within the selected field type.
 
-You may use a 2DAMEMORY# or [StrRef](TLK-File-Format#string-references-strref)# token as value. STRUCTs and LISTs are container
+You may use a 2DAMEMORY# or [StrRef](Audio-and-Localization-Formats#string-references-strref)# token as value. STRUCTs and LISTs are container
 fields that only holds collections of other fields, and thus have no value. ExoLocStrings have no
 value since they are made up of several separate data fields. All other field types should have a
 value set.
 
-##### 3.4.2.5. [StrRef](TLK-File-Format#string-references-strref)
+##### 3.4.2.5. [StrRef](Audio-and-Localization-Formats#string-references-strref)
 
 This field is only used for ExoLocString type fields. When adding an ExoLocString, you can set
-the [dialog.tlk](TLK-File-Format) [StrRef](TLK-File-Format#string-references-strref) value here. This field accepts [StrRef](TLK-File-Format#string-references-strref)# and 2DAMEMORY# token values. Set
-this field to -1 if your ExoLocString doesn't use any value in [dialog.tlk](TLK-File-Format).
+the [dialog.tlk](Audio-and-Localization-Formats#tlk) [StrRef](Audio-and-Localization-Formats#string-references-strref) value here. This field accepts [StrRef](Audio-and-Localization-Formats#string-references-strref)# and 2DAMEMORY# token values. Set
+this field to -1 if your ExoLocString doesn't use any value in [dialog.tlk](Audio-and-Localization-Formats#tlk).
 
 ##### 3.4.2.6. type Id
 
@@ -871,7 +893,7 @@ with the exception that the Path field will always be dimmed down. Never set a P
 fields, they will get their path from your parent field.
 
 Press the right-arrow icon to add your new field to the list to the right. To view or modify a field
-listed here, either select the field and press the left arrow icon, or [double](GFF-File-Format#gff-data-types)-click in the list.
+listed here, either select the field and press the left arrow icon, or double-click in the list.
 
 #### 3.4.3. Compare two [GFF files](GFF-File-Format) for differences to create modifiers
 
@@ -912,7 +934,7 @@ their proper location (override, Modules, StreamVoice folders etc).
 **Important:**
 Do not add any files that have been modified by any of the other sections to the
 InstallList, or the modified files might be overwritten! The other sections
-already modify files in the game folder. The only exception to this is [ERF files](ERF-File-Format)
+already modify files in the game folder. The only exception to this is [ERF files](Container-Formats#erf)
 which has had files added to them by those sections. They must still be added
 to the Install list to be put in their proper places.
 
@@ -949,13 +971,13 @@ SHIFT when you click on files in the list. All selected files will be added to t
 you click the Open button.
 
 To modify a file already added to the file list, either select it in the list and click the down arrow
-icon, or [double](GFF-File-Format#gff-data-types)-click the file in the list. It will then be loaded into the lower box to allow you to
+icon, or double-click the file in the list. It will then be loaded into the lower box to allow you to
 edit it.
 
 ### 3.6. Script Source
 
 This section allows you to specify a number of [NSS](NSS-File-Format) script source files that the TSLPatcher should
-process for any 2DAMEMORY# or [StrRef](TLK-File-Format#string-references-strref)# tokens, substitute the tokens with their stored value,
+process for any 2DAMEMORY# or [StrRef](Audio-and-Localization-Formats#string-references-strref)# tokens, substitute the tokens with their stored value,
 compile the modified source code and put the resulting [NCS file](NCS-File-Format) in the user's override folder.
 
 Either enter the name of a [NSS](NSS-File-Format) script file, or press the Select... button to the right of the file name
@@ -967,16 +989,16 @@ question doesn't already have what your mod needs.
 
 If you want the resulting [NCS file](NCS-File-Format) to be installed in the user's override folder, leave the
 Destination box blank or set it to "override" (without the quotation marks). If you want the [NCS](NCS-File-Format)
-file to be  saved inside an [ERF](ERF-File-Format)/MOD/RIM file instead, put the relative path (from the game
-folder) and name of that [ERF](ERF-File-Format) format file in this box.
+file to be saved inside a [MOD](Container-Formats#erf), [ERF](Container-Formats#erf), or [RIM](Container-Formats#rim) file instead, put the relative path (from the game
+folder) and name of that [ERF](Container-Formats#erf) format file in this box.
 
 **Important:**
 You must specify the relative path from the main game folder to where the
-[ERF](ERF-File-Format)/RIM file you want to save your recompile script in exists. If you for
+[ERF](Container-Formats#erf) or [RIM](Container-Formats#rim) file you want to save your recompile script in exists. If you for
 example want to save your script inside the myarea.mod file located in the
 Modules folder you would set the Destination box to Modules\\myarea.mod.
 
-Only override or the path\\name of an [ERF](ERF-File-Format)/RIM file is a valid value in the Destination box. This
+Only override or the path\\name of an [ERF](Container-Formats#erf) or [RIM](Container-Formats#rim) file is a valid value in the Destination box. This
 can currently not be used to put the file in another folder than the override within the game
 folder. If someone needs that functionality, please let me know.
 
@@ -999,7 +1021,7 @@ In the [NSS](NSS-File-Format) scripts themselves, wherever you want a value to b
 the token to insert, enclosed in hash ("#") characters into the source code.
 
 E.g. to insert the value stored in the 2DAMEMORY1 token as a parameter in a call to the function
-ChangeObjectAppearance(), and the StrRef0 token of a newly added [dialog.tlk](TLK-File-Format) entry into a script
+ChangeObjectAppearance(), and the StrRef0 token of a newly added [dialog.tlk](Audio-and-Localization-Formats#tlk) entry into a script
 using the BarkString() function, your source code script line might look like:
 
 ChangeObjectAppearance(OBJECT_SELF, #2DAMEMORY1#);
@@ -1021,35 +1043,35 @@ ship with an error in this file, which must be corrected prior to use.
 
 ### 3.7. Soundset files
 
-This section allows you to modify sound entries in [SSF](SSF-File-Format) format Soundset files, allowing you to
-set the [StrRef](TLK-File-Format#string-references-strref) of a [SSF](SSF-File-Format) entry to a [TLK](TLK-File-Format) entry you have added to append.tlk to be added to the
-user's [dialog.tlk](TLK-File-Format) file.
+This section allows you to modify sound entries in [SSF](Audio-and-Localization-Formats#ssf) format Soundset files, allowing you to
+set the [StrRef](Audio-and-Localization-Formats#string-references-strref) of a [SSF](Audio-and-Localization-Formats#ssf) entry to a [TLK](Audio-and-Localization-Formats#tlk) entry you have added to append.tlk to be added to the
+user's [dialog.tlk](Audio-and-Localization-Formats#tlk) file.
 
-Either select Add [SSF](SSF-File-Format) file... from the Modifiers menu, or right click on the Soundset files section
-in the tree view and choose Add [SSF](SSF-File-Format) file... from the context menu. You will be asked for the
-name of the [SSF file](SSF-File-Format) to modify. Specify a name, including the [SSF](SSF-File-Format) extension and click the OK
+Either select Add [SSF](Audio-and-Localization-Formats#ssf) file... from the Modifiers menu, or right click on the Soundset files section
+in the tree view and choose Add [SSF](Audio-and-Localization-Formats#ssf) file... from the context menu. You will be asked for the
+name of the [SSF file](Audio-and-Localization-Formats#ssf) to modify. Specify a name, including the [SSF](Audio-and-Localization-Formats#ssf) extension and click the OK
 button to proceed.
 
 The right panel in the ChangeEdit window will now display a list of all sound entry modifiers
-you have added for this Soundset file. To add a modifier, select an Entry from the [SSF](SSF-File-Format) Entry
-drop down menu below the grid, and type in either a [StrRef](TLK-File-Format#string-references-strref)# token, a 2DAMEMORY# token or a
-valid [StrRef](TLK-File-Format#string-references-strref) number in the [StrRef](TLK-File-Format#string-references-strref) input box below it. The drop down list of the [StrRef](TLK-File-Format#string-references-strref) box will list
-any [StrRef](TLK-File-Format#string-references-strref)# and 2DAMEMORY# tokens that have been assigned in this changes.ini file which you
+you have added for this Soundset file. To add a modifier, select an Entry from the [SSF](Audio-and-Localization-Formats#ssf) Entry
+drop down menu below the grid, and type in either a [StrRef](Audio-and-Localization-Formats#string-references-strref)# token, a 2DAMEMORY# token or a
+valid [StrRef](Audio-and-Localization-Formats#string-references-strref) number in the [StrRef](Audio-and-Localization-Formats#string-references-strref) input box below it. The drop down list of the [StrRef](Audio-and-Localization-Formats#string-references-strref) box will list
+any [StrRef](Audio-and-Localization-Formats#string-references-strref)# and 2DAMEMORY# tokens that have been assigned in this changes.ini file which you
 can choose from to save some typing.
 
 To save your modifier, click the red up-arrow icon and it will be added to the grid. To edit an
-existing modifier, either [double](GFF-File-Format#gff-data-types) click it in the grid, or select it in the grid and press the red
+existing modifier, either double click it in the grid, or select it in the grid and press the red
 down-arrow icon. To delete a modifier, select it in the grid and click the trashcan icon above the
 grid.
 
-Like with [2DA](2DA-File-Format) and [GFF files](GFF-File-Format), the TSLPatcher will check if a [SSF file](SSF-File-Format) already exists in the override
+Like other merge-style sections for [2DA](2DA-File-Format) and for [GFF](GFF-File-Format), the TSLPatcher will check if a [SSF file](Audio-and-Localization-Formats#ssf) already exists in the override
 folder of the user and modify the existing file there if found. If you want it to always install and
-modify a fresh copy of the [SSF file](SSF-File-Format) from the tslpatchdata folder, overwriting any existing [SSF file](SSF-File-Format)
-with the same name in override, check the Replace file... check box near the bottom of the [SSF](SSF-File-Format)
+modify a fresh copy of the [SSF file](Audio-and-Localization-Formats#ssf) from the tslpatchdata folder, overwriting any existing [SSF file](Audio-and-Localization-Formats#ssf)
+with the same name in override, check the Replace file... check box near the bottom of the [SSF](Audio-and-Localization-Formats#ssf)
 panel.
 
 **Note:**
-The Unknown(#) sound entries are present in the [SSF](SSF-File-Format) format, but I have been unable to
+The Unknown(#) sound entries are present in the [SSF](Audio-and-Localization-Formats#ssf) format, but I have been unable to
 determine what they are used for, or if they are just reserved and unused. If you figure
 out what any of those entries are for, please let me know.
 
@@ -1154,10 +1176,11 @@ your changes.ini file and change the Progress Log Style setting to "Compatibilit
 
 ### 4.3. Ambiguity problems
 
-You: Changes applied to [2DA](2DA-File-Format)/[GFF files](GFF-File-Format) don't seem to take effect in-game!
+You: Changes applied to [2DA](2DA-File-Format) tables or [GFF files](GFF-File-Format) don't seem to take effect in-game!
 Me: Make sure you don't have copies of those files within sub-folders of your override folder.
 The TSLPatcher only looks for files to modify in the override folder itself, not in sub-folders.
 
+<a id="44-failed-installation--reverting-files"></a>
 ### 4.4. Failed installation – reverting files
 
 You: Something went wrong during Mod installation. How do I undo the changes that have
@@ -1190,7 +1213,7 @@ format would get messed up and only the text before the first LF/CR would be
 added to the [GFF files](GFF-File-Format). Now all the text should be properly added. Updated
 both TSLPatcher and ChangeEdit to fix this. INI config files already broken
 by this bug can be fixed manually by making sure all the text in following a
-lang# key is on the same line in the INI file, and then insert <#LF#> where a new
+lang# [KEY](Container-Formats#key) is on the same line in the INI file, and then insert <#LF#> where a new
 line should be. E.g...
 lang0=The quick brown fox<#LF#><#LF#>jumps over the lazy dog!
 ...would end up like this in the [GFF](GFF-File-Format) substring after patching:
@@ -1223,7 +1246,7 @@ to be read from the Registry.
 
 2006-12-02
 Fixed two bugs that sneaked into the previous version that would cause the
-TSLPatcher to stop installation into games where the [dialog.tlk](TLK-File-Format) file was write
+TSLPatcher to stop installation into games where the [dialog.tlk](Audio-and-Localization-Formats#tlk) file was write
 protected, and where installation would abort with an error when copying a
 [2DA](2DA-File-Format) line and using a high() token to assign a new value to a column on the
 copied row.
@@ -1245,35 +1268,35 @@ Added the HackList modifiers to the Configuration Summary display. Added
 name of source file if different from the destination file name (configured with
 the new !SourceFile and !SaveAs keys).
 
-Added an optional !OverrideType key to the [filename] sections of files
-to be saved into [ERF](ERF-File-Format) or RIM files. If set it can determine how TSLPatcher
+Added an optional !OverrideType [KEY](Container-Formats#key) to the [filename] sections of files
+to be saved into [ERF](Container-Formats#erf) or [RIM](Container-Formats#rim) files. If set it can determine how TSLPatcher
 should react if a file with the same name already exists in the override folder
-(and thus would make the game not use the one in the [ERF](ERF-File-Format)/RIM). This key can
+(and thus would make the game not use the one in the [ERF](Container-Formats#erf) or [RIM](Container-Formats#rim)). This [KEY](Container-Formats#key) can
 hold one of three values: ignore (default behavior), warn (post a warning in the
 progress log) or rename (add a old_ prefix to the name of the file in the
 override folder to deactivate it).
 
-Added an optional !DefaultDestination key to the [CompileList] section
+Added an optional !DefaultDestination [KEY](Container-Formats#key) to the [CompileList] section
 which will determine where the [NCS files](NCS-File-Format) should be put if no specific
-destination has been set. Default value if the key is left out is the override
+destination has been set. Default value if the [KEY](Container-Formats#key) is left out is the override
 folder as before. In addition to override it can be set the the relative path (from
-the game folder) and name of an [ERF](ERF-File-Format) or RIM file to insert the scripts into. This
-value can then be overridden with the !Destination key for individual files as
+the game folder) and name of an [ERF](Container-Formats#erf) or [RIM](Container-Formats#rim) file to insert the scripts into. This
+value can then be overridden with the !Destination [KEY](Container-Formats#key) for individual files as
 before.
 
 Optimized speed and efficiency of storing many recompiled [NCS files](NCS-File-Format) into an
-[ERF](ERF-File-Format) or RIM file. Before the [ERF](ERF-File-Format)/RIM was saved, closed and reopened between
+[ERF](Container-Formats#erf) or [RIM](Container-Formats#rim) file. Before the [ERF](Container-Formats#erf) or [RIM](Container-Formats#rim) was saved, closed and reopened between
 each file that was inserted, now it's kept open until another destination is
-encountered. Thus if you insert scripts into multiple [ERF](ERF-File-Format)/RIM files it's a good
+encountered. Thus if you insert scripts into multiple [ERF](Container-Formats#erf) or [RIM](Container-Formats#rim) files it's a good
 idea to keep them grouped by destination in the [CompileList] modifier list.
 
 Added optional !SourceFile and !SourceFileF keys to the [TLKList]
-section. If present they can be used to set an alternative name of the [TLK file](TLK-File-Format) to
-use to add strings into [dialog.tlk](TLK-File-Format) from. If those keys are left out the default
+section. If present they can be used to set an alternative name of the [TLK file](Audio-and-Localization-Formats#tlk) to
+use to add strings into [dialog.tlk](Audio-and-Localization-Formats#tlk) from. If those keys are left out the default
 values are append.tlk and appendf.tlk, as before.
 
-Fixed bug with [TLK file](TLK-File-Format) handling that prevented TSLPatcher from properly
-handling individual [TLK](TLK-File-Format) entries with strings longer than 4096 characters. It can
+Fixed bug with [TLK file](Audio-and-Localization-Formats#tlk) handling that prevented TSLPatcher from properly
+handling individual [TLK](Audio-and-Localization-Formats#tlk) entries with strings longer than 4096 characters. It can
 now handle strings of any size properly.
 
 Moved most text strings in the TSLPatcher application into the Resource
@@ -1303,7 +1326,7 @@ Apparently there was an error in the RIM spec...
 ### Change Log for Version 1.2.8b1 (REL)
 
 2006-08-09
-Changed the [`[InstallList]`](TSLPatcher-InstallList-Syntax) functionality to allow installing files into [ERF/MOD](ERF-File-Format)/[RIM](RIM-File-Format)
+Changed the InstallList functionality to allow installing files into [ERF](Container-Formats#erf) or [RIM](Container-Formats#rim)
 containers as well, and not just folders within the game folder. This destination is
 set the same as you set the folder, only specify a filename at the end of the
 relative path (from the game folder) as well. (E.g. `Modules\904mal.rim`)
@@ -1326,14 +1349,29 @@ rather substantial changed made in version 1.2.8b0.
 ### Change Log for Version 1.2.8b0 (REL)
 
 2006-08-06
-Changed how the [ERF/MOD](ERF-File-Format)/[RIM](RIM-File-Format) insertion of [GFF](GFF-File-Format) and [NCS files](NCS-File-Format) work to make it a bit more useful. It'll now work directly with such files located in the game folder or any subfolders, and it will modify existing [GFF files](GFF-File-Format) instead of
-overwriting unless the `Replace` setting is set.
+Changed how insertion of [GFF](GFF-File-Format) and [NCS](NCS-File-Format) resources into capsules works. Supported capsule kinds include:
 
-Changed processing order for the InstallList to allow placing new
-[ERF/MOD](ERF-File-Format)/[RIM](RIM-File-Format) files in their proper location before the [`[GFFList]`](TSLPatcher-GFFList-Syntax) and `[CompileList]` sections run so they can save any necessary modified files into those container files. The
-different install phases now run in this order: [`[TLKList]`](TSLPatcher-TLKList-Syntax) Appending, [`[InstallList]`](TSLPatcher-InstallList-Syntax), [`[2DAList]`](TSLPatcher-2DAList-Syntax) changes, [`[GFFList]`](TSLPatcher-GFFList-Syntax) Changes, Script compilation, [`[SSFList]`](TSLPatcher-SSFList-Syntax) Editing.
+- [ERF](Container-Formats#erf)
+- [RIM](Container-Formats#rim)
 
-Extended the [ERF](ERF-File-Format) insertion functionality to support [RIM](RIM-File-Format) format files as well.
+It'll now work directly with such files located in the game folder or any subfolders, and it will modify existing [GFF files](GFF-File-Format) instead of overwriting unless the Replace setting is set.
+
+Changed processing order for the InstallList to allow placing new module archives before [GFF](GFF-File-Format) changes and script compilation so modified resources can land inside those containers. New archive types covered include:
+
+- [ERF](Container-Formats#erf)
+- MOD
+- [RIM](Container-Formats#rim)
+
+The different install phases now run in this order:
+
+- [TLK](Audio-and-Localization-Formats#tlk) appending
+- Install list
+- [2DA](2DA-File-Format) changes
+- [GFF](GFF-File-Format) changes
+- Script compilation
+- [SSF](Audio-and-Localization-Formats#ssf) editing
+
+Extended the [ERF](Container-Formats#erf) insertion functionality to support [RIM](Container-Formats#rim) format files as well.
 
 ### Change Log for Version 1.2.7b9 (REL)
 
@@ -1361,8 +1399,12 @@ as keys must always come below the Add field section in which they are set).
 The main TSLPatcher window now shows the installation path both when
 reading it from the registry and when then user has selected it.
 
-Added a "!SourceFile" special key to all sections except [TLK](TLK-File-Format) and [2DA](2DA-File-Format), which
-allows specifying the name of the file that should be used as a blueprint if it
+Added a "!SourceFile" special [KEY](Container-Formats#key) to all sections except:
+
+- [TLK](Audio-and-Localization-Formats#tlk)
+- [2DA](2DA-File-Format)
+
+which allows specifying the name of the file that should be used as a blueprint if it
 needs to be copied to the installation destination. The file will be renamed to
 the section name when being installed, this is just to allow different install
 options to coexist in the same folder which requires different versions of the
@@ -1376,12 +1418,12 @@ manually.
 
 2006-07-08
 Some improvements to the user interface of ChangeEdit. The
-"ExclusiveColumn" key now has a text box of its own and is not added to the
+"ExclusiveColumn" [KEY](Container-Formats#key) now has a text box of its own and is not added to the
 column list. Column labels are now loaded into the dropdown boxed in the
 Add/Copy [2DA](2DA-File-Format) line editors automatically if the [2DA](2DA-File-Format) file exists in the same folder
 as the changes.ini file (usually tslpatchdata). Fixed TSLPatcher to display the
 folder installation will be made to in the statusbar if the "Let user select" option
-is not set. Modified TSLPatcher to allow the "ExclusiveColumn" key to occur
+is not set. Modified TSLPatcher to allow the "ExclusiveColumn" [KEY](Container-Formats#key) to occur
 anywhere in a [2DA](2DA-File-Format) modifier section, not just at the top, to eliminate a potential
 source for errors.
 
@@ -1391,7 +1433,7 @@ source for errors.
 Added option for the Patcher to look up the game folder locations in the
 Registry instead of asking the user for the location. Two new keys under the
 [Settings] section determine if this is active. If LookupGameFolder is set to 1 the
-game paths will be looked up in the registry. If the LookupGameNumber key is set
+game paths will be looked up in the registry. If the LookupGameNumber [KEY](Container-Formats#key) is set
 to 1 the path to KotOR1 will be looked up, if set to 2 KotOR2:TSL will be used.
 
 ### Change Log for Version 1.2.7b4 (REL)
@@ -1411,7 +1453,7 @@ with multiple installation options.
 ### Change Log for Version 1.2.6b3 (REL)
 
 2006-03-09
-Added a section for modifying [SSF](SSF-File-Format) soundset files to assign dynamic [StrRef](TLK-File-Format#string-references-strref)
+Added a section for modifying [SSF](Audio-and-Localization-Formats#ssf) soundset files to assign dynamic [StrRef](Audio-and-Localization-Formats#string-references-strref)
 values to its sound entries.
 
 2006-03-19
@@ -1427,7 +1469,7 @@ also been made in ChangeEdit to make it less annoying to use.
 
  2006-02-03
 Added primitive support for adding modified [GFF files](GFF-File-Format) and recompiled [NCS](NCS-File-Format)
-files to [ERF](ERF-File-Format) container files.
+files to [ERF](Container-Formats#erf) container files.
 
 2006-02-05
 Fixed bug preventing compilation of scripts using include files.
@@ -1450,7 +1492,7 @@ Added functionality for the Patcher process [NSS files](NSS-File-Format) for tok
 compile them with NWNNSSComp.exe.
 
  2006-01-14
-Added "ScriptCompilerFlags" key to "Settings" section of INI that allows
+Added "ScriptCompilerFlags" [KEY](Container-Formats#key) to "Settings" section of INI that allows
 
 setting of extra commandline parameters to nwnnsscomp.exe.
 
@@ -1466,7 +1508,7 @@ Changed InstallList behavior to create the specified folder path if it
 does not already exist, instead of skipping that folder.
 
 2006-01-26
-Added an optional "!ReplaceFile" key for [GFF](GFF-File-Format) Modifier lists which will
+Added an optional "!ReplaceFile" [KEY](Container-Formats#key) for [GFF](GFF-File-Format) Modifier lists which will
 make the file be overwritten rather than modified in place if it already
 exists in the override folder.
 
@@ -1482,13 +1524,13 @@ Added support for high() token when assigning a RowLabel to
 a new line, not just a copied line like before.
 
  2005-08-23
-Added a "Required" key to the "Settings" section. When set to a
+Added a "Required" [KEY](Container-Formats#key) to the "Settings" section. When set to a
 
 filename that file must exist in the override folder in order for
 
  the installer to proceed. If it does not exist, it will log an error
 
-message found in the "RequiredMsg" key.
+message found in the "RequiredMsg" [KEY](Container-Formats#key).
 
 ### Change Log for Version 1.1.6 (REL)
 
@@ -1497,12 +1539,12 @@ Added fallback plaintext logging since it seems calling RTF a
 
 "standard" would be a mistake... Version incompatibilities++ :/
 
-Add a "PlaintextLog" key under "Settings" in the INI to use it.
+Add a "PlaintextLog" [KEY](Container-Formats#key) under "Settings" in the INI to use it.
 
 ### Change Log for Version 1.1.2 (REL)
 
  2005-06-07
-Added "ExclusiveColumn" key to Add2daLine() and Copy2daLine()
+Added "ExclusiveColumn" [KEY](Container-Formats#key) to Add2daLine() and Copy2daLine()
 
 which allows skipping adding lines if a line with the same
 
@@ -1527,10 +1569,10 @@ Progress log now saved to installlog.rtf when completed.
 Added support for overwriting HACK and INSTALL files.
 
  2005-06-09
-Added "ReplaceFile" key to HACK file modifier list.
+Added "ReplaceFile" [KEY](Container-Formats#key) to HACK file modifier list.
 
  2005-06-09
-Added "Replace#" key to InstallList file list.
+Added "Replace#" [KEY](Container-Formats#key) to InstallList file list.
 
  2005-06-09
 Fixed user-selected files in InstallMode, now copied to Override
@@ -1547,7 +1589,7 @@ a ChangeRow modifier instead, updating the found matching line.
  2005-06-10
 Put in a simple filter to not allow the file Installer to overwrite the
 
-game EXE files or the [dialog.tlk](TLK-File-Format) file directly.
+game EXE files or the [dialog.tlk](Audio-and-Localization-Formats#tlk) file directly.
 
 ## 6. Special Thanks
 
@@ -1565,9 +1607,11 @@ And finally thanks to YOU, for enduring my English and reading all the way down 
 
 ### See also
 
-- [TSLPatcher Thread Complete](TSLPatcher_Thread_Complete) -- LucasForums thread container (Stoffe’s posts, changelogs)
-- [TSLPatcher GFFList Syntax](TSLPatcher-GFFList-Syntax) -- GFF patching; [TSLPatcher HACKList Syntax](TSLPatcher-HACKList-Syntax) -- 2DA/text
-- [HoloPatcher README for Mod Developers](HoloPatcher-README-for-mod-developers) -- HoloPatcher usage
-- [Installing Mods with HoloPatcher](Installing-Mods-with-HoloPatcher) -- End-user installation
-- [GFF File Format](GFF-File-Format), [2DA-File-Format](2DA-File-Format), [TLK-File-Format](TLK-File-Format) -- Patched resources
+- [TSLPatcher GFFList Syntax](TSLPatcher-GFF-Syntax#gfflist-syntax) -- GFF patching
+- [TSLPatcher HACKList Syntax](TSLPatcher-Install-and-Hack-Syntax#hacklist-syntax) -- 2DA and plain-text hacks
+- [HoloPatcher README for Mod Developers](HoloPatcher#mod-developers) -- HoloPatcher usage
+- [Installing Mods with HoloPatcher](HoloPatcher#installing-mods) -- End-user installation
+- [GFF File Format](GFF-File-Format) -- Patched GFF resources
+- [2DA-File-Format](2DA-File-Format) -- Patched table resources
+- [Audio-and-Localization-Formats#tlk](Audio-and-Localization-Formats#tlk) -- Patched talk-table resources
 - [Community sources and archives](Home#community-sources-and-archives) -- DeadlyStream, LucasForums archives for setup help and history

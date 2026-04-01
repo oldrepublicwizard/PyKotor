@@ -174,6 +174,17 @@ def pytest_generate_tests(metafunc: pytest.Metafunc) -> None:
         cases.append(key)
         ids.append(f"k2:{root}")
 
+    # Stunt/cutscene modules ship LYT placeholder model names (e.g. "****") that are not valid
+    # ResRefs; ERF/MOD cannot store resources under those names, so indoor extract→build
+    # roundtrips are excluded here. Set PYKOTOR_INDOOR_ROUNDTRIP_INCLUDE_STUNT=1 to keep them.
+    if (
+        metafunc.definition.path.name == "test_indoor_roundtrip.py"
+        and not os.environ.get("PYKOTOR_INDOOR_ROUNDTRIP_INCLUDE_STUNT", "").strip()
+    ):
+        filtered = [(c, i) for c, i in zip(cases, ids) if not c[1].startswith("stunt_")]
+        cases = [c for c, _ in filtered]
+        ids = [i for _, i in filtered]
+
     # Optional slicing for long-running per-module suites.
     # Format: "start:end" (Python slice semantics), e.g. "0:50", "50:100", "100:".
     raw_slice = os.environ.get("PYKOTOR_MODULE_CASE_SLICE", "").strip()

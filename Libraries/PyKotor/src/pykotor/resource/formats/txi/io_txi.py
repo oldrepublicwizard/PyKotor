@@ -5,7 +5,10 @@ from __future__ import annotations
 from enum import IntEnum
 from typing import TYPE_CHECKING
 
+import kaitaistruct
+
 from loggerplus import RobustLogger
+from bioware_kaitai_formats.txi import Txi
 from pykotor.resource.type import ResourceReader, ResourceWriter, autoclose
 
 if TYPE_CHECKING:
@@ -29,7 +32,8 @@ class TXIBinaryReader(ResourceReader):
 
     References:
     ----------
-        See txi_data module docstring for engine addresses (K1 + TSL TODO). GetTXIInternal, ReleaseTXIInternal, CAuroraTXI, CResTXI, SetTxiData, GetTxiData, ".txi", "txi", "TXI".
+        Retail builds parse TXI text through the same Aurora texture-info path as other Odyssey
+        titles.
 
     """
 
@@ -48,8 +52,12 @@ class TXIBinaryReader(ResourceReader):
         mode: TXIReaderMode = TXIReaderMode.NORMAL
         cur_coords: int = 0
         txi_bytes: bytes = self._reader.read_all()
+        try:
+            txi_text = Txi.from_bytes(txi_bytes).content
+        except (kaitaistruct.KaitaiStructError, UnicodeDecodeError):
+            txi_text = txi_bytes.decode("ascii", errors="ignore")
 
-        for line in txi_bytes.decode("ascii", errors="ignore").splitlines():
+        for line in txi_text.splitlines():
             try:
                 parsed_line: str = line.strip()
                 if not parsed_line:

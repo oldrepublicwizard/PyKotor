@@ -35,11 +35,6 @@ def get_model(
     References:
     ----------
 
-    Derivations and Other Implementations:
-    -------------------------------------
-        https://github.com/th3w1zard1/KotOR.js/tree/master/src/module/ModuleDoor.ts (Door appearance handling)
-
-
         Note: Door model lookup uses genericdoors.2da
 
 
@@ -107,12 +102,6 @@ def extract_door_walkmeshes(
 
     References:
     ----------
-
-    Derivations and Other Implementations:
-    -------------------------------------
-        https://github.com/th3w1zard1/KotOR.js/tree/master/src/module/ModuleDoor.ts:992
-
-
 
     Args:
     ----
@@ -467,8 +456,7 @@ def get_door_dimensions(
 
     References:
     ----------
-        Original BioWare engine binaries (from swkotor.exe, swkotor2.exe)
-        Original BioWare engine binaries
+        Observed retail KotOR I and KotOR II behavior.
         Door dimension calculation logic from kit.py extract_kit()
 
 

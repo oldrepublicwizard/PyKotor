@@ -300,7 +300,6 @@ class TestWAVIO(unittest.TestCase):
         """Test that reading non-existent file raises FileNotFoundError."""
         self.assertRaises(FileNotFoundError, read_wav, DOES_NOT_EXIST_FILE)
 
-    # sourcery skip: no-conditionals-in-tests
     def test_read_raises_directory_error(self):
         """Test that reading a directory raises appropriate error."""
         if os.name == "nt":
@@ -459,7 +458,6 @@ class TestWAVWrite(unittest.TestCase):
         wav_readback = read_wav(BytesIO(data))
         self.assertEqual(wav.sample_rate, wav_readback.sample_rate)
 
-    # sourcery skip: no-conditionals-in-tests
     def test_write_raises_directory_error(self):
         """Test that writing to a directory raises appropriate error."""
         wav = WAV()

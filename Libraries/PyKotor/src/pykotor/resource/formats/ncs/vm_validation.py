@@ -20,8 +20,8 @@ logger: RobustLogger = RobustLogger()
 def validate_ncs_for_vm(ncs: NCS) -> None:
     """Validate an NCS file for compatibility with the NWScript VM.
 
-    Based on reverse engineering of CVirtualMachine::ExecuteCode,
-    this function checks for common issues that could cause VM errors.
+    Applies the same structural rules the shipped NWScript VM expects—bad jumps, stack
+    imbalance, that sort of thing—so broken scripts fail here instead of in-game.
 
     Args:
     ----

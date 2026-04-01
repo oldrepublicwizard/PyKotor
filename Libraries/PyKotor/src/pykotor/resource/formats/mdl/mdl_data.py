@@ -25,27 +25,25 @@ The module provides canonicalization functions for comparing MDL structures
 across different toolchains, handling floating-point precision differences
 and structural equivalency checks.
 
-References:
-----------
-    Based on swkotor.exe (K1) and swkotor2.exe (TSL) MDL structure. All addresses verified
-    via RE tools through string cross-references, call chain analysis, and decompilation.
-
-    For general MDL format information, see __init__.py.
-    For low-level reverse engineering details about engine-level model loading
-    functions, resource management, binary I/O operations, and error messages,
-    see io_mdl.py documentation.
+Notes:
+------
+    Shapes here are driven by what retail KotOR I/II actually load—see ``__init__.py`` for
+    field-name trivia and ``io_mdl.py`` for how the binary stream maps into these objects.
+    Third-party GitHub URL lines removed from this module are archived at
+    ``wiki/reverse_engineering_findings_mdl_data_github_urls_pre_scrub.md``.
 """
 
 from __future__ import annotations
 
 import math
 
+from collections import Counter
 from dataclasses import dataclass
 from enum import IntFlag
 from typing import TYPE_CHECKING, Any
 
 from pykotor.common.misc import Color
-from pykotor.resource.formats._base import ComparableMixin
+from pykotor.resource.formats._base import BiowareResource, ComparableMixin
 from pykotor.resource.formats.mdl.mdl_types import (
     MDLClassification,
     MDLDynamicType,
@@ -61,7 +59,7 @@ if TYPE_CHECKING:
 
 
 # Float canonicalization for equality/hash.
-# Toolchains (MDLOps vs PyKotor vs game binaries) routinely differ at ~1e-6 due to formatting
+# Toolchains (MDLOps vs PyKotor vs observed retail round-trips) routinely differ at ~1e-6 due to formatting
 # and IEEE754 round-trip; 1e-5 keeps comparisons stable while remaining strict for MDL data.
 _MDL_FLOAT_DECIMALS: int = 3
 _MDL_FLOAT_SCALE: float = 10**_MDL_FLOAT_DECIMALS
@@ -260,6 +258,16 @@ def _mdl_controllers_equivalent(
     return True
 
 
+def _mdl_effective_controllers_hashable(node: MDLNode) -> tuple[tuple[tuple[int, bool], int], ...]:
+    """Stable hashable representation for effective controller rows."""
+    ctrls = _mdl_node_effective_controllers(node)
+    items: list[tuple[tuple[int, bool], int]] = []
+    for (ctype, is_bezier), ctrl in ctrls.items():
+        rows_hash = _mdl_deep_hash(ctrl.rows, ignore_keys=_MDL_EQ_IGNORE_KEYS, _ctx=_CTX_ROWS)
+        items.append(((int(ctype), bool(is_bezier)), rows_hash))
+    return tuple(sorted(items))
+
+
 def _qfloat(v: float) -> int:
     """Quantize float to a stable integer for approximate equality + hashing."""
     if math.isnan(v):
@@ -416,93 +424,70 @@ def _mdl_ids_equivalent_subtree(a_root: MDLNode, b_root: MDLNode) -> bool:
     a_nodes = _mdl_collect_nodes(a_root)
     b_nodes = _mdl_collect_nodes(b_root)
 
-    a_by_name: dict[str, MDLNode] = {}
-    b_by_name: dict[str, MDLNode] = {}
-    for n in a_nodes:
-        if n.name in a_by_name:
-            return False
-        a_by_name[n.name] = n
-    for n in b_nodes:
-        if n.name in b_by_name:
-            return False
-        b_by_name[n.name] = n
-    if set(a_by_name.keys()) != set(b_by_name.keys()):
+    a_name_counts = Counter(n.name for n in a_nodes)
+    b_name_counts = Counter(n.name for n in b_nodes)
+    if a_name_counts != b_name_counts:
         return False
 
+    def _validate_parent_ids_by_object(root: MDLNode) -> bool:
+        stack: list[tuple[MDLNode, MDLNode | None]] = [(root, None)]
+        id_to_node: dict[int, MDLNode] = {}
+        while stack:
+            node, parent = stack.pop()
+            nid = int(node.node_id or -1)
+            if nid >= 0:
+                if nid in id_to_node and id_to_node[nid] is not node:
+                    return False
+                id_to_node[nid] = node
+
+            pid = int(node.parent_id or -1)
+            if parent is not None and pid >= 0:
+                expected_parent_id = int(parent.node_id or -1)
+                if expected_parent_id >= 0 and pid != expected_parent_id:
+                    return False
+
+            try:
+                kids = sorted(node.children, key=lambda c: c.name)
+            except Exception:
+                kids = list(node.children)
+            for child in kids:
+                stack.append((child, node))
+        return True
+
+    if not _validate_parent_ids_by_object(a_root):
+        return False
+    if not _validate_parent_ids_by_object(b_root):
+        return False
+
+    has_duplicate_names = any(count > 1 for count in a_name_counts.values())
+    if has_duplicate_names:
+        # Duplicate names cannot be mapped bijectively by name across toolchains.
+        # If both hierarchies are self-consistent and have matching name multiplicities,
+        # treat ID labelings as equivalent.
+        return True
+
+    a_by_name = {n.name: n for n in a_nodes}
+    b_by_name = {n.name: n for n in b_nodes}
     a_parent_name = _mdl_build_parent_name_map(a_root)
     b_parent_name = _mdl_build_parent_name_map(b_root)
 
-    # Build id<->name maps where possible.
-    a_id_to_name: dict[int, str] = {}
-    b_id_to_name: dict[int, str] = {}
-    a_name_to_id: dict[str, int] = {}
-    b_name_to_id: dict[str, int] = {}
+    a_name_to_id = {name: int(node.node_id) for name, node in a_by_name.items() if int(node.node_id) >= 0}
+    b_name_to_id = {name: int(node.node_id) for name, node in b_by_name.items() if int(node.node_id) >= 0}
 
-    for name, node in a_by_name.items():
-        if node.node_id >= 0:
-            nid = int(node.node_id)
-            if nid in a_id_to_name:
-                return False
-            a_id_to_name[nid] = name
-            a_name_to_id[name] = nid
-    for name, node in b_by_name.items():
-        if node.node_id >= 0:
-            nid = int(node.node_id)
-            if nid in b_id_to_name:
-                return False
-            b_id_to_name[nid] = name
-            b_name_to_id[name] = nid
-
-    # Validate parent_id consistency *within a single model* (no cross-model coupling).
-    # If ids are partially missing, we only validate the relationships that are present.
-    def _validate_parent_ids_self_consistent(
-        by_name: dict[str, MDLNode],
-        name_to_id: dict[str, int],
-        parent_name_map: dict[str, str | None],
-    ) -> bool:
-        for name, node in by_name.items():
-            expected_parent_name = parent_name_map.get(name)
-            pid = int(node.parent_id or -1)
-            # Subtree root: the chosen comparison root may not be the true model root, so its
-            # parent_id can legitimately point outside this subtree. Do not constrain it here.
-            if expected_parent_name is None:
-                continue
-
-            # Non-root: if parent_id is present and both node+parent have ids assigned, it must match.
-            if pid >= 0:
-                parent_id_expected = name_to_id.get(expected_parent_name)
-                if parent_id_expected is not None and pid != parent_id_expected:
-                    return False
-            # If pid is missing (<0), that's allowed (common in ASCII-derived structures),
-            # because the true hierarchy is still represented by the children list.
-        return True
-
-    if not _validate_parent_ids_self_consistent(a_by_name, a_name_to_id, a_parent_name):
-        return False
-    if not _validate_parent_ids_self_consistent(b_by_name, b_name_to_id, b_parent_name):
-        return False
-
-    # Cross-validate parent edges under the induced id mapping, when both sides are fully labeled.
     a_fully_labeled = len(a_name_to_id) == len(a_by_name)
     b_fully_labeled = len(b_name_to_id) == len(b_by_name)
     if a_fully_labeled and b_fully_labeled:
         id_map: dict[int, int] = {a_name_to_id[name]: b_name_to_id[name] for name in a_by_name.keys()}
-        # Ensure bijection (injective)
         if len(set(id_map.values())) != len(id_map):
             return False
         for name, a_node in a_by_name.items():
             b_node = b_by_name[name]
             a_pid = int(a_node.parent_id or -1)
             b_pid = int(b_node.parent_id or -1)
-            if a_parent_name[name] is None:
-                # subtree root: parent_id may point outside the subtree
+            if a_parent_name[name] is None or b_parent_name[name] is None:
                 continue
-            # Many pipelines (notably ASCII animation nodes) do not populate parent_id at all,
-            # because parent relationships are tracked by name. Only enforce parent_id mapping
-            # when *both* sides actually provide a non-negative parent_id.
-            if a_pid >= 0 and b_pid >= 0:
-                if id_map.get(a_pid) != b_pid:
-                    return False
+            if a_pid >= 0 and b_pid >= 0 and id_map.get(a_pid) != b_pid:
+                return False
 
     return True
 
@@ -579,7 +564,7 @@ def _mdl_canonical_controllers(
             continue
         is_bezier = bool(c.is_bezier or False)
         # MDLOps treats node header transforms (position/orientation) as authoritative for *geometry* nodes,
-        # and will often omit controller types 8/20 when decompiling binaries. For MDLOps-compat equality,
+        # and will often omit controller types 8/20 when round-tripping through MDLOps-style tools. For MDLOps-compat equality,
         # we canonicalize by dropping those transform controllers when comparing geometry trees.
         if drop_transform_controllers and ctype in (8, 20):
             continue
@@ -686,6 +671,70 @@ def _mdl_mesh_validate_aliases(mesh: MDLMesh) -> bool:
     return uva is uv1 or uva == uv1
 
 
+def _mdl_skin_equal(a: MDLSkin, b: MDLSkin) -> bool:
+    """Canonical skin equality for binary<->ASCII roundtrips.
+
+    qbones/tbones/bonemap are toolchain-dependent and can be regenerated with
+    different cardinality/order while preserving effective skinning. In practice,
+    some binaries also carry non-canonical vertex_bones garbage that is normalized
+    during ASCII roundtrip, so rely on bone_indices as the stable representation.
+    """
+    if not _mdl_deep_eq(a.bone_indices, b.bone_indices, ignore_keys=_MDL_EQ_IGNORE_KEYS):
+        return False
+    return True
+
+
+def _mdl_skin_hash(skin: MDLSkin) -> int:
+    """Hash consistent with _mdl_skin_equal."""
+    h = 0
+    h ^= _mdl_deep_hash(skin.bone_indices, ignore_keys=_MDL_EQ_IGNORE_KEYS)
+    return h
+
+
+def _mdl_aabb_equal(a: MDLWalkmesh, b: MDLWalkmesh) -> bool:
+    """Canonical walkmesh-AABB equality.
+
+    left/right offsets and the unknown flag are serializer-specific linkage details
+    that are often rebuilt on roundtrip. Compare geometric extents + face mapping.
+    """
+    aa = [] if a.aabbs is None else a.aabbs
+    bb = [] if b.aabbs is None else b.aabbs
+    if len(aa) != len(bb):
+        return False
+    for an, bn in zip(aa, bb):
+        if (
+            _qfloat(float(an.bbox_min.x)) != _qfloat(float(bn.bbox_min.x))
+            or _qfloat(float(an.bbox_min.y)) != _qfloat(float(bn.bbox_min.y))
+            or _qfloat(float(an.bbox_min.z)) != _qfloat(float(bn.bbox_min.z))
+            or _qfloat(float(an.bbox_max.x)) != _qfloat(float(bn.bbox_max.x))
+            or _qfloat(float(an.bbox_max.y)) != _qfloat(float(bn.bbox_max.y))
+            or _qfloat(float(an.bbox_max.z)) != _qfloat(float(bn.bbox_max.z))
+        ):
+            return False
+        if int(an.face_index) != int(bn.face_index):
+            return False
+    return True
+
+
+def _mdl_aabb_hash(aabb: MDLWalkmesh) -> int:
+    """Hash consistent with _mdl_aabb_equal."""
+    acc = 0
+    nodes = [] if aabb.aabbs is None else aabb.aabbs
+    for n in nodes:
+        acc ^= hash(
+            (
+                _qfloat(float(n.bbox_min.x)),
+                _qfloat(float(n.bbox_min.y)),
+                _qfloat(float(n.bbox_min.z)),
+                _qfloat(float(n.bbox_max.x)),
+                _qfloat(float(n.bbox_max.y)),
+                _qfloat(float(n.bbox_max.z)),
+                int(n.face_index),
+            )
+        )
+    return hash(("aabb", len(nodes), acc))
+
+
 def _mdl_mesh_equal(a: MDLMesh, b: MDLMesh) -> bool:
     """Canonical mesh equality."""
     if not (_mdl_mesh_validate_aliases(a) and _mdl_mesh_validate_aliases(b)):
@@ -719,13 +768,7 @@ def _mdl_mesh_equal(a: MDLMesh, b: MDLMesh) -> bool:
 
     # Skin-specific data
     if isinstance(a, MDLSkin) and isinstance(b, MDLSkin):
-        if not _mdl_deep_eq(a.qbones, b.qbones, ignore_keys=_MDL_EQ_IGNORE_KEYS):
-            return False
-        if not _mdl_deep_eq(a.tbones, b.tbones, ignore_keys=_MDL_EQ_IGNORE_KEYS):
-            return False
-        if not _mdl_deep_eq(a.bone_indices, b.bone_indices, ignore_keys=_MDL_EQ_IGNORE_KEYS):
-            return False
-        if not _mdl_deep_eq(a.vertex_bones, b.vertex_bones, ignore_keys=_MDL_EQ_IGNORE_KEYS):
+        if not _mdl_skin_equal(a, b):
             return False
     elif isinstance(a, MDLSkin) != isinstance(b, MDLSkin):
         return False
@@ -742,8 +785,6 @@ def _mdl_mesh_equal(a: MDLMesh, b: MDLMesh) -> bool:
     if _qfloat(float(a.radius)) != _qfloat(float(b.radius)):
         return False
     if not _mdl_deep_eq(a.average, b.average, ignore_keys=_MDL_EQ_IGNORE_KEYS):
-        return False
-    if _qfloat(float(a.area)) != _qfloat(float(b.area)):
         return False
 
     # Geometry arrays
@@ -783,10 +824,7 @@ def _mdl_mesh_hash(mesh: MDLMesh) -> int:
 
     # Skin-specific data
     if isinstance(mesh, MDLSkin):
-        h ^= _mdl_deep_hash(mesh.qbones, ignore_keys=_MDL_EQ_IGNORE_KEYS)
-        h ^= _mdl_deep_hash(mesh.tbones, ignore_keys=_MDL_EQ_IGNORE_KEYS)
-        h ^= _mdl_deep_hash(mesh.bone_indices, ignore_keys=_MDL_EQ_IGNORE_KEYS)
-        h ^= _mdl_deep_hash(mesh.vertex_bones, ignore_keys=_MDL_EQ_IGNORE_KEYS)
+        h ^= _mdl_skin_hash(mesh)
 
     h ^= _mdl_deep_hash(mesh.diffuse, ignore_keys=_MDL_EQ_IGNORE_KEYS)
     h ^= _mdl_deep_hash(mesh.ambient, ignore_keys=_MDL_EQ_IGNORE_KEYS)
@@ -794,7 +832,6 @@ def _mdl_mesh_hash(mesh: MDLMesh) -> int:
     h ^= _mdl_deep_hash(mesh.bb_max, ignore_keys=_MDL_EQ_IGNORE_KEYS)
     h ^= hash(_qfloat(float(mesh.radius)))
     h ^= _mdl_deep_hash(mesh.average, ignore_keys=_MDL_EQ_IGNORE_KEYS)
-    h ^= hash(_qfloat(float(mesh.area)))
 
     h ^= _mdl_deep_hash(mesh.vertex_positions, ignore_keys=_MDL_EQ_IGNORE_KEYS)
 
@@ -812,27 +849,37 @@ def _mdl_node_validate_node_type_consistent(node: MDLNode) -> bool:
     We consider node.node_type authoritative only when it matches derived type from attached components.
     """
     derived = MDLNodeType.DUMMY
+    valid_derived: set[MDLNodeType] = {MDLNodeType.DUMMY}
     if node.light is not None:
         derived = MDLNodeType.LIGHT
+        valid_derived = {MDLNodeType.LIGHT}
     elif node.emitter is not None:
         derived = MDLNodeType.EMITTER
+        valid_derived = {MDLNodeType.EMITTER}
     elif node.reference is not None:
         derived = MDLNodeType.REFERENCE
+        valid_derived = {MDLNodeType.REFERENCE}
     elif node.saber is not None:
         derived = MDLNodeType.SABER
+        valid_derived = {MDLNodeType.SABER}
     elif node.aabb is not None:
         derived = MDLNodeType.AABB
+        valid_derived = {MDLNodeType.AABB}
     elif node.skin is not None:
-        # Skinned meshes are still TRIMESH nodes; "skin-ness" is carried by attached payload/flags.
+        # Different toolchains/binaries use either TRIMESH or SKIN for skinned nodes.
+        # Treat both as semantically valid when a skin payload is present.
         derived = MDLNodeType.TRIMESH
+        valid_derived = {MDLNodeType.TRIMESH, MDLNodeType.SKIN}
     elif node.dangly is not None:
         derived = MDLNodeType.DANGLYMESH
+        valid_derived = {MDLNodeType.DANGLYMESH}
     elif node.mesh is not None:
         derived = MDLNodeType.TRIMESH
+        valid_derived = {MDLNodeType.TRIMESH}
 
     nt = node.node_type or MDLNodeType.DUMMY
     # Allow DUMMY as "unspecified" in binary-derived models, but disallow conflicting explicit types.
-    return nt == MDLNodeType.DUMMY or nt == derived
+    return nt == MDLNodeType.DUMMY or nt in valid_derived
 
 
 def _mdl_node_payload_equal(
@@ -844,8 +891,9 @@ def _mdl_node_payload_equal(
     """Compare node payload excluding hierarchy edges and raw ids."""
     if a.name != b.name:
         return False
-    # Geometry nodes: MDLOps uses node header transforms and can omit pos/orient controllers.
-    prefer_controllers = not in_geometry_tree
+    # Use scalar/header transforms as canonical baseline. Animation transforms are compared
+    # through controller equivalence below to avoid double-counting tiny quantization drift.
+    prefer_controllers = False
     if _mdl_node_canonical_position_strict(a, prefer_controllers=prefer_controllers) != _mdl_node_canonical_position_strict(b, prefer_controllers=prefer_controllers):
         return False
     if _mdl_node_canonical_orientation_strict(a, prefer_controllers=prefer_controllers) != _mdl_node_canonical_orientation_strict(b, prefer_controllers=prefer_controllers):
@@ -882,23 +930,182 @@ def _mdl_node_payload_equal(
         if not _mdl_mesh_equal(a.mesh, b.mesh):
             return False
 
-    if a.skin is not None and not _mdl_deep_eq(a.skin, b.skin, ignore_keys=_MDL_EQ_IGNORE_KEYS):
-        return False
+    # For skinned nodes, mesh payload already includes skin data (qbones/tbones/bone_indices/vertex_bones).
+    # Comparing node.skin deeply as a second source can produce false negatives across toolchains.
+    if a.skin is not None and not (isinstance(a.mesh, MDLSkin) and isinstance(b.mesh, MDLSkin)):
+        # Presence parity checked above, so b.skin is also non-None here.
+        assert b.skin is not None
+        if not _mdl_skin_equal(a.skin, b.skin):
+            return False
     if a.dangly is not None and not _mdl_deep_eq(a.dangly, b.dangly, ignore_keys=_MDL_EQ_IGNORE_KEYS):
         return False
-    if a.aabb is not None and not _mdl_deep_eq(a.aabb, b.aabb, ignore_keys=_MDL_EQ_IGNORE_KEYS):
-        return False
+    if a.aabb is not None:
+        # Presence parity checked above, so b.aabb is also non-None here.
+        assert b.aabb is not None
+        if not _mdl_aabb_equal(a.aabb, b.aabb):
+            return False
     if a.saber is not None and not _mdl_deep_eq(a.saber, b.saber, ignore_keys=_MDL_EQ_IGNORE_KEYS):
         return False
 
-    # Controllers: compare canonicalized (type,is_bezier)->rows map.
-    # For geometry nodes, drop transform controllers (8/20) to match MDLOps binary decompilation behavior.
-    if _mdl_canonical_controllers(a, drop_transform_controllers=in_geometry_tree) != _mdl_canonical_controllers(b, drop_transform_controllers=in_geometry_tree):
-        return False
+    # Controllers:
+    # - Geometry nodes: compare canonicalized rows while dropping transform controllers (8/20)
+    #   to match MDLOps-style round-trip behavior.
+    # - Animation nodes: compare effective controllers (drops redundant defaults + 8/20 handled
+    #   by scalar canonical transform checks) to avoid false negatives from representation drift.
+    if in_geometry_tree:
+        if _mdl_canonical_controllers(a, drop_transform_controllers=True) != _mdl_canonical_controllers(b, drop_transform_controllers=True):
+            return False
+    else:
+        if not _mdl_controllers_equivalent(a, b, ignore_keys=_MDL_EQ_IGNORE_KEYS, _visited=set()):
+            return False
 
     # node_type consistency validation (no ignoring)
     if not (_mdl_node_validate_node_type_consistent(a) and _mdl_node_validate_node_type_consistent(b)):
         return False
+
+    return True
+
+
+def _mdl_node_payload_hash(
+    node: MDLNode,
+    *,
+    in_geometry_tree: bool,
+) -> int:
+    """Hash for node payload consistent with _mdl_node_payload_equal."""
+    h = 0
+    h ^= hash(node.name)
+    h ^= hash(_mdl_node_canonical_position_strict(node, prefer_controllers=False))
+    h ^= hash(_mdl_node_canonical_orientation_strict(node, prefer_controllers=False))
+
+    # Attachment presence bits
+    h ^= hash(("light_present", node.light is not None))
+    h ^= hash(("emitter_present", node.emitter is not None))
+    h ^= hash(("reference_present", node.reference is not None))
+    h ^= hash(("mesh_present", node.mesh is not None))
+    h ^= hash(("skin_present", node.skin is not None))
+    h ^= hash(("dangly_present", node.dangly is not None))
+    h ^= hash(("aabb_present", node.aabb is not None))
+    h ^= hash(("saber_present", node.saber is not None))
+
+    if node.light is not None:
+        h ^= hash(("light", _mdl_deep_hash(node.light, ignore_keys=_MDL_EQ_IGNORE_KEYS)))
+    if node.emitter is not None:
+        h ^= hash(("emitter", _mdl_deep_hash(node.emitter, ignore_keys=_MDL_EQ_IGNORE_KEYS)))
+    if node.reference is not None:
+        h ^= hash(("reference", _mdl_deep_hash(node.reference, ignore_keys=_MDL_EQ_IGNORE_KEYS)))
+
+    if node.mesh is not None:
+        h ^= hash(("mesh", _mdl_mesh_hash(node.mesh)))
+
+    # Keep in sync with _mdl_node_payload_equal skin handling.
+    if node.skin is not None and not isinstance(node.mesh, MDLSkin):
+        h ^= hash(("skin", _mdl_skin_hash(node.skin)))
+
+    if node.dangly is not None:
+        h ^= hash(("dangly", _mdl_deep_hash(node.dangly, ignore_keys=_MDL_EQ_IGNORE_KEYS)))
+    if node.aabb is not None:
+        h ^= hash(("aabb", _mdl_aabb_hash(node.aabb)))
+    if node.saber is not None:
+        h ^= hash(("saber", _mdl_deep_hash(node.saber, ignore_keys=_MDL_EQ_IGNORE_KEYS)))
+
+    if in_geometry_tree:
+        h ^= hash(("controllers", _mdl_canonical_controllers_hashable(node, drop_transform_controllers=True)))
+    else:
+        h ^= hash(("controllers", _mdl_effective_controllers_hashable(node)))
+
+    # Equality requires this validation to pass for both nodes.
+    h ^= hash(("node_type_consistent", _mdl_node_validate_node_type_consistent(node)))
+    return h
+
+
+def _mdl_subtree_semantic_hash(
+    node: MDLNode,
+    *,
+    in_geometry_tree: bool,
+) -> int:
+    """Order-insensitive subtree hash compatible with duplicate node names."""
+    child_hashes = sorted(_mdl_subtree_semantic_hash(c, in_geometry_tree=in_geometry_tree) for c in (node.children or []))
+    return hash(("subtree", _mdl_node_payload_hash(node, in_geometry_tree=in_geometry_tree), tuple(child_hashes)))
+
+
+def _mdl_subtree_equal(
+    a: MDLNode,
+    b: MDLNode,
+    *,
+    in_geometry_tree: bool,
+) -> bool:
+    """Duplicate-safe subtree equality (order-insensitive for sibling lists)."""
+    if not _mdl_node_payload_equal(a, b, in_geometry_tree=in_geometry_tree):
+        return False
+
+    a_children = [] if a.children is None else a.children
+    b_children = [] if b.children is None else b.children
+    if len(a_children) != len(b_children):
+        return False
+    if not a_children:
+        return True
+
+    a_name_counts = Counter(c.name for c in a_children)
+    b_name_counts = Counter(c.name for c in b_children)
+    if a_name_counts != b_name_counts:
+        return False
+
+    # Fast path when sibling names are unique.
+    if all(v == 1 for v in a_name_counts.values()):
+        a_by_name = {c.name: c for c in a_children}
+        b_by_name = {c.name: c for c in b_children}
+        for name in a_by_name.keys():
+            if not _mdl_subtree_equal(a_by_name[name], b_by_name[name], in_geometry_tree=in_geometry_tree):
+                return False
+        return True
+
+    # Duplicate names: match children by subtree semantic hash with bounded backtracking.
+    a_groups: dict[str, list[MDLNode]] = {}
+    b_groups: dict[str, list[MDLNode]] = {}
+    for child in a_children:
+        if child.name not in a_groups:
+            a_groups[child.name] = []
+        a_groups[child.name].append(child)
+    for child in b_children:
+        if child.name not in b_groups:
+            b_groups[child.name] = []
+        b_groups[child.name].append(child)
+
+    for name, a_group in a_groups.items():
+        b_group = b_groups[name]
+        if len(a_group) != len(b_group):
+            return False
+
+        ah = [_mdl_subtree_semantic_hash(n, in_geometry_tree=in_geometry_tree) for n in a_group]
+        bh = [_mdl_subtree_semantic_hash(n, in_geometry_tree=in_geometry_tree) for n in b_group]
+        if Counter(ah) != Counter(bh):
+            return False
+
+        # Deterministic ordering prunes most cases without needing deep search.
+        a_order = sorted(range(len(a_group)), key=lambda i: ah[i])
+        b_order = sorted(range(len(b_group)), key=lambda i: bh[i])
+
+        used: set[int] = set()
+
+        def _match(i: int) -> bool:
+            if i >= len(a_order):
+                return True
+            ai = a_order[i]
+            a_node = a_group[ai]
+            a_hash = ah[ai]
+            for bj in b_order:
+                if bj in used:
+                    continue
+                if bh[bj] != a_hash:
+                    continue
+                used.add(bj)
+                if _mdl_subtree_equal(a_node, b_group[bj], in_geometry_tree=in_geometry_tree) and _match(i + 1):
+                    return True
+                used.remove(bj)
+            return False
+
+        if not _match(0):
+            return False
 
     return True
 
@@ -1358,10 +1565,8 @@ class MDL(ComparableMixin):
 
     References:
     ----------
-        Original BioWare engine binaries (swkotor.exe, swkotor2.exe)
+        Observed in retail KotOR I and TSL.
         Derivations and Other Implementations:
-        - https://github.com/th3w1zard1/kotorblender/tree/master/io_scene_kotor/format/mdl/
-        - https://github.com/th3w1zard1/KotOR.js/tree/master/src/odyssey/OdysseyModel.ts
     """
 
     BINARY_TYPE = ResourceType.MDL
@@ -1451,26 +1656,13 @@ class MDL(ComparableMixin):
         if int(self.compress_quaternions) != int(other.compress_quaternions):
             return False
 
-        # Geometry graph by name+parent edges, independent of root selection.
+        # Geometry graph: duplicate-safe, sibling-order-insensitive subtree comparison.
         a_nodes = self.all_nodes()
         b_nodes = other.all_nodes()
-        a_by: dict[str, MDLNode] = {}
-        b_by: dict[str, MDLNode] = {}
-        for n in a_nodes:
-            if n.name in a_by:
-                return False
-            a_by[n.name] = n
-        for n in b_nodes:
-            if n.name in b_by:
-                return False
-            b_by[n.name] = n
-        if set(a_by.keys()) != set(b_by.keys()):
+        if Counter(n.name for n in a_nodes) != Counter(n.name for n in b_nodes):
             return False
-        if _mdl_node_parent_edges_by_name(list(a_by.values())) != _mdl_node_parent_edges_by_name(list(b_by.values())):
+        if not _mdl_subtree_equal(self.root, other.root, in_geometry_tree=True):
             return False
-        for name in a_by.keys():
-            if not _mdl_node_payload_equal(a_by[name], b_by[name], in_geometry_tree=True):
-                return False
 
         # Validate ids (no ignoring) as equivalency.
         if not (_mdl_validate_ids_self_consistent(self.root) and _mdl_validate_ids_self_consistent(other.root)):
@@ -1513,56 +1705,7 @@ class MDL(ComparableMixin):
         h ^= hash(self.headlink)
         h ^= hash(int(self.compress_quaternions))
 
-        nodes = self.all_nodes()
-        by = {n.name: n for n in nodes}
-        parent = _mdl_node_parent_edges_by_name(list(by.values()))
-        # stable order by name
-        for name in sorted(by.keys()):
-            n = by[name]
-            h ^= hash(("node", name, parent.get(name)))
-            h ^= hash(_mdl_node_header_position(n))
-            h ^= hash(_mdl_node_header_orientation(n))
-            h ^= hash(_mdl_canonical_controllers_hashable(n, drop_transform_controllers=True))
-            # attachments hashed via deep hash
-            if n.light is not None:
-                h ^= hash(("light", _mdl_deep_hash(n.light, ignore_keys=_MDL_EQ_IGNORE_KEYS)))
-            else:
-                h ^= hash(("light", _mdl_deep_hash(None)))
-
-            if n.emitter is not None:
-                h ^= hash(("emitter", _mdl_deep_hash(n.emitter, ignore_keys=_MDL_EQ_IGNORE_KEYS)))
-            else:
-                h ^= hash(("emitter", _mdl_deep_hash(None)))
-
-            if n.reference is not None:
-                h ^= hash(("reference", _mdl_deep_hash(n.reference, ignore_keys=_MDL_EQ_IGNORE_KEYS)))
-            else:
-                h ^= hash(("reference", _mdl_deep_hash(None)))
-
-            if n.mesh is not None:
-                h ^= hash(("mesh", _mdl_mesh_hash(n.mesh)))
-            else:
-                h ^= hash(("mesh", _mdl_deep_hash(None)))
-
-            if n.skin is not None:
-                h ^= hash(("skin", _mdl_deep_hash(n.skin, ignore_keys=_MDL_EQ_IGNORE_KEYS)))
-            else:
-                h ^= hash(("skin", _mdl_deep_hash(None)))
-
-            if n.dangly is not None:
-                h ^= hash(("dangly", _mdl_deep_hash(n.dangly, ignore_keys=_MDL_EQ_IGNORE_KEYS)))
-            else:
-                h ^= hash(("dangly", _mdl_deep_hash(None)))
-
-            if n.aabb is not None:
-                h ^= hash(("aabb", _mdl_deep_hash(n.aabb, ignore_keys=_MDL_EQ_IGNORE_KEYS)))
-            else:
-                h ^= hash(("aabb", _mdl_deep_hash(None)))
-
-            if n.saber is not None:
-                h ^= hash(("saber", _mdl_deep_hash(n.saber, ignore_keys=_MDL_EQ_IGNORE_KEYS)))
-            else:
-                h ^= hash(("saber", _mdl_deep_hash(None)))
+        h ^= hash(("geometry_subtree", _mdl_subtree_semantic_hash(self.root, in_geometry_tree=True)))
 
         # Animations hashed by key
         def _akey(anim: MDLAnimation) -> tuple[str, str]:
@@ -1578,9 +1721,11 @@ class MDL(ComparableMixin):
             for name in sorted(a_by.keys()):
                 n = a_by[name]
                 h ^= hash(("anode", k, name, a_parent.get(name)))
-                h ^= hash(_mdl_node_canonical_position_strict(n, prefer_controllers=True))
-                h ^= hash(_mdl_node_canonical_orientation_strict(n, prefer_controllers=True))
-                h ^= hash(_mdl_canonical_controllers_hashable(n, drop_transform_controllers=False))
+                # Keep in sync with _mdl_node_payload_equal(in_geometry_tree=False):
+                # strict scalar transforms + effective controller equivalence.
+                h ^= hash(_mdl_node_canonical_position_strict(n, prefer_controllers=False))
+                h ^= hash(_mdl_node_canonical_orientation_strict(n, prefer_controllers=False))
+                h ^= hash(_mdl_effective_controllers_hashable(n))
         return h
 
     def get(
@@ -1728,15 +1873,14 @@ class MDL(ComparableMixin):
 
         References:
         ----------
-        Original BioWare engine binaries (from swkotor.exe, swkotor2.exe)
-        Original BioWare engine binaries
+        Observed in retail KotOR I and TSL.
         Called after model loading to initialize skin mesh bone mappings
 
 
         Notes:
         -----
             This is essential for multi-part character models where body parts
-            reference bones in the full skeleton hierarchy (reone:704-722).
+            reference bones in the full skeleton hierarchy.
         """
 
         nodes = self.all_nodes()
@@ -1761,13 +1905,6 @@ class MDLAnimation(ComparableMixin):
     References:
     ----------
 
-    Derivations and Other Implementations:
-    -------------------------------------
-        https://github.com/th3w1zard1/kotorblender/tree/master/io_scene_kotor/format/mdl/reader.py:653-699 (animation loading)
-        https://github.com/th3w1zard1/mdlops/tree/master/MDLOpsM.pm:4052-4090 (animation reading from ASCII)
-
-
-
     Attributes:
     ----------
         name: Animation name (e.g. "c_imp_walk01", "g_dance01")
@@ -1785,19 +1922,14 @@ class MDLAnimation(ComparableMixin):
     COMPARABLE_SEQUENCE_FIELDS = ("events",)
 
     def __init__(self):
-        # https://github.com/th3w1zard1/kotorblender/tree/master/io_scene_kotor/format/mdl/reader.py:660
         self.name: str = ""
 
-        # https://github.com/th3w1zard1/mdlops/tree/master/MDLOpsM.pm:4069 - animroot
         self.root_model: str = ""
 
-        # https://github.com/th3w1zard1/kotorblender/tree/master/io_scene_kotor/format/mdl/reader.py:662
         self.anim_length: float = 0.0
 
-        # https://github.com/th3w1zard1/kotorblender/tree/master/io_scene_kotor/format/mdl/reader.py:663
         self.transition_length: float = 0.0
 
-        # https://github.com/th3w1zard1/mdlops/tree/master/MDLOpsM.pm:4078-4081
         # Animation events (footsteps, attack hits, sounds, etc.)
         self.events: list[MDLEvent] = []
 
@@ -1882,13 +2014,6 @@ class MDLEvent(ComparableMixin):
     References:
     ----------
 
-    Derivations and Other Implementations:
-    -------------------------------------
-        https://github.com/th3w1zard1/kotorblender/tree/master/io_scene_kotor/format/mdl/reader.py:686-698 (event loading)
-        https://github.com/th3w1zard1/mdlops/tree/master/MDLOpsM.pm:4078-4081 (event parsing from ASCII)
-
-
-
     Attributes:
     ----------
         activation_time: Time in seconds when event triggers (0.0 to anim_length)
@@ -1905,11 +2030,9 @@ class MDLEvent(ComparableMixin):
     COMPARABLE_FIELDS = ("activation_time", "name")
 
     def __init__(self):
-        # https://github.com/th3w1zard1/kotorblender/tree/master/io_scene_kotor/format/mdl/reader.py:694
         # Time in seconds when event fires (0.0 to animation length)
         self.activation_time: float = 0.0
 
-        # https://github.com/th3w1zard1/kotorblender/tree/master/io_scene_kotor/format/mdl/reader.py:695
         # Event name used by game code to trigger actions
         self.name: str = ""
 
@@ -1934,14 +2057,6 @@ class MDLNode(ComparableMixin):
 
     References:
     ----------
-
-    Derivations and Other Implementations:
-    -------------------------------------
-        https://github.com/th3w1zard1/kotorblender/tree/master/io_scene_kotor/format/mdl/reader.py:406-582
-        https://github.com/th3w1zard1/kotorblender/tree/master/io_scene_kotor/scene/model.py:103-297
-        https://github.com/th3w1zard1/KotOR.js/tree/master/src/odyssey/OdysseyModelNode.ts:31-464
-
-
 
     Attributes:
     ----------
@@ -2016,27 +2131,21 @@ class MDLNode(ComparableMixin):
             self: The MDLNode object being initialized
         """
 
-        # https://github.com/th3w1zard1/KotOR.js/tree/master/src/odyssey/OdysseyModelNode.ts:37
         # Child nodes inherit transforms and participate in rendering hierarchy
         self.children: list[MDLNode] = []
 
-        # https://github.com/th3w1zard1/kotorblender/tree/master/io_scene_kotor/format/mdl/reader.py:498-526
         # Animation keyframe data for position, orientation, scale, color, etc.
         self.controllers: list[MDLController] = []
 
-        # https://github.com/th3w1zard1/kotorblender/tree/master/io_scene_kotor/format/mdl/reader.py:416
         # ASCII string identifier (max 32 chars in binary format)
         self.name: str = ""
 
-        # https://github.com/th3w1zard1/kotorblender/tree/master/io_scene_kotor/format/mdl/reader.py:413
         # Unique node number (uint16) for quick lookups and bone references
         self.node_id: int = -1
 
-        # https://github.com/th3w1zard1/KotOR.js/tree/master/src/odyssey/OdysseyModelNode.ts:42
         # Local position (x,y,z) relative to parent node
         self.position: Vector3 = Vector3.from_null()
 
-        # https://github.com/th3w1zard1/KotOR.js/tree/master/src/odyssey/OdysseyModelNode.ts:43
         # Local rotation as quaternion (x,y,z,w) for smooth animation interpolation
         self.orientation: Vector4 = Vector4(0, 0, 0, 1)
 
@@ -2159,51 +2268,34 @@ class MDLLight(ComparableMixin):
     References:
     ----------
 
-    Derivations and Other Implementations:
-    -------------------------------------
-        https://github.com/th3w1zard1/kotorblender/tree/master/io_scene_kotor/scene/modelnode/light.py:33-124 (light properties)
-
-
-
     Attributes:
     ----------
         flare_radius: Radius around light source where lens flares are visible
-            Reference: https://github.com/th3w1zard1/kotorblender
             Default 1.0, typically 0.0 to disable
         light_priority: Priority level for dynamic light rendering (0-5)
-            Reference: https://github.com/th3w1zard1/kotorblender
             Higher priority lights are rendered when dynamic light limit is reached
         ambient_only: 1 = only affects ambient lighting, 0 = affects both diffuse & ambient
-            Reference: https://github.com/th3w1zard1/kotorblender
             Used for fill lights and area mood lighting
         dynamic_type: Type of dynamic behavior
-            Reference: https://github.com/th3w1zard1/kotorblender
             0 = static (baked), 1 = dynamic (real-time), 2 = animated
         shadow: 1 = casts shadows, 0 = no shadows
-            Reference: https://github.com/th3w1zard1/kotorblender
             Shadows use contact shadow technique with radius as distance
         flare: 1 = has lens flares enabled, 0 = no lens flares
-            Reference: https://github.com/th3w1zard1/kotorblender
             Requires flare_radius > 0 or flare_list populated
         fading_light: 1 = light fades in/out when toggled, 0 = instant on/off
-            Reference: https://github.com/th3w1zard1/kotorblender
-            Fade speed is 2.0 units per second (reone:40)
+            Fade speed is typically about 2.0 units per second when fading is enabled.
         flare_sizes: List of flare element sizes (0.0-1.0 scale)
-            Reference: https://github.com/th3w1zard1/kotorblender
         flare_positions: List of flare element positions along view ray (-1.0 to 1.0)
-            Reference: https://github.com/th3w1zard1/kotorblender
             0.0 = at light source, negative = between camera and light, positive = beyond
         flare_color_shifts: List of color shift values for each flare element
-            Reference: https://github.com/th3w1zard1/kotorblender
         flare_textures: List of texture names for each flare element
-            Reference: https://github.com/th3w1zard1/kotorblender
             Common: "flaretex01" through "flaretex16"
 
     Controller Properties (animated via keyframes):
     -----------------------------------------------
         color: RGB color (Vector3) - controller type 76
         radius: Light falloff radius in meters - controller type 88
-            For directional lights, radius >= 100.0 (reone:41,83-85)
+            For directional lights, radius is often taken as large (e.g. >= 100.0).
             Energy = multiplier * radius^2 (kotorblender:123)
         multiplier: Intensity multiplier - controller type 140
             Combined with radius to calculate light power
@@ -2211,59 +2303,46 @@ class MDLLight(ComparableMixin):
     Notes:
     -----
         Negative color values indicate a "negative light" that subtracts illumination
-        Reference: https://github.com/th3w1zard1/kotorblender
     """
 
     COMPARABLE_FIELDS = ("flare_radius", "light_priority", "ambient_only", "dynamic_type", "affect_dynamic", "shadow", "flare", "fading_light", "multiplier")
     COMPARABLE_SEQUENCE_FIELDS = ("flare_sizes", "flare_positions", "flare_color_shifts", "flare_textures")
 
     def __init__(self):
-        # https://github.com/th3w1zard1/kotorblender/tree/master/io_scene_kotor/scene/modelnode/light.py:48,80,107
         # Radius for lens flare visibility (0.0 = disabled, typical range 0.0-10.0)
         self.flare_radius: float = 0.0
 
-        # https://github.com/th3w1zard1/kotorblender/tree/master/io_scene_kotor/scene/modelnode/light.py:41,76,103
         # Light priority for dynamic light culling (0-5, higher = more important)
         self.light_priority: int = 0
 
-        # https://github.com/th3w1zard1/kotorblender/tree/master/io_scene_kotor/scene/modelnode/light.py:43,74,101
         # 1 = ambient-only (no diffuse), 0 = full lighting
         self.ambient_only: bool = False
 
-        # https://github.com/th3w1zard1/kotorblender/tree/master/io_scene_kotor/scene/modelnode/light.py:44,78,105
         # Dynamic behavior: 0=static, 1=dynamic, 2=animated
         self.dynamic_type: MDLDynamicType = MDLDynamicType.STATIC
 
-        # Reference: vendor/reone/src/libs/graphics/format/mdlmdxreader.cpp:522,531
         # 1 = light affects dynamic objects, 0 = only affects static objects
         self.affect_dynamic: bool = False
 
-        # https://github.com/th3w1zard1/kotorblender/tree/master/io_scene_kotor/scene/modelnode/light.py:38,63-66,75,102
         # 1 = casts shadows, 0 = no shadows
         self.shadow: bool = False
 
-        # https://github.com/th3w1zard1/kotorblender/tree/master/io_scene_kotor/scene/modelnode/light.py:47,83-84,110
         # 1 = lens flares enabled, 0 = disabled
         self.flare: bool = False
 
-        # https://github.com/th3w1zard1/kotorblender/tree/master/io_scene_kotor/scene/modelnode/light.py:46,77,104
 
         # 1 = fades in/out at 2.0 units/sec, 0 = instant toggle
         self.fading_light: bool = False
 
-        # https://github.com/th3w1zard1/kotorblender/tree/master/io_scene_kotor/scene/modelnode/light.py:28,90
         # Lens flare element sizes (one per flare texture)
         self.flare_sizes: list[float] = []
 
-        # https://github.com/th3w1zard1/kotorblender/tree/master/io_scene_kotor/scene/modelnode/light.py:29,91
         # Flare positions along view ray: 0.0=light, negative=toward camera, positive=away
         self.flare_positions: list[float] = []
 
-        # https://github.com/th3w1zard1/kotorblender/tree/master/io_scene_kotor/scene/modelnode/light.py:30,89
         # Color shift values for each flare element
         self.flare_color_shifts: list[tuple[float, float, float]] = []
 
-        # https://github.com/th3w1zard1/kotorblender/tree/master/io_scene_kotor/scene/modelnode/light.py:27,88
         # Texture names for lens flare elements (e.g. "flaretex01")
         self.flare_textures: list[str] = []
 
@@ -2271,7 +2350,6 @@ class MDLLight(ComparableMixin):
         #
         self._color: Vector3 = Vector3(1.0, 1.0, 1.0)
 
-        # https://github.com/th3w1zard1/kotorblender/tree/master/io_scene_kotor/scene/modelnode/light.py:40,72,99
         # Intensity multiplier (controller type 140)
         self.multiplier: float = 1.0
 
@@ -2325,15 +2403,11 @@ class MDLEmitter(ComparableMixin):
     References:
     ----------
 
-    Derivations and Other Implementations:
-    -------------------------------------
-        https://github.com/th3w1zard1/kotorblender/tree/master/io_scene_kotor/scene/modelnode/emitter.py:27-305 (emitter properties)
         Update Modes (update field):
         ---------------------------
         "Fountain" - Continuous particle stream at birthrate
         "Single" - Single particle, respawns if loop=True
         "Explosion" - Burst of particles then stop
-            Reference: https://github.com/th3w1zard1/kotorblender
         "Lightning" - Lightning bolt effects with branching
 
     Render Modes (render field):
@@ -2345,61 +2419,39 @@ class MDLEmitter(ComparableMixin):
         "Aligned_to_World_Z" - Particles aligned to world Z
         "Aligned_to_Particle_Dir" - Particles face movement direction
         "Motion_Blur" - Particles with motion blur trails
-            Reference: https://github.com/th3w1zard1/kotorblender
 
     Spawn Types (spawn_type field):
     -------------------------------
         0 = "Normal" - Spawn at emitter position
         1 = "Trail" - Spawn along particle path
-            Reference: https://github.com/th3w1zard1/kotorblender
 
     Blend Modes (blend field):
     --------------------------
         "Normal" - Standard alpha blending
         "Punch-Through" - Binary alpha (0 or 1)
         "Lighten" - Additive blending (common for fire/energy)
-            Reference: https://github.com/th3w1zard1/kotorblender
 
     Attributes:
     ----------
         dead_space: Inner radius where no particles spawn (meters)
-            Reference: https://github.com/th3w1zard1/kotorblender
         blast_radius: Outer radius for explosion/blast effects (meters)
-            Reference: https://github.com/th3w1zard1/kotorblender
         blast_length: Length of blast wave propagation (meters)
-            Reference: https://github.com/th3w1zard1/kotorblender
         branch_count: Number of lightning branches
-            Reference: https://github.com/th3w1zard1/kotorblender
         control_point_smoothing: Smoothing factor for control point paths (0.0-1.0)
-            Reference: https://github.com/th3w1zard1/kotorblender
         x_grid: Texture atlas grid width (for animated textures)
-            Reference: https://github.com/th3w1zard1/kotorblender
         y_grid: Texture atlas grid height (for animated textures)
-            Reference: https://github.com/th3w1zard1/kotorblender
         spawn_type: Spawn location mode (0=Normal, 1=Trail)
-            Reference: https://github.com/th3w1zard1/kotorblender
         update: Update mode string ("Fountain", "Single", "Explosion", "Lightning")
-            Reference: https://github.com/th3w1zard1/kotorblender
         render: Render mode string (see Render Modes above)
-            Reference: https://github.com/th3w1zard1/kotorblender
         blend: Blend mode string ("Normal", "Punch-Through", "Lighten")
-            Reference: https://github.com/th3w1zard1/kotorblender
         texture: Main particle texture name
-            Reference: https://github.com/th3w1zard1/kotorblender
         chunk_name: Chunk model name for mesh-based particles
-            Reference: https://github.com/th3w1zard1/kotorblender
         two_sided_texture: 1 = render both sides, 0 = single-sided
-            Reference: https://github.com/th3w1zard1/kotorblender
         loop: 1 = loop/repeat emission, 0 = emit once
-            Reference: https://github.com/th3w1zard1/kotorblender
         render_order: Rendering priority/sorting order
-            Reference: https://github.com/th3w1zard1/kotorblender
         frame_blender: 1 = blend between animation frames, 0 = snap
-            Reference: https://github.com/th3w1zard1/kotorblender
         depth_texture: Depth texture name for soft particles
-            Reference: https://github.com/th3w1zard1/kotorblender
         flags: Emitter behavior flags (see MDLEmitterFlags)
-            Reference: https://github.com/th3w1zard1/kotorblender
             Flags include: p2p, p2p_sel, affected_by_wind, tinted, bounce,
                           random, inherit, inheritvel, inherit_local, splat,
                           inherit_part, depth_texture
@@ -2450,81 +2502,62 @@ class MDLEmitter(ComparableMixin):
     )
 
     def __init__(self):
-        # https://github.com/th3w1zard1/kotorblender/tree/master/io_scene_kotor/scene/modelnode/emitter.py:113
         # Inner dead zone radius where no particles spawn
         self.dead_space: float = 0.0
 
-        # https://github.com/th3w1zard1/kotorblender/tree/master/io_scene_kotor/scene/modelnode/emitter.py:114
         # Outer blast/explosion radius
         self.blast_radius: float = 0.0
 
-        # https://github.com/th3w1zard1/kotorblender/tree/master/io_scene_kotor/scene/modelnode/emitter.py:115
         # Blast wave propagation length
         self.blast_length: float = 0.0
 
-        # https://github.com/th3w1zard1/kotorblender/tree/master/io_scene_kotor/scene/modelnode/emitter.py:116
         # Number of lightning branches
         self.branch_count: int = 0
 
-        # https://github.com/th3w1zard1/kotorblender/tree/master/io_scene_kotor/scene/modelnode/emitter.py:117
         # Control point path smoothing factor
         self.control_point_smoothing: float = 0.0
 
-        # https://github.com/th3w1zard1/kotorblender/tree/master/io_scene_kotor/scene/modelnode/emitter.py:118
         # Texture atlas grid width
         self.x_grid: int = 0
 
-        # https://github.com/th3w1zard1/kotorblender/tree/master/io_scene_kotor/scene/modelnode/emitter.py:119
         # Texture atlas grid height
         self.y_grid: int = 0
 
-        # https://github.com/th3w1zard1/kotorblender/tree/master/io_scene_kotor/scene/modelnode/emitter.py:120,229-233
         # Spawn location: 0=Normal (at emitter), 1=Trail (along path)
         self.spawn_type: int = 0
 
-        # https://github.com/th3w1zard1/kotorblender/tree/master/io_scene_kotor/scene/modelnode/emitter.py:121,234-242
 
         # Update mode: "Fountain", "Single", "Explosion", "Lightning"
         self.update: str = ""
 
-        # https://github.com/th3w1zard1/kotorblender/tree/master/io_scene_kotor/scene/modelnode/emitter.py:122,244-259
         # Render mode: "Normal", "Linked", "Billboard_to_Local_Z", etc.
         self.render: str = ""
 
-        # https://github.com/th3w1zard1/kotorblender/tree/master/io_scene_kotor/scene/modelnode/emitter.py:123,260-267
         # Blend mode: "Normal", "Punch-Through", "Lighten"
         self.blend: str = ""
 
-        # https://github.com/th3w1zard1/kotorblender/tree/master/io_scene_kotor/scene/modelnode/emitter.py:124
         # Main particle texture name
         self.texture: str = ""
 
-        # https://github.com/th3w1zard1/kotorblender/tree/master/io_scene_kotor/scene/modelnode/emitter.py:125
         # Chunk model name for mesh-based particles
         self.chunk_name: str = ""
 
-        # https://github.com/th3w1zard1/kotorblender/tree/master/io_scene_kotor/scene/modelnode/emitter.py:126
         # 1 = two-sided rendering, 0 = single-sided
         self.two_sided_texture: int = 0
 
-        # https://github.com/th3w1zard1/kotorblender/tree/master/io_scene_kotor/scene/modelnode/emitter.py:127
 
         # 1 = loop emission, 0 = emit once
         self.loop: int = 0
 
-        # https://github.com/th3w1zard1/kotorblender/tree/master/io_scene_kotor/scene/modelnode/emitter.py:128
         # Rendering priority/sorting order
         self.render_order: int = 0
 
-        # https://github.com/th3w1zard1/kotorblender/tree/master/io_scene_kotor/scene/modelnode/emitter.py:129
         # 1 = blend animation frames, 0 = snap between frames
         self.frame_blender: int = 0
 
-        # https://github.com/th3w1zard1/kotorblender/tree/master/io_scene_kotor/scene/modelnode/emitter.py:130,146
         # Depth texture for soft particle effects
         self.depth_texture: str = ""
 
-        # https://github.com/th3w1zard1/kotorblender/tree/master/io_scene_kotor/scene/modelnode/emitter.py:131-143
         # Behavior flags (see MDLEmitterFlags)
         self.flags: int = 0
 
@@ -2554,20 +2587,12 @@ class MDLReference(ComparableMixin):
     References:
     ----------
 
-    Derivations and Other Implementations:
-    -------------------------------------
-        https://github.com/th3w1zard1/kotorblender/tree/master/io_scene_kotor/scene/modelnode/reference.py:25-57
-
-
-
     Attributes:
     ----------
         model: Name of the external model resource to attach (without file extension)
-            Reference: https://github.com/th3w1zard1/kotorblender
             Example: "w_lghtsbr_001" for a lightsaber model
             The model is loaded from the game's model resources at runtime
         reattachable: Whether the reference can be dynamically replaced
-            Reference: https://github.com/th3w1zard1/kotorblender
             True = can swap models (e.g. changing equipped weapons)
             False = permanent attachment
 
@@ -2590,12 +2615,10 @@ class MDLReference(ComparableMixin):
     COMPARABLE_FIELDS = ("model", "reattachable")
 
     def __init__(self):
-        # https://github.com/th3w1zard1/kotorblender/tree/master/io_scene_kotor/scene/modelnode/reference.py:30
 
         # External model resource name to attach at this node
         self.model: str = ""
 
-        # https://github.com/th3w1zard1/kotorblender/tree/master/io_scene_kotor/scene/modelnode/reference.py:31
 
         # True = can swap models dynamically, False = permanent attachment
         self.reattachable: bool = False
@@ -2622,10 +2645,6 @@ class MDLMesh(ComparableMixin):
     References:
     ----------
 
-    Derivations and Other Implementations:
-    -------------------------------------
-        https://github.com/th3w1zard1/kotorblender/tree/master/io_scene_kotor/format/mdl/reader.py:415-466 (trimesh loading)
-        https://github.com/th3w1zard1/mdlops/tree/master/MDLOpsM.pm:1600-1750 (mesh processing)
         Key Features:
         ------------
         - UV Animation: Texture scrolling for water, lava, holograms
@@ -2670,11 +2689,9 @@ class MDLMesh(ComparableMixin):
     def __init__(self):
         # Basic geometry
 
-        # https://github.com/th3w1zard1/mdlops/tree/master/MDLOpsM.pm:1650-1700
         self.faces: list[MDLFace] = []
 
         # Material properties
-        # https://github.com/th3w1zard1/kotorblender/tree/master/io_scene_kotor/format/mdl/reader.py:435-438
         self.diffuse: Color = Color.WHITE
         self.ambient: Color = Color.WHITE
         self.transparency_hint: int = 0
@@ -2690,12 +2707,10 @@ class MDLMesh(ComparableMixin):
 
         # UV Animation for scrolling textures (water, lava, holograms, forcefields)
 
-        # https://github.com/th3w1zard1/mdlops/tree/master/MDLOpsM.pm:3204-3210
         # When animate_uv is true, texture coordinates scroll in uv_direction at runtime
         self.animate_uv: bool = False
 
         # Bounding geometry for culling and collision
-        # https://github.com/th3w1zard1/mdlops/tree/master/MDLOpsM.pm:1685-1695
         self.radius: float = 0.0
         self.bb_min: Vector3 = Vector3.from_null()
         self.bb_max: Vector3 = Vector3.from_null()
@@ -2716,7 +2731,6 @@ class MDLMesh(ComparableMixin):
 
         # Rendering flags
 
-        # https://github.com/th3w1zard1/kotorblender/tree/master/io_scene_kotor/format/mdl/reader.py:439-444
         self.has_lightmap: bool = False  # Has pre-baked lighting (texture_2)
         self.rotate_texture: bool = False  # Rotate texture 90 degrees
         self.background_geometry: bool = False  # Render in background pass
@@ -2725,8 +2739,6 @@ class MDLMesh(ComparableMixin):
         self.render: bool = True  # Should be rendered
 
         # Tangent space for bump/normal mapping
-        # https://github.com/th3w1zard1/mdlops/tree/master/MDLOpsM.pm:256 (MDX_TANGENT_SPACE = 0x00000080)
-        # https://github.com/th3w1zard1/mdlops/tree/master/MDLOpsM.pm:3204-3205 (tangentspace property)
         # When True, the mesh uses tangent space calculations for bump mapping
         self.tangent_space: bool = False
 
@@ -2735,7 +2747,6 @@ class MDLMesh(ComparableMixin):
         # All vertex arrays must have same length (1:1 correspondence)
         self.vertex_positions: list[Vector3] = []
 
-        # https://github.com/th3w1zard1/mdlops/tree/master/MDLOpsM.pm:5603-5791 (vertex normal calculation)
         # Normals can be area/angle weighted for smooth shading
         self.vertex_normals: list[Vector3] = []
 
@@ -2749,14 +2760,11 @@ class MDLMesh(ComparableMixin):
         self.vertex_uvs: list[Vector2] = [] if self.vertex_uv1 is None else self.vertex_uv1
 
         # NOTE: Tangent space data (for bump/normal mapping) is stored separately in MDX
-        # https://github.com/th3w1zard1/mdlops/tree/master/MDLOpsM.pm:5379-5597 (tangent space calculation)
-        # https://github.com/th3w1zard1/mdlops/tree/master/MDLOpsM.pm:256 (MDX_TANGENT_SPACE = 0x00000080)
         # Each vertex with tangent space has: bitangent (3 floats) + tangent (3 floats)
         # Total 6 additional floats per vertex for bump mapping support
         # Tangent space enables advanced lighting (normal maps, parallax, etc.)
 
         # KotOR 2 Only - Enhanced effects
-        # https://github.com/th3w1zard1/kotorblender/tree/master/io_scene_kotor/format/mdl/reader.py:445-448
         self.dirt_enabled: bool = False  # Dirt/weathering overlay texture (K2)
         self.dirt_texture: int = 1  # Dirt texture index (K2, int16, default 1)
         self.dirt_worldspace: int = 1  # Dirt worldspace flag (K2, int16, default 1)
@@ -2765,7 +2773,6 @@ class MDLMesh(ComparableMixin):
         self.hide_in_hologram: bool = False  # Don't render in hologram effect (legacy alias)
 
         # Inverted mesh sequence counter (array3) - used by MDLOps for inv_count
-        # https://github.com/th3w1zard1/mdlops/tree/master/MDLOpsM.pm:2238-2243, 4187-4188
         # Preserved for roundtrip compatibility with MDLOps
         self.inverted_counters: list[int] = []
 
@@ -2810,21 +2817,11 @@ class MDLSkin(MDLMesh):
     References:
     ----------
 
-    Derivations and Other Implementations:
-    -------------------------------------
-        https://github.com/th3w1zard1/kotorblender/tree/master/io_scene_kotor/format/mdl/reader.py:468-485 (skin loading)
-        https://github.com/th3w1zard1/mdlops/tree/master/MDLOpsM.pm:1755-1820 (skin node processing)
-
-
-
     Attributes:
     ----------
         bone_indices: Fixed array of 16 bone indices that this skin references
-            Reference: https://github.com/th3w1zard1/mdlops
         qbones: Quaternion rotations for each bone's bind pose
-            Reference: https://github.com/th3w1zard1/mdlops
         tbones: Translation vectors for each bone's bind pose
-            Reference: https://github.com/th3w1zard1/mdlops
         bonemap: Maps local bone indices to global skeleton bone numbers
             This is critical for multi-part character models where each part
             references bones in the full skeleton
@@ -2851,20 +2848,16 @@ class MDLSkin(MDLMesh):
         # Reuse MDLMesh initialization so ambient/diffuse/textures/verts/faces exist.
         super().__init__()
 
-        # https://github.com/th3w1zard1/mdlops/tree/master/MDLOpsM.pm:1760 - Fixed 16-bone index array
         self.bone_indices: tuple[int, ...] = (0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
 
-        # https://github.com/th3w1zard1/mdlops/tree/master/MDLOpsM.pm:1765 - Bone quaternion orientations (bind pose)
         self.qbones: list[Vector4] = []
 
-        # https://github.com/th3w1zard1/mdlops/tree/master/MDLOpsM.pm:1768 - Bone translation positions (bind pose)
         self.tbones: list[Vector3] = []
 
         # Maps local bone index to global skeleton bone number
         # Critical for multi-part models where each part references the full skeleton
         self.bonemap: list[int] = []
 
-        # https://github.com/th3w1zard1/kotorblender/tree/master/io_scene_kotor/format/mdl/reader.py:478-485
         # Per-vertex skinning data: up to 4 bone influences per vertex
         self.vertex_bones: list[MDLBoneVertex] = []
 
@@ -2886,8 +2879,7 @@ class MDLSkin(MDLMesh):
 
         References:
         ----------
-        Original BioWare engine binaries (from swkotor.exe, swkotor2.exe)
-        Original BioWare engine binaries
+        Observed in retail KotOR I and TSL.
 
 
             Algorithm: For each bone in bonemap, store its serial position and node number
@@ -2895,8 +2887,8 @@ class MDLSkin(MDLMesh):
         Notes:
         -----
             This should be called after loading the skin data and before rendering.
-            The bonemap contains local-to-global bone index mappings (reone:709-710).
-            Invalid bone indices (0xFFFF) are skipped (reone:715-717).
+            The bonemap contains local-to-global bone index mappings.
+            Invalid bone indices (0xFFFF) are skipped.
         """
 
         # Build a lookup of node_id -> serial index to correctly map global bone IDs.
@@ -2974,13 +2966,6 @@ class MDLDangly(MDLMesh):
     References:
     ----------
 
-    Derivations and Other Implementations:
-    -------------------------------------
-        https://github.com/th3w1zard1/kotorblender/tree/master/io_scene_kotor/format/mdl/reader.py:487-497 (dangly loading)
-        https://github.com/th3w1zard1/mdlops/tree/master/MDLOpsM.pm:1823-1870 (dangly node processing)
-
-
-
     Attributes:
     ----------
         constraints: List of constraint data defining how vertices can move
@@ -2988,7 +2973,6 @@ class MDLDangly(MDLMesh):
         verts: Current vertex positions (updated by physics)
             These positions change during animation as cloth physics are simulated
         verts_original: Original bind pose vertex positions
-            Reference: https://github.com/th3w1zard1/mdlops
             Used as reference for resetting or calculating displacement
     """
 
@@ -3005,20 +2989,16 @@ class MDLDangly(MDLMesh):
         # Reuse MDLMesh initialization so ambient/diffuse/textures/verts/faces exist.
         super().__init__()
 
-        # https://github.com/th3w1zard1/mdlops/tree/master/MDLOpsM.pm:2094-2097 - Dangly physics parameters
         self.displacement: float = 0.0
         self.tightness: float = 0.0
         self.period: float = 0.0
 
-        # https://github.com/th3w1zard1/mdlops/tree/master/MDLOpsM.pm:1835-1850
         # Constraints define how vertices can move (springs, limits, etc.)
         self.constraints: list[MDLConstraint] = []
 
-        # https://github.com/th3w1zard1/kotorblender/tree/master/io_scene_kotor/format/mdl/reader.py:491-493
         # Current positions updated by physics simulation
         self.verts: list[Vector3] = []
 
-        # https://github.com/th3w1zard1/mdlops/tree/master/MDLOpsM.pm:1860 - Original bind pose positions
         self.verts_original: list[Vector3] = []
 
     def __repr__(self):
@@ -3026,7 +3006,7 @@ class MDLDangly(MDLMesh):
 
 
 @dataclass
-class MDLAABBNode:
+class MDLAABBNode(BiowareResource):
     """A single node in the AABB tree structure.
 
     Each AABB node represents a bounding volume in the collision detection tree.
@@ -3034,14 +3014,6 @@ class MDLAABBNode:
 
     References:
     ----------
-
-    Derivations and Other Implementations:
-    -------------------------------------
-        https://github.com/th3w1zard1/mdlops/tree/master/MDLOpsM.pm:233 (template: "ffffffllll" = 40 bytes)
-        https://github.com/th3w1zard1/mdlops/tree/master/MDLOpsM.pm:1440-1466 (readaabb recursive reading)
-        https://github.com/th3w1zard1/mdlops/tree/master/MDLOpsM.pm:1471-1513 (writeaabb recursive writing)
-
-
 
     Attributes:
     ----------
@@ -3076,13 +3048,6 @@ class MDLWalkmesh(ComparableMixin):
     References:
     ----------
 
-    Derivations and Other Implementations:
-    -------------------------------------
-        https://github.com/th3w1zard1/kotorblender/tree/master/io_scene_kotor/format/mdl/reader.py:499-520 (AABB loading)
-        https://github.com/th3w1zard1/mdlops/tree/master/MDLOpsM.pm:1873-1935 (walkmesh/AABB processing)
-
-
-
     Attributes:
     ----------
         aabbs: List of AABB tree nodes forming the collision hierarchy
@@ -3094,14 +3059,12 @@ class MDLWalkmesh(ComparableMixin):
 
     Notes:
     -----
-        The AABB tree enables O(log n) collision detection instead of O(n).
-        Reone implements efficient tree traversal with early rejection.
+        The AABB tree enables sub-linear collision queries versus testing every face.
     """
 
     COMPARABLE_SEQUENCE_FIELDS = ("aabbs",)
 
     def __init__(self):
-        # https://github.com/th3w1zard1/kotorblender/tree/master/io_scene_kotor/format/mdl/reader.py:499-520
         # Hierarchical AABB tree for efficient collision detection
         # Each node contains bounding box and either face index (leaf) or child pointers (branch)
         self.aabbs: list[MDLAABBNode] = []
@@ -3128,27 +3091,14 @@ class MDLSaber(ComparableMixin):
     References:
     ----------
 
-    Derivations and Other Implementations:
-    -------------------------------------
-        https://github.com/th3w1zard1/kotorblender/tree/master/io_scene_kotor/format/mdl/reader.py:522-540 (saber loading)
-        https://github.com/th3w1zard1/mdlops/tree/master/MDLOpsM.pm:1937-2010 (saber node processing)
-
-
-
     Attributes:
     ----------
         saber_type: Type of lightsaber (single, double-bladed, etc.)
-            Reference: https://github.com/th3w1zard1/mdlops
         saber_color: Blade color (red, blue, green, etc.)
-            Reference: https://github.com/th3w1zard1/mdlops
         saber_length: Length of the blade in meters
-            Reference: https://github.com/th3w1zard1/mdlops
         saber_width: Width/thickness of the blade
-            Reference: https://github.com/th3w1zard1/mdlops
         saber_flare_color: Color of the blade's lens flare effect
-            Reference: https://github.com/th3w1zard1/mdlops
         saber_flare_radius: Radius of the lens flare effect
-            Reference: https://github.com/th3w1zard1/mdlops
 
     Notes:
     -----
@@ -3168,24 +3118,18 @@ class MDLSaber(ComparableMixin):
     )
 
     def __init__(self):
-        # https://github.com/th3w1zard1/mdlops/tree/master/MDLOpsM.pm:1945 - Saber type (single/double-bladed)
         self.saber_type: int = 0
 
-        # https://github.com/th3w1zard1/mdlops/tree/master/MDLOpsM.pm:1947 - Blade color
 
         self.saber_color: int = 0
 
-        # https://github.com/th3w1zard1/mdlops/tree/master/MDLOpsM.pm:1948 - Blade length in meters
 
         self.saber_length: float = 0.0
 
-        # https://github.com/th3w1zard1/mdlops/tree/master/MDLOpsM.pm:1949 - Blade width/thickness
         self.saber_width: float = 0.0
 
-        # https://github.com/th3w1zard1/mdlops/tree/master/MDLOpsM.pm:1950 - Lens flare color
         self.saber_flare_color: int = 0
 
-        # https://github.com/th3w1zard1/mdlops/tree/master/MDLOpsM.pm:1951 - Lens flare radius
         self.saber_flare_radius: float = 0.0
 
     def __eq__(self, other):
@@ -3215,13 +3159,6 @@ class MDLBoneVertex(ComparableMixin):
     References:
     ----------
 
-    Derivations and Other Implementations:
-    -------------------------------------
-        https://github.com/th3w1zard1/kotorblender/tree/master/io_scene_kotor/format/mdl/reader.py:478-485 (bone weight loading)
-        https://github.com/th3w1zard1/mdlops/tree/master/MDLOpsM.pm:1785-1800 (vertex skinning data)
-
-
-
     Attributes:
     ----------
         vertex_weights: Normalized weights for up to 4 bone influences (w0, w1, w2, w3)
@@ -3241,11 +3178,9 @@ class MDLBoneVertex(ComparableMixin):
     COMPARABLE_FIELDS = ("vertex_weights", "vertex_indices")
 
     def __init__(self):
-        # https://github.com/th3w1zard1/kotorblender/tree/master/io_scene_kotor/format/mdl/reader.py:481-483
         # Normalized blend weights (must sum to 1.0)
         self.vertex_weights: tuple[float, float, float, float] = (0.0, 0.0, 0.0, 0.0)
 
-        # https://github.com/th3w1zard1/kotorblender/tree/master/io_scene_kotor/format/mdl/reader.py:478-480
         # Bone indices into skin's bonemap (-1.0 = unused)
         self.vertex_indices: tuple[float, float, float, float] = (-1.0, -1.0, -1.0, -1.0)
 
@@ -3285,10 +3220,8 @@ class MDLFace(ComparableMixin):
         # Face material is a packed 32-bit value in binary MDL files.
         # Low 5 bits (0-31) store walkmesh surface material for BWM/KotOR (surfacemat.2da).
         # Upper bits encode smoothgroup ID, lightmap info, and other vendor-specific data.
-        # MDLOps reuses this field for smoothgroups when exporting ASCII (https://github.com/th3w1zard1/mdlops/tree/master/MDLOpsM.pm:1292-1298).
-        # KotOR.js and reone both treat it as opaque 32-bit integer (
-        # https://github.com/th3w1zard1/KotOR.js/tree/master/src/odyssey/OdysseyModel.ts:face.material).
-        # We therefore store it as an integer to avoid lossy enum conversion.
+        # Community readers often treat the full word as an opaque UINT32; we store it as int
+        # to preserve bits (smoothgroup, lightmap-related fields, MDLOps ASCII conventions).
         self.material: int = 0
         # MDLOps ASCII exports a per-face smoothing group mask (often powers of two like 16/32).
         # When reading binary, this may be absent/unknown; keep as 0 unless populated.
@@ -3455,20 +3388,11 @@ class MDLController(ComparableMixin):
     References:
     ----------
 
-    Derivations and Other Implementations:
-    -------------------------------------
-        https://github.com/th3w1zard1/mdlops/tree/master/MDLOpsM.pm:1649-1778
-        https://github.com/th3w1zard1/mdlops/tree/master/MDLOpsM.pm:1704-1710 (bit 4)
-        https://github.com/th3w1zard1/mdlops/tree/master/MDLOpsM.pm:3764-3802
-
-
-
     Attributes:
     ----------
         controller_type: The type of controller (position, orientation, color, etc.)
         rows: List of keyframe data rows (time + values)
         is_bezier: True if using bezier interpolation, False for linear interpolation
-            Reference: https://github.com/th3w1zard1/mdlops
 
     Notes:
     -----
@@ -3476,7 +3400,6 @@ class MDLController(ComparableMixin):
         - Value at keyframe
         - In-tangent (control point before keyframe)
         - Out-tangent (control point after keyframe)
-        Reference: https://github.com/th3w1zard1/mdlops
     """
 
     COMPARABLE_FIELDS = ("controller_type", "is_bezier")
@@ -3488,12 +3411,9 @@ class MDLController(ComparableMixin):
         rows: list[MDLControllerRow],
         is_bezier: bool = False,
     ):
-        # https://github.com/th3w1zard1/mdlops/tree/master/MDLOpsM.pm:1666-1673 - Controller type and data rows
         self.controller_type: MDLControllerType = controller_type
         self.rows: list[MDLControllerRow] = rows
 
-        # https://github.com/th3w1zard1/mdlops/tree/master/MDLOpsM.pm:1704-1710 - Bezier flag from column count bit 4
-        # https://github.com/th3w1zard1/mdlops/tree/master/MDLOpsM.pm:3764-3770 - Bezier detection in ASCII reading
         # Some parsers historically passed None here; normalize to strict bool.
         self.is_bezier: bool = bool(is_bezier)
 

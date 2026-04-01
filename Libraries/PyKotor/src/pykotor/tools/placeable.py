@@ -88,14 +88,7 @@ def extract_placeable_walkmesh(
 
     References:
     ----------
-        Original BioWare engine binaries (from swkotor.exe, swkotor2.exe)
-        Original BioWare engine binaries
-        Derivations and Other Implementations:
-        ----------
-        https://github.com/th3w1zard1/KotOR.js/tree/master/src/module/ModulePlaceable.ts:684
-
-
-
+        Observed retail KotOR I and KotOR II behavior.
     Args:
     ----
         utp_data: UTP placeable data bytes

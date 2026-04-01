@@ -19,6 +19,7 @@ from __future__ import annotations
 import os
 import time
 
+from contextlib import contextmanager
 from pathlib import Path
 from typing import TYPE_CHECKING
 
@@ -31,7 +32,6 @@ from qtpy.QtCore import (
     QFileDevice,
     QFileInfo,
     QModelIndex,
-    QTimeZone,
     Qt,  # pyright: ignore[reportPrivateImportUsage]
 )
 from qtpy.QtGui import QIcon
@@ -49,6 +49,36 @@ from utility.gui.qt.adapters.filesystem.pyfilesystemmodelsorter import PyFileSys
 from utility.gui.qt.adapters.filesystem.pyfilesystemnode import PyFileSystemNode
 from utility.gui.qt.adapters.filesystem.pyfilesystemwatcher import PyFileSystemWatcher
 from utility.gui.qt.adapters.filesystem.qfilesystemmodelnodekey import PyQFileSystemModelNodePathKey
+from utility.gui.qt.adapters.filesystem.qtimezone_compat import qtimezone_utc
+
+# PyQt6: QFileDevice.Permission (Flag). Some bindings expose a Permissions type alias.
+_QFileDevicePermissionsType = getattr(QFileDevice, "Permissions", QFileDevice.Permission)
+
+
+def _shutdown_filesystem_model(model: PyFileSystemModel) -> None:
+    """Stop the model's background QFileInfoGatherer thread (avoids teardown crashes on Windows)."""
+    gatherer = model._fileInfoGatherer  # noqa: SLF001
+    gatherer.requestAbort()
+    gatherer.wait()
+
+
+@contextmanager
+def filesystem_model_scope():
+    """PyFileSystemModel with guaranteed QFileInfoGatherer shutdown."""
+    model = PyFileSystemModel()
+    try:
+        yield model
+    finally:
+        _shutdown_filesystem_model(model)
+
+
+@pytest.fixture
+def temp_test_dir(tmp_path: Path) -> Path:
+    """Empty temp directory for tests that create their own files."""
+    d = tmp_path / "temp_test"
+    d.mkdir(parents=True, exist_ok=True)
+    return d
+
 
 # Constants matching C++ tests
 WAITTIME = 1000  # milliseconds
@@ -135,7 +165,7 @@ class TestPyQExtendedInformation:
         ext_info = PyQExtendedInformation(file_info)
 
         permissions = ext_info.permissions()
-        assert isinstance(permissions, QFileDevice.Permissions)
+        assert isinstance(permissions, _QFileDevicePermissionsType)
         assert permissions & QFileDevice.Permission.ReadUser
 
     def test_extended_information_last_modified(self, temp_test_dir):
@@ -146,7 +176,7 @@ class TestPyQExtendedInformation:
         file_info = QFileInfo(str(test_file))
         ext_info = PyQExtendedInformation(file_info)
 
-        last_modified = ext_info.lastModified(QTimeZone.UTC)
+        last_modified = ext_info.lastModified(qtimezone_utc())
         assert isinstance(last_modified, QDateTime)
         assert last_modified.isValid()
 
@@ -309,7 +339,7 @@ class TestPyFileSystemNode:
         node.populate(ext_info)
 
         permissions = node.permissions()
-        assert isinstance(permissions, QFileDevice.Permissions)
+        assert isinstance(permissions, _QFileDevicePermissionsType)
         assert node.isReadable() == ((permissions & QFileDevice.Permission.ReadUser) != 0)
         assert node.isWritable() == ((permissions & QFileDevice.Permission.WriteUser) != 0)
         assert node.isExecutable() == ((permissions & QFileDevice.Permission.ExeUser) != 0)
@@ -525,8 +555,9 @@ class TestPyFileSystemModelSorter:
         py_node = PyFileSystemNode("test.py")
         py_node.populate(py_info)
 
-        # Text < Python (alphabetically)
-        assert sorter.compareNodes(txt_node, py_node) is True
+        # Locale/natural compare: "Python File" < "Text File" (P before T).
+        assert sorter.compareNodes(py_node, txt_node) is True
+        assert sorter.compareNodes(txt_node, py_node) is False
 
     def test_sorter_compare_nodes_time_column(self, temp_test_dir):
         """Test compareNodes for TimeColumn."""
@@ -581,11 +612,14 @@ class TestPyFileSystemWatcher:
 
     @pytest.fixture
     def watcher(self, qtbot):
-        """Create a PyFileSystemWatcher for testing."""
+        """Create a PyFileSystemWatcher for testing.
+
+        No QWidget parent: qtbot only tracks QWidget; parenting under a disposable
+        QWidget can destroy the watcher (and its QTimer) during teardown races.
+        """
         watcher = PyFileSystemWatcher()
-        qtbot.addWidget(watcher)
         yield watcher
-        # Cleanup is handled by qtbot
+        watcher._timer.stop()  # noqa: SLF001
 
     def test_watcher_constructor(self, watcher):
         """Test default constructor."""
@@ -696,9 +730,8 @@ class TestPyFileInfoGatherer:
 
     @pytest.fixture
     def gatherer(self, qtbot):
-        """Create a PyFileInfoGatherer for testing."""
+        """Create a PyFileInfoGatherer for testing (QThread; do not qtbot.addWidget)."""
         gatherer = PyFileInfoGatherer()
-        qtbot.addWidget(gatherer)
         yield gatherer
         gatherer.requestAbort()
         gatherer.wait()
@@ -800,8 +833,8 @@ class TestPyFileSystemModel:
     def model(self, qtbot):
         """Create a PyFileSystemModel for testing."""
         model = PyFileSystemModel()
-        qtbot.addWidget(model)
         yield model
+        _shutdown_filesystem_model(model)
 
     @pytest.fixture
     def temp_test_dir(self, tmp_path):
@@ -819,9 +852,6 @@ class TestPyFileSystemModel:
 
     def test_model_index_path(self, model):
         """Test indexPath() - matching C++ test_indexPath (lines 160-175)."""
-        if os.name == "nt":
-            pytest.skip("indexPath test is not for Windows")
-
         depth = len(str(Path.cwd()).split(os.sep))
         model.setRootPath(str(Path.cwd()))
 
@@ -829,7 +859,11 @@ class TestPyFileSystemModel:
         for i in range(depth * 2 + 2):
             back_path += "../"
             idx = model.index(back_path)
-            if i != depth - 1:
+            if os.name == "nt":
+                # Extra ".." segments cannot escape past a drive root; the path stays on
+                # the volume and QFileSystemModel keeps returning a valid drive index.
+                assert idx.isValid()
+            elif i != depth - 1:
                 assert idx.isValid()
             else:
                 assert not idx.isValid()
@@ -849,8 +883,8 @@ class TestPyFileSystemModel:
         if not success:
             pytest.skip(f"Model did not populate in time: {timed_out}")
 
-        assert model.rootPath() == str(temp_test_dir)
-        assert model.rootDirectory().absolutePath() == str(temp_test_dir)
+        assert Path(model.rootPath()).resolve() == temp_test_dir.resolve()
+        assert Path(model.rootDirectory().absolutePath()).resolve() == temp_test_dir.resolve()
 
     def test_model_read_only(self, model, temp_test_dir, qtbot):
         """Test readOnly() - matching C++ test_readOnly (lines 243-267)."""
@@ -1099,28 +1133,25 @@ class TestComponentStateConsistency:
 
     def test_pyfilesystemmodel_state_consistency(self, qtbot, temp_test_dir):
         """Test PyFileSystemModel state consistency."""
-        model = PyFileSystemModel()
-        qtbot.addWidget(model)
+        with filesystem_model_scope() as model:
+            root = model.setRootPath(str(temp_test_dir))
+            qtbot.wait(500)
 
-        root = model.setRootPath(str(temp_test_dir))
-        qtbot.wait(500)
+            success, _ = try_wait(lambda: model.rowCount(root) >= 0, timeout_ms=5000)
+            if not success:
+                pytest.skip("Model did not populate")
 
-        success, _ = try_wait(lambda: model.rowCount(root) >= 0, timeout_ms=5000)
-        if not success:
-            pytest.skip("Model did not populate")
+            # Test state after various operations
+            original_filter = model.filter()
+            model.setFilter(QDir.Filter.Files)
+            assert model.filter() != original_filter
 
-        # Test state after various operations
-        original_filter = model.filter()
-        model.setFilter(QDir.Filter.Files)
-        assert model.filter() != original_filter
-
-        model.setFilter(original_filter)
-        assert model.filter() == original_filter
+            model.setFilter(original_filter)
+            assert model.filter() == original_filter
 
     def test_pyfileinfogatherer_state_consistency(self, qtbot):
         """Test PyFileInfoGatherer state consistency."""
         gatherer = PyFileInfoGatherer()
-        qtbot.addWidget(gatherer)
 
         original_watching = gatherer.isWatching()
         gatherer.setWatching(False)
@@ -1192,7 +1223,6 @@ class TestComponentEdgeCases:
     def test_watcher_duplicate_paths(self, qtbot, temp_test_dir):
         """Test PyFileSystemWatcher with duplicate paths."""
         watcher = PyFileSystemWatcher()
-        qtbot.addWidget(watcher)
 
         test_file = temp_test_dir / "test.txt"
         test_file.write_text("content")
@@ -1206,14 +1236,12 @@ class TestComponentEdgeCases:
 
     def test_model_invalid_path(self, qtbot):
         """Test PyFileSystemModel with invalid path."""
-        model = PyFileSystemModel()
-        qtbot.addWidget(model)
+        with filesystem_model_scope() as model:
+            invalid_path = "/nonexistent/invalid/path/12345"
+            root = model.setRootPath(invalid_path)
 
-        invalid_path = "/nonexistent/invalid/path/12345"
-        root = model.setRootPath(invalid_path)
-
-        # Should not crash
-        assert isinstance(root, QModelIndex)
+            # Should not crash
+            assert isinstance(root, QModelIndex)
 
 
 # ============================================================================
@@ -1233,20 +1261,17 @@ class TestComponentPerformance:
         for i in range(100):
             (large_dir / f"file{i:03d}.txt").write_text(f"content {i}")
 
-        model = PyFileSystemModel()
-        qtbot.addWidget(model)
+        with filesystem_model_scope() as model:
+            root = model.setRootPath(str(large_dir))
+            qtbot.wait(1000)
 
-        root = model.setRootPath(str(large_dir))
-        qtbot.wait(1000)
-
-        success, _ = try_wait(lambda: model.rowCount(root) >= 100, timeout_ms=10000)
-        if success:
-            assert model.rowCount(root) >= 100
+            success, _ = try_wait(lambda: model.rowCount(root) >= 100, timeout_ms=10000)
+            if success:
+                assert model.rowCount(root) >= 100
 
     def test_watcher_many_paths(self, qtbot, tmp_path):
         """Test PyFileSystemWatcher with many paths."""
         watcher = PyFileSystemWatcher()
-        qtbot.addWidget(watcher)
 
         test_dir = tmp_path / "watchdir"
         test_dir.mkdir()
@@ -1280,8 +1305,8 @@ class TestPyFileSystemModelAdvanced:
     def model(self, qtbot):
         """Create a PyFileSystemModel for testing."""
         model = PyFileSystemModel()
-        qtbot.addWidget(model)
         yield model
+        _shutdown_filesystem_model(model)
 
     @pytest.fixture
     def temp_test_dir(self, tmp_path):
@@ -1732,7 +1757,6 @@ class TestAllComponentsIntegration:
     def test_fileinfogatherer_with_watcher(self, qtbot, temp_test_dir):
         """Test PyFileInfoGatherer with PyFileSystemWatcher integration."""
         gatherer = PyFileInfoGatherer()
-        qtbot.addWidget(gatherer)
 
         # Gatherer should create watcher internally
         gatherer.setWatching(True)
@@ -1753,52 +1777,46 @@ class TestAllComponentsIntegration:
 
     def test_filesystemmodel_with_gatherer(self, qtbot, temp_test_dir):
         """Test PyFileSystemModel with PyFileInfoGatherer integration."""
-        model = PyFileSystemModel()
-        qtbot.addWidget(model)
+        with filesystem_model_scope() as model:
+            root = model.setRootPath(str(temp_test_dir))
+            qtbot.wait(1000)
 
-        root = model.setRootPath(str(temp_test_dir))
-        qtbot.wait(1000)
-
-        # Model should use gatherer internally
-        success, _ = try_wait(lambda: model.rowCount(root) >= 0, timeout_ms=10000)
-        if success:
-            # Verify model populated
-            assert model.rowCount(root) >= 0
+            # Model should use gatherer internally
+            success, _ = try_wait(lambda: model.rowCount(root) >= 0, timeout_ms=10000)
+            if success:
+                # Verify model populated
+                assert model.rowCount(root) >= 0
 
     def test_all_components_state_consistency(self, qtbot, temp_test_dir):
         """Test that all components maintain consistent state."""
-        # Create all components
         model = PyFileSystemModel()
-        qtbot.addWidget(model)
-
         gatherer = PyFileInfoGatherer()
-        qtbot.addWidget(gatherer)
-
         watcher = PyFileSystemWatcher()
-        qtbot.addWidget(watcher)
+        try:
+            # Set up model
+            model.setRootPath(str(temp_test_dir))
+            qtbot.wait(500)
 
-        # Set up model
-        root = model.setRootPath(str(temp_test_dir))
-        qtbot.wait(500)
+            # Set up gatherer
+            test_file = temp_test_dir / "test.txt"
+            test_file.write_text("content")
 
-        # Set up gatherer
-        test_file = temp_test_dir / "test.txt"
-        test_file.write_text("content")
+            gatherer.watchPaths([str(test_file)])
+            qtbot.wait(200)
 
-        gatherer.watchPaths([str(test_file)])
-        qtbot.wait(200)
+            # Set up watcher
+            watcher.addPath(str(test_file))
+            qtbot.wait(200)
 
-        # Set up watcher
-        watcher.addPath(str(test_file))
-        qtbot.wait(200)
-
-        # All should work without conflicts
-        assert model.rootPath() == str(temp_test_dir)
-        assert gatherer.isWatching() is True
-        assert len(watcher.files()) >= 1
-
-        gatherer.requestAbort()
-        gatherer.wait()
+            # All should work without conflicts
+            assert Path(model.rootPath()).resolve() == temp_test_dir.resolve()
+            assert gatherer.isWatching() is True
+            assert len(watcher.files()) >= 1
+        finally:
+            gatherer.requestAbort()
+            gatherer.wait()
+            watcher._timer.stop()  # noqa: SLF001
+            _shutdown_filesystem_model(model)
 
 
 # ============================================================================
@@ -1858,7 +1876,6 @@ class TestComponentEdgeCasesAdvanced:
     def test_watcher_empty_path(self, qtbot):
         """Test PyFileSystemWatcher with empty path."""
         watcher = PyFileSystemWatcher()
-        qtbot.addWidget(watcher)
 
         # Should handle empty path gracefully
         try:
@@ -1869,14 +1886,12 @@ class TestComponentEdgeCasesAdvanced:
 
     def test_model_invalid_root_path(self, qtbot):
         """Test PyFileSystemModel with invalid root path."""
-        model = PyFileSystemModel()
-        qtbot.addWidget(model)
+        with filesystem_model_scope() as model:
+            invalid_path = "/nonexistent/invalid/path/12345"
+            root = model.setRootPath(invalid_path)
 
-        invalid_path = "/nonexistent/invalid/path/12345"
-        root = model.setRootPath(invalid_path)
-
-        # Should not crash
-        assert isinstance(root, QModelIndex)
+            # Should not crash
+            assert isinstance(root, QModelIndex)
 
 
 # ============================================================================
@@ -1889,30 +1904,27 @@ class TestComponentSignals:
 
     def test_filesystemmodel_all_signals(self, qtbot, temp_test_dir):
         """Test all PyFileSystemModel signals."""
-        model = PyFileSystemModel()
-        qtbot.addWidget(model)
+        with filesystem_model_scope() as model:
+            # Create spies for all signals
+            root_changed_spy = QSignalSpy(model.rootPathChanged)
+            rows_inserted_spy = QSignalSpy(model.rowsInserted)
+            rows_removed_spy = QSignalSpy(model.rowsRemoved)
+            data_changed_spy = QSignalSpy(model.dataChanged)
 
-        # Create spies for all signals
-        root_changed_spy = QSignalSpy(model.rootPathChanged)
-        rows_inserted_spy = QSignalSpy(model.rowsInserted)
-        rows_removed_spy = QSignalSpy(model.rowsRemoved)
-        data_changed_spy = QSignalSpy(model.dataChanged)
+            root = model.setRootPath(str(temp_test_dir))
+            qtbot.wait(500)
 
-        root = model.setRootPath(str(temp_test_dir))
-        qtbot.wait(500)
-
-        success, _ = try_wait(lambda: model.rowCount(root) >= 0, timeout_ms=5000)
-        if success:
-            # Signals may be emitted
-            assert isinstance(root_changed_spy, QSignalSpy)
-            assert isinstance(rows_inserted_spy, QSignalSpy)
-            assert isinstance(rows_removed_spy, QSignalSpy)
-            assert isinstance(data_changed_spy, QSignalSpy)
+            success, _ = try_wait(lambda: model.rowCount(root) >= 0, timeout_ms=5000)
+            if success:
+                # Signals may be emitted
+                assert isinstance(root_changed_spy, QSignalSpy)
+                assert isinstance(rows_inserted_spy, QSignalSpy)
+                assert isinstance(rows_removed_spy, QSignalSpy)
+                assert isinstance(data_changed_spy, QSignalSpy)
 
     def test_fileinfogatherer_all_signals(self, qtbot, temp_test_dir):
         """Test all PyFileInfoGatherer signals."""
         gatherer = PyFileInfoGatherer()
-        qtbot.addWidget(gatherer)
 
         updates_spy = QSignalSpy(gatherer.updates)
         new_list_spy = QSignalSpy(gatherer.newListOfFiles)
@@ -1942,35 +1954,33 @@ class TestComponentBehavior:
 
     def test_model_filter_combinations(self, qtbot, temp_test_dir):
         """Test various filter combinations matching C++ test_filters."""
-        model = PyFileSystemModel()
-        qtbot.addWidget(model)
+        with filesystem_model_scope() as model:
+            # Create test files
+            (temp_test_dir / "a.txt").write_text("a")
+            (temp_test_dir / "b.txt").write_text("b")
+            (temp_test_dir / "c.txt").write_text("c")
+            (temp_test_dir / "subdir").mkdir()
+            (temp_test_dir / ".hidden").write_text("hidden")
 
-        # Create test files
-        (temp_test_dir / "a.txt").write_text("a")
-        (temp_test_dir / "b.txt").write_text("b")
-        (temp_test_dir / "c.txt").write_text("c")
-        (temp_test_dir / "subdir").mkdir()
-        (temp_test_dir / ".hidden").write_text("hidden")
+            root = model.setRootPath(str(temp_test_dir))
+            qtbot.wait(500)
 
-        root = model.setRootPath(str(temp_test_dir))
-        qtbot.wait(500)
+            success, _ = try_wait(lambda: model.rowCount(root) >= 0, timeout_ms=5000)
+            if not success:
+                pytest.skip("Model did not populate")
 
-        success, _ = try_wait(lambda: model.rowCount(root) >= 0, timeout_ms=5000)
-        if not success:
-            pytest.skip("Model did not populate")
+            # Test different filter combinations
+            filter_combinations = [
+                (QDir.Filter.Dirs, 2),  # Only dirs (including . and subdir)
+                (QDir.Filter.Files, 3),  # Only files (a, b, c)
+                (QDir.Filter.Dirs | QDir.Filter.Files, 5),  # Both
+                (QDir.Filter.Dirs | QDir.Filter.Files | QDir.Filter.Hidden, 6),  # Including hidden
+            ]
 
-        # Test different filter combinations
-        filter_combinations = [
-            (QDir.Filter.Dirs, 2),  # Only dirs (including . and subdir)
-            (QDir.Filter.Files, 3),  # Only files (a, b, c)
-            (QDir.Filter.Dirs | QDir.Filter.Files, 5),  # Both
-            (QDir.Filter.Dirs | QDir.Filter.Files | QDir.Filter.Hidden, 6),  # Including hidden
-        ]
-
-        for filter_val, expected_count in filter_combinations:
-            model.setFilter(filter_val)
-            qtbot.wait(200)
-            # Note: exact count may vary, but should be close
+            for filter_val, expected_count in filter_combinations:
+                model.setFilter(filter_val)
+                qtbot.wait(200)
+                # Note: exact count may vary, but should be close
 
 
 # ============================================================================

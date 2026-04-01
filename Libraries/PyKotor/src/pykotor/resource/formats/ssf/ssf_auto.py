@@ -41,7 +41,7 @@ def detect_ssf(
     def check(first4: str) -> ResourceType:
         if first4 == "SSF ":
             return ResourceType.SSF
-        if "<" in first4:  # sourcery skip: assign-if-exp, reintroduce-else
+        if "<" in first4:
             return ResourceType.SSF_XML
         # if "{" in first4:
         #    return ResourceType.SSF_JSON

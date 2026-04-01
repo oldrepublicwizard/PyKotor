@@ -1,8 +1,10 @@
 # Holocron Toolset: Module Editor
 
-*This page is merged from the toolset in-app help (Tools/HolocronToolset/src/toolset/help/tools/).*
+The Module Editor is the primary workspace for editing module content in 3D or 2D. Use it whenever you need to place or reposition creatures, placeables, waypoints, triggers, doors, cameras, or other spatial objects within an existing area. It renders the area geometry alongside all placed instances from the currently loaded module, and lets you select, move, rotate, duplicate, and delete them directly in the viewport.
 
-The Module Editor (Module Designer) is designed to make editing modules easier through the use of both a 3D and 2D viewport. Open it from the Main Window via **Tools** → **Module Designer**.
+Open it from the Main Window via **Tools** → **Module Designer**.
+
+**Typical workflow:** Load a module → navigate the viewport to the location you want to edit → place or select instances → adjust position and orientation → save. For building a new area from scratch, use the [Map Builder](Holocron-Toolset-Map-Builder) instead.
 
 ## Controls
 
@@ -57,6 +59,8 @@ You can edit the controls in **Settings** (Main Window) under the **Module Desig
 
 ### See also
 
+- [Holocron Toolset: Getting started](Holocron-Toolset-Getting-Started) -- Installation and first launch
+- [Holocron Toolset: Module resources](Holocron-Toolset-Module-Resources) -- Module tab and resource browsing
 - [GFF-GIT](GFF-File-Format#git-game-instance-template) -- Game Instance Template (placeables, creatures, doors, etc.)
-- [GFF-ARE](GFF-ARE) -- Area format
+- [GFF-ARE](GFF-Module-and-Area#are) -- Area format
 - [Indoor Map Builder User Guide](Indoor-Map-Builder-User-Guide) -- Building new areas

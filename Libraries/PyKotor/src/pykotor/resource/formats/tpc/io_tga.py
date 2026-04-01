@@ -6,6 +6,9 @@ import io
 
 from typing import TYPE_CHECKING
 
+import kaitaistruct
+
+from bioware_kaitai_formats.tga import Tga
 from pykotor.resource.formats.tpc.tga import read_tga
 from pykotor.resource.formats.tpc.tpc_data import TPC, TPCLayer, TPCTextureFormat
 from pykotor.resource.type import ResourceReader, ResourceWriter, autoclose
@@ -88,7 +91,7 @@ class TPCTGAReader(ResourceReader):
 
     References:
     ----------
-        See tpc_data module docstring for engine addresses (K1 + TSL TODO). Standard TGA specification for header format.
+        Standard TGA header layout (Truevision specification).
 
     """
 
@@ -202,6 +205,10 @@ class TPCTGAReader(ResourceReader):
     def load(self, *, auto_close: bool = True) -> TPC:  # noqa: FBT001, FBT002, ARG002
         self._tpc = TPC()
         raw = self._reader.read_all()
+        try:
+            Tga.from_bytes(raw)
+        except kaitaistruct.KaitaiStructError:
+            pass
         image = read_tga(io.BytesIO(raw))
 
         width, height = image.width, image.height
@@ -246,7 +253,7 @@ class TPCTGAWriter(ResourceWriter):
 
     References:
     ----------
-        See tpc_data module docstring for engine addresses (K1 + TSL TODO). Standard TGA specification for header format.
+        Standard TGA header layout (Truevision specification).
 
     """
 

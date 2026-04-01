@@ -1,22 +1,11 @@
 """Validation and investigation command implementations for Pykotorcli.
 
-This module provides CLI commands for:
-- Checking resource availability (TXI files, 2DA files)
-- Validating installations
-- Investigating module structure
-- Checking missing resources
+Commands cover TXI / 2DA checks, installation validation, module structure inspection,
+and missing-resource reports. Former **References** that named retail resource-manager
+symbols are migrated to ``wiki/reverse_engineering_findings.md`` (*cli/commands/validation.py*).
 
-References:
-----------
-        Based on swkotor.exe resource validation:
-        - CExoResMan::GetResRef - Resource reference lookup
-        - CResGFF, CRes2DA, CResTPC - Resource format validators
-
-        scripts/kotor/check_txi_files.py - TXI file checking
-        scripts/kotor/check_missing_resources.py - Missing resource checking
-        scripts/kotor/investigate_module_structure.py - Module investigation
-        Libraries/PyKotor/src/pykotor/tools/validation.py - Core validation functions
-
+Related scripts: ``scripts/kotor/check_txi_files.py``, ``check_missing_resources.py``,
+``investigate_module_structure.py``; core logic in ``pykotor.tools.validation``.
 """
 
 from __future__ import annotations

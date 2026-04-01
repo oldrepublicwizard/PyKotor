@@ -100,7 +100,6 @@ class TestVIS(TestCase):
         assert not vis.get_visible("room_04", "room_02")
 
     def test_read_raises(self):
-        # sourcery skip: no-conditionals-in-tests
         if os.name == "nt":
             self.assertRaises(PermissionError, read_vis, ".")
         else:
@@ -109,7 +108,6 @@ class TestVIS(TestCase):
         self.assertRaises(ValueError, read_vis, CORRUPT_ASCII_TEST_DATA.encode("utf-8"))
 
     def test_write_raises(self):
-        # sourcery skip: no-conditionals-in-tests
         if os.name == "nt":
             self.assertRaises(PermissionError, write_vis, VIS(), ".", ResourceType.VIS)
         else:

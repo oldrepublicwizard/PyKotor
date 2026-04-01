@@ -5,17 +5,12 @@ texture packs, and hak paks. Unlike BIF files which require a KEY file for filen
 ERF files store both resource names (ResRefs) and data in the same file. They also support
 localized strings for descriptions in multiple languages.
 
-References:
+Observed retail behavior:
 ----------
-        Based on unified K1 (swkotor.exe) and TSL (swkotor2.exe) ERF structure.
-        Addresses: (K1: swkotor.exe, TSL: swkotor2.exe — verify/fill TSL via REVA when available).
+        KotOR I and TSL load modules, saves, and texture packs from self-contained ERF-family
+        capsules (``ERF ``, ``MOD ``, ``SAV ``, ``HAK `` headers) without a separate KEY row per
+        resource.
 
-        - CExoEncapsulatedFile::CExoEncapsulatedFile — constructor for encapsulated file.
-          K1: 0x0040ef90, TSL: TODO
-        - CExoKeyTable::AddEncapsulatedContents — adds ERF/MOD/SAV contents to key table; tries NWM, MOD, SAV, ERF; opens "rb"; reads header/entries.
-          K1: 0x0040f3c0, TSL: TODO
-          Stack/header: Type [0x00], Version [0x04] ("V1.0"), EntryCount [0x10], KeyOffset [0x18]; Build Year/Day/DescStrRef allocated but unused.
-        - "MOD V1.0" string (MOD file version identifier): K1: 0x0074539c, TSL: TODO
         ERF file format specification
         Binary Format:
         -------------
@@ -52,9 +47,6 @@ References:
         0x04   | 4    | uint32 | Resource Size
         Resource Data:
         Raw binary data for each resource at specified offsets
-
-
-    Reference: Original BioWare engine binaries (ERF from swkotor.exe, swkotor2.exe). See module docstring for K1/TSL addresses.
 """
 
 from __future__ import annotations
@@ -79,13 +71,8 @@ class ERFResource(ArchiveResource):
     Unlike BIF resources, ERF resources include their ResRef (filename) directly in the
     archive. Each resource is identified by a unique ResRef and ResourceType combination.
 
-    References:
+    See also:
     ----------
-        See module docstring for engine addresses (K1 + TSL TODO). CExoEncapsulatedFile::CExoEncapsulatedFile, CExoKeyTable::AddEncapsulatedContents, "MOD V1.0".
-        https://github.com/th3w1zard1/Kotor.NET/tree/master/Kotor.NET/Formats/KotorERF/ERFBinaryStructure.cs - Key and Resource entries
-        https://github.com/th3w1zard1/KotOR_IO/tree/master/KotOR_IO/File Formats/ERF.cs - Key and Resource classes
-        https://github.com/th3w1zard1/KotOR.js/tree/master/src/interface/resource/IERFKeyEntry.ts - Key entry interface
-        https://github.com/th3w1zard1/KotOR.js/tree/master/src/interface/resource/IERFResource.ts - Resource entry interface
 
 
     Attributes:
@@ -95,9 +82,6 @@ class ERFResource(ArchiveResource):
     """
 
     def __init__(self, resref: ResRef, restype: ResourceType, data: bytes):
-        # https://github.com/th3w1zard1/Kotor.NET/tree/master/Kotor.NET/Formats/KotorERF/ERFBinaryStructure.cs:119-120
-        # https://github.com/th3w1zard1/KotOR_IO/tree/master/KotOR_IO/File Formats/ERF.cs:197-198
-        # https://github.com/th3w1zard1/KotOR.js/tree/master/src/resource/ERFObject.ts:103-107
         # ResRef stored in Key Entry (16 bytes, null-padded)
         # ResourceType stored in Key Entry (2 bytes, uint16)
         # Resource data referenced via Resource Entry (offset + size)
@@ -113,17 +97,15 @@ class ERFType(Enum):
     - SAV: Save game file
     - HAK: Hak pak file (custom content, unused in KotOR)
 
-    References:
+    See also:
     ----------
-        See module docstring for engine addresses (K1 + TSL TODO). CExoEncapsulatedFile::CExoEncapsulatedFile, CExoKeyTable::AddEncapsulatedContents, "MOD V1.0".
-        https://github.com/th3w1zard1/Kotor.NET/tree/master/Kotor.NET/Formats/KotorERF/ERFBinaryStructure.cs - FileType field
-        https://github.com/th3w1zard1/KotOR_IO/tree/master/KotOR_IO/File Formats/ERF.cs - FileType reading
-        https://github.com/th3w1zard1/KotOR.js/tree/master/src/resource/ERFObject.ts - File type default
 
     """
 
     ERF = "ERF "  # Generic ERF archive (texture packs, etc.)
     MOD = "MOD "  # Module file (game levels/areas)
+    SAV = "SAV "  # Save game (same binary layout as ERF/MOD)
+    HAK = "HAK "  # Hak pak (NWN family; rare in KotOR)
 
     @classmethod
     def from_extension(cls, ext_or_filepath: os.PathLike | str) -> ERFType:
@@ -144,34 +126,24 @@ class ERF(BiowareArchive):
     save games, and resource packs. Unlike BIF+KEY pairs, ERF files contain both resource names
     and data in a single file, making them ideal for distributable content like mods.
 
-    References:
+    See also:
     ----------
-        See module docstring for engine addresses (K1 + TSL TODO). CExoEncapsulatedFile::CExoEncapsulatedFile, CExoKeyTable::AddEncapsulatedContents, "MOD V1.0".
-        https://github.com/th3w1zard1/Kotor.NET/tree/master/Kotor.NET/Formats/KotorERF/ERFBinaryStructure.cs - FileRoot class
-        https://github.com/th3w1zard1/KotOR_IO/tree/master/KotOR_IO/File Formats/ERF.cs - Complete ERF implementation
-        https://github.com/th3w1zard1/KotOR.js/tree/master/src/resource/ERFObject.ts - ERFObject class
 
 
     Attributes:
     ----------
         erf_type: File type signature (ERF, MOD, SAV, HAK)
-            Reference: https://github.com/th3w1zard1/Kotor.NET/tree/master/ERFBinaryStructure.cs:73 (FileType property)
-            Reference: https://github.com/th3w1zard1/KotOR_IO/tree/master/ERF.cs:46 (FileType field)
-            Reference: https://github.com/th3w1zard1/KotOR.js/tree/master/ERFObject.ts:45 (fileType default)
             Determines intended use of the archive
             ERF = texture packs, MOD = game modules, SAV = save games
 
         is_save: Flag indicating if this is a save game ERF
-            Reference: https://github.com/th3w1zard1/KotOR_IO/tree/master/ERF.cs:15-16 (save game comment)
             Save games use MOD signature but have different structure
             Affects how certain fields are interpreted (e.g., build date)
             PyKotor-specific flag for save game handling
 
         build_year: Years since 1900 (e.g., 103 = 2003)
-            Reference: https://github.com/th3w1zard1/Kotor.NET/blob/master/Kotor.NET/Formats/KotorERF/ERFBinaryStructure.cs:84 (BuildYear)
 
         build_day: Day of the year (1-366)
-            Reference: https://github.com/th3w1zard1/Kotor.NET/blob/master/Kotor.NET/Formats/KotorERF/ERFBinaryStructure.cs:85 (BuildDay)
 
         description_strref: TLK String Reference for module description
             Reference: ERF File Format Specification (Offset 0x28)
@@ -180,7 +152,7 @@ class ERF(BiowareArchive):
 
         localized_strings: Dictionary providing descriptions in multiple languages (LanguageID -> String)
             Reference: ERF File Format Specification (Offsets 0x08, 0x0C, 0x14)
-            Note: reone (erfreader.cpp:28) and Kotor.NET (ERFBinaryStructure.cs:100) skip these fields.
+            Note: some third-party readers stop before these fields; PyKotor keeps them for MOD metadata.
             Used primarily in MOD files for module names/loading screens
     """
 
@@ -201,9 +173,6 @@ class ERF(BiowareArchive):
     ):
         super().__init__()
 
-        # https://github.com/th3w1zard1/Kotor.NET/tree/master/Kotor.NET/Formats/KotorERF/ERFBinaryStructure.cs:73
-        # https://github.com/th3w1zard1/KotOR_IO/tree/master/KotOR_IO/File Formats/ERF.cs:46
-        # https://github.com/th3w1zard1/KotOR.js/tree/master/src/resource/ERFObject.ts:45
         # File type signature (ERF, MOD, SAV, HAK)
         self.erf_type: ERFType = erf_type
 

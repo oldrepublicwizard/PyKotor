@@ -52,12 +52,6 @@ class KEYWriter:
     References:
     ----------
 
-    Derivations and Other Implementations:
-    -------------------------------------
-        https://github.com/th3w1zard1/Kotor.NET/tree/master/Kotor.NET/Formats/KotorKEY/KEY.cs (KEY structure)
-        https://github.com/th3w1zard1/KotOR.js/tree/master/src/resource/KEYObject.ts (KEY loading)
-
-
         Note: KEY writing is uncommon in vendor implementations; most tools only read KEY files.
         PyKotor's KEYWriter is primarily for modding and tooling purposes.
 
@@ -98,9 +92,6 @@ class KEYWriter:
         References:
         ----------
 
-    Derivations and Other Implementations:
-    -------------------------------------
-        https://github.com/th3w1zard1/Kotor.NET/tree/master/Kotor.NET/Formats/KotorKEY/KEYReader.cs (KEY reading)
         KEY file format: 8-byte signature, BIF count, resource count, offsets, timestamps
 
         """

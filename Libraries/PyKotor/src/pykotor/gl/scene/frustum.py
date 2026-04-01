@@ -1,11 +1,8 @@
 """Frustum culling implementation for PyKotorGL.
 
-This module provides view frustum extraction and object culling to improve rendering
-performance by skipping objects outside the camera's view.
-
-Reference implementations:
-- reone: src/graphics/renderpipeline.cpp (frustum culling logic)
-- kotor.js: src/engine/camera.ts (view frustum extraction)
+View frustum extraction and object culling so the module designer skips work outside the
+camera frustum. Prior third-party source paths that were listed here are archived under
+``wiki/reverse_engineering_findings.md`` (*PyKotor GL — reference implementation paths*).
 """
 
 from __future__ import annotations
@@ -41,7 +38,7 @@ class Frustum:
 
     Implementation based on:
     - Gribb/Hartmann method for frustum plane extraction
-    - Original BioWare engine binaries (from swkotor.exe, swkotor2.exe)
+    - Observed retail KotOR I and KotOR II behavior
     """
 
     __slots__ = ("planes", "_cached_vp_hash")

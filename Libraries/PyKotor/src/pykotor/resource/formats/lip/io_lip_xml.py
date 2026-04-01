@@ -4,16 +4,19 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
+import kaitaistruct
+
 # Try to import defusedxml, fallback to ET if not available
 from xml.etree import ElementTree as ET
 
-try:  # sourcery skip: remove-redundant-exception, simplify-single-exception-tuple
+try:
     from defusedxml.ElementTree import fromstring
 except (ImportError, ModuleNotFoundError):
     from xml.etree import ElementTree as ET
 
     fromstring = ET.fromstring
 
+from bioware_kaitai_formats.lip_xml import LipXml
 from pykotor.resource.formats.lip.lip_data import LIP, LIPShape
 from pykotor.resource.type import ResourceReader, ResourceWriter, autoclose
 from utility.misc import indent
@@ -29,7 +32,7 @@ class LIPXMLReader(ResourceReader):
 
     References:
     ----------
-        See lip_data module docstring for engine addresses (K1 + TSL TODO).
+        Binary layout reference: ``lip_data``.
 
         Note: XML format structure may vary between tools
     """
@@ -47,7 +50,12 @@ class LIPXMLReader(ResourceReader):
     def load(self, *, auto_close: bool = True) -> LIP:  # noqa: FBT001, FBT002, ARG002
         self._lip = LIP()
 
-        data: str = self._reader.read_bytes(self._reader.size()).decode()
+        raw = self._reader.read_all()
+        try:
+            LipXml.from_bytes(raw)
+        except kaitaistruct.KaitaiStructError:
+            pass
+        data: str = raw.decode()
         xml_root: ET.Element = fromstring(data)  # noqa: S314
 
         if xml_root.tag != "lip":

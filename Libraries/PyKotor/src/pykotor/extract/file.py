@@ -131,9 +131,6 @@ def _extract_from_nested_capsules(
         FileNotFoundError: If a nested resource cannot be found
         ValueError: If the capsule format is invalid
 
-    References:
-    ----------
-        See pykotor.resource.formats.erf.erf_data for engine addresses (K1 + TSL TODO). CExoEncapsulatedFile::CExoEncapsulatedFile, CExoKeyTable::AddEncapsulatedContents.
     """
     from pykotor.common.stream import BinaryReader  # Prevent circular imports
     from pykotor.resource.formats.erf import ERFType
@@ -275,13 +272,6 @@ class FileResource:
 
     Represents a resource entry with metadata (name, type, size, offset) and file location.
     Used throughout PyKotor for resource abstraction and lazy loading.
-
-    References:
-    ----------
-        See pykotor.resource.formats.erf.erf_data for engine addresses (K1 + TSL TODO). CExoEncapsulatedFile::CExoEncapsulatedFile, CExoKeyTable::AddEncapsulatedContents.
-        https://github.com/th3w1zard1/KotOR_IO/tree/master/KotOR_IO/File Formats/KFile.cs (Resource file abstraction)
-        https://github.com/th3w1zard1/KotOR-dotNET/tree/master/AuroraFile.cs (Aurora file format abstraction)
-
 
     """
 
@@ -528,9 +518,6 @@ class FileResource:
             ------
                 FileNotFoundError: File not found on disk or in nested capsule.
 
-        References:
-        ----------
-            See pykotor.resource.formats.erf.erf_data for engine addresses (K1 + TSL TODO). CExoEncapsulatedFile::CExoEncapsulatedFile, CExoKeyTable::AddEncapsulatedContents.
         """
         if reload:
             self._index_resource()
@@ -590,7 +577,6 @@ class ResourceResult:
         return f"ResourceResult({self.resname}, {self.restype}, {self.filepath}, {self.data.__class__.__name__}[{len(self.data)}])"
 
     def __eq__(self, other: object):
-        # sourcery skip: assign-if-exp, reintroduce-else
         if self is other:
             return True
         if isinstance(other, ResourceResult):
@@ -664,8 +650,7 @@ class LocationResult:
     def __hash__(self):
         return hash((self.filepath, self.offset, self.size))
 
-    def __eq__(self, other: object):
-        # sourcery skip: assign-if-exp, reintroduce-else
+    def __eq__(self, other: object) -> bool:
         if self is other:
             return True
         if isinstance(other, LocationResult):
@@ -746,7 +731,6 @@ class ResourceIdentifier:
         raise IndexError(msg)
 
     def __eq__(self, other: object):
-        # sourcery skip: assign-if-exp, reintroduce-else
         # Use identity check first (fastest path)
         if self is other:
             return True

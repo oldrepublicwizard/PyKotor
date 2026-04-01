@@ -107,9 +107,9 @@ class SceneBase:
         self.async_loader: AsyncResourceLoader | None = None
         self._shutdown: bool = False
 
-        self._missing_texture = Texture.from_color(255, 0, 255)
-        self._missing_lightmap = Texture.from_color(0, 0, 0)
-        self._loading_texture = Texture.from_color(128, 128, 128)
+        self._missing_texture: Texture = Texture.from_color(255, 0, 255)
+        self._missing_lightmap: Texture = Texture.from_color(0, 0, 0)
+        self._loading_texture: Texture = Texture.from_color(128, 128, 128)
 
         self.textures: CaseInsensitiveDict[Texture] = CaseInsensitiveDict()
         self.textures["NULL"] = Texture.from_color()
@@ -796,7 +796,7 @@ class SceneBase:
             del self._pending_model_futures[name]
 
         # Handle predefined models
-        predefined_models = {
+        predefined_models: dict[str, tuple[bytes, bytes]] = {
             "waypoint": (WAYPOINT_MDL_DATA, WAYPOINT_MDX_DATA),
             "sound": (SOUND_MDL_DATA, SOUND_MDX_DATA),
             "store": (STORE_MDL_DATA, STORE_MDX_DATA),
@@ -858,7 +858,7 @@ class SceneBase:
             return self.models[name]
 
         # Special/predefined models - load synchronously
-        predefined_models = {
+        predefined_models: dict[str, tuple[bytes, bytes]] = {
             "waypoint": (WAYPOINT_MDL_DATA, WAYPOINT_MDX_DATA),
             "sound": (SOUND_MDL_DATA, SOUND_MDX_DATA),
             "store": (STORE_MDL_DATA, STORE_MDX_DATA),

@@ -6,11 +6,6 @@ implemented by any rendering backend.
 References:
 ----------
 
-    Derivations and Other Implementations:
-    -------------------------------------
-        https://github.com/th3w1zard1/KotOR.js/tree/master/src/odyssey/controllers/OdysseyController.ts
-
-
 """
 
 from __future__ import annotations
@@ -26,11 +21,6 @@ class IAnimationController(ABC):
 
     References:
     ----------
-
-    Derivations and Other Implementations:
-    -------------------------------------
-        https://github.com/th3w1zard1/KotOR.js/tree/master/src/odyssey/controllers/OdysseyController.ts:18-47
-
 
     """
 
@@ -48,8 +38,7 @@ class IAnimationController(ABC):
 
         References:
         ----------
-        Original BioWare engine binaries (from swkotor.exe, swkotor2.exe)
-        Original BioWare engine binaries
+        Observed retail KotOR I and KotOR II behavior.
 
 
         """
@@ -67,11 +56,6 @@ class IAnimationController(ABC):
         References:
         ----------
 
-    Derivations and Other Implementations:
-    -------------------------------------
-        https://github.com/th3w1zard1/KotOR.js/tree/master/src/odyssey/controllers/OdysseyController.ts:35-37
-
-
         """
         ...
 
@@ -81,11 +65,6 @@ class IAnimationState(ABC):
 
     References:
     ----------
-
-    Derivations and Other Implementations:
-    -------------------------------------
-        https://github.com/th3w1zard1/KotOR.js/tree/master/src/odyssey/OdysseyModelAnimation.ts:25-100
-
 
     """
 
@@ -103,8 +82,7 @@ class IAnimationState(ABC):
 
         References:
         ----------
-        Original BioWare engine binaries (from swkotor.exe, swkotor2.exe)
-        Original BioWare engine binaries
+        Observed retail KotOR I and KotOR II behavior.
 
 
         """
@@ -132,11 +110,6 @@ class IAnimationManager(ABC):
     References:
     ----------
 
-    Derivations and Other Implementations:
-    -------------------------------------
-        https://github.com/th3w1zard1/KotOR.js/tree/master/src/odyssey/OdysseyModelAnimationManager.ts:18-250
-
-
     """
 
     @abstractmethod
@@ -155,8 +128,7 @@ class IAnimationManager(ABC):
 
         References:
         ----------
-        Original BioWare engine binaries (from swkotor.exe, swkotor2.exe)
-        Original BioWare engine binaries
+        Observed retail KotOR I and KotOR II behavior.
 
 
         """
@@ -182,8 +154,7 @@ class IAnimationManager(ABC):
 
         References:
         ----------
-        Original BioWare engine binaries (from swkotor.exe, swkotor2.exe)
-        Original BioWare engine binaries
+        Observed retail KotOR I and KotOR II behavior.
 
 
         """

@@ -4,14 +4,6 @@ This module provides an abstract A* pathfinding implementation that can be used
 by any engine implementation. The pathfinder uses PTH (path) data from modules
 to find navigation paths between points.
 
-References:
-----------
-
-    Derivations and Other Implementations:
-    -------------------------------------
-        https://github.com/th3w1zard1/KotOR.js/tree/master/src/pathfinding/Pathfinder.ts (TypeScript pathfinding)
-
-
     Note: Pathfinding uses A* algorithm with PTH waypoint data
 """
 
@@ -57,12 +49,6 @@ class Pathfinder:
     The pathfinder loads waypoint data from PTH files and constructs a graph
     of connected waypoints. When finding a path, it uses A* to search for the
     optimal route through this graph.
-
-    References:
-    ----------
-        Original BioWare engine binaries (from swkotor.exe, swkotor2.exe)
-        Original BioWare engine binaries
-
 
     """
 

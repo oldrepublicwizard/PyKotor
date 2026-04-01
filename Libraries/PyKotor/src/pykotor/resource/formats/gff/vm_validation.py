@@ -1,15 +1,9 @@
-"""GFF validation for engine compatibility.
+"""Sanity checks for GFF payloads before the games choke on them.
 
-This module provides validation functions for GFF files to ensure they
-are compatible with the game's engine based on reverse engineering analysis
-of the CResGFF class in swkotor.exe.
-
-Key findings from reverse engineering:
-- CResGFF uses specific capacity tracking for dynamic arrays
-- Header, structs, fields, and labels are stored in separate arrays
-- Field data is stored separately with indices
-- 16-byte labels are used throughout
-- Capacity fields prevent buffer overflows
+Retail KotOR keeps structs, fields, labels, and blob data in separate tables with explicit
+counts—same layout we emit when round-tripping binary GFF. These validators poke the obvious
+failure modes: broken parent links, labels longer than the 16-char wire format, and indices
+that point past the end of a buffer.
 """
 
 from __future__ import annotations
@@ -28,8 +22,8 @@ logger: RobustLogger = RobustLogger()
 def validate_gff_for_engine(gff: GFF) -> None:
     """Validate a GFF file for compatibility with the game engine.
 
-    Based on reverse engineering of CResGFF class, this function checks
-    for structural issues that could cause engine problems.
+    Walks the struct graph and related tables looking for inconsistencies the retail
+    loader is unlikely to forgive.
 
     Args:
     ----

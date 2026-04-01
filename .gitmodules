@@ -27,3 +27,12 @@
 [submodule "Tools/KotorMCP"]
 	path = Tools/KotorMCP
 	url = https://github.com/OldRepublicDevs/KotorMCP.git
+
+
+# ===============================
+# Vendor
+# ===============================
+
+[submodule "vendor/bioware-kaitai-formats"]
+	path = vendor/bioware-kaitai-formats
+	url = https://github.com/OldRepublicDevs/bioware-kaitai-formats.git

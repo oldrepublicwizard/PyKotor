@@ -7,6 +7,10 @@ import math
 
 from typing import TYPE_CHECKING
 
+import kaitaistruct
+
+from pykotor.common.stream import BinaryReader
+from bioware_kaitai_formats.tpc import Tpc
 from pykotor.resource.formats.tpc.manipulate.rotate import rotate_rgb_rgba  # noqa: F401
 from pykotor.resource.formats.tpc.tpc_data import TPC, TPCLayer, TPCMipmap, TPCTextureFormat
 from pykotor.resource.type import ResourceReader, ResourceWriter, autoclose
@@ -87,17 +91,13 @@ class TPCBinaryReader(ResourceReader):
     TPC (Texture Pack Container) files store texture data with mipmaps, compression,
     and various texture formats used throughout KotOR.
 
-    References:
+    Observed retail behavior:
     ----------
-        Based on swkotor.exe TPC structure:
-        - CResTPC::CResTPC @ 0x00712ea0 - Constructor for TPC resource
-        - CResTPC::~CResTPC @ 0x00712ee0 - Destructor for TPC resource
-        - GetTPCAttrib @ 0x00712ef0 - Gets TPC texture attributes
-        - TPC file format specification
+        KotOR serves in-game textures from ``TPC`` payloads with mip chains and the encodings
+        enumerated in ``tpc_data`` (DXT and uncompressed RGB/RGBA variants).
 
         Note: TPC (Texture Pack Container) files store texture data with mipmaps, compression,
         and various texture formats (DXT1, DXT3, DXT5, RGB, RGBA) used throughout KotOR.
-
 
     """
 
@@ -114,6 +114,13 @@ class TPCBinaryReader(ResourceReader):
 
     @autoclose
     def load(self, *, auto_close: bool = True) -> TPC:  # noqa: PLR0912, C901, PLR0915
+        data = self._reader.read_all()
+        try:
+            Tpc.from_bytes(data)
+        except kaitaistruct.KaitaiStructError:
+            pass
+        self._reader = BinaryReader.from_bytes(data, 0)
+
         self._tpc: TPC = TPC()
         self._layer_count: int = 1
         self._mipmap_count: int = 0
@@ -310,14 +317,9 @@ class TPCBinaryWriter(ResourceWriter):
     - Texture data
     - TXI data (optional)
 
-    References:
+    Observed retail behavior:
     ----------
-        Based on swkotor.exe TPC structure:
-        - CResTPC::CResTPC @ 0x00712ea0 - Constructor for TPC resource
-        - CResTPC::~CResTPC @ 0x00712ee0 - Destructor for TPC resource
-        - GetTPCAttrib @ 0x00712ef0 - Gets TPC texture attributes
-        - TPC file format specification
-
+        Writer output targets the same header layout and mip packing that KotOR loads at runtime.
 
     """
 

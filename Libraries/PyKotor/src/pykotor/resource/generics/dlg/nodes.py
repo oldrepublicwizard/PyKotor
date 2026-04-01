@@ -26,13 +26,9 @@ class DLGNode:
     in the conversation tree. Each node contains text, scripts, animations, camera settings,
     and links to other nodes. Nodes are stored in EntryList or ReplyList arrays in the GFF.
 
-    References:
-    ----------
-        See pykotor.resource.formats.gff.gff_data module docstring for engine addresses (K1 + TSL TODO). LoadDialog, LoadDialogBase, LoadDialogLinkedNode.
-        https://github.com/th3w1zard1/KotOR.js/tree/master/src/resource/DLGNode.ts (DLG node structure)
-        https://github.com/th3w1zard1/Kotor.NET/tree/master/Kotor.NET/Resources/KotorDLG/DLG.cs (DLG node structure)
-
-        Note: DLG nodes are GFF structs within EntryList or ReplyList arrays
+    DLG nodes are GFF structs within ``EntryList`` or ``ReplyList`` arrays. Loader
+    cross-references and third-party DLG mirrors (KotOR.js, Kotor.NET) are migrated to
+    ``wiki/reverse_engineering_findings.md`` (*resource/generics/dlg/nodes.py*).
 
     Attributes:
     ----------

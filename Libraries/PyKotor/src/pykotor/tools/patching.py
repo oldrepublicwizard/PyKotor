@@ -9,11 +9,7 @@ This module provides functions for:
 
 References:
 ----------
-        Based on swkotor.exe resource formats:
-        - CResGFF::CreateGFFFile @ 0x00411260 - Creates new GFF file
-        - CResGFF::WriteGFFFile @ 0x00413030 - Writes GFF data to file
-        - CTlkTable::AddFile @ 0x0041d920 - Adds TLK file to table
-        - CExoEncapsulatedFile::CExoEncapsulatedFile @ 0x0040ef90 - ERF/RIM file handling
+        Observed retail KotOR GFF, TLK, and archive handling (ERF/RIM family).
         Tools/BatchPatcher/src/batchpatcher/__main__.py - Original implementation
 
 
@@ -174,7 +170,7 @@ def patch_nested_gff(
             assert isinstance(value, LocalizedString), f"{value.__class__.__name__}: {value}"  # noqa: S101
             log_message(
                 config,
-                f"Translating CExoLocString at {child_path} to {config.translator.to_lang.name if config.translator else 'unknown'}",
+                f"Translating localized string (GFF) at {child_path} to {config.translator.to_lang.name if config.translator else 'unknown'}",
             )
             made_change |= translate_locstring(value, config)
     return made_change, alien_vo_count

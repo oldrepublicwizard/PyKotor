@@ -43,6 +43,8 @@ from qtpy.QtWidgets import (
 
 from loggerplus import RobustLogger  # pyright: ignore[reportMissingTypeStubs]
 from utility.gui.qt.common.actions_dispatcher import ActionsDispatcher
+from utility.gui.qt.common.filesystem.address_bar import RobustAddressBar
+from utility.gui.qt.common.ribbons_widget import RibbonsWidget
 from utility.gui.qt.common.tasks.actions_executor import FileActionsExecutor
 from utility.gui.qt.common.tasks.task_details_dialog import TaskDetailsDialog
 from utility.gui.qt.filesystem.qfileexplorer.explorer_ui import Ui_QFileExplorer
@@ -186,6 +188,7 @@ class FileSystemExplorerWidget(QMainWindow):
         self.resize(1000, 600)
         self.ui.mainSplitter.setSizes([200, 800])
         self.ui.sidebarToolBox.setMinimumWidth(150)
+        self.ui.sidebarWidget.setMinimumWidth(150)
         self.ui.dynamicView.setMinimumWidth(400)
         self.ui.searchAndAddressWidget.setFixedHeight(30)
         self.fs_model.directoryLoaded.connect(self.on_directory_loaded)
@@ -422,6 +425,35 @@ class FileSystemExplorerWidget(QMainWindow):
         else:
             # Handle invalid path
             self.ui.addressBar.update_path(self.current_path)
+
+    def navigate(self, path: os.PathLike | str) -> None:
+        """Navigate the content view to ``path`` (directory only). Alias for :meth:`set_current_path`."""
+        self.set_current_path(path)
+
+    @property
+    def view(self) -> QWidget:
+        """Content region that hosts list/detail views (``DynamicStackedView``)."""
+        return self.ui.dynamicView
+
+    @property
+    def ribbon_widget(self) -> RibbonsWidget:
+        """Ribbon with File / Home / Share / View tabs."""
+        return self.ui.ribbonWidget
+
+    @property
+    def ribbons(self) -> RibbonsWidget:
+        """Alias for :attr:`ribbon_widget` (legacy name used by tests and callers)."""
+        return self.ui.ribbonWidget
+
+    @property
+    def address_bar(self) -> RobustAddressBar:
+        """Path line, history, and refresh controls."""
+        return self.ui.addressBar
+
+    @property
+    def sidebar(self) -> QWidget:
+        """Left pane (drive tree, bookmarks toolbox)."""
+        return self.ui.sidebarWidget
 
     def on_search_text_changed(
         self,

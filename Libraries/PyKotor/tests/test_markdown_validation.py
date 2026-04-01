@@ -11,7 +11,7 @@ import re
 import subprocess
 
 from pathlib import Path
-from urllib.parse import urlparse
+from urllib.parse import unquote, urlparse
 
 import pytest
 
@@ -20,19 +20,35 @@ WIKI_DIR = REPO_ROOT / "wiki"
 MARKDOWNLINT_CONFIG = REPO_ROOT / ".markdownlint-cli2.jsonc"
 
 
+def _looks_like_markdown_link(url: str) -> bool:
+    """Filter false positives (digits/hex/comma targets are never wiki paths)."""
+    u = url.strip()
+    if not u:
+        return True
+    if u.isdigit():
+        return False
+    if re.match(r"^0x[0-9a-fA-F]+\)?$", u):
+        return False
+    if "," in u:
+        return False
+    return True
+
+
 def extract_links(content: str, file_path: Path) -> list[tuple[str, str, int]]:
     """Extract all markdown links from content.
 
     Returns: List of (link_text, link_url, line_number) tuples
     """
     links = []
-    # Pattern matches [text](url) and [text](url "title")
-    pattern = r'\[([^\]]+)\]\(([^\)"]+)(?:\s+"[^"]+")?\)'
+    # [text](url) — require `[` not immediately after a word char so `vtable[0](1)` is ignored.
+    pattern = r'(?<![\w/\\])\[([^\]]+)\]\(([^\)"]+)(?:\s+"[^"]+")?\)'
 
     for line_num, line in enumerate(content.splitlines(), 1):
         for match in re.finditer(pattern, line):
             link_text = match.group(1)
             link_url = match.group(2)
+            if not _looks_like_markdown_link(link_url):
+                continue
             links.append((link_text, link_url, line_num))
 
     return links
@@ -100,18 +116,21 @@ def validate_link(link_url: str, source_file: Path, all_files: dict[str, Path], 
         if file_part.startswith("./"):
             file_part = file_part[2:]
 
+        # Percent-encoded paths (e.g. parentheses in wiki page names)
+        file_part_resolved = unquote(file_part)
+
         target_file = None
         # Try as-is first (already in wiki directory)
-        if (WIKI_DIR / file_part).exists():
-            target_file = WIKI_DIR / file_part
+        if (WIKI_DIR / file_part_resolved).exists():
+            target_file = WIKI_DIR / file_part_resolved
         # Try with .md extension
-        elif (WIKI_DIR / f"{file_part}.md").exists():
-            target_file = WIKI_DIR / f"{file_part}.md"
+        elif (WIKI_DIR / f"{file_part_resolved}.md").exists():
+            target_file = WIKI_DIR / f"{file_part_resolved}.md"
         # Try relative to source file
-        elif (source_file.parent / file_part).exists():
-            target_file = source_file.parent / file_part
-        elif (source_file.parent / f"{file_part}.md").exists():
-            target_file = source_file.parent / f"{file_part}.md"
+        elif (source_file.parent / file_part_resolved).exists():
+            target_file = source_file.parent / file_part_resolved
+        elif (source_file.parent / f"{file_part_resolved}.md").exists():
+            target_file = source_file.parent / f"{file_part_resolved}.md"
 
         if not target_file:
             return False, f"Target file not found: {file_part}"

@@ -6,11 +6,38 @@ import itertools
 
 from typing import TYPE_CHECKING
 
+import kaitaistruct
+
+from pykotor.common.stream import BinaryReader
+from bioware_kaitai_formats.ltr import Ltr
 from pykotor.resource.formats.ltr.ltr_data import LTR
 from pykotor.resource.type import ResourceReader, ResourceWriter
 
 if TYPE_CHECKING:
     from pykotor.resource.type import SOURCE_TYPES, TARGET_TYPES
+
+
+def _ltr_from_kaitai(parsed: Ltr) -> LTR | None:
+    """Map a parsed ``Ltr`` into :class:`LTR` when it matches KotOR's fixed 28-letter alphabet."""
+    if parsed.file_type != "LTR " or parsed.file_version != "V1.0":
+        return None
+    if parsed.letter_count != 28:
+        return None
+    ltr = LTR()
+    singles = parsed.single_letter_block
+    ltr._singles._start = list(singles.start_probabilities)
+    ltr._singles._middle = list(singles.middle_probabilities)
+    ltr._singles._end = list(singles.end_probabilities)
+    for i, block in enumerate(parsed.double_letter_blocks.blocks):
+        ltr._doubles[i]._start = list(block.start_probabilities)
+        ltr._doubles[i]._middle = list(block.middle_probabilities)
+        ltr._doubles[i]._end = list(block.end_probabilities)
+    for i, row in enumerate(parsed.triple_letter_blocks.rows):
+        for j, block in enumerate(row.blocks):
+            ltr._triples[i][j]._start = list(block.start_probabilities)
+            ltr._triples[i][j]._middle = list(block.middle_probabilities)
+            ltr._triples[i][j]._end = list(block.end_probabilities)
+    return ltr
 
 
 class LTRBinaryReader(ResourceReader):
@@ -20,23 +47,10 @@ class LTRBinaryReader(ResourceReader):
         during character creation. They use a 3rd-order Markov chain model with
         single-letter, double-letter (bigram), and triple-letter (trigram) probability tables.
 
-        References:
+        Observed retail behavior:
         ----------
-            Based on swkotor.exe LTR structure:
-            - LTR files loaded as resources through CExoResMan
-            - "LTR V1.0" format identifier - LTR file version string
-            - ".ltr" extension string - LTR file extension
-            - "ltr" resource type string @ 0x0074dd04 - LTR resource type identifier
-            - LTR format: "LTR " type, "V1.0" version, letter count (28), probability arrays
-            - Single-letter probabilities: start[28], middle[28], end[28] arrays
-            - Double-letter probabilities: 28 blocks of start[28], middle[28], end[28] arrays
-            - Triple-letter probabilities: 28x28 blocks of start[28], middle[28], end[28] arrays
-            - Used for random name generation during character creation
-
-    Derivations and Other Implementations:
-    -------------------------------------
-        - https://github.com/th3w1zard1/KotOR.js/tree/master/src/resource/LTRObject.ts:51-121
-        https://github.com/th3w1zard1/KotOR_IO/tree/master/KotOR_IO/File
+            KotOR loads ``LTR `` / ``V1.0`` tables from the resource tree for the random-name
+            picker; structure matches ``ltr_data`` (single-, double-, and triple-letter blocks).
 
         Note: LTR files are used for random name generation during character creation.
     """
@@ -56,12 +70,25 @@ class LTRBinaryReader(ResourceReader):
         self,
         auto_close: bool = True,
     ) -> LTR:
-        # https://github.com/th3w1zard1/KotOR.js/tree/master/src/resource/LTRObject.ts:51-57
 
         # Initialize LTR instance
         self._ltr = LTR()
 
-        # https://github.com/th3w1zard1/KotOR.js/tree/master/src/resource/LTRObject.ts:55-56
+        data = self._reader.read_all()
+        try:
+            parsed_ltr = Ltr.from_bytes(data)
+        except kaitaistruct.KaitaiStructError:
+            parsed_ltr = None
+        else:
+            mapped = _ltr_from_kaitai(parsed_ltr)
+            if mapped is not None:
+                self._ltr = mapped
+                if auto_close:
+                    self._reader.close()
+                return self._ltr
+
+        self._reader = BinaryReader.from_bytes(data, 0)
+
 
         # Read header: file type ("LTR ") and version ("V1.0")
         file_type = self._reader.read_string(4)
@@ -75,7 +102,6 @@ class LTRBinaryReader(ResourceReader):
             msg = "The LTR version that was loaded is not supported."
             raise TypeError(msg)
 
-        # https://github.com/th3w1zard1/KotOR.js/tree/master/src/resource/LTRObject.ts:57
 
         # Read letter count (must be 28 for KotOR, 26 or 28 for NWN)
         letter_count = self._reader.read_uint8()
@@ -83,14 +109,12 @@ class LTRBinaryReader(ResourceReader):
             msg = "LTR files that do not handle exactly 28 characters are not supported."
             raise TypeError(msg)
 
-        # https://github.com/th3w1zard1/KotOR.js/tree/master/src/resource/LTRObject.ts:62-75
 
         # Read single-letter probability block (start, middle, end arrays)
         self._ltr._singles._start = [self._reader.read_single() for _ in range(28)]
         self._ltr._singles._middle = [self._reader.read_single() for _ in range(28)]
         self._ltr._singles._end = [self._reader.read_single() for _ in range(28)]
 
-        # https://github.com/th3w1zard1/KotOR.js/tree/master/src/resource/LTRObject.ts:78-95
 
         # Read double-letter probability blocks (28 blocks, one per previous character)
         for i in range(28):
@@ -98,7 +122,6 @@ class LTRBinaryReader(ResourceReader):
             self._ltr._doubles[i]._middle = [self._reader.read_single() for _ in range(28)]
             self._ltr._doubles[i]._end = [self._reader.read_single() for _ in range(28)]
 
-        # https://github.com/th3w1zard1/KotOR.js/tree/master/src/resource/LTRObject.ts:98-117
 
         # Read triple-letter probability blocks (28x28 blocks, indexed by previous two characters)
         for i in range(28):

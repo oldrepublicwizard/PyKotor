@@ -88,6 +88,6 @@ LGPL-3.0-or-later (see [LICENSE](https://github.com/OldRepublicDevs/PyKotor/blob
 
 ---
 
-> This project follows unified K1/TSL reverse engineering practices. All resource logic is verified across both game engines using REVA MCP tools. See the [Wiki](https://github.com/OldRepublicDevs/PyKotor/wiki/Reverse-Engineering-Workflow) for details on our protocol.
+> Format behavior is cross-checked against retail KotOR I and TSL builds; tooling can use REVA MCP helpers where that helps. Maintainer-facing workflow notes live in the [project wiki](https://github.com/OldRepublicDevs/PyKotor/wiki/Reverse-Engineering-Workflow).
 
 

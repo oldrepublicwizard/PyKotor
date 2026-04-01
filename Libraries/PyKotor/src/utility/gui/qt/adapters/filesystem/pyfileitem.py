@@ -75,6 +75,7 @@ class PyFileInfo:
         """Initializes the QFileInfo object."""
         self._parent = parent
         super().__init__()
+        self._is_case_sensitive = os.name == "posix"
         if isinstance(file, (PyFileInfo, QFileInfo)):
             self._path: Path = self._getPathType()(file.filePath())
         elif folder is not None:
@@ -86,7 +87,6 @@ class PyFileInfo:
         self.__exists = self._path.exists()
         self._stat = None
         self._is_symlink = self._path.is_symlink()
-        self._is_case_sensitive = os.name == "posix"
         if self.__exists:
             with suppress(FileNotFoundError, PermissionError):
                 self._stat = self._path.stat()

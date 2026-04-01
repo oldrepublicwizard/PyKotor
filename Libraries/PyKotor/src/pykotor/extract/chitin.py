@@ -23,24 +23,13 @@ class Chitin:
 
     Chitin support is read-only and you cannot write your own key/bif files with this class yet.
 
-    Reverse Engineering Notes:
-    -------------------------
-    The KOTOR engine uses CExoResMan (Resource Manager) to handle multiple archive types:
-    - FIXED (0x00000000): KEY/BIF files (chitin.key + data/*.bif)
-    - DIRECTORY (0x80000000): Loose files in directories
-    - ERF (0x40000000): ERF/RIM archives (modules/*.rim, modules/*.erf)
-    - RIM (0x20000000): RIM archives (specifically for texture packs)
+    Container flags you will see in the wild (same buckets the retail resolver uses):
+    - ``FIXED`` (``0x00000000``): ``chitin.key`` plus the companion BIFs under ``data/``
+    - ``DIRECTORY`` (``0x80000000``): loose files (override folders, etc.)
+    - ``ERF`` (``0x40000000``): module capsules (``.mod`` / ``.erf`` / many ``.rim``)
+    - ``RIM`` (``0x20000000``): resource-image style packs (texture bundles and friends)
 
-    CExoResMan::AddKeyTable manages archive loading with these type flags.
-    CExoResMan::ReadResource handles the actual resource loading from archives.
-
-    References:
-    ----------
-        Based on swkotor.exe ERF structure:
-        - See pykotor.resource.formats.erf.erf_data for addresses (K1 + TSL TODO). CExoEncapsulatedFile, AddEncapsulatedContents.
-        Original BioWare engine binaries
-
-
+    This class only reads the KEY/BIF side; the rest of the stack lives in the archive helpers.
     """
 
     KEY_ELEMENT_SIZE = 8
@@ -133,7 +122,7 @@ class Chitin:
             files: list[tuple[int, int]] = []
             reader.seek(file_table_offset)
             for _ in range(bif_count):
-                reader.skip(4)  # ??? 0x000696E0 in k1, 0x000DDD8A in k2
+                reader.skip(4)  # Unknown field; observed u32 differs between K1 and K2 retail KEY/BIF stacks (wiki).
                 file_offset: int = reader.read_uint32()
                 file_length: int = reader.read_uint16()
                 reader.skip(2)  # ??? 0x0001 in K1, 0x0000 in K2

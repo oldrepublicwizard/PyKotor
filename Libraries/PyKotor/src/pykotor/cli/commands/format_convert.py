@@ -1,7 +1,8 @@
 """Format conversion command implementations for Pykotorcli.
 
-This module provides CLI commands for converting between different file formats
-(GFF<->XML, TLK<->XML, SSF<->XML, 2DA<->CSV, etc.) using PyKotor utilities.
+Converts GFF, TLK, SSF, 2DA, and related formats via ``pykotor.tools.conversions``.
+Former per-command **References** naming retail executables and engine-side GFF/2DA loaders
+are migrated to ``wiki/reverse_engineering_findings.md`` (*cli/commands/format_convert.py*).
 """
 
 from __future__ import annotations
@@ -61,28 +62,14 @@ def _run_conversion(
 
 
 def cmd_gff2xml(args: Namespace, logger: Logger) -> int:
-    """Convert GFF file to XML format.
-
-    References:
-    ----------
-        KotOR I (swkotor.exe) / KotOR II (swkotor2.exe):
-            - GFF structures are loaded via CResGFF class throughout the engine
-            - See individual resource format files (uti.py, utc.py, utp.py, dlg/base.py, etc.) for specific GFF field references
-    """
+    """Convert GFF file to XML format."""
     input_path = pathlib.Path(args.input)
     output_path = pathlib.Path(args.output) if args.output else input_path.with_suffix(".xml")
     return _run_conversion(input_path, output_path, convert_gff_to_xml, logger)
 
 
 def cmd_xml2gff(args: Namespace, logger: Logger) -> int:
-    """Convert XML file to GFF format.
-
-    References:
-    ----------
-        KotOR I (swkotor.exe) / KotOR II (swkotor2.exe):
-            - GFF structures are loaded via CResGFF class throughout the engine
-            - See individual resource format files (uti.py, utc.py, utp.py, dlg/base.py, etc.) for specific GFF field references
-    """
+    """Convert XML file to GFF format."""
     input_path = pathlib.Path(args.input)
     output_path = pathlib.Path(args.output) if args.output else input_path.with_suffix(".gff")
     kwargs = {"gff_content_type": args.type} if hasattr(args, "type") else {}
@@ -90,28 +77,14 @@ def cmd_xml2gff(args: Namespace, logger: Logger) -> int:
 
 
 def cmd_tlk2xml(args: Namespace, logger: Logger) -> int:
-    """Convert TLK file to XML format.
-
-    References:
-    ----------
-        KotOR I (swkotor.exe) / KotOR II (swkotor2.exe):
-            - GFF structures are loaded via CResGFF class throughout the engine
-            - See individual resource format files (uti.py, utc.py, utp.py, dlg/base.py, etc.) for specific GFF field references
-    """
+    """Convert TLK file to XML format."""
     input_path = pathlib.Path(args.input)
     output_path = pathlib.Path(args.output) if args.output else input_path.with_suffix(".xml")
     return _run_conversion(input_path, output_path, convert_tlk_to_xml, logger)
 
 
 def cmd_xml2tlk(args: Namespace, logger: Logger) -> int:
-    """Convert XML file to TLK format.
-
-    References:
-    ----------
-        KotOR I (swkotor.exe) / KotOR II (swkotor2.exe):
-            - GFF structures are loaded via CResGFF class throughout the engine
-            - See individual resource format files (uti.py, utc.py, utp.py, dlg/base.py, etc.) for specific GFF field references
-    """
+    """Convert XML file to TLK format."""
     input_path = pathlib.Path(args.input)
     output_path = pathlib.Path(args.output) if args.output else input_path.with_suffix(".tlk")
     return _run_conversion(input_path, output_path, convert_xml_to_tlk, logger)
@@ -132,14 +105,7 @@ def cmd_xml2ssf(args: Namespace, logger: Logger) -> int:
 
 
 def cmd_2da2csv(args: Namespace, logger: Logger) -> int:
-    """Convert 2DA file to CSV format.
-
-    References:
-    ----------
-        KotOR I (swkotor.exe) / KotOR II (swkotor2.exe):
-            - 2DA structures loaded via C2DA class
-            - See individual resource format files (uti.py, utc.py, utp.py, dlg/base.py, etc.) for specific GFF field references
-    """
+    """Convert 2DA file to CSV format."""
     input_path = pathlib.Path(args.input)
     output_path = pathlib.Path(args.output) if args.output else input_path.with_suffix(".csv")
     delimiter = args.delimiter if hasattr(args, "delimiter") else ","

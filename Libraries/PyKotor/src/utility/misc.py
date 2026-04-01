@@ -53,7 +53,7 @@ class ProcessorArchitecture(Enum):
     def get_dashed_bitness(self):
         return self._get("32-bit", "64-bit")
 
-    def _get(self, arg0: T, arg1: U) -> T | U:  # sourcery skip: assign-if-exp, reintroduce-else  # noqa: ANN001
+    def _get(self, arg0: T, arg1: U) -> T | U:  # noqa: ANN001
         if self == self.BIT_32:
             return arg0
         if self == self.BIT_64:
@@ -117,7 +117,6 @@ def print_excluding_base_classes(
 
 
 def get_system_info() -> dict[str, Any]:
-    # sourcery skip: extract-method, list-comprehension, merge-dict-assign
     info: dict[str, Any] = {}
 
     # Basic OS information
@@ -129,7 +128,7 @@ def get_system_info() -> dict[str, Any]:
     # CPU information
     psutil = None
     with suppress(ImportError):
-        import psutil  # pyright: ignore[reportMissingImports]  # type: ignore[no-redef]
+        import psutil  # type: ignore[no-redef, assignment]  # pyright: ignore[reportMissingImports, reportMissingModuleSource]
     if psutil is not None:
         info["Physical cores"] = psutil.cpu_count(logical=False)
         info["Total cores"] = psutil.cpu_count(logical=True)

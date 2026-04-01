@@ -1,4 +1,8 @@
-"""Launch command implementation."""
+"""Launch command implementation.
+
+Resolves the game binary from ``KOTOR_BIN``, install discovery, then common
+per-OS executable filenames used by retail PC/macOS/Linux layouts.
+"""
 
 from __future__ import annotations
 

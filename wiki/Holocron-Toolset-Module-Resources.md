@@ -1,10 +1,8 @@
-# Holocron Toolset: Module resources
-
-*This page is merged from the toolset in-app help (Tools/HolocronToolset/src/toolset/help/).*
+# Holocron Toolset: Module Resources
 
 ## Module resources
 
-Module resources refer to the resources stored in the game's module files. These can be found in the `/modules/` directory of your game directory and behave like zip files (in the sense of storing multiple files into a single file), carrying the extensions ERF, MOD or RIM. Module resources can only be accessed by the specific module they are stored in.
+Module resources are the files stored inside the game's module archives. These can be found in the `/modules/` directory of your game directory and behave like zip files (in the sense of storing multiple files into a single file), carrying the extensions ERF, MOD, or [RIM](Container-Formats#rim). Module resources can only be accessed by the specific module they are stored in.
 
 Resources contained in the module files can be directly edited and saved through the toolset without having to extract them. However, this is an irreversible operation so if you are editing files shipped directly with the game be sure to make backups otherwise you will need to reinstall the whole game.
 
@@ -21,6 +19,8 @@ The "Module" tab allows you to navigate through the various module files through
 
 ### See also
 
-- [ERF-File-Format](ERF-File-Format) -- MOD/RIM container format
-- [Concepts](Concepts#mod--erf) -- MOD/ERF and resource resolution
-- [Holocron Toolset Getting Started](Holocron-Toolset-Getting-Started)
+- [Holocron Toolset: Core Resources](Holocron-Toolset-Core-Resources) -- Core resource tab
+- [Holocron Toolset: Override Resources](Holocron-Toolset-Override-Resources) -- Override resource tab
+- [Container-Formats#erf](Container-Formats#erf) -- MOD / generic ERF container format
+- [Container-Formats#rim](Container-Formats#rim) -- Stock `.rim` / `_s.rim` module archives ([vs. ERF](Container-Formats#rim-versus-erf))
+- [Concepts](Concepts#mod-erf-rim) -- MOD, ERF, RIM, and resource resolution

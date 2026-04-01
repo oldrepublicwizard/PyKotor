@@ -166,7 +166,7 @@ class HRESULT(ctypesHRESULT):
     def __repr__(self):
         return f"{self.__class__.__name__}({self.value})"
 
-    def __eq__(self, other: object | int | ctypesHRESULT) -> bool:  # sourcery skip: assign-if-exp, reintroduce-else
+    def __eq__(self, other: object | int | ctypesHRESULT) -> bool:
         if not isinstance(other, int) and (not hasattr(other, "value") or not isinstance(other.value, int)):
             return NotImplemented  # type: ignore[no-any-return]
         if isinstance(other, (HRESULT, ctypesHRESULT, c_long)):
@@ -177,7 +177,7 @@ class HRESULT(ctypesHRESULT):
             return NotImplemented  # type: ignore[no-any-return]
         return self.value == other_int
 
-    def __ne__(self, other: object | HRESULT | ctypesHRESULT | int | c_long) -> bool:  # sourcery skip: assign-if-exp, reintroduce-else
+    def __ne__(self, other: object | HRESULT | ctypesHRESULT | int | c_long) -> bool:
         if not isinstance(other, int) and (not hasattr(other, "value") or not isinstance(other.value, int)):
             return NotImplemented  # type: ignore[no-any-return]
         if isinstance(other, (HRESULT, ctypesHRESULT, c_long)):

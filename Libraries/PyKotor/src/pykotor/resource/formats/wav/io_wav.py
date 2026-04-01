@@ -5,25 +5,11 @@ This module handles reading and writing WAV files from KotOR, including:
 - SFX files with 470-byte obfuscation header (streammusic, sound effects)
 - MP3 wrapped in WAV container (some music files)
 
-References:
+Observed retail behavior:
 ----------
-        Based on swkotor.exe WAV structure:
-        - Audio loading functions handle WAV file formats
-        - ".wav" extension string @ 0x0074d308 - WAV file extension
-        - "wav" resource type string @ 0x0074d32c - WAV resource type identifier
-        - "wave" string @ 0x0073f064 - Wave format identifier
-        - "RIFF" string @ 0x0074d324 - RIFF format identifier
-        - "STREAMWAVES" string @ 0x0074df34 - Stream waves directory identifier
-        - "HD0:STREAMWAVES\\%s" @ 0x0074a7f4 - Stream waves path format
-        - "HD0:STREAMMUSIC\\%s" @ 0x0074c304 - Stream music path format
-        - ".\\streamwaves" @ 0x0074df40, "d:\\streamwaves" @ 0x0074df50 - Stream waves paths
-        - SFX format: 470-byte obfuscation header starting with 0xFF 0xF3 0x60 0xC4
-        - MP3-in-WAV: RIFF header with size == 50, 58-byte header before MP3 data
-
-        Derivations and Other Implementations:
-        ----------
-        https://github.com/th3w1zard1/KotOR.js/tree/master/src/audio/AudioFile.ts
-
+    PC builds stream dialog and SFX through ``StreamWaves`` / ``StreamMusic`` folders,
+    honoring normal RIFF/WAVE, the 470-byte SFX obfuscation header, and the compact
+    MP3-in-WAV wrapper used on some music tracks.
 
 """
 
@@ -32,7 +18,10 @@ from __future__ import annotations
 from io import BytesIO
 from typing import TYPE_CHECKING
 
+import kaitaistruct
+
 from pykotor.common.stream import BinaryReader
+from bioware_kaitai_formats.wav import Wav
 from pykotor.resource.formats.wav.wav_data import (
     WAV,
     AudioFormat,
@@ -48,6 +37,50 @@ from pykotor.resource.type import ResourceReader, ResourceWriter, autoclose
 
 if TYPE_CHECKING:
     from pykotor.resource.type import SOURCE_TYPES, TARGET_TYPES
+
+
+def _parse_riff_wave_from_kaitai(data: bytes, wav_type: WAVType) -> WAV:
+    """Parse deobfuscated RIFF/WAVE via Kaitai; use first ``data`` chunk (matches legacy)."""
+    parsed = Wav.from_bytes(data)
+    encoding: WaveEncoding | int = WaveEncoding.PCM
+    channels = 1
+    sample_rate = 44100
+    bytes_per_sec = 88200
+    block_align = 2
+    bits_per_sample = 16
+    audio_data = b""
+    found_data = False
+    for chunk in parsed.chunks:
+        if chunk.id == "fmt ":
+            fmt = chunk.body
+            encoding_value = int(fmt.audio_format)
+            try:
+                encoding = WaveEncoding(encoding_value)
+            except ValueError:
+                encoding = encoding_value
+            channels = int(fmt.channels)
+            sample_rate = int(fmt.sample_rate)
+            bytes_per_sec = int(fmt.bytes_per_sec)
+            block_align = int(fmt.block_align)
+            bits_per_sample = int(fmt.bits_per_sample)
+        elif chunk.id == "data":
+            audio_data = bytes(chunk.body.data)
+            found_data = True
+            break
+    if not found_data:
+        msg = "No audio data chunk found in WAV file"
+        raise ValueError(msg)
+    return WAV(
+        wav_type=wav_type,
+        audio_format=AudioFormat.WAVE,
+        encoding=encoding,
+        channels=channels,
+        sample_rate=sample_rate,
+        bits_per_sample=bits_per_sample,
+        bytes_per_sec=bytes_per_sec,
+        block_align=block_align,
+        data=audio_data,
+    )
 
 
 class WAVBinaryReader(ResourceReader):
@@ -67,24 +100,7 @@ class WAVBinaryReader(ResourceReader):
        - RIFF header with size == 50
        - After 58-byte header removal, raw MP3 data follows
 
-    References:
-    ----------
-        Based on swkotor.exe WAV structure:
-        - Audio loading functions handle WAV file formats
-        - ".wav" extension string @ 0x0074d308 - WAV file extension
-        - "wav" resource type string @ 0x0074d32c - WAV resource type identifier
-        - "wave" string @ 0x0073f064 - Wave format identifier
-        - "RIFF" string @ 0x0074d324 - RIFF format identifier
-        - "STREAMWAVES" string @ 0x0074df34 - Stream waves directory identifier
-        - "HD0:STREAMWAVES\\%s" @ 0x0074a7f4 - Stream waves path format
-        - "HD0:STREAMMUSIC\\%s" @ 0x0074c304 - Stream music path format
-        - SFX format: 470-byte obfuscation header starting with 0xFF 0xF3 0x60 0xC4
-        - MP3-in-WAV: RIFF header with size == 50, 58-byte header before MP3 data
-
-        Derivations and Other Implementations:
-        ----------
-        https://github.com/th3w1zard1/KotOR.js/tree/master/src/audio/AudioFile.ts:111-162
-
+    See module docstring for retail audio path notes.
 
     """
 
@@ -124,7 +140,6 @@ class WAVBinaryReader(ResourceReader):
             wav_type = WAVType.VO
 
         # If MP3-in-WAV format detected, return MP3 data directly
-        # Reference: https://github.com/th3w1zard1/KotOR.js/tree/master/src/audio/AudioFile.ts:134-140
         if format_type == DeobfuscationResult.MP3_IN_WAV:
             return WAV(
                 wav_type=wav_type,
@@ -136,8 +151,10 @@ class WAVBinaryReader(ResourceReader):
                 data=deobfuscated_data,
             )
 
-        # Parse as RIFF/WAVE
-        return self._parse_riff_wave(deobfuscated_data, wav_type)
+        try:
+            return _parse_riff_wave_from_kaitai(deobfuscated_data, wav_type)
+        except kaitaistruct.KaitaiStructError:
+            return self._parse_riff_wave(deobfuscated_data, wav_type)
 
     def _parse_riff_wave(self, data: bytes, wav_type: WAVType) -> WAV:
         """Parse RIFF/WAVE format data.
@@ -151,7 +168,6 @@ class WAVBinaryReader(ResourceReader):
 
         References:
 
-            https://github.com/th3w1zard1/KotOR.js/tree/master/src/audio/AudioFile.ts:250-262
         """
         reader = BinaryReader(BytesIO(data))
 
@@ -189,7 +205,6 @@ class WAVBinaryReader(ResourceReader):
             if chunk_id == b"fmt ":
                 # Parse format chunk
                 #
-                # Reference: https://github.com/th3w1zard1/KotOR.js/tree/master/src/audio/AudioFile.ts:214-228
                 encoding_value = reader.read_uint16()
                 try:
                     encoding = WaveEncoding(encoding_value)
@@ -218,7 +233,6 @@ class WAVBinaryReader(ResourceReader):
 
             elif chunk_id == b"fact":
                 # Skip fact chunk (contains sample count for compressed formats)
-                # Reference: https://github.com/th3w1zard1/KotOR.js/tree/master/src/audio/AudioFile.ts:230-234
                 reader.skip(chunk_size)
 
             else:

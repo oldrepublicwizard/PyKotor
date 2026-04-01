@@ -5,41 +5,30 @@ with voice-over audio. Each LIP file contains a series of keyframes that specify
 shapes (visemes) at specific timestamps, allowing the game engine to animate character
 lips during dialogue playback.
 
-References:
+Observed retail behavior:
 ----------
-    Based on swkotor.exe LIP structure:
-    - CLIP::LoadLip @ 0x0070c590 - Loads LIP file for lip sync animation
-      * Parses binary LIP format
-      * Reads header ("LIP V1.0" identifier)
-      * Reads sound length and entry count
-      * Reads keyframe entries (timestamp + shape)
-      * Builds animation timeline for lip sync
-    - "LIP " file type identifier - First 4 bytes of LIP files
-    - "V1.0" version identifier - Bytes 4-7 of LIP files
-    - Sound Length field at offset 0x08 (4 bytes, float)
-    - Entry Count field at offset 0x0C (4 bytes, uint32)
-    - Keyframe entries start at offset 0x10 (5 bytes each: 4-byte float timestamp + 1-byte uint8 shape)
-    - ".lip" extension - LIP file extension
-    - Original BioWare engine binaries (swkotor.exe, swkotor2.exe)
-    Derivations and Other Implementations:
-        ----------
-        https://github.com/th3w1zard1/KotOR_IO/tree/master/KotOR_IO/File
-        https://github.com/th3w1zard1/KotOR.js/tree/master/src/resource/LIPObject.ts:23-348
-        https://github.com/th3w1zard1/KotOR.js/tree/master/src/enums/resource/LIPShape.ts:11-28
-        Binary Format:
-        -------------
-        Header (16 bytes):
-        Offset | Size | Type   | Description
-        -------|------|--------|-------------
-        0x00   | 4    | char[] | File Type ("LIP ")
-        0x04   | 4    | char[] | File Version ("V1.0")
-        0x08   | 4    | float  | Sound Length (duration in seconds)
-        0x0C   | 4    | uint32 | Entry Count (number of keyframes)
-        Keyframe Entry (5 bytes each):
-        Offset | Size | Type   | Description
-        -------|------|--------|-------------
-        0x00   | 4    | float  | Time Stamp (seconds from start)
-        0x04   | 1    | uint8  | Shape (mouth shape index, 0-15)
+    KotOR streams ``LIP `` / ``V1.0`` lip-sync blobs keyed to VO lines: a float duration,
+    a keyframe count, then repeating ``(timestamp, viseme id)`` pairs as in the binary layout
+    below. It has been observed that retail builds load these through the same resource pipeline
+    as other table data.
+
+    Third-party GitHub URL lines removed from this module are archived at
+    ``wiki/reverse_engineering_findings_lip_data_github_urls_pre_scrub.md``.
+
+    Binary Format:
+    ------------
+    Header (16 bytes):
+    Offset | Size | Type   | Description
+    -------|------|--------|-------------
+    0x00   | 4    | char[] | File Type ("LIP ")
+    0x04   | 4    | char[] | File Version ("V1.0")
+    0x08   | 4    | float  | Sound Length (duration in seconds)
+    0x0C   | 4    | uint32 | Entry Count (number of keyframes)
+    Keyframe Entry (5 bytes each):
+    Offset | Size | Type   | Description
+    -------|------|--------|-------------
+    0x00   | 4    | float  | Time Stamp (seconds from start)
+    0x04   | 1    | uint8  | Shape (mouth shape index, 0-15)
 """
 
 from __future__ import annotations
@@ -63,14 +52,6 @@ class LIPShape(IntEnum):
     phoneme series adapted for KotOR's animation system. The game engine interpolates
     between shapes to create smooth lip movement during dialogue.
 
-    References:
-    ----------
-        See module docstring for engine addresses (K1 + TSL TODO). CLIP::LoadLip.
-        Derivations and Other Implementations:
-        ----------
-        https://github.com/th3w1zard1/KotOR_IO/tree/master/KotOR_IO/File
-        https://github.com/th3w1zard1/KotOR.js/tree/master/src/enums/resource/LIPShape.ts:11-28
-        https://github.com/th3w1zard1/KotOR.js/tree/master/src/apps/forge/data/LIPShapeLabels.ts
         Binary Format:
         -------------
         Stored as uint8 (single byte) in keyframe entries
@@ -80,82 +61,51 @@ class LIPShape(IntEnum):
         -----------------
         NEUTRAL = 0: Neutral/rest position (used for pauses)
 
-            Reference: https://github.com/th3w1zard1/KotOR.js/tree/master/LIPShape.ts:12 (EE = 0, but NEUTRAL typically used)
             Default shape when no speech is occurring
 
         EE = 1: Teeth slightly apart, corners wide (as in "see", "teeth")
-            Reference: https://github.com/th3w1zard1/KotOR_IO/tree/master/LIP.cs:127 (ee = 0x0)
-            Reference: https://github.com/th3w1zard1/KotOR.js/tree/master/LIPShape.ts:12 (EE = 0)
             Used for long 'e' sounds
 
         EH = 2: Mouth relaxed, slightly open (as in "get", "bet", "red")
-            Reference: https://github.com/th3w1zard1/KotOR_IO/tree/master/LIP.cs:129 (eh = 0x1)
-            Reference: https://github.com/th3w1zard1/KotOR.js/tree/master/LIPShape.ts:13 (EH = 1)
             Used for short 'e' sounds
 
         AH = 3: Mouth open (as in "father", "bat", "cat")
-            Reference: https://github.com/th3w1zard1/KotOR_IO/tree/master/LIP.cs:133 (ah = 0x3)
-            Reference: https://github.com/th3w1zard1/KotOR.js/tree/master/LIPShape.ts:15 (AH = 3)
             Used for 'a' sounds
 
         OH = 4: Rounded lips (as in "go", "boat", "or")
-            Reference: https://github.com/th3w1zard1/KotOR_IO/tree/master/LIP.cs:135 (oh = 0x4)
-            Reference: https://github.com/th3w1zard1/KotOR.js/tree/master/LIPShape.ts:16 (OH = 4)
             Used for 'o' sounds
 
         OOH = 5: Pursed lips (as in "too", "blue", "wheel")
-            Reference: https://github.com/th3w1zard1/KotOR_IO/tree/master/LIP.cs:137 (oo = 0x5)
-            Reference: https://github.com/th3w1zard1/KotOR.js/tree/master/LIPShape.ts:17 (OOH = 5)
             Used for 'u' and 'w' sounds
 
         Y = 6: Slight smile (as in "yes", "you")
-            Reference: https://github.com/th3w1zard1/KotOR_IO/tree/master/LIP.cs:139 (y = 0x6)
-            Reference: https://github.com/th3w1zard1/KotOR.js/tree/master/LIPShape.ts:18 (Y = 6)
             Used for 'y' sounds
 
         STS = 7: Teeth together (as in "stop", "sick", "nets")
-            Reference: https://github.com/th3w1zard1/KotOR_IO/tree/master/LIP.cs:141 (s = 0x7)
-            Reference: https://github.com/th3w1zard1/KotOR.js/tree/master/LIPShape.ts:19 (S = 7)
             Used for 's', 'z', 'ts' sounds
 
         FV = 8: Lower lip touching upper teeth (as in "five", "fish", "very")
-            Reference: https://github.com/th3w1zard1/KotOR_IO/tree/master/LIP.cs:143 (f = 0x8)
-            Reference: https://github.com/th3w1zard1/KotOR.js/tree/master/LIPShape.ts:20 (FV = 8)
             Used for 'f' and 'v' sounds
 
         NG = 9: Back of tongue up (as in "ring", "nacho", "running")
-            Reference: https://github.com/th3w1zard1/KotOR_IO/tree/master/LIP.cs:145 (n = 0x9)
-            Reference: https://github.com/th3w1zard1/KotOR.js/tree/master/LIPShape.ts:21 (NNG = 9)
             Used for 'n' and 'ng' sounds
 
         TH = 10: Tongue between teeth (as in "thin", "think", "that")
-            Reference: https://github.com/th3w1zard1/KotOR_IO/tree/master/LIP.cs:147 (th = 0xA)
-            Reference: https://github.com/th3w1zard1/KotOR.js/tree/master/LIPShape.ts:22 (TH = 10)
             Used for 'th' sounds
 
         MPB = 11: Lips pressed together (as in "bump", "moose", "pop", "book")
-            Reference: https://github.com/th3w1zard1/KotOR_IO/tree/master/LIP.cs:149 (m = 0xB)
-            Reference: https://github.com/th3w1zard1/KotOR.js/tree/master/LIPShape.ts:23 (MBP = 11)
             Used for 'm', 'p', 'b' sounds
 
         TD = 12: Tongue up (as in "top", "table", "door")
-            Reference: https://github.com/th3w1zard1/KotOR_IO/tree/master/LIP.cs:151 (t = 0xC)
-            Reference: https://github.com/th3w1zard1/KotOR.js/tree/master/LIPShape.ts:24 (TD = 12)
             Used for 't' and 'd' sounds
 
         SH = 13: Rounded but relaxed (as in "measure", "cheese", "jee")
-            Reference: https://github.com/th3w1zard1/KotOR_IO/tree/master/LIP.cs:153 (sh = 0xD)
-            Reference: https://github.com/th3w1zard1/KotOR.js/tree/master/LIPShape.ts:25 (SH = 13)
             Used for 'sh', 'ch', 'j', 'zh' sounds
 
         L = 14: Tongue forward (as in "lip", "read")
-            Reference: https://github.com/th3w1zard1/KotOR_IO/tree/master/LIP.cs:155 (l = 0xE)
-            Reference: https://github.com/th3w1zard1/KotOR.js/tree/master/LIPShape.ts:26 (LR = 14)
             Used for 'l' and 'r' sounds
 
         KG = 15: Back of tongue raised (as in "kick", "green", "key", "he")
-            Reference: https://github.com/th3w1zard1/KotOR_IO/tree/master/LIP.cs:157 (k = 0xF)
-            Reference: https://github.com/th3w1zard1/KotOR.js/tree/master/LIPShape.ts:27 (KG = 15)
             Used for 'k', 'g', 'h' sounds
     """
 
@@ -237,30 +187,14 @@ class LIP(ComparableMixin):
     timestamps. The game engine interpolates between keyframes to create smooth lip
     animation that matches the spoken dialogue.
 
-    References:
-    ----------
-        See module docstring for engine addresses (K1 + TSL TODO). CLIP::LoadLip, "LIP V1.0", keyframes.
-        Derivations and Other Implementations:
-        ----------
-        https://github.com/th3w1zard1/KotOR_IO/tree/master/KotOR_IO/File
-        https://github.com/th3w1zard1/KotOR.js/tree/master/src/resource/LIPObject.ts:23-348
-
-
-
     Attributes:
     ----------
         length: Total duration of lip animation in seconds
-            Reference: https://github.com/th3w1zard1/KotOR_IO/tree/master/LIP.cs:85 (SoundLength property)
-            Reference: https://github.com/th3w1zard1/KotOR.js/tree/master/LIPObject.ts:32 (duration field)
-            Reference: https://github.com/th3w1zard1/KotOR.js/tree/master/LIPObject.ts:106 (readSingle for duration)
             Matches the duration of the associated voice-over WAV file
             Stored as float32 in binary format (4 bytes)
             Used to determine animation playback bounds
 
         frames: List of keyframes defining mouth shapes at specific times
-            Reference: https://github.com/th3w1zard1/KotOR_IO/tree/master/LIP.cs:117 (Entries list)
-            Reference: https://github.com/th3w1zard1/KotOR.js/tree/master/LIPObject.ts:29 (keyframes array)
-            Reference: https://github.com/th3w1zard1/KotOR.js/tree/master/LIPObject.ts:112-116 (keyframe reading loop)
             Each keyframe contains a timestamp and mouth shape
             Keyframes must be sorted by time for proper animation playback
             Game engine interpolates between consecutive keyframes
@@ -272,13 +206,9 @@ class LIP(ComparableMixin):
     COMPARABLE_SEQUENCE_FIELDS = ("frames",)
 
     def __init__(self) -> None:
-        # https://github.com/th3w1zard1/KotOR_IO/tree/master/KotOR_IO/File Formats/LIP.cs:85
-        # https://github.com/th3w1zard1/KotOR.js/tree/master/src/resource/LIPObject.ts:32,106
         # Total duration of lip animation (matches voice-over length)
         self.length: float = 0.0
 
-        # https://github.com/th3w1zard1/KotOR_IO/tree/master/KotOR_IO/File Formats/LIP.cs:117
-        # https://github.com/th3w1zard1/KotOR.js/tree/master/src/resource/LIPObject.ts:29,112-116
         # List of keyframes (timestamp + mouth shape pairs)
         self.frames: list[LIPKeyFrame] = []
 
@@ -472,12 +402,7 @@ class LIPKeyFrame(ComparableMixin):
 
     References:
     ----------
-        See module docstring for engine addresses (K1 + TSL TODO). Keyframe layout (timestamp + shape).
-        Derivations and Other Implementations:
-        ----------
-        https://github.com/th3w1zard1/KotOR_IO/tree/master/KotOR_IO/File
-        https://github.com/th3w1zard1/KotOR.js/tree/master/src/interface/resource/ILIPKeyFrame.ts
-        https://github.com/th3w1zard1/KotOR.js/tree/master/src/resource/LIPObject.ts:113-115 (keyframe reading)
+        Keyframe layout (timestamp + shape).
         Binary Format (5 bytes):
         -----------------------
         Offset | Size | Type   | Description
@@ -488,15 +413,11 @@ class LIPKeyFrame(ComparableMixin):
     Attributes:
     ----------
         time: Timestamp when this keyframe occurs (seconds from start)
-            Reference: https://github.com/th3w1zard1/KotOR_IO/tree/master/LIP.cs:95 (TimeStamp property)
-            Reference: https://github.com/th3w1zard1/KotOR.js/tree/master/LIPObject.ts:114 (readSingle for time)
             Stored as float32 in binary format (4 bytes)
             Must be >= 0.0 and <= animation length
             Keyframes should be sorted by time for proper playback
 
         shape: Mouth shape (viseme) for this keyframe
-            Reference: https://github.com/th3w1zard1/KotOR_IO/tree/master/LIP.cs:99 (State property, LipState enum)
-            Reference: https://github.com/th3w1zard1/KotOR.js/tree/master/LIPObject.ts:115 (readByte for shape)
             Stored as uint8 in binary format (1 byte)
             Valid range: 0-15 (16 possible shapes, see LIPShape enum)
             Index into character's "talk" animation keyframes

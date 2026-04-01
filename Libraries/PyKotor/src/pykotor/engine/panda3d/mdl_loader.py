@@ -5,15 +5,10 @@ with full support for vertex data, tangent space, and face topology.
 
 References:
 ----------
-        Original BioWare engine binaries (from swkotor.exe, swkotor2.exe)
-        Original BioWare engine binaries
+        Observed retail KotOR I and KotOR II behavior.
         Libraries/PyKotor/src/pykotor/resource/formats/mdl - MDL data structures
         /panda3d/panda3d-docs/programming/internal-structures/procedural-generation - Geom creation
-        Derivations and Other Implementations:
-        ----------
-        https://github.com/th3w1zard1/KotOR.js/tree/master/src/three/odyssey/OdysseyModel3D.ts
-
-
+        Archived KotOR.js / MDLOps URL lines: ``wiki/reverse_engineering_findings_panda3d_mdl_loader_github_urls_pre_scrub.md``.
 """
 
 from __future__ import annotations
@@ -65,14 +60,9 @@ class MDLLoader:
 
     References:
     ----------
-        Original BioWare engine binaries (from swkotor.exe, swkotor2.exe)
-        Original BioWare engine binaries
+        Observed retail KotOR I and KotOR II behavior.
         /panda3d/panda3d-docs - GeomVertexData and Geom creation
-        Derivations and Other Implementations:
-        ----------
-        https://github.com/th3w1zard1/KotOR.js/tree/master/src/three/odyssey/OdysseyModel3D.ts:150-400
-
-
+        Archived third-party URL lines: ``wiki/reverse_engineering_findings_panda3d_mdl_loader_github_urls_pre_scrub.md``.
     """
 
     def __init__(
@@ -103,8 +93,7 @@ class MDLLoader:
 
         References:
         ----------
-        Original BioWare engine binaries (from swkotor.exe, swkotor2.exe)
-        Original BioWare engine binaries
+        Observed retail KotOR I and KotOR II behavior.
         Libraries/PyKotor/src/pykotor/resource/formats/mdl/io_mdl.py - MDL reader
 
         """
@@ -143,16 +132,11 @@ class MDLLoader:
 
         References:
         ----------
-
-    Derivations and Other Implementations:
-    -------------------------------------
-        https://github.com/th3w1zard1/KotOR.js/tree/master/src/three/odyssey/OdysseyModel3D.ts:938-1134
-
+        Archived KotOR.js line anchors for this traversal: ``wiki/reverse_engineering_findings_panda3d_mdl_loader_github_urls_pre_scrub.md``.
 
         """
         # Convert this node based on type
         #
-        # Reference: https://github.com/th3w1zard1/KotOR.js/tree/master/src/three/odyssey/OdysseyModel3D.ts:987-1004
         node_np: NodePath | None = None
 
         # Determine node type using abstract converter
@@ -186,15 +170,14 @@ class MDLLoader:
         # Reference: /panda3d/panda3d-docs - NodePath.setPos(), setHpr()
         node_np.setPos(mdl_node.position.x, mdl_node.position.y, mdl_node.position.z)
 
-        # Convert quaternion to HPR
-        # Reference: https://github.com/th3w1zard1/KotOR.js/tree/master/src/three/odyssey/OdysseyModel3D.ts:970-971
+        # Convert quaternion to HPR (third-party quaternion notes: wiki *mdl_loader.py*).
         from panda3d.core import Quat
 
         quat = Quat(mdl_node.orientation.w, mdl_node.orientation.x, mdl_node.orientation.y, mdl_node.orientation.z)
         hpr = quat.getHpr()
         node_np.setHpr(hpr)
 
-        # Handle skin mesh reparenting (reone:72-76)
+        # Skin meshes: reparent to model root so animation is not applied twice (see wiki *mdl_loader.py*).
         # Skin meshes need special transform handling to prevent double animation
         #
         # Skin meshes are reparented directly to model root to prevent animation
@@ -210,7 +193,6 @@ class MDLLoader:
 
         # Handle reference nodes (load child models)
         #
-        # Reference: https://github.com/th3w1zard1/KotOR.js/tree/master/src/three/odyssey/OdysseyModel3D.ts:1006-1027
         if mdl_node.reference and self._resource_loader:
             self._load_reference_model(mdl_node.reference, node_np)
 
@@ -232,20 +214,13 @@ class MDLLoader:
 
         References:
         ----------
-        Original BioWare engine binaries (from swkotor.exe, swkotor2.exe)
-        Original BioWare engine binaries
+        Observed retail KotOR I and KotOR II behavior.
         /panda3d/panda3d-docs - Geom creation
-        Derivations and Other Implementations:
-        ----------
-        https://github.com/th3w1zard1/KotOR.js/tree/master/src/three/odyssey/OdysseyModel3D.ts:1136-1372
-
-
         """
         mesh = mdl_node.mesh
         if not mesh:
             return NodePath(mdl_node.name)
 
-        # Reference: https://github.com/th3w1zard1/KotOR.js/tree/master/src/three/odyssey/OdysseyModel3D.ts:1146
         # Only create geometry if mesh has faces
         if not mesh.faces:
             return NodePath(mdl_node.name)
@@ -291,11 +266,7 @@ class MDLLoader:
 
         References:
         ----------
-
-    Derivations and Other Implementations:
-    -------------------------------------
-        https://github.com/th3w1zard1/KotOR.js/tree/master/src/three/odyssey/OdysseyModel3D.ts:1259-1263
-
+        Archived KotOR.js line anchors: ``wiki/reverse_engineering_findings_panda3d_mdl_loader_github_urls_pre_scrub.md``.
 
         """
         # Skin nodes have both mesh (geometry) and skin (bone weights)
@@ -367,11 +338,7 @@ class MDLLoader:
 
         References:
         ----------
-
-    Derivations and Other Implementations:
-    -------------------------------------
-        https://github.com/th3w1zard1/KotOR.js/tree/master/src/three/odyssey/OdysseyModel3D.ts:1202-1205
-
+        Archived KotOR.js line anchors: ``wiki/reverse_engineering_findings_panda3d_mdl_loader_github_urls_pre_scrub.md``.
 
         """
         # Dangly nodes have both mesh (geometry) and dangly (physics constraints)
@@ -406,7 +373,6 @@ class MDLLoader:
 
         # Store dangly properties for physics simulation and shader uniforms
         #
-        # Reference: https://github.com/th3w1zard1/KotOR.js/tree/master/src/three/odyssey/OdysseyModel3D.ts:1491-1497
         # Reference: Libraries/PyKotor/src/pykotor/resource/formats/mdl/mdl_data.py:1356-1399
         node.setPythonTag("dangly_type", "cloth")
         node.setPythonTag("dangly_data", dangly)
@@ -437,11 +403,8 @@ class MDLLoader:
 
         References:
         ----------
-
-    Derivations and Other Implementations:
-    -------------------------------------
-        https://github.com/th3w1zard1/KotOR.js/tree/master/src/three/odyssey/OdysseyModel3D.ts:1476-1479
         Libraries/PyKotor/src/pykotor/resource/formats/mdl/mdl_data.py:1447-1505 - MDLSaber structure
+        Archived KotOR.js line anchors: ``wiki/reverse_engineering_findings_panda3d_mdl_loader_github_urls_pre_scrub.md``.
 
         """
         # Saber meshes have mesh data
@@ -467,7 +430,6 @@ class MDLLoader:
         node_np.setPythonTag("saber_flare_radius", saber.saber_flare_radius)
 
         # Saber meshes need special material flags
-        # Reference: https://github.com/th3w1zard1/KotOR.js/tree/master/src/three/odyssey/OdysseyModel3D.ts:1476-1479
         # Material should have SABER and IGNORE_LIGHTING flags
         # This is handled in material manager
 
@@ -486,15 +448,10 @@ class MDLLoader:
 
         References:
         ----------
-
-    Derivations and Other Implementations:
-    -------------------------------------
-        https://github.com/th3w1zard1/KotOR.js/tree/master/src/three/odyssey/OdysseyModel3D.ts:1212-1243
-
+        Archived KotOR.js line anchors: ``wiki/reverse_engineering_findings_panda3d_mdl_loader_github_urls_pre_scrub.md``.
 
         """
         # AABB nodes are typically not rendered, used for collision
-        # Reference: https://github.com/th3w1zard1/KotOR.js/tree/master/src/three/odyssey/OdysseyModel3D.ts:1212-1243
         if not mdl_node.walkmesh:
             return NodePath(mdl_node.name)
 
@@ -528,14 +485,8 @@ class MDLLoader:
 
         References:
         ----------
-        Original BioWare engine binaries (from swkotor.exe, swkotor2.exe)
-        Original BioWare engine binaries
+        Observed retail KotOR I and KotOR II behavior.
         /panda3d/panda3d-docs - PointLight, DirectionalLight, SpotLight
-        Derivations and Other Implementations:
-        ----------
-        https://github.com/th3w1zard1/KotOR.js/tree/master/src/three/odyssey/OdysseyModel3D.ts:1544-1639
-
-
         """
         from panda3d.core import DirectionalLight, PointLight, Vec3, Vec4
 
@@ -594,11 +545,8 @@ class MDLLoader:
 
         References:
         ----------
-
-    Derivations and Other Implementations:
-    -------------------------------------
-        https://github.com/th3w1zard1/KotOR.js/tree/master/src/three/odyssey/OdysseyModel3D.ts:998-1004
         Libraries/PyKotor/src/pykotor/resource/formats/mdl/mdl_data.py:842-1051 - MDLEmitter structure
+        Archived KotOR.js line anchors: ``wiki/reverse_engineering_findings_panda3d_mdl_loader_github_urls_pre_scrub.md``.
 
         """
         if not mdl_node.emitter:
@@ -653,15 +601,10 @@ class MDLLoader:
 
         References:
         ----------
-
-    Derivations and Other Implementations:
-    -------------------------------------
-        https://github.com/th3w1zard1/KotOR.js/tree/master/src/three/odyssey/OdysseyModel3D.ts:1006-1027
-
+        Archived KotOR.js line anchors: ``wiki/reverse_engineering_findings_panda3d_mdl_loader_github_urls_pre_scrub.md``.
 
         """
         # Reference nodes create a placeholder - actual model loaded in _load_reference_model
-        # Reference: https://github.com/th3w1zard1/KotOR.js/tree/master/src/three/odyssey/OdysseyModel3D.ts:1006-1027
         return NodePath(mdl_node.name)
 
     def _load_reference_model(self, reference: MDLReference, parent_np: NodePath) -> None:
@@ -674,15 +617,10 @@ class MDLLoader:
 
         References:
         ----------
-
-    Derivations and Other Implementations:
-    -------------------------------------
-        https://github.com/th3w1zard1/KotOR.js/tree/master/src/three/odyssey/OdysseyModel3D.ts:1012-1026
-
+        Archived KotOR.js line anchors: ``wiki/reverse_engineering_findings_panda3d_mdl_loader_github_urls_pre_scrub.md``.
 
         """
         #
-        # Reference: https://github.com/th3w1zard1/KotOR.js/tree/master/src/three/odyssey/OdysseyModel3D.ts:1012-1026
         if not self._resource_loader or not reference.model_name:
             return
 
@@ -756,8 +694,7 @@ class MDLLoader:
 
         References:
         ----------
-        Original BioWare engine binaries (from swkotor.exe, swkotor2.exe)
-        Original BioWare engine binaries
+        Observed retail KotOR I and KotOR II behavior.
         Libraries/PyKotor/src/pykotor/gl/models/mdl_converter.py - Format requirements
         /panda3d/panda3d-docs - GeomVertexArrayFormat.addColumn()
 
@@ -779,7 +716,6 @@ class MDLLoader:
         array.addColumn(InternalName.getTexcoord(), 2, Geom.NTFloat32, Geom.CTexcoord)
 
         # Tangent space for normal mapping
-        # Reference: https://github.com/th3w1zard1/mdlops/tree/master/MDLOpsM.pm:5470-5596 - Tangent space
         if reqs.has_tangent_space:
             array.addColumn(InternalName.getTangent(), 3, Geom.NTFloat32, Geom.CVector)
             array.addColumn(InternalName.getBinormal(), 3, Geom.NTFloat32, Geom.CVector)
@@ -810,8 +746,7 @@ class MDLLoader:
 
         References:
         ----------
-        Original BioWare engine binaries (from swkotor.exe, swkotor2.exe)
-        Original BioWare engine binaries
+        Observed retail KotOR I and KotOR II behavior.
         /panda3d/panda3d-docs - GeomVertexWriter
 
 
@@ -830,7 +765,6 @@ class MDLLoader:
 
         # Optional writers - must match conditions used in _create_vertex_format
         # Tangent/binormal writers only if has_tangent_space (normals AND faces AND UVs)
-        # Reference: https://github.com/th3w1zard1/mdlops/tree/master/MDLOpsM.pm:5470-5596 - Tangent space
         tangent_writer = None
         binormal_writer = None
         if reqs.has_tangent_space:
@@ -920,8 +854,7 @@ class MDLLoader:
 
         References:
         ----------
-        Original BioWare engine binaries (from swkotor.exe, swkotor2.exe)
-        Original BioWare engine binaries
+        Observed retail KotOR I and KotOR II behavior.
         /panda3d/panda3d-docs - GeomTriangles
 
 

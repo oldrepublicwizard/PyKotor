@@ -1,6 +1,7 @@
 """NSS compiler AST and helpers: CompileError, expression/statement nodes, type helpers."""
 
 from __future__ import annotations
+from pykotor.resource.formats._base import BiowareResource
 
 from abc import ABC, abstractmethod
 from enum import Enum
@@ -35,11 +36,6 @@ class CompileError(Exception):
     References:
     ----------
 
-    Derivations and Other Implementations:
-    -------------------------------------
-        https://github.com/th3w1zard1/KotOR.js/tree/master/src/nwscript/NWScriptCompiler.ts (TypeScript compiler errors)
-
-
     """
 
     def __init__(self, message: str, line_num: int | None = None, context: str | None = None):
@@ -61,7 +57,7 @@ class MissingIncludeError(CompileError):
     """Raised when a #include file cannot be found."""
 
 
-class TopLevelObject(ABC):
+class TopLevelObject(BiowareResource, ABC):
     @abstractmethod
     def compile(self, ncs: NCS, root: CodeRoot):  # noqa: A003
         ...
@@ -154,12 +150,11 @@ class GlobalVariableDeclaration(TopLevelObject):
         root.add_scoped(self.identifier, self.data_type, is_const=self.is_const)
 
 
-class Identifier:
+class Identifier(BiowareResource):
     def __init__(self, label: str):
         self.label: str = label
 
     def __eq__(self, other: object) -> bool:
-        # sourcery skip: assign-if-exp, reintroduce-else
         if self is other:
             return True
         if isinstance(other, Identifier):
@@ -216,7 +211,7 @@ class OperatorMapping(NamedTuple):
     binary: list[BinaryOperatorMapping]
 
 
-class BinaryOperatorMapping:
+class BinaryOperatorMapping(BiowareResource):
     def __init__(
         self,
         instruction: NCSInstructionType,
@@ -233,7 +228,7 @@ class BinaryOperatorMapping:
         return f"{self.__class__.__name__}(instruction={self.instruction!r}, result={self.result!r}, lhs={self.lhs!r}, rhs={self.rhs!r})"
 
 
-class UnaryOperatorMapping:
+class UnaryOperatorMapping(BiowareResource):
     def __init__(self, instruction: NCSInstructionType, rhs: DataType):
         self.instruction: NCSInstructionType = instruction
         self.rhs: DataType = rhs
@@ -254,7 +249,7 @@ class GetScopedResult(NamedTuple):
     is_const: bool = False
 
 
-class Struct:
+class Struct(BiowareResource):
     def __init__(self, identifier: Identifier, members: list[StructMember]):
         self.identifier: Identifier = identifier
         self.members: list[StructMember] = members
@@ -292,7 +287,7 @@ class Struct:
         raise CompileError(msg)
 
 
-class StructMember:
+class StructMember(BiowareResource):
     def __init__(self, datatype: DynamicDataType, identifier: Identifier):
         self.datatype: DynamicDataType = datatype
         self.identifier: Identifier = identifier
@@ -328,7 +323,7 @@ class StructMember:
         return self.datatype.size(root)
 
 
-class CodeRoot:
+class CodeRoot(BiowareResource):
     """Root compilation context for NSS compilation.
 
     Manages global scope, function definitions, constants, and compilation state.
@@ -336,11 +331,6 @@ class CodeRoot:
 
     References:
     ----------
-
-    Derivations and Other Implementations:
-    -------------------------------------
-        https://github.com/th3w1zard1/KotOR.js/tree/master/src/nwscript/NWScriptCompiler.ts (TypeScript compiler architecture)
-
 
     """
 
@@ -551,7 +541,7 @@ class CodeRoot:
         return 0 - sum(scoped.data_type.size(self) for scoped in self._global_scope)
 
 
-class CodeBlock:
+class CodeBlock(BiowareResource):
     def __init__(self):
         self.scope: list[ScopedValue] = []
         self._parent: CodeBlock | None = None
@@ -670,7 +660,7 @@ class CodeBlock:
         self._break_scope = True
 
 
-class ScopedValue:
+class ScopedValue(BiowareResource):
     def __init__(self, identifier: Identifier, data_type: DynamicDataType, is_const: bool = False):
         self.identifier: Identifier = identifier
         self.data_type: DynamicDataType = data_type
@@ -796,7 +786,7 @@ class FunctionDefinition(TopLevelObject):
         return all(these_parameters.data_type == prototype.parameters[i].data_type for i, these_parameters in enumerate(self.parameters))
 
 
-class FunctionDefinitionParam:
+class FunctionDefinitionParam(BiowareResource):
     def __init__(
         self,
         data_type: DynamicDataType,
@@ -894,7 +884,7 @@ class StructDefinition(TopLevelObject):
         root.struct_map[self.identifier.label] = Struct(self.identifier, self.members)
 
 
-class Expression(ABC):
+class Expression(BiowareResource, ABC):
     """Abstract base class for NSS expressions.
 
     Expressions compile to NCS bytecode instructions that evaluate to values.
@@ -902,11 +892,6 @@ class Expression(ABC):
 
     References:
     ----------
-
-    Derivations and Other Implementations:
-    -------------------------------------
-        https://github.com/th3w1zard1/KotOR.js/tree/master/src/nwscript/NWScriptCompiler.ts (Expression compilation)
-
 
     """
 
@@ -919,7 +904,7 @@ class Expression(ABC):
     ) -> DynamicDataType: ...
 
 
-class Statement(ABC):
+class Statement(BiowareResource, ABC):
     """Abstract base class for NSS statements.
 
     Statements compile to NCS bytecode instructions that perform actions (control flow,
@@ -927,11 +912,6 @@ class Statement(ABC):
 
     References:
     ----------
-
-    Derivations and Other Implementations:
-    -------------------------------------
-        https://github.com/th3w1zard1/KotOR.js/tree/master/src/nwscript/NWScriptCompiler.ts (Statement compilation)
-
 
     """
 
@@ -950,7 +930,7 @@ class Statement(ABC):
     ) -> object: ...
 
 
-class FieldAccess:
+class FieldAccess(BiowareResource):
     def __init__(self, identifiers: list[Identifier]):
         super().__init__()
         self.identifiers: list[Identifier] = identifiers
@@ -2363,7 +2343,7 @@ class DeclarationStatement(Statement):
             declarator.compile(ncs, root, block, self.data_type, self.is_const)
 
 
-class VariableDeclarator:
+class VariableDeclarator(BiowareResource):
     def __init__(self, identifier: Identifier):
         self.identifier: Identifier = identifier
 
@@ -2415,7 +2395,7 @@ class VariableDeclarator:
         block.add_scoped(self.identifier, data_type, is_const)
 
 
-class VariableInitializer:
+class VariableInitializer(BiowareResource):
     def __init__(self, identifier: Identifier, expression: Expression):
         self.identifier: Identifier = identifier
         self.expression: Expression = expression
@@ -2515,7 +2495,7 @@ class ConditionalBlock(Statement):
         ncs.instructions.append(jump_tos[-1])
 
 
-class ConditionAndBlock:
+class ConditionAndBlock(BiowareResource):
     def __init__(self, condition: Expression, block: CodeBlock):
         self.condition: Expression = condition
         self.block: CodeBlock = block
@@ -2959,13 +2939,13 @@ class SwitchStatement(Statement):
         block.temp_stack -= expression_type.size(root)
 
 
-class SwitchBlock:
+class SwitchBlock(BiowareResource):
     def __init__(self, labels: list[SwitchLabel], block: list[Statement]):
         self.labels: list[SwitchLabel] = labels
         self.block: list[Statement] = block
 
 
-class SwitchLabel(ABC):
+class SwitchLabel(BiowareResource, ABC):
     @abstractmethod
     def compile(
         self,
@@ -2977,7 +2957,7 @@ class SwitchLabel(ABC):
     ): ...
 
 
-class ExpressionSwitchLabel:
+class ExpressionSwitchLabel(SwitchLabel):
     def __init__(self, expression: Expression):
         self.expression: Expression = expression
 
@@ -3002,7 +2982,7 @@ class ExpressionSwitchLabel:
         ncs.add(NCSInstructionType.JNZ, jump=jump_to)
 
 
-class DefaultSwitchLabel:
+class DefaultSwitchLabel(SwitchLabel):
     def __init__(self): ...
 
     def compile(
@@ -3019,7 +2999,7 @@ class DefaultSwitchLabel:
 # endregion
 
 
-class DynamicDataType:
+class DynamicDataType(BiowareResource):
     INT: DynamicDataType
     STRING: DynamicDataType
     FLOAT: DynamicDataType

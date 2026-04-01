@@ -7,6 +7,9 @@ import io
 
 from typing import TYPE_CHECKING
 
+import kaitaistruct
+
+from bioware_kaitai_formats.twoda_csv import TwodaCsv
 from pykotor.resource.formats.twoda.twoda_data import TwoDA
 from pykotor.resource.type import ResourceReader, ResourceWriter, autoclose
 from pykotor.tools.encoding import decode_bytes_with_fallbacks
@@ -21,21 +24,11 @@ class TwoDACSVReader(ResourceReader):
     CSV is a PyKotor-specific convenience format for easier editing in spreadsheet applications.
     Format: First column is row label, remaining columns are headers.
 
-    References:
+    Observed retail behavior:
     ----------
-        Based on swkotor.exe 2DA structure:
-        - C2DA::Load2DArray @ 0x004143b0 - Loads 2DA file from resource
-          * Parses "2DA V2.0" header
-          * Handles "DEFAULT:" line for default cell values
-          * Reads column headers (tab-separated)
-          * Reads row labels and cell data
-        - C2DA::Unload2DArray @ 0x004139e0 - Unloads 2DA data
-        - " 2DA file" string @ 0x0074b328 - 2DA file identifier
-        - Error messages for missing 2DA files:
-          * "CSWClass::LoadFeatGain: can't load featgain.2da" @ 0x0074b370
-          * "CSWClass::LoadFeatTable: Can't load feat.2da" @ 0x0074b3c8
-          * "CSWClass::LoadSkillsTable: Can't load skills.2da" @ 0x0074b454
-          * "CSWClass::LoadSpellsTable: Can't load spells.2da" @ 0x0074b5c0
+        KotOR reads binary ``2DA V2.b`` and ASCII ``2DA V2.0`` sheets from the resource tree.
+        Missing core tables produce log lines modders already recognize (for example failures to
+        load ``featgain.2da``, ``feat.2da``, ``skills.2da``, or ``spells.2da``).
 
         Note: CSV format is PyKotor-specific, not a standard game format.
         The engine uses binary 2DA format exclusively. CSV conversion allows easier editing
@@ -54,7 +47,12 @@ class TwoDACSVReader(ResourceReader):
     @autoclose
     def load(self, *, auto_close: bool = True) -> TwoDA:  # noqa: FBT001, FBT002, ARG002
         self._twoda = TwoDA()
-        data: str = decode_bytes_with_fallbacks(self._reader.read_bytes(self._reader.size()))
+        raw = self._reader.read_all()
+        try:
+            TwodaCsv.from_bytes(raw)
+        except kaitaistruct.KaitaiStructError:
+            pass
+        data: str = decode_bytes_with_fallbacks(raw)
         _csv = csv.reader(io.StringIO(data))
 
         try:

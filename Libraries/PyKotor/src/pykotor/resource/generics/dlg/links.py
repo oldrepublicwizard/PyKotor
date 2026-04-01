@@ -26,29 +26,10 @@ class DLGLink(Generic[T_co]):
     are stored in EntriesList (for entries) or RepliesList (for replies) within nodes,
     or in the StartingList at the root level.
 
-    References:
-    ----------
-        KotOR I (swkotor.exe):
-            - 0x0059ec10 - CSWSDialog::LoadDialogLinkedNode (115 bytes, 24 lines)
-                - Main DLG link GFF parser entry point
-                - Loads link entry from GFF structure
-                - Function signature: LoadDialogLinkedNode(CSWSDialog* this, CSWSDialogLinkEntry* param_1, CResGFF* param_2, CResStruct* param_3, int* param_4, ulong param_5)
-                - Called from LoadDialog (0x005a2ae0) for each link in RepliesList
-            - Reads link fields:
-                - Active (CResRef) - active script (conditional logic)
-                - Index (DWORD) - index to target entry/reply
-                - DisplayInactive (BYTE) - display inactive flag (read separately in LoadDialog)
-            - Links are stored in:
-                - RepliesList (GFFList) within EntryList entries
-                - StartingList (GFFList) at root level
-        KotOR II / TSL (swkotor2.exe):
-            - Functionally identical to K1 implementation
-            - Same GFF structure and parsing logic
-
-    Derivations and Other Implementations:
-    ----------
-        https://github.com/th3w1zard1/KotOR.js/tree/master/src/resource/DLGLink.ts (DLG link structure)
-        https://github.com/th3w1zard1/Kotor.NET/tree/master/Kotor.NET/Resources/KotorDLG/DLG.cs (DLG link structure)
+    On disk, links use GFF fields such as ``Active`` (script ResRef), ``Index`` (target),
+    and related KotOR 2 fields; it has been observed that the retail games use the same
+    layout in KotOR I and TSL. Binary symbol/address notes are migrated to
+    ``wiki/reverse_engineering_findings.md``.
 
     Attributes:
     ----------

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import errno
+import importlib.util
 import os
 import pathlib
 import sys
@@ -65,6 +66,13 @@ BINARY_TEST_FILE = str(THIS_SCRIPT_PATH.parent.parent.parent / "files" / "test.n
 EXPECTED_INSTRUCTION_COUNT = 1541
 
 
+def _ncs_dencs_available() -> bool:
+    return importlib.util.find_spec("pykotor.resource.formats.ncs.dencs") is not None
+
+
+_TSL_NCS_TEST_FILES_DIR = Path(__file__).resolve().parents[3] / "test_files"
+
+
 # ============================================================================
 # Test Base Classes
 # ============================================================================
@@ -115,6 +123,10 @@ class CompilerTestBase(unittest.TestCase):
 # ============================================================================
 
 
+@unittest.skipUnless(
+    os.path.isfile(BINARY_TEST_FILE),
+    f"Binary NCS fixture not present: {BINARY_TEST_FILE}",
+)
 class TestNCSBinaryIO(unittest.TestCase):
     """Tests for binary NCS file I/O operations."""
 
@@ -4132,6 +4144,10 @@ class TestNCSOptimizer(CompilerTestBase):
 # ============================================================================
 
 
+@unittest.skipUnless(
+    _ncs_dencs_available(),
+    "Optional DeNCS package pykotor.resource.formats.ncs.dencs is not installed",
+)
 class TestNCSRoundtrip(unittest.TestCase):
     """Tests for NSS to NCS to NSS roundtrip compilation."""
 
@@ -4318,6 +4334,10 @@ def _assert_substrings(source: str, substrings: list[str]) -> None:
         assert snippet in source, f"Expected snippet '{snippet}' to be present in decompiled script:\n{source}"
 
 
+@unittest.skipUnless(
+    _ncs_dencs_available(),
+    "Optional DeNCS package pykotor.resource.formats.ncs.dencs is not installed",
+)
 class TestNssNcsRoundtripGranular(unittest.TestCase):
     """Granular tests for NSS to NCS roundtrip compilation."""
 
@@ -4869,6 +4889,10 @@ SAMPLE_FILES = [
 ]
 
 
+@pytest.mark.skipif(
+    not _ncs_dencs_available(),
+    reason="Optional DeNCS package pykotor.resource.formats.ncs.dencs is not installed",
+)
 @pytest.mark.parametrize(("relative_path", "game"), SAMPLE_FILES)
 def test_binary_roundtrip_samples(relative_path: str, game: Game):
     """Test roundtrip compilation of binary NCS sample files."""
@@ -4908,6 +4932,10 @@ def _collect_k1_undecompilable_files() -> list[tuple[Path, str]]:
 K1_UNDECOMPILABLE_FILES = _collect_k1_undecompilable_files()
 
 
+@pytest.mark.skipif(
+    not _ncs_dencs_available(),
+    reason="Optional DeNCS package pykotor.resource.formats.ncs.dencs is not installed",
+)
 @pytest.mark.parametrize(("ncs_path", "test_id"), K1_UNDECOMPILABLE_FILES)
 def test_k1_undecompilable_roundtrip(ncs_path: Path, test_id: str):
     """Test NCS -> NSS -> NCS roundtrip for K1 undecompilable files.
@@ -4940,11 +4968,13 @@ def test_k1_undecompilable_roundtrip(ncs_path: Path, test_id: str):
 # ============================================================================
 
 
+@pytest.mark.skipif(
+    not (_TSL_NCS_TEST_FILES_DIR / "a_galaxy_map.nss").is_file(),
+    reason="TSL test script a_galaxy_map.nss not in Libraries/PyKotor/test_files",
+)
 def test_compile_a_galaxy_map_tsl(k2_path: str):
     """Test compilation of a_galaxy_map.nss for TSL."""
-    script_path = Path(__file__).resolve().parents[3] / "test_files" / "a_galaxy_map.nss"
-    if not script_path.exists():
-        pytest.skip(f"Test script not found: {script_path}")
+    script_path = _TSL_NCS_TEST_FILES_DIR / "a_galaxy_map.nss"
 
     source = script_path.read_text(encoding="windows-1252", errors="ignore")
     ncs = compile_nss(source, Game.K2)
@@ -4952,11 +4982,13 @@ def test_compile_a_galaxy_map_tsl(k2_path: str):
     assert len(ncs.instructions) > 0, "Compiled NCS should have instructions"
 
 
+@pytest.mark.skipif(
+    not (_TSL_NCS_TEST_FILES_DIR / "k_sup_galaxymap.nss").is_file(),
+    reason="TSL test script k_sup_galaxymap.nss not in Libraries/PyKotor/test_files",
+)
 def test_compile_k_sup_galaxymap_tsl(k2_path: str):
     """Test compilation of k_sup_galaxymap.nss for TSL with include handling."""
-    script_path = Path(__file__).resolve().parents[3] / "test_files" / "k_sup_galaxymap.nss"
-    if not script_path.exists():
-        pytest.skip(f"Test script not found: {script_path}")
+    script_path = _TSL_NCS_TEST_FILES_DIR / "k_sup_galaxymap.nss"
 
     source = script_path.read_text(encoding="windows-1252", errors="ignore")
     # Provide library lookup for include resolution
@@ -4968,11 +5000,13 @@ def test_compile_k_sup_galaxymap_tsl(k2_path: str):
     assert len(ncs.instructions) > 0, "Compiled NCS should have instructions"
 
 
+@pytest.mark.skipif(
+    not (_TSL_NCS_TEST_FILES_DIR / "a_galaxymap.nss").is_file(),
+    reason="TSL test script a_galaxymap.nss not in Libraries/PyKotor/test_files",
+)
 def test_compile_a_galaxymap_tsl(k2_path: str):
     """Test compilation of a_galaxymap.nss for TSL with many global variables."""
-    script_path = Path(__file__).resolve().parents[3] / "test_files" / "a_galaxymap.nss"
-    if not script_path.exists():
-        pytest.skip(f"Test script not found: {script_path}")
+    script_path = _TSL_NCS_TEST_FILES_DIR / "a_galaxymap.nss"
 
     source = script_path.read_text(encoding="windows-1252", errors="ignore")
     ncs = compile_nss(source, Game.K2)
@@ -4982,11 +5016,13 @@ def test_compile_a_galaxymap_tsl(k2_path: str):
     assert any(inst.ins_type == NCSInstructionType.SAVEBP for inst in ncs.instructions), "Script with globals should have SAVEBP instruction"
 
 
+@pytest.mark.skipif(
+    not (_TSL_NCS_TEST_FILES_DIR / "tr_leave_ehawk.nss").is_file(),
+    reason="TSL test script tr_leave_ehawk.nss not in Libraries/PyKotor/test_files",
+)
 def test_compile_tr_leave_ehawk_tsl(k2_path: str):
     """Test compilation of tr_leave_ehawk.nss for TSL."""
-    script_path = Path(__file__).resolve().parents[3] / "test_files" / "tr_leave_ehawk.nss"
-    if not script_path.exists():
-        pytest.skip(f"Test script not found: {script_path}")
+    script_path = _TSL_NCS_TEST_FILES_DIR / "tr_leave_ehawk.nss"
 
     source = script_path.read_text(encoding="windows-1252", errors="ignore")
     ncs = compile_nss(source, Game.K2)
@@ -4994,11 +5030,13 @@ def test_compile_tr_leave_ehawk_tsl(k2_path: str):
     assert len(ncs.instructions) > 0, "Compiled NCS should have instructions"
 
 
+@pytest.mark.skipif(
+    not _TSL_NCS_TEST_FILES_DIR.is_dir(),
+    reason="Libraries/PyKotor/test_files directory not present",
+)
 def test_compile_all_tsl_scripts_batch(k2_path: str):
     """Test batch compilation of all TSL test scripts."""
-    test_files_dir = Path(__file__).resolve().parents[3] / "test_files"
-    if not test_files_dir.exists():
-        pytest.skip(f"Test files directory not found: {test_files_dir}")
+    test_files_dir = _TSL_NCS_TEST_FILES_DIR
 
     scripts = [
         "a_galaxy_map.nss",

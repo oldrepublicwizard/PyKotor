@@ -19,12 +19,7 @@ Usage:
 
 References:
 ----------
-        See wav_data module docstring for engine addresses (K1 + TSL TODO).
-        Derivations and Other Implementations:
-        ----------
-        https://github.com/th3w1zard1/KotOR.js/tree/master/src/audio/AudioFile.ts:164-205
-
-
+        Behavior notes: ``wav_data`` and ``io_wav``.
 """
 
 from __future__ import annotations
@@ -138,7 +133,6 @@ def get_playable_bytes(wav: WAV) -> bytes:
         Audio bytes playable by standard media players
 
     References:
-        https://github.com/th3w1zard1/KotOR.js/tree/master/src/audio/AudioFile.ts:164-205 - getPlayableByteStream()
     """
     return bytes_wav(wav, ResourceType.WAV_DEOB)
 
@@ -155,7 +149,6 @@ def detect_audio_type(wav: WAV) -> str:
         "mp3" for MP3 format, "wav" for WAVE format
 
     References:
-        https://github.com/th3w1zard1/KotOR.js/tree/master/src/audio/AudioFile.ts:348-354 - getExportExtension()
     """
     if wav.audio_format == AudioFormat.MP3:
         return "mp3"

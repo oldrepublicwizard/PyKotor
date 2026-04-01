@@ -81,14 +81,7 @@ def get_body_model(  # noqa: C901, PLR0912, PLR0915
 
     References:
     ----------
-        Original BioWare engine binaries (from swkotor.exe, swkotor2.exe)
-        Original BioWare engine binaries
-        Derivations and Other Implementations:
-        ----------
-        https://github.com/th3w1zard1/KotOR.js/tree/master/src/module/ModuleCreature.ts (Creature appearance handling)
-        https://github.com/th3w1zard1/kotorblender/tree/master/io_scene_kotor/format/mdl/reader.py (MDL model loading)
-
-
+        Observed retail KotOR I and KotOR II behavior.
         Note: Appearance lookup uses appearance.2da for model associations
     """
     log = RobustLogger()

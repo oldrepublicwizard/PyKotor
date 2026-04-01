@@ -24,6 +24,7 @@ if UTILITY_PATH.joinpath("utility").exists():
     add_sys_path(UTILITY_PATH)
 
 from pykotor.common.stream import BinaryReader, BinaryWriter, BinaryWriterBytearray  # noqa: E402  # pyright: ignore[reportMissingImports]
+from pykotor.common.language import Gender, Language, LocalizedString  # noqa: E402  # pyright: ignore[reportMissingImports]
 
 
 class TestBinaryReader(TestCase):
@@ -143,6 +144,18 @@ class TestBinaryReader(TestCase):
         assert self.reader1b.peek(1) == b"\x04"
 
         assert self.reader1c.peek(1) == b"\x03"
+
+    def test_read_locstring_with_unset_language(self):
+        locstring = LocalizedString.from_invalid()
+        locstring.set_data(Language.UNSET, Gender.MALE, "baragwin")
+
+        writer = BinaryWriterBytearray(bytearray())
+        writer.write_locstring(locstring)
+
+        reader = BinaryReader.from_bytes(writer.data())
+        loaded = reader.read_locstring()
+
+        assert loaded.get(Language.UNSET, Gender.MALE) == "baragwin"
 
 
 class TestBinaryWriterBytearray(TestCase):

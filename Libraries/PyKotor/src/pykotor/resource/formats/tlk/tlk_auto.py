@@ -51,7 +51,7 @@ def detect_tlk(
             return ResourceType.TLK
         if "{" in first4:
             return ResourceType.TLK_JSON
-        if "<" in first4:  # sourcery skip: assign-if-exp, reintroduce-else
+        if "<" in first4:
             return ResourceType.TLK_XML
         return ResourceType.INVALID
 

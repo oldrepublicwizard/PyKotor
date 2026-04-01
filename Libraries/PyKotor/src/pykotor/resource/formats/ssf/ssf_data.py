@@ -5,14 +5,11 @@ in the TLK file. Each SSF defines a set of 28 sound effects that creatures can p
 various game events (battle cries, pain grunts, selection sounds, etc.). The StrRefs point
 to entries in dialog.tlk which contain the actual WAV file references.
 
-References:
+Observed retail behavior:
 ----------
-    Based on unified K1 (swkotor.exe) and TSL (swkotor2.exe) SSF structure.
-    Addresses: (K1: swkotor.exe, TSL: swkotor2.exe — verify/fill TSL via REVA when available).
-
-    - CResSSF::CResSSF (SSF resource constructor): K1: 0x006db650, TSL: TODO
-    - CResSSF::~CResSSF (destructors): K1: 0x006db670, 0x006db6b0, TSL: TODO
-    Format: "SSF ", "V1.1", offset to sound table (typically 12), 28 StrRef entries (4 bytes each); ".ssf" extension.
+    Creature sound sets map 28 fixed event slots to StrRefs in ``dialog.tlk``. On disk the
+    resources use the ``SSF `` / ``V1.1`` header, a table offset (commonly 12), and 28
+    consecutive 32-bit StrRef fields; ``-1`` / ``0xFFFFFFFF`` means “no sound” for that slot.
 """
 
 from __future__ import annotations
@@ -32,17 +29,9 @@ class SSF(ComparableMixin):
     the TLK entry. This allows different creatures to have different sound sets while
     sharing the same event type system.
 
-    References:
-    ----------
-        See module docstring for engine addresses (K1 + TSL TODO). CResSSF, SSF format (28 StrRefs).
-        SSF file format specification
-
     Attributes:
     ----------
         _sounds: Array of 28 StrRef values, one for each sound event type
-            Reference: https://github.com/th3w1zard1/Kotor.NET/tree/master/SSFBinaryStructure.cs:67 (SoundStringRefs[40] array, but only 28 used)
-            Reference: https://github.com/th3w1zard1/KotOR_IO/tree/master/SSF.cs:51-54 (28 entries read)
-            Reference: https://github.com/th3w1zard1/KotOR.js/tree/master/SSFObject.ts:17,42-44 (sound_refs array, 28 entries)
             Index corresponds to SSFSound enum value
             Each value is a StrRef (int32) into dialog.tlk
             Value -1 indicates no sound for that event type
@@ -53,9 +42,6 @@ class SSF(ComparableMixin):
     COMPARABLE_SEQUENCE_FIELDS = ("_sounds",)
 
     def __init__(self):
-        # https://github.com/th3w1zard1/Kotor.NET/tree/master/Kotor.NET/Formats/KotorSSF/SSFBinaryStructure.cs:67
-        # https://github.com/th3w1zard1/KotOR_IO/tree/master/KotOR_IO/File Formats/SSF.cs:51-54
-        # https://github.com/th3w1zard1/KotOR.js/tree/master/src/resource/SSFObject.ts:17,42-44
         # Array of 28 StrRef values (one per sound event type)
         # Index maps to SSFSound enum, value is StrRef into dialog.tlk
         # -1 indicates no sound for that event type
@@ -128,80 +114,52 @@ class SSFSound(IntEnum):
         reference the actual WAV files to play. This system allows different creatures
         to have different sound sets while sharing the same event type definitions.
 
-        References:
-        ----------
-            See module docstring for engine addresses (K1 + TSL TODO). CResSSF.
-
-    Derivations and Other Implementations:
-    ----------
-        https://github.com/th3w1zard1/KotOR_IO/tree/master/KotOR_IO/File (Reference_Tables.SSFields)
-        https://github.com/th3w1zard1/KotOR.js/tree/master/src/enums/resource/SSFType.ts:11-40
-        https://github.com/th3w1zard1/KotOR-Bioware-Libs/tree/master/SSF.pm:15-42
-
     Sound Event Types:
     ------------------
         - BATTLE_CRY_1-6 (0-5): Battle cry sounds played during combat
 
-                Reference: https://github.com/th3w1zard1/KotOR.js/tree/master/SSFType.ts:12-17
                 Used when creature enters combat or performs combat actions
 
         - SELECT_1-3 (6-8): Selection sounds when creature is clicked/selected
-                Reference: https://github.com/th3w1zard1/KotOR.js/tree/master/SSFType.ts:18-20
                 Played when player clicks on creature
 
         - ATTACK_GRUNT_1-3 (9-11): Grunts during attack animations
-                Reference: https://github.com/th3w1zard1/KotOR.js/tree/master/SSFType.ts:21-23
                 Used during melee/ranged attack animations
 
         - PAIN_GRUNT_1-2 (12-13): Pain sounds when taking damage
-                Reference: https://github.com/th3w1zard1/KotOR.js/tree/master/SSFType.ts:24-25
                 Played when creature receives damage
 
         - LOW_HEALTH (14): Sound when health drops below threshold
-                Reference: https://github.com/th3w1zard1/KotOR.js/tree/master/SSFType.ts:26
                 Typically played at ~25% health
 
         - DEAD (15): Death sound when creature dies
-                Reference: https://github.com/th3w1zard1/KotOR.js/tree/master/SSFType.ts:27
                 Played on creature death
 
         - CRITICAL_HIT (16): Sound when creature scores critical hit
-                Reference: https://github.com/th3w1zard1/KotOR.js/tree/master/SSFType.ts:28
                 Played when creature lands critical attack
 
         - TARGET_IMMUNE (17): Sound when target is immune to attack
-                Reference: https://github.com/th3w1zard1/KotOR.js/tree/master/SSFType.ts:29
                 Played when attack has no effect
 
         - LAY_MINE (18): Sound when laying a mine
-                Reference: https://github.com/th3w1zard1/KotOR.js/tree/master/SSFType.ts:30
 
         - DISARM_MINE (19): Sound when disarming a mine
-                Reference: https://github.com/th3w1zard1/KotOR.js/tree/master/SSFType.ts:31
 
         - BEGIN_STEALTH (20): Sound when entering stealth mode
-                Reference: https://github.com/th3w1zard1/KotOR.js/tree/master/SSFType.ts:32
 
         - BEGIN_SEARCH (21): Sound when starting search mode
-                Reference: https://github.com/th3w1zard1/KotOR.js/tree/master/SSFType.ts:33
 
         - BEGIN_UNLOCK (22): Sound when starting lockpicking
-                Reference: https://github.com/th3w1zard1/KotOR.js/tree/master/SSFType.ts:34
 
         - UNLOCK_FAILED (23): Sound when lockpicking fails
-                Reference: https://github.com/th3w1zard1/KotOR.js/tree/master/SSFType.ts:35
 
         - UNLOCK_SUCCESS (24): Sound when lockpicking succeeds
-                Reference: https://github.com/th3w1zard1/KotOR.js/tree/master/SSFType.ts:36
 
         - SEPARATED_FROM_PARTY (25): Sound when leaving party
-                Reference: https://github.com/th3w1zard1/KotOR.js/tree/master/SSFType.ts:37
 
         - REJOINED_PARTY (26): Sound when rejoining party
-                Reference: https://github.com/th3w1zard1/KotOR.js/tree/master/SSFType.ts:38
 
         - POISONED (27): Sound when creature is poisoned
-                Reference: https://github.com/th3w1zard1/KotOR.js/tree/master/SSFType.ts:39
     """
 
     BATTLE_CRY_1 = 0

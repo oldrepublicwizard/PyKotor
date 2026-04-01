@@ -9,9 +9,13 @@ import os
 
 from typing import TYPE_CHECKING
 
-from qtpy.QtCore import QCollator, QTimeZone, Qt  # type: ignore[attr-defined]
+from qtpy.QtCore import QCollator, Qt  # type: ignore[attr-defined]
+
+from utility.gui.qt.adapters.filesystem.qtimezone_compat import qtimezone_utc
 
 if TYPE_CHECKING:
+    from qtpy.QtCore import QTimeZone
+
     from utility.gui.qt.adapters.filesystem.pyfilesystemnode import PyFileSystemNode
 
 
@@ -160,8 +164,9 @@ class PyFileSystemModelSorter:
 
         # Matches C++ lines 1086-1094: TimeColumn case
         if self.sortColumn == 3:  # TimeColumn
-            left_dt = l.lastModified(QTimeZone.UTC)  # type: ignore[attr-defined]
-            right_dt = r.lastModified(QTimeZone.UTC)  # type: ignore[attr-defined]
+            utc = qtimezone_utc()
+            left_dt = l.lastModified(utc)  # type: ignore[attr-defined]
+            right_dt = r.lastModified(utc)  # type: ignore[attr-defined]
             if left_dt == right_dt:
                 return self.naturalCompare.compare(l.fileName, r.fileName) < 0  # type: ignore[attr-defined]
 

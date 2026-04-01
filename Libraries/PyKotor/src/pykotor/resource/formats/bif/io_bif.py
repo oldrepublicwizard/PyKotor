@@ -6,7 +6,12 @@ import lzma
 
 from typing import TYPE_CHECKING
 
+import kaitaistruct
+
 from pykotor.common.misc import ResRef
+from pykotor.common.stream import BinaryReader
+from bioware_kaitai_formats.bif import Bif
+from bioware_kaitai_formats.bzf import Bzf
 from pykotor.resource.formats.bif.bif_data import BIF, BIFResource, BIFType
 from pykotor.resource.type import ResourceReader, ResourceType, ResourceWriter, autoclose
 
@@ -48,6 +53,110 @@ def _decompress_bzf_payload(payload: bytes, expected_size: int) -> bytes:
     return data
 
 
+def _load_bif_from_kaitai(data: bytes) -> BIF:
+    """Parse uncompressed BIFF via Kaitai (table only); load payloads with PyKotor WOK rules."""
+    parsed = Bif.from_bytes(data)
+    bif = BIF()
+    bif.bif_type = BIFType.BIF
+    vt = parsed.var_resource_table
+    if vt is None or not vt.entries:
+        bif.build_lookup_tables()
+        return bif
+    for e in vt.entries:
+        res_type = ResourceType.from_id(int(e.resource_type))
+        resource = BIFResource(ResRef.from_blank(), res_type, b"", int(e.resource_id), int(e.file_size))
+        resource.offset = int(e.offset)
+        bif.resources.append(resource)
+    reader_size = len(data)
+    for i in range(1, len(bif.resources)):
+        prev = bif.resources[i - 1]
+        prev.packed_size = bif.resources[i].offset - prev.offset
+    if bif.resources:
+        bif.resources[-1].packed_size = reader_size - bif.resources[-1].offset
+    br = BinaryReader.from_bytes(data, 0)
+    for resource in bif.resources:
+        br.seek(resource.offset)
+        read_len = resource.size
+        if resource.restype == ResourceType.WOK and getattr(resource, "packed_size", 0) and resource.packed_size > resource.size:
+            read_len = resource.packed_size
+        resource.data = br.read_bytes(read_len)
+    bif.build_lookup_tables()
+    return bif
+
+
+def _load_bif_legacy(reader: BinaryReader) -> BIF:
+    """Original BIF/BZF reader (BZF and Kaitai fallback)."""
+    bif = BIF()
+
+    signature: str = reader.read_string(8)
+
+    if signature[:4] == BIFType.BIF.value:
+        bif.bif_type = BIFType.BIF
+    elif signature[:4] == BIFType.BZF.value:
+        bif.bif_type = BIFType.BZF
+    else:
+        msg = f"Invalid BIF/BZF file type: {signature[:4]}"
+        raise ValueError(msg)
+
+    if signature[4:] != "V1  " and signature[4:] != "V1.1":
+        msg = f"Unsupported BIF/BZF version: {signature[4:]}"
+        raise ValueError(msg)
+
+    var_res_count = reader.read_uint32()
+    fixed_res_count = reader.read_uint32()
+    data_offset = reader.read_uint32()
+
+    if fixed_res_count > 0:
+        msg = "Fixed resources not supported"
+        raise ValueError(msg)
+
+    reader.seek(data_offset)
+
+    for i in range(var_res_count):
+        key_id: int = reader.read_uint32()
+        offset: int = reader.read_uint32()
+        size: int = reader.read_uint32()
+        res_type: ResourceType = ResourceType.from_id(reader.read_uint32())
+
+        resource = BIFResource(ResRef.from_blank(), res_type, b"", key_id, size)
+        resource.offset = offset
+
+        if bif.bif_type == BIFType.BZF and i > 0:
+            prev_resource: BIFResource = bif.resources[-1]
+            prev_resource.packed_size = offset - prev_resource.offset
+
+        bif.resources.append(resource)
+
+    if bif.bif_type == BIFType.BZF and bif.resources:
+        last_resource: BIFResource = bif.resources[-1]
+        last_resource.packed_size = reader.size() - last_resource.offset
+
+    if bif.bif_type == BIFType.BIF and bif.resources:
+        for idx in range(1, len(bif.resources)):
+            prev = bif.resources[idx - 1]
+            prev.packed_size = bif.resources[idx].offset - prev.offset
+        bif.resources[-1].packed_size = reader.size() - bif.resources[-1].offset
+
+    for resource in bif.resources:
+        reader.seek(resource.offset)
+
+        if bif.bif_type == BIFType.BZF:
+            compressed: bytes = reader.read_bytes(resource.packed_size)
+            try:
+                resource.data = _decompress_bzf_payload(compressed, resource.size)
+            except lzma.LZMAError as e:  # noqa: PERF203
+                msg = f"Failed to decompress BZF resource: {e}"
+                raise ValueError(msg) from e
+        else:
+            read_len = resource.size
+            if resource.restype == ResourceType.WOK and getattr(resource, "packed_size", 0) and resource.packed_size > resource.size:
+                read_len = resource.packed_size
+            resource.data = reader.read_bytes(read_len)
+
+    bif.build_lookup_tables()
+    return bif
+
+
 class BIFBinaryReader(ResourceReader):
     """Reads BIF/BZF files.
 
@@ -56,15 +165,15 @@ class BIFBinaryReader(ResourceReader):
 
     References:
     ----------
-        See key_data module docstring for engine addresses (K1 + TSL TODO). CExoKeyTable::LocateBifFile (K1: 0x0040d200).
+        Resolution follows the packed resource identifiers described in ``key_data``.
 
         Note: BIF (BioWare Index File) files contain game resources indexed by KEY files.
         BZF files are compressed BIF files using LZMA compression. The engine uses BIF
         files as the primary resource storage format, with KEY files providing the index.
-        Missing Features:
-        ----------------
-        - Fixed resources explicitly rejected (reone reads but doesn't use them)
 
+    Missing Features:
+    ----------------
+        - Fixed-slot BIF entries (not modeled here)
     """
 
     def __init__(
@@ -75,109 +184,24 @@ class BIFBinaryReader(ResourceReader):
     ):
         super().__init__(source, offset, size)
         self.bif: BIF = BIF()
-        self.var_res_count: int = 0
-        self.fixed_res_count: int = 0
-        self.data_offset: int = 0
 
     @autoclose
     def load(self, *, auto_close: bool = True) -> BIF:  # noqa: FBT001, FBT002, ARG002
         """Load BIF/BZF data from source."""
-        self._check_signature()
-        self._read_header()
-        self._read_resource_table()
-        self._read_resource_data()
+        data = self._reader.read_all()
+        if len(data) >= 4 and data[:4] == b"BIFF":
+            try:
+                self.bif = _load_bif_from_kaitai(data)
+                return self.bif
+            except kaitaistruct.KaitaiStructError:
+                pass
+        elif len(data) >= 4 and data[:4] == b"BZF ":
+            try:
+                Bzf.from_bytes(data)
+            except kaitaistruct.KaitaiStructError:
+                pass
+        self.bif = _load_bif_legacy(BinaryReader.from_bytes(data, 0))
         return self.bif
-
-    def _check_signature(self) -> None:
-        """Check BIF/BZF signature."""
-
-        signature: str = self._reader.read_string(8)  # "BIFFV1  " or "BZF V1  "
-
-        # Check file type
-        if signature[:4] == BIFType.BIF.value:
-            self.bif.bif_type = BIFType.BIF
-        elif signature[:4] == BIFType.BZF.value:
-            self.bif.bif_type = BIFType.BZF
-        else:
-            msg = f"Invalid BIF/BZF file type: {signature[:4]}"
-            raise ValueError(msg)
-
-        # Check version - PyKotor supports "V1  " and "V1.1", reone only checks "BIFFV1  "
-
-        if signature[4:] != "V1  " and signature[4:] != "V1.1":
-            msg = f"Unsupported BIF/BZF version: {signature[4:]}"
-            raise ValueError(msg)
-
-    def _read_header(self) -> None:
-        """Read BIF/BZF file header."""
-        self.var_res_count = self._reader.read_uint32()
-        self.fixed_res_count = self._reader.read_uint32()
-        self.data_offset = self._reader.read_uint32()
-
-        # NOTE: reone reads fixed_res_count but doesn't use it. PyKotor explicitly rejects.
-        if self.fixed_res_count > 0:
-            msg = "Fixed resources not supported"
-            raise ValueError(msg)
-
-    def _read_resource_table(self) -> None:
-        """Read BIF/BZF resource table."""
-        self._reader.seek(self.data_offset)
-
-        for i in range(self.var_res_count):
-            key_id: int = self._reader.read_uint32()
-            offset: int = self._reader.read_uint32()
-            size: int = self._reader.read_uint32()
-            res_type: ResourceType = ResourceType.from_id(self._reader.read_uint32())
-
-            # Create empty resource with placeholder data
-            resource = BIFResource(ResRef.from_blank(), res_type, b"", key_id, size)
-            resource.offset = offset
-
-            # For BZF, calculate packed size from offset differences
-            if self.bif.bif_type == BIFType.BZF and i > 0:
-                prev_resource: BIFResource = self.bif.resources[-1]
-                prev_resource.packed_size = offset - prev_resource.offset
-
-            self.bif.resources.append(resource)
-
-        # Set packed size for last resource in BZF
-        if self.bif.bif_type == BIFType.BZF and self.bif.resources:
-            last_resource: BIFResource = self.bif.resources[-1]
-            last_resource.packed_size = self._reader.size() - last_resource.offset
-
-        # For plain BIF, some resource table sizes are known to be unreliable for certain binary formats
-        # (notably WOK/BWM). The engine can treat the payload as a memory-mapped blob and walk offsets
-        # inside it, so we compute a safe "packed_size" from offset deltas as well.
-        if self.bif.bif_type == BIFType.BIF and self.bif.resources:
-            for i in range(1, len(self.bif.resources)):
-                prev = self.bif.resources[i - 1]
-                prev.packed_size = self.bif.resources[i].offset - prev.offset
-            self.bif.resources[-1].packed_size = self._reader.size() - self.bif.resources[-1].offset
-
-    def _read_resource_data(self) -> None:
-        """Read BIF/BZF resource data."""
-        for i, resource in enumerate(self.bif.resources):
-            self._reader.seek(resource.offset)
-
-            if self.bif.bif_type == BIFType.BZF:
-                # For BZF, decompress the data
-                compressed: bytes = self._reader.read_bytes(resource.packed_size)
-                try:
-                    resource.data = _decompress_bzf_payload(compressed, resource.size)
-                except lzma.LZMAError as e:  # noqa: PERF203
-                    msg = f"Failed to decompress BZF resource: {e}"
-                    raise ValueError(msg) from e
-            else:
-                # For BIF, read raw data
-                # Prefer packed_size for formats where the table's `size` is known to be truncated.
-                # WOK/BWM in particular frequently reports only the 0x88 header size, but the payload
-                # includes all the offset-addressed tables after the header.
-                read_len = resource.size
-                if resource.restype == ResourceType.WOK and getattr(resource, "packed_size", 0) and resource.packed_size > resource.size:
-                    read_len = resource.packed_size
-                resource.data = self._reader.read_bytes(read_len)
-
-        self.bif.build_lookup_tables()
 
 
 class BIFBinaryWriter(ResourceWriter):

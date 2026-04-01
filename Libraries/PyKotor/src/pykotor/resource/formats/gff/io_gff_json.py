@@ -6,7 +6,11 @@ import json
 
 from typing import TYPE_CHECKING, Any, cast
 
+import kaitaistruct
+
 from pykotor.common.language import LocalizedString
+from bioware_kaitai_formats.gff_json import GffJson
+from pykotor.tools.encoding import decode_bytes_with_fallbacks
 from pykotor.resource.formats.gff.gff_data import GFF, GFFFieldType, GFFList, GFFStruct, _GFFField
 from pykotor.resource.type import ResourceReader, ResourceWriter, autoclose
 
@@ -57,7 +61,11 @@ class GFFJSONReader(ResourceReader):
         -------
             A GFF object.
         """
-        json_data = self._reader.read_string(self._size)
+        raw = self._reader.read_all()
+        try:
+            json_data = GffJson.from_bytes(raw).json_content
+        except (kaitaistruct.KaitaiStructError, UnicodeDecodeError):
+            json_data = decode_bytes_with_fallbacks(raw)
         data = json.loads(json_data)
 
         gff = GFF()

@@ -8,12 +8,7 @@ This module provides precise TSLPatcher INI format generation based on analysis 
 
 References:
 ----------
-        Based on swkotor.exe GFF structure:
-        - CResGFF::CreateGFFFile @ 0x00411260 - Creates GFF file structure
-        - CResGFF::WriteGFFFile @ 0x00413030 - Writes GFF data to file
-        Original BioWare engine binaries
-        https://github.com/th3w1zard1/HoloPatcher.NET/tree/master/src/TSLPatcher.Core/Writer/ - C# INI serialization
-        https://github.com/th3w1zard1/Kotor.NET/tree/master/Kotor.NET.Patcher/ - Incomplete C# patcher
+        Observed retail KotOR GFF serialization behavior.
 
 
 """
@@ -211,6 +206,19 @@ class TSLPatcherINISerializer:
             return f'"{value_str}"'
         return value_str
 
+    def _check_empty_modifications(
+        self,
+        modifications: list,
+        modification_type: str,
+        verbose: bool = True,
+    ) -> list[str] | None:
+        """Return an empty serialized section result when there is nothing to emit."""
+        if not modifications:
+            if verbose:
+                print(f"No {modification_type} modifications to serialize")
+            return []
+        return None
+
     def serialize(
         self,
         modifications_by_type: ModificationsByType,
@@ -299,23 +307,16 @@ class TSLPatcherINISerializer:
             ";    • HoloPatcher: Cross-platform TSLPatcher alternative",
             ";    • HolocronToolset: Complete modding suite for KotOR I & II",
             ";    • diff operations: Advanced diff engine for patch generation",
-            ";        https://github.com/OldRepublicDevs/PyKotor",
             ";    • KOTORModSync: Multi-mod installer with conflict resolution",
-            ";        https://github.com/th3w1zard1/KOTORModSync",
             ";    • HoloLSP: The first ever Language Server Protocol for KotOR",
-            ";        https://github.com/th3w1zard1/HoloLSP",
             ";    • HoloPatcher.NET: .NET implementation of HoloPatcher",
-            ";        https://github.com/th3w1zard1/HoloPatcher.NET",
             ";",
             ";  https://www.bolabaden.org  - Self-Hosted Infrastructure and Initiatives",
             ";",
             ";  Developer Initiatives — bolabaden Organization:",
             ";    • bolabaden-site: Main website + frontend",
-            ";        https://github.com/bolabaden/bolabaden-site",
             ";    • bolabaden-infra: Kubernetes backbone for bolabaden.org",
-            ";        https://github.com/bolabaden/bolabaden-infra",
             ";    • ai-researchwizard: AI-powered research assistant",
-            ";        https://github.com/bolabaden/ai-researchwizard",
             "; ----------------------------------------------------------------------------",
             ";",
             ";  FORMATTING NOTES:",
@@ -1479,7 +1480,7 @@ class IncrementalTSLPatchDataWriter:
             source: The Installation or Path object where the resource was found
 
         Returns:
-            Formatted path with source prefix (e.g., "swkotor/data/2da.bif/planetary.2da")
+            Formatted path with source prefix (e.g., "<install>/data/2da.bif/planetary.2da")
         """
         if is_installation_path(source):
             installation_path = source.path()
@@ -1547,23 +1548,16 @@ class IncrementalTSLPatchDataWriter:
             ";    • HoloPatcher: Cross-platform TSLPatcher alternative",
             ";    • HolocronToolset: Complete modding suite for KotOR I & II",
             ";    • diff operations: Advanced diff engine for patch generation",
-            ";        https://github.com/OldRepublicDevs/PyKotor",
             ";    • KOTORModSync: Multi-mod installer with conflict resolution",
-            ";        https://github.com/th3w1zard1/KOTORModSync",
             ";    • HoloLSP: The first ever Language Server Protocol for KotOR",
-            ";        https://github.com/th3w1zard1/HoloLSP",
             ";    • HoloPatcher.NET: .NET implementation of HoloPatcher",
-            ";        https://github.com/th3w1zard1/HoloPatcher.NET",
             ";",
             ";  https://www.bolabaden.org  - Self-Hosted Infrastructure and Initiatives",
             ";",
             ";  Developer Initiatives — bolabaden Organization:",
             ";    • bolabaden-site: Main website + frontend",
-            ";        https://github.com/bolabaden/bolabaden-site",
             ";    • bolabaden-infra: Kubernetes backbone for bolabaden.org",
-            ";        https://github.com/bolabaden/bolabaden-infra",
             ";    • ai-researchwizard: AI-powered research assistant",
-            ";        https://github.com/bolabaden/ai-researchwizard",
             ";",
             "; ----------------------------------------------------------------------------",
             ";",
@@ -1644,6 +1638,10 @@ class IncrementalTSLPatchDataWriter:
             _log_debug(f"Skipping already written 2DA: {filename}")
             return
 
+        # Track in all_modifications before any write/flush so a full INI rewrite always sees it.
+        if mod_2da not in self.all_modifications.twoda:
+            self.all_modifications.twoda.append(mod_2da)
+
         change_row_targets, add_row_targets = self._prepare_twoda_tokens(mod_2da)
 
         # Write resource file (base vanilla 2DA that will be patched)
@@ -1655,7 +1653,8 @@ class IncrementalTSLPatchDataWriter:
                 _log_verbose(f"Wrote 2DA file: {filename}")
             except Exception as e:  # noqa: BLE001
                 self._log_exception_with_traceback("write 2DA", filename, e)
-                return
+                # Still add the modification to INI so the patch structure is generated.
+                # This matches the GFF writer behavior and keeps diff output inspectable.
 
         # Add to install folders
         self._add_to_install_folder("Override", filename)
@@ -1663,10 +1662,6 @@ class IncrementalTSLPatchDataWriter:
         # Write INI section
         self._write_to_ini([mod_2da], "2da")
         self.written_sections.add(filename)
-
-        # Track in all_modifications (only if not already added)
-        if mod_2da not in self.all_modifications.twoda:
-            self.all_modifications.twoda.append(mod_2da)
 
         # Create linking patches for modified rows using BATCH PROCESSING
         # Use source_path from write_modification parameter, or try to infer from base_data_path

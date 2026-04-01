@@ -37,14 +37,6 @@ def find_nss_compiler() -> Path | None:
     1. nwnnsscomp (preferred, compatible with both K1 and K2)
     2. nwnsc (legacy, Neverwinter Nights compiler)
 
-    References:
-    ----------
-        Based on swkotor.exe NCS compilation:
-        - CResNCS::CResNCS @ 0x005d4c30 - NCS resource constructor
-        - NWScript compilation and execution within game engine
-
-        Libraries/PyKotor/src/pykotor/resource/formats/ncs/compilers.py - PyKotor compiler implementations
-
     """
     import platform
 
@@ -82,14 +74,10 @@ def use_builtin_compiler(
     -------
         Tuple of (compiled_count, error_count)
 
-    References:
-    ----------
-        Based on unified K1/TSL NCS. See pykotor.resource.formats.ncs.ncs_data (K1 addrs + TSL TODO).
-        CResNCS::CResNCS (0x005d4c30), HandleBNCSMessage (0x005d5180); NWScript compilation/execution.
-        Derivations and Other Implementations:
-        ----------
-            - https://github.com/th3w1zard1/KotOR.js/tree/master/src/nwscript/NWScriptCompiler.ts
-            - Libraries/PyKotor/src/pykotor/resource/formats/ncs/compiler/
+    NWScript bytecode generation uses the in-tree compiler under ``resource/formats/ncs/``.
+    Former **References** (retail NCS loader symbol names / RVAs, KotOR.js compiler URL)
+    are migrated to ``wiki/reverse_engineering_findings.md`` (*cli/commands/compile.py —
+    built-in compile path*).
     """
     compiler = InbuiltNCSCompiler()
     compiled_count: int = 0

@@ -6,11 +6,7 @@ by any application that needs to work with archives.
 
 References:
 ----------
-        Based on swkotor.exe ERF/RIM/BIF structure:
-        - CExoEncapsulatedFile::CExoEncapsulatedFile @ 0x0040ef90 - Constructor for encapsulated file
-        - CExoKeyTable::AddEncapsulatedContents @ 0x0040f3c0 - Adds ERF/MOD/SAV contents to key table
-        - LocateBifFile @ 0x0040d200 - Locates BIF file in resource system
-        Original BioWare engine binaries
+        Observed retail KotOR ERF/RIM/BIF on-disk layout and resolution behavior.
 
 
 """
@@ -158,11 +154,7 @@ def extract_erf(
 
     References:
     ----------
-        Based on swkotor.exe ERF/RIM/BIF structure:
-        - CExoEncapsulatedFile::CExoEncapsulatedFile @ 0x0040ef90 - Constructor for encapsulated file
-        - CExoKeyTable::AddEncapsulatedContents @ 0x0040f3c0 - Adds ERF/MOD/SAV contents to key table
-        - LocateBifFile @ 0x0040d200 - Locates BIF file in resource system
-        Original BioWare engine binaries
+        Observed retail KotOR ERF/RIM/BIF on-disk layout and resolution behavior.
 
 
     """
@@ -203,11 +195,7 @@ def extract_rim(
 
     References:
     ----------
-        Based on swkotor.exe ERF/RIM/BIF structure:
-        - CExoEncapsulatedFile::CExoEncapsulatedFile @ 0x0040ef90 - Constructor for encapsulated file
-        - CExoKeyTable::AddEncapsulatedContents @ 0x0040f3c0 - Adds ERF/MOD/SAV contents to key table
-        - LocateBifFile @ 0x0040d200 - Locates BIF file in resource system
-        Original BioWare engine binaries
+        Observed retail KotOR ERF/RIM/BIF on-disk layout and resolution behavior.
 
 
     """
@@ -250,11 +238,7 @@ def extract_bif(
 
     References:
     ----------
-        Based on swkotor.exe ERF/RIM/BIF structure:
-        - CExoEncapsulatedFile::CExoEncapsulatedFile @ 0x0040ef90 - Constructor for encapsulated file
-        - CExoKeyTable::AddEncapsulatedContents @ 0x0040f3c0 - Adds ERF/MOD/SAV contents to key table
-        - LocateBifFile @ 0x0040d200 - Locates BIF file in resource system
-        Original BioWare engine binaries
+        Observed retail KotOR ERF/RIM/BIF on-disk layout and resolution behavior.
 
 
     """
@@ -300,11 +284,7 @@ def extract_key_bif(
 
     References:
     ----------
-        Based on swkotor.exe ERF/RIM/BIF structure:
-        - CExoEncapsulatedFile::CExoEncapsulatedFile @ 0x0040ef90 - Constructor for encapsulated file
-        - CExoKeyTable::AddEncapsulatedContents @ 0x0040f3c0 - Adds ERF/MOD/SAV contents to key table
-        - LocateBifFile @ 0x0040d200 - Locates BIF file in resource system
-        Original BioWare engine binaries
+        Observed retail KotOR ERF/RIM/BIF on-disk layout and resolution behavior.
 
 
     """
@@ -454,11 +434,7 @@ def create_erf_from_directory(
 
     References:
     ----------
-        Based on swkotor.exe ERF/RIM/BIF structure:
-        - CExoEncapsulatedFile::CExoEncapsulatedFile @ 0x0040ef90 - Constructor for encapsulated file
-        - CExoKeyTable::AddEncapsulatedContents @ 0x0040f3c0 - Adds ERF/MOD/SAV contents to key table
-        - LocateBifFile @ 0x0040d200 - Locates BIF file in resource system
-        Original BioWare engine binaries
+        Observed retail KotOR ERF/RIM/BIF on-disk layout and resolution behavior.
 
 
     """
@@ -534,11 +510,7 @@ def create_rim_from_directory(
 
     References:
     ----------
-        Based on swkotor.exe ERF/RIM/BIF structure:
-        - CExoEncapsulatedFile::CExoEncapsulatedFile @ 0x0040ef90 - Constructor for encapsulated file
-        - CExoKeyTable::AddEncapsulatedContents @ 0x0040f3c0 - Adds ERF/MOD/SAV contents to key table
-        - LocateBifFile @ 0x0040d200 - Locates BIF file in resource system
-        Original BioWare engine binaries
+        Observed retail KotOR ERF/RIM/BIF on-disk layout and resolution behavior.
 
 
     """
@@ -608,11 +580,7 @@ def search_in_erf(
 
     References:
     ----------
-        Based on swkotor.exe ERF/RIM/BIF structure:
-        - CExoEncapsulatedFile::CExoEncapsulatedFile @ 0x0040ef90 - Constructor for encapsulated file
-        - CExoKeyTable::AddEncapsulatedContents @ 0x0040f3c0 - Adds ERF/MOD/SAV contents to key table
-        - LocateBifFile @ 0x0040d200 - Locates BIF file in resource system
-        Original BioWare engine binaries
+        Observed retail KotOR ERF/RIM/BIF on-disk layout and resolution behavior.
 
 
     """
@@ -734,11 +702,7 @@ def get_resource_from_archive(
 
     References:
     ----------
-        Based on swkotor.exe ERF/RIM/BIF structure:
-        - CExoEncapsulatedFile::CExoEncapsulatedFile @ 0x0040ef90 - Constructor for encapsulated file
-        - CExoKeyTable::AddEncapsulatedContents @ 0x0040f3c0 - Adds ERF/MOD/SAV contents to key table
-        - LocateBifFile @ 0x0040d200 - Locates BIF file in resource system
-        Original BioWare engine binaries
+        Observed retail KotOR ERF/RIM/BIF on-disk layout and resolution behavior.
         Tools/HolocronToolset/src/toolset/utils/misc.py:221-262 - get_resource_from_file
 
     """
@@ -862,11 +826,7 @@ def create_key_from_directory(
 
     References:
     ----------
-        Based on swkotor.exe ERF/RIM/BIF structure:
-        - CExoEncapsulatedFile::CExoEncapsulatedFile @ 0x0040ef90 - Constructor for encapsulated file
-        - CExoKeyTable::AddEncapsulatedContents @ 0x0040f3c0 - Adds ERF/MOD/SAV contents to key table
-        - LocateBifFile @ 0x0040d200 - Locates BIF file in resource system
-        Original BioWare engine binaries
+        Observed retail KotOR ERF/RIM/BIF on-disk layout and resolution behavior.
         Libraries/PyKotor/src/pykotor/extract/keywriter.py:44-143 - KEYWriter class
 
     """

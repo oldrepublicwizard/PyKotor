@@ -1,181 +1,9 @@
-"""Comprehensive KOTOR Save Game Handler.
+"""KotOR I/II save-folder model (SAVENFO, GLOBALVARS, PARTYTABLE, SAVEGAME.sav).
 
-This module provides an exhaustive implementation for reading and writing KOTOR 1 & 2 save games.
-It has been enhanced with knowledge from multiple implementations including:
-
-VENDOR IMPLEMENTATIONS ANALYZED:
-================================
-1. KotOR-Save-Editor (Perl) - https://github.com/th3w1zard1/KotOR-Save-Editor/tree/master/
-   - site/lib/KSE/Functions/Saves.pm - Main save handling
-   - site/lib/KSE/Functions/Globals.pm - Global variables with bit packing
-   - site/lib/KSE/Functions/Journal.pm - Journal entry management
-   - site/lib/KSE/Functions/Inventory.pm - Inventory handling
-   - site/lib/KSE/Functions/NPC.pm - Character data management
-
-2. kotor-savegame-editor (Perl) - https://github.com/th3w1zard1/kotor-savegame-editor/tree/master/
-   - lib/Bioware/ERF.pm - Low-level ERF binary handling
-   - lib/Bioware/GFF.pm - Low-level GFF binary handling
-
-3. KotOR_IO (C#) - https://github.com/th3w1zard1/KotOR_IO/tree/master/
-   - File Formats/ERF.cs - Object-oriented ERF implementation
-   - File Formats/GFF.cs - Object-oriented GFF implementation
-
-4. KotOR.js (TypeScript) - https://github.com/th3w1zard1/KotOR.js/tree/master/
-   - src/SaveGame.ts - Modern async save game handling
-   - Handles FILETIME timestamps, galaxy map, PIFO.ifo (K2)
-
-5. xoreos-tools (C++) - (Engine-related, removed vendor reference)
-   - Cross-platform binary data handling
-   - Resource type definitions
-
-6. reone (C++) -
-   - Game engine perspective on save handling
-   - Resource management and performance optimizations
-
-REAL-WORLD ENGINE IMPLEMENTATIONS:
-==================================
-- **Original Engine (BioWare's Odyssey Engine):**
-  - Saves are folder-based (unlike modules which are single files)
-  - Uses GFF format for structured data, ERF for archives
-  - Boolean packing for memory efficiency (8 per byte)
-  - Location storage with padding for alignment
-
-- **reone (C++ reimplementation):**
-  - Focuses on efficient binary reading/writing
-  - Caches parsed GFF structures for performance
-  - Validates save data integrity on load
-
-- **KotOR.js (TypeScript browser implementation):**
-  - Async/await patterns for non-blocking I/O
-  - Browser-based file system APIs
-  - Memory-efficient streaming for large saves
-
-- **xoreos (C++ cross-platform engine):**
-  - Platform-independent save handling
-  - Endianness-aware binary operations
-  - Comprehensive error handling and validation
-
-KOTOR Save Game Structure:
-==========================
-
-A KOTOR save game consists of multiple files in a folder (e.g., "000057 - game56"):
-
-1. SAVENFO.res - Save metadata for the load/save menu
-   - Save name, area name, last module
-   - Time played, timestamp
-   - Party portraits (for menu display)
-   - Hints (gameplay and story)
-   - Cheat usage flags
-   - K2: PC name
-
-2. GLOBALVARS.res - Global script variables
-   - Boolean variables (packed as bits)
-   - Number variables (bytes)
-   - String variables
-   - Location variables (position + orientation)
-
-3. PARTYTABLE.res - Party and game state
-   - Party composition and member data
-   - Available NPCs list
-   - Credits/gold and XP pool
-   - Journal entries
-   - Pazaak cards and decks
-   - AI/follow states
-   - Tutorial windows shown
-   - Recent messages
-   - K2: Influence values, components, chemicals
-
-4. SAVEGAME.sav - Nested ERF archive containing:
-   - Cached modules (.sav files) from previously visited areas
-   - AVAILNPC*.utc files (companion character templates, 0-12)
-   - INVENTORY.res (player inventory)
-   - REPUTE.fac (faction reputation)
-   - Module-specific resources
-   - PIFO.ifo (optional, K2 only)
-
-5. Screen.tga - Save game screenshot thumbnail
-
-Character Data (UTC) Structure:
-===============================
-Characters (Player and NPCs) contain:
-- Basic info: FirstName, Gender
-- Attributes: STR, DEX, CON, INT, WIS, CHA
-- Health/Force: HitPoints, MaxHitPoints, ForcePoints, MaxForcePoints
-- Character data: Experience, GoodEvil (alignment), Min1HP
-- Appearance: Appearance_Type, PortraitId, SoundSetFile, Race
-- Classes: ClassList (with levels and known powers/spells)
-- Abilities: FeatList, SkillList (8 skills)
-- Equipment: Equip_ItemList (equipment slots)
-- K2: Influence value
-
-Equipment Slots:
-===============
-- Head (0x00001)
-- Armor/Body (0x00002)
-- Gloves (0x00008)
-- Weapon (0x00010 or 0x00030)
-- Arm bands (0x00180)
-- Implant (0x00200 or 0x00208)
-- Belt (0x00400)
-
-Skills (in order):
-=================
-0. Computer Use
-1. Demolitions
-2. Stealth
-3. Awareness
-4. Persuade
-5. Repair
-6. Security
-7. Treat Injury
-
-Journal Entry:
-=============
-- JNL_PlotID - Plot identifier
-- JNL_State - Current state of the quest
-- JNL_Date - Date the entry was added
-- JNL_Time - Time played when entry was added
-
-Common Issues and Fixes:
-========================
-1. EventQueue Corruption: Cached modules in SAVEGAME.sav can have corrupt EventQueue
-   lists in their module.ifo files. Clearing these can fix load issues.
-
-2. Portrait Order: The order of PORTRAIT0-2 in SAVENFO.res depends on which party
-   member is the leader.
-
-3. Boolean Packing: Global booleans are stored as packed bits (8 per byte, LSB first).
-
-4. Location Storage: Locations use 12 floats per entry (x,y,z, ori_x,ori_y,ori_z,
-   plus 6 padding floats), with exactly 50 slots allocated.
-
-Usage Example:
-=============
-```python
-from pykotor.extract.savedata import SaveFolderEntry
-
-# Load a save
-save = SaveFolderEntry(r"C:\\...\\saves\\000057 - game56")
-save.load()
-
-# Access data
-print(f"Save Name: {save.save_info.savegame_name}")
-print(f"Credits: {save.partytable.pt_gold}")
-print(f"Time Played: {save.save_info.time_played}")
-
-# Modify and save
-save.partytable.pt_gold = 999999
-save.partytable.save()
-```
-
-Notes:
-=====
-- K1 and K2 have slightly different structures (K2 adds influence, components, etc.)
-- Some fields are platform-specific (Xbox Live content on Xbox)
-- Save corruption can occur from improper EventQueue handling
-- Always backup saves before modification
-
-Author: Enhanced by comprehensive vendor code analysis
+Reads and writes the on-disk save layout used by retail KotOR. Long-form vendor comparisons,
+engine reimplementation notes, equipment-slot bit values, and method-level vendor essays
+previously in this file are **archived** in ``wiki/reverse_engineering_findings_savedata_pre_scrub.py``
+(verbatim snapshot) and summarized under *extract/savedata.py* in ``wiki/reverse_engineering_findings.md``.
 """
 
 from __future__ import annotations
@@ -206,32 +34,6 @@ if TYPE_CHECKING:
 class SaveInfo:
     """SAVENFO.res - Save information resource.
 
-    VENDOR REFERENCES:
-    ==================
-    - KotOR-Save-Editor: site/lib/KSE/Functions/Saves.pm (LoadSave sub, lines ~150-200)
-      - Reads SAVENFO fields: SAVEGAMENAME, AREANAME, LASTMODULE, TIMEPLAYED
-      - Handles portrait order logic based on party leader
-
-    - KotOR.js: src/SaveGame.ts (loadNFO method, lines ~50-120)
-      - Async loading with Promise-based file reading
-      - Handles TIMESTAMP as Windows FILETIME (64-bit)
-      - Xbox Live fields for Xbox version compatibility
-      - K2-specific: PCNAME field
-
-    - KotOR_IO: Reads GFF fields directly using C# GFF parser
-
-    ENGINE BEHAVIOR:
-    ================
-    - **Original Engine:** Displays save name, area, and time in load menu
-      - Portraits show current party composition (leader + 2 companions)
-      - Portrait order: PORTRAIT0=leader, PORTRAIT1/2=companions
-      - If NPC is leader, portraits rotate accordingly
-
-    - **reone:** Caches parsed SAVENFO in memory for quick save list generation
-      - Validates LASTMODULE exists before allowing load
-
-    - **KotOR.js:** Renders save thumbnails (Screen.tga) alongside SAVENFO data
-      - Async loading allows UI to remain responsive during scan
 
     STRUCTURE:
     ==========
@@ -263,63 +65,60 @@ class SaveInfo:
             path: Path to save folder (e.g., "000057 - game56")
             ident: Optional custom identifier (defaults to "savenfo.res")
 
-        Vendor Implementation:
-        ---------------------
-        - KotOR-Save-Editor: Stores in %data hash, accessed via GetData('CurrentSave', 'NFO', field)
-        - KotOR.js: Stores as SaveGame.nfo object with async accessors
+
         """
         ident = self.IDENTIFIER if ident is None else ident
         self.save_info_path: CaseAwarePath = CaseAwarePath(path) / str(ident)
 
         # Core save information
-        # Vendor ref: KSE/Functions/Saves.pm lines ~170-180
-        self.area_name: str = ""  # AREANAME (CExoString) - Display name of last area
+        # Cross-ref (wiki savedata archive): KSE/Functions/Saves.pm lines ~170-180
+        self.area_name: str = ""  # AREANAME (GFF string) - Display name of last area
         # Example: "Ebon Hawk", "Dantooine - Jedi Enclave"
-        # Engine: Used in save menu second line
+        # Observed: Used in save menu second line
 
-        self.last_module: str = ""  # LASTMODULE (CExoString) - Last module ResRef played
+        self.last_module: str = ""  # LASTMODULE (GFF string) - Last module ResRef played
         # Example: "danm13", "ebo_m12aa", "003ebo"
-        # Engine: Validated on load to ensure module exists
-        # Vendor ref: KotOR.js SaveGame.ts line ~75
+        # Observed: Validated on load to ensure module exists
+        # Cross-ref (wiki savedata archive): KotOR.js SaveGame.ts line ~75
 
-        self.savegame_name: str = ""  # SAVEGAMENAME (CExoString) - User-entered save name
+        self.savegame_name: str = ""  # SAVEGAMENAME (GFF string) - User-entered save name
         # Example: "Before Confronting Malak", "Quick Save"
-        # Engine: Displayed as primary text in save menu
+        # Observed: Displayed as primary text in save menu
         # Max length: ~50 characters (UI truncates longer)
 
         self.time_played: int = 0  # TIMEPLAYED (DWORD) - Total gameplay time in seconds
-        # Engine: Displayed as HH:MM in save menu
-        # Vendor ref: All implementations read/write this
+        # Observed: Displayed as HH:MM in save menu
+        # Cross-ref (wiki savedata archive): All implementations read/write this
 
         self.timestamp: int | None = None  # TIMESTAMP (QWORD, optional) - Windows FILETIME
         # Format: 100-nanosecond intervals since Jan 1, 1601
         # K2 uses this, K1 sometimes omits it
-        # Vendor ref: KotOR.js handles conversion to JavaScript Date
-        # Engine: Used for save sorting by date
+        # Cross-ref (wiki savedata archive): KotOR.js handles conversion to JavaScript Date
+        # Observed: Used for save sorting by date
 
         # Cheat tracking
-        # Vendor ref: KSE/Functions/Saves.pm line ~195
+        # Cross-ref (wiki savedata archive): KSE/Functions/Saves.pm line ~195
         self.cheat_used: bool = False  # CHEATUSED (BYTE, 0 or 1) - Set if cheats were used
-        # Engine: May disable achievements on some platforms
+        # Observed: May disable achievements on some platforms
         # Set by: Using console commands, debug mode
 
         # Hints for loading screens
-        # Vendor ref: KotOR.js SaveGame.ts line ~85-90
+        # Cross-ref (wiki savedata archive): KotOR.js SaveGame.ts line ~85-90
         self.gameplay_hint: int = 0  # GAMEPLAYHINT (BYTE) - Strref to loadscreenhints.2da
-        # Engine: Randomly selected gameplay tip during loading
+        # Observed: Randomly selected gameplay tip during loading
         # Range: 0-255 (indexes into hints table)
 
         self.story_hint: int = 0  # STORYHINT (BYTE) - Strref to story-related hint
-        # Engine: Story-specific tip shown during loading
+        # Observed: Story-specific tip shown during loading
         # Usually relates to current planet/quest
 
         # Party portraits (shown in save menu)
-        # Vendor ref: KSE/Functions/Saves.pm has portrait rotation logic
-        # Engine behavior: Portrait order depends on party leader
+        # Cross-ref (wiki savedata archive): KSE/Functions/Saves.pm has portrait rotation logic
+        # Observed: Portrait order depends on party leader
         self.portrait0: ResRef = ResRef.from_blank()  # PORTRAIT0 (ResRef) - First portrait
         # Usually the party leader
         # Example: "po_player", "po_bastila"
-        # Engine: Displayed leftmost in save menu
+        # Observed: Displayed leftmost in save menu
 
         self.portrait1: ResRef = ResRef.from_blank()  # PORTRAIT1 (ResRef) - Second portrait
         # First companion (if player is leader)
@@ -331,22 +130,22 @@ class SaveInfo:
         # NOTE: If NPC is leader, order rotates
 
         # Xbox Live content (Xbox version only)
-        # Vendor ref: KotOR.js handles these for Xbox compatibility
+        # Cross-ref (wiki savedata archive): KotOR.js handles these for Xbox compatibility
         # PC versions usually leave these blank
-        self.live1: str = ""  # LIVE1 (CExoString) - Xbox Live content ID 1
-        self.live2: str = ""  # LIVE2 (CExoString) - Xbox Live content ID 2
-        self.live3: str = ""  # LIVE3 (CExoString) - Xbox Live content ID 3
-        self.live4: str = ""  # LIVE4 (CExoString) - Xbox Live content ID 4
-        self.live5: str = ""  # LIVE5 (CExoString) - Xbox Live content ID 5
-        self.live6: str = ""  # LIVE6 (CExoString) - Xbox Live content ID 6
+        self.live1: str = ""  # LIVE1 (GFF string) - Xbox Live content ID 1
+        self.live2: str = ""  # LIVE2 (GFF string) - Xbox Live content ID 2
+        self.live3: str = ""  # LIVE3 (GFF string) - Xbox Live content ID 3
+        self.live4: str = ""  # LIVE4 (GFF string) - Xbox Live content ID 4
+        self.live5: str = ""  # LIVE5 (GFF string) - Xbox Live content ID 5
+        self.live6: str = ""  # LIVE6 (GFF string) - Xbox Live content ID 6
         self.livecontent: int = 0  # LIVECONTENT (BYTE) - Xbox Live content flags
         # Bitfield for downloaded content availability
 
         # K2-specific fields
-        # Vendor ref: KotOR.js checks game version before reading PCNAME
-        self.pc_name: str = ""  # PCNAME (CExoString, K2 only) - Player character first name
+        # Cross-ref (wiki savedata archive): KotOR.js checks game version before reading PCNAME
+        self.pc_name: str = ""  # PCNAME (GFF string, K2 only) - Player character first name
         # Example: "Meetra", "The Exile"
-        # K2 Engine: Displayed in save menu for quick identification
+        # K2: displayed in save menu for quick identification
         # K1: Field doesn't exist (will be ignored)
 
         # All other fields preserved verbatim for full fidelity editing
@@ -358,17 +157,6 @@ class SaveInfo:
     def load(self):
         """Load SAVENFO.res data from the save folder.
 
-        VENDOR IMPLEMENTATIONS:
-        =======================
-        - KSE/Functions/Saves.pm: LoadSave() reads fields using GFF2::Field::getvalue()
-        - KotOR.js: Async loadNFO() with FileSystemAPI
-        - reone: Loads and caches GFF structure for quick access
-
-        ENGINE BEHAVIOR:
-        ================
-        - File is loaded when displaying save menu
-        - Engine validates module exists before allowing load
-        - Missing fields use defaults (empty strings, 0)
 
         PROCESS:
         ========
@@ -445,17 +233,6 @@ class SaveInfo:
     def save(self):
         """Save SAVENFO.res data to the save folder.
 
-        VENDOR IMPLEMENTATIONS:
-        =======================
-        - KSE/Functions/Saves.pm: SaveSave() writes fields using GFF2::addField()
-        - KotOR.js: ExportSaveNFO() creates new GFF and writes asynchronously
-        - reone: Serializes cached GFF structure back to binary
-
-        ENGINE BEHAVIOR:
-        ================
-        - File is written when saving game
-        - Atomic write (temp file + rename) to prevent corruption
-        - Validates all required fields are present
 
         PROCESS:
         ========
@@ -553,23 +330,16 @@ class SaveInfo:
 
 
 class JournalEntry:
-    """Single journal quest entry.
+    """Single journal quest entry (JNL_* fields; ties PARTYTABLE to ``global.jrl``).
 
-    VENDOR REF: KSE/Functions/Journal.pm (AssignJRL sub)
-    - Reads from both partytable.res (JNL_Entries) and global.jrl
-    - Synchronizes quest states between save and global journal
-
-    ENGINE BEHAVIOR:
-    - Entries are added when quest updates occur
-    - date/time track when entry was added (for journal sorting)
-    - state determines which text to display (see global.jrl)
+    Former vendor/engine narrative: ``wiki/reverse_engineering_findings_savedata_pre_scrub.py``.
     """
 
     def __init__(self):
         self.date: int = -1  # JNL_Date (DWORD) - Day count since game start
         # Used for sorting journal by date received
 
-        self.plot_id: str = ""  # JNL_PlotID (CExoString) - Quest identifier
+        self.plot_id: str = ""  # JNL_PlotID (GFF string) - Quest identifier
         # Example: "k_main_plot01", "tar_duelring"
         # References entry in global.jrl
 
@@ -583,16 +353,9 @@ class JournalEntry:
 
 
 class AvailableNPCEntry:
-    """Tracks availability of a single NPC companion.
+    """Tracks availability of one NPC companion (``PT_AVAIL_NPCS`` / ``AVAILNPC*.utc``).
 
-    VENDOR REF: KSE/Functions/NPC.pm
-    - PT_AVAIL_NPCS list in PARTYTABLE.res
-    - Indexes match AVAILNPC*.utc files in SAVEGAME.sav
-
-    ENGINE BEHAVIOR:
-    - npc_available: Set when companion can be recruited
-    - npc_selected: Set when companion is chosen for party
-    - List typically has 12 entries (K1/K2 both support up to 12 companions)
+    Former vendor/engine narrative: ``wiki/reverse_engineering_findings_savedata_pre_scrub.py``.
     """
 
     def __init__(self):
@@ -606,16 +369,9 @@ class AvailableNPCEntry:
 
 
 class PartyMemberEntry:
-    """Single member of the current party.
+    """One current party member (``PT_MEMBERS``; portrait order follows leader).
 
-    VENDOR REF: KSE/Functions/Saves.pm (PT_MEMBERS parsing)
-    - PT_MEMBERS list in PARTYTABLE.res
-    - Usually 1-3 entries (player + up to 2 companions)
-
-    ENGINE BEHAVIOR:
-    - is_leader: Determines which character player controls
-    - index: References companion in PT_AVAIL_NPCS or AVAILNPC*.utc
-    - Order matters for portrait display in save menu
+    Former vendor/engine narrative: ``wiki/reverse_engineering_findings_savedata_pre_scrub.py``.
     """
 
     def __init__(self):
@@ -630,29 +386,13 @@ class PartyMemberEntry:
 
 
 class GalaxyMapEntry:
-    """Galaxy map planet entry.
+    """Galaxy map planet entry (K1/K2 differ; usually round-tripped as-is).
 
-    VENDOR REF: KotOR.js handles galaxy map data
-    - Complex nested structure with planet states
-    - Tracks which planets are accessible
-    - K1 vs K2 have different galaxy map structures
-
-    ENGINE BEHAVIOR:
-    ================
-    - Galaxy map data tracks which planets the player can travel to
-    - Each planet has an accessibility state and visited flag
-    - Position data for rendering on the galaxy map UI
-    - K2 has additional fields for influence and story progression
-
-    NOTE: Galaxy map data is rarely modified programmatically
-    Most implementations simply preserve the existing structure
+    Former vendor narrative: ``wiki/reverse_engineering_findings_savedata_pre_scrub.py``.
     """
 
     def __init__(self):
-        """Initialize galaxy map entry with default values.
-
-        STRUCTURE: Based on analysis of PARTYTABLE.res galaxy map fields
-        """
+        """Initialize galaxy map entry with default GFF-shaped fields."""
         self.planet_id: str = ""  # Planet identifier (e.g., "dantooine", "tatooine")
         self.accessible: bool = False  # Can travel to this planet
         self.visited: bool = False  # Has visited before
@@ -669,32 +409,6 @@ class GalaxyMapEntry:
 class PartyTable:
     """PARTYTABLE.res - Party and game state information.
 
-    VENDOR REFERENCES:
-    ==================
-    - KSE/Functions/Saves.pm: Comprehensive PT_* field handling
-      - Lines ~300-500: Reads all party table fields
-      - Handles journal synchronization with global.jrl
-
-    - KotOR.js: src/managers/PartyTableManager.ts
-      - Manages party composition and resources
-      - K2-specific influence system handling
-
-    - reone: Caches frequently-accessed fields (gold, XP) for performance
-
-    ENGINE BEHAVIOR:
-    ================
-    - **Original Engine:** Central hub for party/game state
-      - Updated whenever party changes, items bought/sold, quests updated
-      - Gold/XP modifications go through this file
-      - Journal entries synchronized on quest updates
-
-    - **reone:** Validates party composition on load
-      - Ensures PT_NUM_MEMBERS matches PT_MEMBERS list length
-      - Checks companion indexes are valid
-
-    - **KotOR.js:** Async loading with progressive rendering
-      - Loads journal entries separately for performance
-      - Caches parsed data for quick access
 
     STRUCTURE:
     ==========
@@ -777,21 +491,6 @@ class PartyTable:
     def load(self):
         """Load PARTYTABLE.res data from the save folder.
 
-        VENDOR IMPLEMENTATIONS:
-        =======================
-        - KSE/Functions/Saves.pm: LoadSave() reads all PT_* fields
-          - Special handling for lists (PT_MEMBERS, PT_AVAIL_NPCS, JNL_Entries)
-          - Synchronizes journal with global.jrl file
-
-        - KotOR.js: PartyTableManager.load()
-          - Async loading with progressive parsing
-          - K2: Reads influence values per companion
-
-        ENGINE BEHAVIOR:
-        ================
-        - File loaded early in save load process
-        - Validates party composition before allowing gameplay
-        - Journal entries checked against global.jrl for consistency
 
         PROCESS:
         ========
@@ -918,23 +617,6 @@ class PartyTable:
     def save(self):
         """Save PARTYTABLE.res data to the save folder.
 
-        VENDOR IMPLEMENTATIONS:
-        =======================
-        - KSE/Functions/Saves.pm: SaveSave() writes all PT_* fields
-          - Creates new GFF structure from scratch
-          - Writes lists using addList() and addStruct()
-          - Synchronizes journal entries with global.jrl
-
-        - KotOR.js: PartyTableManager.save()
-          - Serializes to GFF asynchronously
-          - Updates timestamps and played time
-
-        ENGINE BEHAVIOR:
-        ================
-        - File written atomically (temp + rename)
-        - Validates all required fields present
-        - Updates time played to current value
-        - K2: Ensures influence list matches available NPCs
 
         PROCESS:
         ========
@@ -1024,7 +706,7 @@ class PartyTable:
         def _field_present(label: str) -> bool:
             return label in self._existing_fields
 
-        # Scalar fields - Vendor ref: KSE/Functions/Saves.pm lines 200-320
+        # Scalar fields (cross-ref wiki savedata archive for KSE line notes)
         root.set_uint32("PT_GOLD", self.pt_gold)
         root.set_uint32("PT_XP_POOL", self.pt_xp_pool)
         root.set_uint32("PT_PLAYEDSECONDS", self.time_played)
@@ -1037,7 +719,7 @@ class PartyTable:
         root.set_uint32("JNL_SORT_ORDER", self.jnl_sort_order)
         root.set_uint32("PT_LAST_GUI_PNL", self.pt_last_gui_pnl)
 
-        # K2-specific scalars - Vendor ref: KSE/Functions/Saves.pm lines 256-259
+        # K2-specific scalars (cross-ref wiki savedata archive)
         if self.pt_item_componen > 0 or _field_present("PT_ITEM_COMPONEN"):
             root.set_uint32("PT_ITEM_COMPONEN", self.pt_item_componen)
         if self.pt_item_chemical > 0 or _field_present("PT_ITEM_CHEMICAL"):
@@ -1046,7 +728,7 @@ class PartyTable:
             root.set_string("PT_PCNAME", self.pt_pcname)
 
         # PT_MEMBERS list - Current party members
-        # Vendor ref: KSE/Functions/Saves.pm lines 280-299
+        # Cross-ref (wiki savedata archive): KSE/Functions/Saves.pm lines 280-299
         pt_members_list = GFFList()
         for member in self.pt_members:
             member_struct = pt_members_list.add(0)
@@ -1055,7 +737,7 @@ class PartyTable:
         root.set_list("PT_MEMBERS", pt_members_list)
 
         # PT_AVAIL_NPCS list - Available NPCs
-        # Vendor ref: KSE/Functions/NPC.pm
+        # Cross-ref (wiki savedata archive): KSE/Functions/NPC.pm
         pt_avail_npcs_list = GFFList()
         for npc in self.pt_avail_npcs:
             npc_struct = pt_avail_npcs_list.add(0)
@@ -1064,7 +746,7 @@ class PartyTable:
         root.set_list("PT_AVAIL_NPCS", pt_avail_npcs_list)
 
         # JNL_Entries list - Journal entries
-        # Vendor ref: KSE/Functions/Journal.pm
+        # Cross-ref (wiki savedata archive): KSE/Functions/Journal.pm
         jnl_entries_list = GFFList()
         for entry in self.jnl_entries:
             entry_struct = jnl_entries_list.add(0)
@@ -1075,7 +757,7 @@ class PartyTable:
         root.set_list("JNL_Entries", jnl_entries_list)
 
         # PT_INFLUENCE list - K2 only influence values
-        # Vendor ref: KSE/Functions/Saves.pm lines 262-275
+        # Cross-ref (wiki savedata archive): KSE/Functions/Saves.pm lines 262-275
         if self.pt_influence or _field_present("PT_INFLUENCE"):
             pt_influence_list = GFFList()
             for influence_value in self.pt_influence:
@@ -1084,7 +766,7 @@ class PartyTable:
             root.set_list("PT_INFLUENCE", pt_influence_list)
 
         # Pazaak data - Loaded as raw GFF structures and saved back
-        # Vendor ref: KSE/Functions/Saves.pm preserves Pazaak data structures
+        # Cross-ref (wiki savedata archive): KSE/Functions/Saves.pm preserves Pazaak data structures
         # Structure: Lists of card/deck structs (see pazaakdecks.2da, pazaaak.2da)
         # The acquire() method returns GFFList or other GFF types directly
         # We save them back using appropriate setters based on type
@@ -1099,7 +781,7 @@ class PartyTable:
                 root.set_list("PT_PAZAAKDECKS", list_value)
 
         # UI state and messages
-        # Vendor ref: KSE preserves all UI state for proper save restoration
+        # Cross-ref (wiki savedata archive): KSE preserves all UI state for proper save restoration
         if len(self.pt_fb_msg_list) > 0 or _field_present("PT_FB_MSG_LIST"):
             list_value = _convert_list(self.pt_fb_msg_list, "PT_FB_MSG_LIST")
             if list_value is not None:
@@ -1114,7 +796,7 @@ class PartyTable:
             root.set_binary("PT_TUT_WND_SHOWN", self.pt_tut_wnd_shown)
 
         # Economy - Cost multiplier list
-        # Vendor ref: KSE preserves cost multipliers for shop pricing
+        # Cross-ref (wiki savedata archive): KSE preserves cost multipliers for shop pricing
         if len(self.pt_cost_mult_lis) > 0 or _field_present("PT_COST_MULT_LIS"):
             list_value = _convert_list(self.pt_cost_mult_lis, "PT_COST_MULT_LIS")
             if list_value is not None:
@@ -1130,59 +812,30 @@ class PartyTable:
 class GlobalVars:
     """GLOBALVARS.res - Global variable storage.
 
-    VENDOR REFERENCES:
-    ==================
-    - KSE/Functions/Globals.pm: THE definitive reference for global variable handling
-      - ReadGlobals(): Lines ~50-200 - Reads all 4 variable types
-      - SaveGlobals(): Lines ~200-350 - Writes all 4 variable types
-      - Boolean bit packing algorithm (8 per byte, LSB first)
-      - Location storage with 12 floats (pos + ori + padding)
-
-    - KotOR.js: src/SaveGame.ts (loadGlobalVARS method)
-      - Binary data handling using DataView
-      - JavaScript bitwise operations for booleans
-      - Float32Array for location reading
-
-    - reone: Optimized binary reading with pre-allocated buffers
-      - Validates category/value list length matching
-
-    ENGINE BEHAVIOR:
-    ================
-    - **Original Engine:** Variables stored in memory, saved to disk on save
-      - Scripts use GetGlobalBoolean(), SetGlobalNumber(), etc.
-      - Persistent across module transitions
-      - Used for: Story flags, puzzle states, NPC relationships, spawn triggers
-
-    - **reone:** Caches parsed variables in hash map for O(1) lookup
-      - Lazy loading of global variables (only when first accessed)
-
-    - **KotOR.js:** Async loading with progressive parsing
-      - Booleans loaded first (most commonly accessed)
-      - Locations loaded last (least accessed, largest)
 
     BINARY FORMAT:
     ==============
     Booleans: Packed bits
     - 8 booleans per byte, LSB (Least Significant Bit) first
     - Example: Byte 0x53 (binary 01010011) = [1,1,0,0,1,0,1,0] (LSB first)
-    - Vendor ref: KSE/Functions/Globals.pm line ~120
+    - Cross-ref (wiki savedata archive): KSE/Functions/Globals.pm line ~120
 
     Numbers: Single bytes
     - Range: 0-255 (unsigned 8-bit)
     - Used for counters, small values, percentages
-    - Vendor ref: KSE/Functions/Globals.pm line ~180
+    - Cross-ref (wiki savedata archive): KSE/Functions/Globals.pm line ~180
 
     Strings: GFF struct list
     - Each entry has "String" field
     - Used for NPC names, dynamic text
-    - Vendor ref: KSE/Functions/Globals.pm line ~240
+    - Cross-ref (wiki savedata archive): KSE/Functions/Globals.pm line ~240
 
     Locations: 12 floats (48 bytes) per entry
     - Floats 0-2: Position (x, y, z)
     - Floats 3-5: Orientation (ori_x, ori_y, ori_z)
     - Floats 6-11: Padding (unused, always 0.0)
     - Exactly 50 location slots allocated (2400 bytes total)
-    - Vendor ref: KSE/Functions/Globals.pm line ~280
+    - Cross-ref (wiki savedata archive): KSE/Functions/Globals.pm line ~280
 
     STRUCTURE:
     ==========
@@ -1215,25 +868,6 @@ class GlobalVars:
     def load(self):
         """Load GLOBALVARS.res data from the save folder.
 
-        VENDOR IMPLEMENTATIONS:
-        =======================
-        - KSE/Functions/Globals.pm: ReadGlobals() - THE reference implementation
-          - Lines ~70-100: Boolean unpacking (bit manipulation)
-          - Lines ~120-150: Location parsing (12 floats per entry)
-          - Lines ~160-180: Number reading (single bytes)
-          - Lines ~200-220: String reading (struct list)
-
-        - KotOR.js: loadGlobalVARS()
-          - Uses JavaScript DataView for binary reading
-          - Bitwise operations: (byte >> bitIndex) & 1
-          - Float32Array for efficient location reading
-
-        ENGINE BEHAVIOR:
-        ================
-        - File loaded when save is loaded
-        - Categories define variable names
-        - Values stored in separate binary/list fields
-        - Categories and values must have same count (validated)
 
         PROCESS:
         ========
@@ -1251,7 +885,7 @@ class GlobalVars:
         - bit_value = (data[byte_index] >> bit_index) & 1
         LSB first means bit 0 is rightmost
 
-        Vendor ref: KSE/Functions/Globals.pm line ~90-100
+        Cross-ref (wiki savedata archive): KSE/Functions/Globals.pm line ~90-100
         """
         from pykotor.resource.formats.gff import read_gff
 
@@ -1282,13 +916,13 @@ class GlobalVars:
             with BinaryReader.from_bytes(global_locs_data) as reader:
                 for category in global_locs_categories:
                     # Read position (x, y, z)
-                    # Vendor ref: KSE/Functions/Globals.pm lines 78-82 (commented debug output)
+                    # Cross-ref (wiki savedata archive): KSE/Functions/Globals.pm lines 78-82 (commented debug output)
                     x = reader.read_single()  # Float 0
                     y = reader.read_single()  # Float 1
                     z = reader.read_single()  # Float 2
 
                     # Read orientation (ori_x, ori_y) - Engine uses 2D rotation (yaw only)
-                    # Vendor ref: KSE/Functions/Globals.pm line 87:
+                    # Cross-ref (wiki savedata archive): KSE/Functions/Globals.pm line 87:
                     # KSE::Functions::Main::GetOrientationDegrees($globaldata[($i * 12) + 3], $globaldata[($i * 12) + 4])
                     # This function takes TWO floats (cos and sin of angle) and converts to degrees
                     # See GetOrientationDegrees in Main.pm lines 175-220: takes ($x, $y) params only
@@ -1296,13 +930,13 @@ class GlobalVars:
                     _ori_y = reader.read_single()  # Float 4: sin(orientation_angle) - intentionally not used in Vector4 storage
                     _ori_z = reader.read_single()  # Float 5: Always 0 - z-axis rotation not used by engine
 
-                    # Engine behavior: Odyssey uses 2D rotation (yaw) for global location variables
+                    # Observed: global location vars use 2D rotation (yaw) in retail saves
                     # The game stores orientation as cos/sin pair, not full 3D Euler angles
                     # ori_z exists in file format but is never read or written by game code
                     # This is because locations are ground-level positions without pitch/roll
 
                     # Skip 6 padding floats (24 bytes) - Floats 6-11
-                    # Vendor ref: KSE/Functions/Globals.pm line 159: pack('f7', 0, 0, 0, 0, 0, 0, 0)
+                    # Cross-ref (wiki savedata archive): KSE/Functions/Globals.pm line 159: pack('f7', 0, 0, 0, 0, 0, 0, 0)
                     # NOTE: KSE packs 7 zeros (ori_z + 6 padding), we've already read ori_z
                     reader.skip(24)
 
@@ -1316,23 +950,23 @@ class GlobalVars:
                     self.global_locs.append((name, Vector4(x, y, z, ori_x)))
 
         # Numbers - stored as single bytes (0-255)
-        # Vendor ref: KSE/Functions/Globals.pm line 50:
+        # Cross-ref (wiki savedata archive): KSE/Functions/Globals.pm line 50:
         # @globaldata = unpack('C' . scalar @{$catnumber}, $GlobalVarsRes->{Main}{Fields}[...]{'Value'});
         # 'C' format = unsigned char (1 byte per value, range 0-255)
         #
-        # ENGINE USAGE:
+        # GFF layout:
         # - Counters (e.g., "K_CURRENT_PLANET" = 5 for Dantooine)
         # - Small state values (e.g., "K_SWG_BASTILA" = 2 for relationship level)
         # - Percentages (e.g., "K_PARTY_MORALE" = 75)
         # - Quest progression steps (e.g., "TAR_MISSION_STAGE" = 3)
         #
         # BINARY FORMAT:
-        # - CatNumber: GFF LIST of structs, each containing "Name" (CExoString)
+        # - CatNumber: GFF LIST of structs, each containing "Name" (GFF string)
         # - ValNumber: GFF BINARY, packed as: pack('C' * count, values...)
         # - One byte per number variable, same order as CatNumber list
         # - Values outside 0-255 are clamped/wrapped by game scripts
         #
-        # Vendor ref for reading: KSE/Functions/Globals.pm lines 50-58
+        # Reading (cross-ref wiki savedata archive for KSE line notes)
         global_numbers_categories = root.get_list("CatNumber")
         global_numbers_data = root.get_binary("ValNumber")
 
@@ -1345,30 +979,30 @@ class GlobalVars:
                     self.global_numbers.append((name, value))
 
         # Strings - stored as dual struct lists (categories + values)
-        # Vendor ref: KSE/Functions/Globals.pm lines 60-69:
+        # Cross-ref (wiki savedata archive): KSE/Functions/Globals.pm lines 60-69:
         # @globaldata = @{$GlobalVarsRes->{Main}{Fields}[...]{'Value'}};
         # $Globals{'String'}{...} = $GlobalVarsRes->{Main}{Fields}[...]{'Value'}[$i]{'Fields'}{'Value'};
         #
-        # ENGINE USAGE:
+        # GFF layout:
         # - Dynamic NPC names (e.g., "K_PLAYER_NAME" = "Revan")
         # - Custom object labels (e.g., "K_SHIP_NAME" = "Ebon Hawk")
         # - Player-entered text (e.g., "K_CUSTOM_TITLE" = "Jedi Master")
         # - Module variable storage for scripts
         #
         # BINARY FORMAT:
-        # - CatString: GFF LIST of structs, each containing "Name" (CExoString) - variable name
-        # - ValString: GFF LIST of structs, each containing "String" (CExoString) - variable value
+        # - CatString: GFF LIST of structs, each containing "Name" (GFF string) - variable name
+        # - ValString: GFF LIST of structs, each containing "String" (GFF string) - variable value
         # - BOTH lists must have same length and same order (index correspondence)
         # - Unlike booleans/numbers/locations, strings are NOT packed into binary
-        # - Each string can be arbitrary length (limited by CExoString = 32-bit length prefix)
+        # - Each string can be arbitrary length (GFF string = 32-bit length prefix)
         #
         # IMPORTANT: The two lists are PARALLEL ARRAYS:
         # - CatString[0] name corresponds to ValString[0] value
         # - CatString[1] name corresponds to ValString[1] value
         # - etc.
         #
-        # Vendor ref for reading: KSE/Functions/Globals.pm lines 60-69
-        # Vendor ref for writing: KSE/Functions/Globals.pm lines 124-131
+        # Reading bools (cross-ref wiki savedata archive)
+        # Writing bools (cross-ref wiki savedata archive)
         global_strings_categories = root.get_list("CatString")
         global_strings_values = root.get_list("ValString")
 
@@ -1382,24 +1016,6 @@ class GlobalVars:
     def save(self):
         """Save GLOBALVARS.res data to the save folder.
 
-        VENDOR IMPLEMENTATIONS:
-        =======================
-        - KSE/Functions/Globals.pm: SaveGlobals() - THE reference implementation
-          - Lines ~250-280: Boolean packing (bit manipulation)
-          - Lines ~290-330: Location serialization (12 floats per entry)
-          - Lines ~340-360: Number/string serialization
-
-        - KotOR.js: ExportGlobalVars()
-          - Creates new GFF structure
-          - Uses Uint8Array for boolean bit packing
-          - Float32Array for location serialization
-
-        ENGINE BEHAVIOR:
-        ================
-        - File written atomically on save
-        - Exactly 50 location slots allocated (even if fewer used)
-        - Boolean bytes sized to cover all booleans (ceil(count/8))
-        - Numbers must fit in 0-255 range
 
         PROCESS:
         ========
@@ -1427,7 +1043,7 @@ class GlobalVars:
         - Write 6 zero floats for padding
         Total: 12 floats = 48 bytes per location
 
-        Vendor ref: KSE/Functions/Globals.pm line ~300-320
+        Cross-ref (wiki savedata archive): KSE/Functions/Globals.pm line ~300-320
         """
         from pykotor.common.stream import BinaryWriter
         from pykotor.resource.formats.gff import GFF, GFFContent, GFFList, write_gff
@@ -1442,7 +1058,7 @@ class GlobalVars:
         str_cats = GFFList()
 
         # Pack booleans into bytes (8 per byte, LSB first)
-        # Vendor ref: KSE/Functions/Globals.pm lines 102-111
+        # Cross-ref (wiki savedata archive): KSE/Functions/Globals.pm lines 102-111
         num_bools = len(self.global_bools)
         num_bytes = (num_bools + 7) // 8  # Ceiling division
         bool_data = bytearray(num_bytes)
@@ -1462,7 +1078,7 @@ class GlobalVars:
         root.set_binary("ValBoolean", bytes(bool_data))
 
         # Serialize locations (12 floats each, 50 slots total)
-        # Vendor ref: KSE/Functions/Globals.pm lines 133-167
+        # Cross-ref (wiki savedata archive): KSE/Functions/Globals.pm lines 133-167
         loc_writer = BinaryWriter.to_bytearray()
 
         for name, loc in self.global_locs:
@@ -1492,7 +1108,7 @@ class GlobalVars:
         root.set_binary("ValLocation", loc_writer.data())
 
         # Serialize numbers (single bytes 0-255)
-        # Vendor ref: KSE/Functions/Globals.pm lines 113-122
+        # Cross-ref (wiki savedata archive): KSE/Functions/Globals.pm lines 113-122
         num_writer = BinaryWriter.to_bytearray()
 
         for name, value in self.global_numbers:
@@ -1508,7 +1124,7 @@ class GlobalVars:
         root.set_binary("ValNumber", num_writer.data())
 
         # Serialize strings (struct list)
-        # Vendor ref: KSE/Functions/Globals.pm lines 124-131
+        # Cross-ref (wiki savedata archive): KSE/Functions/Globals.pm lines 124-131
         str_vals = GFFList()
 
         for name, value in self.global_strings:
@@ -1676,35 +1292,6 @@ class GlobalVars:
 class SaveNestedCapsule:
     """SAVEGAME.sav - Nested ERF containing save game data.
 
-    VENDOR REFERENCES:
-    ==================
-    - KSE/Functions/Saves.pm: LoadSave() extracts SAVEGAME.sav to temp directory
-      - Lines ~100-150: ERF extraction and resource enumeration
-      - Lines ~400-450: SaveSave() repacks resources into SAVEGAME.sav
-
-    - KotOR.js: src/SaveGame.ts
-      - initSaveGameResourceLoader(): Async ERF loading
-      - loadInventory(): Parses INVENTORY.res from ItemList
-      - loadPC(): Loads player character from pc.utc or PIFO.ifo (K2)
-
-    - reone: Lazy-loads resources from ERF on-demand
-      - Caches frequently-accessed files (INVENTORY.res, AVAILNPC*.utc)
-
-    ENGINE BEHAVIOR:
-    ================
-    - **Original Engine:** Nested ERF structure for organization
-      - Cached modules allow quick return to previously-visited areas
-      - AVAILNPC*.utc files preserve companion state across modules
-      - INVENTORY.res updated whenever items added/removed/modified
-      - EventQueue in module.ifo can become corrupted → save won't load
-
-    - **reone:** Validates ERF structure on load
-      - Checks for required files (INVENTORY.res, REPUTE.fac)
-      - Warns about corrupted cached modules but attempts recovery
-
-    - **KotOR.js:** Progressive loading for browser environment
-      - Loads critical files first (INVENTORY, player UTC)
-      - Defers cached module loading until needed
 
     STRUCTURE & CONTENTS:
     ====================
@@ -1716,7 +1303,7 @@ class SaveNestedCapsule:
        - Each contains: module.ifo, creatures, placeables, triggers, etc.
        - **COMMON ISSUE:** EventQueue in module.ifo can corrupt → save won't load
        - **FIX:** Clear EventQueue GFF list from each cached module's IFO
-       - Vendor ref: KSE notes EventQueue corruption in multiple places
+       - Cross-ref (wiki savedata archive): KSE notes EventQueue corruption in multiple places
 
     2. **AVAILNPC*.utc files** (up to 12 files, indices 0-11)
        - Cached companion character data
@@ -1731,7 +1318,7 @@ class SaveNestedCapsule:
        - GFF file with "ItemList" containing item structs
        - Each struct has item template data (resref, stack size, etc.)
        - Updated whenever items picked up, dropped, or used
-       - Vendor ref: KSE/Functions/Inventory.pm for detailed parsing
+       - Cross-ref (wiki savedata archive): KSE/Functions/Inventory.pm for detailed parsing
 
     4. **REPUTE.fac**
        - Faction reputation data
@@ -1747,7 +1334,7 @@ class SaveNestedCapsule:
        - Player character IFO override
        - Contains player-specific module data
        - K2-specific: Used for player character persistence
-       - Vendor ref: KotOR.js checks for PIFO before falling back to pc.utc
+       - Cross-ref (wiki savedata archive): KotOR.js checks for PIFO before falling back to pc.utc
 
     FILE FORMAT: ERF (Encapsulated Resource File)
     SIZE: Typically 500 KB - 5 MB depending on playtime and visited areas
@@ -1999,15 +1586,10 @@ class SaveNestedCapsule:
         -------
             ERF object for cached module, or None if not found
 
-        ENGINE BEHAVIOR:
-        ================
-        - Cached modules are stored as .sav files within SAVEGAME.sav
-        - Each module is identified by its ResRef (e.g., "danm13.sav")
-        - Module names are stored in the ERF resources with module.ifo
 
         IMPLEMENTATION:
         ===============
-        Vendor ref: KSE extracts all .sav files and checks module.ifo for name
+        Cross-ref (wiki savedata archive): KSE extracts all .sav files and checks module.ifo for name
         We iterate cached modules and check resources for identification
         """
         module_name_lower = module_name.lower()
@@ -2034,16 +1616,6 @@ class SaveNestedCapsule:
     def is_corrupted(self) -> bool:
         """Check if this save has EventQueue corruption.
 
-        VENDOR REFERENCE:
-        =================
-        - KSE/Functions/Saves.pm: Documents EventQueue corruption as common issue
-        - KotOR.js: Mentions corruption but doesn't implement detection
-
-        ENGINE BEHAVIOR:
-        ================
-        - EventQueue in module.ifo can become corrupted during saving
-        - Symptoms: Save won't load, crashes on load, infinite loading screen
-        - Detection: Check if EventQueue exists and has entries in any cached module
 
         Returns:
         -------
@@ -2079,17 +1651,6 @@ class SaveNestedCapsule:
     def clear_event_queues(self):
         """Clear event queues from cached modules to prevent corruption.
 
-        VENDOR REFERENCE:
-        =================
-        - KSE/Functions/Saves.pm: Notes EventQueue corruption as common issue
-        - KotOR.js: Doesn't implement fixing, but documents the problem
-
-        ENGINE BEHAVIOR:
-        ================
-        - EventQueue in module.ifo can become corrupted during saving
-        - Symptoms: Save won't load, crashes on load, infinite loading
-        - Cause: Interrupted save, script errors, memory corruption
-        - Fix: Clear EventQueue GFF list from each cached module's IFO file
 
         PROCESS:
         ========
@@ -2145,18 +1706,6 @@ class SaveNestedCapsule:
         ----
             module: Module object with updated resources to inject into save
 
-        VENDOR REFERENCE:
-        =================
-        - Not implemented in most save editors (advanced feature)
-        - Useful for mod development and testing
-        - Must preserve dynamic save state (creature positions, dialogue states, etc.)
-
-        ENGINE BEHAVIOR:
-        ================
-        - Module resources in SAVEGAME.sav override base game resources
-        - Dynamic resources (creatures, placeables that moved, etc.) must be preserved
-        - Static resources (walkmeshes, models, scripts) can be safely replaced
-        - Area state (doors opened, containers looted) stored in save must be kept
 
         PROCESS:
         ========
@@ -2228,32 +1777,6 @@ class SaveNestedCapsule:
 class SaveFolderEntry:
     """Represents all data in a single KOTOR save game folder.
 
-    VENDOR REFERENCES:
-    ==================
-    - KSE/Functions/Saves.pm: GetAllSaves() discovers save folders
-      - LoadSave() loads all components from folder
-      - SaveSave() writes all components back to folder
-
-    - KotOR.js: src/SaveGame.ts (main save game class)
-      - Constructor initializes folder paths
-      - load() orchestrates loading all components
-      - Save() exports all components back to folder
-
-    ENGINE BEHAVIOR:
-    ================
-    - **Original Engine:** Folder-based saves for easy user management
-      - Each save in separate folder: "000057 - game56"
-      - Folder name format: "{index} - {name}"
-      - Index for sorting, name for user identification
-      - Special folders: "QUICKSAVE", "AUTOSAVE"
-
-    - **reone:** Scans save directory for folders matching pattern
-      - Loads SAVENFO.res first for quick save list display
-      - Lazy-loads other components only when save is opened
-
-    - **KotOR.js:** Async folder scanning and loading
-      - Progressive loading for responsive UI
-      - Caches parsed data to avoid re-parsing
 
     STRUCTURE:
     ==========
@@ -2321,7 +1844,7 @@ class SaveFolderEntry:
         2. Initializes component objects (SaveInfo, PartyTable, etc.)
         3. Does NOT load data yet (call load() to load)
 
-        Vendor ref: KotOR.js constructor stores folderName and directory
+        Cross-ref (wiki savedata archive): KotOR.js constructor stores folderName and directory
         """
         self.save_path: CaseAwarePath = CaseAwarePath(save_folder_path)
 
@@ -2332,23 +1855,12 @@ class SaveFolderEntry:
         self.globals: GlobalVars = GlobalVars(self.save_path)
 
         # Screenshot data
-        # Vendor ref: KSE preserves Screen.tga, KotOR.js loads it for display
+        # Cross-ref (wiki savedata archive): KSE preserves Screen.tga, KotOR.js loads it for display
         self.screenshot: bytes | None = None  # Screen.tga - Save screenshot (800x600 or 640x480 TGA)
 
     def load(self):
         """Load all save game components from the folder.
 
-        VENDOR IMPLEMENTATIONS:
-        =======================
-        - KSE/Functions/Saves.pm: LoadSave() loads all components sequentially
-        - KotOR.js: load() uses async/await for progressive loading
-        - reone: Loads in order of dependency (info first, then data)
-
-        ENGINE BEHAVIOR:
-        ================
-        - Components loaded in specific order to resolve dependencies
-        - Each component validates its data after loading
-        - Missing files cause load to fail (save is corrupted)
 
         LOAD ORDER:
         ===========
@@ -2379,7 +1891,7 @@ class SaveFolderEntry:
             self.sav.game = Game.K1
 
         # Load screenshot if it exists
-        # Vendor ref: All implementations preserve this for save menu display
+        # Cross-ref (wiki savedata archive): All implementations preserve this for save menu display
         screenshot_path = self.save_path / self.SCREENSHOT_NAME.resname
         if screenshot_path.exists():
             logger.debug("Loading screenshot...")
@@ -2392,24 +1904,6 @@ class SaveFolderEntry:
         This method orchestrates the complete save process, ensuring every component
         of the KOTOR save game is written to disk with full fidelity.
 
-        VENDOR IMPLEMENTATIONS:
-        =======================
-        - KSE/Functions/Saves.pm: SaveSave() writes all components
-          - Writes to temp files first, then renames (atomic)
-          - Updates timestamps to current time
-          - Validates all required fields are present
-
-        - KotOR.js: Save() exports all components asynchronously
-          - Creates backup before writing
-          - Validates data before writing
-          - Progressive save with status updates
-
-        ENGINE BEHAVIOR:
-        ================
-        - Files written atomically to prevent corruption
-        - Backup created before overwriting (some implementations)
-        - Timestamps updated to current save time
-        - All resources preserved exactly as loaded (full fidelity)
 
         COMPREHENSIVE SAVE ORDER:
         =========================
@@ -2462,7 +1956,7 @@ class SaveFolderEntry:
         - Each component written to its own file
         - Files written in dependency order
         - Failures in later stages don't corrupt earlier writes
-        - Vendor ref: KSE uses temp files + rename for atomicity
+        - Cross-ref (wiki savedata archive): KSE uses temp files + rename for atomicity
         """
         from loggerplus import RobustLogger
         from pykotor.resource.formats.erf.erf_auto import write_erf
@@ -2484,7 +1978,7 @@ class SaveFolderEntry:
             logger.debug(f"  - PC Name (K2): {self.save_info.pc_name}")
 
         # Write SAVENFO.res to disk
-        # Vendor ref: KSE/Functions/Saves.pm SaveSave() line ~450
+        # Cross-ref (wiki savedata archive): KSE/Functions/Saves.pm SaveSave() line ~450
         self.save_info.save()
         logger.debug(f"  ✓ Written to: {self.save_info.save_info_path}")
 
@@ -2509,7 +2003,7 @@ class SaveFolderEntry:
             logger.debug(f"  - Additional Fields Preserved: {len(self.partytable.additional_fields)}")
 
         # Write PARTYTABLE.res to disk
-        # Vendor ref: KSE/Functions/Saves.pm SaveSave() line ~480
+        # Cross-ref (wiki savedata archive): KSE/Functions/Saves.pm SaveSave() line ~480
         # NOTE: PT_NUM_MEMBERS is now a property that automatically returns len(pt_members)
         self.partytable.save()
         logger.debug(f"  ✓ Written to: {self.partytable.party_table_path}")
@@ -2524,7 +2018,7 @@ class SaveFolderEntry:
         logger.debug(f"  - Location Variables: {len(self.globals.global_locs)}")
 
         # Write GLOBALVARS.res to disk
-        # Vendor ref: KSE/Functions/Globals.pm SaveGlobals() line ~200
+        # Cross-ref (wiki savedata archive): KSE/Functions/Globals.pm SaveGlobals() line ~200
         self.globals.save()
         logger.debug(f"  ✓ Written to: {self.globals.globals_filepath}")
 
@@ -2535,7 +2029,7 @@ class SaveFolderEntry:
 
         # First, serialize all nested resources (modules, characters, inventory, etc.)
         # This updates self.sav.resource_data with serialized bytes for all resources
-        # Vendor ref: KSE/Functions/Saves.pm SaveSave() line ~520
+        # Cross-ref (wiki savedata archive): KSE/Functions/Saves.pm SaveSave() line ~520
         logger.debug("  - Serializing nested resources...")
         self.sav.save()
 
@@ -2555,7 +2049,7 @@ class SaveFolderEntry:
         logger.debug(f"    • Total Resources: {total_resources}")
 
         # Create new ERF and populate with all serialized resources
-        # Vendor ref: KSE/Functions/Saves.pm SaveSave() line ~550
+        # Cross-ref (wiki savedata archive): KSE/Functions/Saves.pm SaveSave() line ~550
         logger.debug("  - Repacking ERF archive...")
         nested_erf: ERF = ERF(ERFType.from_extension(self.sav.nested_capsule_path.suffix))
 
@@ -2574,7 +2068,7 @@ class SaveFolderEntry:
 
         if self.screenshot is not None:
             # Write screenshot to disk
-            # Vendor ref: All implementations preserve this for save menu display
+            # Cross-ref (wiki savedata archive): All implementations preserve this for save menu display
             with open(screenshot_path, "wb") as f:
                 f.write(self.screenshot)
             logger.debug(f"  ✓ Written screenshot ({len(self.screenshot)} bytes) to: {screenshot_path}")

@@ -48,11 +48,7 @@ class ModInstaller:
 
     References:
     ----------
-        Based on swkotor.exe GFF structure:
-        - CResGFF::CreateGFFFile @ 0x00411260 - Creates GFF file structure
-        - CResGFF::WriteGFFFile @ 0x00413030 - Writes GFF data to file
-        Original BioWare engine binaries
-        https://github.com/th3w1zard1/Kotor.NET/tree/master/Kotor.NET.Patcher/ - Incomplete C# patcher
+        Observed retail KotOR GFF serialization behavior.
 
 
     """
@@ -158,13 +154,13 @@ class ModInstaller:
         while not backup_dir.joinpath("tslpatchdata").is_dir() and backup_dir.parent.name:
             backup_dir = backup_dir.parent
         uninstall_dir: CaseAwarePath = backup_dir.joinpath("uninstall")
-        try:  # sourcery skip: remove-redundant-exception
+        try:
             if uninstall_dir.is_dir():
                 shutil.rmtree(uninstall_dir)
         except (PermissionError, OSError) as e:
             self.log.add_warning(f"Could not initialize uninstall directory: {(e.__class__.__name__, str(e))}")
         backup_dir = backup_dir / "backup" / timestamp
-        try:  # sourcery skip: remove-redundant-exception
+        try:
             ensure_directory_exists(backup_dir)
         except (PermissionError, OSError) as e:
             self.log.add_warning(f"Could not create backup folder: {(e.__class__.__name__, str(e))}")

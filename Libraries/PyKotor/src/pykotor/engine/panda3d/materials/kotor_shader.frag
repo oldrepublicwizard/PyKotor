@@ -1,12 +1,6 @@
 #version 150
 
 // Panda3D fragment shader for KotOR materials.
-// References:
-//   Based on swkotor.exe shader system:
-//   - Fragment shader implementation in game engine's rendering pipeline
-//   - Original BioWare engine binaries (swkotor.exe, swkotor2.exe)
-//   Original BioWare engine binaries (Fragment shader from swkotor.exe, swkotor2.exe)
-//   /panda3d/panda3d-docs/programming/shaders/list-of-glsl-inputs.rst
 
 uniform sampler2D p3d_Texture0;
 uniform sampler2D p3d_Texture1;

@@ -5,14 +5,7 @@ including texture/lightmap iteration, node renaming, and geometry offset calcula
 
 References:
 ----------
-        Original BioWare engine binaries (from swkotor.exe, swkotor2.exe)
-        Original BioWare engine binaries
-        Derivations and Other Implementations:
-        ----------
-        https://github.com/th3w1zard1/kotorblender/tree/master/io_scene_kotor/format/mdl/
-        https://github.com/th3w1zard1/KotOR.js/tree/master/src/odyssey/OdysseyModel.ts
-
-
+        Observed retail KotOR I and KotOR II behavior.
     Note: Magic float values (_MESH_FP0_K1, etc.) are game-specific floating point offsets for binary patching
 """
 

@@ -5,12 +5,13 @@ true-color and grayscale images. Used for texture conversion to/from TPC format.
 
 References:
 ----------
-        See tpc_data module docstring for engine addresses (K1 + TSL TODO). Standard TGA specification (Truevision TGA File Format Specification)
+        Standard Truevision TGA header/layout (see Truevision TGA specification).
 
 
 """
 
 from __future__ import annotations
+from pykotor.resource.formats._base import BiowareResource
 
 import io
 import struct
@@ -24,7 +25,7 @@ TGA_TYPE_RLE_TRUE_COLOR = 10
 
 
 @dataclass
-class TGAImage:
+class TGAImage(BiowareResource):
     width: int
     height: int
     data: bytes  # RGBA8888, row-major, origin = top-left

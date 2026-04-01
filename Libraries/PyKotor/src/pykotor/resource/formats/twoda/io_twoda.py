@@ -1,14 +1,117 @@
-"""Binary 2DA read/write: V2.0/V2.b headers, DEFAULT row, and tab-separated cells."""
+"""Binary 2DA read/write: ``2DA `` + ``V2.b`` on-disk layout (game archive format)."""
 
 from __future__ import annotations
 
+from io import BytesIO
 from typing import TYPE_CHECKING
 
+import kaitaistruct
+from kaitaistruct import KaitaiStream
+
+from pykotor.common.stream import BinaryReader
+from bioware_kaitai_formats.twoda import Twoda
 from pykotor.resource.formats.twoda.twoda_data import TwoDA
 from pykotor.resource.type import ResourceReader, ResourceWriter, autoclose
 
 if TYPE_CHECKING:
     from pykotor.resource.type import SOURCE_TYPES, TARGET_TYPES
+
+
+def _twoda_binary_column_tab_count(data: bytes) -> int:
+    """Count tab separators in the V2.b column header blob (matches TwoDABinaryReader column loop)."""
+    if len(data) < 10:
+        return 0
+    if data[:4] != b"2DA " or data[4:8] != b"V2.b" or data[8:9] != b"\n":
+        return 0
+    idx = 9
+    while idx < len(data) and data[idx] != 0:
+        idx += 1
+    return data[9:idx].count(b"\t")
+
+
+def _twoda_cell_string(raw: str, offset: int) -> str:
+    if offset < 0 or offset >= len(raw):
+        return ""
+    nul = raw.find("\0", offset)
+    if nul == -1:
+        return raw[offset:]
+    return raw[offset:nul]
+
+
+def _load_twoda_from_kaitai(data: bytes) -> TwoDA:
+    column_tab_count = _twoda_binary_column_tab_count(data)
+    if column_tab_count <= 0:
+        msg = "The 2DA column header section is invalid."
+        raise ValueError(msg)
+    parsed = Twoda(column_tab_count, KaitaiStream(BytesIO(data)))
+    twoda = TwoDA()
+    columns = [h for h in parsed.column_headers_raw.split("\t") if h]
+    for header in columns:
+        twoda.add_column(header)
+    headers = twoda.get_headers()
+    column_count = len(headers)
+    if column_count != column_tab_count:
+        msg = "The 2DA column header section does not match the tab-separated layout."
+        raise ValueError(msg)
+    for row_entry in parsed.row_labels_section.labels:
+        twoda.add_row(row_entry.label_value)
+    raw_cells = parsed.cell_values_section.raw_data
+    for i, off in enumerate(parsed.cell_offsets):
+        column_id = i % column_count
+        row_id = i // column_count
+        twoda.set_cell(row_id, headers[column_id], _twoda_cell_string(raw_cells, off))
+    return twoda
+
+
+def _load_twoda_legacy(reader: BinaryReader) -> TwoDA:
+    twoda = TwoDA()
+
+    file_type: str = reader.read_string(4)
+    file_version: str = reader.read_string(4)
+
+    if file_type != "2DA ":
+        msg = "The file type that was loaded is invalid."
+        raise TypeError(msg)
+
+    if file_version != "V2.b":
+        msg = "The 2DA version that was loaded is not supported."
+        raise TypeError(msg)
+
+    reader.read_uint8()  # \n
+
+    columns: list[str] = []
+    while reader.peek() != b"\0":
+        column_header: str = reader.read_terminated_string("\t")
+        twoda.add_column(column_header)
+        columns.append(column_header)
+
+    reader.read_uint8()  # \0
+
+    row_count: int = reader.read_uint32()
+    column_count: int = twoda.get_width()
+    cell_count: int = row_count * column_count
+    for _ in range(row_count):
+        row_header: str = reader.read_terminated_string("\t")
+        row_label: str = row_header
+        twoda.add_row(row_label)
+
+    cell_offsets: list[int] = []
+    for _ in range(cell_count):
+        cell_offsets.append(reader.read_uint16())
+
+    _cell_data_size: int = reader.read_uint16()
+    cell_data_offset: int = reader.position()
+
+    for i in range(cell_count):
+        column_id: int = i % column_count
+        row_id: int = i // column_count
+        column_header = columns[column_id]
+        reader.seek(cell_data_offset + cell_offsets[i])
+
+        cell_value: str = reader.read_terminated_string("\0")
+        twoda.set_cell(row_id, column_header, cell_value)
+
+    return twoda
 
 
 class TwoDABinaryReader(ResourceReader):
@@ -17,20 +120,15 @@ class TwoDABinaryReader(ResourceReader):
     2DA files store tabular data used throughout KotOR for game configuration, item stats,
     spell data, and other structured information.
 
-    References:
+    Observed retail behavior:
     ----------
-        Based on swkotor.exe 2DA structure:
-        - C2DA::Load2DArray @ 0x004143b0 - Loads 2DA file from resource
-          * Parses "2DA V2.0" header
-          * Handles "DEFAULT:" line for default cell values
-          * Reads column headers (tab-separated)
-          * Reads row labels and cell data
-          * Supports binary format (V2.b) and ASCII format (V2.0)
-        - C2DA::Unload2DArray @ 0x004139e0 - Unloads 2DA data
-        Algorithm Differences:
-        ---------------------
-        - Cell reading: PyKotor uses read_terminated_string, reone uses readCStringAt with limit
-        - Token reading approaches differ between implementations
+        Shipped data overwhelmingly uses compact binary ``2DA V2.b``; ASCII ``2DA V2.0`` also
+        appears in tools and some distributions.
+
+        ASCII V2.0 / CSV / JSON are handled by other modules in this package (e.g. ``io_twoda_csv``).
+
+    Implementation note: cells are read with terminated-string semantics; other stacks may use
+    different C-string helpers with explicit limits.
 
     """
 
@@ -63,55 +161,11 @@ class TwoDABinaryReader(ResourceReader):
             - Read cell offsets
             - Seek to cell data and populate cells
         """
-        self._twoda = TwoDA()
-
-        file_type: str = self._reader.read_string(4)
-        file_version: str = self._reader.read_string(4)
-
-        if file_type != "2DA ":
-            msg = "The file type that was loaded is invalid."
-            raise TypeError(msg)
-
-        if file_version != "V2.b":
-            msg = "The 2DA version that was loaded is not supported."
-            raise TypeError(msg)
-
-        self._reader.read_uint8()  # \n
-
-        columns: list[str] = []
-        while self._reader.peek() != b"\0":
-            column_header: str = self._reader.read_terminated_string("\t")
-            self._twoda.add_column(column_header)
-            columns.append(column_header)
-
-        self._reader.read_uint8()  # \0
-
-        row_count: int = self._reader.read_uint32()
-        column_count: int = self._twoda.get_width()
-        cell_count: int = row_count * column_count
-        for _ in range(row_count):
-            row_header: str = self._reader.read_terminated_string("\t")
-            row_label: str = row_header
-            self._twoda.add_row(row_label)
-
-        cell_offsets: list[int] = [0] * cell_count
-        for i in range(cell_count):
-            cell_offsets[i] = self._reader.read_uint16()
-
-        self._reader.read_uint16()
-        cell_data_offset: int = self._reader.position()
-
-        for i in range(cell_count):
-            column_id: int = i % column_count
-            row_id: int = i // column_count
-            column_header = columns[column_id]
-            self._reader.seek(cell_data_offset + cell_offsets[i])
-
-            # NOTE: reone uses readCStringAt with limit, PyKotor uses read_terminated_string
-            # Should verify buffer limits match vendor behavior
-            cell_value: str = self._reader.read_terminated_string("\0")
-            self._twoda.set_cell(row_id, column_header, cell_value)
-
+        data = self._reader.read_all()
+        try:
+            self._twoda = _load_twoda_from_kaitai(data)
+        except (kaitaistruct.KaitaiStructError, ValueError):
+            self._twoda = _load_twoda_legacy(BinaryReader.from_bytes(data, 0))
         return self._twoda
 
 

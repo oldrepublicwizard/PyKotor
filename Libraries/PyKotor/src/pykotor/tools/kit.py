@@ -317,15 +317,7 @@ def extract_kit(
 
     References:
     ----------
-        Based on swkotor.exe ERF structure:
-        - See pykotor.resource.formats.erf.erf_data for addresses (K1 + TSL TODO). CExoEncapsulatedFile, AddEncapsulatedContents.
-        Original BioWare engine binaries
-
-    Derivations and Other Implementations:
-    ----------
-    https://github.com/th3w1zard1/KotOR.js/tree/master/src/module/ModuleRoom.ts:331-342
-    https://github.com/th3w1zard1/KotOR.js/tree/master/src/module/ModuleDoor.ts:992
-    https://github.com/th3w1zard1/KotOR.js/tree/master/src/module/ModulePlaceable.ts:684
+        Observed retail KotOR ERF/RIM module packaging (see ``pykotor.resource.formats.erf``).
 
     Raises:
     ------
@@ -523,7 +515,6 @@ def extract_kit(
 
     # Get LYT to find all room models (which have WOK files)
     #
-    # Reference: https://github.com/th3w1zard1/KotOR.js/tree/master/src/module/ModuleRoom.ts:331-342 (loadWalkmesh)
     lyt_resource = module.layout()
     lyt_room_models: set[str] = set()  # Store lowercase room model names
     lyt_room_model_names: list[str] = []  # Store original room model names (for resource lookup)

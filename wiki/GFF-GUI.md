@@ -1,30 +1,12 @@
-# [GUI](GFF-File-Format#gui-graphical-user-interface)
+# GUI — Graphical User Interface
 
-Part of the [GFF File Format Documentation](GFF-File-Format).
+GUI files define the layout and behavior of every in-game interface screen — menus, HUD elements, dialog panels, and character sheets ([`GUI` L154](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/generics/gui.py#L154), [`GFFContent.GUI` L163](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/formats/gff/gff_data.py#L163)). Each GUI is a [GFF](GFF-File-Format) tree describing a hierarchy of panels, buttons, labels, sliders, and other controls, with properties controlling position, size, textures, and event bindings ([`GUIControl` L100](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/generics/gui.py#L100), [`construct_gui` L349](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/generics/gui.py#L349), [`read_gui` L1060](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/generics/gui.py#L1060), [GFF binary reader `io_gff.py` L82](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/formats/gff/io_gff.py#L82)). Other implementations handle GUI as a standard GFF structure: [reone `gff.cpp`](https://github.com/modawan/reone/blob/master/src/libs/resource/gff.cpp), [KotOR.js `GFFObject.ts` L24](https://github.com/KobaltBlu/KotOR.js/blob/ea9491d5c783364cf285f178434b84405bee3608/src/resource/GFFObject.ts#L24), [Kotor.NET `GFF.cs` L18](https://github.com/NickHugi/Kotor.NET/blob/6dca4a6a1af2fee6e36befb9a6f127c8ba04d3e2/Kotor.NET/Formats/KotorGFF/GFF.cs#L18).
 
-GUI files define the layout and behavior of the user interface. They are [GFF files](GFF-File-Format) describing hierarchies of panels, buttons, labels, and other controls. GUI files are loaded with the same [resource resolution order](KEY-File-Format#key-file-purpose) as other resources (override, MOD/SAV, KEY/BIF).
-
-**For mod developers:** To edit GUI layout in the toolset, use the GUI editor; for mod patches see [TSLPatcher GFFList Syntax](TSLPatcher-GFFList-Syntax) and [HoloPatcher README for Mod Developers](HoloPatcher-README-for-mod-developers.).
-
-**Related formats:** GUI references [TPC](TPC-File-Format)/TGA textures, [TLK](TLK-File-Format) for text; used by the engine for menus and HUD.
-
-## References
-
-**PyKotor:**
-
-- [`Libraries/PyKotor/src/pykotor/resource/generics/gui.py`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/gui.py) - GUI [GFF](GFF-File-Format) parsing and control tree
-
-**HolocronToolset:**
-
-- GUI editor
-
-**Vendor Implementations:**
-
-- reone/xoreos GFF parsers (GUI/UI structs)
+GUI controls reference [TPC](Texture-Formats#tpc)/TGA textures for visual elements and use [TLK](Audio-and-Localization-Formats#tlk) string references for localizable text; the GUI editor in the [Holocron Toolset](Holocron-Toolset-Getting-Started) covers the full editing workflow.
 
 ## Core Identity fields
 
-| field | type | Description |
+| Field | Type | Description |
 | ----- | ---- | ----------- |
 | `Tag` | [CExoString](GFF-File-Format#gff-data-types) | Unique [GUI](GFF-File-Format#gui-graphical-user-interface) identifier |
 | `ObjName` | [CExoString](GFF-File-Format#gff-data-types) | Object name (unused) |
@@ -32,16 +14,16 @@ GUI files define the layout and behavior of the user interface. They are [GFF fi
 
 ## Control structure
 
-[GUI](GFF-File-Format#gui-graphical-user-interface) files contain a `Controls` list, which holds the top-level UI elements. Each control can contain child controls, forming a tree structure.
+[GUI](GFF-File-Format#gui-graphical-user-interface) files contain a `Controls` list that holds the top-level UI elements ([`GUIControl` L100](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/generics/gui.py#L100), [KotOR.js `GFFObject.ts` L24](https://github.com/KobaltBlu/KotOR.js/blob/ea9491d5c783364cf285f178434b84405bee3608/src/resource/GFFObject.ts#L24)). Each control can contain child controls, forming a tree structure.
 
-| field | type | Description |
+| Field | Type | Description |
 | ----- | ---- | ----------- |
 | `Controls` | [List](GFF-File-Format#gff-data-types) | List of child controls |
 | `Type` | [int32](GFF-File-Format#gff-data-types) | Control type identifier |
 | `ID` | [int32](GFF-File-Format#gff-data-types) | Unique control ID |
 | `Tag` | [CExoString](GFF-File-Format#gff-data-types) | Control tag |
 
-**Control types:**
+**Control types** (source: [`GUIControl` L100](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/generics/gui.py#L100), [`read_gui` L1060](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/generics/gui.py#L1060)):
 
 | ID | Name | Description |
 | -- | ---- | ----------- |
@@ -61,7 +43,7 @@ GUI files define the layout and behavior of the user interface. They are [GFF fi
 
 All controls share these base properties:
 
-| field | type | Description |
+| Field | Type | Description |
 | ----- | ---- | ----------- |
 | `CONTROLTYPE` | [int32](GFF-File-Format#gff-data-types) | Control type identifier (see Control types) |
 | `ID` | [int32](GFF-File-Format#gff-data-types) | Unique control ID for script references |
@@ -69,7 +51,7 @@ All controls share these base properties:
 | `Obj_Locked` | [byte](GFF-File-Format#gff-data-types) | Lock state (0=unlocked, 1=locked) |
 | `Obj_Parent` | [CExoString](GFF-File-Format#gff-data-types) | Parent control tag (for hierarchy) |
 | `Obj_ParentID` | [int32](GFF-File-Format#gff-data-types) | Parent control ID (for hierarchy) |
-| `ALPHA` | [float](GFF-File-Format#gff-data-types) | Opacity/transparency (0.0=transparent, 1.0=opaque) |
+| `ALPHA` | float | Opacity/transparency (0.0=transparent, 1.0=opaque) |
 | `COLOR` | vector | Control color modulation (RGB, 0.0-1.0) |
 | `EXTENT` | Struct | position and size rectangle |
 | `BORDER` | Struct | Border rendering properties |
@@ -79,7 +61,7 @@ All controls share these base properties:
 
 **EXTENT Struct:**
 
-| field | type | Description |
+| Field | Type | Description |
 | ----- | ---- | ----------- |
 | `LEFT` | [int32](GFF-File-Format#gff-data-types) | X position relative to parent (pixels) |
 | `TOP` | [int32](GFF-File-Format#gff-data-types) | Y position relative to parent (pixels) |
@@ -95,12 +77,12 @@ All controls share these base properties:
 
 **BORDER Struct:**
 
-| field | type | Description |
+| Field | Type | Description |
 | ----- | ---- | ----------- |
-| `CORNER` | *ResRef* | Corner texture ([TPC](TPC-File-Format)/TGA) |
-| `EDGE` | *ResRef* | [edge](BWM-File-Format#edges) texture ([TPC](TPC-File-Format)/TGA) |
-| `FILL` | *ResRef* | Fill/background texture ([TPC](TPC-File-Format)/TGA) |
-| `FILLSTYLE` | [int32](GFF-File-Format#gff-data-types) | Fill rendering style (-1=None, 0=Empty, 1=Solid, 2=[texture](TPC-File-Format)) |
+| `CORNER` | *ResRef* | Corner texture ([TPC](Texture-Formats#tpc) or TGA) |
+| `EDGE` | *ResRef* | [edge](Level-Layout-Formats#edges-wok-only) texture ([TPC](Texture-Formats#tpc) or TGA) |
+| `FILL` | *ResRef* | Fill/background texture ([TPC](Texture-Formats#tpc) or TGA) |
+| `FILLSTYLE` | [int32](GFF-File-Format#gff-data-types) | Fill rendering style (-1=None, 0=Empty, 1=Solid, 2=[texture](Texture-Formats#tpc)) |
 | `DIMENSION` | [int32](GFF-File-Format#gff-data-types) | Border thickness in pixels |
 | `INNEROFFSET` | [int32](GFF-File-Format#gff-data-types) | Inner padding X-axis (pixels) |
 | `INNEROFFSETY` | [int32](GFF-File-Format#gff-data-types) | Inner padding Y-axis (pixels, optional) |
@@ -110,19 +92,19 @@ All controls share these base properties:
 **Border Rendering:**
 
 - **CORNER**: 4 corner pieces (top-left, top-right, bottom-left, bottom-right)
-- **[edge](BWM-File-Format#edges)**: 4 [edge](BWM-File-Format#edges) pieces (top, right, bottom, left)
+- **[edge](Level-Layout-Formats#edges-wok-only)**: 4 [edge](Level-Layout-Formats#edges-wok-only) pieces (top, right, bottom, left)
 - **FILL**: Center fill area (scaled to fit)
-- **DIMENSION**: Thickness of border [edges](BWM-File-Format#edges)
-- **FILLSTYLE**: Controls how fill [texture](TPC-File-Format) is rendered (tiled, stretched, solid color)
-- Border pieces are tiled/repeated along [edges](BWM-File-Format#edges)
+- **DIMENSION**: Thickness of border [edges](Level-Layout-Formats#edges-wok-only)
+- **FILLSTYLE**: Controls how fill [texture](Texture-Formats#tpc) is rendered (tiled, stretched, solid color)
+- Border pieces are tiled/repeated along [edges](Level-Layout-Formats#edges-wok-only)
 
 **TEXT Struct:**
 
-| field | type | Description |
+| Field | Type | Description |
 | ----- | ---- | ----------- |
-| `TEXT` | [CExoString](GFF-File-Format#gff-data-types) | Direct text content (overrides [StrRef](TLK-File-Format#string-references-strref) if set) |
-| `STRREF` | DWord | [TLK](TLK-File-Format) string reference (0xFFFFFFFF = unused) |
-| `FONT` | *ResRef* | Font [texture](TPC-File-Format) resource ([TPC](TPC-File-Format)/TGA) |
+| `TEXT` | [CExoString](GFF-File-Format#gff-data-types) | Direct text content (overrides [StrRef](Audio-and-Localization-Formats#string-references-strref) if set) |
+| `STRREF` | DWord | [TLK](Audio-and-Localization-Formats#tlk) string reference (0xFFFFFFFF = unused) |
+| `FONT` | *ResRef* | Font [texture](Texture-Formats#tpc) resource ([TPC](Texture-Formats#tpc) or TGA) |
 | `ALIGNMENT` | [int32](GFF-File-Format#gff-data-types) | Text alignment flags (bitfield) |
 | `COLOR` | vector | Text color (RGB, 0.0-1.0) |
 | `PULSING` | [byte](GFF-File-Format#gff-data-types) | Pulsing [animation](MDL-MDX-File-Format#animation-header) flag (0=off, 1=on) |
@@ -142,12 +124,12 @@ All controls share these base properties:
 **Text Resolution:**
 
 - If both `TEXT` and `STRREF` are set, `TEXT` takes precedence
-- Font [textures](TPC-File-Format) contain character glyphs in fixed grid
+- Font [textures](Texture-Formats#tpc) contain character glyphs in fixed grid
 - Text color modulates font texture (white = full color, black = no color)
 
 **MOVETO Struct:**
 
-| field | type | Description |
+| Field | Type | Description |
 | ----- | ---- | ----------- |
 | `UP` | [int32](GFF-File-Format#gff-data-types) | Control ID to navigate to when pressing Up |
 | `DOWN` | [int32](GFF-File-Format#gff-data-types) | Control ID to navigate to when pressing Down |
@@ -163,11 +145,11 @@ All controls share these base properties:
 
 **HILIGHT Struct:**
 
-| field | type | Description |
+| Field | Type | Description |
 | ----- | ---- | ----------- |
-| `CORNER` | *ResRef* | Corner [texture](TPC-File-Format) for highlight state |
-| `EDGE` | *ResRef* | [edge](BWM-File-Format#edges) [texture](TPC-File-Format) for highlight state |
-| `FILL` | *ResRef* | Fill [texture](TPC-File-Format) for highlight state |
+| `CORNER` | *ResRef* | Corner [texture](Texture-Formats#tpc) for highlight state |
+| `EDGE` | *ResRef* | [edge](Level-Layout-Formats#edges-wok-only) [texture](Texture-Formats#tpc) for highlight state |
+| `FILL` | *ResRef* | Fill [texture](Texture-Formats#tpc) for highlight state |
 | `FILLSTYLE` | [int32](GFF-File-Format#gff-data-types) | Fill style for highlight |
 | `DIMENSION` | [int32](GFF-File-Format#gff-data-types) | Border thickness |
 | `INNEROFFSET` | [int32](GFF-File-Format#gff-data-types) | Inner padding X-axis |
@@ -184,11 +166,11 @@ All controls share these base properties:
 
 **SELECTED Struct:**
 
-| field | type | Description |
+| Field | Type | Description |
 | ----- | ---- | ----------- |
-| `CORNER` | *ResRef* | Corner [texture](TPC-File-Format) for selected state |
-| `EDGE` | *ResRef* | [edge](BWM-File-Format#edges) [texture](TPC-File-Format) for selected state |
-| `FILL` | *ResRef* | Fill [texture](TPC-File-Format) for selected state |
+| `CORNER` | *ResRef* | Corner [texture](Texture-Formats#tpc) for selected state |
+| `EDGE` | *ResRef* | [edge](Level-Layout-Formats#edges-wok-only) [texture](Texture-Formats#tpc) for selected state |
+| `FILL` | *ResRef* | Fill [texture](Texture-Formats#tpc) for selected state |
 | `FILLSTYLE` | [int32](GFF-File-Format#gff-data-types) | Fill style for selected state |
 | `DIMENSION` | [int32](GFF-File-Format#gff-data-types) | Border thickness |
 | `INNEROFFSET` | [int32](GFF-File-Format#gff-data-types) | Inner padding X-axis |
@@ -198,11 +180,11 @@ All controls share these base properties:
 
 **HILIGHTSELECTED Struct:**
 
-| field | type | Description |
+| Field | Type | Description |
 | ----- | ---- | ----------- |
-| `CORNER` | *ResRef* | Corner [texture](TPC-File-Format) for highlight+selected state |
-| `EDGE` | *ResRef* | [edge](BWM-File-Format#edges) [texture](TPC-File-Format) for highlight+selected state |
-| `FILL` | *ResRef* | Fill [texture](TPC-File-Format) for highlight+selected state |
+| `CORNER` | *ResRef* | Corner [texture](Texture-Formats#tpc) for highlight+selected state |
+| `EDGE` | *ResRef* | [edge](Level-Layout-Formats#edges-wok-only) [texture](Texture-Formats#tpc) for highlight+selected state |
+| `FILL` | *ResRef* | Fill [texture](Texture-Formats#tpc) for highlight+selected state |
 | `FILLSTYLE` | [int32](GFF-File-Format#gff-data-types) | Fill style |
 | `DIMENSION` | [int32](GFF-File-Format#gff-data-types) | Border thickness |
 | `INNEROFFSET` | [int32](GFF-File-Format#gff-data-types) | Inner padding X-axis |
@@ -221,7 +203,7 @@ All controls share these base properties:
 
 **ListBox (type 11):**
 
-| field | type | Description |
+| Field | Type | Description |
 | ----- | ---- | ----------- |
 | `PROTOITEM` | Struct | Template for list item appearance |
 | `SCROLLBAR` | Struct | Embedded scrollbar control |
@@ -242,7 +224,7 @@ All controls share these base properties:
 
 **PROTOITEM Struct (for ListBox):**
 
-| field | type | Description |
+| Field | Type | Description |
 | ----- | ---- | ----------- |
 | `CONTROLTYPE` | [int32](GFF-File-Format#gff-data-types) | Always 4 (ProtoItem) |
 | `EXTENT` | Struct | Item size and position |
@@ -255,7 +237,7 @@ All controls share these base properties:
 
 **ScrollBar (type 9):**
 
-| field | type | Description |
+| Field | Type | Description |
 | ----- | ---- | ----------- |
 | `DIR` | Struct | Direction arrow buttons appearance |
 | `THUMB` | Struct | Draggable thumb appearance |
@@ -273,27 +255,27 @@ All controls share these base properties:
 
 **DIR Struct (ScrollBar Direction Buttons):**
 
-| field | type | Description |
+| Field | Type | Description |
 | ----- | ---- | ----------- |
-| `IMAGE` | *ResRef* | Arrow button [texture](TPC-File-Format) |
+| `IMAGE` | *ResRef* | Arrow button [texture](Texture-Formats#tpc) |
 | `ALIGNMENT` | [int32](GFF-File-Format#gff-data-types) | Image alignment (typically 18=center) |
 | `DRAWSTYLE` | [int32](GFF-File-Format#gff-data-types) | Drawing style (unused) |
 | `FLIPSTYLE` | [int32](GFF-File-Format#gff-data-types) | Flip/rotation style (unused) |
-| `ROTATE` | [float](GFF-File-Format#gff-data-types) | rotation angle (unused) |
+| `ROTATE` | float | rotation angle (unused) |
 
 **THUMB Struct (ScrollBar Thumb):**
 
-| field | type | Description |
+| Field | Type | Description |
 | ----- | ---- | ----------- |
-| `IMAGE` | *ResRef* | Thumb [texture](TPC-File-Format) |
+| `IMAGE` | *ResRef* | Thumb [texture](Texture-Formats#tpc) |
 | `ALIGNMENT` | [int32](GFF-File-Format#gff-data-types) | Image alignment (typically 18=center) |
 | `DRAWSTYLE` | [int32](GFF-File-Format#gff-data-types) | Drawing style (unused) |
 | `FLIPSTYLE` | [int32](GFF-File-Format#gff-data-types) | Flip/rotation style (unused) |
-| `ROTATE` | [float](GFF-File-Format#gff-data-types) | rotation angle (unused) |
+| `ROTATE` | float | rotation angle (unused) |
 
 **ProgressBar (type 10):**
 
-| field | type | Description |
+| Field | Type | Description |
 | ----- | ---- | ----------- |
 | `PROGRESS` | Struct | Progress fill appearance |
 | `CURVALUE` | [int32](GFF-File-Format#gff-data-types) | Current progress value (0-100) |
@@ -308,11 +290,11 @@ All controls share these base properties:
 
 **PROGRESS Struct:**
 
-| field | type | Description |
+| Field | Type | Description |
 | ----- | ---- | ----------- |
-| `CORNER` | *ResRef* | Corner [texture](TPC-File-Format) for progress fill |
-| `EDGE` | *ResRef* | [edge](BWM-File-Format#edges) [texture](TPC-File-Format) for progress fill |
-| `FILL` | *ResRef* | Fill [texture](TPC-File-Format) for progress bar |
+| `CORNER` | *ResRef* | Corner [texture](Texture-Formats#tpc) for progress fill |
+| `EDGE` | *ResRef* | [edge](Level-Layout-Formats#edges-wok-only) [texture](Texture-Formats#tpc) for progress fill |
+| `FILL` | *ResRef* | Fill [texture](Texture-Formats#tpc) for progress bar |
 | `FILLSTYLE` | [int32](GFF-File-Format#gff-data-types) | Fill rendering style |
 | `DIMENSION` | [int32](GFF-File-Format#gff-data-types) | Border thickness |
 | `INNEROFFSET` | [int32](GFF-File-Format#gff-data-types) | Inner padding X-axis |
@@ -322,7 +304,7 @@ All controls share these base properties:
 
 **CheckBox (type 7):**
 
-| field | type | Description |
+| Field | Type | Description |
 | ----- | ---- | ----------- |
 | `SELECTED` | Struct | Appearance when checked |
 | `HILIGHTSELECTED` | Struct | Appearance when checked and hovered |
@@ -337,7 +319,7 @@ All controls share these base properties:
 
 **Slider (type 8):**
 
-| field | type | Description |
+| Field | Type | Description |
 | ----- | ---- | ----------- |
 | `THUMB` | Struct | Slider thumb appearance |
 | `CURVALUE` | [int32](GFF-File-Format#gff-data-types) | Current slider value |
@@ -353,17 +335,17 @@ All controls share these base properties:
 
 **Slider THUMB Struct:**
 
-| field | type | Description |
+| Field | Type | Description |
 | ----- | ---- | ----------- |
-| `IMAGE` | *ResRef* | Thumb [texture](TPC-File-Format) |
+| `IMAGE` | *ResRef* | Thumb [texture](Texture-Formats#tpc) |
 | `ALIGNMENT` | [int32](GFF-File-Format#gff-data-types) | Image alignment |
 | `DRAWSTYLE` | [int32](GFF-File-Format#gff-data-types) | Drawing style (unused) |
 | `FLIPSTYLE` | [int32](GFF-File-Format#gff-data-types) | Flip/rotation style (unused) |
-| `ROTATE` | [float](GFF-File-Format#gff-data-types) | rotation angle (unused) |
+| `ROTATE` | float | rotation angle (unused) |
 
 **Button (type 6):**
 
-| field | type | Description |
+| Field | Type | Description |
 | ----- | ---- | ----------- |
 | `HILIGHT` | Struct | Hover state appearance |
 | `MOVETO` | Struct | D-pad navigation targets |
@@ -373,12 +355,12 @@ All controls share these base properties:
 
 - Clickable control with text label
 - **HILIGHT**: Shown on mouse hover
-- **TEXT**: Button label (can use [StrRef](TLK-File-Format#string-references-strref) for localization)
+- **TEXT**: Button label (can use [StrRef](Audio-and-Localization-Formats#string-references-strref) for localization)
 - **MOVETO**: Keyboard/D-pad navigation
 
 **Label (type 5):**
 
-| field | type | Description |
+| Field | Type | Description |
 | ----- | ---- | ----------- |
 | `TEXT` | Struct | Text display properties |
 
@@ -390,12 +372,12 @@ All controls share these base properties:
 
 **Panel (type 2):**
 
-| field | type | Description |
+| Field | Type | Description |
 | ----- | ---- | ----------- |
 | `CONTROLS` | [List](GFF-File-Format#gff-data-types) | Child controls list |
 | `BORDER` | Struct | Panel border (optional background) |
 | `COLOR` | vector | Panel color modulation |
-| `ALPHA` | [float](GFF-File-Format#gff-data-types) | Panel transparency |
+| `ALPHA` | float | Panel transparency |
 
 **Panel Behavior:**
 
@@ -406,7 +388,7 @@ All controls share these base properties:
 
 **ProtoItem (type 4):**
 
-| field | type | Description |
+| Field | Type | Description |
 | ----- | ---- | ----------- |
 | `TEXT` | Struct | Item label text |
 | `BORDER` | Struct | Item border appearance |
@@ -430,48 +412,42 @@ All controls share these base properties:
 - Controls can have child controls via `CONTROLS` list
 - Child controls positioned relative to parent's EXTENT
 - Parent visibility affects children (hidden parent hides children)
-- Z-order: Children render above parents, later controls render above earlier ones (rendering order determined by control list order)
-
-**Reference**: **[reone](https://github.com/seedhartha/reone)** ([Mirror: th3w1zard1/reone](https://github.com/th3w1zard1/reone)): [`src/libs/gui/gui.cpp:80-92`](https://github.com/seedhartha/reone/blob/master/src/libs/gui/gui.cpp#L80-L92) shows children are added to parent controls, and [`src/libs/gui/control.cpp:192-194`](https://github.com/seedhartha/reone/blob/master/src/libs/gui/control.cpp#L192-L194) shows children are updated/rendered in order
+- Z-order: Children render above parents, and later controls render above earlier ones (rendering order is determined by control list order) ([reone `gui.cpp` L80-92](https://github.com/modawan/reone/blob/61531089341caf5827abbc54346c8c959b03d449/src/libs/gui/gui.cpp#L80-L92), [reone `control.cpp` L192-194](https://github.com/modawan/reone/blob/61531089341caf5827abbc54346c8c959b03d449/src/libs/gui/control.cpp#L192-L194)).
 
 **Positioning System:**
 
-- Base resolution: 640×480 pixels (engine default, scaled for higher resolutions)
+- Base resolution: 640x480 pixels (engine default, scaled for higher resolutions) ([reone `gui.h` L38-39](https://github.com/modawan/reone/blob/61531089341caf5827abbc54346c8c959b03d449/include/reone/gui/gui.h#L38-L39)).
 - coordinates are pixel-based, engine scales for higher resolutions
 - EXTENT.LEFT/TOP: position relative to parent (or screen for root)
 - Negative coordinates allowed (positioning outside parent bounds)
 - Root control EXTENT defines [GUI](GFF-File-Format#gui-graphical-user-interface) bounds
 
-**Reference**: **[reone](https://github.com/seedhartha/reone)** ([Mirror: th3w1zard1/reone](https://github.com/th3w1zard1/reone)): [`include/reone/gui/gui.h:38-39`](https://github.com/seedhartha/reone/blob/master/include/reone/gui/gui.h#L38-L39) defines `kDefaultResolutionX = 640` and `kDefaultResolutionY = 480`
-
 **color System:**
 
 - **color** (Vector3): RGB color modulation (0.0-1.0 range)
-- **ALPHA** ([float](GFF-File-Format#gff-data-types)): Transparency (0.0=transparent, 1.0=opaque)
+- **ALPHA** (float): Transparency (0.0=transparent, 1.0=opaque)
 - colors multiply with textures (white=full color, black=no color)
 - KotOR 1 default text color: RGB(0.0, 0.659, 0.980) - cyan
-- KotOR 2 default text color: RGB(0.102, 0.698, 0.549) - teal (exact values from engine)
+- KotOR 2 default text color: RGB(0.102, 0.698, 0.549) - teal (exact values from engine) ([KotOR.js `GUIControl.ts` L188-194](https://github.com/KobaltBlu/KotOR.js/blob/ea9491d5c783364cf285f178434b84405bee3608/src/gui/GUIControl.ts#L188-L194)).
 - Default highlight color: RGB(1.0, 1.0, 0.0) - yellow
-
-**Reference**: **[KotOR.js](https://github.com/KobaltBlu/KotOR.js)** ([Mirror: th3w1zard1/KotOR.js](https://github.com/th3w1zard1/KotOR.js)): [`src/gui/GUIControl.ts:188-194`](https://github.com/KobaltBlu/KotOR.js/blob/master/src/gui/GUIControl.ts#L188-L194) defines default colors for KotOR 1 and 2
 
 **Border Rendering:**
 
-- Border consists of 9 pieces: 4 corners, 4 [edges](BWM-File-Format#edges), 1 fill
-- CORNER [textures](TPC-File-Format): Top-left, top-right, bottom-left, bottom-right
-- [edge](BWM-File-Format#edges) [textures](TPC-File-Format): Top, right, bottom, left (tiled along length)
-- FILL [texture](TPC-File-Format): Center area (scaled or tiled based on FILLSTYLE)
-- DIMENSION: Thickness of border [edges](BWM-File-Format#edges) in pixels
+- Border consists of 9 pieces: 4 corners, 4 [edges](Level-Layout-Formats#edges-wok-only), 1 fill
+- CORNER [textures](Texture-Formats#tpc): Top-left, top-right, bottom-left, bottom-right
+- [edge](Level-Layout-Formats#edges-wok-only) [textures](Texture-Formats#tpc): Top, right, bottom, left (tiled along length)
+- FILL [texture](Texture-Formats#tpc): Center area (scaled or tiled based on FILLSTYLE)
+- DIMENSION: Thickness of border [edges](Level-Layout-Formats#edges-wok-only) in pixels
 - INNEROFFSET: Padding between border and content
 
 **Text Rendering:**
 
-- Fonts are [texture](TPC-File-Format)-based ([TPC](TPC-File-Format)/TGA files with character grid)
-- Each character has fixed width/height in font [texture](TPC-File-Format)
-- TEXT field takes precedence over [StrRef](TLK-File-Format#string-references-strref) if both set
-- [StrRef](TLK-File-Format#string-references-strref) references [dialog.tlk](TLK-File-Format) for localized strings
+- Fonts are [texture](Texture-Formats#tpc)-based ([TPC](Texture-Formats#tpc) or TGA files with character grid)
+- Each character has fixed width/height in font [texture](Texture-Formats#tpc)
+- TEXT field takes precedence over [StrRef](Audio-and-Localization-Formats#string-references-strref) if both set
+- [StrRef](Audio-and-Localization-Formats#string-references-strref) references [dialog.tlk](Audio-and-Localization-Formats#tlk) for localized strings
 - ALIGNMENT uses bitfield: horizontal (1=left, 2=center, 3=right) + vertical (0=top, 16=center, 32=bottom)
-- Text color modulates font [texture](TPC-File-Format)
+- Text color modulates font [texture](Texture-Formats#tpc)
 
 **State Management:**
 
@@ -514,18 +490,18 @@ All controls share these base properties:
 - Used for attention-grabbing effects
 - [animation](MDL-MDX-File-Format#animation-header) speed controlled by engine
 
-**[texture](TPC-File-Format) formats:**
+**[texture](Texture-Formats#tpc) formats:**
 
-- [GUI](GFF-File-Format#gui-graphical-user-interface) [textures](TPC-File-Format) use TPC (Targa Packed) or TGA format
-- [textures](TPC-File-Format) often have alpha channels for transparency
+- [GUI](GFF-File-Format#gui-graphical-user-interface) [textures](Texture-Formats#tpc) use TPC (Targa Packed) or TGA format
+- [textures](Texture-Formats#tpc) often have alpha channels for transparency
 - Border pieces designed to tile seamlessly
-- Font [textures](TPC-File-Format) contain character glyphs in fixed grid
+- Font [textures](Texture-Formats#tpc) contain character glyphs in fixed grid
 
 **Performance Considerations:**
 
 - Complex GUIs with many controls impact rendering
 - Nested controls increase draw calls
-- Large [texture](TPC-File-Format) borders increase memory usage
+- Large [texture](Texture-Formats#tpc) borders increase memory usage
 - Pulsing [animations](MDL-MDX-File-Format#animation-header) require per-frame updates
 
 **Common Patterns:**
@@ -547,6 +523,9 @@ All controls share these base properties:
 ### See also
 
 - [GFF-File-Format](GFF-File-Format) -- Generic format underlying GUI
-- [TPC File Format](TPC-File-Format), [TXI File Format](TXI-File-Format) - Textures used by GUI controls
-- [TLK File Format](TLK-File-Format) - String references for GUI text
+- [GFF Creature and Dialogue](GFF-Creature-and-Dialogue) -- UTC and DLG types
+- [GFF Items and Economy](GFF-Items-and-Economy) -- UTI, UTM, JRL, FAC types
+- [GFF Module and Area](GFF-Module-and-Area) -- ARE, GIT, IFO types
+- [TPC File Format](Texture-Formats#tpc) — textures used by GUI controls
+- [TLK File Format](Audio-and-Localization-Formats#tlk) - String references for GUI text
 - [NCS File Format](NCS-File-Format) - Scripts that drive GUI behavior

@@ -13,11 +13,6 @@ Designed for both 2-way and 3-way comparisons including changes.ini generation.
 
 Handlers for individual resource formats can be added to the _HANDLERS map to extend support.
 
-Derivations and Other Implementations:
-----------
-    https://github.com/th3w1zard1/TSLPatcher/tree/master/TSLPatcher.pl (unfinished perl rewrite of TSLPatcher)
-    https://github.com/th3w1zard1/HoloPatcher.NET/tree/master/
-    https://github.com/th3w1zard1/Kotor.NET/tree/master/Kotor.NET.Patcher/
 """
 
 from __future__ import annotations

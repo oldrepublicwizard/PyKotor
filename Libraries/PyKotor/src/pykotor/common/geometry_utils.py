@@ -4,17 +4,6 @@ This module provides reusable geometry operations that are not specific to any
 particular rendering backend. These utilities can be used by any rendering
 backend implementation.
 
-References:
-----------
-        Based on swkotor.exe GFF structure:
-        - CResGFF::CreateGFFFile @ 0x00411260 - Creates GFF file structure
-        - Vector3/Vector4 structures used in GFF fields
-        - Libraries/PyKotor/src/pykotor/resource/formats/mdl/io_mdl.py:1448-1577 - Tangent space calculation
-    Derivations and Other Implementations:
-    ----------
-        - https://github.com/th3w1zard1/mdlops/tree/master/MDLOpsM.pm:5470-5596
-
-
 """
 
 from __future__ import annotations
@@ -52,13 +41,6 @@ def compute_per_vertex_tangent_space(
     -------
         Dictionary mapping vertex index to (tangent, binormal) tuple
 
-    References:
-    ----------
-        Based on swkotor.exe GFF structure:
-        - CResGFF::CreateGFFFile @ 0x00411260 - Creates GFF file structure
-        - Vector3/Vector4 structures used in GFF fields
-        - Libraries/PyKotor/src/pykotor/resource/formats/mdl/io_mdl.py:1448-1577 - Tangent space calculation
-        - https://github.com/th3w1zard1/mdlops/tree/master/MDLOpsM.pm:5470-5596
     """
     from pykotor.resource.formats.mdl.io_mdl import _calculate_face_normal, _calculate_tangent_space
 
@@ -138,17 +120,6 @@ def determine_vertex_format_requirements(mesh: MDLMesh) -> dict[str, bool]:
         - has_lightmap: True if mesh has lightmap UVs
         - has_skinning: True if mesh has bone weights
         - has_uv2: True if mesh has second UV set
-
-    References:
-    ----------
-        Based on swkotor.exe GFF structure:
-        - CResGFF::CreateGFFFile @ 0x00411260 - Creates GFF file structure
-        - Vector3/Vector4 structures used in GFF fields
-
-    Derivations and Other Implementations:
-    ----------
-        https://github.com/th3w1zard1/KotOR.js/tree/master/src/three/odyssey/OdysseyModel3D.ts:1169-1197
-
 
     """
     return {

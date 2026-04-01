@@ -12,55 +12,55 @@ namespace Andastra.Game.Games.Odyssey.Components
     /// - Odyssey-specific: UTD file format, GFF field names, transition flag system
     /// - TSL-specific fields (Min1HP, NotBlastable) are supported but default to false for K1 compatibility
     /// - Located via string references:
-    ///   - ["Door List"]    @ (K1: 0x00747680 ✓, TSL: 0x007bd248 ✓) - swkotor2.exe GIT door list
-    ///   - ["GenericDoors"] @ (K1: 0x0074b974 ✓, TSL: 0x007c4ba8 ✓) - generic doors 2DA table
-    ///   - ["DoorTypes"]    @ (K1: 0x0074b968 ✓, TSL: 0x007c4b9c ✓) - door types field
-    ///   - ["SecretDoorDC"] @ (K1: 0x00749870 ✓, TSL: 0x007c1acc ✓) - secret door DC field
+    ///   - ["Door List"]    @  (/K1/k1_win_gog_swkotor.exe: 0x00747680 ✓, TSL: 0x007bd248 ✓) - swkotor2.exe GIT door list
+    ///   - ["GenericDoors"] @  (/K1/k1_win_gog_swkotor.exe: 0x0074b974 ✓, TSL: 0x007c4ba8 ✓) - generic doors 2DA table
+    ///   - ["DoorTypes"]    @  (/K1/k1_win_gog_swkotor.exe: 0x0074b968 ✓, TSL: 0x007c4b9c ✓) - door types field
+    ///   - ["SecretDoorDC"] @  (/K1/k1_win_gog_swkotor.exe: 0x00749870 ✓, TSL: 0x007c1acc ✓) - secret door DC field
     /// - Transition fields:
-    ///   - ["LinkedTo"]    @ (K1: 0x00747aa4 ✓, TSL: 0x007bd798 ✓) - linked to waypoint/area
-    ///   - ["LinkedToModule"] @ (K1: 0x00747ac8 ✓, TSL: 0x007bd7bc ✓) - linked to module
-    ///   - ["LinkedToFlags"] @ (K1: 0x00747a94 ✓, TSL: 0x007bd788 ✓) - transition flags
-    ///   - ["TransitionDestination"] @ (K1: 0x00747ab0 ✓, TSL: 0x007bd7a4 ✓) - waypoint tag for positioning after transition
+    ///   - ["LinkedTo"]    @  (/K1/k1_win_gog_swkotor.exe: 0x00747aa4 ✓, TSL: 0x007bd798 ✓) - linked to waypoint/area
+    ///   - ["LinkedToModule"] @  (/K1/k1_win_gog_swkotor.exe: 0x00747ac8 ✓, TSL: 0x007bd7bc ✓) - linked to module
+    ///   - ["LinkedToFlags"] @  (/K1/k1_win_gog_swkotor.exe: 0x00747a94 ✓, TSL: 0x007bd788 ✓) - transition flags
+    ///   - ["TransitionDestination"] @  (/K1/k1_win_gog_swkotor.exe: 0x00747ab0 ✓, TSL: 0x007bd7a4 ✓) - waypoint tag for positioning after transition
     /// - Door animations:
-    ///   - ["i_opendoor"] @ (K1: 0x0074fbbc ✓, TSL: 0x007c86d4 ✓) - open door animation
+    ///   - ["i_opendoor"] @  (/K1/k1_win_gog_swkotor.exe: 0x0074fbbc ✓, TSL: 0x007c86d4 ✓) - open door animation
     ///   - ["i_doorsaber"] @ (TSL: 0x007ccca0 ✓) - saber door animation
     /// - GUI references:
-    ///   - ["gui_mp_doordp"] @ (K1: 0x0073dc34 ✓, TSL: 0x007b5bdc ✓)
-    ///   - ["gui_mp_doorup"] @ (K1: 0x0073dc44 ✓, TSL: 0x007b5bec ✓)
-    ///   - ["gui_mp_doord"]  @ (K1: 0x0073dd7c ✓, TSL: 0x007b5d24 ✓)
-    ///   - ["gui_mp_dooru"]  @ (K1: 0x0073dd8c ✓, TSL: 0x007b5d34 ✓)
+    ///   - ["gui_mp_doordp"] @  (/K1/k1_win_gog_swkotor.exe: 0x0073dc34 ✓, TSL: 0x007b5bdc ✓)
+    ///   - ["gui_mp_doorup"] @  (/K1/k1_win_gog_swkotor.exe: 0x0073dc44 ✓, TSL: 0x007b5bec ✓)
+    ///   - ["gui_mp_doord"]  @  (/K1/k1_win_gog_swkotor.exe: 0x0073dd7c ✓, TSL: 0x007b5d24 ✓)
+    ///   - ["gui_mp_dooru"]  @  (/K1/k1_win_gog_swkotor.exe: 0x0073dd8c ✓, TSL: 0x007b5d34 ✓)
     ///   - ["gui_doorsaber"] @ (TSL: 0x007c2fe4 ✓)
     /// - Error messages:
-    ///   - ["Cannot load door model '%s'."] @ (K1: 0x00758b00 ✓, TSL: 0x007d2488 ✓) - door model loading error
-    ///   - ["CSWCAnimBaseDoor::GetAnimationName(): No name for server animation %d"] @ (K1: 0x00758b20 ✓, TSL: 0x007d24a8 ✓) - door animation name error
-    ///   - CSWSDoor::LoadDoorFromUTD @ (K1: 0x0058a1f0 ✓, TSL: 0x00584f40 ✓) - load door data from GFF/UTD template
+    ///   - ["Cannot load door model '%s'."] @  (/K1/k1_win_gog_swkotor.exe: 0x00758b00 ✓, TSL: 0x007d2488 ✓) - door model loading error
+    ///   - ["CSWCAnimBaseDoor::GetAnimationName(): No name for server animation %d"] @  (/K1/k1_win_gog_swkotor.exe: 0x00758b20 ✓, TSL: 0x007d24a8 ✓) - door animation name error
+    ///   - CSWSDoor::LoadDoorFromUTD @  (/K1/k1_win_gog_swkotor.exe: 0x0058a1f0 ✓, TSL: 0x00584f40 ✓) - load door data from GFF/UTD template
     ///   - Loads PortraitId/Portrait, CreatorId, script hooks:
-    ///     - ["ScriptHeartbeat"] @ (K1: 0x00746c94 ✓, TSL: 0x007beeb0 ✓) - heartbeat script
-    ///     - ["ScriptOnEnter"] @ (K1: 0x00749a28 ✓, TSL: 0x007c1d40 ✓) - enter script
-    ///     - ["ScriptOnExit"] @ (K1: 0x00749a18 ✓, TSL: 0x007c1d30 ✓) - exit script
-    ///     - ["ScriptUserDefine"] @ (K1: 0x00746be8 ✓, TSL: 0x007bee04 ✓) - user define script
-    ///     - ["OnTrapTriggered"] @ (K1: 0x007495ec ✓, TSL: 0x007c1a34 ✓) - trap triggered script
-    ///     - ["OnDisarm"] @ (K1: 0x0074966c ✓, TSL: 0x007c1a74 ✓) - disarm script
-    ///     - ["OnClick"] @ (K1: 0x00749868 ✓, TSL: 0x007c1a20 ✓) - click script
+    ///     - ["ScriptHeartbeat"] @  (/K1/k1_win_gog_swkotor.exe: 0x00746c94 ✓, TSL: 0x007beeb0 ✓) - heartbeat script
+    ///     - ["ScriptOnEnter"] @  (/K1/k1_win_gog_swkotor.exe: 0x00749a28 ✓, TSL: 0x007c1d40 ✓) - enter script
+    ///     - ["ScriptOnExit"] @  (/K1/k1_win_gog_swkotor.exe: 0x00749a18 ✓, TSL: 0x007c1d30 ✓) - exit script
+    ///     - ["ScriptUserDefine"] @  (/K1/k1_win_gog_swkotor.exe: 0x00746be8 ✓, TSL: 0x007bee04 ✓) - user define script
+    ///     - ["OnTrapTriggered"] @  (/K1/k1_win_gog_swkotor.exe: 0x007495ec ✓, TSL: 0x007c1a34 ✓) - trap triggered script
+    ///     - ["OnDisarm"] @  (/K1/k1_win_gog_swkotor.exe: 0x0074966c ✓, TSL: 0x007c1a74 ✓) - disarm script
+    ///     - ["OnClick"] @  (/K1/k1_win_gog_swkotor.exe: 0x00749868 ✓, TSL: 0x007c1a20 ✓) - click script
     ///   - Loads TrapType, TrapOneShot, LinkedTo, LinkedToFlags, LinkedToModule, AutoRemoveKey, Tag, LocalizedName, Faction, KeyName:
-    ///     - ["TrapType"] @ (K1: 0x0074973c ✓, TSL: 0x007c19f8 ✓) - trap type
-    ///     - ["TrapOneShot"] @ (K1: 0x00749748 ✓, TSL: 0x007c198c ✓) - trap one shot
-    ///     - ["LinkedTo"] @ (K1: 0x00747aa4 ✓, TSL: 0x007bd798 ✓) - linked to waypoint/area
-    ///     - ["LinkedToFlags"] @ (K1: 0x00747a94 ✓, TSL: 0x007bd788 ✓) - transition flags
-    ///     - ["LinkedToModule"] @ (K1: 0x00747ac8 ✓, TSL: 0x007bd7bc ✓) - linked to module
-    ///     - ["AutoRemoveKey"] @ (K1: 0x007497d0 ✓, TSL: 0x007c1b64 ✓) - auto remove key
-    ///     - ["Tag"] @ (K1: 0x00747a28 ✓, TSL: 0x007bd6f4 ✓) - tag
-    ///     - ["LocalizedName"] @ (K1: 0x00748fec ✓, TSL: 0x007c0a40 ✓) - localized name
-    ///     - ["Faction"] @ (K1: 0x007497c8 ✓, TSL: 0x007c0ca0 ✓) - faction
-    ///     - ["KeyName"] @ (K1: 0x0074979c ✓, TSL: 0x007c1b20 ✓) - key name
+    ///     - ["TrapType"] @  (/K1/k1_win_gog_swkotor.exe: 0x0074973c ✓, TSL: 0x007c19f8 ✓) - trap type
+    ///     - ["TrapOneShot"] @  (/K1/k1_win_gog_swkotor.exe: 0x00749748 ✓, TSL: 0x007c198c ✓) - trap one shot
+    ///     - ["LinkedTo"] @  (/K1/k1_win_gog_swkotor.exe: 0x00747aa4 ✓, TSL: 0x007bd798 ✓) - linked to waypoint/area
+    ///     - ["LinkedToFlags"] @  (/K1/k1_win_gog_swkotor.exe: 0x00747a94 ✓, TSL: 0x007bd788 ✓) - transition flags
+    ///     - ["LinkedToModule"] @  (/K1/k1_win_gog_swkotor.exe: 0x00747ac8 ✓, TSL: 0x007bd7bc ✓) - linked to module
+    ///     - ["AutoRemoveKey"] @  (/K1/k1_win_gog_swkotor.exe: 0x007497d0 ✓, TSL: 0x007c1b64 ✓) - auto remove key
+    ///     - ["Tag"] @  (/K1/k1_win_gog_swkotor.exe: 0x00747a28 ✓, TSL: 0x007bd6f4 ✓) - tag
+    ///     - ["LocalizedName"] @  (/K1/k1_win_gog_swkotor.exe: 0x00748fec ✓, TSL: 0x007c0a40 ✓) - localized name
+    ///     - ["Faction"] @  (/K1/k1_win_gog_swkotor.exe: 0x007497c8 ✓, TSL: 0x007c0ca0 ✓) - faction
+    ///     - ["KeyName"] @  (/K1/k1_win_gog_swkotor.exe: 0x0074979c ✓, TSL: 0x007c1b20 ✓) - key name
     ///   - Loads TrapDisarmable, TrapDetectable, OwnerDemolitionsSkill, DisarmDCMod, DetectDCMod, Cursor, TransitionDestination, Type, HighlightHeight:
-    ///     - ["TrapDisarmable"] @ (K1: 0x0074978c ✓, TSL: 0x007c19e8 ✓) - trap disarmable
-    ///     - ["TrapDetectable"] @ (K1: 0x0074977c ✓, TSL: 0x007c19d8 ✓) - trap detectable
+    ///     - ["TrapDisarmable"] @  (/K1/k1_win_gog_swkotor.exe: 0x0074978c ✓, TSL: 0x007c19e8 ✓) - trap disarmable
+    ///     - ["TrapDetectable"] @  (/K1/k1_win_gog_swkotor.exe: 0x0074977c ✓, TSL: 0x007c19d8 ✓) - trap detectable
     ///     - ["OwnerDemolitionsSkill"] @ (K1: N/A, TSL: 0x007c19a4 ✓) - owner demolitions skill
-    ///     - ["DisarmDCMod"] @ (K1: 0x00747d5c ✓, TSL: 0x007c04ac ✓) - disarm DC mod
-    ///     - ["DetectDCMod"] @ (K1: 0x00747d68 ✓, TSL: 0x007c04b8 ✓) - detect DC mod
-    ///     - ["Cursor"] @ (K1: 0x00749a10 ✓, TSL: 0x007c1d28 ✓) - cursor
-    ///     - ["TransitionDestination"] @ (K1: 0x00747ab0 ✓, TSL: 0x007bd7a4 ✓) - waypoint tag for positioning after transition
+    ///     - ["DisarmDCMod"] @  (/K1/k1_win_gog_swkotor.exe: 0x00747d5c ✓, TSL: 0x007c04ac ✓) - disarm DC mod
+    ///     - ["DetectDCMod"] @  (/K1/k1_win_gog_swkotor.exe: 0x00747d68 ✓, TSL: 0x007c04b8 ✓) - detect DC mod
+    ///     - ["Cursor"] @  (/K1/k1_win_gog_swkotor.exe: 0x00749a10 ✓, TSL: 0x007c1d28 ✓) - cursor
+    ///     - ["TransitionDestination"] @  (/K1/k1_win_gog_swkotor.exe: 0x00747ab0 ✓, TSL: 0x007bd7a4 ✓) - waypoint tag for positioning after transition
     ///     - ["Type"] @ (K1: TODO, TSL: TODO) - type (not found in door loading/saving functions; may not exist for doors)
     ///     - ["HighlightHeight"] @ (TSL: 0x007c1b74) - highlight height
     ///   - Loads position (XPosition, YPosition, ZPosition), orientation (XOrientation, YOrientation, ZOrientation), Geometry polygon vertices:
@@ -93,9 +93,9 @@ namespace Andastra.Game.Games.Odyssey.Components
     ///     - ["LinkedToModule"] @ (TSL: 0x007bd7bc) - linked to module
     ///     - ["AutoRemoveKey"] @ (TSL: 0x007c1ab4) - auto remove key
     ///     - ["Tag"] @ (TSL: 0x007c1ac4) - tag
-    ///     - ["LocalizedName"] @ (K1: 0x00748fec ✓, TSL: 0x007c0a40 ✓) - localized name
-    ///     - ["Faction"] @ (K1: 0x007497c8 ✓, TSL: 0x007c0ca0 ✓) - faction
-    ///     - ["Cursor"] @ (K1: 0x00749a10 ✓, TSL: 0x007c1d28 ✓) - cursor
+    ///     - ["LocalizedName"] @  (/K1/k1_win_gog_swkotor.exe: 0x00748fec ✓, TSL: 0x007c0a40 ✓) - localized name
+    ///     - ["Faction"] @  (/K1/k1_win_gog_swkotor.exe: 0x007497c8 ✓, TSL: 0x007c0ca0 ✓) - faction
+    ///     - ["Cursor"] @  (/K1/k1_win_gog_swkotor.exe: 0x00749a10 ✓, TSL: 0x007c1d28 ✓) - cursor
     ///     - ["KeyName"] @ (TSL: 0x007c1af4) - key name
     ///   - Saves TrapDisarmable, TrapDetectable, OwnerDemolitionsSkill, PortraitId/Portrait, Type, HighlightHeight:
     ///     - ["TrapDisarmable"] @ (TSL: 0x007c1b04) - trap disarmable
@@ -113,13 +113,13 @@ namespace Andastra.Game.Games.Odyssey.Components
     ///     - ["LoadScreenID"] @ (TSL: 0x007c1c14) - load screen ID
     ///     - ["TransitionDestination"] @ (TSL: 0x007bd7a4) - waypoint tag for positioning after transition
     ///     - ["SetByPlayerParty"] @ (TSL: 0x007c1c24) - set by player party
-    /// - CSWSDoor::LoadDoorExternal @ (K1: 0x0058c5f0, TSL: 0x005838d0) - load door instance from GIT including position, linked transitions
-    /// - CSWSDoor::LoadDoor @ (K1: 0x0058a1f0, TSL: 0x00580ed0) - door loading function (loads door properties from UTD template)
-    /// - CSWSArea::LoadDoorsFromGIT @ (K1: 0x0050a0e0, TSL: 0x004e5920) - load door list from GIT
-    /// - CSWSArea::SaveDoorsToGIT @ (K1: 0x00507810, TSL: 0x004e56b0) - save door list to GIT
-    /// - CSWSDoor::SaveDoorToGIT @ (K1: 0x00588ad0, TSL: 0x00580330) - save door properties to GIT
+    /// - CSWSDoor::LoadDoorExternal @  (/K1/k1_win_gog_swkotor.exe: 0x0058c5f0, TSL: 0x005838d0) - load door instance from GIT including position, linked transitions
+    /// - CSWSDoor::LoadDoor @  (/K1/k1_win_gog_swkotor.exe: 0x0058a1f0, TSL: 0x00580ed0) - door loading function (loads door properties from UTD template)
+    /// - CSWSArea::LoadDoorsFromGIT @  (/K1/k1_win_gog_swkotor.exe: 0x0050a0e0, TSL: 0x004e5920) - load door list from GIT
+    /// - CSWSArea::SaveDoorsToGIT @  (/K1/k1_win_gog_swkotor.exe: 0x00507810, TSL: 0x004e56b0) - save door list to GIT
+    /// - CSWSDoor::SaveDoorToGIT @  (/K1/k1_win_gog_swkotor.exe: 0x00588ad0, TSL: 0x00580330) - save door properties to GIT
     /// - CSWSDoor::SaveDoorToUTD @ (K1: N/A, TSL: 0x00589520) - save door properties to UTD template (TSL-specific; K1 may use SaveDoor for both GIT and UTD)
-    /// - CServerAIMaster::LogDoorEvent @ (K1: 0x004af630, TSL: 0x004dcfb0) - door event handling, including transition events
+    /// - CServerAIMaster::LogDoorEvent @  (/K1/k1_win_gog_swkotor.exe: 0x004af630, TSL: 0x004dcfb0) - door event handling, including transition events
     /// - Note: swkotor.exe uses identical UTD template structure and transition flag system as swkotor2.exe; exact function addresses for door property loading from UTD templates in swkotor.exe need verification
     /// - Doors have open/closed states, locks, traps, module transitions
     /// - Based on UTD file format (GFF with "UTD " signature) containing door template data
@@ -280,8 +280,8 @@ namespace Andastra.Game.Games.Odyssey.Components
         /// </summary>
         /// <remarks>
         /// Min1HP Flag:
-        /// - CSWSDoor::LoadDoor @ (K1: 0x0058a1f0, TSL: 0x00580ed0) - loads Min1HP from UTD template
-        /// - CSWSDoor::SaveDoor @ (K1: 0x00588ad0, TSL: 0x00580330) - saves Min1HP to GIT
+        /// - CSWSDoor::LoadDoor @  (/K1/k1_win_gog_swkotor.exe: 0x0058a1f0, TSL: 0x00580ed0) - loads Min1HP from UTD template
+        /// - CSWSDoor::SaveDoor @  (/K1/k1_win_gog_swkotor.exe: 0x00588ad0, TSL: 0x00580330) - saves Min1HP to GIT
         /// - CSWSDoor::SaveDoorToUTD @ (K1: N/A, TSL: 0x00589520) - saves Min1HP to UTD template (TSL-specific; K1 may use SaveDoor for both GIT and UTD)
         /// - Located via UTD field: "Min1HP" (UInt8/Byte)
         /// - Original implementation: If Min1HP is true (1), door cannot drop below 1 HP when damaged
@@ -312,15 +312,15 @@ namespace Andastra.Game.Games.Odyssey.Components
         /// </summary>
         /// <remarks>
         /// Module Transition Check:
-        /// - Based on swkotor.exe and swkotor2.exe door transition system
-        /// - swkotor.exe: CSWSArea::LoadDoors @ (K1: 0x0050a0e0, TSL: 0x004e5920) - loads door list from GIT
-        /// - swkotor.exe: CSWSArea::SaveDoors @ (K1: 0x00507810, TSL: 0x004e56b0) - saves door list to GIT
-        /// - swkotor.exe: CServerAIMaster::AddEventAbsoluteTime @ (K1: 0x004af630, TSL: 0x004dcfb0) - handles door events including transitions
+        /// - Based on /K1/k1_win_gog_swkotor.exe and swkotor2.exe door transition system
+        /// - swkotor.exe: CSWSArea::LoadDoors @  (/K1/k1_win_gog_swkotor.exe: 0x0050a0e0, TSL: 0x004e5920) - loads door list from GIT
+        /// - swkotor.exe: CSWSArea::SaveDoors @  (/K1/k1_win_gog_swkotor.exe: 0x00507810, TSL: 0x004e56b0) - saves door list to GIT
+        /// - swkotor.exe: CServerAIMaster::AddEventAbsoluteTime @  (/K1/k1_win_gog_swkotor.exe: 0x004af630, TSL: 0x004dcfb0) - handles door events including transitions
         /// - swkotor.exe: Door transition system uses same UTD template fields (LinkedToModule, LinkedToFlags) as swkotor2.exe
         /// - Located via string references: "LinkedToModule" @ 0x007bd7bc (swkotor2.exe), "LinkedToFlags" @ 0x007bd788 (swkotor2.exe)
-        /// - CSWSDoor::LoadDoorExternal @ (K1: 0x0058c5f0, TSL: 0x005838d0) - reads LinkedToModule and LinkedToFlags from GIT
-        /// - CSWSDoor::LoadDoor @ (K1: 0x0058a1f0, TSL: 0x00580ed0) - loads door properties including transition data
-        /// - CSWSArea::LoadDoorsFromGIT @ (K1: 0x0050a0e0, TSL: 0x004e5920) - loads door instances from GIT with transition fields
+        /// - CSWSDoor::LoadDoorExternal @  (/K1/k1_win_gog_swkotor.exe: 0x0058c5f0, TSL: 0x005838d0) - reads LinkedToModule and LinkedToFlags from GIT
+        /// - CSWSDoor::LoadDoor @  (/K1/k1_win_gog_swkotor.exe: 0x0058a1f0, TSL: 0x00580ed0) - loads door properties including transition data
+        /// - CSWSArea::LoadDoorsFromGIT @  (/K1/k1_win_gog_swkotor.exe: 0x0050a0e0, TSL: 0x004e5920) - loads door instances from GIT with transition fields
         /// - Original implementation: LinkedToFlags bit 1 (0x1) = module transition flag (same in both swkotor.exe and swkotor2.exe)
         /// - Module transition: If LinkedToFlags & 1 != 0 and LinkedToModule is non-empty, door triggers module transition
         /// - Transition destination: TransitionDestination waypoint tag specifies where party spawns in new module
@@ -336,15 +336,15 @@ namespace Andastra.Game.Games.Odyssey.Components
         /// </summary>
         /// <remarks>
         /// Area Transition Check:
-        /// - Based on swkotor.exe and swkotor2.exe door transition system
-        /// - swkotor.exe: CSWSArea::LoadDoors @ (K1: 0x0050a0e0, TSL: 0x004e5920) - loads door list from GIT
-        /// - swkotor.exe: CSWSArea::SaveDoors @ (K1: 0x00507810, TSL: 0x004e56b0) - saves door list to GIT
-        /// - swkotor.exe: CServerAIMaster::AddEventAbsoluteTime @ (K1: 0x004af630, TSL: 0x004dcfb0) - handles door events including transitions
+        /// - Based on /K1/k1_win_gog_swkotor.exe and swkotor2.exe door transition system
+        /// - swkotor.exe: CSWSArea::LoadDoors @  (/K1/k1_win_gog_swkotor.exe: 0x0050a0e0, TSL: 0x004e5920) - loads door list from GIT
+        /// - swkotor.exe: CSWSArea::SaveDoors @  (/K1/k1_win_gog_swkotor.exe: 0x00507810, TSL: 0x004e56b0) - saves door list to GIT
+        /// - swkotor.exe: CServerAIMaster::AddEventAbsoluteTime @  (/K1/k1_win_gog_swkotor.exe: 0x004af630, TSL: 0x004dcfb0) - handles door events including transitions
         /// - swkotor.exe: Door transition system uses same UTD template fields (LinkedTo, LinkedToFlags, TransitionDestination) as swkotor2.exe
         /// - Located via string references: "LinkedTo" @ 0x007bd798 (swkotor2.exe), "LinkedToFlags" @ 0x007bd788 (swkotor2.exe), "TransitionDestination" @ 0x007bd7a4 (swkotor2.exe)
-        /// - CSWSDoor::LoadDoorExternal @ (K1: 0x0058c5f0, TSL: 0x005838d0) - reads LinkedTo and LinkedToFlags from GIT
-        /// - CSWSDoor::LoadDoor @ (K1: 0x0058a1f0, TSL: 0x00580ed0) - loads door properties including transition data
-        /// - CSWSArea::LoadDoorsFromGIT @ (K1: 0x0050a0e0, TSL: 0x004e5920) - loads door instances from GIT with transition fields
+        /// - CSWSDoor::LoadDoorExternal @  (/K1/k1_win_gog_swkotor.exe: 0x0058c5f0, TSL: 0x005838d0) - reads LinkedTo and LinkedToFlags from GIT
+        /// - CSWSDoor::LoadDoor @  (/K1/k1_win_gog_swkotor.exe: 0x0058a1f0, TSL: 0x00580ed0) - loads door properties including transition data
+        /// - CSWSArea::LoadDoorsFromGIT @  (/K1/k1_win_gog_swkotor.exe: 0x0050a0e0, TSL: 0x004e5920) - loads door instances from GIT with transition fields
         /// - Original implementation: LinkedToFlags bit 2 (0x2) = area transition flag (same in both swkotor.exe and swkotor2.exe)
         /// - Area transition: If LinkedToFlags & 2 != 0 and LinkedTo is non-empty, door triggers area transition within module
         /// - LinkedTo: Waypoint or trigger tag to transition to (within current module)
@@ -370,7 +370,7 @@ namespace Andastra.Game.Games.Odyssey.Components
         /// </summary>
         /// <remarks>
         /// Door Locking:
-        /// - Based on swkotor.exe and swkotor2.exe door locking system
+        /// - Based on /K1/k1_win_gog_swkotor.exe and swkotor2.exe door locking system
         /// - Located via string references: "OnLock" @ 0x007c1a28 (swkotor2.exe), "EVENT_LOCK_OBJECT" @ 0x007bcd20 (swkotor2.exe, case 0xd in 0x004dcfb0)
         /// - "CSWSSCRIPTEVENT_EVENTTYPE_ON_LOCKED" @ 0x007bc754 (swkotor2.exe, 0x1c)
         /// - Event dispatching: 0x004dcfb0 @ 0x004dcfb0 (swkotor2.exe) handles EVENT_LOCK_OBJECT (case 0xd, fires before script execution)
@@ -396,7 +396,7 @@ namespace Andastra.Game.Games.Odyssey.Components
         /// <param name="damage">The amount of damage to apply.</param>
         /// <remarks>
         /// Door Bashing:
-        /// - Based on swkotor.exe and swkotor2.exe door bashing system
+        /// - Based on /K1/k1_win_gog_swkotor.exe and swkotor2.exe door bashing system
         /// - Located via string references: ["gui_mp_bashdp"] @ (TSL: 0x007b5e04) - door bash GUI panels
         /// - ["gui_mp_bashup"] @ (TSL: 0x007b5e14) - door bash GUI elements
         /// - Original implementation: Applies damage minus hardness, destroys door when HP reaches 0
@@ -418,12 +418,12 @@ namespace Andastra.Game.Games.Odyssey.Components
         /// <param name="damageType">The type of damage being applied.</param>
         /// <remarks>
         /// Door Damage Application with Type:
-        /// - Based on swkotor.exe and swkotor2.exe door damage system
+        /// - Based on /K1/k1_win_gog_swkotor.exe and swkotor2.exe door damage system
         /// - Located via string references:
         ///   - ["gui_mp_bashdp"] @ (TSL: 0x007b5e04) - door bash GUI panels
         ///   - ["gui_mp_bashup"] @ (TSL: 0x007b5e14) - door bash GUI elements
         ///   - ["gui_mp_bashu"]  @ (TSL: 0x007b5e34) - door bash GUI elements
-        ///   - CSWSDoor::LoadDoorFromUTD @ (K1: 0x0058a1f0, TSL: 0x00584f40) - loads Min1HP from UTD template (both K1 and TSL)
+        ///   - CSWSDoor::LoadDoorFromUTD @  (/K1/k1_win_gog_swkotor.exe: 0x0058a1f0, TSL: 0x00584f40) - loads Min1HP from UTD template (both K1 and TSL)
         ///   - CSWSDoor::LoadDoorFromUTD @ (K1: N/A, TSL: 0x00584f40) - loads NotBlastable from UTD template (TSL only)
         ///   - K1 behavior: Min1HP flag exists in K1 and prevents door from dropping below 1 HP
         ///   - TSL-specific behavior: NotBlastable flag prevents explosive/force power damage (only in TSL, field doesn't exist in K1)
@@ -440,7 +440,7 @@ namespace Andastra.Game.Games.Odyssey.Components
         ///   - Bash damage: Strength modifier + weapon damage (if weapon equipped) vs door Hardness
         ///   - Door destruction: When CurrentHP <= 0 (and Min1HP is false), door is marked as bashed (IsBashed=true), unlocked, and opened
         ///   - Open state: Set to 2 (destroyed state) when door is bashed open (only if Min1HP is false)
-        ///   - Function: CServerAIMaster::LogDoorEvent @ (K1: 0x004af630, TSL: 0x004dcfb0) - processes door bash damage events
+        ///   - Function: CServerAIMaster::LogDoorEvent @  (/K1/k1_win_gog_swkotor.exe: 0x004af630, TSL: 0x004dcfb0) - processes door bash damage events
         /// - Note: For K1 doors, Min1HP and NotBlastable are always false (fields don't exist in K1 templates), so behavior matches K1
         /// </remarks>
         public override void ApplyDamage(int damage, Runtime.Core.Combat.DamageType damageType)
@@ -483,7 +483,7 @@ namespace Andastra.Game.Games.Odyssey.Components
             int newHP = System.Math.Max(0, HitPoints - actualDamage);
 
             // Min1HP prevents door from dropping below 1 HP (exists in both K1 and TSL)
-            // CSWSDoor::LoadDoor @ (K1: 0x0058a1f0, TSL: 0x00580ed0) - loads Min1HP from UTD template
+            // CSWSDoor::LoadDoor @  (/K1/k1_win_gog_swkotor.exe: 0x0058a1f0, TSL: 0x00580ed0) - loads Min1HP from UTD template
             // Original implementation: If Min1HP is true, door cannot be destroyed (HP clamped to 1)
             // Plot doors: Min1HP=1 makes door effectively indestructible
             if (Min1HP && newHP < 1)
@@ -494,7 +494,7 @@ namespace Andastra.Game.Games.Odyssey.Components
             HitPoints = newHP;
 
             // If door is destroyed (and Min1HP is false), mark as bashed and open
-            // CServerAIMaster::LogDoorEvent @ (K1: 0x004af630, TSL: 0x004dcfb0) - processes door bash damage events
+            // CServerAIMaster::LogDoorEvent @  (/K1/k1_win_gog_swkotor.exe: 0x004af630, TSL: 0x004dcfb0) - processes door bash damage events
             if (HitPoints <= 0)
             {
                 IsBashed = true;

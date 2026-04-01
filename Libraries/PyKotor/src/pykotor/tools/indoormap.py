@@ -324,17 +324,38 @@ def extract_indoor_from_module_as_modulekit(
     module_kit_manager = _resolve_module_kit_manager(installation, module_kit_manager)
     kit = _load_module_kit_or_raise(module_kit_manager, module_root)
 
+    lyt_obj = None
+    if kit._module is not None:
+        lyt_mr = kit._module.layout()
+        if lyt_mr is not None:
+            lyt_obj = lyt_mr.resource()
+
     indoor = IndoorMap(module_id=module_root)
-    for comp in kit.components:
-        _append_indoor_room(indoor, comp, comp.default_position)
+    for i, comp in enumerate(kit.components):
+        if lyt_obj is not None and i < len(lyt_obj.rooms):
+            p = lyt_obj.rooms[i].position
+            pos = Vector3(p.x, p.y, p.z)
+        else:
+            pos = comp.default_position
+        _append_indoor_room(indoor, comp, pos)
     indoor.rebuild_room_connections()
     if kit._module is not None:
+        indoor._source_module = kit._module
         are, ifo = _module_are_ifo(kit._module)
         git = _module_git(kit._module)
         indoor.are = are
         indoor.ifo = ifo
         indoor.git = git
         indoor._preserve_extracted_metadata = any((are is not None, ifo is not None, git is not None))
+        indoor._preserve_extracted_git = git is not None
+        if lyt_obj is not None and len(lyt_obj.rooms) == len(indoor.rooms):
+            indoor._source_lyt_for_preserve = deepcopy(lyt_obj)
+            indoor._preserve_extracted_layout = True
+            vis_mr = kit._module.vis()
+            if vis_mr is not None:
+                vis_obj = vis_mr.resource()
+                if vis_obj is not None:
+                    indoor._source_vis_for_preserve = deepcopy(vis_obj)
         _apply_indoor_metadata(indoor, kit._module, are, ifo)
     logger.debug("ModuleKit extraction produced %d room(s) for '%s'", len(indoor.rooms), module_root)
     return indoor
@@ -565,10 +586,9 @@ def extract_indoor_from_module_name(
     logger: RobustLogger | None = None,
     module_kit_manager: ModuleKitManager | None = None,
 ) -> IndoorMap:
-    """Reverse-engineer a `.indoor` map from a module by matching room WOKs back to kit components.
+    """Build a `.indoor` map from a module by fitting each room WOK to kit geometry.
 
-    This is the "full" extraction mode (no reliance on embedded `indoormap.txt`).
-    It attempts to reconstruct:
+    Full extraction (no embedded `indoormap.txt`). It stitches together:
     - room positions (from LYT)
     - room rotations + flip flags (by fitting kit-component walkmesh vertices to room WOK vertices)
     - module lighting/name/warp (from ARE/IFO when present)

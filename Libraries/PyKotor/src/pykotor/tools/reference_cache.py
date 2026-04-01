@@ -929,7 +929,7 @@ def find_strref_references(
             path_str: The relative path string (e.g., "data/2da.bif/planetary.2da")
 
         Returns:
-            Formatted path with installation folder prefix (e.g., "swkotor/data/2da.bif/planetary.2da")
+            Formatted path with installation folder prefix (e.g., "<install>/data/2da.bif/planetary.2da")
         """
         installation_path = installation.path()
         installation_folder = installation_path.name if installation_path else "unknown"

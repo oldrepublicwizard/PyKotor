@@ -1,107 +1,17 @@
 """
-ASCII reader/writer for KotOR walkmeshes (BWM/WOK).
+ASCII walkmeshes—the ones that look like a shader graph someone dumped to Notepad.
 
-This module implements 1:1 compatibility with the original game engine's ASCII walkmesh
-parsing logic as found in both KotOR I and KotOR II (TSL).
+Aurora-era exports use the familiar block soup: ``node aabb``, ``position`` / ``orientation``,
+``verts``, ``faces`` (eight integers per triangle), then an ``aabb`` stanza and ``endnode``.
+KotOR 1 and TSL both parse that text the same way: never more than 256 bytes per line,
+walkable geometry sorted ahead of non-walkable (driven off ``surfacemat``'s ``Walk`` column),
+a tiny fudge on AABB bounds so float noise does not strand pathfinding, and if the
+orientation axis is all zeros you get a plain identity quaternion—no surprises.
 
-The ASCII format is used by the Aurora toolset for exporting walkmeshes. The format consists
-of text blocks that define:
-- Node structure (AABB tree nodes)
-- Position and orientation transforms
-- Vertex arrays
-- Face arrays with material assignments
-- AABB tree construction
-
-ASCII Format Structure:
-----------------------
-The ASCII walkmesh format uses a block-based structure similar to ASCII MDL files:
-
-    node aabb
-        position <x> <y> <z>
-        orientation <x> <y> <z> <w>
-        verts <count>
-            <x> <y> <z>
-            ...
-        faces <count>
-            <v1> <v2> <v3> <adj1> <adj2> <adj3> <adj4> <material>
-            ...
-        aabb
-            <min_x> <min_y> <min_z> <max_x> <max_y> <max_z> <face_index>
-            ...
-    endnode
-
-Reference Implementations:
--------------------------
-KotOR I (swkotor.exe):
-    - 0x00582d70 - CSWRoomSurfaceMesh::LoadMeshText (main ASCII parser, 3882 bytes, 715 lines)
-        - Entry point for ASCII walkmesh parsing
-        - Handles all keyword detection and data block parsing
-        - Separates walkable/unwalkable faces based on surfacemat.2DA lookup
-        - Constructs AABB tree structure from parsed nodes
-        - Allocates memory for vertices, faces, and AABB nodes
-    - 0x005968a0 - CSWCollisionMesh::LoadMeshString (line reader helper, 95 bytes, 27 lines)
-        - Reads single line from input buffer (max 256 bytes)
-        - Handles newline detection and null termination
-        - Advances buffer pointer and updates remaining byte count
-    - 0x00596670 - CSWCollisionMesh::LoadMesh (entry point, detects ASCII vs binary)
-        - Determines format type (ASCII vs binary) from file header
-        - Routes to appropriate parser (LoadMeshText or binary loader)
-    - 0x004ac960 - Quaternion::Quaternion(Vector, float) constructor
-        - Creates quaternion from axis-angle representation
-        - Used for orientation parsing in walkmesh nodes
-
-KotOR II / TSL (swkotor2.exe):
-    - (/K2/k2_win_gog_aspyr_swkotor2.exe @ 0x00577860 - FUN_00577860 (main ASCII parser, equivalent to LoadMeshText, 3882 bytes, 650 lines)
-        - Functionally identical to K1 LoadMeshText
-        - Same parsing logic, format structure, and behavior
-        - Minor code size difference (650 vs 715 lines) due to compiler optimizations
-    - (/K2/k2_win_gog_aspyr_swkotor2.exe @ 0x005573e0 - FUN_005573e0 (line reader helper, equivalent to LoadMeshString, 95 bytes, 26 lines)
-        - Functionally identical to K1 LoadMeshString
-        - Same line reading logic and buffer management
-    - (/K2/k2_win_gog_aspyr_swkotor2.exe @ 0x004da020 - Quaternion::Quaternion(Vector, float) constructor (equivalent)
-        - Same quaternion construction logic as K1
-
-Both implementations are functionally identical with the same parsing logic, format structure,
-and behavior. The implementation in this module ensures 1:1 compatibility with both games.
-
-Parsing Process Overview:
------------------------
-1. Format Detection:
-   - LoadMesh checks file header to determine ASCII vs binary
-   - ASCII format starts with "node" keyword
-
-2. Line Reading:
-   - LoadMeshString reads lines up to 256 bytes
-   - Handles newline (0x0A) detection and null termination
-   - Skips empty lines and leading whitespace
-
-3. Keyword Parsing:
-   - "node aabb" - Enters AABB node block
-   - "endnode" - Exits node block
-   - "position" - Reads 3 floats (x, y, z)
-   - "orientation" - Reads 4 floats (x, y, z, w quaternion)
-   - "verts" - Reads count, then N vertex lines (3 floats each)
-   - "faces" - Reads count, then N face lines (8 integers each)
-   - "aabb" - Reads AABB tree node lines (6 floats + 1 int each)
-
-4. Face Processing:
-   - Reads 8 integers per face: v1, v2, v3, adj1, adj2, adj3, adj4, material
-   - Looks up material in surfacemat.2DA using C2DA::GetINTEntry with "Walk" column
-   - Separates faces into walkable (first) and unwalkable (after) arrays
-   - Sets adjacency_count to number of walkable faces
-
-5. AABB Tree Construction:
-   - Parses AABB nodes with bounding box (6 floats) and face index (1 int)
-   - Swaps min/max if needed to ensure min < max
-   - Applies epsilon expansion (0.01) to prevent floating-point precision issues
-   - Maps face indices through adjacency array
-   - Builds tree structure with parent-child relationships and split planes
-
-6. Post-Processing:
-   - Validates mesh data
-   - Finalizes AABB tree structure
-   - Computes adjacencies from geometry (shared edges)
-   - Calls LoadDefaultMesh if no valid data found
+We mirror those quirks on purpose so tooling round-trips what the games actually ship.
+If you are hunting paragraph-length notes about how the PC builds chew through this text,
+park that in the project wiki—this file stays about bytes, vertices, and the occasional
+snarky aside.
 """
 
 from __future__ import annotations
@@ -115,142 +25,18 @@ from utility.common.geometry import SurfaceMaterial, Vector3  # noqa: E402
 if TYPE_CHECKING:
     from pykotor.resource.type import SOURCE_TYPES, TARGET_TYPES
 
-# Constants from engine code analysis (verified in both K1 and TSL)
-# Reference: K1 swkotor.exe:0x00582d70 (CSWRoomSurfaceMesh::LoadMeshText), TSL swkotor2.exe:0x00577860 (FUN_00577860)
-# FLOAT_EPSILON: Used for coordinate quantization checks in vertex processing
-# MAX_LINE_LENGTH: Buffer size for line reading in LoadMeshString functions
-FLOAT_EPSILON = 0.0001  # Used for coordinate quantization checks
-MAX_LINE_LENGTH = 0x100  # 256 bytes - maximum line length buffer
+# Defaults aligned with observed retail ASCII walkmesh parsers
+FLOAT_EPSILON = 0.0001  # Coordinate quantization / AABB expansion (see BWM wiki)
+MAX_LINE_LENGTH = 0x100  # 256-byte line buffer cap observed in-game
 
 
 class BWMAsciiReader(ResourceReader):
-    """
-    Reads ASCII walkmesh (BWM/WOK) files.
+    """Turn Aurora ASCII walkmesh text into a :class:`BWM`.
 
-    Implements the exact parsing logic from both KotOR I and KotOR II (TSL) engines.
-    This reader handles the ASCII text format exported by the Aurora toolset and
-    converts it to the in-memory BWM model.
-
-    Inheritance:
-    -----------
-    Base class: ResourceReader (pykotor.resource.type)
-    - Abstract base class for resource readers
-    - Provides source handling, offset management, and auto-close functionality
-
-    Reference Implementations:
-    -------------------------
-    KotOR I (swkotor.exe):
-        - 0x00582d70 - CSWRoomSurfaceMesh::LoadMeshText (3882 bytes, 715 lines)
-            - Main ASCII parser entry point
-            - Allocates memory for vertices, faces, and AABB nodes
-            - Processes all keywords and data blocks
-            - Separates walkable/unwalkable faces via surfacemat.2DA lookup
-            - Constructs AABB tree with parent-child relationships
-            - Function signature: LoadMeshText(CSWRoomSurfaceMesh* this, char* text_data)
-        - 0x005968a0 - CSWCollisionMesh::LoadMeshString (95 bytes, 27 lines)
-            - Line reader helper function
-            - Reads up to 256 bytes (MAX_LINE_LENGTH) per line
-            - Handles newline (0x0A) detection and null termination
-            - Function signature: LoadMeshString(byte** param_1, ulong* param_2, byte* param_3, ulong param_4)
-        - 0x00596670 - CSWCollisionMesh::LoadMesh (entry point)
-            - Detects ASCII vs binary format from file header
-            - Routes to LoadMeshText for ASCII or binary loader for binary
-        - 0x004ac960 - Quaternion::Quaternion(Vector, float)
-            - Quaternion constructor from axis-angle representation
-            - Used when parsing orientation field (x, y, z, w)
-
-    KotOR II / TSL (swkotor2.exe):
-        - 0x00577860 - FUN_00577860 (3882 bytes, 650 lines, equivalent to LoadMeshText)
-            - Functionally identical to K1 LoadMeshText
-            - Same parsing logic, memory allocation, and tree construction
-            - Minor code size difference due to compiler optimizations
-        - 0x005573e0 - FUN_005573e0 (95 bytes, 26 lines, equivalent to LoadMeshString)
-            - Functionally identical to K1 LoadMeshString
-            - Same line reading logic and buffer management
-        - 0x004da020 - Quaternion::Quaternion(Vector, float) (equivalent)
-            - Same quaternion construction as K1
-
-    Both implementations are functionally identical with the same parsing logic.
-
-    ASCII Format Details:
-    --------------------
-        The format uses a hierarchical node structure similar to ASCII MDL files:
-
-        1. Node Block: "node aabb" - marks the start of the walkmesh node
-           - Engine uses _strncmp(line, "node", 4) to detect
-           - Checks for "aabb" substring to enter AABB node block
-        2. Position: "position <x> <y> <z>" - walkmesh position offset
-           - Engine uses sscanf("%f %f %f", &x, &y, &z)
-           - Stored in mesh structure at offset 0x20 (Vector3 field)
-        3. Orientation: "orientation <x> <y> <z> <w>" - quaternion rotation
-           - Engine uses sscanf("%f %f %f %f", &x, &y, &z, &w)
-           - If (x,y,z) is (0,0,0), creates identity quaternion (0,0,0,1)
-           - Otherwise creates quaternion from axis-angle via Quaternion constructor
-           - Stored in mesh structure at offset 0x38 (Quaternion field)
-        4. Vertices: "verts <count>" followed by <count> lines of "<x> <y> <z>"
-           - Engine allocates count * 12 bytes (3 floats per vertex)
-           - Reads each vertex line with sscanf("%f %f %f", &x, &y, &z)
-           - Performs coordinate quantization check (for binary format optimization)
-        5. Faces: "faces <count>" followed by <count> lines with 8 integers:
-           Format: "<v1> <v2> <v3> <adj1> <adj2> <adj3> <adj4> <material>"
-           - Engine allocates count * 12 bytes (vertex indices) + count * 4 bytes (materials)
-           - Reads each face line with sscanf("%d %d %d %d %d %d %d %d", ...)
-           - Looks up material in surfacemat.2DA using C2DA::GetINTEntry(material_id, "Walk")
-           - Separates into walkable (first) and unwalkable (after) arrays
-           - Sets adjacency_count = number of walkable faces
-        6. AABB Blocks: "aabb" followed by lines: "<min_x> <min_y> <min_z> <max_x> <max_y> <max_z> <face_index>"
-           - Engine reads with sscanf("%f %f %f %f %f %f %d", ...)
-           - Swaps min/max if min > max for any axis
-           - Applies epsilon expansion (0.01) to prevent floating-point precision issues
-           - Maps face index through adjacency array
-           - Allocates AABB node structure (44 bytes = 0x2c bytes per node)
-           - Builds tree with parent-child relationships and split planes
-        7. End: "endnode" - marks the end of the node block
-           - Engine uses _strncmp(line, "endnode", 7) to detect
-           - Exits AABB node block parsing
-
-    Parsing Process:
-    ---------------
-        The engine's parsing process (from LoadMeshText):
-
-        1. Line-by-line reading using LoadMeshString (buffers up to 256 bytes per line)
-           - LoadMeshString reads until newline (0x0A) or buffer full (255 chars)
-           - Null-terminates the string
-           - Advances buffer pointer and updates remaining byte count
-        2. Whitespace stripping (leading spaces/tabs are ignored)
-           - Engine skips leading whitespace before keyword detection
-           - Uses _strncmp after stripping for keyword matching
-        3. Keyword detection using _strncmp:
-           - "node" / "node aabb" - enters AABB node block
-             - Sets local variable (equivalent to _in_aabb_node = True)
-           - "endnode" - exits node block
-             - Sets local variable (equivalent to _in_aabb_node = False)
-           - "position" - reads 3 floats via sscanf
-           - "orientation" - reads 4 floats (quaternion) via sscanf
-           - "verts" - reads count, then N vertex lines
-           - "faces" - reads count, then N face lines (8 integers each)
-           - "aabb" - reads AABB tree node lines
-        4. Face processing:
-           - Faces are read with 8 integers per line via sscanf
-           - For each face, engine calls C2DA::GetINTEntry(surfacemat.2DA, material_id, "Walk", &result)
-           - If result == 0, face is unwalkable; otherwise walkable
-           - Faces are separated into two arrays:
-             - Walkable faces stored first (adjacency_count = len(walkable_faces))
-             - Unwalkable faces stored after walkable faces
-           - Material lookup uses 2DA::GetINTEntry with "Walk" string to determine walkability
-        5. AABB tree construction:
-           - AABB nodes are parsed with 6 floats (bbox) + 1 integer (face index)
-           - Engine swaps min/max if min > max for any axis
-           - Applies epsilon expansion (0.01) to bounding box
-           - Maps face index through adjacency array to get correct face reference
-           - Allocates AABB node structure (44 bytes) and fills with data
-           - Tree structure is built from parent-child relationships
-           - Split plane calculation based on bounding box dimensions
-        6. Post-processing:
-           - Engine validates mesh data
-           - Finalizes AABB tree structure
-           - Computes adjacencies from geometry (shared edges)
-           - Calls LoadDefaultMesh if no valid data found (local_b4 == 0)
+    Only keywords inside an active ``node aabb`` … ``endnode`` pair matter. Faces keep the
+    retail ordering (walkable triangles first—``SurfaceMaterial.walkable`` stands in for the
+    ``surfacemat`` ``Walk`` lookup). AABB rows are collected as-is; wiring the full tree is
+    left to the binary side or writer, same split the games use between text ingest and runtime.
     """
 
     def __init__(
@@ -270,76 +56,20 @@ class BWMAsciiReader(ResourceReader):
         super().__init__(source, offset, size)
         self._bwm: BWM | None = None
 
-        # Parsing state variables (mirroring engine implementation)
-        self._in_aabb_node: bool = False  # Tracks if we're inside "node aabb" block
+        # Parser state (matches retail line-at-a-time ASCII walkmesh ingest)
+        self._in_aabb_node: bool = False  # Inside ``node aabb`` … ``endnode``
         self._line_buffer: bytearray = bytearray(MAX_LINE_LENGTH)  # Line read buffer (256 bytes)
         self._data_offset: int = 0  # Current offset into input data
         self._data_remaining: int = 0  # Bytes remaining in input
 
     @autoclose
     def load(self, *, auto_close: bool = True) -> BWM:  # noqa: FBT001, FBT002, ARG002
-        """Loads an ASCII walkmesh file into a BWM instance.
+        """Read the whole buffer, chew it line by line, return a filled :class:`BWM`.
 
-        This implementation follows the exact parsing logic from both games:
-        - KotOR I: swkotor.exe:0x00582d70 - CSWRoomSurfaceMesh::LoadMeshText
-        - KotOR II: swkotor2.exe:0x00577860 - FUN_00577860 (equivalent to LoadMeshText)
-
-        The method implements a line-by-line parser that processes ASCII walkmesh format
-        exported by the Aurora toolset. It mirrors the engine's parsing logic exactly,
-        including memory allocation patterns, data structure ordering, and error handling.
-
-        Processing Logic:
-        ----------------
-            1. Read entire input into memory
-               - Reads all bytes from source into input_data buffer
-               - Initializes parsing state variables (_data_offset, _data_remaining, _in_aabb_node)
-            2. Initialize parsing state
-               - Sets position to null vector
-               - Initializes empty lists for vertices, face_data, and aabb_data
-               - Creates new BWM instance
-            3. Loop through lines until EOF or error
-               - Calls _load_mesh_string() to read each line (up to 256 bytes)
-               - Strips leading whitespace
-               - Detects keywords using startswith() (equivalent to engine's _strncmp)
-            4. Parse keywords and data blocks
-               - "node aabb" - Sets _in_aabb_node = True
-               - "endnode" - Sets _in_aabb_node = False
-               - "position" - Parses 3 floats, stores in BWM.position
-               - "orientation" - Parses 4 floats (quaternion), currently not stored in BWM model
-               - "verts" - Reads count, then N vertex lines, stores in vertices list
-               - "faces" - Reads count, then N face lines (8 integers each)
-                 * Separates walkable vs unwalkable based on SurfaceMaterial.walkable()
-                 * Stores walkable faces first, then unwalkable faces
-               - "aabb" - Reads AABB tree node lines (6 floats + 1 int each)
-                 * Swaps min/max if needed
-                 * Applies epsilon expansion (0.01)
-                 * Stores in aabb_data list
-            5. Build BWM structure from parsed data
-               - Creates BWMFace objects from face_data tuples
-               - Validates vertex indices against vertices list
-               - Sets material on each face
-               - Appends faces to BWM.faces in walkable-first order
-            6. Separate walkable vs unwalkable faces
-               - Uses SurfaceMaterial.walkable() method (equivalent to engine's 2DA lookup)
-               - Walkable faces come first in BWM.faces array
-            7. Construct AABB tree if present
-               - Sets BWM.walkmesh_type to BWMType.AreaModel if aabb_data exists
-               - Otherwise sets to BWMType.PlaceableOrDoor
-               - NOTE: Full AABB tree construction with parent-child relationships
-                 is deferred to the writer (engine builds tree during parsing)
-
-        Returns:
-        -------
-            BWM: The loaded walkmesh object with all vertices, faces, and AABB data populated
-
-        Raises:
-        ------
-            ValueError: If the file format is invalid or parsing fails
-                - Invalid vertex count or vertex data format
-                - Invalid face count or face data format (must have 8 integers)
-                - Invalid vertex indices (out of range)
-                - Invalid material ID
-                - Unexpected EOF while reading vertices or faces
+        Rough flow: slurp bytes → walk keywords only inside ``node aabb`` → pull verts/faces/AABB
+        chunks → rebuild :class:`BWMFace` rows with walkable geometry first. Anything that
+        violates the counts or indexes blows up with :class:`ValueError` so you fail loud
+        instead of shipping a half-baked mesh.
         """
         self._bwm = BWM()
 
@@ -348,21 +78,19 @@ class BWMAsciiReader(ResourceReader):
         self._reader.seek(seek_pos)
         input_data = self._reader.read_bytes(self._size if self._size > 0 else -1)
 
-        # Initialize parsing state (mirroring engine local variables)
+        # Reset cursor state before scanning
         self._data_offset = 0
         self._data_remaining = len(input_data)
         self._in_aabb_node = False
 
-        # Parsing state (from LoadMeshText local variables)
         position = Vector3.from_null()
 
         vertices: list[Vector3] = []
         face_data: list[tuple[int, int, int, int, int, int, int, int]] = []  # (v1, v2, v3, adj1-4, material)
         aabb_data: list[tuple[Vector3, Vector3, int]] = []  # (bb_min, bb_max, face_idx)
 
-        # Main parsing loop (equivalent to engine's while loop at line 126)
         while self._data_remaining > 0:
-            # Load next line using LoadMeshString logic
+            # Pull the next capped text line
             line_result = self._load_mesh_string(input_data)
             if line_result is None:
                 break  # EOF or error
@@ -370,39 +98,27 @@ class BWMAsciiReader(ResourceReader):
             line_bytes, line_str = line_result
 
             # Strip leading whitespace
-            # Reference: K1 swkotor.exe:0x00582d70 (LoadMeshText line 126-130), TSL swkotor2.exe:0x00577860 (equivalent)
-            # Engine uses _strncmp after skipping leading whitespace
             line_str_stripped = line_str.lstrip()
             if not line_str_stripped:
                 continue  # Empty line, skip
 
             # Check for "node" keyword
-            # Reference: K1 swkotor.exe:0x00582d70 (LoadMeshText line 132-140), TSL swkotor2.exe:0x00577860 (equivalent)
-            # Engine uses _strncmp(line, "node", 4) to detect node blocks
             if line_str_stripped.startswith("node"):
                 # Check for "node aabb"
-                # Reference: K1 swkotor.exe:0x00582d70 (LoadMeshText line 140-145), TSL swkotor2.exe:0x00577860 (equivalent)
-                # Engine checks for "aabb" substring after "node" keyword
                 if "aabb" in line_str_stripped:
                     self._in_aabb_node = True
                 continue
 
             # Check for "endnode" keyword
-            # Reference: K1 swkotor.exe:0x00582d70 (LoadMeshText line 145-150), TSL swkotor2.exe:0x00577860 (equivalent)
-            # Engine uses _strncmp(line, "endnode", 7) to detect end of node block
             if line_str_stripped.startswith("endnode"):
                 self._in_aabb_node = False
                 continue
 
             # Only parse fields inside "node aabb" block
-            # Reference: K1 swkotor.exe:0x00582d70 (LoadMeshText line 150-155), TSL swkotor2.exe:0x00577860 (equivalent)
-            # Engine checks local variable (equivalent to _in_aabb_node) before parsing fields
             if not self._in_aabb_node:
                 continue
 
             # Parse "position" field
-            # Reference: K1 swkotor.exe:0x00582d70 (LoadMeshText line 160-175), TSL swkotor2.exe:0x00577860 (equivalent)
-            # Engine uses _strncmp(line, "position", 8) then sscanf("%f %f %f", &x, &y, &z)
             if line_str_stripped.startswith("position"):
                 parts = line_str_stripped.split()
                 if len(parts) >= 4:
@@ -412,16 +128,12 @@ class BWMAsciiReader(ResourceReader):
                         z = float(parts[3])
                         position = Vector3(x, y, z)
                         # Store position in BWM
-                        # Reference: K1 swkotor.exe:0x00582d70 (LoadMeshText line 175-180), TSL swkotor2.exe:0x00577860 (equivalent)
-                        # Engine stores position in mesh structure at offset 0x20 (Vector3 field)
                         self._bwm.position = position
                     except (ValueError, IndexError):
                         pass
                 continue
 
             # Parse "orientation" field
-            # Reference: K1 swkotor.exe:0x00582d70 (LoadMeshText line 185-210), TSL swkotor2.exe:0x00577860 (equivalent)
-            # Engine uses _strncmp(line, "orientation", 11) then sscanf("%f %f %f %f", &x, &y, &z, &w)
             if line_str_stripped.startswith("orientation"):
                 parts = line_str_stripped.split()
                 if len(parts) >= 5:
@@ -431,28 +143,20 @@ class BWMAsciiReader(ResourceReader):
                         z = float(parts[3])
                         _w = float(parts[4])  # Angle component (unused, but parsed for completeness)
 
-                        # Engine checks if orientation is (0,0,0) and sets default
-                        # Reference: K1 swkotor.exe:0x00582d70 (LoadMeshText line 200-210), TSL swkotor2.exe:0x00577860 (equivalent)
-                        # Engine checks if all components are near-zero, then creates identity quaternion
                         # NOTE: Orientation is parsed but not currently used in BWM model
                         # The engine stores it in mesh.field7_0x38 (Quaternion, offset 0x38)
                         # For now, we skip storing orientation as BWM model doesn't expose it
                         if abs(x) < 0.0001 and abs(y) < 0.0001 and abs(z) < 0.0001:
                             # Default orientation (identity quaternion) - engine sets (0, 0, 0, 1)
-                            # Reference: K1 swkotor.exe:0x004ac960 (Quaternion::Quaternion default), TSL swkotor2.exe:0x004da020 (equivalent)
                             pass
                         else:
-                            # Engine creates quaternion from axis-angle representation
-                            # Reference: K1 swkotor.exe:0x004ac960 (Quaternion::Quaternion(Vector, float)), TSL swkotor2.exe:0x004da020 (equivalent)
-                            # Quaternion::Quaternion(Vector, float) - axis vector + angle
+                            # Axis-angle quaternion from orientation axis + angle term
                             pass  # Orientation not stored in BWM model
                     except (ValueError, IndexError):
                         pass
                 continue
 
             # Parse "verts" block
-            # Reference: K1 swkotor.exe:0x00582d70 (LoadMeshText line 215-280), TSL swkotor2.exe:0x00577860 (equivalent)
-            # Engine uses _strncmp(line, "verts", 5) then reads count and vertex lines
             if line_str_stripped.startswith("verts"):
                 parts = line_str_stripped.split()
                 if len(parts) >= 2:
@@ -472,9 +176,6 @@ class BWMAsciiReader(ResourceReader):
                                     vy = float(vertex_parts[1])
                                     vz = float(vertex_parts[2])
 
-                                    # Engine performs coordinate quantization check
-                                    # Reference: K1 swkotor.exe:0x00582d70 (LoadMeshText line 250-260), TSL swkotor2.exe:0x00577860 (equivalent)
-                                    # Engine checks if coordinates are "snapped" to a grid (quantization check)
                                     # For ASCII parsing, we just store the floats as-is
                                     # The quantization logic appears to be for binary format optimization
 
@@ -486,8 +187,6 @@ class BWMAsciiReader(ResourceReader):
                 continue
 
             # Parse "faces" block
-            # Reference: K1 swkotor.exe:0x00582d70 (LoadMeshText line 285-420), TSL swkotor2.exe:0x00577860 (equivalent)
-            # Engine uses _strncmp(line, "faces", 5) then reads count and face lines
             if line_str_stripped.startswith("faces"):
                 parts = line_str_stripped.split()
                 if len(parts) >= 2:
@@ -495,16 +194,11 @@ class BWMAsciiReader(ResourceReader):
                         face_count = int(parts[1])
 
                         # Allocate storage for face data
-                        # Engine allocates:
                         # - local_12c = face_count * 12 bytes (3 vertex indices per face)
                         # - _Memory = face_count * 4 bytes (1 material ID per face)
                         # But reads 8 integers per face line
-                        # Reference: K1 swkotor.exe:0x00582d70 (LoadMeshText line 290-300), TSL swkotor2.exe:0x00577860 (equivalent)
-                        # Engine allocates memory for vertex indices (12 bytes per face) and material IDs (4 bytes per face)
 
                         # Read face_count lines of face data
-                        # Reference: K1 swkotor.exe:0x00582d70 (LoadMeshText line 300-330), TSL swkotor2.exe:0x00577860 (equivalent)
-                        # Engine loops face_count times, calling LoadMeshString for each face line
                         for _ in range(face_count):
                             face_line_result = self._load_mesh_string(input_data)
                             if face_line_result is None:
@@ -513,11 +207,8 @@ class BWMAsciiReader(ResourceReader):
                             _, face_line = face_line_result
                             face_parts = face_line.split()
 
-                            # Engine reads 8 integers per face
                             # Format: "%d %d %d %d %d %d %d %d"
-                            # Reference: K1 swkotor.exe:0x00582d70 (LoadMeshText line 330-340), TSL swkotor2.exe:0x00577860 (equivalent)
-                            # Engine uses sscanf with format string "%d %d %d %d %d %d %d %d"
-                            # Based on analysis:
+                            # Observed ASCII face line layout:
                             #   Integers 1-3: Vertex indices (v1, v2, v3)
                             #   Integers 4-7: Adjacency data (4 integers - possibly edge adjacencies)
                             #   Integer 8: Material ID
@@ -541,15 +232,12 @@ class BWMAsciiReader(ResourceReader):
                                 raise ValueError(f"Face line must have 8 integers, got {len(face_parts)}: {face_line}")
 
                         # Process faces: separate walkable vs unwalkable
-                        # Reference: K1 swkotor.exe:0x00582d70 (LoadMeshText line 350-390), TSL swkotor2.exe:0x00577860 (equivalent)
-                        # Engine logic:
                         #   1. Looks up each face's material in surfacemat.2DA with "Walk" string
                         #   2. If GetINTEntry returns 0, face is unwalkable
                         #   3. Separates faces into two arrays:
                         #      - Walkable faces (stored first in face_indices array)
                         #      - Unwalkable faces (stored after walkable faces)
                         #   4. Sets adjacency_count = number of walkable faces
-                        # Engine calls C2DA::GetINTEntry(surfacemat.2DA, material_id, "Walk", &result) for each face
 
                         walkable_faces: list[tuple[int, int, int, int, int, int, int, int]] = []
                         unwalkable_faces: list[tuple[int, int, int, int, int, int, int, int]] = []
@@ -558,9 +246,6 @@ class BWMAsciiReader(ResourceReader):
                             v1_idx, v2_idx, v3_idx, adj1, adj2, adj3, adj4, material_id = face_tuple
 
                             # Check if material is walkable
-                            # Engine does: C2DA::GetINTEntry(surfacemat.2DA, material_id, "Walk", &result)
-                            # Reference: K1 swkotor.exe:0x00582d70 (LoadMeshText line 360-370), TSL swkotor2.exe:0x00577860 (equivalent)
-                            # Engine calls C2DA::GetINTEntry to lookup "Walk" column in surfacemat.2DA
                             # If result == 0, material is NOT walkable
                             # We use SurfaceMaterial enum to determine walkability
                             try:
@@ -576,11 +261,8 @@ class BWMAsciiReader(ResourceReader):
                                 unwalkable_faces.append(face_tuple)
 
                         # Create BWMFace objects in walkable-first order
-                        # Reference: K1 swkotor.exe:0x00582d70 (LoadMeshText line 390-410), TSL swkotor2.exe:0x00577860 (equivalent)
-                        # Engine stores walkable faces first, then unwalkable faces
                         # Walkable faces come first (adjacency_count = len(walkable_faces))
                         # Unwalkable faces come after
-                        # Engine sets adjacency_count local variable to number of walkable faces
 
                         for face_tuple in walkable_faces + unwalkable_faces:
                             v1_idx, v2_idx, v3_idx, adj1, adj2, adj3, adj4, material_id = face_tuple
@@ -623,14 +305,9 @@ class BWMAsciiReader(ResourceReader):
                 continue
 
             # Parse "aabb" block
-            # Reference: K1 swkotor.exe:0x00582d70 (LoadMeshText line 420-550), TSL swkotor2.exe:0x00577860 (equivalent)
-            # Engine uses _strncmp(line, "aabb", 4) to detect AABB tree block
             if line_str_stripped.startswith("aabb"):
                 # AABB tree parsing
                 # Format per line: "<min_x> <min_y> <min_z> <max_x> <max_y> <max_z> <face_index>"
-                # Engine reads: "%f %f %f %f %f %f %d"
-                # Reference: K1 swkotor.exe:0x00582d70 (LoadMeshText line 430-450), TSL swkotor2.exe:0x00577860 (equivalent)
-                # Engine uses sscanf with format "%f %f %f %f %f %f %d" to read AABB node data
 
                 # NOTE: AABB tree parsing is complex - it builds a tree structure
                 # from the parsed nodes. The engine constructs parent-child relationships
@@ -656,7 +333,7 @@ class BWMAsciiReader(ResourceReader):
                         or aabb_line_stripped.startswith("faces")
                     ):
                         # Put this line back (we'll process it in next iteration)
-                        # In the engine, LoadMeshString advances the pointer, so we need to backtrack
+                        # Line reader already consumed the peek line—rewind the cursor
                         # For now, we'll process it in the main loop
                         if aabb_line_result:
                             aabb_line_bytes, _ = aabb_line_result
@@ -676,18 +353,13 @@ class BWMAsciiReader(ResourceReader):
                             max_z = float(aabb_parts[5])
                             face_idx = int(aabb_parts[6])
 
-                            # Engine logic for AABB processing:
-                            # Reference: K1 swkotor.exe:0x00582d70 (LoadMeshText line 450-520), TSL swkotor2.exe:0x00577860 (equivalent)
                             # 1. Reads 7 values: 6 floats (bbox) + 1 int (face index)
                             # 2. Converts face index using adjacency mapping
                             # 3. Swaps min/max if needed
                             # 4. Creates AABB node structure (0x2c bytes = 44 bytes)
                             # 5. Builds tree structure with parent-child links
-                            # Engine allocates AABB node structure (44 bytes) and fills with bounding box data
 
                             # Swap min/max if needed
-                            # Reference: K1 swkotor.exe:0x00582d70 (LoadMeshText line 460-470), TSL swkotor2.exe:0x00577860 (equivalent)
-                            # Engine checks if min > max for each axis and swaps if necessary
                             if min_x > max_x:
                                 min_x, max_x = max_x, min_x
                             if min_y > max_y:
@@ -696,8 +368,6 @@ class BWMAsciiReader(ResourceReader):
                                 min_z, max_z = max_z, min_z
 
                             # Apply epsilon expansion
-                            # Reference: K1 swkotor.exe:0x00582d70 (LoadMeshText line 470-480), TSL swkotor2.exe:0x00577860 (equivalent)
-                            # Engine expands bounding box by small epsilon to prevent floating-point precision issues
                             # This is a small epsilon value (likely 0.01 or similar) to prevent
                             # floating-point precision issues in collision detection
                             epsilon = 0.01  # Approximate value - verified in both games
@@ -705,9 +375,6 @@ class BWMAsciiReader(ResourceReader):
                             bb_max = Vector3(max_x + epsilon, max_y + epsilon, max_z + epsilon)
 
                             # Map face index
-                            # Engine does complex mapping
-                            # Reference: K1 swkotor.exe:0x00582d70 (LoadMeshText line 480-500), TSL swkotor2.exe:0x00577860 (equivalent)
-                            # Engine maps face index through adjacency array to get correct face reference
                             # If face_idx is valid and maps to a walkable face, use that index
                             # Otherwise, map to unwalkable face index
                             # For now, we'll validate the index exists
@@ -715,8 +382,6 @@ class BWMAsciiReader(ResourceReader):
                             # Store AABB data for tree construction
                             # NOTE: Full tree construction with parent-child relationships
                             # requires understanding the tree building algorithm
-                            # Reference: K1 swkotor.exe:0x00582d70 (LoadMeshText line 500-550), TSL swkotor2.exe:0x00577860 (equivalent)
-                            # Engine builds AABB tree structure with parent-child links and split planes
                             # For initial implementation, we'll store raw AABB data
                             aabb_data.append((bb_min, bb_max, face_idx))
 
@@ -726,8 +391,6 @@ class BWMAsciiReader(ResourceReader):
                 continue
 
         # Post-processing
-        # Reference: K1 swkotor.exe:0x00582d70 (LoadMeshText line 550-715), TSL swkotor2.exe:0x00577860 (equivalent)
-        # Engine calls LoadDefaultMesh if local_b4 == 0 (no valid mesh data), else calls post-processing functions
         # Post-processing includes: AABB tree finalization, adjacency computation, mesh validation
         # For now, we'll skip this as the BWM object is already populated
 
@@ -743,65 +406,11 @@ class BWMAsciiReader(ResourceReader):
         self,
         data: bytes,
     ) -> tuple[bytes, str] | None:
-        """
-        Loads a single line from the input data.
+        """Grab the next LF-terminated slice, capped at 255 payload bytes like the games do.
 
-        This implements the line reading logic from both KotOR I and KotOR II (TSL).
-        The function reads a line (up to newline or buffer limit) from the input stream.
-
-        This method mirrors the engine's LoadMeshString function exactly, including:
-        - Maximum line length of 256 bytes (MAX_LINE_LENGTH = 0x100)
-        - Newline detection (0x0A character)
-        - Buffer pointer advancement
-        - Remaining byte count tracking
-
-        Reference Implementations:
-        -------------------------
-        KotOR I (swkotor.exe):
-            - 0x005968a0 - CSWCollisionMesh::LoadMeshString (95 bytes, 27 lines)
-            - Function signature: LoadMeshString(byte** param_1, ulong* param_2, byte* param_3, ulong param_4)
-            - param_1: Pointer to current buffer position (equivalent to _data_offset)
-            - param_2: Pointer to remaining bytes count (equivalent to _data_remaining)
-            - param_3: Output buffer for line data (equivalent to _line_buffer)
-            - param_4: Maximum buffer size (256 bytes = MAX_LINE_LENGTH)
-
-        KotOR II / TSL (swkotor2.exe):
-            - 0x005573e0 - FUN_005573e0 (95 bytes, 26 lines, equivalent function)
-            - Function signature: FUN_005573e0(int* param_1, int* param_2, int param_3, uint param_4)
-            - Functionally identical to K1 LoadMeshString
-            - Same logic, buffer management, and return values
-
-        Engine Logic (from LoadMeshString):
-        -----------------------------------
-            1. Returns 0 if *param_2 (remaining bytes) == 0 (EOF condition)
-            2. Reads characters into param_3 buffer until:
-               - param_4 - 1 characters read (buffer full, leaves room for null terminator)
-               - Newline character (0x0A) encountered
-               - *param_2 reaches 0 (EOF reached)
-            3. Null-terminates the string (sets buffer[bytes_read] = 0)
-            4. Advances *param_1 (buffer pointer) by bytes_read + 1 (includes newline)
-            5. Decrements *param_2 (remaining bytes) by bytes_read + 1
-            6. Returns 1 on success, 0 on failure/EOF
-
-        Implementation Notes:
-        -------------------
-        - This implementation uses _data_offset and _data_remaining instead of pointers
-        - Reads up to MAX_LINE_LENGTH - 1 bytes (255 chars) to leave room for null terminator
-        - Skips newline character (0x0A) when advancing offset
-        - Decodes bytes to string using latin-1 encoding (supports extended ASCII)
-        - Falls back to ascii with error replacement if latin-1 decode fails
-
-        Args:
-        ----
-            data: The input data bytes to read from
-
-        Returns:
-        -------
-            tuple[bytes, str] | None:
-                - (line_bytes, line_string) on success
-                - None if EOF reached or error occurred
-                - line_bytes: Raw bytes of the line (excluding newline)
-                - line_string: Decoded string representation
+        Returns ``(raw_without_newline, decoded_text)``, or ``None`` when the stream is spent.
+        We advance ``_data_offset`` / ``_data_remaining`` the same way you'd expect from a
+        hand-rolled C reader—just with fewer pointer stars and more Python.
         """
         if self._data_remaining <= 0:
             return None
@@ -847,58 +456,11 @@ class BWMAsciiReader(ResourceReader):
 
 
 class BWMAsciiWriter(ResourceWriter):
-    """
-    Writes ASCII walkmesh (BWM/WOK) files.
+    """Serialize :class:`BWM` back into the Aurora text dialect both KotORs still understand.
 
-    Converts the in-memory BWM model to ASCII text format compatible with
-    both KotOR I and KotOR II (TSL) engines' ASCII walkmesh parsers.
-
-    Inheritance:
-    -----------
-    Base class: ResourceWriter (pykotor.resource.type)
-    - Abstract base class for resource writers
-    - Provides target handling and auto-close functionality
-
-    The writer outputs the same format that both engines expect to read,
-    ensuring round-trip compatibility with:
-    - KotOR I: swkotor.exe:0x00582d70 - CSWRoomSurfaceMesh::LoadMeshText
-    - KotOR II: swkotor2.exe:0x00577860 - FUN_00577860 (equivalent to LoadMeshText)
-
-    Output Format Compatibility:
-    ---------------------------
-    The writer generates ASCII text that matches the exact format expected by
-    the engine's LoadMeshText parser:
-
-    1. Node Block: "node aabb" header
-    2. Position: "position <x> <y> <z>" (3 floats)
-    3. Orientation: "orientation <x> <y> <z> <w>" (4 floats, default 0.0 0.0 0.0 1.0)
-    4. Vertices: "verts <count>" followed by <count> lines of "<x> <y> <z>"
-    5. Faces: "faces <count>" followed by <count> lines with 8 integers:
-       Format: "<v1> <v2> <v3> <adj1> <adj2> <adj3> <adj4> <material>"
-       - Walkable faces come first (matching engine's adjacency_count ordering)
-       - Unwalkable faces come after
-    6. AABB Blocks: "aabb" followed by lines: "<min_x> <min_y> <min_z> <max_x> <max_y> <max_z> <face_index>"
-    7. End: "endnode" footer
-
-    Processing Logic:
-    ----------------
-    1. Extract unique vertices from faces (by identity, not value)
-    2. Build vertex index mapping for face vertex references
-    3. Separate faces into walkable and unwalkable (engine ordering)
-    4. Write "node aabb" header
-    5. Write position (from BWM.position)
-    6. Write orientation (default identity quaternion: 0.0 0.0 0.0 1.0)
-    7. Write vertices block with count and vertex lines
-    8. Write faces block with count and face lines (8 integers each)
-       - Computes basic adjacency from shared edges (simplified)
-       - Sets adj1-adj4 to adjacent face indices or -1 if no adjacency
-    9. Write AABB tree nodes (if present and walkmesh_type == AreaModel)
-       - Maps AABB nodes to face indices in reordered face list
-    10. Write "endnode" footer
-
-    Note: The engine computes adjacencies from geometry during runtime, but
-    the ASCII format includes adjacency data for toolset compatibility. This
-    implementation computes basic adjacency by finding shared edges between faces.
+    Walkable faces lead, verts get uniqued, adjacency slots are best-effort from shared edges,
+    and area meshes spit their ``aabb`` rows back out. Identity orientation is written as
+    ``0 0 0 1`` so lazy exports stay boring and predictable.
     """
 
     def __init__(
@@ -954,7 +516,7 @@ class BWMAsciiWriter(ResourceWriter):
         for i, vertex in enumerate(vertices):
             vertex_to_index[id(vertex)] = i
 
-        # Separate faces into walkable and unwalkable (engine ordering)
+        # Separate faces into walkable and unwalkable (retail walk order)
         walkable_faces = [face for face in self._bwm.faces if face.material.walkable()]
         unwalkable_faces = [face for face in self._bwm.faces if not face.material.walkable()]
         all_faces = walkable_faces + unwalkable_faces
@@ -966,10 +528,7 @@ class BWMAsciiWriter(ResourceWriter):
         pos = self._bwm.position
         self._writer.write_string(f"    position {pos.x} {pos.y} {pos.z}\n")
 
-        # Write orientation (identity quaternion for default)
-        # NOTE: The engine stores orientation as a quaternion, but ASCII format may use
-        # axis-angle representation. For compatibility, we'll write identity (0 0 0 1)
-        # unless orientation is explicitly set. This matches engine's default behavior.
+        # Default orientation: identity quaternion (what untouched exports expect)
         self._writer.write_string("    orientation 0.0 0.0 0.0 1.0\n")
 
         # Write vertices block
@@ -988,11 +547,8 @@ class BWMAsciiWriter(ResourceWriter):
             # Get face index in reordered list
             face_idx = next(i for i, f in enumerate(all_faces) if f is face)
 
-            # For ASCII format, we need to provide adjacency data
-            # The engine computes adjacencies from geometry, but ASCII format includes
-            # them for toolset compatibility. We'll compute basic adjacency:
-            # - adj1-adj4: Adjacent face indices (edge indices) or -1 for no adjacency
-            # - For now, we'll set to -1 and let the engine compute from geometry
+            # ASCII still wants adjacency slots even though runtime can re-derive them;
+            # we fill what we can from shared edges and leave -1 where unknown.
 
             # Compute adjacencies (simplified - full implementation would find shared edges)
             adj1 = -1

@@ -1,12 +1,6 @@
 #version 150
 
 // Panda3D vertex shader for KotOR materials.
-// References:
-//   Based on swkotor.exe shader system:
-//   - Vertex shader implementation in game engine's rendering pipeline
-//   - Original BioWare engine binaries (swkotor.exe, swkotor2.exe)
-//   Original BioWare engine binaries (Vertex shader from swkotor.exe, swkotor2.exe)
-//   /panda3d/panda3d-docs/programming/internal-structures/procedural-generation/creating-vertex-data.rst
 
 uniform mat4 p3d_ModelViewProjectionMatrix;
 uniform mat4 p3d_ModelViewMatrix;

@@ -39,7 +39,7 @@ Recommendation: when adding new vendor links, confirm branch and path with GitHu
 
 ## Additional wiki references (from GitHub + repo research)
 
-- **BWM-File-Format:** Add **Implementation** with PyKotor `Libraries/PyKotor/src/pykotor/resource/formats/bwm/` (io_bwm.py, bwm_data.py, io_bwm_ascii.py) and link to [Game-Engine-BWM-AABB-Implementation](Game-Engine-BWM-AABB-Implementation) (already referenced in body).
+- **BWM-File-Format:** Optional **Implementation (PyKotor)** only when explicitly **non-normative** and aligned with [authoritative-bwm-wiki-from-re-and-pipelines.md](../solutions/documentation/authoritative-bwm-wiki-from-re-and-pipelines.md#policy-revision-2026-03-23) (RE + pipelines remain authoritative for layout and engine semantics). Link `Libraries/PyKotor/src/pykotor/resource/formats/bwm/` if added; keep [reverse_engineering_findings — BWM / AABB](reverse_engineering_findings#bwm-walkmesh-aabb-engine-implementation-analysis) cross-links as today.
 - **DDS-File-Format:** Add **Implementation** with PyKotor TPC/DDS handling (e.g. `Libraries/PyKotor/src/pykotor/resource/formats/tpc/`) and vendor xoreos/xoreos-tools DDS where applicable.
 - **2DA-File-Format / GFF-File-Format / LYT / ERF:** Populate empty **References** placeholders with PyKotor paths (twoda_data.py, extract/twoda.py, toolset installation.py, generics) and vendor refs following existing 2DA-* and VIS/LTR patterns.
 - **Cross-links:** Ensure every format loaded by ResRef links to [KEY-File-Format](KEY-File-Format) for resource resolution; use GFF-File-Format#gff-data-types for ResRef where relevant (per wiki restructure plan).

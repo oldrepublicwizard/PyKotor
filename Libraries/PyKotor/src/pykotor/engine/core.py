@@ -5,11 +5,6 @@ This module provides minimal game engine infrastructure for testing purposes.
 References:
 ----------
 
-    Derivations and Other Implementations:
-    -------------------------------------
-        https://github.com/th3w1zard1/KotOR.js/tree/master/src/engine/Engine.ts
-
-
     Note: This is a minimal stub; full engine is in ./Engines directory
 """
 

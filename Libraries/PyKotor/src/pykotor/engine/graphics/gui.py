@@ -2,17 +2,12 @@
 
 This module provides minimal GUI infrastructure for testing without full rendering backend.
 
-References:
+Retail ``.gui`` layouts are GFF hierarchies (controls, extents, text, borders); observed behavior and
+historical loader cross-references are documented under *PyKotor package: migrated library notes*
+in ``wiki/reverse_engineering_findings.md`` (GUI subsection).
+
+Derivations and other implementations:
 ----------
-        Based on swkotor.exe GUI structure:
-        - CSWGuiPanel::StartLoadFromLayout @ 0x0040a680 - Loads GUI panel from layout file
-        - CSWGuiControl::Load @ 0x00418800 - Loads GUI control from GFF structure
-        - CSWGuiExtent::Load @ 0x00409dc0 - Loads GUI extent (position/size) from GFF
-        - CSWGuiLabel::Load @ 0x0041b960 - Loads GUI label from GFF structure
-        - CSWGuiListBox::Load @ 0x0041d5b0 - Loads GUI listbox from GFF structure
-        Derivations and Other Implementations:
-        ----------
-        https://github.com/th3w1zard1/KotOR.js/tree/master/src/gui/
 
 
     Note: This is a minimal stub for testing; full GUI implementation would use a rendering backend

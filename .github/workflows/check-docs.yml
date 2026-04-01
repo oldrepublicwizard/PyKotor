@@ -24,6 +24,9 @@ jobs:
           args: -r -v docs/ README.md CONTRIBUTING.md
         continue-on-error: true
 
+      - name: Audit hyperlink relevance in markdown
+        run: python helper_scripts/wiki_scripts/audit_markdown_link_relevance.py
+
       - name: Check markdown formatting
         uses: DavidAnson/markdownlint-cli2-action@v15
         with:

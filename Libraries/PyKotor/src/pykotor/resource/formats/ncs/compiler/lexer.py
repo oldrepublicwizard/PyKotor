@@ -1,6 +1,7 @@
 """NSS (NWScript) lexer: PLY lex tokenization and keyword/operator mapping."""
 
 from __future__ import annotations
+from pykotor.resource.formats._base import BiowareResource
 
 from typing import ClassVar
 
@@ -21,7 +22,7 @@ from pykotor.resource.formats.ncs.compiler.classes import (
 )
 
 
-class NssLexer:
+class NssLexer(BiowareResource):
     """NSS (NWScript Source) lexer/tokenizer.
 
     Tokenizes NSS source code into tokens for parsing. Handles keywords, operators,
@@ -30,9 +31,6 @@ class NssLexer:
     References:
     ----------
 
-    Derivations and Other Implementations:
-    -------------------------------------
-        https://github.com/th3w1zard1/KotOR.js/tree/master/src/nwscript/NWScriptCompiler.ts (Token handling)
         PLY (Python Lex-Yacc) library for lexer generation
 
     """

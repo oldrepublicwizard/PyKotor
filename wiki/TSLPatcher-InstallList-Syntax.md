@@ -1,29 +1,31 @@
 # TSLPatcher InstallList Syntax Documentation
 
-This guide explains how to install files using TSLPatcher syntax. For general TSLPatcher information, see [TSLPatcher's Official Readme](TSLPatcher's-Official-Readme). For HoloPatcher-specific information, see [HoloPatcher README for Mod Developers](HoloPatcher-README-for-mod-developers.).
+This guide explains how to install files using TSLPatcher syntax. For general TSLPatcher information, see [TSLPatcher's Official Readme](TSLPatcher's-Official-Readme). For HoloPatcher-specific information, see [HoloPatcher README for Mod Developers](HoloPatcher-README-for-mod-developers).
 
 **Implementation:** [`Libraries/PyKotor/src/pykotor/tslpatcher/`](https://github.com/OldRepublicDevs/PyKotor/tree/master/Libraries/PyKotor/src/pykotor/tslpatcher/)
 
-**Vendor References:**
+**Cross-reference:**
 
-- [`vendor/TSLPatcher/`](https://github.com/Fair-Strides/TSLPatcher) - Original Perl TSLPatcher by stoffe (Mirror: https://github.com/th3w1zard1/TSLPatcher)
-- [`Tools/HolocronToolset/src/toolset/gui/dialogs/install_mod.py`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Tools/HolocronToolset/src/toolset/gui/dialogs/install_mod.py) - HoloPatcher [GUI](GFF-File-Format#gui-graphical-user-interface) implementation
-- [`vendor/KotOR.js/src/manager/`](https://github.com/KobaltBlu/KotOR.js/tree/master/src/manager) - TypeScript mod management (different approach) (Mirror: https://github.com/th3w1zard1/KotOR.js)
+- **th3w1zard1/TSLPatcher** — original Perl TSLPatcher (stoffe lineage)
+
+  - Canonical (th3w1zard1/TSLPatcher): <https://github.com/th3w1zard1/TSLPatcher/tree/ad04700a47086c25e1c6ef4b4961f76dfa8cc6a5>
+- [`Tools/HolocronToolset/src/toolset/gui/dialogs/install_mod.py`](https://github.com/OldRepublicDevs/HolocronToolset/src/toolset/gui/dialogs/install_mod.py) - HoloPatcher [GUI](GFF-File-Format#gui-graphical-user-interface) implementation
+- [`KotOR.js/src/manager/`](https://github.com/KobaltBlu/KotOR.js/tree/master/src/manager) - TypeScript mod management (different approach)
 
 ### See also
 
-- [TSLPatcher `[2DAList]` Syntax](TSLPatcher-2DAList-Syntax) - Patching [2DA files](2DA-File-Format)
-- [TSLPatcher `[GFFList]` Syntax](TSLPatcher-GFFList-Syntax) - Patching [GFF files](GFF-File-Format)
-- [TSLPatcher `[TLKList]` Syntax](TSLPatcher-TLKList-Syntax) - Patching [TLK files](TLK-File-Format)
-- [TSLPatcher `[SSFList]` Syntax](TSLPatcher-SSFList-Syntax) - Patching [SSF files](SSF-File-Format)
-- [TSLPatcher `[HACKList]` Syntax](TSLPatcher-HACKList-Syntax) - Binary patching [NCS files](NCS-File-Format)
-- [HoloPatcher README for Mod Developers](HoloPatcher-README-for-mod-developers.) - HoloPatcher extensions
+- [TSLPatcher 2DAList Syntax](TSLPatcher-2DAList-Syntax) - Patching [2DA files](2DA-File-Format)
+- [TSLPatcher GFFList Syntax](TSLPatcher-GFFList-Syntax) - Patching [GFF files](GFF-File-Format)
+- [TSLPatcher TLKList Syntax](TSLPatcher-TLKList-Syntax) - Patching [TLK files](Audio-and-Localization-Formats#tlk)
+- [TSLPatcher SSFList Syntax](TSLPatcher-SSFList-Syntax) - Patching [SSF files](Audio-and-Localization-Formats#ssf)
+- [TSLPatcher HACKList Syntax](TSLPatcher-HACKList-Syntax) - Binary patching [NCS files](NCS-File-Format)
+- [HoloPatcher README for Mod Developers](HoloPatcher-README-for-mod-developers) - HoloPatcher extensions
 
 ## Overview
 
-The `[InstallList]` section in TSLPatcher's `changes.ini` file enables you to copy files from your mod's `tslpatchdata` folder to their proper location in the game installation. This includes installing files to folders (such as `Override`, `Modules`, `StreamVoice`, etc.) or directly into [ERF](ERF-File-Format)/RIM/MOD container files. Unlike other patch lists, InstallList is designed for copying files that haven't been modified by other sections.
+The `[InstallList]` section in TSLPatcher's changes.ini file enables you to copy files from your mod's `tslpatchdata` folder to their proper location in the game installation. This includes installing files to folders (such as `Override`, `Modules`, `StreamVoice`, etc.) or directly into module capsules ([MOD](Container-Formats#erf), [ERF](Container-Formats#erf), or [RIM](Container-Formats#rim)). Unlike other patch lists, InstallList is designed for copying files that haven't been modified by other sections.
 
-**Important:** Do **NOT** add any files that have been modified by any of the other sections ([`[GFFList]`](TSLPatcher-GFFList-Syntax), [`[CompileList]`](TSLPatcher-CompileList-Syntax), [`[2DAList]`](TSLPatcher-2DAList-Syntax), etc.) to the `[InstallList]`, or the modified files might be overwritten! The other sections already handle saving files to their proper locations. The only exception to this is [ERF files](ERF-File-Format) which have had files added to them by those sections. They **MUST** still be added to the `[InstallList]` to be put in their proper places.
+**Important:** Do **not** add any files that have been modified by any of the other sections ([GFFList](TSLPatcher-GFFList-Syntax), CompileList, [2DAList](TSLPatcher-2DAList-Syntax), etc.) to the InstallList, or the modified files might be overwritten! The other sections already handle saving files to their proper locations. The only exception to this is [ERF files](Container-Formats#erf) which have had files added to them by those sections. They must still be added to the InstallList to be put in their proper places.
 
 ## Table of Contents
 
@@ -78,14 +80,14 @@ File1=sound2.wav
 In **HoloPatcher**, the `[InstallList]` runs **first** in the patch execution order:
 
 1. **[InstallList]** - files are installed first
-2. **[TLKList]** - [TLK file](TLK-File-Format) modifications
+2. **[TLKList]** - [TLK](Audio-and-Localization-Formats#tlk) modifications
 3. **[2DAList]** - [2DA file](2DA-File-Format) modifications
 4. **[GFFList]** - [GFF file](GFF-File-Format) modifications
 5. **[CompileList]** - Script compilation
 6. **[HACKList]** - Binary hacking
 7. **[SSFList]** - Sound set modifications
 
-**Note:** In original TSLPatcher, `[InstallList]` executes **after** [`[TLKList]`](TSLPatcher-TLKList-Syntax), but HoloPatcher changed this order to allow installing a whole [`dialog.tlk`](TLK-File-Format) file before [TLK file](TLK-File-Format) modifications are applied. This priority change should not affect the output of mods.
+**Note:** In original TSLPatcher, InstallList executes **after** TLKList, but HoloPatcher changed this order to allow installing a whole [dialog.tlk](Audio-and-Localization-Formats#tlk) file before [TLK](Audio-and-Localization-Formats#tlk) modifications are applied. This priority change should not affect the output of mods.
 
 ## Folder-Level Configuration
 
@@ -99,7 +101,7 @@ Each folder section (e.g., `[Override]`) supports the following configuration ke
 
 The folder section contains the list of files to install. Each file entry uses one of two syntaxes:
 
-| key format | Replace Behavior | Description |
+| [KEY](Container-Formats#key) format | Replace Behavior | Description |
 |------------|-----------------|-------------|
 | `File#=filename.ext` | No replacement | Install the file only if it doesn't already exist at the destination. If the file exists, it will be skipped (warning logged). |
 | `Replace#=filename.ext` | Replacement enabled | Install the file and overwrite any existing file at the destination. |
@@ -282,7 +284,7 @@ File0=file2.mod
 
 ## Installing to Containers
 
-`[InstallList]` supports installing files directly into [ERF/MOD](ERF-File-Format)/[RIM](RIM-File-Format) container files. This is done by specifying the container file path (relative to the game folder) as the destination.
+InstallList supports installing files directly into [MOD](Container-Formats#erf), [ERF](Container-Formats#erf), or [RIM](Container-Formats#rim) container files. This is done by specifying the container file path (relative to the game folder) as the destination.
 
 ### Container file Syntax
 
@@ -313,10 +315,10 @@ File0=another_resource.2da
     - If `!ReplaceFile=0` or `File#=`: The file is **skipped** (see [File Replacement Behavior](#file-replacement-behavior))
 
 - **Container types Supported:**
-  - `.mod` ([MOD](MOD-File-Format)/[ERF](ERF-File-Format) format)
-  - `.erf` ([ERF](ERF-File-Format) format)
-  - `.rim` ([RIM](RIM-File-Format) format)
-  - `.sav` (Save game [ERF](ERF-File-Format) format)
+- `.mod` (MOD/[ERF](Container-Formats#erf) format)
+  - `.erf` ([ERF](Container-Formats#erf) format)
+  - `.rim` ([RIM](Container-Formats#rim) format)
+  - `.sav` (Save game [ERF](Container-Formats#erf) format)
 
 ### Installing Modified Containers
 
@@ -413,7 +415,7 @@ In this example:
 
 ## Override type Handling
 
-When installing files to containers ([ERF/MOD](ERF-File-Format)/[RIM](RIM-File-Format)), there's a potential conflict: a file might already exist in the `Override` folder with the same name. The `!OverrideType` setting controls how this conflict is handled:
+When installing files to containers ([MOD](Container-Formats#erf), [ERF](Container-Formats#erf), or [RIM](Container-Formats#rim)), there's a potential conflict: a file might already exist in the Override folder with the same name. The `!OverrideType` setting controls how this conflict is handled:
 
 | value | Behavior | Description |
 |-------|----------|-------------|
@@ -435,7 +437,7 @@ The game's resource loading system checks folders in this order:
 
 1. Override folder (highest priority)
 2. Module containers (.mod files)
-3. RIM files
+3. [RIM](Container-Formats#rim) files (`.rim` / `_s.rim`)
 4. Other containers
 
 If a file exists in both `Override` and an container, the `Override` version takes precedence. The `!OverrideType` setting helps manage this shadowing behavior.

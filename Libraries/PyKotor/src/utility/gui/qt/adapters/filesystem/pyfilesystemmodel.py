@@ -90,6 +90,7 @@ from utility.gui.qt.adapters.filesystem.pyfilesystemmodelsorter import (
     PyFileSystemModelSorter,  # noqa: E402
 )
 from utility.gui.qt.adapters.filesystem.pyfilesystemnode import PyFileSystemNode  # noqa: E402
+from utility.gui.qt.adapters.filesystem.qtimezone_compat import qtimezone_utc  # noqa: E402
 from utility.system.path import Path  # noqa: E402
 
 if TYPE_CHECKING:
@@ -1062,7 +1063,6 @@ class PyFileSystemModel(QAbstractItemModel):
         return "Computer"
 
     def _handle_node_path_arg(self, path: os.PathLike | str, fetch: bool) -> PyFileSystemNode:  # noqa: FBT001, C901, PLR0911, PLR0912, PLR0915
-        # sourcery skip: low-code-quality
         pathObj = Path(path)
         if not pathObj.parent.name or pathObj.anchor.startswith(":"):
             print("<SDM> [_handle_node_arg_str scope] path: ", path)
@@ -1187,7 +1187,14 @@ class PyFileSystemModel(QAbstractItemModel):
         location: int,
     ) -> int:
         print("<SDM> [translateVisibleLocation scope] location: ", location)
-        return -1 if location == -1 or not node.isVisible else location
+        if location == -1:
+            return -1
+        # The synthetic root ("My Computer") is not a real filesystem node; it stays
+        # isVisible=False but drive rows under it must still map to valid indices
+        # (e.g. index("../../") -> drive root on Windows).
+        if node is not self._root and not node.isVisible:
+            return -1
+        return location
 
     def sort(
         self,
@@ -1239,7 +1246,16 @@ class PyFileSystemModel(QAbstractItemModel):
 
         if not (self._sortColumn == column and self._sortOrder != order and not self._forceSort):
             # we sort only from where we are, don't need to sort all the model
-            self.sortChildren(column, self.index(self.rootPath()))
+            # If rootPath is set but index_path(rootPath) is invalid, do not pass an invalid
+            # QModelIndex to sortChildren: node(invalid) maps to _root and would sort/filter
+            # all drive children (hiding e.g. the parent folder of rootPath on Windows).
+            rp = self.rootPath()
+            if rp:
+                root_idx = self.index_path(rp, 0)
+                if root_idx.isValid():
+                    self.sortChildren(column, root_idx)
+            else:
+                self.sortChildren(column, QModelIndex())
             self._sortColumn = column
             self._forceSort = False
 
@@ -1256,6 +1272,14 @@ class PyFileSystemModel(QAbstractItemModel):
         # PyQt6: layoutChanged.emit([], QAbstractItemModel.LayoutChangeHint.VerticalSortHint)
         self.layoutChanged.emit([], QAbstractItemModel.LayoutChangeHint.VerticalSortHint)  # type: ignore[attr-defined]
 
+    def sortColumn(self) -> int:
+        """Current sort column; matches QFileSystemModel::sortColumn()."""
+        return self._sortColumn
+
+    def sortOrder(self) -> Qt.SortOrder:
+        """Current sort order; matches QFileSystemModel::sortOrder()."""
+        return self._sortOrder
+
     def rmdir(
         self,
         index: QModelIndex,
@@ -1264,7 +1288,7 @@ class PyFileSystemModel(QAbstractItemModel):
         print("<SDM> [rmdir scope] path: ", path, "index.row()", index.row())
 
         try:
-            shutil.rmtree(path, ignore_errors=False)  # noqa: PTH106
+            os.rmdir(path)  # noqa: PTH104 — QFileSystemModel::rmdir removes one empty directory only
         except OSError as e:
             RobustLogger().exception(f"Failed to rmdir: {e.__class__.__name__}: {e}")
             return False
@@ -1617,7 +1641,7 @@ class PyFileSystemModel(QAbstractItemModel):
         if column == 2:
             return node.type()
         if column == 3:
-            return node.lastModified(QTimeZone.UTC).toPyDateTime()  # type: ignore[attr-defined]
+            return node.lastModified(qtimezone_utc()).toPyDateTime()  # type: ignore[attr-defined]
         raise ValueError(f"No column with value of '{column}'")
 
     def icon(
@@ -1659,9 +1683,8 @@ class PyFileSystemModel(QAbstractItemModel):
         # Static initialization matching C++ implementation
         # Use class variable to store the static result (initialized once)
         if PyFileSystemModel._roleNames is None:
-            # Get default role names from QAbstractItemModel
-            temp_model = QAbstractItemModel()
-            default_roles = temp_model.roleNames()
+            # PyQt6: QAbstractItemModel is abstract — use concrete base implementation.
+            default_roles = super().roleNames()
             ret = dict(default_roles)
 
             # Add QFileSystemModel-specific roles
@@ -1794,7 +1817,7 @@ class PyFileSystemModel(QAbstractItemModel):
         parent: QModelIndex,
         name: str,
     ) -> QModelIndex:
-        dirPath = os.path.join(self.filePath(parent), name)  # noqa: PTH118
+        dirPath = str(pathlib.Path(self.filePath(parent)) / name)
         print("<SDM> [mkdir scope] dirPath: ", dirPath)
 
         try:
@@ -1802,7 +1825,7 @@ class PyFileSystemModel(QAbstractItemModel):
         except OSError:
             RobustLogger().exception(f"Failed to mkdir at '{dirPath}'")
             return QModelIndex()
-        else:  # sourcery skip: extract-method
+        else:
             parentNode = self.node(parent)
             # row is not a method on PyFileSystemNode
             print("<SDM> [mkdir scope] parentNode: ", parentNode, "parentNode.fileName:", parentNode.fileName)
@@ -1812,12 +1835,10 @@ class PyFileSystemModel(QAbstractItemModel):
             node = parentNode.children[name]
             print("<SDM> [mkdir scope] node: ", node, "name:", name, "node.fileName", node.fileName)
 
-            node.populate(self._fileInfoGatherer.getInfo(QFileInfo(os.path.abspath(os.path.join(dirPath, name)))))  # noqa: PTH118, PTH100
+            node.populate(self._fileInfoGatherer.getInfo(QFileInfo(os.path.abspath(dirPath))))  # noqa: PTH100
             self.addVisibleFiles(parentNode, [name])
-            # index requires row, column, parent - need to find the row of this node
-            parent_index = self.index_path(self.filePath(parent), 0)
             row = parentNode.visibleChildren.index(name) if name in parentNode.visibleChildren else 0
-            return self.index(row, 0, parent_index)
+            return self.index(row, 0, parent)
 
     def permissions(
         self,
@@ -1886,13 +1907,26 @@ class PyFileSystemModel(QAbstractItemModel):
         node = self.node(index)
         return node.isDir()
 
-    def index(
+    def index(self, *args: Any) -> QModelIndex:  # noqa: ANN401
+        """QFileSystemModel::index overloads: path, (path, column), or (row, column, parent)."""
+        if len(args) == 1 and isinstance(args[0], str):
+            return self.index_path(args[0], 0)
+        if len(args) == 2 and isinstance(args[0], str) and isinstance(args[1], int):
+            return self.index_path(args[0], args[1])
+        if len(args) == 2 and isinstance(args[0], int) and isinstance(args[1], int):
+            return self._index_row_column_parent(args[0], args[1], QModelIndex())
+        if len(args) == 3 and isinstance(args[0], int) and isinstance(args[1], int) and isinstance(args[2], QModelIndex):
+            return self._index_row_column_parent(args[0], args[1], args[2])
+        msg = f"index{args!r}: expected (str), (str, int), (int, int), or (int, int, QModelIndex)"
+        raise TypeError(msg)
+
+    def _index_row_column_parent(
         self,
         row: int,
         column: int,
         parent: QModelIndex = QModelIndex(),
     ) -> QModelIndex:
-        """Index method matching C++ lines 218-238 exactly.
+        """Index(row, column, parent) matching C++ lines 218-238 exactly.
 
         Matches:
         QModelIndex QFileSystemModel::index(int row, int column, const QModelIndex &parent) const
@@ -1952,8 +1986,12 @@ class PyFileSystemModel(QAbstractItemModel):
             QFileSystemModelPrivate::QFileSystemNode *node = d->node(path, false);
             return d->index(node, column);
         }
+
+        fetch=True: C++ uses false, but with fetch=False our node() returns root when a path
+        segment already exists yet is not visible (e.g. parent of setRootPath on Windows),
+        which breaks path-based index() for ``../``. Fetching forces the visibility/bypass path.
         """
-        node = self.node(path, fetch=False)
+        node = self.node(path, fetch=True)
         return self._index_from_node(node, column)
 
     def _handle_from_path_arg(
@@ -2419,6 +2457,9 @@ class PyFileSystemModel(QAbstractItemModel):
         node = self.node(index)
         print("<SDM> [flags node.fileName ", node.fileName)
 
+        if not node.isDir():
+            flags |= Qt.ItemFlag.ItemNeverHasChildren
+
         if not self._readOnly and index.column() == 0 and bool(node.permissions() & QFileDevice.Permission.WriteUser):  # type: ignore[attr-defined]
             flags |= Qt.ItemFlag.ItemIsEditable
             if node.isDir():
@@ -2524,19 +2565,20 @@ class PyFileSystemModel(QAbstractItemModel):
         self,
         index: QModelIndex,
     ) -> str:
-        path: list[str] = []
-        print("<SDM> [filePath scope] path: ", path)
-
-        while index.isValid():
-            node = self.node(index)
-            fInfo = node.fileInfo()
-            print("<SDM> [filePath scope] node.fileName", node.fileName, "node.fileInfo.path()", None if fInfo is None else fInfo.path())
-
-            path.insert(0, node.fileName)
-            index = index.parent()
-            print("<SDM> [filePath scope] index.row(): ", None if index is None else index.row(), "internalPointer:", index.internalPointer())
-
-        return str(pathlib.Path(*path))
+        if not index.isValid():
+            return self.rootPath()
+        fi = self.node(index).fileInfo()
+        abs_path = fi.absoluteFilePath()
+        if abs_path:
+            return str(pathlib.Path(abs_path))
+        rel_parts: list[str] = []
+        walk = index
+        while walk.isValid():
+            rel_parts.insert(0, self.node(walk).fileName)
+            walk = walk.parent()
+        root = pathlib.Path(self.rootPath())
+        built = str(root.joinpath(*rel_parts)) if rel_parts else str(root)
+        return str(pathlib.Path(built))
 
     def fileInfo(
         self,

@@ -247,7 +247,6 @@ def get_cp949_charset() -> list[str]:
 
 
 def get_cp936_charset() -> list[str]:
-    # sourcery skip: merge-duplicate-blocks, remove-redundant-if
     charset: list[str] = []
     for i in range(256):
         if 0x00 <= i <= 0x7F:  # noqa: PLR2004

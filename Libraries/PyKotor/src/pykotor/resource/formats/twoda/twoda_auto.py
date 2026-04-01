@@ -18,7 +18,7 @@ if TYPE_CHECKING:
 def detect_2da(
     source: SOURCE_TYPES,
     offset: int = 0,
-) -> ResourceType:  # sourcery skip: assign-if-exp, reintroduce-else
+) -> ResourceType:
     """Returns what format the TwoDA data is believed to be in.
 
     This function performs a basic check and does not guarantee accuracy of the result or integrity of the data.

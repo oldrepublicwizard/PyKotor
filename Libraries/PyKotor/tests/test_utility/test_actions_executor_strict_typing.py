@@ -7,6 +7,8 @@ from __future__ import annotations
 
 import pathlib
 import sys
+import tempfile
+from multiprocessing import Queue
 
 # Setup paths
 THIS_FILE = pathlib.Path(__file__).resolve()
@@ -29,13 +31,26 @@ class TestActionsExecutorStrictTyping:
 
     def test_execute_task_with_existing_operation(self):
         """Test that existing FileOperations methods are accessed via getattr."""
-        # FileOperations should have various operation methods
-        # This tests that getattr works for legitimate dynamic lookup
-        result = FileActionsExecutor._execute_task("create_file", None, "test.txt", "content")
+        progress_queue: Queue = Queue()
 
-        # Should execute successfully (or return None if operation doesn't exist)
-        # The key is that it uses getattr, not object.__getattribute__
-        assert result is None or isinstance(result, (str, type(None)))
+        class _Ctl:
+            value = False
+
+        pause_flag = _Ctl()
+        cancel_flag = _Ctl()
+        with tempfile.TemporaryDirectory() as tmp:
+            path = pathlib.Path(tmp) / "test.txt"
+            result = FileActionsExecutor._execute_task(
+                "create_file",
+                None,
+                [path],
+                "content",
+                progress_queue=progress_queue,
+                pause_flag=pause_flag,
+                cancel_flag=cancel_flag,
+            )
+            assert path.read_text() == "content"
+            assert result is not None
 
     def test_execute_task_with_nonexistent_operation(self):
         """Test that nonexistent operations return None gracefully."""

@@ -36,8 +36,7 @@ class TalkTable:  # TODO(th3w1zard1): dialogf.tlk  # noqa: FIX002, TD003
 
     References:
     ----------
-        Original BioWare engine binaries (from swkotor.exe, swkotor2.exe)
-        Original BioWare engine binaries
+        Observed retail KotOR I and KotOR II behavior.
 
 
     """

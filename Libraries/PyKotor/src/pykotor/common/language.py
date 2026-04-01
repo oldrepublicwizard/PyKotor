@@ -18,14 +18,6 @@ class Language(IntEnum):
     Note: Official releases support English, French, German, Italian, Spanish, Polish
             Custom language support added for localization beyond official releases
 
-    References:
-    ----------
-        See pykotor.resource.formats.tlk.tlk_data for engine addresses (K1 + TSL TODO). CTlkTable::AddFile (K1: 0x0041d920), CTlkFile::CTlkFile (K1: 0x0041d810).
-
-    Derivations and Other Implementations:
-    ----------
-        https://github.com/th3w1zard1/KotOR.js/tree/master/src/resource/ResourceTypes.ts (Language enum)
-        https://github.com/th3w1zard1/KotOR-dotNET/tree/master/AuroraFile.cs (Language enum)
     """
 
     # UNSET = 0x7FFFFFFF  # noqa: ERA001
@@ -443,6 +435,8 @@ class Language(IntEnum):
             return "cp936"
         if self == Language.JAPANESE:
             return "cp932"
+        if self == Language.UNSET:
+            return None
         msg = f"No encoding defined for language: {self.name}"
         raise ValueError(msg)
 

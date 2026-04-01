@@ -22,11 +22,13 @@ import os
 
 from typing import TYPE_CHECKING
 
-from qtpy.QtCore import QFileInfo, QTimeZone  # noqa: E402
+from qtpy.QtCore import QFileDevice, QFileInfo, QTimeZone  # noqa: E402
 from qtpy.QtGui import QIcon  # noqa: E402
 
+from utility.gui.qt.adapters.filesystem.qtimezone_compat import qtimezone_utc
+
 if TYPE_CHECKING:
-    from qtpy.QtCore import QDateTime, QFileDevice
+    from qtpy.QtCore import QDateTime
 
 
 class PyQExtendedInformation:
@@ -103,7 +105,7 @@ class PyQExtendedInformation:
             self.mFileInfo == other.mFileInfo
             and self.displayType == other.displayType
             and self.permissions() == other.permissions()
-            and self.lastModified(QTimeZone.UTC) == other.lastModified(QTimeZone.UTC)
+            and self.lastModified(qtimezone_utc()) == other.lastModified(qtimezone_utc())
         )
 
     def isCaseSensitive(self) -> bool:
@@ -115,7 +117,7 @@ class PyQExtendedInformation:
         # C++ uses qt_isCaseSensitive from QFileInfoPrivate, we use platform check
         return os.name == "posix"
 
-    def permissions(self) -> QFileDevice.Permissions:
+    def permissions(self) -> QFileDevice.Permission:
         """Return file permissions.
 
         Matches C++ lines 67-69:

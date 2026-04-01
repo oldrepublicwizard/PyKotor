@@ -17,10 +17,16 @@ import pytest
 from qtpy.QtWidgets import QApplication
 
 # Import ActionsDispatcher and dependencies
-from utility.gui.qt.common.action_definitions import ActionDefinition, FileExplorerActions
+from utility.gui.qt.common.action_definitions import ActionDefinition, ActionKey, FileExplorerActions
 from utility.gui.qt.common.actions_dispatcher import ActionsDispatcher
 from utility.gui.qt.common.tasks.actions_executor import FileActionsExecutor
 from utility.gui.qt.filesystem.qfiledialogextended.qfiledialogextended import QFileDialogExtended
+
+
+@pytest.fixture
+def force_process_pool(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Allow FileActionsExecutor to use multiprocessing when PYKOTOR_DISABLE_MULTIPROCESSING is set."""
+    monkeypatch.delenv("PYKOTOR_DISABLE_MULTIPROCESSING", raising=False)
 
 
 @pytest.fixture(scope="session")
@@ -58,37 +64,28 @@ def temp_dir() -> Generator[Path, None, None]:
 
 def test_declarative_action_definitions(qapp):
     """Test that declarative action definitions are properly structured."""
-    # Test the definitions without creating QActions
     definitions = FileExplorerActions.ACTION_DEFINITIONS
     assert len(definitions) > 0
 
-    # Test specific definitions exist
-    open_def = next((d for d in definitions if d.name == "open"), None)
+    open_def = definitions.get(ActionKey.OPEN)
     assert open_def is not None
     assert open_def.text == "Open"
     assert open_def.icon == "document-open"
 
-    delete_def = next((d for d in definitions if d.name == "delete"), None)
+    delete_def = definitions.get(ActionKey.DELETE)
     assert delete_def is not None
     assert delete_def.text == "Delete"
 
-    # Now test creating actions
     actions = FileExplorerActions()
-    assert hasattr(actions, "actions")
     assert isinstance(actions.actions, dict)
     assert len(actions.actions) > 0
 
-    # Test specific actions exist
-    assert "open" in actions.actions
-    assert "delete" in actions.actions
-    assert "copy" in actions.actions
+    assert ActionKey.OPEN in actions.actions
+    assert ActionKey.DELETE in actions.actions
+    assert ActionKey.COPY in actions.actions
 
-    # Test action properties
-    open_action = actions.actions["open"]
-    assert open_action.text() == "Open"
-
-    delete_action = actions.actions["delete"]
-    assert delete_action.text() == "Delete"
+    assert actions.actions[ActionKey.OPEN].text() == "Open"
+    assert actions.actions[ActionKey.DELETE].text() == "Delete"
 
 
 def test_actions_dispatcher_initialization(qapp, temp_dir: Path):
@@ -127,17 +124,15 @@ def test_declarative_action_execution(qapp, temp_dir: Path):
     assert open_action.text() == "Open"
 
 
-def test_multiprocessing_execution(qapp):
+def test_multiprocessing_execution(qapp, tmp_path: Path, force_process_pool: None):
     """Test that actions use multiprocessing for execution."""
-    executor = FileActionsExecutor(max_workers=2)
+    executor = FileActionsExecutor(max_workers=2, enable_multiprocessing=True)
 
-    # Test that executor uses ProcessPoolExecutor
     assert hasattr(executor, "process_pool")
     assert executor.process_pool is not None
-    # Note: On Windows this might still work or fail, but the intent is multiprocessing
 
-    # Test queuing a simple task
-    task_id = executor.queue_task("create_file", args=("test.txt", "test content"))
+    out_file = tmp_path / "queued_create.txt"
+    task_id = executor.queue_task("create_file", args=([out_file], "test content"))
     assert task_id is not None
     assert isinstance(task_id, str)
 
@@ -151,7 +146,7 @@ def test_error_handling_in_declarative_actions(qapp, temp_dir: Path):
 
     # Test invalid action (should not crash)
     # Since we dynamically look up methods, invalid ones should be handled gracefully
-    invalid_definition = ActionDefinition("invalid", "invalid-icon", "Invalid", None, "nonexistent_operation")
+    invalid_definition = ActionDefinition("dialog-error", "Invalid", None, operation="nonexistent_operation")
 
     # This should not crash, though it may not do anything
     try:
@@ -188,18 +183,14 @@ def test_action_metadata_consistency():
     """Test that action definitions have consistent metadata."""
     actions = FileExplorerActions()
 
-    for definition in actions.ACTION_DEFINITIONS:
-        # Each definition should have required fields
-        assert definition.name
+    for _key, definition in actions.ACTION_DEFINITIONS.items():
         assert definition.icon
         assert definition.text
 
-        # Either operation or handler_func should be specified for functionality
         has_operation = definition.operation is not None
         has_handler = definition.handler_func is not None
         has_prepare = definition.prepare_func is not None
 
-        # Should have some way to execute
         assert has_operation or has_handler or has_prepare
 
 
@@ -208,13 +199,11 @@ def test_async_flags_in_definitions():
     # Check that actions that should be async are marked as such
     actions = FileExplorerActions()
 
-    # File operations should typically be async
-    file_ops = ["open", "delete", "copy", "rename"]
-    for op in file_ops:
-        if op in actions.actions:
-            definition = next((d for d in actions.ACTION_DEFINITIONS if d.name == op), None)
+    file_ops = [ActionKey.OPEN, ActionKey.DELETE, ActionKey.COPY, ActionKey.RENAME]
+    for key in file_ops:
+        if key in actions.actions:
+            definition = actions.ACTION_DEFINITIONS.get(key)
             if definition:
-                # Most file operations should be async
                 assert definition.async_operation
 
 
@@ -259,7 +248,7 @@ def test_cross_platform_compatibility(qapp, temp_dir: Path):
         assert len(selected) >= 1
 
 
-def test_full_integration_workflow(qapp, temp_dir: Path):
+def test_full_integration_workflow(qapp, temp_dir: Path, force_process_pool: None):
     """Test full workflow with declarative actions."""
     dialog = QFileDialogExtended()
     dialog.setDirectory(str(temp_dir))
@@ -274,8 +263,9 @@ def test_full_integration_workflow(qapp, temp_dir: Path):
     assert dispatcher.fs_model is not None
     assert dispatcher.dialog is not None
 
-    # 3. Test file operations can be queued
-    task_id = executor.queue_task("create_file", args=("workflow_test.txt", "test"))
+    executor_mp = FileActionsExecutor(enable_multiprocessing=True)
+    workflow_file = temp_dir / "workflow_test.txt"
+    task_id = executor_mp.queue_task("create_file", args=([workflow_file], "test"))
     assert task_id
 
     # 4. Test directory navigation

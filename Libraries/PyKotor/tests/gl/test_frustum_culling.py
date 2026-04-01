@@ -70,13 +70,18 @@ class TestCameraMatrixCaching(unittest.TestCase):
         # Cache should be dirty
         self.assertTrue(self.camera._view_dirty)
 
-        # New view should be different
+        # New view should differ somewhere (orbit-style camera: x shifts effective eye;
+        # not every column-3 row matches GLM tutorials — compare full matrix).
         view2 = self.camera.view()
-        self.assertNotEqual(view1[3][0], view2[3][0])
+        any_diff = any(
+            not math.isclose(float(view1[c][r]), float(view2[c][r]), rel_tol=0.0, abs_tol=1e-5)
+            for c in range(4)
+            for r in range(4)
+        )
+        self.assertTrue(any_diff, "view matrix unchanged after position change")
 
     def test_view_matrix_invalidation_on_rotation(self):
         """Test that view matrix is invalidated when rotation changes."""
-        # Get initial view
         view1 = self.camera.view()
 
         # Change rotation
@@ -84,6 +89,14 @@ class TestCameraMatrixCaching(unittest.TestCase):
 
         # Cache should be dirty
         self.assertTrue(self.camera._view_dirty)
+
+        view2 = self.camera.view()
+        any_diff = any(
+            not math.isclose(float(view1[c][r]), float(view2[c][r]), rel_tol=0.0, abs_tol=1e-5)
+            for c in range(4)
+            for r in range(4)
+        )
+        self.assertTrue(any_diff, "view matrix unchanged after rotation")
 
     def test_projection_matrix_caching(self):
         """Test that projection matrix is cached after first call."""
@@ -122,11 +135,19 @@ class TestCameraMatrixCaching(unittest.TestCase):
         # Get initial projection
         proj1 = self.camera.projection()
 
-        # Change resolution
-        self.camera.set_resolution(1280, 720)
+        # Change resolution to a different aspect ratio (16:9 -> 4:3) so projection changes.
+        self.camera.set_resolution(1024, 768)
 
         # Cache should be dirty
         self.assertTrue(self.camera._projection_dirty)
+
+        proj2 = self.camera.projection()
+        any_diff = any(
+            not math.isclose(float(proj1[c][r]), float(proj2[c][r]), rel_tol=0.0, abs_tol=1e-5)
+            for c in range(4)
+            for r in range(4)
+        )
+        self.assertTrue(any_diff, "projection matrix unchanged after aspect ratio change")
 
 
 class TestFrustum(unittest.TestCase):

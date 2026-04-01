@@ -137,8 +137,12 @@ class PyFileInfoGatherer(QThread):
             wait();
         }
         """
-        self.requestAbort()
-        self.wait()
+        try:
+            self.requestAbort()
+            self.wait()
+        except RuntimeError:
+            # Qt object already destroyed (e.g. parent QFileSystemModel teardown order).
+            pass
 
     def event(self, event: QEvent) -> bool:
         """Event handler matching C++ lines 73-96 exactly.

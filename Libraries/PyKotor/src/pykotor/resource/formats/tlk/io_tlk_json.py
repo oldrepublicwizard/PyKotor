@@ -6,7 +6,10 @@ import json
 
 from typing import TYPE_CHECKING
 
+import kaitaistruct
+
 from pykotor.common.misc import ResRef
+from bioware_kaitai_formats.tlk_json import TlkJson
 from pykotor.resource.formats.tlk.tlk_data import TLK
 from pykotor.resource.type import ResourceReader, ResourceWriter, autoclose
 from pykotor.tools.encoding import decode_bytes_with_fallbacks
@@ -30,10 +33,7 @@ class TLKJSONReader(ResourceReader):
 
     JSON is a PyKotor-specific convenience format for easier editing of talk tables.
 
-    References:
-    ----------
-        See tlk_data module docstring for engine addresses (K1 + TSL TODO). CTlkTable::CTlkTable, CTlkTable::AddFile, CTlkFile::CTlkFile, "TLK ", "tlk" extension.
-        Note: JSON format is PyKotor-specific, not a standard game format.
+    Note: JSON format is PyKotor-specific, not a standard game format.
         The engine uses binary TLK format exclusively. JSON conversion allows easier editing
         and programmatic manipulation of talk table entries.
     """
@@ -51,7 +51,12 @@ class TLKJSONReader(ResourceReader):
     @autoclose
     def load(self, *, auto_close: bool = True) -> TLK:  # noqa: FBT001, FBT002, ARG002
         self._tlk = TLK()
-        self._json = json.loads(decode_bytes_with_fallbacks(self._reader.read_bytes(self._reader.size())))
+        raw = self._reader.read_all()
+        try:
+            TlkJson.from_bytes(raw)
+        except kaitaistruct.KaitaiStructError:
+            pass
+        self._json = json.loads(decode_bytes_with_fallbacks(raw))
 
         self._tlk.resize(len(self._json["strings"]))
         for string in self._json["strings"]:

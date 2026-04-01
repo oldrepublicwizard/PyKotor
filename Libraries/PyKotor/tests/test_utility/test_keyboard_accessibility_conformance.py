@@ -27,11 +27,13 @@ from typing import ClassVar, Final
 from qtpy.QtCore import QCoreApplication, Qt
 from qtpy.QtTest import QSignalSpy, QTest
 from qtpy.QtWidgets import (
+    QAbstractItemView,
     QApplication,
     QComboBox,
     QLineEdit,
     QListView,
     QPushButton,
+    QToolBar,
     QToolButton,
     QTreeView,
     QWidget,
@@ -234,6 +236,10 @@ class TestFileDialogTabNavigation(KeyboardAccessibilityTestBase):
 
         for widget in interactive:
             if widget.isVisible() and widget.isEnabled():
+                # QToolButtons inside a QToolBar intentionally have NoFocus (Qt
+                # manages keyboard navigation for the toolbar as a whole).
+                if isinstance(widget, QToolButton) and isinstance(widget.parent(), QToolBar):
+                    continue
                 # Widget should have focusable policy
                 policy = widget.focusPolicy()
                 self.assertNotEqual(
@@ -302,6 +308,10 @@ class TestFileDialogKeyboardShortcuts(KeyboardAccessibilityTestBase):
         views = self.dialog.findChildren(QListView) + self.dialog.findChildren(QTreeView)
 
         for view in views:
+            # Skip single-selection views (e.g. sidebar); Ctrl+A is only
+            # meaningful on the multi-selection file list.
+            if view.selectionMode() == QAbstractItemView.SelectionMode.SingleSelection:
+                continue
             if view.isVisible() and view.model() and view.model().rowCount() > 0:
                 view.setFocus()
                 QCoreApplication.processEvents()

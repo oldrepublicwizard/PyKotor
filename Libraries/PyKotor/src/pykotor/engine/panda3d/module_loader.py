@@ -7,9 +7,6 @@ utilities from Libraries/PyKotor.
 References:
 ----------
 
-    Derivations and Other Implementations:
-    -------------------------------------
-        https://github.com/th3w1zard1/KotOR.js/tree/master/src/Game.ts
         Libraries/PyKotor/src/pykotor/common/module_loader.py - Backend-agnostic loading
 
 """
@@ -43,9 +40,6 @@ class ModuleLoader:
     References:
     ----------
 
-    Derivations and Other Implementations:
-    -------------------------------------
-        https://github.com/th3w1zard1/KotOR.js/tree/master/src/Game.ts:100-300
         Libraries/PyKotor/src/pykotor/common/module_loader.py - Data extraction
 
     """
@@ -79,8 +73,7 @@ class ModuleLoader:
 
         References:
         ----------
-        Original BioWare engine binaries (from swkotor.exe, swkotor2.exe)
-        Original BioWare engine binaries
+        Observed retail KotOR I and KotOR II behavior.
 
 
         """
@@ -112,8 +105,7 @@ class ModuleLoader:
 
         References:
         ----------
-        Original BioWare engine binaries (from swkotor.exe, swkotor2.exe)
-        Original BioWare engine binaries
+        Observed retail KotOR I and KotOR II behavior.
 
 
         """
@@ -128,8 +120,7 @@ class ModuleLoader:
 
         References:
         ----------
-        Original BioWare engine binaries (from swkotor.exe, swkotor2.exe)
-        Original BioWare engine binaries
+        Observed retail KotOR I and KotOR II behavior.
 
 
         """
@@ -188,8 +179,7 @@ class ModuleLoader:
 
         References:
         ----------
-        Original BioWare engine binaries (from swkotor.exe, swkotor2.exe)
-        Original BioWare engine binaries
+        Observed retail KotOR I and KotOR II behavior.
         Libraries/PyKotor/src/pykotor/resource/generics/git.py:345-450 - GITCamera structure
 
         """
@@ -241,8 +231,7 @@ class ModuleLoader:
 
         References:
         ----------
-        Original BioWare engine binaries (from swkotor.exe, swkotor2.exe)
-        Original BioWare engine binaries
+        Observed retail KotOR I and KotOR II behavior.
 
 
         """

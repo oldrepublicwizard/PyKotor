@@ -65,7 +65,6 @@ class TestERF(TestCase):
         assert erf.get("2", ResourceType.TXT) == b"def"
         assert erf.get("3", ResourceType.TXT) == b"ghi"
 
-    # sourcery skip: no-conditionals-in-tests
     def test_read_raises(self):
         if os.name == "nt":
             self.assertRaises(PermissionError, read_erf, ".")

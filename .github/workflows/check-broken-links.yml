@@ -16,6 +16,11 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Validate wiki internal links (extension-less targets)
+        run: python helper_scripts/wiki_scripts/validate_markdown_links.py
 
       - name: Check links in markdown files
         uses: peter-evans/link-checker@v1

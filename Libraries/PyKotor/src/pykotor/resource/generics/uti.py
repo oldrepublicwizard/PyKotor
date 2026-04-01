@@ -7,8 +7,8 @@ from typing import TYPE_CHECKING
 
 from pykotor.common.language import LocalizedString
 from pykotor.common.misc import Game, ResRef
-from pykotor.resource.formats.gff import GFF, GFFContent, GFFList, read_gff, write_gff
-from pykotor.resource.formats.gff.gff_auto import bytes_gff
+from pykotor.resource.formats.gff.gff_data import GFF, GFFContent, GFFList
+from pykotor.resource.formats.gff.gff_auto import bytes_gff, read_gff, write_gff
 from pykotor.resource.type import ResourceType
 
 if TYPE_CHECKING:
@@ -16,7 +16,7 @@ if TYPE_CHECKING:
     from pykotor.resource.type import SOURCE_TYPES, TARGET_TYPES
 
 # Base item IDs considered armor per 2DA files.
-ARMOR_BASE_ITEMS: set[int] = {35, 36, 37, 38, 39, 40, 41, 42, 43, 53, 58, 63, 64, 65, 69, 71, 85, 89, 98, 100, 102, 103}
+ARMOR_BASE_ITEMS: frozenset[int] = frozenset({35, 36, 37, 38, 39, 40, 41, 42, 43, 53, 58, 63, 64, 65, 69, 71, 85, 89, 98, 100, 102, 103})
 
 
 class UTI:
@@ -25,69 +25,12 @@ class UTI:
     UTI files are GFF-based format files that store item definitions including
     properties, costs, charges, and upgrade information.
 
-    References:
-    ----------
-        Based on unified K1 (swkotor.exe) and TSL (swkotor2.exe) UTI implementation.
-        Addresses: (K1: swkotor.exe, TSL: swkotor2.exe). TSL addresses: resolve in REVA when
-        PyKotorGhidraProject.gpr is open (project may be locked by another process).
+    UTI templates are GFF root structs with base item id, tag, localized names/descriptions,
+    costs, charges, stack size, armor variation bytes, flag bits, and a ``PropertiesList`` of
+    enchantment rows. It has been observed that KotOR I and TSL share this schema; loader
+    symbols and string-table RVAs are migrated to ``wiki/reverse_engineering_findings.md``.
 
-        - CSWSItem::LoadDataFromGff (main UTI GFF parser)
-            K1: 0x0055fcd0, TSL: TODO
-            Loads all UTI template fields from GFF structure.
-            Signature: LoadDataFromGff(CSWSItem* this, CResGFF* param_1, CResStruct* param_2).
-            Called from LoadFromTemplate and LoadItem.
-
-        - CSWSItem::LoadItem (item from GFF in containers/stores)
-            K1: 0x00560970, TSL: TODO
-            Reads EquippedRes, InventoryRes, Dropable, Pickpocketable.
-            Calls LoadDataFromGff when no EquippedRes/InventoryRes present.
-
-        - CSWSItem::LoadFromTemplate (load UTI template from ResRef)
-            K1: 0x005608b0, TSL: TODO
-            Loads GFF then calls LoadDataFromGff.
-
-        - GFF field label string references (K1; TSL at different addresses, TODO):
-            K1: "TemplateResRef" 0x00747494, "BaseItem" 0x00749018, "LocalizedName" 0x00748fec,
-            "DescIdentified" 0x00748ffc, "Charges" 0x00748f88, "MaxCharges" 0x00748f7c,
-            "StackSize" 0x00748fe0.
-
-        GFF Field Structure (from LoadDataFromGff analysis):
-            - Root struct fields:
-                - "BaseItem" (INT32) - Base item type identifier
-                - "Tag" (CExoString) - Item tag identifier
-                - "Identified" (BYTE) - Whether item is identified (bit 0 of bit_flags)
-                - "Description" (CExoLocString) - Description when not identified
-                - "DescIdentified" (CExoLocString) - Description when identified
-                - "LocalizedName" (CExoLocString) - Localized item name
-                - "StackSize" (WORD) - Maximum stack size
-                - "Stolen" (BYTE) - Whether item is stolen (bit 5 of bit_flags)
-                - "Upgrades" (DWORD) - Upgrade level/bitfield
-                - "Dropable" (BYTE) - Whether item can be dropped (bit 3 of bit_flags)
-                - "Pickpocketable" (BYTE) - Whether item can be pickpocketed (bit 4 of bit_flags)
-                - "NonEquippable" (BYTE) - Whether item cannot be equipped (bit 6 of bit_flags)
-                - "ModelVariation" (BYTE) - Model variation index
-                - "ModelPart1" (BYTE) - Model part 1 index (fallback if ModelVariation is 0)
-                - "TextureVar" (BYTE) - Texture variation (for armor items)
-                - "Charges" (BYTE) - Current charges (default 0x32 = 50)
-                - "MaxCharges" (BYTE) - Maximum charges
-                - "NewItem" (BYTE) - New item flag (bit 7 of bit_flags)
-                - "DELETING" (BYTE) - Deletion flag (bit 8 of bit_flags)
-                - "AddCost" (DWORD) - Additional cost modifier
-                - "Plot" (BYTE) - Whether item is plot-critical
-                - "PropertiesList" (GFFList) - List of item properties
-            - PropertiesList element struct fields:
-                - "PropertyName" (WORD) - Property type identifier
-                - "Subtype" (WORD) - Property subtype
-                - "CostTable" (BYTE) - Cost table index
-                - "CostValue" (WORD) - Cost value
-                - "Param1" (BYTE) - Parameter 1
-                - "Param1Value" (BYTE) - Parameter 1 value
-                - "ChanceAppear" (BYTE) - Chance to appear (0-100)
-                - "Useable" (BYTE) - Whether property is usable (default 1)
-                - "UsesPerDay" (BYTE) - Uses per day limit (default 0xff = unlimited)
-                - "UpgradeType" (BYTE) - Upgrade type (default 0xff)
-
-        Note: UTI files are GFF format files with specific structure definitions (GFFContent.UTI)
+    Note: ``GFFContent.UTI``.
 
     Attributes:
     ----------
@@ -150,13 +93,8 @@ class UTI:
 class UTIProperty:
     """Represents an item property (enchantment, upgrade, etc.).
 
-    References:
-    ----------
-        Same engine functions as UTI; PropertiesList parsed in CSWSItem::LoadDataFromGff.
-        K1: 0x0055fcd0, TSL: TODO (see UTI class References).
-        PropertiesList element fields: PropertyName (WORD), Subtype (WORD), CostTable (BYTE),
-        CostValue (WORD), Param1 (BYTE), Param1Value (BYTE), ChanceAppear (BYTE),
-        Useable (BYTE, default 1), UsesPerDay (BYTE, default 0xFF), UpgradeType (BYTE, default 0xFF).
+    Each ``PropertiesList`` row stores property type, subtype, cost table/value, parameters,
+    appearance chance, and optional upgrade type per the on-disk UTI schema.
 
     Attributes:
     ----------
@@ -190,26 +128,20 @@ def construct_uti_from_struct(struct: GFFStruct) -> UTI:
 def construct_uti(gff: GFF) -> UTI:
     """Constructs a UTI object from a GFF structure.
 
-    Defaults when field missing (from engine): K1 CSWSItem::LoadDataFromGff (K1: 0x0055fcd0, TSL: TODO),
-    LoadItem (K1: 0x00560970, TSL: TODO). TemplateResRef "", BaseItem 0, Tag/LocalizedName "" or empty;
-    Charges 0 (engine default 0x32 for some); Cost/StackSize/Plot/AddCost 0. Optional when missing.
-
-    Reference functions: (1) LoadDataFromGff root UTI parser, (2) LoadItem EquippedRes/InventoryRes/
-    Dropable/Pickpocketable, (3) LoadFromTemplate, (4) CResGFF::ReadField* for all root fields,
-    (5) PropertiesList parsing. TSL same semantics; addresses in UTI class References.
+    Missing fields use blank ResRefs, empty strings/localized text, and numeric zeros as in
+    observed retail reads (see ``acquire`` defaults below).
     """
     uti = UTI()
 
     root = gff.root
     # Identity: TemplateResRef "", BaseItem 0, LocalizedName/DescIdentified/Description empty, Tag "".
-    # Engine: K1 LoadDataFromGff 0x0055fcd0, LoadItem 0x00560970; TSL same (addresses in UTI References). Optional.
     uti.resref = root.acquire("TemplateResRef", ResRef.from_blank())
     uti.base_item = root.acquire("BaseItem", 0)
     uti.name = root.acquire("LocalizedName", LocalizedString.from_invalid())
     uti.description = root.acquire("DescIdentified", LocalizedString.from_invalid())
     uti.description2 = root.acquire("Description", LocalizedString.from_invalid())
     uti.tag = root.acquire("Tag", "")
-    # Cost/charges/stack: Charges 0, Cost 0, StackSize 0, Plot 0, AddCost 0. K1/TSL LoadDataFromGff. Optional.
+    # Cost/charges/stack: numeric defaults 0 when absent.
     uti.charges = root.acquire("Charges", 0)
     uti.cost = root.acquire("Cost", 0)
     uti.stack_size = root.acquire("StackSize", 0)
@@ -224,7 +156,7 @@ def construct_uti(gff: GFF) -> UTI:
     uti.stolen = root.acquire("Stolen", 0)
     uti.identified = root.acquire("Identified", 0)
 
-    # PropertiesList: PropertyName, Subtype, CostTable, CostValue, Param1, Param1Value, ChanceAppear 100; UpgradeType optional. K1/TSL LoadDataFromGff. Optional.
+    # PropertiesList: property fields default as acquire() below; UpgradeType optional.
     for property_struct in root.acquire("PropertiesList", GFFList()):
         prop = UTIProperty()
         uti.properties.append(prop)
@@ -251,7 +183,6 @@ def dismantle_uti(
     gff = GFF(GFFContent.UTI)
 
     root = gff.root
-    # Write same defaults as engine read. K1 LoadDataFromGff 0x0055fcd0, LoadItem 0x00560970; TSL same (addresses in UTI References). ResRef "", DWORD/BYTE 0.
     root.set_resref("TemplateResRef", uti.resref)
     root.set_int32("BaseItem", uti.base_item)
     root.set_locstring("LocalizedName", uti.name)

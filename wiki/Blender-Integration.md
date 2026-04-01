@@ -1,7 +1,9 @@
 # Blender Integration
 
-This page documents the current Blender-backed workflow for Holocron Toolset and the upstream
-**[kotorblender](https://github.com/ndixUR/kotorblender)** ([Mirror: th3w1zard1/kotorblender](https://github.com/th3w1zard1/kotorblender); community fork: [OldRepublicDevs/kotorblender](https://github.com/OldRepublicDevs/kotorblender)) add-on.
+Holocron Toolset uses Blender with the **kotorblender** add-on (canonical **[OldRepublicDevs/kotorblender](https://github.com/OldRepublicDevs/kotorblender)**; **th3w1zard1** hosts a mirror) for 3D model import/export.
+
+- Upstream (OldRepublicDevs/kotorblender): <https://github.com/OldRepublicDevs/kotorblender/tree/404c42bc4f36b1f60b643eda0cd17c81ba5ca7d4>
+- Mirror (th3w1zard1/kotorblender): <https://github.com/th3w1zard1/kotorblender/tree/afae04c9172f30ab765891315d9d11224ab57426>
 
 ## Goals
 
@@ -25,9 +27,9 @@ The Toolset no longer assumes a bundled vendor checkout of `kotorblender`.
 Instead it now supports the following source discovery order:
 
 1. A custom `io_scene_kotor` source path from the `KOTORBLENDER_SOURCE_PATH` environment variable
-2. A local repository checkout such as `vendor/kotorblender/io_scene_kotor`
+2. A local checkout of [kotorblender](https://github.com/OldRepublicDevs/kotorblender) (for example `io_scene_kotor/` at repo root)
 3. An adjacent checkout such as `kotorblender/io_scene_kotor`
-4. An auto-downloaded cache of the upstream [kotorblender](https://github.com/ndixUR/kotorblender) ([Mirror: th3w1zard1/kotorblender](https://github.com/th3w1zard1/kotorblender); community fork: [OldRepublicDevs/kotorblender](https://github.com/OldRepublicDevs/kotorblender)) GitHub repository
+4. An auto-downloaded cache of the upstream [kotorblender](https://github.com/OldRepublicDevs/kotorblender) GitHub repository (same upstream / mirror permalinks as in the intro above).
 
 When the Toolset installs the add-on, it also injects a **Holocron IPC overlay** into the installed
 `io_scene_kotor` package. This overlay hosts the Toolset’s JSON-RPC bridge inside *Blender* without
@@ -78,6 +80,7 @@ forward them into the active Blender session.
 The current Toolset integration handles **import into *Blender***. Converting the edited result into *KotOR* runtime resources still relies on the normal `kotorblender` export flow (for example `kb.mdlexport`) plus *PyKotor* packaging/conversion steps for textures and module resources.
 
 In other words:
+
 - **Drag/Drop into Blender:** supported
 - **Edit in Blender with Toolset session active:** supported
 - **Export imported meshes back out as *KotOR* MDL/MDX:** supported through the live bridge for minimal trimesh-style exports
@@ -154,11 +157,12 @@ QT_QPA_PLATFORM=offscreen uv run pytest --import-mode=importlib \
 - External asset import is supported, but end-to-end "import arbitrary asset --> automatically ship as final *KotOR*-compatible resource" is still a guided pipeline rather than a one-click conversion path.
 - Engine-level documentation updates that require direct *K1* + *TSL* binary analysis were **not** added here, because those binaries were not available in the current environment during this work.
 
-### See Also
+### See also
 
 - [Indoor Map Builder User Guide](Indoor-Map-Builder-User-Guide) -- User workflow for Indoor Maps
 - [Indoor Map Builder Implementation Guide](Indoor-Map-Builder-Implementation-Guide) -- Implementation Details
-- [BWM File Format](BWM-File-Format) -- Walkmesh Format
+- [BWM File Format](Level-Layout-Formats#bwm) -- Walkmesh Format
 - [MDL/MDX File Format](MDL-MDX-File-Format) -- Model Format
-- [LYT-File-Format](LYT-File-Format) -- Room Layout; [GFF-GIT](GFF-GIT) -- Instance Data
+- [LYT-File-Format](Level-Layout-Formats#lyt) -- Room Layout
+- [GFF-GIT](GFF-Module-and-Area#git) -- Instance Data
 - [Community sources and archives](Home#community-sources-and-archives) -- DeadlyStream, forums for *MDL/LYT* workflows and *kotorblender*

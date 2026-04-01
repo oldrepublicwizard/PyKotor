@@ -30,7 +30,21 @@ if TYPE_CHECKING:
 logger = logging.getLogger(__name__)
 
 
-class ComparableMixin:
+class BiowareResource:
+    """Base type for BioWare on-disk / parsed resource objects under ``resource.formats``.
+
+    Subclasses include format payloads (GFF, MDL, …), binary readers/writers
+    (via :class:`pykotor.resource.type.ResourceReader` / ``ResourceWriter``),
+    and archives (via :class:`pykotor.resource.bioware_archive.BiowareArchive` /
+    :class:`pykotor.resource.bioware_archive.ArchiveResource`). Use for
+    ``isinstance`` / grouping; keep cooperative multiple inheritance in mind when
+    adding shared behavior.
+    """
+
+    __slots__ = ()
+
+
+class ComparableMixin(BiowareResource):
     """Mixin that provides a dynamic, field-driven compare() implementation.
 
     Subclasses should define class variables to describe which attributes are
@@ -100,7 +114,7 @@ class ComparableMixin:
 
         # Compare set-like fields (unordered)
         comparable_set_fields = type(self).COMPARABLE_SET_FIELDS
-        for set_name in comparable_set_fields:  # sourcery skip: for-append-to-extend
+        for set_name in comparable_set_fields:
             try:
                 old_set_raw = getattr(self, set_name)
                 new_set_raw = getattr(other, set_name)

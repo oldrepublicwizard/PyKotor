@@ -82,14 +82,6 @@ class KModuleType(Enum):
     KotOR modules are split across multiple archive files. The module system
     uses different file extensions to organize resources by type and priority.
 
-    References:
-    ----------
-        Original BioWare Odyssey Engine (module archive structure from swkotor.exe, swkotor2.exe)
-        Note: Module file organization varies between KotOR 1 and KotOR 2
-
-
-        Note: Module file organization varies between KotOR 1 and KotOR 2
-
     File Organization:
     -----------------
         - MAIN (.rim): Contains core module files (IFO, ARE, GIT) - only loaded in simple mode
@@ -98,30 +90,19 @@ class KModuleType(Enum):
         - DATA (_s.rim): Contains module data (creatures, items, placeables, etc.)
         - K2_DLG (_dlg.erf): KotOR 2 only - contains dialog files
         - MOD (.mod): Community override format, replaces all above files
-
-    Reverse Engineering Notes:
-    -------------------------
-        Based on swkotor.exe: FUN_004094a0 and swkotor2.exe: FUN_004096b0
-        - Simple Mode (flag at offset 0x54 == 0): Loads .rim directly
-        - Complex Mode (flag != 0): Checks for _a.rim, _adx.rim, .mod, _s.rim, _dlg.erf
-        - _a.rim and _adx.rim REPLACE .rim in complex mode
-        - .mod REPLACES all other files if it exists
     """
 
     MAIN = ".rim"  # Contains the IFO/ARE/GIT
     """Main module archive containing core module files.
-    
-    Reference: Original BioWare Odyssey Engine module structure
+
     Contains: IFO (module info), ARE (area data), GIT (dynamic area info)
     File naming: <modulename>.rim
-    Note: Only loaded in simple mode (flag at offset 0x54 == 0)
-    swkotor.exe: FUN_004094a0 line 32-42
+    Note: Only loaded in simple mode.
     """
 
     AREA = "_a.rim"  # Area-specific RIM (complex mode)
     """Area-specific module archive (complex mode).
-    
-    Reference: swkotor.exe: FUN_004094a0 line 61, 159
+
     Contains: ARE (area data) and related area resources
     File naming: <modulename>_a.rim
     Behavior: REPLACES .rim in complex mode
@@ -129,8 +110,7 @@ class KModuleType(Enum):
 
     AREA_EXTENDED = "_adx.rim"  # Extended area RIM (complex mode)
     """Extended area module archive (complex mode).
-    
-    Reference: swkotor.exe: FUN_004094a0 line 74, 85
+
     Contains: ARE (area data) and extended area resources
     File naming: <modulename>_adx.rim
     Behavior: REPLACES .rim if _a.rim not found
@@ -138,8 +118,7 @@ class KModuleType(Enum):
 
     DATA = "_s.rim"  # Contains everything else
     """Data module archive containing module resources.
-    
-    Reference: Original BioWare Odyssey Engine module structure
+
     Contains: UTC, UTD, UTE, UTI, UTM, UTP, UTS, UTT, UTW, FAC, LYT, NCS, PTH
     File naming: <modulename>_s.rim
     Note: In KotOR 2, DLG files are NOT in _s.rim (see K2_DLG)
@@ -147,8 +126,7 @@ class KModuleType(Enum):
 
     K2_DLG = "_dlg.erf"  # In TSL, DLGs are here instead of _s.rim.
     """KotOR 2 dialog archive containing dialog files.
-    
-    Reference: Original BioWare Odyssey Engine (KotOR 2 only)
+
     Contains: DLG (dialog) files
     File naming: <modulename>_dlg.erf
     Note: KotOR 1 stores DLG files in _s.rim, KotOR 2 uses separate _dlg.erf
@@ -195,7 +173,7 @@ class KModuleType(Enum):
             return self is not ResourceType.TwoDA
         if self is self.MAIN:
             return restype in {ResourceType.ARE, ResourceType.IFO, ResourceType.GIT}
-        # _a.rim and _adx.rim contain ARE resources (swkotor.exe: FUN_004094a0 line 61, 74 - checks for ARE type 0xbba)
+        # _a.rim and _adx.rim carry the area-side resources in split-module layouts.
         if self is self.AREA or self is self.AREA_EXTENDED:
             return restype in {ResourceType.ARE, ResourceType.IFO, ResourceType.GIT}
         if self is self.DATA:
@@ -377,31 +355,6 @@ class Module:  # noqa: PLR0904
     or a single override archive (.mod). It manages resource loading, activation,
     and provides access to module-specific resources like areas, creatures, items, etc.
 
-    References:
-    ----------
-        Based on swkotor.exe module system:
-        - CServerExoAppInternal::LoadModule @ 0x004b95b0 - Main module loader (4088 bytes, 36 callees)
-          * Loads module from IFO file
-          * Handles module initialization and resource loading
-          * Calls LoadModuleStart, LoadModuleInProgress, LoadModuleFinish
-        - CSWSModule::LoadModuleStart @ 0x004c9050 - Module start loader (5666 bytes, 68 callees)
-          * Initializes module resources
-          * Loads IFO, ARE, GIT files
-          * Sets up module area and objects
-        - LoadModuleInProgress (/K1/k1_win_gog_swkotor.exe @ 0x004c5720, /K2/k2_win_gog_aspyr_swkotor2.exe: TODO: Find this address) - Module loading progress handler (347 bytes, 7 callees)
-        - LoadModuleFinish (/K1/k1_win_gog_swkotor.exe @ 0x004c5880, /K2/k2_win_gog_aspyr_swkotor2.exe: TODO: Find this address) - Module loading completion handler (245 bytes, 9 callees)
-        - UnloadModule (/K1/k1_win_gog_swkotor.exe @ 0x004b9240, /K2/k2_win_gog_aspyr_swkotor2.exe: TODO: Find this address) - Unloads module (850 bytes, 32 callees)
-        - FUN_004094a0 - Module archive loader (loads .rim, _s.rim, _adx.rim files)
-          * Handles module archive file discovery
-          * Loads main .rim, data _s.rim, and extended _adx.rim archives
-        - "MODULES:" string (/K1/k1_win_gog_swkotor.exe @ 0x0073d90c, /K2/k2_win_gog_aspyr_swkotor2.exe: TODO: Find this address) - Module list identifier
-        - "Module" string (/K1/k1_win_gog_swkotor.exe @ 0x007442a8, /K2/k2_win_gog_aspyr_swkotor2.exe: TODO: Find this address) - Module identifier
-        - "CSWSSCRIPTEVENT_EVENTTYPE_ON_MODULE_LOAD" (/K1/k1_win_gog_swkotor.exe @ 0x007446e4, /K2/k2_win_gog_aspyr_swkotor2.exe: TODO: Find this address) - Module load event
-        - "CSWSSCRIPTEVENT_EVENTTYPE_ON_MODULE_START" (/K1/k1_win_gog_swkotor.exe @ 0x00744710, /K2/k2_win_gog_aspyr_swkotor2.exe: TODO: Find this address) - Module start event
-        - "ModuleList" (/K1/k1_win_gog_swkotor.exe @ 0x00745044, /K2/k2_win_gog_aspyr_swkotor2.exe: TODO: Find this address), "GetModuleList" (/K1/k1_win_gog_swkotor.exe @ 0x00745050, /K2/k2_win_gog_aspyr_swkotor2.exe: TODO: Find this address) - Module list functions
-        - "ModuleRunning" (/K1/k1_win_gog_swkotor.exe @ 0x00745060, /K2/k2_win_gog_aspyr_swkotor2.exe: TODO: Find this address), "ModuleLoaded" (/K1/k1_win_gog_swkotor.exe @ 0x00745078, /K2/k2_win_gog_aspyr_swkotor2.exe: TODO: Find this address) - Module state strings
-        - "modulesave" (/K1/k1_win_gog_swkotor.exe @ 0x00745128, /K2/k2_win_gog_aspyr_swkotor2.exe: TODO: Find this address), "ModuleName" (/K1/k1_win_gog_swkotor.exe @ 0x00745134, /K2/k2_win_gog_aspyr_swkotor2.exe: TODO: Find this address) - Module save/name strings
-
     Attributes:
     ----------
         resources: Dictionary mapping ResourceIdentifier to ModuleResource.
@@ -444,8 +397,7 @@ class Module:  # noqa: PLR0904
         self._cached_sort_id: str | None = None
         self._load_textures: bool = load_textures
 
-        # Build all capsules relevant to this root in the provided installation
-        # Based on swkotor.exe: FUN_004094a0 and swkotor2.exe: FUN_004096b0
+        # Build the archive set relevant to this module root.
         self._capsules: _CapsuleDictTypes = {
             KModuleType.MAIN.name: None,
             KModuleType.AREA.name: None,
@@ -457,45 +409,38 @@ class Module:  # noqa: PLR0904
         module_path = installation.module_path()
 
         if self.dot_mod:
-            # .mod file overrides all rim-like files
-            # swkotor.exe: FUN_004094a0 line 136: Loads .mod, skips _s.rim
+            # A .mod file overrides the split RIM/ERF layout.
             mod_filepath = module_path.joinpath(self._root + KModuleType.MOD.value)
             if mod_filepath.is_file():
                 self._capsules[KModuleType.MOD.name] = ModuleFullOverridePiece(mod_filepath)  # pyright: ignore[reportGeneralTypeIssues]
             else:
                 self.dot_mod = False
-                # Fallback to rim files when .mod doesn't exist
+                # Fall back to the split archive layout when .mod is absent.
                 self._capsules[KModuleType.MAIN.name] = ModuleLinkPiece(module_path.joinpath(self._root + KModuleType.MAIN.value))  # pyright: ignore[reportGeneralTypeIssues]
                 self._capsules[KModuleType.DATA.name] = ModuleDataPiece(module_path.joinpath(self._root + KModuleType.DATA.value))  # pyright: ignore[reportGeneralTypeIssues]
                 if self._installation.game().is_k2():
                     self._capsules[KModuleType.K2_DLG.name] = ModuleDLGPiece(module_path.joinpath(self._root + KModuleType.K2_DLG.value))  # pyright: ignore[reportGeneralTypeIssues]
         else:
-            # Complex mode: Check for _a.rim or _adx.rim (replaces .rim), then _s.rim and _dlg.erf
-            # swkotor.exe: FUN_004094a0 line 49-216
+            # In split layouts, prefer area archives before the base .rim.
             area_rim_path = module_path.joinpath(self._root + KModuleType.AREA.value)
             area_extended_rim_path = module_path.joinpath(self._root + KModuleType.AREA_EXTENDED.value)
 
-            # Step 1: Load _a.rim if exists (REPLACES .rim)
-            # swkotor.exe: FUN_004094a0 line 159
+            # Prefer _a.rim when present.
             if area_rim_path.is_file():
                 self._capsules[KModuleType.AREA.name] = ModuleLinkPiece(area_rim_path)  # pyright: ignore[reportGeneralTypeIssues]
-            # Step 2: Load _adx.rim if _a.rim not found (REPLACES .rim)
-            # swkotor.exe: FUN_004094a0 line 85
+            # Otherwise fall back to _adx.rim before .rim.
             elif area_extended_rim_path.is_file():
                 self._capsules[KModuleType.AREA_EXTENDED.name] = ModuleLinkPiece(area_extended_rim_path)  # pyright: ignore[reportGeneralTypeIssues]
             else:
-                # Simple mode: Just load .rim file directly
-                # swkotor.exe: FUN_004094a0 line 32-42
+                # Use the base .rim when no split-area archive exists.
                 self._capsules[KModuleType.MAIN.name] = ModuleLinkPiece(module_path.joinpath(self._root + KModuleType.MAIN.value))  # pyright: ignore[reportGeneralTypeIssues]
 
-            # Step 3: Load _s.rim if exists (ADDS to base)
-            # swkotor.exe: FUN_004094a0 line 118 (only if .mod not found)
+            # Add _s.rim when present.
             data_rim_path = module_path.joinpath(self._root + KModuleType.DATA.value)
             if data_rim_path.is_file():
                 self._capsules[KModuleType.DATA.name] = ModuleDataPiece(data_rim_path)  # pyright: ignore[reportGeneralTypeIssues]
 
-            # Step 4: Load _dlg.erf if exists (K2 only, ADDS to base)
-            # swkotor2.exe: FUN_004096b0 line 147 (only if .mod not found)
+            # TSL may also provide a separate dialog ERF.
             if self._installation.game().is_k2():
                 dlg_erf_path = module_path.joinpath(self._root + KModuleType.K2_DLG.value)
                 if dlg_erf_path.is_file():
@@ -512,8 +457,7 @@ class Module:  # noqa: PLR0904
         from pykotor.extract.installation import Installation
 
         root = cls.name_to_root(filename)
-        # Build all capsules relevant to this root in the provided installation
-        # Based on swkotor.exe: FUN_004094a0 and swkotor2.exe: FUN_004096b0
+        # Build the archive set relevant to this module root.
         capsules: _CapsuleDictTypes = {
             KModuleType.MAIN.name: None,
             KModuleType.AREA.name: None,
@@ -1760,16 +1704,6 @@ class Module:  # noqa: PLR0904
         2. Looking up the bmpresref in loadscreens.2da using the LoadScreenID
         3. Finding the texture resource (TGA or TPC) with that ResRef
 
-        References:
-        ----------
-        Based on swkotor.exe GFF/ARE structure:
-        - CSWSArea::LoadAreaHeader (/K1/k1_win_gog_swkotor.exe @ 0x00508c50, /K2/k2_win_gog_aspyr_swkotor2.exe: TODO: Find this address) - Loads area header from GFF
-        - C2DA::Load2DArray (/K1/k1_win_gog_swkotor.exe @ 0x004143b0, /K2/k2_win_gog_aspyr_swkotor2.exe: TODO: Find this address) - Loads 2DA file from resource
-        - CResGFF::CreateGFFFile (/K1/k1_win_gog_swkotor.exe @ 0x00411260, /K2/k2_win_gog_aspyr_swkotor2.exe: TODO: Find this address) - Creates GFF file structure
-        wiki/2DA-loadscreens.md - loadscreens.2da structure and bmpresref column
-
-
-
         Returns:
         -------
             FileResource | None: The loadscreen texture FileResource, or None if not found.
@@ -1862,10 +1796,6 @@ class ModuleResource(Generic[T]):
     module archives, chitin). It tracks all locations and allows activation of a
     specific location, with lazy loading of the actual resource object.
 
-    References:
-    ----------
-        Original BioWare Odyssey Engine (resource search order: Override > Module > Chitin from swkotor.exe, swkotor2.exe)
-
 
 
     Attributes:
@@ -1952,7 +1882,6 @@ class ModuleResource(Generic[T]):
         return self._identifier
 
     def localized_name(self) -> str | None:
-        # sourcery skip: assign-if-exp, reintroduce-else
         """Returns a localized name for the resource.
 
         Args:

@@ -2396,7 +2396,12 @@ def _repo_root() -> Path:
     for parent in here.parents:
         if (parent / "vendor" / "MDLOps" / "mdlops.exe").exists():
             return parent
-    raise RuntimeError("Could not locate repo root containing vendor/MDLOps/mdlops.exe")
+    raise FileNotFoundError("MDLOps not found at vendor/MDLOps/mdlops.exe")
+
+
+def _has_mdlops() -> bool:
+    here = Path(__file__).resolve()
+    return any((parent / "vendor" / "MDLOps" / "mdlops.exe").exists() for parent in here.parents)
 
 
 def _mdlops_exe() -> Path:
@@ -2486,6 +2491,7 @@ def compare_mdl_nodes(mdl1: MDL, mdl2: MDL, test_case: unittest.TestCase, contex
     test_case.assertEqual(len(nodes1), len(nodes2), f"{msg_prefix}Node counts should match")
 
 
+@pytest.mark.skipif(not _has_mdlops(), reason="MDLOps not found at vendor/MDLOps/mdlops.exe")
 class TestMDLRoundTripAsciiToBinaryToAscii(unittest.TestCase):
     """Test round-trip conversion: ASCII -> Binary -> ASCII using diverse models."""
 

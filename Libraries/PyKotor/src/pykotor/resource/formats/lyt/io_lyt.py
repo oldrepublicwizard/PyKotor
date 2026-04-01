@@ -4,6 +4,10 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
+import kaitaistruct
+
+from pykotor.common.stream import BinaryReader
+from bioware_kaitai_formats.lyt import Lyt
 from pykotor.resource.formats.lyt.lyt_data import LYT, LYTDoorHook, LYTObstacle, LYTRoom, LYTTrack
 from pykotor.resource.type import ResourceReader, ResourceWriter, autoclose
 from utility.common.geometry import Vector3, Vector4
@@ -22,22 +26,8 @@ class LYTAsciiReader(ResourceReader):
     LYT files define the layout of rooms, tracks, obstacles, and door hooks in KotOR modules.
     Used for area loading and spatial organization.
 
-    References:
-    ----------
-        Based on swkotor.exe LYT structure:
-        - LoadLayout @ 0x005de900 - Main LYT loader (2024 bytes, 12 callees)
-          * Loads ASCII layout file from resource
-          * Parses roomcount, trackcount, obstaclecount, doorhookcount
-          * Reads room models, positions, tracks, obstacles, door hooks
-        - LoadLayout @ 0x005df140 - Alternative LYT loader (109 bytes, 4 callees)
-        - UnloadLayout @ 0x005de450 - Unloads layout (27 bytes, 1 callee)
-        - "roomcount" string @ 0x00741588 - Room count keyword
-        - "trackcount" string @ 0x0074157c - Track count keyword
-        - ".lyt" extension string @ 0x007415a0 - LYT file extension
-        - "lyt" resource type string @ 0x0074dc9c - LYT resource type identifier
-        - "beginlayout" string @ 0x0074d384 - Layout loading start marker
-        - "donelayout" string @ 0x0074d370 - Layout loading completion marker
-
+    Retail modules stream ASCII ``roomcount`` / ``trackcount`` / obstacle / door-hook stanzas
+    from ``.lyt`` resources.
 
     """
 
@@ -60,7 +50,12 @@ class LYTAsciiReader(ResourceReader):
     def load(self, *, auto_close: bool = True) -> LYT:  # noqa: FBT001, FBT002, ARG002
         self._lyt = LYT()
 
-        self._lines = self._reader.read_string(self._reader.size()).splitlines()
+        data = self._reader.read_all()
+        try:
+            raw = Lyt.from_bytes(data).raw_content
+        except (kaitaistruct.KaitaiStructError, UnicodeDecodeError):
+            raw = BinaryReader.from_bytes(data, 0).read_string(len(data))
+        self._lines = raw.splitlines()
 
         iterator: Iterator[str] = iter(self._lines)
         for line in iterator:

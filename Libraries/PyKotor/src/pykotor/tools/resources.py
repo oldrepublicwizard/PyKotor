@@ -4,15 +4,12 @@ This module provides reusable, abstract functions for converting between differe
 resource formats (texture, sound, model conversions). These functions are tool-agnostic
 and can be used by any application that needs resource conversions.
 
+For **directory / multi-file TPC↔TGA** workflows and **editor byte loads** (TXI sidecars,
+small-TGA fallback), use :mod:`pykotor.tools.texture_batch` alongside this module.
+
 References:
 ----------
-        Original BioWare engine binaries (from swkotor.exe, swkotor2.exe)
-        Original BioWare engine binaries
-        Derivations and Other Implementations:
-        ----------
-        https://github.com/th3w1zard1/kotorblender/tree/master/
-
-
+        Observed retail KotOR I and KotOR II behavior.
 """
 
 from __future__ import annotations
@@ -90,8 +87,7 @@ def convert_tpc_to_tga(
 
     References:
     ----------
-        Original BioWare engine binaries (from swkotor.exe, swkotor2.exe)
-        Original BioWare engine binaries
+        Observed retail KotOR I and KotOR II behavior.
 
 
     """
@@ -119,8 +115,7 @@ def convert_tga_to_tpc(
 
     References:
     ----------
-        Original BioWare engine binaries (from swkotor.exe, swkotor2.exe)
-        Original BioWare engine binaries
+        Observed retail KotOR I and KotOR II behavior.
 
 
     """
@@ -148,8 +143,7 @@ def convert_wav_to_clean(
 
     References:
     ----------
-        Original BioWare engine binaries (from swkotor.exe, swkotor2.exe)
-        Original BioWare engine binaries
+        Observed retail KotOR I and KotOR II behavior.
 
 
     """
@@ -174,8 +168,7 @@ def convert_clean_to_wav(
 
     References:
     ----------
-        Original BioWare engine binaries (from swkotor.exe, swkotor2.exe)
-        Original BioWare engine binaries
+        Observed retail KotOR I and KotOR II behavior.
 
 
     """
@@ -204,14 +197,7 @@ def convert_mdl_to_ascii(
 
     References:
     ----------
-        Original BioWare engine binaries (from swkotor.exe, swkotor2.exe)
-        Original BioWare engine binaries
-        Derivations and Other Implementations:
-        ----------
-        https://github.com/th3w1zard1/kotorblender/tree/master/io_scene_kotor/format/mdl/
-        https://github.com/th3w1zard1/mdlops/tree/master/mdlops.pl
-
-
+        Observed retail KotOR I and KotOR II behavior.
     """
     mdx_path = mdx_path or input_path.with_suffix(".mdx")
     if not mdx_path.exists():
@@ -237,14 +223,7 @@ def convert_ascii_to_mdl(
 
     References:
     ----------
-        Original BioWare engine binaries (from swkotor.exe, swkotor2.exe)
-        Original BioWare engine binaries
-        Derivations and Other Implementations:
-        ----------
-        https://github.com/th3w1zard1/kotorblender/tree/master/io_scene_kotor/format/mdl/
-        https://github.com/th3w1zard1/mdlops/tree/master/mdlops.pl
-
-
+        Observed retail KotOR I and KotOR II behavior.
     """
     mdl = read_mdl(input_path)
 
@@ -294,8 +273,7 @@ def convert_texture_format(
 
     References:
     ----------
-        Original BioWare engine binaries (from swkotor.exe, swkotor2.exe)
-        Original BioWare engine binaries
+        Observed retail KotOR I and KotOR II behavior.
 
 
     """

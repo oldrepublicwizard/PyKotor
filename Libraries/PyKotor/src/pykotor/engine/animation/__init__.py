@@ -6,11 +6,6 @@ by different rendering backends.
 References:
 ----------
 
-    Derivations and Other Implementations:
-    -------------------------------------
-        https://github.com/th3w1zard1/KotOR.js/tree/master/src/odyssey/controllers
-
-
 """
 
 from __future__ import annotations

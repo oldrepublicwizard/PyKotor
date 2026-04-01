@@ -23,7 +23,7 @@ FUNCTION_FILES = [
     "NSS-Shared-Functions-Item-Management.md",
     "NSS-Shared-Functions-Item-Properties.md",
     "NSS-Shared-Functions-Local-Variables.md",
-    "NSS-Shared-Functions-Module-and-Area-Functions.md",
+    "NSS-Shared-Functions-Module-and-Area.md",
     "NSS-Shared-Functions-Object-Query-and-Manipulation.md",
     "NSS-Shared-Functions-Other-Functions.md",
     "NSS-Shared-Functions-Party-Management.md",

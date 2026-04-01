@@ -16,6 +16,7 @@ import base64
 import itertools
 import json
 import math
+import struct
 
 from copy import copy, deepcopy
 from typing import TYPE_CHECKING, Any, Callable, NamedTuple, TypedDict
@@ -45,6 +46,7 @@ if TYPE_CHECKING:
     import os
     import pathlib
 
+    from pykotor.common.module import Module
     from pykotor.common.modulekit import ModuleKitManager
     from pykotor.extract.installation import Installation
     from pykotor.resource.formats.bwm import BWM
@@ -200,6 +202,12 @@ class IndoorMap(ComparableMixin):
         self.git: GIT | None = None
 
         self._preserve_extracted_metadata: bool = False
+        # Implicit-kit extract → build: preserve retail LYT/VIS/GIT/PTH when sourced from a Module.
+        self._preserve_extracted_git: bool = False
+        self._preserve_extracted_layout: bool = False
+        self._source_module: Module | None = None
+        self._source_lyt_for_preserve: LYT | None = None
+        self._source_vis_for_preserve: VIS | None = None
 
         self.total_lm: int = 0
         self.room_names: dict[IndoorMapRoom, str] = {}
@@ -281,6 +289,12 @@ class IndoorMap(ComparableMixin):
 
     def add_rooms(self):
         assert self.vis is not None
+        if self._preserve_extracted_layout and self._source_vis_for_preserve is not None:
+            return
+        if self._preserve_extracted_layout and self._source_lyt_for_preserve is not None:
+            for lyt_room in self.lyt.rooms if self.lyt is not None else []:
+                self.vis.add_room(lyt_room.model)
+            return
         for i in range(len(self.rooms)):
             modelname = f"{self.module_id}_room{i}"
             self.vis.add_room(modelname)
@@ -305,15 +319,19 @@ class IndoorMap(ComparableMixin):
         for room in self.rooms:
             self.used_rooms.add(room.component)
         for kit_room in self.used_rooms:
-            self.scan_mdls.add(kit_room.mdl)
+            if kit_room.mdl:
+                self.scan_mdls.add(kit_room.mdl)
             self.used_kits.add(kit_room.kit)
             for padding_model in self._iter_padding_models(kit_room):
-                self.scan_mdls.add(padding_model.mdl)
+                if padding_model.mdl:
+                    self.scan_mdls.add(padding_model.mdl)
 
     def handle_textures(self):
         assert self.mod is not None
         # Deterministic iteration: sets are unordered and can change rename indices across runs.
         for mdl in sorted(self.scan_mdls):
+            if not mdl:
+                continue
             # Deterministic rename order is required for stable `.indoor -> .mod` rebuilds.
             # Sort only textures not yet renamed to avoid redundant work.
             for texture in sorted(t for t in model.iterate_textures(mdl) if t not in self.tex_renames):
@@ -354,7 +372,14 @@ class IndoorMap(ComparableMixin):
         installation: Installation,
         target_tsl: bool,
     ) -> tuple[bytes | bytearray, bytes | bytearray]:
-        mdl, mdx = model.flip(room.component.mdl, room.component.mdx, flip_x=room.flip_x, flip_y=room.flip_y)
+        mdl_raw = room.component.mdl or b""
+        mdx_raw = room.component.mdx or b""
+        # model.transform expects a full MDL header; placeholder / missing geometry skips the pipeline.
+        if len(mdl_raw) < 12:
+            return mdl_raw, mdx_raw
+        mdl, mdx = model.flip(mdl_raw, mdx_raw, flip_x=room.flip_x, flip_y=room.flip_y)
+        if len(mdl) < 12:
+            return mdl, mdx
         mdl_transformed: bytes | bytearray = model.transform(mdl, Vector3.from_null(), room.rotation)
         mdl_converted: bytes | bytearray = model.convert_to_k2(mdl_transformed) if target_tsl else model.convert_to_k1(mdl_transformed)
         return mdl_converted, mdx
@@ -393,6 +418,8 @@ class IndoorMap(ComparableMixin):
         installation: Installation,
     ) -> bytes | bytearray:
         assert self.mod is not None
+        if len(mdl_data) < 12:
+            return mdl_data
         lm_renames: dict[str, str] = {}
         # Deterministic rename order is required for stable `.indoor -> .mod` rebuilds.
         for lightmap in sorted(model.iterate_lightmaps(mdl_data)):
@@ -426,7 +453,11 @@ class IndoorMap(ComparableMixin):
         mdx: bytes | bytearray,
     ) -> None:
         assert self.mod is not None, "mod is None"
-        mdl = model.change_textures(mdl, self.tex_renames)
+        if self.tex_renames and len(mdl) >= 12:
+            try:
+                mdl = model.change_textures(mdl, self.tex_renames)
+            except (OSError, ValueError, struct.error):
+                pass
         self.mod.set_data(modelname, ResourceType.MDL, bytes(mdl))
         self.mod.set_data(modelname, ResourceType.MDX, bytes(mdx))
 
@@ -527,6 +558,9 @@ class IndoorMap(ComparableMixin):
     def handle_door_insertions(self, target_tsl: bool):
         assert self.mod is not None, "mod is None"
         assert self.git is not None, "git is None"
+        if self._preserve_extracted_git:
+            self._copy_git_blueprint_resources_from_source_module()
+            return
         insertions = self.door_insertions()
         for i, insertion in enumerate(insertions):
             door_resname = f"{self.module_id}_dor{i}"
@@ -555,11 +589,44 @@ class IndoorMap(ComparableMixin):
         """Return K1/K2 door template based on target game selection."""
         return insertion.door.utdK2 if target_tsl else insertion.door.utdK1
 
+    def _copy_git_blueprint_resources_from_source_module(self) -> None:
+        """Copy UTC/UTD/… blueprints referenced by a preserved GIT from the source module."""
+        assert self.mod is not None
+        if self._source_module is None or self.git is None:
+            return
+        for ident in self.git.iter_resource_identifiers():
+            mr = self._source_module.resource(ident.resname, ident.restype)
+            if mr is None:
+                continue
+            data = mr.data()
+            if data is None:
+                continue
+            self.mod.set_data(ident.resname, ident.restype, bytes(data))
+
+    def _copy_pth_from_source_module_if_present(self) -> None:
+        """Copy all PTH resources from the source module (composite may hold several resnames)."""
+        assert self.mod is not None
+        if self._source_module is None:
+            return
+        for mr in self._source_module.resources.values():
+            if mr.restype() != ResourceType.PTH:
+                continue
+            data = mr.data()
+            if data is None:
+                continue
+            self.mod.set_data(mr.resname(), ResourceType.PTH, bytes(data))
+
     def _initialize_build_state(self) -> None:
         """Reset and allocate transient build objects for module generation."""
         self.mod = ERF(ERFType.MOD)
-        self.lyt = LYT()
-        self.vis = VIS()
+        if self._preserve_extracted_layout and self._source_lyt_for_preserve is not None:
+            self.lyt = deepcopy(self._source_lyt_for_preserve)
+        else:
+            self.lyt = LYT()
+        if self._preserve_extracted_layout and self._source_vis_for_preserve is not None:
+            self.vis = deepcopy(self._source_vis_for_preserve)
+        else:
+            self.vis = VIS()
         if self._preserve_extracted_metadata and self.are is not None:
             pass
         else:
@@ -582,22 +649,41 @@ class IndoorMap(ComparableMixin):
     def _build_room_resources(
         self,
         room: IndoorMapRoom,
-        modelname: str,
+        room_index: int,
         installation: Installation,
         target_tsl: bool,
     ) -> None:
         """Emit per-room model, walkmesh, and static resources into build state."""
         assert self.lyt is not None
+        if self._preserve_extracted_layout and self._source_lyt_for_preserve is not None:
+            if room_index >= len(self.lyt.rooms):
+                msg = f"Preserved LYT has {len(self.lyt.rooms)} rooms but build requested index {room_index}"
+                raise ValueError(msg)
+            modelname = self.lyt.rooms[room_index].model
+        else:
+            modelname = f"{self.module_id}_room{room_index}"
         self.room_names[room] = modelname
-        self.lyt.rooms.append(LYTRoom(modelname, room.position))
+        if not (self._preserve_extracted_layout and self._source_lyt_for_preserve is not None):
+            self.lyt.rooms.append(LYTRoom(modelname, room.position))
         self.add_static_resources(room)
 
         mdl, mdx = self.process_model(room, installation, target_tsl)
         mdl = self.process_lightmaps(mdl, installation)
         self.add_model_resources(modelname, mdl, mdx)
 
-        bwm = self.process_bwm(room)
-        self.add_bwm_resource(modelname, bwm)
+        wok_payload: bytes | None = None
+        if self._preserve_extracted_layout and self._source_module is not None:
+            wok_mr = self._source_module.resource(modelname, ResourceType.WOK)
+            if wok_mr is not None:
+                wd = wok_mr.data()
+                if wd is not None:
+                    wok_payload = bytes(wd)
+        if wok_payload is not None:
+            assert self.mod is not None
+            self.mod.set_data(modelname, ResourceType.WOK, wok_payload)
+        else:
+            bwm = self.process_bwm(room)
+            self.add_bwm_resource(modelname, bwm)
 
     def _apply_loadscreen_override(self, loadscreen_path: os.PathLike | str | None) -> None:
         """Apply optional custom loadscreen payload when file exists."""
@@ -630,6 +716,8 @@ class IndoorMap(ComparableMixin):
         for resname, restype, data in payloads:
             self.mod.set_data(resname, restype, data)
 
+        self._copy_pth_from_source_module_if_present()
+
         # NOTE: We intentionally do NOT embed the `.indoor` JSON into the built module.
         # Roundtrip correctness must come from reconstructing state from game resources
         # (LYT/MDL/MDX/WOK/etc), not from embedding cached editor data.
@@ -654,8 +742,7 @@ class IndoorMap(ComparableMixin):
 
         # Process each room
         for i, room in enumerate(self.rooms):
-            modelname = f"{self.module_id}_room{i}"
-            self._build_room_resources(room, modelname, installation, target_tsl)
+            self._build_room_resources(room, i, installation, target_tsl)
 
         self.process_skybox(kits)
         self.generate_and_set_minimap()
@@ -948,6 +1035,12 @@ class IndoorMap(ComparableMixin):
         self.name = LocalizedString.from_english("New Module")
         self.lighting = Color(0.5, 0.5, 0.5)
         self.target_game_type = None
+        self._preserve_extracted_metadata = False
+        self._preserve_extracted_git = False
+        self._preserve_extracted_layout = False
+        self._source_module = None
+        self._source_lyt_for_preserve = None
+        self._source_vis_for_preserve = None
 
 
 class IndoorMapRoom(ComparableMixin):

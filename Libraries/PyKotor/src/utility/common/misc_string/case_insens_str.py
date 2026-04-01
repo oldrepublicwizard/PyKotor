@@ -17,7 +17,7 @@ class CaseInsensImmutableStr(WrappedStr):
     def _coerce_str(
         cls,
         item: Any,
-    ) -> str:  # sourcery skip: assign-if-exp, reintroduce-else
+    ) -> str:
         if isinstance(item, WrappedStr):
             return str(item._content).casefold()  # noqa: SLF001
         if isinstance(item, str):

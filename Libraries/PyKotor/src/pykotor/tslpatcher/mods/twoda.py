@@ -5,17 +5,7 @@ Handles row/column additions, cell modifications, and memory token resolution.
 
 References:
 ----------
-        Based on swkotor.exe 2DA structure:
-        - C2DA::Load2DArray @ 0x004143b0 - Loads 2DA file from resource
-        - C2DA::Unload2DArray @ 0x004139e0 - Unloads 2DA data
-        Original BioWare engine binaries
-        Derivations and Other Implementations:
-        ----------
-        https://github.com/th3w1zard1/TSLPatcher/tree/master/TSLPatcher.pl (unfinished perl rewrite of TSLPatcher)
-        https://github.com/th3w1zard1/HoloPatcher.NET/tree/master/src/TSLPatcher.Core/Mods/2DA/
-        https://github.com/th3w1zard1/Kotor.NET/tree/master/Kotor.NET.Patcher/
-
-
+        Observed retail KotOR 2DA load/unload behavior.
 """
 
 from __future__ import annotations

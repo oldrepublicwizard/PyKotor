@@ -42,7 +42,7 @@ def detect_lip(
     def check(first4):
         if first4 == "LIP ":
             return ResourceType.LIP
-        if "<" in first4:  # sourcery skip: assign-if-exp, reintroduce-else
+        if "<" in first4:
             return ResourceType.LIP_XML
         if "{" in first4:
             return ResourceType.LIP_JSON

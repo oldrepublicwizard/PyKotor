@@ -4,7 +4,7 @@
 
 > **Note**: This official BioWare documentation was originally written for **Neverwinter Nights**, but the Conversation (DLG) format is **identical in KotOR**. All structures, fields, and behaviors described here apply to KotOR as well. The examples may reference NWN-specific features, but the core format is the same.
 
-**Source:** This documentation is extracted from the official BioWare Aurora Engine Conversation Format PDF, archived in [`vendor/xoreos-docs/specs/bioware/Conversation_Format.pdf`](https://github.com/th3w1zard1/xoreos-docs/blob/master/specs/bioware/Conversation_Format.pdf). The original documentation was published on the now-defunct nwn.bioware.com developer site.
+**Source:** This documentation is extracted from the official BioWare Aurora Engine Conversation Format PDF, archived in [`xoreos-docs/specs/bioware/Conversation_Format.pdf`](https://github.com/xoreos/xoreos-docs/blob/master/specs/bioware/Conversation_Format.pdf). The original documentation was published on the now-defunct nwn.bioware.com developer site.
 
 ---
 
@@ -307,6 +307,9 @@ Struct's own Comment.
 
 ### See also
 
-- [GFF-DLG](GFF-DLG) -- KotOR dialogue implementation
-- [NSS-File-Format](NSS-File-Format), [NCS-File-Format](NCS-File-Format) -- Scripts in dialogue; [TLK-File-Format](TLK-File-Format) -- Strings
-- [GFF-File-Format](GFF-File-Format) -- GFF structure; [KEY-File-Format](KEY-File-Format) -- Resource resolution
+- [GFF-DLG](GFF-Creature-and-Dialogue#dlg) -- KotOR dialogue implementation
+- [NSS-File-Format](NSS-File-Format)
+- [NCS-File-Format](NCS-File-Format) -- Scripts in dialogue
+- [Audio-and-Localization-Formats#tlk](Audio-and-Localization-Formats#tlk) -- Strings
+- [GFF-File-Format](GFF-File-Format) -- GFF structure
+- [Container-Formats#key](Container-Formats#key) -- Resource resolution

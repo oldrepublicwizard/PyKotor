@@ -867,7 +867,7 @@ class ConfigReader:
         identifier: str,
         ini_data: CaseInsensitiveDict[str],
         current_path: PureWindowsPath | None = None,
-    ) -> ModifyGFF:  # sourcery skip: extract-method, remove-unreachable-code
+    ) -> ModifyGFF:
         """Parse GFFList's AddField syntax from the ini to determine what fields/structs/lists to add.
 
         Args:
@@ -1155,7 +1155,6 @@ class ConfigReader:
         raw_value: str,
         field_type: GFFFieldType,
     ) -> FieldValue | None:
-        # sourcery skip: assign-if-exp, reintroduce-else
         """Extracts field value from raw string based on field type.
 
         Args:

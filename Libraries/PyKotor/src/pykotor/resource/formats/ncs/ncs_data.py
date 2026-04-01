@@ -5,44 +5,33 @@ The bytecode uses a stack-based virtual machine with instructions for arithmetic
 function calls, and stack manipulation. Each instruction consists of a bytecode opcode and a qualifier
 that specifies operand types.
 
-References:
-----------
-    Based on unified K1 (swkotor.exe) and TSL (swkotor2.exe) NCS structure.
-    Addresses: (K1: swkotor.exe, TSL: swkotor2.exe — verify/fill TSL via REVA when available).
+Observed retail behavior:
+------------------------
+    KotOR I and TSL execute NWScript from compiled ``NCS`` blobs: files begin with the ``NCS ``
+    signature, a ``V1.0`` version tag, opcode stream, and the usual stack VM semantics shared
+    with other Aurora titles. Resources are pulled from disk or embedded GFF fields before the
+    VM runs.
 
-    - CNetLayer::HandleBNCSMessage — handles BNCS messages; validates length (min 9 bytes); extracts player name/type; auth/permission flags.
-      K1: 0x005d5180, TSL: TODO
-      Signature: undefined4 __thiscall CNetLayer::HandleBNCSMessage(CNetLayer *this, ulong param_1, byte param_2, ulong param_3)
-    - CResNCS::CResNCS (NCS resource constructor): K1: 0x005d4c30, TSL: TODO
-    - CResNCS::~CResNCS (destructor): K1: 0x005d4c50, TSL: TODO
-    - CResNCS::~CResNCS (destructor variant): K1: 0x005d4c90, TSL: TODO
-    - ReadScriptFile (reads NCS from disk): K1: 0x005d2260, TSL: TODO
-    - ReadScriptsFromGff (reads NCS from GFF): K1: 0x004ebf20, TSL: TODO
-    - InitializeScript (script execution context): K1: 0x005d461b, TSL: TODO
-    - ExecuteCommandExecuteScript (executes NCS bytecode): K1: 0x00535b70, TSL: TODO
-    - "ncs" extension string: K1: 0x0074dd68, TSL: TODO
-    - "NCS " file type — first 4 bytes of NCS files; "V1.0" — bytes 4–7; magic byte 0x42 — byte 8.
-    - Original BioWare engine binaries (swkotor.exe, swkotor2.exe)
-    https://github.com/xoreos/xoreos-docs - Torlack's NCS specification (mirrored)
-Derivations and Other Implementations:
--------------------------------------
-    https://github.com/th3w1zard1/Kotor.NET/tree/master/Kotor.NET/Formats/KotorNCS/NCS.cs:9-799
-    https://github.com/th3w1zard1/Kotor.NET/tree/master/Kotor.NET/Formats/KotorNCS/NCSReader.cs:11-31
+    Maintainers: superseded script-VM delivery notes are **migrated** to the wiki
+    engine-findings article (*PyKotor package: migrated library notes*).
+
+    Community bytecode references (Torlack NCS notes, mirrors) are linked from
+    ``wiki/reverse_engineering_findings.md#third-party-format-implementations``.
 
 Binary Format:
 -------------
-Header (9 bytes):
-Offset | Size | Type   | Description
--------|------|--------|-------------
-0x00   | 4    | char[] | File Type ("NCS ")
-0x04   | 4    | char[] | File Version ("V1.0")
-0x08   | 1    | uint8  | First instruction bytecode
+    Header (9 bytes):
+    Offset | Size | Type   | Description
+    -------|------|--------|-------------
+    0x00   | 4    | char[] | File Type ("NCS ")
+    0x04   | 4    | char[] | File Version ("V1.0")
+    0x08   | 1    | uint8  | First instruction bytecode
 
-Instructions (variable length):
-Each instruction consists of:
-- Bytecode (1 byte): Opcode identifying instruction type
-- Qualifier (1 byte): Type qualifier for operands (e.g., INT, FLOAT, INT_INT)
-- Arguments (variable): Instruction-specific arguments (offsets, constants, jump targets)
+    Instructions (variable length):
+    Each instruction consists of:
+    - Bytecode (1 byte): Opcode identifying instruction type
+    - Qualifier (1 byte): Type qualifier for operands (e.g., INT, FLOAT, INT_INT)
+    - Arguments (variable): Instruction-specific arguments (offsets, constants, jump targets)
 
 Instruction Types:
 -----------------
@@ -64,7 +53,7 @@ from abc import ABC, abstractmethod
 from enum import Enum, IntEnum
 from typing import TYPE_CHECKING, Any, NamedTuple
 
-from pykotor.resource.formats._base import ComparableMixin
+from pykotor.resource.formats._base import BiowareResource, ComparableMixin
 
 if TYPE_CHECKING:
     import os
@@ -260,17 +249,10 @@ class NCS(ComparableMixin):
 
     References:
     ----------
-        See module docstring for engine addresses (K1 + TSL TODO). Original BioWare engine binaries (swkotor.exe, swkotor2.exe).
-        Derivations and Other Implementations:
-        ----------
-        https://github.com/th3w1zard1/Kotor.NET/tree/master/Kotor.NET/Formats/KotorNCS/NCS.cs:9-17
-
-
-
+        Observed in retail KotOR I and TSL..
     Attributes:
     ----------
         instructions: List of NCSInstruction objects making up the program
-            Reference: https://github.com/th3w1zard1/Kotor.NET/tree/master/NCS.cs:11 (Instructions List property)
             Instructions are executed sequentially, with jumps allowing control flow
             Each instruction has an offset, type, arguments, and optional jump target
     """
@@ -278,7 +260,6 @@ class NCS(ComparableMixin):
     COMPARABLE_SEQUENCE_FIELDS = ("instructions",)
 
     def __init__(self):
-        # https://github.com/th3w1zard1/Kotor.NET/tree/master/Kotor.NET/Formats/KotorNCS/NCS.cs:11
         # List of bytecode instructions making up the compiled script
         self.instructions: list[NCSInstruction] = []
 
@@ -643,25 +624,16 @@ class NCSInstruction(ComparableMixin):
 
     References:
     ----------
-        See module docstring for engine addresses (K1 + TSL TODO). Original BioWare engine binaries (swkotor.exe, swkotor2.exe).
-        Derivations and Other Implementations:
-        ----------
-        https://github.com/th3w1zard1/Kotor.NET/tree/master/Kotor.NET/Formats/KotorNCS/NCS.cs:19-711
-
-
-
+        Observed in retail KotOR I and TSL..
     Attributes:
     ----------
         ins_type: Instruction type (opcode + qualifier combination)
-            Reference: https://github.com/th3w1zard1/Kotor.NET/tree/master/NCS.cs:21-22 (Instruction and Qualifier properties)
             Combines bytecode opcode (e.g., ADDxx) with qualifier (e.g., INT_INT) to form complete instruction
 
         args: List of instruction arguments (offsets, constants, sizes, etc.)
-            Reference: https://github.com/th3w1zard1/Kotor.NET/tree/master/NCS.cs:23 (Args property, varies by instruction type)
             Examples: CPDOWNSP has [offset, size], CONSTI has [int_value], ACTION has [routine_id, arg_count]
 
         jump: Optional jump target instruction for control flow (JMP, JSR, JZ, JNZ)
-            Reference: https://github.com/th3w1zard1/Kotor.NET/tree/master/NCS.cs:24 (JumpTo property, NCSInstruction?)
             Used by JMP (unconditional), JSR (subroutine call), JZ (jump if zero), JNZ (jump if not zero)
             Jump offset is stored as int32 in binary, converted to instruction reference in memory
 
@@ -678,15 +650,12 @@ class NCSInstruction(ComparableMixin):
         args: list[Any] | None = None,
         jump: NCSInstruction | None = None,
     ):
-        # https://github.com/th3w1zard1/Kotor.NET/tree/master/Kotor.NET/Formats/KotorNCS/NCS.cs:21-22
         # Instruction type (bytecode opcode + qualifier combination)
         self.ins_type: NCSInstructionType = ins_type
 
-        # https://github.com/th3w1zard1/Kotor.NET/tree/master/Kotor.NET/Formats/KotorNCS/NCS.cs:24
         # Optional jump target for control flow instructions (JMP, JSR, JZ, JNZ)
         self.jump: NCSInstruction | None = jump
 
-        # https://github.com/th3w1zard1/Kotor.NET/tree/master/Kotor.NET/Formats/KotorNCS/NCS.cs:23
         # Instruction arguments (offsets, constants, sizes, etc., varies by instruction type)
         self.args: list[Any] = [] if args is None else args
 
@@ -898,7 +867,7 @@ class NCSInstruction(ComparableMixin):
         return 0
 
 
-class NCSOptimizer(ABC):
+class NCSOptimizer(BiowareResource, ABC):
     def __init__(self):
         self.instructions_cleared: int = 0
 
@@ -910,7 +879,7 @@ class NCSOptimizer(ABC):
         self.instructions_cleared = 0
 
 
-class NCSCompiler(ABC):
+class NCSCompiler(BiowareResource, ABC):
     @abstractmethod
     def compile_script(
         self, source_file: os.PathLike | str, output_file: os.PathLike | str, game: Game | int, timeout: int = 5, *, debug: bool = False

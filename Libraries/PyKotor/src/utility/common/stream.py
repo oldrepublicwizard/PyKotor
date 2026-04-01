@@ -1644,7 +1644,7 @@ class RawBinaryWriterFile(RawBinaryWriter):
         prefix_length: int = 0,
         string_length: int = -1,
         padding: str = "\0",
-    ):  # sourcery skip: inline-variable, switch
+    ):
         """Writes the specified string to the stream.
 
         The string can also be prefixed by an integer specifying the strings length.
@@ -1781,6 +1781,11 @@ class RawBinaryWriterBytearray(RawBinaryWriter):
         ----
             position: The byte index into stream.
         """
+        # CPython bytearray: assigning to b[i:j] when i >= len(b) does *not* insert a zero gap;
+        # the buffer can end up shorter than i + (j - i). Sparse writers (e.g. MDL AABB trees)
+        # rely on seek-then-write past EOF to reserve space. Only grow empty-started buffers.
+        if self._initial_size == 0 and position > len(self._ba):
+            self._ba.extend(b"\x00" * (position - len(self._ba)))
         self._position = position
 
     def end(self):
@@ -2141,7 +2146,7 @@ class RawBinaryWriterBytearray(RawBinaryWriter):
         prefix_length: int = 0,
         string_length: int = -1,
         padding: str = "\0",
-    ):  # sourcery skip: inline-variable, switch
+    ):
         """Writes the specified string to the stream.
 
         The string can also be prefixed by an integer specifying the strings length.

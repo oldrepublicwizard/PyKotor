@@ -200,7 +200,6 @@ class TestSSF(unittest.TestCase):
         assert ssf.get(SSFSound.REJOINED_PARTY) == 123049
         assert ssf.get(SSFSound.POISONED) == 123048
 
-    # sourcery skip: no-conditionals-in-tests
     def test_read_raises(self):
         if os.name == "nt":
             self.assertRaises(PermissionError, read_ssf, ".")
@@ -210,7 +209,6 @@ class TestSSF(unittest.TestCase):
         self.assertRaises(ValueError, read_ssf, CORRUPT_BINARY_TEST_DATA)
         self.assertRaises(ValueError, read_ssf, CORRUPT_XML_TEST_DATA.encode("utf-8"))
 
-    # sourcery skip: no-conditionals-in-tests
     def test_write_raises(self):
         if os.name == "nt":
             self.assertRaises(PermissionError, write_ssf, SSF(), ".", ResourceType.SSF)

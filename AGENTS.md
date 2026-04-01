@@ -29,26 +29,6 @@ QT_QPA_PLATFORM=offscreen uv run pytest --import-mode=importlib -m "not gui and 
 
 **Gotchas:**
 - **`--import-mode=importlib` is required on Linux**: Without it, pytest fails with `ModuleNotFoundError: No module named 'resource.formats'` because the test directory `Libraries/PyKotor/tests/resource/` collides with Python's stdlib `resource` module.
-- `test_mdl_ascii.py` must be `--ignore`d: it tries to open KotOR game files from a hardcoded Windows path at *collection* time and will fail with `FileNotFoundError` if `K1_PATH`/`K2_PATH` env vars are not set to valid game directories.
-- `test_registry_strict_typing.py` must be `--ignore`d on Linux: it imports the Windows-only `winreg` module unconditionally.
-- Set `QT_QPA_PLATFORM=offscreen` for headless Qt test execution; `xvfb` is available but `offscreen` is simpler. **Do not** use offscreen when running Module Designer tests (`test_module_designer.py`): they require a real display and OpenGL; HolocronToolset conftest forces real display when that file is in the test run.
-- The pytest process may crash (exit 134 / SIGABRT) during teardown due to PyQt6 thread cleanup. This is a known upstream issue and does not affect test results. Check the output for pass/fail counts before the crash.
-- Many test failures are expected without KotOR game files installed (the `K1_PATH` and `K2_PATH` environment variables point to Windows paths by default in `.env`).
-
-### Building / running the application
-
-- **PyKotor CLI**: `uv run pykotor --help` — format conversions, archive operations, diffing, etc.
-- **HolocronToolset GUI**: `QT_QPA_PLATFORM=offscreen uv run holocrontoolset` — requires display or offscreen mode.
-- **HoloPatcher**: `uv run holopatcher --help`
-- **KotorDiff**: `uv run kotordiff --help`
-
-### MDL editor crash (seek -1 / KOQ200 walkmesh)
-
-**KOQ200 / AABB seek(-1):** On **`import pykotor`**, **`pykotor/__init__.py`** patches **`sysconfig.get_path("purelib")/pykotor/.../io_mdl.py`** with **`attrib -R`** + atomic replace (plain **`write_text`** fails on uv read-only wheels). **`sitecustomize.py`** does the same before imports. One-shot: **`uv tool run holocrontoolset`’s Python** → **`python scripts/sitecustomize_koq_mdl.py`** (must print **`AABB fix present: True`**) **or** **`scripts/apply_pykotor_mdl_aabb_fix.py`**. Then restart Holocron.
-
-### Dependency sync
-
-Run `CXX=g++ uv sync --all-packages --all-extras` (not bare `uv sync`) to install all workspace members (HolocronToolset, HoloPatcher, etc.) and dev extras (ruff, pytest plugins, type stubs). Bare `uv sync` only installs the root meta-package.
 
 ### System dependencies (already in snapshot)
 
@@ -71,21 +51,24 @@ This works after a successful `uv sync --all-packages --all-extras`. **Python 3.
 - Do not use `getattr(self.ui, "widgetName", None)` or similar for UI widgets; reference widgets directly (e.g. `self.ui.toolbarModuleCombo`) and compile the UI first so the uic has the widget.
 - Do not construct Qt widgets (QPushButton, QLineEdit, QButtonGroup, QWidget, etc.) in Python; define all GUI in `.ui` files and use the LTR pattern (`self.ui = Ui_Form(); self.ui.setupUi(self)`).
 - For Qt enum/flag properties in `.ui` (focusPolicy, contextMenuPolicy, allowedAreas, scrollBarPolicy, toolBarArea), use `<enum>Qt::...</enum>` or `<set>Qt::...|...</set>` in the `.ui` file so generated code works with PyQt6; do not set these in Python instead of in the `.ui`.
+- When asked to refine, deepen, or extend a plan document only, change the named plan under `.cursor/plans/` (or the path given) and do not start executing the planned implementation until the user asks to begin that work.
+- When the user specifies a no-pull-request delivery model for wiki or documentation batches, ship updates with commit and push (including the separate `wiki` submodule when that workflow applies) rather than opening pull requests.
+- When merging or retiring a wiki page into another, remove the old page, update inbound links across the repo (wiki, `docs/`, batch catalogs, cross-references in plans or solutions notes), and run markdown link validation on the files you changed.
+- For a complete, zero-omission inventory of files under a directory tree (for example every `*.ksy` under `vendor/bioware-kaitai-formats`), use a recursive shell listing instead of inferring from search tools or stale counts from earlier messages.
+- When wiring Kaitai-backed parsing into `resource/formats`, integrate **one format at a time**, run that format’s tests before moving on, and keep public `*_auto.py` entry points and binary writer signatures compatible with existing callers unless the project explicitly changes scope.
 
 ## Learned Workspace Facts
 
 - Holocron UI workflow is compile-first: change `.ui` → run convertui → then use `self.ui.<name>` in code; defensive getattr for UI is prohibited in `.cursorrules`.
+- Holocron `Editor` subclasses can receive `InstallationToolbar.installation_changed` during `super().__init__` before `setupUi`; init any state handlers touch (e.g. `GITEditor._git`) before `super().__init__`, skip handlers until `ui` exists, and use `self._installation` for the first mode when the toolbar may have set it during construction.
+- GFF auto-read treats binary GFF only when a known four-character type is immediately followed by `V3.2`; a non-zero start offset is applied only if every byte before that header is UTF-8 BOM, ASCII whitespace, or NUL, so arbitrary junk prefixes are not parsed as GFF.
+- The generic GFF editor resolves `GFFContent` for save as loaded content, then `from_res` (special `.res` names only), then `from_resource_type` when unambiguous, else `GFFContent.GFF`; clear stored content on `new()`.
 - CLI command names should follow existing patterns and use domain-accurate terminology (e.g. avoid "archive" where Bioware or docs use different names).
 - Instance dialogs (e.g. DoorDialog) import `Ui_*` from `toolset.uic.qtpy.dialogs.instance.<name>`; ensure the `instance` package and the corresponding UI module (e.g. `door.py` from `.ui` + convertui or programmatic) exist.
-
-### Reverse engineering (agdec-http MCP)
-
-- Binary analysis tools (list-functions, search-everything, match-function, create-label, etc.) require a Ghidra project with at least one program **open/loaded**. If `list-project-files` returns Count: 0 or tools report "No program loaded", open the project and load a binary in Ghidra first; then MCP tools can target programs by project path (e.g. `/TSL/k2_win_gog_aspyr_swkotor2.exe`).
-- When matching K1→K2, prefer search-everything and address/size/call-graph over match-function (which often returns wrong mappings). Apply labels from layout and cross-binary comparison.
-- Wiki documentation stays conceptual only; no tool names or raw RE dumps in `.md`. Document resource resolution and engine behavior; link format pages to [KEY-File-Format](wiki/KEY-File-Format.md) for resolution order.
-
-### KotorMCP and MCP governance
-
-- **Transport**: Run KotorMCP over **stdio** (local command). Do not bind to 0.0.0.0 or expose the server on the network.
-- **Path safety**: Extract and write tools use `pykotor.tools.path_safety`: canonicalization, resolve-under-base, and allowlist. Do not bypass path validation.
-- **No shadow MCPs**: Use the workspace-approved MCP configuration; do not install or enable unmanaged MCP servers without following project governance.
+- Root `wiki/` is a git submodule (`PyKotor.wiki.git`); initialize or update it before full-tree wiki scans, edits, or local link checks, and assume CI may need recursive submodule checkout to see wiki content.
+- HolocronToolset packaging copies `wiki/**/*.md` into the shipped help tree; wiki layout or content changes affect what appears in the GUI help bundle.
+- In Windows PowerShell, change directories with `Set-Location` or `cd` to a path; `cd /d` is cmd.exe-only and errors in PowerShell.
+- For Kaitai Struct work, fix `.ksy` in upstream `bioware-kaitai-formats`, regenerate Python into `Libraries/bioware-kaitai-formats/src/bioware_kaitai_formats/` via `Libraries/bioware-kaitai-formats/scripts/regenerate_python.py` (or compile + `Libraries/bioware-kaitai-formats/scripts/postprocess_generated.py`), then run `scripts/rewrite_kaitai_generated_imports.py` and `scripts/strip_https_from_kaitai_generated.py` on that tree. Regenerate compatibility shims with `scripts/rewrite_kaitai_compat_shims.py`. Do not hand-edit generated parsers for logic or layout fixes; adjust the `.ksy` and regenerate. Keep type hints Python 3.8–safe where they are evaluated at runtime (e.g. use `os.PathLike`, not `os.PathLike[str]`).
+- PyKotor depends on the workspace package `bioware-kaitai-formats` (import name `bioware_kaitai_formats`). `pykotor.kaitai_generated` remains as thin shims for backward compatibility. Canonical `.ksy` sources still live in the separate `OldRepublicDevs/bioware-kaitai-formats` repo (clone into e.g. `vendor/bioware-kaitai-formats` for regeneration).
+- For Kaitai-backed formats, prefer **one parse**: map the Kaitai object into existing `*_data` models (or consume its `*_content` string) and keep `BinaryReader` legacy paths only as fallback when `KaitaiStructError` or spec gaps require it; avoid `from_bytes` + full legacy re-read on the success path.
+- Hand-maintained `Libraries/PyKotor/src/pykotor/**/*.py` (excluding `kaitai_generated/`): scrub third-party `https://` from docstrings and comments into wiki pages under `wiki/reverse_engineering_findings_*` (GitHub lines via `scripts/archive_github_url_lines.py`; other hosts in small `*_external_refs_pre_scrub.md` pages or appended sections on the matching GitHub archive). Keep in-code wording neutral and point the module docstring at the archive. `tslpatcher/writer.py` INI template sample lines that embed URLs are intentional fixture text, not RE citations.

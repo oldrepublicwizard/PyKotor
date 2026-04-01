@@ -7,8 +7,7 @@ KEY file. BZF files are LZMA-compressed BIF files used in some game distribution
 
 References:
 ----------
-        Original BioWare engine binaries (from swkotor.exe, swkotor2.exe)
-        Original BioWare engine binaries
+        Observed in retail KotOR I and TSL.
         BIF file format specification
         Binary Format:
         -------------
@@ -65,14 +64,7 @@ class BIFType(Enum):
 
     References:
     ----------
-        Original BioWare engine binaries (from swkotor.exe, swkotor2.exe)
-        Original BioWare engine binaries
-        Derivations and Other Implementations:
-        ----------
-        https://github.com/th3w1zard1/Kotor.NET/tree/master/Kotor.NET/Formats/KotorBIF/BIFBinaryStructure.cs:36
-        https://github.com/th3w1zard1/KotOR_IO/tree/master/KotOR_IO/File
-
-
+        Observed in retail KotOR I and TSL.
     """
 
     BIF = "BIFF"  # Regular uncompressed BIF file
@@ -101,26 +93,14 @@ class BIFResource(ArchiveResource):
 
     References:
     ----------
-        Original BioWare engine binaries (from swkotor.exe, swkotor2.exe)
-        Original BioWare engine binaries
-        Derivations and Other Implementations:
-        ----------
-        https://github.com/th3w1zard1/Kotor.NET/tree/master/Kotor.NET/Formats/KotorBIF/BIFBinaryStructure.cs:51-65
-        https://github.com/th3w1zard1/KotOR_IO/tree/master/KotOR_IO/File
-
-
-
+        Observed in retail KotOR I and TSL.
     Attributes:
     ----------
         resname_key_index: Composite resource ID that matches KEY file entries (same bit layout as KeyEntry.resource_id)
-            Reference: https://github.com/th3w1zard1/Kotor.NET/tree/master/BIFBinaryStructure.cs:53 (ResourceID property)
-            Reference: https://github.com/th3w1zard1/KotOR_IO/tree/master/BIF.cs:203 (ID field)
             Bits 31-20: BIF index in KEY file table. Bits 19-0: resource index within this BIF.
             Used to match resources between BIF and KEY files.
 
         _offset: Byte offset to resource data within BIF file
-            Reference: https://github.com/th3w1zard1/Kotor.NET/tree/master/BIFBinaryStructure.cs:54 (Offset property)
-            Reference: https://github.com/th3w1zard1/KotOR_IO/tree/master/BIF.cs:204 (Offset field)
             Points to start of raw resource data in file
             Offsets are absolute from beginning of file
 
@@ -140,13 +120,9 @@ class BIFResource(ArchiveResource):
     ):
         super().__init__(resref=resref, restype=restype, data=data, size=size)
 
-        # https://github.com/th3w1zard1/Kotor.NET/tree/master/Kotor.NET/Formats/KotorBIF/BIFBinaryStructure.cs:53
-        # https://github.com/th3w1zard1/KotOR_IO/tree/master/KotOR_IO/File Formats/BIF.cs:203
         # Resource ID (matches KEY file, unique within BIF)
         self.resname_key_index: int = 0 if resname_key_index is None else resname_key_index
 
-        # https://github.com/th3w1zard1/Kotor.NET/tree/master/Kotor.NET/Formats/KotorBIF/BIFBinaryStructure.cs:54
-        # https://github.com/th3w1zard1/KotOR_IO/tree/master/KotOR_IO/File Formats/BIF.cs:204
         # Byte offset to resource data in file
         self._offset: int = 0  # Offset in BIF file
 
@@ -201,42 +177,24 @@ class BIF(BiowareArchive):
 
     References:
     ----------
-        Original BioWare engine binaries (from swkotor.exe, swkotor2.exe)
-        Original BioWare engine binaries
-        Derivations and Other Implementations:
-        ----------
-        https://github.com/th3w1zard1/Kotor.NET/tree/master/Kotor.NET/Formats/KotorBIF/BIFBinaryStructure.cs:15-32
-        https://github.com/th3w1zard1/KotOR_IO/tree/master/KotOR_IO/File
-        https://github.com/th3w1zard1/KotOR.js/tree/master/src/resource/BIFObject.ts:11-152
-
-
-
+        Observed in retail KotOR I and TSL.
     Attributes:
     ----------
         HEADER_SIZE: Size of BIF header in bytes (20 bytes)
-            Reference: https://github.com/th3w1zard1/Kotor.NET/tree/master/BIFBinaryStructure.cs:41-47 (header fields)
-            Reference: https://github.com/th3w1zard1/KotOR_IO/tree/master/BIF.cs:46-51 (header parsing)
             Fixed size across all BIF versions
 
         VAR_ENTRY_SIZE: Size of each variable resource entry (16 bytes)
-            Reference: https://github.com/th3w1zard1/Kotor.NET/tree/master/BIFBinaryStructure.cs:58-64 (VariableResource reading)
-            Reference: https://github.com/th3w1zard1/KotOR_IO/tree/master/BIF.cs:56 (entry reading loop)
             Each entry: ID(4) + Offset(4) + Size(4) + Type(4)
 
         FIX_ENTRY_SIZE: Size of fixed resource entry (16-20 bytes, unused in KotOR)
-            Reference: https://github.com/th3w1zard1/KotOR_IO/tree/master/BIF.cs:63 (FixedResourceEntry struct)
             Fixed resources not used in KotOR games (always 0 count)
 
         FILE_VERSION: BIF file format version ("V1  ")
-            Reference: https://github.com/th3w1zard1/Kotor.NET/tree/master/BIFBinaryStructure.cs:44 (FileVersion)
-            Reference: https://github.com/th3w1zard1/KotOR_IO/tree/master/BIF.cs:48 (Version field)
 
         bif_type: Whether this is regular BIF or compressed BZF
             Determines compression handling during load/save
 
         _resources: List of all resources in this BIF
-            Reference: https://github.com/th3w1zard1/Kotor.NET/tree/master/BIFBinaryStructure.cs:18 (Resources list)
-            Reference: https://github.com/th3w1zard1/KotOR_IO/tree/master/BIF.cs:96 (VariableResourceTable)
             Ordered list maintained for indexing and iteration
 
         _resource_dict: Fast lookup by ResRef and ResourceType
@@ -266,8 +224,6 @@ class BIF(BiowareArchive):
         # File type (BIF vs BZF determines compression)
         self.bif_type: BIFType = bif_type
 
-        # https://github.com/th3w1zard1/Kotor.NET/tree/master/Kotor.NET/Formats/KotorBIF/BIFBinaryStructure.cs:18
-        # https://github.com/th3w1zard1/KotOR_IO/tree/master/KotOR_IO/File Formats/BIF.cs:96
         # List of all resources in file (ordered)
         self._resources: list[BIFResource] = []
 
