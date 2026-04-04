@@ -280,6 +280,7 @@ class ResourceType(Enum):
     GFF = ResourceTuple(2037, "gff", "Other", "gff", supported_engines=(BiowareEngine.Aurora, BiowareEngine.Odyssey, BiowareEngine.Eclipse))  # pyright: ignore[reportCallIssue]  # Generic GFF
     FAC = ResourceTuple(2038, "fac", "Factions", "gff", supported_engines=(BiowareEngine.Aurora, BiowareEngine.Odyssey))  # pyright: ignore[reportCallIssue]  # Faction information, GFF
     BTE = ResourceTuple(2039, "bte", "Encounters", "gff", supported_engines=(BiowareEngine.Aurora, BiowareEngine.Odyssey))  # pyright: ignore[reportCallIssue]  # Encounter template (BioWare), GFF
+    UTE = ResourceTuple(2040, "ute", "Encounters", "gff", supported_engines=(BiowareEngine.Aurora, BiowareEngine.Odyssey))  # pyright: ignore[reportCallIssue]  # Encounter template (user), GFF
     UTD = ResourceTuple(2042, "utd", "Doors", "gff", supported_engines=(BiowareEngine.Aurora, BiowareEngine.Odyssey))  # pyright: ignore[reportCallIssue]  # Door template (user), GFF
     BTP = ResourceTuple(2043, "btp", "Placeables", "gff", supported_engines=(BiowareEngine.Aurora, BiowareEngine.Odyssey))  # pyright: ignore[reportCallIssue]  # Placeable template (BioWare), GFF
     UTP = ResourceTuple(2044, "utp", "Placeables", "gff", supported_engines=(BiowareEngine.Aurora, BiowareEngine.Odyssey))  # pyright: ignore[reportCallIssue]  # Placeable template (user), GFF

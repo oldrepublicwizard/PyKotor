@@ -18,7 +18,7 @@ Use this skill when you need to **decompile, disassemble, or transpile** binary/
 
 ## Workflow
 
-### 1. Gather disassembly (no placeholders)
+### 1. Gather Disassembly (no placeholders)
 
 - Call **get-function** for every function that is part of the target behavior (entry points and all callees to a chosen depth, e.g. 2–3).
 - Record **full disassembly** and any decompiler output. If the decompiler returns "Fallback decompilation (decompiler unavailable)", treat **disassembly as the source of truth** and derive control flow, data flow, and constants from it.

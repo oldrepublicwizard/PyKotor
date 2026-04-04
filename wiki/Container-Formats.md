@@ -91,6 +91,11 @@ The *KEY* indexes [BIF](Container-Formats#bif) entries only (step 4 in that orde
 - **[Kotor.NET](https://github.com/NickHugi/Kotor.NET)**:
 
   - [`KEYBinaryStructure.cs` L17–L114](https://github.com/NickHugi/Kotor.NET/blob/6dca4a6a1af2fee6e36befb9a6f127c8ba04d3e2/Kotor.NET/Formats/KotorKEY/KEYBinaryStructure.cs#L17-L114) (`FileRoot`, `FileHeader`, `BIFInfo`, `Key` with `IndexIntoFileTable` / `IndexIntoResourceTable` properties)
+- **Andastra / sotor (Rust)**:
+
+  - local parser: `vendor/sotor/core/src/formats/key/read.rs`
+  - local model/tests: `vendor/sotor/core/src/formats/key/mod.rs`
+  - notes: accepts `KEY V1  ` and `KEY V1.1`, then decodes `resource_id` with the documented 12-bit BIF index / 20-bit resource index split
 
 ---
 
@@ -114,7 +119,7 @@ The file header is 64 bytes in size:
 
 **Note on Header Variations**: **[xoreos-docs](https://github.com/xoreos/xoreos-docs)**: [`specs/torlack/key.html`](https://github.com/xoreos/xoreos-docs/blob/master/specs/torlack/key.html) (Tim Smith/Torlack's reverse-engineered documentation) shows the header ending at offset `0x0040` with unknown values at offset `0x0018`. The structure shown here (with *Build Year*/*Build Day* and *Reserved* fields) matches the actual *KotOR KEY* File Format.
 
-The same overall KEY layout is also visible in Kotor.NET's binary structure reader ([KEYBinaryStructure.cs L17-L114](https://github.com/NickHugi/Kotor.NET/blob/6dca4a6a1af2fee6e36befb9a6f127c8ba04d3e2/Kotor.NET/Formats/KotorKEY/KEYBinaryStructure.cs#L17-L114)) and the Torlack/xoreos historical notes ([specs/torlack/key.html](https://github.com/xoreos/xoreos-docs/blob/master/specs/torlack/key.html)).
+The same overall KEY layout is also visible in Kotor.NET's binary structure reader ([KEYBinaryStructure.cs L17-L114](https://github.com/NickHugi/Kotor.NET/blob/6dca4a6a1af2fee6e36befb9a6f127c8ba04d3e2/Kotor.NET/Formats/KotorKEY/KEYBinaryStructure.cs#L17-L114)) and the Torlack/xoreos historical notes ([specs/torlack/key.html](https://github.com/xoreos/xoreos-docs/blob/master/specs/torlack/key.html)); the local Andastra `vendor/sotor/core` Rust reader now follows the same header shape and explicitly accepts both `V1  ` and `V1.1`.
 
 ### File Table
 
@@ -322,6 +327,11 @@ The [modular structure](https://en.wikipedia.org/wiki/Modular_programming) allow
   - [`BIFObject.ts` `readFromDisk` L84–L115](https://github.com/KobaltBlu/KotOR.js/blob/ea9491d5c783364cf285f178434b84405bee3608/src/resource/BIFObject.ts#L84-L115) — reads 20-byte header and 16-byte variable rows
   - [`getResourceBuffer` L164–L177](https://github.com/KobaltBlu/KotOR.js/blob/ea9491d5c783364cf285f178434b84405bee3608/src/resource/BIFObject.ts#L164-L177).
 - **[Kotor.NET](https://github.com/NickHugi/Kotor.NET)**: [`BIFBinaryStructure.cs` `FileRoot` / `FileHeader` / `VariableResource` L16–L65](https://github.com/NickHugi/Kotor.NET/blob/6dca4a6a1af2fee6e36befb9a6f127c8ba04d3e2/Kotor.NET/Formats/KotorBIF/BIFBinaryStructure.cs#L16-L65) — header skips the fixed-resource `uint32` with `BaseStream.Position += 4` before reading `OffsetToResources` (same on-disk layout as PyKotor/reone).
+- **Andastra / sotor (Rust)**:
+
+  - local parser: `vendor/sotor/core/src/formats/bif/read.rs`
+  - local model/tests: `vendor/sotor/core/src/formats/bif/mod.rs`
+  - notes: accepts `BIFF V1  ` and `BIFF V1.1`, validates that the fixed-resource count is `0`, and reads requested 16-byte variable-resource rows by absolute payload offset
 - **[bioware-kaitai-formats](https://github.com/OldRepublicDevs/bioware-kaitai-formats)** — Kaitai Struct specs for BIF and related BioWare containers.
 
 ---
@@ -342,7 +352,7 @@ The file header is 20 bytes in size:
 
 **Note on Fixed Resources:** The "Fixed Resource count" field is a legacy holdover from *Neverwinter Nights* (not used in *KotOR*) where some resource types had predetermined sizes. In *KotOR*, this field is always `0` and fixed resource tables are never used. All resources are stored in the variable resource table regardless of their size.
 
-**Note on header Variations**: [xoreos-docs Torlack `bif.html`](https://github.com/xoreos/xoreos-docs/blob/master/specs/torlack/bif.html) shows the field at offset `0x000C` as “Unknown value” rather than “Fixed Resource count”. In *KotOR* it is always `0`; PyKotor **rejects** `fixed_res_count > 0` ([`io_bif.py` L117–L120](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/formats/bif/io_bif.py#L117-L120)).
+**Note on header Variations**: [xoreos-docs Torlack `bif.html`](https://github.com/xoreos/xoreos-docs/blob/master/specs/torlack/bif.html) shows the field at offset `0x000C` as “Unknown value” rather than “Fixed Resource count”. In *KotOR* it is always `0`; PyKotor **rejects** `fixed_res_count > 0` ([`io_bif.py` L117–L120](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/formats/bif/io_bif.py#L117-L120)), and the local Andastra `vendor/sotor/core` Rust reader now enforces the same constraint.
 
 **References:**
 
@@ -568,7 +578,7 @@ See:
 - read path [`ERFBinaryReader.load`](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/formats/erf/io_erf.py#L51-L169)
 - write path [`ERFBinaryWriter.write`](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/formats/erf/io_erf.py#L186-L256)
 
-Other engines and tools cover the same container family in parallel: reone's [`erfreader.cpp`](https://github.com/modawan/reone/blob/61531089341caf5827abbc54346c8c959b03d449/src/libs/resource/format/erfreader.cpp#L29-L92) and [`erfreader.h`](https://github.com/modawan/reone/blob/master/include/reone/resource/format/erfreader.h) parse `ERF V1.0` and `MOD V1.0` but intentionally skip localized strings and do not expose explicit `SAV` fourcc handling; KotOR.js's [`ERFObject.ts`](https://github.com/KobaltBlu/KotOR.js/blob/ea9491d5c783364cf285f178434b84405bee3608/src/resource/ERFObject.ts#L69-L346) covers header, localized strings, keys, resource records, and serialization; Kotor.NET's [`ERFBinaryStructure.cs`](https://github.com/NickHugi/Kotor.NET/blob/6dca4a6a1af2fee6e36befb9a6f127c8ba04d3e2/Kotor.NET/Formats/KotorERF/ERFBinaryStructure.cs#L25-L161) reads the core structures but skips the description StrRef and reserved tail; xoreos and xoreos-tools both use [`erffile.cpp`](https://github.com/xoreos/xoreos/blob/master/src/aurora/erffile.cpp) style Aurora readers; KotOR-Unity ships its own [`ERFObject.cs`](https://github.com/reubenduncan/KotOR-Unity/blob/master/Assets/Scripts/FileObjects/ERFObject.cs); and the [`bioware-kaitai-formats`](https://github.com/OldRepublicDevs/bioware-kaitai-formats) project provides declarative ERF specs for code generation. More repo cross-links are cataloged on [Home — Cross-reference: other tools and engines](Home#cross-reference-other-tools-and-engines).
+Other engines and tools cover the same container family in parallel: reone's [`erfreader.cpp`](https://github.com/modawan/reone/blob/61531089341caf5827abbc54346c8c959b03d449/src/libs/resource/format/erfreader.cpp#L29-L92) and [`erfreader.h`](https://github.com/modawan/reone/blob/master/include/reone/resource/format/erfreader.h) parse `ERF V1.0` and `MOD V1.0` but intentionally skip localized strings and do not expose explicit `SAV` fourcc handling; KotOR.js's [`ERFObject.ts`](https://github.com/KobaltBlu/KotOR.js/blob/ea9491d5c783364cf285f178434b84405bee3608/src/resource/ERFObject.ts#L69-L346) covers header, localized strings, keys, resource records, and serialization; Kotor.NET's [`ERFBinaryStructure.cs`](https://github.com/NickHugi/Kotor.NET/blob/6dca4a6a1af2fee6e36befb9a6f127c8ba04d3e2/Kotor.NET/Formats/KotorERF/ERFBinaryStructure.cs#L25-L161) reads the core structures but skips the description StrRef and reserved tail; the local Andastra `vendor/sotor/core` Rust implementation covers the same header, localized-string, key-list, and resource-list read path in `src/formats/erf/read.rs` with matching in-memory structures in `src/formats/erf/mod.rs`; xoreos and xoreos-tools both use [`erffile.cpp`](https://github.com/xoreos/xoreos/blob/master/src/aurora/erffile.cpp) style Aurora readers; KotOR-Unity ships its own [`ERFObject.cs`](https://github.com/reubenduncan/KotOR-Unity/blob/master/Assets/Scripts/FileObjects/ERFObject.cs); and the [`bioware-kaitai-formats`](https://github.com/OldRepublicDevs/bioware-kaitai-formats) project provides declarative ERF specs for code generation. More repo cross-links are cataloged on [Home — Cross-reference: other tools and engines](Home#cross-reference-other-tools-and-engines).
 
 ---
 
@@ -991,6 +1001,11 @@ For a side-by-side narrative aimed at ERF readers, see [RIM versus ERF](Containe
   - **`RIM_HEADER_LENGTH = 160`** ([L9](https://github.com/KobaltBlu/KotOR.js/blob/ea9491d5c783364cf285f178434b84405bee3608/src/resource/RIMObject.ts#L9))
   - **`34` bytes × row count** for `rimDataOffset` ([L84–L95](https://github.com/KobaltBlu/KotOR.js/blob/ea9491d5c783364cf285f178434b84405bee3608/src/resource/RIMObject.ts#L84-L95))
   - retail **KotOR** RIMs follow **120** / **32** as on this page
+- **Andastra / sotor (Rust)**:
+
+  - local parser: `vendor/sotor/core/src/formats/rim/read.rs`
+  - local model/tests: `vendor/sotor/core/src/formats/rim/mod.rs`
+  - notes: uses the retail KotOR `120`-byte header / `32`-byte entry layout, including the implicit `0 -> 120` resource-table offset fallback documented on this page
 
 Community tools and installers (TSLPatcher, HoloPatcher) support inserting or patching files inside RIM capsules as well as ERF/MOD. See:
 
