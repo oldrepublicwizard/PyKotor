@@ -28,6 +28,7 @@ from pykotor.gl.compat import (
     glClear,
     glClearColor,
     glDepthFunc,
+    glDepthMask,
     glDisable,
     glEnable,
     glPolygonMode,
@@ -278,10 +279,18 @@ class Scene(SceneBase):
                 self._render_object(self.plain_shader, obj, identity)
 
             # Draw bounding box for selected objects (only RenderObjects have cube/boundary)
+            # The model surfaces are already in the depth buffer, so the cube faces fail the
+            # depth test at pixels occupied by the model (nearly all of them).  Disable depth
+            # test so the selection indicator always renders visibly on top.
+            glDisable(GL_DEPTH_TEST)
+            glDepthMask(GL_FALSE)  # type: ignore[arg-type]
+            glDisable(GL_CULL_FACE)  # Draw both inner and outer faces for a solid-filled look
             self.plain_shader.set_vector4("color", vec4(1.0, 0.0, 0.0, 0.4))
             for obj in self.selection:
                 if hasattr(obj, "cube"):
                     obj.cube(self).draw(self.plain_shader, obj.transform())
+            glEnable(GL_DEPTH_TEST)
+            glDepthMask(GL_TRUE)  # type: ignore[arg-type]
 
             # Draw boundary for selected objects
             glDisable(GL_CULL_FACE)
