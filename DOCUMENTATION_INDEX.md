@@ -24,7 +24,7 @@ Complete guide to all PyKotor documentation, organized by topic and audience.
 
 ### 📚 Reference Documentation
 - **[PyKotor Library Docs](Libraries/PyKotor/docs/)** - Core library API documentation
-- **[Project Wiki](https://github.com/OldRepublicDevs/PyKotor/wiki)** - Community documentation
+- **[Project Wiki](https://github.com/OpenKotOR/PyKotor/wiki)** - Community documentation
 - **[File Format Documentation](wiki/)** - Game file format specifications
 
 ### 🔧 Tool-Specific Documentation
@@ -175,8 +175,8 @@ Complete guide to all PyKotor documentation, organized by topic and audience.
 ## External Resources
 
 ### Community
-- **GitHub Discussions**: [PyKotor Discussions](https://github.com/OldRepublicDevs/PyKotor/discussions)
-- **Issue Tracker**: [GitHub Issues](https://github.com/OldRepublicDevs/PyKotor/issues)
+- **GitHub Discussions**: [PyKotor Discussions](https://github.com/OpenKotOR/PyKotor/discussions)
+- **Issue Tracker**: [GitHub Issues](https://github.com/OpenKotOR/PyKotor/issues)
 
 ### Game Modding Resources
 - **DeadlyStream**: KotOR modding community
@@ -242,7 +242,7 @@ PyKotor/
 ## Contact & Support
 
 **Maintainers**: PyKotor Team  
-**Repository**: https://github.com/OldRepublicDevs/PyKotor  
+**Repository**: https://github.com/OpenKotOR/PyKotor  
 **License**: LGPL-3.0-or-later
 
 For questions or issues:

@@ -22,7 +22,7 @@ WIKI = REPO_ROOT / "wiki"
 UPSTREAM: Dict[Tuple[str, str], Optional[Tuple[str, str]]] = {
     ("th3w1zard1", "KotOR.js"): ("KobaltBlu", "KotOR.js"),
     ("th3w1zard1", "Kotor.NET"): ("NickHugi", "Kotor.NET"),
-    ("th3w1zard1", "kotorblender"): ("OldRepublicDevs", "kotorblender"),
+    ("th3w1zard1", "kotorblender"): ("OpenKotOR", "kotorblender"),
     ("th3w1zard1", "mdlops"): ("ndixUR", "mdlops"),
     ("th3w1zard1", "KotOR-Bioware-Libs"): ("Fair-Strides", "KotOR-Bioware-Libs"),
     ("th3w1zard1", "tga2tpc"): ("ndixUR", "tga2tpc"),

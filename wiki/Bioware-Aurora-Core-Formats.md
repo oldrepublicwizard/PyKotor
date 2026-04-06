@@ -823,6 +823,7 @@ from 0 to 2999, 9000 to 9999, and 0xFFFF are reserved.
 | 2030 | itp | gff | Tile/Blueprint Palette File |
 | 2032 | utt | gff | Trigger Blueprint |
 | 2033 | dds | binary | Compressed texture file |
+| 2034 | bts | gff | Sound template (BioWare). The BioWare-authored counterpart to the user-created `.uts` sound blueprint. |
 | 2035 | uts | gff | Sound Blueprint |
 | 2036 | ltr | binary | Letter-combo probability info for name generation |
 | 2037 | gff | gff | Generic File Format. Used when undesirable to create a new file extension for a resource, but the resource is a GFF. (Examples of GFFs include itp, utc, uti, ifo, are, git) |

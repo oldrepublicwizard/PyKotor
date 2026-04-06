@@ -24,7 +24,7 @@ WIKI = Path(__file__).resolve().parents[1] / "wiki"
 UPSTREAM: Dict[Tuple[str, str], Optional[Tuple[str, str]]] = {
     ("th3w1zard1", "KotOR.js"): ("KobaltBlu", "KotOR.js"),
     ("th3w1zard1", "Kotor.NET"): ("NickHugi", "Kotor.NET"),
-    ("th3w1zard1", "kotorblender"): ("OldRepublicDevs", "kotorblender"),
+    ("th3w1zard1", "kotorblender"): ("OpenKotOR", "kotorblender"),
     ("th3w1zard1", "mdlops"): ("ndixUR", "mdlops"),
     ("th3w1zard1", "KotOR-Bioware-Libs"): ("Fair-Strides", "KotOR-Bioware-Libs"),
     ("th3w1zard1", "tga2tpc"): ("ndixUR", "tga2tpc"),
@@ -40,7 +40,7 @@ STATIC_SHA: Dict[Tuple[str, str], str] = {
     ("th3w1zard1", "KotOR.js"): "0067b672a124bbbdaf4006dd0a5d6c2751523195",
     ("NickHugi", "Kotor.NET"): "6dca4a6a1af2fee6e36befb9a6f127c8ba04d3e2",
     ("th3w1zard1", "Kotor.NET"): "6dca4a6a1af2fee6e36befb9a6f127c8ba04d3e2",
-    ("OldRepublicDevs", "kotorblender"): "404c42bc4f36b1f60b643eda0cd17c81ba5ca7d4",
+    ("OpenKotOR", "kotorblender"): "404c42bc4f36b1f60b643eda0cd17c81ba5ca7d4",
     ("th3w1zard1", "kotorblender"): "afae04c9172f30ab765891315d9d11224ab57426",
     ("ndixUR", "mdlops"): "7e40846d36acb5118e2e9feb2fd53620c29be540",
     ("th3w1zard1", "mdlops"): "7e40846d36acb5118e2e9feb2fd53620c29be540",

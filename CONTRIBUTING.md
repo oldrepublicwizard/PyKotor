@@ -34,7 +34,7 @@ Initialize the **wiki** submodule when you need the full Markdown corpus under `
 git submodule update --init wiki
 ```
 
-The [GitHub wiki web UI](https://github.com/OldRepublicDevs/PyKotor/wiki) mirrors that content. If you change `wiki/*.md`, follow the **dual-repository** workflow in [`.github/copilot-instructions.md`](.github/copilot-instructions.md): commit and push to `PyKotor.wiki`, then commit the updated submodule pointer in this repository.
+The [GitHub wiki web UI](https://github.com/OpenKotOR/PyKotor/wiki) mirrors that content. If you change `wiki/*.md`, follow the **dual-repository** workflow in [`.github/copilot-instructions.md`](.github/copilot-instructions.md): commit and push to `PyKotor.wiki`, then commit the updated submodule pointer in this repository.
 
 **Faster clone (if full clone is slow or stalls):** The repository is large (~380 MB). If the clone hangs around 8–15%, use a shallow clone:
 
@@ -395,16 +395,16 @@ Ensure your changes:
 - **[Python Style Guide (PEP 8)](https://pep8.org/)** - Python coding conventions
 - **[Google Python Style Guide](https://google.github.io/styleguide/pyguide.html)** - Docstring conventions
 - **[Conventional Commits](https://www.conventionalcommits.org/)** - Commit message format
-- **[Project Wiki (GitHub UI)](https://github.com/OldRepublicDevs/PyKotor/wiki)** — browsable docs; source of truth for edits is the `wiki/` **git submodule** (`PyKotor.wiki.git`) after `git submodule update --init wiki`
-- **[Wiki Conventions](https://github.com/OldRepublicDevs/PyKotor/blob/master/wiki/Wiki-Conventions.md)** — style, link rules, and recommended validation scripts (`helper_scripts/wiki_scripts/`)
-- **[Issue Tracker](https://github.com/OldRepublicDevs/PyKotor/issues)** - Report bugs or request features
+- **[Project Wiki (GitHub UI)](https://github.com/OpenKotOR/PyKotor/wiki)** — browsable docs; source of truth for edits is the `wiki/` **git submodule** (`PyKotor.wiki.git`) after `git submodule update --init wiki`
+- **[Wiki Conventions](https://github.com/OpenKotOR/PyKotor/blob/master/wiki/Wiki-Conventions.md)** — style, link rules, and recommended validation scripts (`helper_scripts/wiki_scripts/`)
+- **[Issue Tracker](https://github.com/OpenKotOR/PyKotor/issues)** - Report bugs or request features
 
 ### Getting Help
 
 If you need help:
-- Check existing [documentation](https://github.com/OldRepublicDevs/PyKotor/tree/master/Libraries/PyKotor/docs)
-- Search [closed issues](https://github.com/OldRepublicDevs/PyKotor/issues?q=is%3Aissue+is%3Aclosed)
-- Open a [new issue](https://github.com/OldRepublicDevs/PyKotor/issues/new) with the question label
+- Check existing [documentation](https://github.com/OpenKotOR/PyKotor/tree/master/Libraries/PyKotor/docs)
+- Search [closed issues](https://github.com/OpenKotOR/PyKotor/issues?q=is%3Aissue+is%3Aclosed)
+- Open a [new issue](https://github.com/OpenKotOR/PyKotor/issues/new) with the question label
 - Review similar code in the codebase
 
 Thank you for contributing to PyKotor!

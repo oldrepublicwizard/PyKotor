@@ -19,7 +19,7 @@ import difflib
 from typing import TYPE_CHECKING, Callable
 
 from pykotor.resource.formats.gff.gff_auto import read_gff
-from pykotor.resource.formats.gff.gff_data import GFFFieldType, GFFList, GFFStruct
+from pykotor.resource.formats.gff.gff_data import GFFContent, GFFFieldType, GFFList, GFFStruct
 from pykotor.resource.formats.tlk.tlk_auto import read_tlk
 from pykotor.resource.formats.twoda.twoda_auto import read_2da
 
@@ -29,7 +29,11 @@ if TYPE_CHECKING:
     from pykotor.resource.formats.gff.gff_data import GFF
 
 
-_GFF_SUFFIXES: tuple[str, ...] = (".gff", ".utc", ".uti", ".dlg", ".are", ".git", ".ifo")
+# Derived from GFFContent to stay in sync with all known GFF subtypes. Excludes
+# ".res" because .res files are save-game containers that can be GFF *or* other
+# formats depending on the resource name; callers that want to include them should
+# add ".res" explicitly.
+_GFF_SUFFIXES: frozenset[str] = frozenset(f".{ext}" for ext in GFFContent.get_extensions() if ext != "res")
 
 
 def _write_output_if_requested(output_path: Path | None, content: str) -> None:
@@ -373,7 +377,7 @@ def validate_file(file_path: Path) -> tuple[bool, str]:
     suffix = file_path.suffix.lower()
 
     try:
-        if suffix in (".gff", ".utc", ".uti", ".dlg", ".are", ".git", ".ifo"):
+        if suffix in _GFF_SUFFIXES:
             read_gff(file_path)
             return True, "Valid GFF file"
         if suffix == ".2da":

@@ -65,7 +65,7 @@ def get_all_issues(repo: str) -> list[dict[str, Any]]:
 
 
 def main():
-    repo = "OldRepublicDevs/PyKotor"
+    repo = "OpenKotOR/PyKotor"
 
     print("Checking for duplicates...")
 

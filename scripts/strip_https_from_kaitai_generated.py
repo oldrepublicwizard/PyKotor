@@ -31,7 +31,7 @@ BIOWARE_TYPE_IDS_OLD = '''    """This file provides **exhaustive enum mappings**
     Why two enums?
     - `xoreos_file_type_id` mirrors `https://github.com/xoreos/xoreos/blob/master/src/aurora/types.h` (`enum FileType`) and is the
       canonical set of **engine-facing** numeric type IDs found in archives (KEY/BIF/ERF/RIM, etc).
-    - `bioware_resource_type_id` mirrors `https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/type.py` (`class ResourceType`)
+    - `bioware_resource_type_id` mirrors `https://github.com/OpenKotOR/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/type.py` (`class ResourceType`)
       and includes additional **toolset-only** IDs (e.g. XML/JSON abstractions).
     
     Important notes:
@@ -43,7 +43,7 @@ BIOWARE_TYPE_IDS_OLD = '''    """This file provides **exhaustive enum mappings**
     
     References:
     - https://github.com/xoreos/xoreos/blob/master/src/aurora/types.h
-    - https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/type.py
+    - https://github.com/OpenKotOR/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/type.py
     """'''
 
 BIOWARE_TYPE_IDS_NEW = '''    """This file provides **exhaustive enum mappings** for resource/type identifiers used across

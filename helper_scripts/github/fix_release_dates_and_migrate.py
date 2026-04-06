@@ -77,7 +77,7 @@ def create_release(target_repo: str, release_data: dict[str, Any]) -> bool:
 
 def main():
     source_repo = "NickHugi/PyKotor"
-    target_repo = "OldRepublicDevs/PyKotor"
+    target_repo = "OpenKotOR/PyKotor"
 
     print("=" * 70)
     print("FIXING MISSING RELEASES AND DATE ISSUES")
@@ -153,7 +153,7 @@ def main():
         print("\nTo fix dates, you must:")
         print("  1. Use GitHub's web interface to edit each release")
         print("  2. Or use GitHub's release API with proper authentication")
-        print("  3. Or manually edit via: https://github.com/OldRepublicDevs/PyKotor/releases")
+        print("  3. Or manually edit via: https://github.com/OpenKotOR/PyKotor/releases")
         print("\nReleases with date issues:")
         for tag, source_date, target_date in date_issues[:10]:  # Show first 10
             print(f"  - {tag}: {source_date} -> {target_date}")

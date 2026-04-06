@@ -1,6 +1,6 @@
 """Kaitai Struct generated parsers for BioWare / KotOR wire formats.
 
-Source ``.ksy`` files: upstream ``OldRepublicDevs/bioware-kaitai-formats`` (see package README).
+Source ``.ksy`` files: upstream ``OpenKotOR/bioware-kaitai-formats`` (see package README).
 Generated Python is committed in this distribution; regenerate with ``scripts/regenerate_python.py``.
 
 **Consumers:** import concrete modules, e.g. ``from bioware_kaitai_formats.gff import Gff``.

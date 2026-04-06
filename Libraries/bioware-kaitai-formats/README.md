@@ -2,7 +2,7 @@
 
 Installable Python package containing **Kaitai Struct**–generated parsers for BioWare / KotOR binary and text-derived formats.
 
-Canonical **`.ksy` specifications** live in the upstream repository: [OldRepublicDevs/bioware-kaitai-formats](https://github.com/OldRepublicDevs/bioware-kaitai-formats). This PyKotor workspace copy vendors the **generated Python** under `src/bioware_kaitai_formats/` so consumers (PyKotor, KotorBlender, etc.) depend on this package instead of copying parsers into each project.
+Canonical **`.ksy` specifications** live in the upstream repository: [OpenKotOR/bioware-kaitai-formats](https://github.com/OpenKotOR/bioware-kaitai-formats). This PyKotor workspace copy vendors the **generated Python** under `src/bioware_kaitai_formats/` so consumers (PyKotor, KotorBlender, etc.) depend on this package instead of copying parsers into each project.
 
 ## Install
 

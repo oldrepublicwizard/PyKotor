@@ -11,7 +11,7 @@ A clear workflow for when and how to use **best-practices-researcher**, **repo-r
 
 ## Why this approach
 
-- **Vendor permalinks:** Wiki links to GitHub (OldRepublicDevs/PyKotor, th3w1zard1/reone, xoreos, KotOR.js, xoreos-docs, etc.). Validating with GitHub MCP (`get_file_contents`, `get_repository_tree`, `list_branches`) avoids broken links and confirms branch/path without bulk HTTP fetches.
+- **Vendor permalinks:** Wiki links to GitHub (OpenKotOR/PyKotor, th3w1zard1/reone, xoreos, KotOR.js, xoreos-docs, etc.). Validating with GitHub MCP (`get_file_contents`, `get_repository_tree`, `list_branches`) avoids broken links and confirms branch/path without bulk HTTP fetches.
 - **Research tools:** Each tool has a distinct role; combining them in a plan-first flow (repo → best-practices → plan → implement) keeps wiki and code in sync and avoids duplicate or conflicting guidance.
 - **agdec-http first:** Reverse engineering the game binaries (K1/TSL) yields the most authoritative behavior and format insights; use it in most cases before relying only on vendor code or external docs.
 
@@ -23,7 +23,7 @@ A clear workflow for when and how to use **best-practices-researcher**, **repo-r
   - **repo-research-analyst:** Before writing or restructure; to map format → code (PyKotor + vendor), list files with .md links, and audit See Also / Implementation sections.
   - **parallel-web-search:** Default for lookups, fact-check, “research X”; every claim cited inline; mandatory Sources section.
   - **parallel-deep-research:** Only when user explicitly asks for deep/exhaustive/comprehensive research; output to dated files; in wiki use summary + link only.
-- **Wiki reference pattern:** PyKotor: `[path](https://github.com/OldRepublicDevs/PyKotor/blob/master/path#Lx-Ly)`. Vendor: `https://github.com/th3w1zard1/<repo>/blob/master/...`. Add Implementation/Reference sections where missing (e.g. BWM-File-Format, DDS-File-Format, empty References in 2DA/GFF/LYT/ERF).
+- **Wiki reference pattern:** PyKotor: `[path](https://github.com/OpenKotOR/PyKotor/blob/master/path#Lx-Ly)`. Vendor: `https://github.com/th3w1zard1/<repo>/blob/master/...`. Add Implementation/Reference sections where missing (e.g. BWM-File-Format, DDS-File-Format, empty References in 2DA/GFF/LYT/ERF).
 - **agdec-http:** Prefer for game behavior, format semantics, and binary layout; use list-functions, search-everything, get-function, execute-script (Ghidra), etc. Wiki stays conceptual; no tool names or raw RE dumps (per AGENTS.md).
 
 ## Vendor permalink validation (done)
@@ -31,7 +31,7 @@ A clear workflow for when and how to use **best-practices-researcher**, **repo-r
 Sampled permalinks were validated via GitHub MCP `get_file_contents`:
 
 - **th3w1zard1/reone** – `src/libs/resource/format/visreader.cpp` (master) ✓
-- **OldRepublicDevs/PyKotor** – `Libraries/PyKotor/src/pykotor/resource/formats/vis/io_vis.py` (master) ✓
+- **OpenKotOR/PyKotor** – `Libraries/PyKotor/src/pykotor/resource/formats/vis/io_vis.py` (master) ✓
 - **th3w1zard1/xoreos-docs** – `specs/torlack/plt.html` (master) ✓
 - **th3w1zard1/NorthernLights** – `Assets/Scripts/Systems/StateSystem.cs` (master) ✓
 

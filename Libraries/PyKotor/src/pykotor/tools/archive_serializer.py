@@ -19,11 +19,10 @@ from typing import Any
 
 from pykotor.common.misc import ResRef
 from pykotor.resource.formats.bif import read_bif, write_bif
-from pykotor.resource.formats.bif.bif_data import BIF, BIFResource, BIFType
+from pykotor.resource.formats.bif.bif_data import BIF, BIFType
 from pykotor.resource.formats.erf import read_erf, write_erf
-from pykotor.resource.formats.erf.erf_data import ERF, ERFResource, ERFType
+from pykotor.resource.formats.erf.erf_data import ERF, ERFType
 from pykotor.resource.formats.gff import read_gff, write_gff
-from pykotor.resource.formats.gff.gff_data import GFF
 from pykotor.resource.formats.lip import read_lip, write_lip
 from pykotor.resource.formats.rim import read_rim, write_rim
 from pykotor.resource.formats.rim.rim_data import RIM
@@ -31,32 +30,20 @@ from pykotor.resource.formats.ssf import read_ssf, write_ssf
 from pykotor.resource.formats.tlk import read_tlk, write_tlk
 from pykotor.resource.formats.twoda import read_2da, write_2da
 from pykotor.resource.type import ResourceType
-from pykotor.tools.misc import is_bif_file, is_erf_file, is_mod_file, is_rim_file
+from pykotor.tools.misc import is_bif_file, is_erf_file, is_rim_file
 
-# Restype -> plaintext format for embedding (use JSON where available for smaller diff-friendly output)
+# All GFF subtypes serialize to GFF-JSON; non-GFF structured types follow below.
 _RESOURCE_PLAINTEXT_FORMAT: dict[ResourceType, ResourceType] = {
-    ResourceType.GFF: ResourceType.GFF_JSON,
-    ResourceType.ARE: ResourceType.GFF_JSON,
-    ResourceType.DLG: ResourceType.GFF_JSON,
-    ResourceType.GIT: ResourceType.GFF_JSON,
-    ResourceType.IFO: ResourceType.GFF_JSON,
-    ResourceType.UTI: ResourceType.GFF_JSON,
-    ResourceType.UTC: ResourceType.GFF_JSON,
-    ResourceType.UTD: ResourceType.GFF_JSON,
-    ResourceType.UTE: ResourceType.GFF_JSON,
-    ResourceType.UTP: ResourceType.GFF_JSON,
-    ResourceType.UTS: ResourceType.GFF_JSON,
-    ResourceType.UTT: ResourceType.GFF_JSON,
-    ResourceType.UTW: ResourceType.GFF_JSON,
-    ResourceType.PTH: ResourceType.GFF_JSON,
-    ResourceType.FAC: ResourceType.GFF_JSON,
-    ResourceType.GUI: ResourceType.GFF_JSON,
-    ResourceType.UTM: ResourceType.GFF_JSON,
-    ResourceType.JRL: ResourceType.GFF_JSON,
+    **{rt: ResourceType.GFF_JSON for rt in ResourceType if rt.is_gff()},
+    **{rt: ResourceType.GFF_XML for rt in ResourceType if rt.is_gff()},
     ResourceType.TLK: ResourceType.TLK_JSON,
+    ResourceType.TLK: ResourceType.TLK_XML,
     ResourceType.TwoDA: ResourceType.TwoDA_JSON,
+    ResourceType.TwoDA: ResourceType.TwoDA_CSV,
     ResourceType.LIP: ResourceType.LIP_JSON,
+    ResourceType.LIP: ResourceType.LIP_XML,
     ResourceType.SSF: ResourceType.SSF_XML,
+    ResourceType.SSF: ResourceType.SSF_JSON,
 }
 
 
@@ -174,12 +161,14 @@ def _erf_to_dict(data: bytes, *, embed_plaintext: bool) -> dict[str, Any]:
             plain = _resource_bytes_to_plaintext(raw, restype)
             if plain is not None:
                 encoding, payload = plain[0], plain[1]
-        resources.append({
-            "resref": resref,
-            "restype": restype.extension,
-            "data_encoding": encoding,
-            "data": payload,
-        })
+        resources.append(
+            {
+                "resref": resref,
+                "restype": restype.extension,
+                "data_encoding": encoding,
+                "data": payload,
+            }
+        )
     return {
         "format": "erf",
         "erf_type": erf.erf_type.value,
@@ -200,12 +189,14 @@ def _rim_to_dict(data: bytes, *, embed_plaintext: bool) -> dict[str, Any]:
             plain = _resource_bytes_to_plaintext(raw, restype)
             if plain is not None:
                 encoding, payload = plain[0], plain[1]
-        resources.append({
-            "resref": resref,
-            "restype": restype.extension,
-            "data_encoding": encoding,
-            "data": payload,
-        })
+        resources.append(
+            {
+                "resref": resref,
+                "restype": restype.extension,
+                "data_encoding": encoding,
+                "data": payload,
+            }
+        )
     return {
         "format": "rim",
         "resources": resources,
@@ -230,13 +221,15 @@ def _bif_to_dict(
             plain = _resource_bytes_to_plaintext(raw, restype)
             if plain is not None:
                 encoding, payload = plain[0], plain[1]
-        resources.append({
-            "resref": resref,
-            "restype": restype.extension,
-            "resname_key_index": res.resname_key_index,
-            "data_encoding": encoding,
-            "data": payload,
-        })
+        resources.append(
+            {
+                "resref": resref,
+                "restype": restype.extension,
+                "resname_key_index": res.resname_key_index,
+                "data_encoding": encoding,
+                "data": payload,
+            }
+        )
     return {
         "format": "bif",
         "bif_type": bif.bif_type.value,

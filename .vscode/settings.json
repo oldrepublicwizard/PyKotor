@@ -107,7 +107,7 @@
     "${workspaceFolder}/Tools/KotorDiff/src"
   ],
   "python.envFile": "${workspaceFolder}/.env",
-  "python.languageServer": "None",
+  "python.languageServer": "Default",
   "python.linting.enabled": true,
   "python.linting.pylintEnabled": false,
   "python.testing.pytestArgs": [

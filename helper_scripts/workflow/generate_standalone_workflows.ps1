@@ -101,10 +101,10 @@ function Generate-CiWorkflow {
     # Determine install commands based on dependencies
     $installCommands = @()
     if ($PyKotorDeps -contains "pykotor") {
-        $installCommands += 'pip install "pykotor @ git+https://github.com/OldRepublicDevs/PyKotor-lib.git"'
+        $installCommands += 'pip install "pykotor @ git+https://github.com/OpenKotOR/PyKotor-lib.git"'
     }
     if ($PyKotorDeps -contains "pykotorgl") {
-        $installCommands += 'pip install "pykotorgl @ git+https://github.com/OldRepublicDevs/PyKotorGL.git"'
+        $installCommands += 'pip install "pykotorgl @ git+https://github.com/OpenKotOR/PyKotorGL.git"'
     }
     $installCommands += "pip install -e .[dev]"
     

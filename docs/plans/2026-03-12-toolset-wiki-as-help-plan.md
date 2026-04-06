@@ -2,9 +2,9 @@
 
 > **For Claude:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement this plan task-by-task.
 
-**Goal:** Remove `toolset/help` (and its `wiki/` subfolder and `contents.xml`); use repo `wiki/` as the only help source; generate contents.xml at startup; point updates and packaging at OldRepublicDevs/PyKotor wiki.
+**Goal:** Remove `toolset/help` (and its `wiki/` subfolder and `contents.xml`); use repo `wiki/` as the only help source; generate contents.xml at startup; point updates and packaging at OpenKotOR/PyKotor wiki.
 
-**Architecture:** Help path resolution uses only wiki (and vendor) base paths. A new module generates the Contents XML tree from the resolved wiki directory at startup; the legacy and new help windows load that (from memory or a generated temp file). Editor F1 help resolves wiki from the same bases. Updater fetches wiki content from OldRepublicDevs (e.g. main-repo wiki zip or GitHub wiki). Build/compile already bundle repo `wiki/`; remove help from package data and MANIFEST.
+**Architecture:** Help path resolution uses only wiki (and vendor) base paths. A new module generates the Contents XML tree from the resolved wiki directory at startup; the legacy and new help windows load that (from memory or a generated temp file). Editor F1 help resolves wiki from the same bases. Updater fetches wiki content from OpenKotOR (e.g. main-repo wiki zip or GitHub wiki). Build/compile already bundle repo `wiki/`; remove help from package data and MANIFEST.
 
 **Tech Stack:** Python 3.8+, setuptools, PyInstaller (compile), ElementTree, pathlib.
 
@@ -95,19 +95,19 @@ So the only bases remain: **wiki** (package/frozen/repo) and **vendor/xoreos-doc
 
 ---
 
-## Task 5: Help updater fetch from OldRepublicDevs wiki
+## Task 5: Help updater fetch from OpenKotOR wiki
 
 **Files:**
 - Modify: `Tools/HolocronToolset/src/toolset/gui/windows/help_updater.py`
 - Modify: `Tools/HolocronToolset/src/toolset/config.py` (or wherever `get_remote_toolset_update_info` and help version live)
 
-**Step 1:** Decide updater source: (A) Download a zip of the main repo’s `wiki/` folder (e.g. from a GitHub API URL like `https://github.com/OldRepublicDevs/PyKotor/archive/refs/heads/master.zip` and extract `PyKotor-master/wiki` into the app’s wiki location), or (B) use the GitHub wiki repo clone URL and tarball (e.g. `https://api.github.com/repos/OldRepublicDevs/PyKotor.wiki/tarball`). Recommended: (A) so the updater matches the same content as repo root `wiki/` and compile. Implement in `help_updater.py`: replace `download_github_file("th3w1zard1/PyKotor", ..., "/Tools/HolocronToolset/downloads/help.zip")` with fetching from OldRepublicDevs/PyKotor (e.g. main branch archive or a release asset that contains wiki). Extract into the **wiki** directory the app uses (e.g. same path as `get_help_base_paths()[0]` or a dedicated “downloaded help” dir that is then used as wiki base). If the app is frozen, extract to exe-relative `wiki/` or a user-writable location and point the next startup to it.
+**Step 1:** Decide updater source: (A) Download a zip of the main repo’s `wiki/` folder (e.g. from a GitHub API URL like `https://github.com/OpenKotOR/PyKotor/archive/refs/heads/master.zip` and extract `PyKotor-master/wiki` into the app’s wiki location), or (B) use the GitHub wiki repo clone URL and tarball (e.g. `https://api.github.com/repos/OpenKotOR/PyKotor.wiki/tarball`). Recommended: (A) so the updater matches the same content as repo root `wiki/` and compile. Implement in `help_updater.py`: replace `download_github_file("th3w1zard1/PyKotor", ..., "/Tools/HolocronToolset/downloads/help.zip")` with fetching from OpenKotOR/PyKotor (e.g. main branch archive or a release asset that contains wiki). Extract into the **wiki** directory the app uses (e.g. same path as `get_help_base_paths()[0]` or a dedicated “downloaded help” dir that is then used as wiki base). If the app is frozen, extract to exe-relative `wiki/` or a user-writable location and point the next startup to it.
 
-**Step 2:** Update `get_remote_toolset_update_info` (or equivalent) so the “help” version / URL refers to OldRepublicDevs/PyKotor. If the project stores help version in a file on the repo (e.g. `Tools/HolocronToolset/downloads/help_version.txt`), add or move that to a path under OldRepublicDevs/PyKotor and update the config to read it from there.
+**Step 2:** Update `get_remote_toolset_update_info` (or equivalent) so the “help” version / URL refers to OpenKotOR/PyKotor. If the project stores help version in a file on the repo (e.g. `Tools/HolocronToolset/downloads/help_version.txt`), add or move that to a path under OpenKotOR/PyKotor and update the config to read it from there.
 
 **Step 3:** Remove `get_help_path()` usage from help_updater (or make it return the wiki path). Remove any creation of `help/`; create/update only `wiki/`.
 
-**Step 4:** Commit: `feat(toolset): help updater fetch wiki from OldRepublicDevs/PyKotor`
+**Step 4:** Commit: `feat(toolset): help updater fetch wiki from OpenKotOR/PyKotor`
 
 ---
 
@@ -133,7 +133,7 @@ So the only bases remain: **wiki** (package/frozen/repo) and **vendor/xoreos-doc
 
 **Step 1:** Change `generate_help_contents.py` so it no longer writes to `Tools/HolocronToolset/src/toolset/help/contents.xml`. Either (a) remove the script, or (b) have it write to a temp path or to `Tools/HolocronToolset/src/toolset/wiki/contents.xml` for one-off use, or (c) document that the toolset generates contents at runtime and this script is only for reference/offline generation. Prefer (c) or (b) so CI/docs can still generate a static contents.xml for inspection.
 
-**Step 2:** If there is a CI job that builds or publishes “help” (e.g. help.zip), change it to build from repo `wiki/` and publish under OldRepublicDevs/PyKotor (e.g. release asset or a known URL). Document the URL in help_updater or config.
+**Step 2:** If there is a CI job that builds or publishes “help” (e.g. help.zip), change it to build from repo `wiki/` and publish under OpenKotOR/PyKotor (e.g. release asset or a known URL). Document the URL in help_updater or config.
 
 **Step 3:** Commit: `chore: generate_help_contents and CI use wiki; no toolset/help`
 

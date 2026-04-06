@@ -1,6 +1,6 @@
 # GFF — Generic File Format
 
-The Generic File Format (GFF) is the all-purpose binary container used to store structured game data in Knights of the Old Republic and The Sith Lords. Nearly every non-script, non-texture resource the engine reads at runtime is a GFF file: area definitions, creature templates, item blueprints, dialogue trees, journal entries, placeables, triggers, waypoints, and user interface layouts [[`gff_data.py`](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/gff/gff_data.py#L1-L20)]. The format was designed for rapid iteration — new fields can be added to any resource type without breaking backward compatibility, because readers simply skip labels they do not recognize [[`gff_data.py` module docstring](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/gff/gff_data.py#L1-L20)]. xoreos-tools keeps a dedicated `gff2xml` converter in its standard tool list, which is a practical external reminder that GFF is best thought of as a reusable binary container family rather than a one-off KotOR format [[Running xoreos-tools](https://wiki.xoreos.org/index.php/Running_xoreos-tools)].
+The Generic File Format (GFF) is the all-purpose binary container used to store structured game data in Knights of the Old Republic and The Sith Lords. Nearly every non-script, non-texture resource the engine reads at runtime is a GFF file: area definitions, creature templates, item blueprints, dialogue trees, journal entries, placeables, triggers, waypoints, and user interface layouts [[`gff_data.py`](https://github.com/OpenKotOR/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/gff/gff_data.py#L1-L20)]. The format was designed for rapid iteration — new fields can be added to any resource type without breaking backward compatibility, because readers simply skip labels they do not recognize [[`gff_data.py` module docstring](https://github.com/OpenKotOR/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/gff/gff_data.py#L1-L20)]. xoreos-tools keeps a dedicated `gff2xml` converter in its standard tool list, which is a practical external reminder that GFF is best thought of as a reusable binary container family rather than a one-off KotOR format [[Running xoreos-tools](https://wiki.xoreos.org/index.php/Running_xoreos-tools)].
 
 GFF is shared across BioWare's Aurora engine family. The [official BioWare GFF specification](Bioware-Aurora-Core-Formats#gff) describes the original container design; KotOR and TSL build on that same structure with game-specific field schemas, resource subtypes, and modding workflows. For the common GFF struct schemas shared across area and module files, see [Bioware Aurora Common GFF Structs](Bioware-Aurora-Module-and-Area#commongffstructs).
 
@@ -29,22 +29,42 @@ GFF files work alongside [2DA](2DA-File-Format) configuration tables, [TLK](Audi
     - [GFFList](#gfflist)
   - [GFF Generic Types](#gff-generic-types)
     - [ARE (Area)](#are-area)
+    - [BIC (Character)](#bic-character)
+    - [BTC (Creature Template — BioWare)](#btc-creature-template--bioware)
+    - [BTD (Door Template — BioWare)](#btd-door-template--bioware)
+    - [BTE (Encounter Template — BioWare)](#bte-encounter-template--bioware)
+    - [BTG (Random Item Generator — BioWare)](#btg-random-item-generator--bioware)
+    - [BTI (Item Template — BioWare)](#bti-item-template--bioware)
+    - [BTM (Merchant Template — BioWare)](#btm-merchant-template--bioware)
+    - [BTP (Placeable Template — BioWare)](#btp-placeable-template--bioware)
+    - [BTT (Trigger Template — BioWare)](#btt-trigger-template--bioware)
+    - [CWA (Crowd Attributes)](#cwa-crowd-attributes)
     - [DLG (Dialogue)](#dlg-dialogue)
     - [FAC (Faction)](#fac-faction)
+    - [GIC (Game Instance Comments)](#gic-game-instance-comments)
     - [GIT (Game Instance Template)](#git-game-instance-template)
     - [GUI (Graphical User Interface)](#gui-graphical-user-interface)
     - [IFO (Module Info)](#ifo-module-info)
+    - [ITP (Palette)](#itp-palette)
     - [JRL (Journal)](#jrl-journal)
     - [PTH (Path)](#pth-path)
+    - [PTM (Plot Manager)](#ptm-plot-manager)
+    - [PTT (Plot Wizard Template)](#ptt-plot-wizard-template)
+    - [QST2 (Quest — Odyssey)](#qst2-quest--odyssey)
+    - [STO (Store — Odyssey)](#sto-store--odyssey)
+    - [ULT (Light Template)](#ult-light-template)
     - [UTC (Creature)](#utc-creature)
     - [UTD (Door)](#utd-door)
     - [UTE (Encounter)](#ute-encounter)
+    - [UTG (Random Item Generator)](#utg-random-item-generator)
     - [UTI (Item)](#uti-item)
     - [UTM (Merchant)](#utm-merchant)
     - [UTP (Placeable)](#utp-placeable)
+    - [UTR (Tree Template)](#utr-tree-template)
     - [UTS (Sound)](#uts-sound)
     - [UTT (Trigger)](#utt-trigger)
     - [UTW (Waypoint)](#utw-waypoint)
+    - [WMP (World Map)](#wmp-world-map)
   - [Field Data Access Patterns](#field-data-access-patterns)
     - [Direct Access types](#direct-access-types)
     - [Indirect Access types](#indirect-access-types)
@@ -99,14 +119,14 @@ Dozens of other extensions are documented across this wiki.
 
 **Implementation (PyKotor):**
 
-- package: [`resource/formats/gff/`](https://github.com/OldRepublicDevs/PyKotor/tree/master/Libraries/PyKotor/src/pykotor/resource/formats/gff/)
-- binary read [`GFFBinaryReader.load` L82+](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/formats/gff/io_gff.py#L82)
-- write [`GFFBinaryWriter.write` L355+](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/formats/gff/io_gff.py#L355)
-- data model [`GFF` L509+](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/formats/gff/gff_data.py#L509)
-- [`GFFStruct` L689+](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/formats/gff/gff_data.py#L689)
+- package: [`resource/formats/gff/`](https://github.com/OpenKotOR/PyKotor/tree/master/Libraries/PyKotor/src/pykotor/resource/formats/gff/)
+- binary read [`GFFBinaryReader.load` L82+](https://github.com/OpenKotOR/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/formats/gff/io_gff.py#L82)
+- write [`GFFBinaryWriter.write` L355+](https://github.com/OpenKotOR/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/formats/gff/io_gff.py#L355)
+- data model [`GFF` L509+](https://github.com/OpenKotOR/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/formats/gff/gff_data.py#L509)
+- [`GFFStruct` L689+](https://github.com/OpenKotOR/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/formats/gff/gff_data.py#L689)
 - XML/JSON/Twine variants in `io_gff_xml`, `io_gff_json`, `io_gff_twine`
 
-Comparable open implementations include reone's reader, writer, and core GFF types ([gffreader.cpp](https://github.com/modawan/reone/blob/master/src/libs/resource/format/gffreader.cpp), [gffwriter.cpp](https://github.com/modawan/reone/blob/master/src/libs/resource/format/gffwriter.cpp), [gff.cpp](https://github.com/modawan/reone/blob/master/src/libs/resource/gff.cpp)), xoreos and xoreos-tools Aurora loaders ([xoreos `gff3file.cpp`](https://github.com/xoreos/xoreos/blob/master/src/aurora/gff3file.cpp), [xoreos-tools `gff3file.cpp`](https://github.com/xoreos/xoreos-tools/blob/master/src/aurora/gff3file.cpp)), KotOR.js's parser ([GFFObject.ts L24+](https://github.com/KobaltBlu/KotOR.js/blob/ea9491d5c783364cf285f178434b84405bee3608/src/resource/GFFObject.ts#L24)), Kotor.NET's managed reader/writer ([GFF.cs L18+](https://github.com/NickHugi/Kotor.NET/blob/6dca4a6a1af2fee6e36befb9a6f127c8ba04d3e2/Kotor.NET/Formats/KotorGFF/GFF.cs#L18)), KotOR-Unity's loader ([GFFObject.cs](https://github.com/reubenduncan/KotOR-Unity/blob/master/Assets/Scripts/FileObjects/GFFObject.cs)), and the GFF Kaitai specifications in [bioware-kaitai-formats](https://github.com/OldRepublicDevs/bioware-kaitai-formats).
+Comparable open implementations include reone's reader, writer, and core GFF types ([gffreader.cpp](https://github.com/modawan/reone/blob/master/src/libs/resource/format/gffreader.cpp), [gffwriter.cpp](https://github.com/modawan/reone/blob/master/src/libs/resource/format/gffwriter.cpp), [gff.cpp](https://github.com/modawan/reone/blob/master/src/libs/resource/gff.cpp)), xoreos and xoreos-tools Aurora loaders ([xoreos `gff3file.cpp`](https://github.com/xoreos/xoreos/blob/master/src/aurora/gff3file.cpp), [xoreos-tools `gff3file.cpp`](https://github.com/xoreos/xoreos-tools/blob/master/src/aurora/gff3file.cpp)), KotOR.js's parser ([GFFObject.ts L24+](https://github.com/KobaltBlu/KotOR.js/blob/ea9491d5c783364cf285f178434b84405bee3608/src/resource/GFFObject.ts#L24)), Kotor.NET's managed reader/writer ([GFF.cs L18+](https://github.com/NickHugi/Kotor.NET/blob/6dca4a6a1af2fee6e36befb9a6f127c8ba04d3e2/Kotor.NET/Formats/KotorGFF/GFF.cs#L18)), KotOR-Unity's loader ([GFFObject.cs](https://github.com/reubenduncan/KotOR-Unity/blob/master/Assets/Scripts/FileObjects/GFFObject.cs)), and the GFF Kaitai specifications in [bioware-kaitai-formats](https://github.com/OpenKotOR/bioware-kaitai-formats).
 
 ### See also
 
@@ -140,7 +160,7 @@ The *GFF file header* is 56 bytes in size (0x38):
 | List Indices Offset  | UInt32  | 48 (0x30) | 4    | Offset to list indices array                  |
 | List Indices Count   | UInt32  | 52 (0x34) | 4    | Number of list indices                        |
 
-PyKotor implements (GFF binary header loading [io_gff.py L82+](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/formats/gff/io_gff.py#L82)), and the reone engine provides reference implementation ([gffreader.cpp L30–L44](https://github.com/modawan/reone/blob/61531089341caf5827abbc54346c8c959b03d449/src/libs/resource/format/gffreader.cpp#L30-L44)).
+PyKotor implements (GFF binary header loading [io_gff.py L82+](https://github.com/OpenKotOR/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/formats/gff/io_gff.py#L82)), and the reone engine provides reference implementation ([gffreader.cpp L30–L44](https://github.com/modawan/reone/blob/61531089341caf5827abbc54346c8c959b03d449/src/libs/resource/format/gffreader.cpp#L30-L44)).
 
 ### Label Array
 
@@ -148,7 +168,7 @@ Labels are 16-[byte](https://en.wikipedia.org/wiki/Byte) [null-terminated](https
 
 | Name   | Type     | Size | Description                                                      |
 | ------ | -------- | ---- | ---------------------------------------------------------------- |
-| Labels | [char](GFF-File-Format#gff-data-types) | 16×N | array of field name labels (null-padded to 16 bytes)            |
+| Labels | [Char](GFF-File-Format#gff-data-types) | 16×N | Array of field name labels (null-padded to 16 bytes)            |
 
 Label parsing is referenced in the reone implementation ([gffreader.cpp L151–L154](https://github.com/modawan/reone/blob/61531089341caf5827abbc54346c8c959b03d449/src/libs/resource/format/gffreader.cpp#L151-L154)).
 
@@ -158,9 +178,9 @@ Each struct entry is 12 bytes:
 
 | Name       | Type   | Offset | Size | Description                                                      |
 | ---------- | ------ | ------ | ---- | ---------------------------------------------------------------- |
-| Struct ID  | [int32](GFF-File-Format#gff-data-types)  | 0 (0x00) | 4    | structure type identifier                                        |
-| Data/Offset| UInt32 | 4 (0x04) | 4    | field index (if 1 field) or offset to field indices (if multiple) |
-| Field Count| UInt32 | 8 (0x08) | 4    | Number of fields in this struct (0, 1, or >1)                   |
+| Struct ID  | [Int32](GFF-File-Format#gff-data-types)  | 0 (0x00) | 4    | structure type identifier                                        |
+| Data/Offset| [UInt32](GFF-File-Format#gff-data-types) | 4 (0x04) | 4    | field index (if 1 field) or offset to field indices (if multiple) |
+| Field Count| [UInt32](GFF-File-Format#gff-data-types) | 8 (0x08) | 4    | Number of fields in this struct (0, 1, or >1)                   |
 
 Struct array layout is documented in the reone implementation ([gffreader.cpp L40–L62](https://github.com/modawan/reone/blob/61531089341caf5827abbc54346c8c959b03d449/src/libs/resource/format/gffreader.cpp#L40-L62)).
 
@@ -184,8 +204,8 @@ Complex field types store their data in the field data section:
 | ----------------- | ------------------------------------------------------------------- |
 | UInt64            | 8 bytes (uint64)                                                    |
 | Int64             | 8 bytes (int64)                                                     |
-| double            | 8 bytes (double)                                                    |
-| string            | 4 bytes length + N bytes string data                                |
+| Double            | 8 bytes (double)                                                    |
+| String            | 4 bytes length + N bytes string data                                |
 | ResRef            | 1 byte length + N bytes ResRef data (max 16 chars)                  |
 | LocalizedString   | 4 bytes count + N×8 bytes ([Language ID](Concepts#language-ids-kotor) + [StrRef](Audio-and-Localization-Formats#string-references-strref) pairs)              |
 | Binary            | 4 bytes length + N bytes binary data                                 |
@@ -239,7 +259,7 @@ GFF supports the following *field* types:
 | 17      | vector            | 12            | 3D vector (3×float, stored in field data)                       |
 | 18      | [StrRef](Audio-and-Localization-Formats#string-references-strref)            | 4             | string reference ([TLK](Audio-and-Localization-Formats#tlk) [StrRef](Audio-and-Localization-Formats#string-references-strref), stored inline as int32)             |
 
-PyKotor's canonical type enum and storage definitions live in [gff_data.py L73-L108](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/formats/gff/gff_data.py#L73-L108).
+PyKotor's canonical type enum and storage definitions live in [gff_data.py L73-L108](https://github.com/OpenKotOR/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/formats/gff/gff_data.py#L73-L108).
 
 **Type Selection Guidelines:**
 
@@ -277,7 +297,7 @@ A *GFF Struct* is a collection of named fields. Each *GFF Struct* has:
 - **Struct ID**: Type identifier (often `0xFFFFFFFF` for generic structs)
 - **Fields**: Dictionary mapping field names (labels) to field values
 
-PyKotor's in-memory implementations of `GFFStruct`, `GFFField`, and `GFFList` are defined in [gff_data.py](https://github.com/OldRepublicDevs/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/gff/gff_data.py).
+PyKotor's in-memory implementations of `GFFStruct`, `GFFField`, and `GFFList` are defined in [gff_data.py](https://github.com/OpenKotOR/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/gff/gff_data.py).
 
 *GFF Fields* can be accessed using type-specific getter/setter methods, for example:
 
@@ -400,6 +420,107 @@ See [UTT (Trigger)](GFF-Spatial-Objects#utt) for detailed documentation.
 ### UTW (Waypoint)
 
 See [UTW (Waypoint)](GFF-Spatial-Objects#utw) for detailed documentation.
+
+<a id="bic-character"></a>
+### BIC (Character)
+
+Character data file (type ID 2015), GFF. Older Aurora format for PC/NPC character definitions. In KotOR the engine supports this type but no shipped content uses it — use [UTC (Creature)](GFF-Creature-and-Dialogue#utc) instead.
+
+<a id="btc-creature-template--bioware"></a>
+### BTC (Creature Template — BioWare)
+
+BioWare-authored creature blueprint (type ID 2026), GFF. The engine-internal complement to the modder-facing [UTC](GFF-Creature-and-Dialogue#utc). Seldom encountered directly in mods.
+
+<a id="btd-door-template--bioware"></a>
+### BTD (Door Template — BioWare)
+
+BioWare-authored door blueprint (type ID 2041), GFF. Counterpart to the modder-facing [UTD](GFF-Spatial-Objects#utd). In KotOR the engine supports this type but shipped modules use UTD for modder-placed doors.
+
+<a id="bte-encounter-template--bioware"></a>
+### BTE (Encounter Template — BioWare)
+
+BioWare-authored encounter blueprint (type ID 2039), GFF. Counterpart to the modder-facing [UTE](GFF-Spatial-Objects#ute).
+
+<a id="btg-random-item-generator--bioware"></a>
+### BTG (Random Item Generator — BioWare)
+
+BioWare-authored random item generator blueprint (type ID 2054), GFF. Counterpart to the modder-facing [UTG](#utg-random-item-generator). Defines a randomized loot table authored by BioWare; not used directly in modding.
+
+<a id="bti-item-template--bioware"></a>
+### BTI (Item Template — BioWare)
+
+BioWare-authored item blueprint (type ID 2024), GFF. Counterpart to the modder-facing [UTI](GFF-Items-and-Economy#uti).
+
+<a id="btm-merchant-template--bioware"></a>
+### BTM (Merchant Template — BioWare)
+
+BioWare-authored merchant/store blueprint (type ID 2050), GFF. Counterpart to the modder-facing [UTM](GFF-Items-and-Economy#utm). KotOR supports the type but modders use UTM.
+
+<a id="btp-placeable-template--bioware"></a>
+### BTP (Placeable Template — BioWare)
+
+BioWare-authored placeable blueprint (type ID 2043), GFF. Counterpart to the modder-facing [UTP](GFF-Spatial-Objects#utp).
+
+<a id="btt-trigger-template--bioware"></a>
+### BTT (Trigger Template — BioWare)
+
+BioWare-authored trigger blueprint (type ID 2031), GFF. Counterpart to the modder-facing [UTT](GFF-Spatial-Objects#utt).
+
+<a id="cwa-crowd-attributes"></a>
+### CWA (Crowd Attributes)
+
+Odyssey crowd-attribute data (type ID 3025), GFF. Stores NPC crowd behavior parameters for KotOR area populations. Not edited directly by modders.
+
+<a id="gic-game-instance-comments"></a>
+### GIC (Game Instance Comments)
+
+Game instance comments (type ID 2046), GFF. Toolset-only companion to [GIT](GFF-Module-and-Area#git): instance labels and comments that the game engine never reads are stored here rather than in the runtime `.git`. See [GFF-Module-and-Area — GIC](GFF-Module-and-Area#gic).
+
+<a id="itp-palette"></a>
+### ITP (Palette)
+
+Tile/blueprint palette file (type ID 2030), GFF. The Aurora toolset uses `.itp` to organize tiles and object templates into a browsable palette shown in the toolset UI. See [ITP (Palette)](Bioware-Aurora-Module-and-Area#paletteitp) for detailed documentation.
+
+<a id="ptm-plot-manager"></a>
+### PTM (Plot Manager)
+
+Plot instance/manager file (type ID 2065), GFF. Stores plot variable state used by the Aurora toolset's plot wizard system. Not normally edited by KotOR modders.
+
+<a id="ptt-plot-wizard-template"></a>
+### PTT (Plot Wizard Template)
+
+Plot wizard template (type ID 2066), GFF. Provides the blueprint data driving the Aurora toolset plot wizard. Not normally edited by KotOR modders.
+
+<a id="qst2-quest--odyssey"></a>
+### QST2 (Quest — Odyssey)
+
+Odyssey quest file (type ID 3012), GFF. A second Odyssey-specific quest data type. Not present in retail KotOR I/TSL content; tracked in the registry for cross-engine completeness.
+
+<a id="sto-store--odyssey"></a>
+### STO (Store — Odyssey)
+
+Odyssey store/merchant data (type ID 3013), GFF. Not present in retail KotOR content; tracked in the registry for cross-engine completeness.
+
+<a id="ult-light-template"></a>
+### ULT (Light Template)
+
+Light template (type ID 20015), GFF. Defines a reusable light source object in the NWN2-era Aurora toolset. Not a KotOR I/TSL runtime type.
+
+<a id="utg-random-item-generator"></a>
+### UTG (Random Item Generator)
+
+Random item generator template (type ID 2055), GFF. The user-authored counterpart to [BTG](#btg-random-item-generator--bioware). Defines a randomized loot table. Present in the engine's type registry but not commonly used in KotOR modding.
+
+<a id="utr-tree-template"></a>
+### UTR (Tree Template)
+
+Tree template (type ID 20005), GFF. Defines a reusable vegetation/tree object in the NWN2-era toolset. Not a KotOR I/TSL runtime type.
+
+<a id="wmp-world-map"></a>
+### WMP (World Map)
+
+World map data (type ID 20020), GFF. Stores the game-world map layout including area connections and availability flags. Used by the GUI subsystem for the galaxy/travel map. Not normally patched directly; galaxy map changes typically go through `planetary.2da` or module IFO edits instead.
+
 ## Field Data Access Patterns
 
 ### Direct Access types
@@ -434,10 +555,10 @@ Complex types require accessing data from the *field data section*:
 
 | Component | PyKotor Reference |
 |-----------|--------------|
-| Binary read | [`GFFBinaryReader.load` (io_gff.py)](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/formats/gff/io_gff.py#L82) |
-| Binary write | [`GFFBinaryWriter.write` (io_gff.py)](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/formats/gff/io_gff.py#L345) |
-| GFF data model | [`GFF` (gff_data.py)](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/formats/gff/gff_data.py#L509) |
-| GFFStruct | [`GFFStruct` (gff_data.py)](https://github.com/OldRepublicDevs/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/formats/gff/gff_data.py#L689) |
+| Binary read | [`GFFBinaryReader.load` (io_gff.py)](https://github.com/OpenKotOR/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/formats/gff/io_gff.py#L82) |
+| Binary write | [`GFFBinaryWriter.write` (io_gff.py)](https://github.com/OpenKotOR/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/formats/gff/io_gff.py#L345) |
+| GFF data model | [`GFF` (gff_data.py)](https://github.com/OpenKotOR/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/formats/gff/gff_data.py#L509) |
+| GFFStruct | [`GFFStruct` (gff_data.py)](https://github.com/OpenKotOR/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/formats/gff/gff_data.py#L689) |
 
 ### See also
 

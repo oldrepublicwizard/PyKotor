@@ -144,11 +144,11 @@ pykotor = "pykotor.cli.__main__:main"
 pykotorcli = "pykotor.cli.__main__:main"
 
 [project.urls]
-Homepage = "https://github.com/OldRepublicDevs/PyKotor"
-Changelog = "https://github.com/OldRepublicDevs/PyKotor/releases"
-Documentation = "https://github.com/OldRepublicDevs/PyKotor/wiki"
-Issues = "https://github.com/OldRepublicDevs/PyKotor/issues"
-Repository = "https://github.com/OldRepublicDevs/PyKotor.git"
+Homepage = "https://github.com/OpenKotOR/PyKotor"
+Changelog = "https://github.com/OpenKotOR/PyKotor/releases"
+Documentation = "https://github.com/OpenKotOR/PyKotor/wiki"
+Issues = "https://github.com/OpenKotOR/PyKotor/issues"
+Repository = "https://github.com/OpenKotOR/PyKotor.git"
 
 # Poetry configuration
 [tool.poetry]
@@ -203,11 +203,11 @@ pykotor = "pykotor.cli.__main__:main"
 pykotorcli = "pykotor.cli.__main__:main"
 
 [tool.poetry.urls]
-Homepage = "https://github.com/OldRepublicDevs/PyKotor"
-Changelog = "https://github.com/OldRepublicDevs/PyKotor/releases"
-Documentation = "https://github.com/OldRepublicDevs/PyKotor/wiki"
-Issues = "https://github.com/OldRepublicDevs/PyKotor/issues"
-Repository = "https://github.com/OldRepublicDevs/PyKotor.git"
+Homepage = "https://github.com/OpenKotOR/PyKotor"
+Changelog = "https://github.com/OpenKotOR/PyKotor/releases"
+Documentation = "https://github.com/OpenKotOR/PyKotor/wiki"
+Issues = "https://github.com/OpenKotOR/PyKotor/issues"
+Repository = "https://github.com/OpenKotOR/PyKotor.git"
 
 [tool.poetry.extras]
 all = ["charset-normalizer", "fusepy", "pywin32", "PyYAML", "colorama", "comtypes", "gputil", "psutil", "pillow", "PyGLM", "PyOpenGL", "numpy", "certifi", "pycryptodome", "requests"]

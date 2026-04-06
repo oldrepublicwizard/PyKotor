@@ -65,7 +65,7 @@ def close_issue(repo: str, issue_number: int) -> bool:
 
 
 def main():
-    repo = "OldRepublicDevs/PyKotor"
+    repo = "OpenKotOR/PyKotor"
 
     print("Finding duplicate issues...")
     issues = get_all_issues(repo)

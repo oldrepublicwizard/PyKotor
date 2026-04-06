@@ -61,4 +61,4 @@ Do not hand-edit generated code under `toolset/uic/`; details are in `AGENTS.md`
 
 ## Upstream
 
-Canonical repository: [OldRepublicDevs/PyKotor](https://github.com/OldRepublicDevs/PyKotor).
+Canonical repository: [OpenKotOR/PyKotor](https://github.com/OpenKotOR/PyKotor).

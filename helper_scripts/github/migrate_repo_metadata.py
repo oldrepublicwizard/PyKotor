@@ -669,7 +669,7 @@ def migrate_discussions(source_repo: str, target_repo: str) -> int:
 def main():
     parser = argparse.ArgumentParser(description="Migrate repository metadata between GitHub repositories")
     parser.add_argument("--source", default="NickHugi/PyKotor", help="Source repository (default: NickHugi/PyKotor)")
-    parser.add_argument("--target", default="OldRepublicDevs/PyKotor", help="Target repository (default: OldRepublicDevs/PyKotor)")
+    parser.add_argument("--target", default="OpenKotOR/PyKotor", help="Target repository (default: OpenKotOR/PyKotor)")
     parser.add_argument("--fix-only", action="store_true", help="Only fix existing migrated issues, don't migrate new ones")
     parser.add_argument("--recreate-releases", action="store_true", help="Delete all existing releases and recreate in exact chronological order")
     args = parser.parse_args()

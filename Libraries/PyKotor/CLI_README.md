@@ -39,7 +39,7 @@ uv run --directory Libraries/PyKotor/src --module pykotor --help
 **Without uv (Windows):**
 
 ```bash
-git clone https://github.com/OldRepublicDevs/PyKotor
+git clone https://github.com/OpenKotOR/PyKotor
 cd PyKotor
 python -m venv .venv
 .venv\Scripts\Activate.ps1
@@ -415,7 +415,7 @@ LGPL License - See LICENSE file for details.
 
 ## Contributing
 
-Contributions welcome! [See here for contributing guidelines.](https://github.com/OldRepublicDevs/PyKotor/edit/master/Libraries/PyKotor/docs/README.md)
+Contributions welcome! [See here for contributing guidelines.](https://github.com/OpenKotOR/PyKotor/edit/master/Libraries/PyKotor/docs/README.md)
 
 ## Documentation
 

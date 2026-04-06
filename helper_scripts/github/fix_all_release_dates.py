@@ -80,7 +80,7 @@ def update_release_with_date(target_repo: str, release_id: int, release_data: di
 
 def main():
     source_repo = "NickHugi/PyKotor"
-    target_repo = "OldRepublicDevs/PyKotor"
+    target_repo = "OpenKotOR/PyKotor"
 
     print("=" * 70)
     print("RELEASE DATE FIX ATTEMPT")
@@ -115,7 +115,7 @@ def main():
     print("\nGitHub REST API limitation: published_at cannot be set programmatically.")
     print("\nTo fix dates, you have these options:")
     print("\n1. MANUAL FIX (Recommended):")
-    print("   Visit: https://github.com/OldRepublicDevs/PyKotor/releases")
+    print("   Visit: https://github.com/OpenKotOR/PyKotor/releases")
     print("   Edit each release and set the correct date")
     print("\n2. Create a script using GitHub's web interface automation")
     print("\n3. Contact GitHub Support for bulk date correction")
@@ -131,7 +131,7 @@ def main():
         print(f"\n{tag_name}:")
         print(f"  Original date: {original_date}")
         print(f"  Current date:  {current_date}")
-        print(f"  Edit URL: https://github.com/OldRepublicDevs/PyKotor/releases/edit/{tag_name}")
+        print(f"  Edit URL: https://github.com/OpenKotOR/PyKotor/releases/edit/{tag_name}")
 
     print("\n" + "=" * 70)
     print("NOTE: v1.52-patcher exists but has wrong date")

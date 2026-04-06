@@ -128,15 +128,30 @@ class GFFContent(Enum):
     UTM = "UTM "
     UTT = "UTT "
     UTW = "UTW "
+    UTG = "UTG "  # random item generator template (user), GFF
     ARE = "ARE "
     DLG = "DLG "
     FAC = "FAC "
     GIT = "GIT "
+    GIC = "GIC "  # game instance comments (toolset-only companion to GIT), GFF
     GUI = "GUI "
     IFO = "IFO "
     ITP = "ITP "
     JRL = "JRL "
     PTH = "PTH "
+    # BioWare-authored counterparts to the user-facing UT* blueprint types
+    BTS = "BTS "  # sound template (BioWare), GFF
+    BTG = "BTG "  # random item generator template (BioWare), GFF
+    # Odyssey- and cross-engine types with GFF content
+    CUT = "CUT "  # cutscene, GFF
+    QDB = "QDB "  # quest database, GFF
+    QST = "QST "  # quest, GFF
+    QST2 = "QST2"  # quest (Odyssey, 4-char identifier without trailing space), GFF
+    STO = "STO "  # store (Odyssey), GFF
+    CWA = "CWA "  # crowd attributes (Odyssey), GFF
+    UTR = "UTR "  # tree template (user), GFF
+    ULT = "ULT "  # light template (user), GFF
+    WMP = "WMP "  # world map, GFF
     NFO = "NFO "  # savenfo.res
     PT = "PT  "  # partytable.res
     GVT = "GVT "  # GLOBALVARS.res

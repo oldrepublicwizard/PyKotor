@@ -132,17 +132,17 @@ See individual tool documentation for detailed usage.
 
 | Tool | Description | Documentation |
 |------|-------------|---------------|
-| **HolocronToolset** | Full-featured GUI editor for KotOR files | [README](https://github.com/OldRepublicDevs/PyKotor/tree/master/Tools/HolocronToolset#readme) |
-| **HoloPatcher** | Fast, cross-platform mod installer | [README](https://github.com/OldRepublicDevs/PyKotor/tree/master/Tools/HoloPatcher#readme) |
-| **PyKotor CLI** | Command-line build tool (part of pykotor package) | [Docs](https://github.com/OldRepublicDevs/PyKotor/tree/master/Libraries/PyKotor/docs) |
-| **KotorDiff** | File comparison and TSLPatcher data generator | [README](https://github.com/OldRepublicDevs/PyKotor/tree/master/Tools/KotorDiff#readme) |
+| **HolocronToolset** | Full-featured GUI editor for KotOR files | [README](https://github.com/OpenKotOR/PyKotor/tree/master/Tools/HolocronToolset#readme) |
+| **HoloPatcher** | Fast, cross-platform mod installer | [README](https://github.com/OpenKotOR/PyKotor/tree/master/Tools/HoloPatcher#readme) |
+| **PyKotor CLI** | Command-line build tool (part of pykotor package) | [Docs](https://github.com/OpenKotOR/PyKotor/tree/master/Libraries/PyKotor/docs) |
+| **KotorDiff** | File comparison and TSLPatcher data generator | [README](https://github.com/OpenKotOR/PyKotor/tree/master/Tools/KotorDiff#readme) |
 
 ## Documentation
 
 ### User Documentation
-- **[Installation & Usage](https://github.com/OldRepublicDevs/PyKotor/tree/master/Libraries/PyKotor/docs)** - Detailed library documentation
+- **[Installation & Usage](https://github.com/OpenKotOR/PyKotor/tree/master/Libraries/PyKotor/docs)** - Detailed library documentation
 - **[Contributing Guide](CONTRIBUTING.md)** - Development setup and guidelines
-- **[Project Wiki](https://github.com/OldRepublicDevs/PyKotor/wiki)** — community documentation (GitHub UI); clone with `git submodule update --init wiki` to edit `wiki/*.md` in-tree (see [CONTRIBUTING.md](CONTRIBUTING.md))
+- **[Project Wiki](https://github.com/OpenKotOR/PyKotor/wiki)** — community documentation (GitHub UI); clone with `git submodule update --init wiki` to edit `wiki/*.md` in-tree (see [CONTRIBUTING.md](CONTRIBUTING.md))
 - **[PowerShell Setup](POWERSHELL.md)** - Windows PowerShell configuration
 
 ### Design & Architecture
@@ -159,4 +159,4 @@ Contributions are welcome! Please see [CONTRIBUTING.md](CONTRIBUTING.md) for:
 
 ## License
 
-This project is licensed under the [LGPL-3.0-or-later License](https://github.com/OldRepublicDevs/PyKotor/blob/master/LICENSE).
+This project is licensed under the [LGPL-3.0-or-later License](https://github.com/OpenKotOR/PyKotor/blob/master/LICENSE).

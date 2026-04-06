@@ -61,7 +61,7 @@ Use this table when editing. **Original** = canonical upstream; **Mirror** = th3
 | lachjames/NorthernLights | th3w1zard1/NorthernLights | Home 340. |
 | reubenduncan/KotOR-Unity | th3w1zard1/KotOR-Unity | Home 341. |
 | NickHugi/Kotor.NET | th3w1zard1/Kotor.NET | Home 348; add mirror if missing in format pages. |
-| OldRepublicDevs/kotorblender | (th3w1zard1/kotorblender if exists) | Home 356; Blender-Integration. |
+| OpenKotOR/kotorblender | (th3w1zard1/kotorblender if exists) | Home 356; Blender-Integration. |
 | ndixUR/mdlops | th3w1zard1/mdlops | Home 357. |
 | ndixUR/tga2tpc | th3w1zard1/tga2tpc | Home 358. |
 | implicit-image/nwscript-mode.el | th3w1zard1/nwscript-mode.el | Home 367. |

@@ -8,16 +8,16 @@ I've heard that question a lot lately with blender. I think there's actual funct
 
 You'll want to use kotormax/gmax unless you have some coding knowledge as you'll either have to fix kotorblender yourself or wait until the community can properly patch it.
 Well actually, check the normal stuff. You using the latest version?
-https://github.com/OldRepublicDevs/kotorblender
+https://github.com/OpenKotOR/kotorblender
 GitHub
-GitHub - OldRepublicDevs/kotorblender: Blender add-on to import & e...
-Blender add-on to import & export KotOR models. Contribute to OldRepublicDevs/kotorblender development by creating an account on GitHub.
-GitHub - OldRepublicDevs/kotorblender: Blender add-on to import & e...
+GitHub - OpenKotOR/kotorblender: Blender add-on to import & e...
+Blender add-on to import & export KotOR models. Contribute to OpenKotOR/kotorblender development by creating an account on GitHub.
+GitHub - OpenKotOR/kotorblender: Blender add-on to import & e...
 r [T3M4],  — 6:33 AM
 4.0.3
 Wizard [C#],  — 6:36 AM
 ah
-the walkmeshes in general are convoluted. First just ensure you're using the latest version of kotorblender (OldRepublicDevs is part of the OpenKotOR community and they maintain dead projects such as kotorblender and others). I don't think your blender version itself is too important.
+the walkmeshes in general are convoluted. First just ensure you're using the latest version of kotorblender (OpenKotOR is part of the OpenKotOR community and they maintain dead projects such as kotorblender and others). I don't think your blender version itself is too important.
 One thing about room models is they have a walkmesh inside of them too. I believe the one in the wok file has a bit more info in it. 
 
 This is where understanding the nwn engine can shed some light. Nwn was a client/server architecture because it was built to be multi-player. Because they reused a lot of nwn stuff from the aurora engine to make the odyssey engine, that client server communication layer is still in KotOR. Now I'm not sure how deep you're invested into how it all works at a low lvl, but there is a concept of a client and server inside the EXE. All have to do is read the strings inside the EXE and you'll find debug messages that provide clues to that end.
@@ -39,7 +39,7 @@ but tldr for now you may want to just use kotormax/gmax since that's been battle
 Wizard [C#],  — 6:44 AM
 there are a few people here even that have been waiting for the developers in the community to address and properly streamline all of this but it's still in progress, check back soon  I might have something in the next week or so.
 Wizard [C#],  — 6:52 AM
-speaking of the community also maintains kotormax here: https://github.com/OldRepublicDevs/KOTORMax
+speaking of the community also maintains kotormax here: https://github.com/OpenKotOR/KOTORMax
 r [T3M4],  — 7:43 AM
 How do you import mdl files into gmax with kotormax?
 Seem to only be able to look for 3d studio meshes
@@ -986,7 +986,7 @@ Here's exactly what r needs to do, derived directly from the codebase.
 
 KOTORMax **only reads ASCII MDL files** — the import function in `odyssey_fn_import.ms` explicitly checks whether the first byte of the file is `0` (i.e., a binary MDL header) and rejects it:
 
-```maxscript name=odyssey_fn_import.ms url=https://github.com/OldRepublicDevs/KOTORMax/blob/af4e4a37ac498585b5bf169ac3c4bee874542e6f/KOTORMax/kotormax_scripts/odyssey_fn_import.ms#L530-L536
+```maxscript name=odyssey_fn_import.ms url=https://github.com/OpenKotOR/KOTORMax/blob/af4e4a37ac498585b5bf169ac3c4bee874542e6f/KOTORMax/kotormax_scripts/odyssey_fn_import.ms#L530-L536
     -- Open up the file and check to see if its a binary file
     local binMdlStream = fopen pFile "rb"
     local isNotBinary = ReadByte binMdlStream
@@ -1003,7 +1003,7 @@ Use MDLOps (or MDLedit) to convert `203tell.mdl` → ASCII. The output from MDLe
 
 This is the root of the "no appropriate import module found" problem. Look at how `kx_gui_import.ms` strips the filename to find companion `.pwk`/`.dwk` files:
 
-```maxscript name=kx_gui_import.ms url=https://github.com/OldRepublicDevs/KOTORMax/blob/af4e4a37ac498585b5bf169ac3c4bee874542e6f/KOTORMax/kotormax_scripts/kx_gui_import.ms#L115-L122
+```maxscript name=kx_gui_import.ms url=https://github.com/OpenKotOR/KOTORMax/blob/af4e4a37ac498585b5bf169ac3c4bee874542e6f/KOTORMax/kotormax_scripts/kx_gui_import.ms#L115-L122
 		local StrictFilename = mdlFileName
 		while matchPattern StrictFilename pattern:"*.*" do StrictFilename = getFilenameFile  StrictFilename
         local pwk_file = (getFilenamePath mdlFileName)+StrictFilename+".pwk.ascii"
@@ -1018,7 +1018,7 @@ That `while matchPattern StrictFilename pattern:"*.*"` loop **strips ALL extensi
 
 The browse dialog in KOTORMax is driven by the `g_dotAscii` setting:
 
-```maxscript name=kx_gui_import.ms url=https://github.com/OldRepublicDevs/KOTORMax/blob/af4e4a37ac498585b5bf169ac3c4bee874542e6f/KOTORMax/kotormax_scripts/kx_gui_import.ms#L244-L249
+```maxscript name=kx_gui_import.ms url=https://github.com/OpenKotOR/KOTORMax/blob/af4e4a37ac498585b5bf169ac3c4bee874542e6f/KOTORMax/kotormax_scripts/kx_gui_import.ms#L244-L249
 	on import_browse_button pressed do
 	(
 		local sPattern = "Odyssey Ascii Model (*.mdl)|*.mdl|Odyssey Ascii Model (*.mdl.ascii)|*.mdl.ascii|"
@@ -1038,7 +1038,7 @@ Since `dotascii=1` is the default, the browse button will look for `.mdl.ascii` 
 
 From `kx_gui_speedbtns.ms`:
 
-```maxscript name=kx_gui_speedbtns.ms url=https://github.com/OldRepublicDevs/KOTORMax/blob/af4e4a37ac498585b5bf169ac3c4bee874542e6f/KOTORMax/kotormax_scripts/kx_gui_speedbtns.ms#L449-L450
+```maxscript name=kx_gui_speedbtns.ms url=https://github.com/OpenKotOR/KOTORMax/blob/af4e4a37ac498585b5bf169ac3c4bee874542e6f/KOTORMax/kotormax_scripts/kx_gui_speedbtns.ms#L449-L450
 	checkbox chk_dotascii "Use .ascii By Default" checked:(kx_itob (g_dotAscii))
 ```
 
