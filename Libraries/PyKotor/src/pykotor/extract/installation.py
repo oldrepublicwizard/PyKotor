@@ -7,7 +7,6 @@ import os
 import platform
 import sys
 
-from collections.abc import Sequence
 from copy import copy
 from dataclasses import dataclass
 from enum import Enum, IntEnum
