@@ -145,7 +145,7 @@ Missing flags are treated as `false` by PyKotor's reader [[`io_tlk.py` L108–L1
 
 String entries follow the string data table:
 
-| Name         | type   | Description                                                      |
+| Name         | Type   | Description                                                      |
 | ------------ | ------ | ---------------------------------------------------------------- |
 | string Text  | [char](GFF-File-Format#gff-data-types)[] | [null-terminated string](https://en.cppreference.com/w/c/string/byte) data (UTF-8 or Windows-1252 encoded)     |
 
@@ -165,7 +165,7 @@ Each TLK entry contains:
 - PyKotor `TLK` / `TLKEntry` — [`tlk_data.py` L54–L420](https://github.com/OpenKotOR/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/formats/tlk/tlk_data.py#L54-L420)
 - entry serialization — [`io_tlk.py` `_write_entry` L194–L219](https://github.com/OpenKotOR/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/formats/tlk/io_tlk.py#L194-L219).
 
-| Attribute        | type   | Description                                                      |
+| Attribute        | Type   | Description                                                      |
 | ---------------- | ------ | ---------------------------------------------------------------- |
 | `text`           | str    | Localized text string                                            |
 | `voiceover`      | *ResRef* | Voice-over audio filename ([WAV file](Audio-and-Localization-Formats#wav))                            |
@@ -190,7 +190,7 @@ The game uses StrRef values throughout [GFF files](GFF-File-Format), scripts, an
 
 Mods can add custom TLK files to extend available strings:
 
-**dialog.tlk structure:**
+**`dialog.tlk` structure:**
 
 - Base game: `dialog.tlk` (read-only, ~50,000-100,000 entries)
 - Custom content: `dialogf.tlk` or custom TLK files placed in override
