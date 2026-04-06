@@ -590,7 +590,7 @@ See [HoloPatcher README for Mod Developers](HoloPatcher#mod-developers).
 
 ## File types
 
-| type | Usage | Description |
+| Type | Usage | Description |
 | ---- | ----- | ----------- |
 | **VO (Voice-over)** | Dialogue lines (`*.wav` referenced by [TLK](Audio-and-Localization-Formats#tlk) [StrRefs](Audio-and-Localization-Formats#string-references-strref)). | Plain RIFF/WAVE PCM files readable by any media player. |
 | **SFX (Sound effects)** | Combat, UI, ambience, `.wav` files under `StreamSounds`/`SFX`. | Contains a Bioware 470-[byte](https://en.wikipedia.org/wiki/Byte) obfuscation header followed by the same RIFF data. |
