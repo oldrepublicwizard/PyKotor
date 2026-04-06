@@ -87,11 +87,13 @@ Some registry members survive because KotOR shares lineage with broader Aurora/O
 
 ### Extended classic registry table
 
+All entries derive from PyKotor's [`ResourceType` enum in `type.py`](https://github.com/OpenKotOR/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/type.py); each member's `supported_engines` field is the authoritative source for engine support [[`BiowareEngine`](https://github.com/OpenKotOR/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/type.py#L49-L67), [`ResourceType` members L209-L480](https://github.com/OpenKotOR/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/type.py#L209-L480)]. Rows described as having "no known retail game files" are engine-registered types not observed in shipped KotOR archives.
+
 | Resource Name | Type ID | Description                                    |
 | ------------- | ------- | ---------------------------------------------- |
 | [RES](GFF-File-Format#res)           | 0x0000  | Used for `.res` resources within the [save game containers](Container-Formats#erf)                     |
 | BMP           | 0x0001  | Bitmap image                         |
-| MVE           | 0x0002  | Movie/video file       Not used in *KotOR*                   |
+| MVE           | 0x0002  | Movie/video file; Infinity-engine only — not present in KotOR [[`MVE`](https://github.com/OpenKotOR/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/type.py#L215-L216)] |
 | [TGA](https://en.wikipedia.org/wiki/Truevision_TGA)           | 0x0003  | TarGA image format                          |
 | [WAV](Audio-and-Localization-Formats#wav)           | 0x0004  | Wave audio file (see [WAV File Format](Audio-and-Localization-Formats#wav)) |
 | [INI](https://en.wikipedia.org/wiki/INI_file)           | 0x0007  | Configuration file (e.g., `swkotor.ini`, `swkotor2.ini`)                          |
@@ -101,20 +103,20 @@ Some registry members survive because KotOR shares lineage with broader Aurora/O
 | [WMA](Audio-and-Localization-Formats#wma)           | 0x000B  | Windows Media Audio; retained as an Odyssey-supported registry type [[`WMA`](https://github.com/OpenKotOR/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/type.py#L236)] |
 | [WMV](Audio-and-Localization-Formats#wmv)           | 0x000C  | Windows Media Video; retained as an Odyssey-supported registry type [[`WMV`](https://github.com/OpenKotOR/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/type.py#L237)] |
 | [XMV](Audio-and-Localization-Formats#xmv)           | 0x000D  | Xbox media/video type retained as an Odyssey-supported registry type [[`XMV`](https://github.com/OpenKotOR/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/type.py#L238)] |
-| PLH           | 0x07D0  | *PLaceable Header* type.  Not used in *KotOR*                      |
-| TEX           | 0x07D1  | Texture. Not used in *KotOR*                      |
+| PLH           | 0x07D0  | Placeable header type; Odyssey-registered though no known retail KotOR game files of this type are shipped [[`PLH`](https://github.com/OpenKotOR/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/type.py#L239)] |
+| TEX           | 0x07D1  | Texture type; Odyssey-registered though no known retail KotOR game files of this type are shipped [[`TEX`](https://github.com/OpenKotOR/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/type.py#L240)] |
 | [MDL](MDL-MDX-File-Format)           | 0x07D2  | 3D [model](MDL-MDX-File-Format) file (see [MDL/MDX File Format](MDL-MDX-File-Format))                                   |
-| THG           | 0x07D3  | Unknown. Not used in *KotOR*                                |
-| FNT           | 0x07D5  | Font file. Not used in *KotOR*                                  |
-| [Lua](https://www.lua.org/)           | 0x07D7  | Lua script. Not used in *KotOR*                             |
-| SLT           | 0x07D8  | Unknown. Not used in *KotOR*                               |
+| THG           | 0x07D3  | Unknown Odyssey-registered type; no known usage [[`THG`](https://github.com/OpenKotOR/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/type.py#L242)] |
+| FNT           | 0x07D5  | Font file; Odyssey-registered though no known retail KotOR game files of this type are shipped [[`FNT`](https://github.com/OpenKotOR/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/type.py#L244)] |
+| [Lua](https://www.lua.org/)           | 0x07D7  | Lua script source; Odyssey/Eclipse-registered though no known retail KotOR game files of this type are shipped [[`LUA`](https://github.com/OpenKotOR/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/type.py#L246)] |
+| SLT           | 0x07D8  | Unknown Odyssey-registered type; no known usage [[`SLT`](https://github.com/OpenKotOR/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/type.py#L247)] |
 | [NSS](NSS-File-Format)           | 0x07D9  | *NWScript* source code (see [NSS File Format](NSS-File-Format))                            |
 | [NCS](NCS-File-Format)           | 0x07DA  | *Compiled NWScript* bytecode (see [NCS File Format](NCS-File-Format))                     |
 | [MOD](Container-Formats#erf)           | 0x07DB  | [*Module* ERF archive/container](Container-Formats#erf)                         |
 | [ARE](GFF-File-Format#are-area)           | 0x07DC  | *Area* definition (see [GFF-ARE](GFF-Module-and-Area#are))                                 |
-| SET           | 0x07DD  | Unknown.  Not used in *KotOR*                               |
+| SET           | 0x07DD  | Tileset; Odyssey-registered though no known retail KotOR game files of this type are shipped [[`SET`](https://github.com/OpenKotOR/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/type.py#L252)] |
 | [IFO](GFF-File-Format#ifo-module-info)           | 0x07DE  | *Module* InFOrmation (see [GFF-IFO](GFF-Module-and-Area#ifo))                              |
-| BIC          | 0x07DF  | ???                 |
+| BIC          | 0x07DF  | Character export data (GFF format); used in Aurora/Odyssey character exports and some save workflows [[`BIC`](https://github.com/OpenKotOR/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/type.py#L254)] |
 | [WOK](Level-Layout-Formats#bwm)           | 0x07E0  | *Walkmesh* (see [BWM File Format](Level-Layout-Formats#bwm))                                |
 | [2DA](2DA-File-Format)           | 0x07E1  | *Two-Dimensional Array* data (see [2DA File Format](2DA-File-Format))                      |
 | [TLK](Audio-and-Localization-Formats#tlk)           | 0x07E2  | *Talk Table* (Localized Strings, see [TLK File Format](Audio-and-Localization-Formats#tlk))                 |
