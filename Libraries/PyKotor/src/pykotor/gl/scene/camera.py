@@ -6,11 +6,12 @@ import math
 
 from typing import TYPE_CHECKING, Literal, Union
 
-from pykotor.gl.glm_compat import (
+from pykotor.gl import (
     cross,
     inverse,
     mat4,
     normalize,
+    ortho,
     perspective,
     rotate,
     translate,
@@ -35,26 +36,58 @@ class Camera:
     Reference: Standard game engine practice (Unity, Unreal use similar caching)
     """
 
-    __slots__ = ("_x", "_y", "_z", "_width", "_height", "_pitch", "_yaw", "_distance", "_fov", "_cached_view", "_cached_projection", "_view_dirty", "_projection_dirty")
+    __slots__ = (
+        "_x",
+        "_y",
+        "_z",
+        "_width",
+        "_height",
+        "_pitch",
+        "_yaw",
+        "_distance",
+        "_fov",
+        "_orthographic",
+        "_cached_view",
+        "_cached_projection",
+        "_view_dirty",
+        "_projection_dirty",
+    )
 
-    def __init__(self):
+    def __init__(
+        self,
+        x: float | None = None,
+        y: float | None = None,
+        z: float | None = None,
+        width: int | None = None,
+        height: int | None = None,
+        pitch: float | None = None,
+        yaw: float | None = None,
+        distance: float | None = None,
+        fov: float | None = None,
+        orthographic: bool = False,
+        cached_view: mat4 | None = None,
+        cached_projection: mat4 | None = None,
+        view_dirty: bool | None = None,
+        projection_dirty: bool | None = None,
+    ):
         # Initialize internal attributes directly to avoid property setters
         # triggering invalidation during construction
-        self._x: float = 40.0
-        self._y: float = 130.0
-        self._z: float = 0.5
-        self._width: int = 1920
-        self._height: int = 1080
-        self._pitch: float = math.pi / 2
-        self._yaw: float = 0.0
-        self._distance: float = 10.0
-        self._fov: float = 90.0
+        self._x: float = 40.0 if x is None else x
+        self._y: float = 130.0 if y is None else y
+        self._z: float = 0.5 if z is None else z
+        self._width: int = 1920 if width is None else width
+        self._height: int = 1080 if height is None else height
+        self._pitch: float = math.pi / 2 if pitch is None else pitch
+        self._yaw: float = 0.0 if yaw is None else yaw
+        self._distance: float = 10.0 if distance is None else distance
+        self._fov: float = 90.0 if fov is None else fov
+        self._orthographic: bool = False if orthographic is None else orthographic  # When True, use orthographic projection
 
         # Cached matrices
-        self._cached_view: mat4 | None = None
-        self._cached_projection: mat4 | None = None
-        self._view_dirty: bool = True
-        self._projection_dirty: bool = True
+        self._cached_view: mat4 | None = None if cached_view is None else cached_view
+        self._cached_projection: mat4 | None = None if cached_projection is None else cached_projection
+        self._view_dirty: bool = True if view_dirty is None else view_dirty
+        self._projection_dirty: bool = True if projection_dirty is None else projection_dirty
 
     # Position properties - invalidate view cache on change
     @property
@@ -149,6 +182,17 @@ class Camera:
             self._fov = value
             self._projection_dirty = True
 
+    @property
+    def orthographic(self) -> bool:
+        """When True the camera uses orthographic (parallel) projection."""
+        return self._orthographic
+
+    @orthographic.setter
+    def orthographic(self, value: bool) -> None:
+        if self._orthographic != value:
+            self._orthographic = value
+            self._projection_dirty = True
+
     def _invalidate_view(self):
         """Mark view matrix as needing recalculation.
 
@@ -219,19 +263,27 @@ class Camera:
         """Get projection matrix with caching.
 
         Matrix is recalculated only when FOV or aspect ratio changes.
+        Returns perspective or orthographic matrix depending on self.orthographic.
         """
         if not self._projection_dirty and self._cached_projection is not None:
             return self._cached_projection
 
         # Prevent division by zero - use 1.0 aspect ratio if height is 0
-        aspect_ratio = self.width / self.height if self.height > 0 else 1.0
+        aspect_ratio: float = self.width / self.height if self.height > 0 else 1.0
 
-        self._cached_projection = perspective(
-            self.fov,
-            aspect_ratio,
-            0.1,
-            5000,
-        )
+        if self._orthographic:
+            # Scale orthographic extents to match the visible area at the focal distance in
+            # perspective mode so switching is seamless.  half_h = distance * tan(fov/2).
+            half_h = self.distance * math.tan(math.radians(self.fov) / 2.0)
+            half_w = half_h * aspect_ratio
+            self._cached_projection = ortho(-half_w, half_w, -half_h, half_h, 0.1, 5000)
+        else:
+            self._cached_projection = perspective(
+                self.fov,
+                aspect_ratio,
+                0.1,
+                5000,
+            )
         self._projection_dirty = False
         return self._cached_projection
 

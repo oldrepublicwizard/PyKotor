@@ -10,7 +10,7 @@ from pykotor.gl.compat import (
     missing_constant,
     missing_gl_func,
 )
-from pykotor.gl.glm_compat import Vector3, Vector4, mat4, value_ptr
+from pykotor.gl import mat4, value_ptr, vec3, vec4
 
 HAS_PYOPENGL = has_pyopengl()
 
@@ -44,7 +44,7 @@ else:
     GL_VERTEX_SHADER = missing_constant("GL_VERTEX_SHADER")
 
 if TYPE_CHECKING:
-    from pykotor.gl.glm_compat import Vector3, Vector4, mat4
+    from pykotor.gl import mat4, vec3, vec4
 
 
 KOTOR_VSHADER = """
@@ -223,14 +223,14 @@ class Shader:
     def set_vector4(
         self,
         uniform: str,
-        vector: Vector4,
+        vector: vec4,
     ):
         glUniform4fv(self.uniform(uniform), 1, value_ptr(vector))
 
     def set_vector3(
         self,
         uniform: str,
-        vector: Vector3,
+        vector: vec3,
     ):
         glUniform3fv(self.uniform(uniform), 1, value_ptr(vector))
 

@@ -24,7 +24,7 @@ from dataclasses import dataclass, field
 from enum import Enum, auto
 from typing import TYPE_CHECKING
 
-from pykotor.gl.glm_compat import length, normalize, vec3
+from pykotor.gl import length, normalize, vec3
 
 if TYPE_CHECKING:
     from pykotor.gl.scene import Camera
@@ -68,6 +68,10 @@ class InputState:
     right_key: bool = False
     up_key: bool = False
     down_key: bool = False
+
+    # Viewport dimensions (used for zoom-to-cursor; 0 = unknown / disabled)
+    viewport_width: float = 0.0
+    viewport_height: float = 0.0
 
 
 @dataclass
@@ -237,36 +241,41 @@ class CameraController:
         self._update_camera()
 
     def _determine_mode(self, input_state: InputState) -> None:
-        """Determine the camera mode based on input state."""
-        # Priority: Fly > Pan > Zoom > Orbit > None
+        """Determine the camera mode based on input state.
 
-        # Pan: Middle mouse + Shift OR Ctrl + Left mouse
-        if (input_state.middle_button and input_state.shift_held) or (input_state.ctrl_held and input_state.left_button):
+        Blender-style priority (highest to lowest):
+          Pan  : Shift+MMB  (or Alt+MMB for Unity-compat)
+          Zoom : Ctrl+MMB   (drag zoom; scroll is always handled separately)
+          Orbit: MMB alone  (or Alt+LMB for laptops without a scroll button)
+          Zoom : RMB alone  (secondary fallback)
+          None
+        LMB alone is intentionally NOT mapped to any camera mode so it remains
+        available for object selection / manipulation without accidentally
+        entering orbit mode when clicking.
+        """
+        # Pan: Shift+MMB  (Blender primary)  or Alt+MMB  (Unity compat)
+        if input_state.middle_button and (input_state.shift_held or input_state.alt_held):
             self.mode = CameraMode.PAN
             return
 
-        # Zoom: Right mouse (drag mode)
-        if input_state.right_button and not input_state.shift_held and not input_state.ctrl_held:
+        # Zoom drag: Ctrl+MMB  (Blender Ctrl+MMB = zoom/dolly)
+        if input_state.middle_button and input_state.ctrl_held:
             self.mode = CameraMode.ZOOM
             return
 
-        # Orbit: Middle mouse (without shift) OR Left mouse (without modifiers)
-        if input_state.middle_button and not input_state.shift_held:
+        # Orbit: plain MMB  (Blender primary)
+        if input_state.middle_button:
             self.mode = CameraMode.ORBIT
             return
 
-        if input_state.left_button and not input_state.ctrl_held and not input_state.shift_held and not input_state.alt_held:
-            self.mode = CameraMode.ORBIT
-            return
-
-        # Alt + Left mouse for orbit (Unity/Blender style)
+        # Alt+LMB: orbit emulation for laptop / no-MMB users (Blender convention)
         if input_state.alt_held and input_state.left_button:
             self.mode = CameraMode.ORBIT
             return
 
-        # Alt + Middle mouse for pan (Unity/Blender style)
-        if input_state.alt_held and input_state.middle_button:
-            self.mode = CameraMode.PAN
+        # RMB: secondary zoom fallback (keeps previous behaviour for muscle memory)
+        if input_state.right_button and not input_state.shift_held and not input_state.ctrl_held:
+            self.mode = CameraMode.ZOOM
             return
 
         self.mode = CameraMode.NONE
@@ -394,31 +403,55 @@ class CameraController:
         )
 
     def _process_zoom_scroll(self, input_state: InputState) -> None:
-        """Process zoom from scroll wheel."""
-        sensitivity = self.settings.zoom_sensitivity * 0.1
+        """Process zoom from scroll wheel, optionally tracking cursor position."""
+        sensitivity: float = self.settings.zoom_sensitivity * 0.1
 
         # Apply speed boost
         if input_state.shift_held:
             sensitivity *= self.settings.speed_boost_multiplier
 
-        scroll = input_state.scroll_delta
+        scroll: float = input_state.scroll_delta
 
         if self.settings.zoom_invert:
             scroll = -scroll
 
         # Exponential zoom for consistent feel at all distances
-        zoom_factor = 1.0 - scroll * sensitivity
-        new_distance = self.state.target_distance * zoom_factor
-
-        # Clamp to limits
-        self.state.target_distance = max(
+        zoom_factor: float = 1.0 - scroll * sensitivity
+        old_distance: float = self.state.target_distance
+        new_distance: float = max(
             self.settings.min_distance,
-            min(self.settings.max_distance, new_distance),
+            min(self.settings.max_distance, old_distance * zoom_factor),
         )
+
+        # Zoom-to-cursor: shift focal point so the cursor-pointed location stays
+        # stationary as the view zooms.  Uses the cursor's NDC offset from the
+        # viewport centre and the distance change to compute the world-space shift.
+        if (
+            self.settings.zoom_to_cursor
+            and input_state.viewport_width > 0
+            and input_state.viewport_height > 0
+        ):
+            # Cursor offset from viewport centre in [-0.5, 0.5]
+            ndc_x: float = input_state.mouse_x / input_state.viewport_width - 0.5
+            ndc_y: float = 0.5 - input_state.mouse_y / input_state.viewport_height
+            # Distance change: negative = zoom in (camera moves toward focal pt)
+            delta_distance: float = new_distance - old_distance
+            # Camera right vector (perpendicular to forward in the XY plane)
+            right_x: float = math.cos(self.state.current_yaw - math.pi / 2)
+            right_y: float = math.sin(self.state.current_yaw - math.pi / 2)
+            # Scale so the cursor point stays stationary at screen edge (factor 2).
+            shift: float = -delta_distance * 2.0
+            self.state.target_focal_point = vec3(
+                self.state.target_focal_point.x + right_x * ndc_x * shift,
+                self.state.target_focal_point.y + right_y * ndc_x * shift,
+                self.state.target_focal_point.z + ndc_y * shift,
+            )
+
+        self.state.target_distance = new_distance
 
     def _process_fly(self, input_state: InputState, delta_time: float) -> None:
         """Process fly mode input (WASD movement)."""
-        speed = self.settings.fly_speed
+        speed: float = self.settings.fly_speed
         if input_state.shift_held:
             speed = self.settings.fly_boost_speed
 
@@ -430,7 +463,7 @@ class CameraController:
         )
         forward = normalize(forward)
 
-        right = vec3(
+        right: vec3 = vec3(
             math.cos(self.state.current_yaw - math.pi / 2),
             math.sin(self.state.current_yaw - math.pi / 2),
             0,
@@ -592,6 +625,19 @@ class CameraController:
         self.set_focal_point(x, y, z, instant=instant)
         if distance is not None:
             self.set_distance(distance, instant=instant)
+
+    def has_pending_motion(self, *, epsilon: float = 1e-4) -> bool:
+        """Return True when smoothing still has camera state left to converge."""
+        focal = self.state.current_focal_point
+        target = self.state.target_focal_point
+        return (
+            abs(self.state.current_yaw - self.state.target_yaw) > epsilon
+            or abs(self.state.current_pitch - self.state.target_pitch) > epsilon
+            or abs(self.state.current_distance - self.state.target_distance) > epsilon
+            or abs(focal.x - target.x) > epsilon
+            or abs(focal.y - target.y) > epsilon
+            or abs(focal.z - target.z) > epsilon
+        )
 
     def reset_to_default(self) -> None:
         """Reset camera to default position and orientation."""

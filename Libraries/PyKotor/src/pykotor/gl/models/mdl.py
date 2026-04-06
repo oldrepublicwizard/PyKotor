@@ -14,8 +14,10 @@ import numpy as np
 
 from pykotor.gl import (
     glm,
-    mat4,  # pyright: ignore[reportMissingTypeStubs]
-    quat,  # pyright: ignore[reportMissingTypeStubs]
+    mat4,
+    quat,
+    vec3,
+    vec4,
 )
 from pykotor.gl.compat import has_pyopengl, missing_constant, missing_gl_func, safe_gl_error_module
 from utility.common.geometry import Vector3, Vector4
@@ -242,9 +244,9 @@ class Node:
         for ancestor in ancestors:
             transform = transform * glm.translate(ancestor._position)  # noqa: SLF001
             transform = transform * glm.mat4_cast(ancestor._rotation)  # noqa: SLF001
-        position = Vector3()
-        glm.decompose(transform, Vector3(), quat(), position, Vector3(), Vector4())  # pyright: ignore[reportCallIssue, reportArgumentType]
-        return position
+        pos = vec3()
+        glm.decompose(transform, vec3(), quat(), pos, vec3(), vec4())
+        return Vector3(pos.x, pos.y, pos.z)
 
     def global_rotation(self) -> quat:
         ancestors: list[Node] = [*self.ancestors(), self]
@@ -253,7 +255,7 @@ class Node:
             transform = transform * glm.translate(ancestor._position)  # noqa: SLF001
             transform = transform * glm.mat4_cast(ancestor._rotation)  # noqa: SLF001
         rotation = quat()
-        glm.decompose(transform, Vector3(), rotation, Vector3(), Vector3(), Vector4())  # pyright: ignore[reportCallIssue, reportArgumentType]
+        glm.decompose(transform, vec3(), rotation, vec3(), vec3(), vec4())
         return rotation
 
     def global_transform(self) -> mat4:

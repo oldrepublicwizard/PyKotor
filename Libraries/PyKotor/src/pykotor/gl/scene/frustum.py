@@ -12,10 +12,11 @@ import math
 from enum import IntEnum
 from typing import TYPE_CHECKING
 
-from pykotor.gl.glm_compat import Vector3, Vector4
+from utility.common.geometry import Vector3, Vector4
 
 if TYPE_CHECKING:
-    from pykotor.gl.glm_compat import mat4
+    from glm import mat4x4 as mat4
+
     from pykotor.gl.scene import Camera
 
 

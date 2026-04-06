@@ -7,9 +7,9 @@ import math
 from copy import copy
 from typing import TYPE_CHECKING, Any, Callable, Union
 
-from pykotor.gl.glm_compat import decompose, eulerAngles, mat4, mat4_cast, quat, translate
+from pykotor.gl import decompose, eulerAngles, mat4, mat4_cast, quat, translate, vec3, vec4
 from pykotor.gl.models.mdl import Cube, Empty
-from utility.common.geometry import Vector3, Vector4
+from utility.common.geometry import Vector3
 
 if TYPE_CHECKING:
     from pykotor.gl.models.mdl import Boundary
@@ -79,11 +79,14 @@ class RenderObject:
     ):
         self._transform = transform
         rotation = quat()
-        scale = Vector3()
-        skew = Vector3()
-        perspective = Vector4()
-        decompose(transform, scale, rotation, self._position, skew, perspective)  # pyright: ignore[reportArgumentType, reportCallIssue]
-        self._rotation = eulerAngles(rotation)
+        scale = vec3()
+        skew = vec3()
+        persp = vec4()
+        pos = vec3()
+        decompose(transform, scale, rotation, pos, skew, persp)
+        self._position = Vector3(pos.x, pos.y, pos.z)
+        euler = eulerAngles(rotation)
+        self._rotation = Vector3(euler.x, euler.y, euler.z)
         # NOTE: Do NOT set _bounds_dirty here. Bounds are model-local.
 
     def _recalc_transform(self):

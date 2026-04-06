@@ -12,7 +12,8 @@ from pykotor.gl.compat import (
     missing_gl_func,
     safe_gl_error_module,
 )
-from pykotor.gl.glm_compat import Vector3, Vector4, mat4, value_ptr
+from pykotor.gl import mat4, value_ptr
+from utility.common.geometry import Vector3, Vector4
 
 HAS_PYOPENGL = has_pyopengl()
 gl_error = safe_gl_error_module()
@@ -57,7 +58,7 @@ else:
 from pykotor.gl.native import fastmath
 
 if TYPE_CHECKING:
-    from pykotor.gl.glm_compat import mat4
+    from pykotor.gl import mat4
     from pykotor.gl.models.node import Node
     from pykotor.gl.scene import Scene
     from pykotor.gl.shader import Shader

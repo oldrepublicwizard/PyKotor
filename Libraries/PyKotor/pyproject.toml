@@ -125,7 +125,7 @@ font = [
   "pillow>=12.1.1; python_version >= \"3.10\"",
 ]
 gl = [
-  "PyGLM>=2.0,<2.8; python_implementation == 'CPython'",
+  "PyGLM>=2.0,<2.9",
   "PyOpenGL>=3.1",
   "numpy>=1.22,<1.25; python_version < \"3.9\"",
   "numpy>=1.25; python_version >= \"3.9\"",

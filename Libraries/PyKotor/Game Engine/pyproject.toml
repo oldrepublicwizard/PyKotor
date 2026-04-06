@@ -50,7 +50,7 @@ font = [
 gl = [
     "numpy>=1.22",
     "PyOpenGL~=3.1",
-    "PyGLM>=2.0,<2.8; python_implementation == 'CPython'",
+    "PyGLM>=2.0,<2.9",
 ]
 secure_xml = ["defusedxml~=0.7"]
 encodings = [
@@ -61,7 +61,7 @@ all = [
     "pillow>=9.5",
     "numpy>=1.22",
     "PyOpenGL~=3.1",
-    "PyGLM>=2.0,<2.8",
+    "PyGLM>=2.0,<2.9",
     "defusedxml~=0.7",
     "charset-normalizer>=2.0",
 ]

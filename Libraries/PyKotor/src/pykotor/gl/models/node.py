@@ -5,7 +5,8 @@ from __future__ import annotations
 from copy import copy
 from typing import TYPE_CHECKING
 
-from pykotor.gl.glm_compat import Vector3, Vector4, decompose, mat4, mat4_cast, quat, translate
+from pykotor.gl import decompose, mat4, mat4_cast, quat, translate, vec3, vec4
+from utility.common.geometry import Vector3
 
 if TYPE_CHECKING:
     from pykotor.gl.models.mesh import Mesh
@@ -52,9 +53,9 @@ class Node:
         for ancestor in ancestors:
             transform = transform * translate(ancestor._position)  # noqa: SLF001
             transform = transform * mat4_cast(ancestor._rotation)  # noqa: SLF001
-        position = Vector3()
-        decompose(transform, Vector3(), quat(), position, Vector3(), Vector4())  # pyright: ignore[reportCallIssue, reportArgumentType]
-        return position
+        pos = vec3()
+        decompose(transform, vec3(), quat(), pos, vec3(), vec4())
+        return Vector3(pos.x, pos.y, pos.z)
 
     def global_rotation(self) -> quat:
         ancestors: list[Node] = [*self.ancestors(), self]
@@ -63,7 +64,7 @@ class Node:
             transform = transform * translate(ancestor._position)  # noqa: SLF001
             transform = transform * mat4_cast(ancestor._rotation)  # noqa: SLF001
         rotation = quat()
-        decompose(transform, Vector3(), rotation, Vector3(), Vector3(), Vector4())  # pyright: ignore[reportCallIssue, reportArgumentType]
+        decompose(transform, vec3(), rotation, vec3(), vec3(), vec4())
         return rotation
 
     def global_transform(self) -> mat4:

@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from pykotor.gl.glm_compat import mat4, mat4_cast, translate, vec3
+from pykotor.gl import mat4, mat4_cast, translate, vec3
 
 if TYPE_CHECKING:
     from pykotor.gl.models.node import Node

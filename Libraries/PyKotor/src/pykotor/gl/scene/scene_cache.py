@@ -8,7 +8,7 @@ from typing import TYPE_CHECKING, ClassVar, TypeVar
 
 from loggerplus import RobustLogger
 from pykotor.extract.installation import SearchLocation
-from pykotor.gl.glm_compat import eulerAngles, quat
+from pykotor.gl import eulerAngles, quat
 from pykotor.gl.models.mdl import Boundary
 from pykotor.gl.scene import RenderObject
 from pykotor.resource.generics.utd import UTD

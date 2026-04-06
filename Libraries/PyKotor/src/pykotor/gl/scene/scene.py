@@ -33,7 +33,7 @@ from pykotor.gl.compat import (
     glPolygonMode,
     glReadPixels,
 )
-from pykotor.gl.glm_compat import Vector3 as GlmVector3, Vector4, mat4, unProject
+from pykotor.gl import mat4, unProject, vec3, vec4
 from pykotor.gl.models.axis_gizmo import AxisGizmo
 from pykotor.gl.scene.frustum import CullingStats, Frustum
 from pykotor.gl.scene.scene_base import SceneBase
@@ -266,7 +266,7 @@ class Scene(SceneBase):
             assert self._cached_view is not None and self._cached_projection is not None
             self.plain_shader.set_matrix4("view", self._cached_view)
             self.plain_shader.set_matrix4("projection", self._cached_projection)
-            self.plain_shader.set_vector4("color", Vector4(0.0, 0.0, 1.0, 0.4))
+            self.plain_shader.set_vector4("color", vec4(0.0, 0.0, 1.0, 0.4))
 
             # Render special objects (icons)
             assert self._cached_special_objects is not None
@@ -278,14 +278,14 @@ class Scene(SceneBase):
                 self._render_object(self.plain_shader, obj, identity)
 
             # Draw bounding box for selected objects (only RenderObjects have cube/boundary)
-            self.plain_shader.set_vector4("color", Vector4(1.0, 0.0, 0.0, 0.4))
+            self.plain_shader.set_vector4("color", vec4(1.0, 0.0, 0.0, 0.4))
             for obj in self.selection:
                 if hasattr(obj, "cube"):
                     obj.cube(self).draw(self.plain_shader, obj.transform())
 
             # Draw boundary for selected objects
             glDisable(GL_CULL_FACE)
-            self.plain_shader.set_vector4("color", Vector4(0.0, 1.0, 0.0, 0.8))
+            self.plain_shader.set_vector4("color", vec4(0.0, 1.0, 0.0, 0.8))
             for obj in self.selection:
                 if hasattr(obj, "boundary"):
                     obj.boundary(self).draw(self.plain_shader, obj.transform())
@@ -315,7 +315,7 @@ class Scene(SceneBase):
                 focus_point = self.camera_focal_point()
                 self._axis_gizmo.draw(
                     self.plain_shader,
-                    GlmVector3(focus_point.x, focus_point.y, focus_point.z),
+                    vec3(focus_point.x, focus_point.y, focus_point.z),
                     self.camera.distance,
                 )
 
@@ -399,11 +399,11 @@ class Scene(SceneBase):
         if float(zpos) >= self._FAR_PLANE_DEPTH_THRESHOLD:
             return self.camera_focal_point()
 
-        cursor_glm: GlmVector3 = unProject(
-            GlmVector3(float(x), float(self.camera.height - y), float(zpos)),
+        cursor_glm: vec3 = unProject(
+            vec3(float(x), float(self.camera.height - y), float(zpos)),
             view,
             projection,
-            Vector4(0, 0, self.camera.width, self.camera.height),
+            vec4(0, 0, self.camera.width, self.camera.height),
         )
         return GeomVector3(cursor_glm.x, cursor_glm.y, cursor_glm.z)
 
@@ -523,7 +523,7 @@ class Scene(SceneBase):
             r: int = idx & 0xFF
             g: int = (idx >> 8) & 0xFF
             b: int = (idx >> 16) & 0xFF
-            color = GlmVector3(r / 0xFF, g / 0xFF, b / 0xFF)
+            color = vec3(r / 0xFF, g / 0xFF, b / 0xFF)
             self.picker_shader.set_vector3("colorId", color)
             self._picker_render_object(obj, identity)
 
@@ -619,11 +619,11 @@ class Scene(SceneBase):
             GL_FLOAT,
         )[0][0]  # type: ignore[]
 
-        cursor_glm: GlmVector3 = unProject(
-            GlmVector3(float(x), float(self.camera.height - y), float(zpos)),
+        cursor_glm: vec3 = unProject(
+            vec3(float(x), float(self.camera.height - y), float(zpos)),
             view,
             projection,
-            Vector4(0, 0, self.camera.width, self.camera.height),
+            vec4(0, 0, self.camera.width, self.camera.height),
         )
         return GeomVector3(cursor_glm.x, cursor_glm.y, cursor_glm.z)
 

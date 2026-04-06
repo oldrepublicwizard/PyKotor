@@ -464,8 +464,12 @@ class SceneBase:
 
             obj = RenderObject(body_model, data=instance, override_texture=body_texture)
 
-            # Use synchronous model loading for hook finding to ensure model is loaded
-            body_model_obj: Model = self.model_sync(body_model) if sync else self.model(body_model)
+            # Hook lookups must use the real loaded model, not the async empty placeholder.
+            # Without this, creatures can lose their heads/weapons/masks permanently because
+            # the initial `find("headhook")` / `find("rhand")` / `find("lhand")` lookup runs
+            # before the body model finishes loading and is never retried.
+            needs_body_hooks = any((head_model, rhand_model, lhand_model, mask_model))
+            body_model_obj: Model = self.model_sync(body_model) if sync or needs_body_hooks else self.model(body_model)
             head_hook: Node | None = body_model_obj.find("headhook")
             if head_model and head_hook:
                 head_obj = RenderObject(head_model, override_texture=head_texture)
@@ -491,7 +495,9 @@ class SceneBase:
             if head_hook is None:
                 mask_hook = body_model_obj.find("gogglehook")
             elif head_model:
-                head_model_obj: Model = self.model_sync(head_model) if sync else self.model(head_model)
+                # Same issue as the body model: hook lookups on the head must not use the
+                # async placeholder model or goggle/mask attachments will be dropped.
+                head_model_obj: Model = self.model_sync(head_model) if sync or mask_model else self.model(head_model)
                 mask_hook = head_model_obj.find("gogglehook")
             if mask_model and mask_hook:
                 # Pre-load mask model synchronously when sync=True to ensure it's renderable immediately

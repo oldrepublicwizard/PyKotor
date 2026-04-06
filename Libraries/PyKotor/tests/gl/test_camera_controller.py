@@ -15,7 +15,7 @@ from __future__ import annotations
 import math
 import unittest
 
-from pykotor.gl.glm_compat import vec3
+from pykotor.gl import vec3
 
 # Handle optional pykotor.gl dependency
 try:
@@ -136,7 +136,7 @@ class TestCameraController(unittest.TestCase):
 
     def setUp(self):
         """Set up test fixtures."""
-        self.camera = Camera()
+        self.camera: Camera = Camera()
         self.camera.x = 0.0
         self.camera.y = 0.0
         self.camera.z = 0.0
@@ -144,7 +144,7 @@ class TestCameraController(unittest.TestCase):
         self.camera.pitch = math.pi / 2
         self.camera.distance = 10.0
 
-        self.controller = CameraController(self.camera)
+        self.controller: CameraController = CameraController(self.camera)
 
     def test_initialization(self):
         """Test that controller initializes correctly."""
@@ -161,11 +161,11 @@ class TestCameraController(unittest.TestCase):
         self.assertEqual(self.controller.mode, CameraMode.ORBIT)
 
     def test_mode_detection_orbit_left_mouse(self):
-        """Test that left mouse triggers orbit mode."""
+        """Test that plain left mouse does NOT trigger orbit (freed for selection)."""
         input_state = InputState(left_button=True)
         self.controller._determine_mode(input_state)
 
-        self.assertEqual(self.controller.mode, CameraMode.ORBIT)
+        self.assertEqual(self.controller.mode, CameraMode.NONE)
 
     def test_mode_detection_orbit_alt_left(self):
         """Test that Alt+Left mouse triggers orbit mode."""
@@ -182,11 +182,11 @@ class TestCameraController(unittest.TestCase):
         self.assertEqual(self.controller.mode, CameraMode.PAN)
 
     def test_mode_detection_pan_ctrl_left(self):
-        """Test that Ctrl+Left mouse triggers pan mode."""
+        """Test that Ctrl+Left mouse does NOT trigger pan (Blender scheme uses Ctrl+MMB for zoom)."""
         input_state = InputState(ctrl_held=True, left_button=True)
         self.controller._determine_mode(input_state)
 
-        self.assertEqual(self.controller.mode, CameraMode.PAN)
+        self.assertEqual(self.controller.mode, CameraMode.NONE)
 
     def test_mode_detection_zoom_right_mouse(self):
         """Test that right mouse triggers zoom mode."""

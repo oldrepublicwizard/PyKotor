@@ -79,7 +79,7 @@ else:
     GL_DEPTH_TEST = missing_constant("GL_DEPTH_TEST")
     GL_LINE_WIDTH = missing_constant("GL_LINE_WIDTH")
 
-from pykotor.gl.glm_compat import Vector3 as GlmVector3, translate, vec4
+from pykotor.gl import translate, vec3, vec4
 
 if TYPE_CHECKING:
     from pykotor.gl.shader import Shader
@@ -158,7 +158,7 @@ class AxisGizmo:
     def draw(
         self,
         shader: Shader,
-        position: GlmVector3,
+        position: vec3,
         camera_distance: float,
         line_width: float = GIZMO_LINE_WIDTH,
     ) -> None:
@@ -180,12 +180,12 @@ class AxisGizmo:
         # Scale factor: ~5% of camera distance, clamped to a reasonable range.
         scale = max(0.25, min(camera_distance * 0.06, 8.0))
         # translate(vec3) returns a translation matrix; then apply uniform scale.
-        model = translate(GlmVector3(position.x, position.y, position.z))
+        model = translate(vec3(position.x, position.y, position.z))
         # Scale the rotation/scale part of the matrix (rows 0-2, col 0-2).
-        # Matrix4._data is row-major: [row][col].
-        model._data[0][0] *= scale
-        model._data[1][1] *= scale
-        model._data[2][2] *= scale
+        # PyGLM mat4 is column-major: [col][row]; diagonal is [0][0], [1][1], [2][2].
+        model[0][0] *= scale
+        model[1][1] *= scale
+        model[2][2] *= scale
 
         # --- Save GL state we're about to change ---
         old_line_width = glGetFloatv(GL_LINE_WIDTH)

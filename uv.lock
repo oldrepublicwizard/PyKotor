@@ -3000,7 +3000,7 @@ all = [
     { name = "pillow", version = "12.1.1", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.10'" },
     { name = "psutil" },
     { name = "pycryptodome" },
-    { name = "pyglm", marker = "platform_python_implementation == 'CPython'" },
+    { name = "pyglm" },
     { name = "pyopengl" },
     { name = "pywin32", marker = "sys_platform == 'win32'" },
     { name = "pyyaml" },
@@ -3072,7 +3072,7 @@ font = [
 gl = [
     { name = "numpy", version = "1.24.4", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.9'" },
     { name = "numpy", version = "1.26.4", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.9'" },
-    { name = "pyglm", marker = "platform_python_implementation == 'CPython'" },
+    { name = "pyglm" },
     { name = "pyopengl" },
 ]
 gl-exp = [
@@ -3118,7 +3118,7 @@ requires-dist = [
     { name = "psutil", marker = "extra == 'extra'", specifier = ">=7.2.2" },
     { name = "pycryptodome", marker = "extra == 'updater'", specifier = ">=3.19.0" },
     { name = "pyflakes", marker = "python_full_version < '3.9' and extra == 'dev'", specifier = ">=2.0.0,<3.4.0" },
-    { name = "pyglm", marker = "platform_python_implementation == 'CPython' and extra == 'gl'", specifier = ">=2.0,<2.8" },
+    { name = "pyglm", marker = "extra == 'gl'", specifier = ">=2.0,<2.9" },
     { name = "pykotor", extras = ["encodings", "exp", "extra", "font", "gl", "updater"], marker = "extra == 'all'", editable = "Libraries/PyKotor" },
     { name = "pylint", marker = "python_full_version < '3.9' and extra == 'dev'", specifier = ">=2.0.0,<3.3.9" },
     { name = "pyopengl", marker = "extra == 'gl'", specifier = ">=3.1" },
