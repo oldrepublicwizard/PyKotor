@@ -66,6 +66,7 @@ def read_lip(
     source: SOURCE_TYPES,
     offset: int = 0,
     size: int | None = None,
+    file_format: ResourceType | None = None,
 ) -> LIP:
     """Returns an LIP instance from the source.
 
@@ -88,7 +89,8 @@ def read_lip(
     -------
         An LIP instance.
     """
-    file_format = detect_lip(source, offset)
+    if file_format is None:
+        file_format = detect_lip(source, offset)
 
     if file_format == ResourceType.LIP:
         return LIPBinaryReader(source, offset, size or 0).load()
