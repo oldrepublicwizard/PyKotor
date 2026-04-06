@@ -1,6 +1,6 @@
 # MDL/MDX — 3D Model Format
 
-The MDL (Model) and MDX (Model Extension) files together define every 3D model in Knights of the Old Republic and The Sith Lords — characters, placeables, doors, area rooms, lightsaber blades, particle effects, and GUI elements ([`MDL` L1337](https://github.com/OpenKotOR/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/formats/mdl/mdl_data.py#L1337), [`MDLNode` L1928](https://github.com/OpenKotOR/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/formats/mdl/mdl_data.py#L1928)). The MDL file contains the node hierarchy, animation data, and structural metadata; the MDX file contains the raw vertex buffer data (positions, normals, texture coordinates, bone weights) that the renderer consumes directly ([`MDLBinaryReader.load` L2886](https://github.com/OpenKotOR/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/formats/mdl/io_mdl.py#L2886), [xoreos-docs `kotor_mdl.html`](https://github.com/xoreos/xoreos-docs/blob/master/specs/aurora/kotor_mdl.html)). This split lets the engine memory-map vertex data efficiently while keeping the logical model structure in a parseable tree.
+The MDL (Model) and MDX (Model Extension) files together define every 3D model in Knights of the Old Republic and The Sith Lords — characters, placeables, doors, area rooms, lightsaber blades, particle effects, and GUI elements ([`MDL` L1544](https://github.com/OpenKotOR/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/mdl/mdl_data.py#L1544), [`MDLNode` L2051](https://github.com/OpenKotOR/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/mdl/mdl_data.py#L2051)). The MDL file contains the node hierarchy, animation data, and structural metadata; the MDX file contains the raw vertex buffer data (positions, normals, texture coordinates, bone weights) that the renderer consumes directly ([`MDLBinaryReader.load` L2248](https://github.com/OpenKotOR/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/mdl/io_mdl.py#L2248), [xoreos-docs `kotor_mdl.html`](https://github.com/xoreos/xoreos-docs/blob/master/specs/aurora/kotor_mdl.html)). This split lets the engine memory-map vertex data efficiently while keeping the logical model structure in a parseable tree.
 
 Models are referenced by [ResRef](Concepts#resref-resource-reference) from [GFF](GFF-File-Format) templates such as [UTC](GFF-File-Format#utc-creature) creatures, [UTI](GFF-File-Format#uti-item) items, and [UTP](GFF-File-Format#utp-placeable) placeables. Area room models are positioned by [LYT](Level-Layout-Formats#lyt) layout files and paired with [BWM](Level-Layout-Formats#bwm) walkmesh data. Textures are referenced by name and resolved as [TPC](Texture-Formats#tpc) or [TGA](Texture-Formats#txi) through the standard [resource resolution order](Concepts#resource-resolution-order) (override → MOD/SAV → KEY/BIF).
 
@@ -99,9 +99,9 @@ KotOR models are defined using two files:
 **Implementation (PyKotor):**
 
 - package: [`resource/formats/mdl/`](https://github.com/OpenKotOR/PyKotor/tree/master/Libraries/PyKotor/src/pykotor/resource/formats/mdl/)
-- binary read [`MDLBinaryReader.load` L2886+](https://github.com/OpenKotOR/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/formats/mdl/io_mdl.py#L2886)
-- data model [`MDL` L1337+](https://github.com/OpenKotOR/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/formats/mdl/mdl_data.py#L1337)
-- [`MDLNode` L1928+](https://github.com/OpenKotOR/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/formats/mdl/mdl_data.py#L1928)
+- binary read [`MDLBinaryReader.load` L2248+](https://github.com/OpenKotOR/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/mdl/io_mdl.py#L2248)
+- data model [`MDL` L1544+](https://github.com/OpenKotOR/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/mdl/mdl_data.py#L1544)
+- [`MDLNode` L2051+](https://github.com/OpenKotOR/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/mdl/mdl_data.py#L2051)
 - ASCII in `io_mdl_ascii.py`
 - engine-level cross-checks: [MDL-Implementation-Verification-Report](#mdl-format-implementation-verification-report)
 - [MDL-ASCII-Support-Engine-Analysis](#ascii-mdl-support-in-swkotorexe-k1-and-swkotor2exe-tsl---low-level-analysis)
@@ -305,9 +305,9 @@ KotOR models are defined using two files:
 **Implementation (PyKotor):**
 
 - package: [`resource/formats/mdl/`](https://github.com/OpenKotOR/PyKotor/tree/master/Libraries/PyKotor/src/pykotor/resource/formats/mdl/)
-- binary read [`MDLBinaryReader.load` L2886+](https://github.com/OpenKotOR/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/formats/mdl/io_mdl.py#L2886)
-- data model [`MDL` L1337+](https://github.com/OpenKotOR/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/formats/mdl/mdl_data.py#L1337)
-- [`MDLNode` L1928+](https://github.com/OpenKotOR/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/formats/mdl/mdl_data.py#L1928)
+- binary read [`MDLBinaryReader.load` L2248+](https://github.com/OpenKotOR/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/mdl/io_mdl.py#L2248)
+- data model [`MDL` L1544+](https://github.com/OpenKotOR/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/mdl/mdl_data.py#L1544)
+- [`MDLNode` L2051+](https://github.com/OpenKotOR/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/mdl/mdl_data.py#L2051)
 - ASCII in `io_mdl_ascii.py`
 - engine-level cross-checks: [MDL-Implementation-Verification-Report](#mdl-format-implementation-verification-report)
 - [MDL-ASCII-Support-Engine-Analysis](#ascii-mdl-support-in-swkotorexe-k1-and-swkotor2exe-tsl---low-level-analysis)
