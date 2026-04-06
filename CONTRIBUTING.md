@@ -15,16 +15,16 @@ Thank you for your interest in contributing to PyKotor! This guide covers develo
 ## Prerequisites
 
 - **Python 3.8+** (3.9+ recommended for development)
-- **Platforms**: Windows 7–11, macOS, Linux; common architectures (x86, x64, arm64) supported
+- **Platforms**: Windows 7–11, macOS, Linux; common architectures (amd64/arm64) supported
 - **Git** for version control
 - A code editor with Python support (VS Code, PyCharm, etc.)
 
 ## Development Setup
 
-### 1. Fork and Clone
+### 1. Clone the Repository
 
 ```bash
-git clone https://github.com/YOUR_USERNAME/PyKotor.git
+git clone https://github.com/OpenKotOR/PyKotor.git
 cd PyKotor
 ```
 
@@ -40,7 +40,7 @@ The [GitHub wiki web UI](https://github.com/OpenKotOR/PyKotor/wiki) mirrors that
 
 ```bash
 # Shallow clone: only latest commit (fast, ~50–100 MB)
-git clone --depth 1 https://github.com/YOUR_USERNAME/PyKotor.git
+git clone --depth 1 https://github.com/OpenKotOR/PyKotor.git
 cd PyKotor
 ```
 
@@ -49,7 +49,7 @@ To later fetch full history if needed (e.g. for bisect): `git fetch --unshallow`
 Optional: clone without blob content first, then fetch as needed:
 
 ```bash
-git clone --filter=blob:none --sparse https://github.com/YOUR_USERNAME/PyKotor.git
+git clone --filter=blob:none --sparse https://github.com/OpenKotOR/PyKotor.git
 cd PyKotor
 ```
 
