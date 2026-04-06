@@ -34,16 +34,11 @@ from pykotor.tools.misc import is_bif_file, is_erf_file, is_rim_file
 
 # All GFF subtypes serialize to GFF-JSON; non-GFF structured types follow below.
 _RESOURCE_PLAINTEXT_FORMAT: dict[ResourceType, ResourceType] = {
-    **{rt: ResourceType.GFF_JSON for rt in ResourceType if rt.is_gff()},
     **{rt: ResourceType.GFF_XML for rt in ResourceType if rt.is_gff()},
-    ResourceType.TLK: ResourceType.TLK_JSON,
     ResourceType.TLK: ResourceType.TLK_XML,
-    ResourceType.TwoDA: ResourceType.TwoDA_JSON,
     ResourceType.TwoDA: ResourceType.TwoDA_CSV,
-    ResourceType.LIP: ResourceType.LIP_JSON,
     ResourceType.LIP: ResourceType.LIP_XML,
     ResourceType.SSF: ResourceType.SSF_XML,
-    ResourceType.SSF: ResourceType.SSF_JSON,
 }
 
 
