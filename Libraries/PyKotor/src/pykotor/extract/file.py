@@ -147,9 +147,9 @@ def _extract_from_nested_capsules(
 
             # Determine capsule type and read resource list
             # ERF-based formats: ERF, MOD, SAV, HAK (all use similar structure)
-            # NOTE: SAV uses "MOD " signature, HAK may use "ERF " or "HAK "
+            # NOTE: SAV uses "MOD " signature, HAK may use "ERF "
             erf_signatures = set(member.value for member in ERFType)
-            erf_signatures.update({"SAV ", "HAK "})  # Add explicit signatures that might be used
+            erf_signatures.update({"SAV ",})  # Add explicit signatures that might be used
 
             if file_type in erf_signatures:
                 resources = _read_erf_resources(reader, current_data)

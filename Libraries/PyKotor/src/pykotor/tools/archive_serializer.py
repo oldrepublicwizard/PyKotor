@@ -34,10 +34,10 @@ from pykotor.tools.misc import is_bif_file, is_erf_file, is_rim_file
 
 # All GFF subtypes serialize to GFF-JSON; non-GFF structured types follow below.
 _RESOURCE_PLAINTEXT_FORMAT: dict[ResourceType, ResourceType] = {
-    **{rt: ResourceType.GFF_XML for rt in ResourceType if rt.is_gff()},
-    ResourceType.TLK: ResourceType.TLK_XML,
-    ResourceType.TwoDA: ResourceType.TwoDA_CSV,
-    ResourceType.LIP: ResourceType.LIP_XML,
+    **{rt: ResourceType.GFF_JSON for rt in ResourceType if rt.is_gff()},
+    ResourceType.TLK: ResourceType.TLK_JSON,
+    ResourceType.TwoDA: ResourceType.TwoDA_JSON,
+    ResourceType.LIP: ResourceType.LIP_JSON,
     ResourceType.SSF: ResourceType.SSF_XML,
 }
 
@@ -82,7 +82,7 @@ def _resource_bytes_to_plaintext(data: bytes, restype: ResourceType) -> tuple[st
 def _plaintext_to_resource_bytes(encoding: str, payload: str | dict[str, Any], restype: ResourceType) -> bytes:
     """Convert (encoding, payload) back to resource bytes."""
     if encoding == "base64":
-        return base64.b64decode(payload)
+        return base64.b64decode(json.dumps(payload) if isinstance(payload, dict) else payload)
     buf_out = BytesIO()
     if encoding == "gff_json":
         gff = read_gff(BytesIO(json.dumps(payload).encode("utf-8")), file_format=ResourceType.GFF_JSON)
@@ -101,7 +101,7 @@ def _plaintext_to_resource_bytes(encoding: str, payload: str | dict[str, Any], r
         write_lip(lip, buf_out, file_format=ResourceType.LIP)
         return buf_out.getvalue()
     if encoding == "ssf_xml":
-        ssf = read_ssf(BytesIO(payload.encode("utf-8")), file_format=ResourceType.SSF_XML)
+        ssf = read_ssf(BytesIO((json.dumps(payload) if isinstance(payload, dict) else payload).encode("utf-8")), file_format=ResourceType.SSF_XML)
         write_ssf(ssf, buf_out, file_format=ResourceType.SSF)
         return buf_out.getvalue()
     raise ValueError(f"Unknown encoding: {encoding}")
@@ -133,7 +133,7 @@ def archive_to_dict(
         key_bytes = key_source.read_bytes() if key_source and key_source.exists() else None
         return _bif_to_dict(data, key_bytes=key_bytes, embed_plaintext=embed_plaintext)
     if isinstance(source, bytes) or path is None:
-        if data[:4] in (b"ERF ", b"MOD ", b"SAV ", b"HAK "):
+        if data[:4] in (b"ERF ", b"MOD ", b"SAV "):
             return _erf_to_dict(data, embed_plaintext=embed_plaintext)
         if data[:4] == b"RIM ":
             return _rim_to_dict(data, embed_plaintext=embed_plaintext)

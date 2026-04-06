@@ -17,7 +17,7 @@ Observed retail behavior:
         Header (160 bytes):
         Offset | Size | Type   | Description
         -------|------|--------|-------------
-        0x00   | 4    | char[] | File Type ("ERF ", "MOD ", "SAV ", "HAK ")
+        0x00   | 4    | char[] | File Type ("ERF ", "MOD ", "SAV ")
         0x04   | 4    | char[] | File Version ("V1.0")
         0x08   | 4    | uint32 | Language Count
         0x0C   | 4    | uint32 | Localized String Size (total bytes)
@@ -105,7 +105,6 @@ class ERFType(Enum):
     ERF = "ERF "  # Generic ERF archive (texture packs, etc.)
     MOD = "MOD "  # Module file (game levels/areas)
     SAV = "SAV "  # Save game (same binary layout as ERF/MOD)
-    HAK = "HAK "  # Hak pak (NWN family; rare in KotOR)
 
     @classmethod
     def from_extension(cls, ext_or_filepath: os.PathLike | str) -> ERFType:

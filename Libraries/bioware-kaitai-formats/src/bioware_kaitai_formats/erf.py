@@ -387,7 +387,7 @@ class Erf(KaitaiStruct):
 
         def _read(self):
             self.file_type = (self._io.read_bytes(4)).decode(u"ASCII")
-            if not  ((self.file_type == u"ERF ") or (self.file_type == u"MOD ") or (self.file_type == u"SAV ") or (self.file_type == u"HAK ")) :
+            if not  ((self.file_type == u"ERF ") or (self.file_type == u"MOD ") or (self.file_type == u"SAV ")) :
                 raise kaitaistruct.ValidationNotAnyOfError(self.file_type, self._io, u"/types/erf_header/seq/0")
             self.file_version = (self._io.read_bytes(4)).decode(u"ASCII")
             if not self.file_version == u"V1.0":
