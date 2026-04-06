@@ -56,6 +56,8 @@ else:
     GL_STATIC_DRAW = missing_constant("GL_STATIC_DRAW")
 
 from pykotor.gl.native import fastmath
+from pykotor.gl.native.gl_accel import c_available as _gl_accel_c_available
+from pykotor.gl.native.gl_accel import transform_bounds as _c_transform_bounds
 
 if TYPE_CHECKING:
     from pykotor.gl import mat4
@@ -201,10 +203,23 @@ class Mesh:
         self,
         transform: mat4,
     ) -> tuple[Vector3, Vector3] | None:
-        if not fastmath.available() or self.mdx_size <= 0:
+        if self.mdx_size <= 0:
             return None
         vertex_count = len(self.vertex_data) // self.mdx_size
         if vertex_count == 0:
+            return None
+
+        # Prefer compiled C extension (no CFFI runtime overhead)
+        if _gl_accel_c_available():
+            import struct
+            mat_bytes = struct.pack("16f", *[value_ptr(transform)[i] for i in range(16)])
+            bounds_min, bounds_max = _c_transform_bounds(
+                bytes(self.vertex_data), vertex_count, self.mdx_size, self.mdx_vertex, mat_bytes,
+            )
+            return Vector3(*bounds_min), Vector3(*bounds_max)
+
+        # Fall back to CFFI version
+        if not fastmath.available():
             return None
         mv = memoryview(self.vertex_data)
         matrix_values = [value_ptr(transform)[i] for i in range(16)]

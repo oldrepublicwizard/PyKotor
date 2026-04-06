@@ -8,6 +8,7 @@ camera frustum. Prior third-party source paths that were listed here are archive
 from __future__ import annotations
 
 import math
+import struct
 
 from enum import IntEnum
 from typing import TYPE_CHECKING
@@ -18,6 +19,13 @@ if TYPE_CHECKING:
     from glm import mat4x4 as mat4
 
     from pykotor.gl.scene import Camera
+
+# Try to import C acceleration for plane extraction.
+try:
+    from pykotor.gl.native._gl_accel import extract_frustum_planes as _c_extract_planes
+    _HAS_C_ACCEL = True
+except ImportError:
+    _HAS_C_ACCEL = False
 
 
 class FrustumPlane(IntEnum):
@@ -42,19 +50,21 @@ class Frustum:
     - Observed retail KotOR I and KotOR II behavior
     """
 
-    __slots__ = ("_cached_vp_hash", "planes")
+    __slots__ = ("_cached_planes_bytes", "_cached_vp_hash", "planes")
 
     def __init__(self):
         """Initialize frustum with default planes."""
         # Each plane is stored as (nx, ny, nz, d) where n is normal, d is distance
         self.planes: list[Vector4] = [Vector4() for _ in range(6)]
         self._cached_vp_hash: int = 0
+        self._cached_planes_bytes: bytes = b""
 
     def update_from_camera(self, camera: Camera) -> None:
         """Extract frustum planes from camera's view-projection matrix.
 
         Uses the Gribb/Hartmann method to extract planes directly from the
-        combined view-projection matrix.
+        combined view-projection matrix. When the C extension is available,
+        the extraction and normalization is done entirely in C.
 
         Args:
             camera: The camera to extract frustum from.
@@ -87,6 +97,28 @@ class Frustum:
         if vp_hash == self._cached_vp_hash:
             return
         self._cached_vp_hash = vp_hash
+
+        if _HAS_C_ACCEL:
+            # Pack the VP matrix as 16 column-major floats and extract planes in C.
+            vp_bytes = struct.pack(
+                "16f",
+                vp[0][0], vp[0][1], vp[0][2], vp[0][3],
+                vp[1][0], vp[1][1], vp[1][2], vp[1][3],
+                vp[2][0], vp[2][1], vp[2][2], vp[2][3],
+                vp[3][0], vp[3][1], vp[3][2], vp[3][3],
+            )
+            planes_bytes = _c_extract_planes(vp_bytes)
+            self._cached_planes_bytes = planes_bytes
+            # Unpack into Vector4 objects for Python-side compatibility.
+            floats = struct.unpack("24f", planes_bytes)
+            for i in range(6):
+                self.planes[i] = Vector4(
+                    floats[i * 4 + 0],
+                    floats[i * 4 + 1],
+                    floats[i * 4 + 2],
+                    floats[i * 4 + 3],
+                )
+            return
 
         # Extract planes using Gribb/Hartmann method
         # Left plane: row3 + row0

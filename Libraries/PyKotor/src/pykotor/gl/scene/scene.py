@@ -37,6 +37,8 @@ from pykotor.gl.compat import (
     glReadPixels,
 )
 from pykotor.gl.models.axis_gizmo import AxisGizmo
+from pykotor.gl.native.gl_accel import c_available as _gl_accel_available
+from pykotor.gl.native.gl_accel import frustum_cull_objects as _batch_frustum_cull
 from pykotor.gl.scene.frustum import CullingStats, Frustum
 from pykotor.gl.scene.scene_base import SceneBase
 from pykotor.gl.scene.scene_cache import SceneCache
@@ -252,12 +254,23 @@ class Scene(SceneBase):
             if self.use_wireframe:
                 glPolygonMode(GL_FRONT_AND_BACK, GL_LINE)
             try:
-                for obj in self._cached_regular_objects:
-                    if self.enable_frustum_culling and not self._is_object_visible(obj):
-                        self.culling_stats.record_object(visible=False)
-                        continue
-                    self.culling_stats.record_object(visible=True)
-                    self._render_object(self.shader, obj, identity)
+                if self.enable_frustum_culling:
+                    # Batch frustum cull: test all objects at once (C extension when available)
+                    visibility = _batch_frustum_cull(
+                        self.frustum,
+                        self._cached_regular_objects,
+                        self,
+                        self.default_cull_radius,
+                    )
+                    for i, obj in enumerate(self._cached_regular_objects):
+                        if not visibility[i]:
+                            self.culling_stats.record_object(visible=False)
+                            continue
+                        self.culling_stats.record_object(visible=True)
+                        self._render_object(self.shader, obj, identity)
+                else:
+                    for obj in self._cached_regular_objects:
+                        self._render_object(self.shader, obj, identity)
             finally:
                 if self.use_wireframe:
                     glPolygonMode(GL_FRONT_AND_BACK, GL_FILL)
@@ -272,12 +285,22 @@ class Scene(SceneBase):
 
             # Render special objects (icons)
             assert self._cached_special_objects is not None
-            for obj in self._cached_special_objects:
-                if self.enable_frustum_culling and not self._is_object_visible(obj):
-                    self.culling_stats.record_object(visible=False)
-                    continue
-                self.culling_stats.record_object(visible=True)
-                self._render_object(self.plain_shader, obj, identity)
+            if self.enable_frustum_culling:
+                special_visibility = _batch_frustum_cull(
+                    self.frustum,
+                    self._cached_special_objects,
+                    self,
+                    self.default_cull_radius,
+                )
+                for i, obj in enumerate(self._cached_special_objects):
+                    if not special_visibility[i]:
+                        self.culling_stats.record_object(visible=False)
+                        continue
+                    self.culling_stats.record_object(visible=True)
+                    self._render_object(self.plain_shader, obj, identity)
+            else:
+                for obj in self._cached_special_objects:
+                    self._render_object(self.plain_shader, obj, identity)
 
             # Draw bounding box for selected objects (only RenderObjects have cube/boundary)
             # The model surfaces are already in the depth buffer, so the cube faces fail the
