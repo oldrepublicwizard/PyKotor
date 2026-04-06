@@ -86,7 +86,7 @@ The format provides several properties that made it practical for rapid game dev
 - **Direct memory mapping**: the offset-based layout allows fast load without full parsing.
 - **Backward and forward compatibility**: readers skip unknown labels, so adding a new field to a creature template does not break older tools or saves.
 
-The engine uses the four-character file type signature (e.g. `UTC `, `DLG `, `ARE `) plus the version tag `V3.2` to identify GFF content. The same binary layout serves all of these resource types:
+The engine uses the four-character file type signature (e.g. `UTC `, `DLG `, `ARE `) plus the version tag `V3.2` to identify GFF content [[`gff_data.py` — "shipped games create new GFF files with version label V3.2 only"](https://github.com/OpenKotOR/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/gff/gff_data.py#L10)]. The same binary layout serves all of these resource types:
 
 **Typical Applications:**
 
@@ -469,12 +469,12 @@ BioWare-authored trigger blueprint (type ID 2031), GFF. Counterpart to the modde
 <a id="cwa-crowd-attributes"></a>
 ### CWA (Crowd Attributes)
 
-Odyssey crowd-attribute data (type ID 3025), GFF. Stores NPC crowd behavior parameters for KotOR area populations. Not edited directly by modders.
+Odyssey crowd-attribute data (type ID 3025) [[`CWA`](https://github.com/OpenKotOR/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/type.py#L475-L476)], GFF. Stores NPC crowd behavior parameters for KotOR area populations. Not edited directly by modders.
 
 <a id="gic-game-instance-comments"></a>
 ### GIC (Game Instance Comments)
 
-Game instance comments (type ID 2046), GFF. Toolset-only companion to [GIT](GFF-Module-and-Area#git): instance labels and comments that the game engine never reads are stored here rather than in the runtime `.git`. See [GFF-Module-and-Area — GIC](GFF-Module-and-Area#gic).
+Game instance comments (type ID 2046) [[`GIC`](https://github.com/OpenKotOR/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/type.py#L290)], GFF. Toolset-only companion to [GIT](GFF-Module-and-Area#git): instance labels and comments that the game engine never reads are stored here rather than in the runtime `.git`. See [GFF-Module-and-Area — GIC](GFF-Module-and-Area#gic).
 
 <a id="itp-palette"></a>
 ### ITP (Palette)
