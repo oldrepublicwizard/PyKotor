@@ -135,7 +135,7 @@ Some MDL meshes use layered geometry and masked textures (for example: thin plan
 ### See also
 
 - [TPC File Format](Texture-Formats#tpc) - [texture](Texture-Formats#tpc) format referenced by MDL [materials](MDL-MDX-File-Format#trimesh-header)
-- [TXI File Format](Texture-Formats#txi) - [texture](Texture-Formats#tpc) metadata used with MDL [textures](MDL-MDX-File-Format#tpc)
+- [TXI File Format](Texture-Formats#txi) - [texture](Texture-Formats#tpc) metadata used with MDL [textures](Texture-Formats#tpc)
 - [BWM File Format](Level-Layout-Formats#bwm) - [walkmesh](Level-Layout-Formats#bwm) format ([WOK files](Level-Layout-Formats#bwm)) paired with room models
 - [GFF File Format](GFF-File-Format) — templates that reference models, for example:
 

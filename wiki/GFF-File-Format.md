@@ -474,7 +474,7 @@ Odyssey crowd-attribute data (type ID 3025) [[`CWA`](https://github.com/OpenKotO
 <a id="gic-game-instance-comments"></a>
 ### GIC (Game Instance Comments)
 
-Game instance comments (type ID 2046) [[`GIC`](https://github.com/OpenKotOR/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/type.py#L290)], GFF. Toolset-only companion to [GIT](GFF-Module-and-Area#git): instance labels and comments that the game engine never reads are stored here rather than in the runtime `.git`. See [GFF-Module-and-Area — GIC](GFF-Module-and-Area#gic).
+Game instance comments (type ID 2046) [[`GIC`](https://github.com/OpenKotOR/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/type.py#L290)], GFF. Toolset-only companion to [GIT](GFF-Module-and-Area#git): instance labels and comments that the game engine never reads are stored here rather than in the runtime `.git`.
 
 <a id="itp-palette"></a>
 ### ITP (Palette)
