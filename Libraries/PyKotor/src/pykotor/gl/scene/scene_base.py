@@ -711,6 +711,16 @@ class SceneBase:
         for name in completed_models:
             del self._pending_model_futures[name]
 
+        # Invalidate cached bounding cubes for any RenderObject whose model
+        # just finished loading.  Without this, cubes computed from the empty
+        # placeholder while the real model was still loading would be cached
+        # forever, producing invisible/degenerate selection highlights.
+        if completed_models:
+            completed_set = {n.lower() for n in completed_models}
+            for obj in self.objects.values():
+                if obj.model.lower() in completed_set:
+                    obj.reset_cube()
+
     def texture(
         self,
         name: str,
