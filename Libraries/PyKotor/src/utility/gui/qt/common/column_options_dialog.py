@@ -112,7 +112,9 @@ class SetDefaultColumnsDialog(QDialog):
         for column in columns:
             item = QListWidgetItem(column, self.columns_list, QListWidgetItem.ItemType.UserType)
             item.setCheckState(Qt.CheckState.Unchecked)
-            item.setFlags(item.flags() | Qt.ItemFlag.ItemIsUserCheckable | Qt.ItemFlag.ItemIsDragEnabled)
+            item.setFlags(
+                item.flags() | Qt.ItemFlag.ItemIsUserCheckable | Qt.ItemFlag.ItemIsDragEnabled
+            )
             self.columns_list.addItem(item)
 
     def update_description(self, item: QListWidgetItem):

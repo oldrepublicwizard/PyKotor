@@ -34,11 +34,18 @@ def add_kotordiff_arguments(parser: ArgumentParser) -> None:
         parser: The ArgumentParser to add arguments to
     """
     # Path arguments (multiple aliases for compatibility)
-    parser.add_argument("--path1", type=str, help="Path to compare. Multiple path flags can be supplied; at least two paths are required.")
+    parser.add_argument(
+        "--path1",
+        type=str,
+        help="Path to compare. Multiple path flags can be supplied; at least two paths are required.",
+    )
     parser.add_argument("--path2", type=str, help="Additional path to compare.")
     parser.add_argument("--path3", type=str, help="Additional path to compare.")
     parser.add_argument(
-        "--path", action="append", dest="extra_paths", help="Additional paths for N-way comparison (can be used multiple times). Example: --path path4 --path path5",
+        "--path",
+        action="append",
+        dest="extra_paths",
+        help="Additional paths for N-way comparison (can be used multiple times). Example: --path path4 --path path5",
     )
 
     # Output options
@@ -134,7 +141,9 @@ def add_kotordiff_arguments(parser: ArgumentParser) -> None:
 
 def parse_args() -> Namespace:
     """Create and configure the argument parser."""
-    parser = ArgumentParser(description="Finds differences between KOTOR files/dirs. Supports comparisons across any number of paths.")
+    parser = ArgumentParser(
+        description="Finds differences between KOTOR files/dirs. Supports comparisons across any number of paths."
+    )
     add_kotordiff_arguments(parser)
     return parser.parse_args()
 
@@ -240,7 +249,11 @@ def execute_cli(cmdline_args: Namespace):
             # Fall back to Path object (for folders/files)
             resolved_paths.append(path_obj)
 
-    if len(resolved_paths) == 2 and all(isinstance(path, Path) and path.is_file() for path in resolved_paths) and output_mode == "normal":
+    if (
+        len(resolved_paths) == 2
+        and all(isinstance(path, Path) and path.is_file() for path in resolved_paths)
+        and output_mode == "normal"
+    ):
         # Use direct file-to-file diff for unified output
         from pykotor.tslpatcher.diff.engine import DiffContext, diff_data
 
@@ -319,4 +332,6 @@ def execute_cli(cmdline_args: Namespace):
 
 def has_cli_paths(cmdline_args: Namespace) -> bool:
     """Check if CLI paths were provided."""
-    return bool(cmdline_args.path1 or cmdline_args.path2 or cmdline_args.path3 or cmdline_args.extra_paths)
+    return bool(
+        cmdline_args.path1 or cmdline_args.path2 or cmdline_args.path3 or cmdline_args.extra_paths
+    )

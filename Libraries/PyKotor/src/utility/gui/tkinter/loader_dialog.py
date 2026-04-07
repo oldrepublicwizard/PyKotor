@@ -33,7 +33,9 @@ class LoadingDialog(tk.Toplevel):
         self.msg_lbl.pack(padx=10, pady=5)
 
         # Progress bar
-        self.load_bar: ttk.Progressbar = ttk.Progressbar(self, mode="indeterminate", maximum=100, value=0, length=pb_length)
+        self.load_bar: ttk.Progressbar = ttk.Progressbar(
+            self, mode="indeterminate", maximum=100, value=0, length=pb_length
+        )
         self.load_bar.pack(padx=10, pady=(0, 10))
         self.load_bar.start(bounce_speed)
 
@@ -45,7 +47,9 @@ class LoadingDialog(tk.Toplevel):
 
     def start_work_thread(self):
         if self.func is not None:
-            self.work_thread = threading.Thread(target=self.work_task, name="LoadingDialog_worker_thread")
+            self.work_thread = threading.Thread(
+                target=self.work_task, name="LoadingDialog_worker_thread"
+            )
             self.work_thread.start()
 
     def work_task(self):

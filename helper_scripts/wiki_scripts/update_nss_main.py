@@ -51,7 +51,13 @@ while i < len(lines):
     if parent_match:
         parent_name = parent_match.group(1)
         # Skip certain sections that aren't function/constant sections
-        if parent_name not in ["Table of Contents", "PyKotor Implementation", "Commented-Out Elements in nwscript.nss", "Reference Implementations", "Cross-References"]:
+        if parent_name not in [
+            "Table of Contents",
+            "PyKotor Implementation",
+            "Commented-Out Elements in nwscript.nss",
+            "Reference Implementations",
+            "Cross-References",
+        ]:
             current_parent = parent_name
         else:
             current_parent = None

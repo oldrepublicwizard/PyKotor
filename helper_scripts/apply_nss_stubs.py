@@ -6,10 +6,12 @@ scriptdefs.py and replaces every stub section with generated documentation.
 Usage:
     uv run helper_scripts/apply_nss_stubs.py [--dry-run]
 """
+
 from __future__ import annotations
 
 import re
 import sys
+
 from pathlib import Path
 
 REPO_ROOT = Path(__file__).parent.parent
@@ -20,6 +22,7 @@ from pykotor.common.script import DataType, ScriptConstant, ScriptFunction
 from pykotor.common.scriptdefs import KOTOR_CONSTANTS, KOTOR_FUNCTIONS, TSL_CONSTANTS, TSL_FUNCTIONS
 
 # ─── TYPE NAME LOOKUP ─────────────────────────────────────────────────────────
+
 
 def dtype_name(dtype: DataType) -> str:
     return {
@@ -42,24 +45,69 @@ def dtype_name(dtype: DataType) -> str:
 
 FUNC_CATEGORY_RULES: list[tuple[str, str]] = [
     (r"^Effect", "Effects System"),
-    (r"ItemProperty|^(Get|Add|Remove|Break|HasItem).*Property|^GetIsItemProperty", "Item Properties"),
+    (
+        r"ItemProperty|^(Get|Add|Remove|Break|HasItem).*Property|^GetIsItemProperty",
+        "Item Properties",
+    ),
     (r"^(Get|Set)Local(Boolean|Number|String|Object|Float)", "Local Variables"),
     (r"^(Get|Set)Global", "Global Variables"),
-    (r"^(Music|AmbientSound|PlaySound|SoundObject|SetSoundObject|GetSoundObject)", "Sound and Music Functions"),
-    (r"BackgroundMusic|SoundObjectPlay|SoundObjectStop|SoundObjectSetVolume|SoundObjectSetPosition|SoundObjectGetState", "Sound and Music Functions"),
+    (
+        r"^(Music|AmbientSound|PlaySound|SoundObject|SetSoundObject|GetSoundObject)",
+        "Sound and Music Functions",
+    ),
+    (
+        r"BackgroundMusic|SoundObjectPlay|SoundObjectStop|SoundObjectSetVolume|SoundObjectSetPosition|SoundObjectGetState",
+        "Sound and Music Functions",
+    ),
     (r"Alignment|GoodEvil|LawChaos|^AdjustAlignment", "Alignment System"),
-    (r"^GetIsEnemy|^GetIsFriend|^GetIsNeutral|^GetFactionEqual|^GetStandardFactionReputation|^SetStandardFactionReputation|^GetReputation|^SetReputation|FriendlyFireCheck|^GetIsReactionType", "Alignment System"),
-    (r"^GetClassByPosition|^GetLevelByClass|^GetLevelByPosition|^GetHasSpell|^GetKnowsFeat|LevelUpHenchman|^GetTotalLevels|^GetSpellResistance|^GetLastSpellLevel|^GetSpellCastItem", "Class System"),
-    (r"AbilityScore|AbilityModifier|^GetAbility|^SetAbility|HitPoints|ForcePoints|GetFortitude|GetWill|GetReflex|GetReflexAdjusted|Strength|Dexterity|Constitution|GetIntelligence|GetWisdom|GetCharisma|BaseAttackBonus|^GetCurrentHitPoints|^GetMaxHitPoints|^GetCurrentForcePoints|^GetMaxForcePoints", "Abilities and Stats"),
-    (r"SkillRank|HasSkill|^GetSkill|^SetSkill|HasFeat|^GetHasFeat|^GetFeatX|FeatUsesRemaining|^GetLastSpell|^GetSpellFeatId|^SetFeatUsesRemaining", "Skills and Feats"),
-    (r"^(Add|Remove|Get|Set|Is|Show)Party|AvailableNPC|IsNPCPartyMember|IsObjectPartyMember|ShowPartySelection|SwitchPlayerCharacter", "Party Management"),
-    (r"^GetIsPC|^GetPCSpeaker|^SetPCSpeaker|^GetControlledCharacter|^SetCameraMode|^RewardXP|^RewardFeat|^RewardSkill|^GetPCName|PlayerRestrictMode|^GiveXPToCreature|^AwardLevelUpHenchman|^GetPCChatMessage|^SetPCChatMessage|^GetPCPublicCDKey|^SetPCSkinColor|^GetPlotFlag|^SetPlotFlag|^GetGender|^SetGender|^GetAge|^SetAge|^GetRace|^GetSubRace|^SetSubRace|^BootPC|^GetNumLevels", "Player Character Functions"),
-    (r"^SpeakString|^SpeakUniqueTo|Conversation|^ActionStartConversation|IsInConversation|^PauseConversation|^ResumeConversation|^GetCurrentDialogString|Token(?:Integer|String|Float|Object|Boolean)|GetTokenPair|SetCustomToken|^GetFirstNPCInConversation|^GetLastConversationPlayed|^SetLastConversationPlayed", "Dialog and Conversation Functions"),
-    (r"^GetIsInCombat|^GetAttackTarget|^GetLastAttacker|^GetLastDamager|^GetLastKiller|^GetDamageDealers|^GetDamageDealtByType|^GetTotalDamageDealt|^CombatRoundStart|^ActionCombatRoundStart|^ActionAttack|CastSpell|^GetSpellId|^GetSpellTargetObject|^GetSpellTargetLocation|^GetSavingThrowCheckPenalty|^SetSavingThrowCheckPenalty|^GetLastSpellHarmful|^GetLastCastSpell|IsItemSizeGe|^GetWeaponRanged|^GetIsWeaponEffective|^GetNumWeapon|^GetLastHostileActor|^GetAoEObjectById|^ActionForceMoveToObject|^ActionForceMoveToLocation|^SetIsDestroyable|^GetIsDestroyable|^SetImmortal|^GetImmortal|^GetInvulnerable|^SetInvulnerable", "Combat Functions"),
-    (r"(?!.*ItemProperty).*Item|^(Equip|Unequip)|CreateObject|^ActionPickUp|^ActionDropItem|^ActionGiveItem|^ActionTakeItem|^GetDroppableFlag|^SetDroppableFlag|^GetPickpocketable|^SetPickpocketable|^GetItemCursed|^SetItemCursed|^GetItemCharges|^SetItemCharges|^GetItemWeight|^GetIdentified|^SetIdentified|^GetStolenFlag|^SetStolenFlag", "Item Management"),
-    (r"^GetArea\b|^GetModule|^JumpToArea|^ExploreAreaForPlayer|^GetAreaTransitionTarget|^SetAreaTransitionBMP|^GetAreaByTag|^GetObjectByArea|^SetAreaUnescapable|^GetAreaUnescapable|^GetTile|^GetFirstArea|^GetNextArea|^GetEntering|^GetExiting|^GetTransitionTarget|^SetTransitionTarget|^GetAreaSize|^GetEnteringObject|^GetExitingObject|^SetWeather|^GetWeather|^GetTime|^SetTime|^GetCalendar|^SetCalendar|^GetHour|^GetMinute|^GetSecond|^GetMillisecond|^GetDay|^GetMonth|^GetYear", "Module and Area Functions"),
-    (r"^GetObjectByTag|^GetNearestObject|^GetNearestCreature|^GetNearestEnemy|^DestroyObject|^CopyObject|^PlayAnimation|^ApplyEffectToObject|^ApplyEffectAtLocation|^RemoveEffect|^GetFirstEffect|^GetNextEffect|^GetEffectCreator|^GetEffectType|^GetIsObjectValid|^GetDistanceBetween|^GetDistanceToObject|^GetObjectType|^GetFacing|^SetFacing|^GetFacingFromLocation|^GetPosition|^SetPosition|^GetLocation|^SetLocation|^Location\b|^GetFirst(Creature|Door|Waypoint|Placeable|Trigger|Item)|^GetNext(Creature|Door|Waypoint|Placeable|Trigger|Item)|^CreateObject(?!.*OnObject)|^SpawnObject|^GetTag|^GetName|^SetName|^GetObjectInArea", "Object Query and Manipulation"),
-    (r"^Action|^ClearAllActions|^GetCurrentAction|^GetNumberOfActions|^AssignCommand|^DelayCommand", "Actions"),
+    (
+        r"^GetIsEnemy|^GetIsFriend|^GetIsNeutral|^GetFactionEqual|^GetStandardFactionReputation|^SetStandardFactionReputation|^GetReputation|^SetReputation|FriendlyFireCheck|^GetIsReactionType",
+        "Alignment System",
+    ),
+    (
+        r"^GetClassByPosition|^GetLevelByClass|^GetLevelByPosition|^GetHasSpell|^GetKnowsFeat|LevelUpHenchman|^GetTotalLevels|^GetSpellResistance|^GetLastSpellLevel|^GetSpellCastItem",
+        "Class System",
+    ),
+    (
+        r"AbilityScore|AbilityModifier|^GetAbility|^SetAbility|HitPoints|ForcePoints|GetFortitude|GetWill|GetReflex|GetReflexAdjusted|Strength|Dexterity|Constitution|GetIntelligence|GetWisdom|GetCharisma|BaseAttackBonus|^GetCurrentHitPoints|^GetMaxHitPoints|^GetCurrentForcePoints|^GetMaxForcePoints",
+        "Abilities and Stats",
+    ),
+    (
+        r"SkillRank|HasSkill|^GetSkill|^SetSkill|HasFeat|^GetHasFeat|^GetFeatX|FeatUsesRemaining|^GetLastSpell|^GetSpellFeatId|^SetFeatUsesRemaining",
+        "Skills and Feats",
+    ),
+    (
+        r"^(Add|Remove|Get|Set|Is|Show)Party|AvailableNPC|IsNPCPartyMember|IsObjectPartyMember|ShowPartySelection|SwitchPlayerCharacter",
+        "Party Management",
+    ),
+    (
+        r"^GetIsPC|^GetPCSpeaker|^SetPCSpeaker|^GetControlledCharacter|^SetCameraMode|^RewardXP|^RewardFeat|^RewardSkill|^GetPCName|PlayerRestrictMode|^GiveXPToCreature|^AwardLevelUpHenchman|^GetPCChatMessage|^SetPCChatMessage|^GetPCPublicCDKey|^SetPCSkinColor|^GetPlotFlag|^SetPlotFlag|^GetGender|^SetGender|^GetAge|^SetAge|^GetRace|^GetSubRace|^SetSubRace|^BootPC|^GetNumLevels",
+        "Player Character Functions",
+    ),
+    (
+        r"^SpeakString|^SpeakUniqueTo|Conversation|^ActionStartConversation|IsInConversation|^PauseConversation|^ResumeConversation|^GetCurrentDialogString|Token(?:Integer|String|Float|Object|Boolean)|GetTokenPair|SetCustomToken|^GetFirstNPCInConversation|^GetLastConversationPlayed|^SetLastConversationPlayed",
+        "Dialog and Conversation Functions",
+    ),
+    (
+        r"^GetIsInCombat|^GetAttackTarget|^GetLastAttacker|^GetLastDamager|^GetLastKiller|^GetDamageDealers|^GetDamageDealtByType|^GetTotalDamageDealt|^CombatRoundStart|^ActionCombatRoundStart|^ActionAttack|CastSpell|^GetSpellId|^GetSpellTargetObject|^GetSpellTargetLocation|^GetSavingThrowCheckPenalty|^SetSavingThrowCheckPenalty|^GetLastSpellHarmful|^GetLastCastSpell|IsItemSizeGe|^GetWeaponRanged|^GetIsWeaponEffective|^GetNumWeapon|^GetLastHostileActor|^GetAoEObjectById|^ActionForceMoveToObject|^ActionForceMoveToLocation|^SetIsDestroyable|^GetIsDestroyable|^SetImmortal|^GetImmortal|^GetInvulnerable|^SetInvulnerable",
+        "Combat Functions",
+    ),
+    (
+        r"(?!.*ItemProperty).*Item|^(Equip|Unequip)|CreateObject|^ActionPickUp|^ActionDropItem|^ActionGiveItem|^ActionTakeItem|^GetDroppableFlag|^SetDroppableFlag|^GetPickpocketable|^SetPickpocketable|^GetItemCursed|^SetItemCursed|^GetItemCharges|^SetItemCharges|^GetItemWeight|^GetIdentified|^SetIdentified|^GetStolenFlag|^SetStolenFlag",
+        "Item Management",
+    ),
+    (
+        r"^GetArea\b|^GetModule|^JumpToArea|^ExploreAreaForPlayer|^GetAreaTransitionTarget|^SetAreaTransitionBMP|^GetAreaByTag|^GetObjectByArea|^SetAreaUnescapable|^GetAreaUnescapable|^GetTile|^GetFirstArea|^GetNextArea|^GetEntering|^GetExiting|^GetTransitionTarget|^SetTransitionTarget|^GetAreaSize|^GetEnteringObject|^GetExitingObject|^SetWeather|^GetWeather|^GetTime|^SetTime|^GetCalendar|^SetCalendar|^GetHour|^GetMinute|^GetSecond|^GetMillisecond|^GetDay|^GetMonth|^GetYear",
+        "Module and Area Functions",
+    ),
+    (
+        r"^GetObjectByTag|^GetNearestObject|^GetNearestCreature|^GetNearestEnemy|^DestroyObject|^CopyObject|^PlayAnimation|^ApplyEffectToObject|^ApplyEffectAtLocation|^RemoveEffect|^GetFirstEffect|^GetNextEffect|^GetEffectCreator|^GetEffectType|^GetIsObjectValid|^GetDistanceBetween|^GetDistanceToObject|^GetObjectType|^GetFacing|^SetFacing|^GetFacingFromLocation|^GetPosition|^SetPosition|^GetLocation|^SetLocation|^Location\b|^GetFirst(Creature|Door|Waypoint|Placeable|Trigger|Item)|^GetNext(Creature|Door|Waypoint|Placeable|Trigger|Item)|^CreateObject(?!.*OnObject)|^SpawnObject|^GetTag|^GetName|^SetName|^GetObjectInArea",
+        "Object Query and Manipulation",
+    ),
+    (
+        r"^Action|^ClearAllActions|^GetCurrentAction|^GetNumberOfActions|^AssignCommand|^DelayCommand",
+        "Actions",
+    ),
 ]
 
 
@@ -135,7 +183,9 @@ def format_func_doc(func: ScriptFunction) -> str:
 def build_func_section_content(funcs: list[ScriptFunction]) -> str:
     if not funcs:
         return "*No functions in this category.*\n"
-    sorted_funcs = sorted(funcs, key=lambda f: (get_routine_num(f) is None, get_routine_num(f) or 0))
+    sorted_funcs = sorted(
+        funcs, key=lambda f: (get_routine_num(f) is None, get_routine_num(f) or 0)
+    )
     parts = [format_func_doc(f) for f in sorted_funcs]
     return "\n".join(parts) + "\n"
 
@@ -198,18 +248,36 @@ CONST_CONTEXTS = {"shared_constants", "k1_only_constants", "tsl_only_constants"}
 SKIP_H3_NAMES: set[str] = {"Party Management"}
 
 ALL_FUNC_SECTIONS = [
-    "Abilities and Stats", "Actions", "Alignment System", "Class System",
-    "Combat Functions", "Dialog and Conversation Functions", "Effects System",
-    "Global Variables", "Item Management", "Item Properties", "Local Variables",
-    "Module and Area Functions", "Object Query and Manipulation", "Other Functions",
-    "Party Management", "Player Character Functions", "Skills and Feats",
+    "Abilities and Stats",
+    "Actions",
+    "Alignment System",
+    "Class System",
+    "Combat Functions",
+    "Dialog and Conversation Functions",
+    "Effects System",
+    "Global Variables",
+    "Item Management",
+    "Item Properties",
+    "Local Variables",
+    "Module and Area Functions",
+    "Object Query and Manipulation",
+    "Other Functions",
+    "Party Management",
+    "Player Character Functions",
+    "Skills and Feats",
     "Sound and Music Functions",
 ]
 
 ALL_CONST_SECTIONS = [
-    "Ability Constants", "Alignment Constants", "Class type Constants",
-    "Inventory Constants", "NPC Constants", "Object type Constants",
-    "Other Constants", "Planet Constants", "Visual Effects (VFX)",
+    "Ability Constants",
+    "Alignment Constants",
+    "Class type Constants",
+    "Inventory Constants",
+    "NPC Constants",
+    "Object type Constants",
+    "Other Constants",
+    "Planet Constants",
+    "Visual Effects (VFX)",
 ]
 
 
@@ -283,6 +351,7 @@ def is_stub(h3_body: str, context: str) -> bool:
 
 # ─── FILE PATCHING ────────────────────────────────────────────────────────────
 
+
 def patch_markdown(content: str, section_content: dict[tuple[str, str], str]) -> tuple[str, int]:
     """
     Patch all stub sections in the markdown.
@@ -343,7 +412,14 @@ def patch_markdown(content: str, section_content: dict[tuple[str, str], str]) ->
 
 WIKI_PATHS = [
     REPO_ROOT / "wiki" / "NSS-File-Format.md",
-    REPO_ROOT / "Tools" / "HolocronToolset" / "src" / "toolset" / "help" / "wiki" / "NSS-File-Format.md",
+    REPO_ROOT
+    / "Tools"
+    / "HolocronToolset"
+    / "src"
+    / "toolset"
+    / "help"
+    / "wiki"
+    / "NSS-File-Format.md",
 ]
 
 

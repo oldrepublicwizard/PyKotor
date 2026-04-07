@@ -19,7 +19,13 @@ shutil.copy(mdl_p, td / mdl_p.name)
 shutil.copy(mdx_p, td / mdx_p.name)
 
 # Decompile with MDLOps
-subprocess.run([str(mdlops_p), str(td / mdl_p.name)], cwd=str(td), stdout=subprocess.PIPE, stderr=subprocess.STDOUT, check=True)
+subprocess.run(
+    [str(mdlops_p), str(td / mdl_p.name)],
+    cwd=str(td),
+    stdout=subprocess.PIPE,
+    stderr=subprocess.STDOUT,
+    check=True,
+)
 ascii_p = td / f"{mdl_p.stem}-ascii.mdl"
 
 # Read and write with PyKotor
@@ -66,12 +72,16 @@ for tex1_off_pos in tex1_off_positions:
         tex_at_offset = mdl_data[th_start_candidate + 84 : th_start_candidate + 84 + 32]
         if tex_name in tex_at_offset:
             # Verify the bitmap value is correct (should be 0x00000003 or 0x00000007)
-            bitmap_at_pos = struct.unpack("<I", mdl_data[th_start_candidate + 52 : th_start_candidate + 56])[0]
+            bitmap_at_pos = struct.unpack(
+                "<I", mdl_data[th_start_candidate + 52 : th_start_candidate + 56]
+            )[0]
             if bitmap_at_pos & 0x2:  # TEXTURE1 flag set
                 matching_headers.append((th_start_candidate, bitmap_at_pos, tex1_off_pos))
                 if th_start is None:  # Use first match
                     th_start = th_start_candidate
-                    print(f"\nFound matching trimesh header at offset {th_start} (tex1_off at {tex1_off_pos}, bitmap=0x{bitmap_at_pos:08X})")
+                    print(
+                        f"\nFound matching trimesh header at offset {th_start} (tex1_off at {tex1_off_pos}, bitmap=0x{bitmap_at_pos:08X})"
+                    )
 
 if len(matching_headers) > 1:
     print(f"  (Found {len(matching_headers)} total headers with texture LHR_dor02 and tex1_off=12)")
@@ -114,6 +124,8 @@ if th_start is not None and th_start >= 0:
                     u, v = struct.unpack("<ff", mdx_data[uv_off : uv_off + 8])
                     print(f"  UV[{i}]: ({u:.6f}, {v:.6f})")
         else:
-            print(f"ERROR: UV offset {uv_offset} + 8 = {uv_offset + 8} exceeds MDX size {len(mdx_data)}")
+            print(
+                f"ERROR: UV offset {uv_offset} + 8 = {uv_offset + 8} exceeds MDX size {len(mdx_data)}"
+            )
     else:
         print(f"ERROR: Invalid offsets - mdx_off={mdx_off}, tex1_off={tex1_off}")

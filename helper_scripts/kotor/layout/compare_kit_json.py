@@ -9,7 +9,9 @@ REPO_ROOT = Path(__file__).parent.parent
 
 def main():
     """Compare generated jedienclave JSON with other kit JSONs."""
-    generated_json = REPO_ROOT / "tests" / "test_toolset" / "test_files" / "generated_kit" / "jedienclave.json"
+    generated_json = (
+        REPO_ROOT / "tests" / "test_toolset" / "test_files" / "generated_kit" / "jedienclave.json"
+    )
     kits_dir = REPO_ROOT / "Tools" / "HolocronToolset" / "src" / "toolset" / "kits" / "kits"
 
     # Load generated JSON

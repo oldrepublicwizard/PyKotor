@@ -143,10 +143,15 @@ def parse_pcode_file(pcode_path: Path) -> tuple[int, list[Instruction]]:
 
     # Regex to match instruction lines
     # Format: OFFSET OPCODE QUALIFIER [ARGS...] INSTRUCTION_NAME [HUMAN_READABLE]
-    line_pattern = re.compile(r"^\s*([0-9A-Fa-f]{8})\s+([0-9A-Fa-f]{2})\s+([0-9A-Fa-f]+)\s*(.*?)(?:\s{2,}|\s+[A-Z_])", re.IGNORECASE)
+    line_pattern = re.compile(
+        r"^\s*([0-9A-Fa-f]{8})\s+([0-9A-Fa-f]{2})\s+([0-9A-Fa-f]+)\s*(.*?)(?:\s{2,}|\s+[A-Z_])",
+        re.IGNORECASE,
+    )
 
     # Simpler pattern for lines without much whitespace
-    simple_pattern = re.compile(r"^\s*([0-9A-Fa-f]{8})\s+([0-9A-Fa-f]{2})\s+([0-9A-Fa-f]{2,})\s*", re.IGNORECASE)
+    simple_pattern = re.compile(
+        r"^\s*([0-9A-Fa-f]{8})\s+([0-9A-Fa-f]{2})\s+([0-9A-Fa-f]{2,})\s*", re.IGNORECASE
+    )
 
     with open(pcode_path, "r", encoding="latin-1") as f:
         for line in f:
@@ -206,7 +211,9 @@ def parse_pcode_file(pcode_path: Path) -> tuple[int, list[Instruction]]:
                 if string_match:
                     string_val = string_match.group(1)
                     # Handle escape sequences
-                    string_val = string_val.encode("latin-1").decode("unicode_escape").encode("latin-1")
+                    string_val = (
+                        string_val.encode("latin-1").decode("unicode_escape").encode("latin-1")
+                    )
                     # Build args: 2-byte length + string bytes
                     length = len(string_val)
                     args = struct.pack(">H", length) + string_val

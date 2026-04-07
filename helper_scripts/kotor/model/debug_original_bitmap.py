@@ -11,7 +11,12 @@ sys.path.insert(0, str(Path(__file__).parents[3] / "Libraries" / "PyKotor" / "sr
 
 from pykotor.common.misc import Game
 from pykotor.extract.installation import Installation
-from pykotor.resource.formats.mdl.io_mdl import MDLBinaryReader, _MDXDataFlags, _NodeHeader, _TrimeshHeader
+from pykotor.resource.formats.mdl.io_mdl import (
+    MDLBinaryReader,
+    _MDXDataFlags,
+    _NodeHeader,
+    _TrimeshHeader,
+)
 from pykotor.resource.type import ResourceType
 from pykotor.tools.path import find_kotor_paths_from_default
 
@@ -78,7 +83,9 @@ def main():
     name_map = {i: n.name for i, n in enumerate(all_nodes)}
 
     print(f"\nLoaded {len(all_nodes)} nodes")
-    print(f"\n{'Name':<20} {'VCount':>6} {'Bitmap':>10} {'VERT':>5} {'NORM':>5} {'TEX0':>5} {'Texture1':<20}")
+    print(
+        f"\n{'Name':<20} {'VCount':>6} {'Bitmap':>10} {'VERT':>5} {'NORM':>5} {'TEX0':>5} {'Texture1':<20}"
+    )
     print("-" * 90)
 
     mesh_nodes = [d for d in node_data if d["is_mesh"]]
@@ -91,7 +98,9 @@ def main():
         has_tex0 = "Y" if d.get("has_tex0") else "N"
         texture1 = d.get("texture1", "")
 
-        print(f"{name:<20} {vcount:>6} 0x{bitmap:>08X} {has_vert:>5} {has_norm:>5} {has_tex0:>5} {texture1:<20}")
+        print(
+            f"{name:<20} {vcount:>6} 0x{bitmap:>08X} {has_vert:>5} {has_norm:>5} {has_tex0:>5} {texture1:<20}"
+        )
 
     # Summary
     print("\n=== Summary ===")

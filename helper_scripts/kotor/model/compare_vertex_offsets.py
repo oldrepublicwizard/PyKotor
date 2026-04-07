@@ -65,8 +65,15 @@ def main():
         pykotor_mdx = pykotor_mdx_path.read_bytes()
 
         # MDLOps roundtrip
-        subprocess.run([str(mdlops_exe), str(orig_mdl_path)], cwd=str(td_path), capture_output=True, timeout=60)
-        subprocess.run([str(mdlops_exe), str(td_path / f"{model_name}-ascii.mdl"), "-k1"], cwd=str(td_path), capture_output=True, timeout=60)
+        subprocess.run(
+            [str(mdlops_exe), str(orig_mdl_path)], cwd=str(td_path), capture_output=True, timeout=60
+        )
+        subprocess.run(
+            [str(mdlops_exe), str(td_path / f"{model_name}-ascii.mdl"), "-k1"],
+            cwd=str(td_path),
+            capture_output=True,
+            timeout=60,
+        )
         mdlops_mdl = (td_path / f"{model_name}-ascii-k1-bin.mdl").read_bytes()
         mdlops_mdx = (td_path / f"{model_name}-ascii-k1-bin.mdx").read_bytes()
 
@@ -114,7 +121,9 @@ def main():
             # This suggests PyKotor is NOT writing vertcoords to MDL for some nodes
             # Let's calculate how many vertices worth of data is missing
             missing_verts = actual_mdl_diff // 12
-            print(f"This equals approximately {missing_verts} missing vertices ({actual_mdl_diff} / 12)")
+            print(
+                f"This equals approximately {missing_verts} missing vertices ({actual_mdl_diff} / 12)"
+            )
 
         # Check if PyKotor is writing more to MDX
         mdx_diff = len(pykotor_mdx) - len(mdlops_mdx)

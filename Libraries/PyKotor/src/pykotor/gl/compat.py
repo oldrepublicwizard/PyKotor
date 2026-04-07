@@ -103,6 +103,7 @@ if HAS_PYOPENGL:
         GL_ONE_MINUS_SRC_ALPHA,
         GL_SRC_ALPHA,
         GL_SRC_COLOR,
+        GL_TRUE,
         glBlendFunc,
         glClear,
         glClearColor,
@@ -134,6 +135,7 @@ else:
     GL_ONE_MINUS_SRC_ALPHA = missing_constant("GL_ONE_MINUS_SRC_ALPHA")
     GL_ONE = missing_constant("GL_ONE")
     GL_SRC_COLOR = missing_constant("GL_SRC_COLOR")
+    GL_TRUE = missing_constant("GL_TRUE")
     GL_LEQUAL = missing_constant("GL_LEQUAL")
     GL_FLOAT = missing_constant("GL_FLOAT")
     GL_BGRA = missing_constant("GL_BGRA")

@@ -190,7 +190,10 @@ def striprtf(text: str) -> str:  # noqa: C901, PLR0915, PLR0912
         3. Ignoring certain tags and characters inside tags marked as "ignorable"
         4. Appending/joining resulting text pieces to output.
     """
-    pattern: re.Pattern[str] = re.compile(r"\\([a-z]{1,32})(-?\d{1,10})?[ ]?|\\'([0-9a-f]{2})|\\([^a-z])|([{}])|[\r\n]+|(.)", re.IGNORECASE)
+    pattern: re.Pattern[str] = re.compile(
+        r"\\([a-z]{1,32})(-?\d{1,10})?[ ]?|\\'([0-9a-f]{2})|\\([^a-z])|([{}])|[\r\n]+|(.)",
+        re.IGNORECASE,
+    )
     # control words which specify a "destination".
     destinations = frozenset(
         (
@@ -631,7 +634,9 @@ class WrappedStr(str):  # (metaclass=StrType):  # noqa: PLR0904
         __z: Self | str,
         /,
     ) -> dict[int, int | None]:
-        return super().maketrans(cls._assert_str_type(__x), cls._assert_str_type(__y), cls._assert_str_type(__z))
+        return super().maketrans(
+            cls._assert_str_type(__x), cls._assert_str_type(__y), cls._assert_str_type(__z)
+        )
 
     def __setattr__(
         self,
@@ -718,10 +723,19 @@ class WrappedStr(str):  # (metaclass=StrType):  # noqa: PLR0904
 
     def __mod__(
         self,
-        __value: LiteralString | str | WrappedStr | tuple[LiteralString, ...] | tuple[str, ...] | tuple[WrappedStr, ...],
+        __value: LiteralString
+        | str
+        | WrappedStr
+        | tuple[LiteralString, ...]
+        | tuple[str, ...]
+        | tuple[WrappedStr, ...],
         /,
     ):
-        parsed_value: tuple[str, ...] | str = tuple(self._assert_str_type(s) for s in __value) if isinstance(__value, tuple) else self._assert_str_type(__value)
+        parsed_value: tuple[str, ...] | str = (
+            tuple(self._assert_str_type(s) for s in __value)
+            if isinstance(__value, tuple)
+            else self._assert_str_type(__value)
+        )
         return self.__class__(self._content % parsed_value)
 
     def __mul__(
@@ -830,7 +844,11 @@ class WrappedStr(str):  # (metaclass=StrType):  # noqa: PLR0904
 
         Return True if S ends with the specified suffix, False otherwise. With optional start, test S beginning at that position. With optional end, stop comparing S at that position. suffix can also be a tuple of strings to try.
         """  # noqa: D415, D400, D402, E501, W505
-        parsed_suffix: tuple[str, ...] | str = tuple(self._assert_str_type(s) for s in __suffix) if isinstance(__suffix, tuple) else self._assert_str_type(__suffix)
+        parsed_suffix: tuple[str, ...] | str = (
+            tuple(self._assert_str_type(s) for s in __suffix)
+            if isinstance(__suffix, tuple)
+            else self._assert_str_type(__suffix)
+        )
         return self._content.endswith(parsed_suffix, __start, __end)
 
     def expandtabs(  # type: ignore[override]
@@ -1151,7 +1169,9 @@ class WrappedStr(str):  # (metaclass=StrType):  # noqa: PLR0904
         Splits are done starting at the end of the string and working to the front.
         """
         cls: type[Self] = self.__class__
-        return [cls(s) for s in self._content.rsplit(self._assert_str_type(__sep or ""), __maxsplit)]
+        return [
+            cls(s) for s in self._content.rsplit(self._assert_str_type(__sep or ""), __maxsplit)
+        ]
 
     def rstrip(
         self,
@@ -1177,7 +1197,10 @@ class WrappedStr(str):  # (metaclass=StrType):  # noqa: PLR0904
         maxsplit
           Maximum number of splits to do. -1 (the default value) means no limit.
         """
-        return [self.__class__(s) for s in self._content.split(self._assert_str_type(sep or ""), maxsplit)]
+        return [
+            self.__class__(s)
+            for s in self._content.split(self._assert_str_type(sep or ""), maxsplit)
+        ]
 
     def splitlines(  # type: ignore[override]
         self,

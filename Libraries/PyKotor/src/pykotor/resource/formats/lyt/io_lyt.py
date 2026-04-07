@@ -151,25 +151,33 @@ class LYTAsciiWriter(ResourceWriter):
 
         self._writer.write_string(f"beginlayout{self.LYT_LINE_SEP}")
 
-        self._writer.write_string(f"{self.LYT_INDENT}{self.ROOM_COUNT_KEY} {roomcount}{self.LYT_LINE_SEP}")
+        self._writer.write_string(
+            f"{self.LYT_INDENT}{self.ROOM_COUNT_KEY} {roomcount}{self.LYT_LINE_SEP}"
+        )
         for room in self._lyt.rooms:
             self._writer.write_string(
                 f"{self.LYT_INDENT * 2}{room.model} {room.position.x} {room.position.y} {room.position.z}{self.LYT_LINE_SEP}",
             )
 
-        self._writer.write_string(f"{self.LYT_INDENT}{self.TRACK_COUNT_KEY} {trackcount}{self.LYT_LINE_SEP}")
+        self._writer.write_string(
+            f"{self.LYT_INDENT}{self.TRACK_COUNT_KEY} {trackcount}{self.LYT_LINE_SEP}"
+        )
         for track in self._lyt.tracks:
             self._writer.write_string(
                 f"{self.LYT_INDENT * 2}{track.model} {track.position.x} {track.position.y} {track.position.z}{self.LYT_LINE_SEP}",
             )
 
-        self._writer.write_string(f"{self.LYT_INDENT}{self.OBSTACLE_COUNT_KEY} {obstaclecount}{self.LYT_LINE_SEP}")
+        self._writer.write_string(
+            f"{self.LYT_INDENT}{self.OBSTACLE_COUNT_KEY} {obstaclecount}{self.LYT_LINE_SEP}"
+        )
         for obstacle in self._lyt.obstacles:
             self._writer.write_string(
                 f"{self.LYT_INDENT * 2}{obstacle.model} {obstacle.position.x} {obstacle.position.y} {obstacle.position.z}{self.LYT_LINE_SEP}",
             )
 
-        self._writer.write_string(f"{self.LYT_INDENT}{self.DOORHOOK_COUNT_KEY} {doorhookcount}{self.LYT_LINE_SEP}")
+        self._writer.write_string(
+            f"{self.LYT_INDENT}{self.DOORHOOK_COUNT_KEY} {doorhookcount}{self.LYT_LINE_SEP}"
+        )
         for doorhook in self._lyt.doorhooks:
             self._writer.write_string(
                 f"{self.LYT_INDENT * 2}{doorhook.room} {doorhook.door} 0 {doorhook.position.x} {doorhook.position.y} {doorhook.position.z} {doorhook.orientation.x} {doorhook.orientation.y} {doorhook.orientation.z} {doorhook.orientation.w}{self.LYT_LINE_SEP}",

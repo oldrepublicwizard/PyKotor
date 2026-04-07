@@ -33,7 +33,9 @@ if TYPE_CHECKING:
 # ".res" because .res files are save-game containers that can be GFF *or* other
 # formats depending on the resource name; callers that want to include them should
 # add ".res" explicitly.
-_GFF_SUFFIXES: frozenset[str] = frozenset(f".{ext}" for ext in GFFContent.get_extensions() if ext != "res")
+_GFF_SUFFIXES: frozenset[str] = frozenset(
+    f".{ext}" for ext in GFFContent.get_extensions() if ext != "res"
+)
 
 
 def _write_output_if_requested(output_path: Path | None, content: str) -> None:
@@ -160,7 +162,9 @@ def _diff_gff_files(
     context_lines: int,
 ) -> str:
     """Compare two GFF files."""
-    return _diff_structured_files(file1_path, file2_path, output_path, context_lines, read_gff, _gff_to_text)
+    return _diff_structured_files(
+        file1_path, file2_path, output_path, context_lines, read_gff, _gff_to_text
+    )
 
 
 def _diff_2da_files(
@@ -170,7 +174,9 @@ def _diff_2da_files(
     context_lines: int,
 ) -> str:
     """Compare two 2DA files."""
-    return _diff_structured_files(file1_path, file2_path, output_path, context_lines, read_2da, _2da_to_text)
+    return _diff_structured_files(
+        file1_path, file2_path, output_path, context_lines, read_2da, _2da_to_text
+    )
 
 
 def _diff_tlk_files(
@@ -180,7 +186,9 @@ def _diff_tlk_files(
     context_lines: int,
 ) -> str:
     """Compare two TLK files."""
-    return _diff_structured_files(file1_path, file2_path, output_path, context_lines, read_tlk, _tlk_to_text)
+    return _diff_structured_files(
+        file1_path, file2_path, output_path, context_lines, read_tlk, _tlk_to_text
+    )
 
 
 def _diff_binary_files(
@@ -261,7 +269,9 @@ def _grep_in_text_file(
     except UnicodeDecodeError:
         # Try binary search
         data = file_path.read_bytes()
-        search_bytes = pattern.encode("utf-8") if case_sensitive else pattern.lower().encode("utf-8")
+        search_bytes = (
+            pattern.encode("utf-8") if case_sensitive else pattern.lower().encode("utf-8")
+        )
         if search_bytes in data:
             matches.append((0, f"Pattern found in binary file: {file_path.name}"))
 

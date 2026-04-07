@@ -5,7 +5,7 @@ from __future__ import annotations
 import os
 import time
 
-from typing import TYPE_CHECKING, ClassVar, TypeVar, cast
+from typing import TYPE_CHECKING, ClassVar, TypeVar
 
 from pykotor.extract.installation import SearchLocation
 from pykotor.gl import mat4, unProject, vec3, vec4
@@ -36,6 +36,7 @@ from pykotor.gl.compat import (
     glPolygonMode,
     glReadPixels,
 )
+from pykotor.gl.compat import GL_TRUE
 from pykotor.gl.models.axis_gizmo import AxisGizmo
 from pykotor.gl.models.mdl import Mesh as _Mesh
 from pykotor.gl.native.gl_accel import (
@@ -542,11 +543,15 @@ class Scene(SceneBase):
         obj: RenderObject,
         transform: mat4,
     ):
-        if self.should_hide_obj(obj):
+        # Inline hide check to avoid method call overhead on hot path.
+        _hide = obj._hide_attr  # noqa: SLF001
+        if _hide and getattr(self, _hide, False):
             return
 
         model: Model = obj.resolve_model(self)
-        next_transform = cast("mat4", transform * obj.transform())
+        # Avoid cast() call — pure overhead at runtime (typing.cast is a no-op).
+        # Access _transform directly to skip method call overhead.
+        next_transform: mat4 = transform * obj._transform  # type: ignore[assignment]  # noqa: SLF001
         model.draw(shader, next_transform, override_texture=obj.override_texture)
 
         for child in obj.children:
@@ -594,9 +599,9 @@ class Scene(SceneBase):
             return
 
         model: Model = obj.resolve_model(self)
-        model.draw(self.picker_shader, cast("mat4", transform * obj.transform()))
+        model.draw(self.picker_shader, transform * obj._transform)  # type: ignore[arg-type]  # noqa: SLF001
         for child in obj.children:
-            self._picker_render_object(child, obj.transform())
+            self._picker_render_object(child, obj._transform)  # noqa: SLF001
 
     def pick(
         self,

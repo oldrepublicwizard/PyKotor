@@ -92,7 +92,9 @@ class GFFJSONReader(ResourceReader):
 
         for field_name, field_data in data.get("fields", {}).items():
             field_type = GFFFieldType(field_data.get("type", 0))
-            field_value = self._parse_field_value(field_type=field_type, value=field_data.get("value"))
+            field_value = self._parse_field_value(
+                field_type=field_type, value=field_data.get("value")
+            )
             struct._fields[field_name] = _GFFField(field_type, field_value)
 
         return struct

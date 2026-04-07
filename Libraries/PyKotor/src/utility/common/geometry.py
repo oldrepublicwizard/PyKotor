@@ -1146,10 +1146,18 @@ class Vector4(vec4):
         pitch: float = y
         yaw: float = z
 
-        qx: float = math.sin(roll / 2) * math.cos(pitch / 2) * math.cos(yaw / 2) - math.cos(roll / 2) * math.sin(pitch / 2) * math.sin(yaw / 2)
-        qy: float = math.cos(roll / 2) * math.sin(pitch / 2) * math.cos(yaw / 2) + math.sin(roll / 2) * math.cos(pitch / 2) * math.sin(yaw / 2)
-        qz: float = math.cos(roll / 2) * math.cos(pitch / 2) * math.sin(yaw / 2) - math.sin(roll / 2) * math.sin(pitch / 2) * math.cos(yaw / 2)
-        qw: float = math.cos(roll / 2) * math.cos(pitch / 2) * math.cos(yaw / 2) + math.sin(roll / 2) * math.sin(pitch / 2) * math.sin(yaw / 2)
+        qx: float = math.sin(roll / 2) * math.cos(pitch / 2) * math.cos(yaw / 2) - math.cos(
+            roll / 2
+        ) * math.sin(pitch / 2) * math.sin(yaw / 2)
+        qy: float = math.cos(roll / 2) * math.sin(pitch / 2) * math.cos(yaw / 2) + math.sin(
+            roll / 2
+        ) * math.cos(pitch / 2) * math.sin(yaw / 2)
+        qz: float = math.cos(roll / 2) * math.cos(pitch / 2) * math.sin(yaw / 2) - math.sin(
+            roll / 2
+        ) * math.sin(pitch / 2) * math.cos(yaw / 2)
+        qw: float = math.cos(roll / 2) * math.cos(pitch / 2) * math.cos(yaw / 2) + math.sin(
+            roll / 2
+        ) * math.sin(pitch / 2) * math.sin(yaw / 2)
 
         return cls(qx, qy, qz, qw)
 
@@ -1440,7 +1448,12 @@ class Face:
         """
         if not isinstance(other, Face):
             return NotImplemented  # type: ignore[no-any-return]
-        return self.v1 == other.v1 and self.v2 == other.v2 and self.v3 == other.v3 and self.material == other.material
+        return (
+            self.v1 == other.v1
+            and self.v2 == other.v2
+            and self.v3 == other.v3
+            and self.material == other.material
+        )
 
     def __hash__(self) -> int:
         """Hash based on vertices and material for use in sets/dicts."""
@@ -1638,7 +1651,9 @@ class Polygon2:
         n: int = len(self.points)
         area: float = 0.0
         for i in range(n - 1):
-            area += -self.points[i].y * self.points[i + 1].x + self.points[i].x * self.points[i + 1].y
+            area += (
+                -self.points[i].y * self.points[i + 1].x + self.points[i].x * self.points[i + 1].y
+            )
         area += -self.points[n - 1].y * self.points[0].x + self.points[n - 1].x * self.points[0].y
         return 0.5 * math.fabs(area)
 
@@ -1742,7 +1757,11 @@ class Polygon3:
         """
         x, y, z = origin
         height = size * (3**0.5) / 2
-        self.points = [Vector3(x, y, z), Vector3(x + size, y, z), Vector3(x + size / 2, y + height, z)]
+        self.points = [
+            Vector3(x, y, z),
+            Vector3(x + size, y, z),
+            Vector3(x + size / 2, y + height, z),
+        ]
 
     def default_square(
         self,
@@ -1759,7 +1778,12 @@ class Polygon3:
         This method modifies the instance by adding four Vector3 points defining the square.
         """
         x, y, z = origin
-        self.points = [Vector3(x, y, z), Vector3(x + size, y, z), Vector3(x + size, y + size, z), Vector3(x, y + size, z)]
+        self.points = [
+            Vector3(x, y, z),
+            Vector3(x + size, y, z),
+            Vector3(x + size, y + size, z),
+            Vector3(x, y + size, z),
+        ]
 
     def append(
         self,

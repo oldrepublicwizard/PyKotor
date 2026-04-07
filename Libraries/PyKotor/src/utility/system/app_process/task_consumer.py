@@ -78,14 +78,22 @@ class TaskConsumer(Generic[P, R], multiprocessing.Process):
         Note that the handle is not open at this scope yet, even after the super().__init__ call.
         """
         super().__init__(group, target, name, args, kwargs, daemon=daemon)
-        self.task_queue: multiprocessing.JoinableQueue[Callable[[], R | Exception]] = multiprocessing.JoinableQueue() if task_queue is None else task_queue
-        self.result_queue: multiprocessing.Queue[R | Exception] = multiprocessing.Queue() if result_queue is None else result_queue
-        self._stop_event: multiprocessing_Event = multiprocessing.Event() if stop_event is None else stop_event
+        self.task_queue: multiprocessing.JoinableQueue[Callable[[], R | Exception]] = (
+            multiprocessing.JoinableQueue() if task_queue is None else task_queue
+        )
+        self.result_queue: multiprocessing.Queue[R | Exception] = (
+            multiprocessing.Queue() if result_queue is None else result_queue
+        )
+        self._stop_event: multiprocessing_Event = (
+            multiprocessing.Event() if stop_event is None else stop_event
+        )
         self.args: tuple[Any, ...] = args
         self.kwargs: Mapping[str, Any] = kwargs
         if sys.platform == "win32":
             self._popen: Popen_multiprocessing | None  # provided by base class
-            self._job: int | None = None  # job object identifier, used to group processes in task manager
+            self._job: int | None = (
+                None  # job object identifier, used to group processes in task manager
+            )
 
     def get_target(self) -> Callable[[], R | Exception] | None:
         return getattr(self, "_target", None)
@@ -197,4 +205,15 @@ if __name__ == "__main__":
     assert result8 == "Task 8 completed", result8
     assert result9 == "Task 9 completed", result9
 
-    print("All tasks completed: ", result1, result2, result3, result4, result5, result6, result7, result8, result9)
+    print(
+        "All tasks completed: ",
+        result1,
+        result2,
+        result3,
+        result4,
+        result5,
+        result6,
+        result7,
+        result8,
+        result9,
+    )

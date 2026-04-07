@@ -8,6 +8,7 @@ from __future__ import annotations
 import pathlib
 import sys
 import tempfile
+
 from multiprocessing import Queue
 
 # Setup paths

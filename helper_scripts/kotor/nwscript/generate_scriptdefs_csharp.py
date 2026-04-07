@@ -51,7 +51,9 @@ try:
         StringExpression,  # pyright: ignore[reportUnusedImport]  # noqa: F401
         VectorExpression,  # pyright: ignore[reportUnusedImport]  # noqa: F401
     )
-    from pykotor.resource.formats.ncs.compiler.lexer import NssLexer  # type: ignore[import-not-found, note]
+    from pykotor.resource.formats.ncs.compiler.lexer import (
+        NssLexer,  # type: ignore[import-not-found, note]
+    )
 except ImportError as e:
     print(f"Error importing PyKotor modules: {e}")
     print("Make sure you're running from the project root and dependencies are installed.")
@@ -76,7 +78,9 @@ def token_type_to_datatype(token_type: str) -> str | None:
     return type_map.get(token_type)
 
 
-def parse_constant_from_tokens(tokens: list, start_idx: int, lines: list[str]) -> tuple[dict, int] | None:
+def parse_constant_from_tokens(
+    tokens: list, start_idx: int, lines: list[str]
+) -> tuple[dict, int] | None:
     """Parse a constant declaration from tokens.
 
     Grammar: global_variable_initialization : data_type IDENTIFIER '=' expression ';'
@@ -90,7 +94,12 @@ def parse_constant_from_tokens(tokens: list, start_idx: int, lines: list[str]) -
     # Also handle: TYPE TRUE_VALUE = VALUE ; or TYPE FALSE_VALUE = VALUE ;
     # Also handle: TYPE IDENTIFIER = MINUS VALUE ; (negative numbers)
     name_token_type = tokens[start_idx + 1].type
-    is_valid_name = name_token_type == "IDENTIFIER" or name_token_type in ["TRUE_VALUE", "FALSE_VALUE", "OBJECTSELF_VALUE", "OBJECTINVALID_VALUE"]
+    is_valid_name = name_token_type == "IDENTIFIER" or name_token_type in [
+        "TRUE_VALUE",
+        "FALSE_VALUE",
+        "OBJECTSELF_VALUE",
+        "OBJECTINVALID_VALUE",
+    ]
 
     # Check for negative number pattern first (TYPE IDENTIFIER = MINUS VALUE ;)
     if (
@@ -140,7 +149,12 @@ def parse_constant_from_tokens(tokens: list, start_idx: int, lines: list[str]) -
         return ({"datatype": datatype, "name": name, "value": value}, start_idx + 6)
 
     # Standard pattern: TYPE IDENTIFIER = VALUE ;
-    if tokens[start_idx].type in ["INT_TYPE", "FLOAT_TYPE", "STRING_TYPE"] and is_valid_name and tokens[start_idx + 2].type == "=" and tokens[start_idx + 4].type == ";":
+    if (
+        tokens[start_idx].type in ["INT_TYPE", "FLOAT_TYPE", "STRING_TYPE"]
+        and is_valid_name
+        and tokens[start_idx + 2].type == "="
+        and tokens[start_idx + 4].type == ";"
+    ):
         datatype = token_type_to_datatype(tokens[start_idx].type)
         if not datatype:
             return None
@@ -209,7 +223,9 @@ def parse_constant_from_tokens(tokens: list, start_idx: int, lines: list[str]) -
     return None
 
 
-def parse_function_from_tokens(tokens: list, start_idx: int, lines: list[str], line_numbers: dict) -> tuple[dict, int] | None:
+def parse_function_from_tokens(
+    tokens: list, start_idx: int, lines: list[str], line_numbers: dict
+) -> tuple[dict, int] | None:
     """Parse a function forward declaration from tokens.
 
     Grammar: function_forward_declaration : data_type IDENTIFIER '(' function_definition_params ')' ';'
@@ -340,7 +356,11 @@ def parse_function_params(param_tokens: list) -> list[dict]:
                 default_token = group[3]
                 # Special handling: negative number defaults like -1 or -1.0
                 # Pattern: = MINUS INT_VALUE or = MINUS FLOAT_VALUE
-                if len(group) >= 5 and default_token.type == "MINUS" and group[4].type in ["INT_VALUE", "FLOAT_VALUE"]:
+                if (
+                    len(group) >= 5
+                    and default_token.type == "MINUS"
+                    and group[4].type in ["INT_VALUE", "FLOAT_VALUE"]
+                ):
                     value_token = group[4]
                     if value_token.type == "INT_VALUE":
                         expr = value_token.value
@@ -371,9 +391,21 @@ def parse_function_params(param_tokens: list) -> list[dict]:
                         x_expr = group[4].value
                         y_expr = group[6].value
                         z_expr = group[8].value
-                        x = x_expr.value if hasattr(x_expr, "value") else float(str(x_expr).rstrip("f"))
-                        y = y_expr.value if hasattr(y_expr, "value") else float(str(y_expr).rstrip("f"))
-                        z = z_expr.value if hasattr(z_expr, "value") else float(str(z_expr).rstrip("f"))
+                        x = (
+                            x_expr.value
+                            if hasattr(x_expr, "value")
+                            else float(str(x_expr).rstrip("f"))
+                        )
+                        y = (
+                            y_expr.value
+                            if hasattr(y_expr, "value")
+                            else float(str(y_expr).rstrip("f"))
+                        )
+                        z = (
+                            z_expr.value
+                            if hasattr(z_expr, "value")
+                            else float(str(z_expr).rstrip("f"))
+                        )
                         # Generate C# Vector3 representation
                         default_value = f"new Vector3({x}f, {y}f, {z}f)"
                     else:
@@ -422,7 +454,9 @@ def parse_function_params(param_tokens: list) -> list[dict]:
                         # expr.value is the actual string (without quotes)
                         # For C#, escape properly
                         str_value = expr.value
-                        default_value = repr(str_value).replace("'", '"')  # Use double quotes for C#
+                        default_value = repr(str_value).replace(
+                            "'", '"'
+                        )  # Use double quotes for C#
                     else:
                         # Not an expression object, treat as string
                         str_val = str(expr)
@@ -491,7 +525,9 @@ def parse_function_params(param_tokens: list) -> list[dict]:
     return params
 
 
-def extract_function_documentation_from_line(lines: list[str], line_num: int, func_name: str) -> dict:
+def extract_function_documentation_from_line(
+    lines: list[str], line_num: int, func_name: str
+) -> dict:
     """Extract function documentation by finding the function in the original lines."""
     # Find the function line
     func_line_idx = None
@@ -683,7 +719,9 @@ def generate_function_csharp(func: dict, constants: list[dict]) -> str:
                         except ValueError:
                             # Not a numeric value, check other cases
                             # Check if it's already a formatted string literal (starts/ends with quotes)
-                            if (default.startswith('"') and default.endswith('"')) or (default.startswith("'") and default.endswith("'")):
+                            if (default.startswith('"') and default.endswith('"')) or (
+                                default.startswith("'") and default.endswith("'")
+                            ):
                                 # Already formatted, use as-is (convert single to double quotes)
                                 if default.startswith("'") and default.endswith("'"):
                                     default_formatted = default.replace("'", '"')
@@ -702,15 +740,31 @@ def generate_function_csharp(func: dict, constants: list[dict]) -> str:
                     # Not a string, use directly
                     default_formatted = str(default)
                 # Use the default value directly in C# code
-                params_cs.append(f'new ScriptParam({param_type_cs}, "{param_name}", {default_formatted})')
+                params_cs.append(
+                    f'new ScriptParam({param_type_cs}, "{param_name}", {default_formatted})'
+                )
         else:
             params_cs.append(f'new ScriptParam({param_type_cs}, "{param_name}", null)')
 
     params_str = ", ".join(params_cs) if params_cs else ""
-    params_list = f"new List<ScriptParam>() {{ {params_str} }}" if params_str else "new List<ScriptParam>()"
+    params_list = (
+        f"new List<ScriptParam>() {{ {params_str} }}" if params_str else "new List<ScriptParam>()"
+    )
 
-    description = func["description"].replace("\\", "\\\\").replace('"', '\\"').replace("\n", "\\n").replace("\r", "\\r")
-    raw = func["raw"].replace("\\", "\\\\").replace('"', '\\"').replace("\n", "\\n").replace("\r", "\\r")
+    description = (
+        func["description"]
+        .replace("\\", "\\\\")
+        .replace('"', '\\"')
+        .replace("\n", "\\n")
+        .replace("\r", "\\r")
+    )
+    raw = (
+        func["raw"]
+        .replace("\\", "\\\\")
+        .replace('"', '\\"')
+        .replace("\n", "\\n")
+        .replace("\r", "\\r")
+    )
 
     return f"""        new ScriptFunction(
             {return_type_cs},
@@ -721,7 +775,12 @@ def generate_function_csharp(func: dict, constants: list[dict]) -> str:
         ),"""
 
 
-def generate_scriptdefs_csharp(k1_constants: list[dict], k1_functions: list[dict], k2_constants: list[dict], k2_functions: list[dict]) -> str:
+def generate_scriptdefs_csharp(
+    k1_constants: list[dict],
+    k1_functions: list[dict],
+    k2_constants: list[dict],
+    k2_functions: list[dict],
+) -> str:
     """Generate the complete ScriptDefs.cs file content."""
     header = """using System.Collections.Generic;
 using CSharpKOTOR.Common;

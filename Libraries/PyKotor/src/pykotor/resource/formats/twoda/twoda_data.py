@@ -107,7 +107,6 @@ class TwoDA(ComparableMixin):
         # Internal storage: list of dicts, each dict is a row mapping column headers to cell values
         self._rows: list[dict[str, str]] = []
 
-
         # Column headers (case-sensitive, typically lowercase)
         self._headers: list[str] = [] if headers is None else headers  # for columns
 
@@ -121,10 +120,20 @@ class TwoDA(ComparableMixin):
     def __eq__(self, other):
         if not isinstance(other, TwoDA):
             return NotImplemented  # type: ignore[no-any-return]
-        return self._rows == other._rows and self._headers == other._headers and self._labels == other._labels
+        return (
+            self._rows == other._rows
+            and self._headers == other._headers
+            and self._labels == other._labels
+        )
 
     def __hash__(self):
-        return hash((tuple(tuple(sorted(row.items())) for row in self._rows), tuple(self._headers), tuple(self._labels)))
+        return hash(
+            (
+                tuple(tuple(sorted(row.items())) for row in self._rows),
+                tuple(self._headers),
+                tuple(self._labels),
+            )
+        )
 
     def __repr__(self):
         return f"{self.__class__.__name__}(headers={self._headers!r}, labels={self._labels!r}, rows={self._rows!r})"
@@ -410,7 +419,10 @@ class TwoDA(ComparableMixin):
         try:
             label_row = self.get_label(row_index)
         except IndexError as e:
-            e.args = (f"Row index {row_index} not found in the 2DA." + (f" Context: {context}" if context is not None else ""),)
+            e.args = (
+                f"Row index {row_index} not found in the 2DA."
+                + (f" Context: {context}" if context is not None else ""),
+            )
             raise
         return TwoDARow(label_row, self._rows[row_index])
 
@@ -547,7 +559,11 @@ class TwoDA(ComparableMixin):
         for header in self._headers:
             if source_index is None:
                 raise ValueError("Source index cannot be None")
-            self._rows[-1][header] = override_cells[header] if header in override_cells else self.get_cell(source_index, header)  # FIXME: source_index cannot be None
+            self._rows[-1][header] = (
+                override_cells[header]
+                if header in override_cells
+                else self.get_cell(source_index, header)
+            )  # FIXME: source_index cannot be None
 
         return row_index
 
@@ -863,7 +879,9 @@ class TwoDA(ComparableMixin):
                 old_value: str = old_row.get_string(header)
                 new_value: str = new_row.get_string(header)
                 if old_value != new_value:
-                    log_func(f"Cell mismatch at Row '{label}' Header '{header}': '{old_value}' --> '{new_value}'")
+                    log_func(
+                        f"Cell mismatch at Row '{label}' Header '{header}': '{old_value}' --> '{new_value}'"
+                    )
                     ret = False
 
         return ret

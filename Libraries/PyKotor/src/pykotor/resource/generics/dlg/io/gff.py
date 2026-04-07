@@ -102,7 +102,9 @@ def construct_dlg(  # noqa: C901, PLR0915
 
             anim.animation_id = anim_struct.acquire("Animation", 0)
             # Subtract 10000 when present (legacy DLG content quirk; see wiki dlg/io/gff.py notes).
-            if anim.animation_id > 10000:  # HACK(th3w1zard1): can't remember why this was needed.  # noqa: PLR2004
+            if (
+                anim.animation_id > 10000
+            ):  # HACK(th3w1zard1): can't remember why this was needed.  # noqa: PLR2004
                 anim.animation_id -= 10000
 
             anim.participant = anim_struct.acquire("Participant", "")
@@ -150,7 +152,9 @@ def construct_dlg(  # noqa: C901, PLR0915
         if gff_struct.exists("TarHeightOffset"):
             node.target_height = gff_struct.acquire("TarHeightOffset", 0.0)
         if gff_struct.exists("FadeColor"):
-            node.fade_color = Color.from_bgr_vector3(gff_struct.acquire("FadeColor", Vector3.from_null()))
+            node.fade_color = Color.from_bgr_vector3(
+                gff_struct.acquire("FadeColor", Vector3.from_null())
+            )
 
     def construct_link(
         gff_struct: GFFStruct,
@@ -189,8 +193,12 @@ def construct_dlg(  # noqa: C901, PLR0915
 
     root: GFFStruct = gff.root
     # K1/TSL dialog load: EntryList/ReplyList lists; NumWords 0, EndConverAbort/EndConversation "", Skippable 0. Omit OK.
-    all_entries: list[DLGEntry] = [DLGEntry() for _ in range(len(root.acquire("EntryList", GFFList())))]
-    all_replies: list[DLGReply] = [DLGReply() for _ in range(len(root.acquire("ReplyList", GFFList())))]
+    all_entries: list[DLGEntry] = [
+        DLGEntry() for _ in range(len(root.acquire("EntryList", GFFList())))
+    ]
+    all_replies: list[DLGReply] = [
+        DLGReply() for _ in range(len(root.acquire("ReplyList", GFFList())))
+    ]
 
     dlg.word_count = root.acquire("NumWords", 0)
 
@@ -238,7 +246,9 @@ def construct_dlg(  # noqa: C901, PLR0915
             starter_node: DLGEntry = all_entries[node_struct_id]
         except IndexError:
             context_link_msg: str = f"(StartingList/{link_list_index})"  # noqa: SLF001
-            RobustLogger().error(f"'Index' field value '{node_struct_id}' at {context_link_msg} does not point to a valid ReplyList node, omitting...")
+            RobustLogger().error(
+                f"'Index' field value '{node_struct_id}' at {context_link_msg} does not point to a valid ReplyList node, omitting..."
+            )
         else:
             link: DLGLink = DLGLink(starter_node, link_list_index)
             dlg.starters.append(link)
@@ -258,7 +268,9 @@ def construct_dlg(  # noqa: C901, PLR0915
                 reply_node: DLGReply = all_replies[node_struct_id]
             except IndexError:
                 context_link_msg = f"(EntryList/{node_list_index}/RepliesList/{link_list_index})"  # noqa: SLF001
-                RobustLogger().error(f"'Index' field value '{node_struct_id}' at {context_link_msg} does not point to a valid ReplyList node, omitting...")
+                RobustLogger().error(
+                    f"'Index' field value '{node_struct_id}' at {context_link_msg} does not point to a valid ReplyList node, omitting..."
+                )
             else:
                 link = DLGLink(reply_node, link_list_index)
                 link.is_child = bool(link_struct.acquire("IsChild", default=False))
@@ -280,7 +292,9 @@ def construct_dlg(  # noqa: C901, PLR0915
                 entry_node: DLGEntry = all_entries[node_struct_id]
             except IndexError:
                 context_link_msg = f"(ReplyList/{node_list_index}/EntriesList/{link_list_index})"  # noqa: SLF001
-                RobustLogger().error(f"'Index' field value '{node_struct_id}' at {context_link_msg} does not point to a valid EntryList node, omitting...")
+                RobustLogger().error(
+                    f"'Index' field value '{node_struct_id}' at {context_link_msg} does not point to a valid EntryList node, omitting..."
+                )
             else:
                 link = DLGLink(entry_node, link_list_index)
                 link.is_child = bool(link_struct.acquire("IsChild", default=False))
@@ -474,7 +488,9 @@ def dismantle_dlg(  # noqa: PLR0912, C901, PLR0915
 
         link_list: GFFList = gff_struct.set_list(list_name, GFFList())
         # Sort links by link_list_index, treating -1 as the highest value
-        sorted_links: list[DLGLink] = sorted(node.links, key=lambda link: (link.list_index == -1, link.list_index))
+        sorted_links: list[DLGLink] = sorted(
+            node.links, key=lambda link: (link.list_index == -1, link.list_index)
+        )
         for i, link in enumerate(sorted_links):
             link_struct: GFFStruct = link_list.add(i)
             dismantle_link(link_struct, link, nodes, list_name, node_to_index)
@@ -525,7 +541,9 @@ def dismantle_dlg(  # noqa: PLR0912, C901, PLR0915
         stunt_struct.set_resref("StuntModel", stunt.stunt_model)
 
     starting_list: GFFList = root.set_list("StartingList", GFFList())
-    sorted_links: list[DLGLink] = sorted(dlg.starters, key=lambda link: (link.list_index == -1, link.list_index))
+    sorted_links: list[DLGLink] = sorted(
+        dlg.starters, key=lambda link: (link.list_index == -1, link.list_index)
+    )
     for link_list_index, starter in enumerate(sorted_links):
         starting_struct: GFFStruct = starting_list.add(link_list_index)
         dismantle_link(starting_struct, starter, all_entries, "StartingList", entry_index)

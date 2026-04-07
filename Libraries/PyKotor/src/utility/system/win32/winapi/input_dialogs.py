@@ -38,7 +38,11 @@ def color_picker():
     cc.lpCustColors = custom_colors
     cc.rgbResult = COLORREF()
     if CHOOSECOLOR(ctypes.byref(cc)):
-        return (cc.rgbResult.rgb & 0xFF, (cc.rgbResult.rgb >> 8) & 0xFF, (cc.rgbResult.rgb >> 16) & 0xFF)
+        return (
+            cc.rgbResult.rgb & 0xFF,
+            (cc.rgbResult.rgb >> 8) & 0xFF,
+            (cc.rgbResult.rgb >> 16) & 0xFF,
+        )
     return None
 
 

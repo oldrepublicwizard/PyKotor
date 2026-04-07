@@ -67,7 +67,9 @@ def _split_flipbook(image: TGAImage, num_x: int, num_y: int) -> list[TGAImage]:
             for row in range(frame_height):
                 src_offset = ((tile_y * frame_height) + row) * stride + tile_x * frame_width * 4
                 dst_offset = row * frame_width * 4
-                buffer[dst_offset : dst_offset + frame_width * 4] = image.data[src_offset : src_offset + frame_width * 4]
+                buffer[dst_offset : dst_offset + frame_width * 4] = image.data[
+                    src_offset : src_offset + frame_width * 4
+                ]
             frames.append(TGAImage(width=frame_width, height=frame_height, data=bytes(buffer)))
     return frames
 
@@ -234,14 +236,27 @@ def run_cli(argv: Iterable[str]) -> int:
     parser.add_argument("--input", "-i", type=Path, required=True, help="Source TGA image")
     parser.add_argument("--output", "-o", type=Path, required=True, help="Destination TPC file")
     parser.add_argument("--txi", type=Path, help="Optional TXI file to merge into the texture")
-    parser.add_argument("--emit-txi", action="store_true", help="Write the generated TXI data alongside the TPC")
-    parser.add_argument("--compression", choices=["auto", "dxt1", "dxt5", "none"], default="auto", help="Compression strategy")
+    parser.add_argument(
+        "--emit-txi", action="store_true", help="Write the generated TXI data alongside the TPC"
+    )
+    parser.add_argument(
+        "--compression",
+        choices=["auto", "dxt1", "dxt5", "none"],
+        default="auto",
+        help="Compression strategy",
+    )
     parser.add_argument("--numx", type=int, default=0, help="Flipbook columns")
     parser.add_argument("--numy", type=int, default=0, help="Flipbook rows")
     parser.add_argument("--fps", type=float, default=0.0, help="Flipbook playback rate")
-    parser.add_argument("--cube", action="store_true", help="Treat the input as a cubemap (six faces stacked vertically)")
+    parser.add_argument(
+        "--cube",
+        action="store_true",
+        help="Treat the input as a cubemap (six faces stacked vertically)",
+    )
     parser.add_argument("--no-mipmaps", action="store_true", help="Do not generate mipmaps")
-    parser.add_argument("--alpha-test", type=float, default=1.0, help="Alpha test threshold (stored in header)")
+    parser.add_argument(
+        "--alpha-test", type=float, default=1.0, help="Alpha test threshold (stored in header)"
+    )
 
     args = parser.parse_args(list(argv))
 

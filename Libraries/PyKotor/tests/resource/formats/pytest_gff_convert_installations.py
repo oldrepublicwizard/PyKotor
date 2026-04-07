@@ -52,8 +52,12 @@ from pykotor.resource.type import ResourceType
 if TYPE_CHECKING:
     from pykotor.extract.file import FileResource, ResourceIdentifier
 
-K1_PATH: str | None = os.environ.get("K1_PATH", "C:\\Program Files (x86)\\Steam\\steamapps\\common\\swkotor")
-K2_PATH: str | None = os.environ.get("K2_PATH", "C:\\Program Files (x86)\\Steam\\steamapps\\common\\Knights of the Old Republic II")
+K1_PATH: str | None = os.environ.get(
+    "K1_PATH", "C:\\Program Files (x86)\\Steam\\steamapps\\common\\swkotor"
+)
+K2_PATH: str | None = os.environ.get(
+    "K2_PATH", "C:\\Program Files (x86)\\Steam\\steamapps\\common\\Knights of the Old Republic II"
+)
 
 ALL_INSTALLATIONS: dict[Game, Installation] | None = None
 ALL_GFFS: dict[Game, list[tuple[FileResource, Path]]] = {Game.K1: [], Game.K2: []}
@@ -122,13 +126,19 @@ def pytest_generate_tests(metafunc: pytest.Metafunc):
             collect_all_gffs()
 
         combined_data: list[tuple[str, tuple[Game, FileResource, Path]]] = [
-            (f"{game}_{resource._path_ident_obj}", (game, resource, conversion_path)) for game, gff_info in ALL_GFFS.items() for resource, conversion_path in gff_info
+            (f"{game}_{resource._path_ident_obj}", (game, resource, conversion_path))
+            for game, gff_info in ALL_GFFS.items()
+            for resource, conversion_path in gff_info
         ]
 
-        sorted_combined_data: list[tuple[str, tuple[Game, FileResource, Path]]] = sorted(combined_data, key=lambda x: x[0])
+        sorted_combined_data: list[tuple[str, tuple[Game, FileResource, Path]]] = sorted(
+            combined_data, key=lambda x: x[0]
+        )
 
         sorted_ids: list[str] = [item[0] for item in sorted_combined_data]
-        sorted_test_gff_data: list[tuple[Game, FileResource, Path]] = [item[1] for item in sorted_combined_data]
+        sorted_test_gff_data: list[tuple[Game, FileResource, Path]] = [
+            item[1] for item in sorted_combined_data
+        ]
         metafunc.parametrize("gff_data", sorted_test_gff_data, ids=sorted_ids, indirect=True)
 
 

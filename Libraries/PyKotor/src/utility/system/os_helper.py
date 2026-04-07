@@ -63,12 +63,16 @@ def get_app_dir() -> Path:
     if is_frozen():
         return Path(sys.executable).resolve().parent
     main_module = sys.modules["__main__"]
-    RobustLogger().debug("Try to get the __file__ attribute that contains the path of the entry-point script.")
+    RobustLogger().debug(
+        "Try to get the __file__ attribute that contains the path of the entry-point script."
+    )
     # Check for optional __file__ attribute - legitimate use of getattr for optional module attribute
     main_script_path = getattr(main_module, "__file__", None)
     if main_script_path is not None:
         return Path(main_script_path).resolve().parent
-    RobustLogger().debug("Fall back to the current working directory if the __file__ attribute was not found.")
+    RobustLogger().debug(
+        "Fall back to the current working directory if the __file__ attribute was not found."
+    )
     return Path.cwd()
 
 
@@ -166,7 +170,10 @@ def remove_any(path: os.PathLike | str, *, ignore_errors: bool = True, missing_o
             else:
                 if not isfile_func(path_obj):
                     return
-                print(f"File/folder {path_obj} still exists after {i} iterations! (remove_any)", file=sys.stderr)
+                print(
+                    f"File/folder {path_obj} still exists after {i} iterations! (remove_any)",
+                    file=sys.stderr,
+                )
         if not ignore_errors:  # should raise at this point.
             _remove_any(path_obj)
 
@@ -196,7 +203,10 @@ def win_get_system32_dir() -> Path:
         ctypes.windll.kernel32.GetSystemDirectoryW(buffer, len(buffer))
         return Path(buffer.value)
     except Exception:  # noqa: BLE001
-        RobustLogger().warning("Error accessing system directory via GetSystemDirectoryW. Attempting fallback.", exc_info=True)
+        RobustLogger().warning(
+            "Error accessing system directory via GetSystemDirectoryW. Attempting fallback.",
+            exc_info=True,
+        )
         buffer = ctypes.create_unicode_buffer(260)
         ctypes.windll.kernel32.GetWindowsDirectoryW(buffer, len(buffer))
         return Path(buffer.value).joinpath("system32")

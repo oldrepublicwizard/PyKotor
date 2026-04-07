@@ -38,13 +38,17 @@ def cmd_texture_convert(args: Namespace, logger: Logger) -> int:
     try:
         if input_path.suffix.lower() == ".tpc":
             # TPC to TGA
-            output_path = pathlib.Path(args.output) if args.output else input_path.with_suffix(".tga")
+            output_path = (
+                pathlib.Path(args.output) if args.output else input_path.with_suffix(".tga")
+            )
             txi_output = pathlib.Path(args.txi) if args.txi else None
             convert_tpc_to_tga(input_path, output_path, txi_output_path=txi_output)
             logger.info(f"Converted {input_path.name} to {output_path.name}")  # noqa: G004
         else:
             # TGA to TPC
-            output_path = pathlib.Path(args.output) if args.output else input_path.with_suffix(".tpc")
+            output_path = (
+                pathlib.Path(args.output) if args.output else input_path.with_suffix(".tpc")
+            )
             txi_path = pathlib.Path(args.txi) if args.txi else None
             convert_tga_to_tpc(
                 input_path,
@@ -61,9 +65,7 @@ def cmd_texture_convert(args: Namespace, logger: Logger) -> int:
 
 
 def cmd_sound_convert(args: Namespace, logger: Logger) -> int:
-    """Convert sound files (WAV<->clean WAV).
-
-    """
+    """Convert sound files (WAV<->clean WAV)."""
     input_path = pathlib.Path(args.input)
     output_path = pathlib.Path(args.output) if args.output else input_path.with_suffix(".wav")
 
@@ -85,21 +87,23 @@ def cmd_sound_convert(args: Namespace, logger: Logger) -> int:
 
 
 def cmd_model_convert(args: Namespace, logger: Logger) -> int:
-    """Convert model files (MDL<->ASCII).
-
-    """
+    """Convert model files (MDL<->ASCII)."""
     input_path = pathlib.Path(args.input)
 
     try:
         if args.to_ascii:
             # Binary MDL to ASCII
-            output_path = pathlib.Path(args.output) if args.output else input_path.with_suffix(".mdl")
+            output_path = (
+                pathlib.Path(args.output) if args.output else input_path.with_suffix(".mdl")
+            )
             mdx_path = pathlib.Path(args.mdx) if args.mdx else None
             convert_mdl_to_ascii(input_path, output_path, mdx_path=mdx_path)
             logger.info(f"Converted {input_path.name} to ASCII: {output_path.name}")  # noqa: G004
         else:
             # ASCII MDL to binary
-            output_mdl = pathlib.Path(args.output) if args.output else input_path.with_suffix(".mdl")
+            output_mdl = (
+                pathlib.Path(args.output) if args.output else input_path.with_suffix(".mdl")
+            )
             mdx_output = pathlib.Path(args.mdx) if args.mdx else None
             convert_ascii_to_mdl(input_path, output_mdl, output_mdx_path=mdx_output)
             logger.info(f"Converted {input_path.name} to binary: {output_mdl.name}")  # noqa: G004
@@ -164,10 +168,14 @@ def cmd_walkmesh_rebuild(args: Namespace, logger: Logger) -> int:
 
         trans_before = _count_transitions(bwm)
         if trans_before:
-            logger.info(f"Input: {trans_before} edge(s) with transitions (door/area links); keeping only those on outer boundary.")  # noqa: G004
+            logger.info(
+                f"Input: {trans_before} edge(s) with transitions (door/area links); keeping only those on outer boundary."
+            )  # noqa: G004
 
         # ---- Regenerate derived data (AABB, adjacency, perimeter, normals) ----
-        logger.info("Rebuilding from geometry: AABB tree, adjacency, perimeter edges, loop markers, face normals.")  # noqa: G004
+        logger.info(
+            "Rebuilding from geometry: AABB tree, adjacency, perimeter edges, loop markers, face normals."
+        )  # noqa: G004
 
         # ---- Transition invariant: only perimeter edges may have transitions; arrow = inward ----
         cleared = bwm.enforce_transition_invariant()
@@ -182,9 +190,13 @@ def cmd_walkmesh_rebuild(args: Namespace, logger: Logger) -> int:
                         f"Transitions: {trans_before} -> {trans_after} (cleared {cleared} from internal edges). {trans_after} arrow(s) on perimeter, pointing inward.",
                     )
                 else:
-                    logger.info(f"Transitions: {trans_after} on perimeter (all valid). Arrows point inward.")  # noqa: G004
+                    logger.info(
+                        f"Transitions: {trans_after} on perimeter (all valid). Arrows point inward."
+                    )  # noqa: G004
             elif cleared:
-                logger.info(f"Transitions: cleared {cleared} (were on internal edges); 0 remain on perimeter.")  # noqa: G004
+                logger.info(
+                    f"Transitions: cleared {cleared} (were on internal edges); 0 remain on perimeter."
+                )  # noqa: G004
             else:
                 logger.info("Transitions: 0 (no door/area links on this walkmesh).")  # noqa: G004
         else:
@@ -290,7 +302,11 @@ def cmd_walkmesh_convert(args: Namespace, logger: Logger) -> int:
     elif to_ascii:
         output_path = input_path.with_suffix(input_path.suffix + ".ascii")
     else:
-        output_path = input_path.with_suffix("").with_suffix(".wok") if input_path.suffix.lower() == ".ascii" else input_path.with_suffix(".wok")
+        output_path = (
+            input_path.with_suffix("").with_suffix(".wok")
+            if input_path.suffix.lower() == ".ascii"
+            else input_path.with_suffix(".wok")
+        )
 
     try:
         if to_ascii:

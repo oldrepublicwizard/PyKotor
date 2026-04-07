@@ -30,7 +30,7 @@ import pytest
 
 from pykotor.cli.dispatch import cli_main
 from pykotor.resource.formats.bwm import read_bwm
-from pykotor.resource.formats.bwm.bwm_data import BWM, BWMType, BWMFace
+from pykotor.resource.formats.bwm.bwm_data import BWM, BWMFace, BWMType
 from utility.common.geometry import SurfaceMaterial, Vector3
 
 THIS_DIR = pathlib.Path(__file__).resolve().parent
@@ -79,9 +79,15 @@ def _assert_transition_arrows_exclusive(bwm: BWM) -> None:
 
     # --- Assert: ZERO transitions on any non-perimeter edge (redundant but explicit per-face) ---
     for i, face in enumerate(bwm.faces):
-        assert (i, 0) in perimeter or face.trans1 is None, f"Face {i} edge 0: transition on internal edge"
-        assert (i, 1) in perimeter or face.trans2 is None, f"Face {i} edge 1: transition on internal edge"
-        assert (i, 2) in perimeter or face.trans3 is None, f"Face {i} edge 2: transition on internal edge"
+        assert (i, 0) in perimeter or face.trans1 is None, (
+            f"Face {i} edge 0: transition on internal edge"
+        )
+        assert (i, 1) in perimeter or face.trans2 is None, (
+            f"Face {i} edge 1: transition on internal edge"
+        )
+        assert (i, 2) in perimeter or face.trans3 is None, (
+            f"Face {i} edge 2: transition on internal edge"
+        )
 
     # --- Assert: inward direction = from edge toward face centroid (arrow points into the face) ---
     # BWM.edge_inward_direction_xy(face, edge_idx) returns (midpoint, normalized direction toward centroid).

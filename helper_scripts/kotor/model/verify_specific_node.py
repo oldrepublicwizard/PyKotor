@@ -57,7 +57,11 @@ if th_start >= 0 and th_start + 361 <= len(mdl_content):
     print(f"  function_pointer1: {fp1} (0x{fp1:08X})")
 
     # Read texture1
-    tex1 = mdl_content[th_start + 84 : th_start + 84 + 32].rstrip(b"\x00").decode("ascii", errors="ignore")
+    tex1 = (
+        mdl_content[th_start + 84 : th_start + 84 + 32]
+        .rstrip(b"\x00")
+        .decode("ascii", errors="ignore")
+    )
     print(f"  texture1: {repr(tex1)}")
 
     # Read MDX fields
@@ -70,7 +74,9 @@ if th_start >= 0 and th_start + 361 <= len(mdl_content):
     mdx_texture2_offset = struct.unpack("<I", mdl_content[th_start + 72 : th_start + 76])[0]
 
     print(f"  mdx_data_size: {mdx_data_size}")
-    print(f"  mdx_data_bitmap: 0x{mdx_data_bitmap:08X} (VERTEX={bool(mdx_data_bitmap & 0x1)}, TEXTURE1={bool(mdx_data_bitmap & 0x2)})")
+    print(
+        f"  mdx_data_bitmap: 0x{mdx_data_bitmap:08X} (VERTEX={bool(mdx_data_bitmap & 0x1)}, TEXTURE1={bool(mdx_data_bitmap & 0x2)})"
+    )
     print(f"  mdx_vertex_offset: {mdx_vertex_offset} (0x{mdx_vertex_offset:08X})")
     print(f"  mdx_normal_offset: {mdx_normal_offset} (0x{mdx_normal_offset:08X})")
     print(f"  mdx_texture1_offset: {mdx_texture1_offset} (0x{mdx_texture1_offset:08X})")

@@ -277,12 +277,18 @@ class ExplorerLayoutVerifier:
             Tuple of (success, message)
         """
         if splitter.count() != len(expected_widgets):
-            return False, f"Splitter has {splitter.count()} widgets, expected {len(expected_widgets)}"
+            return (
+                False,
+                f"Splitter has {splitter.count()} widgets, expected {len(expected_widgets)}",
+            )
 
         for i, expected_type in enumerate(expected_widgets):
             widget = splitter.widget(i)
             if not isinstance(widget, expected_type):
-                return False, f"Widget {i} is {type(widget).__name__}, expected {expected_type.__name__}"
+                return (
+                    False,
+                    f"Widget {i} is {type(widget).__name__}, expected {expected_type.__name__}",
+                )
 
         return True, "OK"
 
@@ -1601,7 +1607,9 @@ class TestExplorerPanes(WindowsExplorerConformanceTestBase):
 
         # Toggle on
         if hasattr(actions, "actionPreviewPane"):
-            initial_visible = hasattr(self.explorer, "preview_pane") and self.explorer.preview_pane.isVisible()
+            initial_visible = (
+                hasattr(self.explorer, "preview_pane") and self.explorer.preview_pane.isVisible()
+            )
 
             actions.actionPreviewPane.trigger()
             self._process_events_with_timeout(100)
@@ -1744,14 +1752,18 @@ class TestExplorerSelection(WindowsExplorerConformanceTestBase):
         view.selectionModel().select(first, view.selectionModel().ClearAndSelect)
         self._process_events_with_timeout(50)
 
-        initial_selected = {idx.row() for idx in view.selectionModel().selectedIndexes() if idx.column() == 0}
+        initial_selected = {
+            idx.row() for idx in view.selectionModel().selectedIndexes() if idx.column() == 0
+        }
 
         # Invert
         actions = self.explorer.ribbons.actions_definitions
         actions.actionInvertSelection.trigger()
         self._process_events_with_timeout(50)
 
-        after_selected = {idx.row() for idx in view.selectionModel().selectedIndexes() if idx.column() == 0}
+        after_selected = {
+            idx.row() for idx in view.selectionModel().selectedIndexes() if idx.column() == 0
+        }
 
         # Should be different
         self.assertNotEqual(initial_selected, after_selected)

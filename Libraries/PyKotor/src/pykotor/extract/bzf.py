@@ -87,7 +87,9 @@ class BZFFile:
             self._iResources[i].type = struct.unpack("<I", bzf.read(4))[0]
 
             if i > 0:
-                self._iResources[i - 1].packed_size = self._iResources[i].offset - self._iResources[i - 1].offset
+                self._iResources[i - 1].packed_size = (
+                    self._iResources[i].offset - self._iResources[i - 1].offset
+                )
 
         if self._iResources:
             self._iResources[-1].packed_size = bzf.seek(0, 2) - self._iResources[-1].offset
@@ -104,7 +106,9 @@ class BZFFile:
                 continue
 
             if key_res.type != self._iResources[key_res.res_index].type:
-                print(f'KEY and BZF disagree on the type of the resource "{key_res.name}" ({key_res.type}, {self._iResources[key_res.res_index].type}). Trusting the BZF')
+                print(
+                    f'KEY and BZF disagree on the type of the resource "{key_res.name}" ({key_res.type}, {self._iResources[key_res.res_index].type}). Trusting the BZF'
+                )
 
             res = Resource()
             res.name = key_res.name
@@ -131,4 +135,6 @@ class BZFFile:
         res = self.get_iresource(index)
         self._bzf.seek(res.offset)
         compressed_data: bytes = self._bzf.read(res.packed_size)
-        return lzma.decompress(compressed_data, format=lzma.FORMAT_RAW, filters=[{"id": lzma.FILTER_LZMA1}])
+        return lzma.decompress(
+            compressed_data, format=lzma.FORMAT_RAW, filters=[{"id": lzma.FILTER_LZMA1}]
+        )

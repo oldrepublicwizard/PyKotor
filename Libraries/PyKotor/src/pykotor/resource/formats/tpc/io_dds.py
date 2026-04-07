@@ -293,7 +293,9 @@ class TPCDDSReader(ResourceReader):
         self._tpc._format = tpc_format  # noqa: SLF001
         self._read_surfaces(width, height, mip_count, 1, tpc_format, _DDSDataLayout.DIRECT)
 
-    def _file_mipmap_size(self, width: int, height: int, tpc_format: TPCTextureFormat, layout: _DDSDataLayout) -> int:
+    def _file_mipmap_size(
+        self, width: int, height: int, tpc_format: TPCTextureFormat, layout: _DDSDataLayout
+    ) -> int:
         if layout in {_DDSDataLayout.A1R5G5B5, _DDSDataLayout.ARGB4444, _DDSDataLayout.R5G6B5}:
             return width * height * 2
         return tpc_format.get_size(width, height)
@@ -341,7 +343,13 @@ class TPCDDSReader(ResourceReader):
                     TPCMipmap(
                         width=mm_width,
                         height=mm_height,
-                        tpc_format=tpc_format if layout == _DDSDataLayout.DIRECT else (TPCTextureFormat.RGB if layout == _DDSDataLayout.R5G6B5 else TPCTextureFormat.RGBA),
+                        tpc_format=tpc_format
+                        if layout == _DDSDataLayout.DIRECT
+                        else (
+                            TPCTextureFormat.RGB
+                            if layout == _DDSDataLayout.R5G6B5
+                            else TPCTextureFormat.RGBA
+                        ),
                         data=data,
                     ),
                 )
@@ -378,7 +386,9 @@ class TPCDDSWriter(ResourceWriter):
         super().__init__(target)
         self._tpc = tpc
 
-    def _pixel_format_fields(self, fmt: TPCTextureFormat) -> tuple[int, int, int, int, int, int, int]:
+    def _pixel_format_fields(
+        self, fmt: TPCTextureFormat
+    ) -> tuple[int, int, int, int, int, int, int]:
         """Return (ddpf_flags, fourcc, bitcount, rmask, gmask, bmask, amask)."""
         # Aligns with  mappings.
         if fmt == TPCTextureFormat.DXT1:
@@ -388,14 +398,28 @@ class TPCDDSWriter(ResourceWriter):
         if fmt == TPCTextureFormat.DXT5:
             return self.DDPF_FOURCC, 0x44585435, 0, 0, 0, 0, 0
         if fmt == TPCTextureFormat.BGRA:
-            return (self.DDPF_RGB | self.DDPF_ALPHAPIXELS, 0, 32, 0x00FF0000, 0x0000FF00, 0x000000FF, 0xFF000000)
+            return (
+                self.DDPF_RGB | self.DDPF_ALPHAPIXELS,
+                0,
+                32,
+                0x00FF0000,
+                0x0000FF00,
+                0x000000FF,
+                0xFF000000,
+            )
         if fmt == TPCTextureFormat.BGR:
             return (self.DDPF_RGB, 0, 24, 0x00FF0000, 0x0000FF00, 0x000000FF, 0)
         raise ValueError(f"DDS writer does not support format {fmt!r}")
 
     def _ensure_supported_format(self) -> TPCTextureFormat:
         fmt = self._tpc.format()
-        if fmt in (TPCTextureFormat.DXT1, TPCTextureFormat.DXT3, TPCTextureFormat.DXT5, TPCTextureFormat.BGR, TPCTextureFormat.BGRA):
+        if fmt in (
+            TPCTextureFormat.DXT1,
+            TPCTextureFormat.DXT3,
+            TPCTextureFormat.DXT5,
+            TPCTextureFormat.BGR,
+            TPCTextureFormat.BGRA,
+        ):
             return fmt
         if fmt == TPCTextureFormat.RGB:
             return TPCTextureFormat.BGR
@@ -433,7 +457,9 @@ class TPCDDSWriter(ResourceWriter):
         if mip_count > 1:
             flags |= self.DDSD_MIPMAPCOUNT
 
-        pf_flags, fourcc, bitcount, rmask, gmask, bmask, amask = self._pixel_format_fields(target_format)
+        pf_flags, fourcc, bitcount, rmask, gmask, bmask, amask = self._pixel_format_fields(
+            target_format
+        )
 
         caps1 = self.DDSCAPS_TEXTURE
         caps2 = 0
@@ -470,13 +496,17 @@ class TPCDDSWriter(ResourceWriter):
         for face in range(face_count):
             layer = self._tpc.layers[face] if self._tpc.is_cube_map else self._tpc.layers[0]
             if len(layer.mipmaps) < mip_count:
-                raise ValueError(f"Layer {face} does not contain {mip_count} mipmaps required for DDS export.")
+                raise ValueError(
+                    f"Layer {face} does not contain {mip_count} mipmaps required for DDS export."
+                )
             mm_width, mm_height = width, height
             for mip_index in range(mip_count):
                 mipmap = layer.mipmaps[mip_index]
                 expected_w, expected_h = max(1, mm_width), max(1, mm_height)
                 if mipmap.width != expected_w or mipmap.height != expected_h:
-                    raise ValueError(f"Mipmap {mip_index} dimensions mismatch: expected {expected_w}x{expected_h}, found {mipmap.width}x{mipmap.height}")
+                    raise ValueError(
+                        f"Mipmap {mip_index} dimensions mismatch: expected {expected_w}x{expected_h}, found {mipmap.width}x{mipmap.height}"
+                    )
                 payload = self._convert_mipmap_payload(mipmap, target_format)
                 self._writer.write_bytes(payload)
                 mm_width >>= 1

@@ -66,7 +66,9 @@ def prompt(message: str, default: str = "") -> str:
     return response if response else default
 
 
-def _gather_package_info(args: Namespace, target_dir: Path, logger: Logger) -> tuple[str, str, str, str]:
+def _gather_package_info(
+    args: Namespace, target_dir: Path, logger: Logger
+) -> tuple[str, str, str, str]:
     """Gather package information from user or use defaults."""
     if args.default:
         package_name = target_dir.name

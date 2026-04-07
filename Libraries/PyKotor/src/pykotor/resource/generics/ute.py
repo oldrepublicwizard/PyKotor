@@ -16,12 +16,12 @@ if TYPE_CHECKING:
 
 class UTE:
     """Stores encounter data from the on-disk UTE GFF template.
-    
+
     Spawn limits, faction, reset/respawn flags, script hooks, and ``CreatureList`` rows (template
     ResRef, CR, spawn flags; TSL may add ``GuaranteedCount``). The former per-attribute Kotor.NET
     URL matrix is archived in ``wiki/reverse_engineering_findings_generics_ute_class_docstrings_pre_scrub.md``.
     See ``wiki/reverse_engineering_findings.md`` (*resource/generics/ute.py*) and ``wiki/GFF-UTE.md``.
-    
+
     Note: ``GFFContent.UTE``.
     """
 
@@ -61,7 +61,7 @@ class UTE:
 
 class UTECreature:
     """One row in ``CreatureList`` (template ResRef, CR, ``SingleSpawn``, optional ``GuaranteedCount``).
-    
+
     Former attribute-level Kotor.NET references are in the same wiki archive as ``UTE``.
     """
 

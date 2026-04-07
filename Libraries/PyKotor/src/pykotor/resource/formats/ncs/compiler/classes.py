@@ -308,7 +308,9 @@ class StructMember(BiowareResource):
                 msg = f"Struct member '{self.identifier.label}' has no struct type name"
                 raise CompileError(msg)
             if struct_type_name not in root.struct_map:
-                msg = f"Unknown struct type '{struct_type_name}' for member '{self.identifier.label}'"
+                msg = (
+                    f"Unknown struct type '{struct_type_name}' for member '{self.identifier.label}'"
+                )
                 raise CompileError(msg)
             root.struct_map[struct_type_name].initialize(ncs, root)
         else:
@@ -366,13 +368,17 @@ class CodeRoot(BiowareResource):
 
         included: list[IncludeScript] = []
         while [obj for obj in self.objects if isinstance(obj, IncludeScript)]:
-            includes: list[IncludeScript] = [obj for obj in self.objects if isinstance(obj, IncludeScript)]
+            includes: list[IncludeScript] = [
+                obj for obj in self.objects if isinstance(obj, IncludeScript)
+            ]
             include: IncludeScript = includes.pop()
             self.objects.remove(include)
             included.append(include)
             include.compile(ncs, self)
 
-        script_globals: list[GlobalVariableDeclaration | GlobalVariableInitialization | StructDefinition] = [
+        script_globals: list[
+            GlobalVariableDeclaration | GlobalVariableInitialization | StructDefinition
+        ] = [
             obj
             for obj in self.objects
             if isinstance(
@@ -380,7 +386,9 @@ class CodeRoot(BiowareResource):
                 (GlobalVariableDeclaration, GlobalVariableInitialization, StructDefinition),
             )
         ]
-        others: list[TopLevelObject] = [obj for obj in self.objects if obj not in included and obj not in script_globals]
+        others: list[TopLevelObject] = [
+            obj for obj in self.objects if obj not in included and obj not in script_globals
+        ]
 
         if script_globals:
             for global_def in script_globals:
@@ -407,7 +415,9 @@ class CodeRoot(BiowareResource):
             )
             ncs.add(NCSInstructionType.RSADDI, args=[], index=entry_index)
         else:
-            msg = "This file has no entry point and cannot be compiled (Most likely an include file)."
+            msg = (
+                "This file has no entry point and cannot be compiled (Most likely an include file)."
+            )
             raise EntryPointError(msg)
 
     def compile_jsr(
@@ -535,7 +545,9 @@ class CodeRoot(BiowareResource):
             more_text = f" (and {more} more)" if more > 0 else ""
             msg = f"Undefined variable '{identifier}'\n  Available globals: {', '.join(available)}{more_text}"
             raise CompileError(msg)
-        return GetScopedResult(is_global=True, datatype=scoped.data_type, offset=offset, is_const=scoped.is_const)
+        return GetScopedResult(
+            is_global=True, datatype=scoped.data_type, offset=offset, is_const=scoped.is_const
+        )
 
     def scope_size(self):
         return 0 - sum(scoped.data_type.size(self) for scoped in self._global_scope)
@@ -616,7 +628,9 @@ class CodeBlock(BiowareResource):
             )
             raise ValueError(msg)
 
-    def add_scoped(self, identifier: Identifier, data_type: DynamicDataType, is_const: bool = False):
+    def add_scoped(
+        self, identifier: Identifier, data_type: DynamicDataType, is_const: bool = False
+    ):
         self.scope.insert(0, ScopedValue(identifier, data_type, is_const))
 
     def get_scoped(
@@ -634,7 +648,9 @@ class CodeBlock(BiowareResource):
             if self._parent is not None:
                 return self._parent.get_scoped(identifier, root, offset)
             return root.get_scoped(identifier, root)
-        return GetScopedResult(is_global=False, datatype=scoped.data_type, offset=offset, is_const=scoped.is_const)
+        return GetScopedResult(
+            is_global=False, datatype=scoped.data_type, offset=offset, is_const=scoped.is_const
+        )
 
     def scope_size(self, root: CodeRoot) -> int:
         """Returns size of local scope."""
@@ -732,7 +748,9 @@ class FunctionDefinition(TopLevelObject):
 
         # Make sure params are all constant values
         for param in self.parameters:
-            if isinstance(param.default, IdentifierExpression) and not param.default.is_constant(root):
+            if isinstance(param.default, IdentifierExpression) and not param.default.is_constant(
+                root
+            ):
                 msg = f"Non-constant default value specified for function prototype parameter '{param.identifier}'."
                 raise CompileError(msg)
 
@@ -756,17 +774,25 @@ class FunctionDefinition(TopLevelObject):
             # Build detailed error message
             details = []
             if self.return_type != prototype.return_type:
-                details.append(f"Return type mismatch: prototype has {prototype.return_type.builtin.name}, definition has {self.return_type.builtin.name}")
+                details.append(
+                    f"Return type mismatch: prototype has {prototype.return_type.builtin.name}, definition has {self.return_type.builtin.name}"
+                )
             if len(self.parameters) != len(prototype.parameters):
-                details.append(f"Parameter count mismatch: prototype has {len(prototype.parameters)}, definition has {len(self.parameters)}")
+                details.append(
+                    f"Parameter count mismatch: prototype has {len(prototype.parameters)}, definition has {len(self.parameters)}"
+                )
             else:
-                for i, (def_param, proto_param) in enumerate(zip(self.parameters, prototype.parameters)):
+                for i, (def_param, proto_param) in enumerate(
+                    zip(self.parameters, prototype.parameters)
+                ):
                     if def_param.data_type != proto_param.data_type:
                         details.append(
                             f"Parameter {i + 1} type mismatch: prototype has {proto_param.data_type.builtin.name}, definition has {def_param.data_type.builtin.name}",
                         )
 
-            msg = f"Function '{name}' definition does not match its prototype\n  " + "\n  ".join(details)
+            msg = f"Function '{name}' definition does not match its prototype\n  " + "\n  ".join(
+                details
+            )
             raise CompileError(msg)
 
         # Function has forward declaration, insert the compiled definition after the stub
@@ -778,12 +804,17 @@ class FunctionDefinition(TopLevelObject):
         stub_index: int = ncs.instructions.index(root.function_map[name].instruction)
         ncs.instructions[stub_index + 1 : stub_index + 1] = temp.instructions
 
-    def is_matching_signature(self, prototype: FunctionForwardDeclaration | FunctionDefinition) -> bool:
+    def is_matching_signature(
+        self, prototype: FunctionForwardDeclaration | FunctionDefinition
+    ) -> bool:
         if self.return_type != prototype.return_type:
             return False
         if len(self.parameters) != len(prototype.parameters):
             return False
-        return all(these_parameters.data_type == prototype.parameters[i].data_type for i, these_parameters in enumerate(self.parameters))
+        return all(
+            these_parameters.data_type == prototype.parameters[i].data_type
+            for i, these_parameters in enumerate(self.parameters)
+        )
 
 
 class FunctionDefinitionParam(BiowareResource):
@@ -855,7 +886,9 @@ class IncludeScript(TopLevelObject):
                     raise MissingIncludeError(msg) from e
         else:
             # Not found in filesystem, try library
-            case_sensitive: bool = not root.library_lookup or all(lookup_path for lookup_path in root.library_lookup if isinstance(lookup_path, Path))
+            case_sensitive: bool = not root.library_lookup or all(
+                lookup_path for lookup_path in root.library_lookup if isinstance(lookup_path, Path)
+            )
             include_filename: str = self.file.value if case_sensitive else self.file.value.lower()
             if include_filename in self.library:
                 source = self.library[include_filename].decode(errors="ignore")
@@ -977,7 +1010,9 @@ class FieldAccess(BiowareResource):
                     msg = f"Attempting to access unknown member '{next_ident}' on datatype '{datatype}'."
                     raise CompileError(msg)
             elif datatype.builtin == DataType.STRUCT:
-                assert datatype._struct is not None, "datatype._struct cannot be None in FieldAccess.get_scoped()"  # noqa: SLF001
+                assert datatype._struct is not None, (
+                    "datatype._struct cannot be None in FieldAccess.get_scoped()"
+                )  # noqa: SLF001
                 offset += root.struct_map[datatype._struct].child_offset(  # noqa: SLF001
                     root,
                     next_ident,
@@ -987,7 +1022,9 @@ class FieldAccess(BiowareResource):
                     next_ident,
                 )
             else:
-                msg = f"Attempting to access unknown member '{next_ident}' on datatype '{datatype}'."
+                msg = (
+                    f"Attempting to access unknown member '{next_ident}' on datatype '{datatype}'."
+                )
                 raise CompileError(msg)
 
         return GetScopedResult(is_global, datatype, offset, is_const)
@@ -1052,7 +1089,9 @@ class FieldAccessExpression(Expression):
 
     def compile(self, ncs: NCS, root: CodeRoot, block: CodeBlock) -> DynamicDataType:  # noqa: A003
         scoped = self.field_access.get_scoped(block, root)
-        instruction_type = NCSInstructionType.CPTOPBP if scoped.is_global else NCSInstructionType.CPTOPSP
+        instruction_type = (
+            NCSInstructionType.CPTOPBP if scoped.is_global else NCSInstructionType.CPTOPSP
+        )
         ncs.instructions.append(
             NCSInstruction(
                 instruction_type,
@@ -1379,7 +1418,10 @@ class BinaryOperatorExpression(Expression):
                 break
         else:
             # Build helpful error showing what operations are supported
-            supported = [f"{m.lhs.name.lower()} {m.instruction.name} {m.rhs.name.lower()}" for m in self.compatibility[:3]]
+            supported = [
+                f"{m.lhs.name.lower()} {m.instruction.name} {m.rhs.name.lower()}"
+                for m in self.compatibility[:3]
+            ]
             msg = (
                 f"Incompatible types for binary operation: {type1.builtin.name.lower()} and {type2.builtin.name.lower()}\n"
                 f"  Supported combinations: {', '.join(supported)}"
@@ -1524,7 +1566,9 @@ class Assignment(Expression):
         self.field_access: FieldAccess = field_access
         self.expression: Expression = value
 
-    def compile(self, ncs: NCS, root: CodeRoot, block: CodeBlock, allow_const: bool = False) -> DynamicDataType:
+    def compile(
+        self, ncs: NCS, root: CodeRoot, block: CodeBlock, allow_const: bool = False
+    ) -> DynamicDataType:
         # Save temp_stack before compiling expression to check if expression already added to it
         temp_stack_before = block.temp_stack
         # Compile expression - expressions may or may not add to temp_stack themselves
@@ -1642,7 +1686,12 @@ class AdditionAssignment(Expression):
         # temp_stack currently = variable_size + expression_size
         # After operation: stack has 1 result of variable_type size
         # Net change: both operands consumed, result pushed
-        block.temp_stack = block.temp_stack - variable_type.size(root) - expresion_type.size(root) + variable_type.size(root)
+        block.temp_stack = (
+            block.temp_stack
+            - variable_type.size(root)
+            - expresion_type.size(root)
+            + variable_type.size(root)
+        )
         # Return variable_type (the result type) so ExpressionStatement knows what size to clean up
         return variable_type
 
@@ -1709,7 +1758,12 @@ class SubtractionAssignment(Expression):
         # temp_stack currently = variable_size + expression_size
         # After operation: stack has 1 result of variable_type size
         # Net change: both operands consumed, result pushed
-        block.temp_stack = block.temp_stack - variable_type.size(root) - expresion_type.size(root) + variable_type.size(root)
+        block.temp_stack = (
+            block.temp_stack
+            - variable_type.size(root)
+            - expresion_type.size(root)
+            + variable_type.size(root)
+        )
         # Return variable_type (the result type) so ExpressionStatement knows what size to clean up
         return variable_type
 
@@ -1775,7 +1829,12 @@ class MultiplicationAssignment(Expression):
         # temp_stack currently = variable_size + expression_size
         # After operation: stack has 1 result of variable_type size
         # Net change: both operands consumed, result pushed
-        block.temp_stack = block.temp_stack - variable_type.size(root) - expresion_type.size(root) + variable_type.size(root)
+        block.temp_stack = (
+            block.temp_stack
+            - variable_type.size(root)
+            - expresion_type.size(root)
+            + variable_type.size(root)
+        )
         # Return variable_type (the result type) so ExpressionStatement knows what size to clean up
         return variable_type
 
@@ -1841,7 +1900,12 @@ class DivisionAssignment(Expression):
         # temp_stack currently = variable_size + expression_size
         # After operation: stack has 1 result of variable_type size
         # Net change: both operands consumed, result pushed
-        block.temp_stack = block.temp_stack - variable_type.size(root) - expresion_type.size(root) + variable_type.size(root)
+        block.temp_stack = (
+            block.temp_stack
+            - variable_type.size(root)
+            - expresion_type.size(root)
+            + variable_type.size(root)
+        )
         # Return variable_type (the result type) so ExpressionStatement knows what size to clean up
         return variable_type
 
@@ -1899,7 +1963,12 @@ class ModuloAssignment(Expression):
         # temp_stack currently = variable_size + expression_size
         # After operation: stack has 1 result of variable_type size
         # Net change: both operands consumed, result pushed
-        block.temp_stack = block.temp_stack - variable_type.size(root) - expresion_type.size(root) + variable_type.size(root)
+        block.temp_stack = (
+            block.temp_stack
+            - variable_type.size(root)
+            - expresion_type.size(root)
+            + variable_type.size(root)
+        )
         # Return variable_type (the result type) so ExpressionStatement knows what size to clean up
         return variable_type
 
@@ -1954,7 +2023,12 @@ class BitwiseAndAssignment(Expression):
 
         # Bitwise operation consumed variable copy and expression (2 values), left result (1 value)
         # Result is still on stack, temp_stack: both operands consumed, result pushed
-        block.temp_stack = block.temp_stack - variable_type.size(root) - expression_type.size(root) + variable_type.size(root)
+        block.temp_stack = (
+            block.temp_stack
+            - variable_type.size(root)
+            - expression_type.size(root)
+            + variable_type.size(root)
+        )
         # Return variable_type (the result type) so ExpressionStatement knows what size to clean up
         return variable_type
 
@@ -2009,7 +2083,12 @@ class BitwiseOrAssignment(Expression):
 
         # Bitwise operation consumed variable copy and expression (2 values), left result (1 value)
         # Result is still on stack, temp_stack: both operands consumed, result pushed
-        block.temp_stack = block.temp_stack - variable_type.size(root) - expression_type.size(root) + variable_type.size(root)
+        block.temp_stack = (
+            block.temp_stack
+            - variable_type.size(root)
+            - expression_type.size(root)
+            + variable_type.size(root)
+        )
         # Return variable_type (the result type) so ExpressionStatement knows what size to clean up
         return variable_type
 
@@ -2064,7 +2143,12 @@ class BitwiseXorAssignment(Expression):
 
         # Bitwise operation consumed variable copy and expression (2 values), left result (1 value)
         # Result is still on stack, temp_stack: both operands consumed, result pushed
-        block.temp_stack = block.temp_stack - variable_type.size(root) - expression_type.size(root) + variable_type.size(root)
+        block.temp_stack = (
+            block.temp_stack
+            - variable_type.size(root)
+            - expression_type.size(root)
+            + variable_type.size(root)
+        )
         # Return variable_type (the result type) so ExpressionStatement knows what size to clean up
         return variable_type
 
@@ -2119,7 +2203,12 @@ class BitwiseLeftAssignment(Expression):
 
         # Bitwise operation consumed variable copy and expression (2 values), left result (1 value)
         # Result is still on stack, temp_stack: both operands consumed, result pushed
-        block.temp_stack = block.temp_stack - variable_type.size(root) - expression_type.size(root) + variable_type.size(root)
+        block.temp_stack = (
+            block.temp_stack
+            - variable_type.size(root)
+            - expression_type.size(root)
+            + variable_type.size(root)
+        )
         # Return variable_type (the result type) so ExpressionStatement knows what size to clean up
         return variable_type
 
@@ -2174,7 +2263,12 @@ class BitwiseRightAssignment(Expression):
 
         # Bitwise operation consumed variable copy and expression (2 values), left result (1 value)
         # Result is still on stack, temp_stack: both operands consumed, result pushed
-        block.temp_stack = block.temp_stack - variable_type.size(root) - expression_type.size(root) + variable_type.size(root)
+        block.temp_stack = (
+            block.temp_stack
+            - variable_type.size(root)
+            - expression_type.size(root)
+            + variable_type.size(root)
+        )
         # Return variable_type (the result type) so ExpressionStatement knows what size to clean up
         return variable_type
 
@@ -2229,7 +2323,12 @@ class BitwiseUnsignedRightAssignment(Expression):
 
         # Bitwise operation consumed variable copy and expression (2 values), left result (1 value)
         # Result is still on stack, temp_stack: both operands consumed, result pushed
-        block.temp_stack = block.temp_stack - variable_type.size(root) - expression_type.size(root) + variable_type.size(root)
+        block.temp_stack = (
+            block.temp_stack
+            - variable_type.size(root)
+            - expression_type.size(root)
+            + variable_type.size(root)
+        )
         # Return variable_type (the result type) so ExpressionStatement knows what size to clean up
         return variable_type
 
@@ -2449,7 +2548,9 @@ class ConditionalBlock(Statement):
         continue_instruction: NCSInstruction | None,
     ):
         jump_count: int = 1 + len(self.if_blocks)
-        jump_tos: list[NCSInstruction] = [NCSInstruction(NCSInstructionType.NOP, args=[]) for _ in range(jump_count)]
+        jump_tos: list[NCSInstruction] = [
+            NCSInstruction(NCSInstructionType.NOP, args=[]) for _ in range(jump_count)
+        ]
 
         for i, else_if in enumerate(self.if_blocks):
             # Save temp_stack state before condition
@@ -2637,7 +2738,9 @@ class ForLoopBlock(Statement):
         if self.initial is not None:
             if isinstance(self.initial, Statement):
                 # For declaration statements, compile them directly
-                self.initial.compile(ncs, root, block, return_instruction, break_instruction, continue_instruction)
+                self.initial.compile(
+                    ncs, root, block, return_instruction, break_instruction, continue_instruction
+                )
             else:
                 # For expressions, compile and clean up stack
                 temp_stack_before = block.temp_stack
@@ -3019,7 +3122,9 @@ class DynamicDataType(BiowareResource):
             return True
         if isinstance(other, DynamicDataType):
             if self.builtin == other.builtin:
-                return self.builtin != DataType.STRUCT or (self.builtin == DataType.STRUCT and self._struct == other._struct)
+                return self.builtin != DataType.STRUCT or (
+                    self.builtin == DataType.STRUCT and self._struct == other._struct
+                )
             return False
         if isinstance(other, DataType):
             return self.builtin == other and self.builtin != DataType.STRUCT

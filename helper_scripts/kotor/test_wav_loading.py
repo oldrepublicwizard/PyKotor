@@ -39,7 +39,10 @@ def test_single_file(wav_path: Path) -> bool:
 
     from pykotor.resource.formats.wav.wav_auto import get_playable_bytes, read_wav
     from pykotor.resource.formats.wav.wav_data import AudioFormat, WAVType, WaveEncoding
-    from pykotor.resource.formats.wav.wav_obfuscation import DeobfuscationResult, detect_audio_format
+    from pykotor.resource.formats.wav.wav_obfuscation import (
+        DeobfuscationResult,
+        detect_audio_format,
+    )
 
     print(f"\n{'=' * 60}")
     print(f"Testing: {wav_path}")
@@ -73,7 +76,11 @@ def test_single_file(wav_path: Path) -> bool:
         print("  ✓ Successfully loaded WAV")
 
         wav_type_names = {WAVType.VO: "Voice Over", WAVType.SFX: "Sound Effect"}
-        audio_format_names = {AudioFormat.WAVE: "RIFF/WAVE", AudioFormat.MP3: "MP3", AudioFormat.UNKNOWN: "Unknown"}
+        audio_format_names = {
+            AudioFormat.WAVE: "RIFF/WAVE",
+            AudioFormat.MP3: "MP3",
+            AudioFormat.UNKNOWN: "Unknown",
+        }
 
         print(f"    WAV Type: {wav_type_names.get(wav.wav_type, wav.wav_type)}")
         print(f"    Audio Format: {audio_format_names.get(wav.audio_format, wav.audio_format)}")
@@ -98,7 +105,9 @@ def test_single_file(wav_path: Path) -> bool:
         # Verify playable format
         if playable[:4] == b"RIFF":
             print("    Playable Format: Valid RIFF/WAVE")
-        elif playable[:3] == b"ID3" or (len(playable) >= 2 and playable[0] == 0xFF and (playable[1] & 0xE0) == 0xE0):
+        elif playable[:3] == b"ID3" or (
+            len(playable) >= 2 and playable[0] == 0xFF and (playable[1] & 0xE0) == 0xE0
+        ):
             print("    Playable Format: Valid MP3")
         else:
             print("    Playable Format: Unknown (might not play correctly)")
@@ -168,11 +177,15 @@ def main():
 
     if args.kotor1:
         results = test_kotor_installation(args.kotor1)
-        print(f"\n\nKotOR 1 Results: {results['success']}/{results['total']} passed ({results['failed']} failed)")
+        print(
+            f"\n\nKotOR 1 Results: {results['success']}/{results['total']} passed ({results['failed']} failed)"
+        )
 
     if args.kotor2:
         results = test_kotor_installation(args.kotor2)
-        print(f"\n\nKotOR 2 Results: {results['success']}/{results['total']} passed ({results['failed']} failed)")
+        print(
+            f"\n\nKotOR 2 Results: {results['success']}/{results['total']} passed ({results['failed']} failed)"
+        )
 
     if not any([args.path, args.kotor1, args.kotor2]):
         print("No test path specified. Use --path, --kotor1, or --kotor2")

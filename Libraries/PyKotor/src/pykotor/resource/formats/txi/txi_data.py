@@ -607,7 +607,13 @@ class TXIFeatures(BiowareResource):
     @property
     def is_flipbook(self) -> bool:
         """Return True when the TXI describes a flipbook animation."""
-        return isinstance(self.proceduretype, str) and self.proceduretype.lower() == "cycle" and bool(self.numx) and bool(self.numy) and bool(self.fps)
+        return (
+            isinstance(self.proceduretype, str)
+            and self.proceduretype.lower() == "cycle"
+            and bool(self.numx)
+            and bool(self.numy)
+            and bool(self.fps)
+        )
 
 
 class TXICommand(Enum):
@@ -701,7 +707,12 @@ class TXIBaseInformation(ComparableMixin):
     def __eq__(self, other):
         if not isinstance(other, TXIBaseInformation):
             return NotImplemented  # type: ignore[no-any-return]
-        return self.mipmap == other.mipmap and self.filter == other.filter and self.downsamplemin == other.downsamplemin and self.downsamplemax == other.downsamplemax
+        return (
+            self.mipmap == other.mipmap
+            and self.filter == other.filter
+            and self.downsamplemin == other.downsamplemin
+            and self.downsamplemax == other.downsamplemax
+        )
 
     def __hash__(self):
         return hash((self.mipmap, self.filter, self.downsamplemin, self.downsamplemax))
@@ -741,7 +752,17 @@ class TXIMaterialInformation(TXIBaseInformation):
         )
 
     def __hash__(self):
-        return hash((super().__hash__(), self.bumpmaptexture, self.bumpyshinytexture, self.envmaptexture, self.bumpreplacementtexture, self.blending, self.decal))
+        return hash(
+            (
+                super().__hash__(),
+                self.bumpmaptexture,
+                self.bumpyshinytexture,
+                self.envmaptexture,
+                self.bumpreplacementtexture,
+                self.blending,
+                self.decal,
+            )
+        )
 
 
 class TXITextureInformation(TXIBaseInformation):
@@ -857,7 +878,9 @@ class TXITextureInformation(TXIBaseInformation):
 
 class TXIFontInformation(TXIBaseInformation):
     DEFAULT_RESOLUTION: ClassVar[int] = 512
-    FONT_TEXTURES: ClassVar[list[str]] = [  # TODO(th3w1zard1): figure out which ones the game actually uses.
+    FONT_TEXTURES: ClassVar[
+        list[str]
+    ] = [  # TODO(th3w1zard1): figure out which ones the game actually uses.
         "fnt_galahad14",  # Main menu?
         "dialogfont10x10",
         "dialogfont10x10a",
@@ -967,8 +990,12 @@ class TXIFontInformation(TXIBaseInformation):
 
     def __str__(self):
         # Format the coordinates (left 4 spaces are not required, but make formatting cleaner)
-        ul_coords_str = "\n".join([f"    {x:.6f} {y:.6f} {not_z}" for x, y, not_z in self.upper_left_coords])
-        lr_coords_str = "\n".join([f"    {x:.6f} {y:.6f} {not_z}" for x, y, not_z in self.lower_right_coords])
+        ul_coords_str = "\n".join(
+            [f"    {x:.6f} {y:.6f} {not_z}" for x, y, not_z in self.upper_left_coords]
+        )
+        lr_coords_str = "\n".join(
+            [f"    {x:.6f} {y:.6f} {not_z}" for x, y, not_z in self.lower_right_coords]
+        )
 
         return f"""
 mipmap {self.mipmap}
@@ -1027,7 +1054,9 @@ lowerrightcoords {self.lr_coords_count}
         return boxes
 
     def normalize_coords(
-        self, boxes: list[tuple[float, float, float, float]], resolution: tuple[int, int],
+        self,
+        boxes: list[tuple[float, float, float, float]],
+        resolution: tuple[int, int],
     ) -> tuple[list[tuple[float, float, int]], list[tuple[float, float, int]]]:
         """Converts boxes to normalized coordinates.
 

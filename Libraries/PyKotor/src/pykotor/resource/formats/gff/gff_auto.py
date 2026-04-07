@@ -259,7 +259,12 @@ def detect_gff(
             chunk_len = min(512, max(0, remain))
             peek = reader.read_bytes(chunk_len)
         file_format = _classify_gff_peek(peek)
-        if (file_format == ResourceType.INVALID and _locate_binary_gff_header(peek) is not None) or (file_format == ResourceType.INVALID and _locate_binary_gff_header_structural(source, offset, None) is not None):
+        if (
+            file_format == ResourceType.INVALID and _locate_binary_gff_header(peek) is not None
+        ) or (
+            file_format == ResourceType.INVALID
+            and _locate_binary_gff_header_structural(source, offset, None) is not None
+        ):
             file_format = ResourceType.GFF
     except (FileNotFoundError, PermissionError, IsADirectoryError):
         raise
@@ -318,7 +323,11 @@ def read_gff(
         if file_format == ResourceType.INVALID and header_off is not None:
             file_format = ResourceType.GFF
             promoted_binary = True
-    if file_format == ResourceType.GFF and header_off is not None and (promoted_binary or header_off > 0):
+    if (
+        file_format == ResourceType.GFF
+        and header_off is not None
+        and (promoted_binary or header_off > 0)
+    ):
         offset += header_off
         if size is not None:
             size = max(0, size - header_off)

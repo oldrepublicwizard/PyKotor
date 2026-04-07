@@ -23,11 +23,21 @@ if PYKOTOR_PATH.joinpath("pykotor").exists():
 if UTILITY_PATH.joinpath("utility").exists():
     add_sys_path(UTILITY_PATH)
 
-from pykotor.resource.formats.lip import LIP, LIPBinaryReader, LIPShape, LIPXMLReader, detect_lip, read_lip, write_lip
+from pykotor.resource.formats.lip import (
+    LIP,
+    LIPBinaryReader,
+    LIPShape,
+    LIPXMLReader,
+    detect_lip,
+    read_lip,
+    write_lip,
+)
 from pykotor.resource.type import ResourceType
 
 # Inlined test.lip binary content
-BINARY_TEST_DATA = b"LIP V1.0\x00\x00\xc0?\x03\x00\x00\x00\x00\x00\x00\x00\x00Y\x17G?\x05\x00\x00\xa0?\n"
+BINARY_TEST_DATA = (
+    b"LIP V1.0\x00\x00\xc0?\x03\x00\x00\x00\x00\x00\x00\x00\x00Y\x17G?\x05\x00\x00\xa0?\n"
+)
 
 # Inlined test.lip.xml content
 XML_TEST_DATA = """<lip duration="1.50">
@@ -93,11 +103,19 @@ class TestLIP(TestCase):
         lip: LIP,
     ):
         self.assertAlmostEqual(lip.length, 1.50, 3)
-        assert lip.get(0).shape == LIPShape.NEUTRAL, f"Expected {LIPShape.NEUTRAL!r} but got {lip.get(0).shape!r}"
-        assert lip.get(1).shape == LIPShape.OOH, f"Expected {LIPShape.OOH!r} but got {lip.get(1).shape!r}"
-        assert lip.get(2).shape == LIPShape.TH, f"Expected {LIPShape.TH!r} but got {lip.get(2).shape!r}"
+        assert lip.get(0).shape == LIPShape.NEUTRAL, (
+            f"Expected {LIPShape.NEUTRAL!r} but got {lip.get(0).shape!r}"
+        )
+        assert lip.get(1).shape == LIPShape.OOH, (
+            f"Expected {LIPShape.OOH!r} but got {lip.get(1).shape!r}"
+        )
+        assert lip.get(2).shape == LIPShape.TH, (
+            f"Expected {LIPShape.TH!r} but got {lip.get(2).shape!r}"
+        )
         self.assertAlmostEqual(0.0, lip.get(0).time, 4, f"Expected 0.0 but got {lip.get(0).time}")
-        self.assertAlmostEqual(0.7777, lip.get(1).time, 4, f"Expected 0.7777 but got {lip.get(1).time}")
+        self.assertAlmostEqual(
+            0.7777, lip.get(1).time, 4, f"Expected 0.7777 but got {lip.get(1).time}"
+        )
         self.assertAlmostEqual(1.25, lip.get(2).time, 4, f"Expected 1.25 but got {lip.get(2).time}")
 
     def test_read_raises(self):

@@ -32,12 +32,16 @@ from pathlib import (  # noqa: E402
     WindowsPath,
 )
 
-from pykotor.tools.path import CaseAwarePath  # pyright: ignore[reportMissingImports, reportUnusedImport]  # noqa: E402, F401
+from pykotor.tools.path import (
+    CaseAwarePath,  # pyright: ignore[reportMissingImports, reportUnusedImport]  # noqa: E402, F401
+)
 
 
 class TestPathInheritance(unittest.TestCase):
     def test_nt_case_hashing(self):
-        test_classes: tuple[type, ...] = (PureWindowsPath,) if os.name == "posix" else (WindowsPath, PureWindowsPath, Path)
+        test_classes: tuple[type, ...] = (
+            (PureWindowsPath,) if os.name == "posix" else (WindowsPath, PureWindowsPath, Path)
+        )
         for PathType in test_classes:
             with self.subTest(PathType=PathType):
                 path1 = PathType("test\\path\\to\\nothing")
@@ -51,7 +55,9 @@ class TestPathInheritance(unittest.TestCase):
 
     def test_path_attributes(self):
         assert PureWindowsPath("mypath").__class__ is PureWindowsPath
-        assert PurePath("mypath").__class__ is (PurePosixPath if os.name == "posix" else PureWindowsPath)
+        assert PurePath("mypath").__class__ is (
+            PurePosixPath if os.name == "posix" else PureWindowsPath
+        )
         assert PurePosixPath("mypath").__class__ is PurePosixPath
         if os.name == "nt":
             assert WindowsPath("mypath").__class__ is WindowsPath
@@ -71,7 +77,10 @@ class TestPathInheritance(unittest.TestCase):
     def test_path_hashing(self):
         test_list = [Path("/mnt/c/Program Files (x86)/steam/steamapps/common/swkotor/saves")]
         if os.name == "posix":
-            assert Path("/MNT/c/Program FileS (x86)/steam/steamapps/common/swkotor/saves") not in test_list
+            assert (
+                Path("/MNT/c/Program FileS (x86)/steam/steamapps/common/swkotor/saves")
+                not in test_list
+            )
         assert Path("/mnt/c/Program Files (x86)/steam/steamapps/common/swkotor/saves") in test_list
 
     def test_pure_windows_path_isinstance(self):

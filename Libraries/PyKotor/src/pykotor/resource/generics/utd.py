@@ -17,14 +17,14 @@ if TYPE_CHECKING:
 
 class UTD:
     """Stores door data from the on-disk UTD GFF template.
-    
+
     Fields cover locks, HP, scripts, traps, appearance, localized strings, and KotOR II-only
     modifiers. Defaults match observed retail when a field is absent. The former long class
     docstring (load-path references, GFF field walkthrough, engine-facing type names) is archived
     verbatim in ``wiki/reverse_engineering_findings_generics_utd_class_docstring_pre_scrub.md``.
     See ``wiki/reverse_engineering_findings.md`` (section *resource/generics/utd.py*) and
     ``wiki/GFF-UTD.md`` for format-oriented documentation.
-    
+
     Note: ``GFFContent.UTD``.
     """
 

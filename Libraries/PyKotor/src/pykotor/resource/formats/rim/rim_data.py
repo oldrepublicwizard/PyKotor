@@ -121,7 +121,9 @@ class RIM(BiowareArchive):
         from pykotor.resource.formats.rim.io_rim import RIMBinaryWriter  # noqa: PLC0415
 
         entry_count = len(self._resources)
-        data_start = RIMBinaryWriter.FILE_HEADER_SIZE + RIMBinaryWriter.KEY_ELEMENT_SIZE * entry_count
+        data_start = (
+            RIMBinaryWriter.FILE_HEADER_SIZE + RIMBinaryWriter.KEY_ELEMENT_SIZE * entry_count
+        )
 
         offset = data_start
         for res in self._resources:

@@ -120,7 +120,9 @@ with tempfile.TemporaryDirectory() as tmpdir:
             mdx_block_size = 20 if (bitmap_gen & 0x20) == 0 else 32  # 0x20 is NORMAL flag
             print(f"    Estimated block size: {mdx_block_size} bytes per vertex")
             if mdx_vertex_off_gen != 0xFFFFFFFF and mdx_vertex_off_gen < mdx_block_size:
-                vpos_offset = mdx_data_off_gen + mdx_vertex_off_gen  # First vertex, position at offset 0
+                vpos_offset = (
+                    mdx_data_off_gen + mdx_vertex_off_gen
+                )  # First vertex, position at offset 0
                 print(f"    First vertex position at MDX offset {vpos_offset}: ", end="")
                 if vpos_offset + 12 <= len(gen_mdx_data):
                     x, y, z = struct.unpack("<fff", gen_mdx_data[vpos_offset : vpos_offset + 12])
@@ -136,6 +138,10 @@ with tempfile.TemporaryDirectory() as tmpdir:
                     u, v = struct.unpack("<ff", gen_mdx_data[tuv_offset : tuv_offset + 8])
                     print(f"({u:.3f}, {v:.3f})")
                 else:
-                    print(f"ERROR: Offset {tuv_offset} + 8 = {tuv_offset + 8} exceeds MDX size {len(gen_mdx_data)}")
+                    print(
+                        f"ERROR: Offset {tuv_offset} + 8 = {tuv_offset + 8} exceeds MDX size {len(gen_mdx_data)}"
+                    )
             else:
-                print(f"    ERROR: texture1_offset is invalid (0x{tex1_off_gen:08X}) or exceeds block size")
+                print(
+                    f"    ERROR: texture1_offset is invalid (0x{tex1_off_gen:08X}) or exceeds block size"
+                )

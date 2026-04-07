@@ -44,7 +44,9 @@ if __name__ == "__main__":
         pykotor_path = file_absolute_path.parents[6] / "Libraries" / "PyKotor" / "src" / "pykotor"
         if pykotor_path.exists():
             update_sys_path(pykotor_path.parent)
-        pykotor_gl_path = file_absolute_path.parents[6] / "Libraries" / "PyKotorGL" / "src" / "pykotor"
+        pykotor_gl_path = (
+            file_absolute_path.parents[6] / "Libraries" / "PyKotorGL" / "src" / "pykotor"
+        )
         if pykotor_gl_path.exists():
             update_sys_path(pykotor_gl_path.parent)
         utility_path = file_absolute_path.parents[6] / "Libraries" / "Utility" / "src"
@@ -70,14 +72,18 @@ class AbstractAPIResult(ABC):  # noqa: B024
 
     @classmethod
     def from_dict(cls, json_dict: dict[str, Any]) -> Self:
-        assert isinstance(json_dict, dict), f"type {json_dict.__class__.__name__} with contents {json_dict}"
+        assert isinstance(json_dict, dict), (
+            f"type {json_dict.__class__.__name__} with contents {json_dict}"
+        )
         processed_data = {}
         for this_field in fields(cls):
             key = this_field.name
             expected_type = this_field.metadata.get("default_type", (this_field.type,))
             if key not in json_dict:
                 # print(f"{cls.__name__} Warning: Missing expected key '{key}' in data")
-                processed_data[key] = this_field.default if this_field.default is not MISSING else None
+                processed_data[key] = (
+                    this_field.default if this_field.default is not MISSING else None
+                )
             else:
                 value = json_dict[key]
                 processed_data[key] = cls.handle_casting(value, expected_type)
@@ -95,9 +101,15 @@ class AbstractAPIResult(ABC):  # noqa: B024
             if isinstance(value, AbstractAPIResult):
                 result[field.name] = value.to_dict()
             elif isinstance(value, list):
-                result[field.name] = [item.to_dict() if isinstance(item, AbstractAPIResult) else item for item in value]
+                result[field.name] = [
+                    item.to_dict() if isinstance(item, AbstractAPIResult) else item
+                    for item in value
+                ]
             elif isinstance(value, dict):
-                result[field.name] = {k: v.to_dict() if isinstance(v, AbstractAPIResult) else v for k, v in value.items()}
+                result[field.name] = {
+                    k: v.to_dict() if isinstance(v, AbstractAPIResult) else v
+                    for k, v in value.items()
+                }
             else:
                 result[field.name] = value
         return result
@@ -158,7 +170,10 @@ class AbstractAPIResult(ABC):  # noqa: B024
     @classmethod
     def handle_casting(cls, value: Any, expected_types: tuple[type[T], ...]) -> T:
         # Optimize by caching converted types
-        converted_types = tuple(cls._type_cache.get(t, cls.resolve_type(t) if isinstance(t, str) else t) for t in expected_types)
+        converted_types = tuple(
+            cls._type_cache.get(t, cls.resolve_type(t) if isinstance(t, str) else t)
+            for t in expected_types
+        )
         cls._type_cache.update(zip(expected_types, converted_types))
 
         # Convert all string type names to actual types
@@ -205,7 +220,10 @@ class AbstractAPIResult(ABC):  # noqa: B024
                     return value
                 # Handle mapping types
                 key_type, value_type = args if len(args) == 2 else (Any, Any)
-                return {cls.handle_casting(k, (key_type,)): cls.handle_casting(v, (value_type,)) for k, v in value.items()}
+                return {
+                    cls.handle_casting(k, (key_type,)): cls.handle_casting(v, (value_type,))
+                    for k, v in value.items()
+                }
 
             if issubclass(origin, typing.Iterable):
                 if not value and isinstance(value, origin):  # Empty check
@@ -223,7 +241,9 @@ class AbstractAPIResult(ABC):  # noqa: B024
             # Attempt to convert the value to the expected type
             return origin(value)
 
-        raise ValueError(f"Expected value of type {expected_types}, got {type(value)} with data '{value}'")
+        raise ValueError(
+            f"Expected value of type {expected_types}, got {type(value)} with data '{value}'"
+        )
 
 
 @dataclass
@@ -517,17 +537,27 @@ class CompleteRepoData(AbstractAPIResult):
         return self.__dict__[attr_name]
 
     def get_main_branch_files(self) -> list[ContentInfoData]:
-        main_branch = next((branch for branch in self.branches if branch.name == self.repo_info.default_branch), None)
+        main_branch = next(
+            (branch for branch in self.branches if branch.name == self.repo_info.default_branch),
+            None,
+        )
         if not main_branch:
             raise ValueError(f"Main branch {self.repo_info.default_branch} not found in branches")
 
-        return [content for content in self.contents if content.path.startswith(main_branch.commit.sha)]
+        return [
+            content for content in self.contents if content.path.startswith(main_branch.commit.sha)
+        ]
 
     @classmethod
     def load_repo(cls, owner: str, repo_name: str, *, timeout: int = 15) -> CompleteRepoData:
         base_url = f"https://api.github.com/repos/{owner}/{repo_name}"
 
-        endpoints = {"repo_info": base_url, "branches": f"{base_url}/branches", "contents": f"{base_url}/contents", "forks": f"{base_url}/forks"}
+        endpoints = {
+            "repo_info": base_url,
+            "branches": f"{base_url}/branches",
+            "contents": f"{base_url}/contents",
+            "forks": f"{base_url}/forks",
+        }
 
         repo_data = {}
         import requests
@@ -705,7 +735,9 @@ def download_github_release_asset(
 
     if asset_url is None:
         available_assets = [a["name"] for a in assets]
-        raise ValueError(f"Asset '{asset_name}' not found in release '{tag_name}'. Available assets: {', '.join(available_assets) if available_assets else 'none'}")
+        raise ValueError(
+            f"Asset '{asset_name}' not found in release '{tag_name}'. Available assets: {', '.join(available_assets) if available_assets else 'none'}"
+        )
 
     # Download the asset
     with requests.get(asset_url, stream=True, timeout=timeout) as r:
@@ -761,7 +793,9 @@ def download_github_directory_fallback(
 def fetch_repo_index(owner: str, repo: str, branch: str = "master") -> dict[str, str]: ...
 @overload
 def fetch_repo_index(repo: str, branch: str = "master") -> dict[str, str]: ...
-def fetch_repo_index(owner_or_repo: str | tuple[str, str], repo: str = None, branch: str = "master") -> dict[str, str]:
+def fetch_repo_index(
+    owner_or_repo: str | tuple[str, str], repo: str = None, branch: str = "master"
+) -> dict[str, str]:
     """Fetches the index of a GitHub repository.
 
     Args:
@@ -783,7 +817,11 @@ def fetch_repo_index(owner_or_repo: str | tuple[str, str], repo: str = None, bra
     response.raise_for_status()
     data: dict[str, Any] = response.json()
 
-    repo_index = {item["path"]: f"https://github.com/{owner_or_repo}/{repo}/blob/{branch}/{item['path']}" for item in data.get("tree", []) if item["type"] == "blob"}
+    repo_index = {
+        item["path"]: f"https://github.com/{owner_or_repo}/{repo}/blob/{branch}/{item['path']}"
+        for item in data.get("tree", [])
+        if item["type"] == "blob"
+    }
     return repo_index
 
 
@@ -872,6 +910,8 @@ if __name__ == "__main__":
     from toolset.__main__ import onAppCrash
 
     sys.excepthook = onAppCrash
-    test1 = CompleteRepoData.load_repo_from_files(r"C:\GitHub\PyKotor\KOTORCommunityPatches_Vanilla_KOTOR_Script_Source\json files")
+    test1 = CompleteRepoData.load_repo_from_files(
+        r"C:\GitHub\PyKotor\KOTORCommunityPatches_Vanilla_KOTOR_Script_Source\json files"
+    )
     test1_dict = test1.to_dict()
     print(json.dumps(test1_dict, indent=4))

@@ -49,7 +49,10 @@ class TwoDAJSONReader(ResourceReader):
             for row in self._json.get("rows", []):
                 label = row.get("label")
                 cells = row.get("cells", [])
-                cell_map = {h: (cells[i] if i < len(cells) else "") for i, h in enumerate(self._twoda.get_headers())}
+                cell_map = {
+                    h: (cells[i] if i < len(cells) else "")
+                    for i, h in enumerate(self._twoda.get_headers())
+                }
                 self._twoda.add_row(str(label), cell_map)
             return self._twoda
 

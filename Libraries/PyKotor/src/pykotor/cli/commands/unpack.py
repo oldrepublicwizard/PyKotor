@@ -171,12 +171,16 @@ def cmd_unpack(args: Namespace, logger: Logger) -> int:
                     write_gff(gff, json_dest, file_format=ResourceType.GFF_JSON)
 
                     destination = json_dest
-                    logger.debug(f"Converted {filename} to JSON: {destination.relative_to(config.root_dir)}")
+                    logger.debug(
+                        f"Converted {filename} to JSON: {destination.relative_to(config.root_dir)}"
+                    )
                 except Exception as e:
                     logger.warning(f"Failed to convert {filename} to JSON: {e}")
                     # Fall back to binary write
                     destination.write_bytes(resource_data)
-                    logger.debug(f"Extracted {filename} (binary fallback): {destination.relative_to(config.root_dir)}")
+                    logger.debug(
+                        f"Extracted {filename} (binary fallback): {destination.relative_to(config.root_dir)}"
+                    )
             else:
                 # Write binary file for non-GFF resources
                 destination.write_bytes(resource_data)

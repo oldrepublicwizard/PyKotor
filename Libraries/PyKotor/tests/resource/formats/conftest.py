@@ -39,8 +39,12 @@ if TYPE_CHECKING:
     from typing_extensions import Literal
 
 
-K1_PATH: str | None = os.environ.get("K1_PATH", "C:\\Program Files (x86)\\Steam\\steamapps\\common\\swkotor")
-K2_PATH: str | None = os.environ.get("K2_PATH", "C:\\Program Files (x86)\\Steam\\steamapps\\common\\Knights of the Old Republic II")
+K1_PATH: str | None = os.environ.get(
+    "K1_PATH", "C:\\Program Files (x86)\\Steam\\steamapps\\common\\swkotor"
+)
+K2_PATH: str | None = os.environ.get(
+    "K2_PATH", "C:\\Program Files (x86)\\Steam\\steamapps\\common\\Knights of the Old Republic II"
+)
 LOG_FILENAME = "test_ncs_compilers_install"
 
 
@@ -56,7 +60,10 @@ def k1_path():
 @pytest.fixture(scope="session")
 def k2_path():
     """Returns the K2 installation path (session-scoped)."""
-    path = os.environ.get("K2_PATH", "C:\\Program Files (x86)\\Steam\\steamapps\\common\\Knights of the Old Republic II")
+    path = os.environ.get(
+        "K2_PATH",
+        "C:\\Program Files (x86)\\Steam\\steamapps\\common\\Knights of the Old Republic II",
+    )
     if not path:
         pytest.skip("K2_PATH environment variable not set")
     return path
@@ -193,7 +200,9 @@ def pytest_runtest_makereport(
     if "setup" in call.when:
         return None
     if call.excinfo is not None and call.when == "call":
-        longrepr: str = format_exception_with_variables(call.excinfo.value, call.excinfo.type, call.excinfo.tb)
+        longrepr: str = format_exception_with_variables(
+            call.excinfo.value, call.excinfo.type, call.excinfo.tb
+        )
         report = pytest.TestReport(
             nodeid=item.nodeid,
             location=item.location,

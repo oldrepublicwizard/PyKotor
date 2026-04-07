@@ -66,7 +66,9 @@ class Chitin:
         for bif in bifs:  # Loop through all bifs in the chitin.key
             self._resource_dict[bif] = []
             absolute_bif_path: Path = self._base_path.joinpath(bif)
-            if self.game is not None and self.game.is_ios():  # For some reason, the chitin.key references the .bif path instead of the correct .bzf path.
+            if (
+                self.game is not None and self.game.is_ios()
+            ):  # For some reason, the chitin.key references the .bif path instead of the correct .bzf path.
                 absolute_bif_path = absolute_bif_path.with_suffix(".bzf")
             self.read_bif(absolute_bif_path, keys, bif)
 
@@ -92,7 +94,9 @@ class Chitin:
             _bif_file_type: str = reader.read_string(4)  # 0x0
             _bif_file_version: str = reader.read_string(4)  # 0x4
             resource_count: int = reader.read_uint32()  # 0x8
-            _fixed_resource_count: int = reader.read_uint32()  # unimplemented/padding (always 0x00000000?)
+            _fixed_resource_count: int = (
+                reader.read_uint32()
+            )  # unimplemented/padding (always 0x00000000?)
             resource_offset: int = reader.read_uint32()  # 0x10 always the value hex 0x14 (dec 20)
             reader.seek(resource_offset)  # Skip to 0x14
 
@@ -121,7 +125,9 @@ class Chitin:
             files: list[tuple[int, int]] = []
             reader.seek(file_table_offset)
             for _ in range(bif_count):
-                reader.skip(4)  # Unknown field; observed u32 differs between K1 and K2 retail KEY/BIF stacks (wiki).
+                reader.skip(
+                    4
+                )  # Unknown field; observed u32 differs between K1 and K2 retail KEY/BIF stacks (wiki).
                 file_offset: int = reader.read_uint32()
                 file_length: int = reader.read_uint16()
                 reader.skip(2)  # ??? 0x0001 in K1, 0x0000 in K2

@@ -386,7 +386,9 @@ class LIP(ComparableMixin):
 
         # Check length matches last keyframe
         if self.frames and abs(self.length - self.frames[-1].time) > 0.0001:
-            errors.append(f"Length ({self.length}) doesn't match last keyframe time ({self.frames[-1].time})")
+            errors.append(
+                f"Length ({self.length}) doesn't match last keyframe time ({self.frames[-1].time})"
+            )
 
         return errors
 

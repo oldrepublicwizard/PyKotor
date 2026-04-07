@@ -48,7 +48,9 @@ def analyze_geometry_header(data: bytes, label: str):
     offset = 12
     func_ptr0 = struct.unpack_from("<I", data, offset)[0]
     func_ptr1 = struct.unpack_from("<I", data, offset + 4)[0]
-    model_name = data[offset + 8 : offset + 8 + 32].split(b"\x00")[0].decode("ascii", errors="replace")
+    model_name = (
+        data[offset + 8 : offset + 8 + 32].split(b"\x00")[0].decode("ascii", errors="replace")
+    )
     root_node_offset = struct.unpack_from("<I", data, offset + 40)[0]
     node_count = struct.unpack_from("<I", data, offset + 44)[0]
 
@@ -109,14 +111,21 @@ def main():
         pykotor_mdx = pykotor_mdx_path.read_bytes()
 
         # MDLOps roundtrip
-        result = subprocess.run([str(mdlops_exe), str(orig_mdl_path)], cwd=str(td_path), capture_output=True, timeout=60)
+        result = subprocess.run(
+            [str(mdlops_exe), str(orig_mdl_path)], cwd=str(td_path), capture_output=True, timeout=60
+        )
         ascii_path = td_path / f"{model_name}-ascii.mdl"
         if not ascii_path.exists():
             print(f"MDLOps decompile failed: {result.stderr.decode()}")
             print(f"Files created: {list(td_path.iterdir())}")
             return
 
-        result = subprocess.run([str(mdlops_exe), str(ascii_path), "-k1"], cwd=str(td_path), capture_output=True, timeout=60)
+        result = subprocess.run(
+            [str(mdlops_exe), str(ascii_path), "-k1"],
+            cwd=str(td_path),
+            capture_output=True,
+            timeout=60,
+        )
 
         # Find the output files - MDLOps produces *-k1-bin.mdl files
         files_after = list(td_path.iterdir())
@@ -130,7 +139,9 @@ def main():
             return
 
         mdlops_mdl = mdlops_mdl_path.read_bytes()
-        mdlops_mdx = mdlops_mdx_path.read_bytes() if mdlops_mdx_path and mdlops_mdx_path.exists() else b""
+        mdlops_mdx = (
+            mdlops_mdx_path.read_bytes() if mdlops_mdx_path and mdlops_mdx_path.exists() else b""
+        )
 
         print("\nOutput sizes:")
         print(f"  PyKotor: MDL={len(pykotor_mdl)}, MDX={len(pykotor_mdx)}")

@@ -74,7 +74,9 @@ def debug_diff(*, resref: str = "3dgui") -> int:
             a_ids_ok = md._mdl_validate_ids_self_consistent(mdl_bin.root)  # noqa: SLF001
             b_ids_ok = md._mdl_validate_ids_self_consistent(mdl_ascii.root)  # noqa: SLF001
             ids_equiv_ok = md._mdl_ids_equivalent_subtree(mdl_bin.root, mdl_ascii.root)  # noqa: SLF001
-            print(f"ids_self_consistent: bin={bool(a_ids_ok)} ascii={bool(b_ids_ok)} ids_equivalent={bool(ids_equiv_ok)}")
+            print(
+                f"ids_self_consistent: bin={bool(a_ids_ok)} ascii={bool(b_ids_ok)} ids_equivalent={bool(ids_equiv_ok)}"
+            )
         except Exception as e:
             print(f"ids checks: <error> {e!r}")
         try:
@@ -116,7 +118,9 @@ def debug_diff(*, resref: str = "3dgui") -> int:
             if isinstance(a, float) and isinstance(b, float):
                 return None if md._mdl_float_eq(a, b) else base  # noqa: SLF001
 
-            if isinstance(a, (md.Vector2, md.Vector3, md.Vector4)) and isinstance(b, (md.Vector2, md.Vector3, md.Vector4)):
+            if isinstance(a, (md.Vector2, md.Vector3, md.Vector4)) and isinstance(
+                b, (md.Vector2, md.Vector3, md.Vector4)
+            ):
                 return None if md._mdl_deep_eq(a, b, ignore_keys=md._MDL_EQ_IGNORE_KEYS) else base  # noqa: SLF001
 
             if isinstance(a, md.Color) and isinstance(b, md.Color):
@@ -203,18 +207,40 @@ def debug_diff(*, resref: str = "3dgui") -> int:
                         print("\n-- BackCape canonical transform --")
                         print("bin header pos:", md._mdl_node_header_position(na))  # noqa: SLF001
                         print("asc header pos:", md._mdl_node_header_position(nb))  # noqa: SLF001
-                        print("bin canon pos:", md._mdl_node_canonical_position_strict(na, prefer_controllers=False))  # noqa: SLF001
-                        print("asc canon pos:", md._mdl_node_canonical_position_strict(nb, prefer_controllers=False))  # noqa: SLF001
+                        print(
+                            "bin canon pos:",
+                            md._mdl_node_canonical_position_strict(na, prefer_controllers=False),
+                        )  # noqa: SLF001
+                        print(
+                            "asc canon pos:",
+                            md._mdl_node_canonical_position_strict(nb, prefer_controllers=False),
+                        )  # noqa: SLF001
                         print("bin header ori:", md._mdl_node_header_orientation(na))  # noqa: SLF001
                         print("asc header ori:", md._mdl_node_header_orientation(nb))  # noqa: SLF001
-                        print("bin canon ori:", md._mdl_node_canonical_orientation_strict(na, prefer_controllers=False))  # noqa: SLF001
-                        print("asc canon ori:", md._mdl_node_canonical_orientation_strict(nb, prefer_controllers=False))  # noqa: SLF001
+                        print(
+                            "bin canon ori:",
+                            md._mdl_node_canonical_orientation_strict(na, prefer_controllers=False),
+                        )  # noqa: SLF001
+                        print(
+                            "asc canon ori:",
+                            md._mdl_node_canonical_orientation_strict(nb, prefer_controllers=False),
+                        )  # noqa: SLF001
                     except Exception as e:
                         print("canon transform: <error>", repr(e))
                     try:
                         print("\n-- BackCape canonical controllers (hashable) --")
-                        print("bin:", md._mdl_canonical_controllers_hashable(na, drop_transform_controllers=True))  # noqa: SLF001
-                        print("asc:", md._mdl_canonical_controllers_hashable(nb, drop_transform_controllers=True))  # noqa: SLF001
+                        print(
+                            "bin:",
+                            md._mdl_canonical_controllers_hashable(
+                                na, drop_transform_controllers=True
+                            ),
+                        )  # noqa: SLF001
+                        print(
+                            "asc:",
+                            md._mdl_canonical_controllers_hashable(
+                                nb, drop_transform_controllers=True
+                            ),
+                        )  # noqa: SLF001
                     except Exception as e:
                         print("canon controllers: <error>", repr(e))
                     try:
@@ -227,7 +253,9 @@ def debug_diff(*, resref: str = "3dgui") -> int:
                             if not md._mdl_mesh_equal(na.mesh, nb.mesh):  # noqa: SLF001
                                 a = na.mesh
                                 b = nb.mesh
-                                print("\n-- BackCape mesh mismatch explanation (first failing check) --")
+                                print(
+                                    "\n-- BackCape mesh mismatch explanation (first failing check) --"
+                                )
                                 if not md._mdl_mesh_validate_aliases(a):  # noqa: SLF001
                                     print("alias invalid (bin): vertex_uvs vs vertex_uv1")
                                 if not md._mdl_mesh_validate_aliases(b):  # noqa: SLF001
@@ -247,42 +275,81 @@ def debug_diff(*, resref: str = "3dgui") -> int:
                                     "dirt_coordinate_space",
                                 ):
                                     if getattr(a, field) != getattr(b, field):
-                                        print(f"{field}: bin={getattr(a, field)!r} ascii={getattr(b, field)!r}")
+                                        print(
+                                            f"{field}: bin={getattr(a, field)!r} ascii={getattr(b, field)!r}"
+                                        )
                                         break
                                 else:
                                     # Deep fields
-                                    if not md._mdl_deep_eq(a.diffuse, b.diffuse, ignore_keys=md._MDL_EQ_IGNORE_KEYS):  # noqa: SLF001
+                                    if not md._mdl_deep_eq(
+                                        a.diffuse, b.diffuse, ignore_keys=md._MDL_EQ_IGNORE_KEYS
+                                    ):  # noqa: SLF001
                                         print("diffuse differs")
-                                    elif not md._mdl_deep_eq(a.ambient, b.ambient, ignore_keys=md._MDL_EQ_IGNORE_KEYS):  # noqa: SLF001
+                                    elif not md._mdl_deep_eq(
+                                        a.ambient, b.ambient, ignore_keys=md._MDL_EQ_IGNORE_KEYS
+                                    ):  # noqa: SLF001
                                         print("ambient differs")
-                                    elif not md._mdl_deep_eq(a.bb_min, b.bb_min, ignore_keys=md._MDL_EQ_IGNORE_KEYS):  # noqa: SLF001
+                                    elif not md._mdl_deep_eq(
+                                        a.bb_min, b.bb_min, ignore_keys=md._MDL_EQ_IGNORE_KEYS
+                                    ):  # noqa: SLF001
                                         print("bb_min differs", a.bb_min, b.bb_min)
-                                    elif not md._mdl_deep_eq(a.bb_max, b.bb_max, ignore_keys=md._MDL_EQ_IGNORE_KEYS):  # noqa: SLF001
+                                    elif not md._mdl_deep_eq(
+                                        a.bb_max, b.bb_max, ignore_keys=md._MDL_EQ_IGNORE_KEYS
+                                    ):  # noqa: SLF001
                                         print("bb_max differs", a.bb_max, b.bb_max)
                                     elif md._qfloat(float(a.radius)) != md._qfloat(float(b.radius)):  # noqa: SLF001
                                         print("radius differs", a.radius, b.radius)
-                                    elif not md._mdl_deep_eq(a.average, b.average, ignore_keys=md._MDL_EQ_IGNORE_KEYS):  # noqa: SLF001
+                                    elif not md._mdl_deep_eq(
+                                        a.average, b.average, ignore_keys=md._MDL_EQ_IGNORE_KEYS
+                                    ):  # noqa: SLF001
                                         print("average differs", a.average, b.average)
                                     elif md._qfloat(float(a.area)) != md._qfloat(float(b.area)):  # noqa: SLF001
                                         print("area differs", a.area, b.area)
-                                    elif not md._mdl_deep_eq(a.vertex_positions, b.vertex_positions, ignore_keys=md._MDL_EQ_IGNORE_KEYS):  # noqa: SLF001
+                                    elif not md._mdl_deep_eq(
+                                        a.vertex_positions,
+                                        b.vertex_positions,
+                                        ignore_keys=md._MDL_EQ_IGNORE_KEYS,
+                                    ):  # noqa: SLF001
                                         print("vertex_positions differs")
                                     else:
                                         an = a.vertex_normals or []
                                         bn = b.vertex_normals or []
-                                        if an and bn and not md._mdl_deep_eq(an, bn, ignore_keys=md._MDL_EQ_IGNORE_KEYS):  # noqa: SLF001
+                                        if (
+                                            an
+                                            and bn
+                                            and not md._mdl_deep_eq(
+                                                an, bn, ignore_keys=md._MDL_EQ_IGNORE_KEYS
+                                            )
+                                        ):  # noqa: SLF001
                                             print("vertex_normals differs")
-                                        elif not md._mdl_deep_eq(a.vertex_uv1, b.vertex_uv1, ignore_keys=md._MDL_EQ_IGNORE_KEYS):  # noqa: SLF001
+                                        elif not md._mdl_deep_eq(
+                                            a.vertex_uv1,
+                                            b.vertex_uv1,
+                                            ignore_keys=md._MDL_EQ_IGNORE_KEYS,
+                                        ):  # noqa: SLF001
                                             print("vertex_uv1 differs")
-                                        elif not md._mdl_deep_eq(a.vertex_uv2, b.vertex_uv2, ignore_keys=md._MDL_EQ_IGNORE_KEYS):  # noqa: SLF001
+                                        elif not md._mdl_deep_eq(
+                                            a.vertex_uv2,
+                                            b.vertex_uv2,
+                                            ignore_keys=md._MDL_EQ_IGNORE_KEYS,
+                                        ):  # noqa: SLF001
                                             print("vertex_uv2 differs")
-                                        elif not md._mdl_deep_eq(a.faces, b.faces, ignore_keys=md._MDL_EQ_IGNORE_KEYS):  # noqa: SLF001
+                                        elif not md._mdl_deep_eq(
+                                            a.faces, b.faces, ignore_keys=md._MDL_EQ_IGNORE_KEYS
+                                        ):  # noqa: SLF001
                                             print("faces differs")
                                         else:
                                             print("<could not identify failing check?>")
                         if na.skin is not None and nb.skin is not None:
                             print("\n-- BackCape skin_deep_eq --")
-                            print("skin_equal:", bool(md._mdl_deep_eq(na.skin, nb.skin, ignore_keys=md._MDL_EQ_IGNORE_KEYS)))  # noqa: SLF001
+                            print(
+                                "skin_equal:",
+                                bool(
+                                    md._mdl_deep_eq(
+                                        na.skin, nb.skin, ignore_keys=md._MDL_EQ_IGNORE_KEYS
+                                    )
+                                ),
+                            )  # noqa: SLF001
                             subs = _find_first_mismatch(na.skin, nb.skin, "BackCape.skin")
                             if subs:
                                 print("first skin mismatch path:", subs)
@@ -329,10 +396,14 @@ def debug_diff(*, resref: str = "3dgui") -> int:
 
                     print("\n-- controller summary (bin) --")
                     for c in ta:  # type: ignore[union-attr]
-                        print(f"{c.controller_type.name}: rows={len(c.rows)} bezier={bool(c.is_bezier)}")
+                        print(
+                            f"{c.controller_type.name}: rows={len(c.rows)} bezier={bool(c.is_bezier)}"
+                        )
                     print("\n-- controller summary (ascii) --")
                     for c in tb:  # type: ignore[union-attr]
-                        print(f"{c.controller_type.name}: rows={len(c.rows)} bezier={bool(c.is_bezier)}")
+                        print(
+                            f"{c.controller_type.name}: rows={len(c.rows)} bezier={bool(c.is_bezier)}"
+                        )
                 print(f"\n== MDL.__eq__ first mismatch ==\n{where or f'root.{name}'}")
                 return 1
 
@@ -356,8 +427,20 @@ def debug_diff(*, resref: str = "3dgui") -> int:
                 parts["classification_unk1"] = hash(int(m.classification_unk1))
                 parts["animation_scale"] = hash(md._qfloat(float(m.animation_scale)))  # noqa: SLF001
                 parts["radius"] = hash(md._qfloat(float(m.radius)))  # noqa: SLF001
-                parts["bmin"] = hash((md._qfloat(float(m.bmin.x)), md._qfloat(float(m.bmin.y)), md._qfloat(float(m.bmin.z))))  # noqa: SLF001
-                parts["bmax"] = hash((md._qfloat(float(m.bmax.x)), md._qfloat(float(m.bmax.y)), md._qfloat(float(m.bmax.z))))  # noqa: SLF001
+                parts["bmin"] = hash(
+                    (
+                        md._qfloat(float(m.bmin.x)),
+                        md._qfloat(float(m.bmin.y)),
+                        md._qfloat(float(m.bmin.z)),
+                    )
+                )  # noqa: SLF001
+                parts["bmax"] = hash(
+                    (
+                        md._qfloat(float(m.bmax.x)),
+                        md._qfloat(float(m.bmax.y)),
+                        md._qfloat(float(m.bmax.z)),
+                    )
+                )  # noqa: SLF001
                 parts["headlink"] = hash(m.headlink)
                 parts["compress_quaternions"] = hash(int(m.compress_quaternions))
 
@@ -370,17 +453,34 @@ def debug_diff(*, resref: str = "3dgui") -> int:
                     base ^= hash(("node", name, parent.get(name)))
                     base ^= hash(md._mdl_node_header_position(n))  # noqa: SLF001
                     base ^= hash(md._mdl_node_header_orientation(n))  # noqa: SLF001
-                    base ^= hash(md._mdl_canonical_controllers_hashable(n, drop_transform_controllers=True))  # noqa: SLF001
+                    base ^= hash(
+                        md._mdl_canonical_controllers_hashable(n, drop_transform_controllers=True)
+                    )  # noqa: SLF001
                     if n.light is not None:
-                        base ^= hash(("light", md._mdl_deep_hash(n.light, ignore_keys=md._MDL_EQ_IGNORE_KEYS)))  # noqa: SLF001
+                        base ^= hash(
+                            (
+                                "light",
+                                md._mdl_deep_hash(n.light, ignore_keys=md._MDL_EQ_IGNORE_KEYS),
+                            )
+                        )  # noqa: SLF001
                     else:
                         base ^= hash(("light", md._mdl_deep_hash(None)))  # noqa: SLF001
                     if n.emitter is not None:
-                        base ^= hash(("emitter", md._mdl_deep_hash(n.emitter, ignore_keys=md._MDL_EQ_IGNORE_KEYS)))  # noqa: SLF001
+                        base ^= hash(
+                            (
+                                "emitter",
+                                md._mdl_deep_hash(n.emitter, ignore_keys=md._MDL_EQ_IGNORE_KEYS),
+                            )
+                        )  # noqa: SLF001
                     else:
                         base ^= hash(("emitter", md._mdl_deep_hash(None)))  # noqa: SLF001
                     if n.reference is not None:
-                        base ^= hash(("reference", md._mdl_deep_hash(n.reference, ignore_keys=md._MDL_EQ_IGNORE_KEYS)))  # noqa: SLF001
+                        base ^= hash(
+                            (
+                                "reference",
+                                md._mdl_deep_hash(n.reference, ignore_keys=md._MDL_EQ_IGNORE_KEYS),
+                            )
+                        )  # noqa: SLF001
                     else:
                         base ^= hash(("reference", md._mdl_deep_hash(None)))  # noqa: SLF001
                     if n.mesh is not None:
@@ -388,19 +488,33 @@ def debug_diff(*, resref: str = "3dgui") -> int:
                     else:
                         base ^= hash(("mesh", md._mdl_deep_hash(None)))  # noqa: SLF001
                     if n.skin is not None:
-                        base ^= hash(("skin", md._mdl_deep_hash(n.skin, ignore_keys=md._MDL_EQ_IGNORE_KEYS)))  # noqa: SLF001
+                        base ^= hash(
+                            ("skin", md._mdl_deep_hash(n.skin, ignore_keys=md._MDL_EQ_IGNORE_KEYS))
+                        )  # noqa: SLF001
                     else:
                         base ^= hash(("skin", md._mdl_deep_hash(None)))  # noqa: SLF001
                     if n.dangly is not None:
-                        base ^= hash(("dangly", md._mdl_deep_hash(n.dangly, ignore_keys=md._MDL_EQ_IGNORE_KEYS)))  # noqa: SLF001
+                        base ^= hash(
+                            (
+                                "dangly",
+                                md._mdl_deep_hash(n.dangly, ignore_keys=md._MDL_EQ_IGNORE_KEYS),
+                            )
+                        )  # noqa: SLF001
                     else:
                         base ^= hash(("dangly", md._mdl_deep_hash(None)))  # noqa: SLF001
                     if n.aabb is not None:
-                        base ^= hash(("aabb", md._mdl_deep_hash(n.aabb, ignore_keys=md._MDL_EQ_IGNORE_KEYS)))  # noqa: SLF001
+                        base ^= hash(
+                            ("aabb", md._mdl_deep_hash(n.aabb, ignore_keys=md._MDL_EQ_IGNORE_KEYS))
+                        )  # noqa: SLF001
                     else:
                         base ^= hash(("aabb", md._mdl_deep_hash(None)))  # noqa: SLF001
                     if n.saber is not None:
-                        base ^= hash(("saber", md._mdl_deep_hash(n.saber, ignore_keys=md._MDL_EQ_IGNORE_KEYS)))  # noqa: SLF001
+                        base ^= hash(
+                            (
+                                "saber",
+                                md._mdl_deep_hash(n.saber, ignore_keys=md._MDL_EQ_IGNORE_KEYS),
+                            )
+                        )  # noqa: SLF001
                     else:
                         base ^= hash(("saber", md._mdl_deep_hash(None)))  # noqa: SLF001
                     parts[f"node:{name}"] = base
@@ -411,17 +525,34 @@ def debug_diff(*, resref: str = "3dgui") -> int:
 
                 for k in sorted((_akey(a) for a in m.anims)):
                     anim = next(a for a in m.anims if _akey(a) == k)
-                    parts[f"anim-meta:{k}"] = hash(("anim", k, md._qfloat(float(anim.anim_length)), md._qfloat(float(anim.transition_length))))  # noqa: SLF001
-                    parts[f"anim-events:{k}"] = hash(md._mdl_deep_hash(anim.events, ignore_keys=md._MDL_EQ_IGNORE_KEYS))  # noqa: SLF001
+                    parts[f"anim-meta:{k}"] = hash(
+                        (
+                            "anim",
+                            k,
+                            md._qfloat(float(anim.anim_length)),
+                            md._qfloat(float(anim.transition_length)),
+                        )
+                    )  # noqa: SLF001
+                    parts[f"anim-events:{k}"] = hash(
+                        md._mdl_deep_hash(anim.events, ignore_keys=md._MDL_EQ_IGNORE_KEYS)
+                    )  # noqa: SLF001
                     a_by = md._mdl_animation_nodes_by_name(anim)  # noqa: SLF001
                     a_parent = md._mdl_node_parent_edges_by_name(list(a_by.values()))  # noqa: SLF001
                     for name in sorted(a_by.keys()):
                         n = a_by[name]
                         base = 0
                         base ^= hash(("anode", k, name, a_parent.get(name)))
-                        base ^= hash(md._mdl_node_canonical_position_strict(n, prefer_controllers=True))  # noqa: SLF001
-                        base ^= hash(md._mdl_node_canonical_orientation_strict(n, prefer_controllers=True))  # noqa: SLF001
-                        base ^= hash(md._mdl_canonical_controllers_hashable(n, drop_transform_controllers=False))  # noqa: SLF001
+                        base ^= hash(
+                            md._mdl_node_canonical_position_strict(n, prefer_controllers=True)
+                        )  # noqa: SLF001
+                        base ^= hash(
+                            md._mdl_node_canonical_orientation_strict(n, prefer_controllers=True)
+                        )  # noqa: SLF001
+                        base ^= hash(
+                            md._mdl_canonical_controllers_hashable(
+                                n, drop_transform_controllers=False
+                            )
+                        )  # noqa: SLF001
                         parts[f"anode:{k}:{name}"] = base
                 return parts
 
@@ -437,25 +568,73 @@ def debug_diff(*, resref: str = "3dgui") -> int:
                         n1 = {n.name: n for n in mdl_bin.all_nodes()}.get(name)
                         n2 = {n.name: n for n in mdl_ascii.all_nodes()}.get(name)
                         if n1 and n2:
-                            parent1 = md._mdl_node_parent_edges_by_name(list({n.name: n for n in mdl_bin.all_nodes()}.values()))  # noqa: SLF001
-                            parent2 = md._mdl_node_parent_edges_by_name(list({n.name: n for n in mdl_ascii.all_nodes()}.values()))  # noqa: SLF001
+                            parent1 = md._mdl_node_parent_edges_by_name(
+                                list({n.name: n for n in mdl_bin.all_nodes()}.values())
+                            )  # noqa: SLF001
+                            parent2 = md._mdl_node_parent_edges_by_name(
+                                list({n.name: n for n in mdl_ascii.all_nodes()}.values())
+                            )  # noqa: SLF001
                             comps = []
-                            comps.append(("node-edge", hash(("node", name, parent1.get(name))), hash(("node", name, parent2.get(name)))))
-                            comps.append(("header-pos", hash(md._mdl_node_header_position(n1)), hash(md._mdl_node_header_position(n2))))  # noqa: SLF001
-                            comps.append(("header-ori", hash(md._mdl_node_header_orientation(n1)), hash(md._mdl_node_header_orientation(n2))))  # noqa: SLF001
+                            comps.append(
+                                (
+                                    "node-edge",
+                                    hash(("node", name, parent1.get(name))),
+                                    hash(("node", name, parent2.get(name))),
+                                )
+                            )
+                            comps.append(
+                                (
+                                    "header-pos",
+                                    hash(md._mdl_node_header_position(n1)),
+                                    hash(md._mdl_node_header_position(n2)),
+                                )
+                            )  # noqa: SLF001
+                            comps.append(
+                                (
+                                    "header-ori",
+                                    hash(md._mdl_node_header_orientation(n1)),
+                                    hash(md._mdl_node_header_orientation(n2)),
+                                )
+                            )  # noqa: SLF001
                             comps.append(
                                 (
                                     "controllers",
-                                    hash(md._mdl_canonical_controllers_hashable(n1, drop_transform_controllers=True)),
-                                    hash(md._mdl_canonical_controllers_hashable(n2, drop_transform_controllers=True)),
+                                    hash(
+                                        md._mdl_canonical_controllers_hashable(
+                                            n1, drop_transform_controllers=True
+                                        )
+                                    ),
+                                    hash(
+                                        md._mdl_canonical_controllers_hashable(
+                                            n2, drop_transform_controllers=True
+                                        )
+                                    ),
                                 )
                             )  # noqa: SLF001
-                            comps.append(("mesh", hash(md._mdl_mesh_hash(n1.mesh)) if n1.mesh else 0, hash(md._mdl_mesh_hash(n2.mesh)) if n2.mesh else 0))  # noqa: SLF001
+                            comps.append(
+                                (
+                                    "mesh",
+                                    hash(md._mdl_mesh_hash(n1.mesh)) if n1.mesh else 0,
+                                    hash(md._mdl_mesh_hash(n2.mesh)) if n2.mesh else 0,
+                                )
+                            )  # noqa: SLF001
                             comps.append(
                                 (
                                     "skin",
-                                    hash(md._mdl_deep_hash(n1.skin, ignore_keys=md._MDL_EQ_IGNORE_KEYS)) if n1.skin else 0,
-                                    hash(md._mdl_deep_hash(n2.skin, ignore_keys=md._MDL_EQ_IGNORE_KEYS)) if n2.skin else 0,
+                                    hash(
+                                        md._mdl_deep_hash(
+                                            n1.skin, ignore_keys=md._MDL_EQ_IGNORE_KEYS
+                                        )
+                                    )
+                                    if n1.skin
+                                    else 0,
+                                    hash(
+                                        md._mdl_deep_hash(
+                                            n2.skin, ignore_keys=md._MDL_EQ_IGNORE_KEYS
+                                        )
+                                    )
+                                    if n2.skin
+                                    else 0,
                                 )
                             )  # noqa: SLF001
                             for label, a, b in comps:

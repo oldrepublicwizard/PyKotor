@@ -148,7 +148,9 @@ class ISceneGraph(ABC):
         ...
 
     @abstractmethod
-    def add_directional_light(self, name: str, color: tuple[float, float, float], direction: tuple[float, float, float]) -> Any:
+    def add_directional_light(
+        self, name: str, color: tuple[float, float, float], direction: tuple[float, float, float]
+    ) -> Any:
         """Add a directional light to the scene.
 
         Args:
@@ -170,7 +172,13 @@ class ISceneGraph(ABC):
         ...
 
     @abstractmethod
-    def add_point_light(self, name: str, color: tuple[float, float, float], position: tuple[float, float, float], radius: float) -> Any:
+    def add_point_light(
+        self,
+        name: str,
+        color: tuple[float, float, float],
+        position: tuple[float, float, float],
+        radius: float,
+    ) -> Any:
         """Add a point light to the scene.
 
         Args:
@@ -193,7 +201,13 @@ class ISceneGraph(ABC):
         ...
 
     @abstractmethod
-    def set_fog(self, enabled: bool, color: tuple[float, float, float] | None = None, near: float | None = None, far: float | None = None) -> None:
+    def set_fog(
+        self,
+        enabled: bool,
+        color: tuple[float, float, float] | None = None,
+        near: float | None = None,
+        far: float | None = None,
+    ) -> None:
         """Set fog properties for the scene.
 
         Args:

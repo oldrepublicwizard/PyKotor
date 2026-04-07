@@ -42,7 +42,9 @@ def load_thumbnail_task(file_path: str) -> concurrent.futures.Future:
 def _load_thumbnail_task(file_path: str, future: concurrent.futures.Future) -> None:
     image = QImage(file_path)
     if not image.isNull():
-        image = image.scaled(64, 64, Qt.AspectRatioMode.KeepAspectRatio, Qt.TransformationMode.SmoothTransformation)
+        image = image.scaled(
+            64, 64, Qt.AspectRatioMode.KeepAspectRatio, Qt.TransformationMode.SmoothTransformation
+        )
     else:
         image = QImage(64, 64, QImage.Format.Format_ARGB32)
         image.fill(Qt.GlobalColor.transparent)
@@ -116,23 +118,34 @@ def _process_qt_image(filepath_obj: pathlib.Path, mipmap: int) -> tuple[int, int
     from qtpy.QtCore import Qt
     from qtpy.QtGui import QImage, QImageReader
 
-    if filepath_obj.suffix.lower() in [bytes(x.data()).decode().lower() for x in QImageReader.supportedImageFormats()]:
+    if filepath_obj.suffix.lower() in [
+        bytes(x.data()).decode().lower() for x in QImageReader.supportedImageFormats()
+    ]:
         qimg = QImage()
         if qimg.loadFromData(filepath_obj.read_bytes()):
             if mipmap < qimg.width() or mipmap < qimg.height():
-                qimg = qimg.scaled(mipmap, mipmap, Qt.AspectRatioMode.KeepAspectRatio, Qt.TransformationMode.SmoothTransformation)
+                qimg = qimg.scaled(
+                    mipmap,
+                    mipmap,
+                    Qt.AspectRatioMode.KeepAspectRatio,
+                    Qt.TransformationMode.SmoothTransformation,
+                )
             return qimg.width(), qimg.height(), bytes(qimg.constBits().asarray())
     return None
 
 
-def _process_pil_image(filepath_obj: pathlib.Path, mipmap: int, img_format: str) -> tuple[int, int, bytes] | None:
+def _process_pil_image(
+    filepath_obj: pathlib.Path, mipmap: int, img_format: str
+) -> tuple[int, int, bytes] | None:
     from PIL import Image
 
     if filepath_obj.suffix.lower() in Image.registered_extensions():
         with Image.open(BytesIO(filepath_obj.read_bytes())) as img:
             if mipmap < img.width or mipmap < img.height:
                 resized_img = img.resize((mipmap, mipmap), Image.Resampling.LANCZOS)
-            pil_img = resized_img.convert(img_format if img_format != "Default" else resized_img.mode)
+            pil_img = resized_img.convert(
+                img_format if img_format != "Default" else resized_img.mode
+            )
         return pil_img.width, pil_img.height, pil_img.tobytes()
     return None
 

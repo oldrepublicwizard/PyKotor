@@ -85,7 +85,9 @@ class PyQStandardItem:
         self._parent: PyQStandardItem | None = None
         self._children: list[tuple[PyQStandardItem | None, ...]] = []
         self._roleNames: dict[int, QByteArray | bytes | bytearray] = {}
-        self._flags: Qt.ItemFlags | Qt.ItemFlag | int = Qt.ItemFlag.ItemIsEnabled | Qt.ItemFlag.ItemIsSelectable
+        self._flags: Qt.ItemFlags | Qt.ItemFlag | int = (
+            Qt.ItemFlag.ItemIsEnabled | Qt.ItemFlag.ItemIsSelectable
+        )
         self._model: QAbstractItemModel | None = None
         self._rows: int = 0
         self._columns: int = 0
@@ -218,7 +220,11 @@ class PyQStandardItem:
                 formatted_cache[formatted_key] = f"{repr_v[:30]}..." if len(repr_v) > 30 else repr_v  # noqa: PLR2004
             return formatted_cache
 
-        details = {"Text": repr(self._data.get(Qt.ItemDataRole.DisplayRole, QVariant())), "Children Count": str(self.childCount()), "Roles": str(format_cache(self._data))}
+        details = {
+            "Text": repr(self._data.get(Qt.ItemDataRole.DisplayRole, QVariant())),
+            "Children Count": str(self.childCount()),
+            "Roles": str(format_cache(self._data)),
+        }
         if self._parent:
             details["Parent"] = f"Parent Row: {self.row()}"
         return f"{self.__class__.__name__}({', '.join(f'{key}: {value}' for key, value in details.items())})"
@@ -293,8 +299,16 @@ class PyQStandardItem:
     @overload
     def insertRow(self, arow: int, aitem: PyQStandardItem) -> None: ...
     def insertRow(self, *args: Any, **kwargs: Any) -> None:
-        row: int = args[0] if len(args) > 0 and isinstance(args[0], int) else kwargs.get("row", kwargs["arow"])
-        items: Iterable[PyQStandardItem] = ([args[1]] if isinstance(args[1], PyQStandardItem) else args[1]) if len(args) > 1 else kwargs.get("items", [kwargs["aitem"]])
+        row: int = (
+            args[0]
+            if len(args) > 0 and isinstance(args[0], int)
+            else kwargs.get("row", kwargs["arow"])
+        )
+        items: Iterable[PyQStandardItem] = (
+            ([args[1]] if isinstance(args[1], PyQStandardItem) else args[1])
+            if len(args) > 1
+            else kwargs.get("items", [kwargs["aitem"]])
+        )
         for item in items:
             item._parent = self  # noqa: SLF001
             self._children.insert(row, item)
@@ -304,7 +318,9 @@ class PyQStandardItem:
     @overload
     def appendRow(self, aitem: PyQStandardItem) -> None: ...
     def appendRow(self, *args: Any, **kwargs: Any) -> None:
-        items: Iterable[PyQStandardItem] = args[0] if len(args) > 0 else kwargs.get("items", [kwargs["aitem"]])
+        items: Iterable[PyQStandardItem] = (
+            args[0] if len(args) > 0 else kwargs.get("items", [kwargs["aitem"]])
+        )
         for item in items:
             self.appendChild(item)
 
@@ -324,7 +340,9 @@ class PyQStandardItem:
     def insertRows(self, row: int, items: Iterable[PyQStandardItem]) -> None: ...
     def insertRows(self, *args: Any, **kwargs: Any) -> None:
         row: int = kwargs.get("row", args[1] if kwargs.get("items") is None else args[0])
-        _arg2: Iterable[PyQStandardItem] | int | None = kwargs.get("items", args[0] if "row" in kwargs else args[1])
+        _arg2: Iterable[PyQStandardItem] | int | None = kwargs.get(
+            "items", args[0] if "row" in kwargs else args[1]
+        )
         if isinstance(_arg2, Iterable):
             items: Iterable[PyQStandardItem] = _arg2
             count: int = len(tuple(_arg2))
@@ -345,7 +363,9 @@ class PyQStandardItem:
     def removeRows(self, row: int, items: Iterable[PyQStandardItem]) -> None: ...
     def removeRows(self, *args: Any, **kwargs: Any) -> None:
         row: int = kwargs.get("row", args[1] if kwargs.get("items") is None else args[0])
-        _arg2: Iterable[PyQStandardItem] | int | None = kwargs.get("items", args[0] if "row" in kwargs else args[1])
+        _arg2: Iterable[PyQStandardItem] | int | None = kwargs.get(
+            "items", args[0] if "row" in kwargs else args[1]
+        )
         if isinstance(_arg2, Iterable):
             count: int = len(tuple(_arg2))
         else:
@@ -524,7 +544,10 @@ class PyQStandardItem:
         return [item for _ in range(count) for item in self.takeRow(row)]
 
     def takeColumn(self, column: int) -> list[PyQStandardItem]:
-        return cast("list[PyQStandardItem]", [row.takeChild(column) for row in self._children if row.child(column) is not None])
+        return cast(
+            "list[PyQStandardItem]",
+            [row.takeChild(column) for row in self._children if row.child(column) is not None],
+        )
 
     def insertColumn(self, column: int, items: Iterable[PyQStandardItem]) -> None:
         for i, item in enumerate(items):
@@ -535,9 +558,17 @@ class PyQStandardItem:
     @overload
     def setChild(self, arow: int, aitem: PyQStandardItem) -> None: ...
     def setChild(self, *args: Any, **kwargs: Any) -> None:
-        row: int = args[0] if len(args) > 0 and isinstance(args[0], int) else kwargs.get("row", kwargs["arow"])
-        column: int = args[1] if len(args) > 1 and isinstance(args[1], int) else kwargs.get("column", 0)
-        item: PyQStandardItem = args[2] if len(args) > 2 else kwargs.get("item", kwargs.get("aitem"))  # noqa: PLR2004
+        row: int = (
+            args[0]
+            if len(args) > 0 and isinstance(args[0], int)
+            else kwargs.get("row", kwargs["arow"])
+        )
+        column: int = (
+            args[1] if len(args) > 1 and isinstance(args[1], int) else kwargs.get("column", 0)
+        )
+        item: PyQStandardItem = (
+            args[2] if len(args) > 2 else kwargs.get("item", kwargs.get("aitem"))
+        )  # noqa: PLR2004
         if row < 0 or column < 0:
             return
         if row >= len(self._children):
@@ -639,7 +670,9 @@ class PyQStandardItem:
 
     def sortChildren(self, column: int, order: Qt.SortOrder = Qt.AscendingOrder) -> None:
         self._children = sorted(
-            [child for child in self._children if isinstance(child[0], PyQStandardItem)], key=lambda item: item[0].data(column), reverse=(order == Qt.DescendingOrder),
+            [child for child in self._children if isinstance(child[0], PyQStandardItem)],
+            key=lambda item: item[0].data(column),
+            reverse=(order == Qt.DescendingOrder),
         )
         if self._model:
             self._model.layoutChanged.emit()
@@ -655,7 +688,9 @@ class PyQStandardItemModel(QAbstractItemModel):
         super().__init__(parent)
         self._rootItem: PyQStandardItem = PyQStandardItem()
         self._columnCount: int = columns
-        self._horizontalHeaderItems: list[PyQStandardItem] = [PyQStandardItem() for _ in range(columns)]
+        self._horizontalHeaderItems: list[PyQStandardItem] = [
+            PyQStandardItem() for _ in range(columns)
+        ]
         self._verticalHeaderItems: list[PyQStandardItem] = [PyQStandardItem() for _ in range(rows)]
         self._sortRole: int = Qt.ItemDataRole.DisplayRole
 
@@ -738,9 +773,15 @@ class PyQStandardItemModel(QAbstractItemModel):
             assert parent is None
             items = [args[0]]
         else:
-            parent = (args[0] if isinstance(args[0], QModelIndex) else QModelIndex()) if parent is None or not parent.isValid() else parent
+            parent = (
+                (args[0] if isinstance(args[0], QModelIndex) else QModelIndex())
+                if parent is None or not parent.isValid()
+                else parent
+            )
             items = [PyQStandardItem()]
-        item_parent_tuple: list[tuple[QModelIndex, PyQStandardItem]] = [(a.index().parent(), a) for a in items]
+        item_parent_tuple: list[tuple[QModelIndex, PyQStandardItem]] = [
+            (a.index().parent(), a) for a in items
+        ]
         self.beginInsertRows(
             QModelIndex() if parent is None or not parent.isValid() else parent,
             row,
@@ -808,7 +849,14 @@ class PyQStandardItemModel(QAbstractItemModel):
             return QModelIndex()
         return self.index(row, column, self.parent(idx))
 
-    def dropMimeData(self, data: QMimeData, action: Qt.DropAction, row: int, column: int, parent: QModelIndex | None = None) -> bool:
+    def dropMimeData(
+        self,
+        data: QMimeData,
+        action: Qt.DropAction,
+        row: int,
+        column: int,
+        parent: QModelIndex | None = None,
+    ) -> bool:
         if action == Qt.IgnoreAction:
             return False
         if not data.hasFormat("application/x-qabstractitemmodeldatalist"):
@@ -851,7 +899,9 @@ class PyQStandardItemModel(QAbstractItemModel):
     def sortRole(self) -> int:
         return self._sortRole
 
-    def findItems(self, text: str, flags: Qt.MatchFlags | Qt.MatchFlag = Qt.MatchExactly, column: int = 0) -> list[PyQStandardItem]:
+    def findItems(
+        self, text: str, flags: Qt.MatchFlags | Qt.MatchFlag = Qt.MatchExactly, column: int = 0
+    ) -> list[PyQStandardItem]:
         matchedItems = []
         for i in range(self._rootItem.childCount()):
             item = self._rootItem.child(i)
@@ -1015,7 +1065,9 @@ class PyQStandardItemModel(QAbstractItemModel):
         self.endInsertRows()
         return True
 
-    def headerData(self, section: int, orientation: Qt.Orientation, role: int = Qt.ItemDataRole.DisplayRole) -> Any:
+    def headerData(
+        self, section: int, orientation: Qt.Orientation, role: int = Qt.ItemDataRole.DisplayRole
+    ) -> Any:
         if role != Qt.ItemDataRole.DisplayRole:
             return QVariant()
         if orientation == Qt.Horizontal:
@@ -1024,7 +1076,13 @@ class PyQStandardItemModel(QAbstractItemModel):
             return self._verticalHeaderItems[section].data(role)
         return QVariant()
 
-    def setHeaderData(self, section: int, orientation: Qt.Orientation, value: Any, role: int = Qt.ItemDataRole.DisplayRole) -> bool:
+    def setHeaderData(
+        self,
+        section: int,
+        orientation: Qt.Orientation,
+        value: Any,
+        role: int = Qt.ItemDataRole.DisplayRole,
+    ) -> bool:
         if role != Qt.ItemDataRole.DisplayRole:
             return False
         if orientation == Qt.Horizontal:

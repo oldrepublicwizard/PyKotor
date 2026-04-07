@@ -50,7 +50,9 @@ if __name__ == "__main__":
 
     def list_modules(package_name: str) -> list[str]:
         package: types.ModuleType = __import__(package_name, fromlist=[""])
-        return [name for _, name, _ in pkgutil.walk_packages(package.__path__, package.__name__ + ".")]
+        return [
+            name for _, name, _ in pkgutil.walk_packages(package.__path__, package.__name__ + ".")
+        ]
 
     # Example usage
     package_name = "pykotor"

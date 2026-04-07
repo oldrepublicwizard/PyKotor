@@ -142,7 +142,9 @@ class TestMDLDataStructures(unittest.TestCase):
             MDLControllerRow(2.0, [2.0, 0.0, 0.0]),
         ]
 
-        controller = MDLController(controller_type=MDLControllerType.Position, rows=rows, is_bezier=False)
+        controller = MDLController(
+            controller_type=MDLControllerType.Position, rows=rows, is_bezier=False
+        )
 
         self.assertEqual(controller.controller_type, MDLControllerType.Position)
         self.assertEqual(len(controller.rows), 3)
@@ -193,7 +195,10 @@ class TestTangentSpaceCalculation(unittest.TestCase):
             Libraries/PyKotor/src/pykotor/resource/formats/mdl/io_mdl.py:1449-1578 - _calculate_tangent_space()
             vendor/mdlops/MDLOpsM.pm:5477-5596 - Tangent space calculation
         """
-        from pykotor.resource.formats.mdl.io_mdl import _calculate_face_normal, _calculate_tangent_space
+        from pykotor.resource.formats.mdl.io_mdl import (
+            _calculate_face_normal,
+            _calculate_tangent_space,
+        )
 
         # Create a simple triangle
         v0 = Vector3(0, 0, 0)
@@ -229,7 +234,10 @@ class TestTangentSpaceCalculation(unittest.TestCase):
             Libraries/PyKotor/src/pykotor/resource/formats/mdl/io_mdl.py:1560-1576 - Orthogonalization
             vendor/mdlops/MDLOpsM.pm:5570-5585 - TBN orthogonality
         """
-        from pykotor.resource.formats.mdl.io_mdl import _calculate_face_normal, _calculate_tangent_space
+        from pykotor.resource.formats.mdl.io_mdl import (
+            _calculate_face_normal,
+            _calculate_tangent_space,
+        )
 
         # Create triangle
         v0 = Vector3(0, 0, 0)
@@ -245,7 +253,9 @@ class TestTangentSpaceCalculation(unittest.TestCase):
 
         # Compute dot products (should be 0 for orthogonal vectors)
         dot_tn = tangent.x * face_normal.x + tangent.y * face_normal.y + tangent.z * face_normal.z
-        dot_bn = binormal.x * face_normal.x + binormal.y * face_normal.y + binormal.z * face_normal.z
+        dot_bn = (
+            binormal.x * face_normal.x + binormal.y * face_normal.y + binormal.z * face_normal.z
+        )
         dot_tb = tangent.x * binormal.x + tangent.y * binormal.y + tangent.z * binormal.z
 
         self.assertAlmostEqual(dot_tn, 0.0, places=5)
@@ -353,7 +363,9 @@ class TestAnimationControllers(unittest.TestCase):
             MDLControllerRow(1.0, [1.0, 0.0, 0.0]),
             MDLControllerRow(2.0, [2.0, 0.0, 0.0]),
         ]
-        mdl_controller = MDLController(controller_type=MDLControllerType.Position, rows=rows, is_bezier=False)
+        mdl_controller = MDLController(
+            controller_type=MDLControllerType.Position, rows=rows, is_bezier=False
+        )
 
         # This would test the animation controller if Panda3D were available
         # For now, just verify the MDL controller structure

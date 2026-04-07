@@ -38,10 +38,14 @@ class TestResourceType(unittest.TestCase):
         assert acquired_type == "Tlk", f"{acquired_type!r} != Tlk"
         assert ResourceType.TLK.extension == "tlk", f"{ResourceType.TLK.extension!r} != tlk"
         assert ResourceType.TLK.type_id == 2018, f"{ResourceType.TLK.type_id!r} != 2018"
-        assert repr(ResourceType.TLK) == "ResourceType.TLK", f"{repr(ResourceType.TLK)!r} != ResourceType.TLK"
+        assert repr(ResourceType.TLK) == "ResourceType.TLK", (
+            f"{repr(ResourceType.TLK)!r} != ResourceType.TLK"
+        )
         assert str(ResourceType.TLK) == "TLK", f"{str(ResourceType.TLK)!r} != TLK"
         assert ResourceType.TLK.contents == "binary", f"{ResourceType.TLK.contents!r} != binary"
-        assert ResourceType.TLK.category == "Talk Tables", f"{ResourceType.TLK.category!r} != Talk Tables"
+        assert ResourceType.TLK.category == "Talk Tables", (
+            f"{ResourceType.TLK.category!r} != Talk Tables"
+        )
         assert acquired_type.extension == "tlk", f"{acquired_type.extension!r} != tlk"
         assert acquired_type.type_id == 2018, f"{acquired_type.type_id!r} != 2018"
         assert acquired_type.contents == "binary", f"{acquired_type.contents!r} != binary"
@@ -54,10 +58,14 @@ class TestResourceType(unittest.TestCase):
         assert acquired_type == "Tlk", f"{acquired_type!r} != Tlk"
         assert ResourceType.TLK.extension == "tlk", f"{ResourceType.TLK.extension!r} != tlk"
         assert ResourceType.TLK.type_id == 2018, f"{ResourceType.TLK.type_id!r} != 2018"
-        assert repr(ResourceType.TLK) == "ResourceType.TLK", f"{repr(ResourceType.TLK)!r} != ResourceType.TLK"
+        assert repr(ResourceType.TLK) == "ResourceType.TLK", (
+            f"{repr(ResourceType.TLK)!r} != ResourceType.TLK"
+        )
         assert str(ResourceType.TLK) == "TLK", f"{str(ResourceType.TLK)!r} != TLK"
         assert ResourceType.TLK.contents == "binary", f"{ResourceType.TLK.contents!r} != binary"
-        assert ResourceType.TLK.category == "Talk Tables", f"{ResourceType.TLK.category!r} != Talk Tables"
+        assert ResourceType.TLK.category == "Talk Tables", (
+            f"{ResourceType.TLK.category!r} != Talk Tables"
+        )
         assert acquired_type.extension == "tlk", f"{acquired_type.extension!r} != tlk"
         assert acquired_type.type_id == 2018, f"{acquired_type.type_id!r} != 2018"
         assert acquired_type.contents == "binary", f"{acquired_type.contents!r} != binary"
@@ -89,7 +97,9 @@ class TestResourceIdentifier(unittest.TestCase):
     def test_hashing(self):
         test_resname = "test_ResnamE"
         for type_name in ResourceType.__members__:
-            test_ident: ResourceIdentifier = ResourceIdentifier(test_resname, ResourceType.__members__[type_name])
+            test_ident: ResourceIdentifier = ResourceIdentifier(
+                test_resname, ResourceType.__members__[type_name]
+            )
             self.assert_hashing(test_ident)
 
     def test_from_path_mdl(self):
@@ -105,16 +115,24 @@ class TestResourceIdentifier(unittest.TestCase):
         self.assert_resource_identifier("C:/path/to/asdf.Tlk.XmL", "asdf", ResourceType.TLK_XML)
 
     def test_from_path_long_suffix_gff_xml(self):
-        self.assert_resource_identifier("C:/path/to/asdf.xyz.qwerty.gff.xml", "asdf.xyz.qwerty", ResourceType.GFF_XML)
+        self.assert_resource_identifier(
+            "C:/path/to/asdf.xyz.qwerty.gff.xml", "asdf.xyz.qwerty", ResourceType.GFF_XML
+        )
 
     def test_from_path_hidden_file(self):
         self.assert_resource_identifier("C:/path/to/.hidden", ".hidden", ResourceType.INVALID)
 
     def test_from_path_no_extension(self):
-        self.assert_resource_identifier("C:/path/to/no_extension", "no_extension", ResourceType.INVALID)
+        self.assert_resource_identifier(
+            "C:/path/to/no_extension", "no_extension", ResourceType.INVALID
+        )
 
     def test_from_path_long_extension(self):
-        self.assert_resource_identifier("C:/path/to/longer_extension.l.o.n.g._ex.te.nsio.n.xyz", "longer_extension.l.o.n.g._ex.te.nsio.n", ResourceType.INVALID)
+        self.assert_resource_identifier(
+            "C:/path/to/longer_extension.l.o.n.g._ex.te.nsio.n.xyz",
+            "longer_extension.l.o.n.g._ex.te.nsio.n",
+            ResourceType.INVALID,
+        )
 
     def test_from_path_none_file_path(self):
         with self.assertRaises((ValueError, TypeError)):

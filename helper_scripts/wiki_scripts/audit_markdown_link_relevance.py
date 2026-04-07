@@ -17,7 +17,6 @@ from dataclasses import dataclass
 from pathlib import Path
 from urllib.parse import urlparse
 
-
 REPO_ROOT = Path(__file__).resolve().parent.parent.parent
 ROOT_MARKDOWN_FILES = {
     "AGENTS.md",
@@ -158,7 +157,11 @@ def collect_warnings(file_path: Path) -> list[WarningRecord]:
                     )
                 )
 
-            if LIST_ITEM_RE.match(line_text.strip()) and not has_non_link_context(line_text) and not is_descriptive_link_text(link_text):
+            if (
+                LIST_ITEM_RE.match(line_text.strip())
+                and not has_non_link_context(line_text)
+                and not is_descriptive_link_text(link_text)
+            ):
                 warnings.append(
                     WarningRecord(
                         file_path=file_path,
@@ -181,7 +184,9 @@ def audit_markdown_link_relevance() -> list[WarningRecord]:
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser(description="Audit markdown hyperlink relevance across repository documentation.")
+    parser = argparse.ArgumentParser(
+        description="Audit markdown hyperlink relevance across repository documentation."
+    )
     parser.add_argument(
         "--fail-on-warnings",
         action="store_true",

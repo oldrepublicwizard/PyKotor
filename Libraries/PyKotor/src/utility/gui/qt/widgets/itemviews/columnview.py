@@ -33,18 +33,42 @@ class RobustColumnView(RobustAbstractItemView, QColumnView):
 
         column_menu = menu.addMenu("ColumnView")
 
-        self._add_menu_action(column_menu, "Resize Grips Visible", self.resizeGripsVisible, self.setResizeGripsVisible, "resizeGripsVisible")
-        self._add_menu_action(column_menu, "Column Widths", self.columnWidths, self.setColumnWidths, "columnWidths", param_type=list)
-        self._add_menu_action(column_menu, "Preview Widget", self.previewWidget, self.setPreviewWidget, "previewWidget", param_type=QWidget)
+        self._add_menu_action(
+            column_menu,
+            "Resize Grips Visible",
+            self.resizeGripsVisible,
+            self.setResizeGripsVisible,
+            "resizeGripsVisible",
+        )
+        self._add_menu_action(
+            column_menu,
+            "Column Widths",
+            self.columnWidths,
+            self.setColumnWidths,
+            "columnWidths",
+            param_type=list,
+        )
+        self._add_menu_action(
+            column_menu,
+            "Preview Widget",
+            self.previewWidget,
+            self.setPreviewWidget,
+            "previewWidget",
+            param_type=QWidget,
+        )
 
         # Actions submenu
         actions_menu = column_menu.addMenu("Actions")
         self._add_simple_action(actions_menu, "Select All", self.selectAll)
-        self._add_simple_action(actions_menu, "Update Preview Widget", lambda: self.updatePreviewWidget.emit())
+        self._add_simple_action(
+            actions_menu, "Update Preview Widget", lambda: self.updatePreviewWidget.emit()
+        )
 
         # View submenu
         view_menu = column_menu.addMenu("View")
-        self._add_simple_action(view_menu, "Scroll To Current", lambda: self.scrollTo(self.currentIndex()))
+        self._add_simple_action(
+            view_menu, "Scroll To Current", lambda: self.scrollTo(self.currentIndex())
+        )
         self._add_simple_action(view_menu, "Update Geometries", self.updateGeometries)
 
         return menu

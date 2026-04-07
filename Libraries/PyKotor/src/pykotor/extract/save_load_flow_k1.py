@@ -206,7 +206,8 @@ def run_k1_save_flow(
 
     skip_screenshot = (
         skip_screenshot_if_path_equal is not None
-        and path_obj.resolve().as_posix() == Path(skip_screenshot_if_path_equal).resolve().as_posix()
+        and path_obj.resolve().as_posix()
+        == Path(skip_screenshot_if_path_equal).resolve().as_posix()
     )
 
     if not skip_screenshot:

@@ -18,12 +18,12 @@ if TYPE_CHECKING:
 
 class UTP:
     """Stores placeable data from the on-disk UTP GFF template.
-    
+
     Placeables share most door (UTD) lock, script, and trap semantics; this type adds inventory
     (``ItemList``) and placeable-specific hooks. The former long class docstring (References and field
     notes) is archived in ``wiki/reverse_engineering_findings_generics_utp_class_docstring_pre_scrub.md``. See
     ``wiki/reverse_engineering_findings.md`` (*resource/generics/utp.py*) and ``wiki/GFF-UTP.md``.
-    
+
     Note: ``GFFContent.UTP``.
     """
 

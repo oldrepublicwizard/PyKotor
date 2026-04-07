@@ -72,7 +72,9 @@ class TestVIS(TestCase):
         import os
         import tempfile
 
-        with tempfile.NamedTemporaryFile(mode="w", suffix=".vis", delete=False, encoding="utf-8") as tmp:
+        with tempfile.NamedTemporaryFile(
+            mode="w", suffix=".vis", delete=False, encoding="utf-8"
+        ) as tmp:
             tmp.write(ASCII_TEST_DATA)
             tmp_path = tmp.name
 

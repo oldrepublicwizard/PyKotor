@@ -53,7 +53,9 @@ class DynamicStackedView(QStackedWidget):
     ):
         if should_call_qt_init:
             super().__init__(parent)
-        self.current_view_mode: QListView.ViewMode = initial_view_mode or QListView.ViewMode.ListMode
+        self.current_view_mode: QListView.ViewMode = (
+            initial_view_mode or QListView.ViewMode.ListMode
+        )
         if all_views:
             self.set_widgets(all_views)
         else:
@@ -115,7 +117,9 @@ class DynamicStackedView(QStackedWidget):
             return cast("cls", widget)
         for child in widget.findChildren(QAbstractItemView):
             return cast("cls", child)
-        raise ValueError(f"No view of type {cls.__name__} found in widget {widget.__class__.__name__}")
+        raise ValueError(
+            f"No view of type {cls.__name__} found in widget {widget.__class__.__name__}"
+        )
 
     def setModel(
         self,
@@ -181,7 +185,11 @@ class DynamicStackedView(QStackedWidget):
         current_view: QAbstractItemView | None = self.current_view()
         if current_view is None:
             return
-        cur_text_size: int = current_view.get_text_size() if isinstance(current_view, RobustAbstractItemView) else current_view.font().pointSize()
+        cur_text_size: int = (
+            current_view.get_text_size()
+            if isinstance(current_view, RobustAbstractItemView)
+            else current_view.font().pointSize()
+        )
         new_text_size: int = cur_text_size + delta
         new_text_size = max(self.min_text_size, new_text_size)
 
@@ -233,7 +241,10 @@ class DynamicStackedView(QStackedWidget):
 
         font_metrics: QFontMetrics = current_view.fontMetrics()
         item_text: str | None = model.data(model.index(0, 0))
-        if isinstance(item_text, str) and font_metrics.horizontalAdvance(item_text) > item_size.width():
+        if (
+            isinstance(item_text, str)
+            and font_metrics.horizontalAdvance(item_text) > item_size.width()
+        ):
             return False
 
         return visible_items >= max_item_percent * total_items
@@ -253,9 +264,16 @@ class DynamicStackedView(QStackedWidget):
         if self.current_view_index >= len(self.all_widgets()) - 1:
             return
         self.current_view_index += 1
-        current_view: QAbstractItemView = self.get_actual_view(self.all_widgets()[self.current_view_index])
+        current_view: QAbstractItemView = self.get_actual_view(
+            self.all_widgets()[self.current_view_index]
+        )
         model: QAbstractItemModel | None = current_view.model() if current_view else None
-        while self.current_view_index < len(self.all_widgets()) - 1 and isinstance(current_view, QTableView) and model is not None and model.columnCount() == 1:
+        while (
+            self.current_view_index < len(self.all_widgets()) - 1
+            and isinstance(current_view, QTableView)
+            and model is not None
+            and model.columnCount() == 1
+        ):
             self.current_view_index += 1
             current_view = self.get_actual_view(self.all_widgets()[self.current_view_index])
             model = current_view.model() if current_view else None
@@ -272,7 +290,12 @@ class DynamicStackedView(QStackedWidget):
             self.current_view_index -= 1
             current_view: QAbstractItemView = self.all_views()[self.current_view_index]
             model: QAbstractItemModel | None = current_view.model() if current_view else None
-            while self.current_view_index > 0 and isinstance(current_view, QTableView) and model is not None and model.columnCount() == 1:
+            while (
+                self.current_view_index > 0
+                and isinstance(current_view, QTableView)
+                and model is not None
+                and model.columnCount() == 1
+            ):
                 self.current_view_index -= 1
                 current_view = self.all_views()[self.current_view_index]
                 model = current_view.model() if current_view else None

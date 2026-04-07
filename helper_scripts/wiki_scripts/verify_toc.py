@@ -64,9 +64,13 @@ def verify_toc(md_path: Path) -> bool:
 def main() -> None:
     """Main entry point."""
     parser = argparse.ArgumentParser(
-        description="Verify that all sections in a markdown file are in the TOC", formatter_class=argparse.RawDescriptionHelpFormatter, epilog=__doc__
+        description="Verify that all sections in a markdown file are in the TOC",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog=__doc__,
     )
-    parser.add_argument("--file", "-f", type=str, help="Path to markdown file (default: wiki/NSS-File-Format.md)")
+    parser.add_argument(
+        "--file", "-f", type=str, help="Path to markdown file (default: wiki/NSS-File-Format.md)"
+    )
 
     args = parser.parse_args()
 

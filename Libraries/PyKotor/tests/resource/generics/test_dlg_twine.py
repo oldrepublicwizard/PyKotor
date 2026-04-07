@@ -219,7 +219,10 @@ def test_complex_dialog_structure(tmp_path: Path):
         assert len(reply.links) == 1
         next_entry = reply.links[0].node
         assert isinstance(next_entry, DLGEntry)
-        assert next_entry.text.get(Language.ENGLISH, Gender.MALE) in ["Path 1 chosen", "Path 2 chosen"]
+        assert next_entry.text.get(Language.ENGLISH, Gender.MALE) in [
+            "Path 1 chosen",
+            "Path 2 chosen",
+        ]
 
 
 def test_comment_metadata_is_restored_into_twine_story():

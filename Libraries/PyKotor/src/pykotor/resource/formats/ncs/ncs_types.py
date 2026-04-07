@@ -268,7 +268,11 @@ class NCSType(BiowareResource):
         """
         if self._type_code in {NCSTypeCode.INTINT, NCSTypeCode.INTFLOAT}:
             return NCSTypeCode.INTEGER
-        if self._type_code in {NCSTypeCode.FLOATFLOAT, NCSTypeCode.FLOATINT, NCSTypeCode.FLOATVECTOR}:
+        if self._type_code in {
+            NCSTypeCode.FLOATFLOAT,
+            NCSTypeCode.FLOATINT,
+            NCSTypeCode.FLOATVECTOR,
+        }:
             return NCSTypeCode.FLOAT
         if self._type_code in {NCSTypeCode.STRINGSTRING}:
             return NCSTypeCode.STRING
@@ -287,7 +291,11 @@ class NCSType(BiowareResource):
         """
         if self._type_code in {NCSTypeCode.INTINT, NCSTypeCode.INTFLOAT}:
             return NCSTypeCode.INTEGER
-        if self._type_code in {NCSTypeCode.FLOATFLOAT, NCSTypeCode.FLOATINT, NCSTypeCode.FLOATVECTOR}:
+        if self._type_code in {
+            NCSTypeCode.FLOATFLOAT,
+            NCSTypeCode.FLOATINT,
+            NCSTypeCode.FLOATVECTOR,
+        }:
             return NCSTypeCode.FLOAT
         if self._type_code in {NCSTypeCode.STRINGSTRING}:
             return NCSTypeCode.STRING
@@ -316,7 +324,11 @@ class NCSType(BiowareResource):
         """
         if self._type_code in {NCSTypeCode.INTINT, NCSTypeCode.FLOATINT}:
             return NCSTypeCode.INTEGER
-        if self._type_code in {NCSTypeCode.FLOATFLOAT, NCSTypeCode.INTFLOAT, NCSTypeCode.VECTORFLOAT}:
+        if self._type_code in {
+            NCSTypeCode.FLOATFLOAT,
+            NCSTypeCode.INTFLOAT,
+            NCSTypeCode.VECTORFLOAT,
+        }:
             return NCSTypeCode.FLOAT
         if self._type_code in {NCSTypeCode.STRINGSTRING}:
             return NCSTypeCode.STRING

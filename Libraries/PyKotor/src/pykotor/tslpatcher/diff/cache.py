@@ -137,7 +137,9 @@ def save_diff_cache(
     if strref_cache is not None:
         cache.strref_cache_game = str(strref_cache.game)
         cache.strref_cache_data = strref_cache.to_dict()
-        log_func(f"  Including StrRef cache: {len(strref_cache._cache)} StrRefs, {strref_cache._total_references_found} references")
+        log_func(
+            f"  Including StrRef cache: {len(strref_cache._cache)} StrRefs, {strref_cache._total_references_found} references"
+        )
 
     # Create companion data directory
     cache_dir = cache_file.parent / f"{cache_file.stem}_data"
@@ -168,12 +170,16 @@ def save_diff_cache(
     if importlib.util.find_spec("yaml") is not None:
         import yaml
 
-        cache_file.write_text(yaml.dump(cache.to_dict(), default_flow_style=False), encoding="utf-8")
+        cache_file.write_text(
+            yaml.dump(cache.to_dict(), default_flow_style=False), encoding="utf-8"
+        )
         log_func(f"Saved diff cache to: {cache_file}")
         log_func(f"  Cached {len(files_list)} file comparisons")
         if strref_cache is not None:
             stats: dict[str, int] = strref_cache.get_statistics()
-            log_func(f"  Cached StrRef data: {stats['unique_strrefs']} StrRefs, {stats['total_references']} references")
+            log_func(
+                f"  Cached StrRef data: {stats['unique_strrefs']} StrRefs, {stats['total_references']} references"
+            )
         log_func(f"  Cache data directory: {cache_dir}")
 
 
@@ -216,8 +222,12 @@ def load_diff_cache(
     # Log StrRef cache data if present
     if cache.strref_cache_data is not None:
         strref_count: int = len(cache.strref_cache_data)
-        total_refs: int = sum(len(ref["locations"]) for refs in cache.strref_cache_data.values() for ref in refs)
-        log_func(f"  Cached StrRef data: {strref_count} StrRefs, {total_refs} references (game: {cache.strref_cache_game})")
+        total_refs: int = sum(
+            len(ref["locations"]) for refs in cache.strref_cache_data.values() for ref in refs
+        )
+        log_func(
+            f"  Cached StrRef data: {strref_count} StrRefs, {total_refs} references (game: {cache.strref_cache_game})"
+        )
 
     return cache, left_dir, right_dir
 

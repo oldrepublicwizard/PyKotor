@@ -33,7 +33,10 @@ for tex_name in test_textures:
 
     # First, find the TPC file
     tpc_results = inst.locations(
-        [ResourceIdentifier(resname=tex_name, restype=rt) for rt in (ResourceType.TPC, ResourceType.TGA)],
+        [
+            ResourceIdentifier(resname=tex_name, restype=rt)
+            for rt in (ResourceType.TPC, ResourceType.TGA)
+        ],
         [
             SearchLocation.OVERRIDE,
             SearchLocation.TEXTURES_GUI,

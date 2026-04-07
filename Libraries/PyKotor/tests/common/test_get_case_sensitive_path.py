@@ -42,7 +42,9 @@ def is_windows_case_sensitivity_supported() -> bool:
 
     try:
         # Check Windows version
-        version_output: str = subprocess.check_output(["cmd", "/c", "ver"], text=True, stderr=subprocess.DEVNULL, timeout=5)
+        version_output: str = subprocess.check_output(
+            ["cmd", "/c", "ver"], text=True, stderr=subprocess.DEVNULL, timeout=5
+        )
         print(f"Windows version check output: {version_output}")
 
         # Check if fsutil command exists and works
@@ -88,9 +90,16 @@ def get_case_sensitivity_status(directory_path: pathlib.Path) -> bool:
             return False
 
     try:
-        result = subprocess.run(["fsutil", "file", "queryCaseSensitiveInfo", str(directory_path)], capture_output=True, text=True, timeout=10)
+        result = subprocess.run(
+            ["fsutil", "file", "queryCaseSensitiveInfo", str(directory_path)],
+            capture_output=True,
+            text=True,
+            timeout=10,
+        )
         output = result.stdout.strip()
-        print(f"Case sensitivity status for {directory_path}: {output}, returncode: {result.returncode}")
+        print(
+            f"Case sensitivity status for {directory_path}: {output}, returncode: {result.returncode}"
+        )
 
         if result.returncode != 0:
             print(f"fsutil stderr: {result.stderr}")
@@ -126,7 +135,12 @@ def enable_case_sensitivity(directory_path: pathlib.Path) -> bool:
         return True
 
     try:
-        result = subprocess.run(["fsutil", "file", "setCaseSensitiveInfo", str(directory_path), "enable"], capture_output=True, text=True, timeout=10)
+        result = subprocess.run(
+            ["fsutil", "file", "setCaseSensitiveInfo", str(directory_path), "enable"],
+            capture_output=True,
+            text=True,
+            timeout=10,
+        )
         success = result.returncode == 0
         print(f"Enabling case sensitivity for {directory_path}: returncode={result.returncode}")
         print(f"stdout: {result.stdout}")
@@ -168,7 +182,12 @@ def disable_case_sensitivity(directory_path: pathlib.Path) -> bool:
         return True
 
     try:
-        result = subprocess.run(["fsutil", "file", "setCaseSensitiveInfo", str(directory_path), "disable"], capture_output=True, text=True, timeout=10)
+        result = subprocess.run(
+            ["fsutil", "file", "setCaseSensitiveInfo", str(directory_path), "disable"],
+            capture_output=True,
+            text=True,
+            timeout=10,
+        )
         success = result.returncode == 0
         print(f"Disabling case sensitivity for {directory_path}: returncode={result.returncode}")
         if not success:
@@ -196,7 +215,9 @@ def enable_case_sensitivity_recursive(directory_path: pathlib.Path) -> bool:
         return True  # Unix systems are case-sensitive by default
 
     if not directory_path.exists():
-        print(f"Directory {directory_path} does not exist, cannot enable recursive case sensitivity")
+        print(
+            f"Directory {directory_path} does not exist, cannot enable recursive case sensitivity"
+        )
         return False
 
     # Enable on the root directory first
@@ -211,9 +232,13 @@ def enable_case_sensitivity_recursive(directory_path: pathlib.Path) -> bool:
                 subdir_path = pathlib.Path(root) / dir_name
                 if subdir_path.exists() and subdir_path.is_dir():
                     if not enable_case_sensitivity(subdir_path):
-                        print(f"Warning: Failed to enable case sensitivity on subdirectory {subdir_path}")
+                        print(
+                            f"Warning: Failed to enable case sensitivity on subdirectory {subdir_path}"
+                        )
     except Exception as e:
-        print(f"Warning: Error during recursive case sensitivity enablement: {e.__class__.__name__}: {e}")
+        print(
+            f"Warning: Error during recursive case sensitivity enablement: {e.__class__.__name__}: {e}"
+        )
         import traceback
 
         traceback.print_exc()
@@ -248,14 +273,18 @@ class CaseSensitiveTempDirectory:
             self._case_sensitivity_enabled = enable_case_sensitivity(self.path)
             if not self._case_sensitivity_enabled:
                 print(f"WARNING: Failed to enable case sensitivity for {self.path}")
-                raise unittest.SkipTest("Could not enable case sensitivity on Windows. Requires Windows 10 (1803+) or Windows 11 and administrator privileges.")
+                raise unittest.SkipTest(
+                    "Could not enable case sensitivity on Windows. Requires Windows 10 (1803+) or Windows 11 and administrator privileges."
+                )
             # Windows-specific: Ensure case sensitivity is enabled recursively on all subdirectories
             # This ensures any subdirectories that exist or will be created have case sensitivity
             enable_case_sensitivity_recursive(self.path)
 
         self._case_sensitivity_enabled = get_case_sensitivity_status(self.path)
         if not self._case_sensitivity_enabled:
-            raise unittest.SkipTest("File system is not case-sensitive. These tests require a case-sensitive filesystem.")
+            raise unittest.SkipTest(
+                "File system is not case-sensitive. These tests require a case-sensitive filesystem."
+            )
 
         print(f"Case-sensitive directory ready: {self.path}")
         return self.path
@@ -348,19 +377,29 @@ class TestCaseAwarePath(TestCase):
         case_aware_path2 = CaseAwarePath("someFile.txt")
         assert case_aware_path1 / case_aware_path2 == case_aware_path1.joinpath(case_aware_path2)
 
-    @unittest.skipIf(sys.platform == "win32", "CaseAwarePath on Windows is InternalWindowsPath and doesn't resolve case")
+    @unittest.skipIf(
+        sys.platform == "win32",
+        "CaseAwarePath on Windows is InternalWindowsPath and doesn't resolve case",
+    )
     def test_rtruediv(self):
         case_aware_file_path = str(self.temp_path) / CaseAwarePath("soMeDir", "someFile.TXT")
         expected_path: pathlib.Path = self.temp_path / "SOmeDir" / "SOMEFile.txT"
         expected_path.mkdir(exist_ok=True, parents=True)
         expected_path.touch()
-        assert expected_path.exists(), f"expected_path: '{expected_path}' should always exist on disk in this test."
-        assert case_aware_file_path.exists(), f"expected_path: '{expected_path}' actual_path: '{case_aware_file_path}'"
+        assert expected_path.exists(), (
+            f"expected_path: '{expected_path}' should always exist on disk in this test."
+        )
+        assert case_aware_file_path.exists(), (
+            f"expected_path: '{expected_path}' actual_path: '{case_aware_file_path}'"
+        )
         assert str(case_aware_file_path) == str(expected_path) or platform.system() == "Darwin", (
             f"Path case mismatch on a case-sensitive filesystem. Case-aware path: {case_aware_file_path}, expected path: {expected_path}"
         )
 
-    @unittest.skipIf(sys.platform == "win32", "CaseAwarePath on Windows is InternalWindowsPath and doesn't resolve case")
+    @unittest.skipIf(
+        sys.platform == "win32",
+        "CaseAwarePath on Windows is InternalWindowsPath and doesn't resolve case",
+    )
     def test_make_and_parse_uri(self):
         # Use the case-sensitive temp directory from setUp
         temp_dir_path = CaseAwarePath(self.temp_path)
@@ -398,7 +437,13 @@ class TestCaseAwarePath(TestCase):
 
         # On Windows, file URIs have an extra leading slash before the drive letter
         # e.g., file:///C:/Users/... -> /C:/Users/... -> C:/Users/...
-        if os.name == "nt" and path.startswith("/") and len(path) > 1 and path[1].isalpha() and path[2:4] == ":/":
+        if (
+            os.name == "nt"
+            and path.startswith("/")
+            and len(path) > 1
+            and path[1].isalpha()
+            and path[2:4] == ":/"
+        ):
             path = path[1:]  # Remove leading slash before drive letter
 
         # Convert forward slashes to platform-specific separator
@@ -416,7 +461,10 @@ class TestCaseAwarePath(TestCase):
         # Ensure that the parsed path matches the actual file path on disk
         self.assertEqual(path_str, sample_file_normalized)
 
-    @unittest.skipIf(sys.platform == "win32", "CaseAwarePath on Windows is InternalWindowsPath and doesn't resolve case")
+    @unittest.skipIf(
+        sys.platform == "win32",
+        "CaseAwarePath on Windows is InternalWindowsPath and doesn't resolve case",
+    )
     def test_case_change_after_creation(self):
         initial_path: pathlib.Path = self.temp_path / "TestFile.txt"
         case_aware_path = CaseAwarePath(f"{self.temp_path!s}/testfile.TXT")
@@ -431,7 +479,10 @@ class TestCaseAwarePath(TestCase):
         # Should still exist from case_aware_path perspective
         assert case_aware_path.exists()
 
-    @unittest.skipIf(sys.platform == "win32", "CaseAwarePath on Windows is InternalWindowsPath and doesn't resolve case")
+    @unittest.skipIf(
+        sys.platform == "win32",
+        "CaseAwarePath on Windows is InternalWindowsPath and doesn't resolve case",
+    )
     def test_complex_case_changes(self):
         path: pathlib.Path = self.temp_path / "Dir1"
         path.mkdir()
@@ -445,7 +496,10 @@ class TestCaseAwarePath(TestCase):
         (path_changed / "SOMEfile.TXT").touch()
         assert case_aware_path.exists()
 
-    @unittest.skipIf(sys.platform == "win32", "CaseAwarePath on Windows is InternalWindowsPath and doesn't resolve case")
+    @unittest.skipIf(
+        sys.platform == "win32",
+        "CaseAwarePath on Windows is InternalWindowsPath and doesn't resolve case",
+    )
     def test_mixed_case_creation_and_deletion(self):
         case_aware_path = CaseAwarePath(f"{self.temp_path!s}/MixEDCase/File.TXT")
         regular_path: pathlib.Path = self.temp_path / "mixedcase" / "file.txt"
@@ -459,7 +513,10 @@ class TestCaseAwarePath(TestCase):
 
         assert not case_aware_path.exists()
 
-    @unittest.skipIf(sys.platform == "win32", "CaseAwarePath on Windows is InternalWindowsPath and doesn't resolve case")
+    @unittest.skipIf(
+        sys.platform == "win32",
+        "CaseAwarePath on Windows is InternalWindowsPath and doesn't resolve case",
+    )
     def test_joinpath_chain(self):
         path_chain: list[str] = ["dirA", "dirB", "dirC", "file.txt"]
         case_insensitive_chain: list[str] = ["DIRa", "DirB", "dirc", "FILE.txt"]
@@ -480,7 +537,10 @@ class TestCaseAwarePath(TestCase):
 
         assert case_aware_path.exists()
 
-    @unittest.skipIf(sys.platform == "win32", "CaseAwarePath on Windows is InternalWindowsPath and doesn't resolve case")
+    @unittest.skipIf(
+        sys.platform == "win32",
+        "CaseAwarePath on Windows is InternalWindowsPath and doesn't resolve case",
+    )
     def test_deep_directory_truediv(self):
         base_path = self.temp_path
         deep_path: pathlib.Path = base_path / "a" / "b" / "c" / "d" / "e"
@@ -491,7 +551,10 @@ class TestCaseAwarePath(TestCase):
         case_aware_deep_path = CaseAwarePath(self.temp_path) / "A" / "B" / "C" / "D" / "E"
         assert case_aware_deep_path.exists()
 
-    @unittest.skipIf(sys.platform == "win32", "CaseAwarePath on Windows is InternalWindowsPath and doesn't resolve case")
+    @unittest.skipIf(
+        sys.platform == "win32",
+        "CaseAwarePath on Windows is InternalWindowsPath and doesn't resolve case",
+    )
     def test_recursive_directory_creation(self):
         recursive_path: pathlib.Path = self.temp_path / "x" / "y" / "z"
         recursive_path.mkdir(parents=True)
@@ -500,7 +563,10 @@ class TestCaseAwarePath(TestCase):
         actual_path = CaseAwarePath(f"{self.temp_path!s}/X/Y/Z")
         assert actual_path.exists()
 
-    @unittest.skipIf(sys.platform == "win32", "CaseAwarePath on Windows is InternalWindowsPath and doesn't resolve case")
+    @unittest.skipIf(
+        sys.platform == "win32",
+        "CaseAwarePath on Windows is InternalWindowsPath and doesn't resolve case",
+    )
     def test_cascading_file_creation(self):
         cascading_file: pathlib.Path = self.temp_path / "dir" / "subdir" / "file.txt"
         case_aware_cascading_file = CaseAwarePath(f"{self.temp_path!s}/DIR/SUBDIR/FILE.TXT")
@@ -510,7 +576,10 @@ class TestCaseAwarePath(TestCase):
 
         assert case_aware_cascading_file.exists()
 
-    @unittest.skipIf(sys.platform == "win32", "CaseAwarePath on Windows is InternalWindowsPath and doesn't resolve case")
+    @unittest.skipIf(
+        sys.platform == "win32",
+        "CaseAwarePath on Windows is InternalWindowsPath and doesn't resolve case",
+    )
     def test_relative_to(self):
         dir_path = self.temp_path / "someDir"
         file_path: pathlib.Path = dir_path / "someFile.txt"
@@ -547,7 +616,10 @@ class TestCaseAwarePath(TestCase):
         modified_permissions = file_path.stat().st_mode
         assert original_permissions != modified_permissions
 
-    @unittest.skipIf(sys.platform == "win32", "CaseAwarePath on Windows is InternalWindowsPath and doesn't resolve case")
+    @unittest.skipIf(
+        sys.platform == "win32",
+        "CaseAwarePath on Windows is InternalWindowsPath and doesn't resolve case",
+    )
     def test_open_read_write(self):
         file_path: pathlib.Path = self.temp_path / "file.txt"
         case_aware_file_path = CaseAwarePath(f"{self.temp_path!s}/FILE.txt")
@@ -560,12 +632,18 @@ class TestCaseAwarePath(TestCase):
 
         assert content == "Hello, world!"
 
-    @unittest.skipIf(sys.platform == "win32", "CaseAwarePath on Windows is InternalWindowsPath and doesn't resolve case")
+    @unittest.skipIf(
+        sys.platform == "win32",
+        "CaseAwarePath on Windows is InternalWindowsPath and doesn't resolve case",
+    )
     def test_touch(self):
         self.temp_path.joinpath("SOMEfile.TXT").touch()
         assert CaseAwarePath(f"{self.temp_path!s}/someFile.txt").exists()
 
-    @unittest.skipIf(sys.platform == "win32", "CaseAwarePath on Windows is InternalWindowsPath and doesn't resolve case")
+    @unittest.skipIf(
+        sys.platform == "win32",
+        "CaseAwarePath on Windows is InternalWindowsPath and doesn't resolve case",
+    )
     def test_samefile(self):
         file_path = self.temp_path / "file.txt"
         case_aware_file_path = CaseAwarePath(f"{self.temp_path!s}/FILE.TXT")
@@ -574,7 +652,10 @@ class TestCaseAwarePath(TestCase):
         file_path.touch()
         assert case_aware_file_path.samefile(file_path)
 
-    @unittest.skipIf(sys.platform == "win32", "CaseAwarePath on Windows is InternalWindowsPath and doesn't resolve case")
+    @unittest.skipIf(
+        sys.platform == "win32",
+        "CaseAwarePath on Windows is InternalWindowsPath and doesn't resolve case",
+    )
     def test_replace(self):
         file_path1 = self.temp_path / "file1.txt"
         file_path2 = self.temp_path / "file2.txt"
@@ -591,7 +672,10 @@ class TestCaseAwarePath(TestCase):
         assert not file_path1.exists()
         assert file_path2.exists()
 
-    @unittest.skipIf(sys.platform == "win32", "CaseAwarePath on Windows is InternalWindowsPath and doesn't resolve case")
+    @unittest.skipIf(
+        sys.platform == "win32",
+        "CaseAwarePath on Windows is InternalWindowsPath and doesn't resolve case",
+    )
     def test_rename(self):
         original_file = self.temp_path / "original.txt"
         renamed_file = self.temp_path / "renamed.txt"

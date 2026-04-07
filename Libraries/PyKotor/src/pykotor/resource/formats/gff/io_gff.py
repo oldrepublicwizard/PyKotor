@@ -173,7 +173,9 @@ class GFFBinaryReader(ResourceReader):
             offset_in_batch = (field_index - min_index) * 12
             # Parse field header: field_type (4), label_id (4), data/offset (4)
             # Use struct.unpack_from for better performance (avoids slice allocation)
-            field_type_id, label_id, data_or_offset = struct.unpack_from("<III", batch_data, offset_in_batch)
+            field_type_id, label_id, data_or_offset = struct.unpack_from(
+                "<III", batch_data, offset_in_batch
+            )
             label = labels[label_id]
             self._load_field_value_by_id(gff_struct, field_type_id, label, data_or_offset)
 

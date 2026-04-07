@@ -192,14 +192,19 @@ class CaseInsensitiveDict(Generic[T]):
     ):
         self._dictionary: dict[str, T] = {}
         self._case_map: dict[str, str] = {}
+        self._generation: int = 0
 
         if initial:
             # If initial is a mapping, use its items method.
-            items: Iterable[tuple[str, T]] | ItemsView[str, T] | ItemsView[tuple[str, T], T] = initial.items() if isinstance(initial, Mapping) else initial
+            items: Iterable[tuple[str, T]] | ItemsView[str, T] | ItemsView[tuple[str, T], T] = (
+                initial.items() if isinstance(initial, Mapping) else initial
+            )
 
             # Iterate over initial items directly, avoiding the creation of an interim dict
             for key, value in items:
-                assert not isinstance(key, tuple), f"key '{key!r}' and value '{value!r}' are not expected types."
+                assert not isinstance(key, tuple), (
+                    f"key '{key!r}' and value '{value!r}' are not expected types."
+                )
                 if isinstance(key, tuple):
                     # Unpack key-value tuple
                     k, v = key
@@ -239,7 +244,9 @@ class CaseInsensitiveDict(Generic[T]):
         if not isinstance(other, dict) and not is_casedict:
             return NotImplemented  # type: ignore[no-any-return]
         # it's a dict of some sort, do some more quick checks.
-        if is_casedict and (not isinstance(other, CaseInsensitiveDict) or other._case_map != self._case_map):
+        if is_casedict and (
+            not isinstance(other, CaseInsensitiveDict) or other._case_map != self._case_map
+        ):
             return False
         other_dict: dict[str, T]
         if isinstance(other, CaseInsensitiveDict):
@@ -274,6 +281,7 @@ class CaseInsensitiveDict(Generic[T]):
             self.__delitem__(key)
         self._case_map[key.lower()] = key
         self._dictionary[key] = value
+        self._generation += 1
 
     def __delitem__(self, key: str):
         if not isinstance(key, str):
@@ -282,6 +290,7 @@ class CaseInsensitiveDict(Generic[T]):
         lower_key = key.lower()
         del self._dictionary[self._case_map[lower_key]]
         del self._case_map[lower_key]
+        self._generation += 1
 
     def __contains__(self, key: str) -> bool:
         return key.lower() in self._case_map
@@ -302,7 +311,11 @@ class CaseInsensitiveDict(Generic[T]):
     def __ror__(self, other):
         if not isinstance(other, (dict, CaseInsensitiveDict)):
             return NotImplemented  # type: ignore[no-any-return]
-        other_dict: CaseInsensitiveDict[T] = other if isinstance(other, CaseInsensitiveDict) else CaseInsensitiveDict.from_dict(other)
+        other_dict: CaseInsensitiveDict[T] = (
+            other
+            if isinstance(other, CaseInsensitiveDict)
+            else CaseInsensitiveDict.from_dict(other)
+        )
         new_dict: CaseInsensitiveDict[T] = other_dict.copy()
         new_dict.update(self)
         return new_dict
@@ -329,6 +342,7 @@ class CaseInsensitiveDict(Generic[T]):
                 raise
             # Return the default value if lower_key is not found in the case map.
             return __default
+        self._generation += 1
         return value
 
     def update(self, other):
@@ -362,7 +376,9 @@ class CaseInsensitiveDict(Generic[T]):
     def get(self, __key: str, __default: VT | None = None) -> VT | T | None:
         key_lookup: str | object = self._case_map.get(__key.lower(), _unique_sentinel)
         return (
-            __default if key_lookup is _unique_sentinel else self._dictionary.get(key_lookup, __default)  # type: ignore[arg-type]
+            __default
+            if key_lookup is _unique_sentinel
+            else self._dictionary.get(key_lookup, __default)  # type: ignore[arg-type]
         )
 
     def items(self):
@@ -380,6 +396,7 @@ class CaseInsensitiveDict(Generic[T]):
     def clear(self) -> None:
         self._dictionary.clear()
         self._case_map.clear()
+        self._generation += 1
 
 
 # Example usage:

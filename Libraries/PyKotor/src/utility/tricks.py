@@ -18,7 +18,26 @@ from utility.string_util import is_non_empty_string
 if TYPE_CHECKING:
     from types import ModuleType
 
-BUILTIN_TYPES = (TypeVar, type, object, int, float, str, list, dict, set, tuple, frozenset, bool, bytes, complex, range, slice, type(Ellipsis), type(None))
+BUILTIN_TYPES = (
+    TypeVar,
+    type,
+    object,
+    int,
+    float,
+    str,
+    list,
+    dict,
+    set,
+    tuple,
+    frozenset,
+    bool,
+    bytes,
+    complex,
+    range,
+    slice,
+    type(Ellipsis),
+    type(None),
+)
 BUILTIN_IDS = tuple(id(t) for t in BUILTIN_TYPES)
 SENTINEL = object()
 
@@ -195,7 +214,10 @@ def win_get_interpreter_start_time() -> float:
 
 def is_builtin_class_instance(obj: object) -> bool:
     """Check if the object is an instance of a built-in class."""
-    return obj.__class__.__module__ in ("builtins", "__builtin__") or obj.__class__.__name__ == "builtin_function_or_method"
+    return (
+        obj.__class__.__module__ in ("builtins", "__builtin__")
+        or obj.__class__.__name__ == "builtin_function_or_method"
+    )
 
 
 def is_builtin_module(module: ModuleType) -> bool:
@@ -232,7 +254,12 @@ def find_importing_modules(
     importing_modules: list[ModuleType] = [
         module
         for name, module in sys.modules.items()
-        if (module and hasattr(module, "__file__") and target_module_name in sys.modules and target_module_name in module.__dict__.values())
+        if (
+            module
+            and hasattr(module, "__file__")
+            and target_module_name in sys.modules
+            and target_module_name in module.__dict__.values()
+        )
     ]
     return importing_modules
 
@@ -283,7 +310,10 @@ def debug_reload_pymodules(checked: bool = False):
             except TypeError as e:  # noqa: F841
                 ...  # print(f"Failed to update instance of type '{obj_cls.__name__}': {e}", file=sys.__stderr__)
             except Exception as e:  # noqa: BLE001
-                print(f"Unexpected error occurred while updating instance of {obj_cls.__name__}: {e}", file=sys.__stderr__)  # type: ignore[union-attr]  # pyright: ignore[reportAttributeAccessIssue]
+                print(
+                    f"Unexpected error occurred while updating instance of {obj_cls.__name__}: {e}",
+                    file=sys.__stderr__,
+                )  # type: ignore[union-attr]  # pyright: ignore[reportAttributeAccessIssue]
 
         # Track visited objects to avoid infinite recursion
         visited = set()
@@ -321,9 +351,15 @@ def debug_reload_pymodules(checked: bool = False):
                             update_object_class(ref, new_class)
                         update_referents(ref)
                     except Exception as e:  # noqa: PERF203, BLE001
-                        print(f"Error updating referent {ref} for object of type '{obj.__class__.__name__}': {e}", file=sys.__stderr__)
+                        print(
+                            f"Error updating referent {ref} for object of type '{obj.__class__.__name__}': {e}",
+                            file=sys.__stderr__,
+                        )
             except Exception as e:  # noqa: PERF203, BLE001
-                print(f"Error getting referents for object of type '{obj.__class__.__name__}': {e}", file=sys.__stderr__)
+                print(
+                    f"Error getting referents for object of type '{obj.__class__.__name__}': {e}",
+                    file=sys.__stderr__,
+                )
 
         # Start the recursive update from all objects
         for obj in gc.get_objects():
@@ -375,7 +411,18 @@ def debug_reload_pymodules(checked: bool = False):
             continue
         if is_site_packages_module(file_path):  # type: ignore[arg-type]  # pyright: ignore[reportArgumentType]
             continue
-        if name.startswith(("pydevconsole", "debugpy", "pydevd", "_pydevd", "_pydev", "pydev_ipython", "__main__", "__mp_main__")):
+        if name.startswith(
+            (
+                "pydevconsole",
+                "debugpy",
+                "pydevd",
+                "_pydevd",
+                "_pydev",
+                "pydev_ipython",
+                "__main__",
+                "__mp_main__",
+            )
+        ):
             continue
         try:
             # Check if the module has changed on disk
@@ -384,7 +431,11 @@ def debug_reload_pymodules(checked: bool = False):
             if current_mtime is SENTINEL:
                 current_mtime = app_start_time
                 safe_object_setattr(loaded_module, "__mtime__", last_file_modified_time)
-            if isinstance(last_file_modified_time, float) and isinstance(current_mtime, float) and last_file_modified_time <= current_mtime:
+            if (
+                isinstance(last_file_modified_time, float)
+                and isinstance(current_mtime, float)
+                and last_file_modified_time <= current_mtime
+            ):
                 continue  # No changes on disk, skip reloading
             logic_to_use = 0
             if logic_to_use < 1:
@@ -401,7 +452,9 @@ def debug_reload_pymodules(checked: bool = False):
                 else:
                     for attribute_name in dir(loaded_module):
                         old_attribute = getattr(loaded_module, attribute_name)
-                        if isinstance(old_attribute, type) and old_attribute not in BUILTIN_TYPES:  # check if it's a class and not a builtin type
+                        if (
+                            isinstance(old_attribute, type) and old_attribute not in BUILTIN_TYPES
+                        ):  # check if it's a class and not a builtin type
                             new_attribute = getattr(reloaded_module, attribute_name)
                             quick_update_class_instances(old_attribute, new_attribute)  # type: ignore[arg-type]  # pyright: ignore[reportArgumentType]
             else:
@@ -409,21 +462,27 @@ def debug_reload_pymodules(checked: bool = False):
                 safe_object_setattr(reloaded_module, "__mtime__", last_file_modified_time)
                 for attribute_name in dir(loaded_module):
                     old_attribute = getattr(loaded_module, attribute_name)
-                    if isinstance(old_attribute, type) and old_attribute not in BUILTIN_TYPES:  # check if it's a class and not a builtin type
+                    if (
+                        isinstance(old_attribute, type) and old_attribute not in BUILTIN_TYPES
+                    ):  # check if it's a class and not a builtin type
                         new_attribute = getattr(reloaded_module, attribute_name)
                         quick_update_class_instances(old_attribute, new_attribute)  # type: ignore[arg-type]  # pyright: ignore[reportArgumentType]
             sys.modules[name] = reloaded_module
         except TypeError as e:  # noqa: F841
             ...
         except NotImplementedError:
-            RobustLogger().warning(f"Cannot reload built-in module: {name}, falling back to alternative method!!")
+            RobustLogger().warning(
+                f"Cannot reload built-in module: {name}, falling back to alternative method!!"
+            )
             # Fallback to manual reload
             try:
                 with Path(file_path).open("r") as f:  # type: ignore[arg-type]  # pyright: ignore[reportArgumentType]
                     exec(f.read(), loaded_module.__dict__)
                     RobustLogger().debug(f"Manually reloaded '{name}' from '{file_path}'.")
             except Exception as e:  # noqa: BLE001
-                RobustLogger().exception(f"Failed to manually reload '{name}' from '{file_path}': {e}")
+                RobustLogger().exception(
+                    f"Failed to manually reload '{name}' from '{file_path}': {e}"
+                )
         except ModuleNotFoundError as e:
             RobustLogger().warning(f"ModuleNotFoundError: Cannot reload module: {name}, {e}")
         except ImportError as e:
@@ -451,7 +510,9 @@ def debug_reload_pymodules(checked: bool = False):
                 original_name = main_module.__name__
                 main_module.__name__ = "__main_reloaded__"
 
-                spec = importlib.util.spec_from_file_location("__main_reloaded__", main_module_file_path)
+                spec = importlib.util.spec_from_file_location(
+                    "__main_reloaded__", main_module_file_path
+                )
                 new_main_module = importlib.util.module_from_spec(spec)
                 sys.modules["__main_reloaded__"] = new_main_module
                 spec.loader.exec_module(new_main_module)
@@ -462,7 +523,9 @@ def debug_reload_pymodules(checked: bool = False):
                 sys.modules["__main__"] = new_main_module
                 del sys.modules["__main_reloaded__"]
 
-                RobustLogger().info(f"Successfully reloaded entry point module '__main__' from '{main_module_file_path}'")
+                RobustLogger().info(
+                    f"Successfully reloaded entry point module '__main__' from '{main_module_file_path}'"
+                )
             except Exception as e:  # noqa: BLE001
                 RobustLogger().exception(f"Failed to reload entry point module '__main__': {e}")
         else:

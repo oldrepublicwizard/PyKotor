@@ -29,7 +29,13 @@ if UTILITY_PATH.joinpath("utility").exists():
 
 
 from pykotor.resource.formats.gff import read_gff
-from pykotor.resource.generics.fac import FAC, FACFaction, FACReputation, construct_fac, dismantle_fac
+from pykotor.resource.generics.fac import (
+    FAC,
+    FACFaction,
+    FACReputation,
+    construct_fac,
+    dismantle_fac,
+)
 from pykotor.resource.type import ResourceType
 
 # Test FAC XML with standard factions and reputations
@@ -183,29 +189,45 @@ class TestFAC(TestCase):
         assert len(fac.reputations) == 12, f"Expected 12 reputations, got {len(fac.reputations)}"
 
         # Find specific reputation: Hostile (1) perceives PC (0) as hostile (5)
-        hostile_to_pc = next((r for r in fac.reputations if r.faction_id1 == 1 and r.faction_id2 == 0), None)
+        hostile_to_pc = next(
+            (r for r in fac.reputations if r.faction_id1 == 1 and r.faction_id2 == 0), None
+        )
         assert hostile_to_pc is not None, "Missing reputation: Hostile -> PC"
         assert hostile_to_pc.reputation == 5, f"Expected 5, got {hostile_to_pc.reputation}"
 
         # Find reputation: Commoner (2) perceives PC (0) as friendly (100)
-        commoner_to_pc = next((r for r in fac.reputations if r.faction_id1 == 2 and r.faction_id2 == 0), None)
+        commoner_to_pc = next(
+            (r for r in fac.reputations if r.faction_id1 == 2 and r.faction_id2 == 0), None
+        )
         assert commoner_to_pc is not None, "Missing reputation: Commoner -> PC"
         assert commoner_to_pc.reputation == 100, f"Expected 100, got {commoner_to_pc.reputation}"
 
         # Find reputation: Hostile (1) perceives Commoner (2) as hostile (0)
-        hostile_to_commoner = next((r for r in fac.reputations if r.faction_id1 == 1 and r.faction_id2 == 2), None)
+        hostile_to_commoner = next(
+            (r for r in fac.reputations if r.faction_id1 == 1 and r.faction_id2 == 2), None
+        )
         assert hostile_to_commoner is not None, "Missing reputation: Hostile -> Commoner"
-        assert hostile_to_commoner.reputation == 0, f"Expected 0, got {hostile_to_commoner.reputation}"
+        assert hostile_to_commoner.reputation == 0, (
+            f"Expected 0, got {hostile_to_commoner.reputation}"
+        )
 
         # Find reputation: Commoner (2) perceives Hostile (1) as hostile (10)
-        commoner_to_hostile = next((r for r in fac.reputations if r.faction_id1 == 2 and r.faction_id2 == 1), None)
+        commoner_to_hostile = next(
+            (r for r in fac.reputations if r.faction_id1 == 2 and r.faction_id2 == 1), None
+        )
         assert commoner_to_hostile is not None, "Missing reputation: Commoner -> Hostile"
-        assert commoner_to_hostile.reputation == 10, f"Expected 10, got {commoner_to_hostile.reputation}"
+        assert commoner_to_hostile.reputation == 10, (
+            f"Expected 10, got {commoner_to_hostile.reputation}"
+        )
 
         # Find reputation: Merchant (3) perceives Commoner (2) as friendly (95)
-        merchant_to_commoner = next((r for r in fac.reputations if r.faction_id1 == 3 and r.faction_id2 == 2), None)
+        merchant_to_commoner = next(
+            (r for r in fac.reputations if r.faction_id1 == 3 and r.faction_id2 == 2), None
+        )
         assert merchant_to_commoner is not None, "Missing reputation: Merchant -> Commoner"
-        assert merchant_to_commoner.reputation == 95, f"Expected 95, got {merchant_to_commoner.reputation}"
+        assert merchant_to_commoner.reputation == 95, (
+            f"Expected 95, got {merchant_to_commoner.reputation}"
+        )
 
     def test_create_empty_fac(self) -> None:
         """Test creating an empty FAC structure."""

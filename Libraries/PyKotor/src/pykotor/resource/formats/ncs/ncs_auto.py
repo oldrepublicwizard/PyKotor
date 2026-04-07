@@ -32,7 +32,9 @@ if TYPE_CHECKING:
     from pykotor.resource.formats.ncs.ncs_data import NCSOptimizer
     from pykotor.resource.type import SOURCE_TYPES, TARGET_TYPES
 
-    KOTOR_CONSTANTS: list[ScriptConstant] = []  # define these here inside TYPE_CHECKING block because these functions/constants will lag the language server otherwise.
+    KOTOR_CONSTANTS: list[
+        ScriptConstant
+    ] = []  # define these here inside TYPE_CHECKING block because these functions/constants will lag the language server otherwise.
     KOTOR_FUNCTIONS: list[ScriptFunction] = []
     TSL_CONSTANTS: list[ScriptConstant] = []
     TSL_FUNCTIONS: list[ScriptFunction] = []
@@ -172,7 +174,9 @@ def compile_nss(
     NssLexer()
 
     # Create parser with game-appropriate function and constant definitions
-    if isinstance(library_lookup, Sequence) and not isinstance(library_lookup, (str, Path, os.PathLike)):
+    if isinstance(library_lookup, Sequence) and not isinstance(
+        library_lookup, (str, Path, os.PathLike)
+    ):
         lookup_arg = cast(
             "LibraryLookupType",
             list(library_lookup),
@@ -196,7 +200,9 @@ def compile_nss(
     block.compile(ncs)
 
     # Ensure NOP removal is always first optimization pass
-    if not optimizers or not any(isinstance(optimizer, RemoveNopOptimizer) for optimizer in optimizers):
+    if not optimizers or not any(
+        isinstance(optimizer, RemoveNopOptimizer) for optimizer in optimizers
+    ):
         optimizers = [RemoveNopOptimizer()] + (optimizers or [])
 
     # Apply all optimizers

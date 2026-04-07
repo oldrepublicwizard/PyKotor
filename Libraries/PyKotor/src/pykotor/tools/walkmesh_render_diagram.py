@@ -209,7 +209,9 @@ def render_bwm_validation_diagram_lines(
         id_line = tid_str.center(3)[:3]
         for j, ch in enumerate(id_line):
             grid[r0 + 1][c0 + 1 + j] = ch
-            color_role[r0 + 1][c0 + 1 + j] = "transition_id" if ch in "0123456789" else "transition_box"
+            color_role[r0 + 1][c0 + 1 + j] = (
+                "transition_id" if ch in "0123456789" else "transition_box"
+            )
         grid[r0 + 1][c0 + 4] = "|"
         color_role[r0 + 1][c0 + 4] = "transition_box"
         grid[r0 + 2][c0 : c0 + 5] = ["+", "-", "-", "-", "+"]
@@ -271,7 +273,7 @@ def render_bwm_validation_diagram_lines(
                 color_role[head_r][cc] = "arrow_head"
 
     # "X marks the spot": draw error markers at world positions (e.g. validation failures)
-    for (x, y) in (error_positions or []):
+    for x, y in error_positions or []:
         c, r = to_col(x), to_row(y)
         if 0 <= r < height and 0 <= c < width:
             grid[r][c] = "X"
@@ -316,9 +318,13 @@ def render_bwm_validation_diagram_lines(
     lines.append(BWM_VALIDATION_DIAGRAM_MAGIC)
     lines.append("")
     lines.append("--- Summary ---")
-    lines.append(f"  Bbox (world units):  X [{bbmin.x:.1f}, {bbmax.x:.1f}]  Y [{bbmin.y:.1f}, {bbmax.y:.1f}]  Z [{bbmin.z:.1f}, {bbmax.z:.1f}]")
+    lines.append(
+        f"  Bbox (world units):  X [{bbmin.x:.1f}, {bbmax.x:.1f}]  Y [{bbmin.y:.1f}, {bbmax.y:.1f}]  Z [{bbmin.z:.1f}, {bbmax.z:.1f}]"
+    )
     lines.append(f"  Vertices: {n_verts}  |  Faces: {n_walk} walkable, {n_unwalk} unwalkable")
-    lines.append(f"  Perimeter edges: {n_perim} (boundary of walkable area)  |  Transitions: {n_trans} (door/area links)")
+    lines.append(
+        f"  Perimeter edges: {n_perim} (boundary of walkable area)  |  Transitions: {n_trans} (door/area links)"
+    )
     if loops:
         outer_line = f"  Outer perimeter: {n_outer_verts} vertices, {n_outer_edges} edges (1 loop)"
         if n_hole_loops:
@@ -330,10 +336,18 @@ def render_bwm_validation_diagram_lines(
     # Legend: one line per element, with colored sample when use_color
     if use_color:
         lines.append("  Legend:")
-        lines.append(f"    {ANSI_PERIMETER}-|+{ANSI_RESET}  Perimeter — outer walkable boundary (and hole boundaries)")
-        lines.append(f"    {ANSI_TRANSITION_BOX}+---+{ANSI_RESET}  Transition box — door/area link at this edge")
-        lines.append(f"    {ANSI_TRANSITION_BOX}|{ANSI_RESET}{ANSI_TRANSITION_ID} N {ANSI_RESET}{ANSI_TRANSITION_BOX}|{ANSI_RESET}  Number = transition ID (matches LYT door index)")
-        lines.append(f"    {ANSI_ARROW_STEM}-{ANSI_RESET}{ANSI_ARROW_HEAD}>{ANSI_RESET}  Arrow: stem then head; points inward (into walkable area)")
+        lines.append(
+            f"    {ANSI_PERIMETER}-|+{ANSI_RESET}  Perimeter — outer walkable boundary (and hole boundaries)"
+        )
+        lines.append(
+            f"    {ANSI_TRANSITION_BOX}+---+{ANSI_RESET}  Transition box — door/area link at this edge"
+        )
+        lines.append(
+            f"    {ANSI_TRANSITION_BOX}|{ANSI_RESET}{ANSI_TRANSITION_ID} N {ANSI_RESET}{ANSI_TRANSITION_BOX}|{ANSI_RESET}  Number = transition ID (matches LYT door index)"
+        )
+        lines.append(
+            f"    {ANSI_ARROW_STEM}-{ANSI_RESET}{ANSI_ARROW_HEAD}>{ANSI_RESET}  Arrow: stem then head; points inward (into walkable area)"
+        )
         if error_positions:
             lines.append(f"    {ANSI_ERROR_MARKER}X{ANSI_RESET}  Error location (X marks the spot)")
         lines.append("")
@@ -354,7 +368,15 @@ def render_bwm_validation_diagram_lines(
         for trans_num, (_, edge) in enumerate(trans_edges, start=1):
             mid, direction = type(bwm).edge_inward_direction_xy(edge.face, edge.index)
             dx, dy = direction.x, direction.y
-            ch = "^" if (abs(dy) >= abs(dx) and dy > 0) else "v" if (abs(dy) >= abs(dx)) else ">" if dx > 0 else "<"
+            ch = (
+                "^"
+                if (abs(dy) >= abs(dx) and dy > 0)
+                else "v"
+                if (abs(dy) >= abs(dx))
+                else ">"
+                if dx > 0
+                else "<"
+            )
             lines.append(f"  [{trans_num:2}]  ({mid.x:6.1f}, {mid.y:6.1f})   {ch}")
         lines.append("  All on perimeter; arrows point inward.")
     else:

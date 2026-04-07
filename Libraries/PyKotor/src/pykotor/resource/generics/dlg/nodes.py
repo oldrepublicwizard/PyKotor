@@ -138,7 +138,9 @@ class DLGNode:
             - Sets flags and identifiers to default values
         """
         if not isinstance(self, (DLGEntry, DLGReply)):
-            raise RuntimeError("Cannot construct base class DLGNode: use DLGEntry or DLGReply instead.")  # noqa: TRY004
+            raise RuntimeError(
+                "Cannot construct base class DLGNode: use DLGEntry or DLGReply instead."
+            )  # noqa: TRY004
 
         # Use UUID int to avoid hash collisions that would collapse shared nodes
         self._hash_cache: int = uuid.uuid4().int
@@ -216,7 +218,9 @@ class DLGNode:
 
     def path(self) -> str:
         """Returns the GFF path to this node."""
-        node_list_display: Literal["EntryList", "ReplyList"] = "EntryList" if isinstance(self, DLGEntry) else "ReplyList"
+        node_list_display: Literal["EntryList", "ReplyList"] = (
+            "EntryList" if isinstance(self, DLGEntry) else "ReplyList"
+        )
         node_path: str = f"{node_list_display}\\{self.list_index}"
         return node_path
 
@@ -271,7 +275,11 @@ class DLGNode:
         if node_key in node_map:
             return {"type": self.__class__.__name__, "ref": node_key}
 
-        node_dict: dict[str | int, Any] = {"type": self.__class__.__name__, "key": node_key, "data": {}}
+        node_dict: dict[str | int, Any] = {
+            "type": self.__class__.__name__,
+            "key": node_key,
+            "data": {},
+        }
         node_map[node_key] = node_dict
 
         for key, value in self.__dict__.items():
@@ -299,7 +307,10 @@ class DLGNode:
                 node_dict["data"][key] = {"value": value.to_dict(), "py_type": "LocalizedString"}
             elif key == "animations":
                 anims: list[DLGAnimation] = value
-                node_dict["data"][key] = {"value": [anim.to_dict() for anim in anims], "py_type": "list"}
+                node_dict["data"][key] = {
+                    "value": [anim.to_dict() for anim in anims],
+                    "py_type": "list",
+                }
             elif isinstance(value, list):
                 node_dict["data"][key] = {"value": value, "py_type": "list"}
             elif value is None:
@@ -394,9 +405,15 @@ class DLGNode:
                 # DLGEntry.links is list[DLGLink[DLGReply]]
                 # DLGReply.links is list[DLGLink[DLGEntry]]
                 if node_type == "DLGEntry":
-                    node.links = cast("list[DLGLink[DLGReply]]", [DLGLink.from_dict(link, node_map) for link in actual_value])
+                    node.links = cast(
+                        "list[DLGLink[DLGReply]]",
+                        [DLGLink.from_dict(link, node_map) for link in actual_value],
+                    )
                 elif node_type == "DLGReply":
-                    node.links = cast("list[DLGLink[DLGEntry]]", [DLGLink.from_dict(link, node_map) for link in actual_value])
+                    node.links = cast(
+                        "list[DLGLink[DLGEntry]]",
+                        [DLGLink.from_dict(link, node_map) for link in actual_value],
+                    )
                 else:
                     node.links = [DLGLink.from_dict(link, node_map) for link in actual_value]
 

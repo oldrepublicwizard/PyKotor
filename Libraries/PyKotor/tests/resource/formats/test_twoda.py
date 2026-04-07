@@ -21,7 +21,15 @@ if PYKOTOR_PATH.joinpath("pykotor").exists():
 if UTILITY_PATH.joinpath("utility").exists():
     add_sys_path(UTILITY_PATH)
 
-from pykotor.resource.formats.twoda import TwoDA, TwoDABinaryReader, TwoDACSVReader, bytes_2da, detect_2da, read_2da, write_2da
+from pykotor.resource.formats.twoda import (
+    TwoDA,
+    TwoDABinaryReader,
+    TwoDACSVReader,
+    bytes_2da,
+    detect_2da,
+    read_2da,
+    write_2da,
+)
 from pykotor.resource.formats.twoda.io_twoda_json import TwoDAJSONReader
 from pykotor.resource.type import ResourceType
 

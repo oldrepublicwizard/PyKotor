@@ -204,7 +204,9 @@ TEST_UTC_XML = """<gff3>
   </gff3>"""
 
 K1_PATH = os.environ.get("K1_PATH", "C:\\Program Files (x86)\\Steam\\steamapps\\common\\swkotor")
-K2_PATH = os.environ.get("K2_PATH", "C:\\Program Files (x86)\\Steam\\steamapps\\common\\Knights of the Old Republic II")
+K2_PATH = os.environ.get(
+    "K2_PATH", "C:\\Program Files (x86)\\Steam\\steamapps\\common\\Knights of the Old Republic II"
+)
 
 
 class TestUTC(TestCase):
@@ -230,7 +232,9 @@ class TestUTC(TestCase):
         import os
         import tempfile
 
-        with tempfile.NamedTemporaryFile(mode="w", suffix=".utc.xml", delete=False, encoding="utf-8") as tmp:
+        with tempfile.NamedTemporaryFile(
+            mode="w", suffix=".utc.xml", delete=False, encoding="utf-8"
+        ) as tmp:
             tmp.write(TEST_UTC_XML)
             tmp_path = tmp.name
 

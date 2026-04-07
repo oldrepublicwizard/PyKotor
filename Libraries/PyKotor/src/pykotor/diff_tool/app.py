@@ -109,7 +109,9 @@ def log_output(*args, **kwargs):
     # Use logging for other messages (skip INFO in quiet mode)
     import logging
 
-    output_mode = _global_config.config.output_mode if _global_config.config is not None else "normal"
+    output_mode = (
+        _global_config.config.output_mode if _global_config.config is not None else "normal"
+    )
     if output_mode != "quiet" and msg.strip():
         logger = logging.getLogger(__name__)
         logger.info(msg.strip())
@@ -126,7 +128,11 @@ def log_output(*args, **kwargs):
         assert _global_config.output_log is not None, "Output log cannot be None"
         if not _global_config.output_log.parent.is_dir():
             while True:
-                chosen_log_file_path = str(_global_config.config.output_log_path or input("Filepath of the desired output logfile: ").strip() or "log_install_differ.log")
+                chosen_log_file_path = str(
+                    _global_config.config.output_log_path
+                    or input("Filepath of the desired output logfile: ").strip()
+                    or "log_install_differ.log"
+                )
                 _global_config.output_log = Path(chosen_log_file_path).resolve()
                 assert _global_config.output_log is not None, "Output log cannot be None"
                 if _global_config.output_log.parent.is_dir():
@@ -223,7 +229,13 @@ def _setup_logging(config: DiffConfig) -> None:
 
     # In quiet mode, suppress INFO/DEBUG from all pykotor loggers and root
     if output_mode == OutputMode.QUIET:
-        for logger_name in ("pykotor", "pykotor.diff_tool", "pykotor.tslpatcher", "pykotor.extract", "root"):
+        for logger_name in (
+            "pykotor",
+            "pykotor.diff_tool",
+            "pykotor.tslpatcher",
+            "pykotor.extract",
+            "root",
+        ):
             logging.getLogger(logger_name).setLevel(logging.ERROR)
 
     # Set up output file if specified
@@ -306,7 +318,9 @@ def generate_tslpatcher_data(
     # Analyze TLK StrRef references and create linking patches BEFORE generating files
     if modifications.tlk and base_data_path:
         log_output("\n=== Analyzing StrRef References ===")
-        log_output("Searching entire installation/folder for files that reference modified StrRefs...")
+        log_output(
+            "Searching entire installation/folder for files that reference modified StrRefs..."
+        )
 
         for tlk_mod in modifications.tlk:
             from pykotor.tslpatcher.diff.analyzers import analyze_tlk_strref_references
@@ -325,7 +339,9 @@ def generate_tslpatcher_data(
                     modifications.ncs,
                 )
             except Exception as e:  # noqa: BLE001, PERF203
-                log_output(f"[Warning] StrRef analysis failed for tlk_mod={tlk_mod}: {e.__class__.__name__}: {e}")
+                log_output(
+                    f"[Warning] StrRef analysis failed for tlk_mod={tlk_mod}: {e.__class__.__name__}: {e}"
+                )
                 log_output(f"Full traceback (tlk_mod={tlk_mod}):")
                 for line in traceback.format_exc().splitlines():
                     log_output(f"  {line}")
@@ -492,15 +508,21 @@ def handle_diff(config: DiffConfig) -> tuple[bool | None, int | None]:
                 log_output(f"  Location: {config.tslpatchdata_path}")
                 log_output(f"  INI file: {config.ini_filename}")
                 log_output(f"  TLK modifications: {len(incremental_writer.all_modifications.tlk)}")
-                log_output(f"  2DA modifications: {len(incremental_writer.all_modifications.twoda)}")
+                log_output(
+                    f"  2DA modifications: {len(incremental_writer.all_modifications.twoda)}"
+                )
                 log_output(f"  GFF modifications: {len(incremental_writer.all_modifications.gff)}")
                 log_output(f"  SSF modifications: {len(incremental_writer.all_modifications.ssf)}")
                 log_output(f"  NCS modifications: {len(incremental_writer.all_modifications.ncs)}")
-                total_install_files: int = sum(len(files) for files in incremental_writer.install_folders.values())
+                total_install_files: int = sum(
+                    len(files) for files in incremental_writer.install_folders.values()
+                )
                 log_output(f"  Install files: {total_install_files}")
                 log_output(f"  Install folders: {len(incremental_writer.install_folders)}")
             except Exception as gen_error:  # noqa: BLE001
-                log_output(f"[Error] Failed to finalize TSLPatcher data: {(gen_error.__class__.__name__, str(gen_error))}")
+                log_output(
+                    f"[Error] Failed to finalize TSLPatcher data: {(gen_error.__class__.__name__, str(gen_error))}"
+                )
                 log_output("Full traceback:")
                 for line in traceback.format_exc().splitlines():
                     log_output(f"  {line}")

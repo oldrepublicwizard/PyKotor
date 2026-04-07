@@ -92,8 +92,12 @@ class TestUTI(TestCase):
         result = gff.compare(reconstructed_gff, self.log_func)
         output = os.linesep.join(self.log_messages)
         if not result:
-            expected_output: str = r"Field 'LocalizedString' is different at 'GFFRoot\Description': 456 --> 5633"
-            assert output.strip() == expected_output.strip(), "Comparison output does not match expected output"
+            expected_output: str = (
+                r"Field 'LocalizedString' is different at 'GFFRoot\Description': 456 --> 5633"
+            )
+            assert output.strip() == expected_output.strip(), (
+                "Comparison output does not match expected output"
+            )
         else:
             assert result
 

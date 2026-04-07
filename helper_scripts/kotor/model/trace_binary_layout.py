@@ -87,8 +87,15 @@ def main():
         pykotor_mdl = pykotor_mdl_path.read_bytes()
 
         # MDLOps roundtrip
-        subprocess.run([str(mdlops_exe), str(orig_mdl_path)], cwd=str(td_path), capture_output=True, timeout=60)
-        subprocess.run([str(mdlops_exe), str(td_path / f"{model_name}-ascii.mdl"), "-k1"], cwd=str(td_path), capture_output=True, timeout=60)
+        subprocess.run(
+            [str(mdlops_exe), str(orig_mdl_path)], cwd=str(td_path), capture_output=True, timeout=60
+        )
+        subprocess.run(
+            [str(mdlops_exe), str(td_path / f"{model_name}-ascii.mdl"), "-k1"],
+            cwd=str(td_path),
+            capture_output=True,
+            timeout=60,
+        )
         mdlops_mdl = (td_path / f"{model_name}-ascii-k1-bin.mdl").read_bytes()
 
         print(f"Model: {model_name}")

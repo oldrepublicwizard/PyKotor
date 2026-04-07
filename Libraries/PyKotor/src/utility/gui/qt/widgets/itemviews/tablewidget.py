@@ -53,12 +53,19 @@ if __name__ == "__main__":
         def columnCount(self, parent: QModelIndex | None = None) -> int:
             return len(self._data[0]) if self._data else 0
 
-        def data(self, index: QModelIndex, role: Qt.ItemDataRole = Qt.ItemDataRole.DisplayRole) -> str | None:
+        def data(
+            self, index: QModelIndex, role: Qt.ItemDataRole = Qt.ItemDataRole.DisplayRole
+        ) -> str | None:
             if role == Qt.ItemDataRole.DisplayRole:
                 return self._data[index.row()][index.column()]
             return None
 
-        def headerData(self, section: int, orientation: Qt.Orientation, role: Qt.ItemDataRole = Qt.ItemDataRole.DisplayRole) -> str | None:
+        def headerData(
+            self,
+            section: int,
+            orientation: Qt.Orientation,
+            role: Qt.ItemDataRole = Qt.ItemDataRole.DisplayRole,
+        ) -> str | None:
             if role == Qt.ItemDataRole.DisplayRole:
                 if orientation == Qt.Orientation.Horizontal:
                     return f"Column {section + 1}"

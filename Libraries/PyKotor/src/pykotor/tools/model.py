@@ -371,7 +371,9 @@ def convert_to_k2(  # noqa: C901, PLR0915, PLR0912
                 offset_to_node_offset: int = nodes.pop()
                 reader.seek(offset_to_node_offset)
                 node_offset: int = reader.read_uint32()
-                offsets[offset_to_node_offset] = node_offset  # Geometry header/Node children offsets array -> Node offset
+                offsets[offset_to_node_offset] = (
+                    node_offset  # Geometry header/Node children offsets array -> Node offset
+                )
 
                 reader.seek(node_offset)
                 node_type: int = reader.read_uint16()
@@ -381,21 +383,31 @@ def convert_to_k2(  # noqa: C901, PLR0915, PLR0912
                     mesh_offsets.append([node_offset, node_type])
 
                     reader.seek(base_offset + 8)
-                    offsets[base_offset + 8] = reader.read_uint32()  # Node header -> Face array offset
+                    offsets[base_offset + 8] = (
+                        reader.read_uint32()
+                    )  # Node header -> Face array offset
 
                     reader.seek(base_offset + 176)
-                    offsets[base_offset + 176] = reader.read_uint32()  # Node header -> Vertex indices count array
+                    offsets[base_offset + 176] = (
+                        reader.read_uint32()
+                    )  # Node header -> Vertex indices count array
                     indices_array_count: int = reader.read_uint32()
 
                     reader.seek(base_offset + 188)
-                    offsets[base_offset + 188] = reader.read_uint32()  # Node header -> Vertex indices locations array
+                    offsets[base_offset + 188] = (
+                        reader.read_uint32()
+                    )  # Node header -> Vertex indices locations array
                     if indices_array_count == 1:
                         indices_locations_offset: int = offsets[base_offset + 188]
                         reader.seek(indices_locations_offset)
-                        offsets[indices_locations_offset] = reader.read_uint32()  # Vertex indices locations array -> Vertex indices array
+                        offsets[indices_locations_offset] = (
+                            reader.read_uint32()
+                        )  # Vertex indices locations array -> Vertex indices array
 
                     reader.seek(base_offset + 200)
-                    offsets[base_offset + 200] = reader.read_uint32()  # Node header -> Inverted counter array
+                    offsets[base_offset + 200] = (
+                        reader.read_uint32()
+                    )  # Node header -> Inverted counter array
 
                     reader.seek(base_offset + 328)
                     offsets[base_offset + 328] = reader.read_uint32()  # Node header -> Vertex array
@@ -404,19 +416,29 @@ def convert_to_k2(  # noqa: C901, PLR0915, PLR0912
 
                 if node_type & _NODE_TYPE_LIGHT:
                     reader.seek(base_offset + 4)
-                    offsets[base_offset + 4] = reader.read_uint32()  # Node header -> Lens flare size array
+                    offsets[base_offset + 4] = (
+                        reader.read_uint32()
+                    )  # Node header -> Lens flare size array
 
                     reader.seek(base_offset + 16)
-                    offsets[base_offset + 16] = reader.read_uint32()  # Node header -> Lens flare size array
+                    offsets[base_offset + 16] = (
+                        reader.read_uint32()
+                    )  # Node header -> Lens flare size array
 
                     reader.seek(base_offset + 28)
-                    offsets[base_offset + 28] = reader.read_uint32()  # Node header -> Lens flare positions array
+                    offsets[base_offset + 28] = (
+                        reader.read_uint32()
+                    )  # Node header -> Lens flare positions array
 
                     reader.seek(base_offset + 40)
-                    offsets[base_offset + 40] = reader.read_uint32()  # Node header -> Flare colour shifts array
+                    offsets[base_offset + 40] = (
+                        reader.read_uint32()
+                    )  # Node header -> Flare colour shifts array
 
                     reader.seek(base_offset + 52)
-                    offsets[base_offset + 52] = reader.read_uint32()  # Node header -> Flare texture names offsets array
+                    offsets[base_offset + 52] = (
+                        reader.read_uint32()
+                    )  # Node header -> Flare texture names offsets array
                     texture_count: int = reader.read_uint32()
 
                     for i in range(texture_count):
@@ -428,7 +450,9 @@ def convert_to_k2(  # noqa: C901, PLR0915, PLR0912
 
                 if node_type & _NODE_TYPE_SKIN:
                     reader.seek(base_offset + 20)
-                    offsets[base_offset + 20] = reader.read_uint32()  # Node header -> Bone map array
+                    offsets[base_offset + 20] = (
+                        reader.read_uint32()
+                    )  # Node header -> Bone map array
 
                     reader.seek(base_offset + 28)
                     offsets[base_offset + 28] = reader.read_uint32()  # Node header -> QBones array
@@ -443,7 +467,9 @@ def convert_to_k2(  # noqa: C901, PLR0915, PLR0912
 
                 if node_type & _NODE_TYPE_DANGLY:
                     reader.seek(base_offset + 0)
-                    offsets[base_offset + 0] = reader.read_uint32()  # Node header -> Dangly constraint array
+                    offsets[base_offset + 0] = (
+                        reader.read_uint32()
+                    )  # Node header -> Dangly constraint array
 
                     reader.seek(base_offset + 24)
                     offsets[base_offset + 24] = reader.read_uint32()  # Node header -> Unknown
@@ -474,13 +500,19 @@ def convert_to_k2(  # noqa: C901, PLR0915, PLR0912
 
                 if node_type & _NODE_TYPE_SABER:
                     reader.seek(base_offset + 0)
-                    offsets[base_offset + 0] = reader.read_uint32()  # Node header -> Saber Verts array
+                    offsets[base_offset + 0] = (
+                        reader.read_uint32()
+                    )  # Node header -> Saber Verts array
 
                     reader.seek(base_offset + 4)
-                    offsets[base_offset + 4] = reader.read_uint32()  # Node header -> Saber UVs array
+                    offsets[base_offset + 4] = (
+                        reader.read_uint32()
+                    )  # Node header -> Saber UVs array
 
                     reader.seek(base_offset + 8)
-                    offsets[base_offset + 8] = reader.read_uint32()  # Node header -> Saber Normals array
+                    offsets[base_offset + 8] = (
+                        reader.read_uint32()
+                    )  # Node header -> Saber Normals array
 
                     base_offset += _SABER_HEADER_SIZE
 
@@ -491,15 +523,21 @@ def convert_to_k2(  # noqa: C901, PLR0915, PLR0912
                 offsets[node_offset + 12] = reader.read_uint32()  # Node header -> Parent node
 
                 reader.seek(node_offset + 56)
-                offsets[node_offset + 56] = reader.read_uint32()  # Node header -> controller array offset
+                offsets[node_offset + 56] = (
+                    reader.read_uint32()
+                )  # Node header -> controller array offset
 
                 reader.seek(node_offset + 68)
-                offsets[node_offset + 68] = reader.read_uint32()  # Node header -> controller data offset
+                offsets[node_offset + 68] = (
+                    reader.read_uint32()
+                )  # Node header -> controller data offset
 
                 reader.seek(node_offset + 44)
                 child_offsets_offset: int = reader.read_uint32()
                 child_offsets_count: int = reader.read_uint32()
-                offsets[node_offset + 44] = child_offsets_offset  # Node header -> Child node offsets array
+                offsets[node_offset + 44] = (
+                    child_offsets_offset  # Node header -> Child node offsets array
+                )
 
                 nodes = [child_offsets_offset + i * 4 for i in range(child_offsets_count)]
                 nodes.insert(0, offset_to_root_offset)
@@ -535,11 +573,15 @@ def convert_to_k2(  # noqa: C901, PLR0915, PLR0912
         for i in range(anim_count):
             reader.seek(anim_locations_offset + i * 4)
             animation_offset: int = reader.read_uint32()
-            offsets[anim_locations_offset + i * 4] = animation_offset  # Event locations array -> Offset to event
+            offsets[anim_locations_offset + i * 4] = (
+                animation_offset  # Event locations array -> Offset to event
+            )
             anim_offsets.append(animation_offset)
 
             reader.seek(animation_offset + 120)
-            offsets[animation_offset + 120] = reader.read_uint32()  # Animation header -> Offset to event array
+            offsets[animation_offset + 120] = (
+                reader.read_uint32()
+            )  # Animation header -> Offset to event array
 
             reader.seek(animation_offset + 40)
             node_recursive(animation_offset + 40)
@@ -583,7 +625,9 @@ def convert_to_k2(  # noqa: C901, PLR0915, PLR0912
     for i in range(len(mesh_offsets)):
         node_offset, node_type = mesh_offsets[i]
         insert_location: int = node_offset + 80 + 324
-        parsed_data = bytearray(parsed_data[:insert_location] + bytes([0] * 8) + parsed_data[insert_location:])
+        parsed_data = bytearray(
+            parsed_data[:insert_location] + bytes([0] * 8) + parsed_data[insert_location:]
+        )
 
         for offset_location, offset_value in deepcopy(offsets).items():
             if insert_location < offset_location:
@@ -717,8 +761,12 @@ def flip(  # noqa: C901, PLR0912, PLR0915
     parsed_mdx_data = bytearray(mdx_data)
 
     mdl_vertex_offsets: list[tuple[int, int]] = []  # This is a list of tuples: (count, offset)
-    mdx_vertex_offsets: list[tuple[int, int, int, int]] = []  # This is a list of tuples: (count, offset, stride, position)
-    mdx_normal_offsets: list[tuple[int, int, int, int]] = []  # This is a list of tuples: (count, offset, stride, position)
+    mdx_vertex_offsets: list[
+        tuple[int, int, int, int]
+    ] = []  # This is a list of tuples: (count, offset, stride, position)
+    mdx_normal_offsets: list[
+        tuple[int, int, int, int]
+    ] = []  # This is a list of tuples: (count, offset, stride, position)
     elements_offsets: list[tuple[int, int]] = []  # This is a list of tuples: (count, offset)
     faces_offsets: list[tuple[int, int]] = []  # This is a list of tuples: (count, offset)
     with BinaryReader.from_bytes(parsed_mdl_data) as reader:

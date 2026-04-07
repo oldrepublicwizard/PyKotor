@@ -103,7 +103,9 @@ def _load_tlk_legacy(reader: BinaryReader, language: Language | None) -> TLK:
         if null_pos >= 0:
             sound_resref_bytes = sound_resref_bytes[:null_pos]
         sound_resref = sound_resref_bytes.decode("ascii", errors="ignore")
-        _volume_variance, _pitch_variance, text_offset, text_length = struct.unpack("<IIII", entries_data[offset + 20 : offset + 36])
+        _volume_variance, _pitch_variance, text_offset, text_length = struct.unpack(
+            "<IIII", entries_data[offset + 20 : offset + 36]
+        )
         (entry.sound_length,) = struct.unpack("<f", entries_data[offset + 36 : offset + 40])
 
         entry.text_present = (entry_flags & 0x0001) != 0
@@ -204,7 +206,9 @@ class TLKBinaryWriter(ResourceWriter):
 
         entry_flags = 0  # Initialize entry_flags as zero
         if entry.text_present:
-            entry_flags |= 0x0001  # TEXT_PRESENT: As we're writing text, let's assume it's always present
+            entry_flags |= (
+                0x0001  # TEXT_PRESENT: As we're writing text, let's assume it's always present
+            )
         if entry.sound_present:
             entry_flags |= 0x0002  # SND_PRESENT: If sound_resref is defined in this entry.
         if entry.soundlength_present:

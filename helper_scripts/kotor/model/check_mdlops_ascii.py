@@ -70,7 +70,11 @@ def main():
         for i, line in enumerate(lines):
             stripped = line.strip()
 
-            if stripped.startswith("node trimesh") or stripped.startswith("node skin") or stripped.startswith("node danglymesh"):
+            if (
+                stripped.startswith("node trimesh")
+                or stripped.startswith("node skin")
+                or stripped.startswith("node danglymesh")
+            ):
                 current_node = stripped.split()[-1]
                 in_node = True
                 print(f"\n{stripped}")
@@ -81,7 +85,12 @@ def main():
                 current_node = None
                 continue
 
-            if in_node and (any(stripped.startswith(kw) for kw in ["verts ", "tverts ", "bitmap ", "texture0 ", "render "])):
+            if in_node and (
+                any(
+                    stripped.startswith(kw)
+                    for kw in ["verts ", "tverts ", "bitmap ", "texture0 ", "render "]
+                )
+            ):
                 print(f"  {stripped}")
                 continue
 

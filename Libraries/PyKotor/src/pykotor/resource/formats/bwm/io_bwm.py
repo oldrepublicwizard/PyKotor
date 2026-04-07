@@ -74,9 +74,7 @@ def _load_bwm_from_kaitai(data: bytes) -> BWM:
 
     va = parsed.vertices
     vertices: list[Vector3] = (
-        [Vector3(v.x, v.y, v.z) for v in va.vertices]
-        if va is not None
-        else []
+        [Vector3(v.x, v.y, v.z) for v in va.vertices] if va is not None else []
     )
 
     faces: list[BWMFace] = []
@@ -306,9 +304,13 @@ class BWMBinaryWriter(ResourceWriter):
         # Reference: KotOR.js src/odyssey/OdysseyWalkMesh.ts:729-731 (rebuild: sort walkable first).
         _log("write: ordering faces (walkable first)")
         walkable: list[BWMFace] = [face for face in self._wok.faces if face.material.walkable()]
-        unwalkable: list[BWMFace] = [face for face in self._wok.faces if not face.material.walkable()]
+        unwalkable: list[BWMFace] = [
+            face for face in self._wok.faces if not face.material.walkable()
+        ]
         faces: list[BWMFace] = walkable + unwalkable
-        _log(f"write: faces count={len(faces)} (walkable={len(walkable)}, unwalkable={len(unwalkable)})")
+        _log(
+            f"write: faces count={len(faces)} (walkable={len(walkable)}, unwalkable={len(unwalkable)})"
+        )
 
         walkable = [face for face in faces if face.material.walkable()]
         _log("write: building AABB tree")
@@ -362,7 +364,11 @@ class BWMBinaryWriter(ResourceWriter):
             aabb_data += struct.pack("fff", aabb.bb_min.x, aabb.bb_min.y, aabb.bb_min.z + 10.0)
             aabb_data += struct.pack("fff", aabb.bb_max.x, aabb.bb_max.y, aabb.bb_max.z - 10.0)
             # Find face index by object identity
-            face_idx = 0xFFFFFFFF if aabb.face is None else next(i for i, f in enumerate(faces) if f is aabb.face)
+            face_idx = (
+                0xFFFFFFFF
+                if aabb.face is None
+                else next(i for i, f in enumerate(faces) if f is aabb.face)
+            )
             aabb_data += struct.pack("I", face_idx)
             aabb_data += struct.pack("I", 4)
             aabb_data += struct.pack("I", aabb.sigplane.value)
@@ -371,8 +377,16 @@ class BWMBinaryWriter(ResourceWriter):
             # Retail parsers treat these as zero-based array indices into the AABB table.
             #
             # Reference: wiki/BWM-File-Format.md (AABB tree; zero-based child indices).
-            left_idx = 0xFFFFFFFF if aabb.left is None else next(i for i, a in enumerate(aabbs) if a is aabb.left)
-            right_idx = 0xFFFFFFFF if aabb.right is None else next(i for i, a in enumerate(aabbs) if a is aabb.right)
+            left_idx = (
+                0xFFFFFFFF
+                if aabb.left is None
+                else next(i for i, a in enumerate(aabbs) if a is aabb.left)
+            )
+            right_idx = (
+                0xFFFFFFFF
+                if aabb.right is None
+                else next(i for i, a in enumerate(aabbs) if a is aabb.right)
+            )
             aabb_data += struct.pack("I", left_idx)
             aabb_data += struct.pack("I", right_idx)
 
@@ -381,9 +395,13 @@ class BWMBinaryWriter(ResourceWriter):
         adjacency_offset = aabb_offset + len(aabb_data)
         _log("write: packing adjacency (walkable faces)")
         adjacency_data = bytearray()
-        _adjacency_batch: list[tuple[BWMAdjacency | None, BWMAdjacency | None, BWMAdjacency | None]] = self._wok.walkable_adjacency_tuples(walkable)
+        _adjacency_batch: list[
+            tuple[BWMAdjacency | None, BWMAdjacency | None, BWMAdjacency | None]
+        ] = self._wok.walkable_adjacency_tuples(walkable)
         for face_idx, face in enumerate(walkable):
-            adjancencies: tuple[BWMAdjacency | None, BWMAdjacency | None, BWMAdjacency | None] = _adjacency_batch[face_idx]
+            adjancencies: tuple[BWMAdjacency | None, BWMAdjacency | None, BWMAdjacency | None] = (
+                _adjacency_batch[face_idx]
+            )
             indexes: list[int] = []
             for adjacency in adjancencies:
                 if adjacency is None:

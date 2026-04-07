@@ -25,13 +25,17 @@ def analyze_textures(texture_dir: Path):
         try:
             print(file)
             size = file.stat().st_size
-            process_texture(file, categories, format_counts, size_ranges, mipmap_counts, layer_counts, size)
+            process_texture(
+                file, categories, format_counts, size_ranges, mipmap_counts, layer_counts, size
+            )
             total_size += size
         except Exception:
             traceback.print_exc()
             error_count += 1
 
-    print_summary(categories, format_counts, size_ranges, mipmap_counts, layer_counts, total_size, error_count)
+    print_summary(
+        categories, format_counts, size_ranges, mipmap_counts, layer_counts, total_size, error_count
+    )
 
 
 def process_texture(
@@ -117,7 +121,9 @@ def print_summary(
     print("\nAdditional Statistics:")
     print(f"  Average file size: {total_size / sum(format_counts.values()) / 1024:.2f} KB")
     print(f"  Compressed ratio: {len(categories['compressed']) / sum(format_counts.values()):.2%}")
-    print(f"  Textures with multiple layers: {sum(count for layers, count in layer_counts.items() if layers > 1)}")
+    print(
+        f"  Textures with multiple layers: {sum(count for layers, count in layer_counts.items() if layers > 1)}"
+    )
     print(f"  Textures without mipmaps: {mipmap_counts[1] if 1 in mipmap_counts else 0}")
 
 

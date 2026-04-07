@@ -104,7 +104,13 @@ class TaskScheduler:
         ready_tasks = self._task_graph.get_ready_tasks()
         if not ready_tasks:
             return None
-        next_task_id = min(ready_tasks, key=lambda x: (self._task_priorities[x], next(i for i, task in enumerate(self._task_queue) if id(task) == x)))
+        next_task_id = min(
+            ready_tasks,
+            key=lambda x: (
+                self._task_priorities[x],
+                next(i for i, task in enumerate(self._task_queue) if id(task) == x),
+            ),
+        )
         return next(task for task in self._task_queue if id(task) == next_task_id)
 
     def get_task_queue(self) -> list[PrioritizedTask]:

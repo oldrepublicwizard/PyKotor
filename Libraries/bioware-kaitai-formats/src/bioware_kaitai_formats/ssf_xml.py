@@ -5,14 +5,19 @@ import kaitaistruct
 from kaitaistruct import KaitaiStruct, KaitaiStream, BytesIO
 
 
-if getattr(kaitaistruct, 'API_VERSION', (0, 9)) < (0, 11):
-    raise Exception("Incompatible Kaitai Struct Python API: 0.11 or later is required, but you have %s" % (kaitaistruct.__version__))
+if getattr(kaitaistruct, "API_VERSION", (0, 9)) < (0, 11):
+    raise Exception(
+        "Incompatible Kaitai Struct Python API: 0.11 or later is required, but you have %s"
+        % (kaitaistruct.__version__)
+    )
+
 
 class SsfXml(KaitaiStruct):
     """SSF XML format is a human-readable XML representation of SSF (Soundset) binary files.
     Provides easier editing than binary SSF format.
-    
+
     """
+
     def __init__(self, _io, _parent=None, _root=None):
         super(SsfXml, self).__init__(_io)
         self._parent = _parent
@@ -20,10 +25,7 @@ class SsfXml(KaitaiStruct):
         self._read()
 
     def _read(self):
-        self.xml_content = (self._io.read_bytes_full()).decode(u"UTF-8")
-
+        self.xml_content = (self._io.read_bytes_full()).decode("UTF-8")
 
     def _fetch_instances(self):
         pass
-
-

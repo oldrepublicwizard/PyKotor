@@ -27,7 +27,11 @@ class DLGAnimation:
         return self._hash_cache
 
     def to_dict(self) -> dict[str, Any]:
-        return {"animation_id": self.animation_id, "participant": self.participant, "_hash_cache": self._hash_cache}
+        return {
+            "animation_id": self.animation_id,
+            "participant": self.participant,
+            "_hash_cache": self._hash_cache,
+        }
 
     @classmethod
     def from_dict(cls, data: dict) -> DLGAnimation:

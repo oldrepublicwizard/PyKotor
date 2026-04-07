@@ -302,7 +302,12 @@ class FormatConverter:
                     # Parse string format "r g b a" back to Color object
                     components = color_value.split()
                     if len(components) == 4:
-                        r, g, b, a = float(components[0]), float(components[1]), float(components[2]), float(components[3])
+                        r, g, b, a = (
+                            float(components[0]),
+                            float(components[1]),
+                            float(components[2]),
+                            float(components[3]),
+                        )
                         tag_colors_restored[tag_name] = Color(r, g, b, a)
                     elif len(components) == 3:
                         r, g, b = float(components[0]), float(components[1]), float(components[2])

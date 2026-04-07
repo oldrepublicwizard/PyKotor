@@ -10,7 +10,12 @@ sys.path.insert(0, "Libraries/PyKotor/src")
 from pathlib import Path
 
 from pykotor.extract.installation import Installation
-from pykotor.resource.formats.mdl.io_mdl import MDLBinaryReader, _MDXDataFlags, _NodeHeader, _TrimeshHeader
+from pykotor.resource.formats.mdl.io_mdl import (
+    MDLBinaryReader,
+    _MDXDataFlags,
+    _NodeHeader,
+    _TrimeshHeader,
+)
 from pykotor.resource.type import ResourceType
 
 # Find the model

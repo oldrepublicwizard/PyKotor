@@ -56,7 +56,9 @@ def analyze_node(data: bytes, offset: int) -> dict:
     return result
 
 
-def traverse_nodes_linear(data: bytes, start_offset: int, node_count: int) -> list[tuple[int, dict]]:
+def traverse_nodes_linear(
+    data: bytes, start_offset: int, node_count: int
+) -> list[tuple[int, dict]]:
     """Traverse nodes linearly through the file, collecting all nodes."""
     nodes = []
     # Find all mesh nodes by scanning the MDL linearly
@@ -155,8 +157,15 @@ def main():
         pykotor_mdl = pykotor_mdl_path.read_bytes()
 
         # MDLOps roundtrip
-        subprocess.run([str(mdlops_exe), str(orig_mdl_path)], cwd=str(td_path), capture_output=True, timeout=60)
-        subprocess.run([str(mdlops_exe), str(td_path / f"{model_name}-ascii.mdl"), "-k1"], cwd=str(td_path), capture_output=True, timeout=60)
+        subprocess.run(
+            [str(mdlops_exe), str(orig_mdl_path)], cwd=str(td_path), capture_output=True, timeout=60
+        )
+        subprocess.run(
+            [str(mdlops_exe), str(td_path / f"{model_name}-ascii.mdl"), "-k1"],
+            cwd=str(td_path),
+            capture_output=True,
+            timeout=60,
+        )
         mdlops_mdl = (td_path / f"{model_name}-ascii-k1-bin.mdl").read_bytes()
 
         # Get root offset and node count
@@ -171,7 +180,9 @@ def main():
 
         # Compare mesh nodes
         print("\n=== Mesh Nodes Comparison ===")
-        print(f"{'NodeID':<8} {'Type':<6} {'Verts(PK)':<12} {'Verts(MO)':<12} {'VOffset(PK)':<12} {'VOffset(MO)':<12} {'FaceOff(PK)':<12} {'FaceOff(MO)':<12}")
+        print(
+            f"{'NodeID':<8} {'Type':<6} {'Verts(PK)':<12} {'Verts(MO)':<12} {'VOffset(PK)':<12} {'VOffset(MO)':<12} {'FaceOff(PK)':<12} {'FaceOff(MO)':<12}"
+        )
 
         pk_nodes_list = traverse_nodes_linear(pykotor_mdl, pk_root, pk_nodes)
         mo_nodes_list = traverse_nodes_linear(mdlops_mdl, mo_root, mo_nodes)
@@ -202,7 +213,9 @@ def main():
                     total_mo_vbytes += mo_vcount * 12
 
                 marker = "" if pk_voff == mo_voff else " <-- DIFF"
-                print(f"{pk_info['node_id']:<8} 0x{pk_info['type_id']:04X} {pk_vcount:<12} {mo_vcount:<12} {pk_voff:<12} {mo_voff:<12} {pk_foff:<12} {mo_foff:<12}{marker}")
+                print(
+                    f"{pk_info['node_id']:<8} 0x{pk_info['type_id']:04X} {pk_vcount:<12} {mo_vcount:<12} {pk_voff:<12} {mo_voff:<12} {pk_foff:<12} {mo_foff:<12}{marker}"
+                )
 
         print(f"\nTotal vertices: PyKotor={total_pk_verts}, MDLOps={total_mo_verts}")
         print(f"Total vertex bytes in MDL: PyKotor={total_pk_vbytes}, MDLOps={total_mo_vbytes}")

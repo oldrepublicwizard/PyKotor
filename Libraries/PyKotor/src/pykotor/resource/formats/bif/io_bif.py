@@ -65,7 +65,9 @@ def _load_bif_from_kaitai(data: bytes) -> BIF:
         return bif
     for e in vt.entries:
         res_type = ResourceType.from_id(int(e.resource_type))
-        resource = BIFResource(ResRef.from_blank(), res_type, b"", int(e.resource_id), int(e.file_size))
+        resource = BIFResource(
+            ResRef.from_blank(), res_type, b"", int(e.resource_id), int(e.file_size)
+        )
         resource.offset = int(e.offset)
         bif.resources.append(resource)
     reader_size = len(data)
@@ -78,7 +80,11 @@ def _load_bif_from_kaitai(data: bytes) -> BIF:
     for resource in bif.resources:
         br.seek(resource.offset)
         read_len = resource.size
-        if resource.restype == ResourceType.WOK and getattr(resource, "packed_size", 0) and resource.packed_size > resource.size:
+        if (
+            resource.restype == ResourceType.WOK
+            and getattr(resource, "packed_size", 0)
+            and resource.packed_size > resource.size
+        ):
             read_len = resource.packed_size
         resource.data = br.read_bytes(read_len)
     bif.build_lookup_tables()
@@ -150,7 +156,11 @@ def _load_bif_legacy(reader: BinaryReader) -> BIF:
                 raise ValueError(msg) from e
         else:
             read_len = resource.size
-            if resource.restype == ResourceType.WOK and getattr(resource, "packed_size", 0) and resource.packed_size > resource.size:
+            if (
+                resource.restype == ResourceType.WOK
+                and getattr(resource, "packed_size", 0)
+                and resource.packed_size > resource.size
+            ):
                 read_len = resource.packed_size
             resource.data = reader.read_bytes(read_len)
 
@@ -250,7 +260,9 @@ class BIFBinaryWriter(ResourceWriter):
 
             if self.bif.bif_type == BIFType.BZF:
                 # For BZF, compress the data to get size using raw LZMA1 format
-                compressed: bytes = lzma.compress(resource.data, format=lzma.FORMAT_RAW, filters=_LZMA_RAW_FILTERS)
+                compressed: bytes = lzma.compress(
+                    resource.data, format=lzma.FORMAT_RAW, filters=_LZMA_RAW_FILTERS
+                )
                 resource.packed_size = len(compressed)
                 current_offset += resource.packed_size
             else:
@@ -274,7 +286,9 @@ class BIFBinaryWriter(ResourceWriter):
 
             if self.bif.bif_type == BIFType.BZF:
                 # Write compressed data for BZF using raw LZMA1 format
-                compressed: bytes = lzma.compress(resource.data, format=lzma.FORMAT_RAW, filters=_LZMA_RAW_FILTERS)
+                compressed: bytes = lzma.compress(
+                    resource.data, format=lzma.FORMAT_RAW, filters=_LZMA_RAW_FILTERS
+                )
                 self._writer.write_bytes(compressed)
             else:
                 # Write raw data for BIF

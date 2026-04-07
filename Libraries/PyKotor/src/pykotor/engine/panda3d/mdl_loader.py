@@ -173,7 +173,12 @@ class MDLLoader:
         # Convert quaternion to HPR (third-party quaternion notes: wiki *mdl_loader.py*).
         from panda3d.core import Quat
 
-        quat = Quat(mdl_node.orientation.w, mdl_node.orientation.x, mdl_node.orientation.y, mdl_node.orientation.z)
+        quat = Quat(
+            mdl_node.orientation.w,
+            mdl_node.orientation.x,
+            mdl_node.orientation.y,
+            mdl_node.orientation.z,
+        )
         hpr = quat.getHpr()
         node_np.setHpr(hpr)
 
@@ -721,7 +726,9 @@ class MDLLoader:
 
         # Lightmap UV
         if reqs.has_lightmap:
-            array.addColumn(InternalName.getTexcoord().getIndex(1), 2, Geom.NTFloat32, Geom.CTexcoord)
+            array.addColumn(
+                InternalName.getTexcoord().getIndex(1), 2, Geom.NTFloat32, Geom.CTexcoord
+            )
 
         # Bone weights for skinning
         #

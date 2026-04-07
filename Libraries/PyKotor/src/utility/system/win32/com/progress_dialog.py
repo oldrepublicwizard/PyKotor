@@ -40,7 +40,9 @@ class FileOperationProgressSinkImpl(IFileOperationProgressSink):
         print(f"Preparing to move item {psiItem.GetDisplayName()} to {pszNewName}")
         return S_OK
 
-    def PostMoveItem(self, dwFlags, psiItem, psiDestinationFolder, pszNewName, hrMove, psiNewlyCreated):
+    def PostMoveItem(
+        self, dwFlags, psiItem, psiDestinationFolder, pszNewName, hrMove, psiNewlyCreated
+    ):
         print(f"Moved item {psiItem.GetDisplayName()} to {pszNewName}")
         return S_OK
 
@@ -48,7 +50,9 @@ class FileOperationProgressSinkImpl(IFileOperationProgressSink):
         print(f"Preparing to copy item {psiItem.GetDisplayName()} to {pszNewName}")
         return S_OK
 
-    def PostCopyItem(self, dwFlags, psiItem, psiDestinationFolder, pszNewName, hrCopy, psiNewlyCreated):
+    def PostCopyItem(
+        self, dwFlags, psiItem, psiDestinationFolder, pszNewName, hrCopy, psiNewlyCreated
+    ):
         print(f"Copied item {psiItem.GetDisplayName()} to {pszNewName}")
         return S_OK
 
@@ -64,7 +68,16 @@ class FileOperationProgressSinkImpl(IFileOperationProgressSink):
         print(f"Preparing to create new item {pszNewName}")
         return S_OK
 
-    def PostNewItem(self, dwFlags, psiDestinationFolder, pszNewName, pszTemplateName, dwFileAttributes, hrNew, psiNewItem):
+    def PostNewItem(
+        self,
+        dwFlags,
+        psiDestinationFolder,
+        pszNewName,
+        pszTemplateName,
+        dwFileAttributes,
+        hrNew,
+        psiNewItem,
+    ):
         print(f"Created new item {pszNewName}")
         return S_OK
 
@@ -139,7 +152,9 @@ def perform_file_operation(
         print(f"File operation {operation} from {source_path} to {destination_path} completed")
 
     except Exception as e:  # noqa: BLE001
-        RobustLogger().exception(f"General error while attempting to perform file operations with the com objects: {e.__class__.__name__}: {e}")
+        RobustLogger().exception(
+            f"General error while attempting to perform file operations with the com objects: {e.__class__.__name__}: {e}"
+        )
 
     finally:
         uninitialize_com()

@@ -100,7 +100,9 @@ def rotate_dxt5(
             new_data[dst_block_idx : dst_block_idx + 2] = data[src_block_idx : src_block_idx + 2]
 
             # Rotate alpha indices
-            alpha_indices: int = int.from_bytes(data[src_block_idx + 2 : src_block_idx + 8], "little")
+            alpha_indices: int = int.from_bytes(
+                data[src_block_idx + 2 : src_block_idx + 8], "little"
+            )
             rotated_alpha = 0
             for i in range(16):
                 src_alpha = (alpha_indices >> (i * 3)) & 0b111
@@ -117,7 +119,9 @@ def rotate_dxt5(
             new_data[dst_block_idx + 2 : dst_block_idx + 8] = rotated_alpha.to_bytes(6, "little")
 
             # Copy color data
-            new_data[dst_block_idx + 8 : dst_block_idx + 12] = data[src_block_idx + 8 : src_block_idx + 12]
+            new_data[dst_block_idx + 8 : dst_block_idx + 12] = data[
+                src_block_idx + 8 : src_block_idx + 12
+            ]
 
             # Rotate color indices (same as DXT1)
             pixels: int = int.from_bytes(data[src_block_idx + 12 : src_block_idx + 16], "little")
@@ -160,7 +164,9 @@ def flip_vertically_dxt(
     for by in range(blocks_y):
         src_row_start: int = by * blocks_x * block_size
         dst_row_start: int = (blocks_y - 1 - by) * blocks_x * block_size
-        new_data[dst_row_start : dst_row_start + blocks_x * block_size] = data[src_row_start : src_row_start + blocks_x * block_size]
+        new_data[dst_row_start : dst_row_start + blocks_x * block_size] = data[
+            src_row_start : src_row_start + blocks_x * block_size
+        ]
 
     return new_data
 
@@ -189,34 +195,61 @@ def flip_horizontally_dxt(
             dst_block_idx: int = (by * blocks_x + (blocks_x - 1 - bx)) * bytes_per_block
 
             # Copy block data
-            new_data[dst_block_idx : dst_block_idx + bytes_per_block] = data[src_block_idx : src_block_idx + bytes_per_block]
+            new_data[dst_block_idx : dst_block_idx + bytes_per_block] = data[
+                src_block_idx : src_block_idx + bytes_per_block
+            ]
 
             # Flip pixel indices horizontally
             if bytes_per_block == 8:  # DXT1
-                pixels: int = int.from_bytes(new_data[dst_block_idx + 4 : dst_block_idx + 8], "little")
+                pixels: int = int.from_bytes(
+                    new_data[dst_block_idx + 4 : dst_block_idx + 8], "little"
+                )
                 flipped_pixels = 0
                 for i in range(4):
                     row = (pixels >> (i * 8)) & 0xFF
-                    flipped_row = ((row & 0b11) << 6) | ((row & 0b1100) << 2) | ((row & 0b110000) >> 2) | ((row & 0b11000000) >> 6)
+                    flipped_row = (
+                        ((row & 0b11) << 6)
+                        | ((row & 0b1100) << 2)
+                        | ((row & 0b110000) >> 2)
+                        | ((row & 0b11000000) >> 6)
+                    )
                     flipped_pixels |= flipped_row << (i * 8)
-                new_data[dst_block_idx + 4 : dst_block_idx + 8] = flipped_pixels.to_bytes(4, "little")
+                new_data[dst_block_idx + 4 : dst_block_idx + 8] = flipped_pixels.to_bytes(
+                    4, "little"
+                )
             elif bytes_per_block == 16:  # DXT5
                 # Flip alpha indices
-                alpha_indices = int.from_bytes(new_data[dst_block_idx + 2 : dst_block_idx + 8], "little")
+                alpha_indices = int.from_bytes(
+                    new_data[dst_block_idx + 2 : dst_block_idx + 8], "little"
+                )
                 flipped_alpha = 0
                 for i in range(4):
                     row = (alpha_indices >> (i * 12)) & 0xFFF
-                    flipped_row = ((row & 0b111) << 9) | ((row & 0b111000) << 3) | ((row & 0b111000000) >> 3) | ((row & 0b111000000000) >> 9)
+                    flipped_row = (
+                        ((row & 0b111) << 9)
+                        | ((row & 0b111000) << 3)
+                        | ((row & 0b111000000) >> 3)
+                        | ((row & 0b111000000000) >> 9)
+                    )
                     flipped_alpha |= flipped_row << (i * 12)
-                new_data[dst_block_idx + 2 : dst_block_idx + 8] = flipped_alpha.to_bytes(6, "little")
+                new_data[dst_block_idx + 2 : dst_block_idx + 8] = flipped_alpha.to_bytes(
+                    6, "little"
+                )
 
                 # Flip color indices (same as DXT1)
                 pixels = int.from_bytes(new_data[dst_block_idx + 12 : dst_block_idx + 16], "little")
                 flipped_pixels = 0
                 for i in range(4):
                     row = (pixels >> (i * 8)) & 0xFF
-                    flipped_row = ((row & 0b11) << 6) | ((row & 0b1100) << 2) | ((row & 0b110000) >> 2) | ((row & 0b11000000) >> 6)
+                    flipped_row = (
+                        ((row & 0b11) << 6)
+                        | ((row & 0b1100) << 2)
+                        | ((row & 0b110000) >> 2)
+                        | ((row & 0b11000000) >> 6)
+                    )
                     flipped_pixels |= flipped_row << (i * 8)
-                new_data[dst_block_idx + 12 : dst_block_idx + 16] = flipped_pixels.to_bytes(4, "little")
+                new_data[dst_block_idx + 12 : dst_block_idx + 16] = flipped_pixels.to_bytes(
+                    4, "little"
+                )
 
     return new_data

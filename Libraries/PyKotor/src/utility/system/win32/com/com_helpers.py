@@ -54,7 +54,9 @@ class COMInitializeContext(Generic[T]):
 
 
 class COMCreateInstanceContext(Generic[T]):
-    def __init__(self, clsid: GUID | None = None, interface: type[T | comtypes.IUnknown] | None = None):
+    def __init__(
+        self, clsid: GUID | None = None, interface: type[T | comtypes.IUnknown] | None = None
+    ):
         self.clsid: GUID | None = clsid
         self.interface: type[T | comtypes.IUnknown] | None = interface
         self._should_uninitialize: bool = False
@@ -75,7 +77,9 @@ class COMCreateInstanceContext(Generic[T]):
                 raise OSError("Incorrect interface definition")
             hr = windll.ole32.CoCreateInstance(byref(self.clsid), None, 1, byref(iid), byref(p))
             if hr != S_OK:
-                raise HRESULT(hr).exception(f"CoCreateInstance failed on clsid '{self.clsid}', with interface '{iid}'!")
+                raise HRESULT(hr).exception(
+                    f"CoCreateInstance failed on clsid '{self.clsid}', with interface '{iid}'!"
+                )
             return p.contents
         return None
 
@@ -91,7 +95,9 @@ class COMCreateInstanceContext(Generic[T]):
 
 
 @contextmanager
-def HandleCOMCall(action_desc: str = "Unspecified COM function") -> Generator[Callable[..., None], Any, None]:
+def HandleCOMCall(
+    action_desc: str = "Unspecified COM function",
+) -> Generator[Callable[..., None], Any, None]:
     print(f"Attempt to call COM func {action_desc}")
     try:
         from comtypes import (
@@ -174,8 +180,12 @@ if __name__ == "__main__":
 
         _iid_ = IID_IFileSystemBindData
         _methods_: ClassVar[list[_ComMemberSpec]] = [
-            comtypes.COMMETHOD([], HRESULT, "SetFindData", (["in"], POINTER(WIN32_FIND_DATAW), "pfd")),
-            comtypes.COMMETHOD([], HRESULT, "GetFindData", (["out"], POINTER(WIN32_FIND_DATAW), "pfd")),
+            comtypes.COMMETHOD(
+                [], HRESULT, "SetFindData", (["in"], POINTER(WIN32_FIND_DATAW), "pfd")
+            ),
+            comtypes.COMMETHOD(
+                [], HRESULT, "GetFindData", (["out"], POINTER(WIN32_FIND_DATAW), "pfd")
+            ),
         ]
 
     class FileSystemBindData(comtypes.COMObject):
@@ -185,11 +195,15 @@ if __name__ == "__main__":
 
         _com_interfaces_: Sequence[type[comtypes.IUnknown]] = [IFileSystemBindData]
 
-        def IFileSystemBindData_SetFindData(self: Self, this: Self, pfd: _Pointer | _CArgObject) -> HRESULT:
+        def IFileSystemBindData_SetFindData(
+            self: Self, this: Self, pfd: _Pointer | _CArgObject
+        ) -> HRESULT:
             self.pfd: _Pointer = pfd  # pyright: ignore[reportAttributeAccessIssue]
             return S_OK
 
-        def IFileSystemBindData_GetFindData(self: Self, this: Self, pfd: _Pointer | _CArgObject) -> HRESULT:
+        def IFileSystemBindData_GetFindData(
+            self: Self, this: Self, pfd: _Pointer | _CArgObject
+        ) -> HRESULT:
             return S_OK
 
     find_data = WIN32_FIND_DATAW()  # from wintypes

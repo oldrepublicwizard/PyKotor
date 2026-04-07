@@ -98,7 +98,9 @@ class LibUpdate:
 
         self.archive_name: str = self.get_archive_names()[0]
         self._current_app_dir: Path = get_app_dir()
-        self._download_status: bool = False  # The status of the download. Once downloaded this will be True
+        self._download_status: bool = (
+            False  # The status of the download. Once downloaded this will be True
+        )
         self.log: Logger = logger or RobustLogger()
 
     def get_expected_filename(self) -> str:
@@ -299,7 +301,9 @@ class LibUpdate:
         elif archive_ext == ".zip":
             cls.extract_zip(archive_path, recursive_extract=True)
         else:
-            raise ValueError(f"Invalid file extension: '{archive_ext}' for archive path '{archive_path}'")
+            raise ValueError(
+                f"Invalid file extension: '{archive_ext}' for archive path '{archive_path}'"
+            )
 
     @classmethod
     def extract_tar(
@@ -317,20 +321,30 @@ class LibUpdate:
                         continue  # Ignore directories and non-file members
                     # Sanitize and extract each file
                     member_path: tuple[str, ...] = PurePath(member.name).parts
-                    sanitized_path: Path = Path.cwd() / PurePath(*[p for p in member_path if p not in ("/", "..", "")])
+                    sanitized_path: Path = Path.cwd() / PurePath(
+                        *[p for p in member_path if p not in ("/", "..", "")]
+                    )
                     ensure_directory_exists(sanitized_path.parent)  # Ensure directory exists
                     with sanitized_path.open("wb") as f:
                         extracted_member: IO[bytes] | None = tfile.extractfile(member)
                         if not extracted_member:
-                            raise ValueError(f"Issue extracting member '{member}' ({member!r}): extractfile(member) returned None")  # noqa: TRY301
+                            raise ValueError(
+                                f"Issue extracting member '{member}' ({member!r}): extractfile(member) returned None"
+                            )  # noqa: TRY301
                         f.write(extracted_member.read())
                     if sanitized_path.exists():
                         log.info("Successfully extracted '%s'", sanitized_path)
                     else:
-                        log.warning("Expected '%s' to exist after extraction, but it does not.", sanitized_path)
+                        log.warning(
+                            "Expected '%s' to exist after extraction, but it does not.",
+                            sanitized_path,
+                        )
                     if not recursive_extract:
                         continue
-                    if get_normalized_extension(sanitized_path) in {".gz", ".bz2", ".tar", ".zip"} and sanitized_path.is_file():
+                    if (
+                        get_normalized_extension(sanitized_path) in {".gz", ".bz2", ".tar", ".zip"}
+                        and sanitized_path.is_file()
+                    ):
                         cls._recursive_extract(sanitized_path)
         except Exception as err:  # pragma: no cover
             log = RobustLogger()
@@ -356,8 +370,14 @@ class LibUpdate:
                     if extracted_path.exists():
                         log.info("Successfully extracted '%s'", extracted_path)
                     else:
-                        log.warning("Expected '%s' to exist after extraction, but it does not.", extracted_path)
-                    if get_normalized_extension(extracted_path) in {".gz", ".bz2", ".tar", ".zip"} and extracted_path.is_file():
+                        log.warning(
+                            "Expected '%s' to exist after extraction, but it does not.",
+                            extracted_path,
+                        )
+                    if (
+                        get_normalized_extension(extracted_path) in {".gz", ".bz2", ".tar", ".zip"}
+                        and extracted_path.is_file()
+                    ):
                         cls._recursive_extract(extracted_path)
         except Exception as err:  # pragma: no cover
             log.debug(err, exc_info=True)
@@ -382,7 +402,9 @@ class LibUpdate:
                         return self.downloader(self.archive_name, parsed_url, self.progress_hooks)
 
                     if "mega.nz" in parsed_url.lower():
-                        download_mega_file_url(parsed_url, archive_path, progress_hooks=self.progress_hooks)
+                        download_mega_file_url(
+                            parsed_url, archive_path, progress_hooks=self.progress_hooks
+                        )
                     else:
                         # HACK(th3w1zard1): use the latest tag for GitHub based downloads.
                         tag: str = self.latest
@@ -402,12 +424,21 @@ class LibUpdate:
                         result = fd.download_verify_write()
                         if result:
                             self.log.debug("Download Complete")
-                            archive_path = fd.filepath.parent / fd.downloaded_filename  # TODO(th3w1zard1): loop through archive names...
+                            archive_path = (
+                                fd.filepath.parent / fd.downloaded_filename
+                            )  # TODO(th3w1zard1): loop through archive names...
                             if not archive_path.is_file():
-                                self.log.error("Download complete but %s not found on disk at expected %s filepath?", fd.downloaded_filename, archive_path)
+                                self.log.error(
+                                    "Download complete but %s not found on disk at expected %s filepath?",
+                                    fd.downloaded_filename,
+                                    archive_path,
+                                )
                                 continue
                             if fd.downloaded_filename not in self.get_archive_names():
-                                self.log.warning("Archive name %s does not exist in the archive name getter function, will override with downloaded name.", archive_path.name)
+                                self.log.warning(
+                                    "Archive name %s does not exist in the archive name getter function, will override with downloaded name.",
+                                    archive_path.name,
+                                )
 
                                 def getarchivename(a: Path = archive_path) -> list[str]:
                                     return [a.name]
@@ -588,7 +619,9 @@ class AppUpdate(LibUpdate):  # pragma: no cover
                     temp_app_filepath = check_path
                     break
             if temp_app_filepath.is_dir():
-                self.log.warning("The rename strategy is only supported for one file bundled executables. Falling back to overwrite strategy.")
+                self.log.warning(
+                    "The rename strategy is only supported for one file bundled executables. Falling back to overwrite strategy."
+                )
                 self._win_overwrite(restart=True)
             elif not temp_app_filepath.exists():
                 self.log.error("Updated app filepath: %s not found", temp_app_filepath)
@@ -600,10 +633,14 @@ class AppUpdate(LibUpdate):  # pragma: no cover
             elif old_app_path.is_dir():
                 shutil.rmtree(str(old_app_path), ignore_errors=True)
             elif not old_app_path.exists():
-                raise ValueError(f"Old app path at '{old_app_path}' was neither a file or directory, perhaps we don't have permission to check? No changes have been made.")
+                raise ValueError(
+                    f"Old app path at '{old_app_path}' was neither a file or directory, perhaps we don't have permission to check? No changes have been made."
+                )
         except PermissionError:
             # Fallback to the good ol' rename strategy.
-            randomized_old_app_path: Path = old_app_path.with_suffix(f"{old_app_path.suffix}.{uuid.uuid4().hex[:7]}")
+            randomized_old_app_path: Path = old_app_path.with_suffix(
+                f"{old_app_path.suffix}.{uuid.uuid4().hex[:7]}"
+            )
             old_app_path.rename(randomized_old_app_path)
 
         # On Windows, it's possible to rename a currently running exe file
@@ -623,14 +660,21 @@ class AppUpdate(LibUpdate):  # pragma: no cover
             try:
                 win_hide_file(old_app_path)
             except OSError:
-                self.log.info("Failed to hide file. This is fine - we can still continue", exc_info=True)
+                self.log.info(
+                    "Failed to hide file. This is fine - we can still continue", exc_info=True
+                )
 
         if not restart:
             return old_app_path, cur_app_filepath
 
         try:
             r = Restarter(
-                cur_app_filepath, temp_app_filepath, restart_strategy=self.r_strategy, filename=self.filename, update_strategy=self.u_strategy, exithook=self.exithook,
+                cur_app_filepath,
+                temp_app_filepath,
+                restart_strategy=self.r_strategy,
+                filename=self.filename,
+                update_strategy=self.u_strategy,
+                exithook=self.exithook,
             )
             r.process()
         except OSError as e:
@@ -645,7 +689,9 @@ class AppUpdate(LibUpdate):  # pragma: no cover
                 attrs: int = ctypes.windll.kernel32.GetFileAttributesW(str(old_app_path))
                 if attrs == -1:
                     raise ctypes.WinError() from e
-                if not ctypes.windll.kernel32.SetFileAttributesW(str(old_app_path), attrs & (~0x02)):
+                if not ctypes.windll.kernel32.SetFileAttributesW(
+                    str(old_app_path), attrs & (~0x02)
+                ):
                     raise ctypes.WinError() from e
             except OSError:
                 # Better to stay hidden than to just fail at this point

@@ -149,7 +149,9 @@ class DLG:
         if isinstance(target, DLGLink):
             parent_node: DLGEntry | DLGReply | DLG | None = self.get_link_parent(target)
             if parent_node is None:
-                raise ValueError(f"Target {target.__class__.__name__} doesn't have a parent, and also not found in starters.")
+                raise ValueError(
+                    f"Target {target.__class__.__name__} doesn't have a parent, and also not found in starters."
+                )
             if isinstance(parent_node, DLG):
                 paths.append(PureWindowsPath("StartingList", str(target.list_index)))
             else:
@@ -308,7 +310,11 @@ class DLG:
             seen_entries.add(entry)
             for reply_link in entry.links:
                 reply: DLGNode = reply_link.node
-                entries.extend(self._all_entries(cast("Sequence[DLGLink[DLGEntry]]", reply.links), seen_entries))
+                entries.extend(
+                    self._all_entries(
+                        cast("Sequence[DLGLink[DLGEntry]]", reply.links), seen_entries
+                    )
+                )
 
         return entries
 
@@ -346,7 +352,11 @@ class DLG:
         """
         replies: list[DLGReply] = []
 
-        links = [_ for link in self.starters if link.node is not None for _ in link.node.links] if links is None else links
+        links = (
+            [_ for link in self.starters if link.node is not None for _ in link.node.links]
+            if links is None
+            else links
+        )
         seen_replies = [] if seen_replies is None else seen_replies
 
         for link in links:
@@ -361,6 +371,8 @@ class DLG:
                 entry: DLGNode | None = entry_link.node
                 if entry is None:
                     continue
-                replies.extend(self._all_replies(cast("Sequence[DLGLink]", entry.links), seen_replies))
+                replies.extend(
+                    self._all_replies(cast("Sequence[DLGLink]", entry.links), seen_replies)
+                )
 
         return replies

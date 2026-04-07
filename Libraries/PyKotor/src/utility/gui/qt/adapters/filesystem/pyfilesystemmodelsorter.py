@@ -14,7 +14,6 @@ from qtpy.QtCore import QCollator, Qt  # type: ignore[attr-defined]
 from utility.gui.qt.adapters.filesystem.qtimezone_compat import qtimezone_utc
 
 if TYPE_CHECKING:
-
     from utility.gui.qt.adapters.filesystem.pyfilesystemnode import PyFileSystemNode
 
 

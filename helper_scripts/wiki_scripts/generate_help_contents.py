@@ -150,7 +150,9 @@ def generate_contents_xml():
     tutorials_folder.append(create_document("Custom Robes", "tutorials/1-creatingCustomRobes.md"))
     tutorials_folder.append(create_document("New Store", "tutorials/2-creatingANewStore.md"))
     tutorials_folder.append(create_document("Area Transitions", "tutorials/3-areaTransition.md"))
-    tutorials_folder.append(create_document("DLG Static Cameras", "tutorials/4-creatingStaticCameras.md"))
+    tutorials_folder.append(
+        create_document("DLG Static Cameras", "tutorials/4-creatingStaticCameras.md")
+    )
     root.append(tutorials_folder)
 
     # Get and categorize wiki files
@@ -225,7 +227,13 @@ def generate_contents_xml():
         tslpatcher_folder = ET.Element("Folder")
         tslpatcher_folder.set("name", "TSLPatcher")
         for file in sorted(categories["TSLPatcher"]):
-            name = file.replace(".md", "").replace("TSLPatcher-", "").replace("TSLPatcher_", "").replace("-", " ").replace("'s", "'s")
+            name = (
+                file.replace(".md", "")
+                .replace("TSLPatcher-", "")
+                .replace("TSLPatcher_", "")
+                .replace("-", " ")
+                .replace("'s", "'s")
+            )
             tslpatcher_folder.append(create_document(name, file))
         root.append(tslpatcher_folder)
 

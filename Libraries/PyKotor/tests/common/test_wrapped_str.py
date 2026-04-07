@@ -253,7 +253,12 @@ class TestMutableStr(unittest.TestCase):
     def test_rsplit(self):
         ws: WrappedStr = WrappedStr("test test test")
         assert ws.rsplit() == [WrappedStr("test"), WrappedStr("test"), WrappedStr("test")]
-        assert ws.rsplit("e") == [WrappedStr("t"), WrappedStr("st t"), WrappedStr("st t"), WrappedStr("st")]
+        assert ws.rsplit("e") == [
+            WrappedStr("t"),
+            WrappedStr("st t"),
+            WrappedStr("st t"),
+            WrappedStr("st"),
+        ]
 
     def test_rstrip(self):
         ws: WrappedStr = WrappedStr("test   ")
@@ -263,7 +268,12 @@ class TestMutableStr(unittest.TestCase):
     def test_split(self):
         ws: WrappedStr = WrappedStr("test test test")
         assert ws.split() == [WrappedStr("test"), WrappedStr("test"), WrappedStr("test")]
-        assert ws.split("e") == [WrappedStr("t"), WrappedStr("st t"), WrappedStr("st t"), WrappedStr("st")]
+        assert ws.split("e") == [
+            WrappedStr("t"),
+            WrappedStr("st t"),
+            WrappedStr("st t"),
+            WrappedStr("st"),
+        ]
 
     def test_splitlines(self):
         ws: WrappedStr = WrappedStr("test\ntest\rtest")
@@ -304,11 +314,21 @@ class TestMutableStr(unittest.TestCase):
 
     def test_iter(self):
         ws: WrappedStr = WrappedStr("test")
-        assert list(iter(ws)) == [WrappedStr("t"), WrappedStr("e"), WrappedStr("s"), WrappedStr("t")]
+        assert list(iter(ws)) == [
+            WrappedStr("t"),
+            WrappedStr("e"),
+            WrappedStr("s"),
+            WrappedStr("t"),
+        ]
 
     def test_reversed(self):
         ws: WrappedStr = WrappedStr("test")
-        assert list(reversed(ws)) == [WrappedStr("t"), WrappedStr("s"), WrappedStr("e"), WrappedStr("t")]
+        assert list(reversed(ws)) == [
+            WrappedStr("t"),
+            WrappedStr("s"),
+            WrappedStr("e"),
+            WrappedStr("t"),
+        ]
 
     def test_getstate(self):
         ws: WrappedStr = WrappedStr("test")

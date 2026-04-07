@@ -70,7 +70,11 @@ class ArchiveResource(BiowareResource):
             return True
         if not isinstance(other, ArchiveResource):
             return NotImplemented  # type: ignore[no-any-return]
-        return self.resref == other.resref and self.restype == other.restype and self.data == other.data
+        return (
+            self.resref == other.resref
+            and self.restype == other.restype
+            and self.data == other.data
+        )
 
     def __hash__(self):
         return hash((self.resref, self.restype, self.data))
@@ -117,7 +121,9 @@ class ArchiveResource(BiowareResource):
                     gff_str = gff_str[:997] + "..."
                 return f"GFF {self.restype.name} '{self.resref}':\n{gff_str}"
             except Exception as e:
-                return f"GFF {self.restype.name} '{self.resref}' ({self.size} bytes, parse error: {e})"
+                return (
+                    f"GFF {self.restype.name} '{self.resref}' ({self.size} bytes, parse error: {e})"
+                )
 
         # Handle TLK resources
         elif self.restype == ResourceType.TLK:
@@ -165,7 +171,12 @@ class ArchiveResource(BiowareResource):
                 return f"TXI Info '{self.resref}' ({self.size} bytes, binary)"
 
         # Handle sound resources
-        elif self.restype in (ResourceType.WAV, ResourceType.BMU, ResourceType.WMA, ResourceType.WMV):
+        elif self.restype in (
+            ResourceType.WAV,
+            ResourceType.BMU,
+            ResourceType.WMA,
+            ResourceType.WMV,
+        ):
             return f"Audio '{self.resref}' ({self.restype.name}, {self.size} bytes)"
 
         # Handle model resources
@@ -260,7 +271,9 @@ class BiowareArchive(ComparableMixin, ABC):
             key = ResourceIdentifier.from_path(key)
         if not isinstance(key, ResourceIdentifier):
             raise TypeError(f"Expected ResourceIdentifier, got {key.__class__.__name__}")
-        self._resources.remove(cast("dict[ResourceIdentifier, ArchiveResource]", self._resource_dict).pop(key))
+        self._resources.remove(
+            cast("dict[ResourceIdentifier, ArchiveResource]", self._resource_dict).pop(key)
+        )
 
     def __add__(
         self,
@@ -287,7 +300,8 @@ class BiowareArchive(ComparableMixin, ABC):
         if not isinstance(other, BiowareArchive):
             return NotImplemented  # type: ignore[no-any-return]
         return (
-            set(self._resources) == set(other._resources) and super().__eq__(other)  # ComparableMixin.__eq__
+            set(self._resources) == set(other._resources)
+            and super().__eq__(other)  # ComparableMixin.__eq__
         )
 
     def set_resource(
@@ -305,7 +319,11 @@ class BiowareArchive(ComparableMixin, ABC):
         data: bytes,
     ) -> None:
         resource: ArchiveResource | None = next(
-            (resource for resource in cast("list[ArchiveResource]", self._resources) if resource.resref == resref and resource.restype == restype),
+            (
+                resource
+                for resource in cast("list[ArchiveResource]", self._resources)
+                if resource.resref == resref and resource.restype == restype
+            ),
             None,
         )
         if resource is None:
@@ -320,7 +338,9 @@ class BiowareArchive(ComparableMixin, ABC):
         resref: ResRef | str,
         restype: ResourceType,
     ) -> bytes | None:
-        resource_dict: dict[ResourceIdentifier, ArchiveResource] = cast("dict[ResourceIdentifier, ArchiveResource]", self._resource_dict)
+        resource_dict: dict[ResourceIdentifier, ArchiveResource] = cast(
+            "dict[ResourceIdentifier, ArchiveResource]", self._resource_dict
+        )
         key = ResourceIdentifier(resref, restype)
         resource: ArchiveResource | None = resource_dict.get(key)
         return None if resource is None else resource.data

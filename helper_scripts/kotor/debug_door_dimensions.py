@@ -86,7 +86,9 @@ try:
                     f.seek(loc.offset)
                     data = f.read(loc.size)
                 genericdoors_2da = read_2da(data)
-                print(f"  ✓ Successfully loaded genericdoors.2da ({len(genericdoors_2da.get_rows())} rows)")
+                print(
+                    f"  ✓ Successfully loaded genericdoors.2da ({len(genericdoors_2da.get_rows())} rows)"
+                )
                 break
 except Exception as e:
     print(f"  ✗ Failed: {e}")
@@ -97,7 +99,9 @@ if genericdoors_2da is None:
         result = inst.resource("genericdoors", ResourceType.TwoDA)
         if result and result.data:
             genericdoors_2da = read_2da(result.data)
-            print(f"  ✓ Successfully loaded via resource() ({len(genericdoors_2da.get_rows())} rows)")
+            print(
+                f"  ✓ Successfully loaded via resource() ({len(genericdoors_2da.get_rows())} rows)"
+            )
     except Exception as e:
         print(f"  ✗ resource() also failed: {e}")
 

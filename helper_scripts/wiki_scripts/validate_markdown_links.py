@@ -83,7 +83,12 @@ def extract_headings(content: str) -> dict[str, int]:
     return headings
 
 
-def validate_link(link_url: str, source_file: Path, all_files: dict[str, Path], all_headings: dict[str, dict[str, int]],) -> tuple[bool, str]:
+def validate_link(
+    link_url: str,
+    source_file: Path,
+    all_files: dict[str, Path],
+    all_headings: dict[str, dict[str, int]],
+) -> tuple[bool, str]:
     """Validate a single link.
 
     Returns: (is_valid, error_message)
@@ -136,7 +141,11 @@ def validate_link(link_url: str, source_file: Path, all_files: dict[str, Path], 
         if file_key in all_headings:
             if normalized_anchor not in all_headings[file_key]:
                 # Try to find similar anchors
-                similar = [h for h in all_headings[file_key].keys() if normalized_anchor in h or h in normalized_anchor]
+                similar = [
+                    h
+                    for h in all_headings[file_key].keys()
+                    if normalized_anchor in h or h in normalized_anchor
+                ]
                 if similar:
                     return False, f"Anchor not found (similar: {similar[0]})"
                 return False, f"Anchor not found: #{anchor_part}"

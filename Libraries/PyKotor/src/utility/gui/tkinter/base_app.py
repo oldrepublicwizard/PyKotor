@@ -194,7 +194,9 @@ class BaseApp(ABC):
                 with log_file_path.open("a", encoding="utf-8") as log_file:
                     log_file.write(f"{log.formatted_message}\n")
             except OSError as e:
-                RobustLogger().error(f"Failed to write log file at '{log_file_path}': {e.__class__.__name__}: {e}")
+                RobustLogger().error(
+                    f"Failed to write log file at '{log_file_path}': {e.__class__.__name__}: {e}"
+                )
 
         # Write to UI
         try:
@@ -277,9 +279,13 @@ class BaseApp(ABC):
         # Standard log level color tags
         text_widget.tag_configure("DEBUG", foreground="#6495ED")  # Cornflower Blue
         text_widget.tag_configure("INFO", foreground="#000000")  # Black
-        text_widget.tag_configure("WARNING", foreground="#CC4E00", background="#FFF3E0", font=bold_font)  # Orange
+        text_widget.tag_configure(
+            "WARNING", foreground="#CC4E00", background="#FFF3E0", font=bold_font
+        )  # Orange
         text_widget.tag_configure("ERROR", foreground="#DC143C", font=bold_font)  # Firebrick
-        text_widget.tag_configure("CRITICAL", foreground="#FFFFFF", background="#8B0000", font=bold_font)  # White on Dark Red
+        text_widget.tag_configure(
+            "CRITICAL", foreground="#FFFFFF", background="#8B0000", font=bold_font
+        )  # White on Dark Red
 
     def clear_main_text(self):
         """Clear the main text widget content and tags."""
@@ -493,7 +499,9 @@ class BaseApp(ABC):
             Selected file path or None if cancelled
         """
         filetypes = filetypes or [("All files", "*.*")]
-        filepath = filedialog.askopenfilename(title=title, filetypes=filetypes, initialdir=initial_dir)
+        filepath = filedialog.askopenfilename(
+            title=title, filetypes=filetypes, initialdir=initial_dir
+        )
         return filepath if filepath else None
 
     # =========================================================================
@@ -641,7 +649,9 @@ class ThemedApp(BaseApp):
 
         # Progress bar
         self.progress_value = tk.IntVar(value=0)
-        self.progress_bar = ttk.Progressbar(bottom_frame, maximum=100, variable=self.progress_value, style="TProgressbar")
+        self.progress_bar = ttk.Progressbar(
+            bottom_frame, maximum=100, variable=self.progress_value, style="TProgressbar"
+        )
         self.progress_bar.pack(side="bottom", fill="x", padx=5, pady=5)
 
         # Store bottom frame for subclasses to add buttons
@@ -665,7 +675,9 @@ class ThemedApp(BaseApp):
         text_widget.tag_configure("INFO", foreground=self.FG_COLOR)  # Light gray
         text_widget.tag_configure("WARNING", foreground="#ffaa00", font=bold_font)  # Bright orange
         text_widget.tag_configure("ERROR", foreground="#ff4444", font=bold_font)  # Bright red
-        text_widget.tag_configure("CRITICAL", foreground="#ffffff", background="#aa0000", font=bold_font)
+        text_widget.tag_configure(
+            "CRITICAL", foreground="#ffffff", background="#aa0000", font=bold_font
+        )
 
     def create_themed_frame(
         self,

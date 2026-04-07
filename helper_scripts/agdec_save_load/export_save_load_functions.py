@@ -6,18 +6,20 @@
 # K1 save/load core addresses (from KOTOR_SAVE_LOAD_RE_REPORT.md)
 K1_ADDRESSES = [
     0x00401080,  # DoSaveGameScreenShot
-    0x004b2520,  # HasEnoughDiskSpaceForSaveGame
-    0x004ae6e0,  # SaveGame (thunk)
-    0x004ae6f0,  # LoadGame (thunk)
-    0x004b58a0,  # SaveGame (CServerExoAppInternal)
-    0x004ba640,  # LoadGame (CServerExoAppInternal)
-    0x004b95b0,  # LoadModule
+    0x004B2520,  # HasEnoughDiskSpaceForSaveGame
+    0x004AE6E0,  # SaveGame (thunk)
+    0x004AE6F0,  # LoadGame (thunk)
+    0x004B58A0,  # SaveGame (CServerExoAppInternal)
+    0x004BA640,  # LoadGame (CServerExoAppInternal)
+    0x004B95B0,  # LoadModule
 ]
+
 
 def to_hex(addr):
     if addr is None:
         return None
     return addr.toString()
+
 
 def main():
     program = currentProgram()
@@ -32,11 +34,9 @@ def main():
         addr = toAddr(addr_val)
         func = fm.getFunctionAt(addr)
         if not func:
-            result["functions"].append({
-                "address": to_hex(addr),
-                "name": None,
-                "error": "no function at address"
-            })
+            result["functions"].append(
+                {"address": to_hex(addr), "name": None, "error": "no function at address"}
+            )
             continue
 
         # Signature
@@ -71,16 +71,19 @@ def main():
                             seen.add(key)
                             callees.append(key)
 
-        result["functions"].append({
-            "address": to_hex(addr),
-            "name": func.getName(),
-            "signature": sig,
-            "disassembly": disasm,
-            "callers": callers,
-            "callees": callees,
-        })
+        result["functions"].append(
+            {
+                "address": to_hex(addr),
+                "name": func.getName(),
+                "signature": sig,
+                "disassembly": disasm,
+                "callers": callers,
+                "callees": callees,
+            }
+        )
 
     # Return for execute-script (agdec-http): assign to __result__ for MCP response
     globals()["__result__"] = result
+
 
 main()

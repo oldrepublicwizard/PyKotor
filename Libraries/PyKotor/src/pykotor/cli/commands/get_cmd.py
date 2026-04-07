@@ -44,7 +44,9 @@ def cmd_get(args: Namespace, logger: Logger) -> int:
 
     resref_str = getattr(args, "resref", None) or getattr(args, "query", None)
     if not resref_str or not str(resref_str).strip():
-        logger.error("No resource specified. Use: pykotor get <resref[.ext]> [--path PATH] [--output DIR]")
+        logger.error(
+            "No resource specified. Use: pykotor get <resref[.ext]> [--path PATH] [--output DIR]"
+        )
         return 1
 
     try:
@@ -57,7 +59,10 @@ def cmd_get(args: Namespace, logger: Logger) -> int:
     resname = ident.resname
     restype = ident.restype
     if restype.is_invalid or not restype.extension:
-        logger.error("Could not determine resource type from '%s'. Include extension (e.g. 203tell.wok).", resref_str)
+        logger.error(
+            "Could not determine resource type from '%s'. Include extension (e.g. 203tell.wok).",
+            resref_str,
+        )
         return 1
 
     source = getattr(args, "source", None)
@@ -67,7 +72,11 @@ def cmd_get(args: Namespace, logger: Logger) -> int:
         if loc is not None:
             order = [loc]
         else:
-            logger.warning("Unknown --source '%s'; using default order. Valid: %s", source, ", ".join(name_to_loc))
+            logger.warning(
+                "Unknown --source '%s'; using default order. Valid: %s",
+                source,
+                ", ".join(name_to_loc),
+            )
             order = canonical_search_order()
     else:
         order = _parse_order_arg(getattr(args, "order", None))
@@ -94,12 +103,20 @@ def cmd_get(args: Namespace, logger: Logger) -> int:
         output_path = output_path.parent / f"{output_path.stem}.{restype.extension}"
 
     try:
-        output_path = resolve_and_validate_under_base(output_path, pathlib.Path.cwd(), allow_nonexistent=True)
+        output_path = resolve_and_validate_under_base(
+            output_path, pathlib.Path.cwd(), allow_nonexistent=True
+        )
     except ValueError as e:
         logger.error("Output path rejected: %s", e)
         return 1
 
     output_path.parent.mkdir(parents=True, exist_ok=True)
     output_path.write_bytes(result.data)
-    logger.info("Extracted %s.%s (%s bytes) to %s", resname, restype.extension, len(result.data), output_path)
+    logger.info(
+        "Extracted %s.%s (%s bytes) to %s",
+        resname,
+        restype.extension,
+        len(result.data),
+        output_path,
+    )
     return 0

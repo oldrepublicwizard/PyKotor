@@ -151,7 +151,9 @@ class QtObjectParser:
     def create_input_widget(cls, param_type: type, current_value: Any) -> QWidget:
         meta_type = determine_type(param_type, current_value)
         meta_type_type = get_qt_meta_type(param_type, current_value)
-        assert meta_type_type != 0, f"Unknown param_type: {param_type} and current_value: {current_value}"
+        assert meta_type_type != 0, (
+            f"Unknown param_type: {param_type} and current_value: {current_value}"
+        )
 
         widget_creators = {
             QMetaType.Type.Void: lambda: cls.create_void_widget(current_value),
@@ -191,7 +193,9 @@ class QtObjectParser:
             QMetaType.Type.QUuid: lambda: cls.create_uuid_widget(current_value),
             QMetaType.Type.QVariant: lambda: cls.create_variant_widget(current_value),
             QMetaType.Type.QModelIndex: lambda: cls.create_model_index_widget(current_value),
-            QMetaType.Type.QRegularExpression: lambda: cls.create_regular_expression_widget(current_value),
+            QMetaType.Type.QRegularExpression: lambda: cls.create_regular_expression_widget(
+                current_value
+            ),
             QMetaType.Type.QJsonValue: lambda: cls.create_json_value_widget(current_value),
             QMetaType.Type.QJsonObject: lambda: cls.create_json_object_widget(current_value),
             QMetaType.Type.QJsonArray: lambda: cls.create_json_array_widget(current_value),
@@ -251,7 +255,9 @@ class QtObjectParser:
         return widget
 
     @classmethod
-    def create_number_widget(cls, value: float, widget_type: type[QSpinBox | QDoubleSpinBox]) -> QSpinBox | QDoubleSpinBox:
+    def create_number_widget(
+        cls, value: float, widget_type: type[QSpinBox | QDoubleSpinBox]
+    ) -> QSpinBox | QDoubleSpinBox:
         widget = widget_type()
         widget.setValue(value)
         return widget
@@ -307,7 +313,9 @@ class QtObjectParser:
     @classmethod
     def create_locale_widget(cls, value: QLocale) -> QComboBox:
         widget = QComboBox()
-        for locale in QLocale.matchingLocales(QLocale.AnyLanguage, QLocale.AnyScript, QLocale.AnyCountry):
+        for locale in QLocale.matchingLocales(
+            QLocale.AnyLanguage, QLocale.AnyScript, QLocale.AnyCountry
+        ):
             widget.addItem(QLocale(locale).name())
         widget.setCurrentText(value.name())
         return widget
@@ -455,7 +463,11 @@ class QtObjectParser:
     @classmethod
     def create_json_document_widget(cls, value: QJsonDocument | QJsonArray) -> QTextEdit:
         widget = QTextEdit()
-        widget.setPlainText(value.toJson().data().decode() if isinstance(value, QJsonDocument) else json.dumps(value.toVariantList()))
+        widget.setPlainText(
+            value.toJson().data().decode()
+            if isinstance(value, QJsonDocument)
+            else json.dumps(value.toVariantList())
+        )
         return widget
 
     @classmethod
@@ -528,7 +540,9 @@ class QtObjectParser:
 
     @classmethod
     def update_palette_button(cls, button: QPushButton, palette: QPalette):
-        new_palette = QColorDialog.getColor(button.palette().color(QPalette.Button), button.window())
+        new_palette = QColorDialog.getColor(
+            button.palette().color(QPalette.Button), button.window()
+        )
         if new_palette.isValid():
             palette.setColor(QPalette.Button, new_palette)
             button.setPalette(palette)
@@ -544,7 +558,9 @@ class QtObjectParser:
     @classmethod
     def update_icon_button(cls, button: QPushButton, icon: QIcon | None = None):
         if icon is None:
-            file_name, _ = QFileDialog.getOpenFileName(button.window(), "Select Icon", "", "Image Files (*.png *.jpg *.bmp)")
+            file_name, _ = QFileDialog.getOpenFileName(
+                button.window(), "Select Icon", "", "Image Files (*.png *.jpg *.bmp)"
+            )
             if file_name:
                 icon = QIcon(file_name)
             else:
@@ -554,11 +570,15 @@ class QtObjectParser:
     @classmethod
     def create_image_widget(cls, value: QImage) -> QLabel:
         widget = QLabel()
-        widget.setPixmap(QPixmap.fromImage(value).scaled(100, 100, Qt.KeepAspectRatio, Qt.SmoothTransformation))
+        widget.setPixmap(
+            QPixmap.fromImage(value).scaled(100, 100, Qt.KeepAspectRatio, Qt.SmoothTransformation)
+        )
         return widget
 
     @classmethod
-    def create_polygon_widget(cls, value: QPolygon | QPolygonF, value_type: type = int) -> QTableWidget:
+    def create_polygon_widget(
+        cls, value: QPolygon | QPolygonF, value_type: type = int
+    ) -> QTableWidget:
         widget = QTableWidget(value.size(), 2)
         widget.setHorizontalHeaderLabels(["X", "Y"])
         for row in range(value.size()):
@@ -569,7 +589,14 @@ class QtObjectParser:
 
     @classmethod
     def create_region_widget(cls, value: QRegion) -> QTextEdit:
-        widget = QTextEdit("\n".join([f"({rect.x()}, {rect.y()}, {rect.width()}, {rect.height()})" for rect in value.rects()]))
+        widget = QTextEdit(
+            "\n".join(
+                [
+                    f"({rect.x()}, {rect.y()}, {rect.width()}, {rect.height()})"
+                    for rect in value.rects()
+                ]
+            )
+        )
         return widget
 
     @classmethod
@@ -683,7 +710,13 @@ class QtObjectParser:
         layout = QHBoxLayout(widget)
         type_combo = QComboBox()
         type_combo.addItems([attr for attr in dir(QTextLength.Type) if not attr.startswith("__")])
-        type_combo.setCurrentText(next(attr for attr in dir(QTextLength.Type) if getattr(QTextLength.Type, attr) == value.type()))
+        type_combo.setCurrentText(
+            next(
+                attr
+                for attr in dir(QTextLength.Type)
+                if getattr(QTextLength.Type, attr) == value.type()
+            )
+        )
         value_spin = QDoubleSpinBox()
         value_spin.setValue(value.value(1000000))
         value_spin.setMaximum(1000000)  # Set a reasonable maximum value
@@ -704,7 +737,9 @@ class QtObjectParser:
         layout = QVBoxLayout(dialog)
 
         color_button = QPushButton("Color")
-        color_button.clicked.connect(lambda: cls.update_text_format_color(color_button, current_format))
+        color_button.clicked.connect(
+            lambda: cls.update_text_format_color(color_button, current_format)
+        )
         layout.addWidget(color_button)
 
         font_button = QPushButton("Font")
@@ -868,7 +903,11 @@ class QtObjectParser:
         if isinstance(value, QTextTableCellFormat):
             return f"row:{value.topPadding()}, col:{value.leftPadding()}"
         if isinstance(value, QTextDocumentFragment):
-            return value.toPlainText()[:50] + "..." if len(value.toPlainText()) > 50 else value.toPlainText()
+            return (
+                value.toPlainText()[:50] + "..."
+                if len(value.toPlainText()) > 50
+                else value.toPlainText()
+            )
         if isinstance(value, QTextOption):
             return f"alignment:{value.alignment().name}"
         if isinstance(value, QTextLayout):
@@ -888,7 +927,11 @@ class QtObjectParser:
         if isinstance(value, QTextTableCell):
             return f"row:{value.row()}, column:{value.column()}"
         if isinstance(value, QTextDocument):
-            return value.toPlainText()[:50] + "..." if len(value.toPlainText()) > 50 else value.toPlainText()
+            return (
+                value.toPlainText()[:50] + "..."
+                if len(value.toPlainText()) > 50
+                else value.toPlainText()
+            )
         if isinstance(value, QVector2D):
             return f"({value.x()}, {value.y()})"
         if isinstance(value, QVector3D):
@@ -969,7 +1012,9 @@ class QtObjectParser:
             return QLocale(value_str)
         if param_type == QSizePolicy:
             h, v = value_str.split(",")
-            return QSizePolicy(QSizePolicy.Policy[h.split(":")[1]], QSizePolicy.Policy[v.split(":")[1]])
+            return QSizePolicy(
+                QSizePolicy.Policy[h.split(":")[1]], QSizePolicy.Policy[v.split(":")[1]]
+            )
         if param_type in (QRegularExpression, QRegExp):
             return param_type(value_str)
         if param_type == QGradient:
@@ -980,7 +1025,9 @@ class QtObjectParser:
             return QItemSelection()
         if param_type == QItemSelectionRange:
             top, left, bottom, right = map(int, value_str.replace("to", ",").strip("()").split(","))
-            return QItemSelectionRange(QItemSelection.fromSelection(QItemSelection(top, left, bottom, right)))
+            return QItemSelectionRange(
+                QItemSelection.fromSelection(QItemSelection(top, left, bottom, right))
+            )
         if param_type == QTextCursor:
             pos, anchor = map(int, value_str.replace("pos:", "").replace("anchor:", "").split(","))
             cursor = QTextCursor()
@@ -1046,7 +1093,9 @@ class QtObjectParser:
             # This is a simplified representation, actual parsing would be more complex
             return QTextFrame()
         if param_type == QTextTable:
-            rows, columns = map(int, value_str.replace("rows:", "").replace("columns:", "").split(","))
+            rows, columns = map(
+                int, value_str.replace("rows:", "").replace("columns:", "").split(",")
+            )
             table = QTextTable(QTextDocument())
             table.resize(rows, columns)
             return table
@@ -1080,10 +1129,16 @@ class QtObjectParser:
             values = [float(x.split(":")[1]) for x in value_str.split(",")]
             return QTransform(*values)
         if param_type == QPolygon:
-            points = [QPoint(*map(int, p.strip("()").split(","))) for p in value_str.strip("[]").split(",")]
+            points = [
+                QPoint(*map(int, p.strip("()").split(",")))
+                for p in value_str.strip("[]").split(",")
+            ]
             return QPolygon(points)
         if param_type == QPolygonF:
-            points = [QPointF(*map(float, p.strip("()").split(","))) for p in value_str.strip("[]").split(",")]
+            points = [
+                QPointF(*map(float, p.strip("()").split(",")))
+                for p in value_str.strip("[]").split(",")
+            ]
             return QPolygonF(points)
         if param_type == QRegion:
             x, y, width, height = map(int, value_str.split(":")[1].strip("()").split(","))
@@ -1110,7 +1165,11 @@ class QtObjectParser:
             return QBrush(QColor(color.split(":")[1]), getattr(Qt, style.split(":")[1]))
         if param_type == QPen:
             style, width, color = value_str.split(",")
-            return QPen(QColor(color.split(":")[1]), float(width.split(":")[1]), getattr(Qt, style.split(":")[1]))
+            return QPen(
+                QColor(color.split(":")[1]),
+                float(width.split(":")[1]),
+                getattr(Qt, style.split(":")[1]),
+            )
         if param_type == QCursor:
             shape = getattr(Qt, value_str.split(":")[1])
             return QCursor(shape)

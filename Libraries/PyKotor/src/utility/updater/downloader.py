@@ -110,26 +110,38 @@ class FileDownloader:
         self.log = logger or RobustLogger()
 
         self.file_binary_data: list = []  # Hold all binary data once file has been downloaded
-        self.file_binary_path: Path = Path(f"{self.filepath}.part")  # Temporary file to hold large download data
+        self.file_binary_path: Path = Path(
+            f"{self.filepath}.part"
+        )  # Temporary file to hold large download data
 
         if not urls:
             raise FileDownloaderError("No urls provided", expected=True)
-        if not isinstance(urls, list):  # User may have accidentally passed a string to the urls parameter
+        if not isinstance(
+            urls, list
+        ):  # User may have accidentally passed a string to the urls parameter
             raise FileDownloaderError("Must pass list of urls", expected=True)
         self.urls: list[str] = urls
 
         self.hexdigest = hexdigest
         self.verify = verify  # Specify if we want to verify TLS connections
-        self.max_download_retries: int = max_download_retries or 0  # Max attempts to download resource
-        self.progress_hooks: list[Callable[[dict[str, Any]], Any]] = progress_hooks or []  # Progress hooks to be called
+        self.max_download_retries: int = (
+            max_download_retries or 0
+        )  # Max attempts to download resource
+        self.progress_hooks: list[Callable[[dict[str, Any]], Any]] = (
+            progress_hooks or []
+        )  # Progress hooks to be called
         self.block_size: int = 4096 * 4  # Initial block size for each read
         self.file_binary_type: Literal["memory", "file"] = "memory"  # Storage type
         self.downloaded_filename: str = self.filepath.name
 
         # Extra headers
-        self.headers: dict[str, Any] = headers or {"User-Agent": "MyAppName/1.0 (https://myappwebsite.com/)"}
+        self.headers: dict[str, Any] = headers or {
+            "User-Agent": "MyAppName/1.0 (https://myappwebsite.com/)"
+        }
         self.http_timeout = http_timeout
-        self.download_max_size: int = 16 * 1024 * 1024  # Max size of download to memory, larger file will be stored to file
+        self.download_max_size: int = (
+            16 * 1024 * 1024
+        )  # Max size of download to memory, larger file will be stored to file
         self.content_length: int | None = None  # Total length of data to download.
         self.session = requests.Session()
         self.session.headers.update(self.headers)
@@ -161,8 +173,12 @@ class FileDownloader:
 
     def _apply_custom_headers(self, _http: urllib3.PoolManager):
         urllib_keys = inspect.getfullargspec(urllib3.make_headers).args
-        urllib_headers = {header: value for header, value in self.headers.items() if header in urllib_keys}
-        other_headers = {header: value for header, value in self.headers.items() if header not in urllib_keys}
+        urllib_headers = {
+            header: value for header, value in self.headers.items() if header in urllib_keys
+        }
+        other_headers = {
+            header: value for header, value in self.headers.items() if header not in urllib_keys
+        }
         _headers: dict[str, str] = urllib3.make_headers(**urllib_headers)
         _headers.update(other_headers)
         if not isinstance(_http.headers, dict):
@@ -175,7 +191,12 @@ class FileDownloader:
 
     def _progress_hooks(self, just_downloaded, total):
         for hook in self.progress_hooks:
-            hook({"action": "update_progress", "data": {"downloaded": just_downloaded, "total": total}})
+            hook(
+                {
+                    "action": "update_progress",
+                    "data": {"downloaded": just_downloaded, "total": total},
+                }
+            )
 
     @staticmethod
     def _get_filename_from_cd(cd):
@@ -197,11 +218,16 @@ class FileDownloader:
         success: bool = False
         for url in self.urls:
             try:
-                with self.session.get(url, stream=True, timeout=self.http_timeout, verify=self.verify) as r:
+                with self.session.get(
+                    url, stream=True, timeout=self.http_timeout, verify=self.verify
+                ) as r:
                     r.raise_for_status()
 
                     # Determine the filename from the Content-Disposition header or URL.
-                    filename = self._get_filename_from_cd(r.headers.get("Content-Disposition")) or Path(url).name
+                    filename = (
+                        self._get_filename_from_cd(r.headers.get("Content-Disposition"))
+                        or Path(url).name
+                    )
                     self.downloaded_filename = filename
                     RobustLogger().info(f"Expected downloaded filename: {self.downloaded_filename}")
                     file_path = self.filepath.parent / filename
@@ -226,8 +252,12 @@ class FileDownloader:
                                             "total": content_length,
                                             "downloaded": chunk_start,
                                             "status": "downloading",
-                                            "percent_complete": self._calc_progress_percent(chunk_start, content_length),
-                                            "time": self._calc_eta(start_time, time.time(), content_length, chunk_start),
+                                            "percent_complete": self._calc_progress_percent(
+                                                chunk_start, content_length
+                                            ),
+                                            "time": self._calc_eta(
+                                                start_time, time.time(), content_length, chunk_start
+                                            ),
                                         },
                                     },
                                 )
@@ -331,7 +361,9 @@ def _api_request(data, sequence_num: int | None = None, **kwargs):
     if not isinstance(data, list):
         data = [data]
 
-    req = requests.post("https://g.api.mega.co.nz/cs", params=params, data=json.dumps(data), timeout=160)
+    req = requests.post(
+        "https://g.api.mega.co.nz/cs", params=params, data=json.dumps(data), timeout=160
+    )
     json_resp = json.loads(req.text)
 
     # if numeric error code response
@@ -350,7 +382,9 @@ def _download_file(
     progress_hooks: list[Callable[[dict[str, Any]], Any]] | None = None,
 ):
     if not _CRYPTO_AVAILABLE:
-        raise ImportError("pycryptodome is required for MEGA file downloads. Install it with: pip install pycryptodome")
+        raise ImportError(
+            "pycryptodome is required for MEGA file downloads. Install it with: pip install pycryptodome"
+        )
     dest_path = Path(dest or Path.cwd()).absolute()
     if file is None:
         if is_public:
@@ -359,7 +393,12 @@ def _download_file(
         else:
             file_data = _api_request({"a": "g", "g": 1, "n": file_handle})
 
-        k = (file_key[0] ^ file_key[4], file_key[1] ^ file_key[5], file_key[2] ^ file_key[6], file_key[3] ^ file_key[7])
+        k = (
+            file_key[0] ^ file_key[4],
+            file_key[1] ^ file_key[5],
+            file_key[2] ^ file_key[6],
+            file_key[3] ^ file_key[7],
+        )
         iv = file_key[4:6] + (0, 0)
         meta_mac = file_key[6:8]
     else:
@@ -489,4 +528,11 @@ def download_mega_file_url(
     print("Base URL:", base_url)
     print("File ID:", file_id)
     print("Decryption Key:", decryption_key)
-    _download_file(file_id, decryption_key, dest_path, dest_filename, is_public=True, progress_hooks=progress_hooks)
+    _download_file(
+        file_id,
+        decryption_key,
+        dest_path,
+        dest_filename,
+        is_public=True,
+        progress_hooks=progress_hooks,
+    )

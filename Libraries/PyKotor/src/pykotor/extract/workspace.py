@@ -126,7 +126,9 @@ class InstallationWorkspace:
             msg = f"Unsupported destination for add_resource: {destination}"
             raise ValueError(msg)
 
-    def _add_resource_to_bif(self, bif_path_norm: str, resref: ResRef, restype: ResourceType, data: bytes) -> None:
+    def _add_resource_to_bif(
+        self, bif_path_norm: str, resref: ResRef, restype: ResourceType, data: bytes
+    ) -> None:
         key = self._key
         bif_index: int | None = None
         for i, bif_entry in enumerate(key.bif_entries):
@@ -139,7 +141,9 @@ class InstallationWorkspace:
 
         if bif_path_norm not in self._bif_cache:
             full_path = self._path / bif_path_norm
-            self._bif_cache[bif_path_norm] = read_bif(full_path, key_source=self._path / "chitin.key")
+            self._bif_cache[bif_path_norm] = read_bif(
+                full_path, key_source=self._path / "chitin.key"
+            )
 
         bif = self._bif_cache[bif_path_norm]
         res_index = len(bif.resources)
@@ -147,7 +151,9 @@ class InstallationWorkspace:
         bif.set_data(resref, restype, data, res_id=resource_id)
         key.add_key_entry(resref, restype, bif_index, res_index)
 
-    def _add_resource_to_capsule(self, capsule_path: CaseAwarePath, resref: ResRef, restype: ResourceType, data: bytes) -> None:
+    def _add_resource_to_capsule(
+        self, capsule_path: CaseAwarePath, resref: ResRef, restype: ResourceType, data: bytes
+    ) -> None:
         if capsule_path not in self._capsule_cache:
             full = self._path / capsule_path if not capsule_path.is_absolute() else capsule_path
             if not full.is_file():
@@ -176,7 +182,9 @@ class InstallationWorkspace:
             full.parent.mkdir(parents=True, exist_ok=True)
             write_bif(bif, full)
             bif_index = next(
-                i for i, e in enumerate(self._key.bif_entries) if e.filename.replace("\\", "/").lower() == bif_path_norm.lower()
+                i
+                for i, e in enumerate(self._key.bif_entries)
+                if e.filename.replace("\\", "/").lower() == bif_path_norm.lower()
             )
             self._key.bif_entries[bif_index].filesize = full.stat().st_size
 

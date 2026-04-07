@@ -141,7 +141,9 @@ def main() -> None:
             processed_files += 1
             total_changes += changes
 
-    print(f"\nTotal: {processed_files} file(s) processed, {total_changes} self-referential link(s) removed")
+    print(
+        f"\nTotal: {processed_files} file(s) processed, {total_changes} self-referential link(s) removed"
+    )
 
 
 if __name__ == "__main__":

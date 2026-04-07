@@ -1,9 +1,11 @@
 #!/usr/bin/env python3
 """Post-process Kaitai-generated Python: relative imports and URL scrub."""
+
 from __future__ import annotations
 
 import re
 import sys
+
 from pathlib import Path
 
 # Reuse bioware_type_ids docstring swap from PyKotor strip script (URL-free).
@@ -45,17 +47,11 @@ BIOWARE_TYPE_IDS_NEW = '''    """This file provides **exhaustive enum mappings**
       while xoreos uses `25015` for `pck` (Dragon Age II). Keeping the enums separate preserves both.
     """'''
 
-INIT_SOURCE_REPLACEMENT = (
-    "Upstream: OpenKotOR/bioware-kaitai-formats ``.ksy`` specs; see package README for regeneration.\n"
-)
+INIT_SOURCE_REPLACEMENT = "Upstream: OpenKotOR/bioware-kaitai-formats ``.ksy`` specs; see package README for regeneration.\n"
 
 
 def rewrite_relative_imports(root: Path) -> int:
-    local_mods = {
-        p.stem
-        for p in root.glob("*.py")
-        if p.name != "__init__.py"
-    }
+    local_mods = {p.stem for p in root.glob("*.py") if p.name != "__init__.py"}
     import_re = re.compile(r"^import ([a-zA-Z_][a-zA-Z0-9_]*)\s*(#.*)?$", re.MULTILINE)
     n = 0
     for path in sorted(root.glob("*.py")):
@@ -67,7 +63,15 @@ def rewrite_relative_imports(root: Path) -> int:
         def repl(m: re.Match[str]) -> str:
             mod = m.group(1)
             comment = m.group(2) or ""
-            if mod == "kaitaistruct" or mod in {"enum", "typing", "struct", "json", "io", "os", "sys"}:
+            if mod == "kaitaistruct" or mod in {
+                "enum",
+                "typing",
+                "struct",
+                "json",
+                "io",
+                "os",
+                "sys",
+            }:
                 return m.group(0)
             if mod in local_mods:
                 return f"from . import {mod}{comment}"

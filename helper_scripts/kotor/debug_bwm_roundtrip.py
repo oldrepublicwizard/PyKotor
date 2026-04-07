@@ -57,18 +57,33 @@ if only_in_old:
 
         # Try to find matching face in new by vertices
         for new_face in new.faces:
-            if new_face.v1 == face.v1 and new_face.v2 == face.v2 and new_face.v3 == face.v3 and new_face.material == face.material:
+            if (
+                new_face.v1 == face.v1
+                and new_face.v2 == face.v2
+                and new_face.v3 == face.v3
+                and new_face.material == face.material
+            ):
                 print("\n  MATCH in new by vertices+material:")
-                print(f"  new trans1={new_face.trans1}, trans2={new_face.trans2}, trans3={new_face.trans3}")
-                if new_face.trans1 != face.trans1 or new_face.trans2 != face.trans2 or new_face.trans3 != face.trans3:
+                print(
+                    f"  new trans1={new_face.trans1}, trans2={new_face.trans2}, trans3={new_face.trans3}"
+                )
+                if (
+                    new_face.trans1 != face.trans1
+                    or new_face.trans2 != face.trans2
+                    or new_face.trans3 != face.trans3
+                ):
                     print("  *** TRANSITION MISMATCH! ***")
                 break
         else:
             print("  No match found in new by vertices+material")
 
 # Count how many faces have transitions
-old_with_trans = sum(1 for f in old.faces if f.trans1 is not None or f.trans2 is not None or f.trans3 is not None)
-new_with_trans = sum(1 for f in new.faces if f.trans1 is not None or f.trans2 is not None or f.trans3 is not None)
+old_with_trans = sum(
+    1 for f in old.faces if f.trans1 is not None or f.trans2 is not None or f.trans3 is not None
+)
+new_with_trans = sum(
+    1 for f in new.faces if f.trans1 is not None or f.trans2 is not None or f.trans3 is not None
+)
 print(f"\nFaces with transitions - old: {old_with_trans}, new: {new_with_trans}")
 
 # Check if the issue is just transitions
@@ -77,14 +92,27 @@ mismatch_count = 0
 for old_face in old.faces:
     found_match = False
     for new_face in new.faces:
-        if new_face.v1 == old_face.v1 and new_face.v2 == old_face.v2 and new_face.v3 == old_face.v3 and new_face.material == old_face.material:
+        if (
+            new_face.v1 == old_face.v1
+            and new_face.v2 == old_face.v2
+            and new_face.v3 == old_face.v3
+            and new_face.material == old_face.material
+        ):
             found_match = True
-            if new_face.trans1 != old_face.trans1 or new_face.trans2 != old_face.trans2 or new_face.trans3 != old_face.trans3:
+            if (
+                new_face.trans1 != old_face.trans1
+                or new_face.trans2 != old_face.trans2
+                or new_face.trans3 != old_face.trans3
+            ):
                 mismatch_count += 1
                 if mismatch_count <= 5:
                     print("\nTransition mismatch:")
-                    print(f"  old: t1={old_face.trans1}, t2={old_face.trans2}, t3={old_face.trans3}")
-                    print(f"  new: t1={new_face.trans1}, t2={new_face.trans2}, t3={new_face.trans3}")
+                    print(
+                        f"  old: t1={old_face.trans1}, t2={old_face.trans2}, t3={old_face.trans3}"
+                    )
+                    print(
+                        f"  new: t1={new_face.trans1}, t2={new_face.trans2}, t3={new_face.trans3}"
+                    )
             break
     if not found_match:
         print(f"Face not found in new: v1={old_face.v1}, material={old_face.material}")
@@ -97,7 +125,12 @@ if old.faces and new.faces:
     old_face = old.faces[0]
     new_face = None
     for nf in new.faces:
-        if nf.v1 == old_face.v1 and nf.v2 == old_face.v2 and nf.v3 == old_face.v3 and nf.material == old_face.material:
+        if (
+            nf.v1 == old_face.v1
+            and nf.v2 == old_face.v2
+            and nf.v3 == old_face.v3
+            and nf.material == old_face.material
+        ):
             new_face = nf
             break
 

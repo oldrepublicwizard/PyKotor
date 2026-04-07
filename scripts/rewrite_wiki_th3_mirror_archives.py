@@ -10,10 +10,12 @@ Skips `reverse_engineering_findings_resource_formats_mdl_io_mdl_github_urls_pre_
 
 Run (legacy pre_scrub-only rewrite): `uv run python scripts/rewrite_wiki_th3_mirror_archives.py`
 """
+
 from __future__ import annotations
 
 import re
 import sys
+
 from datetime import date
 from pathlib import Path
 from typing import Dict, List, Optional, Set, Tuple
@@ -62,7 +64,11 @@ def _fetch_default_branch_sha(owner: str, repo: str) -> str:
         return STATIC_SHA[key]
     if key in _SHA_CACHE:
         return _SHA_CACHE[key]
-    raise KeyError("Add STATIC_SHA entry for {0}/{1} in scripts/rewrite_wiki_th3_mirror_archives.py".format(owner, repo))
+    raise KeyError(
+        "Add STATIC_SHA entry for {0}/{1} in scripts/rewrite_wiki_th3_mirror_archives.py".format(
+            owner, repo
+        )
+    )
 
 
 def _prefetch_shas() -> None:
@@ -155,7 +161,10 @@ def _line_description(raw: str, url: str) -> str:
 def _should_skip_file(text: str, path: Path) -> bool:
     if "th3w1zard1" not in text:
         return True
-    if path.name == "reverse_engineering_findings_resource_formats_mdl_io_mdl_github_urls_pre_scrub.md":
+    if (
+        path.name
+        == "reverse_engineering_findings_resource_formats_mdl_io_mdl_github_urls_pre_scrub.md"
+    ):
         if "Upstream (ndixUR" in text:
             return True
     # Already migrated to list + permalinks (avoid double-rewrite)

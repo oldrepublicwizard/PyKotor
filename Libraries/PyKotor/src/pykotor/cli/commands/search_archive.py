@@ -104,7 +104,9 @@ def _search_key(archive_path: pathlib.Path, ctx: _SearchContext, logger: Logger)
     return matches
 
 
-def _search_bif(archive_path: pathlib.Path, key_path: pathlib.Path | None, ctx: _SearchContext, logger: Logger) -> int:
+def _search_bif(
+    archive_path: pathlib.Path, key_path: pathlib.Path | None, ctx: _SearchContext, logger: Logger
+) -> int:
     matches = 0
     if not ctx.search_content:
         for resource in list_bif(archive_path, key_path=key_path):
@@ -152,7 +154,9 @@ def cmd_search_archive(args: Namespace, logger: Logger) -> int:
     try:
         case_sensitive = args.case_sensitive if hasattr(args, "case_sensitive") else False
         search_content = args.search_content if hasattr(args, "search_content") else False
-        ctx = _compile_search(args.pattern, case_sensitive=case_sensitive, search_content=search_content)
+        ctx = _compile_search(
+            args.pattern, case_sensitive=case_sensitive, search_content=search_content
+        )
 
         matches = 0
         if suffix in (".erf", ".mod", ".sav", ".hak"):
@@ -176,7 +180,9 @@ def cmd_search_archive(args: Namespace, logger: Logger) -> int:
         elif suffix == ".key":
             matches = _search_key(archive_path, ctx, logger)
         elif suffix == ".bif":
-            key_path = pathlib.Path(args.key_file) if hasattr(args, "key_file") and args.key_file else None
+            key_path = (
+                pathlib.Path(args.key_file) if hasattr(args, "key_file") and args.key_file else None
+            )
             matches = _search_bif(archive_path, key_path, ctx, logger)
         else:
             logger.error(f"Unsupported archive type: {suffix}")  # noqa: G004

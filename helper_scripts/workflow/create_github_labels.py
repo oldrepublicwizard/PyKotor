@@ -9,7 +9,11 @@ LABELS = [
     {"name": "enhancement", "color": "a2eeef", "description": "New feature or request"},
     {"name": "documentation", "color": "0075ca", "description": "Documentation improvements"},
     {"name": "question", "color": "d876e3", "description": "Further information is requested"},
-    {"name": "duplicate", "color": "cfd3d7", "description": "This issue or pull request already exists"},
+    {
+        "name": "duplicate",
+        "color": "cfd3d7",
+        "description": "This issue or pull request already exists",
+    },
     {"name": "invalid", "color": "e4e669", "description": "This doesn't seem right"},
     {"name": "wontfix", "color": "ffffff", "description": "This will not be worked on"},
     {"name": "help wanted", "color": "008672", "description": "Extra attention is needed"},

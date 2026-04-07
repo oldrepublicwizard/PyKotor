@@ -69,12 +69,19 @@ class BitmapGrid:
         chars_per_row: int = math.ceil(math.sqrt(self.num_chars))
 
         # Calculate cell size to fit within resolution
-        cell_size: int = min(self.resolution[0] // chars_per_row, self.resolution[1] // chars_per_col)
+        cell_size: int = min(
+            self.resolution[0] // chars_per_row, self.resolution[1] // chars_per_col
+        )
 
         # Calculate cell height
         cell_height: float = self.resolution[1] / chars_per_row
 
-        return GridDimensions(characters_per_row=chars_per_row, characters_per_column=chars_per_col, cell_size=cell_size, cell_height=cell_height)
+        return GridDimensions(
+            characters_per_row=chars_per_row,
+            characters_per_column=chars_per_col,
+            cell_size=cell_size,
+            cell_height=cell_height,
+        )
 
     def get_cell(self, index: int) -> GridCell:
         """Get the grid cell information for a given character index.

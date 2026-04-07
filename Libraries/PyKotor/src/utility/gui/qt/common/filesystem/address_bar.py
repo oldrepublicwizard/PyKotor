@@ -69,7 +69,9 @@ class PathButton(QToolButton):
         self.setToolButtonStyle(Qt.ToolButtonStyle.ToolButtonTextBesideIcon)
         self.setPopupMode(QToolButton.ToolButtonPopupMode.MenuButtonPopup)
         self._menu_contents: list[tuple[str, Path, QIcon]] = []
-        self._recreate_menu_timer = QTimer(self)  # Fixes a Qt bug where the menu will not pop up a second time.
+        self._recreate_menu_timer = QTimer(
+            self
+        )  # Fixes a Qt bug where the menu will not pop up a second time.
         self._recreate_menu_timer.setSingleShot(True)
         self._recreate_menu_timer.timeout.connect(self._recreate_menu)
         self.setStyleSheet("""
@@ -118,7 +120,9 @@ class PathButton(QToolButton):
         menu = self.menu()
         if menu is None:
             return
-        if event.button() == Qt.MouseButton.LeftButton and not menu.geometry().contains(event.pos()):
+        if event.button() == Qt.MouseButton.LeftButton and not menu.geometry().contains(
+            event.pos()
+        ):
             self._on_clicked()
         else:
             super().mousePressEvent(event)
@@ -199,7 +203,9 @@ class RobustAddressBar(QWidget):
 
         self.address_widget = QWidget()
         self.address_widget.setObjectName("addressWidget")
-        self.address_widget.setStyleSheet("#addressWidget { background-color: white; border: 1px solid #CCCCCC; border-radius: 2px; }")
+        self.address_widget.setStyleSheet(
+            "#addressWidget { background-color: white; border: 1px solid #CCCCCC; border-radius: 2px; }"
+        )
         self.address_layout = QHBoxLayout(self.address_widget)
         self.address_layout.setContentsMargins(2, 2, 2, 2)
         self.address_layout.setSpacing(0)
@@ -213,7 +219,11 @@ class RobustAddressBar(QWidget):
 
         self.completer: QCompleter = QCompleter(self)
         self.completer.setCompletionMode(QCompleter.CompletionMode.PopupCompletion)
-        self.completer.setCaseSensitivity(Qt.CaseSensitivity.CaseInsensitive if os.name == "nt" else Qt.CaseSensitivity.CaseSensitive)
+        self.completer.setCaseSensitivity(
+            Qt.CaseSensitivity.CaseInsensitive
+            if os.name == "nt"
+            else Qt.CaseSensitivity.CaseSensitive
+        )
         self.completer.setModel(self.fs_model)
         self.line_edit.setCompleter(self.completer)
 
@@ -420,9 +430,13 @@ class RobustAddressBar(QWidget):
                             icon = QIcon()  # Placeholder for directory icon
                             contents.append((entry.name, Path(entry.path), icon))
                     except Exception as e:  # noqa: BLE001, PERF203
-                        RobustLogger().warning(f"Failed to scan directory {path}: {e}", exc_info=True, stack_info=False)
+                        RobustLogger().warning(
+                            f"Failed to scan directory {path}: {e}", exc_info=True, stack_info=False
+                        )
         except Exception as e:  # noqa: BLE001, PERF203
-            RobustLogger().warning(f"Failed to scan directory {path}: {e}", exc_info=True, stack_info=False)
+            RobustLogger().warning(
+                f"Failed to scan directory {path}: {e}", exc_info=True, stack_info=False
+            )
         else:
             return contents
         return contents

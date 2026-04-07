@@ -67,7 +67,10 @@ def _bootstrap_patch_mdl_io_aabb_on_disk() -> None:
                         return (0, [])
 
                     aabb_node = MDLAABBNode("""
-        if old_seek in text and "except OSError:\n                        return (0, [])" not in text:
+        if (
+            old_seek in text
+            and "except OSError:\n                        return (0, [])" not in text
+        ):
             text = text.replace(old_seek, new_seek, 1)
 
         child_block = re.compile(

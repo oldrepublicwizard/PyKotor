@@ -38,7 +38,9 @@ class ThemeHandler(QMainWindow):
         self._theme_layout: QHBoxLayout = QHBoxLayout()
         self._select_theme_label: QLabel = QLabel("Select Theme")
         self._material_combo_box: QComboBox = QComboBox()
-        self._material_combo_box.addItems(list(set(ThemeDialog.get_default_styles()) | set(ThemeDialog.get_available_themes())))
+        self._material_combo_box.addItems(
+            list(set(ThemeDialog.get_default_styles()) | set(ThemeDialog.get_available_themes()))
+        )
         self._material_combo_box.currentTextChanged.connect(self.apply_theme_in_runtime)
         self._theme_layout.addWidget(self._select_theme_label)
         self._theme_layout.addWidget(self._material_combo_box)
@@ -50,7 +52,9 @@ class ThemeHandler(QMainWindow):
         self._density_scale_slider.setOrientation(Qt.Orientation.Horizontal)
         self._density_scale_slider.setRange(50, 200)
         self._density_scale_slider.setValue(100)
-        self._density_scale_slider.valueChanged.connect(lambda: self.apply_theme_in_runtime(self._material_combo_box.currentText()))
+        self._density_scale_slider.valueChanged.connect(
+            lambda: self.apply_theme_in_runtime(self._material_combo_box.currentText())
+        )
         self._density_layout.addWidget(self._density_label)
         self._density_layout.addWidget(self._density_scale_slider)
 
@@ -60,7 +64,9 @@ class ThemeHandler(QMainWindow):
         self._font_size_spin_box: QSpinBox = QSpinBox()
         self._font_size_spin_box.setRange(8, 24)
         self._font_size_spin_box.setValue(10)
-        self._font_size_spin_box.valueChanged.connect(lambda: self.apply_theme_in_runtime(self._material_combo_box.currentText()))
+        self._font_size_spin_box.valueChanged.connect(
+            lambda: self.apply_theme_in_runtime(self._material_combo_box.currentText())
+        )
         self._font_layout.addWidget(self._font_label)
         self._font_layout.addWidget(self._font_size_spin_box)
 
@@ -95,5 +101,7 @@ class ThemeHandler(QMainWindow):
         QApplication.setFont(font)
         print(f"Theme changed to: {theme_name}")
         app: QCoreApplication | None = QApplication.instance()
-        assert isinstance(app, QApplication), "QApplication instance not found or not QApplication type."
+        assert isinstance(app, QApplication), (
+            "QApplication instance not found or not QApplication type."
+        )
         ThemeDialog.apply_style(app, style=theme_name)

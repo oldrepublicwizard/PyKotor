@@ -148,7 +148,11 @@ def cmd_archive_to_json(args: Namespace, logger: Logger) -> int:
 
     input_path = pathlib.Path(args.input)
     output_path = pathlib.Path(args.output) if args.output else input_path.with_suffix(".json")
-    key_path = pathlib.Path(args.key_file) if getattr(args, "key_file", None) else (input_path.parent / "chitin.key")
+    key_path = (
+        pathlib.Path(args.key_file)
+        if getattr(args, "key_file", None)
+        else (input_path.parent / "chitin.key")
+    )
     try:
         convert_archive_to_json(
             input_path,

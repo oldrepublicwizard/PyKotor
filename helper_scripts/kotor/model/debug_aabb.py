@@ -58,7 +58,9 @@ def main():
 
             if aabb_count > 0:
                 for i, aabb in enumerate(node.aabb.aabbs[:5]):  # First 5
-                    print(f"  [{i}] bbox_min={aabb.bbox_min}, bbox_max={aabb.bbox_max}, face={aabb.face_index}")
+                    print(
+                        f"  [{i}] bbox_min={aabb.bbox_min}, bbox_max={aabb.bbox_max}, face={aabb.face_index}"
+                    )
                 if aabb_count > 5:
                     print(f"  ... and {aabb_count - 5} more")
 
@@ -102,7 +104,9 @@ def main():
     reader.seek(0xEC)  # Without file header offset since BinaryReader doesn't auto-adjust
     name_off_raw = reader.read_bytes(12)
     name_off_vals = struct.unpack("<III", name_off_raw)
-    print(f"Name offsets array at 0xEC: offset={name_off_vals[0]}, count={name_off_vals[1]}, alloc={name_off_vals[2]}")
+    print(
+        f"Name offsets array at 0xEC: offset={name_off_vals[0]}, count={name_off_vals[1]}, alloc={name_off_vals[2]}"
+    )
 
     # Geometry header root_node_offset is at 0xC (file header) + 0x28 = 0x34
     reader.seek(0x34)

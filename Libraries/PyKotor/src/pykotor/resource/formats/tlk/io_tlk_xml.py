@@ -62,7 +62,9 @@ class TLKXMLReader(ResourceReader):
 
         language = xml.get("language")
         if language is None:
-            raise ValueError("The 'language' attribute is missing from the root element of the TLK XML. This attribute is required to specify the language of the TLK file.")
+            raise ValueError(
+                "The 'language' attribute is missing from the root element of the TLK XML. This attribute is required to specify the language of the TLK file."
+            )
         self._tlk.language = Language(int(language))
         self._tlk.resize(len(xml))
         for string in xml:
@@ -83,7 +85,9 @@ class TLKXMLReader(ResourceReader):
             self._tlk.entries[index].text = text
 
             sound = string.get("sound")
-            self._tlk.entries[index].voiceover = ResRef(sound) if sound is not None else ResRef.from_blank()
+            self._tlk.entries[index].voiceover = (
+                ResRef(sound) if sound is not None else ResRef.from_blank()
+            )
 
         return self._tlk
 

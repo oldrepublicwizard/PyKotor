@@ -33,13 +33,19 @@ def start_shutdown_process(main_pid: int | None = None):
         shutdown_main_process(main_pid)
         return
 
-    args = [sys.executable, "-c", f"from utility.system.app_process.shutdown import shutdown_main_process; shutdown_main_process({os.getpid()})"]
+    args = [
+        sys.executable,
+        "-c",
+        f"from utility.system.app_process.shutdown import shutdown_main_process; shutdown_main_process({os.getpid()})",
+    ]
     if is_frozen():
         multiprocessing.Process(target=shutdown_main_process, args=(os.getpid(),))
     elif os.name == "nt":
         subprocess.Popen(  # noqa: S603
             args,  # noqa: S603
-            creationflags=subprocess.DETACHED_PROCESS | subprocess.CREATE_NEW_PROCESS_GROUP | subprocess.CREATE_NO_WINDOW,
+            creationflags=subprocess.DETACHED_PROCESS
+            | subprocess.CREATE_NEW_PROCESS_GROUP
+            | subprocess.CREATE_NO_WINDOW,
             start_new_session=True,
             env=env,
             startupinfo=startupinfo,
@@ -93,16 +99,28 @@ def terminate_child_processes(
         RobustLogger().debug("Politely ask child process %s to terminate", child.pid)
         try:
             child.terminate()
-            RobustLogger().debug("Waiting for process %s to terminate with timeout of %s", child.pid, timeout)
+            RobustLogger().debug(
+                "Waiting for process %s to terminate with timeout of %s", child.pid, timeout
+            )
             child.join(timeout)
         except multiprocessing.TimeoutError:
             number_timeout_children += 1
-            RobustLogger().warning("Child process %s did not terminate in time. Forcefully terminating.", child.pid)
+            RobustLogger().warning(
+                "Child process %s did not terminate in time. Forcefully terminating.", child.pid
+            )
             try:
                 if os.name == "nt":
                     from utility.system.os_helper import win_get_system32_dir
 
-                    command = shlex.join([str(win_get_system32_dir() / "taskkill.exe"), "/F", "/T", "/PID", str(child.pid)])
+                    command = shlex.join(
+                        [
+                            str(win_get_system32_dir() / "taskkill.exe"),
+                            "/F",
+                            "/T",
+                            "/PID",
+                            str(child.pid),
+                        ]
+                    )
                     subprocess.run(  # noqa: S603
                         shlex.split(command),
                         creationflags=subprocess.CREATE_NO_WINDOW,
@@ -148,13 +166,19 @@ def gracefully_shutdown_threads(timeout: int = 3) -> bool:
         try:
             thread.join(timeout)
             if thread.is_alive():
-                RobustLogger().warning("Thread '%s' did not terminate within the timeout period of %s seconds.", thread.name, timeout)
+                RobustLogger().warning(
+                    "Thread '%s' did not terminate within the timeout period of %s seconds.",
+                    thread.name,
+                    timeout,
+                )
                 number_timeout_threads += 1
         except Exception:  # noqa: BLE001
             RobustLogger().exception("Failed to stop the thread")
 
     if number_timeout_threads:
-        RobustLogger().warning("%s total threads would not terminate on their own!", number_timeout_threads)
+        RobustLogger().warning(
+            "%s total threads would not terminate on their own!", number_timeout_threads
+        )
     else:
         RobustLogger().debug("All threads terminated gracefully; exiting normally.")
     return bool(number_timeout_threads)
@@ -182,12 +206,17 @@ def terminate_main_process(
             RobustLogger().debug("Call sys.exit NOW")
             sys.exit(0)
 
-        RobustLogger().warning("Child processes and/or threads did not terminate, killing main process %s as a fallback.", actual_self_pid)
+        RobustLogger().warning(
+            "Child processes and/or threads did not terminate, killing main process %s as a fallback.",
+            actual_self_pid,
+        )
         if os.name == "nt":
             from utility.system.os_helper import win_get_system32_dir
 
             sys32path = win_get_system32_dir()
-            command = shlex.join([str(sys32path / "taskkill.exe"), "/F", "/T", "/PID", str(actual_self_pid)])
+            command = shlex.join(
+                [str(sys32path / "taskkill.exe"), "/F", "/T", "/PID", str(actual_self_pid)]
+            )
             subprocess.run(  # noqa: S603
                 shlex.split(command),
                 creationflags=subprocess.CREATE_NO_WINDOW,

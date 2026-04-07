@@ -39,13 +39,17 @@ class PazaakSideCard:
         # `-self.value` even when `self.value` is a `list[int]` for yellow special cards.
         if self.card_type == CardType.YELLOW_SPECIAL:
             if not isinstance(self.value, list):
-                raise TypeError(f"Yellow special card value must be a list[int], got {type(self.value)!r}")
+                raise TypeError(
+                    f"Yellow special card value must be a list[int], got {type(self.value)!r}"
+                )
             if not self.value:
                 raise ValueError("Yellow special card value list cannot be empty")
             return int(self.value[0])
 
         if not isinstance(self.value, int):
-            raise TypeError(f"Card value must be an int for card_type={self.card_type!r}, got {type(self.value)!r}")
+            raise TypeError(
+                f"Card value must be an int for card_type={self.card_type!r}, got {type(self.value)!r}"
+            )
 
         if self.card_type == CardType.POSITIVE:
             return self.value
@@ -67,7 +71,9 @@ class Player:
     stands: bool = False
 
     def calculate_hand_value(self) -> int:
-        return sum(card.get_value() if isinstance(card, PazaakSideCard) else card for card in self.hand)
+        return sum(
+            card.get_value() if isinstance(card, PazaakSideCard) else card for card in self.hand
+        )
 
     def is_bust(self) -> bool:
         return self.calculate_hand_value() > 20
@@ -153,7 +159,11 @@ class PazaakGame:
         yellow_card: PazaakSideCard,
     ) -> None:
         for i, card in enumerate(player.hand):
-            if (isinstance(card, PazaakSideCard) and card.card_type == CardType.POSITIVE and card.value in yellow_card.value) or (isinstance(card, int) and card in yellow_card.value):
+            if (
+                isinstance(card, PazaakSideCard)
+                and card.card_type == CardType.POSITIVE
+                and card.value in yellow_card.value
+            ) or (isinstance(card, int) and card in yellow_card.value):
                 player.hand[i] = PazaakSideCard(card.value, CardType.NEGATIVE)
 
     def switch_player(self):
@@ -193,7 +203,10 @@ class PazaakGame:
             if side_card.card_type == CardType.YELLOW_SPECIAL:
                 simulated_hand: list[int | PazaakSideCard] = self.ai.hand.copy()
                 self.apply_yellow_card_effect(Player("Simulated", simulated_hand), side_card)
-                simulated_value: int = sum(card.get_value() if isinstance(card, PazaakSideCard) else card for card in simulated_hand)
+                simulated_value: int = sum(
+                    card.get_value() if isinstance(card, PazaakSideCard) else card
+                    for card in simulated_hand
+                )
             else:
                 simulated_value = ai_value + side_card.get_value()
 
@@ -204,7 +217,9 @@ class PazaakGame:
 
         if best_choice:
             side_card, new_value = best_choice
-            if new_value == self.MAX_HAND_VALUE or (ai_value < player_value and new_value > ai_value):
+            if new_value == self.MAX_HAND_VALUE or (
+                ai_value < player_value and new_value > ai_value
+            ):
                 return "use_side_card", side_card
 
         if ai_value >= 17 and ai_value >= player_value:  # noqa: PLR2004
@@ -271,7 +286,9 @@ class ConsolePazaak(PazaakInterface):
             return
 
         while True:
-            action: str = input("Do you want to hit (h), stand (s), end turn (e), or use a side card (u)? ").lower()
+            action: str = input(
+                "Do you want to hit (h), stand (s), end turn (e), or use a side card (u)? "
+            ).lower()
             if action == "s":
                 self.game.player.stands = True
                 print("You chose to stand.")
@@ -291,7 +308,9 @@ class ConsolePazaak(PazaakInterface):
                 else:
                     print("No side cards left.")
             else:
-                print("Invalid input. Please enter 'h' for hit, 's' for stand, 'e' for end turn, or 'u' for using a side card.")
+                print(
+                    "Invalid input. Please enter 'h' for hit, 's' for stand, 'e' for end turn, or 'u' for using a side card."
+                )
 
     def ai_turn(self):
         main_card: int = self.game.draw_card()

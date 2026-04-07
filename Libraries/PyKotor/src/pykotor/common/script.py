@@ -113,5 +113,7 @@ class DataType(Enum):
         if self == DataType.VECTOR:
             return 12
         if self == DataType.STRUCT:
-            raise ValueError("Structs are variable size")  # TODO(th3w1zard1): something needs to be done here
+            raise ValueError(
+                "Structs are variable size"
+            )  # TODO(th3w1zard1): something needs to be done here
         return 4

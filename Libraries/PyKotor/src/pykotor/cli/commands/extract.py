@@ -76,7 +76,9 @@ def cmd_extract(args: Namespace, logger: Logger) -> int:
         return 1
 
 
-def _extract_key(key_path: pathlib.Path, output_dir: pathlib.Path, args: Namespace, logger: Logger) -> int:
+def _extract_key(
+    key_path: pathlib.Path, output_dir: pathlib.Path, args: Namespace, logger: Logger
+) -> int:
     """Extract resources from KEY/BIF archives."""
     try:
         extracted_count = 0
@@ -104,7 +106,9 @@ def _extract_key(key_path: pathlib.Path, output_dir: pathlib.Path, args: Namespa
         return 0
 
 
-def _extract_bif(bif_path: pathlib.Path, output_dir: pathlib.Path, args: Namespace, logger: Logger) -> int:
+def _extract_bif(
+    bif_path: pathlib.Path, output_dir: pathlib.Path, args: Namespace, logger: Logger
+) -> int:
     """Extract resources from a BIF file (requires KEY for resource names)."""
     key_path = pathlib.Path(args.key_file) if args.key_file else bif_path.parent / "chitin.key"
     if not key_path.exists():
@@ -116,7 +120,11 @@ def _extract_bif(bif_path: pathlib.Path, output_dir: pathlib.Path, args: Namespa
             bif_path,
             output_dir,
             key_path=key_path if key_path.exists() else None,
-            resource_filter=((lambda r: _matches_filter(r, args.filter)) if args.filter and key_path.exists() else None),
+            resource_filter=(
+                (lambda r: _matches_filter(r, args.filter))
+                if args.filter and key_path.exists()
+                else None
+            ),
             filter_pattern=args.filter if not (args.filter and key_path.exists()) else None,
         ):
             ensure_directory_exists(output_file.parent)
@@ -131,7 +139,9 @@ def _extract_bif(bif_path: pathlib.Path, output_dir: pathlib.Path, args: Namespa
         return 0
 
 
-def _extract_rim(rim_path: pathlib.Path, output_dir: pathlib.Path, args: Namespace, logger: Logger) -> int:
+def _extract_rim(
+    rim_path: pathlib.Path, output_dir: pathlib.Path, args: Namespace, logger: Logger
+) -> int:
     """Extract resources from a RIM archive."""
     try:
         extracted_count = 0
@@ -152,7 +162,9 @@ def _extract_rim(rim_path: pathlib.Path, output_dir: pathlib.Path, args: Namespa
         return 0
 
 
-def _extract_erf(erf_path: pathlib.Path, output_dir: pathlib.Path, args: Namespace, logger: Logger) -> int:
+def _extract_erf(
+    erf_path: pathlib.Path, output_dir: pathlib.Path, args: Namespace, logger: Logger
+) -> int:
     """Extract resources from an ERF/MOD/SAV/HAK archive."""
     try:
         extracted_count = 0

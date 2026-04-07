@@ -2,6 +2,7 @@
 
 Prefer ``from bioware_kaitai_formats.MOD import ...`` in new code.
 """
+
 from __future__ import annotations
 
 import importlib

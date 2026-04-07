@@ -28,7 +28,13 @@ while i < len(lines):
     if parent_match:
         parent_name = parent_match.group(1)
         # Skip certain sections
-        if parent_name not in ["Table of Contents", "PyKotor Implementation", "Commented-Out Elements in nwscript.nss", "Reference Implementations", "Cross-References"]:
+        if parent_name not in [
+            "Table of Contents",
+            "PyKotor Implementation",
+            "Commented-Out Elements in nwscript.nss",
+            "Reference Implementations",
+            "Cross-References",
+        ]:
             current_parent = parent_name
         else:
             current_parent = None
@@ -69,7 +75,12 @@ while i < len(lines):
                                 break
 
                 # Create filename from parent and section title
-                parent_clean = current_parent.replace(" (K1 & TSL)", "").replace(" (K1)", "-K1").replace(" (TSL)", "-TSL").replace(" ", "-")
+                parent_clean = (
+                    current_parent.replace(" (K1 & TSL)", "")
+                    .replace(" (K1)", "-K1")
+                    .replace(" (TSL)", "-TSL")
+                    .replace(" ", "-")
+                )
                 section_clean = section_title.replace(" ", "-").replace("/", "-")
                 filename = f"NSS-{parent_clean}-{section_clean}.md"
 
@@ -128,7 +139,9 @@ for section in sections_to_extract:
 
         # Add link back to main NSS file and parent section info
         section_content = section_content.replace(
-            f"# {full_title}\n", f"# {full_title}\n\nPart of the [NSS File Format Documentation](NSS-File-Format).\n\n**Category:** {section['parent']}\n\n", 1
+            f"# {full_title}\n",
+            f"# {full_title}\n\nPart of the [NSS File Format Documentation](NSS-File-Format).\n\n**Category:** {section['parent']}\n\n",
+            1,
         )
 
     output_file = wiki_dir / section["filename"]
@@ -137,6 +150,8 @@ for section in sections_to_extract:
     with open(output_file, "w", encoding="utf-8") as f:
         f.write(section_content)
 
-    print(f"Created {section['filename']} (lines {start_line + 1}-{end_line}, title: {section['full_title']})")
+    print(
+        f"Created {section['filename']} (lines {start_line + 1}-{end_line}, title: {section['full_title']})"
+    )
 
 print(f"\nExtracted {len(sections_to_extract)} NSS section documentation files")

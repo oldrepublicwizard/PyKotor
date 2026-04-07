@@ -128,7 +128,12 @@ def main() -> None:
 
     parser = argparse.ArgumentParser(description="Discover tools for CI/CD")
     parser.add_argument("--tools-dir", default="Tools", help="Tools directory path")
-    parser.add_argument("--format", choices=["json", "github"], default="github", help="Output format (json or github actions output)")
+    parser.add_argument(
+        "--format",
+        choices=["json", "github"],
+        default="github",
+        help="Output format (json or github actions output)",
+    )
     args = parser.parse_args()
 
     repo_root = Path(__file__).resolve().parent.parent.parent

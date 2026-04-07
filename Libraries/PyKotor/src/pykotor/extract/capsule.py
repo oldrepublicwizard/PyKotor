@@ -332,7 +332,9 @@ class LazyCapsule(FileResource):
         return rim
 
     def as_cached(self) -> ERF | RIM:
-        return self.as_cached_erf() if is_any_erf_type_file(self._filepath) else self.as_cached_rim()
+        return (
+            self.as_cached_erf() if is_any_erf_type_file(self._filepath) else self.as_cached_rim()
+        )
 
     def _load_erf(
         self,
@@ -380,7 +382,9 @@ class LazyCapsule(FileResource):
         for i in range(entry_count):
             res_offset: int = reader.read_uint32()
             res_size: int = reader.read_uint32()
-            resources.append(FileResource(resrefs[i], restypes[i], res_size, res_offset, self._filepath))
+            resources.append(
+                FileResource(resrefs[i], restypes[i], res_size, res_offset, self._filepath)
+            )
         return resources
 
     def _load_rim(

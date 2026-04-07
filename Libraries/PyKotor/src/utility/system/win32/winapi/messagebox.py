@@ -84,15 +84,23 @@ def windows_message_box(  # noqa: PLR0913
 
 
 def show_ok_message_box(message: str, title: str, detailed_text: str | None = None) -> int:
-    return windows_message_box(message, title, MB_OK, MB_ICONINFORMATION, detailed_text=detailed_text)
+    return windows_message_box(
+        message, title, MB_OK, MB_ICONINFORMATION, detailed_text=detailed_text
+    )
 
 
 def show_yes_no_message_box(message: str, title: str, detailed_text: str | None = None) -> int:
-    return windows_message_box(message, title, MB_YESNO, MB_ICONQUESTION, detailed_text=detailed_text)
+    return windows_message_box(
+        message, title, MB_YESNO, MB_ICONQUESTION, detailed_text=detailed_text
+    )
 
 
-def show_retry_cancel_message_box(message: str, title: str, detailed_text: str | None = None) -> int:
-    return windows_message_box(message, title, MB_RETRYCANCEL, MB_ICONWARNING, detailed_text=detailed_text)
+def show_retry_cancel_message_box(
+    message: str, title: str, detailed_text: str | None = None
+) -> int:
+    return windows_message_box(
+        message, title, MB_RETRYCANCEL, MB_ICONWARNING, detailed_text=detailed_text
+    )
 
 
 def show_error_message_box(message: str, title: str, detailed_text: str | None = None) -> int:
@@ -120,22 +128,36 @@ if __name__ == "__main__":
     if response == IDOK:
         print("User clicked OK")
 
-    response = show_yes_no_message_box("Do you want to continue?", "Continue?", detailed_text="This action cannot be undone.")
+    response = show_yes_no_message_box(
+        "Do you want to continue?", "Continue?", detailed_text="This action cannot be undone."
+    )
     if response == IDYES:
         print("User chose Yes")
     elif response == IDNO:
         print("User chose No")
 
-    response = show_retry_cancel_message_box("Operation failed. Retry?", "Error", detailed_text="Make sure the file is accessible and try again.")
+    response = show_retry_cancel_message_box(
+        "Operation failed. Retry?",
+        "Error",
+        detailed_text="Make sure the file is accessible and try again.",
+    )
     if response == IDRETRY:
         print("User chose Retry")
     elif response == IDCANCEL:
         print("User chose Cancel")
 
-    response = show_error_message_box("An unexpected error occurred.", "Error", detailed_text="Please contact support with the error code 0x1234.")
+    response = show_error_message_box(
+        "An unexpected error occurred.",
+        "Error",
+        detailed_text="Please contact support with the error code 0x1234.",
+    )
     if response == IDOK:
         print("User acknowledged the error")
 
-    response = show_warning_message_box("This action may cause data loss.", "Warning", detailed_text="Ensure you have backed up your data.")
+    response = show_warning_message_box(
+        "This action may cause data loss.",
+        "Warning",
+        detailed_text="Ensure you have backed up your data.",
+    )
     if response == IDOK:
         print("User acknowledged the warning")

@@ -139,7 +139,9 @@ class BinaryWriterBytearray(BinaryWriter, RawBinaryWriterBytearray):
         for language, gender, substring in value:
             string_id: int = LocalizedString.substring_id(language, gender)
             bw.write_uint32(string_id, big=big)
-            bw.write_string(substring, prefix_length=4, encoding=language.get_encoding(), errors="replace")
+            bw.write_string(
+                substring, prefix_length=4, encoding=language.get_encoding(), errors="replace"
+            )
 
         locstring_data: bytes = bw.data()
         self.write_uint32(len(locstring_data))
@@ -166,7 +168,9 @@ if __name__ == "__main__":
         assert FILE_DATA is not None
         instantiation_times: list[float] = []
         operation_times: list[float] = []
-        stream: BinaryReader | io.BytesIO | io.FileIO | io.BufferedReader | io.BufferedRandom | None = None
+        stream: (
+            BinaryReader | io.BytesIO | io.FileIO | io.BufferedReader | io.BufferedRandom | None
+        ) = None
         raw_raw_stream: io.RawIOBase | io.BufferedIOBase | mmap.mmap | None = None
         raw_stream: IO[Any] | mmap.mmap | None = None
 
@@ -181,7 +185,11 @@ if __name__ == "__main__":
                         stream = BinaryReader.from_bytes(FILE_DATA)
                     elif mode == "mmap":
                         raw_raw_stream = open(TEST_FILE, "rb")  # noqa: PTH123, SIM115
-                        raw_stream = mmap.mmap(raw_raw_stream.fileno(), os.stat(TEST_FILE).st_size, access=mmap.ACCESS_READ)  # noqa: PTH116
+                        raw_stream = mmap.mmap(
+                            raw_raw_stream.fileno(),
+                            os.stat(TEST_FILE).st_size,
+                            access=mmap.ACCESS_READ,
+                        )  # noqa: PTH116
                         instantiation_start_time = time.time()
                         stream = BinaryReader(raw_stream)
                     elif mode == "stream(io.BufferedReader)":
@@ -191,7 +199,9 @@ if __name__ == "__main__":
                         stream = BinaryReader.from_stream(raw_stream)
                     elif mode == "stream(io.BufferedRandom)":
                         raw_raw_stream = open(TEST_FILE, "r+b")  # noqa: PTH123, SIM115
-                        assert isinstance(raw_raw_stream, io.RawIOBase), "raw_raw_stream must be a RawIOBase"
+                        assert isinstance(raw_raw_stream, io.RawIOBase), (
+                            "raw_raw_stream must be a RawIOBase"
+                        )
                         raw_stream = io.BufferedRandom(raw_raw_stream)
                         instantiation_start_time = time.time()
                         stream = BinaryReader.from_stream(raw_stream)
@@ -218,10 +228,14 @@ if __name__ == "__main__":
                 else:
                     raw_stream = open(TEST_FILE, mode)  # noqa: PTH123, SIM115
                     if stream_class is io.BufferedReader:
-                        assert isinstance(raw_stream, io.RawIOBase), "raw_stream must be a RawIOBase"
+                        assert isinstance(raw_stream, io.RawIOBase), (
+                            "raw_stream must be a RawIOBase"
+                        )
                         stream = io.BufferedReader(raw_stream)
                     elif stream_class is io.BufferedRandom:
-                        assert isinstance(raw_stream, io.RawIOBase), "raw_stream must be a RawIOBase"
+                        assert isinstance(raw_stream, io.RawIOBase), (
+                            "raw_stream must be a RawIOBase"
+                        )
                         stream = io.BufferedRandom(raw_stream)
                     else:
                         stream = stream_class(TEST_FILE, mode)  # pyright: ignore[reportArgumentType, reportCallIssue]
@@ -284,7 +298,9 @@ if __name__ == "__main__":
         # Run the tests
         for stream_class, mode in stream_types:
             print(f"Testing {stream_class.__name__}, mode={mode}")
-            total_instantiation_time, total_operation_time, total_time = test_io_performance(stream_class, mode)
+            total_instantiation_time, total_operation_time, total_time = test_io_performance(
+                stream_class, mode
+            )
             results.append(
                 [
                     f"{stream_class.__name__}({mode})",  # pyright: ignore[reportArgumentType]
@@ -307,20 +323,32 @@ if __name__ == "__main__":
                 result[i] = 0.0001
 
         # Print the results with additional statistics
-        print("------------------------------------------------------\n\nInstantiation Statistics (sorted by fastest to slowest):\n")
+        print(
+            "------------------------------------------------------\n\nInstantiation Statistics (sorted by fastest to slowest):\n"
+        )
         for result in results:
             speed_percent: float = (fastest_instantiation_time / result[1]) * 100
-            print(f"{result[0]}: {result[1]:.4f} seconds ({speed_percent:.2f}% of fastest, {result[1] / NUM_INSTANTIATIONS:.2f}s per)")
+            print(
+                f"{result[0]}: {result[1]:.4f} seconds ({speed_percent:.2f}% of fastest, {result[1] / NUM_INSTANTIATIONS:.2f}s per)"
+            )
 
-        print("------------------------------------------------------\n\nOperation Statistics (sorted by fastest to slowest):")
+        print(
+            "------------------------------------------------------\n\nOperation Statistics (sorted by fastest to slowest):"
+        )
         for result in results:
             speed_percent = (fastest_operation_time / result[2]) * 100
-            print(f"{result[0]}: {result[2]:.4f} seconds ({speed_percent:.2f}% of fastest, {result[2] / NUM_INSTANTIATIONS:.2f}s per)")
+            print(
+                f"{result[0]}: {result[2]:.4f} seconds ({speed_percent:.2f}% of fastest, {result[2] / NUM_INSTANTIATIONS:.2f}s per)"
+            )
 
-        print("------------------------------------------------------\n\nCombined Statistics (sorted by fastest to slowest):")
+        print(
+            "------------------------------------------------------\n\nCombined Statistics (sorted by fastest to slowest):"
+        )
         for result in results:
             speed_percent = (fastest_total_time / result[3]) * 100
-            print(f"{result[0]}: {result[3]:.4f} seconds (Inst: {result[1]:.4f}s, Ops: {result[2]:.4f}s) ({speed_percent:.2f}% of fastest)")
+            print(
+                f"{result[0]}: {result[3]:.4f} seconds (Inst: {result[1]:.4f}s, Ops: {result[2]:.4f}s) ({speed_percent:.2f}% of fastest)"
+            )
         print("------------------------------------------------------\n")
 
         # Calculate average times

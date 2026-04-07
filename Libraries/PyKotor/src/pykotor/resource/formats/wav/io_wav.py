@@ -316,7 +316,9 @@ class WAVBinaryWriter(ResourceWriter):
         # Write format chunk
         clean_writer.write_bytes(b"fmt ")
         clean_writer.write_uint32(fmt_chunk_size)
-        clean_writer.write_uint16(self.wav.encoding if isinstance(self.wav.encoding, int) else self.wav.encoding.value)
+        clean_writer.write_uint16(
+            self.wav.encoding if isinstance(self.wav.encoding, int) else self.wav.encoding.value
+        )
         clean_writer.write_uint16(self.wav.channels)
         clean_writer.write_uint32(self.wav.sample_rate)
         bytes_per_sec = self.wav.bytes_per_sec or (self.wav.sample_rate * self.wav.block_align)

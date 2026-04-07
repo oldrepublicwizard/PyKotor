@@ -10,15 +10,27 @@ import subprocess
 from typing import Any
 
 
-def run_gh_api(endpoint: str, method: str = "GET", data: dict[str, Any] | None = None) -> dict[str, Any] | None:
+def run_gh_api(
+    endpoint: str, method: str = "GET", data: dict[str, Any] | None = None
+) -> dict[str, Any] | None:
     """Run a GitHub API command and return JSON result."""
     cmd = ["gh", "api", endpoint, "--method", method]
     if data:
         cmd.extend(["--input", "-"])
         json_data = json.dumps(data)
-        result = subprocess.run(cmd, check=False, input=json_data, capture_output=True, text=True, encoding="utf-8", errors="replace")
+        result = subprocess.run(
+            cmd,
+            check=False,
+            input=json_data,
+            capture_output=True,
+            text=True,
+            encoding="utf-8",
+            errors="replace",
+        )
     else:
-        result = subprocess.run(cmd, check=False, capture_output=True, text=True, encoding="utf-8", errors="replace")
+        result = subprocess.run(
+            cmd, check=False, capture_output=True, text=True, encoding="utf-8", errors="replace"
+        )
 
     if result.returncode != 0:
         return None
@@ -78,7 +90,9 @@ def main():
             release_tags[tag] = []
         release_tags[tag].append(release)
 
-    duplicate_releases = {tag: releases for tag, releases in release_tags.items() if len(releases) > 1}
+    duplicate_releases = {
+        tag: releases for tag, releases in release_tags.items() if len(releases) > 1
+    }
 
     if duplicate_releases:
         print(f"\nDUPLICATE RELEASES FOUND: {len(duplicate_releases)}")
@@ -98,7 +112,9 @@ def main():
             issue_titles[title] = []
         issue_titles[title].append(issue)
 
-    duplicate_issues = {title: issues_list for title, issues_list in issue_titles.items() if len(issues_list) > 1}
+    duplicate_issues = {
+        title: issues_list for title, issues_list in issue_titles.items() if len(issues_list) > 1
+    }
 
     if duplicate_issues:
         print(f"\nDUPLICATE ISSUES FOUND: {len(duplicate_issues)}")

@@ -5,20 +5,24 @@ import kaitaistruct
 from kaitaistruct import KaitaiStruct, KaitaiStream, BytesIO
 
 
-if getattr(kaitaistruct, 'API_VERSION', (0, 9)) < (0, 11):
-    raise Exception("Incompatible Kaitai Struct Python API: 0.11 or later is required, but you have %s" % (kaitaistruct.__version__))
+if getattr(kaitaistruct, "API_VERSION", (0, 9)) < (0, 11):
+    raise Exception(
+        "Incompatible Kaitai Struct Python API: 0.11 or later is required, but you have %s"
+        % (kaitaistruct.__version__)
+    )
+
 
 class Ssf(KaitaiStruct):
     """SSF (Sound Set File) files store sound string references (StrRefs) for character voice sets.
     Each SSF file contains exactly 28 sound slots, mapping to different game events and actions.
-    
+
     Binary Format:
     - Header (12 bytes): File type signature, version, and offset to sounds array (usually 12)
     - Sounds Array (112 bytes at sounds_offset): 28 uint32 values representing StrRefs (0xFFFFFFFF = -1 = no sound)
-    
+
     Vanilla KotOR SSFs are typically 136 bytes total: after the 28 StrRefs, many files append 12 bytes
     of 0xFFFFFFFF padding; that trailer is not part of the header and is not modeled here.
-    
+
     Sound Slots (in order):
     0-5: Battle Cry 1-6
     6-8: Select 1-3
@@ -38,8 +42,9 @@ class Ssf(KaitaiStruct):
     25: Separated From Party
     26: Rejoined Party
     27: Poisoned
-    
+
     """
+
     def __init__(self, _io, _parent=None, _root=None):
         super(Ssf, self).__init__(_io)
         self._parent = _parent
@@ -47,22 +52,22 @@ class Ssf(KaitaiStruct):
         self._read()
 
     def _read(self):
-        self.file_type = (self._io.read_bytes(4)).decode(u"ASCII")
-        if not self.file_type == u"SSF ":
-            raise kaitaistruct.ValidationNotEqualError(u"SSF ", self.file_type, self._io, u"/seq/0")
-        self.file_version = (self._io.read_bytes(4)).decode(u"ASCII")
-        if not self.file_version == u"V1.1":
-            raise kaitaistruct.ValidationNotEqualError(u"V1.1", self.file_version, self._io, u"/seq/1")
+        self.file_type = (self._io.read_bytes(4)).decode("ASCII")
+        if not self.file_type == "SSF ":
+            raise kaitaistruct.ValidationNotEqualError("SSF ", self.file_type, self._io, "/seq/0")
+        self.file_version = (self._io.read_bytes(4)).decode("ASCII")
+        if not self.file_version == "V1.1":
+            raise kaitaistruct.ValidationNotEqualError(
+                "V1.1", self.file_version, self._io, "/seq/1"
+            )
         self.sounds_offset = self._io.read_u4le()
-
 
     def _fetch_instances(self):
         pass
         _ = self.sounds
-        if hasattr(self, '_m_sounds'):
+        if hasattr(self, "_m_sounds"):
             pass
             self._m_sounds._fetch_instances()
-
 
     class SoundArray(KaitaiStruct):
         def __init__(self, _io, _parent=None, _root=None):
@@ -76,15 +81,11 @@ class Ssf(KaitaiStruct):
             for i in range(28):
                 self.entries.append(Ssf.SoundEntry(self._io, self, self._root))
 
-
-
         def _fetch_instances(self):
             pass
             for i in range(len(self.entries)):
                 pass
                 self.entries[i]._fetch_instances()
-
-
 
     class SoundEntry(KaitaiStruct):
         def __init__(self, _io, _parent=None, _root=None):
@@ -96,7 +97,6 @@ class Ssf(KaitaiStruct):
         def _read(self):
             self.strref_raw = self._io.read_u4le()
 
-
         def _fetch_instances(self):
             pass
 
@@ -105,23 +105,20 @@ class Ssf(KaitaiStruct):
             """True if this entry represents "no sound" (0xFFFFFFFF).
             False if this entry contains a valid StrRef value.
             """
-            if hasattr(self, '_m_is_no_sound'):
+            if hasattr(self, "_m_is_no_sound"):
                 return self._m_is_no_sound
 
             self._m_is_no_sound = self.strref_raw == 4294967295
-            return getattr(self, '_m_is_no_sound', None)
-
+            return getattr(self, "_m_is_no_sound", None)
 
     @property
     def sounds(self):
         """Array of 28 sound string references (StrRefs)."""
-        if hasattr(self, '_m_sounds'):
+        if hasattr(self, "_m_sounds"):
             return self._m_sounds
 
         _pos = self._io.pos()
         self._io.seek(self.sounds_offset)
         self._m_sounds = Ssf.SoundArray(self._io, self, self._root)
         self._io.seek(_pos)
-        return getattr(self, '_m_sounds', None)
-
-
+        return getattr(self, "_m_sounds", None)

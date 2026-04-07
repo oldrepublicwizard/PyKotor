@@ -95,9 +95,16 @@ def check_txi_files(installation_path: Path, texture_names: list[str]) -> None:
 def main() -> None:
     """Main entry point."""
     parser = argparse.ArgumentParser(
-        description="Check if TXI files exist in installation for specific textures", formatter_class=argparse.RawDescriptionHelpFormatter, epilog=__doc__
+        description="Check if TXI files exist in installation for specific textures",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog=__doc__,
     )
-    parser.add_argument("--installation", "-i", type=str, help="Path to KOTOR installation (default: from K1_PATH/K2_PATH env or .env file)")
+    parser.add_argument(
+        "--installation",
+        "-i",
+        type=str,
+        help="Path to KOTOR installation (default: from K1_PATH/K2_PATH env or .env file)",
+    )
     parser.add_argument(
         "--textures",
         "-t",

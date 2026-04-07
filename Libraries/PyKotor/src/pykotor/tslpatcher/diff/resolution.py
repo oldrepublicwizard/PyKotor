@@ -267,15 +267,21 @@ def resolve_resource_in_installation(
         module_mod_files_for_logging = module_mod_files.copy()
 
         # If chosen file is from modules, add all files from its basename group to logging
-        if chosen_filepath and "modules" in [parent.name.lower() for parent in chosen_filepath.parents]:
+        if chosen_filepath and "modules" in [
+            parent.name.lower() for parent in chosen_filepath.parents
+        ]:
             try:
                 chosen_module_root = get_module_root(chosen_filepath)
                 # Get all files from this module group (including non-winners for logging)
                 if chosen_module_root in module_groups:
                     group_files = [path for path, _ in module_groups[chosen_module_root]]
                     # Separate by type for logging
-                    module_mod_files_for_logging = [f for f in group_files if f.suffix.lower() == ".mod"]
-                    module_rim_files_for_logging = [f for f in group_files if f.suffix.lower() in (".rim", ".erf")]
+                    module_mod_files_for_logging = [
+                        f for f in group_files if f.suffix.lower() == ".mod"
+                    ]
+                    module_rim_files_for_logging = [
+                        f for f in group_files if f.suffix.lower() in (".rim", ".erf")
+                    ]
             except Exception as e:  # noqa: BLE001
                 log_func(f"Warning: Could not get module group for logging: {e}")
                 log_func("Full traceback:")
@@ -356,7 +362,9 @@ def _log_consolidated_resolution(  # noqa: PLR0913
     if install_count == 2:
         log_func(f"Installation 0 ({install1_name}), 1 ({install2_name})")
     else:
-        log_func(f"Installations: {', '.join(f'{idx} ({name})' for idx, name in enumerate(all_names))}")
+        log_func(
+            f"Installations: {', '.join(f'{idx} ({name})' for idx, name in enumerate(all_names))}"
+        )
     log_func("  Checking each location:")
 
     # Get all locations from all installations
@@ -375,7 +383,10 @@ def _log_consolidated_resolution(  # noqa: PLR0913
     all_installations_with_paths: list[Installation | Path] = [install1, install2]
     if additional_installs:
         all_installations_with_paths.extend(additional_installs)
-    all_installations_with_paths = [install if isinstance(install, Installation) else Path(install) for install in all_installations_with_paths]
+    all_installations_with_paths = [
+        install if isinstance(install, Installation) else Path(install)
+        for install in all_installations_with_paths
+    ]
 
     # Track if we've found a chosen file yet (only ONE chosen across all installations)
     found_chosen: bool = False
@@ -383,15 +394,23 @@ def _log_consolidated_resolution(  # noqa: PLR0913
 
     for loc_key, loc_display in location_order:
         # Collect files from all installations at this location
-        all_files_to_show: list[tuple[int, str, Path, bool]] = []  # (install_idx, install_name, filepath, is_chosen)
+        all_files_to_show: list[
+            tuple[int, str, Path, bool]
+        ] = []  # (install_idx, install_name, filepath, is_chosen)
 
-        for idx, (install_name, resolved, locations) in enumerate(zip(all_names, all_resolved, all_installation_locations)):
+        for idx, (install_name, resolved, locations) in enumerate(
+            zip(all_names, all_resolved, all_installation_locations)
+        ):
             files_at_loc = locations.get(loc_key, [])
             for f in files_at_loc:
                 is_chosen = (resolved.filepath == f) and not found_chosen
 
                 # For module files, only include files with same base name as chosen
-                if loc_key in ("Modules (.mod)", "Modules (.rim/_s.rim/.erf)") and found_chosen and chosen_module_root:
+                if (
+                    loc_key in ("Modules (.mod)", "Modules (.rim/_s.rim/.erf)")
+                    and found_chosen
+                    and chosen_module_root
+                ):
                     try:
                         file_module_root = get_module_root(f)
                         if file_module_root != chosen_module_root:
@@ -418,19 +437,29 @@ def _log_consolidated_resolution(  # noqa: PLR0913
             for install_idx, install_name, filepath, is_chosen in all_files_to_show:
                 try:  # noqa: PERF203
                     installation = all_installations_with_paths[install_idx]
-                    rel_path = filepath.relative_to(installation if isinstance(installation, Path) else installation.path())
+                    rel_path = filepath.relative_to(
+                        installation if isinstance(installation, Path) else installation.path()
+                    )
                     full_path = f"{install_name}/{rel_path}"
 
                     if is_chosen:
-                        log_func(f"    {loc_display} -> CHOSEN (install{install_idx}) - {full_path}")
+                        log_func(
+                            f"    {loc_display} -> CHOSEN (install{install_idx}) - {full_path}"
+                        )
                     else:
-                        log_func(f"    {loc_display} -> (shadowed, install{install_idx}) {full_path}")
+                        log_func(
+                            f"    {loc_display} -> (shadowed, install{install_idx}) {full_path}"
+                        )
                 except ValueError:
                     # Couldn't get relative path, just show filename
                     if is_chosen:
-                        log_func(f"    {loc_display} -> CHOSEN (install{install_idx}) - {filepath.name}")
+                        log_func(
+                            f"    {loc_display} -> CHOSEN (install{install_idx}) - {filepath.name}"
+                        )
                     else:
-                        log_func(f"    {loc_display} -> (shadowed, install{install_idx}) {filepath.name}")
+                        log_func(
+                            f"    {loc_display} -> (shadowed, install{install_idx}) {filepath.name}"
+                        )
 
 
 def collect_all_resource_identifiers(installation: Installation) -> set[ResourceIdentifier]:
@@ -451,7 +480,9 @@ def collect_all_resource_identifiers(installation: Installation) -> set[Resource
     return identifiers
 
 
-def build_resource_index(installation: Installation) -> dict[ResourceIdentifier, list[FileResource]]:
+def build_resource_index(
+    installation: Installation,
+) -> dict[ResourceIdentifier, list[FileResource]]:
     """Build an index mapping ResourceIdentifier to all FileResource instances.
 
     This dramatically improves performance by avoiding O(n) scans for each resource.
@@ -582,7 +613,9 @@ def diff_installations_with_resolution(  # noqa: PLR0913, PLR0915, C901
         install1_candidate = files_and_folders_and_installations[0]
         install2_candidate = files_and_folders_and_installations[1]
 
-        if not isinstance(install1_candidate, Installation) or not isinstance(install2_candidate, Installation):
+        if not isinstance(install1_candidate, Installation) or not isinstance(
+            install2_candidate, Installation
+        ):
             msg = "Current implementation requires Installation objects, Path support coming soon"
             raise NotImplementedError(msg)
 
@@ -602,11 +635,15 @@ def diff_installations_with_resolution(  # noqa: PLR0913, PLR0915, C901
     install2_candidate = files_and_folders_and_installations[1]
     additional_candidates = files_and_folders_and_installations[2:]
 
-    if not isinstance(install1_candidate, Installation) or not isinstance(install2_candidate, Installation):
+    if not isinstance(install1_candidate, Installation) or not isinstance(
+        install2_candidate, Installation
+    ):
         msg = "Current implementation requires Installation objects, Path support coming soon"
         raise NotImplementedError(msg)
 
-    additional_installations = [inst for inst in additional_candidates if isinstance(inst, Installation)]
+    additional_installations = [
+        inst for inst in additional_candidates if isinstance(inst, Installation)
+    ]
 
     return _diff_installations_with_resolution_impl(
         install1_candidate,
@@ -715,7 +752,9 @@ def _diff_installations_with_resolution_impl(  # noqa: PLR0913, PLR0915, C901
 
     # PROCESS TLK FILES FIRST AND IMMEDIATELY (before StrRef cache building)
     # TLKList must come immediately after [Settings] per TSLPatcher design
-    tlk_identifiers: list[ResourceIdentifier] = [ident for ident in all_identifiers if ident.restype.extension.lower() == "tlk"]
+    tlk_identifiers: list[ResourceIdentifier] = [
+        ident for ident in all_identifiers if ident.restype.extension.lower() == "tlk"
+    ]
     filtered_tlk_identifiers: list[ResourceIdentifier] = []
     if tlk_identifiers:
         log_func(f"Found {len(tlk_identifiers)} TLK file(s) to process first")
@@ -723,23 +762,33 @@ def _diff_installations_with_resolution_impl(  # noqa: PLR0913, PLR0915, C901
         # Apply filtering for irrelevant TLK files when both paths are installations
         for identifier in tlk_identifiers:
             # Resolve in install2 to check filepath for filtering
-            resolved2: ResolvedResource = resolve_resource_in_installation(install2, identifier, log_func=log_func, verbose=False, resource_index=index2)
+            resolved2: ResolvedResource = resolve_resource_in_installation(
+                install2, identifier, log_func=log_func, verbose=False, resource_index=index2
+            )
 
             if _should_process_tlk_file(resolved2):
                 filtered_tlk_identifiers.append(identifier)
                 log_func(f"  Processing TLK: {identifier.resname}.{identifier.restype.extension}")
             else:
-                log_func(f"  Skipping irrelevant TLK: {identifier.resname}.{identifier.restype.extension} (not dialog.tlk/dialog_f.tlk in root)")
+                log_func(
+                    f"  Skipping irrelevant TLK: {identifier.resname}.{identifier.restype.extension} (not dialog.tlk/dialog_f.tlk in root)"
+                )
 
     # Process filtered TLK files
     if filtered_tlk_identifiers:
         log_func(f"Processing {len(filtered_tlk_identifiers)} TLK files...")
         log_func("")
         for idx, identifier in enumerate(filtered_tlk_identifiers, start=1):
-            log_func(f"Processing TLK {idx}/{len(filtered_tlk_identifiers)}: {identifier.resname}.{identifier.restype.extension}")
+            log_func(
+                f"Processing TLK {idx}/{len(filtered_tlk_identifiers)}: {identifier.resname}.{identifier.restype.extension}"
+            )
             # Resolve in both installations using indices (O(1) lookups)
-            resolved1: ResolvedResource = resolve_resource_in_installation(install1, identifier, log_func=log_func, verbose=False, resource_index=index1)
-            resolved2 = resolve_resource_in_installation(install2, identifier, log_func=log_func, verbose=False, resource_index=index2)
+            resolved1: ResolvedResource = resolve_resource_in_installation(
+                install1, identifier, log_func=log_func, verbose=False, resource_index=index1
+            )
+            resolved2 = resolve_resource_in_installation(
+                install2, identifier, log_func=log_func, verbose=False, resource_index=index2
+            )
 
             # Check if resource exists in both
             if resolved1.data is None and resolved2.data is None:
@@ -748,14 +797,20 @@ def _diff_installations_with_resolution_impl(  # noqa: PLR0913, PLR0915, C901
 
             if resolved1.data is None:
                 # Only in target installation (new resource) - add to [InstallList] and create patch
-                log_func(f"    TLK {identifier.resname} only in target installation - adding to InstallList")
-                destination = determine_tslpatcher_destination(None, resolved2.location_type, resolved2.filepath)
+                log_func(
+                    f"    TLK {identifier.resname} only in target installation - adding to InstallList"
+                )
+                destination = determine_tslpatcher_destination(
+                    None, resolved2.location_type, resolved2.filepath
+                )
                 filename = f"{identifier.resname}.{identifier.restype.extension}"
                 if modifications_by_type is not None:
                     # Create context for patch creation
                     file1_rel = EnginePath("base") / filename  # Base (missing)
                     file2_rel = EnginePath("target") / filename  # Target (exists)
-                    context = DiffContext(file1_rel, file2_rel, identifier.restype.extension.lower())
+                    context = DiffContext(
+                        file1_rel, file2_rel, identifier.restype.extension.lower()
+                    )
                     _add_to_install_folder(
                         modifications_by_type,
                         destination,
@@ -772,7 +827,9 @@ def _diff_installations_with_resolution_impl(  # noqa: PLR0913, PLR0915, C901
 
             if resolved2.data is None:
                 # Only in base installation (removed resource) - no action needed
-                log_func(f"    TLK {identifier.resname} only in base installation - no action needed")
+                log_func(
+                    f"    TLK {identifier.resname} only in base installation - no action needed"
+                )
                 continue
 
             # Both exist - compare them using proper format-aware comparison
@@ -780,8 +837,12 @@ def _diff_installations_with_resolution_impl(  # noqa: PLR0913, PLR0915, C901
             # For TLK files, DON'T set resname - they are loose files, not in containers
             # Setting resname causes duplication in 'where' property (dialog.tlk/dialog.tlk)
             ctx = DiffContext(
-                file1_rel=Path(install1.path().name) / resolved1.filepath.name if resolved1.filepath else Path(install1.path().name) / "unknown",
-                file2_rel=Path(install2.path().name) / resolved2.filepath.name if resolved2.filepath else Path(install2.path().name) / "unknown",
+                file1_rel=Path(install1.path().name) / resolved1.filepath.name
+                if resolved1.filepath
+                else Path(install1.path().name) / "unknown",
+                file2_rel=Path(install2.path().name) / resolved2.filepath.name
+                if resolved2.filepath
+                else Path(install2.path().name) / "unknown",
                 ext=identifier.restype.extension.lower(),
                 resname=None,  # TLK files are loose files, not in containers
                 file1_location_type=resolved1.location_type,
@@ -821,7 +882,9 @@ def _diff_installations_with_resolution_impl(  # noqa: PLR0913, PLR0915, C901
                 log_func(line)
 
     # Remove TLK identifiers from the main list since we've processed them
-    all_identifiers = [ident for ident in all_identifiers if ident.restype.extension.lower() != "tlk"]
+    all_identifiers = [
+        ident for ident in all_identifiers if ident.restype.extension.lower() != "tlk"
+    ]
     log_func("TLK processing complete.")
     log_func("")
 
@@ -851,7 +914,9 @@ def _diff_installations_with_resolution_impl(  # noqa: PLR0913, PLR0915, C901
     # Log current modification count from TLK processing (GFF/2DA/NCS/SSF added in main loop below)
     if modifications_by_type is not None:
         tlk_mods = len(modifications_by_type.tlk)
-        log_func(f"Modifications from TLK processing: {tlk_mods} (GFF/2DA/NCS/SSF will be added during resource comparison)")
+        log_func(
+            f"Modifications from TLK processing: {tlk_mods} (GFF/2DA/NCS/SSF will be added during resource comparison)"
+        )
 
     log_func("Sorted resources for processing: 2DA -> GFF -> NCS -> SSF -> Others")
     log_func("")
@@ -896,9 +961,13 @@ def _diff_installations_with_resolution_impl(  # noqa: PLR0913, PLR0915, C901
         cache_key1 = (0, identifier)
         cache_key2 = (1, identifier)
         if cache_key1 not in resolution_cache:
-            resolution_cache[cache_key1] = resolve_resource_in_installation(install1, identifier, log_func=log_func, verbose=False, resource_index=index1)
+            resolution_cache[cache_key1] = resolve_resource_in_installation(
+                install1, identifier, log_func=log_func, verbose=False, resource_index=index1
+            )
         if cache_key2 not in resolution_cache:
-            resolution_cache[cache_key2] = resolve_resource_in_installation(install2, identifier, log_func=log_func, verbose=False, resource_index=index2)
+            resolution_cache[cache_key2] = resolve_resource_in_installation(
+                install2, identifier, log_func=log_func, verbose=False, resource_index=index2
+            )
         resolved1 = resolution_cache[cache_key1]
         resolved2 = resolution_cache[cache_key2]
 
@@ -913,7 +982,9 @@ def _diff_installations_with_resolution_impl(  # noqa: PLR0913, PLR0915, C901
 
             # Re-resolve with verbose logging to show where it was found
             log_func(f"Installation 1 (target - {install2_name}):")
-            resolve_resource_in_installation(install2, identifier, log_func=log_func, verbose=True, resource_index=index2)
+            resolve_resource_in_installation(
+                install2, identifier, log_func=log_func, verbose=True, resource_index=index2
+            )
 
             log_func(f"\n[NEW RESOURCE] {identifier}")
             log_func(f"  Source (target/install1): {resolved2.source_location}")
@@ -970,7 +1041,9 @@ def _diff_installations_with_resolution_impl(  # noqa: PLR0913, PLR0915, C901
 
             # Re-resolve with verbose logging to show where it was found
             log_func(f"Installation 0 ({install1_name}):")
-            resolve_resource_in_installation(install1, identifier, log_func=log_func, verbose=True, resource_index=index1)
+            resolve_resource_in_installation(
+                install1, identifier, log_func=log_func, verbose=True, resource_index=index1
+            )
 
             log_func(f"\n[RESOURCE IN INSTALL0 ONLY] {identifier}")
             log_func(f"  Source (install0 - {install1_name}): {resolved1.source_location}")
@@ -1020,7 +1093,9 @@ def _diff_installations_with_resolution_impl(  # noqa: PLR0913, PLR0915, C901
             continue
 
         # Both exist - check if both are from BIFs (read-only, skip comparison)
-        both_from_bif: bool = resolved1.location_type == "Chitin BIFs" and resolved2.location_type == "Chitin BIFs"
+        both_from_bif: bool = (
+            resolved1.location_type == "Chitin BIFs" and resolved2.location_type == "Chitin BIFs"
+        )
         if both_from_bif:
             # Both from read-only BIFs - skip comparison (can't be patched anyway)
             identical_count += 1
@@ -1052,7 +1127,8 @@ def _diff_installations_with_resolution_impl(  # noqa: PLR0913, PLR0915, C901
         # The 'where' property uses resname to build paths like "container.ext/resource.ext"
         # For loose files, file2_rel already contains the full path, so no resname needed
         is_in_container: bool | None = resolved2.location_type == "Chitin BIFs" or (
-            resolved2.filepath and resolved2.filepath.suffix.lower() in (".bif", ".rim", ".erf", ".mod", ".sav")
+            resolved2.filepath
+            and resolved2.filepath.suffix.lower() in (".bif", ".rim", ".erf", ".mod", ".sav")
         )
         resname_for_context: str | None = identifier.resname if is_in_container else None
 
@@ -1133,7 +1209,11 @@ def _diff_installations_with_resolution_impl(  # noqa: PLR0913, PLR0915, C901
 
                 if resolved2.location_type == "Override folder":
                     log_func(f"  → Resource moved to Override (will override base {priority1})")
-                elif resolved1.location_type == "Chitin BIFs" and resolved2.location_type and "Modules" in resolved2.location_type:
+                elif (
+                    resolved1.location_type == "Chitin BIFs"
+                    and resolved2.location_type
+                    and "Modules" in resolved2.location_type
+                ):
                     log_func("  → Resource moved from BIF to Modules (now modifiable)")
 
             # Validate TSLPatcher destination was set correctly (now set directly in engine.py)
@@ -1168,7 +1248,9 @@ def _diff_installations_with_resolution_impl(  # noqa: PLR0913, PLR0915, C901
                                 actual_dest = most_recent.destination
                                 if actual_dest != expected_destination:
                                     # Destination mismatch - log warning and correct it
-                                    log_func(f"  ⚠ Warning: Destination mismatch! Expected '{expected_destination}', got '{actual_dest}'. Correcting...")
+                                    log_func(
+                                        f"  ⚠ Warning: Destination mismatch! Expected '{expected_destination}', got '{actual_dest}'. Correcting..."
+                                    )
                                     most_recent.destination = expected_destination
                                 else:
                                     # Destination is correct - log for confirmation
@@ -1197,7 +1279,9 @@ def _diff_installations_with_resolution_impl(  # noqa: PLR0913, PLR0915, C901
                         incremental_writer=incremental_writer,
                     )
                 except Exception as e:  # noqa: BLE001
-                    log_func(f"Error adding install entry for {identifier.resname}.{identifier.restype.extension}: {(e.__class__.__name__, str(e))}")
+                    log_func(
+                        f"Error adding install entry for {identifier.resname}.{identifier.restype.extension}: {(e.__class__.__name__, str(e))}"
+                    )
                     log_func("Full traceback:")
                     for line in traceback.format_exc().splitlines():
                         log_func(f"  {line}")
@@ -1279,12 +1363,20 @@ def explain_resolution_order(
         log_func("")
 
     # Explain what this means for modding (compare base vs target)
-    if install1_resolved.data is not None and install2_resolved.data is not None and install1_resolved.location_type != install2_resolved.location_type:
+    if (
+        install1_resolved.data is not None
+        and install2_resolved.data is not None
+        and install1_resolved.location_type != install2_resolved.location_type
+    ):
         log_func("  What this means:")
         if install2_resolved.location_type == "Override folder":
             log_func("    ✓ Resource was moved to Override (will override base version)")
             log_func("    ✓ TSLPatcher should install to Override")
-        elif install1_resolved.location_type == "Chitin BIFs" and install2_resolved.location_type and "Modules" in install2_resolved.location_type:
+        elif (
+            install1_resolved.location_type == "Chitin BIFs"
+            and install2_resolved.location_type
+            and "Modules" in install2_resolved.location_type
+        ):
             log_func("    ✓ Resource extracted from BIF to Modules (now modifiable)")
             log_func("    ✓ TSLPatcher should install to appropriate module")
         else:

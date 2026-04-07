@@ -2309,17 +2309,27 @@ def _is_vector_like(v) -> bool:
 
 
 def _assert_vector_close(test_case: unittest.TestCase, a, b, *, context: str):
-    test_case.assertTrue(_is_vector_like(a) and _is_vector_like(b), f"{context}: expected vector-like objects")
-    test_case.assertEqual(_qfloat(float(a.x)), _qfloat(float(b.x)), f"{context}.x: float mismatch {a.x!r} vs {b.x!r}")
-    test_case.assertEqual(_qfloat(float(a.y)), _qfloat(float(b.y)), f"{context}.y: float mismatch {a.y!r} vs {b.y!r}")
+    test_case.assertTrue(
+        _is_vector_like(a) and _is_vector_like(b), f"{context}: expected vector-like objects"
+    )
+    test_case.assertEqual(
+        _qfloat(float(a.x)), _qfloat(float(b.x)), f"{context}.x: float mismatch {a.x!r} vs {b.x!r}"
+    )
+    test_case.assertEqual(
+        _qfloat(float(a.y)), _qfloat(float(b.y)), f"{context}.y: float mismatch {a.y!r} vs {b.y!r}"
+    )
     if hasattr(a, "z") or hasattr(b, "z"):
         az = float(getattr(a, "z", 0.0))
         bz = float(getattr(b, "z", 0.0))
-        test_case.assertEqual(_qfloat(az), _qfloat(bz), f"{context}.z: float mismatch {az!r} vs {bz!r}")
+        test_case.assertEqual(
+            _qfloat(az), _qfloat(bz), f"{context}.z: float mismatch {az!r} vs {bz!r}"
+        )
     if hasattr(a, "w") or hasattr(b, "w"):
         aw = float(getattr(a, "w", 0.0))
         bw = float(getattr(b, "w", 0.0))
-        test_case.assertEqual(_qfloat(aw), _qfloat(bw), f"{context}.w: float mismatch {aw!r} vs {bw!r}")
+        test_case.assertEqual(
+            _qfloat(aw), _qfloat(bw), f"{context}.w: float mismatch {aw!r} vs {bw!r}"
+        )
 
 
 def _compare_components(
@@ -2356,7 +2366,11 @@ def _compare_components(
             if hasattr(a, ch) or hasattr(b, ch):
                 av = float(getattr(a, ch, 0.0))
                 bv = float(getattr(b, ch, 0.0))
-                test_case.assertEqual(_qfloat(av), _qfloat(bv), f"{context}.{ch}: color channel mismatch {av!r} vs {bv!r}")
+                test_case.assertEqual(
+                    _qfloat(av),
+                    _qfloat(bv),
+                    f"{context}.{ch}: color channel mismatch {av!r} vs {bv!r}",
+                )
         return
 
     if isinstance(a, (str, int, bool)) or isinstance(b, (str, int, bool)):
@@ -2380,10 +2394,21 @@ def _compare_components(
     db = getattr(b, "__dict__", None)
     if isinstance(da, dict) and isinstance(db, dict):
         # Ignore unstable or derived keys (mirrors MDL metamethod ignore list).
-        ignore = {"vertex_uvs", "node_id", "parent_id", "node_type", "bone_serial", "bone_node_number"}
+        ignore = {
+            "vertex_uvs",
+            "node_id",
+            "parent_id",
+            "node_type",
+            "bone_serial",
+            "bone_node_number",
+        }
         ka = {k for k in da.keys() if k not in ignore}
         kb = {k for k in db.keys() if k not in ignore}
-        test_case.assertEqual(ka, kb, f"{context}: object keys mismatch ({a.__class__.__name__} vs {b.__class__.__name__})")
+        test_case.assertEqual(
+            ka,
+            kb,
+            f"{context}: object keys mismatch ({a.__class__.__name__} vs {b.__class__.__name__})",
+        )
         for k in sorted(ka):
             _compare_components(test_case, da[k], db[k], context=f"{context}.{k}", visited=visited)
         return
@@ -2543,8 +2568,18 @@ class TestMDLRoundTripAsciiToBinaryToAscii(unittest.TestCase):
         )
         mdl_from_ascii_round: MDL = read_mdl(ascii_bytes_round, file_format=ResourceType.MDL_ASCII)
 
-        compare_mdl_basic(mdl_from_ascii_original, mdl_from_ascii_round, self, "Character model: MDLOps ASCII compare")
-        compare_mdl_nodes(mdl_from_ascii_original, mdl_from_ascii_round, self, "Character model: MDLOps ASCII compare")
+        compare_mdl_basic(
+            mdl_from_ascii_original,
+            mdl_from_ascii_round,
+            self,
+            "Character model: MDLOps ASCII compare",
+        )
+        compare_mdl_nodes(
+            mdl_from_ascii_original,
+            mdl_from_ascii_round,
+            self,
+            "Character model: MDLOps ASCII compare",
+        )
 
         # (Optional) also sanity-check that PyKotor can read the MDLOps output we produced.
         # The deep comparisons above already validate the full component graph.
@@ -2561,22 +2596,38 @@ class TestMDLRoundTripAsciiToBinaryToAscii(unittest.TestCase):
 
                 # Start with ASCII
                 ascii_bytes_original = self._create_ascii_from_binary(mdl_path, mdx_path)
-                mdl_from_ascii_original = read_mdl(ascii_bytes_original, file_format=ResourceType.MDL_ASCII)
+                mdl_from_ascii_original = read_mdl(
+                    ascii_bytes_original, file_format=ResourceType.MDL_ASCII
+                )
 
                 # Convert to binary (MDL + MDX).
                 mdl_bytes = bytearray()
                 mdx_bytes = bytearray()
-                write_mdl(mdl_from_ascii_original, mdl_bytes, ResourceType.MDL, target_ext=mdx_bytes)
+                write_mdl(
+                    mdl_from_ascii_original, mdl_bytes, ResourceType.MDL, target_ext=mdx_bytes
+                )
 
                 ascii_bytes_round = _run_mdlops_decompile_bytes(
                     mdl_bytes=bytes(mdl_bytes),
                     mdx_bytes=bytes(mdx_bytes),
                     stem=Path(mdl_file).stem,
                 )
-                mdl_from_ascii_round = read_mdl(ascii_bytes_round, file_format=ResourceType.MDL_ASCII)
+                mdl_from_ascii_round = read_mdl(
+                    ascii_bytes_round, file_format=ResourceType.MDL_ASCII
+                )
 
-                compare_mdl_basic(mdl_from_ascii_original, mdl_from_ascii_round, self, f"{model_type}: MDLOps ASCII compare")
-                compare_mdl_nodes(mdl_from_ascii_original, mdl_from_ascii_round, self, f"{model_type}: MDLOps ASCII compare")
+                compare_mdl_basic(
+                    mdl_from_ascii_original,
+                    mdl_from_ascii_round,
+                    self,
+                    f"{model_type}: MDLOps ASCII compare",
+                )
+                compare_mdl_nodes(
+                    mdl_from_ascii_original,
+                    mdl_from_ascii_round,
+                    self,
+                    f"{model_type}: MDLOps ASCII compare",
+                )
 
 
 class TestMDLEqualityAndHashing(unittest.TestCase):
@@ -2612,7 +2663,9 @@ def _safe_filename(stem: str) -> str:
     return stem or "mdl"
 
 
-def _collect_mdl_entries_for_game(game_label: str, game_root: Path) -> list[tuple[str, FileResource, FileResource | None]]:
+def _collect_mdl_entries_for_game(
+    game_label: str, game_root: Path
+) -> list[tuple[str, FileResource, FileResource | None]]:
     """Collect all MDL entries from models.bif for a given game installation.
 
     Returns:
@@ -2639,7 +2692,9 @@ def _collect_mdl_entries_for_game(game_label: str, game_root: Path) -> list[tupl
     for fileres in models_resources:
         by_key[(fileres.resname(), fileres.restype())] = fileres
 
-    mdl_entries: list[FileResource] = [r for r in models_resources if r.restype() == ResourceType.MDL]
+    mdl_entries: list[FileResource] = [
+        r for r in models_resources if r.restype() == ResourceType.MDL
+    ]
     if not mdl_entries:
         return []
 
@@ -2820,7 +2875,9 @@ def test_models_bif_roundtrip_eq_hash_pytest(
 
     # Verify game_install_root matches mdl_entry (should always match now, but keep for safety)
     if game_label != game_label_from_entry or game_root != game_root_from_entry:
-        pytest.skip(f"Mismatch between game_install_root ({game_label}) and mdl_entry ({game_label_from_entry})")
+        pytest.skip(
+            f"Mismatch between game_install_root ({game_label}) and mdl_entry ({game_label_from_entry})"
+        )
 
     # Handle skip case where no MDL entries were found
     if resref is None or mdl_res is None:
@@ -2851,7 +2908,9 @@ def test_models_bif_roundtrip_eq_hash_pytest(
         assert mdl_bin == mdl_ascii, "binary->ascii parse mismatch (MDL __eq__)"
     assert hash(mdl_bin) == hash(mdl_ascii), "MDL __hash__ must align with __eq__"
     assert {mdl_bin} == {mdl_ascii}, "MDL must be usable in hash-based collections"
-    _compare_components(unittest.TestCase(), mdl_bin, mdl_ascii, context=f"{game_label}:{resref}:binary_vs_ascii")
+    _compare_components(
+        unittest.TestCase(), mdl_bin, mdl_ascii, context=f"{game_label}:{resref}:binary_vs_ascii"
+    )
 
     out_mdl = bytearray()
     out_mdx = bytearray()
@@ -2865,7 +2924,12 @@ def test_models_bif_roundtrip_eq_hash_pytest(
 
     assert mdl_bin == mdl_bin_round, "binary->ascii->binary parse mismatch (MDL __eq__)"
     assert hash(mdl_bin) == hash(mdl_bin_round), "MDL hash changed after roundtrip"
-    _compare_components(unittest.TestCase(), mdl_bin, mdl_bin_round, context=f"{game_label}:{resref}:binary_vs_binary_round")
+    _compare_components(
+        unittest.TestCase(),
+        mdl_bin,
+        mdl_bin_round,
+        context=f"{game_label}:{resref}:binary_vs_binary_round",
+    )
 
     t0 = time.perf_counter()
     for _ in range(3):

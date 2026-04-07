@@ -466,7 +466,9 @@ class TestPyFileSystemModelSorter:
         assert sorter.naturalCompare.numericMode() is True
         assert sorter.naturalCompare.caseSensitivity() == Qt.CaseSensitivity.CaseInsensitive
 
-    @pytest.mark.parametrize("column", [0, 1, 2, 3])  # NameColumn, SizeColumn, TypeColumn, TimeColumn
+    @pytest.mark.parametrize(
+        "column", [0, 1, 2, 3]
+    )  # NameColumn, SizeColumn, TypeColumn, TimeColumn
     def test_sorter_with_different_columns(self, column):
         """Test sorter with different sort columns."""
         sorter = PyFileSystemModelSorter(column)
@@ -1084,7 +1086,9 @@ class TestFilesystemComponentsIntegration:
     @pytest.fixture
     def dialog_extended(self, qtbot, temp_test_dir):
         """Create QFileDialogExtended for integration testing."""
-        from utility.gui.qt.filesystem.qfiledialogextended.qfiledialogextended import QFileDialogExtended
+        from utility.gui.qt.filesystem.qfiledialogextended.qfiledialogextended import (
+            QFileDialogExtended,
+        )
 
         dialog = QFileDialogExtended(None, None)
         qtbot.addWidget(dialog)
@@ -1195,7 +1199,10 @@ class TestComponentEdgeCases:
         ext_info = PyQExtendedInformation(file_info)
 
         # Should not crash
-        assert ext_info.type() in [PyQExtendedInformation.Type.File, PyQExtendedInformation.Type.System]
+        assert ext_info.type() in [
+            PyQExtendedInformation.Type.File,
+            PyQExtendedInformation.Type.System,
+        ]
         assert ext_info.size() == -1
 
     def test_filesystem_node_empty_filename(self):
@@ -1347,7 +1354,9 @@ class TestPyFileSystemModelAdvanced:
                 file_path.unlink()
                 qtbot.wait(500)
 
-                success, _ = try_wait(lambda: model.rowCount(root) == old_count - 1, timeout_ms=5000)
+                success, _ = try_wait(
+                    lambda: model.rowCount(root) == old_count - 1, timeout_ms=5000
+                )
                 if success:
                     assert len(spy0) >= 1
                     assert len(spy1) >= 1
@@ -1507,7 +1516,11 @@ class TestPyFileSystemModelAdvanced:
             idx1 = model.index(a_path)
             idx2 = model.index(str(temp_test_dir / "A.txt"))
             # On Windows, should be same
-            assert idx1 == idx2 or (idx1.isValid() and idx2.isValid() and model.fileName(idx1).lower() == model.fileName(idx2).lower())
+            assert idx1 == idx2 or (
+                idx1.isValid()
+                and idx2.isValid()
+                and model.fileName(idx1).lower() == model.fileName(idx2).lower()
+            )
 
     def test_model_dirs_before_files(self, model, tmp_path, qtbot):
         """Test dirsBeforeFiles - matching C++ test_dirsBeforeFiles (lines 1105-1143)."""
@@ -1549,7 +1562,9 @@ class TestPyFileSystemModelAdvanced:
                 curr_info = model.fileInfo(curr_idx)
 
                 # Previous file should not come before current directory
-                assert not (prev_info.isFile() and curr_info.isDir()), f"File {prev_info.fileName()} comes before directory {curr_info.fileName()}"
+                assert not (prev_info.isFile() and curr_info.isDir()), (
+                    f"File {prev_info.fileName()} comes before directory {curr_info.fileName()}"
+                )
 
     def test_model_role_names(self, model):
         """Test roleNames - matching C++ test_roleNames (lines 1145-1168)."""

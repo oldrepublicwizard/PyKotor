@@ -88,7 +88,9 @@ class SizeWidget(QWidget):
         self,
         font: QFont,
     ):
-        items: list[QListWidgetItem] = self._size_list_widget.findItems(str(font.pointSize()), Qt.MatchFlag.MatchFixedString)
+        items: list[QListWidgetItem] = self._size_list_widget.findItems(
+            str(font.pointSize()), Qt.MatchFlag.MatchFixedString
+        )
         item: QListWidgetItem | None = None
         if items:
             item = items[0]
@@ -102,7 +104,9 @@ class SizeWidget(QWidget):
 
     def _text_edited(self):
         size_text: str = self._size_line_edit.text()
-        items: list[QListWidgetItem] = self._size_list_widget.findItems(size_text, Qt.MatchFlag.MatchFixedString)
+        items: list[QListWidgetItem] = self._size_list_widget.findItems(
+            size_text, Qt.MatchFlag.MatchFixedString
+        )
         if items:
             self._size_list_widget.setCurrentItem(items[0])
         self.sig_item_size_changed.emit(int(size_text))
@@ -123,7 +127,9 @@ class SizeWidget(QWidget):
         sizes_list: list[str] = list(map(str, sizes))
         self._size_list_widget.clear()
         self._size_list_widget.addItems(sizes_list)
-        items: list[QListWidgetItem] = self._size_list_widget.findItems(str(prev_size), Qt.MatchFlag.MatchFixedString)
+        items: list[QListWidgetItem] = self._size_list_widget.findItems(
+            str(prev_size), Qt.MatchFlag.MatchFixedString
+        )
         if len(items) > 0:
             item: QListWidgetItem = items[0]
             self._size_list_widget.setCurrentItem(item)

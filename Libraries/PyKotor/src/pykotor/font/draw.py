@@ -34,13 +34,17 @@ class _FontMetrics:
         self.baseline_height: int
         self.max_underhang_height: int
         self.max_char_height: int
-        self.baseline_height, self.max_underhang_height, self.max_char_height = self._calculate_metrics()
+        self.baseline_height, self.max_underhang_height, self.max_char_height = (
+            self._calculate_metrics()
+        )
 
     def _calculate_metrics(self) -> tuple[int, int, int]:
         temp_image: Image.Image = Image.new("RGBA", (100, 100), (0, 0, 0, 0))
         temp_draw: ImageDraw.ImageDraw = ImageDraw.Draw(temp_image)
 
-        baseline_bbox: tuple[float, float, float, float] = temp_draw.textbbox((0, 0), self.baseline_char, font=self.pil_font)
+        baseline_bbox: tuple[float, float, float, float] = temp_draw.textbbox(
+            (0, 0), self.baseline_char, font=self.pil_font
+        )
         baseline_height: int = int(baseline_bbox[3] - baseline_bbox[1])
 
         max_underhang_height: int = 0
@@ -50,7 +54,9 @@ class _FontMetrics:
             if not char:
                 continue
 
-            char_bbox: tuple[float, float, float, float] = temp_draw.textbbox((0, 0), char, font=self.pil_font)
+            char_bbox: tuple[float, float, float, float] = temp_draw.textbbox(
+                (0, 0), char, font=self.pil_font
+            )
             underhang_height: int = int(char_bbox[3] - baseline_bbox[3])
             char_height: int = int(char_bbox[3] - char_bbox[1])
 
@@ -72,7 +78,9 @@ class _BitmapGrid:
         self.num_chars: int = num_chars
         self.chars_per_col: int = math.ceil(math.sqrt(num_chars))
         self.chars_per_row: int = math.ceil(math.sqrt(num_chars))
-        self.cell_size: int = min(resolution[0] // self.chars_per_row, resolution[1] // self.chars_per_col)
+        self.cell_size: int = min(
+            resolution[0] // self.chars_per_row, resolution[1] // self.chars_per_col
+        )
         self.cell_height: float = resolution[1] / self.chars_per_row
 
 
@@ -109,17 +117,26 @@ def write_bitmap_font(
     # Calculate total additional height needed for the underhang
     total_additional_height: int = (metrics.baseline_height) * characters_per_column
     # Adjust the resolution to include the additional height
-    adjusted_resolution: tuple[int, int] = (resolution[0] + total_additional_height, resolution[1] + total_additional_height)
+    adjusted_resolution: tuple[int, int] = (
+        resolution[0] + total_additional_height,
+        resolution[1] + total_additional_height,
+    )
 
     # Calculate the multiplier
     multiplier_width: float = adjusted_resolution[0] / resolution[0]
     multiplier_height: float = adjusted_resolution[1] / resolution[1]
 
     # Calculate new resolution that will determine character size
-    new_original_resolution: tuple[int, int] = (int(resolution[0] / multiplier_width), int(resolution[1] / multiplier_height))
+    new_original_resolution: tuple[int, int] = (
+        int(resolution[0] / multiplier_width),
+        int(resolution[1] / multiplier_height),
+    )
 
     # Recalculate everything with the new resolution
-    font_size: int = min(new_original_resolution[0] // characters_per_column, new_original_resolution[1] // characters_per_row)
+    font_size: int = min(
+        new_original_resolution[0] // characters_per_column,
+        new_original_resolution[1] // characters_per_row,
+    )
     pil_font = ImageFont.truetype(str(font_path), font_size)
     metrics = _FontMetrics(pil_font, charset_list)
 
@@ -157,14 +174,27 @@ def write_bitmap_font(
         pixel_y2: float = norm_y2 * resolution[1]
 
         # Calculate character height and width
-        char_bbox: tuple[int, int, int, int] = draw.textbbox((pixel_x1, pixel_y1), char, font=pil_font)
+        char_bbox: tuple[int, int, int, int] = draw.textbbox(
+            (pixel_x1, pixel_y1), char, font=pil_font
+        )
         char_width: int = char_bbox[2] - char_bbox[0]
 
         # Draw character. Adjust Y coordinates to move one cell downwards
         if char == "\n":
-            draw.text((pixel_x1, pixel_y1 + cell_height - metrics.max_underhang_height), char, font=pil_font, fill=font_color or (255, 255, 255, 255))
+            draw.text(
+                (pixel_x1, pixel_y1 + cell_height - metrics.max_underhang_height),
+                char,
+                font=pil_font,
+                fill=font_color or (255, 255, 255, 255),
+            )
         else:
-            draw.text((pixel_x1, pixel_y1 + cell_height - metrics.max_underhang_height), char, anchor="ls", font=pil_font, fill=font_color or (255, 255, 255, 255))
+            draw.text(
+                (pixel_x1, pixel_y1 + cell_height - metrics.max_underhang_height),
+                char,
+                anchor="ls",
+                font=pil_font,
+                fill=font_color or (255, 255, 255, 255),
+            )
 
         # Adjust text coordinates
         pixel_x2 = pixel_x1 + char_width
@@ -203,7 +233,9 @@ def write_bitmap_font(
     txi_font_info.upper_left_coords = upper_left_coords
     txi_font_info.lower_right_coords = lower_right_coords
     # Normalize and set font metrics
-    txi_font_info.set_font_metrics(resolution, metrics.max_char_height, metrics.baseline_height, custom_scaling)
+    txi_font_info.set_font_metrics(
+        resolution, metrics.max_char_height, metrics.baseline_height, custom_scaling
+    )
 
     ensure_directory_exists(target_path.parent)
     charset_image.save(target_path.with_suffix(".tga"), format="TGA")

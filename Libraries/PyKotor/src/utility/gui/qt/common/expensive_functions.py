@@ -221,7 +221,9 @@ class FileOperations:
         if platform.system() == "Windows":
             from utility.system.os_helper import win_get_system32_dir
 
-            cmd: list[str] = shlex.split(f'"{win_get_system32_dir() / "rundll32.exe"}" shell32.dll,OpenAs_RunDLL "{file_path}"')
+            cmd: list[str] = shlex.split(
+                f'"{win_get_system32_dir() / "rundll32.exe"}" shell32.dll,OpenAs_RunDLL "{file_path}"'
+            )
             subprocess.run(cmd, check=True)  # noqa: S603
         elif platform.system() == "Darwin":  # macOS
             subprocess.run(["open", "-a", file_path], check=True)  # noqa: S607, S603
@@ -314,10 +316,14 @@ class FileOperations:
 
             # Define necessary structures and functions
             class SECURITY_DESCRIPTOR(ctypes.Structure):  # noqa: N801
-                _fields_: Sequence[tuple[str, type[_CData]] | tuple[str, type[_CData], int]] = [("buf", wintypes.BYTE * 256)]  # noqa: RUF012
+                _fields_: Sequence[tuple[str, type[_CData]] | tuple[str, type[_CData], int]] = [
+                    ("buf", wintypes.BYTE * 256)
+                ]  # noqa: RUF012
 
             class ACL(ctypes.Structure):
-                _fields_: Sequence[tuple[str, type[_CData]] | tuple[str, type[_CData], int]] = [("buf", wintypes.BYTE * 256)]  # noqa: RUF012
+                _fields_: Sequence[tuple[str, type[_CData]] | tuple[str, type[_CData], int]] = [
+                    ("buf", wintypes.BYTE * 256)
+                ]  # noqa: RUF012
 
             GetFileSecurity = ctypes.windll.advapi32.GetFileSecurityW
             GetSecurityDescriptorOwner = ctypes.windll.advapi32.GetSecurityDescriptorOwner
@@ -327,7 +333,9 @@ class FileOperations:
             sd = SECURITY_DESCRIPTOR()
             owner_sid = ctypes.c_void_p()
             GetFileSecurity(str(path), 1, ctypes.byref(sd), 256, ctypes.byref(ctypes.c_uint32()))  # noqa: S113
-            GetSecurityDescriptorOwner(ctypes.byref(sd), ctypes.byref(owner_sid), ctypes.byref(ctypes.c_bool()))
+            GetSecurityDescriptorOwner(
+                ctypes.byref(sd), ctypes.byref(owner_sid), ctypes.byref(ctypes.c_bool())
+            )
 
             # Look up owner name
             owner_name = ctypes.create_unicode_buffer(256)
@@ -335,7 +343,15 @@ class FileOperations:
             domain_name = ctypes.create_unicode_buffer(256)
             domain_name_size = wintypes.DWORD(256)
             sid_type = wintypes.DWORD()
-            LookupAccountSid(None, owner_sid, owner_name, ctypes.byref(owner_name_size), domain_name, ctypes.byref(domain_name_size), ctypes.byref(sid_type))
+            LookupAccountSid(
+                None,
+                owner_sid,
+                owner_name,
+                ctypes.byref(owner_name_size),
+                domain_name,
+                ctypes.byref(domain_name_size),
+                ctypes.byref(sid_type),
+            )
 
             owner = owner_name.value
             group = domain_name.value
@@ -436,7 +452,9 @@ class FileOperations:
                     terminal_id: bytes = struct.pack("<I", 0)
 
                     link_flags: bytes = struct.pack("<I", 0x0000001)  # HasLinkTargetIDList
-                    link_info_flags: bytes = struct.pack("<I", 0x1 | 0x2)  # VolumeIDAndLocalBasePath
+                    link_info_flags: bytes = struct.pack(
+                        "<I", 0x1 | 0x2
+                    )  # VolumeIDAndLocalBasePath
                     local_base_path: bytes = str(source_path).encode("utf-16le") + b"\x00\x00"
 
                     data: bytes = (
@@ -517,7 +535,9 @@ class FileOperations:
         archive_path: Path,
         **kwargs,
     ):
-        total_size: int = sum(f.stat().st_size for path in paths for f in path.rglob("*") if f.is_file())
+        total_size: int = sum(
+            f.stat().st_size for path in paths for f in path.rglob("*") if f.is_file()
+        )
         compressed_size: int = 0
 
         with zipfile.ZipFile(archive_path, "w", zipfile.ZIP_DEFLATED) as archive:
@@ -535,7 +555,9 @@ class FileOperations:
                             archive.write(file_path, arcname=relative_path)
                             compressed_size += file_path.stat().st_size
 
-                    progress: int = int((compressed_size / total_size) * 100) if total_size > 0 else 100
+                    progress: int = (
+                        int((compressed_size / total_size) * 100) if total_size > 0 else 100
+                    )
                     kwargs["progress_queue"].put(progress)
 
     @classmethod
@@ -545,10 +567,14 @@ class FileOperations:
         archive_path: Path,
         **kwargs,
     ):
-        total_size: int = sum(f.stat().st_size for path in paths for f in path.rglob("*") if f.is_file())
+        total_size: int = sum(
+            f.stat().st_size for path in paths for f in path.rglob("*") if f.is_file()
+        )
         compressed_size: int = 0
 
-        mode: Literal["w:gz", "w"] = "w:gz" if archive_path.name.casefold().endswith((".tar.gz", ".tgz")) else "w"
+        mode: Literal["w:gz", "w"] = (
+            "w:gz" if archive_path.name.casefold().endswith((".tar.gz", ".tgz")) else "w"
+        )
         with tarfile.open(archive_path, mode) as archive:
             for path in paths:
                 if not is_valid_path(path):
@@ -575,8 +601,15 @@ class FileOperations:
             raise ValueError(f"Unsupported archive format: '{archive_path.name}'")
 
         with open_func(archive_path, mode) as archive:  # pyright: ignore[reportArgumentType]
-            total_items: int = len(archive.namelist() if isinstance(archive, zipfile.ZipFile) else archive.getmembers())
-            for i, item in enumerate(archive.namelist() if isinstance(archive, zipfile.ZipFile) else archive.getmembers(), 1):
+            total_items: int = len(
+                archive.namelist() if isinstance(archive, zipfile.ZipFile) else archive.getmembers()
+            )
+            for i, item in enumerate(
+                archive.namelist()
+                if isinstance(archive, zipfile.ZipFile)
+                else archive.getmembers(),
+                1,
+            ):
                 item_path = Path(item if isinstance(item, str) else item.name)
                 if item_path.is_absolute() or ".." in item_path.parts:
                     continue

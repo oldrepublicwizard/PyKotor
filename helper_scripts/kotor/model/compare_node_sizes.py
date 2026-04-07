@@ -67,18 +67,31 @@ def main():
         pykotor_mdx = pykotor_mdx_path.read_bytes()
 
         # MDLOps roundtrip
-        subprocess.run([str(mdlops_exe), str(orig_mdl_path)], cwd=str(td_path), capture_output=True, timeout=60)
+        subprocess.run(
+            [str(mdlops_exe), str(orig_mdl_path)], cwd=str(td_path), capture_output=True, timeout=60
+        )
         ascii_path = td_path / f"{model_name}-ascii.mdl"
-        subprocess.run([str(mdlops_exe), str(ascii_path), "-k1"], cwd=str(td_path), capture_output=True, timeout=60)
+        subprocess.run(
+            [str(mdlops_exe), str(ascii_path), "-k1"],
+            cwd=str(td_path),
+            capture_output=True,
+            timeout=60,
+        )
         mdlops_mdl_path = td_path / f"{model_name}-ascii-k1-bin.mdl"
         mdlops_mdx_path = td_path / f"{model_name}-ascii-k1-bin.mdx"
         mdlops_mdl = mdlops_mdl_path.read_bytes()
         mdlops_mdx = mdlops_mdx_path.read_bytes()
 
         print("=== File Sizes ===")
-        print(f"Original: MDL={len(mdl_res.data)}, MDX={len(mdx_res.data)}, Total={len(mdl_res.data) + len(mdx_res.data)}")
-        print(f"PyKotor:  MDL={len(pykotor_mdl)}, MDX={len(pykotor_mdx)}, Total={len(pykotor_mdl) + len(pykotor_mdx)}")
-        print(f"MDLOps:   MDL={len(mdlops_mdl)}, MDX={len(mdlops_mdx)}, Total={len(mdlops_mdl) + len(mdlops_mdx)}")
+        print(
+            f"Original: MDL={len(mdl_res.data)}, MDX={len(mdx_res.data)}, Total={len(mdl_res.data) + len(mdx_res.data)}"
+        )
+        print(
+            f"PyKotor:  MDL={len(pykotor_mdl)}, MDX={len(pykotor_mdx)}, Total={len(pykotor_mdl) + len(pykotor_mdx)}"
+        )
+        print(
+            f"MDLOps:   MDL={len(mdlops_mdl)}, MDX={len(mdlops_mdx)}, Total={len(mdlops_mdl) + len(mdlops_mdx)}"
+        )
 
         # Compare headers
         print("\n=== Header Comparison ===")
@@ -92,7 +105,9 @@ def main():
 
         # In the model header, look for animation count and offsets
         # Model header is at offset 12, animation info starts at offset 12+80
-        pyk_name_offsets_offset = struct.unpack_from("<I", pykotor_mdl, 12 + 164)[0]  # offset to name offsets
+        pyk_name_offsets_offset = struct.unpack_from("<I", pykotor_mdl, 12 + 164)[
+            0
+        ]  # offset to name offsets
         pyk_name_count = struct.unpack_from("<I", pykotor_mdl, 12 + 168)[0]  # name offsets count
         pyk_anim_offset = struct.unpack_from("<I", pykotor_mdl, 12 + 172)[0]  # offset to animations
 
@@ -100,8 +115,12 @@ def main():
         mdl_name_count = struct.unpack_from("<I", mdlops_mdl, 12 + 168)[0]
         mdl_anim_offset = struct.unpack_from("<I", mdlops_mdl, 12 + 172)[0]
 
-        print(f"PyKotor: name_offsets=@{pyk_name_offsets_offset}, name_count={pyk_name_count}, anim_offset=@{pyk_anim_offset}")
-        print(f"MDLOps:  name_offsets=@{mdl_name_offsets_offset}, name_count={mdl_name_count}, anim_offset=@{mdl_anim_offset}")
+        print(
+            f"PyKotor: name_offsets=@{pyk_name_offsets_offset}, name_count={pyk_name_count}, anim_offset=@{pyk_anim_offset}"
+        )
+        print(
+            f"MDLOps:  name_offsets=@{mdl_name_offsets_offset}, name_count={mdl_name_count}, anim_offset=@{mdl_anim_offset}"
+        )
 
         # Calculate data sections
         header_end = 12 + 196  # file header + model header
@@ -123,10 +142,17 @@ def main():
         print(f"PyKotor parsed {len(all_nodes)} nodes")
 
         # Count vertex data
-        total_verts = sum(len(n.mesh.vertex_positions) if n.mesh and n.mesh.vertex_positions else 0 for n in all_nodes)
+        total_verts = sum(
+            len(n.mesh.vertex_positions) if n.mesh and n.mesh.vertex_positions else 0
+            for n in all_nodes
+        )
         total_faces = sum(len(n.mesh.faces) if n.mesh else 0 for n in all_nodes)
-        total_normals = sum(len(n.mesh.vertex_normals) if n.mesh and n.mesh.vertex_normals else 0 for n in all_nodes)
-        total_uvs = sum(len(n.mesh.vertex_uv1) if n.mesh and n.mesh.vertex_uv1 else 0 for n in all_nodes)
+        total_normals = sum(
+            len(n.mesh.vertex_normals) if n.mesh and n.mesh.vertex_normals else 0 for n in all_nodes
+        )
+        total_uvs = sum(
+            len(n.mesh.vertex_uv1) if n.mesh and n.mesh.vertex_uv1 else 0 for n in all_nodes
+        )
 
         print(f"Total vertices: {total_verts}")
         print(f"Total faces: {total_faces}")

@@ -71,7 +71,9 @@ class FontItemWidget(QWidget):
         self._font_list_widget.addItems(font_families)
 
     def set_current_font(self, font: QFont):
-        items: list[QListWidgetItem] = self._font_list_widget.findItems(font.family(), Qt.MatchFlag.MatchFixedString)
+        items: list[QListWidgetItem] = self._font_list_widget.findItems(
+            font.family(), Qt.MatchFlag.MatchFixedString
+        )
         item: QListWidgetItem | None = None
         if items:
             item = items[0]

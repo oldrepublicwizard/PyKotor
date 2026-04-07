@@ -315,7 +315,10 @@ def find_vendor_references(
                     normalized_path = file_path_str.replace("\\", "/").lower()
                     if "northernlights/assets/scripts/ncs/constants.cs" in normalized_path:
                         continue
-                    if "kotormessageinjector/kotormessageinjector/kotorhelpers_constants.cs" in normalized_path:
+                    if (
+                        "kotormessageinjector/kotormessageinjector/kotorhelpers_constants.cs"
+                        in normalized_path
+                    ):
                         continue
 
                     # ripgrep returns paths like: .\HoloLSP\file.py or HoloLSP\file.py or ./HoloLSP/file.py
@@ -325,7 +328,11 @@ def find_vendor_references(
                         file_path_str = file_path_str[2:]
 
                     # Filter out HoloLSP vendor subfolder
-                    if file_path_str.lower().startswith("hololsp") or file_path_str.lower().startswith("hololsp\\") or file_path_str.lower().startswith("hololsp/"):
+                    if (
+                        file_path_str.lower().startswith("hololsp")
+                        or file_path_str.lower().startswith("hololsp\\")
+                        or file_path_str.lower().startswith("hololsp/")
+                    ):
                         continue
 
                     # Convert to absolute path by joining with vendor_dir
@@ -361,7 +368,9 @@ def find_vendor_references(
                         repo_name = vendor_to_repo[vendor_subfolder]
                         # Get path relative to vendor subfolder
                         # Remove the first directory component (the submodule name)
-                        subfolder_relpath = Path(*parts_list[1:]) if len(parts_list) > 1 else Path(".")
+                        subfolder_relpath = (
+                            Path(*parts_list[1:]) if len(parts_list) > 1 else Path(".")
+                        )
                         references.append((repo_name, str(subfolder_relpath), line_num))
                         # Log when a reference is found (limit to first 10 to avoid spam)
                         if verbose and len(references) <= 10:
@@ -374,7 +383,13 @@ def find_vendor_references(
             if verbose:
                 stderr_msg = result.stderr[:200] if result.stderr else "Unknown error"
                 print(f"    ⚠ ripgrep error (code {result.returncode}): {stderr_msg}")
-    except (FileNotFoundError, subprocess.TimeoutExpired, subprocess.CalledProcessError, UnicodeDecodeError, AttributeError) as e:
+    except (
+        FileNotFoundError,
+        subprocess.TimeoutExpired,
+        subprocess.CalledProcessError,
+        UnicodeDecodeError,
+        AttributeError,
+    ) as e:
         if verbose:
             print(f"    ⚠ Exception searching for {name}: {type(e).__name__}")
         # Fall through to manual search
@@ -408,7 +423,10 @@ def find_vendor_references(
                     normalized_path = str(rel_file_path).replace("\\", "/").lower()
                     if "northernlights/assets/scripts/ncs/constants.cs" in normalized_path:
                         continue
-                    if "kotormessageinjector/kotormessageinjector/kotorhelpers_constants.cs" in normalized_path:
+                    if (
+                        "kotormessageinjector/kotormessageinjector/kotorhelpers_constants.cs"
+                        in normalized_path
+                    ):
                         continue
 
                     file_path_obj = vendor_path_obj / rel_file_path
@@ -426,13 +444,19 @@ def find_vendor_references(
                                     idx = line_lower.find(name_lower)
                                     while idx != -1:
                                         # Check character before (if exists)
-                                        before_ok = idx == 0 or not (line[idx - 1].isalnum() or line[idx - 1] == "_")
+                                        before_ok = idx == 0 or not (
+                                            line[idx - 1].isalnum() or line[idx - 1] == "_"
+                                        )
                                         # Check character after (if exists)
                                         after_idx = idx + len(name)
-                                        after_ok = after_idx >= len(line) or not (line[after_idx].isalnum() or line[after_idx] == "_")
+                                        after_ok = after_idx >= len(line) or not (
+                                            line[after_idx].isalnum() or line[after_idx] == "_"
+                                        )
 
                                         if before_ok and after_ok:
-                                            references.append((repo_name, str(rel_file_path), line_num))
+                                            references.append(
+                                                (repo_name, str(rel_file_path), line_num)
+                                            )
                                             break  # Found match, move to next line
 
                                         # Find next occurrence
@@ -608,7 +632,9 @@ def format_library_markdown(
     return md + "\n"
 
 
-def get_function_file_and_anchor(func_name: str, category: str, section_type: str) -> tuple[str, str] | None:
+def get_function_file_and_anchor(
+    func_name: str, category: str, section_type: str
+) -> tuple[str, str] | None:
     """Get the extracted file name and anchor for a function.
 
     Args:
@@ -650,7 +676,13 @@ def get_function_file_and_anchor(func_name: str, category: str, section_type: st
 
 
 def generate_toc_entry(
-    level: int, title: str, is_item: bool = False, func_name: str | None = None, category: str | None = None, section_type: str | None = None, routine_num: int | None = None
+    level: int,
+    title: str,
+    is_item: bool = False,
+    func_name: str | None = None,
+    category: str | None = None,
+    section_type: str | None = None,
+    routine_num: int | None = None,
 ) -> str:
     """Generate a TOC entry.
 
@@ -731,7 +763,9 @@ def build_section_content(
 
             # Find vendor references using ripgrep (fast!)
             try:
-                refs: list[tuple[str, str, int]] = find_vendor_references(item.name, vendor_to_repo, verbose=True)
+                refs: list[tuple[str, str, int]] = find_vendor_references(
+                    item.name, vendor_to_repo, verbose=True
+                )
                 refs_md = format_references(refs)
                 if refs:
                     print(f"      -> Found {len(refs)} reference(s) for {item.name}")
@@ -777,7 +811,9 @@ def main():
         print("+ Using ripgrep for fast searches")
     except (FileNotFoundError, subprocess.CalledProcessError, subprocess.TimeoutExpired):
         print("! Warning: ripgrep not found. Searches will be slower.")
-        print("  Install ripgrep for best performance: https://github.com/BurntSushi/ripgrep#installation")
+        print(
+            "  Install ripgrep for best performance: https://github.com/BurntSushi/ripgrep#installation"
+        )
         print("  On Windows: `choco install ripgrep`  or  `scoop install ripgrep`")
 
     # Get all functions and constants
@@ -830,17 +866,29 @@ def main():
             category = categorize_constant(const)
             tsl_only_consts[category].append(const)
 
-    print(f"Shared: {sum(len(v) for v in shared_funcs.values())} functions, {sum(len(v) for v in shared_consts.values())} constants")
-    print(f"K1-only: {sum(len(v) for v in k1_only_funcs.values())} functions, {sum(len(v) for v in k1_only_consts.values())} constants")
-    print(f"TSL-only: {sum(len(v) for v in tsl_only_funcs.values())} functions, {sum(len(v) for v in tsl_only_consts.values())} constants")
+    print(
+        f"Shared: {sum(len(v) for v in shared_funcs.values())} functions, {sum(len(v) for v in shared_consts.values())} constants"
+    )
+    print(
+        f"K1-only: {sum(len(v) for v in k1_only_funcs.values())} functions, {sum(len(v) for v in k1_only_consts.values())} constants"
+    )
+    print(
+        f"TSL-only: {sum(len(v) for v in tsl_only_funcs.values())} functions, {sum(len(v) for v in tsl_only_consts.values())} constants"
+    )
 
     # Build content for each section
     print("\nBuilding section content (this may take a while as we search vendor directories)...")
     toc_entries_by_section: dict[str, list[tuple[str, bool]]] = {}
 
     print("\n[1/6] Processing Shared Functions...")
-    shared_func_content, toc_entries_by_section["Shared Functions (K1 & TSL)"] = build_section_content(
-        shared_funcs, format_function_markdown, "function", vendor_to_repo, "Shared Functions (K1 & TSL)"
+    shared_func_content, toc_entries_by_section["Shared Functions (K1 & TSL)"] = (
+        build_section_content(
+            shared_funcs,
+            format_function_markdown,
+            "function",
+            vendor_to_repo,
+            "Shared Functions (K1 & TSL)",
+        )
     )
 
     print("\n[2/6] Processing K1-Only Functions...")
@@ -854,8 +902,14 @@ def main():
     )
 
     print("\n[4/6] Processing Shared Constants...")
-    shared_const_content, toc_entries_by_section["Shared Constants (K1 & TSL)"] = build_section_content(
-        shared_consts, format_constant_markdown, "constant", vendor_to_repo, "Shared Constants (K1 & TSL)"
+    shared_const_content, toc_entries_by_section["Shared Constants (K1 & TSL)"] = (
+        build_section_content(
+            shared_consts,
+            format_constant_markdown,
+            "constant",
+            vendor_to_repo,
+            "Shared Constants (K1 & TSL)",
+        )
     )
 
     print("\n[5/6] Processing K1-Only Constants...")
@@ -953,7 +1007,11 @@ def main():
                     toc_lines.append(generate_toc_entry(3, name, False))
                 else:
                     # Item (function/constant)
-                    toc_lines.append(generate_toc_entry(4, name, True, name, category, entry_section_type, routine_num))
+                    toc_lines.append(
+                        generate_toc_entry(
+                            4, name, True, name, category, entry_section_type, routine_num
+                        )
+                    )
         elif section_name == "KOTOR Library Files":
             # Add library file entries
             for lib_name in sorted(kotor_libraries):
@@ -971,7 +1029,12 @@ def main():
     # TOC - match with any content (including newlines) between placeholders
     toc_pattern = r"<!-- TOC_START -->.*?<!-- TOC_END -->"
     if re.search(toc_pattern, md_content, re.DOTALL):
-        md_content = re.sub(toc_pattern, f"<!-- TOC_START -->\n{toc_content}\n<!-- TOC_END -->", md_content, flags=re.DOTALL)
+        md_content = re.sub(
+            toc_pattern,
+            f"<!-- TOC_START -->\n{toc_content}\n<!-- TOC_END -->",
+            md_content,
+            flags=re.DOTALL,
+        )
         print(f"  ✓ TOC replaced ({len(toc_lines)} entries)")
     else:
         print("  - TOC placeholders not found")
@@ -979,7 +1042,12 @@ def main():
     # Shared Functions
     pattern = r"<!-- SHARED_FUNCTIONS_START -->.*?<!-- SHARED_FUNCTIONS_END -->"
     if re.search(pattern, md_content, re.DOTALL):
-        md_content = re.sub(pattern, f"<!-- SHARED_FUNCTIONS_START -->\n\n{shared_func_content}<!-- SHARED_FUNCTIONS_END -->", md_content, flags=re.DOTALL)
+        md_content = re.sub(
+            pattern,
+            f"<!-- SHARED_FUNCTIONS_START -->\n\n{shared_func_content}<!-- SHARED_FUNCTIONS_END -->",
+            md_content,
+            flags=re.DOTALL,
+        )
         print("  + Shared Functions replaced")
     else:
         print("  - Shared Functions placeholders not found")
@@ -987,7 +1055,12 @@ def main():
     # K1 Functions
     pattern = r"<!-- K1_ONLY_FUNCTIONS_START -->.*?<!-- K1_ONLY_FUNCTIONS_END -->"
     if re.search(pattern, md_content, re.DOTALL):
-        md_content = re.sub(pattern, f"<!-- K1_ONLY_FUNCTIONS_START -->\n\n{k1_func_content}<!-- K1_ONLY_FUNCTIONS_END -->", md_content, flags=re.DOTALL)
+        md_content = re.sub(
+            pattern,
+            f"<!-- K1_ONLY_FUNCTIONS_START -->\n\n{k1_func_content}<!-- K1_ONLY_FUNCTIONS_END -->",
+            md_content,
+            flags=re.DOTALL,
+        )
         print("  + K1-Only Functions replaced")
     else:
         print("  - K1-Only Functions placeholders not found")
@@ -995,7 +1068,12 @@ def main():
     # TSL Functions
     pattern = r"<!-- TSL_ONLY_FUNCTIONS_START -->.*?<!-- TSL_ONLY_FUNCTIONS_END -->"
     if re.search(pattern, md_content, re.DOTALL):
-        md_content = re.sub(pattern, f"<!-- TSL_ONLY_FUNCTIONS_START -->\n\n{tsl_func_content}<!-- TSL_ONLY_FUNCTIONS_END -->", md_content, flags=re.DOTALL)
+        md_content = re.sub(
+            pattern,
+            f"<!-- TSL_ONLY_FUNCTIONS_START -->\n\n{tsl_func_content}<!-- TSL_ONLY_FUNCTIONS_END -->",
+            md_content,
+            flags=re.DOTALL,
+        )
         print("  + TSL-Only Functions replaced")
     else:
         print("  - TSL-Only Functions placeholders not found")
@@ -1003,7 +1081,12 @@ def main():
     # Shared Constants
     pattern = r"<!-- SHARED_CONSTANTS_START -->.*?<!-- SHARED_CONSTANTS_END -->"
     if re.search(pattern, md_content, re.DOTALL):
-        md_content = re.sub(pattern, f"<!-- SHARED_CONSTANTS_START -->\n\n{shared_const_content}<!-- SHARED_CONSTANTS_END -->", md_content, flags=re.DOTALL)
+        md_content = re.sub(
+            pattern,
+            f"<!-- SHARED_CONSTANTS_START -->\n\n{shared_const_content}<!-- SHARED_CONSTANTS_END -->",
+            md_content,
+            flags=re.DOTALL,
+        )
         print("  + Shared Constants replaced")
     else:
         print("  - Shared Constants placeholders not found")
@@ -1011,7 +1094,12 @@ def main():
     # K1 Constants
     pattern = r"<!-- K1_ONLY_CONSTANTS_START -->.*?<!-- K1_ONLY_CONSTANTS_END -->"
     if re.search(pattern, md_content, re.DOTALL):
-        md_content = re.sub(pattern, f"<!-- K1_ONLY_CONSTANTS_START -->\n\n{k1_const_content}<!-- K1_ONLY_CONSTANTS_END -->", md_content, flags=re.DOTALL)
+        md_content = re.sub(
+            pattern,
+            f"<!-- K1_ONLY_CONSTANTS_START -->\n\n{k1_const_content}<!-- K1_ONLY_CONSTANTS_END -->",
+            md_content,
+            flags=re.DOTALL,
+        )
         print("  + K1-Only Constants replaced")
     else:
         print("  - K1-Only Constants placeholders not found")
@@ -1019,7 +1107,12 @@ def main():
     # TSL Constants
     pattern = r"<!-- TSL_ONLY_CONSTANTS_START -->.*?<!-- TSL_ONLY_CONSTANTS_END -->"
     if re.search(pattern, md_content, re.DOTALL):
-        md_content = re.sub(pattern, f"<!-- TSL_ONLY_CONSTANTS_START -->\n\n{tsl_const_content}<!-- TSL_ONLY_CONSTANTS_END -->", md_content, flags=re.DOTALL)
+        md_content = re.sub(
+            pattern,
+            f"<!-- TSL_ONLY_CONSTANTS_START -->\n\n{tsl_const_content}<!-- TSL_ONLY_CONSTANTS_END -->",
+            md_content,
+            flags=re.DOTALL,
+        )
         print("  + TSL-Only Constants replaced")
     else:
         print("  - TSL-Only Constants placeholders not found")
@@ -1027,7 +1120,12 @@ def main():
     # KOTOR Library Files
     pattern = r"<!-- KOTOR_LIBRARY_START -->.*?<!-- KOTOR_LIBRARY_END -->"
     if re.search(pattern, md_content, re.DOTALL):
-        md_content = re.sub(pattern, f"<!-- KOTOR_LIBRARY_START -->\n\n{kotor_lib_content}<!-- KOTOR_LIBRARY_END -->", md_content, flags=re.DOTALL)
+        md_content = re.sub(
+            pattern,
+            f"<!-- KOTOR_LIBRARY_START -->\n\n{kotor_lib_content}<!-- KOTOR_LIBRARY_END -->",
+            md_content,
+            flags=re.DOTALL,
+        )
         print("  + KOTOR Library Files replaced")
     else:
         print("  - KOTOR Library Files placeholders not found")
@@ -1035,7 +1133,12 @@ def main():
     # TSL Library Files
     pattern = r"<!-- TSL_LIBRARY_START -->.*?<!-- TSL_LIBRARY_END -->"
     if re.search(pattern, md_content, re.DOTALL):
-        md_content = re.sub(pattern, f"<!-- TSL_LIBRARY_START -->\n\n{tsl_lib_content}<!-- TSL_LIBRARY_END -->", md_content, flags=re.DOTALL)
+        md_content = re.sub(
+            pattern,
+            f"<!-- TSL_LIBRARY_START -->\n\n{tsl_lib_content}<!-- TSL_LIBRARY_END -->",
+            md_content,
+            flags=re.DOTALL,
+        )
         print("  + TSL Library Files replaced")
     else:
         print("  - TSL Library Files placeholders not found")

@@ -24,7 +24,9 @@ class TOOLINFO(Structure):
 def create_tooltip(hwnd, text):
     TTS_ALWAYSTIP = 0x01
     TTM_ADDTOOL = 0x0400 + 50
-    hwndTT = windll.user32.CreateWindowExW(0, "tooltips_class32", None, TTS_ALWAYSTIP, 0, 0, 0, 0, hwnd, None, None, None)
+    hwndTT = windll.user32.CreateWindowExW(
+        0, "tooltips_class32", None, TTS_ALWAYSTIP, 0, 0, 0, 0, hwnd, None, None, None
+    )
     ti = TOOLINFO(cbSize=sizeof(TOOLINFO), hwnd=hwnd, lpszText=text)
     windll.user32.SendMessageW(hwndTT, TTM_ADDTOOL, 0, byref(ti))
     return hwndTT

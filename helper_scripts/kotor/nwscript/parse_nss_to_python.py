@@ -75,12 +75,18 @@ def parse_function(lines: list[str], start_idx: int) -> tuple[dict, int] | None:
 
     # Match function signature: returntype name(params);
     # May span multiple lines
-    func_match = re.match(r"^\s*(void|int|float|string|object|vector|location|event|effect|itemproperty|talent|action)\s+(\w+)\s*\((.*?)\)\s*;?\s*$", func_line)
+    func_match = re.match(
+        r"^\s*(void|int|float|string|object|vector|location|event|effect|itemproperty|talent|action)\s+(\w+)\s*\((.*?)\)\s*;?\s*$",
+        func_line,
+    )
 
     if not func_match:
         # Try to find function on current or next few lines
         combined = " ".join(lines[idx : idx + 3])
-        func_match = re.search(r"(void|int|float|string|object|vector|location|event|effect|itemproperty|talent|action)\s+(\w+)\s*\((.*?)\)", combined)
+        func_match = re.search(
+            r"(void|int|float|string|object|vector|location|event|effect|itemproperty|talent|action)\s+(\w+)\s*\((.*?)\)",
+            combined,
+        )
         if func_match:
             returntype = func_match.group(1)
             name = func_match.group(2)
@@ -124,16 +130,34 @@ def parse_function(lines: list[str], start_idx: int) -> tuple[dict, int] | None:
                 continue
 
             # Match: datatype name = default
-            param_match = re.match(r"^\s*(void|int|float|string|object|vector|location|event|effect|itemproperty|talent|action)\s+(\w+)(?:\s*=\s*(.+))?\s*$", param_str)
+            param_match = re.match(
+                r"^\s*(void|int|float|string|object|vector|location|event|effect|itemproperty|talent|action)\s+(\w+)(?:\s*=\s*(.+))?\s*$",
+                param_str,
+            )
             if param_match:
                 ptype, pname, pdefault = param_match.groups()
-                params.append({"type": ptype, "name": pname, "default": pdefault.strip() if pdefault else None})
+                params.append(
+                    {
+                        "type": ptype,
+                        "name": pname,
+                        "default": pdefault.strip() if pdefault else None,
+                    }
+                )
 
     # Combine comments into description
     description = "\r\n".join(comments) + f"\r\n{returntype} {name}({params_str});"
     raw = description
 
-    return ({"returntype": returntype, "name": name, "params": params, "description": description, "raw": raw}, idx)
+    return (
+        {
+            "returntype": returntype,
+            "name": name,
+            "params": params,
+            "description": description,
+            "raw": raw,
+        },
+        idx,
+    )
 
 
 def parse_nss_file(nss_path: Path) -> tuple[list, list]:
@@ -225,8 +249,20 @@ def generate_python_function(func: dict) -> str:
     params_str = "[" + ", ".join(params_list) + "]"
 
     # Escape description and raw
-    description = func["description"].replace("\\", "\\\\").replace('"', '\\"').replace("\n", "\\n").replace("\r", "\\r")
-    raw = func["raw"].replace("\\", "\\\\").replace('"', '\\"').replace("\n", "\\n").replace("\r", "\\r")
+    description = (
+        func["description"]
+        .replace("\\", "\\\\")
+        .replace('"', '\\"')
+        .replace("\n", "\\n")
+        .replace("\r", "\\r")
+    )
+    raw = (
+        func["raw"]
+        .replace("\\", "\\\\")
+        .replace('"', '\\"')
+        .replace("\n", "\\n")
+        .replace("\r", "\\r")
+    )
 
     return f'''    ScriptFunction(
         {returntype},

@@ -21,7 +21,9 @@ if TYPE_CHECKING:
 @pytest.fixture(scope="session", autouse=True)
 def app() -> QApplication:
     """Ensure QApplication is initialized."""
-    app: QApplication | QCoreApplication | None = QApplication(sys.argv) if QApplication.instance() is None else QApplication.instance()
+    app: QApplication | QCoreApplication | None = (
+        QApplication(sys.argv) if QApplication.instance() is None else QApplication.instance()
+    )
     assert app is not None
     assert isinstance(app, QApplication)
     return app
@@ -117,7 +119,9 @@ def test_drive_added(gatherer: PyFileInfoGatherer):
             print("Called with:", gatherer.fetchExtendedInformation.call_args)
 
             # Now assert it was called with the correct arguments
-            expected_path = ""  # `driveAdded` in the code calls fetchExtendedInformation with an empty path
+            expected_path = (
+                ""  # `driveAdded` in the code calls fetchExtendedInformation with an empty path
+            )
             gatherer.fetchExtendedInformation.assert_called_once_with(expected_path, [])
 
 
@@ -139,11 +143,17 @@ def test_drive_removed(gatherer: PyFileInfoGatherer):
     ["path", "files", "expected_length"],
     [
         ["", [], 2],  # When an empty path is added, paths list should increase by one
-        ["path1", ["file1"], 1],  # When a path that already exists is passed, paths list should not change
+        [
+            "path1",
+            ["file1"],
+            1,
+        ],  # When a path that already exists is passed, paths list should not change
     ],
     ids=["empty_path", "non_empty_path"],
 )
-def test_fetch_extended_information_boiler(gatherer: PyFileInfoGatherer, path: str, files: list[str], expected_length: int):
+def test_fetch_extended_information_boiler(
+    gatherer: PyFileInfoGatherer, path: str, files: list[str], expected_length: int
+):
     gatherer._paths = ["path1"]  # noqa: SLF001
     gatherer._files = [["file1"]]  # noqa: SLF001
 
@@ -196,7 +206,9 @@ def test_fetch_extended_information(gatherer: PyFileInfoGatherer):
         timeout_timer.stop()
 
         # Assert
-        assert len(updates_data) > 0, f"Should have emitted updates signal. Paths: {gatherer._paths}, Files: {gatherer._files}"  # noqa: SLF001
+        assert len(updates_data) > 0, (
+            f"Should have emitted updates signal. Paths: {gatherer._paths}, Files: {gatherer._files}"
+        )  # noqa: SLF001
         emitted_path, emitted_updates = updates_data[0]
         assert emitted_path == temp_dir
         assert len(emitted_updates) == 1

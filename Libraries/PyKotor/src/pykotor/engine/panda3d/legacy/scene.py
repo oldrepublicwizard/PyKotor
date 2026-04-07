@@ -297,11 +297,15 @@ class KotorRenderer(ShowBase):
             if placeable_resource:
                 utp = placeable_resource.resource()
                 if utp:
-                    model_name = self.table_placeables.get_row(utp.appearance_id).get_string("modelname")
+                    model_name = self.table_placeables.get_row(utp.appearance_id).get_string(
+                        "modelname"
+                    )
                     placeable_node = self._load_model(model_name)
                     if placeable_node:
                         placeable_node.reparentTo(self.module_root)
-                        placeable_node.setPos(placeable.position.x, placeable.position.y, placeable.position.z)
+                        placeable_node.setPos(
+                            placeable.position.x, placeable.position.y, placeable.position.z
+                        )
                         placeable_node.setH(placeable.bearing)
 
     def _load_creatures(self, git: GIT) -> None:
@@ -309,7 +313,9 @@ class KotorRenderer(ShowBase):
         assert self._module is not None
         for git_creature in git.creatures:
             creature_node = self.module_root.attachNewNode(git_creature.resref + ".utc")
-            creature_node.setPos(git_creature.position.x, git_creature.position.y, git_creature.position.z)
+            creature_node.setPos(
+                git_creature.position.x, git_creature.position.y, git_creature.position.z
+            )
             creature_node.setH(git_creature.bearing)
 
             creature_resource = self._module.creature(str(git_creature.resref))
@@ -317,20 +323,34 @@ class KotorRenderer(ShowBase):
                 utc = creature_resource.resource()
                 if utc:
                     # Get body model
-                    body_model, body_tex = creature.get_body_model(utc, self.installation, appearance=self.table_creatures, baseitems=self.table_baseitems)
+                    body_model, body_tex = creature.get_body_model(
+                        utc,
+                        self.installation,
+                        appearance=self.table_creatures,
+                        baseitems=self.table_baseitems,
+                    )
 
                     if body_model:
                         creature_node = self._load_model(body_model)
                         if creature_node:
                             creature_node.reparentTo(self.module_root)
-                            creature_node.setPos(git_creature.position.x, git_creature.position.y, git_creature.position.z)
+                            creature_node.setPos(
+                                git_creature.position.x,
+                                git_creature.position.y,
+                                git_creature.position.z,
+                            )
                             creature_node.setH(git_creature.bearing)
 
                             if body_tex:
                                 self._load_texture(body_tex, creature_node)
 
                             # Load head if present
-                            head_model, head_tex = creature.get_head_model(utc, self.installation, appearance=self.table_creatures, heads=self.table_heads)
+                            head_model, head_tex = creature.get_head_model(
+                                utc,
+                                self.installation,
+                                appearance=self.table_creatures,
+                                heads=self.table_heads,
+                            )
 
                             if head_model and head_model.strip():
                                 head_hook = creature_node.find("**/headhook")
@@ -345,8 +365,15 @@ class KotorRenderer(ShowBase):
         """Load camera nodes from GIT."""
         for i, camera in enumerate(git.cameras):
             camera_node = self.module_root.attachNewNode(f"camera_{i}")
-            camera_node.setPos(camera.position.x, camera.position.y, camera.position.z + camera.height)
-            quat = LQuaternion(camera.orientation.w, camera.orientation.x, camera.orientation.y, camera.orientation.z)
+            camera_node.setPos(
+                camera.position.x, camera.position.y, camera.position.z + camera.height
+            )
+            quat = LQuaternion(
+                camera.orientation.w,
+                camera.orientation.x,
+                camera.orientation.y,
+                camera.orientation.z,
+            )
             euler = quat.getHpr()
             camera_node.setHpr(
                 euler[1],  # Pitch

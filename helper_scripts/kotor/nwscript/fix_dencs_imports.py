@@ -46,7 +46,12 @@ def fix_file(file_path: Path) -> bool:
 
         if in_type_checking:
             # Check if we're leaving the TYPE_CHECKING block
-            if stripped and not stripped.startswith("#") and not line.startswith(" ") and not line.startswith("\t"):
+            if (
+                stripped
+                and not stripped.startswith("#")
+                and not line.startswith(" ")
+                and not line.startswith("\t")
+            ):
                 in_type_checking = False
                 type_checking_end = i
                 continue
@@ -106,7 +111,9 @@ def fix_file(file_path: Path) -> bool:
 
 def main():
     """Main function to fix all dencs node files."""
-    dencs_node_path = Path("G:/GitHub/PyKotor/Libraries/PyKotor/src/pykotor/resource/formats/ncs/dencs/node")
+    dencs_node_path = Path(
+        "G:/GitHub/PyKotor/Libraries/PyKotor/src/pykotor/resource/formats/ncs/dencs/node"
+    )
 
     fixed_count = 0
     for py_file in sorted(dencs_node_path.glob("*.py")):

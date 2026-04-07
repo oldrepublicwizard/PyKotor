@@ -16,6 +16,7 @@ Usage::
 
 Restart HolocronToolset after running.
 """
+
 from __future__ import annotations
 
 import importlib.util
@@ -26,6 +27,7 @@ import stat
 import subprocess
 import sys
 import time
+
 from pathlib import Path
 
 
@@ -91,7 +93,10 @@ def main() -> int:
         (mdl / "io_mdl.py", Path(io_mdl.__file__).resolve()),
         (mdl / "mdl_auto.py", Path(mdl_auto.__file__).resolve()),
         (mdl / "__init__.py", Path(io_mdl.__file__).resolve().parent / "__init__.py"),
-        (mdl / "_install_mdl_io_aabb.py", Path(io_mdl.__file__).resolve().parent / "_install_mdl_io_aabb.py"),
+        (
+            mdl / "_install_mdl_io_aabb.py",
+            Path(io_mdl.__file__).resolve().parent / "_install_mdl_io_aabb.py",
+        ),
     ]
     for src, dst in pairs:
         if not src.is_file():

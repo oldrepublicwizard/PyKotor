@@ -640,7 +640,9 @@ class TestFileSystemExplorerWidgetLayout(unittest.TestCase):
         """Verify dynamic view expands to fill space."""
         view = self.explorer.ui.dynamicView
         policy = view.sizePolicy()
-        self.assertIn(policy.horizontalPolicy(), [QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred])
+        self.assertIn(
+            policy.horizontalPolicy(), [QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred]
+        )
 
     # ========================================================================
     # MODEL TESTS

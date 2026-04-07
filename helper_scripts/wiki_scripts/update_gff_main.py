@@ -39,7 +39,9 @@ for section_title, file_name in sections:
     pattern = rf"### {re.escape(section_title)}.*?(?=\n### |\n## Implementation Details|\Z)"
 
     # Replacement: just a link with blank line after
-    replacement = f"### {section_title}\n\nSee [{section_title}]({file_name}) for detailed documentation.\n"
+    replacement = (
+        f"### {section_title}\n\nSee [{section_title}]({file_name}) for detailed documentation.\n"
+    )
 
     content = re.sub(pattern, replacement, content, flags=re.DOTALL)
 

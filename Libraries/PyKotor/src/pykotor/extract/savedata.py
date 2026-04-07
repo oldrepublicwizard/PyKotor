@@ -422,7 +422,9 @@ class PartyTable:
     SIZE: Typically 20-50 KB depending on journal entries
     """
 
-    IDENTIFIER: ResourceIdentifier = ResourceIdentifier(resname="partytable", restype=ResourceType.RES)
+    IDENTIFIER: ResourceIdentifier = ResourceIdentifier(
+        resname="partytable", restype=ResourceType.RES
+    )
 
     def __init__(self, path: os.PathLike | str, ident: ResourceIdentifier | None = None):
         ident = self.IDENTIFIER if ident is None else ident
@@ -671,14 +673,19 @@ class PartyTable:
             elif field_type == GFFFieldType.String:
                 root.set_string(field_label, str(field_value))
             elif field_type == GFFFieldType.ResRef:
-                root.set_resref(field_label, field_value if isinstance(field_value, ResRef) else ResRef(str(field_value)))
+                root.set_resref(
+                    field_label,
+                    field_value if isinstance(field_value, ResRef) else ResRef(str(field_value)),
+                )
             elif field_type == GFFFieldType.LocalizedString:
                 root.set_locstring(field_label, field_value)
             elif field_type == GFFFieldType.Binary:
                 root.set_binary(field_label, bytes(field_value))
             elif field_type == GFFFieldType.Struct:
                 if not isinstance(field_value, GFFStruct):
-                    msg = f"Expected GFFStruct for '{field_label}', got {type(field_value).__name__}"
+                    msg = (
+                        f"Expected GFFStruct for '{field_label}', got {type(field_value).__name__}"
+                    )
                     raise TypeError(msg)
                 root.set_struct(field_label, deepcopy(field_value))
             elif field_type == GFFFieldType.List:
@@ -847,14 +854,18 @@ class GlobalVars:
     SIZE: Typically 5-15 KB (varies by game progress)
     """
 
-    IDENTIFIER: ResourceIdentifier = ResourceIdentifier(resname="globalvars", restype=ResourceType.RES)
+    IDENTIFIER: ResourceIdentifier = ResourceIdentifier(
+        resname="globalvars", restype=ResourceType.RES
+    )
 
     def __init__(self, path: os.PathLike | str, ident: ResourceIdentifier | None = None):
         ident = self.IDENTIFIER if ident is None else ident
         self.globals_filepath = CaseAwarePath(path) / str(ident)
 
         self.global_bools: list[tuple[str, bool]] = []  # (name, value) pairs
-        self.global_locs: list[tuple[str, Vector4]] = []  # (name, Vector4) pairs - Vec4.w is unused typically
+        self.global_locs: list[
+            tuple[str, Vector4]
+        ] = []  # (name, Vector4) pairs - Vec4.w is unused typically
         self.global_numbers: list[tuple[str, int]] = []  # (name, value) pairs
         self.global_strings: list[tuple[str, str]] = []  # (name, value) pairs
 
@@ -919,8 +930,12 @@ class GlobalVars:
                     # This function takes TWO floats (cos and sin of angle) and converts to degrees
                     # See GetOrientationDegrees in Main.pm lines 175-220: takes ($x, $y) params only
                     ori_x = reader.read_single()  # Float 3: cos(orientation_angle)
-                    _ori_y = reader.read_single()  # Float 4: sin(orientation_angle) - intentionally not used in Vector4 storage
-                    _ori_z = reader.read_single()  # Float 5: Always 0 - z-axis rotation not used by engine
+                    _ori_y = (
+                        reader.read_single()
+                    )  # Float 4: sin(orientation_angle) - intentionally not used in Vector4 storage
+                    _ori_z = (
+                        reader.read_single()
+                    )  # Float 5: Always 0 - z-axis rotation not used by engine
 
                     # Observed: global location vars use 2D rotation (yaw) in retail saves
                     # The game stores orientation as cos/sin pair, not full 3D Euler angles
@@ -1349,9 +1364,15 @@ class SaveNestedCapsule:
     - `set_resource()` / `remove_resource()`: Explicit resource mutation for custom editors
     """
 
-    IDENTIFIER: ResourceIdentifier = ResourceIdentifier(resname="savegame", restype=ResourceType.SAV)
-    INVENTORY_IDENTIFIER: ResourceIdentifier = ResourceIdentifier(resname="inventory", restype=ResourceType.RES)
-    REPUTE_IDENTIFIER: ResourceIdentifier = ResourceIdentifier(resname="repute", restype=ResourceType.FAC)
+    IDENTIFIER: ResourceIdentifier = ResourceIdentifier(
+        resname="savegame", restype=ResourceType.SAV
+    )
+    INVENTORY_IDENTIFIER: ResourceIdentifier = ResourceIdentifier(
+        resname="inventory", restype=ResourceType.RES
+    )
+    REPUTE_IDENTIFIER: ResourceIdentifier = ResourceIdentifier(
+        resname="repute", restype=ResourceType.FAC
+    )
 
     def __init__(self, path: os.PathLike | str, ident: ResourceIdentifier | None = None):
         ident = self.IDENTIFIER if ident is None else ident
@@ -1361,15 +1382,23 @@ class SaveNestedCapsule:
         # Cached game data
         self.resource_order: list[ResourceIdentifier] = []  # Preserve original ERF order
         self.resource_data: dict[ResourceIdentifier, bytes] = {}  # Raw bytes for every resource
-        self.cached_modules: dict[ResourceIdentifier, ERF] = {}  # Cached modules (.sav files) inside the save
-        self.cached_characters: dict[ResourceIdentifier, UTC] = {}  # Cached AVAILNPC*.utc character files
-        self.cached_character_indices: dict[int, ResourceIdentifier] = {}  # Map index -> ResourceIdentifier
+        self.cached_modules: dict[
+            ResourceIdentifier, ERF
+        ] = {}  # Cached modules (.sav files) inside the save
+        self.cached_characters: dict[
+            ResourceIdentifier, UTC
+        ] = {}  # Cached AVAILNPC*.utc character files
+        self.cached_character_indices: dict[
+            int, ResourceIdentifier
+        ] = {}  # Map index -> ResourceIdentifier
         self.inventory: list[UTI] = []  # Player inventory items (converted to convenience objects)
         self.inventory_gff: GFF | None = None  # Original INVENTORY.res GFF for round-trip fidelity
         self.inventory_identifier: ResourceIdentifier | None = None
         self.repute: GFF | None = None  # Faction reputation data (parsed GFF)
         self.repute_identifier: ResourceIdentifier | None = None
-        self.other_resources: dict[ResourceIdentifier, bytes] = {}  # All other resources preserved verbatim
+        self.other_resources: dict[
+            ResourceIdentifier, bytes
+        ] = {}  # All other resources preserved verbatim
         self.game: Game = Game.K2  # Default to K2 behavior; caller can override after inspection
 
     def load(self):
@@ -1475,7 +1504,9 @@ class SaveNestedCapsule:
                 uti_gff = dismantle_uti(uti, game=self.game, use_deprecated=True)
                 inventory_list.append(deepcopy(uti_gff.root))
             self.inventory_gff = inventory_gff
-            self.resource_data[self.inventory_identifier] = bytes_gff(inventory_gff, ResourceType.RES)
+            self.resource_data[self.inventory_identifier] = bytes_gff(
+                inventory_gff, ResourceType.RES
+            )
 
         # Reputation
         if self.repute_identifier and self.repute is not None:
@@ -1531,7 +1562,9 @@ class SaveNestedCapsule:
 
         # Ensure auxiliary map stays consistent
         if identifier in self.other_resources and (
-            identifier.restype in {ResourceType.SAV, ResourceType.UTC} or identifier == self.INVENTORY_IDENTIFIER or identifier == self.REPUTE_IDENTIFIER
+            identifier.restype in {ResourceType.SAV, ResourceType.UTC}
+            or identifier == self.INVENTORY_IDENTIFIER
+            or identifier == self.REPUTE_IDENTIFIER
         ):
             self.other_resources.pop(identifier, None)
 
@@ -1626,7 +1659,10 @@ class SaveNestedCapsule:
         # Check each cached module for EventQueue
         for module_erf in self.cached_modules.values():
             for resource in module_erf:
-                if str(resource.resref).lower() == "module" and resource.restype == ResourceType.IFO:
+                if (
+                    str(resource.resref).lower() == "module"
+                    and resource.restype == ResourceType.IFO
+                ):
                     # Found module.ifo - check for EventQueue
                     ifo_gff = read_gff(resource.data)
                     if ifo_gff.root.exists("EventQueue"):
@@ -1667,7 +1703,10 @@ class SaveNestedCapsule:
         for module_erf in self.cached_modules.values():
             # Look for module.ifo in this cached module
             for resource in module_erf:
-                if str(resource.resref).lower() == "module" and resource.restype == ResourceType.IFO:
+                if (
+                    str(resource.resref).lower() == "module"
+                    and resource.restype == ResourceType.IFO
+                ):
                     # Found module.ifo - load it as GFF
                     ifo_gff = read_gff(resource.data)
 
@@ -1678,7 +1717,11 @@ class SaveNestedCapsule:
                         ifo_gff.root.set_list("EventQueue", empty_list)
 
                         # Write modified GFF back to bytes and update ERF resource
-                        module_erf.set_data(str(resource.resref), resource.restype, bytes_gff(ifo_gff, ResourceType.GFF))
+                        module_erf.set_data(
+                            str(resource.resref),
+                            resource.restype,
+                            bytes_gff(ifo_gff, ResourceType.GFF),
+                        )
 
                     break  # Only one module.ifo per cached module
 
@@ -1749,14 +1792,20 @@ class SaveNestedCapsule:
             # Only replace static resources
             if new_resource.restype() in STATIC_RESOURCE_TYPES:
                 # Create ERF resource from module resource
-                _erf_resource = ERFResource(resref=ResRef(new_resource.resname()), restype=new_resource.restype(), data=new_resource.data() or b"")
+                _erf_resource = ERFResource(
+                    resref=ResRef(new_resource.resname()),
+                    restype=new_resource.restype(),
+                    data=new_resource.data() or b"",
+                )
 
                 # Remove old version if it exists
                 if new_resource.resname() in cached_module_erf:
                     cached_module_erf.remove(new_resource.resname(), new_resource.restype())
 
                 # Add new version
-                cached_module_erf.set_data(new_resource.resname(), new_resource.restype(), new_resource.data() or b"")
+                cached_module_erf.set_data(
+                    new_resource.resname(), new_resource.restype(), new_resource.data() or b""
+                )
 
         # NOTE: Module IFO and dynamic resources are intentionally NOT updated
         # to preserve save state (creature positions, inventory states, etc.)
@@ -1813,8 +1862,12 @@ class SaveFolderEntry:
     - screenshot: Optional bytes for Screen.tga thumbnail (load/save preserved)
     """
 
-    SAVE_INFO_NAME: ResourceIdentifier = ResourceIdentifier(resname="savenfo", restype=ResourceType.RES)
-    SCREENSHOT_NAME: ResourceIdentifier = ResourceIdentifier(resname="screen", restype=ResourceType.TGA)
+    SAVE_INFO_NAME: ResourceIdentifier = ResourceIdentifier(
+        resname="savenfo", restype=ResourceType.RES
+    )
+    SCREENSHOT_NAME: ResourceIdentifier = ResourceIdentifier(
+        resname="screen", restype=ResourceType.TGA
+    )
 
     def __init__(self, save_folder_path: os.PathLike | str):
         """Initializes a single save entry for KOTOR 1 or 2.
@@ -1843,7 +1896,9 @@ class SaveFolderEntry:
 
         # Screenshot data
         # Cross-ref (wiki savedata archive): KSE preserves Screen.tga, KotOR.js loads it for display
-        self.screenshot: bytes | None = None  # Screen.tga - Save screenshot (800x600 or 640x480 TGA)
+        self.screenshot: bytes | None = (
+            None  # Screen.tga - Save screenshot (800x600 or 640x480 TGA)
+        )
 
     def load(self):
         """Load all save game components from the folder.
@@ -1958,8 +2013,12 @@ class SaveFolderEntry:
         logger.debug(f"  - Save Name: {self.save_info.savegame_name}")
         logger.debug(f"  - Area: {self.save_info.area_name}")
         logger.debug(f"  - Last Module: {self.save_info.last_module}")
-        logger.debug(f"  - Time Played: {self.save_info.time_played}s ({self.save_info.time_played // 3600}h {(self.save_info.time_played % 3600) // 60}m)")
-        logger.debug(f"  - Portraits: {self.save_info.portrait0}, {self.save_info.portrait1}, {self.save_info.portrait2}")
+        logger.debug(
+            f"  - Time Played: {self.save_info.time_played}s ({self.save_info.time_played // 3600}h {(self.save_info.time_played % 3600) // 60}m)"
+        )
+        logger.debug(
+            f"  - Portraits: {self.save_info.portrait0}, {self.save_info.portrait1}, {self.save_info.portrait2}"
+        )
         if self.save_info.pc_name:
             logger.debug(f"  - PC Name (K2): {self.save_info.pc_name}")
 
@@ -1986,7 +2045,9 @@ class SaveFolderEntry:
         if self.partytable.pt_item_chemical > 0:
             logger.debug(f"  - Chemicals (K2): {self.partytable.pt_item_chemical}")
         if self.partytable.additional_fields:
-            logger.debug(f"  - Additional Fields Preserved: {len(self.partytable.additional_fields)}")
+            logger.debug(
+                f"  - Additional Fields Preserved: {len(self.partytable.additional_fields)}"
+            )
 
         # Write PARTYTABLE.res to disk
         # Cross-ref (wiki savedata archive): KSE/Functions/Saves.pm SaveSave() line ~480
@@ -2057,7 +2118,9 @@ class SaveFolderEntry:
             # Cross-ref (wiki savedata archive): All implementations preserve this for save menu display
             with open(screenshot_path, "wb") as f:
                 f.write(self.screenshot)
-            logger.debug(f"  ✓ Written screenshot ({len(self.screenshot)} bytes) to: {screenshot_path}")
+            logger.debug(
+                f"  ✓ Written screenshot ({len(self.screenshot)} bytes) to: {screenshot_path}"
+            )
         elif screenshot_path.exists():
             # Remove screenshot if it was deleted from memory
             screenshot_path.unlink()
@@ -2111,7 +2174,9 @@ if __name__ == "__main__":
     print(f"Save Name: {game_save.save_info.savegame_name}")
     print(f"Area: {game_save.save_info.area_name}")
     print(f"Last Module: {game_save.save_info.last_module}")
-    print(f"Time Played: {game_save.save_info.time_played} seconds ({game_save.save_info.time_played // 3600}h {(game_save.save_info.time_played % 3600) // 60}m)")
+    print(
+        f"Time Played: {game_save.save_info.time_played} seconds ({game_save.save_info.time_played // 3600}h {(game_save.save_info.time_played % 3600) // 60}m)"
+    )
     print(f"Gold: {game_save.partytable.pt_gold}")
     print(f"XP Pool: {game_save.partytable.pt_xp_pool}")
     print(f"Cheat Used: {game_save.save_info.cheat_used}")

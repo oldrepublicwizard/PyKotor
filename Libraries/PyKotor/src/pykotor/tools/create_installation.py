@@ -84,7 +84,9 @@ def _write_stream_resources(directory: Path, resources: Mapping[str, bytes] | No
         resource_path.write_bytes(data)
 
 
-def _write_archive_resources(archive: object, resources: Mapping[str, bytes], default_type: str) -> None:
+def _write_archive_resources(
+    archive: object, resources: Mapping[str, bytes], default_type: str
+) -> None:
     for resource_name, data in resources.items():
         resref, ext = _parse_resource_name(resource_name, default_type)
         restype = _resource_type_from_extension(ext, default_type)
@@ -131,7 +133,15 @@ def _prepare_root_layout(root: Path, game: Game) -> None:
 
     is_k2 = game in (Game.K2, Game.K2_XBOX, Game.K2_IOS, Game.K2_ANDROID)
 
-    for subdir in ("data", "modules", "override", "streammusic", "streamsounds", "texturepacks", "lips"):
+    for subdir in (
+        "data",
+        "modules",
+        "override",
+        "streammusic",
+        "streamsounds",
+        "texturepacks",
+        "lips",
+    ):
         (root / subdir).mkdir(parents=True, exist_ok=True)
 
     (root / ("streamvoice" if is_k2 else "streamwaves")).mkdir(parents=True, exist_ok=True)
@@ -214,7 +224,12 @@ def create_installation(
             resref, ext = _parse_resource_name(resource_name, "utc")
             restype = _resource_type_from_extension(ext, "utc")
             resource_id = key.calculate_resource_id(bif_index, res_index)
-            bif.set_data(ResRef(resref), restype, _normalize_resource_bytes(restype, raw_data), res_id=resource_id)
+            bif.set_data(
+                ResRef(resref),
+                restype,
+                _normalize_resource_bytes(restype, raw_data),
+                res_id=resource_id,
+            )
             key.add_key_entry(ResRef(resref), restype, bif_index, res_index)
 
         bif_path = root / "data" / bif_filename
@@ -241,10 +256,16 @@ def create_installation(
         else:
             archive = ERF(erf_type=ERFType.MOD if lower_name.endswith(".mod") else ERFType.ERF)
             _write_archive_resources(archive, resources, "are")
-            write_erf(archive, module_path, file_format=ResourceType.MOD if lower_name.endswith(".mod") else ResourceType.ERF)
+            write_erf(
+                archive,
+                module_path,
+                file_format=ResourceType.MOD if lower_name.endswith(".mod") else ResourceType.ERF,
+            )
 
     for mod_filename, resources in (lips_resources or {}).items():
-        final_name = mod_filename if mod_filename.lower().endswith(".mod") else f"{mod_filename}.mod"
+        final_name = (
+            mod_filename if mod_filename.lower().endswith(".mod") else f"{mod_filename}.mod"
+        )
         archive = ERF(erf_type=ERFType.MOD)
         _write_archive_resources(archive, resources, "lip")
         write_erf(archive, root / "lips" / final_name, file_format=ResourceType.MOD)
@@ -306,6 +327,11 @@ def create_minimal_installation(
     if (root / "chitin.key").exists() and validate_existing:
         _prepare_root_layout(root, game)
         if not (root / "dialog.tlk").is_file():
-            _write_talk_tables(root, dialog_tlk_data=None, dialogf_tlk_data=None, dialog_entries=("", "", _DEFAULT_TLK_TEXT))
+            _write_talk_tables(
+                root,
+                dialog_tlk_data=None,
+                dialogf_tlk_data=None,
+                dialog_entries=("", "", _DEFAULT_TLK_TEXT),
+            )
         return root
     return create_installation(root, game)

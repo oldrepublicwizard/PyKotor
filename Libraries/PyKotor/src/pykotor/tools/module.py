@@ -218,7 +218,11 @@ def clone_module(  # noqa: C901, PLR0915, PLR0912, PLR0913
             return False
 
         tpc = tpc.copy()
-        if tpc.format() in (TPCTextureFormat.BGR, TPCTextureFormat.DXT1, TPCTextureFormat.Greyscale):
+        if tpc.format() in (
+            TPCTextureFormat.BGR,
+            TPCTextureFormat.DXT1,
+            TPCTextureFormat.Greyscale,
+        ):
             tpc.convert(TPCTextureFormat.RGB)
         elif tpc.format() in (TPCTextureFormat.BGRA, TPCTextureFormat.DXT3, TPCTextureFormat.DXT5):
             tpc.convert(TPCTextureFormat.RGBA)
@@ -271,7 +275,9 @@ def clone_module(  # noqa: C901, PLR0915, PLR0912, PLR0913
                     new_textures[texture] = new_texture_name
 
                     if not _write_texture_as_tga(texture, new_texture_name):
-                        RobustLogger().warning(f"TPC/TGA resource not found for texture '{texture}' in module '{root}'")
+                        RobustLogger().warning(
+                            f"TPC/TGA resource not found for texture '{texture}' in module '{root}'"
+                        )
                         continue
                 mdl_data = model.change_textures(mdl_data, new_textures)
 
@@ -283,7 +289,9 @@ def clone_module(  # noqa: C901, PLR0915, PLR0912, PLR0913
                     new_lightmaps[lightmap] = new_lightmap_name
 
                     if not _write_texture_as_tga(lightmap, new_lightmap_name):
-                        RobustLogger().warning(f"TPC/TGA resource not found for lightmap '{lightmap}' in module '{root}'")
+                        RobustLogger().warning(
+                            f"TPC/TGA resource not found for lightmap '{lightmap}' in module '{root}'"
+                        )
                         continue
                 mdl_data = model.change_lightmaps(mdl_data, new_lightmaps)
 
@@ -437,7 +445,12 @@ def prioritize_module_files(module_files: list[os.PathLike | str]) -> list[Path]
         file_name_lower = path.name.lower()
 
         # Check if this is a module file
-        is_module_file = file_name_lower.endswith(".mod") or file_name_lower.endswith(".rim") or file_name_lower.endswith("_s.rim") or file_name_lower.endswith("_dlg.erf")
+        is_module_file = (
+            file_name_lower.endswith(".mod")
+            or file_name_lower.endswith(".rim")
+            or file_name_lower.endswith("_s.rim")
+            or file_name_lower.endswith("_dlg.erf")
+        )
 
         if is_module_file:
             try:
@@ -460,7 +473,9 @@ def prioritize_module_files(module_files: list[os.PathLike | str]) -> list[Path]
         rimlike_files = [
             f
             for f in group_files
-            if (f.name.lower().endswith(".rim") and not f.name.lower().endswith("_s.rim")) or f.name.lower().endswith("_s.rim") or f.name.lower().endswith("_dlg.erf")
+            if (f.name.lower().endswith(".rim") and not f.name.lower().endswith("_s.rim"))
+            or f.name.lower().endswith("_s.rim")
+            or f.name.lower().endswith("_dlg.erf")
         ]
 
         if mod_files:

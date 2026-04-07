@@ -45,10 +45,16 @@ from qtpy.QtWidgets import (
     QTreeView,
 )
 
-from utility.gui.qt.adapters.filesystem.pyfileinfogatherer import PyFileInfoGatherer as QFileInfoGatherer
+from utility.gui.qt.adapters.filesystem.pyfileinfogatherer import (
+    PyFileInfoGatherer as QFileInfoGatherer,
+)
 from utility.gui.qt.adapters.filesystem.qfiledialog.private.qsidebar_p import QSidebar
-from utility.gui.qt.adapters.filesystem.qfiledialog.qfiledialog import QFileDialog as PythonQFileDialog
-from utility.gui.qt.adapters.kernel.qplatformdialoghelper.qplatformdialoghelper import QPlatformFileDialogHelper
+from utility.gui.qt.adapters.filesystem.qfiledialog.qfiledialog import (
+    QFileDialog as PythonQFileDialog,
+)
+from utility.gui.qt.adapters.kernel.qplatformdialoghelper.qplatformdialoghelper import (
+    QPlatformFileDialogHelper,
+)
 
 if TYPE_CHECKING:
     from qtpy.QtCore import (
@@ -81,7 +87,9 @@ class FilterDirModel(QAbstractProxyModel):
     def mapToSource(self, proxy_index: QModelIndex) -> QModelIndex:  # noqa: N803
         if not self._source_model:
             return QModelIndex()
-        return self._source_model.index(proxy_index.row(), proxy_index.column(), proxy_index.parent())
+        return self._source_model.index(
+            proxy_index.row(), proxy_index.column(), proxy_index.parent()
+        )
 
     def mapFromSource(
         self,
@@ -99,7 +107,9 @@ class FilterDirModel(QAbstractProxyModel):
     ) -> QModelIndex:  # noqa: B008
         if not self._source_model:
             return QModelIndex()
-        return self.createIndex(row, column, self._source_model.index(row, column, parent).internalPointer())
+        return self.createIndex(
+            row, column, self._source_model.index(row, column, parent).internalPointer()
+        )
 
     def parent(
         self,
@@ -190,7 +200,9 @@ class CrashDialog(PythonQFileDialog):
 class TestQFileDialog2(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        cls.app: QApplication = cast("QApplication", QApplication.instance() or QApplication(sys.argv))
+        cls.app: QApplication = cast(
+            "QApplication", QApplication.instance() or QApplication(sys.argv)
+        )
         cls.temp_dir: tempfile.TemporaryDirectory = tempfile.TemporaryDirectory()
         cls.temp_path: Path = Path(os.path.normpath(cls.temp_dir.name)).absolute()
         cls.temp_path_str: str = str(cls.temp_path)
@@ -208,7 +220,9 @@ class TestQFileDialog2(unittest.TestCase):
         self.fd_class: type[PythonQFileDialog] = PythonQFileDialog
         self._test_data: dict[str, list[Any]] = {}
         self._current_row: str | None = None
-        self._qtest: type[QTest] = QTest  # TypeError: PyQt5.QtTest.QTest represents a C++ namespace and cannot be instantiated
+        self._qtest: type[QTest] = (
+            QTest  # TypeError: PyQt5.QtTest.QTest represents a C++ namespace and cannot be instantiated
+        )
 
     def tearDown(self):
         self.temp_dir.cleanup()
@@ -291,9 +305,15 @@ class TestQFileDialog2(unittest.TestCase):
         fd: PythonQFileDialog = self.fd_class()
         filters: QComboBox | None = fd.findChild(QComboBox, "fileTypeCombo")
         assert filters is not None, "Filter combobox fileTypeCombo was None"
-        assert not fd.testOption(self.fd_class.Option.HideNameFilterDetails), "HideNameFilterDetails was not False"
+        assert not fd.testOption(self.fd_class.Option.HideNameFilterDetails), (
+            "HideNameFilterDetails was not False"
+        )
 
-        filterChoices: list[str] = ["Image files (*.png *.xpm *.jpg)", "Text files (*.txt)", "Any files (*.*)"]
+        filterChoices: list[str] = [
+            "Image files (*.png *.xpm *.jpg)",
+            "Text files (*.txt)",
+            "Any files (*.*)",
+        ]
         fd.setNameFilters(filterChoices)
 
         # When HideNameFilterDetails is enabled, the visible texts should be the
@@ -301,15 +321,23 @@ class TestQFileDialog2(unittest.TestCase):
         # exact formatting of the underlying patterns.
         fd.setOption(self.fd_class.Option.HideNameFilterDetails, True)  # noqa: FBT003
         labels_when_hidden: list[str] = [filters.itemText(i) for i in range(filters.count())]
-        assert labels_when_hidden[0].startswith("Image files"), f"Unexpected label: {labels_when_hidden[0]!r}"
-        assert labels_when_hidden[1].startswith("Text files"), f"Unexpected label: {labels_when_hidden[1]!r}"
-        assert labels_when_hidden[2].startswith("Any files"), f"Unexpected label: {labels_when_hidden[2]!r}"
+        assert labels_when_hidden[0].startswith("Image files"), (
+            f"Unexpected label: {labels_when_hidden[0]!r}"
+        )
+        assert labels_when_hidden[1].startswith("Text files"), (
+            f"Unexpected label: {labels_when_hidden[1]!r}"
+        )
+        assert labels_when_hidden[2].startswith("Any files"), (
+            f"Unexpected label: {labels_when_hidden[2]!r}"
+        )
 
         # When the option is disabled again, the full filter strings (including
         # patterns) should be restored.
         fd.setOption(self.fd_class.Option.HideNameFilterDetails, False)  # noqa: FBT003
         labels_when_shown: list[str] = [filters.itemText(i) for i in range(filters.count())]
-        assert labels_when_shown == filterChoices, f"Filters were not restored correctly: {labels_when_shown!r} != {filterChoices!r}"
+        assert labels_when_shown == filterChoices, (
+            f"Filters were not restored correctly: {labels_when_shown!r} != {filterChoices!r}"
+        )
 
     def test_unc(self):
         dir: str = QDir.currentPath()
@@ -320,7 +348,9 @@ class TestQFileDialog2(unittest.TestCase):
         fd_dir_path: str = fd.directory().absolutePath()
         model_index_fd: QModelIndex = model.index(fd_dir_path)
         model_index_dir: QModelIndex = model.index(dir)
-        assert model_index_fd == model_index_dir, f"qt_filesystem_model index was not equal to directory: {model_index_fd} != {model_index_dir}"
+        assert model_index_fd == model_index_dir, (
+            f"qt_filesystem_model index was not equal to directory: {model_index_fd} != {model_index_dir}"
+        )
 
     def test_emptyUncPath(self):
         fd = self.fd_class()
@@ -346,12 +376,18 @@ class TestQFileDialog2(unittest.TestCase):
         ctx = TestContext(self.temp_path)
 
         # setup testbed
-        assert ctx.current.mkdir("task143519_deleteAndRenameActionBehavior_test"), f"Failed to create test directory: {ctx.current.absolutePath()}"
+        assert ctx.current.mkdir("task143519_deleteAndRenameActionBehavior_test"), (
+            f"Failed to create test directory: {ctx.current.absolutePath()}"
+        )
         ctx.test = QDir(ctx.current)
-        assert ctx.test.cd("task143519_deleteAndRenameActionBehavior_test"), f"Failed to cd to test directory: {ctx.test.absolutePath()}"
+        assert ctx.test.cd("task143519_deleteAndRenameActionBehavior_test"), (
+            f"Failed to cd to test directory: {ctx.test.absolutePath()}"
+        )
         ctx.file.setFileName(ctx.test.absoluteFilePath("hello"))
         assert ctx.file.open(QIODevice.OpenModeFlag.WriteOnly), "Failed to open file for writing"
-        assert bool(ctx.file.permissions() & QFile.Permission.WriteUser), "File does not have write permission"
+        assert bool(ctx.file.permissions() & QFile.Permission.WriteUser), (
+            "File does not have write permission"
+        )
         ctx.file.close()
 
         fd = self.fd_class()
@@ -372,7 +408,9 @@ class TestQFileDialog2(unittest.TestCase):
 
         # defaults
         assert self.open_context_menu(fd), "Failed to open context menu"
-        assert fd.selectedFiles() == [ctx.file.fileName()], f"Selected files were not correct, expected: {ctx.file.fileName()}, got: {fd.selectedFiles()}"
+        assert fd.selectedFiles() == [ctx.file.fileName()], (
+            f"Selected files were not correct, expected: {ctx.file.fileName()}, got: {fd.selectedFiles()}"
+        )
         assert rm.isEnabled() != fd.testOption(self.fd_class.Option.ReadOnly), (
             f"Delete action was not enabled, expected: {not fd.testOption(self.fd_class.Option.ReadOnly)}, got: {rm.isEnabled()}"
         )
@@ -381,10 +419,14 @@ class TestQFileDialog2(unittest.TestCase):
         )
 
         # change to non-defaults:
-        fd.setOption(self.fd_class.Option.ReadOnly, not fd.testOption(self.fd_class.Option.ReadOnly))  # noqa: FBT003
+        fd.setOption(
+            self.fd_class.Option.ReadOnly, not fd.testOption(self.fd_class.Option.ReadOnly)
+        )  # noqa: FBT003
 
         assert self.open_context_menu(fd), "Failed to open context menu"
-        assert len(fd.selectedFiles()) == 1, f"Selected files were not correct, expected: 1, got: {len(fd.selectedFiles())}"
+        assert len(fd.selectedFiles()) == 1, (
+            f"Selected files were not correct, expected: 1, got: {len(fd.selectedFiles())}"
+        )
         assert rm.isEnabled() != fd.testOption(self.fd_class.Option.ReadOnly), (
             f"Delete action was not enabled, expected: {not fd.testOption(self.fd_class.Option.ReadOnly)}, got: {rm.isEnabled()}"
         )
@@ -393,10 +435,14 @@ class TestQFileDialog2(unittest.TestCase):
         )
 
         # and changed back to defaults:
-        fd.setOption(self.fd_class.Option.ReadOnly, not fd.testOption(self.fd_class.Option.ReadOnly))
+        fd.setOption(
+            self.fd_class.Option.ReadOnly, not fd.testOption(self.fd_class.Option.ReadOnly)
+        )
 
         assert self.open_context_menu(fd), "Failed to open context menu"
-        assert len(fd.selectedFiles()) == 1, f"Selected files were not correct, expected: 1, got: {len(fd.selectedFiles())}"
+        assert len(fd.selectedFiles()) == 1, (
+            f"Selected files were not correct, expected: 1, got: {len(fd.selectedFiles())}"
+        )
         assert rm.isEnabled() != fd.testOption(self.fd_class.Option.ReadOnly), (
             f"Delete action was not enabled, expected: {not fd.testOption(self.fd_class.Option.ReadOnly)}, got: {rm.isEnabled()}"
         )
@@ -410,11 +456,17 @@ class TestQFileDialog2(unittest.TestCase):
         assert q_layout is not None, "Layout was not found"
         old_ms: QSize = q_layout.minimumSize()
         history: list[str] = fd.history()
-        history.append(QDir.toNativeSeparators("/verylongdirectory/aaaaaaaaaabbbbbbbbcccccccccccddddddddddddddeeeeeeeeeeeeffffffffffgggtggggggggghhhhhhhhiiiiiijjjk"))
+        history.append(
+            QDir.toNativeSeparators(
+                "/verylongdirectory/aaaaaaaaaabbbbbbbbcccccccccccddddddddddddddeeeeeeeeeeeeffffffffffgggtggggggggghhhhhhhhiiiiiijjjk"
+            )
+        )
         fd.setHistory(history)
         fd.show()
         ms: QSize = q_layout.minimumSize()
-        assert ms.width() <= old_ms.width(), f"Minimum size was not correct, expected: {old_ms.width()}, got: {ms.width()}"
+        assert ms.width() <= old_ms.width(), (
+            f"Minimum size was not correct, expected: {old_ms.width()}, got: {ms.width()}"
+        )
 
     def test_task180459_lastDirectory_data(self):
         """Data provider emulation for test_task180459_lastDirectory.
@@ -445,8 +497,12 @@ class TestQFileDialog2(unittest.TestCase):
         button_box: QDialogButtonBox | None = dlg.findChild(QDialogButtonBox, "buttonBox")
         button: QPushButton = button_box.button(QDialogButtonBox.StandardButton.Save)
         assert button is not None, "Save button was not found with name 'Save'"
-        assert button.isEnabled() == is_enabled, f"Save button enabled state was not correct, expected: {is_enabled}, got: {button.isEnabled()}"
-        assert model.index(str(result)) == model.index(dlg.selectedFiles()[0]), f"Selected file was not correct, expected: {result}, got: {dlg.selectedFiles()[0]}"
+        assert button.isEnabled() == is_enabled, (
+            f"Save button enabled state was not correct, expected: {is_enabled}, got: {button.isEnabled()}"
+        )
+        assert model.index(str(result)) == model.index(dlg.selectedFiles()[0]), (
+            f"Selected file was not correct, expected: {result}, got: {dlg.selectedFiles()[0]}"
+        )
         dlg.deleteLater()
 
     @unittest.skip("Causes Python abort - crashes test suite")
@@ -488,7 +544,9 @@ class TestQFileDialog2(unittest.TestCase):
         self._qtest.keyClick(_list, Qt.Key.Key_Return)  # pyright: ignore[reportCallIssue]
         dialog.close()
         fd.close()
-        fd2: PythonQFileDialog = self.fd_class(None, "I should not crash with a proxy", str(self.temp_path))
+        fd2: PythonQFileDialog = self.fd_class(
+            None, "I should not crash with a proxy", str(self.temp_path)
+        )
         pm = QSortFilterProxyModel()
         fd2.setProxyModel(pm)
         fd2.show()
@@ -496,7 +554,12 @@ class TestQFileDialog2(unittest.TestCase):
         assert sidebar is not None, "Sidebar was not found with name 'sidebar'"
         sidebar.setFocus()
         sidebar.selectUrl(QUrl.fromLocalFile(QDir.homePath()))
-        self._qtest.mouseClick(sidebar.viewport(), Qt.MouseButton.LeftButton, Qt.KeyboardModifier.NoModifier, sidebar.visualRect(sidebar.model().index(1, 0)).center())  # pyright: ignore[reportCallIssue, reportArgumentType]
+        self._qtest.mouseClick(
+            sidebar.viewport(),
+            Qt.MouseButton.LeftButton,
+            Qt.KeyboardModifier.NoModifier,
+            sidebar.visualRect(sidebar.model().index(1, 0)).center(),
+        )  # pyright: ignore[reportCallIssue, reportArgumentType]
         self._qtest.qWait(250)  # pyright: ignore[reportCallIssue]
 
     @unittest.skip("Causes Python abort - crashes test suite")
@@ -507,8 +570,12 @@ class TestQFileDialog2(unittest.TestCase):
         file = QFile("test/out.txt")
         file2 = QFile("test/out2.txt")
 
-        assert file.open(QIODevice.OpenModeFlag.WriteOnly | QIODevice.OpenModeFlag.Text), "Failed to open file for writing"
-        assert file2.open(QIODevice.OpenModeFlag.WriteOnly | QIODevice.OpenModeFlag.Text), "Failed to open file for writing"
+        assert file.open(QIODevice.OpenModeFlag.WriteOnly | QIODevice.OpenModeFlag.Text), (
+            "Failed to open file for writing"
+        )
+        assert file2.open(QIODevice.OpenModeFlag.WriteOnly | QIODevice.OpenModeFlag.Text), (
+            "Failed to open file for writing"
+        )
         current.cdUp()
         current.mkdir("test2")
         fd = self.fd_class()
@@ -537,7 +604,9 @@ class TestQFileDialog2(unittest.TestCase):
         current.rmdir("test")
         current.rmdir("test2")
 
-    @unittest.skip("Environment-dependent Windows drive completer semantics; covered by other completion tests.")
+    @unittest.skip(
+        "Environment-dependent Windows drive completer semantics; covered by other completion tests."
+    )
     def test_task226366_lowerCaseHardDriveWindows(self):
         fd = self.fd_class()
         fd.setDirectory(QDir.root().path())
@@ -545,9 +614,13 @@ class TestQFileDialog2(unittest.TestCase):
         edit: QLineEdit | None = fd.findChild(QLineEdit, "fileNameEdit")
         button_parent: QToolButton | None = fd.findChild(QToolButton, "toParentButton")
         assert edit is not None, "File name edit was not found with name 'fileNameEdit'"
-        assert button_parent is not None, "To parent button was not found with name 'toParentButton'"
+        assert button_parent is not None, (
+            "To parent button was not found with name 'toParentButton'"
+        )
         self._qtest.qWait(200)  # pyright: ignore[reportCallIssue]
-        self._qtest.mouseClick(button_parent, Qt.MouseButton.LeftButton, Qt.KeyboardModifier.NoModifier, QPoint(0, 0))  # pyright: ignore[reportArgumentType, reportCallIssue, reportArgumentType]
+        self._qtest.mouseClick(
+            button_parent, Qt.MouseButton.LeftButton, Qt.KeyboardModifier.NoModifier, QPoint(0, 0)
+        )  # pyright: ignore[reportArgumentType, reportCallIssue, reportArgumentType]
         self._qtest.qWait(2000)  # pyright: ignore[reportCallIssue]
         self._qtest.keyClick(edit, Qt.Key.Key_C)  # pyright: ignore[reportCallIssue]
         self._qtest.qWait(200)  # pyright: ignore[reportCallIssue]
@@ -558,21 +631,27 @@ class TestQFileDialog2(unittest.TestCase):
         # Allow for platform differences in how drive roots are represented;
         # we only require that the completed text refers to the C: drive in a
         # case‑insensitive way.
-        assert "C:" in edit.text().upper(), f"File name edit was not correct, expected to contain 'C:', got: {edit.text()!r}"
+        assert "C:" in edit.text().upper(), (
+            f"File name edit was not correct, expected to contain 'C:', got: {edit.text()!r}"
+        )
         self._qtest.qWait(2000)  # pyright: ignore[reportCallIssue]
         self._qtest.keyClick(completer.popup(), Qt.Key.Key_Down)  # pyright: ignore[reportCallIssue]
         edit.clear()
         self._qtest.keyClick(edit, Qt.Key.Key_C, Qt.KeyboardModifier.ShiftModifier)  # pyright: ignore[reportArgumentType, reportCallIssue]
         self._qtest.qWait(200)  # pyright: ignore[reportCallIssue]
         self._qtest.keyClick(completer.popup(), Qt.Key.Key_Down)  # pyright: ignore[reportCallIssue]
-        assert "C:" in edit.text().upper(), f"File name edit was not correct, expected to contain 'C:', got: {edit.text()!r}"
+        assert "C:" in edit.text().upper(), (
+            f"File name edit was not correct, expected to contain 'C:', got: {edit.text()!r}"
+        )
 
     def test_completionOnLevelAfterRoot(self):  # noqa: C901
         # The original C++ test depends heavily on the concrete directory
         # structure of the system root (C:/) and can be extremely flaky or even
         # crashy on real user machines. We rely on the more controlled
         # test_completer cases to exercise completion logic instead.
-        self.skipTest("Environment‑dependent root‑level completion behaviour is covered by test_completer")
+        self.skipTest(
+            "Environment‑dependent root‑level completion behaviour is covered by test_completer"
+        )
 
     @unittest.skip("Causes Python abort - crashes test suite")
     def test_task233037_selectingDirectory(self):
@@ -601,11 +680,15 @@ class TestQFileDialog2(unittest.TestCase):
         """
         pass
 
-    @unittest.skip("Hide-on-escape focus semantics are platform-specific; covered by higher-level dialog tests.")
+    @unittest.skip(
+        "Hide-on-escape focus semantics are platform-specific; covered by higher-level dialog tests."
+    )
     def test_task235069_hideOnEscape(self):
         pass
 
-    @unittest.skip("Causes Python abort - crashes test suite due to watcher thread teardown; behaviour is covered by integration tests.")
+    @unittest.skip(
+        "Causes Python abort - crashes test suite due to watcher thread teardown; behaviour is covered by integration tests."
+    )
     def test_task236402_dontWatchDeletedDir(self):
         # Upstream test validates that deleting a watched directory does not
         # leave behind noisy warnings. On some platforms this interacts poorly
@@ -678,7 +761,9 @@ class TestQFileDialog2(unittest.TestCase):
         assert tree2 is not None, "Tree view was not found with name 'treeView'"
         tree2.setFocus()
 
-        assert tree2.rootIndex().data(QFileSystemModel.Roles.FilePathRole) == current.absolutePath(), (
+        assert (
+            tree2.rootIndex().data(QFileSystemModel.Roles.FilePathRole) == current.absolutePath()
+        ), (
             f"Root index was not correct, expected: {current.absolutePath()!r}, got: {tree2.rootIndex().data(QFileSystemModel.Roles.FilePathRole)!r}"
         )
 
@@ -701,7 +786,9 @@ class TestQFileDialog2(unittest.TestCase):
         assert tree3 is not None, "Tree view was not found with name 'treeView'"
         tree3.setFocus()
 
-        assert tree3.rootIndex().data(QFileSystemModel.Roles.FilePathRole) == current.absolutePath(), (
+        assert (
+            tree3.rootIndex().data(QFileSystemModel.Roles.FilePathRole) == current.absolutePath()
+        ), (
             f"Root index was not correct, expected: {current.absolutePath()!r}, got: {tree3.rootIndex().data(QFileSystemModel.Roles.FilePathRole)!r}"
         )
 
@@ -710,7 +797,9 @@ class TestQFileDialog2(unittest.TestCase):
         button3: QPushButton | None = button_box3.button(QDialogButtonBox.StandardButton.Open)
         assert button3 is not None, "Open button was not found with name 'Open'"
         self._qtest.mouseClick(button3, Qt.MouseButton.LeftButton)  # pyright: ignore[reportCallIssue]
-        assert fd3.selectedFiles()[0] == tempFile.fileName(), f"Selected file was not correct, expected: {tempFile.fileName()!r}, got: {fd3.selectedFiles()[0]!r}"
+        assert fd3.selectedFiles()[0] == tempFile.fileName(), (
+            f"Selected file was not correct, expected: {tempFile.fileName()!r}, got: {fd3.selectedFiles()[0]!r}"
+        )
 
         current.cd("aaaaaaaaaaaaaaaaaa")
         current.rmdir("a")
@@ -731,24 +820,36 @@ class TestQFileDialog2(unittest.TestCase):
         # the filesystem watcher thread on some platforms. The core behaviour
         # is already exercised indirectly by other filter tests, so we skip it
         # here for stability.
-        self.skipTest("Environment‑dependent editable filter combo behaviour; covered by other filter tests.")
+        self.skipTest(
+            "Environment‑dependent editable filter combo behaviour; covered by other filter tests."
+        )
 
     def test_task218353_relativePaths(self):
         appDir: QDir = QDir.current()
         assert appDir.cdUp(), "Failed to cd up"
         d = self.fd_class(None, "TestDialog", "..")
-        assert d.directory().absolutePath() == appDir.absolutePath(), f"Directory was not correct, expected: {appDir.absolutePath()!r}, got: {d.directory().absolutePath()!r}"
+        assert d.directory().absolutePath() == appDir.absolutePath(), (
+            f"Directory was not correct, expected: {appDir.absolutePath()!r}, got: {d.directory().absolutePath()!r}"
+        )
 
-        d.setDirectory(appDir.absolutePath() + "/non-existing-directory/../another-non-existing-dir/../")
-        assert d.directory().absolutePath() == appDir.absolutePath(), f"Directory was not correct, expected: {appDir.absolutePath()!r}, got: {d.directory().absolutePath()!r}"
+        d.setDirectory(
+            appDir.absolutePath() + "/non-existing-directory/../another-non-existing-dir/../"
+        )
+        assert d.directory().absolutePath() == appDir.absolutePath(), (
+            f"Directory was not correct, expected: {appDir.absolutePath()!r}, got: {d.directory().absolutePath()!r}"
+        )
 
         QDir.current().mkdir("test")
         appDir = QDir.current()
         d.setDirectory(appDir.absolutePath() + "/test/../test/../")
-        assert d.directory().absolutePath() == appDir.absolutePath(), f"Directory was not correct, expected: {appDir.absolutePath()!r}, got: {d.directory().absolutePath()!r}"
+        assert d.directory().absolutePath() == appDir.absolutePath(), (
+            f"Directory was not correct, expected: {appDir.absolutePath()!r}, got: {d.directory().absolutePath()!r}"
+        )
         appDir.rmdir("test")
 
-    @unittest.skip("Causes Python abort - crashes test suite with access violation in pyfileinfogatherer")
+    @unittest.skip(
+        "Causes Python abort - crashes test suite with access violation in pyfileinfogatherer"
+    )
     def test_task251321_sideBarHiddenEntries(self):
         fd = self.fd_class()
 
@@ -771,7 +872,12 @@ class TestQFileDialog2(unittest.TestCase):
         sidebar.selectUrl(QUrl.fromLocalFile(hiddenSubDir.absolutePath()))
         sidebar_model: QAbstractItemModel | None = sidebar.model()
         assert sidebar_model is not None, "Sidebar model was not found"
-        self._qtest.mouseClick(sidebar.viewport(), Qt.MouseButton.LeftButton, Qt.KeyboardModifier.NoModifier, sidebar.visualRect(sidebar_model.index(0, 0)).center())  # pyright: ignore[reportArgumentType, reportCallIssue]
+        self._qtest.mouseClick(
+            sidebar.viewport(),
+            Qt.MouseButton.LeftButton,
+            Qt.KeyboardModifier.NoModifier,
+            sidebar.visualRect(sidebar_model.index(0, 0)).center(),
+        )  # pyright: ignore[reportArgumentType, reportCallIssue]
         self._qtest.qWait(250)  # pyright: ignore[reportCallIssue]
 
         model: QFileSystemModel | None = fd.findChild(QFileSystemModel, "qt_filesystem_model")
@@ -785,7 +891,9 @@ class TestQFileDialog2(unittest.TestCase):
         hiddenDir.rmdir("subdir")
         QDir(current).rmdir(".hidden")
 
-    @unittest.skip("Sidebar icon caching and invalid-URL handling are implementation-specific; core sidebar behaviour covered by other tests.")
+    @unittest.skip(
+        "Sidebar icon caching and invalid-URL handling are implementation-specific; core sidebar behaviour covered by other tests."
+    )
     def test_task251341_sideBarRemoveEntries(self):
         fd = self.fd_class()
 
@@ -793,7 +901,10 @@ class TestQFileDialog2(unittest.TestCase):
         current.mkdir("testDir")
         test_sub_dir = QDir("testDir")
 
-        urls: list[QUrl] = [QUrl.fromLocalFile(test_sub_dir.absolutePath()), QUrl.fromLocalFile("NotFound")]
+        urls: list[QUrl] = [
+            QUrl.fromLocalFile(test_sub_dir.absolutePath()),
+            QUrl.fromLocalFile("NotFound"),
+        ]
         fd.setSidebarUrls(urls)
         fd.show()
         self._qtest.qWaitForWindowExposed(fd)  # pyright: ignore[reportCallIssue]
@@ -804,7 +915,12 @@ class TestQFileDialog2(unittest.TestCase):
         sidebar.selectUrl(QUrl.fromLocalFile(test_sub_dir.absolutePath()))
         sidebar_model: QAbstractItemModel | None = sidebar.model()
         assert sidebar_model is not None, "Sidebar model was not found"
-        self._qtest.mouseClick(sidebar.viewport(), Qt.MouseButton.LeftButton, Qt.KeyboardModifier.NoModifier, sidebar.visualRect(sidebar_model.index(0, 0)).center())  # pyright: ignore[reportCallIssue, reportArgumentType]
+        self._qtest.mouseClick(
+            sidebar.viewport(),
+            Qt.MouseButton.LeftButton,
+            Qt.KeyboardModifier.NoModifier,
+            sidebar.visualRect(sidebar_model.index(0, 0)).center(),
+        )  # pyright: ignore[reportCallIssue, reportArgumentType]
 
         model: QFileSystemModel | None = fd.findChild(QFileSystemModel, "qt_filesystem_model")
         assert model is not None, "Model was not found with name 'qt_filesystem_model'"
@@ -860,11 +976,15 @@ class TestQFileDialog2(unittest.TestCase):
         assert sidebar is not None, "Sidebar was not found"
         assert len(sidebar.urls()) == 1, "Sidebar urls were not correct"
         assert sidebar.urls()[0].toLocalFile() != url, "Sidebar urls were not correct"
-        assert sidebar.urls()[0].toLocalFile() == QDir.cleanPath(url), "Sidebar urls were not correct"
+        assert sidebar.urls()[0].toLocalFile() == QDir.cleanPath(url), (
+            "Sidebar urls were not correct"
+        )
 
         sidebar_model: QAbstractItemModel | None = sidebar.model()
         assert sidebar_model is not None, "Sidebar model was not found"
-        assert str(sidebar_model.index(0, 0).data()).lower() == qdir.dirName().lower(), "Sidebar model index was not correct"
+        assert str(sidebar_model.index(0, 0).data()).lower() == qdir.dirName().lower(), (
+            "Sidebar model index was not correct"
+        )
 
         assert qdir.rmdir(dirname), "Directory was not removed"
 
@@ -883,9 +1003,13 @@ class TestQFileDialog2(unittest.TestCase):
 
         fd.setOption(self.fd_class.HideNameFilterDetails, False)  # noqa: FBT003
         filters.setCurrentIndex(0)
-        assert filters.currentText().startswith("All Files!"), f"Current text was not correct: {filters.currentText()!r}"
+        assert filters.currentText().startswith("All Files!"), (
+            f"Current text was not correct: {filters.currentText()!r}"
+        )
         filters.setCurrentIndex(1)
-        assert "Text Files" in filters.currentText(), f"Current text was not correct: {filters.currentText()!r}"
+        assert "Text Files" in filters.currentText(), (
+            f"Current text was not correct: {filters.currentText()!r}"
+        )
 
         fd.setNameFilter("é (I like cheese) All Files! (*);;Text Files (*.txt)")
         assert filters.currentText().startswith("é (I like cheese) All Files!")
@@ -898,7 +1022,9 @@ class TestQFileDialog2(unittest.TestCase):
         filters.setCurrentIndex(1)
         assert filters.currentText().startswith("Text Files")
 
-    @unittest.skip("Qt event loop raises internal TypeError under pytest-qt in this environment; selection behaviour is covered by other filename tests.")
+    @unittest.skip(
+        "Qt event loop raises internal TypeError under pytest-qt in this environment; selection behaviour is covered by other filename tests."
+    )
     def test_QTBUG4419_lineEditSelectAll(self):
         # if not QGuiApplicationPrivate.platformIntegration().hasCapability(QPlatformIntegration.WindowActivation):
         #    self.skipTest("Window activation is not supported")
@@ -926,11 +1052,15 @@ class TestQFileDialog2(unittest.TestCase):
         # Text should refer to the chosen file. We only require that the
         # filename appears, since different styles may show absolute or
         # relative paths.
-        assert file_path.name in lineEdit.text(), f"Line edit text was not correct: '{lineEdit.text()!r}'"
+        assert file_path.name in lineEdit.text(), (
+            f"Line edit text was not correct: '{lineEdit.text()!r}'"
+        )
         # Selection behaviour can legitimately vary, but it should never crash
         # or select something unrelated to the filename.
         selected: str = lineEdit.selectedText()
-        assert not selected or file_path.name in selected, f"Line edit selected text was not correct: '{selected!r}'"
+        assert not selected or file_path.name in selected, (
+            f"Line edit selected text was not correct: '{selected!r}'"
+        )
 
     def test_QTBUG6558_showDirsOnly(self):
         # if not QGuiApplicationPrivate.platformIntegration().hasCapability(QPlatformIntegration.WindowActivation):
@@ -992,7 +1122,11 @@ class TestQFileDialog2(unittest.TestCase):
         # if not QGuiApplicationPrivate.platformIntegration().hasCapability(QPlatformIntegration.WindowActivation):
         #    self.skipTest("Window activation is not supported")
 
-        filtersStr: list[str] = ["Images (*.png *.xpm *.jpg)", "Text files (*.txt)", "XML files (*.xml)"]
+        filtersStr: list[str] = [
+            "Images (*.png *.xpm *.jpg)",
+            "Text files (*.txt)",
+            "XML files (*.xml)",
+        ]
         chosenFilterString = "Text files (*.txt)"
 
         fd = self.fd_class(None, "TestFileDialog")
@@ -1009,7 +1143,9 @@ class TestQFileDialog2(unittest.TestCase):
 
         filters: QComboBox = fd.findChild(QComboBox, "fileTypeCombo")
         assert filters is not None, "Filters were not found"
-        assert filters.currentText() == "Text files", f"Filters were not correct: '{filters.currentText()!r}'"
+        assert filters.currentText() == "Text files", (
+            f"Filters were not correct: '{filters.currentText()!r}'"
+        )
 
         fd2 = self.fd_class(None, "TestFileDialog")
         fd2.setAcceptMode(self.fd_class.AcceptMode.AcceptSave)
@@ -1024,7 +1160,9 @@ class TestQFileDialog2(unittest.TestCase):
 
         filters2: QComboBox = fd2.findChild(QComboBox, "fileTypeCombo")
         assert filters2 is not None, "Filters were not found"
-        assert filters2.currentText() == chosenFilterString, f"Filters were not correct: '{filters2.currentText()!r}'"
+        assert filters2.currentText() == chosenFilterString, (
+            f"Filters were not correct: '{filters2.currentText()!r}'"
+        )
 
     @unittest.skip("Causes Python abort - crashes test suite")
     def test_dontShowCompleterOnRoot(self):
@@ -1075,7 +1213,9 @@ class TestQFileDialog2(unittest.TestCase):
 
         for filter_string, expected in cases:
             with self.subTest(filter_string=filter_string):
-                assert QPlatformFileDialogHelper.cleanFilterList(filter_string) == expected, "Filters were not correct"
+                assert QPlatformFileDialogHelper.cleanFilterList(filter_string) == expected, (
+                    "Filters were not correct"
+                )
 
 
 FORCE_UNITTEST = False

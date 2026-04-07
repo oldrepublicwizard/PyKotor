@@ -59,8 +59,12 @@ if TYPE_CHECKING:
 else:
     from pykotor.common.scriptdefs import KOTOR_CONSTANTS, KOTOR_FUNCTIONS
 
-K1_PATH: str | None = os.environ.get("K1_PATH", "C:\\Program Files (x86)\\Steam\\steamapps\\common\\swkotor")
-K2_PATH: str | None = os.environ.get("K2_PATH", "C:\\Program Files (x86)\\Steam\\steamapps\\common\\Knights of the Old Republic II")
+K1_PATH: str | None = os.environ.get(
+    "K1_PATH", "C:\\Program Files (x86)\\Steam\\steamapps\\common\\swkotor"
+)
+K2_PATH: str | None = os.environ.get(
+    "K2_PATH", "C:\\Program Files (x86)\\Steam\\steamapps\\common\\Knights of the Old Republic II"
+)
 
 BINARY_TEST_FILE = str(THIS_SCRIPT_PATH.parent.parent.parent / "files" / "test.ncs")
 EXPECTED_INSTRUCTION_COUNT = 1541
@@ -99,7 +103,9 @@ class CompilerTestBase(unittest.TestCase):
                 # Check if all items are the same type
                 first_item = library_lookup[0]
                 if isinstance(first_item, str):
-                    normalized_lookup = [str(item) if isinstance(item, Path) else item for item in library_lookup]  # type: ignore[list-item]
+                    normalized_lookup = [
+                        str(item) if isinstance(item, Path) else item for item in library_lookup
+                    ]  # type: ignore[list-item]
                 else:
                     normalized_lookup = library_lookup  # type: ignore[assignment]
         nssLexer = NssLexer()
@@ -3989,7 +3995,9 @@ class TestNCSCompiler(CompilerTestBase):
         interpreter.run()
 
         assert interpreter.action_snapshots[-3].arg_values[0] == 5  # 1 + 6 - 2 = 5
-        assert interpreter.action_snapshots[-2].arg_values[0] == -1  # 3 * -1 / 2 = -1 (integer division)
+        assert (
+            interpreter.action_snapshots[-2].arg_values[0] == -1
+        )  # 3 * -1 / 2 = -1 (integer division)
         assert interpreter.action_snapshots[-1].arg_values[0] == 15  # 1 > 0 ? 15 : 15 = 15
 
     def test_expression_with_all_operators(self):
@@ -4164,7 +4172,9 @@ class TestNCSRoundtrip(unittest.TestCase):
     def test_nss_roundtrip(self):
         """Test roundtrip compilation of vanilla game scripts."""
         if not self.roundtrip_cases:
-            self.skipTest("Vanilla_KOTOR_Script_Source submodule not available or no scripts collected")
+            self.skipTest(
+                "Vanilla_KOTOR_Script_Source submodule not available or no scripts collected"
+            )
 
         for game, script_path, library_lookup in self.roundtrip_cases:
             with self.subTest(f"{game.name}_{script_path.relative_to(self.vanilla_root)}"):
@@ -4174,7 +4184,9 @@ class TestNCSRoundtrip(unittest.TestCase):
                 decompiled_source = decompile_ncs(original_ncs, game)
                 roundtrip_ncs = compile_nss(decompiled_source, game, library_lookup=library_lookup)
                 roundtrip_source = decompile_ncs(roundtrip_ncs, game)
-                roundtrip_ncs_second = compile_nss(roundtrip_source, game, library_lookup=library_lookup)
+                roundtrip_ncs_second = compile_nss(
+                    roundtrip_source, game, library_lookup=library_lookup
+                )
 
                 self.assertEqual(
                     roundtrip_ncs,
@@ -4188,7 +4200,9 @@ class TestNCSRoundtrip(unittest.TestCase):
         return sorted(root.rglob("*.nss"))
 
     @classmethod
-    def _collect_sample(cls, game: Game, roots: list[Path], library_lookup: list[Path]) -> list[Path]:
+    def _collect_sample(
+        cls, game: Game, roots: list[Path], library_lookup: list[Path]
+    ) -> list[Path]:
         """Collect sample scripts for roundtrip testing."""
         sample: list[Path] = []
         for directory in roots:
@@ -4260,7 +4274,9 @@ class TestNCSRoundtrip(unittest.TestCase):
 
         roundtrip_cases: list[tuple[Game, Path, list[Path]]] = []
         if not cls.vanilla_root.exists():
-            print(f"Skipping sample collection because VANILLA_ROOT {cls.vanilla_root} does not exist")
+            print(
+                f"Skipping sample collection because VANILLA_ROOT {cls.vanilla_root} does not exist"
+            )
             cls._ROUNDTRIP_CASES = roundtrip_cases
             return roundtrip_cases
 
@@ -4308,7 +4324,9 @@ def _assert_bidirectional_roundtrip(
 
     # NSS -> NCS -> NSS -> NCS
     recompiled = compile_nss(decompiled, game, library_lookup=library_lookup)
-    assert _canonical_bytes(compiled) == _canonical_bytes(recompiled), "Recompiled bytecode diverged from initial compile"
+    assert _canonical_bytes(compiled) == _canonical_bytes(recompiled), (
+        "Recompiled bytecode diverged from initial compile"
+    )
 
     # NCS -> NSS -> NCS using freshly parsed binary payload
     binary_blob = _canonical_bytes(compiled)
@@ -4318,7 +4336,9 @@ def _assert_bidirectional_roundtrip(
         game,
         library_lookup=library_lookup,
     )
-    assert _canonical_bytes(reloaded) == _canonical_bytes(ncs_from_binary), "Roundtrip from binary payload not stable"
+    assert _canonical_bytes(reloaded) == _canonical_bytes(ncs_from_binary), (
+        "Roundtrip from binary payload not stable"
+    )
 
     return decompiled
 
@@ -4331,7 +4351,9 @@ def _dedent(script: str) -> str:
 def _assert_substrings(source: str, substrings: list[str]) -> None:
     """Assert that all substrings are present in source."""
     for snippet in substrings:
-        assert snippet in source, f"Expected snippet '{snippet}' to be present in decompiled script:\n{source}"
+        assert snippet in source, (
+            f"Expected snippet '{snippet}' to be present in decompiled script:\n{source}"
+        )
 
 
 @unittest.skipUnless(
@@ -4903,7 +4925,9 @@ def test_binary_roundtrip_samples(relative_path: str, game: Game):
     decompiled = decompile_ncs(original, game)
     recompilation = compile_nss(decompiled, game)
 
-    assert _canonical_bytes(original) == _canonical_bytes(recompilation), f"Roundtrip failed for {relative_path}"
+    assert _canonical_bytes(original) == _canonical_bytes(recompilation), (
+        f"Roundtrip failed for {relative_path}"
+    )
     assert len(decompiled.strip()) > 0, "Decompiled source should not be empty"
 
 
@@ -4911,7 +4935,9 @@ def test_binary_roundtrip_samples(relative_path: str, game: Game):
 # K1_NCS_Un-decompilable Roundtrip Tests (NCS -> NSS -> NCS)
 # ============================================================================
 
-K1_UNDECOMPILABLE_DIR = Path(__file__).resolve().parents[3] / "test_files" / "K1_NCS_Un-decompilable"
+K1_UNDECOMPILABLE_DIR = (
+    Path(__file__).resolve().parents[3] / "test_files" / "K1_NCS_Un-decompilable"
+)
 
 
 def _collect_k1_undecompilable_files() -> list[tuple[Path, str]]:
@@ -5013,7 +5039,9 @@ def test_compile_a_galaxymap_tsl(k2_path: str):
     assert ncs is not None
     assert len(ncs.instructions) > 0, "Compiled NCS should have instructions"
     # Verify SAVEBP instruction exists (indicates global variables)
-    assert any(inst.ins_type == NCSInstructionType.SAVEBP for inst in ncs.instructions), "Script with globals should have SAVEBP instruction"
+    assert any(inst.ins_type == NCSInstructionType.SAVEBP for inst in ncs.instructions), (
+        "Script with globals should have SAVEBP instruction"
+    )
 
 
 @pytest.mark.skipif(

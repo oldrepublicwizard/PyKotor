@@ -110,7 +110,9 @@ def main() -> None:
 
     print(f"Found {len(orig_nodes)} mesh nodes")
     print()
-    print(f"{'ID':>3} {'Tex':<12} {'Type':<5} {'Verts':>6} {'Row':>5} {'Bitmap':>12} {'MDX Off':>10} {'MDX Bytes':>10}")
+    print(
+        f"{'ID':>3} {'Tex':<12} {'Type':<5} {'Verts':>6} {'Row':>5} {'Bitmap':>12} {'MDX Off':>10} {'MDX Bytes':>10}"
+    )
     print("-" * 80)
 
     total_mdx_orig = 0
@@ -142,9 +144,15 @@ def main() -> None:
         (td_path / f"{resref}.mdx").write_bytes(orig_mdx)
 
         mdlops_exe = REPO_ROOT / "vendor" / "MDLOps" / "mdlops.exe"
-        subprocess.run([str(mdlops_exe), str(td_path / f"{resref}.mdl")], cwd=str(td_path), capture_output=True)
+        subprocess.run(
+            [str(mdlops_exe), str(td_path / f"{resref}.mdl")], cwd=str(td_path), capture_output=True
+        )
         # MDLOps requires flags before file path: mdlops.exe [options] [-k1|-k2] filepath
-        subprocess.run([str(mdlops_exe), "-k1", str(td_path / f"{resref}-ascii.mdl")], cwd=str(td_path), capture_output=True)
+        subprocess.run(
+            [str(mdlops_exe), "-k1", str(td_path / f"{resref}-ascii.mdl")],
+            cwd=str(td_path),
+            capture_output=True,
+        )
 
         mo_mdl = (td_path / f"{resref}-ascii-k1-bin.mdl").read_bytes()
         mo_mdx = (td_path / f"{resref}-ascii-k1-bin.mdx").read_bytes()
@@ -178,7 +186,9 @@ def main() -> None:
     print()
 
     print("Node-by-node comparison (only mismatches):")
-    print(f"{'ID':>3} {'Tex':<12} {'PK row':>7} {'MO row':>7} {'PK bitmap':>12} {'MO bitmap':>12} {'Issue':>20}")
+    print(
+        f"{'ID':>3} {'Tex':<12} {'PK row':>7} {'MO row':>7} {'PK bitmap':>12} {'MO bitmap':>12} {'Issue':>20}"
+    )
     print("-" * 90)
 
     mismatch_count = 0

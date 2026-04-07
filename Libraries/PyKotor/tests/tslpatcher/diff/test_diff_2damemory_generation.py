@@ -55,7 +55,13 @@ class TestDiff2DAMemoryGeneration(unittest.TestCase):
 
     def _setupIniAndConfig(self, ini_text: str) -> PatcherConfig:
         """Load INI and create PatcherConfig."""
-        ini = ConfigParser(delimiters="=", allow_no_value=True, strict=False, interpolation=None, inline_comment_prefixes=(";", "#"))
+        ini = ConfigParser(
+            delimiters="=",
+            allow_no_value=True,
+            strict=False,
+            interpolation=None,
+            inline_comment_prefixes=(";", "#"),
+        )
         ini.optionxform = lambda optionstr: optionstr
         ini.read_string(ini_text)
         result = PatcherConfig()
@@ -313,8 +319,12 @@ class TestDiff2DAMemoryGeneration(unittest.TestCase):
 
         # Vanilla appearance.2da with simple rows
         vanilla_appearance = TwoDA(["label", "modeltype", "normalhead"])
-        vanilla_appearance.add_row("0", {"label": "appearance_0", "modeltype": "P", "normalhead": "****"})
-        vanilla_appearance.add_row("1", {"label": "appearance_1", "modeltype": "F", "normalhead": "****"})
+        vanilla_appearance.add_row(
+            "0", {"label": "appearance_0", "modeltype": "P", "normalhead": "****"}
+        )
+        vanilla_appearance.add_row(
+            "1", {"label": "appearance_1", "modeltype": "F", "normalhead": "****"}
+        )
         write_2da(vanilla_appearance, vanilla_dir / "appearance.2da", ResourceType.TwoDA)
 
         # Create modded files
@@ -324,9 +334,15 @@ class TestDiff2DAMemoryGeneration(unittest.TestCase):
         # Modded appearance.2da with new row that has a unique label
         # The new row's label is "new_row_label"
         modded_appearance = TwoDA(["label", "modeltype", "normalhead"])
-        modded_appearance.add_row("0", {"label": "appearance_0", "modeltype": "P", "normalhead": "****"})
-        modded_appearance.add_row("1", {"label": "appearance_1", "modeltype": "F", "normalhead": "****"})
-        modded_appearance.add_row("new_row_label", {"label": "new_appearance", "modeltype": "S", "normalhead": "****"})
+        modded_appearance.add_row(
+            "0", {"label": "appearance_0", "modeltype": "P", "normalhead": "****"}
+        )
+        modded_appearance.add_row(
+            "1", {"label": "appearance_1", "modeltype": "F", "normalhead": "****"}
+        )
+        modded_appearance.add_row(
+            "new_row_label", {"label": "new_appearance", "modeltype": "S", "normalhead": "****"}
+        )
         write_2da(modded_appearance, modded_dir / "appearance.2da", ResourceType.TwoDA)
 
         # Run diff
@@ -454,15 +470,27 @@ class TestDiff2DAMemoryGeneration(unittest.TestCase):
         # - AddColumn stores: 2DAMEMORY0=I1 (token stores value of row 1 in new column)
         # - GFF uses token: CustomStat=2DAMEMORY0 (instead of literal CustomStat=42)
 
-        self.assertIn("2DAMEMORY0=I1", generated_ini, "AddColumn should store 2DAMEMORY token for I1")
-        self.assertIn("CustomStat=2DAMEMORY0", generated_ini, "GFF should use token reference instead of literal value")
+        self.assertIn(
+            "2DAMEMORY0=I1", generated_ini, "AddColumn should store 2DAMEMORY token for I1"
+        )
+        self.assertIn(
+            "CustomStat=2DAMEMORY0",
+            generated_ini,
+            "GFF should use token reference instead of literal value",
+        )
 
         # Verify no literal value in GFF (should be replaced by token)
-        self.assertNotIn("CustomStat=42", generated_ini, "GFF should NOT contain literal value when token is used")
+        self.assertNotIn(
+            "CustomStat=42",
+            generated_ini,
+            "GFF should NOT contain literal value when token is used",
+        )
 
         # Count tokens - should be exactly 1
         token_count = generated_ini.count("2DAMEMORY")
-        self.assertGreaterEqual(token_count, 2, "Should have at least 2 token references (1 storage + 1 usage)")
+        self.assertGreaterEqual(
+            token_count, 2, "Should have at least 2 token references (1 storage + 1 usage)"
+        )
 
         print("\n=== Generated INI ===")
         print(generated_ini)

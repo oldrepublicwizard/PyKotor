@@ -139,7 +139,9 @@ class ModuleLoader:
                 placeable_node = self._load_model(model_name)
                 if placeable_node:
                     placeable_node.reparentTo(root)
-                    placeable_node.setPos(placeable.position.x, placeable.position.y, placeable.position.z)
+                    placeable_node.setPos(
+                        placeable.position.x, placeable.position.y, placeable.position.z
+                    )
                     placeable_node.setH(placeable.bearing)
 
     def _load_creatures(self, git, root: NodePath, module: Module) -> None:
@@ -153,7 +155,9 @@ class ModuleLoader:
                 creature_node = self._load_model(body_model)
                 if creature_node:
                     creature_node.reparentTo(root)
-                    creature_node.setPos(git_creature.position.x, git_creature.position.y, git_creature.position.z)
+                    creature_node.setPos(
+                        git_creature.position.x, git_creature.position.y, git_creature.position.z
+                    )
                     creature_node.setH(git_creature.bearing)
 
                     body_tex = model_data.get("body_texture")
@@ -183,11 +187,18 @@ class ModuleLoader:
         """
         for i, camera in enumerate(git.cameras):
             camera_node = root.attachNewNode(f"camera_{i}")
-            camera_node.setPos(camera.position.x, camera.position.y, camera.position.z + camera.height)
+            camera_node.setPos(
+                camera.position.x, camera.position.y, camera.position.z + camera.height
+            )
 
             # Convert KotOR quaternion (w, x, y, z) to Panda3D LQuaternion
             # GITCamera.orientation is Vector4 with (x, y, z, w) components
-            quat = LQuaternion(camera.orientation.w, camera.orientation.x, camera.orientation.y, camera.orientation.z)
+            quat = LQuaternion(
+                camera.orientation.w,
+                camera.orientation.x,
+                camera.orientation.y,
+                camera.orientation.z,
+            )
 
             # getHpr() returns (Heading, Pitch, Roll) as (euler[0], euler[1], euler[2])
             # setHpr() expects (Heading, Pitch, Roll) in the same order

@@ -444,7 +444,9 @@ def construct_are(
         room_name = room_struct.acquire("RoomName", "")
         disable_weather = bool(room_struct.acquire("DisableWeather", 0))
         force_rating = room_struct.acquire("ForceRating", 0)
-        are.rooms.append(ARERoom(room_name, disable_weather, env_audio, force_rating, ambient_scale))
+        are.rooms.append(
+            ARERoom(room_name, disable_weather, env_audio, force_rating, ambient_scale)
+        )
 
     # Preserve original values for fields not in UI
     are.preserve_original()

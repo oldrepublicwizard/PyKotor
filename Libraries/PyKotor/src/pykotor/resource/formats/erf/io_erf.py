@@ -52,7 +52,9 @@ def _load_erf_from_kaitai(data: bytes) -> ERF:
 
     if language_count > 0 and offset_to_localized_strings > 0:
         if language_count > _MAX_SANE_LANG_COUNT:
-            msg = f"ERF language_count {language_count} exceeds sanity limit; file may be malformed."
+            msg = (
+                f"ERF language_count {language_count} exceeds sanity limit; file may be malformed."
+            )
             raise ValueError(msg)
         lsl = parsed.localized_string_list
         if lsl is not None:
@@ -130,7 +132,9 @@ def _load_erf_legacy(reader: BinaryReader, file_size: int) -> ERF:
 
     if language_count > 0 and offset_to_localized_strings > 0:
         if language_count > _MAX_SANE_LANG_COUNT:
-            msg = f"ERF language_count {language_count} exceeds sanity limit; file may be malformed."
+            msg = (
+                f"ERF language_count {language_count} exceeds sanity limit; file may be malformed."
+            )
             raise ValueError(msg)
         reader.seek(offset_to_localized_strings)
         block_end = offset_to_localized_strings + localized_string_size

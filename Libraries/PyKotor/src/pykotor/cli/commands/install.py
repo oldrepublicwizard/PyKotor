@@ -45,7 +45,12 @@ def find_kotor_install_dir() -> Path | None:
     else:  # Linux
         possible_paths = [
             Path.home() / ".local" / "share" / "aspyr-media" / "kotor",
-            Path.home() / ".steam" / "steam" / "steamapps" / "common" / "Knights of the Old Republic",
+            Path.home()
+            / ".steam"
+            / "steam"
+            / "steamapps"
+            / "common"
+            / "Knights of the Old Republic",
         ]
 
     for path in possible_paths:

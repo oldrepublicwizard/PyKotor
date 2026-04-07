@@ -323,7 +323,9 @@ class TestAddressBarKeyboard(FileDialogComponentTestBase):
         QCoreApplication.processEvents()
 
         # Either address bar or a child should have focus
-        has_focus = address_bar.hasFocus() or any(w.hasFocus() for w in address_bar.findChildren(QWidget))
+        has_focus = address_bar.hasFocus() or any(
+            w.hasFocus() for w in address_bar.findChildren(QWidget)
+        )
         self.assertTrue(has_focus)
 
     def test_escape_clears_edit(self) -> None:
@@ -866,7 +868,9 @@ class TestBottomControlsStructure(FileDialogComponentTestBase):
 
         button_texts = [b.text().lower() for b in buttons]
 
-        has_action_button = any(text in ["open", "save", "ok", "&open", "&save", "&ok"] for text in button_texts)
+        has_action_button = any(
+            text in ["open", "save", "ok", "&open", "&save", "&ok"] for text in button_texts
+        )
 
         self.assertTrue(has_action_button, "Should have Open/Save button")
 

@@ -31,7 +31,9 @@ while i < len(lines):
         for j in range(i + 1, len(lines)):
             next_line = lines[j].strip()
             # Stop at next ### (2DA file) or ## (category) but not #### (subsection)
-            if (next_line.startswith("### ") and not next_line.startswith("#### ")) or next_line.startswith("## "):
+            if (
+                next_line.startswith("### ") and not next_line.startswith("#### ")
+            ) or next_line.startswith("## "):
                 end_line = j
                 break
 
@@ -42,15 +44,41 @@ while i < len(lines):
             for part in parts:
                 if part.endswith(".2da"):
                     filename = part.replace(".2da", "").replace(" ", "_")
-                    sections.append({"title": part, "start": start_line, "end": end_line, "filename": f"2DA-{filename}.md", "full_title": section_title})
+                    sections.append(
+                        {
+                            "title": part,
+                            "start": start_line,
+                            "end": end_line,
+                            "filename": f"2DA-{filename}.md",
+                            "full_title": section_title,
+                        }
+                    )
         elif "*" in section_title:
             # Handle pattern-based like "cls_atk_*.2da" - use base name
-            filename = section_title.replace("*.2da", "_pattern").replace(".2da", "").replace(" ", "_")
-            sections.append({"title": section_title, "start": start_line, "end": end_line, "filename": f"2DA-{filename}.md", "full_title": section_title})
+            filename = (
+                section_title.replace("*.2da", "_pattern").replace(".2da", "").replace(" ", "_")
+            )
+            sections.append(
+                {
+                    "title": section_title,
+                    "start": start_line,
+                    "end": end_line,
+                    "filename": f"2DA-{filename}.md",
+                    "full_title": section_title,
+                }
+            )
         else:
             # Regular file
             filename = section_title.replace(".2da", "").replace(" ", "_")
-            sections.append({"title": section_title, "start": start_line, "end": end_line, "filename": f"2DA-{filename}.md", "full_title": section_title})
+            sections.append(
+                {
+                    "title": section_title,
+                    "start": start_line,
+                    "end": end_line,
+                    "filename": f"2DA-{filename}.md",
+                    "full_title": section_title,
+                }
+            )
 
         i = end_line
     else:
@@ -110,7 +138,11 @@ for section in sections:
         section_content = "\n".join(lines_list)
 
         # Add link back to main 2DA file right after the title
-        section_content = section_content.replace(f"# {full_title}\n", f"# {full_title}\n\nPart of the [2DA File Format Documentation](2DA-File-Format).\n\n", 1)
+        section_content = section_content.replace(
+            f"# {full_title}\n",
+            f"# {full_title}\n\nPart of the [2DA File Format Documentation](2DA-File-Format).\n\n",
+            1,
+        )
 
     output_file = wiki_dir / section["filename"]
 
@@ -118,6 +150,8 @@ for section in sections:
     with open(output_file, "w", encoding="utf-8") as f:
         f.write(section_content)
 
-    print(f"Created {section['filename']} (lines {start_line + 1}-{end_line}, title: {section['title']})")
+    print(
+        f"Created {section['filename']} (lines {start_line + 1}-{end_line}, title: {section['title']})"
+    )
 
 print(f"\nExtracted {len(sections)} 2DA file documentation files")

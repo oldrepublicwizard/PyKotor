@@ -19,9 +19,18 @@ class RobustHeaderView(RobustAbstractItemView, QHeaderView):
         return QHeaderView.__new__(cls)
 
     @overload
-    def __init__(self, orientation: Qt.Orientation | None = None, parent: QWidget | None = None, *args, should_call_qt_init: bool = True, **kwargs): ...
+    def __init__(
+        self,
+        orientation: Qt.Orientation | None = None,
+        parent: QWidget | None = None,
+        *args,
+        should_call_qt_init: bool = True,
+        **kwargs,
+    ): ...
     @overload
-    def __init__(self, parent: QWidget | None = None, *args, should_call_qt_init: bool = True, **kwargs): ...
+    def __init__(
+        self, parent: QWidget | None = None, *args, should_call_qt_init: bool = True, **kwargs
+    ): ...
     def __init__(
         self,
         *args,
@@ -65,11 +74,41 @@ class RobustHeaderView(RobustAbstractItemView, QHeaderView):
         menu = super().build_context_menu(parent)
         header_menu = menu.addMenu("HeaderView")
 
-        self._add_menu_action(header_menu, "Sections Movable", self.sectionsMovable, self.setSectionsMovable, "sectionsMovable")
-        self._add_menu_action(header_menu, "Sections Clickable", self.sectionsClickable, self.setSectionsClickable, "sectionsClickable")
-        self._add_menu_action(header_menu, "Sort Indicator Shown", self.isSortIndicatorShown, self.setSortIndicatorShown, "sortIndicatorShown")
-        self._add_menu_action(header_menu, "Stretch Last Section", self.stretchLastSection, self.setStretchLastSection, "stretchLastSection")
-        self._add_menu_action(header_menu, "Cascading Section Resizes", self.cascadingSectionResizes, self.setCascadingSectionResizes, "cascadingSectionResizes")
+        self._add_menu_action(
+            header_menu,
+            "Sections Movable",
+            self.sectionsMovable,
+            self.setSectionsMovable,
+            "sectionsMovable",
+        )
+        self._add_menu_action(
+            header_menu,
+            "Sections Clickable",
+            self.sectionsClickable,
+            self.setSectionsClickable,
+            "sectionsClickable",
+        )
+        self._add_menu_action(
+            header_menu,
+            "Sort Indicator Shown",
+            self.isSortIndicatorShown,
+            self.setSortIndicatorShown,
+            "sortIndicatorShown",
+        )
+        self._add_menu_action(
+            header_menu,
+            "Stretch Last Section",
+            self.stretchLastSection,
+            self.setStretchLastSection,
+            "stretchLastSection",
+        )
+        self._add_menu_action(
+            header_menu,
+            "Cascading Section Resizes",
+            self.cascadingSectionResizes,
+            self.setCascadingSectionResizes,
+            "cascadingSectionResizes",
+        )
 
         return menu
 

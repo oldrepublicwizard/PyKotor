@@ -205,7 +205,9 @@ def get_package_manager() -> str | None:
     return None
 
 
-def install_act_windows(version: str = DEFAULT_ACT_VERSION, install_dir: Path | None = None) -> bool:
+def install_act_windows(
+    version: str = DEFAULT_ACT_VERSION, install_dir: Path | None = None
+) -> bool:
     """Install act on Windows via direct download.
 
     Args:
@@ -407,7 +409,9 @@ def install_act_macos(version: str = DEFAULT_ACT_VERSION, install_dir: Path | No
     }
     arch_name = arch_map.get(arch, "x86_64")
 
-    url = f"https://github.com/nektos/act/releases/download/v{version}/act_Darwin_{arch_name}.tar.gz"
+    url = (
+        f"https://github.com/nektos/act/releases/download/v{version}/act_Darwin_{arch_name}.tar.gz"
+    )
 
     print(f"Downloading act from: {url}")
 
@@ -520,7 +524,9 @@ def print_installation_instructions(platform_info: dict[str, str]) -> None:
             if package_manager == "apt":
                 print("    - APT: sudo apt install act (if available in your repos)")
             elif package_manager == "yum" or package_manager == "dnf":
-                print(f"    - {package_manager.upper()}: sudo {package_manager} install act (if available)")
+                print(
+                    f"    - {package_manager.upper()}: sudo {package_manager} install act (if available)"
+                )
             elif package_manager == "pacman":
                 print("    - Pacman: sudo pacman -S act (if available in AUR)")
         print("    - Or download from: https://github.com/nektos/act/releases")

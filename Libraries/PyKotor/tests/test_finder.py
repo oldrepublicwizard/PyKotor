@@ -27,7 +27,6 @@ def test_canonical_search_order() -> None:
 def test_find_result_identifier() -> None:
     from pathlib import Path
 
-
     r = FindResult(
         resref="test",
         restype=ResourceType.UTC,

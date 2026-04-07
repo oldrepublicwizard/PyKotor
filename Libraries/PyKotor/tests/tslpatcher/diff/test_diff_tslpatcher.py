@@ -83,7 +83,9 @@ class TestTSLPatcherFromDiff(unittest.TestCase):
             if filename.endswith(".2da"):
                 obj = read_2da(content.encode(), file_format=plaintext_format)
                 write_2da(obj, vanilla_dir / filename, ResourceType.TwoDA)
-            elif filename.endswith(".gff") or any(filename.endswith(f".{ext}") for ext in GFFContent.get_extensions()):
+            elif filename.endswith(".gff") or any(
+                filename.endswith(f".{ext}") for ext in GFFContent.get_extensions()
+            ):
                 obj = read_gff(content.encode(), file_format=plaintext_format)
                 write_gff(obj, vanilla_dir / filename, ResourceType.GFF)
             elif filename.endswith(".tlk"):
@@ -98,7 +100,9 @@ class TestTSLPatcherFromDiff(unittest.TestCase):
             if filename.endswith(".2da"):
                 obj = read_2da(content.encode(), file_format=plaintext_format)
                 write_2da(obj, modded_dir / filename, ResourceType.TwoDA)
-            elif filename.endswith(".gff") or any(filename.endswith(f".{ext}") for ext in GFFContent.get_extensions()):
+            elif filename.endswith(".gff") or any(
+                filename.endswith(f".{ext}") for ext in GFFContent.get_extensions()
+            ):
                 obj = read_gff(content.encode(), file_format=plaintext_format)
                 write_gff(obj, modded_dir / filename, ResourceType.GFF)
             elif filename.endswith(".tlk"):
@@ -151,7 +155,13 @@ class TestTSLPatcherFromDiff(unittest.TestCase):
         )
 
     def _setupIniAndConfig(self, ini_text: str, mod_path: Path | str = "") -> PatcherConfig:
-        ini = ConfigParser(delimiters="=", allow_no_value=True, strict=False, interpolation=None, inline_comment_prefixes=(";", "#"))
+        ini = ConfigParser(
+            delimiters="=",
+            allow_no_value=True,
+            strict=False,
+            interpolation=None,
+            inline_comment_prefixes=(";", "#"),
+        )
         ini.optionxform = lambda optionstr: optionstr
         ini.read_string(ini_text)
         result = PatcherConfig()
@@ -190,7 +200,9 @@ class TestTSLPatcherFromDiff(unittest.TestCase):
                 10: {"text": "Modified 10", "voiceover": "vo_mod_10"},
             }
         )
-        shutil.copy(Path("tests/files/complex.tlk").resolve(), self.tslpatchdata_path / "complex.tlk")
+        shutil.copy(
+            Path("tests/files/complex.tlk").resolve(), self.tslpatchdata_path / "complex.tlk"
+        )
         shutil.copy(Path("tests/files/append.tlk").resolve(), self.tslpatchdata_path / "append.tlk")
 
         # write it to a real file

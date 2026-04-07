@@ -72,7 +72,9 @@ while i < len(lines):
             end_idx = len(lines)
             for j in range(i + 1, len(lines)):
                 next_line = lines[j].strip()
-                if (next_line.startswith("### ") and not next_line.startswith("#### ")) or next_line.startswith("## "):
+                if (
+                    next_line.startswith("### ") and not next_line.startswith("#### ")
+                ) or next_line.startswith("## "):
                     end_idx = j
                     break
 
@@ -87,7 +89,9 @@ while i < len(lines):
                             display_name = part.replace(".2da", "")
                             new_content.append(f"### {display_name}.2da\n")
                             new_content.append("\n")
-                            new_content.append(f"See [{display_name}.2da]({filename}) for detailed documentation.\n")
+                            new_content.append(
+                                f"See [{display_name}.2da]({filename}) for detailed documentation.\n"
+                            )
                             new_content.append("\n")
             elif "*" in section_title:
                 # Pattern-based section - use the pattern name
@@ -97,14 +101,18 @@ while i < len(lines):
                     filename = section_to_file[pattern_name]
                     new_content.append(f"### {section_title}\n")
                     new_content.append("\n")
-                    new_content.append(f"See [{section_title}]({filename}) for detailed documentation.\n")
+                    new_content.append(
+                        f"See [{section_title}]({filename}) for detailed documentation.\n"
+                    )
                     new_content.append("\n")
                 else:
                     # Just create a simple link
                     filename = pattern_name.replace("*", "_pattern")
                     new_content.append(f"### {section_title}\n")
                     new_content.append("\n")
-                    new_content.append(f"See [{section_title}]({filename}) for detailed documentation.\n")
+                    new_content.append(
+                        f"See [{section_title}]({filename}) for detailed documentation.\n"
+                    )
                     new_content.append("\n")
             else:
                 # Regular file
@@ -113,14 +121,18 @@ while i < len(lines):
                     display_name = section_title.replace(".2da", "")
                     new_content.append(f"### {display_name}.2da\n")
                     new_content.append("\n")
-                    new_content.append(f"See [{display_name}.2da]({filename}) for detailed documentation.\n")
+                    new_content.append(
+                        f"See [{display_name}.2da]({filename}) for detailed documentation.\n"
+                    )
                     new_content.append("\n")
                 else:
                     # Fallback - create link anyway
                     filename = section_title.replace(".2da", "").replace(" ", "_")
                     new_content.append(f"### {section_title}\n")
                     new_content.append("\n")
-                    new_content.append(f"See [{section_title}](2DA-{filename}) for detailed documentation.\n")
+                    new_content.append(
+                        f"See [{section_title}](2DA-{filename}) for detailed documentation.\n"
+                    )
                     new_content.append("\n")
 
             # Skip to end of section

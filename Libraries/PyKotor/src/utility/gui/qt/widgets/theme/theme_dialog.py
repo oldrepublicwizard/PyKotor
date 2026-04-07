@@ -121,11 +121,15 @@ class ThemeDialog(QDialog):
         sel_lower = selection.lower()
         if sel_lower in self._theme_names:
             style_name = self._manager.get_original_style()
-            self._manager.apply_theme_and_style(selection, style_name, fallback_theme="sourcegraph-dark", fallback_style="Fusion")
+            self._manager.apply_theme_and_style(
+                selection, style_name, fallback_theme="sourcegraph-dark", fallback_style="Fusion"
+            )
         elif sel_lower in self._style_names:
             themes = self._manager.get_available_themes()
             theme_name = themes[0] if themes else "sourcegraph-dark"
-            self._manager.apply_theme_and_style(theme_name, selection, fallback_theme="sourcegraph-dark", fallback_style="Fusion")
+            self._manager.apply_theme_and_style(
+                theme_name, selection, fallback_theme="sourcegraph-dark", fallback_style="Fusion"
+            )
 
     @classmethod
     def apply_style(

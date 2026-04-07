@@ -751,7 +751,10 @@ def get_resource_from_archive(
         if resource_type:
             for resource in bif_data:
                 if resource.resref and resource.restype:
-                    if resource.resref.get().lower() == resref.lower() and resource.restype == resource_type:
+                    if (
+                        resource.resref.get().lower() == resref.lower()
+                        and resource.restype == resource_type
+                    ):
                         return resource.data
             return None
 
@@ -759,7 +762,10 @@ def get_resource_from_archive(
         for common_type in [ResourceType.NSS, ResourceType.DLG, ResourceType.UTC, ResourceType.UTI]:
             for resource in bif_data:
                 if resource.resref and resource.restype:
-                    if resource.resref.get().lower() == resref.lower() and resource.restype == common_type:
+                    if (
+                        resource.resref.get().lower() == resref.lower()
+                        and resource.restype == common_type
+                    ):
                         return resource.data
         return None
 
@@ -773,7 +779,12 @@ def get_resource_from_archive(
 
         key_entry = _try_get_key_entry(resource_type) if resource_type else None
         if key_entry is None and resource_type is None:
-            for common_type in [ResourceType.NSS, ResourceType.DLG, ResourceType.UTC, ResourceType.UTI]:
+            for common_type in [
+                ResourceType.NSS,
+                ResourceType.DLG,
+                ResourceType.UTC,
+                ResourceType.UTI,
+            ]:
                 key_entry = _try_get_key_entry(common_type)
                 if key_entry is not None:
                     break

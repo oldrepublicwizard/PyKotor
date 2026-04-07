@@ -151,7 +151,9 @@ class TestQFileDialogExtendedComprehensive(unittest.TestCase):
     def test_constructor_full_args(self) -> None:
         """Test constructor with all arguments."""
         filter_str = "Text Files (*.txt);;All Files (*)"
-        dialog = QFileDialogExtended(None, "Test Caption", str(self.temp_path / "folder1"), filter_str)
+        dialog = QFileDialogExtended(
+            None, "Test Caption", str(self.temp_path / "folder1"), filter_str
+        )
         self.assertEqual(dialog.windowTitle(), "Test Caption")
         self.assertIn("Text Files", dialog.nameFilters())
         current_dir = Path(dialog.directory().absolutePath())
@@ -573,7 +575,9 @@ class TestQFileDialogExtendedComprehensive(unittest.TestCase):
     def test_ribbon_navigation_pane_toggle(self) -> None:
         """Test ribbon navigation pane toggle action."""
         initial_visible = self.dialog.ui.sidebar.isVisible()
-        self.dialog.ribbons.actions_definitions.actionNavigationPane.triggered.emit(not initial_visible)
+        self.dialog.ribbons.actions_definitions.actionNavigationPane.triggered.emit(
+            not initial_visible
+        )
         QTest.qWait(50)
         # Should be toggled
         self.assertNotEqual(self.dialog.ui.sidebar.isVisible(), initial_visible)
@@ -673,7 +677,9 @@ class TestQFileDialogExtendedComprehensive(unittest.TestCase):
             # Click on item
             rect = view.visualRect(first_child)
             if rect.isValid():
-                QTest.mouseClick(view, Qt.MouseButton.LeftButton, Qt.KeyboardModifier.NoModifier, rect.center())
+                QTest.mouseClick(
+                    view, Qt.MouseButton.LeftButton, Qt.KeyboardModifier.NoModifier, rect.center()
+                )
                 QTest.qWait(50)
                 self.assertEqual(view.currentIndex(), first_child)
 
@@ -692,7 +698,9 @@ class TestQFileDialogExtendedComprehensive(unittest.TestCase):
                 dir_before = self.dialog.directory().absolutePath()
 
                 # Double click
-                QTest.mouseDoubleClick(view, Qt.MouseButton.LeftButton, Qt.KeyboardModifier.NoModifier, rect.center())
+                QTest.mouseDoubleClick(
+                    view, Qt.MouseButton.LeftButton, Qt.KeyboardModifier.NoModifier, rect.center()
+                )
                 QTest.qWait(100)
 
     def test_mouse_right_click_context_menu(self) -> None:
@@ -705,7 +713,9 @@ class TestQFileDialogExtendedComprehensive(unittest.TestCase):
             rect = view.visualRect(first_child)
             if rect.isValid():
                 # This should trigger context menu
-                QTest.mouseClick(view, Qt.MouseButton.RightButton, Qt.KeyboardModifier.NoModifier, rect.center())
+                QTest.mouseClick(
+                    view, Qt.MouseButton.RightButton, Qt.KeyboardModifier.NoModifier, rect.center()
+                )
                 QTest.qWait(100)
 
     def test_mouse_ctrl_click_multiple_selection(self) -> None:
@@ -724,11 +734,18 @@ class TestQFileDialogExtendedComprehensive(unittest.TestCase):
 
             if rect1.isValid() and rect2.isValid():
                 # Click first
-                QTest.mouseClick(view, Qt.MouseButton.LeftButton, Qt.KeyboardModifier.NoModifier, rect1.center())
+                QTest.mouseClick(
+                    view, Qt.MouseButton.LeftButton, Qt.KeyboardModifier.NoModifier, rect1.center()
+                )
                 QTest.qWait(50)
 
                 # Ctrl+Click second
-                QTest.mouseClick(view, Qt.MouseButton.LeftButton, Qt.KeyboardModifier.ControlModifier, rect2.center())
+                QTest.mouseClick(
+                    view,
+                    Qt.MouseButton.LeftButton,
+                    Qt.KeyboardModifier.ControlModifier,
+                    rect2.center(),
+                )
                 QTest.qWait(50)
 
     # ========================================================================
@@ -928,7 +945,9 @@ class TestQFileDialogExtendedComprehensive(unittest.TestCase):
         """Test toggling sidebar via ribbon action."""
         initial_visible = self.dialog.ui.sidebar.isVisible()
 
-        self.dialog.ribbons.actions_definitions.actionNavigationPane.triggered.emit(not initial_visible)
+        self.dialog.ribbons.actions_definitions.actionNavigationPane.triggered.emit(
+            not initial_visible
+        )
         QTest.qWait(50)
 
     # ========================================================================
@@ -1133,7 +1152,9 @@ class TestQFileDialogExtendedComprehensive(unittest.TestCase):
         if view.model().hasChildren(root):
             rect = view.visualRect(view.model().index(0, 0, root))
             if rect.isValid():
-                QTest.mouseClick(view, Qt.MouseButton.LeftButton, Qt.KeyboardModifier.NoModifier, rect.center())
+                QTest.mouseClick(
+                    view, Qt.MouseButton.LeftButton, Qt.KeyboardModifier.NoModifier, rect.center()
+                )
                 QTest.qWait(50)
 
         # Keyboard: press enter

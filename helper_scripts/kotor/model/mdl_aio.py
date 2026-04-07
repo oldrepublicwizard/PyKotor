@@ -128,7 +128,9 @@ def _load_from_installation(*, game: Game, install_path: Path, resref: str) -> M
     inst = Installation(install_path)
     mdl_res = inst.resource(resref, ResourceType.MDL)
     if mdl_res is None:
-        raise FileNotFoundError(f"MDL resource '{resref}' not found in installation at {install_path}")
+        raise FileNotFoundError(
+            f"MDL resource '{resref}' not found in installation at {install_path}"
+        )
     mdx_res = inst.resource(resref, ResourceType.MDX)
     mdx_bytes = mdx_res.data if mdx_res is not None else b""
     return ModelBytes(mdl=mdl_res.data, mdx=mdx_bytes, label=f"{resref} (installation)")
@@ -142,7 +144,9 @@ def _load_from_files(*, mdl_path: Path, mdx_path: Path | None) -> ModelBytes:
 
 
 def _pykotor_roundtrip(original: ModelBytes) -> ModelBytes:
-    mdl_obj = read_mdl(original.mdl, source_ext=(original.mdx or None), file_format=ResourceType.MDL)
+    mdl_obj = read_mdl(
+        original.mdl, source_ext=(original.mdx or None), file_format=ResourceType.MDL
+    )
     mdl_out = BytesIO()
     mdx_out = BytesIO()
     write_mdl(mdl_obj, mdl_out, ResourceType.MDL, target_ext=mdx_out)
@@ -157,7 +161,9 @@ def _find_mdlops_exe(explicit: Path | None) -> Path:
     candidate = REPO_ROOT / "vendor" / "MDLOps" / "mdlops.exe"
     if candidate.exists():
         return candidate
-    raise FileNotFoundError("MDLOps exe not found (expected vendor/MDLOps/mdlops.exe). Use --mdlops-exe.")
+    raise FileNotFoundError(
+        "MDLOps exe not found (expected vendor/MDLOps/mdlops.exe). Use --mdlops-exe."
+    )
 
 
 def _run_mdlops_roundtrip(
@@ -195,7 +201,9 @@ def _run_mdlops_roundtrip(
         )
         ascii_path = td_path / f"{resref}-ascii.mdl"
         if dec.returncode != 0 or not ascii_path.exists():
-            raise RuntimeError(f"MDLOps decompile failed (rc={dec.returncode}): {dec.stderr.strip() or dec.stdout.strip()}")
+            raise RuntimeError(
+                f"MDLOps decompile failed (rc={dec.returncode}): {dec.stderr.strip() or dec.stdout.strip()}"
+            )
 
         # Compile
         # MDLOps requires flags before file path: mdlops.exe [options] [-k1|-k2] filepath
@@ -216,7 +224,11 @@ def _run_mdlops_roundtrip(
                 f"MDLOps compile failed or did not produce expected outputs. (rc={comp.returncode}) files={files} stderr={comp.stderr.strip() or comp.stdout.strip()}"
             )
 
-        return ModelBytes(mdl=out_mdl.read_bytes(), mdx=(out_mdx.read_bytes() if out_mdx.exists() else b""), label="mdlops-roundtrip"), td_path
+        return ModelBytes(
+            mdl=out_mdl.read_bytes(),
+            mdx=(out_mdx.read_bytes() if out_mdx.exists() else b""),
+            label="mdlops-roundtrip",
+        ), td_path
     finally:
         if td_cm is not None:
             td_cm.cleanup()
@@ -445,7 +457,9 @@ def _layout_segments_from_reader(mdl: bytes, game: Game) -> list[Segment]:
         return segs
     root_node_offset = struct.unpack_from("<I", mdl, 12 + 40)[0] + 12
     node_count = struct.unpack_from("<I", mdl, 12 + 44)[0]
-    segs.append(Segment(root_node_offset, len(mdl), "node_block (approx)", {"node_count": str(node_count)}))
+    segs.append(
+        Segment(root_node_offset, len(mdl), "node_block (approx)", {"node_count": str(node_count)})
+    )
     return segs
 
 
@@ -587,7 +601,10 @@ def _segments_for_mdl(mdl: bytes, *, game: Game) -> list[Segment]:
     Build labeled segments for the MDL file, using binary offsets from mesh node headers.
     This is designed for diff attribution (what bytes correspond to what logical section).
     """
-    segs: list[Segment] = [Segment(0, 12, "file_header", {}), Segment(12, 12 + 196, "model_header", {})]
+    segs: list[Segment] = [
+        Segment(0, 12, "file_header", {}),
+        Segment(12, 12 + 196, "model_header", {}),
+    ]
     nodes = _capture_mesh_nodes(mdl, game=game)
 
     def add_if_valid(start_rel: int, size: int, label: str, details: dict[str, str]) -> None:
@@ -606,21 +623,44 @@ def _segments_for_mdl(mdl: bytes, *, game: Game) -> list[Segment]:
         # Faces / vertices / index tables
         add_if_valid(n.offset_to_faces, n.faces_count * 32, f"{prefix}.faces", details)
         add_if_valid(n.vertices_offset, n.vertex_count * 12, f"{prefix}.vertices_mdl", details)
-        add_if_valid(n.offset_to_indices_counts, n.indices_counts_count * 4, f"{prefix}.indices_counts", details)
-        add_if_valid(n.offset_to_indices_offsets, n.indices_offsets_count * 4, f"{prefix}.indices_offsets", details)
-        add_if_valid(n.offset_to_counters, n.counters_count * 4, f"{prefix}.inverted_counters", details)
+        add_if_valid(
+            n.offset_to_indices_counts,
+            n.indices_counts_count * 4,
+            f"{prefix}.indices_counts",
+            details,
+        )
+        add_if_valid(
+            n.offset_to_indices_offsets,
+            n.indices_offsets_count * 4,
+            f"{prefix}.indices_offsets",
+            details,
+        )
+        add_if_valid(
+            n.offset_to_counters, n.counters_count * 4, f"{prefix}.inverted_counters", details
+        )
 
         # Children offsets / controllers / controller data
-        add_if_valid(n.offset_to_children, n.children_count * 4, f"{prefix}.children_offsets", details)
-        add_if_valid(n.offset_to_controllers, n.controller_count * 16, f"{prefix}.controllers", details)
-        add_if_valid(n.offset_to_controller_data, n.controller_data_length, f"{prefix}.controller_data", details)
+        add_if_valid(
+            n.offset_to_children, n.children_count * 4, f"{prefix}.children_offsets", details
+        )
+        add_if_valid(
+            n.offset_to_controllers, n.controller_count * 16, f"{prefix}.controllers", details
+        )
+        add_if_valid(
+            n.offset_to_controller_data,
+            n.controller_data_length,
+            f"{prefix}.controller_data",
+            details,
+        )
 
     # Stable order helps readability
     segs.sort(key=lambda s: (s.start, s.end, s.label))
     return segs
 
 
-def _attribute_ranges_to_segments(ranges: list[DiffRange], segments: list[Segment], *, max_hits: int) -> list[dict[str, object]]:
+def _attribute_ranges_to_segments(
+    ranges: list[DiffRange], segments: list[Segment], *, max_hits: int
+) -> list[dict[str, object]]:
     hits: list[dict[str, object]] = []
     for dr in ranges:
         overlapped = [s for s in segments if s.overlaps(dr)]
@@ -743,7 +783,9 @@ def _load_source_from_args(args: argparse.Namespace) -> ModelBytes:
     game = _resolve_game(args.game)
     install_path = args.install_path or _default_install_path(game)
     if install_path is None:
-        raise FileNotFoundError("Could not determine install path. Provide --install-path or set K1_PATH/K2_PATH/TSL_PATH.")
+        raise FileNotFoundError(
+            "Could not determine install path. Provide --install-path or set K1_PATH/K2_PATH/TSL_PATH."
+        )
     return _load_from_installation(game=game, install_path=install_path, resref=args.resref)
 
 
@@ -756,7 +798,11 @@ def _get_named_sources(
     keep_dir: Path | None,
 ) -> dict[SourceKind, ModelBytes]:
     original = _load_source_from_args(args)
-    resref = args.resref if args.resref is not None else (args.mdl.stem if args.mdl is not None else "model")
+    resref = (
+        args.resref
+        if args.resref is not None
+        else (args.mdl.stem if args.mdl is not None else "model")
+    )
 
     out: dict[SourceKind, ModelBytes] = {"original": original}
     if "pykotor" in want:
@@ -847,7 +893,11 @@ def _decode_mdx_row_block(
 def cmd_compare(args: argparse.Namespace) -> int:
     game = _resolve_game(args.game)
     original = _load_source_from_args(args)
-    resref = args.resref if args.resref is not None else (args.mdl.stem if args.mdl is not None else "model")
+    resref = (
+        args.resref
+        if args.resref is not None
+        else (args.mdl.stem if args.mdl is not None else "model")
+    )
 
     # Produce target B
     if args.against == "original":
@@ -911,8 +961,12 @@ def cmd_compare(args: argparse.Namespace) -> int:
     }
 
     if args.with_context:
-        report["mdl"]["first_mismatch_context"] = first_mismatch_context(left.mdl, right.mdl, around=args.context_bytes)
-        report["mdx"]["first_mismatch_context"] = first_mismatch_context(left.mdx, right.mdx, around=args.context_bytes)
+        report["mdl"]["first_mismatch_context"] = first_mismatch_context(
+            left.mdl, right.mdl, around=args.context_bytes
+        )
+        report["mdx"]["first_mismatch_context"] = first_mismatch_context(
+            left.mdx, right.mdx, around=args.context_bytes
+        )
 
     if args.hexdiff:
         report["mdl"]["unified_hexdiff"] = unified_hexdiff(
@@ -935,19 +989,29 @@ def cmd_compare(args: argparse.Namespace) -> int:
         )
 
     if args.layout:
-        report["mdl"]["layout_segments_left"] = [dataclasses.asdict(s) for s in _layout_segments_from_reader(left.mdl, game)]
-        report["mdl"]["layout_segments_right"] = [dataclasses.asdict(s) for s in _layout_segments_from_reader(right.mdl, game)]
+        report["mdl"]["layout_segments_left"] = [
+            dataclasses.asdict(s) for s in _layout_segments_from_reader(left.mdl, game)
+        ]
+        report["mdl"]["layout_segments_right"] = [
+            dataclasses.asdict(s) for s in _layout_segments_from_reader(right.mdl, game)
+        ]
 
     if args.mdx_rows:
         report["mdx"]["mdx_rows_summary_left"] = _parse_nodes_for_mdx_rows(left.mdl, left.mdx, game)
-        report["mdx"]["mdx_rows_summary_right"] = _parse_nodes_for_mdx_rows(right.mdl, right.mdx, game)
+        report["mdx"]["mdx_rows_summary_right"] = _parse_nodes_for_mdx_rows(
+            right.mdl, right.mdx, game
+        )
 
     if args.attribute:
         left_segs = _segments_for_mdl(left.mdl, game=game)
         right_segs = _segments_for_mdl(right.mdl, game=game)
         largest = sorted(mdl_ranges, key=lambda r: r.length, reverse=True)[: args.max_ranges]
-        report["mdl"]["attribution_left"] = _attribute_ranges_to_segments(largest, left_segs, max_hits=args.max_attribution)
-        report["mdl"]["attribution_right"] = _attribute_ranges_to_segments(largest, right_segs, max_hits=args.max_attribution)
+        report["mdl"]["attribution_left"] = _attribute_ranges_to_segments(
+            largest, left_segs, max_hits=args.max_attribution
+        )
+        report["mdl"]["attribution_right"] = _attribute_ranges_to_segments(
+            largest, right_segs, max_hits=args.max_attribution
+        )
 
     if artifacts_dir is not None:
         report["mdlops_artifacts_dir"] = str(artifacts_dir)
@@ -970,7 +1034,11 @@ def cmd_extract(args: argparse.Namespace) -> int:
     out_dir: Path = args.output_dir
     out_dir.mkdir(parents=True, exist_ok=True)
 
-    resref = args.resref if args.resref is not None else (args.mdl.stem if args.mdl is not None else "model")
+    resref = (
+        args.resref
+        if args.resref is not None
+        else (args.mdl.stem if args.mdl is not None else "model")
+    )
     written: list[str] = []
     for kind, mb in sources.items():
         base = out_dir / f"{resref}-{kind}"
@@ -1023,7 +1091,9 @@ def cmd_mdx_rows(args: argparse.Namespace) -> int:
     node_id = int(args.node_id)
     mesh = mesh_by_id.get(node_id)
     if mesh is None:
-        _write_output(_format_output({"error": f"node_id {node_id} not found"}, args.format), args.out)
+        _write_output(
+            _format_output({"error": f"node_id {node_id} not found"}, args.format), args.out
+        )
         return 2
 
     # Determine which fields are present
@@ -1145,13 +1215,21 @@ def cmd_diagnose(args: argparse.Namespace) -> int:
 
     # Size comparison
     report_lines.append("FILE SIZES:")
-    report_lines.append(f"  Original:  MDL={len(original.mdl):>7} bytes, MDX={len(original.mdx):>7} bytes")
-    report_lines.append(f"  PyKotor:   MDL={len(pykotor.mdl):>7} bytes, MDX={len(pykotor.mdx):>7} bytes")
-    report_lines.append(f"  MDLOps:    MDL={len(mdlops.mdl):>7} bytes, MDX={len(mdlops.mdx):>7} bytes")
+    report_lines.append(
+        f"  Original:  MDL={len(original.mdl):>7} bytes, MDX={len(original.mdx):>7} bytes"
+    )
+    report_lines.append(
+        f"  PyKotor:   MDL={len(pykotor.mdl):>7} bytes, MDX={len(pykotor.mdx):>7} bytes"
+    )
+    report_lines.append(
+        f"  MDLOps:    MDL={len(mdlops.mdl):>7} bytes, MDX={len(mdlops.mdx):>7} bytes"
+    )
 
     mdl_diff = len(pykotor.mdl) - len(mdlops.mdl)
     mdx_diff = len(pykotor.mdx) - len(mdlops.mdx)
-    report_lines.append(f"  Delta (PyKotor - MDLOps): MDL={mdl_diff:+d} bytes, MDX={mdx_diff:+d} bytes")
+    report_lines.append(
+        f"  Delta (PyKotor - MDLOps): MDL={mdl_diff:+d} bytes, MDX={mdx_diff:+d} bytes"
+    )
     report_lines.append("")
 
     # Compare PyKotor vs MDLOps
@@ -1164,8 +1242,16 @@ def cmd_diagnose(args: argparse.Namespace) -> int:
         return 0
 
     report_lines.append("BYTE DIFFERENCES:")
-    report_lines.append(f"  MDL: {len(mdl_ranges)} diff ranges, first mismatch at offset 0x{mdl_first:X}" if mdl_first else "  MDL: Identical (except size)")
-    report_lines.append(f"  MDX: {len(mdx_ranges)} diff ranges, first mismatch at offset 0x{mdx_first:X}" if mdx_first else "  MDX: Identical (except size)")
+    report_lines.append(
+        f"  MDL: {len(mdl_ranges)} diff ranges, first mismatch at offset 0x{mdl_first:X}"
+        if mdl_first
+        else "  MDL: Identical (except size)"
+    )
+    report_lines.append(
+        f"  MDX: {len(mdx_ranges)} diff ranges, first mismatch at offset 0x{mdx_first:X}"
+        if mdx_first
+        else "  MDX: Identical (except size)"
+    )
     report_lines.append("")
 
     # Parse mesh nodes from both
@@ -1183,7 +1269,9 @@ def cmd_diagnose(args: argparse.Namespace) -> int:
         mo = mo_by_id.get(node_id)
 
         if pk is None or mo is None:
-            report_lines.append(f"  Node {node_id}: MISSING in {'PyKotor' if pk is None else 'MDLOps'}")
+            report_lines.append(
+                f"  Node {node_id}: MISSING in {'PyKotor' if pk is None else 'MDLOps'}"
+            )
             continue
 
         problems: list[str] = []
@@ -1216,7 +1304,9 @@ def cmd_diagnose(args: argparse.Namespace) -> int:
                     "problems": problems,
                 }
             )
-            report_lines.append(f"  Node {node_id} ({pk.texture1 or 'NULL'}): " + ", ".join(problems))
+            report_lines.append(
+                f"  Node {node_id} ({pk.texture1 or 'NULL'}): " + ", ".join(problems)
+            )
 
     if not mismatches:
         report_lines.append("  All mesh nodes have matching MDX metadata")
@@ -1228,7 +1318,9 @@ def cmd_diagnose(args: argparse.Namespace) -> int:
         first_mm = mismatches[0]
         pk = first_mm["pk"]
         mo = first_mm["mo"]
-        report_lines.append(f"DETAILED ANALYSIS of first mismatched node (node_id={first_mm['node_id']}):")
+        report_lines.append(
+            f"DETAILED ANALYSIS of first mismatched node (node_id={first_mm['node_id']}):"
+        )
         report_lines.append("  PyKotor:")
         report_lines.append(f"    mdx_data_offset: {pk.mdx_data_offset}")
         report_lines.append(f"    mdx_data_size (row stride): {pk.mdx_data_size}")
@@ -1243,16 +1335,24 @@ def cmd_diagnose(args: argparse.Namespace) -> int:
         report_lines.append(f"    Implied MDX bytes: {mo.vertex_count * mo.mdx_data_size}")
 
         # Compute expected row size from bitmap
-        pk_expected = _compute_expected_row_size(pk.mdx_data_bitmap, is_skin=bool(pk.type_id & 0x40))
-        mo_expected = _compute_expected_row_size(mo.mdx_data_bitmap, is_skin=bool(mo.type_id & 0x40))
+        pk_expected = _compute_expected_row_size(
+            pk.mdx_data_bitmap, is_skin=bool(pk.type_id & 0x40)
+        )
+        mo_expected = _compute_expected_row_size(
+            mo.mdx_data_bitmap, is_skin=bool(mo.type_id & 0x40)
+        )
         report_lines.append("  Computed expected row sizes from bitmap:")
         report_lines.append(f"    PyKotor bitmap -> expected row_size: {pk_expected}")
         report_lines.append(f"    MDLOps bitmap -> expected row_size: {mo_expected}")
 
         if pk.mdx_data_size != pk_expected:
-            report_lines.append(f"    *** PyKotor row_size ({pk.mdx_data_size}) != expected ({pk_expected})")
+            report_lines.append(
+                f"    *** PyKotor row_size ({pk.mdx_data_size}) != expected ({pk_expected})"
+            )
         if mo.mdx_data_size != mo_expected:
-            report_lines.append(f"    *** MDLOps row_size ({mo.mdx_data_size}) != expected ({mo_expected})")
+            report_lines.append(
+                f"    *** MDLOps row_size ({mo.mdx_data_size}) != expected ({mo_expected})"
+            )
 
         report_lines.append("")
 
@@ -1269,7 +1369,9 @@ def cmd_diagnose(args: argparse.Namespace) -> int:
                     row_hex = mb.mdx[start:end].hex()
                     report_lines.append(f"      row[{row_i}] @{start}: {row_hex[:80]}...")
                 else:
-                    report_lines.append(f"      row[{row_i}]: OOB (start={start}, mdx_len={len(mb.mdx)})")
+                    report_lines.append(
+                        f"      row[{row_i}]: OOB (start={start}, mdx_len={len(mb.mdx)})"
+                    )
 
     report_lines.append("")
     report_lines.append("DIAGNOSIS:")
@@ -1277,12 +1379,20 @@ def cmd_diagnose(args: argparse.Namespace) -> int:
     # Provide actionable insight
     if mdx_diff != 0 and mismatches:
         if any("row_size" in " ".join(m["problems"]) for m in mismatches):
-            report_lines.append("  - MDX row stride mismatch detected. Check MDLBinaryWriter._update_mdx() calculation of mdx_data_size.")
-            report_lines.append("  - The bitmap->row_size mapping may not match MDLOps expectations.")
+            report_lines.append(
+                "  - MDX row stride mismatch detected. Check MDLBinaryWriter._update_mdx() calculation of mdx_data_size."
+            )
+            report_lines.append(
+                "  - The bitmap->row_size mapping may not match MDLOps expectations."
+            )
         if any("bitmap" in " ".join(m["problems"]) for m in mismatches):
-            report_lines.append("  - MDX bitmap mismatch. Check how tangent_space and other flags are computed.")
+            report_lines.append(
+                "  - MDX bitmap mismatch. Check how tangent_space and other flags are computed."
+            )
     if mdl_diff != 0:
-        report_lines.append("  - MDL size differs. Check node offsets, padding, or extra/missing data sections.")
+        report_lines.append(
+            "  - MDL size differs. Check node offsets, padding, or extra/missing data sections."
+        )
 
     report_lines.append("\nRESULT: FAIL - See above for details.")
 
@@ -1435,7 +1545,9 @@ def cmd_node_types(args: argparse.Namespace) -> int:
                 "flare_sizes": len(n.light.flare_sizes) if n.light.flare_sizes else 0,
                 "flare_positions": len(n.light.flare_positions) if n.light.flare_positions else 0,
                 "flare_textures": len(n.light.flare_textures) if n.light.flare_textures else 0,
-                "flare_color_shifts": len(n.light.flare_color_shifts) if n.light.flare_color_shifts else 0,
+                "flare_color_shifts": len(n.light.flare_color_shifts)
+                if n.light.flare_color_shifts
+                else 0,
             }
 
     # Count types
@@ -1492,10 +1604,19 @@ def cmd_node_types(args: argparse.Namespace) -> int:
             mesh_info = "no_mesh"
         # Lost data = binary has mesh type but PyKotor didn't read mesh data
         marker = ""
-        binary_has_mesh = n["type_name"] in ("trimesh", "skin", "dangly", "aabb", "saber", "unknown(0x0221)")
+        binary_has_mesh = n["type_name"] in (
+            "trimesh",
+            "skin",
+            "dangly",
+            "aabb",
+            "saber",
+            "unknown(0x0221)",
+        )
         if binary_has_mesh and not has_mesh:
             marker = " *** LOST MESH DATA"
-        lines.append(f"{indent}[{n['id']:2d}] {n['type_name']:10s} ({n['type']:04X}) name={n['name']!r:20s} -> PyKotor: {mesh_info}{marker}")
+        lines.append(
+            f"{indent}[{n['id']:2d}] {n['type_name']:10s} ({n['type']:04X}) name={n['name']!r:20s} -> PyKotor: {mesh_info}{marker}"
+        )
 
     if len(nodes) > args.max_nodes:
         lines.append(f"  ... and {len(nodes) - args.max_nodes} more nodes")
@@ -1503,9 +1624,13 @@ def cmd_node_types(args: argparse.Namespace) -> int:
     lines.append("")
     lines.append("Summary of lost data:")
     mesh_types = ("trimesh", "skin", "dangly", "aabb", "saber", "unknown(0x0221)")
-    lost = [n for n in nodes if n["type_name"] in mesh_types and not pk_has_mesh.get(n["name"], False)]
+    lost = [
+        n for n in nodes if n["type_name"] in mesh_types and not pk_has_mesh.get(n["name"], False)
+    ]
     if lost:
-        lines.append(f"  {len(lost)} nodes had mesh data in binary but PyKotor didn't read mesh attribute")
+        lines.append(
+            f"  {len(lost)} nodes had mesh data in binary but PyKotor didn't read mesh attribute"
+        )
         for n in lost[:10]:
             lines.append(f"    - node {n['id']} ({n['name']!r}): binary type={n['type_name']}")
     else:
@@ -1526,33 +1651,55 @@ def build_parser() -> argparse.ArgumentParser:
     sub = p.add_subparsers(dest="cmd", required=True)
 
     # bytes-diff: generic binary compare
-    bd = sub.add_parser("bytes-diff", help="Compare two files (bytes) and report diff ranges + optional hexdump udiff.")
+    bd = sub.add_parser(
+        "bytes-diff",
+        help="Compare two files (bytes) and report diff ranges + optional hexdump udiff.",
+    )
     bd.add_argument("--a", type=Path, required=True)
     bd.add_argument("--b", type=Path, required=True)
     bd.add_argument("--max-ranges", type=int, default=25)
     bd.add_argument("--with-context", action="store_true")
     bd.add_argument("--context-bytes", type=int, default=64)
-    bd.add_argument("--hexdiff", action="store_true", help="Include a unified diff of hexdump lines.")
+    bd.add_argument(
+        "--hexdiff", action="store_true", help="Include a unified diff of hexdump lines."
+    )
     bd.add_argument("--hexdiff-context", type=int, default=3)
     bd.add_argument("--hexdiff-width", type=int, default=16)
     bd.add_argument("--max-diff-lines", type=int, default=400)
     bd.set_defaults(func=cmd_bytes_diff)
 
     # compare: orchestration around installation/files + pykotor + mdlops
-    cmp = sub.add_parser("compare", help="Compare models (original/pykotor/mdlops) with actionable diffs.")
+    cmp = sub.add_parser(
+        "compare", help="Compare models (original/pykotor/mdlops) with actionable diffs."
+    )
     src = cmp.add_argument_group("source")
     src.add_argument("--game", choices=("k1", "k2"), default="k1")
     src.add_argument("--install-path", type=Path, default=None)
-    src.add_argument("--resref", type=str, default=None, help="Resource name (without extension) from installation.")
-    src.add_argument("--mdl", type=Path, default=None, help="Path to .mdl to use as source instead of --resref.")
-    src.add_argument("--mdx", type=Path, default=None, help="Optional path to .mdx for --mdl source.")
+    src.add_argument(
+        "--resref",
+        type=str,
+        default=None,
+        help="Resource name (without extension) from installation.",
+    )
+    src.add_argument(
+        "--mdl", type=Path, default=None, help="Path to .mdl to use as source instead of --resref."
+    )
+    src.add_argument(
+        "--mdx", type=Path, default=None, help="Optional path to .mdx for --mdl source."
+    )
 
     tgt = cmp.add_argument_group("target")
     tgt.add_argument("--against", choices=("original", "pykotor", "mdlops"), default="mdlops")
-    tgt.add_argument("--compare-mode", choices=("pykotor-vs-against", "original-vs-against"), default="pykotor-vs-against")
+    tgt.add_argument(
+        "--compare-mode",
+        choices=("pykotor-vs-against", "original-vs-against"),
+        default="pykotor-vs-against",
+    )
     tgt.add_argument("--mdlops-exe", type=Path, default=None)
     tgt.add_argument("--mdlops-timeout-s", type=int, default=900)
-    tgt.add_argument("--keep-dir", type=Path, default=None, help="Keep MDLOps temp artifacts here (debugging).")
+    tgt.add_argument(
+        "--keep-dir", type=Path, default=None, help="Keep MDLOps temp artifacts here (debugging)."
+    )
 
     out = cmp.add_argument_group("report")
     out.add_argument("--max-ranges", type=int, default=25)
@@ -1563,25 +1710,40 @@ def build_parser() -> argparse.ArgumentParser:
     out.add_argument("--hexdiff-width", type=int, default=16)
     out.add_argument("--max-diff-lines", type=int, default=400)
     out.add_argument("--layout", action="store_true", help="Include coarse layout segment maps.")
-    out.add_argument("--mdx-rows", action="store_true", help="Include a simple per-node MDX rows summary.")
-    out.add_argument("--attribute", action="store_true", help="Attribute diff ranges to labeled sections (faces/verts/controllers/etc).")
+    out.add_argument(
+        "--mdx-rows", action="store_true", help="Include a simple per-node MDX rows summary."
+    )
+    out.add_argument(
+        "--attribute",
+        action="store_true",
+        help="Attribute diff ranges to labeled sections (faces/verts/controllers/etc).",
+    )
     out.add_argument("--max-attribution", type=int, default=30)
     cmp.set_defaults(func=cmd_compare)
 
-    ex = sub.add_parser("extract", help="Write original/pykotor/mdlops artifacts to an output folder.")
+    ex = sub.add_parser(
+        "extract", help="Write original/pykotor/mdlops artifacts to an output folder."
+    )
     ex.add_argument("--game", choices=("k1", "k2"), default="k1")
     ex.add_argument("--install-path", type=Path, default=None)
     ex.add_argument("--resref", type=str, default=None)
     ex.add_argument("--mdl", type=Path, default=None)
     ex.add_argument("--mdx", type=Path, default=None)
     ex.add_argument("--output-dir", type=Path, required=True)
-    ex.add_argument("--include", choices=("original", "pykotor", "mdlops"), nargs="+", default=["original", "pykotor"])
+    ex.add_argument(
+        "--include",
+        choices=("original", "pykotor", "mdlops"),
+        nargs="+",
+        default=["original", "pykotor"],
+    )
     ex.add_argument("--mdlops-exe", type=Path, default=None)
     ex.add_argument("--mdlops-timeout-s", type=int, default=900)
     ex.add_argument("--keep-dir", type=Path, default=None)
     ex.set_defaults(func=cmd_extract)
 
-    mr = sub.add_parser("mdx-rows", help="Inspect MDX row data for a mesh node (optionally compare two sources).")
+    mr = sub.add_parser(
+        "mdx-rows", help="Inspect MDX row data for a mesh node (optionally compare two sources)."
+    )
     mr.add_argument("--game", choices=("k1", "k2"), default="k1")
     mr.add_argument("--install-path", type=Path, default=None)
     mr.add_argument("--resref", type=str, default=None)
@@ -1589,7 +1751,9 @@ def build_parser() -> argparse.ArgumentParser:
     mr.add_argument("--mdx", type=Path, default=None)
     mr.add_argument("--source", choices=("original", "pykotor", "mdlops"), default="original")
     mr.add_argument("--against", choices=("original", "pykotor", "mdlops"), default=None)
-    mr.add_argument("--node-id", type=int, default=None, help="If omitted, lists mesh nodes with MDX metadata.")
+    mr.add_argument(
+        "--node-id", type=int, default=None, help="If omitted, lists mesh nodes with MDX metadata."
+    )
     mr.add_argument("--max-rows", type=int, default=10)
     mr.add_argument("--mdlops-exe", type=Path, default=None)
     mr.add_argument("--mdlops-timeout-s", type=int, default=900)
@@ -1597,24 +1761,44 @@ def build_parser() -> argparse.ArgumentParser:
     mr.set_defaults(func=cmd_mdx_rows)
 
     # diagnose: concise, actionable summary
-    diag = sub.add_parser("diagnose", help="Quick diagnosis of PyKotor vs MDLOps discrepancies (high-signal summary).")
-    diag.add_argument("resref", type=str, nargs="?", default=None, help="Resource name (without extension) from installation.")
+    diag = sub.add_parser(
+        "diagnose", help="Quick diagnosis of PyKotor vs MDLOps discrepancies (high-signal summary)."
+    )
+    diag.add_argument(
+        "resref",
+        type=str,
+        nargs="?",
+        default=None,
+        help="Resource name (without extension) from installation.",
+    )
     diag.add_argument("--game", choices=("k1", "k2"), default="k1")
     diag.add_argument("--install-path", type=Path, default=None)
-    diag.add_argument("--mdl", type=Path, default=None, help="Path to .mdl to use as source instead of resref.")
-    diag.add_argument("--mdx", type=Path, default=None, help="Optional path to .mdx for --mdl source.")
+    diag.add_argument(
+        "--mdl", type=Path, default=None, help="Path to .mdl to use as source instead of resref."
+    )
+    diag.add_argument(
+        "--mdx", type=Path, default=None, help="Optional path to .mdx for --mdl source."
+    )
     diag.add_argument("--mdlops-exe", type=Path, default=None)
     diag.add_argument("--mdlops-timeout-s", type=int, default=900)
     diag.add_argument("--keep-dir", type=Path, default=None)
     diag.set_defaults(func=cmd_diagnose)
 
     # node-types: walk binary node tree and show types
-    nt = sub.add_parser("node-types", help="Walk binary node tree and show node types (debug reader issues).")
-    nt.add_argument("resref", type=str, nargs="?", default=None, help="Resource name from installation.")
+    nt = sub.add_parser(
+        "node-types", help="Walk binary node tree and show node types (debug reader issues)."
+    )
+    nt.add_argument(
+        "resref", type=str, nargs="?", default=None, help="Resource name from installation."
+    )
     nt.add_argument("--game", choices=("k1", "k2"), default="k1")
     nt.add_argument("--install-path", type=Path, default=None)
-    nt.add_argument("--mdl", type=Path, default=None, help="Path to .mdl to use as source instead of resref.")
-    nt.add_argument("--mdx", type=Path, default=None, help="Optional path to .mdx for --mdl source.")
+    nt.add_argument(
+        "--mdl", type=Path, default=None, help="Path to .mdl to use as source instead of resref."
+    )
+    nt.add_argument(
+        "--mdx", type=Path, default=None, help="Optional path to .mdx for --mdl source."
+    )
     nt.add_argument("--max-nodes", type=int, default=60, help="Max nodes to display in tree.")
     nt.set_defaults(func=cmd_node_types)
 

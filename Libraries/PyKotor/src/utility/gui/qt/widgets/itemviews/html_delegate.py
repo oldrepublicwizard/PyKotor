@@ -64,7 +64,9 @@ class HTMLDelegate(QStyledItemDelegate):
 
     def parent(self) -> QWidget:
         parent: QObject | None = super().parent()
-        assert isinstance(parent, QWidget), f"HTMLDelegate.parent() returned non-QWidget: '{parent.__class__.__name__}'"
+        assert isinstance(parent, QWidget), (
+            f"HTMLDelegate.parent() returned non-QWidget: '{parent.__class__.__name__}'"
+        )
         return parent
 
     def setVerticalSpacing(self, spacing: int):
@@ -98,7 +100,11 @@ class HTMLDelegate(QStyledItemDelegate):
         painter.drawEllipse(center, radius, radius)
         painter.setPen(QPen(QColor(0, 0, 0)))
         painter.setFont(QFont("Arial", max(10, self.text_size - 1), QFont.Weight.Bold))
-        painter.drawText(QRect(center.x() - radius, center.y() - radius, radius * 2, radius * 2), Qt.AlignmentFlag.AlignCenter, text)
+        painter.drawText(
+            QRect(center.x() - radius, center.y() - radius, radius * 2, radius * 2),
+            Qt.AlignmentFlag.AlignCenter,
+            text,
+        )
         painter.restore()
 
     def process_icons(
@@ -122,7 +128,9 @@ class HTMLDelegate(QStyledItemDelegate):
             bottom_badge_info = icon_data.get("bottom_badge")
 
             if (execute_action or show_tooltip) and bottom_badge_info:
-                icons.append((None, bottom_badge_info["action"], bottom_badge_info["tooltip_callable"]()))
+                icons.append(
+                    (None, bottom_badge_info["action"], bottom_badge_info["tooltip_callable"]())
+                )
 
             icon_width_total = columns * (icon_size + icon_spacing) - icon_spacing
 
@@ -147,9 +155,18 @@ class HTMLDelegate(QStyledItemDelegate):
 
             if bottom_badge_info:
                 radius = icon_width_total // 2
-                center_y = y_offset + icon_width_total + icon_spacing + radius if icons else option.rect.top() + icon_spacing + radius
+                center_y = (
+                    y_offset + icon_width_total + icon_spacing + radius
+                    if icons
+                    else option.rect.top() + icon_spacing + radius
+                )
                 if painter:
-                    self.draw_badge(painter, QPoint(option.rect.left() + radius, center_y), radius, bottom_badge_info["text_callable"]())
+                    self.draw_badge(
+                        painter,
+                        QPoint(option.rect.left() + radius, center_y),
+                        radius,
+                        bottom_badge_info["text_callable"](),
+                    )
 
         if show_tooltip:
             QToolTip.hideText()
@@ -163,7 +180,14 @@ class HTMLDelegate(QStyledItemDelegate):
             assert q_style is not None
             return q_style.standardIcon(iconSerialized)
         if isinstance(iconSerialized, str):
-            return QIcon(QPixmap(iconSerialized).scaled(icon_size, icon_size, Qt.AspectRatioMode.KeepAspectRatio, Qt.TransformationMode.SmoothTransformation))
+            return QIcon(
+                QPixmap(iconSerialized).scaled(
+                    icon_size,
+                    icon_size,
+                    Qt.AspectRatioMode.KeepAspectRatio,
+                    Qt.TransformationMode.SmoothTransformation,
+                )
+            )
         if isinstance(iconSerialized, QPixmap):
             return QIcon(iconSerialized)
         if isinstance(iconSerialized, QImage):
@@ -179,7 +203,9 @@ class HTMLDelegate(QStyledItemDelegate):
         if decoration:
             icon = QIcon(decoration)
             icon_rect = QRect(option.rect.topLeft(), option.decorationSize)
-            icon.paint(painter, icon_rect, Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter)
+            icon.paint(
+                painter, icon_rect, Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter
+            )
             option.rect.setLeft(icon_rect.right() + 5)
 
         display_data: Any = index.data(Qt.ItemDataRole.DisplayRole)
@@ -197,7 +223,11 @@ class HTMLDelegate(QStyledItemDelegate):
         ctx.palette = option.palette
 
         if bool(option.state & QStyle.StateFlag.State_Selected):
-            highlight_color = option.palette.highlight().color() if option.widget.hasFocus() else QColor(100, 100, 100)
+            highlight_color = (
+                option.palette.highlight().color()
+                if option.widget.hasFocus()
+                else QColor(100, 100, 100)
+            )
             highlight_color.setAlpha(int(highlight_color.alpha() * 0.4))
             painter.fillRect(new_rect, highlight_color)
             ctx.palette.setColor(QPalette.ColorRole.Text, option.palette.highlightedText().color())
@@ -223,7 +253,10 @@ class HTMLDelegate(QStyledItemDelegate):
         ratio = 1.4
         min_width: float = naturalHeight * ratio
         max_height: float = min(naturalWidth / ratio, (naturalHeight * naturalWidth) / min_width)
-        finalSize: QSize = QSize(int(max(naturalWidth, min_width)), int(min(naturalHeight, max_height) + self.custom_vertical_spacing))
+        finalSize: QSize = QSize(
+            int(max(naturalWidth, min_width)),
+            int(min(naturalHeight, max_height) + self.custom_vertical_spacing),
+        )
 
         icon_data: dict[str, Any] = index.data(ICONS_DATA_ROLE)
         if icon_data:
@@ -261,13 +294,27 @@ class HTMLDelegate(QStyledItemDelegate):
         size.setHeight(max(size.height(), total_icon_height))
         return size
 
-    def editorEvent(self, event: QEvent, model: QAbstractItemModel, option: QStyleOptionViewItem, index: QModelIndex) -> bool:
-        if event.type() == QEvent.Type.MouseButtonRelease and isinstance(event, QMouseEvent) and event.button() == Qt.MouseButton.LeftButton:
-            _, handled_click = self.process_icons(None, option, index, event=event, execute_action=True)
+    def editorEvent(
+        self,
+        event: QEvent,
+        model: QAbstractItemModel,
+        option: QStyleOptionViewItem,
+        index: QModelIndex,
+    ) -> bool:
+        if (
+            event.type() == QEvent.Type.MouseButtonRelease
+            and isinstance(event, QMouseEvent)
+            and event.button() == Qt.MouseButton.LeftButton
+        ):
+            _, handled_click = self.process_icons(
+                None, option, index, event=event, execute_action=True
+            )
             if handled_click:
                 return True
         return super().editorEvent(event, model, option, index)
 
-    def handleIconTooltips(self, event: QMouseEvent, option: QStyleOptionViewItem, index: QModelIndex) -> bool:
+    def handleIconTooltips(
+        self, event: QMouseEvent, option: QStyleOptionViewItem, index: QModelIndex
+    ) -> bool:
         """Must be called from the parent widget directly."""
         return self.process_icons(None, option, index, event=event, show_tooltip=True)[1]

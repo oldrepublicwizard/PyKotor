@@ -288,7 +288,9 @@ def read_mdl(
     if file_format == ResourceType.MDL:
         _prepare_walkmesh_safe_mdl_binary_reader()
         try:
-            return MDLBinaryReader(source, offset, size or 0, source_ext, offset_ext, size_ext).load()
+            return MDLBinaryReader(
+                source, offset, size or 0, source_ext, offset_ext, size_ext
+            ).load()
         except OSError as e:
             if not _is_mdl_aabb_seek_oserror(e):
                 raise

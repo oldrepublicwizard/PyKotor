@@ -117,7 +117,9 @@ class RobustAbstractItemView(RobustBaseWidget, QAbstractItemView if TYPE_CHECKIN
         modifiers: Qt.KeyboardModifier = event.modifiers()
         handled: bool = False
 
-        if bool(modifiers & Qt.KeyboardModifier.ShiftModifier) and bool(modifiers & Qt.KeyboardModifier.ControlModifier):
+        if bool(modifiers & Qt.KeyboardModifier.ShiftModifier) and bool(
+            modifiers & Qt.KeyboardModifier.ControlModifier
+        ):
             handled = self._wheel_changes_item_spacing(event)
         elif bool(modifiers & Qt.KeyboardModifier.ControlModifier):
             handled = self._wheel_changes_text_size(event)
@@ -212,11 +214,15 @@ class RobustAbstractItemView(RobustBaseWidget, QAbstractItemView if TYPE_CHECKIN
             if index == self.currentIndex() and self.hasFocus():
                 option.state |= QStyle.StateFlag.State_HasFocus
             if not self.isEnabled():
-                option.state = cast("QStyle.StateFlag", option.state & ~QStyle.StateFlag.State_Enabled)
+                option.state = cast(
+                    "QStyle.StateFlag", option.state & ~QStyle.StateFlag.State_Enabled
+                )
 
             # Additional properties
             check_state_data: Any = index.data(Qt.ItemDataRole.CheckStateRole)
-            option.checkState = Qt.CheckState.Unchecked if check_state_data is None else check_state_data
+            option.checkState = (
+                Qt.CheckState.Unchecked if check_state_data is None else check_state_data
+            )
             option.decorationPosition = QStyleOptionViewItem.Position.Top
             option.decorationAlignment = Qt.AlignmentFlag.AlignCenter
             option.displayAlignment = Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter
@@ -517,7 +523,9 @@ class RobustAbstractItemView(RobustBaseWidget, QAbstractItemView if TYPE_CHECKIN
             elif isinstance(m, QtCore.QMargins):
                 self.setViewportMargins(m.left(), m.top(), m.right(), m.bottom())
             else:
-                self.setViewportMargins(0, 0, 0, 0)  # Default values if neither tuple/list nor QMargins
+                self.setViewportMargins(
+                    0, 0, 0, 0
+                )  # Default values if neither tuple/list nor QMargins
 
         viewport_menu = context_menu.addMenu("Viewport")
         assert viewport_menu is not None

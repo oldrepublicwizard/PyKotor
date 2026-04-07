@@ -49,9 +49,7 @@ class Panda3DMaterial(IMaterial):
         self.lightmap_texture: Texture | None = None
 
     def load_resources(self, loader: Loader, base_path: Path) -> None:
-        """Load textures required by this material.
-
-        """
+        """Load textures required by this material."""
         if self.diffuse_texture_path:
             tex_file = self._find_texture(base_path, self.diffuse_texture_path)
             if tex_file:

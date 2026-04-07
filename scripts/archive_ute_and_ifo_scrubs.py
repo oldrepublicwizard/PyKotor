@@ -1,4 +1,5 @@
 """Archive IFO __init__ URL comments and UTE class docstrings; scrub library copies."""
+
 from __future__ import annotations
 
 import ast
@@ -45,7 +46,9 @@ def main() -> None:
         "Lines removed from `Libraries/PyKotor/src/pykotor/resource/generics/ifo.py` "
         "(`__init__`, third-party `Reference:` style comments only).\n\n"
     )
-    (ROOT / "wiki/reverse_engineering_findings_generics_ifo_init_url_comments_pre_scrub.md").write_text(
+    (
+        ROOT / "wiki/reverse_engineering_findings_generics_ifo_init_url_comments_pre_scrub.md"
+    ).write_text(
         ifo_intro + FENCE + "\n" + "\n".join(url_lines) + "\n" + FENCE + "\n",
         encoding="utf-8",
     )
@@ -56,7 +59,9 @@ def main() -> None:
         if "https://github.com" in ln:
             continue
         scrubbed.append(ln)
-    ifo_path.write_text("\n".join(scrubbed) + ("\n" if ifo_src.endswith("\n") else ""), encoding="utf-8")
+    ifo_path.write_text(
+        "\n".join(scrubbed) + ("\n" if ifo_src.endswith("\n") else ""), encoding="utf-8"
+    )
     print("scrubbed ifo.py")
 
     ute_path = ROOT / "Libraries/PyKotor/src/pykotor/resource/generics/ute.py"
@@ -73,7 +78,9 @@ def main() -> None:
                 break
         else:
             raise SystemExit(f"class {name} not found")
-    (ROOT / "wiki/reverse_engineering_findings_generics_ute_class_docstrings_pre_scrub.md").write_text(
+    (
+        ROOT / "wiki/reverse_engineering_findings_generics_ute_class_docstrings_pre_scrub.md"
+    ).write_text(
         "".join(parts),
         encoding="utf-8",
     )

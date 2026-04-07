@@ -27,10 +27,12 @@ K1_MIN_FREE_BYTES_ENGINE: int = 0x640 * (1 << 14)  # 26_214_400 (~25 MiB)
 
 # Path/alias constants from binary (exact addresses)
 K1_ALIAS_SAVE_PATH: int = 0x745174  # GetAliasPath @ 005e6890 alias for save root
-K1_CURRENTGAME: int = 0x73d8f4  # CURRENTGAME path ref
-K1_FORMAT_PATH: int = 0x7454d4  # Format @ 005e5680 pattern for save path
-K1_FORMAT_SCREENSHOT_PATTERN: int = 0x7454ac  # Format for screenshot path
-K1_PATH_SKIP_SCREENSHOT_CMP: int = 0x73d71c  # operator!= @ 005e5390 compare path (skip screenshot if equal)
+K1_CURRENTGAME: int = 0x73D8F4  # CURRENTGAME path ref
+K1_FORMAT_PATH: int = 0x7454D4  # Format @ 005e5680 pattern for save path
+K1_FORMAT_SCREENSHOT_PATTERN: int = 0x7454AC  # Format for screenshot path
+K1_PATH_SKIP_SCREENSHOT_CMP: int = (
+    0x73D71C  # operator!= @ 005e5390 compare path (skip screenshot if equal)
+)
 
 
 def get_free_disk_space_k1(path: Path) -> int:
@@ -303,7 +305,8 @@ def run_k1_save_flow(
     # Step 7: GetAliasPath @ 005e6890; operator!= @ 005e5390 (path K1_PATH_SKIP_SCREENSHOT_CMP 0x73d71c) → skip screenshot if path matches
     skip_screenshot = (
         skip_screenshot_if_path_equal is not None
-        and path_obj.resolve().as_posix() == Path(skip_screenshot_if_path_equal).resolve().as_posix()
+        and path_obj.resolve().as_posix()
+        == Path(skip_screenshot_if_path_equal).resolve().as_posix()
     )
 
     # Steps 8–9: GetModule @ 005ed530, SetCameraForScreenShot @ 00638e80 no-op. DoSaveGameScreenShot @ 00401080 → AurSaveGameSnapshot 00420f20

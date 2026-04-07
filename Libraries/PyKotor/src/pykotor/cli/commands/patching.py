@@ -74,9 +74,13 @@ def cmd_batch_patch(args: Namespace, logger: Logger) -> int:
             config.translator = Translator(to_lang)
             if args.translation_option and TranslationOption:
                 try:
-                    config.translator.translation_option = TranslationOption[args.translation_option.upper()]
+                    config.translator.translation_option = TranslationOption[
+                        args.translation_option.upper()
+                    ]
                 except KeyError:
-                    logger.warning(f"Unknown translation option: {args.translation_option}, using default")
+                    logger.warning(
+                        f"Unknown translation option: {args.translation_option}, using default"
+                    )
         except KeyError:
             logger.error(f"Unknown language: {args.to_lang}")
             return 1

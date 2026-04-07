@@ -109,7 +109,9 @@ class FileSystemExplorerWidget(QMainWindow):
 
         self.ui.fileSystemTreeView.setModel(self.proxy_model)
         self.ui.dynamicView.setModel(self.proxy_model)
-        self.ui.dynamicView.setRootIndex(self.proxy_model.mapFromSource(self.fs_model.index(str(self.current_path))))
+        self.ui.dynamicView.setRootIndex(
+            self.proxy_model.mapFromSource(self.fs_model.index(str(self.current_path)))
+        )
         self.ui.dynamicView.show()
         for view in self.ui.dynamicView.all_views():
             view.clicked.connect(self.on_file_list_view_clicked)
@@ -127,7 +129,9 @@ class FileSystemExplorerWidget(QMainWindow):
         self.ui.fileSystemTreeView.clicked.connect(self.on_sidepanel_treeview_clicked)
         self.ui.fileSystemTreeView.expanded.connect(self.on_treeview_expanded)
         self.ui.fileSystemTreeView.collapsed.connect(self.on_treeview_collapsed)
-        for i in range(1, self.fs_model.columnCount()):  # Show only the Name column in the tree view
+        for i in range(
+            1, self.fs_model.columnCount()
+        ):  # Show only the Name column in the tree view
             self.ui.fileSystemTreeView.hideColumn(i)
         self.ui.fileSystemTreeView.clicked.connect(self.on_navigation_pane_clicked)
         self.ui.addressBar.refreshButton.clicked.connect(lambda: self.refresh())
@@ -165,9 +169,15 @@ class FileSystemExplorerWidget(QMainWindow):
             drive_button.clicked.connect(lambda _, path=drive_path: self.set_current_path(path))
             drive_layout.addWidget(drive_button)
 
-        self.dispatcher.menus.actions.actionTiles.triggered.connect(lambda: self.ui.dynamicView.list_view().setViewMode(QListView.ViewMode.IconMode))
-        self.dispatcher.menus.actions.actionListView.triggered.connect(lambda: self.ui.dynamicView.list_view().setViewMode(QListView.ViewMode.ListMode))
-        self.dispatcher.menus.actions.actionDetailView.triggered.connect(lambda: self.ui.dynamicView.setCurrentWidget(self.ui.dynamicView.tree_view()))
+        self.dispatcher.menus.actions.actionTiles.triggered.connect(
+            lambda: self.ui.dynamicView.list_view().setViewMode(QListView.ViewMode.IconMode)
+        )
+        self.dispatcher.menus.actions.actionListView.triggered.connect(
+            lambda: self.ui.dynamicView.list_view().setViewMode(QListView.ViewMode.ListMode)
+        )
+        self.dispatcher.menus.actions.actionDetailView.triggered.connect(
+            lambda: self.ui.dynamicView.setCurrentWidget(self.ui.dynamicView.tree_view())
+        )
 
         if self.ui.searchBar.isVisible():
             self.ui.searchBar.hide()
@@ -207,7 +217,9 @@ class FileSystemExplorerWidget(QMainWindow):
         # Final UI updates
         self.update_ui()
         self.ui.addressBar.update_path(self.current_path)
-        self.ui.dynamicView.setRootIndex(self.proxy_model.mapFromSource(self.fs_model.index(str(self.current_path))))
+        self.ui.dynamicView.setRootIndex(
+            self.proxy_model.mapFromSource(self.fs_model.index(str(self.current_path)))
+        )
 
     def setup_platform_features(self):
         """Massive TODO."""
@@ -222,12 +234,16 @@ class FileSystemExplorerWidget(QMainWindow):
 
                     self.shell = win32com.client.Dispatch("Shell.Application")
                 except ImportError:
-                    RobustLogger().warning("Neither comtypes nor pywin32 is available. COM interfaces will not be used.")
+                    RobustLogger().warning(
+                        "Neither comtypes nor pywin32 is available. COM interfaces will not be used."
+                    )
                     self.shell = None
 
     def selectedFiles(self) -> list[str]:
         selected_proxy_indexes: list[QModelIndex] = self.ui.dynamicView.selectedIndexes()
-        selected_source_indexes: list[QModelIndex] = [self.proxy_model.mapToSource(index) for index in selected_proxy_indexes]
+        selected_source_indexes: list[QModelIndex] = [
+            self.proxy_model.mapToSource(index) for index in selected_proxy_indexes
+        ]
         return [self.fs_model.filePath(index) for index in selected_source_indexes]
 
     def proxyModel(self) -> QSortFilterProxyModel:
@@ -299,7 +315,9 @@ class FileSystemExplorerWidget(QMainWindow):
         cast("QStatusBar", self.statusBar()).showMessage(f"Task {task_id} cancelled")
 
     def on_task_progress(self, task_id: int, progress: float):
-        cast("QStatusBar", self.statusBar()).showMessage(f"Task {task_id} progress: {progress:.2f}%")
+        cast("QStatusBar", self.statusBar()).showMessage(
+            f"Task {task_id} progress: {progress:.2f}%"
+        )
 
     def on_all_tasks_completed(self):
         cast("QStatusBar", self.statusBar()).showMessage("All tasks completed")
@@ -343,7 +361,9 @@ class FileSystemExplorerWidget(QMainWindow):
     ) -> None:
         # Implement zoom functionality
         view: QAbstractItemView | None = self.ui.dynamicView.current_view()
-        assert isinstance(view, QAbstractItemView), f"View is not a QAbstractItemView, instead was a {type(view)}"
+        assert isinstance(view, QAbstractItemView), (
+            f"View is not a QAbstractItemView, instead was a {type(view)}"
+        )
         if isinstance(view, RobustAbstractItemView):
             view.set_text_size(value)
         else:
@@ -371,7 +391,9 @@ class FileSystemExplorerWidget(QMainWindow):
     ) -> None:
         # Handle free space label click
         free_space: int = shutil.disk_usage(self.current_path).free
-        QMessageBox.information(self, "Free Space", f"Free space on {self.current_path}: {self.format_size(free_space)}")
+        QMessageBox.information(
+            self, "Free Space", f"Free space on {self.current_path}: {self.format_size(free_space)}"
+        )
 
     def on_navigation_pane_clicked(
         self,
@@ -461,7 +483,9 @@ class FileSystemExplorerWidget(QMainWindow):
     ) -> None:
         self.proxy_model.setFilterRegularExpression(text)
         self.proxy_model.setFilterCaseSensitivity(Qt.CaseSensitivity.CaseInsensitive)
-        proxy_index: QModelIndex = self.proxy_model.mapFromSource(self.fs_model.index(str(self.current_path)))
+        proxy_index: QModelIndex = self.proxy_model.mapFromSource(
+            self.fs_model.index(str(self.current_path))
+        )
         self.ui.dynamicView.setRootIndex(proxy_index)
 
     def focus_address_bar(self):
@@ -505,7 +529,9 @@ class FileSystemExplorerWidget(QMainWindow):
     def on_properties(self):
         index = self.ui.dynamicView.currentIndex()
         path = self.fs_model.filePath(self.proxy_model.mapToSource(index))
-        self.executor.queue_task("get_properties", args=(path,), callback=self.show_properties, priority=1)
+        self.executor.queue_task(
+            "get_properties", args=(path,), callback=self.show_properties, priority=1
+        )
 
     def show_properties(self, properties: dict):
         dialog = PropertiesDialog(properties, self)
@@ -576,7 +602,9 @@ class FileSystemExplorerWidget(QMainWindow):
     def copy(self, cut: bool = False):  # noqa: FBT001, FBT002
         selected_indexes: list[QModelIndex] = self.ui.dynamicView.selectedIndexes()
         if selected_indexes:
-            source_paths: list[Path] = [Path(self.fs_model.filePath(index)) for index in selected_indexes]  # pyright: ignore[reportArgumentType]
+            source_paths: list[Path] = [
+                Path(self.fs_model.filePath(index)) for index in selected_indexes
+            ]  # pyright: ignore[reportArgumentType]
             mime_data: QMimeData = QMimeData()
             urls: list[QUrl] = [QUrl.fromLocalFile(str(path)) for path in source_paths]
             mime_data.setUrls(urls)
@@ -598,9 +626,15 @@ class FileSystemExplorerWidget(QMainWindow):
             def on_complete(_):
                 self.refresh()
                 if hasattr(self, "to_cut") and self.to_cut == source_paths:
-                    self.executor.queue_task("delete_items", args=(self.to_cut,), on_complete=lambda _: setattr(self, "to_cut", None))
+                    self.executor.queue_task(
+                        "delete_items",
+                        args=(self.to_cut,),
+                        on_complete=lambda _: setattr(self, "to_cut", None),
+                    )
 
-            self.executor.queue_task("paste", args=(source_paths, destination_path), on_complete=on_complete)
+            self.executor.queue_task(
+                "paste", args=(source_paths, destination_path), on_complete=on_complete
+            )
 
     def delete_items(self):
         selected_indexes: list[QModelIndex] = self.ui.dynamicView.selectedIndexes()
@@ -614,7 +648,12 @@ class FileSystemExplorerWidget(QMainWindow):
                 QMessageBox.StandardButton.No,
             )
             if reply == QMessageBox.StandardButton.Yes:
-                task_id = self.executor.queue_task("delete_items", args=(paths,), priority=1, description=f"Deleting {len(paths)} item(s)")
+                task_id = self.executor.queue_task(
+                    "delete_items",
+                    args=(paths,),
+                    priority=1,
+                    description=f"Deleting {len(paths)} item(s)",
+                )
                 self.update_ui()
                 self.show_task_details(task_id)
 
@@ -647,7 +686,9 @@ class FileSystemExplorerWidget(QMainWindow):
 
     def invert_selection(self):
         selection_model: QItemSelectionModel = self.ui.dynamicView.selectionModel()
-        assert isinstance(selection_model, QItemSelectionModel), f"Selection model is not a QItemSelectionModel, instead was a {type(selection_model)}"
+        assert isinstance(selection_model, QItemSelectionModel), (
+            f"Selection model is not a QItemSelectionModel, instead was a {type(selection_model)}"
+        )
         for i in range(self.fs_model.rowCount(self.ui.dynamicView.rootIndex())):  # pyright: ignore[reportArgumentType]
             index: QModelIndex = self.fs_model.index(i, 0, self.ui.dynamicView.rootIndex())  # pyright: ignore[reportArgumentType]
             selection_model.select(index, QItemSelectionModel.SelectionFlag.Toggle)  # pyright: ignore[reportCallIssue, reportArgumentType]
@@ -713,7 +754,9 @@ class FileSystemExplorerWidget(QMainWindow):
         pos: QPoint,
     ):
         current_view: QWidget | None = self.ui.dynamicView.current_view()
-        assert isinstance(current_view, QAbstractItemView), f"Current view is not a QListView, instead was a {type(current_view).__name__}"
+        assert isinstance(current_view, QAbstractItemView), (
+            f"Current view is not a QListView, instead was a {type(current_view).__name__}"
+        )
         index = current_view.indexAt(pos)
         if not index.isValid():
             current_view.clearSelection()
@@ -728,11 +771,17 @@ class FileSystemExplorerWidget(QMainWindow):
                 new_folder_path.mkdir(parents=True, exist_ok=False)
                 self.refresh()
             except FileExistsError:
-                QMessageBox.warning(self, "Error", f"A folder named '{folder_name}' already exists.")
+                QMessageBox.warning(
+                    self, "Error", f"A folder named '{folder_name}' already exists."
+                )
             except PermissionError:
-                QMessageBox.warning(self, "Error", f"Permission denied. Unable to create folder '{folder_name}'.")
+                QMessageBox.warning(
+                    self, "Error", f"Permission denied. Unable to create folder '{folder_name}'."
+                )
             except OSError as e:
-                QMessageBox.warning(self, "Error", f"Failed to create folder '{folder_name}'. Error: {e!s}")
+                QMessageBox.warning(
+                    self, "Error", f"Failed to create folder '{folder_name}'. Error: {e!s}"
+                )
 
     def create_new_file(self):
         file_name, ok = QInputDialog.getText(self, "New File", "Enter file name:")
@@ -784,9 +833,13 @@ class FileSystemExplorerWidget(QMainWindow):
             paths = [Path(url.toLocalFile()) for url in urls]
             for path in paths:
                 if path.is_dir():
-                    self.executor.queue_task("copy_directory", args=(path, self.current_path), callback=self.refresh)
+                    self.executor.queue_task(
+                        "copy_directory", args=(path, self.current_path), callback=self.refresh
+                    )
                 else:
-                    self.executor.queue_task("copy_file", args=(path, self.current_path), callback=self.refresh)
+                    self.executor.queue_task(
+                        "copy_file", args=(path, self.current_path), callback=self.refresh
+                    )
             self.statusBar().showMessage(f"Copying {len(paths)} item(s)...")
         else:
             event.ignore()
@@ -804,7 +857,15 @@ class FileSystemExplorerWidget(QMainWindow):
             if file_path.is_file():
                 if file_path.suffix.lower() in [".jpg", ".jpeg", ".png", ".gif", ".bmp"]:
                     self.icon_loader.load_thumbnail(str(file_path))
-                elif file_path.suffix.lower() in [".txt", ".py", ".cpp", ".h", ".html", ".css", ".js"]:
+                elif file_path.suffix.lower() in [
+                    ".txt",
+                    ".py",
+                    ".cpp",
+                    ".h",
+                    ".html",
+                    ".css",
+                    ".js",
+                ]:
                     self.load_text_preview(file_path)
                 elif file_path.suffix.lower() in [".pdf"]:
                     self.load_pdf_preview(file_path)
@@ -850,7 +911,9 @@ class FileSystemExplorerWidget(QMainWindow):
             items = list(folder_path.iterdir())
             preview_text = f"Folder: {folder_path.name}\n"
             preview_text += f"Items: {len(items)}\n"
-            preview_text += f"Size: {self.format_size(sum(f.stat().st_size for f in items if f.is_file()))}\n"
+            preview_text += (
+                f"Size: {self.format_size(sum(f.stat().st_size for f in items if f.is_file()))}\n"
+            )
             preview_text += "\nContents:\n"
             for item in items[:10]:  # Show first 10 items
                 preview_text += f"- {item.name}\n"

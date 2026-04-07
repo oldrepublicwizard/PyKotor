@@ -56,7 +56,9 @@ def get_model(
     if genericdoors is None:
         loaded = load_2da_with_fallback(installation, "genericdoors", RobustLogger())
         if loaded is None:
-            raise ValueError("Resource 'genericdoors.2da' not found in the installation, cannot get UTD model.")
+            raise ValueError(
+                "Resource 'genericdoors.2da' not found in the installation, cannot get UTD model."
+            )
         genericdoors = loaded
     if not isinstance(genericdoors, TwoDA):
         genericdoors = read_2da(genericdoors)
@@ -148,7 +150,9 @@ def extract_door_walkmeshes(
                         dwk_data = dwk_resource.data()
                         if dwk_data:
                             door_walkmeshes[dwk_key] = dwk_data
-                            logger.debug(f"Found DWK '{dwk_resname}' (state: {dwk_key}) from module")
+                            logger.debug(
+                                f"Found DWK '{dwk_resname}' (state: {dwk_key}) from module"
+                            )
                             continue
 
                 # Try installation locations
@@ -167,7 +171,9 @@ def extract_door_walkmeshes(
                         if dwk_data is None:
                             continue
                         door_walkmeshes[dwk_key] = dwk_data
-                        logger.debug(f"Found DWK '{dwk_resname}' (state: {dwk_key}) from installation")
+                        logger.debug(
+                            f"Found DWK '{dwk_resname}' (state: {dwk_key}) from installation"
+                        )
                         break
             except Exception:  # noqa: BLE001
                 # DWK variant not found, skip it
@@ -333,13 +339,19 @@ def _get_door_dimensions_from_model(
         # Only use calculated values if they're reasonable (not zero or extremely large)
         if 0.1 < width < 50.0 and 0.1 < height < 50.0:
             door_name_str = f"'{door_name}'" if door_name else ""
-            logger.debug(f"[DOOR DEBUG] Extracted dimensions for door {door_name_str}: {width:.2f} x {height:.2f} (from {mesh_count} meshes, model='{model_name}')")
+            logger.debug(
+                f"[DOOR DEBUG] Extracted dimensions for door {door_name_str}: {width:.2f} x {height:.2f} (from {mesh_count} meshes, model='{model_name}')"
+            )
             return width, height
         door_name_str = f"'{door_name}'" if door_name else ""
-        logger.warning(f"Calculated dimensions for door {door_name_str} out of range: {width:.2f} x {height:.2f}, using defaults")
+        logger.warning(
+            f"Calculated dimensions for door {door_name_str} out of range: {width:.2f} x {height:.2f}, using defaults"
+        )
     else:
         door_name_str = f"'{door_name}'" if door_name else ""
-        logger.warning(f"Could not calculate bounding box for door {door_name_str} (processed {mesh_count} meshes), using defaults")
+        logger.warning(
+            f"Could not calculate bounding box for door {door_name_str} (processed {mesh_count} meshes), using defaults"
+        )
 
     return None
 
@@ -480,18 +492,28 @@ def get_door_dimensions(
 
     try:
         utd = read_utd(utd_data)
-        logger.debug(f"[DOOR DEBUG] Processing door {door_name_str} (appearance_id={utd.appearance_id})")
+        logger.debug(
+            f"[DOOR DEBUG] Processing door {door_name_str} (appearance_id={utd.appearance_id})"
+        )
 
         # Get door model name from UTD using genericdoors.2da
         # Use pre-loaded genericdoors_2da if provided, otherwise load it
-        genericdoors_2da = genericdoors if genericdoors is not None else load_genericdoors_2da(installation, logger)
+        genericdoors_2da = (
+            genericdoors
+            if genericdoors is not None
+            else load_genericdoors_2da(installation, logger)
+        )
         if not genericdoors_2da:
-            logger.warning(f"Could not load genericdoors.2da for door {door_name_str}, using defaults")
+            logger.warning(
+                f"Could not load genericdoors.2da for door {door_name_str}, using defaults"
+            )
             return door_width, door_height
 
         model_name = get_model(utd, installation, genericdoors=genericdoors_2da)
         if not model_name:
-            logger.warning(f"Could not get model name for door {door_name_str} (appearance_id={utd.appearance_id}), using defaults")
+            logger.warning(
+                f"Could not get model name for door {door_name_str} (appearance_id={utd.appearance_id}), using defaults"
+            )
             return door_width, door_height
 
         # Try method 1: Get dimensions from model bounding box
@@ -501,7 +523,9 @@ def get_door_dimensions(
             if dimensions:
                 door_width, door_height = dimensions
                 return door_width, door_height
-            logger.warning(f"Could not extract dimensions from model '{model_name}' for door {door_name_str}, trying texture fallback")
+            logger.warning(
+                f"Could not extract dimensions from model '{model_name}' for door {door_name_str}, trying texture fallback"
+            )
         else:
             model_variations = _get_model_variations(model_name)
             logger.warning(
@@ -515,10 +539,14 @@ def get_door_dimensions(
         if dimensions:
             door_width, door_height = dimensions
         else:
-            logger.debug(f"[DOOR DEBUG] Door {door_name_str}: Using default dimensions ({default_width} x {default_height}) - model and texture extraction failed")
+            logger.debug(
+                f"[DOOR DEBUG] Door {door_name_str}: Using default dimensions ({default_width} x {default_height}) - model and texture extraction failed"
+            )
 
     except Exception as e:  # noqa: BLE001
         logger.warning(f"Failed to get dimensions for door {door_name_str}: {e}")
 
-    logger.debug(f"[DOOR DEBUG] Final dimensions for door {door_name_str}: width={door_width:.2f}, height={door_height:.2f}")
+    logger.debug(
+        f"[DOOR DEBUG] Final dimensions for door {door_name_str}: width={door_width:.2f}, height={door_height:.2f}"
+    )
     return door_width, door_height

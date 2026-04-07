@@ -190,7 +190,9 @@ class RawBinaryReader:
             reader = cls.from_bytes(source, offset, size)
 
         elif isinstance(source, (io.IOBase, mmap.mmap)):
-            if isinstance(source, (io.RawIOBase, io.BufferedIOBase)):  # only seekable streams are supported.
+            if isinstance(
+                source, (io.RawIOBase, io.BufferedIOBase)
+            ):  # only seekable streams are supported.
                 reader = cls.from_stream(source, offset, size)
             else:
                 msg = f"Stream of type '{source.__class__}' is not supported by this {cls.__name__} class."
@@ -754,7 +756,9 @@ class RawBinaryReader:
             # Lazy import to avoid circular dependency
             from pykotor.tools.encoding import decode_bytes_with_fallbacks
 
-            string: str = decode_bytes_with_fallbacks(string_byte_data, encoding=encoding, errors=errors)
+            string: str = decode_bytes_with_fallbacks(
+                string_byte_data, encoding=encoding, errors=errors
+            )
             RobustLogger().warning(f"decode_bytes_with_fallbacks called and returned '{string}'")
         else:
             string = string_byte_data.decode(encoding=encoding, errors=errors)
@@ -1747,7 +1751,9 @@ class RawBinaryWriterBytearray(RawBinaryWriter):
         self._ba: bytearray = ba if isinstance(ba, bytearray) else bytearray(ba)
         self._offset: int = offset
         self._position: int = 0
-        self._initial_size: int = len(ba)  # Track initial size to distinguish fixed-size from growable buffers
+        self._initial_size: int = len(
+            ba
+        )  # Track initial size to distinguish fixed-size from growable buffers
 
     def size(self) -> int:
         """Returns the total file size.
@@ -1817,7 +1823,9 @@ class RawBinaryWriterBytearray(RawBinaryWriter):
         # Only enforce bounds checking for fixed-size buffers (non-empty initial size)
         # Empty buffers are allowed to grow automatically
         if self._initial_size > 0 and self._position >= self._initial_size:
-            raise IndexError(f"Cannot write beyond buffer bounds: position {self._position} >= initial size {self._initial_size}")
+            raise IndexError(
+                f"Cannot write beyond buffer bounds: position {self._position} >= initial size {self._initial_size}"
+            )
         self._ba[self._position : self._position + 1] = struct.pack(
             f"{_endian_char(big)}B",
             value,
@@ -1840,7 +1848,9 @@ class RawBinaryWriterBytearray(RawBinaryWriter):
         # Only enforce bounds checking for fixed-size buffers (non-empty initial size)
         # Empty buffers are allowed to grow automatically
         if self._initial_size > 0 and self._position >= self._initial_size:
-            raise IndexError(f"Cannot write beyond buffer bounds: position {self._position} >= initial size {self._initial_size}")
+            raise IndexError(
+                f"Cannot write beyond buffer bounds: position {self._position} >= initial size {self._initial_size}"
+            )
         self._ba[self._position : self._position + 1] = struct.pack(
             f"{_endian_char(big)}b",
             value,
@@ -1863,7 +1873,9 @@ class RawBinaryWriterBytearray(RawBinaryWriter):
         # Only enforce bounds checking for fixed-size buffers (non-empty initial size)
         # Empty buffers are allowed to grow automatically
         if self._initial_size > 0 and self._position + 2 > self._initial_size:
-            raise IndexError(f"Cannot write beyond buffer bounds: position {self._position} + 2 > initial size {self._initial_size}")
+            raise IndexError(
+                f"Cannot write beyond buffer bounds: position {self._position} + 2 > initial size {self._initial_size}"
+            )
         self._ba[self._position : self._position + 2] = struct.pack(
             f"{_endian_char(big)}H",
             value,
@@ -1886,7 +1898,9 @@ class RawBinaryWriterBytearray(RawBinaryWriter):
         # Only enforce bounds checking for fixed-size buffers (non-empty initial size)
         # Empty buffers are allowed to grow automatically
         if self._initial_size > 0 and self._position + 2 > self._initial_size:
-            raise IndexError(f"Cannot write beyond buffer bounds: position {self._position} + 2 > initial size {self._initial_size}")
+            raise IndexError(
+                f"Cannot write beyond buffer bounds: position {self._position} + 2 > initial size {self._initial_size}"
+            )
         self._ba[self._position : self._position + 2] = struct.pack(
             f"{_endian_char(big)}h",
             value,
@@ -1916,7 +1930,9 @@ class RawBinaryWriterBytearray(RawBinaryWriter):
         # Only enforce bounds checking for fixed-size buffers (non-empty initial size)
         # Empty buffers are allowed to grow automatically
         if self._initial_size > 0 and self._position + 4 > self._initial_size:
-            raise IndexError(f"Cannot write beyond buffer bounds: position {self._position} + 4 > initial size {self._initial_size}")
+            raise IndexError(
+                f"Cannot write beyond buffer bounds: position {self._position} + 4 > initial size {self._initial_size}"
+            )
         self._ba[self._position : self._position + 4] = struct.pack(
             f"{_endian_char(big)}I",
             value,
@@ -1939,7 +1955,9 @@ class RawBinaryWriterBytearray(RawBinaryWriter):
         # Only enforce bounds checking for fixed-size buffers (non-empty initial size)
         # Empty buffers are allowed to grow automatically
         if self._initial_size > 0 and self._position + 4 > self._initial_size:
-            raise IndexError(f"Cannot write beyond buffer bounds: position {self._position} + 4 > initial size {self._initial_size}")
+            raise IndexError(
+                f"Cannot write beyond buffer bounds: position {self._position} + 4 > initial size {self._initial_size}"
+            )
         self._ba[self._position : self._position + 4] = struct.pack(
             f"{_endian_char(big)}i",
             value,
@@ -1962,7 +1980,9 @@ class RawBinaryWriterBytearray(RawBinaryWriter):
         # Only enforce bounds checking for fixed-size buffers (non-empty initial size)
         # Empty buffers are allowed to grow automatically
         if self._initial_size > 0 and self._position + 8 > self._initial_size:
-            raise IndexError(f"Cannot write beyond buffer bounds: position {self._position} + 8 > initial size {self._initial_size}")
+            raise IndexError(
+                f"Cannot write beyond buffer bounds: position {self._position} + 8 > initial size {self._initial_size}"
+            )
         self._ba[self._position : self._position + 8] = struct.pack(
             f"{_endian_char(big)}Q",
             value,
@@ -1985,7 +2005,9 @@ class RawBinaryWriterBytearray(RawBinaryWriter):
         # Only enforce bounds checking for fixed-size buffers (non-empty initial size)
         # Empty buffers are allowed to grow automatically
         if self._initial_size > 0 and self._position + 8 > self._initial_size:
-            raise IndexError(f"Cannot write beyond buffer bounds: position {self._position} + 8 > initial size {self._initial_size}")
+            raise IndexError(
+                f"Cannot write beyond buffer bounds: position {self._position} + 8 > initial size {self._initial_size}"
+            )
         self._ba[self._position : self._position + 8] = struct.pack(
             f"{_endian_char(big)}q",
             value,
@@ -2008,7 +2030,9 @@ class RawBinaryWriterBytearray(RawBinaryWriter):
         # Only enforce bounds checking for fixed-size buffers (non-empty initial size)
         # Empty buffers are allowed to grow automatically
         if self._initial_size > 0 and self._position + 4 > self._initial_size:
-            raise IndexError(f"Cannot write beyond buffer bounds: position {self._position} + 4 > initial size {self._initial_size}")
+            raise IndexError(
+                f"Cannot write beyond buffer bounds: position {self._position} + 4 > initial size {self._initial_size}"
+            )
         self._ba[self._position : self._position + 4] = struct.pack(
             f"{_endian_char(big)}f",
             value,
@@ -2031,7 +2055,9 @@ class RawBinaryWriterBytearray(RawBinaryWriter):
         # Only enforce bounds checking for fixed-size buffers (non-empty initial size)
         # Empty buffers are allowed to grow automatically
         if self._initial_size > 0 and self._position + 8 > self._initial_size:
-            raise IndexError(f"Cannot write beyond buffer bounds: position {self._position} + 8 > initial size {self._initial_size}")
+            raise IndexError(
+                f"Cannot write beyond buffer bounds: position {self._position} + 8 > initial size {self._initial_size}"
+            )
         self._ba[self._position : self._position + 8] = struct.pack(
             f"{_endian_char(big)}d",
             value,
@@ -2132,7 +2158,9 @@ class RawBinaryWriterBytearray(RawBinaryWriter):
         # Only enforce bounds checking for fixed-size buffers (non-empty initial size)
         # Empty buffers are allowed to grow automatically
         if self._initial_size > 0 and self._position + len(value) > self._initial_size:
-            raise IndexError(f"Cannot write beyond buffer bounds: position {self._position} + {len(value)} > initial size {self._initial_size}")
+            raise IndexError(
+                f"Cannot write beyond buffer bounds: position {self._position} + {len(value)} > initial size {self._initial_size}"
+            )
         self._ba[self._position : self._position + len(value)] = value
         self._position += len(value)
 
@@ -2255,7 +2283,9 @@ class RawBinaryWriterBytearray(RawBinaryWriter):
         for language, gender, substring in value:
             string_id: int = LocalizedString.substring_id(language, gender)
             bw.write_uint32(string_id, big=big)
-            bw.write_string(substring, prefix_length=4, encoding=language.get_encoding(), errors="replace")
+            bw.write_string(
+                substring, prefix_length=4, encoding=language.get_encoding(), errors="replace"
+            )
 
         locstring_data: bytes = bw.data()
         self.write_uint32(len(locstring_data))
@@ -2297,7 +2327,11 @@ if __name__ == "__main__":
                         stream = RawBinaryReader.from_bytes(FILE_DATA)
                     elif mode == "mmap":
                         raw_raw_stream = open(TEST_FILE, "rb")  # noqa: PTH123, SIM115
-                        raw_stream = mmap.mmap(raw_raw_stream.fileno(), os.stat(TEST_FILE).st_size, access=mmap.ACCESS_READ)  # noqa: PTH116
+                        raw_stream = mmap.mmap(
+                            raw_raw_stream.fileno(),
+                            os.stat(TEST_FILE).st_size,
+                            access=mmap.ACCESS_READ,
+                        )  # noqa: PTH116
                         instantiation_start_time = time.time()
                         stream = RawBinaryReader(raw_stream)
                     elif mode == "stream(io.BufferedReader)":
@@ -2392,7 +2426,9 @@ if __name__ == "__main__":
         # Run the tests
         for stream_class, mode in stream_types:
             print(f"Testing {stream_class.__name__}, mode={mode}")
-            total_instantiation_time, total_operation_time, total_time = test_io_performance(stream_class, mode)
+            total_instantiation_time, total_operation_time, total_time = test_io_performance(
+                stream_class, mode
+            )
             results.append(
                 [
                     f"{stream_class.__name__}({mode})",  # pyright: ignore[reportArgumentType]
@@ -2415,20 +2451,32 @@ if __name__ == "__main__":
                 result[i] = 0.0001
 
         # Print the results with additional statistics
-        print("------------------------------------------------------\n\nInstantiation Statistics (sorted by fastest to slowest):\n")
+        print(
+            "------------------------------------------------------\n\nInstantiation Statistics (sorted by fastest to slowest):\n"
+        )
         for result in results:
             speed_percent: float = (fastest_instantiation_time / result[1]) * 100
-            print(f"{result[0]}: {result[1]:.4f} seconds ({speed_percent:.2f}% of fastest, {result[1] / NUM_INSTANTIATIONS:.2f}s per)")
+            print(
+                f"{result[0]}: {result[1]:.4f} seconds ({speed_percent:.2f}% of fastest, {result[1] / NUM_INSTANTIATIONS:.2f}s per)"
+            )
 
-        print("------------------------------------------------------\n\nOperation Statistics (sorted by fastest to slowest):")
+        print(
+            "------------------------------------------------------\n\nOperation Statistics (sorted by fastest to slowest):"
+        )
         for result in results:
             speed_percent = (fastest_operation_time / result[2]) * 100
-            print(f"{result[0]}: {result[2]:.4f} seconds ({speed_percent:.2f}% of fastest, {result[2] / NUM_INSTANTIATIONS:.2f}s per)")
+            print(
+                f"{result[0]}: {result[2]:.4f} seconds ({speed_percent:.2f}% of fastest, {result[2] / NUM_INSTANTIATIONS:.2f}s per)"
+            )
 
-        print("------------------------------------------------------\n\nCombined Statistics (sorted by fastest to slowest):")
+        print(
+            "------------------------------------------------------\n\nCombined Statistics (sorted by fastest to slowest):"
+        )
         for result in results:
             speed_percent = (fastest_total_time / result[3]) * 100
-            print(f"{result[0]}: {result[3]:.4f} seconds (Inst: {result[1]:.4f}s, Ops: {result[2]:.4f}s) ({speed_percent:.2f}% of fastest)")
+            print(
+                f"{result[0]}: {result[3]:.4f} seconds (Inst: {result[1]:.4f}s, Ops: {result[2]:.4f}s) ({speed_percent:.2f}% of fastest)"
+            )
         print("------------------------------------------------------\n")
 
         # Calculate average times

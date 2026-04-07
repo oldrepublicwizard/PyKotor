@@ -1,4 +1,5 @@
 """Generate wiki/reverse_engineering_findings_library_github_url_archives_index.md from archive pages."""
+
 from __future__ import annotations
 
 import pathlib

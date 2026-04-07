@@ -66,7 +66,13 @@ if __name__ == "__main__":
             )
 
             # Title bar
-            title_frame = DirectFrame(frameColor=(0.18, 0.18, 0.2, 1), frameSize=(-1.0, 1.0, -0.1, 0.1), pos=(0, 0, 0.6), parent=frame, relief=1)
+            title_frame = DirectFrame(
+                frameColor=(0.18, 0.18, 0.2, 1),
+                frameSize=(-1.0, 1.0, -0.1, 0.1),
+                pos=(0, 0, 0.6),
+                parent=frame,
+                relief=1,
+            )
 
             DirectLabel(
                 text="KotOR Module Viewer",
@@ -80,7 +86,12 @@ if __name__ == "__main__":
             )
 
             # Content container with better spacing
-            content_frame = DirectFrame(frameColor=(0.16, 0.16, 0.18, 0), frameSize=(-0.9, 0.9, -0.5, 0.5), pos=(0, 0, 0), parent=frame)
+            content_frame = DirectFrame(
+                frameColor=(0.16, 0.16, 0.18, 0),
+                frameSize=(-0.9, 0.9, -0.5, 0.5),
+                pos=(0, 0, 0),
+                parent=frame,
+            )
 
             # Row height and spacing
             _row_height = 0.15
@@ -89,7 +100,14 @@ if __name__ == "__main__":
             button_scale = 0.07
 
             # Game selection row
-            _game_label = DirectLabel(text="Game", scale=label_scale, pos=(-0.85, 0, 0.3), parent=content_frame, text_align=TextNode.ALeft, text_fg=(0.9, 0.9, 0.9, 1))
+            _game_label = DirectLabel(
+                text="Game",
+                scale=label_scale,
+                pos=(-0.85, 0, 0.3),
+                parent=content_frame,
+                text_align=TextNode.ALeft,
+                text_fg=(0.9, 0.9, 0.9, 1),
+            )
 
             game_options = [game.name for game in paths]
             self.game_menu = DirectOptionMenu(
@@ -122,7 +140,14 @@ if __name__ == "__main__":
             )
 
             # Installation selection row
-            _installation_label = DirectLabel(text="Path", scale=label_scale, pos=(-0.85, 0, 0), parent=content_frame, text_align=TextNode.ALeft, text_fg=(0.9, 0.9, 0.9, 1))
+            _installation_label = DirectLabel(
+                text="Path",
+                scale=label_scale,
+                pos=(-0.85, 0, 0),
+                parent=content_frame,
+                text_align=TextNode.ALeft,
+                text_fg=(0.9, 0.9, 0.9, 1),
+            )
 
             self.installation_menu = DirectOptionMenu(
                 text="Select Installation",
@@ -153,7 +178,14 @@ if __name__ == "__main__":
             )
 
             # Level selection row
-            _level_label = DirectLabel(text="Level", scale=label_scale, pos=(-0.85, 0, -0.3), parent=content_frame, text_align=TextNode.ALeft, text_fg=(0.9, 0.9, 0.9, 1))
+            _level_label = DirectLabel(
+                text="Level",
+                scale=label_scale,
+                pos=(-0.85, 0, -0.3),
+                parent=content_frame,
+                text_align=TextNode.ALeft,
+                text_fg=(0.9, 0.9, 0.9, 1),
+            )
 
             self.level_menu = DirectOptionMenu(
                 text="Select Level",
@@ -233,7 +265,8 @@ if __name__ == "__main__":
             if all(
                 [
                     self.selected_game,
-                    self.selected_installation_path and self.selected_installation_path != "No installations found",
+                    self.selected_installation_path
+                    and self.selected_installation_path != "No installations found",
                     self.selected_level and self.selected_level != "No levels found",
                 ],
             ):

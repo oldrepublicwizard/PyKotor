@@ -45,14 +45,18 @@ class WrappedStr(str):
                 try:
                     return getattr(self._content, name)
                 except AttributeError:
-                    raise AttributeError(f"'{type(self).__name__}' object and its '_content' attribute have no attribute '{name}'")
+                    raise AttributeError(
+                        f"'{type(self).__name__}' object and its '_content' attribute have no attribute '{name}'"
+                    )
 
     # region Forwards Compatibility
     # Check if str has __reduce_ex__ - legitimate runtime check for optional builtin method
     if not hasattr(str, "__reduce_ex__"):
 
         def __reduce_ex__(self, protocol: int):
-            if protocol >= 2:  # Protocol version 2 or higher uses a more efficient pickling format  # noqa: PLR2004
+            if (
+                protocol >= 2
+            ):  # Protocol version 2 or higher uses a more efficient pickling format  # noqa: PLR2004
                 return (self.__class__, (str(self),), None, None, None)
             return self.__reduce__()
     # endregion

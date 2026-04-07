@@ -56,14 +56,18 @@ class TestBWM(TestCase):
             f"{wok.faces[1].v3.distance(Vector3(11.3294, 18.5879, -1.275))} is not less than 1000000.0"
         )
 
-        face2_adj: tuple[BWMAdjacency | None, BWMAdjacency | None, BWMAdjacency | None] = wok.adjacencies(wok.faces[2])
+        face2_adj: tuple[BWMAdjacency | None, BWMAdjacency | None, BWMAdjacency | None] = (
+            wok.adjacencies(wok.faces[2])
+        )
         assert face2_adj[0] is None, f"{face2_adj[0]!r} is not None"
         assert wok.faces[29] is face2_adj[1].face, f"{wok.faces[29]!r} is not {face2_adj[1].face!r}"  # pyright: ignore[reportOptionalMemberAccess]
         assert 2 == face2_adj[1].edge, f"{face2_adj[1].edge} != 2"  # pyright: ignore[reportOptionalMemberAccess]
         assert wok.faces[1] is face2_adj[2].face, f"{wok.faces[1]!r} is not {face2_adj[2].face!r}"  # pyright: ignore[reportOptionalMemberAccess]
         assert 0 == face2_adj[2].edge, f"{face2_adj[2].edge} != 0"  # pyright: ignore[reportOptionalMemberAccess]
 
-        face4_adj: tuple[BWMAdjacency | None, BWMAdjacency | None, BWMAdjacency | None] = wok.adjacencies(wok.faces[4])
+        face4_adj: tuple[BWMAdjacency | None, BWMAdjacency | None, BWMAdjacency | None] = (
+            wok.adjacencies(wok.faces[4])
+        )
         assert wok.faces[30] is face4_adj[0].face, f"{wok.faces[30]!r} is not {face4_adj[0].face!r}"  # pyright: ignore[reportOptionalMemberAccess]
         assert 2 == face4_adj[0].edge, f"{face4_adj[0].edge} != 2"  # pyright: ignore[reportOptionalMemberAccess]
         assert wok.faces[35] is face4_adj[1].face, f"{wok.faces[35]!r} is not {face4_adj[1].face!r}"  # pyright: ignore[reportOptionalMemberAccess]
@@ -87,7 +91,9 @@ class TestBWM(TestCase):
         # Spot-check that expected geometry is present (order independent).
         # The original test used an effectively-unbounded threshold; we make it meaningful.
         expected = Vector3(12.667, 23.8963, -1.2749)
-        assert min(v.distance(expected) for v in wok.vertices()) < 0.05, "Expected vertex not found (within tolerance)"
+        assert min(v.distance(expected) for v in wok.vertices()) < 0.05, (
+            "Expected vertex not found (within tolerance)"
+        )
 
         # Adjacency/edges/AABB generation should be computable without errors.
         assert len(wok.walkable_faces()) > 0, "No walkable faces found"

@@ -76,7 +76,9 @@ class WAVStandardWriter(ResourceWriter):
         # Write format chunk
         self._writer.write_bytes(b"fmt ")
         self._writer.write_uint32(fmt_chunk_size)
-        self._writer.write_uint16(self.wav.encoding if isinstance(self.wav.encoding, int) else self.wav.encoding)
+        self._writer.write_uint16(
+            self.wav.encoding if isinstance(self.wav.encoding, int) else self.wav.encoding
+        )
         self._writer.write_uint16(self.wav.channels)
         self._writer.write_uint32(self.wav.sample_rate)
         bytes_per_sec = self.wav.bytes_per_sec or (self.wav.sample_rate * self.wav.block_align)

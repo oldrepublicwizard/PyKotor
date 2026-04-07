@@ -1,8 +1,10 @@
 #!/usr/bin/env python3
 """Insert pre-rewrite 'Verbatim…' intro (from git HEAD) after H1 in archive pages that lost it."""
+
 from __future__ import annotations
 
 import subprocess
+
 from pathlib import Path
 
 REPO = Path(__file__).resolve().parents[1]

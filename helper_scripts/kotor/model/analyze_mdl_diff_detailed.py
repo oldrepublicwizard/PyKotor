@@ -71,8 +71,12 @@ def analyze_trimesh_at_offset(data: bytes, offset: int, label: str) -> dict:
     result["face_count"] = struct.unpack_from("<I", data, offset + 232)[0]
     result["vertices_offset"] = struct.unpack_from("<I", data, offset + 248)[0]
     result["vertex_count"] = struct.unpack_from("<I", data, offset + 252)[0]
-    result["texture1"] = data[offset + 52 : offset + 52 + 32].split(b"\x00")[0].decode("ascii", errors="replace")
-    result["texture2"] = data[offset + 84 : offset + 84 + 32].split(b"\x00")[0].decode("ascii", errors="replace")
+    result["texture1"] = (
+        data[offset + 52 : offset + 52 + 32].split(b"\x00")[0].decode("ascii", errors="replace")
+    )
+    result["texture2"] = (
+        data[offset + 84 : offset + 84 + 32].split(b"\x00")[0].decode("ascii", errors="replace")
+    )
     result["mdx_data_size"] = struct.unpack_from("<I", data, offset + 308)[0]
     result["mdx_data_bitmap"] = struct.unpack_from("<I", data, offset + 312)[0]
     result["mdx_data_offset"] = struct.unpack_from("<I", data, offset + 316)[0]
@@ -136,13 +140,20 @@ def main():
         pykotor_mdx = pykotor_mdx_path.read_bytes()
 
         # MDLOps roundtrip
-        result = subprocess.run([str(mdlops_exe), str(orig_mdl_path)], cwd=str(td_path), capture_output=True, timeout=60)
+        result = subprocess.run(
+            [str(mdlops_exe), str(orig_mdl_path)], cwd=str(td_path), capture_output=True, timeout=60
+        )
         ascii_path = td_path / f"{model_name}-ascii.mdl"
         if not ascii_path.exists():
             print(f"MDLOps decompile failed: {result.stderr.decode()}")
             return
 
-        result = subprocess.run([str(mdlops_exe), str(ascii_path), "-k1"], cwd=str(td_path), capture_output=True, timeout=60)
+        result = subprocess.run(
+            [str(mdlops_exe), str(ascii_path), "-k1"],
+            cwd=str(td_path),
+            capture_output=True,
+            timeout=60,
+        )
         mdlops_mdl_path = td_path / f"{model_name}-ascii-k1-bin.mdl"
         mdlops_mdx_path = td_path / f"{model_name}-ascii-k1-bin.mdx"
 
@@ -172,13 +183,19 @@ def main():
         pk_nodes = get_node_count(pykotor_mdl)
         mo_nodes = get_node_count(mdlops_mdl)
         print(f"{'Field':<20} {'PyKotor':<15} {'MDLOps':<15} {'Match'}")
-        print(f"{'Root Node Offset':<20} {pk_root:<15} {mo_root:<15} {'YES' if pk_root == mo_root else 'NO'}")
-        print(f"{'Node Count':<20} {pk_nodes:<15} {mo_nodes:<15} {'YES' if pk_nodes == mo_nodes else 'NO'}")
+        print(
+            f"{'Root Node Offset':<20} {pk_root:<15} {mo_root:<15} {'YES' if pk_root == mo_root else 'NO'}"
+        )
+        print(
+            f"{'Node Count':<20} {pk_nodes:<15} {mo_nodes:<15} {'YES' if pk_nodes == mo_nodes else 'NO'}"
+        )
 
         # Get model name
         pk_name = pykotor_mdl[20:52].split(b"\x00")[0].decode("ascii", errors="replace")
         mo_name = mdlops_mdl[20:52].split(b"\x00")[0].decode("ascii", errors="replace")
-        print(f"{'Model Name':<20} {pk_name:<15} {mo_name:<15} {'YES' if pk_name == mo_name else 'NO'}")
+        print(
+            f"{'Model Name':<20} {pk_name:<15} {mo_name:<15} {'YES' if pk_name == mo_name else 'NO'}"
+        )
 
         # Analyze first mesh node (root node + 12 for file header offset)
         print("\n=== Root Node Analysis ===")
@@ -189,7 +206,14 @@ def main():
         mo_node = analyze_node_at_offset(mdlops_mdl, mo_root_file, "MDLOps")
 
         print(f"{'Field':<25} {'PyKotor':<15} {'MDLOps':<15} {'Match'}")
-        for key in ["type_id", "node_id", "offset_to_children", "children_count", "offset_to_controllers", "controller_count"]:
+        for key in [
+            "type_id",
+            "node_id",
+            "offset_to_children",
+            "children_count",
+            "offset_to_controllers",
+            "controller_count",
+        ]:
             pk_val = pk_node[key]
             mo_val = mo_node[key]
             match = "YES" if pk_val == mo_val else "NO"
@@ -202,7 +226,16 @@ def main():
             mo_tm = analyze_trimesh_at_offset(mdlops_mdl, mo_root_file + 80, "MDLOps")
 
             print(f"{'Field':<25} {'PyKotor':<15} {'MDLOps':<15} {'Match'}")
-            for key in ["vertex_count", "face_count", "vertices_offset", "offset_to_faces", "mdx_data_size", "mdx_data_bitmap", "mdx_data_offset", "texture1"]:
+            for key in [
+                "vertex_count",
+                "face_count",
+                "vertices_offset",
+                "offset_to_faces",
+                "mdx_data_size",
+                "mdx_data_bitmap",
+                "mdx_data_offset",
+                "texture1",
+            ]:
                 pk_val = pk_tm[key]
                 mo_val = mo_tm[key]
                 match = "YES" if pk_val == mo_val else "NO"

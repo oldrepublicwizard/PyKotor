@@ -146,7 +146,10 @@ def find_profile_file(profile_file: Path | None, use_defaults: bool) -> Path:
         return profile_file
 
     if not use_defaults:
-        print("Error: profile_file is required (or use --default-paths to try common paths)", file=sys.stderr)
+        print(
+            "Error: profile_file is required (or use --default-paths to try common paths)",
+            file=sys.stderr,
+        )
         sys.exit(1)
 
     # Try common default paths
@@ -285,7 +288,12 @@ def format_compact_stats(stats: pstats.Stats, top_n: int, sort_key: str) -> str:
             break
         # func_stats is: (ncalls, prim_calls, tottime, cumtime, callers_dict)
         if len(func_stats) >= 4:
-            ncalls, _prim_calls, tottime, cumtime = func_stats[0], func_stats[1], func_stats[2], func_stats[3]
+            ncalls, _prim_calls, tottime, cumtime = (
+                func_stats[0],
+                func_stats[1],
+                func_stats[2],
+                func_stats[3],
+            )
             func_name = f"{func_key[0]}:{func_key[1]}({func_key[2]})"
             if sort_key == "cumulative":
                 time_val = cumtime
@@ -347,7 +355,12 @@ def export_json(
             break
         # func_stats is: (ncalls, prim_calls, tottime, cumtime, callers_dict)
         if len(func_stats) >= 4:
-            ncalls, _prim_calls, tottime, cumtime = func_stats[0], func_stats[1], func_stats[2], func_stats[3]
+            ncalls, _prim_calls, tottime, cumtime = (
+                func_stats[0],
+                func_stats[1],
+                func_stats[2],
+                func_stats[3],
+            )
             result["functions"]["by_cumulative_time"].append(
                 {
                     "function": f"{func_key[0]}:{func_key[1]}({func_key[2]})",
@@ -365,7 +378,12 @@ def export_json(
         if count >= top_self:
             break
         if len(func_stats) >= 4:
-            ncalls, _prim_calls, tottime, cumtime = func_stats[0], func_stats[1], func_stats[2], func_stats[3]
+            ncalls, _prim_calls, tottime, cumtime = (
+                func_stats[0],
+                func_stats[1],
+                func_stats[2],
+                func_stats[3],
+            )
             result["functions"]["by_self_time"].append(
                 {
                     "function": f"{func_key[0]}:{func_key[1]}({func_key[2]})",
@@ -383,7 +401,12 @@ def export_json(
         if count >= top_calls:
             break
         if len(func_stats) >= 4:
-            ncalls, _prim_calls, tottime, cumtime = func_stats[0], func_stats[1], func_stats[2], func_stats[3]
+            ncalls, _prim_calls, tottime, cumtime = (
+                func_stats[0],
+                func_stats[1],
+                func_stats[2],
+                func_stats[3],
+            )
             result["functions"]["by_call_count"].append(
                 {
                     "function": f"{func_key[0]}:{func_key[1]}({func_key[2]})",
@@ -534,7 +557,10 @@ def analyze_profile(
             stats_protocol = cast("StatsProtocol", stats)
             print(f"Profile: {prof_file}", file=output_stream)
             print(f"Time: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}", file=output_stream)
-            print(f"Total calls: {stats_protocol.total_calls:,}, Total time: {stats_protocol.total_tt:.2f}s", file=output_stream)
+            print(
+                f"Total calls: {stats_protocol.total_calls:,}, Total time: {stats_protocol.total_tt:.2f}s",
+                file=output_stream,
+            )
             print(file=output_stream)
 
             print(format_compact_stats(stats, top_cumulative, "cumulative"), file=output_stream)
@@ -572,7 +598,10 @@ def analyze_profile(
             print("\n" + "=" * 100, file=output_stream)
             print(f"TOP {top_cumulative} FUNCTIONS BY CUMULATIVE TIME", file=output_stream)
             print("=" * 100, file=output_stream)
-            print("(Includes time spent in called functions - shows call chain bottlenecks)", file=output_stream)
+            print(
+                "(Includes time spent in called functions - shows call chain bottlenecks)",
+                file=output_stream,
+            )
             print_stats_to_stream(stats, top_cumulative, output_stream)
 
         # Top functions by self time (actual CPU time spent)
@@ -590,7 +619,10 @@ def analyze_profile(
             print("\n" + "=" * 100, file=output_stream)
             print(f"TOP {top_calls} FUNCTIONS BY CALL COUNT", file=output_stream)
             print("=" * 100, file=output_stream)
-            print("(Functions called most frequently - may indicate inefficient loops)", file=output_stream)
+            print(
+                "(Functions called most frequently - may indicate inefficient loops)",
+                file=output_stream,
+            )
             print_stats_to_stream(stats, top_calls, output_stream)
 
         # Callers analysis (who calls the hot functions)

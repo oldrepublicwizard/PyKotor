@@ -32,7 +32,11 @@ class DLGStunt:
         return self._hash_cache
 
     def to_dict(self) -> dict[str, Any]:
-        return {"participant": self.participant, "stunt_model": str(self.stunt_model), "_hash_cache": self._hash_cache}
+        return {
+            "participant": self.participant,
+            "stunt_model": str(self.stunt_model),
+            "_hash_cache": self._hash_cache,
+        }
 
     @classmethod
     def from_dict(

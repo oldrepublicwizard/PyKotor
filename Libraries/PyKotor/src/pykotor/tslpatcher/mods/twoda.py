@@ -94,7 +94,11 @@ class Target:
             - For label column, checks for label column, then iterates rows to find match
             - Returns matching row or None.
         """
-        value: str | int = self.value.value(memory, twoda, None) if isinstance(self.value, (RowValueTLKMemory, RowValue2DAMemory)) else self.value
+        value: str | int = (
+            self.value.value(memory, twoda, None)
+            if isinstance(self.value, (RowValueTLKMemory, RowValue2DAMemory))
+            else self.value
+        )
         source_row: TwoDARow | None = None
         if self.target_type == TargetType.ROW_INDEX:
             source_row = twoda.get_row(int(value))

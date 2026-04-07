@@ -81,9 +81,24 @@ def check_2da_file(installation_path: Path, twoda_name: str) -> None:
 
 def main() -> None:
     """Main entry point."""
-    parser = argparse.ArgumentParser(description="Check if a 2DA file exists in installation", formatter_class=argparse.RawDescriptionHelpFormatter, epilog=__doc__)
-    parser.add_argument("--installation", "-i", type=str, help="Path to KOTOR installation (default: from K1_PATH/K2_PATH env or .env file)")
-    parser.add_argument("--2da", dest="twoda_name", type=str, default="genericdoors", help="2DA file name to check (default: genericdoors)")
+    parser = argparse.ArgumentParser(
+        description="Check if a 2DA file exists in installation",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog=__doc__,
+    )
+    parser.add_argument(
+        "--installation",
+        "-i",
+        type=str,
+        help="Path to KOTOR installation (default: from K1_PATH/K2_PATH env or .env file)",
+    )
+    parser.add_argument(
+        "--2da",
+        dest="twoda_name",
+        type=str,
+        default="genericdoors",
+        help="2DA file name to check (default: genericdoors)",
+    )
 
     args = parser.parse_args()
 

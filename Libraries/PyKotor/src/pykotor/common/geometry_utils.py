@@ -47,7 +47,11 @@ def compute_per_vertex_tangent_space(
         v2 = mesh.vertex_positions[face.v2]
         v3 = mesh.vertex_positions[face.v3]
 
-        if face.v1 >= len(mesh.vertex_uvs) or face.v2 >= len(mesh.vertex_uvs) or face.v3 >= len(mesh.vertex_uvs):
+        if (
+            face.v1 >= len(mesh.vertex_uvs)
+            or face.v2 >= len(mesh.vertex_uvs)
+            or face.v3 >= len(mesh.vertex_uvs)
+        ):
             continue
 
         uv1 = mesh.vertex_uvs[face.v1]
@@ -78,18 +82,24 @@ def compute_per_vertex_tangent_space(
         # Normalize
         length = (avg_tangent.x**2 + avg_tangent.y**2 + avg_tangent.z**2) ** 0.5
         if length > 0:
-            avg_tangent = Vector3(avg_tangent.x / length, avg_tangent.y / length, avg_tangent.z / length)
+            avg_tangent = Vector3(
+                avg_tangent.x / length, avg_tangent.y / length, avg_tangent.z / length
+            )
 
         # Average binormals
         avg_binormal = Vector3(0, 0, 0)
         for b in vertex_binormals[v_idx]:
             avg_binormal = Vector3(avg_binormal.x + b.x, avg_binormal.y + b.y, avg_binormal.z + b.z)
-        avg_binormal = Vector3(avg_binormal.x / count, avg_binormal.y / count, avg_binormal.z / count)
+        avg_binormal = Vector3(
+            avg_binormal.x / count, avg_binormal.y / count, avg_binormal.z / count
+        )
 
         # Normalize
         length = (avg_binormal.x**2 + avg_binormal.y**2 + avg_binormal.z**2) ** 0.5
         if length > 0:
-            avg_binormal = Vector3(avg_binormal.x / length, avg_binormal.y / length, avg_binormal.z / length)
+            avg_binormal = Vector3(
+                avg_binormal.x / length, avg_binormal.y / length, avg_binormal.z / length
+            )
 
         result[v_idx] = (avg_tangent, avg_binormal)
 
@@ -118,9 +128,13 @@ def determine_vertex_format_requirements(mesh: MDLMesh) -> dict[str, bool]:
     """
     return {
         "has_normals": len(mesh.vertex_normals) > 0 if mesh.vertex_normals is not None else False,
-        "has_tangent_space": (len(mesh.vertex_normals) > 0 if mesh.vertex_normals is not None else False) and len(mesh.faces) > 0 and len(mesh.vertex_uvs) > 0,
-        "has_lightmap": mesh.has_lightmap and (len(mesh.vertex_uv2) > 0 if mesh.vertex_uv2 is not None else False),
+        "has_tangent_space": (
+            len(mesh.vertex_normals) > 0 if mesh.vertex_normals is not None else False
+        )
+        and len(mesh.faces) > 0
+        and len(mesh.vertex_uvs) > 0,
+        "has_lightmap": mesh.has_lightmap
+        and (len(mesh.vertex_uv2) > 0 if mesh.vertex_uv2 is not None else False),
         "has_skinning": isinstance(mesh, MDLSkin) and mesh is not None,
         "has_uv2": len(mesh.vertex_uv2) > 0 if mesh.vertex_uv2 is not None else False,
     }
-

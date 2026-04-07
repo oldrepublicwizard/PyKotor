@@ -4,6 +4,7 @@ This module provides normalized path/suffix handling and predicates for
 common KotOR file extensions (NSS, MOD, ERF, RIM, BIF, etc.) used across
 tools and resource loading.
 """
+
 from __future__ import annotations
 
 from pathlib import PurePath

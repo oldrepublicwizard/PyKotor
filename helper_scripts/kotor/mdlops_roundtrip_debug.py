@@ -28,7 +28,9 @@ def main() -> int:
         description="Roundtrip a single MDL/MDX through PyKotor and MDLOps, keeping outputs for inspection.",
     )
     parser.add_argument("resname", help="Resource name without extension (e.g. m10ac_28d)")
-    parser.add_argument("--game", type=_parse_game, default=Game.K1, help="Game: k1 or k2 (default: k1)")
+    parser.add_argument(
+        "--game", type=_parse_game, default=Game.K1, help="Game: k1 or k2 (default: k1)"
+    )
     parser.add_argument(
         "--outdir",
         type=Path,

@@ -197,11 +197,18 @@ class Panda3DOrientationController(Panda3DAnimationController):
             so we implement it manually.
         """
         # Compute dot product
-        dot = last_value.getR() * next_value.getR() + last_value.getI() * next_value.getI() + last_value.getJ() * next_value.getJ() + last_value.getK() * next_value.getK()
+        dot = (
+            last_value.getR() * next_value.getR()
+            + last_value.getI() * next_value.getI()
+            + last_value.getJ() * next_value.getJ()
+            + last_value.getK() * next_value.getK()
+        )
 
         # If dot product is negative, negate one quaternion to take shorter path
         if dot < 0:
-            next_value = Quat(-next_value.getR(), -next_value.getI(), -next_value.getJ(), -next_value.getK())
+            next_value = Quat(
+                -next_value.getR(), -next_value.getI(), -next_value.getJ(), -next_value.getK()
+            )
             dot = -dot
 
         # Clamp dot product

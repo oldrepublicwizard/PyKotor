@@ -34,7 +34,9 @@ class KotorCLIConfig:
         with self.config_path.open("rb") as f:
             self._data = tomllib.load(f)
 
-    def _expand_variables(self, value: str, target_name: str | None = None, variables: dict[str, str] | None = None) -> str:
+    def _expand_variables(
+        self, value: str, target_name: str | None = None, variables: dict[str, str] | None = None
+    ) -> str:
         """Expand variables in a string value.
 
         Variables can be in the form $variable or ${variable}.
@@ -84,7 +86,9 @@ class KotorCLIConfig:
         """Get all target configurations."""
         result: list[dict[str, Any]] = []
         for key, value in self._data.items():
-            if (key == "target" or (isinstance(value, dict) and value.get("name"))) and isinstance(value, dict):
+            if (key == "target" or (isinstance(value, dict) and value.get("name"))) and isinstance(
+                value, dict
+            ):
                 result.append(value)
         return result
 
@@ -109,7 +113,9 @@ class KotorCLIConfig:
                 return target
         return None
 
-    def resolve_target_value(self, target: dict[str, Any], key: str, default: Any | None = None) -> Any:
+    def resolve_target_value(
+        self, target: dict[str, Any], key: str, default: Any | None = None
+    ) -> Any:
         """Resolve a target value, inheriting from parent or package if needed."""
         # Check target first
         if key in target:
@@ -194,7 +200,9 @@ def load_config(logger: Logger, config_path: Path | None = None) -> KotorCLIConf
         config_path = find_config_file()
 
     if config_path is None:
-        logger.error("This is not a pykotorcli repository. Please run 'pykotor init' or 'pykotorcli init'")
+        logger.error(
+            "This is not a pykotorcli repository. Please run 'pykotor init' or 'pykotorcli init'"
+        )
         return None
 
     try:

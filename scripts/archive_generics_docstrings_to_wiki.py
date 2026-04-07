@@ -1,4 +1,5 @@
 """Write fenced verbatim class docstrings to wiki (avoids shell eating backticks)."""
+
 from __future__ import annotations
 
 import ast

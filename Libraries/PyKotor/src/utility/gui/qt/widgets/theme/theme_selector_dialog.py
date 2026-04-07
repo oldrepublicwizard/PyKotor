@@ -65,8 +65,16 @@ class ThemeSelectorDialog(QDialog):
         super().__init__(parent)
         self._tr = tr or _default_tr
         self._manager = theme_manager or ThemeManager()
-        self._available_themes = available_themes if available_themes is not None else list(self._manager.get_available_themes())
-        self._available_styles = available_styles if available_styles is not None else list(self._manager.get_default_styles())
+        self._available_themes = (
+            available_themes
+            if available_themes is not None
+            else list(self._manager.get_available_themes())
+        )
+        self._available_styles = (
+            available_styles
+            if available_styles is not None
+            else list(self._manager.get_default_styles())
+        )
         self._current_theme = current_theme
         self._current_style = current_style
         self._apply_button: QPushButton | None = None
@@ -81,7 +89,9 @@ class ThemeSelectorDialog(QDialog):
         self.resize(550, 650)
         self.setWindowTitle(self._tr("Theme Selection"))
         self.setWindowFlags(
-            Qt.WindowType.Dialog | Qt.WindowType.WindowCloseButtonHint | Qt.WindowType.WindowTitleHint,
+            Qt.WindowType.Dialog
+            | Qt.WindowType.WindowCloseButtonHint
+            | Qt.WindowType.WindowTitleHint,
         )
 
         main = QVBoxLayout(self)
@@ -210,7 +220,9 @@ class ThemeSelectorDialog(QDialog):
                 item.setHidden(search not in item.text().lower())
         self._update_status_label()
 
-    def _find_matching_item(self, list_widget: QListWidget, value: str, *, user_role: bool = False) -> QListWidgetItem | None:
+    def _find_matching_item(
+        self, list_widget: QListWidget, value: str, *, user_role: bool = False
+    ) -> QListWidgetItem | None:
         for i in range(list_widget.count()):
             item = list_widget.item(i)
             if item is None:
@@ -276,7 +288,9 @@ class ThemeSelectorDialog(QDialog):
         else:
             style_text = style
         self._status_label.setText(
-            self._tr("Visible: {themes} themes, {styles} styles. Selected: {theme} / {style}.").format(
+            self._tr(
+                "Visible: {themes} themes, {styles} styles. Selected: {theme} / {style}."
+            ).format(
                 themes=self._visible_count(self._themes_list),
                 styles=self._visible_count(self._styles_list),
                 theme=theme,

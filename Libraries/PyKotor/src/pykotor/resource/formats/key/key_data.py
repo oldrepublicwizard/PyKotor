@@ -108,7 +108,11 @@ class BifEntry(BiowareResource):
         """Compare two BIF entries."""
         if not isinstance(other, BifEntry):
             return NotImplemented  # type: ignore[no-any-return]
-        return self.filename == other.filename and self.filesize == other.filesize and self.drives == other.drives
+        return (
+            self.filename == other.filename
+            and self.filesize == other.filesize
+            and self.drives == other.drives
+        )
 
     def __hash__(self) -> int:
         """Hash BIF entry."""
@@ -197,7 +201,11 @@ class KeyEntry(BiowareResource):
         """Compare two key entries."""
         if not isinstance(other, KeyEntry):
             return NotImplemented  # type: ignore[no-any-return]
-        return str(self.resref) == str(other.resref) and self.restype == other.restype and self.resource_id == other.resource_id
+        return (
+            str(self.resref) == str(other.resref)
+            and self.restype == other.restype
+            and self.resource_id == other.resource_id
+        )
 
     def __hash__(self) -> int:
         """Hash key entry."""
@@ -289,7 +297,9 @@ class KEY(BiowareResource):
         if bif_index < 0:
             raise ValueError(f"BIF index cannot be negative: {bif_index}")
         if bif_index >= len(self.bif_entries):
-            raise IndexError(f"BIF index {bif_index} is out of range. Total BIF entries: {len(self.bif_entries)}")
+            raise IndexError(
+                f"BIF index {bif_index} is out of range. Total BIF entries: {len(self.bif_entries)}"
+            )
         return (bif_index << 20) | (res_index & 0xFFFFF)
 
     def get_resource(
@@ -350,7 +360,9 @@ class KEY(BiowareResource):
         self._resource_lookup.pop((bif.filename, ResourceType.TXT))
         self._bif_lookup.pop(bif.filename.lower(), None)
         self.bif_entries.remove(bif)
-        self.key_entries.remove(next(key_entry for key_entry in self.key_entries if key_entry.resref == bif.filename))
+        self.key_entries.remove(
+            next(key_entry for key_entry in self.key_entries if key_entry.resref == bif.filename)
+        )
         self.build_lookup_tables()  # Rebuild lookups
         self._modified = True
 

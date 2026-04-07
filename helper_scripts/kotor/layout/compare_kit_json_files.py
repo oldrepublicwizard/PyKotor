@@ -11,11 +11,24 @@ PYKOTOR_PATH = REPO_ROOT / "Libraries" / "PyKotor" / "src"
 if str(PYKOTOR_PATH) not in sys.path:
     sys.path.insert(0, str(PYKOTOR_PATH))
 
-generated_json = REPO_ROOT / "tests" / "test_toolset" / "test_files" / "generated_kit" / "jedienclave.json"
+generated_json = (
+    REPO_ROOT / "tests" / "test_toolset" / "test_files" / "generated_kit" / "jedienclave.json"
+)
 # Check if expected JSON exists in kits/kits or just kits
-expected_json = REPO_ROOT / "Tools" / "HolocronToolset" / "src" / "toolset" / "kits" / "kits" / "jedienclave.json"
+expected_json = (
+    REPO_ROOT
+    / "Tools"
+    / "HolocronToolset"
+    / "src"
+    / "toolset"
+    / "kits"
+    / "kits"
+    / "jedienclave.json"
+)
 if not expected_json.exists():
-    expected_json = REPO_ROOT / "Tools" / "HolocronToolset" / "src" / "toolset" / "kits" / "jedienclave.json"
+    expected_json = (
+        REPO_ROOT / "Tools" / "HolocronToolset" / "src" / "toolset" / "kits" / "jedienclave.json"
+    )
 
 if not generated_json.exists():
     print(f"ERROR: Generated JSON not found: {generated_json}")
@@ -85,8 +98,12 @@ for i, (gen_comp, exp_comp) in enumerate(zip(gen_components, exp_components)):
         # Compare first hook as example
         gen_hook = gen_hooks[0]
         exp_hook = exp_hooks[0]
-        print(f"    {gen_id}: First hook - gen: x={gen_hook.get('x'):.3f}, y={gen_hook.get('y'):.3f}, z={gen_hook.get('z'):.3f}, rot={gen_hook.get('rotation'):.1f}")
-        print(f"                    exp: x={exp_hook.get('x'):.3f}, y={exp_hook.get('y'):.3f}, z={exp_hook.get('z'):.3f}, rot={exp_hook.get('rotation'):.1f}")
+        print(
+            f"    {gen_id}: First hook - gen: x={gen_hook.get('x'):.3f}, y={gen_hook.get('y'):.3f}, z={gen_hook.get('z'):.3f}, rot={gen_hook.get('rotation'):.1f}"
+        )
+        print(
+            f"                    exp: x={exp_hook.get('x'):.3f}, y={exp_hook.get('y'):.3f}, z={exp_hook.get('z'):.3f}, rot={exp_hook.get('rotation'):.1f}"
+        )
 
 print("\n" + "=" * 80)
 print("DOORS COMPARISON")
@@ -110,8 +127,14 @@ for i, (gen_door, exp_door) in enumerate(zip(gen_doors, exp_doors)):
     gen_height = gen_door.get("height")
     exp_height = exp_door.get("height")
 
-    width_match = abs(gen_width - exp_width) < 0.01 if gen_width and exp_width else gen_width == exp_width
-    height_match = abs(gen_height - exp_height) < 0.01 if gen_height and exp_height else gen_height == exp_height
+    width_match = (
+        abs(gen_width - exp_width) < 0.01 if gen_width and exp_width else gen_width == exp_width
+    )
+    height_match = (
+        abs(gen_height - exp_height) < 0.01
+        if gen_height and exp_height
+        else gen_height == exp_height
+    )
 
     status = "✓" if (width_match and height_match and gen_utd_k1 == exp_utd_k1) else "✗"
     print(f"  {status} Door {i} ({gen_utd_k1}):")

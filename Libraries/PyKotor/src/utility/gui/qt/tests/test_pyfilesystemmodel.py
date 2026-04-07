@@ -91,7 +91,12 @@ class TestPyFileSystemModel:
         """Cleanup method matching C++ cleanup() (lines 135-152)."""
         dir_obj = QDir(flat_dir_test_path)
         if dir_obj.exists():
-            filters = QDir.Filter.AllEntries | QDir.Filter.System | QDir.Filter.Hidden | QDir.Filter.NoDotAndDotDot
+            filters = (
+                QDir.Filter.AllEntries
+                | QDir.Filter.System
+                | QDir.Filter.Hidden
+                | QDir.Filter.NoDotAndDotDot
+            )
             file_list = dir_obj.entryInfoList(filters)
             for fi in file_list:
                 if fi.isDir():
@@ -144,7 +149,9 @@ class TestPyFileSystemModel:
         assert len(root_changed) == 0
 
         old_root_path = model.rootPath()
-        document_paths = QStandardPaths.standardLocations(QStandardPaths.StandardLocation.DocumentsLocation)
+        document_paths = QStandardPaths.standardLocations(
+            QStandardPaths.StandardLocation.DocumentsLocation
+        )
         assert len(document_paths) > 0
         document_path = document_paths[0]
 
@@ -168,7 +175,9 @@ class TestPyFileSystemModel:
 
         assert try_wait(check_row_count)
         assert model.rootPath() == document_path
-        assert len(root_changed) == (old_count if old_root_path == model.rootPath() else old_count + 1)
+        assert len(root_changed) == (
+            old_count if old_root_path == model.rootPath() else old_count + 1
+        )
         assert model.rootDirectory().absolutePath() == document_path
 
         newdir = QDir(document_path)
@@ -247,7 +256,9 @@ class TestPyFileSystemModel:
         provider = None
 
         my_model = PyFileSystemModel()
-        document_paths = QStandardPaths.standardLocations(QStandardPaths.StandardLocation.DocumentsLocation)
+        document_paths = QStandardPaths.standardLocations(
+            QStandardPaths.StandardLocation.DocumentsLocation
+        )
         assert len(document_paths) > 0
         my_model.setRootPath(document_paths[0])
 
@@ -255,7 +266,12 @@ class TestPyFileSystemModel:
         provider = CustomFileIconProvider()
         my_model.setIconProvider(provider)
 
-        mb = QApplication.instance().style().standardIcon(QStyle.StandardPixmap.SP_MessageBoxCritical).pixmap(50, 50)
+        mb = (
+            QApplication.instance()
+            .style()
+            .standardIcon(QStyle.StandardPixmap.SP_MessageBoxCritical)
+            .pixmap(50, 50)
+        )
         home_icon = my_model.fileIcon(my_model.index(QDir.homePath(), 0)).pixmap(50, 50)
         # NOTE: Icon comparison may need adjustment based on Qt version
         # For now, just verify it's not null
@@ -267,7 +283,9 @@ class TestPyFileSystemModel:
         assert model.iconProvider() is not None
         # No crash when setIconProvider(None) is used
         model.setIconProvider(None)
-        document_paths = QStandardPaths.standardLocations(QStandardPaths.StandardLocation.DocumentsLocation)
+        document_paths = QStandardPaths.standardLocations(
+            QStandardPaths.StandardLocation.DocumentsLocation
+        )
         assert len(document_paths) > 0
         model.setRootPath(document_paths[0])
 
@@ -356,7 +374,9 @@ class TestPyFileSystemModel:
         from qtpy.QtTest import QSignalSpy
 
         rows_inserted_spy = QSignalSpy(model, Signal("rowsInserted(QModelIndex,int,int)"))
-        rows_about_to_be_inserted_spy = QSignalSpy(model, Signal("rowsAboutToBeInserted(QModelIndex,int,int)"))
+        rows_about_to_be_inserted_spy = QSignalSpy(
+            model, Signal("rowsAboutToBeInserted(QModelIndex,int,int)")
+        )
 
         root = self.prepare_test_model_root(model, flat_dir_test_path)
         assert root.isValid()
@@ -582,21 +602,72 @@ class TestPyFileSystemModel:
             (["a", "b", "c"], ["Z"], QDir.Filter.Dirs, [], 3),
             (["a", "b", "c"], [], QDir.Filter.Dirs | QDir.Filter.Hidden, [], 2),
             (["a", "b", "c"], [], QDir.Filter.Dirs | QDir.Filter.Files | QDir.Filter.Hidden, [], 5),
-            (["a", "b", "c"], [".A"], QDir.Filter.Dirs | QDir.Filter.Files | QDir.Filter.Hidden | QDir.Filter.NoDotAndDotDot, [], 4),
-            (["a", "b", "c"], ["AFolder"], QDir.Filter.Dirs | QDir.Filter.Files | QDir.Filter.Hidden | QDir.Filter.NoDotAndDotDot, ["A*"], 2),
-            (["a", "b", "c"], ["Z"], QDir.Filter.Dirs | QDir.Filter.Files | QDir.Filter.Hidden | QDir.Filter.NoDotAndDotDot | QDir.Filter.CaseSensitive, ["Z"], 1),
-            (["a", "b", "c"], ["Z"], QDir.Filter.Dirs | QDir.Filter.Files | QDir.Filter.Hidden | QDir.Filter.NoDotAndDotDot | QDir.Filter.CaseSensitive, ["a"], 1),
+            (
+                ["a", "b", "c"],
+                [".A"],
+                QDir.Filter.Dirs
+                | QDir.Filter.Files
+                | QDir.Filter.Hidden
+                | QDir.Filter.NoDotAndDotDot,
+                [],
+                4,
+            ),
+            (
+                ["a", "b", "c"],
+                ["AFolder"],
+                QDir.Filter.Dirs
+                | QDir.Filter.Files
+                | QDir.Filter.Hidden
+                | QDir.Filter.NoDotAndDotDot,
+                ["A*"],
+                2,
+            ),
             (
                 ["a", "b", "c"],
                 ["Z"],
-                QDir.Filter.Dirs | QDir.Filter.Files | QDir.Filter.Hidden | QDir.Filter.NoDotAndDotDot | QDir.Filter.CaseSensitive | QDir.Filter.AllDirs,
+                QDir.Filter.Dirs
+                | QDir.Filter.Files
+                | QDir.Filter.Hidden
+                | QDir.Filter.NoDotAndDotDot
+                | QDir.Filter.CaseSensitive,
                 ["Z"],
                 1,
             ),
-            (["Antiguagdb", "Antiguamtd", "Antiguamtp", "afghanistangdb", "afghanistanmtd"], [], QDir.Filter.Files, [], 5),
+            (
+                ["a", "b", "c"],
+                ["Z"],
+                QDir.Filter.Dirs
+                | QDir.Filter.Files
+                | QDir.Filter.Hidden
+                | QDir.Filter.NoDotAndDotDot
+                | QDir.Filter.CaseSensitive,
+                ["a"],
+                1,
+            ),
+            (
+                ["a", "b", "c"],
+                ["Z"],
+                QDir.Filter.Dirs
+                | QDir.Filter.Files
+                | QDir.Filter.Hidden
+                | QDir.Filter.NoDotAndDotDot
+                | QDir.Filter.CaseSensitive
+                | QDir.Filter.AllDirs,
+                ["Z"],
+                1,
+            ),
+            (
+                ["Antiguagdb", "Antiguamtd", "Antiguamtp", "afghanistangdb", "afghanistanmtd"],
+                [],
+                QDir.Filter.Files,
+                [],
+                5,
+            ),
         ],
     )
-    def test_filters(self, qapp, flat_dir_test_path, files, dirs, dirFilters, nameFilters, rowCount):
+    def test_filters(
+        self, qapp, flat_dir_test_path, files, dirs, dirFilters, nameFilters, rowCount
+    ):
         """Test filters() - matching C++ filters() (lines 628-698)."""
         tmp = flat_dir_test_path
         model = PyFileSystemModel()
@@ -628,7 +699,9 @@ class TestPyFileSystemModel:
 
         model_entries = []
         for i in range(rowCount):
-            model_entries.append(model.data(model.index(i, 0, root), PyFileSystemModel.FileNameRole).toString())
+            model_entries.append(
+                model.data(model.index(i, 0, root), PyFileSystemModel.FileNameRole).toString()
+            )
 
         dir_entries.sort()
         model_entries.sort()

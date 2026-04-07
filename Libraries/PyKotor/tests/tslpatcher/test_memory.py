@@ -22,9 +22,18 @@ if PYKOTOR_PATH.joinpath("pykotor").exists():
 if UTILITY_PATH.joinpath("utility").exists():
     add_sys_path(UTILITY_PATH)
 
-from pykotor.common.language import Gender, Language, LocalizedString  # pyright: ignore[reportMissingImports]
+from pykotor.common.language import (  # pyright: ignore[reportMissingImports]
+    Gender,
+    Language,
+    LocalizedString,
+)
 from pykotor.tslpatcher.memory import PatcherMemory  # pyright: ignore[reportMissingImports]
-from pykotor.tslpatcher.mods.gff import FieldValue2DAMemory, FieldValueConstant, FieldValueTLKMemory, LocalizedStringDelta  # pyright: ignore[reportMissingImports]
+from pykotor.tslpatcher.mods.gff import (
+    FieldValue2DAMemory,
+    FieldValueConstant,
+    FieldValueTLKMemory,
+    LocalizedStringDelta,
+)  # pyright: ignore[reportMissingImports]
 
 
 class TestLocalizedStringDelta(TestCase):

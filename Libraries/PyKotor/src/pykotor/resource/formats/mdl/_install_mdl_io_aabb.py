@@ -5,6 +5,7 @@ This runs from ``mdl`` package ``__init__`` before ``io_mdl`` is loaded.
 
 Set ``PYKOTOR_SKIP_MDL_PATCH=1`` to disable.
 """
+
 from __future__ import annotations
 
 import os

@@ -221,11 +221,14 @@ def _ensure_async_worker(logger: logging.Logger) -> bool:
 
 
 class CustomExceptionFormatter(logging.Formatter):
-    sep = f"{os.linesep}----------------------------------------------------------------{os.linesep}"
+    sep = (
+        f"{os.linesep}----------------------------------------------------------------{os.linesep}"
+    )
 
     def formatException(
         self,
-        ei: tuple[type[BaseException], BaseException, TracebackType | None] | tuple[None, None, None],
+        ei: tuple[type[BaseException], BaseException, TracebackType | None]
+        | tuple[None, None, None],
     ) -> str:
         etype, value, tb = ei
         if value is None:
@@ -272,7 +275,9 @@ class ColoredConsoleHandler(logging.StreamHandler):
         # Use detailed formatter if detailed flag is set, otherwise default
         orig_style = formatter._style  # noqa: SLF001
         if detailed:
-            formatter = CustomExceptionFormatter(formatter._fmt, datefmt=formatter.datefmt, validate=True)  # noqa: SLF001  # pyright: ignore[reportArgumentType]
+            formatter = CustomExceptionFormatter(
+                formatter._fmt, datefmt=formatter.datefmt, validate=True
+            )  # noqa: SLF001  # pyright: ignore[reportArgumentType]
         else:
             formatter = logging.Formatter(formatter._fmt, datefmt=formatter.datefmt, validate=True)  # noqa: SLF001  # pyright: ignore[reportArgumentType]
         formatter._style = orig_style  # noqa: SLF001
@@ -330,7 +335,10 @@ def _dir_requires_admin(
 
 
 def _delete_any_file_or_folder(  # noqa: C901
-    path: os.PathLike | str, *, ignore_errors: bool = True, missing_ok: bool = True,
+    path: os.PathLike | str,
+    *,
+    ignore_errors: bool = True,
+    missing_ok: bool = True,
 ):
     path_obj = Path(path)
     isdir_func = _safe_isdir if ignore_errors else Path.is_dir
@@ -361,7 +369,10 @@ def _delete_any_file_or_folder(  # noqa: C901
             else:
                 if not isfile_func(path_obj):
                     return
-                print(f"File/folder {path_obj} still exists after {i} iterations! (remove_any)", file=sys.stderr)
+                print(
+                    f"File/folder {path_obj} still exists after {i} iterations! (remove_any)",
+                    file=sys.stderr,
+                )
         if not ignore_errors:  # should raise at this point.
             _remove_any(path_obj)
 
@@ -386,13 +397,17 @@ def get_log_directory(subdir: os.PathLike | str | None = None) -> Path:
         try:
             return check(cwd)
         except Exception as e2:  # noqa: BLE001
-            _safe_print(f"Failed to init cwd fallback '{cwd}' as log directory: {e2}{os.linesep}original: {e}")
+            _safe_print(
+                f"Failed to init cwd fallback '{cwd}' as log directory: {e2}{os.linesep}original: {e}"
+            )
             return check(_get_fallback_log_dir())
 
 
 def _get_fallback_log_dir() -> Path:
     """Determine a known good location based on the platform."""
-    if sys.platform.startswith("win"):  # Use ProgramData for Windows, which is typically for application data for all users
+    if sys.platform.startswith(
+        "win"
+    ):  # Use ProgramData for Windows, which is typically for application data for all users
         return Path(os.environ.get("PROGRAMDATA", "C:/ProgramData")) / "PyUtility"
     return Path.home() / ".pyutility"
 
@@ -512,13 +527,19 @@ class RobustLogger(logging.Logger, metaclass=MetaLogger):  # noqa: N801
                 return attr_value
             if object.__getattribute__(self, "_robust_root_lock"):  # noqa: FBT003
                 return attr_value
-            if attr_value is not our_type and not isinstance(attr_value, our_type) and callable(attr_value):
+            if (
+                attr_value is not our_type
+                and not isinstance(attr_value, our_type)
+                and callable(attr_value)
+            ):
 
                 def wrapped(*args, **kwargs):
                     try:
                         object.__setattr__(self, "_robust_root_lock", True)
                     except Exception as e:  # noqa: BLE001
-                        _safe_print(f"Exception when accessing attribute '{attr_name}': {e} ({e.__class__.__name__})")
+                        _safe_print(
+                            f"Exception when accessing attribute '{attr_name}': {e} ({e.__class__.__name__})"
+                        )
                         # print(traceback.format_exc(), file=sys.__stderr__)  # too verbose for normal use, uncomment for debugging.
                     else:
                         return attr_value(*args, **kwargs)
@@ -529,7 +550,10 @@ class RobustLogger(logging.Logger, metaclass=MetaLogger):  # noqa: N801
         except AttributeError:
             raise
         except Exception as e:  # noqa: BLE001
-            print(f"(Caught by RobustLogger!) Exception when accessing attribute '{attr_name}': {e}", file=sys.__stderr__)
+            print(
+                f"(Caught by RobustLogger!) Exception when accessing attribute '{attr_name}': {e}",
+                file=sys.__stderr__,
+            )
             print(f"{e.__class__.__name__}: {e}", file=sys.__stderr__)
             return ""
         else:
@@ -566,7 +590,9 @@ class RobustLogger(logging.Logger, metaclass=MetaLogger):  # noqa: N801
         **kwargs,  # handles when user used incorrect keyword args
     ):
         if kwargs:
-            _safe_print(f"RobustLogger.__init__() got unexpected keyword arguments: {[*kwargs.keys()]!r}")
+            _safe_print(
+                f"RobustLogger.__init__() got unexpected keyword arguments: {[*kwargs.keys()]!r}"
+            )
         cls = object.__getattribute__(self, "__class__")
         if not object.__getattribute__(cls, "_wrapped_logger"):
             type.__setattr__(
@@ -588,7 +614,9 @@ class RobustLogger(logging.Logger, metaclass=MetaLogger):  # noqa: N801
         log_on_main_thread: bool = False,
     ) -> logging.Logger:
         logger = logging.getLogger()
-        object.__getattribute__(self, "advanced_configure_logger")(None, override_stdout=override_stdout, override_stderr=override_stderr)
+        object.__getattribute__(self, "advanced_configure_logger")(
+            None, override_stdout=override_stdout, override_stderr=override_stderr
+        )
 
         # The custom exception filter is slow, ensure logging does not happen on the main thread.
         if not log_on_main_thread:
@@ -604,7 +632,11 @@ class RobustLogger(logging.Logger, metaclass=MetaLogger):  # noqa: N801
         override_stdout: bool = False,
         override_stderr: bool = False,
     ) -> logging.Logger:
-        logger: logging.Logger = logging.getLogger(name_or_logger) if isinstance(name_or_logger, (str, None.__class__)) else name_or_logger
+        logger: logging.Logger = (
+            logging.getLogger(name_or_logger)
+            if isinstance(name_or_logger, (str, None.__class__))
+            else name_or_logger
+        )
         if not logger.handlers:
             from utility.misc import is_debug_mode
 
@@ -638,32 +670,56 @@ class RobustLogger(logging.Logger, metaclass=MetaLogger):  # noqa: N801
             if override_stderr:
                 sys.stderr = CustomPrintToLogger(logger, sys.__stderr__, log_type="stderr")  # type: ignore[assignment]
 
-            default_formatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
-            exception_formatter = CustomExceptionFormatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
+            default_formatter = logging.Formatter(
+                "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+            )
+            exception_formatter = CustomExceptionFormatter(
+                "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+            )
 
             # Handler for everything (DEBUG and above)
             if use_level == logging.DEBUG:
-                everything_handler = RotatingFileHandler(str(log_dir / everything_log_file), maxBytes=20 * 1024 * 1024, backupCount=5, encoding="utf8")
+                everything_handler = RotatingFileHandler(
+                    str(log_dir / everything_log_file),
+                    maxBytes=20 * 1024 * 1024,
+                    backupCount=5,
+                    encoding="utf8",
+                )
                 everything_handler.setLevel(logging.DEBUG)
                 everything_handler.setFormatter(default_formatter)
                 logger.addHandler(everything_handler)
 
             # Handler for INFO and WARNING
-            info_warning_handler = RotatingFileHandler(str(log_dir / info_warning_log_file), maxBytes=20 * 1024 * 1024, backupCount=5, encoding="utf8")
+            info_warning_handler = RotatingFileHandler(
+                str(log_dir / info_warning_log_file),
+                maxBytes=20 * 1024 * 1024,
+                backupCount=5,
+                encoding="utf8",
+            )
             info_warning_handler.setLevel(logging.INFO)
             info_warning_handler.setFormatter(default_formatter)
             info_warning_handler.addFilter(LogLevelFilter(logging.ERROR, reject=True))
             logger.addHandler(info_warning_handler)
 
             # Handler for ERROR and CRITICAL
-            error_critical_handler = RotatingFileHandler(str(log_dir / error_critical_log_file), maxBytes=20 * 1024 * 1024, backupCount=5, encoding="utf8")
+            error_critical_handler = RotatingFileHandler(
+                str(log_dir / error_critical_log_file),
+                maxBytes=20 * 1024 * 1024,
+                backupCount=5,
+                encoding="utf8",
+            )
             error_critical_handler.setLevel(logging.ERROR)
             error_critical_handler.addFilter(LogLevelFilter(logging.ERROR))
             error_critical_handler.setFormatter(default_formatter)
             logger.addHandler(error_critical_handler)
 
             # Handler for EXCEPTIONS (using CustomExceptionFormatter)
-            exception_handler = RotatingFileHandler(str(log_dir / exception_log_file), maxBytes=20 * 1024 * 1024, backupCount=5, encoding="utf8")
+            exception_handler = RotatingFileHandler(
+                str(log_dir / exception_log_file),
+                maxBytes=20 * 1024 * 1024,
+                backupCount=5,
+                encoding="utf8",
+            )
             exception_handler.setLevel(logging.ERROR)
             exception_handler.addFilter(LogLevelFilter(logging.ERROR))
             exception_handler.setFormatter(exception_formatter)
@@ -694,7 +750,9 @@ if __name__ == "__main__":
     logger.warning("This is a warning message.")
     logger.error("This is an error message.")
     logger.critical("This is a critical message.")
-    RobustLogger.debug("This is a debug message, correctly handling a user forgetting to construct RobustLogger.")  # type: ignore[call-arg, arg-type]
+    RobustLogger.debug(
+        "This is a debug message, correctly handling a user forgetting to construct RobustLogger."
+    )  # type: ignore[call-arg, arg-type]
 
     # Test various edge case
     RobustLogger("This is a test of __call__")  # type: ignore[call-arg]

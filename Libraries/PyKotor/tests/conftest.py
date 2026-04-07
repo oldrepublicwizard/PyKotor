@@ -12,10 +12,10 @@ skipped during collection when their prerequisites are absent.
 
 from __future__ import annotations
 
-import os
-import sys
 import atexit
+import os
 import shutil
+import sys
 import tempfile
 
 from pathlib import Path
@@ -34,7 +34,6 @@ for _p in (_PYKOTOR_SRC, _UTILITY_SRC):
 from pykotor.common.misc import Game
 from pykotor.tools.create_installation import create_minimal_installation
 from pykotor.tools.heuristics import determine_game
-
 
 _SESSION_TEMP_DIR: Path | None = None
 
@@ -110,7 +109,9 @@ def _discover_game_install_roots() -> list[tuple[str, Path]]:
     seen: set[str] = set()
 
     k1_root = _resolve_or_create_install_path("k1", os.environ.get("K1_PATH"))
-    k2_root = _resolve_or_create_install_path("k2", os.environ.get("TSL_PATH") or os.environ.get("K2_PATH"))
+    k2_root = _resolve_or_create_install_path(
+        "k2", os.environ.get("TSL_PATH") or os.environ.get("K2_PATH")
+    )
 
     for label, p in (("k1", k1_root), ("k2", k2_root)):
         key = str(p.resolve()) if p.exists() else str(p)

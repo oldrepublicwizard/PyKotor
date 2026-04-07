@@ -423,9 +423,15 @@ class LayoutVerifier:
         if col != expected_col:
             return False, f"Widget {widget.objectName()} at col {col}, expected {expected_col}"
         if row_span != expected_row_span:
-            return False, f"Widget {widget.objectName()} row_span {row_span}, expected {expected_row_span}"
+            return (
+                False,
+                f"Widget {widget.objectName()} row_span {row_span}, expected {expected_row_span}",
+            )
         if col_span != expected_col_span:
-            return False, f"Widget {widget.objectName()} col_span {col_span}, expected {expected_col_span}"
+            return (
+                False,
+                f"Widget {widget.objectName()} col_span {col_span}, expected {expected_col_span}",
+            )
 
         return True, "OK"
 
@@ -445,9 +451,15 @@ class LayoutVerifier:
         actual_v = policy.verticalPolicy()
 
         if actual_h != h_policy:
-            return False, f"Widget {widget.objectName()} h_policy {actual_h.name}, expected {h_policy.name}"
+            return (
+                False,
+                f"Widget {widget.objectName()} h_policy {actual_h.name}, expected {h_policy.name}",
+            )
         if actual_v != v_policy:
-            return False, f"Widget {widget.objectName()} v_policy {actual_v.name}, expected {v_policy.name}"
+            return (
+                False,
+                f"Widget {widget.objectName()} v_policy {actual_v.name}, expected {v_policy.name}",
+            )
 
         return True, "OK"
 
@@ -472,7 +484,10 @@ class FontVerifier:
         if actual_family in expected_families:
             return True, "OK"
 
-        return False, f"Widget {widget.objectName()} font '{actual_family}' not in {expected_families}"
+        return (
+            False,
+            f"Widget {widget.objectName()} font '{actual_family}' not in {expected_families}",
+        )
 
     @staticmethod
     def verify_font_size(
@@ -496,7 +511,10 @@ class FontVerifier:
         if abs(actual_size - expected_size) <= tolerance:
             return True, "OK"
 
-        return False, f"Widget {widget.objectName()} font size {actual_size}pt, expected {expected_size}pt"
+        return (
+            False,
+            f"Widget {widget.objectName()} font size {actual_size}pt, expected {expected_size}pt",
+        )
 
 
 class ViewItemVerifier:
@@ -602,13 +620,19 @@ class WindowsFileDialogConformanceTestBase(unittest.TestCase):
         (cls.temp_path / "Documents" / "report.txt").write_text("Report content")
         (cls.temp_path / "Documents" / "report.docx").write_bytes(b"PK\x03\x04" + b"\x00" * 100)
         (cls.temp_path / "Documents" / "data.xlsx").write_bytes(b"PK\x03\x04" + b"\x00" * 100)
-        (cls.temp_path / "Documents" / "Reports" / "annual.pdf").write_bytes(b"%PDF-1.4" + b"\x00" * 100)
+        (cls.temp_path / "Documents" / "Reports" / "annual.pdf").write_bytes(
+            b"%PDF-1.4" + b"\x00" * 100
+        )
         (cls.temp_path / "Pictures" / "photo.jpg").write_bytes(b"\xff\xd8\xff\xe0" + b"\x00" * 100)
-        (cls.temp_path / "Pictures" / "screenshot.png").write_bytes(b"\x89PNG\r\n\x1a\n" + b"\x00" * 100)
+        (cls.temp_path / "Pictures" / "screenshot.png").write_bytes(
+            b"\x89PNG\r\n\x1a\n" + b"\x00" * 100
+        )
         (cls.temp_path / "Downloads" / "setup.exe").write_bytes(b"MZ" + b"\x00" * 100)
         (cls.temp_path / "Downloads" / "archive.zip").write_bytes(b"PK\x03\x04" + b"\x00" * 100)
         (cls.temp_path / "Music" / "song.mp3").write_bytes(b"ID3" + b"\x00" * 100)
-        (cls.temp_path / "Videos" / "video.mp4").write_bytes(b"\x00\x00\x00\x1c" + b"ftyp" + b"\x00" * 100)
+        (cls.temp_path / "Videos" / "video.mp4").write_bytes(
+            b"\x00\x00\x00\x1c" + b"ftyp" + b"\x00" * 100
+        )
 
     @classmethod
     def tearDownClass(cls) -> None:

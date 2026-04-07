@@ -50,7 +50,9 @@ try:
         StringExpression,  # pyright: ignore[reportUnusedImport]  # noqa: F401
         VectorExpression,  # pyright: ignore[reportUnusedImport]  # noqa: F401
     )
-    from pykotor.resource.formats.ncs.compiler.lexer import NssLexer  # type: ignore[import-not-found, note]
+    from pykotor.resource.formats.ncs.compiler.lexer import (
+        NssLexer,  # type: ignore[import-not-found, note]
+    )
 except ImportError as e:
     print(f"Error importing PyKotor modules: {e}")
     print("Make sure you're running from the project root and dependencies are installed.")
@@ -75,7 +77,9 @@ def token_type_to_datatype(token_type: str) -> str | None:
     return type_map.get(token_type)
 
 
-def parse_constant_from_tokens(tokens: list, start_idx: int, lines: list[str]) -> tuple[dict, int] | None:
+def parse_constant_from_tokens(
+    tokens: list, start_idx: int, lines: list[str]
+) -> tuple[dict, int] | None:
     """Parse a constant declaration from tokens.
 
     Grammar: global_variable_initialization : data_type IDENTIFIER '=' expression ';'
@@ -89,7 +93,12 @@ def parse_constant_from_tokens(tokens: list, start_idx: int, lines: list[str]) -
     # Also handle: TYPE TRUE_VALUE = VALUE ; or TYPE FALSE_VALUE = VALUE ;
     # Also handle: TYPE IDENTIFIER = MINUS VALUE ; (negative numbers)
     name_token_type = tokens[start_idx + 1].type
-    is_valid_name = name_token_type == "IDENTIFIER" or name_token_type in ["TRUE_VALUE", "FALSE_VALUE", "OBJECTSELF_VALUE", "OBJECTINVALID_VALUE"]
+    is_valid_name = name_token_type == "IDENTIFIER" or name_token_type in [
+        "TRUE_VALUE",
+        "FALSE_VALUE",
+        "OBJECTSELF_VALUE",
+        "OBJECTINVALID_VALUE",
+    ]
 
     # Check for negative number pattern first (TYPE IDENTIFIER = MINUS VALUE ;)
     if (
@@ -139,7 +148,12 @@ def parse_constant_from_tokens(tokens: list, start_idx: int, lines: list[str]) -
         return ({"datatype": datatype, "name": name, "value": value}, start_idx + 6)
 
     # Standard pattern: TYPE IDENTIFIER = VALUE ;
-    if tokens[start_idx].type in ["INT_TYPE", "FLOAT_TYPE", "STRING_TYPE"] and is_valid_name and tokens[start_idx + 2].type == "=" and tokens[start_idx + 4].type == ";":
+    if (
+        tokens[start_idx].type in ["INT_TYPE", "FLOAT_TYPE", "STRING_TYPE"]
+        and is_valid_name
+        and tokens[start_idx + 2].type == "="
+        and tokens[start_idx + 4].type == ";"
+    ):
         datatype = token_type_to_datatype(tokens[start_idx].type)
         if not datatype:
             return None
@@ -208,7 +222,9 @@ def parse_constant_from_tokens(tokens: list, start_idx: int, lines: list[str]) -
     return None
 
 
-def parse_function_from_tokens(tokens: list, start_idx: int, lines: list[str], line_numbers: dict) -> tuple[dict, int] | None:
+def parse_function_from_tokens(
+    tokens: list, start_idx: int, lines: list[str], line_numbers: dict
+) -> tuple[dict, int] | None:
     """Parse a function forward declaration from tokens.
 
     Grammar: function_forward_declaration : data_type IDENTIFIER '(' function_definition_params ')' ';'
@@ -339,7 +355,11 @@ def parse_function_params(param_tokens: list) -> list[dict]:
                 default_token = group[3]
                 # Special handling: negative number defaults like -1 or -1.0
                 # Pattern: = MINUS INT_VALUE or = MINUS FLOAT_VALUE
-                if len(group) >= 5 and default_token.type == "MINUS" and group[4].type in ["INT_VALUE", "FLOAT_VALUE"]:
+                if (
+                    len(group) >= 5
+                    and default_token.type == "MINUS"
+                    and group[4].type in ["INT_VALUE", "FLOAT_VALUE"]
+                ):
                     value_token = group[4]
                     if value_token.type == "INT_VALUE":
                         expr = value_token.value
@@ -370,9 +390,21 @@ def parse_function_params(param_tokens: list) -> list[dict]:
                         x_expr = group[4].value
                         y_expr = group[6].value
                         z_expr = group[8].value
-                        x = x_expr.value if hasattr(x_expr, "value") else float(str(x_expr).rstrip("f"))
-                        y = y_expr.value if hasattr(y_expr, "value") else float(str(y_expr).rstrip("f"))
-                        z = z_expr.value if hasattr(z_expr, "value") else float(str(z_expr).rstrip("f"))
+                        x = (
+                            x_expr.value
+                            if hasattr(x_expr, "value")
+                            else float(str(x_expr).rstrip("f"))
+                        )
+                        y = (
+                            y_expr.value
+                            if hasattr(y_expr, "value")
+                            else float(str(y_expr).rstrip("f"))
+                        )
+                        z = (
+                            z_expr.value
+                            if hasattr(z_expr, "value")
+                            else float(str(z_expr).rstrip("f"))
+                        )
                         # Generate Python vector representation
                         default_value = f"Vector3({x}, {y}, {z})"
                     else:
@@ -488,7 +520,9 @@ def parse_function_params(param_tokens: list) -> list[dict]:
     return params
 
 
-def extract_function_documentation_from_line(lines: list[str], line_num: int, func_name: str) -> dict:
+def extract_function_documentation_from_line(
+    lines: list[str], line_num: int, func_name: str
+) -> dict:
     """Extract function documentation by finding the function in the original lines."""
     # Find the function line
     func_line_idx = None
@@ -669,13 +703,17 @@ def generate_function_python(func: dict, constants: list[dict]) -> str:
                         else:
                             # Couldn't resolve - this is likely an error in the NSS or a missing constant
                             # Leave as-is and let it fail, so we can debug
-                            print(f"WARNING: Could not resolve constant '{default}' for parameter '{param_name}' in function context")
+                            print(
+                                f"WARNING: Could not resolve constant '{default}' for parameter '{param_name}' in function context"
+                            )
                 # If it's already a string literal (starts with "), it's already properly formatted
                 elif default.startswith('"') and default.endswith('"'):
                     # Already a string literal from repr(), use as-is
                     pass
                 # If it's a repr() string (starts and ends with ' or "), use as-is
-                elif (default.startswith("'") and default.endswith("'")) or (default.startswith('"') and default.endswith('"')):
+                elif (default.startswith("'") and default.endswith("'")) or (
+                    default.startswith('"') and default.endswith('"')
+                ):
                     # Already properly formatted by repr(), use as-is
                     pass
 
@@ -687,7 +725,9 @@ def generate_function_python(func: dict, constants: list[dict]) -> str:
                 # If default is a string, check if it should be a string literal or Python code
                 if isinstance(default, str):
                     # Check if it's already a formatted string literal (starts/ends with quotes)
-                    if (default.startswith('"') and default.endswith('"')) or (default.startswith("'") and default.endswith("'")):
+                    if (default.startswith('"') and default.endswith('"')) or (
+                        default.startswith("'") and default.endswith("'")
+                    ):
                         # Already formatted, use as-is
                         default_formatted = default
                     # Check if it looks like Python code (function calls, etc.)
@@ -706,14 +746,28 @@ def generate_function_python(func: dict, constants: list[dict]) -> str:
                     # Not a string, use directly
                     default_formatted = str(default)
                 # Use the default value directly in Python code
-                params_py.append(f'ScriptParam({param_type_py}, "{param_name}", {default_formatted})')
+                params_py.append(
+                    f'ScriptParam({param_type_py}, "{param_name}", {default_formatted})'
+                )
         else:
             params_py.append(f'ScriptParam({param_type_py}, "{param_name}", None)')
 
     params_str = "[" + ", ".join(params_py) + "]" if params_py else "[]"
 
-    description = func["description"].replace("\\", "\\\\").replace('"', '\\"').replace("\n", "\\n").replace("\r", "\\r")
-    raw = func["raw"].replace("\\", "\\\\").replace('"', '\\"').replace("\n", "\\n").replace("\r", "\\r")
+    description = (
+        func["description"]
+        .replace("\\", "\\\\")
+        .replace('"', '\\"')
+        .replace("\n", "\\n")
+        .replace("\r", "\\r")
+    )
+    raw = (
+        func["raw"]
+        .replace("\\", "\\\\")
+        .replace('"', '\\"')
+        .replace("\n", "\\n")
+        .replace("\r", "\\r")
+    )
 
     return f"""    ScriptFunction(
         {return_type_py},
@@ -724,7 +778,12 @@ def generate_function_python(func: dict, constants: list[dict]) -> str:
     ),"""
 
 
-def generate_scriptdefs(k1_constants: list[dict], k1_functions: list[dict], k2_constants: list[dict], k2_functions: list[dict]) -> str:
+def generate_scriptdefs(
+    k1_constants: list[dict],
+    k1_functions: list[dict],
+    k2_constants: list[dict],
+    k2_functions: list[dict],
+) -> str:
     """Generate the complete scriptdefs.py file content."""
     header = """from __future__ import annotations
 
@@ -767,7 +826,9 @@ def main():
     repo_root = Path(__file__).parent.parent
     k1_nss = repo_root / "vendor" / "NorthernLights" / "Scripts" / "k1_nwscript.nss"
     k2_nss = repo_root / "vendor" / "NorthernLights" / "Scripts" / "k2_nwscript.nss"
-    output_file = repo_root / "Libraries" / "PyKotor" / "src" / "pykotor" / "common" / "scriptdefs.py"
+    output_file = (
+        repo_root / "Libraries" / "PyKotor" / "src" / "pykotor" / "common" / "scriptdefs.py"
+    )
 
     print(f"Parsing {k1_nss}...")
     k1_constants, k1_functions = parse_nss_file(k1_nss, Game.K1)

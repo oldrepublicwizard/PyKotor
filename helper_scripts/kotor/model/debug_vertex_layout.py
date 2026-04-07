@@ -12,7 +12,14 @@ from io import BytesIO
 from pykotor.common.misc import Game
 from pykotor.extract.installation import Installation
 from pykotor.resource.formats.mdl import write_mdl
-from pykotor.resource.formats.mdl.io_mdl import MDLBinaryReader, MDLBinaryWriter, _ModelHeader, _Node, _NodeHeader, _TrimeshHeader
+from pykotor.resource.formats.mdl.io_mdl import (
+    MDLBinaryReader,
+    MDLBinaryWriter,
+    _ModelHeader,
+    _Node,
+    _NodeHeader,
+    _TrimeshHeader,
+)
 from pykotor.resource.type import ResourceType
 from pykotor.tools.path import find_kotor_paths_from_default
 
@@ -61,10 +68,14 @@ mdl = reader.load()
 print(f"{'NodeID':<8} {'VCount':<8} {'MDX_off':<12} {'MDL_verts_off':<15}")
 print("-" * 50)
 for d in orig_vertex_data[:10]:
-    print(f"{d['node_id']:<8} {d['vertex_count']:<8} {d['mdx_data_offset']:<12} {d['vertices_offset']:<15}")
+    print(
+        f"{d['node_id']:<8} {d['vertex_count']:<8} {d['mdx_data_offset']:<12} {d['vertices_offset']:<15}"
+    )
 
 # Calculate how much vertex data is in original MDL vertex blocks
-total_orig_mdl_verts_bytes = sum(d["vertex_count"] * 12 for d in orig_vertex_data if d["vertices_offset"] not in (0, 0xFFFFFFFF))
+total_orig_mdl_verts_bytes = sum(
+    d["vertex_count"] * 12 for d in orig_vertex_data if d["vertices_offset"] not in (0, 0xFFFFFFFF)
+)
 print(f"\nTotal original MDL vertex bytes: {total_orig_mdl_verts_bytes}")
 print(f"Total vertices: {sum(d['vertex_count'] for d in orig_vertex_data)}")
 
@@ -96,17 +107,23 @@ writer.game = Game.K1
 writer._update_all_data()
 
 # Check what vertices bin_nodes have
-total_pykotor_verts_bytes = sum(bn.trimesh.vertices_size() if bn.trimesh else 0 for bn in writer._bin_nodes)
+total_pykotor_verts_bytes = sum(
+    bn.trimesh.vertices_size() if bn.trimesh else 0 for bn in writer._bin_nodes
+)
 print(f"PyKotor would write vertex bytes: {total_pykotor_verts_bytes}")
 
 # Summary
 print("\n=== Summary ===")
 print(f"Original has {total_orig_mdl_verts_bytes} bytes of MDL vertex data")
 print(f"PyKotor writes {total_pykotor_verts_bytes} bytes of MDL vertex data")
-print(f"Both write same vertex data to MDL: {total_orig_mdl_verts_bytes == total_pykotor_verts_bytes}")
+print(
+    f"Both write same vertex data to MDL: {total_orig_mdl_verts_bytes == total_pykotor_verts_bytes}"
+)
 print()
 print(f"But MDL size difference is: {len(pykotor_mdl) - len(mdl_res.data)} bytes")
-print(f"This suggests original has {len(mdl_res.data) - len(pykotor_mdl)} extra bytes not from vertices")
+print(
+    f"This suggests original has {len(mdl_res.data) - len(pykotor_mdl)} extra bytes not from vertices"
+)
 
 # Investigate where the extra bytes come from
 print("\n=== Investigating Extra Data ===")
@@ -172,7 +189,9 @@ for node in mdl.all_nodes():
     if node.mesh:
         total_indices_counts += len(node.mesh.indices_counts) if node.mesh.indices_counts else 0
         total_indices_offsets += len(node.mesh.indices_offsets) if node.mesh.indices_offsets else 0
-        total_inverted_counters += len(node.mesh.inverted_counters) if node.mesh.inverted_counters else 0
+        total_inverted_counters += (
+            len(node.mesh.inverted_counters) if node.mesh.inverted_counters else 0
+        )
 print(f"Total indices_counts: {total_indices_counts}")
 print(f"Total indices_offsets: {total_indices_offsets}")
 print(f"Total inverted_counters: {total_inverted_counters}")
@@ -229,7 +248,9 @@ print(f"Expected controller data: {total_controller_data * 4}")
 print(f"Expected faces: {total_face_bytes}")
 print(f"Expected vertices: {total_pykotor_verts_bytes}")
 print(f"Expected skin extra: {total_skin_extra}")
-print(f"Expected indices arrays: {(total_indices_counts + total_indices_offsets + total_inverted_counters) * 4}")
+print(
+    f"Expected indices arrays: {(total_indices_counts + total_indices_offsets + total_inverted_counters) * 4}"
+)
 
 # Children offsets (4 bytes per child reference)
 total_children = sum(len(node.children) for node in mdl.all_nodes())

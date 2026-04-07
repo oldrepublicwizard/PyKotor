@@ -94,8 +94,32 @@ class FieldDiff:
 
     field_path: str
     diff_type: DiffType
-    left_value: int | float | str | ResRef | LocalizedString | Vector3 | Vector4 | GFFStruct | GFFList | bytes | None = None
-    right_value: int | float | str | ResRef | LocalizedString | Vector3 | Vector4 | GFFStruct | GFFList | bytes | None = None
+    left_value: (
+        int
+        | float
+        | str
+        | ResRef
+        | LocalizedString
+        | Vector3
+        | Vector4
+        | GFFStruct
+        | GFFList
+        | bytes
+        | None
+    ) = None
+    right_value: (
+        int
+        | float
+        | str
+        | ResRef
+        | LocalizedString
+        | Vector3
+        | Vector4
+        | GFFStruct
+        | GFFList
+        | bytes
+        | None
+    ) = None
     field_type: str | None = None
 
 
@@ -436,7 +460,9 @@ class DiffEngine:
                 right_identifier=right_id,
                 resource_type=resource_type,
             )
-        assert left_data is not None and right_data is not None, "Both data cannot be None, at least one must be provided"
+        assert left_data is not None and right_data is not None, (
+            "Both data cannot be None, at least one must be provided"
+        )
 
         # Get the appropriate comparator
         comparator = self.comparators.get(resource_type, self.comparators[DiffResourceType.BYTES])

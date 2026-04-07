@@ -11,6 +11,7 @@ from __future__ import annotations
 
 import re
 import sys
+
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -93,7 +94,9 @@ def process_file(path: Path) -> bool:
         if not changed:
             break
     if lines != original:
-        path.write_text("\n".join(lines) + ("\n" if text.endswith("\n") else ""), encoding="utf-8", newline="\n")
+        path.write_text(
+            "\n".join(lines) + ("\n" if text.endswith("\n") else ""), encoding="utf-8", newline="\n"
+        )
         return True
     return False
 

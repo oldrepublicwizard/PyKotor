@@ -5,21 +5,26 @@ import kaitaistruct
 from kaitaistruct import KaitaiStruct, KaitaiStream, BytesIO
 
 
-if getattr(kaitaistruct, 'API_VERSION', (0, 9)) < (0, 11):
-    raise Exception("Incompatible Kaitai Struct Python API: 0.11 or later is required, but you have %s" % (kaitaistruct.__version__))
+if getattr(kaitaistruct, "API_VERSION", (0, 9)) < (0, 11):
+    raise Exception(
+        "Incompatible Kaitai Struct Python API: 0.11 or later is required, but you have %s"
+        % (kaitaistruct.__version__)
+    )
+
 
 class Ltr(KaitaiStruct):
     """LTR (Letter) resources store third-order Markov chain probability tables that the game uses
     to procedurally generate NPC names. The data encodes likelihoods for characters appearing at
     the start, middle, and end of names given zero, one, or two-character context.
-    
+
     KotOR always uses the 28-character alphabet (a-z plus ' and -). Neverwinter Nights (NWN) used
     26 characters; the header explicitly stores the count. This is a KotOR-specific difference from NWN.
-    
+
     LTR files are binary and consist of a short header followed by three probability tables
     (singles, doubles, triples) stored as contiguous float arrays.
-    
+
     """
+
     def __init__(self, _io, _parent=None, _root=None):
         super(Ltr, self).__init__(_io)
         self._parent = _parent
@@ -27,13 +32,12 @@ class Ltr(KaitaiStruct):
         self._read()
 
     def _read(self):
-        self.file_type = (self._io.read_bytes(4)).decode(u"ASCII")
-        self.file_version = (self._io.read_bytes(4)).decode(u"ASCII")
+        self.file_type = (self._io.read_bytes(4)).decode("ASCII")
+        self.file_version = (self._io.read_bytes(4)).decode("ASCII")
         self.letter_count = self._io.read_u1()
         self.single_letter_block = Ltr.LetterBlock(self._io, self, self._root)
         self.double_letter_blocks = Ltr.DoubleLetterBlocksArray(self._io, self, self._root)
         self.triple_letter_blocks = Ltr.TripleLetterBlocksArray(self._io, self, self._root)
-
 
     def _fetch_instances(self):
         pass
@@ -45,6 +49,7 @@ class Ltr(KaitaiStruct):
         """Array of double-letter blocks. One block per character in the alphabet.
         Each block is indexed by the previous character (context length 1).
         """
+
         def __init__(self, _io, _parent=None, _root=None):
             super(Ltr.DoubleLetterBlocksArray, self).__init__(_io)
             self._parent = _parent
@@ -56,24 +61,21 @@ class Ltr(KaitaiStruct):
             for i in range(self._root.letter_count):
                 self.blocks.append(Ltr.LetterBlock(self._io, self, self._root))
 
-
-
         def _fetch_instances(self):
             pass
             for i in range(len(self.blocks)):
                 pass
                 self.blocks[i]._fetch_instances()
 
-
-
     class LetterBlock(KaitaiStruct):
         """A probability block containing three arrays of probabilities (start, middle, end).
         Each array has letter_count floats representing cumulative probabilities for each character
         in the alphabet appearing at that position (start, middle, or end of name).
-        
+
         Blocks store cumulative probabilities (monotonically increasing floats) that are compared
         against random roll values during name generation.
         """
+
         def __init__(self, _io, _parent=None, _root=None):
             super(Ltr.LetterBlock, self).__init__(_io)
             self._parent = _parent
@@ -93,8 +95,6 @@ class Ltr(KaitaiStruct):
             for i in range(self._root.letter_count):
                 self.end_probabilities.append(self._io.read_f4le())
 
-
-
         def _fetch_instances(self):
             pass
             for i in range(len(self.start_probabilities)):
@@ -106,12 +106,11 @@ class Ltr(KaitaiStruct):
             for i in range(len(self.end_probabilities)):
                 pass
 
-
-
     class TripleLetterBlocksArray(KaitaiStruct):
         """Two-dimensional array of triple-letter blocks. letter_count × letter_count blocks total.
         Each block is indexed by the previous two characters (context length 2).
         """
+
         def __init__(self, _io, _parent=None, _root=None):
             super(Ltr.TripleLetterBlocksArray, self).__init__(_io)
             self._parent = _parent
@@ -123,20 +122,17 @@ class Ltr(KaitaiStruct):
             for i in range(self._root.letter_count):
                 self.rows.append(Ltr.TripleLetterRow(self._io, self, self._root))
 
-
-
         def _fetch_instances(self):
             pass
             for i in range(len(self.rows)):
                 pass
                 self.rows[i]._fetch_instances()
 
-
-
     class TripleLetterRow(KaitaiStruct):
         """A row in the triple-letter blocks array. Contains letter_count blocks,
         each indexed by the last character in the two-character context.
         """
+
         def __init__(self, _io, _parent=None, _root=None):
             super(Ltr.TripleLetterRow, self).__init__(_io)
             self._parent = _parent
@@ -148,14 +144,8 @@ class Ltr(KaitaiStruct):
             for i in range(self._root.letter_count):
                 self.blocks.append(Ltr.LetterBlock(self._io, self, self._root))
 
-
-
         def _fetch_instances(self):
             pass
             for i in range(len(self.blocks)):
                 pass
                 self.blocks[i]._fetch_instances()
-
-
-
-

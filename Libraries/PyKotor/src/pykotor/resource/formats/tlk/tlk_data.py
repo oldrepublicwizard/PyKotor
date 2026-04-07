@@ -145,7 +145,9 @@ class TLK(ComparableMixin):
             raise IndexError(msg)
         old_text: str = self.entries[stringref].text
         old_sound: ResRef = self.entries[stringref].voiceover
-        self.entries[stringref] = TLKEntry(text or old_text, ResRef(sound_resref) if sound_resref else old_sound)
+        self.entries[stringref] = TLKEntry(
+            text or old_text, ResRef(sound_resref) if sound_resref else old_sound
+        )
 
     def resize(
         self,
@@ -175,7 +177,9 @@ class TLK(ComparableMixin):
             True if TLKs are identical, False otherwise
         """
         if not isinstance(other, TLK):
-            log_func(f"Type mismatch: 'TLK' vs '{other.__class__.__name__ if isinstance(other, object) else type(other)}'")
+            log_func(
+                f"Type mismatch: 'TLK' vs '{other.__class__.__name__ if isinstance(other, object) else type(other)}'"
+            )
             return False
 
         # Build content-based lookup to detect moved/reordered entries
@@ -212,7 +216,9 @@ class TLK(ComparableMixin):
         len2 = len(other.entries)
 
         if len1 != len2:
-            log_func(f"TLK size mismatch: Old has {len1} entries, New has {len2} entries (diff: {len2 - len1:+d})")
+            log_func(
+                f"TLK size mismatch: Old has {len1} entries, New has {len2} entries (diff: {len2 - len1:+d})"
+            )
 
         # Report added entries (in new file only)
         if added_keys:
@@ -257,7 +263,9 @@ class TLK(ComparableMixin):
         has_differences = bool(added_keys or removed_keys or modified_count)
 
         if has_differences:
-            log_func(f"\nTLK Summary: {len(added_keys)} added, {len(removed_keys)} removed, {modified_count} modified")
+            log_func(
+                f"\nTLK Summary: {len(added_keys)} added, {len(removed_keys)} removed, {modified_count} modified"
+            )
 
         return not has_differences
 
@@ -355,7 +363,9 @@ class TLKEntry(ComparableMixin):
     def __repr__(self) -> str:
         """Returns a string representation of the TLKEntry."""
         max_repr_length = 50
-        text_preview = self.text[:max_repr_length] + "..." if len(self.text) > max_repr_length else self.text
+        text_preview = (
+            self.text[:max_repr_length] + "..." if len(self.text) > max_repr_length else self.text
+        )
         text_preview = text_preview.replace("\n", "\\n").replace("\r", "\\r")
         return f"TLKEntry(text={text_preview!r}, voiceover={self.voiceover!r})"
 

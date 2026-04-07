@@ -6,17 +6,19 @@ and outputs wiki-formatted markdown blocks for each category section.
 Usage:
     uv run helper_scripts/generate_nss_wiki.py
 """
+
 from __future__ import annotations
 
 import re
 import sys
+
 from pathlib import Path
 
 # Add pykotor to path
 sys.path.insert(0, str(Path(__file__).parent.parent / "Libraries/PyKotor/src"))
 
-from pykotor.common.scriptdefs import KOTOR_FUNCTIONS, TSL_FUNCTIONS
 from pykotor.common.script import DataType, ScriptFunction
+from pykotor.common.scriptdefs import KOTOR_FUNCTIONS, TSL_FUNCTIONS
 
 # ─── Category assignment ──────────────────────────────────────────────────────
 # Rules checked in ORDER - first match wins.
@@ -26,57 +28,89 @@ from pykotor.common.script import DataType, ScriptFunction
 CATEGORY_RULES: list[tuple[str, str]] = [
     # ── Effects System ─────────────────────────────────────────────────────
     (r"^Effect", "Effects System"),
-
     # ── Item Properties ────────────────────────────────────────────────────
-    (r"ItemProperty|^(Get|Add|Remove|Break|HasItem).*Property|^GetIsItemProperty", "Item Properties"),
-
+    (
+        r"ItemProperty|^(Get|Add|Remove|Break|HasItem).*Property|^GetIsItemProperty",
+        "Item Properties",
+    ),
     # ── Local Variables ────────────────────────────────────────────────────
     (r"^(Get|Set)Local(Boolean|Number|String|Object|Float)", "Local Variables"),
-
     # ── Global Variables ───────────────────────────────────────────────────
     (r"^(Get|Set)Global", "Global Variables"),
-
     # ── Sound and Music ────────────────────────────────────────────────────
-    (r"^(Music|AmbientSound|PlaySound|SoundObject|SetSoundObject|GetSoundObject)", "Sound and Music Functions"),
-    (r"BackgroundMusic|SoundObjectPlay|SoundObjectStop|SoundObjectSetVolume|SoundObjectSetPosition|SoundObjectGetState|^AmbientSound", "Sound and Music Functions"),
-
+    (
+        r"^(Music|AmbientSound|PlaySound|SoundObject|SetSoundObject|GetSoundObject)",
+        "Sound and Music Functions",
+    ),
+    (
+        r"BackgroundMusic|SoundObjectPlay|SoundObjectStop|SoundObjectSetVolume|SoundObjectSetPosition|SoundObjectGetState|^AmbientSound",
+        "Sound and Music Functions",
+    ),
     # ── Alignment System ───────────────────────────────────────────────────
-    (r"Alignment|GoodEvil|LawChaos|^AdjustAlignment|^GetAlignmentGoodEvil|^GetAlignmentLawChaos", "Alignment System"),
-    (r"^GetIsEnemy|^GetIsFriend|^GetIsNeutral|^GetFactionEqual|^GetStandardFactionReputation|^SetStandardFactionReputation|^GetReputation|^SetReputation|FriendlyFireCheck|^GetIsFriend|^GetIsReactionType", "Alignment System"),
-
+    (
+        r"Alignment|GoodEvil|LawChaos|^AdjustAlignment|^GetAlignmentGoodEvil|^GetAlignmentLawChaos",
+        "Alignment System",
+    ),
+    (
+        r"^GetIsEnemy|^GetIsFriend|^GetIsNeutral|^GetFactionEqual|^GetStandardFactionReputation|^SetStandardFactionReputation|^GetReputation|^SetReputation|FriendlyFireCheck|^GetIsFriend|^GetIsReactionType",
+        "Alignment System",
+    ),
     # ── Class System ───────────────────────────────────────────────────────
-    (r"^GetClassByPosition|^GetLevelByClass|^GetLevelByPosition|^GetHasSpell|^GetKnowsFeat|LevelUpHenchman|^GetTotalLevels|^GetSpellResistance|^GetLastSpellLevel|^GetSpellCastItem", "Class System"),
-
+    (
+        r"^GetClassByPosition|^GetLevelByClass|^GetLevelByPosition|^GetHasSpell|^GetKnowsFeat|LevelUpHenchman|^GetTotalLevels|^GetSpellResistance|^GetLastSpellLevel|^GetSpellCastItem",
+        "Class System",
+    ),
     # ── Abilities and Stats ────────────────────────────────────────────────
-    (r"AbilityScore|AbilityModifier|^GetAbility|^SetAbility|HitPoints|ForcePoints|GetFortitude|GetWill|GetReflex|GetReflexAdjusted|Strength|Dexterity|Constitution|GetIntelligence|GetWisdom|GetCharisma|BaseAttackBonus|^GetCurrentHitPoints|^GetMaxHitPoints|^GetCurrentForcePoints|^GetMaxForcePoints", "Abilities and Stats"),
-
+    (
+        r"AbilityScore|AbilityModifier|^GetAbility|^SetAbility|HitPoints|ForcePoints|GetFortitude|GetWill|GetReflex|GetReflexAdjusted|Strength|Dexterity|Constitution|GetIntelligence|GetWisdom|GetCharisma|BaseAttackBonus|^GetCurrentHitPoints|^GetMaxHitPoints|^GetCurrentForcePoints|^GetMaxForcePoints",
+        "Abilities and Stats",
+    ),
     # ── Skills and Feats ──────────────────────────────────────────────────
-    (r"SkillRank|HasSkill|^GetSkill|^SetSkill|HasFeat|^GetHasFeat|^GetFeatX|FeatUsesRemaining|^GetLastSpell|^GetSpellFeatId|^SetFeatUsesRemaining", "Skills and Feats"),
-
+    (
+        r"SkillRank|HasSkill|^GetSkill|^SetSkill|HasFeat|^GetHasFeat|^GetFeatX|FeatUsesRemaining|^GetLastSpell|^GetSpellFeatId|^SetFeatUsesRemaining",
+        "Skills and Feats",
+    ),
     # ── Party Management ──────────────────────────────────────────────────
-    (r"^(Add|Remove|Get|Set|Is|Show)Party|AvailableNPC|IsNPCPartyMember|IsObjectPartyMember|ShowPartySelection|SwitchPlayerCharacter", "Party Management"),
-
+    (
+        r"^(Add|Remove|Get|Set|Is|Show)Party|AvailableNPC|IsNPCPartyMember|IsObjectPartyMember|ShowPartySelection|SwitchPlayerCharacter",
+        "Party Management",
+    ),
     # ── Player Character Functions ────────────────────────────────────────
-    (r"^GetIsPC|^GetPCSpeaker|^SetPCSpeaker|^GetControlledCharacter|^SetCameraMode|^RewardXP|^RewardFeat|^RewardSkill|^GetPCName|PlayerRestrictMode|^GiveXPToCreature|^AwardLevelUpHenchman|^GetPCChatMessage|^SetPCChatMessage|^GetPCPublicCDKey|^SetPCSkinColor|^GetPlotFlag|^SetPlotFlag|^GetGender|^SetGender|^GetAge|^SetAge|^GetRace|^GetSubRace|^SetSubRace|^BootPC|^GetNumLevels", "Player Character Functions"),
-
+    (
+        r"^GetIsPC|^GetPCSpeaker|^SetPCSpeaker|^GetControlledCharacter|^SetCameraMode|^RewardXP|^RewardFeat|^RewardSkill|^GetPCName|PlayerRestrictMode|^GiveXPToCreature|^AwardLevelUpHenchman|^GetPCChatMessage|^SetPCChatMessage|^GetPCPublicCDKey|^SetPCSkinColor|^GetPlotFlag|^SetPlotFlag|^GetGender|^SetGender|^GetAge|^SetAge|^GetRace|^GetSubRace|^SetSubRace|^BootPC|^GetNumLevels",
+        "Player Character Functions",
+    ),
     # ── Dialog and Conversation Functions ────────────────────────────────
-    (r"^SpeakString|^SpeakUniqueTo|Conversation|^ActionStartConversation|IsInConversation|^PauseConversation|^ResumeConversation|^GetCurrentDialogString|Token(?:Integer|String|Float|Object|Boolean)|GetTokenPair|SetCustomToken|^GetPCSpeaker|^SetPCSpeaker|^GetFirstNPCInConversation|^GetLastConversationPlayed|^SetLastConversationPlayed", "Dialog and Conversation Functions"),
-
+    (
+        r"^SpeakString|^SpeakUniqueTo|Conversation|^ActionStartConversation|IsInConversation|^PauseConversation|^ResumeConversation|^GetCurrentDialogString|Token(?:Integer|String|Float|Object|Boolean)|GetTokenPair|SetCustomToken|^GetPCSpeaker|^SetPCSpeaker|^GetFirstNPCInConversation|^GetLastConversationPlayed|^SetLastConversationPlayed",
+        "Dialog and Conversation Functions",
+    ),
     # ── Combat Functions ──────────────────────────────────────────────────
-    (r"^GetIsInCombat|^GetAttackTarget|^GetLastAttacker|^GetLastDamager|^GetLastKiller|^GetDamageDealers|^GetDamageDealtByType|^GetTotalDamageDealt|^CombatRoundStart|^ActionCombatRoundStart|^ActionAttack|CastSpell|^GetSpellId|^GetSpellTargetObject|^GetSpellTargetLocation|^GetSavingThrowCheckPenalty|^SetSavingThrowCheckPenalty|^GetLastSpellHarmful|^GetLastCastSpell|IsItemSizeGe|^GetWeaponRanged|^GetIsWeaponEffective|^GetNumWeapon|^GetLastHostileActor|^GetAoEObjectById|^ActionForceMoveToObject|^ActionForceMoveToLocation|^SetIsDestroyable|^GetIsDestroyable|^SetImmortal|^GetImmortal|^GetInvulnerable|^SetInvulnerable", "Combat Functions"),
-
+    (
+        r"^GetIsInCombat|^GetAttackTarget|^GetLastAttacker|^GetLastDamager|^GetLastKiller|^GetDamageDealers|^GetDamageDealtByType|^GetTotalDamageDealt|^CombatRoundStart|^ActionCombatRoundStart|^ActionAttack|CastSpell|^GetSpellId|^GetSpellTargetObject|^GetSpellTargetLocation|^GetSavingThrowCheckPenalty|^SetSavingThrowCheckPenalty|^GetLastSpellHarmful|^GetLastCastSpell|IsItemSizeGe|^GetWeaponRanged|^GetIsWeaponEffective|^GetNumWeapon|^GetLastHostileActor|^GetAoEObjectById|^ActionForceMoveToObject|^ActionForceMoveToLocation|^SetIsDestroyable|^GetIsDestroyable|^SetImmortal|^GetImmortal|^GetInvulnerable|^SetInvulnerable",
+        "Combat Functions",
+    ),
     # ── Item Management ───────────────────────────────────────────────────
     # Match functions with "Item" in name (not followed by Property) + equip-related
-    (r"(?!.*ItemProperty).*Item|^(Equip|Unequip)|CreateObject|^ActionPickUp|^ActionDropItem|^ActionGiveItem|^ActionTakeItem|^GetDroppableFlag|^SetDroppableFlag|^GetPickpocketable|^SetPickpocketable|^GetItemCursed|^SetItemCursed|^GetItemCharges|^SetItemCharges|^GetItemWeight|^GetIdentified|^SetIdentified|^GetStolenFlag|^SetStolenFlag", "Item Management"),
-
+    (
+        r"(?!.*ItemProperty).*Item|^(Equip|Unequip)|CreateObject|^ActionPickUp|^ActionDropItem|^ActionGiveItem|^ActionTakeItem|^GetDroppableFlag|^SetDroppableFlag|^GetPickpocketable|^SetPickpocketable|^GetItemCursed|^SetItemCursed|^GetItemCharges|^SetItemCharges|^GetItemWeight|^GetIdentified|^SetIdentified|^GetStolenFlag|^SetStolenFlag",
+        "Item Management",
+    ),
     # ── Module and Area Functions ────────────────────────────────────────
-    (r"^GetArea\b|^GetModule|^JumpToArea|^ExploreAreaForPlayer|^GetAreaTransitionTarget|^SetAreaTransitionBMP|^GetAreaByTag|^GetObjectByArea|^SetAreaUnescapable|^GetAreaUnescapable|^GetTile|^GetFirstArea|^GetNextArea|^GetEntering|^GetExiting|^GetTransitionTarget|^SetTransitionTarget|^GetAreaSize|^GetEnteringObject|^GetExitingObject|^GetNearestObject.*Area|^SetWeather|^GetWeather|^GetTime|^SetTime|^GetCalendar|^SetCalendar|^GetHour|^GetMinute|^GetSecond|^GetMillisecond|^GetDay|^GetMonth|^GetYear", "Module and Area Functions"),
-
+    (
+        r"^GetArea\b|^GetModule|^JumpToArea|^ExploreAreaForPlayer|^GetAreaTransitionTarget|^SetAreaTransitionBMP|^GetAreaByTag|^GetObjectByArea|^SetAreaUnescapable|^GetAreaUnescapable|^GetTile|^GetFirstArea|^GetNextArea|^GetEntering|^GetExiting|^GetTransitionTarget|^SetTransitionTarget|^GetAreaSize|^GetEnteringObject|^GetExitingObject|^GetNearestObject.*Area|^SetWeather|^GetWeather|^GetTime|^SetTime|^GetCalendar|^SetCalendar|^GetHour|^GetMinute|^GetSecond|^GetMillisecond|^GetDay|^GetMonth|^GetYear",
+        "Module and Area Functions",
+    ),
     # ── Object Query and Manipulation ─────────────────────────────────────
-    (r"^GetObjectByTag|^GetNearestObject|^GetNearestCreature|^GetNearestEnemy|^DestroyObject|^CopyObject|^PlayAnimation|^ApplyEffectToObject|^ApplyEffectAtLocation|^RemoveEffect|^GetFirstEffect|^GetNextEffect|^GetEffectCreator|^GetEffectType|^GetIsObjectValid|^GetDistanceBetween|^GetDistanceToObject|^GetObjectType|^GetFacing|^SetFacing|^GetFacingFromLocation|^GetPosition|^SetPosition|^GetLocation|^SetLocation|^Location|^GetFirst(Creature|Door|Waypoint|Placeable|Trigger|Item)|^GetNext(Creature|Door|Waypoint|Placeable|Trigger|Item)|^CreateObject(?!.*OnObject)|^SpawnObject|^GetIs(Dead|PC|NPC|Alive|Enemy|Friend|Neutral|InCombat)|^GetTag|^GetName|^SetName|^GetObjectInArea", "Object Query and Manipulation"),
-
+    (
+        r"^GetObjectByTag|^GetNearestObject|^GetNearestCreature|^GetNearestEnemy|^DestroyObject|^CopyObject|^PlayAnimation|^ApplyEffectToObject|^ApplyEffectAtLocation|^RemoveEffect|^GetFirstEffect|^GetNextEffect|^GetEffectCreator|^GetEffectType|^GetIsObjectValid|^GetDistanceBetween|^GetDistanceToObject|^GetObjectType|^GetFacing|^SetFacing|^GetFacingFromLocation|^GetPosition|^SetPosition|^GetLocation|^SetLocation|^Location|^GetFirst(Creature|Door|Waypoint|Placeable|Trigger|Item)|^GetNext(Creature|Door|Waypoint|Placeable|Trigger|Item)|^CreateObject(?!.*OnObject)|^SpawnObject|^GetIs(Dead|PC|NPC|Alive|Enemy|Friend|Neutral|InCombat)|^GetTag|^GetName|^SetName|^GetObjectInArea",
+        "Object Query and Manipulation",
+    ),
     # ── Actions (action-queue items) ──────────────────────────────────────
-    (r"^Action|^ClearAllActions|^GetCurrentAction|^GetNumberOfActions|^AssignCommand|^DelayCommand", "Actions"),
+    (
+        r"^Action|^ClearAllActions|^GetCurrentAction|^GetNumberOfActions|^AssignCommand|^DelayCommand",
+        "Actions",
+    ),
 ]
 
 
@@ -87,7 +121,6 @@ def get_category(func: ScriptFunction) -> str:
         if re.search(pattern, name):
             return category
     return "Other Functions"
-
 
 
 def get_routine_number(func: ScriptFunction) -> int | None:
@@ -217,7 +250,6 @@ def build_category_map(
 
 
 def main() -> None:
-
     kotor_map = build_category_map(list(KOTOR_FUNCTIONS))
     tsl_map = build_category_map(list(TSL_FUNCTIONS))
 

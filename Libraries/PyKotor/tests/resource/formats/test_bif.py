@@ -66,9 +66,15 @@ class TestBIFFormats(unittest.TestCase):
 
             # Compress test data using raw LZMA1 format (as used by BZF files)
             lzma_filters = [{"id": lzma.FILTER_LZMA1}]
-            data1: bytes = lzma.compress(b"Hello World 1", format=lzma.FORMAT_RAW, filters=lzma_filters)
-            data2: bytes = lzma.compress(b"Hello World 2", format=lzma.FORMAT_RAW, filters=lzma_filters)
-            data3: bytes = lzma.compress(b"Hello World 3", format=lzma.FORMAT_RAW, filters=lzma_filters)
+            data1: bytes = lzma.compress(
+                b"Hello World 1", format=lzma.FORMAT_RAW, filters=lzma_filters
+            )
+            data2: bytes = lzma.compress(
+                b"Hello World 2", format=lzma.FORMAT_RAW, filters=lzma_filters
+            )
+            data3: bytes = lzma.compress(
+                b"Hello World 3", format=lzma.FORMAT_RAW, filters=lzma_filters
+            )
 
             # Calculate absolute file offsets
             # Data section starts after header (20 bytes) + resource table (3 * 16 bytes)
@@ -183,9 +189,21 @@ class TestBIFFormats(unittest.TestCase):
 
         # Verify resources
         self.assertEqual(len(bif2.resources), 3)
-        self.assertEqual(bif2.resources[0].data, b"Hello World 1", f"{bif2.resources[0].data!r} != b'Hello World 1'")
-        self.assertEqual(bif2.resources[1].data, b"Hello World 2", f"{bif2.resources[1].data!r} != b'Hello World 2'")
-        self.assertEqual(bif2.resources[2].data, b"Hello World 3", f"{bif2.resources[2].data!r} != b'Hello World 3'")
+        self.assertEqual(
+            bif2.resources[0].data,
+            b"Hello World 1",
+            f"{bif2.resources[0].data!r} != b'Hello World 1'",
+        )
+        self.assertEqual(
+            bif2.resources[1].data,
+            b"Hello World 2",
+            f"{bif2.resources[1].data!r} != b'Hello World 2'",
+        )
+        self.assertEqual(
+            bif2.resources[2].data,
+            b"Hello World 3",
+            f"{bif2.resources[2].data!r} != b'Hello World 3'",
+        )
 
     def test_bzf_write(self):
         """Test writing a BZF file."""
@@ -204,9 +222,21 @@ class TestBIFFormats(unittest.TestCase):
 
         # Verify resources
         self.assertEqual(len(bif2.resources), 3, f"{len(bif2.resources)} != 3")
-        self.assertEqual(bif2.resources[0].data, b"Hello World 1", f"{bif2.resources[0].data!r} != b'Hello World 1'")
-        self.assertEqual(bif2.resources[1].data, b"Hello World 2", f"{bif2.resources[1].data!r} != b'Hello World 2'")
-        self.assertEqual(bif2.resources[2].data, b"Hello World 3", f"{bif2.resources[2].data!r} != b'Hello World 3'")
+        self.assertEqual(
+            bif2.resources[0].data,
+            b"Hello World 1",
+            f"{bif2.resources[0].data!r} != b'Hello World 1'",
+        )
+        self.assertEqual(
+            bif2.resources[1].data,
+            b"Hello World 2",
+            f"{bif2.resources[1].data!r} != b'Hello World 2'",
+        )
+        self.assertEqual(
+            bif2.resources[2].data,
+            b"Hello World 3",
+            f"{bif2.resources[2].data!r} != b'Hello World 3'",
+        )
 
     def test_to_raw_data_simple_read_size_unchanged(self):
         """Verify that converting a BIF to raw data preserves its size."""
@@ -232,7 +262,11 @@ class TestBIFFormats(unittest.TestCase):
             write_bif(bif, output_path)
 
             self.assertTrue(output_path.exists(), "BIF output file was not created.")
-            self.assertEqual(reference_path.stat().st_size, output_path.stat().st_size, "Size of written file has changed.")
+            self.assertEqual(
+                reference_path.stat().st_size,
+                output_path.stat().st_size,
+                "Size of written file has changed.",
+            )
 
     def test_read_bif_with_key_source_lookup_by_resref(self):
         """After read_bif(..., key_source=...), lookup by resref (try_get_resource) returns the merged resource."""
@@ -259,7 +293,9 @@ class TestBIFFormats(unittest.TestCase):
 
             loaded = read_bif(bif_path, key_source=key_path)
             found_ok, found = loaded.try_get_resource(ResRef("mergetest"), ResourceType.TXT)
-            self.assertTrue(found_ok, "try_get_resource(mergetest, TXT) should find resource after KEY merge")
+            self.assertTrue(
+                found_ok, "try_get_resource(mergetest, TXT) should find resource after KEY merge"
+            )
             self.assertIsNotNone(found)
             self.assertEqual(found.data, b"merged", "Merged resource data should match")
 
@@ -277,7 +313,9 @@ class TestBIFFormats(unittest.TestCase):
         bif: BIF = read_bif(raw)
         self.assertGreater(len(bif.resources), 0)
         first = bif.resources[0]
-        self.assertEqual(first.resname_key_index, 20971520, "First resource ID should be 20<<20 (bif_index 20)")
+        self.assertEqual(
+            first.resname_key_index, 20971520, "First resource ID should be 20<<20 (bif_index 20)"
+        )
         bif_index = first.resname_key_index >> 20
         res_index = first.resname_key_index & 0xFFFFF
         self.assertEqual(bif_index, 20)

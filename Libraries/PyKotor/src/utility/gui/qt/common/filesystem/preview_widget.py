@@ -27,5 +27,7 @@ class PreviewWidget(QWidget):
     def set_image(self, data: bytes, width: int, height: int):
         image = QImage(data, width, height, QImage.Format.Format_RGBA8888)
         pixmap = QPixmap.fromImage(image)
-        scaled_pixmap = pixmap.scaled(256, 256, Qt.AspectRatioMode.KeepAspectRatio, Qt.TransformationMode.SmoothTransformation)
+        scaled_pixmap = pixmap.scaled(
+            256, 256, Qt.AspectRatioMode.KeepAspectRatio, Qt.TransformationMode.SmoothTransformation
+        )
         self.preview_label.setPixmap(scaled_pixmap)

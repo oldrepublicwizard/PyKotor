@@ -66,7 +66,9 @@ def walk_nodes(mdl_bytes: bytes, game: Game, verbose: bool = False) -> list[dict
         is_skin = bool(hdr.type_id & 0x40)
 
         if verbose:
-            print(f"  {'  ' * depth}Node {hdr.node_id} @ {offset}: type=0x{hdr.type_id:04X}, children={hdr.children_count}")
+            print(
+                f"  {'  ' * depth}Node {hdr.node_id} @ {offset}: type=0x{hdr.type_id:04X}, children={hdr.children_count}"
+            )
 
         node_info = {
             "offset": offset,
@@ -86,7 +88,9 @@ def walk_nodes(mdl_bytes: bytes, game: Game, verbose: bool = False) -> list[dict
                 node_info["mdx_data_size"] = tri.mdx_data_size
                 node_info["mdx_data_bitmap"] = tri.mdx_data_bitmap
                 if verbose:
-                    print(f"  {'  ' * depth}  -> mesh: verts={tri.vertex_count}, row_size={tri.mdx_data_size}")
+                    print(
+                        f"  {'  ' * depth}  -> mesh: verts={tri.vertex_count}, row_size={tri.mdx_data_size}"
+                    )
             except Exception as e:
                 node_info["error"] = str(e)
                 if verbose:
@@ -107,7 +111,9 @@ def walk_nodes(mdl_bytes: bytes, game: Game, verbose: bool = False) -> list[dict
                     invalid_children = [c for c in child_offsets if c <= 0 or c >= file_size]
 
                     if verbose and invalid_children:
-                        print(f"  {'  ' * depth}  -> Invalid children: {invalid_children[:5]}{'...' if len(invalid_children) > 5 else ''}")
+                        print(
+                            f"  {'  ' * depth}  -> Invalid children: {invalid_children[:5]}{'...' if len(invalid_children) > 5 else ''}"
+                        )
 
                     for child_off in valid_children:
                         walk(child_off, depth + 1)
@@ -145,7 +151,9 @@ def main() -> None:
         bitmap = n.get("mdx_data_bitmap", 0)
         size = n.get("mdx_data_size", 0)
         verts = n.get("vertex_count", 0)
-        print(f"  Node {n['node_id']:>3}: verts={verts:>4}, row_size={size:>3}, bitmap=0x{bitmap:08X}")
+        print(
+            f"  Node {n['node_id']:>3}: verts={verts:>4}, row_size={size:>3}, bitmap=0x{bitmap:08X}"
+        )
     print()
 
     # Generate PyKotor roundtrip
@@ -168,7 +176,9 @@ def main() -> None:
         bitmap = n.get("mdx_data_bitmap", 0)
         size = n.get("mdx_data_size", 0)
         verts = n.get("vertex_count", 0)
-        print(f"  Node {n['node_id']:>3}: verts={verts:>4}, row_size={size:>3}, bitmap=0x{bitmap:08X}")
+        print(
+            f"  Node {n['node_id']:>3}: verts={verts:>4}, row_size={size:>3}, bitmap=0x{bitmap:08X}"
+        )
     print()
 
     # Generate MDLOps roundtrip
@@ -178,9 +188,15 @@ def main() -> None:
         (td_path / f"{resref}.mdx").write_bytes(orig_mdx)
 
         mdlops_exe = REPO_ROOT / "vendor" / "MDLOps" / "mdlops.exe"
-        subprocess.run([str(mdlops_exe), str(td_path / f"{resref}.mdl")], cwd=str(td_path), capture_output=True)
+        subprocess.run(
+            [str(mdlops_exe), str(td_path / f"{resref}.mdl")], cwd=str(td_path), capture_output=True
+        )
         # MDLOps requires flags before file path: mdlops.exe [options] [-k1|-k2] filepath
-        subprocess.run([str(mdlops_exe), "-k1", str(td_path / f"{resref}-ascii.mdl")], cwd=str(td_path), capture_output=True)
+        subprocess.run(
+            [str(mdlops_exe), "-k1", str(td_path / f"{resref}-ascii.mdl")],
+            cwd=str(td_path),
+            capture_output=True,
+        )
 
         mo_mdl = (td_path / f"{resref}-ascii-k1-bin.mdl").read_bytes()
         mo_mdx = (td_path / f"{resref}-ascii-k1-bin.mdx").read_bytes()
@@ -197,7 +213,9 @@ def main() -> None:
         bitmap = n.get("mdx_data_bitmap", 0)
         size = n.get("mdx_data_size", 0)
         verts = n.get("vertex_count", 0)
-        print(f"  Node {n['node_id']:>3}: verts={verts:>4}, row_size={size:>3}, bitmap=0x{bitmap:08X}")
+        print(
+            f"  Node {n['node_id']:>3}: verts={verts:>4}, row_size={size:>3}, bitmap=0x{bitmap:08X}"
+        )
     print()
 
     # Summary

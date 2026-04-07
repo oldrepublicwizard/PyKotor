@@ -139,8 +139,12 @@ TEST_ARE_XML = """<gff3>
     <resref label="OnUserDefined">onuserdefined</resref>
     </struct>
   </gff3>"""
-K1_PATH: str | None = os.environ.get("K1_PATH", "C:\\Program Files (x86)\\Steam\\steamapps\\common\\swkotor")
-K2_PATH: str | None = os.environ.get("K2_PATH", "C:\\Program Files (x86)\\Steam\\steamapps\\common\\Knights of the Old Republic II")
+K1_PATH: str | None = os.environ.get(
+    "K1_PATH", "C:\\Program Files (x86)\\Steam\\steamapps\\common\\swkotor"
+)
+K2_PATH: str | None = os.environ.get(
+    "K2_PATH", "C:\\Program Files (x86)\\Steam\\steamapps\\common\\Knights of the Old Republic II"
+)
 
 
 class TestARE(unittest.TestCase):
@@ -166,7 +170,9 @@ class TestARE(unittest.TestCase):
         import os
         import tempfile
 
-        with tempfile.NamedTemporaryFile(mode="w", suffix=".are.xml", delete=False, encoding="utf-8") as tmp:
+        with tempfile.NamedTemporaryFile(
+            mode="w", suffix=".are.xml", delete=False, encoding="utf-8"
+        ) as tmp:
             tmp.write(TEST_ARE_XML)
             tmp_path = tmp.name
 
@@ -240,15 +246,31 @@ class TestARE(unittest.TestCase):
         assert are.on_user_defined == "onuserdefined", f"{are.on_user_defined} != onuserdefined"
 
         assert are.version == 88, f"{are.version} != 88"
-        assert are.grass_ambient.bgr_integer() == 16777215, f"{are.grass_ambient.bgr_integer()} != 16777215"
-        assert are.grass_diffuse.bgr_integer() == 16777215, f"{are.grass_diffuse.bgr_integer()} != 16777215"
-        assert are.sun_ambient.bgr_integer() == 16777215, f"{are.sun_ambient.bgr_integer()} != 16777215"
-        assert are.sun_diffuse.bgr_integer() == 16777215, f"{are.sun_diffuse.bgr_integer()} != 16777215"
+        assert are.grass_ambient.bgr_integer() == 16777215, (
+            f"{are.grass_ambient.bgr_integer()} != 16777215"
+        )
+        assert are.grass_diffuse.bgr_integer() == 16777215, (
+            f"{are.grass_diffuse.bgr_integer()} != 16777215"
+        )
+        assert are.sun_ambient.bgr_integer() == 16777215, (
+            f"{are.sun_ambient.bgr_integer()} != 16777215"
+        )
+        assert are.sun_diffuse.bgr_integer() == 16777215, (
+            f"{are.sun_diffuse.bgr_integer()} != 16777215"
+        )
         assert are.fog_color.bgr_integer() == 16777215, f"{are.fog_color.bgr_integer()} != 16777215"
-        assert are.dynamic_light.bgr_integer() == 16777215, f"{are.dynamic_light.bgr_integer()} != 16777215"
-        assert are.dirty_argb_1.bgr_integer() == 8060928, f"{are.dirty_argb_1.bgr_integer()} != 8060928"
-        assert are.dirty_argb_2.bgr_integer() == 13763584, f"{are.dirty_argb_2.bgr_integer()} != 13763584"
-        assert are.dirty_argb_3.bgr_integer() == 3747840, f"{are.dirty_argb_3.bgr_integer()} != 3747840"
+        assert are.dynamic_light.bgr_integer() == 16777215, (
+            f"{are.dynamic_light.bgr_integer()} != 16777215"
+        )
+        assert are.dirty_argb_1.bgr_integer() == 8060928, (
+            f"{are.dirty_argb_1.bgr_integer()} != 8060928"
+        )
+        assert are.dirty_argb_2.bgr_integer() == 13763584, (
+            f"{are.dirty_argb_2.bgr_integer()} != 13763584"
+        )
+        assert are.dirty_argb_3.bgr_integer() == 3747840, (
+            f"{are.dirty_argb_3.bgr_integer()} != 3747840"
+        )
         # TODO: Fix RGB/BGR mix up
 
 

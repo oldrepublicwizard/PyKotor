@@ -89,7 +89,10 @@ def detect_audio_format(data: bytes) -> tuple[DeobfuscationResult, int]:
     if first_four == RIFF_MAGIC:
         # Check for VO header: if "RIFF" appears again at offset 20, it's a 20-byte VO header
         # Reference: test comment mentions "to satisfy deobfuscation check at offset 16"
-        if len(data) >= VO_HEADER_SIZE + 4 and data[VO_HEADER_SIZE : VO_HEADER_SIZE + 4] == RIFF_MAGIC:
+        if (
+            len(data) >= VO_HEADER_SIZE + 4
+            and data[VO_HEADER_SIZE : VO_HEADER_SIZE + 4] == RIFF_MAGIC
+        ):
             return DeobfuscationResult.STANDARD, VO_HEADER_SIZE
 
         # Read the riffSize (bytes 4-8)

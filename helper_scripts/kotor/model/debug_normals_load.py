@@ -69,7 +69,9 @@ def main():
 
     print("\n=== Totals ===")
     print(f"Total vertices: {total_verts}")
-    print(f"Total normals: {total_normals} {'(MATCHES)' if total_normals == total_verts else '(MISMATCH!)'}")
+    print(
+        f"Total normals: {total_normals} {'(MATCHES)' if total_normals == total_verts else '(MISMATCH!)'}"
+    )
     print(f"Total UVs: {total_uvs} {'(MATCHES)' if total_uvs == total_verts else '(MISMATCH!)'}")
 
     # Sample some normal values to verify they're not all zeros

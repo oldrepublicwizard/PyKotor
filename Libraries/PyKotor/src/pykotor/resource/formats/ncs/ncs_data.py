@@ -171,17 +171,25 @@ class NCSInstructionType(Enum):
     EQUALTT = NCSInstructionTypeValue(NCSByteCode.EQUALxx, NCSInstructionQualifier.StructStruct)
     EQUALEFFEFF = NCSInstructionTypeValue(NCSByteCode.EQUALxx, NCSInstructionQualifier.EffectEffect)
     EQUALEVTEVT = NCSInstructionTypeValue(NCSByteCode.EQUALxx, NCSInstructionQualifier.EventEvent)
-    EQUALLOCLOC = NCSInstructionTypeValue(NCSByteCode.EQUALxx, NCSInstructionQualifier.LocationLocation)
+    EQUALLOCLOC = NCSInstructionTypeValue(
+        NCSByteCode.EQUALxx, NCSInstructionQualifier.LocationLocation
+    )
     EQUALTALTAL = NCSInstructionTypeValue(NCSByteCode.EQUALxx, NCSInstructionQualifier.TalentTalent)
     NEQUALII = NCSInstructionTypeValue(NCSByteCode.NEQUALxx, NCSInstructionQualifier.IntInt)
     NEQUALFF = NCSInstructionTypeValue(NCSByteCode.NEQUALxx, NCSInstructionQualifier.FloatFloat)
     NEQUALSS = NCSInstructionTypeValue(NCSByteCode.NEQUALxx, NCSInstructionQualifier.StringString)
     NEQUALOO = NCSInstructionTypeValue(NCSByteCode.NEQUALxx, NCSInstructionQualifier.ObjectObject)
     NEQUALTT = NCSInstructionTypeValue(NCSByteCode.NEQUALxx, NCSInstructionQualifier.StructStruct)
-    NEQUALEFFEFF = NCSInstructionTypeValue(NCSByteCode.NEQUALxx, NCSInstructionQualifier.EffectEffect)
+    NEQUALEFFEFF = NCSInstructionTypeValue(
+        NCSByteCode.NEQUALxx, NCSInstructionQualifier.EffectEffect
+    )
     NEQUALEVTEVT = NCSInstructionTypeValue(NCSByteCode.NEQUALxx, NCSInstructionQualifier.EventEvent)
-    NEQUALLOCLOC = NCSInstructionTypeValue(NCSByteCode.NEQUALxx, NCSInstructionQualifier.LocationLocation)
-    NEQUALTALTAL = NCSInstructionTypeValue(NCSByteCode.NEQUALxx, NCSInstructionQualifier.TalentTalent)
+    NEQUALLOCLOC = NCSInstructionTypeValue(
+        NCSByteCode.NEQUALxx, NCSInstructionQualifier.LocationLocation
+    )
+    NEQUALTALTAL = NCSInstructionTypeValue(
+        NCSByteCode.NEQUALxx, NCSInstructionQualifier.TalentTalent
+    )
     GEQII = NCSInstructionTypeValue(NCSByteCode.GEQxx, NCSInstructionQualifier.IntInt)
     GEQFF = NCSInstructionTypeValue(NCSByteCode.GEQxx, NCSInstructionQualifier.FloatFloat)
     GTII = NCSInstructionTypeValue(NCSByteCode.GTxx, NCSInstructionQualifier.IntInt)
@@ -272,7 +280,9 @@ class NCS(ComparableMixin):
             return False
 
         self_index_map = {id(instruction): idx for idx, instruction in enumerate(self.instructions)}
-        other_index_map = {id(instruction): idx for idx, instruction in enumerate(other.instructions)}
+        other_index_map = {
+            id(instruction): idx for idx, instruction in enumerate(other.instructions)
+        }
 
         for instruction, other_instruction in zip(self.instructions, other.instructions):
             if instruction.ins_type != other_instruction.ins_type:
@@ -341,9 +351,7 @@ class NCS(ComparableMixin):
         inst_to_idx = {id(inst): i for i, inst in enumerate(self.instructions)}
         lines = [f"NCS with {len(self.instructions)} instructions:"]
         for i, inst in enumerate(self.instructions):
-            jump_idx: int | str | None = (
-                inst_to_idx.get(id(inst.jump), "?") if inst.jump else None
-            )
+            jump_idx: int | str | None = inst_to_idx.get(id(inst.jump), "?") if inst.jump else None
 
             # Format instruction
             inst_name = inst.ins_type.name.ljust(15)
@@ -445,7 +453,9 @@ class NCS(ComparableMixin):
         # Check for jumps to invalid targets
         for i, inst in enumerate(self.instructions):
             if inst.jump is not None and inst.jump not in self.instructions:
-                issues.append(f"Instruction #{i} ({inst.ins_type.name}) jumps to instruction not in list")
+                issues.append(
+                    f"Instruction #{i} ({inst.ins_type.name}) jumps to instruction not in list"
+                )
 
         # Check for instructions that require jumps but don't have them
         jump_required = {
@@ -462,7 +472,9 @@ class NCS(ComparableMixin):
         for i, inst in enumerate(self.instructions):
             expected_args = self._expected_arg_count(inst.ins_type)
             if expected_args is not None and len(inst.args) != expected_args:
-                issues.append(f"Instruction #{i} ({inst.ins_type.name}) has {len(inst.args)} args, expected {expected_args}")
+                issues.append(
+                    f"Instruction #{i} ({inst.ins_type.name}) has {len(inst.args)} args, expected {expected_args}"
+                )
 
         return issues
 
@@ -683,7 +695,9 @@ class NCSInstruction(ComparableMixin):
         if not isinstance(other, NCSInstruction):
             return NotImplemented  # type: ignore[no-any-return]
         # NOTE: We compare jump by identity since it's a circular reference
-        return self.ins_type == other.ins_type and self.args == other.args and self.jump is other.jump
+        return (
+            self.ins_type == other.ins_type and self.args == other.args and self.jump is other.jump
+        )
 
     def __hash__(self):
         # NOTE: We use id() for jump since it's a circular reference
@@ -832,11 +846,21 @@ class NCSInstruction(ComparableMixin):
         """
         # Binary operations consume 2 operands
         if self.is_arithmetic() or self.is_comparison() or self.is_logical():
-            if self.ins_type in {NCSInstructionType.NEGI, NCSInstructionType.NEGF, NCSInstructionType.NOTI, NCSInstructionType.COMPI}:
+            if self.ins_type in {
+                NCSInstructionType.NEGI,
+                NCSInstructionType.NEGF,
+                NCSInstructionType.NOTI,
+                NCSInstructionType.COMPI,
+            }:
                 return 1
             return 2
         # Unary operations consume 1 operand
-        if self.ins_type in {NCSInstructionType.NEGI, NCSInstructionType.NEGF, NCSInstructionType.NOTI, NCSInstructionType.COMPI}:
+        if self.ins_type in {
+            NCSInstructionType.NEGI,
+            NCSInstructionType.NEGF,
+            NCSInstructionType.NOTI,
+            NCSInstructionType.COMPI,
+        }:
             return 1
         # Constants produce 1 operand
         if self.is_constant():
@@ -884,5 +908,11 @@ class NCSOptimizer(BiowareResource, ABC):
 class NCSCompiler(BiowareResource, ABC):
     @abstractmethod
     def compile_script(
-        self, source_file: os.PathLike | str, output_file: os.PathLike | str, game: Game | int, timeout: int = 5, *, debug: bool = False,
+        self,
+        source_file: os.PathLike | str,
+        output_file: os.PathLike | str,
+        game: Game | int,
+        timeout: int = 5,
+        *,
+        debug: bool = False,
     ) -> tuple[str, str]: ...

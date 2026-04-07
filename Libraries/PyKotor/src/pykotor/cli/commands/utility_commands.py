@@ -64,7 +64,9 @@ def _diff_archives_or_directories(
                         if file_path.is_file():
                             try:
                                 relative_path = file_path.relative_to(path)
-                                raw_resource_data[str(relative_path).lower()] = file_path.read_bytes()
+                                raw_resource_data[str(relative_path).lower()] = (
+                                    file_path.read_bytes()
+                                )
                             except Exception:
                                 continue
             else:
@@ -118,7 +120,9 @@ def _diff_archives_or_directories(
                 context = DiffContext(Path(resource_key), Path(resource_key), ext)
 
                 # Use the diff_data function to get structured diff
-                result = diff_data(data1, data2, context, log_func=diff_logger.info, compare_hashes=False)
+                result = diff_data(
+                    data1, data2, context, log_func=diff_logger.info, compare_hashes=False
+                )
 
                 if result is False:  # Different
                     differences_found = True
@@ -127,12 +131,25 @@ def _diff_archives_or_directories(
                         try:
                             import difflib
 
-                            lines1 = data1.decode("utf-8", errors="replace").splitlines(keepends=True)
-                            lines2 = data2.decode("utf-8", errors="replace").splitlines(keepends=True)
+                            lines1 = data1.decode("utf-8", errors="replace").splitlines(
+                                keepends=True
+                            )
+                            lines2 = data2.decode("utf-8", errors="replace").splitlines(
+                                keepends=True
+                            )
 
                             fromfile = f"a/{resource_key}"
                             tofile = f"b/{resource_key}"
-                            diff_lines = list(difflib.unified_diff(lines1, lines2, fromfile=fromfile, tofile=tofile, lineterm="", n=getattr(args, "context", 3)))
+                            diff_lines = list(
+                                difflib.unified_diff(
+                                    lines1,
+                                    lines2,
+                                    fromfile=fromfile,
+                                    tofile=tofile,
+                                    lineterm="",
+                                    n=getattr(args, "context", 3),
+                                )
+                            )
 
                             if diff_lines:
                                 print("".join(diff_lines), end="")
@@ -194,7 +211,12 @@ def _detect_path_type(path: Path) -> str:
             # Check if it's a module piece (composite module component)
             suffix_lower = path.suffix.lower()
             stem_lower = path.stem.lower()
-            if suffix_lower in (".rim", ".erf") and ("_s" in stem_lower or "_dlg" in stem_lower or "_a" in stem_lower or "_adx" in stem_lower):
+            if suffix_lower in (".rim", ".erf") and (
+                "_s" in stem_lower
+                or "_dlg" in stem_lower
+                or "_a" in stem_lower
+                or "_adx" in stem_lower
+            ):
                 return "module_piece"
             return "bioware_archive"
         return "file"
@@ -579,7 +601,9 @@ def cmd_validate(
         logger.error(f"{file_path}: {message}")  # noqa: G004
         return 1
     except Exception as e:
-        logger.exception(f"Failed to validate {file_path}: {e.__class__.__name__}: {e}", exc_info=True)  # noqa: G004
+        logger.exception(
+            f"Failed to validate {file_path}: {e.__class__.__name__}: {e}", exc_info=True
+        )  # noqa: G004
         return 1
 
 
@@ -606,7 +630,9 @@ def cmd_merge(
 
         # Write merged result
         write_gff(target_gff, output_path)
-        logger.info(f"Merged {source_path.name} into {target_path.name}, saved to {output_path.name}")  # noqa: G004
+        logger.info(
+            f"Merged {source_path.name} into {target_path.name}, saved to {output_path.name}"
+        )  # noqa: G004
         return 0
     except Exception as e:
         logger.exception(f"Failed to merge files: {e.__class__.__name__}: {e}", exc_info=True)

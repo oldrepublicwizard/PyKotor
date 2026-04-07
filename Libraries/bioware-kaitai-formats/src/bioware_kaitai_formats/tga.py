@@ -6,21 +6,25 @@ from kaitaistruct import KaitaiStruct, KaitaiStream, BytesIO
 from enum import IntEnum
 
 
-if getattr(kaitaistruct, 'API_VERSION', (0, 9)) < (0, 11):
-    raise Exception("Incompatible Kaitai Struct Python API: 0.11 or later is required, but you have %s" % (kaitaistruct.__version__))
+if getattr(kaitaistruct, "API_VERSION", (0, 9)) < (0, 11):
+    raise Exception(
+        "Incompatible Kaitai Struct Python API: 0.11 or later is required, but you have %s"
+        % (kaitaistruct.__version__)
+    )
+
 
 class Tga(KaitaiStruct):
     """TGA (Targa) is an uncompressed raster image format used in KotOR for textures.
     TGA files support RGB, RGBA, and greyscale formats with optional RLE compression.
-    
+
     TGA files are commonly converted to TPC format for use in KotOR, but the game
     can also load TGA files directly in some contexts.
-    
+
     Format Structure:
     - Header (18 bytes): Image metadata, dimensions, pixel format
     - Color Map (optional): Palette data for indexed color images
     - Image Data: Raw or RLE-compressed pixel data
-    
+
     References:
     - Standard TGA format specification
     """
@@ -37,6 +41,7 @@ class Tga(KaitaiStruct):
         rle_color_mapped = 9
         rle_rgb = 10
         rle_greyscale = 11
+
     def __init__(self, _io, _parent=None, _root=None):
         super(Tga, self).__init__(_io)
         self._parent = _parent
@@ -54,7 +59,7 @@ class Tga(KaitaiStruct):
         self.image_spec = Tga.ImageSpecification(self._io, self, self._root)
         if self.id_length > 0:
             pass
-            self.image_id = (self._io.read_bytes(self.id_length)).decode(u"ASCII")
+            self.image_id = (self._io.read_bytes(self.id_length)).decode("ASCII")
 
         if self.color_map_type == Tga.ColorMapType.present:
             pass
@@ -62,14 +67,11 @@ class Tga(KaitaiStruct):
             for i in range(self.color_map_spec.length):
                 self.color_map_data.append(self._io.read_u1())
 
-
         self.image_data = []
         i = 0
         while not self._io.is_eof():
             self.image_data.append(self._io.read_u1())
             i += 1
-
-
 
     def _fetch_instances(self):
         pass
@@ -86,10 +88,8 @@ class Tga(KaitaiStruct):
             for i in range(len(self.color_map_data)):
                 pass
 
-
         for i in range(len(self.image_data)):
             pass
-
 
     class ColorMapSpecification(KaitaiStruct):
         def __init__(self, _io, _parent=None, _root=None):
@@ -103,10 +103,8 @@ class Tga(KaitaiStruct):
             self.length = self._io.read_u2le()
             self.entry_size = self._io.read_u1()
 
-
         def _fetch_instances(self):
             pass
-
 
     class ImageSpecification(KaitaiStruct):
         def __init__(self, _io, _parent=None, _root=None):
@@ -123,9 +121,5 @@ class Tga(KaitaiStruct):
             self.pixel_depth = self._io.read_u1()
             self.image_descriptor = self._io.read_u1()
 
-
         def _fetch_instances(self):
             pass
-
-
-

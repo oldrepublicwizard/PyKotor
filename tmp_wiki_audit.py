@@ -3,6 +3,7 @@ import re
 
 WIKI = r"c:\GitHub\PyKotor\wiki"
 
+
 def gh_slug(text):
     # Strip HTML tags (rendered output from markdown)
     text = re.sub(r"<[^>]+>", "", text)
@@ -19,6 +20,7 @@ def gh_slug(text):
     text = re.sub(r"[^a-z0-9\-]", "", text)
     text = re.sub(r"-+", "-", text)
     return text.strip("-")
+
 
 anchor_map = {}
 for fname in os.listdir(WIKI):

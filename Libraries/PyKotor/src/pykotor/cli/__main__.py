@@ -19,7 +19,10 @@ def setup_paths() -> None:
     repo_root = file_path.parents[5]  # Fixed: was 4, should be 5
 
     paths_to_add: list[Path] = [
-        repo_root / "Libraries" / "PyKotor" / "src",  # ./Libraries/PyKotor/src/ (contains both pykotor and utility namespaces)
+        repo_root
+        / "Libraries"
+        / "PyKotor"
+        / "src",  # ./Libraries/PyKotor/src/ (contains both pykotor and utility namespaces)
     ]
 
     for path in paths_to_add:

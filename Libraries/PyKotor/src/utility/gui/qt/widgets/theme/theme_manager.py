@@ -111,19 +111,41 @@ class ThemeManager:
             c = self._parse_hex_color(s)
             return c if c.isValid() else QColor()
 
-        primary_bg = get_color("input.background") or get_color("dropdown.background") or get_color("button.background") or get_color("editor.background", "#2D2D2D")
+        primary_bg = (
+            get_color("input.background")
+            or get_color("dropdown.background")
+            or get_color("button.background")
+            or get_color("editor.background", "#2D2D2D")
+        )
         if not primary_bg.isValid():
             primary_bg = QColor(45, 45, 45)
-        secondary_bg = get_color("sideBar.background") or get_color("activityBar.background") or get_color("editor.background", "#1E1E1E")
+        secondary_bg = (
+            get_color("sideBar.background")
+            or get_color("activityBar.background")
+            or get_color("editor.background", "#1E1E1E")
+        )
         if not secondary_bg.isValid():
             secondary_bg = QColor(30, 30, 30)
-        text_color = get_color("foreground") or get_color("editor.foreground") or get_color("input.foreground", "#FFFFFF")
+        text_color = (
+            get_color("foreground")
+            or get_color("editor.foreground")
+            or get_color("input.foreground", "#FFFFFF")
+        )
         if not text_color.isValid():
             text_color = QColor(255, 255, 255)
-        tooltip_base = get_color("editorHoverWidget.background") or get_color("editorWidget.background") or get_color("dropdown.background")
+        tooltip_base = (
+            get_color("editorHoverWidget.background")
+            or get_color("editorWidget.background")
+            or get_color("dropdown.background")
+        )
         if not tooltip_base.isValid() or tooltip_base.alpha() < 200:
             tooltip_base = QColor(secondary_bg)
-        highlight = get_color("editor.selectionBackground") or get_color("list.activeSelectionBackground") or get_color("focusBorder") or get_color("button.background", "#0078D4")
+        highlight = (
+            get_color("editor.selectionBackground")
+            or get_color("list.activeSelectionBackground")
+            or get_color("focusBorder")
+            or get_color("button.background", "#0078D4")
+        )
         if not highlight.isValid():
             highlight = QColor(0, 120, 212)
         if self._get_luminance(highlight) < 0.3:
@@ -134,7 +156,9 @@ class ThemeManager:
         if self._get_luminance(bright_text) < 0.8:
             bright_text = QColor(255, 255, 255)
         text_color = self._ensure_contrast(text_color, secondary_bg, min_ratio=4.5)
-        return self.create_palette(primary_bg, secondary_bg, text_color, tooltip_base, highlight, bright_text)
+        return self.create_palette(
+            primary_bg, secondary_bg, text_color, tooltip_base, highlight, bright_text
+        )
 
     def _load_vscode_theme(self, theme_filename: str) -> dict[str, Any] | None:
         theme_path: Path | None = None
@@ -179,7 +203,11 @@ class ThemeManager:
         vscode = self._load_vscode_theme(f"{theme_name}.json")
         if vscode:
             return vscode
-        for alt in (f"{theme_name}-color-theme.json", f"{theme_name}-dark.json", f"{theme_name}-light.json"):
+        for alt in (
+            f"{theme_name}-color-theme.json",
+            f"{theme_name}-dark.json",
+            f"{theme_name}-light.json",
+        ):
             vscode = self._load_vscode_theme(alt)
             if vscode:
                 return vscode
@@ -208,10 +236,15 @@ class ThemeManager:
         if theme_name == "QDarkStyle":
             if not importlib.util.find_spec("qdarkstyle"):  # pyright: ignore[reportAttributeAccessIssue]
                 if self._on_theme_error:
-                    self._on_theme_error("Theme not found", "QDarkStyle is not installed in this environment.")
+                    self._on_theme_error(
+                        "Theme not found", "QDarkStyle is not installed in this environment."
+                    )
                 return
             import qdarkstyle  # pyright: ignore[reportMissingImports]
-            effective = self.original_style if style_name == "" else (style_name or self.original_style)
+
+            effective = (
+                self.original_style if style_name == "" else (style_name or self.original_style)
+            )
             if effective:
                 obj = QStyleFactory.create(effective)
                 if obj:
@@ -228,13 +261,21 @@ class ThemeManager:
         sheet_val = config.get("sheet", "")
         sheet = str(sheet_val(app) if callable(sheet_val) else sheet_val)
         palette_val = config.get("palette", None)
-        palette = palette_val() if callable(palette_val) else (palette_val if isinstance(palette_val, QPalette) else None)
+        palette = (
+            palette_val()
+            if callable(palette_val)
+            else (palette_val if isinstance(palette_val, QPalette) else None)
+        )
         if palette is None:
             app_style = app.style()
             palette = app_style.standardPalette() if app_style else app.palette()
 
         if style_name == "":
-            effective_style = "Fusion" if theme_name.lower() in ("fusion (light)", "sourcegraph-dark") else self.original_style
+            effective_style = (
+                "Fusion"
+                if theme_name.lower() in ("fusion (light)", "sourcegraph-dark")
+                else self.original_style
+            )
         elif style_name:
             effective_style = style_name
         else:
@@ -266,7 +307,9 @@ class ThemeManager:
         l2 = ThemeManager._get_luminance(c2)
         return (max(l1, l2) + 0.05) / (min(l1, l2) + 0.05)
 
-    def _ensure_contrast(self, text_color: QColor, bg_color: QColor, min_ratio: float = 4.5) -> QColor:
+    def _ensure_contrast(
+        self, text_color: QColor, bg_color: QColor, min_ratio: float = 4.5
+    ) -> QColor:
         if self._get_contrast_ratio(text_color, bg_color) >= min_ratio:
             return text_color
         bg_lum = self._get_luminance(bg_color)
@@ -327,7 +370,9 @@ class ThemeManager:
 
         palette = QPalette()
         hl_lum = self._get_luminance(highlight)
-        highlighted_text = bright_text if hl_lum < 0.5 else self.adjust_color(secondary, lightness=20)
+        highlighted_text = (
+            bright_text if hl_lum < 0.5 else self.adjust_color(secondary, lightness=20)
+        )
         role_colors: dict[QPalette.ColorRole, QColor] = {
             QPalette.ColorRole.Window: secondary,
             QPalette.ColorRole.Dark: self.adjust_color(primary, lightness=80),
@@ -336,24 +381,34 @@ class ThemeManager:
             QPalette.ColorRole.Base: primary,
             QPalette.ColorRole.AlternateBase: self.adjust_color(secondary, lightness=115),
             QPalette.ColorRole.ToolTipBase: tooltip_base,
-            QPalette.ColorRole.ToolTipText: self._ensure_contrast(text, tooltip_base, min_ratio=4.5),
+            QPalette.ColorRole.ToolTipText: self._ensure_contrast(
+                text, tooltip_base, min_ratio=4.5
+            ),
             QPalette.ColorRole.Text: self._ensure_contrast(text, primary, min_ratio=4.5),
             QPalette.ColorRole.ButtonText: self._ensure_contrast(text, primary, min_ratio=4.5),
             QPalette.ColorRole.BrightText: bright_text,
             QPalette.ColorRole.Link: highlight,
-            QPalette.ColorRole.LinkVisited: self.adjust_color(highlight, hue_shift=15, saturation=90),
+            QPalette.ColorRole.LinkVisited: self.adjust_color(
+                highlight, hue_shift=15, saturation=90
+            ),
             QPalette.ColorRole.Highlight: highlight,
             QPalette.ColorRole.HighlightedText: highlighted_text,
             QPalette.ColorRole.Light: self.adjust_color(primary, lightness=150),
             QPalette.ColorRole.Midlight: self.adjust_color(primary, lightness=130),
             QPalette.ColorRole.Mid: self.adjust_color(primary, lightness=100),
             QPalette.ColorRole.Shadow: self.adjust_color(primary, lightness=50),
-            QPalette.ColorRole.PlaceholderText: self.adjust_color(text, lightness=65, saturation=80),
+            QPalette.ColorRole.PlaceholderText: self.adjust_color(
+                text, lightness=65, saturation=80
+            ),
         }
         if qtpy.QT5:
             extra = {
-                getattr(QPalette.ColorRole, "Background", None): self.adjust_color(primary, lightness=110),
-                getattr(QPalette.ColorRole, "Foreground", None): self.adjust_color(text, lightness=95),
+                getattr(QPalette.ColorRole, "Background", None): self.adjust_color(
+                    primary, lightness=110
+                ),
+                getattr(QPalette.ColorRole, "Foreground", None): self.adjust_color(
+                    text, lightness=95
+                ),
             }
             extra = {k: v for k, v in extra.items() if k is not None}
         else:
@@ -364,9 +419,16 @@ class ThemeManager:
         role_colors.update(extra)
         for role, color in role_colors.items():
             palette.setColor(QPalette.ColorGroup.Normal, role, color)
-        for state_key, sat_fac, light_fac in [(QPalette.ColorGroup.Disabled, 80, 60), (QPalette.ColorGroup.Inactive, 90, 80)]:
+        for state_key, sat_fac, light_fac in [
+            (QPalette.ColorGroup.Disabled, 80, 60),
+            (QPalette.ColorGroup.Inactive, 90, 80),
+        ]:
             for role, base_color in role_colors.items():
-                palette.setColor(state_key, role, self.adjust_color(base_color, saturation=sat_fac, lightness=light_fac))
+                palette.setColor(
+                    state_key,
+                    role,
+                    self.adjust_color(base_color, saturation=sat_fac, lightness=light_fac),
+                )
         return palette
 
     @staticmethod
@@ -438,7 +500,12 @@ class ThemeManager:
                     end = self.mapToGlobal(event.pos())
                     parent = self.parent()
                     if isinstance(parent, QWidget):
-                        parent.setGeometry(parent.x() + (end.x() - self.start.x()), parent.y() + (end.y() - self.start.y()), parent.width(), parent.height())
+                        parent.setGeometry(
+                            parent.x() + (end.x() - self.start.x()),
+                            parent.y() + (end.y() - self.start.y()),
+                            parent.width(),
+                            parent.height(),
+                        )
                     self.start = end
 
             def mouseReleaseEvent(self, event: QMouseEvent):

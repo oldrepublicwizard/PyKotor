@@ -343,7 +343,9 @@ class TSLPatcherINISerializer:
         verbose: bool = True,
     ) -> list[str]:
         """Serialize [2DAList] section."""
-        if (empty_result := self._check_empty_modifications(modifications, "2DA", verbose)) is not None:
+        if (
+            empty_result := self._check_empty_modifications(modifications, "2DA", verbose)
+        ) is not None:
             return empty_result
 
         if verbose:
@@ -354,7 +356,9 @@ class TSLPatcherINISerializer:
 
         for idx, mod_2da in enumerate(modifications):
             if verbose:
-                print(f"Adding 2DA table {idx}: {mod_2da.sourcefile} ({len(mod_2da.modifiers)} modifiers)")
+                print(
+                    f"Adding 2DA table {idx}: {mod_2da.sourcefile} ({len(mod_2da.modifiers)} modifiers)"
+                )
             # Section name references must match section headers exactly (no quotes) - section headers are written as [{sourcefile}]
             lines.append(f"Table{idx}={mod_2da.sourcefile}")
         lines.append("")
@@ -377,7 +381,9 @@ class TSLPatcherINISerializer:
         modifier_idx: int = 0
         for modifier in mod_2da.modifiers:
             if isinstance(modifier, ChangeRow2DA):
-                section_name = modifier.identifier or f"{mod_2da.sourcefile}_changerow_{modifier_idx}"
+                section_name = (
+                    modifier.identifier or f"{mod_2da.sourcefile}_changerow_{modifier_idx}"
+                )
                 # Section name references must match section headers exactly (no quotes)
                 lines.append(f"ChangeRow{modifier_idx}={section_name}")
                 modifier_idx += 1
@@ -414,15 +420,21 @@ class TSLPatcherINISerializer:
             # Target specification (exactly as TSLPatcher expects)
             if modifier.target.target_type == TargetType.ROW_INDEX:
                 assert modifier.target.value is not None, "modifier.target.value is None"
-                assert isinstance(modifier.target.value, int), f"modifier.target.value is not int or RowValueRowIndex, but is {modifier.target.value.__class__.__name__}"
+                assert isinstance(modifier.target.value, int), (
+                    f"modifier.target.value is not int or RowValueRowIndex, but is {modifier.target.value.__class__.__name__}"
+                )
                 lines.append(f"RowIndex={self._format_ini_value(str(modifier.target.value))}")
             elif modifier.target.target_type == TargetType.ROW_LABEL:
                 assert modifier.target.value is not None, "modifier.target.value is None"
-                assert isinstance(modifier.target.value, str), f"modifier.target.value is not str, but is {modifier.target.value.__class__.__name__}"
+                assert isinstance(modifier.target.value, str), (
+                    f"modifier.target.value is not str, but is {modifier.target.value.__class__.__name__}"
+                )
                 lines.append(f"RowLabel={self._format_ini_value(modifier.target.value)}")
             elif modifier.target.target_type == TargetType.LABEL_COLUMN:
                 assert modifier.target.value is not None, "modifier.target.value is None"
-                assert isinstance(modifier.target.value, int), f"modifier.target.value is not int, but is {modifier.target.value.__class__.__name__}"
+                assert isinstance(modifier.target.value, int), (
+                    f"modifier.target.value is not int, but is {modifier.target.value.__class__.__name__}"
+                )
                 lines.append(f"LabelIndex={self._format_ini_value(str(modifier.target.value))}")
 
             # Cell modifications (preserve exact column names and values)
@@ -448,13 +460,17 @@ class TSLPatcherINISerializer:
             # Exclusive column (prevents duplicate values)
             if modifier.exclusive_column:
                 assert modifier.exclusive_column is not None, "modifier.exclusive_column is None"
-                assert isinstance(modifier.exclusive_column, str), f"modifier.exclusive_column is not str, but is {modifier.exclusive_column.__class__.__name__}"
+                assert isinstance(modifier.exclusive_column, str), (
+                    f"modifier.exclusive_column is not str, but is {modifier.exclusive_column.__class__.__name__}"
+                )
                 lines.append(f"ExclusiveColumn={self._format_ini_value(modifier.exclusive_column)}")
 
             # Row label (if specified)
             if modifier.row_label:
                 assert modifier.row_label is not None, "modifier.row_label is None"
-                assert isinstance(modifier.row_label, str), f"modifier.row_label is not str, but is {modifier.row_label.__class__.__name__}"
+                assert isinstance(modifier.row_label, str), (
+                    f"modifier.row_label is not str, but is {modifier.row_label.__class__.__name__}"
+                )
                 lines.append(f"RowLabel={self._format_ini_value(modifier.row_label)}")
 
             # Cell values
@@ -493,7 +509,9 @@ class TSLPatcherINISerializer:
             # Store 2DA memory assignments (if any and not empty)
             for token_id, store_val in modifier.store_2da.items():
                 assert store_val is not None, "store_val is None"
-                assert isinstance(store_val, str), f"store_val is not str, but is {store_val.__class__.__name__}"
+                assert isinstance(store_val, str), (
+                    f"store_val is not str, but is {store_val.__class__.__name__}"
+                )
                 lines.append(f"2DAMEMORY{token_id}={self._format_ini_value(store_val)}")
 
             lines.append("")
@@ -562,7 +580,9 @@ class TSLPatcherINISerializer:
         verbose: bool = True,
     ) -> list[str]:
         """Serialize [GFFList] section with exact TSLPatcher format."""
-        if (empty_result := self._check_empty_modifications(modifications, "GFF", verbose)) is not None:
+        if (
+            empty_result := self._check_empty_modifications(modifications, "GFF", verbose)
+        ) is not None:
             return empty_result
 
         if verbose:
@@ -573,10 +593,14 @@ class TSLPatcherINISerializer:
 
         for idx, mod_gff in enumerate(modifications):
             # Use Replace# or File# based on replace_file flag - ModificationsGFF always has replace_file
-            assert isinstance(mod_gff, ModificationsGFF), f"Expected ModificationsGFF, got {type(mod_gff).__name__}"
+            assert isinstance(mod_gff, ModificationsGFF), (
+                f"Expected ModificationsGFF, got {type(mod_gff).__name__}"
+            )
             prefix = "Replace" if mod_gff.replace_file else "File"
             if verbose:
-                print(f"Adding GFF file {idx}: {prefix}{idx}={mod_gff.sourcefile} ({len(mod_gff.modifiers)} modifiers)")
+                print(
+                    f"Adding GFF file {idx}: {prefix}{idx}={mod_gff.sourcefile} ({len(mod_gff.modifiers)} modifiers)"
+                )
             # Section name references must match section headers exactly (no quotes) - section headers are written as [{sourcefile}]
             lines.append(f"{prefix}{idx}={mod_gff.sourcefile}")
         lines.append("")
@@ -596,7 +620,9 @@ class TSLPatcherINISerializer:
         lines.append(f"[{mod_gff.sourcefile}]")
 
         # Add TSLPatcher exclamation-point variables - ModificationsGFF always has these attributes
-        assert isinstance(mod_gff, ModificationsGFF), f"mod_gff must be ModificationsGFF, got {type(mod_gff).__name__}"
+        assert isinstance(mod_gff, ModificationsGFF), (
+            f"mod_gff must be ModificationsGFF, got {type(mod_gff).__name__}"
+        )
         lines.append(f"!ReplaceFile={'1' if mod_gff.replace_file else '0'}")
         if mod_gff.destination != "Override":
             lines.append(f"!Destination={self._format_ini_value(mod_gff.destination)}")
@@ -634,7 +660,9 @@ class TSLPatcherINISerializer:
                     # Store for serialization after main section
                     if not hasattr(self, "_pending_localized_string_subsections"):
                         self._pending_localized_string_subsections = []
-                    self._pending_localized_string_subsections.append((section_name, loc_string_delta))
+                    self._pending_localized_string_subsections.append(
+                        (section_name, loc_string_delta)
+                    )
 
             elif isinstance(gff_modifier, Memory2DAModifierGFF):
                 # Memory assignment: 2DAMEMORY#=!FieldPath or 2DAMEMORY#=2DAMEMORY#
@@ -646,7 +674,9 @@ class TSLPatcherINISerializer:
                     # It's inferred from the field being modified
                 else:
                     # 2DAMEMORY#=2DAMEMORY#
-                    lines.append(f"2DAMEMORY{gff_modifier.dest_token_id}=2DAMEMORY{gff_modifier.src_token_id}")
+                    lines.append(
+                        f"2DAMEMORY{gff_modifier.dest_token_id}=2DAMEMORY{gff_modifier.src_token_id}"
+                    )
 
             elif isinstance(gff_modifier, (AddFieldGFF, AddStructToListGFF)):
                 addfield_modifiers.append(gff_modifier)
@@ -665,7 +695,10 @@ class TSLPatcherINISerializer:
             lines.extend(self._serialize_addfield_section(gff_modifier, section_name))
 
         # Generate LocalizedString subsections (for inline LocalizedStringDelta fields)
-        if hasattr(self, "_pending_localized_string_subsections") and self._pending_localized_string_subsections:
+        if (
+            hasattr(self, "_pending_localized_string_subsections")
+            and self._pending_localized_string_subsections
+        ):
             for section_name, loc_string_delta in self._pending_localized_string_subsections:
                 lines.append("")
                 lines.append(f"[{section_name}]")
@@ -720,10 +753,16 @@ class TSLPatcherINISerializer:
 
         # Add field value based on type
         if is_add_struct_to_list:
-            assert isinstance(gff_modifier, AddStructToListGFF), f"Expected AddStructToListGFF, got {type(gff_modifier).__name__}"
+            assert isinstance(gff_modifier, AddStructToListGFF), (
+                f"Expected AddStructToListGFF, got {type(gff_modifier).__name__}"
+            )
             # AddStructToListGFF always has TypeId
-            if isinstance(gff_modifier.value, FieldValueConstant) and isinstance(gff_modifier.value.stored, GFFStruct):
-                lines.append(f"TypeId={self._format_ini_value(str(gff_modifier.value.stored.struct_id))}")
+            if isinstance(gff_modifier.value, FieldValueConstant) and isinstance(
+                gff_modifier.value.stored, GFFStruct
+            ):
+                lines.append(
+                    f"TypeId={self._format_ini_value(str(gff_modifier.value.stored.struct_id))}"
+                )
 
             # Handle index_to_token for AddStructToListGFF (always present, may be None)
             if gff_modifier.index_to_token is not None:
@@ -732,8 +771,12 @@ class TSLPatcherINISerializer:
             # AddFieldGFF always has field_type attribute
             if gff_modifier.field_type == GFFFieldType.Struct:
                 # For Struct, we need TypeId instead of Value
-                if isinstance(gff_modifier.value, FieldValueConstant) and isinstance(gff_modifier.value.stored, GFFStruct):
-                    lines.append(f"TypeId={self._format_ini_value(str(gff_modifier.value.stored.struct_id))}")
+                if isinstance(gff_modifier.value, FieldValueConstant) and isinstance(
+                    gff_modifier.value.stored, GFFStruct
+                ):
+                    lines.append(
+                        f"TypeId={self._format_ini_value(str(gff_modifier.value.stored.struct_id))}"
+                    )
             elif gff_modifier.field_type in (GFFFieldType.List,):
                 # Lists don't need a Value
                 pass
@@ -746,7 +789,9 @@ class TSLPatcherINISerializer:
                 lines.append(f"Value={self._format_ini_value(value_str)}")
 
         # Process nested modifiers - both AddFieldGFF and AddStructToListGFF have modifiers attribute
-        assert isinstance(gff_modifier, (AddFieldGFF, AddStructToListGFF)), f"Expected AddFieldGFF or AddStructToListGFF, got {type(gff_modifier).__name__}"
+        assert isinstance(gff_modifier, (AddFieldGFF, AddStructToListGFF)), (
+            f"Expected AddFieldGFF or AddStructToListGFF, got {type(gff_modifier).__name__}"
+        )
         if gff_modifier.modifiers:
             # Count AddField modifiers and Memory2DAModifierGFF separately
             addfield_count = 0
@@ -758,9 +803,13 @@ class TSLPatcherINISerializer:
                         lines.append(f"2DAMEMORY{nested_mod.dest_token_id}=!FieldPath")
                     else:
                         # 2DAMEMORY#=2DAMEMORY#
-                        lines.append(f"2DAMEMORY{nested_mod.dest_token_id}=2DAMEMORY{nested_mod.src_token_id}")
+                        lines.append(
+                            f"2DAMEMORY{nested_mod.dest_token_id}=2DAMEMORY{nested_mod.src_token_id}"
+                        )
                 elif isinstance(nested_mod, (AddFieldGFF, AddStructToListGFF)):
-                    nested_section = nested_mod.identifier or f"{section_name}_nested_{addfield_count}"
+                    nested_section = (
+                        nested_mod.identifier or f"{section_name}_nested_{addfield_count}"
+                    )
                     # Section name references must match section headers exactly (no quotes)
                     lines.append(f"AddField{addfield_count}={nested_section}")
                     addfield_count += 1
@@ -882,7 +931,9 @@ class TSLPatcherINISerializer:
         verbose: bool = True,
     ) -> list[str]:
         """Serialize [TLKList] section."""
-        if (empty_result := self._check_empty_modifications(modifications, "TLK", verbose)) is not None:
+        if (
+            empty_result := self._check_empty_modifications(modifications, "TLK", verbose)
+        ) is not None:
             return empty_result
 
         if verbose:
@@ -902,7 +953,9 @@ class TSLPatcherINISerializer:
         has_appends: bool = any(not m.is_replacement for m in mod_tlk.modifiers)
 
         if verbose:
-            print(f"TLK has {sum(1 for m in mod_tlk.modifiers if m.is_replacement)} replacements, {sum(1 for m in mod_tlk.modifiers if not m.is_replacement)} appends")
+            print(
+                f"TLK has {sum(1 for m in mod_tlk.modifiers if m.is_replacement)} replacements, {sum(1 for m in mod_tlk.modifiers if not m.is_replacement)} appends"
+            )
 
         # Modern TSLPatcher syntax for appends: Use StrRef token mappings ONLY
         # For replacements: Still use ReplaceFile# syntax
@@ -937,7 +990,9 @@ class TSLPatcherINISerializer:
 
                 # Add the line with comment
                 token_id_str = str(tlk_modifier.token_id)
-                lines.append(f"StrRef{tlk_modifier.mod_index}={self._format_ini_value(token_id_str)}  ; {comment}")
+                lines.append(
+                    f"StrRef{tlk_modifier.mod_index}={self._format_ini_value(token_id_str)}  ; {comment}"
+                )
 
         lines.append("")
 
@@ -946,7 +1001,13 @@ class TSLPatcherINISerializer:
             replace_count = sum(1 for m in mod_tlk.modifiers if m.is_replacement)
             print(f"Generating [replace.tlk] section with {replace_count} entries")
             lines.append("[replace.tlk]")
-            lines.extend([f"{tlk_modifier.token_id}={tlk_modifier.mod_index}" for tlk_modifier in mod_tlk.modifiers if tlk_modifier.is_replacement])
+            lines.extend(
+                [
+                    f"{tlk_modifier.token_id}={tlk_modifier.mod_index}"
+                    for tlk_modifier in mod_tlk.modifiers
+                    if tlk_modifier.is_replacement
+                ]
+            )
             lines.append("")
 
         return lines
@@ -958,7 +1019,9 @@ class TSLPatcherINISerializer:
         verbose: bool = True,
     ) -> list[str]:
         """Serialize [SSFList] section."""
-        if (empty_result := self._check_empty_modifications(modifications, "SSF", verbose)) is not None:
+        if (
+            empty_result := self._check_empty_modifications(modifications, "SSF", verbose)
+        ) is not None:
             return empty_result
 
         if verbose:
@@ -970,7 +1033,9 @@ class TSLPatcherINISerializer:
         for idx, mod_ssf in enumerate(modifications):
             prefix = "Replace" if mod_ssf.replace_file else "File"
             if verbose:
-                print(f"Adding SSF file {idx}: {prefix}{idx}={mod_ssf.sourcefile} ({len(mod_ssf.modifiers)} modifiers)")
+                print(
+                    f"Adding SSF file {idx}: {prefix}{idx}={mod_ssf.sourcefile} ({len(mod_ssf.modifiers)} modifiers)"
+                )
             # Section name references must match section headers exactly (no quotes) - section headers are written as [{sourcefile}]
             lines.append(f"{prefix}{idx}={mod_ssf.sourcefile}")
         lines.append("")
@@ -1038,7 +1103,9 @@ class TSLPatcherINISerializer:
         verbose: bool = True,
     ) -> list[str]:
         """Serialize [HACKList] section for NCS binary patches."""
-        if (empty_result := self._check_empty_modifications(modifications, "NCS", verbose)) is not None:
+        if (
+            empty_result := self._check_empty_modifications(modifications, "NCS", verbose)
+        ) is not None:
             return empty_result
 
         if verbose:
@@ -1050,7 +1117,9 @@ class TSLPatcherINISerializer:
         for idx, mod_ncs in enumerate(modifications):
             prefix = "Replace" if mod_ncs.replace_file else "File"
             if verbose:
-                print(f"Adding NCS file {idx}: {prefix}{idx}={mod_ncs.sourcefile} ({len(mod_ncs.modifiers)} 'hacks')")
+                print(
+                    f"Adding NCS file {idx}: {prefix}{idx}={mod_ncs.sourcefile} ({len(mod_ncs.modifiers)} 'hacks')"
+                )
             # Section name references must match section headers exactly (no quotes) - section headers are written as [{sourcefile}]
             lines.append(f"{prefix}{idx}={mod_ncs.sourcefile}")
         lines.append("")
@@ -1079,10 +1148,14 @@ class TSLPatcherINISerializer:
 
             if token_type in (NCSTokenType.STRREF, NCSTokenType.STRREF32):
                 # StrRef token reference
-                lines.append(f"Hack{offset:08X}={self._format_ini_value(f'StrRef{token_id_or_value}')}")
+                lines.append(
+                    f"Hack{offset:08X}={self._format_ini_value(f'StrRef{token_id_or_value}')}"
+                )
             elif token_type in (NCSTokenType.MEMORY_2DA, NCSTokenType.MEMORY_2DA32):
                 # 2DAMEMORY token reference
-                lines.append(f"Hack{offset:08X}={self._format_ini_value(f'2DAMEMORY{token_id_or_value}')}")
+                lines.append(
+                    f"Hack{offset:08X}={self._format_ini_value(f'2DAMEMORY{token_id_or_value}')}"
+                )
             else:
                 # Direct value (uint8, uint16, uint32)
                 lines.append(f"Hack{offset:08X}={self._format_ini_value(str(token_id_or_value))}")
@@ -1117,7 +1190,9 @@ class TSLPatcherINISerializer:
 
         total_files = len(install_files)
         if verbose:
-            print(f"Serializing InstallList with {len(folders_dict)} folders, {total_files} total files")
+            print(
+                f"Serializing InstallList with {len(folders_dict)} folders, {total_files} total files"
+            )
 
         lines: list[str] = []
         lines.append("[InstallList]")
@@ -1137,7 +1212,9 @@ class TSLPatcherINISerializer:
             section_name = f"install_folder{i}"
 
             if verbose:
-                print(f"Generating section [{section_name}] for {dest} with {len(files_in_folder)} files")
+                print(
+                    f"Generating section [{section_name}] for {dest} with {len(files_in_folder)} files"
+                )
 
             # Add comment for readability
             lines.append(f"; {dest} :")
@@ -1172,7 +1249,9 @@ class TSLPatcherINISerializer:
 
 # Logging helpers
 # Log level: 0 = normal, 1 = verbose, 2 = debug
-_log_level = 2 if os.environ.get("KOTORDIFF_DEBUG") else (1 if os.environ.get("KOTORDIFF_VERBOSE") else 0)
+_log_level = (
+    2 if os.environ.get("KOTORDIFF_DEBUG") else (1 if os.environ.get("KOTORDIFF_VERBOSE") else 0)
+)
 
 
 def _log_debug(msg: str) -> None:
@@ -1369,7 +1448,9 @@ class IncrementalTSLPatchDataWriter:
             return []
         return None
 
-    def _log_exception_with_traceback(self, operation: str, filename: str, exception: Exception, *, indent_lines: bool = True) -> None:
+    def _log_exception_with_traceback(
+        self, operation: str, filename: str, exception: Exception, *, indent_lines: bool = True
+    ) -> None:
         """Log an exception with full traceback.
 
         Args:
@@ -1379,7 +1460,9 @@ class IncrementalTSLPatchDataWriter:
             exception: The exception that occurred
             indent_lines: Whether to indent traceback lines with "  "
         """
-        self.log_func(f"[Error] Failed to {operation} {filename}: {format_exception_message(exception)}")
+        self.log_func(
+            f"[Error] Failed to {operation} {filename}: {format_exception_message(exception)}"
+        )
         if indent_lines:
             self.log_func("Full traceback:")
             for line in traceback.format_exc().splitlines():
@@ -1438,7 +1521,9 @@ class IncrementalTSLPatchDataWriter:
                 # Binary file
                 dest_path.write_bytes(data)
         except Exception as e:  # noqa: BLE001
-            self.log_func(f"[Warning] Failed to use io function for {file_ext}, using binary write: {format_exception_message(e)}")
+            self.log_func(
+                f"[Warning] Failed to use io function for {file_ext}, using binary write: {format_exception_message(e)}"
+            )
             dest_path.write_bytes(data)
 
     def register_tlk_modification_with_source(
@@ -1467,7 +1552,9 @@ class IncrementalTSLPatchDataWriter:
             self.tlk_mods_by_source[source_index] = []
 
         self.tlk_mods_by_source[source_index].append(wrapped)
-        _log_debug(f"Registered TLK mod from source {source_index}: {tlk_mod.sourcefile} ({len(getattr(tlk_mod, 'strref_mappings', {}))} StrRefs)")
+        _log_debug(
+            f"Registered TLK mod from source {source_index}: {tlk_mod.sourcefile} ({len(getattr(tlk_mod, 'strref_mappings', {}))} StrRefs)"
+        )
 
     @staticmethod
     def _format_path_with_source_prefix(path_str: str, source: Installation | Path) -> str:
@@ -1603,11 +1690,15 @@ class IncrementalTSLPatchDataWriter:
         """
         # Check for and apply pending StrRef references before writing
         filename_lower = modification.sourcefile.lower()
-        self._apply_pending_strref_references(filename_lower, modification, source_data, source_path)
+        self._apply_pending_strref_references(
+            filename_lower, modification, source_data, source_path
+        )
 
         # Check for and apply pending 2DA row references before writing (for GFF files)
         if isinstance(modification, ModificationsGFF):
-            self._apply_pending_2da_row_references(filename_lower, modification, source_data, source_path)
+            self._apply_pending_2da_row_references(
+                filename_lower, modification, source_data, source_path
+            )
 
         # Determine modification type and dispatch
         if isinstance(modification, Modifications2DA):
@@ -1682,27 +1773,41 @@ class IncrementalTSLPatchDataWriter:
 
             # Process each 2DA file's rows in batch
             for twoda_file, targets in twoda_to_targets.items():
-                self.log_func(f"\n=== Batch Finding References for {len(targets)} rows in {twoda_file} ===")
+                self.log_func(
+                    f"\n=== Batch Finding References for {len(targets)} rows in {twoda_file} ==="
+                )
                 self._find_and_patch_2da_rows_batch(source_path, twoda_file, targets)
         elif change_row_targets and source_path:
             # Fallback: process individually for Path-based sources
             for target in change_row_targets:
-                self.log_func(f"\n=== Finding References for 2DA Row: {filename} row {target.row_index} -> Token {target.token_id} ===")
-                self._find_and_patch_single_2da_row(source_path, filename, target.row_index, target.token_id)
+                self.log_func(
+                    f"\n=== Finding References for 2DA Row: {filename} row {target.row_index} -> Token {target.token_id} ==="
+                )
+                self._find_and_patch_single_2da_row(
+                    source_path, filename, target.row_index, target.token_id
+                )
 
         # Process each new row ONE AT A TIME (label-based lookup is harder to batch)
         # For AddRow2DA, scan the MODDED source (where the new row exists)
         scan_source = modded_source_path if modded_source_path else source_path
         if add_row_targets and scan_source:
             for target in add_row_targets:
-                self.log_func(f"\n=== Finding References for New 2DA Row: {filename} label '{target.row_label}' -> Token {target.token_id} ===")
+                self.log_func(
+                    f"\n=== Finding References for New 2DA Row: {filename} label '{target.row_label}' -> Token {target.token_id} ==="
+                )
                 if not modded_source_path:
-                    self.log_func("[Warning] No modded_source_path provided, using vanilla source (may not find new row references)")
+                    self.log_func(
+                        "[Warning] No modded_source_path provided, using vanilla source (may not find new row references)"
+                    )
                 # For new rows, we need the row_label since index is unknown
                 if target.row_label:
-                    self._find_and_patch_single_2da_row_by_label(scan_source, filename, target.row_label, target.token_id)
+                    self._find_and_patch_single_2da_row_by_label(
+                        scan_source, filename, target.row_label, target.token_id
+                    )
 
-    def _prepare_twoda_tokens(self, mod_2da: Modifications2DA) -> tuple[list[TwoDALinkTarget], list[TwoDALinkTarget]]:
+    def _prepare_twoda_tokens(
+        self, mod_2da: Modifications2DA
+    ) -> tuple[list[TwoDALinkTarget], list[TwoDALinkTarget]]:
         """Prepare 2DAMEMORY tokens for 2DA row modifications.
 
         Handles both ChangeRow2DA and AddRow2DA:
@@ -1741,7 +1846,9 @@ class IncrementalTSLPatchDataWriter:
                 if not modifier.store_2da:
                     token_id: int = self._allocate_2da_token()
                     modifier.store_2da = {token_id: RowValueRowIndex()}
-                    change_row_targets.append(TwoDALinkTarget(row_index=row_index, token_id=token_id, row_label=None))
+                    change_row_targets.append(
+                        TwoDALinkTarget(row_index=row_index, token_id=token_id, row_label=None)
+                    )
                     continue
 
                 # Process existing store_2da tokens
@@ -1749,7 +1856,9 @@ class IncrementalTSLPatchDataWriter:
                     if not isinstance(row_value, RowValueRowIndex):
                         continue
                     # Token stores the row index - use this for linking
-                    change_row_targets.append(TwoDALinkTarget(row_index=row_index, token_id=token_id, row_label=None))
+                    change_row_targets.append(
+                        TwoDALinkTarget(row_index=row_index, token_id=token_id, row_label=None)
+                    )
 
             # Handle AddRow2DA - new rows being added
             elif isinstance(modifier, AddRow2DA):
@@ -1757,7 +1866,9 @@ class IncrementalTSLPatchDataWriter:
                 if not modifier.store_2da:
                     token_id = self._allocate_2da_token()
                     modifier.store_2da = {token_id: RowValueRowIndex()}
-                    self.log_func(f"[DEBUG] Created 2DAMEMORY token {token_id} for AddRow2DA with label '{modifier.row_label}'")
+                    self.log_func(
+                        f"[DEBUG] Created 2DAMEMORY token {token_id} for AddRow2DA with label '{modifier.row_label}'"
+                    )
                     add_row_targets.append(
                         TwoDALinkTarget(
                             row_index=-1,  # Unknown until patch time
@@ -1892,18 +2003,26 @@ class IncrementalTSLPatchDataWriter:
                     # NOTE: store_2da for AddColumn uses string values, not RowValue objects
                     add_column_modifier.store_2da[token_id] = store_key
 
-                    self.log_func(f"  [AddColumn Token] Created 2DAMEMORY{token_id}={store_key} for value '{field_value_str}'")
+                    self.log_func(
+                        f"  [AddColumn Token] Created 2DAMEMORY{token_id}={store_key} for value '{field_value_str}'"
+                    )
                     tokens_created += 1
                 else:
                     token_id = existing_token_id
-                    self.log_func(f"  [AddColumn Token] Reusing existing 2DAMEMORY{token_id}={store_key} for value '{field_value_str}'")
+                    self.log_func(
+                        f"  [AddColumn Token] Reusing existing 2DAMEMORY{token_id}={store_key} for value '{field_value_str}'"
+                    )
 
                 # Replace GFF field value with token reference
                 gff_modifier.value = FieldValue2DAMemory(token_id)
-                self.log_func(f"  [AddColumn Token] Replaced {mod_gff.sourcefile} {gff_modifier.path} = {field_value_str} with 2DAMEMORY{token_id}")
+                self.log_func(
+                    f"  [AddColumn Token] Replaced {mod_gff.sourcefile} {gff_modifier.path} = {field_value_str} with 2DAMEMORY{token_id}"
+                )
 
         if tokens_created > 0:
-            self.log_func(f"  Created {tokens_created} AddColumn 2DAMEMORY token(s) with cross-file linking")
+            self.log_func(
+                f"  Created {tokens_created} AddColumn 2DAMEMORY token(s) with cross-file linking"
+            )
 
     def _replace_cells_with_2damemory_tokens(self) -> None:
         """Replace cell values with 2DAMEMORY token references when values match stored tokens.
@@ -1951,7 +2070,11 @@ class IncrementalTSLPatchDataWriter:
                             # For AddRow2DA with RowValueRowIndex, the row index isn't known until runtime
                             # So we can't match it statically - skip this token for matching
                             continue
-                        if isinstance(modifier, ChangeRow2DA) and modifier.target.target_type == TargetType.ROW_INDEX and isinstance(modifier.target.value, int):
+                        if (
+                            isinstance(modifier, ChangeRow2DA)
+                            and modifier.target.target_type == TargetType.ROW_INDEX
+                            and isinstance(modifier.target.value, int)
+                        ):
                             stored_value = str(modifier.target.value)
                     elif isinstance(row_value, RowValueConstant):
                         # For constant values, the stored value is the string itself
@@ -1961,7 +2084,9 @@ class IncrementalTSLPatchDataWriter:
                         # For ChangeRow2DA, we can get it from target
                         # For AddRow2DA, we can get it from modifier.row_label
                         if isinstance(modifier, ChangeRow2DA):
-                            if modifier.target.target_type == TargetType.ROW_LABEL and isinstance(modifier.target.value, str):
+                            if modifier.target.target_type == TargetType.ROW_LABEL and isinstance(
+                                modifier.target.value, str
+                            ):
                                 stored_value = modifier.target.value
                         elif isinstance(modifier, AddRow2DA) and modifier.row_label:
                             stored_value = modifier.row_label
@@ -1976,7 +2101,10 @@ class IncrementalTSLPatchDataWriter:
                         stored_value is not None
                         # Only add if this token hasn't been stored yet, or if this token ID is lower
                         # (prefer lower token IDs when multiple tokens store the same value)
-                        and (stored_value not in available_tokens or token_id < available_tokens[stored_value])
+                        and (
+                            stored_value not in available_tokens
+                            or token_id < available_tokens[stored_value]
+                        )
                     ):
                         available_tokens[stored_value] = token_id
 
@@ -1990,10 +2118,14 @@ class IncrementalTSLPatchDataWriter:
                             # Replace with 2DAMEMORY token reference
                             modifier.cells[column_name] = RowValue2DAMemory(token_id)
                             replacements_made += 1
-                            self.log_func(f"  Replaced {mod_2da.sourcefile} {modifier.identifier} {column_name}={cell_string} with 2DAMEMORY{token_id}")
+                            self.log_func(
+                                f"  Replaced {mod_2da.sourcefile} {modifier.identifier} {column_name}={cell_string} with 2DAMEMORY{token_id}"
+                            )
 
         if replacements_made > 0:
-            self.log_func(f"  Replaced {replacements_made} cell value(s) with 2DAMEMORY token references")
+            self.log_func(
+                f"  Replaced {replacements_made} cell value(s) with 2DAMEMORY token references"
+            )
 
     @staticmethod
     def _gff_has_twoda_token(
@@ -2009,7 +2141,10 @@ class IncrementalTSLPatchDataWriter:
             if existing_path.lower() != path.lower():
                 continue
 
-            if isinstance(modifier.value, FieldValue2DAMemory) and modifier.value.token_id == token_id:
+            if (
+                isinstance(modifier.value, FieldValue2DAMemory)
+                and modifier.value.token_id == token_id
+            ):
                 return True
 
         return False
@@ -2044,10 +2179,16 @@ class IncrementalTSLPatchDataWriter:
                     if isinstance(mod.value, FieldValue2DAMemory):
                         return True
                     # Recursively check nested modifiers
-                    return bool(mod.modifiers and any(_has_2da_references(nested) for nested in mod.modifiers))
+                    return bool(
+                        mod.modifiers
+                        and any(_has_2da_references(nested) for nested in mod.modifiers)
+                    )
                 if isinstance(mod, AddStructToListGFF):
                     # Recursively check nested modifiers
-                    return bool(mod.modifiers and any(_has_2da_references(nested) for nested in mod.modifiers))
+                    return bool(
+                        mod.modifiers
+                        and any(_has_2da_references(nested) for nested in mod.modifiers)
+                    )
                 return False
 
             return _has_2da_references(modifier)
@@ -2058,7 +2199,9 @@ class IncrementalTSLPatchDataWriter:
                 if _needs_listindex_token(modifier):
                     token_id = self._allocate_2da_token()
                     modifier.index_to_token = token_id
-                    self.log_func(f"    Allocated 2DAMEMORY{token_id}=ListIndex for AddStructToListGFF [{modifier.identifier}]")
+                    self.log_func(
+                        f"    Allocated 2DAMEMORY{token_id}=ListIndex for AddStructToListGFF [{modifier.identifier}]"
+                    )
 
                 # Process nested modifiers
                 for nested in modifier.modifiers:
@@ -2123,7 +2266,11 @@ class IncrementalTSLPatchDataWriter:
 
                 # Determine the desired output file format (GFF, GFF_XML, or GFF_JSON)
                 file_format: ResourceType = detect_gff(source_data)
-                if file_format not in {ResourceType.GFF, ResourceType.GFF_XML, ResourceType.GFF_JSON}:
+                if file_format not in {
+                    ResourceType.GFF,
+                    ResourceType.GFF_XML,
+                    ResourceType.GFF_JSON,
+                }:
                     file_format = ResourceType.GFF
 
                 write_gff(gff_obj, output_path, file_format)
@@ -2231,7 +2378,11 @@ class IncrementalTSLPatchDataWriter:
                 new_text: str = ""
 
                 # Check first source installation (path1)
-                if source_installations and len(source_installations) > 0 and isinstance(source_installations[0], Installation):
+                if (
+                    source_installations
+                    and len(source_installations) > 0
+                    and isinstance(source_installations[0], Installation)
+                ):
                     try:
                         talktable = source_installations[0].talktable()
                         path1_text = talktable.string(old_strref)
@@ -2242,7 +2393,11 @@ class IncrementalTSLPatchDataWriter:
                         exists_in_path1 = False
 
                 # Check second source installation (path2) if it exists
-                if source_installations and len(source_installations) > 1 and isinstance(source_installations[1], Installation):
+                if (
+                    source_installations
+                    and len(source_installations) > 1
+                    and isinstance(source_installations[1], Installation)
+                ):
                     try:
                         talktable = source_installations[1].talktable()
                         path2_text = talktable.string(old_strref)
@@ -2257,7 +2412,9 @@ class IncrementalTSLPatchDataWriter:
                     new_text = modifier_entry.text if modifier_entry.text else ""
 
                 # Log the diff
-                self.log_func(f"\n=== Finding References for StrRef {old_strref} -> Token {new_token_id} ===")
+                self.log_func(
+                    f"\n=== Finding References for StrRef {old_strref} -> Token {new_token_id} ==="
+                )
 
                 # Determine which installations to search based on where the entry exists
                 # References are ALWAYS relevant to the installation they're found in
@@ -2268,28 +2425,54 @@ class IncrementalTSLPatchDataWriter:
                 # If exists in both paths, show diff format and search both separately
                 if exists_in_path1 and exists_in_path2:
                     self.log_func(f"  Diff: StrRef {old_strref}")
-                    path1_name = source_installations[0].path() if isinstance(source_installations[0], Installation) else str(source_installations[0])
-                    path2_name = source_installations[1].path() if isinstance(source_installations[1], Installation) else str(source_installations[1])
-                    self.log_func(f"    Path 1 ({path1_name}): {path1_text[:100]}{'...' if len(path1_text) > 100 else ''}")
-                    self.log_func(f"    Path 2 ({path2_name}): {path2_text[:100]}{'...' if len(path2_text) > 100 else ''}")
+                    path1_name = (
+                        source_installations[0].path()
+                        if isinstance(source_installations[0], Installation)
+                        else str(source_installations[0])
+                    )
+                    path2_name = (
+                        source_installations[1].path()
+                        if isinstance(source_installations[1], Installation)
+                        else str(source_installations[1])
+                    )
+                    self.log_func(
+                        f"    Path 1 ({path1_name}): {path1_text[:100]}{'...' if len(path1_text) > 100 else ''}"
+                    )
+                    self.log_func(
+                        f"    Path 2 ({path2_name}): {path2_text[:100]}{'...' if len(path2_text) > 100 else ''}"
+                    )
                     # Search both paths separately - references found in each will only
                     # be linked to files from that same installation
                     installations_to_search = source_installations
                 # If exists only in path1, show unique to path1
                 elif exists_in_path1:
-                    path1_name = source_installations[0].path() if isinstance(source_installations[0], Installation) else str(source_installations[0])
-                    self.log_func(f"  Unique to Path 1 ({path1_name}): {path1_text[:100]}{'...' if len(path1_text) > 100 else ''}")
+                    path1_name = (
+                        source_installations[0].path()
+                        if isinstance(source_installations[0], Installation)
+                        else str(source_installations[0])
+                    )
+                    self.log_func(
+                        f"  Unique to Path 1 ({path1_name}): {path1_text[:100]}{'...' if len(path1_text) > 100 else ''}"
+                    )
                     # Search only path1 - references will only link to path1 files
                     installations_to_search = [source_installations[0]]
                 # If exists only in path2, show unique to path2
                 elif exists_in_path2:
-                    path2_name = source_installations[1].path() if isinstance(source_installations[1], Installation) else str(source_installations[1])
-                    self.log_func(f"  Unique to Path 2 ({path2_name}): {path2_text[:100]}{'...' if len(path2_text) > 100 else ''}")
+                    path2_name = (
+                        source_installations[1].path()
+                        if isinstance(source_installations[1], Installation)
+                        else str(source_installations[1])
+                    )
+                    self.log_func(
+                        f"  Unique to Path 2 ({path2_name}): {path2_text[:100]}{'...' if len(path2_text) > 100 else ''}"
+                    )
                     # Search only path2 - references will only link to path2 files
                     installations_to_search = [source_installations[1]]
                 # If doesn't exist in either but has new text from modifier, it's a new entry
                 elif new_text:
-                    self.log_func(f"  New entry: {new_text[:100]}{'...' if len(new_text) > 100 else ''}")
+                    self.log_func(
+                        f"  New entry: {new_text[:100]}{'...' if len(new_text) > 100 else ''}"
+                    )
                     # Don't search for references to new entries that don't exist yet
                     installations_to_search = []
 
@@ -2320,7 +2503,9 @@ class IncrementalTSLPatchDataWriter:
                 strrefs_to_find = [strref for strref, _ in strref_token_pairs]
 
                 installation_name = source.path()
-                self.log_func(f"\n=== Batch Finding References for {len(strrefs_to_find)} StrRefs in {installation_name} ===")
+                self.log_func(
+                    f"\n=== Batch Finding References for {len(strrefs_to_find)} StrRefs in {installation_name} ==="
+                )
 
                 # Get the existing cache for this installation, or None if it's the first time
                 cache = _global_strref_caches.get(source.path())
@@ -2355,7 +2540,9 @@ class IncrementalTSLPatchDataWriter:
                             filtered_results.append(search_result)
 
                     search_results = filtered_results
-                    self.log_func(f"Found {len(search_results)} resource(s) referencing StrRef {old_strref}")
+                    self.log_func(
+                        f"Found {len(search_results)} resource(s) referencing StrRef {old_strref}"
+                    )
 
                     # Group results by resource identifier (resname.restype)
                     grouped_results: dict[str, list[StrRefSearchResult]] = {}
@@ -2381,11 +2568,25 @@ class IncrementalTSLPatchDataWriter:
                         # is safe (Override > Modules > Chitin within that installation)
                         if is_installation_path(source):
                             installation_source = source  # Type narrowing
-                            best_result: StrRefSearchResult = min(results_group, key=lambda r: self._get_resource_priority(r.resource, installation_source))
-                            best_priority = self._get_resource_priority(best_result.resource, installation_source)
-                            priority_names = ["Override", "Modules (.mod)", "Modules (.rim)", "Chitin BIFs"]
+                            best_result: StrRefSearchResult = min(
+                                results_group,
+                                key=lambda r: self._get_resource_priority(
+                                    r.resource, installation_source
+                                ),
+                            )
+                            best_priority = self._get_resource_priority(
+                                best_result.resource, installation_source
+                            )
+                            priority_names = [
+                                "Override",
+                                "Modules (.mod)",
+                                "Modules (.rim)",
+                                "Chitin BIFs",
+                            ]
                             installation_path = installation_source.path()
-                            self.log_func(f"  Multiple instances of {resource_id} found in {installation_path}, using {priority_names[best_priority]} version")
+                            self.log_func(
+                                f"  Multiple instances of {resource_id} found in {installation_path}, using {priority_names[best_priority]} version"
+                            )
                         else:
                             # For Path sources, just use first result (priority not applicable)
                             best_result = results_group[0]
@@ -2412,7 +2613,9 @@ class IncrementalTSLPatchDataWriter:
 
                             resname_ext = f"{resource_identifier.resname}.{resource_identifier.restype.extension}"
                             # Format path with installation folder prefix for clarity
-                            formatted_path = self._format_path_with_source_prefix(rel_path_str, source)
+                            formatted_path = self._format_path_with_source_prefix(
+                                rel_path_str, source
+                            )
                             self.log_func(f"  Resource: {formatted_path} ({resname_ext})")
 
                             # Store references temporarily instead of creating patches immediately
@@ -2426,7 +2629,11 @@ class IncrementalTSLPatchDataWriter:
                                         old_strref,
                                         new_token_id,
                                         "2da",
-                                        {"row_index": location.row_index, "column_name": location.column_name, "resource_path": rel_path_str},
+                                        {
+                                            "row_index": location.row_index,
+                                            "column_name": location.column_name,
+                                            "resource_path": rel_path_str,
+                                        },
                                     )
                                 elif isinstance(location, SSFRefLocation):
                                     # Store SSF reference for later
@@ -2460,12 +2667,16 @@ class IncrementalTSLPatchDataWriter:
                                 #         {"byte_offset": location.byte_offset},
                                 #     )
                         except Exception as e:  # noqa: BLE001
-                            _log_debug(f"Error processing StrRef reference: {format_exception_message(e)}")
+                            _log_debug(
+                                f"Error processing StrRef reference: {format_exception_message(e)}"
+                            )
                             import traceback
 
                             traceback.print_exc()
         else:
-            self.log_func(f"[Warning] No source installations for TLK {mod_tlk.saveas}, cannot find StrRef references")
+            self.log_func(
+                f"[Warning] No source installations for TLK {mod_tlk.saveas}, cannot find StrRef references"
+            )
 
         # Write INI section
         self._write_to_ini([mod_tlk], "tlk")
@@ -2544,7 +2755,9 @@ class IncrementalTSLPatchDataWriter:
                         filtered_results.append(search_result)
 
                 search_results = filtered_results
-                self.log_func(f"Found {len(search_results)} resource(s) referencing StrRef {strref}")
+                self.log_func(
+                    f"Found {len(search_results)} resource(s) referencing StrRef {strref}"
+                )
 
                 grouped_results: dict[str, list[StrRefSearchResult]] = {}
                 for search_result in search_results:
@@ -2562,10 +2775,20 @@ class IncrementalTSLPatchDataWriter:
                         prioritized_results.append(results_group[0])
                     else:
                         # Multiple instances - pick highest priority (lowest priority number)
-                        best_result: StrRefSearchResult = min(results_group, key=lambda r: self._get_resource_priority(r.resource, source))
+                        best_result: StrRefSearchResult = min(
+                            results_group,
+                            key=lambda r: self._get_resource_priority(r.resource, source),
+                        )
                         best_priority = self._get_resource_priority(best_result.resource, source)
-                        priority_names = ["Override", "Modules (.mod)", "Modules (.rim)", "Chitin BIFs"]
-                        self.log_func(f"  Multiple instances of {resource_id} found, using {priority_names[best_priority]} version")
+                        priority_names = [
+                            "Override",
+                            "Modules (.mod)",
+                            "Modules (.rim)",
+                            "Chitin BIFs",
+                        ]
+                        self.log_func(
+                            f"  Multiple instances of {resource_id} found, using {priority_names[best_priority]} version"
+                        )
                         prioritized_results.append(best_result)
 
                 # Store references temporarily instead of creating patches IMMEDIATELY
@@ -2587,7 +2810,9 @@ class IncrementalTSLPatchDataWriter:
                         except ValueError:
                             rel_path_str = str(resource.path_ident())
 
-                        resname_ext = f"{resource_identifier.resname}.{resource_identifier.restype.extension}"
+                        resname_ext = (
+                            f"{resource_identifier.resname}.{resource_identifier.restype.extension}"
+                        )
                         # Format path with installation folder prefix for clarity
                         formatted_path = self._format_path_with_source_prefix(rel_path_str, source)
                         self.log_func(f"  Resource: {formatted_path} ({resname_ext})")
@@ -2603,7 +2828,11 @@ class IncrementalTSLPatchDataWriter:
                                     strref,
                                     token_id,
                                     "2da",
-                                    {"row_index": location.row_index, "column_name": location.column_name, "resource_path": rel_path_str},
+                                    {
+                                        "row_index": location.row_index,
+                                        "column_name": location.column_name,
+                                        "resource_path": rel_path_str,
+                                    },
                                 )
                             elif isinstance(location, SSFRefLocation):
                                 # Store SSF reference for later
@@ -2638,7 +2867,9 @@ class IncrementalTSLPatchDataWriter:
                             #     )
 
                     except Exception as e:
-                        self.log_func(f"[Warning] Error processing resource {resource_filename}: {format_exception_message(e)}")
+                        self.log_func(
+                            f"[Warning] Error processing resource {resource_filename}: {format_exception_message(e)}"
+                        )
                         self.log_func(traceback.format_exc())
 
             except Exception as e:
@@ -2647,7 +2878,9 @@ class IncrementalTSLPatchDataWriter:
         elif isinstance(source, Path):
             # Path-based scanning is not supported with typed location objects
             # Only Installation-based scanning returns proper typed location data
-            self.log_func(f"[Warning] Path-based StrRef searching not supported (only Installation): {source}")
+            self.log_func(
+                f"[Warning] Path-based StrRef searching not supported (only Installation): {source}"
+            )
 
     def _find_and_patch_2da_rows_batch(
         self,
@@ -2710,7 +2943,9 @@ class IncrementalTSLPatchDataWriter:
             # Get references from cache
             cache_results = cache.get_references(twoda_filename, row_index)
 
-            self.log_func(f"Found {len(cache_results)} file(s) referencing {twoda_filename} row {row_index}")
+            self.log_func(
+                f"Found {len(cache_results)} file(s) referencing {twoda_filename} row {row_index}"
+            )
 
             # Convert cache results to pending references
             for identifier, field_paths in cache_results:
@@ -2774,7 +3009,9 @@ class IncrementalTSLPatchDataWriter:
 
         # If Installation, scan all GFF files
         if is_installation_path(source):
-            self.log_func(f"Searching Installation for references to {twoda_filename} row {row_index}...")
+            self.log_func(
+                f"Searching Installation for references to {twoda_filename} row {row_index}..."
+            )
             found_count = 0
 
             for resource in source:
@@ -2801,9 +3038,13 @@ class IncrementalTSLPatchDataWriter:
                         found_count += 1
 
                 except Exception as e:
-                    _log_debug(f"Error scanning resource for 2DA refs: {format_exception_message(e)}")
+                    _log_debug(
+                        f"Error scanning resource for 2DA refs: {format_exception_message(e)}"
+                    )
 
-            self.log_func(f"Found {found_count} file(s) referencing {twoda_filename} row {row_index}")
+            self.log_func(
+                f"Found {found_count} file(s) referencing {twoda_filename} row {row_index}"
+            )
 
         # If Path, scan directory/file
         elif isinstance(source, Path):
@@ -2835,7 +3076,9 @@ class IncrementalTSLPatchDataWriter:
                                 found_count += 1
 
                         except Exception as e:
-                            _log_debug(f"Error scanning file for 2DA refs: {format_exception_message(e)}")
+                            _log_debug(
+                                f"Error scanning file for 2DA refs: {format_exception_message(e)}"
+                            )
 
             elif source.is_file():
                 try:
@@ -2859,7 +3102,9 @@ class IncrementalTSLPatchDataWriter:
                 except Exception as e:
                     self.log_func(f"[Warning] Error scanning file: {format_exception_message(e)}")
 
-            self.log_func(f"Found {found_count} file(s) referencing {twoda_filename} row {row_index}")
+            self.log_func(
+                f"Found {found_count} file(s) referencing {twoda_filename} row {row_index}"
+            )
 
     def _find_and_patch_single_2da_row_by_label(
         self,
@@ -2936,19 +3181,33 @@ class IncrementalTSLPatchDataWriter:
 
             try:
                 # Check if this field name matches one we're looking for
-                if field_label in field_names and isinstance(field_value, int) and field_value == row_index:
+                if (
+                    field_label in field_names
+                    and isinstance(field_value, int)
+                    and field_value == row_index
+                ):
                     field_paths.append(field_path)
 
                 # Recurse into structs and lists
                 if field_type == GFFFieldType.Struct:
-                    assert isinstance(field_value, GFFStruct), f"Expected GFFStruct, got {type(field_value).__name__}"
-                    self._scan_gff_for_2da_row(field_value, field_names, row_index, field_path, field_paths)
+                    assert isinstance(field_value, GFFStruct), (
+                        f"Expected GFFStruct, got {type(field_value).__name__}"
+                    )
+                    self._scan_gff_for_2da_row(
+                        field_value, field_names, row_index, field_path, field_paths
+                    )
                 elif field_type == GFFFieldType.List:
-                    assert isinstance(field_value, GFFList), f"Expected GFFList, got {type(field_value).__name__}"
+                    assert isinstance(field_value, GFFList), (
+                        f"Expected GFFList, got {type(field_value).__name__}"
+                    )
                     for idx, list_struct in enumerate(field_value):
-                        assert isinstance(list_struct, GFFStruct), f"Expected GFFStruct, got {type(list_struct).__name__}"
+                        assert isinstance(list_struct, GFFStruct), (
+                            f"Expected GFFStruct, got {type(list_struct).__name__}"
+                        )
                         list_path = f"{field_path}[{idx}]"
-                        self._scan_gff_for_2da_row(list_struct, field_names, row_index, list_path, field_paths)
+                        self._scan_gff_for_2da_row(
+                            list_struct, field_names, row_index, list_path, field_paths
+                        )
 
             except Exception as e:
                 _log_debug(f"Error scanning GFF field for 2DA row: {format_exception_message(e)}")
@@ -2976,17 +3235,29 @@ class IncrementalTSLPatchDataWriter:
         locations = []
         try:
             twoda = read_2da(data)
-            self.log_func(f"    [DEBUG] Scanning 2DA: {twoda.get_height()} rows, {len(twoda.get_labels())} columns")
+            self.log_func(
+                f"    [DEBUG] Scanning 2DA: {twoda.get_height()} rows, {len(twoda.get_labels())} columns"
+            )
             for row_idx in range(twoda.get_height()):
                 for col_label in twoda.get_labels():
                     try:
                         cell_value = twoda.get_cell(row_idx, col_label)
-                        if cell_value and cell_value.strip().isdigit() and int(cell_value) == strref:
-                            self.log_func(f"    [DEBUG] Found match: row {row_idx}, column '{col_label}', value='{cell_value}', strref={strref}")
+                        if (
+                            cell_value
+                            and cell_value.strip().isdigit()
+                            and int(cell_value) == strref
+                        ):
+                            self.log_func(
+                                f"    [DEBUG] Found match: row {row_idx}, column '{col_label}', value='{cell_value}', strref={strref}"
+                            )
                             locations.append(f"row_{row_idx}.{col_label}")
                     except Exception as e:
-                        self.log_func(f"    [DEBUG] Error scanning 2DA cell [{row_idx}][{col_label}]: {e.__class__.__name__}: {e}")
-            self.log_func(f"    [DEBUG] _find_strref_locations_in_2da found {len(locations)} locations for StrRef {strref}")
+                        self.log_func(
+                            f"    [DEBUG] Error scanning 2DA cell [{row_idx}][{col_label}]: {e.__class__.__name__}: {e}"
+                        )
+            self.log_func(
+                f"    [DEBUG] _find_strref_locations_in_2da found {len(locations)} locations for StrRef {strref}"
+            )
         except Exception as e:
             self.log_func(f"    [DEBUG] Error reading 2DA: {e.__class__.__name__}: {e}")
             self.log_func(traceback.format_exc())
@@ -3102,13 +3373,28 @@ class IncrementalTSLPatchDataWriter:
         """Recursively scan GFF struct for a single StrRef."""
         field_label: str
         field_type: GFFFieldType
-        field_value: int | str | ResRef | Vector3 | Vector4 | LocalizedString | GFFStruct | GFFList | bytes | float
+        field_value: (
+            int
+            | str
+            | ResRef
+            | Vector3
+            | Vector4
+            | LocalizedString
+            | GFFStruct
+            | GFFList
+            | bytes
+            | float
+        )
         for field_label, field_type, field_value in struct:
             field_path = f"{path_prefix}.{field_label}" if path_prefix else field_label
 
             try:
                 # LocalizedString fields
-                if field_type == GFFFieldType.LocalizedString and isinstance(field_value, LocalizedString) and field_value.stringref == strref:
+                if (
+                    field_type == GFFFieldType.LocalizedString
+                    and isinstance(field_value, LocalizedString)
+                    and field_value.stringref == strref
+                ):
                     locations.append(field_path)
             except Exception as e:
                 _log_debug(f"Error scanning GFF field {field_path}: {e.__class__.__name__}: {e}")
@@ -3148,7 +3434,9 @@ class IncrementalTSLPatchDataWriter:
             location_data=location_data,
         )
         self._pending_strref_references[filename].append(pending_ref)
-        self.log_func(f"    Stored pending StrRef reference: {filename} ({location_type}) -> Token {token_id}")
+        self.log_func(
+            f"    Stored pending StrRef reference: {filename} ({location_type}) -> Token {token_id}"
+        )
 
     def _apply_pending_strref_references(
         self,
@@ -3190,7 +3478,9 @@ class IncrementalTSLPatchDataWriter:
                 continue
 
             # Check if paths match exactly
-            if isinstance(pending_ref.source_path, Installation) and isinstance(source_path, Installation):
+            if isinstance(pending_ref.source_path, Installation) and isinstance(
+                source_path, Installation
+            ):
                 should_apply = pending_ref.source_path.path() == source_path.path()
             elif isinstance(pending_ref.source_path, Path) and isinstance(source_path, Path):
                 should_apply = pending_ref.source_path == source_path
@@ -3281,7 +3571,9 @@ class IncrementalTSLPatchDataWriter:
                 gff_obj = read_gff(data)
                 field_path = pending_ref.location_data["field_path"]
                 # Navigate to the field path and check if it has the StrRef
-                return self._check_gff_field_strref(gff_obj.root, field_path, pending_ref.old_strref)
+                return self._check_gff_field_strref(
+                    gff_obj.root, field_path, pending_ref.old_strref
+                )
 
             # FIXME: TEMPORARILY DISABLED - NCS reference finding will be revisited later
             # if pending_ref.location_type == "ncs":
@@ -3328,7 +3620,11 @@ class IncrementalTSLPatchDataWriter:
                 field_label, index = parsed
                 # Get the field from current struct
                 for field_label_check, field_type, field_value in current:
-                    if field_label_check == field_label and field_type == GFFFieldType.List and isinstance(field_value, GFFList):
+                    if (
+                        field_label_check == field_label
+                        and field_type == GFFFieldType.List
+                        and isinstance(field_value, GFFList)
+                    ):
                         if index < len(field_value):
                             current = field_value[index]
                             break
@@ -3341,7 +3637,9 @@ class IncrementalTSLPatchDataWriter:
                 # Last part - check if it has the StrRef
                 for field_label_check, field_type, field_value in current:
                     if field_label_check == part:
-                        if field_type == GFFFieldType.LocalizedString and isinstance(field_value, LocalizedString):
+                        if field_type == GFFFieldType.LocalizedString and isinstance(
+                            field_value, LocalizedString
+                        ):
                             return field_value.stringref == strref
                         return False
                 return False
@@ -3389,7 +3687,9 @@ class IncrementalTSLPatchDataWriter:
             field_paths=field_paths,
         )
         self._pending_2da_row_references[gff_filename].append(pending_ref)
-        self.log_func(f"    Stored pending 2DA row reference: {gff_filename} -> {twoda_filename} row {row_index} = 2DAMEMORY{token_id} ({len(field_paths)} field(s))")
+        self.log_func(
+            f"    Stored pending 2DA row reference: {gff_filename} -> {twoda_filename} row {row_index} = 2DAMEMORY{token_id} ({len(field_paths)} field(s))"
+        )
 
     def _apply_pending_2da_row_references(
         self,
@@ -3431,7 +3731,9 @@ class IncrementalTSLPatchDataWriter:
                 continue
 
             # Check if paths match exactly
-            if isinstance(pending_ref.source_path, Installation) and isinstance(source_path, Installation):
+            if isinstance(pending_ref.source_path, Installation) and isinstance(
+                source_path, Installation
+            ):
                 should_apply = pending_ref.source_path.path() == source_path.path()
             elif isinstance(pending_ref.source_path, Path) and isinstance(source_path, Path):
                 should_apply = pending_ref.source_path == source_path
@@ -3484,7 +3786,12 @@ class IncrementalTSLPatchDataWriter:
                     relevant_field_names.append(field_name)
 
             # Verify all field paths in the pending reference still have the row index
-            return all(self._check_gff_field_2da_row(gff_obj.root, field_path, pending_ref.row_index, relevant_field_names) for field_path in pending_ref.field_paths)
+            return all(
+                self._check_gff_field_2da_row(
+                    gff_obj.root, field_path, pending_ref.row_index, relevant_field_names
+                )
+                for field_path in pending_ref.field_paths
+            )
 
         except Exception as e:  # noqa: BLE001
             _log_debug(f"Error verifying 2DA row location: {e.__class__.__name__}: {e}")
@@ -3520,7 +3827,11 @@ class IncrementalTSLPatchDataWriter:
                 field_label, index = parsed
                 # Get the field from current struct
                 for field_label_check, field_type, field_value in current:
-                    if field_label_check == field_label and field_type == GFFFieldType.List and isinstance(field_value, GFFList):
+                    if (
+                        field_label_check == field_label
+                        and field_type == GFFFieldType.List
+                        and isinstance(field_value, GFFList)
+                    ):
                         if index < len(field_value):
                             current = field_value[index]
                             break
@@ -3534,7 +3845,9 @@ class IncrementalTSLPatchDataWriter:
                 for field_label_check, _field_type, field_value in current:
                     if field_label_check == part:
                         # Check if this field name is relevant and has the correct row index
-                        if field_label_check in relevant_field_names and isinstance(field_value, int):
+                        if field_label_check in relevant_field_names and isinstance(
+                            field_value, int
+                        ):
                             return field_value == row_index
                         return False
                 return False
@@ -3567,12 +3880,18 @@ class IncrementalTSLPatchDataWriter:
             modification: Optional modification object to add to (if provided, use this instead of searching)
         """
         # Use the provided modification if it matches, otherwise find or create one
-        if modification is not None and isinstance(modification, ModificationsGFF) and modification.sourcefile.lower() == gff_filename.lower():
+        if (
+            modification is not None
+            and isinstance(modification, ModificationsGFF)
+            and modification.sourcefile.lower() == gff_filename.lower()
+        ):
             existing_mod = modification
             is_new = existing_mod.sourcefile not in self.written_sections
         else:
             # Find or create ModificationsGFF from all_modifications
-            found_mod = next((m for m in self.all_modifications.gff if m.sourcefile == gff_filename), None)
+            found_mod = next(
+                (m for m in self.all_modifications.gff if m.sourcefile == gff_filename), None
+            )
             is_new = found_mod is None
 
             if found_mod is None:
@@ -3589,7 +3908,9 @@ class IncrementalTSLPatchDataWriter:
             modifier = ModifyFieldGFF(field_path, field_value)
             existing_mod.modifiers.append(modifier)
 
-            self.log_func(f"    Creating patch: {gff_filename} -> {field_path} = 2DAMEMORY{token_id}")
+            self.log_func(
+                f"    Creating patch: {gff_filename} -> {field_path} = 2DAMEMORY{token_id}"
+            )
 
         # Allocate ListIndex tokens if needed before writing
         self._allocate_listindex_tokens_for_gff(existing_mod)
@@ -3634,12 +3955,18 @@ class IncrementalTSLPatchDataWriter:
         )
 
         # Use the provided modification if it matches, otherwise find or create one
-        if modification is not None and isinstance(modification, Modifications2DA) and modification.sourcefile.lower() == filename.lower():
+        if (
+            modification is not None
+            and isinstance(modification, Modifications2DA)
+            and modification.sourcefile.lower() == filename.lower()
+        ):
             existing_mod = modification
             is_new_mod = existing_mod.sourcefile not in self.written_sections
         else:
             # Get or create 2DA modification from all_modifications
-            found_mod = next((m for m in self.all_modifications.twoda if m.sourcefile == filename), None)
+            found_mod = next(
+                (m for m in self.all_modifications.twoda if m.sourcefile == filename), None
+            )
             is_new_mod = found_mod is None
 
             if found_mod is None:
@@ -3658,7 +3985,9 @@ class IncrementalTSLPatchDataWriter:
 
         # Log the patch being created
         path_info = f" at {resource_path}" if resource_path else ""
-        self.log_func(f"    Creating patch: row {row_index}, column '{column_name}' -> Token {token_id}{path_info}")
+        self.log_func(
+            f"    Creating patch: row {row_index}, column '{column_name}' -> Token {token_id}{path_info}"
+        )
 
         # Write to INI
         if is_new_mod:
@@ -3689,12 +4018,18 @@ class IncrementalTSLPatchDataWriter:
         from pykotor.tslpatcher.mods.ssf import ModificationsSSF, ModifySSF  # noqa: PLC0415
 
         # Use the provided modification if it matches, otherwise find or create one
-        if modification is not None and isinstance(modification, ModificationsSSF) and modification.sourcefile.lower() == filename.lower():
+        if (
+            modification is not None
+            and isinstance(modification, ModificationsSSF)
+            and modification.sourcefile.lower() == filename.lower()
+        ):
             existing_mod = modification
             is_new_mod = existing_mod.sourcefile not in self.written_sections
         else:
             # Get or create SSF modification from all_modifications
-            found_mod = next((m for m in self.all_modifications.ssf if m.sourcefile == filename), None)
+            found_mod = next(
+                (m for m in self.all_modifications.ssf if m.sourcefile == filename), None
+            )
             is_new_mod = found_mod is None
 
             if found_mod is None:
@@ -3742,12 +4077,18 @@ class IncrementalTSLPatchDataWriter:
         )
 
         # Use the provided modification if it matches, otherwise find or create one
-        if modification is not None and isinstance(modification, ModificationsGFF) and modification.sourcefile.lower() == filename.lower():
+        if (
+            modification is not None
+            and isinstance(modification, ModificationsGFF)
+            and modification.sourcefile.lower() == filename.lower()
+        ):
             existing_mod = modification
             is_new_mod = existing_mod.sourcefile not in self.written_sections
         else:
             # Get or create GFF modification from all_modifications
-            found_mod = next((m for m in self.all_modifications.gff if m.sourcefile == filename), None)
+            found_mod = next(
+                (m for m in self.all_modifications.gff if m.sourcefile == filename), None
+            )
             is_new_mod = found_mod is None
 
             if found_mod is None:
@@ -3838,7 +4179,9 @@ class IncrementalTSLPatchDataWriter:
         if not strref_mappings:
             return
 
-        self.log_func(f"\n=== Creating Linking Patches from Cache ({len(strref_mappings)} StrRefs) ===")
+        self.log_func(
+            f"\n=== Creating Linking Patches from Cache ({len(strref_mappings)} StrRefs) ==="
+        )
 
         for old_strref, token_id in strref_mappings.items():
             references = self.strref_cache.get_references(old_strref)
@@ -3854,7 +4197,9 @@ class IncrementalTSLPatchDataWriter:
 
                 # 2DA files
                 if restype == ResourceType.TwoDA:
-                    existing_mod: Modifications2DA | None = next((m for m in self.all_modifications.twoda if m.sourcefile == filename), None)
+                    existing_mod: Modifications2DA | None = next(
+                        (m for m in self.all_modifications.twoda if m.sourcefile == filename), None
+                    )
                     is_new_mod: bool = existing_mod is None
                     if existing_mod is None:
                         existing_mod = Modifications2DA(filename)
@@ -3886,7 +4231,9 @@ class IncrementalTSLPatchDataWriter:
 
                 # SSF files
                 elif restype == ResourceType.SSF:
-                    existing_ssf_mod: ModificationsSSF | None = next((m for m in self.all_modifications.ssf if m.sourcefile == filename), None)
+                    existing_ssf_mod: ModificationsSSF | None = next(
+                        (m for m in self.all_modifications.ssf if m.sourcefile == filename), None
+                    )
                     is_new_ssf_mod: bool = existing_ssf_mod is None
                     if existing_ssf_mod is None:
                         existing_ssf_mod = ModificationsSSF(filename, replace=False, modifiers=[])
@@ -3912,7 +4259,9 @@ class IncrementalTSLPatchDataWriter:
 
                 # GFF files
                 else:
-                    existing_gff_mod: ModificationsGFF | None = next((m for m in self.all_modifications.gff if m.sourcefile == filename), None)
+                    existing_gff_mod: ModificationsGFF | None = next(
+                        (m for m in self.all_modifications.gff if m.sourcefile == filename), None
+                    )
                     is_new_gff_mod: bool = existing_gff_mod is None
                     if existing_gff_mod is None:
                         existing_gff_mod = ModificationsGFF(filename, replace=False, modifiers=[])
@@ -3939,7 +4288,9 @@ class IncrementalTSLPatchDataWriter:
         gff_count: int = len(self.all_modifications.gff)
         twoda_count: int = len(self.all_modifications.twoda)
         ssf_count: int = len(self.all_modifications.ssf)
-        self.log_func(f"=== Linking Patches Created: {gff_count} GFF, {twoda_count} 2DA, {ssf_count} SSF ===")
+        self.log_func(
+            f"=== Linking Patches Created: {gff_count} GFF, {twoda_count} 2DA, {ssf_count} SSF ==="
+        )
 
     def _write_ssf_modification(
         self,
@@ -4079,10 +4430,19 @@ class IncrementalTSLPatchDataWriter:
         for i in range(folder_section_idx + 1, len(lines)):
             file_line: str = lines[i].strip()
             # Stop at next section marker
-            if file_line.startswith("[") and file_line.endswith("]") and file_line != folder_section:
+            if (
+                file_line.startswith("[")
+                and file_line.endswith("]")
+                and file_line != folder_section
+            ):
                 break
             # Check if this is a File#= line
-            if file_line and not file_line.startswith(";") and file_line.startswith("File") and "=" in file_line:
+            if (
+                file_line
+                and not file_line.startswith(";")
+                and file_line.startswith("File")
+                and "=" in file_line
+            ):
                 last_file_idx = i
 
         # Insert after the last file entry (or after section header if no files yet)
@@ -4182,7 +4542,9 @@ class IncrementalTSLPatchDataWriter:
         """
         # Add to tracking
         self._add_to_install_folder(folder, filename)
-        _log_debug(f"add_install_file scheduled '{filename}' for folder '{folder}' (source={source_path})")
+        _log_debug(
+            f"add_install_file scheduled '{filename}' for folder '{folder}' (source={source_path})"
+        )
 
         # Copy file if source provided
         if source_path is not None:
@@ -4236,7 +4598,10 @@ class IncrementalTSLPatchDataWriter:
                 res_ext: str = PurePath(filename).suffix.lstrip(".")
 
                 for res in capsule:
-                    if res.resname().lower() == resref.lower() and res.restype().extension.lower() == res_ext.lower():
+                    if (
+                        res.resname().lower() == resref.lower()
+                        and res.restype().extension.lower() == res_ext.lower()
+                    ):
                         return res.data()
 
                 _log_debug(f"Resource {filename} not found in capsule {source_path.name}")
@@ -4274,7 +4639,15 @@ class IncrementalTSLPatchDataWriter:
         section_idx: int | None = None
         next_section_idx: int | None = None
 
-        section_order = ["[TLKList]", "[InstallList]", "[2DAList]", "[GFFList]", "[CompileList]", "[SSFList]", "[HACKList]"]
+        section_order = [
+            "[TLKList]",
+            "[InstallList]",
+            "[2DAList]",
+            "[GFFList]",
+            "[CompileList]",
+            "[SSFList]",
+            "[HACKList]",
+        ]
         section_to_position = {name: idx for idx, name in enumerate(section_order)}
         current_section_pos = section_to_position.get(section_marker)
         if current_section_pos is None:
@@ -4283,7 +4656,11 @@ class IncrementalTSLPatchDataWriter:
             with self.ini_path.open("a", encoding="utf-8") as f:
                 f.write(content_to_add)
             return
-        next_section_marker: str | None = section_order[current_section_pos + 1] if current_section_pos + 1 < len(section_order) else None
+        next_section_marker: str | None = (
+            section_order[current_section_pos + 1]
+            if current_section_pos + 1 < len(section_order)
+            else None
+        )
 
         for i, line in enumerate(lines):
             if line == section_marker:
@@ -4333,7 +4710,9 @@ class IncrementalTSLPatchDataWriter:
             # Find the last non-empty line in current section (before next section)
             insert_idx = next_section_idx - 1
             # Skip blank lines/comments at end of section
-            while insert_idx > section_idx and (lines[insert_idx].strip() == "" or lines[insert_idx].strip().startswith(";")):
+            while insert_idx > section_idx and (
+                lines[insert_idx].strip() == "" or lines[insert_idx].strip().startswith(";")
+            ):
                 insert_idx -= 1
             # Insert after the last content line
             insert_idx += 1
@@ -4350,7 +4729,13 @@ class IncrementalTSLPatchDataWriter:
 
     def _write_to_ini(
         self,
-        modifications: list[ModificationsTLK | Modifications2DA | ModificationsGFF | ModificationsSSF | ModificationsNCS],
+        modifications: list[
+            ModificationsTLK
+            | Modifications2DA
+            | ModificationsGFF
+            | ModificationsSSF
+            | ModificationsNCS
+        ],
         mod_type: str,
     ) -> None:
         """Rewrite the entire INI file from scratch using all accumulated modifications.

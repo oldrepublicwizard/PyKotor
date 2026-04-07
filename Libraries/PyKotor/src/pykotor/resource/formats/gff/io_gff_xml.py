@@ -117,7 +117,11 @@ class GFFXMLReader(ResourceReader):
             gff_struct.set_resref(label, ResRef(xml_field.text or ""))
         elif xml_field.tag == "locstring":
             locstring = LocalizedString(-1)
-            locstring.stringref = -1 if xml_field.get("strref") == "4294967295" else int(xml_field.get("strref") or -1)
+            locstring.stringref = (
+                -1
+                if xml_field.get("strref") == "4294967295"
+                else int(xml_field.get("strref") or -1)
+            )
             for substring in xml_field:
                 language, gender = LocalizedString.substring_pair(
                     int(substring.get("language", 0)),
@@ -154,7 +158,9 @@ class GFFXMLReader(ResourceReader):
                 gff_list.add(0)
                 child_struct = gff_list.at(len(gff_list) - 1)
                 if child_struct is None:
-                    RobustLogger().error(f"Failed to acquire the GFFStruct at index {len(gff_list) - 1}, skipping...")
+                    RobustLogger().error(
+                        f"Failed to acquire the GFFStruct at index {len(gff_list) - 1}, skipping..."
+                    )
                     continue
                 self._load_struct(child_struct, xml_struct)
             gff_struct.set_list(label, gff_list)

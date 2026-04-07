@@ -231,7 +231,9 @@ class NCSBinaryReader(ResourceReader):
             current_pos = self._reader.position()
 
             self._reader.seek(context_start)
-            context_bytes = self._reader.read_bytes(min(context_size * 2, self._reader.size() - context_start))
+            context_bytes = self._reader.read_bytes(
+                min(context_size * 2, self._reader.size() - context_start)
+            )
             context_hex = " ".join(f"{b:02X}" for b in context_bytes)
 
             self._reader.seek(current_pos)  # Restore position
@@ -273,7 +275,9 @@ class NCSBinaryReader(ResourceReader):
             NCSInstructionType.CPDOWNBP,
             NCSInstructionType.CPTOPBP,
         }:
-            instruction.args.extend([self._reader.read_int32(big=True), self._reader.read_uint16(big=True)])
+            instruction.args.extend(
+                [self._reader.read_int32(big=True), self._reader.read_uint16(big=True)]
+            )
 
         elif instruction.ins_type == NCSInstructionType.CONSTI:
             instruction.args.extend([self._reader.read_uint32(big=True)])
@@ -291,7 +295,9 @@ class NCSBinaryReader(ResourceReader):
             instruction.args.extend([self._reader.read_int32(big=True)])
 
         elif instruction.ins_type == NCSInstructionType.ACTION:
-            instruction.args.extend([self._reader.read_uint16(big=True), self._reader.read_uint8(big=True)])
+            instruction.args.extend(
+                [self._reader.read_uint16(big=True), self._reader.read_uint8(big=True)]
+            )
 
         elif instruction.ins_type == NCSInstructionType.MOVSP:
             instruction.args.extend([self._reader.read_int32(big=True)])
@@ -323,7 +329,9 @@ class NCSBinaryReader(ResourceReader):
             instruction.args.extend([self._reader.read_uint32(big=True)])
 
         elif instruction.ins_type == NCSInstructionType.STORE_STATE:
-            instruction.args.extend([self._reader.read_uint32(big=True), self._reader.read_uint32(big=True)])
+            instruction.args.extend(
+                [self._reader.read_uint32(big=True), self._reader.read_uint32(big=True)]
+            )
 
         elif instruction.ins_type in {
             NCSInstructionType.EQUALTT,
@@ -449,15 +457,22 @@ class NCSBinaryReader(ResourceReader):
             ...
 
         elif (
-            instruction.ins_type == NCSInstructionType.COMPI
+            (
+                instruction.ins_type == NCSInstructionType.COMPI
+                or instruction.ins_type
+                in {  # noqa: SIM114
+                    # NCSInstructionType.STORE_STATEALL,
+                }
+            )
+            or instruction.ins_type == NCSInstructionType.RETN
+            or instruction.ins_type == NCSInstructionType.NOTI
             or instruction.ins_type
             in {  # noqa: SIM114
-                # NCSInstructionType.STORE_STATEALL,
+                NCSInstructionType.SAVEBP,
+                NCSInstructionType.RESTOREBP,
             }
-        ) or instruction.ins_type == NCSInstructionType.RETN or instruction.ins_type == NCSInstructionType.NOTI or instruction.ins_type in {  # noqa: SIM114
-            NCSInstructionType.SAVEBP,
-            NCSInstructionType.RESTOREBP,
-        } or instruction.ins_type == NCSInstructionType.NOP:
+            or instruction.ins_type == NCSInstructionType.NOP
+        ):
             ...
 
         elif instruction.ins_type in {  # noqa: SIM114
@@ -528,7 +543,9 @@ class NCSBinaryWriter(ResourceWriter):
         for instruction in self._ncs.instructions:
             self._write_instruction(instruction)
 
-    def determine_size(self, instruction: NCSInstruction) -> int:  # TODO(th3w1zard1): This function is unfinished and is missing defs.
+    def determine_size(
+        self, instruction: NCSInstruction
+    ) -> int:  # TODO(th3w1zard1): This function is unfinished and is missing defs.
         """Determines the size of an NCS instruction in bytes.
 
         Based on DeNCS Decoder.java readCommand method which shows complete instruction formats.
@@ -611,7 +628,9 @@ class NCSBinaryWriter(ResourceWriter):
 
         return size
 
-    def _write_instruction(self, instruction: NCSInstruction):  # TODO(th3w1zard1): This function is unfinished and is missing defs.
+    def _write_instruction(
+        self, instruction: NCSInstruction
+    ):  # TODO(th3w1zard1): This function is unfinished and is missing defs.
         """Writes an instruction to the NCS binary stream.
 
         Args:
@@ -627,7 +646,11 @@ class NCSBinaryWriter(ResourceWriter):
             - Raises error for unsupported instructions
         """
 
-        def to_signed_32bit(n: int) -> int:  # FIXME(th3w1zard1): Presumably this issue happens further up the call stack, fix later.
+        def to_signed_32bit(
+            n: int,
+        ) -> (
+            int
+        ):  # FIXME(th3w1zard1): Presumably this issue happens further up the call stack, fix later.
             """Convert unsigned 32-bit integer representation to signed.
 
             Handles edge cases where values may be stored as unsigned but need
@@ -648,7 +671,9 @@ class NCSBinaryWriter(ResourceWriter):
                 n -= 2**32
             return n
 
-        def to_signed_16bit(n: int) -> int:  # FIXME(th3w1zard1): Only seen this issue happen with 32bit but better safe than sorry, remove this once above issue is fixed.
+        def to_signed_16bit(
+            n: int,
+        ) -> int:  # FIXME(th3w1zard1): Only seen this issue happen with 32bit but better safe than sorry, remove this once above issue is fixed.
             """Convert unsigned 16-bit integer representation to signed.
 
             Similar to to_signed_32bit but for 16-bit values.
@@ -677,7 +702,12 @@ class NCSBinaryWriter(ResourceWriter):
         }:
             self._writer.write_int32(to_signed_32bit(instruction.args[0]), big=True)
 
-        elif instruction.ins_type in {NCSInstructionType.CPDOWNSP, NCSInstructionType.CPTOPSP, NCSInstructionType.CPDOWNBP, NCSInstructionType.CPTOPBP}:
+        elif instruction.ins_type in {
+            NCSInstructionType.CPDOWNSP,
+            NCSInstructionType.CPTOPSP,
+            NCSInstructionType.CPDOWNBP,
+            NCSInstructionType.CPTOPBP,
+        }:
             self._writer.write_int32(instruction.args[0], big=True)
             # Size argument: typically 4 for most types, 12 for vectors (3 floats)
             # The args[1] should contain the actual size value from compilation

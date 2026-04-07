@@ -101,7 +101,9 @@ class TestSaveLoadFlowK1(TestCase):
             )
             self.assertEqual(result, 1)
             screenshot_path = save_dir / entry.SCREENSHOT_NAME.resname
-            self.assertFalse(screenshot_path.is_file(), "Screenshot should be skipped when path matches alias")
+            self.assertFalse(
+                screenshot_path.is_file(), "Screenshot should be skipped when path matches alias"
+            )
 
     def test_run_k1_save_flow_fails_when_required_save_bytes_exceeds_free(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:

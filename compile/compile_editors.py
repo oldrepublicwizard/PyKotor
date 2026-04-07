@@ -57,8 +57,12 @@ def main() -> int:
     parser = argparse.ArgumentParser(
         description="Compile standalone editors/apps to individual EXEs via compile_tool.py",
     )
-    parser.add_argument("--list", action="store_true", help="List supported editor/app keys and exit.")
-    parser.add_argument("--all", action="store_true", help="Compile all editors and standalone apps.")
+    parser.add_argument(
+        "--list", action="store_true", help="List supported editor/app keys and exit."
+    )
+    parser.add_argument(
+        "--all", action="store_true", help="Compile all editors and standalone apps."
+    )
     parser.add_argument("--editor", choices=editors, help="Compile one editor by key.")
     parser.add_argument("--app", choices=apps, help="Compile one standalone app by key.")
     args, passthrough = parser.parse_known_args()
@@ -74,7 +78,9 @@ def main() -> int:
 
     targets: list[tuple[str, str]] = []
     if args.all:
-        targets.extend([(_script_name_for_editor(name), _script_name_for_editor(name)) for name in editors])
+        targets.extend(
+            [(_script_name_for_editor(name), _script_name_for_editor(name)) for name in editors]
+        )
         targets.extend([(_script_name_for_app(name), _script_name_for_app(name)) for name in apps])
     else:
         if args.editor is not None:
@@ -105,4 +111,3 @@ def main() -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
-

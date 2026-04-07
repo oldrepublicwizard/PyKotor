@@ -100,7 +100,9 @@ class KotorEngine(ShowBase):
 
         # Create scene graph manager
         self.scene_graph: Panda3DSceneGraph = Panda3DSceneGraph("main_scene", self.scene_root)
-        self.material_manager: Panda3DMaterialManager = Panda3DMaterialManager(self.loader, Path.cwd())
+        self.material_manager: Panda3DMaterialManager = Panda3DMaterialManager(
+            self.loader, Path.cwd()
+        )
 
         # Module loader will be initialized when installation is set
         self.module_loader: ModuleLoader | None = None

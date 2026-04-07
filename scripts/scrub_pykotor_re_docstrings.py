@@ -1,7 +1,9 @@
 """One-off helper: scrub legacy engine-binary docstring boilerplate under pykotor/."""
+
 from __future__ import annotations
 
 import re
+
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1] / "Libraries" / "PyKotor" / "src" / "pykotor"

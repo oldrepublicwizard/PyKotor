@@ -46,7 +46,12 @@ def fix_file(file_path: Path) -> bool:
 
         if in_type_checking:
             # Check if we're leaving the TYPE_CHECKING block
-            if stripped and not stripped.startswith("#") and not line.startswith(" ") and not line.startswith("\t"):
+            if (
+                stripped
+                and not stripped.startswith("#")
+                and not line.startswith(" ")
+                and not line.startswith("\t")
+            ):
                 in_type_checking = False
                 continue
 

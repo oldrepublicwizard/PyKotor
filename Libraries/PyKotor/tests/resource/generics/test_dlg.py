@@ -756,7 +756,9 @@ class TestDLG(TestCase):
         reconstructed_gff: GFF = dismantle_dlg(construct_dlg(gff), Game.K2)
         print(reconstructed_gff.root.get_list("EntryList").at(0).get_int32("RecordNoOverri"))
         reconstructed_gff.root.get_list("EntryList").at(0).set_int32("RecordNoOverri", 1)
-        assert gff.compare(reconstructed_gff, self.log_func, ignore_default_changes=True), os.linesep.join(self.log_messages)
+        assert gff.compare(reconstructed_gff, self.log_func, ignore_default_changes=True), (
+            os.linesep.join(self.log_messages)
+        )
 
     def test_k2_reconstruct_from_reconstruct(self):
         gff: GFF = read_gff(TEST_DLG_XML.encode("utf-8"), file_format=ResourceType.GFF_XML)
@@ -776,7 +778,9 @@ class TestDLG(TestCase):
         import os
         import tempfile
 
-        with tempfile.NamedTemporaryFile(mode="w", suffix=".dlg.xml", delete=False, encoding="utf-8") as tmp:
+        with tempfile.NamedTemporaryFile(
+            mode="w", suffix=".dlg.xml", delete=False, encoding="utf-8"
+        ) as tmp:
             tmp.write(TEST_DLG_XML)
             tmp_path = tmp.name
 
@@ -949,7 +953,10 @@ class TestDLGEntrySerialization(unittest.TestCase):
         assert deserialized.links[0].node.text.get(Language.ENGLISH, Gender.MALE) == "R222"
         assert len(deserialized.links[0].node.links) == 2
         assert deserialized.links[0].node.links[0].node.comment == "E221"
-        assert deserialized.links[0].node.links[1].node.text.get(Language.ENGLISH, Gender.MALE) == "R223"
+        assert (
+            deserialized.links[0].node.links[1].node.text.get(Language.ENGLISH, Gender.MALE)
+            == "R223"
+        )
         assert deserialized.links[0].node.links[1].node.links[0].node.comment == "E248"
 
     def test_dlg_entry_with_circular_reference(self):
@@ -1020,13 +1027,31 @@ class TestDLGEntrySerialization(unittest.TestCase):
         assert deserialized.links[0].node.text.get(Language.ENGLISH, Gender.MALE) == "R222"
         assert len(deserialized.links[0].node.links) == 2
         assert deserialized.links[0].node.links[0].node.comment == "E221"
-        assert deserialized.links[0].node.links[1].node.text.get(Language.ENGLISH, Gender.MALE) == "R223"
+        assert (
+            deserialized.links[0].node.links[1].node.text.get(Language.ENGLISH, Gender.MALE)
+            == "R223"
+        )
         assert len(deserialized.links[0].node.links[1].node.links) == 1
         assert deserialized.links[0].node.links[1].node.links[0].node.comment == "E250"
         assert len(deserialized.links[0].node.links[1].node.links[0].node.links) == 1
-        assert deserialized.links[0].node.links[1].node.links[0].node.links[0].node.text.get(Language.ENGLISH, Gender.MALE) == "R225"
+        assert (
+            deserialized.links[0]
+            .node.links[1]
+            .node.links[0]
+            .node.links[0]
+            .node.text.get(Language.ENGLISH, Gender.MALE)
+            == "R225"
+        )
         assert len(deserialized.links[0].node.links[1].node.links[0].node.links[0].node.links) == 1
-        assert deserialized.links[0].node.links[1].node.links[0].node.links[0].node.links[0].node.text.get(Language.ENGLISH, Gender.MALE) == "R224"
+        assert (
+            deserialized.links[0]
+            .node.links[1]
+            .node.links[0]
+            .node.links[0]
+            .node.links[0]
+            .node.text.get(Language.ENGLISH, Gender.MALE)
+            == "R224"
+        )
 
 
 class TestDLGReplySerialization(unittest.TestCase):
@@ -1138,11 +1163,21 @@ class TestDLGReplySerialization(unittest.TestCase):
         assert len(deserialized.links) == 1
         assert deserialized.links[0].node.comment == "E248"
         assert len(deserialized.links[0].node.links) == 1
-        assert deserialized.links[0].node.links[0].node.text.get(Language.ENGLISH, Gender.MALE) == "R249"
+        assert (
+            deserialized.links[0].node.links[0].node.text.get(Language.ENGLISH, Gender.MALE)
+            == "R249"
+        )
         assert len(deserialized.links[0].node.links[0].node.links) == 1
         assert deserialized.links[0].node.links[0].node.links[0].node.comment == "E221"
         assert len(deserialized.links[0].node.links[0].node.links[0].node.links) == 1
-        assert deserialized.links[0].node.links[0].node.links[0].node.links[0].node.text.get(Language.ENGLISH, Gender.MALE) == "R222"
+        assert (
+            deserialized.links[0]
+            .node.links[0]
+            .node.links[0]
+            .node.links[0]
+            .node.text.get(Language.ENGLISH, Gender.MALE)
+            == "R222"
+        )
 
     def test_dlg_reply_with_multiple_levels(self):
         def _describe_chain(start_node: DLGReply | DLGEntry) -> str:
@@ -1153,7 +1188,9 @@ class TestDLGReplySerialization(unittest.TestCase):
             # Walk a single-link chain (the test structure uses one link at each depth)
             while node is not None and steps < 8:
                 if isinstance(node, DLGEntry):
-                    parts.append(f"Entry(comment={node.comment!r}, text={node.text.get(Language.ENGLISH, Gender.MALE)!r})")
+                    parts.append(
+                        f"Entry(comment={node.comment!r}, text={node.text.get(Language.ENGLISH, Gender.MALE)!r})"
+                    )
                     node = node.links[0].node if node.links else None
                 else:
                     parts.append(f"Reply(text={node.text.get(Language.ENGLISH, Gender.MALE)!r})")
@@ -1186,11 +1223,21 @@ class TestDLGReplySerialization(unittest.TestCase):
         assert len(deserialized.links) == 1
         assert deserialized.links[0].node.comment == "E248"
         assert len(deserialized.links[0].node.links) == 1
-        assert deserialized.links[0].node.links[0].node.text.get(Language.ENGLISH, Gender.MALE) == "R223"
+        assert (
+            deserialized.links[0].node.links[0].node.text.get(Language.ENGLISH, Gender.MALE)
+            == "R223"
+        )
         assert len(deserialized.links[0].node.links[0].node.links) == 1
         assert deserialized.links[0].node.links[0].node.links[0].node.comment == "E221"
         assert len(deserialized.links[0].node.links[0].node.links[0].node.links) == 1
-        assert deserialized.links[0].node.links[0].node.links[0].node.links[0].node.text.get(Language.ENGLISH, Gender.MALE) == "R249"
+        assert (
+            deserialized.links[0]
+            .node.links[0]
+            .node.links[0]
+            .node.links[0]
+            .node.text.get(Language.ENGLISH, Gender.MALE)
+            == "R249"
+        )
         assert len(deserialized.links[0].node.links[0].node.links) == 1
 
         # Traverse the deserialized graph to ensure all expected nodes survived.
@@ -1295,7 +1342,10 @@ class TestDLGLinkSerialization(unittest.TestCase):
         assert len(deserialized.node.links) == 1
         assert deserialized.node.links[0].node.comment == "E221"
         assert len(deserialized.node.links[0].node.links) == 1
-        assert deserialized.node.links[0].node.links[0].node.text.get(Language.ENGLISH, Gender.MALE) == "R249"
+        assert (
+            deserialized.node.links[0].node.links[0].node.text.get(Language.ENGLISH, Gender.MALE)
+            == "R249"
+        )
         assert len(deserialized.node.links[0].node.links[0].node.links) == 1
         assert deserialized.node.links[0].node.links[0].node.links[0].node.comment == "E248"
 
@@ -1334,13 +1384,34 @@ class TestDLGLinkSerialization(unittest.TestCase):
         assert deserialized.node.links[0].node.text.get(Language.ENGLISH, Gender.MALE) == "R223"
         assert deserialized.node.links[1].node.comment == "E221"
         assert len(deserialized.node.links[1].node.links) == 1
-        assert deserialized.node.links[1].node.links[0].node.text.get(Language.ENGLISH, Gender.MALE) == "R249"
+        assert (
+            deserialized.node.links[1].node.links[0].node.text.get(Language.ENGLISH, Gender.MALE)
+            == "R249"
+        )
         assert len(deserialized.node.links[1].node.links[0].node.links) == 1
         assert deserialized.node.links[1].node.links[0].node.links[0].node.comment == "E250"
         assert len(deserialized.node.links[1].node.links[0].node.links[0].node.links) == 1
-        assert deserialized.node.links[1].node.links[0].node.links[0].node.links[0].node.text.get(Language.ENGLISH, Gender.MALE) == "R225"
-        assert len(deserialized.node.links[1].node.links[0].node.links[0].node.links[0].node.links) == 1
-        assert deserialized.node.links[1].node.links[0].node.links[0].node.links[0].node.links[0].node.text.get(Language.ENGLISH, Gender.MALE) == "R224"
+        assert (
+            deserialized.node.links[1]
+            .node.links[0]
+            .node.links[0]
+            .node.links[0]
+            .node.text.get(Language.ENGLISH, Gender.MALE)
+            == "R225"
+        )
+        assert (
+            len(deserialized.node.links[1].node.links[0].node.links[0].node.links[0].node.links)
+            == 1
+        )
+        assert (
+            deserialized.node.links[1]
+            .node.links[0]
+            .node.links[0]
+            .node.links[0]
+            .node.links[0]
+            .node.text.get(Language.ENGLISH, Gender.MALE)
+            == "R224"
+        )
 
     def test_dlg_link_serialization_preserves_shared_nodes(self):
         shared_reply = DLGReply(text=LocalizedString.from_english("Shared Reply"))
@@ -1374,7 +1445,12 @@ class TestDLGLinkSerialization(unittest.TestCase):
         reply_one.links.append(link_leaf)
         reply_one.links.append(link_secondary)
 
-        visited_nodes = {link.node.comment if isinstance(link.node, DLGEntry) else link.node.text.get(Language.ENGLISH, Gender.MALE) for link in link_root}
+        visited_nodes = {
+            link.node.comment
+            if isinstance(link.node, DLGEntry)
+            else link.node.text.get(Language.ENGLISH, Gender.MALE)
+            for link in link_root
+        }
         assert visited_nodes == {"r1", "r2", "leaf"}
 
 
@@ -1445,7 +1521,9 @@ class TestDLGStuntSerialization(unittest.TestCase):
 
 
 class TestDLGGraphUtilities(unittest.TestCase):
-    def _build_simple_graph(self) -> tuple[DLG, DLGEntry, DLGReply, DLGEntry, DLGLink, DLGLink, DLGLink, DLGLink]:
+    def _build_simple_graph(
+        self,
+    ) -> tuple[DLG, DLGEntry, DLGReply, DLGEntry, DLGLink, DLGLink, DLGLink, DLGLink]:
         dlg = DLG()
 
         entry0 = DLGEntry(comment="start")
@@ -1465,10 +1543,28 @@ class TestDLGGraphUtilities(unittest.TestCase):
         entry0.links.append(link_entry0_reply)
         reply0.links.append(link_reply0_entry1)
         dlg.starters.extend([start_link0, start_link1])
-        return dlg, entry0, reply0, entry1, start_link0, start_link1, link_entry0_reply, link_reply0_entry1
+        return (
+            dlg,
+            entry0,
+            reply0,
+            entry1,
+            start_link0,
+            start_link1,
+            link_entry0_reply,
+            link_reply0_entry1,
+        )
 
     def test_find_paths_for_nodes_and_links(self):
-        dlg, entry0, reply0, entry1, start_link0, start_link1, link_entry0_reply, link_reply0_entry1 = self._build_simple_graph()
+        (
+            dlg,
+            entry0,
+            reply0,
+            entry1,
+            start_link0,
+            start_link1,
+            link_entry0_reply,
+            link_reply0_entry1,
+        ) = self._build_simple_graph()
 
         paths_entry = dlg.find_paths(entry1)
         paths_reply = dlg.find_paths(reply0)
@@ -1481,7 +1577,16 @@ class TestDLGGraphUtilities(unittest.TestCase):
         assert PureWindowsPath("ReplyList", "0", "EntriesList", "0") in paths_child_link
 
     def test_get_link_parent_and_partial_path(self):
-        dlg, entry0, reply0, entry1, start_link0, start_link1, link_entry0_reply, link_reply0_entry1 = self._build_simple_graph()
+        (
+            dlg,
+            entry0,
+            reply0,
+            entry1,
+            start_link0,
+            start_link1,
+            link_entry0_reply,
+            link_reply0_entry1,
+        ) = self._build_simple_graph()
 
         assert dlg.get_link_parent(start_link0) is dlg
         assert dlg.get_link_parent(link_entry0_reply) is entry0
@@ -1490,7 +1595,16 @@ class TestDLGGraphUtilities(unittest.TestCase):
         assert link_entry0_reply.partial_path(is_starter=False) == "RepliesList\\0"
 
     def test_all_entries_and_replies_sorted_and_unique(self):
-        dlg, entry0, reply0, entry1, start_link0, start_link1, link_entry0_reply, link_reply0_entry1 = self._build_simple_graph()
+        (
+            dlg,
+            entry0,
+            reply0,
+            entry1,
+            start_link0,
+            start_link1,
+            link_entry0_reply,
+            link_reply0_entry1,
+        ) = self._build_simple_graph()
         entry2 = DLGEntry(comment="late")
         entry2.list_index = -1
         reply1 = DLGReply(text=LocalizedString.from_english("shared"))
@@ -1515,7 +1629,16 @@ class TestDLGGraphUtilities(unittest.TestCase):
         assert replies_sorted[1].list_index == 5
 
     def test_calculate_links_and_nodes_counts_cycles_included(self):
-        dlg, entry0, reply0, entry1, start_link0, start_link1, link_entry0_reply, link_reply0_entry1 = self._build_simple_graph()
+        (
+            dlg,
+            entry0,
+            reply0,
+            entry1,
+            start_link0,
+            start_link1,
+            link_entry0_reply,
+            link_reply0_entry1,
+        ) = self._build_simple_graph()
         # Introduce an explicit cycle entry1 -> entry0
         entry1.links.append(DLGLink(node=entry0, list_index=2))
 
@@ -1525,7 +1648,16 @@ class TestDLGGraphUtilities(unittest.TestCase):
         assert num_nodes == 3
 
     def test_shift_item_and_bounds(self):
-        dlg, entry0, reply0, entry1, start_link0, start_link1, link_entry0_reply, link_reply0_entry1 = self._build_simple_graph()
+        (
+            dlg,
+            entry0,
+            reply0,
+            entry1,
+            start_link0,
+            start_link1,
+            link_entry0_reply,
+            link_reply0_entry1,
+        ) = self._build_simple_graph()
         entry0.shift_item(entry0.links, 0, 0)  # no-op allowed
         entry0.shift_item(entry0.links, 0, 0)  # idempotent
         # Add second link for ordering

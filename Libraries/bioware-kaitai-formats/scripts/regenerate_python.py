@@ -7,6 +7,7 @@ Example::
 
     uv run python scripts/regenerate_python.py --ksy-root ..\vendor\bioware-kaitai-formats
 """
+
 from __future__ import annotations
 
 import argparse
@@ -16,6 +17,7 @@ import shutil
 import subprocess
 import sys
 import tempfile
+
 from pathlib import Path
 
 
@@ -33,7 +35,9 @@ def _find_ksc(explicit: str | None) -> list[str]:
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser(description="Regenerate bioware_kaitai_formats from .ksy tree.")
+    parser = argparse.ArgumentParser(
+        description="Regenerate bioware_kaitai_formats from .ksy tree."
+    )
     parser.add_argument(
         "--ksy-root",
         type=Path,
@@ -110,7 +114,9 @@ def main() -> int:
                     if p.is_file():
                         shutil.copy2(p, out_pkg / p.name)
             else:
-                print(f"Expected output under {gen_root} or flat .py in {tmp_path}", file=sys.stderr)
+                print(
+                    f"Expected output under {gen_root} or flat .py in {tmp_path}", file=sys.stderr
+                )
                 return 1
         else:
             if out_pkg.exists():

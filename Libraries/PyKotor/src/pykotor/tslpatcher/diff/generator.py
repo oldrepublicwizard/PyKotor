@@ -56,7 +56,9 @@ if TYPE_CHECKING:
 
 # Logging helpers
 # Log level: 0 = normal, 1 = verbose, 2 = debug
-_log_level = 2 if os.environ.get("KOTORDIFF_DEBUG") else (1 if os.environ.get("KOTORDIFF_VERBOSE") else 0)
+_log_level = (
+    2 if os.environ.get("KOTORDIFF_DEBUG") else (1 if os.environ.get("KOTORDIFF_VERBOSE") else 0)
+)
 
 
 def _log_debug(msg: str) -> None:
@@ -157,7 +159,9 @@ class TSLPatchDataGenerator:
         Returns:
             Dictionary of copied file paths
         """
-        _log_debug("Note: Only copying files for [InstallList], NOT files for [GFFList]/[2DAList]/etc")
+        _log_debug(
+            "Note: Only copying files for [InstallList], NOT files for [GFFList]/[2DAList]/etc"
+        )
         copied_files: dict[str, Path] = {}
 
         # Group files by folder for efficient processing
@@ -295,7 +299,9 @@ class TSLPatchDataGenerator:
 
         except Exception as e:  # noqa: BLE001
             # If parsing fails, fall back to binary write
-            _log_error(f"Failed to use io function for {file_ext}, falling back to binary write: {e}")
+            _log_error(
+                f"Failed to use io function for {file_ext}, falling back to binary write: {e}"
+            )
             dest_path.write_bytes(data)
 
     def _generate_tlk_files(
@@ -326,7 +332,9 @@ class TSLPatchDataGenerator:
             # Warn if any replacements are found (shouldn't happen)
             replacements = [m for m in mod_tlk.modifiers if m.is_replacement]
             if replacements:
-                _log_error(f"WARNING: Found {len(replacements)} replacement modifiers in TLK - TSLPatcher only supports appends!")
+                _log_error(
+                    f"WARNING: Found {len(replacements)} replacement modifiers in TLK - TSLPatcher only supports appends!"
+                )
 
             # Create append.tlk with all modifiers
             if appends:
@@ -398,7 +406,9 @@ class TSLPatchDataGenerator:
 
             # If we couldn't find/copy the base file, log a warning
             if filename not in generated:
-                _log_error(f"Could not find base 2DA file for {filename} - TSLPatcher may fail without it")
+                _log_error(
+                    f"Could not find base 2DA file for {filename} - TSLPatcher may fail without it"
+                )
 
         return generated
 
@@ -544,7 +554,9 @@ class TSLPatchDataGenerator:
             if part.isdigit():
                 # List index navigation
                 if not isinstance(current_struct, GFFList):
-                    _log_error(f"Path part '{part}' expects list but got {type(current_struct).__name__} during {context}")
+                    _log_error(
+                        f"Path part '{part}' expects list but got {type(current_struct).__name__} during {context}"
+                    )
                     return None
                 list_index = int(part)
                 list_item = current_struct.at(list_index)
@@ -556,7 +568,9 @@ class TSLPatchDataGenerator:
             else:
                 nested_struct = current_struct.get_struct(part)
                 if nested_struct is None:
-                    _log_error(f"Cannot navigate to struct field '{part}' during {context} - field missing or wrong type")
+                    _log_error(
+                        f"Cannot navigate to struct field '{part}' during {context} - field missing or wrong type"
+                    )
                     return None
                 current_struct = nested_struct
 
@@ -575,7 +589,9 @@ class TSLPatchDataGenerator:
         """
         # Navigate to the correct struct
         path_parts = str(modifier.path).replace("\\", "/").split("/")
-        current_struct = self._navigate_to_parent_struct(root_struct, path_parts, f"ModifyField: {modifier.path}")
+        current_struct = self._navigate_to_parent_struct(
+            root_struct, path_parts, f"ModifyField: {modifier.path}"
+        )
 
         if current_struct is None:
             return
@@ -611,7 +627,9 @@ class TSLPatchDataGenerator:
         else:
             _log_error(f"Unknown value type for field '{field_label}': {type(value).__name__}")
 
-    def _navigate_to_struct_creating_if_needed(self, root_struct: GFFStruct, path_parts: list[str], context: str = "AddField") -> GFFStruct | None:
+    def _navigate_to_struct_creating_if_needed(
+        self, root_struct: GFFStruct, path_parts: list[str], context: str = "AddField"
+    ) -> GFFStruct | None:
         """Navigate through path, creating structs as needed.
 
         Args:
@@ -632,7 +650,9 @@ class TSLPatchDataGenerator:
             if part.isdigit():
                 # List index navigation
                 if not isinstance(current_struct, GFFList):
-                    _log_error(f"Expected list at '{part}' but got {type(current_struct).__name__} in {context}")
+                    _log_error(
+                        f"Expected list at '{part}' but got {type(current_struct).__name__} in {context}"
+                    )
                     return None
                 list_item = current_struct.at(int(part))
                 if list_item is None:
@@ -672,17 +692,23 @@ class TSLPatchDataGenerator:
         if modifier.field_type == GFFFieldType.Struct:
             nested_struct = current_struct.get_struct(modifier.label)
             if nested_struct is None:
-                _log_error(f"Cannot apply nested modifiers: struct field '{modifier.label}' not found after creation")
+                _log_error(
+                    f"Cannot apply nested modifiers: struct field '{modifier.label}' not found after creation"
+                )
                 return
             for nested_mod in modifier.modifiers:
                 if isinstance(nested_mod, AddFieldGFF):
                     self._apply_add_field(nested_struct, nested_mod)
                 elif isinstance(nested_mod, AddStructToListGFF):
-                    _log_error(f"Unexpected AddStructToListGFF in Struct context for '{modifier.label}'")
+                    _log_error(
+                        f"Unexpected AddStructToListGFF in Struct context for '{modifier.label}'"
+                    )
 
         elif modifier.field_type == GFFFieldType.List:
             # Lists handle their own nested modifiers via AddStructToListGFF
-            _log_debug(f"List field '{modifier.label}' created, nested modifiers handled by AddStructToListGFF")
+            _log_debug(
+                f"List field '{modifier.label}' created, nested modifiers handled by AddStructToListGFF"
+            )
 
     def _apply_add_field(
         self,
@@ -697,7 +723,9 @@ class TSLPatchDataGenerator:
         """
         # Navigate to parent struct, creating intermediate structs as needed
         path_parts = str(modifier.path).replace("\\", "/").split("/") if modifier.path else []
-        current_struct = self._navigate_to_struct_creating_if_needed(root_struct, path_parts, f"AddField: {modifier.label}")
+        current_struct = self._navigate_to_struct_creating_if_needed(
+            root_struct, path_parts, f"AddField: {modifier.label}"
+        )
 
         if current_struct is None:
             return
@@ -736,7 +764,9 @@ class TSLPatchDataGenerator:
             if part.isdigit():
                 # List index navigation
                 if not isinstance(current_obj, GFFList):
-                    _log_error(f"Expected list at index '{part}' but got {type(current_obj).__name__} in {context}")
+                    _log_error(
+                        f"Expected list at index '{part}' but got {type(current_obj).__name__} in {context}"
+                    )
                     return None
                 item = current_obj.at(int(part))
                 if item is None:
@@ -751,12 +781,16 @@ class TSLPatchDataGenerator:
                     return None
                 current_obj = navigated_obj
             else:
-                _log_error(f"Cannot navigate from {type(current_obj).__name__} at '{part}' in {context}")
+                _log_error(
+                    f"Cannot navigate from {type(current_obj).__name__} at '{part}' in {context}"
+                )
                 return None
 
         # Verify final object is a list
         if not isinstance(current_obj, GFFList):
-            _log_error(f"Path '{'/'.join(path_parts)}' did not resolve to GFFList in {context}, got {type(current_obj).__name__}")
+            _log_error(
+                f"Path '{'/'.join(path_parts)}' did not resolve to GFFList in {context}, got {type(current_obj).__name__}"
+            )
             return None
 
         return current_obj
@@ -797,7 +831,9 @@ class TSLPatchDataGenerator:
                 _log_error(f"get_struct('{field_name}') returned None in {context}")
             return result_struct
 
-        _log_error(f"Field '{field_name}' has type {field_type.name}, expected List or Struct in {context}")
+        _log_error(
+            f"Field '{field_name}' has type {field_type.name}, expected List or Struct in {context}"
+        )
         return None
 
     def _extract_struct_from_modifier(
@@ -812,11 +848,15 @@ class TSLPatchDataGenerator:
         Returns:
             GFFStruct object
         """
-        if isinstance(modifier.value, FieldValueConstant) and isinstance(modifier.value.stored, GFFStruct):
+        if isinstance(modifier.value, FieldValueConstant) and isinstance(
+            modifier.value.stored, GFFStruct
+        ):
             return modifier.value.stored
 
         # Create new struct with appropriate struct_id
-        if isinstance(modifier.value, FieldValueConstant) and isinstance(modifier.value.stored, dict):
+        if isinstance(modifier.value, FieldValueConstant) and isinstance(
+            modifier.value.stored, dict
+        ):
             struct_id = modifier.value.stored.get("struct_id", 0)
             return GFFStruct(struct_id)
 
@@ -835,7 +875,9 @@ class TSLPatchDataGenerator:
         """
         # Navigate to the target list
         path_parts = str(modifier.path).replace("\\", "/").split("/") if modifier.path else []
-        target_list = self._navigate_to_list_creating_if_needed(root_struct, path_parts, f"AddStructToList: {modifier.identifier}")
+        target_list = self._navigate_to_list_creating_if_needed(
+            root_struct, path_parts, f"AddStructToList: {modifier.identifier}"
+        )
 
         if target_list is None:
             return
@@ -890,7 +932,9 @@ class TSLPatchDataGenerator:
             GFFFieldType.Vector3: lambda: struct.set_vector3(label, value),
             GFFFieldType.Vector4: lambda: struct.set_vector4(label, value),
             GFFFieldType.Struct: lambda: struct.set_struct(label, value),
-            GFFFieldType.List: lambda: struct.set_list(label, value if isinstance(value, GFFList) else GFFList()),
+            GFFFieldType.List: lambda: struct.set_list(
+                label, value if isinstance(value, GFFList) else GFFList()
+            ),
         }
 
         setter = setters.get(field_type)
@@ -905,7 +949,18 @@ class TSLPatchDataGenerator:
     def _extract_field_value(
         self,
         field_value: FieldValue,
-    ) -> ResRef | str | PureWindowsPath | int | float | object | FieldValueConstant | FieldValue2DAMemory | FieldValueTLKMemory | FieldValue:
+    ) -> (
+        ResRef
+        | str
+        | PureWindowsPath
+        | int
+        | float
+        | object
+        | FieldValueConstant
+        | FieldValue2DAMemory
+        | FieldValueTLKMemory
+        | FieldValue
+    ):
         """Extract the actual value from a FieldValue wrapper.
 
         Args:
@@ -916,7 +971,11 @@ class TSLPatchDataGenerator:
         """
         if isinstance(field_value, FieldValueConstant) and hasattr(field_value, "stored"):
             return field_value.stored
-        if isinstance(field_value, FieldValue) and hasattr(field_value, "value") and callable(field_value.value):
+        if (
+            isinstance(field_value, FieldValue)
+            and hasattr(field_value, "value")
+            and callable(field_value.value)
+        ):
             return field_value.value(None, None)  # type: ignore[arg-type]
         return field_value
 
@@ -954,7 +1013,9 @@ class TSLPatchDataGenerator:
                         ssf = read_ssf(potential_base)
                         _log_debug(f"Loaded base SSF from: '{potential_base}'")
                     except Exception as e:  # noqa: BLE001
-                        _log_debug(f"Could not load base SSF '{potential_base}': {e.__class__.__name__}: {e}")  # noqa: BLE001
+                        _log_debug(
+                            f"Could not load base SSF '{potential_base}': {e.__class__.__name__}: {e}"
+                        )  # noqa: BLE001
                         print("Full traceback:")
                         for line in traceback.format_exc().splitlines():
                             print(f"  {line}")
@@ -1155,7 +1216,9 @@ def _process_tlk_modifications(
         # Warn if replacements found (shouldn't happen)
         has_replacements = any(m.is_replacement for m in mod_tlk.modifiers)
         if has_replacements:
-            _log_debug("WARNING: Found replacement modifiers in TLK - TSLPatcher only supports appends!")
+            _log_debug(
+                "WARNING: Found replacement modifiers in TLK - TSLPatcher only supports appends!"
+            )
 
         if has_appends:
             _add_file_to_folder(install_folders, folder, "append.tlk")

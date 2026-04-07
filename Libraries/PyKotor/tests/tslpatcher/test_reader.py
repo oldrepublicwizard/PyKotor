@@ -29,12 +29,23 @@ if UTILITY_PATH.joinpath("utility").exists():
 
 from pykotor.common.language import Gender, Language  # pyright: ignore[reportMissingImports]
 from pykotor.common.misc import ResRef  # pyright: ignore[reportMissingImports]
-from pykotor.resource.formats.gff.gff_data import GFFFieldType, GFFStruct  # pyright: ignore[reportMissingImports]
+from pykotor.resource.formats.gff.gff_data import (  # pyright: ignore[reportMissingImports]
+    GFFFieldType,
+    GFFStruct,
+)
 from pykotor.resource.formats.ssf import SSFSound  # pyright: ignore[reportMissingImports]
-from pykotor.resource.formats.tlk import TLK, read_tlk, write_tlk  # pyright: ignore[reportMissingImports]
+from pykotor.resource.formats.tlk import (  # pyright: ignore[reportMissingImports]
+    TLK,
+    read_tlk,
+    write_tlk,
+)
 from pykotor.resource.type import ResourceType  # pyright: ignore[reportMissingImports]
 from pykotor.tslpatcher.config import PatcherConfig  # pyright: ignore[reportMissingImports]
-from pykotor.tslpatcher.memory import NoTokenUsage, TokenUsage2DA, TokenUsageTLK  # pyright: ignore[reportMissingImports]
+from pykotor.tslpatcher.memory import (  # pyright: ignore[reportMissingImports]
+    NoTokenUsage,
+    TokenUsage2DA,
+    TokenUsageTLK,
+)
 from pykotor.tslpatcher.mods.gff import (  # pyright: ignore[reportMissingImports]
     AddFieldGFF,
     AddStructToListGFF,
@@ -65,7 +76,10 @@ if TYPE_CHECKING:
     )
     from pykotor.tslpatcher.mods.ssf import ModifySSF  # pyright: ignore[reportMissingImports]
     from pykotor.tslpatcher.mods.tlk import ModifyTLK  # pyright: ignore[reportMissingImports]
-    from pykotor.tslpatcher.mods.twoda import AddColumn2DA, ChangeRow2DA  # pyright: ignore[reportMissingImports]
+    from pykotor.tslpatcher.mods.twoda import (  # pyright: ignore[reportMissingImports]
+        AddColumn2DA,
+        ChangeRow2DA,
+    )
 
 K1_PATH: str = os.environ.get("K1_PATH", r"C:\Program Files (x86)\Steam\steamapps\common\swkotor")
 
@@ -247,7 +261,10 @@ class TestConfigReader(unittest.TestCase):
             modifier.load()
 
         assert len(self.config.patches_tlk.modifiers) == 3
-        modifiers_dict = {mod.token_id: {"text": mod.text, "voiceover": mod.sound, "replace": mod.is_replacement} for mod in self.config.patches_tlk.modifiers}
+        modifiers_dict = {
+            mod.token_id: {"text": mod.text, "voiceover": mod.sound, "replace": mod.is_replacement}
+            for mod in self.config.patches_tlk.modifiers
+        }
         self.maxDiff = None
         self.assertDictEqual(
             modifiers_dict,
@@ -278,7 +295,10 @@ class TestConfigReader(unittest.TestCase):
             modifier.load()
 
         assert len(self.config.patches_tlk.modifiers) == 3
-        modifiers_dict = {mod.token_id: {"text": mod.text, "voiceover": mod.sound, "replace": mod.is_replacement} for mod in self.config.patches_tlk.modifiers}
+        modifiers_dict = {
+            mod.token_id: {"text": mod.text, "voiceover": mod.sound, "replace": mod.is_replacement}
+            for mod in self.config.patches_tlk.modifiers
+        }
         self.assertDictEqual(
             modifiers_dict,
             {
@@ -329,7 +349,12 @@ class TestConfigReader(unittest.TestCase):
             modifier.load()
         assert len(self.config.patches_tlk.modifiers) == 26
         modifiers_dict2: dict[int, dict[str, str | ResRef | bool]] = {
-            mod.token_id: {"text": mod.text, "voiceover": mod.sound, "is_replacement": mod.is_replacement} for mod in modifiers2
+            mod.token_id: {
+                "text": mod.text,
+                "voiceover": mod.sound,
+                "is_replacement": mod.is_replacement,
+            }
+            for mod in modifiers2
         }
         for k in modifiers_dict2.copy():
             modifiers_dict2[k].pop("is_replacement")
@@ -439,7 +464,10 @@ class TestConfigReader(unittest.TestCase):
             modifier.load()
 
         assert len(self.config.patches_tlk.modifiers) == 5
-        modifiers_dict = {mod.token_id: {"text": mod.text, "voiceover": mod.sound} for mod in self.config.patches_tlk.modifiers}
+        modifiers_dict = {
+            mod.token_id: {"text": mod.text, "voiceover": mod.sound}
+            for mod in self.config.patches_tlk.modifiers
+        }
         self.assertDictEqual(
             modifiers_dict,
             {
@@ -1790,7 +1818,13 @@ class TestConfigReader(unittest.TestCase):
         assert mod_1.index_to_token == 5
 
     def _setupIniAndConfig(self, ini_text: str) -> PatcherConfig:
-        ini = ConfigParser(delimiters="=", allow_no_value=True, strict=False, interpolation=None, inline_comment_prefixes=(";", "#"))
+        ini = ConfigParser(
+            delimiters="=",
+            allow_no_value=True,
+            strict=False,
+            interpolation=None,
+            inline_comment_prefixes=(";", "#"),
+        )
         ini.optionxform = lambda optionstr: optionstr
         ini.read_string(ini_text)
         result = PatcherConfig()

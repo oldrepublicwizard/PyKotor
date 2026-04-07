@@ -16,7 +16,9 @@ if TYPE_CHECKING:
     from pykotor.resource.type import SOURCE_TYPES, TARGET_TYPES
 
 # Base item IDs considered armor per 2DA files.
-ARMOR_BASE_ITEMS: frozenset[int] = frozenset({35, 36, 37, 38, 39, 40, 41, 42, 43, 53, 58, 63, 64, 65, 69, 71, 85, 89, 98, 100, 102, 103})
+ARMOR_BASE_ITEMS: frozenset[int] = frozenset(
+    {35, 36, 37, 38, 39, 40, 41, 42, 43, 53, 58, 63, 64, 65, 69, 71, 85, 89, 98, 100, 102, 103}
+)
 
 
 class UTI:

@@ -34,7 +34,9 @@ class TestRegistryStrictTyping:
         """Test that valid winreg root names are accessed via getattr."""
         # Test with a valid registry root (HKEY_LOCAL_MACHINE)
         # This tests that getattr works for legitimate dynamic module attribute lookup
-        result = resolve_reg_key_to_path("HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion", "ProgramFilesDir")
+        result = resolve_reg_key_to_path(
+            "HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion", "ProgramFilesDir"
+        )
 
         # Should either return a path or None (depending on if key exists)
         assert result is None or isinstance(result, str)
@@ -51,7 +53,9 @@ class TestRegistryStrictTyping:
     def test_resolve_registry_key_uses_getattr(self):
         """Test that resolve_reg_key_to_path uses getattr for dynamic lookup."""
         # Test with HKEY_LOCAL_MACHINE (valid winreg attribute)
-        result = resolve_reg_key_to_path("HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion", "ProgramFilesDir")
+        result = resolve_reg_key_to_path(
+            "HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion", "ProgramFilesDir"
+        )
 
         # Should handle gracefully using getattr
         assert result is None or isinstance(result, str)

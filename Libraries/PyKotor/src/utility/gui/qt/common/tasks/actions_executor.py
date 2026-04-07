@@ -128,8 +128,12 @@ class FileActionsExecutor(QObject):
     ):
         super().__init__()
         # Check environment variable for testing mode
-        if not enable_multiprocessing or os.environ.get("PYKOTOR_DISABLE_MULTIPROCESSING", "").lower() in ("1", "true", "yes"):
-            RobustLogger().debug("FileActionsExecutor running in DISABLED mode (no multiprocessing)")
+        if not enable_multiprocessing or os.environ.get(
+            "PYKOTOR_DISABLE_MULTIPROCESSING", ""
+        ).lower() in ("1", "true", "yes"):
+            RobustLogger().debug(
+                "FileActionsExecutor running in DISABLED mode (no multiprocessing)"
+            )
             self.process_pool: ProcessPoolExecutor = None  # type: ignore[assignment]
             self.manager: SyncManager = None  # type: ignore[assignment]
             self.tasks: DictProxy[str, Task] = {}  # type: ignore[assignment]
@@ -206,7 +210,9 @@ class FileActionsExecutor(QObject):
         submitter = self.process_pool.submit
 
         if custom_function is not None and not self._is_picklable(custom_function):
-            RobustLogger().warning(f"Task {task_id} custom function is not picklable; multiprocessing may fail")
+            RobustLogger().warning(
+                f"Task {task_id} custom function is not picklable; multiprocessing may fail"
+            )
 
         future: _ConcurrentFuture[Any] = submitter(
             self._execute_task,
@@ -220,7 +226,9 @@ class FileActionsExecutor(QObject):
         self.TaskStarted.emit(task_id)
         self._update_progress()
 
-        threading.Thread(target=self._monitor_progress, args=(task_id, progress_queue), daemon=True).start()
+        threading.Thread(
+            target=self._monitor_progress, args=(task_id, progress_queue), daemon=True
+        ).start()
 
         RobustLogger().debug(f"Task queued: {task_id}, operation: {operation}")
         return task_id
@@ -240,7 +248,9 @@ class FileActionsExecutor(QObject):
         # (not object.__getattribute__ which is equivalent to getattr)
         func_obj: object | None = getattr(FileOperations, operation, None)
         if func_obj is None:
-            RobustLogger().debug(f"No FileOperations handler found for '{operation}', completing without action")
+            RobustLogger().debug(
+                f"No FileOperations handler found for '{operation}', completing without action"
+            )
             progress_queue = kwargs.get("progress_queue")
             if progress_queue:
                 try:
@@ -265,7 +275,9 @@ class FileActionsExecutor(QObject):
             handle_multi_callable = cast("Callable[..., Any]", handle_multi)
             return handle_multi_callable(paths, **kwargs)
 
-        RobustLogger().debug(f"FileOperations.{operation} is not callable and has no handler methods")
+        RobustLogger().debug(
+            f"FileOperations.{operation} is not callable and has no handler methods"
+        )
         return None
 
     @staticmethod
@@ -287,7 +299,10 @@ class FileActionsExecutor(QObject):
             signature = inspect.signature(func)
         except (TypeError, ValueError):
             return kwargs
-        accepts_var_kw: bool = any(parameter.kind == inspect.Parameter.VAR_KEYWORD for parameter in signature.parameters.values())
+        accepts_var_kw: bool = any(
+            parameter.kind == inspect.Parameter.VAR_KEYWORD
+            for parameter in signature.parameters.values()
+        )
         if accepts_var_kw:
             return kwargs
         allowed_keys = set(signature.parameters.keys())
@@ -383,7 +398,9 @@ class FileActionsExecutor(QObject):
         RobustLogger().debug(f"Attempting to retry task: {task_id}")
         task: Task | None = self.get_task(task_id)
         if task and task.status in (TaskStatus.FAILED, TaskStatus.CANCELLED):
-            new_task_id: str = self.queue_task(task.operation, task.args, task.kwargs, task.priority, task.description)
+            new_task_id: str = self.queue_task(
+                task.operation, task.args, task.kwargs, task.priority, task.description
+            )
             del self.tasks[task_id]
             self.futures.pop(task_id, None)
             RobustLogger().debug(f"Task retried: {task_id}, new task id: {new_task_id}")
@@ -499,7 +516,9 @@ class FileActionsExecutor(QObject):
                 task.status = TaskStatus.COMPLETED
                 task.result = future.result()
                 self.TaskCompleted.emit(task_id, task.result)
-                RobustLogger().debug(f"Task completed successfully: {task_id}, result: {task.result}")
+                RobustLogger().debug(
+                    f"Task completed successfully: {task_id}, result: {task.result}"
+                )
             self.tasks[task_id] = task
             self._update_progress()
             if self.completed_tasks == self.total_tasks:
@@ -533,7 +552,9 @@ if __name__ == "__main__":
 
     def on_task_failed(task_id: str, error: Exception):
         assert isinstance(error, Exception)
-        RobustLogger().exception(f"Task {task_id} failed with error: {error!s}", exc_info=error or True)
+        RobustLogger().exception(
+            f"Task {task_id} failed with error: {error!s}", exc_info=error or True
+        )
 
     def on_task_progress(task_id: str, progress: float):
         print(f"Task {task_id} progress: {progress}%")

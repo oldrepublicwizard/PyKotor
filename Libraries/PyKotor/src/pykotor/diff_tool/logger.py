@@ -233,7 +233,9 @@ def log_output_basic(*args, **kwargs):
     except UnicodeEncodeError:
         # Fallback: encode with error handling for Windows console
         try:
-            safe_msg = msg.encode(sys.stdout.encoding or "utf-8", errors="replace").decode(sys.stdout.encoding or "utf-8")
+            safe_msg = msg.encode(sys.stdout.encoding or "utf-8", errors="replace").decode(
+                sys.stdout.encoding or "utf-8"
+            )
             print(safe_msg, **kwargs)
         except Exception:  # noqa: BLE001
             # Last resort: use ASCII with backslashreplace

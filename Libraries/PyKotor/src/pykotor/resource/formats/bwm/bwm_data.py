@@ -162,7 +162,14 @@ class BWM(ComparableMixin):
             Used for door/transition placement (absolute world position)
     """
 
-    COMPARABLE_FIELDS = ("walkmesh_type", "position", "relative_hook1", "relative_hook2", "absolute_hook1", "absolute_hook2")
+    COMPARABLE_FIELDS = (
+        "walkmesh_type",
+        "position",
+        "relative_hook1",
+        "relative_hook2",
+        "absolute_hook1",
+        "absolute_hook2",
+    )
     COMPARABLE_SEQUENCE_FIELDS = ("faces",)
 
     def __init__(self):
@@ -451,11 +458,16 @@ class BWM(ComparableMixin):
         walkable: list[BWMFace] = [face for face in self.faces if face.material.walkable()]
         # OPTIMIZATION: Compute all adjacencies in batch instead of calling adjacencies() N times
         # This reduces complexity from O(N²) to O(N) by building an edge-to-faces mapping
-        adjacencies: list[tuple[BWMAdjacency | None, BWMAdjacency | None, BWMAdjacency | None]] = self._compute_all_adjacencies(walkable)
+        adjacencies: list[tuple[BWMAdjacency | None, BWMAdjacency | None, BWMAdjacency | None]] = (
+            self._compute_all_adjacencies(walkable)
+        )
 
         # Build mapping from walkable face index to overall face index
         # This is needed because adjacencies use overall face indices, but we iterate over walkable faces
-        walkable_to_overall: dict[int, int] = {walkable_idx: self._index_by_identity(walkable_face) for walkable_idx, walkable_face in enumerate(walkable)}
+        walkable_to_overall: dict[int, int] = {
+            walkable_idx: self._index_by_identity(walkable_face)
+            for walkable_idx, walkable_face in enumerate(walkable)
+        }
 
         # Collect all perimeter edges with (face, edge_id, transition, id(v_start), id(v_end)) for chaining.
         # Reference: KotOR.js OdysseyWalkMesh.ts:757-762 (reduce walkableFaces to edges where adjacent is WalkmeshEdge).
@@ -469,11 +481,7 @@ class BWM(ComparableMixin):
             trans: int | None = (
                 face_for_trans.trans1
                 if j == 0
-                else (
-                    face_for_trans.trans2
-                    if j == 1
-                    else face_for_trans.trans3
-                )
+                else (face_for_trans.trans2 if j == 1 else face_for_trans.trans3)
             )
             transition: int = -1 if trans is None else trans
             v_start, v_end = self._edge_endpoints(face, j)
@@ -493,7 +501,11 @@ class BWM(ComparableMixin):
                     result[-1].final = True
                     break
                 next_idx: int = next(
-                    (idx for idx, (_, _, _, s_id, _) in enumerate(remaining) if s_id == current_end_id),
+                    (
+                        idx
+                        for idx, (_, _, _, s_id, _) in enumerate(remaining)
+                        if s_id == current_end_id
+                    ),
                     -1,
                 )
                 if next_idx < 0:
@@ -1020,11 +1032,11 @@ class BWM(ComparableMixin):
         point: Vector3,
         materials: set[SurfaceMaterial],
     ) -> BWMFace | None:
-        """Recursively search AABB tree for face containing point.
-
-        """
+        """Recursively search AABB tree for face containing point."""
         # Test if point is in AABB bounds (only check X and Y for 2D point-in-face)
-        if not (node.bb_min.x <= point.x <= node.bb_max.x and node.bb_min.y <= point.y <= node.bb_max.y):
+        if not (
+            node.bb_min.x <= point.x <= node.bb_max.x and node.bb_min.y <= point.y <= node.bb_max.y
+        ):
             return None
 
         # If leaf node, test point against face
@@ -1524,7 +1536,12 @@ class BWMFace(Face, ComparableMixin):
         parent_eq = super().__eq__(other)
         if parent_eq is NotImplemented:
             return NotImplemented  # type: ignore[no-any-return]
-        return parent_eq and self.trans1 == other.trans1 and self.trans2 == other.trans2 and self.trans3 == other.trans3
+        return (
+            parent_eq
+            and self.trans1 == other.trans1
+            and self.trans2 == other.trans2
+            and self.trans3 == other.trans3
+        )
 
     def __hash__(self):  # type: ignore[override]
         return hash((super().__hash__(), self.trans1, self.trans2, self.trans3))
@@ -1759,14 +1776,11 @@ class BWMEdge(ComparableMixin):
         *,
         final: bool = False,
     ):
-
         # Face this perimeter edge belongs to
         self.face: BWMFace = face
 
-
         # Edge index on face (0, 1, or 2)
         self.index: int = index
-
 
         # Transition index into LYT door hooks (-1 for no transition)
         self.transition: int = transition
@@ -1777,7 +1791,12 @@ class BWMEdge(ComparableMixin):
     def __eq__(self, other):
         if not isinstance(other, BWMEdge):
             return NotImplemented  # type: ignore[no-any-return]
-        return self.face == other.face and self.index == other.index and self.transition == other.transition and self.final == other.final
+        return (
+            self.face == other.face
+            and self.index == other.index
+            and self.transition == other.transition
+            and self.final == other.final
+        )
 
     def __hash__(self):
         return hash((self.face, self.index, self.transition, self.final))

@@ -87,11 +87,13 @@ def render_bwm_to_pngs(
         i2 = verts_by_id[id(face.v2)]
         i3 = verts_by_id[id(face.v3)]
         tri_verts.append(
-            np.array([
-                verts_list[i1],
-                verts_list[i2],
-                verts_list[i3],
-            ]),
+            np.array(
+                [
+                    verts_list[i1],
+                    verts_list[i2],
+                    verts_list[i3],
+                ]
+            ),
         )
         face_colors.append(
             WALKABLE_COLOR if face.material.walkable() else UNWALKABLE_COLOR,
@@ -135,7 +137,10 @@ def render_bwm_to_pngs(
         c = face.centre()
         n = face.normal()
         normal_segments.append(
-            ((c.x, c.y, c.z), (c.x + normal_scale * n.x, c.y + normal_scale * n.y, c.z + normal_scale * n.z)),
+            (
+                (c.x, c.y, c.z),
+                (c.x + normal_scale * n.x, c.y + normal_scale * n.y, c.z + normal_scale * n.z),
+            ),
         )
 
     extent = (
@@ -146,10 +151,10 @@ def render_bwm_to_pngs(
     aspect = (max(extent[0], 1e-6), max(extent[1], 1e-6), max(extent[2], 1e-6))
 
     views = [
-        ("view1", 90, 0, True, True),   # top-down
+        ("view1", 90, 0, True, True),  # top-down
         ("view2", 35, 30, True, True),  # perspective 1
-        ("view3", 35, 210, True, True), # perspective 2
-        ("view4", 35, 30, False, True), # wireframe emphasis (edges only over solid)
+        ("view3", 35, 210, True, True),  # perspective 2
+        ("view4", 35, 30, False, True),  # wireframe emphasis (edges only over solid)
     ]
 
     title_parts = [
@@ -185,7 +190,9 @@ def render_bwm_to_pngs(
                 tri_edge_segs.append((tuple(p1), tuple(p2)))
                 tri_edge_segs.append((tuple(p2), tuple(p0)))
             if tri_edge_segs:
-                ax.add_collection3d(Line3DCollection(tri_edge_segs, colors=EDGE_COLOR, linewidths=0.8))
+                ax.add_collection3d(
+                    Line3DCollection(tri_edge_segs, colors=EDGE_COLOR, linewidths=0.8)
+                )
         if grid_lines:
             lc = Line3DCollection(grid_lines, colors=GRID_COLOR, linewidths=0.5)
             ax.add_collection3d(lc)

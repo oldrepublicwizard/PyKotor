@@ -59,9 +59,13 @@ class VISAsciiReader(ResourceReader):
                 continue
 
             # Use a named constant for the magic value 2
-            VERSION_HEADER_TOKEN_INDEX = 1  # Index in VIS ASCII lines where a version string may appear
+            VERSION_HEADER_TOKEN_INDEX = (
+                1  # Index in VIS ASCII lines where a version string may appear
+            )
             # Check if this is a version header line (e.g., "room V3.28")
-            if len(tokens) >= VERSION_HEADER_TOKEN_INDEX + 1 and tokens[VERSION_HEADER_TOKEN_INDEX].startswith("V"):
+            if len(tokens) >= VERSION_HEADER_TOKEN_INDEX + 1 and tokens[
+                VERSION_HEADER_TOKEN_INDEX
+            ].startswith("V"):
                 # This is a version header, skip it
                 # Format appears to be: roomname Version
                 continue

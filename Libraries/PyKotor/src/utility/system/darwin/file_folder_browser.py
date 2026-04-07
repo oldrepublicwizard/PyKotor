@@ -50,10 +50,14 @@ def _format_file_types_for_applescript(filetypes: list[tuple[str, str | list[str
     -------
         Formatted file types string for AppleScript
     """
-    return ", ".join([
-        f'"{ft[1]}"' if isinstance(ft[1], str) else "{" + ", ".join([f'"{ext}"' for ext in ft[1]]) + "}"
-        for ft in filetypes
-    ])
+    return ", ".join(
+        [
+            f'"{ft[1]}"'
+            if isinstance(ft[1], str)
+            else "{" + ", ".join([f'"{ext}"' for ext in ft[1]]) + "}"
+            for ft in filetypes
+        ]
+    )
 
 
 def _run_cocoa_dialog(  # noqa: C901, PLR0913
@@ -85,16 +89,30 @@ def _run_cocoa_dialog(  # noqa: C901, PLR0913
     NSArray = libobjc.objc_getClass(b"NSArray")
 
     def NSString_from_str(string):
-        return libobjc.objc_msgSend(NSString, libobjc.sel_registerName(b"stringWithUTF8String:"), ctypes.c_char_p(string.encode("utf-8")))
+        return libobjc.objc_msgSend(
+            NSString,
+            libobjc.sel_registerName(b"stringWithUTF8String:"),
+            ctypes.c_char_p(string.encode("utf-8")),
+        )
 
     def str_from_NSURL(nsurl):
         utf8_string = libobjc.objc_msgSend(nsurl, libobjc.sel_registerName(b"absoluteString"))
-        return ctypes.string_at(libobjc.objc_msgSend(utf8_string, libobjc.sel_registerName(b"UTF8String"))).decode("utf-8")
+        return ctypes.string_at(
+            libobjc.objc_msgSend(utf8_string, libobjc.sel_registerName(b"UTF8String"))
+        ).decode("utf-8")
 
     if dialog_type in ("open_file", "open_folder"):
         panel = libobjc.objc_msgSend(NSOpenPanel, libobjc.sel_registerName(b"openPanel"))
-        libobjc.objc_msgSend(panel, libobjc.sel_registerName(b"setCanChooseFiles:"), ctypes.c_bool(dialog_type == "open_file"))
-        libobjc.objc_msgSend(panel, libobjc.sel_registerName(b"setCanChooseDirectories:"), ctypes.c_bool(dialog_type == "open_folder"))
+        libobjc.objc_msgSend(
+            panel,
+            libobjc.sel_registerName(b"setCanChooseFiles:"),
+            ctypes.c_bool(dialog_type == "open_file"),
+        )
+        libobjc.objc_msgSend(
+            panel,
+            libobjc.sel_registerName(b"setCanChooseDirectories:"),
+            ctypes.c_bool(dialog_type == "open_folder"),
+        )
     elif dialog_type == "save_file":
         panel = libobjc.objc_msgSend(NSSavePanel, libobjc.sel_registerName(b"savePanel"))
 
@@ -104,12 +122,16 @@ def _run_cocoa_dialog(  # noqa: C901, PLR0913
 
     if initialdir:
         initialdir_nsstring = NSString_from_str(initialdir)
-        url = libobjc.objc_msgSend(NSURL, libobjc.sel_registerName(b"fileURLWithPath:"), initialdir_nsstring)
+        url = libobjc.objc_msgSend(
+            NSURL, libobjc.sel_registerName(b"fileURLWithPath:"), initialdir_nsstring
+        )
         libobjc.objc_msgSend(panel, libobjc.sel_registerName(b"setDirectoryURL:"), url)
 
     if initialfile:
         initialfile_nsstring = NSString_from_str(initialfile)
-        libobjc.objc_msgSend(panel, libobjc.sel_registerName(b"setNameFieldStringValue:"), initialfile_nsstring)
+        libobjc.objc_msgSend(
+            panel, libobjc.sel_registerName(b"setNameFieldStringValue:"), initialfile_nsstring
+        )
 
     if filetypes:
         allowed_file_types = []
@@ -119,13 +141,20 @@ def _run_cocoa_dialog(  # noqa: C901, PLR0913
             else:
                 allowed_file_types.extend(NSString_from_str(ext) for ext in ft[1])
         allowed_file_types_nsarray = libobjc.objc_msgSend(
-            NSArray, libobjc.sel_registerName(b"arrayWithObjects:count:"), (cID * len(allowed_file_types))(*allowed_file_types), len(allowed_file_types),
+            NSArray,
+            libobjc.sel_registerName(b"arrayWithObjects:count:"),
+            (cID * len(allowed_file_types))(*allowed_file_types),
+            len(allowed_file_types),
         )
-        libobjc.objc_msgSend(panel, libobjc.sel_registerName(b"setAllowedFileTypes:"), allowed_file_types_nsarray)
+        libobjc.objc_msgSend(
+            panel, libobjc.sel_registerName(b"setAllowedFileTypes:"), allowed_file_types_nsarray
+        )
 
     if defaultextension:
         defaultextension_nsstring = NSString_from_str(defaultextension)
-        libobjc.objc_msgSend(panel, libobjc.sel_registerName(b"setAllowedFileTypes:"), defaultextension_nsstring)
+        libobjc.objc_msgSend(
+            panel, libobjc.sel_registerName(b"setAllowedFileTypes:"), defaultextension_nsstring
+        )
 
     response = libobjc.objc_msgSend(panel, libobjc.sel_registerName(b"runModal"))
 
@@ -137,7 +166,13 @@ def _run_cocoa_dialog(  # noqa: C901, PLR0913
     return None
 
 
-def askdirectory(*, initialdir: os.PathLike | str | None = None, mustexist: bool | None = None, parent: Misc | None = None, title: str | None = None) -> str:
+def askdirectory(
+    *,
+    initialdir: os.PathLike | str | None = None,
+    mustexist: bool | None = None,
+    parent: Misc | None = None,
+    title: str | None = None,
+) -> str:
     try:
         from tkinter import filedialog
 
@@ -149,7 +184,9 @@ def askdirectory(*, initialdir: os.PathLike | str | None = None, mustexist: bool
         )
         return "" if not result or not result.strip() else result
     except Exception:  # noqa: BLE001
-        RobustLogger().warning("Tkinter's filedialog.askdirectory() threw an exception!", exc_info=True)
+        RobustLogger().warning(
+            "Tkinter's filedialog.askdirectory() threw an exception!", exc_info=True
+        )
         try:
             result = _run_cocoa_dialog(
                 dialog_type="open_folder",
@@ -194,7 +231,9 @@ def askopenfile(  # noqa: PLR0913
             typevariable=typevariable,
         )
     except Exception:  # noqa: BLE001
-        RobustLogger().warning("Tkinter's filedialog.askopenfile() threw an exception!", exc_info=True)
+        RobustLogger().warning(
+            "Tkinter's filedialog.askopenfile() threw an exception!", exc_info=True
+        )
         try:
             result = _run_cocoa_dialog(
                 "open_file",
@@ -249,7 +288,9 @@ def askopenfilename(  # noqa: PLR0913
         )
         return "" if not result or not result.strip() else result
     except Exception:  # noqa: BLE001
-        RobustLogger().warning("Tkinter's filedialog.askopenfilename() threw an exception!", exc_info=True)
+        RobustLogger().warning(
+            "Tkinter's filedialog.askopenfilename() threw an exception!", exc_info=True
+        )
         try:
             result = _run_cocoa_dialog(
                 "open_file",
@@ -304,7 +345,9 @@ def askopenfilenames(  # noqa: PLR0913
         )
         return tuple(result) if result else ""
     except Exception:  # noqa: BLE001
-        RobustLogger().warning("Tkinter's filedialog.askopenfilenames() threw an exception!", exc_info=True)
+        RobustLogger().warning(
+            "Tkinter's filedialog.askopenfilenames() threw an exception!", exc_info=True
+        )
         try:
             result = _run_cocoa_dialog(
                 dialog_type="open_file",
@@ -357,7 +400,9 @@ def askopenfiles(  # noqa: PLR0913
         )
         return tuple(result) if result else None
     except Exception:  # noqa: BLE001
-        RobustLogger().warning("Tkinter's filedialog.askopenfiles() threw an exception!", exc_info=True)
+        RobustLogger().warning(
+            "Tkinter's filedialog.askopenfiles() threw an exception!", exc_info=True
+        )
         try:
             result = _run_cocoa_dialog(
                 dialog_type="open_file",
@@ -411,7 +456,9 @@ def asksaveasfile(  # noqa: PLR0913
             typevariable=typevariable,
         )
     except Exception:  # noqa: BLE001
-        RobustLogger().warning("Tkinter's filedialog.asksaveasfile() threw an exception!", exc_info=True)
+        RobustLogger().warning(
+            "Tkinter's filedialog.asksaveasfile() threw an exception!", exc_info=True
+        )
         try:
             result = _run_cocoa_dialog(
                 "save_file",
@@ -457,7 +504,9 @@ def asksaveasfilename(  # noqa: PLR0913
         )
         return "" if not result or not result.strip() else result
     except Exception:  # noqa: BLE001
-        RobustLogger().warning("Tkinter's filedialog.asksaveasfilename() threw an exception!", exc_info=True)
+        RobustLogger().warning(
+            "Tkinter's filedialog.asksaveasfilename() threw an exception!", exc_info=True
+        )
         try:
             result = _run_cocoa_dialog(
                 "save_file",

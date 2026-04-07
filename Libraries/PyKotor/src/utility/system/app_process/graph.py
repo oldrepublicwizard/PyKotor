@@ -52,7 +52,11 @@ class TaskGraph:
         -------
             A set of task IDs that depend on the given task.
         """
-        dependents: set[int] = {task_id_in_graph for task_id_in_graph, dependencies in self._graph.items() if task_id in dependencies}
+        dependents: set[int] = {
+            task_id_in_graph
+            for task_id_in_graph, dependencies in self._graph.items()
+            if task_id in dependencies
+        }
         return dependents
 
     def get_task_status(self, task_id: int) -> str:
@@ -91,7 +95,10 @@ class TaskGraph:
         -------
             True if the task is ready, False otherwise.
         """
-        return all(self.get_task_status(dependency) == "completed" for dependency in self.get_dependencies(task_id))
+        return all(
+            self.get_task_status(dependency) == "completed"
+            for dependency in self.get_dependencies(task_id)
+        )
 
     def get_ready_tasks(self) -> list[int]:
         """Returns a list of task IDs that are ready to be executed.

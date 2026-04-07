@@ -73,7 +73,9 @@ def analyze_kit_wok(kit_path: Path) -> None:
     return bwm
 
 
-def simulate_build_process(bwm, flip_x=False, flip_y=False, rotation=0.0, position=(0, 0, 0), dummy_to_actual=None) -> None:
+def simulate_build_process(
+    bwm, flip_x=False, flip_y=False, rotation=0.0, position=(0, 0, 0), dummy_to_actual=None
+) -> None:
     """Simulate the indoor builder's build process and trace transitions."""
 
     print(f"\n{'=' * 70}")
@@ -181,7 +183,15 @@ def _remap_transitions(bwm, dummy_index, actual_index):
 
 
 def main():
-    kit_path = Path(__file__).resolve().parent.parent / "Tools" / "HolocronToolset" / "src" / "toolset" / "kits" / "blackvulkar"
+    kit_path = (
+        Path(__file__).resolve().parent.parent
+        / "Tools"
+        / "HolocronToolset"
+        / "src"
+        / "toolset"
+        / "kits"
+        / "blackvulkar"
+    )
 
     # Analyze the hallway_1.wok (used in both step01 and step02)
     hallway_wok_path = kit_path / "hallway_1.wok"
@@ -242,7 +252,9 @@ def main():
         if trans:
             in_walkable = face in walkable
             walkable_idx = walkable.index(face) if in_walkable else None
-            print(f"  Face {i}: {face.material.name} (in walkable list: {in_walkable}, walkable_idx={walkable_idx})")
+            print(
+                f"  Face {i}: {face.material.name} (in walkable list: {in_walkable}, walkable_idx={walkable_idx})"
+            )
             print(f"    Transitions: {', '.join(trans)}")
 
     # Now check after BWM writer reordering
@@ -252,7 +264,9 @@ def main():
 
     # The BWM writer reorders faces: walkable first, then unwalkable
     reordered = walkable + unwalkable
-    print(f"Reordered: walkable (indices 0-{len(walkable) - 1}), unwalkable (indices {len(walkable)}-{len(reordered) - 1})")
+    print(
+        f"Reordered: walkable (indices 0-{len(walkable) - 1}), unwalkable (indices {len(walkable)}-{len(reordered) - 1})"
+    )
 
     for new_idx, face in enumerate(reordered):
         old_idx = bwm.faces.index(face)
@@ -265,7 +279,9 @@ def main():
             trans.append(f"t3={face.trans3}")
         if trans:
             is_in_walkable_range = new_idx < len(walkable)
-            status = "GOOD" if is_in_walkable_range else "**BUG**: transition on unwalkable range face"
+            status = (
+                "GOOD" if is_in_walkable_range else "**BUG**: transition on unwalkable range face"
+            )
             print(f"  Reordered idx {new_idx} (was {old_idx}): {face.material.name}")
             print(f"    Transitions: {', '.join(trans)} - {status}")
 

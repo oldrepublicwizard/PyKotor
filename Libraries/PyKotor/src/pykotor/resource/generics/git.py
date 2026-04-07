@@ -47,10 +47,14 @@ def _iterate_gff_list(struct: GFFStruct, label: str) -> list[GFFStruct]:
         gff_list = struct.get_list(label)
         return list([] if gff_list is None else gff_list)
     except KeyError:
-        RobustLogger().debug(f"Missing list label encountered: {label=} struct_id={struct.struct_id}")
+        RobustLogger().debug(
+            f"Missing list label encountered: {label=} struct_id={struct.struct_id}"
+        )
         return []
     except TypeError as error:
-        RobustLogger().error(f"Invalid list type encountered while reading {label=}: struct_id={struct.struct_id} error={error}")
+        RobustLogger().error(
+            f"Invalid list type encountered while reading {label=}: struct_id={struct.struct_id} error={error}"
+        )
         raise
 
 
@@ -115,7 +119,23 @@ class GIT:
         "waypoints": "Waypoint",
         "cameras": "Camera",
     }
-    _INSTANCE_TYPE_MAP: dict[type[GITCreature | GITDoor | GITEncounter | GITPlaceable | GITSound | GITStore | GITTrigger | GITWaypoint | GITCamera], str] | None = None
+    _INSTANCE_TYPE_MAP: (
+        dict[
+            type[
+                GITCreature
+                | GITDoor
+                | GITEncounter
+                | GITPlaceable
+                | GITSound
+                | GITStore
+                | GITTrigger
+                | GITWaypoint
+                | GITCamera
+            ],
+            str,
+        ]
+        | None
+    ) = None
 
     def __init__(self):
         # Area audio properties (ambient sounds, music, environment audio)
@@ -167,14 +187,14 @@ class GIT:
 
     def _get_instance_list(self, instance: GITObject) -> list[GITObject]:
         """Get the appropriate instance list for the given instance type.
-        
+
         Maps an instance to its corresponding list (creatures, doors, placeables, etc).
         Used internally to reduce isinstance dispatch duplication.
-        
+
         Args:
         ----
             instance: The GIT instance to find the list for.
-            
+
         Returns:
         -------
             The list containing this instance type, or None if unknown type.
@@ -260,11 +280,11 @@ class GIT:
 
     def _get_instance_type_name(self, instance: GITObject) -> str:
         """Get a human-readable name for an instance type.
-        
+
         Args:
         ----
             instance: The GIT instance to get the name for.
-            
+
         Returns:
         -------
             A string like "Creature", "Door", "Placeable", etc.
@@ -273,7 +293,22 @@ class GIT:
         return self._TYPE_NAMES.get(section_name or "", "Unknown")
 
     @classmethod
-    def _build_instance_type_map(cls) -> dict[type[GITCreature | GITDoor | GITEncounter | GITPlaceable | GITSound | GITStore | GITTrigger | GITWaypoint | GITCamera], str]:
+    def _build_instance_type_map(
+        cls,
+    ) -> dict[
+        type[
+            GITCreature
+            | GITDoor
+            | GITEncounter
+            | GITPlaceable
+            | GITSound
+            | GITStore
+            | GITTrigger
+            | GITWaypoint
+            | GITCamera
+        ],
+        str,
+    ]:
         if cls._INSTANCE_TYPE_MAP is not None:
             return cls._INSTANCE_TYPE_MAP
         from pykotor.resource.generics.git import (
@@ -338,7 +373,10 @@ class GIT:
             Dictionary representation
         """
         return {
-            section_name: [instance.serialize() for instance in cast("list[GITObject]", getattr(self, section_name))]
+            section_name: [
+                instance.serialize()
+                for instance in cast("list[GITObject]", getattr(self, section_name))
+            ]
             for section_name in self._SERIALIZE_SECTIONS
         }
 
@@ -438,12 +476,14 @@ class GITObject(ABC):
         self.position.y += y
         self.position.z += z
 
+
 class GITInstance(GITObject):
     """Backward-compatible instance base class.
 
     New abstractions should target `GITObject`; `GITInstance` remains to preserve
     runtime/type compatibility for existing consumers.
     """
+
     GFF_GEOMETRY_STRUCT_ID: ClassVar[int] = 0
     GFF_SPAWN_STRUCT_ID: ClassVar[int] = 0
 
@@ -720,7 +760,9 @@ class GITDoor(GITInstance):
         """Serialize GITDoor-specific data."""
         # transition_destination is a LocalizedString, not Vector3
         transition_locstring = self.transition_destination
-        transition_stringref = transition_locstring.stringref if hasattr(transition_locstring, "stringref") else -1
+        transition_stringref = (
+            transition_locstring.stringref if hasattr(transition_locstring, "stringref") else -1
+        )
 
         return {
             "resref": str(self.resref),
@@ -728,7 +770,9 @@ class GITDoor(GITInstance):
             "tag": self.tag,
             "linked_to_module": str(self.linked_to_module),
             "linked_to": self.linked_to,
-            "linked_to_flags": self.linked_to_flags.value if hasattr(self.linked_to_flags, "value") else int(self.linked_to_flags),
+            "linked_to_flags": self.linked_to_flags.value
+            if hasattr(self.linked_to_flags, "value")
+            else int(self.linked_to_flags),
             "transition_destination_stringref": transition_stringref,
         }
 
@@ -1029,7 +1073,9 @@ class GITTrigger(GITInstance):
 
         # transition_destination is a LocalizedString
         transition_locstring = self.transition_destination
-        transition_stringref = transition_locstring.stringref if hasattr(transition_locstring, "stringref") else -1
+        transition_stringref = (
+            transition_locstring.stringref if hasattr(transition_locstring, "stringref") else -1
+        )
 
         return {
             "resref": str(self.resref),
@@ -1037,7 +1083,9 @@ class GITTrigger(GITInstance):
             "geometry": geometry,
             "linked_to_module": str(self.linked_to_module),
             "linked_to": self.linked_to,
-            "linked_to_flags": self.linked_to_flags.value if hasattr(self.linked_to_flags, "value") else int(self.linked_to_flags),
+            "linked_to_flags": self.linked_to_flags.value
+            if hasattr(self.linked_to_flags, "value")
+            else int(self.linked_to_flags),
             "transition_destination_stringref": transition_stringref,
         }
 
@@ -1178,12 +1226,16 @@ def construct_git(
         door.linked_to = door_struct.acquire("LinkedTo", "")
         door.linked_to_flags = GITModuleLink(door_struct.acquire("LinkedToFlags", 0))
         door.linked_to_module = door_struct.acquire("LinkedToModule", ResRef.from_blank())
-        door.transition_destination = door_struct.acquire("TransitionDestin", LocalizedString.from_invalid())
+        door.transition_destination = door_struct.acquire(
+            "TransitionDestin", LocalizedString.from_invalid()
+        )
         door.position.x = door_struct.acquire("X", 0.0)
         door.position.y = door_struct.acquire("Y", 0.0)
         door.position.z = door_struct.acquire("Z", 0.0)
         tweak_enabled = door_struct.acquire("UseTweakColor", 0)
-        door.tweak_color = Color.from_bgr_integer(door_struct.acquire("TweakColor", 0)) if tweak_enabled else None
+        door.tweak_color = (
+            Color.from_bgr_integer(door_struct.acquire("TweakColor", 0)) if tweak_enabled else None
+        )
 
     # Encounter List: zeroed placement, optional geometry/spawn lists with zero defaults.
     for encounter_struct in _iterate_gff_list(gff.root, "Encounter List"):
@@ -1267,7 +1319,9 @@ def construct_git(
         trigger.linked_to = trigger_struct.acquire("LinkedTo", "")
         trigger.linked_to_flags = GITModuleLink(trigger_struct.acquire("LinkedToFlags", 0))
         trigger.linked_to_module = trigger_struct.acquire("LinkedToModule", ResRef.from_blank())
-        trigger.transition_destination = trigger_struct.acquire("TransitionDestin", LocalizedString.from_invalid())
+        trigger.transition_destination = trigger_struct.acquire(
+            "TransitionDestin", LocalizedString.from_invalid()
+        )
 
         if trigger_struct.exists("Geometry"):
             geometry_list = trigger_struct.get_list("Geometry")
@@ -1300,7 +1354,9 @@ def construct_git(
             waypoint_struct.acquire("YOrientation", 0.0),
         )
         if math.isclose(rot_x, 0.0, abs_tol=1e-6) and math.isclose(rot_y, 0.0, abs_tol=1e-6):
-            RobustLogger().debug(f"Defaulting waypoint bearing to zero because orientation components are {rot_x=} {rot_y=}")
+            RobustLogger().debug(
+                f"Defaulting waypoint bearing to zero because orientation components are {rot_x=} {rot_y=}"
+            )
             waypoint.bearing = 0.0
         else:
             waypoint.bearing = Vector2(rot_x, rot_y).angle() - math.pi / 2
@@ -1414,7 +1470,9 @@ def dismantle_git(
         placeable_struct.set_single("Y", placeable.position.y)
         placeable_struct.set_single("Z", placeable.position.z)
         if game.is_k2():
-            tweak_color = 0 if placeable.tweak_color is None else placeable.tweak_color.bgr_integer()
+            tweak_color = (
+                0 if placeable.tweak_color is None else placeable.tweak_color.bgr_integer()
+            )
             placeable_struct.set_uint32("TweakColor", tweak_color)
             placeable_struct.set_uint8(
                 "UseTweakColor",

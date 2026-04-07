@@ -6,25 +6,29 @@ from kaitaistruct import KaitaiStruct, KaitaiStream, BytesIO
 from enum import IntEnum
 
 
-if getattr(kaitaistruct, 'API_VERSION', (0, 9)) < (0, 11):
-    raise Exception("Incompatible Kaitai Struct Python API: 0.11 or later is required, but you have %s" % (kaitaistruct.__version__))
+if getattr(kaitaistruct, "API_VERSION", (0, 9)) < (0, 11):
+    raise Exception(
+        "Incompatible Kaitai Struct Python API: 0.11 or later is required, but you have %s"
+        % (kaitaistruct.__version__)
+    )
+
 
 class Rim(KaitaiStruct):
     """RIM (Resource Information Manager) files are self-contained archives used for module templates.
     RIM files are similar to ERF files but are read-only from the game's perspective. The game
     loads RIM files as templates for modules and exports them to ERF format for runtime mutation.
     RIM files store all resources inline with metadata, making them self-contained archives.
-    
+
     Format Variants:
     - Standard RIM: Basic module template files
     - Extension RIM: Files ending in 'x' (e.g., module001x.rim) that extend other RIMs
-    
+
     Binary Format (KotOR / PyKotor):
     - Fixed header (24 bytes): File type, version, reserved, resource count, offset to key table, offset to resources
     - Padding to key table (96 bytes when offsets are implicit): total 120 bytes before the key table
     - Key / resource entry table (32 bytes per entry): ResRef, type, ID, offset, size
     - Resource data at per-entry offsets (variable size, with engine/tool-specific padding between resources)
-    
+
     """
 
     class XoreosFileTypeId(IntEnum):
@@ -329,6 +333,7 @@ class Rim(KaitaiStruct):
         xds = 30000
         wnd = 30001
         xeositex = 40000
+
     def __init__(self, _io, _parent=None, _root=None):
         super(Rim, self).__init__(_io)
         self._parent = _parent
@@ -343,13 +348,13 @@ class Rim(KaitaiStruct):
 
         if self.header.offset_to_resource_table != 0:
             pass
-            self.gap_before_key_table_explicit = self._io.read_bytes(self.header.offset_to_resource_table - 24)
+            self.gap_before_key_table_explicit = self._io.read_bytes(
+                self.header.offset_to_resource_table - 24
+            )
 
         if self.header.resource_count > 0:
             pass
             self.resource_entry_table = Rim.ResourceEntryTable(self._io, self, self._root)
-
-
 
     def _fetch_instances(self):
         pass
@@ -364,7 +369,6 @@ class Rim(KaitaiStruct):
             pass
             self.resource_entry_table._fetch_instances()
 
-
     class ResourceEntry(KaitaiStruct):
         def __init__(self, _io, _parent=None, _root=None):
             super(Rim.ResourceEntry, self).__init__(_io)
@@ -373,27 +377,26 @@ class Rim(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.resref = (self._io.read_bytes(16)).decode(u"ASCII")
-            self.resource_type = KaitaiStream.resolve_enum(Rim.XoreosFileTypeId, self._io.read_u4le())
+            self.resref = (self._io.read_bytes(16)).decode("ASCII")
+            self.resource_type = KaitaiStream.resolve_enum(
+                Rim.XoreosFileTypeId, self._io.read_u4le()
+            )
             self.resource_id = self._io.read_u4le()
             self.offset_to_data = self._io.read_u4le()
             self.resource_size = self._io.read_u4le()
 
-
         def _fetch_instances(self):
             pass
             _ = self.data
-            if hasattr(self, '_m_data'):
+            if hasattr(self, "_m_data"):
                 pass
                 for i in range(len(self._m_data)):
                     pass
 
-
-
         @property
         def data(self):
             """Raw binary data for this resource (read at specified offset)."""
-            if hasattr(self, '_m_data'):
+            if hasattr(self, "_m_data"):
                 return self._m_data
 
             _pos = self._io.pos()
@@ -403,8 +406,7 @@ class Rim(KaitaiStruct):
                 self._m_data.append(self._io.read_u1())
 
             self._io.seek(_pos)
-            return getattr(self, '_m_data', None)
-
+            return getattr(self, "_m_data", None)
 
     class ResourceEntryTable(KaitaiStruct):
         def __init__(self, _io, _parent=None, _root=None):
@@ -418,15 +420,11 @@ class Rim(KaitaiStruct):
             for i in range(self._root.header.resource_count):
                 self.entries.append(Rim.ResourceEntry(self._io, self, self._root))
 
-
-
         def _fetch_instances(self):
             pass
             for i in range(len(self.entries)):
                 pass
                 self.entries[i]._fetch_instances()
-
-
 
     class RimHeader(KaitaiStruct):
         def __init__(self, _io, _parent=None, _root=None):
@@ -436,17 +434,20 @@ class Rim(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.file_type = (self._io.read_bytes(4)).decode(u"ASCII")
-            if not self.file_type == u"RIM ":
-                raise kaitaistruct.ValidationNotEqualError(u"RIM ", self.file_type, self._io, u"/types/rim_header/seq/0")
-            self.file_version = (self._io.read_bytes(4)).decode(u"ASCII")
-            if not self.file_version == u"V1.0":
-                raise kaitaistruct.ValidationNotEqualError(u"V1.0", self.file_version, self._io, u"/types/rim_header/seq/1")
+            self.file_type = (self._io.read_bytes(4)).decode("ASCII")
+            if not self.file_type == "RIM ":
+                raise kaitaistruct.ValidationNotEqualError(
+                    "RIM ", self.file_type, self._io, "/types/rim_header/seq/0"
+                )
+            self.file_version = (self._io.read_bytes(4)).decode("ASCII")
+            if not self.file_version == "V1.0":
+                raise kaitaistruct.ValidationNotEqualError(
+                    "V1.0", self.file_version, self._io, "/types/rim_header/seq/1"
+                )
             self.reserved = self._io.read_u4le()
             self.resource_count = self._io.read_u4le()
             self.offset_to_resource_table = self._io.read_u4le()
             self.offset_to_resources = self._io.read_u4le()
-
 
         def _fetch_instances(self):
             pass
@@ -454,11 +455,8 @@ class Rim(KaitaiStruct):
         @property
         def has_resources(self):
             """Whether the RIM file contains any resources."""
-            if hasattr(self, '_m_has_resources'):
+            if hasattr(self, "_m_has_resources"):
                 return self._m_has_resources
 
             self._m_has_resources = self.resource_count > 0
-            return getattr(self, '_m_has_resources', None)
-
-
-
+            return getattr(self, "_m_has_resources", None)

@@ -1,8 +1,10 @@
 #!/usr/bin/env python3
 """Strip vendor/engine narrative blocks from extract/savedata.py (archive must exist in wiki first)."""
+
 from __future__ import annotations
 
 import re
+
 from pathlib import Path
 
 REPO = Path(__file__).resolve().parents[1]

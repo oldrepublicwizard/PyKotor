@@ -1,4 +1,5 @@
 """Replace only the first statement docstring of a class (keeps methods intact)."""
+
 from __future__ import annotations
 
 import ast

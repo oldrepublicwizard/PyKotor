@@ -109,7 +109,11 @@ class CaseInsensImmutableStr(WrappedStr):
 
         Return True if S ends with the specified suffix, False otherwise. With optional start, test S beginning at that position. With optional end, stop comparing S at that position. suffix can also be a tuple of strings to try.
         """  # noqa: D415, D400, D402
-        parsed_suffix: tuple[str, ...] | str = tuple(self._coerce_str(s) for s in __suffix) if isinstance(__suffix, tuple) else self._coerce_str(__suffix)
+        parsed_suffix: tuple[str, ...] | str = (
+            tuple(self._coerce_str(s) for s in __suffix)
+            if isinstance(__suffix, tuple)
+            else self._coerce_str(__suffix)
+        )
         return self._casefold_content.endswith(parsed_suffix, __start, __end)
 
     def rfind(
@@ -348,5 +352,9 @@ class CaseInsensImmutableStr(WrappedStr):
         __start: SupportsIndex | None = None,
         __end: SupportsIndex | None = None,
     ) -> bool:
-        parsed_prefix: tuple[str, ...] | str = tuple(self._coerce_str(s) for s in __prefix) if isinstance(__prefix, tuple) else self._coerce_str(__prefix)
+        parsed_prefix: tuple[str, ...] | str = (
+            tuple(self._coerce_str(s) for s in __prefix)
+            if isinstance(__prefix, tuple)
+            else self._coerce_str(__prefix)
+        )
         return self._casefold_content.startswith(parsed_prefix, __start, __end)

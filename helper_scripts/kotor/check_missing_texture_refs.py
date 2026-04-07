@@ -44,7 +44,10 @@ for tex in missing:
 
 print("\nChecking if in module resources:")
 for res_ident, loc_list in module.resources().items():
-    if res_ident.resname.lower() in [t.lower() for t in missing] and res_ident.restype in (ResourceType.TPC, ResourceType.TGA):
+    if res_ident.resname.lower() in [t.lower() for t in missing] and res_ident.restype in (
+        ResourceType.TPC,
+        ResourceType.TGA,
+    ):
         print(f"  {res_ident.resname}.{res_ident.restype.extension}: FOUND in module resources")
 
 print("\nChecking expected kit - which have TGA files:")

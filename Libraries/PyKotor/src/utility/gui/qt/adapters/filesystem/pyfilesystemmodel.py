@@ -124,25 +124,43 @@ if os.name == "nt_disabled":
 
         from comtypes.automation import BSTR, IUnknown  # pyright: ignore[reportMissingTypeStubs]
     except ImportError:
-        RobustLogger().error("Could not setup the comtypes library, volume functionality will be disabled.")
+        RobustLogger().error(
+            "Could not setup the comtypes library, volume functionality will be disabled."
+        )
     else:
 
         def volumeName(path: str) -> str:
             comtypes.CoInitialize()
             # Create the IShellItem instance for the given path
             SHCreateItemFromParsingName = windll.shell32.SHCreateItemFromParsingName
-            print("<SDM> [volumeName scope] SHCreateItemFromParsingName: ", SHCreateItemFromParsingName)
+            print(
+                "<SDM> [volumeName scope] SHCreateItemFromParsingName: ",
+                SHCreateItemFromParsingName,
+            )
 
-            SHCreateItemFromParsingName.argtypes = [LPCWSTR, POINTER(IUnknown), POINTER(GUID), POINTER(POINTER(IShellItem))]
-            print("<SDM> [volumeName scope] SHCreateItemFromParsingName.argtypes: ", SHCreateItemFromParsingName.argtypes)
+            SHCreateItemFromParsingName.argtypes = [
+                LPCWSTR,
+                POINTER(IUnknown),
+                POINTER(GUID),
+                POINTER(POINTER(IShellItem)),
+            ]
+            print(
+                "<SDM> [volumeName scope] SHCreateItemFromParsingName.argtypes: ",
+                SHCreateItemFromParsingName.argtypes,
+            )
 
             SHCreateItemFromParsingName.restype = HRESULT
-            print("<SDM> [volumeName scope] SHCreateItemFromParsingName.restype: ", SHCreateItemFromParsingName.restype)
+            print(
+                "<SDM> [volumeName scope] SHCreateItemFromParsingName.restype: ",
+                SHCreateItemFromParsingName.restype,
+            )
 
             pShellItem = POINTER(IShellItem)()
             print("<SDM> [volumeName scope] pShellItem: ", pShellItem)
 
-            hr = SHCreateItemFromParsingName(path, POINTER(IUnknown)(), byref(IShellItem._iid_), byref(pShellItem))
+            hr = SHCreateItemFromParsingName(
+                path, POINTER(IUnknown)(), byref(IShellItem._iid_), byref(pShellItem)
+            )
             print("<SDM> [volumeName scope] hr: ", hr)
 
             HRESULT.raise_for_status(hr, "SHCreateItemFromParsingName failed.")
@@ -313,7 +331,9 @@ class PyFileSystemModel(QAbstractItemModel):
     # rootPathChanged = Signal(str)  # (const QString &newPath)
     rootPathChanged: ClassVar[Signal] = QFileSystemModel.rootPathChanged  # (const QString &newPath)
     # fileRenamed = Signal(str, str, str)  # (const QString &path, const QString &oldName, const QString &newName)
-    fileRenamed: ClassVar[Signal] = QFileSystemModel.fileRenamed  # (const QString &path, const QString &oldName, const QString &newName)
+    fileRenamed: ClassVar[Signal] = (
+        QFileSystemModel.fileRenamed
+    )  # (const QString &path, const QString &oldName, const QString &newName)
     # directoryLoaded: ClassVar[Signal] = Signal(str)  # (const QString &path)
     directoryLoaded: ClassVar[Signal] = QFileSystemModel.directoryLoaded  # (const QString &path)
 
@@ -357,7 +377,9 @@ class PyFileSystemModel(QAbstractItemModel):
         self._fetchingTimer: QBasicTimer = QBasicTimer()
 
         # Member variables matching C++ lines 293-302
-        self._filters: QDir.Filter = QDir.Filter.AllEntries | QDir.Filter.NoDotAndDotDot | QDir.Filter.AllDirs  # type: ignore[attr-defined]
+        self._filters: QDir.Filter = (
+            QDir.Filter.AllEntries | QDir.Filter.NoDotAndDotDot | QDir.Filter.AllDirs
+        )  # type: ignore[attr-defined]
         self._sortColumn: int = 0
         self._sortOrder: Qt.SortOrder = Qt.SortOrder.AscendingOrder
         self._forceSort: bool = True
@@ -443,25 +465,36 @@ class PyFileSystemModel(QAbstractItemModel):
         if not node.isVisible:
             return QModelIndex()
 
-        visualRow = self.translateVisibleLocation(parentNode, parentNode.visibleLocation(node.fileName))
+        visualRow = self.translateVisibleLocation(
+            parentNode, parentNode.visibleLocation(node.fileName)
+        )
         return self.createIndex(visualRow, column, node)
 
     def _q_directoryChanged(self, directory: str, files: list[str] | None = None):
         parentNode = self.node_path(directory, fetch=False)
         fInfo = parentNode.fileInfo()
         # row is not a method on PyFileSystemNode - it's calculated from the index
-        RobustLogger().warning(f"<SDM> [_q_directoryChanged scope] parentNode: {parentNode} path: {None if fInfo is None else fInfo.path()}")
+        RobustLogger().warning(
+            f"<SDM> [_q_directoryChanged scope] parentNode: {parentNode} path: {None if fInfo is None else fInfo.path()}"
+        )
 
         if len(parentNode.children) == 0:
             return
 
         if files is None:
             toRemove = [child.fileName for child in parentNode.children.values()]
-            print("<SDM> [_q_directoryChanged scope] toRemove: ", toRemove, "length:", len(toRemove))
+            print(
+                "<SDM> [_q_directoryChanged scope] toRemove: ", toRemove, "length:", len(toRemove)
+            )
 
         else:
             newFilesList = sorted(files)
-            print("<SDM> [_q_directoryChanged scope] newFilesList: ", newFilesList, "entry count: ", len(newFilesList))
+            print(
+                "<SDM> [_q_directoryChanged scope] newFilesList: ",
+                newFilesList,
+                "entry count: ",
+                len(newFilesList),
+            )
 
             toRemove = []
             for child in parentNode.children.values():
@@ -472,7 +505,12 @@ class PyFileSystemModel(QAbstractItemModel):
                 print("<SDM> [_q_directoryChanged scope] binary search index: ", index)
 
                 if index == len(newFilesList) or newFilesList[index] != fileName:
-                    print("<SDM> [_q_directoryChanged scope] remove index: ", index, "fileName: ", fileName)
+                    print(
+                        "<SDM> [_q_directoryChanged scope] remove index: ",
+                        index,
+                        "fileName: ",
+                        fileName,
+                    )
 
                     toRemove.append(fileName)
 
@@ -536,7 +574,9 @@ class PyFileSystemModel(QAbstractItemModel):
                             newFiles.append(fileName)
                     elif node.isVisible:
                         visibleLocation = parentNode.visibleChildren.index(fileName)
-                        print("<SDM> [_q_fileSystemChanged scope] visibleLocation: ", visibleLocation)
+                        print(
+                            "<SDM> [_q_fileSystemChanged scope] visibleLocation: ", visibleLocation
+                        )
 
                         self.removeVisibleFile(parentNode, visibleLocation)
 
@@ -562,12 +602,22 @@ class PyFileSystemModel(QAbstractItemModel):
             indexNode = self.node(index)
             # row is from the index, not the node
             row_val = index.row()
-            print("<SDM> [_unwatchPathsAt scope] indexNode: ", indexNode, "row:", row_val, indexNode.fileName)
+            print(
+                "<SDM> [_unwatchPathsAt scope] indexNode: ",
+                indexNode,
+                "row:",
+                row_val,
+                indexNode.fileName,
+            )
 
             if indexNode is None:
                 return []
 
-            caseSensitivity = Qt.CaseSensitivity.CaseSensitive if indexNode.caseSensitive() else Qt.CaseSensitivity.CaseInsensitive
+            caseSensitivity = (
+                Qt.CaseSensitivity.CaseSensitive
+                if indexNode.caseSensitive()
+                else Qt.CaseSensitivity.CaseInsensitive
+            )
             fInfo = indexNode.fileInfo()
 
             path = None if fInfo is None else fInfo.filePath()
@@ -583,12 +633,20 @@ class PyFileSystemModel(QAbstractItemModel):
 
                 if len(watchedPath) == pathSize:
                     print("<SDM> [filter_paths scope] path: ", path)
-                    return (path == watchedPath) if caseSensitivity == Qt.CaseSensitivity.CaseSensitive else (path.lower() == watchedPath.lower())
+                    return (
+                        (path == watchedPath)
+                        if caseSensitivity == Qt.CaseSensitivity.CaseSensitive
+                        else (path.lower() == watchedPath.lower())
+                    )
 
                 if len(watchedPath) > pathSize:
-                    print("<SDM> [filter_paths scope] watchedPath[pathSize]: ", watchedPath[pathSize])
+                    print(
+                        "<SDM> [filter_paths scope] watchedPath[pathSize]: ", watchedPath[pathSize]
+                    )
                     return watchedPath[pathSize] == "/" and (
-                        watchedPath.startswith(path) if caseSensitivity == Qt.CaseSensitivity.CaseSensitive else watchedPath.lower().startswith(path.lower())
+                        watchedPath.startswith(path)
+                        if caseSensitivity == Qt.CaseSensitivity.CaseSensitive
+                        else watchedPath.lower().startswith(path.lower())
                     )
 
                 return False
@@ -644,12 +702,21 @@ class PyFileSystemModel(QAbstractItemModel):
             self.endRemoveRows()
 
     def _q_resolvedName(self, fileName: str, resolvedName: str):  # noqa: N803
-        print(f"<SDM> [_q_resolvedName(fileName={fileName}, resolvedName={resolvedName})", self._resolvedSymLinks[fileName])
+        print(
+            f"<SDM> [_q_resolvedName(fileName={fileName}, resolvedName={resolvedName})",
+            self._resolvedSymLinks[fileName],
+        )
         # C++ uses fileInfoGatherer->mutex, but in Python we use the gatherer's mutex directly
         with QMutexLocker(self._fileInfoGatherer.mutex):
-            print("<SDM> [_q_resolvedName scope] before self._resolvedSymLinks[fileName]: ", self._resolvedSymLinks[fileName])
+            print(
+                "<SDM> [_q_resolvedName scope] before self._resolvedSymLinks[fileName]: ",
+                self._resolvedSymLinks[fileName],
+            )
             self._resolvedSymLinks[fileName] = resolvedName
-            print("<SDM> [_q_resolvedName scope] after self._resolvedSymLinks[fileName]: ", self._resolvedSymLinks[fileName])
+            print(
+                "<SDM> [_q_resolvedName scope] after self._resolvedSymLinks[fileName]: ",
+                self._resolvedSymLinks[fileName],
+            )
 
         node = self.node(self.index_path(fileName, 0))
         print("<SDM> [_q_resolvedName node.fileName ", node.fileName)
@@ -661,7 +728,10 @@ class PyFileSystemModel(QAbstractItemModel):
             if node.parent:
                 try:
                     row = node.parent.visibleChildren.index(fileName)
-                    print(f"<SDM> [_q_resolvedName scope] row<{row}>: ", node.parent.visibleChildren[row])
+                    print(
+                        f"<SDM> [_q_resolvedName scope] row<{row}>: ",
+                        node.parent.visibleChildren[row],
+                    )
 
                     node.parent.visibleChildren[row] = resolvedName
                     print(
@@ -669,9 +739,13 @@ class PyFileSystemModel(QAbstractItemModel):
                         node.parent.visibleChildren[row],
                     )
 
-                    self.dataChanged.emit(self.index(row, 0), self.index(row, self.columnCount() - 1))
+                    self.dataChanged.emit(
+                        self.index(row, 0), self.index(row, self.columnCount() - 1)
+                    )
                 except ValueError:  # noqa: S110
-                    RobustLogger().exception(f"Internal issue trying to access '{fileName}' and resolved '{resolvedName}'")
+                    RobustLogger().exception(
+                        f"Internal issue trying to access '{fileName}' and resolved '{resolvedName}'"
+                    )
 
     def _delayedSort(self) -> None:
         """Delayed sort matching C++ lines 246-249 exactly.
@@ -1000,7 +1074,10 @@ class PyFileSystemModel(QAbstractItemModel):
                 if (
                     len(parent.children) == 0
                     or (parent.caseSensitive() and parent.children[element].fileName != element)
-                    or (not parent.caseSensitive() and parent.children[element].fileName.lower() != element.lower())
+                    or (
+                        not parent.caseSensitive()
+                        and parent.children[element].fileName.lower() != element.lower()
+                    )
                 ):
                     alreadyExisted = False
 
@@ -1068,7 +1145,16 @@ class PyFileSystemModel(QAbstractItemModel):
 
         index = QModelIndex()  # root
         print("<SDM> [_handle_node_arg_str scope] index: ", index)
-        print("<SDM> [_handle_node_arg_str scope] index: ", index, "index.row():", index.row(), "index.column():", index.column(), "index.isValid():", index.isValid())
+        print(
+            "<SDM> [_handle_node_arg_str scope] index: ",
+            index,
+            "index.row():",
+            index.row(),
+            "index.column():",
+            index.column(),
+            "index.isValid():",
+            index.isValid(),
+        )
 
         resolvedPath = Path(os.path.normpath(path)).resolve()
         print("<SDM> [_handle_node_arg_str scope] resolvedPath: ", resolvedPath)
@@ -1086,7 +1172,12 @@ class PyFileSystemModel(QAbstractItemModel):
                 index = self.index(r, 0, QModelIndex())
 
         parent = self.node(index)
-        print("<SDM> [_handle_node_arg_str scope] parent: ", parent, "child count:", parent.children.__len__())
+        print(
+            "<SDM> [_handle_node_arg_str scope] parent: ",
+            parent,
+            "child count:",
+            parent.children.__len__(),
+        )
 
         for thisFile in (resolvedPath, *resolvedPath.parents):
             alreadyExisted = str(thisFile).strip() in parent.children
@@ -1095,12 +1186,17 @@ class PyFileSystemModel(QAbstractItemModel):
             # If the element already exists, ensure it matches case sensitivity requirements
             if alreadyExisted:
                 childNode = parent.children[str(thisFile)]
-                print("<SDM> [_handle_node_arg_str scope] child_node: ", childNode.fileInfo().path())  # pyright: ignore[reportOptionalMemberAccess]
+                print(
+                    "<SDM> [_handle_node_arg_str scope] child_node: ", childNode.fileInfo().path()
+                )  # pyright: ignore[reportOptionalMemberAccess]
 
                 if (
-                    parent.children and parent.caseSensitive() and childNode.fileInfo().path() != thisFile  # pyright: ignore[reportOptionalMemberAccess]
+                    parent.children
+                    and parent.caseSensitive()
+                    and childNode.fileInfo().path() != thisFile  # pyright: ignore[reportOptionalMemberAccess]
                 ) or (
-                    not parent.caseSensitive() and childNode.fileInfo().path().lower() != thisFile.name.lower()  # pyright: ignore[reportOptionalMemberAccess]
+                    not parent.caseSensitive()
+                    and childNode.fileInfo().path().lower() != thisFile.name.lower()  # pyright: ignore[reportOptionalMemberAccess]
                 ):
                     alreadyExisted = False
 
@@ -1172,7 +1268,12 @@ class PyFileSystemModel(QAbstractItemModel):
         for fetch in self._toFetch:
             node: PyFileSystemNode = fetch.node
             # row is not a method on PyFileSystemNode
-            print("<SDM> [_fetchPendingItems scope] PyFileSystemNode: ", node.fileName, "children:", len(node.children))
+            print(
+                "<SDM> [_fetchPendingItems scope] PyFileSystemNode: ",
+                node.fileName,
+                "children:",
+                len(node.children),
+            )
 
             if not node.hasInformation():
                 self.gatherFileInfo(fetch.dir, [fetch.file])
@@ -1300,7 +1401,12 @@ class PyFileSystemModel(QAbstractItemModel):
         info: QFileInfo,
     ) -> PyFileSystemNode:  # noqa: N803
         node = PyFileSystemNode(fileName, parentNode)
-        print("<SDM> [addNode node.fileName ", node.fileName, "parentNode.fileName:", parentNode.fileName if parentNode is not None else None)
+        print(
+            "<SDM> [addNode node.fileName ",
+            node.fileName,
+            "parentNode.fileName:",
+            parentNode.fileName if parentNode is not None else None,
+        )
 
         # populate expects PyQExtendedInformation, so convert QFileInfo
         extended_info = self._fileInfoGatherer.getInfo(info)
@@ -1311,7 +1417,10 @@ class PyFileSystemModel(QAbstractItemModel):
 
         # assert fileName not in parentNode.children
         parentNode.children[fileName] = node
-        print(f"<SDM> [addNode scope] parentNode<{parentNode.fileName}>.children<{parentNode.children.__len__()}[fileName<{fileName}>]: ", parentNode.children[fileName])
+        print(
+            f"<SDM> [addNode scope] parentNode<{parentNode.fileName}>.children<{parentNode.children.__len__()}[fileName<{fileName}>]: ",
+            parentNode.children[fileName],
+        )
 
         return node
 
@@ -1322,12 +1431,25 @@ class PyFileSystemModel(QAbstractItemModel):
     ):  # noqa: N803
         indexHidden = not self.filtersAcceptsNode(parentNode)
         v_location = parentNode.visibleLocation(name)
-        print("<SDM> [removeNode scope] indexHidden: ", indexHidden, "name:", name, "parentNode.fileName", parentNode.fileName, "v_location", v_location)
+        print(
+            "<SDM> [removeNode scope] indexHidden: ",
+            indexHidden,
+            "name:",
+            name,
+            "parentNode.fileName",
+            parentNode.fileName,
+            "v_location",
+            v_location,
+        )
         parent_index = self._index_from_node(parentNode, 0)
         if v_location >= 0 and not indexHidden:
             print("<SDM> [removeNode scope] parentIndex: ", parent_index)
 
-            self.beginRemoveRows(parent_index, self.translateVisibleLocation(parentNode, v_location), self.translateVisibleLocation(parentNode, v_location))
+            self.beginRemoveRows(
+                parent_index,
+                self.translateVisibleLocation(parentNode, v_location),
+                self.translateVisibleLocation(parentNode, v_location),
+            )
 
         node = parentNode.children.pop(name, None)
         print("<SDM> [removeNode node.fileName ", None if node is None else node.fileName)
@@ -1579,7 +1701,6 @@ class PyFileSystemModel(QAbstractItemModel):
 
         # Check the name regularexpression filters
         if not (node.isDir() and bool(self._filters & QDir.Filter.AllDirs)):  # type: ignore[attr-defined]
-
             # C++: node->fileName.contains(re) where re is QRegularExpression
             # In Qt, QString::contains(QRegularExpression) checks if string contains a match
             # In Python/PyQt6, we use match().hasMatch()
@@ -1619,7 +1740,11 @@ class PyFileSystemModel(QAbstractItemModel):
         # Reserve equivalent - pre-allocate list size
         self._nameFiltersRegexps = [None] * len(self._nameFilters)  # type: ignore[list-item]
 
-        cs = Qt.CaseSensitivity.CaseSensitive if bool(self._filters & QDir.Filter.CaseSensitive) else Qt.CaseSensitivity.CaseInsensitive  # type: ignore[attr-defined]
+        cs = (
+            Qt.CaseSensitivity.CaseSensitive
+            if bool(self._filters & QDir.Filter.CaseSensitive)
+            else Qt.CaseSensitivity.CaseInsensitive
+        )  # type: ignore[attr-defined]
 
         for i, nameFilter in enumerate(self._nameFilters):
             # QRegularExpression::fromWildcard equivalent
@@ -1737,7 +1862,9 @@ class PyFileSystemModel(QAbstractItemModel):
                     providerOptions &= ~QFileIconProvider.DontUseCustomDirectoryIcons  # type: ignore[attr-defined]
                 provider.setOptions(providerOptions)
             else:
-                RobustLogger().warning("Setting PyFileSystemModel::DontUseCustomDirectoryIcons has no effect when no provider is used")
+                RobustLogger().warning(
+                    "Setting PyFileSystemModel::DontUseCustomDirectoryIcons has no effect when no provider is used"
+                )
 
     def testOption(
         self,
@@ -1825,7 +1952,12 @@ class PyFileSystemModel(QAbstractItemModel):
         else:
             parentNode = self.node(parent)
             # row is not a method on PyFileSystemNode
-            print("<SDM> [mkdir scope] parentNode: ", parentNode, "parentNode.fileName:", parentNode.fileName)
+            print(
+                "<SDM> [mkdir scope] parentNode: ",
+                parentNode,
+                "parentNode.fileName:",
+                parentNode.fileName,
+            )
 
             _newNode = self.addNode(parentNode, name, QFileInfo(dirPath))
             assert name in parentNode.children
@@ -1834,7 +1966,9 @@ class PyFileSystemModel(QAbstractItemModel):
 
             node.populate(self._fileInfoGatherer.getInfo(QFileInfo(os.path.abspath(dirPath))))  # noqa: PTH100
             self.addVisibleFiles(parentNode, [name])
-            row = parentNode.visibleChildren.index(name) if name in parentNode.visibleChildren else 0
+            row = (
+                parentNode.visibleChildren.index(name) if name in parentNode.visibleChildren else 0
+            )
             return self.index(row, 0, parent)
 
     def permissions(
@@ -1912,7 +2046,12 @@ class PyFileSystemModel(QAbstractItemModel):
             return self.index_path(args[0], args[1])
         if len(args) == 2 and isinstance(args[0], int) and isinstance(args[1], int):
             return self._index_row_column_parent(args[0], args[1], QModelIndex())
-        if len(args) == 3 and isinstance(args[0], int) and isinstance(args[1], int) and isinstance(args[2], QModelIndex):
+        if (
+            len(args) == 3
+            and isinstance(args[0], int)
+            and isinstance(args[1], int)
+            and isinstance(args[2], QModelIndex)
+        ):
             return self._index_row_column_parent(args[0], args[1], args[2])
         msg = f"index{args!r}: expected (str), (str, int), (int, int), or (int, int, QModelIndex)"
         raise TypeError(msg)
@@ -1948,7 +2087,12 @@ class PyFileSystemModel(QAbstractItemModel):
             return createIndex(row, column, indexNode);
         }
         """
-        if row < 0 or column < 0 or row >= self.rowCount(parent) or column >= self.columnCount(parent):
+        if (
+            row < 0
+            or column < 0
+            or row >= self.rowCount(parent)
+            or column >= self.columnCount(parent)
+        ):
             return QModelIndex()
 
         # get the parent node
@@ -2024,7 +2168,9 @@ class PyFileSystemModel(QAbstractItemModel):
             return QModelIndex()
 
         assert node is not None
-        visualRow = self.translateVisibleLocation(parentNode, parentNode.visibleLocation(node.fileName))
+        visualRow = self.translateVisibleLocation(
+            parentNode, parentNode.visibleLocation(node.fileName)
+        )
         print("<SDM> [_handle_from_node_arg scope] visualRow: ", visualRow)
 
         return self.createIndex(visualRow, column, node)
@@ -2069,7 +2215,9 @@ class PyFileSystemModel(QAbstractItemModel):
         assert grandParentNode is not None
         assert parentNode.fileName in grandParentNode.children
         childNode = grandParentNode.children[parentNode.fileName]
-        visualRow = self.translateVisibleLocation(grandParentNode, grandParentNode.visibleLocation(childNode.fileName))
+        visualRow = self.translateVisibleLocation(
+            grandParentNode, grandParentNode.visibleLocation(childNode.fileName)
+        )
         if visualRow == -1:
             return QModelIndex()
         return self.createIndex(visualRow, 0, parentNode)
@@ -2216,7 +2364,11 @@ class PyFileSystemModel(QAbstractItemModel):
             return ""
         dirNode = self.node(index)
         # QT_CONFIG(filesystemwatcher) - always true
-        if self._fileInfoGatherer.resolveSymlinks() and self._resolvedSymLinks and dirNode.isSymLink(ignoreNtfsSymLinks=True):
+        if (
+            self._fileInfoGatherer.resolveSymlinks()
+            and self._resolvedSymLinks
+            and dirNode.isSymLink(ignoreNtfsSymLinks=True)
+        ):
             fullPath = QDir.fromNativeSeparators(self.filePath(index))
             return self._resolvedSymLinks.get(fullPath, dirNode.fileName)
         return dirNode.fileName
@@ -2277,7 +2429,9 @@ class PyFileSystemModel(QAbstractItemModel):
 
         # QTimeZone.LocalTime - matches usage in pyextendedinformation.py
         local_tz = QTimeZone.LocalTime  # type: ignore[attr-defined]
-        return QLocale.system().toString(self.node(index).lastModified(local_tz), QLocale.FormatType.ShortFormat)
+        return QLocale.system().toString(
+            self.node(index).lastModified(local_tz), QLocale.FormatType.ShortFormat
+        )
 
     def _icon(
         self,
@@ -2384,7 +2538,11 @@ class PyFileSystemModel(QAbstractItemModel):
                     provider = self._fileInfoGatherer.iconProvider()
                     if provider:
                         node_obj = self.node(index)
-                        icon = provider.icon(QFileIconProvider.IconType.Folder if node_obj.isDir() else QFileIconProvider.IconType.File)
+                        icon = provider.icon(
+                            QFileIconProvider.IconType.Folder
+                            if node_obj.isDir()
+                            else QFileIconProvider.IconType.File
+                        )
                 return icon
         if role == Qt.ItemDataRole.TextAlignmentRole:
             if index.column() == 1:  # SizeColumn
@@ -2434,7 +2592,10 @@ class PyFileSystemModel(QAbstractItemModel):
         print("<SDM> [setData node.fileName ", node.fileName)
 
         parent_node = node.parent
-        print("<SDM> [setData scope] parent_node.fileName ", None if parent_node is None else parent_node.fileName)
+        print(
+            "<SDM> [setData scope] parent_node.fileName ",
+            None if parent_node is None else parent_node.fileName,
+        )
 
         if parent_node is not None:
             self.removeNode(parent_node, old_name)
@@ -2457,7 +2618,11 @@ class PyFileSystemModel(QAbstractItemModel):
         if not node.isDir():
             flags |= Qt.ItemFlag.ItemNeverHasChildren
 
-        if not self._readOnly and index.column() == 0 and bool(node.permissions() & QFileDevice.Permission.WriteUser):  # type: ignore[attr-defined]
+        if (
+            not self._readOnly
+            and index.column() == 0
+            and bool(node.permissions() & QFileDevice.Permission.WriteUser)
+        ):  # type: ignore[attr-defined]
             flags |= Qt.ItemFlag.ItemIsEditable
             if node.isDir():
                 flags |= Qt.ItemFlag.ItemIsDropEnabled
@@ -2470,7 +2635,9 @@ class PyFileSystemModel(QAbstractItemModel):
         self,
         indexes: Iterable[QModelIndex],
     ) -> QMimeData:
-        urls: list[QUrl] = [QUrl.fromLocalFile(self.filePath(index)) for index in indexes if index.column() == 0]
+        urls: list[QUrl] = [
+            QUrl.fromLocalFile(self.filePath(index)) for index in indexes if index.column() == 0
+        ]
         mime_data = QMimeData()
         mime_data.setUrls(urls)
         return mime_data
@@ -2792,7 +2959,8 @@ class PyFileSystemModel(QAbstractItemModel):
         if self._filters == filters:
             return
         changingCaseSensitivity = (
-            bool(filters & QDir.Filter.CaseSensitive) != bool(self._filters & QDir.Filter.CaseSensitive)  # type: ignore[attr-defined]
+            bool(filters & QDir.Filter.CaseSensitive)
+            != bool(self._filters & QDir.Filter.CaseSensitive)  # type: ignore[attr-defined]
         )
         self._filters = filters
         if changingCaseSensitivity:
@@ -2877,13 +3045,25 @@ class PyFileSystemModel(QAbstractItemModel):
 
     DontWatchForChanges: QFileSystemModel.Option = QFileSystemModel.Option.DontWatchForChanges  # type: ignore[attr-defined]
     DontResolveSymlinks: QFileSystemModel.Option = QFileSystemModel.Option.DontResolveSymlinks  # type: ignore[attr-defined]
-    DontUseCustomDirectoryIcons: QFileSystemModel.Option = QFileSystemModel.Option.DontUseCustomDirectoryIcons  # type: ignore[attr-defined]
+    DontUseCustomDirectoryIcons: QFileSystemModel.Option = (
+        QFileSystemModel.Option.DontUseCustomDirectoryIcons
+    )  # type: ignore[attr-defined]
 
-    FileIconRole: QFileSystemModel.Roles | Qt.ItemDataRole | Literal[1] = Qt.ItemDataRole.DecorationRole
-    FilePathRole: QFileSystemModel.Roles | Qt.ItemDataRole | Literal[257] = Qt.ItemDataRole.UserRole + 1
-    FileNameRole: QFileSystemModel.Roles | Qt.ItemDataRole | Literal[258] = Qt.ItemDataRole.UserRole + 2
-    FilePermissions: QFileSystemModel.Roles | Qt.ItemDataRole | Literal[259] = Qt.ItemDataRole.UserRole + 3
-    FileInfoRole: QFileSystemModel.Roles | Qt.ItemDataRole | Literal[260] = Qt.ItemDataRole.UserRole + 4
+    FileIconRole: QFileSystemModel.Roles | Qt.ItemDataRole | Literal[1] = (
+        Qt.ItemDataRole.DecorationRole
+    )
+    FilePathRole: QFileSystemModel.Roles | Qt.ItemDataRole | Literal[257] = (
+        Qt.ItemDataRole.UserRole + 1
+    )
+    FileNameRole: QFileSystemModel.Roles | Qt.ItemDataRole | Literal[258] = (
+        Qt.ItemDataRole.UserRole + 2
+    )
+    FilePermissions: QFileSystemModel.Roles | Qt.ItemDataRole | Literal[259] = (
+        Qt.ItemDataRole.UserRole + 3
+    )
+    FileInfoRole: QFileSystemModel.Roles | Qt.ItemDataRole | Literal[260] = (
+        Qt.ItemDataRole.UserRole + 4
+    )
 
     NumColumns: int = 4
 

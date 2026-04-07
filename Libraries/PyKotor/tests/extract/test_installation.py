@@ -24,17 +24,17 @@ if PYKOTOR_PATH.joinpath("pykotor").exists():
 if UTILITY_PATH.joinpath("utility").exists():
     add_sys_path(UTILITY_PATH)
 
+import tempfile
+
+from pathlib import Path
+from typing import TYPE_CHECKING
+
 from pykotor.common.language import LocalizedString
 from pykotor.common.misc import Game
 from pykotor.extract.capsule import Capsule
 from pykotor.extract.file import ResourceIdentifier
 from pykotor.extract.installation import Installation, SearchLocation
 from pykotor.resource.type import ResourceType
-import tempfile
-
-from pathlib import Path
-from typing import TYPE_CHECKING
-
 from pykotor.tools.create_installation import create_installation
 
 if TYPE_CHECKING:
@@ -117,28 +117,56 @@ class TestInstallation(TestCase):
         assert installation.resource("c_bantha", ResourceType.UTC, []) is None
         assert installation.resource("c_bantha", ResourceType.UTC) is not None
 
-        assert installation.resource("c_bantha", ResourceType.UTC, [SearchLocation.CHITIN]) is not None
+        assert (
+            installation.resource("c_bantha", ResourceType.UTC, [SearchLocation.CHITIN]) is not None
+        )
         assert installation.resource("xxx", ResourceType.UTC, [SearchLocation.CHITIN]) is None
-        assert installation.resource("m13aa", ResourceType.ARE, [SearchLocation.MODULES]) is not None
+        assert (
+            installation.resource("m13aa", ResourceType.ARE, [SearchLocation.MODULES]) is not None
+        )
         assert installation.resource("xxx", ResourceType.ARE, [SearchLocation.MODULES]) is None
         assert installation.resource("xxx", ResourceType.NSS, [SearchLocation.OVERRIDE]) is None
-        assert installation.resource("NM03ABCITI06004_", ResourceType.WAV, [SearchLocation.VOICE]) is not None
+        assert (
+            installation.resource("NM03ABCITI06004_", ResourceType.WAV, [SearchLocation.VOICE])
+            is not None
+        )
         assert installation.resource("xxx", ResourceType.WAV, [SearchLocation.VOICE]) is None
-        assert installation.resource("P_hk47_POIS", ResourceType.WAV, [SearchLocation.SOUND]) is not None
+        assert (
+            installation.resource("P_hk47_POIS", ResourceType.WAV, [SearchLocation.SOUND])
+            is not None
+        )
         assert installation.resource("xxx", ResourceType.WAV, [SearchLocation.SOUND]) is None
-        assert installation.resource("mus_theme_carth", ResourceType.WAV, [SearchLocation.MUSIC]) is not None
+        assert (
+            installation.resource("mus_theme_carth", ResourceType.WAV, [SearchLocation.MUSIC])
+            is not None
+        )
         assert installation.resource("xxx", ResourceType.WAV, [SearchLocation.MUSIC]) is None
-        assert installation.resource("n_gendro_coms1", ResourceType.LIP, [SearchLocation.LIPS]) is not None
+        assert (
+            installation.resource("n_gendro_coms1", ResourceType.LIP, [SearchLocation.LIPS])
+            is not None
+        )
         assert installation.resource("xxx", ResourceType.LIP, [SearchLocation.LIPS]) is None
         # assert installation.resource("darkjedi", ResourceType.SSF, [SearchLocation.RIMS]) is not None
         # assert installation.resource("xxx", ResourceType.SSF, [SearchLocation.RIMS]) is None
-        assert installation.resource("blood", ResourceType.TPC, [SearchLocation.TEXTURES_TPA]) is not None
+        assert (
+            installation.resource("blood", ResourceType.TPC, [SearchLocation.TEXTURES_TPA])
+            is not None
+        )
         assert installation.resource("xxx", ResourceType.TPC, [SearchLocation.TEXTURES_TPA]) is None
-        assert installation.resource("blood", ResourceType.TPC, [SearchLocation.TEXTURES_TPB]) is not None
+        assert (
+            installation.resource("blood", ResourceType.TPC, [SearchLocation.TEXTURES_TPB])
+            is not None
+        )
         assert installation.resource("xxx", ResourceType.TPC, [SearchLocation.TEXTURES_TPB]) is None
-        assert installation.resource("blood", ResourceType.TPC, [SearchLocation.TEXTURES_TPC]) is not None
+        assert (
+            installation.resource("blood", ResourceType.TPC, [SearchLocation.TEXTURES_TPC])
+            is not None
+        )
         assert installation.resource("xxx", ResourceType.TPC, [SearchLocation.TEXTURES_TPC]) is None
-        assert installation.resource("PO_PCarth", ResourceType.TPC, [SearchLocation.TEXTURES_GUI]) is not None
+        assert (
+            installation.resource("PO_PCarth", ResourceType.TPC, [SearchLocation.TEXTURES_GUI])
+            is not None
+        )
         assert installation.resource("xxx", ResourceType.TPC, [SearchLocation.TEXTURES_GUI]) is None
 
         resource = installation.resource(
@@ -224,7 +252,9 @@ class TestInstallation(TestCase):
             ResourceIdentifier.from_path("m13aa.are"),
             ResourceIdentifier.from_path("xyz.ifo"),
         ]
-        capsules_results = installation.resources(capsules_resources, [SearchLocation.CUSTOM_MODULES], capsules=capsules)
+        capsules_results = installation.resources(
+            capsules_resources, [SearchLocation.CUSTOM_MODULES], capsules=capsules
+        )
         self._assert_from_path_tests(capsules_results, "m13aa.are", "xyz.ifo")
 
     def test_location(self):
@@ -333,7 +363,9 @@ class TestInstallation(TestCase):
             ResourceIdentifier.from_path("m13aa.are"),
             ResourceIdentifier.from_path("xyz.ifo"),
         ]
-        capsules_results = installation.locations(capsules_resources, [SearchLocation.CUSTOM_MODULES], capsules=capsules)
+        capsules_results = installation.locations(
+            capsules_resources, [SearchLocation.CUSTOM_MODULES], capsules=capsules
+        )
         self._assert_from_path_tests(capsules_results, "m13aa.are", "xyz.ifo")
         folders = [installation.override_path()]
 
@@ -449,7 +481,9 @@ class TestInstallation(TestCase):
         results = installation.strings([locstring1, locstring2, locstring3], "default text")
         assert results[locstring1] == "default text"
         assert results[locstring2] == "Some text."
-        assert results[locstring3] == "ERROR: FATAL COMPILER ERROR"  # This test will fail on non-english versions of the game
+        assert (
+            results[locstring3] == "ERROR: FATAL COMPILER ERROR"
+        )  # This test will fail on non-english versions of the game
 
     def test_pickle_unpickle(self):
         """Test that an Installation object can be pickled and unpickled."""

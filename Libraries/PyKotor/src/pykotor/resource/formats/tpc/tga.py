@@ -41,7 +41,10 @@ def _flip_vertically(buffer: bytearray, width: int, height: int, bpp: int) -> No
     for row in range(height // 2):
         a = row * stride
         b = (height - row - 1) * stride
-        buffer[a : a + stride], buffer[b : b + stride] = buffer[b : b + stride], buffer[a : a + stride]
+        buffer[a : a + stride], buffer[b : b + stride] = (
+            buffer[b : b + stride],
+            buffer[a : a + stride],
+        )
 
 
 def _read_rle(stream: BinaryIO, width: int, height: int, pixel_depth: int) -> bytes:
@@ -188,7 +191,11 @@ def write_tga(image: TGAImage, stream: BinaryIO, rle: bool = False) -> None:
             # Look ahead for repeated pixels.
             current = scanline[x * 4 : (x + 1) * 4]
             repeat = 1
-            while x + repeat < width and scanline[(x + repeat) * 4 : (x + repeat + 1) * 4] == current and repeat < 128:
+            while (
+                x + repeat < width
+                and scanline[(x + repeat) * 4 : (x + repeat + 1) * 4] == current
+                and repeat < 128
+            ):
                 repeat += 1
 
             if repeat > 1:

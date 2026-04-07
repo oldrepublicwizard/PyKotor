@@ -49,10 +49,14 @@ class Interpreter(BiowareResource):
         self._ncs: NCS = ncs
         self._cursor: NCSInstruction | None = ncs.instructions[0]
         self._cursor_index: int = 0
-        self._functions: list[ScriptFunction] = KOTOR_FUNCTIONS if game == Game.K1 else TSL_FUNCTIONS
+        self._functions: list[ScriptFunction] = (
+            KOTOR_FUNCTIONS if game == Game.K1 else TSL_FUNCTIONS
+        )
 
         # Precompute instruction index lookup to avoid reliance on equality semantics
-        self._instruction_indices: dict[int, int] = {id(instruction): idx for idx, instruction in enumerate(ncs.instructions)}
+        self._instruction_indices: dict[int, int] = {
+            id(instruction): idx for idx, instruction in enumerate(ncs.instructions)
+        }
 
         self._stack: Stack = Stack()
         self._returns: list[tuple[NCSInstruction, int]] = []
@@ -63,7 +67,9 @@ class Interpreter(BiowareResource):
         self.action_snapshots: list[ActionSnapshot] = []
 
         # Instruction execution limit
-        self._max_instructions: int = max_instructions if max_instructions is not None else self.DEFAULT_MAX_INSTRUCTIONS
+        self._max_instructions: int = (
+            max_instructions if max_instructions is not None else self.DEFAULT_MAX_INSTRUCTIONS
+        )
         self._instructions_executed: int = 0
 
     def step_execute(self) -> bool:
@@ -415,7 +421,9 @@ class Interpreter(BiowareResource):
 
         # DEBUG: Log stack state before popping arguments
         print(f"DEBUG do_action: function={function.name}, args={args}")
-        print(f"DEBUG do_action: stack before pop: {[f'{obj.data_type.name}={obj.value}' for obj in self._stack.state()[-10:]]}")
+        print(
+            f"DEBUG do_action: stack before pop: {[f'{obj.data_type.name}={obj.value}' for obj in self._stack.state()[-10:]]}"
+        )
 
         args_snap = []
 
@@ -449,7 +457,9 @@ class Interpreter(BiowareResource):
                     raise RuntimeError(msg) from e
 
         # DEBUG: Log args_snap before reverse
-        print(f"DEBUG: args_snap before reverse: {[f'{obj.data_type.name}={obj.value}' for obj in args_snap]}")
+        print(
+            f"DEBUG: args_snap before reverse: {[f'{obj.data_type.name}={obj.value}' for obj in args_snap]}"
+        )
 
         # We compiled arguments in reverse order (last first), so when we pop them (last-in-first-out),
         # args_snap[0] is the last parameter and args_snap[-1] is the first parameter.
@@ -457,7 +467,9 @@ class Interpreter(BiowareResource):
         args_snap.reverse()
 
         # DEBUG: Log args_snap after reverse and function params
-        print(f"DEBUG: args_snap after reverse: {[f'{obj.data_type.name}={obj.value}' for obj in args_snap]}")
+        print(
+            f"DEBUG: args_snap after reverse: {[f'{obj.data_type.name}={obj.value}' for obj in args_snap]}"
+        )
         print(f"DEBUG: function.params: {[(p.name, p.datatype.name) for p in function.params]}")
 
         # Validate argument types
@@ -491,7 +503,9 @@ class Interpreter(BiowareResource):
                 self._stack.add(function.returntype, value)
 
         # Store action snapshot with raw values instead of StackObject instances
-        self.action_snapshots.append(ActionSnapshot(function.name, [arg.value for arg in args_snap], None))
+        self.action_snapshots.append(
+            ActionSnapshot(function.name, [arg.value for arg in args_snap], None)
+        )
 
     def print(self):
         for snap in self.stack_snapshots:
@@ -875,7 +889,9 @@ class StackV2(BiowareResource):
                     "StackV2.pop stack underflow: VECTOR requires 12 bytes, have %s",
                     len(self._stack),
                 )
-                msg = f"Stack underflow: VECTOR requires 12 bytes, only {len(self._stack)} available"
+                msg = (
+                    f"Stack underflow: VECTOR requires 12 bytes, only {len(self._stack)} available"
+                )
                 raise IndexError(msg)
             vector_bytes = self._stack[-12:]
             self._stack = self._stack[:-12]
@@ -1085,8 +1101,12 @@ class Stack(BiowareResource):
 
     def copy_to_top(self, offset: int, size: int):
         # DEBUG: Log copy_to_top params and stack state
-        print(f"DEBUG copy_to_top: offset={offset}, size={size}, stack_len={len(self._stack)}, bp={self._bp}")
-        print(f"DEBUG copy_to_top: stack_contents={[f'{obj.data_type.name}={obj.value}' for obj in self._stack]}")
+        print(
+            f"DEBUG copy_to_top: offset={offset}, size={size}, stack_len={len(self._stack)}, bp={self._bp}"
+        )
+        print(
+            f"DEBUG copy_to_top: stack_contents={[f'{obj.data_type.name}={obj.value}' for obj in self._stack]}"
+        )
 
         if size <= 0 or size % 4 != 0:
             msg = f"Size must be a positive multiple of 4, got {size}"
@@ -1115,7 +1135,9 @@ class Stack(BiowareResource):
 
         # If offset exceeds stack size, this might be accessing uninit globals - push defaults
         if offset_abs > total_bytes:
-            print(f"DEBUG copy_to_top: offset {offset} exceeds stack size {total_bytes}, pushing defaults")
+            print(
+                f"DEBUG copy_to_top: offset {offset} exceeds stack size {total_bytes}, pushing defaults"
+            )
             words = size // 4
             for _ in range(words):
                 self._stack.append(StackObject(DataType.INT, 0))
@@ -1169,7 +1191,9 @@ class Stack(BiowareResource):
         # Now copy the elements down the stack
         for i in range(num_elements):
             source_index = -1 - i  # Counting from the end of the list
-            target_index = target_indices[-1 - i]  # The last target index corresponds to the first source index
+            target_index = target_indices[
+                -1 - i
+            ]  # The last target index corresponds to the first source index
             self._stack[target_index] = self._stack[source_index]
 
     def pop(self) -> Any:

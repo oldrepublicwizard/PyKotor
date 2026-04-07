@@ -227,7 +227,9 @@ def write_bwm_validation_diagram(
     )
     data: bytes = ("\n".join(lines) + "\n").encode("utf-8")
     if isinstance(target, (os.PathLike, str)):
-        path: str = os.fspath(target) if isinstance(target, os.PathLike) else os.path.normpath(target)
+        path: str = (
+            os.fspath(target) if isinstance(target, os.PathLike) else os.path.normpath(target)
+        )
         with open(path, "wb") as f:  # noqa: PTH123
             f.write(data)
     elif isinstance(target, bytearray):

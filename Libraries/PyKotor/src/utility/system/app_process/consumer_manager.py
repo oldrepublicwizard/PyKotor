@@ -73,7 +73,11 @@ class ConsumerManager(Generic[P, R]):
                 atexit.register(atexit_stop_event)
             return cls._instance
 
-    def __init__(self, num_consumers: int | None = multiprocessing.cpu_count() * 2, retry_policy: dict[str, Any] | None = None):
+    def __init__(
+        self,
+        num_consumers: int | None = multiprocessing.cpu_count() * 2,
+        retry_policy: dict[str, Any] | None = None,
+    ):
         RobustLogger().info(f"ConsumerManager.__init__ called with num_consumers={num_consumers}")
         if self.__class__._instance is None:
             raise RuntimeError("ConsumerManager instance does not exist")
@@ -112,7 +116,9 @@ class ConsumerManager(Generic[P, R]):
                         asyncio.set_event_loop(self._loop)
                     asyncio.run(self.run())
 
-                thread = threading.Thread(target=start_new_event_loop, name="ConsumerManager.run_thread", daemon=False)
+                thread = threading.Thread(
+                    target=start_new_event_loop, name="ConsumerManager.run_thread", daemon=False
+                )
                 thread.start()
             else:
                 self._main_task = asyncio.create_task(self.run(), name="ConsumerManager.run")
@@ -152,7 +158,10 @@ class ConsumerManager(Generic[P, R]):
             except asyncio.TimeoutError:  # noqa: PERF203
                 RobustLogger().warning(f"{self.__class__.__name__}.run timeout")
             except Exception as e:  # noqa: BLE001
-                RobustLogger().warning(f"Exception {e.__class__.__name__} thrown in {self.__class__.__name__}.run", exc_info=True)
+                RobustLogger().warning(
+                    f"Exception {e.__class__.__name__} thrown in {self.__class__.__name__}.run",
+                    exc_info=True,
+                )
             finally:
                 await asyncio.sleep(0.01 if not self._paused else 0.1)
 
@@ -187,13 +196,27 @@ class ConsumerManager(Generic[P, R]):
             self._result_queue.get_nowait()
 
     async def add_task(
-        self, func: P, *args: Any, priority: TaskPriority = TaskPriority.NORMAL, timeout: float | None = None, dependencies: list[int] = None, **kwargs: Any,
+        self,
+        func: P,
+        *args: Any,
+        priority: TaskPriority = TaskPriority.NORMAL,
+        timeout: float | None = None,
+        dependencies: list[int] = None,
+        **kwargs: Any,
     ) -> int:
         print("add_task called")
         if not self._is_running:
             raise RuntimeError("ConsumerManager is not running")
 
-        task = PrioritizedTask(priority=priority, task=func, args=args, kwargs=kwargs, timeout=timeout, dependencies=dependencies or [], checkpoints={})
+        task = PrioritizedTask(
+            priority=priority,
+            task=func,
+            args=args,
+            kwargs=kwargs,
+            timeout=timeout,
+            dependencies=dependencies or [],
+            checkpoints={},
+        )
         task_id = id(task)
         self._task_graph.add_task(task_id, dependencies or [])
         self._task_priorities[task_id] = priority
@@ -204,7 +227,9 @@ class ConsumerManager(Generic[P, R]):
         print("check_task_queue called")
         if self._paused:
             return
-        assert self._loop is not None, f"{self.__class__.__name__}.check_task_queue error: loop is not running"
+        assert self._loop is not None, (
+            f"{self.__class__.__name__}.check_task_queue error: loop is not running"
+        )
         while not self._consumer_task_queue.empty():
             task_id, task = self._consumer_task_queue.get()
             if task_id is not None and task is not None:
@@ -212,15 +237,21 @@ class ConsumerManager(Generic[P, R]):
                     self._update_task_status(task_id, "running")
                     if task.timeout is not None:
                         try:
-                            result = self._loop.run_until_complete(asyncio.wait_for(self._execute_task(task), timeout=task.timeout))
+                            result = self._loop.run_until_complete(
+                                asyncio.wait_for(self._execute_task(task), timeout=task.timeout)
+                            )
                             self._result_queue.put((task_id, result))
                             self._completed_task_count += 1
                             self._update_task_status(task_id, "completed")
                         except asyncio.TimeoutError:
-                            RobustLogger().warning(f"Task {task.task.__name__} timed out after {task.timeout} seconds")
+                            RobustLogger().warning(
+                                f"Task {task.task.__name__} timed out after {task.timeout} seconds"
+                            )
                             self._failed_task_count += 1
                             self._update_task_status(task_id, "timeout")
-                            self._result_queue.put((task_id, TimeoutError(f"Task {task.task.__name__} timed out")))
+                            self._result_queue.put(
+                                (task_id, TimeoutError(f"Task {task.task.__name__} timed out"))
+                            )
                     else:
                         result = self._loop.run_until_complete(self._execute_task(task))
                         self._result_queue.put((task_id, result))
@@ -229,7 +260,9 @@ class ConsumerManager(Generic[P, R]):
                     self._task_status.pop(task_id, None)
                     self._consumer_task_queue.task_done()
                 except Exception as e:  # noqa: F841, BLE001
-                    RobustLogger().error(f"Error executing task: {task.task.__name__}", exc_info=True)
+                    RobustLogger().error(
+                        f"Error executing task: {task.task.__name__}", exc_info=True
+                    )
 
     def is_running(self) -> bool:
         with self._thread_lock, self._process_lock:
@@ -263,7 +296,9 @@ class ConsumerManager(Generic[P, R]):
                     RobustLogger().warning(f"Consumer {consumer.name} did not terminate gracefully")
                     consumer.terminate()
             except (TimeoutError, RuntimeError) as e:  # noqa: PERF203
-                RobustLogger().warning(f"Error stopping consumer {consumer.name}: {e}", exc_info=True)
+                RobustLogger().warning(
+                    f"Error stopping consumer {consumer.name}: {e}", exc_info=True
+                )
             finally:
                 consumer.close()
 
@@ -285,7 +320,9 @@ class ConsumerManager(Generic[P, R]):
                     RobustLogger().warning(f"Consumer {consumer.name} did not terminate gracefully")
                     consumer.terminate()
             except (TimeoutError, RuntimeError) as e:  # noqa: PERF203
-                RobustLogger().warning(f"Error stopping consumer {consumer.name}: {e}", exc_info=True)
+                RobustLogger().warning(
+                    f"Error stopping consumer {consumer.name}: {e}", exc_info=True
+                )
             finally:
                 consumer.close()
 
@@ -303,7 +340,10 @@ class ConsumerManager(Generic[P, R]):
         start_time = time.time()
         while True:
             if task_id not in self._task_status:
-                return (task_id, KeyError(f"Task {task_id} not found"))  # Task not found or already completed
+                return (
+                    task_id,
+                    KeyError(f"Task {task_id} not found"),
+                )  # Task not found or already completed
             if self._task_status[task_id] == "completed":
                 result = self._result_queue.get(block=block, timeout=timeout)
                 if isinstance(result, Exception):
@@ -322,7 +362,10 @@ class ConsumerManager(Generic[P, R]):
     ) -> tuple[int, R | Exception]:
         while not self._stop_event.is_set():
             if task_id not in self._task_status:
-                return (task_id, KeyError(f"Task {task_id} not found"))  # Task not found or already completed
+                return (
+                    task_id,
+                    KeyError(f"Task {task_id} not found"),
+                )  # Task not found or already completed
             if self._task_status[task_id] == "completed":
                 result = self._result_queue.get(block=block)
                 if isinstance(result, Exception):
@@ -351,7 +394,9 @@ class ConsumerManager(Generic[P, R]):
     async def _execute_task(self, task: PrioritizedTask) -> R:
         try:
             if task.progress_callback:
-                result = await task.task(*task.args, progress_callback=task.progress_callback, **task.kwargs)
+                result = await task.task(
+                    *task.args, progress_callback=task.progress_callback, **task.kwargs
+                )
             else:
                 result = await task.task(*task.args, **task.kwargs)
         except Exception as e:
@@ -359,7 +404,9 @@ class ConsumerManager(Generic[P, R]):
             if task.retry_count < self._max_retries:
                 task.retry_count += 1
                 await self._task_queue.put(task)
-                RobustLogger().info(f"Retrying task {task.task.__name__} (attempt {task.retry_count})")
+                RobustLogger().info(
+                    f"Retrying task {task.task.__name__} (attempt {task.retry_count})"
+                )
             else:
                 raise
         else:
@@ -375,8 +422,14 @@ class ConsumerManager(Generic[P, R]):
         self._task_status[task_id]["status"] = status
 
     async def _process_scheduled_tasks(self, current_time: float) -> None:
-        tasks_to_execute = [task for scheduled_time, task in self._scheduled_tasks if scheduled_time <= current_time]
-        self._scheduled_tasks = [(scheduled_time, task) for scheduled_time, task in self._scheduled_tasks if scheduled_time > current_time]
+        tasks_to_execute = [
+            task for scheduled_time, task in self._scheduled_tasks if scheduled_time <= current_time
+        ]
+        self._scheduled_tasks = [
+            (scheduled_time, task)
+            for scheduled_time, task in self._scheduled_tasks
+            if scheduled_time > current_time
+        ]
         for task in tasks_to_execute:
             await self._task_queue.put(task)
 

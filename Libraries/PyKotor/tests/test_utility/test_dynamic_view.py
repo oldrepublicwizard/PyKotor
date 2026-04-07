@@ -8,7 +8,14 @@ from unittest.mock import patch
 
 from qtpy.QtCore import QModelIndex, QTimer
 from qtpy.QtGui import QStandardItem, QStandardItemModel
-from qtpy.QtWidgets import QAbstractItemView, QApplication, QColumnView, QListView, QTableView, QTreeView
+from qtpy.QtWidgets import (
+    QAbstractItemView,
+    QApplication,
+    QColumnView,
+    QListView,
+    QTableView,
+    QTreeView,
+)
 
 from utility.gui.qt.widgets.widgets.stacked_view import DynamicStackedView
 
@@ -16,7 +23,9 @@ from utility.gui.qt.widgets.widgets.stacked_view import DynamicStackedView
 class TestDynamicStackedView(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        cls.app: QApplication = cast("QApplication", QApplication.instance() or QApplication(sys.argv))
+        cls.app: QApplication = cast(
+            "QApplication", QApplication.instance() or QApplication(sys.argv)
+        )
 
     @classmethod
     def tearDownClass(cls):
@@ -70,13 +79,17 @@ class TestDynamicStackedView(unittest.TestCase):
         """Test retrieving all views."""
         all_views = self.view_manager.all_views()
         assert len(all_views) > 0, "Should have views"
-        assert all(isinstance(view, QAbstractItemView) for view in all_views), "All items should be QAbstractItemView"
+        assert all(isinstance(view, QAbstractItemView) for view in all_views), (
+            "All items should be QAbstractItemView"
+        )
 
     def test_all_widgets(self):
         """Test retrieving all widgets."""
         all_widgets = self.view_manager.all_widgets()
         assert len(all_widgets) > 0, "Should have widgets"
-        assert all(isinstance(widget, object) for widget in all_widgets), "All items should be widgets"
+        assert all(isinstance(widget, object) for widget in all_widgets), (
+            "All items should be widgets"
+        )
 
     def test_current_view(self):
         """Test getting current view."""
@@ -122,7 +135,9 @@ class TestDynamicStackedView(unittest.TestCase):
         widgets = self.view_manager.all_widgets()
         if len(widgets) > 1:
             self.view_manager.setCurrentWidget(widgets[1])
-            assert self.view_manager.currentWidget() == widgets[1], "Current widget should be updated"
+            assert self.view_manager.currentWidget() == widgets[1], (
+                "Current widget should be updated"
+            )
             assert self.view_manager.current_view_index == 1, "Current view index should be updated"
 
     def test_switch_to_next_view(self):
@@ -139,7 +154,9 @@ class TestDynamicStackedView(unittest.TestCase):
 
         # Then switch back
         self.view_manager.switch_to_previous_view()
-        assert self.view_manager.current_view_index == current_index - 1, "Should move to previous view"
+        assert self.view_manager.current_view_index == current_index - 1, (
+            "Should move to previous view"
+        )
 
     def test_switch_to_next_view_at_end(self):
         """Test that switching at end doesn't go beyond bounds."""
@@ -198,7 +215,9 @@ class TestDynamicStackedView(unittest.TestCase):
         assert selection_model is not None, "Should have a selection model"
 
         for view in self.view_manager.all_views():
-            assert view.selectionModel() == selection_model, "All views should share selection model"
+            assert view.selectionModel() == selection_model, (
+                "All views should share selection model"
+            )
 
     def test_selected_indexes(self):
         """Test getting selected indexes."""
@@ -206,7 +225,9 @@ class TestDynamicStackedView(unittest.TestCase):
         if current_view:
             index = self.model.index(0, 0)
             current_view.setCurrentIndex(index)
-            current_view.selectionModel().select(index, current_view.selectionModel().SelectionFlag.Select)
+            current_view.selectionModel().select(
+                index, current_view.selectionModel().SelectionFlag.Select
+            )
 
         selected = self.view_manager.selectedIndexes()
         assert len(selected) > 0, "Should have selected indexes"
@@ -230,7 +251,9 @@ class TestDynamicStackedView(unittest.TestCase):
             QApplication.processEvents()
             selected = current_view.selectedIndexes()
             # Should have selected all items (5 items)
-            assert len(selected) >= 5, f"Should have selected items after selectAll, got {len(selected)}"
+            assert len(selected) >= 5, (
+                f"Should have selected items after selectAll, got {len(selected)}"
+            )
 
     def test_update_icon_size(self):
         """Test updating icon size."""
@@ -307,7 +330,9 @@ def run_tests():
         import pytest
 
         if not FORCE_UNITTEST:
-            pytest.main(["-v" if VERBOSE else "", "-x" if FAIL_FAST else "", "--tb=native", __file__])
+            pytest.main(
+                ["-v" if VERBOSE else "", "-x" if FAIL_FAST else "", "--tb=native", __file__]
+            )
         else:
             raise ImportError  # noqa: TRY301
     except ImportError:

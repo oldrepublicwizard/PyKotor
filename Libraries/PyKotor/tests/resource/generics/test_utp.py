@@ -111,8 +111,12 @@ TEST_UTP_XML = """<gff3>
     </struct>
   </gff3>"""
 
-K1_PATH: str | None = os.environ.get("K1_PATH", "C:\\Program Files (x86)\\Steam\\steamapps\\common\\swkotor")
-K2_PATH: str | None = os.environ.get("K2_PATH", "C:\\Program Files (x86)\\Steam\\steamapps\\common\\Knights of the Old Republic II")
+K1_PATH: str | None = os.environ.get(
+    "K1_PATH", "C:\\Program Files (x86)\\Steam\\steamapps\\common\\swkotor"
+)
+K2_PATH: str | None = os.environ.get(
+    "K2_PATH", "C:\\Program Files (x86)\\Steam\\steamapps\\common\\Knights of the Old Republic II"
+)
 
 
 class Test(TestCase):
@@ -143,7 +147,9 @@ class Test(TestCase):
         import os
         import tempfile
 
-        with tempfile.NamedTemporaryFile(mode="w", suffix=".utp.xml", delete=False, encoding="utf-8") as tmp:
+        with tempfile.NamedTemporaryFile(
+            mode="w", suffix=".utp.xml", delete=False, encoding="utf-8"
+        ) as tmp:
             tmp.write(TEST_UTP_XML)
             tmp_path = tmp.name
 

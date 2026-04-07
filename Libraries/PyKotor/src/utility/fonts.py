@@ -23,7 +23,11 @@ def get_font_paths_linux() -> list[Path]:
     -------
         List of Path objects to TTF font files
     """
-    font_dirs: list[Path] = [Path("/usr/share/fonts/"), Path("/usr/local/share/fonts/"), Path.home() / ".fonts"]
+    font_dirs: list[Path] = [
+        Path("/usr/share/fonts/"),
+        Path("/usr/local/share/fonts/"),
+        Path.home() / ".fonts",
+    ]
     return [font for font_dir in font_dirs for font in font_dir.glob("**/*.ttf")]
 
 
@@ -34,7 +38,11 @@ def get_font_paths_macos() -> list[Path]:
     -------
         List of Path objects to TTF font files
     """
-    font_dirs: list[Path] = [Path("/Library/Fonts/"), Path("/System/Library/Fonts/"), Path.home() / "Library/Fonts"]
+    font_dirs: list[Path] = [
+        Path("/Library/Fonts/"),
+        Path("/System/Library/Fonts/"),
+        Path.home() / "Library/Fonts",
+    ]
     return [font for font_dir in font_dirs for font in font_dir.glob("**/*.ttf")]
 
 

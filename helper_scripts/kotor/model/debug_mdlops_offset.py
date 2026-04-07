@@ -61,7 +61,9 @@ while True:
     bitmap_positions.append(pos)
     start = pos + 1
 
-print(f"Found bitmap 0x00000003 at {len(bitmap_positions)} positions: {bitmap_positions[:10]}")  # Show first 10
+print(
+    f"Found bitmap 0x00000003 at {len(bitmap_positions)} positions: {bitmap_positions[:10]}"
+)  # Show first 10
 
 # Check each occurrence
 # Instead of calculating from texture name, search for the bitmap value we expect (0x00000003 or similar)
@@ -106,12 +108,22 @@ for i, pos in enumerate(positions[:3]):  # Check first 3 only
 
         print(f"\nTrimesh header #{i + 1} (texture at {pos}):")
         print(f"  From texture pos (th_start={th_start_from_tex}):")
-        print(f"    mdx_data_bitmap: 0x{bitmap_from_tex:08X} (TEXTURE1: {bool(bitmap_from_tex & 0x2)})")
+        print(
+            f"    mdx_data_bitmap: 0x{bitmap_from_tex:08X} (TEXTURE1: {bool(bitmap_from_tex & 0x2)})"
+        )
         print(f"    mdx_texture1_offset: {tex1_off_from_tex} (0x{tex1_off_from_tex:08X})")
         if nearest_bitmap_pos:
-            print(f"  From bitmap pos (th_start={th_start_from_bitmap}, bitmap_at={nearest_bitmap_pos}):")
-            print(f"    mdx_data_bitmap: 0x{bitmap_from_bitmap:08X} (TEXTURE1: {bool(bitmap_from_bitmap & 0x2) if bitmap_from_bitmap else False})")
-            print(f"    mdx_texture1_offset: {tex1_off_from_bitmap} (0x{tex1_off_from_bitmap:08X})" if tex1_off_from_bitmap is not None else "    mdx_texture1_offset: N/A")
+            print(
+                f"  From bitmap pos (th_start={th_start_from_bitmap}, bitmap_at={nearest_bitmap_pos}):"
+            )
+            print(
+                f"    mdx_data_bitmap: 0x{bitmap_from_bitmap:08X} (TEXTURE1: {bool(bitmap_from_bitmap & 0x2) if bitmap_from_bitmap else False})"
+            )
+            print(
+                f"    mdx_texture1_offset: {tex1_off_from_bitmap} (0x{tex1_off_from_bitmap:08X})"
+                if tex1_off_from_bitmap is not None
+                else "    mdx_texture1_offset: N/A"
+            )
             print(f"    texture_name: {tex_name_from_bitmap}")
 
         if (bitmap & 0x2) and tex1_off == 0xFFFFFFFF:

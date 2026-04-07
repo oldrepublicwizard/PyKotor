@@ -73,7 +73,11 @@ def main():
 
             for i, (mdl_node, bin_node) in enumerate(zip(self._mdl_nodes, self._bin_nodes)):
                 if bin_node.trimesh:
-                    mdl_vcount = len(mdl_node.mesh.vertex_positions) if mdl_node.mesh and mdl_node.mesh.vertex_positions else 0
+                    mdl_vcount = (
+                        len(mdl_node.mesh.vertex_positions)
+                        if mdl_node.mesh and mdl_node.mesh.vertex_positions
+                        else 0
+                    )
                     bin_vcount = len(bin_node.trimesh.vertices) if bin_node.trimesh.vertices else 0
                     vcount_header = bin_node.trimesh.vertex_count
                     voffset = bin_node.trimesh.vertices_offset
@@ -84,9 +88,13 @@ def main():
                     vertices_size = bin_node.trimesh.vertices_size()
 
                     if mdl_vcount != bin_vcount:
-                        print(f"Node {i} {mdl_node.name}: MDL mesh={mdl_vcount}, trimesh.vertices={bin_vcount}, header={vcount_header}, vsize={vertices_size} <-- MISMATCH")
+                        print(
+                            f"Node {i} {mdl_node.name}: MDL mesh={mdl_vcount}, trimesh.vertices={bin_vcount}, header={vcount_header}, vsize={vertices_size} <-- MISMATCH"
+                        )
                     else:
-                        print(f"Node {i} {mdl_node.name}: {mdl_vcount} vertices, header={vcount_header}, vsize={vertices_size}")
+                        print(
+                            f"Node {i} {mdl_node.name}: {mdl_vcount} vertices, header={vcount_header}, vsize={vertices_size}"
+                        )
 
             print(f"\nTotal vertices from mesh: {total_vertices_from_mesh}")
             print(f"Total vertices from trimesh: {total_vertices_from_trimesh}")

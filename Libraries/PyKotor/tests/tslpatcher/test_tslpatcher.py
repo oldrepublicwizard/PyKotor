@@ -62,7 +62,13 @@ from pykotor.tslpatcher.reader import ConfigReader
 # TODO(th3w1zard1): Make a decorator for test cases that use the _setupIniAndConfig method.
 class TestTSLPatcher(unittest.TestCase):
     def _setupIniAndConfig(self, ini_text: str, mod_path: Path | str = "") -> PatcherConfig:
-        ini = ConfigParser(delimiters="=", allow_no_value=True, strict=False, interpolation=None, inline_comment_prefixes=(";", "#"))
+        ini = ConfigParser(
+            delimiters="=",
+            allow_no_value=True,
+            strict=False,
+            interpolation=None,
+            inline_comment_prefixes=(";", "#"),
+        )
         ini.optionxform = lambda optionstr: optionstr
         ini.read_string(ini_text)
         result = PatcherConfig()
@@ -196,7 +202,13 @@ class TestTSLPatcher(unittest.TestCase):
             RowLabel=1
             Col1=X
         """
-        ini = ConfigParser(delimiters=("="), allow_no_value=True, strict=False, interpolation=None, inline_comment_prefixes=(";", "#"))
+        ini = ConfigParser(
+            delimiters=("="),
+            allow_no_value=True,
+            strict=False,
+            interpolation=None,
+            inline_comment_prefixes=(";", "#"),
+        )
         ini.optionxform = lambda optionstr: optionstr
         ini.read_string(ini_text)
         ConfigReader(ini, self.temp_dir, tslpatchdata_path=self.tslpatchdata_path).load(config)
@@ -266,13 +278,17 @@ class TestTSLPatcher(unittest.TestCase):
 
         # Apply patch end-to-end
         gff = GFF()
-        patch_resource: Callable[[bytes, PatcherMemory, PatchLogger, Game], bytes] = config.patches_gff[0].patch_resource
+        patch_resource: Callable[[bytes, PatcherMemory, PatchLogger, Game], bytes] = (
+            config.patches_gff[0].patch_resource
+        )
         gff_bytes: bytes = bytes_gff(gff)
         patched_bytes: bytes = patch_resource(gff_bytes, PatcherMemory(), PatchLogger(), Game.K1)
         patched: GFF = read_gff(patched_bytes)
         some_struct: GFFStruct | None = patched.root.get_struct("SomeStruct")
         self.assertIsNotNone(some_struct)
-        inside_struct_value: int | None = some_struct.get_uint8("InsideStruct") if some_struct is not None else None
+        inside_struct_value: int | None = (
+            some_struct.get_uint8("InsideStruct") if some_struct is not None else None
+        )
         self.assertEqual(123, inside_struct_value)
 
     def test_gff_add_field_locstring(self):
@@ -308,7 +324,14 @@ class TestTSLPatcher(unittest.TestCase):
         gff.root.set_locstring("Field1", LocalizedString(0))
         memory = PatcherMemory()
         memory.memory_2da[5] = "123"
-        patched = read_gff(cast("bytes", config.patches_gff[0].patch_resource(bytes_gff(gff), memory, PatchLogger(), Game.K1)))
+        patched = read_gff(
+            cast(
+                "bytes",
+                config.patches_gff[0].patch_resource(
+                    bytes_gff(gff), memory, PatchLogger(), Game.K1
+                ),
+            )
+        )
         self.assertEqual(123, patched.root.get_locstring("Field1").stringref)
 
     def test_gff_modifier_path_shorter_than_self_path(self):
@@ -1275,7 +1298,14 @@ class TestTSLPatcher(unittest.TestCase):
         memory = PatcherMemory()
         memory.memory_str[0] = 0
         memory.memory_str[1] = 1
-        twoda = read_2da(cast("bytes", config.patches_2da[0].patch_resource(bytes_2da(twoda), memory, PatchLogger(), Game.K1)))
+        twoda = read_2da(
+            cast(
+                "bytes",
+                config.patches_2da[0].patch_resource(
+                    bytes_2da(twoda), memory, PatchLogger(), Game.K1
+                ),
+            )
+        )
 
         self.assertEqual(["0", "1"], twoda.get_column("Col1"))
         self.assertEqual(["b", "e"], twoda.get_column("Col2"))
@@ -1484,7 +1514,14 @@ class TestTSLPatcher(unittest.TestCase):
         twoda.add_row("0", {"Col1": "123", "Col2": "456"})
 
         memory = PatcherMemory()
-        twoda = read_2da(cast("bytes", config.patches_2da[0].patch_resource(bytes_2da(twoda), memory, PatchLogger(), Game.K1)))
+        twoda = read_2da(
+            cast(
+                "bytes",
+                config.patches_2da[0].patch_resource(
+                    bytes_2da(twoda), memory, PatchLogger(), Game.K1
+                ),
+            )
+        )
 
         self.assertEqual(1, twoda.get_height())
         self.assertEqual("0", twoda.get_label(0))
@@ -1711,7 +1748,14 @@ class TestTSLPatcher(unittest.TestCase):
         twoda.add_row("1", {"Col1": "c", "Col2": "d"})
 
         memory = PatcherMemory()
-        twoda = read_2da(cast("bytes", config.patches_2da[0].patch_resource(bytes_2da(twoda), memory, PatchLogger(), Game.K1)))
+        twoda = read_2da(
+            cast(
+                "bytes",
+                config.patches_2da[0].patch_resource(
+                    bytes_2da(twoda), memory, PatchLogger(), Game.K1
+                ),
+            )
+        )
 
         self.assertEqual(3, twoda.get_height())
         self.assertEqual(["a", "c", "a"], twoda.get_column("Col1"))
@@ -2328,7 +2372,14 @@ class TestTSLPatcher(unittest.TestCase):
                 modifier.load()
 
             self.assertEqual(len(config.patches_tlk.modifiers), 3)
-            modifiers_dict = {mod.token_id: {"text": mod.text, "voiceover": mod.sound, "replace": mod.is_replacement} for mod in config.patches_tlk.modifiers}
+            modifiers_dict = {
+                mod.token_id: {
+                    "text": mod.text,
+                    "voiceover": mod.sound,
+                    "replace": mod.is_replacement,
+                }
+                for mod in config.patches_tlk.modifiers
+            }
             self.assertDictEqual(
                 modifiers_dict,
                 {
@@ -2419,7 +2470,12 @@ class TestTSLPatcher(unittest.TestCase):
             modifier.load()
         self.assertEqual(len(self.config.patches_tlk.modifiers), 26)
         modifiers_dict2: dict[int, dict[str, str | ResRef | bool]] = {
-            mod.token_id: {"text": mod.text, "voiceover": mod.sound, "is_replacement": mod.is_replacement} for mod in modifiers2
+            mod.token_id: {
+                "text": mod.text,
+                "voiceover": mod.sound,
+                "is_replacement": mod.is_replacement,
+            }
+            for mod in modifiers2
         }
         for k in modifiers_dict2.copy():
             modifiers_dict2[k].pop("is_replacement")
@@ -2673,7 +2729,14 @@ class TestTSLPatcher(unittest.TestCase):
         gff_struct = gff_list.add(0)
         gff_struct.set_uint8("Class", 0)
         memory = PatcherMemory()
-        patched = read_gff(cast("bytes", config.patches_gff[0].patch_resource(bytes_gff(gff), memory, PatchLogger(), Game.K1)))
+        patched = read_gff(
+            cast(
+                "bytes",
+                config.patches_gff[0].patch_resource(
+                    bytes_gff(gff), memory, PatchLogger(), Game.K1
+                ),
+            )
+        )
         classlist_0 = patched.root.get_list("ClassList").at(0)
         self.assertIsNotNone(classlist_0)
         assert classlist_0 is not None
@@ -2696,7 +2759,9 @@ class TestTSLPatcher(unittest.TestCase):
         self.assertIsInstance(mod_0, ModifyFieldGFF)
         assert isinstance(mod_0, ModifyFieldGFF), "mod_0 is not an instance of ModifyFieldGFF"
         self.assertIsInstance(mod_0.value, FieldValueConstant)
-        assert isinstance(mod_0.value, FieldValueConstant), "mod_0.value is not an instance of FieldValueConstant"
+        assert isinstance(mod_0.value, FieldValueConstant), (
+            "mod_0.value is not an instance of FieldValueConstant"
+        )
         self.assertEqual("SomeInt", str(mod_0.path))
         self.assertEqual(123, mod_0.value.stored)
 
@@ -2704,7 +2769,14 @@ class TestTSLPatcher(unittest.TestCase):
         gff = GFF()
         gff.root.set_uint8("SomeInt", 1)
         memory = PatcherMemory()
-        patched = read_gff(cast("bytes", config.patches_gff[0].patch_resource(bytes_gff(gff), memory, PatchLogger(), Game.K1)))
+        patched = read_gff(
+            cast(
+                "bytes",
+                config.patches_gff[0].patch_resource(
+                    bytes_gff(gff), memory, PatchLogger(), Game.K1
+                ),
+            )
+        )
         self.assertEqual(123, patched.root.get_uint8("SomeInt"))
 
     def test_gff_modify_type_string(self):
@@ -2724,7 +2796,9 @@ class TestTSLPatcher(unittest.TestCase):
         self.assertIsInstance(mod_0, ModifyFieldGFF)
         assert isinstance(mod_0, ModifyFieldGFF), "mod_0 is not an instance of ModifyFieldGFF"
         self.assertIsInstance(mod_0.value, FieldValueConstant)
-        assert isinstance(mod_0.value, FieldValueConstant), "mod_0.value is not an instance of FieldValueConstant"
+        assert isinstance(mod_0.value, FieldValueConstant), (
+            "mod_0.value is not an instance of FieldValueConstant"
+        )
         self.assertEqual("SomeString", str(mod_0.path))
         self.assertEqual("abc", mod_0.value.stored)
 
@@ -2732,7 +2806,14 @@ class TestTSLPatcher(unittest.TestCase):
         gff = GFF()
         gff.root.set_string("SomeString", "old")
         memory = PatcherMemory()
-        patched = read_gff(cast("bytes", config.patches_gff[0].patch_resource(bytes_gff(gff), memory, PatchLogger(), Game.K1)))
+        patched = read_gff(
+            cast(
+                "bytes",
+                config.patches_gff[0].patch_resource(
+                    bytes_gff(gff), memory, PatchLogger(), Game.K1
+                ),
+            )
+        )
         self.assertEqual("abc", patched.root.get_string("SomeString"))
 
     def test_gff_modify_type_vector3(self):
@@ -2754,7 +2835,9 @@ class TestTSLPatcher(unittest.TestCase):
         self.assertIsInstance(mod_0, ModifyFieldGFF)
         assert isinstance(mod_0, ModifyFieldGFF), "mod_0 is not an instance of ModifyFieldGFF"
         self.assertIsInstance(mod_0.value, FieldValueConstant)
-        assert isinstance(mod_0.value, FieldValueConstant), "mod_0.value is not an instance of FieldValueConstant"
+        assert isinstance(mod_0.value, FieldValueConstant), (
+            "mod_0.value is not an instance of FieldValueConstant"
+        )
         self.assertEqual("SomeVector", str(mod_0.path))
         self.assertEqual(Vector3(1, 2, 3), mod_0.value.stored)
 
@@ -2762,7 +2845,14 @@ class TestTSLPatcher(unittest.TestCase):
         gff = GFF()
         gff.root.set_vector3("SomeVector", Vector3(0, 0, 0))
         memory = PatcherMemory()
-        patched = read_gff(cast("bytes", config.patches_gff[0].patch_resource(bytes_gff(gff), memory, PatchLogger(), Game.K1)))
+        patched = read_gff(
+            cast(
+                "bytes",
+                config.patches_gff[0].patch_resource(
+                    bytes_gff(gff), memory, PatchLogger(), Game.K1
+                ),
+            )
+        )
         self.assertEqual(Vector3(1, 2, 3), patched.root.get_vector3("SomeVector"))
 
     def test_gff_modify_type_vector4(self):
@@ -2784,7 +2874,9 @@ class TestTSLPatcher(unittest.TestCase):
         self.assertIsInstance(mod_0, ModifyFieldGFF)
         assert isinstance(mod_0, ModifyFieldGFF), "mod_0 is not an instance of ModifyFieldGFF"
         self.assertIsInstance(mod_0.value, FieldValueConstant)
-        assert isinstance(mod_0.value, FieldValueConstant), "mod_0.value is not an instance of FieldValueConstant"
+        assert isinstance(mod_0.value, FieldValueConstant), (
+            "mod_0.value is not an instance of FieldValueConstant"
+        )
         self.assertEqual("SomeVector", str(mod_0.path))
         self.assertEqual(Vector4(1, 2, 3, 4), mod_0.value.stored)
 
@@ -2792,7 +2884,14 @@ class TestTSLPatcher(unittest.TestCase):
         gff = GFF()
         gff.root.set_vector4("SomeVector", Vector4(0, 0, 0, 0))
         memory = PatcherMemory()
-        patched = read_gff(cast("bytes", config.patches_gff[0].patch_resource(bytes_gff(gff), memory, PatchLogger(), Game.K1)))
+        patched = read_gff(
+            cast(
+                "bytes",
+                config.patches_gff[0].patch_resource(
+                    bytes_gff(gff), memory, PatchLogger(), Game.K1
+                ),
+            )
+        )
         self.assertEqual(Vector4(1, 2, 3, 4), patched.root.get_vector4("SomeVector"))
 
     def test_gff_modify_type_locstring(self):
@@ -2816,16 +2915,27 @@ class TestTSLPatcher(unittest.TestCase):
             self.assertIsInstance(mod, ModifyFieldGFF)
             assert isinstance(mod, ModifyFieldGFF), "mod is not an instance of ModifyFieldGFF"
             self.assertIsInstance(mod.value, FieldValueConstant)
-            assert isinstance(mod.value, FieldValueConstant), "mod.value is not an instance of FieldValueConstant"
+            assert isinstance(mod.value, FieldValueConstant), (
+                "mod.value is not an instance of FieldValueConstant"
+            )
             self.assertIsInstance(mod.value.stored, LocalizedStringDelta)
-            assert isinstance(mod.value.stored, LocalizedStringDelta), "mod.value.stored is not an instance of LocalizedStringDelta"
+            assert isinstance(mod.value.stored, LocalizedStringDelta), (
+                "mod.value.stored is not an instance of LocalizedStringDelta"
+            )
             self.assertEqual("LocString", str(mod.path))
 
         # Apply (simplified)
         gff = GFF()
         gff.root.set_locstring("LocString", LocalizedString(0))
         memory = PatcherMemory()
-        patched = read_gff(cast("bytes", config.patches_gff[0].patch_resource(bytes_gff(gff), memory, PatchLogger(), Game.K1)))
+        patched = read_gff(
+            cast(
+                "bytes",
+                config.patches_gff[0].patch_resource(
+                    bytes_gff(gff), memory, PatchLogger(), Game.K1
+                ),
+            )
+        )
         locstr = patched.root.get_locstring("LocString")
         self.assertEqual(5, locstr.stringref)
         self.assertEqual("hello", locstr.get(Language.ENGLISH, Gender.MALE))
@@ -2848,7 +2958,9 @@ class TestTSLPatcher(unittest.TestCase):
         self.assertIsInstance(mod_0, ModifyFieldGFF)
         assert isinstance(mod_0, ModifyFieldGFF), "mod_0 is not an instance of ModifyFieldGFF"
         self.assertIsInstance(mod_0.value, FieldValue2DAMemory)
-        assert isinstance(mod_0.value, FieldValue2DAMemory), "mod_0.value is not an instance of FieldValue2DAMemory"
+        assert isinstance(mod_0.value, FieldValue2DAMemory), (
+            "mod_0.value is not an instance of FieldValue2DAMemory"
+        )
         self.assertEqual(12, mod_0.value.token_id)
 
         # Apply
@@ -2861,7 +2973,14 @@ class TestTSLPatcher(unittest.TestCase):
         from pykotor.tslpatcher.mods.gff import ModifyFieldGFF
 
         config.patches_gff[0].modifiers.append(ModifyFieldGFF("IntField", FieldValue2DAMemory(12)))
-        patched = read_gff(cast("bytes", config.patches_gff[0].patch_resource(bytes_gff(gff), memory, PatchLogger(), Game.K1)))
+        patched = read_gff(
+            cast(
+                "bytes",
+                config.patches_gff[0].patch_resource(
+                    bytes_gff(gff), memory, PatchLogger(), Game.K1
+                ),
+            )
+        )
         self.assertEqual("123", patched.root.get_string("SomeField"))
         self.assertEqual(123, patched.root.get_uint8("IntField"))
 
@@ -2883,12 +3002,18 @@ class TestTSLPatcher(unittest.TestCase):
         self.assertIsInstance(mod_0, ModifyFieldGFF)
         assert isinstance(mod_0, ModifyFieldGFF), "mod_0 is not an instance of ModifyFieldGFF"
         self.assertIsInstance(mod_0.value, FieldValueConstant)
-        assert isinstance(mod_0.value, FieldValueConstant), "mod_0.value is not an instance of FieldValueConstant"
+        assert isinstance(mod_0.value, FieldValueConstant), (
+            "mod_0.value is not an instance of FieldValueConstant"
+        )
         self.assertIsInstance(mod_0.value.stored, LocalizedStringDelta)
-        assert isinstance(mod_0.value.stored, LocalizedStringDelta), "mod_0.value.stored is not an instance of LocalizedStringDelta"
+        assert isinstance(mod_0.value.stored, LocalizedStringDelta), (
+            "mod_0.value.stored is not an instance of LocalizedStringDelta"
+        )
         self.assertEqual("LocString", str(mod_0.path))
         self.assertIsInstance(mod_0.value.stored.stringref, FieldValueTLKMemory)
-        assert isinstance(mod_0.value.stored.stringref, FieldValueTLKMemory), "mod_0.value.stored.stringref is not an instance of FieldValueTLKMemory"
+        assert isinstance(mod_0.value.stored.stringref, FieldValueTLKMemory), (
+            "mod_0.value.stored.stringref is not an instance of FieldValueTLKMemory"
+        )
         self.assertEqual(5, mod_0.value.stored.stringref.token_id)
 
         mod_1 = config.patches_gff[0].modifiers[1]
@@ -2897,7 +3022,9 @@ class TestTSLPatcher(unittest.TestCase):
         from pykotor.tslpatcher.mods.gff import FieldValueTLKMemory
 
         self.assertIsInstance(mod_1.value, FieldValueTLKMemory)
-        assert isinstance(mod_1.value, FieldValueTLKMemory), "mod_1.value is not an instance of FieldValueTLKMemory"
+        assert isinstance(mod_1.value, FieldValueTLKMemory), (
+            "mod_1.value is not an instance of FieldValueTLKMemory"
+        )
         self.assertEqual(2, mod_1.value.token_id)
 
         # Apply
@@ -2907,7 +3034,14 @@ class TestTSLPatcher(unittest.TestCase):
         memory = PatcherMemory()
         memory.memory_str[5] = 123
         memory.memory_str[2] = 456
-        patched = read_gff(cast("bytes", config.patches_gff[0].patch_resource(bytes_gff(gff), memory, PatchLogger(), Game.K1)))
+        patched = read_gff(
+            cast(
+                "bytes",
+                config.patches_gff[0].patch_resource(
+                    bytes_gff(gff), memory, PatchLogger(), Game.K1
+                ),
+            )
+        )
         self.assertEqual(123, patched.root.get_locstring("LocString").stringref)
         self.assertEqual("456", patched.root.get_string("SomeField"))
 
@@ -2976,13 +3110,22 @@ class TestTSLPatcher(unittest.TestCase):
             self.assertIsInstance(mod, AddFieldGFF)
             assert isinstance(mod, AddFieldGFF), "mod is not an instance of AddFieldGFF"
             self.assertIsInstance(mod.value, FieldValueConstant)
-            assert isinstance(mod.value, FieldValueConstant), "mod.value is not an instance of FieldValueConstant"
+            assert isinstance(mod.value, FieldValueConstant), (
+                "mod.value is not an instance of FieldValueConstant"
+            )
             self.assertEqual(123, mod.value.stored)
 
         # Apply
         gff = GFF()
         memory = PatcherMemory()
-        patched = read_gff(cast("bytes", config.patches_gff[0].patch_resource(bytes_gff(gff), memory, PatchLogger(), Game.K1)))
+        patched = read_gff(
+            cast(
+                "bytes",
+                config.patches_gff[0].patch_resource(
+                    bytes_gff(gff), memory, PatchLogger(), Game.K1
+                ),
+            )
+        )
         self.assertEqual(123, patched.root.get_uint8("SomeField"))
         self.assertEqual(123, patched.root.get_int8("SomeField2"))
         self.assertEqual(123, patched.root.get_uint16("SomeField3"))
@@ -3021,13 +3164,22 @@ class TestTSLPatcher(unittest.TestCase):
             self.assertIsInstance(mod, AddFieldGFF)
             assert isinstance(mod, AddFieldGFF), "mod is not an instance of AddFieldGFF"
             self.assertIsInstance(mod.value, FieldValueConstant)
-            assert isinstance(mod.value, FieldValueConstant), "mod.value is not an instance of FieldValueConstant"
+            assert isinstance(mod.value, FieldValueConstant), (
+                "mod.value is not an instance of FieldValueConstant"
+            )
             self.assertEqual(1.23, mod.value.stored)
 
         # Apply
         gff = GFF()
         memory = PatcherMemory()
-        patched = read_gff(cast("bytes", config.patches_gff[0].patch_resource(bytes_gff(gff), memory, PatchLogger(), Game.K1)))
+        patched = read_gff(
+            cast(
+                "bytes",
+                config.patches_gff[0].patch_resource(
+                    bytes_gff(gff), memory, PatchLogger(), Game.K1
+                ),
+            )
+        )
         self.assertAlmostEqual(1.23, patched.root.get_single("SomeField"), places=2)
         self.assertEqual(1.23, patched.root.get_double("SomeField2"))
 
@@ -3052,13 +3204,22 @@ class TestTSLPatcher(unittest.TestCase):
         self.assertIsInstance(mod_0, AddFieldGFF)
         assert isinstance(mod_0, AddFieldGFF), "mod_0 is not an instance of AddFieldGFF"
         self.assertIsInstance(mod_0.value, FieldValueConstant)
-        assert isinstance(mod_0.value, FieldValueConstant), "mod_0.value is not an instance of FieldValueConstant"
+        assert isinstance(mod_0.value, FieldValueConstant), (
+            "mod_0.value is not an instance of FieldValueConstant"
+        )
         self.assertEqual("abc", mod_0.value.stored)
 
         # Apply
         gff = GFF()
         memory = PatcherMemory()
-        patched = read_gff(cast("bytes", config.patches_gff[0].patch_resource(bytes_gff(gff), memory, PatchLogger(), Game.K1)))
+        patched = read_gff(
+            cast(
+                "bytes",
+                config.patches_gff[0].patch_resource(
+                    bytes_gff(gff), memory, PatchLogger(), Game.K1
+                ),
+            )
+        )
         self.assertEqual("abc", patched.root.get_string("SomeField"))
 
     def test_gff_add_vector3(self):
@@ -3084,13 +3245,22 @@ class TestTSLPatcher(unittest.TestCase):
         self.assertIsInstance(mod_0, AddFieldGFF)
         assert isinstance(mod_0, AddFieldGFF), "mod_0 is not an instance of AddFieldGFF"
         self.assertIsInstance(mod_0.value, FieldValueConstant)
-        assert isinstance(mod_0.value, FieldValueConstant), "mod_0.value is not an instance of FieldValueConstant"
+        assert isinstance(mod_0.value, FieldValueConstant), (
+            "mod_0.value is not an instance of FieldValueConstant"
+        )
         self.assertEqual(Vector3(1, 2, 3), mod_0.value.stored)
 
         # Apply
         gff = GFF()
         memory = PatcherMemory()
-        patched = read_gff(cast("bytes", config.patches_gff[0].patch_resource(bytes_gff(gff), memory, PatchLogger(), Game.K1)))
+        patched = read_gff(
+            cast(
+                "bytes",
+                config.patches_gff[0].patch_resource(
+                    bytes_gff(gff), memory, PatchLogger(), Game.K1
+                ),
+            )
+        )
         self.assertEqual(Vector3(1, 2, 3), patched.root.get_vector3("SomeField"))
 
     def test_gff_add_vector4(self):
@@ -3116,13 +3286,22 @@ class TestTSLPatcher(unittest.TestCase):
         self.assertIsInstance(mod_0, AddFieldGFF)
         assert isinstance(mod_0, AddFieldGFF), "mod_0 is not an instance of AddFieldGFF"
         self.assertIsInstance(mod_0.value, FieldValueConstant)
-        assert isinstance(mod_0.value, FieldValueConstant), "mod_0.value is not an instance of FieldValueConstant"
+        assert isinstance(mod_0.value, FieldValueConstant), (
+            "mod_0.value is not an instance of FieldValueConstant"
+        )
         self.assertEqual(Vector4(1, 2, 3, 4), mod_0.value.stored)
 
         # Apply
         gff = GFF()
         memory = PatcherMemory()
-        patched = read_gff(cast("bytes", config.patches_gff[0].patch_resource(bytes_gff(gff), memory, PatchLogger(), Game.K1)))
+        patched = read_gff(
+            cast(
+                "bytes",
+                config.patches_gff[0].patch_resource(
+                    bytes_gff(gff), memory, PatchLogger(), Game.K1
+                ),
+            )
+        )
         self.assertEqual(Vector4(1, 2, 3, 4), patched.root.get_vector4("SomeField"))
 
     def test_gff_add_resref(self):
@@ -3146,13 +3325,22 @@ class TestTSLPatcher(unittest.TestCase):
         self.assertIsInstance(mod_0, AddFieldGFF)
         assert isinstance(mod_0, AddFieldGFF), "mod_0 is not an instance of AddFieldGFF"
         self.assertIsInstance(mod_0.value, FieldValueConstant)
-        assert isinstance(mod_0.value, FieldValueConstant), "mod_0.value is not an instance of FieldValueConstant"
+        assert isinstance(mod_0.value, FieldValueConstant), (
+            "mod_0.value is not an instance of FieldValueConstant"
+        )
         self.assertEqual(ResRef("abc"), mod_0.value.stored)
 
         # Apply
         gff = GFF()
         memory = PatcherMemory()
-        patched = read_gff(cast("bytes", config.patches_gff[0].patch_resource(bytes_gff(gff), memory, PatchLogger(), Game.K1)))
+        patched = read_gff(
+            cast(
+                "bytes",
+                config.patches_gff[0].patch_resource(
+                    bytes_gff(gff), memory, PatchLogger(), Game.K1
+                ),
+            )
+        )
         self.assertEqual(ResRef("abc"), patched.root.get_resref("SomeField"))
 
     def test_gff_add_locstring(self):
@@ -3213,7 +3401,14 @@ class TestTSLPatcher(unittest.TestCase):
         gff = GFF()
         memory = PatcherMemory()
         memory.memory_str[8] = 456
-        patched = read_gff(cast("bytes", config.patches_gff[0].patch_resource(bytes_gff(gff), memory, PatchLogger(), Game.K1)))
+        patched = read_gff(
+            cast(
+                "bytes",
+                config.patches_gff[0].patch_resource(
+                    bytes_gff(gff), memory, PatchLogger(), Game.K1
+                ),
+            )
+        )
         locstr = patched.root.get_locstring("SomeField")
         self.assertEqual(123, locstr.stringref)
         self.assertEqual("abc", locstr.get(Language.ENGLISH, Gender.MALE))
@@ -3269,7 +3464,14 @@ class TestTSLPatcher(unittest.TestCase):
         # Apply
         gff = GFF()
         memory = PatcherMemory()
-        patched = read_gff(cast("bytes", config.patches_gff[0].patch_resource(bytes_gff(gff), memory, PatchLogger(), Game.K1)))
+        patched = read_gff(
+            cast(
+                "bytes",
+                config.patches_gff[0].patch_resource(
+                    bytes_gff(gff), memory, PatchLogger(), Game.K1
+                ),
+            )
+        )
         somelist = patched.root.get_list("SomeList")
         self.assertIsNotNone(somelist)
         self.assertEqual(1, len(somelist))
@@ -3297,7 +3499,14 @@ class TestTSLPatcher(unittest.TestCase):
         gff.root.set_uint8("Field1", 1)
 
         memory = PatcherMemory()
-        gff = read_gff(cast("bytes", config.patches_gff[0].patch_resource(bytes_gff(gff), memory, PatchLogger(), Game.K1)))
+        gff = read_gff(
+            cast(
+                "bytes",
+                config.patches_gff[0].patch_resource(
+                    bytes_gff(gff), memory, PatchLogger(), Game.K1
+                ),
+            )
+        )
 
         self.assertEqual(2, gff.root.get_uint8("Field1"))
 
@@ -3315,7 +3524,14 @@ class TestTSLPatcher(unittest.TestCase):
         gff.root.set_int8("Field1", 1)
 
         memory = PatcherMemory()
-        gff = read_gff(cast("bytes", config.patches_gff[0].patch_resource(bytes_gff(gff), memory, PatchLogger(), Game.K1)))
+        gff = read_gff(
+            cast(
+                "bytes",
+                config.patches_gff[0].patch_resource(
+                    bytes_gff(gff), memory, PatchLogger(), Game.K1
+                ),
+            )
+        )
 
         self.assertEqual(2, gff.root.get_int8("Field1"))
 
@@ -3333,7 +3549,14 @@ class TestTSLPatcher(unittest.TestCase):
         gff.root.set_uint16("Field1", 1)
 
         memory = PatcherMemory()
-        gff = read_gff(cast("bytes", config.patches_gff[0].patch_resource(bytes_gff(gff), memory, PatchLogger(), Game.K1)))
+        gff = read_gff(
+            cast(
+                "bytes",
+                config.patches_gff[0].patch_resource(
+                    bytes_gff(gff), memory, PatchLogger(), Game.K1
+                ),
+            )
+        )
 
         self.assertEqual(2, gff.root.get_uint16("Field1"))
 
@@ -3351,7 +3574,14 @@ class TestTSLPatcher(unittest.TestCase):
         gff.root.set_int16("Field1", 1)
 
         memory = PatcherMemory()
-        gff = read_gff(cast("bytes", config.patches_gff[0].patch_resource(bytes_gff(gff), memory, PatchLogger(), Game.K1)))
+        gff = read_gff(
+            cast(
+                "bytes",
+                config.patches_gff[0].patch_resource(
+                    bytes_gff(gff), memory, PatchLogger(), Game.K1
+                ),
+            )
+        )
 
         self.assertEqual(2, gff.root.get_int16("Field1"))
 
@@ -3369,7 +3599,14 @@ class TestTSLPatcher(unittest.TestCase):
         gff.root.set_uint32("Field1", 1)
 
         memory = PatcherMemory()
-        gff = read_gff(cast("bytes", config.patches_gff[0].patch_resource(bytes_gff(gff), memory, PatchLogger(), Game.K1)))
+        gff = read_gff(
+            cast(
+                "bytes",
+                config.patches_gff[0].patch_resource(
+                    bytes_gff(gff), memory, PatchLogger(), Game.K1
+                ),
+            )
+        )
 
         self.assertEqual(2, gff.root.get_uint32("Field1"))
 
@@ -3387,7 +3624,14 @@ class TestTSLPatcher(unittest.TestCase):
         gff.root.set_int32("Field1", 1)
 
         memory = PatcherMemory()
-        gff = read_gff(cast("bytes", config.patches_gff[0].patch_resource(bytes_gff(gff), memory, PatchLogger(), Game.K1)))
+        gff = read_gff(
+            cast(
+                "bytes",
+                config.patches_gff[0].patch_resource(
+                    bytes_gff(gff), memory, PatchLogger(), Game.K1
+                ),
+            )
+        )
 
         self.assertEqual(2, gff.root.get_int32("Field1"))
 
@@ -3405,7 +3649,14 @@ class TestTSLPatcher(unittest.TestCase):
         gff.root.set_uint64("Field1", 1)
 
         memory = PatcherMemory()
-        gff = read_gff(cast("bytes", config.patches_gff[0].patch_resource(bytes_gff(gff), memory, PatchLogger(), Game.K1)))
+        gff = read_gff(
+            cast(
+                "bytes",
+                config.patches_gff[0].patch_resource(
+                    bytes_gff(gff), memory, PatchLogger(), Game.K1
+                ),
+            )
+        )
 
         self.assertEqual(2, gff.root.get_uint64("Field1"))
 
@@ -3423,7 +3674,14 @@ class TestTSLPatcher(unittest.TestCase):
         gff.root.set_int64("Field1", 1)
 
         memory = PatcherMemory()
-        gff = read_gff(cast("bytes", config.patches_gff[0].patch_resource(bytes_gff(gff), memory, PatchLogger(), Game.K1)))
+        gff = read_gff(
+            cast(
+                "bytes",
+                config.patches_gff[0].patch_resource(
+                    bytes_gff(gff), memory, PatchLogger(), Game.K1
+                ),
+            )
+        )
 
         self.assertEqual(2, gff.root.get_int64("Field1"))
 
@@ -3441,7 +3699,14 @@ class TestTSLPatcher(unittest.TestCase):
         gff.root.set_single("Field1", 1.234)
 
         memory = PatcherMemory()
-        gff = read_gff(cast("bytes", config.patches_gff[0].patch_resource(bytes_gff(gff), memory, PatchLogger(), Game.K1)))
+        gff = read_gff(
+            cast(
+                "bytes",
+                config.patches_gff[0].patch_resource(
+                    bytes_gff(gff), memory, PatchLogger(), Game.K1
+                ),
+            )
+        )
 
         self.assertAlmostEqual(2.345, gff.root.get_single("Field1"), places=2)
 
@@ -3459,7 +3724,14 @@ class TestTSLPatcher(unittest.TestCase):
         gff.root.set_double("Field1", 1.234567)
 
         memory = PatcherMemory()
-        gff = read_gff(cast("bytes", config.patches_gff[0].patch_resource(bytes_gff(gff), memory, PatchLogger(), Game.K1)))
+        gff = read_gff(
+            cast(
+                "bytes",
+                config.patches_gff[0].patch_resource(
+                    bytes_gff(gff), memory, PatchLogger(), Game.K1
+                ),
+            )
+        )
 
         self.assertEqual(2.345678, gff.root.get_double("Field1"))
 
@@ -3477,7 +3749,14 @@ class TestTSLPatcher(unittest.TestCase):
         gff.root.set_string("Field1", "abc")
 
         memory = PatcherMemory()
-        gff = read_gff(cast("bytes", config.patches_gff[0].patch_resource(bytes_gff(gff), memory, PatchLogger(), Game.K1)))
+        gff = read_gff(
+            cast(
+                "bytes",
+                config.patches_gff[0].patch_resource(
+                    bytes_gff(gff), memory, PatchLogger(), Game.K1
+                ),
+            )
+        )
 
         self.assertEqual("def", gff.root.get_string("Field1"))
 
@@ -3495,7 +3774,14 @@ class TestTSLPatcher(unittest.TestCase):
         gff.root.set_locstring("Field1", LocalizedString(0))
 
         memory = PatcherMemory()
-        gff = read_gff(cast("bytes", config.patches_gff[0].patch_resource(bytes_gff(gff), memory, PatchLogger(), Game.K1)))
+        gff = read_gff(
+            cast(
+                "bytes",
+                config.patches_gff[0].patch_resource(
+                    bytes_gff(gff), memory, PatchLogger(), Game.K1
+                ),
+            )
+        )
 
         self.assertEqual(1, gff.root.get_locstring("Field1").stringref)
 
@@ -3515,7 +3801,14 @@ class TestTSLPatcher(unittest.TestCase):
         gff.root.set_vector3("Field1", Vector3(0, 1, 2))
 
         memory = PatcherMemory()
-        gff = read_gff(cast("bytes", config.patches_gff[0].patch_resource(bytes_gff(gff), memory, PatchLogger(), Game.K1)))
+        gff = read_gff(
+            cast(
+                "bytes",
+                config.patches_gff[0].patch_resource(
+                    bytes_gff(gff), memory, PatchLogger(), Game.K1
+                ),
+            )
+        )
 
         self.assertEqual(Vector3(1, 2, 3), gff.root.get_vector3("Field1"))
 
@@ -3535,7 +3828,14 @@ class TestTSLPatcher(unittest.TestCase):
         gff.root.set_vector4("Field1", Vector4(0, 1, 2, 3))
 
         memory = PatcherMemory()
-        gff = read_gff(cast("bytes", config.patches_gff[0].patch_resource(bytes_gff(gff), memory, PatchLogger(), Game.K1)))
+        gff = read_gff(
+            cast(
+                "bytes",
+                config.patches_gff[0].patch_resource(
+                    bytes_gff(gff), memory, PatchLogger(), Game.K1
+                ),
+            )
+        )
 
         self.assertEqual(Vector4(1, 2, 3, 4), gff.root.get_vector4("Field1"))
 
@@ -3557,7 +3857,14 @@ class TestTSLPatcher(unittest.TestCase):
         gff_struct.set_string("String", "")
 
         memory = PatcherMemory()
-        gff = read_gff(cast("bytes", config.patches_gff[0].patch_resource(bytes_gff(gff), memory, PatchLogger(), Game.K1)))
+        gff = read_gff(
+            cast(
+                "bytes",
+                config.patches_gff[0].patch_resource(
+                    bytes_gff(gff), memory, PatchLogger(), Game.K1
+                ),
+            )
+        )
         patched_gff_list = gff.root.get_list("List")
         patched_gff_struct = patched_gff_list.at(0)
 
@@ -3582,7 +3889,14 @@ class TestTSLPatcher(unittest.TestCase):
 
         memory = PatcherMemory()
         memory.memory_2da[5] = "123"
-        gff = read_gff(cast("bytes", config.patches_gff[0].patch_resource(bytes_gff(gff), memory, PatchLogger(), Game.K1)))
+        gff = read_gff(
+            cast(
+                "bytes",
+                config.patches_gff[0].patch_resource(
+                    bytes_gff(gff), memory, PatchLogger(), Game.K1
+                ),
+            )
+        )
 
         self.assertEqual("123", gff.root.get_string("String"))
         self.assertEqual(123, gff.root.get_uint8("Integer"))
@@ -3604,7 +3918,14 @@ class TestTSLPatcher(unittest.TestCase):
 
         memory = PatcherMemory()
         memory.memory_str[5] = 123
-        gff = read_gff(cast("bytes", config.patches_gff[0].patch_resource(bytes_gff(gff), memory, PatchLogger(), Game.K1)))
+        gff = read_gff(
+            cast(
+                "bytes",
+                config.patches_gff[0].patch_resource(
+                    bytes_gff(gff), memory, PatchLogger(), Game.K1
+                ),
+            )
+        )
 
         self.assertEqual("123", gff.root.get_string("String"))
         self.assertEqual(123, gff.root.get_uint8("Integer"))
@@ -3640,7 +3961,14 @@ class TestTSLPatcher(unittest.TestCase):
         gff = GFF()
 
         memory = PatcherMemory()
-        gff = read_gff(cast("bytes", config.patches_gff[0].patch_resource(bytes_gff(gff), memory, PatchLogger(), Game.K1)))
+        gff = read_gff(
+            cast(
+                "bytes",
+                config.patches_gff[0].patch_resource(
+                    bytes_gff(gff), memory, PatchLogger(), Game.K1
+                ),
+            )
+        )
 
         self.assertIsNotNone(gff.root.get_list("List"))
         some_list_entry_0 = gff.root.get_list("List").at(0)
@@ -3671,7 +3999,14 @@ class TestTSLPatcher(unittest.TestCase):
         gff_struct = gff_list.add(0)
 
         memory = PatcherMemory()
-        gff = read_gff(cast("bytes", config.patches_gff[0].patch_resource(bytes_gff(gff), memory, PatchLogger(), Game.K1)))
+        gff = read_gff(
+            cast(
+                "bytes",
+                config.patches_gff[0].patch_resource(
+                    bytes_gff(gff), memory, PatchLogger(), Game.K1
+                ),
+            )
+        )
         patched_gff_list = gff.root.get_list("List")
         patched_gff_struct = patched_gff_list.at(0)
 
@@ -3706,7 +4041,14 @@ class TestTSLPatcher(unittest.TestCase):
 
         memory = PatcherMemory()
         memory.memory_2da[5] = "123"
-        gff = read_gff(cast("bytes", config.patches_gff[0].patch_resource(bytes_gff(gff), memory, PatchLogger(), Game.K1)))
+        gff = read_gff(
+            cast(
+                "bytes",
+                config.patches_gff[0].patch_resource(
+                    bytes_gff(gff), memory, PatchLogger(), Game.K1
+                ),
+            )
+        )
 
         self.assertEqual("123", gff.root.get_string("String"))
         self.assertEqual(123, gff.root.get_uint8("Integer"))
@@ -3738,7 +4080,14 @@ class TestTSLPatcher(unittest.TestCase):
 
         memory = PatcherMemory()
         memory.memory_str[5] = 123
-        gff = read_gff(cast("bytes", config.patches_gff[0].patch_resource(bytes_gff(gff), memory, PatchLogger(), Game.K1)))
+        gff = read_gff(
+            cast(
+                "bytes",
+                config.patches_gff[0].patch_resource(
+                    bytes_gff(gff), memory, PatchLogger(), Game.K1
+                ),
+            )
+        )
 
         self.assertEqual("123", gff.root.get_string("String"))
         self.assertEqual(123, gff.root.get_uint8("Integer"))
@@ -3779,7 +4128,14 @@ class TestTSLPatcher(unittest.TestCase):
         gff_list = gff.root.set_list("List", GFFList())
 
         memory = PatcherMemory()
-        gff = read_gff(cast("bytes", config.patches_gff[0].patch_resource(bytes_gff(gff), memory, PatchLogger(), Game.K1)))
+        gff = read_gff(
+            cast(
+                "bytes",
+                config.patches_gff[0].patch_resource(
+                    bytes_gff(gff), memory, PatchLogger(), Game.K1
+                ),
+            )
+        )
         patched_gff_list = gff.root.get_list("List")
         some_list_entry_0 = patched_gff_list.at(0)
         self.assertIsNotNone(some_list_entry_0)
@@ -3824,7 +4180,9 @@ class TestTSLPatcher(unittest.TestCase):
         gff.root.set_list("List", GFFList())
 
         memory = PatcherMemory()
-        gff = read_gff(config.patches_gff[0].patch_resource(bytes_gff(gff), memory, PatchLogger(), Game.K1))
+        gff = read_gff(
+            config.patches_gff[0].patch_resource(bytes_gff(gff), memory, PatchLogger(), Game.K1)
+        )
 
         self.assertEqual("1", memory.memory_2da[12])
 
@@ -3846,7 +4204,9 @@ class TestTSLPatcher(unittest.TestCase):
         memory = PatcherMemory()
         from pykotor.resource.formats.ssf.ssf_auto import bytes_ssf, read_ssf
 
-        ssf = read_ssf(config.patches_ssf[0].patch_resource(bytes_ssf(ssf), memory, PatchLogger(), Game.K1))
+        ssf = read_ssf(
+            config.patches_ssf[0].patch_resource(bytes_ssf(ssf), memory, PatchLogger(), Game.K1)
+        )
 
         self.assertEqual(5, ssf.get(SSFSound.BATTLE_CRY_1))
 
@@ -3866,7 +4226,9 @@ class TestTSLPatcher(unittest.TestCase):
         memory.memory_2da[5] = "123"
         from pykotor.resource.formats.ssf.ssf_auto import bytes_ssf, read_ssf
 
-        ssf = read_ssf(config.patches_ssf[0].patch_resource(bytes_ssf(ssf), memory, PatchLogger(), Game.K1))
+        ssf = read_ssf(
+            config.patches_ssf[0].patch_resource(bytes_ssf(ssf), memory, PatchLogger(), Game.K1)
+        )
 
         self.assertEqual(123, ssf.get(SSFSound.BATTLE_CRY_2))
 
@@ -3886,7 +4248,9 @@ class TestTSLPatcher(unittest.TestCase):
         memory.memory_str[5] = 321
         from pykotor.resource.formats.ssf.ssf_auto import bytes_ssf, read_ssf
 
-        ssf = read_ssf(config.patches_ssf[0].patch_resource(bytes_ssf(ssf), memory, PatchLogger(), Game.K1))
+        ssf = read_ssf(
+            config.patches_ssf[0].patch_resource(bytes_ssf(ssf), memory, PatchLogger(), Game.K1)
+        )
 
         self.assertEqual(321, ssf.get(SSFSound.BATTLE_CRY_3))
 

@@ -48,7 +48,11 @@ def _get_cached_resource_types() -> list[tuple[ResourceType, str]]:
     global _RESOURCE_TYPE_CACHE  # noqa: PLW0603
     if _RESOURCE_TYPE_CACHE is None:
         _RESOURCE_TYPE_CACHE = sorted(
-            [(rt, f".{rt.extension}") for rt in ResourceType.__members__.values() if not rt.is_invalid and rt.extension],
+            [
+                (rt, f".{rt.extension}")
+                for rt in ResourceType.__members__.values()
+                if not rt.is_invalid and rt.extension
+            ],
             key=lambda x: len(x[1]),
             reverse=True,  # Longest extensions first (handles multi-part extensions like "res.xml")
         )
@@ -172,7 +176,9 @@ def _extract_from_nested_capsules(
             import errno
 
             msg = f"Resource '{part}' not found in nested capsule"
-            raise FileNotFoundError(errno.ENOENT, msg, str(real_path / "/".join(nested_parts[: i + 1])))
+            raise FileNotFoundError(
+                errno.ENOENT, msg, str(real_path / "/".join(nested_parts[: i + 1]))
+            )
 
         res_offset, res_size = target_resource
 
@@ -183,7 +189,9 @@ def _extract_from_nested_capsules(
     return current_data
 
 
-def _read_erf_resources(reader: BinaryReader, capsule_data: bytes) -> list[tuple[str, ResourceType, int, int]]:
+def _read_erf_resources(
+    reader: BinaryReader, capsule_data: bytes
+) -> list[tuple[str, ResourceType, int, int]]:
     """Read resource entries from ERF capsule data.
 
     Args:
@@ -224,7 +232,9 @@ def _read_erf_resources(reader: BinaryReader, capsule_data: bytes) -> list[tuple
     return resources
 
 
-def _read_rim_resources(reader: BinaryReader, capsule_data: bytes) -> list[tuple[str, ResourceType, int, int]]:
+def _read_rim_resources(
+    reader: BinaryReader, capsule_data: bytes
+) -> list[tuple[str, ResourceType, int, int]]:
     """Read resource entries from RIM capsule data.
 
     Args:
@@ -286,7 +296,9 @@ class FileResource:
         # This assert sometimes fails when reading dbcs or other weird encoding.
         # for example attempting to read japanese filenames got me 'resource name '?????? (??2Quad) ' cannot start/end with a whitespace'
         # I don't understand what the point of high-level unicode python strings if I can't even work through the issue?
-        assert resname == resname.strip(), f"FileResource cannot be constructed, resource name '{resname}' cannot start/end with whitespace."
+        assert resname == resname.strip(), (
+            f"FileResource cannot be constructed, resource name '{resname}' cannot start/end with whitespace."
+        )
         self._identifier: ResourceIdentifier = ResourceIdentifier(resname, restype)
 
         self._resname: str = resname
@@ -301,7 +313,11 @@ class FileResource:
         self.inside_capsule: bool = filepath_str.endswith(_CAPSULE_EXTENSIONS)
         self.inside_bif: bool = filepath_str.endswith(".bif")
 
-        self._path_ident_obj: CaseAwarePath = CaseAwarePath(self._filepath / str(self._identifier) if self.inside_capsule or self.inside_bif else self._filepath)
+        self._path_ident_obj: CaseAwarePath = CaseAwarePath(
+            self._filepath / str(self._identifier)
+            if self.inside_capsule or self.inside_bif
+            else self._filepath
+        )
 
     def __repr__(self):
         return f"{self.__class__.__name__}(resname='{self._resname}', restype={self._restype!r}, size={self._size}, offset={self._offset}, filepath={self._filepath!r})"
@@ -564,7 +580,9 @@ class ResourceResult:
     restype: ResourceType
     filepath: Path
     data: bytes
-    _resource: FileResource | None = field(repr=False, default=None, init=False)  # Metadata is hidden in the representation
+    _resource: FileResource | None = field(
+        repr=False, default=None, init=False
+    )  # Metadata is hidden in the representation
 
     def __iter__(self) -> Iterator[str | ResourceType | Path | bytes]:
         """This method enables unpacking like tuple behavior."""
@@ -580,7 +598,12 @@ class ResourceResult:
         if self is other:
             return True
         if isinstance(other, ResourceResult):
-            return self.filepath == other.filepath and self.resname == other.resname and self.restype == other.restype and self.data == other.data
+            return (
+                self.filepath == other.filepath
+                and self.resname == other.resname
+                and self.restype == other.restype
+                and self.data == other.data
+            )
         return NotImplemented  # type: ignore[no-any-return]
 
     def __len__(self) -> Literal[4]:
@@ -638,7 +661,9 @@ class LocationResult:
     filepath: Path
     offset: int
     size: int
-    _resource: FileResource | None = field(repr=False, default=None, init=False)  # Metadata is hidden in the representation
+    _resource: FileResource | None = field(
+        repr=False, default=None, init=False
+    )  # Metadata is hidden in the representation
 
     def __iter__(self) -> Iterator[Path | int]:
         """This method enables unpacking like tuple behavior."""
@@ -654,7 +679,11 @@ class LocationResult:
         if self is other:
             return True
         if isinstance(other, LocationResult):
-            return self.filepath == other.filepath and self.size == other.size and self.offset == other.offset
+            return (
+                self.filepath == other.filepath
+                and self.size == other.size
+                and self.offset == other.offset
+            )
         return NotImplemented  # type: ignore[no-any-return]
 
     def __len__(self) -> Literal[3]:

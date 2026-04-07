@@ -6,19 +6,23 @@ from kaitaistruct import KaitaiStruct, KaitaiStream, BytesIO
 from enum import IntEnum
 
 
-if getattr(kaitaistruct, 'API_VERSION', (0, 9)) < (0, 11):
-    raise Exception("Incompatible Kaitai Struct Python API: 0.11 or later is required, but you have %s" % (kaitaistruct.__version__))
+if getattr(kaitaistruct, "API_VERSION", (0, 9)) < (0, 11):
+    raise Exception(
+        "Incompatible Kaitai Struct Python API: 0.11 or later is required, but you have %s"
+        % (kaitaistruct.__version__)
+    )
+
 
 class Mdl(KaitaiStruct):
     """BioWare MDL Model Format
-    
+
     The MDL file contains:
     - File header (12 bytes)
     - Model header (196 bytes) which begins with a Geometry header (80 bytes)
     - Name offset array + name strings
     - Animation offset array + animation headers + animation nodes
     - Node hierarchy with geometry data
-    
+
     """
 
     class ControllerType(IntEnum):
@@ -53,6 +57,7 @@ class Mdl(KaitaiStruct):
         danglymesh = 289
         aabb = 545
         lightsaber = 2081
+
     def __init__(self, _io, _parent=None, _root=None):
         super(Mdl, self).__init__(_io)
         self._parent = _parent
@@ -63,46 +68,42 @@ class Mdl(KaitaiStruct):
         self.file_header = Mdl.FileHeader(self._io, self, self._root)
         self.model_header = Mdl.ModelHeader(self._io, self, self._root)
 
-
     def _fetch_instances(self):
         pass
         self.file_header._fetch_instances()
         self.model_header._fetch_instances()
         _ = self.animation_offsets
-        if hasattr(self, '_m_animation_offsets'):
+        if hasattr(self, "_m_animation_offsets"):
             pass
             for i in range(len(self._m_animation_offsets)):
                 pass
 
-
         _ = self.animations
-        if hasattr(self, '_m_animations'):
+        if hasattr(self, "_m_animations"):
             pass
             for i in range(len(self._m_animations)):
                 pass
                 self._m_animations[i]._fetch_instances()
 
-
         _ = self.name_offsets
-        if hasattr(self, '_m_name_offsets'):
+        if hasattr(self, "_m_name_offsets"):
             pass
             for i in range(len(self._m_name_offsets)):
                 pass
 
-
         _ = self.names_data
-        if hasattr(self, '_m_names_data'):
+        if hasattr(self, "_m_names_data"):
             pass
             self._m_names_data._fetch_instances()
 
         _ = self.root_node
-        if hasattr(self, '_m_root_node'):
+        if hasattr(self, "_m_root_node"):
             pass
             self._m_root_node._fetch_instances()
 
-
     class AabbHeader(KaitaiStruct):
         """AABB (Axis-Aligned Bounding Box) header (336 bytes KOTOR 1, 344 bytes KOTOR 2) - extends trimesh_header."""
+
         def __init__(self, _io, _parent=None, _root=None):
             super(Mdl.AabbHeader, self).__init__(_io)
             self._parent = _parent
@@ -113,14 +114,13 @@ class Mdl(KaitaiStruct):
             self.trimesh_base = Mdl.TrimeshHeader(self._io, self, self._root)
             self.unknown = self._io.read_u4le()
 
-
         def _fetch_instances(self):
             pass
             self.trimesh_base._fetch_instances()
 
-
     class AnimationEvent(KaitaiStruct):
         """Animation event (36 bytes)."""
+
         def __init__(self, _io, _parent=None, _root=None):
             super(Mdl.AnimationEvent, self).__init__(_io)
             self._parent = _parent
@@ -129,15 +129,16 @@ class Mdl(KaitaiStruct):
 
         def _read(self):
             self.activation_time = self._io.read_f4le()
-            self.event_name = (KaitaiStream.bytes_terminate(self._io.read_bytes(32), 0, False)).decode(u"ASCII")
-
+            self.event_name = (
+                KaitaiStream.bytes_terminate(self._io.read_bytes(32), 0, False)
+            ).decode("ASCII")
 
         def _fetch_instances(self):
             pass
 
-
     class AnimationHeader(KaitaiStruct):
         """Animation header (136 bytes = 80 byte geometry header + 56 byte animation header)."""
+
         def __init__(self, _io, _parent=None, _root=None):
             super(Mdl.AnimationHeader, self).__init__(_io)
             self._parent = _parent
@@ -148,20 +149,21 @@ class Mdl(KaitaiStruct):
             self.geo_header = Mdl.GeometryHeader(self._io, self, self._root)
             self.animation_length = self._io.read_f4le()
             self.transition_time = self._io.read_f4le()
-            self.animation_root = (KaitaiStream.bytes_terminate(self._io.read_bytes(32), 0, False)).decode(u"ASCII")
+            self.animation_root = (
+                KaitaiStream.bytes_terminate(self._io.read_bytes(32), 0, False)
+            ).decode("ASCII")
             self.event_array_offset = self._io.read_u4le()
             self.event_count = self._io.read_u4le()
             self.event_count_duplicate = self._io.read_u4le()
             self.unknown = self._io.read_u4le()
 
-
         def _fetch_instances(self):
             pass
             self.geo_header._fetch_instances()
 
-
     class AnimmeshHeader(KaitaiStruct):
         """Animmesh header (388 bytes KOTOR 1, 396 bytes KOTOR 2) - extends trimesh_header."""
+
         def __init__(self, _io, _parent=None, _root=None):
             super(Mdl.AnimmeshHeader, self).__init__(_io)
             self._parent = _parent
@@ -176,8 +178,6 @@ class Mdl(KaitaiStruct):
             for i in range(9):
                 self.unknown_floats.append(self._io.read_f4le())
 
-
-
         def _fetch_instances(self):
             pass
             self.trimesh_base._fetch_instances()
@@ -185,10 +185,9 @@ class Mdl(KaitaiStruct):
             for i in range(len(self.unknown_floats)):
                 pass
 
-
-
     class ArrayDefinition(KaitaiStruct):
         """Array definition structure (offset, count, count duplicate)."""
+
         def __init__(self, _io, _parent=None, _root=None):
             super(Mdl.ArrayDefinition, self).__init__(_io)
             self._parent = _parent
@@ -200,13 +199,12 @@ class Mdl(KaitaiStruct):
             self.count = self._io.read_u4le()
             self.count_duplicate = self._io.read_u4le()
 
-
         def _fetch_instances(self):
             pass
 
-
     class Controller(KaitaiStruct):
         """Controller structure (16 bytes) - defines animation data for a node property over time."""
+
         def __init__(self, _io, _parent=None, _root=None):
             super(Mdl.Controller, self).__init__(_io)
             self._parent = _parent
@@ -224,26 +222,23 @@ class Mdl(KaitaiStruct):
             for i in range(3):
                 self.padding.append(self._io.read_u1())
 
-
-
         def _fetch_instances(self):
             pass
             for i in range(len(self.padding)):
                 pass
 
-
         @property
         def uses_bezier(self):
             """True if controller uses Bezier interpolation."""
-            if hasattr(self, '_m_uses_bezier'):
+            if hasattr(self, "_m_uses_bezier"):
                 return self._m_uses_bezier
 
             self._m_uses_bezier = self.column_count & 16 != 0
-            return getattr(self, '_m_uses_bezier', None)
-
+            return getattr(self, "_m_uses_bezier", None)
 
     class DanglymeshHeader(KaitaiStruct):
         """Danglymesh header (360 bytes KOTOR 1, 368 bytes KOTOR 2) - extends trimesh_header."""
+
         def __init__(self, _io, _parent=None, _root=None):
             super(Mdl.DanglymeshHeader, self).__init__(_io)
             self._parent = _parent
@@ -260,14 +255,13 @@ class Mdl(KaitaiStruct):
             self.period = self._io.read_f4le()
             self.unknown = self._io.read_u4le()
 
-
         def _fetch_instances(self):
             pass
             self.trimesh_base._fetch_instances()
 
-
     class EmitterHeader(KaitaiStruct):
         """Emitter header (224 bytes)."""
+
         def __init__(self, _io, _parent=None, _root=None):
             super(Mdl.EmitterHeader, self).__init__(_io)
             self._parent = _parent
@@ -283,26 +277,37 @@ class Mdl(KaitaiStruct):
             self.x_grid = self._io.read_u4le()
             self.y_grid = self._io.read_u4le()
             self.padding_unknown = self._io.read_u4le()
-            self.update_script = (KaitaiStream.bytes_terminate(self._io.read_bytes(32), 0, False)).decode(u"ASCII")
-            self.render_script = (KaitaiStream.bytes_terminate(self._io.read_bytes(32), 0, False)).decode(u"ASCII")
-            self.blend_script = (KaitaiStream.bytes_terminate(self._io.read_bytes(32), 0, False)).decode(u"ASCII")
-            self.texture_name = (KaitaiStream.bytes_terminate(self._io.read_bytes(32), 0, False)).decode(u"ASCII")
-            self.chunk_name = (KaitaiStream.bytes_terminate(self._io.read_bytes(32), 0, False)).decode(u"ASCII")
+            self.update_script = (
+                KaitaiStream.bytes_terminate(self._io.read_bytes(32), 0, False)
+            ).decode("ASCII")
+            self.render_script = (
+                KaitaiStream.bytes_terminate(self._io.read_bytes(32), 0, False)
+            ).decode("ASCII")
+            self.blend_script = (
+                KaitaiStream.bytes_terminate(self._io.read_bytes(32), 0, False)
+            ).decode("ASCII")
+            self.texture_name = (
+                KaitaiStream.bytes_terminate(self._io.read_bytes(32), 0, False)
+            ).decode("ASCII")
+            self.chunk_name = (
+                KaitaiStream.bytes_terminate(self._io.read_bytes(32), 0, False)
+            ).decode("ASCII")
             self.two_sided_texture = self._io.read_u4le()
             self.loop = self._io.read_u4le()
             self.render_order = self._io.read_u2le()
             self.frame_blending = self._io.read_u1()
-            self.depth_texture_name = (KaitaiStream.bytes_terminate(self._io.read_bytes(32), 0, False)).decode(u"ASCII")
+            self.depth_texture_name = (
+                KaitaiStream.bytes_terminate(self._io.read_bytes(32), 0, False)
+            ).decode("ASCII")
             self.padding = self._io.read_u1()
             self.flags = self._io.read_u4le()
-
 
         def _fetch_instances(self):
             pass
 
-
     class FileHeader(KaitaiStruct):
         """MDL file header (12 bytes)."""
+
         def __init__(self, _io, _parent=None, _root=None):
             super(Mdl.FileHeader, self).__init__(_io)
             self._parent = _parent
@@ -314,13 +319,12 @@ class Mdl(KaitaiStruct):
             self.mdl_size = self._io.read_u4le()
             self.mdx_size = self._io.read_u4le()
 
-
         def _fetch_instances(self):
             pass
 
-
     class GeometryHeader(KaitaiStruct):
         """Geometry header (80 bytes) - Located at offset 12."""
+
         def __init__(self, _io, _parent=None, _root=None):
             super(Mdl.GeometryHeader, self).__init__(_io)
             self._parent = _parent
@@ -330,7 +334,9 @@ class Mdl(KaitaiStruct):
         def _read(self):
             self.function_pointer_0 = self._io.read_u4le()
             self.function_pointer_1 = self._io.read_u4le()
-            self.model_name = (KaitaiStream.bytes_terminate(self._io.read_bytes(32), 0, False)).decode(u"ASCII")
+            self.model_name = (
+                KaitaiStream.bytes_terminate(self._io.read_bytes(32), 0, False)
+            ).decode("ASCII")
             self.root_node_offset = self._io.read_u4le()
             self.node_count = self._io.read_u4le()
             self.unknown_array_1 = Mdl.ArrayDefinition(self._io, self, self._root)
@@ -341,8 +347,6 @@ class Mdl(KaitaiStruct):
             for i in range(3):
                 self.padding.append(self._io.read_u1())
 
-
-
         def _fetch_instances(self):
             pass
             self.unknown_array_1._fetch_instances()
@@ -350,19 +354,20 @@ class Mdl(KaitaiStruct):
             for i in range(len(self.padding)):
                 pass
 
-
         @property
         def is_kotor2(self):
             """True if this is a KOTOR 2 model."""
-            if hasattr(self, '_m_is_kotor2'):
+            if hasattr(self, "_m_is_kotor2"):
                 return self._m_is_kotor2
 
-            self._m_is_kotor2 =  ((self.function_pointer_0 == 4285200) or (self.function_pointer_0 == 4285872)) 
-            return getattr(self, '_m_is_kotor2', None)
-
+            self._m_is_kotor2 = (self.function_pointer_0 == 4285200) or (
+                self.function_pointer_0 == 4285872
+            )
+            return getattr(self, "_m_is_kotor2", None)
 
     class LightHeader(KaitaiStruct):
         """Light header (92 bytes)."""
+
         def __init__(self, _io, _parent=None, _root=None):
             super(Mdl.LightHeader, self).__init__(_io)
             self._parent = _parent
@@ -395,16 +400,14 @@ class Mdl(KaitaiStruct):
             self.flare = self._io.read_u4le()
             self.fading_light = self._io.read_u4le()
 
-
         def _fetch_instances(self):
             pass
             for i in range(len(self.unknown)):
                 pass
 
-
-
     class LightsaberHeader(KaitaiStruct):
         """Lightsaber header (352 bytes KOTOR 1, 360 bytes KOTOR 2) - extends trimesh_header."""
+
         def __init__(self, _io, _parent=None, _root=None):
             super(Mdl.LightsaberHeader, self).__init__(_io)
             self._parent = _parent
@@ -419,17 +422,16 @@ class Mdl(KaitaiStruct):
             self.unknown1 = self._io.read_u4le()
             self.unknown2 = self._io.read_u4le()
 
-
         def _fetch_instances(self):
             pass
             self.trimesh_base._fetch_instances()
-
 
     class ModelHeader(KaitaiStruct):
         """Model header (196 bytes) starting at offset 12 (data_start).
         This matches MDLOps / PyKotor's _ModelHeader layout: a geometry header followed by
         model-wide metadata, offsets, and counts.
         """
+
         def __init__(self, _io, _parent=None, _root=None):
             super(Mdl.ModelHeader, self).__init__(_io)
             self._parent = _parent
@@ -451,7 +453,9 @@ class Mdl(KaitaiStruct):
             self.bounding_box_max = Mdl.Vec3f(self._io, self, self._root)
             self.radius = self._io.read_f4le()
             self.animation_scale = self._io.read_f4le()
-            self.supermodel_name = (KaitaiStream.bytes_terminate(self._io.read_bytes(32), 0, False)).decode(u"ASCII")
+            self.supermodel_name = (
+                KaitaiStream.bytes_terminate(self._io.read_bytes(32), 0, False)
+            ).decode("ASCII")
             self.offset_to_super_root = self._io.read_u4le()
             self.unknown3 = self._io.read_u4le()
             self.mdx_data_size = self._io.read_u4le()
@@ -460,16 +464,15 @@ class Mdl(KaitaiStruct):
             self.name_offsets_count = self._io.read_u4le()
             self.name_offsets_count2 = self._io.read_u4le()
 
-
         def _fetch_instances(self):
             pass
             self.geometry._fetch_instances()
             self.bounding_box_min._fetch_instances()
             self.bounding_box_max._fetch_instances()
 
-
     class NameStrings(KaitaiStruct):
         """Array of null-terminated name strings."""
+
         def __init__(self, _io, _parent=None, _root=None):
             super(Mdl.NameStrings, self).__init__(_io)
             self._parent = _parent
@@ -480,20 +483,19 @@ class Mdl(KaitaiStruct):
             self.strings = []
             i = 0
             while not self._io.is_eof():
-                self.strings.append((self._io.read_bytes_term(0, False, True, True)).decode(u"ASCII"))
+                self.strings.append(
+                    (self._io.read_bytes_term(0, False, True, True)).decode("ASCII")
+                )
                 i += 1
-
-
 
         def _fetch_instances(self):
             pass
             for i in range(len(self.strings)):
                 pass
 
-
-
     class Node(KaitaiStruct):
         """Node structure - starts with 80-byte header, followed by type-specific sub-header."""
+
         def __init__(self, _io, _parent=None, _root=None):
             super(Mdl.Node, self).__init__(_io)
             self._parent = _parent
@@ -538,8 +540,6 @@ class Mdl(KaitaiStruct):
                 pass
                 self.lightsaber_sub_header = Mdl.LightsaberHeader(self._io, self, self._root)
 
-
-
         def _fetch_instances(self):
             pass
             self.header._fetch_instances()
@@ -579,10 +579,9 @@ class Mdl(KaitaiStruct):
                 pass
                 self.lightsaber_sub_header._fetch_instances()
 
-
-
     class NodeHeader(KaitaiStruct):
         """Node header (80 bytes) - present in all node types."""
+
         def __init__(self, _io, _parent=None, _root=None):
             super(Mdl.NodeHeader, self).__init__(_io)
             self._parent = _parent
@@ -608,7 +607,6 @@ class Mdl(KaitaiStruct):
             self.controller_data_count = self._io.read_u4le()
             self.controller_data_count_duplicate = self._io.read_u4le()
 
-
         def _fetch_instances(self):
             pass
             self.position._fetch_instances()
@@ -616,79 +614,79 @@ class Mdl(KaitaiStruct):
 
         @property
         def has_aabb(self):
-            if hasattr(self, '_m_has_aabb'):
+            if hasattr(self, "_m_has_aabb"):
                 return self._m_has_aabb
 
             self._m_has_aabb = self.node_type & 512 != 0
-            return getattr(self, '_m_has_aabb', None)
+            return getattr(self, "_m_has_aabb", None)
 
         @property
         def has_anim(self):
-            if hasattr(self, '_m_has_anim'):
+            if hasattr(self, "_m_has_anim"):
                 return self._m_has_anim
 
             self._m_has_anim = self.node_type & 128 != 0
-            return getattr(self, '_m_has_anim', None)
+            return getattr(self, "_m_has_anim", None)
 
         @property
         def has_dangly(self):
-            if hasattr(self, '_m_has_dangly'):
+            if hasattr(self, "_m_has_dangly"):
                 return self._m_has_dangly
 
             self._m_has_dangly = self.node_type & 256 != 0
-            return getattr(self, '_m_has_dangly', None)
+            return getattr(self, "_m_has_dangly", None)
 
         @property
         def has_emitter(self):
-            if hasattr(self, '_m_has_emitter'):
+            if hasattr(self, "_m_has_emitter"):
                 return self._m_has_emitter
 
             self._m_has_emitter = self.node_type & 4 != 0
-            return getattr(self, '_m_has_emitter', None)
+            return getattr(self, "_m_has_emitter", None)
 
         @property
         def has_light(self):
-            if hasattr(self, '_m_has_light'):
+            if hasattr(self, "_m_has_light"):
                 return self._m_has_light
 
             self._m_has_light = self.node_type & 2 != 0
-            return getattr(self, '_m_has_light', None)
+            return getattr(self, "_m_has_light", None)
 
         @property
         def has_mesh(self):
-            if hasattr(self, '_m_has_mesh'):
+            if hasattr(self, "_m_has_mesh"):
                 return self._m_has_mesh
 
             self._m_has_mesh = self.node_type & 32 != 0
-            return getattr(self, '_m_has_mesh', None)
+            return getattr(self, "_m_has_mesh", None)
 
         @property
         def has_reference(self):
-            if hasattr(self, '_m_has_reference'):
+            if hasattr(self, "_m_has_reference"):
                 return self._m_has_reference
 
             self._m_has_reference = self.node_type & 16 != 0
-            return getattr(self, '_m_has_reference', None)
+            return getattr(self, "_m_has_reference", None)
 
         @property
         def has_saber(self):
-            if hasattr(self, '_m_has_saber'):
+            if hasattr(self, "_m_has_saber"):
                 return self._m_has_saber
 
             self._m_has_saber = self.node_type & 2048 != 0
-            return getattr(self, '_m_has_saber', None)
+            return getattr(self, "_m_has_saber", None)
 
         @property
         def has_skin(self):
-            if hasattr(self, '_m_has_skin'):
+            if hasattr(self, "_m_has_skin"):
                 return self._m_has_skin
 
             self._m_has_skin = self.node_type & 64 != 0
-            return getattr(self, '_m_has_skin', None)
-
+            return getattr(self, "_m_has_skin", None)
 
     class Quaternion(KaitaiStruct):
         """Quaternion rotation (4 floats W, X, Y, Z)."""
+
         def __init__(self, _io, _parent=None, _root=None):
             super(Mdl.Quaternion, self).__init__(_io)
             self._parent = _parent
@@ -701,13 +699,12 @@ class Mdl(KaitaiStruct):
             self.y = self._io.read_f4le()
             self.z = self._io.read_f4le()
 
-
         def _fetch_instances(self):
             pass
 
-
     class ReferenceHeader(KaitaiStruct):
         """Reference header (36 bytes)."""
+
         def __init__(self, _io, _parent=None, _root=None):
             super(Mdl.ReferenceHeader, self).__init__(_io)
             self._parent = _parent
@@ -715,16 +712,17 @@ class Mdl(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.model_resref = (KaitaiStream.bytes_terminate(self._io.read_bytes(32), 0, False)).decode(u"ASCII")
+            self.model_resref = (
+                KaitaiStream.bytes_terminate(self._io.read_bytes(32), 0, False)
+            ).decode("ASCII")
             self.reattachable = self._io.read_u4le()
-
 
         def _fetch_instances(self):
             pass
 
-
     class SkinmeshHeader(KaitaiStruct):
         """Skinmesh header (432 bytes KOTOR 1, 440 bytes KOTOR 2) - extends trimesh_header."""
+
         def __init__(self, _io, _parent=None, _root=None):
             super(Mdl.SkinmeshHeader, self).__init__(_io)
             self._parent = _parent
@@ -755,7 +753,6 @@ class Mdl(KaitaiStruct):
 
             self.padding2 = self._io.read_u2le()
 
-
         def _fetch_instances(self):
             pass
             self.trimesh_base._fetch_instances()
@@ -765,10 +762,9 @@ class Mdl(KaitaiStruct):
             for i in range(len(self.bone_node_serial_numbers)):
                 pass
 
-
-
     class TrimeshHeader(KaitaiStruct):
         """Trimesh header (332 bytes KOTOR 1, 340 bytes KOTOR 2)."""
+
         def __init__(self, _io, _parent=None, _root=None):
             super(Mdl.TrimeshHeader, self).__init__(_io)
             self._parent = _parent
@@ -788,10 +784,18 @@ class Mdl(KaitaiStruct):
             self.diffuse_color = Mdl.Vec3f(self._io, self, self._root)
             self.ambient_color = Mdl.Vec3f(self._io, self, self._root)
             self.transparency_hint = self._io.read_u4le()
-            self.texture_0_name = (KaitaiStream.bytes_terminate(self._io.read_bytes(32), 0, False)).decode(u"ASCII")
-            self.texture_1_name = (KaitaiStream.bytes_terminate(self._io.read_bytes(32), 0, False)).decode(u"ASCII")
-            self.texture_2_name = (KaitaiStream.bytes_terminate(self._io.read_bytes(12), 0, False)).decode(u"ASCII")
-            self.texture_3_name = (KaitaiStream.bytes_terminate(self._io.read_bytes(12), 0, False)).decode(u"ASCII")
+            self.texture_0_name = (
+                KaitaiStream.bytes_terminate(self._io.read_bytes(32), 0, False)
+            ).decode("ASCII")
+            self.texture_1_name = (
+                KaitaiStream.bytes_terminate(self._io.read_bytes(32), 0, False)
+            ).decode("ASCII")
+            self.texture_2_name = (
+                KaitaiStream.bytes_terminate(self._io.read_bytes(12), 0, False)
+            ).decode("ASCII")
+            self.texture_3_name = (
+                KaitaiStream.bytes_terminate(self._io.read_bytes(12), 0, False)
+            ).decode("ASCII")
             self.indices_count_array_offset = self._io.read_u4le()
             self.indices_count_array_count = self._io.read_u4le()
             self.indices_count_array_count_duplicate = self._io.read_u4le()
@@ -849,7 +853,6 @@ class Mdl(KaitaiStruct):
             self.mdx_data_offset = self._io.read_u4le()
             self.mdl_vertices_offset = self._io.read_u4le()
 
-
         def _fetch_instances(self):
             pass
             self.bounding_box_min._fetch_instances()
@@ -870,10 +873,9 @@ class Mdl(KaitaiStruct):
             if self._root.model_header.geometry.is_kotor2:
                 pass
 
-
-
     class Vec3f(KaitaiStruct):
         """3D vector (3 floats)."""
+
         def __init__(self, _io, _parent=None, _root=None):
             super(Mdl.Vec3f, self).__init__(_io)
             self._parent = _parent
@@ -885,15 +887,13 @@ class Mdl(KaitaiStruct):
             self.y = self._io.read_f4le()
             self.z = self._io.read_f4le()
 
-
         def _fetch_instances(self):
             pass
-
 
     @property
     def animation_offsets(self):
         """Animation header offsets (relative to data_start)."""
-        if hasattr(self, '_m_animation_offsets'):
+        if hasattr(self, "_m_animation_offsets"):
             return self._m_animation_offsets
 
         if self.model_header.animation_count > 0:
@@ -906,12 +906,12 @@ class Mdl(KaitaiStruct):
 
             self._io.seek(_pos)
 
-        return getattr(self, '_m_animation_offsets', None)
+        return getattr(self, "_m_animation_offsets", None)
 
     @property
     def animations(self):
         """Animation headers (resolved via animation_offsets)."""
-        if hasattr(self, '_m_animations'):
+        if hasattr(self, "_m_animations"):
             return self._m_animations
 
         if self.model_header.animation_count > 0:
@@ -924,23 +924,23 @@ class Mdl(KaitaiStruct):
 
             self._io.seek(_pos)
 
-        return getattr(self, '_m_animations', None)
+        return getattr(self, "_m_animations", None)
 
     @property
     def data_start(self):
         """MDL "data start" offset. Most offsets in this file are relative to the start of the MDL data
         section, which begins immediately after the 12-byte file header.
         """
-        if hasattr(self, '_m_data_start'):
+        if hasattr(self, "_m_data_start"):
             return self._m_data_start
 
         self._m_data_start = 12
-        return getattr(self, '_m_data_start', None)
+        return getattr(self, "_m_data_start", None)
 
     @property
     def name_offsets(self):
         """Name string offsets (relative to data_start)."""
-        if hasattr(self, '_m_name_offsets'):
+        if hasattr(self, "_m_name_offsets"):
             return self._m_name_offsets
 
         if self.model_header.name_offsets_count > 0:
@@ -953,30 +953,39 @@ class Mdl(KaitaiStruct):
 
             self._io.seek(_pos)
 
-        return getattr(self, '_m_name_offsets', None)
+        return getattr(self, "_m_name_offsets", None)
 
     @property
     def names_data(self):
         """Name string blob (substream). This follows the name offset array and continues up to the animation offset array.
         Parsed as null-terminated ASCII strings in `name_strings`.
         """
-        if hasattr(self, '_m_names_data'):
+        if hasattr(self, "_m_names_data"):
             return self._m_names_data
 
         if self.model_header.name_offsets_count > 0:
             pass
             _pos = self._io.pos()
-            self._io.seek((self.data_start + self.model_header.offset_to_name_offsets) + 4 * self.model_header.name_offsets_count)
-            self._raw__m_names_data = self._io.read_bytes((self.data_start + self.model_header.offset_to_animations) - ((self.data_start + self.model_header.offset_to_name_offsets) + 4 * self.model_header.name_offsets_count))
+            self._io.seek(
+                (self.data_start + self.model_header.offset_to_name_offsets)
+                + 4 * self.model_header.name_offsets_count
+            )
+            self._raw__m_names_data = self._io.read_bytes(
+                (self.data_start + self.model_header.offset_to_animations)
+                - (
+                    (self.data_start + self.model_header.offset_to_name_offsets)
+                    + 4 * self.model_header.name_offsets_count
+                )
+            )
             _io__raw__m_names_data = KaitaiStream(BytesIO(self._raw__m_names_data))
             self._m_names_data = Mdl.NameStrings(_io__raw__m_names_data, self, self._root)
             self._io.seek(_pos)
 
-        return getattr(self, '_m_names_data', None)
+        return getattr(self, "_m_names_data", None)
 
     @property
     def root_node(self):
-        if hasattr(self, '_m_root_node'):
+        if hasattr(self, "_m_root_node"):
             return self._m_root_node
 
         if self.model_header.geometry.root_node_offset > 0:
@@ -986,6 +995,4 @@ class Mdl(KaitaiStruct):
             self._m_root_node = Mdl.Node(self._io, self, self._root)
             self._io.seek(_pos)
 
-        return getattr(self, '_m_root_node', None)
-
-
+        return getattr(self, "_m_root_node", None)

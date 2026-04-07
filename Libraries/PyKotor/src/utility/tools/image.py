@@ -25,20 +25,28 @@ def image_from_file(
         if result:
             return result
     except ImportError:
-        RobustLogger().warning(f"Qt not available for resource type: {get_normalized_extension(filepath_obj)!r}")
+        RobustLogger().warning(
+            f"Qt not available for resource type: {get_normalized_extension(filepath_obj)!r}"
+        )
 
     try:
         result = _process_pil_image(filepath_obj, mipmap, img_format)
         if result:
             return result
     except ImportError:
-        RobustLogger().warning(f"Pillow not available for resource type: {get_normalized_extension(filepath_obj)!r}")
+        RobustLogger().warning(
+            f"Pillow not available for resource type: {get_normalized_extension(filepath_obj)!r}"
+        )
 
     try:
         result = _process_tpc_image(filepath_obj, mipmap)
         if result:
             return result
     except ImportError:
-        RobustLogger().warning(f"PyKotor not available for resource type: {get_normalized_extension(filepath_obj)!r}")
+        RobustLogger().warning(
+            f"PyKotor not available for resource type: {get_normalized_extension(filepath_obj)!r}"
+        )
 
-    raise ValueError(f"No suitable image processing library available for resource type: {get_normalized_extension(filepath_obj)!r}")
+    raise ValueError(
+        f"No suitable image processing library available for resource type: {get_normalized_extension(filepath_obj)!r}"
+    )

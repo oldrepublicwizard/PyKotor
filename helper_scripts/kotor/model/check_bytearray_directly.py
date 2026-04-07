@@ -78,12 +78,16 @@ for pos in found_positions:
                 "<I",
                 writer_data[th_start + 68 : th_start + 72],
             )[0]
-            print(f"    mdx_data_bitmap: 0x{mdx_data_bitmap:08X} (TEXTURE1={bool(mdx_data_bitmap & 0x2)})")
+            print(
+                f"    mdx_data_bitmap: 0x{mdx_data_bitmap:08X} (TEXTURE1={bool(mdx_data_bitmap & 0x2)})"
+            )
             print(f"    mdx_texture1_offset: {mdx_texture1_offset} (0x{mdx_texture1_offset:08X})")
 
             if mdx_data_bitmap & 0x2 and mdx_texture1_offset == 12:
                 print("    STATUS: CORRECT")
             elif mdx_data_bitmap & 0x2 and mdx_texture1_offset != 12:
-                print(f"    STATUS: ERROR - TEXTURE1 flag set but offset is {mdx_texture1_offset}, expected 12")
+                print(
+                    f"    STATUS: ERROR - TEXTURE1 flag set but offset is {mdx_texture1_offset}, expected 12"
+                )
             elif not (mdx_data_bitmap & 0x2):
                 print("    STATUS: ERROR - TEXTURE1 flag not set")

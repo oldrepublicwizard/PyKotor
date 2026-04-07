@@ -48,7 +48,9 @@ def validate_gff_for_engine(gff: GFF) -> None:
     _validate_performance_constraints(gff, issues)
 
     if issues:
-        error_msg = f"GFF validation failed with {len(issues)} issue(s):\n" + "\n".join(f"  - {issue}" for issue in issues)
+        error_msg = f"GFF validation failed with {len(issues)} issue(s):\n" + "\n".join(
+            f"  - {issue}" for issue in issues
+        )
         raise ValueError(error_msg)
 
 

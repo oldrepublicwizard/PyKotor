@@ -3283,14 +3283,22 @@ KOTOR_FUNCTIONS = [
     ScriptFunction(
         DataType.VOID,
         "PrintFloat",
-        [ScriptParam(DataType.FLOAT, "fFloat", None), ScriptParam(DataType.INT, "nWidth", "18"), ScriptParam(DataType.INT, "nDecimals", "9")],
+        [
+            ScriptParam(DataType.FLOAT, "fFloat", None),
+            ScriptParam(DataType.INT, "nWidth", "18"),
+            ScriptParam(DataType.INT, "nDecimals", "9"),
+        ],
         "// 2: Output a formatted float to the log file.\r\n// - nWidth should be a value from 0 to 18 inclusive.\r\n// - nDecimals should be a value from 0 to 9 inclusive.\r\nvoid PrintFloat(float fFloat, int nWidth=18, int nDecimals=9);",
         "// 2: Output a formatted float to the log file.\r\n// - nWidth should be a value from 0 to 18 inclusive.\r\n// - nDecimals should be a value from 0 to 9 inclusive.\r\nvoid PrintFloat(float fFloat, int nWidth=18, int nDecimals=9);",
     ),
     ScriptFunction(
         DataType.STRING,
         "FloatToString",
-        [ScriptParam(DataType.FLOAT, "fFloat", None), ScriptParam(DataType.INT, "nWidth", "18"), ScriptParam(DataType.INT, "nDecimals", "9")],
+        [
+            ScriptParam(DataType.FLOAT, "fFloat", None),
+            ScriptParam(DataType.INT, "nWidth", "18"),
+            ScriptParam(DataType.INT, "nDecimals", "9"),
+        ],
         "// 3: Convert fFloat into a string.\r\n// - nWidth should be a value from 0 to 18 inclusive.\r\n// - nDecimals should be a value from 0 to 9 inclusive.\r\nstring FloatToString(float fFloat, int nWidth=18, int nDecimals=9);",
         "// 3: Convert fFloat into a string.\r\n// - nWidth should be a value from 0 to 18 inclusive.\r\n// - nDecimals should be a value from 0 to 9 inclusive.\r\nstring FloatToString(float fFloat, int nWidth=18, int nDecimals=9);",
     ),
@@ -3311,21 +3319,31 @@ KOTOR_FUNCTIONS = [
     ScriptFunction(
         DataType.VOID,
         "AssignCommand",
-        [ScriptParam(DataType.OBJECT, "oActionSubject", None), ScriptParam(DataType.ACTION, "aActionToAssign", None)],
+        [
+            ScriptParam(DataType.OBJECT, "oActionSubject", None),
+            ScriptParam(DataType.ACTION, "aActionToAssign", None),
+        ],
         '// 6: Assign aActionToAssign to oActionSubject.\r\n// * No return value, but if an error occurs, the log file will contain\r\n//   "AssignCommand failed."\r\n//   (If the object doesn\'t exist, nothing happens.)\r\nvoid AssignCommand(object oActionSubject,action aActionToAssign);',
         '// 6: Assign aActionToAssign to oActionSubject.\r\n// * No return value, but if an error occurs, the log file will contain\r\n//   "AssignCommand failed."\r\n//   (If the object doesn\'t exist, nothing happens.)\r\nvoid AssignCommand(object oActionSubject,action aActionToAssign);',
     ),
     ScriptFunction(
         DataType.VOID,
         "DelayCommand",
-        [ScriptParam(DataType.FLOAT, "fSeconds", None), ScriptParam(DataType.ACTION, "aActionToDelay", None)],
+        [
+            ScriptParam(DataType.FLOAT, "fSeconds", None),
+            ScriptParam(DataType.ACTION, "aActionToDelay", None),
+        ],
         '// 7: Delay aActionToDelay by fSeconds.\r\n// * No return value, but if an error occurs, the log file will contain\r\n//   "DelayCommand failed.".\r\nvoid DelayCommand(float fSeconds, action aActionToDelay);',
         '// 7: Delay aActionToDelay by fSeconds.\r\n// * No return value, but if an error occurs, the log file will contain\r\n//   "DelayCommand failed.".\r\nvoid DelayCommand(float fSeconds, action aActionToDelay);',
     ),
     ScriptFunction(
         DataType.VOID,
         "ExecuteScript",
-        [ScriptParam(DataType.STRING, "sScript", None), ScriptParam(DataType.OBJECT, "oTarget", None), ScriptParam(DataType.INT, "nScriptVar", "-1")],
+        [
+            ScriptParam(DataType.STRING, "sScript", None),
+            ScriptParam(DataType.OBJECT, "oTarget", None),
+            ScriptParam(DataType.INT, "nScriptVar", "-1"),
+        ],
         "// 8: Make oTarget run sScript and then return execution to the calling script.\r\n// If sScript does not specify a compiled script, nothing happens.\r\n// - nScriptVar: This value will be returned by calls to GetRunScriptVar.\r\nvoid ExecuteScript(string sScript, object oTarget, int nScriptVar=-1);",
         "// 8: Make oTarget run sScript and then return execution to the calling script.\r\n// If sScript does not specify a compiled script, nothing happens.\r\n// - nScriptVar: This value will be returned by calls to GetRunScriptVar.\r\nvoid ExecuteScript(string sScript, object oTarget, int nScriptVar=-1);",
     ),
@@ -3421,21 +3439,32 @@ KOTOR_FUNCTIONS = [
     ScriptFunction(
         DataType.VOID,
         "ActionMoveToLocation",
-        [ScriptParam(DataType.LOCATION, "lDestination", None), ScriptParam(DataType.INT, "bRun", "0")],
+        [
+            ScriptParam(DataType.LOCATION, "lDestination", None),
+            ScriptParam(DataType.INT, "bRun", "0"),
+        ],
         '// 21: The action subject will move to lDestination.\r\n// - lDestination: The object will move to this location.  If the location is\r\n//   invalid or a path cannot be found to it, the command does nothing.\r\n// - bRun: If this is TRUE, the action subject will run rather than walk\r\n// * No return value, but if an error occurs the log file will contain\r\n//   "MoveToPoint failed."\r\nvoid ActionMoveToLocation(location lDestination, int bRun=FALSE);',
         '// 21: The action subject will move to lDestination.\r\n// - lDestination: The object will move to this location.  If the location is\r\n//   invalid or a path cannot be found to it, the command does nothing.\r\n// - bRun: If this is TRUE, the action subject will run rather than walk\r\n// * No return value, but if an error occurs the log file will contain\r\n//   "MoveToPoint failed."\r\nvoid ActionMoveToLocation(location lDestination, int bRun=FALSE);',
     ),
     ScriptFunction(
         DataType.VOID,
         "ActionMoveToObject",
-        [ScriptParam(DataType.OBJECT, "oMoveTo", None), ScriptParam(DataType.INT, "bRun", "0"), ScriptParam(DataType.FLOAT, "fRange", "1.0")],
+        [
+            ScriptParam(DataType.OBJECT, "oMoveTo", None),
+            ScriptParam(DataType.INT, "bRun", "0"),
+            ScriptParam(DataType.FLOAT, "fRange", "1.0"),
+        ],
         '// 22: Cause the action subject to move to a certain distance from oMoveTo.\r\n// If there is no path to oMoveTo, this command will do nothing.\r\n// - oMoveTo: This is the object we wish the action subject to move to\r\n// - bRun: If this is TRUE, the action subject will run rather than walk\r\n// - fRange: This is the desired distance between the action subject and oMoveTo\r\n// * No return value, but if an error occurs the log file will contain\r\n//   "ActionMoveToObject failed."\r\nvoid ActionMoveToObject(object oMoveTo, int bRun=FALSE, float fRange=1.0f);',
         '// 22: Cause the action subject to move to a certain distance from oMoveTo.\r\n// If there is no path to oMoveTo, this command will do nothing.\r\n// - oMoveTo: This is the object we wish the action subject to move to\r\n// - bRun: If this is TRUE, the action subject will run rather than walk\r\n// - fRange: This is the desired distance between the action subject and oMoveTo\r\n// * No return value, but if an error occurs the log file will contain\r\n//   "ActionMoveToObject failed."\r\nvoid ActionMoveToObject(object oMoveTo, int bRun=FALSE, float fRange=1.0f);',
     ),
     ScriptFunction(
         DataType.VOID,
         "ActionMoveAwayFromObject",
-        [ScriptParam(DataType.OBJECT, "oFleeFrom", None), ScriptParam(DataType.INT, "bRun", "0"), ScriptParam(DataType.FLOAT, "fMoveAwayRange", "40.0")],
+        [
+            ScriptParam(DataType.OBJECT, "oFleeFrom", None),
+            ScriptParam(DataType.INT, "bRun", "0"),
+            ScriptParam(DataType.FLOAT, "fMoveAwayRange", "40.0"),
+        ],
         '// 23: Cause the action subject to move to a certain distance away from oFleeFrom.\r\n// - oFleeFrom: This is the object we wish the action subject to move away from.\r\n//   If oFleeFrom is not in the same area as the action subject, nothing will\r\n//   happen.\r\n// - bRun: If this is TRUE, the action subject will run rather than walk\r\n// - fMoveAwayRange: This is the distance we wish the action subject to put\r\n//   between themselves and oFleeFrom\r\n// * No return value, but if an error occurs the log file will contain\r\n//   "ActionMoveAwayFromObject failed."\r\nvoid ActionMoveAwayFromObject(object oFleeFrom, int bRun=FALSE, float fMoveAwayRange=40.0f);',
         '// 23: Cause the action subject to move to a certain distance away from oFleeFrom.\r\n// - oFleeFrom: This is the object we wish the action subject to move away from.\r\n//   If oFleeFrom is not in the same area as the action subject, nothing will\r\n//   happen.\r\n// - bRun: If this is TRUE, the action subject will run rather than walk\r\n// - fMoveAwayRange: This is the distance we wish the action subject to put\r\n//   between themselves and oFleeFrom\r\n// * No return value, but if an error occurs the log file will contain\r\n//   "ActionMoveAwayFromObject failed."\r\nvoid ActionMoveAwayFromObject(object oFleeFrom, int bRun=FALSE, float fMoveAwayRange=40.0f);',
     ),
@@ -3484,21 +3513,32 @@ KOTOR_FUNCTIONS = [
     ScriptFunction(
         DataType.OBJECT,
         "GetItemPossessedBy",
-        [ScriptParam(DataType.OBJECT, "oCreature", None), ScriptParam(DataType.STRING, "sItemTag", None)],
+        [
+            ScriptParam(DataType.OBJECT, "oCreature", None),
+            ScriptParam(DataType.STRING, "sItemTag", None),
+        ],
         "// 30: Get the object possessed by oCreature with the tag sItemTag\r\n// * Return value on error: OBJECT_INVALID\r\nobject GetItemPossessedBy(object oCreature, string sItemTag);",
         "// 30: Get the object possessed by oCreature with the tag sItemTag\r\n// * Return value on error: OBJECT_INVALID\r\nobject GetItemPossessedBy(object oCreature, string sItemTag);",
     ),
     ScriptFunction(
         DataType.OBJECT,
         "CreateItemOnObject",
-        [ScriptParam(DataType.STRING, "sItemTemplate", None), ScriptParam(DataType.OBJECT, "oTarget", OBJECT_SELF), ScriptParam(DataType.INT, "nStackSize", "1")],
+        [
+            ScriptParam(DataType.STRING, "sItemTemplate", None),
+            ScriptParam(DataType.OBJECT, "oTarget", OBJECT_SELF),
+            ScriptParam(DataType.INT, "nStackSize", "1"),
+        ],
         "// 31: Create an item with the template sItemTemplate in oTarget's inventory.\r\n// - nStackSize: This is the stack size of the item to be created\r\n// * Return value: The object that has been created.  On error, this returns\r\n//   OBJECT_INVALID.\r\nobject CreateItemOnObject(string sItemTemplate, object oTarget=OBJECT_SELF, int nStackSize=1);",
         "// 31: Create an item with the template sItemTemplate in oTarget's inventory.\r\n// - nStackSize: This is the stack size of the item to be created\r\n// * Return value: The object that has been created.  On error, this returns\r\n//   OBJECT_INVALID.\r\nobject CreateItemOnObject(string sItemTemplate, object oTarget=OBJECT_SELF, int nStackSize=1);",
     ),
     ScriptFunction(
         DataType.VOID,
         "ActionEquipItem",
-        [ScriptParam(DataType.OBJECT, "oItem", None), ScriptParam(DataType.INT, "nInventorySlot", None), ScriptParam(DataType.INT, "bInstant", "0")],
+        [
+            ScriptParam(DataType.OBJECT, "oItem", None),
+            ScriptParam(DataType.INT, "nInventorySlot", None),
+            ScriptParam(DataType.INT, "bInstant", "0"),
+        ],
         '// 32: Equip oItem into nInventorySlot.\r\n// - nInventorySlot: INVENTORY_SLOT_*\r\n// * No return value, but if an error occurs the log file will contain\r\n//   "ActionEquipItem failed."\r\nvoid ActionEquipItem(object oItem, int nInventorySlot, int bInstant=FALSE);',
         '// 32: Equip oItem into nInventorySlot.\r\n// - nInventorySlot: INVENTORY_SLOT_*\r\n// * No return value, but if an error occurs the log file will contain\r\n//   "ActionEquipItem failed."\r\nvoid ActionEquipItem(object oItem, int nInventorySlot, int bInstant=FALSE);',
     ),
@@ -3533,7 +3573,10 @@ KOTOR_FUNCTIONS = [
     ScriptFunction(
         DataType.VOID,
         "ActionAttack",
-        [ScriptParam(DataType.OBJECT, "oAttackee", None), ScriptParam(DataType.INT, "bPassive", "0")],
+        [
+            ScriptParam(DataType.OBJECT, "oAttackee", None),
+            ScriptParam(DataType.INT, "bPassive", "0"),
+        ],
         "// 37: Attack oAttackee.\r\n// - bPassive: If this is TRUE, attack is in passive mode.\r\nvoid ActionAttack(object oAttackee, int bPassive=FALSE);",
         "// 37: Attack oAttackee.\r\n// - bPassive: If this is TRUE, attack is in passive mode.\r\nvoid ActionAttack(object oAttackee, int bPassive=FALSE);",
     ),
@@ -3556,14 +3599,21 @@ KOTOR_FUNCTIONS = [
     ScriptFunction(
         DataType.VOID,
         "ActionSpeakString",
-        [ScriptParam(DataType.STRING, "sStringToSpeak", None), ScriptParam(DataType.INT, "nTalkVolume", "0")],
+        [
+            ScriptParam(DataType.STRING, "sStringToSpeak", None),
+            ScriptParam(DataType.INT, "nTalkVolume", "0"),
+        ],
         "// 39: Add a speak action to the action subject.\r\n// - sStringToSpeak: String to be spoken\r\n// - nTalkVolume: TALKVOLUME_*\r\nvoid ActionSpeakString(string sStringToSpeak, int nTalkVolume=TALKVOLUME_TALK);",
         "// 39: Add a speak action to the action subject.\r\n// - sStringToSpeak: String to be spoken\r\n// - nTalkVolume: TALKVOLUME_*\r\nvoid ActionSpeakString(string sStringToSpeak, int nTalkVolume=TALKVOLUME_TALK);",
     ),
     ScriptFunction(
         DataType.VOID,
         "ActionPlayAnimation",
-        [ScriptParam(DataType.INT, "nAnimation", None), ScriptParam(DataType.FLOAT, "fSpeed", "1.0"), ScriptParam(DataType.FLOAT, "fDurationSeconds", "0.0")],
+        [
+            ScriptParam(DataType.INT, "nAnimation", None),
+            ScriptParam(DataType.FLOAT, "fSpeed", "1.0"),
+            ScriptParam(DataType.FLOAT, "fDurationSeconds", "0.0"),
+        ],
         "// 40: Cause the action subject to play an animation\r\n// - nAnimation: ANIMATION_*\r\n// - fSpeed: Speed of the animation\r\n// - fDurationSeconds: Duration of the animation (this is not used for Fire and\r\n//   Forget animations) If a time of -1.0f is specified for a looping animation\r\n//   it will loop until the next animation is applied.\r\nvoid ActionPlayAnimation(int nAnimation, float fSpeed=1.0, float fDurationSeconds=0.0);",
         "// 40: Cause the action subject to play an animation\r\n// - nAnimation: ANIMATION_*\r\n// - fSpeed: Speed of the animation\r\n// - fDurationSeconds: Duration of the animation (this is not used for Fire and\r\n//   Forget animations) If a time of -1.0f is specified for a looping animation\r\n//   it will loop until the next animation is applied.\r\nvoid ActionPlayAnimation(int nAnimation, float fSpeed=1.0, float fDurationSeconds=0.0);",
     ),
@@ -3739,21 +3789,32 @@ KOTOR_FUNCTIONS = [
     ScriptFunction(
         DataType.STRING,
         "InsertString",
-        [ScriptParam(DataType.STRING, "sDestination", None), ScriptParam(DataType.STRING, "sString", None), ScriptParam(DataType.INT, "nPosition", None)],
+        [
+            ScriptParam(DataType.STRING, "sDestination", None),
+            ScriptParam(DataType.STRING, "sString", None),
+            ScriptParam(DataType.INT, "nPosition", None),
+        ],
         '// 64: Insert sString into sDestination at nPosition\r\n// * Return value on error: ""\r\nstring InsertString(string sDestination, string sString, int nPosition);',
         '// 64: Insert sString into sDestination at nPosition\r\n// * Return value on error: ""\r\nstring InsertString(string sDestination, string sString, int nPosition);',
     ),
     ScriptFunction(
         DataType.STRING,
         "GetSubString",
-        [ScriptParam(DataType.STRING, "sString", None), ScriptParam(DataType.INT, "nStart", None), ScriptParam(DataType.INT, "nCount", None)],
+        [
+            ScriptParam(DataType.STRING, "sString", None),
+            ScriptParam(DataType.INT, "nStart", None),
+            ScriptParam(DataType.INT, "nCount", None),
+        ],
         '// 65: Get nCount characters from sString, starting at nStart\r\n// * Return value on error: ""\r\nstring GetSubString(string sString, int nStart, int nCount);',
         '// 65: Get nCount characters from sString, starting at nStart\r\n// * Return value on error: ""\r\nstring GetSubString(string sString, int nStart, int nCount);',
     ),
     ScriptFunction(
         DataType.INT,
         "FindSubString",
-        [ScriptParam(DataType.STRING, "sString", None), ScriptParam(DataType.STRING, "sSubString", None)],
+        [
+            ScriptParam(DataType.STRING, "sString", None),
+            ScriptParam(DataType.STRING, "sSubString", None),
+        ],
         "// 66: Find the position of sSubstring inside sString\r\n// * Return value on error: -1\r\nint FindSubString(string sString, string sSubString);",
         "// 66: Find the position of sSubstring inside sString\r\n// * Return value on error: -1\r\nint FindSubString(string sString, string sSubString);",
     ),
@@ -3816,7 +3877,10 @@ KOTOR_FUNCTIONS = [
     ScriptFunction(
         DataType.FLOAT,
         "pow",
-        [ScriptParam(DataType.FLOAT, "fValue", None), ScriptParam(DataType.FLOAT, "fExponent", None)],
+        [
+            ScriptParam(DataType.FLOAT, "fValue", None),
+            ScriptParam(DataType.FLOAT, "fExponent", None),
+        ],
         "// 75: Maths operation: fValue is raised to the power of fExponent\r\n// * Returns zero if fValue ==0 and fExponent <0\r\nfloat pow(float fValue, float fExponent);",
         "// 75: Maths operation: fValue is raised to the power of fExponent\r\n// * Returns zero if fValue ==0 and fExponent <0\r\nfloat pow(float fValue, float fExponent);",
     ),
@@ -3844,21 +3908,32 @@ KOTOR_FUNCTIONS = [
     ScriptFunction(
         DataType.EFFECT,
         "EffectDamage",
-        [ScriptParam(DataType.INT, "nDamageAmount", None), ScriptParam(DataType.INT, "nDamageType", "8"), ScriptParam(DataType.INT, "nDamagePower", "0")],
+        [
+            ScriptParam(DataType.INT, "nDamageAmount", None),
+            ScriptParam(DataType.INT, "nDamageType", "8"),
+            ScriptParam(DataType.INT, "nDamagePower", "0"),
+        ],
         "// 79: Create a Damage effect\r\n// - nDamageAmount: amount of damage to be dealt. This should be applied as an\r\n//   instantaneous effect.\r\n// - nDamageType: DAMAGE_TYPE_*\r\n// - nDamagePower: DAMAGE_POWER_*\r\neffect EffectDamage(int nDamageAmount, int nDamageType=DAMAGE_TYPE_UNIVERSAL, int nDamagePower=DAMAGE_POWER_NORMAL);",
         "// 79: Create a Damage effect\r\n// - nDamageAmount: amount of damage to be dealt. This should be applied as an\r\n//   instantaneous effect.\r\n// - nDamageType: DAMAGE_TYPE_*\r\n// - nDamagePower: DAMAGE_POWER_*\r\neffect EffectDamage(int nDamageAmount, int nDamageType=DAMAGE_TYPE_UNIVERSAL, int nDamagePower=DAMAGE_POWER_NORMAL);",
     ),
     ScriptFunction(
         DataType.EFFECT,
         "EffectAbilityIncrease",
-        [ScriptParam(DataType.INT, "nAbilityToIncrease", None), ScriptParam(DataType.INT, "nModifyBy", None)],
+        [
+            ScriptParam(DataType.INT, "nAbilityToIncrease", None),
+            ScriptParam(DataType.INT, "nModifyBy", None),
+        ],
         "// 80: Create an Ability Increase effect\r\n// - bAbilityToIncrease: ABILITY_*\r\neffect EffectAbilityIncrease(int nAbilityToIncrease, int nModifyBy);",
         "// 80: Create an Ability Increase effect\r\n// - bAbilityToIncrease: ABILITY_*\r\neffect EffectAbilityIncrease(int nAbilityToIncrease, int nModifyBy);",
     ),
     ScriptFunction(
         DataType.EFFECT,
         "EffectDamageResistance",
-        [ScriptParam(DataType.INT, "nDamageType", None), ScriptParam(DataType.INT, "nAmount", None), ScriptParam(DataType.INT, "nLimit", "0")],
+        [
+            ScriptParam(DataType.INT, "nDamageType", None),
+            ScriptParam(DataType.INT, "nAmount", None),
+            ScriptParam(DataType.INT, "nLimit", "0"),
+        ],
         "// 81: Create a Damage Resistance effect that removes the first nAmount points of\r\n// damage of type nDamageType, up to nLimit (or infinite if nLimit is 0)\r\n// - nDamageType: DAMAGE_TYPE_*\r\n// - nAmount\r\n// - nLimit\r\neffect EffectDamageResistance(int nDamageType, int nAmount, int nLimit=0);",
         "// 81: Create a Damage Resistance effect that removes the first nAmount points of\r\n// damage of type nDamageType, up to nLimit (or infinite if nLimit is 0)\r\n// - nDamageType: DAMAGE_TYPE_*\r\n// - nAmount\r\n// - nLimit\r\neffect EffectDamageResistance(int nDamageType, int nAmount, int nLimit=0);",
     ),
@@ -3900,7 +3975,10 @@ KOTOR_FUNCTIONS = [
     ScriptFunction(
         DataType.VOID,
         "RemoveEffect",
-        [ScriptParam(DataType.OBJECT, "oCreature", None), ScriptParam(DataType.EFFECT, "eEffect", None)],
+        [
+            ScriptParam(DataType.OBJECT, "oCreature", None),
+            ScriptParam(DataType.EFFECT, "eEffect", None),
+        ],
         "// 87: Remove eEffect from oCreature.\r\n// * No return value\r\nvoid RemoveEffect(object oCreature, effect eEffect);",
         "// 87: Remove eEffect from oCreature.\r\n// * No return value\r\nvoid RemoveEffect(object oCreature, effect eEffect);",
     ),
@@ -3942,14 +4020,20 @@ KOTOR_FUNCTIONS = [
     ScriptFunction(
         DataType.OBJECT,
         "GetFirstObjectInArea",
-        [ScriptParam(DataType.OBJECT, "oArea", OBJECT_INVALID), ScriptParam(DataType.INT, "nObjectFilter", "1")],
+        [
+            ScriptParam(DataType.OBJECT, "oArea", OBJECT_INVALID),
+            ScriptParam(DataType.INT, "nObjectFilter", "1"),
+        ],
         "// 93: Get the first object in oArea.\r\n// If no valid area is specified, it will use the caller's area.\r\n// - oArea\r\n// - nObjectFilter: OBJECT_TYPE_*\r\n// * Return value on error: OBJECT_INVALID\r\nobject GetFirstObjectInArea(object oArea=OBJECT_INVALID, int nObjectFilter=OBJECT_TYPE_CREATURE);",
         "// 93: Get the first object in oArea.\r\n// If no valid area is specified, it will use the caller's area.\r\n// - oArea\r\n// - nObjectFilter: OBJECT_TYPE_*\r\n// * Return value on error: OBJECT_INVALID\r\nobject GetFirstObjectInArea(object oArea=OBJECT_INVALID, int nObjectFilter=OBJECT_TYPE_CREATURE);",
     ),
     ScriptFunction(
         DataType.OBJECT,
         "GetNextObjectInArea",
-        [ScriptParam(DataType.OBJECT, "oArea", OBJECT_INVALID), ScriptParam(DataType.INT, "nObjectFilter", "1")],
+        [
+            ScriptParam(DataType.OBJECT, "oArea", OBJECT_INVALID),
+            ScriptParam(DataType.INT, "nObjectFilter", "1"),
+        ],
         "// 94: Get the next object in oArea.\r\n// If no valid area is specified, it will use the caller's area.\r\n// - oArea\r\n// - nObjectFilter: OBJECT_TYPE_*\r\n// * Return value on error: OBJECT_INVALID\r\nobject GetNextObjectInArea(object oArea=OBJECT_INVALID, int nObjectFilter=OBJECT_TYPE_CREATURE);",
         "// 94: Get the next object in oArea.\r\n// If no valid area is specified, it will use the caller's area.\r\n// - oArea\r\n// - nObjectFilter: OBJECT_TYPE_*\r\n// * Return value on error: OBJECT_INVALID\r\nobject GetNextObjectInArea(object oArea=OBJECT_INVALID, int nObjectFilter=OBJECT_TYPE_CREATURE);",
     ),
@@ -4111,35 +4195,53 @@ KOTOR_FUNCTIONS = [
     ScriptFunction(
         DataType.EFFECT,
         "EffectACIncrease",
-        [ScriptParam(DataType.INT, "nValue", None), ScriptParam(DataType.INT, "nModifyType", "0"), ScriptParam(DataType.INT, "nDamageType", "8199")],
+        [
+            ScriptParam(DataType.INT, "nValue", None),
+            ScriptParam(DataType.INT, "nModifyType", "0"),
+            ScriptParam(DataType.INT, "nDamageType", "8199"),
+        ],
         "// 115: Create an AC Increase effect\r\n// - nValue: size of AC increase\r\n// - nModifyType: AC_*_BONUS\r\n// - nDamageType: DAMAGE_TYPE_*\r\n//   * Default value for nDamageType should only ever be used in this function prototype.\r\neffect EffectACIncrease(int nValue, int nModifyType=AC_DODGE_BONUS, int nDamageType=AC_VS_DAMAGE_TYPE_ALL);",
         "// 115: Create an AC Increase effect\r\n// - nValue: size of AC increase\r\n// - nModifyType: AC_*_BONUS\r\n// - nDamageType: DAMAGE_TYPE_*\r\n//   * Default value for nDamageType should only ever be used in this function prototype.\r\neffect EffectACIncrease(int nValue, int nModifyType=AC_DODGE_BONUS, int nDamageType=AC_VS_DAMAGE_TYPE_ALL);",
     ),
     ScriptFunction(
         DataType.INT,
         "GetAC",
-        [ScriptParam(DataType.OBJECT, "oObject", None), ScriptParam(DataType.INT, "nForFutureUse", "0")],
+        [
+            ScriptParam(DataType.OBJECT, "oObject", None),
+            ScriptParam(DataType.INT, "nForFutureUse", "0"),
+        ],
         "// 116: If oObject is a creature, this will return that creature's armour class\r\n// If oObject is an item, door or placeable, this will return zero.\r\n// - nForFutureUse: this parameter is not currently used\r\n// * Return value if oObject is not a creature, item, door or placeable: -1\r\nint GetAC(object oObject, int nForFutureUse=0);",
         "// 116: If oObject is a creature, this will return that creature's armour class\r\n// If oObject is an item, door or placeable, this will return zero.\r\n// - nForFutureUse: this parameter is not currently used\r\n// * Return value if oObject is not a creature, item, door or placeable: -1\r\nint GetAC(object oObject, int nForFutureUse=0);",
     ),
     ScriptFunction(
         DataType.EFFECT,
         "EffectSavingThrowIncrease",
-        [ScriptParam(DataType.INT, "nSave", None), ScriptParam(DataType.INT, "nValue", None), ScriptParam(DataType.INT, "nSaveType", "0")],
+        [
+            ScriptParam(DataType.INT, "nSave", None),
+            ScriptParam(DataType.INT, "nValue", None),
+            ScriptParam(DataType.INT, "nSaveType", "0"),
+        ],
         "// 117: Create an AC Decrease effect\r\n// - nSave: SAVING_THROW_* (not SAVING_THROW_TYPE_*)\r\n// - nValue: size of AC decrease\r\n// - nSaveType: SAVING_THROW_TYPE_*\r\neffect EffectSavingThrowIncrease(int nSave, int nValue, int nSaveType=SAVING_THROW_TYPE_ALL);",
         "// 117: Create an AC Decrease effect\r\n// - nSave: SAVING_THROW_* (not SAVING_THROW_TYPE_*)\r\n// - nValue: size of AC decrease\r\n// - nSaveType: SAVING_THROW_TYPE_*\r\neffect EffectSavingThrowIncrease(int nSave, int nValue, int nSaveType=SAVING_THROW_TYPE_ALL);",
     ),
     ScriptFunction(
         DataType.EFFECT,
         "EffectAttackIncrease",
-        [ScriptParam(DataType.INT, "nBonus", None), ScriptParam(DataType.INT, "nModifierType", "0")],
+        [
+            ScriptParam(DataType.INT, "nBonus", None),
+            ScriptParam(DataType.INT, "nModifierType", "0"),
+        ],
         "// 118: Create an Attack Increase effect\r\n// - nBonus: size of attack bonus\r\n// - nModifierType: ATTACK_BONUS_*\r\neffect EffectAttackIncrease(int nBonus, int nModifierType=ATTACK_BONUS_MISC);",
         "// 118: Create an Attack Increase effect\r\n// - nBonus: size of attack bonus\r\n// - nModifierType: ATTACK_BONUS_*\r\neffect EffectAttackIncrease(int nBonus, int nModifierType=ATTACK_BONUS_MISC);",
     ),
     ScriptFunction(
         DataType.EFFECT,
         "EffectDamageReduction",
-        [ScriptParam(DataType.INT, "nAmount", None), ScriptParam(DataType.INT, "nDamagePower", None), ScriptParam(DataType.INT, "nLimit", "0")],
+        [
+            ScriptParam(DataType.INT, "nAmount", None),
+            ScriptParam(DataType.INT, "nDamagePower", None),
+            ScriptParam(DataType.INT, "nLimit", "0"),
+        ],
         "// 119: Create a Damage Reduction effect\r\n// - nAmount: amount of damage reduction\r\n// - nDamagePower: DAMAGE_POWER_*\r\n// - nLimit: How much damage the effect can absorb before disappearing.\r\n//   Set to zero for infinite\r\neffect EffectDamageReduction(int nAmount, int nDamagePower, int nLimit=0);",
         "// 119: Create a Damage Reduction effect\r\n// - nAmount: amount of damage reduction\r\n// - nDamagePower: DAMAGE_POWER_*\r\n// - nLimit: How much damage the effect can absorb before disappearing.\r\n//   Set to zero for infinite\r\neffect EffectDamageReduction(int nAmount, int nDamagePower, int nLimit=0);",
     ),
@@ -4174,7 +4276,10 @@ KOTOR_FUNCTIONS = [
     ScriptFunction(
         DataType.VOID,
         "SoundObjectSetFixedVariance",
-        [ScriptParam(DataType.OBJECT, "oSound", None), ScriptParam(DataType.FLOAT, "fFixedVariance", None)],
+        [
+            ScriptParam(DataType.OBJECT, "oSound", None),
+            ScriptParam(DataType.FLOAT, "fFixedVariance", None),
+        ],
         "// 124. SoundObjectSetFixedVariance\r\n// Sets the constant variance at which to play the sound object\r\n// This variance is a multiplier of the original sound\r\nvoid SoundObjectSetFixedVariance( object oSound, float fFixedVariance );",
         "// 124. SoundObjectSetFixedVariance\r\n// Sets the constant variance at which to play the sound object\r\n// This variance is a multiplier of the original sound\r\nvoid SoundObjectSetFixedVariance( object oSound, float fFixedVariance );",
     ),
@@ -4237,7 +4342,10 @@ KOTOR_FUNCTIONS = [
     ScriptFunction(
         DataType.VOID,
         "SignalEvent",
-        [ScriptParam(DataType.OBJECT, "oObject", None), ScriptParam(DataType.EVENT, "evToRun", None)],
+        [
+            ScriptParam(DataType.OBJECT, "oObject", None),
+            ScriptParam(DataType.EVENT, "evToRun", None),
+        ],
         "// 131: Cause oObject to run evToRun\r\nvoid SignalEvent(object oObject, event evToRun);",
         "// 131: Cause oObject to run evToRun\r\nvoid SignalEvent(object oObject, event evToRun);",
     ),
@@ -4251,7 +4359,10 @@ KOTOR_FUNCTIONS = [
     ScriptFunction(
         DataType.EFFECT,
         "EffectDeath",
-        [ScriptParam(DataType.INT, "nSpectacularDeath", "0"), ScriptParam(DataType.INT, "nDisplayFeedback", "1")],
+        [
+            ScriptParam(DataType.INT, "nSpectacularDeath", "0"),
+            ScriptParam(DataType.INT, "nDisplayFeedback", "1"),
+        ],
         "// 133: Create a Death effect\r\n// - nSpectacularDeath: if this is TRUE, the creature to which this effect is\r\n//   applied will die in an extraordinary fashion\r\n// - nDisplayFeedback\r\neffect EffectDeath(int nSpectacularDeath=FALSE, int nDisplayFeedback=TRUE);",
         "// 133: Create a Death effect\r\n// - nSpectacularDeath: if this is TRUE, the creature to which this effect is\r\n//   applied will die in an extraordinary fashion\r\n// - nDisplayFeedback\r\neffect EffectDeath(int nSpectacularDeath=FALSE, int nDisplayFeedback=TRUE);",
     ),
@@ -4265,14 +4376,20 @@ KOTOR_FUNCTIONS = [
     ScriptFunction(
         DataType.VOID,
         "ActionGiveItem",
-        [ScriptParam(DataType.OBJECT, "oItem", None), ScriptParam(DataType.OBJECT, "oGiveTo", None)],
+        [
+            ScriptParam(DataType.OBJECT, "oItem", None),
+            ScriptParam(DataType.OBJECT, "oGiveTo", None),
+        ],
         "// 135: Give oItem to oGiveTo\r\n// If oItem is not a valid item, or oGiveTo is not a valid object, nothing will\r\n// happen.\r\nvoid ActionGiveItem(object oItem, object oGiveTo);",
         "// 135: Give oItem to oGiveTo\r\n// If oItem is not a valid item, or oGiveTo is not a valid object, nothing will\r\n// happen.\r\nvoid ActionGiveItem(object oItem, object oGiveTo);",
     ),
     ScriptFunction(
         DataType.VOID,
         "ActionTakeItem",
-        [ScriptParam(DataType.OBJECT, "oItem", None), ScriptParam(DataType.OBJECT, "oTakeFrom", None)],
+        [
+            ScriptParam(DataType.OBJECT, "oItem", None),
+            ScriptParam(DataType.OBJECT, "oTakeFrom", None),
+        ],
         "// 136: Take oItem from oTakeFrom\r\n// If oItem is not a valid item, or oTakeFrom is not a valid object, nothing\r\n// will happen.\r\nvoid ActionTakeItem(object oItem, object oTakeFrom);",
         "// 136: Take oItem from oTakeFrom\r\n// If oItem is not a valid item, or oTakeFrom is not a valid object, nothing\r\n// will happen.\r\nvoid ActionTakeItem(object oItem, object oTakeFrom);",
     ),
@@ -4293,7 +4410,10 @@ KOTOR_FUNCTIONS = [
     ScriptFunction(
         DataType.INT,
         "GetAbilityScore",
-        [ScriptParam(DataType.OBJECT, "oCreature", None), ScriptParam(DataType.INT, "nAbilityType", None)],
+        [
+            ScriptParam(DataType.OBJECT, "oCreature", None),
+            ScriptParam(DataType.INT, "nAbilityType", None),
+        ],
         "// 139: Get the ability score of type nAbility for a creature (otherwise 0)\r\n// - oCreature: the creature whose ability score we wish to find out\r\n// - nAbilityType: ABILITY_*\r\n// Return value on error: 0\r\nint GetAbilityScore(object oCreature, int nAbilityType);",
         "// 139: Get the ability score of type nAbility for a creature (otherwise 0)\r\n// - oCreature: the creature whose ability score we wish to find out\r\n// - nAbilityType: ABILITY_*\r\n// Return value on error: 0\r\nint GetAbilityScore(object oCreature, int nAbilityType);",
     ),
@@ -4307,14 +4427,21 @@ KOTOR_FUNCTIONS = [
     ScriptFunction(
         DataType.VOID,
         "PrintVector",
-        [ScriptParam(DataType.VECTOR, "vVector", None), ScriptParam(DataType.INT, "bPrepend", None)],
+        [
+            ScriptParam(DataType.VECTOR, "vVector", None),
+            ScriptParam(DataType.INT, "bPrepend", None),
+        ],
         '// 141: Output vVector to the logfile.\r\n// - vVector\r\n// - bPrepend: if this is TRUE, the message will be prefixed with "PRINTVECTOR:"\r\nvoid PrintVector(vector vVector, int bPrepend);',
         '// 141: Output vVector to the logfile.\r\n// - vVector\r\n// - bPrepend: if this is TRUE, the message will be prefixed with "PRINTVECTOR:"\r\nvoid PrintVector(vector vVector, int bPrepend);',
     ),
     ScriptFunction(
         DataType.VECTOR,
         "Vector",
-        [ScriptParam(DataType.FLOAT, "x", "0.0"), ScriptParam(DataType.FLOAT, "y", "0.0"), ScriptParam(DataType.FLOAT, "z", "0.0")],
+        [
+            ScriptParam(DataType.FLOAT, "x", "0.0"),
+            ScriptParam(DataType.FLOAT, "y", "0.0"),
+            ScriptParam(DataType.FLOAT, "z", "0.0"),
+        ],
         "// 142: Create a vector with the specified values for x, y and z\r\nvector Vector(float x=0.0f, float y=0.0f, float z=0.0f);",
         "// 142: Create a vector with the specified values for x, y and z\r\nvector Vector(float x=0.0f, float y=0.0f, float z=0.0f);",
     ),
@@ -4342,14 +4469,20 @@ KOTOR_FUNCTIONS = [
     ScriptFunction(
         DataType.INT,
         "TouchAttackMelee",
-        [ScriptParam(DataType.OBJECT, "oTarget", None), ScriptParam(DataType.INT, "bDisplayFeedback", "1")],
+        [
+            ScriptParam(DataType.OBJECT, "oTarget", None),
+            ScriptParam(DataType.INT, "bDisplayFeedback", "1"),
+        ],
         "// 146: The caller will perform a Melee Touch Attack on oTarget\r\n// This is not an action, and it assumes the caller is already within range of\r\n// oTarget\r\n// * Returns 0 on a miss, 1 on a hit and 2 on a critical hit\r\nint TouchAttackMelee(object oTarget, int bDisplayFeedback=TRUE);",
         "// 146: The caller will perform a Melee Touch Attack on oTarget\r\n// This is not an action, and it assumes the caller is already within range of\r\n// oTarget\r\n// * Returns 0 on a miss, 1 on a hit and 2 on a critical hit\r\nint TouchAttackMelee(object oTarget, int bDisplayFeedback=TRUE);",
     ),
     ScriptFunction(
         DataType.INT,
         "TouchAttackRanged",
-        [ScriptParam(DataType.OBJECT, "oTarget", None), ScriptParam(DataType.INT, "bDisplayFeedback", "1")],
+        [
+            ScriptParam(DataType.OBJECT, "oTarget", None),
+            ScriptParam(DataType.INT, "bDisplayFeedback", "1"),
+        ],
         "// 147: The caller will perform a Ranged Touch Attack on oTarget\r\n// * Returns 0 on a miss, 1 on a hit and 2 on a critical hit\r\nint TouchAttackRanged(object oTarget, int bDisplayFeedback=TRUE);",
         "// 147: The caller will perform a Ranged Touch Attack on oTarget\r\n// * Returns 0 on a miss, 1 on a hit and 2 on a critical hit\r\nint TouchAttackRanged(object oTarget, int bDisplayFeedback=TRUE);",
     ),
@@ -4370,28 +4503,41 @@ KOTOR_FUNCTIONS = [
     ScriptFunction(
         DataType.VOID,
         "SetItemStackSize",
-        [ScriptParam(DataType.OBJECT, "oItem", None), ScriptParam(DataType.INT, "nStackSize", None)],
+        [
+            ScriptParam(DataType.OBJECT, "oItem", None),
+            ScriptParam(DataType.INT, "nStackSize", None),
+        ],
         "// 150:\r\n// Set the stack size of an item.\r\n// NOTE: The stack size will be clamped to between 1 and the max stack size (as\r\n//       specified in the base item).\r\nvoid SetItemStackSize( object oItem, int nStackSize );",
         "// 150:\r\n// Set the stack size of an item.\r\n// NOTE: The stack size will be clamped to between 1 and the max stack size (as\r\n//       specified in the base item).\r\nvoid SetItemStackSize( object oItem, int nStackSize );",
     ),
     ScriptFunction(
         DataType.FLOAT,
         "GetDistanceBetween",
-        [ScriptParam(DataType.OBJECT, "oObjectA", None), ScriptParam(DataType.OBJECT, "oObjectB", None)],
+        [
+            ScriptParam(DataType.OBJECT, "oObjectA", None),
+            ScriptParam(DataType.OBJECT, "oObjectB", None),
+        ],
         "// 151: Get the distance in metres between oObjectA and oObjectB.\r\n// * Return value if either object is invalid: 0.0f\r\nfloat GetDistanceBetween(object oObjectA, object oObjectB);",
         "// 151: Get the distance in metres between oObjectA and oObjectB.\r\n// * Return value if either object is invalid: 0.0f\r\nfloat GetDistanceBetween(object oObjectA, object oObjectB);",
     ),
     ScriptFunction(
         DataType.VOID,
         "SetReturnStrref",
-        [ScriptParam(DataType.INT, "bShow", None), ScriptParam(DataType.INT, "srStringRef", "0"), ScriptParam(DataType.INT, "srReturnQueryStrRef", "0")],
+        [
+            ScriptParam(DataType.INT, "bShow", None),
+            ScriptParam(DataType.INT, "srStringRef", "0"),
+            ScriptParam(DataType.INT, "srReturnQueryStrRef", "0"),
+        ],
         "// 152: SetReturnStrref\r\n// This function will turn on/off the display of the 'return to ebon hawk' option\r\n// on the map screen and allow the string to be changed to an arbitrary string ref\r\n// srReturnQueryStrRef is the string ref that will be displayed in the query pop\r\n// up confirming that you wish to return to the specified location.\r\nvoid SetReturnStrref(int bShow, int srStringRef = 0, int srReturnQueryStrRef = 0);",
         "// 152: SetReturnStrref\r\n// This function will turn on/off the display of the 'return to ebon hawk' option\r\n// on the map screen and allow the string to be changed to an arbitrary string ref\r\n// srReturnQueryStrRef is the string ref that will be displayed in the query pop\r\n// up confirming that you wish to return to the specified location.\r\nvoid SetReturnStrref(int bShow, int srStringRef = 0, int srReturnQueryStrRef = 0);",
     ),
     ScriptFunction(
         DataType.EFFECT,
         "EffectForceJump",
-        [ScriptParam(DataType.OBJECT, "oTarget", None), ScriptParam(DataType.INT, "nAdvanced", "0")],
+        [
+            ScriptParam(DataType.OBJECT, "oTarget", None),
+            ScriptParam(DataType.INT, "nAdvanced", "0"),
+        ],
         "// 153: EffectForceJump\r\n// The effect required for force jumping\r\neffect EffectForceJump(object oTarget, int nAdvanced = 0);",
         "// 153: EffectForceJump\r\n// The effect required for force jumping\r\neffect EffectForceJump(object oTarget, int nAdvanced = 0);",
     ),
@@ -4405,7 +4551,10 @@ KOTOR_FUNCTIONS = [
     ScriptFunction(
         DataType.OBJECT,
         "GetItemInSlot",
-        [ScriptParam(DataType.INT, "nInventorySlot", None), ScriptParam(DataType.OBJECT, "oCreature", OBJECT_SELF)],
+        [
+            ScriptParam(DataType.INT, "nInventorySlot", None),
+            ScriptParam(DataType.OBJECT, "oCreature", OBJECT_SELF),
+        ],
         "// 155: Get the object which is in oCreature's specified inventory slot\r\n// - nInventorySlot: INVENTORY_SLOT_*\r\n// - oCreature\r\n// * Returns OBJECT_INVALID if oCreature is not a valid creature or there is no\r\n//   item in nInventorySlot.\r\nobject GetItemInSlot(int nInventorySlot, object oCreature=OBJECT_SELF);",
         "// 155: Get the object which is in oCreature's specified inventory slot\r\n// - nInventorySlot: INVENTORY_SLOT_*\r\n// - oCreature\r\n// * Returns OBJECT_INVALID if oCreature is not a valid creature or there is no\r\n//   item in nInventorySlot.\r\nobject GetItemInSlot(int nInventorySlot, object oCreature=OBJECT_SELF);",
     ),
@@ -4440,7 +4589,10 @@ KOTOR_FUNCTIONS = [
     ScriptFunction(
         DataType.VOID,
         "SetGlobalString",
-        [ScriptParam(DataType.STRING, "sIdentifier", None), ScriptParam(DataType.STRING, "sValue", None)],
+        [
+            ScriptParam(DataType.STRING, "sIdentifier", None),
+            ScriptParam(DataType.STRING, "sValue", None),
+        ],
         "// 160: Sets a global string with the specified identifier.  This is an EXTREMELY\r\n//      restricted function - do not use without expilicit permission.\r\n//      This means if you are not Preston.  Then go see him if you're even thinking\r\n//      about using this.\r\nvoid SetGlobalString( string sIdentifier, string sValue );",
         "// 160: Sets a global string with the specified identifier.  This is an EXTREMELY\r\n//      restricted function - do not use without expilicit permission.\r\n//      This means if you are not Preston.  Then go see him if you're even thinking\r\n//      about using this.\r\nvoid SetGlobalString( string sIdentifier, string sValue );",
     ),
@@ -4454,7 +4606,10 @@ KOTOR_FUNCTIONS = [
     ScriptFunction(
         DataType.VOID,
         "SetCommandable",
-        [ScriptParam(DataType.INT, "bCommandable", None), ScriptParam(DataType.OBJECT, "oTarget", OBJECT_SELF)],
+        [
+            ScriptParam(DataType.INT, "bCommandable", None),
+            ScriptParam(DataType.OBJECT, "oTarget", OBJECT_SELF),
+        ],
         "// 162: Set whether oTarget's action stack can be modified\r\nvoid SetCommandable(int bCommandable, object oTarget=OBJECT_SELF);",
         "// 162: Set whether oTarget's action stack can be modified\r\nvoid SetCommandable(int bCommandable, object oTarget=OBJECT_SELF);",
     ),
@@ -4468,7 +4623,10 @@ KOTOR_FUNCTIONS = [
     ScriptFunction(
         DataType.EFFECT,
         "EffectRegenerate",
-        [ScriptParam(DataType.INT, "nAmount", None), ScriptParam(DataType.FLOAT, "fIntervalSeconds", None)],
+        [
+            ScriptParam(DataType.INT, "nAmount", None),
+            ScriptParam(DataType.FLOAT, "fIntervalSeconds", None),
+        ],
         "// 164: Create a Regenerate effect.\r\n// - nAmount: amount of damage to be regenerated per time interval\r\n// - fIntervalSeconds: length of interval in seconds\r\neffect EffectRegenerate(int nAmount, float fIntervalSeconds);",
         "// 164: Create a Regenerate effect.\r\n// - nAmount: amount of damage to be regenerated per time interval\r\n// - fIntervalSeconds: length of interval in seconds\r\neffect EffectRegenerate(int nAmount, float fIntervalSeconds);",
     ),
@@ -4489,7 +4647,10 @@ KOTOR_FUNCTIONS = [
     ScriptFunction(
         DataType.VOID,
         "ActionForceFollowObject",
-        [ScriptParam(DataType.OBJECT, "oFollow", None), ScriptParam(DataType.FLOAT, "fFollowDistance", "0.0")],
+        [
+            ScriptParam(DataType.OBJECT, "oFollow", None),
+            ScriptParam(DataType.FLOAT, "fFollowDistance", "0.0"),
+        ],
         "// 167: The action subject will follow oFollow until a ClearAllActions() is called.\r\n// - oFollow: this is the object to be followed\r\n// - fFollowDistance: follow distance in metres\r\n// * No return value\r\nvoid ActionForceFollowObject(object oFollow, float fFollowDistance=0.0f);",
         "// 167: The action subject will follow oFollow until a ClearAllActions() is called.\r\n// - oFollow: this is the object to be followed\r\n// - fFollowDistance: follow distance in metres\r\n// * No return value\r\nvoid ActionForceFollowObject(object oFollow, float fFollowDistance=0.0f);",
     ),
@@ -4503,7 +4664,10 @@ KOTOR_FUNCTIONS = [
     ScriptFunction(
         DataType.INT,
         "ResistForce",
-        [ScriptParam(DataType.OBJECT, "oSource", None), ScriptParam(DataType.OBJECT, "oTarget", None)],
+        [
+            ScriptParam(DataType.OBJECT, "oSource", None),
+            ScriptParam(DataType.OBJECT, "oTarget", None),
+        ],
         "// 169: Do a Force Resistance check between oSource and oTarget, returning TRUE if\r\n// the force was resisted.\r\n// * Return value if oSource or oTarget is an invalid object: FALSE\r\nint ResistForce(object oSource, object oTarget);",
         "// 169: Do a Force Resistance check between oSource and oTarget, returning TRUE if\r\n// the force was resisted.\r\n// * Return value if oSource or oTarget is an invalid object: FALSE\r\nint ResistForce(object oSource, object oTarget);",
     ),
@@ -4529,14 +4693,20 @@ KOTOR_FUNCTIONS = [
     ScriptFunction(
         DataType.INT,
         "GetFactionEqual",
-        [ScriptParam(DataType.OBJECT, "oFirstObject", None), ScriptParam(DataType.OBJECT, "oSecondObject", OBJECT_SELF)],
+        [
+            ScriptParam(DataType.OBJECT, "oFirstObject", None),
+            ScriptParam(DataType.OBJECT, "oSecondObject", OBJECT_SELF),
+        ],
         "// 172: * Returns TRUE if the Faction Ids of the two objects are the same\r\nint GetFactionEqual(object oFirstObject, object oSecondObject=OBJECT_SELF);",
         "// 172: * Returns TRUE if the Faction Ids of the two objects are the same\r\nint GetFactionEqual(object oFirstObject, object oSecondObject=OBJECT_SELF);",
     ),
     ScriptFunction(
         DataType.VOID,
         "ChangeFaction",
-        [ScriptParam(DataType.OBJECT, "oObjectToChangeFaction", None), ScriptParam(DataType.OBJECT, "oMemberOfFactionToJoin", None)],
+        [
+            ScriptParam(DataType.OBJECT, "oObjectToChangeFaction", None),
+            ScriptParam(DataType.OBJECT, "oMemberOfFactionToJoin", None),
+        ],
         "// 173: Make oObjectToChangeFaction join the faction of oMemberOfFactionToJoin.\r\n// NB. ** This will only work for two NPCs **\r\nvoid ChangeFaction(object oObjectToChangeFaction, object oMemberOfFactionToJoin);",
         "// 173: Make oObjectToChangeFaction join the faction of oMemberOfFactionToJoin.\r\n// NB. ** This will only work for two NPCs **\r\nvoid ChangeFaction(object oObjectToChangeFaction, object oMemberOfFactionToJoin);",
     ),
@@ -4557,14 +4727,21 @@ KOTOR_FUNCTIONS = [
     ScriptFunction(
         DataType.VOID,
         "SetListenPattern",
-        [ScriptParam(DataType.OBJECT, "oObject", None), ScriptParam(DataType.STRING, "sPattern", None), ScriptParam(DataType.INT, "nNumber", "0")],
+        [
+            ScriptParam(DataType.OBJECT, "oObject", None),
+            ScriptParam(DataType.STRING, "sPattern", None),
+            ScriptParam(DataType.INT, "nNumber", "0"),
+        ],
         "// 176: Set the string for oObject to listen for.\r\n// Note: this does not set oObject to be listening.\r\nvoid SetListenPattern(object oObject, string sPattern, int nNumber=0);",
         "// 176: Set the string for oObject to listen for.\r\n// Note: this does not set oObject to be listening.\r\nvoid SetListenPattern(object oObject, string sPattern, int nNumber=0);",
     ),
     ScriptFunction(
         DataType.INT,
         "TestStringAgainstPattern",
-        [ScriptParam(DataType.STRING, "sPattern", None), ScriptParam(DataType.STRING, "sStringToTest", None)],
+        [
+            ScriptParam(DataType.STRING, "sPattern", None),
+            ScriptParam(DataType.STRING, "sStringToTest", None),
+        ],
         "// 177: * Returns TRUE if sStringToTest matches sPattern.\r\nint TestStringAgainstPattern(string sPattern, string sStringToTest);",
         "// 177: * Returns TRUE if sStringToTest matches sPattern.\r\nint TestStringAgainstPattern(string sPattern, string sStringToTest);",
     ),
@@ -4585,35 +4762,50 @@ KOTOR_FUNCTIONS = [
     ScriptFunction(
         DataType.EFFECT,
         "EffectVisualEffect",
-        [ScriptParam(DataType.INT, "nVisualEffectId", None), ScriptParam(DataType.INT, "nMissEffect", "0")],
+        [
+            ScriptParam(DataType.INT, "nVisualEffectId", None),
+            ScriptParam(DataType.INT, "nMissEffect", "0"),
+        ],
         "// 180: * Create a Visual Effect that can be applied to an object.\r\n// - nVisualEffectId\r\n// - nMissEffect: if this is TRUE, a random vector near or past the target will\r\n//   be generated, on which to play the effect\r\neffect EffectVisualEffect(int nVisualEffectId, int nMissEffect=FALSE);",
         "// 180: * Create a Visual Effect that can be applied to an object.\r\n// - nVisualEffectId\r\n// - nMissEffect: if this is TRUE, a random vector near or past the target will\r\n//   be generated, on which to play the effect\r\neffect EffectVisualEffect(int nVisualEffectId, int nMissEffect=FALSE);",
     ),
     ScriptFunction(
         DataType.OBJECT,
         "GetFactionWeakestMember",
-        [ScriptParam(DataType.OBJECT, "oFactionMember", OBJECT_SELF), ScriptParam(DataType.INT, "bMustBeVisible", "1")],
+        [
+            ScriptParam(DataType.OBJECT, "oFactionMember", OBJECT_SELF),
+            ScriptParam(DataType.INT, "bMustBeVisible", "1"),
+        ],
         "// 181: Get the weakest member of oFactionMember's faction.\r\n// * Returns OBJECT_INVALID if oFactionMember's faction is invalid.\r\nobject GetFactionWeakestMember(object oFactionMember=OBJECT_SELF, int bMustBeVisible=TRUE);",
         "// 181: Get the weakest member of oFactionMember's faction.\r\n// * Returns OBJECT_INVALID if oFactionMember's faction is invalid.\r\nobject GetFactionWeakestMember(object oFactionMember=OBJECT_SELF, int bMustBeVisible=TRUE);",
     ),
     ScriptFunction(
         DataType.OBJECT,
         "GetFactionStrongestMember",
-        [ScriptParam(DataType.OBJECT, "oFactionMember", OBJECT_SELF), ScriptParam(DataType.INT, "bMustBeVisible", "1")],
+        [
+            ScriptParam(DataType.OBJECT, "oFactionMember", OBJECT_SELF),
+            ScriptParam(DataType.INT, "bMustBeVisible", "1"),
+        ],
         "// 182: Get the strongest member of oFactionMember's faction.\r\n// * Returns OBJECT_INVALID if oFactionMember's faction is invalid.\r\nobject GetFactionStrongestMember(object oFactionMember=OBJECT_SELF, int bMustBeVisible=TRUE);",
         "// 182: Get the strongest member of oFactionMember's faction.\r\n// * Returns OBJECT_INVALID if oFactionMember's faction is invalid.\r\nobject GetFactionStrongestMember(object oFactionMember=OBJECT_SELF, int bMustBeVisible=TRUE);",
     ),
     ScriptFunction(
         DataType.OBJECT,
         "GetFactionMostDamagedMember",
-        [ScriptParam(DataType.OBJECT, "oFactionMember", OBJECT_SELF), ScriptParam(DataType.INT, "bMustBeVisible", "1")],
+        [
+            ScriptParam(DataType.OBJECT, "oFactionMember", OBJECT_SELF),
+            ScriptParam(DataType.INT, "bMustBeVisible", "1"),
+        ],
         "// 183: Get the member of oFactionMember's faction that has taken the most hit points\r\n// of damage.\r\n// * Returns OBJECT_INVALID if oFactionMember's faction is invalid.\r\nobject GetFactionMostDamagedMember(object oFactionMember=OBJECT_SELF, int bMustBeVisible=TRUE);",
         "// 183: Get the member of oFactionMember's faction that has taken the most hit points\r\n// of damage.\r\n// * Returns OBJECT_INVALID if oFactionMember's faction is invalid.\r\nobject GetFactionMostDamagedMember(object oFactionMember=OBJECT_SELF, int bMustBeVisible=TRUE);",
     ),
     ScriptFunction(
         DataType.OBJECT,
         "GetFactionLeastDamagedMember",
-        [ScriptParam(DataType.OBJECT, "oFactionMember", OBJECT_SELF), ScriptParam(DataType.INT, "bMustBeVisible", "1")],
+        [
+            ScriptParam(DataType.OBJECT, "oFactionMember", OBJECT_SELF),
+            ScriptParam(DataType.INT, "bMustBeVisible", "1"),
+        ],
         "// 184: Get the member of oFactionMember's faction that has taken the fewest hit\r\n// points of damage.\r\n// * Returns OBJECT_INVALID if oFactionMember's faction is invalid.\r\nobject GetFactionLeastDamagedMember(object oFactionMember=OBJECT_SELF, int bMustBeVisible=TRUE);",
         "// 184: Get the member of oFactionMember's faction that has taken the fewest hit\r\n// points of damage.\r\n// * Returns OBJECT_INVALID if oFactionMember's faction is invalid.\r\nobject GetFactionLeastDamagedMember(object oFactionMember=OBJECT_SELF, int bMustBeVisible=TRUE);",
     ),
@@ -4627,7 +4819,10 @@ KOTOR_FUNCTIONS = [
     ScriptFunction(
         DataType.INT,
         "GetFactionAverageReputation",
-        [ScriptParam(DataType.OBJECT, "oSourceFactionMember", None), ScriptParam(DataType.OBJECT, "oTarget", None)],
+        [
+            ScriptParam(DataType.OBJECT, "oSourceFactionMember", None),
+            ScriptParam(DataType.OBJECT, "oTarget", None),
+        ],
         "// 186: Get an integer between 0 and 100 (inclusive) that represents how\r\n// oSourceFactionMember's faction feels about oTarget.\r\n// * Return value on error: -1\r\nint GetFactionAverageReputation(object oSourceFactionMember, object oTarget);",
         "// 186: Get an integer between 0 and 100 (inclusive) that represents how\r\n// oSourceFactionMember's faction feels about oTarget.\r\n// * Return value on error: -1\r\nint GetFactionAverageReputation(object oSourceFactionMember, object oTarget);",
     ),
@@ -4669,14 +4864,20 @@ KOTOR_FUNCTIONS = [
     ScriptFunction(
         DataType.OBJECT,
         "GetFactionWorstAC",
-        [ScriptParam(DataType.OBJECT, "oFactionMember", OBJECT_SELF), ScriptParam(DataType.INT, "bMustBeVisible", "1")],
+        [
+            ScriptParam(DataType.OBJECT, "oFactionMember", OBJECT_SELF),
+            ScriptParam(DataType.INT, "bMustBeVisible", "1"),
+        ],
         "// 192: Get the object faction member with the lowest armour class.\r\n// * Returns OBJECT_INVALID if oFactionMember's faction is invalid.\r\nobject GetFactionWorstAC(object oFactionMember=OBJECT_SELF, int bMustBeVisible=TRUE);",
         "// 192: Get the object faction member with the lowest armour class.\r\n// * Returns OBJECT_INVALID if oFactionMember's faction is invalid.\r\nobject GetFactionWorstAC(object oFactionMember=OBJECT_SELF, int bMustBeVisible=TRUE);",
     ),
     ScriptFunction(
         DataType.OBJECT,
         "GetFactionBestAC",
-        [ScriptParam(DataType.OBJECT, "oFactionMember", OBJECT_SELF), ScriptParam(DataType.INT, "bMustBeVisible", "1")],
+        [
+            ScriptParam(DataType.OBJECT, "oFactionMember", OBJECT_SELF),
+            ScriptParam(DataType.INT, "bMustBeVisible", "1"),
+        ],
         "// 193: Get the object faction member with the highest armour class.\r\n// * Returns OBJECT_INVALID if oFactionMember's faction is invalid.\r\nobject GetFactionBestAC(object oFactionMember=OBJECT_SELF, int bMustBeVisible=TRUE);",
         "// 193: Get the object faction member with the highest armour class.\r\n// * Returns OBJECT_INVALID if oFactionMember's faction is invalid.\r\nobject GetFactionBestAC(object oFactionMember=OBJECT_SELF, int bMustBeVisible=TRUE);",
     ),
@@ -4697,7 +4898,10 @@ KOTOR_FUNCTIONS = [
     ScriptFunction(
         DataType.VOID,
         "ActionJumpToObject",
-        [ScriptParam(DataType.OBJECT, "oToJumpTo", None), ScriptParam(DataType.INT, "bWalkStraightLineToPoint", "1")],
+        [
+            ScriptParam(DataType.OBJECT, "oToJumpTo", None),
+            ScriptParam(DataType.INT, "bWalkStraightLineToPoint", "1"),
+        ],
         "// 196: Jump to an object ID, or as near to it as possible.\r\nvoid ActionJumpToObject(object oToJumpTo, int bWalkStraightLineToPoint=TRUE);",
         "// 196: Jump to an object ID, or as near to it as possible.\r\nvoid ActionJumpToObject(object oToJumpTo, int bWalkStraightLineToPoint=TRUE);",
     ),
@@ -4718,7 +4922,10 @@ KOTOR_FUNCTIONS = [
     ScriptFunction(
         DataType.EFFECT,
         "EffectLinkEffects",
-        [ScriptParam(DataType.EFFECT, "eChildEffect", None), ScriptParam(DataType.EFFECT, "eParentEffect", None)],
+        [
+            ScriptParam(DataType.EFFECT, "eChildEffect", None),
+            ScriptParam(DataType.EFFECT, "eParentEffect", None),
+        ],
         '// 199: Link the two supplied effects, returning eChildEffect as a child of\r\n// eParentEffect.\r\n// Note: When applying linked effects if the target is immune to all valid\r\n// effects all other effects will be removed as well. This means that if you\r\n// apply a visual effect and a silence effect (in a link) and the target is\r\n// immune to the silence effect that the visual effect will get removed as well.\r\n// Visual Effects are not considered "valid" effects for the purposes of\r\n// determining if an effect will be removed or not and as such should never be\r\n// packaged *only* with other visual effects in a link.\r\neffect EffectLinkEffects(effect eChildEffect, effect eParentEffect );',
         '// 199: Link the two supplied effects, returning eChildEffect as a child of\r\n// eParentEffect.\r\n// Note: When applying linked effects if the target is immune to all valid\r\n// effects all other effects will be removed as well. This means that if you\r\n// apply a visual effect and a silence effect (in a link) and the target is\r\n// immune to the silence effect that the visual effect will get removed as well.\r\n// Visual Effects are not considered "valid" effects for the purposes of\r\n// determining if an effect will be removed or not and as such should never be\r\n// packaged *only* with other visual effects in a link.\r\neffect EffectLinkEffects(effect eChildEffect, effect eParentEffect );',
     ),
@@ -4732,7 +4939,11 @@ KOTOR_FUNCTIONS = [
     ScriptFunction(
         DataType.VOID,
         "AdjustAlignment",
-        [ScriptParam(DataType.OBJECT, "oSubject", None), ScriptParam(DataType.INT, "nAlignment", None), ScriptParam(DataType.INT, "nShift", None)],
+        [
+            ScriptParam(DataType.OBJECT, "oSubject", None),
+            ScriptParam(DataType.INT, "nAlignment", None),
+            ScriptParam(DataType.INT, "nShift", None),
+        ],
         "// 201: Adjust the alignment of oSubject.\r\n// - oSubject\r\n// - nAlignment:\r\n//   -> ALIGNMENT_LIGHT_SIDE/ALIGNMENT_DARK_SIDE: oSubject's\r\n//      alignment will be shifted in the direction specified\r\n//   -> ALIGNMENT_NEUTRAL: nShift is applied to oSubject's dark side/light side\r\n//      alignment value in the direction which is towards neutrality.\r\n//     e.g. If oSubject has an alignment value of 80 (i.e. light side)\r\n//          then if nShift is 15, the alignment value will become (80-15)=65\r\n//     Furthermore, the shift will at most take the alignment value to 50 and\r\n//     not beyond.\r\n//     e.g. If oSubject has an alignment value of 40 then if nShift is 15,\r\n//          the aligment value will become 50\r\n// - nShift: this is the desired shift in alignment\r\n// * No return value\r\nvoid AdjustAlignment(object oSubject, int nAlignment, int nShift);",
         "// 201: Adjust the alignment of oSubject.\r\n// - oSubject\r\n// - nAlignment:\r\n//   -> ALIGNMENT_LIGHT_SIDE/ALIGNMENT_DARK_SIDE: oSubject's\r\n//      alignment will be shifted in the direction specified\r\n//   -> ALIGNMENT_NEUTRAL: nShift is applied to oSubject's dark side/light side\r\n//      alignment value in the direction which is towards neutrality.\r\n//     e.g. If oSubject has an alignment value of 80 (i.e. light side)\r\n//          then if nShift is 15, the alignment value will become (80-15)=65\r\n//     Furthermore, the shift will at most take the alignment value to 50 and\r\n//     not beyond.\r\n//     e.g. If oSubject has an alignment value of 40 then if nShift is 15,\r\n//          the aligment value will become 50\r\n// - nShift: this is the desired shift in alignment\r\n// * No return value\r\nvoid AdjustAlignment(object oSubject, int nAlignment, int nShift);",
     ),
@@ -4746,7 +4957,10 @@ KOTOR_FUNCTIONS = [
     ScriptFunction(
         DataType.VOID,
         "SetAreaTransitionBMP",
-        [ScriptParam(DataType.INT, "nPredefinedAreaTransition", None), ScriptParam(DataType.STRING, "sCustomAreaTransitionBMP", "")],
+        [
+            ScriptParam(DataType.INT, "nPredefinedAreaTransition", None),
+            ScriptParam(DataType.STRING, "sCustomAreaTransitionBMP", ""),
+        ],
         '// 203: Set the transition bitmap of a player; this should only be called in area\r\n// transition scripts. This action should be run by the person "clicking" the\r\n// area transition via AssignCommand.\r\n// - nPredefinedAreaTransition:\r\n//   -> To use a predefined area transition bitmap, use one of AREA_TRANSITION_*\r\n//   -> To use a custom, user-defined area transition bitmap, use\r\n//      AREA_TRANSITION_USER_DEFINED and specify the filename in the second\r\n//      parameter\r\n// - sCustomAreaTransitionBMP: this is the filename of a custom, user-defined\r\n//   area transition bitmap\r\nvoid SetAreaTransitionBMP(int nPredefinedAreaTransition, string sCustomAreaTransitionBMP="");',
         '// 203: Set the transition bitmap of a player; this should only be called in area\r\n// transition scripts. This action should be run by the person "clicking" the\r\n// area transition via AssignCommand.\r\n// - nPredefinedAreaTransition:\r\n//   -> To use a predefined area transition bitmap, use one of AREA_TRANSITION_*\r\n//   -> To use a custom, user-defined area transition bitmap, use\r\n//      AREA_TRANSITION_USER_DEFINED and specify the filename in the second\r\n//      parameter\r\n// - sCustomAreaTransitionBMP: this is the filename of a custom, user-defined\r\n//   area transition bitmap\r\nvoid SetAreaTransitionBMP(int nPredefinedAreaTransition, string sCustomAreaTransitionBMP="");',
     ),
@@ -4799,14 +5013,21 @@ KOTOR_FUNCTIONS = [
     ScriptFunction(
         DataType.INT,
         "GetReputation",
-        [ScriptParam(DataType.OBJECT, "oSource", None), ScriptParam(DataType.OBJECT, "oTarget", None)],
+        [
+            ScriptParam(DataType.OBJECT, "oSource", None),
+            ScriptParam(DataType.OBJECT, "oTarget", None),
+        ],
         "// 208: Get an integer between 0 and 100 (inclusive) that represents how oSource\r\n// feels about oTarget.\r\n// -> 0-10 means oSource is hostile to oTarget\r\n// -> 11-89 means oSource is neutral to oTarget\r\n// -> 90-100 means oSource is friendly to oTarget\r\n// * Returns -1 if oSource or oTarget does not identify a valid object\r\nint GetReputation(object oSource, object oTarget);",
         "// 208: Get an integer between 0 and 100 (inclusive) that represents how oSource\r\n// feels about oTarget.\r\n// -> 0-10 means oSource is hostile to oTarget\r\n// -> 11-89 means oSource is neutral to oTarget\r\n// -> 90-100 means oSource is friendly to oTarget\r\n// * Returns -1 if oSource or oTarget does not identify a valid object\r\nint GetReputation(object oSource, object oTarget);",
     ),
     ScriptFunction(
         DataType.VOID,
         "AdjustReputation",
-        [ScriptParam(DataType.OBJECT, "oTarget", None), ScriptParam(DataType.OBJECT, "oSourceFactionMember", None), ScriptParam(DataType.INT, "nAdjustment", None)],
+        [
+            ScriptParam(DataType.OBJECT, "oTarget", None),
+            ScriptParam(DataType.OBJECT, "oSourceFactionMember", None),
+            ScriptParam(DataType.INT, "nAdjustment", None),
+        ],
         "// 209: Adjust how oSourceFactionMember's faction feels about oTarget by the\r\n// specified amount.\r\n// Note: This adjusts Faction Reputation, how the entire faction that\r\n// oSourceFactionMember is in, feels about oTarget.\r\n// * No return value\r\nvoid AdjustReputation(object oTarget, object oSourceFactionMember, int nAdjustment);",
         "// 209: Adjust how oSourceFactionMember's faction feels about oTarget by the\r\n// specified amount.\r\n// Note: This adjusts Faction Reputation, how the entire faction that\r\n// oSourceFactionMember is in, feels about oTarget.\r\n// * No return value\r\nvoid AdjustReputation(object oTarget, object oSourceFactionMember, int nAdjustment);",
     ),
@@ -4848,7 +5069,10 @@ KOTOR_FUNCTIONS = [
     ScriptFunction(
         DataType.LOCATION,
         "Location",
-        [ScriptParam(DataType.VECTOR, "vPosition", None), ScriptParam(DataType.FLOAT, "fOrientation", None)],
+        [
+            ScriptParam(DataType.VECTOR, "vPosition", None),
+            ScriptParam(DataType.FLOAT, "fOrientation", None),
+        ],
         "// 215: Create a location.\r\nlocation Location(vector vPosition, float fOrientation);",
         "// 215: Create a location.\r\nlocation Location(vector vPosition, float fOrientation);",
     ),
@@ -4900,7 +5124,10 @@ KOTOR_FUNCTIONS = [
     ScriptFunction(
         DataType.VOID,
         "SpeakString",
-        [ScriptParam(DataType.STRING, "sStringToSpeak", None), ScriptParam(DataType.INT, "nTalkVolume", "0")],
+        [
+            ScriptParam(DataType.STRING, "sStringToSpeak", None),
+            ScriptParam(DataType.INT, "nTalkVolume", "0"),
+        ],
         "// 221: The caller will immediately speak sStringToSpeak (this is different from\r\n// ActionSpeakString)\r\n// - sStringToSpeak\r\n// - nTalkVolume: TALKVOLUME_*\r\nvoid SpeakString(string sStringToSpeak, int nTalkVolume=TALKVOLUME_TALK);",
         "// 221: The caller will immediately speak sStringToSpeak (this is different from\r\n// ActionSpeakString)\r\n// - sStringToSpeak\r\n// - nTalkVolume: TALKVOLUME_*\r\nvoid SpeakString(string sStringToSpeak, int nTalkVolume=TALKVOLUME_TALK);",
     ),
@@ -4951,21 +5178,33 @@ KOTOR_FUNCTIONS = [
     ScriptFunction(
         DataType.OBJECT,
         "GetNearestObject",
-        [ScriptParam(DataType.INT, "nObjectType", "32767"), ScriptParam(DataType.OBJECT, "oTarget", OBJECT_SELF), ScriptParam(DataType.INT, "nNth", "1")],
+        [
+            ScriptParam(DataType.INT, "nObjectType", "32767"),
+            ScriptParam(DataType.OBJECT, "oTarget", OBJECT_SELF),
+            ScriptParam(DataType.INT, "nNth", "1"),
+        ],
         "// 227: Get the Nth object nearest to oTarget that is of the specified type.\r\n// - nObjectType: OBJECT_TYPE_*\r\n// - oTarget\r\n// - nNth\r\n// * Return value on error: OBJECT_INVALID\r\nobject GetNearestObject(int nObjectType=OBJECT_TYPE_ALL, object oTarget=OBJECT_SELF, int nNth=1);",
         "// 227: Get the Nth object nearest to oTarget that is of the specified type.\r\n// - nObjectType: OBJECT_TYPE_*\r\n// - oTarget\r\n// - nNth\r\n// * Return value on error: OBJECT_INVALID\r\nobject GetNearestObject(int nObjectType=OBJECT_TYPE_ALL, object oTarget=OBJECT_SELF, int nNth=1);",
     ),
     ScriptFunction(
         DataType.OBJECT,
         "GetNearestObjectToLocation",
-        [ScriptParam(DataType.INT, "nObjectType", None), ScriptParam(DataType.LOCATION, "lLocation", None), ScriptParam(DataType.INT, "nNth", "1")],
+        [
+            ScriptParam(DataType.INT, "nObjectType", None),
+            ScriptParam(DataType.LOCATION, "lLocation", None),
+            ScriptParam(DataType.INT, "nNth", "1"),
+        ],
         "// 228: Get the nNth object nearest to lLocation that is of the specified type.\r\n// - nObjectType: OBJECT_TYPE_*\r\n// - lLocation\r\n// - nNth\r\n// * Return value on error: OBJECT_INVALID\r\nobject GetNearestObjectToLocation(int nObjectType, location lLocation, int nNth=1);",
         "// 228: Get the nNth object nearest to lLocation that is of the specified type.\r\n// - nObjectType: OBJECT_TYPE_*\r\n// - lLocation\r\n// - nNth\r\n// * Return value on error: OBJECT_INVALID\r\nobject GetNearestObjectToLocation(int nObjectType, location lLocation, int nNth=1);",
     ),
     ScriptFunction(
         DataType.OBJECT,
         "GetNearestObjectByTag",
-        [ScriptParam(DataType.STRING, "sTag", None), ScriptParam(DataType.OBJECT, "oTarget", OBJECT_SELF), ScriptParam(DataType.INT, "nNth", "1")],
+        [
+            ScriptParam(DataType.STRING, "sTag", None),
+            ScriptParam(DataType.OBJECT, "oTarget", OBJECT_SELF),
+            ScriptParam(DataType.INT, "nNth", "1"),
+        ],
         "// 229: Get the nth Object nearest to oTarget that has sTag as its tag.\r\n// * Return value on error: OBJECT_INVALID\r\nobject GetNearestObjectByTag(string sTag, object oTarget=OBJECT_SELF, int nNth=1);",
         "// 229: Get the nth Object nearest to oTarget that has sTag as its tag.\r\n// * Return value on error: OBJECT_INVALID\r\nobject GetNearestObjectByTag(string sTag, object oTarget=OBJECT_SELF, int nNth=1);",
     ),
@@ -5014,21 +5253,30 @@ KOTOR_FUNCTIONS = [
     ScriptFunction(
         DataType.INT,
         "GetIsEnemy",
-        [ScriptParam(DataType.OBJECT, "oTarget", None), ScriptParam(DataType.OBJECT, "oSource", OBJECT_SELF)],
+        [
+            ScriptParam(DataType.OBJECT, "oTarget", None),
+            ScriptParam(DataType.OBJECT, "oSource", OBJECT_SELF),
+        ],
         "// 235: * Returns TRUE if oSource considers oTarget as an enemy.\r\nint GetIsEnemy(object oTarget, object oSource=OBJECT_SELF);",
         "// 235: * Returns TRUE if oSource considers oTarget as an enemy.\r\nint GetIsEnemy(object oTarget, object oSource=OBJECT_SELF);",
     ),
     ScriptFunction(
         DataType.INT,
         "GetIsFriend",
-        [ScriptParam(DataType.OBJECT, "oTarget", None), ScriptParam(DataType.OBJECT, "oSource", OBJECT_SELF)],
+        [
+            ScriptParam(DataType.OBJECT, "oTarget", None),
+            ScriptParam(DataType.OBJECT, "oSource", OBJECT_SELF),
+        ],
         "// 236: * Returns TRUE if oSource considers oTarget as a friend.\r\nint GetIsFriend(object oTarget, object oSource=OBJECT_SELF);",
         "// 236: * Returns TRUE if oSource considers oTarget as a friend.\r\nint GetIsFriend(object oTarget, object oSource=OBJECT_SELF);",
     ),
     ScriptFunction(
         DataType.INT,
         "GetIsNeutral",
-        [ScriptParam(DataType.OBJECT, "oTarget", None), ScriptParam(DataType.OBJECT, "oSource", OBJECT_SELF)],
+        [
+            ScriptParam(DataType.OBJECT, "oTarget", None),
+            ScriptParam(DataType.OBJECT, "oSource", OBJECT_SELF),
+        ],
         "// 237: * Returns TRUE if oSource considers oTarget as neutral.\r\nint GetIsNeutral(object oTarget, object oSource=OBJECT_SELF);",
         "// 237: * Returns TRUE if oSource considers oTarget as neutral.\r\nint GetIsNeutral(object oTarget, object oSource=OBJECT_SELF);",
     ),
@@ -5087,7 +5335,11 @@ KOTOR_FUNCTIONS = [
     ScriptFunction(
         DataType.EVENT,
         "EventSpellCastAt",
-        [ScriptParam(DataType.OBJECT, "oCaster", None), ScriptParam(DataType.INT, "nSpell", None), ScriptParam(DataType.INT, "bHarmful", "1")],
+        [
+            ScriptParam(DataType.OBJECT, "oCaster", None),
+            ScriptParam(DataType.INT, "nSpell", None),
+            ScriptParam(DataType.INT, "bHarmful", "1"),
+        ],
         '// 244: Create an event which triggers the "SpellCastAt" script\r\nevent EventSpellCastAt(object oCaster, int nSpell, int bHarmful=TRUE);',
         '// 244: Create an event which triggers the "SpellCastAt" script\r\nevent EventSpellCastAt(object oCaster, int nSpell, int bHarmful=TRUE);',
     ),
@@ -5164,7 +5416,10 @@ KOTOR_FUNCTIONS = [
     ScriptFunction(
         DataType.INT,
         "BeginConversation",
-        [ScriptParam(DataType.STRING, "sResRef", ""), ScriptParam(DataType.OBJECT, "oObjectToDialog", OBJECT_INVALID)],
+        [
+            ScriptParam(DataType.STRING, "sResRef", ""),
+            ScriptParam(DataType.OBJECT, "oObjectToDialog", OBJECT_INVALID),
+        ],
         '// 255: Use this in an OnDialog script to start up the dialog tree.\r\n// - sResRef: if this is not specified, the default dialog file will be used\r\n// - oObjectToDialog: if this is not specified the person that triggered the\r\n//   event will be used\r\nint BeginConversation(string sResRef="", object oObjectToDialog=OBJECT_INVALID);',
         '// 255: Use this in an OnDialog script to start up the dialog tree.\r\n// - sResRef: if this is not specified, the default dialog file will be used\r\n// - oObjectToDialog: if this is not specified the person that triggered the\r\n//   event will be used\r\nint BeginConversation(string sResRef="", object oObjectToDialog=OBJECT_INVALID);',
     ),
@@ -5249,7 +5504,10 @@ KOTOR_FUNCTIONS = [
     ScriptFunction(
         DataType.VOID,
         "SetItemNonEquippable",
-        [ScriptParam(DataType.OBJECT, "oItem", None), ScriptParam(DataType.INT, "bNonEquippable", None)],
+        [
+            ScriptParam(DataType.OBJECT, "oItem", None),
+            ScriptParam(DataType.INT, "bNonEquippable", None),
+        ],
         "// 266: Flag the specified item as being non-equippable or not.  Set bNonEquippable\r\n//      to TRUE to prevent this item from being equipped, and FALSE to allow\r\n//      the normal equipping checks to determine if the item can be equipped.\r\n// NOTE: This will do nothing if the object passed in is not an item.  Items that\r\n//       are already equipped when this is called will not automatically be\r\n//       unequipped.  These items will just be prevented from being re-equipped\r\n//       should they be unequipped.\r\nvoid SetItemNonEquippable( object oItem, int bNonEquippable );",
         "// 266: Flag the specified item as being non-equippable or not.  Set bNonEquippable\r\n//      to TRUE to prevent this item from being equipped, and FALSE to allow\r\n//      the normal equipping checks to determine if the item can be equipped.\r\n// NOTE: This will do nothing if the object passed in is not an item.  Items that\r\n//       are already equipped when this is called will not automatically be\r\n//       unequipped.  These items will just be prevented from being re-equipped\r\n//       should they be unequipped.\r\nvoid SetItemNonEquippable( object oItem, int bNonEquippable );",
     ),
@@ -5270,7 +5528,10 @@ KOTOR_FUNCTIONS = [
     ScriptFunction(
         DataType.EFFECT,
         "EffectForcePushTargeted",
-        [ScriptParam(DataType.LOCATION, "lCentre", None), ScriptParam(DataType.INT, "nIgnoreTestDirectLine", "0")],
+        [
+            ScriptParam(DataType.LOCATION, "lCentre", None),
+            ScriptParam(DataType.INT, "nIgnoreTestDirectLine", "0"),
+        ],
         "// 269: EffectForcePushTargeted\r\n// This effect is exactly the same as force push, except it takes a location parameter that specifies\r\n// where the location of the force push is to be done from.  All orientations are also based on this location.\r\n// AMF:  The new ignore test direct line variable should be used with extreme caution\r\n// It overrides geometry checks for force pushes, so that the object that the effect is applied to\r\n// is guaranteed to move that far, ignoring collisions.  It is best used for cutscenes.\r\neffect EffectForcePushTargeted(location lCentre, int nIgnoreTestDirectLine = 0);",
         "// 269: EffectForcePushTargeted\r\n// This effect is exactly the same as force push, except it takes a location parameter that specifies\r\n// where the location of the force push is to be done from.  All orientations are also based on this location.\r\n// AMF:  The new ignore test direct line variable should be used with extreme caution\r\n// It overrides geometry checks for force pushes, so that the object that the effect is applied to\r\n// is guaranteed to move that far, ignoring collisions.  It is best used for cutscenes.\r\neffect EffectForcePushTargeted(location lCentre, int nIgnoreTestDirectLine = 0);",
     ),
@@ -5284,7 +5545,10 @@ KOTOR_FUNCTIONS = [
     ScriptFunction(
         DataType.VOID,
         "GiveItem",
-        [ScriptParam(DataType.OBJECT, "oItem", None), ScriptParam(DataType.OBJECT, "oGiveTo", None)],
+        [
+            ScriptParam(DataType.OBJECT, "oItem", None),
+            ScriptParam(DataType.OBJECT, "oGiveTo", None),
+        ],
         "// 271: Give oItem to oGiveTo (instant; for similar Action use ActionGiveItem)\r\n// If oItem is not a valid item, or oGiveTo is not a valid object, nothing will\r\n// happen.\r\nvoid GiveItem(object oItem, object oGiveTo);",
         "// 271: Give oItem to oGiveTo (instant; for similar Action use ActionGiveItem)\r\n// If oItem is not a valid item, or oGiveTo is not a valid object, nothing will\r\n// happen.\r\nvoid GiveItem(object oItem, object oGiveTo);",
     ),
@@ -5305,14 +5569,21 @@ KOTOR_FUNCTIONS = [
     ScriptFunction(
         DataType.INT,
         "GetIsImmune",
-        [ScriptParam(DataType.OBJECT, "oCreature", None), ScriptParam(DataType.INT, "nImmunityType", None), ScriptParam(DataType.OBJECT, "oVersus", OBJECT_INVALID)],
+        [
+            ScriptParam(DataType.OBJECT, "oCreature", None),
+            ScriptParam(DataType.INT, "nImmunityType", None),
+            ScriptParam(DataType.OBJECT, "oVersus", OBJECT_INVALID),
+        ],
         "// 274: - oCreature\r\n// - nImmunityType: IMMUNITY_TYPE_*\r\n// - oVersus: if this is specified, then we also check for the race and\r\n//   alignment of oVersus\r\n// * Returns TRUE if oCreature has immunity of type nImmunity versus oVersus.\r\nint GetIsImmune(object oCreature, int nImmunityType, object oVersus=OBJECT_INVALID);",
         "// 274: - oCreature\r\n// - nImmunityType: IMMUNITY_TYPE_*\r\n// - oVersus: if this is specified, then we also check for the race and\r\n//   alignment of oVersus\r\n// * Returns TRUE if oCreature has immunity of type nImmunity versus oVersus.\r\nint GetIsImmune(object oCreature, int nImmunityType, object oVersus=OBJECT_INVALID);",
     ),
     ScriptFunction(
         DataType.EFFECT,
         "EffectDamageImmunityIncrease",
-        [ScriptParam(DataType.INT, "nDamageType", None), ScriptParam(DataType.INT, "nPercentImmunity", None)],
+        [
+            ScriptParam(DataType.INT, "nDamageType", None),
+            ScriptParam(DataType.INT, "nPercentImmunity", None),
+        ],
         "// 275: Creates a Damage Immunity Increase effect.\r\n// - nDamageType: DAMAGE_TYPE_*\r\n// - nPercentImmunity\r\neffect EffectDamageImmunityIncrease(int nDamageType, int nPercentImmunity);",
         "// 275: Creates a Damage Immunity Increase effect.\r\n// - nDamageType: DAMAGE_TYPE_*\r\n// - nPercentImmunity\r\neffect EffectDamageImmunityIncrease(int nDamageType, int nPercentImmunity);",
     ),
@@ -5326,7 +5597,10 @@ KOTOR_FUNCTIONS = [
     ScriptFunction(
         DataType.VOID,
         "SetEncounterActive",
-        [ScriptParam(DataType.INT, "nNewValue", None), ScriptParam(DataType.OBJECT, "oEncounter", OBJECT_SELF)],
+        [
+            ScriptParam(DataType.INT, "nNewValue", None),
+            ScriptParam(DataType.OBJECT, "oEncounter", OBJECT_SELF),
+        ],
         "// 277: Set oEncounter's active state to nNewValue.\r\n// - nNewValue: TRUE/FALSE\r\n// - oEncounter\r\nvoid SetEncounterActive(int nNewValue, object oEncounter=OBJECT_SELF);",
         "// 277: Set oEncounter's active state to nNewValue.\r\n// - nNewValue: TRUE/FALSE\r\n// - oEncounter\r\nvoid SetEncounterActive(int nNewValue, object oEncounter=OBJECT_SELF);",
     ),
@@ -5340,7 +5614,10 @@ KOTOR_FUNCTIONS = [
     ScriptFunction(
         DataType.VOID,
         "SetEncounterSpawnsMax",
-        [ScriptParam(DataType.INT, "nNewValue", None), ScriptParam(DataType.OBJECT, "oEncounter", OBJECT_SELF)],
+        [
+            ScriptParam(DataType.INT, "nNewValue", None),
+            ScriptParam(DataType.OBJECT, "oEncounter", OBJECT_SELF),
+        ],
         "// 279: Set the maximum number of times that oEncounter can spawn\r\nvoid SetEncounterSpawnsMax(int nNewValue, object oEncounter=OBJECT_SELF);",
         "// 279: Set the maximum number of times that oEncounter can spawn\r\nvoid SetEncounterSpawnsMax(int nNewValue, object oEncounter=OBJECT_SELF);",
     ),
@@ -5354,7 +5631,10 @@ KOTOR_FUNCTIONS = [
     ScriptFunction(
         DataType.VOID,
         "SetEncounterSpawnsCurrent",
-        [ScriptParam(DataType.INT, "nNewValue", None), ScriptParam(DataType.OBJECT, "oEncounter", OBJECT_SELF)],
+        [
+            ScriptParam(DataType.INT, "nNewValue", None),
+            ScriptParam(DataType.OBJECT, "oEncounter", OBJECT_SELF),
+        ],
         "// 281: Set the number of times that oEncounter has spawned so far\r\nvoid SetEncounterSpawnsCurrent(int nNewValue, object oEncounter=OBJECT_SELF);",
         "// 281: Set the number of times that oEncounter has spawned so far\r\nvoid SetEncounterSpawnsCurrent(int nNewValue, object oEncounter=OBJECT_SELF);",
     ),
@@ -5375,21 +5655,30 @@ KOTOR_FUNCTIONS = [
     ScriptFunction(
         DataType.VOID,
         "SetCustomToken",
-        [ScriptParam(DataType.INT, "nCustomTokenNumber", None), ScriptParam(DataType.STRING, "sTokenValue", None)],
+        [
+            ScriptParam(DataType.INT, "nCustomTokenNumber", None),
+            ScriptParam(DataType.STRING, "sTokenValue", None),
+        ],
         "// 284: Set the value for a custom token.\r\nvoid SetCustomToken(int nCustomTokenNumber, string sTokenValue);",
         "// 284: Set the value for a custom token.\r\nvoid SetCustomToken(int nCustomTokenNumber, string sTokenValue);",
     ),
     ScriptFunction(
         DataType.INT,
         "GetHasFeat",
-        [ScriptParam(DataType.INT, "nFeat", None), ScriptParam(DataType.OBJECT, "oCreature", OBJECT_SELF)],
+        [
+            ScriptParam(DataType.INT, "nFeat", None),
+            ScriptParam(DataType.OBJECT, "oCreature", OBJECT_SELF),
+        ],
         "// 285: Determine whether oCreature has nFeat, and nFeat is useable.\r\n// - nFeat: FEAT_*\r\n// - oCreature\r\nint GetHasFeat(int nFeat, object oCreature=OBJECT_SELF);",
         "// 285: Determine whether oCreature has nFeat, and nFeat is useable.\r\n// - nFeat: FEAT_*\r\n// - oCreature\r\nint GetHasFeat(int nFeat, object oCreature=OBJECT_SELF);",
     ),
     ScriptFunction(
         DataType.INT,
         "GetHasSkill",
-        [ScriptParam(DataType.INT, "nSkill", None), ScriptParam(DataType.OBJECT, "oCreature", OBJECT_SELF)],
+        [
+            ScriptParam(DataType.INT, "nSkill", None),
+            ScriptParam(DataType.OBJECT, "oCreature", OBJECT_SELF),
+        ],
         "// 286: Determine whether oCreature has nSkill, and nSkill is useable.\r\n// - nSkill: SKILL_*\r\n// - oCreature\r\nint GetHasSkill(int nSkill, object oCreature=OBJECT_SELF);",
         "// 286: Determine whether oCreature has nSkill, and nSkill is useable.\r\n// - nSkill: SKILL_*\r\n// - oCreature\r\nint GetHasSkill(int nSkill, object oCreature=OBJECT_SELF);",
     ),
@@ -5415,14 +5704,20 @@ KOTOR_FUNCTIONS = [
     ScriptFunction(
         DataType.INT,
         "GetObjectSeen",
-        [ScriptParam(DataType.OBJECT, "oTarget", None), ScriptParam(DataType.OBJECT, "oSource", OBJECT_SELF)],
+        [
+            ScriptParam(DataType.OBJECT, "oTarget", None),
+            ScriptParam(DataType.OBJECT, "oSource", OBJECT_SELF),
+        ],
         "// 289: Determine whether oSource sees oTarget.\r\nint GetObjectSeen(object oTarget, object oSource=OBJECT_SELF);",
         "// 289: Determine whether oSource sees oTarget.\r\nint GetObjectSeen(object oTarget, object oSource=OBJECT_SELF);",
     ),
     ScriptFunction(
         DataType.INT,
         "GetObjectHeard",
-        [ScriptParam(DataType.OBJECT, "oTarget", None), ScriptParam(DataType.OBJECT, "oSource", OBJECT_SELF)],
+        [
+            ScriptParam(DataType.OBJECT, "oTarget", None),
+            ScriptParam(DataType.OBJECT, "oSource", OBJECT_SELF),
+        ],
         "// 290: Determine whether oSource hears oTarget.\r\nint GetObjectHeard(object oTarget, object oSource=OBJECT_SELF);",
         "// 290: Determine whether oSource hears oTarget.\r\nint GetObjectHeard(object oTarget, object oSource=OBJECT_SELF);",
     ),
@@ -5464,7 +5759,10 @@ KOTOR_FUNCTIONS = [
     ScriptFunction(
         DataType.VOID,
         "SetEncounterDifficulty",
-        [ScriptParam(DataType.INT, "nEncounterDifficulty", None), ScriptParam(DataType.OBJECT, "oEncounter", OBJECT_SELF)],
+        [
+            ScriptParam(DataType.INT, "nEncounterDifficulty", None),
+            ScriptParam(DataType.OBJECT, "oEncounter", OBJECT_SELF),
+        ],
         "// 296: Set the difficulty level of oEncounter.\r\n// - nEncounterDifficulty: ENCOUNTER_DIFFICULTY_*\r\n// - oEncounter\r\nvoid SetEncounterDifficulty(int nEncounterDifficulty, object oEncounter=OBJECT_SELF);",
         "// 296: Set the difficulty level of oEncounter.\r\n// - nEncounterDifficulty: ENCOUNTER_DIFFICULTY_*\r\n// - oEncounter\r\nvoid SetEncounterDifficulty(int nEncounterDifficulty, object oEncounter=OBJECT_SELF);",
     ),
@@ -5478,7 +5776,10 @@ KOTOR_FUNCTIONS = [
     ScriptFunction(
         DataType.FLOAT,
         "GetDistanceBetweenLocations",
-        [ScriptParam(DataType.LOCATION, "lLocationA", None), ScriptParam(DataType.LOCATION, "lLocationB", None)],
+        [
+            ScriptParam(DataType.LOCATION, "lLocationA", None),
+            ScriptParam(DataType.LOCATION, "lLocationB", None),
+        ],
         "// 298: Get the distance between lLocationA and lLocationB.\r\nfloat GetDistanceBetweenLocations(location lLocationA, location lLocationB);",
         "// 298: Get the distance between lLocationA and lLocationB.\r\nfloat GetDistanceBetweenLocations(location lLocationA, location lLocationB);",
     ),
@@ -5498,7 +5799,11 @@ KOTOR_FUNCTIONS = [
     ScriptFunction(
         DataType.VOID,
         "PlayAnimation",
-        [ScriptParam(DataType.INT, "nAnimation", None), ScriptParam(DataType.FLOAT, "fSpeed", "1.0"), ScriptParam(DataType.FLOAT, "fSeconds", "0.0")],
+        [
+            ScriptParam(DataType.INT, "nAnimation", None),
+            ScriptParam(DataType.FLOAT, "fSpeed", "1.0"),
+            ScriptParam(DataType.FLOAT, "fSeconds", "0.0"),
+        ],
         "// 300: Play nAnimation immediately.\r\n// - nAnimation: ANIMATION_*\r\n// - fSpeed\r\n// - fSeconds: Duration of the animation (this is not used for Fire and\r\n//   Forget animations) If a time of -1.0f is specified for a looping animation\r\n//   it will loop until the next animation is applied.\r\nvoid PlayAnimation(int nAnimation, float fSpeed=1.0, float fSeconds=0.0);",
         "// 300: Play nAnimation immediately.\r\n// - nAnimation: ANIMATION_*\r\n// - fSpeed\r\n// - fSeconds: Duration of the animation (this is not used for Fire and\r\n//   Forget animations) If a time of -1.0f is specified for a looping animation\r\n//   it will loop until the next animation is applied.\r\nvoid PlayAnimation(int nAnimation, float fSpeed=1.0, float fSeconds=0.0);",
     ),
@@ -5526,7 +5831,10 @@ KOTOR_FUNCTIONS = [
     ScriptFunction(
         DataType.INT,
         "GetHasSpellEffect",
-        [ScriptParam(DataType.INT, "nSpell", None), ScriptParam(DataType.OBJECT, "oObject", OBJECT_SELF)],
+        [
+            ScriptParam(DataType.INT, "nSpell", None),
+            ScriptParam(DataType.OBJECT, "oObject", OBJECT_SELF),
+        ],
         "// 304: Determine if oObject has effects originating from nSpell.\r\n// - nSpell: SPELL_*\r\n// - oObject\r\nint GetHasSpellEffect(int nSpell, object oObject=OBJECT_SELF);",
         "// 304: Determine if oObject has effects originating from nSpell.\r\n// - nSpell: SPELL_*\r\n// - oObject\r\nint GetHasSpellEffect(int nSpell, object oObject=OBJECT_SELF);",
     ),
@@ -5540,14 +5848,21 @@ KOTOR_FUNCTIONS = [
     ScriptFunction(
         DataType.INT,
         "GetCreatureHasTalent",
-        [ScriptParam(DataType.TALENT, "tTalent", None), ScriptParam(DataType.OBJECT, "oCreature", OBJECT_SELF)],
+        [
+            ScriptParam(DataType.TALENT, "tTalent", None),
+            ScriptParam(DataType.OBJECT, "oCreature", OBJECT_SELF),
+        ],
         "// 306: Determine whether oCreature has tTalent.\r\nint GetCreatureHasTalent(talent tTalent, object oCreature=OBJECT_SELF);",
         "// 306: Determine whether oCreature has tTalent.\r\nint GetCreatureHasTalent(talent tTalent, object oCreature=OBJECT_SELF);",
     ),
     ScriptFunction(
         DataType.TALENT,
         "GetCreatureTalentRandom",
-        [ScriptParam(DataType.INT, "nCategory", None), ScriptParam(DataType.OBJECT, "oCreature", OBJECT_SELF), ScriptParam(DataType.INT, "nInclusion", "0")],
+        [
+            ScriptParam(DataType.INT, "nCategory", None),
+            ScriptParam(DataType.OBJECT, "oCreature", OBJECT_SELF),
+            ScriptParam(DataType.INT, "nInclusion", "0"),
+        ],
         "// 307: Get a random talent of oCreature, within nCategory.\r\n// - nCategory: TALENT_CATEGORY_*\r\n// - oCreature\r\n// - nInclusion: types of talent to include\r\ntalent GetCreatureTalentRandom(int nCategory, object oCreature=OBJECT_SELF, int nInclusion=0);",
         "// 307: Get a random talent of oCreature, within nCategory.\r\n// - nCategory: TALENT_CATEGORY_*\r\n// - oCreature\r\n// - nInclusion: types of talent to include\r\ntalent GetCreatureTalentRandom(int nCategory, object oCreature=OBJECT_SELF, int nInclusion=0);",
     ),
@@ -5568,14 +5883,20 @@ KOTOR_FUNCTIONS = [
     ScriptFunction(
         DataType.VOID,
         "ActionUseTalentOnObject",
-        [ScriptParam(DataType.TALENT, "tChosenTalent", None), ScriptParam(DataType.OBJECT, "oTarget", None)],
+        [
+            ScriptParam(DataType.TALENT, "tChosenTalent", None),
+            ScriptParam(DataType.OBJECT, "oTarget", None),
+        ],
         "// 309: Use tChosenTalent on oTarget.\r\nvoid ActionUseTalentOnObject(talent tChosenTalent, object oTarget);",
         "// 309: Use tChosenTalent on oTarget.\r\nvoid ActionUseTalentOnObject(talent tChosenTalent, object oTarget);",
     ),
     ScriptFunction(
         DataType.VOID,
         "ActionUseTalentAtLocation",
-        [ScriptParam(DataType.TALENT, "tChosenTalent", None), ScriptParam(DataType.LOCATION, "lTargetLocation", None)],
+        [
+            ScriptParam(DataType.TALENT, "tChosenTalent", None),
+            ScriptParam(DataType.LOCATION, "lTargetLocation", None),
+        ],
         "// 310: Use tChosenTalent at lTargetLocation.\r\nvoid ActionUseTalentAtLocation(talent tChosenTalent, location lTargetLocation);",
         "// 310: Use tChosenTalent at lTargetLocation.\r\nvoid ActionUseTalentAtLocation(talent tChosenTalent, location lTargetLocation);",
     ),
@@ -5610,7 +5931,10 @@ KOTOR_FUNCTIONS = [
     ScriptFunction(
         DataType.INT,
         "GetSkillRank",
-        [ScriptParam(DataType.INT, "nSkill", None), ScriptParam(DataType.OBJECT, "oTarget", OBJECT_SELF)],
+        [
+            ScriptParam(DataType.INT, "nSkill", None),
+            ScriptParam(DataType.OBJECT, "oTarget", OBJECT_SELF),
+        ],
         "// 315: Get the number of ranks that oTarget has in nSkill.\r\n// - nSkill: SKILL_*\r\n// - oTarget\r\n// * Returns -1 if oTarget doesn't have nSkill.\r\n// * Returns 0 if nSkill is untrained.\r\nint GetSkillRank(int nSkill, object oTarget=OBJECT_SELF);",
         "// 315: Get the number of ranks that oTarget has in nSkill.\r\n// - nSkill: SKILL_*\r\n// - oTarget\r\n// * Returns -1 if oTarget doesn't have nSkill.\r\n// * Returns 0 if nSkill is untrained.\r\nint GetSkillRank(int nSkill, object oTarget=OBJECT_SELF);",
     ),
@@ -5638,7 +5962,10 @@ KOTOR_FUNCTIONS = [
     ScriptFunction(
         DataType.FLOAT,
         "GetDistanceBetween2D",
-        [ScriptParam(DataType.OBJECT, "oObjectA", None), ScriptParam(DataType.OBJECT, "oObjectB", None)],
+        [
+            ScriptParam(DataType.OBJECT, "oObjectA", None),
+            ScriptParam(DataType.OBJECT, "oObjectB", None),
+        ],
         "// 319: Get the distance in metres between oObjectA and oObjectB in 2D.\r\n// * Return value if either object is invalid: 0.0f\r\nfloat GetDistanceBetween2D(object oObjectA, object oObjectB);",
         "// 319: Get the distance in metres between oObjectA and oObjectB in 2D.\r\n// * Return value if either object is invalid: 0.0f\r\nfloat GetDistanceBetween2D(object oObjectA, object oObjectB);",
     ),
@@ -5666,7 +5993,11 @@ KOTOR_FUNCTIONS = [
     ScriptFunction(
         DataType.VOID,
         "SetIsDestroyable",
-        [ScriptParam(DataType.INT, "bDestroyable", None), ScriptParam(DataType.INT, "bRaiseable", "1"), ScriptParam(DataType.INT, "bSelectableWhenDead", "0")],
+        [
+            ScriptParam(DataType.INT, "bDestroyable", None),
+            ScriptParam(DataType.INT, "bRaiseable", "1"),
+            ScriptParam(DataType.INT, "bSelectableWhenDead", "0"),
+        ],
         "// 323: Set the destroyable status of the caller.\r\n// - bDestroyable: If this is FALSE, the caller does not fade out on death, but\r\n//   sticks around as a corpse.\r\n// - bRaiseable: If this is TRUE, the caller can be raised via resurrection.\r\n// - bSelectableWhenDead: If this is TRUE, the caller is selectable after death.\r\nvoid SetIsDestroyable(int bDestroyable, int bRaiseable=TRUE, int bSelectableWhenDead=FALSE);",
         "// 323: Set the destroyable status of the caller.\r\n// - bDestroyable: If this is FALSE, the caller does not fade out on death, but\r\n//   sticks around as a corpse.\r\n// - bRaiseable: If this is TRUE, the caller can be raised via resurrection.\r\n// - bSelectableWhenDead: If this is TRUE, the caller is selectable after death.\r\nvoid SetIsDestroyable(int bDestroyable, int bRaiseable=TRUE, int bSelectableWhenDead=FALSE);",
     ),
@@ -5722,7 +6053,10 @@ KOTOR_FUNCTIONS = [
     ScriptFunction(
         DataType.INT,
         "GetAbilityModifier",
-        [ScriptParam(DataType.INT, "nAbility", None), ScriptParam(DataType.OBJECT, "oCreature", OBJECT_SELF)],
+        [
+            ScriptParam(DataType.INT, "nAbility", None),
+            ScriptParam(DataType.OBJECT, "oCreature", OBJECT_SELF),
+        ],
         "// 331: Returns the ability modifier for the specified ability\r\n// Get oCreature's ability modifier for nAbility.\r\n// - nAbility: ABILITY_*\r\n// - oCreature\r\nint GetAbilityModifier(int nAbility, object oCreature=OBJECT_SELF);",
         "// 331: Returns the ability modifier for the specified ability\r\n// Get oCreature's ability modifier for nAbility.\r\n// - nAbility: ABILITY_*\r\n// - oCreature\r\nint GetAbilityModifier(int nAbility, object oCreature=OBJECT_SELF);",
     ),
@@ -5736,14 +6070,20 @@ KOTOR_FUNCTIONS = [
     ScriptFunction(
         DataType.VOID,
         "SetIdentified",
-        [ScriptParam(DataType.OBJECT, "oItem", None), ScriptParam(DataType.INT, "bIdentified", None)],
+        [
+            ScriptParam(DataType.OBJECT, "oItem", None),
+            ScriptParam(DataType.INT, "bIdentified", None),
+        ],
         "// 333: Set whether oItem has been identified.\r\nvoid SetIdentified(object oItem, int bIdentified);",
         "// 333: Set whether oItem has been identified.\r\nvoid SetIdentified(object oItem, int bIdentified);",
     ),
     ScriptFunction(
         DataType.FLOAT,
         "GetDistanceBetweenLocations2D",
-        [ScriptParam(DataType.LOCATION, "lLocationA", None), ScriptParam(DataType.LOCATION, "lLocationB", None)],
+        [
+            ScriptParam(DataType.LOCATION, "lLocationA", None),
+            ScriptParam(DataType.LOCATION, "lLocationB", None),
+        ],
         "// 334: Get the distance between lLocationA and lLocationB. in 2D\r\nfloat GetDistanceBetweenLocations2D(location lLocationA, location lLocationB);",
         "// 334: Get the distance between lLocationA and lLocationB. in 2D\r\nfloat GetDistanceBetweenLocations2D(location lLocationA, location lLocationB);",
     ),
@@ -5764,14 +6104,20 @@ KOTOR_FUNCTIONS = [
     ScriptFunction(
         DataType.INT,
         "GetIsDoorActionPossible",
-        [ScriptParam(DataType.OBJECT, "oTargetDoor", None), ScriptParam(DataType.INT, "nDoorAction", None)],
+        [
+            ScriptParam(DataType.OBJECT, "oTargetDoor", None),
+            ScriptParam(DataType.INT, "nDoorAction", None),
+        ],
         "// 337: - oTargetDoor\r\n// - nDoorAction: DOOR_ACTION_*\r\n// * Returns TRUE if nDoorAction can be performed on oTargetDoor.\r\nint GetIsDoorActionPossible(object oTargetDoor, int nDoorAction);",
         "// 337: - oTargetDoor\r\n// - nDoorAction: DOOR_ACTION_*\r\n// * Returns TRUE if nDoorAction can be performed on oTargetDoor.\r\nint GetIsDoorActionPossible(object oTargetDoor, int nDoorAction);",
     ),
     ScriptFunction(
         DataType.VOID,
         "DoDoorAction",
-        [ScriptParam(DataType.OBJECT, "oTargetDoor", None), ScriptParam(DataType.INT, "nDoorAction", None)],
+        [
+            ScriptParam(DataType.OBJECT, "oTargetDoor", None),
+            ScriptParam(DataType.INT, "nDoorAction", None),
+        ],
         "// 338: Perform nDoorAction on oTargetDoor.\r\nvoid DoDoorAction(object oTargetDoor, int nDoorAction);",
         "// 338: Perform nDoorAction on oTargetDoor.\r\nvoid DoDoorAction(object oTargetDoor, int nDoorAction);",
     ),
@@ -5792,21 +6138,30 @@ KOTOR_FUNCTIONS = [
     ScriptFunction(
         DataType.INT,
         "GetClassByPosition",
-        [ScriptParam(DataType.INT, "nClassPosition", None), ScriptParam(DataType.OBJECT, "oCreature", OBJECT_SELF)],
+        [
+            ScriptParam(DataType.INT, "nClassPosition", None),
+            ScriptParam(DataType.OBJECT, "oCreature", OBJECT_SELF),
+        ],
         "// 341: A creature can have up to three classes.  This function determines the\r\n// creature's class (CLASS_TYPE_*) based on nClassPosition.\r\n// - nClassPosition: 1, 2 or 3\r\n// - oCreature\r\n// * Returns CLASS_TYPE_INVALID if the oCreature does not have a class in\r\n//   nClassPosition (i.e. a single-class creature will only have a value in\r\n//   nClassLocation=1) or if oCreature is not a valid creature.\r\nint GetClassByPosition(int nClassPosition, object oCreature=OBJECT_SELF);",
         "// 341: A creature can have up to three classes.  This function determines the\r\n// creature's class (CLASS_TYPE_*) based on nClassPosition.\r\n// - nClassPosition: 1, 2 or 3\r\n// - oCreature\r\n// * Returns CLASS_TYPE_INVALID if the oCreature does not have a class in\r\n//   nClassPosition (i.e. a single-class creature will only have a value in\r\n//   nClassLocation=1) or if oCreature is not a valid creature.\r\nint GetClassByPosition(int nClassPosition, object oCreature=OBJECT_SELF);",
     ),
     ScriptFunction(
         DataType.INT,
         "GetLevelByPosition",
-        [ScriptParam(DataType.INT, "nClassPosition", None), ScriptParam(DataType.OBJECT, "oCreature", OBJECT_SELF)],
+        [
+            ScriptParam(DataType.INT, "nClassPosition", None),
+            ScriptParam(DataType.OBJECT, "oCreature", OBJECT_SELF),
+        ],
         "// 342: A creature can have up to three classes.  This function determines the\r\n// creature's class level based on nClass Position.\r\n// - nClassPosition: 1, 2 or 3\r\n// - oCreature\r\n// * Returns 0 if oCreature does not have a class in nClassPosition\r\n//   (i.e. a single-class creature will only have a value in nClassLocation=1)\r\n//   or if oCreature is not a valid creature.\r\nint GetLevelByPosition(int nClassPosition, object oCreature=OBJECT_SELF);",
         "// 342: A creature can have up to three classes.  This function determines the\r\n// creature's class level based on nClass Position.\r\n// - nClassPosition: 1, 2 or 3\r\n// - oCreature\r\n// * Returns 0 if oCreature does not have a class in nClassPosition\r\n//   (i.e. a single-class creature will only have a value in nClassLocation=1)\r\n//   or if oCreature is not a valid creature.\r\nint GetLevelByPosition(int nClassPosition, object oCreature=OBJECT_SELF);",
     ),
     ScriptFunction(
         DataType.INT,
         "GetLevelByClass",
-        [ScriptParam(DataType.INT, "nClassType", None), ScriptParam(DataType.OBJECT, "oCreature", OBJECT_SELF)],
+        [
+            ScriptParam(DataType.INT, "nClassType", None),
+            ScriptParam(DataType.OBJECT, "oCreature", OBJECT_SELF),
+        ],
         "// 343: Determine the levels that oCreature holds in nClassType.\r\n// - nClassType: CLASS_TYPE_*\r\n// - oCreature\r\nint GetLevelByClass(int nClassType, object oCreature=OBJECT_SELF);",
         "// 343: Determine the levels that oCreature holds in nClassType.\r\n// - nClassType: CLASS_TYPE_*\r\n// - oCreature\r\nint GetLevelByClass(int nClassType, object oCreature=OBJECT_SELF);",
     ),
@@ -5890,14 +6245,21 @@ KOTOR_FUNCTIONS = [
     ScriptFunction(
         DataType.EFFECT,
         "VersusAlignmentEffect",
-        [ScriptParam(DataType.EFFECT, "eEffect", None), ScriptParam(DataType.INT, "nLawChaos", "0"), ScriptParam(DataType.INT, "nGoodEvil", "0")],
+        [
+            ScriptParam(DataType.EFFECT, "eEffect", None),
+            ScriptParam(DataType.INT, "nLawChaos", "0"),
+            ScriptParam(DataType.INT, "nGoodEvil", "0"),
+        ],
         "// 355: Set eEffect to be versus a specific alignment.\r\n// - eEffect\r\n// - nLawChaos: ALIGNMENT_LAWFUL/ALIGNMENT_CHAOTIC/ALIGNMENT_ALL\r\n// - nGoodEvil: ALIGNMENT_GOOD/ALIGNMENT_EVIL/ALIGNMENT_ALL\r\neffect VersusAlignmentEffect(effect eEffect, int nLawChaos=ALIGNMENT_ALL, int nGoodEvil=ALIGNMENT_ALL);",
         "// 355: Set eEffect to be versus a specific alignment.\r\n// - eEffect\r\n// - nLawChaos: ALIGNMENT_LAWFUL/ALIGNMENT_CHAOTIC/ALIGNMENT_ALL\r\n// - nGoodEvil: ALIGNMENT_GOOD/ALIGNMENT_EVIL/ALIGNMENT_ALL\r\neffect VersusAlignmentEffect(effect eEffect, int nLawChaos=ALIGNMENT_ALL, int nGoodEvil=ALIGNMENT_ALL);",
     ),
     ScriptFunction(
         DataType.EFFECT,
         "VersusRacialTypeEffect",
-        [ScriptParam(DataType.EFFECT, "eEffect", None), ScriptParam(DataType.INT, "nRacialType", None)],
+        [
+            ScriptParam(DataType.EFFECT, "eEffect", None),
+            ScriptParam(DataType.INT, "nRacialType", None),
+        ],
         "// 356: Set eEffect to be versus nRacialType.\r\n// - eEffect\r\n// - nRacialType: RACIAL_TYPE_*\r\neffect VersusRacialTypeEffect(effect eEffect, int nRacialType);",
         "// 356: Set eEffect to be versus nRacialType.\r\n// - eEffect\r\n// - nRacialType: RACIAL_TYPE_*\r\neffect VersusRacialTypeEffect(effect eEffect, int nRacialType);",
     ),
@@ -5925,7 +6287,11 @@ KOTOR_FUNCTIONS = [
     ScriptFunction(
         DataType.VOID,
         "ActionMoveAwayFromLocation",
-        [ScriptParam(DataType.LOCATION, "lMoveAwayFrom", None), ScriptParam(DataType.INT, "bRun", "0"), ScriptParam(DataType.FLOAT, "fMoveAwayRange", "40.0")],
+        [
+            ScriptParam(DataType.LOCATION, "lMoveAwayFrom", None),
+            ScriptParam(DataType.INT, "bRun", "0"),
+            ScriptParam(DataType.FLOAT, "fMoveAwayRange", "40.0"),
+        ],
         "// 360: Causes the action subject to move away from lMoveAwayFrom.\r\nvoid ActionMoveAwayFromLocation(location lMoveAwayFrom, int bRun=FALSE, float fMoveAwayRange=40.0f);",
         "// 360: Causes the action subject to move away from lMoveAwayFrom.\r\nvoid ActionMoveAwayFromLocation(location lMoveAwayFrom, int bRun=FALSE, float fMoveAwayRange=40.0f);",
     ),
@@ -5972,14 +6338,21 @@ KOTOR_FUNCTIONS = [
     ScriptFunction(
         DataType.VOID,
         "DisplayFeedBackText",
-        [ScriptParam(DataType.OBJECT, "oCreature", None), ScriptParam(DataType.INT, "nTextConstant", None)],
+        [
+            ScriptParam(DataType.OBJECT, "oCreature", None),
+            ScriptParam(DataType.INT, "nTextConstant", None),
+        ],
         "// 366:  displays a feed back string for the object spicified and the constant\r\n// repersents the string to be displayed see:FeedBackText.2da\r\nvoid DisplayFeedBackText(object oCreature, int nTextConstant);",
         "// 366:  displays a feed back string for the object spicified and the constant\r\n// repersents the string to be displayed see:FeedBackText.2da\r\nvoid DisplayFeedBackText(object oCreature, int nTextConstant);",
     ),
     ScriptFunction(
         DataType.VOID,
         "AddJournalQuestEntry",
-        [ScriptParam(DataType.STRING, "szPlotID", None), ScriptParam(DataType.INT, "nState", None), ScriptParam(DataType.INT, "bAllowOverrideHigher", "0")],
+        [
+            ScriptParam(DataType.STRING, "szPlotID", None),
+            ScriptParam(DataType.INT, "nState", None),
+            ScriptParam(DataType.INT, "bAllowOverrideHigher", "0"),
+        ],
         "// 367: Add a journal quest entry to the player.\r\n// - szPlotID: the plot identifier used in the toolset's Journal Editor\r\n// - nState: the state of the plot as seen in the toolset's Journal Editor\r\n// - bAllowOverrideHigher: If this is TRUE, you can set the state to a lower\r\n//   number than the one it is currently on\r\nvoid AddJournalQuestEntry(string szPlotID, int nState, int bAllowOverrideHigher=FALSE);",
         "// 367: Add a journal quest entry to the player.\r\n// - szPlotID: the plot identifier used in the toolset's Journal Editor\r\n// - nState: the state of the plot as seen in the toolset's Journal Editor\r\n// - bAllowOverrideHigher: If this is TRUE, you can set the state to a lower\r\n//   number than the one it is currently on\r\nvoid AddJournalQuestEntry(string szPlotID, int nState, int bAllowOverrideHigher=FALSE);",
     ),
@@ -6028,7 +6401,10 @@ KOTOR_FUNCTIONS = [
     ScriptFunction(
         DataType.VOID,
         "SendMessageToPC",
-        [ScriptParam(DataType.OBJECT, "oPlayer", None), ScriptParam(DataType.STRING, "szMessage", None)],
+        [
+            ScriptParam(DataType.OBJECT, "oPlayer", None),
+            ScriptParam(DataType.STRING, "szMessage", None),
+        ],
         "// 374: Send a server message (szMessage) to the oPlayer.\r\nvoid SendMessageToPC(object oPlayer, string szMessage);",
         "// 374: Send a server message (szMessage) to the oPlayer.\r\nvoid SendMessageToPC(object oPlayer, string szMessage);",
     ),
@@ -6049,7 +6425,10 @@ KOTOR_FUNCTIONS = [
     ScriptFunction(
         DataType.INT,
         "GetHasSpell",
-        [ScriptParam(DataType.INT, "nSpell", None), ScriptParam(DataType.OBJECT, "oCreature", OBJECT_SELF)],
+        [
+            ScriptParam(DataType.INT, "nSpell", None),
+            ScriptParam(DataType.OBJECT, "oCreature", OBJECT_SELF),
+        ],
         "// 377: Determine whether oCreature has nSpell memorised.\r\n// - nSpell: SPELL_*\r\n// - oCreature\r\nint GetHasSpell(int nSpell, object oCreature=OBJECT_SELF);",
         "// 377: Determine whether oCreature has nSpell memorised.\r\n// - nSpell: SPELL_*\r\n// - oCreature\r\nint GetHasSpell(int nSpell, object oCreature=OBJECT_SELF);",
     ),
@@ -6075,21 +6454,31 @@ KOTOR_FUNCTIONS = [
     ScriptFunction(
         DataType.OBJECT,
         "GetFirstFactionMember",
-        [ScriptParam(DataType.OBJECT, "oMemberOfFaction", None), ScriptParam(DataType.INT, "bPCOnly", "1")],
+        [
+            ScriptParam(DataType.OBJECT, "oMemberOfFaction", None),
+            ScriptParam(DataType.INT, "bPCOnly", "1"),
+        ],
         "// 380: Get the first member of oMemberOfFaction's faction (start to cycle through\r\n// oMemberOfFaction's faction).\r\n// * Returns OBJECT_INVALID if oMemberOfFaction's faction is invalid.\r\nobject GetFirstFactionMember(object oMemberOfFaction, int bPCOnly=TRUE);",
         "// 380: Get the first member of oMemberOfFaction's faction (start to cycle through\r\n// oMemberOfFaction's faction).\r\n// * Returns OBJECT_INVALID if oMemberOfFaction's faction is invalid.\r\nobject GetFirstFactionMember(object oMemberOfFaction, int bPCOnly=TRUE);",
     ),
     ScriptFunction(
         DataType.OBJECT,
         "GetNextFactionMember",
-        [ScriptParam(DataType.OBJECT, "oMemberOfFaction", None), ScriptParam(DataType.INT, "bPCOnly", "1")],
+        [
+            ScriptParam(DataType.OBJECT, "oMemberOfFaction", None),
+            ScriptParam(DataType.INT, "bPCOnly", "1"),
+        ],
         "// 381: Get the next member of oMemberOfFaction's faction (continue to cycle through\r\n// oMemberOfFaction's faction).\r\n// * Returns OBJECT_INVALID if oMemberOfFaction's faction is invalid.\r\nobject GetNextFactionMember(object oMemberOfFaction, int bPCOnly=TRUE);",
         "// 381: Get the next member of oMemberOfFaction's faction (continue to cycle through\r\n// oMemberOfFaction's faction).\r\n// * Returns OBJECT_INVALID if oMemberOfFaction's faction is invalid.\r\nobject GetNextFactionMember(object oMemberOfFaction, int bPCOnly=TRUE);",
     ),
     ScriptFunction(
         DataType.VOID,
         "ActionForceMoveToLocation",
-        [ScriptParam(DataType.LOCATION, "lDestination", None), ScriptParam(DataType.INT, "bRun", "0"), ScriptParam(DataType.FLOAT, "fTimeout", "30.0")],
+        [
+            ScriptParam(DataType.LOCATION, "lDestination", None),
+            ScriptParam(DataType.INT, "bRun", "0"),
+            ScriptParam(DataType.FLOAT, "fTimeout", "30.0"),
+        ],
         "// 382: Force the action subject to move to lDestination.\r\nvoid ActionForceMoveToLocation(location lDestination, int bRun=FALSE, float fTimeout=30.0f);",
         "// 382: Force the action subject to move to lDestination.\r\nvoid ActionForceMoveToLocation(location lDestination, int bRun=FALSE, float fTimeout=30.0f);",
     ),
@@ -6115,14 +6504,20 @@ KOTOR_FUNCTIONS = [
     ScriptFunction(
         DataType.VOID,
         "JumpToObject",
-        [ScriptParam(DataType.OBJECT, "oToJumpTo", None), ScriptParam(DataType.INT, "nWalkStraightLineToPoint", "1")],
+        [
+            ScriptParam(DataType.OBJECT, "oToJumpTo", None),
+            ScriptParam(DataType.INT, "nWalkStraightLineToPoint", "1"),
+        ],
         "// 385: Jump to oToJumpTo (the action is added to the top of the action queue).\r\nvoid JumpToObject(object oToJumpTo, int nWalkStraightLineToPoint=1);",
         "// 385: Jump to oToJumpTo (the action is added to the top of the action queue).\r\nvoid JumpToObject(object oToJumpTo, int nWalkStraightLineToPoint=1);",
     ),
     ScriptFunction(
         DataType.VOID,
         "SetMapPinEnabled",
-        [ScriptParam(DataType.OBJECT, "oMapPin", None), ScriptParam(DataType.INT, "nEnabled", None)],
+        [
+            ScriptParam(DataType.OBJECT, "oMapPin", None),
+            ScriptParam(DataType.INT, "nEnabled", None),
+        ],
         "// 386: Set whether oMapPin is enabled.\r\n// - oMapPin\r\n// - nEnabled: 0=Off, 1=On\r\nvoid SetMapPinEnabled(object oMapPin, int nEnabled);",
         "// 386: Set whether oMapPin is enabled.\r\n// - oMapPin\r\n// - nEnabled: 0=Off, 1=On\r\nvoid SetMapPinEnabled(object oMapPin, int nEnabled);",
     ),
@@ -6143,14 +6538,20 @@ KOTOR_FUNCTIONS = [
     ScriptFunction(
         DataType.VOID,
         "AddMultiClass",
-        [ScriptParam(DataType.INT, "nClassType", None), ScriptParam(DataType.OBJECT, "oSource", None)],
+        [
+            ScriptParam(DataType.INT, "nClassType", None),
+            ScriptParam(DataType.OBJECT, "oSource", None),
+        ],
         "// 389: This allows you to add a new class to any creature object\r\nvoid AddMultiClass(int nClassType, object oSource);",
         "// 389: This allows you to add a new class to any creature object\r\nvoid AddMultiClass(int nClassType, object oSource);",
     ),
     ScriptFunction(
         DataType.INT,
         "GetIsLinkImmune",
-        [ScriptParam(DataType.OBJECT, "oTarget", None), ScriptParam(DataType.EFFECT, "eEffect", None)],
+        [
+            ScriptParam(DataType.OBJECT, "oTarget", None),
+            ScriptParam(DataType.EFFECT, "eEffect", None),
+        ],
         "// 390: Tests a linked effect to see if the target is immune to it.\r\n// If the target is imune to any of the linked effect then he is immune to all of it\r\nint GetIsLinkImmune(object oTarget, effect eEffect );",
         "// 390: Tests a linked effect to see if the target is immune to it.\r\n// If the target is imune to any of the linked effect then he is immune to all of it\r\nint GetIsLinkImmune(object oTarget, effect eEffect );",
     ),
@@ -6171,14 +6572,20 @@ KOTOR_FUNCTIONS = [
     ScriptFunction(
         DataType.VOID,
         "GiveXPToCreature",
-        [ScriptParam(DataType.OBJECT, "oCreature", None), ScriptParam(DataType.INT, "nXpAmount", None)],
+        [
+            ScriptParam(DataType.OBJECT, "oCreature", None),
+            ScriptParam(DataType.INT, "nXpAmount", None),
+        ],
         "// 393: Gives nXpAmount to oCreature.\r\nvoid GiveXPToCreature(object oCreature, int nXpAmount);",
         "// 393: Gives nXpAmount to oCreature.\r\nvoid GiveXPToCreature(object oCreature, int nXpAmount);",
     ),
     ScriptFunction(
         DataType.VOID,
         "SetXP",
-        [ScriptParam(DataType.OBJECT, "oCreature", None), ScriptParam(DataType.INT, "nXpAmount", None)],
+        [
+            ScriptParam(DataType.OBJECT, "oCreature", None),
+            ScriptParam(DataType.INT, "nXpAmount", None),
+        ],
         "// 394: Sets oCreature's experience to nXpAmount.\r\nvoid SetXP(object oCreature, int nXpAmount);",
         "// 394: Sets oCreature's experience to nXpAmount.\r\nvoid SetXP(object oCreature, int nXpAmount);",
     ),
@@ -6213,7 +6620,10 @@ KOTOR_FUNCTIONS = [
     ScriptFunction(
         DataType.VOID,
         "ActionEquipMostDamagingMelee",
-        [ScriptParam(DataType.OBJECT, "oVersus", OBJECT_INVALID), ScriptParam(DataType.INT, "bOffHand", "0")],
+        [
+            ScriptParam(DataType.OBJECT, "oVersus", OBJECT_INVALID),
+            ScriptParam(DataType.INT, "bOffHand", "0"),
+        ],
         "// 399: The creature will equip the melee weapon in its possession that can do the\r\n// most damage. If no valid melee weapon is found, it will equip the most\r\n// damaging range weapon. This function should only ever be called in the\r\n// EndOfCombatRound scripts, because otherwise it would have to stop the combat\r\n// round to run simulation.\r\n// - oVersus: You can try to get the most damaging weapon against oVersus\r\n// - bOffHand\r\nvoid ActionEquipMostDamagingMelee(object oVersus=OBJECT_INVALID, int bOffHand=FALSE);",
         "// 399: The creature will equip the melee weapon in its possession that can do the\r\n// most damage. If no valid melee weapon is found, it will equip the most\r\n// damaging range weapon. This function should only ever be called in the\r\n// EndOfCombatRound scripts, because otherwise it would have to stop the combat\r\n// round to run simulation.\r\n// - oVersus: You can try to get the most damaging weapon against oVersus\r\n// - bOffHand\r\nvoid ActionEquipMostDamagingMelee(object oVersus=OBJECT_INVALID, int bOffHand=FALSE);",
     ),
@@ -6241,7 +6651,10 @@ KOTOR_FUNCTIONS = [
     ScriptFunction(
         DataType.VOID,
         "ExploreAreaForPlayer",
-        [ScriptParam(DataType.OBJECT, "oArea", None), ScriptParam(DataType.OBJECT, "oPlayer", None)],
+        [
+            ScriptParam(DataType.OBJECT, "oArea", None),
+            ScriptParam(DataType.OBJECT, "oPlayer", None),
+        ],
         "// 403: Expose the entire map of oArea to oPlayer.\r\nvoid ExploreAreaForPlayer(object oArea, object oPlayer);",
         "// 403: Expose the entire map of oArea to oPlayer.\r\nvoid ExploreAreaForPlayer(object oArea, object oPlayer);",
     ),
@@ -6304,7 +6717,10 @@ KOTOR_FUNCTIONS = [
     ScriptFunction(
         DataType.VOID,
         "ChangeToStandardFaction",
-        [ScriptParam(DataType.OBJECT, "oCreatureToChange", None), ScriptParam(DataType.INT, "nStandardFaction", None)],
+        [
+            ScriptParam(DataType.OBJECT, "oCreatureToChange", None),
+            ScriptParam(DataType.INT, "nStandardFaction", None),
+        ],
         "// 412: Make oCreatureToChange join one of the standard factions.\r\n// ** This will only work on an NPC **\r\n// - nStandardFaction: STANDARD_FACTION_*\r\nvoid ChangeToStandardFaction(object oCreatureToChange, int nStandardFaction);",
         "// 412: Make oCreatureToChange join one of the standard factions.\r\n// ** This will only work on an NPC **\r\n// - nStandardFaction: STANDARD_FACTION_*\r\nvoid ChangeToStandardFaction(object oCreatureToChange, int nStandardFaction);",
     ),
@@ -6332,14 +6748,20 @@ KOTOR_FUNCTIONS = [
     ScriptFunction(
         DataType.VOID,
         "SoundObjectSetPosition",
-        [ScriptParam(DataType.OBJECT, "oSound", None), ScriptParam(DataType.VECTOR, "vPosition", None)],
+        [
+            ScriptParam(DataType.OBJECT, "oSound", None),
+            ScriptParam(DataType.VECTOR, "vPosition", None),
+        ],
         "// 416: Set the position of oSound.\r\nvoid SoundObjectSetPosition(object oSound, vector vPosition);",
         "// 416: Set the position of oSound.\r\nvoid SoundObjectSetPosition(object oSound, vector vPosition);",
     ),
     ScriptFunction(
         DataType.VOID,
         "SpeakOneLinerConversation",
-        [ScriptParam(DataType.STRING, "sDialogResRef", ""), ScriptParam(DataType.OBJECT, "oTokenTarget", "32767")],
+        [
+            ScriptParam(DataType.STRING, "sDialogResRef", ""),
+            ScriptParam(DataType.OBJECT, "oTokenTarget", "32767"),
+        ],
         '// 417: Immediately speak a conversation one-liner.\r\n// - sDialogResRef\r\n// - oTokenTarget: This must be specified if there are creature-specific tokens\r\n//   in the string.\r\nvoid SpeakOneLinerConversation(string sDialogResRef="", object oTokenTarget=OBJECT_TYPE_INVALID);',
         '// 417: Immediately speak a conversation one-liner.\r\n// - sDialogResRef\r\n// - oTokenTarget: This must be specified if there are creature-specific tokens\r\n//   in the string.\r\nvoid SpeakOneLinerConversation(string sDialogResRef="", object oTokenTarget=OBJECT_TYPE_INVALID);',
     ),
@@ -6379,7 +6801,10 @@ KOTOR_FUNCTIONS = [
     ScriptFunction(
         DataType.INT,
         "GetIsWeaponEffective",
-        [ScriptParam(DataType.OBJECT, "oVersus", OBJECT_INVALID), ScriptParam(DataType.INT, "bOffHand", "0")],
+        [
+            ScriptParam(DataType.OBJECT, "oVersus", OBJECT_INVALID),
+            ScriptParam(DataType.INT, "bOffHand", "0"),
+        ],
         "// 422: * Returns TRUE if the weapon equipped is capable of damaging oVersus.\r\nint GetIsWeaponEffective(object oVersus=OBJECT_INVALID, int bOffHand=FALSE);",
         "// 422: * Returns TRUE if the weapon equipped is capable of damaging oVersus.\r\nint GetIsWeaponEffective(object oVersus=OBJECT_INVALID, int bOffHand=FALSE);",
     ),
@@ -6393,7 +6818,11 @@ KOTOR_FUNCTIONS = [
     ScriptFunction(
         DataType.EVENT,
         "EventActivateItem",
-        [ScriptParam(DataType.OBJECT, "oItem", None), ScriptParam(DataType.LOCATION, "lTarget", None), ScriptParam(DataType.OBJECT, "oTarget", OBJECT_INVALID)],
+        [
+            ScriptParam(DataType.OBJECT, "oItem", None),
+            ScriptParam(DataType.LOCATION, "lTarget", None),
+            ScriptParam(DataType.OBJECT, "oTarget", OBJECT_INVALID),
+        ],
         "// 424: Activate oItem.\r\nevent EventActivateItem(object oItem, location lTarget, object oTarget=OBJECT_INVALID);",
         "// 424: Activate oItem.\r\nevent EventActivateItem(object oItem, location lTarget, object oTarget=OBJECT_INVALID);",
     ),
@@ -6533,7 +6962,11 @@ KOTOR_FUNCTIONS = [
     ScriptFunction(
         DataType.VOID,
         "TakeGoldFromCreature",
-        [ScriptParam(DataType.INT, "nAmount", None), ScriptParam(DataType.OBJECT, "oCreatureToTakeFrom", None), ScriptParam(DataType.INT, "bDestroy", "0")],
+        [
+            ScriptParam(DataType.INT, "nAmount", None),
+            ScriptParam(DataType.OBJECT, "oCreatureToTakeFrom", None),
+            ScriptParam(DataType.INT, "bDestroy", "0"),
+        ],
         "// 444: Take nAmount of gold from oCreatureToTakeFrom.\r\n// - nAmount\r\n// - oCreatureToTakeFrom: If this is not a valid creature, nothing will happen.\r\n// - bDestroy: If this is TRUE, the caller will not get the gold.  Instead, the\r\n//   gold will be destroyed and will vanish from the game.\r\nvoid TakeGoldFromCreature(int nAmount, object oCreatureToTakeFrom, int bDestroy=FALSE);",
         "// 444: Take nAmount of gold from oCreatureToTakeFrom.\r\n// - nAmount\r\n// - oCreatureToTakeFrom: If this is not a valid creature, nothing will happen.\r\n// - bDestroy: If this is TRUE, the caller will not get the gold.  Instead, the\r\n//   gold will be destroyed and will vanish from the game.\r\nvoid TakeGoldFromCreature(int nAmount, object oCreatureToTakeFrom, int bDestroy=FALSE);",
     ),
@@ -6554,28 +6987,41 @@ KOTOR_FUNCTIONS = [
     ScriptFunction(
         DataType.EFFECT,
         "EffectAttackDecrease",
-        [ScriptParam(DataType.INT, "nPenalty", None), ScriptParam(DataType.INT, "nModifierType", "0")],
+        [
+            ScriptParam(DataType.INT, "nPenalty", None),
+            ScriptParam(DataType.INT, "nModifierType", "0"),
+        ],
         "// 447: Create an Attack Decrease effect.\r\n// - nPenalty\r\n// - nModifierType: ATTACK_BONUS_*\r\neffect EffectAttackDecrease(int nPenalty, int nModifierType=ATTACK_BONUS_MISC);",
         "// 447: Create an Attack Decrease effect.\r\n// - nPenalty\r\n// - nModifierType: ATTACK_BONUS_*\r\neffect EffectAttackDecrease(int nPenalty, int nModifierType=ATTACK_BONUS_MISC);",
     ),
     ScriptFunction(
         DataType.EFFECT,
         "EffectDamageDecrease",
-        [ScriptParam(DataType.INT, "nPenalty", None), ScriptParam(DataType.INT, "nDamageType", "8")],
+        [
+            ScriptParam(DataType.INT, "nPenalty", None),
+            ScriptParam(DataType.INT, "nDamageType", "8"),
+        ],
         "// 448: Create a Damage Decrease effect.\r\n// - nPenalty\r\n// - nDamageType: DAMAGE_TYPE_*\r\neffect EffectDamageDecrease(int nPenalty, int nDamageType=DAMAGE_TYPE_UNIVERSAL);",
         "// 448: Create a Damage Decrease effect.\r\n// - nPenalty\r\n// - nDamageType: DAMAGE_TYPE_*\r\neffect EffectDamageDecrease(int nPenalty, int nDamageType=DAMAGE_TYPE_UNIVERSAL);",
     ),
     ScriptFunction(
         DataType.EFFECT,
         "EffectDamageImmunityDecrease",
-        [ScriptParam(DataType.INT, "nDamageType", None), ScriptParam(DataType.INT, "nPercentImmunity", None)],
+        [
+            ScriptParam(DataType.INT, "nDamageType", None),
+            ScriptParam(DataType.INT, "nPercentImmunity", None),
+        ],
         "// 449: Create a Damage Immunity Decrease effect.\r\n// - nDamageType: DAMAGE_TYPE_*\r\n// - nPercentImmunity\r\neffect EffectDamageImmunityDecrease(int nDamageType, int nPercentImmunity);",
         "// 449: Create a Damage Immunity Decrease effect.\r\n// - nDamageType: DAMAGE_TYPE_*\r\n// - nPercentImmunity\r\neffect EffectDamageImmunityDecrease(int nDamageType, int nPercentImmunity);",
     ),
     ScriptFunction(
         DataType.EFFECT,
         "EffectACDecrease",
-        [ScriptParam(DataType.INT, "nValue", None), ScriptParam(DataType.INT, "nModifyType", "0"), ScriptParam(DataType.INT, "nDamageType", "8199")],
+        [
+            ScriptParam(DataType.INT, "nValue", None),
+            ScriptParam(DataType.INT, "nModifyType", "0"),
+            ScriptParam(DataType.INT, "nDamageType", "8199"),
+        ],
         "// 450: Create an AC Decrease effect.\r\n// - nValue\r\n// - nModifyType: AC_*\r\n// - nDamageType: DAMAGE_TYPE_*\r\n//   * Default value for nDamageType should only ever be used in this function prototype.\r\neffect EffectACDecrease(int nValue, int nModifyType=AC_DODGE_BONUS, int nDamageType=AC_VS_DAMAGE_TYPE_ALL);",
         "// 450: Create an AC Decrease effect.\r\n// - nValue\r\n// - nModifyType: AC_*\r\n// - nDamageType: DAMAGE_TYPE_*\r\n//   * Default value for nDamageType should only ever be used in this function prototype.\r\neffect EffectACDecrease(int nValue, int nModifyType=AC_DODGE_BONUS, int nDamageType=AC_VS_DAMAGE_TYPE_ALL);",
     ),
@@ -6589,7 +7035,11 @@ KOTOR_FUNCTIONS = [
     ScriptFunction(
         DataType.EFFECT,
         "EffectSavingThrowDecrease",
-        [ScriptParam(DataType.INT, "nSave", None), ScriptParam(DataType.INT, "nValue", None), ScriptParam(DataType.INT, "nSaveType", "0")],
+        [
+            ScriptParam(DataType.INT, "nSave", None),
+            ScriptParam(DataType.INT, "nValue", None),
+            ScriptParam(DataType.INT, "nSaveType", "0"),
+        ],
         "// 452: Create a Saving Throw Decrease effect.\r\n// - nSave\r\n// - nValue\r\n// - nSaveType: SAVING_THROW_TYPE_*\r\neffect EffectSavingThrowDecrease(int nSave, int nValue, int nSaveType=SAVING_THROW_TYPE_ALL);",
         "// 452: Create a Saving Throw Decrease effect.\r\n// - nSave\r\n// - nValue\r\n// - nSaveType: SAVING_THROW_TYPE_*\r\neffect EffectSavingThrowDecrease(int nSave, int nValue, int nSaveType=SAVING_THROW_TYPE_ALL);",
     ),
@@ -6617,7 +7067,10 @@ KOTOR_FUNCTIONS = [
     ScriptFunction(
         DataType.VOID,
         "SetPlotFlag",
-        [ScriptParam(DataType.OBJECT, "oTarget", None), ScriptParam(DataType.INT, "nPlotFlag", None)],
+        [
+            ScriptParam(DataType.OBJECT, "oTarget", None),
+            ScriptParam(DataType.INT, "nPlotFlag", None),
+        ],
         "// 456: Set oTarget's plot object status.\r\nvoid SetPlotFlag(object oTarget, int nPlotFlag);",
         "// 456: Set oTarget's plot object status.\r\nvoid SetPlotFlag(object oTarget, int nPlotFlag);",
     ),
@@ -6838,14 +7291,21 @@ KOTOR_FUNCTIONS = [
     ScriptFunction(
         DataType.EFFECT,
         "EffectDamageShield",
-        [ScriptParam(DataType.INT, "nDamageAmount", None), ScriptParam(DataType.INT, "nRandomAmount", None), ScriptParam(DataType.INT, "nDamageType", None)],
+        [
+            ScriptParam(DataType.INT, "nDamageAmount", None),
+            ScriptParam(DataType.INT, "nRandomAmount", None),
+            ScriptParam(DataType.INT, "nDamageType", None),
+        ],
         "// 487: Create a Damage Shield effect which does (nDamageAmount + nRandomAmount)\r\n// damage to any melee attacker on a successful attack of damage type nDamageType.\r\n// - nDamageAmount: an integer value\r\n// - nRandomAmount: DAMAGE_BONUS_*\r\n// - nDamageType: DAMAGE_TYPE_*\r\neffect EffectDamageShield(int nDamageAmount, int nRandomAmount, int nDamageType);",
         "// 487: Create a Damage Shield effect which does (nDamageAmount + nRandomAmount)\r\n// damage to any melee attacker on a successful attack of damage type nDamageType.\r\n// - nDamageAmount: an integer value\r\n// - nRandomAmount: DAMAGE_BONUS_*\r\n// - nDamageType: DAMAGE_TYPE_*\r\neffect EffectDamageShield(int nDamageAmount, int nRandomAmount, int nDamageType);",
     ),
     ScriptFunction(
         DataType.OBJECT,
         "GetNearestTrapToObject",
-        [ScriptParam(DataType.OBJECT, "oTarget", OBJECT_SELF), ScriptParam(DataType.INT, "nTrapDetected", "1")],
+        [
+            ScriptParam(DataType.OBJECT, "oTarget", OBJECT_SELF),
+            ScriptParam(DataType.INT, "nTrapDetected", "1"),
+        ],
         '// 488: Get the trap nearest to oTarget.\r\n// Note : "trap objects" are actually any trigger, placeable or door that is\r\n// trapped in oTarget\'s area.\r\n// - oTarget\r\n// - nTrapDetected: if this is TRUE, the trap returned has to have been detected\r\n//   by oTarget.\r\nobject GetNearestTrapToObject(object oTarget=OBJECT_SELF, int nTrapDetected=TRUE);',
         '// 488: Get the trap nearest to oTarget.\r\n// Note : "trap objects" are actually any trigger, placeable or door that is\r\n// trapped in oTarget\'s area.\r\n// - oTarget\r\n// - nTrapDetected: if this is TRUE, the trap returned has to have been detected\r\n//   by oTarget.\r\nobject GetNearestTrapToObject(object oTarget=OBJECT_SELF, int nTrapDetected=TRUE);',
     ),
@@ -6929,21 +7389,32 @@ KOTOR_FUNCTIONS = [
     ScriptFunction(
         DataType.VOID,
         "DuplicateHeadAppearance",
-        [ScriptParam(DataType.OBJECT, "oidCreatureToChange", None), ScriptParam(DataType.OBJECT, "oidCreatureToMatch", None)],
+        [
+            ScriptParam(DataType.OBJECT, "oidCreatureToChange", None),
+            ScriptParam(DataType.OBJECT, "oidCreatureToMatch", None),
+        ],
         "// 500:\r\nvoid DuplicateHeadAppearance(object oidCreatureToChange, object oidCreatureToMatch);",
         "// 500:\r\nvoid DuplicateHeadAppearance(object oidCreatureToChange, object oidCreatureToMatch);",
     ),
     ScriptFunction(
         DataType.VOID,
         "ActionCastFakeSpellAtObject",
-        [ScriptParam(DataType.INT, "nSpell", None), ScriptParam(DataType.OBJECT, "oTarget", None), ScriptParam(DataType.INT, "nProjectilePathType", "0")],
+        [
+            ScriptParam(DataType.INT, "nSpell", None),
+            ScriptParam(DataType.OBJECT, "oTarget", None),
+            ScriptParam(DataType.INT, "nProjectilePathType", "0"),
+        ],
         "// 501: The action subject will fake casting a spell at oTarget; the conjure and cast\r\n// animations and visuals will occur, nothing else.\r\n// - nSpell\r\n// - oTarget\r\n// - nProjectilePathType: PROJECTILE_PATH_TYPE_*\r\nvoid ActionCastFakeSpellAtObject(int nSpell, object oTarget, int nProjectilePathType=PROJECTILE_PATH_TYPE_DEFAULT);",
         "// 501: The action subject will fake casting a spell at oTarget; the conjure and cast\r\n// animations and visuals will occur, nothing else.\r\n// - nSpell\r\n// - oTarget\r\n// - nProjectilePathType: PROJECTILE_PATH_TYPE_*\r\nvoid ActionCastFakeSpellAtObject(int nSpell, object oTarget, int nProjectilePathType=PROJECTILE_PATH_TYPE_DEFAULT);",
     ),
     ScriptFunction(
         DataType.VOID,
         "ActionCastFakeSpellAtLocation",
-        [ScriptParam(DataType.INT, "nSpell", None), ScriptParam(DataType.LOCATION, "lTarget", None), ScriptParam(DataType.INT, "nProjectilePathType", "0")],
+        [
+            ScriptParam(DataType.INT, "nSpell", None),
+            ScriptParam(DataType.LOCATION, "lTarget", None),
+            ScriptParam(DataType.INT, "nProjectilePathType", "0"),
+        ],
         "// 502: The action subject will fake casting a spell at lLocation; the conjure and\r\n// cast animations and visuals will occur, nothing else.\r\n// - nSpell\r\n// - lTarget\r\n// - nProjectilePathType: PROJECTILE_PATH_TYPE_*\r\nvoid ActionCastFakeSpellAtLocation(int nSpell, location lTarget, int nProjectilePathType=PROJECTILE_PATH_TYPE_DEFAULT);",
         "// 502: The action subject will fake casting a spell at lLocation; the conjure and\r\n// cast animations and visuals will occur, nothing else.\r\n// - nSpell\r\n// - lTarget\r\n// - nProjectilePathType: PROJECTILE_PATH_TYPE_*\r\nvoid ActionCastFakeSpellAtLocation(int nSpell, location lTarget, int nProjectilePathType=PROJECTILE_PATH_TYPE_DEFAULT);",
     ),
@@ -6962,7 +7433,10 @@ KOTOR_FUNCTIONS = [
     ScriptFunction(
         DataType.VOID,
         "SetCameraMode",
-        [ScriptParam(DataType.OBJECT, "oPlayer", None), ScriptParam(DataType.INT, "nCameraMode", None)],
+        [
+            ScriptParam(DataType.OBJECT, "oPlayer", None),
+            ScriptParam(DataType.INT, "nCameraMode", None),
+        ],
         "// 504: Set the camera mode for oPlayer.\r\n// - oPlayer\r\n// - nCameraMode: CAMERA_MODE_*\r\n// * If oPlayer is not player-controlled or nCameraMode is invalid, nothing\r\n//   happens.\r\nvoid SetCameraMode(object oPlayer, int nCameraMode);",
         "// 504: Set the camera mode for oPlayer.\r\n// - oPlayer\r\n// - nCameraMode: CAMERA_MODE_*\r\n// * If oPlayer is not player-controlled or nCameraMode is invalid, nothing\r\n//   happens.\r\nvoid SetCameraMode(object oPlayer, int nCameraMode);",
     ),
@@ -6983,7 +7457,11 @@ KOTOR_FUNCTIONS = [
     ScriptFunction(
         DataType.VOID,
         "CutsceneMove",
-        [ScriptParam(DataType.OBJECT, "oObject", None), ScriptParam(DataType.VECTOR, "vPosition", None), ScriptParam(DataType.INT, "nRun", None)],
+        [
+            ScriptParam(DataType.OBJECT, "oObject", None),
+            ScriptParam(DataType.VECTOR, "vPosition", None),
+            ScriptParam(DataType.INT, "nRun", None),
+        ],
         "// 507: CutsceneMoveToPoint\r\n// Used by the cutscene system to allow designers to script combat\r\nvoid CutsceneMove(object oObject, vector vPosition, int nRun);",
         "// 507: CutsceneMoveToPoint\r\n// Used by the cutscene system to allow designers to script combat\r\nvoid CutsceneMove(object oObject, vector vPosition, int nRun);",
     ),
@@ -7048,7 +7526,10 @@ KOTOR_FUNCTIONS = [
     ScriptFunction(
         DataType.VOID,
         "RevealMap",
-        [ScriptParam(DataType.VECTOR, "vPoint", Vector3(0.0, 0.0, 0.0)), ScriptParam(DataType.INT, "nRadius", "-1")],
+        [
+            ScriptParam(DataType.VECTOR, "vPoint", Vector3(0.0, 0.0, 0.0)),
+            ScriptParam(DataType.INT, "nRadius", "-1"),
+        ],
         "// 515: RevealMap\r\n// Reveals the map at the given WORLD point 'vPoint' with a MAP Grid Radius 'nRadius'\r\n// If this function is called with no parameters it will reveal the entire map.\r\n// (NOTE: if this function is called with a valid point but a default radius, ie. 'nRadius' of -1\r\n//        then the entire map will be revealed)\r\nvoid RevealMap(vector vPoint=[0.0,0.0,0.0],int nRadius=-1);",
         "// 515: RevealMap\r\n// Reveals the map at the given WORLD point 'vPoint' with a MAP Grid Radius 'nRadius'\r\n// If this function is called with no parameters it will reveal the entire map.\r\n// (NOTE: if this function is called with a valid point but a default radius, ie. 'nRadius' of -1\r\n//        then the entire map will be revealed)\r\nvoid RevealMap(vector vPoint=[0.0,0.0,0.0],int nRadius=-1);",
     ),
@@ -7154,7 +7635,10 @@ KOTOR_FUNCTIONS = [
     ScriptFunction(
         DataType.INT,
         "GetTrapDetectedBy",
-        [ScriptParam(DataType.OBJECT, "oTrapObject", None), ScriptParam(DataType.OBJECT, "oCreature", None)],
+        [
+            ScriptParam(DataType.OBJECT, "oTrapObject", None),
+            ScriptParam(DataType.OBJECT, "oCreature", None),
+        ],
         "// 529: - oTrapObject: a placeable, door or trigger\r\n// - oCreature\r\n// * Returns TRUE if oCreature has detected oTrapObject\r\nint GetTrapDetectedBy(object oTrapObject, object oCreature);",
         "// 529: - oTrapObject: a placeable, door or trigger\r\n// - oCreature\r\n// * Returns TRUE if oCreature has detected oTrapObject\r\nint GetTrapDetectedBy(object oTrapObject, object oCreature);",
     ),
@@ -7252,14 +7736,20 @@ KOTOR_FUNCTIONS = [
     ScriptFunction(
         DataType.INT,
         "GetHasFeatEffect",
-        [ScriptParam(DataType.INT, "nFeat", None), ScriptParam(DataType.OBJECT, "oObject", OBJECT_SELF)],
+        [
+            ScriptParam(DataType.INT, "nFeat", None),
+            ScriptParam(DataType.OBJECT, "oObject", OBJECT_SELF),
+        ],
         "// 543: - nFeat: FEAT_*\r\n// - oObject\r\n// * Returns TRUE if oObject has effects on it originating from nFeat.\r\nint GetHasFeatEffect(int nFeat, object oObject=OBJECT_SELF);",
         "// 543: - nFeat: FEAT_*\r\n// - oObject\r\n// * Returns TRUE if oObject has effects on it originating from nFeat.\r\nint GetHasFeatEffect(int nFeat, object oObject=OBJECT_SELF);",
     ),
     ScriptFunction(
         DataType.VOID,
         "SetPlaceableIllumination",
-        [ScriptParam(DataType.OBJECT, "oPlaceable", OBJECT_SELF), ScriptParam(DataType.INT, "bIlluminate", "1")],
+        [
+            ScriptParam(DataType.OBJECT, "oPlaceable", OBJECT_SELF),
+            ScriptParam(DataType.INT, "bIlluminate", "1"),
+        ],
         "// 544: Set the status of the illumination for oPlaceable.\r\n// - oPlaceable\r\n// - bIlluminate: if this is TRUE, oPlaceable's illumination will be turned on.\r\n//   If this is FALSE, oPlaceable's illumination will be turned off.\r\n// Note: You must call RecomputeStaticLighting() after calling this function in\r\n// order for the changes to occur visually for the players.\r\n// SetPlaceableIllumination() buffers the illumination changes, which are then",
         "// 544: Set the status of the illumination for oPlaceable.\r\n// - oPlaceable\r\n// - bIlluminate: if this is TRUE, oPlaceable's illumination will be turned on.\r\n//   If this is FALSE, oPlaceable's illumination will be turned off.\r\n// Note: You must call RecomputeStaticLighting() after calling this function in\r\n// order for the changes to occur visually for the players.\r\n// SetPlaceableIllumination() buffers the illumination changes, which are then",
     ),
@@ -7273,14 +7763,20 @@ KOTOR_FUNCTIONS = [
     ScriptFunction(
         DataType.INT,
         "GetIsPlaceableObjectActionPossible",
-        [ScriptParam(DataType.OBJECT, "oPlaceable", None), ScriptParam(DataType.INT, "nPlaceableAction", None)],
+        [
+            ScriptParam(DataType.OBJECT, "oPlaceable", None),
+            ScriptParam(DataType.INT, "nPlaceableAction", None),
+        ],
         "// 546: - oPlaceable\r\n// - nPlaceableAction: PLACEABLE_ACTION_*\r\n// * Returns TRUE if nPlacebleAction is valid for oPlaceable.\r\nint GetIsPlaceableObjectActionPossible(object oPlaceable, int nPlaceableAction);",
         "// 546: - oPlaceable\r\n// - nPlaceableAction: PLACEABLE_ACTION_*\r\n// * Returns TRUE if nPlacebleAction is valid for oPlaceable.\r\nint GetIsPlaceableObjectActionPossible(object oPlaceable, int nPlaceableAction);",
     ),
     ScriptFunction(
         DataType.VOID,
         "DoPlaceableObjectAction",
-        [ScriptParam(DataType.OBJECT, "oPlaceable", None), ScriptParam(DataType.INT, "nPlaceableAction", None)],
+        [
+            ScriptParam(DataType.OBJECT, "oPlaceable", None),
+            ScriptParam(DataType.INT, "nPlaceableAction", None),
+        ],
         "// 547: The caller performs nPlaceableAction on oPlaceable.\r\n// - oPlaceable\r\n// - nPlaceableAction: PLACEABLE_ACTION_*\r\nvoid DoPlaceableObjectAction(object oPlaceable, int nPlaceableAction);",
         "// 547: The caller performs nPlaceableAction on oPlaceable.\r\n// - oPlaceable\r\n// - nPlaceableAction: PLACEABLE_ACTION_*\r\nvoid DoPlaceableObjectAction(object oPlaceable, int nPlaceableAction);",
     ),
@@ -7301,7 +7797,10 @@ KOTOR_FUNCTIONS = [
     ScriptFunction(
         DataType.INT,
         "SetTrapDetectedBy",
-        [ScriptParam(DataType.OBJECT, "oTrap", None), ScriptParam(DataType.OBJECT, "oDetector", None)],
+        [
+            ScriptParam(DataType.OBJECT, "oTrap", None),
+            ScriptParam(DataType.OBJECT, "oDetector", None),
+        ],
         "// 550: Set oDetector to have detected oTrap.\r\nint SetTrapDetectedBy(object oTrap, object oDetector);",
         "// 550: Set oDetector to have detected oTrap.\r\nint SetTrapDetectedBy(object oTrap, object oDetector);",
     ),
@@ -7322,7 +7821,10 @@ KOTOR_FUNCTIONS = [
     ScriptFunction(
         DataType.VOID,
         "FaceObjectAwayFromObject",
-        [ScriptParam(DataType.OBJECT, "oFacer", None), ScriptParam(DataType.OBJECT, "oObjectToFaceAwayFrom", None)],
+        [
+            ScriptParam(DataType.OBJECT, "oFacer", None),
+            ScriptParam(DataType.OBJECT, "oObjectToFaceAwayFrom", None),
+        ],
         "// 553: FaceObjectAwayFromObject\r\n// This will cause the object oFacer to face away from oObjectToFaceAwayFrom.\r\n// The objects must be in the same area for this to work.\r\nvoid FaceObjectAwayFromObject( object oFacer, object oObjectToFaceAwayFrom );",
         "// 553: FaceObjectAwayFromObject\r\n// This will cause the object oFacer to face away from oObjectToFaceAwayFrom.\r\n// The objects must be in the same area for this to work.\r\nvoid FaceObjectAwayFromObject( object oFacer, object oObjectToFaceAwayFrom );",
     ),
@@ -7398,7 +7900,10 @@ KOTOR_FUNCTIONS = [
     ScriptFunction(
         DataType.VOID,
         "SWMG_SetSpeedBlurEffect",
-        [ScriptParam(DataType.INT, "bEnabled", None), ScriptParam(DataType.FLOAT, "fRatio", "0.75")],
+        [
+            ScriptParam(DataType.INT, "bEnabled", None),
+            ScriptParam(DataType.FLOAT, "fRatio", "0.75"),
+        ],
         "// 563: Turns on or off the speed blur effect in rendered scenes.\r\n// bEnabled: Set TRUE to turn it on, FALSE to turn it off.\r\n// fRatio: Sets the frame accumulation ratio.\r\nvoid SWMG_SetSpeedBlurEffect( int bEnabled, float fRatio=0.75f );",
         "// 563: Turns on or off the speed blur effect in rendered scenes.\r\n// bEnabled: Set TRUE to turn it on, FALSE to turn it off.\r\n// fRatio: Sets the frame accumulation ratio.\r\nvoid SWMG_SetSpeedBlurEffect( int bEnabled, float fRatio=0.75f );",
     ),
@@ -7461,7 +7966,10 @@ KOTOR_FUNCTIONS = [
     ScriptFunction(
         DataType.VOID,
         "AddToParty",
-        [ScriptParam(DataType.OBJECT, "oPC", None), ScriptParam(DataType.OBJECT, "oPartyLeader", None)],
+        [
+            ScriptParam(DataType.OBJECT, "oPC", None),
+            ScriptParam(DataType.OBJECT, "oPartyLeader", None),
+        ],
         "// 572: Add oPC to oPartyLeader's party.  This will only work on two PCs.\r\n// - oPC: player to add to a party\r\n// - oPartyLeader: player already in the party\r\nvoid AddToParty(object oPC, object oPartyLeader);",
         "// 572: Add oPC to oPartyLeader's party.  This will only work on two PCs.\r\n// - oPC: player to add to a party\r\n// - oPartyLeader: player already in the party\r\nvoid AddToParty(object oPC, object oPartyLeader);",
     ),
@@ -7510,7 +8018,10 @@ KOTOR_FUNCTIONS = [
     ScriptFunction(
         DataType.VOID,
         "SetGlobalBoolean",
-        [ScriptParam(DataType.STRING, "sIdentifier", None), ScriptParam(DataType.INT, "nValue", None)],
+        [
+            ScriptParam(DataType.STRING, "sIdentifier", None),
+            ScriptParam(DataType.INT, "nValue", None),
+        ],
         "// 579: SetGlobalBoolean\r\n// This function sets the value of a global boolean (TRUE or FALSE) scripting variable.\r\nvoid SetGlobalBoolean( string sIdentifier, int nValue );",
         "// 579: SetGlobalBoolean\r\n// This function sets the value of a global boolean (TRUE or FALSE) scripting variable.\r\nvoid SetGlobalBoolean( string sIdentifier, int nValue );",
     ),
@@ -7524,7 +8035,10 @@ KOTOR_FUNCTIONS = [
     ScriptFunction(
         DataType.VOID,
         "SetGlobalNumber",
-        [ScriptParam(DataType.STRING, "sIdentifier", None), ScriptParam(DataType.INT, "nValue", None)],
+        [
+            ScriptParam(DataType.STRING, "sIdentifier", None),
+            ScriptParam(DataType.INT, "nValue", None),
+        ],
         "// 581: SetGlobalNumber\r\n// This function sets the value of a global number (-128 to +127) scripting variable.\r\nvoid SetGlobalNumber( string sIdentifier, int nValue );",
         "// 581: SetGlobalNumber\r\n// This function sets the value of a global number (-128 to +127) scripting variable.\r\nvoid SetGlobalNumber( string sIdentifier, int nValue );",
     ),
@@ -7598,7 +8112,11 @@ KOTOR_FUNCTIONS = [
     ScriptFunction(
         DataType.INT,
         "SWMG_AdjustFollowerHitPoints",
-        [ScriptParam(DataType.OBJECT, "oFollower", None), ScriptParam(DataType.INT, "nHP", None), ScriptParam(DataType.INT, "nAbsolute", "0")],
+        [
+            ScriptParam(DataType.OBJECT, "oFollower", None),
+            ScriptParam(DataType.INT, "nHP", None),
+            ScriptParam(DataType.INT, "nAbsolute", "0"),
+        ],
         "// 590: adjusts a followers hit points, can specify the absolute value to set to\r\n// SWMG_AdjustFollowerHitPoints\r\nint SWMG_AdjustFollowerHitPoints(object oFollower, int nHP, int nAbsolute=0);",
         "// 590: adjusts a followers hit points, can specify the absolute value to set to\r\n// SWMG_AdjustFollowerHitPoints\r\nint SWMG_AdjustFollowerHitPoints(object oFollower, int nHP, int nAbsolute=0);",
     ),
@@ -7717,7 +8235,10 @@ KOTOR_FUNCTIONS = [
     ScriptFunction(
         DataType.VOID,
         "SWMG_RemoveAnimation",
-        [ScriptParam(DataType.OBJECT, "oObject", None), ScriptParam(DataType.STRING, "sAnimName", None)],
+        [
+            ScriptParam(DataType.OBJECT, "oObject", None),
+            ScriptParam(DataType.STRING, "sAnimName", None),
+        ],
         "// 607: SWMG_RemoveAnimation\r\nvoid SWMG_RemoveAnimation(object oObject, string sAnimName);",
         "// 607: SWMG_RemoveAnimation\r\nvoid SWMG_RemoveAnimation(object oObject, string sAnimName);",
     ),
@@ -7794,7 +8315,10 @@ KOTOR_FUNCTIONS = [
     ScriptFunction(
         DataType.VOID,
         "SWMG_SetMaxHitPoints",
-        [ScriptParam(DataType.OBJECT, "oFollower", None), ScriptParam(DataType.INT, "nMaxHP", None)],
+        [
+            ScriptParam(DataType.OBJECT, "oFollower", None),
+            ScriptParam(DataType.INT, "nMaxHP", None),
+        ],
         "// 618: SWMG_SetMaxHitPoints\r\nvoid SWMG_SetMaxHitPoints(object oFollower, int nMaxHP);",
         "// 618: SWMG_SetMaxHitPoints\r\nvoid SWMG_SetMaxHitPoints(object oFollower, int nMaxHP);",
     ),
@@ -7808,7 +8332,10 @@ KOTOR_FUNCTIONS = [
     ScriptFunction(
         DataType.VOID,
         "SWMG_SetSphereRadius",
-        [ScriptParam(DataType.OBJECT, "oFollower", None), ScriptParam(DataType.FLOAT, "fRadius", None)],
+        [
+            ScriptParam(DataType.OBJECT, "oFollower", None),
+            ScriptParam(DataType.FLOAT, "fRadius", None),
+        ],
         "// 620: SWMG_SetSphereRadius\r\nvoid SWMG_SetSphereRadius(object oFollower, float fRadius);",
         "// 620: SWMG_SetSphereRadius\r\nvoid SWMG_SetSphereRadius(object oFollower, float fRadius);",
     ),
@@ -7822,7 +8349,10 @@ KOTOR_FUNCTIONS = [
     ScriptFunction(
         DataType.VOID,
         "SWMG_SetNumLoops",
-        [ScriptParam(DataType.OBJECT, "oFollower", None), ScriptParam(DataType.INT, "nNumLoops", None)],
+        [
+            ScriptParam(DataType.OBJECT, "oFollower", None),
+            ScriptParam(DataType.INT, "nNumLoops", None),
+        ],
         "// 622: SWMG_SetNumLoops\r\nvoid SWMG_SetNumLoops(object oFollower, int nNumLoops);",
         "// 622: SWMG_SetNumLoops\r\nvoid SWMG_SetNumLoops(object oFollower, int nNumLoops);",
     ),
@@ -7843,98 +8373,147 @@ KOTOR_FUNCTIONS = [
     ScriptFunction(
         DataType.STRING,
         "SWMG_GetGunBankBulletModel",
-        [ScriptParam(DataType.OBJECT, "oFollower", None), ScriptParam(DataType.INT, "nGunBank", None)],
+        [
+            ScriptParam(DataType.OBJECT, "oFollower", None),
+            ScriptParam(DataType.INT, "nGunBank", None),
+        ],
         "// 625: SWMG_GetGunBankBulletModel\r\nstring SWMG_GetGunBankBulletModel(object oFollower, int nGunBank);",
         "// 625: SWMG_GetGunBankBulletModel\r\nstring SWMG_GetGunBankBulletModel(object oFollower, int nGunBank);",
     ),
     ScriptFunction(
         DataType.STRING,
         "SWMG_GetGunBankGunModel",
-        [ScriptParam(DataType.OBJECT, "oFollower", None), ScriptParam(DataType.INT, "nGunBank", None)],
+        [
+            ScriptParam(DataType.OBJECT, "oFollower", None),
+            ScriptParam(DataType.INT, "nGunBank", None),
+        ],
         "// 626: SWMG_GetGunBankGunModel\r\nstring SWMG_GetGunBankGunModel(object oFollower, int nGunBank);",
         "// 626: SWMG_GetGunBankGunModel\r\nstring SWMG_GetGunBankGunModel(object oFollower, int nGunBank);",
     ),
     ScriptFunction(
         DataType.INT,
         "SWMG_GetGunBankDamage",
-        [ScriptParam(DataType.OBJECT, "oFollower", None), ScriptParam(DataType.INT, "nGunBank", None)],
+        [
+            ScriptParam(DataType.OBJECT, "oFollower", None),
+            ScriptParam(DataType.INT, "nGunBank", None),
+        ],
         "// 627: SWMG_GetGunBankDamage\r\nint SWMG_GetGunBankDamage(object oFollower, int nGunBank);",
         "// 627: SWMG_GetGunBankDamage\r\nint SWMG_GetGunBankDamage(object oFollower, int nGunBank);",
     ),
     ScriptFunction(
         DataType.FLOAT,
         "SWMG_GetGunBankTimeBetweenShots",
-        [ScriptParam(DataType.OBJECT, "oFollower", None), ScriptParam(DataType.INT, "nGunBank", None)],
+        [
+            ScriptParam(DataType.OBJECT, "oFollower", None),
+            ScriptParam(DataType.INT, "nGunBank", None),
+        ],
         "// 628: SWMG_GetGunBankTimeBetweenShots\r\nfloat SWMG_GetGunBankTimeBetweenShots(object oFollower, int nGunBank);",
         "// 628: SWMG_GetGunBankTimeBetweenShots\r\nfloat SWMG_GetGunBankTimeBetweenShots(object oFollower, int nGunBank);",
     ),
     ScriptFunction(
         DataType.FLOAT,
         "SWMG_GetGunBankLifespan",
-        [ScriptParam(DataType.OBJECT, "oFollower", None), ScriptParam(DataType.INT, "nGunBank", None)],
+        [
+            ScriptParam(DataType.OBJECT, "oFollower", None),
+            ScriptParam(DataType.INT, "nGunBank", None),
+        ],
         "// 629: SWMG_GetGunBankLifespan\r\nfloat SWMG_GetGunBankLifespan(object oFollower, int nGunBank);",
         "// 629: SWMG_GetGunBankLifespan\r\nfloat SWMG_GetGunBankLifespan(object oFollower, int nGunBank);",
     ),
     ScriptFunction(
         DataType.FLOAT,
         "SWMG_GetGunBankSpeed",
-        [ScriptParam(DataType.OBJECT, "oFollower", None), ScriptParam(DataType.INT, "nGunBank", None)],
+        [
+            ScriptParam(DataType.OBJECT, "oFollower", None),
+            ScriptParam(DataType.INT, "nGunBank", None),
+        ],
         "// 630: SWMG_GetGunBankSpeed\r\nfloat SWMG_GetGunBankSpeed(object oFollower, int nGunBank);",
         "// 630: SWMG_GetGunBankSpeed\r\nfloat SWMG_GetGunBankSpeed(object oFollower, int nGunBank);",
     ),
     ScriptFunction(
         DataType.INT,
         "SWMG_GetGunBankTarget",
-        [ScriptParam(DataType.OBJECT, "oFollower", None), ScriptParam(DataType.INT, "nGunBank", None)],
+        [
+            ScriptParam(DataType.OBJECT, "oFollower", None),
+            ScriptParam(DataType.INT, "nGunBank", None),
+        ],
         "// 631: SWMG_GetGunBankTarget\r\nint SWMG_GetGunBankTarget(object oFollower, int nGunBank);",
         "// 631: SWMG_GetGunBankTarget\r\nint SWMG_GetGunBankTarget(object oFollower, int nGunBank);",
     ),
     ScriptFunction(
         DataType.VOID,
         "SWMG_SetGunBankBulletModel",
-        [ScriptParam(DataType.OBJECT, "oFollower", None), ScriptParam(DataType.INT, "nGunBank", None), ScriptParam(DataType.STRING, "sBulletModel", None)],
+        [
+            ScriptParam(DataType.OBJECT, "oFollower", None),
+            ScriptParam(DataType.INT, "nGunBank", None),
+            ScriptParam(DataType.STRING, "sBulletModel", None),
+        ],
         "// 632: SWMG_SetGunBankBulletModel\r\nvoid SWMG_SetGunBankBulletModel(object oFollower, int nGunBank, string sBulletModel);",
         "// 632: SWMG_SetGunBankBulletModel\r\nvoid SWMG_SetGunBankBulletModel(object oFollower, int nGunBank, string sBulletModel);",
     ),
     ScriptFunction(
         DataType.VOID,
         "SWMG_SetGunBankGunModel",
-        [ScriptParam(DataType.OBJECT, "oFollower", None), ScriptParam(DataType.INT, "nGunBank", None), ScriptParam(DataType.STRING, "sGunModel", None)],
+        [
+            ScriptParam(DataType.OBJECT, "oFollower", None),
+            ScriptParam(DataType.INT, "nGunBank", None),
+            ScriptParam(DataType.STRING, "sGunModel", None),
+        ],
         "// 633: SWMG_SetGunBankGunModel\r\nvoid SWMG_SetGunBankGunModel(object oFollower, int nGunBank, string sGunModel);",
         "// 633: SWMG_SetGunBankGunModel\r\nvoid SWMG_SetGunBankGunModel(object oFollower, int nGunBank, string sGunModel);",
     ),
     ScriptFunction(
         DataType.VOID,
         "SWMG_SetGunBankDamage",
-        [ScriptParam(DataType.OBJECT, "oFollower", None), ScriptParam(DataType.INT, "nGunBank", None), ScriptParam(DataType.INT, "nDamage", None)],
+        [
+            ScriptParam(DataType.OBJECT, "oFollower", None),
+            ScriptParam(DataType.INT, "nGunBank", None),
+            ScriptParam(DataType.INT, "nDamage", None),
+        ],
         "// 634: SWMG_SetGunBankDamage\r\nvoid SWMG_SetGunBankDamage(object oFollower, int nGunBank, int nDamage);",
         "// 634: SWMG_SetGunBankDamage\r\nvoid SWMG_SetGunBankDamage(object oFollower, int nGunBank, int nDamage);",
     ),
     ScriptFunction(
         DataType.VOID,
         "SWMG_SetGunBankTimeBetweenShots",
-        [ScriptParam(DataType.OBJECT, "oFollower", None), ScriptParam(DataType.INT, "nGunBank", None), ScriptParam(DataType.FLOAT, "fTBS", None)],
+        [
+            ScriptParam(DataType.OBJECT, "oFollower", None),
+            ScriptParam(DataType.INT, "nGunBank", None),
+            ScriptParam(DataType.FLOAT, "fTBS", None),
+        ],
         "// 635: SWMG_SetGunBankTimeBetweenShots\r\nvoid SWMG_SetGunBankTimeBetweenShots(object oFollower, int nGunBank, float fTBS);",
         "// 635: SWMG_SetGunBankTimeBetweenShots\r\nvoid SWMG_SetGunBankTimeBetweenShots(object oFollower, int nGunBank, float fTBS);",
     ),
     ScriptFunction(
         DataType.VOID,
         "SWMG_SetGunBankLifespan",
-        [ScriptParam(DataType.OBJECT, "oFollower", None), ScriptParam(DataType.INT, "nGunBank", None), ScriptParam(DataType.FLOAT, "fLifespan", None)],
+        [
+            ScriptParam(DataType.OBJECT, "oFollower", None),
+            ScriptParam(DataType.INT, "nGunBank", None),
+            ScriptParam(DataType.FLOAT, "fLifespan", None),
+        ],
         "// 636: SWMG_SetGunBankLifespan\r\nvoid SWMG_SetGunBankLifespan(object oFollower, int nGunBank, float fLifespan);",
         "// 636: SWMG_SetGunBankLifespan\r\nvoid SWMG_SetGunBankLifespan(object oFollower, int nGunBank, float fLifespan);",
     ),
     ScriptFunction(
         DataType.VOID,
         "SWMG_SetGunBankSpeed",
-        [ScriptParam(DataType.OBJECT, "oFollower", None), ScriptParam(DataType.INT, "nGunBank", None), ScriptParam(DataType.FLOAT, "fSpeed", None)],
+        [
+            ScriptParam(DataType.OBJECT, "oFollower", None),
+            ScriptParam(DataType.INT, "nGunBank", None),
+            ScriptParam(DataType.FLOAT, "fSpeed", None),
+        ],
         "// 637: SWMG_SetGunBankSpeed\r\nvoid SWMG_SetGunBankSpeed(object oFollower, int nGunBank, float fSpeed);",
         "// 637: SWMG_SetGunBankSpeed\r\nvoid SWMG_SetGunBankSpeed(object oFollower, int nGunBank, float fSpeed);",
     ),
     ScriptFunction(
         DataType.VOID,
         "SWMG_SetGunBankTarget",
-        [ScriptParam(DataType.OBJECT, "oFollower", None), ScriptParam(DataType.INT, "nGunBank", None), ScriptParam(DataType.INT, "nTarget", None)],
+        [
+            ScriptParam(DataType.OBJECT, "oFollower", None),
+            ScriptParam(DataType.INT, "nGunBank", None),
+            ScriptParam(DataType.INT, "nTarget", None),
+        ],
         "// 638: SWMG_SetGunBankTarget\r\nvoid SWMG_SetGunBankTarget(object oFollower, int nGunBank, int nTarget);",
         "// 638: SWMG_SetGunBankTarget\r\nvoid SWMG_SetGunBankTarget(object oFollower, int nGunBank, int nTarget);",
     ),
@@ -7948,7 +8527,10 @@ KOTOR_FUNCTIONS = [
     ScriptFunction(
         DataType.INT,
         "SWMG_IsGunBankTargetting",
-        [ScriptParam(DataType.OBJECT, "oFollower", None), ScriptParam(DataType.INT, "nGunBank", None)],
+        [
+            ScriptParam(DataType.OBJECT, "oFollower", None),
+            ScriptParam(DataType.INT, "nGunBank", None),
+        ],
         "// 640: SWMG_IsGunBankTargetting\r\nint SWMG_IsGunBankTargetting(object oFollower, int nGunBank);",
         "// 640: SWMG_IsGunBankTargetting\r\nint SWMG_IsGunBankTargetting(object oFollower, int nGunBank);",
     ),
@@ -8095,28 +8677,44 @@ KOTOR_FUNCTIONS = [
     ScriptFunction(
         DataType.VOID,
         "SWMG_SetGunBankHorizontalSpread",
-        [ScriptParam(DataType.OBJECT, "oEnemy", None), ScriptParam(DataType.INT, "nGunBank", None), ScriptParam(DataType.FLOAT, "fHorizontalSpread", None)],
+        [
+            ScriptParam(DataType.OBJECT, "oEnemy", None),
+            ScriptParam(DataType.INT, "nGunBank", None),
+            ScriptParam(DataType.FLOAT, "fHorizontalSpread", None),
+        ],
         "// 661: SWMG_SetGunBankHorizontalSpread\r\nvoid SWMG_SetGunBankHorizontalSpread(object oEnemy, int nGunBank, float fHorizontalSpread);",
         "// 661: SWMG_SetGunBankHorizontalSpread\r\nvoid SWMG_SetGunBankHorizontalSpread(object oEnemy, int nGunBank, float fHorizontalSpread);",
     ),
     ScriptFunction(
         DataType.VOID,
         "SWMG_SetGunBankVerticalSpread",
-        [ScriptParam(DataType.OBJECT, "oEnemy", None), ScriptParam(DataType.INT, "nGunBank", None), ScriptParam(DataType.FLOAT, "fVerticalSpread", None)],
+        [
+            ScriptParam(DataType.OBJECT, "oEnemy", None),
+            ScriptParam(DataType.INT, "nGunBank", None),
+            ScriptParam(DataType.FLOAT, "fVerticalSpread", None),
+        ],
         "// 662: SWMG_SetGunBankVerticalSpread\r\nvoid SWMG_SetGunBankVerticalSpread(object oEnemy, int nGunBank, float fVerticalSpread);",
         "// 662: SWMG_SetGunBankVerticalSpread\r\nvoid SWMG_SetGunBankVerticalSpread(object oEnemy, int nGunBank, float fVerticalSpread);",
     ),
     ScriptFunction(
         DataType.VOID,
         "SWMG_SetGunBankSensingRadius",
-        [ScriptParam(DataType.OBJECT, "oEnemy", None), ScriptParam(DataType.INT, "nGunBank", None), ScriptParam(DataType.FLOAT, "fSensingRadius", None)],
+        [
+            ScriptParam(DataType.OBJECT, "oEnemy", None),
+            ScriptParam(DataType.INT, "nGunBank", None),
+            ScriptParam(DataType.FLOAT, "fSensingRadius", None),
+        ],
         "// 663: SWMG_SetGunBankSensingRadius\r\nvoid SWMG_SetGunBankSensingRadius(object oEnemy, int nGunBank, float fSensingRadius);",
         "// 663: SWMG_SetGunBankSensingRadius\r\nvoid SWMG_SetGunBankSensingRadius(object oEnemy, int nGunBank, float fSensingRadius);",
     ),
     ScriptFunction(
         DataType.VOID,
         "SWMG_SetGunBankInaccuracy",
-        [ScriptParam(DataType.OBJECT, "oEnemy", None), ScriptParam(DataType.INT, "nGunBank", None), ScriptParam(DataType.FLOAT, "fInaccuracy", None)],
+        [
+            ScriptParam(DataType.OBJECT, "oEnemy", None),
+            ScriptParam(DataType.INT, "nGunBank", None),
+            ScriptParam(DataType.FLOAT, "fInaccuracy", None),
+        ],
         "// 664: SWMG_SetGunBankInaccuracy\r\nvoid SWMG_SetGunBankInaccuracy(object oEnemy, int nGunBank, float fInaccuracy);",
         "// 664: SWMG_SetGunBankInaccuracy\r\nvoid SWMG_SetGunBankInaccuracy(object oEnemy, int nGunBank, float fInaccuracy);",
     ),
@@ -8151,7 +8749,11 @@ KOTOR_FUNCTIONS = [
     ScriptFunction(
         DataType.VOID,
         "AddJournalWorldEntry",
-        [ScriptParam(DataType.INT, "nIndex", None), ScriptParam(DataType.STRING, "szEntry", None), ScriptParam(DataType.STRING, "szTitle", "World Entry")],
+        [
+            ScriptParam(DataType.INT, "nIndex", None),
+            ScriptParam(DataType.STRING, "szEntry", None),
+            ScriptParam(DataType.STRING, "szTitle", "World Entry"),
+        ],
         '// 669: AddJournalWorldEntry\r\n// Adds a user entered entry to the world notices\r\nvoid AddJournalWorldEntry( int nIndex, string szEntry, string szTitle = "World Entry" );',
         '// 669: AddJournalWorldEntry\r\n// Adds a user entered entry to the world notices\r\nvoid AddJournalWorldEntry( int nIndex, string szEntry, string szTitle = "World Entry" );',
     ),
@@ -8165,7 +8767,10 @@ KOTOR_FUNCTIONS = [
     ScriptFunction(
         DataType.VOID,
         "BarkString",
-        [ScriptParam(DataType.OBJECT, "oCreature", None), ScriptParam(DataType.INT, "strRef", None)],
+        [
+            ScriptParam(DataType.OBJECT, "oCreature", None),
+            ScriptParam(DataType.INT, "strRef", None),
+        ],
         "// 671: BarkString\r\n// this will cause a creature to bark the strRef from the talk table\r\n// If creature is specefied as OBJECT_INVALID a general bark is made.\r\nvoid BarkString(object oCreature,int strRef);",
         "// 671: BarkString\r\n// this will cause a creature to bark the strRef from the talk table\r\n// If creature is specefied as OBJECT_INVALID a general bark is made.\r\nvoid BarkString(object oCreature,int strRef);",
     ),
@@ -8207,7 +8812,10 @@ KOTOR_FUNCTIONS = [
     ScriptFunction(
         DataType.VOID,
         "PlayVisualAreaEffect",
-        [ScriptParam(DataType.INT, "nEffectID", None), ScriptParam(DataType.LOCATION, "lTarget", None)],
+        [
+            ScriptParam(DataType.INT, "nEffectID", None),
+            ScriptParam(DataType.LOCATION, "lTarget", None),
+        ],
         "// 677: PlayVisualAreaEffect\r\nvoid PlayVisualAreaEffect(int nEffectID, location lTarget);",
         "// 677: PlayVisualAreaEffect\r\nvoid PlayVisualAreaEffect(int nEffectID, location lTarget);",
     ),
@@ -8234,7 +8842,11 @@ KOTOR_FUNCTIONS = [
     ScriptFunction(
         DataType.VOID,
         "SetLocalBoolean",
-        [ScriptParam(DataType.OBJECT, "oObject", None), ScriptParam(DataType.INT, "nIndex", None), ScriptParam(DataType.INT, "nValue", None)],
+        [
+            ScriptParam(DataType.OBJECT, "oObject", None),
+            ScriptParam(DataType.INT, "nIndex", None),
+            ScriptParam(DataType.INT, "nValue", None),
+        ],
         "// 680. SetLocalBoolean\r\n// This sets a boolean flag on an object\r\n// currently the index is a range between 0 and 63\r\nvoid SetLocalBoolean( object oObject, int nIndex, int nValue );",
         "// 680. SetLocalBoolean\r\n// This sets a boolean flag on an object\r\n// currently the index is a range between 0 and 63\r\nvoid SetLocalBoolean( object oObject, int nIndex, int nValue );",
     ),
@@ -8248,49 +8860,74 @@ KOTOR_FUNCTIONS = [
     ScriptFunction(
         DataType.VOID,
         "SetLocalNumber",
-        [ScriptParam(DataType.OBJECT, "oObject", None), ScriptParam(DataType.INT, "nIndex", None), ScriptParam(DataType.INT, "nValue", None)],
+        [
+            ScriptParam(DataType.OBJECT, "oObject", None),
+            ScriptParam(DataType.INT, "nIndex", None),
+            ScriptParam(DataType.INT, "nValue", None),
+        ],
         "// 682. SetLocalNumber\r\n// This sets a number on an object\r\n// currently the index is a range between 0 and 0\r\nvoid SetLocalNumber( object oObject, int nIndex, int nValue );",
         "// 682. SetLocalNumber\r\n// This sets a number on an object\r\n// currently the index is a range between 0 and 0\r\nvoid SetLocalNumber( object oObject, int nIndex, int nValue );",
     ),
     ScriptFunction(
         DataType.INT,
         "SWMG_GetSoundFrequency",
-        [ScriptParam(DataType.OBJECT, "oFollower", None), ScriptParam(DataType.INT, "nSound", None)],
+        [
+            ScriptParam(DataType.OBJECT, "oFollower", None),
+            ScriptParam(DataType.INT, "nSound", None),
+        ],
         "// 683. SWMG_GetSoundFrequency\r\n// Gets the frequency of a trackfollower sound\r\nint SWMG_GetSoundFrequency( object oFollower, int nSound );",
         "// 683. SWMG_GetSoundFrequency\r\n// Gets the frequency of a trackfollower sound\r\nint SWMG_GetSoundFrequency( object oFollower, int nSound );",
     ),
     ScriptFunction(
         DataType.VOID,
         "SWMG_SetSoundFrequency",
-        [ScriptParam(DataType.OBJECT, "oFollower", None), ScriptParam(DataType.INT, "nSound", None), ScriptParam(DataType.INT, "nFrequency", None)],
+        [
+            ScriptParam(DataType.OBJECT, "oFollower", None),
+            ScriptParam(DataType.INT, "nSound", None),
+            ScriptParam(DataType.INT, "nFrequency", None),
+        ],
         "// 684. SWMG_SetSoundFrequency\r\n// Sets the frequency of a trackfollower sound\r\nvoid SWMG_SetSoundFrequency( object oFollower, int nSound, int nFrequency );",
         "// 684. SWMG_SetSoundFrequency\r\n// Sets the frequency of a trackfollower sound\r\nvoid SWMG_SetSoundFrequency( object oFollower, int nSound, int nFrequency );",
     ),
     ScriptFunction(
         DataType.INT,
         "SWMG_GetSoundFrequencyIsRandom",
-        [ScriptParam(DataType.OBJECT, "oFollower", None), ScriptParam(DataType.INT, "nSound", None)],
+        [
+            ScriptParam(DataType.OBJECT, "oFollower", None),
+            ScriptParam(DataType.INT, "nSound", None),
+        ],
         "// 685. SWMG_GetSoundFrequencyIsRandom\r\n// Gets whether the frequency of a trackfollower sound is using the random model\r\nint SWMG_GetSoundFrequencyIsRandom( object oFollower, int nSound );",
         "// 685. SWMG_GetSoundFrequencyIsRandom\r\n// Gets whether the frequency of a trackfollower sound is using the random model\r\nint SWMG_GetSoundFrequencyIsRandom( object oFollower, int nSound );",
     ),
     ScriptFunction(
         DataType.VOID,
         "SWMG_SetSoundFrequencyIsRandom",
-        [ScriptParam(DataType.OBJECT, "oFollower", None), ScriptParam(DataType.INT, "nSound", None), ScriptParam(DataType.INT, "bIsRandom", None)],
+        [
+            ScriptParam(DataType.OBJECT, "oFollower", None),
+            ScriptParam(DataType.INT, "nSound", None),
+            ScriptParam(DataType.INT, "bIsRandom", None),
+        ],
         "// 686. SWMG_SetSoundFrequencyIsRandom\r\n// Sets whether the frequency of a trackfollower sound is using the random model\r\nvoid SWMG_SetSoundFrequencyIsRandom( object oFollower, int nSound, int bIsRandom );",
         "// 686. SWMG_SetSoundFrequencyIsRandom\r\n// Sets whether the frequency of a trackfollower sound is using the random model\r\nvoid SWMG_SetSoundFrequencyIsRandom( object oFollower, int nSound, int bIsRandom );",
     ),
     ScriptFunction(
         DataType.INT,
         "SWMG_GetSoundVolume",
-        [ScriptParam(DataType.OBJECT, "oFollower", None), ScriptParam(DataType.INT, "nSound", None)],
+        [
+            ScriptParam(DataType.OBJECT, "oFollower", None),
+            ScriptParam(DataType.INT, "nSound", None),
+        ],
         "// 687. SWMG_GetSoundVolume\r\n// Gets the volume of a trackfollower sound\r\nint SWMG_GetSoundVolume( object oFollower, int nSound );",
         "// 687. SWMG_GetSoundVolume\r\n// Gets the volume of a trackfollower sound\r\nint SWMG_GetSoundVolume( object oFollower, int nSound );",
     ),
     ScriptFunction(
         DataType.VOID,
         "SWMG_SetSoundVolume",
-        [ScriptParam(DataType.OBJECT, "oFollower", None), ScriptParam(DataType.INT, "nSound", None), ScriptParam(DataType.INT, "nVolume", None)],
+        [
+            ScriptParam(DataType.OBJECT, "oFollower", None),
+            ScriptParam(DataType.INT, "nSound", None),
+            ScriptParam(DataType.INT, "nVolume", None),
+        ],
         "// 688. SWMG_SetSoundVolume\r\n// Sets the volume of a trackfollower sound\r\nvoid SWMG_SetSoundVolume( object oFollower, int nSound, int nVolume );",
         "// 688. SWMG_SetSoundVolume\r\n// Sets the volume of a trackfollower sound\r\nvoid SWMG_SetSoundVolume( object oFollower, int nSound, int nVolume );",
     ),
@@ -8304,7 +8941,10 @@ KOTOR_FUNCTIONS = [
     ScriptFunction(
         DataType.VOID,
         "SoundObjectSetPitchVariance",
-        [ScriptParam(DataType.OBJECT, "oSound", None), ScriptParam(DataType.FLOAT, "fVariance", None)],
+        [
+            ScriptParam(DataType.OBJECT, "oSound", None),
+            ScriptParam(DataType.FLOAT, "fVariance", None),
+        ],
         "// 690. SoundObjectSetPitchVariance\r\n// Sets the pitch variance of a placeable sound object\r\nvoid SoundObjectSetPitchVariance( object oSound, float fVariance );",
         "// 690. SoundObjectSetPitchVariance\r\n// Sets the pitch variance of a placeable sound object\r\nvoid SoundObjectSetPitchVariance( object oSound, float fVariance );",
     ),
@@ -8325,7 +8965,10 @@ KOTOR_FUNCTIONS = [
     ScriptFunction(
         DataType.VOID,
         "SetGlobalLocation",
-        [ScriptParam(DataType.STRING, "sIdentifier", None), ScriptParam(DataType.LOCATION, "lValue", None)],
+        [
+            ScriptParam(DataType.STRING, "sIdentifier", None),
+            ScriptParam(DataType.LOCATION, "lValue", None),
+        ],
         "// 693: SetGlobalLocation\r\n// This function sets the a global location scripting variable.\r\nvoid SetGlobalLocation( string sIdentifier, location lValue );",
         "// 693: SetGlobalLocation\r\n// This function sets the a global location scripting variable.\r\nvoid SetGlobalLocation( string sIdentifier, location lValue );",
     ),
@@ -8360,7 +9003,10 @@ KOTOR_FUNCTIONS = [
     ScriptFunction(
         DataType.OBJECT,
         "SpawnAvailableNPC",
-        [ScriptParam(DataType.INT, "nNPC", None), ScriptParam(DataType.LOCATION, "lPosition", None)],
+        [
+            ScriptParam(DataType.INT, "nNPC", None),
+            ScriptParam(DataType.LOCATION, "lPosition", None),
+        ],
         "// 698. SpawnAvailableNPC\r\n// This spawns a NPC from the list of available creatures\r\n// Returns a pointer to the creature object\r\nobject SpawnAvailableNPC( int nNPC, location lPosition );",
         "// 698. SpawnAvailableNPC\r\n// This spawns a NPC from the list of available creatures\r\n// Returns a pointer to the creature object\r\nobject SpawnAvailableNPC( int nNPC, location lPosition );",
     ),
@@ -8428,14 +9074,20 @@ KOTOR_FUNCTIONS = [
     ScriptFunction(
         DataType.VOID,
         "SetNPCAIStyle",
-        [ScriptParam(DataType.OBJECT, "oCreature", None), ScriptParam(DataType.INT, "nStyle", None)],
+        [
+            ScriptParam(DataType.OBJECT, "oCreature", None),
+            ScriptParam(DataType.INT, "nStyle", None),
+        ],
         "// 707.\r\n// Sets the party members ai style\r\nvoid SetNPCAIStyle(object oCreature, int nStyle);",
         "// 707.\r\n// Sets the party members ai style\r\nvoid SetNPCAIStyle(object oCreature, int nStyle);",
     ),
     ScriptFunction(
         DataType.VOID,
         "SetNPCSelectability",
-        [ScriptParam(DataType.INT, "nNPC", None), ScriptParam(DataType.INT, "nSelectability", None)],
+        [
+            ScriptParam(DataType.INT, "nNPC", None),
+            ScriptParam(DataType.INT, "nSelectability", None),
+        ],
         "// 708: SetNPCSelectability\r\nvoid SetNPCSelectability(int nNPC, int nSelectability);",
         "// 708: SetNPCSelectability\r\nvoid SetNPCSelectability(int nNPC, int nSelectability);",
     ),
@@ -8463,7 +9115,11 @@ KOTOR_FUNCTIONS = [
     ScriptFunction(
         DataType.VOID,
         "ShowPartySelectionGUI",
-        [ScriptParam(DataType.STRING, "sExitScript", ""), ScriptParam(DataType.INT, "nForceNPC1", "-1"), ScriptParam(DataType.INT, "nForceNPC2", "-1")],
+        [
+            ScriptParam(DataType.STRING, "sExitScript", ""),
+            ScriptParam(DataType.INT, "nForceNPC1", "-1"),
+            ScriptParam(DataType.INT, "nForceNPC2", "-1"),
+        ],
         '//\r\n// 712: ShowPartySelectionGUI\r\n// Brings up the party selection GUI for the player to\r\n// select the members of the party from\r\n// if exit script is specified, will be executed when\r\n// the GUI is exited\r\nvoid ShowPartySelectionGUI(string sExitScript = "", int nForceNPC1 = -1, int nForceNPC2 = -1);',
         '//\r\n// 712: ShowPartySelectionGUI\r\n// Brings up the party selection GUI for the player to\r\n// select the members of the party from\r\n// if exit script is specified, will be executed when\r\n// the GUI is exited\r\nvoid ShowPartySelectionGUI(string sExitScript = "", int nForceNPC1 = -1, int nForceNPC2 = -1);',
     ),
@@ -8477,7 +9133,10 @@ KOTOR_FUNCTIONS = [
     ScriptFunction(
         DataType.VOID,
         "GivePlotXP",
-        [ScriptParam(DataType.STRING, "sPlotName", None), ScriptParam(DataType.INT, "nPercentage", None)],
+        [
+            ScriptParam(DataType.STRING, "sPlotName", None),
+            ScriptParam(DataType.INT, "nPercentage", None),
+        ],
         "// 714: GivePlotXP\r\n// Give nPercentage% of the experience associated with plot sPlotName\r\n// to the party\r\n// - sPlotName\r\n// - nPercentage\r\nvoid GivePlotXP(string sPlotName, int nPercentage);",
         "// 714: GivePlotXP\r\n// Give nPercentage% of the experience associated with plot sPlotName\r\n// to the party\r\n// - sPlotName\r\n// - nPercentage\r\nvoid GivePlotXP(string sPlotName, int nPercentage);",
     ),
@@ -8491,7 +9150,10 @@ KOTOR_FUNCTIONS = [
     ScriptFunction(
         DataType.VOID,
         "SetMinOneHP",
-        [ScriptParam(DataType.OBJECT, "oObject", None), ScriptParam(DataType.INT, "nMinOneHP", None)],
+        [
+            ScriptParam(DataType.OBJECT, "oObject", None),
+            ScriptParam(DataType.INT, "nMinOneHP", None),
+        ],
         "// 716. SetMinOneHP\r\n// Sets/Removes the MinOneHP Flag on oObject.\r\nvoid SetMinOneHP(object oObject,int nMinOneHP);",
         "// 716. SetMinOneHP\r\n// Sets/Removes the MinOneHP Flag on oObject.\r\nvoid SetMinOneHP(object oObject,int nMinOneHP);",
     ),
@@ -8613,7 +9275,10 @@ KOTOR_FUNCTIONS = [
     ScriptFunction(
         DataType.VOID,
         "SetForcePowerUnsuccessful",
-        [ScriptParam(DataType.INT, "nResult", None), ScriptParam(DataType.OBJECT, "oCreature", OBJECT_SELF)],
+        [
+            ScriptParam(DataType.INT, "nResult", None),
+            ScriptParam(DataType.OBJECT, "oCreature", OBJECT_SELF),
+        ],
         "// 731. SetForcePowerUnsuccessful\r\n// Sets the reason (through a constant) for why a force power failed\r\nvoid SetForcePowerUnsuccessful(int nResult, object oCreature = OBJECT_SELF);",
         "// 731. SetForcePowerUnsuccessful\r\n// Sets the reason (through a constant) for why a force power failed\r\nvoid SetForcePowerUnsuccessful(int nResult, object oCreature = OBJECT_SELF);",
     ),
@@ -8648,21 +9313,30 @@ KOTOR_FUNCTIONS = [
     ScriptFunction(
         DataType.VOID,
         "SurrenderByFaction",
-        [ScriptParam(DataType.INT, "nFactionFrom", None), ScriptParam(DataType.INT, "nFactionTo", None)],
+        [
+            ScriptParam(DataType.INT, "nFactionFrom", None),
+            ScriptParam(DataType.INT, "nFactionTo", None),
+        ],
         "// 736: This affects all creatures in the area that are in faction nFactionFrom...\r\n// - Makes them join nFactionTo\r\n// - Clears all actions\r\n// - Disables combat mode\r\nvoid SurrenderByFaction(int nFactionFrom, int nFactionTo);",
         "// 736: This affects all creatures in the area that are in faction nFactionFrom...\r\n// - Makes them join nFactionTo\r\n// - Clears all actions\r\n// - Disables combat mode\r\nvoid SurrenderByFaction(int nFactionFrom, int nFactionTo);",
     ),
     ScriptFunction(
         DataType.VOID,
         "ChangeFactionByFaction",
-        [ScriptParam(DataType.INT, "nFactionFrom", None), ScriptParam(DataType.INT, "nFactionTo", None)],
+        [
+            ScriptParam(DataType.INT, "nFactionFrom", None),
+            ScriptParam(DataType.INT, "nFactionTo", None),
+        ],
         "// 737: This affects all creatures in the area that are in faction nFactionFrom.\r\n// making them change to nFactionTo\r\nvoid ChangeFactionByFaction(int nFactionFrom, int nFactionTo);",
         "// 737: This affects all creatures in the area that are in faction nFactionFrom.\r\n// making them change to nFactionTo\r\nvoid ChangeFactionByFaction(int nFactionFrom, int nFactionTo);",
     ),
     ScriptFunction(
         DataType.VOID,
         "PlayRoomAnimation",
-        [ScriptParam(DataType.STRING, "sRoom", None), ScriptParam(DataType.INT, "nAnimation", None)],
+        [
+            ScriptParam(DataType.STRING, "sRoom", None),
+            ScriptParam(DataType.INT, "nAnimation", None),
+        ],
         "// 738: PlayRoomAnimation\r\n// Plays a looping animation on a room\r\nvoid PlayRoomAnimation(string sRoom, int nAnimation);",
         "// 738: PlayRoomAnimation\r\n// Plays a looping animation on a room\r\nvoid PlayRoomAnimation(string sRoom, int nAnimation);",
     ),
@@ -8676,7 +9350,10 @@ KOTOR_FUNCTIONS = [
     ScriptFunction(
         DataType.VOID,
         "SetPlanetSelectable",
-        [ScriptParam(DataType.INT, "nPlanet", None), ScriptParam(DataType.INT, "bSelectable", None)],
+        [
+            ScriptParam(DataType.INT, "nPlanet", None),
+            ScriptParam(DataType.INT, "bSelectable", None),
+        ],
         "// 740: SetPlanetSelectable\r\n// Sets 'nPlanet' selectable on the Galaxy Map Gui.\r\nvoid SetPlanetSelectable(int nPlanet, int bSelectable);",
         "// 740: SetPlanetSelectable\r\n// Sets 'nPlanet' selectable on the Galaxy Map Gui.\r\nvoid SetPlanetSelectable(int nPlanet, int bSelectable);",
     ),
@@ -8711,7 +9388,10 @@ KOTOR_FUNCTIONS = [
     ScriptFunction(
         DataType.VOID,
         "SoundObjectFadeAndStop",
-        [ScriptParam(DataType.OBJECT, "oSound", None), ScriptParam(DataType.FLOAT, "fSeconds", None)],
+        [
+            ScriptParam(DataType.OBJECT, "oSound", None),
+            ScriptParam(DataType.FLOAT, "fSeconds", None),
+        ],
         "// 745: SoundObjectFadeAndStop\r\n// Fades a sound object for 'fSeconds' and then stops it.\r\nvoid SoundObjectFadeAndStop(object oSound,float fSeconds);",
         "// 745: SoundObjectFadeAndStop\r\n// Fades a sound object for 'fSeconds' and then stops it.\r\nvoid SoundObjectFadeAndStop(object oSound,float fSeconds);",
     ),
@@ -8730,7 +9410,10 @@ KOTOR_FUNCTIONS = [
     ScriptFunction(
         DataType.VOID,
         "ChangeItemCost",
-        [ScriptParam(DataType.STRING, "sItem", None), ScriptParam(DataType.FLOAT, "fCostMultiplier", None)],
+        [
+            ScriptParam(DataType.STRING, "sItem", None),
+            ScriptParam(DataType.FLOAT, "fCostMultiplier", None),
+        ],
         "// 747: ChangeItemCost\r\n// Change the cost of an item\r\nvoid ChangeItemCost( string sItem, float fCostMultiplier );",
         "// 747: ChangeItemCost\r\n// Change the cost of an item\r\nvoid ChangeItemCost( string sItem, float fCostMultiplier );",
     ),
@@ -8751,7 +9434,10 @@ KOTOR_FUNCTIONS = [
     ScriptFunction(
         DataType.VOID,
         "SetGoodEvilValue",
-        [ScriptParam(DataType.OBJECT, "oCreature", None), ScriptParam(DataType.INT, "nAlignment", None)],
+        [
+            ScriptParam(DataType.OBJECT, "oCreature", None),
+            ScriptParam(DataType.INT, "nAlignment", None),
+        ],
         "// 750: SetAlignmentGoodEvil\r\n// Set oCreature's alignment value\r\nvoid SetGoodEvilValue( object oCreature, int nAlignment );",
         "// 750: SetAlignmentGoodEvil\r\n// Set oCreature's alignment value\r\nvoid SetGoodEvilValue( object oCreature, int nAlignment );",
     ),
@@ -8863,7 +9549,11 @@ KOTOR_FUNCTIONS = [
     ScriptFunction(
         DataType.OBJECT,
         "CreateItemOnFloor",
-        [ScriptParam(DataType.STRING, "sTemplate", None), ScriptParam(DataType.LOCATION, "lLocation", None), ScriptParam(DataType.INT, "bUseAppearAnimation", "0")],
+        [
+            ScriptParam(DataType.STRING, "sTemplate", None),
+            ScriptParam(DataType.LOCATION, "lLocation", None),
+            ScriptParam(DataType.INT, "bUseAppearAnimation", "0"),
+        ],
         "// 766. CreateItemOnFloor\r\n// Should only be used for items that have been created on the ground, and will\r\n// be destroyed without ever being picked up or equipped.  Returns true if successful\r\nobject CreateItemOnFloor(string sTemplate, location lLocation, int bUseAppearAnimation=FALSE);",
         "// 766. CreateItemOnFloor\r\n// Should only be used for items that have been created on the ground, and will\r\n// be destroyed without ever being picked up or equipped.  Returns true if successful\r\nobject CreateItemOnFloor(string sTemplate, location lLocation, int bUseAppearAnimation=FALSE);",
     ),
@@ -8884,7 +9574,10 @@ KOTOR_FUNCTIONS = [
     ScriptFunction(
         DataType.VOID,
         "QueueMovie",
-        [ScriptParam(DataType.STRING, "sMovie", None), ScriptParam(DataType.INT, "bSkippable", None)],
+        [
+            ScriptParam(DataType.STRING, "sMovie", None),
+            ScriptParam(DataType.INT, "bSkippable", None),
+        ],
         "// 769. QueueMovie\r\n// Queues up a movie to be played using PlayMovieQueue.\r\n// If bSkippable is TRUE, the player can cancel the movie by hitting escape.\r\n// If bSkippable is FALSE, the player cannot cancel the movie and must wait\r\n// for it to finish playing.\r\nvoid QueueMovie( string sMovie, int bSkippable );",
         "// 769. QueueMovie\r\n// Queues up a movie to be played using PlayMovieQueue.\r\n// If bSkippable is TRUE, the player can cancel the movie by hitting escape.\r\n// If bSkippable is FALSE, the player cannot cancel the movie and must wait\r\n// for it to finish playing.\r\nvoid QueueMovie( string sMovie, int bSkippable );",
     ),
@@ -8922,14 +9615,22 @@ TSL_FUNCTIONS = [
     ScriptFunction(
         DataType.VOID,
         "PrintFloat",
-        [ScriptParam(DataType.FLOAT, "fFloat", None), ScriptParam(DataType.INT, "nWidth", "18"), ScriptParam(DataType.INT, "nDecimals", "9")],
+        [
+            ScriptParam(DataType.FLOAT, "fFloat", None),
+            ScriptParam(DataType.INT, "nWidth", "18"),
+            ScriptParam(DataType.INT, "nDecimals", "9"),
+        ],
         "// 2: Output a formatted float to the log file.\r\n// - nWidth should be a value from 0 to 18 inclusive.\r\n// - nDecimals should be a value from 0 to 9 inclusive.\r\nvoid PrintFloat(float fFloat, int nWidth=18, int nDecimals=9);",
         "// 2: Output a formatted float to the log file.\r\n// - nWidth should be a value from 0 to 18 inclusive.\r\n// - nDecimals should be a value from 0 to 9 inclusive.\r\nvoid PrintFloat(float fFloat, int nWidth=18, int nDecimals=9);",
     ),
     ScriptFunction(
         DataType.STRING,
         "FloatToString",
-        [ScriptParam(DataType.FLOAT, "fFloat", None), ScriptParam(DataType.INT, "nWidth", "18"), ScriptParam(DataType.INT, "nDecimals", "9")],
+        [
+            ScriptParam(DataType.FLOAT, "fFloat", None),
+            ScriptParam(DataType.INT, "nWidth", "18"),
+            ScriptParam(DataType.INT, "nDecimals", "9"),
+        ],
         "// 3: Convert fFloat into a string.\r\n// - nWidth should be a value from 0 to 18 inclusive.\r\n// - nDecimals should be a value from 0 to 9 inclusive.\r\nstring FloatToString(float fFloat, int nWidth=18, int nDecimals=9);",
         "// 3: Convert fFloat into a string.\r\n// - nWidth should be a value from 0 to 18 inclusive.\r\n// - nDecimals should be a value from 0 to 9 inclusive.\r\nstring FloatToString(float fFloat, int nWidth=18, int nDecimals=9);",
     ),
@@ -8950,21 +9651,31 @@ TSL_FUNCTIONS = [
     ScriptFunction(
         DataType.VOID,
         "AssignCommand",
-        [ScriptParam(DataType.OBJECT, "oActionSubject", None), ScriptParam(DataType.ACTION, "aActionToAssign", None)],
+        [
+            ScriptParam(DataType.OBJECT, "oActionSubject", None),
+            ScriptParam(DataType.ACTION, "aActionToAssign", None),
+        ],
         '// 6: Assign aActionToAssign to oActionSubject.\r\n// * No return value, but if an error occurs, the log file will contain\r\n//   "AssignCommand failed."\r\n//   (If the object doesn\'t exist, nothing happens.)\r\nvoid AssignCommand(object oActionSubject,action aActionToAssign);',
         '// 6: Assign aActionToAssign to oActionSubject.\r\n// * No return value, but if an error occurs, the log file will contain\r\n//   "AssignCommand failed."\r\n//   (If the object doesn\'t exist, nothing happens.)\r\nvoid AssignCommand(object oActionSubject,action aActionToAssign);',
     ),
     ScriptFunction(
         DataType.VOID,
         "DelayCommand",
-        [ScriptParam(DataType.FLOAT, "fSeconds", None), ScriptParam(DataType.ACTION, "aActionToDelay", None)],
+        [
+            ScriptParam(DataType.FLOAT, "fSeconds", None),
+            ScriptParam(DataType.ACTION, "aActionToDelay", None),
+        ],
         '// 7: Delay aActionToDelay by fSeconds.\r\n// * No return value, but if an error occurs, the log file will contain\r\n//   "DelayCommand failed.".\r\nvoid DelayCommand(float fSeconds, action aActionToDelay);',
         '// 7: Delay aActionToDelay by fSeconds.\r\n// * No return value, but if an error occurs, the log file will contain\r\n//   "DelayCommand failed.".\r\nvoid DelayCommand(float fSeconds, action aActionToDelay);',
     ),
     ScriptFunction(
         DataType.VOID,
         "ExecuteScript",
-        [ScriptParam(DataType.STRING, "sScript", None), ScriptParam(DataType.OBJECT, "oTarget", None), ScriptParam(DataType.INT, "nScriptVar", "-1")],
+        [
+            ScriptParam(DataType.STRING, "sScript", None),
+            ScriptParam(DataType.OBJECT, "oTarget", None),
+            ScriptParam(DataType.INT, "nScriptVar", "-1"),
+        ],
         "// 8: Make oTarget run sScript and then return execution to the calling script.\r\n// If sScript does not specify a compiled script, nothing happens.\r\n// - nScriptVar: This value will be returned by calls to GetRunScriptVar.\r\nvoid ExecuteScript(string sScript, object oTarget, int nScriptVar=-1);",
         "// 8: Make oTarget run sScript and then return execution to the calling script.\r\n// If sScript does not specify a compiled script, nothing happens.\r\n// - nScriptVar: This value will be returned by calls to GetRunScriptVar.\r\nvoid ExecuteScript(string sScript, object oTarget, int nScriptVar=-1);",
     ),
@@ -9060,21 +9771,32 @@ TSL_FUNCTIONS = [
     ScriptFunction(
         DataType.VOID,
         "ActionMoveToLocation",
-        [ScriptParam(DataType.LOCATION, "lDestination", None), ScriptParam(DataType.INT, "bRun", "0")],
+        [
+            ScriptParam(DataType.LOCATION, "lDestination", None),
+            ScriptParam(DataType.INT, "bRun", "0"),
+        ],
         '// 21: The action subject will move to lDestination.\r\n// - lDestination: The object will move to this location.  If the location is\r\n//   invalid or a path cannot be found to it, the command does nothing.\r\n// - bRun: If this is TRUE, the action subject will run rather than walk\r\n// * No return value, but if an error occurs the log file will contain\r\n//   "MoveToPoint failed."\r\nvoid ActionMoveToLocation(location lDestination, int bRun=FALSE);',
         '// 21: The action subject will move to lDestination.\r\n// - lDestination: The object will move to this location.  If the location is\r\n//   invalid or a path cannot be found to it, the command does nothing.\r\n// - bRun: If this is TRUE, the action subject will run rather than walk\r\n// * No return value, but if an error occurs the log file will contain\r\n//   "MoveToPoint failed."\r\nvoid ActionMoveToLocation(location lDestination, int bRun=FALSE);',
     ),
     ScriptFunction(
         DataType.VOID,
         "ActionMoveToObject",
-        [ScriptParam(DataType.OBJECT, "oMoveTo", None), ScriptParam(DataType.INT, "bRun", "0"), ScriptParam(DataType.FLOAT, "fRange", "1.0")],
+        [
+            ScriptParam(DataType.OBJECT, "oMoveTo", None),
+            ScriptParam(DataType.INT, "bRun", "0"),
+            ScriptParam(DataType.FLOAT, "fRange", "1.0"),
+        ],
         '// 22: Cause the action subject to move to a certain distance from oMoveTo.\r\n// If there is no path to oMoveTo, this command will do nothing.\r\n// - oMoveTo: This is the object we wish the action subject to move to\r\n// - bRun: If this is TRUE, the action subject will run rather than walk\r\n// - fRange: This is the desired distance between the action subject and oMoveTo\r\n// * No return value, but if an error occurs the log file will contain\r\n//   "ActionMoveToObject failed."\r\nvoid ActionMoveToObject(object oMoveTo, int bRun=FALSE, float fRange=1.0f);',
         '// 22: Cause the action subject to move to a certain distance from oMoveTo.\r\n// If there is no path to oMoveTo, this command will do nothing.\r\n// - oMoveTo: This is the object we wish the action subject to move to\r\n// - bRun: If this is TRUE, the action subject will run rather than walk\r\n// - fRange: This is the desired distance between the action subject and oMoveTo\r\n// * No return value, but if an error occurs the log file will contain\r\n//   "ActionMoveToObject failed."\r\nvoid ActionMoveToObject(object oMoveTo, int bRun=FALSE, float fRange=1.0f);',
     ),
     ScriptFunction(
         DataType.VOID,
         "ActionMoveAwayFromObject",
-        [ScriptParam(DataType.OBJECT, "oFleeFrom", None), ScriptParam(DataType.INT, "bRun", "0"), ScriptParam(DataType.FLOAT, "fMoveAwayRange", "40.0")],
+        [
+            ScriptParam(DataType.OBJECT, "oFleeFrom", None),
+            ScriptParam(DataType.INT, "bRun", "0"),
+            ScriptParam(DataType.FLOAT, "fMoveAwayRange", "40.0"),
+        ],
         '// 23: Cause the action subject to move to a certain distance away from oFleeFrom.\r\n// - oFleeFrom: This is the object we wish the action subject to move away from.\r\n//   If oFleeFrom is not in the same area as the action subject, nothing will\r\n//   happen.\r\n// - bRun: If this is TRUE, the action subject will run rather than walk\r\n// - fMoveAwayRange: This is the distance we wish the action subject to put\r\n//   between themselves and oFleeFrom\r\n// * No return value, but if an error occurs the log file will contain\r\n//   "ActionMoveAwayFromObject failed."\r\nvoid ActionMoveAwayFromObject(object oFleeFrom, int bRun=FALSE, float fMoveAwayRange=40.0f);',
         '// 23: Cause the action subject to move to a certain distance away from oFleeFrom.\r\n// - oFleeFrom: This is the object we wish the action subject to move away from.\r\n//   If oFleeFrom is not in the same area as the action subject, nothing will\r\n//   happen.\r\n// - bRun: If this is TRUE, the action subject will run rather than walk\r\n// - fMoveAwayRange: This is the distance we wish the action subject to put\r\n//   between themselves and oFleeFrom\r\n// * No return value, but if an error occurs the log file will contain\r\n//   "ActionMoveAwayFromObject failed."\r\nvoid ActionMoveAwayFromObject(object oFleeFrom, int bRun=FALSE, float fMoveAwayRange=40.0f);',
     ),
@@ -9123,7 +9845,10 @@ TSL_FUNCTIONS = [
     ScriptFunction(
         DataType.OBJECT,
         "GetItemPossessedBy",
-        [ScriptParam(DataType.OBJECT, "oCreature", None), ScriptParam(DataType.STRING, "sItemTag", None)],
+        [
+            ScriptParam(DataType.OBJECT, "oCreature", None),
+            ScriptParam(DataType.STRING, "sItemTag", None),
+        ],
         "// 30: Get the object possessed by oCreature with the tag sItemTag\r\n// * Return value on error: OBJECT_INVALID\r\nobject GetItemPossessedBy(object oCreature, string sItemTag);",
         "// 30: Get the object possessed by oCreature with the tag sItemTag\r\n// * Return value on error: OBJECT_INVALID\r\nobject GetItemPossessedBy(object oCreature, string sItemTag);",
     ),
@@ -9142,7 +9867,11 @@ TSL_FUNCTIONS = [
     ScriptFunction(
         DataType.VOID,
         "ActionEquipItem",
-        [ScriptParam(DataType.OBJECT, "oItem", None), ScriptParam(DataType.INT, "nInventorySlot", None), ScriptParam(DataType.INT, "bInstant", "0")],
+        [
+            ScriptParam(DataType.OBJECT, "oItem", None),
+            ScriptParam(DataType.INT, "nInventorySlot", None),
+            ScriptParam(DataType.INT, "bInstant", "0"),
+        ],
         '// 32: Equip oItem into nInventorySlot.\r\n// - nInventorySlot: INVENTORY_SLOT_*\r\n// * No return value, but if an error occurs the log file will contain\r\n//   "ActionEquipItem failed."\r\nvoid ActionEquipItem(object oItem, int nInventorySlot, int bInstant=FALSE);',
         '// 32: Equip oItem into nInventorySlot.\r\n// - nInventorySlot: INVENTORY_SLOT_*\r\n// * No return value, but if an error occurs the log file will contain\r\n//   "ActionEquipItem failed."\r\nvoid ActionEquipItem(object oItem, int nInventorySlot, int bInstant=FALSE);',
     ),
@@ -9177,7 +9906,10 @@ TSL_FUNCTIONS = [
     ScriptFunction(
         DataType.VOID,
         "ActionAttack",
-        [ScriptParam(DataType.OBJECT, "oAttackee", None), ScriptParam(DataType.INT, "bPassive", "0")],
+        [
+            ScriptParam(DataType.OBJECT, "oAttackee", None),
+            ScriptParam(DataType.INT, "bPassive", "0"),
+        ],
         "// 37: Attack oAttackee.\r\n// - bPassive: If this is TRUE, attack is in passive mode.\r\nvoid ActionAttack(object oAttackee, int bPassive=FALSE);",
         "// 37: Attack oAttackee.\r\n// - bPassive: If this is TRUE, attack is in passive mode.\r\nvoid ActionAttack(object oAttackee, int bPassive=FALSE);",
     ),
@@ -9200,14 +9932,21 @@ TSL_FUNCTIONS = [
     ScriptFunction(
         DataType.VOID,
         "ActionSpeakString",
-        [ScriptParam(DataType.STRING, "sStringToSpeak", None), ScriptParam(DataType.INT, "nTalkVolume", "0")],
+        [
+            ScriptParam(DataType.STRING, "sStringToSpeak", None),
+            ScriptParam(DataType.INT, "nTalkVolume", "0"),
+        ],
         "// 39: Add a speak action to the action subject.\r\n// - sStringToSpeak: String to be spoken\r\n// - nTalkVolume: TALKVOLUME_*\r\nvoid ActionSpeakString(string sStringToSpeak, int nTalkVolume=TALKVOLUME_TALK);",
         "// 39: Add a speak action to the action subject.\r\n// - sStringToSpeak: String to be spoken\r\n// - nTalkVolume: TALKVOLUME_*\r\nvoid ActionSpeakString(string sStringToSpeak, int nTalkVolume=TALKVOLUME_TALK);",
     ),
     ScriptFunction(
         DataType.VOID,
         "ActionPlayAnimation",
-        [ScriptParam(DataType.INT, "nAnimation", None), ScriptParam(DataType.FLOAT, "fSpeed", "1.0"), ScriptParam(DataType.FLOAT, "fDurationSeconds", "0.0")],
+        [
+            ScriptParam(DataType.INT, "nAnimation", None),
+            ScriptParam(DataType.FLOAT, "fSpeed", "1.0"),
+            ScriptParam(DataType.FLOAT, "fDurationSeconds", "0.0"),
+        ],
         "// 40: Cause the action subject to play an animation\r\n// - nAnimation: ANIMATION_*\r\n// - fSpeed: Speed of the animation\r\n// - fDurationSeconds: Duration of the animation (this is not used for Fire and\r\n//   Forget animations) If a time of -1.0f is specified for a looping animation\r\n//   it will loop until the next animation is applied.\r\nvoid ActionPlayAnimation(int nAnimation, float fSpeed=1.0, float fDurationSeconds=0.0);",
         "// 40: Cause the action subject to play an animation\r\n// - nAnimation: ANIMATION_*\r\n// - fSpeed: Speed of the animation\r\n// - fDurationSeconds: Duration of the animation (this is not used for Fire and\r\n//   Forget animations) If a time of -1.0f is specified for a looping animation\r\n//   it will loop until the next animation is applied.\r\nvoid ActionPlayAnimation(int nAnimation, float fSpeed=1.0, float fDurationSeconds=0.0);",
     ),
@@ -9383,21 +10122,32 @@ TSL_FUNCTIONS = [
     ScriptFunction(
         DataType.STRING,
         "InsertString",
-        [ScriptParam(DataType.STRING, "sDestination", None), ScriptParam(DataType.STRING, "sString", None), ScriptParam(DataType.INT, "nPosition", None)],
+        [
+            ScriptParam(DataType.STRING, "sDestination", None),
+            ScriptParam(DataType.STRING, "sString", None),
+            ScriptParam(DataType.INT, "nPosition", None),
+        ],
         '// 64: Insert sString into sDestination at nPosition\r\n// * Return value on error: ""\r\nstring InsertString(string sDestination, string sString, int nPosition);',
         '// 64: Insert sString into sDestination at nPosition\r\n// * Return value on error: ""\r\nstring InsertString(string sDestination, string sString, int nPosition);',
     ),
     ScriptFunction(
         DataType.STRING,
         "GetSubString",
-        [ScriptParam(DataType.STRING, "sString", None), ScriptParam(DataType.INT, "nStart", None), ScriptParam(DataType.INT, "nCount", None)],
+        [
+            ScriptParam(DataType.STRING, "sString", None),
+            ScriptParam(DataType.INT, "nStart", None),
+            ScriptParam(DataType.INT, "nCount", None),
+        ],
         '// 65: Get nCount characters from sString, starting at nStart\r\n// * Return value on error: ""\r\nstring GetSubString(string sString, int nStart, int nCount);',
         '// 65: Get nCount characters from sString, starting at nStart\r\n// * Return value on error: ""\r\nstring GetSubString(string sString, int nStart, int nCount);',
     ),
     ScriptFunction(
         DataType.INT,
         "FindSubString",
-        [ScriptParam(DataType.STRING, "sString", None), ScriptParam(DataType.STRING, "sSubString", None)],
+        [
+            ScriptParam(DataType.STRING, "sString", None),
+            ScriptParam(DataType.STRING, "sSubString", None),
+        ],
         "// 66: Find the position of sSubstring inside sString\r\n// * Return value on error: -1\r\nint FindSubString(string sString, string sSubString);",
         "// 66: Find the position of sSubstring inside sString\r\n// * Return value on error: -1\r\nint FindSubString(string sString, string sSubString);",
     ),
@@ -9460,7 +10210,10 @@ TSL_FUNCTIONS = [
     ScriptFunction(
         DataType.FLOAT,
         "pow",
-        [ScriptParam(DataType.FLOAT, "fValue", None), ScriptParam(DataType.FLOAT, "fExponent", None)],
+        [
+            ScriptParam(DataType.FLOAT, "fValue", None),
+            ScriptParam(DataType.FLOAT, "fExponent", None),
+        ],
         "// 75: Maths operation: fValue is raised to the power of fExponent\r\n// * Returns zero if fValue ==0 and fExponent <0\r\nfloat pow(float fValue, float fExponent);",
         "// 75: Maths operation: fValue is raised to the power of fExponent\r\n// * Returns zero if fValue ==0 and fExponent <0\r\nfloat pow(float fValue, float fExponent);",
     ),
@@ -9488,21 +10241,32 @@ TSL_FUNCTIONS = [
     ScriptFunction(
         DataType.EFFECT,
         "EffectDamage",
-        [ScriptParam(DataType.INT, "nDamageAmount", None), ScriptParam(DataType.INT, "nDamageType", "8"), ScriptParam(DataType.INT, "nDamagePower", "0")],
+        [
+            ScriptParam(DataType.INT, "nDamageAmount", None),
+            ScriptParam(DataType.INT, "nDamageType", "8"),
+            ScriptParam(DataType.INT, "nDamagePower", "0"),
+        ],
         "// 79: Create a Damage effect\r\n// - nDamageAmount: amount of damage to be dealt. This should be applied as an\r\n//   instantaneous effect.\r\n// - nDamageType: DAMAGE_TYPE_*\r\n// - nDamagePower: DAMAGE_POWER_*\r\neffect EffectDamage(int nDamageAmount, int nDamageType=DAMAGE_TYPE_UNIVERSAL, int nDamagePower=DAMAGE_POWER_NORMAL);",
         "// 79: Create a Damage effect\r\n// - nDamageAmount: amount of damage to be dealt. This should be applied as an\r\n//   instantaneous effect.\r\n// - nDamageType: DAMAGE_TYPE_*\r\n// - nDamagePower: DAMAGE_POWER_*\r\neffect EffectDamage(int nDamageAmount, int nDamageType=DAMAGE_TYPE_UNIVERSAL, int nDamagePower=DAMAGE_POWER_NORMAL);",
     ),
     ScriptFunction(
         DataType.EFFECT,
         "EffectAbilityIncrease",
-        [ScriptParam(DataType.INT, "nAbilityToIncrease", None), ScriptParam(DataType.INT, "nModifyBy", None)],
+        [
+            ScriptParam(DataType.INT, "nAbilityToIncrease", None),
+            ScriptParam(DataType.INT, "nModifyBy", None),
+        ],
         "// 80: Create an Ability Increase effect\r\n// - bAbilityToIncrease: ABILITY_*\r\neffect EffectAbilityIncrease(int nAbilityToIncrease, int nModifyBy);",
         "// 80: Create an Ability Increase effect\r\n// - bAbilityToIncrease: ABILITY_*\r\neffect EffectAbilityIncrease(int nAbilityToIncrease, int nModifyBy);",
     ),
     ScriptFunction(
         DataType.EFFECT,
         "EffectDamageResistance",
-        [ScriptParam(DataType.INT, "nDamageType", None), ScriptParam(DataType.INT, "nAmount", None), ScriptParam(DataType.INT, "nLimit", "0")],
+        [
+            ScriptParam(DataType.INT, "nDamageType", None),
+            ScriptParam(DataType.INT, "nAmount", None),
+            ScriptParam(DataType.INT, "nLimit", "0"),
+        ],
         "// 81: Create a Damage Resistance effect that removes the first nAmount points of\r\n// damage of type nDamageType, up to nLimit (or infinite if nLimit is 0)\r\n// - nDamageType: DAMAGE_TYPE_*\r\n// - nAmount\r\n// - nLimit\r\neffect EffectDamageResistance(int nDamageType, int nAmount, int nLimit=0);",
         "// 81: Create a Damage Resistance effect that removes the first nAmount points of\r\n// damage of type nDamageType, up to nLimit (or infinite if nLimit is 0)\r\n// - nDamageType: DAMAGE_TYPE_*\r\n// - nAmount\r\n// - nLimit\r\neffect EffectDamageResistance(int nDamageType, int nAmount, int nLimit=0);",
     ),
@@ -9544,7 +10308,10 @@ TSL_FUNCTIONS = [
     ScriptFunction(
         DataType.VOID,
         "RemoveEffect",
-        [ScriptParam(DataType.OBJECT, "oCreature", None), ScriptParam(DataType.EFFECT, "eEffect", None)],
+        [
+            ScriptParam(DataType.OBJECT, "oCreature", None),
+            ScriptParam(DataType.EFFECT, "eEffect", None),
+        ],
         "// 87: Remove eEffect from oCreature.\r\n// * No return value\r\nvoid RemoveEffect(object oCreature, effect eEffect);",
         "// 87: Remove eEffect from oCreature.\r\n// * No return value\r\nvoid RemoveEffect(object oCreature, effect eEffect);",
     ),
@@ -9586,14 +10353,20 @@ TSL_FUNCTIONS = [
     ScriptFunction(
         DataType.OBJECT,
         "GetFirstObjectInArea",
-        [ScriptParam(DataType.OBJECT, "oArea", OBJECT_INVALID), ScriptParam(DataType.INT, "nObjectFilter", "1")],
+        [
+            ScriptParam(DataType.OBJECT, "oArea", OBJECT_INVALID),
+            ScriptParam(DataType.INT, "nObjectFilter", "1"),
+        ],
         "// 93: Get the first object in oArea.\r\n// If no valid area is specified, it will use the caller's area.\r\n// - oArea\r\n// - nObjectFilter: OBJECT_TYPE_*\r\n// * Return value on error: OBJECT_INVALID\r\nobject GetFirstObjectInArea(object oArea=OBJECT_INVALID, int nObjectFilter=OBJECT_TYPE_CREATURE);",
         "// 93: Get the first object in oArea.\r\n// If no valid area is specified, it will use the caller's area.\r\n// - oArea\r\n// - nObjectFilter: OBJECT_TYPE_*\r\n// * Return value on error: OBJECT_INVALID\r\nobject GetFirstObjectInArea(object oArea=OBJECT_INVALID, int nObjectFilter=OBJECT_TYPE_CREATURE);",
     ),
     ScriptFunction(
         DataType.OBJECT,
         "GetNextObjectInArea",
-        [ScriptParam(DataType.OBJECT, "oArea", OBJECT_INVALID), ScriptParam(DataType.INT, "nObjectFilter", "1")],
+        [
+            ScriptParam(DataType.OBJECT, "oArea", OBJECT_INVALID),
+            ScriptParam(DataType.INT, "nObjectFilter", "1"),
+        ],
         "// 94: Get the next object in oArea.\r\n// If no valid area is specified, it will use the caller's area.\r\n// - oArea\r\n// - nObjectFilter: OBJECT_TYPE_*\r\n// * Return value on error: OBJECT_INVALID\r\nobject GetNextObjectInArea(object oArea=OBJECT_INVALID, int nObjectFilter=OBJECT_TYPE_CREATURE);",
         "// 94: Get the next object in oArea.\r\n// If no valid area is specified, it will use the caller's area.\r\n// - oArea\r\n// - nObjectFilter: OBJECT_TYPE_*\r\n// * Return value on error: OBJECT_INVALID\r\nobject GetNextObjectInArea(object oArea=OBJECT_INVALID, int nObjectFilter=OBJECT_TYPE_CREATURE);",
     ),
@@ -9755,35 +10528,53 @@ TSL_FUNCTIONS = [
     ScriptFunction(
         DataType.EFFECT,
         "EffectACIncrease",
-        [ScriptParam(DataType.INT, "nValue", None), ScriptParam(DataType.INT, "nModifyType", "0"), ScriptParam(DataType.INT, "nDamageType", "8199")],
+        [
+            ScriptParam(DataType.INT, "nValue", None),
+            ScriptParam(DataType.INT, "nModifyType", "0"),
+            ScriptParam(DataType.INT, "nDamageType", "8199"),
+        ],
         "// 115: Create an AC Increase effect\r\n// - nValue: size of AC increase\r\n// - nModifyType: AC_*_BONUS\r\n// - nDamageType: DAMAGE_TYPE_*\r\n//   * Default value for nDamageType should only ever be used in this function prototype.\r\neffect EffectACIncrease(int nValue, int nModifyType=AC_DODGE_BONUS, int nDamageType=AC_VS_DAMAGE_TYPE_ALL);",
         "// 115: Create an AC Increase effect\r\n// - nValue: size of AC increase\r\n// - nModifyType: AC_*_BONUS\r\n// - nDamageType: DAMAGE_TYPE_*\r\n//   * Default value for nDamageType should only ever be used in this function prototype.\r\neffect EffectACIncrease(int nValue, int nModifyType=AC_DODGE_BONUS, int nDamageType=AC_VS_DAMAGE_TYPE_ALL);",
     ),
     ScriptFunction(
         DataType.INT,
         "GetAC",
-        [ScriptParam(DataType.OBJECT, "oObject", None), ScriptParam(DataType.INT, "nForFutureUse", "0")],
+        [
+            ScriptParam(DataType.OBJECT, "oObject", None),
+            ScriptParam(DataType.INT, "nForFutureUse", "0"),
+        ],
         "// 116: If oObject is a creature, this will return that creature's armour class\r\n// If oObject is an item, door or placeable, this will return zero.\r\n// - nForFutureUse: this parameter is not currently used\r\n// * Return value if oObject is not a creature, item, door or placeable: -1\r\nint GetAC(object oObject, int nForFutureUse=0);",
         "// 116: If oObject is a creature, this will return that creature's armour class\r\n// If oObject is an item, door or placeable, this will return zero.\r\n// - nForFutureUse: this parameter is not currently used\r\n// * Return value if oObject is not a creature, item, door or placeable: -1\r\nint GetAC(object oObject, int nForFutureUse=0);",
     ),
     ScriptFunction(
         DataType.EFFECT,
         "EffectSavingThrowIncrease",
-        [ScriptParam(DataType.INT, "nSave", None), ScriptParam(DataType.INT, "nValue", None), ScriptParam(DataType.INT, "nSaveType", "0")],
+        [
+            ScriptParam(DataType.INT, "nSave", None),
+            ScriptParam(DataType.INT, "nValue", None),
+            ScriptParam(DataType.INT, "nSaveType", "0"),
+        ],
         "// 117: Create an AC Decrease effect\r\n// - nSave: SAVING_THROW_* (not SAVING_THROW_TYPE_*)\r\n// - nValue: size of AC decrease\r\n// - nSaveType: SAVING_THROW_TYPE_*\r\neffect EffectSavingThrowIncrease(int nSave, int nValue, int nSaveType=SAVING_THROW_TYPE_ALL);",
         "// 117: Create an AC Decrease effect\r\n// - nSave: SAVING_THROW_* (not SAVING_THROW_TYPE_*)\r\n// - nValue: size of AC decrease\r\n// - nSaveType: SAVING_THROW_TYPE_*\r\neffect EffectSavingThrowIncrease(int nSave, int nValue, int nSaveType=SAVING_THROW_TYPE_ALL);",
     ),
     ScriptFunction(
         DataType.EFFECT,
         "EffectAttackIncrease",
-        [ScriptParam(DataType.INT, "nBonus", None), ScriptParam(DataType.INT, "nModifierType", "0")],
+        [
+            ScriptParam(DataType.INT, "nBonus", None),
+            ScriptParam(DataType.INT, "nModifierType", "0"),
+        ],
         "// 118: Create an Attack Increase effect\r\n// - nBonus: size of attack bonus\r\n// - nModifierType: ATTACK_BONUS_*\r\neffect EffectAttackIncrease(int nBonus, int nModifierType=ATTACK_BONUS_MISC);",
         "// 118: Create an Attack Increase effect\r\n// - nBonus: size of attack bonus\r\n// - nModifierType: ATTACK_BONUS_*\r\neffect EffectAttackIncrease(int nBonus, int nModifierType=ATTACK_BONUS_MISC);",
     ),
     ScriptFunction(
         DataType.EFFECT,
         "EffectDamageReduction",
-        [ScriptParam(DataType.INT, "nAmount", None), ScriptParam(DataType.INT, "nDamagePower", None), ScriptParam(DataType.INT, "nLimit", "0")],
+        [
+            ScriptParam(DataType.INT, "nAmount", None),
+            ScriptParam(DataType.INT, "nDamagePower", None),
+            ScriptParam(DataType.INT, "nLimit", "0"),
+        ],
         "// 119: Create a Damage Reduction effect\r\n// - nAmount: amount of damage reduction\r\n// - nDamagePower: DAMAGE_POWER_*\r\n// - nLimit: How much damage the effect can absorb before disappearing.\r\n//   Set to zero for infinite\r\neffect EffectDamageReduction(int nAmount, int nDamagePower, int nLimit=0);",
         "// 119: Create a Damage Reduction effect\r\n// - nAmount: amount of damage reduction\r\n// - nDamagePower: DAMAGE_POWER_*\r\n// - nLimit: How much damage the effect can absorb before disappearing.\r\n//   Set to zero for infinite\r\neffect EffectDamageReduction(int nAmount, int nDamagePower, int nLimit=0);",
     ),
@@ -9818,7 +10609,10 @@ TSL_FUNCTIONS = [
     ScriptFunction(
         DataType.VOID,
         "SoundObjectSetFixedVariance",
-        [ScriptParam(DataType.OBJECT, "oSound", None), ScriptParam(DataType.FLOAT, "fFixedVariance", None)],
+        [
+            ScriptParam(DataType.OBJECT, "oSound", None),
+            ScriptParam(DataType.FLOAT, "fFixedVariance", None),
+        ],
         "// 124. SoundObjectSetFixedVariance\r\n// Sets the constant variance at which to play the sound object\r\n// This variance is a multiplier of the original sound\r\nvoid SoundObjectSetFixedVariance( object oSound, float fFixedVariance );",
         "// 124. SoundObjectSetFixedVariance\r\n// Sets the constant variance at which to play the sound object\r\n// This variance is a multiplier of the original sound\r\nvoid SoundObjectSetFixedVariance( object oSound, float fFixedVariance );",
     ),
@@ -9881,7 +10675,10 @@ TSL_FUNCTIONS = [
     ScriptFunction(
         DataType.VOID,
         "SignalEvent",
-        [ScriptParam(DataType.OBJECT, "oObject", None), ScriptParam(DataType.EVENT, "evToRun", None)],
+        [
+            ScriptParam(DataType.OBJECT, "oObject", None),
+            ScriptParam(DataType.EVENT, "evToRun", None),
+        ],
         "// 131: Cause oObject to run evToRun\r\nvoid SignalEvent(object oObject, event evToRun);",
         "// 131: Cause oObject to run evToRun\r\nvoid SignalEvent(object oObject, event evToRun);",
     ),
@@ -9895,7 +10692,11 @@ TSL_FUNCTIONS = [
     ScriptFunction(
         DataType.EFFECT,
         "EffectDeath",
-        [ScriptParam(DataType.INT, "nSpectacularDeath", "0"), ScriptParam(DataType.INT, "nDisplayFeedback", "1"), ScriptParam(DataType.INT, "nNoFadeAway", "0")],
+        [
+            ScriptParam(DataType.INT, "nSpectacularDeath", "0"),
+            ScriptParam(DataType.INT, "nDisplayFeedback", "1"),
+            ScriptParam(DataType.INT, "nNoFadeAway", "0"),
+        ],
         "// 133: Create a Death effect\r\n// - nSpectacularDeath: if this is TRUE, the creature to which this effect is\r\n//   applied will die in an extraordinary fashion\r\n// - nDisplayFeedback\r\n// - nNoFadeAway: Passing TRUE for this parameter will keep the bodies from fading after the creature\r\n//                dies. Note that NO XP will be awarded if the creature is killed with this parameter.\r\neffect EffectDeath(int nSpectacularDeath=FALSE, int nDisplayFeedback=TRUE, int nNoFadeAway=FALSE);",
         "// 133: Create a Death effect\r\n// - nSpectacularDeath: if this is TRUE, the creature to which this effect is\r\n//   applied will die in an extraordinary fashion\r\n// - nDisplayFeedback\r\n// - nNoFadeAway: Passing TRUE for this parameter will keep the bodies from fading after the creature\r\n//                dies. Note that NO XP will be awarded if the creature is killed with this parameter.\r\neffect EffectDeath(int nSpectacularDeath=FALSE, int nDisplayFeedback=TRUE, int nNoFadeAway=FALSE);",
     ),
@@ -9909,14 +10710,20 @@ TSL_FUNCTIONS = [
     ScriptFunction(
         DataType.VOID,
         "ActionGiveItem",
-        [ScriptParam(DataType.OBJECT, "oItem", None), ScriptParam(DataType.OBJECT, "oGiveTo", None)],
+        [
+            ScriptParam(DataType.OBJECT, "oItem", None),
+            ScriptParam(DataType.OBJECT, "oGiveTo", None),
+        ],
         "// 135: Give oItem to oGiveTo\r\n// If oItem is not a valid item, or oGiveTo is not a valid object, nothing will\r\n// happen.\r\nvoid ActionGiveItem(object oItem, object oGiveTo);",
         "// 135: Give oItem to oGiveTo\r\n// If oItem is not a valid item, or oGiveTo is not a valid object, nothing will\r\n// happen.\r\nvoid ActionGiveItem(object oItem, object oGiveTo);",
     ),
     ScriptFunction(
         DataType.VOID,
         "ActionTakeItem",
-        [ScriptParam(DataType.OBJECT, "oItem", None), ScriptParam(DataType.OBJECT, "oTakeFrom", None)],
+        [
+            ScriptParam(DataType.OBJECT, "oItem", None),
+            ScriptParam(DataType.OBJECT, "oTakeFrom", None),
+        ],
         "// 136: Take oItem from oTakeFrom\r\n// If oItem is not a valid item, or oTakeFrom is not a valid object, nothing\r\n// will happen.\r\nvoid ActionTakeItem(object oItem, object oTakeFrom);",
         "// 136: Take oItem from oTakeFrom\r\n// If oItem is not a valid item, or oTakeFrom is not a valid object, nothing\r\n// will happen.\r\nvoid ActionTakeItem(object oItem, object oTakeFrom);",
     ),
@@ -9937,7 +10744,10 @@ TSL_FUNCTIONS = [
     ScriptFunction(
         DataType.INT,
         "GetAbilityScore",
-        [ScriptParam(DataType.OBJECT, "oCreature", None), ScriptParam(DataType.INT, "nAbilityType", None)],
+        [
+            ScriptParam(DataType.OBJECT, "oCreature", None),
+            ScriptParam(DataType.INT, "nAbilityType", None),
+        ],
         "// 139: Get the ability score of type nAbility for a creature (otherwise 0)\r\n// - oCreature: the creature whose ability score we wish to find out\r\n// - nAbilityType: ABILITY_*\r\n// Return value on error: 0\r\nint GetAbilityScore(object oCreature, int nAbilityType);",
         "// 139: Get the ability score of type nAbility for a creature (otherwise 0)\r\n// - oCreature: the creature whose ability score we wish to find out\r\n// - nAbilityType: ABILITY_*\r\n// Return value on error: 0\r\nint GetAbilityScore(object oCreature, int nAbilityType);",
     ),
@@ -9951,14 +10761,21 @@ TSL_FUNCTIONS = [
     ScriptFunction(
         DataType.VOID,
         "PrintVector",
-        [ScriptParam(DataType.VECTOR, "vVector", None), ScriptParam(DataType.INT, "bPrepend", None)],
+        [
+            ScriptParam(DataType.VECTOR, "vVector", None),
+            ScriptParam(DataType.INT, "bPrepend", None),
+        ],
         '// 141: Output vVector to the logfile.\r\n// - vVector\r\n// - bPrepend: if this is TRUE, the message will be prefixed with "PRINTVECTOR:"\r\nvoid PrintVector(vector vVector, int bPrepend);',
         '// 141: Output vVector to the logfile.\r\n// - vVector\r\n// - bPrepend: if this is TRUE, the message will be prefixed with "PRINTVECTOR:"\r\nvoid PrintVector(vector vVector, int bPrepend);',
     ),
     ScriptFunction(
         DataType.VECTOR,
         "Vector",
-        [ScriptParam(DataType.FLOAT, "x", "0.0"), ScriptParam(DataType.FLOAT, "y", "0.0"), ScriptParam(DataType.FLOAT, "z", "0.0")],
+        [
+            ScriptParam(DataType.FLOAT, "x", "0.0"),
+            ScriptParam(DataType.FLOAT, "y", "0.0"),
+            ScriptParam(DataType.FLOAT, "z", "0.0"),
+        ],
         "// 142: Create a vector with the specified values for x, y and z\r\nvector Vector(float x=0.0f, float y=0.0f, float z=0.0f);",
         "// 142: Create a vector with the specified values for x, y and z\r\nvector Vector(float x=0.0f, float y=0.0f, float z=0.0f);",
     ),
@@ -9986,14 +10803,20 @@ TSL_FUNCTIONS = [
     ScriptFunction(
         DataType.INT,
         "TouchAttackMelee",
-        [ScriptParam(DataType.OBJECT, "oTarget", None), ScriptParam(DataType.INT, "bDisplayFeedback", "1")],
+        [
+            ScriptParam(DataType.OBJECT, "oTarget", None),
+            ScriptParam(DataType.INT, "bDisplayFeedback", "1"),
+        ],
         "// 146: The caller will perform a Melee Touch Attack on oTarget\r\n// This is not an action, and it assumes the caller is already within range of\r\n// oTarget\r\n// * Returns 0 on a miss, 1 on a hit and 2 on a critical hit\r\nint TouchAttackMelee(object oTarget, int bDisplayFeedback=TRUE);",
         "// 146: The caller will perform a Melee Touch Attack on oTarget\r\n// This is not an action, and it assumes the caller is already within range of\r\n// oTarget\r\n// * Returns 0 on a miss, 1 on a hit and 2 on a critical hit\r\nint TouchAttackMelee(object oTarget, int bDisplayFeedback=TRUE);",
     ),
     ScriptFunction(
         DataType.INT,
         "TouchAttackRanged",
-        [ScriptParam(DataType.OBJECT, "oTarget", None), ScriptParam(DataType.INT, "bDisplayFeedback", "1")],
+        [
+            ScriptParam(DataType.OBJECT, "oTarget", None),
+            ScriptParam(DataType.INT, "bDisplayFeedback", "1"),
+        ],
         "// 147: The caller will perform a Ranged Touch Attack on oTarget\r\n// * Returns 0 on a miss, 1 on a hit and 2 on a critical hit\r\nint TouchAttackRanged(object oTarget, int bDisplayFeedback=TRUE);",
         "// 147: The caller will perform a Ranged Touch Attack on oTarget\r\n// * Returns 0 on a miss, 1 on a hit and 2 on a critical hit\r\nint TouchAttackRanged(object oTarget, int bDisplayFeedback=TRUE);",
     ),
@@ -10014,28 +10837,41 @@ TSL_FUNCTIONS = [
     ScriptFunction(
         DataType.VOID,
         "SetItemStackSize",
-        [ScriptParam(DataType.OBJECT, "oItem", None), ScriptParam(DataType.INT, "nStackSize", None)],
+        [
+            ScriptParam(DataType.OBJECT, "oItem", None),
+            ScriptParam(DataType.INT, "nStackSize", None),
+        ],
         "// 150:\r\n// Set the stack size of an item.\r\n// NOTE: The stack size will be clamped to between 1 and the max stack size (as\r\n//       specified in the base item).\r\nvoid SetItemStackSize( object oItem, int nStackSize );",
         "// 150:\r\n// Set the stack size of an item.\r\n// NOTE: The stack size will be clamped to between 1 and the max stack size (as\r\n//       specified in the base item).\r\nvoid SetItemStackSize( object oItem, int nStackSize );",
     ),
     ScriptFunction(
         DataType.FLOAT,
         "GetDistanceBetween",
-        [ScriptParam(DataType.OBJECT, "oObjectA", None), ScriptParam(DataType.OBJECT, "oObjectB", None)],
+        [
+            ScriptParam(DataType.OBJECT, "oObjectA", None),
+            ScriptParam(DataType.OBJECT, "oObjectB", None),
+        ],
         "// 151: Get the distance in metres between oObjectA and oObjectB.\r\n// * Return value if either object is invalid: 0.0f\r\nfloat GetDistanceBetween(object oObjectA, object oObjectB);",
         "// 151: Get the distance in metres between oObjectA and oObjectB.\r\n// * Return value if either object is invalid: 0.0f\r\nfloat GetDistanceBetween(object oObjectA, object oObjectB);",
     ),
     ScriptFunction(
         DataType.VOID,
         "SetReturnStrref",
-        [ScriptParam(DataType.INT, "bShow", None), ScriptParam(DataType.INT, "srStringRef", "0"), ScriptParam(DataType.INT, "srReturnQueryStrRef", "0")],
+        [
+            ScriptParam(DataType.INT, "bShow", None),
+            ScriptParam(DataType.INT, "srStringRef", "0"),
+            ScriptParam(DataType.INT, "srReturnQueryStrRef", "0"),
+        ],
         "// 152: SetReturnStrref\r\n// This function will turn on/off the display of the 'return to ebon hawk' option\r\n// on the map screen and allow the string to be changed to an arbitrary string ref\r\n// srReturnQueryStrRef is the string ref that will be displayed in the query pop\r\n// up confirming that you wish to return to the specified location.\r\nvoid SetReturnStrref(int bShow, int srStringRef = 0, int srReturnQueryStrRef = 0);",
         "// 152: SetReturnStrref\r\n// This function will turn on/off the display of the 'return to ebon hawk' option\r\n// on the map screen and allow the string to be changed to an arbitrary string ref\r\n// srReturnQueryStrRef is the string ref that will be displayed in the query pop\r\n// up confirming that you wish to return to the specified location.\r\nvoid SetReturnStrref(int bShow, int srStringRef = 0, int srReturnQueryStrRef = 0);",
     ),
     ScriptFunction(
         DataType.EFFECT,
         "EffectForceJump",
-        [ScriptParam(DataType.OBJECT, "oTarget", None), ScriptParam(DataType.INT, "nAdvanced", "0")],
+        [
+            ScriptParam(DataType.OBJECT, "oTarget", None),
+            ScriptParam(DataType.INT, "nAdvanced", "0"),
+        ],
         "// 153: EffectForceJump\r\n// The effect required for force jumping\r\neffect EffectForceJump(object oTarget, int nAdvanced = 0);",
         "// 153: EffectForceJump\r\n// The effect required for force jumping\r\neffect EffectForceJump(object oTarget, int nAdvanced = 0);",
     ),
@@ -10049,7 +10885,10 @@ TSL_FUNCTIONS = [
     ScriptFunction(
         DataType.OBJECT,
         "GetItemInSlot",
-        [ScriptParam(DataType.INT, "nInventorySlot", None), ScriptParam(DataType.OBJECT, "oCreature", OBJECT_SELF)],
+        [
+            ScriptParam(DataType.INT, "nInventorySlot", None),
+            ScriptParam(DataType.OBJECT, "oCreature", OBJECT_SELF),
+        ],
         "// 155: Get the object which is in oCreature's specified inventory slot\r\n// - nInventorySlot: INVENTORY_SLOT_*\r\n// - oCreature\r\n// * Returns OBJECT_INVALID if oCreature is not a valid creature or there is no\r\n//   item in nInventorySlot.\r\nobject GetItemInSlot(int nInventorySlot, object oCreature=OBJECT_SELF);",
         "// 155: Get the object which is in oCreature's specified inventory slot\r\n// - nInventorySlot: INVENTORY_SLOT_*\r\n// - oCreature\r\n// * Returns OBJECT_INVALID if oCreature is not a valid creature or there is no\r\n//   item in nInventorySlot.\r\nobject GetItemInSlot(int nInventorySlot, object oCreature=OBJECT_SELF);",
     ),
@@ -10084,7 +10923,10 @@ TSL_FUNCTIONS = [
     ScriptFunction(
         DataType.VOID,
         "SetGlobalString",
-        [ScriptParam(DataType.STRING, "sIdentifier", None), ScriptParam(DataType.STRING, "sValue", None)],
+        [
+            ScriptParam(DataType.STRING, "sIdentifier", None),
+            ScriptParam(DataType.STRING, "sValue", None),
+        ],
         "// 160: Sets a global string with the specified identifier.  This is an EXTREMELY\r\n//      restricted function - do not use without expilicit permission.\r\n//      This means if you are not Preston.  Then go see him if you're even thinking\r\n//      about using this.\r\nvoid SetGlobalString( string sIdentifier, string sValue );",
         "// 160: Sets a global string with the specified identifier.  This is an EXTREMELY\r\n//      restricted function - do not use without expilicit permission.\r\n//      This means if you are not Preston.  Then go see him if you're even thinking\r\n//      about using this.\r\nvoid SetGlobalString( string sIdentifier, string sValue );",
     ),
@@ -10098,7 +10940,10 @@ TSL_FUNCTIONS = [
     ScriptFunction(
         DataType.VOID,
         "SetCommandable",
-        [ScriptParam(DataType.INT, "bCommandable", None), ScriptParam(DataType.OBJECT, "oTarget", OBJECT_SELF)],
+        [
+            ScriptParam(DataType.INT, "bCommandable", None),
+            ScriptParam(DataType.OBJECT, "oTarget", OBJECT_SELF),
+        ],
         "// 162: Set whether oTarget's action stack can be modified\r\nvoid SetCommandable(int bCommandable, object oTarget=OBJECT_SELF);",
         "// 162: Set whether oTarget's action stack can be modified\r\nvoid SetCommandable(int bCommandable, object oTarget=OBJECT_SELF);",
     ),
@@ -10112,7 +10957,10 @@ TSL_FUNCTIONS = [
     ScriptFunction(
         DataType.EFFECT,
         "EffectRegenerate",
-        [ScriptParam(DataType.INT, "nAmount", None), ScriptParam(DataType.FLOAT, "fIntervalSeconds", None)],
+        [
+            ScriptParam(DataType.INT, "nAmount", None),
+            ScriptParam(DataType.FLOAT, "fIntervalSeconds", None),
+        ],
         "// 164: Create a Regenerate effect.\r\n// - nAmount: amount of damage to be regenerated per time interval\r\n// - fIntervalSeconds: length of interval in seconds\r\neffect EffectRegenerate(int nAmount, float fIntervalSeconds);",
         "// 164: Create a Regenerate effect.\r\n// - nAmount: amount of damage to be regenerated per time interval\r\n// - fIntervalSeconds: length of interval in seconds\r\neffect EffectRegenerate(int nAmount, float fIntervalSeconds);",
     ),
@@ -10133,7 +10981,10 @@ TSL_FUNCTIONS = [
     ScriptFunction(
         DataType.VOID,
         "ActionForceFollowObject",
-        [ScriptParam(DataType.OBJECT, "oFollow", None), ScriptParam(DataType.FLOAT, "fFollowDistance", "0.0")],
+        [
+            ScriptParam(DataType.OBJECT, "oFollow", None),
+            ScriptParam(DataType.FLOAT, "fFollowDistance", "0.0"),
+        ],
         "// 167: The action subject will follow oFollow until a ClearAllActions() is called.\r\n// - oFollow: this is the object to be followed\r\n// - fFollowDistance: follow distance in metres\r\n// * No return value\r\nvoid ActionForceFollowObject(object oFollow, float fFollowDistance=0.0f);",
         "// 167: The action subject will follow oFollow until a ClearAllActions() is called.\r\n// - oFollow: this is the object to be followed\r\n// - fFollowDistance: follow distance in metres\r\n// * No return value\r\nvoid ActionForceFollowObject(object oFollow, float fFollowDistance=0.0f);",
     ),
@@ -10147,7 +10998,10 @@ TSL_FUNCTIONS = [
     ScriptFunction(
         DataType.INT,
         "ResistForce",
-        [ScriptParam(DataType.OBJECT, "oSource", None), ScriptParam(DataType.OBJECT, "oTarget", None)],
+        [
+            ScriptParam(DataType.OBJECT, "oSource", None),
+            ScriptParam(DataType.OBJECT, "oTarget", None),
+        ],
         "// 169: Do a Force Resistance check between oSource and oTarget, returning TRUE if\r\n// the force was resisted.\r\n// * Return value if oSource or oTarget is an invalid object: FALSE\r\nint ResistForce(object oSource, object oTarget);",
         "// 169: Do a Force Resistance check between oSource and oTarget, returning TRUE if\r\n// the force was resisted.\r\n// * Return value if oSource or oTarget is an invalid object: FALSE\r\nint ResistForce(object oSource, object oTarget);",
     ),
@@ -10173,14 +11027,20 @@ TSL_FUNCTIONS = [
     ScriptFunction(
         DataType.INT,
         "GetFactionEqual",
-        [ScriptParam(DataType.OBJECT, "oFirstObject", None), ScriptParam(DataType.OBJECT, "oSecondObject", OBJECT_SELF)],
+        [
+            ScriptParam(DataType.OBJECT, "oFirstObject", None),
+            ScriptParam(DataType.OBJECT, "oSecondObject", OBJECT_SELF),
+        ],
         "// 172: * Returns TRUE if the Faction Ids of the two objects are the same\r\nint GetFactionEqual(object oFirstObject, object oSecondObject=OBJECT_SELF);",
         "// 172: * Returns TRUE if the Faction Ids of the two objects are the same\r\nint GetFactionEqual(object oFirstObject, object oSecondObject=OBJECT_SELF);",
     ),
     ScriptFunction(
         DataType.VOID,
         "ChangeFaction",
-        [ScriptParam(DataType.OBJECT, "oObjectToChangeFaction", None), ScriptParam(DataType.OBJECT, "oMemberOfFactionToJoin", None)],
+        [
+            ScriptParam(DataType.OBJECT, "oObjectToChangeFaction", None),
+            ScriptParam(DataType.OBJECT, "oMemberOfFactionToJoin", None),
+        ],
         "// 173: Make oObjectToChangeFaction join the faction of oMemberOfFactionToJoin.\r\n// NB. ** This will only work for two NPCs **\r\nvoid ChangeFaction(object oObjectToChangeFaction, object oMemberOfFactionToJoin);",
         "// 173: Make oObjectToChangeFaction join the faction of oMemberOfFactionToJoin.\r\n// NB. ** This will only work for two NPCs **\r\nvoid ChangeFaction(object oObjectToChangeFaction, object oMemberOfFactionToJoin);",
     ),
@@ -10201,14 +11061,21 @@ TSL_FUNCTIONS = [
     ScriptFunction(
         DataType.VOID,
         "SetListenPattern",
-        [ScriptParam(DataType.OBJECT, "oObject", None), ScriptParam(DataType.STRING, "sPattern", None), ScriptParam(DataType.INT, "nNumber", "0")],
+        [
+            ScriptParam(DataType.OBJECT, "oObject", None),
+            ScriptParam(DataType.STRING, "sPattern", None),
+            ScriptParam(DataType.INT, "nNumber", "0"),
+        ],
         "// 176: Set the string for oObject to listen for.\r\n// Note: this does not set oObject to be listening.\r\nvoid SetListenPattern(object oObject, string sPattern, int nNumber=0);",
         "// 176: Set the string for oObject to listen for.\r\n// Note: this does not set oObject to be listening.\r\nvoid SetListenPattern(object oObject, string sPattern, int nNumber=0);",
     ),
     ScriptFunction(
         DataType.INT,
         "TestStringAgainstPattern",
-        [ScriptParam(DataType.STRING, "sPattern", None), ScriptParam(DataType.STRING, "sStringToTest", None)],
+        [
+            ScriptParam(DataType.STRING, "sPattern", None),
+            ScriptParam(DataType.STRING, "sStringToTest", None),
+        ],
         "// 177: * Returns TRUE if sStringToTest matches sPattern.\r\nint TestStringAgainstPattern(string sPattern, string sStringToTest);",
         "// 177: * Returns TRUE if sStringToTest matches sPattern.\r\nint TestStringAgainstPattern(string sPattern, string sStringToTest);",
     ),
@@ -10229,35 +11096,50 @@ TSL_FUNCTIONS = [
     ScriptFunction(
         DataType.EFFECT,
         "EffectVisualEffect",
-        [ScriptParam(DataType.INT, "nVisualEffectId", None), ScriptParam(DataType.INT, "nMissEffect", "0")],
+        [
+            ScriptParam(DataType.INT, "nVisualEffectId", None),
+            ScriptParam(DataType.INT, "nMissEffect", "0"),
+        ],
         "// 180: * Create a Visual Effect that can be applied to an object.\r\n// - nVisualEffectId\r\n// - nMissEffect: if this is TRUE, a random vector near or past the target will\r\n//   be generated, on which to play the effect\r\neffect EffectVisualEffect(int nVisualEffectId, int nMissEffect=FALSE);",
         "// 180: * Create a Visual Effect that can be applied to an object.\r\n// - nVisualEffectId\r\n// - nMissEffect: if this is TRUE, a random vector near or past the target will\r\n//   be generated, on which to play the effect\r\neffect EffectVisualEffect(int nVisualEffectId, int nMissEffect=FALSE);",
     ),
     ScriptFunction(
         DataType.OBJECT,
         "GetFactionWeakestMember",
-        [ScriptParam(DataType.OBJECT, "oFactionMember", OBJECT_SELF), ScriptParam(DataType.INT, "bMustBeVisible", "1")],
+        [
+            ScriptParam(DataType.OBJECT, "oFactionMember", OBJECT_SELF),
+            ScriptParam(DataType.INT, "bMustBeVisible", "1"),
+        ],
         "// 181: Get the weakest member of oFactionMember's faction.\r\n// * Returns OBJECT_INVALID if oFactionMember's faction is invalid.\r\nobject GetFactionWeakestMember(object oFactionMember=OBJECT_SELF, int bMustBeVisible=TRUE);",
         "// 181: Get the weakest member of oFactionMember's faction.\r\n// * Returns OBJECT_INVALID if oFactionMember's faction is invalid.\r\nobject GetFactionWeakestMember(object oFactionMember=OBJECT_SELF, int bMustBeVisible=TRUE);",
     ),
     ScriptFunction(
         DataType.OBJECT,
         "GetFactionStrongestMember",
-        [ScriptParam(DataType.OBJECT, "oFactionMember", OBJECT_SELF), ScriptParam(DataType.INT, "bMustBeVisible", "1")],
+        [
+            ScriptParam(DataType.OBJECT, "oFactionMember", OBJECT_SELF),
+            ScriptParam(DataType.INT, "bMustBeVisible", "1"),
+        ],
         "// 182: Get the strongest member of oFactionMember's faction.\r\n// * Returns OBJECT_INVALID if oFactionMember's faction is invalid.\r\nobject GetFactionStrongestMember(object oFactionMember=OBJECT_SELF, int bMustBeVisible=TRUE);",
         "// 182: Get the strongest member of oFactionMember's faction.\r\n// * Returns OBJECT_INVALID if oFactionMember's faction is invalid.\r\nobject GetFactionStrongestMember(object oFactionMember=OBJECT_SELF, int bMustBeVisible=TRUE);",
     ),
     ScriptFunction(
         DataType.OBJECT,
         "GetFactionMostDamagedMember",
-        [ScriptParam(DataType.OBJECT, "oFactionMember", OBJECT_SELF), ScriptParam(DataType.INT, "bMustBeVisible", "1")],
+        [
+            ScriptParam(DataType.OBJECT, "oFactionMember", OBJECT_SELF),
+            ScriptParam(DataType.INT, "bMustBeVisible", "1"),
+        ],
         "// 183: Get the member of oFactionMember's faction that has taken the most hit points\r\n// of damage.\r\n// * Returns OBJECT_INVALID if oFactionMember's faction is invalid.\r\nobject GetFactionMostDamagedMember(object oFactionMember=OBJECT_SELF, int bMustBeVisible=TRUE);",
         "// 183: Get the member of oFactionMember's faction that has taken the most hit points\r\n// of damage.\r\n// * Returns OBJECT_INVALID if oFactionMember's faction is invalid.\r\nobject GetFactionMostDamagedMember(object oFactionMember=OBJECT_SELF, int bMustBeVisible=TRUE);",
     ),
     ScriptFunction(
         DataType.OBJECT,
         "GetFactionLeastDamagedMember",
-        [ScriptParam(DataType.OBJECT, "oFactionMember", OBJECT_SELF), ScriptParam(DataType.INT, "bMustBeVisible", "1")],
+        [
+            ScriptParam(DataType.OBJECT, "oFactionMember", OBJECT_SELF),
+            ScriptParam(DataType.INT, "bMustBeVisible", "1"),
+        ],
         "// 184: Get the member of oFactionMember's faction that has taken the fewest hit\r\n// points of damage.\r\n// * Returns OBJECT_INVALID if oFactionMember's faction is invalid.\r\nobject GetFactionLeastDamagedMember(object oFactionMember=OBJECT_SELF, int bMustBeVisible=TRUE);",
         "// 184: Get the member of oFactionMember's faction that has taken the fewest hit\r\n// points of damage.\r\n// * Returns OBJECT_INVALID if oFactionMember's faction is invalid.\r\nobject GetFactionLeastDamagedMember(object oFactionMember=OBJECT_SELF, int bMustBeVisible=TRUE);",
     ),
@@ -10271,7 +11153,10 @@ TSL_FUNCTIONS = [
     ScriptFunction(
         DataType.INT,
         "GetFactionAverageReputation",
-        [ScriptParam(DataType.OBJECT, "oSourceFactionMember", None), ScriptParam(DataType.OBJECT, "oTarget", None)],
+        [
+            ScriptParam(DataType.OBJECT, "oSourceFactionMember", None),
+            ScriptParam(DataType.OBJECT, "oTarget", None),
+        ],
         "// 186: Get an integer between 0 and 100 (inclusive) that represents how\r\n// oSourceFactionMember's faction feels about oTarget.\r\n// * Return value on error: -1\r\nint GetFactionAverageReputation(object oSourceFactionMember, object oTarget);",
         "// 186: Get an integer between 0 and 100 (inclusive) that represents how\r\n// oSourceFactionMember's faction feels about oTarget.\r\n// * Return value on error: -1\r\nint GetFactionAverageReputation(object oSourceFactionMember, object oTarget);",
     ),
@@ -10313,14 +11198,20 @@ TSL_FUNCTIONS = [
     ScriptFunction(
         DataType.OBJECT,
         "GetFactionWorstAC",
-        [ScriptParam(DataType.OBJECT, "oFactionMember", OBJECT_SELF), ScriptParam(DataType.INT, "bMustBeVisible", "1")],
+        [
+            ScriptParam(DataType.OBJECT, "oFactionMember", OBJECT_SELF),
+            ScriptParam(DataType.INT, "bMustBeVisible", "1"),
+        ],
         "// 192: Get the object faction member with the lowest armour class.\r\n// * Returns OBJECT_INVALID if oFactionMember's faction is invalid.\r\nobject GetFactionWorstAC(object oFactionMember=OBJECT_SELF, int bMustBeVisible=TRUE);",
         "// 192: Get the object faction member with the lowest armour class.\r\n// * Returns OBJECT_INVALID if oFactionMember's faction is invalid.\r\nobject GetFactionWorstAC(object oFactionMember=OBJECT_SELF, int bMustBeVisible=TRUE);",
     ),
     ScriptFunction(
         DataType.OBJECT,
         "GetFactionBestAC",
-        [ScriptParam(DataType.OBJECT, "oFactionMember", OBJECT_SELF), ScriptParam(DataType.INT, "bMustBeVisible", "1")],
+        [
+            ScriptParam(DataType.OBJECT, "oFactionMember", OBJECT_SELF),
+            ScriptParam(DataType.INT, "bMustBeVisible", "1"),
+        ],
         "// 193: Get the object faction member with the highest armour class.\r\n// * Returns OBJECT_INVALID if oFactionMember's faction is invalid.\r\nobject GetFactionBestAC(object oFactionMember=OBJECT_SELF, int bMustBeVisible=TRUE);",
         "// 193: Get the object faction member with the highest armour class.\r\n// * Returns OBJECT_INVALID if oFactionMember's faction is invalid.\r\nobject GetFactionBestAC(object oFactionMember=OBJECT_SELF, int bMustBeVisible=TRUE);",
     ),
@@ -10341,7 +11232,10 @@ TSL_FUNCTIONS = [
     ScriptFunction(
         DataType.VOID,
         "ActionJumpToObject",
-        [ScriptParam(DataType.OBJECT, "oToJumpTo", None), ScriptParam(DataType.INT, "bWalkStraightLineToPoint", "1")],
+        [
+            ScriptParam(DataType.OBJECT, "oToJumpTo", None),
+            ScriptParam(DataType.INT, "bWalkStraightLineToPoint", "1"),
+        ],
         "// 196: Jump to an object ID, or as near to it as possible.\r\nvoid ActionJumpToObject(object oToJumpTo, int bWalkStraightLineToPoint=TRUE);",
         "// 196: Jump to an object ID, or as near to it as possible.\r\nvoid ActionJumpToObject(object oToJumpTo, int bWalkStraightLineToPoint=TRUE);",
     ),
@@ -10362,7 +11256,10 @@ TSL_FUNCTIONS = [
     ScriptFunction(
         DataType.EFFECT,
         "EffectLinkEffects",
-        [ScriptParam(DataType.EFFECT, "eChildEffect", None), ScriptParam(DataType.EFFECT, "eParentEffect", None)],
+        [
+            ScriptParam(DataType.EFFECT, "eChildEffect", None),
+            ScriptParam(DataType.EFFECT, "eParentEffect", None),
+        ],
         '// 199: Link the two supplied effects, returning eChildEffect as a child of\r\n// eParentEffect.\r\n// Note: When applying linked effects if the target is immune to all valid\r\n// effects all other effects will be removed as well. This means that if you\r\n// apply a visual effect and a silence effect (in a link) and the target is\r\n// immune to the silence effect that the visual effect will get removed as well.\r\n// Visual Effects are not considered "valid" effects for the purposes of\r\n// determining if an effect will be removed or not and as such should never be\r\n// packaged *only* with other visual effects in a link.\r\neffect EffectLinkEffects(effect eChildEffect, effect eParentEffect );',
         '// 199: Link the two supplied effects, returning eChildEffect as a child of\r\n// eParentEffect.\r\n// Note: When applying linked effects if the target is immune to all valid\r\n// effects all other effects will be removed as well. This means that if you\r\n// apply a visual effect and a silence effect (in a link) and the target is\r\n// immune to the silence effect that the visual effect will get removed as well.\r\n// Visual Effects are not considered "valid" effects for the purposes of\r\n// determining if an effect will be removed or not and as such should never be\r\n// packaged *only* with other visual effects in a link.\r\neffect EffectLinkEffects(effect eChildEffect, effect eParentEffect );',
     ),
@@ -10395,7 +11292,10 @@ TSL_FUNCTIONS = [
     ScriptFunction(
         DataType.VOID,
         "SetAreaTransitionBMP",
-        [ScriptParam(DataType.INT, "nPredefinedAreaTransition", None), ScriptParam(DataType.STRING, "sCustomAreaTransitionBMP", "")],
+        [
+            ScriptParam(DataType.INT, "nPredefinedAreaTransition", None),
+            ScriptParam(DataType.STRING, "sCustomAreaTransitionBMP", ""),
+        ],
         '// 203: Set the transition bitmap of a player; this should only be called in area\r\n// transition scripts. This action should be run by the person "clicking" the\r\n// area transition via AssignCommand.\r\n// - nPredefinedAreaTransition:\r\n//   -> To use a predefined area transition bitmap, use one of AREA_TRANSITION_*\r\n//   -> To use a custom, user-defined area transition bitmap, use\r\n//      AREA_TRANSITION_USER_DEFINED and specify the filename in the second\r\n//      parameter\r\n// - sCustomAreaTransitionBMP: this is the filename of a custom, user-defined\r\n//   area transition bitmap\r\nvoid SetAreaTransitionBMP(int nPredefinedAreaTransition, string sCustomAreaTransitionBMP="");',
         '// 203: Set the transition bitmap of a player; this should only be called in area\r\n// transition scripts. This action should be run by the person "clicking" the\r\n// area transition via AssignCommand.\r\n// - nPredefinedAreaTransition:\r\n//   -> To use a predefined area transition bitmap, use one of AREA_TRANSITION_*\r\n//   -> To use a custom, user-defined area transition bitmap, use\r\n//      AREA_TRANSITION_USER_DEFINED and specify the filename in the second\r\n//      parameter\r\n// - sCustomAreaTransitionBMP: this is the filename of a custom, user-defined\r\n//   area transition bitmap\r\nvoid SetAreaTransitionBMP(int nPredefinedAreaTransition, string sCustomAreaTransitionBMP="");',
     ),
@@ -10451,14 +11351,21 @@ TSL_FUNCTIONS = [
     ScriptFunction(
         DataType.INT,
         "GetReputation",
-        [ScriptParam(DataType.OBJECT, "oSource", None), ScriptParam(DataType.OBJECT, "oTarget", None)],
+        [
+            ScriptParam(DataType.OBJECT, "oSource", None),
+            ScriptParam(DataType.OBJECT, "oTarget", None),
+        ],
         "// 208: Get an integer between 0 and 100 (inclusive) that represents how oSource\r\n// feels about oTarget.\r\n// -> 0-10 means oSource is hostile to oTarget\r\n// -> 11-89 means oSource is neutral to oTarget\r\n// -> 90-100 means oSource is friendly to oTarget\r\n// * Returns -1 if oSource or oTarget does not identify a valid object\r\nint GetReputation(object oSource, object oTarget);",
         "// 208: Get an integer between 0 and 100 (inclusive) that represents how oSource\r\n// feels about oTarget.\r\n// -> 0-10 means oSource is hostile to oTarget\r\n// -> 11-89 means oSource is neutral to oTarget\r\n// -> 90-100 means oSource is friendly to oTarget\r\n// * Returns -1 if oSource or oTarget does not identify a valid object\r\nint GetReputation(object oSource, object oTarget);",
     ),
     ScriptFunction(
         DataType.VOID,
         "AdjustReputation",
-        [ScriptParam(DataType.OBJECT, "oTarget", None), ScriptParam(DataType.OBJECT, "oSourceFactionMember", None), ScriptParam(DataType.INT, "nAdjustment", None)],
+        [
+            ScriptParam(DataType.OBJECT, "oTarget", None),
+            ScriptParam(DataType.OBJECT, "oSourceFactionMember", None),
+            ScriptParam(DataType.INT, "nAdjustment", None),
+        ],
         "// 209: Adjust how oSourceFactionMember's faction feels about oTarget by the\r\n// specified amount.\r\n// Note: This adjusts Faction Reputation, how the entire faction that\r\n// oSourceFactionMember is in, feels about oTarget.\r\n// * No return value\r\nvoid AdjustReputation(object oTarget, object oSourceFactionMember, int nAdjustment);",
         "// 209: Adjust how oSourceFactionMember's faction feels about oTarget by the\r\n// specified amount.\r\n// Note: This adjusts Faction Reputation, how the entire faction that\r\n// oSourceFactionMember is in, feels about oTarget.\r\n// * No return value\r\nvoid AdjustReputation(object oTarget, object oSourceFactionMember, int nAdjustment);",
     ),
@@ -10500,7 +11407,10 @@ TSL_FUNCTIONS = [
     ScriptFunction(
         DataType.LOCATION,
         "Location",
-        [ScriptParam(DataType.VECTOR, "vPosition", None), ScriptParam(DataType.FLOAT, "fOrientation", None)],
+        [
+            ScriptParam(DataType.VECTOR, "vPosition", None),
+            ScriptParam(DataType.FLOAT, "fOrientation", None),
+        ],
         "// 215: Create a location.\r\nlocation Location(vector vPosition, float fOrientation);",
         "// 215: Create a location.\r\nlocation Location(vector vPosition, float fOrientation);",
     ),
@@ -10552,7 +11462,10 @@ TSL_FUNCTIONS = [
     ScriptFunction(
         DataType.VOID,
         "SpeakString",
-        [ScriptParam(DataType.STRING, "sStringToSpeak", None), ScriptParam(DataType.INT, "nTalkVolume", "0")],
+        [
+            ScriptParam(DataType.STRING, "sStringToSpeak", None),
+            ScriptParam(DataType.INT, "nTalkVolume", "0"),
+        ],
         "// 221: The caller will immediately speak sStringToSpeak (this is different from\r\n// ActionSpeakString)\r\n// - sStringToSpeak\r\n// - nTalkVolume: TALKVOLUME_*\r\nvoid SpeakString(string sStringToSpeak, int nTalkVolume=TALKVOLUME_TALK);",
         "// 221: The caller will immediately speak sStringToSpeak (this is different from\r\n// ActionSpeakString)\r\n// - sStringToSpeak\r\n// - nTalkVolume: TALKVOLUME_*\r\nvoid SpeakString(string sStringToSpeak, int nTalkVolume=TALKVOLUME_TALK);",
     ),
@@ -10603,21 +11516,33 @@ TSL_FUNCTIONS = [
     ScriptFunction(
         DataType.OBJECT,
         "GetNearestObject",
-        [ScriptParam(DataType.INT, "nObjectType", "32767"), ScriptParam(DataType.OBJECT, "oTarget", OBJECT_SELF), ScriptParam(DataType.INT, "nNth", "1")],
+        [
+            ScriptParam(DataType.INT, "nObjectType", "32767"),
+            ScriptParam(DataType.OBJECT, "oTarget", OBJECT_SELF),
+            ScriptParam(DataType.INT, "nNth", "1"),
+        ],
         "// 227: Get the Nth object nearest to oTarget that is of the specified type.\r\n// - nObjectType: OBJECT_TYPE_*\r\n// - oTarget\r\n// - nNth\r\n// * Return value on error: OBJECT_INVALID\r\nobject GetNearestObject(int nObjectType=OBJECT_TYPE_ALL, object oTarget=OBJECT_SELF, int nNth=1);",
         "// 227: Get the Nth object nearest to oTarget that is of the specified type.\r\n// - nObjectType: OBJECT_TYPE_*\r\n// - oTarget\r\n// - nNth\r\n// * Return value on error: OBJECT_INVALID\r\nobject GetNearestObject(int nObjectType=OBJECT_TYPE_ALL, object oTarget=OBJECT_SELF, int nNth=1);",
     ),
     ScriptFunction(
         DataType.OBJECT,
         "GetNearestObjectToLocation",
-        [ScriptParam(DataType.INT, "nObjectType", None), ScriptParam(DataType.LOCATION, "lLocation", None), ScriptParam(DataType.INT, "nNth", "1")],
+        [
+            ScriptParam(DataType.INT, "nObjectType", None),
+            ScriptParam(DataType.LOCATION, "lLocation", None),
+            ScriptParam(DataType.INT, "nNth", "1"),
+        ],
         "// 228: Get the nNth object nearest to lLocation that is of the specified type.\r\n// - nObjectType: OBJECT_TYPE_*\r\n// - lLocation\r\n// - nNth\r\n// * Return value on error: OBJECT_INVALID\r\nobject GetNearestObjectToLocation(int nObjectType, location lLocation, int nNth=1);",
         "// 228: Get the nNth object nearest to lLocation that is of the specified type.\r\n// - nObjectType: OBJECT_TYPE_*\r\n// - lLocation\r\n// - nNth\r\n// * Return value on error: OBJECT_INVALID\r\nobject GetNearestObjectToLocation(int nObjectType, location lLocation, int nNth=1);",
     ),
     ScriptFunction(
         DataType.OBJECT,
         "GetNearestObjectByTag",
-        [ScriptParam(DataType.STRING, "sTag", None), ScriptParam(DataType.OBJECT, "oTarget", OBJECT_SELF), ScriptParam(DataType.INT, "nNth", "1")],
+        [
+            ScriptParam(DataType.STRING, "sTag", None),
+            ScriptParam(DataType.OBJECT, "oTarget", OBJECT_SELF),
+            ScriptParam(DataType.INT, "nNth", "1"),
+        ],
         "// 229: Get the nth Object nearest to oTarget that has sTag as its tag.\r\n// * Return value on error: OBJECT_INVALID\r\nobject GetNearestObjectByTag(string sTag, object oTarget=OBJECT_SELF, int nNth=1);",
         "// 229: Get the nth Object nearest to oTarget that has sTag as its tag.\r\n// * Return value on error: OBJECT_INVALID\r\nobject GetNearestObjectByTag(string sTag, object oTarget=OBJECT_SELF, int nNth=1);",
     ),
@@ -10666,21 +11591,30 @@ TSL_FUNCTIONS = [
     ScriptFunction(
         DataType.INT,
         "GetIsEnemy",
-        [ScriptParam(DataType.OBJECT, "oTarget", None), ScriptParam(DataType.OBJECT, "oSource", OBJECT_SELF)],
+        [
+            ScriptParam(DataType.OBJECT, "oTarget", None),
+            ScriptParam(DataType.OBJECT, "oSource", OBJECT_SELF),
+        ],
         "// 235: * Returns TRUE if oSource considers oTarget as an enemy.\r\nint GetIsEnemy(object oTarget, object oSource=OBJECT_SELF);",
         "// 235: * Returns TRUE if oSource considers oTarget as an enemy.\r\nint GetIsEnemy(object oTarget, object oSource=OBJECT_SELF);",
     ),
     ScriptFunction(
         DataType.INT,
         "GetIsFriend",
-        [ScriptParam(DataType.OBJECT, "oTarget", None), ScriptParam(DataType.OBJECT, "oSource", OBJECT_SELF)],
+        [
+            ScriptParam(DataType.OBJECT, "oTarget", None),
+            ScriptParam(DataType.OBJECT, "oSource", OBJECT_SELF),
+        ],
         "// 236: * Returns TRUE if oSource considers oTarget as a friend.\r\nint GetIsFriend(object oTarget, object oSource=OBJECT_SELF);",
         "// 236: * Returns TRUE if oSource considers oTarget as a friend.\r\nint GetIsFriend(object oTarget, object oSource=OBJECT_SELF);",
     ),
     ScriptFunction(
         DataType.INT,
         "GetIsNeutral",
-        [ScriptParam(DataType.OBJECT, "oTarget", None), ScriptParam(DataType.OBJECT, "oSource", OBJECT_SELF)],
+        [
+            ScriptParam(DataType.OBJECT, "oTarget", None),
+            ScriptParam(DataType.OBJECT, "oSource", OBJECT_SELF),
+        ],
         "// 237: * Returns TRUE if oSource considers oTarget as neutral.\r\nint GetIsNeutral(object oTarget, object oSource=OBJECT_SELF);",
         "// 237: * Returns TRUE if oSource considers oTarget as neutral.\r\nint GetIsNeutral(object oTarget, object oSource=OBJECT_SELF);",
     ),
@@ -10740,7 +11674,11 @@ TSL_FUNCTIONS = [
     ScriptFunction(
         DataType.EVENT,
         "EventSpellCastAt",
-        [ScriptParam(DataType.OBJECT, "oCaster", None), ScriptParam(DataType.INT, "nSpell", None), ScriptParam(DataType.INT, "bHarmful", "1")],
+        [
+            ScriptParam(DataType.OBJECT, "oCaster", None),
+            ScriptParam(DataType.INT, "nSpell", None),
+            ScriptParam(DataType.INT, "bHarmful", "1"),
+        ],
         '// 244: Create an event which triggers the "SpellCastAt" script\r\nevent EventSpellCastAt(object oCaster, int nSpell, int bHarmful=TRUE);',
         '// 244: Create an event which triggers the "SpellCastAt" script\r\nevent EventSpellCastAt(object oCaster, int nSpell, int bHarmful=TRUE);',
     ),
@@ -10817,7 +11755,10 @@ TSL_FUNCTIONS = [
     ScriptFunction(
         DataType.INT,
         "BeginConversation",
-        [ScriptParam(DataType.STRING, "sResRef", ""), ScriptParam(DataType.OBJECT, "oObjectToDialog", OBJECT_INVALID)],
+        [
+            ScriptParam(DataType.STRING, "sResRef", ""),
+            ScriptParam(DataType.OBJECT, "oObjectToDialog", OBJECT_INVALID),
+        ],
         '// 255: Use this in an OnDialog script to start up the dialog tree.\r\n// - sResRef: if this is not specified, the default dialog file will be used\r\n// - oObjectToDialog: if this is not specified the person that triggered the\r\n//   event will be used\r\nint BeginConversation(string sResRef="", object oObjectToDialog=OBJECT_INVALID);',
         '// 255: Use this in an OnDialog script to start up the dialog tree.\r\n// - sResRef: if this is not specified, the default dialog file will be used\r\n// - oObjectToDialog: if this is not specified the person that triggered the\r\n//   event will be used\r\nint BeginConversation(string sResRef="", object oObjectToDialog=OBJECT_INVALID);',
     ),
@@ -10902,7 +11843,10 @@ TSL_FUNCTIONS = [
     ScriptFunction(
         DataType.VOID,
         "SetItemNonEquippable",
-        [ScriptParam(DataType.OBJECT, "oItem", None), ScriptParam(DataType.INT, "bNonEquippable", None)],
+        [
+            ScriptParam(DataType.OBJECT, "oItem", None),
+            ScriptParam(DataType.INT, "bNonEquippable", None),
+        ],
         "// 266: Flag the specified item as being non-equippable or not.  Set bNonEquippable\r\n//      to TRUE to prevent this item from being equipped, and FALSE to allow\r\n//      the normal equipping checks to determine if the item can be equipped.\r\n// NOTE: This will do nothing if the object passed in is not an item.  Items that\r\n//       are already equipped when this is called will not automatically be\r\n//       unequipped.  These items will just be prevented from being re-equipped\r\n//       should they be unequipped.\r\nvoid SetItemNonEquippable( object oItem, int bNonEquippable );",
         "// 266: Flag the specified item as being non-equippable or not.  Set bNonEquippable\r\n//      to TRUE to prevent this item from being equipped, and FALSE to allow\r\n//      the normal equipping checks to determine if the item can be equipped.\r\n// NOTE: This will do nothing if the object passed in is not an item.  Items that\r\n//       are already equipped when this is called will not automatically be\r\n//       unequipped.  These items will just be prevented from being re-equipped\r\n//       should they be unequipped.\r\nvoid SetItemNonEquippable( object oItem, int bNonEquippable );",
     ),
@@ -10923,7 +11867,10 @@ TSL_FUNCTIONS = [
     ScriptFunction(
         DataType.EFFECT,
         "EffectForcePushTargeted",
-        [ScriptParam(DataType.LOCATION, "lCentre", None), ScriptParam(DataType.INT, "nIgnoreTestDirectLine", "0")],
+        [
+            ScriptParam(DataType.LOCATION, "lCentre", None),
+            ScriptParam(DataType.INT, "nIgnoreTestDirectLine", "0"),
+        ],
         "// 269: EffectForcePushTargeted\r\n// This effect is exactly the same as force push, except it takes a location parameter that specifies\r\n// where the location of the force push is to be done from.  All orientations are also based on this location.\r\n// AMF:  The new ignore test direct line variable should be used with extreme caution\r\n// It overrides geometry checks for force pushes, so that the object that the effect is applied to\r\n// is guaranteed to move that far, ignoring collisions.  It is best used for cutscenes.\r\neffect EffectForcePushTargeted(location lCentre, int nIgnoreTestDirectLine = 0);",
         "// 269: EffectForcePushTargeted\r\n// This effect is exactly the same as force push, except it takes a location parameter that specifies\r\n// where the location of the force push is to be done from.  All orientations are also based on this location.\r\n// AMF:  The new ignore test direct line variable should be used with extreme caution\r\n// It overrides geometry checks for force pushes, so that the object that the effect is applied to\r\n// is guaranteed to move that far, ignoring collisions.  It is best used for cutscenes.\r\neffect EffectForcePushTargeted(location lCentre, int nIgnoreTestDirectLine = 0);",
     ),
@@ -10937,7 +11884,10 @@ TSL_FUNCTIONS = [
     ScriptFunction(
         DataType.VOID,
         "GiveItem",
-        [ScriptParam(DataType.OBJECT, "oItem", None), ScriptParam(DataType.OBJECT, "oGiveTo", None)],
+        [
+            ScriptParam(DataType.OBJECT, "oItem", None),
+            ScriptParam(DataType.OBJECT, "oGiveTo", None),
+        ],
         "// 271: Give oItem to oGiveTo (instant; for similar Action use ActionGiveItem)\r\n// If oItem is not a valid item, or oGiveTo is not a valid object, nothing will\r\n// happen.\r\nvoid GiveItem(object oItem, object oGiveTo);",
         "// 271: Give oItem to oGiveTo (instant; for similar Action use ActionGiveItem)\r\n// If oItem is not a valid item, or oGiveTo is not a valid object, nothing will\r\n// happen.\r\nvoid GiveItem(object oItem, object oGiveTo);",
     ),
@@ -10958,14 +11908,21 @@ TSL_FUNCTIONS = [
     ScriptFunction(
         DataType.INT,
         "GetIsImmune",
-        [ScriptParam(DataType.OBJECT, "oCreature", None), ScriptParam(DataType.INT, "nImmunityType", None), ScriptParam(DataType.OBJECT, "oVersus", OBJECT_INVALID)],
+        [
+            ScriptParam(DataType.OBJECT, "oCreature", None),
+            ScriptParam(DataType.INT, "nImmunityType", None),
+            ScriptParam(DataType.OBJECT, "oVersus", OBJECT_INVALID),
+        ],
         "// 274: - oCreature\r\n// - nImmunityType: IMMUNITY_TYPE_*\r\n// - oVersus: if this is specified, then we also check for the race and\r\n//   alignment of oVersus\r\n// * Returns TRUE if oCreature has immunity of type nImmunity versus oVersus.\r\nint GetIsImmune(object oCreature, int nImmunityType, object oVersus=OBJECT_INVALID);",
         "// 274: - oCreature\r\n// - nImmunityType: IMMUNITY_TYPE_*\r\n// - oVersus: if this is specified, then we also check for the race and\r\n//   alignment of oVersus\r\n// * Returns TRUE if oCreature has immunity of type nImmunity versus oVersus.\r\nint GetIsImmune(object oCreature, int nImmunityType, object oVersus=OBJECT_INVALID);",
     ),
     ScriptFunction(
         DataType.EFFECT,
         "EffectDamageImmunityIncrease",
-        [ScriptParam(DataType.INT, "nDamageType", None), ScriptParam(DataType.INT, "nPercentImmunity", None)],
+        [
+            ScriptParam(DataType.INT, "nDamageType", None),
+            ScriptParam(DataType.INT, "nPercentImmunity", None),
+        ],
         "// 275: Creates a Damage Immunity Increase effect.\r\n// - nDamageType: DAMAGE_TYPE_*\r\n// - nPercentImmunity\r\neffect EffectDamageImmunityIncrease(int nDamageType, int nPercentImmunity);",
         "// 275: Creates a Damage Immunity Increase effect.\r\n// - nDamageType: DAMAGE_TYPE_*\r\n// - nPercentImmunity\r\neffect EffectDamageImmunityIncrease(int nDamageType, int nPercentImmunity);",
     ),
@@ -10979,7 +11936,10 @@ TSL_FUNCTIONS = [
     ScriptFunction(
         DataType.VOID,
         "SetEncounterActive",
-        [ScriptParam(DataType.INT, "nNewValue", None), ScriptParam(DataType.OBJECT, "oEncounter", OBJECT_SELF)],
+        [
+            ScriptParam(DataType.INT, "nNewValue", None),
+            ScriptParam(DataType.OBJECT, "oEncounter", OBJECT_SELF),
+        ],
         "// 277: Set oEncounter's active state to nNewValue.\r\n// - nNewValue: TRUE/FALSE\r\n// - oEncounter\r\nvoid SetEncounterActive(int nNewValue, object oEncounter=OBJECT_SELF);",
         "// 277: Set oEncounter's active state to nNewValue.\r\n// - nNewValue: TRUE/FALSE\r\n// - oEncounter\r\nvoid SetEncounterActive(int nNewValue, object oEncounter=OBJECT_SELF);",
     ),
@@ -10993,7 +11953,10 @@ TSL_FUNCTIONS = [
     ScriptFunction(
         DataType.VOID,
         "SetEncounterSpawnsMax",
-        [ScriptParam(DataType.INT, "nNewValue", None), ScriptParam(DataType.OBJECT, "oEncounter", OBJECT_SELF)],
+        [
+            ScriptParam(DataType.INT, "nNewValue", None),
+            ScriptParam(DataType.OBJECT, "oEncounter", OBJECT_SELF),
+        ],
         "// 279: Set the maximum number of times that oEncounter can spawn\r\nvoid SetEncounterSpawnsMax(int nNewValue, object oEncounter=OBJECT_SELF);",
         "// 279: Set the maximum number of times that oEncounter can spawn\r\nvoid SetEncounterSpawnsMax(int nNewValue, object oEncounter=OBJECT_SELF);",
     ),
@@ -11007,7 +11970,10 @@ TSL_FUNCTIONS = [
     ScriptFunction(
         DataType.VOID,
         "SetEncounterSpawnsCurrent",
-        [ScriptParam(DataType.INT, "nNewValue", None), ScriptParam(DataType.OBJECT, "oEncounter", OBJECT_SELF)],
+        [
+            ScriptParam(DataType.INT, "nNewValue", None),
+            ScriptParam(DataType.OBJECT, "oEncounter", OBJECT_SELF),
+        ],
         "// 281: Set the number of times that oEncounter has spawned so far\r\nvoid SetEncounterSpawnsCurrent(int nNewValue, object oEncounter=OBJECT_SELF);",
         "// 281: Set the number of times that oEncounter has spawned so far\r\nvoid SetEncounterSpawnsCurrent(int nNewValue, object oEncounter=OBJECT_SELF);",
     ),
@@ -11028,21 +11994,30 @@ TSL_FUNCTIONS = [
     ScriptFunction(
         DataType.VOID,
         "SetCustomToken",
-        [ScriptParam(DataType.INT, "nCustomTokenNumber", None), ScriptParam(DataType.STRING, "sTokenValue", None)],
+        [
+            ScriptParam(DataType.INT, "nCustomTokenNumber", None),
+            ScriptParam(DataType.STRING, "sTokenValue", None),
+        ],
         "// 284: Set the value for a custom token.\r\nvoid SetCustomToken(int nCustomTokenNumber, string sTokenValue);",
         "// 284: Set the value for a custom token.\r\nvoid SetCustomToken(int nCustomTokenNumber, string sTokenValue);",
     ),
     ScriptFunction(
         DataType.INT,
         "GetHasFeat",
-        [ScriptParam(DataType.INT, "nFeat", None), ScriptParam(DataType.OBJECT, "oCreature", OBJECT_SELF)],
+        [
+            ScriptParam(DataType.INT, "nFeat", None),
+            ScriptParam(DataType.OBJECT, "oCreature", OBJECT_SELF),
+        ],
         "// 285: Determine whether oCreature has nFeat, and nFeat is useable.\r\n// PLEASE NOTE!!! - This function will return FALSE if the target\r\n// is not currently able to use the feat due to daily limits or\r\n// other restrictions. Use GetFeatAcquired() if you just want to\r\n// know if they've got it or not.\r\n// - nFeat: FEAT_*\r\n// - oCreature\r\nint GetHasFeat(int nFeat, object oCreature=OBJECT_SELF);",
         "// 285: Determine whether oCreature has nFeat, and nFeat is useable.\r\n// PLEASE NOTE!!! - This function will return FALSE if the target\r\n// is not currently able to use the feat due to daily limits or\r\n// other restrictions. Use GetFeatAcquired() if you just want to\r\n// know if they've got it or not.\r\n// - nFeat: FEAT_*\r\n// - oCreature\r\nint GetHasFeat(int nFeat, object oCreature=OBJECT_SELF);",
     ),
     ScriptFunction(
         DataType.INT,
         "GetHasSkill",
-        [ScriptParam(DataType.INT, "nSkill", None), ScriptParam(DataType.OBJECT, "oCreature", OBJECT_SELF)],
+        [
+            ScriptParam(DataType.INT, "nSkill", None),
+            ScriptParam(DataType.OBJECT, "oCreature", OBJECT_SELF),
+        ],
         "// 286: Determine whether oCreature has nSkill, and nSkill is useable.\r\n// - nSkill: SKILL_*\r\n// - oCreature\r\nint GetHasSkill(int nSkill, object oCreature=OBJECT_SELF);",
         "// 286: Determine whether oCreature has nSkill, and nSkill is useable.\r\n// - nSkill: SKILL_*\r\n// - oCreature\r\nint GetHasSkill(int nSkill, object oCreature=OBJECT_SELF);",
     ),
@@ -11068,14 +12043,20 @@ TSL_FUNCTIONS = [
     ScriptFunction(
         DataType.INT,
         "GetObjectSeen",
-        [ScriptParam(DataType.OBJECT, "oTarget", None), ScriptParam(DataType.OBJECT, "oSource", OBJECT_SELF)],
+        [
+            ScriptParam(DataType.OBJECT, "oTarget", None),
+            ScriptParam(DataType.OBJECT, "oSource", OBJECT_SELF),
+        ],
         "// 289: Determine whether oSource sees oTarget.\r\nint GetObjectSeen(object oTarget, object oSource=OBJECT_SELF);",
         "// 289: Determine whether oSource sees oTarget.\r\nint GetObjectSeen(object oTarget, object oSource=OBJECT_SELF);",
     ),
     ScriptFunction(
         DataType.INT,
         "GetObjectHeard",
-        [ScriptParam(DataType.OBJECT, "oTarget", None), ScriptParam(DataType.OBJECT, "oSource", OBJECT_SELF)],
+        [
+            ScriptParam(DataType.OBJECT, "oTarget", None),
+            ScriptParam(DataType.OBJECT, "oSource", OBJECT_SELF),
+        ],
         "// 290: Determine whether oSource hears oTarget.\r\nint GetObjectHeard(object oTarget, object oSource=OBJECT_SELF);",
         "// 290: Determine whether oSource hears oTarget.\r\nint GetObjectHeard(object oTarget, object oSource=OBJECT_SELF);",
     ),
@@ -11117,7 +12098,10 @@ TSL_FUNCTIONS = [
     ScriptFunction(
         DataType.VOID,
         "SetEncounterDifficulty",
-        [ScriptParam(DataType.INT, "nEncounterDifficulty", None), ScriptParam(DataType.OBJECT, "oEncounter", OBJECT_SELF)],
+        [
+            ScriptParam(DataType.INT, "nEncounterDifficulty", None),
+            ScriptParam(DataType.OBJECT, "oEncounter", OBJECT_SELF),
+        ],
         "// 296: Set the difficulty level of oEncounter.\r\n// - nEncounterDifficulty: ENCOUNTER_DIFFICULTY_*\r\n// - oEncounter\r\nvoid SetEncounterDifficulty(int nEncounterDifficulty, object oEncounter=OBJECT_SELF);",
         "// 296: Set the difficulty level of oEncounter.\r\n// - nEncounterDifficulty: ENCOUNTER_DIFFICULTY_*\r\n// - oEncounter\r\nvoid SetEncounterDifficulty(int nEncounterDifficulty, object oEncounter=OBJECT_SELF);",
     ),
@@ -11131,7 +12115,10 @@ TSL_FUNCTIONS = [
     ScriptFunction(
         DataType.FLOAT,
         "GetDistanceBetweenLocations",
-        [ScriptParam(DataType.LOCATION, "lLocationA", None), ScriptParam(DataType.LOCATION, "lLocationB", None)],
+        [
+            ScriptParam(DataType.LOCATION, "lLocationA", None),
+            ScriptParam(DataType.LOCATION, "lLocationB", None),
+        ],
         "// 298: Get the distance between lLocationA and lLocationB.\r\nfloat GetDistanceBetweenLocations(location lLocationA, location lLocationB);",
         "// 298: Get the distance between lLocationA and lLocationB.\r\nfloat GetDistanceBetweenLocations(location lLocationA, location lLocationB);",
     ),
@@ -11151,7 +12138,11 @@ TSL_FUNCTIONS = [
     ScriptFunction(
         DataType.VOID,
         "PlayAnimation",
-        [ScriptParam(DataType.INT, "nAnimation", None), ScriptParam(DataType.FLOAT, "fSpeed", "1.0"), ScriptParam(DataType.FLOAT, "fSeconds", "0.0")],
+        [
+            ScriptParam(DataType.INT, "nAnimation", None),
+            ScriptParam(DataType.FLOAT, "fSpeed", "1.0"),
+            ScriptParam(DataType.FLOAT, "fSeconds", "0.0"),
+        ],
         "// 300: Play nAnimation immediately.\r\n// - nAnimation: ANIMATION_*\r\n// - fSpeed\r\n// - fSeconds: Duration of the animation (this is not used for Fire and\r\n//   Forget animations) If a time of -1.0f is specified for a looping animation\r\n//   it will loop until the next animation is applied.\r\nvoid PlayAnimation(int nAnimation, float fSpeed=1.0, float fSeconds=0.0);",
         "// 300: Play nAnimation immediately.\r\n// - nAnimation: ANIMATION_*\r\n// - fSpeed\r\n// - fSeconds: Duration of the animation (this is not used for Fire and\r\n//   Forget animations) If a time of -1.0f is specified for a looping animation\r\n//   it will loop until the next animation is applied.\r\nvoid PlayAnimation(int nAnimation, float fSpeed=1.0, float fSeconds=0.0);",
     ),
@@ -11179,7 +12170,10 @@ TSL_FUNCTIONS = [
     ScriptFunction(
         DataType.INT,
         "GetHasSpellEffect",
-        [ScriptParam(DataType.INT, "nSpell", None), ScriptParam(DataType.OBJECT, "oObject", OBJECT_SELF)],
+        [
+            ScriptParam(DataType.INT, "nSpell", None),
+            ScriptParam(DataType.OBJECT, "oObject", OBJECT_SELF),
+        ],
         "// 304: Determine if oObject has effects originating from nSpell.\r\n// - nSpell: SPELL_*\r\n// - oObject\r\nint GetHasSpellEffect(int nSpell, object oObject=OBJECT_SELF);",
         "// 304: Determine if oObject has effects originating from nSpell.\r\n// - nSpell: SPELL_*\r\n// - oObject\r\nint GetHasSpellEffect(int nSpell, object oObject=OBJECT_SELF);",
     ),
@@ -11193,14 +12187,21 @@ TSL_FUNCTIONS = [
     ScriptFunction(
         DataType.INT,
         "GetCreatureHasTalent",
-        [ScriptParam(DataType.TALENT, "tTalent", None), ScriptParam(DataType.OBJECT, "oCreature", OBJECT_SELF)],
+        [
+            ScriptParam(DataType.TALENT, "tTalent", None),
+            ScriptParam(DataType.OBJECT, "oCreature", OBJECT_SELF),
+        ],
         "// 306: Determine whether oCreature has tTalent.\r\nint GetCreatureHasTalent(talent tTalent, object oCreature=OBJECT_SELF);",
         "// 306: Determine whether oCreature has tTalent.\r\nint GetCreatureHasTalent(talent tTalent, object oCreature=OBJECT_SELF);",
     ),
     ScriptFunction(
         DataType.TALENT,
         "GetCreatureTalentRandom",
-        [ScriptParam(DataType.INT, "nCategory", None), ScriptParam(DataType.OBJECT, "oCreature", OBJECT_SELF), ScriptParam(DataType.INT, "nInclusion", "0")],
+        [
+            ScriptParam(DataType.INT, "nCategory", None),
+            ScriptParam(DataType.OBJECT, "oCreature", OBJECT_SELF),
+            ScriptParam(DataType.INT, "nInclusion", "0"),
+        ],
         "// 307: Get a random talent of oCreature, within nCategory.\r\n// - nCategory: TALENT_CATEGORY_*\r\n// - oCreature\r\n// - nInclusion: types of talent to include\r\ntalent GetCreatureTalentRandom(int nCategory, object oCreature=OBJECT_SELF, int nInclusion=0);",
         "// 307: Get a random talent of oCreature, within nCategory.\r\n// - nCategory: TALENT_CATEGORY_*\r\n// - oCreature\r\n// - nInclusion: types of talent to include\r\ntalent GetCreatureTalentRandom(int nCategory, object oCreature=OBJECT_SELF, int nInclusion=0);",
     ),
@@ -11221,14 +12222,20 @@ TSL_FUNCTIONS = [
     ScriptFunction(
         DataType.VOID,
         "ActionUseTalentOnObject",
-        [ScriptParam(DataType.TALENT, "tChosenTalent", None), ScriptParam(DataType.OBJECT, "oTarget", None)],
+        [
+            ScriptParam(DataType.TALENT, "tChosenTalent", None),
+            ScriptParam(DataType.OBJECT, "oTarget", None),
+        ],
         "// 309: Use tChosenTalent on oTarget.\r\nvoid ActionUseTalentOnObject(talent tChosenTalent, object oTarget);",
         "// 309: Use tChosenTalent on oTarget.\r\nvoid ActionUseTalentOnObject(talent tChosenTalent, object oTarget);",
     ),
     ScriptFunction(
         DataType.VOID,
         "ActionUseTalentAtLocation",
-        [ScriptParam(DataType.TALENT, "tChosenTalent", None), ScriptParam(DataType.LOCATION, "lTargetLocation", None)],
+        [
+            ScriptParam(DataType.TALENT, "tChosenTalent", None),
+            ScriptParam(DataType.LOCATION, "lTargetLocation", None),
+        ],
         "// 310: Use tChosenTalent at lTargetLocation.\r\nvoid ActionUseTalentAtLocation(talent tChosenTalent, location lTargetLocation);",
         "// 310: Use tChosenTalent at lTargetLocation.\r\nvoid ActionUseTalentAtLocation(talent tChosenTalent, location lTargetLocation);",
     ),
@@ -11263,7 +12270,10 @@ TSL_FUNCTIONS = [
     ScriptFunction(
         DataType.INT,
         "GetSkillRank",
-        [ScriptParam(DataType.INT, "nSkill", None), ScriptParam(DataType.OBJECT, "oTarget", OBJECT_SELF)],
+        [
+            ScriptParam(DataType.INT, "nSkill", None),
+            ScriptParam(DataType.OBJECT, "oTarget", OBJECT_SELF),
+        ],
         "// 315: Get the number of ranks that oTarget has in nSkill.\r\n// - nSkill: SKILL_*\r\n// - oTarget\r\n// * Returns -1 if oTarget doesn't have nSkill.\r\n// * Returns 0 if nSkill is untrained.\r\nint GetSkillRank(int nSkill, object oTarget=OBJECT_SELF);",
         "// 315: Get the number of ranks that oTarget has in nSkill.\r\n// - nSkill: SKILL_*\r\n// - oTarget\r\n// * Returns -1 if oTarget doesn't have nSkill.\r\n// * Returns 0 if nSkill is untrained.\r\nint GetSkillRank(int nSkill, object oTarget=OBJECT_SELF);",
     ),
@@ -11291,14 +12301,20 @@ TSL_FUNCTIONS = [
     ScriptFunction(
         DataType.FLOAT,
         "GetDistanceBetween2D",
-        [ScriptParam(DataType.OBJECT, "oObjectA", None), ScriptParam(DataType.OBJECT, "oObjectB", None)],
+        [
+            ScriptParam(DataType.OBJECT, "oObjectA", None),
+            ScriptParam(DataType.OBJECT, "oObjectB", None),
+        ],
         "// 319: Get the distance in metres between oObjectA and oObjectB in 2D.\r\n// * Return value if either object is invalid: 0.0f\r\nfloat GetDistanceBetween2D(object oObjectA, object oObjectB);",
         "// 319: Get the distance in metres between oObjectA and oObjectB in 2D.\r\n// * Return value if either object is invalid: 0.0f\r\nfloat GetDistanceBetween2D(object oObjectA, object oObjectB);",
     ),
     ScriptFunction(
         DataType.INT,
         "GetIsInCombat",
-        [ScriptParam(DataType.OBJECT, "oCreature", OBJECT_SELF), ScriptParam(DataType.INT, "bOnlyCountReal", "0")],
+        [
+            ScriptParam(DataType.OBJECT, "oCreature", OBJECT_SELF),
+            ScriptParam(DataType.INT, "bOnlyCountReal", "0"),
+        ],
         "// 320: * Returns TRUE if oCreature is in combat.\r\n//RWT-OEI 09/30/04 - If you pass TRUE in as the second parameter then\r\n//this function will only return true if the character is in REAL combat.\r\n//If you don't know what that means, don't pass in TRUE.\r\nint GetIsInCombat(object oCreature=OBJECT_SELF, int bOnlyCountReal = FALSE);",
         "// 320: * Returns TRUE if oCreature is in combat.\r\n//RWT-OEI 09/30/04 - If you pass TRUE in as the second parameter then\r\n//this function will only return true if the character is in REAL combat.\r\n//If you don't know what that means, don't pass in TRUE.\r\nint GetIsInCombat(object oCreature=OBJECT_SELF, int bOnlyCountReal = FALSE);",
     ),
@@ -11319,7 +12335,11 @@ TSL_FUNCTIONS = [
     ScriptFunction(
         DataType.VOID,
         "SetIsDestroyable",
-        [ScriptParam(DataType.INT, "bDestroyable", None), ScriptParam(DataType.INT, "bRaiseable", "1"), ScriptParam(DataType.INT, "bSelectableWhenDead", "0")],
+        [
+            ScriptParam(DataType.INT, "bDestroyable", None),
+            ScriptParam(DataType.INT, "bRaiseable", "1"),
+            ScriptParam(DataType.INT, "bSelectableWhenDead", "0"),
+        ],
         "// 323: Set the destroyable status of the caller.\r\n// - bDestroyable: If this is FALSE, the caller does not fade out on death, but\r\n//   sticks around as a corpse.\r\n// - bRaiseable: If this is TRUE, the caller can be raised via resurrection.\r\n// - bSelectableWhenDead: If this is TRUE, the caller is selectable after death.\r\nvoid SetIsDestroyable(int bDestroyable, int bRaiseable=TRUE, int bSelectableWhenDead=FALSE);",
         "// 323: Set the destroyable status of the caller.\r\n// - bDestroyable: If this is FALSE, the caller does not fade out on death, but\r\n//   sticks around as a corpse.\r\n// - bRaiseable: If this is TRUE, the caller can be raised via resurrection.\r\n// - bSelectableWhenDead: If this is TRUE, the caller is selectable after death.\r\nvoid SetIsDestroyable(int bDestroyable, int bRaiseable=TRUE, int bSelectableWhenDead=FALSE);",
     ),
@@ -11375,7 +12395,10 @@ TSL_FUNCTIONS = [
     ScriptFunction(
         DataType.INT,
         "GetAbilityModifier",
-        [ScriptParam(DataType.INT, "nAbility", None), ScriptParam(DataType.OBJECT, "oCreature", OBJECT_SELF)],
+        [
+            ScriptParam(DataType.INT, "nAbility", None),
+            ScriptParam(DataType.OBJECT, "oCreature", OBJECT_SELF),
+        ],
         "// 331: Returns the ability modifier for the specified ability\r\n// Get oCreature's ability modifier for nAbility.\r\n// - nAbility: ABILITY_*\r\n// - oCreature\r\nint GetAbilityModifier(int nAbility, object oCreature=OBJECT_SELF);",
         "// 331: Returns the ability modifier for the specified ability\r\n// Get oCreature's ability modifier for nAbility.\r\n// - nAbility: ABILITY_*\r\n// - oCreature\r\nint GetAbilityModifier(int nAbility, object oCreature=OBJECT_SELF);",
     ),
@@ -11389,14 +12412,20 @@ TSL_FUNCTIONS = [
     ScriptFunction(
         DataType.VOID,
         "SetIdentified",
-        [ScriptParam(DataType.OBJECT, "oItem", None), ScriptParam(DataType.INT, "bIdentified", None)],
+        [
+            ScriptParam(DataType.OBJECT, "oItem", None),
+            ScriptParam(DataType.INT, "bIdentified", None),
+        ],
         "// 333: Set whether oItem has been identified.\r\nvoid SetIdentified(object oItem, int bIdentified);",
         "// 333: Set whether oItem has been identified.\r\nvoid SetIdentified(object oItem, int bIdentified);",
     ),
     ScriptFunction(
         DataType.FLOAT,
         "GetDistanceBetweenLocations2D",
-        [ScriptParam(DataType.LOCATION, "lLocationA", None), ScriptParam(DataType.LOCATION, "lLocationB", None)],
+        [
+            ScriptParam(DataType.LOCATION, "lLocationA", None),
+            ScriptParam(DataType.LOCATION, "lLocationB", None),
+        ],
         "// 334: Get the distance between lLocationA and lLocationB. in 2D\r\nfloat GetDistanceBetweenLocations2D(location lLocationA, location lLocationB);",
         "// 334: Get the distance between lLocationA and lLocationB. in 2D\r\nfloat GetDistanceBetweenLocations2D(location lLocationA, location lLocationB);",
     ),
@@ -11417,14 +12446,20 @@ TSL_FUNCTIONS = [
     ScriptFunction(
         DataType.INT,
         "GetIsDoorActionPossible",
-        [ScriptParam(DataType.OBJECT, "oTargetDoor", None), ScriptParam(DataType.INT, "nDoorAction", None)],
+        [
+            ScriptParam(DataType.OBJECT, "oTargetDoor", None),
+            ScriptParam(DataType.INT, "nDoorAction", None),
+        ],
         "// 337: - oTargetDoor\r\n// - nDoorAction: DOOR_ACTION_*\r\n// * Returns TRUE if nDoorAction can be performed on oTargetDoor.\r\nint GetIsDoorActionPossible(object oTargetDoor, int nDoorAction);",
         "// 337: - oTargetDoor\r\n// - nDoorAction: DOOR_ACTION_*\r\n// * Returns TRUE if nDoorAction can be performed on oTargetDoor.\r\nint GetIsDoorActionPossible(object oTargetDoor, int nDoorAction);",
     ),
     ScriptFunction(
         DataType.VOID,
         "DoDoorAction",
-        [ScriptParam(DataType.OBJECT, "oTargetDoor", None), ScriptParam(DataType.INT, "nDoorAction", None)],
+        [
+            ScriptParam(DataType.OBJECT, "oTargetDoor", None),
+            ScriptParam(DataType.INT, "nDoorAction", None),
+        ],
         "// 338: Perform nDoorAction on oTargetDoor.\r\nvoid DoDoorAction(object oTargetDoor, int nDoorAction);",
         "// 338: Perform nDoorAction on oTargetDoor.\r\nvoid DoDoorAction(object oTargetDoor, int nDoorAction);",
     ),
@@ -11445,21 +12480,30 @@ TSL_FUNCTIONS = [
     ScriptFunction(
         DataType.INT,
         "GetClassByPosition",
-        [ScriptParam(DataType.INT, "nClassPosition", None), ScriptParam(DataType.OBJECT, "oCreature", OBJECT_SELF)],
+        [
+            ScriptParam(DataType.INT, "nClassPosition", None),
+            ScriptParam(DataType.OBJECT, "oCreature", OBJECT_SELF),
+        ],
         "// 341: A creature can have up to three classes.  This function determines the\r\n// creature's class (CLASS_TYPE_*) based on nClassPosition.\r\n// - nClassPosition: 1, 2 or 3\r\n// - oCreature\r\n// * Returns CLASS_TYPE_INVALID if the oCreature does not have a class in\r\n//   nClassPosition (i.e. a single-class creature will only have a value in\r\n//   nClassLocation=1) or if oCreature is not a valid creature.\r\nint GetClassByPosition(int nClassPosition, object oCreature=OBJECT_SELF);",
         "// 341: A creature can have up to three classes.  This function determines the\r\n// creature's class (CLASS_TYPE_*) based on nClassPosition.\r\n// - nClassPosition: 1, 2 or 3\r\n// - oCreature\r\n// * Returns CLASS_TYPE_INVALID if the oCreature does not have a class in\r\n//   nClassPosition (i.e. a single-class creature will only have a value in\r\n//   nClassLocation=1) or if oCreature is not a valid creature.\r\nint GetClassByPosition(int nClassPosition, object oCreature=OBJECT_SELF);",
     ),
     ScriptFunction(
         DataType.INT,
         "GetLevelByPosition",
-        [ScriptParam(DataType.INT, "nClassPosition", None), ScriptParam(DataType.OBJECT, "oCreature", OBJECT_SELF)],
+        [
+            ScriptParam(DataType.INT, "nClassPosition", None),
+            ScriptParam(DataType.OBJECT, "oCreature", OBJECT_SELF),
+        ],
         "// 342: A creature can have up to three classes.  This function determines the\r\n// creature's class level based on nClass Position.\r\n// - nClassPosition: 1, 2 or 3\r\n// - oCreature\r\n// * Returns 0 if oCreature does not have a class in nClassPosition\r\n//   (i.e. a single-class creature will only have a value in nClassLocation=1)\r\n//   or if oCreature is not a valid creature.\r\nint GetLevelByPosition(int nClassPosition, object oCreature=OBJECT_SELF);",
         "// 342: A creature can have up to three classes.  This function determines the\r\n// creature's class level based on nClass Position.\r\n// - nClassPosition: 1, 2 or 3\r\n// - oCreature\r\n// * Returns 0 if oCreature does not have a class in nClassPosition\r\n//   (i.e. a single-class creature will only have a value in nClassLocation=1)\r\n//   or if oCreature is not a valid creature.\r\nint GetLevelByPosition(int nClassPosition, object oCreature=OBJECT_SELF);",
     ),
     ScriptFunction(
         DataType.INT,
         "GetLevelByClass",
-        [ScriptParam(DataType.INT, "nClassType", None), ScriptParam(DataType.OBJECT, "oCreature", OBJECT_SELF)],
+        [
+            ScriptParam(DataType.INT, "nClassType", None),
+            ScriptParam(DataType.OBJECT, "oCreature", OBJECT_SELF),
+        ],
         "// 343: Determine the levels that oCreature holds in nClassType.\r\n// - nClassType: CLASS_TYPE_*\r\n// - oCreature\r\nint GetLevelByClass(int nClassType, object oCreature=OBJECT_SELF);",
         "// 343: Determine the levels that oCreature holds in nClassType.\r\n// - nClassType: CLASS_TYPE_*\r\n// - oCreature\r\nint GetLevelByClass(int nClassType, object oCreature=OBJECT_SELF);",
     ),
@@ -11549,14 +12593,21 @@ TSL_FUNCTIONS = [
     ScriptFunction(
         DataType.EFFECT,
         "VersusAlignmentEffect",
-        [ScriptParam(DataType.EFFECT, "eEffect", None), ScriptParam(DataType.INT, "nLawChaos", "0"), ScriptParam(DataType.INT, "nGoodEvil", "0")],
+        [
+            ScriptParam(DataType.EFFECT, "eEffect", None),
+            ScriptParam(DataType.INT, "nLawChaos", "0"),
+            ScriptParam(DataType.INT, "nGoodEvil", "0"),
+        ],
         "// 355: Set eEffect to be versus a specific alignment.\r\n// - eEffect\r\n// - nLawChaos: ALIGNMENT_LAWFUL/ALIGNMENT_CHAOTIC/ALIGNMENT_ALL\r\n// - nGoodEvil: ALIGNMENT_GOOD/ALIGNMENT_EVIL/ALIGNMENT_ALL\r\neffect VersusAlignmentEffect(effect eEffect, int nLawChaos=ALIGNMENT_ALL, int nGoodEvil=ALIGNMENT_ALL);",
         "// 355: Set eEffect to be versus a specific alignment.\r\n// - eEffect\r\n// - nLawChaos: ALIGNMENT_LAWFUL/ALIGNMENT_CHAOTIC/ALIGNMENT_ALL\r\n// - nGoodEvil: ALIGNMENT_GOOD/ALIGNMENT_EVIL/ALIGNMENT_ALL\r\neffect VersusAlignmentEffect(effect eEffect, int nLawChaos=ALIGNMENT_ALL, int nGoodEvil=ALIGNMENT_ALL);",
     ),
     ScriptFunction(
         DataType.EFFECT,
         "VersusRacialTypeEffect",
-        [ScriptParam(DataType.EFFECT, "eEffect", None), ScriptParam(DataType.INT, "nRacialType", None)],
+        [
+            ScriptParam(DataType.EFFECT, "eEffect", None),
+            ScriptParam(DataType.INT, "nRacialType", None),
+        ],
         "// 356: Set eEffect to be versus nRacialType.\r\n// - eEffect\r\n// - nRacialType: RACIAL_TYPE_*\r\neffect VersusRacialTypeEffect(effect eEffect, int nRacialType);",
         "// 356: Set eEffect to be versus nRacialType.\r\n// - eEffect\r\n// - nRacialType: RACIAL_TYPE_*\r\neffect VersusRacialTypeEffect(effect eEffect, int nRacialType);",
     ),
@@ -11584,7 +12635,11 @@ TSL_FUNCTIONS = [
     ScriptFunction(
         DataType.VOID,
         "ActionMoveAwayFromLocation",
-        [ScriptParam(DataType.LOCATION, "lMoveAwayFrom", None), ScriptParam(DataType.INT, "bRun", "0"), ScriptParam(DataType.FLOAT, "fMoveAwayRange", "40.0")],
+        [
+            ScriptParam(DataType.LOCATION, "lMoveAwayFrom", None),
+            ScriptParam(DataType.INT, "bRun", "0"),
+            ScriptParam(DataType.FLOAT, "fMoveAwayRange", "40.0"),
+        ],
         "// 360: Causes the action subject to move away from lMoveAwayFrom.\r\nvoid ActionMoveAwayFromLocation(location lMoveAwayFrom, int bRun=FALSE, float fMoveAwayRange=40.0f);",
         "// 360: Causes the action subject to move away from lMoveAwayFrom.\r\nvoid ActionMoveAwayFromLocation(location lMoveAwayFrom, int bRun=FALSE, float fMoveAwayRange=40.0f);",
     ),
@@ -11631,14 +12686,21 @@ TSL_FUNCTIONS = [
     ScriptFunction(
         DataType.VOID,
         "DisplayFeedBackText",
-        [ScriptParam(DataType.OBJECT, "oCreature", None), ScriptParam(DataType.INT, "nTextConstant", None)],
+        [
+            ScriptParam(DataType.OBJECT, "oCreature", None),
+            ScriptParam(DataType.INT, "nTextConstant", None),
+        ],
         "// 366:  displays a feed back string for the object spicified and the constant\r\n// repersents the string to be displayed see:FeedBackText.2da\r\nvoid DisplayFeedBackText(object oCreature, int nTextConstant);",
         "// 366:  displays a feed back string for the object spicified and the constant\r\n// repersents the string to be displayed see:FeedBackText.2da\r\nvoid DisplayFeedBackText(object oCreature, int nTextConstant);",
     ),
     ScriptFunction(
         DataType.VOID,
         "AddJournalQuestEntry",
-        [ScriptParam(DataType.STRING, "szPlotID", None), ScriptParam(DataType.INT, "nState", None), ScriptParam(DataType.INT, "bAllowOverrideHigher", "0")],
+        [
+            ScriptParam(DataType.STRING, "szPlotID", None),
+            ScriptParam(DataType.INT, "nState", None),
+            ScriptParam(DataType.INT, "bAllowOverrideHigher", "0"),
+        ],
         "// 367: Add a journal quest entry to the player.\r\n// - szPlotID: the plot identifier used in the toolset's Journal Editor\r\n// - nState: the state of the plot as seen in the toolset's Journal Editor\r\n// - bAllowOverrideHigher: If this is TRUE, you can set the state to a lower\r\n//   number than the one it is currently on\r\nvoid AddJournalQuestEntry(string szPlotID, int nState, int bAllowOverrideHigher=FALSE);",
         "// 367: Add a journal quest entry to the player.\r\n// - szPlotID: the plot identifier used in the toolset's Journal Editor\r\n// - nState: the state of the plot as seen in the toolset's Journal Editor\r\n// - bAllowOverrideHigher: If this is TRUE, you can set the state to a lower\r\n//   number than the one it is currently on\r\nvoid AddJournalQuestEntry(string szPlotID, int nState, int bAllowOverrideHigher=FALSE);",
     ),
@@ -11687,7 +12749,10 @@ TSL_FUNCTIONS = [
     ScriptFunction(
         DataType.VOID,
         "SendMessageToPC",
-        [ScriptParam(DataType.OBJECT, "oPlayer", None), ScriptParam(DataType.STRING, "szMessage", None)],
+        [
+            ScriptParam(DataType.OBJECT, "oPlayer", None),
+            ScriptParam(DataType.STRING, "szMessage", None),
+        ],
         "// 374: Send a server message (szMessage) to the oPlayer.\r\nvoid SendMessageToPC(object oPlayer, string szMessage);",
         "// 374: Send a server message (szMessage) to the oPlayer.\r\nvoid SendMessageToPC(object oPlayer, string szMessage);",
     ),
@@ -11708,7 +12773,10 @@ TSL_FUNCTIONS = [
     ScriptFunction(
         DataType.INT,
         "GetHasSpell",
-        [ScriptParam(DataType.INT, "nSpell", None), ScriptParam(DataType.OBJECT, "oCreature", OBJECT_SELF)],
+        [
+            ScriptParam(DataType.INT, "nSpell", None),
+            ScriptParam(DataType.OBJECT, "oCreature", OBJECT_SELF),
+        ],
         "// 377: Determine whether oCreature has nSpell memorised.\r\n// PLEASE NOTE!!! - This function will return FALSE if the target\r\n// is not currently able to use the spell due to lack of sufficient\r\n// Force Points. Use GetSpellAcquired() if you just want to\r\n// know if they've got it or not.\r\n// - nSpell: SPELL_*\r\n// - oCreature\r\nint GetHasSpell(int nSpell, object oCreature=OBJECT_SELF);",
         "// 377: Determine whether oCreature has nSpell memorised.\r\n// PLEASE NOTE!!! - This function will return FALSE if the target\r\n// is not currently able to use the spell due to lack of sufficient\r\n// Force Points. Use GetSpellAcquired() if you just want to\r\n// know if they've got it or not.\r\n// - nSpell: SPELL_*\r\n// - oCreature\r\nint GetHasSpell(int nSpell, object oCreature=OBJECT_SELF);",
     ),
@@ -11734,21 +12802,31 @@ TSL_FUNCTIONS = [
     ScriptFunction(
         DataType.OBJECT,
         "GetFirstFactionMember",
-        [ScriptParam(DataType.OBJECT, "oMemberOfFaction", None), ScriptParam(DataType.INT, "bPCOnly", "1")],
+        [
+            ScriptParam(DataType.OBJECT, "oMemberOfFaction", None),
+            ScriptParam(DataType.INT, "bPCOnly", "1"),
+        ],
         "// 380: Get the first member of oMemberOfFaction's faction (start to cycle through\r\n// oMemberOfFaction's faction).\r\n// * Returns OBJECT_INVALID if oMemberOfFaction's faction is invalid.\r\nobject GetFirstFactionMember(object oMemberOfFaction, int bPCOnly=TRUE);",
         "// 380: Get the first member of oMemberOfFaction's faction (start to cycle through\r\n// oMemberOfFaction's faction).\r\n// * Returns OBJECT_INVALID if oMemberOfFaction's faction is invalid.\r\nobject GetFirstFactionMember(object oMemberOfFaction, int bPCOnly=TRUE);",
     ),
     ScriptFunction(
         DataType.OBJECT,
         "GetNextFactionMember",
-        [ScriptParam(DataType.OBJECT, "oMemberOfFaction", None), ScriptParam(DataType.INT, "bPCOnly", "1")],
+        [
+            ScriptParam(DataType.OBJECT, "oMemberOfFaction", None),
+            ScriptParam(DataType.INT, "bPCOnly", "1"),
+        ],
         "// 381: Get the next member of oMemberOfFaction's faction (continue to cycle through\r\n// oMemberOfFaction's faction).\r\n// * Returns OBJECT_INVALID if oMemberOfFaction's faction is invalid.\r\nobject GetNextFactionMember(object oMemberOfFaction, int bPCOnly=TRUE);",
         "// 381: Get the next member of oMemberOfFaction's faction (continue to cycle through\r\n// oMemberOfFaction's faction).\r\n// * Returns OBJECT_INVALID if oMemberOfFaction's faction is invalid.\r\nobject GetNextFactionMember(object oMemberOfFaction, int bPCOnly=TRUE);",
     ),
     ScriptFunction(
         DataType.VOID,
         "ActionForceMoveToLocation",
-        [ScriptParam(DataType.LOCATION, "lDestination", None), ScriptParam(DataType.INT, "bRun", "0"), ScriptParam(DataType.FLOAT, "fTimeout", "30.0")],
+        [
+            ScriptParam(DataType.LOCATION, "lDestination", None),
+            ScriptParam(DataType.INT, "bRun", "0"),
+            ScriptParam(DataType.FLOAT, "fTimeout", "30.0"),
+        ],
         "// 382: Force the action subject to move to lDestination.\r\nvoid ActionForceMoveToLocation(location lDestination, int bRun=FALSE, float fTimeout=30.0f);",
         "// 382: Force the action subject to move to lDestination.\r\nvoid ActionForceMoveToLocation(location lDestination, int bRun=FALSE, float fTimeout=30.0f);",
     ),
@@ -11774,14 +12852,20 @@ TSL_FUNCTIONS = [
     ScriptFunction(
         DataType.VOID,
         "JumpToObject",
-        [ScriptParam(DataType.OBJECT, "oToJumpTo", None), ScriptParam(DataType.INT, "nWalkStraightLineToPoint", "1")],
+        [
+            ScriptParam(DataType.OBJECT, "oToJumpTo", None),
+            ScriptParam(DataType.INT, "nWalkStraightLineToPoint", "1"),
+        ],
         "// 385: Jump to oToJumpTo (the action is added to the top of the action queue).\r\nvoid JumpToObject(object oToJumpTo, int nWalkStraightLineToPoint=1);",
         "// 385: Jump to oToJumpTo (the action is added to the top of the action queue).\r\nvoid JumpToObject(object oToJumpTo, int nWalkStraightLineToPoint=1);",
     ),
     ScriptFunction(
         DataType.VOID,
         "SetMapPinEnabled",
-        [ScriptParam(DataType.OBJECT, "oMapPin", None), ScriptParam(DataType.INT, "nEnabled", None)],
+        [
+            ScriptParam(DataType.OBJECT, "oMapPin", None),
+            ScriptParam(DataType.INT, "nEnabled", None),
+        ],
         "// 386: Set whether oMapPin is enabled.\r\n// - oMapPin\r\n// - nEnabled: 0=Off, 1=On\r\nvoid SetMapPinEnabled(object oMapPin, int nEnabled);",
         "// 386: Set whether oMapPin is enabled.\r\n// - oMapPin\r\n// - nEnabled: 0=Off, 1=On\r\nvoid SetMapPinEnabled(object oMapPin, int nEnabled);",
     ),
@@ -11802,14 +12886,20 @@ TSL_FUNCTIONS = [
     ScriptFunction(
         DataType.VOID,
         "AddMultiClass",
-        [ScriptParam(DataType.INT, "nClassType", None), ScriptParam(DataType.OBJECT, "oSource", None)],
+        [
+            ScriptParam(DataType.INT, "nClassType", None),
+            ScriptParam(DataType.OBJECT, "oSource", None),
+        ],
         "// 389: This allows you to add a new class to any creature object\r\nvoid AddMultiClass(int nClassType, object oSource);",
         "// 389: This allows you to add a new class to any creature object\r\nvoid AddMultiClass(int nClassType, object oSource);",
     ),
     ScriptFunction(
         DataType.INT,
         "GetIsLinkImmune",
-        [ScriptParam(DataType.OBJECT, "oTarget", None), ScriptParam(DataType.EFFECT, "eEffect", None)],
+        [
+            ScriptParam(DataType.OBJECT, "oTarget", None),
+            ScriptParam(DataType.EFFECT, "eEffect", None),
+        ],
         "// 390: Tests a linked effect to see if the target is immune to it.\r\n// If the target is imune to any of the linked effect then he is immune to all of it\r\nint GetIsLinkImmune(object oTarget, effect eEffect );",
         "// 390: Tests a linked effect to see if the target is immune to it.\r\n// If the target is imune to any of the linked effect then he is immune to all of it\r\nint GetIsLinkImmune(object oTarget, effect eEffect );",
     ),
@@ -11830,14 +12920,20 @@ TSL_FUNCTIONS = [
     ScriptFunction(
         DataType.VOID,
         "GiveXPToCreature",
-        [ScriptParam(DataType.OBJECT, "oCreature", None), ScriptParam(DataType.INT, "nXpAmount", None)],
+        [
+            ScriptParam(DataType.OBJECT, "oCreature", None),
+            ScriptParam(DataType.INT, "nXpAmount", None),
+        ],
         "// 393: Gives nXpAmount to oCreature.\r\nvoid GiveXPToCreature(object oCreature, int nXpAmount);",
         "// 393: Gives nXpAmount to oCreature.\r\nvoid GiveXPToCreature(object oCreature, int nXpAmount);",
     ),
     ScriptFunction(
         DataType.VOID,
         "SetXP",
-        [ScriptParam(DataType.OBJECT, "oCreature", None), ScriptParam(DataType.INT, "nXpAmount", None)],
+        [
+            ScriptParam(DataType.OBJECT, "oCreature", None),
+            ScriptParam(DataType.INT, "nXpAmount", None),
+        ],
         "// 394: Sets oCreature's experience to nXpAmount.\r\nvoid SetXP(object oCreature, int nXpAmount);",
         "// 394: Sets oCreature's experience to nXpAmount.\r\nvoid SetXP(object oCreature, int nXpAmount);",
     ),
@@ -11872,7 +12968,10 @@ TSL_FUNCTIONS = [
     ScriptFunction(
         DataType.VOID,
         "ActionEquipMostDamagingMelee",
-        [ScriptParam(DataType.OBJECT, "oVersus", OBJECT_INVALID), ScriptParam(DataType.INT, "bOffHand", "0")],
+        [
+            ScriptParam(DataType.OBJECT, "oVersus", OBJECT_INVALID),
+            ScriptParam(DataType.INT, "bOffHand", "0"),
+        ],
         "// 399: The creature will equip the melee weapon in its possession that can do the\r\n// most damage. If no valid melee weapon is found, it will equip the most\r\n// damaging range weapon. This function should only ever be called in the\r\n// EndOfCombatRound scripts, because otherwise it would have to stop the combat\r\n// round to run simulation.\r\n// - oVersus: You can try to get the most damaging weapon against oVersus\r\n// - bOffHand\r\nvoid ActionEquipMostDamagingMelee(object oVersus=OBJECT_INVALID, int bOffHand=FALSE);",
         "// 399: The creature will equip the melee weapon in its possession that can do the\r\n// most damage. If no valid melee weapon is found, it will equip the most\r\n// damaging range weapon. This function should only ever be called in the\r\n// EndOfCombatRound scripts, because otherwise it would have to stop the combat\r\n// round to run simulation.\r\n// - oVersus: You can try to get the most damaging weapon against oVersus\r\n// - bOffHand\r\nvoid ActionEquipMostDamagingMelee(object oVersus=OBJECT_INVALID, int bOffHand=FALSE);",
     ),
@@ -11900,7 +12999,10 @@ TSL_FUNCTIONS = [
     ScriptFunction(
         DataType.VOID,
         "ExploreAreaForPlayer",
-        [ScriptParam(DataType.OBJECT, "oArea", None), ScriptParam(DataType.OBJECT, "oPlayer", None)],
+        [
+            ScriptParam(DataType.OBJECT, "oArea", None),
+            ScriptParam(DataType.OBJECT, "oPlayer", None),
+        ],
         "// 403: Expose the entire map of oArea to oPlayer.\r\nvoid ExploreAreaForPlayer(object oArea, object oPlayer);",
         "// 403: Expose the entire map of oArea to oPlayer.\r\nvoid ExploreAreaForPlayer(object oArea, object oPlayer);",
     ),
@@ -11963,7 +13065,10 @@ TSL_FUNCTIONS = [
     ScriptFunction(
         DataType.VOID,
         "ChangeToStandardFaction",
-        [ScriptParam(DataType.OBJECT, "oCreatureToChange", None), ScriptParam(DataType.INT, "nStandardFaction", None)],
+        [
+            ScriptParam(DataType.OBJECT, "oCreatureToChange", None),
+            ScriptParam(DataType.INT, "nStandardFaction", None),
+        ],
         "// 412: Make oCreatureToChange join one of the standard factions.\r\n// ** This will only work on an NPC **\r\n// - nStandardFaction: STANDARD_FACTION_*\r\nvoid ChangeToStandardFaction(object oCreatureToChange, int nStandardFaction);",
         "// 412: Make oCreatureToChange join one of the standard factions.\r\n// ** This will only work on an NPC **\r\n// - nStandardFaction: STANDARD_FACTION_*\r\nvoid ChangeToStandardFaction(object oCreatureToChange, int nStandardFaction);",
     ),
@@ -11991,14 +13096,20 @@ TSL_FUNCTIONS = [
     ScriptFunction(
         DataType.VOID,
         "SoundObjectSetPosition",
-        [ScriptParam(DataType.OBJECT, "oSound", None), ScriptParam(DataType.VECTOR, "vPosition", None)],
+        [
+            ScriptParam(DataType.OBJECT, "oSound", None),
+            ScriptParam(DataType.VECTOR, "vPosition", None),
+        ],
         "// 416: Set the position of oSound.\r\nvoid SoundObjectSetPosition(object oSound, vector vPosition);",
         "// 416: Set the position of oSound.\r\nvoid SoundObjectSetPosition(object oSound, vector vPosition);",
     ),
     ScriptFunction(
         DataType.VOID,
         "SpeakOneLinerConversation",
-        [ScriptParam(DataType.STRING, "sDialogResRef", ""), ScriptParam(DataType.OBJECT, "oTokenTarget", "32767")],
+        [
+            ScriptParam(DataType.STRING, "sDialogResRef", ""),
+            ScriptParam(DataType.OBJECT, "oTokenTarget", "32767"),
+        ],
         '// 417: Immediately speak a conversation one-liner.\r\n// - sDialogResRef\r\n// - oTokenTarget: This must be specified if there are creature-specific tokens\r\n//   in the string.\r\nvoid SpeakOneLinerConversation(string sDialogResRef="", object oTokenTarget=OBJECT_TYPE_INVALID);',
         '// 417: Immediately speak a conversation one-liner.\r\n// - sDialogResRef\r\n// - oTokenTarget: This must be specified if there are creature-specific tokens\r\n//   in the string.\r\nvoid SpeakOneLinerConversation(string sDialogResRef="", object oTokenTarget=OBJECT_TYPE_INVALID);',
     ),
@@ -12038,7 +13149,10 @@ TSL_FUNCTIONS = [
     ScriptFunction(
         DataType.INT,
         "GetIsWeaponEffective",
-        [ScriptParam(DataType.OBJECT, "oVersus", OBJECT_INVALID), ScriptParam(DataType.INT, "bOffHand", "0")],
+        [
+            ScriptParam(DataType.OBJECT, "oVersus", OBJECT_INVALID),
+            ScriptParam(DataType.INT, "bOffHand", "0"),
+        ],
         "// 422: * Returns TRUE if the weapon equipped is capable of damaging oVersus.\r\nint GetIsWeaponEffective(object oVersus=OBJECT_INVALID, int bOffHand=FALSE);",
         "// 422: * Returns TRUE if the weapon equipped is capable of damaging oVersus.\r\nint GetIsWeaponEffective(object oVersus=OBJECT_INVALID, int bOffHand=FALSE);",
     ),
@@ -12052,7 +13166,11 @@ TSL_FUNCTIONS = [
     ScriptFunction(
         DataType.EVENT,
         "EventActivateItem",
-        [ScriptParam(DataType.OBJECT, "oItem", None), ScriptParam(DataType.LOCATION, "lTarget", None), ScriptParam(DataType.OBJECT, "oTarget", OBJECT_INVALID)],
+        [
+            ScriptParam(DataType.OBJECT, "oItem", None),
+            ScriptParam(DataType.LOCATION, "lTarget", None),
+            ScriptParam(DataType.OBJECT, "oTarget", OBJECT_INVALID),
+        ],
         "// 424: Activate oItem.\r\nevent EventActivateItem(object oItem, location lTarget, object oTarget=OBJECT_INVALID);",
         "// 424: Activate oItem.\r\nevent EventActivateItem(object oItem, location lTarget, object oTarget=OBJECT_INVALID);",
     ),
@@ -12080,14 +13198,22 @@ TSL_FUNCTIONS = [
     ScriptFunction(
         DataType.VOID,
         "MusicBackgroundChangeDay",
-        [ScriptParam(DataType.OBJECT, "oArea", None), ScriptParam(DataType.INT, "nTrack", None), ScriptParam(DataType.INT, "nStreamingMusic", "0")],
+        [
+            ScriptParam(DataType.OBJECT, "oArea", None),
+            ScriptParam(DataType.INT, "nTrack", None),
+            ScriptParam(DataType.INT, "nStreamingMusic", "0"),
+        ],
         "// 428: Change the background day track for oArea to nTrack.\r\n// - oArea\r\n// - nTrack\r\nvoid MusicBackgroundChangeDay(object oArea, int nTrack, int nStreamingMusic = FALSE);",
         "// 428: Change the background day track for oArea to nTrack.\r\n// - oArea\r\n// - nTrack\r\nvoid MusicBackgroundChangeDay(object oArea, int nTrack, int nStreamingMusic = FALSE);",
     ),
     ScriptFunction(
         DataType.VOID,
         "MusicBackgroundChangeNight",
-        [ScriptParam(DataType.OBJECT, "oArea", None), ScriptParam(DataType.INT, "nTrack", None), ScriptParam(DataType.INT, "nStreamingMusic", "0")],
+        [
+            ScriptParam(DataType.OBJECT, "oArea", None),
+            ScriptParam(DataType.INT, "nTrack", None),
+            ScriptParam(DataType.INT, "nStreamingMusic", "0"),
+        ],
         "// 429: Change the background night track for oArea to nTrack.\r\n// - oArea\r\n// - nTrack\r\nvoid MusicBackgroundChangeNight(object oArea, int nTrack, int nStreamingMusic = FALSE);",
         "// 429: Change the background night track for oArea to nTrack.\r\n// - oArea\r\n// - nTrack\r\nvoid MusicBackgroundChangeNight(object oArea, int nTrack, int nStreamingMusic = FALSE);",
     ),
@@ -12192,7 +13318,11 @@ TSL_FUNCTIONS = [
     ScriptFunction(
         DataType.VOID,
         "TakeGoldFromCreature",
-        [ScriptParam(DataType.INT, "nAmount", None), ScriptParam(DataType.OBJECT, "oCreatureToTakeFrom", None), ScriptParam(DataType.INT, "bDestroy", "0")],
+        [
+            ScriptParam(DataType.INT, "nAmount", None),
+            ScriptParam(DataType.OBJECT, "oCreatureToTakeFrom", None),
+            ScriptParam(DataType.INT, "bDestroy", "0"),
+        ],
         "// 444: Take nAmount of gold from oCreatureToTakeFrom.\r\n// - nAmount\r\n// - oCreatureToTakeFrom: If this is not a valid creature, nothing will happen.\r\n// - bDestroy: If this is TRUE, the caller will not get the gold.  Instead, the\r\n//   gold will be destroyed and will vanish from the game.\r\nvoid TakeGoldFromCreature(int nAmount, object oCreatureToTakeFrom, int bDestroy=FALSE);",
         "// 444: Take nAmount of gold from oCreatureToTakeFrom.\r\n// - nAmount\r\n// - oCreatureToTakeFrom: If this is not a valid creature, nothing will happen.\r\n// - bDestroy: If this is TRUE, the caller will not get the gold.  Instead, the\r\n//   gold will be destroyed and will vanish from the game.\r\nvoid TakeGoldFromCreature(int nAmount, object oCreatureToTakeFrom, int bDestroy=FALSE);",
     ),
@@ -12213,28 +13343,41 @@ TSL_FUNCTIONS = [
     ScriptFunction(
         DataType.EFFECT,
         "EffectAttackDecrease",
-        [ScriptParam(DataType.INT, "nPenalty", None), ScriptParam(DataType.INT, "nModifierType", "0")],
+        [
+            ScriptParam(DataType.INT, "nPenalty", None),
+            ScriptParam(DataType.INT, "nModifierType", "0"),
+        ],
         "// 447: Create an Attack Decrease effect.\r\n// - nPenalty\r\n// - nModifierType: ATTACK_BONUS_*\r\neffect EffectAttackDecrease(int nPenalty, int nModifierType=ATTACK_BONUS_MISC);",
         "// 447: Create an Attack Decrease effect.\r\n// - nPenalty\r\n// - nModifierType: ATTACK_BONUS_*\r\neffect EffectAttackDecrease(int nPenalty, int nModifierType=ATTACK_BONUS_MISC);",
     ),
     ScriptFunction(
         DataType.EFFECT,
         "EffectDamageDecrease",
-        [ScriptParam(DataType.INT, "nPenalty", None), ScriptParam(DataType.INT, "nDamageType", "8")],
+        [
+            ScriptParam(DataType.INT, "nPenalty", None),
+            ScriptParam(DataType.INT, "nDamageType", "8"),
+        ],
         "// 448: Create a Damage Decrease effect.\r\n// - nPenalty\r\n// - nDamageType: DAMAGE_TYPE_*\r\neffect EffectDamageDecrease(int nPenalty, int nDamageType=DAMAGE_TYPE_UNIVERSAL);",
         "// 448: Create a Damage Decrease effect.\r\n// - nPenalty\r\n// - nDamageType: DAMAGE_TYPE_*\r\neffect EffectDamageDecrease(int nPenalty, int nDamageType=DAMAGE_TYPE_UNIVERSAL);",
     ),
     ScriptFunction(
         DataType.EFFECT,
         "EffectDamageImmunityDecrease",
-        [ScriptParam(DataType.INT, "nDamageType", None), ScriptParam(DataType.INT, "nPercentImmunity", None)],
+        [
+            ScriptParam(DataType.INT, "nDamageType", None),
+            ScriptParam(DataType.INT, "nPercentImmunity", None),
+        ],
         "// 449: Create a Damage Immunity Decrease effect.\r\n// - nDamageType: DAMAGE_TYPE_*\r\n// - nPercentImmunity\r\neffect EffectDamageImmunityDecrease(int nDamageType, int nPercentImmunity);",
         "// 449: Create a Damage Immunity Decrease effect.\r\n// - nDamageType: DAMAGE_TYPE_*\r\n// - nPercentImmunity\r\neffect EffectDamageImmunityDecrease(int nDamageType, int nPercentImmunity);",
     ),
     ScriptFunction(
         DataType.EFFECT,
         "EffectACDecrease",
-        [ScriptParam(DataType.INT, "nValue", None), ScriptParam(DataType.INT, "nModifyType", "0"), ScriptParam(DataType.INT, "nDamageType", "8199")],
+        [
+            ScriptParam(DataType.INT, "nValue", None),
+            ScriptParam(DataType.INT, "nModifyType", "0"),
+            ScriptParam(DataType.INT, "nDamageType", "8199"),
+        ],
         "// 450: Create an AC Decrease effect.\r\n// - nValue\r\n// - nModifyType: AC_*\r\n// - nDamageType: DAMAGE_TYPE_*\r\n//   * Default value for nDamageType should only ever be used in this function prototype.\r\neffect EffectACDecrease(int nValue, int nModifyType=AC_DODGE_BONUS, int nDamageType=AC_VS_DAMAGE_TYPE_ALL);",
         "// 450: Create an AC Decrease effect.\r\n// - nValue\r\n// - nModifyType: AC_*\r\n// - nDamageType: DAMAGE_TYPE_*\r\n//   * Default value for nDamageType should only ever be used in this function prototype.\r\neffect EffectACDecrease(int nValue, int nModifyType=AC_DODGE_BONUS, int nDamageType=AC_VS_DAMAGE_TYPE_ALL);",
     ),
@@ -12248,7 +13391,11 @@ TSL_FUNCTIONS = [
     ScriptFunction(
         DataType.EFFECT,
         "EffectSavingThrowDecrease",
-        [ScriptParam(DataType.INT, "nSave", None), ScriptParam(DataType.INT, "nValue", None), ScriptParam(DataType.INT, "nSaveType", "0")],
+        [
+            ScriptParam(DataType.INT, "nSave", None),
+            ScriptParam(DataType.INT, "nValue", None),
+            ScriptParam(DataType.INT, "nSaveType", "0"),
+        ],
         "// 452: Create a Saving Throw Decrease effect.\r\n// - nSave\r\n// - nValue\r\n// - nSaveType: SAVING_THROW_TYPE_*\r\neffect EffectSavingThrowDecrease(int nSave, int nValue, int nSaveType=SAVING_THROW_TYPE_ALL);",
         "// 452: Create a Saving Throw Decrease effect.\r\n// - nSave\r\n// - nValue\r\n// - nSaveType: SAVING_THROW_TYPE_*\r\neffect EffectSavingThrowDecrease(int nSave, int nValue, int nSaveType=SAVING_THROW_TYPE_ALL);",
     ),
@@ -12276,7 +13423,10 @@ TSL_FUNCTIONS = [
     ScriptFunction(
         DataType.VOID,
         "SetPlotFlag",
-        [ScriptParam(DataType.OBJECT, "oTarget", None), ScriptParam(DataType.INT, "nPlotFlag", None)],
+        [
+            ScriptParam(DataType.OBJECT, "oTarget", None),
+            ScriptParam(DataType.INT, "nPlotFlag", None),
+        ],
         "// 456: Set oTarget's plot object status.\r\nvoid SetPlotFlag(object oTarget, int nPlotFlag);",
         "// 456: Set oTarget's plot object status.\r\nvoid SetPlotFlag(object oTarget, int nPlotFlag);",
     ),
@@ -12497,14 +13647,21 @@ TSL_FUNCTIONS = [
     ScriptFunction(
         DataType.EFFECT,
         "EffectDamageShield",
-        [ScriptParam(DataType.INT, "nDamageAmount", None), ScriptParam(DataType.INT, "nRandomAmount", None), ScriptParam(DataType.INT, "nDamageType", None)],
+        [
+            ScriptParam(DataType.INT, "nDamageAmount", None),
+            ScriptParam(DataType.INT, "nRandomAmount", None),
+            ScriptParam(DataType.INT, "nDamageType", None),
+        ],
         "// 487: Create a Damage Shield effect which does (nDamageAmount + nRandomAmount)\r\n// damage to any melee attacker on a successful attack of damage type nDamageType.\r\n// - nDamageAmount: an integer value\r\n// - nRandomAmount: DAMAGE_BONUS_*\r\n// - nDamageType: DAMAGE_TYPE_*\r\neffect EffectDamageShield(int nDamageAmount, int nRandomAmount, int nDamageType);",
         "// 487: Create a Damage Shield effect which does (nDamageAmount + nRandomAmount)\r\n// damage to any melee attacker on a successful attack of damage type nDamageType.\r\n// - nDamageAmount: an integer value\r\n// - nRandomAmount: DAMAGE_BONUS_*\r\n// - nDamageType: DAMAGE_TYPE_*\r\neffect EffectDamageShield(int nDamageAmount, int nRandomAmount, int nDamageType);",
     ),
     ScriptFunction(
         DataType.OBJECT,
         "GetNearestTrapToObject",
-        [ScriptParam(DataType.OBJECT, "oTarget", OBJECT_SELF), ScriptParam(DataType.INT, "nTrapDetected", "1")],
+        [
+            ScriptParam(DataType.OBJECT, "oTarget", OBJECT_SELF),
+            ScriptParam(DataType.INT, "nTrapDetected", "1"),
+        ],
         '// 488: Get the trap nearest to oTarget.\r\n// Note : "trap objects" are actually any trigger, placeable or door that is\r\n// trapped in oTarget\'s area.\r\n// - oTarget\r\n// - nTrapDetected: if this is TRUE, the trap returned has to have been detected\r\n//   by oTarget.\r\nobject GetNearestTrapToObject(object oTarget=OBJECT_SELF, int nTrapDetected=TRUE);',
         '// 488: Get the trap nearest to oTarget.\r\n// Note : "trap objects" are actually any trigger, placeable or door that is\r\n// trapped in oTarget\'s area.\r\n// - oTarget\r\n// - nTrapDetected: if this is TRUE, the trap returned has to have been detected\r\n//   by oTarget.\r\nobject GetNearestTrapToObject(object oTarget=OBJECT_SELF, int nTrapDetected=TRUE);',
     ),
@@ -12588,21 +13745,32 @@ TSL_FUNCTIONS = [
     ScriptFunction(
         DataType.VOID,
         "DuplicateHeadAppearance",
-        [ScriptParam(DataType.OBJECT, "oidCreatureToChange", None), ScriptParam(DataType.OBJECT, "oidCreatureToMatch", None)],
+        [
+            ScriptParam(DataType.OBJECT, "oidCreatureToChange", None),
+            ScriptParam(DataType.OBJECT, "oidCreatureToMatch", None),
+        ],
         "// 500:\r\nvoid DuplicateHeadAppearance(object oidCreatureToChange, object oidCreatureToMatch);",
         "// 500:\r\nvoid DuplicateHeadAppearance(object oidCreatureToChange, object oidCreatureToMatch);",
     ),
     ScriptFunction(
         DataType.VOID,
         "ActionCastFakeSpellAtObject",
-        [ScriptParam(DataType.INT, "nSpell", None), ScriptParam(DataType.OBJECT, "oTarget", None), ScriptParam(DataType.INT, "nProjectilePathType", "0")],
+        [
+            ScriptParam(DataType.INT, "nSpell", None),
+            ScriptParam(DataType.OBJECT, "oTarget", None),
+            ScriptParam(DataType.INT, "nProjectilePathType", "0"),
+        ],
         "// 501: The action subject will fake casting a spell at oTarget; the conjure and cast\r\n// animations and visuals will occur, nothing else.\r\n// - nSpell\r\n// - oTarget\r\n// - nProjectilePathType: PROJECTILE_PATH_TYPE_*\r\nvoid ActionCastFakeSpellAtObject(int nSpell, object oTarget, int nProjectilePathType=PROJECTILE_PATH_TYPE_DEFAULT);",
         "// 501: The action subject will fake casting a spell at oTarget; the conjure and cast\r\n// animations and visuals will occur, nothing else.\r\n// - nSpell\r\n// - oTarget\r\n// - nProjectilePathType: PROJECTILE_PATH_TYPE_*\r\nvoid ActionCastFakeSpellAtObject(int nSpell, object oTarget, int nProjectilePathType=PROJECTILE_PATH_TYPE_DEFAULT);",
     ),
     ScriptFunction(
         DataType.VOID,
         "ActionCastFakeSpellAtLocation",
-        [ScriptParam(DataType.INT, "nSpell", None), ScriptParam(DataType.LOCATION, "lTarget", None), ScriptParam(DataType.INT, "nProjectilePathType", "0")],
+        [
+            ScriptParam(DataType.INT, "nSpell", None),
+            ScriptParam(DataType.LOCATION, "lTarget", None),
+            ScriptParam(DataType.INT, "nProjectilePathType", "0"),
+        ],
         "// 502: The action subject will fake casting a spell at lLocation; the conjure and\r\n// cast animations and visuals will occur, nothing else.\r\n// - nSpell\r\n// - lTarget\r\n// - nProjectilePathType: PROJECTILE_PATH_TYPE_*\r\nvoid ActionCastFakeSpellAtLocation(int nSpell, location lTarget, int nProjectilePathType=PROJECTILE_PATH_TYPE_DEFAULT);",
         "// 502: The action subject will fake casting a spell at lLocation; the conjure and\r\n// cast animations and visuals will occur, nothing else.\r\n// - nSpell\r\n// - lTarget\r\n// - nProjectilePathType: PROJECTILE_PATH_TYPE_*\r\nvoid ActionCastFakeSpellAtLocation(int nSpell, location lTarget, int nProjectilePathType=PROJECTILE_PATH_TYPE_DEFAULT);",
     ),
@@ -12621,7 +13789,10 @@ TSL_FUNCTIONS = [
     ScriptFunction(
         DataType.VOID,
         "SetCameraMode",
-        [ScriptParam(DataType.OBJECT, "oPlayer", None), ScriptParam(DataType.INT, "nCameraMode", None)],
+        [
+            ScriptParam(DataType.OBJECT, "oPlayer", None),
+            ScriptParam(DataType.INT, "nCameraMode", None),
+        ],
         "// 504: Set the camera mode for oPlayer.\r\n// - oPlayer\r\n// - nCameraMode: CAMERA_MODE_*\r\n// * If oPlayer is not player-controlled or nCameraMode is invalid, nothing\r\n//   happens.\r\nvoid SetCameraMode(object oPlayer, int nCameraMode);",
         "// 504: Set the camera mode for oPlayer.\r\n// - oPlayer\r\n// - nCameraMode: CAMERA_MODE_*\r\n// * If oPlayer is not player-controlled or nCameraMode is invalid, nothing\r\n//   happens.\r\nvoid SetCameraMode(object oPlayer, int nCameraMode);",
     ),
@@ -12642,7 +13813,11 @@ TSL_FUNCTIONS = [
     ScriptFunction(
         DataType.VOID,
         "CutsceneMove",
-        [ScriptParam(DataType.OBJECT, "oObject", None), ScriptParam(DataType.VECTOR, "vPosition", None), ScriptParam(DataType.INT, "nRun", None)],
+        [
+            ScriptParam(DataType.OBJECT, "oObject", None),
+            ScriptParam(DataType.VECTOR, "vPosition", None),
+            ScriptParam(DataType.INT, "nRun", None),
+        ],
         "// 507: CutsceneMoveToPoint\r\n// Used by the cutscene system to allow designers to script combat\r\nvoid CutsceneMove(object oObject, vector vPosition, int nRun);",
         "// 507: CutsceneMoveToPoint\r\n// Used by the cutscene system to allow designers to script combat\r\nvoid CutsceneMove(object oObject, vector vPosition, int nRun);",
     ),
@@ -12707,7 +13882,10 @@ TSL_FUNCTIONS = [
     ScriptFunction(
         DataType.VOID,
         "RevealMap",
-        [ScriptParam(DataType.VECTOR, "vPoint", Vector3(0.0, 0.0, 0.0)), ScriptParam(DataType.INT, "nRadius", "-1")],
+        [
+            ScriptParam(DataType.VECTOR, "vPoint", Vector3(0.0, 0.0, 0.0)),
+            ScriptParam(DataType.INT, "nRadius", "-1"),
+        ],
         "// 515: RevealMap\r\n// Reveals the map at the given WORLD point 'vPoint' with a MAP Grid Radius 'nRadius'\r\n// If this function is called with no parameters it will reveal the entire map.\r\n// (NOTE: if this function is called with a valid point but a default radius, ie. 'nRadius' of -1\r\n//        then the entire map will be revealed)\r\nvoid RevealMap(vector vPoint=[0.0,0.0,0.0],int nRadius=-1);",
         "// 515: RevealMap\r\n// Reveals the map at the given WORLD point 'vPoint' with a MAP Grid Radius 'nRadius'\r\n// If this function is called with no parameters it will reveal the entire map.\r\n// (NOTE: if this function is called with a valid point but a default radius, ie. 'nRadius' of -1\r\n//        then the entire map will be revealed)\r\nvoid RevealMap(vector vPoint=[0.0,0.0,0.0],int nRadius=-1);",
     ),
@@ -12813,7 +13991,10 @@ TSL_FUNCTIONS = [
     ScriptFunction(
         DataType.INT,
         "GetTrapDetectedBy",
-        [ScriptParam(DataType.OBJECT, "oTrapObject", None), ScriptParam(DataType.OBJECT, "oCreature", None)],
+        [
+            ScriptParam(DataType.OBJECT, "oTrapObject", None),
+            ScriptParam(DataType.OBJECT, "oCreature", None),
+        ],
         "// 529: - oTrapObject: a placeable, door or trigger\r\n// - oCreature\r\n// * Returns TRUE if oCreature has detected oTrapObject\r\nint GetTrapDetectedBy(object oTrapObject, object oCreature);",
         "// 529: - oTrapObject: a placeable, door or trigger\r\n// - oCreature\r\n// * Returns TRUE if oCreature has detected oTrapObject\r\nint GetTrapDetectedBy(object oTrapObject, object oCreature);",
     ),
@@ -12911,14 +14092,20 @@ TSL_FUNCTIONS = [
     ScriptFunction(
         DataType.INT,
         "GetHasFeatEffect",
-        [ScriptParam(DataType.INT, "nFeat", None), ScriptParam(DataType.OBJECT, "oObject", OBJECT_SELF)],
+        [
+            ScriptParam(DataType.INT, "nFeat", None),
+            ScriptParam(DataType.OBJECT, "oObject", OBJECT_SELF),
+        ],
         "// 543: - nFeat: FEAT_*\r\n// - oObject\r\n// * Returns TRUE if oObject has effects on it originating from nFeat.\r\nint GetHasFeatEffect(int nFeat, object oObject=OBJECT_SELF);",
         "// 543: - nFeat: FEAT_*\r\n// - oObject\r\n// * Returns TRUE if oObject has effects on it originating from nFeat.\r\nint GetHasFeatEffect(int nFeat, object oObject=OBJECT_SELF);",
     ),
     ScriptFunction(
         DataType.VOID,
         "SetPlaceableIllumination",
-        [ScriptParam(DataType.OBJECT, "oPlaceable", OBJECT_SELF), ScriptParam(DataType.INT, "bIlluminate", "1")],
+        [
+            ScriptParam(DataType.OBJECT, "oPlaceable", OBJECT_SELF),
+            ScriptParam(DataType.INT, "bIlluminate", "1"),
+        ],
         "// 544: Set the status of the illumination for oPlaceable.\r\n// - oPlaceable\r\n// - bIlluminate: if this is TRUE, oPlaceable's illumination will be turned on.\r\n//   If this is FALSE, oPlaceable's illumination will be turned off.\r\n// Note: You must call RecomputeStaticLighting() after calling this function in\r\n// order for the changes to occur visually for the players.\r\n// SetPlaceableIllumination() buffers the illumination changes, which are then",
         "// 544: Set the status of the illumination for oPlaceable.\r\n// - oPlaceable\r\n// - bIlluminate: if this is TRUE, oPlaceable's illumination will be turned on.\r\n//   If this is FALSE, oPlaceable's illumination will be turned off.\r\n// Note: You must call RecomputeStaticLighting() after calling this function in\r\n// order for the changes to occur visually for the players.\r\n// SetPlaceableIllumination() buffers the illumination changes, which are then",
     ),
@@ -12932,14 +14119,20 @@ TSL_FUNCTIONS = [
     ScriptFunction(
         DataType.INT,
         "GetIsPlaceableObjectActionPossible",
-        [ScriptParam(DataType.OBJECT, "oPlaceable", None), ScriptParam(DataType.INT, "nPlaceableAction", None)],
+        [
+            ScriptParam(DataType.OBJECT, "oPlaceable", None),
+            ScriptParam(DataType.INT, "nPlaceableAction", None),
+        ],
         "// 546: - oPlaceable\r\n// - nPlaceableAction: PLACEABLE_ACTION_*\r\n// * Returns TRUE if nPlacebleAction is valid for oPlaceable.\r\nint GetIsPlaceableObjectActionPossible(object oPlaceable, int nPlaceableAction);",
         "// 546: - oPlaceable\r\n// - nPlaceableAction: PLACEABLE_ACTION_*\r\n// * Returns TRUE if nPlacebleAction is valid for oPlaceable.\r\nint GetIsPlaceableObjectActionPossible(object oPlaceable, int nPlaceableAction);",
     ),
     ScriptFunction(
         DataType.VOID,
         "DoPlaceableObjectAction",
-        [ScriptParam(DataType.OBJECT, "oPlaceable", None), ScriptParam(DataType.INT, "nPlaceableAction", None)],
+        [
+            ScriptParam(DataType.OBJECT, "oPlaceable", None),
+            ScriptParam(DataType.INT, "nPlaceableAction", None),
+        ],
         "// 547: The caller performs nPlaceableAction on oPlaceable.\r\n// - oPlaceable\r\n// - nPlaceableAction: PLACEABLE_ACTION_*\r\nvoid DoPlaceableObjectAction(object oPlaceable, int nPlaceableAction);",
         "// 547: The caller performs nPlaceableAction on oPlaceable.\r\n// - oPlaceable\r\n// - nPlaceableAction: PLACEABLE_ACTION_*\r\nvoid DoPlaceableObjectAction(object oPlaceable, int nPlaceableAction);",
     ),
@@ -12960,7 +14153,10 @@ TSL_FUNCTIONS = [
     ScriptFunction(
         DataType.INT,
         "SetTrapDetectedBy",
-        [ScriptParam(DataType.OBJECT, "oTrap", None), ScriptParam(DataType.OBJECT, "oDetector", None)],
+        [
+            ScriptParam(DataType.OBJECT, "oTrap", None),
+            ScriptParam(DataType.OBJECT, "oDetector", None),
+        ],
         "// 550: Set oDetector to have detected oTrap.\r\nint SetTrapDetectedBy(object oTrap, object oDetector);",
         "// 550: Set oDetector to have detected oTrap.\r\nint SetTrapDetectedBy(object oTrap, object oDetector);",
     ),
@@ -12981,7 +14177,10 @@ TSL_FUNCTIONS = [
     ScriptFunction(
         DataType.VOID,
         "FaceObjectAwayFromObject",
-        [ScriptParam(DataType.OBJECT, "oFacer", None), ScriptParam(DataType.OBJECT, "oObjectToFaceAwayFrom", None)],
+        [
+            ScriptParam(DataType.OBJECT, "oFacer", None),
+            ScriptParam(DataType.OBJECT, "oObjectToFaceAwayFrom", None),
+        ],
         "// 553: FaceObjectAwayFromObject\r\n// This will cause the object oFacer to face away from oObjectToFaceAwayFrom.\r\n// The objects must be in the same area for this to work.\r\nvoid FaceObjectAwayFromObject( object oFacer, object oObjectToFaceAwayFrom );",
         "// 553: FaceObjectAwayFromObject\r\n// This will cause the object oFacer to face away from oObjectToFaceAwayFrom.\r\n// The objects must be in the same area for this to work.\r\nvoid FaceObjectAwayFromObject( object oFacer, object oObjectToFaceAwayFrom );",
     ),
@@ -13057,7 +14256,10 @@ TSL_FUNCTIONS = [
     ScriptFunction(
         DataType.VOID,
         "SWMG_SetSpeedBlurEffect",
-        [ScriptParam(DataType.INT, "bEnabled", None), ScriptParam(DataType.FLOAT, "fRatio", "0.75")],
+        [
+            ScriptParam(DataType.INT, "bEnabled", None),
+            ScriptParam(DataType.FLOAT, "fRatio", "0.75"),
+        ],
         "// 563: Turns on or off the speed blur effect in rendered scenes.\r\n// bEnabled: Set TRUE to turn it on, FALSE to turn it off.\r\n// fRatio: Sets the frame accumulation ratio.\r\nvoid SWMG_SetSpeedBlurEffect( int bEnabled, float fRatio=0.75f );",
         "// 563: Turns on or off the speed blur effect in rendered scenes.\r\n// bEnabled: Set TRUE to turn it on, FALSE to turn it off.\r\n// fRatio: Sets the frame accumulation ratio.\r\nvoid SWMG_SetSpeedBlurEffect( int bEnabled, float fRatio=0.75f );",
     ),
@@ -13120,7 +14322,10 @@ TSL_FUNCTIONS = [
     ScriptFunction(
         DataType.VOID,
         "AddToParty",
-        [ScriptParam(DataType.OBJECT, "oPC", None), ScriptParam(DataType.OBJECT, "oPartyLeader", None)],
+        [
+            ScriptParam(DataType.OBJECT, "oPC", None),
+            ScriptParam(DataType.OBJECT, "oPartyLeader", None),
+        ],
         "// 572: Add oPC to oPartyLeader's party.  This will only work on two PCs.\r\n// - oPC: player to add to a party\r\n// - oPartyLeader: player already in the party\r\nvoid AddToParty(object oPC, object oPartyLeader);",
         "// 572: Add oPC to oPartyLeader's party.  This will only work on two PCs.\r\n// - oPC: player to add to a party\r\n// - oPartyLeader: player already in the party\r\nvoid AddToParty(object oPC, object oPartyLeader);",
     ),
@@ -13169,7 +14374,10 @@ TSL_FUNCTIONS = [
     ScriptFunction(
         DataType.VOID,
         "SetGlobalBoolean",
-        [ScriptParam(DataType.STRING, "sIdentifier", None), ScriptParam(DataType.INT, "nValue", None)],
+        [
+            ScriptParam(DataType.STRING, "sIdentifier", None),
+            ScriptParam(DataType.INT, "nValue", None),
+        ],
         "// 579: SetGlobalBoolean\r\n// This function sets the value of a global boolean (TRUE or FALSE) scripting variable.\r\nvoid SetGlobalBoolean( string sIdentifier, int nValue );",
         "// 579: SetGlobalBoolean\r\n// This function sets the value of a global boolean (TRUE or FALSE) scripting variable.\r\nvoid SetGlobalBoolean( string sIdentifier, int nValue );",
     ),
@@ -13183,7 +14391,10 @@ TSL_FUNCTIONS = [
     ScriptFunction(
         DataType.VOID,
         "SetGlobalNumber",
-        [ScriptParam(DataType.STRING, "sIdentifier", None), ScriptParam(DataType.INT, "nValue", None)],
+        [
+            ScriptParam(DataType.STRING, "sIdentifier", None),
+            ScriptParam(DataType.INT, "nValue", None),
+        ],
         "// 581: SetGlobalNumber\r\n// This function sets the value of a global number (-128 to +127) scripting variable.\r\nvoid SetGlobalNumber( string sIdentifier, int nValue );",
         "// 581: SetGlobalNumber\r\n// This function sets the value of a global number (-128 to +127) scripting variable.\r\nvoid SetGlobalNumber( string sIdentifier, int nValue );",
     ),
@@ -13257,7 +14468,11 @@ TSL_FUNCTIONS = [
     ScriptFunction(
         DataType.INT,
         "SWMG_AdjustFollowerHitPoints",
-        [ScriptParam(DataType.OBJECT, "oFollower", None), ScriptParam(DataType.INT, "nHP", None), ScriptParam(DataType.INT, "nAbsolute", "0")],
+        [
+            ScriptParam(DataType.OBJECT, "oFollower", None),
+            ScriptParam(DataType.INT, "nHP", None),
+            ScriptParam(DataType.INT, "nAbsolute", "0"),
+        ],
         "// 590: adjusts a followers hit points, can specify the absolute value to set to\r\n// SWMG_AdjustFollowerHitPoints\r\nint SWMG_AdjustFollowerHitPoints(object oFollower, int nHP, int nAbsolute=0);",
         "// 590: adjusts a followers hit points, can specify the absolute value to set to\r\n// SWMG_AdjustFollowerHitPoints\r\nint SWMG_AdjustFollowerHitPoints(object oFollower, int nHP, int nAbsolute=0);",
     ),
@@ -13376,7 +14591,10 @@ TSL_FUNCTIONS = [
     ScriptFunction(
         DataType.VOID,
         "SWMG_RemoveAnimation",
-        [ScriptParam(DataType.OBJECT, "oObject", None), ScriptParam(DataType.STRING, "sAnimName", None)],
+        [
+            ScriptParam(DataType.OBJECT, "oObject", None),
+            ScriptParam(DataType.STRING, "sAnimName", None),
+        ],
         "// 607: SWMG_RemoveAnimation\r\nvoid SWMG_RemoveAnimation(object oObject, string sAnimName);",
         "// 607: SWMG_RemoveAnimation\r\nvoid SWMG_RemoveAnimation(object oObject, string sAnimName);",
     ),
@@ -13453,7 +14671,10 @@ TSL_FUNCTIONS = [
     ScriptFunction(
         DataType.VOID,
         "SWMG_SetMaxHitPoints",
-        [ScriptParam(DataType.OBJECT, "oFollower", None), ScriptParam(DataType.INT, "nMaxHP", None)],
+        [
+            ScriptParam(DataType.OBJECT, "oFollower", None),
+            ScriptParam(DataType.INT, "nMaxHP", None),
+        ],
         "// 618: SWMG_SetMaxHitPoints\r\nvoid SWMG_SetMaxHitPoints(object oFollower, int nMaxHP);",
         "// 618: SWMG_SetMaxHitPoints\r\nvoid SWMG_SetMaxHitPoints(object oFollower, int nMaxHP);",
     ),
@@ -13467,7 +14688,10 @@ TSL_FUNCTIONS = [
     ScriptFunction(
         DataType.VOID,
         "SWMG_SetSphereRadius",
-        [ScriptParam(DataType.OBJECT, "oFollower", None), ScriptParam(DataType.FLOAT, "fRadius", None)],
+        [
+            ScriptParam(DataType.OBJECT, "oFollower", None),
+            ScriptParam(DataType.FLOAT, "fRadius", None),
+        ],
         "// 620: SWMG_SetSphereRadius\r\nvoid SWMG_SetSphereRadius(object oFollower, float fRadius);",
         "// 620: SWMG_SetSphereRadius\r\nvoid SWMG_SetSphereRadius(object oFollower, float fRadius);",
     ),
@@ -13481,7 +14705,10 @@ TSL_FUNCTIONS = [
     ScriptFunction(
         DataType.VOID,
         "SWMG_SetNumLoops",
-        [ScriptParam(DataType.OBJECT, "oFollower", None), ScriptParam(DataType.INT, "nNumLoops", None)],
+        [
+            ScriptParam(DataType.OBJECT, "oFollower", None),
+            ScriptParam(DataType.INT, "nNumLoops", None),
+        ],
         "// 622: SWMG_SetNumLoops\r\nvoid SWMG_SetNumLoops(object oFollower, int nNumLoops);",
         "// 622: SWMG_SetNumLoops\r\nvoid SWMG_SetNumLoops(object oFollower, int nNumLoops);",
     ),
@@ -13502,98 +14729,147 @@ TSL_FUNCTIONS = [
     ScriptFunction(
         DataType.STRING,
         "SWMG_GetGunBankBulletModel",
-        [ScriptParam(DataType.OBJECT, "oFollower", None), ScriptParam(DataType.INT, "nGunBank", None)],
+        [
+            ScriptParam(DataType.OBJECT, "oFollower", None),
+            ScriptParam(DataType.INT, "nGunBank", None),
+        ],
         "// 625: SWMG_GetGunBankBulletModel\r\nstring SWMG_GetGunBankBulletModel(object oFollower, int nGunBank);",
         "// 625: SWMG_GetGunBankBulletModel\r\nstring SWMG_GetGunBankBulletModel(object oFollower, int nGunBank);",
     ),
     ScriptFunction(
         DataType.STRING,
         "SWMG_GetGunBankGunModel",
-        [ScriptParam(DataType.OBJECT, "oFollower", None), ScriptParam(DataType.INT, "nGunBank", None)],
+        [
+            ScriptParam(DataType.OBJECT, "oFollower", None),
+            ScriptParam(DataType.INT, "nGunBank", None),
+        ],
         "// 626: SWMG_GetGunBankGunModel\r\nstring SWMG_GetGunBankGunModel(object oFollower, int nGunBank);",
         "// 626: SWMG_GetGunBankGunModel\r\nstring SWMG_GetGunBankGunModel(object oFollower, int nGunBank);",
     ),
     ScriptFunction(
         DataType.INT,
         "SWMG_GetGunBankDamage",
-        [ScriptParam(DataType.OBJECT, "oFollower", None), ScriptParam(DataType.INT, "nGunBank", None)],
+        [
+            ScriptParam(DataType.OBJECT, "oFollower", None),
+            ScriptParam(DataType.INT, "nGunBank", None),
+        ],
         "// 627: SWMG_GetGunBankDamage\r\nint SWMG_GetGunBankDamage(object oFollower, int nGunBank);",
         "// 627: SWMG_GetGunBankDamage\r\nint SWMG_GetGunBankDamage(object oFollower, int nGunBank);",
     ),
     ScriptFunction(
         DataType.FLOAT,
         "SWMG_GetGunBankTimeBetweenShots",
-        [ScriptParam(DataType.OBJECT, "oFollower", None), ScriptParam(DataType.INT, "nGunBank", None)],
+        [
+            ScriptParam(DataType.OBJECT, "oFollower", None),
+            ScriptParam(DataType.INT, "nGunBank", None),
+        ],
         "// 628: SWMG_GetGunBankTimeBetweenShots\r\nfloat SWMG_GetGunBankTimeBetweenShots(object oFollower, int nGunBank);",
         "// 628: SWMG_GetGunBankTimeBetweenShots\r\nfloat SWMG_GetGunBankTimeBetweenShots(object oFollower, int nGunBank);",
     ),
     ScriptFunction(
         DataType.FLOAT,
         "SWMG_GetGunBankLifespan",
-        [ScriptParam(DataType.OBJECT, "oFollower", None), ScriptParam(DataType.INT, "nGunBank", None)],
+        [
+            ScriptParam(DataType.OBJECT, "oFollower", None),
+            ScriptParam(DataType.INT, "nGunBank", None),
+        ],
         "// 629: SWMG_GetGunBankLifespan\r\nfloat SWMG_GetGunBankLifespan(object oFollower, int nGunBank);",
         "// 629: SWMG_GetGunBankLifespan\r\nfloat SWMG_GetGunBankLifespan(object oFollower, int nGunBank);",
     ),
     ScriptFunction(
         DataType.FLOAT,
         "SWMG_GetGunBankSpeed",
-        [ScriptParam(DataType.OBJECT, "oFollower", None), ScriptParam(DataType.INT, "nGunBank", None)],
+        [
+            ScriptParam(DataType.OBJECT, "oFollower", None),
+            ScriptParam(DataType.INT, "nGunBank", None),
+        ],
         "// 630: SWMG_GetGunBankSpeed\r\nfloat SWMG_GetGunBankSpeed(object oFollower, int nGunBank);",
         "// 630: SWMG_GetGunBankSpeed\r\nfloat SWMG_GetGunBankSpeed(object oFollower, int nGunBank);",
     ),
     ScriptFunction(
         DataType.INT,
         "SWMG_GetGunBankTarget",
-        [ScriptParam(DataType.OBJECT, "oFollower", None), ScriptParam(DataType.INT, "nGunBank", None)],
+        [
+            ScriptParam(DataType.OBJECT, "oFollower", None),
+            ScriptParam(DataType.INT, "nGunBank", None),
+        ],
         "// 631: SWMG_GetGunBankTarget\r\nint SWMG_GetGunBankTarget(object oFollower, int nGunBank);",
         "// 631: SWMG_GetGunBankTarget\r\nint SWMG_GetGunBankTarget(object oFollower, int nGunBank);",
     ),
     ScriptFunction(
         DataType.VOID,
         "SWMG_SetGunBankBulletModel",
-        [ScriptParam(DataType.OBJECT, "oFollower", None), ScriptParam(DataType.INT, "nGunBank", None), ScriptParam(DataType.STRING, "sBulletModel", None)],
+        [
+            ScriptParam(DataType.OBJECT, "oFollower", None),
+            ScriptParam(DataType.INT, "nGunBank", None),
+            ScriptParam(DataType.STRING, "sBulletModel", None),
+        ],
         "// 632: SWMG_SetGunBankBulletModel\r\nvoid SWMG_SetGunBankBulletModel(object oFollower, int nGunBank, string sBulletModel);",
         "// 632: SWMG_SetGunBankBulletModel\r\nvoid SWMG_SetGunBankBulletModel(object oFollower, int nGunBank, string sBulletModel);",
     ),
     ScriptFunction(
         DataType.VOID,
         "SWMG_SetGunBankGunModel",
-        [ScriptParam(DataType.OBJECT, "oFollower", None), ScriptParam(DataType.INT, "nGunBank", None), ScriptParam(DataType.STRING, "sGunModel", None)],
+        [
+            ScriptParam(DataType.OBJECT, "oFollower", None),
+            ScriptParam(DataType.INT, "nGunBank", None),
+            ScriptParam(DataType.STRING, "sGunModel", None),
+        ],
         "// 633: SWMG_SetGunBankGunModel\r\nvoid SWMG_SetGunBankGunModel(object oFollower, int nGunBank, string sGunModel);",
         "// 633: SWMG_SetGunBankGunModel\r\nvoid SWMG_SetGunBankGunModel(object oFollower, int nGunBank, string sGunModel);",
     ),
     ScriptFunction(
         DataType.VOID,
         "SWMG_SetGunBankDamage",
-        [ScriptParam(DataType.OBJECT, "oFollower", None), ScriptParam(DataType.INT, "nGunBank", None), ScriptParam(DataType.INT, "nDamage", None)],
+        [
+            ScriptParam(DataType.OBJECT, "oFollower", None),
+            ScriptParam(DataType.INT, "nGunBank", None),
+            ScriptParam(DataType.INT, "nDamage", None),
+        ],
         "// 634: SWMG_SetGunBankDamage\r\nvoid SWMG_SetGunBankDamage(object oFollower, int nGunBank, int nDamage);",
         "// 634: SWMG_SetGunBankDamage\r\nvoid SWMG_SetGunBankDamage(object oFollower, int nGunBank, int nDamage);",
     ),
     ScriptFunction(
         DataType.VOID,
         "SWMG_SetGunBankTimeBetweenShots",
-        [ScriptParam(DataType.OBJECT, "oFollower", None), ScriptParam(DataType.INT, "nGunBank", None), ScriptParam(DataType.FLOAT, "fTBS", None)],
+        [
+            ScriptParam(DataType.OBJECT, "oFollower", None),
+            ScriptParam(DataType.INT, "nGunBank", None),
+            ScriptParam(DataType.FLOAT, "fTBS", None),
+        ],
         "// 635: SWMG_SetGunBankTimeBetweenShots\r\nvoid SWMG_SetGunBankTimeBetweenShots(object oFollower, int nGunBank, float fTBS);",
         "// 635: SWMG_SetGunBankTimeBetweenShots\r\nvoid SWMG_SetGunBankTimeBetweenShots(object oFollower, int nGunBank, float fTBS);",
     ),
     ScriptFunction(
         DataType.VOID,
         "SWMG_SetGunBankLifespan",
-        [ScriptParam(DataType.OBJECT, "oFollower", None), ScriptParam(DataType.INT, "nGunBank", None), ScriptParam(DataType.FLOAT, "fLifespan", None)],
+        [
+            ScriptParam(DataType.OBJECT, "oFollower", None),
+            ScriptParam(DataType.INT, "nGunBank", None),
+            ScriptParam(DataType.FLOAT, "fLifespan", None),
+        ],
         "// 636: SWMG_SetGunBankLifespan\r\nvoid SWMG_SetGunBankLifespan(object oFollower, int nGunBank, float fLifespan);",
         "// 636: SWMG_SetGunBankLifespan\r\nvoid SWMG_SetGunBankLifespan(object oFollower, int nGunBank, float fLifespan);",
     ),
     ScriptFunction(
         DataType.VOID,
         "SWMG_SetGunBankSpeed",
-        [ScriptParam(DataType.OBJECT, "oFollower", None), ScriptParam(DataType.INT, "nGunBank", None), ScriptParam(DataType.FLOAT, "fSpeed", None)],
+        [
+            ScriptParam(DataType.OBJECT, "oFollower", None),
+            ScriptParam(DataType.INT, "nGunBank", None),
+            ScriptParam(DataType.FLOAT, "fSpeed", None),
+        ],
         "// 637: SWMG_SetGunBankSpeed\r\nvoid SWMG_SetGunBankSpeed(object oFollower, int nGunBank, float fSpeed);",
         "// 637: SWMG_SetGunBankSpeed\r\nvoid SWMG_SetGunBankSpeed(object oFollower, int nGunBank, float fSpeed);",
     ),
     ScriptFunction(
         DataType.VOID,
         "SWMG_SetGunBankTarget",
-        [ScriptParam(DataType.OBJECT, "oFollower", None), ScriptParam(DataType.INT, "nGunBank", None), ScriptParam(DataType.INT, "nTarget", None)],
+        [
+            ScriptParam(DataType.OBJECT, "oFollower", None),
+            ScriptParam(DataType.INT, "nGunBank", None),
+            ScriptParam(DataType.INT, "nTarget", None),
+        ],
         "// 638: SWMG_SetGunBankTarget\r\nvoid SWMG_SetGunBankTarget(object oFollower, int nGunBank, int nTarget);",
         "// 638: SWMG_SetGunBankTarget\r\nvoid SWMG_SetGunBankTarget(object oFollower, int nGunBank, int nTarget);",
     ),
@@ -13607,7 +14883,10 @@ TSL_FUNCTIONS = [
     ScriptFunction(
         DataType.INT,
         "SWMG_IsGunBankTargetting",
-        [ScriptParam(DataType.OBJECT, "oFollower", None), ScriptParam(DataType.INT, "nGunBank", None)],
+        [
+            ScriptParam(DataType.OBJECT, "oFollower", None),
+            ScriptParam(DataType.INT, "nGunBank", None),
+        ],
         "// 640: SWMG_IsGunBankTargetting\r\nint SWMG_IsGunBankTargetting(object oFollower, int nGunBank);",
         "// 640: SWMG_IsGunBankTargetting\r\nint SWMG_IsGunBankTargetting(object oFollower, int nGunBank);",
     ),
@@ -13754,28 +15033,44 @@ TSL_FUNCTIONS = [
     ScriptFunction(
         DataType.VOID,
         "SWMG_SetGunBankHorizontalSpread",
-        [ScriptParam(DataType.OBJECT, "oEnemy", None), ScriptParam(DataType.INT, "nGunBank", None), ScriptParam(DataType.FLOAT, "fHorizontalSpread", None)],
+        [
+            ScriptParam(DataType.OBJECT, "oEnemy", None),
+            ScriptParam(DataType.INT, "nGunBank", None),
+            ScriptParam(DataType.FLOAT, "fHorizontalSpread", None),
+        ],
         "// 661: SWMG_SetGunBankHorizontalSpread\r\nvoid SWMG_SetGunBankHorizontalSpread(object oEnemy, int nGunBank, float fHorizontalSpread);",
         "// 661: SWMG_SetGunBankHorizontalSpread\r\nvoid SWMG_SetGunBankHorizontalSpread(object oEnemy, int nGunBank, float fHorizontalSpread);",
     ),
     ScriptFunction(
         DataType.VOID,
         "SWMG_SetGunBankVerticalSpread",
-        [ScriptParam(DataType.OBJECT, "oEnemy", None), ScriptParam(DataType.INT, "nGunBank", None), ScriptParam(DataType.FLOAT, "fVerticalSpread", None)],
+        [
+            ScriptParam(DataType.OBJECT, "oEnemy", None),
+            ScriptParam(DataType.INT, "nGunBank", None),
+            ScriptParam(DataType.FLOAT, "fVerticalSpread", None),
+        ],
         "// 662: SWMG_SetGunBankVerticalSpread\r\nvoid SWMG_SetGunBankVerticalSpread(object oEnemy, int nGunBank, float fVerticalSpread);",
         "// 662: SWMG_SetGunBankVerticalSpread\r\nvoid SWMG_SetGunBankVerticalSpread(object oEnemy, int nGunBank, float fVerticalSpread);",
     ),
     ScriptFunction(
         DataType.VOID,
         "SWMG_SetGunBankSensingRadius",
-        [ScriptParam(DataType.OBJECT, "oEnemy", None), ScriptParam(DataType.INT, "nGunBank", None), ScriptParam(DataType.FLOAT, "fSensingRadius", None)],
+        [
+            ScriptParam(DataType.OBJECT, "oEnemy", None),
+            ScriptParam(DataType.INT, "nGunBank", None),
+            ScriptParam(DataType.FLOAT, "fSensingRadius", None),
+        ],
         "// 663: SWMG_SetGunBankSensingRadius\r\nvoid SWMG_SetGunBankSensingRadius(object oEnemy, int nGunBank, float fSensingRadius);",
         "// 663: SWMG_SetGunBankSensingRadius\r\nvoid SWMG_SetGunBankSensingRadius(object oEnemy, int nGunBank, float fSensingRadius);",
     ),
     ScriptFunction(
         DataType.VOID,
         "SWMG_SetGunBankInaccuracy",
-        [ScriptParam(DataType.OBJECT, "oEnemy", None), ScriptParam(DataType.INT, "nGunBank", None), ScriptParam(DataType.FLOAT, "fInaccuracy", None)],
+        [
+            ScriptParam(DataType.OBJECT, "oEnemy", None),
+            ScriptParam(DataType.INT, "nGunBank", None),
+            ScriptParam(DataType.FLOAT, "fInaccuracy", None),
+        ],
         "// 664: SWMG_SetGunBankInaccuracy\r\nvoid SWMG_SetGunBankInaccuracy(object oEnemy, int nGunBank, float fInaccuracy);",
         "// 664: SWMG_SetGunBankInaccuracy\r\nvoid SWMG_SetGunBankInaccuracy(object oEnemy, int nGunBank, float fInaccuracy);",
     ),
@@ -13810,7 +15105,11 @@ TSL_FUNCTIONS = [
     ScriptFunction(
         DataType.VOID,
         "AddJournalWorldEntry",
-        [ScriptParam(DataType.INT, "nIndex", None), ScriptParam(DataType.STRING, "szEntry", None), ScriptParam(DataType.STRING, "szTitle", "World Entry")],
+        [
+            ScriptParam(DataType.INT, "nIndex", None),
+            ScriptParam(DataType.STRING, "szEntry", None),
+            ScriptParam(DataType.STRING, "szTitle", "World Entry"),
+        ],
         '// 669: AddJournalWorldEntry\r\n// Adds a user entered entry to the world notices\r\nvoid AddJournalWorldEntry( int nIndex, string szEntry, string szTitle = "World Entry" );',
         '// 669: AddJournalWorldEntry\r\n// Adds a user entered entry to the world notices\r\nvoid AddJournalWorldEntry( int nIndex, string szEntry, string szTitle = "World Entry" );',
     ),
@@ -13871,7 +15170,10 @@ TSL_FUNCTIONS = [
     ScriptFunction(
         DataType.VOID,
         "PlayVisualAreaEffect",
-        [ScriptParam(DataType.INT, "nEffectID", None), ScriptParam(DataType.LOCATION, "lTarget", None)],
+        [
+            ScriptParam(DataType.INT, "nEffectID", None),
+            ScriptParam(DataType.LOCATION, "lTarget", None),
+        ],
         "// 677: PlayVisualAreaEffect\r\nvoid PlayVisualAreaEffect(int nEffectID, location lTarget);",
         "// 677: PlayVisualAreaEffect\r\nvoid PlayVisualAreaEffect(int nEffectID, location lTarget);",
     ),
@@ -13898,7 +15200,11 @@ TSL_FUNCTIONS = [
     ScriptFunction(
         DataType.VOID,
         "SetLocalBoolean",
-        [ScriptParam(DataType.OBJECT, "oObject", None), ScriptParam(DataType.INT, "nIndex", None), ScriptParam(DataType.INT, "nValue", None)],
+        [
+            ScriptParam(DataType.OBJECT, "oObject", None),
+            ScriptParam(DataType.INT, "nIndex", None),
+            ScriptParam(DataType.INT, "nValue", None),
+        ],
         "// 680. SetLocalBoolean\r\n// This sets a boolean flag on an object\r\n// currently the index is a range between 20 and 63\r\nvoid SetLocalBoolean( object oObject, int nIndex, int nValue );",
         "// 680. SetLocalBoolean\r\n// This sets a boolean flag on an object\r\n// currently the index is a range between 20 and 63\r\nvoid SetLocalBoolean( object oObject, int nIndex, int nValue );",
     ),
@@ -13912,49 +15218,74 @@ TSL_FUNCTIONS = [
     ScriptFunction(
         DataType.VOID,
         "SetLocalNumber",
-        [ScriptParam(DataType.OBJECT, "oObject", None), ScriptParam(DataType.INT, "nIndex", None), ScriptParam(DataType.INT, "nValue", None)],
+        [
+            ScriptParam(DataType.OBJECT, "oObject", None),
+            ScriptParam(DataType.INT, "nIndex", None),
+            ScriptParam(DataType.INT, "nValue", None),
+        ],
         "// 682. SetLocalNumber\r\n// This sets a number on an object\r\n// currently the index is a range between 12 and 28\r\n// the value range is 0 to 255\r\nvoid SetLocalNumber( object oObject, int nIndex, int nValue );",
         "// 682. SetLocalNumber\r\n// This sets a number on an object\r\n// currently the index is a range between 12 and 28\r\n// the value range is 0 to 255\r\nvoid SetLocalNumber( object oObject, int nIndex, int nValue );",
     ),
     ScriptFunction(
         DataType.INT,
         "SWMG_GetSoundFrequency",
-        [ScriptParam(DataType.OBJECT, "oFollower", None), ScriptParam(DataType.INT, "nSound", None)],
+        [
+            ScriptParam(DataType.OBJECT, "oFollower", None),
+            ScriptParam(DataType.INT, "nSound", None),
+        ],
         "// 683. SWMG_GetSoundFrequency\r\n// Gets the frequency of a trackfollower sound\r\nint SWMG_GetSoundFrequency( object oFollower, int nSound );",
         "// 683. SWMG_GetSoundFrequency\r\n// Gets the frequency of a trackfollower sound\r\nint SWMG_GetSoundFrequency( object oFollower, int nSound );",
     ),
     ScriptFunction(
         DataType.VOID,
         "SWMG_SetSoundFrequency",
-        [ScriptParam(DataType.OBJECT, "oFollower", None), ScriptParam(DataType.INT, "nSound", None), ScriptParam(DataType.INT, "nFrequency", None)],
+        [
+            ScriptParam(DataType.OBJECT, "oFollower", None),
+            ScriptParam(DataType.INT, "nSound", None),
+            ScriptParam(DataType.INT, "nFrequency", None),
+        ],
         "// 684. SWMG_SetSoundFrequency\r\n// Sets the frequency of a trackfollower sound\r\nvoid SWMG_SetSoundFrequency( object oFollower, int nSound, int nFrequency );",
         "// 684. SWMG_SetSoundFrequency\r\n// Sets the frequency of a trackfollower sound\r\nvoid SWMG_SetSoundFrequency( object oFollower, int nSound, int nFrequency );",
     ),
     ScriptFunction(
         DataType.INT,
         "SWMG_GetSoundFrequencyIsRandom",
-        [ScriptParam(DataType.OBJECT, "oFollower", None), ScriptParam(DataType.INT, "nSound", None)],
+        [
+            ScriptParam(DataType.OBJECT, "oFollower", None),
+            ScriptParam(DataType.INT, "nSound", None),
+        ],
         "// 685. SWMG_GetSoundFrequencyIsRandom\r\n// Gets whether the frequency of a trackfollower sound is using the random model\r\nint SWMG_GetSoundFrequencyIsRandom( object oFollower, int nSound );",
         "// 685. SWMG_GetSoundFrequencyIsRandom\r\n// Gets whether the frequency of a trackfollower sound is using the random model\r\nint SWMG_GetSoundFrequencyIsRandom( object oFollower, int nSound );",
     ),
     ScriptFunction(
         DataType.VOID,
         "SWMG_SetSoundFrequencyIsRandom",
-        [ScriptParam(DataType.OBJECT, "oFollower", None), ScriptParam(DataType.INT, "nSound", None), ScriptParam(DataType.INT, "bIsRandom", None)],
+        [
+            ScriptParam(DataType.OBJECT, "oFollower", None),
+            ScriptParam(DataType.INT, "nSound", None),
+            ScriptParam(DataType.INT, "bIsRandom", None),
+        ],
         "// 686. SWMG_SetSoundFrequencyIsRandom\r\n// Sets whether the frequency of a trackfollower sound is using the random model\r\nvoid SWMG_SetSoundFrequencyIsRandom( object oFollower, int nSound, int bIsRandom );",
         "// 686. SWMG_SetSoundFrequencyIsRandom\r\n// Sets whether the frequency of a trackfollower sound is using the random model\r\nvoid SWMG_SetSoundFrequencyIsRandom( object oFollower, int nSound, int bIsRandom );",
     ),
     ScriptFunction(
         DataType.INT,
         "SWMG_GetSoundVolume",
-        [ScriptParam(DataType.OBJECT, "oFollower", None), ScriptParam(DataType.INT, "nSound", None)],
+        [
+            ScriptParam(DataType.OBJECT, "oFollower", None),
+            ScriptParam(DataType.INT, "nSound", None),
+        ],
         "// 687. SWMG_GetSoundVolume\r\n// Gets the volume of a trackfollower sound\r\nint SWMG_GetSoundVolume( object oFollower, int nSound );",
         "// 687. SWMG_GetSoundVolume\r\n// Gets the volume of a trackfollower sound\r\nint SWMG_GetSoundVolume( object oFollower, int nSound );",
     ),
     ScriptFunction(
         DataType.VOID,
         "SWMG_SetSoundVolume",
-        [ScriptParam(DataType.OBJECT, "oFollower", None), ScriptParam(DataType.INT, "nSound", None), ScriptParam(DataType.INT, "nVolume", None)],
+        [
+            ScriptParam(DataType.OBJECT, "oFollower", None),
+            ScriptParam(DataType.INT, "nSound", None),
+            ScriptParam(DataType.INT, "nVolume", None),
+        ],
         "// 688. SWMG_SetSoundVolume\r\n// Sets the volume of a trackfollower sound\r\nvoid SWMG_SetSoundVolume( object oFollower, int nSound, int nVolume );",
         "// 688. SWMG_SetSoundVolume\r\n// Sets the volume of a trackfollower sound\r\nvoid SWMG_SetSoundVolume( object oFollower, int nSound, int nVolume );",
     ),
@@ -13968,7 +15299,10 @@ TSL_FUNCTIONS = [
     ScriptFunction(
         DataType.VOID,
         "SoundObjectSetPitchVariance",
-        [ScriptParam(DataType.OBJECT, "oSound", None), ScriptParam(DataType.FLOAT, "fVariance", None)],
+        [
+            ScriptParam(DataType.OBJECT, "oSound", None),
+            ScriptParam(DataType.FLOAT, "fVariance", None),
+        ],
         "// 690. SoundObjectSetPitchVariance\r\n// Sets the pitch variance of a placeable sound object\r\nvoid SoundObjectSetPitchVariance( object oSound, float fVariance );",
         "// 690. SoundObjectSetPitchVariance\r\n// Sets the pitch variance of a placeable sound object\r\nvoid SoundObjectSetPitchVariance( object oSound, float fVariance );",
     ),
@@ -13989,7 +15323,10 @@ TSL_FUNCTIONS = [
     ScriptFunction(
         DataType.VOID,
         "SetGlobalLocation",
-        [ScriptParam(DataType.STRING, "sIdentifier", None), ScriptParam(DataType.LOCATION, "lValue", None)],
+        [
+            ScriptParam(DataType.STRING, "sIdentifier", None),
+            ScriptParam(DataType.LOCATION, "lValue", None),
+        ],
         "// 693: SetGlobalLocation\r\n// This function sets the a global location scripting variable.\r\nvoid SetGlobalLocation( string sIdentifier, location lValue );",
         "// 693: SetGlobalLocation\r\n// This function sets the a global location scripting variable.\r\nvoid SetGlobalLocation( string sIdentifier, location lValue );",
     ),
@@ -14024,7 +15361,10 @@ TSL_FUNCTIONS = [
     ScriptFunction(
         DataType.OBJECT,
         "SpawnAvailableNPC",
-        [ScriptParam(DataType.INT, "nNPC", None), ScriptParam(DataType.LOCATION, "lPosition", None)],
+        [
+            ScriptParam(DataType.INT, "nNPC", None),
+            ScriptParam(DataType.LOCATION, "lPosition", None),
+        ],
         "// 698. SpawnAvailableNPC\r\n// This spawns a NPC from the list of available creatures\r\n// Returns a pointer to the creature object\r\nobject SpawnAvailableNPC( int nNPC, location lPosition );",
         "// 698. SpawnAvailableNPC\r\n// This spawns a NPC from the list of available creatures\r\n// Returns a pointer to the creature object\r\nobject SpawnAvailableNPC( int nNPC, location lPosition );",
     ),
@@ -14092,14 +15432,20 @@ TSL_FUNCTIONS = [
     ScriptFunction(
         DataType.VOID,
         "SetNPCAIStyle",
-        [ScriptParam(DataType.OBJECT, "oCreature", None), ScriptParam(DataType.INT, "nStyle", None)],
+        [
+            ScriptParam(DataType.OBJECT, "oCreature", None),
+            ScriptParam(DataType.INT, "nStyle", None),
+        ],
         "// 707.\r\n// Sets the party members ai style\r\nvoid SetNPCAIStyle(object oCreature, int nStyle);",
         "// 707.\r\n// Sets the party members ai style\r\nvoid SetNPCAIStyle(object oCreature, int nStyle);",
     ),
     ScriptFunction(
         DataType.VOID,
         "SetNPCSelectability",
-        [ScriptParam(DataType.INT, "nNPC", None), ScriptParam(DataType.INT, "nSelectability", None)],
+        [
+            ScriptParam(DataType.INT, "nNPC", None),
+            ScriptParam(DataType.INT, "nSelectability", None),
+        ],
         "// 708: SetNPCSelectability\r\nvoid SetNPCSelectability(int nNPC, int nSelectability);",
         "// 708: SetNPCSelectability\r\nvoid SetNPCSelectability(int nNPC, int nSelectability);",
     ),
@@ -14146,7 +15492,10 @@ TSL_FUNCTIONS = [
     ScriptFunction(
         DataType.VOID,
         "GivePlotXP",
-        [ScriptParam(DataType.STRING, "sPlotName", None), ScriptParam(DataType.INT, "nPercentage", None)],
+        [
+            ScriptParam(DataType.STRING, "sPlotName", None),
+            ScriptParam(DataType.INT, "nPercentage", None),
+        ],
         "// 714: GivePlotXP\r\n// Give nPercentage% of the experience associated with plot sPlotName\r\n// to the party\r\n// - sPlotName\r\n// - nPercentage\r\nvoid GivePlotXP(string sPlotName, int nPercentage);",
         "// 714: GivePlotXP\r\n// Give nPercentage% of the experience associated with plot sPlotName\r\n// to the party\r\n// - sPlotName\r\n// - nPercentage\r\nvoid GivePlotXP(string sPlotName, int nPercentage);",
     ),
@@ -14160,7 +15509,10 @@ TSL_FUNCTIONS = [
     ScriptFunction(
         DataType.VOID,
         "SetMinOneHP",
-        [ScriptParam(DataType.OBJECT, "oObject", None), ScriptParam(DataType.INT, "nMinOneHP", None)],
+        [
+            ScriptParam(DataType.OBJECT, "oObject", None),
+            ScriptParam(DataType.INT, "nMinOneHP", None),
+        ],
         "// 716. SetMinOneHP\r\n// Sets/Removes the MinOneHP Flag on oObject.\r\nvoid SetMinOneHP(object oObject,int nMinOneHP);",
         "// 716. SetMinOneHP\r\n// Sets/Removes the MinOneHP Flag on oObject.\r\nvoid SetMinOneHP(object oObject,int nMinOneHP);",
     ),
@@ -14282,7 +15634,10 @@ TSL_FUNCTIONS = [
     ScriptFunction(
         DataType.VOID,
         "SetForcePowerUnsuccessful",
-        [ScriptParam(DataType.INT, "nResult", None), ScriptParam(DataType.OBJECT, "oCreature", OBJECT_SELF)],
+        [
+            ScriptParam(DataType.INT, "nResult", None),
+            ScriptParam(DataType.OBJECT, "oCreature", OBJECT_SELF),
+        ],
         "// 731. SetForcePowerUnsuccessful\r\n// Sets the reason (through a constant) for why a force power failed\r\nvoid SetForcePowerUnsuccessful(int nResult, object oCreature = OBJECT_SELF);",
         "// 731. SetForcePowerUnsuccessful\r\n// Sets the reason (through a constant) for why a force power failed\r\nvoid SetForcePowerUnsuccessful(int nResult, object oCreature = OBJECT_SELF);",
     ),
@@ -14296,7 +15651,10 @@ TSL_FUNCTIONS = [
     ScriptFunction(
         DataType.VOID,
         "PlayMovie",
-        [ScriptParam(DataType.STRING, "sMovie", None), ScriptParam(DataType.INT, "nStreamingMusic", "0")],
+        [
+            ScriptParam(DataType.STRING, "sMovie", None),
+            ScriptParam(DataType.INT, "nStreamingMusic", "0"),
+        ],
         "// 733. PlayMovie\r\n// Playes a Movie.\r\nvoid PlayMovie( string sMovie, int nStreamingMusic = FALSE );",
         "// 733. PlayMovie\r\n// Playes a Movie.\r\nvoid PlayMovie( string sMovie, int nStreamingMusic = FALSE );",
     ),
@@ -14317,21 +15675,30 @@ TSL_FUNCTIONS = [
     ScriptFunction(
         DataType.VOID,
         "SurrenderByFaction",
-        [ScriptParam(DataType.INT, "nFactionFrom", None), ScriptParam(DataType.INT, "nFactionTo", None)],
+        [
+            ScriptParam(DataType.INT, "nFactionFrom", None),
+            ScriptParam(DataType.INT, "nFactionTo", None),
+        ],
         "// 736: This affects all creatures in the area that are in faction nFactionFrom...\r\n// - Makes them join nFactionTo\r\n// - Clears all actions\r\n// - Disables combat mode\r\nvoid SurrenderByFaction(int nFactionFrom, int nFactionTo);",
         "// 736: This affects all creatures in the area that are in faction nFactionFrom...\r\n// - Makes them join nFactionTo\r\n// - Clears all actions\r\n// - Disables combat mode\r\nvoid SurrenderByFaction(int nFactionFrom, int nFactionTo);",
     ),
     ScriptFunction(
         DataType.VOID,
         "ChangeFactionByFaction",
-        [ScriptParam(DataType.INT, "nFactionFrom", None), ScriptParam(DataType.INT, "nFactionTo", None)],
+        [
+            ScriptParam(DataType.INT, "nFactionFrom", None),
+            ScriptParam(DataType.INT, "nFactionTo", None),
+        ],
         "// 737: This affects all creatures in the area that are in faction nFactionFrom.\r\n// making them change to nFactionTo\r\nvoid ChangeFactionByFaction(int nFactionFrom, int nFactionTo);",
         "// 737: This affects all creatures in the area that are in faction nFactionFrom.\r\n// making them change to nFactionTo\r\nvoid ChangeFactionByFaction(int nFactionFrom, int nFactionTo);",
     ),
     ScriptFunction(
         DataType.VOID,
         "PlayRoomAnimation",
-        [ScriptParam(DataType.STRING, "sRoom", None), ScriptParam(DataType.INT, "nAnimation", None)],
+        [
+            ScriptParam(DataType.STRING, "sRoom", None),
+            ScriptParam(DataType.INT, "nAnimation", None),
+        ],
         "// 738: PlayRoomAnimation\r\n// Plays a looping animation on a room\r\nvoid PlayRoomAnimation(string sRoom, int nAnimation);",
         "// 738: PlayRoomAnimation\r\n// Plays a looping animation on a room\r\nvoid PlayRoomAnimation(string sRoom, int nAnimation);",
     ),
@@ -14345,7 +15712,10 @@ TSL_FUNCTIONS = [
     ScriptFunction(
         DataType.VOID,
         "SetPlanetSelectable",
-        [ScriptParam(DataType.INT, "nPlanet", None), ScriptParam(DataType.INT, "bSelectable", None)],
+        [
+            ScriptParam(DataType.INT, "nPlanet", None),
+            ScriptParam(DataType.INT, "bSelectable", None),
+        ],
         "// 740: SetPlanetSelectable\r\n// Sets 'nPlanet' selectable on the Galaxy Map Gui.\r\nvoid SetPlanetSelectable(int nPlanet, int bSelectable);",
         "// 740: SetPlanetSelectable\r\n// Sets 'nPlanet' selectable on the Galaxy Map Gui.\r\nvoid SetPlanetSelectable(int nPlanet, int bSelectable);",
     ),
@@ -14380,7 +15750,10 @@ TSL_FUNCTIONS = [
     ScriptFunction(
         DataType.VOID,
         "SoundObjectFadeAndStop",
-        [ScriptParam(DataType.OBJECT, "oSound", None), ScriptParam(DataType.FLOAT, "fSeconds", None)],
+        [
+            ScriptParam(DataType.OBJECT, "oSound", None),
+            ScriptParam(DataType.FLOAT, "fSeconds", None),
+        ],
         "// 745: SoundObjectFadeAndStop\r\n// Fades a sound object for 'fSeconds' and then stops it.\r\nvoid SoundObjectFadeAndStop(object oSound,float fSeconds);",
         "// 745: SoundObjectFadeAndStop\r\n// Fades a sound object for 'fSeconds' and then stops it.\r\nvoid SoundObjectFadeAndStop(object oSound,float fSeconds);",
     ),
@@ -14399,7 +15772,10 @@ TSL_FUNCTIONS = [
     ScriptFunction(
         DataType.VOID,
         "ChangeItemCost",
-        [ScriptParam(DataType.STRING, "sItem", None), ScriptParam(DataType.FLOAT, "fCostMultiplier", None)],
+        [
+            ScriptParam(DataType.STRING, "sItem", None),
+            ScriptParam(DataType.FLOAT, "fCostMultiplier", None),
+        ],
         "// 747: ChangeItemCost\r\n// Change the cost of an item\r\nvoid ChangeItemCost( string sItem, float fCostMultiplier );",
         "// 747: ChangeItemCost\r\n// Change the cost of an item\r\nvoid ChangeItemCost( string sItem, float fCostMultiplier );",
     ),
@@ -14420,7 +15796,10 @@ TSL_FUNCTIONS = [
     ScriptFunction(
         DataType.VOID,
         "SetGoodEvilValue",
-        [ScriptParam(DataType.OBJECT, "oCreature", None), ScriptParam(DataType.INT, "nAlignment", None)],
+        [
+            ScriptParam(DataType.OBJECT, "oCreature", None),
+            ScriptParam(DataType.INT, "nAlignment", None),
+        ],
         "// 750: SetAlignmentGoodEvil\r\n// Set oCreature's alignment value\r\nvoid SetGoodEvilValue( object oCreature, int nAlignment );",
         "// 750: SetAlignmentGoodEvil\r\n// Set oCreature's alignment value\r\nvoid SetGoodEvilValue( object oCreature, int nAlignment );",
     ),
@@ -14532,7 +15911,11 @@ TSL_FUNCTIONS = [
     ScriptFunction(
         DataType.OBJECT,
         "CreateItemOnFloor",
-        [ScriptParam(DataType.STRING, "sTemplate", None), ScriptParam(DataType.LOCATION, "lLocation", None), ScriptParam(DataType.INT, "bUseAppearAnimation", "0")],
+        [
+            ScriptParam(DataType.STRING, "sTemplate", None),
+            ScriptParam(DataType.LOCATION, "lLocation", None),
+            ScriptParam(DataType.INT, "bUseAppearAnimation", "0"),
+        ],
         "// 766. CreateItemOnFloor\r\n// Should only be used for items that have been created on the ground, and will\r\n// be destroyed without ever being picked up or equipped.  Returns true if successful\r\nobject CreateItemOnFloor(string sTemplate, location lLocation, int bUseAppearAnimation=FALSE);",
         "// 766. CreateItemOnFloor\r\n// Should only be used for items that have been created on the ground, and will\r\n// be destroyed without ever being picked up or equipped.  Returns true if successful\r\nobject CreateItemOnFloor(string sTemplate, location lLocation, int bUseAppearAnimation=FALSE);",
     ),
@@ -14651,14 +16034,20 @@ TSL_FUNCTIONS = [
     ScriptFunction(
         DataType.INT,
         "GetFeatAcquired",
-        [ScriptParam(DataType.INT, "nFeat", None), ScriptParam(DataType.OBJECT, "oCreature", OBJECT_SELF)],
+        [
+            ScriptParam(DataType.INT, "nFeat", None),
+            ScriptParam(DataType.OBJECT, "oCreature", OBJECT_SELF),
+        ],
         "// 285: Determine whether oCreature has nFeat, and nFeat is useable.\r\n// PLEASE NOTE!!! - This function will return FALSE if the target\r\n// is not currently able to use the feat due to daily limits or\r\n// other restrictions. Use GetFeatAcquired() if you just want to",
         "// 285: Determine whether oCreature has nFeat, and nFeat is useable.\r\n// PLEASE NOTE!!! - This function will return FALSE if the target\r\n// is not currently able to use the feat due to daily limits or\r\n// other restrictions. Use GetFeatAcquired() if you just want to",
     ),
     ScriptFunction(
         DataType.INT,
         "GetSpellAcquired",
-        [ScriptParam(DataType.INT, "nSpell", None), ScriptParam(DataType.OBJECT, "oCreature", OBJECT_SELF)],
+        [
+            ScriptParam(DataType.INT, "nSpell", None),
+            ScriptParam(DataType.OBJECT, "oCreature", OBJECT_SELF),
+        ],
         "// 377: Determine whether oCreature has nSpell memorised.\r\n// PLEASE NOTE!!! - This function will return FALSE if the target\r\n// is not currently able to use the spell due to lack of sufficient\r\n// Force Points. Use GetSpellAcquired() if you just want to",
         "// 377: Determine whether oCreature has nSpell memorised.\r\n// PLEASE NOTE!!! - This function will return FALSE if the target\r\n// is not currently able to use the spell due to lack of sufficient\r\n// Force Points. Use GetSpellAcquired() if you just want to",
     ),
@@ -14679,7 +16068,10 @@ TSL_FUNCTIONS = [
     ScriptFunction(
         DataType.VOID,
         "GrantSpell",
-        [ScriptParam(DataType.INT, "nSpell", None), ScriptParam(DataType.OBJECT, "oCreature", None)],
+        [
+            ScriptParam(DataType.INT, "nSpell", None),
+            ScriptParam(DataType.OBJECT, "oCreature", None),
+        ],
         "// DJS-OEI 1/13/2004\r\n// 787: Grants the target a spell without regard for prerequisites.\r\nvoid GrantSpell( int nSpell, object oCreature );",
         "// DJS-OEI 1/13/2004\r\n// 787: Grants the target a spell without regard for prerequisites.\r\nvoid GrantSpell( int nSpell, object oCreature );",
     ),
@@ -14734,7 +16126,10 @@ TSL_FUNCTIONS = [
     ScriptFunction(
         DataType.VOID,
         "SetOrientOnClick",
-        [ScriptParam(DataType.OBJECT, "oCreature", OBJECT_SELF), ScriptParam(DataType.INT, "nState", "1")],
+        [
+            ScriptParam(DataType.OBJECT, "oCreature", OBJECT_SELF),
+            ScriptParam(DataType.INT, "nState", "1"),
+        ],
         "// RWT-OEI 01/29/04\r\n// 794: Disables or Enables the Orient On Click behavior in creatures. If\r\n//      disabled, they will not orient to face the player when clicked on\r\n//      for dialogue. The default behavior is TRUE.\r\nvoid SetOrientOnClick( object oCreature = OBJECT_SELF, int nState = TRUE );",
         "// RWT-OEI 01/29/04\r\n// 794: Disables or Enables the Orient On Click behavior in creatures. If\r\n//      disabled, they will not orient to face the player when clicked on\r\n//      for dialogue. The default behavior is TRUE.\r\nvoid SetOrientOnClick( object oCreature = OBJECT_SELF, int nState = TRUE );",
     ),
@@ -14769,28 +16164,40 @@ TSL_FUNCTIONS = [
     ScriptFunction(
         DataType.VOID,
         "IncrementGlobalNumber",
-        [ScriptParam(DataType.STRING, "sIdentifier", None), ScriptParam(DataType.INT, "nAmount", None)],
+        [
+            ScriptParam(DataType.STRING, "sIdentifier", None),
+            ScriptParam(DataType.INT, "nAmount", None),
+        ],
         "// DJS-OEI 2/3/2004\r\n// 799: Increases the value of the given global number by the given amount.\r\n// This function only works with Number type globals, not booleans. It\r\n// will fail with a warning if the final amount is greater than the max\r\n// of 127.\r\nvoid IncrementGlobalNumber( string sIdentifier, int nAmount );",
         "// DJS-OEI 2/3/2004\r\n// 799: Increases the value of the given global number by the given amount.\r\n// This function only works with Number type globals, not booleans. It\r\n// will fail with a warning if the final amount is greater than the max\r\n// of 127.\r\nvoid IncrementGlobalNumber( string sIdentifier, int nAmount );",
     ),
     ScriptFunction(
         DataType.VOID,
         "DecrementGlobalNumber",
-        [ScriptParam(DataType.STRING, "sIdentifier", None), ScriptParam(DataType.INT, "nAmount", None)],
+        [
+            ScriptParam(DataType.STRING, "sIdentifier", None),
+            ScriptParam(DataType.INT, "nAmount", None),
+        ],
         "// DJS-OEI 2/3/2004\r\n// 800: Decreases the value of the given global number by the given amount.\r\n// This function only works with Number type globals, not booleans. It\r\n// will fail with a warning if the final amount is less than the minimum\r\n// of -128.\r\nvoid DecrementGlobalNumber( string sIdentifier, int nAmount );",
         "// DJS-OEI 2/3/2004\r\n// 800: Decreases the value of the given global number by the given amount.\r\n// This function only works with Number type globals, not booleans. It\r\n// will fail with a warning if the final amount is less than the minimum\r\n// of -128.\r\nvoid DecrementGlobalNumber( string sIdentifier, int nAmount );",
     ),
     ScriptFunction(
         DataType.VOID,
         "SetBonusForcePoints",
-        [ScriptParam(DataType.OBJECT, "oCreature", None), ScriptParam(DataType.INT, "nBonusFP", None)],
+        [
+            ScriptParam(DataType.OBJECT, "oCreature", None),
+            ScriptParam(DataType.INT, "nBonusFP", None),
+        ],
         "// RWT-OEI 02/06/04\r\n// 801: SetBonusForcePoints - This sets the number of bonus force points\r\n//      that will always be added to that character's total calculated\r\n//      force points.\r\nvoid SetBonusForcePoints( object oCreature, int nBonusFP );",
         "// RWT-OEI 02/06/04\r\n// 801: SetBonusForcePoints - This sets the number of bonus force points\r\n//      that will always be added to that character's total calculated\r\n//      force points.\r\nvoid SetBonusForcePoints( object oCreature, int nBonusFP );",
     ),
     ScriptFunction(
         DataType.VOID,
         "AddBonusForcePoints",
-        [ScriptParam(DataType.OBJECT, "oCreature", None), ScriptParam(DataType.INT, "nBonusFP", None)],
+        [
+            ScriptParam(DataType.OBJECT, "oCreature", None),
+            ScriptParam(DataType.INT, "nBonusFP", None),
+        ],
         "// RWT-OEI 02/06/04\r\n// 802: AddBonusForcePoints - This adds nBonusFP to the current total\r\n//      bonus that the player has. The Bonus Force Points are a pool\r\n//      of force points that will always be added after the player's\r\n//      total force points are calculated (based on level, force dice,\r\n//      etc.)\r\nvoid AddBonusForcePoints( object oCreature, int nBonusFP );",
         "// RWT-OEI 02/06/04\r\n// 802: AddBonusForcePoints - This adds nBonusFP to the current total\r\n//      bonus that the player has. The Bonus Force Points are a pool\r\n//      of force points that will always be added after the player's\r\n//      total force points are calculated (based on level, force dice,\r\n//      etc.)\r\nvoid AddBonusForcePoints( object oCreature, int nBonusFP );",
     ),
@@ -14818,7 +16225,10 @@ TSL_FUNCTIONS = [
     ScriptFunction(
         DataType.VOID,
         "QueueMovie",
-        [ScriptParam(DataType.STRING, "sMovie", None), ScriptParam(DataType.INT, "nSkippable", "1")],
+        [
+            ScriptParam(DataType.STRING, "sMovie", None),
+            ScriptParam(DataType.INT, "nSkippable", "1"),
+        ],
         "// 806 QueueMovie\r\nvoid QueueMovie(string sMovie, int nSkippable = TRUE);",
         "// 806 QueueMovie\r\nvoid QueueMovie(string sMovie, int nSkippable = TRUE);",
     ),
@@ -14867,7 +16277,10 @@ TSL_FUNCTIONS = [
     ScriptFunction(
         DataType.VOID,
         "SetHealTarget",
-        [ScriptParam(DataType.OBJECT, "oidHealer", None), ScriptParam(DataType.OBJECT, "oidTarget", None)],
+        [
+            ScriptParam(DataType.OBJECT, "oidHealer", None),
+            ScriptParam(DataType.OBJECT, "oidTarget", None),
+        ],
         "// 813\r\n// RWT-OEI 03/19/04\r\n// Stores a Heal Target for the Healer AI script. Should probably\r\n// not be used outside of the Healer AI script.\r\nvoid SetHealTarget( object oidHealer, object oidTarget );",
         "// 813\r\n// RWT-OEI 03/19/04\r\n// Stores a Heal Target for the Healer AI script. Should probably\r\n// not be used outside of the Healer AI script.\r\nvoid SetHealTarget( object oidHealer, object oidTarget );",
     ),
@@ -14881,14 +16294,20 @@ TSL_FUNCTIONS = [
     ScriptFunction(
         DataType.VECTOR,
         "GetRandomDestination",
-        [ScriptParam(DataType.OBJECT, "oCreature", None), ScriptParam(DataType.INT, "rangeLimit", None)],
+        [
+            ScriptParam(DataType.OBJECT, "oCreature", None),
+            ScriptParam(DataType.INT, "rangeLimit", None),
+        ],
         "// 815\r\n// RWT-OEI 03/23/04\r\n// Returns a vector containing a random destination that the\r\n// given creature can walk to that's within the range of the\r\n// passed parameter.\r\nvector GetRandomDestination( object oCreature, int rangeLimit );",
         "// 815\r\n// RWT-OEI 03/23/04\r\n// Returns a vector containing a random destination that the\r\n// given creature can walk to that's within the range of the\r\n// passed parameter.\r\nvector GetRandomDestination( object oCreature, int rangeLimit );",
     ),
     ScriptFunction(
         DataType.INT,
         "IsFormActive",
-        [ScriptParam(DataType.OBJECT, "oCreature", None), ScriptParam(DataType.INT, "nFormID", None)],
+        [
+            ScriptParam(DataType.OBJECT, "oCreature", None),
+            ScriptParam(DataType.INT, "nFormID", None),
+        ],
         "// 816\r\n// DJS-OEI 3/25/2004\r\n// Returns whether the given creature is currently in the\r\n// requested Lightsaber/Consular Form and can make use of\r\n// its benefits. This function will perform trumping checks\r\n// and lightsaber-wielding checks for those Forms that require\r\n// them.\r\nint IsFormActive( object oCreature, int nFormID );",
         "// 816\r\n// DJS-OEI 3/25/2004\r\n// Returns whether the given creature is currently in the\r\n// requested Lightsaber/Consular Form and can make use of\r\n// its benefits. This function will perform trumping checks\r\n// and lightsaber-wielding checks for those Forms that require\r\n// them.\r\nint IsFormActive( object oCreature, int nFormID );",
     ),
@@ -14983,21 +16402,30 @@ TSL_FUNCTIONS = [
     ScriptFunction(
         DataType.VOID,
         "ModifyReflexSavingThrowBase",
-        [ScriptParam(DataType.OBJECT, "aObject", None), ScriptParam(DataType.INT, "aModValue", None)],
+        [
+            ScriptParam(DataType.OBJECT, "aObject", None),
+            ScriptParam(DataType.INT, "aModValue", None),
+        ],
         "// 828\r\n// AWD-OEI 6/21/2004\r\n// This function does not return a value.\r\n// This function modifies the BASE value of the REFLEX saving throw for aObject\r\nvoid ModifyReflexSavingThrowBase(object aObject, int aModValue);",
         "// 828\r\n// AWD-OEI 6/21/2004\r\n// This function does not return a value.\r\n// This function modifies the BASE value of the REFLEX saving throw for aObject\r\nvoid ModifyReflexSavingThrowBase(object aObject, int aModValue);",
     ),
     ScriptFunction(
         DataType.VOID,
         "ModifyFortitudeSavingThrowBase",
-        [ScriptParam(DataType.OBJECT, "aObject", None), ScriptParam(DataType.INT, "aModValue", None)],
+        [
+            ScriptParam(DataType.OBJECT, "aObject", None),
+            ScriptParam(DataType.INT, "aModValue", None),
+        ],
         "// 829\r\n// AWD-OEI 6/21/2004\r\n// This function does not return a value.\r\n// This function modifies the BASE value of the FORTITUDE saving throw for aObject\r\nvoid ModifyFortitudeSavingThrowBase(object aObject, int aModValue);",
         "// 829\r\n// AWD-OEI 6/21/2004\r\n// This function does not return a value.\r\n// This function modifies the BASE value of the FORTITUDE saving throw for aObject\r\nvoid ModifyFortitudeSavingThrowBase(object aObject, int aModValue);",
     ),
     ScriptFunction(
         DataType.VOID,
         "ModifyWillSavingThrowBase",
-        [ScriptParam(DataType.OBJECT, "aObject", None), ScriptParam(DataType.INT, "aModValue", None)],
+        [
+            ScriptParam(DataType.OBJECT, "aObject", None),
+            ScriptParam(DataType.INT, "aModValue", None),
+        ],
         "// 830\r\n// AWD-OEI 6/21/2004\r\n// This function does not return a value.\r\n// This function modifies the BASE value of the WILL saving throw for aObject\r\nvoid ModifyWillSavingThrowBase(object aObject, int aModValue);",
         "// 830\r\n// AWD-OEI 6/21/2004\r\n// This function does not return a value.\r\n// This function modifies the BASE value of the WILL saving throw for aObject\r\nvoid ModifyWillSavingThrowBase(object aObject, int aModValue);",
     ),
@@ -15018,14 +16446,21 @@ TSL_FUNCTIONS = [
     ScriptFunction(
         DataType.VOID,
         "AdjustCreatureAttributes",
-        [ScriptParam(DataType.OBJECT, "oObject", None), ScriptParam(DataType.INT, "nAttribute", None), ScriptParam(DataType.INT, "nAmount", None)],
+        [
+            ScriptParam(DataType.OBJECT, "oObject", None),
+            ScriptParam(DataType.INT, "nAttribute", None),
+            ScriptParam(DataType.INT, "nAmount", None),
+        ],
         "// 833\r\n// AWD-OEI 7/06/2004\r\n// This function adjusts a creatures stats.\r\n// oObject is the creature that will have it's attribute adjusted\r\n// The following constants are acceptable for the nAttribute parameter:\r\n// ABILITY_STRENGTH\r\n// ABILITY_DEXTERITY\r\n// ABILITY_CONSTITUTION\r\n// ABILITY_INTELLIGENCE\r\n// ABILITY_WISDOM\r\n// ABILITY_CHARISMA\r\n// nAmount is the integer vlaue to adjust the stat by (negative values will work).\r\nvoid AdjustCreatureAttributes(object oObject, int nAttribute, int nAmount);",
         "// 833\r\n// AWD-OEI 7/06/2004\r\n// This function adjusts a creatures stats.\r\n// oObject is the creature that will have it's attribute adjusted\r\n// The following constants are acceptable for the nAttribute parameter:\r\n// ABILITY_STRENGTH\r\n// ABILITY_DEXTERITY\r\n// ABILITY_CONSTITUTION\r\n// ABILITY_INTELLIGENCE\r\n// ABILITY_WISDOM\r\n// ABILITY_CHARISMA\r\n// nAmount is the integer vlaue to adjust the stat by (negative values will work).\r\nvoid AdjustCreatureAttributes(object oObject, int nAttribute, int nAmount);",
     ),
     ScriptFunction(
         DataType.VOID,
         "SetCreatureAILevel",
-        [ScriptParam(DataType.OBJECT, "oObject", None), ScriptParam(DataType.INT, "nPriority", None)],
+        [
+            ScriptParam(DataType.OBJECT, "oObject", None),
+            ScriptParam(DataType.INT, "nPriority", None),
+        ],
         "// 834\r\n// AWD-OEI 7/08/2004\r\n// This function raises a creature's priority level.\r\nvoid SetCreatureAILevel(object oObject, int nPriority);",
         "// 834\r\n// AWD-OEI 7/08/2004\r\n// This function raises a creature's priority level.\r\nvoid SetCreatureAILevel(object oObject, int nPriority);",
     ),
@@ -15060,14 +16495,20 @@ TSL_FUNCTIONS = [
     ScriptFunction(
         DataType.OBJECT,
         "SpawnAvailablePUP",
-        [ScriptParam(DataType.INT, "nPUP", None), ScriptParam(DataType.LOCATION, "lLocation", None)],
+        [
+            ScriptParam(DataType.INT, "nPUP", None),
+            ScriptParam(DataType.LOCATION, "lLocation", None),
+        ],
         "// 839\r\n// RWT-OEI 07/17/04\r\n// This function spawns a Party PUPPET.\r\n// This must be used whenever you want a copy\r\n// of the puppet around to manipulate in the game\r\n// since the puppet is stored in the party table\r\n// just like NPCs are.  Once a puppet is assigned\r\n// to a party NPC (see AssignPUP), it will spawn\r\n// or disappear whenever its owner joins or leaves\r\n// the party.\r\n// This does not add it to the party automatically,\r\n// just like SpawnNPC doesn't. You must call AddPuppet()\r\n// to actually add it to the party\r\nobject SpawnAvailablePUP( int nPUP, location lLocation );",
         "// 839\r\n// RWT-OEI 07/17/04\r\n// This function spawns a Party PUPPET.\r\n// This must be used whenever you want a copy\r\n// of the puppet around to manipulate in the game\r\n// since the puppet is stored in the party table\r\n// just like NPCs are.  Once a puppet is assigned\r\n// to a party NPC (see AssignPUP), it will spawn\r\n// or disappear whenever its owner joins or leaves\r\n// the party.\r\n// This does not add it to the party automatically,\r\n// just like SpawnNPC doesn't. You must call AddPuppet()\r\n// to actually add it to the party\r\nobject SpawnAvailablePUP( int nPUP, location lLocation );",
     ),
     ScriptFunction(
         DataType.INT,
         "AddPartyPuppet",
-        [ScriptParam(DataType.INT, "nPUP", None), ScriptParam(DataType.OBJECT, "oidCreature", None)],
+        [
+            ScriptParam(DataType.INT, "nPUP", None),
+            ScriptParam(DataType.OBJECT, "oidCreature", None),
+        ],
         "// 840\r\n// RWT-OEI 07/18/04\r\n// This adds an existing puppet object to the party. The\r\n// puppet object must already exist via SpawnAvailablePUP\r\n// and must already be available via AddAvailablePUP*\r\n// functions.\r\nint AddPartyPuppet(int nPUP, object oidCreature);",
         "// 840\r\n// RWT-OEI 07/18/04\r\n// This adds an existing puppet object to the party. The\r\n// puppet object must already exist via SpawnAvailablePUP\r\n// and must already be available via AddAvailablePUP*\r\n// functions.\r\nint AddPartyPuppet(int nPUP, object oidCreature);",
     ),
@@ -15137,7 +16578,10 @@ TSL_FUNCTIONS = [
     ScriptFunction(
         DataType.VOID,
         "ChangeObjectAppearance",
-        [ScriptParam(DataType.OBJECT, "oObjectToChange", None), ScriptParam(DataType.INT, "nAppearance", None)],
+        [
+            ScriptParam(DataType.OBJECT, "oObjectToChange", None),
+            ScriptParam(DataType.INT, "nAppearance", None),
+        ],
         "// 850\r\n// ChangeObjectAppearance\r\n// oObjectToChange = Object to change appearance of\r\n// nAppearance = appearance to change to (from appearance.2da)\r\nvoid ChangeObjectAppearance( object oObjectToChange, int nAppearance );",
         "// 850\r\n// ChangeObjectAppearance\r\n// oObjectToChange = Object to change appearance of\r\n// nAppearance = appearance to change to (from appearance.2da)\r\nvoid ChangeObjectAppearance( object oObjectToChange, int nAppearance );",
     ),
@@ -15165,7 +16609,10 @@ TSL_FUNCTIONS = [
     ScriptFunction(
         DataType.VOID,
         "PlayOverlayAnimation",
-        [ScriptParam(DataType.OBJECT, "oTarget", None), ScriptParam(DataType.INT, "nAnimation", None)],
+        [
+            ScriptParam(DataType.OBJECT, "oTarget", None),
+            ScriptParam(DataType.INT, "nAnimation", None),
+        ],
         "// 854\r\n// DJS-OEI 8/29/2004\r\n// PlayOverlayAnimation\r\n// This function will play an overlay animation on a character\r\n// even if the character is moving. This does not cause an action\r\n// to be placed on the queue. The animation passed in must be\r\n// designated as an overlay in Animations.2DA.\r\nvoid PlayOverlayAnimation( object oTarget, int nAnimation );",
         "// 854\r\n// DJS-OEI 8/29/2004\r\n// PlayOverlayAnimation\r\n// This function will play an overlay animation on a character\r\n// even if the character is moving. This does not cause an action\r\n// to be placed on the queue. The animation passed in must be\r\n// designated as an overlay in Animations.2DA.\r\nvoid PlayOverlayAnimation( object oTarget, int nAnimation );",
     ),
@@ -15200,7 +16647,10 @@ TSL_FUNCTIONS = [
     ScriptFunction(
         DataType.VOID,
         "SetCurrentForm",
-        [ScriptParam(DataType.OBJECT, "oCreature", None), ScriptParam(DataType.INT, "nFormID", None)],
+        [
+            ScriptParam(DataType.OBJECT, "oCreature", None),
+            ScriptParam(DataType.INT, "nFormID", None),
+        ],
         "// 859\r\n// DJS-OEI 9/7/2004\r\n// This function sets the current Jedi Form on the given creature. This\r\n// call will do nothing if the target does not know the Form itself.\r\nvoid SetCurrentForm( object oCreature, int nFormID );",
         "// 859\r\n// DJS-OEI 9/7/2004\r\n// This function sets the current Jedi Form on the given creature. This\r\n// call will do nothing if the target does not know the Form itself.\r\nvoid SetCurrentForm( object oCreature, int nFormID );",
     ),
@@ -15256,28 +16706,41 @@ TSL_FUNCTIONS = [
     ScriptFunction(
         DataType.VOID,
         "RemoveEffectByID",
-        [ScriptParam(DataType.OBJECT, "oCreature", None), ScriptParam(DataType.INT, "nEffectID", None)],
+        [
+            ScriptParam(DataType.OBJECT, "oCreature", None),
+            ScriptParam(DataType.INT, "nEffectID", None),
+        ],
         "//867\r\n// JF-OEI 10-07-2004\r\n// Remove an effect by ID\r\nvoid RemoveEffectByID( object oCreature, int nEffectID );",
         "//867\r\n// JF-OEI 10-07-2004\r\n// Remove an effect by ID\r\nvoid RemoveEffectByID( object oCreature, int nEffectID );",
     ),
     ScriptFunction(
         DataType.VOID,
         "RemoveEffectByExactMatch",
-        [ScriptParam(DataType.OBJECT, "oCreature", None), ScriptParam(DataType.EFFECT, "eEffect", None)],
+        [
+            ScriptParam(DataType.OBJECT, "oCreature", None),
+            ScriptParam(DataType.EFFECT, "eEffect", None),
+        ],
         "//868\r\n// RWT-OEI 10/07/04\r\n// This script removes an effect by an identical match\r\n// based on:\r\n// Must have matching EffectID types.\r\n// Must have the same value in Integer(0)\r\n// Must have the same value in Integer(1)\r\n// I'm specifically using this function for Mandalore's implant swapping\r\n// script and it will probably not be useful for anyone else. If you're\r\n// not sure what this script function does, see me before using it.\r\nvoid RemoveEffectByExactMatch( object oCreature, effect eEffect);",
         "//868\r\n// RWT-OEI 10/07/04\r\n// This script removes an effect by an identical match\r\n// based on:\r\n// Must have matching EffectID types.\r\n// Must have the same value in Integer(0)\r\n// Must have the same value in Integer(1)\r\n// I'm specifically using this function for Mandalore's implant swapping\r\n// script and it will probably not be useful for anyone else. If you're\r\n// not sure what this script function does, see me before using it.\r\nvoid RemoveEffectByExactMatch( object oCreature, effect eEffect);",
     ),
     ScriptFunction(
         DataType.VOID,
         "AdjustCreatureSkills",
-        [ScriptParam(DataType.OBJECT, "oObject", None), ScriptParam(DataType.INT, "nSkill", None), ScriptParam(DataType.INT, "nAmount", None)],
+        [
+            ScriptParam(DataType.OBJECT, "oObject", None),
+            ScriptParam(DataType.INT, "nSkill", None),
+            ScriptParam(DataType.INT, "nAmount", None),
+        ],
         "// 869\r\n// DJS-OEI 10/9/2004\r\n// This function adjusts a creature's skills.\r\n// oObject is the creature that will have its skill adjusted\r\n// The following constants are acceptable for the nSkill parameter:\r\n// SKILL_COMPUTER_USE\r\n// SKILL_DEMOLITIONS\r\n// SKILL_STEALTH\r\n// SKILL_AWARENESS\r\n// SKILL_PERSUADE\r\n// SKILL_REPAIR\r\n// SKILL_SECURITY\r\n// SKILL_TREAT_INJURY\r\n// nAmount is the integer value to adjust the stat by (negative values will work).\r\nvoid AdjustCreatureSkills(object oObject, int nSkill, int nAmount);",
         "// 869\r\n// DJS-OEI 10/9/2004\r\n// This function adjusts a creature's skills.\r\n// oObject is the creature that will have its skill adjusted\r\n// The following constants are acceptable for the nSkill parameter:\r\n// SKILL_COMPUTER_USE\r\n// SKILL_DEMOLITIONS\r\n// SKILL_STEALTH\r\n// SKILL_AWARENESS\r\n// SKILL_PERSUADE\r\n// SKILL_REPAIR\r\n// SKILL_SECURITY\r\n// SKILL_TREAT_INJURY\r\n// nAmount is the integer value to adjust the stat by (negative values will work).\r\nvoid AdjustCreatureSkills(object oObject, int nSkill, int nAmount);",
     ),
     ScriptFunction(
         DataType.INT,
         "GetSkillRankBase",
-        [ScriptParam(DataType.INT, "nSkill", None), ScriptParam(DataType.OBJECT, "oObject", OBJECT_SELF)],
+        [
+            ScriptParam(DataType.INT, "nSkill", None),
+            ScriptParam(DataType.OBJECT, "oObject", OBJECT_SELF),
+        ],
         "// 870\r\n// DJS-OEI 10/10/2004\r\n// This function returns the base Skill Rank for the requested\r\n// skill. It does not include modifiers from effects/items.\r\n// The following constants are acceptable for the nSkill parameter:\r\n// SKILL_COMPUTER_USE\r\n// SKILL_DEMOLITIONS\r\n// SKILL_STEALTH\r\n// SKILL_AWARENESS\r\n// SKILL_PERSUADE\r\n// SKILL_REPAIR\r\n// SKILL_SECURITY\r\n// SKILL_TREAT_INJURY\r\n// oObject is the creature that will have its skill base returned.\r\nint GetSkillRankBase(int nSkill, object oObject=OBJECT_SELF);",
         "// 870\r\n// DJS-OEI 10/10/2004\r\n// This function returns the base Skill Rank for the requested\r\n// skill. It does not include modifiers from effects/items.\r\n// The following constants are acceptable for the nSkill parameter:\r\n// SKILL_COMPUTER_USE\r\n// SKILL_DEMOLITIONS\r\n// SKILL_STEALTH\r\n// SKILL_AWARENESS\r\n// SKILL_PERSUADE\r\n// SKILL_REPAIR\r\n// SKILL_SECURITY\r\n// SKILL_TREAT_INJURY\r\n// oObject is the creature that will have its skill base returned.\r\nint GetSkillRankBase(int nSkill, object oObject=OBJECT_SELF);",
     ),
@@ -15298,7 +16761,10 @@ TSL_FUNCTIONS = [
     ScriptFunction(
         DataType.VOID,
         "SaveNPCByObject",
-        [ScriptParam(DataType.INT, "nNPC", None), ScriptParam(DataType.OBJECT, "oidCharacter", None)],
+        [
+            ScriptParam(DataType.INT, "nNPC", None),
+            ScriptParam(DataType.OBJECT, "oidCharacter", None),
+        ],
         "// 873\r\n// RWT-OEI 10/26/04\r\n// This function saves the party member at that index with the object\r\n// that is passed in.\r\nvoid SaveNPCByObject( int nNPC, object oidCharacter);",
         "// 873\r\n// RWT-OEI 10/26/04\r\n// This function saves the party member at that index with the object\r\n// that is passed in.\r\nvoid SaveNPCByObject( int nNPC, object oidCharacter);",
     ),

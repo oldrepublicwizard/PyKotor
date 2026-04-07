@@ -60,15 +60,26 @@ def main():
     """Scan directory for hardcoded strings."""
     import argparse
 
-    parser = argparse.ArgumentParser(description="Find hardcoded English strings that need localization", formatter_class=argparse.RawDescriptionHelpFormatter, epilog=__doc__)
-    parser.add_argument("--directory", "-d", type=str, help="Directory to scan (default: Tools/HolocronToolset/src/toolset)")
+    parser = argparse.ArgumentParser(
+        description="Find hardcoded English strings that need localization",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog=__doc__,
+    )
+    parser.add_argument(
+        "--directory",
+        "-d",
+        type=str,
+        help="Directory to scan (default: Tools/HolocronToolset/src/toolset)",
+    )
 
     args = parser.parse_args()
 
     if args.directory:
         toolset_path = Path(args.directory)
     else:
-        toolset_path = Path(__file__).parent.parent / "Tools" / "HolocronToolset" / "src" / "toolset"
+        toolset_path = (
+            Path(__file__).parent.parent / "Tools" / "HolocronToolset" / "src" / "toolset"
+        )
 
     if not toolset_path.exists():
         print(f"Error: Directory not found: {toolset_path}", file=sys.stderr)
@@ -88,7 +99,9 @@ def main():
 
     # Print results
     if all_strings:
-        print(f"Found {sum(len(s) for s in all_strings.values())} hardcoded strings in {len(all_strings)} files:\n")
+        print(
+            f"Found {sum(len(s) for s in all_strings.values())} hardcoded strings in {len(all_strings)} files:\n"
+        )
         for file_path, strings in sorted(all_strings.items()):
             print(f"\n{file_path}:")
             for line_num, text in strings:

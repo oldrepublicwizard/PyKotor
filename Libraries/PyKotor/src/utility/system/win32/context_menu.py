@@ -48,12 +48,30 @@ def create_dispatch_shell() -> CDispatch | ShellNamespace:
         return win32com.client.Dispatch("Shell.Application")
 
 
-def get_context_menu_functions() -> tuple[bool, Callable[..., Any], Callable[..., Any], Callable[..., Any], Callable[..., Any], int, int, int]:
+def get_context_menu_functions() -> tuple[
+    bool,
+    Callable[..., Any],
+    Callable[..., Any],
+    Callable[..., Any],
+    Callable[..., Any],
+    int,
+    int,
+    int,
+]:
     try:
         import win32con
         import win32gui
     except ImportError:
-        return (False, windll.user32.AppendMenuW, windll.user32.CreatePopupMenu, windll.user32.GetCursorPos, windll.user32.TrackPopupMenu, 0x0000, 0x0000, 0x0100)
+        return (
+            False,
+            windll.user32.AppendMenuW,
+            windll.user32.CreatePopupMenu,
+            windll.user32.GetCursorPos,
+            windll.user32.TrackPopupMenu,
+            0x0000,
+            0x0000,
+            0x0100,
+        )
     else:
         return (
             True,
@@ -118,9 +136,20 @@ def show_context_menu(context_menu: CDispatch | ShellFolderItemVerbs, hwnd: int 
     # assert isinstance(context_menu, Iterable)  # this fails!
     assert hasattr(context_menu, "__iter__")  # this also fails!
     if not hasattr(context_menu, "__getitem__"):
-        raise TypeError(f"Expected arg1 to be Iterable or something similar: {context_menu} ({context_menu.__class__.__name__})")
+        raise TypeError(
+            f"Expected arg1 to be Iterable or something similar: {context_menu} ({context_menu.__class__.__name__})"
+        )
 
-    pywin32_available, AppendMenu, CreatePopupMenu, GetCursorPos, TrackPopupMenu, MF_STRING, TPM_LEFTALIGN, TPM_RETURNCMD = get_context_menu_functions()
+    (
+        pywin32_available,
+        AppendMenu,
+        CreatePopupMenu,
+        GetCursorPos,
+        TrackPopupMenu,
+        MF_STRING,
+        TPM_LEFTALIGN,
+        TPM_RETURNCMD,
+    ) = get_context_menu_functions()
     hmenu = CreatePopupMenu()
     for i, verb in enumerate(context_menu):  # pyright: ignore[reportArgumentType]
         if verb.Name:
@@ -182,7 +211,9 @@ def windows_context_menu_folder(
     show_context_menu(context_menu, hwnd)
 
 
-def windows_context_menu(path: os.PathLike | str | Iterable[os.PathLike | str], hwnd: int | None = None):
+def windows_context_menu(
+    path: os.PathLike | str | Iterable[os.PathLike | str], hwnd: int | None = None
+):
     if isinstance(path, Iterable):
         paths = list(path)
         if not paths:

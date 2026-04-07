@@ -82,13 +82,17 @@ def _location_result_to_find_result(
     is_selected: bool,
 ) -> FindResult:
     """Build a FindResult from a LocationResult and context."""
-    filepath = Path(location.filepath) if hasattr(location.filepath, "__fspath__") else location.filepath
+    filepath = (
+        Path(location.filepath) if hasattr(location.filepath, "__fspath__") else location.filepath
+    )
     archive_path: str | None = None
     archive_index = 0
     path_str = str(filepath).lower()
     if path_str.endswith((".bif", ".rim", ".erf", ".mod", ".sav", ".hak")):
         archive_path = str(filepath)
-    location_type = SEARCH_LOCATION_NAMES.get(source, source.name if hasattr(source, "name") else str(source))
+    location_type = SEARCH_LOCATION_NAMES.get(
+        source, source.name if hasattr(source, "name") else str(source)
+    )
     return FindResult(
         resref=identifier.resname,
         restype=identifier.restype,
@@ -182,7 +186,9 @@ def find_resource(
     return results
 
 
-def _identifiers_matching_glob(installation: Installation, pattern: str) -> list[ResourceIdentifier]:
+def _identifiers_matching_glob(
+    installation: Installation, pattern: str
+) -> list[ResourceIdentifier]:
     """Collect ResourceIdentifiers from installation that match the glob pattern (resref only).
 
     Pattern is fnmatch applied to resref (e.g. "203tel*" matches 203tell, 203tel, etc.).

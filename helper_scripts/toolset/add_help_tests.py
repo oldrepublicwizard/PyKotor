@@ -115,9 +115,13 @@ def add_test_to_file(test_file_path: Path, editor_class: str, wiki_file: str | N
     # Generate test code
     editor_lower = editor_class.lower()
     if wiki_file:
-        test_code = TEST_TEMPLATE.format(editor_lower=editor_lower, editor_class=editor_class, wiki_file=wiki_file)
+        test_code = TEST_TEMPLATE.format(
+            editor_lower=editor_lower, editor_class=editor_class, wiki_file=wiki_file
+        )
     else:
-        test_code = TEST_TEMPLATE_NO_HELP.format(editor_lower=editor_lower, editor_class=editor_class)
+        test_code = TEST_TEMPLATE_NO_HELP.format(
+            editor_lower=editor_lower, editor_class=editor_class
+        )
 
     # Insert test
     lines.insert(insert_pos, test_code)

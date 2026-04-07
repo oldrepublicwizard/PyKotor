@@ -191,7 +191,9 @@ class GFFContent(Enum):
             if content_enum in res_contents:
                 gff_restypes.add(ResourceType.RES)
                 continue
-            gff_restypes.add(ResourceType.from_extension(normalize_string(content_enum.value)).target_type())
+            gff_restypes.add(
+                ResourceType.from_extension(normalize_string(content_enum.value)).target_type()
+            )
         return gff_restypes
 
     @classmethod
@@ -243,7 +245,9 @@ def _normalize_string_for_compare(value: object) -> str:
     if not isinstance(value, str):
         return str(value) if value is not None else ""
     # Normalize line endings to \n, strip trailing whitespace from each line and overall
-    return "\n".join(line.rstrip() for line in value.replace("\r\n", "\n").replace("\r", "\n").split("\n")).rstrip()
+    return "\n".join(
+        line.rstrip() for line in value.replace("\r\n", "\n").replace("\r", "\n").split("\n")
+    ).rstrip()
 
 
 @dataclass
@@ -364,7 +368,18 @@ class GFFFieldType(IntEnum):
 
     def return_type(  # noqa: C901, PLR0911
         self,
-    ) -> type[int | str | ResRef | Vector3 | Vector4 | LocalizedString | GFFStruct | GFFList | bytes | float]:  # type: ignore[valid-type]
+    ) -> type[
+        int
+        | str
+        | ResRef
+        | Vector3
+        | Vector4
+        | LocalizedString
+        | GFFStruct
+        | GFFList
+        | bytes
+        | float
+    ]:  # type: ignore[valid-type]
         if self in {
             GFFFieldType.UInt8,
             GFFFieldType.UInt16,
@@ -429,7 +444,9 @@ class Difference(BiowareResource):
         self.new_value: object = new_value
 
     def __repr__(self):
-        return f"Difference(path={self.path}, old_value={self.old_value}, new_value={self.new_value})"
+        return (
+            f"Difference(path={self.path}, old_value={self.old_value}, new_value={self.new_value})"
+        )
 
 
 class GFFComparisonResult(BiowareResource):
@@ -443,19 +460,27 @@ class GFFComparisonResult(BiowareResource):
             "used": {},  # Fields that were successfully compared
         }
         self.struct_id_mismatches: list[tuple[str, int, int]] = []  # (path, source_id, target_id)
-        self.field_count_mismatches: list[tuple[str, int, int]] = []  # (path, source_count, target_count)
-        self.value_mismatches: list[tuple[str, str, Any, Any]] = []  # (path, field_type, source_val, target_val)
+        self.field_count_mismatches: list[
+            tuple[str, int, int]
+        ] = []  # (path, source_count, target_count)
+        self.value_mismatches: list[
+            tuple[str, str, Any, Any]
+        ] = []  # (path, field_type, source_val, target_val)
 
     def __bool__(self) -> bool:
         return self.is_identical
 
     @property
     def is_identical(self) -> bool:
-        return not (self.struct_id_mismatches or self.field_count_mismatches or self.value_mismatches)
+        return not (
+            self.struct_id_mismatches or self.field_count_mismatches or self.value_mismatches
+        )
 
     def has_field_differences(self) -> bool:
         """Return True if any extra/missing/mismatched field stats were recorded."""
-        return any(self.field_stats.get(category) for category in ("missing", "extra", "mismatched"))
+        return any(
+            self.field_stats.get(category) for category in ("missing", "extra", "mismatched")
+        )
 
     def add_field_stat(self, category: str, field_name: str) -> None:
         """Increment the count for a field in a given category."""
@@ -767,7 +792,9 @@ class GFFStruct(ComparableMixin, dict):
         """Set field value by label. For backwards compatibility, this is not allowed directly."""
         # For backwards compatibility, we don't allow direct dict-style setting
         # Users should use the typed setter methods (set_string, set_int32, etc.)
-        raise TypeError("Cannot set GFF field values directly. Use typed setter methods like set_string(), set_int32(), etc.")
+        raise TypeError(
+            "Cannot set GFF field values directly. Use typed setter methods like set_string(), set_int32(), etc."
+        )
 
     def __delitem__(self, key: str) -> None:
         """Remove field by label."""
@@ -858,7 +885,10 @@ class GFFStruct(ComparableMixin, dict):
 
         Returns immutable views so callers cannot mutate `_fields` directly.
         """
-        return [GFFFieldView(label or "", field.field_type(), field.value()) for label, field in self._fields.items()]
+        return [
+            GFFFieldView(label or "", field.field_type(), field.value())
+            for label, field in self._fields.items()
+        ]
 
     def remove(
         self,
@@ -936,7 +966,11 @@ class GFFStruct(ComparableMixin, dict):
 
         def is_ignorable_value(label: str, v: Any) -> bool:
             """Check if a value is ignorable for a specific label."""
-            return not v or str(v) in {"0", "-1"} or (label in ignore_values and v in ignore_values[label])
+            return (
+                not v
+                or str(v) in {"0", "-1"}
+                or (label in ignore_values and v in ignore_values[label])
+            )
 
         def is_ignorable_comparison(
             label: str,
@@ -947,24 +981,36 @@ class GFFStruct(ComparableMixin, dict):
 
         current_path = PureWindowsPath(current_path or "GFFRoot")
         if not isinstance(other, GFFStruct):
-            log_func(f"GFFStruct counts have changed at '{current_path}': '{len(self)}' --> '<unknown>'", message_type="diff")
+            log_func(
+                f"GFFStruct counts have changed at '{current_path}': '{len(self)}' --> '<unknown>'",
+                message_type="diff",
+            )
             log_func("", message_type="diff")
             comparison_result.add_field_count_mismatch(str(current_path), len(self), 0)
             return False
         # Create dictionaries for both old and new structures (needed for field count check with ignore_default_changes)
         old_dict_pre: dict[str, tuple[GFFFieldType, Any]] = {
-            label or f"gffstruct({idx})": (ftype, value) for idx, (label, ftype, value) in enumerate(self) if label not in ignore_labels
+            label or f"gffstruct({idx})": (ftype, value)
+            for idx, (label, ftype, value) in enumerate(self)
+            if label not in ignore_labels
         }
         new_dict_pre: dict[str, tuple[GFFFieldType, Any]] = {
-            label or f"gffstruct({idx})": (ftype, value) for idx, (label, ftype, value) in enumerate(other) if label not in ignore_labels
+            label or f"gffstruct({idx})": (ftype, value)
+            for idx, (label, ftype, value) in enumerate(other)
+            if label not in ignore_labels
         }
 
         # Check field count difference, but only report if not ignoring default changes or if extra fields are non-default
         if len(old_dict_pre) != len(new_dict_pre):
             if not ignore_default_changes:
                 log_func("", message_type="diff")
-                log_func(f"GFFStruct: number of fields have changed at '{current_path}': '{len(old_dict_pre)}' --> '{len(new_dict_pre)}'", message_type="diff")
-                comparison_result.add_field_count_mismatch(str(current_path), len(old_dict_pre), len(new_dict_pre))
+                log_func(
+                    f"GFFStruct: number of fields have changed at '{current_path}': '{len(old_dict_pre)}' --> '{len(new_dict_pre)}'",
+                    message_type="diff",
+                )
+                comparison_result.add_field_count_mismatch(
+                    str(current_path), len(old_dict_pre), len(new_dict_pre)
+                )
             else:
                 # When ignoring default changes, check if extra fields in old/new are all default/empty
                 extra_in_old = set(old_dict_pre.keys()) - set(new_dict_pre.keys())
@@ -975,20 +1021,31 @@ class GFFStruct(ComparableMixin, dict):
                     pass  # Field counts match after filtering
                 else:
                     # Check if extra fields in old are all ignorable (empty sets return True from all())
-                    all_extra_ignorable = not extra_in_old or all(is_ignorable_value(label, old_dict_pre[label][1]) for label in extra_in_old)
+                    all_extra_ignorable = not extra_in_old or all(
+                        is_ignorable_value(label, old_dict_pre[label][1]) for label in extra_in_old
+                    )
 
                     # Check if extra fields in new are all ignorable
-                    all_new_extra_ignorable = not extra_in_new or all(is_ignorable_value(label, new_dict_pre[label][1]) for label in extra_in_new)
+                    all_new_extra_ignorable = not extra_in_new or all(
+                        is_ignorable_value(label, new_dict_pre[label][1]) for label in extra_in_new
+                    )
 
                     # Only report mismatch if extra fields are non-default
                     if not all_extra_ignorable or not all_new_extra_ignorable:
                         log_func("", message_type="diff")
-                        log_func(f"GFFStruct: number of fields have changed at '{current_path}': '{len(old_dict_pre)}' --> '{len(new_dict_pre)}'", message_type="diff")
-                        comparison_result.add_field_count_mismatch(str(current_path), len(old_dict_pre), len(new_dict_pre))
+                        log_func(
+                            f"GFFStruct: number of fields have changed at '{current_path}': '{len(old_dict_pre)}' --> '{len(new_dict_pre)}'",
+                            message_type="diff",
+                        )
+                        comparison_result.add_field_count_mismatch(
+                            str(current_path), len(old_dict_pre), len(new_dict_pre)
+                        )
 
         if self.struct_id != other.struct_id:
             log_func("", message_type="diff")
-            comparison_result.add_struct_id_mismatch(str(current_path), self.struct_id, other.struct_id)
+            comparison_result.add_struct_id_mismatch(
+                str(current_path), self.struct_id, other.struct_id
+            )
 
         # Use the dictionaries already created above
         old_dict: dict[str, tuple[GFFFieldType, Any]] = old_dict_pre
@@ -1013,12 +1070,18 @@ class GFFStruct(ComparableMixin, dict):
                 # When ignore_default_changes: treat "field added with default value" as ignorable
                 if ignore_default_changes and is_ignorable_value(label, new_value):
                     continue
-                log_func(f"Field '{label}' ({new_ftype.name}) added: {format_text(safe_repr(new_value))}", message_type="diff")
+                log_func(
+                    f"Field '{label}' ({new_ftype.name}) added: {format_text(safe_repr(new_value))}",
+                    message_type="diff",
+                )
                 comparison_result.add_field_stat("extra", label)
                 continue
 
             if new_value is None or new_ftype is None:
-                log_func(f"Missing '{old_ftype.name}' field at '{child_path}': {format_text(safe_repr(old_value))}", message_type="diff")
+                log_func(
+                    f"Missing '{old_ftype.name}' field at '{child_path}': {format_text(safe_repr(old_value))}",
+                    message_type="diff",
+                )
                 comparison_result.add_field_stat("missing", label)
                 continue
 
@@ -1026,7 +1089,9 @@ class GFFStruct(ComparableMixin, dict):
             if old_ftype != new_ftype:
                 log_func("", message_type="diff")
                 comparison_result.add_field_stat("mismatched", label)
-                comparison_result.add_value_mismatch(str(child_path), "field_type", old_ftype.name, new_ftype.name)
+                comparison_result.add_value_mismatch(
+                    str(child_path), "field_type", old_ftype.name, new_ftype.name
+                )
                 continue
 
             # Compare values depending on their types
@@ -1035,7 +1100,9 @@ class GFFStruct(ComparableMixin, dict):
                 cur_struct_this: GFFStruct = old_value
                 if cur_struct_this.struct_id != new_value.struct_id:
                     log_func("", message_type="diff")
-                    comparison_result.add_struct_id_mismatch(str(child_path), cur_struct_this.struct_id, new_value.struct_id)
+                    comparison_result.add_struct_id_mismatch(
+                        str(child_path), cur_struct_this.struct_id, new_value.struct_id
+                    )
 
                 if not cur_struct_this.compare(
                     new_value,
@@ -1061,18 +1128,30 @@ class GFFStruct(ComparableMixin, dict):
                     gff_content=gff_content,
                 ):
                     continue
-            elif old_ftype == GFFFieldType.String and isinstance(old_value, str) and isinstance(new_value, str):
+            elif (
+                old_ftype == GFFFieldType.String
+                and isinstance(old_value, str)
+                and isinstance(new_value, str)
+            ):
                 # Normalize to avoid false positives from CRLF vs LF, trailing whitespace
-                if _normalize_string_for_compare(old_value) == _normalize_string_for_compare(new_value):
+                if _normalize_string_for_compare(old_value) == _normalize_string_for_compare(
+                    new_value
+                ):
                     comparison_result.add_field_stat("used", label)
                     continue
                 log_func("", message_type="diff")
                 log_func(format_diff(old_value, new_value, label), message_type="diff")
                 comparison_result.add_field_stat("mismatched", label)
-                comparison_result.add_value_mismatch(str(child_path), old_ftype.name, old_value, new_value)
+                comparison_result.add_value_mismatch(
+                    str(child_path), old_ftype.name, old_value, new_value
+                )
                 continue
             elif old_value != new_value:
-                if isinstance(old_value, float) and isinstance(new_value, float) and math.isclose(old_value, new_value, rel_tol=1e-4, abs_tol=1e-4):
+                if (
+                    isinstance(old_value, float)
+                    and isinstance(new_value, float)
+                    and math.isclose(old_value, new_value, rel_tol=1e-4, abs_tol=1e-4)
+                ):
                     comparison_result.add_field_stat("used", label)
                     continue
 
@@ -1084,7 +1163,9 @@ class GFFStruct(ComparableMixin, dict):
                 log_func("", message_type="diff")
                 log_func(format_diff(old_value, new_value, label), message_type="diff")
                 comparison_result.add_field_stat("mismatched", label)
-                comparison_result.add_value_mismatch(str(child_path), old_ftype.name, old_value, new_value)
+                comparison_result.add_value_mismatch(
+                    str(child_path), old_ftype.name, old_value, new_value
+                )
                 continue
 
             comparison_result.add_field_stat("used", label)
@@ -1120,10 +1201,7 @@ class GFFStruct(ComparableMixin, dict):
         value: T = default
         if object_type is None:
             object_type = default_cls
-        if (
-            self.exists(label)
-            and object_type is not None
-        ):
+        if self.exists(label) and object_type is not None:
             value = self[label]
         if object_type is bool and issubclass(value.__class__, int):
             value = bool(value)
@@ -1165,15 +1243,21 @@ class GFFStruct(ComparableMixin, dict):
             if target.exists(label):
                 if field_type == GFFFieldType.Struct:
                     assert isinstance(value, GFFStruct)
-                    value._add_missing(value, source.get_struct(label, GFFStruct()), relpath.joinpath(label))  # noqa: SLF001  # pyright: ignore[reportOptionalMemberAccess]
+                    value._add_missing(
+                        value, source.get_struct(label, GFFStruct()), relpath.joinpath(label)
+                    )  # noqa: SLF001  # pyright: ignore[reportOptionalMemberAccess]
                 elif field_type == GFFFieldType.List:
                     assert isinstance(value, GFFList)
                     target_list: GFFList = target.get_list(label, GFFList())
                     for i, (target_item, source_item) in enumerate(zip(target_list, value)):
                         assert isinstance(target_item, GFFStruct)
-                        target_item._add_missing(target_item, source_item, relpath.joinpath(label, str(i)))  # noqa: SLF001  # pyright: ignore[reportOptionalMemberAccess]
+                        target_item._add_missing(
+                            target_item, source_item, relpath.joinpath(label, str(i))
+                        )  # noqa: SLF001  # pyright: ignore[reportOptionalMemberAccess]
             else:
-                RobustLogger().debug(f"Adding {field_type!r} '{relpath.joinpath(label)}' to target.")  # pyright: ignore[reportOptionalMemberAccess]
+                RobustLogger().debug(
+                    f"Adding {field_type!r} '{relpath.joinpath(label)}' to target."
+                )  # pyright: ignore[reportOptionalMemberAccess]
                 if field_type == GFFFieldType.UInt8:
                     target.set_uint8(label, deepcopy(value))
                 elif field_type == GFFFieldType.UInt16:
@@ -2071,7 +2155,9 @@ class GFFStruct(ComparableMixin, dict):
                     full_path = f"{current_path}.{label}" if current_path else label
                     if label == field_name and (field_type is None or ftype == field_type):
                         results.append((full_path, value))
-                    if (ftype == GFFFieldType.Struct and isinstance(value, GFFStruct)) or (ftype == GFFFieldType.List and isinstance(value, GFFList)):
+                    if (ftype == GFFFieldType.Struct and isinstance(value, GFFStruct)) or (
+                        ftype == GFFFieldType.List and isinstance(value, GFFList)
+                    ):
                         _search_recursive(value, full_path)
             elif isinstance(current, GFFList):
                 for idx, struct in enumerate(current):
@@ -2155,12 +2241,16 @@ class GFFList(ComparableMixin, list):
         """
         if not isinstance(struct, GFFStruct):
             struct_type = type(struct)
-            RobustLogger().error(f"Failed to append struct; expected GFFStruct, received {struct_type!r}.")
+            RobustLogger().error(
+                f"Failed to append struct; expected GFFStruct, received {struct_type!r}."
+            )
             msg = f"The struct must be a GFFStruct instance, got {struct_type!r} instead."
             raise TypeError(msg)
 
         self._structs.append(struct)
-        RobustLogger().debug(f"Appended Struct#{struct.struct_id} to GFFList; list_length={len(self._structs)}.")
+        RobustLogger().debug(
+            f"Appended Struct#{struct.struct_id} to GFFList; list_length={len(self._structs)}."
+        )
 
     def extend(self, other):
         """Extend list with another iterable of GFFStructs."""
@@ -2316,7 +2406,12 @@ class GFFList(ComparableMixin, list):
             if isinstance(value, ResRef):
                 return ("ResRef", str(value))
             if isinstance(value, Vector3):
-                return ("Vector3", round(value.x, _FLOAT_KEY_PRECISION), round(value.y, _FLOAT_KEY_PRECISION), round(value.z, _FLOAT_KEY_PRECISION))
+                return (
+                    "Vector3",
+                    round(value.x, _FLOAT_KEY_PRECISION),
+                    round(value.y, _FLOAT_KEY_PRECISION),
+                    round(value.z, _FLOAT_KEY_PRECISION),
+                )
             if isinstance(value, Vector4):
                 return (
                     "Vector4",
@@ -2326,7 +2421,11 @@ class GFFList(ComparableMixin, list):
                     round(value.w, _FLOAT_KEY_PRECISION),
                 )
             if isinstance(value, LocalizedString):
-                return ("LocalizedString", value.stringref, tuple((lang, gender, text) for lang, gender, text in value))
+                return (
+                    "LocalizedString",
+                    value.stringref,
+                    tuple((lang, gender, text) for lang, gender, text in value),
+                )
             if isinstance(value, GFFStruct):
                 return struct_key(value)
             if isinstance(value, GFFList):
@@ -2340,7 +2439,12 @@ class GFFList(ComparableMixin, list):
         def struct_key(struct: GFFStruct) -> tuple[int, tuple[tuple[str, GFFFieldType, Any], ...]]:
             return (
                 struct.struct_id,
-                tuple(sorted((label, field_type, _hashable_value(value)) for label, field_type, value in struct)),
+                tuple(
+                    sorted(
+                        (label, field_type, _hashable_value(value))
+                        for label, field_type, value in struct
+                    )
+                ),
             )
 
         # Semantic config: match by identity fields + default_when_absent.
@@ -2357,8 +2461,13 @@ class GFFList(ComparableMixin, list):
                     return _hashable_value(val)
             return _hashable_value(defaults.get(label))
 
-        def semantic_identity_key(struct: GFFStruct, config: GFFListSemanticConfig) -> tuple[Any, ...]:
-            return tuple((label, _get_field_val(struct, label, config.default_when_absent)) for label in config.identity_fields)
+        def semantic_identity_key(
+            struct: GFFStruct, config: GFFListSemanticConfig
+        ) -> tuple[Any, ...]:
+            return tuple(
+                (label, _get_field_val(struct, label, config.default_when_absent))
+                for label in config.identity_fields
+            )
 
         # Use semantic matching when config exists
         if semantic_config is not None:
@@ -2434,25 +2543,41 @@ class GFFList(ComparableMixin, list):
             for key in sorted(added_keys, key=lambda k: new_sem_map[k][0][0]):
                 for idx, struct in new_sem_map[key]:
                     added_count += 1
-                    log_func(f"\nGFFList '{path_str}': entry [new:{idx}] ADDED (present only in new file; merge-safe to add):", message_type="diff")
+                    log_func(
+                        f"\nGFFList '{path_str}': entry [new:{idx}] ADDED (present only in new file; merge-safe to add):",
+                        message_type="diff",
+                    )
                     for label, field_type, val in struct:
-                        log_func(f"  + {field_type.name} {label}: {format_text(val)}", message_type="diff")
+                        log_func(
+                            f"  + {field_type.name} {label}: {format_text(val)}",
+                            message_type="diff",
+                        )
                     comparison_result.add_field_stat("extra", path_str)
 
             # REMOVED: only in old (not mergeable—deleted entry)
             for key in sorted(removed_keys, key=lambda k: old_sem_map[k][0][0]):
                 for idx, struct in old_sem_map[key]:
                     removed_count += 1
-                    log_func(f"\nGFFList '{path_str}': entry [old:{idx}] REMOVED (present only in old file; merge-safe to delete):", message_type="diff")
+                    log_func(
+                        f"\nGFFList '{path_str}': entry [old:{idx}] REMOVED (present only in old file; merge-safe to delete):",
+                        message_type="diff",
+                    )
                     for label, field_type, val in struct:
-                        log_func(f"  - {field_type.name} {label}: {format_text(val)}", message_type="diff")
+                        log_func(
+                            f"  - {field_type.name} {label}: {format_text(val)}",
+                            message_type="diff",
+                        )
                     comparison_result.add_field_stat("missing", path_str)
 
-            has_diff = bool(modified_count or added_count or removed_count or reordered_count or len1 != len2)
+            has_diff = bool(
+                modified_count or added_count or removed_count or reordered_count or len1 != len2
+            )
             if has_diff:
                 parts: list[str] = []
                 if modified_count:
-                    parts.append(f"{modified_count} modified (same logical entry, field changes; merge-safe)")
+                    parts.append(
+                        f"{modified_count} modified (same logical entry, field changes; merge-safe)"
+                    )
                 if added_count:
                     parts.append(f"{added_count} added (only in new)")
                 if removed_count:
@@ -2480,7 +2605,10 @@ class GFFList(ComparableMixin, list):
         common_keys = set(old_map.keys()) & set(new_map.keys())
 
         if len1 != len2:
-            log_func(f"GFFList '{path_str}': length {len1} -> {len2} (diff: {len2 - len1:+d})", message_type="diff")
+            log_func(
+                f"GFFList '{path_str}': length {len1} -> {len2} (diff: {len2 - len1:+d})",
+                message_type="diff",
+            )
             comparison_result.add_field_count_mismatch(path_str, len1, len2)
 
         reported_old: set[int] = set()

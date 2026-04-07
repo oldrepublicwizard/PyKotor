@@ -6,23 +6,27 @@ from kaitaistruct import KaitaiStruct, KaitaiStream, BytesIO
 from enum import IntEnum
 
 
-if getattr(kaitaistruct, 'API_VERSION', (0, 9)) < (0, 11):
-    raise Exception("Incompatible Kaitai Struct Python API: 0.11 or later is required, but you have %s" % (kaitaistruct.__version__))
+if getattr(kaitaistruct, "API_VERSION", (0, 9)) < (0, 11):
+    raise Exception(
+        "Incompatible Kaitai Struct Python API: 0.11 or later is required, but you have %s"
+        % (kaitaistruct.__version__)
+    )
+
 
 class Erf(KaitaiStruct):
     """ERF (Encapsulated Resource File) files are self-contained archives used for modules, save games,
     texture packs, and hak paks. Unlike BIF files which require a KEY file for filename lookups,
     ERF files store both resource names (ResRefs) and data in the same file. They also support
     localized strings for descriptions in multiple languages.
-    
+
     Format Variants:
     - ERF: Generic encapsulated resource file (texture packs, etc.)
     - HAK: Hak pak file (contains override resources). Used for mod content distribution
     - MOD: Module file (game areas/levels). Contains area resources, scripts, and module-specific data
     - SAV: Save game file (contains saved game state). Uses MOD signature but typically has `description_strref == 0`
-    
+
     All variants use the same binary format structure, differing only in the file type signature.
-    
+
     Binary Format Structure:
     - Header (160 bytes): File type, version, entry counts, offsets, build date, description
     - Localized String List (optional, variable size): Multi-language descriptions. MOD files may
@@ -38,13 +42,13 @@ class Erf(KaitaiStruct):
       - resource_size (u4): Uncompressed size of resource data in bytes
     - Resource Data (variable size): Raw binary data for each resource, stored at offsets specified
       in resource_list
-    
+
     File Access Pattern:
     1. Read header to get entry_count and offsets
     2. Read key_list to map ResRefs to resource_ids
     3. Use resource_id to index into resource_list
     4. Read resource data from offset_to_data with size resource_size
-    
+
     """
 
     class XoreosFileTypeId(IntEnum):
@@ -349,6 +353,7 @@ class Erf(KaitaiStruct):
         xds = 30000
         wnd = 30001
         xeositex = 40000
+
     def __init__(self, _io, _parent=None, _root=None):
         super(Erf, self).__init__(_io)
         self._parent = _parent
@@ -358,25 +363,23 @@ class Erf(KaitaiStruct):
     def _read(self):
         self.header = Erf.ErfHeader(self._io, self, self._root)
 
-
     def _fetch_instances(self):
         pass
         self.header._fetch_instances()
         _ = self.key_list
-        if hasattr(self, '_m_key_list'):
+        if hasattr(self, "_m_key_list"):
             pass
             self._m_key_list._fetch_instances()
 
         _ = self.localized_string_list
-        if hasattr(self, '_m_localized_string_list'):
+        if hasattr(self, "_m_localized_string_list"):
             pass
             self._m_localized_string_list._fetch_instances()
 
         _ = self.resource_list
-        if hasattr(self, '_m_resource_list'):
+        if hasattr(self, "_m_resource_list"):
             pass
             self._m_resource_list._fetch_instances()
-
 
     class ErfHeader(KaitaiStruct):
         def __init__(self, _io, _parent=None, _root=None):
@@ -386,12 +389,20 @@ class Erf(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.file_type = (self._io.read_bytes(4)).decode(u"ASCII")
-            if not  ((self.file_type == u"ERF ") or (self.file_type == u"MOD ") or (self.file_type == u"SAV ")) :
-                raise kaitaistruct.ValidationNotAnyOfError(self.file_type, self._io, u"/types/erf_header/seq/0")
-            self.file_version = (self._io.read_bytes(4)).decode(u"ASCII")
-            if not self.file_version == u"V1.0":
-                raise kaitaistruct.ValidationNotEqualError(u"V1.0", self.file_version, self._io, u"/types/erf_header/seq/1")
+            self.file_type = (self._io.read_bytes(4)).decode("ASCII")
+            if not (
+                (self.file_type == "ERF ")
+                or (self.file_type == "MOD ")
+                or (self.file_type == "SAV ")
+            ):
+                raise kaitaistruct.ValidationNotAnyOfError(
+                    self.file_type, self._io, "/types/erf_header/seq/0"
+                )
+            self.file_version = (self._io.read_bytes(4)).decode("ASCII")
+            if not self.file_version == "V1.0":
+                raise kaitaistruct.ValidationNotEqualError(
+                    "V1.0", self.file_version, self._io, "/types/erf_header/seq/1"
+                )
             self.language_count = self._io.read_u4le()
             self.localized_string_size = self._io.read_u4le()
             self.entry_count = self._io.read_u4le()
@@ -403,7 +414,6 @@ class Erf(KaitaiStruct):
             self.description_strref = self._io.read_s4le()
             self.reserved = self._io.read_bytes(116)
 
-
         def _fetch_instances(self):
             pass
 
@@ -412,12 +422,11 @@ class Erf(KaitaiStruct):
             """Heuristic to detect save game files.
             Save games use MOD signature but typically have description_strref = 0.
             """
-            if hasattr(self, '_m_is_save_file'):
+            if hasattr(self, "_m_is_save_file"):
                 return self._m_is_save_file
 
-            self._m_is_save_file =  ((self.file_type == u"MOD ") and (self.description_strref == 0)) 
-            return getattr(self, '_m_is_save_file', None)
-
+            self._m_is_save_file = (self.file_type == "MOD ") and (self.description_strref == 0)
+            return getattr(self, "_m_is_save_file", None)
 
     class KeyEntry(KaitaiStruct):
         def __init__(self, _io, _parent=None, _root=None):
@@ -427,15 +436,15 @@ class Erf(KaitaiStruct):
             self._read()
 
         def _read(self):
-            self.resref = (self._io.read_bytes(16)).decode(u"ASCII")
+            self.resref = (self._io.read_bytes(16)).decode("ASCII")
             self.resource_id = self._io.read_u4le()
-            self.resource_type = KaitaiStream.resolve_enum(Erf.XoreosFileTypeId, self._io.read_u2le())
+            self.resource_type = KaitaiStream.resolve_enum(
+                Erf.XoreosFileTypeId, self._io.read_u2le()
+            )
             self.unused = self._io.read_u2le()
-
 
         def _fetch_instances(self):
             pass
-
 
     class KeyList(KaitaiStruct):
         def __init__(self, _io, _parent=None, _root=None):
@@ -449,15 +458,11 @@ class Erf(KaitaiStruct):
             for i in range(self._root.header.entry_count):
                 self.entries.append(Erf.KeyEntry(self._io, self, self._root))
 
-
-
         def _fetch_instances(self):
             pass
             for i in range(len(self.entries)):
                 pass
                 self.entries[i]._fetch_instances()
-
-
 
     class LocalizedStringEntry(KaitaiStruct):
         def __init__(self, _io, _parent=None, _root=None):
@@ -469,12 +474,10 @@ class Erf(KaitaiStruct):
         def _read(self):
             self.language_id = self._io.read_u4le()
             self.string_size = self._io.read_u4le()
-            self.string_data = (self._io.read_bytes(self.string_size)).decode(u"UTF-8")
-
+            self.string_data = (self._io.read_bytes(self.string_size)).decode("UTF-8")
 
         def _fetch_instances(self):
             pass
-
 
     class LocalizedStringList(KaitaiStruct):
         def __init__(self, _io, _parent=None, _root=None):
@@ -488,15 +491,11 @@ class Erf(KaitaiStruct):
             for i in range(self._root.header.language_count):
                 self.entries.append(Erf.LocalizedStringEntry(self._io, self, self._root))
 
-
-
         def _fetch_instances(self):
             pass
             for i in range(len(self.entries)):
                 pass
                 self.entries[i]._fetch_instances()
-
-
 
     class ResourceEntry(KaitaiStruct):
         def __init__(self, _io, _parent=None, _root=None):
@@ -509,26 +508,23 @@ class Erf(KaitaiStruct):
             self.offset_to_data = self._io.read_u4le()
             self.resource_size = self._io.read_u4le()
 
-
         def _fetch_instances(self):
             pass
             _ = self.data
-            if hasattr(self, '_m_data'):
+            if hasattr(self, "_m_data"):
                 pass
-
 
         @property
         def data(self):
             """Raw binary data for this resource."""
-            if hasattr(self, '_m_data'):
+            if hasattr(self, "_m_data"):
                 return self._m_data
 
             _pos = self._io.pos()
             self._io.seek(self.offset_to_data)
             self._m_data = self._io.read_bytes(self.resource_size)
             self._io.seek(_pos)
-            return getattr(self, '_m_data', None)
-
+            return getattr(self, "_m_data", None)
 
     class ResourceList(KaitaiStruct):
         def __init__(self, _io, _parent=None, _root=None):
@@ -542,32 +538,28 @@ class Erf(KaitaiStruct):
             for i in range(self._root.header.entry_count):
                 self.entries.append(Erf.ResourceEntry(self._io, self, self._root))
 
-
-
         def _fetch_instances(self):
             pass
             for i in range(len(self.entries)):
                 pass
                 self.entries[i]._fetch_instances()
 
-
-
     @property
     def key_list(self):
         """Array of key entries mapping ResRefs to resource indices."""
-        if hasattr(self, '_m_key_list'):
+        if hasattr(self, "_m_key_list"):
             return self._m_key_list
 
         _pos = self._io.pos()
         self._io.seek(self.header.offset_to_key_list)
         self._m_key_list = Erf.KeyList(self._io, self, self._root)
         self._io.seek(_pos)
-        return getattr(self, '_m_key_list', None)
+        return getattr(self, "_m_key_list", None)
 
     @property
     def localized_string_list(self):
         """Optional localized string entries for multi-language descriptions."""
-        if hasattr(self, '_m_localized_string_list'):
+        if hasattr(self, "_m_localized_string_list"):
             return self._m_localized_string_list
 
         if self.header.language_count > 0:
@@ -577,18 +569,16 @@ class Erf(KaitaiStruct):
             self._m_localized_string_list = Erf.LocalizedStringList(self._io, self, self._root)
             self._io.seek(_pos)
 
-        return getattr(self, '_m_localized_string_list', None)
+        return getattr(self, "_m_localized_string_list", None)
 
     @property
     def resource_list(self):
         """Array of resource entries containing offset and size information."""
-        if hasattr(self, '_m_resource_list'):
+        if hasattr(self, "_m_resource_list"):
             return self._m_resource_list
 
         _pos = self._io.pos()
         self._io.seek(self.header.offset_to_resource_list)
         self._m_resource_list = Erf.ResourceList(self._io, self, self._root)
         self._io.seek(_pos)
-        return getattr(self, '_m_resource_list', None)
-
-
+        return getattr(self, "_m_resource_list", None)

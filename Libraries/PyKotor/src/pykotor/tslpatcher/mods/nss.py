@@ -36,11 +36,15 @@ class MutableString:
 
 
 class ModificationsNSS(PatcherModifications):
-    def __init__(self, filename: str, *, replace: bool | None = None, modifiers: list | None = None):
+    def __init__(
+        self, filename: str, *, replace: bool | None = None, modifiers: list | None = None
+    ):
         super().__init__(filename, replace, modifiers)
         self.saveas = str(PurePath(filename).with_suffix(".ncs"))
         self.action: str = "Compile"
-        self.nwnnsscomp_path: Path | None = None  # TODO(th3w1zard1): fix type. Default None or Path?
+        self.nwnnsscomp_path: Path | None = (
+            None  # TODO(th3w1zard1): fix type. Default None or Path?
+        )
         self.backup_nwnnsscomp_path: Path
         self.temp_script_folder: Path
         self.skip_if_not_replace = True
@@ -84,7 +88,9 @@ class ModificationsNSS(PatcherModifications):
         self.apply(mutable_source, memory, logger, game)
         temp_script_file = self.temp_script_folder / self.sourcefile
 
-        BinaryWriter.dump(temp_script_file, mutable_source.value.encode(encoding="windows-1252", errors="ignore"))
+        BinaryWriter.dump(
+            temp_script_file, mutable_source.value.encode(encoding="windows-1252", errors="ignore")
+        )
 
         # Compile with external on windows, fall back to built-in if mac/linux or if external fails.
         is_windows = os.name == "nt"
@@ -108,11 +114,17 @@ class ModificationsNSS(PatcherModifications):
 
         if is_windows:
             if not self.nwnnsscomp_path or not nwnnsscomp_exists:
-                logger.add_note("nwnnsscomp.exe was not found in the 'tslpatchdata' folder, using the built-in compilers...")
+                logger.add_note(
+                    "nwnnsscomp.exe was not found in the 'tslpatchdata' folder, using the built-in compilers..."
+                )
             else:
-                logger.add_error(f"An error occurred while compiling '{self.sourcefile}' with nwnnsscomp.exe, falling back to the built-in compilers...")
+                logger.add_error(
+                    f"An error occurred while compiling '{self.sourcefile}' with nwnnsscomp.exe, falling back to the built-in compilers..."
+                )
         else:
-            logger.add_note(f"Patching from a unix operating system, compiling '{self.sourcefile}' using the built-in compilers...")
+            logger.add_note(
+                f"Patching from a unix operating system, compiling '{self.sourcefile}' using the built-in compilers..."
+            )
 
         # Compile using built-in script compiler if external compiler fails.
         try:
@@ -158,21 +170,33 @@ class ModificationsNSS(PatcherModifications):
             match = re.search(search_pattern, mutable_data.value)
             while match:
                 start, end = match.start(), match.end()
-                token_id = int(mutable_data.value[start + len(token_name) + 1 : end - 1])  # -3 adjusts for '#', the first digit and '#'
+                token_id = int(
+                    mutable_data.value[start + len(token_name) + 1 : end - 1]
+                )  # -3 adjusts for '#', the first digit and '#'
 
                 if token_id not in memory_dict:
-                    msg = f"{token_name}{token_id} was not defined before use in '{self.sourcefile}'"
+                    msg = (
+                        f"{token_name}{token_id} was not defined before use in '{self.sourcefile}'"
+                    )
                     raise KeyError(msg)
 
                 replacement_value = memory_dict[token_id]
                 if isinstance(replacement_value, PureWindowsPath):
-                    msg = str(TypeError(f"{token_name} cannot be !FieldPath for [CompileList] patches, got '{token_name}{token_id}={replacement_value!r}'"))
+                    msg = str(
+                        TypeError(
+                            f"{token_name} cannot be !FieldPath for [CompileList] patches, got '{token_name}{token_id}={replacement_value!r}'"
+                        )
+                    )
                     logger.add_error(msg)
                     match = re.search(search_pattern, mutable_data.value)
                     continue
 
-                logger.add_verbose(f"{self.sourcefile}: Replacing '#{token_name}{token_id}#' with '{replacement_value}'")
-                mutable_data.value = mutable_data.value[:start] + str(replacement_value) + mutable_data.value[end:]
+                logger.add_verbose(
+                    f"{self.sourcefile}: Replacing '#{token_name}{token_id}#' with '{replacement_value}'"
+                )
+                mutable_data.value = (
+                    mutable_data.value[:start] + str(replacement_value) + mutable_data.value[end:]
+                )
                 match = re.search(search_pattern, mutable_data.value)
 
         iterate_and_replace_tokens("2DAMEMORY", memory.memory_2da)
@@ -187,7 +211,9 @@ class ModificationsNSS(PatcherModifications):
     ) -> bytes | Literal[True]:
         with TemporaryDirectory() as tempdir:
             tempcompiled_filepath: Path = Path(tempdir, "temp_script.ncs")
-            stdout, stderr = nwnnsscompiler.compile_script(temp_script_file, tempcompiled_filepath, game)
+            stdout, stderr = nwnnsscompiler.compile_script(
+                temp_script_file, tempcompiled_filepath, game
+            )
             result: bool | bytes = "File is an include file, ignored" in stdout
             if not result:
                 # Return the compiled bytes

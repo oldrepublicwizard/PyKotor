@@ -30,7 +30,11 @@ def check_door_dims(
     print(f"File: {json_path}")
     print(f"Total doors: {len(doors)}")
 
-    non_default = [d for d in doors if d.get("width", 0) != default_width or d.get("height", 0) != default_height]
+    non_default = [
+        d
+        for d in doors
+        if d.get("width", 0) != default_width or d.get("height", 0) != default_height
+    ]
     print(f"Non-default dimensions: {len(non_default)}")
     if non_default:
         print("First 10 non-default doors:")
@@ -47,10 +51,29 @@ def check_door_dims(
 
 def main() -> None:
     """Main entry point."""
-    parser = argparse.ArgumentParser(description="Check door dimensions in a kit JSON file", formatter_class=argparse.RawDescriptionHelpFormatter, epilog=__doc__)
-    parser.add_argument("--file", "-f", type=str, help="Path to kit JSON file (default: tests/test_toolset/test_files/generated_kit/jedienclave.json)")
-    parser.add_argument("--default-width", type=float, default=2.0, help="Default door width to check against (default: 2.0)")
-    parser.add_argument("--default-height", type=float, default=3.0, help="Default door height to check against (default: 3.0)")
+    parser = argparse.ArgumentParser(
+        description="Check door dimensions in a kit JSON file",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog=__doc__,
+    )
+    parser.add_argument(
+        "--file",
+        "-f",
+        type=str,
+        help="Path to kit JSON file (default: tests/test_toolset/test_files/generated_kit/jedienclave.json)",
+    )
+    parser.add_argument(
+        "--default-width",
+        type=float,
+        default=2.0,
+        help="Default door width to check against (default: 2.0)",
+    )
+    parser.add_argument(
+        "--default-height",
+        type=float,
+        default=3.0,
+        help="Default door height to check against (default: 3.0)",
+    )
 
     args = parser.parse_args()
 
@@ -59,7 +82,14 @@ def main() -> None:
     else:
         # Default path
         repo_root = Path(__file__).parent.parent
-        json_path = repo_root / "tests" / "test_toolset" / "test_files" / "generated_kit" / "jedienclave.json"
+        json_path = (
+            repo_root
+            / "tests"
+            / "test_toolset"
+            / "test_files"
+            / "generated_kit"
+            / "jedienclave.json"
+        )
 
     check_door_dims(json_path, args.default_width, args.default_height)
 

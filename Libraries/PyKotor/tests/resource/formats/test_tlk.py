@@ -23,7 +23,17 @@ if UTILITY_PATH.joinpath("utility").exists():
 
 from pykotor.common.language import Language
 from pykotor.common.misc import ResRef
-from pykotor.resource.formats.tlk import TLK, TLKBinaryReader, TLKEntry, TLKJSONReader, TLKXMLReader, bytes_tlk, detect_tlk, read_tlk, write_tlk
+from pykotor.resource.formats.tlk import (
+    TLK,
+    TLKBinaryReader,
+    TLKEntry,
+    TLKJSONReader,
+    TLKXMLReader,
+    bytes_tlk,
+    detect_tlk,
+    read_tlk,
+    write_tlk,
+)
 from pykotor.resource.type import ResourceType
 
 BASE_TLK = TLK(Language.ENGLISH)

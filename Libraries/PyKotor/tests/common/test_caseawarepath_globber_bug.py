@@ -81,7 +81,9 @@ class TestGlobberBug(unittest.TestCase):
             print(f"[TEST] Exception type: {type(e).__name__}")
             print(f"[TEST] Exception args: {e.args}")
             traceback.print_exc()
-            self.fail(f"rglob('*') raised TypeError: {e}\nThis is the _Globber.__init__() bug. Check traceback above.")
+            self.fail(
+                f"rglob('*') raised TypeError: {e}\nThis is the _Globber.__init__() bug. Check traceback above."
+            )
 
     def test_rglob_recursive_pattern(self):
         """Test rglob with recursive pattern like '**/*.txt'."""
@@ -93,7 +95,9 @@ class TestGlobberBug(unittest.TestCase):
         except TypeError as e:
             print(f"[TEST] FAILED with TypeError: {e}")
             traceback.print_exc()
-            self.fail(f"rglob('**/*.txt') raised TypeError: {e}\nThis is the _Globber.__init__() bug. Check traceback above.")
+            self.fail(
+                f"rglob('**/*.txt') raised TypeError: {e}\nThis is the _Globber.__init__() bug. Check traceback above."
+            )
 
     def test_rglob_file_extension(self):
         """Test rglob with file extension pattern."""
@@ -105,7 +109,9 @@ class TestGlobberBug(unittest.TestCase):
         except TypeError as e:
             print(f"[TEST] FAILED with TypeError: {e}")
             traceback.print_exc()
-            self.fail(f"rglob('*.txt') raised TypeError: {e}\nThis is the _Globber.__init__() bug. Check traceback above.")
+            self.fail(
+                f"rglob('*.txt') raised TypeError: {e}\nThis is the _Globber.__init__() bug. Check traceback above."
+            )
 
     def test_rglob_case_sensitive_parameter(self):
         """Test rglob with case_sensitive parameter (Python 3.12+)."""
@@ -163,7 +169,9 @@ class TestGlobberBug(unittest.TestCase):
             if "_Globber.__init__()" in error_msg:
                 print(f"[TEST] FAILED with _Globber TypeError: {e}")
                 traceback.print_exc()
-                self.fail(f"glob('*') raised _Globber TypeError: {e}\nThis is the _Globber.__init__() bug. Check traceback above.")
+                self.fail(
+                    f"glob('*') raised _Globber TypeError: {e}\nThis is the _Globber.__init__() bug. Check traceback above."
+                )
             else:
                 print(f"[TEST] TypeError (unexpected): {e}")
                 traceback.print_exc()
@@ -187,7 +195,9 @@ class TestGlobberBug(unittest.TestCase):
                 print(f"[TEST] FAILED with _Globber TypeError: {e}")
                 print(f"[TEST] Error message: {error_msg}")
                 traceback.print_exc()
-                self.fail(f"glob() with kwargs raised _Globber TypeError: {e}\nThis is the _Globber.__init__() bug when passing multiple kwargs.\nCheck traceback above.")
+                self.fail(
+                    f"glob() with kwargs raised _Globber TypeError: {e}\nThis is the _Globber.__init__() bug when passing multiple kwargs.\nCheck traceback above."
+                )
             else:
                 print(f"[TEST] TypeError (might be expected): {e}")
 
@@ -206,7 +216,9 @@ class TestGlobberBug(unittest.TestCase):
             if "_Globber.__init__()" in error_msg:
                 print(f"[TEST] FAILED with _Globber TypeError: {e}")
                 traceback.print_exc()
-                self.fail(f"rglob() raised _Globber TypeError: {e}\nThis is the _Globber.__init__() bug propagating through rglob.\nCheck traceback above.")
+                self.fail(
+                    f"rglob() raised _Globber TypeError: {e}\nThis is the _Globber.__init__() bug propagating through rglob.\nCheck traceback above."
+                )
             else:
                 print(f"[TEST] TypeError: {e}")
                 traceback.print_exc()
@@ -219,7 +231,9 @@ class TestGlobberBug(unittest.TestCase):
 
         try:
             standard_result = list(standard_path.rglob("*"))
-            print(f"[TEST] Standard pathlib.Path.rglob('*'): {len(standard_result)} items (SUCCESS)")
+            print(
+                f"[TEST] Standard pathlib.Path.rglob('*'): {len(standard_result)} items (SUCCESS)"
+            )
 
             caseaware_result = list(self.test_base.rglob("*"))
             print(f"[TEST] CaseAwarePath.rglob('*'): {len(caseaware_result)} items (SUCCESS)")
@@ -235,7 +249,9 @@ class TestGlobberBug(unittest.TestCase):
                 print("[TEST] CaseAwarePath FAILED while pathlib.Path succeeded")
                 print("[TEST] This confirms the bug is specific to CaseAwarePath wrapper")
                 traceback.print_exc()
-                self.fail(f"CaseAwarePath.rglob() failed with _Globber TypeError while pathlib.Path.rglob() succeeded. Error: {e}")
+                self.fail(
+                    f"CaseAwarePath.rglob() failed with _Globber TypeError while pathlib.Path.rglob() succeeded. Error: {e}"
+                )
             else:
                 raise
 
@@ -253,7 +269,9 @@ class TestGlobberBug(unittest.TestCase):
             if "_Globber.__init__()" in error_msg:
                 print(f"[TEST] FAILED with _Globber TypeError: {e}")
                 traceback.print_exc()
-                self.fail(f"rglob() on nested directory raised _Globber TypeError: {e}\nCheck traceback above.")
+                self.fail(
+                    f"rglob() on nested directory raised _Globber TypeError: {e}\nCheck traceback above."
+                )
 
     def test_globber_signature_analysis(self):
         """Analyze and document the exact error signature."""

@@ -31,7 +31,14 @@ if TYPE_CHECKING:
     from pykotor.resource.formats.lyt import LYT, LYTRoom
 
 
-_MODULE_DISPLAY_EXTENSIONS: tuple[str, ...] = (".mod", "_s.rim", ".rim", "_dlg.erf", "_adx.rim", "_a.rim")
+_MODULE_DISPLAY_EXTENSIONS: tuple[str, ...] = (
+    ".mod",
+    "_s.rim",
+    ".rim",
+    "_dlg.erf",
+    "_adx.rim",
+    "_a.rim",
+)
 
 
 class ModuleKit(Kit):
@@ -85,7 +92,9 @@ class ModuleKit(Kit):
         # matching the module root.
         # Use fast composite module loading; Module.reload_resources() texture crawling is a major bottleneck
         # and is unnecessary for ModuleKit (we only need module-local LYT/WOK/MDL/MDX).
-        self._module = Module(self.module_root, self._installation, use_dot_mod=True, load_textures=False)
+        self._module = Module(
+            self.module_root, self._installation, use_dot_mod=True, load_textures=False
+        )
 
         layout_res = self._module.layout()
         if layout_res is None:
@@ -104,7 +113,9 @@ class ModuleKit(Kit):
         # Extract rooms from LYT
         lyt_room_to_component: dict[int, KitComponent] = {}
         for room_idx, lyt_room in enumerate(lyt_data.rooms):
-            component: KitComponent | None = self._component_from_lyt_room(lyt_room, room_idx, default_door)
+            component: KitComponent | None = self._component_from_lyt_room(
+                lyt_room, room_idx, default_door
+            )
             if component is not None:
                 self.components.append(component)
                 lyt_room_to_component[room_idx] = component
@@ -202,7 +213,9 @@ class ModuleKit(Kit):
         else:
             component_name = f"ROOM{idx}"
 
-        component = KitComponent(kit=self, name=component_name, component_id=component_id, bwm=bwm, mdl=mdl, mdx=mdx)
+        component = KitComponent(
+            kit=self, name=component_name, component_id=component_id, bwm=bwm, mdl=mdl, mdx=mdx
+        )
         # Persist the original room placement so extract/build roundtrips can preserve layout.
         component.default_position = Vector3(room_position.x, room_position.y, room_position.z)  # type: ignore[attr-defined]
 
@@ -226,7 +239,9 @@ class ModuleKit(Kit):
         try:
             return read_bwm(data)
         except Exception:  # noqa: BLE001
-            RobustLogger().warning("Failed to read WOK for '%s' in module '%s'", model_name, self.module_root)
+            RobustLogger().warning(
+                "Failed to read WOK for '%s' in module '%s'", model_name, self.module_root
+            )
             return None
 
     def _get_room_model(
@@ -324,7 +339,9 @@ class ModuleKit(Kit):
             if rotation_deg < 0:
                 rotation_deg += 360
 
-            closest_edge: int | None = self._find_closest_edge(matching_component.bwm, local_position)
+            closest_edge: int | None = self._find_closest_edge(
+                matching_component.bwm, local_position
+            )
             edge_index: int = 0 if closest_edge is None else closest_edge
 
             door = self._resolve_matching_door(doorhook.door)
@@ -397,7 +414,9 @@ class ModuleKit(Kit):
             if edge_len_sq < 1e-6:
                 continue
 
-            t: float = max(0.0, min(1.0, (point_vec.x * edge_vec.x + point_vec.y * edge_vec.y) / edge_len_sq))
+            t: float = max(
+                0.0, min(1.0, (point_vec.x * edge_vec.x + point_vec.y * edge_vec.y) / edge_len_sq)
+            )
             closest_point: Vector3 = Vector3(
                 v1.x + t * edge_vec.x,
                 v1.y + t * edge_vec.y,
@@ -415,7 +434,9 @@ class ModuleKit(Kit):
                     try:
                         face_index = bwm.faces.index(face)
                     except ValueError:
-                        RobustLogger().warning("Encountered unmatched face object while resolving closest edge; skipping this edge.")
+                        RobustLogger().warning(
+                            "Encountered unmatched face object while resolving closest edge; skipping this edge."
+                        )
                         continue
                 closest_edge_index = face_index * 3 + local_edge_index
 
@@ -452,7 +473,10 @@ class ModuleKitManager:
         Returns:
             List of module root names (without extensions).
         """
-        roots = {self._installation.get_module_root(module_filename) for module_filename in self.get_module_names()}
+        roots = {
+            self._installation.get_module_root(module_filename)
+            for module_filename in self.get_module_names()
+        }
         return sorted(roots)
 
     def get_module_display_name(self, module_root: str) -> str:

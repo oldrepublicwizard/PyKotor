@@ -53,7 +53,9 @@ def swizzle(
     for y, x in itertools.product(range(height), range(width)):
         src_offset = (y * width + x) * bytes_per_pixel
         dst_offset = swizzle_offset(x, y, width, height) * bytes_per_pixel
-        swizzled[dst_offset : dst_offset + bytes_per_pixel] = data[src_offset : src_offset + bytes_per_pixel]
+        swizzled[dst_offset : dst_offset + bytes_per_pixel] = data[
+            src_offset : src_offset + bytes_per_pixel
+        ]
     return swizzled
 
 
@@ -82,7 +84,9 @@ def deswizzle(data: bytes | bytearray, width: int, height: int, bytes_per_pixel:
     for y, x in itertools.product(range(height), range(width)):
         src_offset = deswizzle_offset(x, y, width, height) * bytes_per_pixel
         dst_offset = (y * width + x) * bytes_per_pixel
-        deswizzled[dst_offset : dst_offset + bytes_per_pixel] = data[src_offset : src_offset + bytes_per_pixel]
+        deswizzled[dst_offset : dst_offset + bytes_per_pixel] = data[
+            src_offset : src_offset + bytes_per_pixel
+        ]
     return deswizzled
 
 
@@ -149,7 +153,9 @@ class TPCBinaryReader(ResourceReader):
             (False, 12): TPCTextureFormat.BGRA,
         }.get((compressed, pixel_type), TPCTextureFormat.Invalid)
         if tpc_format == TPCTextureFormat.Invalid:
-            raise ValueError(f"Unsupported texture format (pixel_type: {pixel_type}, compressed: {compressed})")
+            raise ValueError(
+                f"Unsupported texture format (pixel_type: {pixel_type}, compressed: {compressed})"
+            )
         self._tpc._format = tpc_format  # noqa: SLF001
 
         total_cube_sides: Literal[6] = 6
@@ -195,7 +201,9 @@ class TPCBinaryReader(ResourceReader):
 
         if self._tpc.is_animated:
             animated_txi: TXI = self._tpc._txi  # noqa: SLF001
-            self._layer_count = (animated_txi.features.numx or 1) * (animated_txi.features.numy or 1)
+            self._layer_count = (animated_txi.features.numx or 1) * (
+                animated_txi.features.numy or 1
+            )
             width //= animated_txi.features.numx or 1
             height //= animated_txi.features.numy or 1
             data_size //= self._layer_count
@@ -208,12 +216,21 @@ class TPCBinaryReader(ResourceReader):
                 self._mipmap_count += 1
 
         if compressed and not self._tpc.is_animated:
-            expected_size: int = (width * height) // 2 if tpc_format == TPCTextureFormat.DXT1 else width * height
+            expected_size: int = (
+                (width * height) // 2 if tpc_format == TPCTextureFormat.DXT1 else width * height
+            )
             if data_size != expected_size:
-                raise ValueError(f"Invalid data size for a texture of {width}x{height} pixels and format {tpc_format!r}")
+                raise ValueError(
+                    f"Invalid data size for a texture of {width}x{height} pixels and format {tpc_format!r}"
+                )
 
         self._reader.seek(self.IMG_DATA_START_OFFSET)
-        if width <= 0 or height <= 0 or width >= self.MAX_DIMENSIONS or height >= self.MAX_DIMENSIONS:
+        if (
+            width <= 0
+            or height <= 0
+            or width >= self.MAX_DIMENSIONS
+            or height >= self.MAX_DIMENSIONS
+        ):
             raise ValueError(f"Invalid dimensions ({width}x{height}) for format {tpc_format!r}")
 
         full_image_data_size: int = tpc_format.get_size(
@@ -222,9 +239,7 @@ class TPCBinaryReader(ResourceReader):
         )
         full_data_size: int = self._reader.size() - self.IMG_DATA_START_OFFSET
         if full_data_size < (self._layer_count * full_image_data_size):
-            msg: str = (
-                f"Insufficient data for image. Expected at least {hex(self._layer_count * full_image_data_size)} bytes, but only {hex(full_data_size)} bytes are available."
-            )
+            msg: str = f"Insufficient data for image. Expected at least {hex(self._layer_count * full_image_data_size)} bytes, but only {hex(full_data_size)} bytes are available."
             raise ValueError(
                 msg,
             )
@@ -233,7 +248,11 @@ class TPCBinaryReader(ResourceReader):
             layer = TPCLayer()
             self._tpc.layers.append(layer)
             layer_width, layer_height = width, height
-            layer_size: int = tpc_format.get_size(layer_width, layer_height) if self._tpc.is_animated else data_size
+            layer_size: int = (
+                tpc_format.get_size(layer_width, layer_height)
+                if self._tpc.is_animated
+                else data_size
+            )
 
             for _ in range(self._mipmap_count):
                 mm_width, mm_height = (
@@ -284,7 +303,11 @@ class TPCBinaryReader(ResourceReader):
         return self._tpc
 
     def _normalize_cubemaps(self):
-        self._tpc.convert(TPCTextureFormat.RGB if self._tpc.format() == TPCTextureFormat.DXT1 else TPCTextureFormat.RGBA)
+        self._tpc.convert(
+            TPCTextureFormat.RGB
+            if self._tpc.format() == TPCTextureFormat.DXT1
+            else TPCTextureFormat.RGBA
+        )
         rotation: tuple[int, int, int, int, int, int] = (3, 1, 0, 2, 2, 0)
         for i, layer in enumerate(self._tpc.layers):
             for mipmap in layer.mipmaps:
@@ -337,7 +360,9 @@ class TPCBinaryWriter(ResourceWriter):
         super().__init__(target)
         self._tpc: TPC = tpc
         self._layer_count: int = len(tpc.layers) if tpc.layers else 0
-        self._mipmap_count: int = len(tpc.layers[0].mipmaps) if tpc.layers and tpc.layers[0].mipmaps else 0
+        self._mipmap_count: int = (
+            len(tpc.layers[0].mipmaps) if tpc.layers and tpc.layers[0].mipmaps else 0
+        )
 
     def _get_pixel_encoding(self, tpc_format: TPCTextureFormat) -> int:
         """Get the pixel encoding value for the given format."""
@@ -394,7 +419,9 @@ class TPCBinaryWriter(ResourceWriter):
             layer_width = frame_width
             layer_height = frame_height
             if layer_width <= 0 or layer_height <= 0:
-                raise ValueError(f"Invalid layer dimensions ({layer_width}x{layer_height}) for animated texture")
+                raise ValueError(
+                    f"Invalid layer dimensions ({layer_width}x{layer_height}) for animated texture"
+                )
 
         elif self._tpc.is_cube_map:
             if self._layer_count != 6:  # noqa: PLR2004
@@ -402,7 +429,11 @@ class TPCBinaryWriter(ResourceWriter):
             height = frame_height * self._layer_count
 
         # Calculate data size
-        base_level_size: int = len(self._tpc.layers[0].mipmaps[0].data) if self._tpc.layers and self._tpc.layers[0].mipmaps else 0
+        base_level_size: int = (
+            len(self._tpc.layers[0].mipmaps[0].data)
+            if self._tpc.layers and self._tpc.layers[0].mipmaps
+            else 0
+        )
         data_size: int = 0
         if tpc_format.is_dxt():
             layers = self._layer_count if self._tpc.is_animated else 1
@@ -436,8 +467,13 @@ class TPCBinaryWriter(ResourceWriter):
                     )
 
                 mipmap_data: bytearray = mipmap.data
-                if tpc_format == TPCTextureFormat.BGRA and (current_width & (current_width - 1)) == 0:
-                    mipmap_data = swizzle(mipmap_data, current_width, current_height, tpc_format.bytes_per_pixel())
+                if (
+                    tpc_format == TPCTextureFormat.BGRA
+                    and (current_width & (current_width - 1)) == 0
+                ):
+                    mipmap_data = swizzle(
+                        mipmap_data, current_width, current_height, tpc_format.bytes_per_pixel()
+                    )
 
                 self._writer.write_bytes(bytes(mipmap_data))
 

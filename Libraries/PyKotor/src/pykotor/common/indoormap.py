@@ -186,7 +186,9 @@ class IndoorMap(ComparableMixin):
     ):
         self.rooms: list[IndoorMapRoom] = rooms if rooms is not None else []
         self.module_id: str = module_id if module_id is not None else "test01"
-        self.name: LocalizedString = name if name is not None else LocalizedString.from_english("New Module")
+        self.name: LocalizedString = (
+            name if name is not None else LocalizedString.from_english("New Module")
+        )
         self.lighting: Color = lighting if lighting is not None else Color(0.5, 0.5, 0.5)
         self.skybox: str = skybox if skybox is not None else ""
         self.warp_point: Vector3 = warp_point if warp_point is not None else Vector3.from_null()
@@ -302,14 +304,18 @@ class IndoorMap(ComparableMixin):
     @staticmethod
     def _iter_padding_models(component: KitComponent):
         """Iterate all top/side padding models referenced by a kit component."""
-        for door_padding_dict in list(component.kit.top_padding.values()) + list(component.kit.side_padding.values()):
+        for door_padding_dict in list(component.kit.top_padding.values()) + list(
+            component.kit.side_padding.values()
+        ):
             yield from door_padding_dict.values()
 
     def _sorted_used_kits(self) -> list[Kit]:
         """Return used kits in deterministic id order."""
         return sorted(self.used_kits, key=lambda kit: kit.id)
 
-    def _set_tga_txi(self, resname: str, tga_data: bytes | bytearray, txi_data: bytes | bytearray = b"") -> None:
+    def _set_tga_txi(
+        self, resname: str, tga_data: bytes | bytearray, txi_data: bytes | bytearray = b""
+    ) -> None:
         """Write paired texture payloads (`TGA` + `TXI`) for a resource name."""
         assert self.mod is not None
         self.mod.set_data(resname, ResourceType.TGA, bytes(tga_data))
@@ -334,7 +340,9 @@ class IndoorMap(ComparableMixin):
                 continue
             # Deterministic rename order is required for stable `.indoor -> .mod` rebuilds.
             # Sort only textures not yet renamed to avoid redundant work.
-            for texture in sorted(t for t in model.iterate_textures(mdl) if t not in self.tex_renames):
+            for texture in sorted(
+                t for t in model.iterate_textures(mdl) if t not in self.tex_renames
+            ):
                 renamed = f"{self.module_id}_tex{len(self.tex_renames)}"
                 self.tex_renames[texture] = renamed
                 for kit in self._sorted_used_kits():
@@ -380,8 +388,14 @@ class IndoorMap(ComparableMixin):
         mdl, mdx = model.flip(mdl_raw, mdx_raw, flip_x=room.flip_x, flip_y=room.flip_y)
         if len(mdl) < 12:
             return mdl, mdx
-        mdl_transformed: bytes | bytearray = model.transform(mdl, Vector3.from_null(), room.rotation)
-        mdl_converted: bytes | bytearray = model.convert_to_k2(mdl_transformed) if target_tsl else model.convert_to_k1(mdl_transformed)
+        mdl_transformed: bytes | bytearray = model.transform(
+            mdl, Vector3.from_null(), room.rotation
+        )
+        mdl_converted: bytes | bytearray = (
+            model.convert_to_k2(mdl_transformed)
+            if target_tsl
+            else model.convert_to_k1(mdl_transformed)
+        )
         return mdl_converted, mdx
 
     def _ensure_lightmap_tga(self, renamed: str, lightmap: str, installation: Installation) -> None:
@@ -514,7 +528,9 @@ class IndoorMap(ComparableMixin):
             data.extend([0, 0, 0, 255])
         minimap_tpc = TPC()
         minimap_tpc.set_single(data, TPCTextureFormat.RGBA, 512, 256)
-        self.mod.set_data(f"lbl_map{self.module_id}", ResourceType.TGA, bytes_tpc(minimap_tpc, ResourceType.TGA))
+        self.mod.set_data(
+            f"lbl_map{self.module_id}", ResourceType.TGA, bytes_tpc(minimap_tpc, ResourceType.TGA)
+        )
 
     def set_area_attributes(self, bounds: tuple[Vector2, Vector2]):
         assert self.are is not None, "are is None"
@@ -575,7 +591,9 @@ class IndoorMap(ComparableMixin):
             utd = self._door_utd_for_target(insertion, target_tsl)
             self.mod.set_data(door_resname, ResourceType.UTD, bytes_utd(utd))
 
-    def _configure_git_door_link(self, door: GITDoor, door_resname: str, insertion: DoorInsertion) -> None:
+    def _configure_git_door_link(
+        self, door: GITDoor, door_resname: str, insertion: DoorInsertion
+    ) -> None:
         """Configure door linkage fields for static or linked insertions."""
         if insertion.room2 is None:
             door.linked_to_flags = GITModuleLink.NoLink
@@ -696,7 +714,9 @@ class IndoorMap(ComparableMixin):
         if not load_path.is_file():
             return
         data = load_path.read_bytes()
-        restype = ResourceType.TGA if get_normalized_extension(load_path) == ".tga" else ResourceType.TPC
+        restype = (
+            ResourceType.TGA if get_normalized_extension(load_path) == ".tga" else ResourceType.TPC
+        )
         self.mod.set_data(f"load_{self.module_id}", restype, data)
 
     def finalize_module_data(self):
@@ -830,12 +850,21 @@ class IndoorMap(ComparableMixin):
             s_kit = self._resolve_room_kit(room_data, kit_id, kits, module_kit_manager)
             if s_kit is None:
                 logger.warning("Kit '%s' is missing, skipping room.", kit_id)
-                self._record_missing_room(missing_rooms, kit_name=kit_id, component_name=comp_id, reason="kit_missing")
+                self._record_missing_room(
+                    missing_rooms, kit_name=kit_id, component_name=comp_id, reason="kit_missing"
+                )
                 continue
             s_component = self._find_component_by_id(s_kit, comp_id)
             if s_component is None:
-                logger.warning("Component '%s' is missing in kit '%s', skipping room.", comp_id, s_kit.id)
-                self._record_missing_room(missing_rooms, kit_name=kit_id, component_name=comp_id, reason="component_missing")
+                logger.warning(
+                    "Component '%s' is missing in kit '%s', skipping room.", comp_id, s_kit.id
+                )
+                self._record_missing_room(
+                    missing_rooms,
+                    kit_name=kit_id,
+                    component_name=comp_id,
+                    reason="component_missing",
+                )
                 continue
 
             room = self._parse_room_instance(room_data, s_component, logger)
@@ -912,7 +941,9 @@ class IndoorMap(ComparableMixin):
         reason: str,
     ) -> None:
         """Append a normalized missing-room record."""
-        missing_rooms.append(MissingRoomInfo(kit_name=kit_name, component_name=component_name, reason=reason))
+        missing_rooms.append(
+            MissingRoomInfo(kit_name=kit_name, component_name=component_name, reason=reason)
+        )
 
     @classmethod
     def _load_embedded_components(
@@ -951,7 +982,9 @@ class IndoorMap(ComparableMixin):
             raw_bwm = base64.b64decode(room_data["walkmesh_override"])
             room.walkmesh_override = read_bwm(raw_bwm)
         except Exception as exc:  # noqa: BLE001
-            logger.warning("Failed to read walkmesh override for room '%s': %s", room.component.id, exc)
+            logger.warning(
+                "Failed to read walkmesh override for room '%s': %s", room.component.id, exc
+            )
 
     @classmethod
     def _parse_room_instance(
@@ -1013,7 +1046,9 @@ class IndoorMap(ComparableMixin):
             logger.warning("Failed to load embedded component '%s': %s", comp_data.get("id"), exc)
             return None
 
-        component = KitComponent(kit=embedded_kit, name=name, component_id=comp_id, bwm=bwm_obj, mdl=mdl_raw, mdx=mdx_raw)
+        component = KitComponent(
+            kit=embedded_kit, name=name, component_id=comp_id, bwm=bwm_obj, mdl=mdl_raw, mdx=mdx_raw
+        )
         component.hooks.clear()
         for hook_data in comp_data.get("hooks", []):
             try:
@@ -1078,7 +1113,9 @@ class IndoorMapRoom(ComparableMixin):
     ) -> bool:
         """Compare IndoorMapRoom objects, handling component comparison by ID and hooks carefully."""
         if not isinstance(other, IndoorMapRoom):
-            log_func(f"Type mismatch: '{self.__class__.__name__}' vs '{other.__class__.__name__ if isinstance(other, object) else type(other)}'")
+            log_func(
+                f"Type mismatch: '{self.__class__.__name__}' vs '{other.__class__.__name__ if isinstance(other, object) else type(other)}'"
+            )
             return False
 
         is_same: bool = True
@@ -1088,7 +1125,9 @@ class IndoorMapRoom(ComparableMixin):
             log_func(f"Component ID mismatch: '{self.component.id}' vs '{other.component.id}'")
             is_same = False
         if self.component.name != other.component.name:
-            log_func(f"Component name mismatch: '{self.component.name}' vs '{other.component.name}'")
+            log_func(
+                f"Component name mismatch: '{self.component.name}' vs '{other.component.name}'"
+            )
             is_same = False
 
         # Compare other fields using parent implementation
@@ -1125,7 +1164,9 @@ class IndoorMapRoom(ComparableMixin):
                     continue
                 # Compare connected rooms by component ID to avoid circular comparison
                 if hook1.component.id != hook2.component.id:
-                    log_func(f"Hook {i} connected to different components: '{hook1.component.id}' vs '{hook2.component.id}'")
+                    log_func(
+                        f"Hook {i} connected to different components: '{hook1.component.id}' vs '{hook2.component.id}'"
+                    )
                     is_same = False
 
         return is_same

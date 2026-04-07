@@ -19,7 +19,10 @@ from pykotor.common.language import Language  # pyright: ignore[reportMissingImp
 
 # Handle optional pykotor.font dependency
 try:
-    from pykotor.font.draw import write_bitmap_font, write_bitmap_fonts  # pyright: ignore[reportMissingImports]
+    from pykotor.font.draw import (  # pyright: ignore[reportMissingImports]
+        write_bitmap_font,
+        write_bitmap_fonts,
+    )
 except ImportError:
     import pytest
 
@@ -31,8 +34,12 @@ if __name__ == "__main__":
 
 
 FONT_PATH_FILE = Path(__file__).parent / "test_files" / "roboto" / "Roboto-Black.ttf"
-CHINESE_FONT_PATH_FILE = Path(__file__).parent / "test_files" / "chinese_simplified_ttf" / "Unifontexmono-AL3RA.ttf"
-THAI_FONT_PATH_FILE = (Path(__file__).parent / "test_files" / "TH Sarabun New Regular" / "TH Sarabun New Regular.ttf").resolve()
+CHINESE_FONT_PATH_FILE = (
+    Path(__file__).parent / "test_files" / "chinese_simplified_ttf" / "Unifontexmono-AL3RA.ttf"
+)
+THAI_FONT_PATH_FILE = (
+    Path(__file__).parent / "test_files" / "TH Sarabun New Regular" / "TH Sarabun New Regular.ttf"
+).resolve()
 
 
 class TestWriteBitmapFont(unittest.TestCase):
@@ -42,14 +49,33 @@ class TestWriteBitmapFont(unittest.TestCase):
 
     def tearDown(self):
         # Remove the temporary directory and all its contents
-        shutil.rmtree(self.test_dir, ignore_errors=True, onerror=lambda *args: warnings.warn(f"Error removing directory: {args}"))
+        shutil.rmtree(
+            self.test_dir,
+            ignore_errors=True,
+            onerror=lambda *args: warnings.warn(f"Error removing directory: {args}"),
+        )
 
     def test_bitmap_font(self):
-        write_bitmap_fonts(self.test_dir, r"C:\Windows\Fonts\Inkfree.ttf", (2048, 2048), Language.ENGLISH, custom_scaling=1.0, draw_debug_box=True)
+        write_bitmap_fonts(
+            self.test_dir,
+            r"C:\Windows\Fonts\Inkfree.ttf",
+            (2048, 2048),
+            Language.ENGLISH,
+            custom_scaling=1.0,
+            draw_debug_box=True,
+        )
 
-    @unittest.skipIf(not THAI_FONT_PATH_FILE.exists(), f"Thai font file not found: {THAI_FONT_PATH_FILE}")
+    @unittest.skipIf(
+        not THAI_FONT_PATH_FILE.exists(), f"Thai font file not found: {THAI_FONT_PATH_FILE}"
+    )
     def test_bitmap_font_thai(self):
-        write_bitmap_font(Path(self.test_dir) / "test_font_thai.tga", THAI_FONT_PATH_FILE, (2048, 2048), Language.THAI, draw_debug_box=True)
+        write_bitmap_font(
+            Path(self.test_dir) / "test_font_thai.tga",
+            THAI_FONT_PATH_FILE,
+            (2048, 2048),
+            Language.THAI,
+            draw_debug_box=True,
+        )
 
     @unittest.skipIf(not FONT_PATH_FILE.exists(), f"Font file not found: {FONT_PATH_FILE}")
     def test_valid_inputs(self):

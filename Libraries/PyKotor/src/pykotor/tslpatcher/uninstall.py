@@ -196,7 +196,9 @@ class ModUninstaller:
                 f"No backups found at '{backup_folder_path}'!{os.linesep}HoloPatcher cannot uninstall TSLPatcher.exe installations.",
             )
             return None
-        return max(valid_backups, key=lambda x: datetime.strptime(x.name, "%Y-%m-%d_%H.%M.%S").astimezone())
+        return max(
+            valid_backups, key=lambda x: datetime.strptime(x.name, "%Y-%m-%d_%H.%M.%S").astimezone()
+        )
 
     def restore_backup(
         self,
@@ -234,11 +236,15 @@ class ModUninstaller:
             destination_path: Path = self.game_path / file_path.relative_to(backup_folder)  # type: ignore[attr-defined]
             ensure_directory_exists(destination_path.parent)
             shutil.copy(file_path, destination_path)
-            self.log.add_note(f"Restoring backup of '{file_path.name}' to '{destination_path.relative_to(self.game_path.parent)}'...")  # type: ignore[attr-defined]
+            self.log.add_note(
+                f"Restoring backup of '{file_path.name}' to '{destination_path.relative_to(self.game_path.parent)}'..."
+            )  # type: ignore[attr-defined]
 
     def get_backup_info(self) -> tuple[Path | None, set[str], list[Path], int]:
         """Get info about the most recent valid backup."""
-        most_recent_backup_folder: Path | None = self.get_most_recent_backup(self.backups_location_path)
+        most_recent_backup_folder: Path | None = self.get_most_recent_backup(
+            self.backups_location_path
+        )
         if most_recent_backup_folder is None:
             return None, set(), [], 0
 
@@ -249,7 +255,11 @@ class ModUninstaller:
             with BinaryReader.from_file(delete_list_file) as f:
                 lines: list[str] = decode_bytes_with_fallbacks(f.read_all()).split("\n")
             files_to_delete = {line.strip() for line in lines if line.strip()}
-            existing_files = {line.strip() for line in files_to_delete if line.strip() and Path(line.strip()).is_file()}
+            existing_files = {
+                line.strip()
+                for line in files_to_delete
+                if line.strip() and Path(line.strip()).is_file()
+            }
             if len(existing_files) < len(files_to_delete) and not messagebox.askyesno(
                 "Backup out of date or mismatched",
                 (
@@ -261,7 +271,9 @@ class ModUninstaller:
             ):
                 return None, set(), [], 0
 
-        files_in_backup: list[Path] = list(filter(Path.is_file, most_recent_backup_folder.rglob("*")))
+        files_in_backup: list[Path] = list(
+            filter(Path.is_file, most_recent_backup_folder.rglob("*"))
+        )
         folder_count: int = len(list(most_recent_backup_folder.rglob("*"))) - len(files_in_backup)
 
         return most_recent_backup_folder, existing_files, files_in_backup, folder_count
@@ -283,14 +295,18 @@ class ModUninstaller:
             - Restore files from backup
             - Offer to delete restored backup.
         """
-        most_recent_backup_folder, existing_files, files_in_backup, folder_count = self.get_backup_info()
+        most_recent_backup_folder, existing_files, files_in_backup, folder_count = (
+            self.get_backup_info()
+        )
         if most_recent_backup_folder is None:
             return False
         self.log.add_note(f"Using backup folder '{most_recent_backup_folder}'")
 
         if len(files_in_backup) < 6:
             for item in files_in_backup:
-                self.log.add_note(f"Would restore file '{item.relative_to(most_recent_backup_folder)}'")
+                self.log.add_note(
+                    f"Would restore file '{item.relative_to(most_recent_backup_folder)}'"
+                )
         if not messagebox.askyesno(
             "Confirmation",
             f"Really uninstall {len(existing_files)} files and restore the most recent backup (containing {len(files_in_backup)} files and {folder_count} folders)?\nNote: This uses the most recent mod-specific backup, the namespace option displayed does not affect this tool.",  # noqa: E501

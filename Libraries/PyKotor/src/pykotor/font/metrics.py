@@ -34,7 +34,9 @@ class FontMetrics:
         self.baseline_height: int
         self.max_underhang_height: int
         self.max_char_height: int
-        self.baseline_height, self.max_underhang_height, self.max_char_height = self._calculate_metrics()
+        self.baseline_height, self.max_underhang_height, self.max_char_height = (
+            self._calculate_metrics()
+        )
 
     def _calculate_metrics(self) -> tuple[int, int, int]:
         """Calculate font metrics including baseline height, underhang height, and max character height.
@@ -47,7 +49,9 @@ class FontMetrics:
         temp_draw: ImageDraw.ImageDraw = ImageDraw.Draw(temp_image)
 
         # Get the bounding box of the baseline character
-        baseline_bbox: tuple[int, int, int, int] = temp_draw.textbbox((0, 0), self.baseline_char, font=self.pil_font)
+        baseline_bbox: tuple[int, int, int, int] = temp_draw.textbbox(
+            (0, 0), self.baseline_char, font=self.pil_font
+        )
         baseline_height: int = int(baseline_bbox[3] - baseline_bbox[1])
 
         max_underhang_height: int = 0
@@ -58,7 +62,9 @@ class FontMetrics:
             if not char:  # Skip empty characters
                 continue
 
-            char_bbox: tuple[int, int, int, int] = temp_draw.textbbox((0, 0), char, font=self.pil_font)
+            char_bbox: tuple[int, int, int, int] = temp_draw.textbbox(
+                (0, 0), char, font=self.pil_font
+            )
 
             underhang_height = int(char_bbox[3] - baseline_bbox[3])
             char_height = int(char_bbox[3] - char_bbox[1])

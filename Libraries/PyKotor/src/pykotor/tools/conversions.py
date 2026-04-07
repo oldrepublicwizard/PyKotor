@@ -52,9 +52,19 @@ def _create_conversion_function(
     **default_kwargs: Any,
 ) -> Callable[..., None]:
     """Factory to create conversion functions with consistent patterns."""
+
     def convert(input_path: Path, output_path: Path, **kwargs: Any) -> None:
         merged_kwargs = {**default_kwargs, **kwargs}
-        _convert_resource(input_path, output_path, reader, writer, read_format=read_format, write_format=write_format, **merged_kwargs)
+        _convert_resource(
+            input_path,
+            output_path,
+            reader,
+            writer,
+            read_format=read_format,
+            write_format=write_format,
+            **merged_kwargs,
+        )
+
     return convert
 
 
@@ -66,10 +76,14 @@ def convert_gff_to_xml(input_path: Path, output_path: Path) -> None:
         input_path: Path to the input GFF file (binary or JSON)
         output_path: Path to write the output XML file
     """
-    _convert_resource(input_path, output_path, read_gff, write_gff, write_format=ResourceType.GFF_XML)
+    _convert_resource(
+        input_path, output_path, read_gff, write_gff, write_format=ResourceType.GFF_XML
+    )
 
 
-def convert_xml_to_gff(input_path: Path, output_path: Path, *, gff_content_type: str | None = None) -> None:
+def convert_xml_to_gff(
+    input_path: Path, output_path: Path, *, gff_content_type: str | None = None
+) -> None:
     """Convert an XML file to GFF format.
 
     Args:
@@ -78,7 +92,14 @@ def convert_xml_to_gff(input_path: Path, output_path: Path, *, gff_content_type:
         output_path: Path to write the output GFF file
         gff_content_type: Optional GFF content type (e.g., "IFO ", "UTC ") - auto-detected if None
     """
-    _convert_resource(input_path, output_path, read_gff, write_gff, read_format=ResourceType.GFF_XML, write_format=ResourceType.GFF)
+    _convert_resource(
+        input_path,
+        output_path,
+        read_gff,
+        write_gff,
+        read_format=ResourceType.GFF_XML,
+        write_format=ResourceType.GFF,
+    )
 
 
 def convert_tlk_to_xml(input_path: Path, output_path: Path) -> None:
@@ -89,10 +110,14 @@ def convert_tlk_to_xml(input_path: Path, output_path: Path) -> None:
         input_path: Path to the input TLK file
         output_path: Path to write the output XML file
     """
-    _convert_resource(input_path, output_path, read_tlk, write_tlk, write_format=ResourceType.TLK_XML)
+    _convert_resource(
+        input_path, output_path, read_tlk, write_tlk, write_format=ResourceType.TLK_XML
+    )
 
 
-def convert_xml_to_tlk(input_path: Path, output_path: Path, *, language: Language | None = None) -> None:
+def convert_xml_to_tlk(
+    input_path: Path, output_path: Path, *, language: Language | None = None
+) -> None:
     """Convert an XML file to TLK format.
 
     Args:
@@ -120,7 +145,9 @@ def convert_ssf_to_xml(input_path: Path, output_path: Path) -> None:
         input_path: Path to the input SSF file
         output_path: Path to write the output XML file
     """
-    _convert_resource(input_path, output_path, read_ssf, write_ssf, write_format=ResourceType.SSF_XML)
+    _convert_resource(
+        input_path, output_path, read_ssf, write_ssf, write_format=ResourceType.SSF_XML
+    )
 
 
 def convert_xml_to_ssf(input_path: Path, output_path: Path) -> None:
@@ -131,7 +158,14 @@ def convert_xml_to_ssf(input_path: Path, output_path: Path) -> None:
         input_path: Path to the input XML file
         output_path: Path to write the output SSF file
     """
-    _convert_resource(input_path, output_path, read_ssf, write_ssf, read_format=ResourceType.SSF_XML, write_format=ResourceType.SSF)
+    _convert_resource(
+        input_path,
+        output_path,
+        read_ssf,
+        write_ssf,
+        read_format=ResourceType.SSF_XML,
+        write_format=ResourceType.SSF,
+    )
 
 
 def convert_2da_to_csv(input_path: Path, output_path: Path, *, delimiter: str = ",") -> None:
@@ -143,7 +177,9 @@ def convert_2da_to_csv(input_path: Path, output_path: Path, *, delimiter: str = 
         output_path: Path to write the output CSV file
         delimiter: CSV delimiter character (default: comma)
     """
-    _convert_resource(input_path, output_path, read_2da, write_2da, write_format=ResourceType.TwoDA_CSV)
+    _convert_resource(
+        input_path, output_path, read_2da, write_2da, write_format=ResourceType.TwoDA_CSV
+    )
 
 
 def convert_csv_to_2da(input_path: Path, output_path: Path, *, delimiter: str = ",") -> None:
@@ -155,7 +191,14 @@ def convert_csv_to_2da(input_path: Path, output_path: Path, *, delimiter: str = 
         output_path: Path to write the output 2DA file
         delimiter: CSV delimiter character (default: comma)
     """
-    _convert_resource(input_path, output_path, read_2da, write_2da, read_format=ResourceType.TwoDA_CSV, write_format=ResourceType.TwoDA)
+    _convert_resource(
+        input_path,
+        output_path,
+        read_2da,
+        write_2da,
+        read_format=ResourceType.TwoDA_CSV,
+        write_format=ResourceType.TwoDA,
+    )
 
 
 def convert_gff_to_json(input_path: Path, output_path: Path) -> None:
@@ -166,10 +209,14 @@ def convert_gff_to_json(input_path: Path, output_path: Path) -> None:
         input_path: Path to the input GFF file (binary or XML)
         output_path: Path to write the output JSON file
     """
-    _convert_resource(input_path, output_path, read_gff, write_gff, write_format=ResourceType.GFF_JSON)
+    _convert_resource(
+        input_path, output_path, read_gff, write_gff, write_format=ResourceType.GFF_JSON
+    )
 
 
-def convert_json_to_gff(input_path: Path, output_path: Path, *, gff_content_type: str | None = None) -> None:
+def convert_json_to_gff(
+    input_path: Path, output_path: Path, *, gff_content_type: str | None = None
+) -> None:
     """Convert a JSON file to GFF format.
 
     Args:
@@ -178,7 +225,14 @@ def convert_json_to_gff(input_path: Path, output_path: Path, *, gff_content_type
         output_path: Path to write the output GFF file
         gff_content_type: Optional GFF content type (e.g., "IFO ", "UTC ") - auto-detected if None
     """
-    _convert_resource(input_path, output_path, read_gff, write_gff, read_format=ResourceType.GFF_JSON, write_format=ResourceType.GFF)
+    _convert_resource(
+        input_path,
+        output_path,
+        read_gff,
+        write_gff,
+        read_format=ResourceType.GFF_JSON,
+        write_format=ResourceType.GFF,
+    )
 
 
 def convert_tlk_to_json(input_path: Path, output_path: Path) -> None:
@@ -189,7 +243,9 @@ def convert_tlk_to_json(input_path: Path, output_path: Path) -> None:
         input_path: Path to the input TLK file
         output_path: Path to write the output JSON file
     """
-    _convert_resource(input_path, output_path, read_tlk, write_tlk, write_format=ResourceType.TLK_JSON)
+    _convert_resource(
+        input_path, output_path, read_tlk, write_tlk, write_format=ResourceType.TLK_JSON
+    )
 
 
 def convert_json_to_tlk(input_path: Path, output_path: Path) -> None:
@@ -200,4 +256,11 @@ def convert_json_to_tlk(input_path: Path, output_path: Path) -> None:
         input_path: Path to the input JSON file
         output_path: Path to write the output TLK file
     """
-    _convert_resource(input_path, output_path, read_tlk, write_tlk, read_format=ResourceType.TLK_JSON, write_format=ResourceType.TLK)
+    _convert_resource(
+        input_path,
+        output_path,
+        read_tlk,
+        write_tlk,
+        read_format=ResourceType.TLK_JSON,
+        write_format=ResourceType.TLK,
+    )

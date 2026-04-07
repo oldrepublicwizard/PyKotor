@@ -317,7 +317,9 @@ class TestFileDialogDropAcceptance(DragDropTestBase):
         for view in views:
             if view.acceptDrops() and view.isVisible():
                 # Create drag enter event
-                mime_data = DragDropTestHelper.create_file_mime_data([str(self.source_dir / "file1.txt")])
+                mime_data = DragDropTestHelper.create_file_mime_data(
+                    [str(self.source_dir / "file1.txt")]
+                )
 
                 event = DragDropTestHelper.create_drag_enter_event(
                     QPoint(view.width() // 2, view.height() // 2),
@@ -413,7 +415,9 @@ class TestExplorerDragInitiation(DragDropTestBase):
 
     def test_multi_selection_drag(self) -> None:
         """Verify multiple items can be dragged together."""
-        views = self.explorer.view.findChildren(QListView) + self.explorer.view.findChildren(QTreeView)
+        views = self.explorer.view.findChildren(QListView) + self.explorer.view.findChildren(
+            QTreeView
+        )
 
         for view in views:
             if view.dragEnabled() and view.isVisible():
@@ -452,7 +456,9 @@ class TestExplorerDropZones(DragDropTestBase):
 
     def test_content_area_accepts_drops(self) -> None:
         """Verify content area accepts file drops."""
-        views = self.explorer.view.findChildren(QListView) + self.explorer.view.findChildren(QTreeView)
+        views = self.explorer.view.findChildren(QListView) + self.explorer.view.findChildren(
+            QTreeView
+        )
 
         drop_enabled = any(v.acceptDrops() for v in views)
 
@@ -473,7 +479,9 @@ class TestExplorerDropZones(DragDropTestBase):
 
     def test_folder_items_are_drop_targets(self) -> None:
         """Verify folders within view can be drop targets."""
-        views = self.explorer.view.findChildren(QListView) + self.explorer.view.findChildren(QTreeView)
+        views = self.explorer.view.findChildren(QListView) + self.explorer.view.findChildren(
+            QTreeView
+        )
 
         for view in views:
             if view.isVisible() and view.acceptDrops():
@@ -506,7 +514,9 @@ class TestExplorerCopyMoveOperations(DragDropTestBase):
 
     def test_default_action_within_same_drive(self) -> None:
         """Verify default action within same drive is Move."""
-        views = self.explorer.view.findChildren(QListView) + self.explorer.view.findChildren(QTreeView)
+        views = self.explorer.view.findChildren(QListView) + self.explorer.view.findChildren(
+            QTreeView
+        )
 
         for view in views:
             if view.dragEnabled():
@@ -519,12 +529,16 @@ class TestExplorerCopyMoveOperations(DragDropTestBase):
         """Verify Ctrl key forces copy operation."""
         # This tests the modifier key behavior
         # When Ctrl is held during drop, operation should be Copy
-        views = self.explorer.view.findChildren(QListView) + self.explorer.view.findChildren(QTreeView)
+        views = self.explorer.view.findChildren(QListView) + self.explorer.view.findChildren(
+            QTreeView
+        )
 
         for view in views:
             if view.acceptDrops() and view.isVisible():
                 # Create drop event with Ctrl modifier
-                mime_data = DragDropTestHelper.create_file_mime_data([str(self.source_dir / "file1.txt")])
+                mime_data = DragDropTestHelper.create_file_mime_data(
+                    [str(self.source_dir / "file1.txt")]
+                )
 
                 # In actual implementation, Ctrl modifier changes action
                 break
@@ -532,7 +546,9 @@ class TestExplorerCopyMoveOperations(DragDropTestBase):
     def test_shift_modifier_forces_move(self) -> None:
         """Verify Shift key forces move operation."""
         # Similar test for Shift modifier
-        views = self.explorer.view.findChildren(QListView) + self.explorer.view.findChildren(QTreeView)
+        views = self.explorer.view.findChildren(QListView) + self.explorer.view.findChildren(
+            QTreeView
+        )
 
         for view in views:
             if view.acceptDrops():
@@ -574,10 +590,14 @@ class TestCrossWidgetDragDrop(DragDropTestBase):
     def test_drag_between_explorers(self) -> None:
         """Verify drag from one explorer to another works."""
         # Get source view
-        source_views = self.explorer1.view.findChildren(QListView) + self.explorer1.view.findChildren(QTreeView)
+        source_views = self.explorer1.view.findChildren(
+            QListView
+        ) + self.explorer1.view.findChildren(QTreeView)
 
         # Get dest view
-        dest_views = self.explorer2.view.findChildren(QListView) + self.explorer2.view.findChildren(QTreeView)
+        dest_views = self.explorer2.view.findChildren(QListView) + self.explorer2.view.findChildren(
+            QTreeView
+        )
 
         for source in source_views:
             if source.dragEnabled() and source.isVisible():
@@ -675,7 +695,9 @@ class TestDragScrollBehavior(DragDropTestBase):
 
     def test_scroll_bars_present(self) -> None:
         """Verify scroll bars are available for large content."""
-        views = self.explorer.view.findChildren(QListView) + self.explorer.view.findChildren(QTreeView)
+        views = self.explorer.view.findChildren(QListView) + self.explorer.view.findChildren(
+            QTreeView
+        )
 
         for view in views:
             if view.isVisible():

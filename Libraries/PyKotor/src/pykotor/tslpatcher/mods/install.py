@@ -65,8 +65,14 @@ def create_backup(
             uninstall_folder.mkdir(exist_ok=True)
 
             # Write the PowerShell/Bash uninstall scripts to the uninstall folder
-            subdir_temp: PurePath | None = PurePath(subdirectory_path) if subdirectory_path else None
-            game_folder: CaseAwarePath = destination_filepath.parents[len(subdir_temp.parts)] if subdir_temp else destination_filepath.parent
+            subdir_temp: PurePath | None = (
+                PurePath(subdirectory_path) if subdirectory_path else None
+            )
+            game_folder: CaseAwarePath = (
+                destination_filepath.parents[len(subdir_temp.parts)]
+                if subdir_temp
+                else destination_filepath.parent
+            )
             create_uninstall_scripts(backup_folderpath, uninstall_folder, game_folder)
             processed_files.add(uninstall_str_lower)
 
@@ -75,7 +81,9 @@ def create_backup(
             i = 2
             filestem: str = backup_filepath.stem
             while backup_filepath.exists():
-                backup_filepath = backup_filepath.parent / f"{filestem} ({i}){backup_filepath.suffix}"
+                backup_filepath = (
+                    backup_filepath.parent / f"{filestem} ({i}){backup_filepath.suffix}"
+                )
                 i += 1
 
             log.add_note(f"Backing up '{destination_file_str}'...")
@@ -84,7 +92,9 @@ def create_backup(
             try:
                 shutil.copy(destination_filepath, backup_filepath)
             except (OSError, PermissionError) as e:
-                log.add_warning(f"Failed to create backup of '{destination_file_str}': {(e.__class__.__name__, str(e))}")
+                log.add_warning(
+                    f"Failed to create backup of '{destination_file_str}': {(e.__class__.__name__, str(e))}"
+                )
         else:
             # Write the file path to remove these files.txt in backup directory
             removal_files_txt: CaseAwarePath = backup_folderpath.joinpath("remove these files.txt")
@@ -319,7 +329,9 @@ class InstallFile(PatcherModifications):
         self.action: str = "Copy "
         self.skip_if_not_replace: bool = True
 
-    def __hash__(self):  # HACK(th3w1zard1): organize this into PatcherModifications class later, this is only used for nwscript.nss currently.
+    def __hash__(
+        self,
+    ):  # HACK(th3w1zard1): organize this into PatcherModifications class later, this is only used for nwscript.nss currently.
         return hash((self.destination, self.saveas, self.replace_file))
 
     def patch_resource(

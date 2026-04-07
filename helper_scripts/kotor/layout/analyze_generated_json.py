@@ -5,7 +5,9 @@ import json
 from pathlib import Path
 
 REPO_ROOT = Path(__file__).parent.parent
-generated_json = REPO_ROOT / "tests" / "test_toolset" / "test_files" / "generated_kit" / "jedienclave.json"
+generated_json = (
+    REPO_ROOT / "tests" / "test_toolset" / "test_files" / "generated_kit" / "jedienclave.json"
+)
 
 if not generated_json.exists():
     print(f"ERROR: Generated JSON not found: {generated_json}")
@@ -49,7 +51,9 @@ for i, door in enumerate(doors):
     print(f"  {i + 1:2d}. {utd_k1:25s} - {width:.2f} x {height:.2f}")
 
 # Compare with sithbase for reference
-sithbase_json = REPO_ROOT / "Tools" / "HolocronToolset" / "src" / "toolset" / "kits" / "kits" / "sithbase.json"
+sithbase_json = (
+    REPO_ROOT / "Tools" / "HolocronToolset" / "src" / "toolset" / "kits" / "kits" / "sithbase.json"
+)
 if sithbase_json.exists():
     print("\n" + "=" * 80)
     print("COMPARISON WITH SITHBASE KIT (for reference)")

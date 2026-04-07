@@ -83,7 +83,11 @@ for i, section_name in enumerate(section_names[:-1]):
         section_content = "\n".join(lines_list)
 
         # Add link back to main GFF file right after the title
-        section_content = section_content.replace(f"# {full_title}\n", f"# {full_title}\n\nPart of the [GFF File Format Documentation](GFF-File-Format).\n\n", 1)
+        section_content = section_content.replace(
+            f"# {full_title}\n",
+            f"# {full_title}\n\nPart of the [GFF File Format Documentation](GFF-File-Format).\n\n",
+            1,
+        )
     else:
         # Fallback
         section_content = re.sub(r"^### ", "## ", section_content, flags=re.MULTILINE)

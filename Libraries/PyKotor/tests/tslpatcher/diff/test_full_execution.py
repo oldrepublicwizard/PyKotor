@@ -58,6 +58,7 @@ try:
         validate_game_directory,
         validate_install_paths,
     )
+
     HAS_HOLOPATCHER = True
 except ModuleNotFoundError:
     HAS_HOLOPATCHER = False
@@ -123,8 +124,12 @@ def get_test_paths() -> tuple[str, str]:
     Returns:
         Tuple of (path1_vanilla, path2_modded)
     """
-    path1 = os.environ.get("K1_VANILLA_PATH", r"C:\Program Files (x86)\Steam\steamapps\common\swkotor - Vanilla")
-    path2 = os.environ.get("K1_SLEHEYRON_PATH", r"C:\Program Files (x86)\Steam\steamapps\common\swkotor")
+    path1 = os.environ.get(
+        "K1_VANILLA_PATH", r"C:\Program Files (x86)\Steam\steamapps\common\swkotor - Vanilla"
+    )
+    path2 = os.environ.get(
+        "K1_SLEHEYRON_PATH", r"C:\Program Files (x86)\Steam\steamapps\common\swkotor"
+    )
     return path1, path2
 
 
@@ -260,7 +265,13 @@ class TestKotorDiffFullExecution(unittest.TestCase):
         cls.mod_info_for_uninstall = None
         cls.step3_completed = False
 
-    def _save_profiler_results(self, profiler: cProfile.Profile, profiler_output_file: Path, profiler_summary_file: Path, step_name: str):
+    def _save_profiler_results(
+        self,
+        profiler: cProfile.Profile,
+        profiler_output_file: Path,
+        profiler_summary_file: Path,
+        step_name: str,
+    ):
         """Save profiler results to files."""
         try:
             profiler.dump_stats(str(profiler_output_file))
@@ -291,7 +302,9 @@ class TestKotorDiffFullExecution(unittest.TestCase):
             print(f"[TEST] Profile summary saved to: {profiler_summary_file}")
             print("[TEST] To view profile:")
             print(f"[TEST]   CLI (built-in): python -m pstats {profiler_output_file}")
-            print(f"[TEST]   Visual (SnakeViz): uv pip install snakeviz && snakeviz {profiler_output_file}")
+            print(
+                f"[TEST]   Visual (SnakeViz): uv pip install snakeviz && snakeviz {profiler_output_file}"
+            )
         except Exception as e:
             print(f"[TEST] Warning: Failed to save profile data: {e}")
 
@@ -303,7 +316,9 @@ class TestKotorDiffFullExecution(unittest.TestCase):
         """
         profiler = cProfile.Profile()
         profiler_output_file = self.tslpatchdata_path / "test_step1_generate_patch_profile.prof"
-        profiler_summary_file = self.tslpatchdata_path / "test_step1_generate_patch_profile_summary.txt"
+        profiler_summary_file = (
+            self.tslpatchdata_path / "test_step1_generate_patch_profile_summary.txt"
+        )
 
         try:
             profiler.enable()
@@ -344,10 +359,18 @@ class TestKotorDiffFullExecution(unittest.TestCase):
             print(f"[TEST] KotorDiff completed with exit code: {result}")
 
             # Verify changes.ini was generated
-            if self.generated_ini_path is None or not self.generated_ini_path.exists() or not self.generated_ini_path.is_file():
-                self.fail(f"Cannot proceed: changes.ini was not generated at {self.generated_ini_path}")
+            if (
+                self.generated_ini_path is None
+                or not self.generated_ini_path.exists()
+                or not self.generated_ini_path.is_file()
+            ):
+                self.fail(
+                    f"Cannot proceed: changes.ini was not generated at {self.generated_ini_path}"
+                )
 
-            print(f"[TEST] ✓ Step 1 completed: changes.ini generated successfully at {self.generated_ini_path}")
+            print(
+                f"[TEST] ✓ Step 1 completed: changes.ini generated successfully at {self.generated_ini_path}"
+            )
 
         except KeyboardInterrupt:
             print("\n[TEST] KeyboardInterrupt: Step 1 was cancelled by user")
@@ -358,7 +381,9 @@ class TestKotorDiffFullExecution(unittest.TestCase):
             raise
         finally:
             profiler.disable()
-            self._save_profiler_results(profiler, profiler_output_file, profiler_summary_file, "Step 1: Generate Patch")
+            self._save_profiler_results(
+                profiler, profiler_output_file, profiler_summary_file, "Step 1: Generate Patch"
+            )
 
     def test_02_step2_install_patch(self):
         """Step 2 validator: install the generated changes.ini using HoloPatcher.
@@ -372,7 +397,9 @@ class TestKotorDiffFullExecution(unittest.TestCase):
         """
         profiler = cProfile.Profile()
         profiler_output_file = self.tslpatchdata_path / "test_step2_install_patch_profile.prof"
-        profiler_summary_file = self.tslpatchdata_path / "test_step2_install_patch_profile_summary.txt"
+        profiler_summary_file = (
+            self.tslpatchdata_path / "test_step2_install_patch_profile_summary.txt"
+        )
 
         try:
             profiler.enable()
@@ -380,7 +407,9 @@ class TestKotorDiffFullExecution(unittest.TestCase):
 
             # Check prerequisite: changes.ini must exist
             if not self.generated_ini_path or not self.generated_ini_path.exists():
-                self.skipTest(f"Cannot proceed: changes.ini not found at {self.generated_ini_path}. Run test_01_step1_generate_patch first.")
+                self.skipTest(
+                    f"Cannot proceed: changes.ini not found at {self.generated_ini_path}. Run test_01_step1_generate_patch first."
+                )
 
             print(f"[TEST] ✓ Found changes.ini at {self.generated_ini_path}")
 
@@ -402,7 +431,9 @@ class TestKotorDiffFullExecution(unittest.TestCase):
             print(f"[TEST] Validated game path: {game_path}")
 
             # Validate install paths
-            assert validate_install_paths(mod_info.mod_path, game_path), f"Invalid mod or game paths: mod={mod_info.mod_path}, game={game_path}"
+            assert validate_install_paths(mod_info.mod_path, game_path), (
+                f"Invalid mod or game paths: mod={mod_info.mod_path}, game={game_path}"
+            )
 
             # Install the mod
             patcher_logger = PatchLogger()
@@ -423,8 +454,12 @@ class TestKotorDiffFullExecution(unittest.TestCase):
             print(f"  Patches: {install_result.num_patches}")
             print(f"  Time: {format_install_time(install_result.install_time)}")
 
-            assert install_result.num_errors == 0, f"Installation had {install_result.num_errors} errors"
-            assert install_result.num_patches > 0, f"Installation should have applied patches, got {install_result.num_patches}"
+            assert install_result.num_errors == 0, (
+                f"Installation had {install_result.num_errors} errors"
+            )
+            assert install_result.num_patches > 0, (
+                f"Installation should have applied patches, got {install_result.num_patches}"
+            )
 
             # Store mod_info for potential uninstall
             self.mod_info_for_uninstall = mod_info
@@ -439,7 +474,9 @@ class TestKotorDiffFullExecution(unittest.TestCase):
             raise
         finally:
             profiler.disable()
-            self._save_profiler_results(profiler, profiler_output_file, profiler_summary_file, "Step 2: Install Patch")
+            self._save_profiler_results(
+                profiler, profiler_output_file, profiler_summary_file, "Step 2: Install Patch"
+            )
 
     def test_03_step3_verify_installation(self):
         """Step 3 validator: diff the installed test installation against vanilla.
@@ -451,8 +488,12 @@ class TestKotorDiffFullExecution(unittest.TestCase):
         (from step 2). Can be run independently if installation already exists.
         """
         profiler = cProfile.Profile()
-        profiler_output_file = self.tslpatchdata_path / "test_step3_verify_installation_profile.prof"
-        profiler_summary_file = self.tslpatchdata_path / "test_step3_verify_installation_profile_summary.txt"
+        profiler_output_file = (
+            self.tslpatchdata_path / "test_step3_verify_installation_profile.prof"
+        )
+        profiler_summary_file = (
+            self.tslpatchdata_path / "test_step3_verify_installation_profile_summary.txt"
+        )
 
         try:
             profiler.enable()
@@ -463,10 +504,14 @@ class TestKotorDiffFullExecution(unittest.TestCase):
                 self.fail("Vanilla path not initialized")
 
             if not self.test_install_path:
-                self.test_install_path = Path(self.path1_vanilla).parent / "swkotor - Vanilla - Copy"
+                self.test_install_path = (
+                    Path(self.path1_vanilla).parent / "swkotor - Vanilla - Copy"
+                )
 
             if not self.test_install_path.exists():
-                self.skipTest(f"Cannot proceed: Test installation not found at {self.test_install_path}. Run test_02_step2_install_patch first.")
+                self.skipTest(
+                    f"Cannot proceed: Test installation not found at {self.test_install_path}. Run test_02_step2_install_patch first."
+                )
 
             print(f"[TEST] ✓ Found test installation at {self.test_install_path}")
 
@@ -481,7 +526,9 @@ class TestKotorDiffFullExecution(unittest.TestCase):
             # Run KotorDiff for verification
             # NOTE: We're diffing test_install_path (which has mod installed) to path1_vanilla
             # If installation worked correctly, this diff should show the same changes as the original diff
-            print("[TEST] Running KotorDiff to diff installed test installation to path1 (vanilla)...")
+            print(
+                "[TEST] Running KotorDiff to diff installed test installation to path1 (vanilla)..."
+            )
             verify_result = run_application(
                 config=DiffConfig(
                     paths=[Installation(self.test_install_path), Installation(self.path1_vanilla)],
@@ -491,7 +538,9 @@ class TestKotorDiffFullExecution(unittest.TestCase):
                     logging_enabled=True,
                 )
             )
-            assert verify_result == 0, f"Verification KotorDiff failed with exit code: {verify_result}"
+            assert verify_result == 0, (
+                f"Verification KotorDiff failed with exit code: {verify_result}"
+            )
             print(f"[TEST] Verification KotorDiff completed with exit code: {verify_result}")
 
             # Mark step 3 as completed successfully
@@ -508,7 +557,9 @@ class TestKotorDiffFullExecution(unittest.TestCase):
             # This means uninstall won't run in cleanup
         finally:
             profiler.disable()
-            self._save_profiler_results(profiler, profiler_output_file, profiler_summary_file, "Step 3: Verify Installation")
+            self._save_profiler_results(
+                profiler, profiler_output_file, profiler_summary_file, "Step 3: Verify Installation"
+            )
 
     def test_04_step4_uninstall_patch(self):
         """Step 4 cleanup validator: uninstall the mod from the test installation.
@@ -520,7 +571,9 @@ class TestKotorDiffFullExecution(unittest.TestCase):
         """
         profiler = cProfile.Profile()
         profiler_output_file = self.tslpatchdata_path / "test_step4_uninstall_patch_profile.prof"
-        profiler_summary_file = self.tslpatchdata_path / "test_step4_uninstall_patch_profile_summary.txt"
+        profiler_summary_file = (
+            self.tslpatchdata_path / "test_step4_uninstall_patch_profile_summary.txt"
+        )
 
         try:
             profiler.enable()
@@ -531,10 +584,14 @@ class TestKotorDiffFullExecution(unittest.TestCase):
                 self.fail("Vanilla path not initialized")
 
             if not self.test_install_path:
-                self.test_install_path = Path(self.path1_vanilla).parent / "swkotor - Vanilla - Copy"
+                self.test_install_path = (
+                    Path(self.path1_vanilla).parent / "swkotor - Vanilla - Copy"
+                )
 
             if not self.test_install_path.exists():
-                self.skipTest(f"Cannot proceed: Test installation not found at {self.test_install_path}. Nothing to uninstall.")
+                self.skipTest(
+                    f"Cannot proceed: Test installation not found at {self.test_install_path}. Nothing to uninstall."
+                )
 
             if not self.mod_info_for_uninstall:
                 # Try to load mod info if not already loaded
@@ -542,11 +599,17 @@ class TestKotorDiffFullExecution(unittest.TestCase):
                     self.mod_info_for_uninstall = load_mod(str(self.tslpatchdata_path))
                     print("[TEST] Loaded mod info for uninstall")
                 except Exception as e:
-                    self.skipTest(f"Cannot proceed: Could not load mod info for uninstall: {e}. Run test_02_step2_install_patch first.")
+                    self.skipTest(
+                        f"Cannot proceed: Could not load mod info for uninstall: {e}. Run test_02_step2_install_patch first."
+                    )
 
             print(f"[TEST] Uninstalling mod from {self.test_install_path}...")
             patcher_logger = PatchLogger()
-            fully_ran = uninstall_mod(self.mod_info_for_uninstall.mod_path, self.test_install_path.as_posix(), patcher_logger)
+            fully_ran = uninstall_mod(
+                self.mod_info_for_uninstall.mod_path,
+                self.test_install_path.as_posix(),
+                patcher_logger,
+            )
 
             if fully_ran:
                 print("[TEST] ✓ Step 4 completed: Uninstall successful")
@@ -562,7 +625,9 @@ class TestKotorDiffFullExecution(unittest.TestCase):
             # Don't fail the test - uninstall is cleanup
         finally:
             profiler.disable()
-            self._save_profiler_results(profiler, profiler_output_file, profiler_summary_file, "Step 4: Uninstall Patch")
+            self._save_profiler_results(
+                profiler, profiler_output_file, profiler_summary_file, "Step 4: Uninstall Patch"
+            )
 
 
 def report_test_errors(errors: list[str], test_case: unittest.TestCase):

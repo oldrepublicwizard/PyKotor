@@ -174,7 +174,9 @@ class Ui_QFileDialog:  # noqa: N801
         # Button box
         self.buttonBox: QDialogButtonBox = QDialogButtonBox(parent=QFileDialog)
         self.buttonBox.setOrientation(QtCore.Qt.Orientation.Vertical)
-        self.buttonBox.setStandardButtons(QDialogButtonBox.StandardButton.Cancel | QDialogButtonBox.StandardButton.Ok)
+        self.buttonBox.setStandardButtons(
+            QDialogButtonBox.StandardButton.Cancel | QDialogButtonBox.StandardButton.Ok
+        )
         self.buttonBox.setObjectName("buttonBox")
         self.gridlayout.addWidget(self.buttonBox, 2, 2, 2, 1)
 
@@ -229,23 +231,33 @@ class Ui_QFileDialog:  # noqa: N801
 
         self.toParentButton.setToolTip(_translate("QFileDialog", "Parent Directory"))
         self.toParentButton.setAccessibleName(_translate("QFileDialog", "Parent Directory"))
-        self.toParentButton.setAccessibleDescription(_translate("QFileDialog", "Go to the parent directory"))
+        self.toParentButton.setAccessibleDescription(
+            _translate("QFileDialog", "Go to the parent directory")
+        )
         self.toParentButton.setShortcut(_translate("QFileDialog", "Alt+Up"))
 
         self.newFolderButton.setToolTip(_translate("QFileDialog", "Create New Folder"))
         self.newFolderButton.setAccessibleName(_translate("QFileDialog", "Create New Folder"))
-        self.newFolderButton.setAccessibleDescription(_translate("QFileDialog", "Create a New Folder"))
+        self.newFolderButton.setAccessibleDescription(
+            _translate("QFileDialog", "Create a New Folder")
+        )
 
         self.listModeButton.setToolTip(_translate("QFileDialog", "List View"))
         self.listModeButton.setAccessibleName(_translate("QFileDialog", "List View"))
-        self.listModeButton.setAccessibleDescription(_translate("QFileDialog", "Change to list view mode"))
+        self.listModeButton.setAccessibleDescription(
+            _translate("QFileDialog", "Change to list view mode")
+        )
 
         self.detailModeButton.setToolTip(_translate("QFileDialog", "Detail View"))
         self.detailModeButton.setAccessibleName(_translate("QFileDialog", "Detail View"))
-        self.detailModeButton.setAccessibleDescription(_translate("QFileDialog", "Change to detail view mode"))
+        self.detailModeButton.setAccessibleDescription(
+            _translate("QFileDialog", "Change to detail view mode")
+        )
 
         self.sidebar.setAccessibleName(_translate("QFileDialog", "Sidebar"))
-        self.sidebar.setAccessibleDescription(_translate("QFileDialog", "List of places and bookmarks"))
+        self.sidebar.setAccessibleDescription(
+            _translate("QFileDialog", "List of places and bookmarks")
+        )
 
         self.listView.setAccessibleName(_translate("QFileDialog", "Files"))
         self.treeView.setAccessibleName(_translate("QFileDialog", "Files"))

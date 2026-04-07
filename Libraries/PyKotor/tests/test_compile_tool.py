@@ -363,4 +363,6 @@ class TestToolSpecificCompilation:
             slug = tool.lower()
 
         entrypoint = f"{slug}/__main__.py"
-        assert entrypoint == expected_entrypoint, f"{tool} entrypoint should be {expected_entrypoint}, got {entrypoint}"
+        assert entrypoint == expected_entrypoint, (
+            f"{tool} entrypoint should be {expected_entrypoint}, got {entrypoint}"
+        )

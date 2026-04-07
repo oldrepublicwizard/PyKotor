@@ -50,12 +50,22 @@ class JOBOBJECT_BASIC_LIMIT_INFORMATION(ctypes.Structure):  # noqa: N801
         ("PriorityClass", ctypes.wintypes.DWORD),
         ("SchedulingClass", ctypes.wintypes.DWORD),
     ]
-    PerProcessUserTimeLimit: ctypes.wintypes.LARGE_INTEGER  # The time limit for the user time of a process in the job.
-    PerJobUserTimeLimit: ctypes.wintypes.LARGE_INTEGER  # The time limit for the user time of the job.
+    PerProcessUserTimeLimit: (
+        ctypes.wintypes.LARGE_INTEGER
+    )  # The time limit for the user time of a process in the job.
+    PerJobUserTimeLimit: (
+        ctypes.wintypes.LARGE_INTEGER
+    )  # The time limit for the user time of the job.
     LimitFlags: ctypes.wintypes.DWORD  # The limit flags for the job object.
-    MinimumWorkingSetSize: ctypes.wintypes.LPVOID  # The minimum working set size for the job object.
-    MaximumWorkingSetSize: ctypes.wintypes.LPVOID  # The maximum working set size for the job object.
-    ActiveProcessLimit: ctypes.wintypes.DWORD  # The maximum number of processes that can be active in the job object.
+    MinimumWorkingSetSize: (
+        ctypes.wintypes.LPVOID
+    )  # The minimum working set size for the job object.
+    MaximumWorkingSetSize: (
+        ctypes.wintypes.LPVOID
+    )  # The maximum working set size for the job object.
+    ActiveProcessLimit: (
+        ctypes.wintypes.DWORD
+    )  # The maximum number of processes that can be active in the job object.
     Affinity: ctypes._Pointer[ctypes.wintypes.LPVOID]  # The affinity mask for the job object.
     PriorityClass: ctypes.wintypes.DWORD  # The priority class for the job object.
     SchedulingClass: ctypes.wintypes.DWORD  # The scheduling class for the job object.
@@ -72,12 +82,24 @@ class IO_COUNTERS(ctypes.Structure):  # noqa: N801
         ("WriteTransferCount", ctypes.wintypes.ULARGE_INTEGER),
         ("OtherTransferCount", ctypes.wintypes.ULARGE_INTEGER),
     ]
-    ReadOperationCount: ctypes.wintypes.ULARGE_INTEGER  # The number of read operations performed by the job object.
-    WriteOperationCount: ctypes.wintypes.ULARGE_INTEGER  # The number of write operations performed by the job object.
-    OtherOperationCount: ctypes.wintypes.ULARGE_INTEGER  # The number of other operations performed by the job object.
-    ReadTransferCount: ctypes.wintypes.ULARGE_INTEGER  # The number of bytes read from the job object.
-    WriteTransferCount: ctypes.wintypes.ULARGE_INTEGER  # The number of bytes written to the job object.
-    OtherTransferCount: ctypes.wintypes.ULARGE_INTEGER  # The number of bytes transferred to the job object.
+    ReadOperationCount: (
+        ctypes.wintypes.ULARGE_INTEGER
+    )  # The number of read operations performed by the job object.
+    WriteOperationCount: (
+        ctypes.wintypes.ULARGE_INTEGER
+    )  # The number of write operations performed by the job object.
+    OtherOperationCount: (
+        ctypes.wintypes.ULARGE_INTEGER
+    )  # The number of other operations performed by the job object.
+    ReadTransferCount: (
+        ctypes.wintypes.ULARGE_INTEGER
+    )  # The number of bytes read from the job object.
+    WriteTransferCount: (
+        ctypes.wintypes.ULARGE_INTEGER
+    )  # The number of bytes written to the job object.
+    OtherTransferCount: (
+        ctypes.wintypes.ULARGE_INTEGER
+    )  # The number of bytes transferred to the job object.
 
 
 class JOBOBJECT_EXTENDED_LIMIT_INFORMATION(ctypes.Structure):  # noqa: N801
@@ -91,7 +113,9 @@ class JOBOBJECT_EXTENDED_LIMIT_INFORMATION(ctypes.Structure):  # noqa: N801
         ("PeakProcessMemoryUsed", ctypes.c_size_t),
         ("PeakJobMemoryUsed", ctypes.c_size_t),
     ]
-    BasicLimitInformation: JOBOBJECT_BASIC_LIMIT_INFORMATION  # The basic limit information for the job object.
+    BasicLimitInformation: (
+        JOBOBJECT_BASIC_LIMIT_INFORMATION  # The basic limit information for the job object.
+    )
     IoInfo: IO_COUNTERS  # The I/O counters for the job object.
     ProcessMemoryLimit: ctypes.wintypes.LPVOID  # The memory limit for the job object.
     JobMemoryLimit: ctypes.wintypes.LPVOID  # The memory limit for the job object.
@@ -105,9 +129,13 @@ class JOBOBJECT_BASIC_PROCESS_ID_LIST(ctypes.Structure):  # noqa: N801
         ("NumberOfProcessIdsInList", ctypes.wintypes.DWORD),
         ("ProcessIdList", ctypes.POINTER(ctypes.wintypes.DWORD)),
     ]
-    NumberOfAssignedProcesses: ctypes.wintypes.DWORD  # The number of processes assigned to the job object.
+    NumberOfAssignedProcesses: (
+        ctypes.wintypes.DWORD
+    )  # The number of processes assigned to the job object.
     NumberOfProcessIdsInList: ctypes.wintypes.DWORD  # The number of process IDs in the list.
-    ProcessIdList: ctypes._Pointer[ctypes.wintypes.DWORD]  # The list of process IDs assigned to the job object.
+    ProcessIdList: ctypes._Pointer[
+        ctypes.wintypes.DWORD
+    ]  # The list of process IDs assigned to the job object.
 
 
 class JOBOBJECT_BASIC_ACCOUNTING_INFORMATION(ctypes.Structure):  # noqa: N801
@@ -123,12 +151,20 @@ class JOBOBJECT_BASIC_ACCOUNTING_INFORMATION(ctypes.Structure):  # noqa: N801
     ]
     TotalUserTime: ctypes.wintypes.LARGE_INTEGER  # The total user time for the job object.
     TotalKernelTime: ctypes.wintypes.LARGE_INTEGER  # The total kernel time for the job object.
-    ThisPeriodTotalUserTime: ctypes.wintypes.LARGE_INTEGER  # The total user time for the current period for the job object.
-    ThisPeriodTotalKernelTime: ctypes.wintypes.LARGE_INTEGER  # The total kernel time for the current period for the job object.
-    TotalPageFaultCount: ctypes.wintypes.DWORD  # The total number of page faults for the job object.
+    ThisPeriodTotalUserTime: (
+        ctypes.wintypes.LARGE_INTEGER
+    )  # The total user time for the current period for the job object.
+    ThisPeriodTotalKernelTime: (
+        ctypes.wintypes.LARGE_INTEGER
+    )  # The total kernel time for the current period for the job object.
+    TotalPageFaultCount: (
+        ctypes.wintypes.DWORD
+    )  # The total number of page faults for the job object.
     TotalProcesses: ctypes.wintypes.DWORD  # The total number of processes for the job object.
     ActiveProcesses: ctypes.wintypes.DWORD  # The number of active processes for the job object.
-    TotalTerminatedProcesses: ctypes.wintypes.DWORD  # The total number of terminated processes for the job object.
+    TotalTerminatedProcesses: (
+        ctypes.wintypes.DWORD
+    )  # The total number of terminated processes for the job object.
 
 
 class JOBOBJECT_BASIC_AND_IO_ACCOUNTING_INFORMATION(ctypes.Structure):  # noqa: N801
@@ -279,7 +315,11 @@ def create_job_object(
 
     if extended_limit_information is None:
         extended_limit_information = JOBOBJECT_EXTENDED_LIMIT_INFORMATION()
-    limit_flags_value = limit_flags.value if limit_flags is not None else JOBOBJECTLIMIT.JOB_OBJECT_LIMIT_KILL_ON_JOB_CLOSE
+    limit_flags_value = (
+        limit_flags.value
+        if limit_flags is not None
+        else JOBOBJECTLIMIT.JOB_OBJECT_LIMIT_KILL_ON_JOB_CLOSE
+    )
     extended_limit_information.BasicLimitInformation.LimitFlags = ctypes.c_ulong(limit_flags_value)
     if not ctypes.windll.kernel32.SetInformationJobObject(
         job,
@@ -316,7 +356,9 @@ def assign_process_to_job_object(job: ctypes.c_int | int, process: ctypes.c_int 
         raise ctypes.WinError(ctypes.get_last_error())  # noqa: TRY301
 
 
-def set_information_job_object(job: ctypes.c_int | int, info_class: JOBOBJECTINFOCLASS, data: ctypes.Structure) -> None:
+def set_information_job_object(
+    job: ctypes.c_int | int, info_class: JOBOBJECTINFOCLASS, data: ctypes.Structure
+) -> None:
     """Sets information for the specified job object.
 
     Documentation:
@@ -340,9 +382,15 @@ def set_information_job_object(job: ctypes.c_int | int, info_class: JOBOBJECTINF
         extended_limit_information = JOBOBJECT_EXTENDED_LIMIT_INFORMATION()
         extended_limit_information.BasicLimitInformation = JOBOBJECT_BASIC_LIMIT_INFORMATION()
         extended_limit_information.BasicLimitInformation.LimitFlags = data.LimitFlags
-        extended_limit_information.BasicLimitInformation.MinimumWorkingSetSize = data.MinimumWorkingSetSize
-        extended_limit_information.BasicLimitInformation.MaximumWorkingSetSize = data.MaximumWorkingSetSize
-        extended_limit_information.BasicLimitInformation.ActiveProcessLimit = data.ActiveProcessLimit
+        extended_limit_information.BasicLimitInformation.MinimumWorkingSetSize = (
+            data.MinimumWorkingSetSize
+        )
+        extended_limit_information.BasicLimitInformation.MaximumWorkingSetSize = (
+            data.MaximumWorkingSetSize
+        )
+        extended_limit_information.BasicLimitInformation.ActiveProcessLimit = (
+            data.ActiveProcessLimit
+        )
         extended_limit_information.BasicLimitInformation.Affinity = data.Affinity
         extended_limit_information.BasicLimitInformation.PriorityClass = data.PriorityClass
         extended_limit_information.BasicLimitInformation.SchedulingClass = data.SchedulingClass
@@ -355,7 +403,9 @@ def set_information_job_object(job: ctypes.c_int | int, info_class: JOBOBJECTINF
             raise ctypes.WinError(ctypes.get_last_error())
 
 
-def get_information_job_object(job: ctypes.c_int | int, info_class: JOBOBJECTINFOCLASS, data: ctypes.Structure) -> None:
+def get_information_job_object(
+    job: ctypes.c_int | int, info_class: JOBOBJECTINFOCLASS, data: ctypes.Structure
+) -> None:
     ERROR_INSUFFICIENT_BUFFER = 122
     ret_length = ctypes.wintypes.DWORD()
     if not ctypes.windll.kernel32.QueryInformationJobObject(

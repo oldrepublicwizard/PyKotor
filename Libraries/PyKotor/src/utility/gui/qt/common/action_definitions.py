@@ -169,168 +169,513 @@ class FileExplorerActions:
         # OPEN ACTIONS
         # Actions related to opening files, folders, and running programs
         # =========================================================================
-        ActionKey.OPEN: ActionDefinition("document-open", "Open", QKeySequence.StandardKey.Open, "open_file", async_operation=True),
-        ActionKey.OPEN_AS_ADMIN: ActionDefinition("dialog-password", "Open as Administrator", "Ctrl+Shift+A", "open_as_admin"),
-        ActionKey.OPEN_IN_NEW_WINDOW: ActionDefinition("window-new", "Open in New Window", "Ctrl+Enter", "open_in_new_window"),
-        ActionKey.OPEN_IN_NEW_TAB: ActionDefinition("tab-new", "Open in New Tab", "Alt+Enter", "open_in_new_tab"),
-        ActionKey.OPEN_WITH: ActionDefinition("document-open", "Open With...", "Alt+O", "open_with"),
-        ActionKey.PROPERTIES: ActionDefinition("document-properties", "Properties", "Alt+Return", "get_properties"),
-        ActionKey.OPEN_TERMINAL: ActionDefinition("utilities-terminal", "Open Terminal", "Shift+F10", "open_terminal"),
-        ActionKey.OPEN_IN_TERMINAL: ActionDefinition("utilities-terminal", "Open in Terminal", "Ctrl+Shift+T", "open_terminal", prepare_func="prepare_open_in_terminal"),
+        ActionKey.OPEN: ActionDefinition(
+            "document-open",
+            "Open",
+            QKeySequence.StandardKey.Open,
+            "open_file",
+            async_operation=True,
+        ),
+        ActionKey.OPEN_AS_ADMIN: ActionDefinition(
+            "dialog-password", "Open as Administrator", "Ctrl+Shift+A", "open_as_admin"
+        ),
+        ActionKey.OPEN_IN_NEW_WINDOW: ActionDefinition(
+            "window-new", "Open in New Window", "Ctrl+Enter", "open_in_new_window"
+        ),
+        ActionKey.OPEN_IN_NEW_TAB: ActionDefinition(
+            "tab-new", "Open in New Tab", "Alt+Enter", "open_in_new_tab"
+        ),
+        ActionKey.OPEN_WITH: ActionDefinition(
+            "document-open", "Open With...", "Alt+O", "open_with"
+        ),
+        ActionKey.PROPERTIES: ActionDefinition(
+            "document-properties", "Properties", "Alt+Return", "get_properties"
+        ),
+        ActionKey.OPEN_TERMINAL: ActionDefinition(
+            "utilities-terminal", "Open Terminal", "Shift+F10", "open_terminal"
+        ),
+        ActionKey.OPEN_IN_TERMINAL: ActionDefinition(
+            "utilities-terminal",
+            "Open in Terminal",
+            "Ctrl+Shift+T",
+            "open_terminal",
+            prepare_func="prepare_open_in_terminal",
+        ),
         # =========================================================================
         # EDIT / CLIPBOARD ACTIONS
         # Cut, copy, paste and related clipboard operations
         # =========================================================================
-        ActionKey.CUT: ActionDefinition("edit-cut", "Cut", QKeySequence.StandardKey.Cut, None, handler_func="on_cut_items"),
-        ActionKey.COPY: ActionDefinition("edit-copy", "Copy", QKeySequence.StandardKey.Copy, None, handler_func="on_copy_items"),
-        ActionKey.PASTE: ActionDefinition("edit-paste", "Paste", QKeySequence.StandardKey.Paste, None, handler_func="on_paste_items"),
-        ActionKey.COPY_PATH: ActionDefinition("edit-copy", "Copy Path", "Ctrl+Shift+C", None, handler_func="copy_path"),
-        ActionKey.COPY_AS_PATH: ActionDefinition("edit-copy", "Copy as path", None, None, handler_func="copy_as_path"),
-        ActionKey.PASTE_SHORTCUT: ActionDefinition("insert-link", "Paste Shortcut", "Ctrl+Shift+V", None, handler_func="paste_shortcut"),
-        ActionKey.CREATE_SHORTCUT: ActionDefinition("insert-link", "Create Shortcut", None, "create_shortcut"),
+        ActionKey.CUT: ActionDefinition(
+            "edit-cut", "Cut", QKeySequence.StandardKey.Cut, None, handler_func="on_cut_items"
+        ),
+        ActionKey.COPY: ActionDefinition(
+            "edit-copy", "Copy", QKeySequence.StandardKey.Copy, None, handler_func="on_copy_items"
+        ),
+        ActionKey.PASTE: ActionDefinition(
+            "edit-paste",
+            "Paste",
+            QKeySequence.StandardKey.Paste,
+            None,
+            handler_func="on_paste_items",
+        ),
+        ActionKey.COPY_PATH: ActionDefinition(
+            "edit-copy", "Copy Path", "Ctrl+Shift+C", None, handler_func="copy_path"
+        ),
+        ActionKey.COPY_AS_PATH: ActionDefinition(
+            "edit-copy", "Copy as path", None, None, handler_func="copy_as_path"
+        ),
+        ActionKey.PASTE_SHORTCUT: ActionDefinition(
+            "insert-link", "Paste Shortcut", "Ctrl+Shift+V", None, handler_func="paste_shortcut"
+        ),
+        ActionKey.CREATE_SHORTCUT: ActionDefinition(
+            "insert-link", "Create Shortcut", None, "create_shortcut"
+        ),
         # =========================================================================
         # ORGANIZE ACTIONS
         # Move, copy to, delete, rename operations
         # =========================================================================
-        ActionKey.MOVE_TO: ActionDefinition("edit-cut", "Move To...", "F6", None, handler_func="move_to"),
-        ActionKey.COPY_TO: ActionDefinition("edit-copy", "Copy To...", None, None, handler_func="copy_to"),
-        ActionKey.DELETE: ActionDefinition("edit-delete", "Delete", QKeySequence.StandardKey.Delete, "delete_items"),
+        ActionKey.MOVE_TO: ActionDefinition(
+            "edit-cut", "Move To...", "F6", None, handler_func="move_to"
+        ),
+        ActionKey.COPY_TO: ActionDefinition(
+            "edit-copy", "Copy To...", None, None, handler_func="copy_to"
+        ),
+        ActionKey.DELETE: ActionDefinition(
+            "edit-delete", "Delete", QKeySequence.StandardKey.Delete, "delete_items"
+        ),
         ActionKey.RENAME: ActionDefinition("edit-rename", "Rename", Qt.Key.Key_F2, "rename_item"),
-        ActionKey.PIN_TO_QUICK_ACCESS: ActionDefinition("bookmark-new", "Pin to Quick access", "Ctrl+Q", None, handler_func="pin_to_quick_access"),
+        ActionKey.PIN_TO_QUICK_ACCESS: ActionDefinition(
+            "bookmark-new",
+            "Pin to Quick access",
+            "Ctrl+Q",
+            None,
+            handler_func="pin_to_quick_access",
+        ),
         # =========================================================================
         # NEW ITEMS ACTIONS
         # Creating new folders, files, shortcuts
         # =========================================================================
-        ActionKey.NEW_FOLDER: ActionDefinition("folder-new", "New folder", "Ctrl+Shift+N", "new_folder", prepare_func="prepare_new_folder"),
-        ActionKey.NEW_BLANK_FILE: ActionDefinition("document-new", "New Blank File", "Ctrl+N", "new_file", prepare_func="prepare_new_file"),
-        ActionKey.NEW_TEXT_DOCUMENT: ActionDefinition("document-new", "New Text Document", None, "new_text_document"),
-        ActionKey.NEW_COMPRESSED_FOLDER: ActionDefinition("package-x-generic", "New Compressed Folder", None, "new_compressed_folder"),
-        ActionKey.NEW_SHORTCUT: ActionDefinition("insert-link", "New Shortcut", None, "new_shortcut"),
+        ActionKey.NEW_FOLDER: ActionDefinition(
+            "folder-new",
+            "New folder",
+            "Ctrl+Shift+N",
+            "new_folder",
+            prepare_func="prepare_new_folder",
+        ),
+        ActionKey.NEW_BLANK_FILE: ActionDefinition(
+            "document-new", "New Blank File", "Ctrl+N", "new_file", prepare_func="prepare_new_file"
+        ),
+        ActionKey.NEW_TEXT_DOCUMENT: ActionDefinition(
+            "document-new", "New Text Document", None, "new_text_document"
+        ),
+        ActionKey.NEW_COMPRESSED_FOLDER: ActionDefinition(
+            "package-x-generic", "New Compressed Folder", None, "new_compressed_folder"
+        ),
+        ActionKey.NEW_SHORTCUT: ActionDefinition(
+            "insert-link", "New Shortcut", None, "new_shortcut"
+        ),
         # =========================================================================
         # EDIT ACTIONS
         # File editing operations
         # =========================================================================
-        ActionKey.EDIT: ActionDefinition("document-edit", "Edit", None, None, handler_func="edit_file"),
+        ActionKey.EDIT: ActionDefinition(
+            "document-edit", "Edit", None, None, handler_func="edit_file"
+        ),
         # =========================================================================
         # SELECT ACTIONS
         # Selection management operations
         # =========================================================================
-        ActionKey.SELECT_ALL: ActionDefinition("edit-select-all", "Select All", QKeySequence.StandardKey.SelectAll, None, handler_func="select_all"),
-        ActionKey.SELECT_NONE: ActionDefinition("edit-select-none", "Select None", "Escape", None, handler_func="select_none"),
-        ActionKey.INVERT_SELECTION: ActionDefinition("edit-select-all", "Invert Selection", "Ctrl+I", None, handler_func="invert_selection"),
+        ActionKey.SELECT_ALL: ActionDefinition(
+            "edit-select-all",
+            "Select All",
+            QKeySequence.StandardKey.SelectAll,
+            None,
+            handler_func="select_all",
+        ),
+        ActionKey.SELECT_NONE: ActionDefinition(
+            "edit-select-none", "Select None", "Escape", None, handler_func="select_none"
+        ),
+        ActionKey.INVERT_SELECTION: ActionDefinition(
+            "edit-select-all", "Invert Selection", "Ctrl+I", None, handler_func="invert_selection"
+        ),
         # =========================================================================
         # VIEW MODE ACTIONS
         # Icon sizes and view layouts (matches Windows Explorer View tab)
         # =========================================================================
         ActionKey.EXTRA_LARGE_ICONS: ActionDefinition(
-            "view-list-icons", "Extra large icons", "Ctrl+Shift+1", None, handler_func="set_view_mode", checkable=True, extra_kwargs={"mode": "extra_large"},
+            "view-list-icons",
+            "Extra large icons",
+            "Ctrl+Shift+1",
+            None,
+            handler_func="set_view_mode",
+            checkable=True,
+            extra_kwargs={"mode": "extra_large"},
         ),
         ActionKey.LARGE_ICONS: ActionDefinition(
-            "view-list-icons", "Large icons", "Ctrl+Shift+2", None, handler_func="set_view_mode", checkable=True, extra_kwargs={"mode": "large"},
+            "view-list-icons",
+            "Large icons",
+            "Ctrl+Shift+2",
+            None,
+            handler_func="set_view_mode",
+            checkable=True,
+            extra_kwargs={"mode": "large"},
         ),
         ActionKey.MEDIUM_ICONS: ActionDefinition(
-            "view-list-icons", "Medium icons", "Ctrl+Shift+3", None, handler_func="set_view_mode", checkable=True, extra_kwargs={"mode": "medium"},
+            "view-list-icons",
+            "Medium icons",
+            "Ctrl+Shift+3",
+            None,
+            handler_func="set_view_mode",
+            checkable=True,
+            extra_kwargs={"mode": "medium"},
         ),
         ActionKey.SMALL_ICONS: ActionDefinition(
-            "view-list-icons", "Small icons", "Ctrl+Shift+4", None, handler_func="set_view_mode", checkable=True, extra_kwargs={"mode": "small"},
+            "view-list-icons",
+            "Small icons",
+            "Ctrl+Shift+4",
+            None,
+            handler_func="set_view_mode",
+            checkable=True,
+            extra_kwargs={"mode": "small"},
         ),
-        ActionKey.LIST_VIEW: ActionDefinition("view-list-details", "List", "Ctrl+Shift+5", None, handler_func="set_view_mode", checkable=True, extra_kwargs={"mode": "list"}),
+        ActionKey.LIST_VIEW: ActionDefinition(
+            "view-list-details",
+            "List",
+            "Ctrl+Shift+5",
+            None,
+            handler_func="set_view_mode",
+            checkable=True,
+            extra_kwargs={"mode": "list"},
+        ),
         ActionKey.DETAIL_VIEW: ActionDefinition(
-            "view-list-tree", "Details", "Ctrl+Shift+6", None, handler_func="set_view_mode", checkable=True, extra_kwargs={"mode": "detail"},
+            "view-list-tree",
+            "Details",
+            "Ctrl+Shift+6",
+            None,
+            handler_func="set_view_mode",
+            checkable=True,
+            extra_kwargs={"mode": "detail"},
         ),
-        ActionKey.TILES: ActionDefinition("view-list-icons", "Tiles", "Ctrl+Shift+7", None, handler_func="set_view_mode", checkable=True, extra_kwargs={"mode": "tiles"}),
-        ActionKey.CONTENT: ActionDefinition("view-list-text", "Content", "Ctrl+Shift+8", None, handler_func="set_view_mode", checkable=True, extra_kwargs={"mode": "content"}),
+        ActionKey.TILES: ActionDefinition(
+            "view-list-icons",
+            "Tiles",
+            "Ctrl+Shift+7",
+            None,
+            handler_func="set_view_mode",
+            checkable=True,
+            extra_kwargs={"mode": "tiles"},
+        ),
+        ActionKey.CONTENT: ActionDefinition(
+            "view-list-text",
+            "Content",
+            "Ctrl+Shift+8",
+            None,
+            handler_func="set_view_mode",
+            checkable=True,
+            extra_kwargs={"mode": "content"},
+        ),
         # =========================================================================
         # PANES ACTIONS
         # Navigation pane, preview pane, details pane toggles
         # =========================================================================
         ActionKey.NAVIGATION_PANE: ActionDefinition(
-            "view-sidetree", "Navigation Pane", "Ctrl+Shift+E", None, handler_func="toggle_navigation_pane", checkable=True, checked=True,
+            "view-sidetree",
+            "Navigation Pane",
+            "Ctrl+Shift+E",
+            None,
+            handler_func="toggle_navigation_pane",
+            checkable=True,
+            checked=True,
         ),
-        ActionKey.PREVIEW_PANE: ActionDefinition("view-preview", "Preview Pane", "Alt+P", None, handler_func="toggle_preview_pane", checkable=True),
-        ActionKey.DETAILS_PANE: ActionDefinition("view-list-tree", "Details Pane", "Alt+Shift+P", None, handler_func="toggle_details_pane", checkable=True),
+        ActionKey.PREVIEW_PANE: ActionDefinition(
+            "view-preview",
+            "Preview Pane",
+            "Alt+P",
+            None,
+            handler_func="toggle_preview_pane",
+            checkable=True,
+        ),
+        ActionKey.DETAILS_PANE: ActionDefinition(
+            "view-list-tree",
+            "Details Pane",
+            "Alt+Shift+P",
+            None,
+            handler_func="toggle_details_pane",
+            checkable=True,
+        ),
         # =========================================================================
         # SHOW/HIDE ACTIONS
         # Toggle visibility of hidden files, extensions, etc.
         # =========================================================================
-        ActionKey.SHOW_HIDDEN_FILES: ActionDefinition("view-hidden", "Hidden Items", "Ctrl+H", None, handler_func="toggle_hidden_files", checkable=True),
-        ActionKey.SHOW_HIDE_HIDDEN_ITEMS: ActionDefinition("view-hidden", "Show/Hide Hidden Items", "Ctrl+H", None, handler_func="toggle_hidden_items", checkable=True),
-        ActionKey.SHOW_FILE_EXTENSIONS: ActionDefinition(
-            "view-list-details", "File Name Extensions", None, None, handler_func="toggle_file_extensions", checkable=True, checked=True,
+        ActionKey.SHOW_HIDDEN_FILES: ActionDefinition(
+            "view-hidden",
+            "Hidden Items",
+            "Ctrl+H",
+            None,
+            handler_func="toggle_hidden_files",
+            checkable=True,
         ),
-        ActionKey.SHOW_ITEM_CHECKBOXES: ActionDefinition("checkbox", "Item Check Boxes", None, None, handler_func="toggle_item_checkboxes", checkable=True),
+        ActionKey.SHOW_HIDE_HIDDEN_ITEMS: ActionDefinition(
+            "view-hidden",
+            "Show/Hide Hidden Items",
+            "Ctrl+H",
+            None,
+            handler_func="toggle_hidden_items",
+            checkable=True,
+        ),
+        ActionKey.SHOW_FILE_EXTENSIONS: ActionDefinition(
+            "view-list-details",
+            "File Name Extensions",
+            None,
+            None,
+            handler_func="toggle_file_extensions",
+            checkable=True,
+            checked=True,
+        ),
+        ActionKey.SHOW_ITEM_CHECKBOXES: ActionDefinition(
+            "checkbox",
+            "Item Check Boxes",
+            None,
+            None,
+            handler_func="toggle_item_checkboxes",
+            checkable=True,
+        ),
         # =========================================================================
         # SORT ACTIONS
         # Sorting options matching Windows Explorer
         # =========================================================================
-        ActionKey.SORT_BY_NAME: ActionDefinition("view-sort", "Name", None, None, handler_func="sort_by_name", checkable=True, checked=True),
-        ActionKey.SORT_BY_DATE: ActionDefinition("view-sort", "Date modified", None, None, handler_func="sort_by_date", checkable=True),
-        ActionKey.SORT_BY_DATE_MODIFIED: ActionDefinition("view-sort", "Date modified", None, None, handler_func="sort_by_date_modified", checkable=True),
-        ActionKey.SORT_BY_DATE_CREATED: ActionDefinition("view-sort", "Date created", None, None, handler_func="sort_by_date_created", checkable=True),
-        ActionKey.SORT_BY_TYPE: ActionDefinition("view-sort", "Type", None, None, handler_func="sort_by_type", checkable=True),
-        ActionKey.SORT_BY_SIZE: ActionDefinition("view-sort", "Size", None, None, handler_func="sort_by_size", checkable=True),
-        ActionKey.SORT_BY_AUTHOR: ActionDefinition("view-sort", "Author", None, None, handler_func="sort_by_author", checkable=True),
-        ActionKey.SORT_BY_TAGS: ActionDefinition("view-sort", "Tags", None, None, handler_func="sort_by_tags", checkable=True),
-        ActionKey.SORT_ASCENDING: ActionDefinition("view-sort-ascending", "Ascending", None, None, handler_func="sort_ascending", checkable=True, checked=True),
-        ActionKey.SORT_DESCENDING: ActionDefinition("view-sort-descending", "Descending", None, None, handler_func="sort_descending", checkable=True),
+        ActionKey.SORT_BY_NAME: ActionDefinition(
+            "view-sort",
+            "Name",
+            None,
+            None,
+            handler_func="sort_by_name",
+            checkable=True,
+            checked=True,
+        ),
+        ActionKey.SORT_BY_DATE: ActionDefinition(
+            "view-sort", "Date modified", None, None, handler_func="sort_by_date", checkable=True
+        ),
+        ActionKey.SORT_BY_DATE_MODIFIED: ActionDefinition(
+            "view-sort",
+            "Date modified",
+            None,
+            None,
+            handler_func="sort_by_date_modified",
+            checkable=True,
+        ),
+        ActionKey.SORT_BY_DATE_CREATED: ActionDefinition(
+            "view-sort",
+            "Date created",
+            None,
+            None,
+            handler_func="sort_by_date_created",
+            checkable=True,
+        ),
+        ActionKey.SORT_BY_TYPE: ActionDefinition(
+            "view-sort", "Type", None, None, handler_func="sort_by_type", checkable=True
+        ),
+        ActionKey.SORT_BY_SIZE: ActionDefinition(
+            "view-sort", "Size", None, None, handler_func="sort_by_size", checkable=True
+        ),
+        ActionKey.SORT_BY_AUTHOR: ActionDefinition(
+            "view-sort", "Author", None, None, handler_func="sort_by_author", checkable=True
+        ),
+        ActionKey.SORT_BY_TAGS: ActionDefinition(
+            "view-sort", "Tags", None, None, handler_func="sort_by_tags", checkable=True
+        ),
+        ActionKey.SORT_ASCENDING: ActionDefinition(
+            "view-sort-ascending",
+            "Ascending",
+            None,
+            None,
+            handler_func="sort_ascending",
+            checkable=True,
+            checked=True,
+        ),
+        ActionKey.SORT_DESCENDING: ActionDefinition(
+            "view-sort-descending",
+            "Descending",
+            None,
+            None,
+            handler_func="sort_descending",
+            checkable=True,
+        ),
         # =========================================================================
         # GROUP ACTIONS
         # Grouping options
         # =========================================================================
-        ActionKey.GROUP_BY_NONE: ActionDefinition("view-list-text", "None", None, None, handler_func="group_by_none", checkable=True, checked=True),
-        ActionKey.GROUP_BY_NAME: ActionDefinition("view-list-text", "Name", None, None, handler_func="group_by_name", checkable=True),
-        ActionKey.GROUP_BY_DATE: ActionDefinition("view-list-text", "Date modified", None, None, handler_func="group_by_date", checkable=True),
-        ActionKey.GROUP_BY_DATE_CREATED: ActionDefinition("view-list-text", "Date created", None, None, handler_func="group_by_date_created", checkable=True),
-        ActionKey.GROUP_BY_DATE_MODIFIED: ActionDefinition("view-list-text", "Date modified", None, None, handler_func="group_by_date_modified", checkable=True),
-        ActionKey.GROUP_BY_TYPE: ActionDefinition("view-list-text", "Type", None, None, handler_func="group_by_type", checkable=True),
-        ActionKey.GROUP_BY_SIZE: ActionDefinition("view-list-text", "Size", None, None, handler_func="group_by_size", checkable=True),
+        ActionKey.GROUP_BY_NONE: ActionDefinition(
+            "view-list-text",
+            "None",
+            None,
+            None,
+            handler_func="group_by_none",
+            checkable=True,
+            checked=True,
+        ),
+        ActionKey.GROUP_BY_NAME: ActionDefinition(
+            "view-list-text", "Name", None, None, handler_func="group_by_name", checkable=True
+        ),
+        ActionKey.GROUP_BY_DATE: ActionDefinition(
+            "view-list-text",
+            "Date modified",
+            None,
+            None,
+            handler_func="group_by_date",
+            checkable=True,
+        ),
+        ActionKey.GROUP_BY_DATE_CREATED: ActionDefinition(
+            "view-list-text",
+            "Date created",
+            None,
+            None,
+            handler_func="group_by_date_created",
+            checkable=True,
+        ),
+        ActionKey.GROUP_BY_DATE_MODIFIED: ActionDefinition(
+            "view-list-text",
+            "Date modified",
+            None,
+            None,
+            handler_func="group_by_date_modified",
+            checkable=True,
+        ),
+        ActionKey.GROUP_BY_TYPE: ActionDefinition(
+            "view-list-text", "Type", None, None, handler_func="group_by_type", checkable=True
+        ),
+        ActionKey.GROUP_BY_SIZE: ActionDefinition(
+            "view-list-text", "Size", None, None, handler_func="group_by_size", checkable=True
+        ),
         # =========================================================================
         # SHARE TAB ACTIONS
         # Share, email, compress, print
         # =========================================================================
-        ActionKey.SHARE: ActionDefinition("emblem-shared", "Share", None, None, handler_func="share_items"),
-        ActionKey.EMAIL: ActionDefinition("mail-send", "Email", None, None, handler_func="email_items"),
-        ActionKey.COMPRESS_TO_ZIP: ActionDefinition("package-x-generic", "Compress to ZIP file", None, "compress_to_zip"),
+        ActionKey.SHARE: ActionDefinition(
+            "emblem-shared", "Share", None, None, handler_func="share_items"
+        ),
+        ActionKey.EMAIL: ActionDefinition(
+            "mail-send", "Email", None, None, handler_func="email_items"
+        ),
+        ActionKey.COMPRESS_TO_ZIP: ActionDefinition(
+            "package-x-generic", "Compress to ZIP file", None, "compress_to_zip"
+        ),
         ActionKey.COMPRESS: ActionDefinition("package-x-generic", "Compress", None, "compress"),
         ActionKey.EXTRACT: ActionDefinition("extract-archive", "Extract", None, "extract"),
-        ActionKey.SEND_TO_DESKTOP: ActionDefinition("document-send", "Send to Desktop", None, "send_to_desktop"),
-        ActionKey.SEND_TO_DOCUMENTS: ActionDefinition("document-send", "Send to Documents", None, "send_to_documents"),
-        ActionKey.SEND_TO_COMPRESSED_FOLDER: ActionDefinition("document-send", "Send to Compressed Folder", None, "send_to_compressed_folder"),
-        ActionKey.TAKE_OWNERSHIP: ActionDefinition("document-edit-sign", "Take Ownership", None, "take_ownership"),
-        ActionKey.ADD_TO_ARCHIVE: ActionDefinition("package-x-generic", "Add to Archive", None, "add_to_archive"),
-        ActionKey.PRINT: ActionDefinition("document-print", "Print", QKeySequence.StandardKey.Print, None, handler_func="print_items"),
-        ActionKey.BURN_TO_DISC: ActionDefinition("media-optical-burn", "Burn to disc", None, "burn_to_disc"),
+        ActionKey.SEND_TO_DESKTOP: ActionDefinition(
+            "document-send", "Send to Desktop", None, "send_to_desktop"
+        ),
+        ActionKey.SEND_TO_DOCUMENTS: ActionDefinition(
+            "document-send", "Send to Documents", None, "send_to_documents"
+        ),
+        ActionKey.SEND_TO_COMPRESSED_FOLDER: ActionDefinition(
+            "document-send", "Send to Compressed Folder", None, "send_to_compressed_folder"
+        ),
+        ActionKey.TAKE_OWNERSHIP: ActionDefinition(
+            "document-edit-sign", "Take Ownership", None, "take_ownership"
+        ),
+        ActionKey.ADD_TO_ARCHIVE: ActionDefinition(
+            "package-x-generic", "Add to Archive", None, "add_to_archive"
+        ),
+        ActionKey.PRINT: ActionDefinition(
+            "document-print",
+            "Print",
+            QKeySequence.StandardKey.Print,
+            None,
+            handler_func="print_items",
+        ),
+        ActionKey.BURN_TO_DISC: ActionDefinition(
+            "media-optical-burn", "Burn to disc", None, "burn_to_disc"
+        ),
         # =========================================================================
         # NAVIGATION ACTIONS
         # Back, forward, up, refresh
         # =========================================================================
-        ActionKey.GO_BACK: ActionDefinition("go-previous", "Back", QKeySequence.StandardKey.Back, None, handler_func="go_back"),
-        ActionKey.GO_FORWARD: ActionDefinition("go-next", "Forward", QKeySequence.StandardKey.Forward, None, handler_func="go_forward"),
+        ActionKey.GO_BACK: ActionDefinition(
+            "go-previous", "Back", QKeySequence.StandardKey.Back, None, handler_func="go_back"
+        ),
+        ActionKey.GO_FORWARD: ActionDefinition(
+            "go-next", "Forward", QKeySequence.StandardKey.Forward, None, handler_func="go_forward"
+        ),
         ActionKey.GO_UP: ActionDefinition("go-up", "Up", "Alt+Up", None, handler_func="go_up"),
-        ActionKey.REFRESH: ActionDefinition("view-refresh", "Refresh", QKeySequence.StandardKey.Refresh, None, handler_func="refresh_view"),
+        ActionKey.REFRESH: ActionDefinition(
+            "view-refresh",
+            "Refresh",
+            QKeySequence.StandardKey.Refresh,
+            None,
+            handler_func="refresh_view",
+        ),
         # =========================================================================
         # OPTIONS/SETTINGS ACTIONS
         # Configuration dialogs
         # =========================================================================
-        ActionKey.OPTIONS: ActionDefinition("configure", "Options...", "Ctrl+,", None, handler_func="show_options"),
-        ActionKey.FOLDER_OPTIONS: ActionDefinition("folder-open", "Folder Options", None, None, handler_func="show_folder_options"),
-        ActionKey.PERSONALIZE: ActionDefinition("preferences-system", "Personalize", None, "personalize"),
-        ActionKey.DISPLAY_SETTINGS: ActionDefinition("preferences-system-display", "Display Settings", None, "display_settings"),
-        ActionKey.CUSTOMIZE_CONTEXT_MENU: ActionDefinition("configure", "Customize Context Menu", "Ctrl+Shift+X", None, handler_func="prepare_customize_context_menu"),
+        ActionKey.OPTIONS: ActionDefinition(
+            "configure", "Options...", "Ctrl+,", None, handler_func="show_options"
+        ),
+        ActionKey.FOLDER_OPTIONS: ActionDefinition(
+            "folder-open", "Folder Options", None, None, handler_func="show_folder_options"
+        ),
+        ActionKey.PERSONALIZE: ActionDefinition(
+            "preferences-system", "Personalize", None, "personalize"
+        ),
+        ActionKey.DISPLAY_SETTINGS: ActionDefinition(
+            "preferences-system-display", "Display Settings", None, "display_settings"
+        ),
+        ActionKey.CUSTOMIZE_CONTEXT_MENU: ActionDefinition(
+            "configure",
+            "Customize Context Menu",
+            "Ctrl+Shift+X",
+            None,
+            handler_func="prepare_customize_context_menu",
+        ),
         # =========================================================================
         # ADVANCED UTILITY ACTIONS
         # Power user features
         # =========================================================================
-        ActionKey.DUPLICATE_FINDER: ActionDefinition("edit-find-replace", "Find Duplicate Files", "Ctrl+Shift+D", "find_duplicates", prepare_func="prepare_duplicate_finder"),
-        ActionKey.HASH_GENERATOR: ActionDefinition("document-encrypt", "Generate File Hashes", "Ctrl+Shift+H", "generate_hashes", prepare_func="prepare_hash_generator"),
-        ActionKey.PERMISSIONS_EDITOR: ActionDefinition("document-edit-sign", "Edit File Permissions", None, "edit_permissions", prepare_func="prepare_permissions_editor"),
-        ActionKey.FILE_SHREDDER: ActionDefinition("edit-delete-shred", "Securely Delete Files", "Ctrl+Shift+Del", "shred_files", prepare_func="prepare_file_shredder"),
-        ActionKey.FILE_COMPARISON: ActionDefinition("document-compare", "Compare Files", "Ctrl+Shift+M", "compare_files", prepare_func="prepare_file_comparison"),
+        ActionKey.DUPLICATE_FINDER: ActionDefinition(
+            "edit-find-replace",
+            "Find Duplicate Files",
+            "Ctrl+Shift+D",
+            "find_duplicates",
+            prepare_func="prepare_duplicate_finder",
+        ),
+        ActionKey.HASH_GENERATOR: ActionDefinition(
+            "document-encrypt",
+            "Generate File Hashes",
+            "Ctrl+Shift+H",
+            "generate_hashes",
+            prepare_func="prepare_hash_generator",
+        ),
+        ActionKey.PERMISSIONS_EDITOR: ActionDefinition(
+            "document-edit-sign",
+            "Edit File Permissions",
+            None,
+            "edit_permissions",
+            prepare_func="prepare_permissions_editor",
+        ),
+        ActionKey.FILE_SHREDDER: ActionDefinition(
+            "edit-delete-shred",
+            "Securely Delete Files",
+            "Ctrl+Shift+Del",
+            "shred_files",
+            prepare_func="prepare_file_shredder",
+        ),
+        ActionKey.FILE_COMPARISON: ActionDefinition(
+            "document-compare",
+            "Compare Files",
+            "Ctrl+Shift+M",
+            "compare_files",
+            prepare_func="prepare_file_comparison",
+        ),
         # =========================================================================
         # UNDO/REDO ACTIONS
         # =========================================================================
-        ActionKey.UNDO: ActionDefinition("edit-undo", "Undo", QKeySequence.StandardKey.Undo, None, handler_func="undo"),
-        ActionKey.REDO: ActionDefinition("edit-redo", "Redo", QKeySequence.StandardKey.Redo, None, handler_func="redo"),
+        ActionKey.UNDO: ActionDefinition(
+            "edit-undo", "Undo", QKeySequence.StandardKey.Undo, None, handler_func="undo"
+        ),
+        ActionKey.REDO: ActionDefinition(
+            "edit-redo", "Redo", QKeySequence.StandardKey.Redo, None, handler_func="redo"
+        ),
     }
 
     def __init__(self):
@@ -351,7 +696,9 @@ class FileExplorerActions:
             action = QAction(QIcon.fromTheme(definition.icon), definition.text)
             action.setObjectName(key.value)
             if definition.shortcut:
-                if isinstance(definition.shortcut, str) or isinstance(definition.shortcut, (QKeySequence.StandardKey, Qt.Key)):
+                if isinstance(definition.shortcut, str) or isinstance(
+                    definition.shortcut, (QKeySequence.StandardKey, Qt.Key)
+                ):
                     action.setShortcut(QKeySequence(definition.shortcut))
                 else:
                     action.setShortcut(definition.shortcut)

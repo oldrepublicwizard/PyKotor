@@ -26,7 +26,15 @@ if __name__ == "__main__":
     ]
 
     # Also check for test_mdl_editor.py
-    editor_test = THIS_DIR.parents[2] / "Tools" / "HolocronToolset" / "tests" / "gui" / "editors" / "test_mdl_editor.py"
+    editor_test = (
+        THIS_DIR.parents[2]
+        / "Tools"
+        / "HolocronToolset"
+        / "tests"
+        / "gui"
+        / "editors"
+        / "test_mdl_editor.py"
+    )
     if editor_test.exists():
         test_files.append(str(editor_test.relative_to(THIS_DIR.parents[2])))
 

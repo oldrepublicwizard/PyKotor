@@ -76,19 +76,33 @@ else:
     from pykotor.common.scriptdefs import KOTOR_CONSTANTS, KOTOR_FUNCTIONS
     from pykotor.common.scriptlib import KOTOR_LIBRARY, TSL_LIBRARY
 
-K1_PATH: str | None = os.environ.get("K1_PATH", "C:\\Program Files (x86)\\Steam\\steamapps\\common\\swkotor")
-K2_PATH: str | None = os.environ.get("K2_PATH", "C:\\Program Files (x86)\\Steam\\steamapps\\common\\Knights of the Old Republic II")
+K1_PATH: str | None = os.environ.get(
+    "K1_PATH", "C:\\Program Files (x86)\\Steam\\steamapps\\common\\swkotor"
+)
+K2_PATH: str | None = os.environ.get(
+    "K2_PATH", "C:\\Program Files (x86)\\Steam\\steamapps\\common\\Knights of the Old Republic II"
+)
 KTOOL_NWNNSSCOMP_PATH: str | None = r"C:\Program Files (x86)\Kotor Tool\nwnnsscomp.exe"
-TSLPATCHER_NWNNSSCOMP_PATH: str | None = r"C:\Users\boden\Documents\k1 mods\KillCzerkaJerk\tslpatchdata\nwnnsscomp.exe"
-K_SCRIPT_TOOL_NWNNSSCOMP_PATH: str | None = r"C:/Program Files (x86)/KotOR Scripting Tool/nwnnsscomp.exe"
+TSLPATCHER_NWNNSSCOMP_PATH: str | None = (
+    r"C:\Users\boden\Documents\k1 mods\KillCzerkaJerk\tslpatchdata\nwnnsscomp.exe"
+)
+K_SCRIPT_TOOL_NWNNSSCOMP_PATH: str | None = (
+    r"C:/Program Files (x86)/KotOR Scripting Tool/nwnnsscomp.exe"
+)
 V1_NWNNSSCOMP_PATH: str | None = r"C:\Users\boden\Desktop\kotorcomp (1)\nwnnsscomp.exe"
 LOG_FILENAME = "test_ncs_compilers_install"
 
 ALL_INSTALLATIONS: dict[Game, Installation] | None = None
 ALL_SCRIPTS: dict[Game, list[tuple[FileResource, Path, Path]]] = {Game.K1: [], Game.K2: []}
 SYMLINK_MAP: dict[Path, FileResource] = {}
-TEMP_NSS_DIRS: dict[Game, TemporaryDirectory[str]] = {Game.K1: TemporaryDirectory(), Game.K2: TemporaryDirectory()}
-TEMP_NCS_DIRS: dict[Game, TemporaryDirectory[str]] = {Game.K1: TemporaryDirectory(), Game.K2: TemporaryDirectory()}
+TEMP_NSS_DIRS: dict[Game, TemporaryDirectory[str]] = {
+    Game.K1: TemporaryDirectory(),
+    Game.K2: TemporaryDirectory(),
+}
+TEMP_NCS_DIRS: dict[Game, TemporaryDirectory[str]] = {
+    Game.K1: TemporaryDirectory(),
+    Game.K2: TemporaryDirectory(),
+}
 CANNOT_COMPILE_EXT: dict[Game, set[str]] = {
     Game.K1: set(),
     Game.K2: set(),
@@ -176,7 +190,9 @@ def extract_all_scripts():
                 with nss_path.open("wb") as f:
                     f.write(resdata)
 
-        print(f"Symlinking {len(SYMLINK_MAP)} scripts.bif scripts into subfolders... this may take a while...")
+        print(
+            f"Symlinking {len(SYMLINK_MAP)} scripts.bif scripts into subfolders... this may take a while..."
+        )
         seen_paths = set()
         for resource, nss_path, ncs_path in scripts:
             if nss_path in SYMLINK_MAP:
@@ -205,10 +221,15 @@ def pytest_generate_tests(metafunc: pytest.Metafunc):
             collect_all_scripts()
 
         test_script_data: list[tuple[Game, tuple[FileResource, Path, Path]]] = [
-            (game, script) for game, scripts in ALL_SCRIPTS.items() for script in scripts if not script[1].is_symlink()
+            (game, script)
+            for game, scripts in ALL_SCRIPTS.items()
+            for script in scripts
+            if not script[1].is_symlink()
         ]
         print(f"Test data collected. Total tests: {len(test_script_data)}")
-        ids: list[str] = sorted([f"{game}_{script[0].identifier()}" for game, script in test_script_data])
+        ids: list[str] = sorted(
+            [f"{game}_{script[0].identifier()}" for game, script in test_script_data]
+        )
         metafunc.parametrize("script_data", test_script_data, ids=ids, indirect=True)
 
 
@@ -251,8 +272,13 @@ def pytest_runtest_makereport(item: pytest.Item, call: pytest.CallInfo) -> TestR
         # Construct and return a TestReport object
 
         # longrepr = call.excinfo.getrepr()
-        longrepr = format_exception_with_variables(call.excinfo.value, call.excinfo.type, call.excinfo.tb)
-        logger.error("Test failed with exception!", extra={"item.nodeid": item.nodeid, "Traceback: ": longrepr})
+        longrepr = format_exception_with_variables(
+            call.excinfo.value, call.excinfo.type, call.excinfo.tb
+        )
+        logger.error(
+            "Test failed with exception!",
+            extra={"item.nodeid": item.nodeid, "Traceback: ": longrepr},
+        )
         report = TestReport(
             nodeid=item.nodeid,
             location=item.location,
@@ -299,7 +325,12 @@ def bizarre_compiler(
     if not library:
         library = KOTOR_LIBRARY if game == Game.K1 else TSL_LIBRARY
     _nssLexer = NssLexer()
-    nssParser = NssParser(library=library, constants=KOTOR_CONSTANTS, functions=KOTOR_FUNCTIONS, library_lookup=library_lookup)
+    nssParser = NssParser(
+        library=library,
+        constants=KOTOR_CONSTANTS,
+        functions=KOTOR_FUNCTIONS,
+        library_lookup=library_lookup,
+    )
 
     parser: yacc.LRParser = nssParser.parser
     t = parser.parse(script, tracking=True)
@@ -320,7 +351,11 @@ def _handle_compile_exc(
     exc_type_name, exc_basic_info_str = (e.__class__.__name__, str(e))
     exc_debug_info_str = format_exception_with_variables(e)
 
-    prefix_msg = "Could not compile " if e.__class__ is CompileError else f"Unexpected exception of type '{exc_type_name}' occurred when compiling"
+    prefix_msg = (
+        "Could not compile "
+        if e.__class__ is CompileError
+        else f"Unexpected exception of type '{exc_type_name}' occurred when compiling"
+    )
     msg = f"{prefix_msg} '{nss_path.name}' (from {file_res.filepath()}) with '{compiler_identifier}' compiler!"
     exc_separator_str = "-" * len(msg)
 
@@ -329,7 +364,9 @@ def _handle_compile_exc(
 
     log_file(msg_info_level, filepath=f"fallback_level_info_{game}_{compiler_identifier}.txt")
     log_file(msg_debug_level, filepath=f"fallback_level_debug_{game}_{compiler_identifier}.txt")
-    log_file(f'"{nss_path.name}",', filepath=f"{compiler_identifier}_incompatible_{game}.txt")  # for quick copy/paste into the known_issues hashset
+    log_file(
+        f'"{nss_path.name}",', filepath=f"{compiler_identifier}_incompatible_{game}.txt"
+    )  # for quick copy/paste into the known_issues hashset
     logger.log(level=40, msg=msg_debug_level)
     pytest.fail(msg_info_level)
 
@@ -355,7 +392,9 @@ def compile_with_abstract_compatible(
             try:
                 stdout, stderr = compiler.compile_script(nss_path, ncs_path, game)
             except EntryPointError as e:
-                pytest.xfail(f"{compiler_identifier}: No entry point found in '{nss_path.name}': {e}")
+                pytest.xfail(
+                    f"{compiler_identifier}: No entry point found in '{nss_path.name}': {e}"
+                )
             else:
                 if stderr:
                     raise CompileError(f"{stdout}: {stderr}")
@@ -371,7 +410,11 @@ def compile_with_abstract_compatible(
             # raise it so _handle_compile_exc can be used to reduce duplicated logging code.
             import errno
 
-            raise FileNotFoundError(errno.ENOENT, f"Could not find NCS compiled script on disk, '{compiler_identifier}' compiler failed.", str(ncs_path))
+            raise FileNotFoundError(
+                errno.ENOENT,
+                f"Could not find NCS compiled script on disk, '{compiler_identifier}' compiler failed.",
+                str(ncs_path),
+            )
 
     except Exception as e:  # pylint: disable=W0718  # noqa: BLE001
         if isinstance(compiler, ExternalNCSCompiler):
@@ -386,7 +429,11 @@ def compare_external_results(
 ):
     """Compare results between compilers. No real point since having any of them match is rare."""
     # Ensure all non-None results are the same
-    non_none_results: dict[str, bytes] = {cp: result for cp, result in compiler_result.items() if result is not None and cp is not None}
+    non_none_results: dict[str, bytes] = {
+        cp: result
+        for cp, result in compiler_result.items()
+        if result is not None and cp is not None
+    }
 
     if not non_none_results:
         pytest.skip("No compilers were available or produced output for comparison.")
@@ -405,9 +452,13 @@ def compare_external_results(
             result_j = non_none_results[path_j]
 
             if result_i == result_j:
-                matches.append(f"Match: Compiler outputs for '{path_i}' and '{path_j}' are identical.")
+                matches.append(
+                    f"Match: Compiler outputs for '{path_i}' and '{path_j}' are identical."
+                )
             else:
-                mismatches.append(f"Mismatch: Compiler outputs for '{path_i}' and '{path_j}' differ.")
+                mismatches.append(
+                    f"Mismatch: Compiler outputs for '{path_i}' and '{path_j}' differ."
+                )
 
     # Report results
     if mismatches:
@@ -458,7 +509,9 @@ def test_tslpatcher_nwnnsscomp(
             continue
 
         unique_ncs_path = ncs_path.with_stem(f"{ncs_path.stem}_{Path(compiler_path).stem}_(2)")
-        compile_with_abstract_compatible(compiler, file_res, nss_path, unique_ncs_path, game, "tslpatcher_nwnnsscomp")
+        compile_with_abstract_compatible(
+            compiler, file_res, nss_path, unique_ncs_path, game, "tslpatcher_nwnnsscomp"
+        )
         with unique_ncs_path.open("rb") as f:
             compiler_result[compiler_path] = f.read()
 
@@ -471,7 +524,14 @@ def test_inbuilt_compiler(script_data: tuple[Game, tuple[FileResource, Path, Pat
         return
     if os.path.islink(nss_path):
         return
-    compile_with_abstract_compatible(compiler, file_res, nss_path, ncs_path.with_stem(f"{ncs_path.stem}_inbuilt"), game, "inbuilt")
+    compile_with_abstract_compatible(
+        compiler,
+        file_res,
+        nss_path,
+        ncs_path.with_stem(f"{ncs_path.stem}_inbuilt"),
+        game,
+        "inbuilt",
+    )
 
 
 def test_bizarre_compiler(script_data: tuple[Game, tuple[FileResource, Path, Path]]):
@@ -491,15 +551,26 @@ def test_bizarre_compiler(script_data: tuple[Game, tuple[FileResource, Path, Pat
         NCSBinaryWriter(ncs_result, ncs_path).write()
 
         if not isinstance(ncs_result, NCS):
-            log_file(f"Failed bizarre compilation, no NCS returned: '{working_dir.name}/{nss_path}'", filepath="fallback_out.txt")
-            pytest.fail(f"Failed bizarre compilation, no NCS returned: '{working_dir.name}/{nss_path}'")
+            log_file(
+                f"Failed bizarre compilation, no NCS returned: '{working_dir.name}/{nss_path}'",
+                filepath="fallback_out.txt",
+            )
+            pytest.fail(
+                f"Failed bizarre compilation, no NCS returned: '{working_dir.name}/{nss_path}'"
+            )
         if not ncs_path.is_file():
             import errno
 
-            raise FileNotFoundError(errno.ENOENT, f"Could not find NCS compiled script on disk at '{working_dir.name}/{nss_path}', bizarre compiler failed.", str(ncs_path))
+            raise FileNotFoundError(
+                errno.ENOENT,
+                f"Could not find NCS compiled script on disk at '{working_dir.name}/{nss_path}', bizarre compiler failed.",
+                str(ncs_path),
+            )
 
     except EntryPointError as e:
-        pytest.xfail(f"Bizarre Compiler: No entry point found in '{working_dir.name}/{nss_path}': {e}")
+        pytest.xfail(
+            f"Bizarre Compiler: No entry point found in '{working_dir.name}/{nss_path}': {e}"
+        )
     except Exception as e:
         _handle_compile_exc(e, file_res, nss_path, "Bizarre Compiler", game)
 
@@ -521,14 +592,23 @@ def test_pykotor_compile_nss(script_data: tuple[Game, tuple[FileResource, Path, 
         write_ncs(ncs_result, ncs_path)
 
         if not isinstance(ncs_result, NCS):
-            log_file(f"Failed compile_nss, no NCS returned: '{working_dir.name}/{nss_path.name}'", filepath="fallback_out.txt")
-            pytest.fail(f"Failed compile_nss, no NCS returned: '{working_dir.name}/{nss_path.name}'")
+            log_file(
+                f"Failed compile_nss, no NCS returned: '{working_dir.name}/{nss_path.name}'",
+                filepath="fallback_out.txt",
+            )
+            pytest.fail(
+                f"Failed compile_nss, no NCS returned: '{working_dir.name}/{nss_path.name}'"
+            )
         if not ncs_path.is_file():
-            new_exc = FileNotFoundError("Could not find NCS compiled script on disk, compile_nss failed.")
+            new_exc = FileNotFoundError(
+                "Could not find NCS compiled script on disk, compile_nss failed."
+            )
             new_exc.filename = ncs_path
             raise new_exc  # noqa: TRY301
     except EntryPointError as e:
-        pytest.xfail(f"compile_nss: No entry point in with '{working_dir.name}/{nss_path.name}': {e}")
+        pytest.xfail(
+            f"compile_nss: No entry point in with '{working_dir.name}/{nss_path.name}': {e}"
+        )
     except Exception as e:  # pylint: disable=W0718  # noqa: BLE001
         _handle_compile_exc(e, file_res, nss_path, "compile_nss", game)
 

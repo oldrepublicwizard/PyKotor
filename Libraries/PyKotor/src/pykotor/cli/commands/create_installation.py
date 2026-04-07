@@ -44,6 +44,7 @@ def cmd_create_installation(args: Namespace, logger: Logger) -> int:
 
     if getattr(args, "force", False) and dest.exists():
         import shutil
+
         shutil.rmtree(dest)
 
     root = create_minimal_installation(dest, game)

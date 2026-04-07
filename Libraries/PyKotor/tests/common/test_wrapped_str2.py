@@ -33,14 +33,24 @@ class TestCaseInsensImmutableStr(unittest.TestCase):
         assert CaseInsensImmutableStr("Test").find(CaseInsensImmutableStr("test")) == 0
 
     def test_partition(self):
-        assert CaseInsensImmutableStr("Test").partition("e") == (CaseInsensImmutableStr("T"), CaseInsensImmutableStr("e"), CaseInsensImmutableStr("st"))
+        assert CaseInsensImmutableStr("Test").partition("e") == (
+            CaseInsensImmutableStr("T"),
+            CaseInsensImmutableStr("e"),
+            CaseInsensImmutableStr("st"),
+        )
 
     def test_replace(self):
         assert CaseInsensImmutableStr("Test").replace("t", "x") == CaseInsensImmutableStr("xesx")
-        assert CaseInsensImmutableStr("Test").replace(CaseInsensImmutableStr("t"), CaseInsensImmutableStr("x")) == CaseInsensImmutableStr("xesx")
+        assert CaseInsensImmutableStr("Test").replace(
+            CaseInsensImmutableStr("t"), CaseInsensImmutableStr("x")
+        ) == CaseInsensImmutableStr("xesx")
 
     def test_rpartition(self):
-        assert CaseInsensImmutableStr("Test").rpartition("e") == (CaseInsensImmutableStr("T"), CaseInsensImmutableStr("e"), CaseInsensImmutableStr("st"))
+        assert CaseInsensImmutableStr("Test").rpartition("e") == (
+            CaseInsensImmutableStr("T"),
+            CaseInsensImmutableStr("e"),
+            CaseInsensImmutableStr("st"),
+        )
 
     def test_endswith(self):
         assert CaseInsensImmutableStr("Test").endswith("st")
@@ -51,13 +61,25 @@ class TestCaseInsensImmutableStr(unittest.TestCase):
         assert CaseInsensImmutableStr("Test").rfind(CaseInsensImmutableStr("t")) == 3
 
     def test_rsplit(self):
-        assert CaseInsensImmutableStr("a,b,c").rsplit(",") == [CaseInsensImmutableStr("a"), CaseInsensImmutableStr("b"), CaseInsensImmutableStr("c")]
+        assert CaseInsensImmutableStr("a,b,c").rsplit(",") == [
+            CaseInsensImmutableStr("a"),
+            CaseInsensImmutableStr("b"),
+            CaseInsensImmutableStr("c"),
+        ]
 
     def test_split(self):
-        assert CaseInsensImmutableStr("a,b,c").split(",") == [CaseInsensImmutableStr("a"), CaseInsensImmutableStr("b"), CaseInsensImmutableStr("c")]
+        assert CaseInsensImmutableStr("a,b,c").split(",") == [
+            CaseInsensImmutableStr("a"),
+            CaseInsensImmutableStr("b"),
+            CaseInsensImmutableStr("c"),
+        ]
 
     def test_split_by_indices(self):
-        assert CaseInsensImmutableStr("a,b,c")._split_by_indices([1, 3], 2) == [CaseInsensImmutableStr("a"), CaseInsensImmutableStr(","), CaseInsensImmutableStr("b,c")]
+        assert CaseInsensImmutableStr("a,b,c")._split_by_indices([1, 3], 2) == [
+            CaseInsensImmutableStr("a"),
+            CaseInsensImmutableStr(","),
+            CaseInsensImmutableStr("b,c"),
+        ]
 
 
 if __name__ == "__main__":

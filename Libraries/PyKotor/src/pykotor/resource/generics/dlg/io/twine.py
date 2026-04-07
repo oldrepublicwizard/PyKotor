@@ -184,12 +184,23 @@ def _read_json(content: str) -> TwineStory:
             if "sound" in custom_data:
                 passage_metadata.sound = str(custom_data["sound"]) if custom_data["sound"] else ""
             if "vo_resref" in custom_data:
-                passage_metadata.vo_resref = str(custom_data["vo_resref"]) if custom_data["vo_resref"] else ""
+                passage_metadata.vo_resref = (
+                    str(custom_data["vo_resref"]) if custom_data["vo_resref"] else ""
+                )
             if "speaker" in custom_data:
                 passage_metadata.speaker = str(custom_data["speaker"])
 
             # Store remaining custom metadata (e.g., language variants) that aren't KotOR-specific fields
-            kotorf_fields = {"animation_id", "camera_angle", "camera_id", "fade_type", "quest", "sound", "vo_resref", "speaker"}
+            kotorf_fields = {
+                "animation_id",
+                "camera_angle",
+                "camera_id",
+                "fade_type",
+                "quest",
+                "sound",
+                "vo_resref",
+                "speaker",
+            }
             for key, value in custom_data.items():
                 if key not in kotorf_fields:
                     passage_metadata.custom[key] = str(value)
@@ -316,14 +327,27 @@ def _read_html(content: str) -> TwineStory:
                     if "quest" in custom_dict:
                         passage_metadata.quest = str(custom_dict["quest"])
                     if "sound" in custom_dict:
-                        passage_metadata.sound = str(custom_dict["sound"]) if custom_dict["sound"] else ""
+                        passage_metadata.sound = (
+                            str(custom_dict["sound"]) if custom_dict["sound"] else ""
+                        )
                     if "vo_resref" in custom_dict:
-                        passage_metadata.vo_resref = str(custom_dict["vo_resref"]) if custom_dict["vo_resref"] else ""
+                        passage_metadata.vo_resref = (
+                            str(custom_dict["vo_resref"]) if custom_dict["vo_resref"] else ""
+                        )
                     if "speaker" in custom_dict:
                         passage_metadata.speaker = str(custom_dict["speaker"])
 
                     # Store remaining custom metadata that aren't KotOR-specific fields
-                    kotorf_fields = {"animation_id", "camera_angle", "camera_id", "fade_type", "quest", "sound", "vo_resref", "speaker"}
+                    kotorf_fields = {
+                        "animation_id",
+                        "camera_angle",
+                        "camera_id",
+                        "fade_type",
+                        "quest",
+                        "sound",
+                        "vo_resref",
+                        "speaker",
+                    }
                     for key, value in custom_dict.items():
                         if key not in kotorf_fields:
                             passage_metadata.custom[key] = str(value)
@@ -401,7 +425,9 @@ def _write_json(
                         link_texts.append(f"[[{link.target}]]")
             if link_texts:
                 # Append links to the text (Twine convention is to append links at the end)
-                text_with_links = passage.text + (" " if passage.text else "") + " ".join(link_texts)
+                text_with_links = (
+                    passage.text + (" " if passage.text else "") + " ".join(link_texts)
+                )
 
         metadata_dict: PassageMetadataDict = {
             "position": f"{passage.metadata.position.x},{passage.metadata.position.y}",
@@ -532,7 +558,9 @@ def _write_html(
                         link_texts.append(f"[[{link.target}]]")
             if link_texts:
                 # Append links to the text (Twine convention is to append links at the end)
-                text_with_links = passage.text + (" " if passage.text else "") + " ".join(link_texts)
+                text_with_links = (
+                    passage.text + (" " if passage.text else "") + " ".join(link_texts)
+                )
 
         p_data.text = text_with_links
 
@@ -648,7 +676,13 @@ def _dlg_to_story(
         if node in node_names:
             return node_names[node]
 
-        base = node.speaker if isinstance(node, DLGEntry) and node.speaker else "Entry" if isinstance(node, DLGEntry) else "Reply"
+        base = (
+            node.speaker
+            if isinstance(node, DLGEntry) and node.speaker
+            else "Entry"
+            if isinstance(node, DLGEntry)
+            else "Reply"
+        )
         count = name_registry.get(base, 0)
         name_registry[base] = count + 1
         name = base if count == 0 else f"{base}_{count}"
@@ -688,7 +722,9 @@ def _dlg_to_story(
         if link.node is None:
             continue
 
-        stack: list[tuple[DLGEntry | DLGReply, str]] = [(cast("DLGEntry | DLGReply", link.node), str(i + 1))]
+        stack: list[tuple[DLGEntry | DLGReply, str]] = [
+            (cast("DLGEntry | DLGReply", link.node), str(i + 1))
+        ]
         start_passage: TwinePassage | None = None
 
         while stack:
@@ -704,7 +740,9 @@ def _dlg_to_story(
 
                     target_node = child_link.node
                     target_pid = str(uuid.uuid4())
-                    target_passage = _ensure_passage(cast("DLGEntry | DLGReply", target_node), target_pid)
+                    target_passage = _ensure_passage(
+                        cast("DLGEntry | DLGReply", target_node), target_pid
+                    )
 
                     passage.links.append(
                         TwineLink(

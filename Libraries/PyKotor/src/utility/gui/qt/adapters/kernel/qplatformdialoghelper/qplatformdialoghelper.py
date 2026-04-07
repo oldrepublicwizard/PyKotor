@@ -274,7 +274,9 @@ class QPlatformDialogHelper(QObject):
     def exec(self) -> DialogCode:
         raise NotImplementedError
 
-    def show(self, window_flags: Qt.WindowFlags, window_state: Qt.WindowState, parent: QObject | None):
+    def show(
+        self, window_flags: Qt.WindowFlags, window_state: Qt.WindowState, parent: QObject | None
+    ):
         raise NotImplementedError
 
     def hide(self):
@@ -323,7 +325,10 @@ class QPlatformDialogHelper(QObject):
         return ButtonRole.InvalidRole
 
     @staticmethod
-    def buttonLayout(orientation: Qt.Orientation = Qt.Orientation.Horizontal, policy: ButtonLayout = ButtonLayout.UnknownLayout) -> tuple[ButtonRole, ...]:
+    def buttonLayout(
+        orientation: Qt.Orientation = Qt.Orientation.Horizontal,
+        policy: ButtonLayout = ButtonLayout.UnknownLayout,
+    ) -> tuple[ButtonRole, ...]:
         layout_policy = policy
         if layout_policy == ButtonLayout.UnknownLayout:
             if sys.platform == "darwin":

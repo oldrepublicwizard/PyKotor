@@ -122,7 +122,9 @@ def cmd_convert(args: Namespace, logger: Logger) -> int:
                 cache_file = cache_dir / gff_filename
                 write_gff(gff, cache_file, file_format=ResourceType.GFF)
 
-                logger.debug(f"Converted: {json_path.relative_to(config.root_dir)} -> {cache_file.relative_to(config.root_dir)}")
+                logger.debug(
+                    f"Converted: {json_path.relative_to(config.root_dir)} -> {cache_file.relative_to(config.root_dir)}"
+                )
                 converted_count += 1
 
             except Exception as e:

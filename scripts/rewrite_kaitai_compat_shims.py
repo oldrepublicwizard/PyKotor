@@ -4,6 +4,7 @@
 Run after adding or renaming Kaitai-generated modules in
 ``Libraries/bioware-kaitai-formats/src/bioware_kaitai_formats/``.
 """
+
 from __future__ import annotations
 
 from pathlib import Path

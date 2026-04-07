@@ -3,6 +3,7 @@
 This module provides read_resource, resource_to_bytes, and dismantle_generic so callers
 can work with sources and high-level types (ARE, DLG, GIT, etc.) without format-specific imports.
 """
+
 from __future__ import annotations
 
 import os
@@ -209,12 +210,18 @@ def read_resource(  # noqa: C901, PLR0911, PLR0912
         if handler is not None:
             return handler(source)
 
-        if ResourceType.from_extension(resource_ext) in (ResourceType.ERF, ResourceType.MOD, ResourceType.SAV):
+        if ResourceType.from_extension(resource_ext) in (
+            ResourceType.ERF,
+            ResourceType.MOD,
+            ResourceType.SAV,
+        ):
             return bytes_erf(read_erf(source))
         if resource_type.extension.upper() in GFFContent.__members__:
             return bytes_gff(read_gff(source))
     except Exception as e:  # pylint: disable=W0718  # noqa: BLE001
-        new_err = ValueError(f"Could not load resource '{source_path}' as resource type '{resource_type}")
+        new_err = ValueError(
+            f"Could not load resource '{source_path}' as resource type '{resource_type}"
+        )
         print((new_err.__class__.__name__, str(new_err)))
         raise new_err from e
 
@@ -253,15 +260,33 @@ def dismantle_generic(  # noqa: PLR0911, C901, PLR0912, ANN201
             return dismantler(generic)
     if isinstance(generic, GFF):
         return generic  # Guess whoever called this didn't get the memo.
-    raise TypeError(f"Could not dismantle generic, invalid object passed ({generic}) of type '{type(generic).__name__}' was unexpected.")
+    raise TypeError(
+        f"Could not dismantle generic, invalid object passed ({generic}) of type '{type(generic).__name__}' was unexpected."
+    )
 
 
 def resource_to_bytes(  # noqa: PLR0912, C901, PLR0911
-    resource: BWM | ERF | GFF | LIP | LTR | LYT | MDL | NCS | RIM | SSF | TLK | TPC | TwoDA | VIS | GFF_GENERICS,
+    resource: BWM
+    | ERF
+    | GFF
+    | LIP
+    | LTR
+    | LYT
+    | MDL
+    | NCS
+    | RIM
+    | SSF
+    | TLK
+    | TPC
+    | TwoDA
+    | VIS
+    | GFF_GENERICS,
 ) -> bytes:
     if isinstance(resource, GFF_GENERICS):
         return bytes_gff(dismantle_generic(resource))
     for resource_type, serializer in _RESOURCE_SERIALIZERS:
         if isinstance(resource, resource_type):
             return serializer(resource)
-    raise TypeError(f"Invalid resource {resource} of type '{type(resource).__name__}' passed to `resource_to_bytes`.")
+    raise TypeError(
+        f"Invalid resource {resource} of type '{type(resource).__name__}' passed to `resource_to_bytes`."
+    )

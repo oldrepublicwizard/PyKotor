@@ -161,7 +161,9 @@ K1_SAME_TEST_UTD_XML = """<gff3>
     </struct>
   </gff3>"""
 K1_PATH = os.environ.get("K1_PATH", "C:\\Program Files (x86)\\Steam\\steamapps\\common\\swkotor")
-K2_PATH = os.environ.get("K2_PATH", "C:\\Program Files (x86)\\Steam\\steamapps\\common\\Knights of the Old Republic II")
+K2_PATH = os.environ.get(
+    "K2_PATH", "C:\\Program Files (x86)\\Steam\\steamapps\\common\\Knights of the Old Republic II"
+)
 
 
 class TestUTD(TestCase):
@@ -193,7 +195,9 @@ class TestUTD(TestCase):
         import os
         import tempfile
 
-        with tempfile.NamedTemporaryFile(mode="w", suffix=".utd.xml", delete=False, encoding="utf-8") as tmp:
+        with tempfile.NamedTemporaryFile(
+            mode="w", suffix=".utd.xml", delete=False, encoding="utf-8"
+        ) as tmp:
             tmp.write(TEST_UTD_XML)
             tmp_path = tmp.name
 

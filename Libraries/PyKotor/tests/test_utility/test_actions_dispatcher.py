@@ -17,7 +17,11 @@ import pytest
 from qtpy.QtWidgets import QApplication
 
 # Import ActionsDispatcher and dependencies
-from utility.gui.qt.common.action_definitions import ActionDefinition, ActionKey, FileExplorerActions
+from utility.gui.qt.common.action_definitions import (
+    ActionDefinition,
+    ActionKey,
+    FileExplorerActions,
+)
 from utility.gui.qt.common.actions_dispatcher import ActionsDispatcher
 from utility.gui.qt.common.tasks.actions_executor import FileActionsExecutor
 from utility.gui.qt.filesystem.qfiledialogextended.qfiledialogextended import QFileDialogExtended
@@ -146,7 +150,9 @@ def test_error_handling_in_declarative_actions(qapp, temp_dir: Path):
 
     # Test invalid action (should not crash)
     # Since we dynamically look up methods, invalid ones should be handled gracefully
-    invalid_definition = ActionDefinition("dialog-error", "Invalid", None, operation="nonexistent_operation")
+    invalid_definition = ActionDefinition(
+        "dialog-error", "Invalid", None, operation="nonexistent_operation"
+    )
 
     # This should not crash, though it may not do anything
     try:
@@ -269,7 +275,9 @@ def test_full_integration_workflow(qapp, temp_dir: Path, force_process_pool: Non
     assert task_id
 
     # 4. Test directory navigation
-    dispatcher.dialog.setDirectory(str(temp_dir / "subdir") if (temp_dir / "subdir").exists() else str(temp_dir))
+    dispatcher.dialog.setDirectory(
+        str(temp_dir / "subdir") if (temp_dir / "subdir").exists() else str(temp_dir)
+    )
     assert dispatcher.get_current_directory().exists()
 
     # 5. Test state consistency

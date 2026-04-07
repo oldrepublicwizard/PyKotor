@@ -29,8 +29,12 @@ def downsample_dxt(data: bytearray, width: int, height: int, bytes_per_block: in
                         src_block_index = (src_y * blocks_x + src_x) * bytes_per_block
 
                         # Extract color endpoints
-                        color0 = int.from_bytes(data[src_block_index : src_block_index + 2], "little")
-                        color1 = int.from_bytes(data[src_block_index + 2 : src_block_index + 4], "little")
+                        color0 = int.from_bytes(
+                            data[src_block_index : src_block_index + 2], "little"
+                        )
+                        color1 = int.from_bytes(
+                            data[src_block_index + 2 : src_block_index + 4], "little"
+                        )
 
                         # Convert 565 to RGB
                         color0_sum[0] += ((color0 >> 11) & 0x1F) << 3
@@ -51,8 +55,12 @@ def downsample_dxt(data: bytearray, width: int, height: int, bytes_per_block: in
             color1_avg = [c // block_count for c in color1_sum]
 
             # Convert back to 565 format
-            color0_565 = ((color0_avg[0] >> 3) << 11) | ((color0_avg[1] >> 2) << 5) | (color0_avg[2] >> 3)
-            color1_565 = ((color1_avg[0] >> 3) << 11) | ((color1_avg[1] >> 2) << 5) | (color1_avg[2] >> 3)
+            color0_565 = (
+                ((color0_avg[0] >> 3) << 11) | ((color0_avg[1] >> 2) << 5) | (color0_avg[2] >> 3)
+            )
+            color1_565 = (
+                ((color1_avg[0] >> 3) << 11) | ((color1_avg[1] >> 2) << 5) | (color1_avg[2] >> 3)
+            )
 
             # Write averaged color endpoints to new block
             new_data[new_block_index : new_block_index + 2] = color0_565.to_bytes(2, "little")
@@ -80,7 +88,9 @@ def downsample_dxt(data: bytearray, width: int, height: int, bytes_per_block: in
             else:
                 # If we don't have all four blocks, just copy from the first available block
                 src_block_index = (y * 2 * blocks_x + x * 2) * bytes_per_block
-                new_data[new_block_index + 4 : new_block_index + 8] = data[src_block_index + 4 : src_block_index + 8]
+                new_data[new_block_index + 4 : new_block_index + 8] = data[
+                    src_block_index + 4 : src_block_index + 8
+                ]
 
             # For DXT5, handle alpha indices (simplified approach)
             if bytes_per_block == 16:
@@ -92,13 +102,20 @@ def downsample_dxt(data: bytearray, width: int, height: int, bytes_per_block: in
                             for dx in range(2):
                                 src_x, src_y = x * 2 + dx, y * 2 + dy
                                 src_block_index = (src_y * blocks_x + src_x) * bytes_per_block
-                                src_alpha_indices = int.from_bytes(data[src_block_index + 2 + i : src_block_index + 3 + i], "little")
+                                src_alpha_indices = int.from_bytes(
+                                    data[src_block_index + 2 + i : src_block_index + 3 + i],
+                                    "little",
+                                )
                                 alpha_indices += src_alpha_indices
-                        new_data[new_block_index + 2 + i] = (alpha_indices // 4).to_bytes(1, "little")[0]
+                        new_data[new_block_index + 2 + i] = (alpha_indices // 4).to_bytes(
+                            1, "little"
+                        )[0]
                 else:
                     # If we don't have all four blocks, just copy from the first available block
                     src_block_index = (y * 2 * blocks_x + x * 2) * bytes_per_block
-                    new_data[new_block_index + 2 : new_block_index + 8] = data[src_block_index + 2 : src_block_index + 8]
+                    new_data[new_block_index + 2 : new_block_index + 8] = data[
+                        src_block_index + 2 : src_block_index + 8
+                    ]
 
     return new_data
 

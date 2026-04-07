@@ -7,12 +7,14 @@ Uses `gh api` for default-branch tip SHAs. Run from repo root:
 
 Optional: WIKI_TH3_DRY_RUN=1 for no writes.
 """
+
 from __future__ import annotations
 
 import os
 import re
 import subprocess
 import sys
+
 from pathlib import Path
 from typing import Dict, List, Optional, Tuple
 
@@ -77,7 +79,9 @@ def _gh_tip_sha(owner: str, repo: str) -> str:
         check=False,
     )
     if sh.returncode != 0:
-        raise RuntimeError("gh commits {0}/{1}@{2}: {3}".format(owner, repo, branch, sh.stderr.strip()))
+        raise RuntimeError(
+            "gh commits {0}/{1}@{2}: {3}".format(owner, repo, branch, sh.stderr.strip())
+        )
     sha = sh.stdout.strip()
     _SHA_CACHE[key] = sha
     return sha
@@ -333,7 +337,13 @@ def _refresh_blob_shas(content: str) -> Tuple[str, int]:
 
     def repl(m: re.Match[str]) -> str:
         nonlocal changes
-        o, r, old_sha, path, frag = m.group("o"), m.group("r"), m.group("sha"), m.group("path"), m.group("frag") or ""
+        o, r, old_sha, path, frag = (
+            m.group("o"),
+            m.group("r"),
+            m.group("sha"),
+            m.group("path"),
+            m.group("frag") or "",
+        )
         try:
             new_sha = _gh_tip_sha(o, r)
         except Exception:

@@ -139,7 +139,11 @@ class PatcherConfig:
         reader.load_settings()
 
         namespace: PatcherNamespace = PatcherNamespace.from_default()
-        namespace.name = reader.config.window_title or filepath.parents[1].name.strip() or "<< Untitled Mod Loaded >>"
+        namespace.name = (
+            reader.config.window_title
+            or filepath.parents[1].name.strip()
+            or "<< Untitled Mod Loaded >>"
+        )
 
         return namespace
 
@@ -180,4 +184,12 @@ class PatcherConfig:
         num_nss_patches: int = len(self.patches_nss)
         num_ncs_patches: int = len(self.patches_ncs)
 
-        return num_2da_patches + num_gff_patches + num_ssf_patches + num_tlk_patches + num_install_list_patches + num_nss_patches + num_ncs_patches
+        return (
+            num_2da_patches
+            + num_gff_patches
+            + num_ssf_patches
+            + num_tlk_patches
+            + num_install_list_patches
+            + num_nss_patches
+            + num_ncs_patches
+        )

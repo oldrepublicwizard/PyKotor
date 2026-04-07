@@ -74,7 +74,9 @@ def fix_qss_file(file_path: Path) -> bool:
 
 
 if __name__ == "__main__":
-    qss_dir = Path(__file__).parent.parent / "Tools" / "HolocronToolset" / "src" / "resources" / "other"
+    qss_dir = (
+        Path(__file__).parent.parent / "Tools" / "HolocronToolset" / "src" / "resources" / "other"
+    )
 
     if not qss_dir.exists():
         print(f"Directory not found: {qss_dir}")

@@ -59,7 +59,11 @@ def is_frozen() -> bool:
         True if running from a frozen executable
     """
     # Check for sys attributes - legitimate use of getattr for optional runtime attributes
-    return getattr(sys, "frozen", False) or getattr(sys, "_MEIPASS", False) or tempfile.gettempdir() in sys.executable
+    return (
+        getattr(sys, "frozen", False)
+        or getattr(sys, "_MEIPASS", False)
+        or tempfile.gettempdir() in sys.executable
+    )
 
 
 def setup_sys_path(
@@ -160,7 +164,9 @@ def create_exception_hook(
                     fake_traceback = None
                     for frame_info in current_stack:
                         frame = frame_info.frame
-                        fake_traceback = TracebackType(fake_traceback, frame, frame.f_lasti, frame.f_lineno)
+                        fake_traceback = TracebackType(
+                            fake_traceback, frame, frame.f_lasti, frame.f_lineno
+                        )
                     exc = exc.with_traceback(fake_traceback)
                     tback = exc.__traceback__
 

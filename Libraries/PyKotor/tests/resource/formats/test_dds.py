@@ -46,10 +46,17 @@ class TestDDSParsing(unittest.TestCase):
         ddpf_flags: int,
         caps2: int = 0,
     ) -> bytearray:
-        header_flags = TestDDSParsing.DDSD_CAPS | TestDDSParsing.DDSD_HEIGHT | TestDDSParsing.DDSD_WIDTH | TestDDSParsing.DDSD_PIXELFORMAT
+        header_flags = (
+            TestDDSParsing.DDSD_CAPS
+            | TestDDSParsing.DDSD_HEIGHT
+            | TestDDSParsing.DDSD_WIDTH
+            | TestDDSParsing.DDSD_PIXELFORMAT
+        )
         if fourcc:
             header_flags |= TestDDSParsing.DDSD_LINEARSIZE
-            pitch_or_linear = max(1, ((width + 3) // 4) * ((height + 3) // 4)) * (8 if fourcc == b"DXT1" else 16)
+            pitch_or_linear = max(1, ((width + 3) // 4) * ((height + 3) // 4)) * (
+                8 if fourcc == b"DXT1" else 16
+            )
         else:
             header_flags |= TestDDSParsing.DDSD_PITCH
             pitch_or_linear = width * (bitcount // 8)

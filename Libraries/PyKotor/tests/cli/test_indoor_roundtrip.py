@@ -231,7 +231,9 @@ def _get_area_pth_payload(
     deterministic choice so original vs rebuilt agree regardless of container iteration order.
     """
     root_l = module_root.strip().lower()
-    by_resref: dict[str, bytes] = {r.lower(): d for (r, t), d in resources.items() if t == ResourceType.PTH}
+    by_resref: dict[str, bytes] = {
+        r.lower(): d for (r, t), d in resources.items() if t == ResourceType.PTH
+    }
     if root_l in by_resref:
         return by_resref[root_l]
     if not by_resref:
@@ -263,7 +265,11 @@ class TestIndoorCLIRoundtrip:
         original_resources = _get_module_resources(module_root, installation)
 
         original_lyt_data = next(
-            (data for (resref, restype), data in original_resources.items() if restype == ResourceType.LYT),
+            (
+                data
+                for (resref, restype), data in original_resources.items()
+                if restype == ResourceType.LYT
+            ),
             None,
         )
         if original_lyt_data is None:
@@ -280,13 +286,19 @@ class TestIndoorCLIRoundtrip:
         # Compare
         rebuilt_resources = _read_erf_resources(rebuilt_path)
         rebuilt_lyt_data = next(
-            (data for (resref, restype), data in rebuilt_resources.items() if restype == ResourceType.LYT),
+            (
+                data
+                for (resref, restype), data in rebuilt_resources.items()
+                if restype == ResourceType.LYT
+            ),
             None,
         )
         assert rebuilt_lyt_data is not None, f"{module_root}: Rebuilt module missing LYT"
         rebuilt_lyt = read_lyt(rebuilt_lyt_data)
 
-        assert len(rebuilt_lyt.rooms) == len(original_lyt.rooms), f"{module_root}: Room count mismatch - original={len(original_lyt.rooms)}, rebuilt={len(rebuilt_lyt.rooms)}"
+        assert len(rebuilt_lyt.rooms) == len(original_lyt.rooms), (
+            f"{module_root}: Room count mismatch - original={len(original_lyt.rooms)}, rebuilt={len(rebuilt_lyt.rooms)}"
+        )
 
     def test_roundtrip_lyt_room_positions(
         self,
@@ -302,7 +314,11 @@ class TestIndoorCLIRoundtrip:
         original_resources = _get_module_resources(module_root, installation)
 
         original_lyt_data = next(
-            (data for (resref, restype), data in original_resources.items() if restype == ResourceType.LYT),
+            (
+                data
+                for (resref, restype), data in original_resources.items()
+                if restype == ResourceType.LYT
+            ),
             None,
         )
         if original_lyt_data is None:
@@ -315,7 +331,11 @@ class TestIndoorCLIRoundtrip:
 
         rebuilt_resources = _read_erf_resources(rebuilt_path)
         rebuilt_lyt_data = next(
-            (data for (resref, restype), data in rebuilt_resources.items() if restype == ResourceType.LYT),
+            (
+                data
+                for (resref, restype), data in rebuilt_resources.items()
+                if restype == ResourceType.LYT
+            ),
             None,
         )
         assert rebuilt_lyt_data is not None
@@ -350,13 +370,23 @@ class TestIndoorCLIRoundtrip:
         _build_indoor_map_to_mod(indoor_map, installation, rebuilt_path)
         rebuilt_resources = _read_erf_resources(rebuilt_path)
 
-        original_woks = [data for (resref, restype), data in original_resources.items() if restype == ResourceType.WOK]
-        rebuilt_woks = [data for (resref, restype), data in rebuilt_resources.items() if restype == ResourceType.WOK]
+        original_woks = [
+            data
+            for (resref, restype), data in original_resources.items()
+            if restype == ResourceType.WOK
+        ]
+        rebuilt_woks = [
+            data
+            for (resref, restype), data in rebuilt_resources.items()
+            if restype == ResourceType.WOK
+        ]
 
         original_total = sum(len(read_bwm(data).faces) for data in original_woks)
         rebuilt_total = sum(len(read_bwm(data).faces) for data in rebuilt_woks)
 
-        assert rebuilt_total == original_total, f"{module_root}: WOK face count mismatch - original={original_total}, rebuilt={rebuilt_total}"
+        assert rebuilt_total == original_total, (
+            f"{module_root}: WOK face count mismatch - original={original_total}, rebuilt={rebuilt_total}"
+        )
 
     def test_roundtrip_wok_walkable_count(
         self,
@@ -376,13 +406,23 @@ class TestIndoorCLIRoundtrip:
         _build_indoor_map_to_mod(indoor_map, installation, rebuilt_path)
         rebuilt_resources = _read_erf_resources(rebuilt_path)
 
-        original_woks = [data for (resref, restype), data in original_resources.items() if restype == ResourceType.WOK]
-        rebuilt_woks = [data for (resref, restype), data in rebuilt_resources.items() if restype == ResourceType.WOK]
+        original_woks = [
+            data
+            for (resref, restype), data in original_resources.items()
+            if restype == ResourceType.WOK
+        ]
+        rebuilt_woks = [
+            data
+            for (resref, restype), data in rebuilt_resources.items()
+            if restype == ResourceType.WOK
+        ]
 
         original_walkable = sum(len(read_bwm(data).walkable_faces()) for data in original_woks)
         rebuilt_walkable = sum(len(read_bwm(data).walkable_faces()) for data in rebuilt_woks)
 
-        assert rebuilt_walkable == original_walkable, f"{module_root}: Walkable face count mismatch - original={original_walkable}, rebuilt={rebuilt_walkable}"
+        assert rebuilt_walkable == original_walkable, (
+            f"{module_root}: Walkable face count mismatch - original={original_walkable}, rebuilt={rebuilt_walkable}"
+        )
 
     def test_roundtrip_wok_vertex_count(
         self,
@@ -402,13 +442,23 @@ class TestIndoorCLIRoundtrip:
         _build_indoor_map_to_mod(indoor_map, installation, rebuilt_path)
         rebuilt_resources = _read_erf_resources(rebuilt_path)
 
-        original_woks = [data for (resref, restype), data in original_resources.items() if restype == ResourceType.WOK]
-        rebuilt_woks = [data for (resref, restype), data in rebuilt_resources.items() if restype == ResourceType.WOK]
+        original_woks = [
+            data
+            for (resref, restype), data in original_resources.items()
+            if restype == ResourceType.WOK
+        ]
+        rebuilt_woks = [
+            data
+            for (resref, restype), data in rebuilt_resources.items()
+            if restype == ResourceType.WOK
+        ]
 
         original_vertices = sum(len(list(read_bwm(data).vertices())) for data in original_woks)
         rebuilt_vertices = sum(len(list(read_bwm(data).vertices())) for data in rebuilt_woks)
 
-        assert rebuilt_vertices == original_vertices, f"{module_root}: Vertex count mismatch - original={original_vertices}, rebuilt={rebuilt_vertices}"
+        assert rebuilt_vertices == original_vertices, (
+            f"{module_root}: Vertex count mismatch - original={original_vertices}, rebuilt={rebuilt_vertices}"
+        )
 
     def test_roundtrip_wok_material_distribution(
         self,
@@ -428,8 +478,16 @@ class TestIndoorCLIRoundtrip:
         _build_indoor_map_to_mod(indoor_map, installation, rebuilt_path)
         rebuilt_resources = _read_erf_resources(rebuilt_path)
 
-        original_woks = [data for (resref, restype), data in original_resources.items() if restype == ResourceType.WOK]
-        rebuilt_woks = [data for (resref, restype), data in rebuilt_resources.items() if restype == ResourceType.WOK]
+        original_woks = [
+            data
+            for (resref, restype), data in original_resources.items()
+            if restype == ResourceType.WOK
+        ]
+        rebuilt_woks = [
+            data
+            for (resref, restype), data in rebuilt_resources.items()
+            if restype == ResourceType.WOK
+        ]
 
         def count_materials(wok_list: list[bytes]) -> dict[int, int]:
             materials: dict[int, int] = {}
@@ -443,7 +501,9 @@ class TestIndoorCLIRoundtrip:
         original_materials = count_materials(original_woks)
         rebuilt_materials = count_materials(rebuilt_woks)
 
-        assert rebuilt_materials == original_materials, f"{module_root}: Material distribution mismatch - original={original_materials}, rebuilt={rebuilt_materials}"
+        assert rebuilt_materials == original_materials, (
+            f"{module_root}: Material distribution mismatch - original={original_materials}, rebuilt={rebuilt_materials}"
+        )
 
     def test_roundtrip_required_resources(
         self,
@@ -467,7 +527,9 @@ class TestIndoorCLIRoundtrip:
         rebuilt_types = {restype for (_, restype) in rebuilt_resources.keys()}
 
         for req_type in required_types:
-            assert req_type in original_types, f"{module_root}: Original missing required {req_type}"
+            assert req_type in original_types, (
+                f"{module_root}: Original missing required {req_type}"
+            )
             assert req_type in rebuilt_types, f"{module_root}: Rebuilt missing required {req_type}"
 
     def test_roundtrip_are_equivalent(
@@ -576,7 +638,9 @@ class TestIndoorCLIRoundtrip:
         assert reb_lyt_data is not None, f"{module_root}: Rebuilt missing LYT"
         rebuilt_lyt = read_lyt(reb_lyt_data)
 
-        assert original_lyt == rebuilt_lyt, f"{module_root}: LYT structure differs (rooms/tracks/obstacles/doorhooks)"
+        assert original_lyt == rebuilt_lyt, (
+            f"{module_root}: LYT structure differs (rooms/tracks/obstacles/doorhooks)"
+        )
 
     def test_roundtrip_lyt_room_models(
         self,
@@ -605,7 +669,9 @@ class TestIndoorCLIRoundtrip:
         rebuilt_lyt = read_lyt(reb_lyt_data)
         reb_models = [r.model.lower().strip() for r in rebuilt_lyt.rooms]
 
-        assert orig_models == reb_models, f"{module_root}: LYT room models differ - original={orig_models}, rebuilt={reb_models}"
+        assert orig_models == reb_models, (
+            f"{module_root}: LYT room models differ - original={orig_models}, rebuilt={reb_models}"
+        )
 
     def test_roundtrip_resource_set(
         self,
@@ -624,14 +690,26 @@ class TestIndoorCLIRoundtrip:
         _build_indoor_map_to_mod(indoor_map, installation, rebuilt_path)
         rebuilt_resources = _read_erf_resources(rebuilt_path)
 
-        core_types = {ResourceType.LYT, ResourceType.ARE, ResourceType.IFO, ResourceType.GIT, ResourceType.WOK}
-        orig_count_by_type = {rt: sum(1 for (_, t) in original_resources if t == rt) for rt in core_types}
-        reb_count_by_type = {rt: sum(1 for (_, t) in rebuilt_resources if t == rt) for rt in core_types}
+        core_types = {
+            ResourceType.LYT,
+            ResourceType.ARE,
+            ResourceType.IFO,
+            ResourceType.GIT,
+            ResourceType.WOK,
+        }
+        orig_count_by_type = {
+            rt: sum(1 for (_, t) in original_resources if t == rt) for rt in core_types
+        }
+        reb_count_by_type = {
+            rt: sum(1 for (_, t) in rebuilt_resources if t == rt) for rt in core_types
+        }
 
         for rt in core_types:
             orig_count = orig_count_by_type[rt]
             reb_count = reb_count_by_type[rt]
-            assert reb_count == orig_count, f"{module_root}: {rt.extension} count differs - original={orig_count}, rebuilt={reb_count}"
+            assert reb_count == orig_count, (
+                f"{module_root}: {rt.extension} count differs - original={orig_count}, rebuilt={reb_count}"
+            )
 
     def test_roundtrip_vis_equivalent(
         self,
@@ -705,12 +783,28 @@ class TestIndoorCLIRoundtrip:
         _build_indoor_map_to_mod(indoor_map, installation, rebuilt_path)
         rebuilt_resources = _read_erf_resources(rebuilt_path)
 
-        original_woks = sorted([(resref, data) for (resref, restype), data in original_resources.items() if restype == ResourceType.WOK])
-        rebuilt_woks = sorted([(resref, data) for (resref, restype), data in rebuilt_resources.items() if restype == ResourceType.WOK])
+        original_woks = sorted(
+            [
+                (resref, data)
+                for (resref, restype), data in original_resources.items()
+                if restype == ResourceType.WOK
+            ]
+        )
+        rebuilt_woks = sorted(
+            [
+                (resref, data)
+                for (resref, restype), data in rebuilt_resources.items()
+                if restype == ResourceType.WOK
+            ]
+        )
 
-        assert len(rebuilt_woks) == len(original_woks), f"{module_root}: WOK count mismatch - original={len(original_woks)}, rebuilt={len(rebuilt_woks)}"
+        assert len(rebuilt_woks) == len(original_woks), (
+            f"{module_root}: WOK count mismatch - original={len(original_woks)}, rebuilt={len(rebuilt_woks)}"
+        )
 
-        for i, ((orig_resref, orig_data), (rebuilt_resref, rebuilt_data)) in enumerate(zip(original_woks, rebuilt_woks)):
+        for i, ((orig_resref, orig_data), (rebuilt_resref, rebuilt_data)) in enumerate(
+            zip(original_woks, rebuilt_woks)
+        ):
             if orig_data != rebuilt_data:
                 orig_bwm = read_bwm(orig_data)
                 rebuilt_bwm = read_bwm(rebuilt_data)
@@ -719,11 +813,17 @@ class TestIndoorCLIRoundtrip:
                 if len(orig_bwm.faces) != len(rebuilt_bwm.faces):
                     diff_info.append(f"faces: {len(orig_bwm.faces)} vs {len(rebuilt_bwm.faces)}")
                 if len(list(orig_bwm.vertices())) != len(list(rebuilt_bwm.vertices())):
-                    diff_info.append(f"vertices: {len(list(orig_bwm.vertices()))} vs {len(list(rebuilt_bwm.vertices()))}")
+                    diff_info.append(
+                        f"vertices: {len(list(orig_bwm.vertices()))} vs {len(list(rebuilt_bwm.vertices()))}"
+                    )
                 if len(orig_bwm.walkable_faces()) != len(rebuilt_bwm.walkable_faces()):
-                    diff_info.append(f"walkable: {len(orig_bwm.walkable_faces())} vs {len(rebuilt_bwm.walkable_faces())}")
+                    diff_info.append(
+                        f"walkable: {len(orig_bwm.walkable_faces())} vs {len(rebuilt_bwm.walkable_faces())}"
+                    )
 
-                assert False, f"{module_root} WOK {i} ({orig_resref}): Bytes differ - {'; '.join(diff_info) if diff_info else 'binary difference at unknown location'}"
+                assert False, (
+                    f"{module_root} WOK {i} ({orig_resref}): Bytes differ - {'; '.join(diff_info) if diff_info else 'binary difference at unknown location'}"
+                )
 
 
 class TestIndoorCLIRoundtripIndoorMapComparison:
@@ -759,7 +859,9 @@ class TestIndoorCLIRoundtripIndoorMapComparison:
             diff_log: list[str] = []
             is_identical = indoor_map_1.compare(indoor_map_2, log_func=diff_log.append)
 
-            assert is_identical, f"{module_root}: IndoorMap comparison failed:\n" + "\n".join(diff_log)
+            assert is_identical, f"{module_root}: IndoorMap comparison failed:\n" + "\n".join(
+                diff_log
+            )
         else:
             # Fallback: compare room counts
             assert len(indoor_map_1.rooms) > 0, f"{module_root}: No rooms extracted"

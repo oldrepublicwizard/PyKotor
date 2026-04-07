@@ -110,7 +110,11 @@ def read_tlk(
         raise ValueError(msg)
 
     normalized_source = source
-    if isinstance(source, str) and file_format in (ResourceType.TLK_XML, ResourceType.TLK_JSON) and not os.path.exists(source):  # noqa: PTH110
+    if (
+        isinstance(source, str)
+        and file_format in (ResourceType.TLK_XML, ResourceType.TLK_JSON)
+        and not os.path.exists(source)
+    ):  # noqa: PTH110
         normalized_source = source.encode("utf-8")
 
     if file_format == ResourceType.TLK:

@@ -874,7 +874,9 @@ class TestExplorerKeyboardNavigation(ExplorerComponentTestBase):
 
         # Address bar or child should have focus
         address_bar = self.explorer.address_bar
-        has_focus = address_bar.hasFocus() or any(w.hasFocus() for w in address_bar.findChildren(QWidget))
+        has_focus = address_bar.hasFocus() or any(
+            w.hasFocus() for w in address_bar.findChildren(QWidget)
+        )
         # May depend on implementation
 
     def test_f4_opens_address_bar_dropdown(self) -> None:

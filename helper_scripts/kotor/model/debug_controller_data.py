@@ -55,9 +55,13 @@ def debug_controller_data(model_name: str, game: Game):
             if node.controllers:
                 print(f"  Node {node.name}: {len(node.controllers)} controllers")
                 for i, ctrl in enumerate(node.controllers):
-                    print(f"    Controller {i}: type={ctrl.controller_type}, rows={len(ctrl.rows)}, compress_quaternions={mdl_obj.compress_quaternions}")
+                    print(
+                        f"    Controller {i}: type={ctrl.controller_type}, rows={len(ctrl.rows)}, compress_quaternions={mdl_obj.compress_quaternions}"
+                    )
                     if ctrl.controller_type.value == 20:  # ORIENTATION
-                        print(f"      First row data length: {len(ctrl.rows[0].data) if ctrl.rows else 0}")
+                        print(
+                            f"      First row data length: {len(ctrl.rows[0].data) if ctrl.rows else 0}"
+                        )
 
         print("\nWriting PyKotor output...")
         pykotor_mdl = td_path / f"{model_name}-pykotor.mdl"

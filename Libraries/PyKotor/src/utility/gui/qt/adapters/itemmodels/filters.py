@@ -78,7 +78,10 @@ class NoScrollEventFilter(QObject):
         if event.type() == QEvent.Type.Wheel and isinstance(obj, QWidget):
             parent_widget = obj.parent()
             self_parent = self.parent()
-            while parent_widget is not None and (not isinstance(parent_widget, self_parent.__class__) or self_parent.__class__ == QObject):
+            while parent_widget is not None and (
+                not isinstance(parent_widget, self_parent.__class__)
+                or self_parent.__class__ == QObject
+            ):
                 parent_widget = parent_widget.parent()
             if parent_widget:
                 QApplication.sendEvent(parent_widget, event)
@@ -92,11 +95,21 @@ class NoScrollEventFilter(QObject):
     ) -> None:
         """Recursively install event filters on all child widgets."""
         if include_types is None:
-            include_types = [QComboBox, QSlider, QSpinBox, QGroupBox, QAbstractSpinBox, QDoubleSpinBox]
+            include_types = [
+                QComboBox,
+                QSlider,
+                QSpinBox,
+                QGroupBox,
+                QAbstractSpinBox,
+                QDoubleSpinBox,
+            ]
 
         parent_widget = self.parent() if parent_widget is None else parent_widget
         if parent_widget is None:
-            RobustLogger().warning("NoScrollEventFilter has nothing to do, please provide a widget to process (parent_widget was somehow None here)", stack_info=True)
+            RobustLogger().warning(
+                "NoScrollEventFilter has nothing to do, please provide a widget to process (parent_widget was somehow None here)",
+                stack_info=True,
+            )
         for widget in parent_widget.findChildren(QWidget):
             try:
                 if not widget.objectName():
@@ -123,9 +136,13 @@ class HoverEventFilter(QObject):
         elif event.type() == QEvent.Type.HoverLeave:
             if self.current_widget == obj:
                 self.current_widget = None
-        elif event.type() == QEvent.Type.KeyPress and cast("QKeyEvent", event).key() == self.debugKey:
+        elif (
+            event.type() == QEvent.Type.KeyPress and cast("QKeyEvent", event).key() == self.debugKey
+        ):
             if self.current_widget:
-                print(f"Hovered control: {self.current_widget.__class__.__name__} ({self.current_widget.objectName()})")
+                print(
+                    f"Hovered control: {self.current_widget.__class__.__name__} ({self.current_widget.objectName()})"
+                )
             else:
                 print("No control is currently hovered.")
         return super().eventFilter(obj, event)

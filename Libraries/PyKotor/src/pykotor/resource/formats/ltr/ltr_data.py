@@ -84,27 +84,35 @@ class LTR(ComparableMixin):
     COMPARABLE_FIELDS = ("_singles", "_doubles", "_triples")
 
     def __init__(self):
-
         # Single-letter probability block (no context, for first character)
         self._singles: LTRBlock = LTRBlock(LTR.NUM_CHARACTERS)
 
-
         # Double-letter probability blocks (1-character context, for second character)
         # Array of 28 blocks, indexed by previous character
-        self._doubles: list[LTRBlock] = [LTRBlock(LTR.NUM_CHARACTERS) for _ in range(LTR.NUM_CHARACTERS)]
-
+        self._doubles: list[LTRBlock] = [
+            LTRBlock(LTR.NUM_CHARACTERS) for _ in range(LTR.NUM_CHARACTERS)
+        ]
 
         # Triple-letter probability blocks (2-character context, for third+ characters)
         # 28x28 array of blocks, indexed by previous two characters
-        self._triples: list[list[LTRBlock]] = [[LTRBlock(LTR.NUM_CHARACTERS) for _ in range(LTR.NUM_CHARACTERS)] for _ in range(LTR.NUM_CHARACTERS)]
+        self._triples: list[list[LTRBlock]] = [
+            [LTRBlock(LTR.NUM_CHARACTERS) for _ in range(LTR.NUM_CHARACTERS)]
+            for _ in range(LTR.NUM_CHARACTERS)
+        ]
 
     def __eq__(self, other):
         if not isinstance(other, LTR):
             return NotImplemented  # type: ignore[no-any-return]
-        return self._singles == other._singles and self._doubles == other._doubles and self._triples == other._triples
+        return (
+            self._singles == other._singles
+            and self._doubles == other._doubles
+            and self._triples == other._triples
+        )
 
     def __hash__(self):
-        return hash((self._singles, tuple(self._doubles), tuple(tuple(row) for row in self._triples)))
+        return hash(
+            (self._singles, tuple(self._doubles), tuple(tuple(row) for row in self._triples))
+        )
 
     @staticmethod
     def _chance() -> float:
@@ -152,7 +160,6 @@ class LTR(ComparableMixin):
             attempts = 0
             name: str = ""
 
-
             # Generate first character using single-letter start probabilities
             for char in LTR.CHARACTER_SET:
                 if LTR._chance() < self._singles.get_start(char):
@@ -160,7 +167,6 @@ class LTR(ComparableMixin):
                     break
             else:
                 continue
-
 
             # Generate second character using double-letter start probabilities (indexed by first char)
             for char in LTR.CHARACTER_SET:
@@ -170,7 +176,6 @@ class LTR(ComparableMixin):
                     break
             else:
                 continue
-
 
             # Generate third character using triple-letter start probabilities (indexed by first two chars)
             for char in LTR.CHARACTER_SET:
@@ -182,15 +187,12 @@ class LTR(ComparableMixin):
             else:
                 continue
 
-
             # Generate subsequent characters using triple-letter middle/end probabilities
             while True:
                 prob: float = LTR._chance()
 
-
                 # Check if name should end (probability increases with name length)
                 if (secrets.randbelow(12) % 12) <= len(name):
-
                     # Select final character using triple-letter end probabilities
                     for char in LTR.CHARACTER_SET:
                         index1 = LTR._CHAR_INDEX[name[-2]]
@@ -198,7 +200,6 @@ class LTR(ComparableMixin):
                         if prob < self._triples[index1][index2].get_end(char):
                             name += char
                             return name.capitalize()
-
 
                 # Generate next character using triple-letter middle probabilities
                 for char in LTR.CHARACTER_SET:
@@ -208,7 +209,6 @@ class LTR(ComparableMixin):
                         name += char
                         break
                 else:
-
                     # No valid character found - increment attempts and check termination
                     attempts += 1
                     if len(name) < 4 or attempts > 100:  # noqa: PLR2004
@@ -269,7 +269,9 @@ class LTR(ComparableMixin):
         char: str,
         chance: float,
     ):
-        self._triples[LTR._CHAR_INDEX[previous2]][LTR._CHAR_INDEX[previous1]].set_start(char, chance)
+        self._triples[LTR._CHAR_INDEX[previous2]][LTR._CHAR_INDEX[previous1]].set_start(
+            char, chance
+        )
 
     def set_triples_middle(
         self,
@@ -278,7 +280,9 @@ class LTR(ComparableMixin):
         char: str,
         chance: float,
     ):
-        self._triples[LTR._CHAR_INDEX[previous2]][LTR._CHAR_INDEX[previous1]].set_middle(char, chance)
+        self._triples[LTR._CHAR_INDEX[previous2]][LTR._CHAR_INDEX[previous1]].set_middle(
+            char, chance
+        )
 
     def set_triples_end(
         self,
@@ -343,7 +347,11 @@ class LTRBlock(ComparableMixin):
     def __eq__(self, other):
         if not isinstance(other, LTRBlock):
             return NotImplemented  # type: ignore[no-any-return]
-        return self._start == other._start and self._middle == other._middle and self._end == other._end
+        return (
+            self._start == other._start
+            and self._middle == other._middle
+            and self._end == other._end
+        )
 
     def __hash__(self):
         return hash((tuple(self._start), tuple(self._middle), tuple(self._end)))

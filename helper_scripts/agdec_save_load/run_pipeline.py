@@ -19,12 +19,15 @@ import argparse
 import json
 import subprocess
 import sys
+
 from pathlib import Path
 
 # Repo root: helper_scripts/agdec_save_load/ -> repo root
 REPO_ROOT = Path(__file__).resolve().parents[2]
 DEFAULT_CACHE = REPO_ROOT / "docs" / "reva_roadmap" / "agdec_cache" / "k1_save_load_cache.json"
-FLOW_MODULE = REPO_ROOT / "Libraries" / "PyKotor" / "src" / "pykotor" / "extract" / "save_load_flow_k1.py"
+FLOW_MODULE = (
+    REPO_ROOT / "Libraries" / "PyKotor" / "src" / "pykotor" / "extract" / "save_load_flow_k1.py"
+)
 FLOW_TESTS = REPO_ROOT / "Libraries" / "PyKotor" / "tests" / "extract" / "test_save_load_flow_k1.py"
 
 

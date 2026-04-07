@@ -24,7 +24,11 @@ def main():
             if "doorhookcount" in lower_raw:
                 section: str = lower_raw.split("doorhookcount")[1].split("donelayout")[0]
                 lines: list[str] = [
-                    raw_lwr.strip() for raw_lwr in section.split("\n") if raw_lwr.strip() and not raw_lwr.strip().isdigit() and "doorhookcount" not in raw_lwr.lower()
+                    raw_lwr.strip()
+                    for raw_lwr in section.split("\n")
+                    if raw_lwr.strip()
+                    and not raw_lwr.strip().isdigit()
+                    and "doorhookcount" not in raw_lwr.lower()
                 ]
 
                 print(f"\n=== {m.upper()} ===")
@@ -40,14 +44,24 @@ def main():
                         print(f"    room = tokens[0] = {tokens[0]}")
                         print(f"    door = tokens[1] = {tokens[1]}")
                         print(f"    token[2] = {tokens[2]} (the '0')")
-                        print(f"    position = tokens[3-5] = ({tokens[3]}, {tokens[4]}, {tokens[5]})")
-                        print(f"    quaternion = tokens[6-9] = ({tokens[6]}, {tokens[7]}, {tokens[8]}, {tokens[9]})")
+                        print(
+                            f"    position = tokens[3-5] = ({tokens[3]}, {tokens[4]}, {tokens[5]})"
+                        )
+                        print(
+                            f"    quaternion = tokens[6-9] = ({tokens[6]}, {tokens[7]}, {tokens[8]}, {tokens[9]})"
+                        )
                         print("  xoreos interpretation:")
                         print(f"    room = strings[0] = {tokens[0]}")
                         print(f"    name = strings[1] = {tokens[1]}")
-                        print(f"    x = strings[2] = {tokens[2]} (would be '{tokens[2]}' - the '0'!)")
-                        print(f"    y = strings[3] = {tokens[3]} (would be '{tokens[3]}' - actual x!)")
-                        print(f"    z = strings[4] = {tokens[4]} (would be '{tokens[4]}' - actual y!)")
+                        print(
+                            f"    x = strings[2] = {tokens[2]} (would be '{tokens[2]}' - the '0'!)"
+                        )
+                        print(
+                            f"    y = strings[3] = {tokens[3]} (would be '{tokens[3]}' - actual x!)"
+                        )
+                        print(
+                            f"    z = strings[4] = {tokens[4]} (would be '{tokens[4]}' - actual y!)"
+                        )
         except Exception as e:
             print(f"\n=== {m.upper()} ===")
             print(f"Error: {e}")

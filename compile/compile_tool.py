@@ -366,7 +366,9 @@ def build_pyinstaller_args(
     # Entry point (must be last positional argument)
     entrypoint = args.entrypoint or metadata.get("entrypoint")
     if not entrypoint:
-        raise SystemExit("No entrypoint found. Specify --entrypoint, define [project.scripts] in pyproject.toml, or ensure a __main__.py exists in your tool's src directory.")
+        raise SystemExit(
+            "No entrypoint found. Specify --entrypoint, define [project.scripts] in pyproject.toml, or ensure a __main__.py exists in your tool's src directory."
+        )
 
     entrypoint_path = src_dir / entrypoint
     if not entrypoint_path.exists():
@@ -399,22 +401,36 @@ Example pyproject.toml:
     )
 
     # Required
-    parser.add_argument("--tool-path", required=True, help="Path to tool directory (e.g., Tools/HolocronToolset)")
+    parser.add_argument(
+        "--tool-path", required=True, help="Path to tool directory (e.g., Tools/HolocronToolset)"
+    )
 
     # Optional overrides
     default_python = os.environ.get("pythonExePath") or sys.executable
     parser.add_argument("--python-exe", default=default_python, help="Python executable")
-    parser.add_argument("--name", help="Override output binary name (from pyproject.toml or directory name)")
-    parser.add_argument("--entrypoint", help="Override entry point, relative to src dir (e.g., toolset/__main__.py)")
-    parser.add_argument("--script-name", help="Select script key from [project.scripts] for entrypoint discovery")
+    parser.add_argument(
+        "--name", help="Override output binary name (from pyproject.toml or directory name)"
+    )
+    parser.add_argument(
+        "--entrypoint", help="Override entry point, relative to src dir (e.g., toolset/__main__.py)"
+    )
+    parser.add_argument(
+        "--script-name", help="Select script key from [project.scripts] for entrypoint discovery"
+    )
     parser.add_argument("--icon", help="Override icon path")
     parser.add_argument("--console", action="store_true", help="Force console mode")
     parser.add_argument("--windowed", action="store_true", help="Force windowed mode")
-    parser.add_argument("--onefile", action="store_true", default=True, help="Build one-file bundle")
+    parser.add_argument(
+        "--onefile", action="store_true", default=True, help="Build one-file bundle"
+    )
     parser.add_argument("--no-onefile", dest="onefile", action="store_false")
-    parser.add_argument("--clean", action="store_true", default=True, help="Clean PyInstaller cache")
+    parser.add_argument(
+        "--clean", action="store_true", default=True, help="Clean PyInstaller cache"
+    )
     parser.add_argument("--no-clean", dest="clean", action="store_false")
-    parser.add_argument("--noconfirm", action="store_true", default=True, help="Replace output without confirmation")
+    parser.add_argument(
+        "--noconfirm", action="store_true", default=True, help="Replace output without confirmation"
+    )
     parser.add_argument("--no-noconfirm", dest="noconfirm", action="store_false")
     parser.add_argument("--dist-path", help="Output directory for built binaries")
     parser.add_argument("--work-path", help="PyInstaller work directory")
@@ -423,19 +439,40 @@ Example pyproject.toml:
     parser.add_argument("--log-level", help="Log level (TRACE/DEBUG/INFO/WARN/ERROR/CRITICAL)")
 
     # Lists (append to metadata values)
-    parser.add_argument("--hidden-import", action="append", default=[], help="Additional hidden imports")
-    parser.add_argument("--exclude-module", action="append", default=[], help="Additional modules to exclude")
-    parser.add_argument("--add-data", action="append", default=[], help="Additional data files (src:dst or src;dst)")
-    parser.add_argument("--upx-exclude", action="append", default=[], help="Files to exclude from UPX compression")
-    parser.add_argument("--extra-path", action="append", default=[], help="Additional --path entries")
+    parser.add_argument(
+        "--hidden-import", action="append", default=[], help="Additional hidden imports"
+    )
+    parser.add_argument(
+        "--exclude-module", action="append", default=[], help="Additional modules to exclude"
+    )
+    parser.add_argument(
+        "--add-data", action="append", default=[], help="Additional data files (src:dst or src;dst)"
+    )
+    parser.add_argument(
+        "--upx-exclude", action="append", default=[], help="Files to exclude from UPX compression"
+    )
+    parser.add_argument(
+        "--extra-path", action="append", default=[], help="Additional --path entries"
+    )
 
     # Qt handling
     parser.add_argument("--qt-api", help="Qt API in use (PyQt5/PyQt6/PySide2/PySide6)")
-    parser.add_argument("--exclude-other-qt", action="store_true", help="Exclude other Qt backends when qt-api is set")
+    parser.add_argument(
+        "--exclude-other-qt",
+        action="store_true",
+        help="Exclude other Qt backends when qt-api is set",
+    )
 
     # Special flags
-    parser.add_argument("--include-wiki-if-present", action="store_true", help="Include wiki folder if it exists")
-    parser.add_argument("--remove-previous", action="store_true", default=True, help="Remove previous build artifacts")
+    parser.add_argument(
+        "--include-wiki-if-present", action="store_true", help="Include wiki folder if it exists"
+    )
+    parser.add_argument(
+        "--remove-previous",
+        action="store_true",
+        default=True,
+        help="Remove previous build artifacts",
+    )
     parser.add_argument("--no-remove-previous", dest="remove_previous", action="store_false")
 
     args = parser.parse_args()
@@ -460,14 +497,18 @@ Example pyproject.toml:
     print("Reading configuration from pyproject.toml...")
     metadata = discover_tool_metadata(tool_path, src_dir, os_name, script_name=args.script_name)
     print(f"  Tool name: {metadata.get('name') or tool_path.name}")
-    print(f"  Selected script: {metadata.get('selected_script') or args.script_name or 'first project.scripts entry'}")
+    print(
+        f"  Selected script: {metadata.get('selected_script') or args.script_name or 'first project.scripts entry'}"
+    )
     print(f"  Entry point: {metadata.get('entrypoint') or 'auto-detect'}")
     print(f"  Requires Qt: {metadata.get('requires_qt')}")
     print(f"  Console: {metadata.get('console')}")
     print(f"  Windowed: {metadata.get('windowed')}")
 
     # Build PyInstaller command
-    cmd = build_pyinstaller_args(metadata, args, tool_path, src_dir, repo_root, os_name, args.python_exe)
+    cmd = build_pyinstaller_args(
+        metadata, args, tool_path, src_dir, repo_root, os_name, args.python_exe
+    )
 
     # Remove previous artifacts if requested
     if args.remove_previous:

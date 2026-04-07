@@ -69,9 +69,15 @@ def main() -> None:
         )
 
         indent = "  " * depth
-        print(f"{indent}Node id={hdr.node_id} type=0x{hdr.type_id:04X} ({node_type}) children={hdr.children_count} @{offset} (children_offset={hdr.offset_to_children})")
+        print(
+            f"{indent}Node id={hdr.node_id} type=0x{hdr.type_id:04X} ({node_type}) children={hdr.children_count} @{offset} (children_offset={hdr.offset_to_children})"
+        )
 
-        if hdr.children_count > 0 and hdr.offset_to_children not in (0, 0xFFFFFFFF) and hdr.children_count < 100:
+        if (
+            hdr.children_count > 0
+            and hdr.offset_to_children not in (0, 0xFFFFFFFF)
+            and hdr.children_count < 100
+        ):
             try:
                 reader.seek(hdr.offset_to_children)
                 child_offsets = []
@@ -83,15 +89,21 @@ def main() -> None:
                 if depth < 10:
                     valid = [o for o in child_offsets if 0 < o < 100000]
                     invalid = [o for o in child_offsets if o <= 0 or o >= 100000]
-                    print(f"{indent}  -> Valid children: {valid[:5]}{'...' if len(valid) > 5 else ''}")
+                    print(
+                        f"{indent}  -> Valid children: {valid[:5]}{'...' if len(valid) > 5 else ''}"
+                    )
                     if invalid:
-                        print(f"{indent}  -> INVALID children: {invalid[:5]}{'...' if len(invalid) > 5 else ''}")
+                        print(
+                            f"{indent}  -> INVALID children: {invalid[:5]}{'...' if len(invalid) > 5 else ''}"
+                        )
 
                 for child_off in child_offsets:
                     if 0 < child_off < 100000:  # Sanity check
                         walk(child_off, depth + 1)
             except OSError as e:
-                print(f"{indent}  ERROR: Cannot read children at offset {hdr.offset_to_children}: {e}")
+                print(
+                    f"{indent}  ERROR: Cannot read children at offset {hdr.offset_to_children}: {e}"
+                )
 
     walk(header.geometry.root_node_offset)
 

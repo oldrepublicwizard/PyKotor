@@ -53,7 +53,9 @@ def update_offsets_in_file(filepath: Path) -> tuple[bool, list[str]]:
             is_separator = False
             if i + 1 < len(lines):
                 next_stripped = lines[i + 1].strip()
-                if next_stripped.startswith("|") and re.match(r"^\|[\s\-:]+(\|[\s\-:]+)*\|$", next_stripped):
+                if next_stripped.startswith("|") and re.match(
+                    r"^\|[\s\-:]+(\|[\s\-:]+)*\|$", next_stripped
+                ):
                     is_separator = True
                     # This is the header row
                     table_headers = [h.strip() for h in stripped.split("|")[1:-1]]
@@ -117,13 +119,17 @@ def update_offsets_in_file(filepath: Path) -> tuple[bool, list[str]]:
 
                             # Preserve left spacing, update the value, preserve right spacing
                             left_spaces = len(original_col) - len(original_col.lstrip())
-                            right_spaces = len(original_col) - len(original_col.rstrip()) - left_spaces
+                            right_spaces = (
+                                len(original_col) - len(original_col.rstrip()) - left_spaces
+                            )
 
                             new_col = " " * left_spaces + new_offset_val + " " * right_spaces
                             new_line = line[:col_start] + new_col + line[col_end:]
 
                             modified_lines.append(new_line)
-                            changes.append(f"Line {i + 1}: Updated offset '{offset_val}' -> '{new_offset_val}'")
+                            changes.append(
+                                f"Line {i + 1}: Updated offset '{offset_val}' -> '{new_offset_val}'"
+                            )
                             continue
 
             modified_lines.append(line)

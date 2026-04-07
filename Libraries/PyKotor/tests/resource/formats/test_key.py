@@ -43,8 +43,12 @@ class TestKEY(TestCase):
 
         # Verify BIF entries
         assert len(key_read.bif_entries) == 2, f"{len(key_read.bif_entries)} != 2"
-        assert key_read.bif_entries[0].filename == "test1.bif", f"{key_read.bif_entries[0].filename!r} != 'test1.bif'"
-        assert key_read.bif_entries[1].filename == "test2.bif", f"{key_read.bif_entries[1].filename!r} != 'test2.bif'"
+        assert key_read.bif_entries[0].filename == "test1.bif", (
+            f"{key_read.bif_entries[0].filename!r} != 'test1.bif'"
+        )
+        assert key_read.bif_entries[1].filename == "test2.bif", (
+            f"{key_read.bif_entries[1].filename!r} != 'test2.bif'"
+        )
 
         # Verify resource entries
         assert len(key_read.key_entries) == 5, f"{len(key_read.key_entries)} != 5"
@@ -126,15 +130,23 @@ class TestKEY(TestCase):
         # Read back and verify
         key2: KEY = KEYBinaryReader(data).load()
         assert len(key2.bif_entries) == 1, f"{len(key2.bif_entries)} != 1"
-        assert key2.bif_entries[0].filename == bif.filename, f"{key2.bif_entries[0].filename!r} != {bif.filename!r}"
-        assert key2.bif_entries[0].filesize == bif.filesize, f"{key2.bif_entries[0].filesize} != {bif.filesize}"
+        assert key2.bif_entries[0].filename == bif.filename, (
+            f"{key2.bif_entries[0].filename!r} != {bif.filename!r}"
+        )
+        assert key2.bif_entries[0].filesize == bif.filesize, (
+            f"{key2.bif_entries[0].filesize} != {bif.filesize}"
+        )
         assert len(key2.key_entries) == 1, f"{len(key2.key_entries)} != 1"
         entry2: KeyEntry = key2.key_entries[0]
-        assert str(entry2.resref) == str(entry.resref), f"{str(entry2.resref)!r} != {str(entry.resref)!r}"
+        assert str(entry2.resref) == str(entry.resref), (
+            f"{str(entry2.resref)!r} != {str(entry.resref)!r}"
+        )
         assert entry2.restype == entry.restype, f"{entry2.restype!r} != {entry.restype!r}"
         assert entry2.bif_index == entry.bif_index, f"{entry2.bif_index} != {entry.bif_index}"
         assert entry2.res_index == entry.res_index, f"{entry2.res_index} != {entry.res_index}"
-        assert entry2.resource_id == entry.resource_id, f"{entry2.resource_id} != {entry.resource_id}"
+        assert entry2.resource_id == entry.resource_id, (
+            f"{entry2.resource_id} != {entry.resource_id}"
+        )
 
     def test_key_invalid_type(self):
         """Test reading a KEY file with invalid type."""
@@ -143,7 +155,9 @@ class TestKEY(TestCase):
         with self.assertRaises(ValueError) as context:
             key: KEY = KEYBinaryReader(data).load()
 
-        assert "Tried to save or load an unsupported or corrupted file." in str(context.exception), (
+        assert "Tried to save or load an unsupported or corrupted file." in str(
+            context.exception
+        ), (
             f"{str(context.exception)!r} does not contain 'Tried to save or load an unsupported or corrupted file.'"
         )
 
@@ -166,7 +180,9 @@ class TestKEY(TestCase):
         with self.assertRaises(ValueError) as context:
             KEYBinaryReader(stream).load()
 
-        assert "Tried to save or load an unsupported or corrupted file." in str(context.exception), (
+        assert "Tried to save or load an unsupported or corrupted file." in str(
+            context.exception
+        ), (
             f"{str(context.exception)!r} does not contain 'Tried to save or load an unsupported or corrupted file.'"
         )
 
@@ -237,18 +253,30 @@ class TestKEY(TestCase):
         entry2: KeyEntry = key.add_key_entry("test2", ResourceType.TXT, 0, 2)
 
         # Test getting by ResRef/type
-        assert key.get_resource("test1", ResourceType.TXT) == entry1, f"{key.get_resource('test1', ResourceType.TXT)!r} != {entry1!r}"
-        assert key.get_resource("invalid", ResourceType.TXT) is None, "Resource lookup should return None for invalid ResRef/type"
+        assert key.get_resource("test1", ResourceType.TXT) == entry1, (
+            f"{key.get_resource('test1', ResourceType.TXT)!r} != {entry1!r}"
+        )
+        assert key.get_resource("invalid", ResourceType.TXT) is None, (
+            "Resource lookup should return None for invalid ResRef/type"
+        )
 
         # Test getting by type
-        txt_resources: list[KeyEntry] = [key_entry for key_entry in key.key_entries if key_entry.restype == ResourceType.TXT]
+        txt_resources: list[KeyEntry] = [
+            key_entry for key_entry in key.key_entries if key_entry.restype == ResourceType.TXT
+        ]
         assert len(txt_resources) == 2, f"{len(txt_resources)} != 2"
-        assert set(txt_resources) == {entry1, entry2}, f"{set(txt_resources)!r} != {{entry1!r, entry2!r}}"
+        assert set(txt_resources) == {entry1, entry2}, (
+            f"{set(txt_resources)!r} != {{entry1!r, entry2!r}}"
+        )
 
         # Test getting by BIF index
-        bif_resources: list[KeyEntry] = [key_entry for key_entry in key.key_entries if key_entry.bif_index == 0]
+        bif_resources: list[KeyEntry] = [
+            key_entry for key_entry in key.key_entries if key_entry.bif_index == 0
+        ]
         assert len(bif_resources) == 2, f"{len(bif_resources)} != 2"
-        assert set(bif_resources) == {entry1, entry2}, f"{set(bif_resources)!r} != {{entry1!r, entry2!r}}"
+        assert set(bif_resources) == {entry1, entry2}, (
+            f"{set(bif_resources)!r} != {{entry1!r, entry2!r}}"
+        )
 
     def test_key_offset_calculations(self):
         """Test KEY file offset calculations."""
@@ -259,8 +287,12 @@ class TestKEY(TestCase):
         key.add_bif("test2.bif")
 
         # Verify offset calculations
-        assert key.calculate_file_table_offset() == KEY.HEADER_SIZE, f"{key.calculate_file_table_offset()} != {KEY.HEADER_SIZE}"
-        assert key.calculate_filename_table_offset() == KEY.HEADER_SIZE + (2 * KEY.BIF_ENTRY_SIZE), (
+        assert key.calculate_file_table_offset() == KEY.HEADER_SIZE, (
+            f"{key.calculate_file_table_offset()} != {KEY.HEADER_SIZE}"
+        )
+        assert key.calculate_filename_table_offset() == KEY.HEADER_SIZE + (
+            2 * KEY.BIF_ENTRY_SIZE
+        ), (
             f"{key.calculate_filename_table_offset()} != {KEY.HEADER_SIZE + (2 * KEY.BIF_ENTRY_SIZE)}"
         )
 
@@ -402,7 +434,9 @@ class TestKEY(TestCase):
 
         # Test BIF entries
         assert len(key.bif_entries) == 1, f"{len(key.bif_entries)} != 1"
-        assert key.bif_entries[0].filename == "data/xoreos.bif", f"{key.bif_entries[0].filename!r} != 'data/xoreos.bif'"
+        assert key.bif_entries[0].filename == "data/xoreos.bif", (
+            f"{key.bif_entries[0].filename!r} != 'data/xoreos.bif'"
+        )
         assert key.bif_entries[0].filesize == 76, f"{key.bif_entries[0].filesize} != 76"
 
         # Test resource entries

@@ -98,7 +98,9 @@ class ButtonDelegate(QStyledItemDelegate):
         fm: QFontMetrics = QFontMetrics(option.font)
         button_width: int = fm.horizontalAdvance(self.button_text) + 20  # Adding padding
         button_height: int = fm.height() + 10
-        button_rect: QRect = QRect(option.rect.right() - button_width, option.rect.top(), button_width, button_height)
+        button_rect: QRect = QRect(
+            option.rect.right() - button_width, option.rect.top(), button_width, button_height
+        )
         painter.save()
         painter.setPen(Qt.PenStyle.NoPen)
         painter.setBrush(Qt.GlobalColor.lightGray)
@@ -182,7 +184,10 @@ class CustomListView(QListView):
         option.initFrom(self)
         option.rect = self.visualRect(index)
         button_width: int = QFontMetrics(option.font).horizontalAdvance(self.button_text) + 20
-        left_limit: int = min(option.rect.right() - button_width, cast("QWidget", self.parent()).width() - button_width)
+        left_limit: int = min(
+            option.rect.right() - button_width,
+            cast("QWidget", self.parent()).width() - button_width,
+        )
         if left_limit <= viewport_pos.x() <= option.rect.right():
             self.combobox.force_stay_popped_up = True
             self.button_callback(index.data(Qt.ItemDataRole.DisplayRole))
@@ -204,8 +209,12 @@ class FilterComboBox(QComboBox):
             self.lineEdit().setValidator(None)  # type: ignore[arg-type]
         self.proxy_model: FilterProxyModel = FilterProxyModel(self)
         super().setModel(self.proxy_model)
-        model: QStringListModel | QAbstractItemModel | None = QStringListModel(self) if init else self.model()
-        assert isinstance(model, (QStringListModel, QStandardItemModel)), f"Invalid source model type: {model.__class__.__name__}"
+        model: QStringListModel | QAbstractItemModel | None = (
+            QStringListModel(self) if init else self.model()
+        )
+        assert isinstance(model, (QStringListModel, QStandardItemModel)), (
+            f"Invalid source model type: {model.__class__.__name__}"
+        )
         self.setModel(model)
 
         self.items: list[str] = []
@@ -221,11 +230,18 @@ class FilterComboBox(QComboBox):
         self.filter_line_edit.textChanged.connect(self.filter_items)
         self.filter_line_edit.setFocusPolicy(Qt.FocusPolicy.StrongFocus)
         self.filter_line_edit.hide()
-        self.filter_line_edit.keyPressEvent = lambda event: filter_line_edit_key_press_event(self.filter_line_edit, event, self)  # type: ignore[method-assign, assignment]
+        self.filter_line_edit.keyPressEvent = lambda event: filter_line_edit_key_press_event(
+            self.filter_line_edit, event, self
+        )  # type: ignore[method-assign, assignment]
         main_view: CustomListView = CustomListView(self)
         main_view.combobox = self
         margins: QMargins = cast("QMargins", main_view.viewportMargins())
-        main_view.setViewportMargins(margins.left(), margins.top() + self.filter_line_edit.height(), margins.right(), margins.bottom())
+        main_view.setViewportMargins(
+            margins.left(),
+            margins.top() + self.filter_line_edit.height(),
+            margins.right(),
+            margins.bottom(),
+        )
         self.setView(main_view)
         self.setMinimumWidth(200)
         self.setSizePolicy(QSizePolicy.Policy.MinimumExpanding, QSizePolicy.Policy.Preferred)
@@ -237,7 +253,9 @@ class FilterComboBox(QComboBox):
             self.setLineEdit(line_edit)
         line_edit.setReadOnly(not self.isEditable())
         if not self.isEditable():
-            line_edit.mousePressEvent = lambda *args: self.hidePopup() if self.is_popped_up else self.showPopup()  # type: ignore[attr-value]
+            line_edit.mousePressEvent = (
+                lambda *args: self.hidePopup() if self.is_popped_up else self.showPopup()
+            )  # type: ignore[attr-value]
         else:
             line_edit.mousePressEvent = lambda *args: QLineEdit.mousePressEvent(line_edit, *args)  # type: ignore[attr-value]
         line_edit.home(False)  # noqa: FBT003
@@ -300,7 +318,9 @@ class FilterComboBox(QComboBox):
         assert isinstance(delegate, QStyledItemDelegate)
         items_to_measure: int = min(self.source_model.rowCount(), 1000)
         for i in range(items_to_measure):
-            item_width: int = delegate.sizeHint(QStyleOptionViewItem(), self.source_model.index(i, 0)).width()
+            item_width: int = delegate.sizeHint(
+                QStyleOptionViewItem(), self.source_model.index(i, 0)
+            ).width()
             max_width = max(item_width, max_width)
         adjusted_width: int = max_width
         self.resize(adjusted_width, self.height())

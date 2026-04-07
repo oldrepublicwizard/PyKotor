@@ -35,7 +35,9 @@ def normalize_path_arg(path_str: str | None) -> str | None:
             path_str = path_str[:quote_space_idx]
 
     # Strip quotes if present (handles both single and double quotes)
-    if (path_str.startswith('"') and path_str.endswith('"')) or (path_str.startswith("'") and path_str.endswith("'")):
+    if (path_str.startswith('"') and path_str.endswith('"')) or (
+        path_str.startswith("'") and path_str.endswith("'")
+    ):
         path_str = path_str[1:-1]
 
     # Remove any remaining quotes that might be embedded

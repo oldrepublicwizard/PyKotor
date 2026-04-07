@@ -19,7 +19,9 @@ def command_exists(cmd: str) -> bool:
 # Get default actions using xdg-mime and gio
 def get_default_actions(path: os.PathLike | str) -> list[str]:
     try:
-        mime_type = subprocess.check_output(["xdg-mime", "query", "filetype", path], text=True).strip()  # noqa: S603, S607
+        mime_type = subprocess.check_output(
+            ["xdg-mime", "query", "filetype", path], text=True
+        ).strip()  # noqa: S603, S607
         actions = subprocess.check_output(["gio", "mime", mime_type], text=True).splitlines()  # noqa: S603, S607
     except Exception:  # noqa: BLE001
         return []
@@ -109,7 +111,9 @@ def context_menu_zenity(path: str):
         if result.returncode == 0:
             choice = result.stdout.strip()
             if choice:
-                subprocess.run(["zenity", "--info", f"--text=You chose '{choice}' for '{path}'"], check=False)  # noqa: S603, S607
+                subprocess.run(
+                    ["zenity", "--info", f"--text=You chose '{choice}' for '{path}'"], check=False
+                )  # noqa: S603, S607
     except Exception as e:  # noqa: BLE001
         print(f"Zenity method failed: {e}")
         return False
@@ -133,7 +137,9 @@ def context_menu_yad(path: str):
         if result.returncode == 0:
             choice = result.stdout.strip()
             if choice:
-                subprocess.run(["yad", "--info", f"--text=You chose '{choice}' for '{path}'"], check=False)  # noqa: S607, S603
+                subprocess.run(
+                    ["yad", "--info", f"--text=You chose '{choice}' for '{path}'"], check=False
+                )  # noqa: S607, S603
     except Exception as e:  # noqa: BLE001
         print(f"Yad method failed: {e}")
         return False
@@ -176,23 +182,38 @@ def show_context_menu(path: str):
         return [
             a.split(":")[1].strip()
             for a in subprocess.check_output(
-                ["gio", "mime", subprocess.check_output(["xdg-mime", "query", "filetype", p], text=True).strip()],  # noqa: S607, S603
+                [
+                    "gio",
+                    "mime",
+                    subprocess.check_output(
+                        ["xdg-mime", "query", "filetype", p], text=True
+                    ).strip(),
+                ],  # noqa: S607, S603
                 text=True,
             ).splitlines()
             if a.startswith("default:")
         ]
 
     methods = [
-        lambda p: cmd_exists("nautilus") and not subprocess.run(["nautilus", "--select", p], check=False).returncode,  # noqa: S603, S607
-        lambda p: cmd_exists("dolphin") and not subprocess.run(["dolphin", "--select", p], check=False).returncode,  # noqa: S603, S607
-        lambda p: cmd_exists("thunar") and not subprocess.run(["thunar", p], check=False).returncode,  # noqa: S603, S607
-        lambda p: cmd_exists("nemo") and not subprocess.run(["nemo", "--no-desktop", "--browser", p], check=False).returncode,  # noqa: S603, S607
-        lambda p: cmd_exists("caja") and not subprocess.run(["caja", "--browser", p], check=False).returncode,  # noqa: S603, S607
-        lambda p: cmd_exists("pcmanfm") and not subprocess.run(["pcmanfm", p], check=False).returncode,  # noqa: S603, S607
-        lambda p: cmd_exists("konqueror") and not subprocess.run(["konqueror", p], check=False).returncode,  # noqa: S603, S607
-        lambda p: cmd_exists("spacefm") and not subprocess.run(["spacefm", p], check=False).returncode,  # noqa: S603, S607
+        lambda p: cmd_exists("nautilus")
+        and not subprocess.run(["nautilus", "--select", p], check=False).returncode,  # noqa: S603, S607
+        lambda p: cmd_exists("dolphin")
+        and not subprocess.run(["dolphin", "--select", p], check=False).returncode,  # noqa: S603, S607
+        lambda p: cmd_exists("thunar")
+        and not subprocess.run(["thunar", p], check=False).returncode,  # noqa: S603, S607
+        lambda p: cmd_exists("nemo")
+        and not subprocess.run(["nemo", "--no-desktop", "--browser", p], check=False).returncode,  # noqa: S603, S607
+        lambda p: cmd_exists("caja")
+        and not subprocess.run(["caja", "--browser", p], check=False).returncode,  # noqa: S603, S607
+        lambda p: cmd_exists("pcmanfm")
+        and not subprocess.run(["pcmanfm", p], check=False).returncode,  # noqa: S603, S607
+        lambda p: cmd_exists("konqueror")
+        and not subprocess.run(["konqueror", p], check=False).returncode,  # noqa: S603, S607
+        lambda p: cmd_exists("spacefm")
+        and not subprocess.run(["spacefm", p], check=False).returncode,  # noqa: S603, S607
         lambda p: cmd_exists("rox") and not subprocess.run(["rox", p], check=False).returncode,  # noqa: S603, S607
-        lambda p: cmd_exists("krusader") and not subprocess.run(["krusader", p], check=False).returncode,  # noqa: S603, S607
+        lambda p: cmd_exists("krusader")
+        and not subprocess.run(["krusader", p], check=False).returncode,  # noqa: S603, S607
         context_menu_zenity,
         context_menu_yad,
         context_menu_dmenu,

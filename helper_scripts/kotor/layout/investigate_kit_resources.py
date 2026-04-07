@@ -91,7 +91,9 @@ for mdl in module.models():
     except Exception as e:
         print(f"Error iterating lightmaps or textures for model {mdl.identifier()}: {e}")
 
-print(f"  Found {len(all_lightmaps_from_models)} lightmaps and {len(all_textures_from_models)} textures from danm13 models")
+print(
+    f"  Found {len(all_lightmaps_from_models)} lightmaps and {len(all_textures_from_models)} textures from danm13 models"
+)
 
 # 2. Check if missing resources exist in installation and where
 print("\n2. Checking if missing resources exist in installation...")
@@ -112,7 +114,13 @@ for lm in missing_lms:
         print(f"  {lm}:")
         for res_ident, loc_list in locations.items():
             for loc in loc_list[:2]:  # Show first 2 locations
-                source = "RIM" if ".rim" in str(loc.filepath).lower() else "BIF" if ".bif" in str(loc.filepath).lower() else "Other"
+                source = (
+                    "RIM"
+                    if ".rim" in str(loc.filepath).lower()
+                    else "BIF"
+                    if ".bif" in str(loc.filepath).lower()
+                    else "Other"
+                )
                 print(f"    - {source}: {loc.filepath.name} (in {loc.filepath.parent.name})")
         # Check if referenced by danm13 models
         if lm.lower() in all_lightmaps_from_models:
@@ -125,7 +133,10 @@ for lm in missing_lms:
 print("\nMissing textures:")
 for tex in missing_textures[:10]:  # Check first 10
     locations = inst.locations(
-        [ResourceIdentifier(resname=tex, restype=rt) for rt in (ResourceType.TPC, ResourceType.TGA)],
+        [
+            ResourceIdentifier(resname=tex, restype=rt)
+            for rt in (ResourceType.TPC, ResourceType.TGA)
+        ],
         [
             SearchLocation.OVERRIDE,
             SearchLocation.TEXTURES_GUI,
@@ -139,7 +150,13 @@ for tex in missing_textures[:10]:  # Check first 10
         print(f"  {tex}:")
         for res_ident, loc_list in locations.items():
             for loc in loc_list[:2]:
-                source = "RIM" if ".rim" in str(loc.filepath).lower() else "BIF" if ".bif" in str(loc.filepath).lower() else "Other"
+                source = (
+                    "RIM"
+                    if ".rim" in str(loc.filepath).lower()
+                    else "BIF"
+                    if ".bif" in str(loc.filepath).lower()
+                    else "Other"
+                )
                 print(f"    - {source}: {loc.filepath.name} (in {loc.filepath.parent.name})")
         if tex.lower() in all_textures_from_models:
             print("    -> Referenced by danm13 models: YES")
@@ -185,7 +202,10 @@ for lm in missing_lms[:3]:  # Check first 3
     print(f"\n  {lm}:")
     for search_loc in common_locations:
         locations = inst.locations(
-            [ResourceIdentifier(resname=lm, restype=rt) for rt in (ResourceType.TPC, ResourceType.TGA)],
+            [
+                ResourceIdentifier(resname=lm, restype=rt)
+                for rt in (ResourceType.TPC, ResourceType.TGA)
+            ],
             [search_loc],
         )
         if locations:
@@ -215,16 +235,28 @@ if sithbase_always.exists():
             if locations:
                 for res_id, loc_list in locations.items():
                     for loc in loc_list[:1]:
-                        source = "RIM" if ".rim" in str(loc.filepath).lower() else "BIF" if ".bif" in str(loc.filepath).lower() else "Other"
-                        print(f"      -> Found in installation: {source} ({loc.filepath.parent.name})")
+                        source = (
+                            "RIM"
+                            if ".rim" in str(loc.filepath).lower()
+                            else "BIF"
+                            if ".bif" in str(loc.filepath).lower()
+                            else "Other"
+                        )
+                        print(
+                            f"      -> Found in installation: {source} ({loc.filepath.parent.name})"
+                        )
         except:
             pass
 
 print("\n" + "=" * 80)
 print("SUMMARY")
 print("=" * 80)
-print(f"\nMissing lightmaps NOT referenced by danm13 models: {len([lm for lm in missing_lms if lm.lower() not in all_lightmaps_from_models])}")
-print(f"Missing textures NOT referenced by danm13 models: {len([tex for tex in missing_textures if tex.lower() not in all_textures_from_models])}")
+print(
+    f"\nMissing lightmaps NOT referenced by danm13 models: {len([lm for lm in missing_lms if lm.lower() not in all_lightmaps_from_models])}"
+)
+print(
+    f"Missing textures NOT referenced by danm13 models: {len([tex for tex in missing_textures if tex.lower() not in all_textures_from_models])}"
+)
 
 print("\nConclusion:")
 print("  - These resources are likely shared/common resources that were manually")

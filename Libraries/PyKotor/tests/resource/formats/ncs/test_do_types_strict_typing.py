@@ -24,7 +24,10 @@ from io import StringIO
 
 import pytest
 
-pytest.importorskip("pykotor.resource.formats.ncs.dencs", reason="Optional DeNCS package is not available in this build")
+pytest.importorskip(
+    "pykotor.resource.formats.ncs.dencs",
+    reason="Optional DeNCS package is not available in this build",
+)
 
 from pykotor.resource.formats.ncs.dencs.do_types import DoTypes
 from pykotor.resource.formats.ncs.dencs.node.node import Node

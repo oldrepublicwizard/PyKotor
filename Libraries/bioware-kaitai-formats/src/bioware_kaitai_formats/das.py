@@ -5,27 +5,32 @@ import kaitaistruct
 from kaitaistruct import KaitaiStruct, KaitaiStream, BytesIO
 
 
-if getattr(kaitaistruct, 'API_VERSION', (0, 9)) < (0, 11):
-    raise Exception("Incompatible Kaitai Struct Python API: 0.11 or later is required, but you have %s" % (kaitaistruct.__version__))
+if getattr(kaitaistruct, "API_VERSION", (0, 9)) < (0, 11):
+    raise Exception(
+        "Incompatible Kaitai Struct Python API: 0.11 or later is required, but you have %s"
+        % (kaitaistruct.__version__)
+    )
+
 
 class Das(KaitaiStruct):
     """DAS (Dragon Age: Origins Save) files are binary save game files used by the Eclipse Engine
     (Dragon Age: Origins). They contain save game metadata and optionally full game state.
-    
+
     DAS files are binary format files with the following structure:
     - Signature (4 bytes): "DAS " (Dragon Age Save)
     - Version (int32): Save format version (1 for DA:O)
     - Metadata fields (strings, integers, timestamps, etc.)
     - Optional: Full game state (party, inventory, journal, globals)
-    
+
     Based on daorigins.exe: SaveGameMessage @ 0x00ae6276, COMMAND_SAVEGAME @ 0x00af15d4
     Located via string references: "SaveGameMessage" @ 0x00ae6276, "COMMAND_SAVEGAME" @ 0x00af15d4
     Original implementation: UnrealScript message-based save system, binary serialization
-    
+
     References:
     - src/Andastra/Runtime/Games/Eclipse/DragonAgeOrigins/Save/DragonAgeOriginsSaveSerializer.cs
     - src/Andastra/Runtime/Games/Eclipse/Save/EclipseSaveSerializer.cs (base class)
     """
+
     def __init__(self, _io, _parent=None, _root=None):
         super(Das, self).__init__(_io)
         self._parent = _parent
@@ -33,12 +38,12 @@ class Das(KaitaiStruct):
         self._read()
 
     def _read(self):
-        self.signature = (self._io.read_bytes(4)).decode(u"ASCII")
-        if not self.signature == u"DAS ":
-            raise kaitaistruct.ValidationNotEqualError(u"DAS ", self.signature, self._io, u"/seq/0")
+        self.signature = (self._io.read_bytes(4)).decode("ASCII")
+        if not self.signature == "DAS ":
+            raise kaitaistruct.ValidationNotEqualError("DAS ", self.signature, self._io, "/seq/0")
         self.version = self._io.read_s4le()
         if not self.version == 1:
-            raise kaitaistruct.ValidationNotEqualError(1, self.version, self._io, u"/seq/1")
+            raise kaitaistruct.ValidationNotEqualError(1, self.version, self._io, "/seq/1")
         self.save_name = Das.LengthPrefixedString(self._io, self, self._root)
         self.module_name = Das.LengthPrefixedString(self._io, self, self._root)
         self.area_name = Das.LengthPrefixedString(self._io, self, self._root)
@@ -51,7 +56,6 @@ class Das(KaitaiStruct):
             for i in range(self.screenshot_length):
                 self.screenshot_data.append(self._io.read_u1())
 
-
         self.portrait_length = self._io.read_s4le()
         if self.portrait_length > 0:
             pass
@@ -59,11 +63,9 @@ class Das(KaitaiStruct):
             for i in range(self.portrait_length):
                 self.portrait_data.append(self._io.read_u1())
 
-
         self.player_name = Das.LengthPrefixedString(self._io, self, self._root)
         self.party_member_count = self._io.read_s4le()
         self.player_level = self._io.read_s4le()
-
 
     def _fetch_instances(self):
         pass
@@ -75,12 +77,10 @@ class Das(KaitaiStruct):
             for i in range(len(self.screenshot_data)):
                 pass
 
-
         if self.portrait_length > 0:
             pass
             for i in range(len(self.portrait_data)):
                 pass
-
 
         self.player_name._fetch_instances()
 
@@ -93,8 +93,9 @@ class Das(KaitaiStruct):
 
         def _read(self):
             self.length = self._io.read_s4le()
-            self.value = (KaitaiStream.bytes_terminate(self._io.read_bytes(self.length), 0, False)).decode(u"UTF-8")
-
+            self.value = (
+                KaitaiStream.bytes_terminate(self._io.read_bytes(self.length), 0, False)
+            ).decode("UTF-8")
 
         def _fetch_instances(self):
             pass
@@ -104,11 +105,8 @@ class Das(KaitaiStruct):
             """String value.
             Note: trailing null bytes are already excluded via `terminator: 0` and `include: false`.
             """
-            if hasattr(self, '_m_value_trimmed'):
+            if hasattr(self, "_m_value_trimmed"):
                 return self._m_value_trimmed
 
             self._m_value_trimmed = self.value
-            return getattr(self, '_m_value_trimmed', None)
-
-
-
+            return getattr(self, "_m_value_trimmed", None)

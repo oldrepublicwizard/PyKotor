@@ -311,9 +311,7 @@ def _normalize_vector(vec: list[float]) -> list[float]:
 
 
 class MDLAsciiWriter(ResourceWriter):
-    """Writer for ASCII MDL files.
-
-    """
+    """Writer for ASCII MDL files."""
 
     def __init__(
         self,
@@ -345,9 +343,7 @@ class MDLAsciiWriter(ResourceWriter):
         *,
         auto_close: bool = True,
     ) -> None:  # noqa: FBT001, FBT002, ARG002
-        """Write MDL data to ASCII format.
-
-        """
+        """Write MDL data to ASCII format."""
         mdl = self._mdl
         self.write_line(0, "# ASCII MDL")
         self.write_line(0, f"filedependancy {mdl.name} NULL.mlk")
@@ -457,7 +453,9 @@ class MDLAsciiWriter(ResourceWriter):
             node_type_str = "danglymesh"
         elif type_id == 97 and not self._convert_skin:  # NODE_SKIN
             node_type_str = "skin"
-        elif (type_id == 97 and self._convert_skin) or type_id == 33:  # NODE_SKIN (convert to trimesh)
+        elif (
+            type_id == 97 and self._convert_skin
+        ) or type_id == 33:  # NODE_SKIN (convert to trimesh)
             node_type_str = "trimesh"
         elif type_id in (513, 545):  # HEADER|AABB (513), HEADER|MESH|AABB (545) NODE_AABB
             node_type_str = "aabb"
@@ -493,9 +491,14 @@ class MDLAsciiWriter(ResourceWriter):
             # This should rarely happen if hierarchy is built correctly
             self.write_line(indent, "parent NULL")
         # MDLOps uses "% .7g" format (space before number) -
-        self.write_line(indent, f"position {node.position.x: .7g} {node.position.y: .7g} {node.position.z: .7g}")
+        self.write_line(
+            indent, f"position {node.position.x: .7g} {node.position.y: .7g} {node.position.z: .7g}"
+        )
         # MDLOps uses "% .7g" format (space before number) -
-        self.write_line(indent, f"orientation {node.orientation.x: .7g} {node.orientation.y: .7g} {node.orientation.z: .7g} {node.orientation.w: .7g}")
+        self.write_line(
+            indent,
+            f"orientation {node.orientation.x: .7g} {node.orientation.y: .7g} {node.orientation.z: .7g} {node.orientation.w: .7g}",
+        )
 
         if node.mesh:
             # Binary parsing stores skin/dangly payloads in separate node fields (`node.skin`, `node.dangly`)
@@ -526,10 +529,16 @@ class MDLAsciiWriter(ResourceWriter):
         """Write mesh data."""
         # Mesh header values (bbox/radius/average) are emitted in-node by MDLOps and must roundtrip.
         # MDLOps uses "% .7g" format (space before number) -
-        self.write_line(indent, f"bmin {mesh.bb_min.x: .7g} {mesh.bb_min.y: .7g} {mesh.bb_min.z: .7g}")
-        self.write_line(indent, f"bmax {mesh.bb_max.x: .7g} {mesh.bb_max.y: .7g} {mesh.bb_max.z: .7g}")
+        self.write_line(
+            indent, f"bmin {mesh.bb_min.x: .7g} {mesh.bb_min.y: .7g} {mesh.bb_min.z: .7g}"
+        )
+        self.write_line(
+            indent, f"bmax {mesh.bb_max.x: .7g} {mesh.bb_max.y: .7g} {mesh.bb_max.z: .7g}"
+        )
         self.write_line(indent, f"radius {mesh.radius: .7g}")
-        self.write_line(indent, f"average {mesh.average.x: .7g} {mesh.average.y: .7g} {mesh.average.z: .7g}")
+        self.write_line(
+            indent, f"average {mesh.average.x: .7g} {mesh.average.y: .7g} {mesh.average.z: .7g}"
+        )
         # Not emitted by MDLOps ASCII, but present in the binary mesh header and required for strict equality.
         self.write_line(indent, f"area {mesh.area:.7g}")
 
@@ -551,7 +560,12 @@ class MDLAsciiWriter(ResourceWriter):
         # K2-specific dirt and hologram fields
         # MDLOps writes these fields when they differ from defaults or when explicitly set
         #
-        if mesh.dirt_enabled or mesh.dirt_texture != 1 or mesh.dirt_worldspace != 1 or mesh.hologram_donotdraw:
+        if (
+            mesh.dirt_enabled
+            or mesh.dirt_texture != 1
+            or mesh.dirt_worldspace != 1
+            or mesh.hologram_donotdraw
+        ):
             self.write_line(indent, f"dirt_enabled {1 if mesh.dirt_enabled else 0}")
             if mesh.dirt_texture != 1:
                 self.write_line(indent, f"dirt_texture {mesh.dirt_texture}")
@@ -566,7 +580,9 @@ class MDLAsciiWriter(ResourceWriter):
         # Inverted mesh sequence counter (inv_count) - preserved for MDLOps compatibility
         if hasattr(mesh, "inverted_counters") and mesh.inverted_counters:
             if len(mesh.inverted_counters) >= 2:
-                self.write_line(indent, f"inv_count {mesh.inverted_counters[0]} {mesh.inverted_counters[1]}")
+                self.write_line(
+                    indent, f"inv_count {mesh.inverted_counters[0]} {mesh.inverted_counters[1]}"
+                )
             elif len(mesh.inverted_counters) >= 1:
                 self.write_line(indent, f"inv_count {mesh.inverted_counters[0]}")
 
@@ -613,9 +629,13 @@ class MDLAsciiWriter(ResourceWriter):
 
         # Preserve indices arrays for binary roundtrip (MDLOps compatibility)
         if getattr(mesh, "indices_counts", None) and len(mesh.indices_counts) > 0:
-            self.write_line(indent, "indices_counts " + " ".join(str(c) for c in mesh.indices_counts))
+            self.write_line(
+                indent, "indices_counts " + " ".join(str(c) for c in mesh.indices_counts)
+            )
         if getattr(mesh, "indices_offsets", None) and len(mesh.indices_offsets) > 0:
-            self.write_line(indent, "indices_offsets " + " ".join(str(o) for o in mesh.indices_offsets))
+            self.write_line(
+                indent, "indices_offsets " + " ".join(str(o) for o in mesh.indices_offsets)
+            )
         if getattr(mesh, "indices_offsets_count", 0) != 0:
             self.write_line(indent, f"indices_offsets_count {mesh.indices_offsets_count}")
 
@@ -631,7 +651,10 @@ class MDLAsciiWriter(ResourceWriter):
             # Fall back to identity orientation and zero translation.
             qbone: Vector4 = skin.qbones[i] if i < len(skin.qbones) else Vector4(0, 0, 0, 1)
             tbone: Vector3 = skin.tbones[i] if i < len(skin.tbones) else Vector3.from_null()
-            self.write_line(indent + 1, f"{i} {bone_idx} {qbone.x} {qbone.y} {qbone.z} {qbone.w} {tbone.x} {tbone.y} {tbone.z}")
+            self.write_line(
+                indent + 1,
+                f"{i} {bone_idx} {qbone.x} {qbone.y} {qbone.z} {qbone.w} {tbone.x} {tbone.y} {tbone.z}",
+            )
 
         # Weights (vertex -> bone influences). The test suite only asserts presence of the
         # "weights" section, but we also emit a reasonable format that our reader accepts:
@@ -667,16 +690,16 @@ class MDLAsciiWriter(ResourceWriter):
         """Write dangly mesh data."""
         self.write_line(indent, "constraints " + str(len(dangly.constraints)))
         for i, constraint in enumerate(dangly.constraints):
-            self.write_line(indent + 1, f"{i} {constraint.type} {constraint.target} {constraint.target_node}")
+            self.write_line(
+                indent + 1, f"{i} {constraint.type} {constraint.target} {constraint.target_node}"
+            )
 
     def _write_light(
         self,
         indent: int,
         light: MDLLight,
     ) -> None:
-        """Write light data.
-
-        """
+        """Write light data."""
         # Light color/radius/multiplier are controller properties, not direct attributes.
         # They are written via controllers in the node's controller list.
 
@@ -713,7 +736,10 @@ class MDLAsciiWriter(ResourceWriter):
                 self.write_line(indent, f"flarecolorshifts {len(light.flare_color_shifts)}")
                 for color_shift in light.flare_color_shifts:
                     if isinstance(color_shift, (list, tuple)) and len(color_shift) >= 3:
-                        self.write_line(indent + 1, f"{color_shift[0]:.7g} {color_shift[1]:.7g} {color_shift[2]:.7g}")
+                        self.write_line(
+                            indent + 1,
+                            f"{color_shift[0]:.7g} {color_shift[1]:.7g} {color_shift[2]:.7g}",
+                        )
 
         self.write_line(indent, f"flareradius {light.flare_radius:.7g}")
         self.write_line(indent, f"priority {light.light_priority}")
@@ -731,9 +757,7 @@ class MDLAsciiWriter(ResourceWriter):
         indent: int,
         emitter: MDLEmitter,
     ) -> None:
-        """Write emitter data.
-
-        """
+        """Write emitter data."""
         self.write_line(indent, f"deadspace {emitter.dead_space:.7g}")
         self.write_line(indent, f"blastRadius {emitter.blast_radius:.7g}")
         self.write_line(indent, f"blastLength {emitter.blast_length:.7g}")
@@ -760,16 +784,24 @@ class MDLAsciiWriter(ResourceWriter):
 
         self.write_line(indent, f"p2p {1 if (flags & MDLEmitterFlags.P2P) else 0}")
         self.write_line(indent, f"p2p_sel {1 if (flags & MDLEmitterFlags.P2P_SEL) else 0}")
-        self.write_line(indent, f"affectedByWind {1 if (flags & MDLEmitterFlags.AFFECTED_WIND) else 0}")
+        self.write_line(
+            indent, f"affectedByWind {1 if (flags & MDLEmitterFlags.AFFECTED_WIND) else 0}"
+        )
         self.write_line(indent, f"m_isTinted {1 if (flags & MDLEmitterFlags.TINTED) else 0}")
         self.write_line(indent, f"bounce {1 if (flags & MDLEmitterFlags.BOUNCE) else 0}")
         self.write_line(indent, f"random {1 if (flags & MDLEmitterFlags.RANDOM) else 0}")
         self.write_line(indent, f"inherit {1 if (flags & MDLEmitterFlags.INHERIT) else 0}")
         self.write_line(indent, f"inheritvel {1 if (flags & MDLEmitterFlags.INHERIT_VEL) else 0}")
-        self.write_line(indent, f"inherit_local {1 if (flags & MDLEmitterFlags.INHERIT_LOCAL) else 0}")
+        self.write_line(
+            indent, f"inherit_local {1 if (flags & MDLEmitterFlags.INHERIT_LOCAL) else 0}"
+        )
         self.write_line(indent, f"splat {1 if (flags & MDLEmitterFlags.SPLAT) else 0}")
-        self.write_line(indent, f"inherit_part {1 if (flags & MDLEmitterFlags.INHERIT_PART) else 0}")
-        self.write_line(indent, f"depth_texture {1 if (flags & MDLEmitterFlags.DEPTH_TEXTURE) else 0}")
+        self.write_line(
+            indent, f"inherit_part {1 if (flags & MDLEmitterFlags.INHERIT_PART) else 0}"
+        )
+        self.write_line(
+            indent, f"depth_texture {1 if (flags & MDLEmitterFlags.DEPTH_TEXTURE) else 0}"
+        )
         self.write_line(indent, f"emitterflag13 {1 if (flags & MDLEmitterFlags.FLAG_13) else 0}")
 
     def _write_reference(self, indent: int, reference: MDLReference) -> None:
@@ -859,9 +891,7 @@ class MDLAsciiWriter(ResourceWriter):
         self.write_line(indent, "endlist")
 
     def _write_animation(self, anim: MDLAnimation, model_name: str) -> None:
-        """Write animation data.
-
-        """
+        """Write animation data."""
         self.write_line(0, "")
         self.write_line(0, f"newanim {anim.name} {model_name}")
         # Preserve exact float values across Binary→ASCII→Binary roundtrips.
@@ -961,9 +991,7 @@ def _parse_float_robust(value: str) -> float:
 
 
 class MDLAsciiReader(ResourceReader):
-    """Reader for ASCII MDL files matching mdlops implementation exactly.
-
-    """
+    """Reader for ASCII MDL files matching mdlops implementation exactly."""
 
     def __init__(
         self,
@@ -987,7 +1015,19 @@ class MDLAsciiReader(ResourceReader):
         self._is_animation: bool = False
         self._in_node: bool = False
         self._current_anim_num: int = 0
-        self._task: Literal["verts", "faces", "tverts", "tverts1", "lightmaptverts", "bones", "flarecolorshifts", "weights", "constraints", "aabb", ""] = ""
+        self._task: Literal[
+            "verts",
+            "faces",
+            "tverts",
+            "tverts1",
+            "lightmaptverts",
+            "bones",
+            "flarecolorshifts",
+            "weights",
+            "constraints",
+            "aabb",
+            "",
+        ] = ""
         self._task_count: int = 0
         self._task_total: int = 0
         self._anim_node_index: dict[str, MDLNode] = {}
@@ -1102,8 +1142,14 @@ class MDLAsciiReader(ResourceReader):
             elif re.match(r"^\s*transtime\s+(\S+)", line, re.IGNORECASE) and self._is_animation:
                 match = re.match(r"^\s*transtime\s+(\S+)", line, re.IGNORECASE)
                 if match is not None and self._mdl.anims:
-                    self._mdl.anims[self._current_anim_num].transition_length = float(match.group(1))
-            elif re.match(r"^\s*event\s+(\S+)\s+(\S+)", line, re.IGNORECASE) and self._is_animation and not self._in_node:
+                    self._mdl.anims[self._current_anim_num].transition_length = float(
+                        match.group(1)
+                    )
+            elif (
+                re.match(r"^\s*event\s+(\S+)\s+(\S+)", line, re.IGNORECASE)
+                and self._is_animation
+                and not self._in_node
+            ):
                 match = re.match(r"^\s*event\s+(\S+)\s+(\S+)", line, re.IGNORECASE)
                 if match is not None and self._mdl.anims:
                     event = MDLEvent()
@@ -1118,14 +1164,28 @@ class MDLAsciiReader(ResourceReader):
                     self._parse_node(line)
             elif self._in_node:
                 self._parse_node_data(line)
-            elif re.match(r"^\s*bmin\s+(\S+)\s+(\S+)\s+(\S+)", line, re.IGNORECASE) and not self._in_node:
+            elif (
+                re.match(r"^\s*bmin\s+(\S+)\s+(\S+)\s+(\S+)", line, re.IGNORECASE)
+                and not self._in_node
+            ):
                 match = re.match(r"^\s*bmin\s+(\S+)\s+(\S+)\s+(\S+)", line, re.IGNORECASE)
                 if match is not None:
-                    self._mdl.bmin = Vector3(_parse_float_robust(match.group(1)), _parse_float_robust(match.group(2)), _parse_float_robust(match.group(3)))
-            elif re.match(r"^\s*bmax\s+(\S+)\s+(\S+)\s+(\S+)", line, re.IGNORECASE) and not self._in_node:
+                    self._mdl.bmin = Vector3(
+                        _parse_float_robust(match.group(1)),
+                        _parse_float_robust(match.group(2)),
+                        _parse_float_robust(match.group(3)),
+                    )
+            elif (
+                re.match(r"^\s*bmax\s+(\S+)\s+(\S+)\s+(\S+)", line, re.IGNORECASE)
+                and not self._in_node
+            ):
                 match = re.match(r"^\s*bmax\s+(\S+)\s+(\S+)\s+(\S+)", line, re.IGNORECASE)
                 if match is not None:
-                    self._mdl.bmax = Vector3(_parse_float_robust(match.group(1)), _parse_float_robust(match.group(2)), _parse_float_robust(match.group(3)))
+                    self._mdl.bmax = Vector3(
+                        _parse_float_robust(match.group(1)),
+                        _parse_float_robust(match.group(2)),
+                        _parse_float_robust(match.group(3)),
+                    )
             elif re.match(r"^\s*radius\s+(\S+)", line, re.IGNORECASE) and not self._in_node:
                 match = re.match(r"^\s*radius\s+(\S+)", line, re.IGNORECASE)
                 if match is not None:
@@ -1141,9 +1201,7 @@ class MDLAsciiReader(ResourceReader):
         return self._mdl
 
     def _parse_node(self, line: str) -> None:
-        """Parse a node declaration.
-
-        """
+        """Parse a node declaration."""
         match = re.match(r"^\s*node\s+(\S+)\s+(\S+)", line, re.IGNORECASE)
         if not match:
             return
@@ -1269,7 +1327,11 @@ class MDLAsciiReader(ResourceReader):
                 for n in nodes
                 # Treat missing parents AND parents that are external to this animation node list
                 # (e.g. model root name, animroot name) as top-level animation nodes.
-                if (not isinstance(n.__dict__.get("_parent_name"), str)) or (isinstance(n.__dict__.get("_parent_name"), str) and n.__dict__.get("_parent_name") not in by_name)
+                if (not isinstance(n.__dict__.get("_parent_name"), str))
+                or (
+                    isinstance(n.__dict__.get("_parent_name"), str)
+                    and n.__dict__.get("_parent_name") not in by_name
+                )
             ]
             if root_candidates:
                 # Prefer the candidate that actually has children.
@@ -1284,9 +1346,7 @@ class MDLAsciiReader(ResourceReader):
         self,
         line: str,
     ) -> None:
-        """Parse data within a node.
-
-        """
+        """Parse data within a node."""
         if not self._current_node:
             return
 
@@ -1329,7 +1389,11 @@ class MDLAsciiReader(ResourceReader):
                         except ValueError:
                             parent_idx = -1
 
-                        if parent_idx >= 0 and self._current_anim_num >= 0 and self._current_anim_num < len(self._anim_nodes):
+                        if (
+                            parent_idx >= 0
+                            and self._current_anim_num >= 0
+                            and self._current_anim_num < len(self._anim_nodes)
+                        ):
                             # Try node_id match first (more robust than list index).
                             cand_nodes: list[MDLNode] = self._anim_nodes[self._current_anim_num]
                             for cand in cand_nodes:
@@ -1384,7 +1448,9 @@ class MDLAsciiReader(ResourceReader):
 
         # Parse orientation
         if re.match(r"^\s*orientation\s+(\S+)\s+(\S+)\s+(\S+)\s+(\S+)", line, re.IGNORECASE):
-            match = re.match(r"^\s*orientation\s+(\S+)\s+(\S+)\s+(\S+)\s+(\S+)", line, re.IGNORECASE)
+            match = re.match(
+                r"^\s*orientation\s+(\S+)\s+(\S+)\s+(\S+)\s+(\S+)", line, re.IGNORECASE
+            )
             if match is not None:
                 self._current_node.orientation = Vector4(
                     _parse_float_robust(match.group(1)),
@@ -1397,7 +1463,9 @@ class MDLAsciiReader(ResourceReader):
         # Parse mesh data before controllers.
         # Some keywords overlap (e.g. "radius" is a mesh header scalar but also a light controller name).
         # AABB nodes can have mesh data, so attempt parsing even if mesh doesn't exist yet (will be created on-demand)
-        if self._current_node.mesh is not None or (self._current_node.node_type == MDLNodeType.AABB and self._current_node.aabb is not None):
+        if self._current_node.mesh is not None or (
+            self._current_node.node_type == MDLNodeType.AABB and self._current_node.aabb is not None
+        ):
             if self._parse_mesh_data(line):
                 return
 
@@ -1434,9 +1502,7 @@ class MDLAsciiReader(ResourceReader):
         self,
         line: str,
     ) -> bool:
-        """Parse a controller declaration or data.
-
-        """
+        """Parse a controller declaration or data."""
         if self._current_node is None:
             return False
 
@@ -1461,14 +1527,18 @@ class MDLAsciiReader(ResourceReader):
                 keyed_pattern = rf"^\s*{re.escape(controller_name)}(bezier)?key"
                 if re.match(keyed_pattern, line, re.IGNORECASE):
                     match = re.match(keyed_pattern, line, re.IGNORECASE)
-                    is_bezier = bool(match and match.group(1) and match.group(1).lower() == "bezier")
+                    is_bezier = bool(
+                        match and match.group(1) and match.group(1).lower() == "bezier"
+                    )
                     # Check for old format with count: "positionkey 4"
                     count_match = re.search(r"key\s+(\d+)$", line, re.IGNORECASE)
                     total = int(count_match.group(1)) if count_match else 0
 
                     # Read keyframe data
                     rows: list[MDLControllerRow] = []
-                    controller_type: MDLControllerType = _CONTROLLER_NAME_TO_TYPE.get(controller_name, MDLControllerType.INVALID)
+                    controller_type: MDLControllerType = _CONTROLLER_NAME_TO_TYPE.get(
+                        controller_name, MDLControllerType.INVALID
+                    )
 
                     # Read rows until endlist or count reached
                     for _ in range(total if total > 0 else 10000):  # Large limit for safety
@@ -1508,7 +1578,9 @@ class MDLAsciiReader(ResourceReader):
                         data = [_parse_float_robust(x) for x in parts[1:]]
 
                         # Special handling for orientation
-                        controller_type = _CONTROLLER_NAME_TO_TYPE.get(controller_name, MDLControllerType.INVALID)
+                        controller_type = _CONTROLLER_NAME_TO_TYPE.get(
+                            controller_name, MDLControllerType.INVALID
+                        )
                         if controller_type == MDLControllerType.ORIENTATION and len(data) == 4:
                             data = _aa_to_quaternion(data)
 
@@ -1534,9 +1606,7 @@ class MDLAsciiReader(ResourceReader):
         self,
         line: str,
     ) -> bool:
-        """Parse mesh-specific data.
-
-        """
+        """Parse mesh-specific data."""
         if self._current_node is None:
             return False
 
@@ -1562,12 +1632,20 @@ class MDLAsciiReader(ResourceReader):
         if re.match(r"^\s*bmin\s+(\S+)\s+(\S+)\s+(\S+)\s*$", line, re.IGNORECASE):
             match = re.match(r"^\s*bmin\s+(\S+)\s+(\S+)\s+(\S+)\s*$", line, re.IGNORECASE)
             if match is not None:
-                mesh.bb_min = Vector3(_parse_float_robust(match.group(1)), _parse_float_robust(match.group(2)), _parse_float_robust(match.group(3)))
+                mesh.bb_min = Vector3(
+                    _parse_float_robust(match.group(1)),
+                    _parse_float_robust(match.group(2)),
+                    _parse_float_robust(match.group(3)),
+                )
             return True
         if re.match(r"^\s*bmax\s+(\S+)\s+(\S+)\s+(\S+)\s*$", line, re.IGNORECASE):
             match = re.match(r"^\s*bmax\s+(\S+)\s+(\S+)\s+(\S+)\s*$", line, re.IGNORECASE)
             if match is not None:
-                mesh.bb_max = Vector3(_parse_float_robust(match.group(1)), _parse_float_robust(match.group(2)), _parse_float_robust(match.group(3)))
+                mesh.bb_max = Vector3(
+                    _parse_float_robust(match.group(1)),
+                    _parse_float_robust(match.group(2)),
+                    _parse_float_robust(match.group(3)),
+                )
             return True
         if re.match(r"^\s*radius\s+(\S+)\s*$", line, re.IGNORECASE):
             match = re.match(r"^\s*radius\s+(\S+)\s*$", line, re.IGNORECASE)
@@ -1577,7 +1655,11 @@ class MDLAsciiReader(ResourceReader):
         if re.match(r"^\s*average\s+(\S+)\s+(\S+)\s+(\S+)\s*$", line, re.IGNORECASE):
             match = re.match(r"^\s*average\s+(\S+)\s+(\S+)\s+(\S+)\s*$", line, re.IGNORECASE)
             if match is not None:
-                mesh.average = Vector3(_parse_float_robust(match.group(1)), _parse_float_robust(match.group(2)), _parse_float_robust(match.group(3)))
+                mesh.average = Vector3(
+                    _parse_float_robust(match.group(1)),
+                    _parse_float_robust(match.group(2)),
+                    _parse_float_robust(match.group(3)),
+                )
             return True
 
         # Mesh surface area (binary header field). We emit/read this for strict equality.
@@ -1780,7 +1862,11 @@ class MDLAsciiReader(ResourceReader):
         # AABB nodes can have mesh data, so allow parsing even if node_type is AABB
         if self._task in ("verts", "faces", "tverts", "tverts1"):
             # Ensure mesh exists for AABB nodes with mesh data
-            if self._current_node and self._current_node.node_type == MDLNodeType.AABB and self._current_node.mesh is None:
+            if (
+                self._current_node
+                and self._current_node.node_type == MDLNodeType.AABB
+                and self._current_node.mesh is None
+            ):
                 self._current_node.mesh = MDLMesh()
             return self._parse_task_data(line)
 
@@ -1793,9 +1879,7 @@ class MDLAsciiReader(ResourceReader):
         return False
 
     def _parse_task_data(self, line: str) -> bool:
-        """Parse data for current task (verts, faces, tverts, etc.).
-
-        """
+        """Parse data for current task (verts, faces, tverts, etc.)."""
         if not self._current_node:
             return False
 
@@ -1814,17 +1898,29 @@ class MDLAsciiReader(ResourceReader):
             # Unit test fixtures also allow a compact form without an explicit index: "x y z"
             if len(parts) == 3:
                 idx = self._task_count
-                pos = Vector3(_parse_float_robust(parts[0]), _parse_float_robust(parts[1]), _parse_float_robust(parts[2]))
+                pos = Vector3(
+                    _parse_float_robust(parts[0]),
+                    _parse_float_robust(parts[1]),
+                    _parse_float_robust(parts[2]),
+                )
                 mesh.vertex_positions.append(pos)
             elif len(parts) >= 4:
                 idx = int(parts[0])
-                pos = Vector3(_parse_float_robust(parts[1]), _parse_float_robust(parts[2]), _parse_float_robust(parts[3]))
+                pos = Vector3(
+                    _parse_float_robust(parts[1]),
+                    _parse_float_robust(parts[2]),
+                    _parse_float_robust(parts[3]),
+                )
                 # Keep positions in encounter order; most ASCII exports are sequential.
                 mesh.vertex_positions.append(pos)
 
                 # Optional normal
                 if len(parts) >= 7:
-                    normal = Vector3(_parse_float_robust(parts[4]), _parse_float_robust(parts[5]), _parse_float_robust(parts[6]))
+                    normal = Vector3(
+                        _parse_float_robust(parts[4]),
+                        _parse_float_robust(parts[5]),
+                        _parse_float_robust(parts[6]),
+                    )
                     if mesh.vertex_normals is None:
                         mesh.vertex_normals = []
                     while len(mesh.vertex_normals) <= idx:
@@ -1883,7 +1979,9 @@ class MDLAsciiReader(ResourceReader):
                         # full packed material value (e.g. 501) instead of just the mask (e.g. 15).
                         # We normalize it here to ensure roundtrip equality.
                         # Check if high bits are set AND low bits match material_id.
-                        if smoothgroup_mask > 31 and (smoothgroup_mask & 0x1F) == (material_id & 0x1F):
+                        if smoothgroup_mask > 31 and (smoothgroup_mask & 0x1F) == (
+                            material_id & 0x1F
+                        ):
                             # It's a packed material; extract the high bits as smoothing group.
                             smoothgroup_mask = smoothgroup_mask >> 5
 
@@ -2042,9 +2140,7 @@ class MDLAsciiReader(ResourceReader):
         self,
         line: str,
     ) -> bool:
-        """Parse skin mesh data (bones, weights).
-
-        """
+        """Parse skin mesh data (bones, weights)."""
         if self._current_node is None:
             return False
 
@@ -2088,8 +2184,17 @@ class MDLAsciiReader(ResourceReader):
             if len(parts) >= 9:
                 idx = int(parts[0])
                 bone_idx = int(parts[1])
-                qbone = Vector4(_parse_float_robust(parts[2]), _parse_float_robust(parts[3]), _parse_float_robust(parts[4]), _parse_float_robust(parts[5]))
-                tbone = Vector3(_parse_float_robust(parts[6]), _parse_float_robust(parts[7]), _parse_float_robust(parts[8]))
+                qbone = Vector4(
+                    _parse_float_robust(parts[2]),
+                    _parse_float_robust(parts[3]),
+                    _parse_float_robust(parts[4]),
+                    _parse_float_robust(parts[5]),
+                )
+                tbone = Vector3(
+                    _parse_float_robust(parts[6]),
+                    _parse_float_robust(parts[7]),
+                    _parse_float_robust(parts[8]),
+                )
 
                 # Update bone_indices tuple (need to convert to list, modify, convert back)
                 # Update bone_indices list
@@ -2158,9 +2263,7 @@ class MDLAsciiReader(ResourceReader):
         self,
         line: str,
     ) -> bool:
-        """Parse dangly mesh data (constraints).
-
-        """
+        """Parse dangly mesh data (constraints)."""
         if self._current_node is None:
             return False
 
@@ -2203,9 +2306,7 @@ class MDLAsciiReader(ResourceReader):
         self,
         line: str,
     ) -> bool:
-        """Parse light node data.
-
-        """
+        """Parse light node data."""
         if self._current_node is None or self._current_node.light is None:
             return False
 
@@ -2216,7 +2317,9 @@ class MDLAsciiReader(ResourceReader):
         if re.match(r"^\s*color\s+(\S+)\s+(\S+)\s+(\S+)", line, re.IGNORECASE):
             match = re.match(r"^\s*color\s+(\S+)\s+(\S+)\s+(\S+)", line, re.IGNORECASE)
             if match is not None:
-                light.color = Color(float(match.group(1)), float(match.group(2)), float(match.group(3)))
+                light.color = Color(
+                    float(match.group(1)), float(match.group(2)), float(match.group(3))
+                )
             return True
 
         if re.match(r"^\s*radius\s+(\S+)", line, re.IGNORECASE):
@@ -2269,7 +2372,9 @@ class MDLAsciiReader(ResourceReader):
 
         # Parse flare data arrays
         if re.match(r"^\s*(flarepositions|flaresizes|texturenames)\s+(\S+)", line, re.IGNORECASE):
-            match = re.match(r"^\s*(flarepositions|flaresizes|texturenames)\s+(\S+)", line, re.IGNORECASE)
+            match = re.match(
+                r"^\s*(flarepositions|flaresizes|texturenames)\s+(\S+)", line, re.IGNORECASE
+            )
             if match is not None:
                 task_name = match.group(1).lower()
                 count = int(match.group(2))
@@ -2330,7 +2435,13 @@ class MDLAsciiReader(ResourceReader):
         if self._task == "flarecolorshifts":
             parts = line.split()
             if len(parts) >= 3:
-                light.flare_color_shifts.append((_parse_float_robust(parts[0]), _parse_float_robust(parts[1]), _parse_float_robust(parts[2])))
+                light.flare_color_shifts.append(
+                    (
+                        _parse_float_robust(parts[0]),
+                        _parse_float_robust(parts[1]),
+                        _parse_float_robust(parts[2]),
+                    )
+                )
                 self._task_count += 1
                 if self._task_count >= self._task_total:
                     self._task = ""
@@ -2339,9 +2450,7 @@ class MDLAsciiReader(ResourceReader):
         return False
 
     def _parse_emitter_data(self, line: str) -> bool:
-        """Parse emitter node data.
-
-        """
+        """Parse emitter node data."""
         if not self._current_node or not self._current_node.emitter:
             return False
 
@@ -2469,9 +2578,7 @@ class MDLAsciiReader(ResourceReader):
         self,
         line: str,
     ) -> bool:
-        """Parse reference node data.
-
-        """
+        """Parse reference node data."""
         if self._current_node is None or self._current_node.reference is None:
             return False
 
@@ -2486,7 +2593,9 @@ class MDLAsciiReader(ResourceReader):
         if re.match(r"^\s*reattachable(\s+(\S+))?\s*$", line, re.IGNORECASE):
             match = re.match(r"^\s*reattachable(\s+(\S+))?\s*$", line, re.IGNORECASE)
             if match is not None:
-                reference.reattachable = (int(match.group(2)) != 0) if match.group(2) is not None else True
+                reference.reattachable = (
+                    (int(match.group(2)) != 0) if match.group(2) is not None else True
+                )
             return True
 
         return False
@@ -2495,9 +2604,7 @@ class MDLAsciiReader(ResourceReader):
         self,
         line: str,
     ) -> bool:
-        """Parse saber node data.
-
-        """
+        """Parse saber node data."""
         if self._current_node is None or self._current_node.saber is None:
             return False
 
@@ -2551,9 +2658,7 @@ class MDLAsciiReader(ResourceReader):
         self,
         line: str,
     ) -> bool:
-        """Parse walkmesh/AABB node data.
-
-        """
+        """Parse walkmesh/AABB node data."""
         if self._current_node is None or self._current_node.aabb is None:
             return False
 
@@ -2576,8 +2681,16 @@ class MDLAsciiReader(ResourceReader):
             if len(parts) >= 7:
                 # Parse 6 floats (bbox_min.xyz, bbox_max.xyz) + 1 int (face_index)
                 aabb_node: MDLAABBNode = MDLAABBNode(
-                    bbox_min=Vector3(_parse_float_robust(parts[0]), _parse_float_robust(parts[1]), _parse_float_robust(parts[2])),
-                    bbox_max=Vector3(_parse_float_robust(parts[3]), _parse_float_robust(parts[4]), _parse_float_robust(parts[5])),
+                    bbox_min=Vector3(
+                        _parse_float_robust(parts[0]),
+                        _parse_float_robust(parts[1]),
+                        _parse_float_robust(parts[2]),
+                    ),
+                    bbox_max=Vector3(
+                        _parse_float_robust(parts[3]),
+                        _parse_float_robust(parts[4]),
+                        _parse_float_robust(parts[5]),
+                    ),
                     face_index=int(parts[6]),
                     left_child_offset=0,  # Not stored in ASCII format
                     right_child_offset=0,  # Not stored in ASCII format
@@ -2592,9 +2705,7 @@ class MDLAsciiReader(ResourceReader):
         return False
 
     def _build_node_hierarchy(self) -> None:
-        """Build the node hierarchy from parent relationships.
-
-        """
+        """Build the node hierarchy from parent relationships."""
         if self._nodes is None:
             return
         assert self._mdl is not None, "MDL is not set"

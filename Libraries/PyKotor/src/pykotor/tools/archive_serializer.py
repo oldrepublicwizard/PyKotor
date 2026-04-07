@@ -42,7 +42,9 @@ _RESOURCE_PLAINTEXT_FORMAT: dict[ResourceType, ResourceType] = {
 }
 
 
-def _resource_bytes_to_plaintext(data: bytes, restype: ResourceType) -> tuple[str, str | dict[str, Any]] | None:
+def _resource_bytes_to_plaintext(
+    data: bytes, restype: ResourceType
+) -> tuple[str, str | dict[str, Any]] | None:
     """Convert resource bytes to (format_name, plaintext_data). Returns None to use base64."""
     text_format = _RESOURCE_PLAINTEXT_FORMAT.get(restype)
     if text_format is None:
@@ -79,29 +81,44 @@ def _resource_bytes_to_plaintext(data: bytes, restype: ResourceType) -> tuple[st
     return None
 
 
-def _plaintext_to_resource_bytes(encoding: str, payload: str | dict[str, Any], restype: ResourceType) -> bytes:
+def _plaintext_to_resource_bytes(
+    encoding: str, payload: str | dict[str, Any], restype: ResourceType
+) -> bytes:
     """Convert (encoding, payload) back to resource bytes."""
     if encoding == "base64":
         return base64.b64decode(json.dumps(payload) if isinstance(payload, dict) else payload)
     buf_out = BytesIO()
     if encoding == "gff_json":
-        gff = read_gff(BytesIO(json.dumps(payload).encode("utf-8")), file_format=ResourceType.GFF_JSON)
+        gff = read_gff(
+            BytesIO(json.dumps(payload).encode("utf-8")), file_format=ResourceType.GFF_JSON
+        )
         write_gff(gff, buf_out, file_format=ResourceType.GFF)
         return buf_out.getvalue()
     if encoding == "tlk_json":
-        tlk = read_tlk(BytesIO(json.dumps(payload).encode("utf-8")), file_format=ResourceType.TLK_JSON)
+        tlk = read_tlk(
+            BytesIO(json.dumps(payload).encode("utf-8")), file_format=ResourceType.TLK_JSON
+        )
         write_tlk(tlk, buf_out, file_format=ResourceType.TLK)
         return buf_out.getvalue()
     if encoding == "2da_json":
-        twoda = read_2da(BytesIO(json.dumps(payload).encode("utf-8")), file_format=ResourceType.TwoDA_JSON)
+        twoda = read_2da(
+            BytesIO(json.dumps(payload).encode("utf-8")), file_format=ResourceType.TwoDA_JSON
+        )
         write_2da(twoda, buf_out, file_format=ResourceType.TwoDA)
         return buf_out.getvalue()
     if encoding == "lip_json":
-        lip = read_lip(BytesIO(json.dumps(payload).encode("utf-8")), file_format=ResourceType.LIP_JSON)
+        lip = read_lip(
+            BytesIO(json.dumps(payload).encode("utf-8")), file_format=ResourceType.LIP_JSON
+        )
         write_lip(lip, buf_out, file_format=ResourceType.LIP)
         return buf_out.getvalue()
     if encoding == "ssf_xml":
-        ssf = read_ssf(BytesIO((json.dumps(payload) if isinstance(payload, dict) else payload).encode("utf-8")), file_format=ResourceType.SSF_XML)
+        ssf = read_ssf(
+            BytesIO(
+                (json.dumps(payload) if isinstance(payload, dict) else payload).encode("utf-8")
+            ),
+            file_format=ResourceType.SSF_XML,
+        )
         write_ssf(ssf, buf_out, file_format=ResourceType.SSF)
         return buf_out.getvalue()
     raise ValueError(f"Unknown encoding: {encoding}")

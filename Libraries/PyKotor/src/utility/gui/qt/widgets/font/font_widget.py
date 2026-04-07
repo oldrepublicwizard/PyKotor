@@ -57,7 +57,9 @@ class FontWidget(QWidget):
 
         bottom_widget = QWidget()
         bottom_widget.setLayout(lay)
-        bottom_widget.setSizePolicy(QSizePolicy.Policy.MinimumExpanding, QSizePolicy.Policy.Preferred)
+        bottom_widget.setSizePolicy(
+            QSizePolicy.Policy.MinimumExpanding, QSizePolicy.Policy.Preferred
+        )
 
         lay = QVBoxLayout()
         lay.addWidget(top_widget)

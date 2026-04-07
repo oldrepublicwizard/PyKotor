@@ -361,7 +361,12 @@ class ColorComparer:
         else:
             r2, g2, b2, a2 = color2.red(), color2.green(), color2.blue(), color2.alpha()
 
-        return abs(r1 - r2) <= rgb_tolerance and abs(g1 - g2) <= rgb_tolerance and abs(b1 - b2) <= rgb_tolerance and abs(a1 - a2) <= alpha_tolerance
+        return (
+            abs(r1 - r2) <= rgb_tolerance
+            and abs(g1 - g2) <= rgb_tolerance
+            and abs(b1 - b2) <= rgb_tolerance
+            and abs(a1 - a2) <= alpha_tolerance
+        )
 
     @classmethod
     def get_difference(cls, color1: QColor | str, color2: QColor | str) -> dict[str, int]:
@@ -568,7 +573,9 @@ class TestRibbonVisualConformance(FluentDesignConformanceTestBase):
     def test_ribbon_tab_names(self) -> None:
         """Verify ribbon tab names match Windows Explorer."""
         expected_tabs = ["file", "home", "share", "view"]
-        actual_tabs = [self.ribbon.tab_widget.tabText(i).lower() for i in range(self.ribbon.tab_widget.count())]
+        actual_tabs = [
+            self.ribbon.tab_widget.tabText(i).lower() for i in range(self.ribbon.tab_widget.count())
+        ]
 
         for expected in expected_tabs:
             self.assertIn(

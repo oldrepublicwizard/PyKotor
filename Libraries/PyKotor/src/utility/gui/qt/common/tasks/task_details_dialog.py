@@ -35,7 +35,9 @@ class TaskDetailsDialog(QDialog):
         super().__init__(parent)
         self.file_actions_executor: FileActionsExecutor = file_actions_executor
         self.task_id: str = task_id
-        self.task_details: dict[str, Any] | None = self.file_actions_executor.get_task_details(self.task_id)
+        self.task_details: dict[str, Any] | None = self.file_actions_executor.get_task_details(
+            self.task_id
+        )
         self.setup_ui()
 
     def setup_ui(self) -> None:
@@ -48,7 +50,9 @@ class TaskDetailsDialog(QDialog):
             self._setup_error_message(layout)
 
         self.setLayout(layout)
-        self.setWindowTitle(f"Task Details - {self.task_details['operation'] if self.task_details else 'Unknown'}")
+        self.setWindowTitle(
+            f"Task Details - {self.task_details['operation'] if self.task_details else 'Unknown'}"
+        )
         self.resize(500, 300)
 
         self._setup_update_timer()
@@ -122,9 +126,13 @@ class TaskDetailsDialog(QDialog):
         if self.task_details is None:
             return
 
-        self.retry_button.setEnabled(self.task_details["status"] in (TaskStatus.FAILED.name, TaskStatus.CANCELLED.name))
+        self.retry_button.setEnabled(
+            self.task_details["status"] in (TaskStatus.FAILED.name, TaskStatus.CANCELLED.name)
+        )
         self.cancel_button.setEnabled(self.task_details["status"] == TaskStatus.RUNNING.name)
-        self.pause_resume_button.setEnabled(self.task_details["status"] in (TaskStatus.RUNNING.name, TaskStatus.PAUSED.name))
+        self.pause_resume_button.setEnabled(
+            self.task_details["status"] in (TaskStatus.RUNNING.name, TaskStatus.PAUSED.name)
+        )
 
         if self.task_details["status"] == TaskStatus.PAUSED.name:
             self.pause_resume_button.setText("Resume")

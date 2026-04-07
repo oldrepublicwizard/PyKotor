@@ -51,7 +51,13 @@ def analyze_model_header(data: bytes) -> dict:
 
 
 def calc_mesh_node_data_size(
-    type_id: int, vertex_count: int, face_count: int, indices_counts_count: int, indices_offsets_count: int, counters_count: int, game: Game = Game.K1
+    type_id: int,
+    vertex_count: int,
+    face_count: int,
+    indices_counts_count: int,
+    indices_offsets_count: int,
+    counters_count: int,
+    game: Game = Game.K1,
 ) -> int:
     """Calculate the data size for a mesh node (arrays written after header)."""
     # indices_counts array
@@ -104,8 +110,15 @@ def main():
         pykotor_mdl = pykotor_mdl_path.read_bytes()
 
         # MDLOps roundtrip
-        subprocess.run([str(mdlops_exe), str(orig_mdl_path)], cwd=str(td_path), capture_output=True, timeout=60)
-        subprocess.run([str(mdlops_exe), str(td_path / f"{model_name}-ascii.mdl"), "-k1"], cwd=str(td_path), capture_output=True, timeout=60)
+        subprocess.run(
+            [str(mdlops_exe), str(orig_mdl_path)], cwd=str(td_path), capture_output=True, timeout=60
+        )
+        subprocess.run(
+            [str(mdlops_exe), str(td_path / f"{model_name}-ascii.mdl"), "-k1"],
+            cwd=str(td_path),
+            capture_output=True,
+            timeout=60,
+        )
         mdlops_mdl = (td_path / f"{model_name}-ascii-k1-bin.mdl").read_bytes()
 
         print(f"Model: {model_name}")
@@ -120,7 +133,14 @@ def main():
         mo_hdr = analyze_model_header(mdlops_mdl)
 
         print(f"{'Field':<25} {'Original':<15} {'PyKotor':<15} {'MDLOps':<15}")
-        for key in ["root_node_offset", "node_count", "offset_to_animations", "animation_count", "offset_to_name_offsets", "name_offsets_count"]:
+        for key in [
+            "root_node_offset",
+            "node_count",
+            "offset_to_animations",
+            "animation_count",
+            "offset_to_name_offsets",
+            "name_offsets_count",
+        ]:
             print(f"{key:<25} {orig_hdr[key]:<15} {pk_hdr[key]:<15} {mo_hdr[key]:<15}")
 
         # Analyze where data is placed
@@ -132,17 +152,25 @@ def main():
         pk_names_size = pk_hdr["name_offsets_count"] * 4
         mo_names_size = mo_hdr["name_offsets_count"] * 4
 
-        print(f"Name offsets: PyKotor starts at 0x{pk_names_start:X}, MDLOps starts at 0x{mo_names_start:X}")
+        print(
+            f"Name offsets: PyKotor starts at 0x{pk_names_start:X}, MDLOps starts at 0x{mo_names_start:X}"
+        )
 
         # Check animations offset
         pk_anims_start = pk_hdr["offset_to_animations"] + 12
         mo_anims_start = mo_hdr["offset_to_animations"] + 12
 
-        print(f"Animations: PyKotor starts at 0x{pk_anims_start:X}, MDLOps starts at 0x{mo_anims_start:X}")
+        print(
+            f"Animations: PyKotor starts at 0x{pk_anims_start:X}, MDLOps starts at 0x{mo_anims_start:X}"
+        )
 
         # Calculate space between name offsets and animations (this is where names strings are)
-        pk_names_str_space = pk_hdr["offset_to_animations"] - (pk_hdr["offset_to_name_offsets"] + pk_names_size)
-        mo_names_str_space = mo_hdr["offset_to_animations"] - (mo_hdr["offset_to_name_offsets"] + mo_names_size)
+        pk_names_str_space = pk_hdr["offset_to_animations"] - (
+            pk_hdr["offset_to_name_offsets"] + pk_names_size
+        )
+        mo_names_str_space = mo_hdr["offset_to_animations"] - (
+            mo_hdr["offset_to_name_offsets"] + mo_names_size
+        )
         print(f"Names strings space: PyKotor={pk_names_str_space}, MDLOps={mo_names_str_space}")
 
         # Check root node

@@ -89,18 +89,14 @@ class LYT(ComparableMixin):
     COMPARABLE_SEQUENCE_FIELDS = ("rooms", "tracks", "obstacles", "doorhooks")
 
     def __init__(self):
-
         # List of room definitions (model name + 3D position)
         self.rooms: list[LYTRoom] = []
-
 
         # List of swoop track booster positions
         self.tracks: list[LYTTrack] = []
 
-
         # List of swoop track obstacle positions
         self.obstacles: list[LYTObstacle] = []
-
 
         # List of door hook points (door placement positions)
         self.doorhooks: list[LYTDoorHook] = []
@@ -108,7 +104,12 @@ class LYT(ComparableMixin):
     def __eq__(self, other: object) -> bool:
         if not isinstance(other, LYT):
             return NotImplemented  # type: ignore[no-any-return]
-        return self.rooms == other.rooms and self.tracks == other.tracks and self.obstacles == other.obstacles and self.doorhooks == other.doorhooks
+        return (
+            self.rooms == other.rooms
+            and self.tracks == other.tracks
+            and self.obstacles == other.obstacles
+            and self.doorhooks == other.doorhooks
+        )
 
     def __hash__(self) -> int:
         return hash(
@@ -124,7 +125,9 @@ class LYT(ComparableMixin):
         """Generate resources that utilise this LYT. Skips rooms with invalid model refs (e.g. '****' placeholders in stunt modules)."""
         for room in self.rooms:
             if not ResRef.is_valid(room.model):
-                print(f"LYT.iter_resource_identifiers(): Invalid room model: '{room.model}' (not a valid ResRef)")
+                print(
+                    f"LYT.iter_resource_identifiers(): Invalid room model: '{room.model}' (not a valid ResRef)"
+                )
                 continue
             yield ResourceIdentifier(room.model, ResourceType.MDL)
             yield ResourceIdentifier(room.model, ResourceType.MDX)
@@ -135,7 +138,9 @@ class LYT(ComparableMixin):
         for room_index, room in enumerate(self.rooms):
             parsed_model: str = room.model.strip()
             assert parsed_model == room.model, "room model names cannot contain spaces."
-            assert ResRef.is_valid(parsed_model), f"invalid room model: '{room.model}' at room {room_index}, must conform to resref restrictions."
+            assert ResRef.is_valid(parsed_model), (
+                f"invalid room model: '{room.model}' at room {room_index}, must conform to resref restrictions."
+            )
             yield parsed_model.lower()
 
     def find_room_by_model(self, model: str) -> LYTRoom | None:
@@ -212,10 +217,8 @@ class LYTRoom(ComparableMixin):
     COMPARABLE_FIELDS = ("model", "position")
 
     def __init__(self, model: str, position: Vector3):
-
         # ResRef name of room model (MDL file)
         self.model: str = model
-
 
         # 3D position in world space (x, y, z)
         self.position: Vector3 = position
@@ -400,7 +403,6 @@ class LYTDoorHook(ComparableMixin):
         # 3D position in world space
         self.position: Vector3 = position
 
-
         # Rotation quaternion (qx, qy, qz, qw)
         self.orientation: Vector4 = orientation
 
@@ -409,7 +411,12 @@ class LYTDoorHook(ComparableMixin):
             return True
         if not isinstance(other, LYTDoorHook):
             return NotImplemented  # type: ignore[no-any-return]
-        return self.room == other.room and self.door == other.door and self.position == other.position and self.orientation == other.orientation
+        return (
+            self.room == other.room
+            and self.door == other.door
+            and self.position == other.position
+            and self.orientation == other.orientation
+        )
 
     def __hash__(self) -> int:
         return hash((self.room, self.door, self.position, self.orientation))

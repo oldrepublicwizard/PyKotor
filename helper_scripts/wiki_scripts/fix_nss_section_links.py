@@ -24,7 +24,10 @@ def fix_section_links():
         (r"\[Actions\]\(#actions-1\)", "[Actions](#actions)"),
         (r"\[Class System\]\(#class-system-1\)", "[Class System](#class-system)"),
         (r"\[Combat Functions\]\(#combat-functions-1\)", "[Combat Functions](#combat-functions)"),
-        (r"\[Dialog and Conversation Functions\]\(#dialog-and-conversation-functions-1\)", "[Dialog and Conversation Functions](#dialog-and-conversation-functions)"),
+        (
+            r"\[Dialog and Conversation Functions\]\(#dialog-and-conversation-functions-1\)",
+            "[Dialog and Conversation Functions](#dialog-and-conversation-functions)",
+        ),
         (r"\[Effects System\]\(#effects-system-1\)", "[Effects System](#effects-system)"),
         (r"\[Global Variables\]\(#global-variables-1\)", "[Global Variables](#global-variables)"),
         (r"\[Item Management\]\(#item-management-1\)", "[Item Management](#item-management)"),

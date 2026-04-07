@@ -32,7 +32,9 @@ def convert_pdf_pymupdf(pdf_path: Path, output_path: Path) -> bool:
         markdown_content = []
 
         # Add header with title
-        title = pdf_path.stem.replace("Bioware_Aurora_", "").replace("_Format", "").replace("_", " ")
+        title = (
+            pdf_path.stem.replace("Bioware_Aurora_", "").replace("_Format", "").replace("_", " ")
+        )
         markdown_content.append(f"# {title}\n")
         markdown_content.append("*Official Bioware Aurora Documentation*\n\n")
         markdown_content.append("---\n\n")
@@ -77,7 +79,9 @@ def convert_pdf_pdfplumber(pdf_path: Path, output_path: Path) -> bool:
         markdown_content = []
 
         # Add header with title
-        title = pdf_path.stem.replace("Bioware_Aurora_", "").replace("_Format", "").replace("_", " ")
+        title = (
+            pdf_path.stem.replace("Bioware_Aurora_", "").replace("_Format", "").replace("_", " ")
+        )
         markdown_content.append(f"# {title}\n")
         markdown_content.append("*Official Bioware Aurora Documentation*\n\n")
         markdown_content.append("---\n\n")

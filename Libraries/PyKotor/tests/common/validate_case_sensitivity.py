@@ -37,7 +37,9 @@ def check_windows_version() -> tuple[bool, str]:
         print(f"Windows Version: {version_str}")
 
         # Check build number (needs 17134+ for case sensitivity)
-        result = subprocess.run(["wmic", "os", "get", "BuildNumber"], capture_output=True, text=True, timeout=5)
+        result = subprocess.run(
+            ["wmic", "os", "get", "BuildNumber"], capture_output=True, text=True, timeout=5
+        )
         lines = result.stdout.strip().split("\n")
         build_number = int(lines[-1].strip()) if len(lines) > 1 else 0
         print(f"Build Number: {build_number}")
@@ -78,7 +80,12 @@ def check_filesystem_type() -> tuple[bool, str]:
         if not current_drive:
             current_drive = "C:"
 
-        result = subprocess.run(["fsutil", "fsinfo", "volumeinfo", current_drive], capture_output=True, text=True, timeout=5)
+        result = subprocess.run(
+            ["fsutil", "fsinfo", "volumeinfo", current_drive],
+            capture_output=True,
+            text=True,
+            timeout=5,
+        )
 
         output = result.stdout
         print(f"Volume info for {current_drive}:")
@@ -104,7 +111,12 @@ def test_case_sensitivity_enable() -> tuple[bool, str]:
             # Test Windows case sensitivity enablement
             try:
                 # Try to enable case sensitivity
-                result = subprocess.run(["fsutil", "file", "setCaseSensitiveInfo", str(temp_path), "enable"], capture_output=True, text=True, timeout=10)
+                result = subprocess.run(
+                    ["fsutil", "file", "setCaseSensitiveInfo", str(temp_path), "enable"],
+                    capture_output=True,
+                    text=True,
+                    timeout=10,
+                )
 
                 print(f"Enable returncode: {result.returncode}")
                 print(f"Enable stdout: {result.stdout}")
@@ -115,7 +127,12 @@ def test_case_sensitivity_enable() -> tuple[bool, str]:
                     return False, f"Failed to enable case sensitivity: {result.stderr}"
 
                 # Query to verify
-                result = subprocess.run(["fsutil", "file", "queryCaseSensitiveInfo", str(temp_path)], capture_output=True, text=True, timeout=10)
+                result = subprocess.run(
+                    ["fsutil", "file", "queryCaseSensitiveInfo", str(temp_path)],
+                    capture_output=True,
+                    text=True,
+                    timeout=10,
+                )
 
                 print(f"Query stdout: {result.stdout}")
 
@@ -132,7 +149,10 @@ def test_case_sensitivity_enable() -> tuple[bool, str]:
                             content_lower = test_lower.read_text()
                             content_upper = test_upper.read_text()
                             if content_lower != content_upper:
-                                return True, "Case sensitivity works! Created separate 'test.txt' and 'TEST.txt' [OK]"
+                                return (
+                                    True,
+                                    "Case sensitivity works! Created separate 'test.txt' and 'TEST.txt' [OK]",
+                                )
 
                     return False, "Case sensitivity enabled but files not treated as different"
                 else:
@@ -242,7 +262,9 @@ def main():
         print("[-] Some checks failed. Review the issues above.")
         print("\nCommon solutions:")
         print("  1. Run as Administrator (Windows)")
-        print("  2. For per-directory case sensitivity only: Windows 10 1803+ or Windows 11 (PyKotor otherwise supports Windows 7+)")
+        print(
+            "  2. For per-directory case sensitivity only: Windows 10 1803+ or Windows 11 (PyKotor otherwise supports Windows 7+)"
+        )
         print("  3. Verify NTFS filesystem")
         print("  4. Check if fsutil.exe is available")
         return 1

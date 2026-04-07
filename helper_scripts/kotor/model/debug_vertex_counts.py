@@ -73,7 +73,9 @@ def main():
             print(f"{node.name:<25} {node_type:<10} {vpos:<10} {vnorm:<10} {uv1:<10}")
 
     print("-" * 65)
-    print(f"{'TOTAL':<25} {mesh_nodes:<10} {total_vertex_positions:<10} {total_vertex_normals:<10} {total_uvs:<10}")
+    print(
+        f"{'TOTAL':<25} {mesh_nodes:<10} {total_vertex_positions:<10} {total_vertex_normals:<10} {total_uvs:<10}"
+    )
 
     # Calculate expected MDL vertex bytes
     expected_vertex_bytes = total_vertex_positions * 12  # Vector3 = 3 floats = 12 bytes
@@ -118,8 +120,12 @@ def main():
         print(f"{'TOTAL':<25} {total_bin_vertices:<10} {'':<10} {total_bin_vertex_bytes:<10}")
 
         print("\n=== Extra Arrays ===")
-        print(f"Total indices_counts entries: {total_indices_counts} ({total_indices_counts * 4} bytes)")
-        print(f"Total indices_offsets entries: {total_indices_offsets} ({total_indices_offsets * 4} bytes)")
+        print(
+            f"Total indices_counts entries: {total_indices_counts} ({total_indices_counts * 4} bytes)"
+        )
+        print(
+            f"Total indices_offsets entries: {total_indices_offsets} ({total_indices_offsets * 4} bytes)"
+        )
         print(f"Total inverted_counters entries: {total_inverted} ({total_inverted * 4} bytes)")
 
         # Check actual file size
@@ -144,7 +150,9 @@ def main():
         print(f"Names:        {names_size}")
         print(f"Anim offsets: {anim_offsets_size}")
         print(f"Node total:   {node_sizes}")
-        print(f"Calculated:   {header_size + name_offsets_size + names_size + anim_offsets_size + node_sizes}")
+        print(
+            f"Calculated:   {header_size + name_offsets_size + names_size + anim_offsets_size + node_sizes}"
+        )
         print(f"Actual:       {len(pykotor_mdl) - 12}")  # -12 for file header
 
 

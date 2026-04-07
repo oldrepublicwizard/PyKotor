@@ -48,7 +48,11 @@ class TestPathExtras(unittest.TestCase):
             cmd_switch = "/K" if pause_after_command else "/C"
 
             # Construct the command to run the batch script with elevated privileges
-            run_script_cmd: list[str] = ["Powershell", "-Command", f"Start-Process cmd.exe -ArgumentList '{cmd_switch} \"{script_path}\"' -Verb RunAs -Wait"]
+            run_script_cmd: list[str] = [
+                "Powershell",
+                "-Command",
+                f"Start-Process cmd.exe -ArgumentList '{cmd_switch} \"{script_path}\"' -Verb RunAs -Wait",
+            ]
 
             # Execute the batch script
             subprocess.run(run_script_cmd, check=False)
@@ -75,7 +79,9 @@ class TestPathExtras(unittest.TestCase):
         # self.run_command(isfile_or_dir_args(["icacls", path_str, "/deny", "dummy_user:(D,WDAC,WO)"]))
         # self.run_command(["cipher", "/e", path_str])
 
-    @unittest.skip("skipped - requires admin permissions and overall an exhaustively involved test.")
+    @unittest.skip(
+        "skipped - requires admin permissions and overall an exhaustively involved test."
+    )
     def test_gain_file_access(self):
         test_file = Path("this file has no permissions.txt").absolute()
         try:

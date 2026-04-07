@@ -12,7 +12,9 @@ class TestTPCData(unittest.TestCase):
     def setUp(self):
         self.tpc = TPC()
         # Real DXT1 block data representing actual texture patterns
-        self.dxt1_red: bytes = bytes.fromhex("00F800F800000000")  # Pure red DXT1 block with pure red indices
+        self.dxt1_red: bytes = bytes.fromhex(
+            "00F800F800000000"
+        )  # Pure red DXT1 block with pure red indices
         self.dxt1_gradient: bytes = bytes.fromhex("F80007E0A4A4A4A4")  # Red-green gradient
         self.dxt1_transparent: bytes = bytes.fromhex("E00700F8FFFFFFFF")
 

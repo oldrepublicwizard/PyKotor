@@ -14,7 +14,9 @@ from pykotor.common.misc import Game
 from pykotor.resource.formats.ncs.ncs_auto import compile_nss, decompile_ncs
 
 root = Path("vendor/Vanilla_KOTOR_Script_Source")
-script_path = root / "K1" / "Modules" / "M01AA_Endar_Spire_Command_Module_end_m01aa" / "k_end_cut2_fght.nss"
+script_path = (
+    root / "K1" / "Modules" / "M01AA_Endar_Spire_Command_Module_end_m01aa" / "k_end_cut2_fght.nss"
+)
 
 if not script_path.exists():
     print(f"Script not found: {script_path}")

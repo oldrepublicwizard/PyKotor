@@ -370,7 +370,9 @@ def find_resref_references(
             resources=gff_resources,
         )
         for resource in ncs_resources:
-            results.extend(_search_ncs_for_string(resource, resref, search_pattern, case_sensitive, logger))
+            results.extend(
+                _search_ncs_for_string(resource, resref, search_pattern, case_sensitive, logger)
+            )
     else:
         results = _search_gff_resources_with_cache(
             installation,
@@ -428,7 +430,9 @@ def find_field_value_references(
     if field_types is None:
         field_types = {GFFFieldType.String, GFFFieldType.ResRef}
 
-    search_pattern: re.Pattern[str] = _build_search_pattern(search_value, partial_match, case_sensitive)
+    search_pattern: re.Pattern[str] = _build_search_pattern(
+        search_value, partial_match, case_sensitive
+    )
 
     return _search_gff_resources_with_cache(
         installation,
@@ -602,7 +606,17 @@ def _search_gff_for_resref(
     gff = _safe_read_gff(resource)
     if gff is None:
         return []
-    return _search_gff_for_resref_with_gff(resource, gff, resref, search_pattern, field_names, field_types, file_type, case_sensitive, logger)
+    return _search_gff_for_resref_with_gff(
+        resource,
+        gff,
+        resref,
+        search_pattern,
+        field_names,
+        field_types,
+        file_type,
+        case_sensitive,
+        logger,
+    )
 
 
 def _search_gff_for_resref_with_gff(
@@ -910,7 +924,9 @@ def _search_ncs_for_string(
                     string_offset = reader.position()
                     str_len = reader.read_uint16(big=True)
                     if str_len > 0 and reader.remaining() >= str_len:
-                        string_value = reader.read_string(str_len, encoding="ascii", errors="ignore")
+                        string_value = reader.read_string(
+                            str_len, encoding="ascii", errors="ignore"
+                        )
                         if search_pattern.search(string_value):
                             results.append(
                                 ReferenceSearchResult(
@@ -922,18 +938,28 @@ def _search_ncs_for_string(
                                 ),
                             )
                             if logger is not None:
-                                logger(f"Found '{search_string}' in {resource.filename()} at byte offset {string_offset:#X}")
+                                logger(
+                                    f"Found '{search_string}' in {resource.filename()} at byte offset {string_offset:#X}"
+                                )
 
                 # Skip to next instruction based on opcode/qualifier
                 elif opcode == NCSByteCode.CONSTx:
-                    if qualifier == NCSInstructionQualifier.Int or qualifier == NCSInstructionQualifier.Float:
+                    if (
+                        qualifier == NCSInstructionQualifier.Int
+                        or qualifier == NCSInstructionQualifier.Float
+                    ):
                         reader.skip(4)
                     elif qualifier == NCSInstructionQualifier.String:
                         str_len = reader.read_uint16(big=True)
                         reader.skip(str_len)
                     elif qualifier == NCSInstructionQualifier.Object:
                         reader.skip(4)
-                elif opcode in (NCSByteCode.CPDOWNSP, NCSByteCode.CPTOPSP, NCSByteCode.CPDOWNBP, NCSByteCode.CPTOPBP):
+                elif opcode in (
+                    NCSByteCode.CPDOWNSP,
+                    NCSByteCode.CPTOPSP,
+                    NCSByteCode.CPDOWNBP,
+                    NCSByteCode.CPTOPBP,
+                ):
                     reader.skip(6)
                 elif opcode == NCSByteCode.STORE_STATE:
                     reader.skip(8)
@@ -955,7 +981,13 @@ def _search_ncs_for_string(
                     reader.skip(3)
                 elif opcode == NCSByteCode.DESTRUCT:
                     reader.skip(6)
-                elif (opcode == NCSByteCode.EQUALxx and qualifier == NCSInstructionQualifier.StructStruct) or (opcode == NCSByteCode.NEQUALxx and qualifier == NCSInstructionQualifier.StructStruct):
+                elif (
+                    opcode == NCSByteCode.EQUALxx
+                    and qualifier == NCSInstructionQualifier.StructStruct
+                ) or (
+                    opcode == NCSByteCode.NEQUALxx
+                    and qualifier == NCSInstructionQualifier.StructStruct
+                ):
                     reader.skip(2)
                 # Other instructions have no additional data
 

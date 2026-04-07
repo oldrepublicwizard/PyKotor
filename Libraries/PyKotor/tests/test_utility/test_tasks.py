@@ -39,7 +39,9 @@ class TestFileActionsExecutor(unittest.TestCase):
             return x + y
 
         custom_func_result: int = 3
-        task_id: str = self.executor.queue_task("custom_operation", args=(1, 2), custom_function=custom_func)
+        task_id: str = self.executor.queue_task(
+            "custom_operation", args=(1, 2), custom_function=custom_func
+        )
         future: Future[int] = self.executor.futures[task_id]
         result: int = future.result()
         assert result == custom_func_result, f"{result} == {custom_func_result}"
@@ -71,11 +73,15 @@ class TestFileActionsExecutor(unittest.TestCase):
         self.executor.pause_task(task_id)
         get_task_test1: Task | None = self.executor.get_task(task_id)
         assert get_task_test1 is not None, f"{get_task_test1} is not None"
-        assert get_task_test1.status == TaskStatus.PAUSED, f"{get_task_test1.status} == {TaskStatus.PAUSED}"
+        assert get_task_test1.status == TaskStatus.PAUSED, (
+            f"{get_task_test1.status} == {TaskStatus.PAUSED}"
+        )
         self.executor.resume_task(task_id)
         get_task_test2: Task | None = self.executor.get_task(task_id)
         assert get_task_test2 is not None, "get_task_test2 is not None"
-        assert get_task_test2.status == TaskStatus.RUNNING, f"{get_task_test2.status} == {TaskStatus.RUNNING}"
+        assert get_task_test2.status == TaskStatus.RUNNING, (
+            f"{get_task_test2.status} == {TaskStatus.RUNNING}"
+        )
 
     def test_retry_task(self):
         task_id: str = self.executor.queue_task("operation")
@@ -145,7 +151,9 @@ class TestFileActionsExecutor(unittest.TestCase):
             return x + y
 
         custom_func_result = 3
-        task_id: str = self.executor.queue_task("custom_operation", args=(1, 2), custom_function=custom_func)
+        task_id: str = self.executor.queue_task(
+            "custom_operation", args=(1, 2), custom_function=custom_func
+        )
         future: Future[int] = self.executor.futures[task_id]
         result: int = future.result()
         assert result == custom_func_result, f"{result} == {custom_func_result}"
@@ -161,7 +169,9 @@ class TestFileActionsExecutor(unittest.TestCase):
         assert unpickled_task is not None, f"{unpickled_task} is not None"
         assert unpickled_task.id == task.id, f"{unpickled_task.id} == {task.id}"
         assert task.id == unpickled_task.id, f"{task.id} == {unpickled_task.id}"
-        assert task.operation == unpickled_task.operation, f"{task.operation} == {unpickled_task.operation}"
+        assert task.operation == unpickled_task.operation, (
+            f"{task.operation} == {unpickled_task.operation}"
+        )
 
     def test_task_status(self):
         task_id: str = self.executor.queue_task("operation")
@@ -178,7 +188,9 @@ class TestFileActionsExecutor(unittest.TestCase):
             return x * y
 
         custom_func_result = 12
-        task_id: str = self.executor.queue_task("custom_operation", args=(3, 4), custom_function=custom_func)
+        task_id: str = self.executor.queue_task(
+            "custom_operation", args=(3, 4), custom_function=custom_func
+        )
         future: Future[int] = self.executor.futures[task_id]
         result: int = future.result()
         assert result == custom_func_result, f"{result} == {custom_func_result}"
@@ -187,7 +199,9 @@ class TestFileActionsExecutor(unittest.TestCase):
         def custom_func(_x: int, _y: int) -> int:
             raise ValueError("Test error")
 
-        task_id: str = self.executor.queue_task("custom_operation", args=(1, 2), custom_function=custom_func)
+        task_id: str = self.executor.queue_task(
+            "custom_operation", args=(1, 2), custom_function=custom_func
+        )
         future: Future[int] = self.executor.futures[task_id]
         with pytest.raises(ValueError):
             future.result()
@@ -285,7 +299,9 @@ class TestFileActionsExecutor(unittest.TestCase):
             return x - y
 
         custom_func_result = 2
-        task_id: str = self.executor.queue_task("custom_operation", args=(5, 3), custom_function=custom_func)
+        task_id: str = self.executor.queue_task(
+            "custom_operation", args=(5, 3), custom_function=custom_func
+        )
         future: Future[int] = self.executor.futures[task_id]
         result: int = future.result()
         assert result == custom_func_result, f"{result} == {custom_func_result}"

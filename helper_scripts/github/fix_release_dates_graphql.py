@@ -15,7 +15,9 @@ import time
 from typing import Any
 
 
-def run_gh_api_graphql(query: str, variables: dict[str, Any] | None = None) -> dict[str, Any] | None:
+def run_gh_api_graphql(
+    query: str, variables: dict[str, Any] | None = None
+) -> dict[str, Any] | None:
     """Run a GitHub GraphQL query."""
     data = {"query": query}
     if variables:
@@ -23,7 +25,15 @@ def run_gh_api_graphql(query: str, variables: dict[str, Any] | None = None) -> d
 
     cmd = ["gh", "api", "graphql", "--input", "-"]
     json_data = json.dumps(data)
-    result = subprocess.run(cmd, check=False, input=json_data, capture_output=True, text=True, encoding="utf-8", errors="replace")
+    result = subprocess.run(
+        cmd,
+        check=False,
+        input=json_data,
+        capture_output=True,
+        text=True,
+        encoding="utf-8",
+        errors="replace",
+    )
 
     if result.returncode != 0:
         if result.stderr:
@@ -39,15 +49,27 @@ def run_gh_api_graphql(query: str, variables: dict[str, Any] | None = None) -> d
     return None
 
 
-def run_gh_api(endpoint: str, method: str = "GET", data: dict[str, Any] | None = None) -> dict[str, Any] | None:
+def run_gh_api(
+    endpoint: str, method: str = "GET", data: dict[str, Any] | None = None
+) -> dict[str, Any] | None:
     """Run a GitHub REST API command."""
     cmd = ["gh", "api", endpoint, "--method", method]
     if data:
         cmd.extend(["--input", "-"])
         json_data = json.dumps(data)
-        result = subprocess.run(cmd, check=False, input=json_data, capture_output=True, text=True, encoding="utf-8", errors="replace")
+        result = subprocess.run(
+            cmd,
+            check=False,
+            input=json_data,
+            capture_output=True,
+            text=True,
+            encoding="utf-8",
+            errors="replace",
+        )
     else:
-        result = subprocess.run(cmd, check=False, capture_output=True, text=True, encoding="utf-8", errors="replace")
+        result = subprocess.run(
+            cmd, check=False, capture_output=True, text=True, encoding="utf-8", errors="replace"
+        )
 
     if result.returncode != 0:
         return None

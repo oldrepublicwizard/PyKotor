@@ -51,7 +51,9 @@ def validate_ncs_for_vm(ncs: NCS) -> None:
     _validate_execution_safety(ncs, issues)
 
     if issues:
-        error_msg = f"NCS validation failed with {len(issues)} issue(s):\n" + "\n".join(f"  - {issue}" for issue in issues)
+        error_msg = f"NCS validation failed with {len(issues)} issue(s):\n" + "\n".join(
+            f"  - {issue}" for issue in issues
+        )
         raise ValueError(error_msg)
 
 
@@ -68,7 +70,11 @@ def _validate_instruction_sequence(ncs: NCS, issues: list[str]) -> None:
         # Check for consecutive stack operations that might cause issues
         if i > 0:
             prev_instr = instructions[i - 1]
-            if _is_stack_operation(instr.ins_type) and _is_stack_operation(prev_instr.ins_type) and _stack_operations_conflict(instr, prev_instr):
+            if (
+                _is_stack_operation(instr.ins_type)
+                and _is_stack_operation(prev_instr.ins_type)
+                and _stack_operations_conflict(instr, prev_instr)
+            ):
                 issues.append(f"Conflicting stack operations at positions {i - 1} and {i}")
 
 
@@ -86,7 +92,12 @@ def _validate_stack_operations(ncs: NCS, issues: list[str]) -> None:
             # Stack pointer manipulation
             if hasattr(instr, "size") and instr.size < 0:
                 stack_depth += abs(instr.size)  # Negative size means allocating stack space
-        elif instr.ins_type in (NCSInstructionType.CONSTI, NCSInstructionType.CONSTF, NCSInstructionType.CONSTS, NCSInstructionType.CONSTO):
+        elif instr.ins_type in (
+            NCSInstructionType.CONSTI,
+            NCSInstructionType.CONSTF,
+            NCSInstructionType.CONSTS,
+            NCSInstructionType.CONSTO,
+        ):
             # Constants push values onto stack
             stack_depth += 1
         elif instr.ins_type == NCSInstructionType.ACTION:
@@ -113,7 +124,12 @@ def _validate_control_flow(ncs: NCS, issues: list[str]) -> None:
     instr_to_index: dict[int, int] = {id(instr): i for i, instr in enumerate(instructions)}
 
     for i, instr in enumerate(instructions):
-        if instr.ins_type in (NCSInstructionType.JMP, NCSInstructionType.JZ, NCSInstructionType.JNZ, NCSInstructionType.JSR):
+        if instr.ins_type in (
+            NCSInstructionType.JMP,
+            NCSInstructionType.JZ,
+            NCSInstructionType.JNZ,
+            NCSInstructionType.JSR,
+        ):
             if instr.jump is None:
                 issues.append(f"Jump instruction at position {i} has no valid target")
                 continue
@@ -121,16 +137,22 @@ def _validate_control_flow(ncs: NCS, issues: list[str]) -> None:
             # Check jump target bounds
             target_index = instr_to_index.get(id(instr.jump), -1)
             if target_index < 0 or target_index >= len(instructions):
-                issues.append(f"Jump instruction at position {i} targets invalid location {target_index}")
+                issues.append(
+                    f"Jump instruction at position {i} targets invalid location {target_index}"
+                )
                 continue
 
             # Check for suspicious jump patterns
             if abs(target_index - i) > 1000:  # Very long jumps might indicate issues
-                issues.append(f"Unusually long jump at position {i} (distance: {abs(target_index - i)})")
+                issues.append(
+                    f"Unusually long jump at position {i} (distance: {abs(target_index - i)})"
+                )
 
             # Check for jumps to invalid locations (e.g., into middle of instructions)
             if instr.ins_type == NCSInstructionType.JSR and target_index == 0:
-                issues.append(f"JSR at position {i} jumps to script start (potential recursion issue)")
+                issues.append(
+                    f"JSR at position {i} jumps to script start (potential recursion issue)"
+                )
 
 
 def _validate_execution_safety(ncs: NCS, issues: list[str]) -> None:
@@ -144,7 +166,9 @@ def _validate_execution_safety(ncs: NCS, issues: list[str]) -> None:
     # Check for excessive consecutive NOP-like operations
     consecutive_noops: int = 0
     for instr in instructions:
-        if instr.ins_type in (NCSInstructionType.NOP,):  # Add other no-op instructions as identified
+        if instr.ins_type in (
+            NCSInstructionType.NOP,
+        ):  # Add other no-op instructions as identified
             consecutive_noops += 1
             if consecutive_noops > 10:
                 issues.append("Excessive consecutive no-op instructions detected")
@@ -171,7 +195,10 @@ def _stack_operations_conflict(instr1: NCSInstruction, instr2: NCSInstruction) -
     # This is a simplified check - full analysis would be more complex
     # For example, CPDOWNSP followed by CPTOPSP with incompatible sizes
 
-    if instr1.ins_type == NCSInstructionType.CPDOWNSP and instr2.ins_type == NCSInstructionType.CPTOPSP:
+    if (
+        instr1.ins_type == NCSInstructionType.CPDOWNSP
+        and instr2.ins_type == NCSInstructionType.CPTOPSP
+    ):
         # Check if sizes are compatible
         size1 = getattr(instr1, "size", 0)
         size2 = getattr(instr2, "size", 0)

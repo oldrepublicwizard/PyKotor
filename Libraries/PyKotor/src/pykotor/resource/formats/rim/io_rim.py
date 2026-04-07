@@ -62,7 +62,9 @@ def _load_rim_legacy(reader: BinaryReader) -> RIM:
     return rim
 
 
-def _read_rim_entries(rim: RIM, reader: BinaryReader, entry_count: int, offset_to_keys: int, stream_size: int):
+def _read_rim_entries(
+    rim: RIM, reader: BinaryReader, entry_count: int, offset_to_keys: int, stream_size: int
+):
     resrefs: list[str] = []
     resids: list[int] = []
     restypes: list[int] = []

@@ -99,9 +99,21 @@ def test_binary_reader_read_methods(
     "test_id, method, args, expected_result, expected_exception",
     [
         ("happy_path_read_string", "read_string", {"length": 5}, "Hello", None),
-        ("happy_path_read_terminated_string", "read_terminated_string", {"terminator": "\x00"}, "HelloWorld", None),
+        (
+            "happy_path_read_terminated_string",
+            "read_terminated_string",
+            {"terminator": "\x00"},
+            "HelloWorld",
+            None,
+        ),
         ("error_case_read_string_beyond_stream", "read_string", {"length": 15}, None, OSError),
-        ("error_case_read_terminated_string_no_terminator", "read_terminated_string", {"terminator": "\x01"}, None, OSError),
+        (
+            "error_case_read_terminated_string_no_terminator",
+            "read_terminated_string",
+            {"terminator": "\x01"},
+            None,
+            OSError,
+        ),
     ],
 )
 def test_binary_reader_read_string_methods(
@@ -154,7 +166,14 @@ def test_binary_reader_context_manager(
     "test_id, file_content, offset, size, expected_result, expected_exception",
     [
         ("happy_path_from_file", b"1234567890", 0, None, b"1234567890", None),
-        ("error_case_from_file_no_contents", b"", 0, None, None, ValueError),  # mmap can't map empty files
+        (
+            "error_case_from_file_no_contents",
+            b"",
+            0,
+            None,
+            None,
+            ValueError,
+        ),  # mmap can't map empty files
     ],
 )
 def test_binary_reader_from_file(

@@ -3,6 +3,7 @@
 LookupResult2DA and column classes (K1ResRef2DAColumns, ABSColumns2DA, etc.) are used
 to resolve resrefs and IDs to 2DA file paths and row data during extraction and tooling.
 """
+
 from __future__ import annotations
 
 from dataclasses import dataclass
@@ -162,7 +163,12 @@ class K1Columns2DA:
         hen_companion: ClassVar[set[str]] = {"baseresref"}  # Not used in the game engine.
         hen_familiar: ClassVar[set[str]] = {"baseresref"}  # Not used in the game engine.
         iprp_paramtable: ClassVar[set[str]] = {"tableresref"}
-        itempropdef: ClassVar[set[str]] = {"subtyperesref", "param1resref", "gamestrref", "description"}
+        itempropdef: ClassVar[set[str]] = {
+            "subtyperesref",
+            "param1resref",
+            "gamestrref",
+            "description",
+        }
         minglobalrim: ClassVar[set[str]] = {"moduleresref"}
         modulesave: ClassVar[set[str]] = {"modulename"}
 
@@ -171,7 +177,18 @@ class K1Columns2DA:
             """All 2DA columns that reference model resrefs in the first game."""
 
             ammunitiontypes: ClassVar[set[str]] = {"model", "model0", "model1", "muzzleflash"}
-            appearance: ClassVar[set[str]] = {"modela", "modelb", "modelc", "modeld", "modele", "modelf", "modelg", "modelh", "modeli", "modelj"}
+            appearance: ClassVar[set[str]] = {
+                "modela",
+                "modelb",
+                "modelc",
+                "modeld",
+                "modele",
+                "modelf",
+                "modelg",
+                "modelh",
+                "modeli",
+                "modelj",
+            }
             baseitems: ClassVar[set[str]] = {"defaultmodel"}
             placeables: ClassVar[set[str]] = {"modelname"}
             planetary: ClassVar[set[str]] = {"model"}
@@ -190,8 +207,18 @@ class K1Columns2DA:
 
             aliensound: ClassVar[set[str]] = {"filename"}
             ambientsound: ClassVar[set[str]] = {"resource"}
-            ammunitiontypes: ClassVar[set[str]] = {"shotsound0", "shotsound1", "impactsound0", "impactsound1"}
-            appearancesndset: ClassVar[set[str]] = {"falldirt", "fallhard", "fallmetal", "fallwater"}
+            ammunitiontypes: ClassVar[set[str]] = {
+                "shotsound0",
+                "shotsound1",
+                "impactsound0",
+                "impactsound1",
+            }
+            appearancesndset: ClassVar[set[str]] = {
+                "falldirt",
+                "fallhard",
+                "fallmetal",
+                "fallwater",
+            }
             baseitems: ClassVar[set[str]] = {"powerupsnd", "powerdownsnd", "poweredsnd"}
             footstepsounds: ClassVar[set[str]] = {
                 "rolling",
@@ -259,7 +286,15 @@ class K1Columns2DA:
             }
             baseitems: ClassVar[set[str]] = {"defaulticon"}
             effecticon: ClassVar[set[str]] = {"iconresref"}
-            heads: ClassVar[set[str]] = {"head", "headtexvvve", "headtexvve", "headtexve", "headtexe", "headtexg", "headtexvg"}
+            heads: ClassVar[set[str]] = {
+                "head",
+                "headtexvvve",
+                "headtexvve",
+                "headtexve",
+                "headtexe",
+                "headtexg",
+                "headtexvg",
+            }
             iprp_spells: ClassVar[set[str]] = {"icon"}
             loadscreens: ClassVar[set[str]] = {"bmpresref"}
             planetary: ClassVar[set[str]] = {"icon"}
@@ -386,7 +421,12 @@ class K2Columns2DA:
         hen_companion: ClassVar[set[str]] = {"baseresref"}  # Not used in the game engine.
         hen_familiar: ClassVar[set[str]] = {"baseresref"}  # Not used in the game engine.
         iprp_paramtable: ClassVar[set[str]] = {"tableresref"}
-        itempropdef: ClassVar[set[str]] = {"subtyperesref", "param1resref", "gamestrref", "description"}
+        itempropdef: ClassVar[set[str]] = {
+            "subtyperesref",
+            "param1resref",
+            "gamestrref",
+            "description",
+        }
         minglobalrim: ClassVar[set[str]] = {"moduleresref"}
         modulesave: ClassVar[set[str]] = {"modulename"}
 
@@ -395,7 +435,18 @@ class K2Columns2DA:
             """All 2DA columns that reference model resrefs."""
 
             ammunitiontypes: ClassVar[set[str]] = {"model", "model0", "model1"}
-            appearance: ClassVar[set[str]] = {"modela", "modelb", "modelc", "modeld", "modele", "modelf", "modelg", "modelh", "modeli", "modelj"}
+            appearance: ClassVar[set[str]] = {
+                "modela",
+                "modelb",
+                "modelc",
+                "modeld",
+                "modele",
+                "modelf",
+                "modelg",
+                "modelh",
+                "modeli",
+                "modelj",
+            }
             baseitems: ClassVar[set[str]] = {"defaultmodel"}
             placeables: ClassVar[set[str]] = {"modelname"}
             planetary: ClassVar[set[str]] = {"model"}
@@ -450,8 +501,18 @@ class K2Columns2DA:
                 "screaming_small",
             }
             ambientsound: ClassVar[set[str]] = {"resource"}
-            ammunitiontypes: ClassVar[set[str]] = {"shotsound0", "shotsound1", "impactsound0", "impactsound1"}
-            appearancesndset: ClassVar[set[str]] = {"falldirt", "fallhard", "fallmetal", "fallwater"}
+            ammunitiontypes: ClassVar[set[str]] = {
+                "shotsound0",
+                "shotsound1",
+                "impactsound0",
+                "impactsound1",
+            }
+            appearancesndset: ClassVar[set[str]] = {
+                "falldirt",
+                "fallhard",
+                "fallmetal",
+                "fallwater",
+            }
             baseitems: ClassVar[set[str]] = {"powerupsnd", "powerdownsnd", "poweredsnd"}
             footstepsounds: ClassVar[set[str]] = {
                 "rolling",
@@ -520,7 +581,15 @@ class K2Columns2DA:
             cursors: ClassVar[set[str]] = {"resref"}
             baseitems: ClassVar[set[str]] = {"defaulticon"}
             effecticon: ClassVar[set[str]] = {"iconresref"}
-            heads: ClassVar[set[str]] = {"head", "headtexvvve", "headtexvve", "headtexve", "headtexe", "headtexg", "headtexvg"}
+            heads: ClassVar[set[str]] = {
+                "head",
+                "headtexvvve",
+                "headtexvve",
+                "headtexve",
+                "headtexe",
+                "headtexg",
+                "headtexvg",
+            }
             iprp_spells: ClassVar[set[str]] = {"icon"}
             loadscreens: ClassVar[set[str]] = {"bmpresref"}
             planetary: ClassVar[set[str]] = {"icon"}
@@ -740,7 +809,9 @@ class TwoDAManager:
             result.extend(columns)
         return list(set(result))
 
-    def lookup_in_installation(self, query: str, data_type: Literal["resref", "strref"]) -> LookupResult2DA | None:
+    def lookup_in_installation(
+        self, query: str, data_type: Literal["resref", "strref"]
+    ) -> LookupResult2DA | None:
         from pykotor.resource.formats.twoda.twoda_auto import read_2da  # lazy import
         from pykotor.tools.path import CaseAwarePath
 

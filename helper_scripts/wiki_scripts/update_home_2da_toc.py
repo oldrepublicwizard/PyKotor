@@ -9,7 +9,13 @@ wiki_dir = Path("wiki")
 home_file = wiki_dir / "Home.md"
 
 # Get all 2DA file names (sorted, excluding the main file)
-twoda_files = sorted([f.name.replace("2DA-", "").replace(".md", "") for f in wiki_dir.glob("2DA-*.md") if f.name != "2DA-File-Format.md"])
+twoda_files = sorted(
+    [
+        f.name.replace("2DA-", "").replace(".md", "")
+        for f in wiki_dir.glob("2DA-*.md")
+        if f.name != "2DA-File-Format.md"
+    ]
+)
 
 # Read Home.md
 with open(home_file, "r", encoding="utf-8") as f:

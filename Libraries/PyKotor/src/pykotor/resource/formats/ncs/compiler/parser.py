@@ -161,7 +161,12 @@ class NssParser(BiowareResource):
             code_root.objects.append(p[2])
             p[0] = code_root
         else:
-            p[0] = CodeRoot(constants=self.constants, functions=self.functions, library_lookup=self.library_lookup, library=self.library)
+            p[0] = CodeRoot(
+                constants=self.constants,
+                functions=self.functions,
+                library_lookup=self.library_lookup,
+                library=self.library,
+            )
 
     def p_code_root_object(self, p):
         """
@@ -627,7 +632,9 @@ class NssParser(BiowareResource):
         args: list[Expression] = p[3]
 
         # identifier is an Identifier object, need to get its label for comparison
-        identifier_label = identifier.label if isinstance(identifier, Identifier) else str(identifier)
+        identifier_label = (
+            identifier.label if isinstance(identifier, Identifier) else str(identifier)
+        )
         # Single pass: get (index, function) to avoid separate index() call
         routine_id, engine_function = next(
             ((i, x) for i, x in enumerate(self.functions) if x.name == identifier_label),

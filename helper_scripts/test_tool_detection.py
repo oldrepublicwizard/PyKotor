@@ -74,7 +74,9 @@ if tools_dir.exists():
                     }
                 )
             else:
-                print(f"Skipping {tool_path.name}: no compile script found and no __main__.py entrypoint")
+                print(
+                    f"Skipping {tool_path.name}: no compile script found and no __main__.py entrypoint"
+                )
                 continue
 
 print("Detected tools:")

@@ -56,7 +56,9 @@ def setup_installation(path: str | None) -> HTInstallation | None:
         if env_path and Path(env_path).exists():
             return HTInstallation(env_path, f"Installation from {env_var}")
 
-    print("No installation path provided. Use --installation PATH or set K1_PATH/K2_PATH environment variable.")
+    print(
+        "No installation path provided. Use --installation PATH or set K1_PATH/K2_PATH environment variable."
+    )
     return None
 
 
@@ -268,7 +270,9 @@ def test_bwm_preview_generation(installation: HTInstallation, verbose: bool = Fa
         return False
 
 
-def compare_kit_module_structures(installation: HTInstallation, kits_path: str, verbose: bool = False) -> bool:
+def compare_kit_module_structures(
+    installation: HTInstallation, kits_path: str, verbose: bool = False
+) -> bool:
     """Compare structure of regular kits vs module-derived kits."""
     from pykotor.common.indoorkit import ModuleKitManager, load_kits
 
@@ -633,7 +637,9 @@ def test_multiple_module_loading(installation: HTInstallation, verbose: bool = F
         return False
 
 
-def test_component_equivalence(installation: HTInstallation, kits_path: str, verbose: bool = False) -> bool:
+def test_component_equivalence(
+    installation: HTInstallation, kits_path: str, verbose: bool = False
+) -> bool:
     """Test that module components can be used interchangeably with kit components."""
     from pykotor.data.indoormap import IndoorMap, IndoorMapRoom
 
@@ -657,7 +663,9 @@ def test_component_equivalence(installation: HTInstallation, kits_path: str, ver
             for kit in regular_kits:
                 if kit.components:
                     comp = kit.components[0]
-                    regular_room = IndoorMapRoom(comp, Vector3(0, 0, 0), 0.0, flip_x=False, flip_y=False)
+                    regular_room = IndoorMapRoom(
+                        comp, Vector3(0, 0, 0), 0.0, flip_x=False, flip_y=False
+                    )
                     indoor_map.rooms.append(regular_room)
                     print(f"  Added room from regular kit: {comp.name}")
                     break
@@ -670,7 +678,9 @@ def test_component_equivalence(installation: HTInstallation, kits_path: str, ver
 
             if kit.components:
                 comp = kit.components[0]
-                module_room = IndoorMapRoom(comp, Vector3(20, 0, 0), 0.0, flip_x=False, flip_y=False)
+                module_room = IndoorMapRoom(
+                    comp, Vector3(20, 0, 0), 0.0, flip_x=False, flip_y=False
+                )
                 indoor_map.rooms.append(module_room)
                 print(f"  Added room from module kit: {comp.name}")
                 break
@@ -696,7 +706,9 @@ def test_component_equivalence(installation: HTInstallation, kits_path: str, ver
         return False
 
 
-def run_all_tests(installation: HTInstallation, kits_path: str = "./kits", verbose: bool = False) -> int:
+def run_all_tests(
+    installation: HTInstallation, kits_path: str = "./kits", verbose: bool = False
+) -> int:
     """Run all tests and return exit code."""
     results = []
 
@@ -705,7 +717,9 @@ def run_all_tests(installation: HTInstallation, kits_path: str = "./kits", verbo
     results.append(("Lazy Loading", test_module_kit_lazy_loading(installation, verbose)))
     results.append(("Component Structure", test_component_structure(installation, verbose)))
     results.append(("BWM Preview", test_bwm_preview_generation(installation, verbose)))
-    results.append(("Kit vs Module", compare_kit_module_structures(installation, kits_path, verbose)))
+    results.append(
+        ("Kit vs Module", compare_kit_module_structures(installation, kits_path, verbose))
+    )
 
     # Room creation and operations tests
     results.append(("Room Creation", test_room_creation_from_module(installation, verbose)))
@@ -717,7 +731,9 @@ def run_all_tests(installation: HTInstallation, kits_path: str = "./kits", verbo
 
     # Multi-module and equivalence tests
     results.append(("Multiple Modules", test_multiple_module_loading(installation, verbose)))
-    results.append(("Component Equivalence", test_component_equivalence(installation, kits_path, verbose)))
+    results.append(
+        ("Component Equivalence", test_component_equivalence(installation, kits_path, verbose))
+    )
 
     # Summary
     print("\n" + "=" * 50)
@@ -741,9 +757,15 @@ def run_all_tests(installation: HTInstallation, kits_path: str = "./kits", verbo
 
 def main():
     """Main entry point."""
-    parser = argparse.ArgumentParser(description="Test Indoor Map Builder module functionality", formatter_class=argparse.RawDescriptionHelpFormatter, epilog=__doc__)
+    parser = argparse.ArgumentParser(
+        description="Test Indoor Map Builder module functionality",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog=__doc__,
+    )
     parser.add_argument("--installation", "-i", help="Path to KotOR installation directory")
-    parser.add_argument("--kits", "-k", default="./kits", help="Path to kits directory (default: ./kits)")
+    parser.add_argument(
+        "--kits", "-k", default="./kits", help="Path to kits directory (default: ./kits)"
+    )
     parser.add_argument("--verbose", "-v", action="store_true", help="Enable verbose output")
 
     args = parser.parse_args()

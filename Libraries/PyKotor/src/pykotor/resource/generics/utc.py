@@ -559,12 +559,16 @@ def construct_utc(
     # extras in _extra_unimplemented_skills for round-trip. Third-party templates that cap at eight
     # skills are noted in wiki *resource/generics/utc.py — SkillList*.
     if len(skill_list_acquired._structs) > 8:
-        utc._extra_unimplemented_skills = [skill_struct.acquire("Rank", 0) for skill_struct in skill_list_acquired._structs[8:]]
+        utc._extra_unimplemented_skills = [
+            skill_struct.acquire("Rank", 0) for skill_struct in skill_list_acquired._structs[8:]
+        ]
 
     # ClassList: class id/level 0; empty power lists when absent.
     class_list: GFFList = root.acquire("ClassList", GFFList())
     for class_struct in class_list:
-        class_id = class_struct.acquire("Class", 0)  # Class type identifier (e.g., 0=Soldier, 1=Scout)
+        class_id = class_struct.acquire(
+            "Class", 0
+        )  # Class type identifier (e.g., 0=Soldier, 1=Scout)
         class_level = class_struct.acquire("ClassLevel", 0)  # Level in this class
         utc_class = UTCClass(class_id, class_level)
 
@@ -715,7 +719,9 @@ def dismantle_utc(
             power_struct.set_uint8("SpellMetaMagic", 0)
 
         def _sort_powers(power_struct: GFFStruct):
-            return utc_class._original_powers_mapping.get(power_struct.get_uint16("Spell"), float("inf"))
+            return utc_class._original_powers_mapping.get(
+                power_struct.get_uint16("Spell"), float("inf")
+            )
 
         power_list._structs = sorted(power_list._structs, key=_sort_powers)
 
@@ -800,7 +806,11 @@ def _validate_utc_kaitai_binary(
     if file_format == ResourceType.INVALID and header_off is not None:
         file_format = ResourceType.GFF
         promoted_binary = True
-    if file_format == ResourceType.GFF and header_off is not None and (promoted_binary or header_off > 0):
+    if (
+        file_format == ResourceType.GFF
+        and header_off is not None
+        and (promoted_binary or header_off > 0)
+    ):
         offset_adj += header_off
         if size_adj is not None:
             size_adj = max(0, size_adj - header_off)

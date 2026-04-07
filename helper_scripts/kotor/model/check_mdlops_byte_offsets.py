@@ -50,10 +50,16 @@ if tex_pos != -1:
                 print("  Byte offsets from trimesh header start:")
                 print(f"    +48: mdx_data_size = {mdx_data_size} (0x{mdx_data_size:08X})")
                 print(f"    +52: mdx_data_bitmap = 0x{mdx_data_bitmap:08X}")
-                print(f"    +56: mdx_vertex_offset = {mdx_vertex_offset} (0x{mdx_vertex_offset:08X})")
-                print(f"    +60: mdx_normal_offset = {mdx_normal_offset} (0x{mdx_normal_offset:08X})")
+                print(
+                    f"    +56: mdx_vertex_offset = {mdx_vertex_offset} (0x{mdx_vertex_offset:08X})"
+                )
+                print(
+                    f"    +60: mdx_normal_offset = {mdx_normal_offset} (0x{mdx_normal_offset:08X})"
+                )
                 print(f"    +64: mdx_color_offset = {mdx_color_offset} (0x{mdx_color_offset:08X})")
-                print(f"    +68: mdx_texture1_offset = {mdx_texture1_offset} (0x{mdx_texture1_offset:08X})")
+                print(
+                    f"    +68: mdx_texture1_offset = {mdx_texture1_offset} (0x{mdx_texture1_offset:08X})"
+                )
 
                 # Now check what MDLOps template would see at indices 51-56
                 # We need to unpack the header using MDLOps' template to see what's at those indices

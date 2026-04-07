@@ -31,7 +31,10 @@ def showinfo(title: str, message: str):
             try:
                 subprocess.run(["yad", "--info", "--title", title, "--text", message], check=True)  # noqa: S603, S607
             except subprocess.CalledProcessError:
-                subprocess.run(["gtk-message-dialog", "--type=info", "--title", title, "--text", message], check=True)  # noqa: S603, S607
+                subprocess.run(
+                    ["gtk-message-dialog", "--type=info", "--title", title, "--text", message],
+                    check=True,
+                )  # noqa: S603, S607
 
 
 def showwarning(title: str, message: str):
@@ -45,9 +48,14 @@ def showwarning(title: str, message: str):
             subprocess.run(["zenity", "--warning", "--title", title, "--text", message], check=True)  # noqa: S603, S607
         except subprocess.CalledProcessError:
             try:
-                subprocess.run(["yad", "--warning", "--title", title, "--text", message], check=True)  # noqa: S603, S607
+                subprocess.run(
+                    ["yad", "--warning", "--title", title, "--text", message], check=True
+                )  # noqa: S603, S607
             except subprocess.CalledProcessError:
-                subprocess.run(["gtk-message-dialog", "--type=warning", "--title", title, "--text", message], check=True)  # noqa: S603, S607
+                subprocess.run(
+                    ["gtk-message-dialog", "--type=warning", "--title", title, "--text", message],
+                    check=True,
+                )  # noqa: S603, S607
 
 
 def showerror(title: str, message: str):
@@ -63,7 +71,10 @@ def showerror(title: str, message: str):
             try:
                 subprocess.run(["yad", "--error", "--title", title, "--text", message], check=True)  # noqa: S603, S607
             except subprocess.CalledProcessError:
-                subprocess.run(["gtk-message-dialog", "--type=error", "--title", title, "--text", message], check=True)  # noqa: S603, S607
+                subprocess.run(
+                    ["gtk-message-dialog", "--type=error", "--title", title, "--text", message],
+                    check=True,
+                )  # noqa: S603, S607
 
 
 def askquestion(title: str, message: str) -> str:
@@ -74,14 +85,21 @@ def askquestion(title: str, message: str) -> str:
         return messagebox.askquestion(title, message)
     except Exception:  # noqa: BLE001
         try:
-            result = subprocess.run(["zenity", "--question", "--title", title, "--text", message], check=True)  # noqa: S603, S607
+            result = subprocess.run(
+                ["zenity", "--question", "--title", title, "--text", message], check=True
+            )  # noqa: S603, S607
             return "yes" if result.returncode == 0 else "no"  # noqa: TRY300
         except subprocess.CalledProcessError:
             try:
-                result = subprocess.run(["yad", "--question", "--title", title, "--text", message], check=True)  # noqa: S603, S607
+                result = subprocess.run(
+                    ["yad", "--question", "--title", title, "--text", message], check=True
+                )  # noqa: S603, S607
                 return "yes" if result.returncode == 0 else "nono"  # noqa: TRY300
             except subprocess.CalledProcessError:
-                result = subprocess.run(["gtk-message-dialog", "--type=question", "--title", title, "--text", message], check=True)  # noqa: S603, S607
+                result = subprocess.run(
+                    ["gtk-message-dialog", "--type=question", "--title", title, "--text", message],
+                    check=True,
+                )  # noqa: S603, S607
                 return "yes" if result.returncode == 0 else "no"
 
 
@@ -93,14 +111,41 @@ def askokcancel(title: str, message: str) -> bool:
         return messagebox.askokcancel(title, message)
     except Exception:  # noqa: BLE001
         try:
-            result = subprocess.run(["zenity", "--question", "--ok-label=OK", "--cancel-label=Cancel", "--title", title, "--text", message], check=True)  # noqa: S603, S607
+            result = subprocess.run(
+                [
+                    "zenity",
+                    "--question",
+                    "--ok-label=OK",
+                    "--cancel-label=Cancel",
+                    "--title",
+                    title,
+                    "--text",
+                    message,
+                ],
+                check=True,
+            )  # noqa: S603, S607
             return result.returncode == 0  # noqa: TRY300
         except subprocess.CalledProcessError:
             try:
-                result = subprocess.run(["yad", "--question", "--button=OK:0", "--button=Cancel:1", "--title", title, "--text", message], check=True)  # noqa: S603, S607
+                result = subprocess.run(
+                    [
+                        "yad",
+                        "--question",
+                        "--button=OK:0",
+                        "--button=Cancel:1",
+                        "--title",
+                        title,
+                        "--text",
+                        message,
+                    ],
+                    check=True,
+                )  # noqa: S603, S607
                 return result.returncode == 0  # noqa: TRY300
             except subprocess.CalledProcessError:
-                result = subprocess.run(["gtk-message-dialog", "--type=question", "--title", title, "--text", message], check=True)  # noqa: S603, S607
+                result = subprocess.run(
+                    ["gtk-message-dialog", "--type=question", "--title", title, "--text", message],
+                    check=True,
+                )  # noqa: S603, S607
                 return result.returncode == 0
 
 
@@ -112,14 +157,31 @@ def askyesno(title: str, message: str) -> bool:
         return messagebox.askyesno(title, message)
     except Exception:  # noqa: BLE001
         try:
-            result = subprocess.run(["zenity", "--question", "--title", title, "--text", message], check=True)  # noqa: S603, S607
+            result = subprocess.run(
+                ["zenity", "--question", "--title", title, "--text", message], check=True
+            )  # noqa: S603, S607
             return result.returncode == 0  # noqa: TRY300
         except subprocess.CalledProcessError:
             try:
-                result = subprocess.run(["yad", "--question", "--button=Yes:0", "--button=No:1", "--title", title, "--text", message], check=True)  # noqa: S603, S607
+                result = subprocess.run(
+                    [
+                        "yad",
+                        "--question",
+                        "--button=Yes:0",
+                        "--button=No:1",
+                        "--title",
+                        title,
+                        "--text",
+                        message,
+                    ],
+                    check=True,
+                )  # noqa: S603, S607
                 return result.returncode == 0  # noqa: TRY300
             except subprocess.CalledProcessError:
-                result = subprocess.run(["gtk-message-dialog", "--type=question", "--title", title, "--text", message], check=True)  # noqa: S603, S607
+                result = subprocess.run(
+                    ["gtk-message-dialog", "--type=question", "--title", title, "--text", message],
+                    check=True,
+                )  # noqa: S603, S607
                 return result.returncode == 0
 
 
@@ -131,7 +193,18 @@ def askyesnocancel(title: str, message: str) -> bool | None:
         return messagebox.askyesnocancel(title, message)
     except Exception:  # noqa: BLE001
         try:
-            result = subprocess.run(["zenity", "--question", "--extra-button=Cancel", "--title", title, "--text", message], check=True)  # noqa: S603, S607
+            result = subprocess.run(
+                [
+                    "zenity",
+                    "--question",
+                    "--extra-button=Cancel",
+                    "--title",
+                    title,
+                    "--text",
+                    message,
+                ],
+                check=True,
+            )  # noqa: S603, S607
             if result.returncode == 0:
                 return True
             if result.returncode == 1:
@@ -139,14 +212,38 @@ def askyesnocancel(title: str, message: str) -> bool | None:
             return None  # noqa: TRY300
         except subprocess.CalledProcessError:
             try:
-                result = subprocess.run(["yad", "--question", "--button=Yes:0", "--button=No:1", "--button=Cancel:2", "--title", title, "--text", message], check=True)  # noqa: S603, S607
+                result = subprocess.run(
+                    [
+                        "yad",
+                        "--question",
+                        "--button=Yes:0",
+                        "--button=No:1",
+                        "--button=Cancel:2",
+                        "--title",
+                        title,
+                        "--text",
+                        message,
+                    ],
+                    check=True,
+                )  # noqa: S603, S607
                 if result.returncode == 0:
                     return True
                 if result.returncode == 1:
                     return False
                 return None  # noqa: TRY300
             except subprocess.CalledProcessError:
-                result = subprocess.run(["gtk-message-dialog", "--type=question", "--title", title, "--text", message, "--buttons=yes-no-cancel"], check=True)  # noqa: S603, S607
+                result = subprocess.run(
+                    [
+                        "gtk-message-dialog",
+                        "--type=question",
+                        "--title",
+                        title,
+                        "--text",
+                        message,
+                        "--buttons=yes-no-cancel",
+                    ],
+                    check=True,
+                )  # noqa: S603, S607
                 if result.returncode == 0:
                     return True
                 if result.returncode == 1:
@@ -162,12 +259,39 @@ def askretrycancel(title: str, message: str) -> bool:
         return messagebox.askretrycancel(title, message)
     except Exception:  # noqa: BLE001
         try:
-            result = subprocess.run(["zenity", "--question", "--ok-label=Retry", "--cancel-label=Cancel", "--title", title, "--text", message], check=True)  # noqa: S603, S607
+            result = subprocess.run(
+                [
+                    "zenity",
+                    "--question",
+                    "--ok-label=Retry",
+                    "--cancel-label=Cancel",
+                    "--title",
+                    title,
+                    "--text",
+                    message,
+                ],
+                check=True,
+            )  # noqa: S603, S607
             return result.returncode == 0  # noqa: TRY300
         except subprocess.CalledProcessError:
             try:
-                result = subprocess.run(["yad", "--question", "--button=Retry:0", "--button=Cancel:1", "--title", title, "--text", message], check=True)  # noqa: S603, S607
+                result = subprocess.run(
+                    [
+                        "yad",
+                        "--question",
+                        "--button=Retry:0",
+                        "--button=Cancel:1",
+                        "--title",
+                        title,
+                        "--text",
+                        message,
+                    ],
+                    check=True,
+                )  # noqa: S603, S607
                 return result.returncode == 0  # noqa: TRY300
             except subprocess.CalledProcessError:
-                result = subprocess.run(["gtk-message-dialog", "--type=question", "--title", title, "--text", message], check=True)  # noqa: S603, S607
+                result = subprocess.run(
+                    ["gtk-message-dialog", "--type=question", "--title", title, "--text", message],
+                    check=True,
+                )  # noqa: S603, S607
                 return result.returncode == 0

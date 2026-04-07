@@ -24,12 +24,27 @@ def showinfo(title: str, message: str, **options):
     except ImportError:
         try:
             subprocess.run(
-                ["cocoaDialog", "msgbox", "--title", title, "--text", message, "--informative-text", "", "--button1", "OK"],  # noqa: S603, S607
+                [
+                    "cocoaDialog",
+                    "msgbox",
+                    "--title",
+                    title,
+                    "--text",
+                    message,
+                    "--informative-text",
+                    "",
+                    "--button1",
+                    "OK",
+                ],  # noqa: S603, S607
                 check=True,
             )
         except subprocess.CalledProcessError:
             subprocess.run(
-                ["osascript", "-e", f'display dialog "{message}" with title "{title}" buttons {{"OK"}} default button "OK"'],  # noqa: S603, S607
+                [
+                    "osascript",
+                    "-e",
+                    f'display dialog "{message}" with title "{title}" buttons {{"OK"}} default button "OK"',
+                ],  # noqa: S603, S607
                 check=True,
             )
     else:
@@ -43,12 +58,29 @@ def showwarning(title: str, message: str, **options):
     except ImportError:
         try:
             subprocess.run(
-                ["cocoaDialog", "msgbox", "--title", title, "--text", message, "--informative-text", "", "--button1", "OK", "--icon", "caution"],  # noqa: S603, S607
+                [
+                    "cocoaDialog",
+                    "msgbox",
+                    "--title",
+                    title,
+                    "--text",
+                    message,
+                    "--informative-text",
+                    "",
+                    "--button1",
+                    "OK",
+                    "--icon",
+                    "caution",
+                ],  # noqa: S603, S607
                 check=True,
             )
         except subprocess.CalledProcessError:
             subprocess.run(
-                ["osascript", "-e", f'display dialog "{message}" with title "{title}" buttons {{"OK"}} default button "OK" with icon caution'],  # noqa: S603, S607
+                [
+                    "osascript",
+                    "-e",
+                    f'display dialog "{message}" with title "{title}" buttons {{"OK"}} default button "OK" with icon caution',
+                ],  # noqa: S603, S607
                 check=True,
             )
     else:
@@ -62,12 +94,29 @@ def showerror(title: str, message: str, **options):
     except ImportError:
         try:
             subprocess.run(
-                ["cocoaDialog", "msgbox", "--title", title, "--text", message, "--informative-text", "", "--button1", "OK", "--icon", "stop"],  # noqa: S603, S607
+                [
+                    "cocoaDialog",
+                    "msgbox",
+                    "--title",
+                    title,
+                    "--text",
+                    message,
+                    "--informative-text",
+                    "",
+                    "--button1",
+                    "OK",
+                    "--icon",
+                    "stop",
+                ],  # noqa: S603, S607
                 check=True,
             )
         except subprocess.CalledProcessError:
             subprocess.run(
-                ["osascript", "-e", f'display dialog "{message}" with title "{title}" buttons {{"OK"}} default button "OK" with icon stop'],  # noqa: S603, S607
+                [
+                    "osascript",
+                    "-e",
+                    f'display dialog "{message}" with title "{title}" buttons {{"OK"}} default button "OK" with icon stop',
+                ],  # noqa: S603, S607
                 check=True,
             )
     else:
@@ -81,13 +130,26 @@ def askquestion(title: str, message: str, **options) -> str:
     except ImportError:
         try:
             result = subprocess.run(
-                ["cocoaDialog", "yesno-msgbox", "--title", title, "--text", message, "--informative-text", ""],  # noqa: S603, S607
+                [
+                    "cocoaDialog",
+                    "yesno-msgbox",
+                    "--title",
+                    title,
+                    "--text",
+                    message,
+                    "--informative-text",
+                    "",
+                ],  # noqa: S603, S607
                 check=True,
             )
             return "yes" if result.returncode == 0 else "no"  # noqa: TRY300
         except subprocess.CalledProcessError:
             result = subprocess.run(
-                ["osascript", "-e", f'display dialog "{message}" with title "{title}" buttons {{"Yes", "No"}} default button "Yes"'],  # noqa: S603, S607
+                [
+                    "osascript",
+                    "-e",
+                    f'display dialog "{message}" with title "{title}" buttons {{"Yes", "No"}} default button "Yes"',
+                ],  # noqa: S603, S607
                 check=True,
                 capture_output=True,
             )
@@ -103,13 +165,26 @@ def askokcancel(title: str, message: str, **options) -> bool:
     except ImportError:
         try:
             result = subprocess.run(
-                ["cocoaDialog", "ok-msgbox", "--title", title, "--text", message, "--informative-text", ""],  # noqa: S603, S607
+                [
+                    "cocoaDialog",
+                    "ok-msgbox",
+                    "--title",
+                    title,
+                    "--text",
+                    message,
+                    "--informative-text",
+                    "",
+                ],  # noqa: S603, S607
                 check=True,
             )
             return result.returncode == 0  # noqa: TRY300
         except subprocess.CalledProcessError:
             result = subprocess.run(
-                ["osascript", "-e", f'display dialog "{message}" with title "{title}" buttons {{"OK", "Cancel"}} default button "OK"'],  # noqa: S603, S607
+                [
+                    "osascript",
+                    "-e",
+                    f'display dialog "{message}" with title "{title}" buttons {{"OK", "Cancel"}} default button "OK"',
+                ],  # noqa: S603, S607
                 check=True,
                 capture_output=True,
             )
@@ -125,13 +200,26 @@ def askyesno(title: str, message: str, **options) -> bool:
     except ImportError:
         try:
             result = subprocess.run(
-                ["cocoaDialog", "yesno-msgbox", "--title", title, "--text", message, "--informative-text", ""],  # noqa: S603, S607
+                [
+                    "cocoaDialog",
+                    "yesno-msgbox",
+                    "--title",
+                    title,
+                    "--text",
+                    message,
+                    "--informative-text",
+                    "",
+                ],  # noqa: S603, S607
                 check=True,
             )
             return result.returncode == 0  # noqa: TRY300
         except subprocess.CalledProcessError:
             result = subprocess.run(
-                ["osascript", "-e", f'display dialog "{message}" with title "{title}" buttons {{"Yes", "No"}} default button "Yes"'],  # noqa: S603, S607
+                [
+                    "osascript",
+                    "-e",
+                    f'display dialog "{message}" with title "{title}" buttons {{"Yes", "No"}} default button "Yes"',
+                ],  # noqa: S603, S607
                 check=True,
                 capture_output=True,
             )
@@ -147,7 +235,22 @@ def askyesnocancel(title: str, message: str, **options) -> bool | None:
     except ImportError:
         try:
             result = subprocess.run(
-                ["cocoaDialog", "yesno-msgbox", "--title", title, "--text", message, "--informative-text", "", "--button1", "Yes", "--button2", "No", "--button3", "Cancel"],  # noqa: S603, S607
+                [
+                    "cocoaDialog",
+                    "yesno-msgbox",
+                    "--title",
+                    title,
+                    "--text",
+                    message,
+                    "--informative-text",
+                    "",
+                    "--button1",
+                    "Yes",
+                    "--button2",
+                    "No",
+                    "--button3",
+                    "Cancel",
+                ],  # noqa: S603, S607
                 check=True,
             )
             if result.returncode == 0:
@@ -157,7 +260,11 @@ def askyesnocancel(title: str, message: str, **options) -> bool | None:
             return None  # noqa: TRY300
         except subprocess.CalledProcessError:
             result = subprocess.run(
-                ["osascript", "-e", f'display dialog "{message}" with title "{title}" buttons {{"Yes", "No", "Cancel"}} default button "Yes"'],  # noqa: S603, S607
+                [
+                    "osascript",
+                    "-e",
+                    f'display dialog "{message}" with title "{title}" buttons {{"Yes", "No", "Cancel"}} default button "Yes"',
+                ],  # noqa: S603, S607
                 check=True,
                 capture_output=True,
             )
@@ -177,13 +284,30 @@ def askretrycancel(title: str, message: str, **options) -> bool:
     except ImportError:
         try:
             result = subprocess.run(
-                ["cocoaDialog", "msgbox", "--title", title, "--text", message, "--informative-text", "", "--button1", "Retry", "--button2", "Cancel"],  # noqa: S603, S607
+                [
+                    "cocoaDialog",
+                    "msgbox",
+                    "--title",
+                    title,
+                    "--text",
+                    message,
+                    "--informative-text",
+                    "",
+                    "--button1",
+                    "Retry",
+                    "--button2",
+                    "Cancel",
+                ],  # noqa: S603, S607
                 check=True,
             )
             return result.returncode == 0  # noqa: TRY300
         except subprocess.CalledProcessError:
             result = subprocess.run(
-                ["osascript", "-e", f'display dialog "{message}" with title "{title}" buttons {{"Retry", "Cancel"}} default button "Retry"'],  # noqa: S603, S607
+                [
+                    "osascript",
+                    "-e",
+                    f'display dialog "{message}" with title "{title}" buttons {{"Retry", "Cancel"}} default button "Retry"',
+                ],  # noqa: S603, S607
                 check=True,
             )
             return result.returncode == 0

@@ -60,7 +60,9 @@ class TestCaseAwarePath(unittest.TestCase):
         assert CaseAwarePath(pathlib.Path("data\\something.test")).name == "something.test"
         assert CaseAwarePath(pathlib.Path("data/something.test")).name == "something.test"
         assert CaseAwarePath("test", pathlib.Path("data\\something.test")).name == "something.test"
-        assert (CaseAwarePath("test") / pathlib.Path("data/something.test")).name == "something.test"
+        assert (
+            CaseAwarePath("test") / pathlib.Path("data/something.test")
+        ).name == "something.test"
 
     def test_new_invalid_argument(self):
         with self.assertRaises(TypeError):
@@ -73,16 +75,27 @@ class TestCaseAwarePath(unittest.TestCase):
         assert path.endswith(".TXT")
         assert not path.endswith(".doc")
 
-    @unittest.skipIf(sys.platform == "win32", "find_closest_match not available on Windows (CaseAwarePath is InternalWindowsPath)")
+    @unittest.skipIf(
+        sys.platform == "win32",
+        "find_closest_match not available on Windows (CaseAwarePath is InternalWindowsPath)",
+    )
     def test_find_closest_match(self):
-        items = [CaseAwarePath("test"), CaseAwarePath("TEST"), CaseAwarePath("TesT"), CaseAwarePath("teSt")]
+        items = [
+            CaseAwarePath("test"),
+            CaseAwarePath("TEST"),
+            CaseAwarePath("TesT"),
+            CaseAwarePath("teSt"),
+        ]
         # find_closest_match expects a generator, not a list
 
         items_gen: Generator = (item for item in items)
         result = CaseAwarePath.find_closest_match("teST", items_gen)
         assert result == "teSt"
 
-    @unittest.skipIf(sys.platform == "win32", "get_matching_characters_count not available on Windows (CaseAwarePath is InternalWindowsPath)")
+    @unittest.skipIf(
+        sys.platform == "win32",
+        "get_matching_characters_count not available on Windows (CaseAwarePath is InternalWindowsPath)",
+    )
     def test_get_matching_characters_count(self):
         assert CaseAwarePath.get_matching_characters_count("test", "tesT") == 3
         assert CaseAwarePath.get_matching_characters_count("test", "teat") == -1
@@ -123,7 +136,9 @@ class TestCaseAwarePath(unittest.TestCase):
 
 
 class TestIsRelativeTo(unittest.TestCase):
-    @unittest.skipIf(sys.platform == "win32", "POSIX path test - Windows uses different path format")
+    @unittest.skipIf(
+        sys.platform == "win32", "POSIX path test - Windows uses different path format"
+    )
     def test_basic(self):
         p1 = CaseAwarePath("/usr/local/bin")
         p2 = CaseAwarePath("/usr/local")

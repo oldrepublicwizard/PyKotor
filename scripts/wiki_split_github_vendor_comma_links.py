@@ -16,6 +16,7 @@ from __future__ import annotations
 
 import re
 import sys
+
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -81,7 +82,9 @@ def process_file(path: Path) -> bool:
         else:
             out.append(line)
     if changed:
-        path.write_text("\n".join(out) + ("\n" if text.endswith("\n") else ""), encoding="utf-8", newline="\n")
+        path.write_text(
+            "\n".join(out) + ("\n" if text.endswith("\n") else ""), encoding="utf-8", newline="\n"
+        )
     return changed
 
 

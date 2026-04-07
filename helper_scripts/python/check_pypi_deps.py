@@ -57,7 +57,10 @@ def get_package_info(package_name: str, version: str | None = None) -> dict[str,
     except requests.exceptions.HTTPError as e:
         if e.response.status_code == 404:
             if version:
-                print(f"Error: Package '{package_name}' version '{version}' not found on PyPI", file=sys.stderr)
+                print(
+                    f"Error: Package '{package_name}' version '{version}' not found on PyPI",
+                    file=sys.stderr,
+                )
             else:
                 print(f"Error: Package '{package_name}' not found on PyPI", file=sys.stderr)
         else:

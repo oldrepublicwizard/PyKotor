@@ -112,7 +112,9 @@ class ERFType(Enum):
             return cls.ERF
         if is_mod_file(ext_or_filepath):
             return cls.MOD
-        if is_sav_file(ext_or_filepath):  # .SAV files still use the 'MOD ' signature in its first 4 bytes of the file header
+        if is_sav_file(
+            ext_or_filepath
+        ):  # .SAV files still use the 'MOD ' signature in its first 4 bytes of the file header
             return cls.MOD
         msg = f"Invalid ERF extension in filepath '{ext_or_filepath}'."
         raise ValueError(msg)
@@ -157,7 +159,14 @@ class ERF(BiowareArchive):
 
     BINARY_TYPE = ResourceType.ERF
     ARCHIVE_TYPE: type[ArchiveResource] = ERFResource
-    COMPARABLE_FIELDS = ("erf_type", "is_save_erf", "build_year", "build_day", "description_strref", "localized_strings")
+    COMPARABLE_FIELDS = (
+        "erf_type",
+        "is_save_erf",
+        "build_year",
+        "build_day",
+        "description_strref",
+        "localized_strings",
+    )
     COMPARABLE_SET_FIELDS = ("_resources",)
 
     def __init__(
@@ -182,7 +191,9 @@ class ERF(BiowareArchive):
         self.build_year: int = build_year
         self.build_day: int = build_day
         self.description_strref: int = description_strref
-        self.localized_strings: dict[int, str] = localized_strings if localized_strings is not None else {}
+        self.localized_strings: dict[int, str] = (
+            localized_strings if localized_strings is not None else {}
+        )
 
     @property
     def is_save_erf(self) -> bool:
@@ -211,7 +222,9 @@ class ERF(BiowareArchive):
         from pykotor.resource.formats.erf.io_erf import ERFBinaryWriter
 
         entry_count = len(self._resources)
-        data_start = ERFBinaryWriter.FILE_HEADER_SIZE + ERFBinaryWriter.KEY_ELEMENT_SIZE * entry_count
+        data_start = (
+            ERFBinaryWriter.FILE_HEADER_SIZE + ERFBinaryWriter.KEY_ELEMENT_SIZE * entry_count
+        )
 
         offset = data_start
         for res in self._resources:
@@ -219,4 +232,3 @@ class ERF(BiowareArchive):
                 return offset
             offset += len(res.data)
         raise ValueError("Resource is not present in ERF resource list")
-

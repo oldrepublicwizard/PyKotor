@@ -105,14 +105,22 @@ class RibbonsWidget(QWidget):
         layout.setContentsMargins(2, 2, 2, 2)
 
         top_row = QHBoxLayout()
-        top_row.addWidget(self.create_large_button("Pin to\nQuick access", self.actions_definitions.actionPinToQuickAccess))
+        top_row.addWidget(
+            self.create_large_button(
+                "Pin to\nQuick access", self.actions_definitions.actionPinToQuickAccess
+            )
+        )
         top_row.addWidget(self.create_large_button("Copy", self.actions_definitions.actionCopy))
         top_row.addWidget(self.create_large_button("Paste", self.actions_definitions.actionPaste))
 
         bottom_row = QHBoxLayout()
         bottom_row.addWidget(self.create_small_button("Cut", self.actions_definitions.actionCut))
-        bottom_row.addWidget(self.create_small_button("Copy path", self.actions_definitions.actionCopyPath))
-        bottom_row.addWidget(self.create_small_button("Paste shortcut", self.actions_definitions.actionPasteShortcut))
+        bottom_row.addWidget(
+            self.create_small_button("Copy path", self.actions_definitions.actionCopyPath)
+        )
+        bottom_row.addWidget(
+            self.create_small_button("Paste shortcut", self.actions_definitions.actionPasteShortcut)
+        )
 
         layout.addLayout(top_row)
         layout.addLayout(bottom_row)
@@ -138,7 +146,9 @@ class RibbonsWidget(QWidget):
         delete_button = self.create_small_button("Delete", self.actions_definitions.actionDelete)
         delete_button.setMenu(QMenu())
         bottom_row.addWidget(delete_button)
-        bottom_row.addWidget(self.create_small_button("Rename", self.actions_definitions.actionRename))
+        bottom_row.addWidget(
+            self.create_small_button("Rename", self.actions_definitions.actionRename)
+        )
 
         layout.addLayout(top_row)
         layout.addLayout(bottom_row)
@@ -151,10 +161,14 @@ class RibbonsWidget(QWidget):
         layout.setSpacing(2)
         layout.setContentsMargins(2, 2, 2, 2)
 
-        new_folder_button = self.create_large_button("New\nfolder", self.actions_definitions.actionCreateNewFolder)
+        new_folder_button = self.create_large_button(
+            "New\nfolder", self.actions_definitions.actionCreateNewFolder
+        )
         layout.addWidget(new_folder_button)
 
-        new_item_button = self.create_small_button("New item", self.actions_definitions.actionNewBlankFile)
+        new_item_button = self.create_small_button(
+            "New item", self.actions_definitions.actionNewBlankFile
+        )
         new_item_button.setMenu(QMenu())
         layout.addWidget(new_item_button)
 
@@ -168,7 +182,9 @@ class RibbonsWidget(QWidget):
         layout.setContentsMargins(2, 2, 2, 2)
 
         top_row = QHBoxLayout()
-        properties_button = self.create_large_button("Properties", self.actions_definitions.actionProperties)
+        properties_button = self.create_large_button(
+            "Properties", self.actions_definitions.actionProperties
+        )
         top_row.addWidget(properties_button)
 
         bottom_row = QHBoxLayout()
@@ -194,9 +210,17 @@ class RibbonsWidget(QWidget):
         layout.setSpacing(2)
         layout.setContentsMargins(2, 2, 2, 2)
 
-        layout.addWidget(self.create_small_button("Select all", self.actions_definitions.actionSelectAll))
-        layout.addWidget(self.create_small_button("Select none", self.actions_definitions.actionSelectNone))
-        layout.addWidget(self.create_small_button("Invert selection", self.actions_definitions.actionInvertSelection))
+        layout.addWidget(
+            self.create_small_button("Select all", self.actions_definitions.actionSelectAll)
+        )
+        layout.addWidget(
+            self.create_small_button("Select none", self.actions_definitions.actionSelectNone)
+        )
+        layout.addWidget(
+            self.create_small_button(
+                "Invert selection", self.actions_definitions.actionInvertSelection
+            )
+        )
 
         group.setLayout(layout)
         return group
@@ -207,11 +231,17 @@ class RibbonsWidget(QWidget):
         layout.setSpacing(2)
         layout.setContentsMargins(2, 2, 2, 2)
 
-        navigation_pane_button = self.create_large_button("Navigation\npane", self.actions_definitions.actionNavigationPane)
+        navigation_pane_button = self.create_large_button(
+            "Navigation\npane", self.actions_definitions.actionNavigationPane
+        )
         navigation_pane_button.setMenu(QMenu())
         layout.addWidget(navigation_pane_button)
-        layout.addWidget(self.create_large_button("Preview\npane", self.actions_definitions.actionPreviewPane))
-        layout.addWidget(self.create_large_button("Details\npane", self.actions_definitions.actionDetailsPane))
+        layout.addWidget(
+            self.create_large_button("Preview\npane", self.actions_definitions.actionPreviewPane)
+        )
+        layout.addWidget(
+            self.create_large_button("Details\npane", self.actions_definitions.actionDetailsPane)
+        )
 
         group.setLayout(layout)
         return group
@@ -222,14 +252,40 @@ class RibbonsWidget(QWidget):
         layout.setSpacing(2)
         layout.setContentsMargins(2, 2, 2, 2)
 
-        layout.addWidget(self.create_small_button("Extra large\nicons", self.actions_definitions.actionExtraLargeIcons), 0, 0)
-        layout.addWidget(self.create_small_button("Large\nicons", self.actions_definitions.actionLargeIcons), 0, 1)
-        layout.addWidget(self.create_small_button("Medium\nicons", self.actions_definitions.actionMediumIcons), 0, 2)
-        layout.addWidget(self.create_small_button("Small\nicons", self.actions_definitions.actionSmallIcons), 1, 0)
-        layout.addWidget(self.create_small_button("List", self.actions_definitions.actionListView), 1, 1)
-        layout.addWidget(self.create_small_button("Details", self.actions_definitions.actionDetailView), 1, 2)
-        layout.addWidget(self.create_small_button("Tiles", self.actions_definitions.actionTiles), 2, 0)
-        layout.addWidget(self.create_small_button("Content", self.actions_definitions.actionContent), 2, 1)
+        layout.addWidget(
+            self.create_small_button(
+                "Extra large\nicons", self.actions_definitions.actionExtraLargeIcons
+            ),
+            0,
+            0,
+        )
+        layout.addWidget(
+            self.create_small_button("Large\nicons", self.actions_definitions.actionLargeIcons),
+            0,
+            1,
+        )
+        layout.addWidget(
+            self.create_small_button("Medium\nicons", self.actions_definitions.actionMediumIcons),
+            0,
+            2,
+        )
+        layout.addWidget(
+            self.create_small_button("Small\nicons", self.actions_definitions.actionSmallIcons),
+            1,
+            0,
+        )
+        layout.addWidget(
+            self.create_small_button("List", self.actions_definitions.actionListView), 1, 1
+        )
+        layout.addWidget(
+            self.create_small_button("Details", self.actions_definitions.actionDetailView), 1, 2
+        )
+        layout.addWidget(
+            self.create_small_button("Tiles", self.actions_definitions.actionTiles), 2, 0
+        )
+        layout.addWidget(
+            self.create_small_button("Content", self.actions_definitions.actionContent), 2, 1
+        )
 
         group.setLayout(layout)
         return group
@@ -287,7 +343,9 @@ class RibbonsWidget(QWidget):
 
         bottom_row = QHBoxLayout()
         bottom_row.addWidget(self.create_small_button("Hide selected\nitems", QAction()))
-        bottom_row.addWidget(self.create_small_button("Options", self.actions_definitions.actionOptions))
+        bottom_row.addWidget(
+            self.create_small_button("Options", self.actions_definitions.actionOptions)
+        )
 
         layout.addLayout(bottom_row)
         group.setLayout(layout)

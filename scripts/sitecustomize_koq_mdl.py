@@ -12,6 +12,7 @@ INSTALL (same Python as Holocron, Holocron closed)::
 
 Disable: PYKOTOR_SKIP_MDL_PATCH=1
 """
+
 from __future__ import annotations
 
 import os
@@ -21,6 +22,7 @@ import stat
 import subprocess
 import sys
 import time
+
 from pathlib import Path
 
 _koq_disk_done = False
@@ -228,7 +230,10 @@ if __name__ == "__main__":
 
     spec = importlib.util.find_spec("pykotor.resource.formats.mdl.io_mdl")
     if not spec or not getattr(spec, "origin", None):
-        print("ERROR: pykotor io_mdl not importable. Use the same Python as Holocron.", file=sys.stderr)
+        print(
+            "ERROR: pykotor io_mdl not importable. Use the same Python as Holocron.",
+            file=sys.stderr,
+        )
         sys.exit(2)
     p = Path(spec.origin)
     t = p.read_text(encoding="utf-8", errors="replace")

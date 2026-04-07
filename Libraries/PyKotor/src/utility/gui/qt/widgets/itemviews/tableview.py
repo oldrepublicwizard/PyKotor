@@ -44,9 +44,13 @@ class RobustTableView(RobustAbstractItemView, QTableView):
         self.original_stylesheet: str = self.styleSheet()
 
         self.horizontalHeader().setContextMenuPolicy(Qt.ContextMenuPolicy.CustomContextMenu)
-        self.horizontalHeader().customContextMenuRequested.connect(lambda pos: self.show_header_context_menu(pos, self.horizontalHeader()))
+        self.horizontalHeader().customContextMenuRequested.connect(
+            lambda pos: self.show_header_context_menu(pos, self.horizontalHeader())
+        )
         self.verticalHeader().setContextMenuPolicy(Qt.ContextMenuPolicy.CustomContextMenu)
-        self.verticalHeader().customContextMenuRequested.connect(lambda pos: self.show_header_context_menu(pos, self.verticalHeader()))
+        self.verticalHeader().customContextMenuRequested.connect(
+            lambda pos: self.show_header_context_menu(pos, self.verticalHeader())
+        )
 
     def setFirstColumnInteractable(self, value: bool):  # noqa: FBT001
         self.only_first_column_selectable = value
@@ -63,26 +67,59 @@ class RobustTableView(RobustAbstractItemView, QTableView):
         horizontal_header_menu = header_menu.addMenu("Horizontal Header")
 
         # Define common actions for both headers
-        for header, menu in [(self.verticalHeader(), vertical_header_menu), (self.horizontalHeader(), horizontal_header_menu)]:
+        for header, menu in [
+            (self.verticalHeader(), vertical_header_menu),
+            (self.horizontalHeader(), horizontal_header_menu),
+        ]:
             h_or_v_name = "Horizontal" if header == self.horizontalHeader() else "Vertical"
-            self._add_simple_action(menu, f"Toggle {h_or_v_name} Header Visibility", lambda h=header: h.setVisible(not h.isVisible()))
-            self._add_simple_action(menu, "Toggle Sections Movable", lambda h=header: h.setSectionsMovable(not h.sectionsMovable()))
-            self._add_simple_action(menu, "Toggle Sections Clickable", lambda h=header: h.setSectionsClickable(not h.sectionsClickable()))
-            self._add_simple_action(menu, "Toggle Stretch Last Section", lambda h=header: h.setStretchLastSection(not h.stretchLastSection()))
-            self._add_simple_action(menu, "Toggle Cascading Section Resizes", lambda h=header: h.setCascadingSectionResizes(not h.cascadingSectionResizes()))
-            self._add_simple_action(menu, "Toggle Highlight Sections", lambda h=header: h.setHighlightSections(not h.highlightSections()))
+            self._add_simple_action(
+                menu,
+                f"Toggle {h_or_v_name} Header Visibility",
+                lambda h=header: h.setVisible(not h.isVisible()),
+            )
+            self._add_simple_action(
+                menu,
+                "Toggle Sections Movable",
+                lambda h=header: h.setSectionsMovable(not h.sectionsMovable()),
+            )
+            self._add_simple_action(
+                menu,
+                "Toggle Sections Clickable",
+                lambda h=header: h.setSectionsClickable(not h.sectionsClickable()),
+            )
+            self._add_simple_action(
+                menu,
+                "Toggle Stretch Last Section",
+                lambda h=header: h.setStretchLastSection(not h.stretchLastSection()),
+            )
+            self._add_simple_action(
+                menu,
+                "Toggle Cascading Section Resizes",
+                lambda h=header: h.setCascadingSectionResizes(not h.cascadingSectionResizes()),
+            )
+            self._add_simple_action(
+                menu,
+                "Toggle Highlight Sections",
+                lambda h=header: h.setHighlightSections(not h.highlightSections()),
+            )
 
             # Resize modes submenu
             resize_mode_menu = menu.addMenu("Resize Mode")
             model: QAbstractItemModel | None = self.model()
             if model is not None:
                 for i in range(header.count()):
-                    section_name = model.headerData(i, header.orientation(), Qt.ItemDataRole.DisplayRole)
+                    section_name = model.headerData(
+                        i, header.orientation(), Qt.ItemDataRole.DisplayRole
+                    )
                     self._add_exclusive_menu_action(
                         resize_mode_menu,
                         f"[{i}] {section_name}",
                         lambda idx=i, h=header: h.sectionResizeMode(idx),
-                        (lambda mode, idx=i, h=header: h.setSectionResizeMode(idx, mode if qtpy.QT5 else QHeaderView.ResizeMode(mode))),
+                        (
+                            lambda mode, idx=i, h=header: h.setSectionResizeMode(
+                                idx, mode if qtpy.QT5 else QHeaderView.ResizeMode(mode)
+                            )
+                        ),
                         options={
                             "Interactive": QHeaderView.ResizeMode.Interactive,
                             "Fixed": QHeaderView.ResizeMode.Fixed,
@@ -94,15 +131,32 @@ class RobustTableView(RobustAbstractItemView, QTableView):
 
             # Sizing options
             sizing_menu = menu.addMenu("Sizing")
-            self._add_simple_action(sizing_menu, "Reset Default Section Size", header.resetDefaultSectionSize)
-            self._add_menu_action(
-                sizing_menu, "Set Maximum Section Size", header.maximumSectionSize, header.setMaximumSectionSize, f"{h_or_v_name.lower()}MaximumSectionSize", param_type=int,
+            self._add_simple_action(
+                sizing_menu, "Reset Default Section Size", header.resetDefaultSectionSize
             )
             self._add_menu_action(
-                sizing_menu, "Set Minimum Section Size", header.minimumSectionSize, header.setMinimumSectionSize, f"{h_or_v_name.lower()}MinimumSectionSize", param_type=int,
+                sizing_menu,
+                "Set Maximum Section Size",
+                header.maximumSectionSize,
+                header.setMaximumSectionSize,
+                f"{h_or_v_name.lower()}MaximumSectionSize",
+                param_type=int,
             )
             self._add_menu_action(
-                sizing_menu, "Set Default Section Size", header.defaultSectionSize, header.setDefaultSectionSize, f"{h_or_v_name.lower()}DefaultSectionSize", param_type=int,
+                sizing_menu,
+                "Set Minimum Section Size",
+                header.minimumSectionSize,
+                header.setMinimumSectionSize,
+                f"{h_or_v_name.lower()}MinimumSectionSize",
+                param_type=int,
+            )
+            self._add_menu_action(
+                sizing_menu,
+                "Set Default Section Size",
+                header.defaultSectionSize,
+                header.setDefaultSectionSize,
+                f"{h_or_v_name.lower()}DefaultSectionSize",
+                param_type=int,
             )
 
             # Alignment
@@ -111,21 +165,32 @@ class RobustTableView(RobustAbstractItemView, QTableView):
                 "Alignment",
                 header.defaultAlignment,
                 header.setDefaultAlignment,
-                options={"Left": Qt.AlignmentFlag.AlignLeft, "Center": Qt.AlignmentFlag.AlignCenter, "Right": Qt.AlignmentFlag.AlignRight},
+                options={
+                    "Left": Qt.AlignmentFlag.AlignLeft,
+                    "Center": Qt.AlignmentFlag.AlignCenter,
+                    "Right": Qt.AlignmentFlag.AlignRight,
+                },
                 settings_key=f"{h_or_v_name.lower()}HeaderDefaultAlignment",
                 param_type=Qt.AlignmentFlag,
             )
 
             # Sorting
             sorting_menu = menu.addMenu("Sorting")
-            self._add_simple_action(sorting_menu, "Toggle Sort Indicator", lambda h=header: h.setSortIndicatorShown(not h.isSortIndicatorShown()))
+            self._add_simple_action(
+                sorting_menu,
+                "Toggle Sort Indicator",
+                lambda h=header: h.setSortIndicatorShown(not h.isSortIndicatorShown()),
+            )
             sort_order_menu = sorting_menu.addMenu("Sort Order")
             self._add_exclusive_menu_action(
                 sort_order_menu,
                 "Sort Order",
                 header.sortIndicatorOrder,
                 lambda order, h=header: h.setSortIndicator(h.sortIndicatorSection(), order),
-                options={"Ascending": Qt.SortOrder.AscendingOrder, "Descending": Qt.SortOrder.DescendingOrder},
+                options={
+                    "Ascending": Qt.SortOrder.AscendingOrder,
+                    "Descending": Qt.SortOrder.DescendingOrder,
+                },
                 settings_key=f"{h_or_v_name.lower()}HeaderSortOrder",
                 param_type=Qt.SortOrder,
             )
@@ -134,7 +199,11 @@ class RobustTableView(RobustAbstractItemView, QTableView):
             section_menu = menu.addMenu("Sections")
             for i in range(header.count()):
                 section_submenu = section_menu.addMenu(f"Section {i}")
-                self._add_simple_action(section_submenu, "Hide/Show", lambda idx=i, h=header: h.setSectionHidden(idx, not h.isSectionHidden(idx)))
+                self._add_simple_action(
+                    section_submenu,
+                    "Hide/Show",
+                    lambda idx=i, h=header: h.setSectionHidden(idx, not h.isSectionHidden(idx)),
+                )
                 self._add_menu_action(
                     section_submenu,
                     "Resize",
@@ -166,16 +235,40 @@ class RobustTableView(RobustAbstractItemView, QTableView):
         advanced_menu: QMenu = settings_menu.addMenu("Advanced")
 
         # Actions submenu items
-        self._add_simple_action(actions_menu, "Resize Columns To Contents", self.resizeColumnsToContents)
+        self._add_simple_action(
+            actions_menu, "Resize Columns To Contents", self.resizeColumnsToContents
+        )
         self._add_simple_action(actions_menu, "Resize Rows To Contents", self.resizeRowsToContents)
         self._add_simple_action(actions_menu, "Clear Spans", self.clearSpans)
 
         # Settings submenu items
-        self._add_menu_action(settings_menu, "Show Grid", self.showGrid, self.setShowGrid, "showGrid")
-        self._add_menu_action(settings_menu, "First Column Interactable", self.firstColumnInteractable, self.setFirstColumnInteractable, "firstColumnInteractable")
-        self._add_menu_action(settings_menu, "Word Wrap", self.wordWrap, self.setWordWrap, "wordWrap")
-        self._add_menu_action(settings_menu, "Corner Button Enabled", self.isCornerButtonEnabled, self.setCornerButtonEnabled, "cornerButtonEnabled")
-        self._add_menu_action(settings_menu, "Sorting Enabled", self.isSortingEnabled, self.setSortingEnabled, "sortingEnabled")
+        self._add_menu_action(
+            settings_menu, "Show Grid", self.showGrid, self.setShowGrid, "showGrid"
+        )
+        self._add_menu_action(
+            settings_menu,
+            "First Column Interactable",
+            self.firstColumnInteractable,
+            self.setFirstColumnInteractable,
+            "firstColumnInteractable",
+        )
+        self._add_menu_action(
+            settings_menu, "Word Wrap", self.wordWrap, self.setWordWrap, "wordWrap"
+        )
+        self._add_menu_action(
+            settings_menu,
+            "Corner Button Enabled",
+            self.isCornerButtonEnabled,
+            self.setCornerButtonEnabled,
+            "cornerButtonEnabled",
+        )
+        self._add_menu_action(
+            settings_menu,
+            "Sorting Enabled",
+            self.isSortingEnabled,
+            self.setSortingEnabled,
+            "sortingEnabled",
+        )
         self._add_exclusive_menu_action(
             advanced_menu,
             "Grid Style",
@@ -227,7 +320,13 @@ class RobustTableView(RobustAbstractItemView, QTableView):
             settings_key="horizontalSectionResizeMode",
         )
 
-        self._add_menu_action(actions_menu, "Vertical Header Visible", self.verticalHeader().isVisible, self.verticalHeader().setVisible, "verticalHeaderVisible")
+        self._add_menu_action(
+            actions_menu,
+            "Vertical Header Visible",
+            self.verticalHeader().isVisible,
+            self.verticalHeader().setVisible,
+            "verticalHeaderVisible",
+        )
         self._add_exclusive_menu_action(
             settings_menu,
             "Section Resize Mode",
@@ -338,12 +437,19 @@ if __name__ == "__main__":
         def columnCount(self, parent: QModelIndex | None = None) -> int:
             return len(self._data[0]) if self._data else 0
 
-        def data(self, index: QModelIndex, role: Qt.ItemDataRole = Qt.ItemDataRole.DisplayRole) -> str | None:
+        def data(
+            self, index: QModelIndex, role: Qt.ItemDataRole = Qt.ItemDataRole.DisplayRole
+        ) -> str | None:
             if role == Qt.ItemDataRole.DisplayRole:
                 return self._data[index.row()][index.column()]
             return None
 
-        def headerData(self, section: int, orientation: Qt.Orientation, role: Qt.ItemDataRole = Qt.ItemDataRole.DisplayRole) -> str | None:
+        def headerData(
+            self,
+            section: int,
+            orientation: Qt.Orientation,
+            role: Qt.ItemDataRole = Qt.ItemDataRole.DisplayRole,
+        ) -> str | None:
             if role == Qt.ItemDataRole.DisplayRole:
                 if orientation == Qt.Orientation.Horizontal:
                     return f"Column {section + 1}"

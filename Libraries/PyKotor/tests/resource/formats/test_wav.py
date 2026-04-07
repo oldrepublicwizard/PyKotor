@@ -330,7 +330,14 @@ class TestWAVIO(unittest.TestCase):
     def test_read_raises_missing_data_chunk(self):
         """Test that reading file without data chunk raises ValueError."""
         invalid_data = (
-            b"RIFF" + struct.pack("<I", 36) + b"WAVE" + b"fmt " + struct.pack("<I", 16) + struct.pack("<HHIIHH", 1, 1, 44100, 88200, 2, 16) + b"XXXX" + struct.pack("<I", 0)
+            b"RIFF"
+            + struct.pack("<I", 36)
+            + b"WAVE"
+            + b"fmt "
+            + struct.pack("<I", 16)
+            + struct.pack("<HHIIHH", 1, 1, 44100, 88200, 2, 16)
+            + b"XXXX"
+            + struct.pack("<I", 0)
         )
         self.assertRaises(ValueError, read_wav, invalid_data)
 

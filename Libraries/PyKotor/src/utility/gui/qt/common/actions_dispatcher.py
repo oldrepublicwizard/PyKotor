@@ -109,7 +109,9 @@ class ActionsDispatcher:
     ):
         self.fs_model: QFileSystemModel = fs_model
         self.dialog: QFileDialog = dialog
-        self.file_actions_executor: FileActionsExecutor = FileActionsExecutor() if file_actions_executor is None else file_actions_executor
+        self.file_actions_executor: FileActionsExecutor = (
+            FileActionsExecutor() if file_actions_executor is None else file_actions_executor
+        )
         self.file_actions_executor.TaskCompleted.connect(self._handle_task_result)
         self.file_actions_executor.TaskFailed.connect(self._handle_task_error)
         RobustLogger().debug("Connected TaskCompleted signal to handle_task_result")
@@ -124,7 +126,9 @@ class ActionsDispatcher:
         actions = FileExplorerActions()
         for action_key, definition in actions.ACTION_DEFINITIONS.items():
             action = actions.actions[action_key]
-            action.triggered.connect(lambda checked=False, defn=definition: self._handle_action(defn, checked))
+            action.triggered.connect(
+                lambda checked=False, defn=definition: self._handle_action(defn, checked)
+            )
 
     def _handle_action(self, definition, checked: bool = False):
         """Handle action triggered from declarative definition."""
@@ -144,7 +148,12 @@ class ActionsDispatcher:
 
         # Queue task if operation specified
         if definition.operation:
-            paths = self.get_selected_paths() if definition.operation in ["open_file", "get_properties", "open_terminal", "delete_items", "rename_item"] else []
+            paths = (
+                self.get_selected_paths()
+                if definition.operation
+                in ["open_file", "get_properties", "open_terminal", "delete_items", "rename_item"]
+                else []
+            )
             self.queue_task(definition.operation, *paths, **definition.extra_kwargs)
 
     def prepare_duplicate_finder(self):
@@ -159,7 +168,9 @@ class ActionsDispatcher:
             return
 
         algorithms = ["MD5", "SHA1", "SHA256"]
-        algorithm, ok = QInputDialog.getItem(self.dialog, "Hash Generator", "Select hash algorithm:", algorithms, 0, editable=False)
+        algorithm, ok = QInputDialog.getItem(
+            self.dialog, "Hash Generator", "Select hash algorithm:", algorithms, 0, editable=False
+        )
         if ok and algorithm:
             self.queue_task("generate_hashes", selected_items, algorithm)
 
@@ -191,7 +202,9 @@ class ActionsDispatcher:
         """Prepare file comparison for exactly two selected files."""
         selected_items = self.get_selected_paths()
         if len(selected_items) != 2:  # noqa: PLR2004
-            QMessageBox.warning(self.dialog, "Invalid Selection", "Please select exactly two files for comparison.")
+            QMessageBox.warning(
+                self.dialog, "Invalid Selection", "Please select exactly two files for comparison."
+            )
             return
 
         self.queue_task("compare_files", selected_items)
@@ -205,7 +218,11 @@ class ActionsDispatcher:
         """Prepare the context menu customization dialog."""
         # This would typically open a dialog to customize the context menu.
         # For now, we'll just show a message.
-        QMessageBox.information(self.dialog, "Customize Context Menu", "Context menu customization feature is not implemented yet.")
+        QMessageBox.information(
+            self.dialog,
+            "Customize Context Menu",
+            "Context menu customization feature is not implemented yet.",
+        )
 
     def show_set_default_columns_dialog(self):
         """Show dialog to set default columns for the file dialog."""
@@ -278,7 +295,9 @@ class ActionsDispatcher:
 
                 for item in items:
                     item_label = QLabel(f'<a href="{item}">{item.name}</a>')
-                    item_label.setTextInteractionFlags(Qt.TextInteractionFlag.TextBrowserInteraction)
+                    item_label.setTextInteractionFlags(
+                        Qt.TextInteractionFlag.TextBrowserInteraction
+                    )
                     item_label.setOpenExternalLinks(True)
                     content_layout.addWidget(item_label)
 
@@ -310,10 +329,14 @@ class ActionsDispatcher:
     def get_menu(self, index: QModelIndex) -> QMenu:
         """Get the context menu for a specific index."""
         shift_mod = Qt.KeyboardModifier.ShiftModifier
-        shift_held = bool(QApplication.keyboardModifiers() & shift_mod) or bool(QApplication.queryKeyboardModifiers() & shift_mod)
+        shift_held = bool(QApplication.keyboardModifiers() & shift_mod) or bool(
+            QApplication.queryKeyboardModifiers() & shift_mod
+        )
         if not index.isValid():
             return self.menus.create_menu(context=MenuContext.EMPTY, shift=shift_held)
-        proxy_model: QAbstractProxyModel | None = cast("Union[None, QAbstractProxyModel]", self.dialog.proxyModel())
+        proxy_model: QAbstractProxyModel | None = cast(
+            "Union[None, QAbstractProxyModel]", self.dialog.proxyModel()
+        )
         source_index: QModelIndex = index if proxy_model is None else proxy_model.mapToSource(index)
         if self.fs_model.isDir(source_index):
             return self.menus.create_menu(context=MenuContext.DIR, shift=shift_held)
@@ -331,7 +354,9 @@ class ActionsDispatcher:
 
         # Multiple items selected
         shift_mod = Qt.KeyboardModifier.ShiftModifier
-        shift_held = bool(QApplication.keyboardModifiers() & shift_mod)  # or bool(QApplication.queryKeyboardModifiers() & shift_mod)
+        shift_held = bool(
+            QApplication.keyboardModifiers() & shift_mod
+        )  # or bool(QApplication.queryKeyboardModifiers() & shift_mod)
 
         # Convert selection indexes to source indexes
         source_indexes: list[QModelIndex] = []
@@ -349,7 +374,9 @@ class ActionsDispatcher:
         all_dirs = all(self.fs_model.isDir(idx) for idx in source_indexes)
         all_files = all(not self.fs_model.isDir(idx) for idx in source_indexes)
 
-        context = MenuContext.DIR if all_dirs else MenuContext.FILE if all_files else MenuContext.MIXED
+        context = (
+            MenuContext.DIR if all_dirs else MenuContext.FILE if all_files else MenuContext.MIXED
+        )
         multi = len(source_indexes) > 1
         return self.menus.create_menu(context=context, shift=shift_held, multi=multi)
 
@@ -361,7 +388,9 @@ class ActionsDispatcher:
         """Prepare sorting by the given column name."""
         column_map: dict[str, int] = {}
         for column in range(self.fs_model.columnCount()):
-            header = self.fs_model.headerData(column, Qt.Orientation.Horizontal, Qt.ItemDataRole.DisplayRole)
+            header = self.fs_model.headerData(
+                column, Qt.Orientation.Horizontal, Qt.ItemDataRole.DisplayRole
+            )
             assert isinstance(header, str)
             column_map[header.casefold()] = column
 
@@ -389,12 +418,18 @@ class ActionsDispatcher:
         Does nothing if sorting is not enabled on the view.
         """
         # stubs are wrong, cast it as correct type.
-        proxy_model: QAbstractProxyModel | None = cast("Union[None, QAbstractProxyModel]", self.dialog.proxyModel())
+        proxy_model: QAbstractProxyModel | None = cast(
+            "Union[None, QAbstractProxyModel]", self.dialog.proxyModel()
+        )
         if isinstance(proxy_model, QSortFilterProxyModel):
             current_column = proxy_model.sortColumn()
             current_order = proxy_model.sortOrder()
 
-            new_order = Qt.SortOrder.DescendingOrder if current_order == Qt.SortOrder.AscendingOrder else Qt.SortOrder.AscendingOrder
+            new_order = (
+                Qt.SortOrder.DescendingOrder
+                if current_order == Qt.SortOrder.AscendingOrder
+                else Qt.SortOrder.AscendingOrder
+            )
             proxy_model.sort(current_column, new_order)
         else:
             inner_view: QAbstractItemView = self.get_current_view()
@@ -407,7 +442,11 @@ class ActionsDispatcher:
                 current_column = inner_view_header.sortIndicatorSection()
                 current_order = inner_view_header.sortIndicatorOrder()
 
-                new_order = Qt.SortOrder.DescendingOrder if current_order == Qt.SortOrder.AscendingOrder else Qt.SortOrder.AscendingOrder
+                new_order = (
+                    Qt.SortOrder.DescendingOrder
+                    if current_order == Qt.SortOrder.AscendingOrder
+                    else Qt.SortOrder.AscendingOrder
+                )
                 inner_view.sortByColumn(current_column, new_order)
                 inner_view_header.setSortIndicator(current_column, new_order)
             elif isinstance(inner_view, QTableView):
@@ -417,13 +456,21 @@ class ActionsDispatcher:
                 assert horizontal_header is not None, "View horizontal header is None"
                 current_column = horizontal_header.sortIndicatorSection()
                 current_order = horizontal_header.sortIndicatorOrder()
-                new_order = Qt.SortOrder.DescendingOrder if current_order == Qt.SortOrder.AscendingOrder else Qt.SortOrder.AscendingOrder
+                new_order = (
+                    Qt.SortOrder.DescendingOrder
+                    if current_order == Qt.SortOrder.AscendingOrder
+                    else Qt.SortOrder.AscendingOrder
+                )
                 inner_view.sortByColumn(current_column, new_order)
                 horizontal_header.setSortIndicator(current_column, new_order)
             elif isinstance(inner_view, QHeaderView):
                 current_order = inner_view.sortIndicatorOrder()
                 current_column = inner_view.sortIndicatorSection()
-                next_sort_order = Qt.SortOrder.DescendingOrder if current_order == Qt.SortOrder.AscendingOrder else Qt.SortOrder.AscendingOrder
+                next_sort_order = (
+                    Qt.SortOrder.DescendingOrder
+                    if current_order == Qt.SortOrder.AscendingOrder
+                    else Qt.SortOrder.AscendingOrder
+                )
                 inner_view.setSortIndicator(current_column, next_sort_order)
 
     def prepare_rename(self):
@@ -441,23 +488,34 @@ class ActionsDispatcher:
                 "File name:",
                 QLineEdit.EchoMode.Normal,
                 "",
-                flags=Qt.WindowType.Dialog | Qt.WindowType.WindowStaysOnTopHint | Qt.WindowType.MSWindowsFixedSizeDialogHint | Qt.WindowType.WindowCloseButtonHint,
-                inputMethodHints=Qt.InputMethodHint.ImhNoAutoUppercase | Qt.InputMethodHint.ImhLatinOnly | Qt.InputMethodHint.ImhNoPredictiveText,
+                flags=Qt.WindowType.Dialog
+                | Qt.WindowType.WindowStaysOnTopHint
+                | Qt.WindowType.MSWindowsFixedSizeDialogHint
+                | Qt.WindowType.WindowCloseButtonHint,
+                inputMethodHints=Qt.InputMethodHint.ImhNoAutoUppercase
+                | Qt.InputMethodHint.ImhLatinOnly
+                | Qt.InputMethodHint.ImhNoPredictiveText,
             )
             if not ok:
                 return
             if not name or not name.strip():
-                QMessageBox.warning(self.dialog, "Invalid File Name", "File name cannot be empty/blank.")
+                QMessageBox.warning(
+                    self.dialog, "Invalid File Name", "File name cannot be empty/blank."
+                )
                 continue
             if validator.validate(name, 0)[0] != QValidator.State.Acceptable:
-                QMessageBox.warning(self.dialog, "Invalid File Name", "File name contains invalid characters.")
+                QMessageBox.warning(
+                    self.dialog, "Invalid File Name", "File name contains invalid characters."
+                )
                 continue
             if len(PurePath(name).stem) > 16:  # resref max length  # noqa: PLR2004
                 QMessageBox.warning(self.dialog, "File Name Too Long", "File name is too long.")
                 continue
             new_file_path = old_path.parent / name
             if (new_file_path).exists():
-                QMessageBox.warning(self.dialog, "File Exists", "File with this name already exists.")
+                QMessageBox.warning(
+                    self.dialog, "File Exists", "File with this name already exists."
+                )
                 continue
             break
 
@@ -485,8 +543,13 @@ class ActionsDispatcher:
                 "File name:",
                 QLineEdit.EchoMode.Normal,
                 "",
-                flags=Qt.WindowType.Dialog | Qt.WindowType.WindowStaysOnTopHint | Qt.WindowType.MSWindowsFixedSizeDialogHint | Qt.WindowType.WindowCloseButtonHint,
-                inputMethodHints=Qt.InputMethodHint.ImhNoAutoUppercase | Qt.InputMethodHint.ImhLatinOnly | Qt.InputMethodHint.ImhNoPredictiveText,
+                flags=Qt.WindowType.Dialog
+                | Qt.WindowType.WindowStaysOnTopHint
+                | Qt.WindowType.MSWindowsFixedSizeDialogHint
+                | Qt.WindowType.WindowCloseButtonHint,
+                inputMethodHints=Qt.InputMethodHint.ImhNoAutoUppercase
+                | Qt.InputMethodHint.ImhLatinOnly
+                | Qt.InputMethodHint.ImhNoPredictiveText,
             )
             if not ok:
                 return
@@ -494,14 +557,18 @@ class ActionsDispatcher:
                 QMessageBox.warning(self.dialog, "Invalid File Name", "File name cannot be empty.")
                 continue
             if validator.validate(name, 0)[0] != QValidator.State.Acceptable:
-                QMessageBox.warning(self.dialog, "Invalid File Name", "File name contains invalid characters.")
+                QMessageBox.warning(
+                    self.dialog, "Invalid File Name", "File name contains invalid characters."
+                )
                 continue
             if len(PurePath(name).stem) > 16:  # resref max length  # noqa: PLR2004
                 QMessageBox.warning(self.dialog, "File Name Too Long", "File name is too long.")
                 continue
             new_file_path = current_dir / name
             if (new_file_path).exists():
-                QMessageBox.warning(self.dialog, "File Exists", "File with this name already exists.")
+                QMessageBox.warning(
+                    self.dialog, "File Exists", "File with this name already exists."
+                )
                 continue
             break
 
@@ -520,7 +587,9 @@ class ActionsDispatcher:
         source_paths = self.get_selected_paths()
         if not source_paths:
             return
-        shortcut_path = source_paths[0].parent / f"{source_paths[0].stem} - Shortcut{source_paths[0].suffix}"
+        shortcut_path = (
+            source_paths[0].parent / f"{source_paths[0].stem} - Shortcut{source_paths[0].suffix}"
+        )
         self.queue_task("create_shortcut", source_paths, shortcut_path)
 
     def prepare_open_with(self):
@@ -594,7 +663,11 @@ class ActionsDispatcher:
 
     def prepare_show_hidden_items(self, show: bool):  # noqa: FBT001
         """Handle the 'Show Hidden Items' action."""
-        self.fs_model.setFilter(self.fs_model.filter() | QDir.Filter.Hidden if show else self.fs_model.filter() & ~QDir.Filter.Hidden)
+        self.fs_model.setFilter(
+            self.fs_model.filter() | QDir.Filter.Hidden
+            if show
+            else self.fs_model.filter() & ~QDir.Filter.Hidden
+        )
         self.queue_task("refresh_view")
 
     def prepare_show_file_extensions(self, show: bool):  # noqa: FBT001
@@ -741,10 +814,17 @@ class ActionsDispatcher:
             import plistlib
 
             plist_data = {"NSFilenamesPboardType": [str(item) for item in paths]}
-            mime_data.setData("com.apple.NSFilePromiseContent", QByteArray(plistlib.dumps(plist_data)))
+            mime_data.setData(
+                "com.apple.NSFilePromiseContent", QByteArray(plistlib.dumps(plist_data))
+            )
         else:  # Linux and other Unix-like
             action = "cut" if is_cut else "copy"
-            mime_data.setData("x-special/gnome-copied-files", QByteArray(f"{action}\n".encode() + b"\n".join(str(item).encode() for item in paths)))
+            mime_data.setData(
+                "x-special/gnome-copied-files",
+                QByteArray(
+                    f"{action}\n".encode() + b"\n".join(str(item).encode() for item in paths)
+                ),
+            )
 
         clipboard = QApplication.clipboard()
         assert clipboard is not None, "Clipboard is not available"
@@ -772,7 +852,11 @@ class ActionsDispatcher:
                 if is_cut:
                     clipboard.clear()
             else:
-                QMessageBox.warning(self.dialog, "Paste Error", "Cannot paste the items to the selected destination.")
+                QMessageBox.warning(
+                    self.dialog,
+                    "Paste Error",
+                    "Cannot paste the items to the selected destination.",
+                )
 
     def _can_paste_data_object(self, destination: Path, mime_data: QMimeData) -> bool:
         if not destination.is_dir() or not os.access(str(destination), os.W_OK):
@@ -851,7 +935,9 @@ if __name__ == "__main__":
     test_fs_model = test_tree_view.model()
     assert isinstance(test_fs_model, QFileSystemModel)
     test_file_actions_executor = FileActionsExecutor()
-    test_menu_actions_dispatcher = ActionsDispatcher(test_fs_model, test_file_dialog, test_file_actions_executor)
+    test_menu_actions_dispatcher = ActionsDispatcher(
+        test_fs_model, test_file_dialog, test_file_actions_executor
+    )
 
     def on_task_failed(task_id: str, error: Exception):
         """Handle task failure by logging the error and displaying an error dialog.
@@ -875,7 +961,12 @@ if __name__ == "__main__":
     for test_view in test_views:
         if not isinstance(test_view, QAbstractItemView):
             continue
-        print("Setting context menu policy for view:", test_view.objectName(), "of type:", type(test_view).__name__)
+        print(
+            "Setting context menu policy for view:",
+            test_view.objectName(),
+            "of type:",
+            type(test_view).__name__,
+        )
 
         def show_context_menu(
             pos: QPoint,
@@ -898,7 +989,9 @@ if __name__ == "__main__":
                 menu.exec(viewport.mapToGlobal(pos))
 
         test_view.setContextMenuPolicy(Qt.ContextMenuPolicy.CustomContextMenu)
-        with contextlib.suppress(TypeError):  # TypeError: disconnect() failed between 'customContextMenuRequested' and all its connections
+        with contextlib.suppress(
+            TypeError
+        ):  # TypeError: disconnect() failed between 'customContextMenuRequested' and all its connections
             test_view.customContextMenuRequested.disconnect()
         test_view.customContextMenuRequested.connect(show_context_menu)
 

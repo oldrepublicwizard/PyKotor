@@ -108,7 +108,9 @@ def _mdl_node_position_from_controller(node: MDLNode) -> tuple[float, float, flo
     return None
 
 
-def _mdl_node_orientation_from_controller(node: MDLNode) -> tuple[float, float, float, float] | None:
+def _mdl_node_orientation_from_controller(
+    node: MDLNode,
+) -> tuple[float, float, float, float] | None:
     """Return orientation from an ORIENTATION controller row if present and meaningful.
 
     Note: Values are not guaranteed to be normalized; we normalize during canonicalization.
@@ -127,7 +129,12 @@ def _mdl_node_orientation_from_controller(node: MDLNode) -> tuple[float, float, 
         fx, fy, fz, fw = float(data[0]), float(data[1]), float(data[2]), float(data[3])
         # Identity quaternion (or -identity) is non-meaningful/no-op.
         qx, qy, qz, qw = _qfloat(fx), _qfloat(fy), _qfloat(fz), _qfloat(fw)
-        if qx == _qfloat(0.0) and qy == _qfloat(0.0) and qz == _qfloat(0.0) and (qw == _qfloat(1.0) or qw == _qfloat(-1.0)):
+        if (
+            qx == _qfloat(0.0)
+            and qy == _qfloat(0.0)
+            and qz == _qfloat(0.0)
+            and (qw == _qfloat(1.0) or qw == _qfloat(-1.0))
+        ):
             return None
         return (fx, fy, fz, fw)
     return None
@@ -150,7 +157,9 @@ def _mdl_node_canonical_position(node: MDLNode) -> tuple[int, int, int]:
     return (_qfloat(bx), _qfloat(by), _qfloat(bz))
 
 
-def _mdl_canonicalize_quaternion(x: float, y: float, z: float, w: float) -> tuple[int, int, int, int]:
+def _mdl_canonicalize_quaternion(
+    x: float, y: float, z: float, w: float
+) -> tuple[int, int, int, int]:
     """Normalize quaternion and canonicalize sign so q and -q compare equal."""
     # Normalize (robust to unnormalized/scaled values coming from toolchains)
     mag2 = (x * x) + (y * y) + (z * z) + (w * w)
@@ -346,7 +355,10 @@ def _norm_value(v: Any, *, ignore_keys: set[str] | None = None) -> Any:
         return tuple(_norm_value(x, ignore_keys=ignore_keys) for x in v)
 
     if isinstance(v, dict):
-        return tuple((k, _norm_value(val, ignore_keys=ignore_keys)) for k, val in sorted(v.items(), key=lambda kv: str(kv[0])))
+        return tuple(
+            (k, _norm_value(val, ignore_keys=ignore_keys))
+            for k, val in sorted(v.items(), key=lambda kv: str(kv[0]))
+        )
 
     dct = v.__dict__
     if isinstance(dct, dict):
@@ -470,8 +482,12 @@ def _mdl_ids_equivalent_subtree(a_root: MDLNode, b_root: MDLNode) -> bool:
     a_parent_name = _mdl_build_parent_name_map(a_root)
     b_parent_name = _mdl_build_parent_name_map(b_root)
 
-    a_name_to_id = {name: int(node.node_id) for name, node in a_by_name.items() if int(node.node_id) >= 0}
-    b_name_to_id = {name: int(node.node_id) for name, node in b_by_name.items() if int(node.node_id) >= 0}
+    a_name_to_id = {
+        name: int(node.node_id) for name, node in a_by_name.items() if int(node.node_id) >= 0
+    }
+    b_name_to_id = {
+        name: int(node.node_id) for name, node in b_by_name.items() if int(node.node_id) >= 0
+    }
 
     a_fully_labeled = len(a_name_to_id) == len(a_by_name)
     b_fully_labeled = len(b_name_to_id) == len(b_by_name)
@@ -532,7 +548,12 @@ def _mdl_validate_ids_self_consistent(root: MDLNode) -> bool:
 
 def _mdl_quat_is_zeroish(x: float, y: float, z: float, w: float) -> bool:
     # A bunch of toolchains (and corrupted/placeholder data) can emit 0 quats. Treat as invalid.
-    return _qfloat(x) == _qfloat(0.0) and _qfloat(y) == _qfloat(0.0) and _qfloat(z) == _qfloat(0.0) and _qfloat(w) == _qfloat(0.0)
+    return (
+        _qfloat(x) == _qfloat(0.0)
+        and _qfloat(y) == _qfloat(0.0)
+        and _qfloat(z) == _qfloat(0.0)
+        and _qfloat(w) == _qfloat(0.0)
+    )
 
 
 def _mdl_node_parent_edges_by_name(nodes: list[MDLNode]) -> dict[str, str | None]:
@@ -605,7 +626,9 @@ def _mdl_node_canonical_position_from_controllers(node: MDLNode) -> tuple[int, i
     return (data[0], data[1], data[2])
 
 
-def _mdl_node_canonical_orientation_from_controllers(node: MDLNode) -> tuple[int, int, int, int] | None:
+def _mdl_node_canonical_orientation_from_controllers(
+    node: MDLNode,
+) -> tuple[int, int, int, int] | None:
     ctrls = _mdl_canonical_controllers(node)
     key = (20, False)
     rows = ctrls.get(key)
@@ -639,7 +662,9 @@ def _mdl_node_header_orientation(node: MDLNode) -> tuple[int, int, int, int]:
     return _mdl_canonicalize_quaternion(float(ori.x), float(ori.y), float(ori.z), float(ori.w))
 
 
-def _mdl_node_canonical_position_strict(node: MDLNode, *, prefer_controllers: bool = True) -> tuple[int, int, int]:
+def _mdl_node_canonical_position_strict(
+    node: MDLNode, *, prefer_controllers: bool = True
+) -> tuple[int, int, int]:
     """Canonical node position.
 
     - Geometry nodes: compare scalar position (what actually gets written into binary headers).
@@ -653,7 +678,9 @@ def _mdl_node_canonical_position_strict(node: MDLNode, *, prefer_controllers: bo
     return _mdl_node_header_position(node)
 
 
-def _mdl_node_canonical_orientation_strict(node: MDLNode, *, prefer_controllers: bool = True) -> tuple[int, int, int, int]:
+def _mdl_node_canonical_orientation_strict(
+    node: MDLNode, *, prefer_controllers: bool = True
+) -> tuple[int, int, int, int]:
     if prefer_controllers:
         ctrl = _mdl_node_canonical_orientation_from_controllers(node)
         if ctrl is not None:
@@ -791,7 +818,9 @@ def _mdl_mesh_equal(a: MDLMesh, b: MDLMesh) -> bool:
         return False
 
     # Per-vertex normals
-    if not _mdl_deep_eq(a.vertex_normals or [], b.vertex_normals or [], ignore_keys=_MDL_EQ_IGNORE_KEYS):
+    if not _mdl_deep_eq(
+        a.vertex_normals or [], b.vertex_normals or [], ignore_keys=_MDL_EQ_IGNORE_KEYS
+    ):
         return False
 
     # UVs (can be empty lists)
@@ -893,9 +922,13 @@ def _mdl_node_payload_equal(
     # Use scalar/header transforms as canonical baseline. Animation transforms are compared
     # through controller equivalence below to avoid double-counting tiny quantization drift.
     prefer_controllers = False
-    if _mdl_node_canonical_position_strict(a, prefer_controllers=prefer_controllers) != _mdl_node_canonical_position_strict(b, prefer_controllers=prefer_controllers):
+    if _mdl_node_canonical_position_strict(
+        a, prefer_controllers=prefer_controllers
+    ) != _mdl_node_canonical_position_strict(b, prefer_controllers=prefer_controllers):
         return False
-    if _mdl_node_canonical_orientation_strict(a, prefer_controllers=prefer_controllers) != _mdl_node_canonical_orientation_strict(b, prefer_controllers=prefer_controllers):
+    if _mdl_node_canonical_orientation_strict(
+        a, prefer_controllers=prefer_controllers
+    ) != _mdl_node_canonical_orientation_strict(b, prefer_controllers=prefer_controllers):
         return False
 
     # Presence/type of attachments
@@ -919,9 +952,13 @@ def _mdl_node_payload_equal(
     # Deep-compare attachments (they already use quantized deep equality)
     if a.light is not None and not _mdl_deep_eq(a.light, b.light, ignore_keys=_MDL_EQ_IGNORE_KEYS):
         return False
-    if a.emitter is not None and not _mdl_deep_eq(a.emitter, b.emitter, ignore_keys=_MDL_EQ_IGNORE_KEYS):
+    if a.emitter is not None and not _mdl_deep_eq(
+        a.emitter, b.emitter, ignore_keys=_MDL_EQ_IGNORE_KEYS
+    ):
         return False
-    if a.reference is not None and not _mdl_deep_eq(a.reference, b.reference, ignore_keys=_MDL_EQ_IGNORE_KEYS):
+    if a.reference is not None and not _mdl_deep_eq(
+        a.reference, b.reference, ignore_keys=_MDL_EQ_IGNORE_KEYS
+    ):
         return False
 
     # Mesh-like payload can be huge; rely on deep compare but validate aliases first.
@@ -936,7 +973,9 @@ def _mdl_node_payload_equal(
         assert b.skin is not None
         if not _mdl_skin_equal(a.skin, b.skin):
             return False
-    if a.dangly is not None and not _mdl_deep_eq(a.dangly, b.dangly, ignore_keys=_MDL_EQ_IGNORE_KEYS):
+    if a.dangly is not None and not _mdl_deep_eq(
+        a.dangly, b.dangly, ignore_keys=_MDL_EQ_IGNORE_KEYS
+    ):
         return False
     if a.aabb is not None:
         # Presence parity checked above, so b.aabb is also non-None here.
@@ -952,13 +991,17 @@ def _mdl_node_payload_equal(
     # - Animation nodes: compare effective controllers (drops redundant defaults + 8/20 handled
     #   by scalar canonical transform checks) to avoid false negatives from representation drift.
     if in_geometry_tree:
-        if _mdl_canonical_controllers(a, drop_transform_controllers=True) != _mdl_canonical_controllers(b, drop_transform_controllers=True):
+        if _mdl_canonical_controllers(
+            a, drop_transform_controllers=True
+        ) != _mdl_canonical_controllers(b, drop_transform_controllers=True):
             return False
     elif not _mdl_controllers_equivalent(a, b, ignore_keys=_MDL_EQ_IGNORE_KEYS, _visited=set()):
         return False
 
     # node_type consistency validation (no ignoring)
-    if not (_mdl_node_validate_node_type_consistent(a) and _mdl_node_validate_node_type_consistent(b)):
+    if not (
+        _mdl_node_validate_node_type_consistent(a) and _mdl_node_validate_node_type_consistent(b)
+    ):
         return False
 
     return True
@@ -1007,7 +1050,12 @@ def _mdl_node_payload_hash(
         h ^= hash(("saber", _mdl_deep_hash(node.saber, ignore_keys=_MDL_EQ_IGNORE_KEYS)))
 
     if in_geometry_tree:
-        h ^= hash(("controllers", _mdl_canonical_controllers_hashable(node, drop_transform_controllers=True)))
+        h ^= hash(
+            (
+                "controllers",
+                _mdl_canonical_controllers_hashable(node, drop_transform_controllers=True),
+            )
+        )
     else:
         h ^= hash(("controllers", _mdl_effective_controllers_hashable(node)))
 
@@ -1022,8 +1070,17 @@ def _mdl_subtree_semantic_hash(
     in_geometry_tree: bool,
 ) -> int:
     """Order-insensitive subtree hash compatible with duplicate node names."""
-    child_hashes = sorted(_mdl_subtree_semantic_hash(c, in_geometry_tree=in_geometry_tree) for c in (node.children or []))
-    return hash(("subtree", _mdl_node_payload_hash(node, in_geometry_tree=in_geometry_tree), tuple(child_hashes)))
+    child_hashes = sorted(
+        _mdl_subtree_semantic_hash(c, in_geometry_tree=in_geometry_tree)
+        for c in (node.children or [])
+    )
+    return hash(
+        (
+            "subtree",
+            _mdl_node_payload_hash(node, in_geometry_tree=in_geometry_tree),
+            tuple(child_hashes),
+        )
+    )
 
 
 def _mdl_subtree_equal(
@@ -1053,7 +1110,9 @@ def _mdl_subtree_equal(
         a_by_name = {c.name: c for c in a_children}
         b_by_name = {c.name: c for c in b_children}
         for name in a_by_name:
-            if not _mdl_subtree_equal(a_by_name[name], b_by_name[name], in_geometry_tree=in_geometry_tree):
+            if not _mdl_subtree_equal(
+                a_by_name[name], b_by_name[name], in_geometry_tree=in_geometry_tree
+            ):
                 return False
         return True
 
@@ -1097,7 +1156,9 @@ def _mdl_subtree_equal(
                 if bh[bj] != a_hash:
                     continue
                 used.add(bj)
-                if _mdl_subtree_equal(a_node, b_group[bj], in_geometry_tree=in_geometry_tree) and _match(i + 1):
+                if _mdl_subtree_equal(
+                    a_node, b_group[bj], in_geometry_tree=in_geometry_tree
+                ) and _match(i + 1):
                     return True
                 used.remove(bj)
             return False
@@ -1150,7 +1211,9 @@ def _mdl_animation_equal(
             return False
 
     # Validate ids (no ignoring) as equivalency: self-consistent + equivalent labeling
-    if not (_mdl_validate_ids_self_consistent(a.root) and _mdl_validate_ids_self_consistent(b.root)):
+    if not (
+        _mdl_validate_ids_self_consistent(a.root) and _mdl_validate_ids_self_consistent(b.root)
+    ):
         return False
     if not _mdl_ids_equivalent_subtree(a.root, b.root):
         return False
@@ -1294,11 +1357,22 @@ def _mdl_deep_eq(
             except Exception:
                 map_a = None
                 map_b = None
-            if map_a is not None and map_b is not None and len(map_a) == len(a) and len(map_b) == len(b):
+            if (
+                map_a is not None
+                and map_b is not None
+                and len(map_a) == len(a)
+                and len(map_b) == len(b)
+            ):
                 if set(map_a.keys()) != set(map_b.keys()):
                     return False
                 for name in map_a.keys():
-                    if not _mdl_deep_eq(map_a[name], map_b[name], ignore_keys=ignore_keys, _visited=_visited, _ctx=_CTX_NONE):
+                    if not _mdl_deep_eq(
+                        map_a[name],
+                        map_b[name],
+                        ignore_keys=ignore_keys,
+                        _visited=_visited,
+                        _ctx=_CTX_NONE,
+                    ):
                         return False
                 return True
 
@@ -1314,11 +1388,22 @@ def _mdl_deep_eq(
             except Exception:
                 map_a = None
                 map_b = None
-            if map_a is not None and map_b is not None and len(map_a) == len(a) and len(map_b) == len(b):
+            if (
+                map_a is not None
+                and map_b is not None
+                and len(map_a) == len(a)
+                and len(map_b) == len(b)
+            ):
                 if set(map_a.keys()) != set(map_b.keys()):
                     return False
                 for k in map_a.keys():
-                    if not _mdl_deep_eq(map_a[k], map_b[k], ignore_keys=ignore_keys, _visited=_visited, _ctx=_CTX_NONE):
+                    if not _mdl_deep_eq(
+                        map_a[k],
+                        map_b[k],
+                        ignore_keys=ignore_keys,
+                        _visited=_visited,
+                        _ctx=_CTX_NONE,
+                    ):
                         return False
                 return True
 
@@ -1335,7 +1420,9 @@ def _mdl_deep_eq(
                 rows_a = a
                 rows_b = b
             for i, (av, bv) in enumerate(zip(rows_a, rows_b)):
-                if not _mdl_deep_eq(av, bv, ignore_keys=ignore_keys, _visited=_visited, _ctx=_CTX_NONE):
+                if not _mdl_deep_eq(
+                    av, bv, ignore_keys=ignore_keys, _visited=_visited, _ctx=_CTX_NONE
+                ):
                     return False
             return True
 
@@ -1352,7 +1439,9 @@ def _mdl_deep_eq(
         if set(a.keys()) != set(b.keys()):
             return False
         for k in a.keys():
-            if not _mdl_deep_eq(a[k], b[k], ignore_keys=ignore_keys, _visited=_visited, _ctx=_CTX_NONE):
+            if not _mdl_deep_eq(
+                a[k], b[k], ignore_keys=ignore_keys, _visited=_visited, _ctx=_CTX_NONE
+            ):
                 return False
         return True
 
@@ -1377,7 +1466,11 @@ def _mdl_deep_eq(
                 next_ctx = _CTX_CONTROLLERS
 
             # Special-case canonical position/orientation on MDLNode.
-            if isinstance(a, MDLNode) and isinstance(b, MDLNode) and k in ("position", "orientation"):
+            if (
+                isinstance(a, MDLNode)
+                and isinstance(b, MDLNode)
+                and k in ("position", "orientation")
+            ):
                 if k == "position":
                     if _mdl_node_canonical_position(a) != _mdl_node_canonical_position(b):
                         return False
@@ -1389,11 +1482,15 @@ def _mdl_deep_eq(
 
             # Special-case controllers on MDLNode: canonicalize redundant constant controllers.
             if next_ctx == _CTX_CONTROLLERS and isinstance(a, MDLNode) and isinstance(b, MDLNode):
-                if not _mdl_controllers_equivalent(a, b, ignore_keys=ignore_keys, _visited=_visited):
+                if not _mdl_controllers_equivalent(
+                    a, b, ignore_keys=ignore_keys, _visited=_visited
+                ):
                     return False
                 continue
 
-            if not _mdl_deep_eq(da[k], db[k], ignore_keys=ignore_keys, _visited=_visited, _ctx=next_ctx):
+            if not _mdl_deep_eq(
+                da[k], db[k], ignore_keys=ignore_keys, _visited=_visited, _ctx=next_ctx
+            ):
                 return False
         return True
 
@@ -1443,19 +1540,59 @@ def _mdl_deep_hash(
 
         # MDLFace
         if isinstance(v, MDLFace):
-            return hash(("face", v.v1, v.v2, v.v3, v.material, v.smoothgroup, v.v1 if v.t1 < 0 else v.t1, v.v2 if v.t2 < 0 else v.t2, v.v3 if v.t3 < 0 else v.t3))
+            return hash(
+                (
+                    "face",
+                    v.v1,
+                    v.v2,
+                    v.v3,
+                    v.material,
+                    v.smoothgroup,
+                    v.v1 if v.t1 < 0 else v.t1,
+                    v.v2 if v.t2 < 0 else v.t2,
+                    v.v3 if v.t3 < 0 else v.t3,
+                )
+            )
 
         # Color
         if isinstance(v, Color):
-            return hash(("color", (_qfloat(float(v.r)), _qfloat(float(v.g)), _qfloat(float(v.b)), _qfloat(float(v.a)))))
+            return hash(
+                (
+                    "color",
+                    (
+                        _qfloat(float(v.r)),
+                        _qfloat(float(v.g)),
+                        _qfloat(float(v.b)),
+                        _qfloat(float(v.a)),
+                    ),
+                )
+            )
 
         # Sequences
         if isinstance(v, (list, tuple)):
             # Special: children list order-insensitive by node name
             if _ctx == _CTX_CHILDREN and v and isinstance(v[0], MDLNode):
                 try:
-                    child_items = sorted(((str(x.name), x) for x in v), key=lambda kv: str(kv[0]).lower())
-                    return hash(("children", tuple((n, _mdl_deep_hash(x, ignore_keys=ignore_keys, _visited=_visited, _ctx=_CTX_NONE)) for n, x in child_items)))
+                    child_items = sorted(
+                        ((str(x.name), x) for x in v), key=lambda kv: str(kv[0]).lower()
+                    )
+                    return hash(
+                        (
+                            "children",
+                            tuple(
+                                (
+                                    n,
+                                    _mdl_deep_hash(
+                                        x,
+                                        ignore_keys=ignore_keys,
+                                        _visited=_visited,
+                                        _ctx=_CTX_NONE,
+                                    ),
+                                )
+                                for n, x in child_items
+                            ),
+                        )
+                    )
                 except Exception:
                     pass
 
@@ -1466,8 +1603,26 @@ def _mdl_deep_hash(
                     def _akey(x: Any) -> tuple[str, str]:
                         return (str(x.name), str(x.root_model))
 
-                    anim_items = sorted(((_akey(x), x) for x in v), key=lambda kv: str(kv[0]).lower())
-                    return hash(("anims", tuple((k, _mdl_deep_hash(x, ignore_keys=ignore_keys, _visited=_visited, _ctx=_CTX_NONE)) for k, x in anim_items)))
+                    anim_items = sorted(
+                        ((_akey(x), x) for x in v), key=lambda kv: str(kv[0]).lower()
+                    )
+                    return hash(
+                        (
+                            "anims",
+                            tuple(
+                                (
+                                    k,
+                                    _mdl_deep_hash(
+                                        x,
+                                        ignore_keys=ignore_keys,
+                                        _visited=_visited,
+                                        _ctx=_CTX_NONE,
+                                    ),
+                                )
+                                for k, x in anim_items
+                            ),
+                        )
+                    )
                 except Exception:
                     pass
 
@@ -1479,16 +1634,48 @@ def _mdl_deep_hash(
                         return _qfloat(float(x.time))
 
                     row_items = sorted(v, key=_tkey)
-                    return hash(("rows", tuple(_mdl_deep_hash(x, ignore_keys=ignore_keys, _visited=_visited, _ctx=_CTX_NONE) for x in row_items)))
+                    return hash(
+                        (
+                            "rows",
+                            tuple(
+                                _mdl_deep_hash(
+                                    x, ignore_keys=ignore_keys, _visited=_visited, _ctx=_CTX_NONE
+                                )
+                                for x in row_items
+                            ),
+                        )
+                    )
                 except Exception:
                     pass
 
-            return hash(("seq", len(v), tuple(_mdl_deep_hash(x, ignore_keys=ignore_keys, _visited=_visited, _ctx=_CTX_NONE) for x in v)))
+            return hash(
+                (
+                    "seq",
+                    len(v),
+                    tuple(
+                        _mdl_deep_hash(
+                            x, ignore_keys=ignore_keys, _visited=_visited, _ctx=_CTX_NONE
+                        )
+                        for x in v
+                    ),
+                )
+            )
 
         # Dicts
         if isinstance(v, dict):
             dict_items = tuple(
-                sorted(((k, _mdl_deep_hash(val, ignore_keys=ignore_keys, _visited=_visited, _ctx=_CTX_NONE)) for k, val in v.items()), key=lambda kv: str(kv[0]).lower()),
+                sorted(
+                    (
+                        (
+                            k,
+                            _mdl_deep_hash(
+                                val, ignore_keys=ignore_keys, _visited=_visited, _ctx=_CTX_NONE
+                            ),
+                        )
+                        for k, val in v.items()
+                    ),
+                    key=lambda kv: str(kv[0]).lower(),
+                ),
             )
             return hash(("dict", dict_items))
 
@@ -1526,12 +1713,21 @@ def _mdl_deep_hash(
                     acc = 0
                     for (ctype, is_bezier), ctrl in ctrls.items():
                         h_key = hash((int(ctype) if ctype is not None else None, bool(is_bezier)))
-                        h_rows = _mdl_deep_hash(ctrl.rows, ignore_keys=ignore_keys, _visited=_visited, _ctx=_CTX_ROWS)
+                        h_rows = _mdl_deep_hash(
+                            ctrl.rows, ignore_keys=ignore_keys, _visited=_visited, _ctx=_CTX_ROWS
+                        )
                         acc ^= hash((h_key, h_rows))
                     items.append((k, hash((len(ctrls), acc))))
                     continue
 
-                items.append((k, _mdl_deep_hash(dct[k], ignore_keys=ignore_keys, _visited=_visited, _ctx=next_ctx)))
+                items.append(
+                    (
+                        k,
+                        _mdl_deep_hash(
+                            dct[k], ignore_keys=ignore_keys, _visited=_visited, _ctx=next_ctx
+                        ),
+                    )
+                )
             return hash((v.__class__.__name__, tuple(items)))
 
         return hash(v)
@@ -1663,7 +1859,10 @@ class MDL(ComparableMixin):
             return False
 
         # Validate ids (no ignoring) as equivalency.
-        if not (_mdl_validate_ids_self_consistent(self.root) and _mdl_validate_ids_self_consistent(other.root)):
+        if not (
+            _mdl_validate_ids_self_consistent(self.root)
+            and _mdl_validate_ids_self_consistent(other.root)
+        ):
             return False
         if not _mdl_ids_equivalent_subtree(self.root, other.root):
             return False
@@ -1698,12 +1897,18 @@ class MDL(ComparableMixin):
         h ^= hash(int(self.classification_unk1))
         h ^= hash(_qfloat(float(self.animation_scale)))
         h ^= hash(_qfloat(float(self.radius)))
-        h ^= hash((_qfloat(float(self.bmin.x)), _qfloat(float(self.bmin.y)), _qfloat(float(self.bmin.z))))
-        h ^= hash((_qfloat(float(self.bmax.x)), _qfloat(float(self.bmax.y)), _qfloat(float(self.bmax.z))))
+        h ^= hash(
+            (_qfloat(float(self.bmin.x)), _qfloat(float(self.bmin.y)), _qfloat(float(self.bmin.z)))
+        )
+        h ^= hash(
+            (_qfloat(float(self.bmax.x)), _qfloat(float(self.bmax.y)), _qfloat(float(self.bmax.z)))
+        )
         h ^= hash(self.headlink)
         h ^= hash(int(self.compress_quaternions))
 
-        h ^= hash(("geometry_subtree", _mdl_subtree_semantic_hash(self.root, in_geometry_tree=True)))
+        h ^= hash(
+            ("geometry_subtree", _mdl_subtree_semantic_hash(self.root, in_geometry_tree=True))
+        )
 
         # Animations hashed by key
         def _akey(anim: MDLAnimation) -> tuple[str, str]:
@@ -1711,7 +1916,14 @@ class MDL(ComparableMixin):
 
         for k in sorted(_akey(a) for a in self.anims):
             anim = next(a for a in self.anims if _akey(a) == k)
-            h ^= hash(("anim", k, _qfloat(float(anim.anim_length)), _qfloat(float(anim.transition_length))))
+            h ^= hash(
+                (
+                    "anim",
+                    k,
+                    _qfloat(float(anim.anim_length)),
+                    _qfloat(float(anim.transition_length)),
+                )
+            )
             h ^= hash(_mdl_deep_hash(anim.events, ignore_keys=_MDL_EQ_IGNORE_KEYS))
             # canonical node graph hash by name+parent edge + payload
             a_by = _mdl_animation_nodes_by_name(anim)
@@ -1847,7 +2059,11 @@ class MDL(ComparableMixin):
         -------
             set[str]: A set containing all unique texture names used in meshes
         """
-        return {node.mesh.texture_1 for node in self.all_nodes() if (node.mesh and node.mesh.texture_1 != "NULL" and node.mesh.texture_1)}
+        return {
+            node.mesh.texture_1
+            for node in self.all_nodes()
+            if (node.mesh and node.mesh.texture_1 != "NULL" and node.mesh.texture_1)
+        }
 
     def all_lightmaps(self) -> set[str]:
         """Returns a set of all lightmap textures used in the scene.
@@ -1860,7 +2076,11 @@ class MDL(ComparableMixin):
         -------
             set[str]: A set of all lightmap texture names used in nodes
         """
-        return {node.mesh.texture_2 for node in self.all_nodes() if (node.mesh and node.mesh.texture_2 != "NULL" and node.mesh.texture_2)}
+        return {
+            node.mesh.texture_2
+            for node in self.all_nodes()
+            if (node.mesh and node.mesh.texture_2 != "NULL" and node.mesh.texture_2)
+        }
 
     def prepare_skin_meshes(self) -> None:
         """Prepare bone lookup tables for all skinned meshes in the model.
@@ -1957,7 +2177,14 @@ class MDLAnimation(ComparableMixin):
 
     def __hash__(self):
         # Consistent with _mdl_animation_equal: hash canonical graph keyed by names/edges.
-        h = hash((self.name, self.root_model, _qfloat(float(self.anim_length)), _qfloat(float(self.transition_length))))
+        h = hash(
+            (
+                self.name,
+                self.root_model,
+                _qfloat(float(self.anim_length)),
+                _qfloat(float(self.transition_length)),
+            )
+        )
         h ^= hash(_mdl_deep_hash(self.events, ignore_keys=_MDL_EQ_IGNORE_KEYS))
         by = _mdl_animation_nodes_by_name(self)
         parent = _mdl_node_parent_edges_by_name(list(by.values()))
@@ -2117,7 +2344,18 @@ class MDLNode(ComparableMixin):
             See MDLSaber class for blade properties
     """
 
-    COMPARABLE_FIELDS = ("name", "position", "orientation", "light", "emitter", "mesh", "skin", "dangly", "aabb", "saber")
+    COMPARABLE_FIELDS = (
+        "name",
+        "position",
+        "orientation",
+        "light",
+        "emitter",
+        "mesh",
+        "skin",
+        "dangly",
+        "aabb",
+        "saber",
+    )
     COMPARABLE_SEQUENCE_FIELDS = ("children", "controllers")
 
     def __init__(self):
@@ -2301,8 +2539,23 @@ class MDLLight(ComparableMixin):
         Negative color values indicate a "negative light" that subtracts illumination
     """
 
-    COMPARABLE_FIELDS = ("flare_radius", "light_priority", "ambient_only", "dynamic_type", "affect_dynamic", "shadow", "flare", "fading_light", "multiplier")
-    COMPARABLE_SEQUENCE_FIELDS = ("flare_sizes", "flare_positions", "flare_color_shifts", "flare_textures")
+    COMPARABLE_FIELDS = (
+        "flare_radius",
+        "light_priority",
+        "ambient_only",
+        "dynamic_type",
+        "affect_dynamic",
+        "shadow",
+        "flare",
+        "fading_light",
+        "multiplier",
+    )
+    COMPARABLE_SEQUENCE_FIELDS = (
+        "flare_sizes",
+        "flare_positions",
+        "flare_color_shifts",
+        "flare_textures",
+    )
 
     def __init__(self):
         # Radius for lens flare visibility (0.0 = disabled, typical range 0.0-10.0)
@@ -2325,7 +2578,6 @@ class MDLLight(ComparableMixin):
 
         # 1 = lens flares enabled, 0 = disabled
         self.flare: bool = False
-
 
         # 1 = fades in/out at 2.0 units/sec, 0 = instant toggle
         self.fading_light: bool = False
@@ -2521,7 +2773,6 @@ class MDLEmitter(ComparableMixin):
         # Spawn location: 0=Normal (at emitter), 1=Trail (along path)
         self.spawn_type: int = 0
 
-
         # Update mode: "Fountain", "Single", "Explosion", "Lightning"
         self.update: str = ""
 
@@ -2539,7 +2790,6 @@ class MDLEmitter(ComparableMixin):
 
         # 1 = two-sided rendering, 0 = single-sided
         self.two_sided_texture: int = 0
-
 
         # 1 = loop emission, 0 = emit once
         self.loop: int = 0
@@ -2610,16 +2860,16 @@ class MDLReference(ComparableMixin):
     COMPARABLE_FIELDS = ("model", "reattachable")
 
     def __init__(self):
-
         # External model resource name to attach at this node
         self.model: str = ""
-
 
         # True = can swap models dynamically, False = permanent attachment
         self.reattachable: bool = False
 
     def __repr__(self):
-        return f"{self.__class__.__name__}(model={self.model!r}, reattachable={self.reattachable!r})"
+        return (
+            f"{self.__class__.__name__}(model={self.model!r}, reattachable={self.reattachable!r})"
+        )
 
     def __eq__(self, other):
         if not isinstance(other, MDLReference):
@@ -2697,7 +2947,16 @@ class MDLMesh(ComparableMixin):
         self.texture_2: str = ""
 
         # Saber-specific unknowns (not fully documented in vendors)
-        self.saber_unknowns: tuple[int, int, int, int, int, int, int, int] = (3, 0, 0, 0, 0, 0, 0, 0)
+        self.saber_unknowns: tuple[int, int, int, int, int, int, int, int] = (
+            3,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+        )
 
         # UV Animation for scrolling textures (water, lava, holograms, forcefields)
 
@@ -2762,8 +3021,12 @@ class MDLMesh(ComparableMixin):
         self.dirt_enabled: bool = False  # Dirt/weathering overlay texture (K2)
         self.dirt_texture: int = 1  # Dirt texture index (K2, int16, default 1)
         self.dirt_worldspace: int = 1  # Dirt worldspace flag (K2, int16, default 1)
-        self.dirt_coordinate_space: int = 0  # UV space for dirt (legacy, use dirt_worldspace for K2)
-        self.hologram_donotdraw: bool = False  # Don't render in hologram effect (K2, replaces hide_in_hologram)
+        self.dirt_coordinate_space: int = (
+            0  # UV space for dirt (legacy, use dirt_worldspace for K2)
+        )
+        self.hologram_donotdraw: bool = (
+            False  # Don't render in hologram effect (K2, replaces hide_in_hologram)
+        )
         self.hide_in_hologram: bool = False  # Don't render in hologram effect (legacy alias)
 
         # Inverted mesh sequence counter (array3) - used by MDLOps for inv_count
@@ -2792,13 +3055,22 @@ class MDLMesh(ComparableMixin):
             return False
         a_uv = self.vertex_uv1 or self.vertex_uvs
         b_uv = other.vertex_uv1 or other.vertex_uvs
-        return _mdl_deep_eq(a_uv, b_uv, ignore_keys=_MDL_EQ_IGNORE_KEYS | _MDL_EQ_ID_KEYS, _ctx=_CTX_NONE)
+        return _mdl_deep_eq(
+            a_uv, b_uv, ignore_keys=_MDL_EQ_IGNORE_KEYS | _MDL_EQ_ID_KEYS, _ctx=_CTX_NONE
+        )
 
     def __hash__(self):
         # Hash must match __eq__: ignore alias field, hash effective uv1.
         h = _mdl_hash(self, ignore_keys=_MDL_EQ_IGNORE_KEYS | _MDL_EQ_ID_KEYS)
         uv = self.vertex_uv1 or self.vertex_uvs
-        return hash((h, _mdl_deep_hash(uv, ignore_keys=_MDL_EQ_IGNORE_KEYS | _MDL_EQ_ID_KEYS, _ctx=_CTX_NONE)))
+        return hash(
+            (
+                h,
+                _mdl_deep_hash(
+                    uv, ignore_keys=_MDL_EQ_IGNORE_KEYS | _MDL_EQ_ID_KEYS, _ctx=_CTX_NONE
+                ),
+            )
+        )
 
 
 class MDLSkin(MDLMesh):
@@ -3113,9 +3385,7 @@ class MDLSaber(ComparableMixin):
     def __init__(self):
         self.saber_type: int = 0
 
-
         self.saber_color: int = 0
-
 
         self.saber_length: float = 0.0
 

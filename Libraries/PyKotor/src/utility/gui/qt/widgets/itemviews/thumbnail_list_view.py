@@ -53,7 +53,17 @@ class ThumbnailCache:
     MAX_CACHE_SIZE: ClassVar[int] = 500
 
     # Supported image formats for thumbnails
-    THUMBNAIL_FORMATS: ClassVar[set[str]] = {".jpg", ".jpeg", ".png", ".gif", ".bmp", ".ico", ".webp", ".tiff", ".tif"}
+    THUMBNAIL_FORMATS: ClassVar[set[str]] = {
+        ".jpg",
+        ".jpeg",
+        ".png",
+        ".gif",
+        ".bmp",
+        ".ico",
+        ".webp",
+        ".tiff",
+        ".tif",
+    }
 
     def __init__(self):
         self._cache: dict[tuple[str, int], QPixmap] = {}

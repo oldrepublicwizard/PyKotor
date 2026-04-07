@@ -71,7 +71,6 @@ class LTRBinaryReader(ResourceReader):
         self,
         auto_close: bool = True,
     ) -> LTR:
-
         # Initialize LTR instance
         self._ltr = LTR()
 
@@ -90,7 +89,6 @@ class LTRBinaryReader(ResourceReader):
 
         self._reader = BinaryReader.from_bytes(data, 0)
 
-
         # Read header: file type ("LTR ") and version ("V1.0")
         file_type = self._reader.read_string(4)
         file_version = self._reader.read_string(4)
@@ -103,26 +101,22 @@ class LTRBinaryReader(ResourceReader):
             msg = "The LTR version that was loaded is not supported."
             raise TypeError(msg)
 
-
         # Read letter count (must be 28 for KotOR, 26 or 28 for NWN)
         letter_count = self._reader.read_uint8()
         if letter_count != 28:
             msg = "LTR files that do not handle exactly 28 characters are not supported."
             raise TypeError(msg)
 
-
         # Read single-letter probability block (start, middle, end arrays)
         self._ltr._singles._start = [self._reader.read_single() for _ in range(28)]
         self._ltr._singles._middle = [self._reader.read_single() for _ in range(28)]
         self._ltr._singles._end = [self._reader.read_single() for _ in range(28)]
-
 
         # Read double-letter probability blocks (28 blocks, one per previous character)
         for i in range(28):
             self._ltr._doubles[i]._start = [self._reader.read_single() for _ in range(28)]
             self._ltr._doubles[i]._middle = [self._reader.read_single() for _ in range(28)]
             self._ltr._doubles[i]._end = [self._reader.read_single() for _ in range(28)]
-
 
         # Read triple-letter probability blocks (28x28 blocks, indexed by previous two characters)
         for i in range(28):

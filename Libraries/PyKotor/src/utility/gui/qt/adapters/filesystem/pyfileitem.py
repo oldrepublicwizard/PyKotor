@@ -240,7 +240,13 @@ class PyFileInfo:
 
     def isBundle(self) -> bool:
         """Returns True if the file is a macOS bundle."""
-        return sys.platform == "Darwin" and self._path.suffix.lower() in {".app", ".bundle", ".framework", ".plugin", ".kext"}
+        return sys.platform == "Darwin" and self._path.suffix.lower() in {
+            ".app",
+            ".bundle",
+            ".framework",
+            ".plugin",
+            ".kext",
+        }
 
     def isJunction(self) -> bool:
         """Returns True if the _path is a Windows junction."""
@@ -268,21 +274,29 @@ class PyFileInfo:
 
     def lastModified(self) -> QDateTime | None:
         """Returns the last modification time."""
-        return QDateTime.fromMSecsSinceEpoch(int(self._stat.st_mtime * 1000)) if self._stat else None  # noqa: DTZ006
+        return (
+            QDateTime.fromMSecsSinceEpoch(int(self._stat.st_mtime * 1000)) if self._stat else None
+        )  # noqa: DTZ006
 
     def lastRead(self) -> QDateTime | None:
         """Returns the last access time."""
-        return QDateTime.fromMSecsSinceEpoch(int(self._stat.st_atime * 1000)) if self._stat else None  # noqa: DTZ006
+        return (
+            QDateTime.fromMSecsSinceEpoch(int(self._stat.st_atime * 1000)) if self._stat else None
+        )  # noqa: DTZ006
 
     def birthTime(self) -> QDateTime | None:
         """Returns the creation time."""
         if self._stat:
-            return QDateTime.fromMSecsSinceEpoch(int(self._stat.st_ctime if os.name == "nt" else self._stat.st_birthtime * 1000))  # noqa: DTZ006
+            return QDateTime.fromMSecsSinceEpoch(
+                int(self._stat.st_ctime if os.name == "nt" else self._stat.st_birthtime * 1000)
+            )  # noqa: DTZ006
         return None
 
     def metadataChangeTime(self) -> QDateTime | None:
         """Returns the metadata change time."""
-        return QDateTime.fromMSecsSinceEpoch(int(self._stat.st_ctime * 1000)) if self._stat else None  # noqa: DTZ006
+        return (
+            QDateTime.fromMSecsSinceEpoch(int(self._stat.st_ctime * 1000)) if self._stat else None
+        )  # noqa: DTZ006
 
     def owner(self) -> str | None:
         """Returns the owner name of the file."""
@@ -344,7 +358,9 @@ class PyFileInfo:
             return self.lastRead()
         if time_type == "modification":
             return self.lastModified()
-        raise ValueError("Invalid time_type. Must be 'birth', 'metadata', 'access', or 'modification'.")
+        raise ValueError(
+            "Invalid time_type. Must be 'birth', 'metadata', 'access', or 'modification'."
+        )
 
     def swap(self, other: QFileInfo):
         """Swaps the contents with another QFileInfo object."""
@@ -529,7 +545,13 @@ class PyWrappedQFileInfo:
     def isBundle(self) -> bool:
         """Returns True if the file is a macOS bundle."""
         if sys.platform == "Darwin":
-            return self._path.suffix.lower() in [".app", ".bundle", ".framework", ".plugin", ".kext"]
+            return self._path.suffix.lower() in [
+                ".app",
+                ".bundle",
+                ".framework",
+                ".plugin",
+                ".kext",
+            ]
         return False
 
     def isJunction(self) -> bool:
@@ -636,7 +658,9 @@ class PyWrappedQFileInfo:
             return self.lastRead()
         if time_type == "modification":
             return self.lastModified()
-        raise ValueError("Invalid time_type. Must be 'birth', 'metadata', 'access', or 'modification'.")
+        raise ValueError(
+            "Invalid time_type. Must be 'birth', 'metadata', 'access', or 'modification'."
+        )
 
     def __eq__(self, other: PyFileInfo) -> bool:
         """Checks if two PyFileInfo objects refer to the same file."""

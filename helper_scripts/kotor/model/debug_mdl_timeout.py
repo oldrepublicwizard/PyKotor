@@ -64,9 +64,13 @@ def debug_model(model_name: str, game: Game):
 
             print("\nSize comparison:")
             print(f"  Original MDL: {orig_mdl_size} bytes")
-            print(f"  PyKotor MDL:  {pykotor_mdl_size} bytes (diff: {pykotor_mdl_size - orig_mdl_size:+d})")
+            print(
+                f"  PyKotor MDL:  {pykotor_mdl_size} bytes (diff: {pykotor_mdl_size - orig_mdl_size:+d})"
+            )
             print(f"  Original MDX: {orig_mdx_size} bytes")
-            print(f"  PyKotor MDX:  {pykotor_mdx_size} bytes (diff: {pykotor_mdx_size - orig_mdx_size:+d})")
+            print(
+                f"  PyKotor MDX:  {pykotor_mdx_size} bytes (diff: {pykotor_mdx_size - orig_mdx_size:+d})"
+            )
 
         except Exception as e:
             print(f"Error writing: {e}")

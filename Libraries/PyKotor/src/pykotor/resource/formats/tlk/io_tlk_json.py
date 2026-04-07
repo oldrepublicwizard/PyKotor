@@ -81,7 +81,11 @@ class TLKJSONWriter(ResourceWriter):
     @autoclose
     def write(self, *, auto_close: bool = True):  # noqa: FBT001, FBT002, ARG002  # pyright: ignore[reportUnusedParameters]
         for stringref, entry in self._tlk:
-            string: TLKStringEntry = {"_index": str(stringref), "text": entry.text, "soundResRef": str(entry.voiceover)}
+            string: TLKStringEntry = {
+                "_index": str(stringref),
+                "text": entry.text,
+                "soundResRef": str(entry.voiceover),
+            }
             self._json["strings"].append(string)
 
         json_dump = json.dumps(self._json, indent=4)

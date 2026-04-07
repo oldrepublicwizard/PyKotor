@@ -118,11 +118,15 @@ def cmd_validate_installation(args: Namespace, logger: Logger) -> int:
         if summary.get("game"):
             logger.info(f"  Game: {summary['game']}")  # noqa: G004
         if args.verbose:
-            logger.info(f"  Modules: {summary.get('module_count', 0)}, Override files: {summary.get('override_file_count', 0)}")  # noqa: G004
+            logger.info(
+                f"  Modules: {summary.get('module_count', 0)}, Override files: {summary.get('override_file_count', 0)}"
+            )  # noqa: G004
         return 0
 
     missing_files_raw = summary["missing"]
-    assert isinstance(missing_files_raw, (Sized, list)), "missing must be a list or a sized iterable"
+    assert isinstance(missing_files_raw, (Sized, list)), (
+        "missing must be a list or a sized iterable"
+    )
     missing_files = missing_files_raw
     if bool(missing_files):
         logger.warning(f"Missing files ({len(missing_files)}):")  # noqa: G004
@@ -176,7 +180,9 @@ def cmd_investigate_module(args: Namespace, logger: Logger) -> int:
     logger.info(f"Data RIM: {info['data_rim']}")  # noqa: G004
     logger.info(f"Total resources: {info['total_resources']}")  # noqa: G004
     logger.info("\nResources by type:")
-    for res_type, count in sorted(info["resources_by_type"].items(), key=lambda x: x[1], reverse=True):
+    for res_type, count in sorted(
+        info["resources_by_type"].items(), key=lambda x: x[1], reverse=True
+    ):
         logger.info(f"  {res_type}: {count}")  # noqa: G004
 
     if info["lyt_file"]:

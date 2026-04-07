@@ -102,7 +102,9 @@ def investigate_module(module_name: str, installation: Installation):
         for room in lyt.rooms:
             model_name = room.model.lower()
             room_models.add(model_name)
-            print(f"  - {model_name} at ({room.position.x:.2f}, {room.position.y:.2f}, {room.position.z:.2f})")
+            print(
+                f"  - {model_name} at ({room.position.x:.2f}, {room.position.y:.2f}, {room.position.z:.2f})"
+            )
         print()
 
         # Find MDL/MDX/WOK for each room
@@ -200,7 +202,11 @@ def investigate_module(module_name: str, installation: Installation):
     for res_ident, loc_list in module_resources.items():
         if res_ident.restype in (ResourceType.TPC, ResourceType.TGA):
             resname_lower = str(res_ident.resname).lower()
-            if "_lm" in resname_lower or resname_lower.endswith("_lm") or resname_lower.startswith("l_"):
+            if (
+                "_lm" in resname_lower
+                or resname_lower.endswith("_lm")
+                or resname_lower.startswith("l_")
+            ):
                 lightmaps_found.add(res_ident.resname)
             else:
                 textures_found.add(res_ident.resname)

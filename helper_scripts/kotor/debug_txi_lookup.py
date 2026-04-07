@@ -76,7 +76,9 @@ for tex_name in test_textures[:5]:  # Test first 5
                 print(f"     Location list type: {type(loc_list)}, value: {loc_list}")
                 if loc_list:
                     for loc in loc_list[:2]:
-                        print(f"       - {loc.filepath.name} (offset: {loc.offset}, size: {loc.size})")
+                        print(
+                            f"       - {loc.filepath.name} (offset: {loc.offset}, size: {loc.size})"
+                        )
                 else:
                     print("       WARNING: loc_list is empty or None!")
         else:

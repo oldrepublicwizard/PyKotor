@@ -202,7 +202,9 @@ def cmd_compile(
                         for exclude_pattern in exclude_patterns:
                             import fnmatch  # noqa: PLC0415
 
-                            if fnmatch.fnmatch(str(match_path), str(config.root_dir / exclude_pattern)):
+                            if fnmatch.fnmatch(
+                                str(match_path), str(config.root_dir / exclude_pattern)
+                            ):
                                 excluded = True
                                 break
 
@@ -276,7 +278,9 @@ def cmd_compile(
                         error_count += 1
 
             if not use_external or compiler is None:
-                compiled_count, error_count = use_builtin_compiler(nss_files, cache_dir, game, logger)
+                compiled_count, error_count = use_builtin_compiler(
+                    nss_files, cache_dir, game, logger
+                )
         else:
             # Use built-in PyKotor compiler
             compiled_count, error_count = use_builtin_compiler(nss_files, cache_dir, game, logger)

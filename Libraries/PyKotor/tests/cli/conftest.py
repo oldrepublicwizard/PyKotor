@@ -108,7 +108,9 @@ def k2_installation() -> Installation:
     if not k2_path.is_dir():
         pytest.skip(f"K2_PATH/TSL_PATH path does not exist or is not a directory: {k2_path}")
     if not k2_path.joinpath("chitin.key").is_file():
-        pytest.skip(f"K2_PATH/TSL_PATH does not look like a real install (missing chitin.key): {k2_path}")
+        pytest.skip(
+            f"K2_PATH/TSL_PATH does not look like a real install (missing chitin.key): {k2_path}"
+        )
     return Installation(CaseAwarePath(k2_path))
 
 
@@ -129,7 +131,13 @@ def pytest_collection_modifyitems(config: pytest.Config, items: list[pytest.Item
             game_key, module_root = params["module_case"]
         except Exception:
             continue
-        install_label = "k1_installation" if game_key == "k1" else "tsl_installation" if game_key == "k2" else str(game_key)
+        install_label = (
+            "k1_installation"
+            if game_key == "k1"
+            else "tsl_installation"
+            if game_key == "k2"
+            else str(game_key)
+        )
         base = item.nodeid.split("::", 1)[0]
         rest = item.nodeid[len(base) + 2 :] if item.nodeid.startswith(base + "::") else item.nodeid
         # `rest` typically begins with the function name, potentially with `[param]`.

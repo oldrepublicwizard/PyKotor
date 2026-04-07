@@ -77,7 +77,9 @@ def main():
         pykotor_mdl = pykotor_mdl_path.read_bytes()
 
         # MDLOps roundtrip (decompile + recompile)
-        result = subprocess.run([str(mdlops_exe), str(orig_mdl_path)], cwd=str(td_path), capture_output=True, timeout=60)
+        result = subprocess.run(
+            [str(mdlops_exe), str(orig_mdl_path)], cwd=str(td_path), capture_output=True, timeout=60
+        )
         if result.returncode != 0:
             print(f"MDLOps decompile failed: {result.stderr.decode()}")
             return
@@ -87,7 +89,12 @@ def main():
             print(f"MDLOps ASCII not found: {ascii_path}")
             return
 
-        result = subprocess.run([str(mdlops_exe), str(ascii_path), "-k1"], cwd=str(td_path), capture_output=True, timeout=60)
+        result = subprocess.run(
+            [str(mdlops_exe), str(ascii_path), "-k1"],
+            cwd=str(td_path),
+            capture_output=True,
+            timeout=60,
+        )
         if result.returncode != 0:
             print(f"MDLOps compile failed: {result.stderr.decode()}")
             return
@@ -155,7 +162,9 @@ def main():
                 elif pk_val != mo_val:
                     match = " *** DIFF ***"
 
-            print(f"{name:<30} {pos:<6} {str(orig_val):<12} {str(pk_val):<12} {str(mo_val):<12}{match}")
+            print(
+                f"{name:<30} {pos:<6} {str(orig_val):<12} {str(pk_val):<12} {str(mo_val):<12}{match}"
+            )
 
         print("\n=== Key Analysis ===")
         or_root = get_uint32(orig_mdl, 52)
@@ -168,9 +177,15 @@ def main():
         pk_names = get_uint32(pykotor_mdl, 196)
         mo_names = get_uint32(mdlops_mdl, 196)
 
-        print(f"Original: root_node_offset={or_root}, offset_to_super_root={or_super}, offset_to_name_offsets={or_names}")
-        print(f"PyKotor:  root_node_offset={pk_root}, offset_to_super_root={pk_super}, offset_to_name_offsets={pk_names}")
-        print(f"MDLOps:   root_node_offset={mo_root}, offset_to_super_root={mo_super}, offset_to_name_offsets={mo_names}")
+        print(
+            f"Original: root_node_offset={or_root}, offset_to_super_root={or_super}, offset_to_name_offsets={or_names}"
+        )
+        print(
+            f"PyKotor:  root_node_offset={pk_root}, offset_to_super_root={pk_super}, offset_to_name_offsets={pk_names}"
+        )
+        print(
+            f"MDLOps:   root_node_offset={mo_root}, offset_to_super_root={mo_super}, offset_to_name_offsets={mo_names}"
+        )
 
         # Check if original super_root differs from root_node_offset
         if or_super != or_root:
@@ -199,7 +214,9 @@ def main():
         pk_name_count = get_uint32(pykotor_mdl, 200)
         pk_anim_offset = get_uint32(pykotor_mdl, 100)
         pk_anim_count = get_uint32(pykotor_mdl, 104)
-        print(f"PyKotor: name_offsets_count={pk_name_count}, offset_to_animations={pk_anim_offset}, animation_count={pk_anim_count}")
+        print(
+            f"PyKotor: name_offsets_count={pk_name_count}, offset_to_animations={pk_anim_offset}, animation_count={pk_anim_count}"
+        )
 
         # The node start should be: after header + names + anims
         # But if no anims, it's after names

@@ -49,7 +49,9 @@ def _resolve_installation(
     installation: Installation | None,
 ) -> Installation:
     """Return injected installation or build one from path."""
-    return installation if installation is not None else Installation(CaseAwarePath(installation_path))
+    return (
+        installation if installation is not None else Installation(CaseAwarePath(installation_path))
+    )
 
 
 def _resolve_module_kit_manager(
@@ -92,7 +94,15 @@ def _append_indoor_room(
     flip_y: bool = False,
 ) -> None:
     """Append a new indoor room instance using explicit transform fields."""
-    indoor.rooms.append(IndoorMapRoom(component, Vector3(position.x, position.y, position.z), rotation=rotation, flip_x=flip_x, flip_y=flip_y))
+    indoor.rooms.append(
+        IndoorMapRoom(
+            component,
+            Vector3(position.x, position.y, position.z),
+            rotation=rotation,
+            flip_x=flip_x,
+            flip_y=flip_y,
+        )
+    )
 
 
 def _components_by_vertex_count(kits: list[Kit]) -> dict[int, list[KitComponent]]:
@@ -201,7 +211,9 @@ def _module_git(module: Module) -> GIT | None:
     return None if git_res is None else git_res.resource()
 
 
-def _apply_indoor_metadata(indoor: IndoorMap, module: Module, are: ARE | None, ifo: IFO | None) -> None:
+def _apply_indoor_metadata(
+    indoor: IndoorMap, module: Module, are: ARE | None, ifo: IFO | None
+) -> None:
     """Apply module id, area lighting/name, and warp point to indoor map."""
     indoor.module_id = module.module_id() or "test01"
     if are is not None:
@@ -238,7 +250,9 @@ def _resolve_extraction_kits(
     return kits
 
 
-def _room_from_transform_match(room: LYTRoom, best_match: _RoomTransformMatch, instance_bwm: BWM) -> IndoorMapRoom:
+def _room_from_transform_match(
+    room: LYTRoom, best_match: _RoomTransformMatch, instance_bwm: BWM
+) -> IndoorMapRoom:
     """Create IndoorMapRoom from best transform match with optional override walkmesh."""
     room_obj = IndoorMapRoom(
         best_match.component,
@@ -275,7 +289,9 @@ def build_mod_from_indoor_file(
     indoor_map.load(Path(indoor_path).read_bytes(), kits)
     if module_id:
         indoor_map.module_id = module_id
-    indoor_map.build(installation, kits, output_mod_path, game_override=game, loadscreen_path=loadscreen_path)
+    indoor_map.build(
+        installation, kits, output_mod_path, game_override=game, loadscreen_path=loadscreen_path
+    )
 
 
 def build_mod_from_indoor_file_modulekit(
@@ -301,7 +317,9 @@ def build_mod_from_indoor_file_modulekit(
         indoor_map.module_id = module_id
     # For implicit-kit builds, pass only the kits referenced by rooms.
     kits = _collect_unique_room_kits(indoor_map)
-    indoor_map.build(installation, kits, output_mod_path, game_override=game, loadscreen_path=loadscreen_path)
+    indoor_map.build(
+        installation, kits, output_mod_path, game_override=game, loadscreen_path=loadscreen_path
+    )
 
 
 def extract_indoor_from_module_as_modulekit(
@@ -346,7 +364,9 @@ def extract_indoor_from_module_as_modulekit(
         indoor.are = are
         indoor.ifo = ifo
         indoor.git = git
-        indoor._preserve_extracted_metadata = any((are is not None, ifo is not None, git is not None))
+        indoor._preserve_extracted_metadata = any(
+            (are is not None, ifo is not None, git is not None)
+        )
         indoor._preserve_extracted_git = git is not None
         if lyt_obj is not None and len(lyt_obj.rooms) == len(indoor.rooms):
             indoor._source_lyt_for_preserve = deepcopy(lyt_obj)
@@ -357,7 +377,9 @@ def extract_indoor_from_module_as_modulekit(
                 if vis_obj is not None:
                     indoor._source_vis_for_preserve = deepcopy(vis_obj)
         _apply_indoor_metadata(indoor, kit._module, are, ifo)
-    logger.debug("ModuleKit extraction produced %d room(s) for '%s'", len(indoor.rooms), module_root)
+    logger.debug(
+        "ModuleKit extraction produced %d room(s) for '%s'", len(indoor.rooms), module_root
+    )
     return indoor
 
 
@@ -411,7 +433,12 @@ def extract_indoor_from_module_file_against_modulekit(
     _append_rooms_by_index(indoor, lyt, kit.components)
 
     indoor.rebuild_room_connections()
-    logger.debug("Module-file extraction produced %d room(s) for '%s' against ModuleKit '%s'", len(indoor.rooms), module_path.name, module_root)
+    logger.debug(
+        "Module-file extraction produced %d room(s) for '%s' against ModuleKit '%s'",
+        len(indoor.rooms),
+        module_path.name,
+        module_root,
+    )
     return indoor
 
 
@@ -530,7 +557,11 @@ def infer_room_transform(
 
             # Translation: inst_centroid - R * flipped_centroid
             rot_centroid = _apply_rotate_z([flipped_centroid], rotation_deg)[0]
-            translation = Vector3(inst_centroid.x - rot_centroid.x, inst_centroid.y - rot_centroid.y, inst_centroid.z - rot_centroid.z)
+            translation = Vector3(
+                inst_centroid.x - rot_centroid.x,
+                inst_centroid.y - rot_centroid.y,
+                inst_centroid.z - rot_centroid.z,
+            )
 
             transformed = _apply_translate(_apply_rotate_z(flipped, rotation_deg), translation)
             err = _rms_error(transformed, instance_vertices)

@@ -212,9 +212,13 @@ class TestDataHelper:
         return ini_path.read_text(encoding="utf-8")
 
     @staticmethod
-    def assert_ini_section_exists(ini_content: str, section_name: str, test_case: unittest.TestCase):
+    def assert_ini_section_exists(
+        ini_content: str, section_name: str, test_case: unittest.TestCase
+    ):
         """Assert that a section exists in INI."""
-        test_case.assertIn(f"[{section_name}]", ini_content, f"Section [{section_name}] should exist")
+        test_case.assertIn(
+            f"[{section_name}]", ini_content, f"Section [{section_name}] should exist"
+        )
 
     @staticmethod
     def assert_ini_key_value(
@@ -266,7 +270,9 @@ class Test2DAMemory(unittest.TestCase):
 
     def setUp(self):
         """Set up test environment."""
-        self.temp_dir, self.vanilla_dir, self.modded_dir, self.tslpatchdata_dir = TestDataHelper.create_test_env()
+        self.temp_dir, self.vanilla_dir, self.modded_dir, self.tslpatchdata_dir = (
+            TestDataHelper.create_test_env()
+        )
 
     def tearDown(self):
         """Clean up test environment."""
@@ -284,7 +290,10 @@ class Test2DAMemory(unittest.TestCase):
         # Vanilla: 2 rows
         vanilla_2da = TestDataHelper.create_basic_2da(
             ["label", "name"],
-            [("0", {"label": "spell_0", "name": "100"}), ("1", {"label": "spell_1", "name": "101"})],
+            [
+                ("0", {"label": "spell_0", "name": "100"}),
+                ("1", {"label": "spell_1", "name": "101"}),
+            ],
         )
         write_2da(vanilla_2da, self.vanilla_dir / "spells.2da", ResourceType.TwoDA)
 
@@ -300,7 +309,9 @@ class Test2DAMemory(unittest.TestCase):
         write_2da(modded_2da, self.modded_dir / "spells.2da", ResourceType.TwoDA)
 
         # Run diff
-        ini_content = TestDataHelper.run_diff(self.vanilla_dir, self.modded_dir, self.tslpatchdata_dir)
+        ini_content = TestDataHelper.run_diff(
+            self.vanilla_dir, self.modded_dir, self.tslpatchdata_dir
+        )
 
         # Verify AddRow with 2DAMEMORY token
         self.assertIn("[spells.2da]", ini_content)
@@ -339,7 +350,9 @@ class Test2DAMemory(unittest.TestCase):
         write_2da(modded_2da, self.modded_dir / "baseitems.2da", ResourceType.TwoDA)
 
         # Run diff
-        ini_content = TestDataHelper.run_diff(self.vanilla_dir, self.modded_dir, self.tslpatchdata_dir)
+        ini_content = TestDataHelper.run_diff(
+            self.vanilla_dir, self.modded_dir, self.tslpatchdata_dir
+        )
 
         # Verify ChangeRow exists
         self.assertIn("[baseitems.2da]", ini_content)
@@ -359,14 +372,20 @@ class Test2DAMemory(unittest.TestCase):
         # Vanilla: weaponsounds.2da with 2 rows
         vanilla_weaponsounds = TestDataHelper.create_basic_2da(
             ["label", "cloth0"],
-            [("0", {"label": "weapon_sound_0", "cloth0": "snd0"}), ("1", {"label": "weapon_sound_1", "cloth0": "snd1"})],
+            [
+                ("0", {"label": "weapon_sound_0", "cloth0": "snd0"}),
+                ("1", {"label": "weapon_sound_1", "cloth0": "snd1"}),
+            ],
         )
         write_2da(vanilla_weaponsounds, self.vanilla_dir / "weaponsounds.2da", ResourceType.TwoDA)
 
         # Vanilla: baseitems.2da with 2 rows
         vanilla_baseitems = TestDataHelper.create_basic_2da(
             ["label", "weaponmattype"],
-            [("0", {"label": "base_0", "weaponmattype": "0"}), ("1", {"label": "base_1", "weaponmattype": "1"})],
+            [
+                ("0", {"label": "base_0", "weaponmattype": "0"}),
+                ("1", {"label": "base_1", "weaponmattype": "1"}),
+            ],
         )
         write_2da(vanilla_baseitems, self.vanilla_dir / "baseitems.2da", ResourceType.TwoDA)
 
@@ -391,7 +410,10 @@ class Test2DAMemory(unittest.TestCase):
             [
                 ("0", {"label": "base_0", "weaponmattype": "0"}),
                 ("1", {"label": "base_1", "weaponmattype": "1"}),
-                ("2", {"label": "new_base", "weaponmattype": "2"}),  # References new weaponsounds row
+                (
+                    "2",
+                    {"label": "new_base", "weaponmattype": "2"},
+                ),  # References new weaponsounds row
             ],
         )
         write_2da(modded_baseitems, self.modded_dir / "baseitems.2da", ResourceType.TwoDA)
@@ -401,7 +423,9 @@ class Test2DAMemory(unittest.TestCase):
         write_gff(modded_gff, self.modded_dir / "item.uti", ResourceType.GFF)
 
         # Run diff
-        ini_content = TestDataHelper.run_diff(self.vanilla_dir, self.modded_dir, self.tslpatchdata_dir, logging_enabled=True)
+        ini_content = TestDataHelper.run_diff(
+            self.vanilla_dir, self.modded_dir, self.tslpatchdata_dir, logging_enabled=True
+        )
 
         # Verify chain exists:
         # 1. weaponsounds.2da AddRow stores index in 2DAMEMORY
@@ -454,7 +478,9 @@ class Test2DAMemory(unittest.TestCase):
         write_2da(modded_2da, self.modded_dir / "test.2da", ResourceType.TwoDA)
 
         # Run diff
-        ini_content = TestDataHelper.run_diff(self.vanilla_dir, self.modded_dir, self.tslpatchdata_dir)
+        ini_content = TestDataHelper.run_diff(
+            self.vanilla_dir, self.modded_dir, self.tslpatchdata_dir
+        )
 
         # Verify AddColumn
         self.assertIn("[test.2da]", ini_content)
@@ -487,7 +513,11 @@ class Test2DAMemory(unittest.TestCase):
         # Modded: 2DA with 3 rows (new row 2)
         modded_2da = TestDataHelper.create_basic_2da(
             ["label"],
-            [("0", {"label": "soundset_0"}), ("1", {"label": "soundset_1"}), ("2", {"label": "new_soundset"})],
+            [
+                ("0", {"label": "soundset_0"}),
+                ("1", {"label": "soundset_1"}),
+                ("2", {"label": "new_soundset"}),
+            ],
         )
         write_2da(modded_2da, self.modded_dir / "soundset.2da", ResourceType.TwoDA)
 
@@ -499,7 +529,9 @@ class Test2DAMemory(unittest.TestCase):
         write_gff(modded_gff2, self.modded_dir / "creature2.utc", ResourceType.GFF)
 
         # Run diff
-        ini_content = TestDataHelper.run_diff(self.vanilla_dir, self.modded_dir, self.tslpatchdata_dir, logging_enabled=True)
+        ini_content = TestDataHelper.run_diff(
+            self.vanilla_dir, self.modded_dir, self.tslpatchdata_dir, logging_enabled=True
+        )
 
         # Verify both GFF files use same token
         self.assertIn("[creature1.utc]", ini_content)
@@ -542,7 +574,10 @@ class Test2DAMemory(unittest.TestCase):
         # Vanilla: 2DA with existing rows
         vanilla_2da = TestDataHelper.create_basic_2da(
             ["label", "priority"],
-            [("0", {"label": "row_0", "priority": "10"}), ("1", {"label": "row_1", "priority": "20"})],
+            [
+                ("0", {"label": "row_0", "priority": "10"}),
+                ("1", {"label": "row_1", "priority": "20"}),
+            ],
         )
         write_2da(vanilla_2da, self.vanilla_dir / "test.2da", ResourceType.TwoDA)
 
@@ -558,7 +593,9 @@ class Test2DAMemory(unittest.TestCase):
         write_2da(modded_2da, self.modded_dir / "test.2da", ResourceType.TwoDA)
 
         # Run diff
-        ini_content = TestDataHelper.run_diff(self.vanilla_dir, self.modded_dir, self.tslpatchdata_dir)
+        ini_content = TestDataHelper.run_diff(
+            self.vanilla_dir, self.modded_dir, self.tslpatchdata_dir
+        )
 
         # Check if High() is detected and used
         # NOTE: The diff engine would need logic to detect this pattern
@@ -576,7 +613,9 @@ class TestTLKStrRef(unittest.TestCase):
 
     def setUp(self):
         """Set up test environment."""
-        self.temp_dir, self.vanilla_dir, self.modded_dir, self.tslpatchdata_dir = TestDataHelper.create_test_env()
+        self.temp_dir, self.vanilla_dir, self.modded_dir, self.tslpatchdata_dir = (
+            TestDataHelper.create_test_env()
+        )
 
     def tearDown(self):
         """Clean up test environment."""
@@ -599,7 +638,9 @@ class TestTLKStrRef(unittest.TestCase):
         write_tlk(modded_tlk, self.modded_dir / "dialog.tlk", ResourceType.TLK)
 
         # Run diff
-        ini_content = TestDataHelper.run_diff(self.vanilla_dir, self.modded_dir, self.tslpatchdata_dir)
+        ini_content = TestDataHelper.run_diff(
+            self.vanilla_dir, self.modded_dir, self.tslpatchdata_dir
+        )
 
         # Verify TLKList section
         self.assertIn("[TLKList]", ini_content)
@@ -619,15 +660,21 @@ class TestTLKStrRef(unittest.TestCase):
         101=1
         """
         # Vanilla: TLK with entries
-        vanilla_tlk = TestDataHelper.create_basic_tlk([("Original text 100", ""), ("Original text 101", "")])
+        vanilla_tlk = TestDataHelper.create_basic_tlk(
+            [("Original text 100", ""), ("Original text 101", "")]
+        )
         write_tlk(vanilla_tlk, self.vanilla_dir / "dialog.tlk", ResourceType.TLK)
 
         # Modded: TLK with modified entries
-        modded_tlk = TestDataHelper.create_basic_tlk([("Modified text 100", ""), ("Modified text 101", "")])
+        modded_tlk = TestDataHelper.create_basic_tlk(
+            [("Modified text 100", ""), ("Modified text 101", "")]
+        )
         write_tlk(modded_tlk, self.modded_dir / "dialog.tlk", ResourceType.TLK)
 
         # Run diff
-        ini_content = TestDataHelper.run_diff(self.vanilla_dir, self.modded_dir, self.tslpatchdata_dir)
+        ini_content = TestDataHelper.run_diff(
+            self.vanilla_dir, self.modded_dir, self.tslpatchdata_dir
+        )
 
         # Verify replace pattern
         self.assertIn("[TLKList]", ini_content)
@@ -663,7 +710,9 @@ class TestTLKStrRef(unittest.TestCase):
         write_2da(modded_2da, self.modded_dir / "spells.2da", ResourceType.TwoDA)
 
         # Run diff
-        ini_content = TestDataHelper.run_diff(self.vanilla_dir, self.modded_dir, self.tslpatchdata_dir)
+        ini_content = TestDataHelper.run_diff(
+            self.vanilla_dir, self.modded_dir, self.tslpatchdata_dir
+        )
 
         # Verify StrRef used in 2DA
         self.assertIn("[TLKList]", ini_content)
@@ -702,7 +751,9 @@ class TestTLKStrRef(unittest.TestCase):
         write_ssf(modded_ssf, self.modded_dir / "character.ssf", ResourceType.SSF)
 
         # Run diff
-        ini_content = TestDataHelper.run_diff(self.vanilla_dir, self.modded_dir, self.tslpatchdata_dir)
+        ini_content = TestDataHelper.run_diff(
+            self.vanilla_dir, self.modded_dir, self.tslpatchdata_dir
+        )
 
         # Verify StrRef used in SSF
         self.assertIn("[TLKList]", ini_content)
@@ -722,7 +773,9 @@ class TestGFF(unittest.TestCase):
 
     def setUp(self):
         """Set up test environment."""
-        self.temp_dir, self.vanilla_dir, self.modded_dir, self.tslpatchdata_dir = TestDataHelper.create_test_env()
+        self.temp_dir, self.vanilla_dir, self.modded_dir, self.tslpatchdata_dir = (
+            TestDataHelper.create_test_env()
+        )
 
     def tearDown(self):
         """Clean up test environment."""
@@ -775,7 +828,9 @@ class TestGFF(unittest.TestCase):
         write_gff(modded_gff, self.modded_dir / "test.utc", ResourceType.GFF)
 
         # Run diff
-        ini_content = TestDataHelper.run_diff(self.vanilla_dir, self.modded_dir, self.tslpatchdata_dir)
+        ini_content = TestDataHelper.run_diff(
+            self.vanilla_dir, self.modded_dir, self.tslpatchdata_dir
+        )
 
         # Verify all field modifications
         self.assertIn("[test.utc]", ini_content)
@@ -799,7 +854,9 @@ class TestGFF(unittest.TestCase):
         write_gff(modded_gff, self.modded_dir / "test.utc", ResourceType.GFF)
 
         # Run diff
-        ini_content = TestDataHelper.run_diff(self.vanilla_dir, self.modded_dir, self.tslpatchdata_dir)
+        ini_content = TestDataHelper.run_diff(
+            self.vanilla_dir, self.modded_dir, self.tslpatchdata_dir
+        )
 
         # Verify AddField
         self.assertIn("[test.utc]", ini_content)
@@ -825,7 +882,9 @@ class TestGFF(unittest.TestCase):
         write_gff(modded_gff, self.modded_dir / "test.utc", ResourceType.GFF)
 
         # Run diff
-        ini_content = TestDataHelper.run_diff(self.vanilla_dir, self.modded_dir, self.tslpatchdata_dir)
+        ini_content = TestDataHelper.run_diff(
+            self.vanilla_dir, self.modded_dir, self.tslpatchdata_dir
+        )
 
         # Verify nested modification
         self.assertIn("[test.utc]", ini_content)
@@ -858,7 +917,9 @@ class TestGFF(unittest.TestCase):
         write_gff(modded_gff, self.modded_dir / "test.utc", ResourceType.GFF)
 
         # Run diff
-        ini_content = TestDataHelper.run_diff(self.vanilla_dir, self.modded_dir, self.tslpatchdata_dir)
+        ini_content = TestDataHelper.run_diff(
+            self.vanilla_dir, self.modded_dir, self.tslpatchdata_dir
+        )
 
         # Verify list modification
         self.assertIn("[test.utc]", ini_content)
@@ -883,7 +944,9 @@ class TestGFF(unittest.TestCase):
         write_gff(modded_gff, self.modded_dir / "test.utc", ResourceType.GFF)
 
         # Run diff
-        ini_content = TestDataHelper.run_diff(self.vanilla_dir, self.modded_dir, self.tslpatchdata_dir)
+        ini_content = TestDataHelper.run_diff(
+            self.vanilla_dir, self.modded_dir, self.tslpatchdata_dir
+        )
 
         # Verify LocalizedString modification with lang# entries
         self.assertIn("[test.utc]", ini_content)
@@ -903,7 +966,9 @@ class TestSSF(unittest.TestCase):
 
     def setUp(self):
         """Set up test environment."""
-        self.temp_dir, self.vanilla_dir, self.modded_dir, self.tslpatchdata_dir = TestDataHelper.create_test_env()
+        self.temp_dir, self.vanilla_dir, self.modded_dir, self.tslpatchdata_dir = (
+            TestDataHelper.create_test_env()
+        )
 
     def tearDown(self):
         """Clean up test environment."""
@@ -929,7 +994,9 @@ class TestSSF(unittest.TestCase):
         write_ssf(modded_ssf, self.modded_dir / "character.ssf", ResourceType.SSF)
 
         # Run diff
-        ini_content = TestDataHelper.run_diff(self.vanilla_dir, self.modded_dir, self.tslpatchdata_dir)
+        ini_content = TestDataHelper.run_diff(
+            self.vanilla_dir, self.modded_dir, self.tslpatchdata_dir
+        )
 
         # Verify SSF modifications
         self.assertIn("[SSFList]", ini_content)
@@ -949,7 +1016,9 @@ class TestIntegration(unittest.TestCase):
 
     def setUp(self):
         """Set up test environment."""
-        self.temp_dir, self.vanilla_dir, self.modded_dir, self.tslpatchdata_dir = TestDataHelper.create_test_env()
+        self.temp_dir, self.vanilla_dir, self.modded_dir, self.tslpatchdata_dir = (
+            TestDataHelper.create_test_env()
+        )
 
     def tearDown(self):
         """Clean up test environment."""
@@ -1019,7 +1088,10 @@ class TestIntegration(unittest.TestCase):
         # Modded visualeffects.2da - add new effect (row 1)
         modded_vfx = TestDataHelper.create_basic_2da(
             ["label", "type_fd"],
-            [("0", {"label": "VFX_IMP_HEAL", "type_fd": "F"}), ("1", {"label": "VFX_IMP_NEW", "type_fd": "F"})],
+            [
+                ("0", {"label": "VFX_IMP_HEAL", "type_fd": "F"}),
+                ("1", {"label": "VFX_IMP_NEW", "type_fd": "F"}),
+            ],
         )
         write_2da(modded_vfx, self.modded_dir / "visualeffects.2da", ResourceType.TwoDA)
 
@@ -1055,7 +1127,9 @@ class TestIntegration(unittest.TestCase):
         write_gff(modded_creature2, self.modded_dir / "creature2.utc", ResourceType.GFF)
 
         # Step 3: Run diff
-        ini_content = TestDataHelper.run_diff(self.vanilla_dir, self.modded_dir, self.tslpatchdata_dir, logging_enabled=True)
+        ini_content = TestDataHelper.run_diff(
+            self.vanilla_dir, self.modded_dir, self.tslpatchdata_dir, logging_enabled=True
+        )
 
         # Step 4: Verify comprehensive INI generation
         self.assertIn("[spells.2da]", ini_content)
@@ -1079,7 +1153,10 @@ class TestIntegration(unittest.TestCase):
         # Vanilla weaponsounds.2da
         vanilla_weaponsounds = TestDataHelper.create_basic_2da(
             ["label", "cloth0"],
-            [("0", {"label": "sword_sounds", "cloth0": "snd_sword"}), ("1", {"label": "blaster_sounds", "cloth0": "snd_blaster"})],
+            [
+                ("0", {"label": "sword_sounds", "cloth0": "snd_sword"}),
+                ("1", {"label": "blaster_sounds", "cloth0": "snd_blaster"}),
+            ],
         )
         write_2da(vanilla_weaponsounds, self.vanilla_dir / "weaponsounds.2da", ResourceType.TwoDA)
 
@@ -1114,7 +1191,10 @@ class TestIntegration(unittest.TestCase):
             [
                 ("0", {"label": "sword", "weaponmattype": "0", "name": "200"}),
                 ("1", {"label": "blaster", "weaponmattype": "1", "name": "201"}),
-                ("2", {"label": "quarterstaff", "weaponmattype": "2", "name": "202"}),  # References new weaponsounds
+                (
+                    "2",
+                    {"label": "quarterstaff", "weaponmattype": "2", "name": "202"},
+                ),  # References new weaponsounds
             ],
         )
         write_2da(modded_baseitems, self.modded_dir / "baseitems.2da", ResourceType.TwoDA)
@@ -1124,7 +1204,9 @@ class TestIntegration(unittest.TestCase):
         write_gff(modded_item, self.modded_dir / "item.uti", ResourceType.GFF)
 
         # Run diff
-        ini_content = TestDataHelper.run_diff(self.vanilla_dir, self.modded_dir, self.tslpatchdata_dir, logging_enabled=True)
+        ini_content = TestDataHelper.run_diff(
+            self.vanilla_dir, self.modded_dir, self.tslpatchdata_dir, logging_enabled=True
+        )
 
         # Verify chain
         self.assertIn("[weaponsounds.2da]", ini_content)
@@ -1146,7 +1228,9 @@ class TestRealWorldScenarios(unittest.TestCase):
 
     def setUp(self):
         """Set up test environment."""
-        self.temp_dir, self.vanilla_dir, self.modded_dir, self.tslpatchdata_dir = TestDataHelper.create_test_env()
+        self.temp_dir, self.vanilla_dir, self.modded_dir, self.tslpatchdata_dir = (
+            TestDataHelper.create_test_env()
+        )
 
     def tearDown(self):
         """Clean up test environment."""
@@ -1162,19 +1246,41 @@ class TestRealWorldScenarios(unittest.TestCase):
         # Create appearance.2da with many columns (simplified)
         vanilla_appearance = TestDataHelper.create_basic_2da(
             ["label", "race", "modeltype", "modela"],
-            [("370", {"label": "Sith_Ghost", "race": "AjuntaGhost", "modeltype": "F", "modela": "n_ajunta"})],
+            [
+                (
+                    "370",
+                    {
+                        "label": "Sith_Ghost",
+                        "race": "AjuntaGhost",
+                        "modeltype": "F",
+                        "modela": "n_ajunta",
+                    },
+                )
+            ],
         )
         write_2da(vanilla_appearance, self.vanilla_dir / "appearance.2da", ResourceType.TwoDA)
 
         # Modded: Change to unique appearance
         modded_appearance = TestDataHelper.create_basic_2da(
             ["label", "race", "modeltype", "modela"],
-            [("370", {"label": "Unique_Sith_Ghost", "race": "DP_AjuntaGhost", "modeltype": "F", "modela": "DP_AjuntaGhost"})],
+            [
+                (
+                    "370",
+                    {
+                        "label": "Unique_Sith_Ghost",
+                        "race": "DP_AjuntaGhost",
+                        "modeltype": "F",
+                        "modela": "DP_AjuntaGhost",
+                    },
+                )
+            ],
         )
         write_2da(modded_appearance, self.modded_dir / "appearance.2da", ResourceType.TwoDA)
 
         # Run diff
-        ini_content = TestDataHelper.run_diff(self.vanilla_dir, self.modded_dir, self.tslpatchdata_dir)
+        ini_content = TestDataHelper.run_diff(
+            self.vanilla_dir, self.modded_dir, self.tslpatchdata_dir
+        )
 
         # Verify ChangeRow with RowIndex
         self.assertIn("[appearance.2da]", ini_content)
@@ -1207,7 +1313,9 @@ class TestRealWorldScenarios(unittest.TestCase):
         write_tlk(modded_tlk, self.modded_dir / "dialog.tlk", ResourceType.TLK)
 
         # Run diff
-        ini_content = TestDataHelper.run_diff(self.vanilla_dir, self.modded_dir, self.tslpatchdata_dir)
+        ini_content = TestDataHelper.run_diff(
+            self.vanilla_dir, self.modded_dir, self.tslpatchdata_dir
+        )
 
         # Verify multiple StrRef tokens
         self.assertIn("[TLKList]", ini_content)
@@ -1228,7 +1336,9 @@ class TestInstallList(unittest.TestCase):
 
     def setUp(self):
         """Set up test environment."""
-        self.temp_dir, self.vanilla_dir, self.modded_dir, self.tslpatchdata_dir = TestDataHelper.create_test_env()
+        self.temp_dir, self.vanilla_dir, self.modded_dir, self.tslpatchdata_dir = (
+            TestDataHelper.create_test_env()
+        )
 
     def tearDown(self):
         """Clean up test environment."""
@@ -1241,7 +1351,9 @@ class TestInstallList(unittest.TestCase):
         test_file.write_bytes(b"MOCK_MODEL_DATA")
 
         # Run diff
-        ini_content = TestDataHelper.run_diff(self.vanilla_dir, self.modded_dir, self.tslpatchdata_dir)
+        ini_content = TestDataHelper.run_diff(
+            self.vanilla_dir, self.modded_dir, self.tslpatchdata_dir
+        )
 
         # Verify InstallList
         self.assertIn("[InstallList]", ini_content)
@@ -1266,7 +1378,9 @@ class TestEdgeCases(unittest.TestCase):
 
     def setUp(self):
         """Set up test environment."""
-        self.temp_dir, self.vanilla_dir, self.modded_dir, self.tslpatchdata_dir = TestDataHelper.create_test_env()
+        self.temp_dir, self.vanilla_dir, self.modded_dir, self.tslpatchdata_dir = (
+            TestDataHelper.create_test_env()
+        )
 
     def tearDown(self):
         """Clean up test environment."""
@@ -1283,7 +1397,9 @@ class TestEdgeCases(unittest.TestCase):
         write_2da(twoda, self.modded_dir / "test.2da", ResourceType.TwoDA)
 
         # Run diff
-        ini_content = TestDataHelper.run_diff(self.vanilla_dir, self.modded_dir, self.tslpatchdata_dir)
+        ini_content = TestDataHelper.run_diff(
+            self.vanilla_dir, self.modded_dir, self.tslpatchdata_dir
+        )
 
         # Should not create modifications for unchanged file
         # (or should create empty modification - depends on implementation)
@@ -1305,7 +1421,9 @@ class TestEdgeCases(unittest.TestCase):
         write_2da(modded_2da, self.modded_dir / "test.2da", ResourceType.TwoDA)
 
         # Run diff
-        ini_content = TestDataHelper.run_diff(self.vanilla_dir, self.modded_dir, self.tslpatchdata_dir)
+        ini_content = TestDataHelper.run_diff(
+            self.vanilla_dir, self.modded_dir, self.tslpatchdata_dir
+        )
 
         # Should handle **** -> value transition
         self.assertIn("[test.2da]", ini_content)
@@ -1315,14 +1433,20 @@ class TestEdgeCases(unittest.TestCase):
 
     def test_gff_with_special_characters_in_strings(self):
         """Test: GFF strings with special characters that need escaping."""
-        vanilla_gff = TestDataHelper.create_basic_gff({"Description": (GFFFieldType.String, "Normal text")})
+        vanilla_gff = TestDataHelper.create_basic_gff(
+            {"Description": (GFFFieldType.String, "Normal text")}
+        )
         write_gff(vanilla_gff, self.vanilla_dir / "test.utc", ResourceType.GFF)
 
-        modded_gff = TestDataHelper.create_basic_gff({"Description": (GFFFieldType.String, "Text with\nnewline\tand\ttabs")})
+        modded_gff = TestDataHelper.create_basic_gff(
+            {"Description": (GFFFieldType.String, "Text with\nnewline\tand\ttabs")}
+        )
         write_gff(modded_gff, self.modded_dir / "test.utc", ResourceType.GFF)
 
         # Run diff
-        ini_content = TestDataHelper.run_diff(self.vanilla_dir, self.modded_dir, self.tslpatchdata_dir)
+        ini_content = TestDataHelper.run_diff(
+            self.vanilla_dir, self.modded_dir, self.tslpatchdata_dir
+        )
 
         # Should escape special characters in INI
         self.assertIn("[test.utc]", ini_content)
@@ -1339,12 +1463,17 @@ class TestEdgeCases(unittest.TestCase):
         write_2da(vanilla_2da, self.vanilla_dir / "large.2da", ResourceType.TwoDA)
 
         # Modify one row in the middle
-        rows_modded = [(str(i), {"label": f"row_{i}", "value": str(i * 10) if i != 50 else "MODIFIED"}) for i in range(100)]
+        rows_modded = [
+            (str(i), {"label": f"row_{i}", "value": str(i * 10) if i != 50 else "MODIFIED"})
+            for i in range(100)
+        ]
         modded_2da = TestDataHelper.create_basic_2da(["label", "value"], rows_modded)
         write_2da(modded_2da, self.modded_dir / "large.2da", ResourceType.TwoDA)
 
         # Run diff
-        ini_content = TestDataHelper.run_diff(self.vanilla_dir, self.modded_dir, self.tslpatchdata_dir)
+        ini_content = TestDataHelper.run_diff(
+            self.vanilla_dir, self.modded_dir, self.tslpatchdata_dir
+        )
 
         # Should only modify row 50
         self.assertIn("[large.2da]", ini_content)
@@ -1364,7 +1493,9 @@ class TestPerformance(unittest.TestCase):
 
     def setUp(self):
         """Set up test environment."""
-        self.temp_dir, self.vanilla_dir, self.modded_dir, self.tslpatchdata_dir = TestDataHelper.create_test_env()
+        self.temp_dir, self.vanilla_dir, self.modded_dir, self.tslpatchdata_dir = (
+            TestDataHelper.create_test_env()
+        )
 
     def tearDown(self):
         """Clean up test environment."""
@@ -1383,12 +1514,17 @@ class TestPerformance(unittest.TestCase):
             # Modded: modify first row of each
             twoda_modded = TestDataHelper.create_basic_2da(
                 ["label", "value"],
-                [(str(j), {"label": f"row_{j}", "value": "MODIFIED" if j == 0 else str(j)}) for j in range(10)],
+                [
+                    (str(j), {"label": f"row_{j}", "value": "MODIFIED" if j == 0 else str(j)})
+                    for j in range(10)
+                ],
             )
             write_2da(twoda_modded, self.modded_dir / f"test{i}.2da", ResourceType.TwoDA)
 
         # Run diff
-        ini_content = TestDataHelper.run_diff(self.vanilla_dir, self.modded_dir, self.tslpatchdata_dir)
+        ini_content = TestDataHelper.run_diff(
+            self.vanilla_dir, self.modded_dir, self.tslpatchdata_dir
+        )
 
         # Should handle all files
         self.assertIn("[2DAList]", ini_content)
@@ -1410,7 +1546,9 @@ class TestPerformance(unittest.TestCase):
             write_gff(gff_modded, self.modded_dir / f"test{i}.utc", ResourceType.GFF)
 
         # Run diff
-        ini_content = TestDataHelper.run_diff(self.vanilla_dir, self.modded_dir, self.tslpatchdata_dir)
+        ini_content = TestDataHelper.run_diff(
+            self.vanilla_dir, self.modded_dir, self.tslpatchdata_dir
+        )
 
         # Should handle all files
         self.assertIn("[GFFList]", ini_content)

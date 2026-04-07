@@ -91,10 +91,14 @@ class TXIBinaryReader(ResourceReader):
                                 float(parts[1].strip()),
                                 int(parts[2].strip()),
                             )
-                            if self._txi.features.upperleftcoords is not None and cur_coords < len(self._txi.features.upperleftcoords):
+                            if self._txi.features.upperleftcoords is not None and cur_coords < len(
+                                self._txi.features.upperleftcoords
+                            ):
                                 self._txi.features.upperleftcoords[cur_coords] = coords
                             cur_coords += 1
-                            if self._txi.features.upperleftcoords is not None and cur_coords >= len(self._txi.features.upperleftcoords):
+                            if self._txi.features.upperleftcoords is not None and cur_coords >= len(
+                                self._txi.features.upperleftcoords
+                            ):
                                 mode = TXIReaderMode.NORMAL
                             continue
                         except (ValueError, IndexError):
@@ -115,10 +119,15 @@ class TXIBinaryReader(ResourceReader):
                                 float(parts[1].strip()),
                                 int(parts[2].strip()),
                             )
-                            if self._txi.features.lowerrightcoords is not None and cur_coords < len(self._txi.features.lowerrightcoords):
+                            if self._txi.features.lowerrightcoords is not None and cur_coords < len(
+                                self._txi.features.lowerrightcoords
+                            ):
                                 self._txi.features.lowerrightcoords[cur_coords] = coords
                             cur_coords += 1
-                            if self._txi.features.lowerrightcoords is not None and cur_coords >= len(self._txi.features.lowerrightcoords):
+                            if (
+                                self._txi.features.lowerrightcoords is not None
+                                and cur_coords >= len(self._txi.features.lowerrightcoords)
+                            ):
                                 mode = TXIReaderMode.NORMAL
                             continue
                         except (ValueError, IndexError):

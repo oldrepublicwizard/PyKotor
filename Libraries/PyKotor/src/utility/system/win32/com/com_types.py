@@ -133,11 +133,15 @@ class GUID(*inherit):
         windll.ole32.CoTaskMemFree(p)
         if result is None:
             d4_hex = "".join(f"{byte:02X}" for byte in self.Data4)
-            result = f"{{{self.Data1:08X}-{self.Data2:04X}-{self.Data3:04X}-{d4_hex[:4]}-{d4_hex[4:]}}}"
+            result = (
+                f"{{{self.Data1:08X}-{self.Data2:04X}-{self.Data3:04X}-{d4_hex[:4]}-{d4_hex[4:]}}}"
+            )
         return (result and result.strip()) or str(self.NULL())
 
     @classmethod
-    def guid_ducktypes(cls) -> tuple[type[COMTYPE_GUID], type[Self]] | tuple[type[COMTYPE_GUID], type[GUID], type[Self]]:
+    def guid_ducktypes(
+        cls,
+    ) -> tuple[type[COMTYPE_GUID], type[Self]] | tuple[type[COMTYPE_GUID], type[GUID], type[Self]]:
         """Returns (cls, GUID, comtypes.GUID). If comtypes cannot be imported, return (cls, GUID).
 
         This allows duck typing and subclasses to work in isinstance checks.
@@ -163,7 +167,12 @@ class GUID(*inherit):
         )
 
     def __bytes__(self) -> bytes:
-        return self.Data1.to_bytes(4, byteorder="little") + self.Data2.to_bytes(2, byteorder="little") + self.Data3.to_bytes(2, byteorder="little") + self.Data4
+        return (
+            self.Data1.to_bytes(4, byteorder="little")
+            + self.Data2.to_bytes(2, byteorder="little")
+            + self.Data3.to_bytes(2, byteorder="little")
+            + self.Data4
+        )
 
     def __hash__(self):
         # We make GUID instances hashable, although ctypes.Structure instances are technically supposed to be mutable.
@@ -233,7 +242,9 @@ class GUID(*inherit):
             all_byte_ints = len(args) == 12  # noqa: PLR2004
             altern_format = len(args) == 7  # noqa: PLR2004
             if not all_byte_ints and not altern_format:
-                raise ValueError(f"Incorrect arguments passed to GUID({d1}, {d2}, {d3}, {d4}, *{args})")
+                raise ValueError(
+                    f"Incorrect arguments passed to GUID({d1}, {d2}, {d3}, {d4}, *{args})"
+                )
             if all_byte_ints:
                 gd = (d1, d2, d3, d4, *args)
                 guid_str = f"{{{gd[0]:08X}-{gd[1]:04X}-{gd[2]:04X}-{gd[3]:02X}{gd[4]:02X}-{gd[5]:02X}{gd[6]:02X}{gd[7]:02X}-{gd[8]:02X}{gd[9]:02X}{gd[10]:02X}{gd[11]:02X}}}"

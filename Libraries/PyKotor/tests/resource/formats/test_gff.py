@@ -210,15 +210,21 @@ class TestGFF(TestCase):
 
         child_struct = gff.root.get_struct("child_struct")
         assert child_struct is not None, "Child struct is None"
-        assert child_struct.get_uint8("child_uint8") == 4, f"Child struct get_uint8('child_uint8') {child_struct.get_uint8('child_uint8')} is not 4"
+        assert child_struct.get_uint8("child_uint8") == 4, (
+            f"Child struct get_uint8('child_uint8') {child_struct.get_uint8('child_uint8')} is not 4"
+        )
         gff_list = gff.root.get_list("list")
         assert gff_list is not None, "List is None"
         gff_list_entry_0 = gff_list.at(0)
         assert gff_list_entry_0 is not None, "List at(0) is None"
-        assert gff_list_entry_0.struct_id == 1, f"List at(0).struct_id {gff_list_entry_0.struct_id} is not 1"
+        assert gff_list_entry_0.struct_id == 1, (
+            f"List at(0).struct_id {gff_list_entry_0.struct_id} is not 1"
+        )
         gff_list_entry_1 = gff_list.at(1)
         assert gff_list_entry_1 is not None, "List at(1) is None"
-        assert gff_list_entry_1.struct_id == 2, f"List at(1).struct_id {gff_list_entry_1.struct_id} is not 2"
+        assert gff_list_entry_1.struct_id == 2, (
+            f"List at(1).struct_id {gff_list_entry_1.struct_id} is not 2"
+        )
         assert len(gff_list) == 2, f"List length {len(gff_list)} is not 2"
 
     def test_detect_gff_no_false_resync_after_binary_junk(self):

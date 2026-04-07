@@ -36,7 +36,9 @@ from qtpy.QtWidgets import (
     QWidget,
 )
 
-from utility.gui.qt.adapters.filesystem.qfiledialog.qfiledialog import QFileDialog as PythonQFileDialog
+from utility.gui.qt.adapters.filesystem.qfiledialog.qfiledialog import (
+    QFileDialog as PythonQFileDialog,
+)
 from utility.gui.qt.filesystem.qfiledialogextended.qfiledialogextended import QFileDialogExtended
 
 
@@ -107,7 +109,10 @@ def _accept_dialog(qtbot, dialog, timeout=5000):
             QTimer.singleShot(100, lambda: accept_button.click())
     else:
         QTimer.singleShot(100, dialog.accept)
-    qtbot.waitUntil(lambda: not dialog.isVisible() or dialog.result() == QDialog.DialogCode.Accepted, timeout=timeout)
+    qtbot.waitUntil(
+        lambda: not dialog.isVisible() or dialog.result() == QDialog.DialogCode.Accepted,
+        timeout=timeout,
+    )
 
 
 def _reject_dialog(qtbot, dialog, timeout=5000):
@@ -121,7 +126,10 @@ def _reject_dialog(qtbot, dialog, timeout=5000):
             QTimer.singleShot(100, dialog.reject)
     else:
         QTimer.singleShot(100, dialog.reject)
-    qtbot.waitUntil(lambda: not dialog.isVisible() or dialog.result() == QDialog.DialogCode.Rejected, timeout=timeout)
+    qtbot.waitUntil(
+        lambda: not dialog.isVisible() or dialog.result() == QDialog.DialogCode.Rejected,
+        timeout=timeout,
+    )
 
 
 # ============================================================================
@@ -403,7 +411,11 @@ def test_option_set_test(qtbot, dialog_factory, option):
 def test_options_combinations(qtbot, dialog_factory):
     """Test multiple options set together."""
     dialog = dialog_factory()
-    options = RealQFileDialog.Option.ShowDirsOnly | RealQFileDialog.Option.DontResolveSymlinks | RealQFileDialog.Option.ReadOnly
+    options = (
+        RealQFileDialog.Option.ShowDirsOnly
+        | RealQFileDialog.Option.DontResolveSymlinks
+        | RealQFileDialog.Option.ReadOnly
+    )
     dialog.setOptions(options)
     assert dialog.testOption(RealQFileDialog.Option.ShowDirsOnly)
     assert dialog.testOption(RealQFileDialog.Option.DontResolveSymlinks)
@@ -492,7 +504,10 @@ def test_select_url(qtbot, dialog_factory, temp_test_dir):
     dialog.selectUrl(url)
     selected_urls = dialog.selectedUrls()
     assert len(selected_urls) >= 1
-    assert any(QUrl.fromLocalFile(str(test_file)) == u or str(test_file) in u.toLocalFile() for u in selected_urls)
+    assert any(
+        QUrl.fromLocalFile(str(test_file)) == u or str(test_file) in u.toLocalFile()
+        for u in selected_urls
+    )
 
 
 # ============================================================================
@@ -530,11 +545,17 @@ def test_get_open_file_name(qtbot, dialog_class, temp_test_dir):
 
     if dialog_class == QFileDialogExtended:
         # Use the extended class
-        result_file, selected_filter = QFileDialogExtended.getOpenFileName(None, "Test", str(temp_test_dir), "Text files (*.txt)")
+        result_file, selected_filter = QFileDialogExtended.getOpenFileName(
+            None, "Test", str(temp_test_dir), "Text files (*.txt)"
+        )
     elif dialog_class == RealQFileDialog:
-        result_file, selected_filter = RealQFileDialog.getOpenFileName(None, "Test", str(temp_test_dir), "Text files (*.txt)")
+        result_file, selected_filter = RealQFileDialog.getOpenFileName(
+            None, "Test", str(temp_test_dir), "Text files (*.txt)"
+        )
     else:
-        result_file, selected_filter = PythonQFileDialog.getOpenFileName(None, "Test", str(temp_test_dir), "Text files (*.txt)")
+        result_file, selected_filter = PythonQFileDialog.getOpenFileName(
+            None, "Test", str(temp_test_dir), "Text files (*.txt)"
+        )
 
     # Result might be empty if dialog was cancelled, which is expected in headless tests
     # In a real scenario, we'd ensure the file is selected
@@ -561,11 +582,17 @@ def test_get_save_file_name(qtbot, dialog_class, temp_test_dir):
     QTimer.singleShot(500, accept_dialog)
 
     if dialog_class == QFileDialogExtended:
-        result_file, selected_filter = QFileDialogExtended.getSaveFileName(None, "Save Test", str(temp_test_dir), "Text files (*.txt)")
+        result_file, selected_filter = QFileDialogExtended.getSaveFileName(
+            None, "Save Test", str(temp_test_dir), "Text files (*.txt)"
+        )
     elif dialog_class == RealQFileDialog:
-        result_file, selected_filter = RealQFileDialog.getSaveFileName(None, "Save Test", str(temp_test_dir), "Text files (*.txt)")
+        result_file, selected_filter = RealQFileDialog.getSaveFileName(
+            None, "Save Test", str(temp_test_dir), "Text files (*.txt)"
+        )
     else:
-        result_file, selected_filter = PythonQFileDialog.getSaveFileName(None, "Save Test", str(temp_test_dir), "Text files (*.txt)")
+        result_file, selected_filter = PythonQFileDialog.getSaveFileName(
+            None, "Save Test", str(temp_test_dir), "Text files (*.txt)"
+        )
 
     assert isinstance(result_file, str)
     assert isinstance(selected_filter, str)
@@ -586,11 +613,17 @@ def test_get_open_file_names(qtbot, dialog_class, temp_test_dir):
     QTimer.singleShot(500, accept_dialog)
 
     if dialog_class == QFileDialogExtended:
-        result_files, selected_filter = QFileDialogExtended.getOpenFileNames(None, "Open Multiple", str(temp_test_dir), "Text files (*.txt)")
+        result_files, selected_filter = QFileDialogExtended.getOpenFileNames(
+            None, "Open Multiple", str(temp_test_dir), "Text files (*.txt)"
+        )
     elif dialog_class == RealQFileDialog:
-        result_files, selected_filter = RealQFileDialog.getOpenFileNames(None, "Open Multiple", str(temp_test_dir), "Text files (*.txt)")
+        result_files, selected_filter = RealQFileDialog.getOpenFileNames(
+            None, "Open Multiple", str(temp_test_dir), "Text files (*.txt)"
+        )
     else:
-        result_files, selected_filter = PythonQFileDialog.getOpenFileNames(None, "Open Multiple", str(temp_test_dir), "Text files (*.txt)")
+        result_files, selected_filter = PythonQFileDialog.getOpenFileNames(
+            None, "Open Multiple", str(temp_test_dir), "Text files (*.txt)"
+        )
 
     assert isinstance(result_files, list)
     assert isinstance(selected_filter, str)
@@ -611,11 +644,17 @@ def test_get_existing_directory(qtbot, dialog_class, temp_test_dir):
     QTimer.singleShot(500, accept_dialog)
 
     if dialog_class == QFileDialogExtended:
-        result_dir = QFileDialogExtended.getExistingDirectory(None, "Select Directory", str(temp_test_dir))
+        result_dir = QFileDialogExtended.getExistingDirectory(
+            None, "Select Directory", str(temp_test_dir)
+        )
     elif dialog_class == RealQFileDialog:
-        result_dir = RealQFileDialog.getExistingDirectory(None, "Select Directory", str(temp_test_dir))
+        result_dir = RealQFileDialog.getExistingDirectory(
+            None, "Select Directory", str(temp_test_dir)
+        )
     else:
-        result_dir = PythonQFileDialog.getExistingDirectory(None, "Select Directory", str(temp_test_dir))
+        result_dir = PythonQFileDialog.getExistingDirectory(
+            None, "Select Directory", str(temp_test_dir)
+        )
 
     assert isinstance(result_dir, str)
 
@@ -641,11 +680,17 @@ def test_get_open_file_url(qtbot, dialog_class, temp_test_dir):
 
     url = QUrl.fromLocalFile(str(temp_test_dir))
     if dialog_class == QFileDialogExtended:
-        result_url, selected_filter = QFileDialogExtended.getOpenFileUrl(None, "Test", url, "Text files (*.txt)")
+        result_url, selected_filter = QFileDialogExtended.getOpenFileUrl(
+            None, "Test", url, "Text files (*.txt)"
+        )
     elif dialog_class == RealQFileDialog:
-        result_url, selected_filter = RealQFileDialog.getOpenFileUrl(None, "Test", url, "Text files (*.txt)")
+        result_url, selected_filter = RealQFileDialog.getOpenFileUrl(
+            None, "Test", url, "Text files (*.txt)"
+        )
     else:
-        result_url, selected_filter = PythonQFileDialog.getOpenFileUrl(None, "Test", url, "Text files (*.txt)")
+        result_url, selected_filter = PythonQFileDialog.getOpenFileUrl(
+            None, "Test", url, "Text files (*.txt)"
+        )
 
     assert isinstance(result_url, QUrl)
     assert isinstance(selected_filter, str)
@@ -667,11 +712,17 @@ def test_get_open_file_urls(qtbot, dialog_class, temp_test_dir):
 
     url = QUrl.fromLocalFile(str(temp_test_dir))
     if dialog_class == QFileDialogExtended:
-        result_urls, selected_filter = QFileDialogExtended.getOpenFileUrls(None, "Test", url, "Text files (*.txt)")
+        result_urls, selected_filter = QFileDialogExtended.getOpenFileUrls(
+            None, "Test", url, "Text files (*.txt)"
+        )
     elif dialog_class == RealQFileDialog:
-        result_urls, selected_filter = RealQFileDialog.getOpenFileUrls(None, "Test", url, "Text files (*.txt)")
+        result_urls, selected_filter = RealQFileDialog.getOpenFileUrls(
+            None, "Test", url, "Text files (*.txt)"
+        )
     else:
-        result_urls, selected_filter = PythonQFileDialog.getOpenFileUrls(None, "Test", url, "Text files (*.txt)")
+        result_urls, selected_filter = PythonQFileDialog.getOpenFileUrls(
+            None, "Test", url, "Text files (*.txt)"
+        )
 
     assert isinstance(result_urls, list)
     assert isinstance(selected_filter, str)
@@ -697,11 +748,17 @@ def test_get_save_file_url(qtbot, dialog_class, temp_test_dir):
 
     url = QUrl.fromLocalFile(str(temp_test_dir))
     if dialog_class == QFileDialogExtended:
-        result_url, selected_filter = QFileDialogExtended.getSaveFileUrl(None, "Save Test", url, "Text files (*.txt)")
+        result_url, selected_filter = QFileDialogExtended.getSaveFileUrl(
+            None, "Save Test", url, "Text files (*.txt)"
+        )
     elif dialog_class == RealQFileDialog:
-        result_url, selected_filter = RealQFileDialog.getSaveFileUrl(None, "Save Test", url, "Text files (*.txt)")
+        result_url, selected_filter = RealQFileDialog.getSaveFileUrl(
+            None, "Save Test", url, "Text files (*.txt)"
+        )
     else:
-        result_url, selected_filter = PythonQFileDialog.getSaveFileUrl(None, "Save Test", url, "Text files (*.txt)")
+        result_url, selected_filter = PythonQFileDialog.getSaveFileUrl(
+            None, "Save Test", url, "Text files (*.txt)"
+        )
 
     assert isinstance(result_url, QUrl)
     assert isinstance(selected_filter, str)
@@ -1224,7 +1281,11 @@ def test_open_dir_navigates_in_app(qtbot, dialog_factory, temp_test_dir):
 
     # Dialog should now be showing that directory
     # QFileDialog.directory() returns a QDir; use absolutePath()/path() for string equality
-    current_dir = dialog.directory().absolutePath() if hasattr(dialog.directory(), "absolutePath") else dialog.directory().path()
+    current_dir = (
+        dialog.directory().absolutePath()
+        if hasattr(dialog.directory(), "absolutePath")
+        else dialog.directory().path()
+    )
     assert str(subdir) in current_dir
 
 
@@ -1275,12 +1336,36 @@ def test_filter_with_special_characters(qtbot, dialog_factory):
 @pytest.mark.parametrize(
     "file_mode,accept_mode,view_mode",
     [
-        (RealQFileDialog.FileMode.AnyFile, RealQFileDialog.AcceptMode.AcceptSave, RealQFileDialog.ViewMode.Detail),
-        (RealQFileDialog.FileMode.AnyFile, RealQFileDialog.AcceptMode.AcceptSave, RealQFileDialog.ViewMode.List),
-        (RealQFileDialog.FileMode.ExistingFile, RealQFileDialog.AcceptMode.AcceptOpen, RealQFileDialog.ViewMode.Detail),
-        (RealQFileDialog.FileMode.ExistingFile, RealQFileDialog.AcceptMode.AcceptOpen, RealQFileDialog.ViewMode.List),
-        (RealQFileDialog.FileMode.Directory, RealQFileDialog.AcceptMode.AcceptOpen, RealQFileDialog.ViewMode.Detail),
-        (RealQFileDialog.FileMode.ExistingFiles, RealQFileDialog.AcceptMode.AcceptOpen, RealQFileDialog.ViewMode.List),
+        (
+            RealQFileDialog.FileMode.AnyFile,
+            RealQFileDialog.AcceptMode.AcceptSave,
+            RealQFileDialog.ViewMode.Detail,
+        ),
+        (
+            RealQFileDialog.FileMode.AnyFile,
+            RealQFileDialog.AcceptMode.AcceptSave,
+            RealQFileDialog.ViewMode.List,
+        ),
+        (
+            RealQFileDialog.FileMode.ExistingFile,
+            RealQFileDialog.AcceptMode.AcceptOpen,
+            RealQFileDialog.ViewMode.Detail,
+        ),
+        (
+            RealQFileDialog.FileMode.ExistingFile,
+            RealQFileDialog.AcceptMode.AcceptOpen,
+            RealQFileDialog.ViewMode.List,
+        ),
+        (
+            RealQFileDialog.FileMode.Directory,
+            RealQFileDialog.AcceptMode.AcceptOpen,
+            RealQFileDialog.ViewMode.Detail,
+        ),
+        (
+            RealQFileDialog.FileMode.ExistingFiles,
+            RealQFileDialog.AcceptMode.AcceptOpen,
+            RealQFileDialog.ViewMode.List,
+        ),
     ],
 )
 def test_mode_combinations(qtbot, dialog_factory, file_mode, accept_mode, view_mode):
@@ -1397,11 +1482,17 @@ def test_static_methods_with_various_filters(qtbot, dialog_class, filter_str, te
     QTimer.singleShot(500, accept_dialog)
 
     if dialog_class == QFileDialogExtended:
-        result, selected = QFileDialogExtended.getOpenFileName(None, "Test", str(temp_test_dir), filter_str)
+        result, selected = QFileDialogExtended.getOpenFileName(
+            None, "Test", str(temp_test_dir), filter_str
+        )
     elif dialog_class == RealQFileDialog:
-        result, selected = RealQFileDialog.getOpenFileName(None, "Test", str(temp_test_dir), filter_str or "")
+        result, selected = RealQFileDialog.getOpenFileName(
+            None, "Test", str(temp_test_dir), filter_str or ""
+        )
     else:
-        result, selected = PythonQFileDialog.getOpenFileName(None, "Test", str(temp_test_dir), filter_str or "")
+        result, selected = PythonQFileDialog.getOpenFileName(
+            None, "Test", str(temp_test_dir), filter_str or ""
+        )
 
     assert isinstance(result, str)
     assert isinstance(selected, str)
@@ -1452,7 +1543,11 @@ def test_all_three_implementations_identical_state(qtbot, temp_test_dir):
     # Selected files should match (accounting for path normalization)
     assert len(adapter_selected) == len(real_selected) == len(extended_selected)
     if adapter_selected:
-        assert Path(adapter_selected[0]).name == Path(real_selected[0]).name == Path(extended_selected[0]).name
+        assert (
+            Path(adapter_selected[0]).name
+            == Path(real_selected[0]).name
+            == Path(extended_selected[0]).name
+        )
 
 
 def test_state_save_restore_across_implementations(qtbot, temp_test_dir):
@@ -1484,9 +1579,18 @@ def test_all_properties_accessible(qtbot, dialog_factory):
     dialog = dialog_factory()
 
     # Test all getters return appropriate types
-    assert isinstance(dialog.fileMode(), (RealQFileDialog.FileMode, PythonQFileDialog.FileMode, QFileDialogExtended.FileMode))
-    assert isinstance(dialog.acceptMode(), (RealQFileDialog.AcceptMode, PythonQFileDialog.AcceptMode, QFileDialogExtended.AcceptMode))
-    assert isinstance(dialog.viewMode(), (RealQFileDialog.ViewMode, PythonQFileDialog.ViewMode, QFileDialogExtended.ViewMode))
+    assert isinstance(
+        dialog.fileMode(),
+        (RealQFileDialog.FileMode, PythonQFileDialog.FileMode, QFileDialogExtended.FileMode),
+    )
+    assert isinstance(
+        dialog.acceptMode(),
+        (RealQFileDialog.AcceptMode, PythonQFileDialog.AcceptMode, QFileDialogExtended.AcceptMode),
+    )
+    assert isinstance(
+        dialog.viewMode(),
+        (RealQFileDialog.ViewMode, PythonQFileDialog.ViewMode, QFileDialogExtended.ViewMode),
+    )
     assert isinstance(dialog.directory(), QDir)
     assert isinstance(dialog.directoryUrl(), QUrl)
     assert isinstance(dialog.selectedFiles(), list)
@@ -1499,7 +1603,10 @@ def test_all_properties_accessible(qtbot, dialog_factory):
     assert isinstance(dialog.history(), list)
     assert isinstance(dialog.sidebarUrls(), list)
     assert isinstance(dialog.supportedSchemes(), list)
-    assert isinstance(dialog.options(), (RealQFileDialog.Option, PythonQFileDialog.Option, QFileDialogExtended.Option))
+    assert isinstance(
+        dialog.options(),
+        (RealQFileDialog.Option, PythonQFileDialog.Option, QFileDialogExtended.Option),
+    )
     assert isinstance(dialog.filter(), (QDir.Filter, int))
 
 
@@ -1582,7 +1689,9 @@ def test_extended_has_ribbons(qtbot, temp_test_dir):
     dialog.setDirectory(str(temp_test_dir))
 
     assert hasattr(dialog, "ribbons_widget") or hasattr(dialog.ui, "ribbonsWidget")
-    ribbons = getattr(dialog, "ribbons_widget", None) or dialog.ui.findChild(QWidget, "ribbonsWidget")
+    ribbons = getattr(dialog, "ribbons_widget", None) or dialog.ui.findChild(
+        QWidget, "ribbonsWidget"
+    )
     assert ribbons is not None
 
 
@@ -1670,7 +1779,11 @@ def test_all_methods_callable(qtbot, dialog_factory):
         try:
             result = method(*args)
             # Just verify it returns something (type checking happens elsewhere)
-            assert result is not None or method_name in ["proxyModel", "iconProvider", "itemDelegate"]
+            assert result is not None or method_name in [
+                "proxyModel",
+                "iconProvider",
+                "itemDelegate",
+            ]
         except Exception as e:
             # Some methods might raise exceptions in certain states, that's okay
             # But they should at least be callable
@@ -1692,7 +1805,9 @@ def test_all_methods_callable(qtbot, dialog_factory):
         (None, "Test", QDir.tempPath(), "Text files (*.txt)", "Text files (*.txt)"),
     ],
 )
-def test_static_method_parameter_combinations(qtbot, dialog_class, parent, caption, directory, filter_str, initial_filter, temp_test_dir):
+def test_static_method_parameter_combinations(
+    qtbot, dialog_class, parent, caption, directory, filter_str, initial_filter, temp_test_dir
+):
     """Test static methods with all parameter combinations."""
 
     def accept_dialog():
@@ -1708,11 +1823,17 @@ def test_static_method_parameter_combinations(qtbot, dialog_class, parent, capti
 
     test_dir = directory or str(temp_test_dir)
     if dialog_class == QFileDialogExtended:
-        result, selected = QFileDialogExtended.getOpenFileName(parent, caption, test_dir, filter_str, initial_filter)
+        result, selected = QFileDialogExtended.getOpenFileName(
+            parent, caption, test_dir, filter_str, initial_filter
+        )
     elif dialog_class == RealQFileDialog:
-        result, selected = RealQFileDialog.getOpenFileName(parent, caption or "", test_dir or "", filter_str or "", initial_filter or "")
+        result, selected = RealQFileDialog.getOpenFileName(
+            parent, caption or "", test_dir or "", filter_str or "", initial_filter or ""
+        )
     else:
-        result, selected = PythonQFileDialog.getOpenFileName(parent, caption or "", test_dir or "", filter_str or "", initial_filter or "")
+        result, selected = PythonQFileDialog.getOpenFileName(
+            parent, caption or "", test_dir or "", filter_str or "", initial_filter or ""
+        )
 
     assert isinstance(result, str)
     assert isinstance(selected, str)

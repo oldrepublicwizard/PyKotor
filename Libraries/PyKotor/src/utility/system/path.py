@@ -167,7 +167,9 @@ class PurePath(pathlib.PurePath, metaclass=PurePathType):  # type: ignore[misc]
     ):
         if sys.version_info >= (3, 12, 0):
             self._raw_paths: list[str] = self.parse_args(args)
-            self._cached_str = self.str_norm(self._flavour.sep.join(self._raw_paths), slash=self._flavour.sep)
+            self._cached_str = self.str_norm(
+                self._flavour.sep.join(self._raw_paths), slash=self._flavour.sep
+            )
         elif self._drv.strip().endswith(":") and self._flavour.sep == "\\":
             self._root = "\\"
             self._cached_str = self.str_norm(super().__str__(), slash=self._flavour.sep)
@@ -181,7 +183,9 @@ class PurePath(pathlib.PurePath, metaclass=PurePathType):  # type: ignore[misc]
         instance: Self = cls.__new__(cls, *args, **kwargs)  # type: ignore[arg-type]
         if sys.version_info >= (3, 12, 0):
             instance._raw_paths = cls.parse_args(args)  # noqa: SLF001
-            instance._cached_str = cls.str_norm(cls._flavour.sep.join(instance._raw_paths), slash=cls._flavour.sep)  # noqa: SLF001
+            instance._cached_str = cls.str_norm(
+                cls._flavour.sep.join(instance._raw_paths), slash=cls._flavour.sep
+            )  # noqa: SLF001
         return instance
 
     @classmethod
@@ -205,7 +209,11 @@ class PurePath(pathlib.PurePath, metaclass=PurePathType):  # type: ignore[misc]
         for arg in args:
             normpath_str: str = cls.str_norm(os.fspath(arg), slash=cls._flavour.sep)
             if cached_isabs(normpath_str):
-                drive_or_root, splitpathpart = cached_splitdrive(normpath_str) if cls._flavour.sep == "\\" else cached_splitroot(normpath_str)
+                drive_or_root, splitpathpart = (
+                    cached_splitdrive(normpath_str)
+                    if cls._flavour.sep == "\\"
+                    else cached_splitroot(normpath_str)
+                )
                 if drive_or_root:
                     args_list.append(drive_or_root)
                 if splitpathpart and splitpathpart.strip():
@@ -262,7 +270,9 @@ class PurePath(pathlib.PurePath, metaclass=PurePathType):  # type: ignore[misc]
 
     def __str__(self):
         """Return the result from _fix_path_formatting that was initialized."""
-        if not hasattr(self, "_cached_str"):  # Sometimes pathlib's internal instance creation mechanisms won't call our __init__
+        if not hasattr(
+            self, "_cached_str"
+        ):  # Sometimes pathlib's internal instance creation mechanisms won't call our __init__
             self._cached_str = self.str_norm(super().__str__(), slash=self._flavour.sep)  # pyright: ignore[reportAttributeAccessIssue]
         return self._cached_str
 
@@ -285,7 +295,11 @@ class PurePath(pathlib.PurePath, metaclass=PurePathType):  # type: ignore[misc]
                 other_compare = str(__value)
             else:
                 fmt_other = self.str_norm(os.fspath(__value), slash=self._flavour.sep)  # pyright: ignore[reportAttributeAccessIssue]
-                other_compare = os.path.expanduser(fmt_other) if issubclass(self.__class__, (Path, WindowsPath, PosixPath)) else fmt_other  # noqa: PTH111
+                other_compare = (
+                    os.path.expanduser(fmt_other)
+                    if issubclass(self.__class__, (Path, WindowsPath, PosixPath))
+                    else fmt_other
+                )  # noqa: PTH111
 
             if self._flavour.sep == "\\":  # pyright: ignore[reportAttributeAccessIssue]
                 self_compare = self_compare.lower()
@@ -459,7 +473,11 @@ class PurePath(pathlib.PurePath, metaclass=PurePathType):  # type: ignore[misc]
             self_str: str = str(self).lower()
 
             # Normalize each string in the tuple if text is a tuple
-            text = tuple(subtext.lower() for subtext in text) if isinstance(text, tuple) else text.lower()
+            text = (
+                tuple(subtext.lower() for subtext in text)
+                if isinstance(text, tuple)
+                else text.lower()
+            )
         else:
             self_str = str(self)
 
@@ -591,7 +609,9 @@ class Path(PurePath, pathlib.Path):  # type: ignore[misc]
             open_mode: str | None = mode_to_str[mode]
             if self.is_file():
                 if open_mode is not None:
-                    with self.open(open_mode) as _:  # on windows this will fail if the file has system/read-only attributes.
+                    with self.open(
+                        open_mode
+                    ) as _:  # on windows this will fail if the file has system/read-only attributes.
                         ...
                 return self.get_highest_permission() >= mode  # check against os.access
 
@@ -599,7 +619,9 @@ class Path(PurePath, pathlib.Path):  # type: ignore[misc]
                 test_path: Path = self / f"pyk_{uuid.uuid4().hex}.tmp"
                 test_path.touch()
                 if open_mode is not None:
-                    with test_path.open(open_mode) as _:  # on windows this will fail if the file has system/read-only attributes.
+                    with test_path.open(
+                        open_mode
+                    ) as _:  # on windows this will fail if the file has system/read-only attributes.
                         ...
                 test_path.unlink()
 
@@ -607,7 +629,9 @@ class Path(PurePath, pathlib.Path):  # type: ignore[misc]
                     return True
 
                 for file_or_folder in self.rglob("*"):
-                    cur_access: bool = file_or_folder.has_access(mode, recurse=recurse, filter_results=filter_results)
+                    cur_access: bool = file_or_folder.has_access(
+                        mode, recurse=recurse, filter_results=filter_results
+                    )
                     if not cur_access:
                         return False
                 return True
@@ -654,12 +678,18 @@ class Path(PurePath, pathlib.Path):  # type: ignore[misc]
                 try:
                     stat_info = home_path.stat()
                 except OSError as e:
-                    print(format_exception_with_variables(e, message=f"Error accessing file information at path '{home_path}'"))
+                    print(
+                        format_exception_with_variables(
+                            e, message=f"Error accessing file information at path '{home_path}'"
+                        )
+                    )
                     raise
                 else:
                     os.chown(self, stat_info.st_uid, stat_info.st_gid)  # type: ignore[attr-defined]
             except (OSError, NotImplementedError) as e:
-                print(format_exception_with_variables(e, message=f"Error during chown for '{self}'"))
+                print(
+                    format_exception_with_variables(e, message=f"Error during chown for '{self}'")
+                )
 
         # (Any OS) chmod the folder
         print(f"Attempting pathlib.Path.chmod({self})...")
@@ -667,8 +697,12 @@ class Path(PurePath, pathlib.Path):  # type: ignore[misc]
             # Get the current permissions
             current_permissions: int = self.stat().st_mode
             # Extract owner and group permissions
-            owner_permissions: int = current_permissions & 0o700  # Extracts the first number of the octal (e.g. 0o7 in 0o750)
-            group_permissions: int = current_permissions & 0o70  # Extracts the second number of the octal (e.g. 0o5 in 0o750)
+            owner_permissions: int = (
+                current_permissions & 0o700
+            )  # Extracts the first number of the octal (e.g. 0o7 in 0o750)
+            group_permissions: int = (
+                current_permissions & 0o70
+            )  # Extracts the second number of the octal (e.g. 0o5 in 0o750)
             # Combine them with the new 'other' permissions
             new_permissions: int = owner_permissions | group_permissions | mode
             # Apply the new permissions
@@ -680,7 +714,9 @@ class Path(PurePath, pathlib.Path):  # type: ignore[misc]
                 except NotImplementedError:
                     self.chmod(new_permissions)
         except (OSError, NotImplementedError) as e:
-            print(format_exception_with_variables(e, message=f"Error during chmod at path '{self}'"))
+            print(
+                format_exception_with_variables(e, message=f"Error during chmod at path '{self}'")
+            )
 
         success: bool = True
         if not self.has_access(mode, recurse=False) and os.name == "nt":
@@ -688,16 +724,28 @@ class Path(PurePath, pathlib.Path):  # type: ignore[misc]
             try:
                 self.request_native_access(elevate=False, recurse=recurse, log_func=log_func)
             except OSError as e:
-                print(format_exception_with_variables(e, message=f"Error during platform-specific permission request at path '{self}'"))
+                print(
+                    format_exception_with_variables(
+                        e,
+                        message=f"Error during platform-specific permission request at path '{self}'",
+                    )
+                )
 
             log_func("Checking access again before attempting elevated native access fix...")
             success = self.has_access(mode, recurse=False)
             if not success:
-                log_func("Still no access permitted, attempting to elevate the native access fix...")
+                log_func(
+                    "Still no access permitted, attempting to elevate the native access fix..."
+                )
                 try:
                     self.request_native_access(elevate=True, recurse=recurse, log_func=log_func)
                 except OSError as e:
-                    print(format_exception_with_variables(e, message=f"Error during elevated platform-specific permission request at path '{self}'"))
+                    print(
+                        format_exception_with_variables(
+                            e,
+                            message=f"Error during elevated platform-specific permission request at path '{self}'",
+                        )
+                    )
 
         if not success:
             log_func("Verifying the operations were successful...")
@@ -705,12 +753,18 @@ class Path(PurePath, pathlib.Path):  # type: ignore[misc]
         try:
             if recurse and self.is_dir():
                 for child in self.iterdir():
-                    result: bool = child.gain_access(mode, recurse=recurse, resolve_symlinks=resolve_symlinks, log_func=log_func)
+                    result: bool = child.gain_access(
+                        mode, recurse=recurse, resolve_symlinks=resolve_symlinks, log_func=log_func
+                    )
                     if not result:
                         log_func(f"FAILED to gain access to '{child}'!")
                     success &= result
         except (OSError, NotImplementedError) as e:
-            print(format_exception_with_variables(e, message=f"Error gaining access for children of path '{self}'"))
+            print(
+                format_exception_with_variables(
+                    e, message=f"Error gaining access for children of path '{self}'"
+                )
+            )
             success = False
 
         return success
@@ -783,7 +837,9 @@ class Path(PurePath, pathlib.Path):  # type: ignore[misc]
 
                 # Execute the batch script
                 if block_until_complete:
-                    subprocess.run(run_script_cmd, check=False, creationflags=creation_flags, timeout=5)  # noqa: S603
+                    subprocess.run(
+                        run_script_cmd, check=False, creationflags=creation_flags, timeout=5
+                    )  # noqa: S603
                 else:
                     subprocess.Popen(run_script_cmd, creationflags=creation_flags, timeout=5)  # noqa: S603  # pyright: ignore[reportCallIssue]
 
@@ -808,14 +864,18 @@ class Path(PurePath, pathlib.Path):  # type: ignore[misc]
             isdir_check: bool = self.is_dir()
             commands: list[str] = []
 
-            print(f"Step 1: Resetting permissions and re-enabling inheritance for {self_path_str}...")
+            print(
+                f"Step 1: Resetting permissions and re-enabling inheritance for {self_path_str}..."
+            )
             icacls_reset_args: list[str] = ["icacls", self_path_str, "/reset", "/Q"]
             if isdir_check and recurse:
                 icacls_reset_args.append("/T")
             if elevate:
                 commands.append(" ".join(icacls_reset_args))
             else:
-                icacls_reset_result: subprocess.CompletedProcess[str] = subprocess.run(icacls_reset_args, timeout=60, check=False, capture_output=True, text=True)  # noqa: S603
+                icacls_reset_result: subprocess.CompletedProcess[str] = subprocess.run(
+                    icacls_reset_args, timeout=60, check=False, capture_output=True, text=True
+                )  # noqa: S603
                 if icacls_reset_result.returncode != 0:
                     log_func(
                         f"Failed reset permissions of {self_path_str}:\n"
@@ -835,7 +895,9 @@ class Path(PurePath, pathlib.Path):  # type: ignore[misc]
             if elevate:
                 commands.append(" ".join(takeown_args))
             else:
-                takeown_result: subprocess.CompletedProcess[str] = subprocess.run(takeown_args, timeout=60, check=False, capture_output=True, text=True)  # noqa: S603
+                takeown_result: subprocess.CompletedProcess[str] = subprocess.run(
+                    takeown_args, timeout=60, check=False, capture_output=True, text=True
+                )  # noqa: S603
                 if takeown_result.returncode != 0:
                     log_func(
                         f"Failed to take ownership of {self_path_str}:\n"
@@ -846,14 +908,26 @@ class Path(PurePath, pathlib.Path):  # type: ignore[misc]
                 elif takeown_result.stdout.strip():
                     log_func(takeown_result.stdout)
 
-            print(f"Step 3: Attempting to set access rights of the target {self_path_str} using icacls...")
-            icacls_args: list[str] = ["icacls", self_path_str, "/grant", "*S-1-1-0:(OI)(CI)F", "/C", "/L", "/Q"]
+            print(
+                f"Step 3: Attempting to set access rights of the target {self_path_str} using icacls..."
+            )
+            icacls_args: list[str] = [
+                "icacls",
+                self_path_str,
+                "/grant",
+                "*S-1-1-0:(OI)(CI)F",
+                "/C",
+                "/L",
+                "/Q",
+            ]
             if recurse:
                 icacls_args.append("/T")
             if elevate:
                 commands.append(" ".join(icacls_args))
             else:
-                icacls_result: subprocess.CompletedProcess[str] = subprocess.run(icacls_args, timeout=60, check=False, capture_output=True, text=True)  # noqa: S603
+                icacls_result: subprocess.CompletedProcess[str] = subprocess.run(
+                    icacls_args, timeout=60, check=False, capture_output=True, text=True
+                )  # noqa: S603
                 if icacls_result.returncode != 0:
                     log_func(
                         f"Could not set Windows icacls permissions at '{self_path_str}':\n"
@@ -878,7 +952,9 @@ class Path(PurePath, pathlib.Path):  # type: ignore[misc]
             if elevate:
                 commands.append(" ".join(attrib_args))
             else:
-                attrib_result: subprocess.CompletedProcess[str] = subprocess.run(attrib_args, timeout=60, check=False, capture_output=True, text=True)  # noqa: S603
+                attrib_result: subprocess.CompletedProcess[str] = subprocess.run(
+                    attrib_args, timeout=60, check=False, capture_output=True, text=True
+                )  # noqa: S603
                 if attrib_result.returncode != 0:
                     log_func(
                         f"Could not set Windows icacls permissions at '{self_path_str}':\n"
@@ -899,7 +975,9 @@ class Path(PurePath, pathlib.Path):  # type: ignore[misc]
                 if elevate:
                     commands.append(" ".join(rehide_args))
                 else:
-                    rehide_result: subprocess.CompletedProcess[str] = subprocess.run(rehide_args, timeout=60, check=False, capture_output=True, text=True)  # noqa: S603
+                    rehide_result: subprocess.CompletedProcess[str] = subprocess.run(
+                        rehide_args, timeout=60, check=False, capture_output=True, text=True
+                    )  # noqa: S603
                     if rehide_result.returncode != 0:
                         log_func(
                             f"Could not set Windows icacls permissions at '{self_path_str}':\n"

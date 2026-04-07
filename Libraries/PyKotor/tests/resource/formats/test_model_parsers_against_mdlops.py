@@ -235,7 +235,9 @@ def _test_single_model(
                     if not binary_diff_summary:
                         for i, (a, b) in enumerate(zip(pykotor_mdx_bytes, mdlops_mdx_bytes)):
                             if a != b:
-                                binary_diff_summary = f"MDX first diff @ offset {i}: {a:02x} != {b:02x}"
+                                binary_diff_summary = (
+                                    f"MDX first diff @ offset {i}: {a:02x} != {b:02x}"
+                                )
                                 print(f"         -> {binary_diff_summary}")
                                 break
 
@@ -258,7 +260,9 @@ def _test_single_model(
                 # Show more context for MDLOps errors
                 full_error = error_msg
                 if len(error_msg) > 1000:
-                    full_error = error_msg[:1000] + f"\n... ({len(error_msg) - 1000} more characters)"
+                    full_error = (
+                        error_msg[:1000] + f"\n... ({len(error_msg) - 1000} more characters)"
+                    )
                 return (
                     False,
                     f"MDLOps failed to decompile PyKotor output:\n{full_error}",
@@ -286,7 +290,12 @@ def _test_single_model(
             # Replace "-pykotor" suffix in filedependancy lines for comparison
             import re
 
-            pykotor_ascii_normalized = re.sub(r"^filedependancy (.+)-pykotor (NULL\.mlk)$", r"filedependancy \1 \2", pykotor_ascii, flags=re.MULTILINE)
+            pykotor_ascii_normalized = re.sub(
+                r"^filedependancy (.+)-pykotor (NULL\.mlk)$",
+                r"filedependancy \1 \2",
+                pykotor_ascii,
+                flags=re.MULTILINE,
+            )
 
             if mdlops_ascii == pykotor_ascii_normalized:
                 print("         -> PASS: Outputs match exactly")
@@ -308,7 +317,9 @@ def _test_single_model(
                 diff_text = "".join(diff_lines)
                 # Limit to first 500 lines for readability
                 if len(diff_lines) > 500:
-                    diff_text = "".join(diff_lines[:500]) + f"\n... ({len(diff_lines) - 500} more lines)"
+                    diff_text = (
+                        "".join(diff_lines[:500]) + f"\n... ({len(diff_lines) - 500} more lines)"
+                    )
 
                 # Combine binary diff summary (if any) with ASCII diff
                 error_parts: list[str] = []
@@ -360,7 +371,13 @@ def _format_clean_traceback(exc: BaseException) -> str:
             continue
         skip_next = False
         # Only include lines from our codebase
-        if "Libraries/PyKotor" in line or "test_model_parsers" in line or "Traceback" in line or "Error:" in line or line.strip() == "":
+        if (
+            "Libraries/PyKotor" in line
+            or "test_model_parsers" in line
+            or "Traceback" in line
+            or "Error:" in line
+            or line.strip() == ""
+        ):
             filtered_lines.append(line)
 
     if not filtered_lines:
@@ -394,7 +411,11 @@ def pytest_runtest_logreport(report: pytest.TestReport) -> None:  # noqa: ARG001
                 for i in range(msg_start, len(lines)):
                     line = lines[i]
                     # Stop at "Stack Trace Variables" or traceback indicators
-                    if "Stack Trace Variables" in line or line.strip().startswith("Function '") or "Traceback (most recent call last):" in line:
+                    if (
+                        "Stack Trace Variables" in line
+                        or line.strip().startswith("Function '")
+                        or "Traceback (most recent call last):" in line
+                    ):
                         break
                     clean_lines.append(line)
 

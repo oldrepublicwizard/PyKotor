@@ -45,17 +45,29 @@ def fix_tpc_ui():
     ET.SubElement(dock_area, "number").text = "1"
 
     # Create contents widget
-    contents_widget = ET.SubElement(properties_dock, "widget", {"class": "QWidget", "name": "propertiesDockWidgetContents"})
-    properties_layout = ET.SubElement(contents_widget, "layout", {"class": "QVBoxLayout", "name": "propertiesLayout"})
+    contents_widget = ET.SubElement(
+        properties_dock, "widget", {"class": "QWidget", "name": "propertiesDockWidgetContents"}
+    )
+    properties_layout = ET.SubElement(
+        contents_widget, "layout", {"class": "QVBoxLayout", "name": "propertiesLayout"}
+    )
 
     # Layout properties
-    for prop_name, prop_value in [("spacing", "4"), ("leftMargin", "4"), ("topMargin", "4"), ("rightMargin", "4"), ("bottomMargin", "4")]:
+    for prop_name, prop_value in [
+        ("spacing", "4"),
+        ("leftMargin", "4"),
+        ("topMargin", "4"),
+        ("rightMargin", "4"),
+        ("bottomMargin", "4"),
+    ]:
         prop = ET.SubElement(properties_layout, "property", {"name": prop_name})
         ET.SubElement(prop, "number").text = prop_value
 
     # Create form layout
     form_layout_item = ET.SubElement(properties_layout, "item")
-    form_layout = ET.SubElement(form_layout_item, "widget", {"class": "QFormLayout", "name": "propertiesFormLayout"})
+    form_layout = ET.SubElement(
+        form_layout_item, "widget", {"class": "QFormLayout", "name": "propertiesFormLayout"}
+    )
 
     # Define form fields
     fields = [
@@ -72,13 +84,17 @@ def fix_tpc_ui():
     for field_name, label_text in fields:
         # Label
         label_item = ET.SubElement(form_layout, "item", {"row": str(row), "column": "0"})
-        label_widget = ET.SubElement(label_item, "widget", {"class": "QLabel", "name": f"{field_name}Label"})
+        label_widget = ET.SubElement(
+            label_item, "widget", {"class": "QLabel", "name": f"{field_name}Label"}
+        )
         label_prop = ET.SubElement(label_widget, "property", {"name": "text"})
         ET.SubElement(label_prop, "string").text = label_text
 
         # Value
         value_item = ET.SubElement(form_layout, "item", {"row": str(row), "column": "1"})
-        value_widget = ET.SubElement(value_item, "widget", {"class": "QLabel", "name": f"{field_name}Value"})
+        value_widget = ET.SubElement(
+            value_item, "widget", {"class": "QLabel", "name": f"{field_name}Value"}
+        )
         value_prop = ET.SubElement(value_widget, "property", {"name": "text"})
         ET.SubElement(value_prop, "string").text = "—"
 
@@ -86,12 +102,16 @@ def fix_tpc_ui():
 
     # Alpha test field (with spinbox)
     label_item = ET.SubElement(form_layout, "item", {"row": str(row), "column": "0"})
-    label_widget = ET.SubElement(label_item, "widget", {"class": "QLabel", "name": "alphaTestLabel"})
+    label_widget = ET.SubElement(
+        label_item, "widget", {"class": "QLabel", "name": "alphaTestLabel"}
+    )
     label_prop = ET.SubElement(label_widget, "property", {"name": "text"})
     ET.SubElement(label_prop, "string").text = "Alpha Test:"
 
     value_item = ET.SubElement(form_layout, "item", {"row": str(row), "column": "1"})
-    spinbox_widget = ET.SubElement(value_item, "widget", {"class": "QDoubleSpinBox", "name": "alphaTestSpinBox"})
+    spinbox_widget = ET.SubElement(
+        value_item, "widget", {"class": "QDoubleSpinBox", "name": "alphaTestSpinBox"}
+    )
 
     decimals = ET.SubElement(spinbox_widget, "property", {"name": "decimals"})
     ET.SubElement(decimals, "number").text = "2"

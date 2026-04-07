@@ -1,4 +1,5 @@
 """Archive lines containing https://github.com and remove them from a source file."""
+
 from __future__ import annotations
 
 import argparse
@@ -54,8 +55,12 @@ def main() -> None:
             "wiki_rel",
             help="Markdown filename under wiki/ (e.g. reverse_engineering_findings_foo_github_urls_pre_scrub.md)",
         )
-        p.add_argument("--title", required=True, help="H1 title for the wiki page (without leading #)")
-        p.add_argument("--intro", required=True, help="Paragraph after the title (markdown allowed)")
+        p.add_argument(
+            "--title", required=True, help="H1 title for the wiki page (without leading #)"
+        )
+        p.add_argument(
+            "--intro", required=True, help="Paragraph after the title (markdown allowed)"
+        )
         args = p.parse_args(sys.argv[2:])
         path = ROOT / args.src
         if not path.is_file():

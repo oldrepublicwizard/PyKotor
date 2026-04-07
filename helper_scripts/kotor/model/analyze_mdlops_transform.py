@@ -135,7 +135,21 @@ def main():
         lines = ascii_content.split("\n")
         print("\n=== Key ASCII Lines ===")
         for i, line in enumerate(lines[:50]):
-            if any(kw in line.lower() for kw in ["node ", "endnode", "bitmap", "render", "shadow", "beaming", "face ", "vertex ", "verts ", "tverts "]):
+            if any(
+                kw in line.lower()
+                for kw in [
+                    "node ",
+                    "endnode",
+                    "bitmap",
+                    "render",
+                    "shadow",
+                    "beaming",
+                    "face ",
+                    "vertex ",
+                    "verts ",
+                    "tverts ",
+                ]
+            ):
                 print(f"  {i}: {line.strip()}")
 
         # MDLOps recompile
@@ -173,7 +187,9 @@ def main():
         # Identify what's different
         print("\n=== Changes Made by MDLOps ===")
         if orig_info.get("node_count") != mdlops_info.get("node_count"):
-            print(f"Node count changed: {orig_info.get('node_count')} -> {mdlops_info.get('node_count')}")
+            print(
+                f"Node count changed: {orig_info.get('node_count')} -> {mdlops_info.get('node_count')}"
+            )
         else:
             print(f"Node count unchanged: {orig_info.get('node_count')}")
 

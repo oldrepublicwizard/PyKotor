@@ -63,8 +63,12 @@ class PTH:
         self._connections = [x for x in self._connections if index not in {x.source, x.target}]
 
         for connection in self._connections:
-            connection.source = connection.source - 1 if connection.source > index else connection.source
-            connection.target = connection.target - 1 if connection.target > index else connection.target
+            connection.source = (
+                connection.source - 1 if connection.source > index else connection.source
+            )
+            connection.target = (
+                connection.target - 1 if connection.target > index else connection.target
+            )
 
     def get(
         self,

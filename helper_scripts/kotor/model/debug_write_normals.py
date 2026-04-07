@@ -71,9 +71,16 @@ def main():
         pykotor_mdx = pykotor_mdx_path.read_bytes()
 
         # MDLOps roundtrip
-        subprocess.run([str(mdlops_exe), str(orig_mdl_path)], cwd=str(td_path), capture_output=True, timeout=60)
+        subprocess.run(
+            [str(mdlops_exe), str(orig_mdl_path)], cwd=str(td_path), capture_output=True, timeout=60
+        )
         ascii_path = td_path / f"{model_name}-ascii.mdl"
-        subprocess.run([str(mdlops_exe), str(ascii_path), "-k1"], cwd=str(td_path), capture_output=True, timeout=60)
+        subprocess.run(
+            [str(mdlops_exe), str(ascii_path), "-k1"],
+            cwd=str(td_path),
+            capture_output=True,
+            timeout=60,
+        )
         mdlops_mdx_path = td_path / f"{model_name}-ascii-k1-bin.mdx"
         mdlops_mdx = mdlops_mdx_path.read_bytes()
 
@@ -112,7 +119,9 @@ def main():
             if node.mesh and node.mesh.vertex_positions:
                 print(f"\nNode: {node.name}")
                 print(f"  Positions: {len(node.mesh.vertex_positions)}")
-                print(f"  Normals: {len(node.mesh.vertex_normals) if node.mesh.vertex_normals else 0}")
+                print(
+                    f"  Normals: {len(node.mesh.vertex_normals) if node.mesh.vertex_normals else 0}"
+                )
                 print(f"  UV1: {len(node.mesh.vertex_uv1) if node.mesh.vertex_uv1 else 0}")
 
                 if node.mesh.vertex_normals:

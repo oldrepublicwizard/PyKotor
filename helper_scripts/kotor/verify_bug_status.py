@@ -65,13 +65,19 @@ def analyze_mod_woks(mod_path: Path, mod_name: str):
                                 "is_walkable": is_walkable,
                                 "in_walkable_range": in_walkable_range,
                                 "transitions": trans,
-                                "v1": (round(face.v1.x, 3), round(face.v1.y, 3), round(face.v1.z, 3)),
+                                "v1": (
+                                    round(face.v1.x, 3),
+                                    round(face.v1.y, 3),
+                                    round(face.v1.z, 3),
+                                ),
                             }
                         )
 
                 # Check edges
                 edges = bwm.edges()
-                edges_with_trans = [e for e in edges if e.transition is not None and e.transition >= 0]
+                edges_with_trans = [
+                    e for e in edges if e.transition is not None and e.transition >= 0
+                ]
 
                 result = {
                     "resref": resource.resref.get(),
@@ -132,11 +138,15 @@ def main():
 
         for r in step01_results:
             status = "OK" if r["transitions_on_walkable"] else "BUG"
-            print(f"| Step01 | {r['resref']} | {r['transitions_on_walkable']} | {r['edges_with_trans']} | {status} |")
+            print(
+                f"| Step01 | {r['resref']} | {r['transitions_on_walkable']} | {r['edges_with_trans']} | {status} |"
+            )
 
         for r in step02_results:
             status = "OK" if r["transitions_on_walkable"] else "BUG"
-            print(f"| Step02 | {r['resref']} | {r['transitions_on_walkable']} | {r['edges_with_trans']} | {status} |")
+            print(
+                f"| Step02 | {r['resref']} | {r['transitions_on_walkable']} | {r['edges_with_trans']} | {status} |"
+            )
 
     # Conclusion
     print("\n" + "=" * 70)

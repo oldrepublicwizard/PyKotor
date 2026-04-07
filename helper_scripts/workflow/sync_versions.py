@@ -158,7 +158,9 @@ def validate_versions() -> bool:
 
     unique_versions = set(core_versions.values())
     if len(unique_versions) > 1:
-        errors.append(f"Core libraries have inconsistent versions: {', '.join(f'{k}={v}' for k, v in core_versions.items())}")
+        errors.append(
+            f"Core libraries have inconsistent versions: {', '.join(f'{k}={v}' for k, v in core_versions.items())}"
+        )
 
     # Check poetry versions match project versions
     for name, path in get_all_pyproject_paths():
@@ -168,7 +170,9 @@ def validate_versions() -> bool:
             poetry_ver = get_poetry_version(data)
 
             if project_ver and poetry_ver and project_ver != poetry_ver:
-                warnings.append(f"{name}: [project].version ({project_ver}) != [tool.poetry].version ({poetry_ver})")
+                warnings.append(
+                    f"{name}: [project].version ({project_ver}) != [tool.poetry].version ({poetry_ver})"
+                )
 
     # Check workspace version matches pykotor
     if WORKSPACE_PYPROJECT.exists():
@@ -181,7 +185,9 @@ def validate_versions() -> bool:
             pykotor_version = get_version(pykotor_data)
 
             if ws_version and pykotor_version and ws_version != pykotor_version:
-                warnings.append(f"Workspace version ({ws_version}) != pykotor version ({pykotor_version})")
+                warnings.append(
+                    f"Workspace version ({ws_version}) != pykotor version ({pykotor_version})"
+                )
 
     # Report results
     if errors:
@@ -207,10 +213,20 @@ def update_version_in_file(path: Path, new_version: str) -> bool:
     content = path.read_text(encoding="utf-8")
 
     # Update [project] version
-    content = re.sub(r'(\[project\][^\[]*version\s*=\s*")[^"]*(")', rf"\g<1>{new_version}\g<2>", content, flags=re.DOTALL)
+    content = re.sub(
+        r'(\[project\][^\[]*version\s*=\s*")[^"]*(")',
+        rf"\g<1>{new_version}\g<2>",
+        content,
+        flags=re.DOTALL,
+    )
 
     # Update [tool.poetry] version
-    content = re.sub(r'(\[tool\.poetry\][^\[]*version\s*=\s*")[^"]*(")', rf"\g<1>{new_version}\g<2>", content, flags=re.DOTALL)
+    content = re.sub(
+        r'(\[tool\.poetry\][^\[]*version\s*=\s*")[^"]*(")',
+        rf"\g<1>{new_version}\g<2>",
+        content,
+        flags=re.DOTALL,
+    )
 
     path.write_text(content, encoding="utf-8")
     return True
@@ -242,7 +258,9 @@ def sync_versions(new_version: str, include_tools: bool = False) -> None:
                     if pyproject.exists():
                         # Update pykotor dependency version requirement
                         content = pyproject.read_text(encoding="utf-8")
-                        content = re.sub(r'(pykotor["\']?\s*[><=~!]*\s*)[0-9.]+', rf"\g<1>{new_version}", content)
+                        content = re.sub(
+                            r'(pykotor["\']?\s*[><=~!]*\s*)[0-9.]+', rf"\g<1>{new_version}", content
+                        )
                         pyproject.write_text(content, encoding="utf-8")
                         print(f"  ✓ {tool_dir.name} dependencies updated")
 
@@ -291,13 +309,25 @@ def bump_version(bump_type: str) -> str:
 
 def main() -> None:
     """Main entry point."""
-    parser = argparse.ArgumentParser(description="Synchronize versions across PyKotor packages", formatter_class=argparse.RawDescriptionHelpFormatter, epilog=__doc__)
+    parser = argparse.ArgumentParser(
+        description="Synchronize versions across PyKotor packages",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog=__doc__,
+    )
 
     parser.add_argument("--show", action="store_true", help="Show current versions of all packages")
     parser.add_argument("--validate", action="store_true", help="Validate version consistency")
-    parser.add_argument("--sync", metavar="VERSION", help="Synchronize core libraries to specified version")
-    parser.add_argument("--bump", choices=["major", "minor", "patch"], help="Bump version (major/minor/patch)")
-    parser.add_argument("--include-tools", action="store_true", help="Also update tool dependency versions when syncing")
+    parser.add_argument(
+        "--sync", metavar="VERSION", help="Synchronize core libraries to specified version"
+    )
+    parser.add_argument(
+        "--bump", choices=["major", "minor", "patch"], help="Bump version (major/minor/patch)"
+    )
+    parser.add_argument(
+        "--include-tools",
+        action="store_true",
+        help="Also update tool dependency versions when syncing",
+    )
 
     args = parser.parse_args()
 

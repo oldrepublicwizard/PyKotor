@@ -30,7 +30,9 @@ class ResourceInfo:
         self.file_resources: list[FileResource] = []  # FileResource instances across all locations
         self.is_missing: bool = False  # Whether the resource is missing
         self.is_unused: bool = False  # Whether the resource is unused
-        self.dependent_resources: set[ResourceIdentifier] = set()  # Other resources this one depends on
+        self.dependent_resources: set[ResourceIdentifier] = (
+            set()
+        )  # Other resources this one depends on
         self.resource_hashes: dict[str, str] = {}  # Hashes of the resource data (e.g., SHA-256)
         self.impact_of_missing: str | None = None  # Impact description if the resource is missing
 
@@ -61,7 +63,9 @@ class ModuleManager:
 
             # First Pass: Collect Resource Information
             for identifier, mod_res in module.resources.items():
-                resource_info: ResourceInfo = self.resources_info.setdefault(identifier, ResourceInfo())
+                resource_info: ResourceInfo = self.resources_info.setdefault(
+                    identifier, ResourceInfo()
+                )
                 resource_info.modules.add(module_name)
 
                 # Create FileResource instances for each location and add them to the resource info
@@ -75,7 +79,9 @@ class ModuleManager:
                     )
                     resource_info.file_resources.append(file_resource)
                     resource_hash: str = file_resource.get_sha1_hash()
-                    resource_info.resource_hashes[file_resource.filepath().as_posix()] = resource_hash
+                    resource_info.resource_hashes[file_resource.filepath().as_posix()] = (
+                        resource_hash
+                    )
 
                 # Check for unused resources
                 if not mod_res.isActive():
@@ -84,21 +90,27 @@ class ModuleManager:
                 # If the resource data is missing, mark it as missing
                 if not mod_res.data():
                     resource_info.is_missing = True
-                    resource_info.impact_of_missing = "Critical resource missing, could impact module functionality."
+                    resource_info.impact_of_missing = (
+                        "Critical resource missing, could impact module functionality."
+                    )
 
             # Second Pass: Identify Dependencies and Conflicts
             for identifier, mod_res in module.resources.items():
                 resource_info = self.resources_info[identifier]
 
                 # Find dependencies within the module
-                dependent_resources: set[ResourceIdentifier] = self._find_dependencies(module, mod_res)
+                dependent_resources: set[ResourceIdentifier] = self._find_dependencies(
+                    module, mod_res
+                )
                 resource_info.dependent_resources.update(dependent_resources)
 
                 # Check for resource conflicts across multiple modules
                 if len(resource_info.modules) > 1:
                     self.conflicting_resources[identifier].update(resource_info.modules)
 
-    def _find_dependencies(self, module: Module, mod_res: ModuleResource) -> set[ResourceIdentifier]:
+    def _find_dependencies(
+        self, module: Module, mod_res: ModuleResource
+    ) -> set[ResourceIdentifier]:
         """Finds and returns a set of resources that the given ModuleResource depends on.
 
         Args:
@@ -112,11 +124,18 @@ class ModuleManager:
 
         # Search for linked resources like GIT, LYT, VIS
         if mod_res.restype() in {ResourceType.GIT, ResourceType.LYT, ResourceType.VIS}:
-            linked_resources: set[ResourceIdentifier] = self._search_linked_resources(module, mod_res)
+            linked_resources: set[ResourceIdentifier] = self._search_linked_resources(
+                module, mod_res
+            )
             dependencies.update(linked_resources)
 
         # Extract dependencies from GFF files
-        if mod_res.restype() in {ResourceType.GFF, ResourceType.ARE, ResourceType.IFO, ResourceType.DLG}:
+        if mod_res.restype() in {
+            ResourceType.GFF,
+            ResourceType.ARE,
+            ResourceType.IFO,
+            ResourceType.DLG,
+        }:
             dependencies.update(self._extract_references_from_gff(mod_res.data()))
 
         # Extract texture and model dependencies
@@ -126,7 +145,9 @@ class ModuleManager:
 
         return dependencies
 
-    def _search_linked_resources(self, module: Module, mod_res: ModuleResource) -> set[ResourceIdentifier]:
+    def _search_linked_resources(
+        self, module: Module, mod_res: ModuleResource
+    ) -> set[ResourceIdentifier]:
         """Searches for linked resources in GIT, LYT, VIS and related files.
 
         Args:
@@ -168,7 +189,9 @@ class ModuleManager:
         for field in gff.fields():
             if field.type == GFFFieldType.ResRef:
                 resref: ResRef = field.value
-                references.add(ResourceIdentifier(resref.get(), ResourceType.UNKNOWN))  # ResourceType.UNKNOWN is a placeholder
+                references.add(
+                    ResourceIdentifier(resref.get(), ResourceType.UNKNOWN)
+                )  # ResourceType.UNKNOWN is a placeholder
         return references
 
     def _extract_references_from_model(self, model_data: bytes) -> set[ResourceIdentifier]:
@@ -341,7 +364,9 @@ class ModuleManager:
         for resource_file in override_path.iterdir():
             if resource_file.is_file():
                 resname: str = resource_file.stem
-                restype: ResourceType = ResourceType.from_extension(resource_file.suffix[1:])  # Remove the dot
+                restype: ResourceType = ResourceType.from_extension(
+                    resource_file.suffix[1:]
+                )  # Remove the dot
                 identifier = ResourceIdentifier(resname, restype)
 
                 modules: set[str] = self.resource_to_modules.get(resname.lower(), set())

@@ -41,7 +41,9 @@ except ImportError as err:
 
         USE_COMTYPES = False
     except ImportError:
-        raise ImportError("Neither comtypes nor pywin32 is available. Please install one of them.") from err
+        raise ImportError(
+            "Neither comtypes nor pywin32 is available. Please install one of them."
+        ) from err
 
 
 class WindowsFileDialogHelper(QFileDialogPlatformHelper):
@@ -108,9 +110,19 @@ class WindowsFileDialogHelper(QFileDialogPlatformHelper):
         file_filter = self._create_win32_file_filter()
 
         if self._options.acceptMode() == QFileDialog.AcceptMode.AcceptOpen:
-            (file_path, customfilter, flags) = win32gui.GetOpenFileNameW(InitialDir=self._current_directory, Flags=flags, Filter=file_filter, Title="Open File")
+            (file_path, customfilter, flags) = win32gui.GetOpenFileNameW(
+                InitialDir=self._current_directory,
+                Flags=flags,
+                Filter=file_filter,
+                Title="Open File",
+            )
         else:
-            (file_path, customfilter, flags) = win32gui.GetSaveFileNameW(InitialDir=self._current_directory, Flags=flags, Filter=file_filter, Title="Save File")
+            (file_path, customfilter, flags) = win32gui.GetSaveFileNameW(
+                InitialDir=self._current_directory,
+                Flags=flags,
+                Filter=file_filter,
+                Title="Save File",
+            )
 
         if file_path:
             if flags & win32con.OFN_ALLOWMULTISELECT:
@@ -170,7 +182,12 @@ class WindowsFileDialogHelper(QFileDialogPlatformHelper):
             return QPlatformDialogHelper.DialogCode.Accepted
         return QPlatformDialogHelper.DialogCode.Rejected
 
-    def show(self, parent_window_flags: Qt.WindowType, parent_window_state: Qt.WindowState, parent: QObject | None):
+    def show(
+        self,
+        parent_window_flags: Qt.WindowType,
+        parent_window_state: Qt.WindowState,
+        parent: QObject | None,
+    ):
         hwnd: int | None = self._get_hwnd_from_parent(parent)
         self.show_dialog(hwnd)
 
@@ -227,14 +244,25 @@ class QWindowsDialogHelperBase(QPlatformDialogHelper):
 
     def exec(self) -> QPlatformDialogHelper.DialogCode:
         if self.m_eventLoop:
-            raise RuntimeError("QWindowsDialogHelperBase::exec(): Recursive calls are not supported")
+            raise RuntimeError(
+                "QWindowsDialogHelperBase::exec(): Recursive calls are not supported"
+            )
         self.m_eventLoop = QEventLoop()
         self.show(Qt.WindowType(0), Qt.WindowState.WindowNoState, None)
         self.m_eventLoop.exec()
         self.m_eventLoop = None
-        return QPlatformDialogHelper.DialogCode.Accepted if self.result() else QPlatformDialogHelper.DialogCode.Rejected
+        return (
+            QPlatformDialogHelper.DialogCode.Accepted
+            if self.result()
+            else QPlatformDialogHelper.DialogCode.Rejected
+        )
 
-    def show(self, parent_window_flags: Qt.WindowType, parent_window_state: Qt.WindowState, parent: QObject | None):
+    def show(
+        self,
+        parent_window_flags: Qt.WindowType,
+        parent_window_state: Qt.WindowState,
+        parent: QObject | None,
+    ):
         self.m_visible = True
 
     def hide(self):
@@ -272,7 +300,12 @@ class QWindowsFileDialogHelper(QWindowsDialogHelperBase, QPlatformFileDialogHelp
             return QPlatformDialogHelper.DialogCode.Accepted
         return QPlatformDialogHelper.DialogCode.Rejected
 
-    def show(self, parent_window_flags: Qt.WindowType, parent_window_state: Qt.WindowState, parent: QObject | None):
+    def show(
+        self,
+        parent_window_flags: Qt.WindowType,
+        parent_window_state: Qt.WindowState,
+        parent: QObject | None,
+    ):
         if not self.m_fileDialog:
             self.m_fileDialog = QFileDialog(parent)
         self._applyOptions()
@@ -466,7 +499,9 @@ class QWindowsFontDialogHelper(QWindowsDialogHelperBase, QPlatformFontDialogHelp
             return QPlatformDialogHelper.DialogCode.Accepted
         return QPlatformDialogHelper.DialogCode.Rejected
 
-    def show(self, parent_window_flags, parent_window_state: Qt.WindowState, parent: QObject | None):
+    def show(
+        self, parent_window_flags, parent_window_state: Qt.WindowState, parent: QObject | None
+    ):
         if not self.m_fontDialog:
             self.m_fontDialog = QFontDialog(self.m_font, parent)
         self.m_fontDialog.setOptions(self.m_options)
@@ -537,7 +572,12 @@ class QWindowsDialogHelper(QWindowsDialogHelperBase):
             return self.m_helper.exec()
         return QPlatformDialogHelper.DialogCode.Rejected
 
-    def show(self, parent_window_flags: Qt.WindowType, parent_window_state: Qt.WindowState, parent: QObject | None):
+    def show(
+        self,
+        parent_window_flags: Qt.WindowType,
+        parent_window_state: Qt.WindowState,
+        parent: QObject | None,
+    ):
         if self.m_helper:
             self.m_helper.show(parent_window_flags, parent_window_state, parent)
 

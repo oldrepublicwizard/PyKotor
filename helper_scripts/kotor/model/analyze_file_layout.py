@@ -170,12 +170,16 @@ def main():
         print("PyKotor nodes:")
         pk_nodes = scan_nodes(pykotor_mdl, pk_root, pk_count)
         for n in pk_nodes[:10]:
-            print(f"  offset={n['offset']:5d}, type=0x{n['type']:04X}, id={n['node_id']:2d}, name_id={n['name_id']:2d}")
+            print(
+                f"  offset={n['offset']:5d}, type=0x{n['type']:04X}, id={n['node_id']:2d}, name_id={n['name_id']:2d}"
+            )
 
         print("\nMDLOps nodes:")
         mo_nodes = scan_nodes(mdlops_mdl, mo_root, mo_count)
         for n in mo_nodes[:10]:
-            print(f"  offset={n['offset']:5d}, type=0x{n['type']:04X}, id={n['node_id']:2d}, name_id={n['name_id']:2d}")
+            print(
+                f"  offset={n['offset']:5d}, type=0x{n['type']:04X}, id={n['node_id']:2d}, name_id={n['name_id']:2d}"
+            )
 
         # Find neck_g in both
         print("\n=== neck_g Node Location ===")
@@ -188,7 +192,10 @@ def main():
         # Check MDL nodes with trimesh for vertex data
         print("\n=== Trimesh Node Analysis (first 5 mesh nodes) ===")
         mesh_count = 0
-        for nodes, data, label in [(pk_nodes, pykotor_mdl, "PyKotor"), (mo_nodes, mdlops_mdl, "MDLOps")]:
+        for nodes, data, label in [
+            (pk_nodes, pykotor_mdl, "PyKotor"),
+            (mo_nodes, mdlops_mdl, "MDLOps"),
+        ]:
             print(f"\n{label}:")
             for n in nodes:
                 if n["type"] & 0x20 and mesh_count < 5:  # Has mesh

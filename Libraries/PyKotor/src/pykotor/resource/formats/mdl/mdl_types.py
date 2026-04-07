@@ -87,7 +87,9 @@ class MDLNodeFlags(IntFlag):
     LIGHT = 0x0002  # NODE_HAS_LIGHT - Light data (mdlops:303, kotorblender:94)
     EMITTER = 0x0004  # NODE_HAS_EMITTER - Particle emitter data (mdlops:304, kotorblender:95)
     CAMERA = 0x0008  # NODE_HAS_CAMERA - Camera data (not in mdlops quick ref)
-    REFERENCE = 0x0010  # NODE_HAS_REFERENCE - Reference to another model (mdlops:305, kotorblender:96)
+    REFERENCE = (
+        0x0010  # NODE_HAS_REFERENCE - Reference to another model (mdlops:305, kotorblender:96)
+    )
     MESH = 0x0020  # NODE_HAS_MESH - Mesh geometry (mdlops:306, kotorblender:97)
     SKIN = 0x0040  # NODE_HAS_SKIN - Skinned mesh (mdlops:307, kotorblender:98)
     ANIM = 0x0080  # NODE_HAS_ANIM - Animation mesh (mdlops:308)
@@ -194,7 +196,9 @@ class MDLControllerType(IntEnum):
     DETONATE = 502  # detonate - Emitter, was 228 (mdlops:404)
 
     # Mesh controllers (NODE_HAS_MESH)
-    SELFILLUMCOLOR = 100  # selfillumcolor - Mesh (mdlops:406, same as DRAG and VERTICALDISPLACEMENT)
+    SELFILLUMCOLOR = (
+        100  # selfillumcolor - Mesh (mdlops:406, same as DRAG and VERTICALDISPLACEMENT)
+    )
 
     # Legacy aliases for backward compatibility
     BOUNCE_CO = BOUNCECO
@@ -322,9 +326,13 @@ class MDLEmitterFlags(IntFlag):
     RANDOM = 0x0020  # EMITTER_FLAG_RANDOM - Random rotation (kotorblender:120)
     INHERIT = 0x0040  # EMITTER_FLAG_INHERIT - Inherit parent orientation (kotorblender:121)
     INHERIT_VEL = 0x0080  # EMITTER_FLAG_INHERIT_VEL - Inherit parent velocity (kotorblender:122)
-    INHERIT_LOCAL = 0x0100  # EMITTER_FLAG_INHERIT_LOCAL - Inherit local transform (kotorblender:123)
+    INHERIT_LOCAL = (
+        0x0100  # EMITTER_FLAG_INHERIT_LOCAL - Inherit local transform (kotorblender:123)
+    )
     SPLAT = 0x0200  # EMITTER_FLAG_SPLAT - Splat on collision (kotorblender:124)
-    INHERIT_PART = 0x0400  # EMITTER_FLAG_INHERIT_PART - Inherit particle properties (kotorblender:125)
+    INHERIT_PART = (
+        0x0400  # EMITTER_FLAG_INHERIT_PART - Inherit particle properties (kotorblender:125)
+    )
     DEPTH_TEXTURE = 0x0800  # EMITTER_FLAG_DEPTH_TEXTURE - Use depth texture (kotorblender:126)
     FLAG_13 = 0x1000  # Unknown flag 13 (kotorblender:127)
 

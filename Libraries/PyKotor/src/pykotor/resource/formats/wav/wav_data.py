@@ -24,9 +24,7 @@ from pykotor.resource.type import ResourceType
 
 
 class WaveEncoding(IntEnum):
-    """Wave encoding types used by Bioware.
-
-    """
+    """Wave encoding types used by Bioware."""
 
     PCM = 0x01  # Linear PCM (uncompressed)
     MS_ADPCM = 0x02  # Microsoft ADPCM
@@ -133,4 +131,15 @@ class WAV(BiowareResource):
         )
 
     def __hash__(self):
-        return hash((self.wav_type, self.audio_format, self.encoding, self.channels, self.sample_rate, self.bits_per_sample, self.block_align, self.data))
+        return hash(
+            (
+                self.wav_type,
+                self.audio_format,
+                self.encoding,
+                self.channels,
+                self.sample_rate,
+                self.bits_per_sample,
+                self.block_align,
+                self.data,
+            )
+        )

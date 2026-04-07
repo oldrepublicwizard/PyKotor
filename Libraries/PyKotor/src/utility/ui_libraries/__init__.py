@@ -3,6 +3,7 @@
 Legacy: from utility.ui_libraries.qt.widgets.theme.theme_dialog import ThemeDialog
 Resolves to: utility.gui.qt.widgets.theme.theme_dialog (same namespace).
 """
+
 from utility import gui
 import sys
 

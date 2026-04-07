@@ -73,7 +73,9 @@ def askdirectory(
         )
         return _normalize_result(result)
     except Exception:  # noqa: BLE001
-        RobustLogger().warning("Tkinter's filedialog.askdirectory() threw an exception!", exc_info=True)
+        RobustLogger().warning(
+            "Tkinter's filedialog.askdirectory() threw an exception!", exc_info=True
+        )
         from utility.system.win32.com.windialogs import open_folder_dialog
 
         result = open_folder_dialog(title, None if initialdir is None else str(initialdir))
@@ -105,7 +107,9 @@ def askopenfile(  # noqa: PLR0913
             typevariable=typevariable,
         )
     except Exception:  # noqa: BLE001
-        RobustLogger().warning("Tkinter's filedialog.askopenfile() threw an exception!", exc_info=True)
+        RobustLogger().warning(
+            "Tkinter's filedialog.askopenfile() threw an exception!", exc_info=True
+        )
         from utility.system.win32.com.windialogs import open_file_dialog
 
         result = open_file_dialog(
@@ -141,7 +145,9 @@ def askopenfilename(  # noqa: PLR0913
         )
         return _normalize_result(result)
     except Exception:  # noqa: BLE001
-        RobustLogger().warning("Tkinter's filedialog.askopenfilename() threw an exception!", exc_info=True)
+        RobustLogger().warning(
+            "Tkinter's filedialog.askopenfilename() threw an exception!", exc_info=True
+        )
         from utility.system.win32.com.windialogs import open_file_dialog
 
         result = open_file_dialog(
@@ -177,10 +183,18 @@ def askopenfilenames(  # noqa: PLR0913
         )
         return tuple(result) if result else ""
     except Exception:  # noqa: BLE001
-        RobustLogger().warning("Tkinter's filedialog.askopenfilenames() threw an exception!", exc_info=True)
+        RobustLogger().warning(
+            "Tkinter's filedialog.askopenfilenames() threw an exception!", exc_info=True
+        )
         from utility.system.win32.com.windialogs import open_file_dialog
 
-        result = open_file_dialog(title, None if initialdir is None else str(initialdir), filetypes, defaultextension, allow_multiple_selection=True)
+        result = open_file_dialog(
+            title,
+            None if initialdir is None else str(initialdir),
+            filetypes,
+            defaultextension,
+            allow_multiple_selection=True,
+        )
         return tuple(result) if result else ""
 
 
@@ -209,10 +223,18 @@ def askopenfiles(  # noqa: PLR0913
             typevariable=typevariable,
         )
     except Exception:  # noqa: BLE001
-        RobustLogger().warning("Tkinter's filedialog.askopenfiles() threw an exception!", exc_info=True)
+        RobustLogger().warning(
+            "Tkinter's filedialog.askopenfiles() threw an exception!", exc_info=True
+        )
         from utility.system.win32.com.windialogs import open_file_dialog
 
-        result = open_file_dialog(title, None if initialdir is None else str(initialdir), filetypes, defaultextension, allow_multiple_selection=True)
+        result = open_file_dialog(
+            title,
+            None if initialdir is None else str(initialdir),
+            filetypes,
+            defaultextension,
+            allow_multiple_selection=True,
+        )
         return tuple(open(file, mode) for file in result) if result else None  # noqa: PTH123, SIM115
 
 
@@ -243,7 +265,9 @@ def asksaveasfile(  # noqa: PLR0913
             typevariable=typevariable,
         )
     except Exception:  # noqa: BLE001
-        RobustLogger().warning("Tkinter's filedialog.asksaveasfile() threw an exception!", exc_info=True)
+        RobustLogger().warning(
+            "Tkinter's filedialog.asksaveasfile() threw an exception!", exc_info=True
+        )
         from utility.system.win32.com.windialogs import save_file_dialog
 
         result = save_file_dialog(
@@ -282,7 +306,9 @@ def asksaveasfilename(  # noqa: PLR0913
         )
         return _normalize_result(result)
     except Exception:  # noqa: BLE001
-        RobustLogger().warning("Tkinter's filedialog.asksaveasfilename() threw an exception!", exc_info=True)
+        RobustLogger().warning(
+            "Tkinter's filedialog.asksaveasfilename() threw an exception!", exc_info=True
+        )
         from utility.system.win32.com.windialogs import save_file_dialog
 
         result = save_file_dialog(

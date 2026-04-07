@@ -139,7 +139,9 @@ class TwoDADiffAnalyzer(DiffAnalyzer):
         self._analyze_rows(left_2da, right_2da, modifications, identifier)
 
         if modifications.modifiers:
-            logger.info(f"2DA modifications: identifier={identifier}, modifier_count={len(modifications.modifiers)}")
+            logger.info(
+                f"2DA modifications: identifier={identifier}, modifier_count={len(modifications.modifiers)}"
+            )
 
         return modifications if modifications.modifiers else None
 
@@ -227,7 +229,9 @@ class TwoDADiffAnalyzer(DiffAnalyzer):
                 except Exception:  # noqa: BLE001
                     right_label = None
 
-                target_row_index = _resolve_row_index_value(row_idx, labels=(right_label, left_label))
+                target_row_index = _resolve_row_index_value(
+                    row_idx, labels=(right_label, left_label)
+                )
 
                 change_row = ChangeRow2DA(
                     identifier=change_row_id,
@@ -342,7 +346,9 @@ class GFFDiffAnalyzer(DiffAnalyzer):
         )
 
         if modifications.modifiers:
-            logger.info(f"GFF modifications: identifier={identifier}, modifier_count={len(modifications.modifiers)}")
+            logger.info(
+                f"GFF modifications: identifier={identifier}, modifier_count={len(modifications.modifiers)}"
+            )
 
         return modifications if modifications.modifiers else None
 
@@ -745,7 +751,9 @@ class TLKDiffAnalyzer(DiffAnalyzer):
         # Use "append.tlk" as the sourcefile per TSLPatcher convention (this is the OUTPUT file)
         # But store the actual TLK filename for reference finding
         modifications = ModificationsTLK(filename="append.tlk", replace=False, modifiers=[])
-        modifications.saveas = tlk_filename  # This is the actual TLK file being patched (dialog.tlk)
+        modifications.saveas = (
+            tlk_filename  # This is the actual TLK file being patched (dialog.tlk)
+        )
 
         # StrRef mappings will be returned separately for storage in TLKModificationWithSource
         strref_mappings: dict[int, int] = {}  # old_strref -> token_id
@@ -812,7 +820,9 @@ class TLKDiffAnalyzer(DiffAnalyzer):
         # This keeps ModificationsTLK clean for reader/patcher code
 
         if modifications.modifiers:
-            print(f"TLK modifications: identifier={identifier}, modifier_count={len(modifications.modifiers)}, strref_count={len(strref_mappings)}")
+            print(
+                f"TLK modifications: identifier={identifier}, modifier_count={len(modifications.modifiers)}, strref_count={len(strref_mappings)}"
+            )
             # Return tuple: (modifications, strref_mappings)
             # The caller will extract both and store in TLKModificationWithSource
             return (modifications, strref_mappings)
@@ -833,7 +843,9 @@ class SSFDiffAnalyzer(DiffAnalyzer):
             left_ssf = read_ssf(left_data)
             right_ssf = read_ssf(right_data)
         except Exception as e:  # noqa: BLE001
-            print(f"Failed to parse SSF files: identifier={identifier}, error={e.__class__.__name__}: {e}")
+            print(
+                f"Failed to parse SSF files: identifier={identifier}, error={e.__class__.__name__}: {e}"
+            )
             traceback.print_exc()
             return None
 
@@ -856,7 +868,9 @@ class SSFDiffAnalyzer(DiffAnalyzer):
                 modifications.modifiers.append(modify)
 
         if modifications.modifiers:
-            print(f"SSF modifications: identifier={identifier}, modifier_count={len(modifications.modifiers)}")
+            print(
+                f"SSF modifications: identifier={identifier}, modifier_count={len(modifications.modifiers)}"
+            )
 
         return modifications if modifications.modifiers else None
 
@@ -998,13 +1012,25 @@ def _extract_ncs_consti_offsets(  # noqa: C901, PLR0912
                     reader.skip(6)
                 elif opcode == 0x2C:  # STORE_STATE  # noqa: PLR2004
                     reader.skip(8)
-                elif opcode in (0x1B, 0x1D, 0x1E, 0x1F, 0x23, 0x24, 0x25, 0x28, 0x29):  # MOVSP, jumps, inc/dec
+                elif opcode in (
+                    0x1B,
+                    0x1D,
+                    0x1E,
+                    0x1F,
+                    0x23,
+                    0x24,
+                    0x25,
+                    0x28,
+                    0x29,
+                ):  # MOVSP, jumps, inc/dec
                     reader.skip(4)
                 elif opcode == 0x05:  # ACTION  # noqa: PLR2004
                     reader.skip(3)
                 elif opcode == 0x21:  # DESTRUCT  # noqa: PLR2004
                     reader.skip(6)
-                elif (opcode == 0x0B and qualifier == 0x24) or (opcode == 0x0C and qualifier == 0x24):  # EQUALTT  # noqa: PLR2004
+                elif (opcode == 0x0B and qualifier == 0x24) or (
+                    opcode == 0x0C and qualifier == 0x24
+                ):  # EQUALTT  # noqa: PLR2004
                     reader.skip(2)
                     # Other instructions have no additional data
 
@@ -1012,7 +1038,9 @@ def _extract_ncs_consti_offsets(  # noqa: C901, PLR0912
         # If anything fails, return what we found so far
         exception_type = e.__class__.__name__
         offsets_so_far = len(offsets)
-        print(f"NCS processing failed: target_value={target_value}, exception_type={exception_type}, error={e}, offsets_so_far={offsets_so_far}")
+        print(
+            f"NCS processing failed: target_value={target_value}, exception_type={exception_type}, error={e}, offsets_so_far={offsets_so_far}"
+        )
 
     return offsets
 
@@ -1056,7 +1084,9 @@ def analyze_tlk_strref_references(  # noqa: PLR0913
         except Exception:  # noqa: BLE001
             # Not an installation, treat as folder
             is_installation = False
-            print(f"Treating as folder, attempting game detection: path={installation_or_folder_path}")
+            print(
+                f"Treating as folder, attempting game detection: path={installation_or_folder_path}"
+            )
             # Try to detect game from folder structure (look for chitin.key or swkotor.exe)
             chitin_key = installation_or_folder_path / "chitin.key"
             swkotor_exe = installation_or_folder_path / "swkotor.exe"
@@ -1071,10 +1101,14 @@ def analyze_tlk_strref_references(  # noqa: PLR0913
 
             if swkotor2_exists:
                 game = Game.K2
-                print(f"Detected K2 from swkotor2.exe: game={game}, path={installation_or_folder_path}")
+                print(
+                    f"Detected K2 from swkotor2.exe: game={game}, path={installation_or_folder_path}"
+                )
             elif swkotor_exists or chitin_exists:
                 game = Game.K1
-                print(f"Detected K1 from files: game={game}, swkotor_exists={swkotor_exists}, chitin_exists={chitin_exists}, path={installation_or_folder_path}")
+                print(
+                    f"Detected K1 from files: game={game}, swkotor_exists={swkotor_exists}, chitin_exists={chitin_exists}, path={installation_or_folder_path}"
+                )
             else:
                 print(
                     f"Could not detect game type: path={installation_or_folder_path}, chitin_exists={chitin_exists}, swkotor_exists={swkotor_exists}, swkotor2_exists={swkotor2_exists}",  # noqa: E501
@@ -1088,17 +1122,25 @@ def analyze_tlk_strref_references(  # noqa: PLR0913
         print(f"Determining game-specific 2DA columns: game={game}, is_k1={is_k1}, is_k2={is_k2}")
         if is_k1:
             relevant_2da_filenames = K1Columns2DA.StrRefs.as_dict()
-            print(f"Using K1 2DA definitions: game={game}, num_2da_files={len(relevant_2da_filenames)}")
+            print(
+                f"Using K1 2DA definitions: game={game}, num_2da_files={len(relevant_2da_filenames)}"
+            )
         elif is_k2:
             relevant_2da_filenames = K2Columns2DA.StrRefs.as_dict()
-            print(f"Using K2 2DA definitions: game={game}, num_2da_files={len(relevant_2da_filenames)}")
+            print(
+                f"Using K2 2DA definitions: game={game}, num_2da_files={len(relevant_2da_filenames)}"
+            )
         else:
-            print(f"Unknown game type, cannot proceed: game={game}, path={installation_or_folder_path}")
+            print(
+                f"Unknown game type, cannot proceed: game={game}, path={installation_or_folder_path}"
+            )
             return
 
         search_type = "installation" if is_installation else "folder"
         twoda_count = len(relevant_2da_filenames)
-        print(f"Searching for StrRef references: search_type={search_type}, path={installation_or_folder_path}, game={game}, twoda_file_count={twoda_count}")
+        print(
+            f"Searching for StrRef references: search_type={search_type}, path={installation_or_folder_path}, game={game}, twoda_file_count={twoda_count}"
+        )
 
     except Exception as e:  # noqa: BLE001
         print(f"Failed to initialize StrRef analysis: {e.__class__.__name__}: {e}")
@@ -1142,7 +1184,10 @@ def analyze_tlk_strref_references(  # noqa: PLR0913
 
                     # Check based on file type
                     try:
-                        if restype == ResourceType.TwoDA and file_path.name.lower() in relevant_2da_filenames:
+                        if (
+                            restype == ResourceType.TwoDA
+                            and file_path.name.lower() in relevant_2da_filenames
+                        ):
                             twoda_obj = read_2da(BinaryReader.load_file(file_path))
                             columns_with_strrefs = relevant_2da_filenames[file_path.name.lower()]
 
@@ -1151,7 +1196,11 @@ def analyze_tlk_strref_references(  # noqa: PLR0913
                                     if column_name == ">>##HEADER##<<":
                                         continue
                                     cell = twoda_obj.get_cell(row_idx, column_name)
-                                    if cell and cell.strip().isdigit() and int(cell.strip()) == old_strref:
+                                    if (
+                                        cell
+                                        and cell.strip().isdigit()
+                                        and int(cell.strip()) == old_strref
+                                    ):
                                         found_resources.add(file_res)
                                         break
 
@@ -1190,7 +1239,9 @@ def analyze_tlk_strref_references(  # noqa: PLR0913
                 filename = resource.filename().lower()
                 restype = resource.restype()
 
-                print(f"  [{idx}/{len(found_resources)}] Patching {filename} (StrRef {old_strref} → StrRef{token_id})")
+                print(
+                    f"  [{idx}/{len(found_resources)}] Patching {filename} (StrRef {old_strref} → StrRef{token_id})"
+                )
 
                 # Handle 2DA files
                 if filename in relevant_2da_filenames and restype == ResourceType.TwoDA:
@@ -1207,12 +1258,25 @@ def analyze_tlk_strref_references(  # noqa: PLR0913
 
                                 try:
                                     cell_value = twoda_obj.get_cell(row_idx, column_name)
-                                    if cell_value and cell_value.strip().isdigit() and int(cell_value.strip()) == old_strref:
+                                    if (
+                                        cell_value
+                                        and cell_value.strip().isdigit()
+                                        and int(cell_value.strip()) == old_strref
+                                    ):
                                         # Found a match - create a ChangeRow2DA modification
-                                        print(f"Found StrRef {old_strref} in {filename} row {row_idx}, column {column_name}")
+                                        print(
+                                            f"Found StrRef {old_strref} in {filename} row {row_idx}, column {column_name}"
+                                        )
 
                                         # Check if we already have a modification for this file
-                                        existing_mod = next((m for m in twoda_modifications if m.sourcefile == filename), None)
+                                        existing_mod = next(
+                                            (
+                                                m
+                                                for m in twoda_modifications
+                                                if m.sourcefile == filename
+                                            ),
+                                            None,
+                                        )
                                         if existing_mod is None:
                                             existing_mod = Modifications2DA(filename)
                                             twoda_modifications.append(existing_mod)
@@ -1221,7 +1285,9 @@ def analyze_tlk_strref_references(  # noqa: PLR0913
                                             row_label: str | None = twoda_obj.get_label(row_idx)
                                         except Exception:  # noqa: BLE001
                                             row_label = None
-                                        target_row_index = _resolve_row_index_value(row_idx, labels=(row_label,))
+                                        target_row_index = _resolve_row_index_value(
+                                            row_idx, labels=(row_label,)
+                                        )
 
                                         # Create ChangeRow2DA with 2DAMEMORY token
                                         change_row = ChangeRow2DA(
@@ -1256,19 +1322,27 @@ def analyze_tlk_strref_references(  # noqa: PLR0913
                                 modified_sounds.append(sound)
 
                         if modified_sounds:
-                            print(f"Found {len(modified_sounds)} SSF sounds with StrRef {old_strref} in {filename}")
+                            print(
+                                f"Found {len(modified_sounds)} SSF sounds with StrRef {old_strref} in {filename}"
+                            )
 
                             # Check if we already have a modification for this file
-                            existing_ssf_mod = next((m for m in ssf_modifications if m.sourcefile == filename), None)
+                            existing_ssf_mod = next(
+                                (m for m in ssf_modifications if m.sourcefile == filename), None
+                            )
                             if existing_ssf_mod is None:
-                                existing_ssf_mod = ModificationsSSF(filename, replace=False, modifiers=[])
+                                existing_ssf_mod = ModificationsSSF(
+                                    filename, replace=False, modifiers=[]
+                                )
                                 ssf_modifications.append(existing_ssf_mod)
 
                             # Create ModifySSF for each sound
                             for sound in modified_sounds:
                                 modify_ssf = ModifySSF(sound, TokenUsageTLK(token_id))
                                 existing_ssf_mod.modifiers.append(modify_ssf)
-                                print(f"Created SSF patch for {filename} sound {sound.name}: StrRef {old_strref} -> StrRef{token_id}")
+                                print(
+                                    f"Created SSF patch for {filename} sound {sound.name}: StrRef {old_strref} -> StrRef{token_id}"
+                                )
 
                     except Exception as e:  # noqa: BLE001
                         print(f"Failed to process SSF {filename}: {e.__class__.__name__}: {e}")
@@ -1283,12 +1357,18 @@ def analyze_tlk_strref_references(  # noqa: PLR0913
                         consti_offsets = _extract_ncs_consti_offsets(ncs_data, old_strref)
 
                         if consti_offsets:
-                            print(f"Found {len(consti_offsets)} CONSTI instructions with StrRef {old_strref} in {filename}")
+                            print(
+                                f"Found {len(consti_offsets)} CONSTI instructions with StrRef {old_strref} in {filename}"
+                            )
 
                             # Check if we already have a modification for this file
-                            existing_ncs_mod = next((m for m in ncs_modifications if m.sourcefile == filename), None)
+                            existing_ncs_mod = next(
+                                (m for m in ncs_modifications if m.sourcefile == filename), None
+                            )
                             if existing_ncs_mod is None:
-                                existing_ncs_mod = ModificationsNCS(filename, replace=False, modifiers=[])
+                                existing_ncs_mod = ModificationsNCS(
+                                    filename, replace=False, modifiers=[]
+                                )
                                 ncs_modifications.append(existing_ncs_mod)
 
                             # Create HACKList entries for each offset
@@ -1314,19 +1394,27 @@ def analyze_tlk_strref_references(  # noqa: PLR0913
                         gff_obj = read_gff(resource.data())
 
                         # Search recursively for LocalizedString fields with this StrRef
-                        strref_locations = _find_strref_in_gff_struct(gff_obj.root, old_strref, PurePath())
+                        strref_locations = _find_strref_in_gff_struct(
+                            gff_obj.root, old_strref, PurePath()
+                        )
 
                         if strref_locations:
                             # Check if we already have a modification for this file
-                            existing_gff_mod = next((m for m in gff_modifications if m.sourcefile == filename), None)
+                            existing_gff_mod = next(
+                                (m for m in gff_modifications if m.sourcefile == filename), None
+                            )
                             if existing_gff_mod is None:
-                                existing_gff_mod = ModificationsGFF(filename, replace=False, modifiers=[])
+                                existing_gff_mod = ModificationsGFF(
+                                    filename, replace=False, modifiers=[]
+                                )
                                 gff_modifications.append(existing_gff_mod)
 
                             # Create ModifyFieldGFF for each location
                             for field_path in strref_locations:
                                 # Create LocalizedStringDelta with token
-                                locstring_delta = LocalizedStringDelta(FieldValueTLKMemory(token_id))
+                                locstring_delta = LocalizedStringDelta(
+                                    FieldValueTLKMemory(token_id)
+                                )
 
                                 modify_field = ModifyFieldGFF(
                                     path=str(field_path).replace("/", "\\"),
@@ -1365,7 +1453,9 @@ def analyze_2da_memory_references(  # noqa: PLR0913, C901
     """
     if not twoda_modifications:
         mods_count = 0
-        print(f"No 2DA modifications to analyze: mods_count={mods_count}, installation_path={installation_or_folder_path}")
+        print(
+            f"No 2DA modifications to analyze: mods_count={mods_count}, installation_path={installation_or_folder_path}"
+        )
         return
 
     print(f"Analyzing 2DA memory references: {len(twoda_modifications)} 2DA files modified")
@@ -1393,21 +1483,30 @@ def analyze_2da_memory_references(  # noqa: PLR0913, C901
                 # AddRow rows have unknown indices until patch-time; we cannot create static mappings for RowIndex storage.
                 for token_id, _row_value in modifier.store_2da.items():
                     if isinstance(_row_value, RowValueRowIndex):
-                        print(f"Skipping AddRow2DA mapping for 2DAMEMORY token {token_id}: row index is determined at install time")
+                        print(
+                            f"Skipping AddRow2DA mapping for 2DAMEMORY token {token_id}: row index is determined at install time"
+                        )
                         continue
                     if isinstance(_row_value, RowValueConstant):
                         try:
                             row_idx = int(_row_value.string)
                         except (ValueError, AttributeError) as e:  # noqa: PERF203
-                            print(f"Failed to map {twoda_filename} row {_row_value.string} -> 2DAMEMORY{token_id}: {e.__class__.__name__}: {e}")
+                            print(
+                                f"Failed to map {twoda_filename} row {_row_value.string} -> 2DAMEMORY{token_id}: {e.__class__.__name__}: {e}"
+                            )
                             traceback.print_exc()
                             continue
                         row_to_token[(twoda_filename, row_idx)] = token_id
                         print(f"Mapped {twoda_filename} row {row_idx} -> 2DAMEMORY{token_id}")
 
-            elif isinstance(modifier, ChangeRow2DA) and modifier.target.target_type is TargetType.ROW_INDEX:
+            elif (
+                isinstance(modifier, ChangeRow2DA)
+                and modifier.target.target_type is TargetType.ROW_INDEX
+            ):
                 # For ChangeRow, extract the target row index
-                assert isinstance(modifier.target.value, int), "Target value was expected to be int if type is row index."
+                assert isinstance(modifier.target.value, int), (
+                    "Target value was expected to be int if type is row index."
+                )
                 row_idx = modifier.target.value
                 if not isinstance(row_idx, int) or not modifier.store_2da:
                     continue
@@ -1436,13 +1535,17 @@ def analyze_2da_memory_references(  # noqa: PLR0913, C901
             is_installation = True
         except Exception:  # noqa: BLE001
             is_installation = False
-            print(f"Treating as folder for 2DA reference search: path={installation_or_folder_path}")
+            print(
+                f"Treating as folder for 2DA reference search: path={installation_or_folder_path}"
+            )
 
         # Collect all GFF files to search
         all_resources: list[FileResource] = []
         if is_installation and installation is not None:
             # Search all resources in the installation (Installation implements __iter__)
-            all_resources = [res for res in installation if res.restype() in GFFContent.get_restypes()]
+            all_resources = [
+                res for res in installation if res.restype() in GFFContent.get_restypes()
+            ]
         else:
             # Search all files in folder
             all_files: list[Path] = list(installation_or_folder_path.rglob("*"))
@@ -1474,7 +1577,9 @@ def analyze_2da_memory_references(  # noqa: PLR0913, C901
                 continue
 
             field_names: list[str] = twoda_to_fields[twoda_filename]
-            print(f"Analyzing {twoda_filename} row {row_index} -> token {token_id} (fields: {', '.join(field_names)})")
+            print(
+                f"Analyzing {twoda_filename} row {row_index} -> token {token_id} (fields: {', '.join(field_names)})"
+            )
 
             found_count: int = 0
 
@@ -1497,9 +1602,13 @@ def analyze_2da_memory_references(  # noqa: PLR0913, C901
                         filename: str = resource.filename().lower()
 
                         # Check if we already have a modification for this file
-                        existing_gff_mod: ModificationsGFF | None = next((m for m in gff_modifications if m.sourcefile == filename), None)
+                        existing_gff_mod: ModificationsGFF | None = next(
+                            (m for m in gff_modifications if m.sourcefile == filename), None
+                        )
                         if existing_gff_mod is None:
-                            existing_gff_mod = ModificationsGFF(filename, replace=False, modifiers=[])
+                            existing_gff_mod = ModificationsGFF(
+                                filename, replace=False, modifiers=[]
+                            )
                             gff_modifications.append(existing_gff_mod)
 
                         # Create ModifyFieldGFF for each location
@@ -1553,14 +1662,18 @@ def _find_2da_ref_in_gff_struct(
 
         # Recurse into nested structures
         if field_type == GFFFieldType.Struct and isinstance(value, GFFStruct):
-            nested_locations: list[PurePath] = _find_2da_ref_in_gff_struct(value, field_names, target_value, field_path)
+            nested_locations: list[PurePath] = _find_2da_ref_in_gff_struct(
+                value, field_names, target_value, field_path
+            )
             locations.extend(nested_locations)
 
         elif field_type == GFFFieldType.List and isinstance(value, GFFList):
             for idx, item in enumerate(value):
                 if isinstance(item, GFFStruct):
                     item_path: PurePath = field_path / str(idx)
-                    item_locations: list[PurePath] = _find_2da_ref_in_gff_struct(item, field_names, target_value, item_path)
+                    item_locations: list[PurePath] = _find_2da_ref_in_gff_struct(
+                        item, field_names, target_value, item_path
+                    )
                     locations.extend(item_locations)
 
     return locations

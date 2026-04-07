@@ -53,7 +53,10 @@ def universal_simplify_exception(
 
     # Handle PermissionError, which may have a 'filename' attribute
     if isinstance(e, PermissionError):
-        return error_name, f"Permission Denied: {e.filename if hasattr(e, 'filename') else e.args[0] if e.args else ''}"
+        return (
+            error_name,
+            f"Permission Denied: {e.filename if hasattr(e, 'filename') else e.args[0] if e.args else ''}",
+        )
 
     # Handle TimeoutError
     if isinstance(e, TimeoutError):
@@ -65,11 +68,18 @@ def universal_simplify_exception(
 
     # Handle ConnectionError, which may have a 'request' attribute if it's from the `requests` library
     if isinstance(e, ConnectionError):
-        return error_name, f"Connection Error: {getattr(e, 'request', lambda: {'method': e.args[0]})().get('method', '')}"
+        return (
+            error_name,
+            f"Connection Error: {getattr(e, 'request', lambda: {'method': e.args[0]})().get('method', '')}",
+        )
 
     # Add more oddball exception handling here as needed
 
-    error_messages = [f"- {attr}: {getattr(e, attr)}" for attr in ["strerror", "filename", "filename1", "filename2", "message", "reason"] if getattr(e, attr, None)]
+    error_messages = [
+        f"- {attr}: {getattr(e, attr)}"
+        for attr in ["strerror", "filename", "filename1", "filename2", "message", "reason"]
+        if getattr(e, attr, None)
+    ]
     if error_messages:
         error_details = "\n".join(error_messages)
         return error_name, f"{e}:\n\nDetails:\n{error_details}"
@@ -160,7 +170,9 @@ def safe_repr(
         base_indent = indent * indent_level
         next_indent = indent * (indent_level + 1)
         representation: str = f"{obj.__class__.__name__}(\n{next_indent}"
-        current_stack.append({"id": obj_id, "indent_level": indent_level, "representation": representation})
+        current_stack.append(
+            {"id": obj_id, "indent_level": indent_level, "representation": representation}
+        )
         _CURRENTLY_PROCESSING.set(current_stack)
 
         if hasattr(obj, "__class__") and obj.__class__.__repr__ is not object.__repr__:
@@ -177,7 +189,9 @@ def safe_repr(
             attr_value = getattr(obj, attr_name)
             if not attr_name.startswith("__") and not callable(attr_value):
                 try:
-                    this_repr = safe_repr(attr_value, max_length, indent_level + 1, _depth=_depth + 1)
+                    this_repr = safe_repr(
+                        attr_value, max_length, indent_level + 1, _depth=_depth + 1
+                    )
                     # Concatenate attribute name and its representation with appropriate indentation
                     attr_repr = f"{attr_name}={this_repr}"
                     # Check if current attribute representation exceeds the max length
@@ -187,7 +201,11 @@ def safe_repr(
                 except Exception:  # noqa: BLE001
                     attrs.append(f"{attr_name}={object.__repr__(attr_value)}")
         joined_attrs = (",\n" + next_indent).join(attrs)
-        final_repr = f"{representation}{joined_attrs}\n{base_indent})" if attrs else f"{representation}{base_indent})"
+        final_repr = (
+            f"{representation}{joined_attrs}\n{base_indent})"
+            if attrs
+            else f"{representation}{base_indent})"
+        )
     except Exception:  # noqa: BLE001
         return object.__repr__(obj)
     else:
@@ -249,7 +267,9 @@ def format_frame_info(
     ) = frame_info
     code_context = ""  # type: ignore[assignment]
     # code_context = f"\nContext [{', '.join(code_context)}] " if code_context else ""  # type: ignore[assignment]
-    detailed_message: list[str] = [f"\nFunction '{function}' at {filename}:{line_no}:{code_context}"]
+    detailed_message: list[str] = [
+        f"\nFunction '{function}' at {filename}:{line_no}:{code_context}"
+    ]
     for var, val in frame.f_locals.items():
         formatted_var: str | None = format_var_str(var, val)
         if formatted_var:
@@ -284,7 +304,9 @@ def format_exception_with_variables(
                 fake_traceback = None
                 for frame_info in current_stack:
                     frame = frame_info.frame
-                    fake_traceback = types.TracebackType(fake_traceback, frame, frame.f_lasti, frame.f_lineno)
+                    fake_traceback = types.TracebackType(
+                        fake_traceback, frame, frame.f_lasti, frame.f_lineno
+                    )
                 exc = exc.with_traceback(fake_traceback)
                 # Now exc has a traceback :)
                 tb = exc.__traceback__
@@ -413,7 +435,11 @@ def with_variable_trace(
                     detailed_message.extend(format_frame_info(frame_info))
                 if e.__cause__ is not None:
                     detailed_message.append("This is the original exception:")
-                    detailed_message.extend(format_exception_with_variables(e.__cause__, message="Causing Exception's Stack Trace Variables:").split("\n"))
+                    detailed_message.extend(
+                        format_exception_with_variables(
+                            e.__cause__, message="Causing Exception's Stack Trace Variables:"
+                        ).split("\n")
+                    )
 
                 full_message: str = "\n".join(detailed_message)
 
@@ -424,7 +450,9 @@ def with_variable_trace(
                 elif action == "print":
                     print(full_message)  # noqa: T201
                 if log:
-                    with Path("errorlog.txt", encoding="utf-8").open("a", encoding="utf-8") as outfile:
+                    with Path("errorlog.txt", encoding="utf-8").open(
+                        "a", encoding="utf-8"
+                    ) as outfile:
                         outfile.write(full_message)
                 if rethrow:
                     # Raise an exception with the detailed message

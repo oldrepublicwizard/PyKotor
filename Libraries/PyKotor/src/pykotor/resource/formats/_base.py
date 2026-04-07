@@ -90,7 +90,9 @@ class ComparableMixin(BiowareResource):
             log_func = self._prefixed_logger(log_func, prefix)
 
         if not isinstance(other, self.__class__):
-            log_func(f"Type mismatch: '{self.__class__.__name__}' vs '{other.__class__.__name__ if isinstance(other, object) else type(other)}'")
+            log_func(
+                f"Type mismatch: '{self.__class__.__name__}' vs '{other.__class__.__name__ if isinstance(other, object) else type(other)}'"
+            )
             return False
 
         is_same: bool = True
@@ -119,7 +121,9 @@ class ComparableMixin(BiowareResource):
                 old_set_raw = getattr(self, set_name)
                 new_set_raw = getattr(other, set_name)
             except AttributeError as e:
-                log_func(f"Missing set attribute '{set_name}' on one of the objects: {e.__class__.__name__}: {e}")
+                log_func(
+                    f"Missing set attribute '{set_name}' on one of the objects: {e.__class__.__name__}: {e}"
+                )
                 is_same = False
                 continue
 
@@ -160,10 +164,14 @@ class ComparableMixin(BiowareResource):
                 continue
 
             if len(old_seq) != len(new_seq):
-                log_func(f"List '{seq_name}' length mismatch. Old: {len(old_seq)}, New: {len(new_seq)}")
+                log_func(
+                    f"List '{seq_name}' length mismatch. Old: {len(old_seq)}, New: {len(new_seq)}"
+                )
                 is_same = False
 
-            for index, (old_item, new_item) in enumerate(zip_longest(old_seq, new_seq, fillvalue=None)):
+            for index, (old_item, new_item) in enumerate(
+                zip_longest(old_seq, new_seq, fillvalue=None)
+            ):
                 if old_item is None and new_item is None:
                     continue
                 if old_item is None:

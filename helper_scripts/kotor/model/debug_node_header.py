@@ -22,7 +22,9 @@ root_abs = root_node_offset + 12
 print(f"root_node_offset (absolute): 0x{root_abs:X} ({root_abs})")
 
 
-def decode_node_header(data: bytes, offset: int, name: str = "") -> dict[str, int | float | list[float] | tuple[Any, ...]]:
+def decode_node_header(
+    data: bytes, offset: int, name: str = ""
+) -> dict[str, int | float | list[float] | tuple[Any, ...]]:
     hdr: dict[str, int | float | list[float] | tuple[Any, ...]] = {}
     hdr["type_id"] = struct.unpack("<H", data[offset : offset + 2])[0]
     hdr["padding0"] = struct.unpack("<H", data[offset + 2 : offset + 4])[0]
@@ -49,12 +51,22 @@ def decode_node_header(data: bytes, offset: int, name: str = "") -> dict[str, in
     print(f"  type_id={type_id}, node_id={node_id}, name_id={name_id}")
     print(f"  offset_to_root=0x{hdr['offset_to_root']:X}")
     print(f"  offset_to_parent=0x{hdr['offset_to_parent']:X}")
-    print(f"  offset_to_children=0x{hdr['offset_to_children']:X} (at file offset 0x{offset + 44:X})")
+    print(
+        f"  offset_to_children=0x{hdr['offset_to_children']:X} (at file offset 0x{offset + 44:X})"
+    )
     print(f"  children_count={hdr['children_count']}, children_count2={hdr['children_count2']}")
-    print(f"  offset_to_controllers=0x{hdr['offset_to_controllers']:X} (at file offset 0x{offset + 56:X})")
-    print(f"  controller_count={hdr['controller_count']}, controller_count2={hdr['controller_count2']}")
-    print(f"  offset_to_controller_data=0x{hdr['offset_to_controller_data']:X} (at file offset 0x{offset + 68:X})")
-    print(f"  controller_data_length={hdr['controller_data_length']}, controller_data_length2={hdr['controller_data_length2']}")
+    print(
+        f"  offset_to_controllers=0x{hdr['offset_to_controllers']:X} (at file offset 0x{offset + 56:X})"
+    )
+    print(
+        f"  controller_count={hdr['controller_count']}, controller_count2={hdr['controller_count2']}"
+    )
+    print(
+        f"  offset_to_controller_data=0x{hdr['offset_to_controller_data']:X} (at file offset 0x{offset + 68:X})"
+    )
+    print(
+        f"  controller_data_length={hdr['controller_data_length']}, controller_data_length2={hdr['controller_data_length2']}"
+    )
     return hdr
 
 
@@ -68,7 +80,9 @@ print("\n=== ROOT NODE (MDLOPS) ===")
 mo_root = decode_node_header(mo_data, root_abs, "MDLOPS")
 
 print("\n=== PROBLEMATIC OFFSETS ===")
-print(f"Offset 0x13C = {0x13C} is at relative offset {0x13C - root_abs} from root node (root at {root_abs})")
+print(
+    f"Offset 0x13C = {0x13C} is at relative offset {0x13C - root_abs} from root node (root at {root_abs})"
+)
 print(f"Offset 0x148 = {0x148} is at relative offset {0x148 - root_abs} from root node")
 print(f"Offset 0x163 = {0x163} is at relative offset {0x163 - root_abs} from root node")
 
@@ -89,7 +103,9 @@ if children_count > 0:
     print(f"Children array at: 0x{children_offset:X}")
     # Read child pointers
     for i in range(children_count):
-        child_ptr = struct.unpack("<I", orig_data[children_offset + i * 4 : children_offset + i * 4 + 4])[0]
+        child_ptr = struct.unpack(
+            "<I", orig_data[children_offset + i * 4 : children_offset + i * 4 + 4]
+        )[0]
         child_abs = child_ptr + 12
         print(f"  Child {i}: ptr=0x{child_ptr:X}, abs=0x{child_abs:X}")
         if child_abs < len(orig_data):

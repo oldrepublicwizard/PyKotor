@@ -76,7 +76,11 @@ def cli_main(argv: Sequence[str]) -> int:  # noqa: PLR0911, PLR0912, PLR0915
     parser = create_parser()
     args = parser.parse_args(argv)
 
-    log_level = "DEBUG" if args.debug else ("ERROR" if args.quiet else ("INFO" if not args.verbose else "DEBUG"))
+    log_level = (
+        "DEBUG"
+        if args.debug
+        else ("ERROR" if args.quiet else ("INFO" if not args.verbose else "DEBUG"))
+    )
     use_color = not args.no_color
     logger = setup_logger(log_level, use_color)
 

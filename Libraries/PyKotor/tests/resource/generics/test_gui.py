@@ -54,8 +54,12 @@ TEST_FILE_1 = r"Libraries\PyKotor\tests\test_files\name_x.gui"
 TEST_FILE_2 = r"Libraries\PyKotor\tests\test_files\pazaakgame_p.gui"
 TEST_FILE_3 = r"Libraries\PyKotor\tests\test_files\component_p.gui"
 TEST_FILE_4 = r"Libraries\PyKotor\tests\test_files\inventory_x.gui"
-K1_PATH: str | None = os.environ.get("K1_PATH", "C:\\Program Files (x86)\\Steam\\steamapps\\common\\swkotor")
-K2_PATH: str | None = os.environ.get("K2_PATH", "C:\\Program Files (x86)\\Steam\\steamapps\\common\\Knights of the Old Republic II")
+K1_PATH: str | None = os.environ.get(
+    "K1_PATH", "C:\\Program Files (x86)\\Steam\\steamapps\\common\\swkotor"
+)
+K2_PATH: str | None = os.environ.get(
+    "K2_PATH", "C:\\Program Files (x86)\\Steam\\steamapps\\common\\Knights of the Old Republic II"
+)
 
 
 class TestGUI(TestCase):
@@ -89,15 +93,21 @@ class TestGUI(TestCase):
         assert root is not None
 
         # Basic GUIControl attributes
-        assert isinstance(root.gui_type, GUIControlType), f"{root.gui_type} is {type(root.gui_type)}"
+        assert isinstance(root.gui_type, GUIControlType), (
+            f"{root.gui_type} is {type(root.gui_type)}"
+        )
         assert isinstance(root.id, (int, type(None))), f"{root.id} is {type(root.id)}"
         assert isinstance(root.tag, str), f"{root.tag} is {type(root.tag)}"
         assert isinstance(root.extent, Vector4), f"{root.extent} is {type(root.extent)}"
         assert isinstance(root._position, Vector2), f"{root._position} is {type(root._position)}"
         assert isinstance(root._size, Vector2), f"{root._size} is {type(root._size)}"
         assert isinstance(root.color, Color), f"{root.color} is {type(root.color)}"
-        assert isinstance(root.parent_tag, (str, type(None))), f"{root.parent_tag} is {type(root.parent_tag)}"
-        assert isinstance(root.parent_id, (int, type(None))), f"{root.parent_id} is {type(root.parent_id)}"
+        assert isinstance(root.parent_tag, (str, type(None))), (
+            f"{root.parent_tag} is {type(root.parent_tag)}"
+        )
+        assert isinstance(root.parent_id, (int, type(None))), (
+            f"{root.parent_id} is {type(root.parent_id)}"
+        )
         assert isinstance(root.locked, (bool, type(None))), f"{root.locked} is {type(root.locked)}"
         assert isinstance(root.font, str), f"{root.font} is {type(root.font)}"
         assert isinstance(root.children, list), f"{root.children} is {type(root.children)}"
@@ -118,17 +128,37 @@ class TestGUI(TestCase):
         # Border validation
         if root.border:
             assert isinstance(root.border, GUIBorder), f"{root.border} is {type(root.border)}"
-            assert isinstance(root.border.color, Color), f"{root.border.color} is {type(root.border.color)}"
-            assert isinstance(root.border.corner, str), f"{root.border.corner} is {type(root.border.corner)}"
-            assert isinstance(root.border.dimension, int), f"{root.border.dimension} is {type(root.border.dimension)}"
-            assert isinstance(root.border.edge, str), f"{root.border.edge} is {type(root.border.edge)}"
-            assert isinstance(root.border.fill, str), f"{root.border.fill} is {type(root.border.fill)}"
-            assert isinstance(root.border.fill_style, int), f"{root.border.fill_style} is {type(root.border.fill_style)}"
-            assert isinstance(root.border.inner_offset, int), f"{root.border.inner_offset} is {type(root.border.inner_offset)}"
-            assert isinstance(root.border.inner_offset_y, int), f"{root.border.inner_offset_y} is {type(root.border.inner_offset_y)}"
-            assert isinstance(root.border.pulsing, int), f"{root.border.pulsing} is {type(root.border.pulsing)}"
+            assert isinstance(root.border.color, Color), (
+                f"{root.border.color} is {type(root.border.color)}"
+            )
+            assert isinstance(root.border.corner, str), (
+                f"{root.border.corner} is {type(root.border.corner)}"
+            )
+            assert isinstance(root.border.dimension, int), (
+                f"{root.border.dimension} is {type(root.border.dimension)}"
+            )
+            assert isinstance(root.border.edge, str), (
+                f"{root.border.edge} is {type(root.border.edge)}"
+            )
+            assert isinstance(root.border.fill, str), (
+                f"{root.border.fill} is {type(root.border.fill)}"
+            )
+            assert isinstance(root.border.fill_style, int), (
+                f"{root.border.fill_style} is {type(root.border.fill_style)}"
+            )
+            assert isinstance(root.border.inner_offset, int), (
+                f"{root.border.inner_offset} is {type(root.border.inner_offset)}"
+            )
+            assert isinstance(root.border.inner_offset_y, int), (
+                f"{root.border.inner_offset_y} is {type(root.border.inner_offset_y)}"
+            )
+            assert isinstance(root.border.pulsing, int), (
+                f"{root.border.pulsing} is {type(root.border.pulsing)}"
+            )
 
-            assert root.border.color == Color(1, 1, 1, 1), f"{root.border.color} == {Color(1, 1, 1, 1)}"
+            assert root.border.color == Color(1, 1, 1, 1), (
+                f"{root.border.color} == {Color(1, 1, 1, 1)}"
+            )
             assert root.border.corner == "", f"{root.border.corner} == ''"
             assert root.border.dimension == 0, f"{root.border.dimension} == 0"
             assert root.border.edge == "", f"{root.border.edge} == ''"
@@ -141,17 +171,37 @@ class TestGUI(TestCase):
         # Hilight validation
         if root.hilight is not None:
             assert isinstance(root.hilight, GUIBorder), f"{root.hilight} is {type(root.hilight)}"
-            assert isinstance(root.hilight.color, Color), f"{root.hilight.color} is {type(root.hilight.color)}"
-            assert isinstance(root.hilight.corner, str), f"{root.hilight.corner} is {type(root.hilight.corner)}"
-            assert isinstance(root.hilight.dimension, int), f"{root.hilight.dimension} is {type(root.hilight.dimension)}"
-            assert isinstance(root.hilight.edge, str), f"{root.hilight.edge} is {type(root.hilight.edge)}"
-            assert isinstance(root.hilight.fill, str), f"{root.hilight.fill} is {type(root.hilight.fill)}"
-            assert isinstance(root.hilight.fill_style, int), f"{root.hilight.fill_style} is {type(root.hilight.fill_style)}"
-            assert isinstance(root.hilight.inner_offset, int), f"{root.hilight.inner_offset} is {type(root.hilight.inner_offset)}"
-            assert isinstance(root.hilight.inner_offset_y, int), f"{root.hilight.inner_offset_y} is {type(root.hilight.inner_offset_y)}"
-            assert isinstance(root.hilight.pulsing, int), f"{root.hilight.pulsing} is {type(root.hilight.pulsing)}"
+            assert isinstance(root.hilight.color, Color), (
+                f"{root.hilight.color} is {type(root.hilight.color)}"
+            )
+            assert isinstance(root.hilight.corner, str), (
+                f"{root.hilight.corner} is {type(root.hilight.corner)}"
+            )
+            assert isinstance(root.hilight.dimension, int), (
+                f"{root.hilight.dimension} is {type(root.hilight.dimension)}"
+            )
+            assert isinstance(root.hilight.edge, str), (
+                f"{root.hilight.edge} is {type(root.hilight.edge)}"
+            )
+            assert isinstance(root.hilight.fill, str), (
+                f"{root.hilight.fill} is {type(root.hilight.fill)}"
+            )
+            assert isinstance(root.hilight.fill_style, int), (
+                f"{root.hilight.fill_style} is {type(root.hilight.fill_style)}"
+            )
+            assert isinstance(root.hilight.inner_offset, int), (
+                f"{root.hilight.inner_offset} is {type(root.hilight.inner_offset)}"
+            )
+            assert isinstance(root.hilight.inner_offset_y, int), (
+                f"{root.hilight.inner_offset_y} is {type(root.hilight.inner_offset_y)}"
+            )
+            assert isinstance(root.hilight.pulsing, int), (
+                f"{root.hilight.pulsing} is {type(root.hilight.pulsing)}"
+            )
 
-            assert root.hilight.color == Color(0, 0, 0, 0), f"{root.hilight.color} == {Color(0, 0, 0, 0)}"
+            assert root.hilight.color == Color(0, 0, 0, 0), (
+                f"{root.hilight.color} == {Color(0, 0, 0, 0)}"
+            )
             assert root.hilight.corner == "", f"{root.hilight.corner} == ''"
             assert root.hilight.dimension == 0, f"{root.hilight.dimension} == 0"
             assert root.hilight.edge == "", f"{root.hilight.edge} == ''"
@@ -164,15 +214,29 @@ class TestGUI(TestCase):
         # Text validation
         if root.gui_text is not None:
             assert isinstance(root.gui_text, GUIText), f"{root.gui_text} is {type(root.gui_text)}"
-            assert isinstance(root.gui_text.alignment, int), f"{root.gui_text.alignment} is {type(root.gui_text.alignment)}"
-            assert isinstance(root.gui_text.color, Color), f"{root.gui_text.color} is {type(root.gui_text.color)}"
-            assert isinstance(root.gui_text.font, str), f"{root.gui_text.font} is {type(root.gui_text.font)}"
-            assert isinstance(root.gui_text.pulsing, int), f"{root.gui_text.pulsing} is {type(root.gui_text.pulsing)}"
-            assert isinstance(root.gui_text.strref, int), f"{root.gui_text.strref} is {type(root.gui_text.strref)}"
-            assert isinstance(root.gui_text.text, str), f"{root.gui_text.text} is {type(root.gui_text.text)}"
+            assert isinstance(root.gui_text.alignment, int), (
+                f"{root.gui_text.alignment} is {type(root.gui_text.alignment)}"
+            )
+            assert isinstance(root.gui_text.color, Color), (
+                f"{root.gui_text.color} is {type(root.gui_text.color)}"
+            )
+            assert isinstance(root.gui_text.font, str), (
+                f"{root.gui_text.font} is {type(root.gui_text.font)}"
+            )
+            assert isinstance(root.gui_text.pulsing, int), (
+                f"{root.gui_text.pulsing} is {type(root.gui_text.pulsing)}"
+            )
+            assert isinstance(root.gui_text.strref, int), (
+                f"{root.gui_text.strref} is {type(root.gui_text.strref)}"
+            )
+            assert isinstance(root.gui_text.text, str), (
+                f"{root.gui_text.text} is {type(root.gui_text.text)}"
+            )
 
             assert root.gui_text.alignment == 0, f"{root.gui_text.alignment} == 0"
-            assert root.gui_text.color == Color(0, 0, 0, 1), f"{root.gui_text.color} == {Color(0, 0, 0, 1)}"
+            assert root.gui_text.color == Color(0, 0, 0, 1), (
+                f"{root.gui_text.color} == {Color(0, 0, 0, 1)}"
+            )
             assert root.gui_text.font == "", f"{root.gui_text.font} == ''"
             assert root.gui_text.pulsing == 0, f"{root.gui_text.pulsing} == 0"
             assert root.gui_text.strref == -1, f"{root.gui_text.strref} == -1"
@@ -180,10 +244,18 @@ class TestGUI(TestCase):
 
         for control in root.children:
             if isinstance(control, GUIButton):
-                assert isinstance(control.text, (str, type(None))), f"{control.text} is {type(control.text)}"
-                assert isinstance(control.color, (Color, type(None))), f"{control.color} is {type(control.color)}"
-                assert isinstance(control.border, (GUIBorder, type(None))), f"{control.border} is {type(control.border)}"
-                assert isinstance(control.pulsing, (int, type(None))), f"{control.pulsing} is {type(control.pulsing)}"
+                assert isinstance(control.text, (str, type(None))), (
+                    f"{control.text} is {type(control.text)}"
+                )
+                assert isinstance(control.color, (Color, type(None))), (
+                    f"{control.color} is {type(control.color)}"
+                )
+                assert isinstance(control.border, (GUIBorder, type(None))), (
+                    f"{control.border} is {type(control.border)}"
+                )
+                assert isinstance(control.pulsing, (int, type(None))), (
+                    f"{control.pulsing} is {type(control.pulsing)}"
+                )
 
                 assert control.text == None, f"{control.text} == None"
                 assert control.color == None, f"{control.color} == None"
@@ -191,9 +263,15 @@ class TestGUI(TestCase):
 
             elif isinstance(control, GUISlider):
                 assert isinstance(control.value, float), f"{control.value} is {type(control.value)}"
-                assert isinstance(control.min_value, float), f"{control.min_value} is {type(control.min_value)}"
-                assert isinstance(control.max_value, float), f"{control.max_value} is {type(control.max_value)}"
-                assert isinstance(control.direction, str), f"{control.direction} is {type(control.direction)}"
+                assert isinstance(control.min_value, float), (
+                    f"{control.min_value} is {type(control.min_value)}"
+                )
+                assert isinstance(control.max_value, float), (
+                    f"{control.max_value} is {type(control.max_value)}"
+                )
+                assert isinstance(control.direction, str), (
+                    f"{control.direction} is {type(control.direction)}"
+                )
 
                 assert control.value == 0.0, f"{control.value} == 0.0"
                 assert control.min_value == 0.0, f"{control.min_value} == 0.0"
@@ -201,8 +279,12 @@ class TestGUI(TestCase):
                 assert control.direction == "horizontal", f"{control.direction} == 'horizontal'"
 
             elif isinstance(control, GUIPanel):
-                assert isinstance(control.background_texture, (str, type(None))), f"{control.background_texture} is {type(control.background_texture)}"
-                assert isinstance(control.border_texture, (str, type(None))), f"{control.border_texture} is {type(control.border_texture)}"
+                assert isinstance(control.background_texture, (str, type(None))), (
+                    f"{control.background_texture} is {type(control.background_texture)}"
+                )
+                assert isinstance(control.border_texture, (str, type(None))), (
+                    f"{control.border_texture} is {type(control.border_texture)}"
+                )
 
                 if control.background_texture:
                     assert control.background_texture == "", f"{control.background_texture} == ''"
@@ -210,55 +292,111 @@ class TestGUI(TestCase):
                     assert control.border_texture == "", f"{control.border_texture} == ''"
 
             elif isinstance(control, GUIListBox):
-                assert isinstance(control.proto_item, (GUIProtoItem, type(None))), f"{control.proto_item} is {type(control.proto_item)}"
-                assert isinstance(control.scroll_bar, (GUIScrollbar, type(None))), f"{control.scroll_bar} is {type(control.scroll_bar)}"
+                assert isinstance(control.proto_item, (GUIProtoItem, type(None))), (
+                    f"{control.proto_item} is {type(control.proto_item)}"
+                )
+                assert isinstance(control.scroll_bar, (GUIScrollbar, type(None))), (
+                    f"{control.scroll_bar} is {type(control.scroll_bar)}"
+                )
 
             elif isinstance(control, GUICheckBox):
-                assert isinstance(control.gui_text, GUIText), f"{control.gui_text} is {type(control.gui_text)}"
+                assert isinstance(control.gui_text, GUIText), (
+                    f"{control.gui_text} is {type(control.gui_text)}"
+                )
                 assert isinstance(control.color, Color), f"{control.color} is {type(control.color)}"
 
                 assert control.gui_text.text == "", f"{control.gui_text.text} == ''"
                 assert control.color == Color(0, 0, 0, 1), f"{control.color} == {Color(0, 0, 0, 1)}"
 
             elif isinstance(control, GUIProtoItem):
-                assert isinstance(control.gui_text, GUIText), f"{control.gui_text} is {type(control.gui_text)}"
-                assert isinstance(control.color, (Color, type(None))), f"{control.color} is {type(control.color)}"
-                assert isinstance(control.border, (GUIBorder, type(None))), f"{control.border} is {type(control.border)}"
-                assert isinstance(control.pulsing, (int, type(None))), f"{control.pulsing} is {type(control.pulsing)}"
+                assert isinstance(control.gui_text, GUIText), (
+                    f"{control.gui_text} is {type(control.gui_text)}"
+                )
+                assert isinstance(control.color, (Color, type(None))), (
+                    f"{control.color} is {type(control.color)}"
+                )
+                assert isinstance(control.border, (GUIBorder, type(None))), (
+                    f"{control.border} is {type(control.border)}"
+                )
+                assert isinstance(control.pulsing, (int, type(None))), (
+                    f"{control.pulsing} is {type(control.pulsing)}"
+                )
 
-                assert control.gui_text.text in ("Entered Name", None, ""), f"'{control.gui_text.text}' in ('Entered Name', None)"
+                assert control.gui_text.text in ("Entered Name", None, ""), (
+                    f"'{control.gui_text.text}' in ('Entered Name', None)"
+                )
                 assert control.color == None, f"{control.color} == None"
                 assert control.pulsing == None, f"{control.pulsing} == None"
 
             elif isinstance(control, GUIProgressBar):
-                assert isinstance(control.max_value, float), f"{control.max_value} is {type(control.max_value)}"
-                assert isinstance(control.progress_fill_texture, str), f"{control.progress_fill_texture} is {type(control.progress_fill_texture)}"
-                assert isinstance(control.progress_border, (GUIBorder, type(None))), f"{control.progress_border} is {type(control.progress_border)}"
+                assert isinstance(control.max_value, float), (
+                    f"{control.max_value} is {type(control.max_value)}"
+                )
+                assert isinstance(control.progress_fill_texture, str), (
+                    f"{control.progress_fill_texture} is {type(control.progress_fill_texture)}"
+                )
+                assert isinstance(control.progress_border, (GUIBorder, type(None))), (
+                    f"{control.progress_border} is {type(control.progress_border)}"
+                )
 
                 assert control.progress_fill_texture == "", f"{control.progress_fill_texture} == ''"
 
                 if control.progress_border:
-                    assert isinstance(control.progress_border.color, Color), f"{control.progress_border.color} is {type(control.progress_border.color)}"
-                    assert isinstance(control.progress_border.corner, str), f"{control.progress_border.corner} is {type(control.progress_border.corner)}"
-                    assert isinstance(control.progress_border.dimension, int), f"{control.progress_border.dimension} is {type(control.progress_border.dimension)}"
-                    assert isinstance(control.progress_border.edge, str), f"{control.progress_border.edge} is {type(control.progress_border.edge)}"
-                    assert isinstance(control.progress_border.fill, str), f"{control.progress_border.fill} is {type(control.progress_border.fill)}"
-                    assert isinstance(control.progress_border.fill_style, int), f"{control.progress_border.fill_style} is {type(control.progress_border.fill_style)}"
-                    assert isinstance(control.progress_border.inner_offset, int), f"{control.progress_border.inner_offset} is {type(control.progress_border.inner_offset)}"
+                    assert isinstance(control.progress_border.color, Color), (
+                        f"{control.progress_border.color} is {type(control.progress_border.color)}"
+                    )
+                    assert isinstance(control.progress_border.corner, str), (
+                        f"{control.progress_border.corner} is {type(control.progress_border.corner)}"
+                    )
+                    assert isinstance(control.progress_border.dimension, int), (
+                        f"{control.progress_border.dimension} is {type(control.progress_border.dimension)}"
+                    )
+                    assert isinstance(control.progress_border.edge, str), (
+                        f"{control.progress_border.edge} is {type(control.progress_border.edge)}"
+                    )
+                    assert isinstance(control.progress_border.fill, str), (
+                        f"{control.progress_border.fill} is {type(control.progress_border.fill)}"
+                    )
+                    assert isinstance(control.progress_border.fill_style, int), (
+                        f"{control.progress_border.fill_style} is {type(control.progress_border.fill_style)}"
+                    )
+                    assert isinstance(control.progress_border.inner_offset, int), (
+                        f"{control.progress_border.inner_offset} is {type(control.progress_border.inner_offset)}"
+                    )
                     assert isinstance(control.progress_border.inner_offset_y, int), (
                         f"{control.progress_border.inner_offset_y} is {type(control.progress_border.inner_offset_y)}"
                     )
-                    assert isinstance(control.progress_border.pulsing, int), f"{control.progress_border.pulsing} is {type(control.progress_border.pulsing)}"
+                    assert isinstance(control.progress_border.pulsing, int), (
+                        f"{control.progress_border.pulsing} is {type(control.progress_border.pulsing)}"
+                    )
 
-                    assert control.progress_border.color == Color(0, 0, 0, 0), f"{control.progress_border.color} == {Color(0, 0, 0, 0)}"
-                    assert control.progress_border.corner == "", f"{control.progress_border.corner} == ''"
-                    assert control.progress_border.dimension == 0, f"{control.progress_border.dimension} == 0"
-                    assert control.progress_border.edge == "", f"{control.progress_border.edge} == ''"
-                    assert control.progress_border.fill == "", f"{control.progress_border.fill} == ''"
-                    assert control.progress_border.fill_style == 0, f"{control.progress_border.fill_style} == 0"
-                    assert control.progress_border.inner_offset == 0, f"{control.progress_border.inner_offset} == 0"
-                    assert control.progress_border.inner_offset_y == 0, f"{control.progress_border.inner_offset_y} == 0"
-                    assert control.progress_border.pulsing == 0, f"{control.progress_border.pulsing} == 0"
+                    assert control.progress_border.color == Color(0, 0, 0, 0), (
+                        f"{control.progress_border.color} == {Color(0, 0, 0, 0)}"
+                    )
+                    assert control.progress_border.corner == "", (
+                        f"{control.progress_border.corner} == ''"
+                    )
+                    assert control.progress_border.dimension == 0, (
+                        f"{control.progress_border.dimension} == 0"
+                    )
+                    assert control.progress_border.edge == "", (
+                        f"{control.progress_border.edge} == ''"
+                    )
+                    assert control.progress_border.fill == "", (
+                        f"{control.progress_border.fill} == ''"
+                    )
+                    assert control.progress_border.fill_style == 0, (
+                        f"{control.progress_border.fill_style} == 0"
+                    )
+                    assert control.progress_border.inner_offset == 0, (
+                        f"{control.progress_border.inner_offset} == 0"
+                    )
+                    assert control.progress_border.inner_offset_y == 0, (
+                        f"{control.progress_border.inner_offset_y} == 0"
+                    )
+                    assert control.progress_border.pulsing == 0, (
+                        f"{control.progress_border.pulsing} == 0"
+                    )
 
     def test_gui_missing_extent_and_controls_defaults(self):
         """EXTENT omit → (0,0,0,0). CONTROLS omit → empty. K1 CSWGuiExtent::Load 0x00409dc0; TSL FUN_0090c850."""

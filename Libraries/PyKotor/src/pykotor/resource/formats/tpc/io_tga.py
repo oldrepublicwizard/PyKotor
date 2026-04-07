@@ -156,7 +156,11 @@ class TPCTGAReader(ResourceReader):
                             self._reader.read_uint8(),
                             self._reader.read_uint8(),
                         )
-                        pixel = [r, g, b, self._reader.read_uint8()] if bits_per_pixel == 32 else [r, g, b, 255]
+                        pixel = (
+                            [r, g, b, self._reader.read_uint8()]
+                            if bits_per_pixel == 32
+                            else [r, g, b, 255]
+                        )
                     elif color_map:
                         index = self._reader.read_uint8()
                         color = list(color_map[index])
@@ -174,7 +178,11 @@ class TPCTGAReader(ResourceReader):
                         self._reader.read_uint8(),
                         self._reader.read_uint8(),
                     )
-                    pixel = [r, g, b, self._reader.read_uint8()] if bits_per_pixel == 32 else [r, g, b, 255]
+                    pixel = (
+                        [r, g, b, self._reader.read_uint8()]
+                        if bits_per_pixel == 32
+                        else [r, g, b, 255]
+                    )
                 elif color_map:
                     index = self._reader.read_uint8()
                     color = list(color_map[index])
@@ -235,7 +243,9 @@ class TPCTGAReader(ResourceReader):
             for row in range(face_height):
                 src_offset = ((face * face_height) + row) * width * 4
                 dst_offset = row * width * 4
-                slice_rgba[dst_offset : dst_offset + width * 4] = rgba[src_offset : src_offset + width * 4]
+                slice_rgba[dst_offset : dst_offset + width * 4] = rgba[
+                    src_offset : src_offset + width * 4
+                ]
             layer.set_single(width, face_height, slice_rgba, TPCTextureFormat.RGBA)
             self._tpc.layers.append(layer)
 

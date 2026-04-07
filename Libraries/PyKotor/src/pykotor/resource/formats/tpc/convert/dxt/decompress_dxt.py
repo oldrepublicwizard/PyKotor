@@ -44,7 +44,9 @@ def dxt1_to_rgb(dxt1_data: bytes | bytearray, width: int, height: int) -> bytear
             color_table = [
                 c0,
                 c1,
-                interpolate_colors(c0, c1, 2 / 3) if color0 > color1 else interpolate_colors(c0, c1, 1 / 2),
+                interpolate_colors(c0, c1, 2 / 3)
+                if color0 > color1
+                else interpolate_colors(c0, c1, 1 / 2),
                 interpolate_colors(c0, c1, 1 / 3) if color0 > color1 else (0, 0, 0),
             ]
 
@@ -68,7 +70,9 @@ def dxt1_to_rgba(dxt1_data: bytes | bytearray, width: int, height: int) -> bytea
         b = color & 0x1F
         return (r << 3) | (r >> 2), (g << 2) | (g >> 4), (b << 3) | (b >> 2)
 
-    def interpolate_colors(c0: tuple[int, int, int], c1: tuple[int, int, int], t: float) -> tuple[int, int, int]:
+    def interpolate_colors(
+        c0: tuple[int, int, int], c1: tuple[int, int, int], t: float
+    ) -> tuple[int, int, int]:
         return (
             int((1 - t) * c0[0] + t * c1[0]),
             int((1 - t) * c0[1] + t * c1[1]),
@@ -163,7 +167,9 @@ def dxt3_to_rgba(dxt3_data: bytes | bytearray, width: int, height: int) -> bytea
             alpha_values = dxt3_data[block_offset : block_offset + 8]
             color0 = int.from_bytes(dxt3_data[block_offset + 8 : block_offset + 10], "little")
             color1 = int.from_bytes(dxt3_data[block_offset + 10 : block_offset + 12], "little")
-            color_indices = int.from_bytes(dxt3_data[block_offset + 12 : block_offset + 16], "little")
+            color_indices = int.from_bytes(
+                dxt3_data[block_offset + 12 : block_offset + 16], "little"
+            )
 
             r0, g0, b0 = unpack_565(color0)
             r1, g1, b1 = unpack_565(color1)
@@ -205,8 +211,14 @@ def dxt5_to_rgba(
         b: int = color & 0x1F
         return (r << 3 | r >> 2, g << 2 | g >> 4, b << 3 | b >> 2)
 
-    def interpolate_color(c0: tuple[int, int, int], c1: tuple[int, int, int], t: float) -> tuple[int, int, int]:
-        return (int((1 - t) * c0[0] + t * c1[0]), int((1 - t) * c0[1] + t * c1[1]), int((1 - t) * c0[2] + t * c1[2]))
+    def interpolate_color(
+        c0: tuple[int, int, int], c1: tuple[int, int, int], t: float
+    ) -> tuple[int, int, int]:
+        return (
+            int((1 - t) * c0[0] + t * c1[0]),
+            int((1 - t) * c0[1] + t * c1[1]),
+            int((1 - t) * c0[2] + t * c1[2]),
+        )
 
     def interpolate_alpha(a0: int, a1: int, t: float) -> int:
         return int((1 - t) * a0 + t * a1)
@@ -235,12 +247,16 @@ def dxt5_to_rgba(
             # Alpha
             alpha0: int = dxt5_data[block_offset]
             alpha1: int = dxt5_data[block_offset + 1]
-            alpha_bits: int = int.from_bytes(dxt5_data[block_offset + 2 : block_offset + 8], "little")
+            alpha_bits: int = int.from_bytes(
+                dxt5_data[block_offset + 2 : block_offset + 8], "little"
+            )
 
             # Color
             color0: int = int.from_bytes(dxt5_data[block_offset + 8 : block_offset + 10], "little")
             color1: int = int.from_bytes(dxt5_data[block_offset + 10 : block_offset + 12], "little")
-            color_bits: int = int.from_bytes(dxt5_data[block_offset + 12 : block_offset + 16], "little")
+            color_bits: int = int.from_bytes(
+                dxt5_data[block_offset + 12 : block_offset + 16], "little"
+            )
 
             c0: tuple[int, int, int] = unpack_565(color0)
             c1: tuple[int, int, int] = unpack_565(color1)

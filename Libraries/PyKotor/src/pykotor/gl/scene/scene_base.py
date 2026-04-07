@@ -118,6 +118,8 @@ class SceneBase:
         self._missing_texture: Texture = Texture.from_color(255, 0, 255)
         self._missing_lightmap: Texture = Texture.from_color(0, 0, 0)
         self._loading_texture: Texture = Texture.from_color(128, 128, 128)
+        self._texture_sentinel: object = object()  # Unique sentinel for .get() fast path
+        self._model_sentinel: object = object()  # Unique sentinel for .get() fast path
 
         self.textures: CaseInsensitiveDict[Texture] = CaseInsensitiveDict()
         self.textures["NULL"] = Texture.from_color()
@@ -820,12 +822,14 @@ class SceneBase:
         *,
         lightmap: bool = False,
     ) -> Texture:
-        # Already cached?
-        if name in self.textures:
-            tex = self.textures[name]
+        # Already cached?  Use .get() for a single .lower() instead of
+        # ``in`` + ``__getitem__`` which would call .lower() twice.
+        _sentinel = self._texture_sentinel
+        tex = self.textures.get(name, _sentinel)
+        if tex is not _sentinel:
             if tex is self._missing_texture and lightmap:
                 return self._missing_lightmap
-            return tex
+            return tex  # type: ignore[return-value]
 
         # Already loading?
         if name in self._pending_texture_futures:
@@ -979,9 +983,12 @@ class SceneBase:
         self,
         name: str,
     ) -> Model:
-        # Already cached?
-        if name in self.models:
-            return self.models[name]
+        # Already cached?  Use .get() for a single .lower() instead of
+        # ``in`` + ``__getitem__`` which would call .lower() twice.
+        _sentinel = self._model_sentinel
+        cached = self.models.get(name, _sentinel)
+        if cached is not _sentinel:
+            return cached  # type: ignore[return-value]
 
         # Special/predefined models - load synchronously
         predefined_models: dict[str, tuple[bytes, bytes]] = {

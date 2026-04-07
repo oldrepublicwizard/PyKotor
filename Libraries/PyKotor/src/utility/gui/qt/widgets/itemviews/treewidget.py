@@ -48,10 +48,16 @@ class RobustTreeWidget(QTreeWidget, RobustTreeView):
             tree_widget_menu,
             "Expand Current Item",
             lambda: self.isExpanded(self.currentIndex()),
-            lambda x: self.expandItem(self.currentItem()) if x else self.collapseItem(self.currentItem()),
+            lambda x: self.expandItem(self.currentItem())
+            if x
+            else self.collapseItem(self.currentItem()),
             "expandCurrentItem",
         )
-        self._add_simple_action(tree_widget_menu, "Scroll to Current Item", lambda: self.scrollToItem(self.currentItem()))
+        self._add_simple_action(
+            tree_widget_menu,
+            "Scroll to Current Item",
+            lambda: self.scrollToItem(self.currentItem()),
+        )
         self._add_menu_action(
             tree_widget_menu,
             "Sort Items",
@@ -114,10 +120,24 @@ class RobustTreeWidget(QTreeWidget, RobustTreeView):
 
         # Item manipulation actions
         item_menu = tree_widget_menu.addMenu("Item Actions")
-        self._add_simple_action(item_menu, "Add Top Level Item", lambda: self.addTopLevelItem(QTreeWidgetItem(["New Item"])))
-        self._add_simple_action(item_menu, "Remove Current Item", lambda: self.takeTopLevelItem(self.indexOfTopLevelItem(self.currentItem())) if self.currentItem() else None)
+        self._add_simple_action(
+            item_menu,
+            "Add Top Level Item",
+            lambda: self.addTopLevelItem(QTreeWidgetItem(["New Item"])),
+        )
+        self._add_simple_action(
+            item_menu,
+            "Remove Current Item",
+            lambda: self.takeTopLevelItem(self.indexOfTopLevelItem(self.currentItem()))
+            if self.currentItem()
+            else None,
+        )
         self._add_simple_action(item_menu, "Clear All Items", self.clear)
-        self._add_simple_action(item_menu, "Edit Current Item", lambda: self.editItem(self.currentItem(), 0) if self.currentItem() else None)
+        self._add_simple_action(
+            item_menu,
+            "Edit Current Item",
+            lambda: self.editItem(self.currentItem(), 0) if self.currentItem() else None,
+        )
 
         return menu
 

@@ -106,7 +106,9 @@ def analyze_wok_file(path: Path, name: str) -> dict:
                 trans_str.append(f"trans2={face_info['trans2']}")
             if face_info["trans3"] is not None:
                 trans_str.append(f"trans3={face_info['trans3']}")
-            print(f"    Face {face_info['index']}: material={face_info['material']}, walkable={face_info['walkable']}, {', '.join(trans_str)}")
+            print(
+                f"    Face {face_info['index']}: material={face_info['material']}, walkable={face_info['walkable']}, {', '.join(trans_str)}"
+            )
             print(f"      v1={face_info['v1']}")
             print(f"      v2={face_info['v2']}")
             print(f"      v3={face_info['v3']}")
@@ -142,7 +144,9 @@ def analyze_mod_woks(mod_path: Path, name: str) -> list:
             # Analyze faces
             for i, face in enumerate(bwm.faces):
                 is_walkable = face.material.walkable()
-                has_trans = face.trans1 is not None or face.trans2 is not None or face.trans3 is not None
+                has_trans = (
+                    face.trans1 is not None or face.trans2 is not None or face.trans3 is not None
+                )
 
                 if is_walkable:
                     result["walkable_count"] += 1
@@ -176,7 +180,9 @@ def analyze_mod_woks(mod_path: Path, name: str) -> list:
             # Print summary for this WOK
             print(f"\n  WOK: {result['resref']}")
             print(f"    Total faces: {result['total_faces']}")
-            print(f"    Walkable: {result['walkable_count']}, Unwalkable: {result['unwalkable_count']}")
+            print(
+                f"    Walkable: {result['walkable_count']}, Unwalkable: {result['unwalkable_count']}"
+            )
             print(f"    Faces with transitions: {len(result['faces_with_transitions'])}")
             print(f"    Edges with transitions: {result['edges_with_transitions']}")
 
@@ -191,7 +197,9 @@ def analyze_mod_woks(mod_path: Path, name: str) -> list:
                     trans_str.append(f"t3={face_info['trans3']}")
 
                 walkable_str = "WALKABLE" if face_info["walkable"] else "NON_WALK"
-                print(f"      Face {face_info['index']}: {face_info['material']} ({walkable_str}) - {', '.join(trans_str)}")
+                print(
+                    f"      Face {face_info['index']}: {face_info['material']} ({walkable_str}) - {', '.join(trans_str)}"
+                )
 
     return results
 
@@ -254,12 +262,24 @@ def main():
     print("|---------|-----|----------------|-------------------|----------------|")
 
     for result in step01_results:
-        trans_walkable = all(f["walkable"] for f in result["faces_with_transitions"]) if result["faces_with_transitions"] else "N/A"
-        print(f"| Step01  | {result['resref'][:15]} | {len(result['faces_with_transitions'])} | {trans_walkable} | {result['edges_with_transitions']} |")
+        trans_walkable = (
+            all(f["walkable"] for f in result["faces_with_transitions"])
+            if result["faces_with_transitions"]
+            else "N/A"
+        )
+        print(
+            f"| Step01  | {result['resref'][:15]} | {len(result['faces_with_transitions'])} | {trans_walkable} | {result['edges_with_transitions']} |"
+        )
 
     for result in step02_results:
-        trans_walkable = all(f["walkable"] for f in result["faces_with_transitions"]) if result["faces_with_transitions"] else "N/A"
-        print(f"| Step02  | {result['resref'][:15]} | {len(result['faces_with_transitions'])} | {trans_walkable} | {result['edges_with_transitions']} |")
+        trans_walkable = (
+            all(f["walkable"] for f in result["faces_with_transitions"])
+            if result["faces_with_transitions"]
+            else "N/A"
+        )
+        print(
+            f"| Step02  | {result['resref'][:15]} | {len(result['faces_with_transitions'])} | {trans_walkable} | {result['edges_with_transitions']} |"
+        )
 
     # 5. Root cause analysis
     print("\n" + "#" * 70)
@@ -272,14 +292,26 @@ def main():
 
         if step01_room0 and step02_room0:
             print("\nRoom0 Comparison:")
-            print(f"  Step01: {len(step01_room0['faces_with_transitions'])} faces with transitions, {step01_room0['edges_with_transitions']} edges with transitions")
-            print(f"  Step02: {len(step02_room0['faces_with_transitions'])} faces with transitions, {step02_room0['edges_with_transitions']} edges with transitions")
+            print(
+                f"  Step01: {len(step01_room0['faces_with_transitions'])} faces with transitions, {step01_room0['edges_with_transitions']} edges with transitions"
+            )
+            print(
+                f"  Step02: {len(step02_room0['faces_with_transitions'])} faces with transitions, {step02_room0['edges_with_transitions']} edges with transitions"
+            )
 
             # Check if transitions are on walkable faces
-            step01_trans_walkable = [f for f in step01_room0["faces_with_transitions"] if f["walkable"]]
-            step01_trans_nonwalk = [f for f in step01_room0["faces_with_transitions"] if not f["walkable"]]
-            step02_trans_walkable = [f for f in step02_room0["faces_with_transitions"] if f["walkable"]]
-            step02_trans_nonwalk = [f for f in step02_room0["faces_with_transitions"] if not f["walkable"]]
+            step01_trans_walkable = [
+                f for f in step01_room0["faces_with_transitions"] if f["walkable"]
+            ]
+            step01_trans_nonwalk = [
+                f for f in step01_room0["faces_with_transitions"] if not f["walkable"]
+            ]
+            step02_trans_walkable = [
+                f for f in step02_room0["faces_with_transitions"] if f["walkable"]
+            ]
+            step02_trans_nonwalk = [
+                f for f in step02_room0["faces_with_transitions"] if not f["walkable"]
+            ]
 
             print("\n  Step01 transitions:")
             print(f"    On WALKABLE faces: {len(step01_trans_walkable)}")
@@ -291,7 +323,9 @@ def main():
 
             if step02_trans_nonwalk and not step02_trans_walkable:
                 print("\n  ** BUG CONFIRMED: Step02 has transitions ONLY on NON_WALK faces! **")
-                print("     This is why edges have no transitions - edges are computed from walkable faces only.")
+                print(
+                    "     This is why edges have no transitions - edges are computed from walkable faces only."
+                )
 
     print("\n" + "=" * 70)
     print("Analysis complete.")

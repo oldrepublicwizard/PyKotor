@@ -42,7 +42,9 @@ def get_model(
     if placeables is None:
         loaded = load_2da_with_fallback(installation, "placeables", RobustLogger())
         if loaded is None:
-            raise ValueError("Resource 'placeables.2da' not found in the installation, cannot get UTP model.")
+            raise ValueError(
+                "Resource 'placeables.2da' not found in the installation, cannot get UTP model."
+            )
         placeables_2da = loaded
     elif not isinstance(placeables, TwoDA):
         placeables_2da = read_2da(placeables)
@@ -116,14 +118,18 @@ def extract_placeable_walkmesh(
 
         placeable_model_name = get_model(utp, installation, placeables=placeables_2da)
         if not placeable_model_name:
-            logger.warning(f"Could not get model name for placeable (appearance_id={utp.appearance_id})")
+            logger.warning(
+                f"Could not get model name for placeable (appearance_id={utp.appearance_id})"
+            )
             return None
 
         # Try to extract PWK file: modelname.pwk
         try:
             # Try to find PWK in module resources first (if module provided)
             if module is not None:
-                pwk_resource = module.resource(resname=placeable_model_name, restype=ResourceType.PWK)
+                pwk_resource = module.resource(
+                    resname=placeable_model_name, restype=ResourceType.PWK
+                )
                 if pwk_resource is not None:
                     pwk_data = pwk_resource.data()
                     if pwk_data is not None:

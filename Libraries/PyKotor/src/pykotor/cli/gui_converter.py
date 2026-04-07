@@ -213,7 +213,10 @@ def _parse_resolution_spec(resolution: str) -> list[ResolutionTarget]:
             continue
 
         if item in ASPECT_RATIO_TO_RESOLUTION:
-            parsed.extend(ResolutionTarget(width, height) for width, height in ASPECT_RATIO_TO_RESOLUTION[item])
+            parsed.extend(
+                ResolutionTarget(width, height)
+                for width, height in ASPECT_RATIO_TO_RESOLUTION[item]
+            )
             continue
 
         try:
@@ -232,7 +235,9 @@ def _parse_resolution_spec(resolution: str) -> list[ResolutionTarget]:
     return _unique_targets(parsed)
 
 
-def _gather_gui_inputs(inputs: Sequence[Path], warn: Callable[[str], None]) -> list[tuple[CaseAwarePath, Path]]:
+def _gather_gui_inputs(
+    inputs: Sequence[Path], warn: Callable[[str], None]
+) -> list[tuple[CaseAwarePath, Path]]:
     """Expand user inputs to concrete GUI files with their relative output roots."""
     gathered: list[tuple[CaseAwarePath, Path]] = []
     for raw in inputs:
@@ -355,14 +360,18 @@ def launch_gui_converter() -> None:  # noqa: PLR0915
             messagebox.showerror("Missing paths", "Input and output paths are required.")
             return
         try:
-            exit_code = convert_gui_inputs([Path(input_path)], Path(output_path), resolution_spec, logger)
+            exit_code = convert_gui_inputs(
+                [Path(input_path)], Path(output_path), resolution_spec, logger
+            )
         except Exception as exc:
             messagebox.showerror("Conversion failed", f"{exc.__class__.__name__}: {exc}")
             return
         if exit_code == 0:
             messagebox.showinfo("Done", "GUI conversion completed.")
         else:
-            messagebox.showwarning("Finished with warnings", "Conversion completed with warnings or no files.")
+            messagebox.showwarning(
+                "Finished with warnings", "Conversion completed with warnings or no files."
+            )
 
     # Layout
     frm = tk.Frame(root, padx=8, pady=8)

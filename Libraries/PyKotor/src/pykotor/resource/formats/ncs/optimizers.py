@@ -52,7 +52,9 @@ class RemoveNopOptimizer(NCSOptimizer):
             msg = f"NOP not present by identity lookup. nop_id={id(target)}"
             raise ValueError(msg)
 
-        nops: list[NCSInstruction] = [inst for inst in ncs.instructions if inst.ins_type == NCSInstructionType.NOP]
+        nops: list[NCSInstruction] = [
+            inst for inst in ncs.instructions if inst.ins_type == NCSInstructionType.NOP
+        ]
 
         if not nops:
             return
@@ -64,7 +66,9 @@ class RemoveNopOptimizer(NCSOptimizer):
             try:
                 nop_index: int = find_index(nop)
             except ValueError:
-                logger.warning("Skipping NOP removal; lookup failed. nop_id=%s", id(nop), exc_info=True)
+                logger.warning(
+                    "Skipping NOP removal; lookup failed. nop_id=%s", id(nop), exc_info=True
+                )
                 continue
 
             inbound_links = ncs.links_to(nop)
@@ -96,7 +100,11 @@ class RemoveMoveSPEqualsZeroOptimizer(NCSOptimizer):
         super().__init__()
 
     def optimize(self, ncs: NCS):
-        movsp0: list[NCSInstruction] = [inst for inst in ncs.instructions if inst.ins_type == NCSInstructionType.MOVSP and inst.args[0] == 0]
+        movsp0: list[NCSInstruction] = [
+            inst
+            for inst in ncs.instructions
+            if inst.ins_type == NCSInstructionType.MOVSP and inst.args[0] == 0
+        ]
         instr_to_index: dict[int, int] = {id(inst): i for i, inst in enumerate(ncs.instructions)}
 
         # Process instructions which jump to a MOVSP=0 and set them to jump to the proceeding instruction instead
@@ -205,7 +213,9 @@ class RemoveUnusedBlocksOptimizer(NCSOptimizer):
             else:
                 checking.append(check + 1)
 
-        unreachable: list[NCSInstruction] = [instruction for instruction in ncs.instructions if instruction not in reachable]
+        unreachable: list[NCSInstruction] = [
+            instruction for instruction in ncs.instructions if instruction not in reachable
+        ]
         for instruction in unreachable:
             # We do not have to worry about fixing any instructions that JMP since the target instructions here should
             # be detached for the actual (reachable) script.

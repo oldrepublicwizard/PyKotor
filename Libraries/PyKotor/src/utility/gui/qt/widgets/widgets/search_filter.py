@@ -34,7 +34,9 @@ class SearchFilterWidget(QWidget):
 
     # Signals
     textChanged: Signal = Signal(str)  # Emitted when text changes
-    searchRequested: Signal = Signal(str)  # Emitted when search button is clicked or Enter is pressed
+    searchRequested: Signal = Signal(
+        str
+    )  # Emitted when search button is clicked or Enter is pressed
     textEdited: Signal = Signal(str)  # Emitted when user types (for backward compatibility)
 
     def __init__(
@@ -144,7 +146,9 @@ class SearchFilterWidget(QWidget):
     def _apply_styling(self):
         """Apply custom styling to the widget using palette colors."""
         app = QApplication.instance()
-        assert isinstance(app, QApplication), f"QApplication instance is required, got {app.__class__.__name__}"
+        assert isinstance(app, QApplication), (
+            f"QApplication instance is required, got {app.__class__.__name__}"
+        )
         palette: QPalette = app.palette()
 
         # Get palette colors

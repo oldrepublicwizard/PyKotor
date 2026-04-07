@@ -5,8 +5,12 @@ import kaitaistruct
 from kaitaistruct import KaitaiStruct, KaitaiStream, BytesIO
 
 
-if getattr(kaitaistruct, 'API_VERSION', (0, 9)) < (0, 11):
-    raise Exception("Incompatible Kaitai Struct Python API: 0.11 or later is required, but you have %s" % (kaitaistruct.__version__))
+if getattr(kaitaistruct, "API_VERSION", (0, 9)) < (0, 11):
+    raise Exception(
+        "Incompatible Kaitai Struct Python API: 0.11 or later is required, but you have %s"
+        % (kaitaistruct.__version__)
+    )
+
 
 class NcsMinimal(KaitaiStruct):
     def __init__(self, _io, _parent=None, _root=None):
@@ -16,8 +20,8 @@ class NcsMinimal(KaitaiStruct):
         self._read()
 
     def _read(self):
-        self.file_type = (self._io.read_bytes(4)).decode(u"ASCII")
-        self.file_version = (self._io.read_bytes(4)).decode(u"ASCII")
+        self.file_type = (self._io.read_bytes(4)).decode("ASCII")
+        self.file_version = (self._io.read_bytes(4)).decode("ASCII")
         self.size_marker = self._io.read_u1()
         self.total_file_size = self._io.read_u4be()
         self.instructions = []
@@ -29,13 +33,11 @@ class NcsMinimal(KaitaiStruct):
                 break
             i += 1
 
-
     def _fetch_instances(self):
         pass
         for i in range(len(self.instructions)):
             pass
             self.instructions[i]._fetch_instances()
-
 
     class Instruction(KaitaiStruct):
         def __init__(self, _io, _parent=None, _root=None):
@@ -48,9 +50,5 @@ class NcsMinimal(KaitaiStruct):
             self.bytecode = self._io.read_u1()
             self.qualifier = self._io.read_u1()
 
-
         def _fetch_instances(self):
             pass
-
-
-

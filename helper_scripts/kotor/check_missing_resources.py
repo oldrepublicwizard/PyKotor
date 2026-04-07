@@ -116,12 +116,25 @@ def check_missing_resources(
 def main() -> None:
     """Main entry point."""
     parser = argparse.ArgumentParser(
-        description="Check if missing resources are referenced by module models", formatter_class=argparse.RawDescriptionHelpFormatter, epilog=__doc__
+        description="Check if missing resources are referenced by module models",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog=__doc__,
     )
-    parser.add_argument("--installation", "-i", type=str, help="Path to KOTOR installation (default: from K1_PATH/K2_PATH env or .env file)")
-    parser.add_argument("--module", "-m", type=str, default="danm13", help="Module name to check (default: danm13)")
-    parser.add_argument("--lightmaps", "-l", nargs="+", default=[], help="List of lightmap names to check")
-    parser.add_argument("--textures", "-t", nargs="+", default=[], help="List of texture names to check")
+    parser.add_argument(
+        "--installation",
+        "-i",
+        type=str,
+        help="Path to KOTOR installation (default: from K1_PATH/K2_PATH env or .env file)",
+    )
+    parser.add_argument(
+        "--module", "-m", type=str, default="danm13", help="Module name to check (default: danm13)"
+    )
+    parser.add_argument(
+        "--lightmaps", "-l", nargs="+", default=[], help="List of lightmap names to check"
+    )
+    parser.add_argument(
+        "--textures", "-t", nargs="+", default=[], help="List of texture names to check"
+    )
 
     args = parser.parse_args()
 

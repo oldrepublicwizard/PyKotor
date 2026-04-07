@@ -1,4 +1,3 @@
-
 # Form implementation generated from reading ui file 'c:\GitHub\PyKotor\Libraries\PyKotor\src\utility\gui\qt\error_report_dialog.ui'
 #
 # Created by: PyQt5 UI code generator 5.15.11
@@ -71,7 +70,9 @@ class Ui_Dialog:
     def retranslateUi(self, Dialog: QDialog):
         _translate = QCoreApplication.translate
         Dialog.setWindowTitle(_translate("Dialog", "Error handler"))
-        self.additionalLabel.setText(_translate("Dialog", "Provide additional information (optional)"))
+        self.additionalLabel.setText(
+            _translate("Dialog", "Provide additional information (optional)")
+        )
         self.attachmentsLabel.setText(_translate("Dialog", "Select attachments (optional)"))
         self.includeLogsCheckbox.setText(_translate("Dialog", "Log Files"))
         self.contactLabel.setText(

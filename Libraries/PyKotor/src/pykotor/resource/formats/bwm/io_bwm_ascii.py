@@ -85,7 +85,9 @@ class BWMAsciiReader(ResourceReader):
         position = Vector3.from_null()
 
         vertices: list[Vector3] = []
-        face_data: list[tuple[int, int, int, int, int, int, int, int]] = []  # (v1, v2, v3, adj1-4, material)
+        face_data: list[
+            tuple[int, int, int, int, int, int, int, int]
+        ] = []  # (v1, v2, v3, adj1-4, material)
         aabb_data: list[tuple[Vector3, Vector3, int]] = []  # (bb_min, bb_max, face_idx)
 
         while self._data_remaining > 0:
@@ -140,7 +142,9 @@ class BWMAsciiReader(ResourceReader):
                         x = float(parts[1])
                         y = float(parts[2])
                         z = float(parts[3])
-                        _w = float(parts[4])  # Angle component (unused, but parsed for completeness)
+                        _w = float(
+                            parts[4]
+                        )  # Angle component (unused, but parsed for completeness)
 
                         # NOTE: Orientation is parsed but not currently used in BWM model
                         # The engine stores it in mesh.field7_0x38 (Quaternion, offset 0x38)
@@ -182,7 +186,9 @@ class BWMAsciiReader(ResourceReader):
                                 except (ValueError, IndexError):
                                     raise ValueError(f"Invalid vertex data: {vertex_line}")
                     except (ValueError, IndexError) as e:
-                        raise ValueError(f"Invalid verts count or vertex data: {e.__class__.__name__}: {e}")
+                        raise ValueError(
+                            f"Invalid verts count or vertex data: {e.__class__.__name__}: {e}"
+                        )
                 continue
 
             # Parse "faces" block
@@ -224,11 +230,24 @@ class BWMAsciiReader(ResourceReader):
                                     material_id = int(face_parts[7])
 
                                     # Store face data for later processing
-                                    face_data.append((v1_idx, v2_idx, v3_idx, adj1, adj2, adj3, adj4, material_id))
+                                    face_data.append(
+                                        (
+                                            v1_idx,
+                                            v2_idx,
+                                            v3_idx,
+                                            adj1,
+                                            adj2,
+                                            adj3,
+                                            adj4,
+                                            material_id,
+                                        )
+                                    )
                                 except (ValueError, IndexError):
                                     raise ValueError(f"Invalid face data: {face_line}")
                             else:
-                                raise ValueError(f"Face line must have 8 integers, got {len(face_parts)}: {face_line}")
+                                raise ValueError(
+                                    f"Face line must have 8 integers, got {len(face_parts)}: {face_line}"
+                                )
 
                         # Process faces: separate walkable vs unwalkable
                         #   1. Looks up each face's material in surfacemat.2DA with "Walk" string
@@ -268,11 +287,17 @@ class BWMAsciiReader(ResourceReader):
 
                             # Validate vertex indices
                             if v1_idx < 0 or v1_idx >= len(vertices):
-                                raise ValueError(f"Invalid vertex index v1={v1_idx} (max={len(vertices) - 1})")
+                                raise ValueError(
+                                    f"Invalid vertex index v1={v1_idx} (max={len(vertices) - 1})"
+                                )
                             if v2_idx < 0 or v2_idx >= len(vertices):
-                                raise ValueError(f"Invalid vertex index v2={v2_idx} (max={len(vertices) - 1})")
+                                raise ValueError(
+                                    f"Invalid vertex index v2={v2_idx} (max={len(vertices) - 1})"
+                                )
                             if v3_idx < 0 or v3_idx >= len(vertices):
-                                raise ValueError(f"Invalid vertex index v3={v3_idx} (max={len(vertices) - 1})")
+                                raise ValueError(
+                                    f"Invalid vertex index v3={v3_idx} (max={len(vertices) - 1})"
+                                )
 
                             # Get vertex objects (by identity, not by value)
                             # We need to ensure vertex sharing works correctly
@@ -300,7 +325,9 @@ class BWMAsciiReader(ResourceReader):
                         face_data = []
 
                     except (ValueError, IndexError) as e:
-                        raise ValueError(f"Invalid faces count or face data: {e.__class__.__name__}: {e}")
+                        raise ValueError(
+                            f"Invalid faces count or face data: {e.__class__.__name__}: {e}"
+                        )
                 continue
 
             # Parse "aabb" block
@@ -561,7 +588,9 @@ class BWMAsciiWriter(ResourceWriter):
                 if other_face is face:
                     continue
                 # Check if other_face shares edge v1->v2
-                if (other_face.v1 is face.v1 and other_face.v2 is face.v2) or (other_face.v2 is face.v1 and other_face.v1 is face.v2):
+                if (other_face.v1 is face.v1 and other_face.v2 is face.v2) or (
+                    other_face.v2 is face.v1 and other_face.v1 is face.v2
+                ):
                     adj1 = other_idx * 3 + 0  # Edge index calculation
                     break
 
@@ -569,7 +598,9 @@ class BWMAsciiWriter(ResourceWriter):
             for other_idx, other_face in enumerate(all_faces):
                 if other_face is face:
                     continue
-                if (other_face.v2 is face.v2 and other_face.v3 is face.v3) or (other_face.v3 is face.v2 and other_face.v2 is face.v3):
+                if (other_face.v2 is face.v2 and other_face.v3 is face.v3) or (
+                    other_face.v3 is face.v2 and other_face.v2 is face.v3
+                ):
                     adj2 = other_idx * 3 + 1
                     break
 
@@ -577,12 +608,16 @@ class BWMAsciiWriter(ResourceWriter):
             for other_idx, other_face in enumerate(all_faces):
                 if other_face is face:
                     continue
-                if (other_face.v3 is face.v3 and other_face.v1 is face.v1) or (other_face.v1 is face.v3 and other_face.v3 is face.v1):
+                if (other_face.v3 is face.v3 and other_face.v1 is face.v1) or (
+                    other_face.v1 is face.v3 and other_face.v3 is face.v1
+                ):
                     adj3 = other_idx * 3 + 2
                     break
 
             # Write face line: v1 v2 v3 adj1 adj2 adj3 adj4 material
-            self._writer.write_string(f"        {v1_idx} {v2_idx} {v3_idx} {adj1} {adj2} {adj3} {adj4} {face.material.value}\n")
+            self._writer.write_string(
+                f"        {v1_idx} {v2_idx} {v3_idx} {adj1} {adj2} {adj3} {adj4} {face.material.value}\n"
+            )
 
         # Write AABB tree nodes (if present)
         if self._bwm.walkmesh_type == BWMType.AreaModel:
@@ -604,7 +639,9 @@ class BWMAsciiWriter(ResourceWriter):
                         face_idx = next((i for i, f in enumerate(all_faces) if f is aabb.face), -1)
 
                     # Write AABB line: min_x min_y min_z max_x max_y max_z face_index
-                    self._writer.write_string(f"        {bb_min.x} {bb_min.y} {bb_min.z} {bb_max.x} {bb_max.y} {bb_max.z} {face_idx}\n")
+                    self._writer.write_string(
+                        f"        {bb_min.x} {bb_min.y} {bb_min.z} {bb_max.x} {bb_max.y} {bb_max.z} {face_idx}\n"
+                    )
 
         # Write "endnode" footer
         self._writer.write_string("endnode\n")

@@ -3,6 +3,7 @@
 
 Run from repository root: python helper_scripts/wiki_scripts/fix_ini_comments_in_wiki.py
 """
+
 from __future__ import annotations
 
 import os

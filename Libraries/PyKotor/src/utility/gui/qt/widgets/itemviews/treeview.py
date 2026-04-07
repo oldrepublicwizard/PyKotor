@@ -31,14 +31,23 @@ class RobustTreeView(RobustAbstractItemView, QTreeView):
         # For PySide6 compatibility with multiple inheritance
         return QTreeView.__new__(cls)
 
-    def __init__(self, parent: QWidget | None = None, *args, use_columns: bool = False, should_call_qt_init: bool = True, **kwargs):
+    def __init__(
+        self,
+        parent: QWidget | None = None,
+        *args,
+        use_columns: bool = False,
+        should_call_qt_init: bool = True,
+        **kwargs,
+    ):
         if should_call_qt_init:
             QTreeView.__init__(self, parent)
         self.branch_connectors_enabled: bool = False
         self.header_visible: bool = False
         RobustAbstractItemView.__init__(self, parent, *args, **kwargs)
         self.header().setContextMenuPolicy(Qt.ContextMenuPolicy.CustomContextMenu)
-        self.header().customContextMenuRequested.connect(lambda pos: self.show_header_context_menu(pos, self.header()))
+        self.header().customContextMenuRequested.connect(
+            lambda pos: self.show_header_context_menu(pos, self.header())
+        )
         if not use_columns:
             self.set_horizontal_scrollbar(state=False)
 
@@ -54,20 +63,58 @@ class RobustTreeView(RobustAbstractItemView, QTreeView):
         self._add_simple_action(
             tree_view_menu,
             "Resize Column To Contents",
-            lambda: None if self.model() is None else (self.resizeColumnToContents(i) for i in range(cast("QAbstractItemModel", self.model()).columnCount())),
+            lambda: None
+            if self.model() is None
+            else (
+                self.resizeColumnToContents(i)
+                for i in range(cast("QAbstractItemModel", self.model()).columnCount())
+            ),
         )
         self._add_simple_action(tree_view_menu, "Expand All", self.expandAll)
         self._add_simple_action(tree_view_menu, "Collapse All", self.collapseAll)
-        self._add_simple_action(tree_view_menu, "Expand To Depth", lambda: self.expandToDepth(3))  # Default depth of 3
+        self._add_simple_action(
+            tree_view_menu, "Expand To Depth", lambda: self.expandToDepth(3)
+        )  # Default depth of 3
         self._add_simple_action(tree_view_menu, "Reset Indentation", self.resetIndentation)
         self._add_simple_action(tree_view_menu, "Select All", self.selectAll)
 
         # Settings submenu items
-        self._add_menu_action(advanced_menu, "Uniform Row Heights", self.uniformRowHeights, self.setUniformRowHeights, "uniformRowHeights")
-        self._add_menu_action(tree_view_menu, "Show/Hide Branch Connectors", self.branch_connectors_drawn, self.draw_connectors, "drawBranchConnectors")
-        self._add_menu_action(tree_view_menu, "Expand Items on Double Click", self.expandsOnDoubleClick, self.setExpandsOnDoubleClick, "expandsOnDoubleClick")
-        self._add_menu_action(tree_view_menu, "Tree Indentation", self.indentation, self.setIndentation, "indentation", param_type=int)
-        self._add_menu_action(tree_view_menu, "Show Horizontal Scrollbar", lambda: self.header_visible, self.set_horizontal_scrollbar, "horizontalScrollBarVisible")
+        self._add_menu_action(
+            advanced_menu,
+            "Uniform Row Heights",
+            self.uniformRowHeights,
+            self.setUniformRowHeights,
+            "uniformRowHeights",
+        )
+        self._add_menu_action(
+            tree_view_menu,
+            "Show/Hide Branch Connectors",
+            self.branch_connectors_drawn,
+            self.draw_connectors,
+            "drawBranchConnectors",
+        )
+        self._add_menu_action(
+            tree_view_menu,
+            "Expand Items on Double Click",
+            self.expandsOnDoubleClick,
+            self.setExpandsOnDoubleClick,
+            "expandsOnDoubleClick",
+        )
+        self._add_menu_action(
+            tree_view_menu,
+            "Tree Indentation",
+            self.indentation,
+            self.setIndentation,
+            "indentation",
+            param_type=int,
+        )
+        self._add_menu_action(
+            tree_view_menu,
+            "Show Horizontal Scrollbar",
+            lambda: self.header_visible,
+            self.set_horizontal_scrollbar,
+            "horizontalScrollBarVisible",
+        )
         self._add_menu_action(
             tree_view_menu,
             "Vertical Spacing",
@@ -76,41 +123,125 @@ class RobustTreeView(RobustAbstractItemView, QTreeView):
             "verticalSpacing",
             param_type=int,
         )
-        self._add_menu_action(tree_view_menu, "Word Wrap", self.wordWrap, self.setWordWrap, "wordWrap")
-        self._add_menu_action(advanced_menu, "All Columns Show Focus", self.allColumnsShowFocus, self.setAllColumnsShowFocus, "allColumnsShowFocus")
-        self._add_menu_action(tree_view_menu, "Animated", self.isAnimated, self.setAnimated, "animated")
-        self._add_menu_action(tree_view_menu, "Sorting Enabled", self.isSortingEnabled, self.setSortingEnabled, "sortingEnabled")
-        self._add_menu_action(advanced_menu, "Items Expandable", self.itemsExpandable, self.setItemsExpandable, "itemsExpandable")
-        self._add_menu_action(advanced_menu, "Root Is Decorated", self.rootIsDecorated, self.setRootIsDecorated, "rootIsDecorated")
-        self._add_menu_action(advanced_menu, "Header Hidden", self.isHeaderHidden, self.setHeaderHidden, "headerHidden")
-        self._add_menu_action(tree_view_menu, "Auto Expand Delay", self.autoExpandDelay, self.setAutoExpandDelay, "autoExpandDelay", param_type=int)
-        self._add_menu_action(advanced_menu, "Tree Position", self.treePosition, self.setTreePosition, "treePosition", param_type=int)
+        self._add_menu_action(
+            tree_view_menu, "Word Wrap", self.wordWrap, self.setWordWrap, "wordWrap"
+        )
+        self._add_menu_action(
+            advanced_menu,
+            "All Columns Show Focus",
+            self.allColumnsShowFocus,
+            self.setAllColumnsShowFocus,
+            "allColumnsShowFocus",
+        )
+        self._add_menu_action(
+            tree_view_menu, "Animated", self.isAnimated, self.setAnimated, "animated"
+        )
+        self._add_menu_action(
+            tree_view_menu,
+            "Sorting Enabled",
+            self.isSortingEnabled,
+            self.setSortingEnabled,
+            "sortingEnabled",
+        )
+        self._add_menu_action(
+            advanced_menu,
+            "Items Expandable",
+            self.itemsExpandable,
+            self.setItemsExpandable,
+            "itemsExpandable",
+        )
+        self._add_menu_action(
+            advanced_menu,
+            "Root Is Decorated",
+            self.rootIsDecorated,
+            self.setRootIsDecorated,
+            "rootIsDecorated",
+        )
+        self._add_menu_action(
+            advanced_menu,
+            "Header Hidden",
+            self.isHeaderHidden,
+            self.setHeaderHidden,
+            "headerHidden",
+        )
+        self._add_menu_action(
+            tree_view_menu,
+            "Auto Expand Delay",
+            self.autoExpandDelay,
+            self.setAutoExpandDelay,
+            "autoExpandDelay",
+            param_type=int,
+        )
+        self._add_menu_action(
+            advanced_menu,
+            "Tree Position",
+            self.treePosition,
+            self.setTreePosition,
+            "treePosition",
+            param_type=int,
+        )
 
         return menu
 
     def build_header_context_menu(self, parent: QWidget | None = None) -> QMenu:
         header_menu = QMenu("Header", self if parent is None else parent)
-        self._add_simple_action(header_menu, "Toggle Visibility", lambda: self.header().setVisible(not self.header().isVisible()))
-        self._add_simple_action(header_menu, "Toggle First Section Movable", lambda: self.header().setFirstSectionMovable(not self.header().isFirstSectionMovable()))
-        self._add_simple_action(header_menu, "Toggle Sections Movable", lambda: self.header().setSectionsMovable(not self.header().sectionsMovable()))
-        self._add_simple_action(header_menu, "Toggle Sections Clickable", lambda: self.header().setSectionsClickable(not self.header().sectionsClickable()))
-        self._add_simple_action(header_menu, "Toggle Stretch Last Section", lambda: self.header().setStretchLastSection(not self.header().stretchLastSection()))
-        self._add_simple_action(header_menu, "Toggle Cascading Section Resizes", lambda: self.header().setCascadingSectionResizes(not self.header().cascadingSectionResizes()))
-        self._add_simple_action(header_menu, "Toggle Highlight Sections", lambda: self.header().setHighlightSections(not self.header().highlightSections()))
+        self._add_simple_action(
+            header_menu,
+            "Toggle Visibility",
+            lambda: self.header().setVisible(not self.header().isVisible()),
+        )
+        self._add_simple_action(
+            header_menu,
+            "Toggle First Section Movable",
+            lambda: self.header().setFirstSectionMovable(not self.header().isFirstSectionMovable()),
+        )
+        self._add_simple_action(
+            header_menu,
+            "Toggle Sections Movable",
+            lambda: self.header().setSectionsMovable(not self.header().sectionsMovable()),
+        )
+        self._add_simple_action(
+            header_menu,
+            "Toggle Sections Clickable",
+            lambda: self.header().setSectionsClickable(not self.header().sectionsClickable()),
+        )
+        self._add_simple_action(
+            header_menu,
+            "Toggle Stretch Last Section",
+            lambda: self.header().setStretchLastSection(not self.header().stretchLastSection()),
+        )
+        self._add_simple_action(
+            header_menu,
+            "Toggle Cascading Section Resizes",
+            lambda: self.header().setCascadingSectionResizes(
+                not self.header().cascadingSectionResizes()
+            ),
+        )
+        self._add_simple_action(
+            header_menu,
+            "Toggle Highlight Sections",
+            lambda: self.header().setHighlightSections(not self.header().highlightSections()),
+        )
 
         # Resize modes submenu
         resize_mode_menu = header_menu.addMenu("Resize Mode")
         model: QAbstractItemModel | None = self.model()
         if model is not None:
             for i in range(self.header().count()):
-                section_name = model.headerData(i, Qt.Orientation.Horizontal, Qt.ItemDataRole.DisplayRole)
+                section_name = model.headerData(
+                    i, Qt.Orientation.Horizontal, Qt.ItemDataRole.DisplayRole
+                )
                 self._add_exclusive_menu_action(
                     resize_mode_menu,
                     f"[{i}] {section_name}",
                     lambda idx=i: self.header().sectionResizeMode(idx),
                     (lambda mode, idx=i: self.header().setSectionResizeMode(idx, mode))
                     if qtpy.QT5
-                    else (lambda mode, idx=i: self.header().setSectionResizeMode(idx, QHeaderView.ResizeMode(mode))),
+                    else (
+                        lambda mode, idx=i: self.header().setSectionResizeMode(
+                            idx, QHeaderView.ResizeMode(mode)
+                        )
+                    ),
                     options={
                         "Interactive": QHeaderView.ResizeMode.Interactive,
                         "Fixed": QHeaderView.ResizeMode.Fixed,
@@ -122,15 +253,32 @@ class RobustTreeView(RobustAbstractItemView, QTreeView):
 
         # Sizing options
         sizing_menu = header_menu.addMenu("Sizing")
-        self._add_simple_action(sizing_menu, "Reset Default Section Size", self.header().resetDefaultSectionSize)
+        self._add_simple_action(
+            sizing_menu, "Reset Default Section Size", self.header().resetDefaultSectionSize
+        )
         self._add_menu_action(
-            sizing_menu, "Set Maximum Section Size", self.header().maximumSectionSize, self.header().setMaximumSectionSize, "maximumSectionSize", param_type=int,
+            sizing_menu,
+            "Set Maximum Section Size",
+            self.header().maximumSectionSize,
+            self.header().setMaximumSectionSize,
+            "maximumSectionSize",
+            param_type=int,
         )  # noqa: E501
         self._add_menu_action(
-            sizing_menu, "Set Minimum Section Size", self.header().minimumSectionSize, self.header().setMinimumSectionSize, "minimumSectionSize", param_type=int,
+            sizing_menu,
+            "Set Minimum Section Size",
+            self.header().minimumSectionSize,
+            self.header().setMinimumSectionSize,
+            "minimumSectionSize",
+            param_type=int,
         )  # noqa: E501
         self._add_menu_action(
-            sizing_menu, "Set Default Section Size", self.header().defaultSectionSize, self.header().setDefaultSectionSize, "defaultSectionSize", param_type=int,
+            sizing_menu,
+            "Set Default Section Size",
+            self.header().defaultSectionSize,
+            self.header().setDefaultSectionSize,
+            "defaultSectionSize",
+            param_type=int,
         )  # noqa: E501
         self._add_menu_action(
             sizing_menu,
@@ -147,29 +295,55 @@ class RobustTreeView(RobustAbstractItemView, QTreeView):
             "Alignment",
             self.header().defaultAlignment,
             self.header().setDefaultAlignment,
-            options={"Left": Qt.AlignmentFlag.AlignLeft, "Center": Qt.AlignmentFlag.AlignCenter, "Right": Qt.AlignmentFlag.AlignRight},
+            options={
+                "Left": Qt.AlignmentFlag.AlignLeft,
+                "Center": Qt.AlignmentFlag.AlignCenter,
+                "Right": Qt.AlignmentFlag.AlignRight,
+            },
             settings_key="headerDefaultAlignment",
             param_type=Qt.AlignmentFlag,
         )
 
         # Sorting
         sorting_menu = header_menu.addMenu("Sorting")
-        self._add_simple_action(sorting_menu, "Toggle Sort Indicator", lambda: self.header().setSortIndicatorShown(not self.header().isSortIndicatorShown()))
+        self._add_simple_action(
+            sorting_menu,
+            "Toggle Sort Indicator",
+            lambda: self.header().setSortIndicatorShown(not self.header().isSortIndicatorShown()),
+        )
         sort_order_menu = sorting_menu.addMenu("Sort Order")
         self._add_exclusive_menu_action(
             sort_order_menu,
             "Sort Order",
             self.header().sortIndicatorOrder,
-            lambda order: self.header().setSortIndicator(self.header().sortIndicatorSection(), order),
-            options={"Ascending": Qt.SortOrder.AscendingOrder, "Descending": Qt.SortOrder.DescendingOrder},
+            lambda order: self.header().setSortIndicator(
+                self.header().sortIndicatorSection(), order
+            ),
+            options={
+                "Ascending": Qt.SortOrder.AscendingOrder,
+                "Descending": Qt.SortOrder.DescendingOrder,
+            },
             settings_key="headerSortOrder",
             param_type=Qt.SortOrder,
         )
 
         # Miscellaneous
-        self._add_simple_action(header_menu, "Toggle Highlight Sections", lambda: self.header().setHighlightSections(not self.header().highlightSections()))
-        self._add_menu_action(header_menu, "Set Offset", lambda: self.header().offset(), lambda x: self.header().setOffset(x), settings_key="headerOffset", param_type=int)
-        self._add_simple_action(header_menu, "Set Offset to Last Section", self.header().setOffsetToLastSection)
+        self._add_simple_action(
+            header_menu,
+            "Toggle Highlight Sections",
+            lambda: self.header().setHighlightSections(not self.header().highlightSections()),
+        )
+        self._add_menu_action(
+            header_menu,
+            "Set Offset",
+            lambda: self.header().offset(),
+            lambda x: self.header().setOffset(x),
+            settings_key="headerOffset",
+            param_type=int,
+        )
+        self._add_simple_action(
+            header_menu, "Set Offset to Last Section", self.header().setOffsetToLastSection
+        )
         self._add_menu_action(
             header_menu,
             "Set Offset to Section Position",
@@ -183,7 +357,13 @@ class RobustTreeView(RobustAbstractItemView, QTreeView):
         section_menu = header_menu.addMenu("Sections")
         for i in range(self.header().count()):
             section_submenu = section_menu.addMenu(f"Section {i}")
-            self._add_simple_action(section_submenu, "Hide/Show", lambda idx=i: self.header().setSectionHidden(idx, not self.header().isSectionHidden(idx)))
+            self._add_simple_action(
+                section_submenu,
+                "Hide/Show",
+                lambda idx=i: self.header().setSectionHidden(
+                    idx, not self.header().isSectionHidden(idx)
+                ),
+            )
             self._add_menu_action(
                 section_submenu,
                 "Resize",
@@ -203,7 +383,9 @@ class RobustTreeView(RobustAbstractItemView, QTreeView):
 
         return header_menu
 
-    def _enable_horizontal_scrollbar_when_header_single_column_and_hidden(self, *, use_deprecated_method: bool = False):
+    def _enable_horizontal_scrollbar_when_header_single_column_and_hidden(
+        self, *, use_deprecated_method: bool = False
+    ):
         """Fixes the horizontal scrollbar when the header is single column and hidden.
 
         This solution was pulled from stackoverflow <insert link here>
@@ -424,7 +606,9 @@ if __name__ == "__main__":
             self.setCentralWidget(central_widget)
             layout = QVBoxLayout(central_widget)
 
-            self.tree_view: RobustTreeView = RobustTreeView(use_columns=True, parent=self.centralWidget())
+            self.tree_view: RobustTreeView = RobustTreeView(
+                use_columns=True, parent=self.centralWidget()
+            )
             layout.addWidget(self.tree_view)
 
             # Create a model and set it to the tree view

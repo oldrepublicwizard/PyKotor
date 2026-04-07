@@ -169,7 +169,9 @@ class TestDiffCommand:
         """Test GFF file vs GFF file comparison."""
         file1, file2 = self.create_test_gff_files(tmp_path)
 
-        args = Namespace(path1=str(file1), path2=str(file2), format="unified", generate_ini=False, verbose=False)
+        args = Namespace(
+            path1=str(file1), path2=str(file2), format="unified", generate_ini=False, verbose=False
+        )
 
         logger = RobustLogger()
 
@@ -200,7 +202,9 @@ class TestDiffCommand:
         write_gff(gff, file1)
         write_gff(gff, file2)
 
-        args = Namespace(path1=str(file1), path2=str(file2), format="unified", generate_ini=False, verbose=False)
+        args = Namespace(
+            path1=str(file1), path2=str(file2), format="unified", generate_ini=False, verbose=False
+        )
 
         logger = RobustLogger()
 
@@ -217,7 +221,9 @@ class TestDiffCommand:
         """Test 2DA file vs 2DA file comparison."""
         file1, file2 = self.create_test_2da_files(tmp_path)
 
-        args = Namespace(path1=str(file1), path2=str(file2), format="unified", generate_ini=False, verbose=False)
+        args = Namespace(
+            path1=str(file1), path2=str(file2), format="unified", generate_ini=False, verbose=False
+        )
 
         logger = RobustLogger()
 
@@ -239,7 +245,9 @@ class TestDiffCommand:
         file1.write_text("line 1\nline 2\nline 3\n")
         file2.write_text("line 1\nline 2 modified\nline 3\n")
 
-        args = Namespace(path1=str(file1), path2=str(file2), format="unified", generate_ini=False, verbose=False)
+        args = Namespace(
+            path1=str(file1), path2=str(file2), format="unified", generate_ini=False, verbose=False
+        )
 
         logger = RobustLogger()
 
@@ -261,7 +269,9 @@ class TestDiffCommand:
         """Test verbose output mode."""
         file1, file2 = self.create_test_gff_files(tmp_path)
 
-        args = Namespace(path1=str(file1), path2=str(file2), format="unified", generate_ini=False, verbose=True)
+        args = Namespace(
+            path1=str(file1), path2=str(file2), format="unified", generate_ini=False, verbose=True
+        )
 
         logger = RobustLogger()
 
@@ -285,7 +295,13 @@ class TestDiffCommand:
         gff.root.set_string("TemplateResRef", "test")
         write_gff(gff, existing_file)
 
-        args = Namespace(path1=str(existing_file), path2=str(missing_file), format="unified", generate_ini=False, verbose=False)
+        args = Namespace(
+            path1=str(existing_file),
+            path2=str(missing_file),
+            format="unified",
+            generate_ini=False,
+            verbose=False,
+        )
 
         logger = RobustLogger()
 
@@ -302,7 +318,9 @@ class TestDiffCommand:
         """Test that --generate-ini gives error for individual files."""
         file1, file2 = self.create_test_gff_files(tmp_path)
 
-        args = Namespace(path1=str(file1), path2=str(file2), format="unified", generate_ini=True, verbose=False)
+        args = Namespace(
+            path1=str(file1), path2=str(file2), format="unified", generate_ini=True, verbose=False
+        )
 
         logger = RobustLogger()
 
@@ -333,7 +351,9 @@ class TestDiffFormats:
         """Test unified diff format."""
         file1, file2 = self.create_test_text_files(tmp_path)
 
-        args = Namespace(path1=str(file1), path2=str(file2), format="unified", generate_ini=False, verbose=False)
+        args = Namespace(
+            path1=str(file1), path2=str(file2), format="unified", generate_ini=False, verbose=False
+        )
 
         logger = RobustLogger()
 
@@ -351,7 +371,9 @@ class TestDiffFormats:
         """Test context diff format."""
         file1, file2 = self.create_test_text_files(tmp_path)
 
-        args = Namespace(path1=str(file1), path2=str(file2), format="context", generate_ini=False, verbose=False)
+        args = Namespace(
+            path1=str(file1), path2=str(file2), format="context", generate_ini=False, verbose=False
+        )
 
         logger = RobustLogger()
 
@@ -528,7 +550,9 @@ class TestPathResolution:
         assert isinstance(resolved, Path)
         assert resolved == rim_file
 
-    def test_resolve_path_relative_case_mismatch(self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch):
+    def test_resolve_path_relative_case_mismatch(
+        self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+    ):
         """Demonstrate that _resolve_path uses plain Path semantics for case mismatches."""
         if sys.platform == "win32":
             pytest.skip("Case-mismatch existence semantics differ on Windows filesystems.")
@@ -555,7 +579,15 @@ class TestDiffCommand:
         file1.write_text(content)
         file2.write_text(content)
 
-        args = Namespace(path1=str(file1), path2=str(file2), output=None, context=3, verbose=False, debug=False, no_color=False)
+        args = Namespace(
+            path1=str(file1),
+            path2=str(file2),
+            output=None,
+            context=3,
+            verbose=False,
+            debug=False,
+            no_color=False,
+        )
         logger = RobustLogger()
         result = cmd_diff(args, logger)
         # Should return 0 for identical files
@@ -568,7 +600,15 @@ class TestDiffCommand:
         file1.write_text("content 1")
         file2.write_text("content 2")
 
-        args = Namespace(path1=str(file1), path2=str(file2), output=None, context=3, verbose=False, debug=False, no_color=False)
+        args = Namespace(
+            path1=str(file1),
+            path2=str(file2),
+            output=None,
+            context=3,
+            verbose=False,
+            debug=False,
+            no_color=False,
+        )
         logger = RobustLogger()
         result = cmd_diff(args, logger)
         # Should return 0 (success) even if files differ (diff shows differences)
@@ -584,7 +624,15 @@ class TestDiffCommand:
         (folder1 / "file1.txt").write_text("content 1")
         (folder2 / "file1.txt").write_text("content 2")
 
-        args = Namespace(path1=str(folder1), path2=str(folder2), output=None, context=3, verbose=False, debug=False, no_color=False)
+        args = Namespace(
+            path1=str(folder1),
+            path2=str(folder2),
+            output=None,
+            context=3,
+            verbose=False,
+            debug=False,
+            no_color=False,
+        )
         logger = RobustLogger()
         result = cmd_diff(args, logger)
         # Should complete without error
@@ -600,7 +648,15 @@ class TestDiffCommand:
         write_rim(rim_obj1, rim1)
         write_rim(rim_obj2, rim2)
 
-        args = Namespace(path1=str(rim1), path2=str(rim2), output=None, context=3, verbose=False, debug=False, no_color=False)
+        args = Namespace(
+            path1=str(rim1),
+            path2=str(rim2),
+            output=None,
+            context=3,
+            verbose=False,
+            debug=False,
+            no_color=False,
+        )
         logger = RobustLogger()
         result = cmd_diff(args, logger)
         # Should complete without error
@@ -615,7 +671,15 @@ class TestDiffCommand:
         test_file = tmp_path / "test.txt"
         test_file.write_text("test")
 
-        args = Namespace(path1=str(install_dir), path2=str(test_file), output=None, context=3, verbose=False, debug=False, no_color=False)
+        args = Namespace(
+            path1=str(install_dir),
+            path2=str(test_file),
+            output=None,
+            context=3,
+            verbose=False,
+            debug=False,
+            no_color=False,
+        )
         logger = RobustLogger()
         # This may fail if installation is invalid, but should handle gracefully
         result = cmd_diff(args, logger)
@@ -631,7 +695,15 @@ class TestDiffCommand:
         rim = RIM()
         write_rim(rim, rim_file)
 
-        args = Namespace(path1=str(folder), path2=str(rim_file), output=None, context=3, verbose=False, debug=False, no_color=False)
+        args = Namespace(
+            path1=str(folder),
+            path2=str(rim_file),
+            output=None,
+            context=3,
+            verbose=False,
+            debug=False,
+            no_color=False,
+        )
         logger = RobustLogger()
         result = cmd_diff(args, logger)
         # Should complete without error
@@ -644,7 +716,15 @@ class TestDiffCommand:
         file1.write_text("content 1")
         file2.write_text("content 2")
 
-        args = Namespace(path1=str(file1), path2=str(file2), output=None, context=3, verbose=True, debug=False, no_color=False)
+        args = Namespace(
+            path1=str(file1),
+            path2=str(file2),
+            output=None,
+            context=3,
+            verbose=True,
+            debug=False,
+            no_color=False,
+        )
         logger = RobustLogger()
         result = cmd_diff(args, logger)
         # Should complete
@@ -658,7 +738,15 @@ class TestDiffCommand:
         file2.write_text("content 2")
 
         output_file = tmp_path / "diff_output.txt"
-        args = Namespace(path1=str(file1), path2=str(file2), output=str(output_file), context=3, format="unified", generate_ini=False, verbose=False)
+        args = Namespace(
+            path1=str(file1),
+            path2=str(file2),
+            output=str(output_file),
+            context=3,
+            format="unified",
+            generate_ini=False,
+            verbose=False,
+        )
         logger = RobustLogger()
         result = cmd_diff(args, logger)
         # Should return 1 (different files) but complete successfully
@@ -706,7 +794,15 @@ class TestCompositeModules:
         write_rim(rim1, module1_dir / "test.rim")
         write_rim(rim2, module2_dir / "test.rim")
 
-        args = Namespace(path1=str(module1_dir / "test.rim"), path2=str(module2_dir / "test.rim"), output=None, context=3, verbose=False, debug=False, no_color=False)
+        args = Namespace(
+            path1=str(module1_dir / "test.rim"),
+            path2=str(module2_dir / "test.rim"),
+            output=None,
+            context=3,
+            verbose=False,
+            debug=False,
+            no_color=False,
+        )
         logger = RobustLogger()
         result = cmd_diff(args, logger)
         # Should complete without error
@@ -729,7 +825,15 @@ class TestOutputModes:
         file2.write_text("line 1\nline 2 modified\nline 3")
 
         args = Namespace(
-            path1=str(file1), path2=str(file2), output=None, format="unified", output_mode="normal", verbose=False, debug=False, no_color=False, generate_ini=False
+            path1=str(file1),
+            path2=str(file2),
+            output=None,
+            format="unified",
+            output_mode="normal",
+            verbose=False,
+            debug=False,
+            no_color=False,
+            generate_ini=False,
         )
         logger = RobustLogger()
         result = cmd_diff(args, logger)
@@ -766,7 +870,15 @@ class TestOutputModes:
         write_rim(rim2, rim2_path)
 
         args = Namespace(
-            path1=str(rim1_path), path2=str(rim2_path), output=None, format="unified", output_mode="normal", verbose=False, debug=False, no_color=False, generate_ini=False
+            path1=str(rim1_path),
+            path2=str(rim2_path),
+            output=None,
+            format="unified",
+            output_mode="normal",
+            verbose=False,
+            debug=False,
+            no_color=False,
+            generate_ini=False,
         )
         logger = RobustLogger()
         result = cmd_diff(args, logger)
@@ -787,7 +899,15 @@ class TestOutputModes:
         file2.write_text("line 1\nline 2 modified\nline 3")
 
         args = Namespace(
-            path1=str(file1), path2=str(file2), output=None, format="unified", output_mode="quiet", verbose=False, debug=False, no_color=False, generate_ini=False
+            path1=str(file1),
+            path2=str(file2),
+            output=None,
+            format="unified",
+            output_mode="quiet",
+            verbose=False,
+            debug=False,
+            no_color=False,
+            generate_ini=False,
         )
         logger = RobustLogger()
         result = cmd_diff(args, logger)
@@ -804,7 +924,17 @@ class TestOutputModes:
         file1.write_text("line 1\nline 2\nline 3")
         file2.write_text("line 1\nline 2 modified\nline 3")
 
-        args = Namespace(path1=str(file1), path2=str(file2), output=None, format="unified", output_mode="full", verbose=False, debug=False, no_color=False, generate_ini=False)
+        args = Namespace(
+            path1=str(file1),
+            path2=str(file2),
+            output=None,
+            format="unified",
+            output_mode="full",
+            verbose=False,
+            debug=False,
+            no_color=False,
+            generate_ini=False,
+        )
         logger = RobustLogger()
         result = cmd_diff(args, logger)
         assert result == 1
@@ -859,7 +989,15 @@ class TestInstallationErrorHandling:
         nonexistent_path = tmp_path / "does_not_exist.txt"
 
         args = Namespace(
-            path1=str(nonexistent_path), path2=str(tmp_path), output=None, format="unified", output_mode="full", verbose=False, debug=False, no_color=False, generate_ini=False
+            path1=str(nonexistent_path),
+            path2=str(tmp_path),
+            output=None,
+            format="unified",
+            output_mode="full",
+            verbose=False,
+            debug=False,
+            no_color=False,
+            generate_ini=False,
         )
         logger = RobustLogger()
         result = cmd_diff(args, logger)
@@ -874,7 +1012,17 @@ class TestInstallationErrorHandling:
         file1.write_text("content1")
         file2.write_text("content2")
 
-        args = Namespace(path1=str(file1), path2=str(file2), output=None, format="unified", output_mode="full", verbose=False, debug=False, no_color=False, generate_ini=True)
+        args = Namespace(
+            path1=str(file1),
+            path2=str(file2),
+            output=None,
+            format="unified",
+            output_mode="full",
+            verbose=False,
+            debug=False,
+            no_color=False,
+            generate_ini=True,
+        )
         logger = RobustLogger()
         result = cmd_diff(args, logger)
 
@@ -895,7 +1043,15 @@ class TestComprehensivePathCombinations:
         (folder_path / "test.txt").write_text("content")
 
         args = Namespace(
-            path1=str(file_path), path2=str(folder_path), output=None, format="unified", output_mode="full", verbose=False, debug=False, no_color=False, generate_ini=False
+            path1=str(file_path),
+            path2=str(folder_path),
+            output=None,
+            format="unified",
+            output_mode="full",
+            verbose=False,
+            debug=False,
+            no_color=False,
+            generate_ini=False,
         )
         logger = RobustLogger()
         result = cmd_diff(args, logger)
@@ -913,7 +1069,15 @@ class TestComprehensivePathCombinations:
         (folder_path / "test.txt").write_text("content")
 
         args = Namespace(
-            path1=str(rim_path), path2=str(folder_path), output=None, format="unified", output_mode="full", verbose=False, debug=False, no_color=False, generate_ini=False
+            path1=str(rim_path),
+            path2=str(folder_path),
+            output=None,
+            format="unified",
+            output_mode="full",
+            verbose=False,
+            debug=False,
+            no_color=False,
+            generate_ini=False,
         )
         logger = RobustLogger()
         result = cmd_diff(args, logger)
@@ -930,7 +1094,15 @@ class TestComprehensivePathCombinations:
         regular_file.write_text("content")
 
         args = Namespace(
-            path1=str(module_piece), path2=str(regular_file), output=None, format="unified", output_mode="full", verbose=False, debug=False, no_color=False, generate_ini=False
+            path1=str(module_piece),
+            path2=str(regular_file),
+            output=None,
+            format="unified",
+            output_mode="full",
+            verbose=False,
+            debug=False,
+            no_color=False,
+            generate_ini=False,
         )
         logger = RobustLogger()
         result = cmd_diff(args, logger)
@@ -948,7 +1120,15 @@ class TestComprehensivePathCombinations:
         (folder_path / "test.txt").write_text("content")
 
         args = Namespace(
-            path1=str(folder_path), path2=str(module_piece), output=None, format="unified", output_mode="full", verbose=False, debug=False, no_color=False, generate_ini=False
+            path1=str(folder_path),
+            path2=str(module_piece),
+            output=None,
+            format="unified",
+            output_mode="full",
+            verbose=False,
+            debug=False,
+            no_color=False,
+            generate_ini=False,
         )
         logger = RobustLogger()
         result = cmd_diff(args, logger)
@@ -970,7 +1150,15 @@ class TestComprehensivePathCombinations:
         write_rim(rim, rim_path)
 
         args = Namespace(
-            path1=str(erf_path), path2=str(rim_path), output=None, format="unified", output_mode="full", verbose=False, debug=False, no_color=False, generate_ini=False
+            path1=str(erf_path),
+            path2=str(rim_path),
+            output=None,
+            format="unified",
+            output_mode="full",
+            verbose=False,
+            debug=False,
+            no_color=False,
+            generate_ini=False,
         )
         logger = RobustLogger()
         result = cmd_diff(args, logger)
@@ -992,7 +1180,15 @@ class TestComprehensivePathCombinations:
         write_erf(erf, erf_path)
 
         args = Namespace(
-            path1=str(mod_path), path2=str(erf_path), output=None, format="unified", output_mode="full", verbose=False, debug=False, no_color=False, generate_ini=False
+            path1=str(mod_path),
+            path2=str(erf_path),
+            output=None,
+            format="unified",
+            output_mode="full",
+            verbose=False,
+            debug=False,
+            no_color=False,
+            generate_ini=False,
         )
         logger = RobustLogger()
         result = cmd_diff(args, logger)
@@ -1010,7 +1206,15 @@ class TestComprehensivePathCombinations:
         write_gff(gff, binary_file)
 
         args = Namespace(
-            path1=str(text_file), path2=str(binary_file), output=None, format="unified", output_mode="full", verbose=False, debug=False, no_color=False, generate_ini=False
+            path1=str(text_file),
+            path2=str(binary_file),
+            output=None,
+            format="unified",
+            output_mode="full",
+            verbose=False,
+            debug=False,
+            no_color=False,
+            generate_ini=False,
         )
         logger = RobustLogger()
         result = cmd_diff(args, logger)
@@ -1032,7 +1236,15 @@ class TestComprehensivePathCombinations:
         (folder2 / "subdir" / "file.txt").write_text("content2")
 
         args = Namespace(
-            path1=str(folder1), path2=str(folder2), output=None, format="unified", output_mode="full", verbose=False, debug=False, no_color=False, generate_ini=False
+            path1=str(folder1),
+            path2=str(folder2),
+            output=None,
+            format="unified",
+            output_mode="full",
+            verbose=False,
+            debug=False,
+            no_color=False,
+            generate_ini=False,
         )
         logger = RobustLogger()
         result = cmd_diff(args, logger)
@@ -1056,7 +1268,15 @@ class TestComprehensivePathCombinations:
         write_rim(rim2, populated_rim)
 
         args = Namespace(
-            path1=str(empty_rim), path2=str(populated_rim), output=None, format="unified", output_mode="full", verbose=False, debug=False, no_color=False, generate_ini=False
+            path1=str(empty_rim),
+            path2=str(populated_rim),
+            output=None,
+            format="unified",
+            output_mode="full",
+            verbose=False,
+            debug=False,
+            no_color=False,
+            generate_ini=False,
         )
         logger = RobustLogger()
         result = cmd_diff(args, logger)
@@ -1071,14 +1291,25 @@ class TestDiffWithTestFiles:
         """Test diff between GFF files from test_files."""
         import pathlib
 
-        test_files_dir = pathlib.Path(__file__).parents[4] / "Libraries" / "PyKotor" / "tests" / "test_files"
+        test_files_dir = (
+            pathlib.Path(__file__).parents[4] / "Libraries" / "PyKotor" / "tests" / "test_files"
+        )
 
         # Find GFF files
         gff_files = list(test_files_dir.glob("*.gff"))
         if len(gff_files) >= 2:
             file1, file2 = gff_files[:2]
 
-            args = Namespace(path1=str(file1), path2=str(file2), format="unified", output_mode="full", generate_ini=False, verbose=False, output=None, context=3)
+            args = Namespace(
+                path1=str(file1),
+                path2=str(file2),
+                format="unified",
+                output_mode="full",
+                generate_ini=False,
+                verbose=False,
+                output=None,
+                context=3,
+            )
 
             logger = RobustLogger()
             result = cmd_diff(args, logger)
@@ -1089,14 +1320,25 @@ class TestDiffWithTestFiles:
         """Test diff between 2DA files from test_files."""
         import pathlib
 
-        test_files_dir = pathlib.Path(__file__).parents[4] / "Libraries" / "PyKotor" / "tests" / "test_files"
+        test_files_dir = (
+            pathlib.Path(__file__).parents[4] / "Libraries" / "PyKotor" / "tests" / "test_files"
+        )
 
         # Find 2DA files
         da_files = list(test_files_dir.glob("*.2da"))
         if len(da_files) >= 2:
             file1, file2 = da_files[:2]
 
-            args = Namespace(path1=str(file1), path2=str(file2), format="unified", output_mode="normal", generate_ini=False, verbose=False, output=None, context=3)
+            args = Namespace(
+                path1=str(file1),
+                path2=str(file2),
+                format="unified",
+                output_mode="normal",
+                generate_ini=False,
+                verbose=False,
+                output=None,
+                context=3,
+            )
 
             logger = RobustLogger()
             result = cmd_diff(args, logger)
@@ -1107,14 +1349,25 @@ class TestDiffWithTestFiles:
         """Test diff between TLK files from test_files."""
         import pathlib
 
-        test_files_dir = pathlib.Path(__file__).parents[4] / "Libraries" / "PyKotor" / "tests" / "test_files"
+        test_files_dir = (
+            pathlib.Path(__file__).parents[4] / "Libraries" / "PyKotor" / "tests" / "test_files"
+        )
 
         # Find TLK files
         tlk_files = list(test_files_dir.glob("*.tlk"))
         if len(tlk_files) >= 2:
             file1, file2 = tlk_files[:2]
 
-            args = Namespace(path1=str(file1), path2=str(file2), format="unified", output_mode="normal", generate_ini=False, verbose=False, output=None, context=3)
+            args = Namespace(
+                path1=str(file1),
+                path2=str(file2),
+                format="unified",
+                output_mode="normal",
+                generate_ini=False,
+                verbose=False,
+                output=None,
+                context=3,
+            )
 
             logger = RobustLogger()
             result = cmd_diff(args, logger)
@@ -1125,7 +1378,9 @@ class TestDiffWithTestFiles:
         """Test diff between archive files from test_files."""
         import pathlib
 
-        test_files_dir = pathlib.Path(__file__).parents[4] / "Libraries" / "PyKotor" / "tests" / "test_files"
+        test_files_dir = (
+            pathlib.Path(__file__).parents[4] / "Libraries" / "PyKotor" / "tests" / "test_files"
+        )
 
         # Find archive files (rim, erf, mod, sav)
         archive_files = []
@@ -1137,7 +1392,16 @@ class TestDiffWithTestFiles:
         if len(archive_files) >= 2:
             file1, file2 = archive_files[:2]
 
-            args = Namespace(path1=str(file1), path2=str(file2), format="unified", output_mode="normal", generate_ini=False, verbose=False, output=None, context=3)
+            args = Namespace(
+                path1=str(file1),
+                path2=str(file2),
+                format="unified",
+                output_mode="normal",
+                generate_ini=False,
+                verbose=False,
+                output=None,
+                context=3,
+            )
 
             logger = RobustLogger()
             result = cmd_diff(args, logger)
@@ -1148,14 +1412,25 @@ class TestDiffWithTestFiles:
         """Test diff between corrupted and valid files."""
         import pathlib
 
-        test_files_dir = pathlib.Path(__file__).parents[4] / "Libraries" / "PyKotor" / "tests" / "test_files"
+        test_files_dir = (
+            pathlib.Path(__file__).parents[4] / "Libraries" / "PyKotor" / "tests" / "test_files"
+        )
 
         # Test corrupted vs valid GFF
         corrupted_gff = test_files_dir / "test_corrupted.gff"
         valid_gff = test_files_dir / "test.gff"
 
         if corrupted_gff.exists() and valid_gff.exists():
-            args = Namespace(path1=str(corrupted_gff), path2=str(valid_gff), format="unified", output_mode="normal", generate_ini=False, verbose=False, output=None, context=3)
+            args = Namespace(
+                path1=str(corrupted_gff),
+                path2=str(valid_gff),
+                format="unified",
+                output_mode="normal",
+                generate_ini=False,
+                verbose=False,
+                output=None,
+                context=3,
+            )
 
             logger = RobustLogger()
             result = cmd_diff(args, logger)
@@ -1166,14 +1441,25 @@ class TestDiffWithTestFiles:
         """Test unified diff between text files."""
         import pathlib
 
-        test_files_dir = pathlib.Path(__file__).parents[4] / "Libraries" / "PyKotor" / "tests" / "test_files"
+        test_files_dir = (
+            pathlib.Path(__file__).parents[4] / "Libraries" / "PyKotor" / "tests" / "test_files"
+        )
 
         # Find NSS files (text-based scripts)
         nss_files = list(test_files_dir.glob("*.nss"))
         if len(nss_files) >= 2:
             file1, file2 = nss_files[:2]
 
-            args = Namespace(path1=str(file1), path2=str(file2), format="unified", output_mode="normal", generate_ini=False, verbose=False, output=None, context=3)
+            args = Namespace(
+                path1=str(file1),
+                path2=str(file2),
+                format="unified",
+                output_mode="normal",
+                generate_ini=False,
+                verbose=False,
+                output=None,
+                context=3,
+            )
 
             logger = RobustLogger()
             result = cmd_diff(args, logger)
@@ -1184,16 +1470,33 @@ class TestDiffWithTestFiles:
         """Test side-by-side diff format."""
         import pathlib
 
-        test_files_dir = pathlib.Path(__file__).parents[4] / "Libraries" / "PyKotor" / "tests" / "test_files"
+        test_files_dir = (
+            pathlib.Path(__file__).parents[4] / "Libraries" / "PyKotor" / "tests" / "test_files"
+        )
 
         # Find any two files
         all_files = list(test_files_dir.glob("*"))
-        text_files = [f for f in all_files if f.is_file() and get_normalized_extension(f) not in [".rim", ".erf", ".mod", ".sav", ".bif", ".tpc", ".mp3", ".wav", ".bik", ".mve"]]
+        text_files = [
+            f
+            for f in all_files
+            if f.is_file()
+            and get_normalized_extension(f)
+            not in [".rim", ".erf", ".mod", ".sav", ".bif", ".tpc", ".mp3", ".wav", ".bik", ".mve"]
+        ]
 
         if len(text_files) >= 2:
             file1, file2 = text_files[:2]
 
-            args = Namespace(path1=str(file1), path2=str(file2), format="side_by_side", output_mode="normal", generate_ini=False, verbose=False, output=None, context=3)
+            args = Namespace(
+                path1=str(file1),
+                path2=str(file2),
+                format="side_by_side",
+                output_mode="normal",
+                generate_ini=False,
+                verbose=False,
+                output=None,
+                context=3,
+            )
 
             logger = RobustLogger()
             result = cmd_diff(args, logger)
@@ -1204,16 +1507,33 @@ class TestDiffWithTestFiles:
         """Test context diff format."""
         import pathlib
 
-        test_files_dir = pathlib.Path(__file__).parents[4] / "Libraries" / "PyKotor" / "tests" / "test_files"
+        test_files_dir = (
+            pathlib.Path(__file__).parents[4] / "Libraries" / "PyKotor" / "tests" / "test_files"
+        )
 
         # Find any two files
         all_files = list(test_files_dir.glob("*"))
-        text_files = [f for f in all_files if f.is_file() and get_normalized_extension(f) not in [".rim", ".erf", ".mod", ".sav", ".bif", ".tpc", ".mp3", ".wav", ".bik", ".mve"]]
+        text_files = [
+            f
+            for f in all_files
+            if f.is_file()
+            and get_normalized_extension(f)
+            not in [".rim", ".erf", ".mod", ".sav", ".bif", ".tpc", ".mp3", ".wav", ".bik", ".mve"]
+        ]
 
         if len(text_files) >= 2:
             file1, file2 = text_files[:2]
 
-            args = Namespace(path1=str(file1), path2=str(file2), format="context", output_mode="context", generate_ini=False, verbose=False, output=None, context=3)
+            args = Namespace(
+                path1=str(file1),
+                path2=str(file2),
+                format="context",
+                output_mode="context",
+                generate_ini=False,
+                verbose=False,
+                output=None,
+                context=3,
+            )
 
             logger = RobustLogger()
             result = cmd_diff(args, logger)

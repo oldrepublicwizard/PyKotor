@@ -8,7 +8,9 @@ from pathlib import Path
 from qtpy.QtTest import QSignalSpy, QTest
 from qtpy.QtWidgets import QApplication
 
-from utility.gui.qt.adapters.filesystem.qfiledialog.qfiledialog import QFileDialog as AdapterQFileDialog
+from utility.gui.qt.adapters.filesystem.qfiledialog.qfiledialog import (
+    QFileDialog as AdapterQFileDialog,
+)
 from utility.gui.qt.filesystem.qfiledialogextended.qfiledialogextended import QFileDialogExtended
 
 
@@ -57,7 +59,9 @@ class TestQFileDialogExtended(unittest.TestCase):
 
         # After insertion, original row 0 (lookInLabel) should be at row 3
         item = grid.itemAtPosition(3, 0)
-        self.assertIsNotNone(item, "lookInLabel should be at row 3 after inserting ribbon, address bar and search")
+        self.assertIsNotNone(
+            item, "lookInLabel should be at row 3 after inserting ribbon, address bar and search"
+        )
         self.assertEqual(item.widget(), self.dialog.ui.lookInLabel)
 
     def test_address_bar_syncs_directory(self):

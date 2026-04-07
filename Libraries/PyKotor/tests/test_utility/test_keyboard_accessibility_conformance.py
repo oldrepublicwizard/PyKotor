@@ -48,58 +48,166 @@ class WindowsKeyboardShortcuts:
     """Windows 11 standard keyboard shortcuts."""
 
     # Navigation
-    TAB_FORWARD: Final[tuple[Qt.Key, Qt.KeyboardModifier]] = (Qt.Key.Key_Tab, Qt.KeyboardModifier.NoModifier)
-    TAB_BACKWARD: Final[tuple[Qt.Key, Qt.KeyboardModifier]] = (Qt.Key.Key_Tab, Qt.KeyboardModifier.ShiftModifier)
+    TAB_FORWARD: Final[tuple[Qt.Key, Qt.KeyboardModifier]] = (
+        Qt.Key.Key_Tab,
+        Qt.KeyboardModifier.NoModifier,
+    )
+    TAB_BACKWARD: Final[tuple[Qt.Key, Qt.KeyboardModifier]] = (
+        Qt.Key.Key_Tab,
+        Qt.KeyboardModifier.ShiftModifier,
+    )
 
     # File operations
-    COPY: Final[tuple[Qt.Key, Qt.KeyboardModifier]] = (Qt.Key.Key_C, Qt.KeyboardModifier.ControlModifier)
-    CUT: Final[tuple[Qt.Key, Qt.KeyboardModifier]] = (Qt.Key.Key_X, Qt.KeyboardModifier.ControlModifier)
-    PASTE: Final[tuple[Qt.Key, Qt.KeyboardModifier]] = (Qt.Key.Key_V, Qt.KeyboardModifier.ControlModifier)
-    DELETE: Final[tuple[Qt.Key, Qt.KeyboardModifier]] = (Qt.Key.Key_Delete, Qt.KeyboardModifier.NoModifier)
-    RENAME: Final[tuple[Qt.Key, Qt.KeyboardModifier]] = (Qt.Key.Key_F2, Qt.KeyboardModifier.NoModifier)
-    SELECT_ALL: Final[tuple[Qt.Key, Qt.KeyboardModifier]] = (Qt.Key.Key_A, Qt.KeyboardModifier.ControlModifier)
-    UNDO: Final[tuple[Qt.Key, Qt.KeyboardModifier]] = (Qt.Key.Key_Z, Qt.KeyboardModifier.ControlModifier)
-    REDO: Final[tuple[Qt.Key, Qt.KeyboardModifier]] = (Qt.Key.Key_Y, Qt.KeyboardModifier.ControlModifier)
+    COPY: Final[tuple[Qt.Key, Qt.KeyboardModifier]] = (
+        Qt.Key.Key_C,
+        Qt.KeyboardModifier.ControlModifier,
+    )
+    CUT: Final[tuple[Qt.Key, Qt.KeyboardModifier]] = (
+        Qt.Key.Key_X,
+        Qt.KeyboardModifier.ControlModifier,
+    )
+    PASTE: Final[tuple[Qt.Key, Qt.KeyboardModifier]] = (
+        Qt.Key.Key_V,
+        Qt.KeyboardModifier.ControlModifier,
+    )
+    DELETE: Final[tuple[Qt.Key, Qt.KeyboardModifier]] = (
+        Qt.Key.Key_Delete,
+        Qt.KeyboardModifier.NoModifier,
+    )
+    RENAME: Final[tuple[Qt.Key, Qt.KeyboardModifier]] = (
+        Qt.Key.Key_F2,
+        Qt.KeyboardModifier.NoModifier,
+    )
+    SELECT_ALL: Final[tuple[Qt.Key, Qt.KeyboardModifier]] = (
+        Qt.Key.Key_A,
+        Qt.KeyboardModifier.ControlModifier,
+    )
+    UNDO: Final[tuple[Qt.Key, Qt.KeyboardModifier]] = (
+        Qt.Key.Key_Z,
+        Qt.KeyboardModifier.ControlModifier,
+    )
+    REDO: Final[tuple[Qt.Key, Qt.KeyboardModifier]] = (
+        Qt.Key.Key_Y,
+        Qt.KeyboardModifier.ControlModifier,
+    )
 
     # Navigation shortcuts
-    ADDRESS_BAR: Final[tuple[Qt.Key, Qt.KeyboardModifier]] = (Qt.Key.Key_D, Qt.KeyboardModifier.AltModifier)
-    ADDRESS_BAR_ALT: Final[tuple[Qt.Key, Qt.KeyboardModifier]] = (Qt.Key.Key_L, Qt.KeyboardModifier.ControlModifier)
-    SEARCH: Final[tuple[Qt.Key, Qt.KeyboardModifier]] = (Qt.Key.Key_E, Qt.KeyboardModifier.ControlModifier)
-    SEARCH_ALT: Final[tuple[Qt.Key, Qt.KeyboardModifier]] = (Qt.Key.Key_F, Qt.KeyboardModifier.ControlModifier)
-    GO_UP: Final[tuple[Qt.Key, Qt.KeyboardModifier]] = (Qt.Key.Key_Backspace, Qt.KeyboardModifier.NoModifier)
-    GO_BACK: Final[tuple[Qt.Key, Qt.KeyboardModifier]] = (Qt.Key.Key_Left, Qt.KeyboardModifier.AltModifier)
-    GO_FORWARD: Final[tuple[Qt.Key, Qt.KeyboardModifier]] = (Qt.Key.Key_Right, Qt.KeyboardModifier.AltModifier)
-    REFRESH: Final[tuple[Qt.Key, Qt.KeyboardModifier]] = (Qt.Key.Key_F5, Qt.KeyboardModifier.NoModifier)
+    ADDRESS_BAR: Final[tuple[Qt.Key, Qt.KeyboardModifier]] = (
+        Qt.Key.Key_D,
+        Qt.KeyboardModifier.AltModifier,
+    )
+    ADDRESS_BAR_ALT: Final[tuple[Qt.Key, Qt.KeyboardModifier]] = (
+        Qt.Key.Key_L,
+        Qt.KeyboardModifier.ControlModifier,
+    )
+    SEARCH: Final[tuple[Qt.Key, Qt.KeyboardModifier]] = (
+        Qt.Key.Key_E,
+        Qt.KeyboardModifier.ControlModifier,
+    )
+    SEARCH_ALT: Final[tuple[Qt.Key, Qt.KeyboardModifier]] = (
+        Qt.Key.Key_F,
+        Qt.KeyboardModifier.ControlModifier,
+    )
+    GO_UP: Final[tuple[Qt.Key, Qt.KeyboardModifier]] = (
+        Qt.Key.Key_Backspace,
+        Qt.KeyboardModifier.NoModifier,
+    )
+    GO_BACK: Final[tuple[Qt.Key, Qt.KeyboardModifier]] = (
+        Qt.Key.Key_Left,
+        Qt.KeyboardModifier.AltModifier,
+    )
+    GO_FORWARD: Final[tuple[Qt.Key, Qt.KeyboardModifier]] = (
+        Qt.Key.Key_Right,
+        Qt.KeyboardModifier.AltModifier,
+    )
+    REFRESH: Final[tuple[Qt.Key, Qt.KeyboardModifier]] = (
+        Qt.Key.Key_F5,
+        Qt.KeyboardModifier.NoModifier,
+    )
 
     # View shortcuts
-    DETAILS_VIEW: Final[tuple[Qt.Key, Qt.KeyboardModifier]] = (Qt.Key.Key_6, Qt.KeyboardModifier.ControlModifier | Qt.KeyboardModifier.ShiftModifier)
-    LARGE_ICONS: Final[tuple[Qt.Key, Qt.KeyboardModifier]] = (Qt.Key.Key_2, Qt.KeyboardModifier.ControlModifier | Qt.KeyboardModifier.ShiftModifier)
-    LIST_VIEW: Final[tuple[Qt.Key, Qt.KeyboardModifier]] = (Qt.Key.Key_5, Qt.KeyboardModifier.ControlModifier | Qt.KeyboardModifier.ShiftModifier)
+    DETAILS_VIEW: Final[tuple[Qt.Key, Qt.KeyboardModifier]] = (
+        Qt.Key.Key_6,
+        Qt.KeyboardModifier.ControlModifier | Qt.KeyboardModifier.ShiftModifier,
+    )
+    LARGE_ICONS: Final[tuple[Qt.Key, Qt.KeyboardModifier]] = (
+        Qt.Key.Key_2,
+        Qt.KeyboardModifier.ControlModifier | Qt.KeyboardModifier.ShiftModifier,
+    )
+    LIST_VIEW: Final[tuple[Qt.Key, Qt.KeyboardModifier]] = (
+        Qt.Key.Key_5,
+        Qt.KeyboardModifier.ControlModifier | Qt.KeyboardModifier.ShiftModifier,
+    )
 
     # Dialog shortcuts
-    OPEN_ACCEPT: Final[tuple[Qt.Key, Qt.KeyboardModifier]] = (Qt.Key.Key_Return, Qt.KeyboardModifier.NoModifier)
-    CANCEL: Final[tuple[Qt.Key, Qt.KeyboardModifier]] = (Qt.Key.Key_Escape, Qt.KeyboardModifier.NoModifier)
+    OPEN_ACCEPT: Final[tuple[Qt.Key, Qt.KeyboardModifier]] = (
+        Qt.Key.Key_Return,
+        Qt.KeyboardModifier.NoModifier,
+    )
+    CANCEL: Final[tuple[Qt.Key, Qt.KeyboardModifier]] = (
+        Qt.Key.Key_Escape,
+        Qt.KeyboardModifier.NoModifier,
+    )
 
     # Item navigation
-    NAVIGATE_UP: Final[tuple[Qt.Key, Qt.KeyboardModifier]] = (Qt.Key.Key_Up, Qt.KeyboardModifier.NoModifier)
-    NAVIGATE_DOWN: Final[tuple[Qt.Key, Qt.KeyboardModifier]] = (Qt.Key.Key_Down, Qt.KeyboardModifier.NoModifier)
-    NAVIGATE_LEFT: Final[tuple[Qt.Key, Qt.KeyboardModifier]] = (Qt.Key.Key_Left, Qt.KeyboardModifier.NoModifier)
-    NAVIGATE_RIGHT: Final[tuple[Qt.Key, Qt.KeyboardModifier]] = (Qt.Key.Key_Right, Qt.KeyboardModifier.NoModifier)
-    PAGE_UP: Final[tuple[Qt.Key, Qt.KeyboardModifier]] = (Qt.Key.Key_PageUp, Qt.KeyboardModifier.NoModifier)
-    PAGE_DOWN: Final[tuple[Qt.Key, Qt.KeyboardModifier]] = (Qt.Key.Key_PageDown, Qt.KeyboardModifier.NoModifier)
-    GO_TO_START: Final[tuple[Qt.Key, Qt.KeyboardModifier]] = (Qt.Key.Key_Home, Qt.KeyboardModifier.ControlModifier)
-    GO_TO_END: Final[tuple[Qt.Key, Qt.KeyboardModifier]] = (Qt.Key.Key_End, Qt.KeyboardModifier.ControlModifier)
+    NAVIGATE_UP: Final[tuple[Qt.Key, Qt.KeyboardModifier]] = (
+        Qt.Key.Key_Up,
+        Qt.KeyboardModifier.NoModifier,
+    )
+    NAVIGATE_DOWN: Final[tuple[Qt.Key, Qt.KeyboardModifier]] = (
+        Qt.Key.Key_Down,
+        Qt.KeyboardModifier.NoModifier,
+    )
+    NAVIGATE_LEFT: Final[tuple[Qt.Key, Qt.KeyboardModifier]] = (
+        Qt.Key.Key_Left,
+        Qt.KeyboardModifier.NoModifier,
+    )
+    NAVIGATE_RIGHT: Final[tuple[Qt.Key, Qt.KeyboardModifier]] = (
+        Qt.Key.Key_Right,
+        Qt.KeyboardModifier.NoModifier,
+    )
+    PAGE_UP: Final[tuple[Qt.Key, Qt.KeyboardModifier]] = (
+        Qt.Key.Key_PageUp,
+        Qt.KeyboardModifier.NoModifier,
+    )
+    PAGE_DOWN: Final[tuple[Qt.Key, Qt.KeyboardModifier]] = (
+        Qt.Key.Key_PageDown,
+        Qt.KeyboardModifier.NoModifier,
+    )
+    GO_TO_START: Final[tuple[Qt.Key, Qt.KeyboardModifier]] = (
+        Qt.Key.Key_Home,
+        Qt.KeyboardModifier.ControlModifier,
+    )
+    GO_TO_END: Final[tuple[Qt.Key, Qt.KeyboardModifier]] = (
+        Qt.Key.Key_End,
+        Qt.KeyboardModifier.ControlModifier,
+    )
 
     # Selection
-    EXTEND_SELECTION_UP: Final[tuple[Qt.Key, Qt.KeyboardModifier]] = (Qt.Key.Key_Up, Qt.KeyboardModifier.ShiftModifier)
-    EXTEND_SELECTION_DOWN: Final[tuple[Qt.Key, Qt.KeyboardModifier]] = (Qt.Key.Key_Down, Qt.KeyboardModifier.ShiftModifier)
-    TOGGLE_SELECTION: Final[tuple[Qt.Key, Qt.KeyboardModifier]] = (Qt.Key.Key_Space, Qt.KeyboardModifier.ControlModifier)
+    EXTEND_SELECTION_UP: Final[tuple[Qt.Key, Qt.KeyboardModifier]] = (
+        Qt.Key.Key_Up,
+        Qt.KeyboardModifier.ShiftModifier,
+    )
+    EXTEND_SELECTION_DOWN: Final[tuple[Qt.Key, Qt.KeyboardModifier]] = (
+        Qt.Key.Key_Down,
+        Qt.KeyboardModifier.ShiftModifier,
+    )
+    TOGGLE_SELECTION: Final[tuple[Qt.Key, Qt.KeyboardModifier]] = (
+        Qt.Key.Key_Space,
+        Qt.KeyboardModifier.ControlModifier,
+    )
 
     # New items
-    NEW_FOLDER: Final[tuple[Qt.Key, Qt.KeyboardModifier]] = (Qt.Key.Key_N, Qt.KeyboardModifier.ControlModifier | Qt.KeyboardModifier.ShiftModifier)
+    NEW_FOLDER: Final[tuple[Qt.Key, Qt.KeyboardModifier]] = (
+        Qt.Key.Key_N,
+        Qt.KeyboardModifier.ControlModifier | Qt.KeyboardModifier.ShiftModifier,
+    )
 
     # Properties
-    PROPERTIES: Final[tuple[Qt.Key, Qt.KeyboardModifier]] = (Qt.Key.Key_Return, Qt.KeyboardModifier.AltModifier)
+    PROPERTIES: Final[tuple[Qt.Key, Qt.KeyboardModifier]] = (
+        Qt.Key.Key_Return,
+        Qt.KeyboardModifier.AltModifier,
+    )
 
 
 class AccessibilityRequirements:
@@ -279,7 +387,11 @@ class TestFileDialogKeyboardShortcuts(KeyboardAccessibilityTestBase):
 
         # Either address bar itself or a child should be focused
         address_bar = self.dialog.address_bar
-        is_address_bar_focused = focused is address_bar or (focused is not None and address_bar.isAncestorOf(focused)) or focused in address_bar.findChildren(QWidget)
+        is_address_bar_focused = (
+            focused is address_bar
+            or (focused is not None and address_bar.isAncestorOf(focused))
+            or focused in address_bar.findChildren(QWidget)
+        )
         # Implementation may vary
 
     def test_escape_closes_dialog(self) -> None:
@@ -500,7 +612,9 @@ class TestExplorerKeyboardShortcuts(KeyboardAccessibilityTestBase):
     def test_f2_renames_selected_item(self) -> None:
         """Verify F2 initiates rename on selected item."""
         # Find and select an item
-        views = self.explorer.view.findChildren(QListView) + self.explorer.view.findChildren(QTreeView)
+        views = self.explorer.view.findChildren(QListView) + self.explorer.view.findChildren(
+            QTreeView
+        )
 
         for view in views:
             if view.isVisible() and view.model() and view.model().rowCount() > 0:
@@ -623,7 +737,11 @@ class TestFileDialogAccessibility(KeyboardAccessibilityTestBase):
         for edit in line_edits:
             if edit.isVisible():
                 # Should have placeholder, label, or accessible name
-                has_context = edit.placeholderText() != "" or edit.accessibleName() != "" or edit.accessibleDescription() != ""
+                has_context = (
+                    edit.placeholderText() != ""
+                    or edit.accessibleName() != ""
+                    or edit.accessibleDescription() != ""
+                )
                 # Not strictly required, but good practice
 
 
@@ -656,7 +774,9 @@ class TestExplorerAccessibility(KeyboardAccessibilityTestBase):
         for button in tool_buttons:
             if button.isVisible():
                 # Should have text, tooltip, or accessible name
-                has_label = button.text() != "" or button.toolTip() != "" or button.accessibleName() != ""
+                has_label = (
+                    button.text() != "" or button.toolTip() != "" or button.accessibleName() != ""
+                )
                 # Not enforced but good practice
 
 

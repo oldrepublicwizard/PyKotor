@@ -5,27 +5,32 @@ import kaitaistruct
 from kaitaistruct import KaitaiStruct, KaitaiStream, BytesIO
 
 
-if getattr(kaitaistruct, 'API_VERSION', (0, 9)) < (0, 11):
-    raise Exception("Incompatible Kaitai Struct Python API: 0.11 or later is required, but you have %s" % (kaitaistruct.__version__))
+if getattr(kaitaistruct, "API_VERSION", (0, 9)) < (0, 11):
+    raise Exception(
+        "Incompatible Kaitai Struct Python API: 0.11 or later is required, but you have %s"
+        % (kaitaistruct.__version__)
+    )
+
 
 class Pcc(KaitaiStruct):
     """PCC (Package) files are BioWare's proprietary version of Unreal Engine package files.
     They store game resources including textures, meshes, materials, scripts, and more.
-    
+
     PCC files can be either compressed or uncompressed:
     - Uncompressed: Direct structure with header, tables, and data
     - Compressed: Chunks containing compressed blocks using zlib or LZO
-    
+
     The file structure consists of:
     1. File Header - Contains magic number, version, table offsets, and metadata
     2. Name Table - Contains all string names used in the package
     3. Import Table - Contains references to external packages/classes
     4. Export Table - Contains all objects stored in the package
     5. Export Data - Raw binary data for each export
-    
+
     References:
     - Unreal Engine package format (BioWare variant)
     """
+
     def __init__(self, _io, _parent=None, _root=None):
         super(Pcc, self).__init__(_io)
         self._parent = _parent
@@ -35,25 +40,23 @@ class Pcc(KaitaiStruct):
     def _read(self):
         self.header = Pcc.FileHeader(self._io, self, self._root)
 
-
     def _fetch_instances(self):
         pass
         self.header._fetch_instances()
         _ = self.export_table
-        if hasattr(self, '_m_export_table'):
+        if hasattr(self, "_m_export_table"):
             pass
             self._m_export_table._fetch_instances()
 
         _ = self.import_table
-        if hasattr(self, '_m_import_table'):
+        if hasattr(self, "_m_import_table"):
             pass
             self._m_import_table._fetch_instances()
 
         _ = self.name_table
-        if hasattr(self, '_m_name_table'):
+        if hasattr(self, "_m_name_table"):
             pass
             self._m_name_table._fetch_instances()
-
 
     class ExportEntry(KaitaiStruct):
         def __init__(self, _io, _parent=None, _root=None):
@@ -82,9 +85,6 @@ class Pcc(KaitaiStruct):
                 for i in range(self.component_count):
                     self.components.append(self._io.read_s4le())
 
-
-
-
         def _fetch_instances(self):
             pass
             self.guid._fetch_instances()
@@ -92,9 +92,6 @@ class Pcc(KaitaiStruct):
                 pass
                 for i in range(len(self.components)):
                     pass
-
-
-
 
     class ExportTable(KaitaiStruct):
         def __init__(self, _io, _parent=None, _root=None):
@@ -108,15 +105,11 @@ class Pcc(KaitaiStruct):
             for i in range(self._root.header.export_count):
                 self.entries.append(Pcc.ExportEntry(self._io, self, self._root))
 
-
-
         def _fetch_instances(self):
             pass
             for i in range(len(self.entries)):
                 pass
                 self.entries[i]._fetch_instances()
-
-
 
     class FileHeader(KaitaiStruct):
         def __init__(self, _io, _parent=None, _root=None):
@@ -128,11 +121,13 @@ class Pcc(KaitaiStruct):
         def _read(self):
             self.magic = self._io.read_u4le()
             if not self.magic == 2653586369:
-                raise kaitaistruct.ValidationNotEqualError(2653586369, self.magic, self._io, u"/types/file_header/seq/0")
+                raise kaitaistruct.ValidationNotEqualError(
+                    2653586369, self.magic, self._io, "/types/file_header/seq/0"
+                )
             self.version = self._io.read_u4le()
             self.licensee_version = self._io.read_u4le()
             self.header_size = self._io.read_s4le()
-            self.package_name = (self._io.read_bytes(10)).decode(u"UTF-16LE")
+            self.package_name = (self._io.read_bytes(10)).decode("UTF-16LE")
             self.package_flags = self._io.read_u4le()
             self.package_type = self._io.read_u4le()
             self.name_count = self._io.read_u4le()
@@ -158,10 +153,8 @@ class Pcc(KaitaiStruct):
             self.compression_type = self._io.read_u4le()
             self.chunk_count = self._io.read_u4le()
 
-
         def _fetch_instances(self):
             pass
-
 
     class Guid(KaitaiStruct):
         def __init__(self, _io, _parent=None, _root=None):
@@ -176,10 +169,8 @@ class Pcc(KaitaiStruct):
             self.part3 = self._io.read_u4le()
             self.part4 = self._io.read_u4le()
 
-
         def _fetch_instances(self):
             pass
-
 
     class ImportEntry(KaitaiStruct):
         def __init__(self, _io, _parent=None, _root=None):
@@ -194,10 +185,8 @@ class Pcc(KaitaiStruct):
             self.link = self._io.read_s8le()
             self.import_name_index = self._io.read_s8le()
 
-
         def _fetch_instances(self):
             pass
-
 
     class ImportTable(KaitaiStruct):
         def __init__(self, _io, _parent=None, _root=None):
@@ -211,15 +200,11 @@ class Pcc(KaitaiStruct):
             for i in range(self._root.header.import_count):
                 self.entries.append(Pcc.ImportEntry(self._io, self, self._root))
 
-
-
         def _fetch_instances(self):
             pass
             for i in range(len(self.entries)):
                 pass
                 self.entries[i]._fetch_instances()
-
-
 
     class NameEntry(KaitaiStruct):
         def __init__(self, _io, _parent=None, _root=None):
@@ -230,8 +215,9 @@ class Pcc(KaitaiStruct):
 
         def _read(self):
             self.length = self._io.read_s4le()
-            self.name = (self._io.read_bytes((-(self.length) if self.length < 0 else self.length) * 2)).decode(u"UTF-16LE")
-
+            self.name = (
+                self._io.read_bytes((-(self.length) if self.length < 0 else self.length) * 2)
+            ).decode("UTF-16LE")
 
         def _fetch_instances(self):
             pass
@@ -239,21 +225,20 @@ class Pcc(KaitaiStruct):
         @property
         def abs_length(self):
             """Absolute value of length for size calculation."""
-            if hasattr(self, '_m_abs_length'):
+            if hasattr(self, "_m_abs_length"):
                 return self._m_abs_length
 
-            self._m_abs_length = (-(self.length) if self.length < 0 else self.length)
-            return getattr(self, '_m_abs_length', None)
+            self._m_abs_length = -(self.length) if self.length < 0 else self.length
+            return getattr(self, "_m_abs_length", None)
 
         @property
         def name_size(self):
             """Size of name string in bytes (absolute length * 2 bytes per WCHAR)."""
-            if hasattr(self, '_m_name_size'):
+            if hasattr(self, "_m_name_size"):
                 return self._m_name_size
 
             self._m_name_size = self.abs_length * 2
-            return getattr(self, '_m_name_size', None)
-
+            return getattr(self, "_m_name_size", None)
 
     class NameTable(KaitaiStruct):
         def __init__(self, _io, _parent=None, _root=None):
@@ -267,29 +252,25 @@ class Pcc(KaitaiStruct):
             for i in range(self._root.header.name_count):
                 self.entries.append(Pcc.NameEntry(self._io, self, self._root))
 
-
-
         def _fetch_instances(self):
             pass
             for i in range(len(self.entries)):
                 pass
                 self.entries[i]._fetch_instances()
 
-
-
     @property
     def compression_type(self):
         """Compression algorithm used (0=None, 1=Zlib, 2=LZO)."""
-        if hasattr(self, '_m_compression_type'):
+        if hasattr(self, "_m_compression_type"):
             return self._m_compression_type
 
         self._m_compression_type = self.header.compression_type
-        return getattr(self, '_m_compression_type', None)
+        return getattr(self, "_m_compression_type", None)
 
     @property
     def export_table(self):
         """Table containing all objects exported from this package."""
-        if hasattr(self, '_m_export_table'):
+        if hasattr(self, "_m_export_table"):
             return self._m_export_table
 
         if self.header.export_count > 0:
@@ -299,12 +280,12 @@ class Pcc(KaitaiStruct):
             self._m_export_table = Pcc.ExportTable(self._io, self, self._root)
             self._io.seek(_pos)
 
-        return getattr(self, '_m_export_table', None)
+        return getattr(self, "_m_export_table", None)
 
     @property
     def import_table(self):
         """Table containing references to external packages and classes."""
-        if hasattr(self, '_m_import_table'):
+        if hasattr(self, "_m_import_table"):
             return self._m_import_table
 
         if self.header.import_count > 0:
@@ -314,21 +295,21 @@ class Pcc(KaitaiStruct):
             self._m_import_table = Pcc.ImportTable(self._io, self, self._root)
             self._io.seek(_pos)
 
-        return getattr(self, '_m_import_table', None)
+        return getattr(self, "_m_import_table", None)
 
     @property
     def is_compressed(self):
         """True if package uses compressed chunks (bit 25 of package_flags)."""
-        if hasattr(self, '_m_is_compressed'):
+        if hasattr(self, "_m_is_compressed"):
             return self._m_is_compressed
 
         self._m_is_compressed = self.header.package_flags & 33554432 != 0
-        return getattr(self, '_m_is_compressed', None)
+        return getattr(self, "_m_is_compressed", None)
 
     @property
     def name_table(self):
         """Table containing all string names used in the package."""
-        if hasattr(self, '_m_name_table'):
+        if hasattr(self, "_m_name_table"):
             return self._m_name_table
 
         if self.header.name_count > 0:
@@ -338,6 +319,4 @@ class Pcc(KaitaiStruct):
             self._m_name_table = Pcc.NameTable(self._io, self, self._root)
             self._io.seek(_pos)
 
-        return getattr(self, '_m_name_table', None)
-
-
+        return getattr(self, "_m_name_table", None)

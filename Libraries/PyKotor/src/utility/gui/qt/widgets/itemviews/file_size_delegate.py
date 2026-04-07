@@ -434,12 +434,16 @@ class Windows11ItemDelegate(QStyledItemDelegate):
         # Delegate to size-aware painting for size column
         column = index.column()
         if column == self.SIZE_COLUMN:
-            self._size_delegate._paint_size_column(painter, option, index, self._get_source_model(index))
+            self._size_delegate._paint_size_column(
+                painter, option, index, self._get_source_model(index)
+            )
             return
 
         # Use default painting for other columns but without the default selection
         opt = QStyleOptionViewItem(option)
-        opt.state &= ~QStyle.StateFlag.State_Selected  # Remove selection flag to prevent double-drawing
+        opt.state &= (
+            ~QStyle.StateFlag.State_Selected
+        )  # Remove selection flag to prevent double-drawing
         opt.state &= ~QStyle.StateFlag.State_MouseOver  # Remove hover flag
         super().paint(painter, opt, index)
 

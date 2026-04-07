@@ -46,7 +46,9 @@ def cmd_find(args: Namespace, logger: Logger) -> int:
         return 1
 
     try:
-        installation = __import__("pykotor.extract.installation", fromlist=["Installation"]).Installation(
+        installation = __import__(
+            "pykotor.extract.installation", fromlist=["Installation"]
+        ).Installation(
             pathlib.Path(path),
         )
     except Exception:

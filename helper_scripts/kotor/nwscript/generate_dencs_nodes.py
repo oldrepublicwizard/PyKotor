@@ -74,7 +74,9 @@ def generate_python_class(info: dict) -> str:
     # Add field type imports
     for field_type, _ in fields:
         field_type_python = java_name_to_python(field_type)
-        lines.append(f"    from pykotor.resource.formats.ncs.dencs.node.{field_type_python} import {field_type}  # pyright: ignore[reportMissingImports]")
+        lines.append(
+            f"    from pykotor.resource.formats.ncs.dencs.node.{field_type_python} import {field_type}  # pyright: ignore[reportMissingImports]"
+        )
 
     lines.extend(
         [
@@ -207,8 +209,12 @@ def generate_python_class(info: dict) -> str:
 
 def main():
     """Main function to generate missing node files."""
-    java_nodes_path = Path("G:/GitHub/PyKotor/vendor/DeNCS/procyon/com/knights2end/nwscript/decomp/node")
-    python_nodes_path = Path("G:/GitHub/PyKotor/Libraries/PyKotor/src/pykotor/resource/formats/ncs/dencs/node")
+    java_nodes_path = Path(
+        "G:/GitHub/PyKotor/vendor/DeNCS/procyon/com/knights2end/nwscript/decomp/node"
+    )
+    python_nodes_path = Path(
+        "G:/GitHub/PyKotor/Libraries/PyKotor/src/pykotor/resource/formats/ncs/dencs/node"
+    )
 
     generated = 0
 

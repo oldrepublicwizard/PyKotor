@@ -547,7 +547,9 @@ class TestOutputModes:
         try:
             # Create different files
             file1 = DiffTestDataHelper.create_text_file(path1, "test.txt", "Line 1\nLine 2\nLine 3")
-            file2 = DiffTestDataHelper.create_text_file(path2, "test.txt", "Line 1\nModified\nLine 3")
+            file2 = DiffTestDataHelper.create_text_file(
+                path2, "test.txt", "Line 1\nModified\nLine 3"
+            )
 
             args = Namespace(
                 path1=str(file1),

@@ -9,7 +9,10 @@ from pathlib import Path
 import pytest
 
 THIS_SCRIPT_PATH = Path(__file__).parent
-REPO_ROOT = next((parent for parent in THIS_SCRIPT_PATH.parents if (parent / "Libraries").is_dir()), THIS_SCRIPT_PATH.parents[2])
+REPO_ROOT = next(
+    (parent for parent in THIS_SCRIPT_PATH.parents if (parent / "Libraries").is_dir()),
+    THIS_SCRIPT_PATH.parents[2],
+)
 LIBRARY_PATH = REPO_ROOT.joinpath("Libraries")
 PYKOTOR_PATH = LIBRARY_PATH.joinpath("PyKotor", "src")
 UTILITY_PATH = LIBRARY_PATH.joinpath("Utility", "src")

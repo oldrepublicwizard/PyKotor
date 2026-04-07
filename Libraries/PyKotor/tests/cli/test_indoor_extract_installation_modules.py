@@ -90,27 +90,41 @@ def test_indoor_extract_each_module_matches_modulekit_loadability(
     )
 
     if expected_room_count is not None and expected_room_count > 0:
-        assert rc == 0, f"CLI failed for module with LYT rooms ({expected_room_count}): {module_root} (rc={rc})"
+        assert rc == 0, (
+            f"CLI failed for module with LYT rooms ({expected_room_count}): {module_root} (rc={rc})"
+        )
         assert out.is_file(), f"Output file does not exist: {out}"
         raw = out.read_bytes()
         d = _parse_indoor(raw)
         assert "rooms" in d, f"Indoor file missing rooms: {d}"
         assert isinstance(d["rooms"], list), f"Rooms is not a list: {d['rooms']}"
-        assert len(d["rooms"]) == expected_room_count, f"Rooms length mismatch: {len(d['rooms'])} != {expected_room_count}"
+        assert len(d["rooms"]) == expected_room_count, (
+            f"Rooms length mismatch: {len(d['rooms'])} != {expected_room_count}"
+        )
         for room in d["rooms"]:
             assert "kit" in room, f"Room missing kit: {room}"
-            assert str(room["kit"]).lower() == module_root.lower(), f"Room kit mismatch: {room['kit']} != {module_root}"
+            assert str(room["kit"]).lower() == module_root.lower(), (
+                f"Room kit mismatch: {room['kit']} != {module_root}"
+            )
             assert "component" in room, f"Room missing component: {room}"
             assert "module_root" in room, f"Room missing module_root: {room}"
-            assert str(room["module_root"]).lower() == module_root.lower(), f"Room module_root mismatch: {room['module_root']} != {module_root}"
+            assert str(room["module_root"]).lower() == module_root.lower(), (
+                f"Room module_root mismatch: {room['module_root']} != {module_root}"
+            )
             assert "position" in room, f"Room missing position: {room}"
-            assert isinstance(room["position"], list), f"Room position is not a list: {room['position']}"
-            assert len(room["position"]) == 3, f"Room position has wrong length: {len(room['position'])} != 3"
+            assert isinstance(room["position"], list), (
+                f"Room position is not a list: {room['position']}"
+            )
+            assert len(room["position"]) == 3, (
+                f"Room position has wrong length: {len(room['position'])} != 3"
+            )
             assert "rotation" in room, f"Room missing rotation: {room}"
             assert "flip_x" in room, f"Room missing flip_x: {room}"
             assert isinstance(room["flip_x"], bool), f"Room flip_x is not a bool: {room['flip_x']}"
             assert "flip_y" in room, f"Room missing flip_y: {room}"
             assert isinstance(room["flip_y"], bool), f"Room flip_y is not a bool: {room['flip_y']}"
     else:
-        assert rc != 0, f"CLI unexpectedly succeeded for module without usable LYT rooms: {module_root}"
+        assert rc != 0, (
+            f"CLI unexpectedly succeeded for module without usable LYT rooms: {module_root}"
+        )
         assert not out.exists(), f"Output file should not exist: {out}"

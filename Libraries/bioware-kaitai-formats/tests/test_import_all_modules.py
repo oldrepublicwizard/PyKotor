@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import importlib
 import pkgutil
+
 from pathlib import Path
 
 
@@ -23,5 +24,9 @@ def test_generated_sources_have_no_http_urls():
     root = Path(pkg.__file__).resolve().parent
     for path in sorted(root.glob("*.py")):
         text = path.read_text(encoding="utf-8")
-        assert "https://" not in text, f"{path.name} must not contain https:// (run postprocess_generated.py)"
-        assert "http://" not in text, f"{path.name} must not contain http:// (run postprocess_generated.py)"
+        assert "https://" not in text, (
+            f"{path.name} must not contain https:// (run postprocess_generated.py)"
+        )
+        assert "http://" not in text, (
+            f"{path.name} must not contain http:// (run postprocess_generated.py)"
+        )

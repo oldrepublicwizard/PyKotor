@@ -1,8 +1,10 @@
 """Rebuild continual-learning-index.json from all agent-transcripts *.jsonl on disk."""
+
 from __future__ import annotations
 
 import datetime as dt
 import json
+
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[3]  # PyKotor repo root
@@ -20,7 +22,9 @@ def main() -> None:
         except OSError:
             continue
         transcripts[str(p.resolve())] = {"mtimeMs": mtime_ms, "lastProcessedAt": stamp}
-    OUT.write_text(json.dumps({"version": 1, "transcripts": transcripts}, indent=2), encoding="utf-8")
+    OUT.write_text(
+        json.dumps({"version": 1, "transcripts": transcripts}, indent=2), encoding="utf-8"
+    )
     print("entries", len(transcripts))
 
 

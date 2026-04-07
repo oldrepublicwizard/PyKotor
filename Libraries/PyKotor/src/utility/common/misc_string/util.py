@@ -132,7 +132,10 @@ def striprtf(text: str) -> str:  # noqa: C901, PLR0915, PLR0912
         3. Ignoring certain tags and characters inside tags marked as "ignorable"
         4. Appending/joining resulting text pieces to output.
     """
-    pattern: re.Pattern[str] = re.compile(r"\\([a-z]{1,32})(-?\d{1,10})?[ ]?|\\'([0-9a-f]{2})|\\([^a-z])|([{}])|[\r\n]+|(.)", re.IGNORECASE)
+    pattern: re.Pattern[str] = re.compile(
+        r"\\([a-z]{1,32})(-?\d{1,10})?[ ]?|\\'([0-9a-f]{2})|\\([^a-z])|([{}])|[\r\n]+|(.)",
+        re.IGNORECASE,
+    )
     # control words which specify a "destination".
     destinations = frozenset(
         (

@@ -66,7 +66,9 @@ def compare_binaries(a: bytes, b: bytes, name: str, verbose: bool = False) -> li
         diff_ranges.append((current_range_start, min_len - 1))
 
     if diff_count > 0:
-        diffs.append(f"{name} has {diff_count} byte differences (first at offset 0x{first_diff_offset:X})")
+        diffs.append(
+            f"{name} has {diff_count} byte differences (first at offset 0x{first_diff_offset:X})"
+        )
 
         if verbose:
             for start, end in diff_ranges[:10]:

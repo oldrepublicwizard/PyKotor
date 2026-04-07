@@ -89,7 +89,9 @@ class QUrlModel(QStandardItemModel):
         self.fileSystemModel: QFileSystemModel | None = None
         self.watching: list[QUrlModel.WatchItem] = []
         self.invalidUrls: list[QUrl] = []
-        self.modelConnections: list[QMetaObject.Connection] = []  # Store connections for proper cleanup (matching C++)
+        self.modelConnections: list[
+            QMetaObject.Connection
+        ] = []  # Store connections for proper cleanup (matching C++)
 
     def __del__(self):
         """Cleanup connections on destruction, matching C++ destructor behavior."""
@@ -178,14 +180,20 @@ class QUrlModel(QStandardItemModel):
             # Match C++: On windows the popup display the "C:\", convert to nativeSeparators
             if self.showFullPath:
                 # Match C++: QStandardItemModel::setData(index, QDir::toNativeSeparators(fileSystemModel->data(dirIndex, QFileSystemModel::FilePathRole).toString()));
-                file_path_data = self.fileSystemModel.data(dirIndex, QFileSystemModel.Roles.FilePathRole)
+                file_path_data = self.fileSystemModel.data(
+                    dirIndex, QFileSystemModel.Roles.FilePathRole
+                )
                 file_path_str = str(file_path_data) if file_path_data is not None else ""
                 super().setData(index, QDir.toNativeSeparators(file_path_str))
             else:
                 # Match C++: QStandardItemModel::setData(index, QDir::toNativeSeparators(...), Qt::ToolTipRole);
-                file_path_data = self.fileSystemModel.data(dirIndex, QFileSystemModel.Roles.FilePathRole)
+                file_path_data = self.fileSystemModel.data(
+                    dirIndex, QFileSystemModel.Roles.FilePathRole
+                )
                 file_path_str = str(file_path_data) if file_path_data is not None else ""
-                super().setData(index, QDir.toNativeSeparators(file_path_str), Qt.ItemDataRole.ToolTipRole)
+                super().setData(
+                    index, QDir.toNativeSeparators(file_path_str), Qt.ItemDataRole.ToolTipRole
+                )
                 # Match C++: QStandardItemModel::setData(index, fileSystemModel->data(dirIndex).toString());
                 display_data = self.fileSystemModel.data(dirIndex)
                 display_str = str(display_data) if display_data is not None else ""
@@ -221,14 +229,20 @@ class QUrlModel(QStandardItemModel):
             # Match C++: setData(index, fileSystemModel->myComputer());
             self.setData(index, self.fileSystemModel.myComputer())
             # Match C++: setData(index, fileSystemModel->myComputer(Qt::DecorationRole), Qt::DecorationRole);
-            self.setData(index, self.fileSystemModel.myComputer(Qt.ItemDataRole.DecorationRole), Qt.ItemDataRole.DecorationRole)
+            self.setData(
+                index,
+                self.fileSystemModel.myComputer(Qt.ItemDataRole.DecorationRole),
+                Qt.ItemDataRole.DecorationRole,
+            )
         else:
             # Match C++: QString newName;
             newName: str
             if self.showFullPath:
                 # Match C++: newName = QDir::toNativeSeparators(dirIndex.data(QFileSystemModel::FilePathRole).toString());
                 file_path_data = dirIndex.data(QFileSystemModel.Roles.FilePathRole)
-                newName = QDir.toNativeSeparators(str(file_path_data) if file_path_data is not None else "")
+                newName = QDir.toNativeSeparators(
+                    str(file_path_data) if file_path_data is not None else ""
+                )
             else:
                 # Match C++: newName = dirIndex.data().toString();
                 display_data = dirIndex.data()
@@ -268,11 +282,17 @@ class QUrlModel(QStandardItemModel):
                     widget = cast("QWidget | None", self.parent())
                     # Match C++: const auto dpr = widget ? widget->devicePixelRatio() : qApp->devicePixelRatio();
                     app = QGuiApplication.instance()
-                    dpr = widget.devicePixelRatio() if isinstance(widget, QWidget) and widget else (app.devicePixelRatio() if isinstance(app, QGuiApplication) else 1.0)  # pyright: ignore[reportAttributeAccessIssue]
+                    dpr = (
+                        widget.devicePixelRatio()
+                        if isinstance(widget, QWidget) and widget
+                        else (app.devicePixelRatio() if isinstance(app, QGuiApplication) else 1.0)
+                    )  # pyright: ignore[reportAttributeAccessIssue]
                     # Match C++: const auto smallPixmap = newIcon.pixmap(QSize(32, 32), dpr);
                     small_pixmap: QPixmap = newIcon.pixmap(QSize(32, 32), dpr)
                     # Match C++: const auto newPixmap = smallPixmap.scaledToWidth(32 * dpr, Qt::SmoothTransformation);
-                    new_pixmap = small_pixmap.scaledToWidth(int(32 * dpr), Qt.TransformationMode.SmoothTransformation)
+                    new_pixmap = small_pixmap.scaledToWidth(
+                        int(32 * dpr), Qt.TransformationMode.SmoothTransformation
+                    )
                     # Match C++: newIcon.addPixmap(newPixmap);
                     newIcon.addPixmap(new_pixmap)
 
@@ -283,7 +303,9 @@ class QUrlModel(QStandardItemModel):
                 self.setData(index, newName)
             # Match C++: QIcon oldIcon = qvariant_cast<QIcon>(index.data(Qt::DecorationRole));
             old_decoration_data = index.data(Qt.ItemDataRole.DecorationRole)
-            oldIcon: QIcon | None = cast("QIcon", old_decoration_data) if old_decoration_data is not None else None
+            oldIcon: QIcon | None = (
+                cast("QIcon", old_decoration_data) if old_decoration_data is not None else None
+            )
             # Match C++: if (oldIcon.cacheKey() != newIcon.cacheKey()) setData(index, newIcon, Qt::DecorationRole);
             # In C++, both oldIcon and newIcon are QIcon objects (value types), not pointers
             # An empty QIcon has cacheKey 0. The comparison happens regardless of whether newIcon is empty.
@@ -291,8 +313,12 @@ class QUrlModel(QStandardItemModel):
             from qtpy.QtGui import QIcon as QtQIcon
 
             # Get cache keys: None/empty icons have cacheKey 0
-            new_icon_cache_key = newIcon.cacheKey() if newIcon is not None and not newIcon.isNull() else 0
-            old_icon_cache_key = oldIcon.cacheKey() if oldIcon is not None and not oldIcon.isNull() else 0
+            new_icon_cache_key = (
+                newIcon.cacheKey() if newIcon is not None and not newIcon.isNull() else 0
+            )
+            old_icon_cache_key = (
+                oldIcon.cacheKey() if oldIcon is not None and not oldIcon.isNull() else 0
+            )
             if old_icon_cache_key != new_icon_cache_key:
                 # Match C++: setData(index, newIcon, Qt::DecorationRole);
                 # In C++, newIcon is always a QIcon object (may be empty), so we pass it directly
@@ -548,7 +574,9 @@ class QSidebar(QListView):
         sidebar_model: QAbstractItemModel | None = self.model()
         if sidebar_model is None:
             return QListView.sizeHint(self)
-        return self.sizeHintForIndex(sidebar_model.index(0, 0)) + QSize(2 * self.frameWidth(), 2 * self.frameWidth())
+        return self.sizeHintForIndex(sidebar_model.index(0, 0)) + QSize(
+            2 * self.frameWidth(), 2 * self.frameWidth()
+        )
 
     def selectUrl(self, url: QUrl) -> None:
         """Select URL in sidebar. Matches C++ QSidebar::selectUrl() implementation."""
@@ -578,7 +606,9 @@ class QSidebar(QListView):
                 self.goToUrl.emit(url)
                 # Match C++: selectionModel()->setCurrentIndex(model()->index(i, 0), QItemSelectionModel::SelectCurrent);
                 if sel_model is not None:
-                    sel_model.setCurrentIndex(sidebar_model.index(i, 0), QItemSelectionModel.SelectionFlag.SelectCurrent)
+                    sel_model.setCurrentIndex(
+                        sidebar_model.index(i, 0), QItemSelectionModel.SelectionFlag.SelectCurrent
+                    )
                 # Match C++: break;
                 break
         # Match C++: connect(selectionModel(), &QItemSelectionModel::currentChanged, this, &QSidebar::clicked);
@@ -624,7 +654,9 @@ class QSidebar(QListView):
         indexes: list[QModelIndex] = sel_model.selectedIndexes()
         # Match C++: // Create a list of QPersistentModelIndex as the removeRow() calls below could invalidate the indexes in "idxs"
         # Match C++: const QList<QPersistentModelIndex> persIndexes(idxs.cbegin(), idxs.cend());
-        persistent_indexes: list[QPersistentModelIndex] = [QPersistentModelIndex(idx) for idx in indexes]
+        persistent_indexes: list[QPersistentModelIndex] = [
+            QPersistentModelIndex(idx) for idx in indexes
+        ]
         # Match C++: for (const QPersistentModelIndex &persistent : persIndexes)
         for persistent in persistent_indexes:
             # Match C++: if (!persistent.data(QUrlModel::UrlRole).toUrl().path().isEmpty())

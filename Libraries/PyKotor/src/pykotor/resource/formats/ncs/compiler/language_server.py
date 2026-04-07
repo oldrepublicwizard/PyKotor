@@ -196,7 +196,10 @@ class NSSLanguageServer(BiowareResource):
 
     def _ensure_parser_initialized(self):
         """Ensure parser is initialized (only once per process)."""
-        if NSSLanguageServer._parser is None or NSSLanguageServer._initialized_for_tsl != self.is_tsl:
+        if (
+            NSSLanguageServer._parser is None
+            or NSSLanguageServer._initialized_for_tsl != self.is_tsl
+        ):
             # Create parser with error suppression
             NSSLanguageServer._parser = NssParser(
                 functions=self.functions,
@@ -525,11 +528,17 @@ class NSSLanguageServer(BiowareResource):
                     kind="function",
                     range=Range(
                         start=Position(line=line_num, character=0),
-                        end=Position(line=end_line, character=len(lines[end_line]) if end_line < len(lines) else 0),
+                        end=Position(
+                            line=end_line,
+                            character=len(lines[end_line]) if end_line < len(lines) else 0,
+                        ),
                     ),
                     selection_range=Range(
                         start=Position(line=line_num, character=0),
-                        end=Position(line=line_num, character=len(lines[line_num]) if line_num < len(lines) else 0),
+                        end=Position(
+                            line=line_num,
+                            character=len(lines[line_num]) if line_num < len(lines) else 0,
+                        ),
                     ),
                     detail=f"{return_type} {obj.identifier.identifier}({param_str})",
                     children=[],
@@ -648,7 +657,9 @@ class NSSLanguageServer(BiowareResource):
         current_line = lines[line]
         # Find word start
         word_start = character
-        while word_start > 0 and (current_line[word_start - 1].isalnum() or current_line[word_start - 1] == "_"):
+        while word_start > 0 and (
+            current_line[word_start - 1].isalnum() or current_line[word_start - 1] == "_"
+        ):
             word_start -= 1
 
         prefix = current_line[word_start:character].lower() if character > word_start else ""
@@ -658,7 +669,9 @@ class NSSLanguageServer(BiowareResource):
             if not prefix or func.name.lower().startswith(prefix):
                 return_type = getattr(func, "return_type", "void")
                 params = getattr(func, "parameters", [])
-                param_str = ", ".join(f"{getattr(p, 'type', '?')} {getattr(p, 'name', 'arg')}" for p in params[:3])
+                param_str = ", ".join(
+                    f"{getattr(p, 'type', '?')} {getattr(p, 'name', 'arg')}" for p in params[:3]
+                )
                 if len(params) > 3:
                     param_str += ", ..."
 
@@ -763,9 +776,13 @@ class NSSLanguageServer(BiowareResource):
         word_start = character
         word_end = character
 
-        while word_start > 0 and (current_line[word_start - 1].isalnum() or current_line[word_start - 1] == "_"):
+        while word_start > 0 and (
+            current_line[word_start - 1].isalnum() or current_line[word_start - 1] == "_"
+        ):
             word_start -= 1
-        while word_end < len(current_line) and (current_line[word_end].isalnum() or current_line[word_end] == "_"):
+        while word_end < len(current_line) and (
+            current_line[word_end].isalnum() or current_line[word_end] == "_"
+        ):
             word_end += 1
 
         word = current_line[word_start:word_end]
@@ -779,7 +796,9 @@ class NSSLanguageServer(BiowareResource):
             if func.name.lower() == word_lower:
                 return_type = getattr(func, "return_type", "void")
                 params = getattr(func, "parameters", [])
-                param_str = ", ".join(f"{getattr(p, 'type', '?')} {getattr(p, 'name', 'arg')}" for p in params)
+                param_str = ", ".join(
+                    f"{getattr(p, 'type', '?')} {getattr(p, 'name', 'arg')}" for p in params
+                )
                 description = getattr(func, "description", "") or ""
 
                 content = f"```nwscript\n{return_type} {func.name}({param_str})\n```"
@@ -929,8 +948,14 @@ class NSSLanguageServer(BiowareResource):
         """Convert Diagnostic to dictionary."""
         return {
             "range": {
-                "start": {"line": diagnostic.range.start.line, "character": diagnostic.range.start.character},
-                "end": {"line": diagnostic.range.end.line, "character": diagnostic.range.end.character},
+                "start": {
+                    "line": diagnostic.range.start.line,
+                    "character": diagnostic.range.start.character,
+                },
+                "end": {
+                    "line": diagnostic.range.end.line,
+                    "character": diagnostic.range.end.character,
+                },
             },
             "message": diagnostic.message,
             "severity": int(diagnostic.severity),
@@ -945,12 +970,21 @@ class NSSLanguageServer(BiowareResource):
             "name": symbol.name,
             "kind": symbol.kind,
             "range": {
-                "start": {"line": symbol.range.start.line, "character": symbol.range.start.character},
+                "start": {
+                    "line": symbol.range.start.line,
+                    "character": symbol.range.start.character,
+                },
                 "end": {"line": symbol.range.end.line, "character": symbol.range.end.character},
             },
             "selection_range": {
-                "start": {"line": symbol.selection_range.start.line, "character": symbol.selection_range.start.character},
-                "end": {"line": symbol.selection_range.end.line, "character": symbol.selection_range.end.character},
+                "start": {
+                    "line": symbol.selection_range.start.line,
+                    "character": symbol.selection_range.start.character,
+                },
+                "end": {
+                    "line": symbol.selection_range.end.line,
+                    "character": symbol.selection_range.end.character,
+                },
             },
             "detail": symbol.detail,
             "children": [self._symbol_to_dict(c) for c in symbol.children],

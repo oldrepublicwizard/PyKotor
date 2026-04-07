@@ -131,11 +131,28 @@ def extract_theme_colors(theme_data: dict | list) -> dict[str, str] | None:
             return fallback
         return ""
 
-    bg = get_color("editor.background") or get_color("sideBar.background") or get_color("activityBar.background", "#1E1E1E")
+    bg = (
+        get_color("editor.background")
+        or get_color("sideBar.background")
+        or get_color("activityBar.background", "#1E1E1E")
+    )
     secondary_bg = get_color("sideBar.background") or get_color("activityBar.background") or bg
-    text = get_color("foreground") or get_color("editor.foreground") or get_color("input.foreground", "#FFFFFF")
-    tooltip = get_color("editorHoverWidget.background") or get_color("editorWidget.background") or secondary_bg
-    highlight = get_color("editor.selectionBackground") or get_color("list.activeSelectionBackground") or get_color("focusBorder") or get_color("button.background", "#0078D4")
+    text = (
+        get_color("foreground")
+        or get_color("editor.foreground")
+        or get_color("input.foreground", "#FFFFFF")
+    )
+    tooltip = (
+        get_color("editorHoverWidget.background")
+        or get_color("editorWidget.background")
+        or secondary_bg
+    )
+    highlight = (
+        get_color("editor.selectionBackground")
+        or get_color("list.activeSelectionBackground")
+        or get_color("focusBorder")
+        or get_color("button.background", "#0078D4")
+    )
     bright_text = get_color("foreground", "#FFFFFF")
 
     return {
@@ -185,8 +202,25 @@ def generate_palette_entry(theme_name: str, theme_colors: dict, theme_type: str 
 
 def process_themes():
     """Process all VS Code theme files and integrate them."""
-    base_path = Path(__file__).parent.parent / "Tools" / "HolocronToolset" / "src" / "resources" / "extra_themes"
-    theme_manager_path = Path(__file__).parent.parent / "Tools" / "HolocronToolset" / "src" / "toolset" / "gui" / "common" / "style" / "theme_manager.py"
+    base_path = (
+        Path(__file__).parent.parent
+        / "Tools"
+        / "HolocronToolset"
+        / "src"
+        / "resources"
+        / "extra_themes"
+    )
+    theme_manager_path = (
+        Path(__file__).parent.parent
+        / "Tools"
+        / "HolocronToolset"
+        / "src"
+        / "toolset"
+        / "gui"
+        / "common"
+        / "style"
+        / "theme_manager.py"
+    )
 
     if not base_path.exists():
         print(f"Error: extra_themes path not found: {base_path}")
@@ -197,7 +231,15 @@ def process_themes():
         return
 
     # Find all JSON theme files
-    theme_files = sorted([f for f in base_path.glob("*.json") if "config" not in f.stem.lower() and "settings" not in f.stem.lower() and "template" not in f.stem.lower()])
+    theme_files = sorted(
+        [
+            f
+            for f in base_path.glob("*.json")
+            if "config" not in f.stem.lower()
+            and "settings" not in f.stem.lower()
+            and "template" not in f.stem.lower()
+        ]
+    )
 
     print(f"Found {len(theme_files)} theme files to process")
 
@@ -230,7 +272,13 @@ def process_themes():
         pattern = r"(\},\s*\n)(\s+)\}\s*\n(\s+)# Try to find theme"
         match = re.search(pattern, content)
         if match:
-            insertion_point = match.end() - len(match.group(2)) - len("}") - len(match.group(3)) - len("# Try to find theme")
+            insertion_point = (
+                match.end()
+                - len(match.group(2))
+                - len("}")
+                - len(match.group(3))
+                - len("# Try to find theme")
+            )
             indent = match.group(2)
         else:
             print("Error: Could not find insertion point in theme_manager.py")
@@ -270,11 +318,20 @@ def process_themes():
                                 if "colors" in item:
                                     theme_data = item
                                     break
-                                elif "theme" in item and isinstance(item["theme"], dict) and "colors" in item["theme"]:
-                                    theme_data = {"colors": item["theme"]["colors"], "type": item.get("theme", {}).get("type", "dark")}
+                                elif (
+                                    "theme" in item
+                                    and isinstance(item["theme"], dict)
+                                    and "colors" in item["theme"]
+                                ):
+                                    theme_data = {
+                                        "colors": item["theme"]["colors"],
+                                        "type": item.get("theme", {}).get("type", "dark"),
+                                    }
                                     break
                         else:
-                            print(f"  Skipping {theme_file.name}: Array structure but no colors found")
+                            print(
+                                f"  Skipping {theme_file.name}: Array structure but no colors found"
+                            )
                             continue
                     else:
                         print(f"  Skipping {theme_file.name}: Empty array")
@@ -292,21 +349,33 @@ def process_themes():
                     cleaned_content = re.sub(r",\s*]", "]", cleaned_content)
                     # Remove any remaining problematic patterns
                     cleaned_content = re.sub(r":\s*undefined", ": null", cleaned_content)
-                    cleaned_content = re.sub(r":\s*null,?\s*$", ": null", cleaned_content, flags=re.MULTILINE)
+                    cleaned_content = re.sub(
+                        r":\s*null,?\s*$", ": null", cleaned_content, flags=re.MULTILINE
+                    )
                     # Remove unquoted keys (try to quote them)
                     cleaned_content = re.sub(r"(\w+):", r'"\1":', cleaned_content)
                     # Fix common issues
-                    cleaned_content = re.sub(r'"(\w+)":\s*\{', r'"\1": {', cleaned_content)  # Fix already-quoted
+                    cleaned_content = re.sub(
+                        r'"(\w+)":\s*\{', r'"\1": {', cleaned_content
+                    )  # Fix already-quoted
                     try:
                         theme_data = json.loads(cleaned_content)
                     except json.JSONDecodeError as e:
                         # Last resort: try to extract just the colors section manually via regex
-                        colors_match = re.search(r'"colors"\s*:\s*\{([^{}]*(?:\{[^{}]*\}[^{}]*)*)\}', cleaned_content, re.DOTALL)
+                        colors_match = re.search(
+                            r'"colors"\s*:\s*\{([^{}]*(?:\{[^{}]*\}[^{}]*)*)\}',
+                            cleaned_content,
+                            re.DOTALL,
+                        )
                         if colors_match:
                             # Try to build a minimal theme structure
-                            print(f"  Warning: {theme_file.name} has parsing issues, attempting manual color extraction")
+                            print(
+                                f"  Warning: {theme_file.name} has parsing issues, attempting manual color extraction"
+                            )
                             # Extract individual color entries
-                            color_entries = re.findall(r'"([^"]+)"\s*:\s*"([^"]+)"', colors_match.group(1))
+                            color_entries = re.findall(
+                                r'"([^"]+)"\s*:\s*"([^"]+)"', colors_match.group(1)
+                            )
                             if color_entries:
                                 theme_data = {"colors": dict(color_entries), "type": "dark"}
                             else:
@@ -368,7 +437,11 @@ def process_themes():
                 if re.match(r'^\s+"\w+":\s*\{$', lines[i]):
                     # Found a theme entry start, now find its end
                     for j in range(i, min(len(lines), i + 10)):
-                        if "},\n" in lines[j] or (j + 1 < len(lines) and lines[j].strip() == "}," and lines[j + 1].strip() == "}"):
+                        if "},\n" in lines[j] or (
+                            j + 1 < len(lines)
+                            and lines[j].strip() == "},"
+                            and lines[j + 1].strip() == "}"
+                        ):
                             # This might be the last entry
                             # Look ahead for closing brace
                             if j + 2 < len(lines) and "theme_lower" in lines[j + 2]:
@@ -383,7 +456,13 @@ def process_themes():
                 return
 
     # Insert all new entries before the closing brace
-    new_content = content[:insertion_point] + "\n".join(new_entries) + "\n" + indent + content[insertion_point:]
+    new_content = (
+        content[:insertion_point]
+        + "\n".join(new_entries)
+        + "\n"
+        + indent
+        + content[insertion_point:]
+    )
 
     # Write updated file
     with open(theme_manager_path, "w", encoding="utf-8") as f:

@@ -638,7 +638,9 @@ class LocalizedString:
         substrings: dict[int, str] | None = None,
     ):
         self.stringref: int = stringref
-        self._substrings_internal: IntKeyDict = IntKeyDict() if substrings is None else IntKeyDict(substrings)
+        self._substrings_internal: IntKeyDict = (
+            IntKeyDict() if substrings is None else IntKeyDict(substrings)
+        )
 
     @property
     def _substrings(self) -> dict[int, str]:
@@ -824,7 +826,9 @@ class LocalizedString:
         self.set_data(language, gender, string)
 
     @overload
-    def get(self, language: Language, gender: Gender, *, use_fallback: bool = False) -> str | None: ...
+    def get(
+        self, language: Language, gender: Gender, *, use_fallback: bool = False
+    ) -> str | None: ...
     @overload
     def get(self, language: int, gender: int, *, use_fallback: bool = False) -> str | None: ...
     @overload
@@ -869,7 +873,9 @@ class LocalizedString:
             gender_enum = gender
 
         substring_id: int = LocalizedString.substring_id(language_enum, gender_enum)
-        return self._substrings.get(substring_id, next(iter(self._substrings.values()), None) if use_fallback else None)
+        return self._substrings.get(
+            substring_id, next(iter(self._substrings.values()), None) if use_fallback else None
+        )
 
     @overload
     def remove(self, language: Language, gender: Gender) -> None: ...

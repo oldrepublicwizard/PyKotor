@@ -33,7 +33,9 @@ class IconManager:
 
     def __init__(self):
         self.MAIN_FG_COLOR = SpyderPalette.ICON_1
-        self.BIN_FILES: dict[str, str] = dict.fromkeys(["zip", "x-tar", "x-7z-compressed", "rar"], "ArchiveFileIcon")
+        self.BIN_FILES: dict[str, str] = dict.fromkeys(
+            ["zip", "x-tar", "x-7z-compressed", "rar"], "ArchiveFileIcon"
+        )
 
         self.DOCUMENT_FILES: dict[str, str] = {
             "vnd.ms-powerpoint": "PowerpointFileIcon",
@@ -45,7 +47,11 @@ class IconManager:
             "pdf": "PDFIcon",
         }
 
-        self.OFFICE_FILES: dict[str, str] = {".xlsx": "ExcelFileIcon", ".docx": "WordFileIcon", ".pptx": "PowerpointFileIcon"}
+        self.OFFICE_FILES: dict[str, str] = {
+            ".xlsx": "ExcelFileIcon",
+            ".docx": "WordFileIcon",
+            ".pptx": "PowerpointFileIcon",
+        }
 
         self.ICONS_BY_EXTENSION: dict[tuple[str, float | None], QIcon] = {}
 
@@ -129,11 +135,23 @@ class IconManager:
             "filesaveas": (("mdi.content-save-edit",), {"color": self.MAIN_FG_COLOR}),
             "print": (("mdi.printer",), {"color": self.MAIN_FG_COLOR}),
             "fileclose": (("mdi.close",), {"color": self.MAIN_FG_COLOR}),
-            "breakpoint_transparent": (("mdi.checkbox-blank-circle",), {"color": SpyderPalette.COLOR_ERROR_1, "opacity": 0.75, "scale_factor": 0.9}),
-            "breakpoint_big": (("mdi.checkbox-blank-circle",), {"color": SpyderPalette.ICON_4, "scale_factor": 0.9}),
-            "breakpoint_cond_big": (("mdi.help-circle",), {"color": SpyderPalette.ICON_4, "scale_factor": 0.9}),
+            "breakpoint_transparent": (
+                ("mdi.checkbox-blank-circle",),
+                {"color": SpyderPalette.COLOR_ERROR_1, "opacity": 0.75, "scale_factor": 0.9},
+            ),
+            "breakpoint_big": (
+                ("mdi.checkbox-blank-circle",),
+                {"color": SpyderPalette.ICON_4, "scale_factor": 0.9},
+            ),
+            "breakpoint_cond_big": (
+                ("mdi.help-circle",),
+                {"color": SpyderPalette.ICON_4, "scale_factor": 0.9},
+            ),
             "breakpoints": (("mdi.dots-vertical",), {"color": self.MAIN_FG_COLOR}),
-            "arrow_debugger": (("mdi.arrow-right-bold",), {"color": SpyderPalette.ICON_2, "scale_factor": 1.5}),
+            "arrow_debugger": (
+                ("mdi.arrow-right-bold",),
+                {"color": SpyderPalette.ICON_2, "scale_factor": 1.5},
+            ),
             "debug": (("mdi.step-forward-2",), {"color": SpyderPalette.ICON_2}),
             "arrow-step-over": (("mdi.debug-step-over",), {"color": SpyderPalette.ICON_2}),
             "arrow-continue": (("mdi.fast-forward",), {"color": SpyderPalette.ICON_2}),
@@ -143,9 +161,39 @@ class IconManager:
             "enter_debug": (("mdi.location-enter",), {"color": SpyderPalette.ICON_2}),
             "run": (("mdi.play",), {"color": SpyderPalette.ICON_3}),
             "todo_list": (("mdi.check-bold",), {"color": self.MAIN_FG_COLOR}),
-            "wng_list": (("mdi.alert",), {"options": [{"color": SpyderPalette.COLOR_WARN_2, "color_disabled": SpyderPalette.COLOR_TEXT_4}]}),
-            "prev_wng": (("mdi.arrow-left",), {"options": [{"color": SpyderPalette.ICON_1, "color_disabled": SpyderPalette.COLOR_TEXT_4}]}),
-            "next_wng": (("mdi.arrow-right",), {"options": [{"color": SpyderPalette.ICON_1, "color_disabled": SpyderPalette.COLOR_TEXT_4}]}),
+            "wng_list": (
+                ("mdi.alert",),
+                {
+                    "options": [
+                        {
+                            "color": SpyderPalette.COLOR_WARN_2,
+                            "color_disabled": SpyderPalette.COLOR_TEXT_4,
+                        }
+                    ]
+                },
+            ),
+            "prev_wng": (
+                ("mdi.arrow-left",),
+                {
+                    "options": [
+                        {
+                            "color": SpyderPalette.ICON_1,
+                            "color_disabled": SpyderPalette.COLOR_TEXT_4,
+                        }
+                    ]
+                },
+            ),
+            "next_wng": (
+                ("mdi.arrow-right",),
+                {
+                    "options": [
+                        {
+                            "color": SpyderPalette.ICON_1,
+                            "color_disabled": SpyderPalette.COLOR_TEXT_4,
+                        }
+                    ]
+                },
+            ),
             "prev_cursor": (("mdi.hand-pointing-left",), {"color": self.MAIN_FG_COLOR}),
             "next_cursor": (("mdi.hand-pointing-right",), {"color": self.MAIN_FG_COLOR}),
             "comment": (("mdi.comment-text-outline",), {"color": self.MAIN_FG_COLOR}),
@@ -162,11 +210,21 @@ class IconManager:
             "ipython_console": (("mdi.console",), {"color": self.MAIN_FG_COLOR}),
             "python": (
                 ("spyder.python-logo-up", "spyder.python-logo-down"),
-                {"options": [{"color": SpyderPalette.PYTHON_LOGO_UP}, {"color": SpyderPalette.PYTHON_LOGO_DOWN}]},
+                {
+                    "options": [
+                        {"color": SpyderPalette.PYTHON_LOGO_UP},
+                        {"color": SpyderPalette.PYTHON_LOGO_DOWN},
+                    ]
+                },
             ),
             "pythonpath": (
                 ("spyder.python-logo-up", "spyder.python-logo-down"),
-                {"options": [{"color": SpyderPalette.PYTHON_LOGO_UP}, {"color": SpyderPalette.PYTHON_LOGO_DOWN}]},
+                {
+                    "options": [
+                        {"color": SpyderPalette.PYTHON_LOGO_UP},
+                        {"color": SpyderPalette.PYTHON_LOGO_DOWN},
+                    ]
+                },
             ),
             "findf": (("mdi.file-find",), {"color": self.MAIN_FG_COLOR}),
             "history": (("mdi.history",), {"color": self.MAIN_FG_COLOR}),
@@ -179,8 +237,18 @@ class IconManager:
             "next": (("mdi.arrow-right-bold",), {"color": self.MAIN_FG_COLOR}),
             "up": (("mdi.arrow-up-bold",), {"color": self.MAIN_FG_COLOR}),
             "spyder": (
-                ("spyder.spyder-logo-background", "spyder.spyder-logo-web", "spyder.spyder-logo-snake"),
-                {"options": [{"color": SpyderPalette.SPYDER_LOGO_BACKGROUND}, {"color": SpyderPalette.SPYDER_LOGO_WEB}, {"color": SpyderPalette.SPYDER_LOGO_SNAKE}]},
+                (
+                    "spyder.spyder-logo-background",
+                    "spyder.spyder-logo-web",
+                    "spyder.spyder-logo-snake",
+                ),
+                {
+                    "options": [
+                        {"color": SpyderPalette.SPYDER_LOGO_BACKGROUND},
+                        {"color": SpyderPalette.SPYDER_LOGO_WEB},
+                        {"color": SpyderPalette.SPYDER_LOGO_SNAKE},
+                    ]
+                },
             ),
             "find": (("mdi.magnify",), {"color": self.MAIN_FG_COLOR}),
             "replace": (("mdi.find-replace",), {"color": self.MAIN_FG_COLOR}),
@@ -266,14 +334,23 @@ class IconManager:
             "arrow": (("mdi.arrow-right-bold",), {"color": self.MAIN_FG_COLOR}),
             "collapse": (("mdi.collapse-all",), {"color": self.MAIN_FG_COLOR}),
             "expand": (("mdi.expand-all",), {"color": self.MAIN_FG_COLOR}),
-            "restore": (("mdi.subdirectory-arrow-right",), {"color": self.MAIN_FG_COLOR, "rotated": 270}),
+            "restore": (
+                ("mdi.subdirectory-arrow-right",),
+                {"color": self.MAIN_FG_COLOR, "rotated": 270},
+            ),
             "collapse_selection": (("mdi.minus-box",), {"color": self.MAIN_FG_COLOR}),
             "expand_selection": (("mdi.plus-box",), {"color": self.MAIN_FG_COLOR}),
             "copywop": (("mdi.console-line",), {"color": self.MAIN_FG_COLOR}),
             "editpaste": (("mdi.content-paste",), {"color": self.MAIN_FG_COLOR}),
             "edit": (("mdi.pencil",), {"color": self.MAIN_FG_COLOR}),
-            "convention": (("mdi.alpha-c-circle",), {"color": SpyderPalette.ICON_2, "scale_factor": self.BIG_ATTR_FACTOR}),
-            "refactor": (("mdi.alpha-r-circle",), {"color": SpyderPalette.ICON_2, "scale_factor": self.BIG_ATTR_FACTOR}),
+            "convention": (
+                ("mdi.alpha-c-circle",),
+                {"color": SpyderPalette.ICON_2, "scale_factor": self.BIG_ATTR_FACTOR},
+            ),
+            "refactor": (
+                ("mdi.alpha-r-circle",),
+                {"color": SpyderPalette.ICON_2, "scale_factor": self.BIG_ATTR_FACTOR},
+            ),
             "2uparrow": (("mdi.chevron-double-up",), {"color": self.MAIN_FG_COLOR}),
             "1uparrow": (("mdi.chevron-up",), {"color": self.MAIN_FG_COLOR}),
             "2downarrow": (("mdi.chevron-double-down",), {"color": self.MAIN_FG_COLOR}),
@@ -283,45 +360,162 @@ class IconManager:
             "toolbar_ext_button": (("mdi.dots-horizontal",), {"color": self.MAIN_FG_COLOR}),
             # --- Autocompletion/document symbol type icons --------------
             "completions": (("mdi.code-tags-check",), {"color": self.MAIN_FG_COLOR}),
-            "keyword": (("mdi.alpha-k-box",), {"color": SpyderPalette.GROUP_9, "scale_factor": self.BIG_ATTR_FACTOR}),
-            "color": (("mdi.alpha-c-box",), {"color": SpyderPalette.ICON_5, "scale_factor": self.BIG_ATTR_FACTOR}),
-            "enum": (("mdi.alpha-e-box",), {"color": SpyderPalette.ICON_5, "scale_factor": self.BIG_ATTR_FACTOR}),
-            "value": (("mdi.alpha-v-box",), {"color": SpyderPalette.ICON_5, "scale_factor": self.BIG_ATTR_FACTOR}),
-            "constant": (("mdi.alpha-c-box",), {"color": SpyderPalette.ICON_5, "scale_factor": self.BIG_ATTR_FACTOR}),
-            "unit": (("mdi.alpha-u-box",), {"color": SpyderPalette.ICON_5, "scale_factor": self.BIG_ATTR_FACTOR}),
-            "text": (("mdi.alphabetical-variant",), {"color": self.MAIN_FG_COLOR, "scale_factor": self.BIG_ATTR_FACTOR}),
-            "file": (("mdi.file",), {"color": self.MAIN_FG_COLOR, "scale_factor": self.SMALL_ATTR_FACTOR}),
-            "snippet": (("mdi.alpha-s-box",), {"color": SpyderPalette.GROUP_11, "scale_factor": self.BIG_ATTR_FACTOR}),
-            "attribute": (("mdi.alpha-a-box",), {"color": SpyderPalette.GROUP_12, "scale_factor": self.BIG_ATTR_FACTOR}),
-            "reference": (("mdi.alpha-r-box",), {"color": SpyderPalette.ICON_5, "scale_factor": self.BIG_ATTR_FACTOR}),
-            "variable": (("mdi.alpha-v-box",), {"color": SpyderPalette.ICON_5, "scale_factor": self.BIG_ATTR_FACTOR}),
-            "field": (("mdi.alpha-a-box",), {"color": SpyderPalette.ICON_5, "scale_factor": self.BIG_ATTR_FACTOR}),
-            "property": (("mdi.alpha-p-box",), {"color": SpyderPalette.ICON_5, "scale_factor": self.BIG_ATTR_FACTOR}),
-            "module": (("mdi.alpha-m-box",), {"color": SpyderPalette.GROUP_5, "scale_factor": self.BIG_ATTR_FACTOR}),
-            "namespace": (("mdi.alpha-n-box",), {"color": SpyderPalette.GROUP_5, "scale_factor": self.BIG_ATTR_FACTOR}),
-            "package": (("mdi.alpha-p-box",), {"color": SpyderPalette.GROUP_5, "scale_factor": self.BIG_ATTR_FACTOR}),
-            "class": (("mdi.alpha-c-box",), {"color": SpyderPalette.ICON_2, "scale_factor": self.BIG_ATTR_FACTOR}),
-            "interface": (("mdi.alpha-i-box",), {"color": SpyderPalette.ICON_5, "scale_factor": self.BIG_ATTR_FACTOR}),
-            "string": (("mdi.alpha-s-box",), {"color": SpyderPalette.GROUP_9, "scale_factor": self.BIG_ATTR_FACTOR}),
-            "number": (("mdi.alpha-n-box",), {"color": SpyderPalette.GROUP_9, "scale_factor": self.BIG_ATTR_FACTOR}),
-            "boolean": (("mdi.alpha-b-box",), {"color": SpyderPalette.GROUP_12, "scale_factor": self.BIG_ATTR_FACTOR}),
-            "array": (("mdi.alpha-a-box",), {"color": SpyderPalette.GROUP_9, "scale_factor": self.BIG_ATTR_FACTOR}),
-            "object": (("mdi.alpha-o-box",), {"color": SpyderPalette.ICON_5, "scale_factor": self.BIG_ATTR_FACTOR}),
-            "key": (("mdi.alpha-k-box",), {"color": SpyderPalette.ICON_5, "scale_factor": self.BIG_ATTR_FACTOR}),
-            "null": (("mdi.alpha-n-box",), {"color": SpyderPalette.GROUP_12, "scale_factor": self.BIG_ATTR_FACTOR}),
-            "enum_member": (("mdi.alpha-e-box",), {"color": SpyderPalette.COLOR_ERROR_3, "scale_factor": self.BIG_ATTR_FACTOR}),
-            "struct": (("mdi.alpha-s-box",), {"color": SpyderPalette.ICON_2, "scale_factor": self.BIG_ATTR_FACTOR}),
-            "event": (("mdi.alpha-e-box",), {"color": SpyderPalette.COLOR_WARN_3, "scale_factor": self.BIG_ATTR_FACTOR}),
-            "operator": (("mdi.alpha-o-box",), {"color": SpyderPalette.COLOR_WARN_3, "scale_factor": self.BIG_ATTR_FACTOR}),
-            "type_parameter": (("mdi.alpha-t-box",), {"color": SpyderPalette.COLOR_WARN_3, "scale_factor": self.BIG_ATTR_FACTOR}),
-            "private2": (("mdi.eye-off",), {"color": SpyderPalette.COLOR_ERROR_3, "scale_factor": self.SMALL_ATTR_FACTOR}),
-            "private1": (("mdi.eye-off",), {"color": SpyderPalette.COLOR_ERROR_3, "scale_factor": self.SMALL_ATTR_FACTOR}),
-            "method": (("mdi.alpha-m-box",), {"color": SpyderPalette.ICON_3, "scale_factor": self.BIG_ATTR_FACTOR}),
-            "constructor": (("mdi.alpha-c-box",), {"color": SpyderPalette.ICON_5, "scale_factor": self.BIG_ATTR_FACTOR}),
-            "function": (("mdi.alpha-f-box",), {"color": SpyderPalette.COLOR_WARN_3, "scale_factor": self.BIG_ATTR_FACTOR}),
-            "blockcomment": (("mdi.pound",), {"color": SpyderPalette.ICON_2, "scale_factor": self.SMALL_ATTR_FACTOR}),
-            "cell": (("mdi.percent",), {"color": SpyderPalette.GROUP_9, "scale_factor": self.SMALL_ATTR_FACTOR}),
-            "no_match": (("mdi.checkbox-blank-circle",), {"color": SpyderPalette.GROUP_3, "scale_factor": self.SMALL_ATTR_FACTOR}),
+            "keyword": (
+                ("mdi.alpha-k-box",),
+                {"color": SpyderPalette.GROUP_9, "scale_factor": self.BIG_ATTR_FACTOR},
+            ),
+            "color": (
+                ("mdi.alpha-c-box",),
+                {"color": SpyderPalette.ICON_5, "scale_factor": self.BIG_ATTR_FACTOR},
+            ),
+            "enum": (
+                ("mdi.alpha-e-box",),
+                {"color": SpyderPalette.ICON_5, "scale_factor": self.BIG_ATTR_FACTOR},
+            ),
+            "value": (
+                ("mdi.alpha-v-box",),
+                {"color": SpyderPalette.ICON_5, "scale_factor": self.BIG_ATTR_FACTOR},
+            ),
+            "constant": (
+                ("mdi.alpha-c-box",),
+                {"color": SpyderPalette.ICON_5, "scale_factor": self.BIG_ATTR_FACTOR},
+            ),
+            "unit": (
+                ("mdi.alpha-u-box",),
+                {"color": SpyderPalette.ICON_5, "scale_factor": self.BIG_ATTR_FACTOR},
+            ),
+            "text": (
+                ("mdi.alphabetical-variant",),
+                {"color": self.MAIN_FG_COLOR, "scale_factor": self.BIG_ATTR_FACTOR},
+            ),
+            "file": (
+                ("mdi.file",),
+                {"color": self.MAIN_FG_COLOR, "scale_factor": self.SMALL_ATTR_FACTOR},
+            ),
+            "snippet": (
+                ("mdi.alpha-s-box",),
+                {"color": SpyderPalette.GROUP_11, "scale_factor": self.BIG_ATTR_FACTOR},
+            ),
+            "attribute": (
+                ("mdi.alpha-a-box",),
+                {"color": SpyderPalette.GROUP_12, "scale_factor": self.BIG_ATTR_FACTOR},
+            ),
+            "reference": (
+                ("mdi.alpha-r-box",),
+                {"color": SpyderPalette.ICON_5, "scale_factor": self.BIG_ATTR_FACTOR},
+            ),
+            "variable": (
+                ("mdi.alpha-v-box",),
+                {"color": SpyderPalette.ICON_5, "scale_factor": self.BIG_ATTR_FACTOR},
+            ),
+            "field": (
+                ("mdi.alpha-a-box",),
+                {"color": SpyderPalette.ICON_5, "scale_factor": self.BIG_ATTR_FACTOR},
+            ),
+            "property": (
+                ("mdi.alpha-p-box",),
+                {"color": SpyderPalette.ICON_5, "scale_factor": self.BIG_ATTR_FACTOR},
+            ),
+            "module": (
+                ("mdi.alpha-m-box",),
+                {"color": SpyderPalette.GROUP_5, "scale_factor": self.BIG_ATTR_FACTOR},
+            ),
+            "namespace": (
+                ("mdi.alpha-n-box",),
+                {"color": SpyderPalette.GROUP_5, "scale_factor": self.BIG_ATTR_FACTOR},
+            ),
+            "package": (
+                ("mdi.alpha-p-box",),
+                {"color": SpyderPalette.GROUP_5, "scale_factor": self.BIG_ATTR_FACTOR},
+            ),
+            "class": (
+                ("mdi.alpha-c-box",),
+                {"color": SpyderPalette.ICON_2, "scale_factor": self.BIG_ATTR_FACTOR},
+            ),
+            "interface": (
+                ("mdi.alpha-i-box",),
+                {"color": SpyderPalette.ICON_5, "scale_factor": self.BIG_ATTR_FACTOR},
+            ),
+            "string": (
+                ("mdi.alpha-s-box",),
+                {"color": SpyderPalette.GROUP_9, "scale_factor": self.BIG_ATTR_FACTOR},
+            ),
+            "number": (
+                ("mdi.alpha-n-box",),
+                {"color": SpyderPalette.GROUP_9, "scale_factor": self.BIG_ATTR_FACTOR},
+            ),
+            "boolean": (
+                ("mdi.alpha-b-box",),
+                {"color": SpyderPalette.GROUP_12, "scale_factor": self.BIG_ATTR_FACTOR},
+            ),
+            "array": (
+                ("mdi.alpha-a-box",),
+                {"color": SpyderPalette.GROUP_9, "scale_factor": self.BIG_ATTR_FACTOR},
+            ),
+            "object": (
+                ("mdi.alpha-o-box",),
+                {"color": SpyderPalette.ICON_5, "scale_factor": self.BIG_ATTR_FACTOR},
+            ),
+            "key": (
+                ("mdi.alpha-k-box",),
+                {"color": SpyderPalette.ICON_5, "scale_factor": self.BIG_ATTR_FACTOR},
+            ),
+            "null": (
+                ("mdi.alpha-n-box",),
+                {"color": SpyderPalette.GROUP_12, "scale_factor": self.BIG_ATTR_FACTOR},
+            ),
+            "enum_member": (
+                ("mdi.alpha-e-box",),
+                {"color": SpyderPalette.COLOR_ERROR_3, "scale_factor": self.BIG_ATTR_FACTOR},
+            ),
+            "struct": (
+                ("mdi.alpha-s-box",),
+                {"color": SpyderPalette.ICON_2, "scale_factor": self.BIG_ATTR_FACTOR},
+            ),
+            "event": (
+                ("mdi.alpha-e-box",),
+                {"color": SpyderPalette.COLOR_WARN_3, "scale_factor": self.BIG_ATTR_FACTOR},
+            ),
+            "operator": (
+                ("mdi.alpha-o-box",),
+                {"color": SpyderPalette.COLOR_WARN_3, "scale_factor": self.BIG_ATTR_FACTOR},
+            ),
+            "type_parameter": (
+                ("mdi.alpha-t-box",),
+                {"color": SpyderPalette.COLOR_WARN_3, "scale_factor": self.BIG_ATTR_FACTOR},
+            ),
+            "private2": (
+                ("mdi.eye-off",),
+                {"color": SpyderPalette.COLOR_ERROR_3, "scale_factor": self.SMALL_ATTR_FACTOR},
+            ),
+            "private1": (
+                ("mdi.eye-off",),
+                {"color": SpyderPalette.COLOR_ERROR_3, "scale_factor": self.SMALL_ATTR_FACTOR},
+            ),
+            "method": (
+                ("mdi.alpha-m-box",),
+                {"color": SpyderPalette.ICON_3, "scale_factor": self.BIG_ATTR_FACTOR},
+            ),
+            "constructor": (
+                ("mdi.alpha-c-box",),
+                {"color": SpyderPalette.ICON_5, "scale_factor": self.BIG_ATTR_FACTOR},
+            ),
+            "function": (
+                ("mdi.alpha-f-box",),
+                {"color": SpyderPalette.COLOR_WARN_3, "scale_factor": self.BIG_ATTR_FACTOR},
+            ),
+            "blockcomment": (
+                ("mdi.pound",),
+                {"color": SpyderPalette.ICON_2, "scale_factor": self.SMALL_ATTR_FACTOR},
+            ),
+            "cell": (
+                ("mdi.percent",),
+                {"color": SpyderPalette.GROUP_9, "scale_factor": self.SMALL_ATTR_FACTOR},
+            ),
+            "no_match": (
+                ("mdi.checkbox-blank-circle",),
+                {"color": SpyderPalette.GROUP_3, "scale_factor": self.SMALL_ATTR_FACTOR},
+            ),
             "github": (("mdi.github",), {"color": self.MAIN_FG_COLOR}),
             # --- Spyder Tour --------------------------------------------------------
             "tour": (("mdi.map-outline",), {"color": self.MAIN_FG_COLOR}),
@@ -363,7 +557,10 @@ class IconManager:
             "first_page": (("mdi.page-first",), {"color": self.MAIN_FG_COLOR}),
             "last_page": (("mdi.page-last",), {"color": self.MAIN_FG_COLOR}),
             "print.single_page": (("mdi.file-document-outline",), {"color": self.MAIN_FG_COLOR}),
-            "print.all_pages": (("mdi.file-document-multiple-outline",), {"color": self.MAIN_FG_COLOR}),
+            "print.all_pages": (
+                ("mdi.file-document-multiple-outline",),
+                {"color": self.MAIN_FG_COLOR},
+            ),
             "print.page_setup": (("mdi.ruler-square",), {"color": self.MAIN_FG_COLOR}),
         }
 
@@ -448,7 +645,12 @@ class IconManager:
             try:
                 # Try to load the icons from QtAwesome
                 if not self._resource["loaded"]:
-                    qtawesome.load_font("spyder", "spyder.ttf", "spyder-charmap.json", directory=self._resource["directory"])
+                    qtawesome.load_font(
+                        "spyder",
+                        "spyder.ttf",
+                        "spyder-charmap.json",
+                        directory=self._resource["directory"],
+                    )
                     self._resource["loaded"] = True
                 args, kwargs = self._qtaargs[name]
                 if scale_factor is not None:
@@ -518,7 +720,11 @@ class IconManager:
                     icon_by_extension = self.icon("VideoFileIcon", scale_factor)
                 elif file_type == "image":
                     icon_by_extension = self.icon("ImageFileIcon", scale_factor)
-                elif file_type == "application" and bin_name is not None and bin_name in application_icons:
+                elif (
+                    file_type == "application"
+                    and bin_name is not None
+                    and bin_name in application_icons
+                ):
                     icon_by_extension = self.icon(application_icons[bin_name], scale_factor)
 
         self.ICONS_BY_EXTENSION[(extension, scale_factor)] = icon_by_extension

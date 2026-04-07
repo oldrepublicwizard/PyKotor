@@ -26,15 +26,27 @@ import time
 from typing import Any
 
 
-def run_gh_api(endpoint: str, method: str = "GET", data: dict[str, Any] | None = None) -> dict[str, Any] | None:
+def run_gh_api(
+    endpoint: str, method: str = "GET", data: dict[str, Any] | None = None
+) -> dict[str, Any] | None:
     """Run a GitHub API command and return JSON result."""
     cmd = ["gh", "api", endpoint, "--method", method]
     if data:
         cmd.extend(["--input", "-"])
         json_data = json.dumps(data)
-        result = subprocess.run(cmd, check=False, input=json_data, capture_output=True, text=True, encoding="utf-8", errors="replace")
+        result = subprocess.run(
+            cmd,
+            check=False,
+            input=json_data,
+            capture_output=True,
+            text=True,
+            encoding="utf-8",
+            errors="replace",
+        )
     else:
-        result = subprocess.run(cmd, check=False, capture_output=True, text=True, encoding="utf-8", errors="replace")
+        result = subprocess.run(
+            cmd, check=False, capture_output=True, text=True, encoding="utf-8", errors="replace"
+        )
 
     if result.returncode != 0:
         if result.stderr and "rate limit" not in result.stderr.lower():
@@ -144,7 +156,9 @@ def get_issue_comments(source_repo: str, issue_number: int) -> list[dict[str, An
     per_page = 100
 
     while True:
-        endpoint = f"repos/{source_repo}/issues/{issue_number}/comments?page={page}&per_page={per_page}"
+        endpoint = (
+            f"repos/{source_repo}/issues/{issue_number}/comments?page={page}&per_page={per_page}"
+        )
         page_comments = run_gh_api(endpoint)
         if not page_comments:
             break
@@ -163,9 +177,15 @@ def get_issue(source_repo: str, issue_num: int) -> dict[str, Any] | None:
     return run_gh_api(endpoint)
 
 
-def create_issue(target_repo: str, issue_data: dict[str, Any], skip_milestone: bool = False) -> dict[str, Any] | None:
+def create_issue(
+    target_repo: str, issue_data: dict[str, Any], skip_milestone: bool = False
+) -> dict[str, Any] | None:
     """Create an issue in target repository."""
-    data = {"title": issue_data["title"], "body": issue_data["body"], "state": issue_data.get("state", "open")}
+    data = {
+        "title": issue_data["title"],
+        "body": issue_data["body"],
+        "state": issue_data.get("state", "open"),
+    }
 
     if issue_data.get("labels"):
         data["labels"] = [label["name"] for label in issue_data["labels"]]
@@ -301,7 +321,9 @@ def get_all_discussions(source_repo: str) -> list[dict[str, Any]]:
     return discussions
 
 
-def migrate_releases(source_repo: str, target_repo: str, recreate_in_order: bool = False) -> tuple[int, int]:
+def migrate_releases(
+    source_repo: str, target_repo: str, recreate_in_order: bool = False
+) -> tuple[int, int]:
     """Migrate all releases from source to target.
 
     If recreate_in_order is True, deletes all existing releases and recreates
@@ -321,7 +343,9 @@ def migrate_releases(source_repo: str, target_repo: str, recreate_in_order: bool
     sorted_releases = sorted(releases, key=get_published_date)
 
     if recreate_in_order:
-        print("\nRECREATE MODE: Deleting all existing releases and recreating in chronological order")
+        print(
+            "\nRECREATE MODE: Deleting all existing releases and recreating in chronological order"
+        )
 
         # Get and delete all existing releases
         existing_releases = get_all_releases(target_repo)
@@ -359,7 +383,9 @@ def migrate_releases(source_repo: str, target_repo: str, recreate_in_order: bool
         time.sleep(2)
         remaining_releases = get_all_releases(target_repo)
         if remaining_releases:
-            print(f"WARNING: {len(remaining_releases)} releases still exist. Attempting to delete again...")
+            print(
+                f"WARNING: {len(remaining_releases)} releases still exist. Attempting to delete again..."
+            )
             for release in remaining_releases:
                 delete_release(target_repo, release["id"])
                 time.sleep(0.5)
@@ -491,7 +517,9 @@ def migrate_issues(source_repo: str, target_repo: str) -> tuple[int, int, int]:
             existing_comments = get_existing_comments(target_repo, existing_issue["number"])
 
             if source_comments and len(source_comments) > len(existing_comments):
-                print(f"  Migrating {len(source_comments) - len(existing_comments)} missing comments...")
+                print(
+                    f"  Migrating {len(source_comments) - len(existing_comments)} missing comments..."
+                )
                 for comment in source_comments[len(existing_comments) :]:
                     if create_issue_comment(target_repo, existing_issue["number"], comment):
                         pass  # Success
@@ -667,11 +695,27 @@ def migrate_discussions(source_repo: str, target_repo: str) -> int:
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Migrate repository metadata between GitHub repositories")
-    parser.add_argument("--source", default="NickHugi/PyKotor", help="Source repository (default: NickHugi/PyKotor)")
-    parser.add_argument("--target", default="OpenKotOR/PyKotor", help="Target repository (default: OpenKotOR/PyKotor)")
-    parser.add_argument("--fix-only", action="store_true", help="Only fix existing migrated issues, don't migrate new ones")
-    parser.add_argument("--recreate-releases", action="store_true", help="Delete all existing releases and recreate in exact chronological order")
+    parser = argparse.ArgumentParser(
+        description="Migrate repository metadata between GitHub repositories"
+    )
+    parser.add_argument(
+        "--source", default="NickHugi/PyKotor", help="Source repository (default: NickHugi/PyKotor)"
+    )
+    parser.add_argument(
+        "--target",
+        default="OpenKotOR/PyKotor",
+        help="Target repository (default: OpenKotOR/PyKotor)",
+    )
+    parser.add_argument(
+        "--fix-only",
+        action="store_true",
+        help="Only fix existing migrated issues, don't migrate new ones",
+    )
+    parser.add_argument(
+        "--recreate-releases",
+        action="store_true",
+        help="Delete all existing releases and recreate in exact chronological order",
+    )
     args = parser.parse_args()
 
     source_repo = args.source
@@ -691,7 +735,9 @@ def main():
         verify_and_fix_remaining(source_repo, target_repo)
     else:
         # Full migration
-        migrated_releases, skipped_releases = migrate_releases(source_repo, target_repo, recreate_in_order=args.recreate_releases)
+        migrated_releases, skipped_releases = migrate_releases(
+            source_repo, target_repo, recreate_in_order=args.recreate_releases
+        )
         migrated_issues, skipped_issues, failed_issues = migrate_issues(source_repo, target_repo)
         matched, updated, closed = fix_migrated_issues(source_repo, target_repo)
         verify_and_fix_remaining(source_repo, target_repo)
@@ -702,7 +748,9 @@ def main():
         print("MIGRATION SUMMARY")
         print("=" * 60)
         print(f"Releases:  {migrated_releases} migrated, {skipped_releases} skipped")
-        print(f"Issues:    {migrated_issues} migrated, {skipped_issues} skipped, {failed_issues} failed")
+        print(
+            f"Issues:    {migrated_issues} migrated, {skipped_issues} skipped, {failed_issues} failed"
+        )
         print(f"Fixed:     {matched} matched, {updated} updated, {closed} closed")
         print(f"Discussions: {discussions_count} found (require manual migration)")
         print("\nMigration complete!")

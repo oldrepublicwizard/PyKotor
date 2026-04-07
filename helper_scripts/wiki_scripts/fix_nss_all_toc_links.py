@@ -246,7 +246,11 @@ def fix_toc_links():
         elif "## K1-Only Functions" in parsed_line:
             in_tsl_only = False
             in_k1_only = True
-        elif parsed_line.strip().startswith("## ") and not parsed_line.strip().startswith("## TSL-Only") and not parsed_line.strip().startswith("## K1-Only"):
+        elif (
+            parsed_line.strip().startswith("## ")
+            and not parsed_line.strip().startswith("## TSL-Only")
+            and not parsed_line.strip().startswith("## K1-Only")
+        ):
             in_tsl_only = False
             in_k1_only = False
 
@@ -274,11 +278,15 @@ def fix_toc_links():
                     # If we're in TSL-Only or K1-Only section, prefer those files
                     if in_tsl_only and file_name.startswith("NSS-Shared-Functions"):
                         # Try to find in TSL-Only file instead
-                        tsl_file = file_name.replace("NSS-Shared-Functions", "NSS-TSL-Only-Functions")
+                        tsl_file = file_name.replace(
+                            "NSS-Shared-Functions", "NSS-TSL-Only-Functions"
+                        )
                         tsl_path = WIKI_DIR / f"{tsl_file}.md"
                         if tsl_path.exists():
                             content = tsl_path.read_text(encoding="utf-8")
-                            anchor_pattern = rf'<a id="([^"]+)"></a>\s*\n\s*##\s+`{re.escape(func_name)}\('
+                            anchor_pattern = (
+                                rf'<a id="([^"]+)"></a>\s*\n\s*##\s+`{re.escape(func_name)}\('
+                            )
                             match_anchor = re.search(anchor_pattern, content)
                             if match_anchor:
                                 file_name = tsl_file
@@ -289,7 +297,9 @@ def fix_toc_links():
                         k1_path = WIKI_DIR / f"{k1_file}.md"
                         if k1_path.exists():
                             content = k1_path.read_text(encoding="utf-8")
-                            anchor_pattern = rf'<a id="([^"]+)"></a>\s*\n\s*##\s+`{re.escape(func_name)}\('
+                            anchor_pattern = (
+                                rf'<a id="([^"]+)"></a>\s*\n\s*##\s+`{re.escape(func_name)}\('
+                            )
                             match_anchor = re.search(anchor_pattern, content)
                             if match_anchor:
                                 file_name = k1_file
@@ -306,7 +316,9 @@ def fix_toc_links():
                             # Verify anchor exists
                             if f'<a id="{anchor}"></a>' not in content:
                                 # Try to find actual anchor
-                                anchor_pattern = rf'<a id="([^"]+)"></a>\s*\n\s*##\s+`{re.escape(func_name)}\('
+                                anchor_pattern = (
+                                    rf'<a id="([^"]+)"></a>\s*\n\s*##\s+`{re.escape(func_name)}\('
+                                )
                                 match_anchor = re.search(anchor_pattern, content)
                                 if match_anchor:
                                     anchor = match_anchor.group(1)
@@ -319,34 +331,62 @@ def fix_toc_links():
                     match: re.Match[str] | None = re.search(link_pattern, parsed_line)
                     if match:
                         current_file: str = match.group(1)
-                        current_anchor: str | None = match.group(2) if match.lastindex and match.lastindex >= 2 else None
+                        current_anchor: str | None = (
+                            match.group(2) if match.lastindex and match.lastindex >= 2 else None
+                        )
 
                         # Fix if file is wrong or (anchor is wrong and function exists)
                         if current_file != file_name:
                             # File is wrong - fix it
                             if has_function:
-                                parsed_line = re.sub(link_pattern, f"[`{func_text}`{routine_str}]({file_name}#{anchor})", parsed_line)
+                                parsed_line = re.sub(
+                                    link_pattern,
+                                    f"[`{func_text}`{routine_str}]({file_name}#{anchor})",
+                                    parsed_line,
+                                )
                             else:
-                                parsed_line = re.sub(link_pattern, f"[`{func_text}`{routine_str}]({file_name})", parsed_line)
+                                parsed_line = re.sub(
+                                    link_pattern,
+                                    f"[`{func_text}`{routine_str}]({file_name})",
+                                    parsed_line,
+                                )
                             fixes += 1
                         elif current_anchor and has_function and current_anchor != anchor:
                             # Anchor is wrong and function exists - fix it
-                            parsed_line = re.sub(link_pattern, f"[`{func_text}`{routine_str}]({file_name}#{anchor})", parsed_line)
+                            parsed_line = re.sub(
+                                link_pattern,
+                                f"[`{func_text}`{routine_str}]({file_name}#{anchor})",
+                                parsed_line,
+                            )
                             fixes += 1
                         elif current_anchor and not has_function:
                             # Anchor exists but function doesn't - remove anchor
-                            parsed_line = re.sub(link_pattern, f"[`{func_text}`{routine_str}]({file_name})", parsed_line)
+                            parsed_line = re.sub(
+                                link_pattern,
+                                f"[`{func_text}`{routine_str}]({file_name})",
+                                parsed_line,
+                            )
                             fixes += 1
                     elif "](#" in parsed_line:
                         # Replace anchor link with file link (with or without anchor based on has_function)
                         if has_function:
-                            parsed_line = re.sub(r"\[`[^`]+`[^\]]*\]\([^\)]+\)", f"[`{func_text}`{routine_str}]({file_name}#{anchor})", parsed_line)
+                            parsed_line = re.sub(
+                                r"\[`[^`]+`[^\]]*\]\([^\)]+\)",
+                                f"[`{func_text}`{routine_str}]({file_name}#{anchor})",
+                                parsed_line,
+                            )
                         else:
-                            parsed_line = re.sub(r"\[`[^`]+`[^\]]*\]\([^\)]+\)", f"[`{func_text}`{routine_str}]({file_name})", parsed_line)
+                            parsed_line = re.sub(
+                                r"\[`[^`]+`[^\]]*\]\([^\)]+\)",
+                                f"[`{func_text}`{routine_str}]({file_name})",
+                                parsed_line,
+                            )
                         fixes += 1
                     elif f"]({file_name})" in parsed_line and has_function:
                         # Add anchor to existing file link if function exists
-                        parsed_line = parsed_line.replace(f"]({file_name})", f"]({file_name}#{anchor})")
+                        parsed_line = parsed_line.replace(
+                            f"]({file_name})", f"]({file_name}#{anchor})"
+                        )
                         fixes += 1
                 # If result is None, keep the original line unchanged (no continue)
 

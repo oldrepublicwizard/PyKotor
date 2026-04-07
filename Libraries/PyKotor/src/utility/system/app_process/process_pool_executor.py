@@ -38,7 +38,9 @@ class CustomProcessPoolExecutor(Generic[T]):
         if hasattr(self, "singleton_initialized"):
             return
         self.max_workers: int = max_workers or multiprocessing.cpu_count() * 2
-        self.task_queue: multiprocessing.JoinableQueue[Callable[..., Any]] = multiprocessing.JoinableQueue()
+        self.task_queue: multiprocessing.JoinableQueue[Callable[..., Any]] = (
+            multiprocessing.JoinableQueue()
+        )
         self.result_queue: multiprocessing.Queue[T] = multiprocessing.Queue()
         self.workers: list[tuple[MultiprocessingEvent, TaskConsumer]] = []
         self._initializer: Callable[[], None] | None = initializer

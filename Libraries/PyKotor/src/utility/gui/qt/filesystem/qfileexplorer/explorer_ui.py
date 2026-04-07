@@ -35,7 +35,9 @@ class Ui_QFileExplorer:
         self.topLayout.setSpacing(2)
         self.topLayout.setObjectName("topLayout")
         self.ribbonWidget = RibbonsWidget()
-        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Policy.Expanding, QtWidgets.QSizePolicy.Policy.Fixed)
+        sizePolicy = QtWidgets.QSizePolicy(
+            QtWidgets.QSizePolicy.Policy.Expanding, QtWidgets.QSizePolicy.Policy.Fixed
+        )
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(self.ribbonWidget.sizePolicy().hasHeightForWidth())
@@ -49,7 +51,9 @@ class Ui_QFileExplorer:
         self.horizontalLayout.setSpacing(2)
         self.horizontalLayout.setObjectName("horizontalLayout")
         self.searchBar = QtWidgets.QLineEdit(parent=self.searchAndAddressWidget)
-        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Policy.Fixed, QtWidgets.QSizePolicy.Policy.Fixed)
+        sizePolicy = QtWidgets.QSizePolicy(
+            QtWidgets.QSizePolicy.Policy.Fixed, QtWidgets.QSizePolicy.Policy.Fixed
+        )
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(self.searchBar.sizePolicy().hasHeightForWidth())
@@ -58,7 +62,9 @@ class Ui_QFileExplorer:
         self.searchBar.setObjectName("searchBar")
         self.horizontalLayout.addWidget(self.searchBar)
         self.addressBar = RobustAddressBar(parent=self.searchAndAddressWidget)
-        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Policy.Expanding, QtWidgets.QSizePolicy.Policy.Fixed)
+        sizePolicy = QtWidgets.QSizePolicy(
+            QtWidgets.QSizePolicy.Policy.Expanding, QtWidgets.QSizePolicy.Policy.Fixed
+        )
         sizePolicy.setHorizontalStretch(1)
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(self.addressBar.sizePolicy().hasHeightForWidth())
@@ -68,7 +74,9 @@ class Ui_QFileExplorer:
         self.topLayout.addWidget(self.searchAndAddressWidget)
         self.verticalLayout.addWidget(self.topWidget)
         self.mainSplitter = QtWidgets.QSplitter(parent=self.centralwidget)
-        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Policy.Expanding, QtWidgets.QSizePolicy.Policy.Expanding)
+        sizePolicy = QtWidgets.QSizePolicy(
+            QtWidgets.QSizePolicy.Policy.Expanding, QtWidgets.QSizePolicy.Policy.Expanding
+        )
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(1)
         sizePolicy.setHeightForWidth(self.mainSplitter.sizePolicy().hasHeightForWidth())
@@ -76,7 +84,9 @@ class Ui_QFileExplorer:
         self.mainSplitter.setOrientation(QtCore.Qt.Orientation.Horizontal)
         self.mainSplitter.setObjectName("mainSplitter")
         self.sidebarWidget = QtWidgets.QWidget(parent=self.mainSplitter)
-        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Policy.Preferred, QtWidgets.QSizePolicy.Policy.Expanding)
+        sizePolicy = QtWidgets.QSizePolicy(
+            QtWidgets.QSizePolicy.Policy.Preferred, QtWidgets.QSizePolicy.Policy.Expanding
+        )
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(self.sidebarWidget.sizePolicy().hasHeightForWidth())
@@ -86,7 +96,9 @@ class Ui_QFileExplorer:
         self.sidebarLayout.setContentsMargins(0, 0, 0, 0)
         self.sidebarLayout.setObjectName("sidebarLayout")
         self.drivesWidget = QtWidgets.QWidget(parent=self.sidebarWidget)
-        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Policy.Preferred, QtWidgets.QSizePolicy.Policy.Fixed)
+        sizePolicy = QtWidgets.QSizePolicy(
+            QtWidgets.QSizePolicy.Policy.Preferred, QtWidgets.QSizePolicy.Policy.Fixed
+        )
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(self.drivesWidget.sizePolicy().hasHeightForWidth())
@@ -97,7 +109,9 @@ class Ui_QFileExplorer:
         self.horizontalLayout_2.setObjectName("horizontalLayout_2")
         self.sidebarLayout.addWidget(self.drivesWidget)
         self.sidebarToolBox = QtWidgets.QToolBox(parent=self.sidebarWidget)
-        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Policy.Preferred, QtWidgets.QSizePolicy.Policy.Expanding)
+        sizePolicy = QtWidgets.QSizePolicy(
+            QtWidgets.QSizePolicy.Policy.Preferred, QtWidgets.QSizePolicy.Policy.Expanding
+        )
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(1)
         sizePolicy.setHeightForWidth(self.sidebarToolBox.sizePolicy().hasHeightForWidth())
@@ -108,7 +122,9 @@ class Ui_QFileExplorer:
         self.verticalLayout_5 = QtWidgets.QVBoxLayout(self.treeViewPage)
         self.verticalLayout_5.setObjectName("verticalLayout_5")
         self.fileSystemTreeView = QtWidgets.QTreeView(parent=self.treeViewPage)
-        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Policy.Expanding, QtWidgets.QSizePolicy.Policy.Expanding)
+        sizePolicy = QtWidgets.QSizePolicy(
+            QtWidgets.QSizePolicy.Policy.Expanding, QtWidgets.QSizePolicy.Policy.Expanding
+        )
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(self.fileSystemTreeView.sizePolicy().hasHeightForWidth())
@@ -133,7 +149,9 @@ class Ui_QFileExplorer:
         self.sidebarToolBox.addItem(self.bookmarksPage, "")
         self.sidebarLayout.addWidget(self.sidebarToolBox)
         self.dynamicView = DynamicStackedView(parent=self.mainSplitter)
-        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Policy.Preferred, QtWidgets.QSizePolicy.Policy.Preferred)
+        sizePolicy = QtWidgets.QSizePolicy(
+            QtWidgets.QSizePolicy.Policy.Preferred, QtWidgets.QSizePolicy.Policy.Preferred
+        )
         sizePolicy.setHorizontalStretch(1)
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(self.dynamicView.sizePolicy().hasHeightForWidth())
@@ -163,7 +181,9 @@ class Ui_QFileExplorer:
         self.freeSpaceLabel.setObjectName("freeSpaceLabel")
         self.horizontalLayout_3.addWidget(self.freeSpaceLabel)
         self.progressBar = QtWidgets.QProgressBar(parent=self.statusWidget)
-        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Policy.Preferred, QtWidgets.QSizePolicy.Policy.Fixed)
+        sizePolicy = QtWidgets.QSizePolicy(
+            QtWidgets.QSizePolicy.Policy.Preferred, QtWidgets.QSizePolicy.Policy.Fixed
+        )
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(self.progressBar.sizePolicy().hasHeightForWidth())
@@ -174,10 +194,14 @@ class Ui_QFileExplorer:
         self.progressBar.setTextVisible(True)
         self.progressBar.setObjectName("progressBar")
         self.horizontalLayout_3.addWidget(self.progressBar)
-        spacerItem = QtWidgets.QSpacerItem(40, 20, QtWidgets.QSizePolicy.Policy.Expanding, QtWidgets.QSizePolicy.Policy.Minimum)
+        spacerItem = QtWidgets.QSpacerItem(
+            40, 20, QtWidgets.QSizePolicy.Policy.Expanding, QtWidgets.QSizePolicy.Policy.Minimum
+        )
         self.horizontalLayout_3.addItem(spacerItem)
         self.zoom_slider = QtWidgets.QSlider(parent=self.statusWidget)
-        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Policy.Preferred, QtWidgets.QSizePolicy.Policy.Fixed)
+        sizePolicy = QtWidgets.QSizePolicy(
+            QtWidgets.QSizePolicy.Policy.Preferred, QtWidgets.QSizePolicy.Policy.Fixed
+        )
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(self.zoom_slider.sizePolicy().hasHeightForWidth())
@@ -202,12 +226,20 @@ class Ui_QFileExplorer:
     def retranslateUi(self, QFileExplorer: FileSystemExplorerWidget | None = None):
         _translate = QtCore.QCoreApplication.translate
         self.searchBar.setPlaceholderText(_translate("QFileExplorer", "Search..."))
-        self.fileSystemTreeView.setToolTip(_translate("QFileExplorer", "Browse file system hierarchy"))
+        self.fileSystemTreeView.setToolTip(
+            _translate("QFileExplorer", "Browse file system hierarchy")
+        )
         self.fileSystemTreeView.setAccessibleName(_translate("QFileExplorer", "File System Tree"))
-        self.sidebarToolBox.setItemText(self.sidebarToolBox.indexOf(self.treeViewPage), _translate("QFileExplorer", "File System"))
+        self.sidebarToolBox.setItemText(
+            self.sidebarToolBox.indexOf(self.treeViewPage),
+            _translate("QFileExplorer", "File System"),
+        )
         self.bookmarksListView.setToolTip(_translate("QFileExplorer", "View and manage bookmarks"))
         self.bookmarksListView.setAccessibleName(_translate("QFileExplorer", "Bookmarks"))
-        self.sidebarToolBox.setItemText(self.sidebarToolBox.indexOf(self.bookmarksPage), _translate("QFileExplorer", "Bookmarks"))
+        self.sidebarToolBox.setItemText(
+            self.sidebarToolBox.indexOf(self.bookmarksPage),
+            _translate("QFileExplorer", "Bookmarks"),
+        )
         self.dynamicView.setToolTip(_translate("QFileExplorer", "View files and folders"))
         self.dynamicView.setAccessibleName(_translate("QFileExplorer", "File View"))
         self.taskStatusToggle.setText(_translate("QFileExplorer", "Task Status"))

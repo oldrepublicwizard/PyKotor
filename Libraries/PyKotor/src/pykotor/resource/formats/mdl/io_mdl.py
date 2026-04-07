@@ -64,7 +64,15 @@ from pykotor.resource.formats.mdl.mdl_types import MDLClassification, MDLControl
 from utility.common.geometry import Vector2, Vector3, Vector4
 
 # Debug logging: Enable via environment variable PYKOTOR_DEBUG_MDL=1
-_DEBUG_MDL = os.environ.get("PYKOTOR_DEBUG_MDL", "").strip() in ("1", "true", "True", "TRUE", "yes", "Yes", "YES")
+_DEBUG_MDL = os.environ.get("PYKOTOR_DEBUG_MDL", "").strip() in (
+    "1",
+    "true",
+    "True",
+    "TRUE",
+    "yes",
+    "Yes",
+    "YES",
+)
 
 if TYPE_CHECKING:
     from pykotor.common.stream import BinaryWriterBytearray
@@ -107,7 +115,9 @@ class _ModelHeader:
         self.geometry: _GeometryHeader = _GeometryHeader()
         # Binary MDL model header after geometry header (0x50 bytes into the model header block):
         self.model_type: int = 0  # Model classification type (uint8 at binary offset 0x50)
-        self.subclassification: int = 0  # Model subclassification value (uint8 at binary offset 0x51)
+        self.subclassification: int = (
+            0  # Model subclassification value (uint8 at binary offset 0x51)
+        )
         # Padding byte at 0x52 aligns subclassification (uint8) with child_model_count (uint32 at 0x54)
         self.padding0: int = 0  # Alignment padding byte (uint8 at binary offset 0x52) - ensures proper alignment for subsequent uint32 fields
         self.fog: int = 0  # Fog flag/parameter (uint8 at binary offset 0x53)
@@ -138,11 +148,17 @@ class _ModelHeader:
         reader: BinaryReader,
     ) -> _ModelHeader:
         self.geometry = _GeometryHeader().read(reader)
-        self.model_type = reader.read_uint8()  # Model classification type (uint8 at binary offset 0x50)
-        self.subclassification = reader.read_uint8()  # Model subclassification value (uint8 at binary offset 0x51)
+        self.model_type = (
+            reader.read_uint8()
+        )  # Model classification type (uint8 at binary offset 0x50)
+        self.subclassification = (
+            reader.read_uint8()
+        )  # Model subclassification value (uint8 at binary offset 0x51)
         self.padding0 = reader.read_uint8()  # uint8 at binary offset 0x52 (alignment)
         self.fog = reader.read_uint8()  # Fog flag/parameter (uint8 at binary offset 0x53)
-        self.child_model_count = reader.read_uint32()  # Number of child models (uint32 at binary offset 0x54)
+        self.child_model_count = (
+            reader.read_uint32()
+        )  # Number of child models (uint32 at binary offset 0x54)
         self.offset_to_animations = reader.read_uint32()
         animation_count_raw = reader.read_uint32()
         animation_count_raw = min(animation_count_raw, 0x7FFFFFFF)
@@ -150,7 +166,9 @@ class _ModelHeader:
         animation_count2_raw = reader.read_uint32()
         animation_count2_raw = min(animation_count2_raw, 0x7FFFFFFF)
         self.animation_count2 = animation_count2_raw
-        self.parent_model_pointer = reader.read_uint32()  # Parent model link / context field (uint32 at binary offset 0x64)
+        self.parent_model_pointer = (
+            reader.read_uint32()
+        )  # Parent model link / context field (uint32 at binary offset 0x64)
         self.bounding_box_min = reader.read_vector3()
         self.bounding_box_max = reader.read_vector3()
         self.radius = reader.read_single()
@@ -512,7 +530,8 @@ class _Node:
         if (
             child_loc in (0, 0xFFFFFFFF)
             or child_loc >= reader.size()
-            or self.header.children_count > 0x7FFFFFFF  # Prevent negative values when interpreted as signed
+            or self.header.children_count
+            > 0x7FFFFFFF  # Prevent negative values when interpreted as signed
             or (self.header.children_count * 4) + child_loc > reader.size()
         ):
             self.header.children_count = 0
@@ -522,7 +541,9 @@ class _Node:
 
         try:
             reader.seek(child_loc)
-            self.children_offsets = [reader.read_uint32() for _ in range(self.header.children_count)]
+            self.children_offsets = [
+                reader.read_uint32() for _ in range(self.header.children_count)
+            ]
         except Exception:
             # If reading fails, set to empty to prevent corruption.
             self.header.children_count = 0
@@ -597,7 +618,10 @@ class _Node:
                     data_idx += 1
             # Write data values
             # Check if this is a compressed quaternion controller (type 20, column_count 2)
-            is_compressed_quat = controller.type_id == int(MDLControllerType.ORIENTATION) and controller.column_count == 2
+            is_compressed_quat = (
+                controller.type_id == int(MDLControllerType.ORIENTATION)
+                and controller.column_count == 2
+            )
             if is_compressed_quat:
                 # Compressed quaternions: write as uint32s (1 per row, reinterpreted from float)
                 import struct as struct_module
@@ -606,7 +630,9 @@ class _Node:
                     if data_idx < len(self.w_controller_data):
                         # Reinterpret float as uint32 (same bits, NOT numeric conversion)
                         float_val = self.w_controller_data[data_idx]
-                        compressed_uint32 = struct_module.unpack("<I", struct_module.pack("<f", float_val))[0]
+                        compressed_uint32 = struct_module.unpack(
+                            "<I", struct_module.pack("<f", float_val)
+                        )[0]
                         writer.write_uint32(compressed_uint32)
                         data_idx += 1
             else:
@@ -1119,10 +1145,14 @@ class _TrimeshHeader:
         self.counters_count2: int = 0
         # Reference: wiki/MDL-MDX-File-Format.md:380 - "Unknown values" at offset 212 (0xD4)
         # Typically `{-1, -1, 0}` as three int32 values (12 bytes total)
-        self.unknown1: bytes = b"\xff\xff\xff\xff" + b"\xff\xff\xff\xff" + b"\x00\x00\x00\x00"  # Unknown values (3 int32s, typically {-1, -1, 0})
+        self.unknown1: bytes = (
+            b"\xff\xff\xff\xff" + b"\xff\xff\xff\xff" + b"\x00\x00\x00\x00"
+        )  # Unknown values (3 int32s, typically {-1, -1, 0})
         # Reference: wiki/MDL-MDX-File-Format.md:381 - "Saber Unknown data" at offset 224 (0xE0)
         # Data specific to lightsaber meshes (8 bytes)
-        self.saber_unknowns: bytes = b"\x00" * 8  # Saber Unknown data (8 bytes, lightsaber-specific)
+        self.saber_unknowns: bytes = (
+            b"\x00" * 8
+        )  # Saber Unknown data (8 bytes, lightsaber-specific)
         # Reference: wiki/MDL-MDX-File-Format.md:382 - "Unknown" at offset 232 (0xE8)
         # Signed int32 in MDLOps template (single `l`).
         self.unknown2: int = 0  # Unknown field (int32 at binary offset 0xE8, purpose unknown)
@@ -1225,11 +1255,17 @@ class _TrimeshHeader:
         counters_count2_raw = min(counters_count2_raw, 0x7FFFFFFF)
         self.counters_count2 = counters_count2_raw
         # Reference: wiki/MDL-MDX-File-Format.md:380 - "Unknown values" (3 int32s, typically {-1, -1, 0})
-        self.unknown1 = reader.read_bytes(12)  # Unknown values (3 int32s, MDLOps `l[3]`, typically {-1, -1, 0})
+        self.unknown1 = reader.read_bytes(
+            12
+        )  # Unknown values (3 int32s, MDLOps `l[3]`, typically {-1, -1, 0})
         # Reference: wiki/MDL-MDX-File-Format.md:381 - "Saber Unknown data" (8 bytes, lightsaber-specific)
-        self.saber_unknowns = reader.read_bytes(8)  # Saber Unknown data (8 bytes, MDLOps `C[8]`, lightsaber-specific)
+        self.saber_unknowns = reader.read_bytes(
+            8
+        )  # Saber Unknown data (8 bytes, MDLOps `C[8]`, lightsaber-specific)
         # Reference: wiki/MDL-MDX-File-Format.md:382 - "Unknown" field at offset 232 (0xE8)
-        self.unknown2 = reader.read_int32()  # Unknown field (int32 at binary offset 0xE8, purpose unknown)
+        self.unknown2 = (
+            reader.read_int32()
+        )  # Unknown field (int32 at binary offset 0xE8, purpose unknown)
         self.uv_direction = reader.read_vector2()
         self.uv_jitter = reader.read_single()
         self.uv_speed = reader.read_single()
@@ -1302,7 +1338,9 @@ class _TrimeshHeader:
             loc = _loc(self.offset_to_indices_counts)
             if loc <= reader.size() and (loc + counts_bytes) <= reader.size():
                 reader.seek(loc)
-                self.indices_counts = [reader.read_uint32() for _ in range(self.indices_counts_count)]
+                self.indices_counts = [
+                    reader.read_uint32() for _ in range(self.indices_counts_count)
+                ]
 
         # Indices offsets array
         if self.offset_to_indices_offset not in (0, 0xFFFFFFFF) and self.indices_offsets_count > 0:
@@ -1310,7 +1348,9 @@ class _TrimeshHeader:
             loc = _loc(self.offset_to_indices_offset)
             if loc <= reader.size() and (loc + offsets_bytes) <= reader.size():
                 reader.seek(loc)
-                self.indices_offsets = [reader.read_uint32() for _ in range(self.indices_offsets_count)]
+                self.indices_offsets = [
+                    reader.read_uint32() for _ in range(self.indices_offsets_count)
+                ]
 
         # Inverted counters (array3) - read from offset_to_counters when counters_count > 0
         if self.offset_to_counters not in (0, 0xFFFFFFFF) and self.counters_count > 0:
@@ -1416,7 +1456,9 @@ class _TrimeshHeader:
         # Some real-world models use a full 0..65535 index range, requiring 65536 vertices;
         # MDLOps handles this by storing 0 in the uint16 field to mean 65536.
         if self.vertex_count < 0 or self.vertex_count > 65536:
-            raise ValueError(f"vertex_count out of range for uint16/MDLOps semantics: {self.vertex_count}")
+            raise ValueError(
+                f"vertex_count out of range for uint16/MDLOps semantics: {self.vertex_count}"
+            )
         writer.write_uint16(0 if self.vertex_count == 65536 else self.vertex_count)
         # Clamp texture_count to prevent issues (uint16 max is 65535)
         texture_count_clamped = min(self.texture_count, 65535)
@@ -1538,7 +1580,9 @@ class _SkinmeshHeader:
         self.tbones_count2: int = 0
         # Reference: wiki/MDL-MDX-File-Format.md:454 - "Unknown array" at offset 384/392
         self.offset_to_unknown0: int = 0  # Offset to unknown array (uint32 at offset 0x34 relative to skinmesh header, 0x180/0x188 absolute)
-        self.unknown0_count: int = 0  # Count of unknown array entries (uint32, documented as "Purpose unknown" in wiki)
+        self.unknown0_count: int = (
+            0  # Count of unknown array entries (uint32, documented as "Purpose unknown" in wiki)
+        )
         self.unknown0_count2: int = 0  # Duplicate count of unknown array entries (uint32)
         self.bones: tuple[int, ...] = tuple(-1 for _ in range(16))
         # Reference: wiki/MDL-MDX-File-Format.md:456 - "Padding" at offset 428/436 (uint16)
@@ -1557,8 +1601,12 @@ class _SkinmeshHeader:
     ) -> _SkinmeshHeader:
         # Reference: wiki/MDL-MDX-File-Format.md:443 - "Unknown Weights" field
         self.unknown_weights = reader.read_int32()  # Unknown Weights (possibly compilation weights)
-        self.unknown3 = reader.read_int32()  # Unknown field (int32 at offset 0x4, not documented in wiki)
-        self.unknown4 = reader.read_int32()  # Unknown field (int32 at offset 0x8, not documented in wiki)
+        self.unknown3 = (
+            reader.read_int32()
+        )  # Unknown field (int32 at offset 0x4, not documented in wiki)
+        self.unknown4 = (
+            reader.read_int32()
+        )  # Unknown field (int32 at offset 0x8, not documented in wiki)
         self.offset_to_mdx_weights = reader.read_uint32()
         self.offset_to_mdx_bones = reader.read_uint32()
         self.offset_to_bonemap = reader.read_uint32()
@@ -1576,13 +1624,17 @@ class _SkinmeshHeader:
         self.tbones_count2 = min(tbones_count2_raw, 0x7FFFFFFF)
         self.offset_to_unknown0 = reader.read_uint32()
         # Reference: wiki/MDL-MDX-File-Format.md:454 - Unknown array count
-        unknown0_count_raw = reader.read_uint32()  # Count of unknown array entries (Purpose unknown)
+        unknown0_count_raw = (
+            reader.read_uint32()
+        )  # Count of unknown array entries (Purpose unknown)
         self.unknown0_count = min(unknown0_count_raw, 0x7FFFFFFF)
         unknown0_count2_raw = reader.read_uint32()  # Duplicate count of unknown array entries
         self.unknown0_count2 = min(unknown0_count2_raw, 0x7FFFFFFF)
         self.bones = tuple(reader.read_uint16() for _ in range(16))
         # Reference: wiki/MDL-MDX-File-Format.md:456 - Padding at offset 428/436 (wiki: uint16, code: uint32 - mismatch)
-        self.unknown1 = reader.read_uint32()  # Padding/unknown field (wiki documents uint16 padding, code reads uint32)
+        self.unknown1 = (
+            reader.read_uint32()
+        )  # Padding/unknown field (wiki documents uint16 padding, code reads uint32)
         return self
 
     def read_extra(
@@ -1594,19 +1646,28 @@ class _SkinmeshHeader:
         if self.offset_to_bonemap not in (0, 0xFFFFFFFF) and self.bonemap_count > 0:
             # bonemap is stored as floats in some implementations; keep current behavior but validate bounds.
             bonemap_bytes = self.bonemap_count * 4
-            if self.offset_to_bonemap <= reader.size() and (self.offset_to_bonemap + bonemap_bytes) <= reader.size():
+            if (
+                self.offset_to_bonemap <= reader.size()
+                and (self.offset_to_bonemap + bonemap_bytes) <= reader.size()
+            ):
                 reader.seek(self.offset_to_bonemap)
                 self.bonemap = [int(reader.read_single()) for _ in range(self.bonemap_count)]
 
         if self.offset_to_tbones not in (0, 0xFFFFFFFF) and self.tbones_count > 0:
             tbones_bytes = self.tbones_count * 12
-            if self.offset_to_tbones <= reader.size() and (self.offset_to_tbones + tbones_bytes) <= reader.size():
+            if (
+                self.offset_to_tbones <= reader.size()
+                and (self.offset_to_tbones + tbones_bytes) <= reader.size()
+            ):
                 reader.seek(self.offset_to_tbones)
                 self.tbones = [reader.read_vector3() for _ in range(self.tbones_count)]
 
         if self.offset_to_qbones not in (0, 0xFFFFFFFF) and self.qbones_count > 0:
             qbones_bytes = self.qbones_count * 16
-            if self.offset_to_qbones <= reader.size() and (self.offset_to_qbones + qbones_bytes) <= reader.size():
+            if (
+                self.offset_to_qbones <= reader.size()
+                and (self.offset_to_qbones + qbones_bytes) <= reader.size()
+            ):
                 reader.seek(self.offset_to_qbones)
                 self.qbones = [reader.read_vector4() for _ in range(self.qbones_count)]
 
@@ -1634,14 +1695,20 @@ class _SkinmeshHeader:
         writer.write_uint32(tbones_count2_clamped)
         writer.write_uint32(self.offset_to_unknown0)
         # Reference: wiki/MDL-MDX-File-Format.md:454 - Unknown array count
-        unknown0_count_clamped = min(self.unknown0_count, 0x7FFFFFFF)  # Count of unknown array entries
+        unknown0_count_clamped = min(
+            self.unknown0_count, 0x7FFFFFFF
+        )  # Count of unknown array entries
         writer.write_uint32(unknown0_count_clamped)
-        unknown0_count2_clamped = min(self.unknown0_count2, 0x7FFFFFFF)  # Duplicate count of unknown array entries
+        unknown0_count2_clamped = min(
+            self.unknown0_count2, 0x7FFFFFFF
+        )  # Duplicate count of unknown array entries
         writer.write_uint32(unknown0_count2_clamped)
         for i in range(16):
             writer.write_uint16(self.bones[i])
         # Reference: wiki/MDL-MDX-File-Format.md:456 - Padding (wiki: uint16, code: uint32 - structure mismatch)
-        writer.write_uint32(self.unknown1)  # Padding/unknown field (wiki documents uint16, code writes uint32)
+        writer.write_uint32(
+            self.unknown1
+        )  # Padding/unknown field (wiki documents uint16, code writes uint32)
 
 
 class _SaberHeader:
@@ -1683,7 +1750,9 @@ class _LightHeader:
     def __init__(self):
         # Reference: wiki/MDL-MDX-File-Format.md:484 - Structure mismatch: wiki documents "Unknown/Padding" (4 floats, 16 bytes) at offset 0
         # Code reads 3 uint32s (12 bytes): offset + 2 counts. Structure differs from wiki documentation.
-        self.offset_to_unknown0: int = 0  # Offset to unknown array (uint32, wiki documents float padding - structure mismatch)
+        self.offset_to_unknown0: int = (
+            0  # Offset to unknown array (uint32, wiki documents float padding - structure mismatch)
+        )
         self.unknown0_count: int = 0  # Count of unknown array entries (uint32, wiki documents float padding - structure mismatch)
         self.unknown0_count2: int = 0  # Duplicate count of unknown array entries (uint32, wiki documents float padding - structure mismatch)
         self.offset_to_flare_sizes: int = 0
@@ -1713,10 +1782,16 @@ class _LightHeader:
     ) -> _LightHeader:
         # Reference: wiki/MDL-MDX-File-Format.md:484 - Structure mismatch: wiki documents 4 floats (16 bytes) at offset 0
         # Code reads 3 uint32s (12 bytes) - structure differs from wiki
-        self.offset_to_unknown0 = reader.read_uint32()  # Offset to unknown array (wiki documents float padding - mismatch)
-        unknown0_count_raw = reader.read_uint32()  # Count of unknown array entries (wiki documents float padding - mismatch)
+        self.offset_to_unknown0 = (
+            reader.read_uint32()
+        )  # Offset to unknown array (wiki documents float padding - mismatch)
+        unknown0_count_raw = (
+            reader.read_uint32()
+        )  # Count of unknown array entries (wiki documents float padding - mismatch)
         self.unknown0_count = min(unknown0_count_raw, 0x7FFFFFFF)
-        unknown0_count2_raw = reader.read_uint32()  # Duplicate count of unknown array entries (wiki documents float padding - mismatch)
+        unknown0_count2_raw = (
+            reader.read_uint32()
+        )  # Duplicate count of unknown array entries (wiki documents float padding - mismatch)
         self.unknown0_count2 = min(unknown0_count2_raw, 0x7FFFFFFF)
         self.offset_to_flare_sizes = reader.read_uint32()
         flare_sizes_count_raw = reader.read_uint32()
@@ -1754,10 +1829,16 @@ class _LightHeader:
     ):
         # Reference: wiki/MDL-MDX-File-Format.md:484 - Structure mismatch: wiki documents 4 floats (16 bytes) at offset 0
         # Code writes 3 uint32s (12 bytes) - structure differs from wiki
-        writer.write_uint32(self.offset_to_unknown0)  # Offset to unknown array (wiki documents float padding - mismatch)
-        unknown0_count_clamped = min(self.unknown0_count, 0x7FFFFFFF)  # Count of unknown array entries (wiki documents float padding - mismatch)
+        writer.write_uint32(
+            self.offset_to_unknown0
+        )  # Offset to unknown array (wiki documents float padding - mismatch)
+        unknown0_count_clamped = min(
+            self.unknown0_count, 0x7FFFFFFF
+        )  # Count of unknown array entries (wiki documents float padding - mismatch)
         writer.write_uint32(unknown0_count_clamped)
-        unknown0_count2_clamped = min(self.unknown0_count2, 0x7FFFFFFF)  # Duplicate count (wiki documents float padding - mismatch)
+        unknown0_count2_clamped = min(
+            self.unknown0_count2, 0x7FFFFFFF
+        )  # Duplicate count (wiki documents float padding - mismatch)
         writer.write_uint32(unknown0_count2_clamped)
         writer.write_uint32(self.offset_to_flare_sizes)
         flare_sizes_count_clamped = min(self.flare_sizes_count, 0x7FFFFFFF)
@@ -1818,7 +1899,9 @@ class _EmitterHeader:
         self.frame_blending: int = 0  # C (uint8)
         self.depth_texture: str = ""  # Z[32] (32-byte null-terminated string)
         # Reference: MDLOps template "SCZ[32]CL" - C byte (padding byte, MDLOps writes 0)
-        self.unknown1: int = 0  # Padding byte (uint8, MDLOps template: C, always writes 0 for alignment)
+        self.unknown1: int = (
+            0  # Padding byte (uint8, MDLOps template: C, always writes 0 for alignment)
+        )
         self.flags: int = 0  # L (emitterflags, uint32)
 
     def read(
@@ -2215,7 +2298,9 @@ class MDLBinaryReader(BiowareResource):
     ):
         self._reader: BinaryReader = BinaryReader.from_auto(source, offset)
 
-        self._reader_ext: BinaryReader | None = None if source_ext is None else BinaryReader.from_auto(source_ext, offset_ext)
+        self._reader_ext: BinaryReader | None = (
+            None if source_ext is None else BinaryReader.from_auto(source_ext, offset_ext)
+        )
 
         # first 12 bytes do not count in offsets used within the file
         self._reader.set_offset(self._reader.offset() + 12)
@@ -2266,10 +2351,14 @@ class MDLBinaryReader(BiowareResource):
 
         # Game (K1 vs K2) from the first two UINT32s in the geometry header: retail files use
         # stable token pairs; see wiki/reverse_engineering_findings.md (MDL layout tokens).
-        if model_header.geometry.layout_token0 == _GeometryHeader.K1_LAYOUT_TOKEN0 and model_header.geometry.layout_token1 == _GeometryHeader.K1_LAYOUT_TOKEN1:
+        if (
+            model_header.geometry.layout_token0 == _GeometryHeader.K1_LAYOUT_TOKEN0
+            and model_header.geometry.layout_token1 == _GeometryHeader.K1_LAYOUT_TOKEN1
+        ):
             self.game = Game.K1
         elif (
-            model_header.geometry.layout_token0 == _GeometryHeader.K2_LAYOUT_TOKEN0 and model_header.geometry.layout_token1 == _GeometryHeader.K2_LAYOUT_TOKEN1
+            model_header.geometry.layout_token0 == _GeometryHeader.K2_LAYOUT_TOKEN0
+            and model_header.geometry.layout_token1 == _GeometryHeader.K2_LAYOUT_TOKEN1
         ):
             self.game = Game.K2
 
@@ -2303,7 +2392,9 @@ class MDLBinaryReader(BiowareResource):
         # Skip animations when fast loading (not needed for rendering)
         if not self._fast_load:
             self._reader.seek(model_header.offset_to_animations)
-            animation_offsets: list[int] = [self._reader.read_uint32() for _ in range(model_header.animation_count)]
+            animation_offsets: list[int] = [
+                self._reader.read_uint32() for _ in range(model_header.animation_count)
+            ]
             for animation_offset in animation_offsets:
                 anim: MDLAnimation = self._load_anim(animation_offset)
                 self._mdl.anims.append(anim)
@@ -2333,7 +2424,9 @@ class MDLBinaryReader(BiowareResource):
                 ),
             )
 
-        names_size: int = model_header.offset_to_animations - (model_header.offset_to_name_offsets + (4 * name_indexes_count))
+        names_size: int = model_header.offset_to_animations - (
+            model_header.offset_to_name_offsets + (4 * name_indexes_count)
+        )
         names_raw: bytes = self._reader.read_bytes(names_size)
 
         names_list: list[str] = []
@@ -2366,7 +2459,9 @@ class MDLBinaryReader(BiowareResource):
 
         if child_array_length > 0 and child_array_offset not in (0, 0xFFFFFFFF):
             self._reader.seek(child_array_offset + 12)
-            child_offsets: list[int] = [self._reader.read_uint32() for _ in range(child_array_length)]
+            child_offsets: list[int] = [
+                self._reader.read_uint32() for _ in range(child_array_length)
+            ]
             for child_offset in child_offsets:
                 if child_offset not in (0, 0xFFFFFFFF):
                     self._get_node_order(child_offset)
@@ -2383,7 +2478,11 @@ class MDLBinaryReader(BiowareResource):
         node: MDLNode = MDLNode()
         node.node_id = bin_node.header.node_id
         # MDLOps derives node names from the "partnames" array by node_id (not from the nodeheader 4th short).
-        node.name = self._names[bin_node.header.node_id] if 0 <= bin_node.header.node_id < len(self._names) else ""
+        node.name = (
+            self._names[bin_node.header.node_id]
+            if 0 <= bin_node.header.node_id < len(self._names)
+            else ""
+        )
         node.position = bin_node.header.position
         node.orientation = bin_node.header.orientation
         node.node_type = MDLNodeType.DUMMY
@@ -2489,7 +2588,10 @@ class MDLBinaryReader(BiowareResource):
                 light_header = bin_node.light
 
                 # Flare textures: array of string pointers, each pointing to a 12-byte null-terminated string
-                if light_header.flare_textures_count > 0 and light_header.offset_to_flare_textures not in (0, 0xFFFFFFFF):
+                if (
+                    light_header.flare_textures_count > 0
+                    and light_header.offset_to_flare_textures not in (0, 0xFFFFFFFF)
+                ):
                     node.light.flare_textures = []
                     saved_pos: int = self._reader.position()
                     try:
@@ -2513,7 +2615,10 @@ class MDLBinaryReader(BiowareResource):
                         self._reader.seek(saved_pos)
 
                 # Flare sizes: array of floats (4 bytes each)
-                if light_header.flare_sizes_count > 0 and light_header.offset_to_flare_sizes not in (0, 0xFFFFFFFF):
+                if (
+                    light_header.flare_sizes_count > 0
+                    and light_header.offset_to_flare_sizes not in (0, 0xFFFFFFFF)
+                ):
                     node.light.flare_sizes = []
                     saved_pos = self._reader.position()
                     try:
@@ -2526,7 +2631,10 @@ class MDLBinaryReader(BiowareResource):
                         self._reader.seek(saved_pos)
 
                 # Flare positions: array of floats (4 bytes each)
-                if light_header.flare_positions_count > 0 and light_header.offset_to_flare_positions not in (0, 0xFFFFFFFF):
+                if (
+                    light_header.flare_positions_count > 0
+                    and light_header.offset_to_flare_positions not in (0, 0xFFFFFFFF)
+                ):
                     node.light.flare_positions = []
                     saved_pos = self._reader.position()
                     try:
@@ -2539,7 +2647,10 @@ class MDLBinaryReader(BiowareResource):
                         self._reader.seek(saved_pos)
 
                 # Flare color shifts: array of Vector3 (12 bytes each = 3 floats)
-                if light_header.flare_colors_count > 0 and light_header.offset_to_flare_colors not in (0, 0xFFFFFFFF):
+                if (
+                    light_header.flare_colors_count > 0
+                    and light_header.offset_to_flare_colors not in (0, 0xFFFFFFFF)
+                ):
                     node.light.flare_color_shifts = []
                     saved_pos = self._reader.position()
                     try:
@@ -2566,7 +2677,9 @@ class MDLBinaryReader(BiowareResource):
                 node.emitter.blast_radius = bin_node.emitter.blast_radius
                 node.emitter.blast_length = bin_node.emitter.blast_length
                 node.emitter.branch_count = bin_node.emitter.branch_count
-                node.emitter.control_point_smoothing = float(bin_node.emitter.control_point_smoothing)
+                node.emitter.control_point_smoothing = float(
+                    bin_node.emitter.control_point_smoothing
+                )
                 node.emitter.x_grid = int(bin_node.emitter.x_grid)
                 node.emitter.y_grid = int(bin_node.emitter.y_grid)
                 node.emitter.spawn_type = int(bin_node.emitter.spawn_type)
@@ -2612,7 +2725,15 @@ class MDLBinaryReader(BiowareResource):
                 # Only set TRIMESH type if special node type flags are not set
                 # A node can have both MESH and AABB flags (walkmesh with visible geometry)
                 # LIGHT, EMITTER, and REFERENCE flags also take precedence over TRIMESH
-                if not (bin_node.header.type_id & (MDLNodeFlags.AABB | MDLNodeFlags.LIGHT | MDLNodeFlags.EMITTER | MDLNodeFlags.REFERENCE)):
+                if not (
+                    bin_node.header.type_id
+                    & (
+                        MDLNodeFlags.AABB
+                        | MDLNodeFlags.LIGHT
+                        | MDLNodeFlags.EMITTER
+                        | MDLNodeFlags.REFERENCE
+                    )
+                ):
                     node.node_type = MDLNodeType.TRIMESH
             node.mesh.shadow = bool(bin_node.trimesh.has_shadow)
             # render is stored as uint8 in binary (0 or 1), convert to bool for MDLMesh
@@ -2641,7 +2762,9 @@ class MDLBinaryReader(BiowareResource):
                 # Legacy alias
                 node.mesh.hide_in_hologram = bin_node.trimesh.hologram_donotdraw
             # Tangent space flag from MDX data bitmap
-            node.mesh.tangent_space = bool(bin_node.trimesh.mdx_data_bitmap & _MDXDataFlags.TANGENT_SPACE)
+            node.mesh.tangent_space = bool(
+                bin_node.trimesh.mdx_data_bitmap & _MDXDataFlags.TANGENT_SPACE
+            )
             # Stored as 8 raw bytes in the binary trimesh header; normalize to a tuple[int,...] for MDLMesh.
             node.mesh.saber_unknowns = cast(
                 "tuple[int, int, int, int, int, int, int, int]",
@@ -2664,9 +2787,17 @@ class MDLBinaryReader(BiowareResource):
                 and vcount > 0
             ):
                 # Read from MDX
-                vertex_offset = 0 if bin_node.trimesh.mdx_vertex_offset == 0xFFFFFFFF else bin_node.trimesh.mdx_vertex_offset
+                vertex_offset = (
+                    0
+                    if bin_node.trimesh.mdx_vertex_offset == 0xFFFFFFFF
+                    else bin_node.trimesh.mdx_vertex_offset
+                )
                 for i in range(vcount):
-                    seek_pos = bin_node.trimesh.mdx_data_offset + i * bin_node.trimesh.mdx_data_size + vertex_offset
+                    seek_pos = (
+                        bin_node.trimesh.mdx_data_offset
+                        + i * bin_node.trimesh.mdx_data_size
+                        + vertex_offset
+                    )
                     if seek_pos + 12 <= self._reader_ext.size():
                         self._reader_ext.seek(seek_pos)
                         node.mesh.vertex_positions.append(
@@ -2678,28 +2809,52 @@ class MDLBinaryReader(BiowareResource):
                         )
                 vertices_read = True
 
-            if not vertices_read and vcount > 0 and bin_node.trimesh.vertices_offset not in (0, 0xFFFFFFFF):
+            if (
+                not vertices_read
+                and vcount > 0
+                and bin_node.trimesh.vertices_offset not in (0, 0xFFFFFFFF)
+            ):
                 # Read from MDL
                 vertices_bytes = vcount * 12
                 if bin_node.trimesh.vertices_offset + vertices_bytes <= self._reader.size():
                     self._reader.seek(bin_node.trimesh.vertices_offset)
-                    node.mesh.vertex_positions = [self._reader.read_vector3() for _ in range(vcount)]
+                    node.mesh.vertex_positions = [
+                        self._reader.read_vector3() for _ in range(vcount)
+                    ]
 
-            if bool(bin_node.trimesh.mdx_data_bitmap & _MDXDataFlags.NORMAL) and self._reader_ext is not None and self._reader_ext.size() > 0:
+            if (
+                bool(bin_node.trimesh.mdx_data_bitmap & _MDXDataFlags.NORMAL)
+                and self._reader_ext is not None
+                and self._reader_ext.size() > 0
+            ):
                 node.mesh.vertex_normals = []
-            if bool(bin_node.trimesh.mdx_data_bitmap & _MDXDataFlags.TEX0) and self._reader_ext is not None and self._reader_ext.size() > 0:
+            if (
+                bool(bin_node.trimesh.mdx_data_bitmap & _MDXDataFlags.TEX0)
+                and self._reader_ext is not None
+                and self._reader_ext.size() > 0
+            ):
                 node.mesh.vertex_uv1 = []
                 node.mesh.vertex_uvs = node.mesh.vertex_uv1
-            if bool(bin_node.trimesh.mdx_data_bitmap & _MDXDataFlags.TEX1) and self._reader_ext is not None and self._reader_ext.size() > 0:
+            if (
+                bool(bin_node.trimesh.mdx_data_bitmap & _MDXDataFlags.TEX1)
+                and self._reader_ext is not None
+                and self._reader_ext.size() > 0
+            ):
                 node.mesh.vertex_uv2 = []
 
             mdx_offset: int = bin_node.trimesh.mdx_data_offset
             mdx_block_size: int = bin_node.trimesh.mdx_data_size
             for i in range(vcount):
-                if bool(bin_node.trimesh.mdx_data_bitmap & _MDXDataFlags.NORMAL) and self._reader_ext is not None and self._reader_ext.size() > 0:
+                if (
+                    bool(bin_node.trimesh.mdx_data_bitmap & _MDXDataFlags.NORMAL)
+                    and self._reader_ext is not None
+                    and self._reader_ext.size() > 0
+                ):
                     if node.mesh.vertex_normals is None:
                         node.mesh.vertex_normals = []
-                    normal_pos = mdx_offset + i * mdx_block_size + bin_node.trimesh.mdx_normal_offset
+                    normal_pos = (
+                        mdx_offset + i * mdx_block_size + bin_node.trimesh.mdx_normal_offset
+                    )
                     if normal_pos + 12 <= self._reader_ext.size():  # Need 12 bytes for Vector3
                         self._reader_ext.seek(normal_pos)
                         x, y, z = (
@@ -2712,7 +2867,11 @@ class MDLBinaryReader(BiowareResource):
                         # Bounds check failed - use null normal
                         node.mesh.vertex_normals.append(Vector3.from_null())
 
-                if bin_node.trimesh.mdx_data_bitmap & _MDXDataFlags.TEX0 and self._reader_ext is not None and self._reader_ext.size() > 0:
+                if (
+                    bin_node.trimesh.mdx_data_bitmap & _MDXDataFlags.TEX0
+                    and self._reader_ext is not None
+                    and self._reader_ext.size() > 0
+                ):
                     assert node.mesh.vertex_uv1 is not None
                     uv1_pos = mdx_offset + i * mdx_block_size + bin_node.trimesh.mdx_texture1_offset
                     if uv1_pos + 8 <= self._reader_ext.size():  # Need 8 bytes for Vector2
@@ -2726,7 +2885,11 @@ class MDLBinaryReader(BiowareResource):
                         # Bounds check failed - use null UV
                         node.mesh.vertex_uv1.append(Vector2(0.0, 0.0))
 
-                if bin_node.trimesh.mdx_data_bitmap & _MDXDataFlags.TEX1 and self._reader_ext is not None and self._reader_ext.size() > 0:
+                if (
+                    bin_node.trimesh.mdx_data_bitmap & _MDXDataFlags.TEX1
+                    and self._reader_ext is not None
+                    and self._reader_ext.size() > 0
+                ):
                     assert node.mesh.vertex_uv2 is not None
                     uv2_pos = mdx_offset + i * mdx_block_size + bin_node.trimesh.mdx_texture2_offset
                     if uv2_pos + 8 <= self._reader_ext.size():  # Need 8 bytes for Vector2
@@ -2787,7 +2950,10 @@ class MDLBinaryReader(BiowareResource):
                 # MDLOps: reads offset from subhead[79] + 12 (line 2176: $temp = $ref->{$node}{'subhead'}{'unpacked'}[$structs{'darray'}[$i]{'loc'} + $temp2] + 12;)
                 # MDLOps: unpacks constraints as floats from "constraints+" array (line 2401: $ref->{$node}{'constraints'}[$i] = $ref->{$node}{$structs{'darray'}[9]{'name'}}{'unpacked'}[$i];)
                 # MDLOps: writes constraints as pack("f", $_) for each constraint (line 7264)
-                if bin_node.dangly.offset_to_contraints not in (0, 0xFFFFFFFF) and bin_node.dangly.constraints_count > 0:
+                if (
+                    bin_node.dangly.offset_to_contraints not in (0, 0xFFFFFFFF)
+                    and bin_node.dangly.constraints_count > 0
+                ):
                     saved_pos = self._reader.position()
                     try:
                         # MDLOps line 2176: offset + 12 (offset-12 semantics)
@@ -2803,7 +2969,11 @@ class MDLBinaryReader(BiowareResource):
 
                                 constraint = MDLConstraint()
                                 # Store float value in constraint.type field (temporary workaround for MDLConstraint structure)
-                                constraint.type = int(constraint_value * 1000000) if constraint_value != 0.0 else 0  # type: ignore[assignment]
+                                constraint.type = (
+                                    int(constraint_value * 1000000)
+                                    if constraint_value != 0.0
+                                    else 0
+                                )  # type: ignore[assignment]
                                 node.dangly.constraints.append(constraint)
                     finally:
                         self._reader.seek(saved_pos)
@@ -2821,7 +2991,9 @@ class MDLBinaryReader(BiowareResource):
                     vertex_bone = MDLBoneVertex()
                     node.skin.vertex_bones.append(vertex_bone)
 
-                    mdx_offset = bin_node.trimesh.mdx_data_offset + i * bin_node.trimesh.mdx_data_size
+                    mdx_offset = (
+                        bin_node.trimesh.mdx_data_offset + i * bin_node.trimesh.mdx_data_size
+                    )
                     bones_pos = mdx_offset + bin_node.skin.offset_to_mdx_bones
                     if bones_pos + 16 <= self._reader_ext.size():
                         self._reader_ext.seek(bones_pos)
@@ -2831,7 +3003,9 @@ class MDLBinaryReader(BiowareResource):
                         t4 = self._reader_ext.read_single()
                         vertex_bone.vertex_indices = (t1, t2, t3, t4)
 
-                    mdx_offset = bin_node.trimesh.mdx_data_offset + i * bin_node.trimesh.mdx_data_size
+                    mdx_offset = (
+                        bin_node.trimesh.mdx_data_offset + i * bin_node.trimesh.mdx_data_size
+                    )
                     weights_pos = mdx_offset + bin_node.skin.offset_to_mdx_weights
                     if weights_pos + 16 <= self._reader_ext.size():
                         self._reader_ext.seek(weights_pos)
@@ -2932,7 +3106,10 @@ class MDLBinaryReader(BiowareResource):
         # uncompress the quaternion if that is the case.
         # Compressed quaternions use column_count=2 as a FLAG (not 2 values per row!)
         # Each compressed quaternion is stored as a single uint32, NOT uint32 + padding float
-        if bin_controller.type_id == MDLControllerType.ORIENTATION and bin_controller.column_count == 2:
+        if (
+            bin_controller.type_id == MDLControllerType.ORIENTATION
+            and bin_controller.column_count == 2
+        ):
             # Detected compressed quaternions - set the model flag
             self._mdl.compress_quaternions = 1
             for _ in range(bin_controller.row_count):
@@ -2961,7 +3138,9 @@ class MDLBinaryReader(BiowareResource):
                 # Check bounds before reading each row
                 if self._reader.position() + bytes_per_row > self._reader.size():
                     break
-                row_data: list[float] = [self._reader.read_single() for _ in range(effective_columns)]
+                row_data: list[float] = [
+                    self._reader.read_single() for _ in range(effective_columns)
+                ]
                 data.append(row_data)
 
         controller_type: int = bin_controller.type_id
@@ -2981,7 +3160,9 @@ class MDLBinaryReader(BiowareResource):
 
         # Handle case where we didn't read all rows due to bounds issues
         actual_row_count: int = min(len(time_keys), len(data), row_count)
-        rows: list[MDLControllerRow] = [MDLControllerRow(time_keys[i], data[i]) for i in range(actual_row_count)]
+        rows: list[MDLControllerRow] = [
+            MDLControllerRow(time_keys[i], data[i]) for i in range(actual_row_count)
+        ]
         controller = MDLController(
             controller_type_enum,
             rows,
@@ -3056,7 +3237,12 @@ class MDLBinaryWriter(BiowareResource):
                 # or if hologram_donotdraw is set (which is K2-only)
                 # Also check if the node has been marked as having K2 features (e.g., by checking if
                 # dirt fields were explicitly set, or if hologram_donotdraw was read from binary)
-                if node.mesh.dirt_enabled or node.mesh.dirt_texture != 1 or node.mesh.dirt_worldspace != 1 or node.mesh.hologram_donotdraw:
+                if (
+                    node.mesh.dirt_enabled
+                    or node.mesh.dirt_texture != 1
+                    or node.mesh.dirt_worldspace != 1
+                    or node.mesh.hologram_donotdraw
+                ):
                     self.game = Game.K2
                     break
                 # Also check if hide_in_hologram is set (legacy alias for hologram_donotdraw)
@@ -3205,8 +3391,12 @@ class MDLBinaryWriter(BiowareResource):
             # K2 dirt fields (only present in K2 models)
             if self.game == Game.K2:
                 bin_node.trimesh.dirt_enabled = mdl_node.mesh.dirt_enabled
-                bin_node.trimesh.dirt_texture = mdl_node.mesh.dirt_texture if mdl_node.mesh.dirt_texture else 1
-                bin_node.trimesh.dirt_worldspace = mdl_node.mesh.dirt_worldspace if mdl_node.mesh.dirt_worldspace else 1
+                bin_node.trimesh.dirt_texture = (
+                    mdl_node.mesh.dirt_texture if mdl_node.mesh.dirt_texture else 1
+                )
+                bin_node.trimesh.dirt_worldspace = (
+                    mdl_node.mesh.dirt_worldspace if mdl_node.mesh.dirt_worldspace else 1
+                )
                 # Only use hologram_donotdraw, not hide_in_hologram (which is just a legacy alias)
                 # hide_in_hologram is set from hologram_donotdraw when reading, so they should match
                 # Write as uint32 (1 or 0), but _TrimeshHeader stores it as bool, so convert
@@ -3226,7 +3416,9 @@ class MDLBinaryWriter(BiowareResource):
             # These are needed for MDLOps compatibility
             if mdl_node.mesh.inverted_counters:
                 bin_node.trimesh.inverted_counters = list(mdl_node.mesh.inverted_counters)
-                bin_node.trimesh.counters_count = bin_node.trimesh.counters_count2 = len(bin_node.trimesh.inverted_counters)
+                bin_node.trimesh.counters_count = bin_node.trimesh.counters_count2 = len(
+                    bin_node.trimesh.inverted_counters
+                )
             else:
                 # If not preserved, use empty arrays (MDLOps will regenerate them)
                 bin_node.trimesh.inverted_counters = []
@@ -3235,15 +3427,21 @@ class MDLBinaryWriter(BiowareResource):
             # Preserve indices arrays if available from original binary
             bin_node.trimesh.indices_counts = list(mdl_node.mesh.indices_counts)
             bin_node.trimesh.indices_offsets = list(mdl_node.mesh.indices_offsets)
-            bin_node.trimesh.indices_counts_count = bin_node.trimesh.indices_counts_count2 = len(bin_node.trimesh.indices_counts)
+            bin_node.trimesh.indices_counts_count = bin_node.trimesh.indices_counts_count2 = len(
+                bin_node.trimesh.indices_counts
+            )
             # Preserve original indices_offsets_count from binary header if available, otherwise use array length
             original_count = int(mdl_node.mesh.indices_offsets_count)
             if original_count > 0:
-                bin_node.trimesh.indices_offsets_count = bin_node.trimesh.indices_offsets_count2 = original_count
+                bin_node.trimesh.indices_offsets_count = bin_node.trimesh.indices_offsets_count2 = (
+                    original_count
+                )
                 if not bin_node.trimesh.indices_offsets:
                     bin_node.trimesh.indices_offsets = [0] * original_count
             else:
-                bin_node.trimesh.indices_offsets_count = bin_node.trimesh.indices_offsets_count2 = len(bin_node.trimesh.indices_offsets)
+                bin_node.trimesh.indices_offsets_count = bin_node.trimesh.indices_offsets_count2 = (
+                    len(bin_node.trimesh.indices_offsets)
+                )
 
             bin_node.trimesh.faces_count = bin_node.trimesh.faces_count2 = len(mdl_node.mesh.faces)
             for face in mdl_node.mesh.faces:
@@ -3269,7 +3467,9 @@ class MDLBinaryWriter(BiowareResource):
 
             # Bone indices table in header is fixed-size (16 uint16).
             bones = list(skin.bone_indices)
-            bones16: list[int] = [(int(b) if i < len(bones) else -1) for i, b in enumerate(bones[:16] + [-1] * 16)]
+            bones16: list[int] = [
+                (int(b) if i < len(bones) else -1) for i, b in enumerate(bones[:16] + [-1] * 16)
+            ]
             bin_node.skin.bones = tuple(int(b) for b in bones16[:16])
 
             # Bonemap + bind pose transforms.
@@ -3399,12 +3599,18 @@ class MDLBinaryWriter(BiowareResource):
             # Handle compressed quaternions for orientation controllers
             # If compress_quaternions is set and this is an orientation controller with 4 floats per row,
             # set column_count to 2 (compressed quaternions use 2 columns: compressed uint32 + padding)
-            if self._mdl.compress_quaternions == 1 and mdl_controller.controller_type == MDLControllerType.ORIENTATION and data_floats_per_row == 4:
+            if (
+                self._mdl.compress_quaternions == 1
+                and mdl_controller.controller_type == MDLControllerType.ORIENTATION
+                and data_floats_per_row == 4
+            ):
                 bin_controller.column_count = 2  # Compressed quaternions use 2 columns
             # Encode bezier flag in column_count bit 4 (16) as per mdlops.
             # For bezier controllers, each logical column stores 3 floats per row.
             elif mdl_controller.is_bezier:
-                logical_cols = data_floats_per_row // 3 if data_floats_per_row >= 3 else data_floats_per_row
+                logical_cols = (
+                    data_floats_per_row // 3 if data_floats_per_row >= 3 else data_floats_per_row
+                )
                 bin_controller.column_count = int(logical_cols) | 16
             else:
                 bin_controller.column_count = int(data_floats_per_row)
@@ -3432,11 +3638,18 @@ class MDLBinaryWriter(BiowareResource):
                     bin_controller.unknown1 = b"\x57\x49\x00"  # "WI"
                 elif ctrl_type == MDLControllerType.ORIENTATION:
                     bin_controller.unknown1 = b"\x39\x47\x00"  # "9G"
-                elif ctrl_type in (132, MDLControllerType.SELFILLUMCOLOR):  # ALPHA=132, SELFILLUMCOLOR=100
+                elif ctrl_type in (
+                    132,
+                    MDLControllerType.SELFILLUMCOLOR,
+                ):  # ALPHA=132, SELFILLUMCOLOR=100
                     bin_controller.unknown1 = b"\xe3\x77\x11"  # 227,119,17
                 elif ctrl_type == MDLControllerType.SCALE:  # 36
                     bin_controller.unknown1 = b"\x32\x12\x00"  # 50,18,0
-                elif (node_type & MDLNodeFlags.LIGHT) and ctrl_type in (MDLControllerType.RADIUS, MDLControllerType.MULTIPLIER, MDLControllerType.COLOR):
+                elif (node_type & MDLNodeFlags.LIGHT) and ctrl_type in (
+                    MDLControllerType.RADIUS,
+                    MDLControllerType.MULTIPLIER,
+                    MDLControllerType.COLOR,
+                ):
                     # Light controllers: radius(88), multiplier(140), color(76)
                     bin_controller.unknown1 = b"\xff\x72\x11"  # 255,114,17
                 elif node_type & MDLNodeFlags.EMITTER:
@@ -3451,12 +3664,18 @@ class MDLBinaryWriter(BiowareResource):
 
             # Adjust float offset calculation for compressed quaternions
             # Compressed quaternions use 1 float per row (just the uint32 reinterpreted as float)
-            if self._mdl.compress_quaternions == 1 and mdl_controller.controller_type == MDLControllerType.ORIENTATION and data_floats_per_row == 4:
+            if (
+                self._mdl.compress_quaternions == 1
+                and mdl_controller.controller_type == MDLControllerType.ORIENTATION
+                and data_floats_per_row == 4
+            ):
                 # Compressed quaternions: 1 float per row (compressed uint32 as float)
                 # Plus row_count for time keys
                 cur_float_offset += bin_controller.row_count + bin_controller.row_count
             else:
-                cur_float_offset += bin_controller.row_count + (bin_controller.row_count * data_floats_per_row)
+                cur_float_offset += bin_controller.row_count + (
+                    bin_controller.row_count * data_floats_per_row
+                )
             bin_node.w_controllers.append(bin_controller)
 
         # Controller-data floats must match _Node.write(): for each entry in w_controllers, all time
@@ -3468,7 +3687,11 @@ class MDLBinaryWriter(BiowareResource):
             for row in mdl_controller.rows:
                 bin_node.w_controller_data.append(row.time)
             for row in mdl_controller.rows:
-                if self._mdl.compress_quaternions == 1 and mdl_controller.controller_type == MDLControllerType.ORIENTATION and len(row.data) == 4:
+                if (
+                    self._mdl.compress_quaternions == 1
+                    and mdl_controller.controller_type == MDLControllerType.ORIENTATION
+                    and len(row.data) == 4
+                ):
                     quat = Vector4(row.data[0], row.data[1], row.data[2], row.data[3])
                     compressed = _compress_quaternion(quat)
                     import struct
@@ -3480,7 +3703,9 @@ class MDLBinaryWriter(BiowareResource):
 
         controller_count_actual = len(bin_node.w_controllers)
         controller_count_clamped = min(controller_count_actual, 0x7FFFFFFF)
-        bin_node.header.controller_count = bin_node.header.controller_count2 = controller_count_clamped
+        bin_node.header.controller_count = bin_node.header.controller_count2 = (
+            controller_count_clamped
+        )
         # Clamp controller_data_length to prevent Perl from interpreting it as negative (values >= 2^31)
         # MDLOps reads this as a signed integer, so we must ensure it's < 2^31
         # If the data is too large, truncate it to match the clamped length to prevent MDLOps from reading too much
@@ -3490,7 +3715,9 @@ class MDLBinaryWriter(BiowareResource):
             # MDLOps will read exactly controller_data_length floats, so we must write exactly that many
             bin_node.w_controller_data = bin_node.w_controller_data[:0x7FFFFFFF]
             controller_data_length = 0x7FFFFFFF
-        bin_node.header.controller_data_length = bin_node.header.controller_data_length2 = controller_data_length
+        bin_node.header.controller_data_length = bin_node.header.controller_data_length2 = (
+            controller_data_length
+        )
 
     def _update_anim(
         self,
@@ -3575,7 +3802,9 @@ class MDLBinaryWriter(BiowareResource):
 
         # Use vertex_count from trimesh header, but prefer vertex_positions length if available
         # This ensures we write the correct number of vertices
-        vertex_positions_len = len(mdl_node.mesh.vertex_positions) if mdl_node.mesh.vertex_positions else 0
+        vertex_positions_len = (
+            len(mdl_node.mesh.vertex_positions) if mdl_node.mesh.vertex_positions else 0
+        )
         vcount = vertex_positions_len if vertex_positions_len > 0 else bin_node.trimesh.vertex_count
         # Ensure vcount matches vertex_positions length if vertex_positions exists
         if vertex_positions_len > 0 and vcount != vertex_positions_len:
@@ -3596,10 +3825,14 @@ class MDLBinaryWriter(BiowareResource):
                 print(
                     f"DEBUG _update_mdx: Node {mdl_node.name} has_uv1=True texture1={mdl_node.mesh.texture_1} bitmap=0x{bin_node.trimesh.mdx_data_bitmap:08X} TEX0={bool(bin_node.trimesh.mdx_data_bitmap & _MDXDataFlags.TEX0)} texture1_offset={bin_node.trimesh.mdx_texture1_offset}",
                 )
-            assert bin_node.trimesh.mdx_data_bitmap & _MDXDataFlags.TEX0, f"Failed to set TEX0 flag for node {mdl_node.name}"
+            assert bin_node.trimesh.mdx_data_bitmap & _MDXDataFlags.TEX0, (
+                f"Failed to set TEX0 flag for node {mdl_node.name}"
+            )
             suboffset += 8
         elif (  # has_texture1
-            mdl_node.mesh.texture_1 is not None and mdl_node.mesh.texture_1.strip() != "" and mdl_node.mesh.texture_1.upper() != "NULL"
+            mdl_node.mesh.texture_1 is not None
+            and mdl_node.mesh.texture_1.strip() != ""
+            and mdl_node.mesh.texture_1.upper() != "NULL"
         ) and vcount > 0:
             # Texture name exists but no valid UV data - generate default UV coordinates
             # This ensures MDLOps can find tverts data when it reads the binary
@@ -3619,7 +3852,9 @@ class MDLBinaryWriter(BiowareResource):
             bin_node.trimesh.mdx_data_bitmap |= _MDXDataFlags.TEX1
             suboffset += 8
         elif (  # has_texture2
-            mdl_node.mesh.texture_2 is not None and mdl_node.mesh.texture_2.strip() != "" and mdl_node.mesh.texture_2.upper() != "NULL"
+            mdl_node.mesh.texture_2 is not None
+            and mdl_node.mesh.texture_2.strip() != ""
+            and mdl_node.mesh.texture_2.upper() != "NULL"
         ) and vcount > 0:
             # Texture name exists but no valid UV data - generate default UV coordinates
             if not mdl_node.mesh.vertex_uv2 or len(mdl_node.mesh.vertex_uv2) != vcount:
@@ -3652,19 +3887,35 @@ class MDLBinaryWriter(BiowareResource):
         for i in range(vcount):
             if bin_node.trimesh.mdx_data_bitmap & _MDXDataFlags.VERTEX:
                 # Use vertex from vertex_positions if available, otherwise use null vertex
-                position = mdl_node.mesh.vertex_positions[i] if (mdl_node.mesh.vertex_positions and i < len(mdl_node.mesh.vertex_positions)) else Vector3.from_null()
+                position = (
+                    mdl_node.mesh.vertex_positions[i]
+                    if (mdl_node.mesh.vertex_positions and i < len(mdl_node.mesh.vertex_positions))
+                    else Vector3.from_null()
+                )
                 self._writer_ext.write_vector3(position)
             if bin_node.trimesh.mdx_data_bitmap & _MDXDataFlags.NORMAL:
                 # Only write normals if they're actually in MDX (bitmap flag set)
-                norm = mdl_node.mesh.vertex_normals[i] if (mdl_node.mesh.vertex_normals and i < len(mdl_node.mesh.vertex_normals)) else Vector3.from_null()
+                norm = (
+                    mdl_node.mesh.vertex_normals[i]
+                    if (mdl_node.mesh.vertex_normals and i < len(mdl_node.mesh.vertex_normals))
+                    else Vector3.from_null()
+                )
                 self._writer_ext.write_vector3(norm)
             if bin_node.trimesh.mdx_data_bitmap & _MDXDataFlags.TEX0:
                 # Only write UV1 if it's actually in MDX (bitmap flag set)
-                uv1 = mdl_node.mesh.vertex_uv1[i] if (mdl_node.mesh.vertex_uv1 and i < len(mdl_node.mesh.vertex_uv1)) else Vector2(0.0, 0.0)
+                uv1 = (
+                    mdl_node.mesh.vertex_uv1[i]
+                    if (mdl_node.mesh.vertex_uv1 and i < len(mdl_node.mesh.vertex_uv1))
+                    else Vector2(0.0, 0.0)
+                )
                 self._writer_ext.write_vector2(uv1)
             if bin_node.trimesh.mdx_data_bitmap & _MDXDataFlags.TEX1:
                 # Only write UV2 if it's actually in MDX (bitmap flag set)
-                uv2 = mdl_node.mesh.vertex_uv2[i] if (mdl_node.mesh.vertex_uv2 and i < len(mdl_node.mesh.vertex_uv2)) else Vector2(0.0, 0.0)
+                uv2 = (
+                    mdl_node.mesh.vertex_uv2[i]
+                    if (mdl_node.mesh.vertex_uv2 and i < len(mdl_node.mesh.vertex_uv2))
+                    else Vector2(0.0, 0.0)
+                )
                 self._writer_ext.write_vector2(uv2)
 
             if mdl_node.skin and bin_node.skin is not None:
@@ -3758,7 +4009,9 @@ class MDLBinaryWriter(BiowareResource):
     def _calc_inner_offsets(self):
         for i, bin_anim in enumerate(self._bin_anims):
             bin_anim.header.offset_to_events = self._anim_offsets[i] + bin_anim.events_offset()
-            bin_anim.header.geometry.root_node_offset = self._anim_offsets[i] + bin_anim.nodes_offset()
+            bin_anim.header.geometry.root_node_offset = (
+                self._anim_offsets[i] + bin_anim.nodes_offset()
+            )
 
             node_offsets: list[int] = []
             node_offset: int = self._anim_offsets[i] + bin_anim.nodes_offset()
@@ -3787,7 +4040,9 @@ class MDLBinaryWriter(BiowareResource):
     ) -> None:
         """Populate per-node child offsets + header offsets for a single node array (geometry OR animation)."""
         if len(bin_nodes) != len(mdl_nodes):
-            raise ValueError(f"bin_nodes and mdl_nodes length mismatch ({len(bin_nodes)} vs {len(mdl_nodes)})")
+            raise ValueError(
+                f"bin_nodes and mdl_nodes length mismatch ({len(bin_nodes)} vs {len(mdl_nodes)})"
+            )
 
         idx_by_id: dict[int, int] = {id(n): i for i, n in enumerate(mdl_nodes)}
         parent_by_idx: dict[int, int] = {}
@@ -3824,12 +4079,19 @@ class MDLBinaryWriter(BiowareResource):
             # Offsets in the MDL content block are absolute byte indices into the model payload (the same
             # coordinate system as BinaryReader after the 12-byte wrapper offset is applied).
             #
-            if bin_node.header.controller_count == 0 and bin_node.header.controller_data_length == 0:
+            if (
+                bin_node.header.controller_count == 0
+                and bin_node.header.controller_data_length == 0
+            ):
                 bin_node.header.offset_to_controllers = 0
                 bin_node.header.offset_to_controller_data = 0
             else:
-                absolute_controllers_offset: int = node_offset + bin_node.controllers_offset(self.game)
-                absolute_controller_data_offset: int = node_offset + bin_node.controller_data_offset(self.game)
+                absolute_controllers_offset: int = node_offset + bin_node.controllers_offset(
+                    self.game
+                )
+                absolute_controller_data_offset: int = (
+                    node_offset + bin_node.controller_data_offset(self.game)
+                )
                 bin_node.header.offset_to_controllers = absolute_controllers_offset
                 bin_node.header.offset_to_controller_data = absolute_controller_data_offset
 
@@ -3838,7 +4100,9 @@ class MDLBinaryWriter(BiowareResource):
             if actual_children_count == 0:
                 bin_node.header.offset_to_children = bin_node.header.offset_to_controllers
             else:
-                absolute_children_offset: int = node_offset + bin_node.children_offsets_offset(self.game)
+                absolute_children_offset: int = node_offset + bin_node.children_offsets_offset(
+                    self.game
+                )
                 bin_node.header.offset_to_children = absolute_children_offset
             bin_node.header.offset_to_root = 0
             parent_idx = parent_by_idx.get(i)
@@ -3948,9 +4212,15 @@ class MDLBinaryWriter(BiowareResource):
         bin_node: _Node,
     ):
         assert bin_node.trimesh is not None, "Trimesh node is required"
-        bin_node.trimesh.offset_to_counters = node_offset + bin_node.inverted_counters_offset(self.game)
-        bin_node.trimesh.offset_to_indices_counts = node_offset + bin_node.indices_counts_offset(self.game)
-        bin_node.trimesh.offset_to_indices_offset = node_offset + bin_node.indices_offsets_offset(self.game)
+        bin_node.trimesh.offset_to_counters = node_offset + bin_node.inverted_counters_offset(
+            self.game
+        )
+        bin_node.trimesh.offset_to_indices_counts = node_offset + bin_node.indices_counts_offset(
+            self.game
+        )
+        bin_node.trimesh.offset_to_indices_offset = node_offset + bin_node.indices_offsets_offset(
+            self.game
+        )
         # indices_offsets stores offsets relative to the start of the indices data block
         # If indices_offsets is empty but count > 0, create the correct number of offsets (all 0)
         # This ensures the count matches the array length, preventing MDLOps from reading beyond bounds
@@ -3961,7 +4231,9 @@ class MDLBinaryWriter(BiowareResource):
         # If indices_offsets already has values, preserve them (they're already relative offsets)
         # Ensure count matches array length
         if bin_node.trimesh.indices_offsets:
-            bin_node.trimesh.indices_offsets_count = bin_node.trimesh.indices_offsets_count2 = len(bin_node.trimesh.indices_offsets)
+            bin_node.trimesh.indices_offsets_count = bin_node.trimesh.indices_offsets_count2 = len(
+                bin_node.trimesh.indices_offsets
+            )
 
         bin_node.trimesh.offset_to_faces = node_offset + bin_node.faces_offset(self.game)
         bin_node.trimesh.vertices_offset = node_offset + bin_node.vertices_offset(self.game)
@@ -4004,10 +4276,15 @@ class MDLBinaryWriter(BiowareResource):
         # The all_nodes() traversal returns nodes in a different order than they appear in the binary,
         # so we need to sort by node_id before writing MDX data.
         # Create a list of (bin_node, mdl_node, original_index) tuples sorted by node_id
-        node_pairs: list[tuple[_Node, MDLNode, int, int]] = [(self._bin_nodes[i], self._mdl_nodes[i], i, self._mdl_nodes[i].node_id) for i in range(len(self._bin_nodes))]
+        node_pairs: list[tuple[_Node, MDLNode, int, int]] = [
+            (self._bin_nodes[i], self._mdl_nodes[i], i, self._mdl_nodes[i].node_id)
+            for i in range(len(self._bin_nodes))
+        ]
 
         # Write MDX data in node_id order
-        for bin_node, mdl_node, orig_idx, node_id in sorted(node_pairs, key=lambda x: x[3]):  # Sort by node_id
+        for bin_node, mdl_node, orig_idx, node_id in sorted(
+            node_pairs, key=lambda x: x[3]
+        ):  # Sort by node_id
             if bin_node.trimesh is not None:
                 if _DEBUG_MDL:
                     print(
@@ -4015,7 +4292,9 @@ class MDLBinaryWriter(BiowareResource):
                     )
                 self._update_mdx(bin_node, mdl_node)
                 if _DEBUG_MDL and bin_node.trimesh.texture1:
-                    print(f"DEBUG _write_all: After _update_mdx, node {mdl_node.name} has tex1_off={bin_node.trimesh.mdx_texture1_offset} (trimesh_id={id(bin_node.trimesh)})")
+                    print(
+                        f"DEBUG _write_all: After _update_mdx, node {mdl_node.name} has tex1_off={bin_node.trimesh.mdx_texture1_offset} (trimesh_id={id(bin_node.trimesh)})"
+                    )
 
         # Geometry header UINT32 pair observed in retail MDL files (per game).
         if self.game == Game.K2:
@@ -4072,7 +4351,9 @@ class MDLBinaryWriter(BiowareResource):
         if self._mdl.classification_unk1 is not None:
             self._file_header.subclassification = self._mdl.classification_unk1
         else:
-            self._file_header.subclassification = 4 if self._mdl.classification == MDLClassification.PLACEABLE else 0
+            self._file_header.subclassification = (
+                4 if self._mdl.classification == MDLClassification.PLACEABLE else 0
+            )
 
         # fog: mdlops uses ignorefog (inverted), writes as "affectedByFog" (mdlops:6147)
         # ignorefog ? 0 : 1 means: if ignorefog is true, fog_byte=0; if false, fog_byte=1
@@ -4082,7 +4363,9 @@ class MDLBinaryWriter(BiowareResource):
 
         animation_count_actual = len(self._mdl.anims)
         animation_count_clamped = min(animation_count_actual, 0x7FFFFFFF)
-        self._file_header.animation_count = self._file_header.animation_count2 = animation_count_clamped
+        self._file_header.animation_count = self._file_header.animation_count2 = (
+            animation_count_clamped
+        )
         self._file_header.bounding_box_min = self._mdl.bmin
         self._file_header.bounding_box_max = self._mdl.bmax
         self._file_header.radius = self._mdl.radius
@@ -4095,7 +4378,9 @@ class MDLBinaryWriter(BiowareResource):
             self._file_header.supermodel = self._mdl.supermodel
         name_offsets_count_actual = len(self._names)
         name_offsets_count_clamped = min(name_offsets_count_actual, 0x7FFFFFFF)
-        self._file_header.name_offsets_count = self._file_header.name_offsets_count2 = name_offsets_count_clamped
+        self._file_header.name_offsets_count = self._file_header.name_offsets_count2 = (
+            name_offsets_count_clamped
+        )
 
         self._file_header.write(self._writer)
 
@@ -4117,7 +4402,9 @@ class MDLBinaryWriter(BiowareResource):
                 )
             bin_node.write(self._writer, self.game)
             if _DEBUG_MDL and bin_node.trimesh and bin_node.trimesh.texture1:
-                print(f"DEBUG _write_all: After writing node {i}, texture1_offset={bin_node.trimesh.mdx_texture1_offset}")
+                print(
+                    f"DEBUG _write_all: After writing node {i}, texture1_offset={bin_node.trimesh.mdx_texture1_offset}"
+                )
 
         # Write to MDL
         mdl_writer = BinaryWriter.to_auto(self._target)

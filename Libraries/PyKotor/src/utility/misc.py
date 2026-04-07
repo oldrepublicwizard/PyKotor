@@ -70,7 +70,9 @@ def format_gpu_info(
     headers: tuple[str, ...],
 ) -> str:
     # Determine the maximum width for each column
-    column_widths: list[int] = [max(len(str(row[i])) for row in (headers, *info)) for i in range(len(headers))]
+    column_widths: list[int] = [
+        max(len(str(row[i])) for row in (headers, *info)) for i in range(len(headers))
+    ]
 
     # Function to format a single row
     def format_row(row: Iterable) -> str:
@@ -103,7 +105,11 @@ def print_excluding_base_classes(
     def print_filtered_attributes(obj: object, obj_name: str, exclude_attrs: Iterable[str]):
         print(f"{obj_name} Attributes:")
         for attr in dir(obj):
-            if not attr.startswith("_") and not callable(getattr(obj, attr)) and attr not in exclude_attrs:
+            if (
+                not attr.startswith("_")
+                and not callable(getattr(obj, attr))
+                and attr not in exclude_attrs
+            ):
                 try:
                     print(f"  {attr}: {getattr(obj, attr)}")
                 except Exception as ex:  # noqa: BLE001
@@ -167,7 +173,18 @@ def get_system_info() -> dict[str, Any]:
             )
             for gpu in gpus
         )
-        info["GPU Details"] = format_gpu_info(gpu_info, headers=("id", "name", "total memory", "used memory", "free memory", "driver", "temperature"))
+        info["GPU Details"] = format_gpu_info(
+            gpu_info,
+            headers=(
+                "id",
+                "name",
+                "total memory",
+                "used memory",
+                "free memory",
+                "driver",
+                "temperature",
+            ),
+        )
 
     return info
 
@@ -221,7 +238,9 @@ def is_instance_or_subinstance(
         return False  # if instance is a class type, always return False
     # instance is not a class
     instance_type = instance.__class__
-    return instance_type is target_cls or is_class_or_subclass_but_not_instance(instance_type, target_cls)
+    return instance_type is target_cls or is_class_or_subclass_but_not_instance(
+        instance_type, target_cls
+    )
 
 
 def generate_hash(
@@ -268,7 +287,10 @@ def get_file_attributes(
 
     # Check if file is hidden
     attributes["is_hidden"] = (
-        path.name.startswith(".") or bool(path.stat().st_file_attributes & stat.FILE_ATTRIBUTE_HIDDEN) if hasattr(stat, "FILE_ATTRIBUTE_HIDDEN") else False
+        path.name.startswith(".")
+        or bool(path.stat().st_file_attributes & stat.FILE_ATTRIBUTE_HIDDEN)
+        if hasattr(stat, "FILE_ATTRIBUTE_HIDDEN")
+        else False
     )
 
     # Check if file is read-only
@@ -297,7 +319,9 @@ def get_file_attributes(
             logging.getLogger(__name__).exception(f"Failed to get file attributes for: '{path}'")
     else:  # Unix-like systems
         # Check if file is system (based on location)
-        attributes["is_system"] = str(path).startswith(("/etc", "/var", "/bin", "/sbin", "/usr/bin", "/usr/sbin"))
+        attributes["is_system"] = str(path).startswith(
+            ("/etc", "/var", "/bin", "/sbin", "/usr/bin", "/usr/sbin")
+        )
 
         # Check if file is archived (based on extension)
         archive_extensions = {".tar", ".gz", ".bz2", ".xz", ".zip", ".7z", ".rar"}
@@ -405,7 +429,9 @@ def to_kwargs(
             if kwargs[key] is None:
                 kwargs[key] = arg
         except StopIteration as e:  # noqa: PERF203
-            raise ValueError("Too many positional arguments for the available keyword arguments.") from e  # noqa: B904
+            raise ValueError(
+                "Too many positional arguments for the available keyword arguments."
+            ) from e  # noqa: B904
     return dict(kwargs)
 
 
@@ -473,4 +499,5 @@ def is_installation_path(path: object) -> bool:
         True if the path is an Installation instance, False otherwise
     """
     from pykotor.extract.installation import Installation  # Import here to avoid circular imports
+
     return isinstance(path, Installation)
