@@ -35,8 +35,15 @@ def _load_node(
     node = Node(scene, node, names[name_id])
 
     mdl_reader.seek(offset + 16)
-    node._position = glm.vec3(mdl_reader.read_single(), mdl_reader.read_single(), mdl_reader.read_single())  # noqa: SLF001
-    node._rotation = glm.quat(mdl_reader.read_single(), mdl_reader.read_single(), mdl_reader.read_single(), mdl_reader.read_single())  # noqa: SLF001
+    node._position = glm.vec3(
+        mdl_reader.read_single(), mdl_reader.read_single(), mdl_reader.read_single()
+    )  # noqa: SLF001
+    node._rotation = glm.quat(
+        mdl_reader.read_single(),
+        mdl_reader.read_single(),
+        mdl_reader.read_single(),
+        mdl_reader.read_single(),
+    )  # noqa: SLF001
     node._recalc_transform()  # noqa: SLF001
     child_offsets = mdl_reader.read_uint32()
     child_count = mdl_reader.read_uint32()
@@ -175,8 +182,15 @@ def gl_load_stitched_model(
         name_list_index = mdl_reader.read_uint16()
 
         mdl_reader.seek(offset + 16)
-        position = glm.vec3(mdl_reader.read_single(), mdl_reader.read_single(), mdl_reader.read_single())
-        rotation = glm.quat(mdl_reader.read_single(), mdl_reader.read_single(), mdl_reader.read_single(), mdl_reader.read_single())
+        position = glm.vec3(
+            mdl_reader.read_single(), mdl_reader.read_single(), mdl_reader.read_single()
+        )
+        rotation = glm.quat(
+            mdl_reader.read_single(),
+            mdl_reader.read_single(),
+            mdl_reader.read_single(),
+            mdl_reader.read_single(),
+        )
         child_offsets = mdl_reader.read_uint32()
         child_count = mdl_reader.read_uint32()
 
@@ -196,7 +210,13 @@ def gl_load_stitched_model(
             if render:
                 offsets.append((offset, transform))
 
-        if names[name_list_index].lower() in {"headhook", "rhand", "lhand", "gogglehook", "maskhook"}:
+        if names[name_list_index].lower() in {
+            "headhook",
+            "rhand",
+            "lhand",
+            "gogglehook",
+            "maskhook",
+        }:
             node = Node(scene, root, names[name_list_index])
             root.children.append(node)
             _pos = vec3()
@@ -245,7 +265,9 @@ def gl_load_stitched_model(
                 mdl_reader.seek(offset_to_element_offsets)
                 offset_to_elements = mdl_reader.read_uint32()
                 mdl_reader.seek(offset_to_elements)
-                elements.extend(mdl_reader.read_uint16() + last_element for _ in range(face_count * 3))
+                elements.extend(
+                    mdl_reader.read_uint16() + last_element for _ in range(face_count * 3)
+                )
             mdl_reader.seek(offset + 80 + 304)
             vertex_count = mdl_reader.read_uint16()
             if k2:
@@ -256,7 +278,9 @@ def gl_load_stitched_model(
 
             for i in range(vertex_count):
                 mdx_reader.seek(mdx_offset + i * mdx_block_size + mdx_vertex_offset)
-                vertex = vec3(mdx_reader.read_single(), mdx_reader.read_single(), mdx_reader.read_single())
+                vertex = vec3(
+                    mdx_reader.read_single(), mdx_reader.read_single(), mdx_reader.read_single()
+                )
                 vertex = transform * vertex
                 vertex_data += struct.pack("fff", vertex.x, vertex.y, vertex.z)
 
@@ -285,6 +309,19 @@ def gl_load_stitched_model(
             element_data += struct.pack("H", element)
 
         texture, lightmap = key.split("\n")
-        child.mesh = Mesh(scene, child, texture, lightmap, vertex_data, element_data, 40, mdx_data_bitflags, 0, 12, 24, 32)
+        child.mesh = Mesh(
+            scene,
+            child,
+            texture,
+            lightmap,
+            vertex_data,
+            element_data,
+            40,
+            mdx_data_bitflags,
+            0,
+            12,
+            24,
+            32,
+        )
 
     return Model(scene, root)

@@ -206,7 +206,9 @@ def _parse_texture_data(
             # Material hints from embedded TXI (if present)
             txi = getattr(tpc, "_txi", None)  # noqa: SLF001
             txi_features = getattr(txi, "features", None)
-            blend_mode = int((getattr(txi_features, "blending", 0) if txi_features is not None else 0) or 0)
+            blend_mode = int(
+                (getattr(txi_features, "blending", 0) if txi_features is not None else 0) or 0
+            )
             if mm.tpc_format != TPCTextureFormat.RGBA:
                 tpc.convert(TPCTextureFormat.RGBA)
                 mm = tpc.get(0, 0)
@@ -215,7 +217,9 @@ def _parse_texture_data(
             has_alpha = _rgba_has_transparency(rgba_data)
             alpha_cutoff = 0.01 if has_alpha and blend_mode != 1 else 0.0
             if blend_mode == 2:
-                alphamean = getattr(txi_features, "alphamean", None) if txi_features is not None else None
+                alphamean = (
+                    getattr(txi_features, "alphamean", None) if txi_features is not None else None
+                )
                 alpha_cutoff = max(alpha_cutoff, float(alphamean) if alphamean is not None else 0.1)
             return (
                 name,
@@ -471,7 +475,10 @@ class AsyncResourceLoader:
     def __init__(
         self,
         texture_location_resolver: Callable[[str], tuple[str, int, int, int] | None] | None = None,
-        model_location_resolver: Callable[[str], tuple[tuple[str, int, int] | None, tuple[str, int, int] | None]] | None = None,
+        model_location_resolver: Callable[
+            [str], tuple[tuple[str, int, int] | None, tuple[str, int, int] | None]
+        ]
+        | None = None,
         max_workers: int | None = None,
     ):
         """Initialize the async loader with ProcessPoolExecutor.
@@ -508,7 +515,9 @@ class AsyncResourceLoader:
                 max_workers=self.max_workers,
                 mp_context=multiprocessing.get_context("spawn"),
             )
-            self.logger.debug(f"Started ProcessPoolExecutor with {self.max_workers} workers for async IO")
+            self.logger.debug(
+                f"Started ProcessPoolExecutor with {self.max_workers} workers for async IO"
+            )
 
     def shutdown(self, *, wait: bool = True):
         """Shutdown ProcessPoolExecutor and cleanup pending futures."""
@@ -565,7 +574,9 @@ class AsyncResourceLoader:
                 filepath, offset, size, restype_id = location
                 # Submit IO + parsing to child process
                 assert self.process_pool is not None
-                io_parse_future = self.process_pool.submit(_load_and_parse_texture, name, restype_id, filepath, offset, size)
+                io_parse_future = self.process_pool.submit(
+                    _load_and_parse_texture, name, restype_id, filepath, offset, size
+                )
 
                 def on_complete(pf: Future):
                     # Check if result_future was cancelled before trying to set result

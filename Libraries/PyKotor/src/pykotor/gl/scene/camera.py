@@ -81,11 +81,15 @@ class Camera:
         self._yaw: float = 0.0 if yaw is None else yaw
         self._distance: float = 10.0 if distance is None else distance
         self._fov: float = 90.0 if fov is None else fov
-        self._orthographic: bool = False if orthographic is None else orthographic  # When True, use orthographic projection
+        self._orthographic: bool = (
+            False if orthographic is None else orthographic
+        )  # When True, use orthographic projection
 
         # Cached matrices
         self._cached_view: mat4 | None = None if cached_view is None else cached_view
-        self._cached_projection: mat4 | None = None if cached_projection is None else cached_projection
+        self._cached_projection: mat4 | None = (
+            None if cached_projection is None else cached_projection
+        )
         self._view_dirty: bool = True if view_dirty is None else view_dirty
         self._projection_dirty: bool = True if projection_dirty is None else projection_dirty
 

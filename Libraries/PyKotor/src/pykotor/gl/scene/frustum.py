@@ -23,6 +23,7 @@ if TYPE_CHECKING:
 # Try to import C acceleration for plane extraction.
 try:
     from pykotor.gl.native._gl_accel import extract_frustum_planes as _c_extract_planes
+
     _HAS_C_ACCEL = True
 except ImportError:
     _HAS_C_ACCEL = False
@@ -102,10 +103,22 @@ class Frustum:
             # Pack the VP matrix as 16 column-major floats and extract planes in C.
             vp_bytes = struct.pack(
                 "16f",
-                vp[0][0], vp[0][1], vp[0][2], vp[0][3],
-                vp[1][0], vp[1][1], vp[1][2], vp[1][3],
-                vp[2][0], vp[2][1], vp[2][2], vp[2][3],
-                vp[3][0], vp[3][1], vp[3][2], vp[3][3],
+                vp[0][0],
+                vp[0][1],
+                vp[0][2],
+                vp[0][3],
+                vp[1][0],
+                vp[1][1],
+                vp[1][2],
+                vp[1][3],
+                vp[2][0],
+                vp[2][1],
+                vp[2][2],
+                vp[2][3],
+                vp[3][0],
+                vp[3][1],
+                vp[3][2],
+                vp[3][3],
             )
             planes_bytes = _c_extract_planes(vp_bytes)
             self._cached_planes_bytes = planes_bytes

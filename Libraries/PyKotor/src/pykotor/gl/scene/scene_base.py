@@ -82,7 +82,15 @@ SEARCH_ORDER: list[SearchLocation] = [SearchLocation.OVERRIDE, SearchLocation.CH
 
 
 class SceneBase:
-    SPECIAL_MODELS: ClassVar[list[str]] = ["waypoint", "store", "sound", "camera", "trigger", "encounter", "unknown"]
+    SPECIAL_MODELS: ClassVar[list[str]] = [
+        "waypoint",
+        "store",
+        "sound",
+        "camera",
+        "trigger",
+        "encounter",
+        "unknown",
+    ]
     _TWODA_TABLES: ClassVar[dict[str, str]] = {
         "table_doors": "genericdoors",
         "table_placeables": "placeables",
@@ -206,10 +214,18 @@ class SceneBase:
 
             # Single call: find texture by trying all supported texture restypes.
             # This avoids extra location() calls while still reporting the real restype (TPC/TGA/DDS).
-            restypes: list[ResourceType] = list(getattr(self.installation, "TEXTURES_TYPES", (ResourceType.TPC, ResourceType.TGA, ResourceType.DDS)))
+            restypes: list[ResourceType] = list(
+                getattr(
+                    self.installation,
+                    "TEXTURES_TYPES",
+                    (ResourceType.TPC, ResourceType.TGA, ResourceType.DDS),
+                )
+            )
             found_loc = None
             found_restype = None
-            locs_by_query = self.installation.locations(([name], restypes), list(texture_search_locs))
+            locs_by_query = self.installation.locations(
+                ([name], restypes), list(texture_search_locs)
+            )
             for rt in restypes:
                 query = ResourceIdentifier(name, rt)
                 locs = locs_by_query.get(query, [])
@@ -241,7 +257,12 @@ class SceneBase:
                     getattr(resolved_source, "name", resolved_source),
                     [getattr(x, "name", str(x)) for x in texture_search_locs],
                 )
-                return (str(found_loc.filepath), found_loc.offset, found_loc.size, found_restype.type_id)
+                return (
+                    str(found_loc.filepath),
+                    found_loc.offset,
+                    found_loc.size,
+                    found_restype.type_id,
+                )
             self.texture_lookup_info[name] = {
                 "found": False,
                 "filepath": None,
@@ -257,7 +278,9 @@ class SceneBase:
             )
             return None
 
-        def _resolve_model_location(name: str) -> tuple[tuple[str, int, int] | None, tuple[str, int, int] | None]:
+        def _resolve_model_location(
+            name: str,
+        ) -> tuple[tuple[str, int, int] | None, tuple[str, int, int] | None]:
             """Resolve model file locations in main thread using Installation ONLY.
 
             Returns ((mdl_path, offset, size), (mdx_path, offset, size)) or (None, None).
@@ -274,8 +297,12 @@ class SceneBase:
             capsules = _cached_capsules or []
 
             # Installation.location() returns list[LocationResult] with offset/size fields
-            mdl_locs = self.installation.location(name, ResourceType.MDL, model_search_locs, capsules=capsules)
-            mdx_locs = self.installation.location(name, ResourceType.MDX, model_search_locs, capsules=capsules)
+            mdl_locs = self.installation.location(
+                name, ResourceType.MDL, model_search_locs, capsules=capsules
+            )
+            mdx_locs = self.installation.location(
+                name, ResourceType.MDX, model_search_locs, capsules=capsules
+            )
 
             mdl_loc = None
             mdx_loc = None
@@ -296,10 +323,16 @@ class SceneBase:
             model_location_resolver=_resolve_model_location,
         )
         # Type narrowing: async_loader is guaranteed to be non-None after assignment
-        assert self.async_loader is not None, "AsyncResourceLoader is not initialized" # Type narrowing for type checker
+        assert self.async_loader is not None, (
+            "AsyncResourceLoader is not initialized"
+        )  # Type narrowing for type checker
         self.async_loader.start()
-        self._pending_texture_futures: dict[str, Future[tuple[str, IntermediateTexture | None, str | None]]] = {}  # name -> Future
-        self._pending_model_futures: dict[str, Future[tuple[str, IntermediateModel | None, str | None]]] = {}  # name -> Future
+        self._pending_texture_futures: dict[
+            str, Future[tuple[str, IntermediateTexture | None, str | None]]
+        ] = {}  # name -> Future
+        self._pending_model_futures: dict[
+            str, Future[tuple[str, IntermediateModel | None, str | None]]
+        ] = {}  # name -> Future
 
         self.hide_creatures: bool = False
         self.hide_placeables: bool = False
@@ -400,9 +433,13 @@ class SceneBase:
         installation: Installation,
     ):
         def load_2da(name: str) -> TwoDA:
-            resource: ResourceResult | None = installation.resource(name, ResourceType.TwoDA, SEARCH_ORDER_2DA)
+            resource: ResourceResult | None = installation.resource(
+                name, ResourceType.TwoDA, SEARCH_ORDER_2DA
+            )
             if resource is None:
-                RobustLogger().warning(f"Could not load {name}.2da, this means its models will not be rendered")
+                RobustLogger().warning(
+                    f"Could not load {name}.2da, this means its models will not be rendered"
+                )
                 return TwoDA()
             return read_2da(resource.data)
 
@@ -429,9 +466,13 @@ class SceneBase:
                 utc = self._resource_from_gitinstance(instance, self.module.creature)
             if utc is None:
                 if instance is not None:
-                    RobustLogger().warning(f"Could not get UTC for GITCreature instance '{instance.identifier()}', not found in mod/override.")
+                    RobustLogger().warning(
+                        f"Could not get UTC for GITCreature instance '{instance.identifier()}', not found in mod/override."
+                    )
                 else:
-                    RobustLogger().warning("Could not get UTC for GITCreature, no instance provided.")
+                    RobustLogger().warning(
+                        "Could not get UTC for GITCreature, no instance provided."
+                    )
                 return RenderObject("unknown", data=instance)
 
             head_obj: RenderObject | None = None
@@ -444,7 +485,9 @@ class SceneBase:
                 baseitems=self.table_baseitems,
             )
             if not body_model or not body_model.strip():
-                raise ValueError("creature.get_body_model failed to return a valid body_model resref str.")  # noqa: TRY301
+                raise ValueError(
+                    "creature.get_body_model failed to return a valid body_model resref str."
+                )  # noqa: TRY301
             head_model, head_texture = creature.get_head_model(
                 utc,
                 self.installation,
@@ -469,7 +512,9 @@ class SceneBase:
             # the initial `find("headhook")` / `find("rhand")` / `find("lhand")` lookup runs
             # before the body model finishes loading and is never retried.
             needs_body_hooks = any((head_model, rhand_model, lhand_model, mask_model))
-            body_model_obj: Model = self.model_sync(body_model) if sync or needs_body_hooks else self.model(body_model)
+            body_model_obj: Model = (
+                self.model_sync(body_model) if sync or needs_body_hooks else self.model(body_model)
+            )
             head_hook: Node | None = body_model_obj.find("headhook")
             if head_model and head_hook:
                 head_obj = RenderObject(head_model, override_texture=head_texture)
@@ -497,7 +542,9 @@ class SceneBase:
             elif head_model:
                 # Same issue as the body model: hook lookups on the head must not use the
                 # async placeholder model or goggle/mask attachments will be dropped.
-                head_model_obj: Model = self.model_sync(head_model) if sync or mask_model else self.model(head_model)
+                head_model_obj: Model = (
+                    self.model_sync(head_model) if sync or mask_model else self.model(head_model)
+                )
                 mask_hook = head_model_obj.find("gogglehook")
             if mask_model and mask_hook:
                 # Pre-load mask model synchronously when sync=True to ensure it's renderable immediately
@@ -537,7 +584,9 @@ class SceneBase:
 
     def _get_lyt(self) -> LYT:
         layout_module_resource: ModuleResource[LYT] | None = self.module.layout()
-        result: LYT | None = self._resource_from_module(layout_module_resource, "' is missing a LYT.")
+        result: LYT | None = self._resource_from_module(
+            layout_module_resource, "' is missing a LYT."
+        )
         if result is None:
             RobustLogger().warning(f"Module '{self.module.root()}' is missing a LYT.")
             return LYT()
@@ -545,7 +594,9 @@ class SceneBase:
 
     def _get_ifo(self) -> IFO:
         info_module_resource: ModuleResource[IFO] | None = self.module.info()
-        result: IFO | None = self._resource_from_module(info_module_resource, "' is missing an IFO.")
+        result: IFO | None = self._resource_from_module(
+            info_module_resource, "' is missing an IFO."
+        )
         if result is None:
             RobustLogger().warning(f"Module '{self.module.root()}' is missing an IFO.")
             return IFO()
@@ -557,11 +608,15 @@ class SceneBase:
         errpart: str,
     ) -> T | None:
         if module_res is None:
-            RobustLogger().error(f"Cannot render a frame in Scene when this module '{self.module.root()}{errpart}")
+            RobustLogger().error(
+                f"Cannot render a frame in Scene when this module '{self.module.root()}{errpart}"
+            )
             return None
         resource: T | None = module_res.resource()
         if resource is None:
-            RobustLogger().error(f"No locations found for '{module_res.identifier()}', needed to render a Scene for module '{self.module.root()}'")
+            RobustLogger().error(
+                f"No locations found for '{module_res.identifier()}', needed to render a Scene for module '{self.module.root()}'"
+            )
             return None
         return resource
 
@@ -572,11 +627,15 @@ class SceneBase:
     ) -> T | None:
         resource: ModuleResource[T] | None = lookup_func(str(instance.resref))
         if resource is None:
-            RobustLogger().error(f"The module '{self.module.root()}' does not store '{instance.identifier()}' needed to render a Scene.")
+            RobustLogger().error(
+                f"The module '{self.module.root()}' does not store '{instance.identifier()}' needed to render a Scene."
+            )
             return None
         resource_data: T | None = resource.resource()
         if resource_data is None:
-            RobustLogger().error(f"No locations found for '{resource.identifier()}' needed by module '{self.module.root()}'")
+            RobustLogger().error(
+                f"No locations found for '{resource.identifier()}' needed by module '{self.module.root()}'"
+            )
             return None
         return resource_data
 
@@ -603,8 +662,21 @@ class SceneBase:
         self._pending_model_futures.clear()
 
         # Clear caches (but keep predefined models/textures)
-        predefined_models = {"waypoint", "sound", "store", "entry", "encounter", "trigger", "camera", "empty", "cursor", "unknown"}
-        self.models = CaseInsensitiveDict({k: v for k, v in self.models.items() if k in predefined_models})
+        predefined_models = {
+            "waypoint",
+            "sound",
+            "store",
+            "entry",
+            "encounter",
+            "trigger",
+            "camera",
+            "empty",
+            "cursor",
+            "unknown",
+        }
+        self.models = CaseInsensitiveDict(
+            {k: v for k, v in self.models.items() if k in predefined_models}
+        )
         # Preserve the existing NULL texture; do NOT call Texture.from_color() here.
         # This method can run from __del__ via GC at unpredictable times (e.g. during
         # another scene's render loop) when the GL context may be invalid or belong to
@@ -617,7 +689,9 @@ class SceneBase:
 
         RobustLogger().debug("Invalidated resource cache")
 
-    def poll_async_resources(self, *, max_textures_per_frame: int = 8, max_models_per_frame: int = 4):
+    def poll_async_resources(
+        self, *, max_textures_per_frame: int = 8, max_models_per_frame: int = 4
+    ):
         """Poll for completed async resource loading and create OpenGL objects.
 
         MUST be called from main thread with active OpenGL context.
@@ -645,7 +719,9 @@ class SceneBase:
                         if "not found" in error:
                             RobustLogger().debug(f"Texture not found: '{resource_name}'")
                         else:
-                            RobustLogger().warning(f"Async texture load failed for '{resource_name}': {error}")
+                            RobustLogger().warning(
+                                f"Async texture load failed for '{resource_name}': {error}"
+                            )
                         self.textures[resource_name] = self._missing_texture  # Magenta placeholder
                         # Persist status for UI/debugging (no additional lookups)
                         info = self.texture_lookup_info.setdefault(resource_name, {})
@@ -656,17 +732,28 @@ class SceneBase:
                             error,
                         )
                     elif intermediate:
-                        self.textures[resource_name] = create_texture_from_intermediate(intermediate)
+                        self.textures[resource_name] = create_texture_from_intermediate(
+                            intermediate
+                        )
                         info = self.texture_lookup_info.setdefault(resource_name, {})
                         info.update({"loaded": True, "load_error": None})
-                        RobustLogger().debug("SceneBase: texture async complete '%s' (loaded=True)", resource_name)
+                        RobustLogger().debug(
+                            "SceneBase: texture async complete '%s' (loaded=True)", resource_name
+                        )
                     completed_textures.append(name)
                     textures_processed += 1
                 except Exception:  # noqa: BLE001
-                    RobustLogger().exception(f"Error processing completed texture future for '{name}'")
+                    RobustLogger().exception(
+                        f"Error processing completed texture future for '{name}'"
+                    )
                     self.textures[name] = self._missing_texture
                     info = self.texture_lookup_info.setdefault(name, {})
-                    info.update({"loaded": False, "load_error": "Exception while processing completed texture future"})
+                    info.update(
+                        {
+                            "loaded": False,
+                            "load_error": "Exception while processing completed texture future",
+                        }
+                    )
                     completed_textures.append(name)
                     textures_processed += 1
 
@@ -687,7 +774,9 @@ class SceneBase:
                         if "not found" in error:
                             RobustLogger().debug(f"Model not found: '{resource_name}'")
                         else:
-                            RobustLogger().warning(f"Async model load failed for '{resource_name}': {error}")
+                            RobustLogger().warning(
+                                f"Async model load failed for '{resource_name}': {error}"
+                            )
                         # Load empty model as fallback
                         self.models[resource_name] = gl_load_stitched_model(
                             self,  # pyright: ignore[reportArgumentType]
@@ -695,11 +784,15 @@ class SceneBase:
                             BinaryReader.from_bytes(EMPTY_MDX_DATA),
                         )
                     elif intermediate:
-                        self.models[resource_name] = create_model_from_intermediate(self, intermediate)
+                        self.models[resource_name] = create_model_from_intermediate(
+                            self, intermediate
+                        )
                     completed_models.append(name)
                     models_processed += 1
                 except Exception:  # noqa: BLE001
-                    RobustLogger().exception(f"Error processing completed model future for '{name}'")
+                    RobustLogger().exception(
+                        f"Error processing completed model future for '{name}'"
+                    )
                     self.models[name] = gl_load_stitched_model(
                         self,  # pyright: ignore[reportArgumentType]
                         BinaryReader.from_bytes(EMPTY_MDL_DATA, 12),
@@ -740,7 +833,10 @@ class SceneBase:
             return self._loading_texture
 
         # Start async loading if location resolver available
-        if self.async_loader is not None and self.async_loader.texture_location_resolver is not None:
+        if (
+            self.async_loader is not None
+            and self.async_loader.texture_location_resolver is not None
+        ):
             # Track requests for UI/debugging (names only). Resolution details are stored by the resolver.
             self.requested_texture_names.add(name)
             RobustLogger().debug("SceneBase: requesting texture '%s' (lightmap=%s)", name, lightmap)
@@ -755,15 +851,21 @@ class SceneBase:
         try:
             # Check the textures linked to the module first
             if self._module is not None:
-                RobustLogger().debug(f"Locating {type_name} '{name}' in module '{self.module.root()}'")
+                RobustLogger().debug(
+                    f"Locating {type_name} '{name}' in module '{self.module.root()}'"
+                )
                 module_tex: ModuleResource[TPC] | None = self.module.texture(name)
                 if module_tex is not None:
-                    RobustLogger().debug(f"Loading {type_name} '{name}' from module '{self.module.root()}'")
+                    RobustLogger().debug(
+                        f"Loading {type_name} '{name}' from module '{self.module.root()}'"
+                    )
                     tpc = module_tex.resource()
 
             # Otherwise just search through all relevant game files
             if tpc is None and self.installation is not None:
-                RobustLogger().debug(f"Locating and loading {type_name} '{name}' from override/bifs/texturepacks...")
+                RobustLogger().debug(
+                    f"Locating and loading {type_name} '{name}' from override/bifs/texturepacks..."
+                )
                 tpc = self.installation.texture(
                     name,
                     [
@@ -841,14 +943,22 @@ class SceneBase:
         fallback_mdx_data: bytes = EMPTY_MDX_DATA
 
         if self.installation is not None:
-            capsules: list[ModulePieceResource] = [] if self._module is None else self.module.capsules()
-            mdl_search: ResourceResult | None = self.installation.resource(name, ResourceType.MDL, SEARCH_ORDER, capsules=capsules)
-            mdx_search: ResourceResult | None = self.installation.resource(name, ResourceType.MDX, SEARCH_ORDER, capsules=capsules)
+            capsules: list[ModulePieceResource] = (
+                [] if self._module is None else self.module.capsules()
+            )
+            mdl_search: ResourceResult | None = self.installation.resource(
+                name, ResourceType.MDL, SEARCH_ORDER, capsules=capsules
+            )
+            mdx_search: ResourceResult | None = self.installation.resource(
+                name, ResourceType.MDX, SEARCH_ORDER, capsules=capsules
+            )
             if mdl_search is not None and mdx_search is not None:
                 fallback_mdl_data = mdl_search.data
                 fallback_mdx_data = mdx_search.data
             else:
-                RobustLogger().warning(f"Model '{name}' not found in installation (MDL: {mdl_search is not None}, MDX: {mdx_search is not None})")
+                RobustLogger().warning(
+                    f"Model '{name}' not found in installation (MDL: {mdl_search is not None}, MDX: {mdx_search is not None})"
+                )
 
         try:
             mdl_reader = BinaryReader.from_bytes(fallback_mdl_data, 12)
@@ -930,9 +1040,15 @@ class SceneBase:
         fallback_mdx_data: bytes = EMPTY_MDX_DATA
 
         if self.installation is not None:
-            capsules: list[ModulePieceResource] = [] if self._module is None else self.module.capsules()
-            mdl_search: ResourceResult | None = self.installation.resource(name, ResourceType.MDL, SEARCH_ORDER, capsules=capsules)
-            mdx_search: ResourceResult | None = self.installation.resource(name, ResourceType.MDX, SEARCH_ORDER, capsules=capsules)
+            capsules: list[ModulePieceResource] = (
+                [] if self._module is None else self.module.capsules()
+            )
+            mdl_search: ResourceResult | None = self.installation.resource(
+                name, ResourceType.MDL, SEARCH_ORDER, capsules=capsules
+            )
+            mdx_search: ResourceResult | None = self.installation.resource(
+                name, ResourceType.MDX, SEARCH_ORDER, capsules=capsules
+            )
             if mdl_search is not None and mdx_search is not None:
                 fallback_mdl_data = mdl_search.data
                 fallback_mdx_data = mdx_search.data
