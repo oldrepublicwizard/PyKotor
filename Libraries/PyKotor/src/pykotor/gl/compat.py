@@ -67,9 +67,7 @@ def missing_gl_func(name: str) -> Callable[..., Any]:
     """Create a stub that raises a helpful error when a GL function is unavailable."""
 
     def _missing(*_args: Any, **_kwargs: Any) -> None:
-        raise MissingPyOpenGLError(
-            f"PyOpenGL function '{name}' is unavailable because PyOpenGL is not installed. Install PyOpenGL."
-        )
+        raise MissingPyOpenGLError(f"PyOpenGL function '{name}' is unavailable because PyOpenGL is not installed. Install PyOpenGL.")
 
     return _missing
 
