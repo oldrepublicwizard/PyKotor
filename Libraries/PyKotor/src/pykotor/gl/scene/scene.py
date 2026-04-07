@@ -597,10 +597,11 @@ class Scene(SceneBase):
         if self.should_hide_obj(obj) and not self.pick_include_hidden:
             return
 
+        world_transform = transform * obj._transform  # noqa: SLF001
         model: Model = obj.resolve_model(self)
-        model.draw(self.picker_shader, transform * obj._transform)  # type: ignore[arg-type]  # noqa: SLF001
+        model.draw(self.picker_shader, world_transform)  # type: ignore[arg-type]
         for child in obj.children:
-            self._picker_render_object(child, obj._transform)  # noqa: SLF001
+            self._picker_render_object(child, world_transform)  # noqa: SLF001
 
     def pick(
         self,
