@@ -62,6 +62,7 @@ from pykotor.resource.generics.git import (
     GITDoor,
     GITEncounter,
     GITInstance,
+    GITObject,
     GITPlaceable,
     GITSound,
     GITStore,
@@ -615,7 +616,7 @@ class Scene(SceneBase):
 
     def select(
         self,
-        target: RenderObject | GITInstance,
+        target: RenderObject | GITObject,
         *,
         clear_existing: bool = True,
     ):
@@ -624,7 +625,7 @@ class Scene(SceneBase):
 
         SceneCache.build_cache(self)
         actual_target: RenderObject | None = None
-        if isinstance(target, GITInstance):
+        if isinstance(target, GITObject):
             for obj in self.objects.values():
                 if obj.data is target:
                     actual_target = obj
