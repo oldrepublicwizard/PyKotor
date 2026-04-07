@@ -98,6 +98,7 @@ if HAS_PYOPENGL:
         GL_DEPTH_BUFFER_BIT,
         GL_DEPTH_COMPONENT,
         GL_DEPTH_TEST,
+        GL_FALSE,
         GL_LEQUAL,  # pyright: ignore[reportMissingImports]
         GL_ONE,
         GL_ONE_MINUS_SRC_ALPHA,
@@ -136,6 +137,7 @@ else:
     GL_ONE = missing_constant("GL_ONE")
     GL_SRC_COLOR = missing_constant("GL_SRC_COLOR")
     GL_TRUE = missing_constant("GL_TRUE")
+    GL_FALSE = missing_constant("GL_FALSE")
     GL_LEQUAL = missing_constant("GL_LEQUAL")
     GL_FLOAT = missing_constant("GL_FLOAT")
     GL_BGRA = missing_constant("GL_BGRA")
@@ -144,4 +146,3 @@ else:
     GL_FRONT_AND_BACK = missing_constant("GL_FRONT_AND_BACK")
     GL_LINE = missing_constant("GL_LINE")
     glPolygonMode = missing_gl_func("glPolygonMode")
-    GL_TRUE = missing_constant("GL_TRUE")

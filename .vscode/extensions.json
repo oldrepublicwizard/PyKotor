@@ -13,6 +13,23 @@
         "seanwu.vscode-qt-for-python",
         "littlefoxteam.vscode-python-test-adapter",
         "ms-python.vscode-python-envs",
-        "anysphere.cursorpyright"
+        "anysphere.cursorpyright",
+        "dsobotta.godot-rust-vscode",
+        "geequlim.godot-tools",
+        "dohe.godot-format",
+        "geequlim.godot-javascript-debug",
+        "redmser.godot-hover-docs",
+        "alfish.godot-files",
+        "altamkp.godot-docs-vscode-csharp",
+        "woberg.godot-dotnet-tools",
+        "ryanabx.godot-vscode-theme",
+        "wix.vscode-import-cost",
+        "aykutsarac.jsoncrack-vscode",
+        "fudgepops.kaitai-struct-vscode",
+        "xyz.local-history",
+        "ms-vscode.notepadplusplus-keybindings",
+        "ms-vscode.powershell",
+        "alefragnani.project-manager",
+        "neikeq.godot-csharp-vscode"
     ]
 }

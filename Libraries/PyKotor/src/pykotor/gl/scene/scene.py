@@ -17,6 +17,7 @@ from pykotor.gl.compat import (
     GL_DEPTH_BUFFER_BIT,
     GL_DEPTH_COMPONENT,
     GL_DEPTH_TEST,
+    GL_FALSE,
     GL_FILL,
     GL_FLOAT,
     GL_FRONT_AND_BACK,
@@ -24,6 +25,7 @@ from pykotor.gl.compat import (
     GL_LINE,
     GL_ONE_MINUS_SRC_ALPHA,
     GL_SRC_ALPHA,
+    GL_TRUE,
     GL_UNSIGNED_INT_8_8_8_8,
     HAS_PYOPENGL,
     glBlendFunc,
@@ -36,7 +38,6 @@ from pykotor.gl.compat import (
     glPolygonMode,
     glReadPixels,
 )
-from pykotor.gl.compat import GL_FALSE, GL_TRUE
 from pykotor.gl.models.axis_gizmo import AxisGizmo
 from pykotor.gl.models.mdl import Mesh as _Mesh
 from pykotor.gl.native.gl_accel import (
@@ -61,7 +62,6 @@ from pykotor.resource.generics.git import (
     GITCreature,
     GITDoor,
     GITEncounter,
-    GITInstance,
     GITObject,
     GITPlaceable,
     GITSound,
@@ -410,9 +410,7 @@ class Scene(SceneBase):
                 if isinstance(exc, GLError):
                     from loggerplus import RobustLogger
 
-                    RobustLogger().debug(
-                        "Scene.render: OpenGL error during render; skipping frame", exc_info=True
-                    )
+                    RobustLogger().debug("Scene.render: OpenGL error during render; skipping frame", exc_info=True)
                     return
             except Exception:  # noqa: BLE001
                 # If OpenGL isn't importable for some reason, just re-raise the original error.
