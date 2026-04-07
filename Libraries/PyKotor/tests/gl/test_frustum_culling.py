@@ -184,7 +184,10 @@ class TestFrustum(unittest.TestCase):
             # Allow either normalized plane or fallback plane
             is_normalized = abs(normal_length - 1.0) < 0.01
             is_fallback = normal_length < 0.01 or plane.w > 1e9  # Degenerate fallback
-            self.assertTrue(is_normalized or is_fallback, msg=f"Plane {i} not properly normalized or fallback: length={normal_length}, w={plane.w}")
+            self.assertTrue(
+                is_normalized or is_fallback,
+                msg=f"Plane {i} not properly normalized or fallback: length={normal_length}, w={plane.w}",
+            )
 
     def test_frustum_caching(self):
         """Test that frustum caches view-projection matrix hash."""
@@ -242,7 +245,9 @@ class TestFrustum(unittest.TestCase):
 
         # Point way beyond far plane (5000 units)
         far_point = vec3(10000, 0, 0)
-        self.assertFalse(self.frustum.point_in_frustum(far_point), "Point beyond far plane should be culled")
+        self.assertFalse(
+            self.frustum.point_in_frustum(far_point), "Point beyond far plane should be culled"
+        )
 
     def test_sphere_in_frustum_visible(self):
         """Test that sphere culling returns a boolean result."""
@@ -267,7 +272,10 @@ class TestFrustum(unittest.TestCase):
         # Sphere at edge of frustum with large radius
         # Should still be visible due to partial intersection
         edge_sphere = vec3(0, 50, 0)
-        self.assertTrue(self.frustum.sphere_in_frustum(edge_sphere, 100.0), "Large sphere at edge should be partially visible")
+        self.assertTrue(
+            self.frustum.sphere_in_frustum(edge_sphere, 100.0),
+            "Large sphere at edge should be partially visible",
+        )
 
     def test_sphere_completely_outside(self):
         """Test that spheres completely outside are culled."""
@@ -275,7 +283,10 @@ class TestFrustum(unittest.TestCase):
 
         # Small sphere far to the side
         outside_sphere = vec3(0, 1000, 0)
-        self.assertFalse(self.frustum.sphere_in_frustum(outside_sphere, 1.0), "Small sphere far outside frustum should be culled")
+        self.assertFalse(
+            self.frustum.sphere_in_frustum(outside_sphere, 1.0),
+            "Small sphere far outside frustum should be culled",
+        )
 
     def test_aabb_in_frustum_visible(self):
         """Test that AABB culling returns a boolean result."""
@@ -443,7 +454,9 @@ class TestFrustumIntegration(unittest.TestCase):
             result = self.frustum.sphere_in_frustum(center, radius)
             # NOTE: Due to camera orientation complexity, we just verify the function runs
             # and returns a boolean. Exact culling depends on matrix calculations.
-            self.assertIsInstance(result, bool, f"Sphere culling should return boolean for {description}")
+            self.assertIsInstance(
+                result, bool, f"Sphere culling should return boolean for {description}"
+            )
             self.stats.record_object(visible=result)
 
         # Verify statistics work
@@ -569,7 +582,11 @@ class TestPerformanceOptimizations(unittest.TestCase):
 
         # Should complete in under 100ms for 10000 objects
         # This is a reasonable target for real-time rendering
-        self.assertLess(elapsed_ms, 100.0, f"Sphere culling for {num_objects} objects took {elapsed_ms:.2f}ms (should be < 100ms)")
+        self.assertLess(
+            elapsed_ms,
+            100.0,
+            f"Sphere culling for {num_objects} objects took {elapsed_ms:.2f}ms (should be < 100ms)",
+        )
 
 
 if __name__ == "__main__":

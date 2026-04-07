@@ -240,7 +240,11 @@ class TestCameraController(unittest.TestCase):
 
         # Position should have changed
         final_focal = self.controller.state.target_focal_point
-        position_changed = final_focal.x != initial_focal.x or final_focal.y != initial_focal.y or final_focal.z != initial_focal.z
+        position_changed = (
+            final_focal.x != initial_focal.x
+            or final_focal.y != initial_focal.y
+            or final_focal.z != initial_focal.z
+        )
         self.assertTrue(position_changed, "Pan should change focal point")
 
     def test_zoom_scroll_changes_distance(self):
@@ -253,7 +257,9 @@ class TestCameraController(unittest.TestCase):
         self.controller.update(input_state, delta_time=0.016)
 
         # Distance should have changed
-        self.assertNotEqual(self.controller.state.target_distance, initial_distance, "Scroll should change distance")
+        self.assertNotEqual(
+            self.controller.state.target_distance, initial_distance, "Scroll should change distance"
+        )
 
     def test_zoom_clamps_to_limits(self):
         """Test that zoom respects min/max distance limits."""
