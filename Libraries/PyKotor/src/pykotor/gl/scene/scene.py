@@ -36,7 +36,7 @@ from pykotor.gl.compat import (
     glPolygonMode,
     glReadPixels,
 )
-from pykotor.gl.compat import GL_TRUE
+from pykotor.gl.compat import GL_FALSE, GL_TRUE
 from pykotor.gl.models.axis_gizmo import AxisGizmo
 from pykotor.gl.models.mdl import Mesh as _Mesh
 from pykotor.gl.native.gl_accel import (
