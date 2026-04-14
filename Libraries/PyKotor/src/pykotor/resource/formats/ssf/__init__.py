@@ -20,6 +20,8 @@ __all__ = [
     "SSF",
     "SSFBinaryReader",
     "SSFBinaryWriter",
+    "SSFJSONReader",
+    "SSFJSONWriter",
     "SSFSound",
     "SSFXMLReader",
     "SSFXMLWriter",

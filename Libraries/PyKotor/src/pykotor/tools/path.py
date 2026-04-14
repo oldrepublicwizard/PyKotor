@@ -609,6 +609,11 @@ def find_kotor_paths_from_default() -> dict[Game, list[CaseAwarePath]]:
     return {Game.K1: sorted(list(locations[Game.K1])), Game.K2: sorted(list(locations[Game.K2]))}
 
 
+def get_kotor_paths_from_default() -> dict[Game, list[CaseAwarePath]]:
+    """Compatibility alias for find_kotor_paths_from_default()."""
+    return find_kotor_paths_from_default()
+
+
 __all__ = [
     "CaseAwarePath",
     "_cleanup_fuse_mounts",
@@ -617,6 +622,7 @@ __all__ = [
     "clear_cache",
     "create_case_insensitive_pathlib_class",
     "find_kotor_paths_from_default",
+    "get_kotor_paths_from_default",
     "get_default_paths",
     "is_filesystem_case_sensitive",
     "simple_wrapper",

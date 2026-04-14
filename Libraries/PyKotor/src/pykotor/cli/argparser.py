@@ -154,12 +154,21 @@ def _organize_commands_by_category() -> dict[str, list[str]]:
             "tlk2xml",
             "xml2tlk",
             "tlk2json",
+            "json2tlk",
             "ssf2xml",
+            "ssf2json",
             "xml2ssf",
             "2da2csv",
+            "2da2json",
             "csv22da",
+            "json22da",
+            "lip2json",
+            "json2lip",
+            "json2ssf",
             "capsule2json",
             "json2capsule",
+            "to-json",
+            "from-json",
         ],
         "Script Tools": ["decompile", "disassemble", "assemble", "nwnnsscomp"],
         "Resource Tools": ["texture-convert", "sound-convert", "model-convert", "walkmesh-convert"],
@@ -178,6 +187,7 @@ def _organize_commands_by_category() -> dict[str, list[str]]:
         "Analysis & Utilities": ["diff", "grep", "stats", "validate", "merge", "config"],
         "Validation & Investigation": [
             "find",
+            "kotor-paths",
             "get",
             "check-txi",
             "check-2da",
@@ -698,6 +708,10 @@ Extract files from Bioware archive formats including:
         "--compact", action="store_true", help="Compact output (no pretty-printing)"
     )
 
+    json2tlk_parser = subparsers.add_parser("json2tlk", help="Convert JSON to TLK")
+    json2tlk_parser.add_argument("input", help="Input JSON file")
+    json2tlk_parser.add_argument("--output", "-o", dest="output", help="Output TLK file")
+
     ssf2xml_parser = subparsers.add_parser("ssf2xml", help="Convert SSF to XML")
     ssf2xml_parser.add_argument("input", help="Input SSF file")
     ssf2xml_parser.add_argument("--output", "-o", dest="output", help="Output XML file")
@@ -705,9 +719,17 @@ Extract files from Bioware archive formats including:
         "--compact", action="store_true", help="Compact output (no pretty-printing)"
     )
 
+    ssf2json_parser = subparsers.add_parser("ssf2json", help="Convert SSF to JSON")
+    ssf2json_parser.add_argument("input", help="Input SSF file")
+    ssf2json_parser.add_argument("--output", "-o", dest="output", help="Output JSON file")
+
     xml2ssf_parser = subparsers.add_parser("xml2ssf", help="Convert XML to SSF")
     xml2ssf_parser.add_argument("input", help="Input XML file")
     xml2ssf_parser.add_argument("--output", "-o", dest="output", help="Output SSF file")
+
+    json2ssf_parser = subparsers.add_parser("json2ssf", help="Convert JSON to SSF")
+    json2ssf_parser.add_argument("input", help="Input JSON file")
+    json2ssf_parser.add_argument("--output", "-o", dest="output", help="Output SSF file")
 
     da2csv_parser = subparsers.add_parser("2da2csv", help="Convert 2DA to CSV")
     da2csv_parser.add_argument("input", help="Input 2DA file")
@@ -724,6 +746,22 @@ Extract files from Bioware archive formats including:
     csv2da_parser.add_argument(
         "--headers", action="store_true", default=True, help="CSV has headers"
     )
+
+    da2json_parser = subparsers.add_parser("2da2json", help="Convert 2DA to JSON")
+    da2json_parser.add_argument("input", help="Input 2DA file")
+    da2json_parser.add_argument("--output", "-o", dest="output", help="Output JSON file")
+
+    json2da_parser = subparsers.add_parser("json22da", help="Convert JSON to 2DA")
+    json2da_parser.add_argument("input", help="Input JSON file")
+    json2da_parser.add_argument("--output", "-o", dest="output", help="Output 2DA file")
+
+    lip2json_parser = subparsers.add_parser("lip2json", help="Convert LIP to JSON")
+    lip2json_parser.add_argument("input", help="Input LIP file")
+    lip2json_parser.add_argument("--output", "-o", dest="output", help="Output JSON file")
+
+    json2lip_parser = subparsers.add_parser("json2lip", help="Convert JSON to LIP")
+    json2lip_parser.add_argument("input", help="Input JSON file")
+    json2lip_parser.add_argument("--output", "-o", dest="output", help="Output LIP file")
 
     capsule2json_parser = subparsers.add_parser(
         "capsule2json",
@@ -748,6 +786,36 @@ Extract files from Bioware archive formats including:
     json2capsule_parser.add_argument("input", help="Input JSON file")
     json2capsule_parser.add_argument(
         "--output", "-o", dest="output", required=True, help="Output capsule file"
+    )
+
+    to_json_parser = subparsers.add_parser(
+        "to-json",
+        help="Convert a supported resource file to JSON (GFF, TLK, 2DA, LIP, SSF, capsule)",
+    )
+    to_json_parser.add_argument("input", help="Input resource file")
+    to_json_parser.add_argument("--output", "-o", dest="output", help="Output JSON file")
+    to_json_parser.add_argument(
+        "--type",
+        help="Optional input type override (for example utc, tlk, 2da, lip, ssf, mod, rim, bif)",
+    )
+    to_json_parser.add_argument(
+        "--key-file", help="KEY file for BIF input (default: chitin.key beside BIF)"
+    )
+    to_json_parser.add_argument(
+        "--no-plaintext",
+        action="store_true",
+        help="For capsule input, embed all resources as base64 instead of JSON/XML/plaintext",
+    )
+
+    from_json_parser = subparsers.add_parser(
+        "from-json",
+        help="Convert JSON produced by PyKotor back to a supported resource format",
+    )
+    from_json_parser.add_argument("input", help="Input JSON file")
+    from_json_parser.add_argument("--output", "-o", dest="output", help="Output resource file")
+    from_json_parser.add_argument(
+        "--type",
+        help="Optional output type override when it cannot be inferred (for example utc, tlk, 2da, lip, ssf, mod)",
     )
 
     # Script tools
@@ -919,8 +987,8 @@ Compare two paths and show differences. Supports any combination of:
   {prog} diff --generate-ini installation1 installation2
 """,
     )
-    diff_parser.add_argument("path1", help="First path (file, folder, installation, or archive)")
-    diff_parser.add_argument("path2", help="Second path (file, folder, installation, or archive)")
+    diff_parser.add_argument("path1", nargs="?", default=None, help="First path (file, folder, installation, or archive)")
+    diff_parser.add_argument("path2", nargs="?", default=None, help="Second path (file, folder, installation, or archive)")
     diff_parser.add_argument(
         "--format",
         choices=["unified", "context", "side_by_side"],
@@ -941,6 +1009,57 @@ Compare two paths and show differences. Supports any combination of:
     diff_parser.add_argument("--output", "-o", dest="output", help="Write diff output to file")
     diff_parser.add_argument(
         "--context", "-C", type=int, default=3, help="Lines of context around changes (default: 3)"
+    )
+
+    # Merge-tslpatcher flags (three-way DLG merge workflow)
+    diff_parser.add_argument(
+        "--merge-tslpatcher",
+        action="store_true",
+        help="Resolve a base resource from a KotOR installation, merge two modified resources onto it, and generate tslpatchdata.",
+    )
+    diff_parser.add_argument(
+        "--merge-installation",
+        type=str,
+        help="KotOR installation path used to resolve the base resource for --merge-tslpatcher.",
+    )
+    diff_parser.add_argument(
+        "--merge-resource",
+        type=str,
+        help="Base resource to resolve from the installation, e.g. unk41_mission.dlg.",
+    )
+    diff_parser.add_argument(
+        "--merge-resource-type",
+        type=str,
+        help="Optional resource type/extension for --merge-resource when the name does not include an extension.",
+    )
+    diff_parser.add_argument(
+        "--merge-module",
+        type=str,
+        help="Optional module root to constrain installation lookup, e.g. unk_m41aa.",
+    )
+    diff_parser.add_argument(
+        "--merge-path",
+        action="append",
+        dest="merge_paths",
+        help="One of exactly two modified resource paths to merge onto the resolved base resource.",
+    )
+    diff_parser.add_argument(
+        "--tslpatchdata",
+        type=str,
+        help="Path where tslpatchdata folder should be created.",
+    )
+    diff_parser.add_argument(
+        "--ini",
+        type=str,
+        default="changes.ini",
+        help="Filename for changes.ini (default: changes.ini).",
+    )
+    diff_parser.add_argument(
+        "--log-level",
+        type=str,
+        default="info",
+        choices=["debug", "info", "warning", "error", "critical"],
+        help="Logging level (default: info)",
     )
 
     grep_parser = subparsers.add_parser("grep", help="Search for patterns in files")
@@ -1071,6 +1190,22 @@ Compare two paths and show differences. Supports any combination of:
         help="List all locations in priority order (default: show only selected)",
     )
 
+    kotor_paths_parser = subparsers.add_parser(
+        "kotor-paths",
+        aliases=["find-installations"],
+        help="List default KotOR installation paths detected on this machine",
+    )
+    kotor_paths_parser.add_argument(
+        "--game",
+        choices=["k1", "kotor", "kotor1", "k2", "tsl", "kotor2"],
+        help="Filter to a single game",
+    )
+    kotor_paths_parser.add_argument(
+        "--json",
+        action="store_true",
+        help="Write machine-readable JSON to stdout instead of log-formatted text",
+    )
+
     get_parser = subparsers.add_parser(
         "get",
         help="Extract resource by name from installation (resolution order: Override → MOD → Chitin)",
@@ -1082,8 +1217,18 @@ Compare two paths and show differences. Supports any combination of:
         "--installation",
         "-i",
         dest="path",
-        required=True,
-        help="Path to KOTOR installation",
+        help="Path to KOTOR installation. If omitted, use --game to auto-detect a default install.",
+    )
+    get_parser.add_argument(
+        "--game",
+        choices=["k1", "kotor", "kotor1", "k2", "tsl", "kotor2"],
+        help="Auto-detect a default installation for this game when --path is omitted",
+    )
+    get_parser.add_argument(
+        "--path-index",
+        type=int,
+        default=0,
+        help="Which auto-detected installation to use when multiple are found (default: 0)",
     )
     get_parser.add_argument(
         "--output",
@@ -1091,6 +1236,12 @@ Compare two paths and show differences. Supports any combination of:
         dest="output",
         default=".",
         help="Output path or directory (default: current directory)",
+    )
+    get_parser.add_argument(
+        "--format",
+        choices=["binary", "json"],
+        default="binary",
+        help="Write the raw resource or its JSON representation (default: binary)",
     )
     get_parser.add_argument(
         "--order",

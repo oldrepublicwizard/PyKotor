@@ -1985,6 +1985,14 @@ class ResourceType(Enum):
         supported_engines=(),
         target_member="RES",
     )
+    SSF_JSON = ResourceTuple(  # pyright: ignore[reportCallIssue]  # SSF as JSON, toolset only
+        50030,
+        "ssf.json",
+        "Soundsets",
+        "plaintext",
+        supported_engines=(),
+        target_member="SSF",
+    )
 
     def __init__(  # noqa: PLR0913
         self,

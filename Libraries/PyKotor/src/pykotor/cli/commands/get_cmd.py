@@ -6,9 +6,11 @@ import pathlib
 
 from typing import TYPE_CHECKING
 
+from pykotor.common.misc import Game
 from pykotor.extract.file import ResourceIdentifier
 from pykotor.extract.installation import Installation, SearchLocation
 from pykotor.tools.finder import canonical_search_order
+from pykotor.tools.path import get_kotor_paths_from_default
 from pykotor.tools.path_safety import resolve_and_validate_under_base
 
 if TYPE_CHECKING:
@@ -30,6 +32,56 @@ def _parse_order_arg(order_str: str | None) -> list[SearchLocation] | None:
     return order if order else None
 
 
+def _parse_game_arg(game_str: str | None) -> Game | None:
+    if not game_str or not game_str.strip():
+        return None
+
+    normalized = game_str.strip().lower()
+    if normalized in {"k1", "kotor", "kotor1"}:
+        return Game.K1
+    if normalized in {"k2", "tsl", "kotor2"}:
+        return Game.K2
+    return None
+
+
+def _resolve_installation_path(args: Namespace, logger: Logger) -> pathlib.Path | None:
+    explicit_path = getattr(args, "path", None) or getattr(args, "installation", None)
+    if explicit_path:
+        return pathlib.Path(explicit_path)
+
+    game = _parse_game_arg(getattr(args, "game", None))
+    if game is None:
+        logger.error("No installation path. Use --path or --game to auto-detect a default installation.")
+        return None
+
+    discovered_paths = get_kotor_paths_from_default().get(game, [])
+    if not discovered_paths:
+        logger.error("No default %s installation paths were found.", game.name)
+        return None
+
+    path_index = getattr(args, "path_index", 0)
+    if path_index < 0 or path_index >= len(discovered_paths):
+        logger.error(
+            "Default installation index %s is out of range for %s. Found %s path(s).",
+            path_index,
+            game.name,
+            len(discovered_paths),
+        )
+        return None
+
+    chosen_path = pathlib.Path(discovered_paths[path_index])
+    if len(discovered_paths) > 1:
+        logger.info(
+            "Using auto-detected %s installation [%s]: %s",
+            game.name,
+            path_index,
+            chosen_path,
+        )
+    else:
+        logger.info("Using auto-detected %s installation: %s", game.name, chosen_path)
+    return chosen_path
+
+
 def cmd_get(args: Namespace, logger: Logger) -> int:
     """Extract the resource the engine would load (first in resolution order) to disk.
 
@@ -37,9 +89,8 @@ def cmd_get(args: Namespace, logger: Logger) -> int:
         pykotor get 203tell.wok --path "G:/.../KOTOR2" --output .
         pykotor get 203tel.lyt --path "G:/..." --order OVERRIDE,CHITIN
     """
-    path = getattr(args, "path", None) or getattr(args, "installation", None)
+    path = _resolve_installation_path(args, logger)
     if not path:
-        logger.error("No installation path. Use --path or --installation.")
         return 1
 
     resref_str = getattr(args, "resref", None) or getattr(args, "query", None)
@@ -96,9 +147,14 @@ def cmd_get(args: Namespace, logger: Logger) -> int:
         return 1
 
     output = getattr(args, "output", None) or "."
+    export_format = getattr(args, "format", "binary")
     output_path = pathlib.Path(output).resolve()
+    default_name = f"{resname}.{restype.extension}.json" if export_format == "json" else f"{resname}.{restype.extension}"
     if output_path.is_dir() or (not output_path.exists() and not output_path.suffix):
-        output_path = output_path / f"{resname}.{restype.extension}"
+        output_path = output_path / default_name
+    elif export_format == "json":
+        if output_path.suffix.lower() != ".json":
+            output_path = output_path.with_suffix(f"{output_path.suffix}.json") if output_path.suffix else output_path.with_suffix(".json")
     elif output_path.suffix.lower() != f".{restype.extension}":
         output_path = output_path.parent / f"{output_path.stem}.{restype.extension}"
 
@@ -111,12 +167,22 @@ def cmd_get(args: Namespace, logger: Logger) -> int:
         return 1
 
     output_path.parent.mkdir(parents=True, exist_ok=True)
-    output_path.write_bytes(result.data)
+    output_data = result.data
+    if export_format == "json":
+        from pykotor.cli.commands.format_convert import resource_data_to_json_bytes
+
+        try:
+            output_data = resource_data_to_json_bytes(result.data, restype)
+        except ValueError as e:
+            logger.error(str(e))
+            return 1
+
+    output_path.write_bytes(output_data)
     logger.info(
         "Extracted %s.%s (%s bytes) to %s",
         resname,
         restype.extension,
-        len(result.data),
+        len(output_data),
         output_path,
     )
     return 0

@@ -10,6 +10,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Any, Callable
 
 from pykotor.resource.formats.gff.gff_auto import read_gff, write_gff
+from pykotor.resource.formats.lip.lip_auto import read_lip, write_lip
 from pykotor.resource.formats.ssf.ssf_auto import read_ssf, write_ssf
 from pykotor.resource.formats.tlk.tlk_auto import read_tlk, write_tlk
 from pykotor.resource.formats.twoda.twoda_auto import read_2da, write_2da
@@ -201,6 +202,25 @@ def convert_csv_to_2da(input_path: Path, output_path: Path, *, delimiter: str = 
     )
 
 
+def convert_2da_to_json(input_path: Path, output_path: Path) -> None:
+    """Convert a 2DA file to JSON format."""
+    _convert_resource(
+        input_path, output_path, read_2da, write_2da, write_format=ResourceType.TwoDA_JSON
+    )
+
+
+def convert_json_to_2da(input_path: Path, output_path: Path) -> None:
+    """Convert a JSON file to 2DA format."""
+    _convert_resource(
+        input_path,
+        output_path,
+        read_2da,
+        write_2da,
+        read_format=ResourceType.TwoDA_JSON,
+        write_format=ResourceType.TwoDA,
+    )
+
+
 def convert_gff_to_json(input_path: Path, output_path: Path) -> None:
     """Convert a GFF file to JSON format.
 
@@ -263,4 +283,42 @@ def convert_json_to_tlk(input_path: Path, output_path: Path) -> None:
         write_tlk,
         read_format=ResourceType.TLK_JSON,
         write_format=ResourceType.TLK,
+    )
+
+
+def convert_lip_to_json(input_path: Path, output_path: Path) -> None:
+    """Convert a LIP file to JSON format."""
+    _convert_resource(
+        input_path, output_path, read_lip, write_lip, write_format=ResourceType.LIP_JSON
+    )
+
+
+def convert_json_to_lip(input_path: Path, output_path: Path) -> None:
+    """Convert a JSON file to LIP format."""
+    _convert_resource(
+        input_path,
+        output_path,
+        read_lip,
+        write_lip,
+        read_format=ResourceType.LIP_JSON,
+        write_format=ResourceType.LIP,
+    )
+
+
+def convert_ssf_to_json(input_path: Path, output_path: Path) -> None:
+    """Convert a SSF file to JSON format."""
+    _convert_resource(
+        input_path, output_path, read_ssf, write_ssf, write_format=ResourceType.SSF_JSON
+    )
+
+
+def convert_json_to_ssf(input_path: Path, output_path: Path) -> None:
+    """Convert a JSON file to SSF format."""
+    _convert_resource(
+        input_path,
+        output_path,
+        read_ssf,
+        write_ssf,
+        read_format=ResourceType.SSF_JSON,
+        write_format=ResourceType.SSF,
     )

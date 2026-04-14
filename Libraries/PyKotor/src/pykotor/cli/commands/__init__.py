@@ -13,12 +13,21 @@ from pykotor.cli.commands.find_cmd import cmd_find
 from pykotor.cli.commands.get_cmd import cmd_get
 from pykotor.cli.commands.format_convert import (
     cmd_2da2csv,
+    cmd_2da2json,
     cmd_archive_to_json,
     cmd_csv22da,
+    cmd_from_json,
     cmd_gff2json,
     cmd_gff2xml,
+    cmd_json22da,
     cmd_json2gff,
+    cmd_json2lip,
+    cmd_json2ssf,
+    cmd_json2tlk,
     cmd_json_to_archive,
+    cmd_lip2json,
+    cmd_ssf2json,
+    cmd_to_json,
     cmd_ssf2xml,
     cmd_tlk2json,
     cmd_tlk2xml,
@@ -31,6 +40,7 @@ from pykotor.cli.commands.init import cmd_init
 from pykotor.cli.commands.install import cmd_install
 from pykotor.cli.commands.key_pack import cmd_key_pack
 from pykotor.cli.commands.kit_generate import cmd_kit_generate
+from pykotor.cli.commands.kotor_paths import cmd_kotor_paths
 from pykotor.cli.commands.launch import cmd_launch
 from pykotor.cli.commands.list import cmd_list
 from pykotor.cli.commands.list_archive import cmd_list_archive
@@ -74,6 +84,7 @@ from pykotor.cli.commands.validation import (
 
 __all__ = [
     "cmd_2da2csv",
+    "cmd_2da2json",
     "cmd_archive_to_json",
     "cmd_assemble",
     "cmd_batch_patch",
@@ -92,6 +103,7 @@ __all__ = [
     "cmd_disassemble",
     "cmd_extract",
     "cmd_find",
+    "cmd_from_json",
     "cmd_get",
     "cmd_gff2json",
     "cmd_gff2xml",
@@ -100,10 +112,15 @@ __all__ = [
     "cmd_init",
     "cmd_install",
     "cmd_investigate_module",
+    "cmd_json22da",
     "cmd_json2gff",
+    "cmd_json2lip",
+    "cmd_json2ssf",
+    "cmd_json2tlk",
     "cmd_json_to_archive",
     "cmd_key_pack",
     "cmd_kit_generate",
+    "cmd_kotor_paths",
     "cmd_launch",
     "cmd_list",
     "cmd_list_archive",
@@ -117,9 +134,11 @@ __all__ = [
     "cmd_patch_installation",
     "cmd_search_archive",
     "cmd_sound_convert",
+    "cmd_ssf2json",
     "cmd_ssf2xml",
     "cmd_stats",
     "cmd_texture_convert",
+    "cmd_to_json",
     "cmd_tlk2json",
     "cmd_tlk2xml",
     "cmd_unpack",

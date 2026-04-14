@@ -24,6 +24,7 @@ if UTILITY_PATH.joinpath("utility").exists():
 from pykotor.resource.formats.ssf import (
     SSF,
     SSFBinaryReader,
+    SSFJSONReader,
     SSFSound,
     SSFXMLReader,
     read_ssf,
@@ -79,6 +80,39 @@ XML_TEST_DATA = """<?xml version="1.0" encoding="utf-8" standalone="yes"?>
   <sound id="38"></sound>
   <sound id="39"></sound>
 </ssf>"""
+
+JSON_TEST_DATA = """{
+    "sounds": [
+        {"id": "0", "label": "BATTLE_CRY_1", "strref": "123075"},
+        {"id": "1", "label": "BATTLE_CRY_2", "strref": "123074"},
+        {"id": "2", "label": "BATTLE_CRY_3", "strref": "123073"},
+        {"id": "3", "label": "BATTLE_CRY_4", "strref": "123072"},
+        {"id": "4", "label": "BATTLE_CRY_5", "strref": "123071"},
+        {"id": "5", "label": "BATTLE_CRY_6", "strref": "123070"},
+        {"id": "6", "label": "SELECT_1", "strref": "123069"},
+        {"id": "7", "label": "SELECT_2", "strref": "123068"},
+        {"id": "8", "label": "SELECT_3", "strref": "123067"},
+        {"id": "9", "label": "ATTACK_GRUNT_1", "strref": "123066"},
+        {"id": "10", "label": "ATTACK_GRUNT_2", "strref": "123065"},
+        {"id": "11", "label": "ATTACK_GRUNT_3", "strref": "123064"},
+        {"id": "12", "label": "PAIN_GRUNT_1", "strref": "123063"},
+        {"id": "13", "label": "PAIN_GRUNT_2", "strref": "123062"},
+        {"id": "14", "label": "LOW_HEALTH", "strref": "123061"},
+        {"id": "15", "label": "DEAD", "strref": "123060"},
+        {"id": "16", "label": "CRITICAL_HIT", "strref": "123059"},
+        {"id": "17", "label": "TARGET_IMMUNE", "strref": "123058"},
+        {"id": "18", "label": "LAY_MINE", "strref": "123057"},
+        {"id": "19", "label": "DISARM_MINE", "strref": "123056"},
+        {"id": "20", "label": "BEGIN_STEALTH", "strref": "123055"},
+        {"id": "21", "label": "BEGIN_SEARCH", "strref": "123054"},
+        {"id": "22", "label": "BEGIN_UNLOCK", "strref": "123053"},
+        {"id": "23", "label": "UNLOCK_FAILED", "strref": "123052"},
+        {"id": "24", "label": "UNLOCK_SUCCESS", "strref": "123051"},
+        {"id": "25", "label": "SEPARATED_FROM_PARTY", "strref": "123050"},
+        {"id": "26", "label": "REJOINED_PARTY", "strref": "123049"},
+        {"id": "27", "label": "POISONED", "strref": "123048"}
+    ]
+}"""
 
 # Inlined test_corrupted.ssf binary content
 CORRUPT_BINARY_TEST_DATA = b"SSF V1.1asdas\xe0\x01\x00\xc2\xe0\x01\x00\xc1\xe0\x01\x00\xc0\xe0\x01\x00\xbf\xe0\x01\x00\xbe\xe0\x01\x00\xbd\xe0\x01\x00\xbc\xe0\x01\x00\xbb\xe0\x01\x00\xba\xe0\x01\x00\xb9\xe0\x01\x00\xb8\xe0\x01\x00\xb7\xe0\x01\x00\xb6\xe0\x01\x00\xb5\xe0\x01\x00\xb4\xe0\x01\x00\xb3\xe0\x01\x00\xb2\xe0\x01\x00\xb1\xe0\x01\x00\xb0\xe0\x01\x00\xaf\xe0\x01\x00\xae\xe0\x01\x00\xad\xe0\x01\x00\xac\xe0\x01\x00\xab\xe0\x01\x00\xaa\xe0\x01\x00\xa9\xe0\x01\x00\xa8\xe0\x01\x00\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff"
@@ -167,6 +201,17 @@ class TestSSF(unittest.TestCase):
 
         data = bytearray()
         write_ssf(ssf, data, ResourceType.SSF_XML)
+        ssf = read_ssf(data)
+        self.validate_io(ssf)
+
+    def test_json_io(self):
+        assert detect_ssf(JSON_TEST_DATA.encode("utf-8")) == ResourceType.SSF_JSON
+
+        ssf = SSFJSONReader(JSON_TEST_DATA.encode("utf-8")).load()
+        self.validate_io(ssf)
+
+        data = bytearray()
+        write_ssf(ssf, data, ResourceType.SSF_JSON)
         ssf = read_ssf(data)
         self.validate_io(ssf)
 
