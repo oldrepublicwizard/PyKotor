@@ -107,7 +107,10 @@
     "${workspaceFolder}/Tools/KotorDiff/src"
   ],
   "python.envFile": "${workspaceFolder}/.env",
+  "python.defaultInterpreterPath": "${workspaceFolder}\\.venv\\Scripts\\python.exe",
   "python.languageServer": "Default",
+  "python.locator": "js",
+  "python.useEnvironmentsExtension": false,
   "python.linting.enabled": true,
   "python.linting.pylintEnabled": false,
   "python.testing.pytestArgs": [
