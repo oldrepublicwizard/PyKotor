@@ -1045,6 +1045,12 @@ Compare two paths and show differences. Supports any combination of:
         help="One of exactly two modified resource paths to merge onto the resolved base resource.",
     )
     diff_parser.add_argument(
+        "--merge-conflict-policy",
+        choices=["mod-a", "mod-b", "fail"],
+        default="mod-a",
+        help="Conflict resolution policy for --merge-tslpatcher (default: mod-a).",
+    )
+    diff_parser.add_argument(
         "--tslpatchdata",
         type=str,
         help="Path where tslpatchdata folder should be created.",
@@ -1289,6 +1295,11 @@ Compare two paths and show differences. Supports any combination of:
         "--clean",
         action="store_true",
         help="Delete the output directory before exporting",
+    )
+    installation_to_json_parser.add_argument(
+        "--all-detected",
+        action="store_true",
+        help="Export every auto-detected installation into per-game subfolders under the output directory.",
     )
 
     validate_installation_parser = subparsers.add_parser(

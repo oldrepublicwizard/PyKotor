@@ -2017,9 +2017,20 @@ class ResourceType(Enum):
         return self.contents == "gff"
 
     def target_type(self) -> Self:
-        return (
-            self if self.target_member is None else self.__class__.__members__[self.target_member]
-        )
+        if self.target_member is None:
+            return self
+
+        members = self.__class__.__members__
+        if self.target_member in members:
+            return members[self.target_member]
+
+        legacy_aliases = {
+            "2DA": "TwoDA",
+        }
+        resolved_member = legacy_aliases.get(self.target_member)
+        if resolved_member is not None and resolved_member in members:
+            return members[resolved_member]
+        return self
 
     @classmethod
     @lru_cache(maxsize=0xFFFF)

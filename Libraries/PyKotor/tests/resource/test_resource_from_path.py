@@ -71,6 +71,10 @@ class TestResourceType(unittest.TestCase):
         assert acquired_type.contents == "binary", f"{acquired_type.contents!r} != binary"
         assert acquired_type.category == "Talk Tables", f"{acquired_type.category!r} != Talk Tables"
 
+    def test_target_type_resolves_legacy_twoda_aliases(self):
+        assert ResourceType.TwoDA_CSV.target_type() == ResourceType.TwoDA
+        assert ResourceType.TwoDA_JSON.target_type() == ResourceType.TwoDA
+
 
 class TestResourceIdentifier(unittest.TestCase):
     """These tests were created because of the many soft, hard-to-find errors that occur all over when this function ever fails."""

@@ -146,9 +146,6 @@ def k2_installation() -> Installation:
     return Installation(CaseAwarePath(k2_path))
 
 
-e
-
-
 def pytest_generate_tests(metafunc: pytest.Metafunc) -> None:
     """Generate one test per module root in the real installations (no skips)."""
 

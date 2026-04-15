@@ -333,6 +333,38 @@ class TestDiffCommand:
         assert result == 1
         assert "--generate-ini is only supported for installation-wide comparisons" in output
 
+    def test_merge_tslpatcher_passes_conflict_policy(self, tmp_path: Path):
+        """Test that merge-tslpatcher CLI plumbing forwards the conflict policy."""
+        captured_config = None
+
+        def fake_run_application(config):
+            nonlocal captured_config
+            captured_config = config
+            return 0
+
+        args = Namespace(
+            merge_tslpatcher=True,
+            merge_installation=str(tmp_path),
+            merge_resource="unk41_mission.dlg",
+            merge_paths=[str(tmp_path / "mod_a.dlg"), str(tmp_path / "mod_b.dlg")],
+            merge_resource_type=None,
+            tslpatchdata=str(tmp_path / "tslpatchdata"),
+            output_log=None,
+            output_mode="full",
+            log_level="info",
+            merge_module="unk_m41aa",
+            merge_conflict_policy="fail",
+        )
+
+        logger = RobustLogger()
+
+        with patch("pykotor.diff_tool.app.run_application", side_effect=fake_run_application):
+            result = cmd_diff(args, logger)
+
+        assert result == 0
+        assert captured_config is not None
+        assert captured_config.merge_conflict_policy == "fail"
+
 
 class TestDiffFormats:
     """Tests for different diff output formats."""
@@ -790,6 +822,39 @@ class TestDiffCommand:
         # Output file should be created
         assert output_file.exists()
         assert output_file.exists()
+
+
+def test_cmd_diff_merge_tslpatcher_passes_conflict_policy(tmp_path: Path):
+    """Test that merge-tslpatcher CLI plumbing forwards the conflict policy."""
+    captured_config = None
+
+    def fake_run_application(config):
+        nonlocal captured_config
+        captured_config = config
+        return 0
+
+    args = Namespace(
+        merge_tslpatcher=True,
+        merge_installation=str(tmp_path),
+        merge_resource="unk41_mission.dlg",
+        merge_paths=[str(tmp_path / "mod_a.dlg"), str(tmp_path / "mod_b.dlg")],
+        merge_resource_type=None,
+        tslpatchdata=str(tmp_path / "tslpatchdata"),
+        output_log=None,
+        output_mode="full",
+        log_level="info",
+        merge_module="unk_m41aa",
+        merge_conflict_policy="fail",
+    )
+
+    logger = RobustLogger()
+
+    with patch("pykotor.diff_tool.app.run_application", side_effect=fake_run_application):
+        result = cmd_diff(args, logger)
+
+    assert result == 0
+    assert captured_config is not None
+    assert captured_config.merge_conflict_policy == "fail"
 
 
 class TestCompositeModules:

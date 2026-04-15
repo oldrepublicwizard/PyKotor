@@ -9,15 +9,29 @@ import shutil
 from pathlib import Path
 from typing import TYPE_CHECKING, Iterator
 
+from pykotor.common.misc import Game
 from pykotor.cli.commands.format_convert import resource_data_to_json_bytes
 from pykotor.cli.commands.get_cmd import _resolve_installation_path
 from pykotor.extract.file import FileResource, clear_file_data_cache
 from pykotor.extract.installation import Installation
+from pykotor.tools.path import get_kotor_paths_from_default
 
 if TYPE_CHECKING:
     from argparse import Namespace
 
     from loggerplus import RobustLogger as Logger
+
+
+def _parse_game_arg(game_str: str | None) -> Game | None:
+    if not game_str or not game_str.strip():
+        return None
+
+    normalized = game_str.strip().lower()
+    if normalized in {"k1", "kotor", "kotor1"}:
+        return Game.K1
+    if normalized in {"k2", "tsl", "kotor2"}:
+        return Game.K2
+    return None
 
 
 def _iter_stream_resources(installation: Installation) -> Iterator[FileResource]:
@@ -149,20 +163,13 @@ def _build_fallback_payload(installation_path: Path, resource: FileResource, dat
     return json.dumps(payload, separators=(",", ":")).encode("utf-8") + b"\n"
 
 
-def cmd_installation_to_json(args: Namespace, logger: Logger) -> int:
-    installation_path = _resolve_installation_path(args, logger)
-    if installation_path is None:
-        return 1
-
-    output_root = Path(getattr(args, "output", "installation-json")).resolve()
-    if getattr(args, "clean", False) and output_root.exists():
-        shutil.rmtree(output_root)
+def _export_installation_to_json(installation_path: Path, output_root: Path, logger: Logger) -> int:
     output_root.mkdir(parents=True, exist_ok=True)
 
     try:
         installation = Installation(installation_path)
     except Exception:
-        logger.exception("Invalid installation path")
+        logger.exception("Invalid installation path: %s", installation_path)
         return 1
 
     logger.info("Exporting resources from %s to %s", installation_path, output_root)
@@ -226,3 +233,61 @@ def cmd_installation_to_json(args: Namespace, logger: Logger) -> int:
         error_count,
     )
     return 0 if error_count == 0 else 2
+
+
+def cmd_installation_to_json(args: Namespace, logger: Logger) -> int:
+    output_root = Path(getattr(args, "output", "installation-json")).resolve()
+    clean_output = bool(getattr(args, "clean", False))
+
+    if getattr(args, "all_detected", False):
+        explicit_path = getattr(args, "path", None) or getattr(args, "installation", None)
+        if explicit_path:
+            logger.error("--all-detected cannot be combined with --path.")
+            return 1
+
+        game_arg = getattr(args, "game", None)
+        game_filter = _parse_game_arg(game_arg)
+        if game_arg and game_filter is None:
+            logger.error("Unknown game '%s'. Use k1 or k2.", game_arg)
+            return 1
+
+        discovered = get_kotor_paths_from_default()
+        install_targets = [
+            (game, index, Path(path))
+            for game, game_paths in discovered.items()
+            if game_filter in (None, game)
+            for index, path in enumerate(game_paths)
+        ]
+        if not install_targets:
+            logger.error("No default installations were found%s.", f" for {game_filter.name}" if game_filter else "")
+            return 1
+
+        if clean_output and output_root.exists():
+            shutil.rmtree(output_root)
+        output_root.mkdir(parents=True, exist_ok=True)
+
+        exit_codes: list[int] = []
+        for game, index, installation_path in install_targets:
+            install_output_root = output_root / game.name.lower() / str(index)
+            logger.info(
+                "Exporting auto-detected %s installation [%s] from %s to %s",
+                game.name,
+                index,
+                installation_path,
+                install_output_root,
+            )
+            exit_codes.append(_export_installation_to_json(installation_path, install_output_root, logger))
+
+        if any(code == 1 for code in exit_codes):
+            return 1
+        if any(code == 2 for code in exit_codes):
+            return 2
+        return 0
+
+    installation_path = _resolve_installation_path(args, logger)
+    if installation_path is None:
+        return 1
+
+    if clean_output and output_root.exists():
+        shutil.rmtree(output_root)
+    return _export_installation_to_json(Path(installation_path), output_root, logger)

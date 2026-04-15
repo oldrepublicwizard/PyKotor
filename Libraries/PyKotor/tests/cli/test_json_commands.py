@@ -7,7 +7,7 @@ from pathlib import Path
 import pytest
 
 from pykotor.cli.dispatch import cli_main
-from pykotor.common.language import Language
+from pykotor.common.language import Language, LocalizedString
 from pykotor.common.misc import Game
 from pykotor.resource.formats.rim import RIM, write_rim
 from pykotor.resource.formats.ssf import SSF, SSFSound, read_ssf
@@ -130,10 +130,9 @@ def test_installation_to_json_exports_supported_and_fallback_resources(tmp_path:
 
     dlg = DLG()
     entry = DLGEntry()
-    entry.text = Language.ENGLISH, 0  # type: ignore[assignment]
-    entry.text = entry.text.from_english("module entry")
+    entry.text = LocalizedString.from_english("module entry")
     reply = DLGReply()
-    reply.text = reply.text.from_english("module reply")
+    reply.text = LocalizedString.from_english("module reply")
     entry.links = [DLGLink(reply, 0)]
     dlg.starters = [DLGLink(entry, 0)]
     rim = RIM()
@@ -159,3 +158,42 @@ def test_installation_to_json_exports_supported_and_fallback_resources(tmp_path:
     wav_payload = json.loads((output_path / "StreamMusic" / "intro.wav.json").read_text(encoding="utf-8"))
     assert wav_payload["encoding"] == "base64"
     assert wav_payload["extension"] == "wav"
+
+
+def test_installation_to_json_can_export_all_detected_installations(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    def create_install(install_path: Path, dialog_text: str, executable_name: str) -> None:
+        install_path.mkdir()
+        (install_path / "Override").mkdir()
+        (install_path / "Modules").mkdir()
+        (install_path / "chitin.key").write_bytes(b"")
+        (install_path / executable_name).write_bytes(b"")
+
+        tlk = TLK(Language.ENGLISH)
+        tlk.add(dialog_text, "voice")
+        write_tlk(tlk, install_path / "dialog.tlk", ResourceType.TLK)
+
+    k1_install_a = tmp_path / "K1A"
+    k1_install_b = tmp_path / "K1B"
+    k2_install = tmp_path / "K2"
+    create_install(k1_install_a, "k1 first", "swkotor.exe")
+    create_install(k1_install_b, "k1 second", "swkotor.exe")
+    create_install(k2_install, "k2 only", "swkotor2.exe")
+
+    monkeypatch.setattr(
+        "pykotor.cli.commands.installation_to_json.get_kotor_paths_from_default",
+        lambda: {Game.K1: [k1_install_a, k1_install_b], Game.K2: [k2_install]},
+    )
+
+    output_path = tmp_path / "json-export-all"
+    assert cli_main([
+        "installation-to-json",
+        "--all-detected",
+        "--output",
+        str(output_path),
+    ]) == 0
+
+    assert json.loads((output_path / "k1" / "0" / "dialog.tlk.json").read_text(encoding="utf-8"))["strings"][0]["text"] == "k1 first"
+    assert json.loads((output_path / "k1" / "1" / "dialog.tlk.json").read_text(encoding="utf-8"))["strings"][0]["text"] == "k1 second"
+    assert json.loads((output_path / "k2" / "0" / "dialog.tlk.json").read_text(encoding="utf-8"))["strings"][0]["text"] == "k2 only"

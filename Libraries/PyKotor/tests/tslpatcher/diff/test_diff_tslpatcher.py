@@ -34,9 +34,11 @@ if KOTORDIFF_PATH.joinpath("kotordiff").exists():
 
 
 from pykotor.cli.logger import OutputMode
-from pykotor.common.misc import Game
+from pykotor.common.language import Language
+from pykotor.common.misc import Game, ResRef
 from pykotor.common.language import LocalizedString
 from pykotor.diff_tool.app import DiffConfig, run_application
+from pykotor.diff_tool.merge import MergeConflictError, _align_node_sequence
 from pykotor.resource.formats.rim import RIM, write_rim
 from pykotor.resource.formats.gff.gff_auto import read_gff, write_gff
 from pykotor.resource.formats.gff.gff_data import GFFContent
@@ -341,6 +343,162 @@ class TestTSLPatcherFromDiff(unittest.TestCase):
         self.assertIn("[GFFList]", ini_text)
         # mod_a's value should be present since it wins conflicts
         self.assertIn("conflict_a", ini_text)
+
+    def test_merge_tslpatcher_can_prefer_mod_b_on_conflict(self):
+        base_dlg = self._create_simple_dlg()
+        installation_dir = self._create_test_installation(base_dlg)
+
+        mod_a = deepcopy(base_dlg)
+        mod_a.all_entries(as_sorted=True)[0].comment = "conflict_a"
+        mod_b = deepcopy(base_dlg)
+        mod_b.all_entries(as_sorted=True)[0].comment = "conflict_b"
+
+        mod_a_path = Path(self.temp_dir) / "conflict_mod_a.dlg"
+        mod_b_path = Path(self.temp_dir) / "conflict_mod_b.dlg"
+        write_dlg(mod_a, mod_a_path, Game.K1, ResourceType.DLG)
+        write_dlg(mod_b, mod_b_path, Game.K1, ResourceType.DLG)
+
+        tslpatchdata_path = Path(self.temp_dir) / "conflict_mod_b_tslpatchdata"
+        exit_code = run_application(
+            DiffConfig(
+                paths=[],
+                tslpatchdata_path=tslpatchdata_path,
+                ini_filename="changes.ini",
+                logging_enabled=False,
+                output_mode=OutputMode.QUIET,
+                merge_installation_path=installation_dir,
+                merge_resource_name="unk41_mission.dlg",
+                merge_modded_paths=[mod_a_path, mod_b_path],
+                merge_conflict_policy="mod-b",
+            )
+        )
+
+        self.assertEqual(exit_code, 0)
+        ini_text = (tslpatchdata_path / "changes.ini").read_text(encoding="utf-8")
+        self.assertIn("conflict_b", ini_text)
+
+    def test_merge_tslpatcher_can_fail_on_conflict(self):
+        base_dlg = self._create_simple_dlg()
+        installation_dir = self._create_test_installation(base_dlg)
+
+        mod_a = deepcopy(base_dlg)
+        mod_a.all_entries(as_sorted=True)[0].comment = "conflict_a"
+        mod_b = deepcopy(base_dlg)
+        mod_b.all_entries(as_sorted=True)[0].comment = "conflict_b"
+
+        mod_a_path = Path(self.temp_dir) / "fail_conflict_a.dlg"
+        mod_b_path = Path(self.temp_dir) / "fail_conflict_b.dlg"
+        write_dlg(mod_a, mod_a_path, Game.K1, ResourceType.DLG)
+        write_dlg(mod_b, mod_b_path, Game.K1, ResourceType.DLG)
+
+        with self.assertRaises(MergeConflictError):
+            run_application(
+                DiffConfig(
+                    paths=[],
+                    tslpatchdata_path=Path(self.temp_dir) / "fail_conflict_tslpatchdata",
+                    ini_filename="changes.ini",
+                    logging_enabled=False,
+                    output_mode=OutputMode.QUIET,
+                    merge_installation_path=installation_dir,
+                    merge_resource_name="unk41_mission.dlg",
+                    merge_modded_paths=[mod_a_path, mod_b_path],
+                    merge_conflict_policy="fail",
+                )
+            )
+
+    def test_merge_tslpatcher_treats_blank_localizedstring_variants_as_equal(self):
+        base_dlg = self._create_simple_dlg()
+        base_dlg.all_entries(as_sorted=True)[0].text = LocalizedString(-1)
+        installation_dir = self._create_test_installation(base_dlg)
+
+        mod_a = deepcopy(base_dlg)
+        mod_a.all_entries(as_sorted=True)[0].text = LocalizedString(-1)
+        mod_a.all_entries(as_sorted=True)[0].text.set_data(Language.ENGLISH, 0, "")
+
+        mod_b = deepcopy(base_dlg)
+        mod_b.all_entries(as_sorted=True)[0].comment = "real_change"
+
+        mod_a_path = Path(self.temp_dir) / "blank_loc_a.dlg"
+        mod_b_path = Path(self.temp_dir) / "blank_loc_b.dlg"
+        write_dlg(mod_a, mod_a_path, Game.K1, ResourceType.DLG)
+        write_dlg(mod_b, mod_b_path, Game.K1, ResourceType.DLG)
+
+        tslpatchdata_path = Path(self.temp_dir) / "blank_loc_tslpatchdata"
+        exit_code = run_application(
+            DiffConfig(
+                paths=[],
+                tslpatchdata_path=tslpatchdata_path,
+                ini_filename="changes.ini",
+                logging_enabled=False,
+                output_mode=OutputMode.QUIET,
+                merge_installation_path=installation_dir,
+                merge_resource_name="unk41_mission.dlg",
+                merge_modded_paths=[mod_a_path, mod_b_path],
+                merge_conflict_policy="fail",
+            )
+        )
+
+        self.assertEqual(exit_code, 0)
+        ini_text = (tslpatchdata_path / "changes.ini").read_text(encoding="utf-8")
+        self.assertIn("real_change", ini_text)
+
+    def test_align_node_sequence_prefers_vo_resref_when_entries_shift(self):
+        def make_entry(vo_resref: str, text: str) -> DLGEntry:
+            entry = DLGEntry()
+            entry.speaker = "Mission"
+            entry.listener = ""
+            entry.vo_resref = ResRef(vo_resref)
+            entry.text = LocalizedString.from_english(text)
+            return entry
+
+        base_entries = [
+            make_entry("vo_a", "base a"),
+            make_entry("vo_b", "base b"),
+            make_entry("vo_c", "base c"),
+        ]
+        shifted_entries = [
+            make_entry("vo_b", "changed b"),
+            make_entry("vo_c", "base c"),
+        ]
+
+        alignment = _align_node_sequence(base_entries, shifted_entries)
+
+        self.assertEqual(alignment.base_to_variant, {1: 0, 2: 1})
+        self.assertEqual(alignment.removed_base_indices, [0])
+
+    def test_merge_tslpatcher_can_keep_link_with_mod_b_policy(self):
+        base_dlg = self._create_simple_dlg()
+        installation_dir = self._create_test_installation(base_dlg)
+
+        mod_a = deepcopy(base_dlg)
+        mod_a.all_entries(as_sorted=True)[0].links = []
+
+        mod_b = deepcopy(base_dlg)
+        mod_b.all_replies(as_sorted=True)[0].comment = "keep_reply"
+
+        mod_a_path = Path(self.temp_dir) / "link_conflict_mod_a.dlg"
+        mod_b_path = Path(self.temp_dir) / "link_conflict_mod_b.dlg"
+        write_dlg(mod_a, mod_a_path, Game.K1, ResourceType.DLG)
+        write_dlg(mod_b, mod_b_path, Game.K1, ResourceType.DLG)
+
+        tslpatchdata_path = Path(self.temp_dir) / "link_conflict_tslpatchdata"
+        exit_code = run_application(
+            DiffConfig(
+                paths=[],
+                tslpatchdata_path=tslpatchdata_path,
+                ini_filename="changes.ini",
+                logging_enabled=False,
+                output_mode=OutputMode.QUIET,
+                merge_installation_path=installation_dir,
+                merge_resource_name="unk41_mission.dlg",
+                merge_modded_paths=[mod_a_path, mod_b_path],
+                merge_conflict_policy="mod-b",
+            )
+        )
+
+        self.assertEqual(exit_code, 0)
+        ini_text = (tslpatchdata_path / "changes.ini").read_text(encoding="utf-8")
+        self.assertIn("keep_reply", ini_text)
 
     def test_merge_tslpatcher_resolves_module_piece_with_merge_module(self):
         base_dlg = self._create_simple_dlg()

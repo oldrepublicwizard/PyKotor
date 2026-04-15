@@ -22,6 +22,7 @@ from pykotor.resource.generics.dlg.links import DLGLink
 from pykotor.resource.generics.dlg.nodes import DLGEntry, DLGNode, DLGReply
 from pykotor.resource.generics.dlg.stunts import DLGStunt
 from pykotor.resource.type import ResourceType
+from pykotor.tools.finder import canonical_search_order
 
 if TYPE_CHECKING:
     from collections.abc import Callable, Mapping, Sequence
@@ -48,10 +49,18 @@ class _SequenceAlignment:
     removed_base_indices: list[int]
 
 
+def _normalize_merge_conflict_policy(policy: str | None) -> str:
+    if policy in {"mod-a", "mod-b", "fail"}:
+        return policy
+    return "mod-a"
+
+
 def run_merge_tslpatcher_workflow(
     config: DiffConfig,
     run_application: Callable[[DiffConfig], int],
 ) -> int:
+    global _merge_conflict_policy
+
     if config.tslpatchdata_path is None:
         raise MergeConflictError("--merge-tslpatcher requires --tslpatchdata.")
     if not config.merge_modded_paths or len(config.merge_modded_paths) != 2:  # noqa: PLR2004
@@ -78,11 +87,13 @@ def run_merge_tslpatcher_workflow(
     base_dlg = read_dlg(resolved_base.data)
     mod_a_dlg = read_dlg(mod_path_a)
     mod_b_dlg = read_dlg(mod_path_b)
+    _merge_conflict_policy = _normalize_merge_conflict_policy(config.merge_conflict_policy)
     _merge_conflicts.clear()
     merged_dlg = _merge_dlg_three_way(base_dlg, mod_a_dlg, mod_b_dlg)
 
     if _merge_conflicts:
-        _merge_logger.warning("=== Merge completed with %d conflict(s) (mod_a values used) ===", len(_merge_conflicts))
+        chosen_label = "mod_a" if _merge_conflict_policy == "mod-a" else "mod_b"
+        _merge_logger.warning("=== Merge completed with %d conflict(s) (%s values used) ===", len(_merge_conflicts), chosen_label)
         for conflict in _merge_conflicts:
             _merge_logger.warning("  - %s", conflict)
 
@@ -149,7 +160,11 @@ def _resolve_base_resource(
                 if resource is not None:
                     return _ResolvedResource(query, candidate, resource)
 
-    search_order = [SearchLocation.OVERRIDE, SearchLocation.MODULES, SearchLocation.CHITIN]
+    search_order = [
+        location
+        for location in canonical_search_order()
+        if location in {SearchLocation.OVERRIDE, SearchLocation.MODULES, SearchLocation.CHITIN}
+    ]
     locations = installation.locations([query], order=search_order, module_root=module_root).get(query, [])
     if not locations:
         raise MergeConflictError(f"Unable to resolve {resname}.{restype.extension} from installation {installation.path()}.")
@@ -314,13 +329,29 @@ def _align_node_sequence(
             continue
 
         if tag == "replace":
-            common_len = min(i2 - i1, j2 - j1)
-            for offset in range(common_len):
-                base_to_variant[i1 + offset] = j1 + offset
-            if (j2 - j1) > common_len:
-                added_variant_indices.extend(range(j1 + common_len, j2))
-            if (i2 - i1) > common_len:
-                removed_base_indices.extend(range(i1 + common_len, i2))
+            nested_matcher = SequenceMatcher(
+                a=base_keys[i1:i2],
+                b=variant_keys[j1:j2],
+                autojunk=False,
+            )
+            matched_base_indices: set[int] = set()
+            matched_variant_indices: set[int] = set()
+            for nested_tag, nested_i1, nested_i2, nested_j1, nested_j2 in nested_matcher.get_opcodes():
+                if nested_tag != "equal":
+                    continue
+                for offset in range(nested_i2 - nested_i1):
+                    base_index = i1 + nested_i1 + offset
+                    variant_index = j1 + nested_j1 + offset
+                    base_to_variant[base_index] = variant_index
+                    matched_base_indices.add(base_index)
+                    matched_variant_indices.add(variant_index)
+
+            added_variant_indices.extend(
+                variant_index for variant_index in range(j1, j2) if variant_index not in matched_variant_indices
+            )
+            removed_base_indices.extend(
+                base_index for base_index in range(i1, i2) if base_index not in matched_base_indices
+            )
             continue
 
         if tag == "insert":
@@ -502,14 +533,18 @@ def _merge_link_sequence(
         mod_a_link = mod_a_map.get(target_key)
         mod_b_link = mod_b_map.get(target_key)
 
-        if base_link is not None and (mod_a_link is None or mod_b_link is None):
-            # Link removed by one mod — skip it (honor the removal)
-            _merge_logger.warning(
-                "%s.%s: link to %s removed by one mod, skipping.", parent_label, label, target_key
-            )
-            _merge_conflicts.append(f"{parent_label}.{label}[{target_key}] (link removed)")
+        if base_link is not None and mod_a_link is None and mod_b_link is None:
             continue
-        if base_link is None and mod_a_link is not None and mod_b_link is None:
+        if base_link is not None and (mod_a_link is None or mod_b_link is None):
+            merged_link = _resolve_link_presence_conflict(
+                mod_a_link,
+                mod_b_link,
+                merged_target_nodes[target_key],
+                f"{parent_label}.{label}[{target_key}]",
+            )
+            if merged_link is None:
+                continue
+        elif base_link is None and mod_a_link is not None and mod_b_link is None:
             merged_link = _clone_link(mod_a_link, merged_target_nodes[target_key])
         elif base_link is None and mod_b_link is not None and mod_a_link is None:
             merged_link = _clone_link(mod_b_link, merged_target_nodes[target_key])
@@ -605,6 +640,40 @@ _merge_logger = logging.getLogger(__name__)
 
 # Track conflict warnings for summary output
 _merge_conflicts: list[str] = []
+_merge_conflict_policy = "mod-a"
+
+
+def _preferred_conflict_label() -> str:
+    return "mod_a" if _merge_conflict_policy != "mod-b" else "mod_b"
+
+
+def _raise_or_record_conflict(context: str, message: str) -> None:
+    if _merge_conflict_policy == "fail":
+        raise MergeConflictError(message)
+    _merge_logger.warning(message)
+    _merge_conflicts.append(context)
+
+
+def _resolve_link_presence_conflict(
+    mod_a_link: DLGLink | None,
+    mod_b_link: DLGLink | None,
+    target_node: DLGNode,
+    context: str,
+) -> DLGLink | None:
+    chosen_link = mod_a_link if _merge_conflict_policy != "mod-b" else mod_b_link
+    preferred_label = _preferred_conflict_label()
+    if chosen_link is None:
+        _raise_or_record_conflict(
+            f"{context} (link removed)",
+            f"CONFLICT at {context}: one mod removed this link while the other kept it. Removing link per {preferred_label} policy.",
+        )
+        return None
+
+    _raise_or_record_conflict(
+        context,
+        f"CONFLICT at {context}: one mod removed this link while the other kept it. Using {preferred_label} value.",
+    )
+    return _clone_link(chosen_link, target_node)
 
 
 def _merge_value(base_value: Any, mod_a_value: Any, mod_b_value: Any, context: str) -> Any:
@@ -619,11 +688,13 @@ def _merge_value(base_value: Any, mod_a_value: Any, mod_b_value: Any, context: s
     # Try list-level merge when all three are lists
     if isinstance(base_value, list) and isinstance(mod_a_value, list) and isinstance(mod_b_value, list):
         return _merge_list_values(base_value, mod_a_value, mod_b_value, context)
-    # True conflict: both mods changed same field to different values. Prefer mod_a (first listed).
-    msg = f"CONFLICT at {context}: both mods changed this field differently. Using mod_a value."
-    _merge_logger.warning(msg)
-    _merge_conflicts.append(context)
-    return copy.deepcopy(mod_a_value)
+    preferred_value = mod_a_value if _merge_conflict_policy != "mod-b" else mod_b_value
+    preferred_label = _preferred_conflict_label()
+    _raise_or_record_conflict(
+        context,
+        f"CONFLICT at {context}: both mods changed this field differently. Using {preferred_label} value.",
+    )
+    return copy.deepcopy(preferred_value)
 
 
 def _merge_list_values(base_list: list, mod_a_list: list, mod_b_list: list, context: str) -> list:
@@ -685,6 +756,11 @@ def _values_equal(left: Any, right: Any) -> bool:
 def _node_identity(node: DLGNode) -> tuple[Any, ...]:
     if node.node_id:
         return (node.__class__.__name__, "node_id", node.node_id)
+    vo_resref = str(getattr(node, "vo_resref", ResRef("")))
+    if vo_resref:
+        if isinstance(node, DLGEntry):
+            return (node.__class__.__name__, node.speaker, node.listener, "vo_resref", vo_resref)
+        return (node.__class__.__name__, node.listener, "vo_resref", vo_resref)
     text_key = _localized_key(node.text)
     if isinstance(node, DLGEntry):
         return (node.__class__.__name__, node.speaker, node.listener, text_key)
@@ -701,7 +777,14 @@ def _node_exact_signature(node: DLGNode) -> tuple[Any, ...]:
 
 
 def _localized_key(value: LocalizedString) -> tuple[int, tuple[tuple[int, str], ...]]:
-    return (value.stringref, tuple(sorted(value.to_dict()["substrings"].items())))
+    substrings = tuple(
+        sorted(
+            (language, text)
+            for language, text in value.to_dict()["substrings"].items()
+            if text != ""
+        )
+    )
+    return (value.stringref, substrings)
 
 
 _SIGNATURE_EXCLUDE_KEYS = frozenset({"_hash_cache"})

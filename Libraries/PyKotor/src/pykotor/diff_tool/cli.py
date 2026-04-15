@@ -157,6 +157,13 @@ def add_kotordiff_arguments(parser: ArgumentParser) -> None:
         dest="merge_paths",
         help="One of exactly two modified resource paths to merge onto the resolved base resource.",
     )
+    parser.add_argument(
+        "--merge-conflict-policy",
+        type=str,
+        default="mod-a",
+        choices=["mod-a", "mod-b", "fail"],
+        help="Conflict resolution policy for --merge-tslpatcher: prefer the first merge path, prefer the second, or fail (default: mod-a).",
+    )
 
     # GUI/Console options
     parser.add_argument(
@@ -292,6 +299,7 @@ def execute_cli(cmdline_args: Namespace | Any | object):
             merge_resource_type=merge_resource_type,
             merge_module_root=getattr(cmdline_args, "merge_module", None),
             merge_modded_paths=[Path(normalize_path_arg(path)) for path in merge_paths_raw],
+            merge_conflict_policy=str(getattr(cmdline_args, "merge_conflict_policy", "mod-a")),
         )
         exit_code = run_application(config)
         sys.exit(exit_code)
