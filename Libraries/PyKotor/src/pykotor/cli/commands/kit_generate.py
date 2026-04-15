@@ -1,4 +1,4 @@
-"""Generate Holocron-compatible kits from installation modules."""
+"""Generate Holocron-compatible kits from game-root modules."""
 
 from __future__ import annotations
 
@@ -33,8 +33,8 @@ def cmd_kit_generate(args: Namespace, logger: RobustLogger) -> int:
     if args.log_level:
         logger.setLevel(LEVEL_MAP.get(args.log_level, logging.INFO))
 
-    if not args.installation:
-        logger.error("No installation path specified. Use --installation <path>")
+    if not args.path:
+        logger.error("No game-root path specified. Use --path <path>")
         return 1
     if not args.module:
         logger.error("No module name specified. Use --module <name>")
@@ -43,14 +43,14 @@ def cmd_kit_generate(args: Namespace, logger: RobustLogger) -> int:
         logger.error("No output path specified. Use --output <path>")
         return 1
 
-    installation_path = Path(args.installation)
+    installation_path = Path(args.path)
     output_path = Path(args.output)
     module_name = normalize_module_name(args.module)
     kit_id = args.kit_id.strip().lower() if args.kit_id else None
 
     try:
         logger.info("Installing kit from module: %s", module_name)
-        logger.info("Installation: %s", installation_path)
+        logger.info("Game root: %s", installation_path)
         logger.info("Output: %s", output_path)
         if kit_id:
             logger.info("Kit ID: %s", kit_id)

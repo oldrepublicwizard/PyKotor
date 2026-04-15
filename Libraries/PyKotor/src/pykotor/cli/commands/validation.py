@@ -39,12 +39,12 @@ def cmd_check_txi(args: Namespace, logger: Logger) -> int:
 
     Usage:
         pykotorcli check-txi --textures TEXTURE1 TEXTURE2 ...
-        pykotorcli check-txi --textures lda_bark04 lda_flr11 --installation "C:/Games/KOTOR"
+        pykotorcli check-txi --textures lda_bark04 lda_flr11 --path "C:/Games/KOTOR"
     """
     try:
-        installation = Installation(pathlib.Path(args.installation))
+        installation = Installation(pathlib.Path(args.path))
     except Exception:
-        logger.exception("Invalid installation path")
+        logger.exception("Invalid game-root path")
         return 1
 
     if not args.textures:
@@ -76,12 +76,12 @@ def cmd_check_2da(args: Namespace, logger: Logger) -> int:
     """Check if a 2DA file exists in installation.
 
     Usage:
-        pykotorcli check-2da --2da genericdoors --installation "C:/Games/KOTOR"
+        pykotorcli check-2da --2da genericdoors --path "C:/Games/KOTOR"
     """
     try:
-        installation = Installation(pathlib.Path(args.two_da_installation))
+        installation = Installation(pathlib.Path(args.path))
     except Exception:
-        logger.exception("Invalid installation path")
+        logger.exception("Invalid game-root path")
         return 1
 
     logger.info(f"Checking for 2DA file: {args.two_da_name}")  # noqa: G004
@@ -101,15 +101,15 @@ def cmd_validate_installation(args: Namespace, logger: Logger) -> int:
     """Validate a KOTOR installation.
 
     Usage:
-        pykotorcli validate-installation --installation "C:/Games/KOTOR"
+        pykotorcli validate-installation --path "C:/Games/KOTOR"
     """
     try:
-        installation = Installation(pathlib.Path(args.installation))
+        installation = Installation(pathlib.Path(args.path))
     except Exception:
-        logger.exception("Invalid installation path")
+        logger.exception("Invalid game-root path")
         return 1
 
-    logger.info(f"Validating installation: {installation.path()}")  # noqa: G004
+    logger.info(f"Validating game root: {installation.path()}")  # noqa: G004
     summary = get_installation_summary(installation, check_essential_files=args.check_essential)
     ok, _fail = ok_fail_symbols()
 
@@ -148,13 +148,13 @@ def cmd_investigate_module(args: Namespace, logger: Logger) -> int:
     """Investigate a module's structure.
 
     Usage:
-        pykotorcli investigate-module --module danm13 --installation "C:/Games/KOTOR"
+        pykotorcli investigate-module --module danm13 --path "C:/Games/KOTOR"
         pykotorcli investigate-module --module danm13 --json output.json
     """
     try:
-        installation = Installation(pathlib.Path(args.installation))
+        installation = Installation(pathlib.Path(args.path))
     except Exception:
-        logger.exception("Invalid installation path")
+        logger.exception("Invalid game-root path")
         return 1
 
     try:
@@ -208,9 +208,9 @@ def cmd_check_missing_resources(args: Namespace, logger: Logger) -> int:  # noqa
         pykotorcli check-missing-resources --module danm13 --textures TEX1 TEX2 --lightmaps LM1 LM2
     """
     try:
-        installation = Installation(pathlib.Path(args.installation))
+        installation = Installation(pathlib.Path(args.path))
     except Exception:
-        logger.exception("Invalid installation path")
+        logger.exception("Invalid game-root path")
         return 1
 
     try:
@@ -264,12 +264,12 @@ def cmd_module_resources(args: Namespace, logger: Logger) -> int:
     """Get all resources referenced by a module's models.
 
     Usage:
-        pykotorcli module-resources --module danm13 --installation "C:/Games/KOTOR"
+        pykotorcli module-resources --module danm13 --path "C:/Games/KOTOR"
     """
     try:
-        installation = Installation(pathlib.Path(args.installation))
+        installation = Installation(pathlib.Path(args.path))
     except Exception:
-        logger.exception("Invalid installation path")
+        logger.exception("Invalid game-root path")
         return 1
 
     try:

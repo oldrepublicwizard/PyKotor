@@ -2,11 +2,13 @@ from __future__ import annotations
 
 import json
 
+from argparse import Namespace
 from pathlib import Path
-from types import SimpleNamespace
 
 import pytest
+from loggerplus import RobustLogger
 
+from pykotor.cli.argparser import create_parser
 from pykotor.cli.commands.find_cmd import cmd_find
 from pykotor.cli.commands.get_cmd import cmd_get
 from pykotor.cli.commands.diff_installation import cmd_diff_installation
@@ -97,21 +99,22 @@ def test_get_supports_auto_detected_game_root_and_json_export(
     output_path.unlink()
 
 
-class _CaptureLogger:
+class _CaptureLogger(RobustLogger):
     def __init__(self) -> None:
-        self.messages: list[str] = []
+        object.__setattr__(self, "_logger", None)
+        object.__setattr__(self, "messages", [])
 
     def info(self, message: str, *args) -> None:
-        self.messages.append(message % args if args else message)
+        object.__getattribute__(self, "messages").append(message % args if args else message)
 
     def warning(self, message: str, *args) -> None:
-        self.messages.append(message % args if args else message)
+        object.__getattribute__(self, "messages").append(message % args if args else message)
 
     def error(self, message: str, *args) -> None:
-        self.messages.append(message % args if args else message)
+        object.__getattribute__(self, "messages").append(message % args if args else message)
 
     def exception(self, message: str, *args) -> None:
-        self.messages.append(message % args if args else message)
+        object.__getattribute__(self, "messages").append(message % args if args else message)
 
 
 def test_cmd_get_can_extract_from_folder_source(tmp_path: Path) -> None:
@@ -121,7 +124,7 @@ def test_cmd_get_can_extract_from_folder_source(tmp_path: Path) -> None:
     output_path = Path("notes.folder.txt").resolve()
 
     logger = _CaptureLogger()
-    args = SimpleNamespace(
+    args = Namespace(
         resref="notes.txt",
         path=str(source_dir),
         game=None,
@@ -132,19 +135,21 @@ def test_cmd_get_can_extract_from_folder_source(tmp_path: Path) -> None:
         format="binary",
     )
 
-    assert cmd_get(args, logger) == 0  # pyright: ignore[reportArgumentType]
+    assert cmd_get(args, logger) == 0
     assert output_path.read_text(encoding="utf-8") == "folder source"
     output_path.unlink()
 
 
-def test_cmd_find_can_search_archive_source(tmp_path: Path) -> None:
+def test_cmd_find_can_search_archive_source(
+    tmp_path: Path, caplog: pytest.LogCaptureFixture
+) -> None:
     rim_path = tmp_path / "capsule.rim"
     rim = RIM()
     rim.set_data("notes", ResourceType.TXT, b"archive source")
     write_rim(rim, rim_path)
 
     logger = _CaptureLogger()
-    args = SimpleNamespace(
+    args = Namespace(
         resref="notes.txt",
         path=str(rim_path),
         game=None,
@@ -155,8 +160,8 @@ def test_cmd_find_can_search_archive_source(tmp_path: Path) -> None:
     )
 
     assert cmd_find(args, logger) == 0
-    assert any("notes.txt" in message for message in logger.messages)
-    assert any("Archive" in message for message in logger.messages)
+    assert "notes.txt" in caplog.text
+    assert "Archive" in caplog.text
 
 
 def test_kotor_paths_can_emit_json(
@@ -426,6 +431,59 @@ def test_cmd_diff_merge_defaults_tslpatchdata_and_passes_merge_options(
     assert captured["logging_enabled"] is True
 
 
+def test_parser_accepts_legacy_installation_aliases() -> None:
+    parser = create_parser("pykotor")
+
+    get_args = parser.parse_args(["get", "notes.txt", "--installation", "C:/game"])
+    find_args = parser.parse_args(["find", "notes*", "--installation", "C:/game"])
+    diff_args = parser.parse_args(
+        [
+            "diff",
+            "--merge-tslpatcher",
+            "--merge-installation",
+            "C:/game",
+            "--merge-resource",
+            "unk41_mission.dlg",
+            "--merge-path",
+            "mod_a.dlg",
+            "--merge-path",
+            "mod_b.dlg",
+        ]
+    )
+
+    assert get_args.path == "C:/game"
+    assert find_args.path == "C:/game"
+    assert diff_args.merge_source == "C:/game"
+
+
+def test_parser_wave2_game_root_commands_use_path_dest_and_keep_hidden_alias() -> None:
+    parser = create_parser("pykotor")
+
+    check_txi_args = parser.parse_args(["check-txi", "--path", "C:/game", "--textures", "foo"])
+    check_txi_alias_args = parser.parse_args(
+        ["check-txi", "--installation", "C:/game", "--textures", "foo"]
+    )
+    check_2da_args = parser.parse_args(["check-2da", "--2da", "genericdoors", "--path", "C:/game"])
+    validate_args = parser.parse_args(["validate-installation", "--path", "C:/game"])
+    investigate_args = parser.parse_args(
+        ["investigate-module", "--module", "danm13", "--path", "C:/game"]
+    )
+    missing_args = parser.parse_args(
+        ["check-missing-resources", "--module", "danm13", "--path", "C:/game", "--textures", "foo"]
+    )
+    resources_args = parser.parse_args(["module-resources", "--module", "danm13", "--path", "C:/game"])
+    kit_args = parser.parse_args(["kit-generate", "--path", "C:/game", "--module", "danm13"])
+
+    assert check_txi_args.path == "C:/game"
+    assert check_txi_alias_args.path == "C:/game"
+    assert check_2da_args.path == "C:/game"
+    assert validate_args.path == "C:/game"
+    assert investigate_args.path == "C:/game"
+    assert missing_args.path == "C:/game"
+    assert resources_args.path == "C:/game"
+    assert kit_args.path == "C:/game"
+
+
 def test_diff_installation_forwards_merge_flags(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
     captured_argv: list[str] = []
 
@@ -435,7 +493,7 @@ def test_diff_installation_forwards_merge_flags(monkeypatch: pytest.MonkeyPatch,
 
     monkeypatch.setattr("pykotor.diff_tool.__main__.main", fake_main)
 
-    args = SimpleNamespace(
+    args = Namespace(
         path1=None,
         path2=None,
         path3=None,
@@ -462,7 +520,7 @@ def test_diff_installation_forwards_merge_flags(monkeypatch: pytest.MonkeyPatch,
         gui=False,
     )
 
-    assert cmd_diff_installation(args, logger=SimpleNamespace(error=lambda *_args, **_kwargs: None, exception=lambda *_args, **_kwargs: None)) == 0
+    assert cmd_diff_installation(args, logger=_CaptureLogger()) == 0
     assert "--merge-tslpatcher" in captured_argv
     assert "--merge-source" in captured_argv
     assert "--merge-resource" in captured_argv

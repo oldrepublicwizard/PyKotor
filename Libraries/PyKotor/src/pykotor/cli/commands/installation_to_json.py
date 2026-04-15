@@ -29,7 +29,7 @@ def cmd_installation_to_json(args: Namespace, logger: Logger) -> int:
             return 1
 
         game_arg = getattr(args, "game", None)
-        game_filter = _parse_game_arg(game_arg)
+        game_filter = parse_game_arg(game_arg)
         if game_arg and game_filter is None:
             logger.error("Unknown game '%s'. Use k1 or k2.", game_arg)
             return 1

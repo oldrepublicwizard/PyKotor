@@ -5,7 +5,7 @@ from __future__ import annotations
 import os
 import sys
 
-from argparse import ArgumentParser, RawDescriptionHelpFormatter
+from argparse import SUPPRESS, ArgumentParser, RawDescriptionHelpFormatter
 from typing import TYPE_CHECKING, Any
 
 from pykotor.cli.version import VERSION
@@ -1061,6 +1061,12 @@ Compare two paths and show differences. Supports any combination of:
         help="Source path used to resolve the base resource for --merge-tslpatcher.",
     )
     diff_parser.add_argument(
+        "--merge-installation",
+        dest="merge_source",
+        type=str,
+        help=SUPPRESS,
+    )
+    diff_parser.add_argument(
         "--merge-resource",
         type=str,
         help="Base resource to resolve from the source path, e.g. unk41_mission.dlg.",
@@ -1179,9 +1185,11 @@ Compare two paths and show differences. Supports any combination of:
     check_txi_parser = subparsers.add_parser(
         "check-txi", help="Check if TXI files exist for specific textures"
     )
-    check_txi_parser.add_argument(
-        "--installation", "-i", required=True, help="Path to KOTOR installation"
+    check_txi_path_group = check_txi_parser.add_mutually_exclusive_group(required=True)
+    check_txi_path_group.add_argument(
+        "--path", "-p", dest="path", help="Path to a game root"
     )
+    check_txi_path_group.add_argument("--installation", "-i", dest="path", help=SUPPRESS)
     check_txi_parser.add_argument(
         "--textures",
         "-t",
@@ -1196,13 +1204,14 @@ Compare two paths and show differences. Supports any combination of:
     check_2da_parser.add_argument(
         "--2da", dest="two_da_name", required=True, help="2DA file name (without extension)"
     )
-    check_2da_parser.add_argument(
-        "--installation",
-        "-i",
-        dest="two_da_installation",
-        required=True,
-        help="Path to KOTOR installation",
+    check_2da_path_group = check_2da_parser.add_mutually_exclusive_group(required=True)
+    check_2da_path_group.add_argument(
+        "--path",
+        "-p",
+        dest="path",
+        help="Path to a game root",
     )
+    check_2da_path_group.add_argument("--installation", "-i", dest="path", help=SUPPRESS)
 
     find_parser = subparsers.add_parser(
         "find",
@@ -1217,6 +1226,12 @@ Compare two paths and show differences. Supports any combination of:
         "-p",
         dest="path",
         help="Path to a game root, folder, archive, or module piece. Omit with --game to auto-detect a default game root.",
+    )
+    find_parser.add_argument(
+        "--installation",
+        "-i",
+        dest="path",
+        help=SUPPRESS,
     )
     find_parser.add_argument(
         "--game",
@@ -1270,6 +1285,12 @@ Compare two paths and show differences. Supports any combination of:
         help="Path to a game root, folder, archive, or module piece. If omitted, use --game to auto-detect a default game root.",
     )
     get_parser.add_argument(
+        "--installation",
+        "-i",
+        dest="path",
+        help=SUPPRESS,
+    )
+    get_parser.add_argument(
         "--game",
         choices=["k1", "kotor", "kotor1", "k2", "tsl", "kotor2"],
         help="Auto-detect a default game root for this game when --path is omitted",
@@ -1307,9 +1328,11 @@ Compare two paths and show differences. Supports any combination of:
     validate_installation_parser = subparsers.add_parser(
         "validate-installation", help="Validate a KOTOR installation"
     )
-    validate_installation_parser.add_argument(
-        "--installation", "-i", required=True, help="Path to KOTOR installation"
+    validate_installation_path_group = validate_installation_parser.add_mutually_exclusive_group(required=True)
+    validate_installation_path_group.add_argument(
+        "--path", "-p", dest="path", help="Path to a game root"
     )
+    validate_installation_path_group.add_argument("--installation", "-i", dest="path", help=SUPPRESS)
     validate_installation_parser.add_argument(
         "--check-essential",
         action="store_true",
@@ -1323,9 +1346,11 @@ Compare two paths and show differences. Supports any combination of:
     investigate_module_parser.add_argument(
         "--module", "-m", required=True, help="Module name to investigate"
     )
-    investigate_module_parser.add_argument(
-        "--installation", "-i", required=True, help="Path to KOTOR installation"
+    investigate_module_path_group = investigate_module_parser.add_mutually_exclusive_group(required=True)
+    investigate_module_path_group.add_argument(
+        "--path", "-p", dest="path", help="Path to a game root"
     )
+    investigate_module_path_group.add_argument("--installation", "-i", dest="path", help=SUPPRESS)
     investigate_module_parser.add_argument("--json", help="Output results as JSON to file")
     investigate_module_parser.add_argument(
         "--verbose", "-v", action="store_true", help="Show detailed information"
@@ -1337,9 +1362,11 @@ Compare two paths and show differences. Supports any combination of:
     check_missing_resources_parser.add_argument(
         "--module", "-m", required=True, help="Module name to check"
     )
-    check_missing_resources_parser.add_argument(
-        "--installation", "-i", required=True, help="Path to KOTOR installation"
+    check_missing_resources_path_group = check_missing_resources_parser.add_mutually_exclusive_group(required=True)
+    check_missing_resources_path_group.add_argument(
+        "--path", "-p", dest="path", help="Path to a game root"
     )
+    check_missing_resources_path_group.add_argument("--installation", "-i", dest="path", help=SUPPRESS)
     check_missing_resources_parser.add_argument(
         "--textures", "-t", nargs="+", help="Texture names to check"
     )
@@ -1351,9 +1378,11 @@ Compare two paths and show differences. Supports any combination of:
         "module-resources", help="Get all resources referenced by a module's models"
     )
     module_resources_parser.add_argument("--module", "-m", required=True, help="Module name")
-    module_resources_parser.add_argument(
-        "--installation", "-i", required=True, help="Path to KOTOR installation"
+    module_resources_path_group = module_resources_parser.add_mutually_exclusive_group(required=True)
+    module_resources_path_group.add_argument(
+        "--path", "-p", dest="path", help="Path to a game root"
     )
+    module_resources_path_group.add_argument("--installation", "-i", dest="path", help=SUPPRESS)
     module_resources_parser.add_argument("--output", "-o", help="Output JSON file")
     module_resources_parser.add_argument(
         "--verbose", "-v", action="store_true", help="Show detailed information"
@@ -1362,7 +1391,8 @@ Compare two paths and show differences. Supports any combination of:
     kit_generate_parser = subparsers.add_parser(
         "kit-generate", aliases=["kit"], help="Generate a Holocron-compatible kit from a module"
     )
-    kit_generate_parser.add_argument("--installation", "-i", help="Path to KOTOR installation")
+    kit_generate_parser.add_argument("--path", "-p", dest="path", help="Path to a game root")
+    kit_generate_parser.add_argument("--installation", "-i", dest="path", help=SUPPRESS)
     kit_generate_parser.add_argument("--module", "-m", help="Module name (e.g., danm13)")
     kit_generate_parser.add_argument("--output", "-o", help="Output directory for generated kit")
     kit_generate_parser.add_argument("--kit-id", help="Optional kit id (defaults to module name)")
