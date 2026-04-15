@@ -134,7 +134,6 @@ def apply_tool_preset(
                 "utility.updater",
             ]
         )
-        args.exclude_module.extend(["dl_translate", "torch"])
         if args.qt_api:
             args.exclude_other_qt = True
 
@@ -169,10 +168,6 @@ def apply_tool_preset(
                 "PySide6",
                 "PyOpenGL",
                 "PyGLM",
-                "dl_translate",
-                "torch",
-                "deep_translator",
-                "cefpython3",
             ]
         )
         if os_name == "Windows":
@@ -187,8 +182,6 @@ def apply_tool_preset(
 
         args.exclude_module.extend(
             [
-                "dl_translate",
-                "torch",
                 "PyQt5",
                 "PyQt5-Qt5",
                 "PyQt5-sip",
@@ -217,9 +210,6 @@ def apply_tool_preset(
                 "arabic-reshaper",
                 "beautifulsoup4",
                 "cssselect",
-                "deep_translator",
-                "deepl-cli",
-                "dl_translate",
                 "greenlet",
                 "install_playwright",
                 "isort",
@@ -249,7 +239,6 @@ def apply_tool_preset(
                 "PySide6",
                 "ruff",
                 "setuptools",
-                "torch",
                 "watchdog",
                 "wheel",
             ]
