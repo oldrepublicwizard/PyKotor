@@ -10,6 +10,7 @@ exists for it yet.
 
 from __future__ import annotations
 
+from contextlib import suppress
 from typing import TYPE_CHECKING, Any, Callable, NamedTuple, cast
 
 from pykotor.resource.formats.gff import GFF, bytes_gff, read_gff, write_gff
@@ -30,7 +31,7 @@ from pykotor.resource.generics.utp import bytes_utp, construct_utp, dismantle_ut
 from pykotor.resource.generics.uts import bytes_uts, construct_uts, dismantle_uts, read_uts, write_uts
 from pykotor.resource.generics.utt import bytes_utt, construct_utt, dismantle_utt, read_utt, write_utt
 from pykotor.resource.generics.utw import bytes_utw, construct_utw, dismantle_utw, read_utw, write_utw
-from pykotor.resource.type import RESOURCE_FORMAT, ResourceType, iter_resource_formats
+from pykotor.resource.type import ResourceType
 
 if TYPE_CHECKING:
     from pykotor.common.misc import Game
@@ -134,43 +135,45 @@ _BIOWARE_TEMPLATE_TARGETS: dict[ResourceType, ResourceType] = {
 }
 
 
-def _safe_target_type(restype: RESOURCE_FORMAT) -> ResourceType:
-    return cast(ResourceType, restype.target_type() if hasattr(restype, "target_type") else restype)
+def _safe_target_type(restype: ResourceType) -> ResourceType:
+    if restype.target_member is None:
+        return restype
+    with suppress(KeyError):
+        return ResourceType.__members__[restype.target_member]
+    return restype
 
 
-def is_gff_resource_type(restype: RESOURCE_FORMAT) -> bool:
+def is_gff_resource_type(restype: ResourceType) -> bool:
     return bool(restype.is_gff() or _safe_target_type(restype).is_gff())
 
 
-def _resolve_gff_pipeline_type(restype: RESOURCE_FORMAT) -> ResourceType:
+def _resolve_gff_pipeline_type(restype: ResourceType) -> ResourceType:
     canonical_type = _safe_target_type(restype)
     return _BIOWARE_TEMPLATE_TARGETS.get(canonical_type, canonical_type)
 
 
-_GFF_RESOURCE_PIPELINES: dict[RESOURCE_FORMAT, GFFResourcePipeline] = {
+_GFF_RESOURCE_PIPELINES: dict[ResourceType, GFFResourcePipeline] = {
     restype: pipeline
-    for restype in iter_resource_formats()
+    for restype in ResourceType
     if is_gff_resource_type(restype)
     for pipeline in [_BASE_GFF_RESOURCE_PIPELINES.get(_resolve_gff_pipeline_type(restype))]
     if pipeline is not None
 }
 
 
-SUPPORTED_GFF_RESOURCE_TYPES: frozenset[ResourceType] = frozenset(
-    restype for restype in ResourceType if restype in _GFF_RESOURCE_PIPELINES
-)
+SUPPORTED_GFF_RESOURCE_TYPES: frozenset[ResourceType] = frozenset(_GFF_RESOURCE_PIPELINES)
 UNSUPPORTED_GFF_RESOURCE_TYPES: frozenset[ResourceType] = frozenset(
     restype for restype in ResourceType if is_gff_resource_type(restype) and restype not in _GFF_RESOURCE_PIPELINES
 )
 
 
-def get_gff_resource_pipeline(restype: RESOURCE_FORMAT) -> GFFResourcePipeline | None:
+def get_gff_resource_pipeline(restype: ResourceType) -> GFFResourcePipeline | None:
     """Return the GFF-backed resource pipeline for a resource type, if supported."""
     return _GFF_RESOURCE_PIPELINES.get(restype)
 
 
 def get_gff_read_converter(
-    restype: RESOURCE_FORMAT,
+    restype: ResourceType,
 ) -> Callable[[SOURCE_TYPES, int, int | None], Any] | None:
     """Return the shared GFF reader for a resource type, if supported."""
     pipeline = get_gff_resource_pipeline(restype)
@@ -179,7 +182,7 @@ def get_gff_read_converter(
     return pipeline.read
 
 
-def reconstruct_gff_as_bytes(gff: GFF, restype: RESOURCE_FORMAT) -> bytes | None:
+def reconstruct_gff_as_bytes(gff: GFF, restype: ResourceType) -> bytes | None:
     """Construct and serialize a typed GFF-backed resource when the type is supported."""
     pipeline = get_gff_resource_pipeline(restype)
     if pipeline is None:
