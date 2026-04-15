@@ -3,6 +3,7 @@ from __future__ import annotations
 import os
 
 from pathlib import Path
+from typing import Any, Iterator
 
 import pytest
 
@@ -42,9 +43,46 @@ _test_helpers_path = str(Path(__file__).resolve().parents[1])
 if _test_helpers_path not in sys.path:
     sys.path.insert(0, _test_helpers_path)
 
-from typing import Any, Iterator
-
 from test_helpers.profiling_and_timeout import profile_if_enabled
+
+
+_LEGACY_INSTALL_LABELS = {"k1_installation", "tsl_installation"}
+
+
+def _normalize_legacy_cli_selector(nodeid: str) -> str:
+    """Collapse legacy display-only CLI selectors back to canonical pytest node IDs."""
+    parts = nodeid.split("::")
+    if len(parts) < 5 or parts[1] not in _LEGACY_INSTALL_LABELS:
+        return nodeid
+    return "::".join((parts[0], *parts[3:]))
+
+
+def _normalize_cli_cache_entries(config: pytest.Config) -> None:
+    """Normalize stale cached node IDs written before the CLI tests used canonical selectors."""
+    cached_nodeids: list[str] = config.cache.get("cache/nodeids", [])
+    normalized_nodeids = [_normalize_legacy_cli_selector(nodeid) for nodeid in cached_nodeids]
+    if normalized_nodeids != cached_nodeids:
+        config.cache.set("cache/nodeids", normalized_nodeids)
+
+    lastfailed: dict[str, bool] = config.cache.get("cache/lastfailed", {})
+    normalized_lastfailed = {
+        _normalize_legacy_cli_selector(nodeid): failed
+        for nodeid, failed in lastfailed.items()
+    }
+    if normalized_lastfailed != lastfailed:
+        config.cache.set("cache/lastfailed", normalized_lastfailed)
+
+    stepwise = config.cache.get("cache/stepwise", None)
+    if isinstance(stepwise, str):
+        normalized_stepwise = _normalize_legacy_cli_selector(stepwise)
+        if normalized_stepwise != stepwise:
+            config.cache.set("cache/stepwise", normalized_stepwise)
+
+
+def pytest_configure(config: pytest.Config) -> None:
+    """Normalize legacy CLI selectors before collection and clean stale pytest cache entries."""
+    config.args[:] = [_normalize_legacy_cli_selector(arg) for arg in config.args]
+    _normalize_cli_cache_entries(config)
 
 
 @pytest.hookimpl(hookwrapper=True)
@@ -112,36 +150,6 @@ def k2_installation() -> Installation:
             f"K2_PATH/TSL_PATH does not look like a real install (missing chitin.key): {k2_path}"
         )
     return Installation(CaseAwarePath(k2_path))
-
-
-def pytest_collection_modifyitems(config: pytest.Config, items: list[pytest.Item]) -> None:  # noqa: ARG001
-    """Rewrite nodeids for per-module installation tests for easier scanning.
-
-    When a test is parametrized with `module_case=('k1'|'k2', module_root)`, we rewrite the nodeid to:
-    `<path>::<k1_installation|tsl_installation>::<module_root>::<test_name>[...]`
-    """
-    for item in items:
-        callspec = getattr(item, "callspec", None)
-        if callspec is None:
-            continue
-        params = getattr(callspec, "params", {})
-        if "module_case" not in params:
-            continue
-        try:
-            game_key, module_root = params["module_case"]
-        except Exception:
-            continue
-        install_label = (
-            "k1_installation"
-            if game_key == "k1"
-            else "tsl_installation"
-            if game_key == "k2"
-            else str(game_key)
-        )
-        base = item.nodeid.split("::", 1)[0]
-        rest = item.nodeid[len(base) + 2 :] if item.nodeid.startswith(base + "::") else item.nodeid
-        # `rest` typically begins with the function name, potentially with `[param]`.
-        item._nodeid = f"{base}::{install_label}::{module_root}::{rest}"  # type: ignore[attr-defined]
 
 
 def pytest_generate_tests(metafunc: pytest.Metafunc) -> None:
