@@ -2,6 +2,12 @@
   "backends": {
     "http://127.0.0.1:1975/mcp/message": {
       "session_id": "da4751c3b4684de2a43305b3946a390c"
+    },
+    "http://127.0.0.1:8099/mcp/message": {
+      "session_id": "a496db9273924baa9879eb23ea419728"
+    },
+    "http://127.0.0.1:8100/mcp/message": {
+      "session_id": "21cd44cf6e7b4b16acfde26edf15017e"
     }
   }
 }
