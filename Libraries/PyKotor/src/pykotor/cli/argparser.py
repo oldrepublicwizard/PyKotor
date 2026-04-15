@@ -1472,11 +1472,6 @@ Compare two paths and show differences. Supports any combination of:
     batch_patch_parser.add_argument(
         "--path", "-p", required=True, help="Path to file, folder, or installation"
     )
-    batch_patch_parser.add_argument("--translate", action="store_true", help="Enable translation")
-    batch_patch_parser.add_argument(
-        "--to-lang", help="Target language for translation (e.g., French, German)"
-    )
-    batch_patch_parser.add_argument("--translation-option", help="Translation service to use")
     batch_patch_parser.add_argument(
         "--set-unskippable", action="store_true", help="Set dialogs as unskippable"
     )
@@ -1493,13 +1488,11 @@ Compare two paths and show differences. Supports any combination of:
         "--always-backup", action="store_true", default=True, help="Always create backups"
     )
     batch_patch_parser.add_argument(
-        "--max-threads", type=int, default=2, help="Maximum translation threads"
+        "--max-threads", type=int, default=2, help="Maximum worker threads"
     )
 
     patch_file_parser = subparsers.add_parser("patch-file", help="Patch a single file")
     patch_file_parser.add_argument("--file", "-f", required=True, help="File to patch")
-    patch_file_parser.add_argument("--translate", action="store_true", help="Enable translation")
-    patch_file_parser.add_argument("--to-lang", help="Target language for translation")
     patch_file_parser.add_argument(
         "--set-unskippable", action="store_true", help="Set dialogs as unskippable"
     )
@@ -1520,8 +1513,6 @@ Compare two paths and show differences. Supports any combination of:
         "patch-folder", help="Patch all files in a folder recursively"
     )
     patch_folder_parser.add_argument("--folder", "-f", required=True, help="Folder to patch")
-    patch_folder_parser.add_argument("--translate", action="store_true", help="Enable translation")
-    patch_folder_parser.add_argument("--to-lang", help="Target language for translation")
     patch_folder_parser.add_argument(
         "--set-unskippable", action="store_true", help="Set dialogs as unskippable"
     )
@@ -1538,7 +1529,7 @@ Compare two paths and show differences. Supports any combination of:
         "--always-backup", action="store_true", default=True, help="Always create backups"
     )
     patch_folder_parser.add_argument(
-        "--max-threads", type=int, default=2, help="Maximum translation threads"
+        "--max-threads", type=int, default=2, help="Maximum worker threads"
     )
 
     patch_installation_parser = subparsers.add_parser(
@@ -1548,10 +1539,6 @@ Compare two paths and show differences. Supports any combination of:
         "--installation", "-i", required=True, help="Path to KOTOR installation"
     )
     patch_installation_parser.add_argument(
-        "--translate", action="store_true", help="Enable translation"
-    )
-    patch_installation_parser.add_argument("--to-lang", help="Target language for translation")
-    patch_installation_parser.add_argument(
         "--set-unskippable", action="store_true", help="Set dialogs as unskippable"
     )
     patch_installation_parser.add_argument(
@@ -1567,7 +1554,7 @@ Compare two paths and show differences. Supports any combination of:
         "--always-backup", action="store_true", default=True, help="Always create backups"
     )
     patch_installation_parser.add_argument(
-        "--max-threads", type=int, default=2, help="Maximum translation threads"
+        "--max-threads", type=int, default=2, help="Maximum worker threads"
     )
 
     return parser

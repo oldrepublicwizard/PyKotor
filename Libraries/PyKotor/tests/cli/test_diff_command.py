@@ -567,6 +567,42 @@ class TestPathResolution:
         # CaseAwarePath resolves case-insensitively on POSIX.
         assert CaseAwarePath("a/b").exists() is True
 
+    def test_resolve_container_resource_syntax(self, tmp_path: Path):
+        """Test resolution of container::resource syntax extracts from capsule."""
+        from pykotor.resource.type import ResourceType
+
+        rim_file = tmp_path / "test.rim"
+        rim = RIM()
+        gff = GFF()
+        from pykotor.resource.formats.gff.gff_auto import bytes_gff
+
+        gff_bytes = bytes_gff(gff)
+        rim.set_data("test_res", ResourceType.UTC, gff_bytes)
+        write_rim(rim, rim_file)
+
+        resolved = _resolve_path(f"{rim_file}::test_res.utc")
+        assert isinstance(resolved, Path)
+        assert resolved.name == "test_res.utc"
+        assert resolved.is_file()
+
+        # Extracted content should match original
+        extracted = resolved.read_bytes()
+        assert extracted == gff_bytes
+
+    def test_resolve_container_resource_not_found(self, tmp_path: Path):
+        """Test that missing resource in container raises ValueError."""
+        rim_file = tmp_path / "test.rim"
+        rim = RIM()
+        write_rim(rim, rim_file)
+
+        with pytest.raises(ValueError, match="not found"):
+            _resolve_path(f"{rim_file}::nonexistent.utc")
+
+    def test_resolve_container_not_found(self, tmp_path: Path):
+        """Test that missing container file raises FileNotFoundError."""
+        with pytest.raises(FileNotFoundError):
+            _resolve_path(f"{tmp_path / 'missing.rim'}::test.utc")
+
 
 class TestDiffCommand:
     """Tests for the diff command implementation."""

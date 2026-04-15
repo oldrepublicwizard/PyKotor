@@ -1,10 +1,9 @@
 """Batch patching utilities for KOTOR resources.
 
 This module provides functions for:
-- Patching GFF files (translating LocalizedStrings, setting unskippable dialogs)
+- Patching GFF files (setting unskippable dialogs)
 - Converting GFF files between K1 and TSL formats
 - Converting TGA/TPC textures
-- Processing TLK files
 - Batch patching installations, folders, and files
 
 References:
@@ -17,14 +16,10 @@ References:
 
 from __future__ import annotations
 
-import concurrent.futures
-
-from copy import deepcopy
 from pathlib import Path
 from typing import TYPE_CHECKING, Any
 
 from pykotor.common.alien_sounds import ALIEN_SOUNDS
-from pykotor.common.language import LocalizedString
 from pykotor.common.misc import Game, ResRef
 from pykotor.common.stream import BinaryWriter
 from pykotor.extract.capsule import Capsule, LazyCapsule
@@ -43,7 +38,6 @@ from pykotor.resource.formats.gff import (
 from pykotor.resource.formats.gff.gff_auto import bytes_gff
 from pykotor.resource.formats.rim.rim_auto import write_rim
 from pykotor.resource.formats.rim.rim_data import RIM
-from pykotor.resource.formats.tlk import read_tlk, write_tlk
 from pykotor.resource.formats.tpc.io_tga import TPCTGAReader, TPCTGAWriter
 from pykotor.resource.formats.tpc.io_tpc import TPCBinaryReader, TPCBinaryWriter
 from pykotor.resource.formats.tpc.tpc_auto import bytes_tpc
@@ -71,30 +65,23 @@ from pykotor.tools.path import CaseAwarePath
 if TYPE_CHECKING:
     from collections.abc import Callable
 
-    from pykotor.common.language import Language
-    from pykotor.resource.formats.tlk import TLK
-    from pykotor.resource.formats.tlk.tlk_data import TLKEntry
-
 
 class PatchingConfig:
     """Configuration for batch patching operations."""
 
     def __init__(self):
-        self.translate: bool = False
         self.set_unskippable: bool = False
         self.convert_tga: str | None = None  # "TGA to TPC", "TPC to TGA", or None
         self.k1_convert_gffs: bool = False
         self.tsl_convert_gffs: bool = False
         self.always_backup: bool = True
         self.max_threads: int = 2
-        self.translator: Any = None  # Translator instance
         self.log_callback: Callable[[str], None] | None = None
 
     def is_patching(self) -> bool:
         """Check if any patching operation is enabled."""
         return bool(
-            self.translate
-            or self.set_unskippable
+            self.set_unskippable
             or self.convert_tga
             or self.k1_convert_gffs
             or self.tsl_convert_gffs
@@ -146,7 +133,7 @@ def patch_nested_gff(
     -------
         Tuple of (made_change: bool, alien_vo_count: int)
     """
-    if gff_content != GFFContent.DLG and not config.translate:
+    if gff_content != GFFContent.DLG or not config.set_unskippable:
         return False, alien_vo_count
 
     if gff_content == GFFContent.DLG and config.set_unskippable:
@@ -182,13 +169,6 @@ def patch_nested_gff(
             made_change |= result_made_change
             continue
 
-        if ftype == GFFFieldType.LocalizedString and config.translate:
-            assert isinstance(value, LocalizedString), f"{value.__class__.__name__}: {value}"  # noqa: S101
-            log_message(
-                config,
-                f"Translating localized string (GFF) at {child_path} to {config.translator.to_lang.name if config.translator else 'unknown'}",
-            )
-            made_change |= translate_locstring(value, config)
     return made_change, alien_vo_count
 
 
@@ -230,53 +210,6 @@ def recurse_through_list(
         )
         made_change |= result_made_change
     return made_change, alien_vo_count
-
-
-def translate_locstring(locstring: LocalizedString, config: PatchingConfig) -> bool:
-    """Translate a LocalizedString using the configured translator.
-
-    Args:
-    ----
-        locstring: The LocalizedString to translate
-        config: Patching configuration with translator
-
-    Returns:
-    -------
-        True if changes were made, False otherwise
-    """
-    if not config.translator:
-        return False
-
-    made_change = False
-    new_substrings: dict[int, str] = deepcopy(locstring._substrings)  # noqa: SLF001
-    for lang, gender, text in locstring:
-        if text is not None and text.strip():
-            translated_text = config.translator.translate(text, from_lang=lang)
-            log_message(config, f"Translated {text} --> {translated_text}")
-            substring_id = LocalizedString.substring_id(config.translator.to_lang, gender)
-            new_substrings[substring_id] = str(translated_text)
-            made_change = True
-    locstring._substrings = new_substrings  # noqa: SLF001
-    return made_change
-
-
-def fix_encoding(text: str, encoding: str) -> str:
-    """Fix text encoding by re-encoding and decoding.
-
-    Args:
-    ----
-        text: Text to fix
-        encoding: Target encoding
-
-    Returns:
-    -------
-        Fixed text
-    """
-    return (
-        text.encode(encoding=encoding, errors="ignore")
-        .decode(encoding=encoding, errors="ignore")
-        .strip()
-    )
 
 
 def convert_gff_game(
@@ -364,60 +297,12 @@ def convert_gff_game(
         lazy_capsule.add(resource.resname(), resource.restype(), bytes(converted_data))
 
 
-def process_translations(
-    tlk: TLK,
-    from_lang: Language,
-    config: PatchingConfig,
-) -> None:
-    """Process translations for a TLK file.
-
-    Args:
-    ----
-        tlk: The TLK file to translate
-        from_lang: Source language
-        config: Patching configuration with translator
-    """
-    if not config.translator:
-        return
-
-    def translate_entry(tlkentry: TLKEntry, from_lang: Language) -> tuple[str, str]:
-        text = tlkentry.text
-        if not text.strip() or text.isdigit():
-            return text, ""
-        if "Do not translate this text" in text:
-            return text, text
-        if "actual text to be translated" in text:
-            return text, text
-        return text, config.translator.translate(text, from_lang=from_lang)
-
-    with concurrent.futures.ThreadPoolExecutor(max_workers=config.max_threads) as executor:
-        future_to_strref: dict[concurrent.futures.Future[tuple[str, str]], int] = {
-            executor.submit(translate_entry, tlkentry, from_lang): strref
-            for strref, tlkentry in tlk
-        }
-
-        for future in concurrent.futures.as_completed(future_to_strref):
-            strref: int = future_to_strref[future]
-            try:
-                original_text, translated_text = future.result()
-                if translated_text.strip():
-                    translated_text = fix_encoding(
-                        translated_text, config.translator.to_lang.get_encoding()
-                    )
-                    tlk.replace(strref, translated_text)
-                    log_message(
-                        config, f"#{strref} Translated {original_text} --> {translated_text}"
-                    )
-            except Exception as exc:  # pylint: disable=W0718  # noqa: BLE001
-                log_message(config, f"tlk strref {strref} generated an exception: {exc}")
-
-
 def patch_resource(
     resource: FileResource,
     config: PatchingConfig,
     processed_files: set[Path] | None = None,
 ) -> GFF | TPC | None:
-    """Patch a single resource (GFF, TPC, TLK).
+    """Patch a single resource (GFF, TPC).
 
     Args:
     ----
@@ -430,34 +315,6 @@ def patch_resource(
         Patched GFF or TPC object, or None if no changes or error
     """
     processed_files = _ensure_processed_files(processed_files)
-
-    # Handle TLK translation
-    if resource.restype().extension.lower() == "tlk" and config.translate and config.translator:
-        tlk: TLK | None = None
-        log_message(config, f"Loading TLK '{resource.filepath()}'")
-        try:
-            tlk = read_tlk(resource.data())
-        except Exception:  # pylint: disable=W0718  # noqa: BLE001
-            log_message(
-                config, f"[Error] loading TLK '{resource.identifier()}' at '{resource.filepath()}'!"
-            )
-            return None
-
-        from_lang: Language = tlk.language
-        new_filename_stem = (
-            f"{resource.resname()}_{config.translator.to_lang.get_bcp47_code() or 'UNKNOWN'}"
-        )
-        new_file_path = (
-            resource.filepath().parent / f"{new_filename_stem}.{resource.restype().extension}"
-        )
-        tlk.language = config.translator.to_lang
-        log_message(
-            config,
-            f"Translating TalkTable resource at {resource.filepath()} to {config.translator.to_lang.name}",
-        )
-        process_translations(tlk, from_lang, config)
-        write_tlk(tlk, new_file_path)
-        processed_files.add(new_file_path)
 
     # Handle TGA to TPC conversion
     if resource.restype().extension.lower() == "tga" and config.convert_tga == "TGA to TPC":
@@ -558,8 +415,6 @@ def patch_and_save_noncapsule(
         new_data = bytes_gff(patched_data)
 
         new_gff_filename = resource.filename()
-        if config.translate and config.translator:
-            new_gff_filename = f"{resource.resname()}_{config.translator.to_lang.get_bcp47_code()}.{resource.restype().extension}"
 
         new_path = (savedir or resource.filepath().parent) / new_gff_filename
         if new_path.exists() and savedir:
@@ -618,11 +473,6 @@ def patch_capsule_file(
         return
 
     new_filepath: Path = c_file
-    if config.translate and config.translator:
-        new_filepath = (
-            c_file.parent
-            / f"{c_file.stem}_{config.translator.to_lang.get_bcp47_code()}{c_file.suffix}"
-        )
 
     if not config.is_patching():
         return
@@ -685,10 +535,6 @@ def patch_erf_or_rim(
     """
     omitted_resources: list[ResourceIdentifier] = []
     new_filename = Path(filename)
-    if config.translate and config.translator:
-        new_filename = Path(
-            f"{new_filename.stem}_{config.translator.to_lang.name}{new_filename.suffix}"
-        )
 
     for resource in resources:
         patched_data: GFF | TPC | None = patch_resource(resource, config)
@@ -862,7 +708,7 @@ def patch_install(
     if config.is_patching():
         log_message(config, "Extract and patch BIF data, saving to Override (will not overwrite)")
     for resource in k_install.core_resources():
-        if config.translate or config.set_unskippable:
+        if config.set_unskippable:
             patch_and_save_noncapsule(resource, savedir=override_path, config=config)
 
     patch_file(k_install.path().joinpath("dialog.tlk"), config, processed_files)

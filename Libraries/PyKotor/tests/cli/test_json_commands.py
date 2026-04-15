@@ -9,8 +9,10 @@ import pytest
 from pykotor.cli.dispatch import cli_main
 from pykotor.common.language import Language
 from pykotor.common.misc import Game
+from pykotor.resource.formats.rim import RIM, write_rim
 from pykotor.resource.formats.ssf import SSF, SSFSound, read_ssf
 from pykotor.resource.formats.tlk import TLK, read_tlk, write_tlk
+from pykotor.resource.generics.dlg import DLG, DLGEntry, DLGLink, DLGReply, bytes_dlg
 from pykotor.resource.type import ResourceType
 
 
@@ -111,3 +113,49 @@ def test_ssf_json_commands_roundtrip(tmp_path: Path) -> None:
     roundtrip = read_ssf(output_path)
     assert roundtrip.get(SSFSound.BATTLE_CRY_1) == 123
     assert roundtrip.get(SSFSound.DEAD) == 456
+
+
+def test_installation_to_json_exports_supported_and_fallback_resources(tmp_path: Path) -> None:
+    install_path = tmp_path / "K1"
+    install_path.mkdir()
+    (install_path / "Override").mkdir()
+    (install_path / "Modules").mkdir()
+    (install_path / "StreamMusic").mkdir()
+    (install_path / "chitin.key").write_bytes(b"")
+    (install_path / "swkotor.exe").write_bytes(b"")
+
+    tlk = TLK(Language.ENGLISH)
+    tlk.add("install root text", "root_vo")
+    write_tlk(tlk, install_path / "dialog.tlk", ResourceType.TLK)
+
+    dlg = DLG()
+    entry = DLGEntry()
+    entry.text = Language.ENGLISH, 0  # type: ignore[assignment]
+    entry.text = entry.text.from_english("module entry")
+    reply = DLGReply()
+    reply.text = reply.text.from_english("module reply")
+    entry.links = [DLGLink(reply, 0)]
+    dlg.starters = [DLGLink(entry, 0)]
+    rim = RIM()
+    rim.set_data("testdlg", ResourceType.DLG, bytes_dlg(dlg, Game.K1, ResourceType.DLG))
+    write_rim(rim, install_path / "Modules" / "testmod_s.rim")
+
+    (install_path / "StreamMusic" / "intro.wav").write_bytes(b"RIFFdemo")
+
+    output_path = tmp_path / "json-export"
+    assert cli_main([
+        "installation-to-json",
+        "--path",
+        str(install_path),
+        "--output",
+        str(output_path),
+    ]) == 0
+
+    tlk_payload = json.loads((output_path / "dialog.tlk.json").read_text(encoding="utf-8"))
+    assert tlk_payload["strings"][0]["text"] == "install root text"
+
+    assert (output_path / "Modules" / "testmod_s.rim" / "testdlg.dlg.json").is_file()
+
+    wav_payload = json.loads((output_path / "StreamMusic" / "intro.wav.json").read_text(encoding="utf-8"))
+    assert wav_payload["encoding"] == "base64"
+    assert wav_payload["extension"] == "wav"

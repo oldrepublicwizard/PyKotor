@@ -64,6 +64,35 @@ class SSF(BiowareResource):
             return NotImplemented  # type: ignore[no-any-return]
         return self._sounds[item]
 
+    def __json__(self) -> dict[str, list[dict[str, str]]]:
+        """Serialize the SSF object to a JSON-compatible dictionary."""
+        json_data: dict[str, list[dict[str, str]]] = {"sounds": []}
+        for sound_name, sound in SSFSound.__members__.items():
+            json_data["sounds"].append(
+                {
+                    "id": str(sound.value),
+                    "label": sound_name,
+                    "strref": str(self.get(sound)),
+                }
+            )
+        return json_data
+
+    @classmethod
+    def from_json(cls, data: dict) -> SSF:
+        """Hydrate an SSF object from a JSON dictionary."""
+        instance = cls()
+        sounds = data.get("sounds")
+        if not isinstance(sounds, list):
+            msg = "The JSON file that was loaded was not a valid SSF."
+            raise ValueError(msg)
+
+        for sound_entry in sounds:
+            sound = SSFSound(int(sound_entry["id"]))
+            stringref = int(sound_entry["strref"])
+            instance.set_data(sound, stringref)
+
+        return instance
+
     def reset(self):
         """Sets all the sound stringrefs to -1."""
         for i in range(28):

@@ -49,7 +49,7 @@ def cmd_diff_installation(args: Namespace, logger: Logger) -> int:
         if hasattr(args, "log_level") and args.log_level:
             argv.extend(["--log-level", str(args.log_level)])
         if hasattr(args, "output_mode") and args.output_mode:
-            argv.extend(["--output-mode", str(args.output_mode)])
+            argv.extend(["--output-mode", args.output_mode.value if hasattr(args.output_mode, "value") else str(args.output_mode)])
         if hasattr(args, "no_color") and args.no_color:
             argv.append("--no-color")
         if hasattr(args, "compare_hashes") and args.compare_hashes is not None:
@@ -74,7 +74,7 @@ def cmd_diff_installation(args: Namespace, logger: Logger) -> int:
         if hasattr(args, "gui") and args.gui:
             argv.append("--gui")
         if hasattr(args, "output_mode") and args.output_mode:
-            argv.extend(["--output-mode", str(args.output_mode)])
+            argv.extend(["--output-mode", args.output_mode.value if hasattr(args.output_mode, "value") else str(args.output_mode)])
 
         return kotordiff_main(argv)
     except ImportError:

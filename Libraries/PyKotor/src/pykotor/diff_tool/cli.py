@@ -198,10 +198,12 @@ def execute_cli(cmdline_args: Namespace | Any | object):
     # Set up logging ONCE at the CLI level
     import logging
 
+    from pykotor.cli.logger import OutputMode
     from pykotor.diff_tool.app import DiffConfig, run_application
     from pykotor.extract.installation import Installation
 
-    output_mode = getattr(cmdline_args, "output_mode", "normal")
+    output_mode_str = getattr(cmdline_args, "output_mode", "normal")
+    output_mode = OutputMode(output_mode_str) if isinstance(output_mode_str, str) else output_mode_str
     log_level_arg = getattr(cmdline_args, "log_level", None)
 
     # Determine log level based on output_mode or explicit log_level
@@ -217,9 +219,9 @@ def execute_cli(cmdline_args: Namespace | Any | object):
     else:
         # Default log levels based on output mode
         log_level = {
-            "full": logging.DEBUG,
-            "normal": logging.INFO,
-            "quiet": logging.ERROR,
+            OutputMode.FULL: logging.DEBUG,
+            OutputMode.NORMAL: logging.INFO,
+            OutputMode.QUIET: logging.ERROR,
         }.get(output_mode, logging.INFO)
 
     # Configure logging once - all code uses standard logging calls
@@ -279,7 +281,7 @@ def execute_cli(cmdline_args: Namespace | Any | object):
             ini_filename=getattr(cmdline_args, "ini", "changes.ini"),
             output_log_path=Path(cmdline_args.output_log) if cmdline_args.output_log else None,
             log_level=getattr(cmdline_args, "log_level", "info"),
-            output_mode=getattr(cmdline_args, "output_mode", "full"),
+            output_mode=output_mode,
             use_colors=not getattr(cmdline_args, "no_color", False),
             compare_hashes=not bool(cmdline_args.compare_hashes),
             use_profiler=bool(cmdline_args.use_profiler),
@@ -328,7 +330,7 @@ def execute_cli(cmdline_args: Namespace | Any | object):
     if (
         len(resolved_paths) == 2
         and all(isinstance(path, Path) and path.is_file() for path in resolved_paths)
-        and output_mode == "normal"
+        and output_mode == OutputMode.NORMAL
     ):
         # Use direct file-to-file diff for unified output
         from pykotor.tslpatcher.diff.engine import DiffContext, diff_data
@@ -393,7 +395,7 @@ def execute_cli(cmdline_args: Namespace | Any | object):
         ini_filename=getattr(cmdline_args, "ini", "changes.ini"),
         output_log_path=Path(cmdline_args.output_log) if cmdline_args.output_log else None,
         log_level=getattr(cmdline_args, "log_level", "info"),
-        output_mode=getattr(cmdline_args, "output_mode", "full"),
+        output_mode=output_mode,
         use_colors=not getattr(cmdline_args, "no_color", False),
         compare_hashes=not bool(cmdline_args.compare_hashes),  # NOTE: inverted logic from original
         use_profiler=bool(cmdline_args.use_profiler),

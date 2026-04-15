@@ -138,6 +138,50 @@ class TwoDA(BiowareResource):
     def __repr__(self):
         return f"{self.__class__.__name__}(headers={self._headers!r}, labels={self._labels!r}, rows={self._rows!r})"
 
+    def __json__(self) -> dict[str, list]:
+        """Serialize the TwoDA object to a JSON-compatible dictionary."""
+        json_data: dict[str, list] = {"headers": self._headers, "rows": []}
+        for row in self:
+            json_row: dict[str, list | str] = {"label": row.label(), "cells": []}
+            for header in self._headers:
+                json_row["cells"].append(row.get_string(header))
+            json_data["rows"].append(json_row)
+        return json_data
+
+    @classmethod
+    def from_json(cls, data: dict) -> TwoDA:
+        """Hydrate a TwoDA object from a JSON dictionary."""
+        instance = cls()
+        
+        # Support both legacy format (rows with "_id" and header keys) and the
+        # newer format (top-level "headers" list and rows containing "label" and "cells").
+        if isinstance(data, dict) and "headers" in data and "rows" in data:
+            for header in data.get("headers", []):
+                instance.add_column(header)
+
+            for row in data.get("rows", []):
+                label = row.get("label")
+                cells = row.get("cells", [])
+                cell_map = {
+                    h: (cells[i] if i < len(cells) else "")
+                    for i, h in enumerate(instance.get_headers())
+                }
+                instance.add_row(str(label), cell_map)
+            return instance
+
+        # Fallback to legacy behavior
+        for row in data.get("rows", []):
+            row_label = row["_id"]
+            del row["_id"]
+
+            for header in row:
+                if header not in instance.get_headers():
+                    instance.add_column(header)
+
+            instance.add_row(row_label, row)
+
+        return instance
+
     def __iter__(self):
         """Iterates through each row yielding a new linked TwoDARow instance."""
         for i, row in enumerate(self._rows):

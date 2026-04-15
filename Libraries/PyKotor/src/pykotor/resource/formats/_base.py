@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import json
 import logging
 import pathlib
 import sys
@@ -250,6 +251,15 @@ class ComparableMixin:
         return _inner
 
 
+class BiowareEncoder(json.JSONEncoder):
+    """JSON Encoder for BioWare resources that intercepts __json__ methods."""
+
+    def default(self, o: Any) -> Any:
+        if hasattr(o, "__json__") and callable(o.__json__):
+            return o.__json__()
+        return super().default(o)
+
+
 class BiowareResource(ComparableMixin):
     """Base type for BioWare on-disk / parsed resource objects under ``resource.formats``.
 
@@ -262,3 +272,20 @@ class BiowareResource(ComparableMixin):
     """
 
     __slots__ = ()
+
+    def __json__(self) -> dict[str, Any]:
+        """Serialize the object fields to a dictionary utilizing the ComparableMixin lists."""
+        data: dict[str, Any] = {}
+        for field in self.COMPARABLE_FIELDS + self.COMPARABLE_SEQUENCE_FIELDS + self.COMPARABLE_SET_FIELDS:
+            val = getattr(self, field)
+            data[field] = val
+        return data
+
+    @classmethod
+    def from_json(cls, data: dict[str, Any]) -> Self:
+        """Create an object from a dictionary, mapping to ComparableMixin schema."""
+        instance = cls()
+        for key, value in data.items():
+            if hasattr(instance, key):
+                setattr(instance, key, value)
+        return instance

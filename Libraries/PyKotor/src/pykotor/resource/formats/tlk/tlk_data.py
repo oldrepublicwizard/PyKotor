@@ -86,6 +86,35 @@ class TLK(BiowareResource):
         """Iterates through the stored entry with each iteration yielding a stringref and the corresponding entry data."""
         yield from enumerate(self.entries)
 
+    def __json__(self) -> dict[str, list[dict[str, str]]]:
+        """Serialize the TLK object to a JSON-compatible dictionary."""
+        json_data: dict[str, list[dict[str, str]]] = {"strings": []}
+        for stringref, entry in self:
+            json_data["strings"].append(
+                {
+                    "_index": str(stringref),
+                    "text": entry.text,
+                    "soundResRef": str(entry.voiceover),
+                }
+            )
+        return json_data
+
+    @classmethod
+    def from_json(cls, data: dict) -> TLK:
+        """Hydrate a TLK object from a JSON dictionary."""
+        instance = cls()
+        
+        strings = data.get("strings", [])
+        if strings:
+            instance.resize(max(int(s.get("_index", 0)) for s in strings) + 1)
+        
+        for string_data in strings:
+            index = int(string_data["_index"])
+            instance.entries[index].text = string_data["text"]
+            instance.entries[index].voiceover = ResRef(string_data["soundResRef"])
+            
+        return instance
+
     def __getitem__(
         self,
         item,

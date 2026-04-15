@@ -1,7 +1,6 @@
 """Batch patching command implementations for Pykotorcli.
 
 This module provides CLI commands for batch patching operations:
-- Translating resources (TLK, GFF LocalizedStrings)
 - Converting GFF files between K1 and TSL
 - Converting TGA/TPC textures
 - Setting dialogs as unskippable
@@ -18,7 +17,6 @@ import pathlib
 
 from typing import TYPE_CHECKING
 
-from pykotor.common.language import Language
 from pykotor.tools.patching import (
     PatchingConfig,
     determine_input_path,
@@ -27,12 +25,6 @@ from pykotor.tools.patching import (
     patch_folder,
     patch_install,
 )
-
-try:
-    from batchpatcher.translate.language_translator import TranslationOption, Translator
-except ImportError:
-    TranslationOption = None
-    Translator = None
 
 if TYPE_CHECKING:
     from argparse import Namespace
@@ -44,13 +36,11 @@ def cmd_batch_patch(args: Namespace, logger: Logger) -> int:
     """Batch patch files, folders, or installations.
 
     Usage:
-        pykotorcli batch-patch --path "C:/Games/KOTOR" --translate --to-lang French
         pykotorcli batch-patch --path "C:/Games/KOTOR" --set-unskippable
         pykotorcli batch-patch --path "C:/Games/KOTOR" --convert-gffs-to-k1
         pykotorcli batch-patch --path "C:/Games/KOTOR" --convert-tga "TGA to TPC"
     """
     config = PatchingConfig()
-    config.translate = args.translate
     config.set_unskippable = args.set_unskippable
     config.convert_tga = args.convert_tga
     config.k1_convert_gffs = args.convert_gffs_to_k1
@@ -58,32 +48,6 @@ def cmd_batch_patch(args: Namespace, logger: Logger) -> int:
     config.always_backup = args.always_backup
     config.max_threads = args.max_threads
     config.log_callback = lambda msg: logger.info(msg)
-
-    # Setup translator if translation is enabled
-    if config.translate:
-        if not args.to_lang:
-            logger.error("--to-lang is required when --translate is enabled")
-            return 1
-
-        if Translator is None:
-            logger.error("Translation requires BatchPatcher. Install it or use BatchPatcher GUI.")
-            return 1
-
-        try:
-            to_lang = Language[args.to_lang.upper()]
-            config.translator = Translator(to_lang)
-            if args.translation_option and TranslationOption:
-                try:
-                    config.translator.translation_option = TranslationOption[
-                        args.translation_option.upper()
-                    ]
-                except KeyError:
-                    logger.warning(
-                        f"Unknown translation option: {args.translation_option}, using default"
-                    )
-        except KeyError:
-            logger.error(f"Unknown language: {args.to_lang}")
-            return 1
 
     try:
         input_path = pathlib.Path(args.path)
@@ -100,28 +64,15 @@ def cmd_patch_file(args: Namespace, logger: Logger) -> int:
     """Patch a single file.
 
     Usage:
-        pykotorcli patch-file --file "mymodule.mod" --translate --to-lang French
+        pykotorcli patch-file --file "mymodule.mod" --set-unskippable
     """
     config = PatchingConfig()
-    config.translate = args.translate
     config.set_unskippable = args.set_unskippable
     config.convert_tga = args.convert_tga
     config.k1_convert_gffs = args.convert_gffs_to_k1
     config.tsl_convert_gffs = args.convert_gffs_to_tsl
     config.always_backup = args.always_backup
     config.log_callback = lambda msg: logger.info(msg)
-
-    if config.translate and args.to_lang:
-        if Translator is None:  # type: ignore[truthy-function]
-            logger.error("Translation requires BatchPatcher. Install it or use BatchPatcher GUI.")
-            return 1
-
-        try:
-            to_lang = Language[args.to_lang.upper()]
-            config.translator = Translator(to_lang)  # type: ignore[misc]
-        except KeyError as e:
-            logger.error(f"Failed to setup translator: {e}")  # noqa: G004
-            return 1
 
     try:
         file_path = pathlib.Path(args.file)
@@ -137,10 +88,9 @@ def cmd_patch_folder(args: Namespace, logger: Logger) -> int:
     """Patch all files in a folder recursively.
 
     Usage:
-        pykotorcli patch-folder --folder "C:/MyMod" --translate --to-lang French
+        pykotorcli patch-folder --folder "C:/MyMod" --set-unskippable
     """
     config = PatchingConfig()
-    config.translate = args.translate
     config.set_unskippable = args.set_unskippable
     config.convert_tga = args.convert_tga
     config.k1_convert_gffs = args.convert_gffs_to_k1
@@ -148,18 +98,6 @@ def cmd_patch_folder(args: Namespace, logger: Logger) -> int:
     config.always_backup = args.always_backup
     config.max_threads = args.max_threads
     config.log_callback = lambda msg: logger.info(msg)
-
-    if config.translate and args.to_lang:
-        if Translator is None:  # type: ignore[truthy-function]
-            logger.error("Translation requires BatchPatcher. Install it or use BatchPatcher GUI.")
-            return 1
-
-        try:
-            to_lang = Language[args.to_lang.upper()]
-            config.translator = Translator(to_lang)  # type: ignore[misc]
-        except KeyError as e:
-            logger.error(f"Failed to setup translator: {e}")  # noqa: G004
-            return 1
 
     try:
         folder_path = pathlib.Path(args.folder)
@@ -175,10 +113,9 @@ def cmd_patch_installation(args: Namespace, logger: Logger) -> int:
     """Patch a KOTOR installation.
 
     Usage:
-        pykotorcli patch-installation --installation "C:/Games/KOTOR" --translate --to-lang French
+        pykotorcli patch-installation --installation "C:/Games/KOTOR" --set-unskippable
     """
     config = PatchingConfig()
-    config.translate = args.translate
     config.set_unskippable = args.set_unskippable
     config.convert_tga = args.convert_tga
     config.k1_convert_gffs = args.convert_gffs_to_k1
@@ -186,18 +123,6 @@ def cmd_patch_installation(args: Namespace, logger: Logger) -> int:
     config.always_backup = args.always_backup
     config.max_threads = args.max_threads
     config.log_callback = lambda msg: logger.info(msg)
-
-    if config.translate and args.to_lang:
-        if Translator is None:  # type: ignore[truthy-function]
-            logger.error("Translation requires BatchPatcher. Install it or use BatchPatcher GUI.")
-            return 1
-
-        try:
-            to_lang = Language[args.to_lang.upper()]
-            config.translator = Translator(to_lang)  # type: ignore[misc]
-        except KeyError as e:
-            logger.error(f"Failed to setup translator: {e}")  # noqa: G004
-            return 1
 
     try:
         install_path = pathlib.Path(args.installation)

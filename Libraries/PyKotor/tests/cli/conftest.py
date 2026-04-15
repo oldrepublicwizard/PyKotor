@@ -45,7 +45,6 @@ if _test_helpers_path not in sys.path:
 
 from test_helpers.profiling_and_timeout import profile_if_enabled
 
-
 _LEGACY_INSTALL_LABELS = {"k1_installation", "tsl_installation"}
 
 
@@ -65,10 +64,7 @@ def _normalize_cli_cache_entries(config: pytest.Config) -> None:
         config.cache.set("cache/nodeids", normalized_nodeids)
 
     lastfailed: dict[str, bool] = config.cache.get("cache/lastfailed", {})
-    normalized_lastfailed = {
-        _normalize_legacy_cli_selector(nodeid): failed
-        for nodeid, failed in lastfailed.items()
-    }
+    normalized_lastfailed = {_normalize_legacy_cli_selector(nodeid): failed for nodeid, failed in lastfailed.items()}
     if normalized_lastfailed != lastfailed:
         config.cache.set("cache/lastfailed", normalized_lastfailed)
 
@@ -146,10 +142,11 @@ def k2_installation() -> Installation:
     if not k2_path.is_dir():
         pytest.skip(f"K2_PATH/TSL_PATH path does not exist or is not a directory: {k2_path}")
     if not k2_path.joinpath("chitin.key").is_file():
-        pytest.skip(
-            f"K2_PATH/TSL_PATH does not look like a real install (missing chitin.key): {k2_path}"
-        )
+        pytest.skip(f"K2_PATH/TSL_PATH does not look like a real install (missing chitin.key): {k2_path}")
     return Installation(CaseAwarePath(k2_path))
+
+
+e
 
 
 def pytest_generate_tests(metafunc: pytest.Metafunc) -> None:
@@ -193,10 +190,7 @@ def pytest_generate_tests(metafunc: pytest.Metafunc) -> None:
     # Stunt/cutscene modules ship LYT placeholder model names (e.g. "****") that are not valid
     # ResRefs; ERF/MOD cannot store resources under those names, so indoor extract→build
     # roundtrips are excluded here. Set PYKOTOR_INDOOR_ROUNDTRIP_INCLUDE_STUNT=1 to keep them.
-    if (
-        metafunc.definition.path.name == "test_indoor_roundtrip.py"
-        and not os.environ.get("PYKOTOR_INDOOR_ROUNDTRIP_INCLUDE_STUNT", "").strip()
-    ):
+    if metafunc.definition.path.name == "test_indoor_roundtrip.py" and not os.environ.get("PYKOTOR_INDOOR_ROUNDTRIP_INCLUDE_STUNT", "").strip():
         filtered = [(c, i) for c, i in zip(cases, ids) if not c[1].startswith("stunt_")]
         cases = [c for c, _ in filtered]
         ids = [i for _, i in filtered]

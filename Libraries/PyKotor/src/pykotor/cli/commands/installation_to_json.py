@@ -7,7 +7,7 @@ import json
 import shutil
 
 from pathlib import Path
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Iterator
 
 from pykotor.cli.commands.format_convert import resource_data_to_json_bytes
 from pykotor.cli.commands.get_cmd import _resolve_installation_path
@@ -20,8 +20,7 @@ if TYPE_CHECKING:
     from loggerplus import RobustLogger as Logger
 
 
-def _iter_stream_resources(installation: Installation) -> list[FileResource]:
-    resources: list[FileResource] = []
+def _iter_stream_resources(installation: Installation) -> Iterator[FileResource]:
     for path_getter in (
         installation.streammusic_path,
         installation.streamsounds_path,
@@ -35,15 +34,13 @@ def _iter_stream_resources(installation: Installation) -> list[FileResource]:
             continue
         for file_path in folder_path.rglob("*"):
             if file_path.is_file():
-                resources.append(FileResource.from_path(file_path))
-    return resources
+                yield FileResource.from_path(file_path)
 
 
-def _iter_all_installation_resources(installation: Installation, logger: Logger) -> list[FileResource]:
-    resources: list[FileResource] = []
+def _iter_all_installation_resources(installation: Installation, logger: Logger) -> Iterator[FileResource]:
     seen: set[tuple[str, int, int, str, str]] = set()
 
-    def add(resource: FileResource) -> None:
+    def add(resource: FileResource) -> FileResource | None:
         key = (
             str(resource.filepath()),
             resource.offset(),
@@ -52,57 +49,71 @@ def _iter_all_installation_resources(installation: Installation, logger: Logger)
             resource.restype().extension.lower() if resource.restype().extension else resource.restype().name.lower(),
         )
         if key in seen:
-            return
+            return None
         seen.add(key)
-        resources.append(resource)
+        return resource
 
     root_tlk = installation.path() / "dialog.tlk"
     if root_tlk.is_file():
-        add(FileResource.from_path(root_tlk))
+        resource = add(FileResource.from_path(root_tlk))
+        if resource is not None:
+            yield resource
     root_tlk_f = installation.path() / "dialogf.tlk"
     if root_tlk_f.is_file():
-        add(FileResource.from_path(root_tlk_f))
+        resource = add(FileResource.from_path(root_tlk_f))
+        if resource is not None:
+            yield resource
 
     try:
         for resource in installation.override_resources():
-            add(resource)
+            deduped = add(resource)
+            if deduped is not None:
+                yield deduped
     except Exception as exc:
         logger.warning("Skipping override resources: %s: %s", exc.__class__.__name__, exc)
 
     try:
         for module_name in installation.modules_list():
             for resource in installation.module_resources(module_name):
-                add(resource)
+                deduped = add(resource)
+                if deduped is not None:
+                    yield deduped
     except Exception as exc:
         logger.warning("Skipping module resources: %s: %s", exc.__class__.__name__, exc)
 
     try:
         for lip_name in installation.lips_list():
             for resource in installation.lip_resources(lip_name):
-                add(resource)
+                deduped = add(resource)
+                if deduped is not None:
+                    yield deduped
     except Exception as exc:
         logger.warning("Skipping lip resources: %s: %s", exc.__class__.__name__, exc)
 
     try:
         for texturepack_name in installation.texturepacks_list():
             for resource in installation.texturepack_resources(texturepack_name):
-                add(resource)
+                deduped = add(resource)
+                if deduped is not None:
+                    yield deduped
     except Exception as exc:
         logger.warning("Skipping texturepack resources: %s: %s", exc.__class__.__name__, exc)
 
     try:
         for resource in installation.core_resources():
-            add(resource)
+            deduped = add(resource)
+            if deduped is not None:
+                yield deduped
     except Exception as exc:
         logger.warning("Skipping core resources: %s: %s", exc.__class__.__name__, exc)
 
     try:
         for resource in _iter_stream_resources(installation):
-            add(resource)
+            deduped = add(resource)
+            if deduped is not None:
+                yield deduped
     except Exception as exc:
         logger.warning("Skipping stream resources: %s: %s", exc.__class__.__name__, exc)
-
-    return resources
 
 
 def _resource_output_path(output_root: Path, installation_path: Path, resource: FileResource) -> Path:
@@ -135,7 +146,7 @@ def _build_fallback_payload(installation_path: Path, resource: FileResource, dat
         "encoding": "base64",
         "data_base64": base64.b64encode(data).decode("ascii"),
     }
-    return json.dumps(payload, indent=2, sort_keys=True).encode("utf-8") + b"\n"
+    return json.dumps(payload, separators=(",", ":")).encode("utf-8") + b"\n"
 
 
 def cmd_installation_to_json(args: Namespace, logger: Logger) -> int:
@@ -154,17 +165,21 @@ def cmd_installation_to_json(args: Namespace, logger: Logger) -> int:
         logger.exception("Invalid installation path")
         return 1
 
-    resources = _iter_all_installation_resources(installation, logger)
-    total_resources = len(resources)
-    logger.info("Exporting %s resource(s) from %s to %s", total_resources, installation_path, output_root)
+    logger.info("Exporting resources from %s to %s", installation_path, output_root)
 
     supported_count = 0
     fallback_count = 0
     error_count = 0
+    processed_count = 0
 
-    for index, resource in enumerate(resources, start=1):
+    created_directories: set[Path] = set()
+    for index, resource in enumerate(_iter_all_installation_resources(installation, logger), start=1):
+        processed_count = index
         destination = _resource_output_path(output_root, Path(installation_path), resource)
-        destination.parent.mkdir(parents=True, exist_ok=True)
+        destination_parent = destination.parent
+        if destination_parent not in created_directories:
+            destination_parent.mkdir(parents=True, exist_ok=True)
+            created_directories.add(destination_parent)
 
         try:
             data = resource.data()
@@ -182,18 +197,27 @@ def cmd_installation_to_json(args: Namespace, logger: Logger) -> int:
                 "source_path": str(resource.filepath()),
                 "error": f"{exc.__class__.__name__}: {exc}",
             }
-            destination.write_text(json.dumps(error_payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+            destination.write_text(json.dumps(error_payload, separators=(",", ":")) + "\n", encoding="utf-8")
 
-        if index % 500 == 0 or index == total_resources:
+        if index % 500 == 0:
             logger.info(
-                "Processed %s/%s resources (%s supported, %s fallback, %s errors)",
+                "Processed %s resources (%s supported, %s fallback, %s errors)",
                 index,
-                total_resources,
                 supported_count,
                 fallback_count,
                 error_count,
             )
+        if index % 1000 == 0:
             clear_file_data_cache()
+
+    clear_file_data_cache()
+    logger.info(
+        "Processed %s resources (%s supported, %s fallback, %s errors)",
+        processed_count,
+        supported_count,
+        fallback_count,
+        error_count,
+    )
 
     logger.info(
         "Installation export complete: %s supported JSON, %s fallback JSON, %s error JSON",

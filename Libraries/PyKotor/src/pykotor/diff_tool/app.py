@@ -10,11 +10,12 @@ from __future__ import annotations
 import cProfile
 import traceback
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from io import StringIO
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, Callable, TextIO
 
+from pykotor.cli.logger import OutputMode
 from pykotor.common.misc import Game
 from pykotor.extract.installation import Installation
 from pykotor.resource.formats import gff
@@ -35,8 +36,6 @@ from pykotor.tslpatcher.writer import (
 )
 
 if TYPE_CHECKING:
-    from typing_extensions import Literal
-
     from pykotor.tools.reference_cache import TwoDAMemoryReferenceCache
     from pykotor.tslpatcher.diff.engine import DiffContext
 
@@ -45,13 +44,13 @@ if TYPE_CHECKING:
 class DiffConfig:
     """Configuration for diff operations."""
 
-    paths: list[Path | Installation]
+    paths: list[Path | Installation] = field(default_factory=list)  # List of paths to compare (files, folders, installations, or archives)
     generate_tslpatcher_config: bool = False
     tslpatchdata_path: Path | None = None
     ini_filename: str = "changes.ini"
     output_log_path: Path | None = None
     log_level: str = "info"
-    output_mode: Literal["full", "normal", "quiet"] = "normal"
+    output_mode: OutputMode = OutputMode.NORMAL
     use_colors: bool = True
     compare_hashes: bool = True
     use_profiler: bool = False
@@ -116,9 +115,9 @@ def log_output(*args, **kwargs):
     import logging
 
     output_mode = (
-        _global_config.config.output_mode if _global_config.config is not None else "normal"
+        _global_config.config.output_mode if _global_config.config is not None else OutputMode.NORMAL
     )
-    if output_mode != "quiet" and msg.strip():
+    if output_mode != OutputMode.QUIET and msg.strip():
         logger = logging.getLogger(__name__)
         logger.info(msg.strip())
 
@@ -226,11 +225,11 @@ def _setup_logging(config: DiffConfig) -> None:
     """
     import logging
 
-    from pykotor.cli.logger import LogLevel, OutputMode
+    from pykotor.cli.logger import LogLevel
     from pykotor.diff_tool.logger import setup_logger
 
     log_level = getattr(LogLevel, config.log_level.upper())
-    output_mode = getattr(OutputMode, config.output_mode.upper())
+    output_mode = config.output_mode
     use_colors = config.use_colors
 
     # In quiet mode, suppress INFO/DEBUG from all pykotor loggers and root
