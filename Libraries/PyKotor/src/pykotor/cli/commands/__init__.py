@@ -37,7 +37,6 @@ from pykotor.cli.commands.format_convert import (
 )
 from pykotor.cli.commands.gui_convert import cmd_gui_convert
 from pykotor.cli.commands.init import cmd_init
-from pykotor.cli.commands.installation_to_json import cmd_installation_to_json
 from pykotor.cli.commands.install import cmd_install
 from pykotor.cli.commands.key_pack import cmd_key_pack
 from pykotor.cli.commands.kit_generate import cmd_kit_generate
@@ -111,7 +110,6 @@ __all__ = [
     "cmd_grep",
     "cmd_gui_convert",
     "cmd_init",
-    "cmd_installation_to_json",
     "cmd_install",
     "cmd_investigate_module",
     "cmd_json22da",

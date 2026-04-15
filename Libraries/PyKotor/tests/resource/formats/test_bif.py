@@ -20,7 +20,7 @@ from pykotor.resource.formats.bif import (
 from pykotor.resource.formats.key import KEY, BifEntry, KeyEntry
 from pykotor.resource.formats.key.key_auto import write_key
 from pykotor.resource.type import ResourceType
-from pykotor.tools.archive_serializer import dict_to_archive
+from pykotor.tools.archive_serializer import archive_to_dict, dict_to_archive
 
 # Minimal BIF in plaintext (JSON) form: same schema as archive_to_dict output.
 # No external file dependency; round-trip via dict_to_archive -> read_bif.
@@ -141,6 +141,23 @@ class TestBIFFormats(unittest.TestCase):
         self.assertEqual(res3.resname_key_index, 2)
         self.assertEqual(res3.restype, ResourceType.TXT)
         self.assertEqual(res3.data, b"Hello World 3")
+
+    def test_archive_to_dict_no_plaintext_forces_base64(self):
+        """Disabling plaintext embedding must keep even readable resources base64 encoded."""
+        bif = BIF()
+        bif.bif_type = BIFType.BIF
+        bif.resources.append(BIFResource(ResRef("test1"), ResourceType.TXT, b"Hello World 1", 0))
+
+        encoded = archive_to_dict(bytes_bif(bif), embed_plaintext=False)
+        readable = archive_to_dict(bytes_bif(bif), embed_plaintext=True)
+
+        self.assertEqual(encoded["resources"][0]["data_encoding"], "base64")
+        self.assertEqual(
+            encoded["resources"][0]["data"],
+            base64.b64encode(b"Hello World 1").decode("ascii"),
+        )
+        self.assertEqual(readable["resources"][0]["data_encoding"], "text")
+        self.assertEqual(readable["resources"][0]["data"], "Hello World 1")
 
     def test_bzf_read(self):
         """Test reading a BZF file."""

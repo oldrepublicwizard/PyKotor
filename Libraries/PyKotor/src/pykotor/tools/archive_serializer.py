@@ -2,8 +2,10 @@
 
 from __future__ import annotations
 
+import base64
 import json
 
+from io import BytesIO
 from pathlib import Path
 from typing import Any
 
@@ -17,9 +19,16 @@ from pykotor.resource.formats.rim.rim_data import RIM
 from pykotor.resource.type import ResourceType
 from pykotor.tools.misc import is_any_erf_type_file, is_bif_file, is_rim_file
 from pykotor.tools.resource_json import (
+    SerializedResourcePayload,
     deserialize_embedded_resource_payload,
     serialize_resource_payload,
 )
+
+
+def _serialize_archive_resource(raw: bytes, restype: ResourceType, *, embed_plaintext: bool):
+    if embed_plaintext:
+        return serialize_resource_payload(raw, restype, mode="embedded")
+    return SerializedResourcePayload("base64", base64.b64encode(raw).decode("ascii"))
 
 
 def archive_to_dict(
@@ -59,19 +68,13 @@ def archive_to_dict(
 
 
 def _erf_to_dict(data: bytes, *, embed_plaintext: bool) -> dict[str, Any]:
-    erf = read_erf(BytesIO(data))
+    erf = read_erf(data)
     resources: list[dict[str, Any]] = []
     for res in erf:
         resref = str(res.resref) if res.resref else ""
         restype = res.restype
         raw = res.data
-        serialized = (
-            serialize_resource_payload(raw, restype, mode="embedded")
-            if embed_plaintext
-            else serialize_resource_payload(raw, restype, mode="embedded")
-        )
-        if not embed_plaintext:
-            serialized = serialize_resource_payload(raw, ResourceType.INVALID, mode="embedded")
+        serialized = _serialize_archive_resource(raw, restype, embed_plaintext=embed_plaintext)
         resources.append(
             {
                 "resref": resref,
@@ -88,17 +91,13 @@ def _erf_to_dict(data: bytes, *, embed_plaintext: bool) -> dict[str, Any]:
 
 
 def _rim_to_dict(data: bytes, *, embed_plaintext: bool) -> dict[str, Any]:
-    rim = read_rim(BytesIO(data))
+    rim = read_rim(data)
     resources = []
     for res in rim:
         resref = str(res.resref) if res.resref else ""
         restype = res.restype
         raw = res.data
-        serialized = (
-            serialize_resource_payload(raw, restype, mode="embedded")
-            if embed_plaintext
-            else serialize_resource_payload(raw, ResourceType.INVALID, mode="embedded")
-        )
+        serialized = _serialize_archive_resource(raw, restype, embed_plaintext=embed_plaintext)
         resources.append(
             {
                 "resref": resref,
@@ -119,17 +118,13 @@ def _bif_to_dict(
     key_bytes: bytes | None = None,
     embed_plaintext: bool = True,
 ) -> dict[str, Any]:
-    bif = read_bif(BytesIO(data), key_source=BytesIO(key_bytes) if key_bytes else None)
+    bif = read_bif(data, key_source=key_bytes)
     resources = []
     for res in bif.resources:
         resref = str(res.resref) if res.resref else ""
         restype = res.restype
         raw = res.data
-        serialized = (
-            serialize_resource_payload(raw, restype, mode="embedded")
-            if embed_plaintext
-            else serialize_resource_payload(raw, ResourceType.INVALID, mode="embedded")
-        )
+        serialized = _serialize_archive_resource(raw, restype, embed_plaintext=embed_plaintext)
         resources.append(
             {
                 "resref": resref,

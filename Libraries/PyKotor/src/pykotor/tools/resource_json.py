@@ -584,14 +584,15 @@ def serialize_resource_payload(
         return SerializedResourcePayload("mdl_json", _serialize_mdl_json(mdl))
 
     source_bytes = _source_bytes(source)
-    if target_type in _PLAIN_TEXT_TYPES or restype.is_invalid:
+    if target_type in _PLAIN_TEXT_TYPES:
         text = _decode_plain_text(source_bytes)
         if text is not None:
             return SerializedResourcePayload("text", text)
 
-    text = _decode_plain_text(source_bytes)
-    if text is not None:
-        return SerializedResourcePayload("text", text)
+    if restype.is_invalid:
+        text = _decode_plain_text(source_bytes)
+        if text is not None:
+            return SerializedResourcePayload("text", text)
     return SerializedResourcePayload("base64", base64.b64encode(source_bytes).decode("ascii"))
 
 

@@ -7,12 +7,11 @@ from pathlib import Path
 import pytest
 
 from pykotor.cli.dispatch import cli_main
-from pykotor.common.language import Language, LocalizedString
+from pykotor.common.language import Language
 from pykotor.common.misc import Game
 from pykotor.resource.formats.rim import RIM, write_rim
 from pykotor.resource.formats.ssf import SSF, SSFSound, read_ssf
 from pykotor.resource.formats.tlk import TLK, read_tlk, write_tlk
-from pykotor.resource.generics.dlg import DLG, DLGEntry, DLGLink, DLGReply, bytes_dlg
 from pykotor.resource.type import ResourceType
 
 
@@ -122,7 +121,7 @@ def test_ssf_json_commands_roundtrip(tmp_path: Path) -> None:
     assert roundtrip.get(SSFSound.DEAD) == 456
 
 
-def test_installation_to_json_exports_supported_and_fallback_resources(tmp_path: Path) -> None:
+def test_to_json_exports_installation_resources_with_readable_wrappers(tmp_path: Path) -> None:
     install_path = tmp_path / "K1"
     install_path.mkdir()
     (install_path / "Override").mkdir()
@@ -135,15 +134,10 @@ def test_installation_to_json_exports_supported_and_fallback_resources(tmp_path:
     tlk.add("install root text", "root_vo")
     write_tlk(tlk, install_path / "dialog.tlk", ResourceType.TLK)
 
-    dlg = DLG()
-    entry = DLGEntry()
-    entry.text = LocalizedString.from_english("module entry")
-    reply = DLGReply()
-    reply.text = LocalizedString.from_english("module reply")
-    entry.links = [DLGLink(reply, 0)]
-    dlg.starters = [DLGLink(entry, 0)]
+    (install_path / "Override" / "hello.nss").write_text("void main() {}\n", encoding="utf-8")
+
     rim = RIM()
-    rim.set_data("testdlg", ResourceType.DLG, bytes_dlg(dlg, Game.K1, ResourceType.DLG))
+    rim.set_data("notes", ResourceType.TXT, b"module notes")
     write_rim(rim, install_path / "Modules" / "testmod_s.rim")
 
     (install_path / "StreamMusic" / "intro.wav").write_bytes(b"RIFFdemo")
@@ -152,9 +146,9 @@ def test_installation_to_json_exports_supported_and_fallback_resources(tmp_path:
     assert (
         cli_main(
             [
-                "installation-to-json",
-                "--path",
+                "to-json",
                 str(install_path),
+                "--clean",
                 "--output",
                 str(output_path),
             ]
@@ -163,18 +157,31 @@ def test_installation_to_json_exports_supported_and_fallback_resources(tmp_path:
     )
 
     tlk_payload = json.loads((output_path / "dialog.tlk.json").read_text(encoding="utf-8"))
-    assert tlk_payload["strings"][0]["text"] == "install root text"
+    assert tlk_payload["encoding"] == "tlk_json"
+    assert tlk_payload["data"]["strings"][0]["text"] == "install root text"
 
-    assert (output_path / "Modules" / "testmod_s.rim" / "testdlg.dlg.json").is_file()
+    nss_payload = json.loads(
+        (output_path / "Override" / "hello.nss.json").read_text(encoding="utf-8")
+    )
+    assert nss_payload["encoding"] == "text"
+    assert nss_payload["data"].replace("\r\n", "\n") == "void main() {}\n"
+
+    module_payload = json.loads(
+        (output_path / "Modules" / "testmod_s.rim" / "notes.txt.json").read_text(encoding="utf-8")
+    )
+    assert module_payload["encoding"] == "text"
+    assert module_payload["data"] == "module notes"
 
     wav_payload = json.loads(
         (output_path / "StreamMusic" / "intro.wav.json").read_text(encoding="utf-8")
     )
     assert wav_payload["encoding"] == "base64"
     assert wav_payload["extension"] == "wav"
+    assert "data_base64" in wav_payload
+    assert "data" not in wav_payload
 
 
-def test_installation_to_json_can_export_all_detected_installations(
+def test_to_json_can_export_all_detected_installations(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     def create_install(install_path: Path, dialog_text: str, executable_name: str) -> None:
@@ -204,7 +211,7 @@ def test_installation_to_json_can_export_all_detected_installations(
     assert (
         cli_main(
             [
-                "installation-to-json",
+                "to-json",
                 "--all-detected",
                 "--output",
                 str(output_path),
@@ -215,19 +222,19 @@ def test_installation_to_json_can_export_all_detected_installations(
 
     assert (
         json.loads((output_path / "k1" / "0" / "dialog.tlk.json").read_text(encoding="utf-8"))[
-            "strings"
-        ][0]["text"]
+            "data"
+        ]["strings"][0]["text"]
         == "k1 first"
     )
     assert (
         json.loads((output_path / "k1" / "1" / "dialog.tlk.json").read_text(encoding="utf-8"))[
-            "strings"
-        ][0]["text"]
+            "data"
+        ]["strings"][0]["text"]
         == "k1 second"
     )
     assert (
         json.loads((output_path / "k2" / "0" / "dialog.tlk.json").read_text(encoding="utf-8"))[
-            "strings"
-        ][0]["text"]
+            "data"
+        ]["strings"][0]["text"]
         == "k2 only"
     )

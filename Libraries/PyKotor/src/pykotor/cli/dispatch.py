@@ -33,7 +33,6 @@ from pykotor.cli.commands import (
     cmd_grep,
     cmd_gui_convert,
     cmd_init,
-    cmd_installation_to_json,
     cmd_install,
     cmd_investigate_module,
     cmd_json22da,
@@ -125,8 +124,6 @@ def cli_main(argv: Sequence[str]) -> int:  # noqa: PLR0911, PLR0912, PLR0915
             return cmd_kotor_paths(args, logger)
         if args.command == "get":
             return cmd_get(args, logger)
-        if args.command in ("installation-to-json", "export-installation-json"):
-            return cmd_installation_to_json(args, logger)
         if args.command in ("list-archive", "ls-archive"):
             return cmd_list_archive(args, logger)
         if args.command in ("create-archive", "pack-archive"):

@@ -22,8 +22,7 @@ class OptionalBuildExt(build_ext):
             super().build_extension(ext)
         except Exception:
             print(
-                f"WARNING: Failed to build C extension '{ext.name}'. "
-                "Falling back to pure-Python implementation.",
+                f"WARNING: Failed to build C extension '{ext.name}'. Falling back to pure-Python implementation.",
                 file=sys.stderr,
             )
 
@@ -49,6 +48,10 @@ ext_modules = [
     Extension(
         "pykotor.gl.native._gl_accel",
         sources=[os.path.join("src", "pykotor", "gl", "native", "_gl_accel.c")],
+    ),
+    Extension(
+        "pykotor.gl.native._render2d_accel",
+        sources=[os.path.join("src", "pykotor", "gl", "native", "_render2d_accel.c")],
     ),
 ]
 

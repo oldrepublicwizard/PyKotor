@@ -7,10 +7,14 @@ are migrated to ``wiki/reverse_engineering_findings.md`` (*cli/commands/format_c
 
 from __future__ import annotations
 
+import json
 import pathlib
+import shutil
 
+from argparse import Namespace
 from typing import TYPE_CHECKING, Callable
 
+from pykotor.cli.commands.get_cmd import _resolve_installation_path
 from pykotor.resource.type import ResourceType
 from pykotor.tools.conversions import (
     convert_2da_to_csv,
@@ -39,8 +43,6 @@ from pykotor.tools.resource_json import (
 )
 
 if TYPE_CHECKING:
-    from argparse import Namespace
-
     from loggerplus import RobustLogger as Logger
 
 
@@ -117,16 +119,12 @@ def _run_to_json_conversion(
         return 1
 
     if restype in _ARCHIVE_RESOURCE_TYPES:
-        archive_args = type(
-            "ArchiveArgs",
-            (),
-            {
-                "input": str(input_path),
-                "output": str(output_path),
-                "key_file": key_file,
-                "no_plaintext": no_plaintext,
-            },
-        )()
+        archive_args = Namespace(
+            input=str(input_path),
+            output=str(output_path),
+            key_file=key_file,
+            no_plaintext=no_plaintext,
+        )
         return cmd_archive_to_json(archive_args, logger)
 
     try:
@@ -162,11 +160,7 @@ def _run_from_json_conversion(
     if restype == ResourceType.SSF:
         return _run_conversion(input_path, output_path, convert_json_to_ssf, logger)
     if restype in _ARCHIVE_RESOURCE_TYPES:
-        archive_args = type(
-            "ArchiveArgs",
-            (),
-            {"input": str(input_path), "output": str(output_path)},
-        )()
+        archive_args = Namespace(input=str(input_path), output=str(output_path))
         return cmd_json_to_archive(archive_args, logger)
 
     try:
@@ -371,11 +365,32 @@ def cmd_json22da(args: Namespace, logger: Logger) -> int:
 
 def cmd_to_json(args: Namespace, logger: Logger) -> int:
     """Convert a supported resource file to its JSON representation."""
-    input_path = pathlib.Path(args.input)
+    if getattr(args, "all_detected", False):
+        if getattr(args, "input", None):
+            logger.error("--all-detected cannot be combined with an explicit input path.")
+            return 1
+        from pykotor.cli.commands.installation_to_json import cmd_installation_to_json
+
+        return cmd_installation_to_json(args, logger)
+
+    input_value = getattr(args, "input", None)
+    if input_value:
+        input_path = pathlib.Path(input_value)
+    else:
+        resolved_path = _resolve_installation_path(args, logger)
+        if resolved_path is None:
+            return 1
+        input_path = resolved_path
+
     if input_path.is_dir():
         output_path = (
             pathlib.Path(args.output) if args.output else _default_json_tree_output_path(input_path)
         )
+        if getattr(args, "clean", False) and output_path.exists():
+            if output_path.is_dir():
+                shutil.rmtree(output_path)
+            else:
+                output_path.unlink()
         return export_path_tree_to_json(input_path, output_path, logger)
 
     output_path = (
