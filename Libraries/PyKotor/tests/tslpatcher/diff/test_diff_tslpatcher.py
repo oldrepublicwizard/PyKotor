@@ -444,6 +444,80 @@ class TestTSLPatcherFromDiff(unittest.TestCase):
         ini_text = (tslpatchdata_path / "changes.ini").read_text(encoding="utf-8")
         self.assertIn("real_change", ini_text)
 
+    def test_merge_tslpatcher_reverts_missing_script_reference_to_existing_script(self):
+        base_dlg = self._create_simple_dlg()
+        base_dlg.all_entries(as_sorted=True)[0].script1 = ResRef("k_punk_temp01")
+        installation_dir = self._create_test_installation(base_dlg)
+        (installation_dir / "Override" / "k_punk_temp01.ncs").write_bytes(b"script")
+
+        mod_a = deepcopy(base_dlg)
+        mod_a.all_entries(as_sorted=True)[0].script1 = ResRef("cp_unk41_misdies")
+
+        mod_b = deepcopy(base_dlg)
+        mod_b.all_replies(as_sorted=True)[0].comment = "keep_reply"
+
+        mod_a_path = Path(self.temp_dir) / "missing_script_mod_a.dlg"
+        mod_b_path = Path(self.temp_dir) / "missing_script_mod_b.dlg"
+        write_dlg(mod_a, mod_a_path, Game.K1, ResourceType.DLG)
+        write_dlg(mod_b, mod_b_path, Game.K1, ResourceType.DLG)
+
+        tslpatchdata_path = Path(self.temp_dir) / "missing_script_tslpatchdata"
+        exit_code = run_application(
+            DiffConfig(
+                paths=[],
+                tslpatchdata_path=tslpatchdata_path,
+                ini_filename="changes.ini",
+                logging_enabled=False,
+                output_mode=OutputMode.QUIET,
+                merge_installation_path=installation_dir,
+                merge_resource_name="unk41_mission.dlg",
+                merge_modded_paths=[mod_a_path, mod_b_path],
+            )
+        )
+
+        self.assertEqual(exit_code, 0)
+        ini_text = (tslpatchdata_path / "changes.ini").read_text(encoding="utf-8")
+        self.assertNotIn("cp_unk41_misdies", ini_text)
+        self.assertIn("keep_reply", ini_text)
+
+    def test_merge_tslpatcher_reverts_missing_script_reference_on_duplicate_entry(self):
+        base_dlg = self._create_simple_dlg()
+        base_dlg.all_entries(as_sorted=True)[0].script1 = ResRef("k_punk_temp01")
+        installation_dir = self._create_test_installation(base_dlg)
+        (installation_dir / "Override" / "k_punk_temp01.ncs").write_bytes(b"script")
+
+        mod_a = deepcopy(base_dlg)
+        duplicate_entry = deepcopy(mod_a.all_entries(as_sorted=True)[0])
+        duplicate_entry.script1 = ResRef("cp_unk41_misdies")
+        mod_a.starters.append(DLGLink(duplicate_entry, 1))
+
+        mod_b = deepcopy(base_dlg)
+        mod_b.all_replies(as_sorted=True)[0].comment = "keep_reply"
+
+        mod_a_path = Path(self.temp_dir) / "duplicate_missing_script_mod_a.dlg"
+        mod_b_path = Path(self.temp_dir) / "duplicate_missing_script_mod_b.dlg"
+        write_dlg(mod_a, mod_a_path, Game.K1, ResourceType.DLG)
+        write_dlg(mod_b, mod_b_path, Game.K1, ResourceType.DLG)
+
+        tslpatchdata_path = Path(self.temp_dir) / "duplicate_missing_script_tslpatchdata"
+        exit_code = run_application(
+            DiffConfig(
+                paths=[],
+                tslpatchdata_path=tslpatchdata_path,
+                ini_filename="changes.ini",
+                logging_enabled=False,
+                output_mode=OutputMode.QUIET,
+                merge_installation_path=installation_dir,
+                merge_resource_name="unk41_mission.dlg",
+                merge_modded_paths=[mod_a_path, mod_b_path],
+            )
+        )
+
+        self.assertEqual(exit_code, 0)
+        ini_text: str = (tslpatchdata_path / "changes.ini").read_text(encoding="utf-8")
+        self.assertNotIn("cp_unk41_misdies", ini_text)
+        self.assertIn("keep_reply", ini_text)
+
     def test_align_node_sequence_prefers_vo_resref_when_entries_shift(self):
         def make_entry(vo_resref: str, text: str) -> DLGEntry:
             entry = DLGEntry()

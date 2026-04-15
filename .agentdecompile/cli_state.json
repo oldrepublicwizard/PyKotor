@@ -7,7 +7,8 @@
       "session_id": "a496db9273924baa9879eb23ea419728"
     },
     "http://127.0.0.1:8100/mcp/message": {
-      "session_id": "21cd44cf6e7b4b16acfde26edf15017e"
+      "session_id": "21cd44cf6e7b4b16acfde26edf15017e",
+      "last_program": "/KOTOR II"
     }
   }
 }

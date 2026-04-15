@@ -8,7 +8,7 @@ import json
 from dataclasses import dataclass
 from io import BytesIO
 from pathlib import Path
-from typing import TYPE_CHECKING, Literal, cast
+from typing import TYPE_CHECKING, Callable, Iterator, Literal, cast
 
 from pykotor.extract.file import FileResource, clear_file_data_cache
 from pykotor.extract.installation import Installation
@@ -20,6 +20,7 @@ from pykotor.resource.formats.mdl.mdl_data import (
     MDL,
     MDLAnimation,
     MDLController,
+    MDLDangly,
     MDLEmitter,
     MDLFace,
     MDLLight,
@@ -28,15 +29,14 @@ from pykotor.resource.formats.mdl.mdl_data import (
     MDLReference,
     MDLSaber,
     MDLSkin,
-    MDLDangly,
     MDLWalkmesh,
 )
 from pykotor.resource.formats.ssf import read_ssf, write_ssf
 from pykotor.resource.formats.tlk import read_tlk, write_tlk
 from pykotor.resource.formats.tpc import bytes_tpc, read_tpc
 from pykotor.resource.formats.tpc.tpc_data import TPC, TPCLayer, TPCMipmap, TPCTextureFormat
-from pykotor.resource.formats.txi import read_txi, write_txi
 from pykotor.resource.formats.twoda import read_2da, write_2da
+from pykotor.resource.formats.txi import read_txi, write_txi
 from pykotor.resource.formats.vis import read_vis, write_vis
 from pykotor.resource.type import ResourceType, ToolsetFormat
 from pykotor.tools.encoding import decode_bytes_with_fallbacks
@@ -105,16 +105,10 @@ def _paired_path(path: Path, suffix: str) -> Path | None:
 
 
 def _resource_type_target(restype: ResourceType) -> ResourceType:
-    return (
-        cast(ResourceType, restype.target_type())
-        if not restype.is_invalid
-        else ResourceType.INVALID
-    )
+    return cast(ResourceType, restype.target_type()) if not restype.is_invalid else ResourceType.INVALID
 
 
-def _json_from_writer(
-    data: bytes | bytearray | Path, reader, writer, file_format: ToolsetFormat
-) -> JsonValue:
+def _json_from_writer(data: bytes | bytearray | Path, reader, writer, file_format: ToolsetFormat) -> JsonValue:
     resource = reader(data)
     output = bytearray()
     writer(resource, output, file_format=file_format)
@@ -255,9 +249,7 @@ def _serialize_mdl_dangly(dangly: MDLDangly) -> dict[str, JsonValue]:
     return {"constraints": constraints}
 
 
-def _serialize_mdl_mesh(
-    mesh: MDLMesh, skin: MDLSkin | None, dangly: MDLDangly | None
-) -> dict[str, JsonValue]:
+def _serialize_mdl_mesh(mesh: MDLMesh, skin: MDLSkin | None, dangly: MDLDangly | None) -> dict[str, JsonValue]:
     vertices: list[JsonValue] = []
     for index, position in enumerate(mesh.vertex_positions):
         vertex: dict[str, JsonValue] = {
@@ -459,7 +451,7 @@ def _serialize_tpc_json(tpc: TPC, restype: ResourceType) -> dict[str, JsonValue]
                     "width": mipmap.width,
                     "height": mipmap.height,
                     "texture_format": mipmap.tpc_format.name,
-                    "data_base64": base64.b64encode(bytes(mipmap.data)).decode("ascii"),
+                    "data_hex": bytes(mipmap.data).hex(),
                 }
             )
         layers.append({"index": layer_index, "mipmaps": mipmaps})
@@ -504,7 +496,11 @@ def _deserialize_tpc_json(payload: JsonValue, restype: ResourceType) -> bytes:
                     if not isinstance(mipmap_value, dict):
                         continue
                     texture_format = mipmap_value.get("texture_format")
-                    encoded_data = mipmap_value.get("data_base64")
+                    encoded_data = mipmap_value.get("data_hex")
+                    decoder = bytes.fromhex
+                    if not isinstance(encoded_data, str):
+                        encoded_data = mipmap_value.get("data_base64")
+                        decoder = base64.b64decode
                     width = mipmap_value.get("width")
                     height = mipmap_value.get("height")
                     if not (
@@ -519,7 +515,7 @@ def _deserialize_tpc_json(payload: JsonValue, restype: ResourceType) -> bytes:
                             width=width,
                             height=height,
                             tpc_format=TPCTextureFormat[texture_format],
-                            data=bytearray(base64.b64decode(encoded_data)),
+                            data=bytearray(decoder(encoded_data)),
                         )
                     )
             layers.append(TPCLayer(mipmaps))
@@ -596,9 +592,7 @@ def serialize_resource_payload(
     return SerializedResourcePayload("base64", base64.b64encode(source_bytes).decode("ascii"))
 
 
-def _payload_to_direct_document(
-    restype: ResourceType, payload: SerializedResourcePayload
-) -> JsonValue:
+def _payload_to_direct_document(restype: ResourceType, payload: SerializedResourcePayload) -> JsonValue:
     if payload.encoding in _STRUCTURED_ENCODINGS:
         return payload.payload
     if payload.encoding in {"text", "mdl_ascii"}:
@@ -720,16 +714,12 @@ def direct_json_document_to_resource_bytes(document: JsonValue, restype: Resourc
         if format_name in {"text", "mdl_ascii"}:
             text = document.get("text")
             if isinstance(text, str):
-                return deserialize_embedded_resource_payload(
-                    cast(str, format_name), text, target_type
-                )
+                return deserialize_embedded_resource_payload(cast(str, format_name), text, target_type)
         if format_name == "tpc_json":
             return deserialize_embedded_resource_payload("tpc_json", document, target_type)
         if format_name == "mdl_json":
             raise ValueError("MDL JSON import is not supported yet.")
-    raise ValueError(
-        "JSON document does not use a direct-wrapper format handled by the shared serializer."
-    )
+    raise ValueError("JSON document does not use a direct-wrapper format handled by the shared serializer.")
 
 
 def is_installation_path(path: Path) -> bool:
@@ -762,9 +752,7 @@ def _iter_installation_resources(installation: Installation, logger: Logger):
             resource.offset(),
             resource.size(),
             resource.resname().lower(),
-            resource.restype().extension.lower()
-            if resource.restype().extension
-            else resource.restype().name.lower(),
+            resource.restype().extension.lower() if resource.restype().extension else resource.restype().name.lower(),
         )
         if key in seen:
             return None
@@ -778,31 +766,19 @@ def _iter_installation_resources(installation: Installation, logger: Logger):
             if resource is not None:
                 yield resource
 
-    iterators = (
+    iterators: tuple[tuple[str, Callable[[], Iterator[FileResource]]], ...] = (
         ("override resources", installation.override_resources),
         (
             "module resources",
-            lambda: (
-                resource
-                for module in installation.modules_list()
-                for resource in installation.module_resources(module)
-            ),
+            lambda: (resource for module in installation.modules_list() for resource in installation.module_resources(module)),
         ),
         (
             "lip resources",
-            lambda: (
-                resource
-                for lip in installation.lips_list()
-                for resource in installation.lip_resources(lip)
-            ),
+            lambda: (resource for lip in installation.lips_list() for resource in installation.lip_resources(lip)),
         ),
         (
             "texturepack resources",
-            lambda: (
-                resource
-                for texturepack in installation.texturepacks_list()
-                for resource in installation.texturepack_resources(texturepack)
-            ),
+            lambda: (resource for texturepack in installation.texturepacks_list() for resource in installation.texturepack_resources(texturepack)),
         ),
         ("core resources", installation.core_resources),
         ("stream resources", lambda: _iter_stream_resources(installation)),
@@ -834,14 +810,8 @@ def _resource_relative_source(base_path: Path, resource: FileResource) -> Path:
 
 def _resource_output_path(output_root: Path, base_path: Path, resource: FileResource) -> Path:
     relative_source = _resource_relative_source(base_path, resource)
-    target_path = (
-        relative_source / resource.filename()
-        if (resource.inside_capsule or resource.inside_bif)
-        else relative_source
-    )
-    return output_root / target_path.with_suffix(
-        f"{target_path.suffix}.json" if target_path.suffix else ".json"
-    )
+    target_path = relative_source / resource.filename() if (resource.inside_capsule or resource.inside_bif) else relative_source
+    return output_root / target_path.with_suffix(f"{target_path.suffix}.json" if target_path.suffix else ".json")
 
 
 def _build_embedded_document(
@@ -857,9 +827,7 @@ def _build_embedded_document(
         "restype": resource.restype().name,
         "extension": resource.restype().extension,
         "source_path": relative_source.as_posix(),
-        "container_path": relative_source.as_posix()
-        if (resource.inside_capsule or resource.inside_bif)
-        else None,
+        "container_path": relative_source.as_posix() if (resource.inside_capsule or resource.inside_bif) else None,
         "offset": resource.offset(),
         "size": len(data),
         "encoding": serialized.encoding,
@@ -872,7 +840,7 @@ def _build_embedded_document(
 
 
 def _export_file_resources(
-    resources,
+    resources: Iterator[FileResource],
     *,
     base_path: Path,
     output_root: Path,
@@ -880,35 +848,28 @@ def _export_file_resources(
 ) -> int:
     output_root.mkdir(parents=True, exist_ok=True)
 
-    supported_count = 0
-    fallback_count = 0
-    error_count = 0
-    processed_count = 0
+    supported_count: int = 0
+    fallback_count: int = 0
+    error_count: int = 0
+    processed_count: int = 0
     created_directories: set[Path] = set()
 
     for index, resource in enumerate(resources, start=1):
-        processed_count = index
-        destination = _resource_output_path(output_root, base_path, resource)
+        processed_count: int = index
+        destination: Path = _resource_output_path(output_root, base_path, resource)
         if destination.parent not in created_directories:
             destination.parent.mkdir(parents=True, exist_ok=True)
             created_directories.add(destination.parent)
 
         try:
-            data = resource.data()
-            source: bytes | Path = (
-                Path(resource.filepath())
-                if not (resource.inside_capsule or resource.inside_bif)
-                and Path(resource.filepath()).is_file()
-                else data
-            )
-            serialized = serialize_resource_payload(source, resource.restype(), mode="direct")
+            data: bytes = resource.data()
+            source: bytes | Path = Path(resource.filepath()) if not (resource.inside_capsule or resource.inside_bif) and Path(resource.filepath()).is_file() else data
+            serialized: SerializedResourcePayload = serialize_resource_payload(source, resource.restype(), mode="direct")
             if serialized.encoding == "base64":
                 fallback_count += 1
             else:
                 supported_count += 1
-            destination.write_bytes(
-                _json_dumps_bytes(_build_embedded_document(base_path, resource, data, serialized))
-            )
+            destination.write_bytes(_json_dumps_bytes(_build_embedded_document(base_path, resource, data, serialized)))
         except Exception as exc:
             error_count += 1
             error_payload = {
@@ -940,9 +901,7 @@ def _export_file_resources(
     return 0 if error_count == 0 else 2
 
 
-def export_installation_to_json_tree(
-    installation_path: Path, output_root: Path, logger: Logger
-) -> int:
+def export_installation_to_json_tree(installation_path: Path, output_root: Path, logger: Logger) -> int:
     try:
         installation = Installation(installation_path)
     except Exception:

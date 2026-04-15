@@ -76,19 +76,25 @@ def cmd_diff_installation(args: Namespace, logger: Logger) -> int:
             argv.append("--use-profiler")
         if hasattr(args, "use_incremental_writer") and args.use_incremental_writer:
             argv.append("--incremental")
+        if hasattr(args, "merge_tslpatcher") and args.merge_tslpatcher:
+            argv.append("--merge-tslpatcher")
+        if hasattr(args, "merge_installation") and args.merge_installation:
+            argv.extend(["--merge-installation", str(args.merge_installation)])
+        if hasattr(args, "merge_resource") and args.merge_resource:
+            argv.extend(["--merge-resource", str(args.merge_resource)])
+        if hasattr(args, "merge_resource_type") and args.merge_resource_type:
+            argv.extend(["--merge-resource-type", str(args.merge_resource_type)])
+        if hasattr(args, "merge_module") and args.merge_module:
+            argv.extend(["--merge-module", str(args.merge_module)])
+        if hasattr(args, "merge_paths") and args.merge_paths:
+            for merge_path in args.merge_paths:
+                argv.extend(["--merge-path", str(merge_path)])
+        if hasattr(args, "merge_conflict_policy") and args.merge_conflict_policy:
+            argv.extend(["--merge-conflict-policy", str(args.merge_conflict_policy)])
         if hasattr(args, "console") and args.console:
             argv.append("--console")
         if hasattr(args, "gui") and args.gui:
             argv.append("--gui")
-        if hasattr(args, "output_mode") and args.output_mode:
-            argv.extend(
-                [
-                    "--output-mode",
-                    args.output_mode.value
-                    if hasattr(args.output_mode, "value")
-                    else str(args.output_mode),
-                ]
-            )
 
         return kotordiff_main(argv)
     except ImportError:

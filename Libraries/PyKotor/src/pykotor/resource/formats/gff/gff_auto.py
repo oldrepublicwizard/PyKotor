@@ -326,7 +326,9 @@ def read_gff(
             file_format = ResourceType.GFF
             promoted_binary = True
     if (
-        file_format == ResourceType.GFF
+        file_format.target_type().is_gff()
+        and not file_format.name.endswith("_XML")
+        and not file_format.name.endswith("_JSON")
         and header_off is not None
         and (promoted_binary or header_off > 0)
     ):
@@ -334,7 +336,11 @@ def read_gff(
         if size is not None:
             size = max(0, size - header_off)
 
-    if file_format == ResourceType.GFF:
+    if (
+        file_format.target_type().is_gff()
+        and not file_format.name.endswith("_XML")
+        and not file_format.name.endswith("_JSON")
+    ):
         return GFFBinaryReader(source, offset, size or 0).load()
     if file_format.name.endswith("_XML") and file_format.target_type().is_gff():
         return GFFXMLReader(source, offset, size or 0).load()
@@ -370,7 +376,11 @@ def write_gff(
         PermissionError: If the file could not be written to the specified destination.
         ValueError: If the specified format was unsupported.
     """
-    if file_format == ResourceType.GFF:
+    if (
+        file_format.target_type().is_gff()
+        and not file_format.name.endswith("_XML")
+        and not file_format.name.endswith("_JSON")
+    ):
         GFFBinaryWriter(gff, target).write()
     elif file_format.name.endswith("_XML") and file_format.target_type().is_gff():
         GFFXMLWriter(gff, target).write()

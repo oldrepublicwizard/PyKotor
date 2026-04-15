@@ -356,15 +356,21 @@ def cmd_diff(
         merge_output_mode = (
             OutputMode(output_mode_raw) if isinstance(output_mode_raw, str) else output_mode_raw
         )
+        tslpatchdata_path = (
+            Path(normalize_path_arg(tslpatchdata_arg))
+            if tslpatchdata_arg
+            else Path.cwd() / "tslpatchdata"
+        )
         config = DiffConfig(
             paths=[],
-            tslpatchdata_path=Path(normalize_path_arg(tslpatchdata_arg))
-            if tslpatchdata_arg
-            else None,
+            tslpatchdata_path=tslpatchdata_path,
             ini_filename=getattr(args, "ini", "changes.ini"),
             output_log_path=Path(normalize_path_arg(output_log_arg)) if output_log_arg else None,
             log_level=getattr(args, "log_level", "info"),
             output_mode=merge_output_mode,
+            compare_hashes=bool(getattr(args, "compare_hashes", True)),
+            use_profiler=bool(getattr(args, "use_profiler", False)),
+            logging_enabled=bool(getattr(args, "logging", True)),
             merge_installation_path=Path(normalize_path_arg(merge_installation)),
             merge_resource_name=str(merge_resource),
             merge_resource_type=merge_resource_type,

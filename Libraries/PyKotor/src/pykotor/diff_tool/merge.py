@@ -17,7 +17,8 @@ from pykotor.diff_tool.app import DiffConfig
 from pykotor.extract.capsule import Capsule
 from pykotor.extract.file import ResourceIdentifier
 from pykotor.extract.installation import Installation, SearchLocation
-from pykotor.resource.generics.dlg import DLG, bytes_dlg, read_dlg
+from pykotor.resource.generics.dlg.base import DLG
+from pykotor.resource.generics.dlg.io import bytes_dlg, read_dlg
 from pykotor.resource.generics.dlg.links import DLGLink
 from pykotor.resource.generics.dlg.nodes import DLGEntry, DLGNode, DLGReply
 from pykotor.resource.generics.dlg.stunts import DLGStunt
@@ -59,16 +60,14 @@ def run_merge_tslpatcher_workflow(
     config: DiffConfig,
     run_application: Callable[[DiffConfig], int],
 ) -> int:
-    global _merge_conflict_policy
+    global _merge_conflict_policy, _merge_installation, _merge_mod_script_names
 
     if config.tslpatchdata_path is None:
         raise MergeConflictError("--merge-tslpatcher requires --tslpatchdata.")
     if not config.merge_modded_paths or len(config.merge_modded_paths) != 2:  # noqa: PLR2004
         raise MergeConflictError("Exactly two modified resource paths are required.")
     if config.merge_installation_path is None or config.merge_resource_name is None:
-        raise MergeConflictError(
-            "--merge-tslpatcher requires both --merge-installation and --merge-resource."
-        )
+        raise MergeConflictError("--merge-tslpatcher requires both --merge-installation and --merge-resource.")
 
     installation = Installation(config.merge_installation_path)
     resolved_base = _resolve_base_resource(
@@ -80,9 +79,7 @@ def run_merge_tslpatcher_workflow(
 
     resource_type = resolved_base.identifier.restype
     if resource_type != ResourceType.DLG:
-        raise MergeConflictError(
-            f"Only DLG merge-to-TSLPatcher is currently implemented. Resolved type: {resource_type.extension}"
-        )
+        raise MergeConflictError(f"Only DLG merge-to-TSLPatcher is currently implemented. Resolved type: {resource_type.extension}")
 
     mod_path_a, mod_path_b = config.merge_modded_paths
     if not mod_path_a.is_file() or not mod_path_b.is_file():
@@ -93,7 +90,16 @@ def run_merge_tslpatcher_workflow(
     mod_b_dlg = read_dlg(mod_path_b)
     _merge_conflict_policy = _normalize_merge_conflict_policy(config.merge_conflict_policy)
     _merge_conflicts.clear()
-    merged_dlg = _merge_dlg_three_way(base_dlg, mod_a_dlg, mod_b_dlg)
+    _merge_installation = installation
+    _merge_mod_script_names = _collect_mod_script_names((mod_path_a.parent, mod_path_b.parent))
+    _merge_script_exists_cache.clear()
+    try:
+        merged_dlg = _merge_dlg_three_way(base_dlg, mod_a_dlg, mod_b_dlg)
+        _normalize_missing_scripts_against_base(base_dlg, merged_dlg)
+    finally:
+        _merge_installation = None
+        _merge_mod_script_names = set()
+        _merge_script_exists_cache.clear()
 
     if _merge_conflicts:
         chosen_label = "mod_a" if _merge_conflict_policy == "mod-a" else "mod_b"
@@ -112,15 +118,11 @@ def run_merge_tslpatcher_workflow(
         base_dir.mkdir(parents=True, exist_ok=True)
         merged_dir.mkdir(parents=True, exist_ok=True)
 
-        resource_filename = (
-            f"{resolved_base.identifier.resname}.{resolved_base.identifier.restype.extension}"
-        )
+        resource_filename = f"{resolved_base.identifier.resname}.{resolved_base.identifier.restype.extension}"
         base_file_path = base_dir / resource_filename
         merged_file_path = merged_dir / resource_filename
         base_file_path.write_bytes(resolved_base.data)
-        merged_file_path.write_bytes(
-            bytes_dlg(merged_dlg, game=installation.game(), file_format=ResourceType.DLG)
-        )
+        merged_file_path.write_bytes(bytes_dlg(merged_dlg, game=installation.game(), file_format=ResourceType.DLG))
 
         diff_config = DiffConfig(
             paths=[base_file_path, merged_file_path],
@@ -147,13 +149,9 @@ def _resolve_base_resource(
 ) -> _ResolvedResource:
     resource_name = resource_name.strip()
     suffix = Path(resource_name).suffix.lstrip(".")
-    restype = explicit_type or (
-        ResourceType.from_extension(suffix) if suffix else ResourceType.INVALID
-    )
+    restype = explicit_type or (ResourceType.from_extension(suffix) if suffix else ResourceType.INVALID)
     if restype.is_invalid:
-        raise MergeConflictError(
-            "Could not determine resource type for --merge-resource. Include an extension or pass --merge-resource-type."
-        )
+        raise MergeConflictError("Could not determine resource type for --merge-resource. Include an extension or pass --merge-resource-type.")
 
     resname = Path(resource_name).stem if suffix else resource_name
     query = ResourceIdentifier(resname, restype)
@@ -176,23 +174,13 @@ def _resolve_base_resource(
                 if resource is not None:
                     return _ResolvedResource(query, candidate, resource)
 
-    search_order = [
-        location
-        for location in canonical_search_order()
-        if location in {SearchLocation.OVERRIDE, SearchLocation.MODULES, SearchLocation.CHITIN}
-    ]
-    locations = installation.locations([query], order=search_order, module_root=module_root).get(
-        query, []
-    )
+    search_order = [location for location in canonical_search_order() if location in {SearchLocation.OVERRIDE, SearchLocation.MODULES, SearchLocation.CHITIN}]
+    locations = installation.locations([query], order=search_order, module_root=module_root).get(query, [])
     if not locations:
-        raise MergeConflictError(
-            f"Unable to resolve {resname}.{restype.extension} from installation {installation.path()}."
-        )
+        raise MergeConflictError(f"Unable to resolve {resname}.{restype.extension} from installation {installation.path()}.")
     if len(locations) > 1:
         location_list = "\n".join(str(location.filepath) for location in locations)
-        raise MergeConflictError(
-            f"Base resource resolution for {resname}.{restype.extension} is ambiguous. Narrow it with --merge-module.\n{location_list}"
-        )
+        raise MergeConflictError(f"Base resource resolution for {resname}.{restype.extension} is ambiguous. Narrow it with --merge-module.\n{location_list}")
 
     resource = installation.resource(
         resname,
@@ -201,9 +189,7 @@ def _resolve_base_resource(
         module_root=module_root,
     )
     if resource is None:
-        raise MergeConflictError(
-            f"Resolved location for {resname}.{restype.extension} but failed to read it."
-        )
+        raise MergeConflictError(f"Resolved location for {resname}.{restype.extension} but failed to read it.")
 
     return _ResolvedResource(query, resource.filepath, resource.data)
 
@@ -222,13 +208,9 @@ def _merge_dlg_three_way(base: DLG, mod_a: DLG, mod_b: DLG) -> DLG:
     reply_align_b = _align_node_sequence(base_replies, mod_b_replies)
 
     if entry_align_a.removed_base_indices or entry_align_b.removed_base_indices:
-        _merge_logger.warning(
-            "EntryList removals detected; removed entries will be excluded from the merge."
-        )
+        _merge_logger.warning("EntryList removals detected; removed entries will be excluded from the merge.")
     if reply_align_a.removed_base_indices or reply_align_b.removed_base_indices:
-        _merge_logger.warning(
-            "ReplyList removals detected; removed replies will be excluded from the merge."
-        )
+        _merge_logger.warning("ReplyList removals detected; removed replies will be excluded from the merge.")
 
     merged = DLG()
     for field_name, base_value in base.__dict__.items():
@@ -384,14 +366,8 @@ def _align_node_sequence(
                     matched_base_indices.add(base_index)
                     matched_variant_indices.add(variant_index)
 
-            added_variant_indices.extend(
-                variant_index
-                for variant_index in range(j1, j2)
-                if variant_index not in matched_variant_indices
-            )
-            removed_base_indices.extend(
-                base_index for base_index in range(i1, i2) if base_index not in matched_base_indices
-            )
+            added_variant_indices.extend(variant_index for variant_index in range(j1, j2) if variant_index not in matched_variant_indices)
+            removed_base_indices.extend(base_index for base_index in range(i1, i2) if base_index not in matched_base_indices)
             continue
 
         if tag == "insert":
@@ -415,14 +391,8 @@ def _build_node_keys(
 ) -> tuple[list[str], dict[int, str], dict[int, str], dict[int, str]]:
     ordered_keys = [f"{prefix}:base:{index}" for index in range(len(base_nodes))]
     key_by_base = {index: key for index, key in enumerate(ordered_keys)}
-    key_by_a = {
-        variant_index: key_by_base[base_index]
-        for base_index, variant_index in align_a.base_to_variant.items()
-    }
-    key_by_b = {
-        variant_index: key_by_base[base_index]
-        for base_index, variant_index in align_b.base_to_variant.items()
-    }
+    key_by_a = {variant_index: key_by_base[base_index] for base_index, variant_index in align_a.base_to_variant.items()}
+    key_by_b = {variant_index: key_by_base[base_index] for base_index, variant_index in align_b.base_to_variant.items()}
 
     exact_additions_a: dict[tuple[Any, ...], str] = {}
     for variant_index in align_a.added_variant_indices:
@@ -564,16 +534,22 @@ def _merge_link_sequence(
     parent_label: str,
 ) -> list[DLGLink]:
     base_map, base_order = _index_links(
-        base_links, target_key_by_base, f"{parent_label}.{label}.base"
+        base_links,
+        target_key_by_base,
+        f"{parent_label}.{label}.base",
     )
     mod_a_map, mod_a_order = _index_links(
-        mod_a_links, target_key_by_a, f"{parent_label}.{label}.mod_a"
+        mod_a_links,
+        target_key_by_a,
+        f"{parent_label}.{label}.mod_a",
     )
     mod_b_map, mod_b_order = _index_links(
-        mod_b_links, target_key_by_b, f"{parent_label}.{label}.mod_b"
+        mod_b_links,
+        target_key_by_b,
+        f"{parent_label}.{label}.mod_b",
     )
 
-    ordered_keys = [
+    ordered_keys: list[str] = [
         *base_order,
         *[key for key in mod_a_order if key not in base_map],
         *[key for key in mod_b_order if key not in base_map and key not in mod_a_map],
@@ -624,9 +600,7 @@ def _merge_link_sequence(
                 f"{parent_label}.{label}[{target_key}]",
             )
         else:
-            raise MergeConflictError(
-                f"Internal link merge error at {parent_label}.{label}[{target_key}]"
-            )
+            raise MergeConflictError(f"Internal link merge error at {parent_label}.{label}[{target_key}]")
 
         merged_link.list_index = len(merged_links)
         merged_links.append(merged_link)
@@ -651,9 +625,7 @@ def _index_links(
             )
             continue
         if target_key in result:
-            _merge_logger.warning(
-                "%s: duplicate link to target %s; keeping first occurrence.", context, target_key
-            )
+            _merge_logger.warning("%s: duplicate link to target %s; keeping first occurrence.", context, target_key)
             continue
         result[target_key] = link
         ordered_keys.append(target_key)
@@ -707,11 +679,160 @@ _merge_logger = logging.getLogger(__name__)
 
 # Track conflict warnings for summary output
 _merge_conflicts: list[str] = []
-_merge_conflict_policy = "mod-a"
+_merge_conflict_policy: str = "mod-a"
+_merge_installation: Installation | None = None
+_merge_mod_script_names: set[str] = set()
+_merge_script_exists_cache: dict[str, bool] = {}
 
 
 def _preferred_conflict_label() -> str:
     return "mod_a" if _merge_conflict_policy != "mod-b" else "mod_b"
+
+
+def _collect_mod_script_names(mod_paths: tuple[Path, Path]) -> set[str]:
+    script_names: set[str] = set()
+    for mod_path in mod_paths:
+        if not mod_path.exists():
+            continue
+        for pattern in ("*.ncs", "*.nss"):
+            for script_path in mod_path.rglob(pattern):
+                script_names.add(script_path.stem.lower())
+    return script_names
+
+
+def _script_ref_name(value: ResRef | str) -> str | None:
+    if isinstance(value, ResRef):
+        name = str(value).strip()
+        return name or None
+    if isinstance(value, str):
+        name = value.strip()
+        return name or None
+    return None
+
+
+def _is_script_context(context: str) -> bool:
+    field_name = context.rsplit(".", 1)[-1].lower()
+    return field_name.startswith("script")
+
+
+def _script_ref_exists(value: Any) -> bool:
+    name = _script_ref_name(value)
+    if name is None:
+        return True
+
+    lookup = name.lower()
+    cached = _merge_script_exists_cache.get(lookup)
+    if cached is not None:
+        return cached
+
+    if lookup in _merge_mod_script_names:
+        _merge_script_exists_cache[lookup] = True
+        return True
+
+    exists = False
+    if _merge_installation is not None:
+        override_path = _merge_installation.override_path()
+        for extension in ("ncs", "nss"):
+            if (override_path / f"{name}.{extension}").is_file():
+                exists = True
+                break
+
+        if not exists:
+            for restype in (ResourceType.NCS, ResourceType.NSS):
+                try:
+                    resource = _merge_installation.resource(name, restype)
+                except Exception:
+                    resource = None
+                if resource is not None:
+                    exists = True
+                    break
+
+    _merge_script_exists_cache[lookup] = exists
+    return exists
+
+
+def _normalize_missing_script_choice(
+    base_value: Any,
+    preferred_value: Any,
+    fallback_value: Any,
+    context: str,
+) -> Any | None:
+    preferred_name = _script_ref_name(preferred_value)
+    fallback_name = _script_ref_name(fallback_value)
+    base_name = _script_ref_name(base_value)
+
+    if preferred_name is None or _script_ref_exists(preferred_value):
+        return None
+    if fallback_name is not None and _script_ref_exists(fallback_value):
+        _merge_logger.warning(
+            "%s references missing script '%s'; using existing alternative '%s'.",
+            context,
+            preferred_name,
+            fallback_name,
+        )
+        return copy.deepcopy(fallback_value)
+    if base_name is not None and _script_ref_exists(base_value):
+        _merge_logger.warning(
+            "%s references missing script '%s'; reverting to base script '%s'.",
+            context,
+            preferred_name,
+            base_name,
+        )
+        return copy.deepcopy(base_value)
+    return None
+
+
+def _normalize_missing_scripts_against_base(base_dlg: DLG, merged_dlg: DLG) -> None:
+    for label, base_nodes, merged_nodes in (
+        ("EntryList", base_dlg.all_entries(as_sorted=True), merged_dlg.all_entries(as_sorted=True)),
+        ("ReplyList", base_dlg.all_replies(as_sorted=True), merged_dlg.all_replies(as_sorted=True)),
+    ):
+        alignment = _align_node_sequence(base_nodes, merged_nodes)
+        base_nodes_by_identity: dict[tuple[Any, ...], list[DLGNode]] = {}
+        for base_node in base_nodes:
+            base_nodes_by_identity.setdefault(_node_identity(base_node), []).append(base_node)
+
+        for base_index, merged_index in alignment.base_to_variant.items():
+            base_node = base_nodes[base_index]
+            merged_node = merged_nodes[merged_index]
+            for field_name, merged_value in vars(merged_node).items():
+                if field_name in {"links", "list_index", "_hash_cache"}:
+                    continue
+                if not field_name.lower().startswith("script"):
+                    continue
+                base_value = getattr(base_node, field_name, None)
+                normalized = _normalize_missing_script_choice(
+                    base_value,
+                    merged_value,
+                    base_value,
+                    f"{label}[{merged_index}].{field_name}",
+                )
+                if normalized is not None:
+                    setattr(merged_node, field_name, normalized)
+
+        for merged_index, merged_node in enumerate(merged_nodes):
+            candidate_base_nodes = base_nodes_by_identity.get(_node_identity(merged_node), [])
+            if not candidate_base_nodes:
+                continue
+            for field_name, merged_value in vars(merged_node).items():
+                if field_name in {"links", "list_index", "_hash_cache"}:
+                    continue
+                if not field_name.lower().startswith("script"):
+                    continue
+                for base_node in candidate_base_nodes:
+                    base_value = getattr(base_node, field_name, None)
+                    normalized = _normalize_missing_script_choice(
+                        base_value,
+                        merged_value,
+                        base_value,
+                        f"{label}[{merged_index}].{field_name}",
+                    )
+                    if normalized is not None:
+                        setattr(merged_node, field_name, normalized)
+                        break
+                else:
+                    continue
+                break
 
 
 def _raise_or_record_conflict(context: str, message: str) -> None:
@@ -748,16 +869,31 @@ def _merge_value(base_value: Any, mod_a_value: Any, mod_b_value: Any, context: s
         return copy.deepcopy(base_value if base_value is not None else mod_a_value)
     if _values_equal(mod_a_value, mod_b_value):
         return copy.deepcopy(mod_a_value)
+    if _is_script_context(context):
+        if _values_equal(mod_b_value, base_value):
+            normalized = _normalize_missing_script_choice(
+                base_value,
+                mod_a_value,
+                mod_b_value,
+                context,
+            )
+            if normalized is not None:
+                return normalized
+        if _values_equal(mod_a_value, base_value):
+            normalized = _normalize_missing_script_choice(
+                base_value,
+                mod_b_value,
+                mod_a_value,
+                context,
+            )
+            if normalized is not None:
+                return normalized
     if _values_equal(mod_b_value, base_value):
         return copy.deepcopy(mod_a_value)
     if _values_equal(mod_a_value, base_value):
         return copy.deepcopy(mod_b_value)
     # Try list-level merge when all three are lists
-    if (
-        isinstance(base_value, list)
-        and isinstance(mod_a_value, list)
-        and isinstance(mod_b_value, list)
-    ):
+    if isinstance(base_value, list) and isinstance(mod_a_value, list) and isinstance(mod_b_value, list):
         return _merge_list_values(base_value, mod_a_value, mod_b_value, context)
     preferred_value = mod_a_value if _merge_conflict_policy != "mod-b" else mod_b_value
     preferred_label = _preferred_conflict_label()
@@ -848,13 +984,7 @@ def _node_exact_signature(node: DLGNode) -> tuple[Any, ...]:
 
 
 def _localized_key(value: LocalizedString) -> tuple[int, tuple[tuple[int, str], ...]]:
-    substrings = tuple(
-        sorted(
-            (language, text)
-            for language, text in value.to_dict()["substrings"].items()
-            if text != ""
-        )
-    )
+    substrings = tuple(sorted((language, text) for language, text in value.to_dict()["substrings"].items() if text != ""))
     return (value.stringref, substrings)
 
 
@@ -869,28 +999,16 @@ def _signature(value: Any) -> Any:
     if isinstance(value, DLGStunt):
         return (
             "stunt",
-            tuple(
-                sorted(
-                    (k, v) for k, v in value.to_dict().items() if k not in _SIGNATURE_EXCLUDE_KEYS
-                )
-            ),
+            tuple(sorted((k, v) for k, v in value.to_dict().items() if k not in _SIGNATURE_EXCLUDE_KEYS)),
         )
     if hasattr(value, "to_dict") and callable(value.to_dict):
         data = value.to_dict()
         if isinstance(data, dict):
-            return tuple(
-                (key, _signature(item))
-                for key, item in sorted(data.items())
-                if key not in _SIGNATURE_EXCLUDE_KEYS
-            )
+            return tuple((key, _signature(item)) for key, item in sorted(data.items()) if key not in _SIGNATURE_EXCLUDE_KEYS)
     if isinstance(value, list):
         return tuple(_signature(item) for item in value)
     if isinstance(value, tuple):
         return tuple(_signature(item) for item in value)
     if isinstance(value, dict):
-        return tuple(
-            (key, _signature(item))
-            for key, item in sorted(value.items())
-            if key not in _SIGNATURE_EXCLUDE_KEYS
-        )
+        return tuple((key, _signature(item)) for key, item in sorted(value.items()) if key not in _SIGNATURE_EXCLUDE_KEYS)
     return value

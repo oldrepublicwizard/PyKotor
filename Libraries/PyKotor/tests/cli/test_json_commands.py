@@ -3,15 +3,18 @@ from __future__ import annotations
 import json
 
 from pathlib import Path
+from types import SimpleNamespace
 
 import pytest
 
+from pykotor.cli.commands.diff_installation import cmd_diff_installation
 from pykotor.cli.dispatch import cli_main
 from pykotor.common.language import Language
 from pykotor.common.misc import Game
 from pykotor.resource.formats.rim import RIM, write_rim
 from pykotor.resource.formats.ssf import SSF, SSFSound, read_ssf
 from pykotor.resource.formats.tlk import TLK, read_tlk, write_tlk
+from pykotor.resource.formats.tpc import TPC, TPCTextureFormat, bytes_tpc, read_tpc
 from pykotor.resource.type import ResourceType
 
 
@@ -238,3 +241,147 @@ def test_to_json_can_export_all_detected_installations(
         ]["strings"][0]["text"]
         == "k2 only"
     )
+
+
+def test_to_json_roundtrips_tpc_without_base64_payload(tmp_path: Path) -> None:
+    input_path = tmp_path / "sample.tpc"
+    json_path = tmp_path / "sample.tpc.json"
+    output_path = tmp_path / "sample.roundtrip.tpc"
+
+    tpc = TPC()
+    tpc.set_single(
+        bytes(
+            [
+                255,
+                0,
+                0,
+                255,
+                0,
+                255,
+                0,
+                255,
+                0,
+                0,
+                255,
+                255,
+                255,
+                255,
+                255,
+                255,
+            ]
+        ),
+        TPCTextureFormat.RGBA,
+        2,
+        2,
+    )
+    input_path.write_bytes(bytes_tpc(tpc, ResourceType.TPC))
+
+    assert cli_main(["to-json", str(input_path), "--output", str(json_path)]) == 0
+    payload = json.loads(json_path.read_text(encoding="utf-8"))
+    assert payload["format"] == "tpc_json"
+    first_mipmap = payload["layers"][0]["mipmaps"][0]
+    assert "data_hex" in first_mipmap
+    assert "data_base64" not in first_mipmap
+
+    assert cli_main(["from-json", str(json_path), "--output", str(output_path)]) == 0
+    roundtrip = read_tpc(output_path)
+    assert roundtrip.layers[0].mipmaps[0].data == tpc.layers[0].mipmaps[0].data
+
+
+def test_cmd_diff_merge_defaults_tslpatchdata_and_passes_merge_options(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    captured: dict[str, object] = {}
+
+    def fake_run_application(config):
+        captured["tslpatchdata_path"] = config.tslpatchdata_path
+        captured["merge_installation_path"] = config.merge_installation_path
+        captured["merge_resource_name"] = config.merge_resource_name
+        captured["merge_modded_paths"] = config.merge_modded_paths
+        captured["merge_conflict_policy"] = config.merge_conflict_policy
+        captured["compare_hashes"] = config.compare_hashes
+        captured["logging_enabled"] = config.logging_enabled
+        return 0
+
+    monkeypatch.setattr("pykotor.diff_tool.app.run_application", fake_run_application)
+
+    base_install = tmp_path / "K1"
+    base_install.mkdir()
+    mod_a = tmp_path / "mod_a.dlg"
+    mod_b = tmp_path / "mod_b.dlg"
+    mod_a.write_bytes(b"a")
+    mod_b.write_bytes(b"b")
+
+    assert (
+        cli_main(
+            [
+                "diff",
+                "--merge-tslpatcher",
+                "--merge-installation",
+                str(base_install),
+                "--merge-resource",
+                "unk41_mission.dlg",
+                "--merge-path",
+                str(mod_a),
+                "--merge-path",
+                str(mod_b),
+                "--merge-conflict-policy",
+                "mod-b",
+            ]
+        )
+        == 0
+    )
+
+    assert captured["tslpatchdata_path"] == Path.cwd() / "tslpatchdata"
+    assert captured["merge_installation_path"] == base_install
+    assert captured["merge_resource_name"] == "unk41_mission.dlg"
+    assert captured["merge_modded_paths"] == [mod_a, mod_b]
+    assert captured["merge_conflict_policy"] == "mod-b"
+    assert captured["compare_hashes"] is True
+    assert captured["logging_enabled"] is True
+
+
+def test_diff_installation_forwards_merge_flags(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    captured_argv: list[str] = []
+
+    def fake_main(argv: list[str]) -> int:
+        captured_argv.extend(argv)
+        return 0
+
+    monkeypatch.setattr("pykotor.diff_tool.__main__.main", fake_main)
+
+    args = SimpleNamespace(
+        path1=None,
+        path2=None,
+        path3=None,
+        extra_paths=None,
+        tslpatchdata=str(tmp_path / "tslpatchdata"),
+        ini="changes.ini",
+        output_log=None,
+        log_level="info",
+        output_mode="quiet",
+        no_color=False,
+        compare_hashes=True,
+        filter=None,
+        logging=True,
+        use_profiler=False,
+        use_incremental_writer=False,
+        merge_tslpatcher=True,
+        merge_installation=str(tmp_path / "K1"),
+        merge_resource="unk41_mission.dlg",
+        merge_resource_type="dlg",
+        merge_module="unk_m41aa",
+        merge_paths=[str(tmp_path / "mod_a.dlg"), str(tmp_path / "mod_b.dlg")],
+        merge_conflict_policy="mod-b",
+        console=False,
+        gui=False,
+    )
+
+    assert cmd_diff_installation(args, logger=SimpleNamespace(error=lambda *_args, **_kwargs: None, exception=lambda *_args, **_kwargs: None)) == 0
+    assert "--merge-tslpatcher" in captured_argv
+    assert "--merge-installation" in captured_argv
+    assert "--merge-resource" in captured_argv
+    assert "--merge-resource-type" in captured_argv
+    assert "--merge-module" in captured_argv
+    assert captured_argv.count("--merge-path") == 2
+    assert "--merge-conflict-policy" in captured_argv
