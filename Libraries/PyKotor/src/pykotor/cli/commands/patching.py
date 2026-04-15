@@ -110,10 +110,10 @@ def cmd_patch_folder(args: Namespace, logger: Logger) -> int:
 
 
 def cmd_patch_installation(args: Namespace, logger: Logger) -> int:
-    """Patch a KOTOR installation.
+    """Patch a KotOR game root.
 
     Usage:
-        pykotorcli patch-installation --installation "C:/Games/KOTOR" --set-unskippable
+        pykotorcli patch-game-root --path "C:/Games/KOTOR" --set-unskippable
     """
     config = PatchingConfig()
     config.set_unskippable = args.set_unskippable
@@ -125,13 +125,13 @@ def cmd_patch_installation(args: Namespace, logger: Logger) -> int:
     config.log_callback = lambda msg: logger.info(msg)
 
     try:
-        install_path = pathlib.Path(args.installation)
+        install_path = pathlib.Path(args.path)
         if not is_kotor_install_dir(install_path):
-            logger.error(f"Path is not a KOTOR installation: {install_path}")
+            logger.error(f"Path is not a KotOR game root: {install_path}")
             return 1
 
         patch_install(install_path, config)
-        logger.info(f"Patched installation: {install_path}")  # noqa: G004
+        logger.info(f"Patched game root: {install_path}")  # noqa: G004
         return 0
     except Exception:
         logger.exception("Error patching installation")

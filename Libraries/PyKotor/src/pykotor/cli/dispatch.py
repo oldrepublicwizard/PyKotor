@@ -120,7 +120,7 @@ def cli_main(argv: Sequence[str]) -> int:  # noqa: PLR0911, PLR0912, PLR0915
             return cmd_extract(args, logger)
         if args.command == "find":
             return cmd_find(args, logger)
-        if args.command in ("kotor-paths", "find-installations"):
+        if args.command in ("kotor-paths", "find-game-roots", "find-installations"):
             return cmd_kotor_paths(args, logger)
         if args.command == "get":
             return cmd_get(args, logger)
@@ -128,7 +128,12 @@ def cli_main(argv: Sequence[str]) -> int:  # noqa: PLR0911, PLR0912, PLR0915
             return cmd_list_archive(args, logger)
         if args.command in ("create-archive", "pack-archive"):
             return cmd_create_archive(args, logger)
-        if args.command in ("create-installation", "scaffold-installation"):
+        if args.command in (
+            "create-game-root",
+            "scaffold-game-root",
+            "create-installation",
+            "scaffold-installation",
+        ):
             return cmd_create_installation(args, logger)
         # Format conversions
         if args.command == "gff2xml":
@@ -218,7 +223,7 @@ def cli_main(argv: Sequence[str]) -> int:  # noqa: PLR0911, PLR0912, PLR0915
             return cmd_check_txi(args, logger)
         if args.command == "check-2da":
             return cmd_check_2da(args, logger)
-        if args.command == "validate-installation":
+        if args.command in ("validate-game-root", "validate-installation"):
             return cmd_validate_installation(args, logger)
         if args.command == "investigate-module":
             return cmd_investigate_module(args, logger)
@@ -242,7 +247,7 @@ def cli_main(argv: Sequence[str]) -> int:  # noqa: PLR0911, PLR0912, PLR0915
             return cmd_patch_file(args, logger)
         if args.command == "patch-folder":
             return cmd_patch_folder(args, logger)
-        if args.command == "patch-installation":
+        if args.command in ("patch-game-root", "patch-installation"):
             return cmd_patch_installation(args, logger)
     except KeyboardInterrupt:
         logger.info("Operation cancelled by user")

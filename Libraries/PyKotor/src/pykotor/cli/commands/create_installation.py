@@ -1,4 +1,4 @@
-"""CLI command for scaffolding a minimal KotOR installation layout."""
+"""CLI command for scaffolding a minimal KotOR game-root layout."""
 
 from __future__ import annotations
 
@@ -12,12 +12,12 @@ if TYPE_CHECKING:
 
 
 def cmd_create_installation(args: Namespace, logger: Logger) -> int:
-    """Scaffold a minimal KotOR installation directory layout.
+    """Scaffold a minimal KotOR game-root directory layout.
 
     Creates a fully valid but empty installation tree — chitin.key, dialog.tlk,
     all canonical subdirectories, and game-specific sentinel files — suitable
     for development environments, CI pipelines, or any context where a real
-    game installation is unavailable.
+    game root is unavailable.
     """
     from pykotor.common.misc import Game
     from pykotor.tools.create_installation import create_minimal_installation
@@ -39,7 +39,7 @@ def cmd_create_installation(args: Namespace, logger: Logger) -> int:
         return 1
 
     if dest.exists() and (dest / "chitin.key").exists() and not getattr(args, "force", False):
-        logger.info("Installation already exists at %s (use --force to overwrite).", dest)
+        logger.info("Game root already exists at %s (use --force to overwrite).", dest)
         return 0
 
     if getattr(args, "force", False) and dest.exists():
@@ -48,5 +48,5 @@ def cmd_create_installation(args: Namespace, logger: Logger) -> int:
         shutil.rmtree(dest)
 
     root = create_minimal_installation(dest, game)
-    logger.info("Created %s installation scaffold at: %s", game_str.upper(), root)
+    logger.info("Created %s game-root scaffold at: %s", game_str.upper(), root)
     return 0

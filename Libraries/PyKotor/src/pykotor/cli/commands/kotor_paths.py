@@ -1,4 +1,4 @@
-"""List default KotOR installation paths detected on the local machine."""
+"""List default KotOR game-root paths detected on the local machine."""
 
 from __future__ import annotations
 
@@ -29,7 +29,7 @@ def _parse_game(value: str | None) -> Game | None:
 
 
 def cmd_kotor_paths(args: Namespace, logger: Logger) -> int:
-    """List default KotOR installation paths discovered from platform defaults and registry."""
+    """List default KotOR game-root paths discovered from platform defaults and registry."""
     game_filter = _parse_game(getattr(args, "game", None))
     if getattr(args, "game", None) and game_filter is None:
         logger.error("Unknown game '%s'. Use k1 or k2.", args.game)
@@ -50,7 +50,7 @@ def cmd_kotor_paths(args: Namespace, logger: Logger) -> int:
     for game, found_paths in items:
         label = "KotOR I" if game == Game.K1 else "KotOR II"
         if not found_paths:
-            logger.info("%s: no default installations found", label)
+            logger.info("%s: no default game roots found", label)
             continue
         logger.info("%s:", label)
         for index, path in enumerate(found_paths):

@@ -464,7 +464,8 @@ def test_parser_wave2_game_root_commands_use_path_dest_and_keep_hidden_alias() -
         ["check-txi", "--installation", "C:/game", "--textures", "foo"]
     )
     check_2da_args = parser.parse_args(["check-2da", "--2da", "genericdoors", "--path", "C:/game"])
-    validate_args = parser.parse_args(["validate-installation", "--path", "C:/game"])
+    validate_args = parser.parse_args(["validate-game-root", "--path", "C:/game"])
+    validate_alias_args = parser.parse_args(["validate-installation", "--installation", "C:/game"])
     investigate_args = parser.parse_args(
         ["investigate-module", "--module", "danm13", "--path", "C:/game"]
     )
@@ -473,15 +474,51 @@ def test_parser_wave2_game_root_commands_use_path_dest_and_keep_hidden_alias() -
     )
     resources_args = parser.parse_args(["module-resources", "--module", "danm13", "--path", "C:/game"])
     kit_args = parser.parse_args(["kit-generate", "--path", "C:/game", "--module", "danm13"])
+    indoor_build_args = parser.parse_args(
+        ["indoor-build", "--input", "map.indoor", "--output", "map.mod", "--path", "C:/game"]
+    )
+    indoor_build_alias_args = parser.parse_args(
+        ["indoor-build", "--input", "map.indoor", "--output", "map.mod", "--installation", "C:/game"]
+    )
+    indoor_extract_args = parser.parse_args(
+        ["indoor-extract", "--module", "danm13", "--output", "map.indoor", "--path", "C:/game"]
+    )
+    patch_root_args = parser.parse_args(["patch-game-root", "--path", "C:/game"])
+    patch_root_alias_args = parser.parse_args(["patch-installation", "--installation", "C:/game"])
 
     assert check_txi_args.path == "C:/game"
     assert check_txi_alias_args.path == "C:/game"
     assert check_2da_args.path == "C:/game"
     assert validate_args.path == "C:/game"
+    assert validate_alias_args.path == "C:/game"
     assert investigate_args.path == "C:/game"
     assert missing_args.path == "C:/game"
     assert resources_args.path == "C:/game"
     assert kit_args.path == "C:/game"
+    assert indoor_build_args.path == "C:/game"
+    assert indoor_build_alias_args.path == "C:/game"
+    assert indoor_extract_args.path == "C:/game"
+    assert patch_root_args.path == "C:/game"
+    assert patch_root_alias_args.path == "C:/game"
+
+
+def test_parser_accepts_game_root_command_renames_and_legacy_aliases() -> None:
+    parser = create_parser("pykotor")
+
+    paths_args = parser.parse_args(["find-game-roots", "--game", "k1"])
+    paths_alias_args = parser.parse_args(["find-installations", "--game", "k2"])
+    create_args = parser.parse_args(["create-game-root", "C:/game", "--game", "k1"])
+    scaffold_args = parser.parse_args(["scaffold-game-root", "C:/game", "--game", "k2"])
+    create_alias_args = parser.parse_args(["create-installation", "C:/game", "--game", "k1"])
+
+    assert paths_args.command == "find-game-roots"
+    assert paths_alias_args.command == "find-installations"
+    assert create_args.command == "create-game-root"
+    assert scaffold_args.command == "scaffold-game-root"
+    assert create_alias_args.command == "create-installation"
+    assert create_args.path == "C:/game"
+    assert scaffold_args.path == "C:/game"
+    assert create_alias_args.path == "C:/game"
 
 
 def test_diff_installation_forwards_merge_flags(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:

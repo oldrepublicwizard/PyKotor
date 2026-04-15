@@ -98,10 +98,10 @@ def cmd_check_2da(args: Namespace, logger: Logger) -> int:
 
 
 def cmd_validate_installation(args: Namespace, logger: Logger) -> int:
-    """Validate a KOTOR installation.
+    """Validate a KotOR game root.
 
     Usage:
-        pykotorcli validate-installation --path "C:/Games/KOTOR"
+        pykotorcli validate-game-root --path "C:/Games/KOTOR"
     """
     try:
         installation = Installation(pathlib.Path(args.path))

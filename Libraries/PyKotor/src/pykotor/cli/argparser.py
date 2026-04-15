@@ -191,7 +191,7 @@ def _organize_commands_by_category() -> dict[str, list[str]]:
             "get",
             "check-txi",
             "check-2da",
-            "validate-installation",
+            "validate-game-root",
             "investigate-module",
             "check-missing-resources",
             "module-resources",
@@ -206,7 +206,7 @@ def _organize_commands_by_category() -> dict[str, list[str]]:
             "indoor-extract",
             "indoormap-extract",
         ],
-        "Patching": ["batch-patch", "patch-file", "patch-folder", "patch-installation"],
+        "Patching": ["batch-patch", "patch-file", "patch-folder", "patch-game-root"],
     }
     return categories
 
@@ -643,13 +643,13 @@ Extract files from Bioware archive formats including:
         "--filter", help="Filter files by pattern (supports wildcards)"
     )
 
-    # create-installation command
+    # create-game-root command
     create_install_parser = subparsers.add_parser(
-        "create-installation",
-        aliases=["scaffold-installation"],
-        help="Scaffold a minimal KotOR installation layout (empty but structurally valid)",
+        "create-game-root",
+        aliases=["scaffold-game-root", "create-installation", "scaffold-installation"],
+        help="Scaffold a minimal KotOR game-root layout (empty but structurally valid)",
     )
-    create_install_parser.add_argument("path", help="Destination directory for the installation")
+    create_install_parser.add_argument("path", help="Destination directory for the game root")
     create_install_parser.add_argument(
         "--game",
         "-g",
@@ -660,7 +660,7 @@ Extract files from Bioware archive formats including:
     create_install_parser.add_argument(
         "--force",
         action="store_true",
-        help="Remove and recreate the destination if it already contains an installation",
+        help="Remove and recreate the destination if it already contains a game root",
     )
 
     # Format conversion commands
@@ -1259,8 +1259,8 @@ Compare two paths and show differences. Supports any combination of:
 
     kotor_paths_parser = subparsers.add_parser(
         "kotor-paths",
-        aliases=["find-installations"],
-        help="List default KotOR installation paths detected on this machine",
+        aliases=["find-game-roots", "find-installations"],
+        help="List default KotOR game-root paths detected on this machine",
     )
     kotor_paths_parser.add_argument(
         "--game",
@@ -1326,7 +1326,7 @@ Compare two paths and show differences. Supports any combination of:
     )
 
     validate_installation_parser = subparsers.add_parser(
-        "validate-installation", help="Validate a KOTOR installation"
+        "validate-game-root", aliases=["validate-installation"], help="Validate a KotOR game root"
     )
     validate_installation_path_group = validate_installation_parser.add_mutually_exclusive_group(required=True)
     validate_installation_path_group.add_argument(
@@ -1431,9 +1431,9 @@ Compare two paths and show differences. Supports any combination of:
     )
     indoor_build_parser.add_argument("--input", "-i", required=True, help="Input .indoor file")
     indoor_build_parser.add_argument("--output", "-o", required=True, help="Output .mod file")
-    indoor_build_parser.add_argument(
-        "--installation", required=True, help="Path to KOTOR installation"
-    )
+    indoor_build_path_group = indoor_build_parser.add_mutually_exclusive_group(required=True)
+    indoor_build_path_group.add_argument("--path", "-p", dest="path", help="Path to a game root")
+    indoor_build_path_group.add_argument("--installation", dest="path", help=SUPPRESS)
     indoor_build_parser.add_argument(
         "--implicit-kit",
         action="store_true",
@@ -1449,7 +1449,7 @@ Compare two paths and show differences. Supports any combination of:
         "--game",
         "-g",
         choices=["k1", "k2", "kotor1", "kotor2", "tsl"],
-        help="Target game version (default: auto-detect from installation)",
+        help="Target game version (default: auto-detect from game root)",
     )
     indoor_build_parser.add_argument(
         "--module-filename", help="Module filename (overrides .indoor module_id)"
@@ -1481,9 +1481,9 @@ Compare two paths and show differences. Supports any combination of:
         help="Extract an indoor map from a specific module container file (.mod/.rim/.erf/.sav).",
     )
     indoor_extract_parser.add_argument("--output", "-o", required=True, help="Output .indoor file")
-    indoor_extract_parser.add_argument(
-        "--installation", required=True, help="Path to KOTOR installation"
-    )
+    indoor_extract_path_group = indoor_extract_parser.add_mutually_exclusive_group(required=True)
+    indoor_extract_path_group.add_argument("--path", "-p", dest="path", help="Path to a game root")
+    indoor_extract_path_group.add_argument("--installation", dest="path", help=SUPPRESS)
     indoor_extract_parser.add_argument(
         "--implicit-kit",
         action="store_true",
@@ -1499,7 +1499,7 @@ Compare two paths and show differences. Supports any combination of:
         "--game",
         "-g",
         choices=["k1", "k2", "kotor1", "kotor2", "tsl"],
-        help="Target game version (default: auto-detect from installation)",
+        help="Target game version (default: auto-detect from game root)",
     )
     indoor_extract_parser.add_argument(
         "--log-level",
@@ -1576,11 +1576,13 @@ Compare two paths and show differences. Supports any combination of:
     )
 
     patch_installation_parser = subparsers.add_parser(
-        "patch-installation", help="Patch a KOTOR installation"
+        "patch-game-root", aliases=["patch-installation"], help="Patch a KotOR game root"
     )
-    patch_installation_parser.add_argument(
-        "--installation", "-i", required=True, help="Path to KOTOR installation"
+    patch_installation_path_group = patch_installation_parser.add_mutually_exclusive_group(required=True)
+    patch_installation_path_group.add_argument(
+        "--path", "-p", dest="path", help="Path to a game root"
     )
+    patch_installation_path_group.add_argument("--installation", "-i", dest="path", help=SUPPRESS)
     patch_installation_parser.add_argument(
         "--set-unskippable", action="store_true", help="Set dialogs as unskippable"
     )

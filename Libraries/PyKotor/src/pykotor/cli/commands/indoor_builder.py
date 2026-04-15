@@ -228,16 +228,16 @@ def _log_indoor_context(
 def _resolve_context(args: Namespace, logger: RobustLogger):
     """Shared setup for indoor-build and indoor-extract.
 
-    Validates installation/kits paths, resolves the game, and returns (game, installation, kits).
+    Validates game-root/kits paths, resolves the game, and returns (game, installation, kits).
     """
-    installation_path = Path(args.installation) if args.installation else None
+    installation_path = Path(args.path) if args.path else None
     kits_path = Path(args.kits) if args.kits else None
 
     if installation_path is None:
-        msg = "No installation path specified. Use --installation <path>"
+        msg = "No game-root path specified. Use --path <path>"
         raise ValueError(msg)
     if not installation_path.exists():
-        msg = f"Installation path does not exist: {installation_path}"
+        msg = f"Game-root path does not exist: {installation_path}"
         raise ValueError(msg)
 
     game = resolve_game_argument(args.game, installation_path)
@@ -259,7 +259,7 @@ def _resolve_context(args: Namespace, logger: RobustLogger):
             injected_installation = None
         else:
             if injected_root != cli_root:
-                msg = f"Injected Installation root does not match --installation: {injected_installation.path()} != {installation_path}"
+                msg = f"Injected Installation root does not match --path: {injected_installation.path()} != {installation_path}"
                 raise ValueError(msg)
 
     installation = injected_installation or Installation(CaseAwarePath(installation_path))
@@ -313,7 +313,7 @@ def cmd_indoor_build(args: Namespace, logger: RobustLogger) -> int:  # noqa: PLR
         [
             (args.input, "No input .indoor file specified. Use --input <path>"),
             (args.output, "No output .mod file specified. Use --output <path>"),
-            (args.installation, "No installation path specified. Use --installation <path>"),
+            (args.path, "No game-root path specified. Use --path <path>"),
         ],
         logger=logger,
     ):
@@ -324,7 +324,7 @@ def cmd_indoor_build(args: Namespace, logger: RobustLogger) -> int:  # noqa: PLR
 
     input_path = Path(args.input)
     output_path = Path(args.output)
-    installation_path = Path(args.installation)
+    installation_path = Path(args.path)
     kits_path = Path(args.kits) if args.kits else None
 
     # Validate paths exist
@@ -418,7 +418,7 @@ def cmd_indoor_extract(args: Namespace, logger: RobustLogger) -> int:  # noqa: P
     if not _require_cli_values(
         [
             (args.output, "No output .indoor file specified. Use --output <path>"),
-            (args.installation, "No installation path specified. Use --installation <path>"),
+            (args.path, "No game-root path specified. Use --path <path>"),
         ],
         logger=logger,
     ):
@@ -427,7 +427,7 @@ def cmd_indoor_extract(args: Namespace, logger: RobustLogger) -> int:  # noqa: P
 
     module_name = normalize_string(args.module) if args.module else ""
     output_path = Path(args.output)
-    installation_path = Path(args.installation)
+    installation_path = Path(args.path)
     kits_path = Path(args.kits) if args.kits else None
 
     try:
