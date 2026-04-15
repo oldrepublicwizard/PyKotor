@@ -1,0 +1,7 @@
+{
+  "backends": {
+    "http://127.0.0.1:1975/mcp/message": {
+      "session_id": "da4751c3b4684de2a43305b3946a390c"
+    }
+  }
+}
