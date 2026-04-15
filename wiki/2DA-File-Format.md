@@ -683,127 +683,46 @@ The earlier `soundset.2da` schema block was broader than the currently rechecked
 
 ### [visualeffects.2da](#visualeffects2da)
 
-**Engine Usage**: Defines visual effects (particle effects, impact effects, environmental effects) with their durations, [models](MDL-MDX-File-Format), and properties. The engine uses this file when playing visual effects for spells, combat, and environmental events.
+**Verified local usage**: The currently rechecked local linkage for `visualeffects.2da` is PyKotor's GFF-to-2DA mapping from `VisualType` to this table. That proves the page's object-level contract: some GFF resources store a numeric `VisualType` that should be interpreted as a row index into `visualeffects.2da`. PyKotor's script library also preserves many hard-coded `SetEffectIcon(...)` calls, but those point to `effecticon.2da`, not to `visualeffects.2da`, so they are not evidence for this table's row schema. [[`extract/twoda.py`](https://github.com/OpenKotOR/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py), [`common/scriptlib.py`](https://github.com/OpenKotOR/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/common/scriptlib.py)]
 
 **Row index**: Visual effect ID (integer)
 
-**Column structure**:
+**Verified local fields and limits**:
 
-| Column Name | type | Description |
-|------------|------|-------------|
-| `label` | *String* | Visual effect label |
-| `name` | [StrRef](Audio-and-Localization-Formats#string-references-strref) | *String* reference for effect name |
-| `model` | *ResRef* (optional) | Effect [model](MDL-MDX-File-Format) *ResRef* |
-| `impactmodel` | *ResRef* (optional) | Impact [model](MDL-MDX-File-Format) *ResRef* |
-| `impactorient` | *Integer* | Impact orientation |
-| `impacttype` | *Integer* | Impact type identifier |
-| `duration` | *Float* | Effect duration in seconds |
-| `durationvariance` | *Float* | Duration variance |
-| `loop` | *Boolean* | Whether effect loops |
-| `render` | *Boolean* | Whether effect is rendered |
-| `renderhint` | *Integer* | Render hint flags |
-| `sound` | *ResRef* (optional) | Sound effect *ResRef* |
-| `sounddelay` | *Float* | Sound delay in seconds |
-| `soundvariance` | *Float* | Sound variance |
-| `soundloop` | *Boolean* | Whether sound loops |
-| `soundvolume` | *Float* | Sound volume (0.0-1.0) |
-| `light` | *Boolean* | Whether effect emits light |
-| `lightcolor` | *String* | Light color RGB values |
-| `lightintensity` | *Float* | Light intensity |
-| `lightradius` | *Float* | Light radius |
-| `lightpulse` | *Boolean* | Whether light pulses |
-| `lightpulselength` | *Float* | Light pulse length |
-| `lightfade` | *Boolean* | Whether light fades |
-| `lightfadelength` | *Float* | Light fade length |
-| `lightfadestart` | *Float* | Light fade start time |
-| `lightfadeend` | *Float* | Light fade end time |
-| `lightshadow` | *Boolean* | Whether light casts shadows |
-| `lightshadowradius` | *Float* | Light shadow radius |
-| `lightshadowintensity` | *Float* | Light shadow intensity |
-| `lightshadowcolor` | *String* | Light shadow color RGB values |
-| `lightshadowfade` | *Boolean* | Whether light shadow fades |
-| `lightshadowfadelength` | *Float* | Light shadow fade length |
-| `lightshadowfadestart` | *Float* | Light shadow fade start time |
-| `lightshadowfadeend` | *Float* | Light shadow fade end time |
-| `lightshadowpulse` | *Boolean* | Whether light shadow pulses |
-| `lightshadowpulselength` | *Float* | Light shadow pulse length |
-| `lightshadowpulseintensity` | *Float* | Light shadow pulse intensity |
-| `lightshadowpulsecolor` | *String* | Light shadow pulse color RGB values |
-| `lightshadowpulsefade` | *Boolean* | Whether light shadow pulse fades |
-| `lightshadowpulsefadelength` | *Float* | Light shadow pulse fade length |
-| `lightshadowpulsefadestart` | *Float* | Light shadow pulse fade start time |
-| `lightshadowpulsefadeend` | *Float* | Light shadow pulse fade end time |
-| `lightshadowpulsefadeintensity` | *Float* | Light shadow pulse fade intensity |
-| `lightshadowpulsefadecolor` | *String* | Light shadow pulse fade color RGB values |
-| `lightshadowpulsefadepulse` | *Boolean* | Whether light shadow pulse fade pulses |
-| `lightshadowpulsefadepulselength` | *Float* | Light shadow pulse fade pulse length |
-| `lightshadowpulsefadepulseintensity` | *Float* | Light shadow pulse fade pulse intensity |
-| `lightshadowpulsefadepulsecolor` | *String* | Light shadow pulse fade pulse color RGB values |
-| `lightshadowpulsefadepulsefade` | *Boolean* | Whether light shadow pulse fade pulse fades |
-| `lightshadowpulsefadepulsefadelength` | *Float* | Light shadow pulse fade pulse fade length |
-| `lightshadowpulsefadepulsefadestart` | *Float* | Light shadow pulse fade pulse fade start time |
-| `lightshadowpulsefadepulsefadeend` | *Float* | Light shadow pulse fade pulse fade end time |
-| `lightshadowpulsefadepulsefadeintensity` | *Float* | Light shadow pulse fade pulse fade intensity |
-| `lightshadowpulsefadepulsefadecolor` | *String* | Light shadow pulse fade pulse fade color RGB values |
+- `VisualType` is the rechecked field name that PyKotor binds to `visualeffects.2da`. [[`extract/twoda.py`](https://github.com/OpenKotOR/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py)]
+- The current local registry pass does not enumerate a trusted column family for `visualeffects.2da`, so the inherited giant schema table was removed rather than kept as unsupported prose. [[`extract/twoda.py`](https://github.com/OpenKotOR/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py)]
 
-**Note**: The `visualeffects.2da` file may contain many optional columns for advanced lighting and shadow effects.
-
-Visual effect table linkage is implemented in PyKotor's GFF-to-2DA mapping (`VisualType` -> `visualeffects.2da`) ([`twoda.py` L593](https://github.com/OpenKotOR/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/extract/twoda.py#L593)).
+Until a fresh parser-level or binary-backed reconstruction is completed, the only safe statement here is that `visualeffects.2da` provides row targets for `VisualType` references. [[`extract/twoda.py`](https://github.com/OpenKotOR/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py)]
 
 ---
 
 ### [portraits.2da](#portraits2da)
 
-**Engine Usage**: Maps portrait IDs to portrait image ResRefs for character selection screens and character sheets. The engine uses this file to display character portraits in the UI.
+**Verified local usage**: `portraits.2da` is the table PyKotor maps from the GFF field name `PortraitId`, and Holocron Toolset exposes it as `HTInstallation.TwoDA_PORTRAITS`. PyKotor's UTC, UTD, UTP, and UTT generic readers all preserve a numeric `portrait_id`, and the generated UTC editor help text documents the creature `PortraitId` field as a portrait-table row selector, with `65534` or `65535` delegating to the explicit `Portrait` ResRef instead. The same UI also documents the portrait preview as a display derived from `PortraitId` plus the optional `Portrait` ResRef. [[`extract/twoda.py`](https://github.com/OpenKotOR/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py), [`resource/generics/utc.py`](https://github.com/OpenKotOR/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/utc.py), [`resource/generics/utd.py`](https://github.com/OpenKotOR/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/utd.py), [`resource/generics/utp.py`](https://github.com/OpenKotOR/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/utp.py), [`resource/generics/utt.py`](https://github.com/OpenKotOR/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/utt.py), [`toolset/uic/qtpy/editors/utc.py`](https://github.com/OpenKotOR/PyKotor/blob/master/Tools/HolocronToolset/src/toolset/uic/qtpy/editors/utc.py), [`installation.py`](https://github.com/OpenKotOR/PyKotor/blob/master/Tools/HolocronToolset/src/toolset/data/installation.py)]
 
 **Row index**: Portrait ID (integer)
 
-**Column structure**:
+**Verified local fields and behavior**:
 
-| Column Name | type | Description |
-|------------|------|-------------|
-| `label` | *String* | Portrait label |
-| `baseresref` | *ResRef* | Base portrait image *ResRef* |
-| `appearancenumber` | *Integer* | Associated appearance ID |
-| `appearance_s` | *Integer* | Small appearance ID |
-| `appearance_l` | *Integer* | Large appearance ID |
-| `forpc` | *Boolean* | Whether portrait is for player character |
-| `sex` | *Integer* | Gender (0=male, 1=female) |
+- `PortraitId` is the GFF field name that PyKotor maps to `portraits.2da`. [[`extract/twoda.py`](https://github.com/OpenKotOR/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py)]
+- The creature, door, placeable, and trigger generics all preserve a numeric `portrait_id`, but `UTT` explicitly documents that field as not used by the game engine, so this page should not overgeneralize portrait-table runtime use across all object classes. [[`resource/generics/utc.py`](https://github.com/OpenKotOR/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/utc.py), [`resource/generics/utd.py`](https://github.com/OpenKotOR/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/utd.py), [`resource/generics/utp.py`](https://github.com/OpenKotOR/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/utp.py), [`resource/generics/utt.py`](https://github.com/OpenKotOR/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/utt.py)]
+- For creatures specifically, Holocron Toolset documents the row-selection behavior directly in the UTC editor tooltip and preview text. [[`toolset/uic/qtpy/editors/utc.py`](https://github.com/OpenKotOR/PyKotor/blob/master/Tools/HolocronToolset/src/toolset/uic/qtpy/editors/utc.py)]
 
-Portrait table semantics and usage are supported by PyKotor registry/mapping and save-data handling ([`twoda.py` L455](https://github.com/OpenKotOR/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/extract/twoda.py#L455), [`twoda.py` L523](https://github.com/OpenKotOR/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/extract/twoda.py#L523), [`savedata.py` L66](https://github.com/OpenKotOR/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/extract/savedata.py#L66), [`savedata.py` L226-L228](https://github.com/OpenKotOR/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/extract/savedata.py#L226-L228), [`savedata.py` L241](https://github.com/OpenKotOR/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/extract/savedata.py#L241), [`savedata.py` L391](https://github.com/OpenKotOR/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/extract/savedata.py#L391), [`savedata.py` L456](https://github.com/OpenKotOR/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/extract/savedata.py#L456), [`savedata.py` L2157](https://github.com/OpenKotOR/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/extract/savedata.py#L2157), [`savedata.py` L2309](https://github.com/OpenKotOR/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/extract/savedata.py#L2309), [`savedata.py` L2370](https://github.com/OpenKotOR/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/extract/savedata.py#L2370)), Toolset editor/UI integration ([`installation.py` L54](https://github.com/OpenKotOR/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Tools/HolocronToolset/src/toolset/data/installation.py#L54), [`utc.py` L140-L152](https://github.com/OpenKotOR/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Tools/HolocronToolset/src/toolset/gui/editors/utc.py#L140-L152), [`utc.ui` L407](https://github.com/OpenKotOR/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Tools/HolocronToolset/src/ui/editors/utc.ui#L407), [`savegame.py` L51](https://github.com/OpenKotOR/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Tools/HolocronToolset/src/toolset/gui/editors/savegame.py#L51), [`savegame.ui` L94-L98](https://github.com/OpenKotOR/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Tools/HolocronToolset/src/ui/editors/savegame.ui#L94-L98)), and vendor runtime loading ([`portraits.cpp` L33-L51](https://github.com/seedhartha/reone/blob/master/src/libs/game/portraits.cpp#L33-L51)).
+The earlier `portraits.2da` schema block was broader than the currently rechecked evidence. Until individual portrait-table columns are re-verified from code or binary analysis, this page keeps only the narrower mapping and consumer behavior above. [[`extract/twoda.py`](https://github.com/OpenKotOR/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py), [`toolset/uic/qtpy/editors/utc.py`](https://github.com/OpenKotOR/PyKotor/blob/master/Tools/HolocronToolset/src/toolset/uic/qtpy/editors/utc.py)]
 
 ---
 
 ### heads.2da
 
-**Verified local usage**: `itemprops.2da` is the installation-scoped lookup table Holocron Toolset uses when presenting and constructing `UTIProperty` entries. The installation layer exposes it as `HTInstallation.TwoDA_ITEM_PROPERTIES`, the UTI editor batches it together with `baseitems.2da`, populates the available-property tree by iterating `itemprops` rows, and reads `costtableresref` plus `param1resref` from the selected row when building a new `UTIProperty`. PyKotor's 2DA registry independently marks `itemprops` as a string-bearing table through its `stringref` column. [[`extract/twoda.py`](https://github.com/OpenKotOR/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py), [`installation.py`](https://github.com/OpenKotOR/PyKotor/blob/master/Tools/HolocronToolset/src/toolset/data/installation.py), [`uti.py`](https://github.com/OpenKotOR/PyKotor/blob/master/Tools/HolocronToolset/src/toolset/gui/editors/uti.py)]
+**Verified local and external usage**: `heads.2da` is a head-asset table tracked by PyKotor's K1 and K2 registry families, where the file contributes model and texture-bearing columns rather than a generic string column. The local registry marks `head` plus the alignment-variant `headtex*` columns as texture/model-facing resource references, and the external `reone` codebase ships a dedicated `heads.cpp` parser plus creature-side head loading that reads the same family of fields. [[`extract/twoda.py`](https://github.com/OpenKotOR/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py), [reone `heads.cpp`](https://github.com/seedhartha/reone/blob/master/src/libs/resource/parser/2da/heads.cpp), [reone `creature.cpp`](https://github.com/seedhartha/reone/blob/master/src/libs/game/object/creature.cpp)]
 
-- [models](MDL-MDX-File-Format)
-- [textures](Texture-Formats#tpc)
-**Verified local columns and related tables**:
+**Verified local columns**:
 
-- `stringref` is the directly declared string-bearing column for `itemprops.2da` in PyKotor's K1 and K2 registries. [[`extract/twoda.py`](https://github.com/OpenKotOR/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py)]
-- `subtyperesref` is read from each row while the UTI editor expands the available-property tree, which is direct local evidence that rows in `itemprops.2da` point outward to subtype tables rather than acting as a standalone closed schema. [[`uti.py`](https://github.com/OpenKotOR/PyKotor/blob/master/Tools/HolocronToolset/src/toolset/gui/editors/uti.py)]
-- `costtableresref` and `param1resref` are read from the selected item-property row and copied into `UTIProperty.cost_table` and `UTIProperty.param1`, which is direct local evidence that `itemprops.2da` wires base property rows to the `iprp_*` parameter and cost tables. [[`uti.py`](https://github.com/OpenKotOR/PyKotor/blob/master/Tools/HolocronToolset/src/toolset/gui/editors/uti.py), [`installation.py`](https://github.com/OpenKotOR/PyKotor/blob/master/Tools/HolocronToolset/src/toolset/data/installation.py)]
-- Holocron Toolset's installation constants keep `TwoDA_ITEM_PROPERTIES` beside many `TwoDA_IPRP_*` tables such as `IPRP_IMMUNITY`, `IPRP_MONSTERHIT`, `IPRP_ONHIT`, `IPRP_PARAMTABLE`, `IPRP_PROTECTION`, `IPRP_SAVEELEMENT`, `IPRP_SAVINGTHROW`, and `IPRP_WALK`, which is the strongest currently verified local evidence that `itemprops.2da` is the hub table for the item-property subtable family. [[`installation.py`](https://github.com/OpenKotOR/PyKotor/blob/master/Tools/HolocronToolset/src/toolset/data/installation.py)]
+- `head` is a model-bearing column in PyKotor's K1 and K2 registry data. [[`extract/twoda.py`](https://github.com/OpenKotOR/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py)]
+- `headtexe`, `headtexg`, `headtexve`, `headtexvg`, `headtexvve`, and `headtexvvve` are texture-bearing columns in PyKotor's K1 and K2 registry data. [[`extract/twoda.py`](https://github.com/OpenKotOR/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py)]
+- `reone` additionally parses `alttexture` alongside the same `head` and `headtex*` family, which is external implementation evidence for a slightly wider row shape than the local registry alone exposes. [[reone `heads.cpp`](https://github.com/seedhartha/reone/blob/master/src/libs/resource/parser/2da/heads.cpp)]
 
-The earlier full `itemprops.2da` schema table went beyond what the current source-backed evidence proves column by column. Until a line-by-line rebuild confirms more fields from code or multi-binary analysis, this page keeps only the narrower subset above. [[`extract/twoda.py`](https://github.com/OpenKotOR/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py), [`uti.py`](https://github.com/OpenKotOR/PyKotor/blob/master/Tools/HolocronToolset/src/toolset/gui/editors/uti.py)]
-| `alttexture` | *ResRef* (optional) | Alternative [texture](Texture-Formats#tpc) *ResRef* |
-
-**Column Details**:
-
-The complete column structure is defined in reone's heads parser:
-
-- `head`: Optional *ResRef* - head [model](MDL-MDX-File-Format) *ResRef*
-- `alttexture`: Optional *ResRef* - alternative [texture](Texture-Formats#tpc) *ResRef*
-- `headtexe`: Optional *ResRef* - head [texture](Texture-Formats#tpc) for evil alignment
-- `headtexg`: Optional *ResRef* - head [texture](Texture-Formats#tpc) for good alignment
-- `headtexve`: Optional *ResRef* - head [texture](Texture-Formats#tpc) for very evil alignment
-- `headtexvg`: Optional *ResRef* - head [texture](Texture-Formats#tpc) for very good alignment
-- `headtexvve`: Optional *ResRef* - head [texture](Texture-Formats#tpc) for very very evil alignment
-- `headtexvvve`: Optional *ResRef* - head [texture](Texture-Formats#tpc) for very very very evil alignment
-
-These head columns are reflected in reone's table parser and creature head-loading runtime path ([`heads.cpp` L29-L39](https://github.com/seedhartha/reone/blob/master/src/libs/resource/parser/2da/heads.cpp#L29-L39), [`creature.cpp` L1223-L1228](https://github.com/seedhartha/reone/blob/master/src/libs/game/object/creature.cpp#L1223-L1228)).
+`heads.2da` is a head-model and head-texture table with a verified `head` plus `headtex*` family, and that any larger schema should return only after a fresh line-by-line rebuild. [[`extract/twoda.py`](https://github.com/OpenKotOR/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py), [reone `heads.cpp`](https://github.com/seedhartha/reone/blob/master/src/libs/resource/parser/2da/heads.cpp)]
 
 ---
 

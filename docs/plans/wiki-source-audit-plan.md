@@ -13,7 +13,7 @@ This plan tracks the ongoing rewrite of wiki content so that every retained stat
 ## Status
 
 - [x] Home.md — TODO completed: local package inventory, shipped-wiki packaging path, and adjacent-repository survey rewritten from repository sources.
-- [ ] 2DA-File-Format.md — TODO: keep original scope, replace weak prose with parser-code citations, and anchor runtime claims in three binaries; the generic format half plus `appearance`, `baseitems`, `classes`, `feat`, `skills`, `spells`, `itemprops`, `placeables`, `genericdoors`, `doortypes`, and `soundset` now have narrower source-backed sections, but the remaining catalog still needs the same treatment.
+- [ ] 2DA-File-Format.md — TODO: keep original scope, replace weak prose with parser-code citations, and anchor runtime claims in three binaries; the generic format half plus `appearance`, `baseitems`, `classes`, `feat`, `skills`, `spells`, `itemprops`, `placeables`, `genericdoors`, `doortypes`, `soundset`, `visualeffects`, `portraits`, and `heads` now have narrower source-backed sections, but the remaining catalog still needs the same treatment.
 - [ ] Area-Modding-and-Room-Transitions.md — TODO: audit room-transition workflow against toolset code, area resource formats, and three-binary runtime handling.
 - [ ] Audio-and-Localization-Formats.md — TODO: re-source TLK, SSF, WAV/streaming, and StrRef claims from local parsers plus tri-binary string-loading paths.
 - [ ] Bioware-Aurora-Conversation.md — TODO: preserve only source-backed Aurora conversation material and tie KotOR carryovers to local code or archived specs.
