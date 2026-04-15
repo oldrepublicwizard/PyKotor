@@ -129,17 +129,17 @@ def add_kotordiff_arguments(parser: ArgumentParser) -> None:
     parser.add_argument(
         "--merge-tslpatcher",
         action="store_true",
-        help="Resolve a base resource from a KotOR installation, merge two modified resources onto it, and generate tslpatchdata.",
+        help="Resolve a base resource from a game root, folder, archive, or module path, merge two modified resources onto it, and generate tslpatchdata.",
     )
     parser.add_argument(
-        "--merge-installation",
+        "--merge-source",
         type=str,
-        help="KotOR installation path used to resolve the base resource for --merge-tslpatcher.",
+        help="Source path used to resolve the base resource for --merge-tslpatcher.",
     )
     parser.add_argument(
         "--merge-resource",
         type=str,
-        help="Base resource to resolve from the installation, for example unk41_mission.dlg.",
+        help="Base resource to resolve from the source path, for example unk41_mission.dlg.",
     )
     parser.add_argument(
         "--merge-resource-type",
@@ -264,13 +264,13 @@ def execute_cli(cmdline_args: Namespace | Any | object):
     merge_mode = bool(getattr(cmdline_args, "merge_tslpatcher", False))
 
     if merge_mode:
-        merge_installation = getattr(cmdline_args, "merge_installation", None)
+        merge_source = getattr(cmdline_args, "merge_source", None)
         merge_resource = getattr(cmdline_args, "merge_resource", None)
         merge_paths_raw = getattr(cmdline_args, "merge_paths", None) or []
 
-        if not merge_installation or not merge_resource or len(merge_paths_raw) != 2:  # noqa: PLR2004
+        if not merge_source or not merge_resource or len(merge_paths_raw) != 2:  # noqa: PLR2004
             logging.error(
-                "--merge-tslpatcher requires --merge-installation, --merge-resource, and exactly two --merge-path arguments."
+                "--merge-tslpatcher requires --merge-source, --merge-resource, and exactly two --merge-path arguments."
             )
             sys.exit(1)
 
@@ -296,7 +296,7 @@ def execute_cli(cmdline_args: Namespace | Any | object):
             use_profiler=bool(cmdline_args.use_profiler),
             filters=getattr(cmdline_args, "filter", None),
             logging_enabled=bool(cmdline_args.logging is None or cmdline_args.logging),
-            merge_installation_path=Path(normalize_path_arg(merge_installation)),
+            merge_source_path=Path(normalize_path_arg(merge_source)),
             merge_resource_name=str(merge_resource),
             merge_resource_type=merge_resource_type,
             merge_module_root=getattr(cmdline_args, "merge_module", None),

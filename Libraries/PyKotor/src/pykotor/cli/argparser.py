@@ -790,12 +790,12 @@ Extract files from Bioware archive formats including:
 
     to_json_parser = subparsers.add_parser(
         "to-json",
-        help="Convert a supported resource file, directory, or installation to JSON",
+        help="Convert a supported resource file, directory, or game root to JSON",
     )
     to_json_parser.add_argument(
         "input",
         nargs="?",
-        help="Input resource file, directory, or installation root. Omit with --game or --all-detected.",
+        help="Input resource file, directory, or game root. Omit with --game or --all-detected.",
     )
     to_json_parser.add_argument(
         "--output",
@@ -810,13 +810,13 @@ Extract files from Bioware archive formats including:
     to_json_parser.add_argument(
         "--game",
         choices=["k1", "kotor", "kotor1", "k2", "tsl", "kotor2"],
-        help="Auto-detect a default installation for this game when no input path is provided",
+        help="Auto-detect a default game root for this game when no input path is provided",
     )
     to_json_parser.add_argument(
         "--path-index",
         type=int,
         default=0,
-        help="Which auto-detected installation to use when multiple are found (default: 0)",
+        help="Which auto-detected game root to use when multiple are found (default: 0)",
     )
     to_json_parser.add_argument(
         "--key-file", help="KEY file for BIF input (default: chitin.key beside BIF)"
@@ -829,12 +829,12 @@ Extract files from Bioware archive formats including:
     to_json_parser.add_argument(
         "--clean",
         action="store_true",
-        help="Delete the output directory before exporting a directory or installation",
+        help="Delete the output directory before exporting a directory or game root",
     )
     to_json_parser.add_argument(
         "--all-detected",
         action="store_true",
-        help="Export every auto-detected installation into per-game subfolders under the output directory.",
+        help="Export every auto-detected game root into per-game subfolders under the output directory.",
     )
 
     from_json_parser = subparsers.add_parser(
@@ -1052,17 +1052,18 @@ Compare two paths and show differences. Supports any combination of:
     diff_parser.add_argument(
         "--merge-tslpatcher",
         action="store_true",
-        help="Resolve a base resource from a KotOR installation, merge two modified resources onto it, and generate tslpatchdata.",
+        help="Resolve a base resource from a source path, merge two modified resources onto it, and generate tslpatchdata.",
     )
     diff_parser.add_argument(
-        "--merge-installation",
+        "--merge-source",
+        dest="merge_source",
         type=str,
-        help="KotOR installation path used to resolve the base resource for --merge-tslpatcher.",
+        help="Source path used to resolve the base resource for --merge-tslpatcher.",
     )
     diff_parser.add_argument(
         "--merge-resource",
         type=str,
-        help="Base resource to resolve from the installation, e.g. unk41_mission.dlg.",
+        help="Base resource to resolve from the source path, e.g. unk41_mission.dlg.",
     )
     diff_parser.add_argument(
         "--merge-resource-type",
@@ -1072,7 +1073,7 @@ Compare two paths and show differences. Supports any combination of:
     diff_parser.add_argument(
         "--merge-module",
         type=str,
-        help="Optional module root to constrain installation lookup, e.g. unk_m41aa.",
+        help="Optional module root to constrain game-root lookup, e.g. unk_m41aa.",
     )
     diff_parser.add_argument(
         "--merge-path",
@@ -1205,7 +1206,7 @@ Compare two paths and show differences. Supports any combination of:
 
     find_parser = subparsers.add_parser(
         "find",
-        help="Find resource(s) in a KOTOR installation (resolution order: Override → MOD → Chitin)",
+        help="Find resource(s) in a source path (resolution order for game roots: Override → MOD → Chitin)",
     )
     find_parser.add_argument(
         "resref",
@@ -1214,11 +1215,19 @@ Compare two paths and show differences. Supports any combination of:
     find_parser.add_argument(
         "--path",
         "-p",
-        "--installation",
-        "-i",
         dest="path",
-        required=True,
-        help="Path to KOTOR installation",
+        help="Path to a game root, folder, archive, or module piece. Omit with --game to auto-detect a default game root.",
+    )
+    find_parser.add_argument(
+        "--game",
+        choices=["k1", "kotor", "kotor1", "k2", "tsl", "kotor2"],
+        help="Auto-detect a default game root for this game when --path is omitted",
+    )
+    find_parser.add_argument(
+        "--path-index",
+        type=int,
+        default=0,
+        help="Which auto-detected game root to use when multiple are found (default: 0)",
     )
     find_parser.add_argument(
         "--type", "-t", dest="resource_type", help="Resource type (default: from extension)"
@@ -1251,27 +1260,25 @@ Compare two paths and show differences. Supports any combination of:
 
     get_parser = subparsers.add_parser(
         "get",
-        help="Extract resource by name from installation (resolution order: Override → MOD → Chitin)",
+        help="Extract a resource by name from a source path (resolution order for game roots: Override → MOD → Chitin)",
     )
     get_parser.add_argument("resref", help="Resource name with extension (e.g. 203tell.wok)")
     get_parser.add_argument(
         "--path",
         "-p",
-        "--installation",
-        "-i",
         dest="path",
-        help="Path to KOTOR installation. If omitted, use --game to auto-detect a default install.",
+        help="Path to a game root, folder, archive, or module piece. If omitted, use --game to auto-detect a default game root.",
     )
     get_parser.add_argument(
         "--game",
         choices=["k1", "kotor", "kotor1", "k2", "tsl", "kotor2"],
-        help="Auto-detect a default installation for this game when --path is omitted",
+        help="Auto-detect a default game root for this game when --path is omitted",
     )
     get_parser.add_argument(
         "--path-index",
         type=int,
         default=0,
-        help="Which auto-detected installation to use when multiple are found (default: 0)",
+        help="Which auto-detected game root to use when multiple are found (default: 0)",
     )
     get_parser.add_argument(
         "--output",

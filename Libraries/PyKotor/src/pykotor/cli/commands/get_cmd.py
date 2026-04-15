@@ -1,4 +1,4 @@
-"""Get command: extract a single resource from a KOTOR installation (resolution order)."""
+"""Get command: extract a single resource from a resolved source path."""
 
 from __future__ import annotations
 
@@ -6,11 +6,10 @@ import pathlib
 
 from typing import TYPE_CHECKING
 
-from pykotor.common.misc import Game
 from pykotor.extract.file import ResourceIdentifier
-from pykotor.extract.installation import Installation, SearchLocation
+from pykotor.extract.installation import SearchLocation
+from pykotor.extract.path_source import resolve_resource_source, resolve_source_path_from_args
 from pykotor.tools.finder import canonical_search_order
-from pykotor.tools.path import get_kotor_paths_from_default
 from pykotor.tools.path_safety import resolve_and_validate_under_base
 
 if TYPE_CHECKING:
@@ -32,58 +31,6 @@ def _parse_order_arg(order_str: str | None) -> list[SearchLocation] | None:
     return order if order else None
 
 
-def _parse_game_arg(game_str: str | None) -> Game | None:
-    if not game_str or not game_str.strip():
-        return None
-
-    normalized = game_str.strip().lower()
-    if normalized in {"k1", "kotor", "kotor1"}:
-        return Game.K1
-    if normalized in {"k2", "tsl", "kotor2"}:
-        return Game.K2
-    return None
-
-
-def _resolve_installation_path(args: Namespace, logger: Logger) -> pathlib.Path | None:
-    explicit_path = getattr(args, "path", None) or getattr(args, "installation", None)
-    if explicit_path:
-        return pathlib.Path(explicit_path)
-
-    game = _parse_game_arg(getattr(args, "game", None))
-    if game is None:
-        logger.error(
-            "No installation path. Use --path or --game to auto-detect a default installation."
-        )
-        return None
-
-    discovered_paths = get_kotor_paths_from_default().get(game, [])
-    if not discovered_paths:
-        logger.error("No default %s installation paths were found.", game.name)
-        return None
-
-    path_index = getattr(args, "path_index", 0)
-    if path_index < 0 or path_index >= len(discovered_paths):
-        logger.error(
-            "Default installation index %s is out of range for %s. Found %s path(s).",
-            path_index,
-            game.name,
-            len(discovered_paths),
-        )
-        return None
-
-    chosen_path = pathlib.Path(discovered_paths[path_index])
-    if len(discovered_paths) > 1:
-        logger.info(
-            "Using auto-detected %s installation [%s]: %s",
-            game.name,
-            path_index,
-            chosen_path,
-        )
-    else:
-        logger.info("Using auto-detected %s installation: %s", game.name, chosen_path)
-    return chosen_path
-
-
 def cmd_get(args: Namespace, logger: Logger) -> int:
     """Extract the resource the engine would load (first in resolution order) to disk.
 
@@ -91,8 +38,8 @@ def cmd_get(args: Namespace, logger: Logger) -> int:
         pykotor get 203tell.wok --path "G:/.../KOTOR2" --output .
         pykotor get 203tel.lyt --path "G:/..." --order OVERRIDE,CHITIN
     """
-    path = _resolve_installation_path(args, logger)
-    if not path:
+    path = resolve_source_path_from_args(args, logger)
+    if path is None:
         return 1
 
     resref_str = getattr(args, "resref", None) or getattr(args, "query", None)
@@ -102,11 +49,7 @@ def cmd_get(args: Namespace, logger: Logger) -> int:
         )
         return 1
 
-    try:
-        installation = Installation(pathlib.Path(path))
-    except Exception:
-        logger.exception("Invalid installation path")
-        return 1
+    resolved_source = resolve_resource_source(path)
 
     ident = ResourceIdentifier.from_path(str(resref_str).strip())
     resname = ident.resname
@@ -136,7 +79,10 @@ def cmd_get(args: Namespace, logger: Logger) -> int:
         if order is None:
             order = canonical_search_order()
 
-    result = installation.resource(resname, restype, order=order)
+    if resolved_source.installation is None and getattr(args, "source", None):
+        logger.warning("--source only applies to game-root lookups; ignoring it for %s.", path)
+
+    result = resolved_source.resource(resname, restype, order=order)
     if result is None:
         logger.warning(
             "Resource '%s.%s' not found. Searched in order: %s. Try: pykotor find %s --path %s (or use a glob, e.g. *.dlg)",

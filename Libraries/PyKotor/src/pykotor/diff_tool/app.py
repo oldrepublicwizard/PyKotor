@@ -59,7 +59,7 @@ class DiffConfig:
     logging_enabled: bool = True
     use_incremental_writer: bool = False
     ui_log_func: Callable[..., Any] | None = None
-    merge_installation_path: Path | None = None
+    merge_source_path: Path | None = None
     merge_resource_name: str | None = None
     merge_resource_type: ResourceType | None = None
     merge_module_root: str | None = None
@@ -618,7 +618,7 @@ def run_application(config: DiffConfig) -> int:
     # Log configuration
     _log_configuration(config)
 
-    if config.merge_installation_path and config.merge_resource_name and config.merge_modded_paths:
+    if config.merge_source_path and config.merge_resource_name and config.merge_modded_paths:
         from pykotor.diff_tool.merge import run_merge_tslpatcher_workflow
 
         return run_merge_tslpatcher_workflow(config, run_application)

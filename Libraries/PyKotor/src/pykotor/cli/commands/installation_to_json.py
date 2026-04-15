@@ -8,7 +8,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING
 
 from pykotor.common.misc import Game
-from pykotor.cli.commands.get_cmd import _resolve_installation_path
+from pykotor.extract.path_source import parse_game_arg, resolve_source_path_from_args
 from pykotor.tools.path import get_kotor_paths_from_default
 from pykotor.tools.resource_json import export_installation_to_json_tree
 
@@ -18,24 +18,12 @@ if TYPE_CHECKING:
     from loggerplus import RobustLogger as Logger
 
 
-def _parse_game_arg(game_str: str | None) -> Game | None:
-    if not game_str or not game_str.strip():
-        return None
-
-    normalized = game_str.strip().lower()
-    if normalized in {"k1", "kotor", "kotor1"}:
-        return Game.K1
-    if normalized in {"k2", "tsl", "kotor2"}:
-        return Game.K2
-    return None
-
-
 def cmd_installation_to_json(args: Namespace, logger: Logger) -> int:
     output_root = Path(getattr(args, "output", "installation-json")).resolve()
     clean_output = bool(getattr(args, "clean", False))
 
     if getattr(args, "all_detected", False):
-        explicit_path = getattr(args, "path", None) or getattr(args, "installation", None)
+        explicit_path = getattr(args, "path", None)
         if explicit_path:
             logger.error("--all-detected cannot be combined with --path.")
             return 1
@@ -84,7 +72,7 @@ def cmd_installation_to_json(args: Namespace, logger: Logger) -> int:
             return 2
         return 0
 
-    installation_path = _resolve_installation_path(args, logger)
+    installation_path = resolve_source_path_from_args(args, logger)
     if installation_path is None:
         return 1
 

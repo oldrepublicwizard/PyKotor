@@ -1,4 +1,4 @@
-"""Dedicated merge-to-TSLPatcher workflow for resource patches based on a game installation."""
+"""Dedicated merge-to-TSLPatcher workflow for resource patches based on a resolved source path."""
 
 from __future__ import annotations
 
@@ -12,11 +12,12 @@ from pathlib import Path
 from typing import TYPE_CHECKING, Any, TypeVar
 
 from pykotor.common.language import LocalizedString
-from pykotor.common.misc import ResRef
+from pykotor.common.misc import Game, ResRef
 from pykotor.diff_tool.app import DiffConfig
 from pykotor.extract.capsule import Capsule
 from pykotor.extract.file import ResourceIdentifier
 from pykotor.extract.installation import Installation, SearchLocation
+from pykotor.extract.path_source import ResolvedResourceSource, resolve_resource_source
 from pykotor.resource.generics.dlg.base import DLG
 from pykotor.resource.generics.dlg.io import bytes_dlg, read_dlg
 from pykotor.resource.generics.dlg.links import DLGLink
@@ -66,12 +67,12 @@ def run_merge_tslpatcher_workflow(
         raise MergeConflictError("--merge-tslpatcher requires --tslpatchdata.")
     if not config.merge_modded_paths or len(config.merge_modded_paths) != 2:  # noqa: PLR2004
         raise MergeConflictError("Exactly two modified resource paths are required.")
-    if config.merge_installation_path is None or config.merge_resource_name is None:
-        raise MergeConflictError("--merge-tslpatcher requires both --merge-installation and --merge-resource.")
+    if config.merge_source_path is None or config.merge_resource_name is None:
+        raise MergeConflictError("--merge-tslpatcher requires both --merge-source and --merge-resource.")
 
-    installation = Installation(config.merge_installation_path)
+    resolved_source = resolve_resource_source(config.merge_source_path)
     resolved_base = _resolve_base_resource(
-        installation,
+        resolved_source,
         config.merge_resource_name,
         config.merge_resource_type,
         config.merge_module_root,
@@ -90,7 +91,7 @@ def run_merge_tslpatcher_workflow(
     mod_b_dlg = read_dlg(mod_path_b)
     _merge_conflict_policy = _normalize_merge_conflict_policy(config.merge_conflict_policy)
     _merge_conflicts.clear()
-    _merge_installation = installation
+    _merge_installation = resolved_source.installation
     _merge_mod_script_names = _collect_mod_script_names((mod_path_a.parent, mod_path_b.parent))
     _merge_script_exists_cache.clear()
     try:
@@ -122,7 +123,7 @@ def run_merge_tslpatcher_workflow(
         base_file_path = base_dir / resource_filename
         merged_file_path = merged_dir / resource_filename
         base_file_path.write_bytes(resolved_base.data)
-        merged_file_path.write_bytes(bytes_dlg(merged_dlg, game=installation.game(), file_format=ResourceType.DLG))
+        merged_file_path.write_bytes(bytes_dlg(merged_dlg, game=resolved_source.game or Game.K1, file_format=ResourceType.DLG))
 
         diff_config = DiffConfig(
             paths=[base_file_path, merged_file_path],
@@ -142,7 +143,7 @@ def run_merge_tslpatcher_workflow(
 
 
 def _resolve_base_resource(
-    installation: Installation,
+    resolved_source: ResolvedResourceSource,
     resource_name: str,
     explicit_type: ResourceType | None,
     module_root: str | None,
@@ -156,38 +157,38 @@ def _resolve_base_resource(
     resname = Path(resource_name).stem if suffix else resource_name
     query = ResourceIdentifier(resname, restype)
 
-    direct_override_path = installation.override_path() / f"{resname}.{restype.extension}"
-    if direct_override_path.is_file():
-        return _ResolvedResource(query, direct_override_path, direct_override_path.read_bytes())
+    if resolved_source.installation is not None:
+        installation = resolved_source.installation
+        direct_override_path = installation.override_path() / f"{resname}.{restype.extension}"
+        if direct_override_path.is_file():
+            return _ResolvedResource(query, direct_override_path, direct_override_path.read_bytes())
 
-    if module_root:
-        modules_dir = installation.module_path()
-        direct_module_candidates = [
-            modules_dir / module_root,
-            modules_dir / f"{module_root}.mod",
-            modules_dir / f"{module_root}.rim",
-            modules_dir / f"{module_root}_s.rim",
-        ]
-        for candidate in direct_module_candidates:
-            if candidate.is_file():
-                resource = Capsule(candidate).resource(resname, restype)
-                if resource is not None:
-                    return _ResolvedResource(query, candidate, resource)
+        if module_root:
+            modules_dir = installation.module_path()
+            direct_module_candidates = [
+                modules_dir / module_root,
+                modules_dir / f"{module_root}.mod",
+                modules_dir / f"{module_root}.rim",
+                modules_dir / f"{module_root}_s.rim",
+            ]
+            for candidate in direct_module_candidates:
+                if candidate.is_file():
+                    resource = Capsule(candidate).resource(resname, restype)
+                    if resource is not None:
+                        return _ResolvedResource(query, candidate, resource)
 
-    search_order = [location for location in canonical_search_order() if location in {SearchLocation.OVERRIDE, SearchLocation.MODULES, SearchLocation.CHITIN}]
-    locations = installation.locations([query], order=search_order, module_root=module_root).get(query, [])
+        search_order = [location for location in canonical_search_order() if location in {SearchLocation.OVERRIDE, SearchLocation.MODULES, SearchLocation.CHITIN}]
+    else:
+        search_order = None
+
+    locations = resolved_source.locations([query], order=search_order).get(query, [])
     if not locations:
-        raise MergeConflictError(f"Unable to resolve {resname}.{restype.extension} from installation {installation.path()}.")
+        raise MergeConflictError(f"Unable to resolve {resname}.{restype.extension} from source {resolved_source.path}.")
     if len(locations) > 1:
         location_list = "\n".join(str(location.filepath) for location in locations)
-        raise MergeConflictError(f"Base resource resolution for {resname}.{restype.extension} is ambiguous. Narrow it with --merge-module.\n{location_list}")
+        raise MergeConflictError(f"Base resource resolution for {resname}.{restype.extension} is ambiguous. Narrow it with --merge-module or a more specific --merge-source.\n{location_list}")
 
-    resource = installation.resource(
-        resname,
-        restype,
-        order=search_order,
-        module_root=module_root,
-    )
+    resource = resolved_source.resource(resname, restype, order=search_order)
     if resource is None:
         raise MergeConflictError(f"Resolved location for {resname}.{restype.extension} but failed to read it.")
 

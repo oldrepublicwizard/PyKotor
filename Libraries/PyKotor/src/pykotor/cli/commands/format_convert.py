@@ -14,7 +14,7 @@ import shutil
 from argparse import Namespace
 from typing import TYPE_CHECKING, Callable
 
-from pykotor.cli.commands.get_cmd import _resolve_installation_path
+from pykotor.extract.path_source import resolve_source_path_from_args
 from pykotor.resource.type import ResourceType
 from pykotor.tools.conversions import (
     convert_2da_to_csv,
@@ -377,7 +377,7 @@ def cmd_to_json(args: Namespace, logger: Logger) -> int:
     if input_value:
         input_path = pathlib.Path(input_value)
     else:
-        resolved_path = _resolve_installation_path(args, logger)
+        resolved_path = resolve_source_path_from_args(args, logger)
         if resolved_path is None:
             return 1
         input_path = resolved_path

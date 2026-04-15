@@ -1,17 +1,14 @@
-"""Find command: installation-aware resource search with strict resolution order."""
+"""Find command: source-aware resource search with strict resolution order."""
 
 from __future__ import annotations
 
-import pathlib
-
 from typing import TYPE_CHECKING
 
+from pykotor.extract.file import ResourceIdentifier
 from pykotor.extract.installation import SearchLocation
+from pykotor.extract.path_source import resolve_resource_source, resolve_source_path_from_args
 from pykotor.resource.type import ResourceType
-from pykotor.tools.finder import (
-    canonical_search_order,
-    find_resource,
-)
+from pykotor.tools.finder import FindResult, canonical_search_order
 
 if TYPE_CHECKING:
     from argparse import Namespace
@@ -40,20 +37,11 @@ def cmd_find(args: Namespace, logger: Logger) -> int:
         pykotor find 203tell.wok --path "G:/..." --all-locations
         pykotor find 203tel* --path "G:/..."  (glob: override folder only)
     """
-    path = getattr(args, "path", None) or getattr(args, "installation", None)
-    if not path:
-        logger.error("No installation path. Use --path or --installation.")
+    path = resolve_source_path_from_args(args, logger)
+    if path is None:
         return 1
 
-    try:
-        installation = __import__(
-            "pykotor.extract.installation", fromlist=["Installation"]
-        ).Installation(
-            pathlib.Path(path),
-        )
-    except Exception:
-        logger.exception("Invalid installation path")
-        return 1
+    resolved_source = resolve_resource_source(path)
 
     resref = getattr(args, "resref", None) or getattr(args, "query", None)
     if not resref or not str(resref).strip():
@@ -79,14 +67,54 @@ def cmd_find(args: Namespace, logger: Logger) -> int:
     if order is None:
         order = canonical_search_order()
 
-    results = find_resource(
-        installation,
-        resref=resref_str if not glob_pattern else None,
-        restype=restype,
-        glob_pattern=glob_pattern,
-        order=order,
-        all_locations=all_locations,
-    )
+    if glob_pattern:
+        identifiers = resolved_source.matching_identifiers(glob_pattern=glob_pattern, restype=restype)
+    else:
+        identifier = ResourceIdentifier.from_path(resref_str)
+        if restype is not None:
+            identifier = ResourceIdentifier(identifier.resname, restype)
+        if identifier.restype == ResourceType.INVALID:
+            logger.error("Could not determine resource type from '%s'. Include an extension or pass --type.", resref_str)
+            return 1
+        identifiers = [identifier]
+
+    results: list[FindResult] = []
+    locations_map = resolved_source.locations(identifiers, order=order if resolved_source.installation is not None else None)
+    for query in identifiers:
+        query_locations = locations_map.get(query, [])
+        if not query_locations:
+            continue
+        for idx, location in enumerate(query_locations):
+            file_resource = location.as_file_resource()
+            if resolved_source.installation is not None and idx < len(order):
+                source_location = order[idx]
+            elif resolved_source.kind in {"capsule", "module"}:
+                source_location = SearchLocation.CUSTOM_MODULES
+            else:
+                source_location = SearchLocation.CUSTOM_FOLDERS
+            location_type = {
+                "folder": "Folder",
+                "capsule": "Archive",
+                "module": "Module",
+                "file": "File",
+                "game_root": source_location.name.title(),
+            }.get(resolved_source.kind, source_location.name.title())
+            results.append(
+                FindResult(
+                    resref=query.resname,
+                    restype=query.restype,
+                    size=file_resource.size(),
+                    source=source_location,
+                    filepath=location.filepath,
+                    archive_path=str(file_resource.filepath()) if file_resource.inside_capsule else None,
+                    archive_index=0,
+                    priority_index=idx + 1,
+                    is_selected=(idx == 0),
+                    location_type=location_type,
+                )
+            )
+            if not all_locations:
+                break
 
     if not results:
         logger.warning(

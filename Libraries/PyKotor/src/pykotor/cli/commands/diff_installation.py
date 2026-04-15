@@ -78,8 +78,8 @@ def cmd_diff_installation(args: Namespace, logger: Logger) -> int:
             argv.append("--incremental")
         if hasattr(args, "merge_tslpatcher") and args.merge_tslpatcher:
             argv.append("--merge-tslpatcher")
-        if hasattr(args, "merge_installation") and args.merge_installation:
-            argv.extend(["--merge-installation", str(args.merge_installation)])
+        if hasattr(args, "merge_source") and args.merge_source:
+            argv.extend(["--merge-source", str(args.merge_source)])
         if hasattr(args, "merge_resource") and args.merge_resource:
             argv.extend(["--merge-resource", str(args.merge_resource)])
         if hasattr(args, "merge_resource_type") and args.merge_resource_type:

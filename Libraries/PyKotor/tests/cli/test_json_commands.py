@@ -7,6 +7,8 @@ from types import SimpleNamespace
 
 import pytest
 
+from pykotor.cli.commands.find_cmd import cmd_find
+from pykotor.cli.commands.get_cmd import cmd_get
 from pykotor.cli.commands.diff_installation import cmd_diff_installation
 from pykotor.cli.dispatch import cli_main
 from pykotor.common.language import Language
@@ -39,7 +41,7 @@ def test_to_json_and_from_json_roundtrip_tlk(tmp_path: Path) -> None:
     assert str(roundtrip[1].voiceover) == "reply"
 
 
-def test_get_supports_auto_detected_installation_and_json_export(
+def test_get_supports_auto_detected_game_root_and_json_export(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     captured_path: list[Path] = []
@@ -57,16 +59,20 @@ def test_get_supports_auto_detected_installation_and_json_export(
         def __init__(self, path: Path):
             captured_path.append(path)
 
+        def game(self) -> Game:
+            return Game.K1
+
         def resource(self, resname: str, restype: ResourceType, order=None):  # noqa: ARG002
             assert resname == "dialog"
             assert restype == ResourceType.TLK
             return FakeResource(bytes(tlk_bytes))
 
     monkeypatch.setattr(
-        "pykotor.cli.commands.get_cmd.get_kotor_paths_from_default",
+        "pykotor.extract.path_source.get_kotor_paths_from_default",
         lambda: {Game.K1: [tmp_path], Game.K2: []},
     )
-    monkeypatch.setattr("pykotor.cli.commands.get_cmd.Installation", FakeInstallation)
+    monkeypatch.setattr("pykotor.extract.path_source.Installation", FakeInstallation)
+    (tmp_path / "chitin.key").write_bytes(b"")
 
     output_path = Path("dialog.auto.json").resolve()
     assert (
@@ -89,6 +95,68 @@ def test_get_supports_auto_detected_installation_and_json_export(
     payload = json.loads(output_path.read_text(encoding="utf-8"))
     assert payload["strings"][0]["text"] == "auto detected"
     output_path.unlink()
+
+
+class _CaptureLogger:
+    def __init__(self) -> None:
+        self.messages: list[str] = []
+
+    def info(self, message: str, *args) -> None:
+        self.messages.append(message % args if args else message)
+
+    def warning(self, message: str, *args) -> None:
+        self.messages.append(message % args if args else message)
+
+    def error(self, message: str, *args) -> None:
+        self.messages.append(message % args if args else message)
+
+    def exception(self, message: str, *args) -> None:
+        self.messages.append(message % args if args else message)
+
+
+def test_cmd_get_can_extract_from_folder_source(tmp_path: Path) -> None:
+    source_dir = tmp_path / "source"
+    source_dir.mkdir()
+    (source_dir / "notes.txt").write_text("folder source", encoding="utf-8")
+    output_path = Path("notes.folder.txt").resolve()
+
+    logger = _CaptureLogger()
+    args = SimpleNamespace(
+        resref="notes.txt",
+        path=str(source_dir),
+        game=None,
+        path_index=0,
+        source=None,
+        order=None,
+        output=str(output_path),
+        format="binary",
+    )
+
+    assert cmd_get(args, logger) == 0  # pyright: ignore[reportArgumentType]
+    assert output_path.read_text(encoding="utf-8") == "folder source"
+    output_path.unlink()
+
+
+def test_cmd_find_can_search_archive_source(tmp_path: Path) -> None:
+    rim_path = tmp_path / "capsule.rim"
+    rim = RIM()
+    rim.set_data("notes", ResourceType.TXT, b"archive source")
+    write_rim(rim, rim_path)
+
+    logger = _CaptureLogger()
+    args = SimpleNamespace(
+        resref="notes.txt",
+        path=str(rim_path),
+        game=None,
+        path_index=0,
+        resource_type=None,
+        order=None,
+        all_locations=False,
+    )
+
+    assert cmd_find(args, logger) == 0
+    assert any("notes.txt" in message for message in logger.messages)
+    assert any("Archive" in message for message in logger.messages)
 
 
 def test_kotor_paths_can_emit_json(
@@ -312,7 +380,7 @@ def test_cmd_diff_merge_defaults_tslpatchdata_and_passes_merge_options(
 
     def fake_run_application(config):
         captured["tslpatchdata_path"] = config.tslpatchdata_path
-        captured["merge_installation_path"] = config.merge_installation_path
+        captured["merge_source_path"] = config.merge_source_path
         captured["merge_resource_name"] = config.merge_resource_name
         captured["merge_modded_paths"] = config.merge_modded_paths
         captured["merge_conflict_policy"] = config.merge_conflict_policy
@@ -334,7 +402,7 @@ def test_cmd_diff_merge_defaults_tslpatchdata_and_passes_merge_options(
             [
                 "diff",
                 "--merge-tslpatcher",
-                "--merge-installation",
+                "--merge-source",
                 str(base_install),
                 "--merge-resource",
                 "unk41_mission.dlg",
@@ -350,7 +418,7 @@ def test_cmd_diff_merge_defaults_tslpatchdata_and_passes_merge_options(
     )
 
     assert captured["tslpatchdata_path"] == Path.cwd() / "tslpatchdata"
-    assert captured["merge_installation_path"] == base_install
+    assert captured["merge_source_path"] == base_install
     assert captured["merge_resource_name"] == "unk41_mission.dlg"
     assert captured["merge_modded_paths"] == [mod_a, mod_b]
     assert captured["merge_conflict_policy"] == "mod-b"
@@ -384,7 +452,7 @@ def test_diff_installation_forwards_merge_flags(monkeypatch: pytest.MonkeyPatch,
         use_profiler=False,
         use_incremental_writer=False,
         merge_tslpatcher=True,
-        merge_installation=str(tmp_path / "K1"),
+        merge_source=str(tmp_path / "K1"),
         merge_resource="unk41_mission.dlg",
         merge_resource_type="dlg",
         merge_module="unk_m41aa",
@@ -396,7 +464,7 @@ def test_diff_installation_forwards_merge_flags(monkeypatch: pytest.MonkeyPatch,
 
     assert cmd_diff_installation(args, logger=SimpleNamespace(error=lambda *_args, **_kwargs: None, exception=lambda *_args, **_kwargs: None)) == 0
     assert "--merge-tslpatcher" in captured_argv
-    assert "--merge-installation" in captured_argv
+    assert "--merge-source" in captured_argv
     assert "--merge-resource" in captured_argv
     assert "--merge-resource-type" in captured_argv
     assert "--merge-module" in captured_argv

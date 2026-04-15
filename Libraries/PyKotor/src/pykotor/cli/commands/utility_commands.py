@@ -325,13 +325,13 @@ def cmd_diff(
         from pykotor.diff_tool.app import DiffConfig, run_application  # noqa: PLC0415
         from pykotor.diff_tool.cli import normalize_path_arg  # noqa: PLC0415
 
-        merge_installation = getattr(args, "merge_installation", None)
+        merge_source = getattr(args, "merge_source", None)
         merge_resource = getattr(args, "merge_resource", None)
         merge_paths_raw = getattr(args, "merge_paths", None) or []
 
-        if not merge_installation or not merge_resource or len(merge_paths_raw) != 2:  # noqa: PLR2004
+        if not merge_source or not merge_resource or len(merge_paths_raw) != 2:  # noqa: PLR2004
             print(
-                "Error: --merge-tslpatcher requires --merge-installation, --merge-resource, "
+                "Error: --merge-tslpatcher requires --merge-source, --merge-resource, "
                 "and exactly two --merge-path arguments.",
                 file=sys.stderr,
             )
@@ -371,7 +371,7 @@ def cmd_diff(
             compare_hashes=bool(getattr(args, "compare_hashes", True)),
             use_profiler=bool(getattr(args, "use_profiler", False)),
             logging_enabled=bool(getattr(args, "logging", True)),
-            merge_installation_path=Path(normalize_path_arg(merge_installation)),
+            merge_source_path=Path(normalize_path_arg(merge_source)),
             merge_resource_name=str(merge_resource),
             merge_resource_type=merge_resource_type,
             merge_module_root=getattr(args, "merge_module", None),

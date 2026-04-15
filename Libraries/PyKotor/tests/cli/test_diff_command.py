@@ -344,7 +344,7 @@ class TestDiffCommand:
 
         args = Namespace(
             merge_tslpatcher=True,
-            merge_installation=str(tmp_path),
+            merge_source=str(tmp_path),
             merge_resource="unk41_mission.dlg",
             merge_paths=[str(tmp_path / "mod_a.dlg"), str(tmp_path / "mod_b.dlg")],
             merge_resource_type=None,
@@ -364,6 +364,7 @@ class TestDiffCommand:
         assert result == 0
         assert captured_config is not None
         assert captured_config.merge_conflict_policy == "fail"
+        assert captured_config.merge_source_path == tmp_path
 
 
 class TestDiffFormats:
@@ -835,7 +836,7 @@ def test_cmd_diff_merge_tslpatcher_passes_conflict_policy(tmp_path: Path):
 
     args = Namespace(
         merge_tslpatcher=True,
-        merge_installation=str(tmp_path),
+        merge_source=str(tmp_path),
         merge_resource="unk41_mission.dlg",
         merge_paths=[str(tmp_path / "mod_a.dlg"), str(tmp_path / "mod_b.dlg")],
         merge_resource_type=None,
