@@ -159,6 +159,189 @@ If executed well, this plan should:
 - reduce default runtime by moving install-wide and tool-dependent tests out of the fast path;
 - make failures easier to interpret because each remaining test will map more clearly to a behavior the project actually cares about.
 
+## Module-by-Module Disposition
+
+This section turns the summary into explicit per-module actions.
+
+Status meanings:
+
+- `keep`: keep in the fast or standard suite with only minor cleanup.
+- `keep-slow`: keep, but move behind a slow or opt-in marker.
+- `consolidate`: keep the behavior coverage, but merge, parametrize, or shrink the current file.
+- `fix-then-keep`: repair broken, skipped, or duplicate structure before keeping it.
+- `remove-or-merge`: delete the file as a standalone suite or merge its assertions into a stronger neighboring suite.
+- `policy-only`: keep only if the repository explicitly wants coding-policy enforcement at runtime; otherwise merge into a smaller policy suite.
+
+### Top-Level and Resource Root
+
+- `Libraries/PyKotor/tests/test_compile_tool.py`: `keep` — compact, practical coverage for build-helper behavior.
+- `Libraries/PyKotor/tests/test_engine/test_mdl_loader.py`: `consolidate` — keep the geometry and hierarchy behavior, trim constructor-style checks that duplicate richer model suites.
+- `Libraries/PyKotor/tests/test_finder.py`: `consolidate` — keep the resource-finding contract, but drop trivial static-order assertions unless paired with real search scenarios.
+- `Libraries/PyKotor/tests/test_kaitai_generated_parity.py`: `remove-or-merge` — better treated as vendor integrity or lint coverage unless true parser parity is added.
+- `Libraries/PyKotor/tests/test_markdown_validation.py`: `keep` — useful documentation integrity guardrail.
+- `Libraries/PyKotor/tests/resource/test_replace_module_extensions.py`: `keep` — strong edge-case coverage for important module-name normalization.
+- `Libraries/PyKotor/tests/resource/test_resource_from_path.py`: `keep` — high-value coverage for resource typing and path parsing.
+
+### Common
+
+- `Libraries/PyKotor/tests/common/test_case_aware_path.py`: `keep` — useful public-path behavior coverage; trim helper-internal assertions if they block refactors.
+- `Libraries/PyKotor/tests/common/test_caseawarepath_globber_bug.py`: `keep` — regression-focused and tied to real filesystem behavior.
+- `Libraries/PyKotor/tests/common/test_consumer_manager.py`: `keep` — meaningful async/task lifecycle coverage.
+- `Libraries/PyKotor/tests/common/test_decode_fallbacks.py`: `keep` — practical encoding fallback coverage with real failure modes.
+- `Libraries/PyKotor/tests/common/test_geometry.py`: `keep` — compact math and geometry behavior suite with clear value.
+- `Libraries/PyKotor/tests/common/test_get_case_sensitive_path.py`: `fix-then-keep` — retain the core filesystem behavior, but remove or complete explicitly unfinished cases.
+- `Libraries/PyKotor/tests/common/test_path_isinstance.py`: `consolidate` — keep one representative cross-platform inheritance matrix instead of many near-identical platform permutations.
+- `Libraries/PyKotor/tests/common/test_path_mixed_slash_handling.py`: `consolidate` — reduce the exhaustive slash/permutation matrix to representative contract-level cases.
+- `Libraries/PyKotor/tests/common/test_stream.py`: `keep` — strong low-level stream behavior coverage.
+- `Libraries/PyKotor/tests/common/test_wrapped_case_insens_str.py`: `consolidate` — keep truly distinct case-insensitive behavior, trim builtin-wrapper exhaustiveness.
+- `Libraries/PyKotor/tests/common/test_wrapped_str.py`: `consolidate` — merge with `test_wrapped_str2.py` and keep only contract-level behavior.
+- `Libraries/PyKotor/tests/common/test_wrapped_str2.py`: `remove-or-merge` — fold into `test_wrapped_str.py`.
+
+### Extract
+
+- `Libraries/PyKotor/tests/extract/test_capsule.py`: `keep` — small but meaningful container behavior coverage.
+- `Libraries/PyKotor/tests/extract/test_chitin.py`: `keep-slow` — useful integration test, but installation-dependent.
+- `Libraries/PyKotor/tests/extract/test_installation.py`: `keep` — important installation/resource access behavior.
+- `Libraries/PyKotor/tests/extract/test_nested_capsule.py`: `keep` — real nested-container behavior that is hard to replace with simpler tests.
+- `Libraries/PyKotor/tests/extract/test_save_load_flow_k1.py`: `keep` — workflow-level behavior with concrete filesystem outcomes.
+- `Libraries/PyKotor/tests/extract/test_talktable.py`: `keep` — small, cheap, and still behaviorally useful.
+
+### Font and GL
+
+- `Libraries/PyKotor/tests/font/test_txi_tga_font.py`: `keep-slow` — keep, but not in the default fast path because it depends on fonts and output assets.
+- `Libraries/PyKotor/tests/gl/test_async_loader_texture_txi_none.py`: `keep` — small regression coverage with direct rendering value.
+- `Libraries/PyKotor/tests/gl/test_camera_controller.py`: `keep` — strong user-facing camera behavior suite.
+- `Libraries/PyKotor/tests/gl/test_frustum_culling.py`: `keep` — high-value visibility and caching behavior coverage.
+- `Libraries/PyKotor/tests/gl/test_gl_accel.py`: `keep-slow` — keep as optional compiled-extension validation only.
+- `Libraries/PyKotor/tests/gl/test_mdl_mesh_alpha_modes.py`: `consolidate` — keep alpha-mode behavior but reduce exact internal GL-call coupling where possible.
+- `Libraries/PyKotor/tests/gl/test_texture_loader_core.py`: `keep` — compact, meaningful serialization and queue behavior coverage.
+
+### Resource Formats
+
+- `Libraries/PyKotor/tests/resource/formats/ncs/test_do_types_strict_typing.py`: `policy-only` — keep only if runtime policy tests are an intentional repo standard.
+- `Libraries/PyKotor/tests/resource/formats/test_base_comparable_strict_typing.py`: `policy-only` — merge with other policy tests if retained at all.
+- `Libraries/PyKotor/tests/resource/formats/test_bif.py`: `keep` — useful container/index coverage.
+- `Libraries/PyKotor/tests/resource/formats/test_bwm.py`: `keep` — one of the strongest format suites in the repository.
+- `Libraries/PyKotor/tests/resource/formats/test_dds.py`: `keep` — practical texture codec coverage.
+- `Libraries/PyKotor/tests/resource/formats/test_erf.py`: `consolidate` — keep behavior, parametrize repeated I/O forms.
+- `Libraries/PyKotor/tests/resource/formats/test_gff.py`: `consolidate` — keep, but merge repetitive binary/XML/file variants.
+- `Libraries/PyKotor/tests/resource/formats/test_gff_list_compare.py`: `remove-or-merge` — merge the regression into `test_gff.py` instead of keeping a single-assert file.
+- `Libraries/PyKotor/tests/resource/formats/test_key.py`: `keep` — still important for archive index behavior.
+- `Libraries/PyKotor/tests/resource/formats/test_lip.py`: `consolidate` — keep behavior, reduce repeated format-shape duplication.
+- `Libraries/PyKotor/tests/resource/formats/test_lyt.py`: `keep` — small but useful layout parsing coverage.
+- `Libraries/PyKotor/tests/resource/formats/test_mdl.py`: `consolidate` — merge overlapping round-trip and structure checks with the stronger MDL ASCII and loader suites.
+- `Libraries/PyKotor/tests/resource/formats/test_mdl_ascii.py`: `keep-slow` — preserve, but split by feature or marker because it is a major, expensive suite.
+- `Libraries/PyKotor/tests/resource/formats/test_model_parsers_against_mdlops.py`: `keep-slow` — valuable reference-tool comparison, but strictly opt-in.
+- `Libraries/PyKotor/tests/resource/formats/test_ncs.py`: `keep` — critical compiler/runtime coverage.
+- `Libraries/PyKotor/tests/resource/formats/test_rim.py`: `consolidate` — keep behavior, reduce repeated binary/file variants.
+- `Libraries/PyKotor/tests/resource/formats/test_ssf.py`: `consolidate` — keep behavior, parametrize binary/XML/JSON variants.
+- `Libraries/PyKotor/tests/resource/formats/test_tlk.py`: `consolidate` — keep behavior, parametrize binary/XML/JSON variants.
+- `Libraries/PyKotor/tests/resource/formats/test_tpc.py`: `keep` — meaningful texture behavior coverage.
+- `Libraries/PyKotor/tests/resource/formats/test_twoda.py`: `consolidate` — keep behavior, parametrize binary/CSV/JSON variants.
+- `Libraries/PyKotor/tests/resource/formats/test_txi_data.py`: `remove-or-merge` — too narrow as a standalone suite; merge into broader TXI coverage or expand substantially.
+- `Libraries/PyKotor/tests/resource/formats/test_txi_io.py`: `keep` — compact and directly useful.
+- `Libraries/PyKotor/tests/resource/formats/test_utm.py`: `remove-or-merge` — fold into a parametrized UT* generic suite.
+- `Libraries/PyKotor/tests/resource/formats/test_vis.py`: `keep` — low-cost behavior coverage.
+- `Libraries/PyKotor/tests/resource/formats/test_wav.py`: `keep` — broad, practical audio coverage.
+- `Libraries/PyKotor/tests/resource/formats/test_wok.py`: `keep` — useful walkmesh file coverage; merge only if runtime pressure makes the overlap with `test_bwm.py` unjustified.
+
+### Resource Generics
+
+- `Libraries/PyKotor/tests/resource/generics/test_are.py`: `consolidate` — move into a minimal-generics group unless richer area-specific behavior is added.
+- `Libraries/PyKotor/tests/resource/generics/test_dlg.py`: `keep` — complex graph behavior fully justifies a dedicated suite.
+- `Libraries/PyKotor/tests/resource/generics/test_dlg_twine.py`: `keep` — distinct feature surface with genuine behavior coverage.
+- `Libraries/PyKotor/tests/resource/generics/test_fac.py`: `keep` — sufficiently distinct and not overly large.
+- `Libraries/PyKotor/tests/resource/generics/test_git.py`: `keep` — meaningful area-instance serialization coverage.
+- `Libraries/PyKotor/tests/resource/generics/test_gui.py`: `keep` — compact and distinct GUI resource behavior.
+- `Libraries/PyKotor/tests/resource/generics/test_ifo.py`: `consolidate` — group with other minimal generics unless more module-specific behavior is added.
+- `Libraries/PyKotor/tests/resource/generics/test_jrl.py`: `consolidate` — group with other minimal generics unless deeper journal behavior is added.
+- `Libraries/PyKotor/tests/resource/generics/test_pth.py`: `consolidate` — group with other minimal generics unless path-specific behavior is expanded.
+- `Libraries/PyKotor/tests/resource/generics/test_utc.py`: `keep` — keep as the richest UT* anchor if one dedicated UT suite remains.
+- `Libraries/PyKotor/tests/resource/generics/test_utd.py`: `fix-then-keep` — repair the known broken case, then fold into a parametrized UT* suite.
+- `Libraries/PyKotor/tests/resource/generics/test_ute.py`: `consolidate` — fold into a parametrized UT* suite.
+- `Libraries/PyKotor/tests/resource/generics/test_uti.py`: `consolidate` — fold into a parametrized UT* suite.
+- `Libraries/PyKotor/tests/resource/generics/test_utp.py`: `consolidate` — fold into a parametrized UT* suite.
+- `Libraries/PyKotor/tests/resource/generics/test_uts.py`: `consolidate` — fold into a parametrized UT* suite.
+- `Libraries/PyKotor/tests/resource/generics/test_utt.py`: `consolidate` — fold into a parametrized UT* suite.
+- `Libraries/PyKotor/tests/resource/generics/test_utw.py`: `consolidate` — fold into a parametrized UT* suite.
+
+### CLI
+
+- `Libraries/PyKotor/tests/cli/test_cli_backwards_compat.py`: `keep` — tiny but high-signal CLI contract suite.
+- `Libraries/PyKotor/tests/cli/test_diff_command.py`: `fix-then-keep` — remove duplicate/hidden structure, then keep the best CLI-path behavior checks.
+- `Libraries/PyKotor/tests/cli/test_diff_comprehensive.py`: `consolidate` — merge the real coverage into `test_diff_command.py` and delete duplicative or aspirational cases.
+- `Libraries/PyKotor/tests/cli/test_indoor_extract_installation_modules.py`: `keep-slow` — strong integration value, but not for the default suite.
+- `Libraries/PyKotor/tests/cli/test_indoor_roundtrip.py`: `keep-slow` — high-value end-to-end workflow coverage; keep behind a slow marker.
+- `Libraries/PyKotor/tests/cli/test_json_commands.py`: `keep` — focused feature-level CLI coverage.
+- `Libraries/PyKotor/tests/cli/test_walkmesh_rebuild.py`: `keep` — good workflow and invariant coverage.
+
+### Utility and UI
+
+- `Libraries/PyKotor/tests/test_utility/test_actions_dispatcher.py`: `keep` — retain, but tighten any vague or non-behavioral assertions.
+- `Libraries/PyKotor/tests/test_utility/test_actions_executor_strict_typing.py`: `policy-only` — merge with the other strict-typing policy tests if retained.
+- `Libraries/PyKotor/tests/test_utility/test_drag_drop_conformance.py`: `consolidate` — keep real drag/drop behavior, merge into dialog or explorer behavior suites.
+- `Libraries/PyKotor/tests/test_utility/test_dynamic_view.py`: `keep` — strong component behavior suite.
+- `Libraries/PyKotor/tests/test_utility/test_explorer_widget_components.py`: `consolidate` — merge with explorer behavior suites to avoid widget-existence duplication.
+- `Libraries/PyKotor/tests/test_utility/test_file_dialog_components.py`: `keep` — useful component behavior coverage.
+- `Libraries/PyKotor/tests/test_utility/test_filesystem_components.py`: `keep` — one of the better utility suites; high behavior-to-maintenance ratio.
+- `Libraries/PyKotor/tests/test_utility/test_fluent_design_conformance.py`: `remove-or-merge` — remove as a standalone suite; exact visual constants are too brittle.
+- `Libraries/PyKotor/tests/test_utility/test_keyboard_accessibility_conformance.py`: `keep` — retain keyboard and accessibility behavior, but trim vague visual-only checks.
+- `Libraries/PyKotor/tests/test_utility/test_mutable_str_strict_typing.py`: `policy-only` — merge with the strict-typing policy bucket if retained.
+- `Libraries/PyKotor/tests/test_utility/test_pixel_perfect_layout.py`: `remove-or-merge` — remove as a standalone suite; exact pixel checks are low-value and fragile.
+- `Libraries/PyKotor/tests/test_utility/test_pyfileinfogatherer.py`: `keep` — focused, practical filesystem infrastructure coverage.
+- `Libraries/PyKotor/tests/test_utility/test_qfiledialog.py`: `keep` — primary dialog behavior suite.
+- `Libraries/PyKotor/tests/test_utility/test_qfiledialog2.py`: `fix-then-keep` — keep the valid regression coverage, but isolate or remove permanently crashing/skipped cases.
+- `Libraries/PyKotor/tests/test_utility/test_qfiledialogextended.py`: `keep` — useful extension-specific behavior coverage.
+- `Libraries/PyKotor/tests/test_utility/test_qfiledialogextended_comprehensive.py`: `consolidate` — merge distinct behavior into `test_qfiledialogextended.py` and `test_qfiledialog.py`.
+- `Libraries/PyKotor/tests/test_utility/test_registry_strict_typing.py`: `policy-only` — merge with the strict-typing policy bucket if retained.
+- `Libraries/PyKotor/tests/test_utility/test_string_util_strict_typing.py`: `policy-only` — merge with the strict-typing policy bucket if retained.
+- `Libraries/PyKotor/tests/test_utility/test_sys_attributes_strict_typing.py`: `policy-only` — merge with the strict-typing policy bucket if retained.
+- `Libraries/PyKotor/tests/test_utility/test_tasks.py`: `keep` — good async/task execution coverage.
+- `Libraries/PyKotor/tests/test_utility/test_visual_layout_conformance.py`: `consolidate` — keep structural hierarchy checks, drop layout/pixel fidelity assertions.
+- `Libraries/PyKotor/tests/test_utility/test_windows_explorer_conformance.py`: `consolidate` — merge behavioral explorer checks into slimmer explorer suites.
+- `Libraries/PyKotor/tests/test_utility/test_windows_file_dialog_conformance.py`: `consolidate` — merge behavioral dialog checks into slimmer dialog suites.
+
+### TSLPatcher
+
+- `Libraries/PyKotor/tests/tslpatcher/diff/test_diff_2damemory_generation.py`: `keep` — focused and distinct token-generation behavior.
+- `Libraries/PyKotor/tests/tslpatcher/diff/test_diff_comprehensive.py`: `keep-slow` — preserve the broad diff-generation scenarios, but move heavier cases out of the fast lane if runtime demands it.
+- `Libraries/PyKotor/tests/tslpatcher/diff/test_diff_tslpatcher.py`: `keep` — useful bridge between diff generation and patcher output.
+- `Libraries/PyKotor/tests/tslpatcher/diff/test_full_execution.py`: `keep-slow` — end-to-end execution value is real, but it should be opt-in.
+- `Libraries/PyKotor/tests/tslpatcher/diff/test_twoda.py`: `keep` — small, distinct, and practical vendor-diff behavior.
+- `Libraries/PyKotor/tests/tslpatcher/mods/test_vendor_twoda_mods.py`: `keep` — compact and directly tied to vendor behavior parity.
+- `Libraries/PyKotor/tests/tslpatcher/test_config.py`: `fix-then-keep` — remove skipped broken cases or repair them, then keep only the configuration behaviors that still matter.
+- `Libraries/PyKotor/tests/tslpatcher/test_mods.py`: `keep` — core patch-application behavior suite.
+- `Libraries/PyKotor/tests/tslpatcher/test_reader.py`: `consolidate` — preserve behavior, but parametrize the many near-identical 2DA and config-reader variants.
+- `Libraries/PyKotor/tests/tslpatcher/test_tslpatcher.py`: `keep` — primary integration suite, though it may eventually be split for readability.
+
+### Non-Inventory but In-Scope Follow-Up Files
+
+These files do not appear in the `test_*.py` inventory appendix, but they are part of the test-plan surface and should be handled explicitly.
+
+- `Libraries/PyKotor/tests/resource/formats/pytest_ncs_compile_installation.py`: `keep-slow` — retain only as an explicit installation-wide compiler sweep.
+- `Libraries/PyKotor/tests/resource/formats/pytest_gff_convert_installations.py`: `keep-slow` — retain only as an explicit installation-wide conversion sweep.
+- `Libraries/PyKotor/tests/tslpatcher/diff/test_gff.py`: `fix-then-keep` or remove — currently zero collected tests; either add real tests or delete the placeholder.
+- `Libraries/PyKotor/tests/tslpatcher/diff/test_ssf.py`: `fix-then-keep` or remove — currently zero collected tests; either add real tests or delete the placeholder.
+- `Libraries/PyKotor/tests/tslpatcher/diff/test_tlk.py`: `fix-then-keep` or remove — currently zero collected tests; either add real tests or delete the placeholder.
+
+## Execution Sequence
+
+1. Remove or quarantine the brittle visual-conformance files and the zero-test placeholders.
+2. Fix known broken or unfinished suites so the remaining baseline is trustworthy.
+3. Consolidate repeated wrapper, generic UT*, diff, and UI-conformance suites into behavior-first modules.
+4. Parametrize repeated format and TSLPatcher variants to preserve coverage while cutting maintenance cost.
+5. Move install-wide, external-tool, and full-workflow suites behind explicit slow markers.
+6. Re-run collection and compare the resulting file/module/test counts to this document before doing any deeper deletions.
+
+## Implementation Progress
+
+- Completed tranche 1:
+   - consolidated `Libraries/PyKotor/tests/common/test_wrapped_str.py` from exhaustive builtin-proxy checks into a smaller contract-focused suite;
+   - removed `Libraries/PyKotor/tests/common/test_wrapped_str2.py` because it duplicated coverage already present in `test_wrapped_case_insens_str.py`;
+   - deleted empty placeholder modules `Libraries/PyKotor/tests/tslpatcher/diff/test_gff.py`, `test_ssf.py`, and `test_tlk.py`.
+- Validation completed for the touched string-wrapper slice with:
+   - `uv run pytest Libraries/PyKotor/tests/common/test_wrapped_str.py Libraries/PyKotor/tests/common/test_wrapped_case_insens_str.py --import-mode=importlib`
+
 ## Full Test Inventory
 
 The list below names every collected test symbol discovered from `test_*.py` files under `Libraries/PyKotor/tests`.
