@@ -9,7 +9,18 @@ import sys
 from dataclasses import dataclass
 from io import BytesIO
 from pathlib import Path
-from typing import TYPE_CHECKING, Callable, Dict, Iterable, Iterator, List, Literal, TextIO, Union, cast
+from typing import (
+    TYPE_CHECKING,
+    Callable,
+    Dict,
+    Iterable,
+    Iterator,
+    List,
+    Literal,
+    TextIO,
+    Union,
+    cast,
+)
 
 from pykotor.extract.file import FileResource, clear_file_data_cache
 from pykotor.extract.installation import Installation
@@ -56,6 +67,13 @@ SerializationMode = Literal["direct", "embedded"]
 class SerializedResourcePayload:
     encoding: str
     payload: JsonValue
+
+
+@dataclass(frozen=True)
+class SerializedInstallationResourceDocument:
+    resource: FileResource
+    relative_path: str
+    document: dict[str, JsonValue]
 
 
 _STRUCTURED_ENCODINGS: frozenset[str] = frozenset(
@@ -109,10 +127,16 @@ def _paired_path(path: Path, suffix: str) -> Path | None:
 
 
 def _resource_type_target(restype: ResourceType) -> ResourceType:
-    return cast(ResourceType, restype.target_type()) if not restype.is_invalid else ResourceType.INVALID
+    return (
+        cast(ResourceType, restype.target_type())
+        if not restype.is_invalid
+        else ResourceType.INVALID
+    )
 
 
-def _json_from_writer(data: bytes | bytearray | Path, reader, writer, file_format: ToolsetFormat) -> JsonValue:
+def _json_from_writer(
+    data: bytes | bytearray | Path, reader, writer, file_format: ToolsetFormat
+) -> JsonValue:
     resource = reader(data)
     output = bytearray()
     writer(resource, output, file_format=file_format)
@@ -157,7 +181,9 @@ def _decode_plain_text(data: bytes) -> str | None:
 
 
 def _base64_payload(source: bytes | bytearray | Path) -> SerializedResourcePayload:
-    return SerializedResourcePayload("base64", base64.b64encode(_source_bytes(source)).decode("ascii"))
+    return SerializedResourcePayload(
+        "base64", base64.b64encode(_source_bytes(source)).decode("ascii")
+    )
 
 
 def _resource_dedup_key(resource: FileResource) -> tuple[str, int, int, str, str]:
@@ -206,7 +232,11 @@ class _ExportProgressReporter:
         percent = min((current / self.total_resources) * 100.0, 100.0)
         message = f"[{_format_progress_bar(percent)}] {percent:6.2f}% Writing {resource_label}"
         if self.live_updates:
-            if current != self.total_resources and self._last_live_percent >= 0 and percent - self._last_live_percent < _LIVE_PROGRESS_PERCENT_STEP:
+            if (
+                current != self.total_resources
+                and self._last_live_percent >= 0
+                and percent - self._last_live_percent < _LIVE_PROGRESS_PERCENT_STEP
+            ):
                 return
             render = message.ljust(self._last_render_width)
             self.stream.write(f"\r{render}")
@@ -278,7 +308,11 @@ def _serialize_mdl_face(face: MDLFace) -> dict[str, JsonValue]:
     smoothgroup = getattr(face, "smoothgroup", getattr(face, "smoothing_group", 0))
     coefficient = getattr(face, "coefficient", getattr(face, "coeff", 0))
     material = getattr(face, "material", 0)
-    adjacent_faces = getattr(face, "adjacent_faces", (getattr(face, "a1", 0), getattr(face, "a2", 0), getattr(face, "a3", 0)))
+    adjacent_faces = getattr(
+        face,
+        "adjacent_faces",
+        (getattr(face, "a1", 0), getattr(face, "a2", 0), getattr(face, "a3", 0)),
+    )
     return {
         "verts": [face.v1, face.v2, face.v3],
         "smoothgroup": smoothgroup,
@@ -335,7 +369,9 @@ def _serialize_mdl_dangly(dangly: MDLDangly) -> dict[str, JsonValue]:
     return {"constraints": constraints}
 
 
-def _serialize_mdl_mesh(mesh: MDLMesh, skin: MDLSkin | None, dangly: MDLDangly | None) -> dict[str, JsonValue]:
+def _serialize_mdl_mesh(
+    mesh: MDLMesh, skin: MDLSkin | None, dangly: MDLDangly | None
+) -> dict[str, JsonValue]:
     vertices: list[JsonValue] = []
     for index, position in enumerate(mesh.vertex_positions):
         vertex: dict[str, JsonValue] = {
@@ -690,7 +726,9 @@ def serialize_resource_payload(
     return SerializedResourcePayload("base64", base64.b64encode(source_bytes).decode("ascii"))
 
 
-def _payload_to_direct_document(restype: ResourceType, payload: SerializedResourcePayload) -> JsonValue:
+def _payload_to_direct_document(
+    restype: ResourceType, payload: SerializedResourcePayload
+) -> JsonValue:
     if payload.encoding in _STRUCTURED_ENCODINGS:
         return payload.payload
     if payload.encoding in {"text", "mdl_ascii"}:
@@ -812,12 +850,16 @@ def direct_json_document_to_resource_bytes(document: JsonValue, restype: Resourc
         if format_name in {"text", "mdl_ascii"}:
             text = document.get("text")
             if isinstance(text, str):
-                return deserialize_embedded_resource_payload(cast(str, format_name), text, target_type)
+                return deserialize_embedded_resource_payload(
+                    cast(str, format_name), text, target_type
+                )
         if format_name == "tpc_json":
             return deserialize_embedded_resource_payload("tpc_json", document, target_type)
         if format_name == "mdl_json":
             raise ValueError("MDL JSON import is not supported yet.")
-    raise ValueError("JSON document does not use a direct-wrapper format handled by the shared serializer.")
+    raise ValueError(
+        "JSON document does not use a direct-wrapper format handled by the shared serializer."
+    )
 
 
 def is_installation_path(path: Path) -> bool:
@@ -857,15 +899,27 @@ def _installation_resource_iterators(
         ("override resources", installation.override_resources),
         (
             "module resources",
-            lambda: (resource for module in installation.modules_list() for resource in installation.module_resources(module)),
+            lambda: (
+                resource
+                for module in installation.modules_list()
+                for resource in installation.module_resources(module)
+            ),
         ),
         (
             "lip resources",
-            lambda: (resource for lip in installation.lips_list() for resource in installation.lip_resources(lip)),
+            lambda: (
+                resource
+                for lip in installation.lips_list()
+                for resource in installation.lip_resources(lip)
+            ),
         ),
         (
             "texturepack resources",
-            lambda: (resource for texturepack in installation.texturepacks_list() for resource in installation.texturepack_resources(texturepack)),
+            lambda: (
+                resource
+                for texturepack in installation.texturepacks_list()
+                for resource in installation.texturepack_resources(texturepack)
+            ),
         ),
         ("core resources", installation.core_resources),
         ("stream resources", lambda: _iter_stream_resources(installation)),
@@ -890,12 +944,16 @@ def _iter_unique_resources(
             logger.warning("Skipping %s: %s: %s", label, exc.__class__.__name__, exc)
 
 
-def _iter_installation_resources(installation: Installation, logger: Logger) -> Iterator[FileResource]:
+def _iter_installation_resources(
+    installation: Installation, logger: Logger
+) -> Iterator[FileResource]:
     yield from _iter_unique_resources(_installation_resource_iterators(installation), logger)
 
 
 def _count_installation_resources(installation: Installation, logger: Logger) -> int:
-    return sum(1 for _ in _iter_unique_resources(_installation_resource_iterators(installation), logger))
+    return sum(
+        1 for _ in _iter_unique_resources(_installation_resource_iterators(installation), logger)
+    )
 
 
 def _iter_directory_resources(root: Path):
@@ -917,8 +975,16 @@ def _resource_relative_source(base_path: Path, resource: FileResource) -> Path:
 
 
 def _resource_output_path(output_root: Path, relative_source: Path, resource: FileResource) -> Path:
-    target_path = relative_source / resource.filename() if (resource.inside_capsule or resource.inside_bif) else relative_source
-    return output_root / target_path.with_suffix(f"{target_path.suffix}.json" if target_path.suffix else ".json")
+    return output_root / _resource_document_relative_path(relative_source, resource)
+
+
+def _resource_document_relative_path(relative_source: Path, resource: FileResource) -> Path:
+    target_path = (
+        relative_source / resource.filename()
+        if (resource.inside_capsule or resource.inside_bif)
+        else relative_source
+    )
+    return target_path.with_suffix(f"{target_path.suffix}.json" if target_path.suffix else ".json")
 
 
 def _resource_progress_label(relative_source: Path, resource: FileResource) -> str:
@@ -939,7 +1005,9 @@ def _build_embedded_document(
         "restype": resource.restype().name,
         "extension": resource.restype().extension,
         "source_path": relative_source.as_posix(),
-        "container_path": relative_source.as_posix() if (resource.inside_capsule or resource.inside_bif) else None,
+        "container_path": relative_source.as_posix()
+        if (resource.inside_capsule or resource.inside_bif)
+        else None,
         "offset": resource.offset(),
         "size": len(data),
         "encoding": serialized.encoding,
@@ -949,6 +1017,50 @@ def _build_embedded_document(
     else:
         payload["data"] = serialized.payload
     return payload
+
+
+def serialize_file_resource_document(
+    resource: FileResource,
+    *,
+    base_path: Path,
+) -> SerializedInstallationResourceDocument:
+    relative_source = _resource_relative_source(base_path, resource)
+    relative_path = _resource_document_relative_path(relative_source, resource)
+
+    try:
+        data: bytes = resource.data()
+        resource_path = Path(resource.filepath())
+        source: bytes | Path = (
+            resource_path
+            if not (resource.inside_capsule or resource.inside_bif)
+            and cast(ResourceType, resource.restype()) == ResourceType.MDL
+            and resource_path.is_file()
+            else data
+        )
+        serialized = serialize_resource_payload(source, cast(ResourceType, resource.restype()))
+        document = _build_embedded_document(relative_source, resource, data, serialized)
+    except Exception as exc:
+        document = {
+            "resource": resource.filename(),
+            "source_path": relative_source.as_posix(),
+            "error": f"{exc.__class__.__name__}: {exc}",
+        }
+
+    return SerializedInstallationResourceDocument(resource, relative_path.as_posix(), document)
+
+
+def iter_installation_resource_documents(
+    installation: Installation,
+    logger: Logger,
+) -> Iterator[SerializedInstallationResourceDocument]:
+    base_path = Path(str(installation.path()))
+    try:
+        for index, resource in enumerate(_iter_installation_resources(installation, logger), start=1):
+            yield serialize_file_resource_document(resource, base_path=base_path)
+            if index % 1000 == 0:
+                clear_file_data_cache()
+    finally:
+        clear_file_data_cache()
 
 
 def _export_file_resources(
@@ -996,7 +1108,11 @@ def _export_file_resources(
                 fallback_count += 1
             else:
                 supported_count += 1
-            destination.write_bytes(_json_dumps_bytes(_build_embedded_document(relative_source, resource, data, serialized)))
+            destination.write_bytes(
+                _json_dumps_bytes(
+                    _build_embedded_document(relative_source, resource, data, serialized)
+                )
+            )
         except Exception as exc:
             error_count += 1
             error_payload: dict[str, JsonValue] = {
@@ -1020,7 +1136,9 @@ def _export_file_resources(
     return 0 if error_count == 0 else 2
 
 
-def export_installation_to_json_tree(installation_path: Path, output_root: Path, logger: Logger) -> int:
+def export_installation_to_json_tree(
+    installation_path: Path, output_root: Path, logger: Logger
+) -> int:
     try:
         installation = Installation(installation_path)
     except Exception:

@@ -16,6 +16,7 @@ from pykotor.cli.commands.diff_installation import cmd_diff_installation
 from pykotor.cli.dispatch import cli_main
 from pykotor.common.language import Language
 from pykotor.common.misc import Game
+from pykotor.extract.installation import Installation
 from pykotor.resource.formats.rim import RIM, write_rim
 from pykotor.resource.formats.mdl import MDLFace
 from pykotor.resource.formats.ssf import SSF, SSFSound, read_ssf
@@ -25,6 +26,7 @@ from pykotor.resource.type import ResourceType
 from pykotor.tools.resource_json import (
     _serialize_mdl_face,
     export_installation_to_json_tree,
+    iter_installation_resource_documents,
     serialize_resource_payload,
 )
 
@@ -314,9 +316,45 @@ def test_export_installation_to_json_tree_logs_percentage_progress(
     assert any("75.00% Writing Modules/testmod_s.rim/notes.txt" in message for message in messages)
     assert any("100.00% Writing streammusic/intro.wav" in message for message in messages)
     assert any(
-        message == "Processed 4 resources (3 readable, 1 binary, 0 errors)"
-        for message in messages
+        message == "Processed 4 resources (3 readable, 1 binary, 0 errors)" for message in messages
     )
+
+
+def test_iter_installation_resource_documents_reuses_installation_export_shape(
+    tmp_path: Path,
+) -> None:
+    install_path = tmp_path / "K1"
+    install_path.mkdir()
+    (install_path / "Override").mkdir()
+    (install_path / "Modules").mkdir()
+    (install_path / "StreamMusic").mkdir()
+    (install_path / "chitin.key").write_bytes(b"")
+    (install_path / "swkotor.exe").write_bytes(b"")
+
+    tlk = TLK(Language.ENGLISH)
+    tlk.add("install root text", "root_vo")
+    write_tlk(tlk, install_path / "dialog.tlk", ResourceType.TLK)
+
+    (install_path / "Override" / "hello.nss").write_text("void main() {}\n", encoding="utf-8")
+
+    rim = RIM()
+    rim.set_data("notes", ResourceType.TXT, b"module notes")
+    write_rim(rim, install_path / "Modules" / "testmod_s.rim")
+
+    (install_path / "StreamMusic" / "intro.wav").write_bytes(b"RIFFdemo")
+
+    installation = Installation(install_path)
+    documents = {
+        item.relative_path: item.document
+        for item in iter_installation_resource_documents(installation, RobustLogger())
+    }
+
+    assert documents["dialog.tlk.json"]["encoding"] == "tlk_json"
+    assert documents["dialog.tlk.json"]["data"]["strings"][0]["text"] == "install root text"
+    assert documents["Override/hello.nss.json"]["encoding"] == "text"
+    assert documents["Modules/testmod_s.rim/notes.txt.json"]["data"] == "module notes"
+    stream_key = next(key for key in documents if key.lower() == "streammusic/intro.wav.json")
+    assert documents[stream_key]["encoding"] == "base64"
 
 
 def test_to_json_can_export_all_detected_installations(
@@ -517,13 +555,23 @@ def test_parser_wave2_game_root_commands_use_path_dest_and_keep_hidden_alias() -
     missing_args = parser.parse_args(
         ["check-missing-resources", "--module", "danm13", "--path", "C:/game", "--textures", "foo"]
     )
-    resources_args = parser.parse_args(["module-resources", "--module", "danm13", "--path", "C:/game"])
+    resources_args = parser.parse_args(
+        ["module-resources", "--module", "danm13", "--path", "C:/game"]
+    )
     kit_args = parser.parse_args(["kit-generate", "--path", "C:/game", "--module", "danm13"])
     indoor_build_args = parser.parse_args(
         ["indoor-build", "--input", "map.indoor", "--output", "map.mod", "--path", "C:/game"]
     )
     indoor_build_alias_args = parser.parse_args(
-        ["indoor-build", "--input", "map.indoor", "--output", "map.mod", "--installation", "C:/game"]
+        [
+            "indoor-build",
+            "--input",
+            "map.indoor",
+            "--output",
+            "map.mod",
+            "--installation",
+            "C:/game",
+        ]
     )
     indoor_extract_args = parser.parse_args(
         ["indoor-extract", "--module", "danm13", "--output", "map.indoor", "--path", "C:/game"]
@@ -608,7 +656,9 @@ def test_serialize_resource_payload_falls_back_to_base64_for_invalid_mdl(
     assert payload.payload == base64.b64encode(b"not-a-mdl").decode("ascii")
 
 
-def test_diff_installation_forwards_merge_flags(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+def test_diff_installation_forwards_merge_flags(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
     captured_argv: list[str] = []
 
     def fake_main(argv: list[str]) -> int:

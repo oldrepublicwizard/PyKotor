@@ -149,9 +149,17 @@ class ResolvedResourceSource:
         matched: list[ResourceIdentifier] = []
         seen: set[ResourceIdentifier] = set()
         for identifier in identifiers:
-            if restype is not None and restype != ResourceType.INVALID and identifier.restype != restype:
+            if (
+                restype is not None
+                and restype != ResourceType.INVALID
+                and identifier.restype != restype
+            ):
                 continue
-            if glob_pattern and not fnmatch.fnmatch(str(identifier).lower(), glob_pattern.lower()) and not fnmatch.fnmatch(identifier.resname.lower(), glob_pattern.lower()):
+            if (
+                glob_pattern
+                and not fnmatch.fnmatch(str(identifier).lower(), glob_pattern.lower())
+                and not fnmatch.fnmatch(identifier.resname.lower(), glob_pattern.lower())
+            ):
                 continue
             if identifier in seen:
                 continue
@@ -186,8 +194,14 @@ class ResolvedResourceSource:
                 continue
             location = query_locations[0]
             file_resource = location.as_file_resource()
-            data = file_resource.data() if (file_resource.inside_capsule or file_resource.inside_bif) else Path(file_resource.filepath()).read_bytes()
-            result = ResourceResult(query.resname, query.restype, Path(file_resource.filepath()), data)
+            data = (
+                file_resource.data()
+                if (file_resource.inside_capsule or file_resource.inside_bif)
+                else Path(file_resource.filepath()).read_bytes()
+            )
+            result = ResourceResult(
+                query.resname, query.restype, Path(file_resource.filepath()), data
+            )
             result.set_file_resource(file_resource)
             results[query] = result
         return results
@@ -244,7 +258,9 @@ class ResolvedResourceSource:
                 query = query_map.get(resource.identifier())
                 if query is None:
                     continue
-                location = LocationResult(Path(resource.filepath()), resource.offset(), resource.size())
+                location = LocationResult(
+                    Path(resource.filepath()), resource.offset(), resource.size()
+                )
                 location.set_file_resource(resource)
                 results[query].append(location)
 
@@ -265,11 +281,15 @@ def resolve_resource_source(pathlike: str | Path) -> ResolvedResourceSource:
         game = installation.game()
 
     if source_type == "game_root":
-        return ResolvedResourceSource(path=path, kind=source_type, game=game, installation=installation)
+        return ResolvedResourceSource(
+            path=path, kind=source_type, game=game, installation=installation
+        )
     if source_type == "folder":
         return ResolvedResourceSource(path=path, kind=source_type, game=game, folders=(path,))
     if source_type == "capsule":
-        return ResolvedResourceSource(path=path, kind=source_type, game=game, capsules=(Capsule(path),))
+        return ResolvedResourceSource(
+            path=path, kind=source_type, game=game, capsules=(Capsule(path),)
+        )
     if source_type == "module":
         return ResolvedResourceSource(
             path=path,
@@ -316,7 +336,9 @@ def _module_piece_candidates(path: Path) -> list[Path]:
         return []
 
     candidates = [path.parent / f"{root}{modtype.value}" for modtype in _module_search_order()]
-    existing = [candidate for candidate in candidates if candidate.is_file() and is_capsule_file(candidate)]
+    existing = [
+        candidate for candidate in candidates if candidate.is_file() and is_capsule_file(candidate)
+    ]
     if path in existing:
         return existing
     return []

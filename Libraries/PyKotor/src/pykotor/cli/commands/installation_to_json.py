@@ -7,7 +7,6 @@ import shutil
 from pathlib import Path
 from typing import TYPE_CHECKING
 
-from pykotor.common.misc import Game
 from pykotor.extract.path_source import parse_game_arg, resolve_source_path_from_args
 from pykotor.tools.path import get_kotor_paths_from_default
 from pykotor.tools.resource_json import export_installation_to_json_tree

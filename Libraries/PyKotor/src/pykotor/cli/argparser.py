@@ -781,7 +781,7 @@ Extract files from Bioware archive formats including:
     )
 
     json2capsule_parser = subparsers.add_parser(
-        "json2capsule", help="Convert JSON from capsule2json back to binary (ERF/RIM/BIF)"
+        "json2capsule", help="Convert JSON from capsule2json back to binary (BIF/ERF/MOD/RIM/SAV)"
     )
     json2capsule_parser.add_argument("input", help="Input JSON file")
     json2capsule_parser.add_argument(
