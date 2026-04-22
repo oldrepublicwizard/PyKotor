@@ -36,7 +36,7 @@ class HashAlgo(Enum):
     JENKINS = 4
 
 
-class ArchiveResource(BiowareResource):
+class ArchiveResource(ComparableMixin):
     """Represents a resource stored within a BioWare archive (ERF, RIM, BIF).
 
     Contains resource reference, type, and data. Used as the base resource type

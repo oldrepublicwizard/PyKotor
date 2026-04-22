@@ -18,7 +18,7 @@ import struct
 from dataclasses import dataclass
 from typing import BinaryIO
 
-from pykotor.resource.formats._base import BiowareResource
+from pykotor.resource.formats._base import ComparableMixin
 
 TGA_TYPE_TRUE_COLOR = 2
 TGA_TYPE_GRAYSCALE = 3
@@ -26,7 +26,7 @@ TGA_TYPE_RLE_TRUE_COLOR = 10
 
 
 @dataclass
-class TGAImage(BiowareResource):
+class TGAImage(ComparableMixin):
     width: int
     height: int
     data: bytes  # RGBA8888, row-major, origin = top-left

@@ -7,7 +7,7 @@ from typing import TYPE_CHECKING, NoReturn, Sequence, cast
 
 from ply import yacc
 
-from pykotor.resource.formats._base import BiowareResource
+from pykotor.resource.formats._base import ComparableMixin
 from pykotor.resource.formats.ncs.compiler.classes import (
     AdditionAssignment,
     Assignment,
@@ -77,7 +77,7 @@ else:
     from pykotor.common.script import DataType
 
 
-class NssParser(BiowareResource):
+class NssParser(ComparableMixin):
     """NSS (NWScript Source) parser.
 
     Parses tokenized NSS source code into an abstract syntax tree (AST) using

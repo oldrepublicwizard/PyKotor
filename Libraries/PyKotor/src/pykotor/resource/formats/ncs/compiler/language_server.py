@@ -53,7 +53,7 @@ from typing import TYPE_CHECKING, Any
 
 from ply import yacc
 
-from pykotor.resource.formats._base import BiowareResource
+from pykotor.resource.formats._base import ComparableMixin
 from pykotor.resource.formats.ncs.compiler.classes import (
     CompileError,
     FunctionDefinition,
@@ -82,7 +82,7 @@ class DiagnosticSeverity(IntEnum):
 
 
 @dataclass
-class Position(BiowareResource):
+class Position(ComparableMixin):
     """A position in a text document (0-indexed)."""
 
     line: int
@@ -90,7 +90,7 @@ class Position(BiowareResource):
 
 
 @dataclass
-class Range(BiowareResource):
+class Range(ComparableMixin):
     """A range in a text document."""
 
     start: Position
@@ -98,7 +98,7 @@ class Range(BiowareResource):
 
 
 @dataclass
-class Diagnostic(BiowareResource):
+class Diagnostic(ComparableMixin):
     """A diagnostic (error, warning, etc.) in a document."""
 
     range: Range
@@ -110,7 +110,7 @@ class Diagnostic(BiowareResource):
 
 
 @dataclass
-class DocumentSymbol(BiowareResource):
+class DocumentSymbol(ComparableMixin):
     """A symbol in a document (function, struct, variable, etc.)."""
 
     name: str
@@ -122,7 +122,7 @@ class DocumentSymbol(BiowareResource):
 
 
 @dataclass
-class CompletionItem(BiowareResource):
+class CompletionItem(ComparableMixin):
     """An auto-completion suggestion."""
 
     label: str
@@ -134,7 +134,7 @@ class CompletionItem(BiowareResource):
 
 
 @dataclass
-class HoverInfo(BiowareResource):
+class HoverInfo(ComparableMixin):
     """Hover information for a symbol."""
 
     contents: str  # Markdown-formatted content
@@ -142,7 +142,7 @@ class HoverInfo(BiowareResource):
 
 
 @dataclass
-class AnalysisResult(BiowareResource):
+class AnalysisResult(ComparableMixin):
     """Complete analysis result for a document."""
 
     diagnostics: list[Diagnostic] = field(default_factory=list)
@@ -151,7 +151,7 @@ class AnalysisResult(BiowareResource):
     ast: CodeRoot | None = None
 
 
-class NSSLanguageServer(BiowareResource):
+class NSSLanguageServer(ComparableMixin):
     """Language server for NSS scripts.
 
     Provides diagnostics, completions, hover, and document symbols.
