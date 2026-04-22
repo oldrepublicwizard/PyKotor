@@ -2,7 +2,7 @@
 
 *Your handy guide to conquering the galaxy without murdering your adorable street rat.*
 
-> Originally posted on Tumblr: https://425599167.tumblr.com/post/146915047378/how-to-avoid-killing-mission-after-joining-the
+> Originally posted on Tumblr: <https://425599167.tumblr.com/post/146915047378/how-to-avoid-killing-mission-after-joining-the>
 
 ---
 
@@ -47,6 +47,7 @@ Mission was dual-wielding Mandalorian heavy blasters with Genoharadan armor, max
 In order for Mission to survive the fight with your other party members, you'll want to level her up to be as tough as possible. The only viable place for this is **Tatooine**, where a pack of four "wraids" will spawn every time you enter the first area of the Dune Sea. You'll need to do this repeatedly to make sure she reaches Level 20 before you enter the Rakatan temple (at which point you can't go back). You don't have to get her all the way there — there's plenty of EXP on Rakata Prime — but this is good insurance.
 
 **Efficient wraid farming loop:**
+
 1. Kill one group of wraids.
 2. Move to the next spawn point.
 3. Transit back to the Ebon Hawk (which heals you).

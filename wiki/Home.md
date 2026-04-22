@@ -68,12 +68,12 @@ This wiki is part of the shipped Holocron Toolset help payload rather than websi
 ## Preserved source documents
 
 - **Bioware Aurora**:
-    - [Core Formats](Bioware-Aurora-Core-Formats)
-    - [Module & Area](Bioware-Aurora-Module-and-Area)
-    - [Creature](Bioware-Aurora-Creature)
-    - [Items, Economy & Narrative](Bioware-Aurora-Items-Economy-and-Narrative)
-    - [Spatial & Interactive](Bioware-Aurora-Spatial-and-Interactive)
-    - [Conversation](Bioware-Aurora-Conversation)
+  - [Core Formats](Bioware-Aurora-Core-Formats)
+  - [Module & Area](Bioware-Aurora-Module-and-Area)
+  - [Creature](Bioware-Aurora-Creature)
+  - [Items, Economy & Narrative](Bioware-Aurora-Items-Economy-and-Narrative)
+  - [Spatial & Interactive](Bioware-Aurora-Spatial-and-Interactive)
+  - [Conversation](Bioware-Aurora-Conversation)
 - [TSLPatcher's Official Readme](TSLPatcher's-Official-Readme)
 
 ## Cross-reference: other tools and engines
