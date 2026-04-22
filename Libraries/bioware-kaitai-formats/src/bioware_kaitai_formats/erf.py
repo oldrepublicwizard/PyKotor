@@ -51,7 +51,7 @@ class Erf(KaitaiStruct):
 
     """
 
-    class XoreosFileTypeId(IntEnum):
+    class FileTypeId(IntEnum):
         none = -1
         res = 0
         bmp = 1
@@ -439,7 +439,7 @@ class Erf(KaitaiStruct):
             self.resref = (self._io.read_bytes(16)).decode("ASCII")
             self.resource_id = self._io.read_u4le()
             self.resource_type = KaitaiStream.resolve_enum(
-                Erf.XoreosFileTypeId, self._io.read_u2le()
+                Erf.FileTypeId, self._io.read_u2le()
             )
             self.unused = self._io.read_u2le()
 
