@@ -316,7 +316,7 @@ class BiowareArchive(ComparableMixin, ABC):
         self,
         resref: ResRef | str,
         restype: ResourceType,
-        data: bytes,
+        data: bytes | bytearray,
     ) -> None:
         resource: ArchiveResource | None = next(
             (
@@ -327,11 +327,11 @@ class BiowareArchive(ComparableMixin, ABC):
             None,
         )
         if resource is None:
-            resource = self.ARCHIVE_TYPE(ResRef(resref), restype, data)
+            resource = self.ARCHIVE_TYPE(ResRef(resref), restype, bytes(data))
             self._resources.append(resource)
             self._resource_dict[resource.identifier()] = resource
         else:
-            resource.data = data
+            resource.data = bytes(data)
 
     def get(
         self,
