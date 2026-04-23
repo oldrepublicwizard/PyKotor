@@ -4,7 +4,7 @@ You are an AI agent for PyKotor, a Python library and tools for modding Knights 
 
 ## 1. MANDATORY: Core Game Engine Fidelity (Highest Priority Rule)
 
-You are an expert reverse engineer for K1 (swkotor.exe) and TSL (swkotor2.exe). Treat them as one engine with minor address/logic differences; all functions exist in both. For **any** change involving game engine features, file formats, mechanics, resources, or reverse-engineered behavior: **YOU MUST** analyze both via agentdecompile MCP, produce a unified description with inline difference notes, and prefer `/K1/K1_win_gog_swkotor.exe/` and `/TSL/K2_win_gog_aspyr.swkotor2.exe/`. If you see incorrectly formatted agentdecompile comments place a TODO: therre so we can easily grep the word `TODO: ` appropriately to replace it later.
+You are an expert reverse engineer for K1 (swkotor.exe) and TSL (swkotor2.exe). Treat them as one engine with minor address/logic differences; all functions exist in both. For **any** change involving game engine features, file formats, mechanics, resources, or reverse-engineered behavior: **YOU MUST** analyze both via agentdecompile MCP, produce a unified description with inline difference notes, and prefer `/K1/K1_win_gog_swkotor.exe/` and `/TSL/K2_win_gog_aspyr_swkotor2.exe/`. If you see incorrectly formatted agentdecompile comments place a TODO: therre so we can easily grep the word `TODO: ` appropriately to replace it later.
 
 **Prohibited (NEVER)**:
 - No K1-only or TSL-only sections, headings, or docstrings.
@@ -55,9 +55,11 @@ Addresses: ModelLoader::Load @ (/K1/K1_win_gog_swkotor.exe @ 0x00451230, /TSL/K2
 
 ## 2. MANDATORY: Git Commit Discipline (High Priority – Non-Negotiable)
 
-To avoid conflicts in multi-agent use: **NEVER** `git add .` / `git add -A` / wildcards. **ALWAYS** add and commit one file (or a small related group) at a time and chain `git add` + `git commit` on the **same line** (platform separator: `;` Windows, `&&` Unix/Mac).
+To avoid conflicts in multi-agent use: **NEVER** `git add .` / `git add -A` / wildcards. **ALWAYS** add and commit one file (or a small related group) at a time and chain `git add` + `git commit` on a **single copy-pasteable line** (platform separator: `;` Windows, `&&` Unix/Mac). Do not include comments, prompts, explanatory prose, or wrapped multi-line commands inside the proposed command block.
 
 **Format**: `git add <file1> <file2>; git commit -m "type(scope): message"` (Windows) or `... && git commit -m "..."` (Unix/Mac). List only explicit files. Messages: conventional commits only — types `feat:`, `fix:`, `refactor:`, `docs:`, `chore:`, `test:`; concise, lowercase. Let pre-commit run; limit 2–3 commands per commit. Use `--no-pager` for paging; preserve working tree; snapshot before cleanups (`git stash push --include-untracked`); get explicit approval before destructive actions (quote command).
+
+**Submodule format**: If any edited file lives in a Git submodule, the proposed command must still be **one line** and must perform commits in this exact order: commit the submodule files first, commit any root-level PyKotor files second using the same message when both repos changed, then commit the updated submodule gitlink from the PyKotor root as a third commit. Never try to `git add Tools/<Submodule>/...` from the PyKotor root for files that actually belong to the submodule.
 
 **CORRECT**:
 ```powershell
@@ -66,18 +68,22 @@ git add path/to/file.py; git commit -m "feat(scope): add feature"
 ```bash
 git add file1.cs file2.cs && git commit -m "refactor(scope): simplify logic"
 ```
-
-**INCORRECT**: `git add .`, `git add -A`, add without commit, commit without chained add, non-conventional message (e.g. "Update file.md").
-
-**MANDATORY**: After any file change, end with a fenced "Proposed Git Commands" block showing **both** formats below, then: `Git commits: Issued per rules ✅`. If no changes: `Git commits: No changes made ✅`. Never skip.
-
-**Dual-format rule**: Always show two command variants — one from the **repo root** (`C:\GitHub\PyKotor`) and one from the **nearest subtool/library directory** (e.g. `Tools/HolocronToolset`, `Libraries/PyKotor`). Example:
+```powershell
+cd Tools/HolocronToolset; git add src/ui/dialogs/select_update.ui src/toolset/gui/dialogs/select_update.py src/toolset/uic/qtpy/dialogs/select_update.py; git commit -m "fix(toolset): rebuild update dialog layout"; cd ../..; git add .github/copilot-instructions.md .cursorrules AGENTS.md; git commit -m "docs(repo): tighten git command rules"; git add Tools/HolocronToolset; git commit -m "chore(submodule): update holocrontoolset"
 ```
-# From repo root:
-git add Tools/HolocronToolset/src/toolset/gui/editors/tpc.py; git commit -m "fix(toolset): add tpc editor import fallback"
+```bash
+cd Tools/HolocronToolset && git add src/ui/dialogs/select_update.ui src/toolset/gui/dialogs/select_update.py src/toolset/uic/qtpy/dialogs/select_update.py && git commit -m "fix(toolset): rebuild update dialog layout" && cd ../.. && git add .github/copilot-instructions.md .cursorrules AGENTS.md && git commit -m "docs(repo): tighten git command rules" && git add Tools/HolocronToolset && git commit -m "chore(submodule): update holocrontoolset"
+```
 
-# From subtool directory:
-cd Tools/HolocronToolset; git add src/toolset/gui/editors/tpc.py; git commit -m "fix(toolset): add tpc editor import fallback"
+**INCORRECT**: `git add .`, `git add -A`, add without commit, commit without chained add, non-conventional message (e.g. "Update file.md"), comment-prefixed command blocks, wrapped multi-line command examples, `git add Tools/HolocronToolset/src/...` from the PyKotor root, or any submodule workflow that omits the final root commit updating the submodule reference.
+
+**MANDATORY**: After any file change, end with a fenced "Proposed Git Commands" block showing **both** formats below as **single-line copy-paste-ready commands only**, then: `Git commits: Issued per rules ✅`. If no changes: `Git commits: No changes made ✅`. Never skip.
+
+**Dual-format rule**: Always show two command variants — one Windows/PowerShell one-liner and one Unix one-liner. If a submodule is involved, each variant must remain a single line and include the submodule commit, any root-level commit, and the final root-level submodule-pointer commit in sequence. Example:
+```
+cd Tools/HolocronToolset; git add src/toolset/gui/editors/tpc.py; git commit -m "fix(toolset): add tpc editor import fallback"; cd ../..; git add helper_scripts/sync_tooling.py; git commit -m "fix(toolset): add tpc editor import fallback"; git add Tools/HolocronToolset; git commit -m "chore(submodule): update holocrontoolset"
+
+cd Tools/HolocronToolset && git add src/toolset/gui/editors/tpc.py && git commit -m "fix(toolset): add tpc editor import fallback" && cd ../.. && git add helper_scripts/sync_tooling.py && git commit -m "fix(toolset): add tpc editor import fallback" && git add Tools/HolocronToolset && git commit -m "chore(submodule): update holocrontoolset"
 ```
 
 ## 3. Static Type Checking
