@@ -28,7 +28,7 @@ jobs:
     outputs:
       tools_matrix: ${{ steps.detect.outputs.tools_matrix }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - name: Discover tools and compile scripts
         id: detect
@@ -140,7 +140,7 @@ jobs:
       #qt_version: ${#{ steps.set_env.outputs.qt_version }}
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - name: Install PowerShell on non-Windows
         if: ${{ (success() || failure()) && runner.os != 'Windows' }}
@@ -209,7 +209,7 @@ jobs:
             architecture: x86
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - name: Install PowerShell on non-Windows
         if: ${{ (success() || failure()) && runner.os != 'Windows' }}

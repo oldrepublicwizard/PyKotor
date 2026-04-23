@@ -32,7 +32,7 @@ jobs:
       tools_matrix: ${{ steps.discover.outputs.tools_matrix }}
       has_tools: ${{ steps.discover.outputs.has_tools }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           fetch-depth: 0
       
@@ -78,7 +78,7 @@ jobs:
             python-version: "3.9"
     
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       
       - name: Setup Python ${{ matrix.python-version }}
         uses: actions/setup-python@v5

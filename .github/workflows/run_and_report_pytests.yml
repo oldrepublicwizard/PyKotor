@@ -106,7 +106,7 @@ jobs:
         }
       shell: pwsh
 
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v6
     - name: Discover tool for dependency setup
       id: discover-tool
       shell: bash
@@ -198,7 +198,7 @@ jobs:
       cancel-in-progress: true
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Download all artifacts
         uses: actions/download-artifact@v4
