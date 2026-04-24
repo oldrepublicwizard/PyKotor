@@ -202,6 +202,11 @@ class CameraController:
         self.state.sync_to_camera(camera)
         self.state.last_update_time = time.time()
 
+        # Bound as an instance attribute so the public API is always present on
+        # every instance — prevents AttributeError if class-level lookup fails
+        # (e.g. stale .pyc cache or mismatched installed-package version).
+        self.has_pending_motion = self._has_pending_motion
+
     def sync_from_camera(self) -> None:
         """Sync controller state from the current camera (e.g. after snap-to-selection)."""
         self.state.sync_to_camera(self.camera)
@@ -637,8 +642,12 @@ class CameraController:
         if distance is not None:
             self.set_distance(distance, instant=instant)
 
-    def has_pending_motion(self, *, epsilon: float = 1e-4) -> bool:
-        """Return True when smoothing still has camera state left to converge."""
+    def _has_pending_motion(self, *, epsilon: float = 1e-4) -> bool:
+        """Return True when smoothing still has camera state left to converge.
+
+        Exposed publicly as ``self.has_pending_motion`` (bound in ``__init__``)
+        so it is always accessible as an instance attribute.
+        """
         focal = self.state.current_focal_point
         target = self.state.target_focal_point
         return (

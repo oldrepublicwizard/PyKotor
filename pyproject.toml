@@ -81,7 +81,7 @@ keywords = ["editor", "holocron", "holopatcher", "kotor", "library", "pykotor", 
 license = {text = "LGPL-3.0-or-later License"}
 readme = {content-type = "text/markdown", file = "README.md"}
 requires-python = ">=3.8"
-version = "2.3.5"
+version = "2.3.11"
 
 # Re-export every optional-dependency set from Libraries/PyKotor/pyproject.toml so
 # that anything previously installable as `pykotor[<extra>]` is also reachable via
