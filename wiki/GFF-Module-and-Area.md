@@ -67,8 +67,8 @@ The local ARE schema stores the main lighting state as RGB integers plus two sha
 | ----- | ---- | ----------- |
 | `SunAmbientColor` | color | Ambient light color RGB |
 | `SunDiffuseColor` | color | Sun diffuse light color RGB |
-| `SunShadows` | [byte](GFF-File-Format#gff-data-types) | Enable shadow rendering |
-| `ShadowOpacity` | [byte](GFF-File-Format#gff-data-types) | Shadow opacity (0-255) |
+| `SunShadows` | byte | Enable shadow rendering |
+| `ShadowOpacity` | byte | Shadow opacity (0-255) |
 | `DynAmbientColor` | color | Dynamic ambient light RGB |
 
 ## Fog Settings
@@ -77,7 +77,7 @@ Fog is also explicit in the local read path: `SunFogOn` defaults to `0`, `SunFog
 
 | Field | Type | Description |
 | ----- | ---- | ----------- |
-| `SunFogOn` | [byte](GFF-File-Format#gff-data-types) | Enable fog rendering |
+| `SunFogOn` | byte | Enable fog rendering |
 | `SunFogNear` | float | Fog start distance (default 10000.0) [[`are.py` L380](https://github.com/OpenKotOR/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/are.py#L380)] |
 | `SunFogFar` | float | Fog end distance (default 10000.0) [[`are.py` L381](https://github.com/OpenKotOR/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/are.py#L381)] |
 | `SunFogColor` | color | Fog color RGB |
@@ -90,12 +90,12 @@ The moon-lighting block remains in the schema and is preserved by the local read
 | ----- | ---- | ----------- |
 | `MoonAmbientColor` | color | Moon ambient light color |
 | `MoonDiffuseColor` | color | Moon diffuse light color |
-| `MoonFogOn` | [byte](GFF-File-Format#gff-data-types) | Moon fog toggle |
+| `MoonFogOn` | byte | Moon fog toggle |
 | `MoonFogNear` | float | Moon fog start distance |
 | `MoonFogFar` | float | Moon fog end distance |
 | `MoonFogColor` | color | Moon fog color |
-| `MoonShadows` | [byte](GFF-File-Format#gff-data-types) | Moon-shadow toggle |
-| `IsNight` | [byte](GFF-File-Format#gff-data-types) | Night-state flag |
+| `MoonShadows` | byte | Moon-shadow toggle |
+| `IsNight` | byte | Night-state flag |
 
 ## Grass Rendering
 
@@ -161,17 +161,17 @@ The area-behavior block is mostly scalar flag state in the local schema. `constr
 
 | Field | Type | Description |
 | ----- | ---- | ----------- |
-| `Unescapable` | [byte](GFF-File-Format#gff-data-types) | Cannot use save/travel functions |
-| `DisableTransit` | [byte](GFF-File-Format#gff-data-types) | Cannot travel to other modules |
-| `StealthXPEnabled` | [byte](GFF-File-Format#gff-data-types) | Award stealth XP |
+| `Unescapable` | byte | Cannot use save/travel functions |
+| `DisableTransit` | byte | Cannot travel to other modules |
+| `StealthXPEnabled` | byte | Award stealth XP |
 | `StealthXPLoss` | [int32](GFF-File-Format#gff-data-types) | Stealth detection XP penalty |
 | `StealthXPMax` | [int32](GFF-File-Format#gff-data-types) | Maximum stealth XP per area |
-| `DayNightCycle` | [byte](GFF-File-Format#gff-data-types) | Day/night-cycle toggle [[`are.py` L421](https://github.com/OpenKotOR/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/are.py#L421), [reone `are.cpp` L309](https://github.com/seedhartha/reone/blob/master/src/libs/resource/parser/gff/are.cpp#L309)] |
+| `DayNightCycle` | byte | Day/night-cycle toggle [[`are.py` L421](https://github.com/OpenKotOR/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/are.py#L421), [reone `are.cpp` L309](https://github.com/seedhartha/reone/blob/master/src/libs/resource/parser/gff/are.cpp#L309)] |
 | `LoadScreenID` | UInt16 | Loading screen to display [[`are.py` L422](https://github.com/OpenKotOR/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/are.py#L422), [reone `are.cpp` L339](https://github.com/seedhartha/reone/blob/master/src/libs/resource/parser/gff/are.cpp#L339)] |
-| `NoRest` | [byte](GFF-File-Format#gff-data-types) | No-rest area flag [[`are.py` L423](https://github.com/OpenKotOR/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/are.py#L423), [reone `are.cpp` L359](https://github.com/seedhartha/reone/blob/master/src/libs/resource/parser/gff/are.cpp#L359)] |
-| `NoHangBack` | [byte](GFF-File-Format#gff-data-types) | Hang-back behavior flag [[`are.py` L424](https://github.com/OpenKotOR/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/are.py#L424)] |
-| `PlayerOnly` | [byte](GFF-File-Format#gff-data-types) | Player-only area flag [[`are.py` L425](https://github.com/OpenKotOR/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/are.py#L425)] |
-| `PlayerVsPlayer` | [byte](GFF-File-Format#gff-data-types) | Player-versus-player flag [[`are.py` L426](https://github.com/OpenKotOR/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/are.py#L426)] |
+| `NoRest` | byte | No-rest area flag [[`are.py` L423](https://github.com/OpenKotOR/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/are.py#L423), [reone `are.cpp` L359](https://github.com/seedhartha/reone/blob/master/src/libs/resource/parser/gff/are.cpp#L359)] |
+| `NoHangBack` | byte | Hang-back behavior flag [[`are.py` L424](https://github.com/OpenKotOR/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/are.py#L424)] |
+| `PlayerOnly` | byte | Player-only area flag [[`are.py` L425](https://github.com/OpenKotOR/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/are.py#L425)] |
+| `PlayerVsPlayer` | byte | Player-versus-player flag [[`are.py` L426](https://github.com/OpenKotOR/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/are.py#L426)] |
 
 ## Skill Check Modifiers
 
@@ -552,8 +552,8 @@ This subsection needs one distinction that the older text blurred: PyKotor reads
 
 | Field | Type | Description |
 | ----- | ---- | ----------- |
-| `Mod_IsSaveGame` | [byte](GFF-File-Format#gff-data-types) | Module is from save file |
-| `Mod_XPScale` | [byte](GFF-File-Format#gff-data-types) | Experience point multiplier (0-200%) |
+| `Mod_IsSaveGame` | byte | Module is from save file |
+| `Mod_XPScale` | byte | Experience point multiplier (0-200%) |
 
 So `Mod_IsSaveGame` belongs here as a schema-visible field, but not as a value the current local reader fully round-trips. [[`construct_ifo` XP read](https://github.com/OpenKotOR/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/ifo.py#L141), [`dismantle_ifo` savegame write](https://github.com/OpenKotOR/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/ifo.py#L170-L181), [reone `parseIFO`](https://github.com/seedhartha/reone/blob/main/src/libs/resource/parser/gff/ifo.cpp#L46-L78)]
 
@@ -567,8 +567,8 @@ These timing fields are still part of the active schema in both codebases even t
 | `Mod_StartDay` | UInt32 | Module start day |
 | `Mod_StartHour` | UInt32 | Module start hour |
 | `Mod_StartYear` | UInt32 | Module start year |
-| `Mod_DawnHour` | [byte](GFF-File-Format#gff-data-types) | Dawn start hour |
-| `Mod_DuskHour` | [byte](GFF-File-Format#gff-data-types) | Dusk start hour |
+| `Mod_DawnHour` | byte | Dawn start hour |
+| `Mod_DuskHour` | byte | Dusk start hour |
 | `Mod_MinPerHour` | UInt32 | Minutes per in-game hour |
 
 For now, these remain documented as schema-visible timing fields rather than as proven live day/night controls in KotOR retail. [[`construct_ifo` time-field reads](https://github.com/OpenKotOR/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/ifo.py#L134-L141), [reone `parseIFO`](https://github.com/seedhartha/reone/blob/main/src/libs/resource/parser/gff/ifo.cpp#L34-L78)]

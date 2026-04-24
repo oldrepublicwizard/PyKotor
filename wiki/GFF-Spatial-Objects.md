@@ -75,9 +75,9 @@ UTD files store door templates for all interactive doors in an area. A door can 
 
 | Field | Type | Description |
 | ----- | ---- | ----------- |
-| `GenericType` | [byte](GFF-File-Format#gff-data-types) | Index into `genericdoors.2da` (door model, textures, animations) [[`utd.py` `construct_utd`](https://github.com/OpenKotOR/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/utd.py#L122), [reone `utd.cpp`](https://github.com/seedhartha/reone/blob/master/src/libs/resource/parser/gff/utd.cpp)] |
+| `GenericType` | byte | Index into `genericdoors.2da` (door model, textures, animations) [[`utd.py` `construct_utd`](https://github.com/OpenKotOR/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/utd.py#L122), [reone `utd.cpp`](https://github.com/seedhartha/reone/blob/master/src/libs/resource/parser/gff/utd.cpp)] |
 | `Appearance` | [DWord](GFF-File-Format#gff-data-types) | Unused secondary appearance value (always 0 in retail files) [[`utd.py` `UTD.unused_appearance`](https://github.com/OpenKotOR/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/utd.py#L122)] |
-| `AnimationState` | [byte](GFF-File-Format#gff-data-types) | Current [animation](MDL-MDX-File-Format#animation-header) state (always 0 in templates) |
+| `AnimationState` | byte | Current [animation](MDL-MDX-File-Format#animation-header) state (always 0 in templates) |
 
 **Appearance System:**
 
@@ -87,13 +87,13 @@ UTD files store door templates for all interactive doors in an area. A door can 
 
 | Field | Type | Description |
 | ----- | ---- | ----------- |
-| `Locked` | [byte](GFF-File-Format#gff-data-types) | Door is currently locked |
-| `Lockable` | [byte](GFF-File-Format#gff-data-types) | Door can be locked/unlocked |
-| `KeyRequired` | [byte](GFF-File-Format#gff-data-types) | Door requires a specific inventory item to open |
+| `Locked` | byte | Door is currently locked |
+| `Lockable` | byte | Door can be locked/unlocked |
+| `KeyRequired` | byte | Door requires a specific inventory item to open |
 | `KeyName` | [CExoString](GFF-File-Format#gff-data-types) | Tag of the required key item in the player's inventory |
-| `AutoRemoveKey` | [byte](GFF-File-Format#gff-data-types) | Key item is consumed after a successful use |
-| `OpenLockDC` | [byte](GFF-File-Format#gff-data-types) | Security skill DC to pick lock |
-| `CloseLockDC` (KotOR2) | [byte](GFF-File-Format#gff-data-types) | Security skill DC to lock door |
+| `AutoRemoveKey` | byte | Key item is consumed after a successful use |
+| `OpenLockDC` | byte | Security skill DC to pick lock |
+| `CloseLockDC` (KotOR2) | byte | Security skill DC to lock door |
 
 Lock fields defined in [`utd.py` `UTD`](https://github.com/OpenKotOR/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/utd.py#L18).
 
@@ -103,11 +103,11 @@ Lock fields defined in [`utd.py` `UTD`](https://github.com/OpenKotOR/PyKotor/blo
 | ----- | ---- | ----------- |
 | `HP` | [int16](GFF-File-Format#gff-data-types) | Maximum hit points |
 | `CurrentHP` | [int16](GFF-File-Format#gff-data-types) | Current hit points |
-| `Hardness` | [byte](GFF-File-Format#gff-data-types) | Damage reduction |
-| `Min1HP` (KotOR2) | [byte](GFF-File-Format#gff-data-types) | Cannot drop below 1 HP |
-| `Fort` | [byte](GFF-File-Format#gff-data-types) | Fortitude save (always 0) |
-| `Ref` | [byte](GFF-File-Format#gff-data-types) | Reflex save (always 0) |
-| `Will` | [byte](GFF-File-Format#gff-data-types) | Will save (always 0) |
+| `Hardness` | byte | Damage reduction |
+| `Min1HP` (KotOR2) | byte | Cannot drop below 1 HP |
+| `Fort` | byte | Fortitude save (always 0) |
+| `Ref` | byte | Reflex save (always 0) |
+| `Will` | byte | Will save (always 0) |
 
 **Destructible Doors:**
 
@@ -118,9 +118,9 @@ Lock fields defined in [`utd.py` `UTD`](https://github.com/OpenKotOR/PyKotor/blo
 
 | Field | Type | Description |
 | ----- | ---- | ----------- |
-| `Plot` | [byte](GFF-File-Format#gff-data-types) | Plot-critical (cannot be destroyed) |
-| `Static` | [byte](GFF-File-Format#gff-data-types) | Door is static geometry (no interaction) |
-| `Interruptable` | [byte](GFF-File-Format#gff-data-types) | Opening can be interrupted |
+| `Plot` | byte | Plot-critical (cannot be destroyed) |
+| `Static` | byte | Door is static geometry (no interaction) |
+| `Interruptable` | byte | Opening can be interrupted |
 | `Conversation` | *ResRef* | Dialog file when used |
 | `Faction` | [DWord](GFF-File-Format#gff-data-types) | Faction identifier [[`utd.py` `construct_utd`](https://github.com/OpenKotOR/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/utd.py#L122)] |
 
@@ -150,13 +150,13 @@ Lock fields defined in [`utd.py` `UTD`](https://github.com/OpenKotOR/PyKotor/blo
 
 | Field | Type | Description |
 | ----- | ---- | ----------- |
-| `TrapDetectable` | [byte](GFF-File-Format#gff-data-types) | Trap can be detected |
-| `TrapDetectDC` | [byte](GFF-File-Format#gff-data-types) | Awareness DC to detect trap |
-| `TrapDisarmable` | [byte](GFF-File-Format#gff-data-types) | Trap can be disarmed |
-| `DisarmDC` | [byte](GFF-File-Format#gff-data-types) | Security DC to disarm trap |
-| `TrapFlag` | [byte](GFF-File-Format#gff-data-types) | Trap is active |
-| `TrapOneShot` | [byte](GFF-File-Format#gff-data-types) | Trap triggers only once |
-| `TrapType` | [byte](GFF-File-Format#gff-data-types) | Index into `traps.2da` |
+| `TrapDetectable` | byte | Trap can be detected |
+| `TrapDetectDC` | byte | Awareness DC to detect trap |
+| `TrapDisarmable` | byte | Trap can be disarmed |
+| `DisarmDC` | byte | Security DC to disarm trap |
+| `TrapFlag` | byte | Trap is active |
+| `TrapOneShot` | byte | Trap triggers only once |
+| `TrapType` | byte | Index into `traps.2da` |
 
 **Trap System fields** are defined in `traps.2da` indexed by `TrapType` [[`utd.py`](https://github.com/OpenKotOR/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/utd.py#L18)].
 
@@ -167,7 +167,7 @@ Lock fields defined in [`utd.py` `UTD`](https://github.com/OpenKotOR/PyKotor/blo
 | `LoadScreenID` | [DWord](GFF-File-Format#gff-data-types) | Loading screen to show [[`utd.py` `construct_utd`](https://github.com/OpenKotOR/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/utd.py#L122), [reone `utd.cpp`](https://github.com/seedhartha/reone/blob/master/src/libs/resource/parser/gff/utd.cpp)] |
 | `LinkedTo` | [CExoString](GFF-File-Format#gff-data-types) | Destination waypoint tag (read by reone; not yet in PyKotor `construct_utd`) [[reone `utd.cpp`](https://github.com/seedhartha/reone/blob/master/src/libs/resource/parser/gff/utd.cpp)] |
 | `LinkedToFlags` | [DWord](GFF-File-Format#gff-data-types) | Transition behavior flags [[reone `utd.cpp`](https://github.com/seedhartha/reone/blob/master/src/libs/resource/parser/gff/utd.cpp)] |
-| `OpenState` (KotOR2) | [byte](GFF-File-Format#gff-data-types) | Door initial open state [[`utd.py` `construct_utd`](https://github.com/OpenKotOR/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/utd.py#L122)] |
+| `OpenState` (KotOR2) | byte | Door initial open state [[`utd.py` `construct_utd`](https://github.com/OpenKotOR/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/utd.py#L122)] |
 
 These transition and state fields are read from the UTD template. `LinkedTo`/`LinkedToFlags` are confirmed by reone; `OpenState` and `LoadScreenID` by PyKotor.
 
@@ -176,7 +176,7 @@ These transition and state fields are read from the UTD template. `LinkedTo`/`Li
 | Field | Type | Description |
 | ----- | ---- | ----------- |
 | `PortraitId` | [word](GFF-File-Format#gff-data-types) | Portrait icon identifier |
-| `PaletteID` | [byte](GFF-File-Format#gff-data-types) | Toolset palette category |
+| `PaletteID` | byte | Toolset palette category |
 
 ## Implementation Notes
 
@@ -255,8 +255,8 @@ UTP files store placeable object templates: containers, furniture, switches, wor
 | Field | Type | Description |
 | ----- | ---- | ----------- |
 | `Appearance` | UInt32 | Index into [`placeables.2da`](2DA-File-Format#placeables2da) |
-| `Type` | [byte](GFF-File-Format#gff-data-types) | Placeable type category |
-| `AnimationState` | [byte](GFF-File-Format#gff-data-types) | Current [animation](MDL-MDX-File-Format#animation-header) state |
+| `Type` | byte | Placeable type category |
+| `AnimationState` | byte | Current [animation](MDL-MDX-File-Format#animation-header) state |
 
 **Appearance System:**
 
@@ -266,16 +266,16 @@ UTP files store placeable object templates: containers, furniture, switches, wor
 
 | Field | Type | Description |
 | ----- | ---- | ----------- |
-| `HasInventory` | [byte](GFF-File-Format#gff-data-types) | Placeable contains items |
+| `HasInventory` | byte | Placeable contains items |
 | `ItemList` | [List](GFF-File-Format#gff-data-types) | Items in inventory |
-| `BodyBag` | [byte](GFF-File-Format#gff-data-types) | Container for corpse loot |
+| `BodyBag` | byte | Container for corpse loot |
 
 **ItemList Struct fields:**
 
 - `InventoryRes` (*ResRef*): [UTI](GFF-File-Format#uti-item) template *ResRef*
 - `Repos_PosX` ([word](GFF-File-Format#gff-data-types)): Grid X position (optional)
 - `Repos_Posy` ([word](GFF-File-Format#gff-data-types)): Grid Y position (optional)
-- `Dropable` ([byte](GFF-File-Format#gff-data-types)): Can drop item
+- `Dropable` (byte): Can drop item
 
 **Container Behavior:**
 
@@ -286,14 +286,14 @@ UTP files store placeable object templates: containers, furniture, switches, wor
 
 | Field | Type | Description |
 | ----- | ---- | ----------- |
-| `Locked` | [byte](GFF-File-Format#gff-data-types) | Placeable is currently locked |
-| `Lockable` | [byte](GFF-File-Format#gff-data-types) | Can be locked/unlocked |
-| `KeyRequired` | [byte](GFF-File-Format#gff-data-types) | Placeable requires a specific inventory item to open |
+| `Locked` | byte | Placeable is currently locked |
+| `Lockable` | byte | Can be locked/unlocked |
+| `KeyRequired` | byte | Placeable requires a specific inventory item to open |
 | `KeyName` | [CExoString](GFF-File-Format#gff-data-types) | Tag of the required key item in the player's inventory |
-| `AutoRemoveKey` | [byte](GFF-File-Format#gff-data-types) | Key item is consumed after a successful use |
-| `OpenLockDC` | [byte](GFF-File-Format#gff-data-types) | Security skill DC to pick lock |
-| `CloseLockDC` (KotOR2) | [byte](GFF-File-Format#gff-data-types) | Security DC to lock |
-| `OpenLockDiff` (KotOR2) | [byte](GFF-File-Format#gff-data-types) | Additional lock difficulty [[`utp.py` `dismantle_utp`](https://github.com/OpenKotOR/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/utp.py#L108)] |
+| `AutoRemoveKey` | byte | Key item is consumed after a successful use |
+| `OpenLockDC` | byte | Security skill DC to pick lock |
+| `CloseLockDC` (KotOR2) | byte | Security DC to lock |
+| `OpenLockDiff` (KotOR2) | byte | Additional lock difficulty [[`utp.py` `dismantle_utp`](https://github.com/OpenKotOR/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/utp.py#L108)] |
 | `OpenLockDiffMod` (KotOR2) | [int8](GFF-File-Format#gff-data-types) | Modifier to lock difficulty [[`utp.py` `dismantle_utp`](https://github.com/OpenKotOR/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/utp.py#L108)] |
 
 Lock fields defined in [`utp.py` `UTP`](https://github.com/OpenKotOR/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/utp.py#L19).
@@ -304,11 +304,11 @@ Lock fields defined in [`utp.py` `UTP`](https://github.com/OpenKotOR/PyKotor/blo
 | ----- | ---- | ----------- |
 | `HP` | [int16](GFF-File-Format#gff-data-types) | Maximum hit points |
 | `CurrentHP` | [int16](GFF-File-Format#gff-data-types) | Current hit points |
-| `Hardness` | [byte](GFF-File-Format#gff-data-types) | Damage reduction |
-| `Min1HP` (KotOR2) | [byte](GFF-File-Format#gff-data-types) | Cannot drop below 1 HP |
-| `Fort` | [byte](GFF-File-Format#gff-data-types) | Fortitude save (usually 0) |
-| `Ref` | [byte](GFF-File-Format#gff-data-types) | Reflex save (usually 0) |
-| `Will` | [byte](GFF-File-Format#gff-data-types) | Will save (usually 0) |
+| `Hardness` | byte | Damage reduction |
+| `Min1HP` (KotOR2) | byte | Cannot drop below 1 HP |
+| `Fort` | byte | Fortitude save (usually 0) |
+| `Ref` | byte | Reflex save (usually 0) |
+| `Will` | byte | Will save (usually 0) |
 
 **Destructible Placeables:**
 
@@ -318,13 +318,13 @@ Lock fields defined in [`utp.py` `UTP`](https://github.com/OpenKotOR/PyKotor/blo
 
 | Field | Type | Description |
 | ----- | ---- | ----------- |
-| `Plot` | [byte](GFF-File-Format#gff-data-types) | Plot-critical (cannot be destroyed) |
-| `Static` | [byte](GFF-File-Format#gff-data-types) | Static geometry (no interaction) |
-| `Useable` | [byte](GFF-File-Format#gff-data-types) | Can be clicked/used |
+| `Plot` | byte | Plot-critical (cannot be destroyed) |
+| `Static` | byte | Static geometry (no interaction) |
+| `Useable` | byte | Can be clicked/used |
 | `Conversation` | *ResRef* | [Dialog](GFF-Creature-and-Dialogue#dlg) file when used |
 | `Faction` | [DWord](GFF-File-Format#gff-data-types) | Faction identifier [[`utp.py` `construct_utp`](https://github.com/OpenKotOR/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/utp.py#L108)] |
-| `PartyInteract` | [byte](GFF-File-Format#gff-data-types) | Requires party member selection |
-| `NotBlastable` (KotOR2) | [byte](GFF-File-Format#gff-data-types) | Immune to area damage |
+| `PartyInteract` | byte | Requires party member selection |
+| `NotBlastable` (KotOR2) | byte | Immune to area damage |
 
 **Usage Patterns:**
 
@@ -358,13 +358,13 @@ Lock fields defined in [`utp.py` `UTP`](https://github.com/OpenKotOR/PyKotor/blo
 
 | Field | Type | Description |
 | ----- | ---- | ----------- |
-| `TrapDetectable` | [byte](GFF-File-Format#gff-data-types) | Trap can be detected |
-| `TrapDetectDC` | [byte](GFF-File-Format#gff-data-types) | Awareness DC to detect trap |
-| `TrapDisarmable` | [byte](GFF-File-Format#gff-data-types) | Trap can be disarmed |
-| `DisarmDC` | [byte](GFF-File-Format#gff-data-types) | Security DC to disarm trap |
-| `TrapFlag` | [byte](GFF-File-Format#gff-data-types) | Trap is active |
-| `TrapOneShot` | [byte](GFF-File-Format#gff-data-types) | Trap triggers only once |
-| `TrapType` | [byte](GFF-File-Format#gff-data-types) | Index into [`traps.2da`](2DA-File-Format#traps2da) ([trap definitions](2DA-File-Format#traps2da)) |
+| `TrapDetectable` | byte | Trap can be detected |
+| `TrapDetectDC` | byte | Awareness DC to detect trap |
+| `TrapDisarmable` | byte | Trap can be disarmed |
+| `DisarmDC` | byte | Security DC to disarm trap |
+| `TrapFlag` | byte | Trap is active |
+| `TrapOneShot` | byte | Trap triggers only once |
+| `TrapType` | byte | Index into [`traps.2da`](2DA-File-Format#traps2da) ([trap definitions](2DA-File-Format#traps2da)) |
 
 **Trap System fields** are defined in [`traps.2da`](2DA-File-Format#traps2da) indexed by `TrapType` [[`utp.py`](https://github.com/OpenKotOR/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/utp.py#L19)].
 
@@ -373,7 +373,7 @@ Lock fields defined in [`utp.py` `UTP`](https://github.com/OpenKotOR/PyKotor/blo
 | Field | Type | Description |
 | ----- | ---- | ----------- |
 | `PortraitId` | [word](GFF-File-Format#gff-data-types) | Portrait icon identifier |
-| `PaletteID` | [byte](GFF-File-Format#gff-data-types) | Toolset palette category |
+| `PaletteID` | byte | Toolset palette category |
 
 ## Implementation Notes
 
@@ -444,7 +444,7 @@ Use community write-ups for **playtesting and tooling**; **UTT fields** follow t
 | ----- | ---- | ----------- |
 | `Type` | [int32](GFF-File-Format#gff-data-types) | Trigger type (0=Generic, 1=Transition, 2=Trap) [[`utt.py` `construct_utt`](https://github.com/OpenKotOR/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/utt.py#L103), [reone `utt.cpp`](https://github.com/seedhartha/reone/blob/master/src/libs/resource/parser/gff/utt.cpp)] |
 | `Faction` | [DWord](GFF-File-Format#gff-data-types) | Faction identifier |
-| `Cursor` | [byte](GFF-File-Format#gff-data-types) | Cursor icon when hovered (0=None, 1=Door, etc) |
+| `Cursor` | byte | Cursor icon when hovered (0=None, 1=Door, etc) |
 | `HighlightHeight` | Float | Height of selection highlight |
 
 Trigger type values defined in [`utt.py` `UTT.type`](https://github.com/OpenKotOR/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/utt.py#L17).
