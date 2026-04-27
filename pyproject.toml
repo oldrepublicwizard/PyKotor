@@ -10,7 +10,8 @@ requires = [
 # plus workspace-level GUI/test tooling so `uv sync` at the root installs
 # every dev dependency previously only available from the PyKotor sub-project.
 dev = [
-    "pytest-qt>=4.5.0",
+    "pytest-qt>=4.4.0,<4.5.0; python_version < \"3.9\"",
+    "pytest-qt>=4.5.0; python_version >= \"3.9\"",
     "pytest-timeout>=2.4.0",
     "astroid>=3.2.0,<3.5.0; python_version<\"3.9\"",
     "astroid>=3.2.0; python_version>=\"3.9\"",
@@ -74,7 +75,8 @@ dependencies = [
   "holopazaak>=2.0.0",
   "kotordiff>=1.0.1",
   "numpy>=1.24.4",
-  "matplotlib>=3.9.4",
+  "matplotlib>=3.7.5,<3.9.4; python_version < \"3.9\"",
+  "matplotlib>=3.9.4; python_version >= \"3.9\"",
 ]
 description = "PyKotor workspace - meta-package for PyKotor ecosystem"
 keywords = ["editor", "holocron", "holopatcher", "kotor", "library", "pykotor", "toolset", "tslpatcher"]
