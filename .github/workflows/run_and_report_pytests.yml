@@ -106,7 +106,7 @@ jobs:
         }
       shell: pwsh
 
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v6
     - name: Discover tool for dependency setup
       id: discover-tool
       shell: bash
@@ -131,7 +131,7 @@ jobs:
         PYTHON_SCRIPT
     - name: Set up ${{ matrix.python_pypy }} ${{ matrix.python-version }}
       if: ${{ matrix.python_pypy == 'pypy' }}
-      uses: actions/setup-python@v5
+      uses: actions/setup-python@v6
       with:
         python-version: ${{ env.PYTHON_VERSION }}
         architecture: ${{ matrix.architecture }}
@@ -181,7 +181,7 @@ jobs:
 
     - name: Upload Pytest Reports
       if: ${{ success() || failure() }}
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v7
       with:
         name: pytest_report_${{ matrix.os }}_${{ matrix.python_pypy }}_${{ matrix.python-version }}_${{ matrix.architecture }}
         path: |
@@ -198,10 +198,10 @@ jobs:
       cancel-in-progress: true
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Download all artifacts
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           path: all_pytest_reports
           pattern: pytest_report_*

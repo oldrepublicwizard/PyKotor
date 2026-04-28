@@ -59,13 +59,13 @@ Each [SSF file](Audio-and-Localization-Formats#ssf) requires its own section (e.
 | `!SourceFile` | string | Same as section name | Alternative source filename |
 | `!ReplaceFile` | 0/1 | 0 | Overwrite existing file before modifications |
 
-Destination values:
+**Destination values:**
 
 - `Override` or empty: Save to the Override folder
 - `Modules\module.mod`: Insert into a [MOD](Container-Formats#erf), [ERF](Container-Formats#erf), or [RIM](Container-Formats#rim) container
 - Use backslashes for path separators
 
-Replace file behavior:
+**Replace file Behavior:**
 
 - If `FileN=filename.ssf` is used: The [SSF file](Audio-and-Localization-Formats#ssf) will be checked if it exists in the target destination. If it exists, it will be modified in place. If it doesn't exist, a copy from tslpatchdata will be made and modified.
 - If `ReplaceN=filename.ssf` is used: The [SSF file](Audio-and-Localization-Formats#ssf) will be copied from tslpatchdata to the target destination (overwriting any existing file with the same name) and then modified.
@@ -104,11 +104,11 @@ Attack 1=2DAMEMORY10
 Pain 1=-1
 ```
 
-Important notes:
+**Important Notes:**
 
 - Sound entry names are **case-insensitive**
 - Sound entry names must match exactly (including spaces) from the allowed list
-- Negative values, including `-1`, are valid and typically represent "no sound" or an empty sound slot
+- Negative values (including -1) are valid and typically represent "no sound" or unused sound slots
 - Stringref values must be numeric strings
 
 ## Memory Token System
@@ -131,9 +131,9 @@ Battlecry 1=StrRef5
 Attack 1=StrRef12
 ```
 
-Syntax: `StrRef` followed immediately by a numeric token ID.
+**Syntax:** `StrRef` followed immediately by a numeric token ID
 
-When to use: when you want the sound entry to reference a dialog entry you've added to the game's [TLK file](Audio-and-Localization-Formats#tlk).
+**When to use:** When you want the sound entry to reference a dialog entry you've added to the game's [TLK file](Audio-and-Localization-Formats#tlk).
 
 ### 2DAMEMORY Tokens
 
@@ -148,9 +148,9 @@ Selected 1=2DAMEMORY5
 Pain 1=2DAMEMORY10
 ```
 
-Syntax: `2DAMEMORY` followed immediately by a numeric token ID.
+**Syntax:** `2DAMEMORY` followed immediately by a numeric token ID
 
-When to use: when you want the sound entry to reference a value stored in [2DA](2DA-File-Format) memory, typically row indices or other numeric identifiers.
+**When to use:** When you want the sound entry to reference a value stored in [2DA](2DA-File-Format) memory (typically row indices or other numeric identifiers).
 
 ### Token Resolution
 
@@ -197,7 +197,7 @@ If a token references an uninitialized memory slot, the behavior is undefined an
 | `Rejoin party` | 26 | REJOINED_PARTY | Party rejoin sound |
 | `Poisoned` | 27 | POISONED | Poison effect sound |
 
-Note: All sound entry names are case-insensitive when used in `changes.ini`. The spaces in entry names must match exactly, for example `Battlecry 1` rather than `Battlecry1`.
+**Note:** All sound entry names are case-insensitive when used in changes.ini. The spaces in entry names must match exactly (e.g., "Battlecry 1" not "Battlecry1").
 
 ## Examples
 
@@ -267,7 +267,7 @@ Battlecry 1=2DAMEMORY102
 Selected 1=2DAMEMORY103
 ```
 
-Note: The `2DAMEMORY` values in this example would need to extract the actual stringref values from the [2DA](2DA-File-Format) cells, which requires additional configuration in the [2DA](2DA-File-Format) section.
+**Note:** The 2DAMEMORY values in this example would need to extract the actual stringref values from the [2DA](2DA-File-Format) cells, which requires additional configuration in the [2DA](2DA-File-Format) section.
 
 ### Example 4: Replace file Behavior
 
@@ -389,7 +389,7 @@ Attack 1=60003
 Death=60004
 ```
 
-Important: When patching files in containers, ensure that:
+**Important:** When patching files in containers, ensure that:
 
 1. The container file exists in the game directory
 2. The [SSF file](Audio-and-Localization-Formats#ssf) already exists in that container (or use ReplaceN to force overwrite)
@@ -418,7 +418,7 @@ Selected 2=12346
 Selected 3=12347
 ```
 
-Note: The value `-1`, or any negative value, typically represents "no sound" in the game. Setting all entries to `-1` would create a silent character soundset.
+**Note:** The value -1 (or any negative value) typically represents "no sound" in the game engine. Setting all entries to -1 would create a silent character soundset.
 
 ## Advanced Usage
 
@@ -476,53 +476,52 @@ Battlecry 1=20001
 
 ### Common Issues
 
-Problem: Sound entries not applying.
+**Problem:** Sound entries not applying
 
-- Solution: Verify that the sound entry name matches exactly, including spaces, from the [Available Sound Entries](#available-sound-entries) table.
-- Solution: Ensure the [SSF file](Audio-and-Localization-Formats#ssf) exists in the specified source location, typically the `tslpatchdata` folder.
+- **Solution:** Verify that the sound entry name matches exactly (including spaces) from the [Available Sound Entries](#available-sound-entries) table
+- **Solution:** Ensure the [SSF file](Audio-and-Localization-Formats#ssf) exists in the specified source location (tslpatchdata folder)
 
-Problem: Token values not resolving.
+**Problem:** Token values not resolving
 
-- Solution: Ensure [TLK](Audio-and-Localization-Formats#tlk) memory tokens ([StrRef](Audio-and-Localization-Formats#string-references-strref)#) are set before the SSFList section runs.
-- Solution: Ensure [2DA](2DA-File-Format) memory tokens (`2DAMEMORY#`) are set before the SSFList section runs.
-- Solution: Verify token IDs match between where they are set and where they are used.
+- **Solution:** Ensure [TLK](Audio-and-Localization-Formats#tlk) memory tokens ([StrRef](Audio-and-Localization-Formats#string-references-strref)#) are set before SSFList section runs
+- **Solution:** Ensure [2DA](2DA-File-Format) memory tokens (2DAMEMORY#) are set before SSFList section runs
+- **Solution:** Verify token IDs match between where they're set and where they're used
 
-Problem: file not found in destination.
+**Problem:** file not found in destination
 
-- Solution: When using `FileN` syntax, the file must either exist at the destination or in `tslpatchdata`.
-- Solution: Use `ReplaceN` syntax to always copy from `tslpatchdata`.
-- Solution: Set `!ReplaceFile=1` in the file section to force replacement.
+- **Solution:** When using FileN syntax, the file must either exist in destination or in tslpatchdata
+- **Solution:** Use ReplaceN syntax to always copy from tslpatchdata
+- **Solution:** Set `!ReplaceFile=1` in the file section to force replacement
 
-Problem: Incorrect file being loaded.
+**Problem:** Incorrect file being loaded
 
-- Solution: Check that `!SourceFolder` is correct relative to the `tslpatchdata` root.
-- Solution: Verify `!SourceFile` matches the actual filename if it differs from the section name.
-- Solution: Ensure `!DefaultSourceFolder` is set correctly at the SSFList level.
+- **Solution:** Check `!SourceFolder` path is correct relative to tslpatchdata root
+- **Solution:** Verify `!SourceFile` matches the actual filename if different from section name
+- **Solution:** Ensure !DefaultSourceFolder is set correctly at SSFList level
 
-Problem: Container insertion failing.
+**Problem:** Container insertion failing
 
-- Solution: Verify the container file exists in the game directory.
-- Solution: Use backslashes, not forward slashes, in `!Destination` paths.
-- Solution: Ensure the [SSF file](Audio-and-Localization-Formats#ssf) already exists in the container if you are not using `ReplaceN` syntax.
+- **Solution:** Verify the container file exists in the game directory
+- **Solution:** Use backslashes (not forward slashes) in !Destination paths
+- **Solution:** Ensure the [SSF file](Audio-and-Localization-Formats#ssf) already exists in the container if not using ReplaceN syntax
 
 ### Installation Order
 
-HoloPatcher processes sections in a specific order. SSFList is processed after:
+TSLPatcher processes sections in a specific order. SSFList is processed after:
 
 1. TLK Appending (TLKList)
 2. Install List
 3. 2DA changes (2DAList)
 4. GFF Changes (GFFList)
 5. Script compilation
-6. HACKList binary patching
 
-This means that memory tokens set in TLKList and 2DAList will be available when SSFList runs. In HoloPatcher's current execution order, SSFList runs as the last patch-list stage.
+This means that memory tokens set in TLKList and 2DAList will be available when SSFList runs. SSFList runs before final file installation operations.
 
 ## Reference
 
 ### Implementation Details
 
-Binary format:
+**Binary format:**
 
 - header: "[SSF](Audio-and-Localization-Formats#ssf) " (4 bytes)
 - Version: "V1.1" (4 bytes)
@@ -531,14 +530,14 @@ Binary format:
 - Padding: 12 x 4 bytes (0xFFFFFFFF) = 48 bytes
 - Total size: ~160 bytes
 
-Default values:
+**Default values:**
 
 - All sound entries default to -1 in a new [SSF file](Audio-and-Localization-Formats#ssf)
 - Replacement behavior defaults to modifying existing files when possible
 - Destination defaults to Override folder
 - Source folder defaults to tslpatchdata root (`.`)
 
-Supported operations:
+**Supported Operations:**
 
 - Read existing [SSF files](Audio-and-Localization-Formats#ssf) from Override or containers
 - Write modified [SSF files](Audio-and-Localization-Formats#ssf) to Override or containers
@@ -560,4 +559,4 @@ Supported operations:
 
 ---
 
-Last updated: Based on PyKotor implementation and TSLPatcher v1.2.10b compatibility.
+**Last Updated:** Based on PyKotor implementation and TSLPatcher v1.2.10b compatibility

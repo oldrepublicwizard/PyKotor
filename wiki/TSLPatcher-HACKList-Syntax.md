@@ -82,7 +82,7 @@ Each [NCS file](NCS-File-Format) requires its own section (e.g., `[myscript.ncs]
 | `!SourceFolder` | string | Inherited from `!DefaultSourceFolder` | Source folder for the [NCS file](NCS-File-Format). Relative path from `mod_path` (typically the tslpatchdata folder). When `.`, refers to the tslpatchdata folder itself. |
 | `!SourceFile` | string | Same as section name | Alternative source filename to load |
 | `!SaveAs` or `!Filename` | string | Same as section name | Final filename to save as |
-| `ReplaceFile` | 0/1 | 0 | Unlike other patch lists, HACKList uses `ReplaceFile` without an exclamation point. |
+| `ReplaceFile` | 0/1 | 0 | **Note:** Unlike other patch lists, HACKList uses `ReplaceFile` (without exclamation point) |
 
 Destination values:
 

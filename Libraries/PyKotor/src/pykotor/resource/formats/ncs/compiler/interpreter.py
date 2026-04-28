@@ -11,7 +11,7 @@ from typing import TYPE_CHECKING, Any, NamedTuple, cast
 
 from pykotor.common.misc import Game
 from pykotor.common.script import DataType
-from pykotor.resource.formats._base import BiowareResource
+from pykotor.resource.formats._base import ComparableMixin
 from pykotor.resource.formats.ncs import NCSInstruction, NCSInstructionType
 from utility.common.geometry import Vector3
 
@@ -29,7 +29,7 @@ else:
     from pykotor.common.scriptdefs import KOTOR_FUNCTIONS, TSL_FUNCTIONS
 
 
-class Interpreter(BiowareResource):
+class Interpreter(ComparableMixin):
     """NCS bytecode interpreter for testing and debugging.
 
     Executes NCS bytecode instructions to test script behavior. Partially implemented
@@ -533,7 +533,7 @@ class Interpreter(BiowareResource):
         self._mocks.pop(function_name)
 
 
-class ObjectHeap(BiowareResource):
+class ObjectHeap(ComparableMixin):
     """Manages object references for non-primitive types in the NCS stack.
 
     This implements a handle-based object management system where non-primitive
@@ -660,7 +660,7 @@ class ObjectHeap(BiowareResource):
         return len(self._objects)
 
 
-class StackV2(BiowareResource):
+class StackV2(ComparableMixin):
     """Byte-accurate stack implementation for NCS bytecode execution.
 
     This class simulates the NWScript VM stack using a bytearray to store
@@ -993,7 +993,7 @@ class StackV2(BiowareResource):
         log.debug("StackV2 cleared: freed %s bytes, %s objects", stack_size, heap_size)
 
 
-class Stack(BiowareResource):
+class Stack(ComparableMixin):
     def __init__(self):
         self._stack: list[StackObject] = []
         self._bp: int = 0
@@ -1816,7 +1816,7 @@ class Stack(BiowareResource):
     def store_state(self): ...
 
 
-class StackObject(BiowareResource):
+class StackObject(ComparableMixin):
     def __init__(self, data_type: DataType, value: float | str | bool | object):  # noqa: FBT001
         self.data_type: DataType = data_type
         self.value = value
@@ -1851,7 +1851,7 @@ class StackSnapshot(NamedTuple):
     stack: list[StackObject]
 
 
-class EngineRoutineMock(BiowareResource):
+class EngineRoutineMock(ComparableMixin):
     def __init__(self, function: ScriptFunction, mock: Callable):
         self.function: ScriptFunction = function
         self.mock: Callable = mock

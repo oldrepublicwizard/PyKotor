@@ -10,7 +10,7 @@ from pathlib import Path  # pyright: ignore[reportMissingImports]
 from typing import TYPE_CHECKING, NamedTuple
 
 from pykotor.common.misc import Game
-from pykotor.resource.formats._base import BiowareResource
+from pykotor.resource.formats._base import ComparableMixin
 from pykotor.resource.formats.ncs.compiler.classes import EntryPointError
 from pykotor.resource.formats.ncs.ncs_auto import compile_nss, write_ncs
 from pykotor.resource.formats.ncs.ncs_data import NCSCompiler
@@ -194,7 +194,7 @@ class KnownExternalCompilers(Enum):
         raise ValueError(msg)
 
 
-class NwnnsscompConfig(BiowareResource):
+class NwnnsscompConfig(ComparableMixin):
     """Unifies the arguments passed to each different version of nwnnsscomp, since no versions offer backwards-compatibility with each other."""
 
     def __init__(

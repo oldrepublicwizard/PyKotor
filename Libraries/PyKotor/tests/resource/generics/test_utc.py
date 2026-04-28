@@ -26,8 +26,14 @@ if UTILITY_PATH.joinpath("utility").exists():
 from typing import TYPE_CHECKING
 
 from pykotor.common.misc import EquipmentSlot
-from pykotor.resource.formats.gff import read_gff
-from pykotor.resource.generics.utc import construct_utc, dismantle_utc
+
+from pykotor.resource.formats.gff import bytes_gff, read_gff
+from pykotor.resource.generics.utc import (
+    bytes_utc,
+    construct_utc,
+    dismantle_utc,
+    read_utc,
+)
 from pykotor.resource.type import ResourceType
 
 if TYPE_CHECKING:
@@ -227,6 +233,24 @@ class TestUTC(TestCase):
         utc = construct_utc(gff)
         self.validate_io(utc)
 
+    def test_read_utc_binary_roundtrip(self) -> None:
+        """Binary path exercises Kaitai pre-check before ``read_gff`` (creature templates vs other GFF types)."""
+        gff = read_gff(TEST_UTC_XML.encode("utf-8"), file_format=ResourceType.GFF_XML)
+        utc = construct_utc(gff)
+        binary = bytes_gff(dismantle_utc(utc), ResourceType.GFF)
+        utc2 = read_utc(binary)
+        self.validate_io(utc2)
+
+    def test_read_utc_rejects_non_utc_binary_gff(self) -> None:
+        """Mislabeled binary GFF (e.g. door as creature) must fail fast with a clear error."""
+        gff = read_gff(TEST_UTC_XML.encode("utf-8"), file_format=ResourceType.GFF_XML)
+        utc = construct_utc(gff)
+        binary = bytearray(bytes_gff(dismantle_utc(utc), ResourceType.GFF))
+        binary[0:4] = b"UTI "
+        with self.assertRaises(ValueError) as ctx:
+            read_utc(bytes(binary))
+        self.assertIn("UTC", str(ctx.exception))
+
     def test_file_io(self):
         """Test reading from a temporary file to ensure file-based reading still works."""
         import os
@@ -380,6 +404,26 @@ class TestUTC(TestCase):
         self.assertEqual(len(utc.inventory), 0)
         self.assertEqual(utc.computer_use, 0)
         self.assertEqual(utc.treat_injury, 0)
+
+    def test_read_utc_validates_binary_utc_header(self) -> None:
+        """read_utc runs Kaitai GFF parse and requires header type ``UTC `` for binary data."""
+        gff = read_gff(TEST_UTC_XML.encode("utf-8"), file_format=ResourceType.GFF_XML)
+        utc = construct_utc(gff)
+        raw = bytes_utc(utc)
+        loaded = read_utc(raw)
+        self.assertEqual(loaded.tag, utc.tag)
+        self.assertEqual(loaded.resref, utc.resref)
+
+    def test_read_utc_rejects_non_utc_binary_gff(self) -> None:
+        """Binary GFF with a different content tag must not load as UTC (avoids wrong creature data)."""
+        gff = read_gff(TEST_UTC_XML.encode("utf-8"), file_format=ResourceType.GFF_XML)
+        raw = bytearray(bytes_utc(construct_utc(gff)))
+        raw[0:4] = b"UTI "
+
+        with self.assertRaisesRegex(
+            ValueError, "Not a valid binary UTC file: GFF header file type is not 'UTC '"
+        ):
+            read_utc(bytes(raw))
 
     def test_utc_empty_roundtrip(self) -> None:
         """Minimal root with empty lists: construct_utc -> dismantle_utc -> construct_utc preserves defaults."""

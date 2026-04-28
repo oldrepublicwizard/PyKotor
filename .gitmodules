@@ -72,3 +72,7 @@
 [submodule "vendor/xoreos-tools"]
 	path = vendor/xoreos-tools
 	url = https://github.com/xoreos/xoreos-tools
+[submodule "vendor/Kotor.NET"]
+	path = vendor/Kotor.NET
+	url = https://github.com/NickHugi/Kotor.NET
+	branch = rework-area-designer

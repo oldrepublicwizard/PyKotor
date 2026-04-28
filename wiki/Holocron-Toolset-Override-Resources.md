@@ -4,7 +4,7 @@
 
 The override folder is the highest-priority resource location in the game. These can be found in the `/override/` folder of your game directory. Override files can be accessed by any module in the game and take priority over core and module resources.
 
-Because override resources take the highest priority and are accessible by any module, conflicts are likely. For example, if a creature file named `n_rodian01` exists in both the *Citadel Station Cantina* and *Nar Shaddaa Loading Docks* and you place a file of the same name in override, both modules will now use the override file even if the creatures were originally different. If you are adding new files or editing existing ones, be cautious. TSL developers often reused the same filename across multiple modules.
+**Warning:** Because override resources take the highest priority and are accessible by any module, conflicts are likely. For example, if a creature file named `n_rodian01` exists in both the *Citadel Station Cantina* and *Nar Shaddaa Loading Docks* and you place a file of the same name in override, both modules will now use the override file, even if the creatures were originally different. If you are adding new files or editing existing ones, be cautious. TSL developers often reused the same filename across multiple modules.
 
 ## Override Tab
 

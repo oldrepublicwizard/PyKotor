@@ -7,7 +7,7 @@ from typing import ClassVar
 from ply import lex
 
 from pykotor.common.script import DataType
-from pykotor.resource.formats._base import BiowareResource
+from pykotor.resource.formats._base import ComparableMixin
 from pykotor.resource.formats.ncs import NCSInstructionType
 from pykotor.resource.formats.ncs.compiler.classes import (
     BinaryOperatorMapping,
@@ -22,7 +22,7 @@ from pykotor.resource.formats.ncs.compiler.classes import (
 )
 
 
-class NssLexer(BiowareResource):
+class NssLexer(ComparableMixin):
     """NSS (NWScript Source) lexer/tokenizer.
 
     Tokenizes NSS source code into tokens for parsing. Handles keywords, operators,
@@ -31,14 +31,13 @@ class NssLexer(BiowareResource):
     References:
     ----------
         PLY (Python Lex-Yacc) library for lexer generation
-
     """
 
     def __init__(
         self,
-        errorlog=lex.NullLogger(),  # noqa: B008
+        errorlog: lex.NullLogger = lex.NullLogger(),  # noqa: B008
         *,
-        nowarn=True,
+        nowarn: bool = True,
     ):
         self.lexer: lex.Lexer = lex.lex(module=self, errorlog=errorlog, nowarn=nowarn)
         self.lexer.begin("INITIAL")

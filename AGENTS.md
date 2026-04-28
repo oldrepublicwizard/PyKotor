@@ -43,3 +43,9 @@ uv run python Tools/HolocronToolset/src/ui/convertui.py
 ```
 
 This works after a successful `uv sync --all-packages --all-extras`. **Python 3.8 is the minimum target.** Dependencies are pinned so that on 3.8 the highest version compatible with 3.8 is used (e.g. `numpy>=1.19.0,<1.25`, `requests>=2.23.0,<2.32.5`, PyQt5 on 3.8 with PyQt5-Qt5 constrained to a version that has Windows wheels). On 3.9+ the same packages use `>=` current/min versions (e.g. `numpy>=1.25`, `requests>=2.32.4`). All such splits use `python_version < \"3.9\"` vs `python_version >= \"3.9\"` (and where needed, e.g. Pillow/PyQt6-sip, additional splits for 3.10+). This keeps 3.9–3.13 working with newer releases while 3.8 gets the latest 3.8-compatible versions.
+
+### Git commits
+
+- Proposed git commands must be copy-paste-ready **single-line** commands only. Do not include comments, shell prompts, or wrapped multi-line blocks.
+- Use the normal PyKotor root add/commit command when only root-level files changed.
+- If a submodule was updated, recommend a single one-line command that commits the PyKotor root changes including the submodule gitlink, then `cd`s into the submodule, runs `git add .`, commits with the same message, pushes when required, and `cd`s back to the PyKotor root.

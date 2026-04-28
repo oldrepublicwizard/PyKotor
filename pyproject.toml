@@ -6,9 +6,56 @@ requires = [
 ]
 
 [dependency-groups]
+# Mirrors Libraries/PyKotor/pyproject.toml [tool.poetry.group.dev.dependencies]
+# plus workspace-level GUI/test tooling so `uv sync` at the root installs
+# every dev dependency previously only available from the PyKotor sub-project.
 dev = [
-    "pytest-qt>=4.4.0",
+    "pytest-qt>=4.4.0,<4.5.0; python_version < \"3.9\"",
+    "pytest-qt>=4.5.0; python_version >= \"3.9\"",
     "pytest-timeout>=2.4.0",
+    "astroid>=3.2.0,<3.5.0; python_version<\"3.9\"",
+    "astroid>=3.2.0; python_version>=\"3.9\"",
+    "autoflake>=2.3.1",
+    "mypy-extensions>=1.1.0; python_version>=\"3.8\"",
+    "mypy>=1.0.0,<1.10.0; python_version<\"3.9\"",
+    "mypy>=1.19.1; python_version>=\"3.9\"",
+    "pyflakes>=2.0.0,<3.4.0; python_version<\"3.9\"",
+    "pylint>=2.0.0,<3.3.9; python_version<\"3.9\"",
+    "pytest-cov>=4.0.0",
+    "pytest-html>=3.0.0,<4.0.0; python_version<\"3.9\"",
+    "pytest-html>=4.2.0; python_version>=\"3.9\"",
+    "pytest-json-report>=1.5.0",
+    "pytest-metadata>=2.0.0,<3.0.0; python_version<\"3.9\"",
+    "pytest-metadata>=3.1.1; python_version>=\"3.9\"",
+    "pytest-xdist>=2.0.0,<3.8.0; python_version<\"3.9\"",
+    "pytest-xdist>=3.8.0; python_version>=\"3.9\"",
+    "pytest>=7.0.0; python_version>=\"3.9\"",
+    "pytest>=7.0.0,<8.0.0; python_version<\"3.9\"",
+    "python-dateutil>=2.9.0.post0",
+    "python-dotenv; python_version<\"3.9\"",
+    "python-dotenv>=1.2.1; python_version>=\"3.9\"",
+    "python-multipart>=0.0.9,<0.0.21; python_version < \"3.10\"",
+    "python-multipart>=0.0.22; python_version >= \"3.10\"",
+    "ruff>=0.5.3,<0.6.0; python_version < \"3.9\"",
+    "ruff>=0.5.3; python_version >= \"3.9\"",
+    "snakeviz; python_version<\"3.9\"",
+    "snakeviz>=2.2.2; python_version>=\"3.9\"",
+    "tomli-w>=1.2.0; python_version>\"3.11\"",
+    "tomli>=2.4.0; python_version>\"3.11\"",
+    "tomli>=2.4.0; python_version<\"3.11\"",
+    "types-cffi>=1.17.0.20250915; python_version>=\"3.9\"",
+    "types-colorama>=0.4.15.20250801; python_version>=\"3.9\"",
+    "types-defusedxml>=0.7.0.20250822; python_version>=\"3.9\"",
+    "types-pillow>=10.2.0.20240822; python_version>=\"3.9\"",
+    "types-psutil>=7.2.2.20260130; python_version>=\"3.9\"",
+    "types-pywin32>=38; python_version>=\"3.9\" and sys_platform == \"win32\"",
+    "types-pyyaml>=6.0.12.20250915; python_version>=\"3.9\"",
+    "types-requests>=2.32.4.20260107; python_version>=\"3.9\"",
+    "types-send2trash>=2.1.0.20260117; python_version>=\"3.9\"",
+    "types-setuptools>=80.10.0.20260124; python_version>=\"3.9\"",
+    "typing-extensions>=4.5.0,<4.9.0; python_version<\"3.9\"",
+    "typing-extensions>=4.15.0; python_version>=\"3.9\"",
+    "typing-inspection>=0.4.2; python_version>=\"3.9\"",
 ]
 
 # Pin PyQt5-Qt5 to a version that has Windows wheels (5.15.11+ dropped win). Required for Python 3.8.
@@ -22,20 +69,39 @@ name = "pykotor-workspace"
 authors = [{ name = "Nick Hugi" }, { name = "th3w1zard1" }]
 maintainers = [{ name = "th3w1zard1", email = "boden.crouch@gmail.com" }]
 dependencies = [
-  "pykotor[render]>=2.3.11",
+  "pykotor[render]>=2.3.12",
   "holocrontoolset>=4.0.0b31",
   "holopatcher>=2.0.0a3",
   "holopazaak>=2.0.0",
   "kotordiff>=1.0.1",
   "numpy>=1.24.4",
-  "matplotlib>=3.7.5",
+  "matplotlib>=3.7.5,<3.9.4; python_version < \"3.9\"",
+  "matplotlib>=3.9.4; python_version >= \"3.9\"",
 ]
 description = "PyKotor workspace - meta-package for PyKotor ecosystem"
 keywords = ["editor", "holocron", "holopatcher", "kotor", "library", "pykotor", "toolset", "tslpatcher"]
 license = {text = "LGPL-3.0-or-later License"}
 readme = {content-type = "text/markdown", file = "README.md"}
 requires-python = ">=3.8"
-version = "2.3.5"
+version = "2.3.12"
+
+# Re-export every optional-dependency set from Libraries/PyKotor/pyproject.toml so
+# that anything previously installable as `pykotor[<extra>]` is also reachable via
+# `pykotor-workspace[<extra>]` from this root project. Each entry forwards to the
+# corresponding pykotor extra; the actual dependency specifiers live in the
+# PyKotor sub-project so we never drift from its pinning logic.
+[project.optional-dependencies]
+all = ["pykotor[encodings,exp,extra,font,gl,updater,render]>=2.3.12"]
+encodings = ["pykotor[encodings]>=2.3.12"]
+exp = ["pykotor[exp]>=2.3.12"]
+extra = ["pykotor[extra]>=2.3.12"]
+font = ["pykotor[font]>=2.3.12"]
+gl = ["pykotor[gl]>=2.3.12"]
+gl_exp = ["pykotor[gl_exp]>=2.3.12"]
+updater = ["pykotor[updater]>=2.3.12"]
+render = ["pykotor[render]>=2.3.12"]
+# Surface pykotor's own dev extra too, for parity with the sub-project.
+dev = ["pykotor[dev]>=2.3.12"]
 
 [tool.setuptools]
 packages = []
@@ -201,7 +267,7 @@ keywords = ["editor", "holocron", "holopatcher", "kotor", "library", "pykotor", 
 
 [tool.poetry.dependencies]
 python = "^3.8"
-pykotor = "^2.3.11"
+pykotor = "^2.3.12"
 holocrontoolset = ">=4.0.0b31"
 holopatcher = ">=2.0.0a3"
 holopazaak = ">=2.0.0"

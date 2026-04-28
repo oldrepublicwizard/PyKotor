@@ -43,9 +43,9 @@ Mods do not normally edit the KEY file. Instead, they place content in the overr
 
 ## File structure overview
 
-KEY files map resource names ([ResRefs](Concepts#resref-resource-reference)) and types to specific locations within [BIF containers](Container-Formats#bif). KotOR uses `chitin.key` as the main **KEY** file which references shipped [BIF files](Container-Formats#bif), and PyKotor's `KeyEntry.bif_index` / `KeyEntry.res_index` properties decode the composite `resource_id` exactly that way. [[PyKotor `KeyEntry.bif_index`](https://github.com/OpenKotOR/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/key/key_data.py#L181-L198), [PyKotor `KeyEntry.res_index`](https://github.com/OpenKotOR/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/key/key_data.py#L191-L198)]
+KEY files map resource names ([ResRefs](Concepts#resref-resource-reference)) and types to specific locations within [BIF containers](Container-Formats#bif). KotOR uses `chitin.key` as the main KEY file which references shipped [BIF files](Container-Formats#bif), and PyKotor's `KeyEntry.bif_index` / `KeyEntry.res_index` properties decode the composite `resource_id` exactly that way. [[PyKotor `KeyEntry.bif_index`](https://github.com/OpenKotOR/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/key/key_data.py#L181-L198), [PyKotor `KeyEntry.res_index`](https://github.com/OpenKotOR/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/key/key_data.py#L191-L198)]
 
-**Modder note:** Mods do not normally edit the **KEY**. The runtime probe in all three binaries checks higher-priority layers before relying on the keyed archive fallback, so shipping override files or module capsules is the normal way to shadow **KEY**-indexed resources. `CExoResMan::Exists @ (/K1/k1_win_gog_swkotor.exe @ 0x00408bc0, /TSL/k2_win_gog_aspyr_swkotor2.exe @ 0x0061b830, /Other BioWare Engines/Aurora/nwmain.exe @ 0x14018f590)`
+Mods do not normally edit the KEY. The runtime probe in all three binaries checks higher-priority layers before relying on the keyed archive fallback, so shipping override files or module capsules is the normal way to shadow KEY-indexed resources. `CExoResMan::Exists @ (/K1/k1_win_gog_swkotor.exe @ 0x00408bc0, /TSL/k2_win_gog_aspyr_swkotor2.exe @ 0x0061b830, /Other BioWare Engines/Aurora/nwmain.exe @ 0x14018f590)`
 
 See:
 
@@ -54,22 +54,22 @@ See:
 
 ### KEY File Purpose
 
-The **KEY** file, specifically `chitin.key` in KotOR, serves as the master index for the shipped archive system:
+The *KEY* file, specifically `chitin.key` in KotOR, serves as the master index for the shipped archive system:
 
-1. **Resource Lookup**: Maps **ResRef** + **Resource Type** ([hex IDs and labels](Resource-Formats-and-Resolution#resource-type-identifiers)) -> [BIF](Container-Formats#bif) location
+1. **Resource Lookup**: Maps *ResRef* + *Resource Type* ([hex IDs and labels](Resource-Formats-and-Resolution#resource-type-identifiers)) -> [BIF](Container-Formats#bif) location
 2. **[BIF](Container-Formats#bif) Registration**: Tracks all [BIF files](Container-Formats#bif) and their install paths
-3. **Resource Naming**: Provides the filename (**ResRef**) missing from [BIF files](Container-Formats#bif)
+3. **Resource Naming**: Provides the filename (*ResRef*) missing from [BIF files](Container-Formats#bif)
 4. **Drive Mapping**: Historical feature indicating which media held each [BIF](Container-Formats#bif):
    - [CD](https://en.wikipedia.org/wiki/Compact_disc)
    - [HD](https://en.wikipedia.org/wiki/Hard_disk_drive)
 
-**Resource resolution (anchored here at function scope):** the current three-binary evidence directly supports **KEY**/BIF as a fallback table layer. It does not require mods to rewrite **KEY**, because higher-priority layers are checked before the keyed archive probe returns success. `CExoResMan::Exists @ (/K1/k1_win_gog_swkotor.exe @ 0x00408bc0, /TSL/k2_win_gog_aspyr_swkotor2.exe @ 0x0061b830, /Other BioWare Engines/Aurora/nwmain.exe @ 0x14018f590)`
+The current three-binary evidence directly supports KEY/BIF as a fallback table layer. It does not require mods to rewrite KEY, because higher-priority layers are checked before the keyed archive probe returns success. `CExoResMan::Exists @ (/K1/k1_win_gog_swkotor.exe @ 0x00408bc0, /TSL/k2_win_gog_aspyr_swkotor2.exe @ 0x0061b830, /Other BioWare Engines/Aurora/nwmain.exe @ 0x14018f590)`
 
-The **KEY** indexes [BIF](Container-Formats#bif) entries only. Higher-priority sources can shadow **KEY**-indexed assets without editing the **KEY**; using override or **MOD** for that is the normal modding practice exposed both by PyKotor's explicit search layers and by the tri-binary resource-manager probes above. [[PyKotor `SearchLocation`](https://github.com/OpenKotOR/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/installation.py#L67-L104)] `CExoResMan::Exists @ (/K1/k1_win_gog_swkotor.exe @ 0x00408bc0, /TSL/k2_win_gog_aspyr_swkotor2.exe @ 0x0061b830, /Other BioWare Engines/Aurora/nwmain.exe @ 0x14018f590)`
+The *KEY* indexes [BIF](Container-Formats#bif) entries only. Higher-priority sources can shadow *KEY*-indexed assets without editing the *KEY*; using override or MOD for that is the normal modding practice exposed both by PyKotor's explicit search layers and by the tri-binary resource-manager probes above. [[PyKotor `SearchLocation`](https://github.com/OpenKotOR/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/installation.py#L67-L104)] `CExoResMan::Exists @ (/K1/k1_win_gog_swkotor.exe @ 0x00408bc0, /TSL/k2_win_gog_aspyr_swkotor2.exe @ 0x0061b830, /Other BioWare Engines/Aurora/nwmain.exe @ 0x14018f590)`
 
-**Implementation:** [`Libraries/PyKotor/src/pykotor/resource/formats/key/`](https://github.com/OpenKotOR/PyKotor/tree/master/Libraries/PyKotor/src/pykotor/resource/formats/key/)
+PyKotor's KEY implementation lives in [`Libraries/PyKotor/src/pykotor/resource/formats/key/`](https://github.com/OpenKotOR/PyKotor/tree/master/Libraries/PyKotor/src/pykotor/resource/formats/key/).
 
-**Cross-reference implementations (line anchors are against `master` and may drift):**
+Cross-reference implementations (line anchors are against `master` and may drift):
 
 - **PyKotor**
 
@@ -140,9 +140,7 @@ Each file entry is 12 bytes:
 | Filename Length | [UInt16](GFF-File-Format#gff-data-types) | `8` (0x08) | `2`    | Length of filename in bytes                                      |
 | Drives          | [UInt16](GFF-File-Format#gff-data-types) | `10` (0x0A) | `2`    | Drive flags (`0x0001=HD0`, `0x0002=CD1`, etc.)                      |
 
-**Drive Flags Explained:**
-
-*Drive Flags* are a legacy feature from the multi-[CD](https://en.wikipedia.org/wiki/Compact_disc) distribution era:
+Drive flags are a legacy feature from the multi-[CD](https://en.wikipedia.org/wiki/Compact_disc) distribution era:
 
 | Flag Value | Meaning | Description |
 | ---------- | ------- | ----------- |
@@ -152,15 +150,11 @@ Each file entry is 12 bytes:
 | `0x0008` | `CD3` ([CD](https://en.wikipedia.org/wiki/Compact_disc) 3) | [BIF](Container-Formats#bif) is on the third game disc |
 | `0x0010` | `CD4` ([CD](https://en.wikipedia.org/wiki/Compact_disc) 4) | [BIF](Container-Formats#bif) is on the fourth game disc |
 
-**Modern Usage:**
-
 In contemporary distributions:
 
 - [Steam](https://store.steampowered.com/)
 - [GOG](https://www.gog.com/)
 - [digital](https://en.wikipedia.org/wiki/Digital_distribution)
-
-**Typical PC installs:**
 
 - All [BIF files](Container-Formats#bif) use `0x0001` (`HD` Flag) since everything is installed locally
 - The engine doesn't prompt for disc swapping
@@ -193,9 +187,7 @@ Each *KEY* entry is `22` (`0x16`) bytes in size:
 | Resource Type | [UInt16](GFF-File-Format#gff-data-types) | `16` (`0x10`) | `2`    | Numeric resource type ID ([wiki table](Resource-Formats-and-Resolution#resource-type-identifiers); PyKotor [`ResourceType`](https://github.com/OpenKotOR/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/type.py))                                         |
 | Resource ID | UInt32   | `18` (`0x12`) | `4`    | Encoded Resource Location (see [Resource ID Encoding](#resource-id-encoding)) (e.g. `0x00000005` for the 5th Resource in the 1st [BIF](Container-Formats#bif)) |
 
-**Critical Structure Packing Note:**
-
-  The *KEY* entry structure must use **[byte](https://en.wikipedia.org/wiki/Byte) or [word](https://en.wikipedia.org/wiki/Word_(computer_architecture)) alignment** (1-[byte](https://en.wikipedia.org/wiki/Byte) or 2-[byte](https://en.wikipedia.org/wiki/Byte) packing). If the structure is packed with `4-[byte](https://en.wikipedia.org/wiki/Byte)` or `8-[byte](https://en.wikipedia.org/wiki/Byte)` alignment, the `UInt32` at offset `0x0012` (`18`) will be incorrectly placed at offset `0x0014` (`20`), causing incorrect *Resource ID* decoding.
+The *KEY* entry structure must use **[byte](https://en.wikipedia.org/wiki/Byte) or [word](https://en.wikipedia.org/wiki/Word_(computer_architecture)) alignment** (1-byte or 2-byte packing). If the structure is packed with 4-byte or 8-byte alignment, the `UInt32` at offset `0x12` (`18`) will be incorrectly placed at offset `0x14` (`20`), causing incorrect *Resource ID* decoding.
 
 On non-Intel platforms, this alignment requirement may cause alignment faults unless the compiler provides an "unaligned" type or special care is taken when accessing the `UInt32` field. The structure should be explicitly packed to ensure the `UInt32` starts at offset `18` (`0x12`) rather than being aligned to a `4-[byte](https://en.wikipedia.org/wiki/Byte)` or `8-[byte](https://en.wikipedia.org/wiki/Byte)` boundary.
 
@@ -210,20 +202,14 @@ The *Resource ID* field encodes both the [BIF](Container-Formats#bif) index and 
 - **bits `31-20`**: [BIF](Container-Formats#bif) Index (top 12 bits) - index into file table
 - **bits `19-0`**: Resource Index (bottom 20 bits) - index within the [BIF](Container-Formats#bif) file
 
-**Decoding:**
-
 ```python
 bif_index = (resource_id >> 20) & 0xFFF  # top 12 bits
 resource_index = resource_id & 0xFFFFF   # bottom 20 bits
 ```
 
-**Encoding:**
-
 ```python
 resource_id = (bif_index << 20) | resource_index
 ```
-
-**Practical Limits:**
 
 - Maximum [BIF](Container-Formats#bif) Files: `4,096` (12-bit [BIF](Container-Formats#bif) index)
 - Maximum Resources per [BIF](Container-Formats#bif) File: `1,048,576` (20-bit resource index)
@@ -232,8 +218,6 @@ These limits are more than sufficient for KotOR, which typically has:
 
 - `~50-100` [BIF](Container-Formats#bif) Files in a full installation
 - `~100-10,000` Resources per [BIF](Container-Formats#bif) File (largest [BIF](Container-Formats#bif) Files are [texture](Texture-Formats#tpc) packs)
-
-**Example:**
 
 Given *Resource ID* `0x00123456`:
 
@@ -313,9 +297,9 @@ BIF containers are the primary storage mechanism for game assets. The game organ
 
 The [modular structure](https://en.wikipedia.org/wiki/Modular_programming) allows for efficient loading and potential platform-specific optimizations. Resources in BIF files are read-only at runtime; mods override them via the `override/` directory or custom [MOD](Container-Formats#erf) or [ERF](Container-Formats#erf) files. The engine loads from BIF only when the resource is not found in [override](Concepts#override-folder), loaded MOD, or save (see [resource resolution order](Concepts#resource-resolution-order)); the [KEY file](Container-Formats#key) supplies the mapping from ResRef to the correct BIF and offset.
 
-**Implementation:** [`Libraries/PyKotor/src/pykotor/resource/formats/bif/`](https://github.com/OpenKotOR/PyKotor/tree/master/Libraries/PyKotor/src/pykotor/resource/formats/bif/)
+PyKotor's BIF implementation lives in [`Libraries/PyKotor/src/pykotor/resource/formats/bif/`](https://github.com/OpenKotOR/PyKotor/tree/master/Libraries/PyKotor/src/pykotor/resource/formats/bif/).
 
-**Cross-reference implementations (line anchors are against `master` and may drift):**
+Cross-reference implementations (line anchors are against `master` and may drift):
 
 - **PyKotor**:
 
@@ -357,14 +341,12 @@ The file header is 20 bytes in size:
 | File Type                 | [char](GFF-File-Format#gff-data-types) | 0 (0x00) | 4    | `"BIFF"` for BIF, `"BZF "` for compressed BIF  |
 | File Version              | [char](GFF-File-Format#gff-data-types) | 4 (0x04) | 4    | `"V1  "` for BIF, `"V1.0"` for BZF             |
 | Variable Resource count   | UInt32  | 8 (0x08) | 4    | Number of variable-size resources              |
-| Fixed Resource count      | UInt32  | 12 (0x0C) | 4    | Number of fixed-size resources (unused, always 0) |
+| Fixed Resource count      | UInt32  | 12 (0x0C) | 4    | Fixed-resource count field |
 | Offset to Variable Resource Table | UInt32 | 16 (0x10) | 4 | offset to variable resource entries            |
 
-**Note on Fixed Resources:** The "Fixed Resource count" field is a legacy holdover from *Neverwinter Nights* (not used in *KotOR*) where some resource types had predetermined sizes. In *KotOR*, this field is always `0` and fixed resource tables are never used. All resources are stored in the variable resource table regardless of their size.
+The fixed-resource field is a legacy holdover from older Aurora-family descriptions. In the KotOR-oriented implementations cited here, current readers expect this field to remain `0` and read all payloads from the variable-resource table instead. [xoreos-docs Torlack `bif.html`](https://github.com/xoreos/xoreos-docs/blob/master/specs/torlack/bif.html) still labels the field at offset `0x000C` as unknown; PyKotor rejects `fixed_res_count > 0`, and the local Andastra `vendor/sotor/core` Rust reader enforces the same constraint.
 
-**Note on header Variations**: [xoreos-docs Torlack `bif.html`](https://github.com/xoreos/xoreos-docs/blob/master/specs/torlack/bif.html) shows the field at offset `0x000C` as “Unknown value” rather than “Fixed Resource count”. In *KotOR* it is always `0`; PyKotor **rejects** `fixed_res_count > 0` ([`io_bif.py` L117–L120](https://github.com/OpenKotOR/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/formats/bif/io_bif.py#L117-L120)), and the local Andastra `vendor/sotor/core` Rust reader now enforces the same constraint.
-
-**References:**
+References:
 
 - [xoreos `biffile.cpp` L64–L67](https://github.com/xoreos/xoreos/blob/f36b681b2a38799ddd6fce0f252b6d7fa781dfc2/src/aurora/biffile.cpp#L64-L67) (fixed count must be 0)
 - [reone `loadHeader` L34–L41](https://github.com/seedhartha/reone/blob/master/src/libs/resource/format/bifreader.cpp#L34-L41)
@@ -382,11 +364,9 @@ Each variable resource entry is 16 bytes:
 | File Size   | `UInt32` | 8 (0x08) | 4    | Uncompressed size of resource data (bytes)                                 |
 | Resource type | `UInt32` | 12 (0x0C) | 4    | Resource type identifier (hex IDs and labels: [Resource Type Identifiers](Resource-Formats-and-Resolution#resource-type-identifiers); PyKotor: `ResourceType` enum)                          |
 
-**Entry Reading Order:**
-
 Entries are read sequentially from the variable resource table. The table is located at the offset specified in the file header. Each entry is exactly 16 bytes, allowing efficient sequential reading.
 
-**References:**
+References:
 
 - [reone `readResourceEntry` L52–L67](https://github.com/seedhartha/reone/blob/master/src/libs/resource/format/bifreader.cpp#L52-L67)
 - [Kotor.NET `VariableResource` L49–L64](https://github.com/NickHugi/Kotor.NET/blob/6dca4a6a1af2fee6e36befb9a6f127c8ba04d3e2/Kotor.NET/Formats/KotorBIF/BIFBinaryStructure.cs#L49-L64)
@@ -401,15 +381,9 @@ Entries are read sequentially from the variable resource table. The table is loc
 | ------------ | ------ | ---------------------------------------------------------------- |
 | Resource Data | [byte](https://en.wikipedia.org/wiki/Byte)[] | Raw binary data for each resource                               |
 
-**Resource Storage Details:**
+Resources are stored sequentially but not necessarily contiguously; each row supplies its own absolute file offset and payload size, and the stored bytes remain in their native format without an additional BIF wrapper.
 
-- Resources are stored sequentially but not necessarily contiguously (gaps may exist between resources)
-- Each resource's size is specified in the variable resource table entry
-- *Resource Data* is stored in its native format (no additional BIF-specific wrapping or metadata)
-- Offsets in the variable resource table are absolute file offsets (relative to start of file)
-- *Resource Data* begins immediately at the specified offset
-
-**Resource Access Flow:**
+The resource access flow is:
 
 The engine reads resources through the following process:
 
@@ -422,19 +396,17 @@ The engine reads resources through the following process:
 
 That lookup flow matches xoreos's [`biffile.cpp`](https://github.com/xoreos/xoreos/blob/f36b681b2a38799ddd6fce0f252b6d7fa781dfc2/src/aurora/biffile.cpp#L84-L123), which reads each variable-resource row and merges the result with KEY metadata, reone's [`loadResources`](https://github.com/seedhartha/reone/blob/master/src/libs/resource/format/bifreader.cpp#L43-L50), and Torlack's [`bif.html`](https://github.com/xoreos/xoreos-docs/blob/master/specs/torlack/bif.html) description of the row semantics.
 
-**Resource IDs:**
-
 The *Resource ID* in the *BIF* file's *variable resource table* must match the *Resource ID* stored in the [KEY file](Container-Formats#key). The *Resource ID* is a 32-bit value that encodes two pieces of information:
 
 - **Lower 20 bits (bits 0-19)**: Resource index within the *BIF* file (0-based index into the variable resource table)
 - **Upper 12 bits (bits 20-31)**: BIF index in the [KEY file](Container-Formats#key)'s *BIF* table (identifies which *BIF* file contains this resource)
 
-**Example:** A *Resource ID* of `0x00400029` decodes as:
+For example, a *Resource ID* of `0x00400029` decodes as:
 
 - Resource index: `0x29` (41st resource in the *BIF*)
 - BIF index: `0x004` (4th *BIF* file in the [KEY](Container-Formats#key)'s *BIF* table)
 
-**References:**
+References:
 
 - [KEY File Format](Container-Formats#resource-id-encoding)
 - [Torlack `key.html`](https://github.com/xoreos/xoreos-docs/blob/master/specs/torlack/key.html) (worked examples)
@@ -454,32 +426,9 @@ The *BZF* format wraps a complete *BIF* file in LZMA compression:
 2. **LZMA Stream**: Compressed *BIF* file data using LZMA algorithm
 3. **Decompressed Result**: Standard *BIF* file structure (as described above)
 
-**compression Details:**
+The entire *BIF* file after the 8-byte BZF header is wrapped in an LZMA stream; decompression yields an ordinary BIF payload that can then be parsed through the same header and resource-table logic described above. In practical terms, the wrapper is storage-oriented rather than schema-oriented: tools should decompress first and then interpret the resulting bytes as a standard BIF.
 
-- The entire *BIF* file (after the 8-[byte](https://en.wikipedia.org/wiki/Byte) header) is compressed using LZMA (Lempel-Ziv-Markov chain Algorithm)
-- LZMA provides high compression ratios with good decompression speed
-- The compressed stream follows immediately after the BZF header
-- Decompression yields a standard *BIF* file that can be read normally
-
-**Benefits of BZF:**
-
-- Significantly reduced file sizes (typically 40-60% compression ratio)
-- Faster download times for mobile platforms
-- Reduced storage requirements
-- Identical resource access after decompression
-- No performance penalty during gameplay (decompressed once at load time)
-
-**Platform Usage:**
-
-- PC releases use uncompressed *BIF* files for faster access
-- Mobile releases (iOS/Android) use *BZF* for storage efficiency
-- Modding tools can (and should) convert between *BIF* and *BZF* formats freely
-
-**Implementation Notes:**
-
-The *BZF* wrapper is completely transparent to the game engine - once decompressed in memory, the resource access patterns are identical to standard BIF files. Tools should decompress *BZF* files before reading resource entries, as the variable resource table offsets are relative to the decompressed BIF structure.
-
-**References:**
+References:
 
 - PyKotor BZF wrapper layout — [`bif_data.py` L35–L39](https://github.com/OpenKotOR/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/formats/bif/bif_data.py#L35-L39)
 - PyKotor BZF decompression entry — [`io_bif.py` L162–L169](https://github.com/OpenKotOR/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/formats/bif/io_bif.py#L162-L169)
@@ -524,9 +473,7 @@ PyKotor's BIF implementation is centered in [`io_bif.py`](https://github.com/Ope
 
 # ERF — Encapsulated Resource File
 
-ERF is the self-contained archive family in which each resource carries its own ResRef and type inside the container, so the format does not need a companion KEY index. In PyKotor, `ERF`, `MOD`, and `SAV` are modeled as the same 160-byte header family with different fourCC signatures, shared key/resource tables, build-year and build-day fields, an optional localized-string block, and a description StrRef. [[PyKotor `erf_data.py` layout](https://github.com/OpenKotOR/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/erf/erf_data.py#L1-L54), [PyKotor `ERFType`](https://github.com/OpenKotOR/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/erf/erf_data.py#L90-L122), [PyKotor `ERF` model](https://github.com/OpenKotOR/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/erf/erf_data.py#L125-L236)]
-
-PyKotor's current ERF reader proves that layout through two independent local implementations: `ERFBinaryReader.load()` first tries the generated `bioware_kaitai_formats.erf.Erf` parser and then falls back to a legacy reader that decodes the same header, localized-string list, key list, and resource list fields directly. [[PyKotor `ERFBinaryReader.load`](https://github.com/OpenKotOR/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/erf/io_erf.py#L169-L219), [PyKotor `_load_erf_from_kaitai`](https://github.com/OpenKotOR/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/erf/io_erf.py#L15-L69), [PyKotor `_load_erf_legacy`](https://github.com/OpenKotOR/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/erf/io_erf.py#L72-L166), [bioware-kaitai-formats repository](https://github.com/OpenKotOR/bioware-kaitai-formats)] Shipped modules also use **[RIM](Container-Formats#rim)** archives, which solve the same naming problem with a shorter header and a different index layout; see [RIM versus ERF](#rim-versus-erf) and the dedicated [RIM section](Container-Formats#rim).
+ERF is a self-contained resource archive: every entry carries its own ResRef and type, so no external KEY file is needed. The engine uses ERF (and its signature variants MOD, SAV) for module content, saved games, override packs, and any other bundle that must travel as a single file. The header includes an optional localized-string list — primarily used in SAV files to store the save-game description — followed by a key list pointing into a contiguous data block. Shipped modules also use **[RIM](Container-Formats#rim)** archives, which solve the same naming problem with a simpler binary layout; see [RIM versus ERF](#rim-versus-erf) and the dedicated [RIM section](Container-Formats#rim).
 
 ## Table of Contents
 
@@ -552,43 +499,18 @@ PyKotor's current ERF reader proves that layout through two independent local im
 
 ## File Structure Overview
 
-*ERF* files are self-contained containers that store both resource names ([ResRefs](Concepts#resref-resource-reference)) and resource data in the same file. Unlike [BIF files](Container-Formats#bif), which pair payloads with an external [KEY file](Container-Formats#key), the ERF family stores the per-resource ResRef in a 24-byte key record and stores the payload location and size in a parallel 8-byte resource record. PyKotor's reader and writer treat the "ERF ", "MOD ", and "SAV " signatures as this same structure and derive only the family tag from the file signature. [[PyKotor `erf_data.py` binary layout](https://github.com/OpenKotOR/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/erf/erf_data.py#L19-L54), [PyKotor `_load_erf_legacy`](https://github.com/OpenKotOR/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/erf/io_erf.py#L72-L166), [PyKotor `ERFBinaryWriter`](https://github.com/OpenKotOR/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/erf/io_erf.py#L222-L256)]
+*ERF* files are self-contained containers that store both resource names ([ResRefs](Concepts#resref-resource-reference)) and data in the same file. Unlike [BIF files](Container-Formats#bif) which require a [KEY file](Container-Formats#key) for filename lookups, *ERF* files include *ResRef* information directly in the container. When the engine resolves a resource request, it can service from encapsulated containers (*MOD/ERF* and stock [RIM](Container-Formats#rim) module archives) before falling back to *KEY/BIF*; see [resource resolution order](Concepts#resource-resolution-order).
 
-**For mod developers:**
+For mod developers, the practical rule is simple: build module-scoped changes as `.mod` capsules and keep global replacements in [override](Concepts#override-folder). Vanilla modules ship as `.rim` / `_s.rim` ([RIM](Container-Formats#rim)), and a `.mod` in `modules/` overrides the same module’s RIM set when present. See [Installing Mods with HoloPatcher](HoloPatcher#installing-mods) and [HoloPatcher README for Mod Developers](HoloPatcher#mod-developers).
 
-- *MOD* files are built with Holocron Toolset or other packers.
-- See [Installing Mods with HoloPatcher](HoloPatcher#installing-mods).
-- See [HoloPatcher README for Mod Developers](HoloPatcher#mod-developers).
-- Vanilla modules ship as `.rim` / `_s.rim` ([RIM](Container-Formats#rim)); a `.mod` in `modules/` overrides the same module’s RIM set when present.
-
-**Related formats:**
-
-- *ERF* containers commonly hold:
-
-  - [GFF](GFF-File-Format)
-  - [2DA](2DA-File-Format)
-  - [TPC](Texture-Formats#tpc)
-  - [NCS](NCS-File-Format)
-  - other resource types
-
-- Alternative storage:
-
-  - [KEY](Container-Formats#key)
-  - [BIF](Container-Formats#bif)
-
-**Modder note:** Use *MOD*s for module-specific content (area GFFs, module 2DAs); use [override](Concepts#override-folder) for global replacements.
+ERF containers commonly hold [GFF](GFF-File-Format), [2DA](2DA-File-Format), [TPC](Texture-Formats#tpc), [NCS](NCS-File-Format), and other resource types; the main alternative storage families are [KEY](Container-Formats#key) and [BIF](Container-Formats#bif).
 
 See:
 
 - [Concepts — MOD / ERF / RIM](Concepts#mod-erf-rim)
 - [Mod-Creation-Best-Practices — file priority](Mod-Creation-Best-Practices#file-priority-and-where-to-put-your-files)
 
-**Implementation (PyKotor):**
-
-- package: [`Libraries/PyKotor/src/pykotor/resource/formats/erf/`](https://github.com/OpenKotOR/PyKotor/tree/master/Libraries/PyKotor/src/pykotor/resource/formats/erf/)
-- layout table in [`erf_data.py`](https://github.com/OpenKotOR/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/formats/erf/erf_data.py#L19-L54) docstring
-- read path [`ERFBinaryReader.load`](https://github.com/OpenKotOR/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/formats/erf/io_erf.py#L51-L169)
-- write path [`ERFBinaryWriter.write`](https://github.com/OpenKotOR/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/formats/erf/io_erf.py#L186-L256)
+PyKotor's ERF implementation lives in [`Libraries/PyKotor/src/pykotor/resource/formats/erf/`](https://github.com/OpenKotOR/PyKotor/tree/master/Libraries/PyKotor/src/pykotor/resource/formats/erf/), with the layout table in [`erf_data.py`](https://github.com/OpenKotOR/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/formats/erf/erf_data.py#L19-L54), the read path in [`ERFBinaryReader.load`](https://github.com/OpenKotOR/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/formats/erf/io_erf.py#L51-L169), and the write path in [`ERFBinaryWriter.write`](https://github.com/OpenKotOR/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/formats/erf/io_erf.py#L186-L256).
 
 Other engines and tools cover the same container family in parallel: reone's [`erfreader.cpp`](https://github.com/seedhartha/reone/blob/master/src/libs/resource/format/erfreader.cpp#L29-L92) and [`erfreader.h`](https://github.com/seedhartha/reone/blob/master/include/reone/resource/format/erfreader.h) parse `ERF V1.0` and `MOD V1.0` but intentionally skip localized strings and do not expose explicit `SAV` fourcc handling; KotOR.js's [`ERFObject.ts`](https://github.com/KobaltBlu/KotOR.js/blob/ea9491d5c783364cf285f178434b84405bee3608/src/resource/ERFObject.ts#L69-L346) covers header, localized strings, keys, resource records, and serialization; Kotor.NET's [`ERFBinaryStructure.cs`](https://github.com/NickHugi/Kotor.NET/blob/6dca4a6a1af2fee6e36befb9a6f127c8ba04d3e2/Kotor.NET/Formats/KotorERF/ERFBinaryStructure.cs#L25-L161) reads the core structures but skips the description StrRef and reserved tail; the local Andastra `vendor/sotor/core` Rust implementation covers the same header, localized-string, key-list, and resource-list read path in `src/formats/erf/read.rs` with matching in-memory structures in `src/formats/erf/mod.rs`; xoreos and xoreos-tools both use [`erffile.cpp`](https://github.com/xoreos/xoreos/blob/master/src/aurora/erffile.cpp) style Aurora readers; KotOR-Unity ships its own [`ERFObject.cs`](https://github.com/reubenduncan/KotOR-Unity/blob/master/Assets/Scripts/FileObjects/ERFObject.cs); and the [`bioware-kaitai-formats`](https://github.com/OpenKotOR/bioware-kaitai-formats) project provides declarative ERF specs for code generation. More repo cross-links are cataloged on [Home — Cross-reference: other tools and engines](Home#cross-reference-other-tools-and-engines).
 
@@ -606,9 +528,9 @@ Other engines and tools cover the same container family in parallel: reone's [`e
 | Index layout | One **32-byte** record per resource (includes **UInt32** type, offset, size) | **24-byte** [KEY](Container-Formats#key)-style list + separate **8-byte** offset/size list |
 | MOD-only gap | N/A | Optional **8-byte × entry_count** zero block between key list and resource list ([quirk](#modnwm-file-format-quirk-blank-data-block)) |
 
-**Engine and tooling:** Both families are loaded as module-side capsules ahead of [KEY](Container-Formats#key) and [BIF](Container-Formats#bif) for resources they contain; see [resource resolution order](Concepts#resource-resolution-order). PyKotor can turn a loaded RIM into an in-memory ERF via `RIM.to_erf()` for writing MOD/ERF output.
+Both families are loaded as module-side capsules ahead of [KEY](Container-Formats#key) and [BIF](Container-Formats#bif) for resources they contain; see [resource resolution order](Concepts#resource-resolution-order). PyKotor can turn a loaded RIM into an in-memory ERF via `RIM.to_erf()` for writing MOD/ERF output.
 
-**Normative RIM layout:** Field sizes, implicit offset `0` -> table at byte 120, and padding behavior are specified on [RIM File Format](Container-Formats#rim).
+Field sizes, implicit offset `0` -> table at byte 120, and padding behavior are specified on [RIM File Format](Container-Formats#rim).
 
 ---
 
@@ -635,8 +557,6 @@ The *file header* is **160 bytes** in size:
 | Description [StrRef](Audio-and-Localization-Formats#string-references-strref)        | UInt32  | 40 (0x28) | 4    | [TLK](Audio-and-Localization-Formats#tlk) string reference for description           |
 | Reserved                  | [byte](https://en.wikipedia.org/wiki/Byte) | 44 (0x2C)  | 116  | Padding (usually zeros)                         |
 
-**Build Date Fields:**
-
 The *Build Year* and *Build Day* fields timestamp when the [ERF](Container-Formats#erf) file was created:
 
 - **Build Year**: Years since 1900 (e.g., 103 = year 2003)
@@ -644,7 +564,7 @@ The *Build Year* and *Build Day* fields timestamp when the [ERF](Container-Forma
 
 These timestamps are primarily informational and used by development tools to track module versions. The game engine doesn't rely on them for functionality.
 
-**Example Calculation:**
+For example:
 
 ```plaintext
 Build Year: 103 --> 1900 + 103 = 2003
@@ -653,9 +573,7 @@ Build Day: 247 --> September 4th (the 247th day of 2003)
 
 Most mod tools either zero out these fields or set them to the current date when creating/modifying ERF files.
 
-**Description [StrRef](Audio-and-Localization-Formats#string-references-strref) values by file type:**
-
-The Description [StrRef](Audio-and-Localization-Formats#string-references-strref) field (offset 0x0028 / 0x28) varies depending on the ERF variant:
+The Description [StrRef](Audio-and-Localization-Formats#string-references-strref) field (offset `0x28`) varies by file family and observed build conventions:
 
 - **MOD files**: `0xFFFFFFFF` (-1) is the standard for BioWare modules.
   - *Exception*: TSL LIPS files consistently use `0xCDCDCDCD` (Debug Fill).
@@ -664,7 +582,7 @@ The Description [StrRef](Audio-and-Localization-Formats#string-references-strref
 - **NWM files**: `-1` (**Neverwinter Nights module format, NOT used in KotOR**)
 - **ERF files**: Unpredictable (may contain valid [StrRef](Audio-and-Localization-Formats#string-references-strref) or `-1`)
 
-**Technical Note**: The engine determines if a file is a Save Game based on context (loading from `saves/` vs `modules/` and presence of `SAVES:` resource alias), **NOT** by any flag or value in the ERF header; that matches PyKotor's full 160-byte header read and layout table, KotOR.js's `ERFObject.parseHeader`, Kotor.NET's partial header reader, and the historical Torlack RE notes in xoreos-docs ([`io_erf.py` L70-L96](https://github.com/OpenKotOR/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/formats/erf/io_erf.py#L70-L96), [`erf_data.py` L19-L36](https://github.com/OpenKotOR/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/formats/erf/erf_data.py#L19-L36), [`ERFObject.ts` L69-L85](https://github.com/KobaltBlu/KotOR.js/blob/ea9491d5c783364cf285f178434b84405bee3608/src/resource/ERFObject.ts#L69-L85), [`ERFBinaryStructure.cs` L86-L97](https://github.com/NickHugi/Kotor.NET/blob/6dca4a6a1af2fee6e36befb9a6f127c8ba04d3e2/Kotor.NET/Formats/KotorERF/ERFBinaryStructure.cs#L86-L97), [xoreos-docs `specs/torlack/mod.html`](https://github.com/xoreos/xoreos-docs/blob/master/specs/torlack/mod.html)).
+The engine determines save-game handling from file context rather than from a dedicated ERF-header flag. That matches PyKotor's full 160-byte header read and layout table, KotOR.js's `ERFObject.parseHeader`, Kotor.NET's partial header reader, and the historical Torlack RE notes in xoreos-docs ([`io_erf.py` L70-L96](https://github.com/OpenKotOR/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/formats/erf/io_erf.py#L70-L96), [`erf_data.py` L19-L36](https://github.com/OpenKotOR/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/formats/erf/erf_data.py#L19-L36), [`ERFObject.ts` L69-L85](https://github.com/KobaltBlu/KotOR.js/blob/ea9491d5c783364cf285f178434b84405bee3608/src/resource/ERFObject.ts#L69-L85), [`ERFBinaryStructure.cs` L86-L97](https://github.com/NickHugi/Kotor.NET/blob/6dca4a6a1af2fee6e36befb9a6f127c8ba04d3e2/Kotor.NET/Formats/KotorERF/ERFBinaryStructure.cs#L86-L97), [xoreos-docs `specs/torlack/mod.html`](https://github.com/xoreos/xoreos-docs/blob/master/specs/torlack/mod.html)).
 
 ### Localized String List
 
@@ -676,19 +594,9 @@ Localized strings provide descriptions in multiple languages:
 | string size  | UInt32  | 4    | Length of string in bytes                                       |
 | string data  | [char](GFF-File-Format#gff-data-types)[]  | N    | `windows-1252` encoded text                     |
 
-**Localized string Usage:**
+ERF localized strings provide multi-language descriptions for the container itself. Most ERF-family files have zero localized strings, while some MOD-family files include localized module names or descriptions for UI-facing contexts. Use the shared Aurora numeric enum and encodings on [Concepts](Concepts#language-ids-kotor) for language ids and legacy code pages.
 
-ERF localized strings provide multi-language descriptions for the container itself. These are primarily used in MOD files to display module names and descriptions in the game's module selection screen.
-
-**Language IDs:** Use the shared Aurora numeric enum and encodings on [Concepts](Concepts#language-ids-kotor) (same values as TLK and GFF localized strings).
-
-**Important Notes:**
-
-- Most ERF files have zero localized strings (Language count = 0)
-- MOD files may include localized module names for the load screen
-- **Engine Behavior**: The game engine's resource loader (`CExoKeyTable::AddEncapsulatedContents`) **ignores** these fields. They are likely used only by the specific UI components (like the Module Selection screen).
-- **Encoding**: Strings should be encoded as `windows-1252` (CP1252) to support legacy BioWare character sets.
-- The Description [StrRef](Audio-and-Localization-Formats#string-references-strref) field (in header) provides an alternative via [TLK](Audio-and-Localization-Formats#tlk) reference
+At the evidence level documented here, the resource-loader path does not rely on these strings for encapsulated-content indexing. They remain metadata fields, with the Description [StrRef](Audio-and-Localization-Formats#string-references-strref) offering an alternative TLK-backed description mechanism in the header.
 
 PyKotor's localized-string block reader and writer and KotOR.js's `parseStructures` confirm that this list is a simple `language id + byte length + text` sequence, while reone's `ErfReader` omits localized-string parsing entirely, so PyKotor and KotOR.js are the better implementation references for this subsection ([`io_erf.py` L122-L143](https://github.com/OpenKotOR/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/formats/erf/io_erf.py#L122-L143), [`io_erf.py` L235-L240](https://github.com/OpenKotOR/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/formats/erf/io_erf.py#L235-L240), [`ERFObject.ts` L91-L97](https://github.com/KobaltBlu/KotOR.js/blob/ea9491d5c783364cf285f178434b84405bee3608/src/resource/ERFObject.ts#L91-L97)).
 
@@ -702,8 +610,6 @@ Each [KEY](Container-Formats#key) entry is 24 bytes and maps ResRefs to resource
 | Resource ID | UInt32   | 16 (0x10) | 4    | index into resource list                                         |
 | Resource type | [uint16](GFF-File-Format#gff-data-types) | 20 (0x14) | 2    | Resource type ID ([table](Resource-Formats-and-Resolution#resource-type-identifiers))                                         |
 | Unused      | [uint16](GFF-File-Format#gff-data-types)   | 22 (0x16) | 2    | Padding                                                           |
-
-***ResRef* Padding Notes:**
 
 Resource names are padded with NULL bytes to 16 characters, but are not necessarily [null-terminated](https://en.cppreference.com/w/c/string/byte). If a resource name is exactly 16 characters long, no [null terminator](https://en.cppreference.com/w/c/string/byte) exists. Resource names can be mixed case, though most are lowercase in practice.
 
@@ -752,8 +658,6 @@ The **on-disk** 160-byte layout is the same family for shipped KotOR capsules; t
 
 MOD files package all resources needed for a game module (level/area):
 
-**Typical Contents:**
-
 - Area layouts (`.are`, `.git`)
 - Module information (`.ifo`)
 - Dialogs and scripts (`.dlg`, `.ncs`)
@@ -766,8 +670,6 @@ The game loads MOD files from the `modules/` directory. When entering a module, 
 ### SAV Files (save game containers)
 
 SAV files store complete game state:
-
-**Contents:**
 
 - Party member data (inventory, stats, equipped items)
 - Module state (spawned creatures, opened containers)
@@ -806,13 +708,13 @@ Reverse engineering of the game engine (specifically `CExoKeyTable::AddEncapsula
 
 ### Critical vs. Metadata Fields
 
-The engine's resource manager is surprisingly strict, reading the 160-byte header but **ignoring** most fields. It only validates/uses:
+The engine's resource manager reads the 160-byte header but only a subset of fields are required for encapsulated-content indexing. The currently documented reverse-engineering evidence supports direct use of:
 
 - **file type** and **Version** (Verified against expected values)
 - **Entry Count** (Used to allocate memory for the key table)
 - **offset to [KEY](Container-Formats#key) List** (Used to seek to the key data)
 
-The following fields are **parsed but ignored** by the resource manager (though they may be used by the UI/Menus):
+The remaining header fields are metadata-oriented in this loader path:
 
 - `Language count` and `Localized string size`
 - `offset to Localized string List`
@@ -821,14 +723,11 @@ The following fields are **parsed but ignored** by the resource manager (though 
 
 ### Save Game Detection
 
-Contrary to popular belief, the engine does **not** identify Save Games based on the file type signature (`SAV` vs `ERF`) or the `Description StrRef` being `0`.
-
-- **Mechanism**: The engine distinguishes save games based on **file context** (loading from the `saves/` directory) and the resource system usage (aliasing `SAVES:` path).
-- **Implication**: Setting `Description StrRef` to `0` in a `MOD` file does *not* make it a save file. Legitimate modules (e.g., `unk_m41` series) use `0` as their StrRef.
+The current reverse-engineering summary here is that save-game handling is contextual rather than driven by a dedicated ERF-header discriminator. File location and resource-system context matter more than the `Description StrRef`, so setting that field to `0` in a `MOD` file does not by itself make the file behave like a save capsule.
 
 ### TSL Specific Quirks
 
-- **LIPS MODs**: In *Knights of the Old Republic II: The Sith Lords*, MOD files related to lip-syncing (`lips_*.mod`) consistently use `0xCDCDCDCD` for the `Description StrRef`. This value (`-842150451`) is a common "uninitialized memory" fill pattern in Microsoft C++ debug runtimes, suggesting these files were built with a debug version of the toolset.
+In *Knights of the Old Republic II: The Sith Lords*, MOD files related to lip-syncing (`lips_*.mod`) consistently use `0xCDCDCDCD` for the `Description StrRef`. This value (`-842150451`) is a common Microsoft C++ debug fill pattern, which suggests those files were produced with a debug-oriented toolchain.
 
 ---
 
@@ -862,7 +761,7 @@ See also **Cross-reference** at the [top of this page](#file-structure-overview)
 
 # RIM — Resource Image
 
-RIM is the shorter self-contained archive family used for module resources. Like [ERF](Container-Formats#erf), each entry carries a ResRef, a resource-type id, and the raw bytes for the payload, but the on-disk structure is intentionally simpler: a 120-byte header, one 32-byte entry per resource, and no localized-string block or separate key/resource lists. PyKotor models RIM as its own archive type, and the current reader again has two local implementations: a generated `bioware_kaitai_formats.rim.Rim` path plus a legacy reader that decodes the same 120-byte header and 32-byte records directly. [[PyKotor `rim_data.py` layout](https://github.com/OpenKotOR/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/rim/rim_data.py#L1-L34), [PyKotor `RIM` model](https://github.com/OpenKotOR/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/rim/rim_data.py#L67-L140), [PyKotor `RIMBinaryReader.load`](https://github.com/OpenKotOR/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/rim/io_rim.py#L84-L116), [PyKotor `_load_rim_legacy`](https://github.com/OpenKotOR/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/rim/io_rim.py#L31-L55), [bioware-kaitai-formats repository](https://github.com/OpenKotOR/bioware-kaitai-formats)] Typical capsule contents include:
+RIM is the lightweight module archive shipped with the base game. Like [ERF](Container-Formats#erf), each entry carries a ResRef and type, but the binary layout is intentionally simpler: no localized-string list, no compression, just a flat resource table and contiguous data. The engine loads RIM files from `modules/`, and a `.mod` in the same directory shadows the corresponding `.rim` pair when present. Typical capsule contents include:
 
 - [GFF](GFF-File-Format)
 - [2DA](2DA-File-Format)
@@ -887,9 +786,7 @@ RIM is the shorter self-contained archive family used for module resources. Like
 
 ## Role in the game and modding
 
-Vanilla modules are usually split across one or more `.rim` files, commonly a main archive and an `_s.rim` companion archive. That naming pattern is visible both in shipped file layouts and in K1's recovered string table, which includes the literal `_s.rim` suffix alongside the distinct resource-image loader path. [[PyKotor `rim` package](https://github.com/OpenKotOR/PyKotor/tree/master/Libraries/PyKotor/src/pykotor/resource/formats/rim), [xoreos-tools `unrim`](https://wiki.xoreos.org/index.php?title=Unrim)] `AddResourceImageFile @ (/K1/k1_win_gog_swkotor.exe @ 0x004087c0, /TSL/k2_win_gog_aspyr_swkotor2.exe @ TODO: Find this address, /Other BioWare Engines/Aurora/nwmain.exe @ TODO: Find this address)`
-
-For tooling and modding, the main format distinction is simpler than the runtime search-order discussion: RIM is the stock 120-byte resource-image archive, while MOD/ERF output uses the ERF-family layout described above. PyKotor exposes that bridge explicitly with `RIM.to_erf()`, which copies the resource payload into an in-memory ERF archive when a tool needs to emit MOD/ERF-style output instead of another RIM. [[PyKotor `RIM.to_erf`](https://github.com/OpenKotOR/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/rim/rim_data.py#L96-L106), [PyKotor `RIMBinaryWriter`](https://github.com/OpenKotOR/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/rim/io_rim.py#L118-L181)] For MOD versus RIM priority and practical editing notes, see:
+Vanilla modules are usually split across one or more `.rim` files (for example a main archive and a `_s` supplementary archive). The engine resolves resources using the same high-level rules as for MOD/ERF: module-scoped containers participate in the pipeline described in [resource resolution order](Concepts#resource-resolution-order). A `module_name.mod` file in `modules/` typically **shadows** the corresponding `.rim` pair when present. For MOD versus RIM priority and practical editing notes, see:
 
 - [Concepts](Concepts#mod-erf-rim)
 - [Holocron Toolset module resources](Holocron-Toolset-Module-Resources)
@@ -900,7 +797,7 @@ RIM is appropriate to read and edit when you are working directly with shipped m
 
 ## File structure overview
 
-A RIM file is a **self-contained** archive: each stored resource has a [ResRef](Concepts#resref-resource-reference), a **resource type** id, and raw **payload bytes**. There is **no** separate [KEY](Container-Formats#key) file and **no** localized description block like ERF's optional string list. In PyKotor's legacy reader, the table offset at `0x10` defaults to byte `120` when the header stores `0`, and each 32-byte entry is decoded in the order `resref`, `resource_type`, `resource_id`, `offset`, `size`. [[PyKotor `_load_rim_legacy`](https://github.com/OpenKotOR/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/rim/io_rim.py#L31-L55), [PyKotor `_read_rim_entries`](https://github.com/OpenKotOR/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/rim/io_rim.py#L58-L83)]
+A RIM file is a **self-contained** archive: each stored resource has a [ResRef](Concepts#resref-resource-reference), a **resource type** id, and raw **payload bytes**. There is **no** separate [KEY](Container-Formats#key) file and **no** localized description block like ERF's optional string list.
 
 At a high level:
 
@@ -930,7 +827,7 @@ The header is **120 bytes**.
 | Offset to resources / reserved | UInt32 | 20 | 4 | PyKotor’s writer records **`0` here** (“implicit” layout: data follows the table and alignment padding). Older descriptions sometimes treat parts of the tail of the header as opaque padding; readers should not depend on undocumented flags without verification. |
 | Reserved | byte[] | 24 | 96 | Padding (typically zeros) to complete 120 bytes. |
 
-**Implicit offset:** If the offset at **0x10** is `0`, compliant readers assume the resource table starts at byte **120**.
+If the offset at `0x10` is `0`, compliant readers assume the resource table starts at byte `120`.
 
 ### Resource entries
 
@@ -944,7 +841,7 @@ Each entry is **32 bytes**. Field order matches the reader in PyKotor’s `RIMBi
 | Offset to data | UInt32 | 24 | 4 | File offset to the first byte of this resource’s payload. |
 | Resource size | UInt32 | 28 | 4 | Length of the payload in bytes. |
 
-**Contrast with ERF:** In [ERF](Container-Formats#erf), the parallel “key” record uses a **UInt16** resource type plus **2 bytes** padding, and **offsets/sizes** live in a **separate** 8-byte-per-entry resource list. RIM folds metadata and locating information into this single 32-byte record.
+In [ERF](Container-Formats#erf), the parallel “key” record uses a `UInt16` resource type plus 2 bytes of padding, and offsets/sizes live in a separate 8-byte-per-entry resource list. RIM folds metadata and locating information into this single 32-byte record.
 
 ### Resource data and padding
 
@@ -982,18 +879,18 @@ RIM and ERF solve the same problem—**named, typed resources in one file**—bu
 | Localized Description Strings | **No** | Optional block (language id + CP1252 text) |
 | Build year/day, Description StrRef | **No** | Present in ERF header |
 | Per-resource Metadata | One **32-byte** entry (includes offset + size) | **24-byte** key + **8-byte** resource entry |
-| Resource Type in Entry | **UInt32** | **UInt16** + 2 unused bytes |
+| Resource Type in Entry | `UInt32` | `UInt16` + 2 padding bytes |
 | MOD “blank block” Quirk | **No** | Documented between key list and resource list for MOD/NWM in [ERF File Format](Container-Formats#erf) |
 
 For a side-by-side narrative aimed at ERF readers, see [RIM versus ERF](Container-Formats#rim-versus-erf) on the ERF page.
 
-**Conversion:** PyKotor exposes `RIM.to_erf()` to build an in-memory [ERF](Container-Formats#erf) with the same resources, which can then be serialized as MOD/ERF for tools that only speak the ERF layout.
+PyKotor exposes `RIM.to_erf()` to build an in-memory [ERF](Container-Formats#erf) with the same resources, which can then be serialized as MOD/ERF for tools that only speak the ERF layout.
 
 ---
 
 ## Cross-reference: implementations
 
-**Cross-reference implementations (line anchors are against `master` and may drift):**
+Cross-reference implementations (line anchors are against `master` and may drift):
 
 - **PyKotor**:
 

@@ -202,6 +202,8 @@ class CameraController:
         self.state.sync_to_camera(camera)
         self.state.last_update_time = time.time()
 
+
+
     def sync_from_camera(self) -> None:
         """Sync controller state from the current camera (e.g. after snap-to-selection)."""
         self.state.sync_to_camera(self.camera)
@@ -649,6 +651,10 @@ class CameraController:
             or abs(focal.y - target.y) > epsilon
             or abs(focal.z - target.z) > epsilon
         )
+
+    def _has_pending_motion(self, *, epsilon: float = 1e-4) -> bool:
+        """Alias kept for backward compat; delegates to has_pending_motion."""
+        return self.has_pending_motion(epsilon=epsilon)
 
     def reset_to_default(self) -> None:
         """Reset camera to default position and orientation."""

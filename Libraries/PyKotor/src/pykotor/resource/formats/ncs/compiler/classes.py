@@ -8,7 +8,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING, NamedTuple, cast
 
 from pykotor.common.script import DataType
-from pykotor.resource.formats._base import BiowareResource
+from pykotor.resource.formats._base import ComparableMixin
 from pykotor.resource.formats.ncs import NCS, NCSInstruction, NCSInstructionType
 from pykotor.tools.path import CaseAwarePath
 
@@ -57,7 +57,7 @@ class MissingIncludeError(CompileError):
     """Raised when a #include file cannot be found."""
 
 
-class TopLevelObject(BiowareResource, ABC):
+class TopLevelObject(ComparableMixin, ABC):
     @abstractmethod
     def compile(self, ncs: NCS, root: CodeRoot):  # noqa: A003
         ...
@@ -150,7 +150,7 @@ class GlobalVariableDeclaration(TopLevelObject):
         root.add_scoped(self.identifier, self.data_type, is_const=self.is_const)
 
 
-class Identifier(BiowareResource):
+class Identifier(ComparableMixin):
     def __init__(self, label: str):
         self.label: str = label
 
@@ -211,7 +211,7 @@ class OperatorMapping(NamedTuple):
     binary: list[BinaryOperatorMapping]
 
 
-class BinaryOperatorMapping(BiowareResource):
+class BinaryOperatorMapping(ComparableMixin):
     def __init__(
         self,
         instruction: NCSInstructionType,
@@ -228,7 +228,7 @@ class BinaryOperatorMapping(BiowareResource):
         return f"{self.__class__.__name__}(instruction={self.instruction!r}, result={self.result!r}, lhs={self.lhs!r}, rhs={self.rhs!r})"
 
 
-class UnaryOperatorMapping(BiowareResource):
+class UnaryOperatorMapping(ComparableMixin):
     def __init__(self, instruction: NCSInstructionType, rhs: DataType):
         self.instruction: NCSInstructionType = instruction
         self.rhs: DataType = rhs
@@ -249,7 +249,7 @@ class GetScopedResult(NamedTuple):
     is_const: bool = False
 
 
-class Struct(BiowareResource):
+class Struct(ComparableMixin):
     def __init__(self, identifier: Identifier, members: list[StructMember]):
         self.identifier: Identifier = identifier
         self.members: list[StructMember] = members
@@ -287,7 +287,7 @@ class Struct(BiowareResource):
         raise CompileError(msg)
 
 
-class StructMember(BiowareResource):
+class StructMember(ComparableMixin):
     def __init__(self, datatype: DynamicDataType, identifier: Identifier):
         self.datatype: DynamicDataType = datatype
         self.identifier: Identifier = identifier
@@ -325,7 +325,7 @@ class StructMember(BiowareResource):
         return self.datatype.size(root)
 
 
-class CodeRoot(BiowareResource):
+class CodeRoot(ComparableMixin):
     """Root compilation context for NSS compilation.
 
     Manages global scope, function definitions, constants, and compilation state.
@@ -553,7 +553,7 @@ class CodeRoot(BiowareResource):
         return 0 - sum(scoped.data_type.size(self) for scoped in self._global_scope)
 
 
-class CodeBlock(BiowareResource):
+class CodeBlock(ComparableMixin):
     def __init__(self):
         self.scope: list[ScopedValue] = []
         self._parent: CodeBlock | None = None
@@ -676,7 +676,7 @@ class CodeBlock(BiowareResource):
         self._break_scope = True
 
 
-class ScopedValue(BiowareResource):
+class ScopedValue(ComparableMixin):
     def __init__(self, identifier: Identifier, data_type: DynamicDataType, is_const: bool = False):
         self.identifier: Identifier = identifier
         self.data_type: DynamicDataType = data_type
@@ -817,7 +817,7 @@ class FunctionDefinition(TopLevelObject):
         )
 
 
-class FunctionDefinitionParam(BiowareResource):
+class FunctionDefinitionParam(ComparableMixin):
     def __init__(
         self,
         data_type: DynamicDataType,
@@ -917,7 +917,7 @@ class StructDefinition(TopLevelObject):
         root.struct_map[self.identifier.label] = Struct(self.identifier, self.members)
 
 
-class Expression(BiowareResource, ABC):
+class Expression(ComparableMixin, ABC):
     """Abstract base class for NSS expressions.
 
     Expressions compile to NCS bytecode instructions that evaluate to values.
@@ -937,7 +937,7 @@ class Expression(BiowareResource, ABC):
     ) -> DynamicDataType: ...
 
 
-class Statement(BiowareResource, ABC):
+class Statement(ComparableMixin, ABC):
     """Abstract base class for NSS statements.
 
     Statements compile to NCS bytecode instructions that perform actions (control flow,
@@ -963,7 +963,7 @@ class Statement(BiowareResource, ABC):
     ) -> object: ...
 
 
-class FieldAccess(BiowareResource):
+class FieldAccess(ComparableMixin):
     def __init__(self, identifiers: list[Identifier]):
         super().__init__()
         self.identifiers: list[Identifier] = identifiers
@@ -2441,7 +2441,7 @@ class DeclarationStatement(Statement):
             declarator.compile(ncs, root, block, self.data_type, self.is_const)
 
 
-class VariableDeclarator(BiowareResource):
+class VariableDeclarator(ComparableMixin):
     def __init__(self, identifier: Identifier):
         self.identifier: Identifier = identifier
 
@@ -2493,7 +2493,7 @@ class VariableDeclarator(BiowareResource):
         block.add_scoped(self.identifier, data_type, is_const)
 
 
-class VariableInitializer(BiowareResource):
+class VariableInitializer(ComparableMixin):
     def __init__(self, identifier: Identifier, expression: Expression):
         self.identifier: Identifier = identifier
         self.expression: Expression = expression
@@ -2595,7 +2595,7 @@ class ConditionalBlock(Statement):
         ncs.instructions.append(jump_tos[-1])
 
 
-class ConditionAndBlock(BiowareResource):
+class ConditionAndBlock(ComparableMixin):
     def __init__(self, condition: Expression, block: CodeBlock):
         self.condition: Expression = condition
         self.block: CodeBlock = block
@@ -3041,13 +3041,13 @@ class SwitchStatement(Statement):
         block.temp_stack -= expression_type.size(root)
 
 
-class SwitchBlock(BiowareResource):
+class SwitchBlock(ComparableMixin):
     def __init__(self, labels: list[SwitchLabel], block: list[Statement]):
         self.labels: list[SwitchLabel] = labels
         self.block: list[Statement] = block
 
 
-class SwitchLabel(BiowareResource, ABC):
+class SwitchLabel(ComparableMixin, ABC):
     @abstractmethod
     def compile(
         self,
@@ -3101,7 +3101,7 @@ class DefaultSwitchLabel(SwitchLabel):
 # endregion
 
 
-class DynamicDataType(BiowareResource):
+class DynamicDataType(ComparableMixin):
     INT: DynamicDataType
     STRING: DynamicDataType
     FLOAT: DynamicDataType

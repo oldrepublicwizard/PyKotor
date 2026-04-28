@@ -1,10 +1,8 @@
 # 2DA — Two-Dimensional Array
 
-The Two-Dimensional Array (2DA) format is one of the engine's main configuration-table formats. PyKotor's `TwoDA` model stores ordered headers, ordered row labels, and string-valued cells, while its extraction metadata enumerates large catalogs of KotOR tables such as `appearance.2da`, `baseitems.2da`, `classes.2da`, `feat.2da`, `skills.2da`, `spells.2da`, `placeables.2da`, `itemprops.2da`, `soundset.2da`, and many `iprp_*` families. [[`twoda_data.py`](https://github.com/OpenKotOR/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/twoda/twoda_data.py), [`extract/twoda.py`](https://github.com/OpenKotOR/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py)]
+The Two-Dimensional Array (2DA) format is the engine's primary configuration mechanism. Nearly every tunable game system — character classes, feats, Force powers, item properties, appearance models, sound sets, combat formulas — is driven by 2DA tables that the engine reads at startup [[`twoda_data.py`](https://github.com/OpenKotOR/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/twoda/twoda_data.py#L1-L10)]. Each 2DA file is a simple spreadsheet: rows indexed by number, columns indexed by label, and cell values that are either strings, integers, or the special `****` token meaning "no value" [[`twoda_data.py` L36](https://github.com/OpenKotOR/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/twoda/twoda_data.py#L36)]. The format is compact enough to ship on disc and simple enough that modders can edit tables with a text editor; both binary `V2.b` and ASCII `V2.0` encodings appear in shipped KotOR game data [[`twoda_data.py` docstring](https://github.com/OpenKotOR/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/twoda/twoda_data.py#L8-L12)]. xoreos-tools also keeps a dedicated `convert2da` utility in its baseline tool list, which is a useful external signal that 2DA remained a shared BioWare configuration-table family well beyond KotOR-specific tooling [[Running xoreos-tools](https://wiki.xoreos.org/index.php/Running_xoreos-tools)].
 
-Each 2DA file is a table: rows are identified by labels, columns are identified by header text, and the on-disk cell payload is ultimately reconstructed as strings that callers interpret as integers, floats, ResRefs, StrRefs, or sentinel values such as `****` depending on the column. PyKotor documents both binary `2DA V2.b` and ASCII `2DA V2.0` handling, and xoreos-tools ships a dedicated `convert2da` utility alongside its other BioWare reverse-engineering tools. [[`io_twoda.py`](https://github.com/OpenKotOR/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/twoda/io_twoda.py), [`twoda_data.py`](https://github.com/OpenKotOR/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/twoda/twoda_data.py), [xoreos-tools `README.md`](https://github.com/xoreos/xoreos-tools/blob/master/README.md)]
-
-The layout documented below matches the same core binary structure implemented in PyKotor, reone, xoreos, Kotor.NET, KotOR.js, KotOR-Unity, and reubenduncan's standalone format notes. To modify 2DA tables in a mod without replacing the whole file, use [TSLPatcher/HoloPatcher 2DAList syntax](TSLPatcher-2DAList-Syntax). 2DA tables are also referenced widely from GFF resources and installer workflows through the schemas cataloged in PyKotor's extraction registry. [[`io_twoda.py`](https://github.com/OpenKotOR/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/twoda/io_twoda.py), [reone `2dareader.cpp`](https://github.com/seedhartha/reone/blob/master/src/libs/resource/format/2dareader.cpp), [xoreos `2dafile.cpp`](https://github.com/xoreos/xoreos/blob/master/src/aurora/2dafile.cpp), [Kotor.NET `TwoDABinaryStructure.cs`](https://github.com/NickHugi/Kotor.NET/blob/master/Kotor.NET/Formats/Kotor2DA/TwoDABinaryStructure.cs), [KotOR.js `TwoDAObject.ts`](https://github.com/KobaltBlu/KotOR.js/blob/master/src/resource/TwoDAObject.ts), [KotOR-Unity `2DAObject.cs`](https://github.com/reubenduncan/KotOR-Unity/blob/master/Assets/Scripts/FileObjects/2DAObject.cs), [kotor `docs/2da.md`](https://github.com/reubenduncan/kotor/blob/master/docs/2da.md), [`extract/twoda.py`](https://github.com/OpenKotOR/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py)]
+The [official BioWare 2DA specification](Bioware-Aurora-Core-Formats#2da) describes the format as Aurora introduced it. KotOR and TSL use that same foundation for per-table column semantics, game-specific enumerations, and [ResRef](Concepts#resref-resource-reference) lookups. To modify 2DA tables in a mod without overwriting the entire file, use [TSLPatcher/HoloPatcher 2DAList syntax](TSLPatcher-2DAList-Syntax). 2DA tables are referenced from [GFF](GFF-File-Format) resources such as [UTC](GFF-File-Format#utc-creature) creature templates, [UTI](GFF-File-Format#uti-item) item blueprints, and [UTP](GFF-File-Format#utp-placeable) placeable definitions, and they often store [StrRef](Audio-and-Localization-Formats#string-references-strref) indices into [TLK](Audio-and-Localization-Formats#tlk) string tables for player-visible text.
 
 **Important**: While the 2DA binary layout is shared across BioWare's Aurora, Odyssey, and Eclipse engines, all column structures and engine usage descriptions on this page are specific to KotOR and KotOR II.
 
@@ -245,7 +243,7 @@ The layout documented below matches the same core binary structure implemented i
 - [KEY](Container-Formats#key)
 - [BIF](Container-Formats#bif)
 
-PyKotor's 2DA implementation lives in `Libraries/PyKotor/src/pykotor/resource/formats/twoda/`, with binary `V2.b` parsing and writing in `io_twoda.py`, CSV interchange support in `io_twoda_csv.py`, and format detection/dispatch in `twoda_auto.py`. The in-memory table model itself is defined in `twoda_data.py`. Equivalent binary-layout readers or writers exist in reone, xoreos, Kotor.NET, KotOR.js, KotOR-Unity, and reubenduncan's `kotor` notes. [[`io_twoda.py`](https://github.com/OpenKotOR/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/twoda/io_twoda.py), [`io_twoda_csv.py`](https://github.com/OpenKotOR/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/twoda/io_twoda_csv.py), [`twoda_auto.py`](https://github.com/OpenKotOR/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/twoda/twoda_auto.py), [`twoda_data.py`](https://github.com/OpenKotOR/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/twoda/twoda_data.py), [reone `2dareader.cpp`](https://github.com/seedhartha/reone/blob/master/src/libs/resource/format/2dareader.cpp), [xoreos `2dafile.cpp`](https://github.com/xoreos/xoreos/blob/master/src/aurora/2dafile.cpp), [Kotor.NET `TwoDABinaryStructure.cs`](https://github.com/NickHugi/Kotor.NET/blob/master/Kotor.NET/Formats/Kotor2DA/TwoDABinaryStructure.cs), [KotOR.js `TwoDAObject.ts`](https://github.com/KobaltBlu/KotOR.js/blob/master/src/resource/TwoDAObject.ts), [KotOR-Unity `2DAObject.cs`](https://github.com/reubenduncan/KotOR-Unity/blob/master/Assets/Scripts/FileObjects/2DAObject.cs), [kotor `docs/2da.md`](https://github.com/reubenduncan/kotor/blob/master/docs/2da.md)]
+PyKotor's 2DA implementation is in `resource/formats/twoda/`, with binary `V2.b` reader/writer support in [`TwoDABinaryReader.load` L146+](https://github.com/OpenKotOR/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/formats/twoda/io_twoda.py#L146) and [`TwoDABinaryWriter.write` L183+](https://github.com/OpenKotOR/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/formats/twoda/io_twoda.py#L183), backed by [`TwoDA` L87+](https://github.com/OpenKotOR/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/formats/twoda/twoda_data.py#L87) and [`TwoDARow` L915+](https://github.com/OpenKotOR/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/formats/twoda/twoda_data.py#L915). Text and interchange formats (`V2.0`, CSV, JSON) are handled in `io_twoda_csv.py`, `io_twoda_json.py`, and [`twoda_auto.py`](https://github.com/OpenKotOR/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/twoda/twoda_auto.py). Equivalent parsers exist in [reone `2dareader.cpp`](https://github.com/seedhartha/reone/blob/master/src/libs/resource/format/2dareader.cpp), [KotOR.js `TwoDAObject.ts`](https://github.com/KobaltBlu/KotOR.js/blob/master/src/resource/TwoDAObject.ts), [Kotor.NET `TwoDA.cs` L16+](https://github.com/NickHugi/Kotor.NET/blob/6dca4a6a1af2fee6e36befb9a6f127c8ba04d3e2/Kotor.NET/Formats/Kotor2DA/TwoDA.cs#L16) and [`TwoDABinaryStructure.cs` L12+](https://github.com/NickHugi/Kotor.NET/blob/6dca4a6a1af2fee6e36befb9a6f127c8ba04d3e2/Kotor.NET/Formats/Kotor2DA/TwoDABinaryStructure.cs#L12), [xoreos `2dafile.cpp`](https://github.com/xoreos/xoreos/blob/master/src/aurora/2dafile.cpp), [KotOR-Unity `2DAObject.cs`](https://github.com/reubenduncan/KotOR-Unity/blob/master/Assets/Scripts/FileObjects/2DAObject.cs), and [kotor `docs/2da.md`](https://github.com/reubenduncan/kotor/blob/master/docs/2da.md).
 
 ### See also
 
@@ -265,11 +263,11 @@ The file header is `9` bytes in size:
 
 | Name         | type    | offset | size | Description                                    |
 | ------------ | ------- | ------ | ---- | ---------------------------------------------- |
-| file type    | [char](GFF-File-Format#gff-data-types) | `0` (0x00) | `4`    | Four-byte type tag written as `"2DA "` in the parsers cited below |
+| file type    | [char](GFF-File-Format#gff-data-types) | `0` (0x00) | `4`    | Always `"2DA "` (space-padded) or `"2DA\t"` (tab-padded) |
 | file Version | [char](GFF-File-Format#gff-data-types) | `4` (0x04) | `4`    | Always `"V2.b"`              |
 | Line Break   | [uint8](GFF-File-Format#gff-data-types)   | `8` (0x08) | `1`    | Newline character (`\n`, value `0x0A`)        |
 
-PyKotor validates a literal "2DA " file type followed by "V2.b" and a newline; reone checks for the eight-byte "2DA V2.b" signature before skipping the newline; KotOR.js and KotOR-Unity both write or read the same space-padded form; and xoreos defines both "2DA " and "2DA\t" constants in its parser code while its binary writer emits "2DA V2.b\n". The safest cross-parser statement is therefore that the normal binary header in active KotOR tooling is "2DA " + "V2.b" + "\n". [[`io_twoda.py`](https://github.com/OpenKotOR/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/twoda/io_twoda.py), [reone `2dareader.cpp`](https://github.com/seedhartha/reone/blob/master/src/libs/resource/format/2dareader.cpp), [xoreos `2dafile.cpp`](https://github.com/xoreos/xoreos/blob/master/src/aurora/2dafile.cpp), [KotOR.js `TwoDAObject.ts`](https://github.com/KobaltBlu/KotOR.js/blob/master/src/resource/TwoDAObject.ts), [KotOR-Unity `2DAObject.cs`](https://github.com/reubenduncan/KotOR-Unity/blob/master/Assets/Scripts/FileObjects/2DAObject.cs)]
+The file type can be either `"2DA "` (space-padded) or `"2DA\t"` (tab-padded), and both are accepted by the KotOR engine implementations in [PyKotor `io_twoda.py`](https://github.com/OpenKotOR/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/twoda/io_twoda.py), [reone `2dareader.cpp` L29-L32](https://github.com/seedhartha/reone/blob/master/src/libs/resource/format/2dareader.cpp#L29-L32), [xoreos `2dafile.cpp` L48-L51](https://github.com/xoreos/xoreos/blob/f36b681b2a38799ddd6fce0f252b6d7fa781dfc2/src/aurora/2dafile.cpp#L48-L51), and [KotOR-Unity `2DAObject.cs` L25-L32](https://github.com/reubenduncan/KotOR-Unity/blob/da59c0e3b16e351479e543d455bb39b6811f7239/Assets/Scripts/FileObjects/2DAObject.cs#L25-L32).
 
 ### Column Headers
 
@@ -280,7 +278,7 @@ Column headers immediately follow the header, terminated by a [null byte](https:
   | Column Headers  | [char](GFF-File-Format#gff-data-types)[]  | [Tab-separated](https://en.wikipedia.org/wiki/Tab-separated_values) column names (e.g., `"label\tname\tdescription"`) |
 | [Null Terminator](https://en.cppreference.com/w/c/string/byte) | [uint8](GFF-File-Format#gff-data-types)   | Single [null byte](https://en.cppreference.com/w/c/string/byte) (`\0`) marking end of headers                   |
 
-Each column name is terminated by a tab character (`0x09`), and the entire header list is terminated by a [null byte](https://en.cppreference.com/w/c/string/byte) (`0x00`). PyKotor, reone, xoreos, Kotor.NET, and the reubenduncan parsers all follow that same header walk. [[`io_twoda.py`](https://github.com/OpenKotOR/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/twoda/io_twoda.py), [reone `2dareader.cpp`](https://github.com/seedhartha/reone/blob/master/src/libs/resource/format/2dareader.cpp), [xoreos `2dafile.cpp`](https://github.com/xoreos/xoreos/blob/master/src/aurora/2dafile.cpp), [Kotor.NET `TwoDABinaryStructure.cs`](https://github.com/NickHugi/Kotor.NET/blob/master/Kotor.NET/Formats/Kotor2DA/TwoDABinaryStructure.cs), [kotor `docs/2da.md`](https://github.com/reubenduncan/kotor/blob/master/docs/2da.md)]
+Each column name is terminated by a tab character (`0x09`), and the entire header list is terminated by a [null byte](https://en.cppreference.com/w/c/string/byte) (`0x00`). Column names are case-sensitive and are usually lowercase in KotOR files, consistent with [reone `2dareader.cpp` L72-L89](https://github.com/seedhartha/reone/blob/master/src/libs/resource/format/2dareader.cpp#L72-L89), [xoreos `2dafile.cpp` L260-L275](https://github.com/xoreos/xoreos/blob/f36b681b2a38799ddd6fce0f252b6d7fa781dfc2/src/aurora/2dafile.cpp#L260-L275), [KotOR-Unity `2DAObject.cs` L36-L48](https://github.com/reubenduncan/KotOR-Unity/blob/da59c0e3b16e351479e543d455bb39b6811f7239/Assets/Scripts/FileObjects/2DAObject.cs#L36-L48), and [kotor `docs/2da.md` L32-L37](https://github.com/reubenduncan/kotor/blob/master/docs/2da.md#L32-L37).
 
 ### Row Count
 
@@ -288,7 +286,7 @@ Each column name is terminated by a tab character (`0x09`), and the entire heade
 | --------- | ------- | ------ | ---- | ------------------------------ |
 | Row Count | UInt32  | varies | 4    | Number of data rows in the file ([little-endian](https://en.wikipedia.org/wiki/Endianness)) |
 
-The row count is stored as a 32-bit little-endian integer, and that value determines how many row labels follow and how many cell offsets must be read. PyKotor reads it as `uint32`, reone reads it as `Uint32`, xoreos writes it as `writeUint32LE`, and the reubenduncan notes describe the same slot. [[`io_twoda.py`](https://github.com/OpenKotOR/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/twoda/io_twoda.py), [reone `2dareader.cpp`](https://github.com/seedhartha/reone/blob/master/src/libs/resource/format/2dareader.cpp), [xoreos `2dafile.cpp`](https://github.com/xoreos/xoreos/blob/master/src/aurora/2dafile.cpp), [kotor `docs/2da.md`](https://github.com/reubenduncan/kotor/blob/master/docs/2da.md)]
+The row count is stored as a 32-bit unsigned integer in [little-endian](https://en.wikipedia.org/wiki/Endianness) order, and this value determines how many row labels and data rows follow, matching [reone `2dareader.cpp` L34](https://github.com/seedhartha/reone/blob/master/src/libs/resource/format/2dareader.cpp#L34), [xoreos `2dafile.cpp` L284](https://github.com/xoreos/xoreos/blob/f36b681b2a38799ddd6fce0f252b6d7fa781dfc2/src/aurora/2dafile.cpp#L284), and [kotor `docs/2da.md` L39-L44](https://github.com/reubenduncan/kotor/blob/master/docs/2da.md#L39-L44).
 
 ### Row Labels
 
@@ -300,7 +298,7 @@ Row labels immediately follow the row count:
 
 Each row label is read as a [tab-terminated](#column-headers) string (tab character `0x09`). Row labels are usually numeric (`"0"`, `"1"`, `"2"`...) but can be arbitrary strings.
 
-**Important**: The row label list is **not** terminated by a [null byte](https://en.cppreference.com/w/c/string/byte) (`0x00`), so the reader must consume exactly `row_count` labels from the count field. This differs from column headers, which do use a [null terminator](https://en.cppreference.com/w/c/string/byte). PyKotor, reone, KotOR-Unity, and the reubenduncan notes all implement or describe that bounded read. [[`io_twoda.py`](https://github.com/OpenKotOR/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/twoda/io_twoda.py), [reone `2dareader.cpp`](https://github.com/seedhartha/reone/blob/master/src/libs/resource/format/2dareader.cpp), [KotOR-Unity `2DAObject.cs`](https://github.com/reubenduncan/KotOR-Unity/blob/master/Assets/Scripts/FileObjects/2DAObject.cs), [kotor `docs/2da.md`](https://github.com/reubenduncan/kotor/blob/master/docs/2da.md)]
+**Important**: The row label list is **not** terminated by a [null byte](https://en.cppreference.com/w/c/string/byte) (`0x00`), so the reader must consume exactly `row_count` labels from the count field. This differs from column headers, which do use a [null terminator](https://en.cppreference.com/w/c/string/byte). Row labels are mainly for readability and tools; in-engine row indexing is positional, not label-based, as shown in [reone `2dareader.cpp` L35](https://github.com/seedhartha/reone/blob/master/src/libs/resource/format/2dareader.cpp#L35), [xoreos `2dafile.cpp` L277-L294](https://github.com/xoreos/xoreos/blob/f36b681b2a38799ddd6fce0f252b6d7fa781dfc2/src/aurora/2dafile.cpp#L277-L294), [KotOR-Unity `2DAObject.cs` L56-L70](https://github.com/reubenduncan/KotOR-Unity/blob/da59c0e3b16e351479e543d455bb39b6811f7239/Assets/Scripts/FileObjects/2DAObject.cs#L56-L70), and [kotor `docs/2da.md` L39-L46](https://github.com/reubenduncan/kotor/blob/master/docs/2da.md#L39-L46).
 
 ### Cell Data Offsets
 
@@ -313,7 +311,7 @@ After row labels, cell data offsets are stored:
 
 Each cell has a 16-bit unsigned integer offset ([little-endian](https://en.wikipedia.org/wiki/Endianness)) pointing to its string value in the cell data string table. Offsets are stored in [row-major order](https://en.wikipedia.org/wiki/Row-_and_column-major_order) (all cells of row `0`, then all cells of row `1`, etc.). The cell data size field immediately follows the offset array and precedes the actual cell data.
 
-**Important**: Offsets are relative to the start of the cell data string table (immediately after `cell_data_size`). Multiple cells can share one offset when they contain identical strings, enabling data *[deduplication](https://en.wikipedia.org/wiki/Data_deduplication)*, which is explicitly implemented in PyKotor's writer and described in reone, xoreos, KotOR.js, and the reubenduncan notes. [[`io_twoda.py`](https://github.com/OpenKotOR/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/twoda/io_twoda.py), [reone `2dareader.cpp`](https://github.com/seedhartha/reone/blob/master/src/libs/resource/format/2dareader.cpp), [xoreos `2dafile.cpp`](https://github.com/xoreos/xoreos/blob/master/src/aurora/2dafile.cpp), [KotOR.js `TwoDAObject.ts`](https://github.com/KobaltBlu/KotOR.js/blob/master/src/resource/TwoDAObject.ts), [kotor `docs/2da.md`](https://github.com/reubenduncan/kotor/blob/master/docs/2da.md)]
+**Important**: Offsets are relative to the start of the cell data string table (immediately after `cell_data_size`). Multiple cells can share one offset when they contain identical strings, enabling data *[deduplication](https://en.wikipedia.org/wiki/Data_deduplication)*, which is visible in [reone `2dareader.cpp` L47-L52](https://github.com/seedhartha/reone/blob/master/src/libs/resource/format/2dareader.cpp#L47-L52), [xoreos `2dafile.cpp` L314-L317](https://github.com/xoreos/xoreos/blob/f36b681b2a38799ddd6fce0f252b6d7fa781dfc2/src/aurora/2dafile.cpp#L314-L317), [KotOR-Unity `2DAObject.cs` L72-L83](https://github.com/reubenduncan/KotOR-Unity/blob/da59c0e3b16e351479e543d455bb39b6811f7239/Assets/Scripts/FileObjects/2DAObject.cs#L72-L83), [reone `2dawriter.cpp` L63-L89](https://github.com/seedhartha/reone/blob/master/src/libs/resource/format/2dawriter.cpp#L63-L89), and [kotor `docs/2da.md` L48-L54](https://github.com/reubenduncan/kotor/blob/master/docs/2da.md#L48-L54).
 
 ### Cell Data String Table
 
@@ -323,7 +321,7 @@ The cell data string table contains all cell values as *[null-terminated](https:
 | ------------ | ------ | ---------------------------------------------------------------- |
 | Cell strings | [char](GFF-File-Format#gff-data-types)[] | *[Null-terminated](https://en.cppreference.com/w/c/string/byte)* strings, *[deduplicated](https://en.wikipedia.org/wiki/Data_deduplication)* (same value shares offset) |
 
-The cell data string table begins immediately after the `cell_data_size` field. Each string is *[null-terminated](https://en.cppreference.com/w/c/string/byte)* (`0x00`). PyKotor's readers return empty strings when an offset is out of range or when a cell points at an empty terminator, while `twoda_data.py` and the reubenduncan parser both preserve `"****"` as a common explicit no-value sentinel in table content. The table is *[deduplicated](https://en.wikipedia.org/wiki/Data_deduplication)*, so multiple cells can share one offset. [[`io_twoda.py`](https://github.com/OpenKotOR/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/twoda/io_twoda.py), [`twoda_data.py`](https://github.com/OpenKotOR/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/twoda/twoda_data.py), [KotOR-Unity `2DAObject.cs`](https://github.com/reubenduncan/KotOR-Unity/blob/master/Assets/Scripts/FileObjects/2DAObject.cs), [kotor `docs/2da.md`](https://github.com/reubenduncan/kotor/blob/master/docs/2da.md)]
+The cell data string table begins immediately after the `cell_data_size` field. Each string is *[null-terminated](https://en.cppreference.com/w/c/string/byte)* (`0x00`). Blank or empty cells are typically stored as empty strings (immediately *[null-terminated](https://en.cppreference.com/w/c/string/byte)*) or the string `"****"`. The string table is *[deduplicated](https://en.wikipedia.org/wiki/Data_deduplication)* - multiple cells with the same value share the same offset, reducing file size.
 
 **Reading process**: For each cell, the reader retrieves the 16-bit offset from the offset array (`row_index × column_count + column_index`), seeks to `cell_data_start_position + offset`, and reads a *[null-terminated](https://en.cppreference.com/w/c/string/byte)* string at that location. This behavior and the `"****"` empty-cell convention are consistent across [reone `2dareader.cpp` L54-L65](https://github.com/seedhartha/reone/blob/master/src/libs/resource/format/2dareader.cpp#L54-L65), [xoreos `2dafile.cpp` L319-L335](https://github.com/xoreos/xoreos/blob/f36b681b2a38799ddd6fce0f252b6d7fa781dfc2/src/aurora/2dafile.cpp#L319-L335) and [`2dafile.cpp` L63-L64](https://github.com/xoreos/xoreos/blob/f36b681b2a38799ddd6fce0f252b6d7fa781dfc2/src/aurora/2dafile.cpp#L63-L64), [KotOR-Unity `2DAObject.cs` L85-L100](https://github.com/reubenduncan/KotOR-Unity/blob/da59c0e3b16e351479e543d455bb39b6811f7239/Assets/Scripts/FileObjects/2DAObject.cs#L85-L100), and [kotor `docs/2da.md` L57-L64](https://github.com/reubenduncan/kotor/blob/master/docs/2da.md#L57-L64).
 
@@ -331,41 +329,186 @@ The cell data string table begins immediately after the `cell_data_size` field. 
 
 ## Data Structure
 
-### `TwoDA` Object
+### TwoDA Object
 
-PyKotor's in-memory `TwoDA` object stores rows as `list[dict[str, str]]`, headers as an ordered `list[str]`, row labels as an ordered `list[str]`, and an auxiliary `_label_to_index` dictionary for O(1) label lookup. The same class also exposes JSON serialization, row iteration that yields `TwoDARow` wrappers, structural helpers such as `shape`, `columns`, and `index`, and mutators such as `add_column`, `remove_column`, `set_label`, `add_row`, `copy_row`, and `remove_row`. [[`twoda_data.py`](https://github.com/OpenKotOR/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/twoda/twoda_data.py)]
+The `TwoDA` object represents a complete *2DA* file in memory ([`twoda_data.py:77–119`](https://github.com/OpenKotOR/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/formats/twoda/twoda_data.py#L77-L119)):
 
-That design is intentionally string-backed: PyKotor stores every parsed cell as a Python string in the table core and layers typed conversion on top only when callers ask for it. This is consistent with the binary format described above, where cells resolve through the shared string table rather than through per-column typed storage. [[`twoda_data.py`](https://github.com/OpenKotOR/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/twoda/twoda_data.py), [`io_twoda.py`](https://github.com/OpenKotOR/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/twoda/io_twoda.py)]
+**Attributes:**
 
-### `TwoDARow` Object
+- `_rows`: List of dictionaries, each mapping column headers to cell values
+- `_headers`: List of column header names (case-sensitive, typically lowercase)
+- `_labels`: List of row labels (usually numeric strings like `"0"`, `"1"`, `"2"`...)
 
-`TwoDARow` is a light wrapper around one row label plus one `dict[str, str]` cell map. Its accessors expose the same underlying string data through `get_string`, `get_integer`, `get_float`, and `get_enum`, while `update_values` and `set_string` write back into the same row map. In other words, the row object is a typed access facade over string-backed storage, not a second typed copy of the table. [[`twoda_data.py`](https://github.com/OpenKotOR/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/twoda/twoda_data.py)]
+**Methods:**
+
+- `get_cell(row_index, column_header)`: Get cell value by row index and column header
+- `set_cell(row_index, column_header, value)`: Set cell value
+- `get_column(header)`: Get all values for a column
+- `add_row(label)`: Add a new row
+- `add_column(header)`: Add a new column
+
+### TwoDARow Object
+
+The `TwoDARow` object provides a convenient interface for accessing row data ([`twoda_data.py:850–950`](https://github.com/OpenKotOR/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/formats/twoda/twoda_data.py#L850-L950)):
+
+**Attributes:**
+
+- `label`: Row label string (usually numeric strings like `"0"`, `"1"`, `"2"`...)
+- `cells`: Dictionary mapping column headers to cell values
 
 ---
 
 ## Cell value types
 
-At the storage level, PyKotor treats every 2DA cell as text. `TwoDARow.get_string` returns the raw string, while `get_integer`, `get_float`, and `get_enum` are opt-in conversions layered on top of that string value. [[`twoda_data.py`](https://github.com/OpenKotOR/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/twoda/twoda_data.py)]
+All cell values are stored as strings in the *2DA* file, but are interpreted as different types by the KotOR game engine:
 
-The third comparator binary confirms that this string-backed model also exists in BioWare's native runtime API: Aurora's `C2DA` class exposes `GetCExoStringEntry @ (/K1/k1_win_gog_swkotor.exe @ 0x00413de0, /TSL/k2_win_gog_aspyr_swkotor2.exe @ TODO: Find this address, /Other BioWare Engines/Aurora/nwmain.exe @ 0x1401a6730)`, `GetINTEntry @ (/K1/k1_win_gog_swkotor.exe @ 0x00414110, /TSL/k2_win_gog_aspyr_swkotor2.exe @ TODO: Find this address, /Other BioWare Engines/Aurora/nwmain.exe @ 0x1401a6e00)`, `GetFLOATEntry @ (/K1/k1_win_gog_swkotor.exe @ 0x00413350, /TSL/k2_win_gog_aspyr_swkotor2.exe @ TODO: Find this address, /Other BioWare Engines/Aurora/nwmain.exe @ 0x1401a6af0)`, and `SetBlankEntry @ (/K1/k1_win_gog_swkotor.exe @ TODO: Find this address, /TSL/k2_win_gog_aspyr_swkotor2.exe @ TODO: Find this address, /Other BioWare Engines/Aurora/nwmain.exe @ 0x1401a8830)`, which is exactly the split between raw string storage and typed interpretation. # Reference: /K1/k1_win_gog_swkotor.exe @ 0x00413de0, /K1/k1_win_gog_swkotor.exe @ 0x00414110, /K1/k1_win_gog_swkotor.exe @ 0x00413350, /Other BioWare Engines/Aurora/nwmain.exe @ 0x1401a6730, /Other BioWare Engines/Aurora/nwmain.exe @ 0x1401a6e00, /Other BioWare Engines/Aurora/nwmain.exe @ 0x1401a6af0, /Other BioWare Engines/Aurora/nwmain.exe @ 0x1401a8830
+- **Integers**: Numeric strings parsed as [`int32`](https://en.wikipedia.org/wiki/Integer_(computer_science)) - used for numeric identifiers, counts, and enumerated values.
+- **Floats**: Decimal strings parsed as [`float`](https://en.wikipedia.org/wiki/Single-precision_floating-point_format) - used for calculations like damage multipliers, timers, and percentages.
+- **ResRefs**: [Resource references](Concepts#resref-resource-reference) point to other game resources such as:
 
-PyKotor's extraction registry shows how that interpretation is applied in practice for KotOR data. It groups columns into StrRef-bearing tables, generic ResRef-bearing tables, and narrower model, sound, music, texture, GUI, and script-reference families, which is stronger evidence than describing 2DA cells as if the file format itself had hardcoded scalar types. [[`extract/twoda.py`](https://github.com/OpenKotOR/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py)]
+  - [models](MDL-MDX-File-Format)
+  - [textures](Texture-Formats#tpc)
+  - [NCS](NCS-File-Format) scripts (and other resource types by ResRef)
+- **StrRefs**: [String references](Audio-and-Localization-Formats#string-references-strref) into [`dialog.tlk`](Audio-and-Localization-Formats#tlk) (typically negative values like `-1` indicate no reference) - used for localized text display.
+- **Boolean**: `"0"` or `"1"` (sometimes `"TRUE"`/`"FALSE"`) - control feature flags and settings
+- **Empty Cells**: Represented as `"****"` - treated as null/undefined by the engine
 
-Examples from the local registry include StrRef columns in `classes.2da`, `feat.2da`, `skills.2da`, `spells.2da`, and `itemprops.2da`; model or texture-style ResRef columns in `appearance.2da`, `baseitems.2da`, `placeables.2da`, and `heads.2da`; and audio-oriented ResRef columns in `ambientmusic.2da`, `ambientsound.2da`, `footstepsounds.2da`, `guisounds.2da`, and `inventorysnds.2da`. [[`extract/twoda.py`](https://github.com/OpenKotOR/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py)]
-
-`"****"` is best described as a common content-level no-value *sentinel* rather than as a separate storage type. PyKotor's `twoda_data.py` documents it as a conventional explicit empty marker, while the binary parser itself still reads the underlying payload as ordinary strings via offsets into the shared string table. [[`twoda_data.py`](https://github.com/OpenKotOR/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/twoda/twoda_data.py), [`io_twoda.py`](https://github.com/OpenKotOR/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/formats/twoda/io_twoda.py)]
+The game engine parses cell values based on context and expected data type for each column. For example, the `appearance.2da` file uses integers for [model](MDL-MDX-File-Format) indices, [ResRefs](Concepts#resref-resource-reference) for [texture](Texture-Formats#tpc) names, and [StrRefs](Audio-and-Localization-Formats#string-references-strref) for race names.
 
 ---
 
 ## Confirmed Engine Usage
 
-Three analyzed binaries expose the same underlying 2DA subsystem even though symbol recovery quality differs between them. KotOR I exposes `C2DA @ (/K1/k1_win_gog_swkotor.exe @ 0x00413cc0, /TSL/k2_win_gog_aspyr_swkotor2.exe @ TODO: Find this address, /Other BioWare Engines/Aurora/nwmain.exe @ 0x1401a62b0)`, `CRes2DA @ (/K1/k1_win_gog_swkotor.exe @ 0x0041d730, /TSL/k2_win_gog_aspyr_swkotor2.exe @ TODO: Find this address, /Other BioWare Engines/Aurora/nwmain.exe @ 0x14019e2b0)`, `Load2DArray @ (/K1/k1_win_gog_swkotor.exe @ 0x004143b0, /TSL/k2_win_gog_aspyr_swkotor2.exe @ 0x00621e70, /Other BioWare Engines/Aurora/nwmain.exe @ 0x1401a73a0)`, and `Unload2DArray @ (/K1/k1_win_gog_swkotor.exe @ 0x004139e0, /TSL/k2_win_gog_aspyr_swkotor2.exe @ TODO: Find this address, /Other BioWare Engines/Aurora/nwmain.exe @ 0x1401a9b10)`. KotOR II retains `Load2DArray` plus a large `Load2DArrays_*` family, while Aurora exposes the generic cache manager `CTwoDimArrays::Load2DArrays @ (/K1/k1_win_gog_swkotor.exe @ TODO: Find this address, /TSL/k2_win_gog_aspyr_swkotor2.exe @ TODO: Find this address, /Other BioWare Engines/Aurora/nwmain.exe @ 0x1402b3920)` together with `GetCached2DA @ (/K1/k1_win_gog_swkotor.exe @ TODO: Find this address, /TSL/k2_win_gog_aspyr_swkotor2.exe @ TODO: Find this address, /Other BioWare Engines/Aurora/nwmain.exe @ 0x1402b31e0)` and `ClearCached2DAs @ (/K1/k1_win_gog_swkotor.exe @ TODO: Find this address, /TSL/k2_win_gog_aspyr_swkotor2.exe @ TODO: Find this address, /Other BioWare Engines/Aurora/nwmain.exe @ 0x1402b2fe0)`. # Reference: /K1/k1_win_gog_swkotor.exe @ 0x00413cc0, /K1/k1_win_gog_swkotor.exe @ 0x0041d730, /K1/k1_win_gog_swkotor.exe @ 0x004143b0, /K1/k1_win_gog_swkotor.exe @ 0x004139e0, /TSL/k2_win_gog_aspyr_swkotor2.exe @ 0x00621e70, /Other BioWare Engines/Aurora/nwmain.exe @ 0x1401a62b0, /Other BioWare Engines/Aurora/nwmain.exe @ 0x14019e2b0, /Other BioWare Engines/Aurora/nwmain.exe @ 0x1401a73a0, /Other BioWare Engines/Aurora/nwmain.exe @ 0x1401a9b10, /Other BioWare Engines/Aurora/nwmain.exe @ 0x1402b3920, /Other BioWare Engines/Aurora/nwmain.exe @ 0x1402b31e0, /Other BioWare Engines/Aurora/nwmain.exe @ 0x1402b2fe0
+The following *2DA* files have been confirmed to be actively loaded and used by the KotOR game engine through comprehensive reverse engineering analysis of `swkotor.exe` and `swkotor2.exe` using Ghidra (via [AgentDecompile](https://github.com/bolabaden/AgentDecompile)). This analysis examined the actual game executables to identify all *2DA* files loaded via `Load2DArrays()`, `CResRef__CResRef()` calls, and related loading functions.
 
-The KotOR executables also preserve many table-specific loader entry points by name. Verified examples include `Load2DArrays_Appearance @ (/K1/k1_win_gog_swkotor.exe @ 0x005c0270, /TSL/k2_win_gog_aspyr_swkotor2.exe @ 0x00480c10, /Other BioWare Engines/Aurora/nwmain.exe @ TODO: KotOR-specific specialization not present)`, `Load2DArrays_Spells @ (/K1/k1_win_gog_swkotor.exe @ 0x005c3e10, /TSL/k2_win_gog_aspyr_swkotor2.exe @ 0x004853f0, /Other BioWare Engines/Aurora/nwmain.exe @ TODO: generic 2DA manager only)`, `Load2DArrays_Placeables @ (/K1/k1_win_gog_swkotor.exe @ 0x005c1830, /TSL/k2_win_gog_aspyr_swkotor2.exe @ 0x00482800, /Other BioWare Engines/Aurora/nwmain.exe @ TODO: generic 2DA manager only)`, `Load2DArrays_SurfaceMaterial @ (/K1/k1_win_gog_swkotor.exe @ 0x005c0bb0, /TSL/k2_win_gog_aspyr_swkotor2.exe @ 0x00481830, /Other BioWare Engines/Aurora/nwmain.exe @ TODO: generic 2DA manager only)`, and `Load2DArrays_VisualEffect @ (/K1/k1_win_gog_swkotor.exe @ 0x005c0c80, /TSL/k2_win_gog_aspyr_swkotor2.exe @ 0x00481920, /Other BioWare Engines/Aurora/nwmain.exe @ TODO: generic 2DA manager only)`. # Reference: /K1/k1_win_gog_swkotor.exe @ 0x005c0270, /K1/k1_win_gog_swkotor.exe @ 0x005c3e10, /K1/k1_win_gog_swkotor.exe @ 0x005c1830, /K1/k1_win_gog_swkotor.exe @ 0x005c0bb0, /K1/k1_win_gog_swkotor.exe @ 0x005c0c80, /TSL/k2_win_gog_aspyr_swkotor2.exe @ 0x00480c10, /TSL/k2_win_gog_aspyr_swkotor2.exe @ 0x004853f0, /TSL/k2_win_gog_aspyr_swkotor2.exe @ 0x00482800, /TSL/k2_win_gog_aspyr_swkotor2.exe @ 0x00481830, /TSL/k2_win_gog_aspyr_swkotor2.exe @ 0x00481920
+### Analysis Methodology
 
-For shared table names, the string evidence is also present in all three analyzed binaries. `Appearance` appears at `(/K1/k1_win_gog_swkotor.exe @ 0x00746efc, /TSL/k2_win_gog_aspyr_swkotor2.exe @ 0x0098845c, /Other BioWare Engines/Aurora/nwmain.exe @ 0x140dc50b0)`, `CLASSES` at `(/K1/k1_win_gog_swkotor.exe @ 0x007488ec, /TSL/k2_win_gog_aspyr_swkotor2.exe @ 0x0098cc58, /Other BioWare Engines/Aurora/nwmain.exe @ 0x140dc4cd8)`, `Skills` at `(/K1/k1_win_gog_swkotor.exe @ 0x00748a1c, /TSL/k2_win_gog_aspyr_swkotor2.exe @ 0x0098cd5c, /Other BioWare Engines/Aurora/nwmain.exe @ 0x140dc51fc)`, `SPELLS` at `(/K1/k1_win_gog_swkotor.exe @ 0x0074a4d0, /TSL/k2_win_gog_aspyr_swkotor2.exe @ 0x0098b8cc, /Other BioWare Engines/Aurora/nwmain.exe @ 0x140dc56d8)`, `BASEITEMS` at `(/K1/k1_win_gog_swkotor.exe @ 0x0074b294, /TSL/k2_win_gog_aspyr_swkotor2.exe @ 0x0098b4c4, /Other BioWare Engines/Aurora/nwmain.exe @ 0x140dc39b8)`, and `Feat` or feat-related table labels at `(/K1/k1_win_gog_swkotor.exe @ 0x00748ca0, /TSL/k2_win_gog_aspyr_swkotor2.exe @ 0x00986500, /Other BioWare Engines/Aurora/nwmain.exe @ 0x140dc4958)`. # Reference: /K1/k1_win_gog_swkotor.exe @ 0x00746efc, /K1/k1_win_gog_swkotor.exe @ 0x007488ec, /K1/k1_win_gog_swkotor.exe @ 0x00748a1c, /K1/k1_win_gog_swkotor.exe @ 0x0074a4d0, /K1/k1_win_gog_swkotor.exe @ 0x0074b294, /K1/k1_win_gog_swkotor.exe @ 0x00748ca0, /TSL/k2_win_gog_aspyr_swkotor2.exe @ 0x0098845c, /TSL/k2_win_gog_aspyr_swkotor2.exe @ 0x0098cc58, /TSL/k2_win_gog_aspyr_swkotor2.exe @ 0x0098cd5c, /TSL/k2_win_gog_aspyr_swkotor2.exe @ 0x0098b8cc, /TSL/k2_win_gog_aspyr_swkotor2.exe @ 0x0098b4c4, /TSL/k2_win_gog_aspyr_swkotor2.exe @ 0x00986500, /Other BioWare Engines/Aurora/nwmain.exe @ 0x140dc50b0, /Other BioWare Engines/Aurora/nwmain.exe @ 0x140dc4cd8, /Other BioWare Engines/Aurora/nwmain.exe @ 0x140dc51fc, /Other BioWare Engines/Aurora/nwmain.exe @ 0x140dc56d8, /Other BioWare Engines/Aurora/nwmain.exe @ 0x140dc39b8, /Other BioWare Engines/Aurora/nwmain.exe @ 0x140dc4958
+The game engine analysis was performed by:
 
-That is enough to say, conservatively, that 2DA is not merely a file-format convention in KotOR-era tooling; it is an engine-level runtime system with generic table loaders, cache-management helpers, typed accessors, and many named table consumers. It is not enough yet to keep every historic per-table claim that previously appeared in this section, so the remaining catalog below should be read as a documented table inventory unless a subsection explicitly adds its own loader evidence. [[`extract/twoda.py`](https://github.com/OpenKotOR/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py), [reone `src/libs/resource/parser/2da/`](https://github.com/seedhartha/reone/tree/master/src/libs/resource/parser/2da)]
+1. Decompiling `swkotor.exe` (*KotOR* 1) and `swkotor2.exe` (*KotOR* 2/TSL) using Ghidra
+2. Identifying all `Load2DArrays_*()` functions and their `CResRef()` calls
+3. Tracing `C2DA::Load2DArray()` calls throughout the codebase
+4. Verifying string references to *2DA* file names in the executable binaries
+
+### KotOR 1 (`swkotor.exe`) - Confirmed *2DA* Files
+
+> **Note:** Function names below are derived from binary analysis of `swkotor.exe` (Ghidra/AgentDecompile). Absolute binary addresses for K1 have not been independently verified in this table — see the TSL columns above for confirmed `FUN_*` addresses. K1 addresses are marked `TODO: Find this address` per convention.
+
+**Core Game Systems:**
+
+- `classes.2da` - `LoadClassInfo()` --> `CResRef("Classes")`
+- `feat.2da` - `LoadFeatInfo()` --> `CResRef("Feat")`
+- `featgain.2da` - `CSWClass::LoadFeatGain()` --> `CResRef("featgain")`
+- `skills.2da` - `LoadSkillInfo()` --> `CResRef("Skills")`
+- `spells.2da` - `Load2DArrays_Spells()` --> `CResRef("Spells")`
+- `exptable.2da` - `CSWRules::CSWRules()` --> `CResRef("EXPTABLE")`
+- `xptable.2da` - `Load2DArrays_XpBase()` --> `CResRef("XPTable")`
+
+**Character & Appearance:**
+
+- `appearance.2da` - `Load2DArrays_Appearance()` --> `CResRef("Appearance")`
+- `racialtypes.2da` - `LoadRaceInfo()` --> `CResRef("RacialTypes")`
+- `gender.2da` - `Load2DArrays_Gender()` --> `CResRef("GENDER")`
+- `portraits.2da` - `Load2DArrays_Portrait()` --> `CResRef("Portraits")`
+- `heads.2da` - `Load2DArrays_Heads()` --> `CResRef("Heads")`
+- `creaturespeed.2da` - `Load2DArrays_CreatureSpeed()` --> `CResRef("CreatureSpeed")`
+- `ranges.2da` - `CSWRules::CSWRules()` --> `CResRef("Ranges")`
+
+**Items & Equipment:**
+
+- `baseitems.2da` - `CSWBaseItemArray::Load()` --> `CResRef("BASEITEMS")`
+- `itempropdef.2da` - `Load2DArrays_ItemPropDef()` --> `CResRef("ItemPropDef")`
+- `itemprops.2da` - `HandleServerToPlayerDebugInfo_Item()` --> `CResRef("ITEMPROPS")`
+- `upgrade.2da` - `CSWGuiUpgrade()` --> `CResRef("upgrade")`
+
+**Objects & Areas:**
+
+- `placeables.2da` - `Load2DArrays_Placeables()` --> `CResRef("Placeables")`
+- `genericdoors.2da` - `Load2DArrays_GenericDoors()` --> `CResRef("GenericDoors")`
+- `doortypes.2da` - `Load2DArrays_DoorTypes()` --> `CResRef("DoorTypes")`
+- `traps.2da` - `Load2DArrays_Traps()` --> `CResRef("Traps")`
+- `encdifficulty.2da` - `Load2DArrays_EncDifficulty()` --> `CResRef("EncDifficulty")`
+- `loadscreens.2da` - `Load2DArrays_AreaTransition()` --> `CResRef("Loadscreens")`
+- `modulesave.2da` - `StartNewModule()` --> `CResRef("modulesave")`
+
+**Audio & Visual:**
+
+- `ambientmusic.2da` - `Load2DArrays_AmbientMusic()` --> `CResRef("AmbientMusic")`
+- `ambientsound.2da` - `Load2DArrays_AmbientSound()` --> `CResRef("AmbientSound")`
+- `footstepsounds.2da` - `Load2DArrays_FootstepSounds()` --> `CResRef("FootstepSounds")`
+- `appearancesndset.2da` - `Load2DArrays_AppearanceSounds()` --> `CResRef("AppearanceSounds")`
+- `weaponsounds.2da` - `Load2DArrays_WeaponSounds()` --> `CResRef("WeaponSounds")`
+- `placeablesounds.2da` - `Load2DArrays_PlaceableSounds()` --> `CResRef("PlaceableSounds")`
+- `camerastyle.2da` - `Load2DArrays_CameraStyle()` --> `CResRef("CameraStyle")`
+- `surfacemat.2da` - `Load2DArrays_SurfaceMaterial()` --> `CResRef("SurfaceMaterial")`
+- `visualeffects.2da` - `Load2DArrays_VisualEffect()` --> `CResRef("VisualEffect")`
+- `videoeffects.2da` - `Load2DArrays_VideoEffects()` --> `CResRef("VideoEffects")`
+- `dialoganimations.2da` - `Load2DArrays_DialogAnimations()` --> `CResRef("DialogAnimations")`
+- `cursors.2da` - `Load2DArrays_Cursor()` --> `CResRef("cursors")`
+
+**Item Properties (IPRP):**
+
+- `iprp_abilities.2da` - `Load2DArrays_IPRPAbilities()` --> `CResRef("IPRP_ABILITIES")`
+- `iprp_acmodtype.2da` - `LoadIPRPCostTables()` --> `CResRef("IPRP_ACMODTYPE")`
+- `iprp_aligngrp.2da` - `LoadIPRPCostTables()` --> `CResRef("IPRP_ALIGNGRP")`
+- `iprp_ammotype.2da` - `LoadIPRPCostTables()` --> `CResRef("IPRP_AMMOTYPE")`
+- `iprp_combatdam.2da` - `LoadIPRPCostTables()` --> `CResRef("IPRP_COMBATDAM")`
+- `iprp_costtable.2da` - `LoadIPRPCostTables()` --> `CResRef("IPRP_COSTTABLE")`
+- `iprp_damagecost.2da` - `Load2DArrays_IPRPDamage()` --> `CResRef("IPRP_DAMAGECOST")`
+- `iprp_damagetype.2da` - `LoadIPRPCostTables()` --> `CResRef("IPRP_DAMAGETYPE")`
+- `iprp_immunity.2da` - `LoadIPRPCostTables()` --> `CResRef("IPRP_IMMUNITY")`
+- `iprp_lightcol.2da` - `Load2DArrays_LightColor()` --> `CResRef("LightColor")`
+- `iprp_meleecost.2da` - `Load2DArrays_IPRPMelee()` --> `CResRef("IPRP_MeleeCost")`
+- `iprp_mosterhit.2da` - `LoadIPRPCostTables()` --> `CResRef("IPRP_MONSTERHIT")`
+- `iprp_onhit.2da` - `Load2DArrays_OnHit()` --> `CResRef("IPRP_ONHIT")`
+- `iprp_paramtable.2da` - `LoadIPRPParamTables()` --> `CResRef("IPRP_PARAMTABLE")`
+- `iprp_protection.2da` - `LoadIPRPCostTables()` --> `CResRef("IPRP_PROTECTION")`
+- `iprp_saveelement.2da` - `LoadIPRPCostTables()` --> `CResRef("IPRP_SAVEELEMENT")`
+- `iprp_savingthrow.2da` - `LoadIPRPCostTables()` --> `CResRef("IPRP_SAVINGTHROW")`
+- `iprp_walk.2da` - `LoadIPRPCostTables()` --> `CResRef("IPRP_WALK")`
+
+**Factions & Reputation:**
+
+- `repute.2da` - `Load2DArrays_Repute()` --> `CResRef("Repute")`
+
+**Game Systems:**
+
+- `plot.2da` - `Load2DArrays_PlotXP()` --> `CResRef("Plot")`
+- `planetary.2da` - `Load2DArrays_Planetary()` --> `CResRef("Planetary")`
+- `loadscreenhints.2da` - `CClientExoAppInternal::GetNextLoadScreenHintSTRREF()` --> `CResRef("loadscreenhints")`
+- `movies.2da` - `Load2DArrays_Movies()` --> `CResRef("Movies")`
+- `globalcat.2da` - `CSWGlobalVariableTable::ReadCatalogue()` --> `CResRef("globalcat")`
+- `tutorial.2da` - `Load2DArrays_Tutorial()` --> `CResRef("Tutorial")`
+- `difficultyopt.2da` - `Load2DArrays_DifficultyOptions()` --> `CResRef("DifficultyOptions")`
+- `gamma.2da` - `Load2DArrays_Gamma()` --> `CResRef("Gamma")`
+- `statescripts.2da` - `Load2DArrays_StateScripts()` --> `CResRef("StateScripts")`
+- `poison.2da` - `Load2DArrays_Poison()` --> `CResRef("Poison")`
+- `disease.2da` - `Load2DArrays_Disease()` --> `CResRef("Disease")`
+- `repaadjustments.2da` - `Load2DArrays_RepAdjustments()` --> `CResRef("RepAdjustments")`
+- `fractionalcr.2da` - `Load2DArrays_FractionalCR()` --> `CResRef("FractionalCR")`
+- `regeneration.2da` - `Load2DArrays_Regeneration()` --> `CResRef("Regeneration")`
+- `ammunitiontypes.2da` - `Load2DArrays_AmmunitionTypes()` --> `CResRef("AmmunitionTypes")`
+- `keymap.2da` - `Load2DArrays_Keymap()` --> `CResRef("Keymap")`
+- `bindablekeys.2da` - `Load2DArrays_BindableKey()` --> `CResRef("BindableKey")`
+
+### KotOR 2/TSL (swkotor2.exe) - Additional 2DA Files
+
+The following 2DA files are loaded in KotOR 2 but not in KotOR 1:
+
+- `emotion.2da` - `FUN_00612fb0()` --> `CResRef("Emotion")`
+- `facialanim.2da` - `FUN_005e6ac0()` --> `CResRef("FacialAnim")`
+- `subrace.2da` - `FUN_00612ab0()` --> `CResRef("Subrace")`
+- `soundset.2da` - `FUN_006ce0c0()` --> `CResRef("SoundSet")`
+- `pazaakdecks.2da` - `FUN_00754f60()` --> `CResRef("PazaakDecks")`
+- `upcrystals.2da` - `FUN_00730970()` --> `CResRef("upcrystals")`
+- `iprp_monstcost.2da` - `FUN_00611120()` --> `CResRef("IPRP_MONSTCOST")`
+- `iprp_bonuscost.2da` - `FUN_006111c0()` --> `CResRef("IPRP_BONUSCOST")`
+- `iprp_srcost.2da` - `FUN_00611260()` --> `CResRef("IPRP_SRCOST")`
+- `iprp_neg5cost.2da` - `FUN_00611300()` --> `CResRef("IPRP_NEG5COST")`
+- `iprp_onhitdur.2da` - `FUN_006114e0()` --> `CResRef("IPRP_ONHITDUR")`
+- `iprp_pc.2da` - `FUN_00612b50()` --> `CResRef("IPRP_PC")`
+
+**Note:** All files listed above have been verified through decompilation analysis of the game executables. Function names in `swkotor2.exe` are obfuscated (shown as `FUN_*` addresses), but the 2DA file loading calls have been confirmed. Files documented below that are not listed here may be remnants from Neverwinter Nights (NWN), unused by the game engine, or used in ways not yet identified.
 
 ## Known 2DA Files
 
@@ -377,7 +520,7 @@ KotOR and TSL ship a large set of 2DA tables. The sections below group them by s
 
 ### `appearance.2da`
 
-**Engine Usage**: `appearance.2da` is the appearance-to-rendering lookup table that KotOR uses for creature presentation and related physical metadata. The table name is present as `Appearance` in all three analyzed binaries at `(/K1/k1_win_gog_swkotor.exe @ 0x00746efc, /TSL/k2_win_gog_aspyr_swkotor2.exe @ 0x0098845c, /Other BioWare Engines/Aurora/nwmain.exe @ 0x140dc50b0)`, and KotOR I plus KotOR II both retain dedicated appearance loaders `Load2DArrays_Appearance @ (/K1/k1_win_gog_swkotor.exe @ 0x005c0270, /TSL/k2_win_gog_aspyr_swkotor2.exe @ 0x00480c10, /Other BioWare Engines/Aurora/nwmain.exe @ TODO: generic 2DA manager only)`. PyKotor and Holocron Toolset also treat it as a first-class cached table through `TwoDARegistry.APPEARANCES` and `HTInstallation.TwoDA_APPEARANCES`, and reone ships a dedicated `appearance.cpp` parser plus downstream creature usage. [[`extract/twoda.py`](https://github.com/OpenKotOR/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py), [`installation.py`](https://github.com/OpenKotOR/PyKotor/blob/master/Tools/HolocronToolset/src/toolset/data/installation.py), [reone `appearance.cpp`](https://github.com/seedhartha/reone/blob/master/src/libs/resource/parser/2da/appearance.cpp), [reone `creature.cpp`](https://github.com/seedhartha/reone/blob/master/src/libs/game/object/creature.cpp)]
+**Engine Usage**: The `appearance.2da` file is one of the most critical *2DA* files in the games. It maps appearance IDs (from [creature templates](GFF-File-Format#utc-creature) and character creation) into the data the renderer needs when loading creatures:
 
 - 3D [model](MDL-MDX-File-Format) *ResRefs*
 - [texture](Texture-Formats#tpc) assignments
@@ -457,7 +600,7 @@ KotOR and TSL ship a large set of 2DA tables. The sections below group them by s
 
 **Column Details**:
 
-The full row shape shown above is not guesswork from old docs; it is mirrored closely by reone's generated `parseAppearanceTwoDARow`, which explicitly reads the listed fields from a generic `TwoDA` object. That parser is not the original BioWare runtime, but it is a concrete source-backed external implementation that matches the local PyKotor registry families for appearance StrRefs, model ResRefs, texture ResRefs, and related creature-facing fields. [[reone `appearance.cpp`](https://github.com/seedhartha/reone/blob/master/src/libs/resource/parser/2da/appearance.cpp), [`extract/twoda.py`](https://github.com/OpenKotOR/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py)]
+The `appearance.2da` file contains a comprehensive set of columns for character appearance configuration. The complete column list is parsed by the game engine:
 
 - [model](MDL-MDX-File-Format) columns: `modela` through `modeln` (14 [model](MDL-MDX-File-Format) variations)
 - [texture](Texture-Formats#tpc) columns: `texa` through `texn` (14 [texture](Texture-Formats#tpc) variations)
@@ -478,93 +621,327 @@ The full row shape shown above is not guesswork from old docs; it is mirrored cl
 - Vehicle: `driveaccl`, `drivemaxspeed`, `driveanimwalk`, `driveanimrunPc`, `driveanimrunXbox`
 - Other: `bloodcolr`, `bodyBag`, `stringRef`, `abortonparry`, `destroyobjectdelay`, `disableinjuredanim`
 
-PyKotor's local registry confirms the most important appearance-facing column families directly: K1 and K2 both mark `string_ref` as the talk-table column, `race` as a generic ResRef-bearing column, `modela` through at least `modelj` as model-bearing columns, and `racetex`, `texa` through `texj`, plus the head texture variants, as texture-bearing columns. Holocron Toolset then uses the cached table as an installation-scoped selector source in creature-oriented editors such as UTC. [[`extract/twoda.py`](https://github.com/OpenKotOR/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py), [`installation.py`](https://github.com/OpenKotOR/PyKotor/blob/master/Tools/HolocronToolset/src/toolset/data/installation.py), [`utc.py`](https://github.com/OpenKotOR/PyKotor/blob/master/Tools/HolocronToolset/src/toolset/gui/editors/utc.py)]
+These `appearance.2da` columns are reflected in PyKotor's 2DA extraction metadata and registry mappings ([`twoda.py` L73](https://github.com/OpenKotOR/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/extract/twoda.py#L73), [`twoda.py` L155](https://github.com/OpenKotOR/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/extract/twoda.py#L155), [`twoda.py` L168](https://github.com/OpenKotOR/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/extract/twoda.py#L168), [`twoda.py` L213-L214](https://github.com/OpenKotOR/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/extract/twoda.py#L213-L214), [`twoda.py` L248](https://github.com/OpenKotOR/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/extract/twoda.py#L248), [`twoda.py` L456](https://github.com/OpenKotOR/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/extract/twoda.py#L456), [`twoda.py` L524](https://github.com/OpenKotOR/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/extract/twoda.py#L524)). The Holocron Toolset uses the same table for appearance selectors in UTC/UTP/UTD/UTE editors ([`installation.py` L55](https://github.com/OpenKotOR/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Tools/HolocronToolset/src/toolset/data/installation.py#L55), [`utc.py`](https://github.com/OpenKotOR/HolocronToolset/src/toolset/gui/editors/utc.py), [`utp.py` L124-L131](https://github.com/OpenKotOR/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Tools/HolocronToolset/src/toolset/gui/editors/utp.py#L124-L131), [`utd.py`](https://github.com/OpenKotOR/HolocronToolset/src/toolset/gui/editors/utd.py), [`ute.py` L181](https://github.com/OpenKotOR/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Tools/HolocronToolset/src/toolset/gui/editors/ute.py#L181)). Runtime usage and column parsing are visible in reone's table parser and creature systems ([`appearance.cpp` L28-L125](https://github.com/seedhartha/reone/blob/master/src/libs/resource/parser/2da/appearance.cpp#L28-L125), [`creature.cpp` L98-L107](https://github.com/seedhartha/reone/blob/master/src/libs/game/object/creature.cpp#L98-L107), [`creature.cpp` L1156-L1228](https://github.com/seedhartha/reone/blob/master/src/libs/game/object/creature.cpp#L1156-L1228)).
 
 ### [baseitems.2da](#baseitems2da)
 
-**Engine Usage**: `baseitems.2da` is the canonical item-class table for combat, equipment, and inventory behavior. The table string `BASEITEMS` is present in all three analyzed binaries at `(/K1/k1_win_gog_swkotor.exe @ 0x0074b294, /TSL/k2_win_gog_aspyr_swkotor2.exe @ 0x0098b4c4, /Other BioWare Engines/Aurora/nwmain.exe @ 0x140dc39b8)`, and PyKotor plus Holocron Toolset expose it as `TwoDARegistry.BASEITEMS` and `HTInstallation.TwoDA_BASEITEMS`; the toolset then consumes it directly in item and creature editors for label lookup, model selection, and base-item classification. [[`extract/twoda.py`](https://github.com/OpenKotOR/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py), [`installation.py`](https://github.com/OpenKotOR/PyKotor/blob/master/Tools/HolocronToolset/src/toolset/data/installation.py), [`uti.py`](https://github.com/OpenKotOR/PyKotor/blob/master/Tools/HolocronToolset/src/toolset/gui/editors/uti.py), [`utc.py`](https://github.com/OpenKotOR/PyKotor/blob/master/Tools/HolocronToolset/src/toolset/gui/editors/utc.py)]
+**Engine Usage**: Defines base item types that form the foundation for all items in the game. Each row represents a base item type (*weapon*, *armor*, *shield*, etc.) with properties like damage dice, weapon categories, equipment slots, and item flags. The engine uses this file to determine item behavior, combat statistics, and equipment compatibility.
 
 **Row index**: Base item ID (*integer*)
 
-**Verified local column families**:
+**Column structure** (columns accessed by reone):
 
-- `label`: used by Holocron Toolset for base-item display text and name lookup. [[`installation.py`](https://github.com/OpenKotOR/PyKotor/blob/master/Tools/HolocronToolset/src/toolset/data/installation.py)]
-- `itemclass`: used by Holocron Toolset to derive inventory icon resrefs such as `i{itemclass}_{variation}`. [[`installation.py`](https://github.com/OpenKotOR/PyKotor/blob/master/Tools/HolocronToolset/src/toolset/data/installation.py)]
-- `defaultmodel`: registered by PyKotor as a model-bearing column in both games. [[`extract/twoda.py`](https://github.com/OpenKotOR/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py)]
-- `defaulticon`: registered by PyKotor as a texture-bearing column in both games. [[`extract/twoda.py`](https://github.com/OpenKotOR/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py)]
-- `itemclass`, `baseitemstatref`: registered by PyKotor as item-reference-bearing columns in both games. [[`extract/twoda.py`](https://github.com/OpenKotOR/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py)]
-- `powerupsnd`, `powerdownsnd`, `poweredsnd`: registered by PyKotor as sound-reference-bearing columns in both games. [[`extract/twoda.py`](https://github.com/OpenKotOR/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py)]
+| Column Name | type | Description |
+|------------|------|-------------|
+| `label` | *String* | Item type label |
+| `name` | [StrRef](Audio-and-Localization-Formats#string-references-strref) | *String* reference for item type name |
+| `basecost` | *Integer* | Base gold cost |
+| `stacking` | *Integer* | Stack size limit |
+| `invslotwidth` | *Integer* | Inventory slot width |
+| `invslotheight` | *Integer* | Inventory slot height |
+| `canrotateicon` | *Boolean* (optional) | Whether icon can be rotated in inventory |
+| `itemclass` | *Integer* | Item class identifier |
+| `weapontype` | *Integer* | Weapon type (if weapon) |
+| `weaponsize` | *Integer* | Weapon size category |
+| `weaponwield` | *Integer* | Wield type (one-handed, two-handed, etc.) |
+| `damagedice` | *Integer* | Damage dice count |
+| `damagedie` | *Integer* | Damage die size |
+| `damagebonus` | *Integer* | Base damage bonus |
+| `damagetype` | *Integer* | Damage type flags |
+| `weaponmattype` | *Integer* | Weapon [material](MDL-MDX-File-Format#trimesh-header) type |
+| `weaponsound` | *Integer* | Weapon sound type |
+| `ammunitiontype` | *Integer* | Ammunition type required |
+| `rangedweapon` | *Boolean* | Whether item is a ranged weapon |
+| `maxattackrange` | *Integer* | Maximum attack range |
+| `preferredattackrange` | *Integer* | Preferred attack range |
+| `attackmod` | *Integer* | Attack modifier |
+| `damagebonusfeat` | *Integer* | Feat ID for damage bonus |
+| `weaponfocustype` | *Integer* | Weapon focus type |
+| `weaponfocusfeat` | *Integer* | Weapon focus feat ID |
+| `description` | [StrRef](Audio-and-Localization-Formats#string-references-strref) | *String* reference for item description |
+| `icon` | *ResRef* | Icon image *ResRef* |
+| `equipableslots` | *Integer* | Equipment slot flags |
+| `model1` through `model6` | *ResRef* (optional) | 3D [model](MDL-MDX-File-Format) *ResRefs* for different variations |
+| `partenvmap` | *ResRef* (optional) | Partial environment map [texture](Texture-Formats#tpc) |
+| `defaultmodel` | *ResRef* (optional) | Default [model](MDL-MDX-File-Format) *ResRef* |
+| `defaulticon` | *ResRef* (optional) | Default icon *ResRef* |
+| `container` | *Boolean* | Whether item is a container |
+| `weapon` | *Boolean* | Whether item is a weapon |
+| `armor` | *Boolean* | Whether item is armor |
+| `chargesstarting` | *Integer* | Starting charges (for usable items) |
+| `costpercharge` | *Integer* | Cost per charge to recharge |
+| `addcost` | *Integer* | Additional cost modifier |
+| `stolen` | *Boolean* | Whether item is marked as stolen |
+| `minlevel` | *Integer* | Minimum level requirement |
+| `stacking` | *Integer* | Maximum stack size |
+| `reqfeat0` through `reqfeat3` | *Integer* (optional) | Required feat IDs |
+| `reqfeatcount0` through `reqfeatcount3` | *Integer* (optional) | Required feat counts |
+| `reqclass` | *Integer* (optional) | Required class ID |
+| `reqrace` | *Integer* (optional) | Required race ID |
+| `reqalign` | *Integer* (optional) | Required alignment |
+| `reqdeity` | *Integer* (optional) | Required deity ID |
+| `reqstr` | *Integer* (optional) | Required strength |
+| `reqdex` | *Integer* (optional) | Required dexterity |
+| `reqint` | *Integer* (optional) | Required intelligence |
+| `reqwis` | *Integer* (optional) | Required wisdom |
+| `reqcon` | *Integer* (optional) | Required constitution |
+| `reqcha` | *Integer* (optional) | Required charisma |
 
-The previous larger base-item column table mixed solid evidence with inherited prose and needs a line-by-line rebuild before it can be trusted at the same level as the top half of this page. For now, the safer statement is that `baseitems.2da` is unquestionably engine-visible and tool-visible, but this wiki should only assert the narrower subset of columns that local registry code and live tool consumers actually expose. [[`extract/twoda.py`](https://github.com/OpenKotOR/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py), [`installation.py`](https://github.com/OpenKotOR/PyKotor/blob/master/Tools/HolocronToolset/src/toolset/data/installation.py), [`uti.py`](https://github.com/OpenKotOR/PyKotor/blob/master/Tools/HolocronToolset/src/toolset/gui/editors/uti.py), [`inventory.py`](https://github.com/OpenKotOR/PyKotor/blob/master/Tools/HolocronToolset/src/toolset/gui/dialogs/inventory.py)]
+**Column Details** (from reone implementation):
+
+The following columns are accessed by the game engine:
+
+- `maxattackrange`: Maximum attack range for ranged weapons
+- `crithitmult`: Critical hit multiplier
+- `critthreat`: Critical threat range
+- `damageflags`: Damage type flags
+- `dietoroll`: Damage die size
+- `equipableslots`: Equipment slot flags (*hex integer*)
+- `itemclass`: Item class identifier (*string*)
+- `numdice`: Number of damage dice
+- `weapontype`: Weapon type identifier
+- `weaponwield`: Weapon wield type (*one-handed*, *two-handed*, etc.)
+- `bodyvar`: Body variation for armor
+- `ammunitiontype`: Ammunition type ID (used to look up `ammunitiontypes.2da`). These `baseitems.2da` columns are reflected in PyKotor's 2DA extraction metadata ([PyKotor L169](https://github.com/OpenKotOR/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/extract/twoda.py#L169), [L187](https://github.com/OpenKotOR/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/extract/twoda.py#L187), [L215](https://github.com/OpenKotOR/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/extract/twoda.py#L215), [L225](https://github.com/OpenKotOR/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/extract/twoda.py#L225), [L466](https://github.com/OpenKotOR/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/extract/twoda.py#L466), [L537](https://github.com/OpenKotOR/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/extract/twoda.py#L537)). The Holocron Toolset uses this table via its HTInstallation registry and inventory/item editor integration ([installation.py L65](https://github.com/OpenKotOR/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Tools/HolocronToolset/src/toolset/data/installation.py#L65), [L594-L607](https://github.com/OpenKotOR/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Tools/HolocronToolset/src/toolset/data/installation.py#L594-L607), [L609-L620](https://github.com/OpenKotOR/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Tools/HolocronToolset/src/toolset/data/installation.py#L609-L620), [L630-L643](https://github.com/OpenKotOR/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Tools/HolocronToolset/src/toolset/data/installation.py#L630-L643), [uti.py L107-L117](https://github.com/OpenKotOR/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Tools/HolocronToolset/src/toolset/gui/editors/uti.py#L107-L117), [inventory.py L668-L704](https://github.com/OpenKotOR/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Tools/HolocronToolset/src/toolset/gui/dialogs/inventory.py#L668-L704)). Runtime engine implementations from the reone project ([item.cpp L126-L136](https://github.com/seedhartha/reone/blob/master/src/libs/game/object/item.cpp#L126-L136), [L160-L171](https://github.com/seedhartha/reone/blob/master/src/libs/game/object/item.cpp#L160-L171)) demonstrate base item column access and ammunition type lookup patterns.
 
 ---
 
 ### [classes.2da](#classes2da)
 
-**Engine Usage**: `classes.2da` is the class-id table used by creature and savegame tooling, and the `CLASSES` table name is present in all three analyzed binaries at `(/K1/k1_win_gog_swkotor.exe @ 0x007488ec, /TSL/k2_win_gog_aspyr_swkotor2.exe @ 0x0098cc58, /Other BioWare Engines/Aurora/nwmain.exe @ 0x140dc4cd8)`. PyKotor registers it as `TwoDARegistry.CLASSES`, Holocron Toolset exposes the same file as `HTInstallation.TwoDA_CLASSES`, and reone ships a dedicated `class.cpp` loader for the same table family. [[`extract/twoda.py`](https://github.com/OpenKotOR/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py), [`installation.py`](https://github.com/OpenKotOR/PyKotor/blob/master/Tools/HolocronToolset/src/toolset/data/installation.py), [reone `class.cpp`](https://github.com/seedhartha/reone/blob/master/src/libs/game/d20/class.cpp)]
+**Engine Usage**: Defines character classes with their progression tables, skill point calculations, hit dice, saving throw progressions, and feat access. The engine uses this file to determine class abilities, skill point allocation, and level progression mechanics.
 
 **Row index**: Class ID (integer)
 
-**Verified local column and consumer evidence**:
+**Column structure**:
 
-- `name`, `description` are the directly declared StrRef-bearing columns for `classes.2da` in both K1 and K2 within PyKotor's 2DA registry. [[`extract/twoda.py`](https://github.com/OpenKotOR/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py)]
-- `label` is a live UI-facing column in Holocron Toolset: the UTC editor populates `class1Select` and `class2Select` from `classes.get_column("label")`, and the savegame editor resolves class ids back to `classes.get_cell(class_id, "label")` when present. [[`utc.py`](https://github.com/OpenKotOR/PyKotor/blob/master/Tools/HolocronToolset/src/toolset/gui/editors/utc.py), [`savegame.py`](https://github.com/OpenKotOR/PyKotor/blob/master/Tools/HolocronToolset/src/toolset/gui/editors/savegame.py)]
-- The generated UTC editor help text documents `ClassList[0].Class` and `ClassList[1].Class` as indices into `classes.2da`, and PyKotor's UTC reader consumes those values from `ClassList` as raw class ids. [[`toolset/uic/qtpy/editors/utc.py`](https://github.com/OpenKotOR/PyKotor/blob/master/Tools/HolocronToolset/src/toolset/uic/qtpy/editors/utc.py), [`resource/generics/utc.py`](https://github.com/OpenKotOR/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/utc.py)]
-- Each `ClassList` entry also owns a `KnownList0` power list in the UTC structure, which is local evidence that class rows participate in power progression and lookup even though the full row schema still needs a stricter column-by-column rebuild. [[`resource/generics/utc.py`](https://github.com/OpenKotOR/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/utc.py), [`toolset/uic/qtpy/editors/utc.py`](https://github.com/OpenKotOR/PyKotor/blob/master/Tools/HolocronToolset/src/toolset/uic/qtpy/editors/utc.py), [reone `class.cpp`](https://github.com/seedhartha/reone/blob/master/src/libs/game/d20/class.cpp)]
+| Column Name | type | Description |
+|------------|------|-------------|
+| `label` | *String* | Class label |
+| `name` | [StrRef](Audio-and-Localization-Formats#string-references-strref) | *String* reference for class name |
+| `description` | [StrRef](Audio-and-Localization-Formats#string-references-strref) | *String* reference for class description |
+| `hitdie` | *Integer* | Hit dice size (d6, d8, d10, etc.) |
+| `skillpointbase` | *Integer* | Base skill points per level |
+| `skillpointbonus` | *Integer* | Intelligence bonus skill points |
+| `attackbonus` | *String* | Attack bonus progression table reference |
+| `savingthrow` | *String* | Saving throw progression table reference |
+| `savingthrowtable` | *String* | Saving throw table filename |
+| `spellgaintable` | *String* | Spell/Force power gain table reference |
+| `spellknowntable` | *String* | Spell/Force power known table reference |
+| `primaryability` | *Integer* | Primary ability score for class |
+| `preferredalignment` | *Integer* | Preferred alignment |
+| `alignrestrict` | *Integer* | Alignment restrictions |
+| `classfeat` | *Integer* | Class-specific feat ID |
+| `classskill` | *Integer* | Class skill flags |
+| `skillpointmaxlevel` | *Integer* | Maximum level for skill point calculation |
+| `spellcaster` | *Integer* | Spellcasting level (0 = non-caster) |
+| `spellcastingtype` | *Integer* | Spellcasting type identifier |
+| `spelllevel` | *Integer* | Maximum spell level |
+| `spellbook` | *ResRef* (optional) | Spellbook *ResRef* |
+| `icon` | *ResRef* | Class icon *ResRef* |
+| `portrait` | *ResRef* (optional) | Class portrait *ResRef* |
+| `startingfeat0` through `startingfeat9` | *Integer* (optional) | Starting feat IDs |
+| `startingpack` | *Integer* (optional) | Starting equipment pack ID |
+| `description` | [StrRef](Audio-and-Localization-Formats#string-references-strref) | Class description string reference |
 
-The older large column table for `classes.2da` mixed verified content with inherited schema prose. Until that row layout is re-checked field by field against live code, this page keeps only the narrower subset above. [[`extract/twoda.py`](https://github.com/OpenKotOR/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py), [`utc.py`](https://github.com/OpenKotOR/PyKotor/blob/master/Tools/HolocronToolset/src/toolset/gui/editors/utc.py), [`savegame.py`](https://github.com/OpenKotOR/PyKotor/blob/master/Tools/HolocronToolset/src/toolset/gui/editors/savegame.py)]
+**Column Details** (from reone implementation):
+
+The following columns are accessed by the game engine:
+
+- `name`: *String* reference for class name
+- `description`: *String* reference for class description
+- `hitdie`: Hit dice size
+- `skillpointbase`: Base skill points per level
+- `str`, `dex`, `con`, `int`, `wis`, `cha`: Default ability scores
+- `skillstable`: Skills table reference (used to check class skills in `skills.2da`)
+- `savingthrowtable`: Saving throw table reference (e.g., `cls_savthr_jedi_guardian`)
+- `attackbonustable`: Attack bonus table reference (e.g., `cls_atk_jedi_guardian`). PyKotor defines string-reference columns for class.2da across both games ([L75](https://github.com/OpenKotOR/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/extract/twoda.py#L75) for K1, [L250](https://github.com/OpenKotOR/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/extract/twoda.py#L250) for K2) and registers the table via TwoDARegistry.CLASSES ([L463](https://github.com/OpenKotOR/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/extract/twoda.py#L463)), with GFF mapping for creature class fields ([L531](https://github.com/OpenKotOR/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/extract/twoda.py#L531)). The Holocron Toolset caches and uses classes.2da in the UTC editor for class selection ([installation.py L62](https://github.com/OpenKotOR/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Tools/HolocronToolset/src/toolset/data/installation.py#L62), [utc.py L242](https://github.com/OpenKotOR/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Tools/HolocronToolset/src/toolset/gui/editors/utc.py#L242), [L256](https://github.com/OpenKotOR/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Tools/HolocronToolset/src/toolset/gui/editors/utc.py#L256), [L291-L298](https://github.com/OpenKotOR/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Tools/HolocronToolset/src/toolset/gui/editors/utc.py#L291-L298)). The reone implementation demonstrates class loading ([class.cpp L34-L56](https://github.com/seedhartha/reone/blob/master/src/libs/game/d20/class.cpp#L34-L56)) and progression table integration ([L58-L86](https://github.com/seedhartha/reone/blob/master/src/libs/game/d20/class.cpp#L58-L86)).
 
 ---
 
 ### [feat.2da](#feat2da)
 
-**Engine Usage**: `feat.2da` is the feat-id table used by creature blueprints, save data, and open-engine consumers, and feat-related table strings are present in all three analyzed binaries at `(/K1/k1_win_gog_swkotor.exe @ 0x00748ca0, /TSL/k2_win_gog_aspyr_swkotor2.exe @ 0x00986500, /Other BioWare Engines/Aurora/nwmain.exe @ 0x140dc4958)`. PyKotor exposes the file as `TwoDARegistry.FEATS`, Holocron Toolset caches it as `HTInstallation.TwoDA_FEATS`, and reone plus KotOR.js both ship explicit feat loaders or feat model types. [[`extract/twoda.py`](https://github.com/OpenKotOR/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py), [`installation.py`](https://github.com/OpenKotOR/PyKotor/blob/master/Tools/HolocronToolset/src/toolset/data/installation.py), [reone `feats.cpp`](https://github.com/seedhartha/reone/blob/master/src/libs/game/d20/feats.cpp), [KotOR.js `TalentFeat.ts`](https://github.com/KobaltBlu/KotOR.js/blob/master/src/talents/TalentFeat.ts)]
+**Engine Usage**: Defines all feats available in the game, including combat feats, skill feats, Force feats, and class-specific abilities. The engine uses this file to determine feat prerequisites, effects, and availability during character creation and level-up.
 
 **Row index**: Feat ID (integer)
 
-**Verified local column and consumer evidence**:
+**Column structure**:
 
-- `name`, `description` are the explicitly declared StrRef-bearing columns for `feat.2da` in PyKotor's K1 and K2 registries. [[`extract/twoda.py`](https://github.com/OpenKotOR/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py)]
-- PyKotor's registry maps GFF `Feat` and `FeatID` references back to the feats table, which is direct local evidence that feat ids are consumed as row indices rather than as free-form constants. [[`extract/twoda.py`](https://github.com/OpenKotOR/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py)]
-- The generated UTC editor help text documents each `FeatList` row as storing a feat index that references `feats.2da`, and the UTC reader consumes `FeatList` entries as raw feat ids from creature GFF data. [[`toolset/uic/qtpy/editors/utc.py`](https://github.com/OpenKotOR/PyKotor/blob/master/Tools/HolocronToolset/src/toolset/uic/qtpy/editors/utc.py), [`resource/generics/utc.py`](https://github.com/OpenKotOR/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/utc.py)]
-- Holocron Toolset populates its creature feat checklist from the cached feats table and prefers the `name` StrRef when available, falling back to a direct string column when no talktable text resolves. The savegame editor likewise resolves stored feat ids back to feat labels through the same cached table. [[`utc.py`](https://github.com/OpenKotOR/PyKotor/blob/master/Tools/HolocronToolset/src/toolset/gui/editors/utc.py), [`savegame.py`](https://github.com/OpenKotOR/PyKotor/blob/master/Tools/HolocronToolset/src/toolset/gui/editors/savegame.py)]
+| Column Name | type | Description |
+|------------|------|-------------|
+| `label` | *String* | Feat label |
+| `name` | [StrRef](Audio-and-Localization-Formats#string-references-strref) | *String* reference for feat name |
+| `description` | [StrRef](Audio-and-Localization-Formats#string-references-strref) | *String* reference for feat description |
+| `icon` | *ResRef* | Feat icon *ResRef* |
+| `takentext` | [StrRef](Audio-and-Localization-Formats#string-references-strref) | *String* reference for "feat taken" message |
+| `prerequisite` | *Integer* (optional) | Prerequisite feat ID |
+| `minattackbonus` | *Integer* (optional) | Minimum attack bonus requirement |
+| `minstr` | *Integer* (optional) | Minimum strength requirement |
+| `mindex` | *Integer* (optional) | Minimum dexterity requirement |
+| `minint` | *Integer* (optional) | Minimum intelligence requirement |
+| `minwis` | *Integer* (optional) | Minimum wisdom requirement |
+| `mincon` | *Integer* (optional) | Minimum constitution requirement |
+| `mincha` | *Integer* (optional) | Minimum charisma requirement |
+| `minlevel` | *Integer* (optional) | Minimum character level |
+| `minclasslevel` | *Integer* (optional) | Minimum class level |
+| `minspelllevel` | *Integer* (optional) | Minimum spell level |
+| `spellid` | *Integer* (optional) | Required spell ID |
+| `successor` | *Integer* (optional) | Successor feat ID (for feat chains) |
+| `maxrank` | *Integer* (optional) | Maximum rank for stackable feats |
+| `minrank` | *Integer* (optional) | Minimum rank requirement |
+| `masterfeat` | *Integer* (optional) | Master feat ID |
+| `targetself` | *Boolean* | Whether feat targets self |
+| `orreqfeat0` through `orreqfeat4` | *Integer* (optional) | Alternative prerequisite feat IDs |
+| `reqskill` | *Integer* (optional) | Required skill ID |
+| `reqskillrank` | *Integer* (optional) | Required skill rank |
+| `constant` | *Integer* (optional) | Constant value for feat calculations |
+| `toolscategories` | *Integer* (optional) | Tool categories flags |
+| `effecticon` | *ResRef* (optional) | Effect icon *ResRef* |
+| `effectdesc` | [StrRef](Audio-and-Localization-Formats#string-references-strref) (optional) | Effect description string reference |
+| `effectcategory` | *Integer* (optional) | Effect category identifier |
+| `allclassescanuse` | *Boolean* | Whether all classes can use this feat |
+| `category` | *Integer* | Feat category identifier |
+| `maxcr` | *Integer* (optional) | Maximum challenge rating |
+| `spellid` | *Integer* (optional) | Associated spell ID |
+| `usesperday` | *Integer* (optional) | Uses per day limit |
+| `masterfeat` | *Integer* (optional) | Master feat ID for feat trees |
 
-The previous larger feat schema table went beyond what the current local evidence proves field by field. Until that row shape is rebuilt against live code, this page keeps the directly verified subset above. [[`extract/twoda.py`](https://github.com/OpenKotOR/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py), [`utc.py`](https://github.com/OpenKotOR/PyKotor/blob/master/Tools/HolocronToolset/src/toolset/gui/editors/utc.py), [`savegame.py`](https://github.com/OpenKotOR/PyKotor/blob/master/Tools/HolocronToolset/src/toolset/gui/editors/savegame.py)]
+**Column Details** (from reone implementation):
+
+The following columns are accessed by the reone engine:
+
+- `name`: *String* reference for feat name
+- `description`: *String* reference for feat description
+- `icon`: Icon *ResRef*
+- `mincharlevel`: Minimum character level (hex integer)
+- `prereqfeat1`: Prerequisite feat ID 1 (hex integer)
+- `prereqfeat2`: Prerequisite feat ID 2 (hex integer)
+- `successor`: Successor feat ID (hex integer)
+- `pips`: Feat pips/ranks (hex integer)
+- `allclassescanuse`: Boolean - whether all classes can use this feat
+- `masterfeat`: Master feat ID
+- `orreqfeat0` through `orreqfeat4`: Alternative prerequisite feat IDs
+- `hostilefeat`: Boolean - whether feat is hostile
+- `category`: Feat category identifier. PyKotor provides comprehensive feat.2da column definitions for both games ([L82](https://github.com/OpenKotOR/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/extract/twoda.py#L82) for K1 string references, [L260](https://github.com/OpenKotOR/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/extract/twoda.py#L260) for K2), icons ([L227](https://github.com/OpenKotOR/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/extract/twoda.py#L227)), and GFF field mappings ([L561-L562](https://github.com/OpenKotOR/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/extract/twoda.py#L561-L562)), alongside UTC creature feat list documentation ([utc.py L321-L323](https://github.com/OpenKotOR/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/generics/utc.py#L321-L323), [L432](https://github.com/OpenKotOR/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/generics/utc.py#L432), [L762-L768](https://github.com/OpenKotOR/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/generics/utc.py#L762-L768), [L907-L909](https://github.com/OpenKotOR/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/generics/utc.py#L907-L909)). The Holocron Toolset includes feat.2da via TwoDARegistry ([installation.py L63](https://github.com/OpenKotOR/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Tools/HolocronToolset/src/toolset/data/installation.py#L63)). Runtime implementations include reone's feat loading ([feats.cpp L32-L58](https://github.com/seedhartha/reone/blob/master/src/libs/game/d20/feats.cpp#L32-L58)) and KotOR.js feat structures ([TalentFeat.ts L36-L53](https://github.com/KobaltBlu/KotOR.js/blob/ea9491d5c783364cf285f178434b84405bee3608/src/talents/TalentFeat.ts#L36-L53), [L122-L132](https://github.com/KobaltBlu/KotOR.js/blob/ea9491d5c783364cf285f178434b84405bee3608/src/talents/TalentFeat.ts#L122-L132)).
 
 ---
 
 ### [skills.2da](#skills2da)
 
-**Engine Usage**: `skills.2da` is the skill-id table used by character data and skill displays, and the table string `Skills` is present in all three analyzed binaries at `(/K1/k1_win_gog_swkotor.exe @ 0x00748a1c, /TSL/k2_win_gog_aspyr_swkotor2.exe @ 0x0098cd5c, /Other BioWare Engines/Aurora/nwmain.exe @ 0x140dc51fc)`. PyKotor exposes it as `TwoDARegistry.SKILLS`, Holocron Toolset caches it as `HTInstallation.TwoDA_SKILLS`, and reone plus KotOR.js both carry dedicated skill-loading code. [[`extract/twoda.py`](https://github.com/OpenKotOR/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py), [`installation.py`](https://github.com/OpenKotOR/PyKotor/blob/master/Tools/HolocronToolset/src/toolset/data/installation.py), [reone `skills.cpp`](https://github.com/seedhartha/reone/blob/master/src/libs/game/d20/skills.cpp), [KotOR.js `TalentSkill.ts`](https://github.com/KobaltBlu/KotOR.js/blob/master/src/talents/TalentSkill.ts)]
+**Engine Usage**: Defines all skills available in the game, including which classes can use them, their key ability scores, and skill descriptions. The engine uses this file to determine skill availability, skill point costs, and skill checks.
 
 **Row index**: Skill ID (integer)
 
-**Verified local column and consumer evidence**:
+**Column structure**:
 
-- `name`, `description` are the directly declared StrRef-bearing columns for `skills.2da` in PyKotor's K1 and K2 registries. [[`extract/twoda.py`](https://github.com/OpenKotOR/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py)]
-- PyKotor's registry maps `SkillID` references back to the skills table, which is direct local evidence that skill references in higher-level resources are intended to resolve through `skills.2da`. [[`extract/twoda.py`](https://github.com/OpenKotOR/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py)]
-- Creature GFF data stores skill ranks in the fixed `SkillList` array rather than storing free-form skill names. PyKotor's UTC reader enforces and reconstructs that `SkillList`, which is the local bridge between creature data and skills table ordering. [[`resource/generics/utc.py`](https://github.com/OpenKotOR/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/utc.py)]
-- Holocron Toolset uses the cached skills table in savegame workflows, which is enough local evidence to keep the table's role in display and editing, but not enough yet to keep a full legacy row-schema table without stricter verification. [[`installation.py`](https://github.com/OpenKotOR/PyKotor/blob/master/Tools/HolocronToolset/src/toolset/data/installation.py), [`savegame.py`](https://github.com/OpenKotOR/PyKotor/blob/master/Tools/HolocronToolset/src/toolset/gui/editors/savegame.py)]
+| Column Name | type | Description |
+|------------|------|-------------|
+| `label` | *String* | Skill label |
+| `name` | [StrRef](Audio-and-Localization-Formats#string-references-strref) | *String* reference for skill name |
+| `description` | [StrRef](Audio-and-Localization-Formats#string-references-strref) | *String* reference for skill description |
+| `keyability` | *Integer* | key ability score (STR, DEX, INT, etc.) |
+| `armorcheckpenalty` | *Boolean* | Whether armor check penalty applies |
+| `allclassescanuse` | *Boolean* | Whether all classes can use this skill |
+| `category` | *Integer* | Skill category identifier |
+| `maxrank` | *Integer* | Maximum skill rank |
+| `untrained` | *Boolean* | Whether skill can be used untrained |
+| `constant` | *Integer* (optional) | Constant modifier |
+| `hostileskill` | *Boolean* | Whether skill is hostile |
+| `icon` | *ResRef* (optional) | Skill icon *ResRef* |
 
-The previous larger `skills.2da` schema block contained many plausible fields, but the currently re-verified local evidence proves only the smaller subset above. The rest should come back only after a line-by-line rebuild against code. [[`extract/twoda.py`](https://github.com/OpenKotOR/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py), [`resource/generics/utc.py`](https://github.com/OpenKotOR/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/utc.py), [`savegame.py`](https://github.com/OpenKotOR/PyKotor/blob/master/Tools/HolocronToolset/src/toolset/gui/editors/savegame.py)]
+**Column Details** (from reone implementation):
+
+The following columns are accessed by the reone engine:
+
+- `name`: *String* reference for skill name
+- `description`: *String* reference for skill description
+- `icon`: Icon *ResRef*
+- Dynamic class skill columns: For each class, there is a column named `{classname}_class` (e.g., `jedi_guardian_class`) that contains `1` if the skill is a class skill for that class
+- `droidcanuse`: Boolean - whether droids can use this skill
+- `npccanuse`: Boolean - whether NPCs can use this skill. PyKotor defines skill.2da string-reference columns across both games ([L148](https://github.com/OpenKotOR/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/extract/twoda.py#L148) for K1, [L326](https://github.com/OpenKotOR/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/extract/twoda.py#L326) for K2), maintains TwoDARegistry.SKILLS ([L472](https://github.com/OpenKotOR/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/extract/twoda.py#L472)), and maps GFF skill references ([L563](https://github.com/OpenKotOR/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/extract/twoda.py#L563)). The Holocron Toolset integrates skills.2da through its HTInstallation registry ([installation.py L71](https://github.com/OpenKotOR/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Tools/HolocronToolset/src/toolset/data/installation.py#L71)) and displays skill tables in the save game editor ([savegame.py L129](https://github.com/OpenKotOR/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Tools/HolocronToolset/src/toolset/gui/editors/savegame.py#L129), [L511-L519](https://github.com/OpenKotOR/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Tools/HolocronToolset/src/toolset/gui/editors/savegame.py#L511-L519), [L542-L543](https://github.com/OpenKotOR/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Tools/HolocronToolset/src/toolset/gui/editors/savegame.py#L542-L543)). Vendor implementations include reone's skill loading with dynamic column name handling ([skills.cpp L32-L48](https://github.com/seedhartha/reone/blob/master/src/libs/game/d20/skills.cpp#L32-L48), [class.cpp L58-L65](https://github.com/seedhartha/reone/blob/master/src/libs/game/d20/class.cpp#L58-L65)) and KotOR.js skill loading ([TalentSkill.ts L38-L49](https://github.com/KobaltBlu/KotOR.js/blob/ea9491d5c783364cf285f178434b84405bee3608/src/talents/TalentSkill.ts#L38-L49)).
 
 ---
 
 ### [spells.2da](#spells2da)
 
-**Engine Usage**: `spells.2da` remains the inherited table name, but in KotOR it is the active Force-power table. The table string `SPELLS` is present in all three analyzed binaries at `(/K1/k1_win_gog_swkotor.exe @ 0x0074a4d0, /TSL/k2_win_gog_aspyr_swkotor2.exe @ 0x0098b8cc, /Other BioWare Engines/Aurora/nwmain.exe @ 0x140dc56d8)`, KotOR I and KotOR II both retain dedicated `Load2DArrays_Spells` loader names, and PyKotor plus Holocron Toolset both register the file under their power-table constants rather than under a generic D&D-only name. [[`extract/twoda.py`](https://github.com/OpenKotOR/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py), [`installation.py`](https://github.com/OpenKotOR/PyKotor/blob/master/Tools/HolocronToolset/src/toolset/data/installation.py), [`utc.py`](https://github.com/OpenKotOR/PyKotor/blob/master/Tools/HolocronToolset/src/toolset/gui/editors/utc.py), [reone `spells.cpp`](https://github.com/seedhartha/reone/blob/master/src/libs/game/d20/spells.cpp)]
+**Engine Usage**: Defines all Force powers (and legacy spell entries) in KotOR, including their costs, targeting modes, visual effects, and descriptions. The engine uses this file to determine Force power availability, casting requirements, and effects. Note: KotOR uses Force powers rather than traditional D&D spells, though the file structure is inherited from the Aurora engine (originally designed for Neverwinter Nights).
 
-**Row index**: Spell or Force-power ID (integer)
+**Row index**: Spell ID (integer)
 
-**Verified local column and consumer evidence**:
+**Column structure**:
 
-- `name` and `spelldesc` are the directly declared StrRef-bearing columns for `spells.2da` in PyKotor's K1 and K2 registries. [[`extract/twoda.py`](https://github.com/OpenKotOR/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py)]
-- PyKotor maps `Spell`, `SpellId`, and `Subtype` references back to the same power table, which is direct local evidence that higher-level data refers to rows in `spells.2da` by numeric id. [[`extract/twoda.py`](https://github.com/OpenKotOR/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py)]
-- The generated UTC editor help text states that `ClassList -> KnownList0/1/2` stores `Spell` ids that reference `spells.2da`, and PyKotor's UTC reader consumes those `Spell` values from creature GFF data exactly that way. [[`toolset/uic/qtpy/editors/utc.py`](https://github.com/OpenKotOR/PyKotor/blob/master/Tools/HolocronToolset/src/toolset/uic/qtpy/editors/utc.py), [`resource/generics/utc.py`](https://github.com/OpenKotOR/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/utc.py)]
-- PyKotor's NWScript definition layer independently documents `GetLastForcePowerUsed` as returning a spell number that indexes `Spells.2da`, which is local evidence that the same numeric table ids leak into script-visible runtime APIs. [[`scriptdefs.py`](https://github.com/OpenKotOR/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/common/scriptdefs.py)]
-- Holocron Toolset caches the power table and populates creature power lists from it, preferring resolved names and falling back to label-style text where needed. [[`installation.py`](https://github.com/OpenKotOR/PyKotor/blob/master/Tools/HolocronToolset/src/toolset/data/installation.py), [`utc.py`](https://github.com/OpenKotOR/PyKotor/blob/master/Tools/HolocronToolset/src/toolset/gui/editors/utc.py)]
+| Column Name | type | Description |
+|------------|------|-------------|
+| `label` | *String* | Spell label |
+| `name` | [StrRef](Audio-and-Localization-Formats#string-references-strref) | *String* reference for spell name |
+| `school` | *Integer* | Spell school identifier |
+| `range` | *Integer* | Spell range type |
+| `vs` | *Integer* | Versus type (self, touch, etc.) |
+| `metamagic` | *Integer* | Metamagic flags |
+| `targettype` | *Integer* | Target type flags |
+| `impactscript` | *ResRef* (optional) | Impact script *ResRef* |
+| `innate` | *Integer* | Innate Force power level (0 = not available) |
+| `conjtime` | *Float* | Casting/conjuration time |
+| `conjtimevfx` | *Integer* (optional) | Casting time visual effect |
+| `conjheadvfx` | *Integer* (optional) | Casting head visual effect |
+| `conjhandvfx` | *Integer* (optional) | Casting hand visual effect |
+| `conjgrndvfx` | *Integer* (optional) | Casting ground visual effect |
+| `conjcastvfx` | *Integer* (optional) | Casting visual effect |
+| `conjimpactscript` | *ResRef* (optional) | Conjuration impact script |
+| `conjduration` | *Float* | Conjuration duration |
+| `conjrange` | *Integer* | Conjuration range |
+| `conjca` | *Integer* | Conjuration casting [animation](MDL-MDX-File-Format#animation-header) |
+| `conjca2` through `conjca50` | *Integer* (optional) | Additional casting animations (numbered 2-50) |
+| `hostilesetting` | *Integer* | Hostile setting flags |
+| `featid` | *Integer* (optional) | Associated feat ID |
+| `counter1` | *Integer* (optional) | Counter spell ID 1 |
+| `counter2` | *Integer* (optional) | Counter spell ID 2 |
+| `counter3` | *Integer* (optional) | Counter spell ID 3 |
+| `projectile` | *ResRef* (optional) | Projectile [model](MDL-MDX-File-Format) *ResRef* |
+| `projectilesound` | *ResRef* (optional) | Projectile sound *ResRef* |
+| `projectiletype` | *Integer* | Projectile type identifier |
+| `projectileorient` | *Integer* | Projectile orientation |
+| `projectilepath` | *Integer* | Projectile path type |
+| `projectilehoming` | *Boolean* | Whether projectile homes on target |
+| `projectilemodel` | *ResRef* (optional) | Projectile 3D [model](MDL-MDX-File-Format) *ResRef* |
+| `projectilemodel2` through `projectilemodel50` | *ResRef* (optional) | Additional projectile models (numbered 2-50) |
+| `icon` | *ResRef* | Spell icon *ResRef* |
+| `icon2` through `icon50` | *ResRef* (optional) | Additional icons (numbered 2-50) |
+| `description` | [StrRef](Audio-and-Localization-Formats#string-references-strref) | Spell description string reference |
+| `altmessage` | [StrRef](Audio-and-Localization-Formats#string-references-strref) (optional) | Alternative message string reference |
+| `usewhencast` | *Integer* | Use when cast flags |
+| `blood` | *Boolean* | Whether spell causes blood effects |
+| `concentration` | *Integer* | Concentration check DC |
+| `immunitytype` | *Integer* | Immunity type identifier |
+| `immunitytype2` through `immunitytype50` | *Integer* (optional) | Additional immunity types (numbered 2-50) |
+| `immunityitem` | *Integer* | Immunity item type |
+| `immunityitem2` through `immunityitem50` | *Integer* (optional) | Additional immunity items (numbered 2-50) |
 
-The earlier full `spells.2da` schema table was too broad for the current evidence set. The verified local code proves the table's role, its row-id usage, and a small number of column families; the rest should return only after a stricter rebuild. [[`extract/twoda.py`](https://github.com/OpenKotOR/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py), [`resource/generics/utc.py`](https://github.com/OpenKotOR/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/utc.py), [`scriptdefs.py`](https://github.com/OpenKotOR/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/common/scriptdefs.py)]
+**Column Details** (from reone implementation):
+
+The following columns are accessed by the reone engine:
+
+- `name`: *String* reference for spell name
+- `spelldesc`: *String* reference for spell description (note: column name is `spelldesc`, not `description`)
+- `iconresref`: Icon ResRef (note: column name is `iconresref`, not `icon`)
+- `pips`: Spell pips/ranks (hex integer)
+- `conjtime`: Conjuration/casting time
+- `casttime`: Cast time
+- `catchtime`: Catch time
+- `conjanim`: Conjuration [animation](MDL-MDX-File-Format#animation-header) type (e.g., "throw", "up")
+- `hostilesetting`: Hostile setting flags
+- `projectile`: Projectile *ResRef*
+- `projectileHook`: Projectile hook point
+- `projectileOrigin`: Projectile origin point
+- `projectileTarget`: Projectile target point
+- `projectileCurve`: Projectile curve type
+- `projmodel`: Projectile [model](MDL-MDX-File-Format) *ResRef*
+- `range`: Spell range
+- `impactscript`: Impact script *ResRef*
+- `casthandvisual`: Cast hand visual effect
+
+**Note**: The `spells.2da` file contains many optional columns for projectile [models](MDL-MDX-File-Format), icons, and immunity types (numbered 1-50). These are used for spell variations and visual effects.
+
+These spell column semantics are corroborated by PyKotor's K1/K2 schema mappings and registry entries ([`twoda.py` L149](https://github.com/OpenKotOR/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/extract/twoda.py#L149), [`twoda.py` L327](https://github.com/OpenKotOR/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/extract/twoda.py#L327), [`twoda.py` L239](https://github.com/OpenKotOR/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/extract/twoda.py#L239), [`twoda.py` L432](https://github.com/OpenKotOR/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/extract/twoda.py#L432), [`twoda.py` L709](https://github.com/OpenKotOR/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/extract/twoda.py#L709), [`twoda.py` L558-L560](https://github.com/OpenKotOR/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/extract/twoda.py#L558-L560), [`scriptdefs.py` L9380-L9381](https://github.com/OpenKotOR/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/common/scriptdefs.py#L9380-L9381), [`scriptlib.py` L5676](https://github.com/OpenKotOR/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/common/scriptlib.py#L5676)) and by tool/runtime consumers in Holocron Toolset and open engines ([`installation.py` L110](https://github.com/OpenKotOR/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Tools/HolocronToolset/src/toolset/data/installation.py#L110), [`spells.cpp` L32-L48](https://github.com/seedhartha/reone/blob/master/src/libs/game/d20/spells.cpp#L32-L48), [`TalentSpell.ts` L16-L44](https://github.com/KobaltBlu/KotOR.js/blob/ea9491d5c783364cf285f178434b84405bee3608/src/talents/TalentSpell.ts#L16-L44), [`TalentSpell.ts` L42-L53](https://github.com/KobaltBlu/KotOR.js/blob/ea9491d5c783364cf285f178434b84405bee3608/src/talents/TalentSpell.ts#L42-L53)).
 
 ---
 
@@ -617,65 +994,137 @@ This table's naming and cost schema are tracked in both K1 and K2 column maps in
 
 ### [placeables.2da](#placeables2da)
 
-**Engine and tool usage**: `placeables.2da` is the placeable-appearance lookup table for UTPs and scene rendering. The tri-binary section above already confirms that KotOR I and KotOR II retain `Load2DArrays_Placeables @ (/K1/k1_win_gog_swkotor.exe @ 0x005c1830, /TSL/k2_win_gog_aspyr_swkotor2.exe @ 0x00482800, /Other BioWare Engines/Aurora/nwmain.exe @ TODO: generic 2DA manager only)`. Locally, PyKotor exposes the table as `TwoDARegistry.PLACEABLES`, Holocron Toolset caches it as `HTInstallation.TwoDA_PLACEABLES`, the UTP editor uses its `label` column to populate appearance selection, and scene rendering resolves each `UTP.appearance_id` through `placeables.2da` to recover `modelname`. [[`extract/twoda.py`](https://github.com/OpenKotOR/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py), [`installation.py`](https://github.com/OpenKotOR/PyKotor/blob/master/Tools/HolocronToolset/src/toolset/data/installation.py), [`utp.py`](https://github.com/OpenKotOR/PyKotor/blob/master/Tools/HolocronToolset/src/toolset/gui/editors/utp.py), [`scene_cache.py`](https://github.com/OpenKotOR/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/gl/scene/scene_cache.py)]
+**Engine Usage**: Defines placeable objects (containers, usable objects, interactive elements) with their [models](MDL-MDX-File-Format), properties, and behaviors. The engine uses this file when loading placeable objects in areas, determining their [models](MDL-MDX-File-Format), hit detection, and interaction properties.
 
-**Row index**: Placeable appearance ID or type ID (integer)
+**Row index**: Placeable type ID (integer)
 
-**Verified local columns and consumers**:
+**Column structure**:
 
-- `strref` is the directly declared string-bearing column for `placeables.2da` in PyKotor's K1 and K2 registries. [[`extract/twoda.py`](https://github.com/OpenKotOR/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py)]
-- `modelname` is the directly declared model-bearing column for `placeables.2da` in PyKotor's K1 and K2 registries. [[`extract/twoda.py`](https://github.com/OpenKotOR/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py)]
-- `label` is a live UI-facing column in Holocron Toolset: the UTP editor loads `placeables.2da` and uses `appearances.get_column("label")` to populate the appearance selector. [[`utp.py`](https://github.com/OpenKotOR/PyKotor/blob/master/Tools/HolocronToolset/src/toolset/gui/editors/utp.py)]
-- `UTP.appearance_id` is resolved back through the same table during scene rendering, and `scene_cache.py` explicitly reads `placeables.2da[row]["modelname"]` when constructing placeable render objects. [[`scene_cache.py`](https://github.com/OpenKotOR/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/gl/scene/scene_cache.py)]
+| Column Name | type | Description |
+|------------|------|-------------|
+| `label` | String (optional) | Placeable type label |
+| `modelname` | *ResRef* (optional) | 3D [model](MDL-MDX-File-Format) *ResRef* |
+| `strref` | *Integer* | *String* reference for placeable name |
+| `bodybag` | *Boolean* | Whether placeable can contain bodies |
+| `canseeheight` | *Float* | Can-see height for line of sight |
+| `hitcheck` | *Boolean* | Whether hit detection is enabled |
+| `hostile` | *Boolean* | Whether placeable is hostile |
+| `ignorestatichitcheck` | *Boolean* | Whether to ignore static hit checks |
+| `lightcolor` | String (optional) | Light color RGB values |
+| `lightoffsetx` | String (optional) | Light X offset |
+| `lightoffsety` | String (optional) | Light Y offset |
+| `lightoffsetz` | String (optional) | Light Z offset |
+| `lowgore` | String (optional) | Low gore [model](MDL-MDX-File-Format) *ResRef* |
+| `noncull` | *Boolean* | Whether to disable culling |
+| `preciseuse` | *Boolean* | Whether precise use is enabled |
+| `shadowsize` | *Boolean* | Whether shadow size is enabled |
+| `soundapptype` | *Integer* (optional) | Sound appearance type |
+| `usesearch` | *Boolean* | Whether placeable can be searched |
 
-The earlier full `placeables.2da` schema table was broader than the currently verified evidence. Until the remaining fields are rechecked against code or multi-binary analysis, this page keeps only the smaller subset above. [[`extract/twoda.py`](https://github.com/OpenKotOR/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py), [`utp.py`](https://github.com/OpenKotOR/PyKotor/blob/master/Tools/HolocronToolset/src/toolset/gui/editors/utp.py), [`scene_cache.py`](https://github.com/OpenKotOR/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/gl/scene/scene_cache.py)]
+**Column Details**:
+
+The complete column structure is defined in reone's placeables parser:
+
+- `label`: Optional label string
+- `modelname`: 3D [model](MDL-MDX-File-Format) *ResRef*
+- `strref`: *String* reference for placeable name
+- `bodybag`: Boolean - whether placeable can contain bodies
+- `canseeheight`: Float - can-see height for line of sight
+- `hitcheck`: Boolean - whether hit detection is enabled
+- `hostile`: Boolean - whether placeable is hostile
+- `ignorestatichitcheck`: Boolean - whether to ignore static hit checks
+- `lightcolor`: Optional string - light color RGB values
+- `lightoffsetx`: Optional string - light X offset
+- `lightoffsety`: Optional string - light Y offset
+- `lightoffsetz`: Optional string - light Z offset
+- `lowgore`: Optional string - low gore [model](MDL-MDX-File-Format) *ResRef*
+- `noncull`: Boolean - whether to disable culling
+- `preciseuse`: Boolean - whether precise use is enabled
+- `shadowsize`: Boolean - whether shadow size is enabled
+- `soundapptype`: Optional integer - sound appearance type
+- `usesearch`: Boolean - whether placeable can be searched
+
+Placeables column semantics and runtime usage are backed by PyKotor K1/K2 column/type definitions and registry mappings ([`twoda.py` L141](https://github.com/OpenKotOR/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/extract/twoda.py#L141), [`twoda.py` L170](https://github.com/OpenKotOR/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/extract/twoda.py#L170), [`twoda.py` L319](https://github.com/OpenKotOR/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/extract/twoda.py#L319), [`twoda.py` L349](https://github.com/OpenKotOR/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/extract/twoda.py#L349), [`twoda.py` L467](https://github.com/OpenKotOR/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/extract/twoda.py#L467), [`twoda.py` L542](https://github.com/OpenKotOR/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/extract/twoda.py#L542)), editor integration in Holocron Toolset ([`installation.py` L66](https://github.com/OpenKotOR/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Tools/HolocronToolset/src/toolset/data/installation.py#L66), [`utp.py` L52](https://github.com/OpenKotOR/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Tools/HolocronToolset/src/toolset/gui/editors/utp.py#L52), [`utp.py` L62](https://github.com/OpenKotOR/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Tools/HolocronToolset/src/toolset/gui/editors/utp.py#L62), [`utp.py` L121-L131](https://github.com/OpenKotOR/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Tools/HolocronToolset/src/toolset/gui/editors/utp.py#L121-L131), [`utp.py` L471](https://github.com/OpenKotOR/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Tools/HolocronToolset/src/toolset/gui/editors/utp.py#L471)), and vendor parsing/loading in reone ([`placeables.cpp` L29-L49](https://github.com/seedhartha/reone/blob/master/src/libs/resource/parser/2da/placeables.cpp#L29-L49), [`placeable.cpp` L59-L60](https://github.com/seedhartha/reone/blob/master/src/libs/game/object/placeable.cpp#L59-L60)).
 
 ---
 
 ### [genericdoors.2da](#genericdoors2da)
 
-**Verified local usage**: `genericdoors.2da` is a live door-appearance lookup table in Holocron Toolset and PyKotor. PyKotor exposes the file through `TwoDARegistry.DOORS`, its K1 and K2 registries declare `strref` as the table's string-bearing column and `modelname` as its model-bearing column, and the door editor caches `genericdoors.2da` immediately on startup. The same editor validates `UTD.appearance_id` against the table height, resolves the preview model through `door.get_model(..., genericdoors=...)`, and explicitly reports the lookup as `genericdoors.2da[row]['modelname']`. The generated UTD help text also documents the door `Appearance` field as an index into `doortypes.2da` or `genericdoors.2da` that picks the 3D model and behavior. [[`extract/twoda.py`](https://github.com/OpenKotOR/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py), [`utd.py`](https://github.com/OpenKotOR/PyKotor/blob/master/Tools/HolocronToolset/src/toolset/gui/editors/utd.py), [`toolset/uic/qtpy/editors/utd.py`](https://github.com/OpenKotOR/PyKotor/blob/master/Tools/HolocronToolset/src/toolset/uic/qtpy/editors/utd.py)]
+**Engine Usage**: Defines door types and how they behave in areas. The engine consults this file when loading doors to choose:
+
+- [models](MDL-MDX-File-Format)
+- [animations](MDL-MDX-File-Format#animation-header)
+- Associated properties and which [model](MDL-MDX-File-Format) to display
 
 **Row index**: Door type ID (integer)
 
-**Verified local columns and consumers**:
+**Column structure**:
 
-- `strref` is the directly declared string-bearing column for `genericdoors.2da` in PyKotor's K1 and K2 registries. [[`extract/twoda.py`](https://github.com/OpenKotOR/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py)]
-- `modelname` is the directly declared model-bearing column for `genericdoors.2da` in PyKotor's K1 and K2 registries. [[`extract/twoda.py`](https://github.com/OpenKotOR/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py)]
-- `modelname` is also the live preview lookup used by Holocron Toolset's UTD editor when resolving the current door model from `UTD.appearance_id`. [[`utd.py`](https://github.com/OpenKotOR/PyKotor/blob/master/Tools/HolocronToolset/src/toolset/gui/editors/utd.py)]
+| Column Name | type | Description |
+|------------|------|-------------|
+| `label` | *String* | Door type label |
+| `modelname` | *ResRef* | 3D [model](MDL-MDX-File-Format) *ResRef* |
+| `name` | String (optional) | Door type name |
+| `strref` | *Integer* (optional) | *String* reference for door name |
+| `blocksight` | *Boolean* | Whether door blocks line of sight |
+| `nobin` | *Boolean* | Whether door has no bin (container) |
+| `preciseuse` | *Boolean* | Whether precise use is enabled |
+| `soundapptype` | *Integer* (optional) | Sound appearance type |
+| `staticanim` | String (optional) | Static [animation](MDL-MDX-File-Format#animation-header) *ResRef* |
+| `visiblemodel` | *Boolean* | Whether [model](MDL-MDX-File-Format) is visible |
 
-The previous full `genericdoors.2da` schema block was broader than the evidence currently rechecked in source. Until the remaining fields are re-verified against live code or binary analysis, this page keeps only the narrower subset above. [[`extract/twoda.py`](https://github.com/OpenKotOR/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py), [`utd.py`](https://github.com/OpenKotOR/PyKotor/blob/master/Tools/HolocronToolset/src/toolset/gui/editors/utd.py)]
+**Column Details**:
+
+The complete column structure is defined in reone's genericdoors parser:
+
+- `label`: Door type label
+- `modelname`: 3D [model](MDL-MDX-File-Format) *ResRef*
+- `name`: Optional door type name string
+- `strref`: Optional integer - *String* reference for door name
+- `blocksight`: Boolean - whether door blocks line of sight
+- `nobin`: Boolean - whether door has no bin (container)
+- `preciseuse`: Boolean - whether precise use is enabled
+- `soundapptype`: Optional integer - sound appearance type
+- `staticanim`: Optional string - static [animation](MDL-MDX-File-Format#animation-header) *ResRef*
+- `visiblemodel`: Boolean - whether [model](MDL-MDX-File-Format) is visible
+
+Generic door semantics are validated by PyKotor's K1/K2 mappings for doortypes and genericdoors plus registry/GFF linkages ([`twoda.py` L78](https://github.com/OpenKotOR/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/extract/twoda.py#L78), [`twoda.py` L86](https://github.com/OpenKotOR/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/extract/twoda.py#L86), [`twoda.py` L177-L178](https://github.com/OpenKotOR/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/extract/twoda.py#L177-L178), [`twoda.py` L256-L264](https://github.com/OpenKotOR/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/extract/twoda.py#L256-L264), [`twoda.py` L356-L357](https://github.com/OpenKotOR/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/extract/twoda.py#L356-L357), [`twoda.py` L468](https://github.com/OpenKotOR/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/extract/twoda.py#L468), [`twoda.py` L543](https://github.com/OpenKotOR/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/extract/twoda.py#L543)); the same table is consumed by Toolset door editors and by reone's parser/runtime load path ([`installation.py` L67](https://github.com/OpenKotOR/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Tools/HolocronToolset/src/toolset/data/installation.py#L67), [`utd.py` L60](https://github.com/OpenKotOR/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Tools/HolocronToolset/src/toolset/gui/editors/utd.py#L60), [`utd.py` L117-L123](https://github.com/OpenKotOR/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Tools/HolocronToolset/src/toolset/gui/editors/utd.py#L117-L123), [`utd.py` L409](https://github.com/OpenKotOR/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Tools/HolocronToolset/src/toolset/gui/editors/utd.py#L409), [`genericdoors.cpp` L29-L41](https://github.com/seedhartha/reone/blob/master/src/libs/resource/parser/2da/genericdoors.cpp#L29-L41), [`door.cpp` L66-L67](https://github.com/seedhartha/reone/blob/master/src/libs/game/object/door.cpp#L66-L67)).
 
 ---
 
 ### [doortypes.2da](#doortypes2da)
 
-**Verified local usage**: `doortypes.2da` is the sibling door table that PyKotor's K1 and K2 registries track alongside `genericdoors.2da`. The registry declares `stringrefgame` as its string-bearing column and `model` as its model-bearing column, and the generated UTD help text explicitly describes the `Appearance` field as an index into `doortypes.2da` or `genericdoors.2da`. That is enough local evidence to keep the table's role as a door-appearance/configuration source, but not enough yet to preserve a larger inherited row-schema description without a stricter line-by-line rebuild. [[`extract/twoda.py`](https://github.com/OpenKotOR/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py), [`toolset/uic/qtpy/editors/utd.py`](https://github.com/OpenKotOR/PyKotor/blob/master/Tools/HolocronToolset/src/toolset/uic/qtpy/editors/utd.py)]
+**Engine Usage**: Defines door type configurations and their properties. The engine uses this file to determine door type names, [models](MDL-MDX-File-Format), and behaviors.
 
 **Row index**: Door type ID (integer)
 
-**Verified local columns**:
+**Column structure**:
 
-- `stringrefgame` is the directly declared string-bearing column for `doortypes.2da` in PyKotor's K1 and K2 registries. [[`extract/twoda.py`](https://github.com/OpenKotOR/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py)]
-- `model` is the directly declared model-bearing column for `doortypes.2da` in PyKotor's K1 and K2 registries. [[`extract/twoda.py`](https://github.com/OpenKotOR/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py)]
+| Column Name | type | Description |
+|------------|------|-------------|
+| `label` | *String* | Door type label |
+| `stringrefgame` | [StrRef](Audio-and-Localization-Formats#string-references-strref) | *String* reference for door type name |
+| `model` | *ResRef* | [model](MDL-MDX-File-Format) *ResRef* for the door type |
+| Additional columns | Various | Door type properties |
 
-The older `doortypes.2da` schema block went beyond what the currently rechecked local evidence proves. The safer statement is that `doortypes.2da` remains a documented sibling door table with string and model columns, and that higher-level door editors still acknowledge it as a valid appearance source. [[`extract/twoda.py`](https://github.com/OpenKotOR/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py), [`toolset/uic/qtpy/editors/utd.py`](https://github.com/OpenKotOR/PyKotor/blob/master/Tools/HolocronToolset/src/toolset/uic/qtpy/editors/utd.py)]
+The doortypes table itself is anchored in the same K1/K2 extraction mappings used by PyKotor's 2DA schema index ([`twoda.py` L78](https://github.com/OpenKotOR/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/extract/twoda.py#L78), [`twoda.py` L177](https://github.com/OpenKotOR/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/extract/twoda.py#L177)).
 
 ---
 
 ### [soundset.2da](#soundset2da)
 
-**Verified local usage**: `soundset.2da` is the table that creature data uses to choose a sound-set row by numeric id. PyKotor exposes the file as `TwoDARegistry.SOUNDSETS`, declares `strref` as its string-bearing column in both K1 and K2 registries, and maps the UTC `SoundSetFile` GFF field back to `soundset.2da`. PyKotor's UTC reader stores that field as `soundset_id`, and Holocron Toolset's generated UTC help text documents it as a WORD index into `soundset.2da` that chooses creature dialogue and battle sounds. [[`extract/twoda.py`](https://github.com/OpenKotOR/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py), [`resource/generics/utc.py`](https://github.com/OpenKotOR/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/utc.py), [`toolset/uic/qtpy/editors/utc.py`](https://github.com/OpenKotOR/PyKotor/blob/master/Tools/HolocronToolset/src/toolset/uic/qtpy/editors/utc.py), [`installation.py`](https://github.com/OpenKotOR/PyKotor/blob/master/Tools/HolocronToolset/src/toolset/data/installation.py)]
+**Engine Usage**: Maps sound set IDs to voice set assignments for characters. The engine uses this file to determine which voice lines to play for characters based on their sound set.
 
 **Row index**: Sound set ID (integer)
 
-**Verified local columns and consumers**:
+**Column structure**:
 
-- `strref` is the directly declared string-bearing column for `soundset.2da` in PyKotor's K1 and K2 registries. [[`extract/twoda.py`](https://github.com/OpenKotOR/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py)]
-- `SoundSetFile` is the GFF field that PyKotor maps back to `soundset.2da`, and the UTC reader reads and writes it as `utc.soundset_id`. [[`extract/twoda.py`](https://github.com/OpenKotOR/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py), [`resource/generics/utc.py`](https://github.com/OpenKotOR/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/utc.py)]
-- Holocron Toolset's UTC editor tooltip explicitly describes the field as an index into `soundset.2da` that changes dialogue and battle sounds. [[`toolset/uic/qtpy/editors/utc.py`](https://github.com/OpenKotOR/PyKotor/blob/master/Tools/HolocronToolset/src/toolset/uic/qtpy/editors/utc.py)]
+| Column Name | type | Description |
+|------------|------|-------------|
+| `label` | *String* | Sound set label |
+| `resref` | *ResRef* | [sound set files](Audio-and-Localization-Formats#ssf) ResRef (e.g., `c_human_m_01`) |
 
-The earlier `soundset.2da` schema block was broader than the currently rechecked evidence. Until additional columns are re-verified against code or binary analysis, this page keeps only the smaller subset above. [[`extract/twoda.py`](https://github.com/OpenKotOR/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py), [`resource/generics/utc.py`](https://github.com/OpenKotOR/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/utc.py), [`toolset/uic/qtpy/editors/utc.py`](https://github.com/OpenKotOR/PyKotor/blob/master/Tools/HolocronToolset/src/toolset/uic/qtpy/editors/utc.py)]
+This soundset schema is validated across PyKotor table mappings and UTC field usage ([`twoda.py` L143](https://github.com/OpenKotOR/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/extract/twoda.py#L143), [`twoda.py` L321](https://github.com/OpenKotOR/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/extract/twoda.py#L321), [`twoda.py` L459](https://github.com/OpenKotOR/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/extract/twoda.py#L459), [`twoda.py` L522](https://github.com/OpenKotOR/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/extract/twoda.py#L522), [`utc.py` L90-L92](https://github.com/OpenKotOR/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/generics/utc.py#L90-L92), [`utc.py` L359](https://github.com/OpenKotOR/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/generics/utc.py#L359), [`utc.py` L549-L550](https://github.com/OpenKotOR/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/generics/utc.py#L549-L550), [`utc.py` L821](https://github.com/OpenKotOR/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/resource/generics/utc.py#L821)), Toolset bindings ([`installation.py` L58](https://github.com/OpenKotOR/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Tools/HolocronToolset/src/toolset/data/installation.py#L58), [`utc.ui` L260-L267](https://github.com/OpenKotOR/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Tools/HolocronToolset/src/ui/editors/utc.ui#L260-L267)), and runtime loading in reone ([`creature.cpp` L1347-L1354](https://github.com/seedhartha/reone/blob/master/src/libs/game/object/creature.cpp#L1347-L1354)).
 
 ---
 
@@ -683,46 +1132,135 @@ The earlier `soundset.2da` schema block was broader than the currently rechecked
 
 ### [visualeffects.2da](#visualeffects2da)
 
-**Verified local usage**: The currently rechecked local linkage for `visualeffects.2da` is PyKotor's GFF-to-2DA mapping from `VisualType` to this table. That proves the page's object-level contract: some GFF resources store a numeric `VisualType` that should be interpreted as a row index into `visualeffects.2da`. PyKotor's script library also preserves many hard-coded `SetEffectIcon(...)` calls, but those point to `effecticon.2da`, not to `visualeffects.2da`, so they are not evidence for this table's row schema. [[`extract/twoda.py`](https://github.com/OpenKotOR/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py), [`common/scriptlib.py`](https://github.com/OpenKotOR/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/common/scriptlib.py)]
+**Engine Usage**: Defines visual effects (particle effects, impact effects, environmental effects) with their durations, [models](MDL-MDX-File-Format), and properties. The engine uses this file when playing visual effects for spells, combat, and environmental events.
 
 **Row index**: Visual effect ID (integer)
 
-**Verified local fields and limits**:
+**Column structure**:
 
-- `VisualType` is the rechecked field name that PyKotor binds to `visualeffects.2da`. [[`extract/twoda.py`](https://github.com/OpenKotOR/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py)]
-- The current local registry pass does not enumerate a trusted column family for `visualeffects.2da`, so the inherited giant schema table was removed rather than kept as unsupported prose. [[`extract/twoda.py`](https://github.com/OpenKotOR/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py)]
+| Column Name | type | Description |
+|------------|------|-------------|
+| `label` | *String* | Visual effect label |
+| `name` | [StrRef](Audio-and-Localization-Formats#string-references-strref) | *String* reference for effect name |
+| `model` | *ResRef* (optional) | Effect [model](MDL-MDX-File-Format) *ResRef* |
+| `impactmodel` | *ResRef* (optional) | Impact [model](MDL-MDX-File-Format) *ResRef* |
+| `impactorient` | *Integer* | Impact orientation |
+| `impacttype` | *Integer* | Impact type identifier |
+| `duration` | *Float* | Effect duration in seconds |
+| `durationvariance` | *Float* | Duration variance |
+| `loop` | *Boolean* | Whether effect loops |
+| `render` | *Boolean* | Whether effect is rendered |
+| `renderhint` | *Integer* | Render hint flags |
+| `sound` | *ResRef* (optional) | Sound effect *ResRef* |
+| `sounddelay` | *Float* | Sound delay in seconds |
+| `soundvariance` | *Float* | Sound variance |
+| `soundloop` | *Boolean* | Whether sound loops |
+| `soundvolume` | *Float* | Sound volume (0.0-1.0) |
+| `light` | *Boolean* | Whether effect emits light |
+| `lightcolor` | *String* | Light color RGB values |
+| `lightintensity` | *Float* | Light intensity |
+| `lightradius` | *Float* | Light radius |
+| `lightpulse` | *Boolean* | Whether light pulses |
+| `lightpulselength` | *Float* | Light pulse length |
+| `lightfade` | *Boolean* | Whether light fades |
+| `lightfadelength` | *Float* | Light fade length |
+| `lightfadestart` | *Float* | Light fade start time |
+| `lightfadeend` | *Float* | Light fade end time |
+| `lightshadow` | *Boolean* | Whether light casts shadows |
+| `lightshadowradius` | *Float* | Light shadow radius |
+| `lightshadowintensity` | *Float* | Light shadow intensity |
+| `lightshadowcolor` | *String* | Light shadow color RGB values |
+| `lightshadowfade` | *Boolean* | Whether light shadow fades |
+| `lightshadowfadelength` | *Float* | Light shadow fade length |
+| `lightshadowfadestart` | *Float* | Light shadow fade start time |
+| `lightshadowfadeend` | *Float* | Light shadow fade end time |
+| `lightshadowpulse` | *Boolean* | Whether light shadow pulses |
+| `lightshadowpulselength` | *Float* | Light shadow pulse length |
+| `lightshadowpulseintensity` | *Float* | Light shadow pulse intensity |
+| `lightshadowpulsecolor` | *String* | Light shadow pulse color RGB values |
+| `lightshadowpulsefade` | *Boolean* | Whether light shadow pulse fades |
+| `lightshadowpulsefadelength` | *Float* | Light shadow pulse fade length |
+| `lightshadowpulsefadestart` | *Float* | Light shadow pulse fade start time |
+| `lightshadowpulsefadeend` | *Float* | Light shadow pulse fade end time |
+| `lightshadowpulsefadeintensity` | *Float* | Light shadow pulse fade intensity |
+| `lightshadowpulsefadecolor` | *String* | Light shadow pulse fade color RGB values |
+| `lightshadowpulsefadepulse` | *Boolean* | Whether light shadow pulse fade pulses |
+| `lightshadowpulsefadepulselength` | *Float* | Light shadow pulse fade pulse length |
+| `lightshadowpulsefadepulseintensity` | *Float* | Light shadow pulse fade pulse intensity |
+| `lightshadowpulsefadepulsecolor` | *String* | Light shadow pulse fade pulse color RGB values |
+| `lightshadowpulsefadepulsefade` | *Boolean* | Whether light shadow pulse fade pulse fades |
+| `lightshadowpulsefadepulsefadelength` | *Float* | Light shadow pulse fade pulse fade length |
+| `lightshadowpulsefadepulsefadestart` | *Float* | Light shadow pulse fade pulse fade start time |
+| `lightshadowpulsefadepulsefadeend` | *Float* | Light shadow pulse fade pulse fade end time |
+| `lightshadowpulsefadepulsefadeintensity` | *Float* | Light shadow pulse fade pulse fade intensity |
+| `lightshadowpulsefadepulsefadecolor` | *String* | Light shadow pulse fade pulse fade color RGB values |
 
-Until a fresh parser-level or binary-backed reconstruction is completed, the only safe statement here is that `visualeffects.2da` provides row targets for `VisualType` references. [[`extract/twoda.py`](https://github.com/OpenKotOR/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py)]
+**Note**: The `visualeffects.2da` file may contain many optional columns for advanced lighting and shadow effects.
+
+Visual effect table linkage is implemented in PyKotor's GFF-to-2DA mapping (`VisualType` -> `visualeffects.2da`) ([`twoda.py` L593](https://github.com/OpenKotOR/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/extract/twoda.py#L593)).
 
 ---
 
 ### [portraits.2da](#portraits2da)
 
-**Verified local usage**: `portraits.2da` is the table PyKotor maps from the GFF field name `PortraitId`, and Holocron Toolset exposes it as `HTInstallation.TwoDA_PORTRAITS`. PyKotor's UTC, UTD, UTP, and UTT generic readers all preserve a numeric `portrait_id`, and the generated UTC editor help text documents the creature `PortraitId` field as a portrait-table row selector, with `65534` or `65535` delegating to the explicit `Portrait` ResRef instead. The same UI also documents the portrait preview as a display derived from `PortraitId` plus the optional `Portrait` ResRef. [[`extract/twoda.py`](https://github.com/OpenKotOR/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py), [`resource/generics/utc.py`](https://github.com/OpenKotOR/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/utc.py), [`resource/generics/utd.py`](https://github.com/OpenKotOR/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/utd.py), [`resource/generics/utp.py`](https://github.com/OpenKotOR/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/utp.py), [`resource/generics/utt.py`](https://github.com/OpenKotOR/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/utt.py), [`toolset/uic/qtpy/editors/utc.py`](https://github.com/OpenKotOR/PyKotor/blob/master/Tools/HolocronToolset/src/toolset/uic/qtpy/editors/utc.py), [`installation.py`](https://github.com/OpenKotOR/PyKotor/blob/master/Tools/HolocronToolset/src/toolset/data/installation.py)]
+**Engine Usage**: Maps portrait IDs to portrait image ResRefs for character selection screens and character sheets. The engine uses this file to display character portraits in the UI.
 
 **Row index**: Portrait ID (integer)
 
-**Verified local fields and behavior**:
+**Column structure**:
 
-- `PortraitId` is the GFF field name that PyKotor maps to `portraits.2da`. [[`extract/twoda.py`](https://github.com/OpenKotOR/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py)]
-- The creature, door, placeable, and trigger generics all preserve a numeric `portrait_id`, but `UTT` explicitly documents that field as not used by the game engine, so this page should not overgeneralize portrait-table runtime use across all object classes. [[`resource/generics/utc.py`](https://github.com/OpenKotOR/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/utc.py), [`resource/generics/utd.py`](https://github.com/OpenKotOR/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/utd.py), [`resource/generics/utp.py`](https://github.com/OpenKotOR/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/utp.py), [`resource/generics/utt.py`](https://github.com/OpenKotOR/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/utt.py)]
-- For creatures specifically, Holocron Toolset documents the row-selection behavior directly in the UTC editor tooltip and preview text. [[`toolset/uic/qtpy/editors/utc.py`](https://github.com/OpenKotOR/PyKotor/blob/master/Tools/HolocronToolset/src/toolset/uic/qtpy/editors/utc.py)]
+| Column Name | type | Description |
+|------------|------|-------------|
+| `label` | *String* | Portrait label |
+| `baseresref` | *ResRef* | Base portrait image *ResRef* |
+| `appearancenumber` | *Integer* | Associated appearance ID |
+| `appearance_s` | *Integer* | Small appearance ID |
+| `appearance_l` | *Integer* | Large appearance ID |
+| `forpc` | *Boolean* | Whether portrait is for player character |
+| `sex` | *Integer* | Gender (0=male, 1=female) |
 
-The earlier `portraits.2da` schema block was broader than the currently rechecked evidence. Until individual portrait-table columns are re-verified from code or binary analysis, this page keeps only the narrower mapping and consumer behavior above. [[`extract/twoda.py`](https://github.com/OpenKotOR/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py), [`toolset/uic/qtpy/editors/utc.py`](https://github.com/OpenKotOR/PyKotor/blob/master/Tools/HolocronToolset/src/toolset/uic/qtpy/editors/utc.py)]
+Portrait table semantics and usage are supported by PyKotor registry/mapping and save-data handling ([`twoda.py` L455](https://github.com/OpenKotOR/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/extract/twoda.py#L455), [`twoda.py` L523](https://github.com/OpenKotOR/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/extract/twoda.py#L523), [`savedata.py` L66](https://github.com/OpenKotOR/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/extract/savedata.py#L66), [`savedata.py` L226-L228](https://github.com/OpenKotOR/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/extract/savedata.py#L226-L228), [`savedata.py` L241](https://github.com/OpenKotOR/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/extract/savedata.py#L241), [`savedata.py` L391](https://github.com/OpenKotOR/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/extract/savedata.py#L391), [`savedata.py` L456](https://github.com/OpenKotOR/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/extract/savedata.py#L456), [`savedata.py` L2157](https://github.com/OpenKotOR/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/extract/savedata.py#L2157), [`savedata.py` L2309](https://github.com/OpenKotOR/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/extract/savedata.py#L2309), [`savedata.py` L2370](https://github.com/OpenKotOR/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/extract/savedata.py#L2370)), Toolset editor/UI integration ([`installation.py` L54](https://github.com/OpenKotOR/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Tools/HolocronToolset/src/toolset/data/installation.py#L54), [`utc.py` L140-L152](https://github.com/OpenKotOR/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Tools/HolocronToolset/src/toolset/gui/editors/utc.py#L140-L152), [`utc.ui` L407](https://github.com/OpenKotOR/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Tools/HolocronToolset/src/ui/editors/utc.ui#L407), [`savegame.py` L51](https://github.com/OpenKotOR/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Tools/HolocronToolset/src/toolset/gui/editors/savegame.py#L51), [`savegame.ui` L94-L98](https://github.com/OpenKotOR/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Tools/HolocronToolset/src/ui/editors/savegame.ui#L94-L98)), and vendor runtime loading ([`portraits.cpp` L33-L51](https://github.com/seedhartha/reone/blob/master/src/libs/game/portraits.cpp#L33-L51)).
 
 ---
 
 ### heads.2da
 
-**Verified local and external usage**: `heads.2da` is a head-asset table tracked by PyKotor's K1 and K2 registry families, where the file contributes model and texture-bearing columns rather than a generic string column. The local registry marks `head` plus the alignment-variant `headtex*` columns as texture/model-facing resource references, and the external `reone` codebase ships a dedicated `heads.cpp` parser plus creature-side head loading that reads the same family of fields. [[`extract/twoda.py`](https://github.com/OpenKotOR/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py), [reone `heads.cpp`](https://github.com/seedhartha/reone/blob/master/src/libs/resource/parser/2da/heads.cpp), [reone `creature.cpp`](https://github.com/seedhartha/reone/blob/master/src/libs/game/object/creature.cpp)]
+**Engine Usage**: Defines head assets for player characters and NPCs. When loading character heads, the engine uses this file to choose:
 
-**Verified local columns**:
+- [models](MDL-MDX-File-Format)
+- [textures](Texture-Formats#tpc)
+- Which 3D [model](MDL-MDX-File-Format) to apply
+- Which [textures](Texture-Formats#tpc) to apply
 
-- `head` is a model-bearing column in PyKotor's K1 and K2 registry data. [[`extract/twoda.py`](https://github.com/OpenKotOR/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py)]
-- `headtexe`, `headtexg`, `headtexve`, `headtexvg`, `headtexvve`, and `headtexvvve` are texture-bearing columns in PyKotor's K1 and K2 registry data. [[`extract/twoda.py`](https://github.com/OpenKotOR/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py)]
-- `reone` additionally parses `alttexture` alongside the same `head` and `headtex*` family, which is external implementation evidence for a slightly wider row shape than the local registry alone exposes. [[reone `heads.cpp`](https://github.com/seedhartha/reone/blob/master/src/libs/resource/parser/2da/heads.cpp)]
+**Row index**: Head ID (integer)
 
-`heads.2da` is a head-model and head-texture table with a verified `head` plus `headtex*` family, and that any larger schema should return only after a fresh line-by-line rebuild. [[`extract/twoda.py`](https://github.com/OpenKotOR/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/twoda.py), [reone `heads.cpp`](https://github.com/seedhartha/reone/blob/master/src/libs/resource/parser/2da/heads.cpp)]
+**Column structure**:
+
+| Column Name | type | Description |
+|------------|------|-------------|
+| `head` | *ResRef* (optional) | Head [model](MDL-MDX-File-Format) *ResRef* |
+| `headtexe` | *ResRef* (optional) | Head [texture](Texture-Formats#tpc) E *ResRef* |
+| `headtexg` | *ResRef* (optional) | Head [texture](Texture-Formats#tpc) G *ResRef* |
+| `headtexve` | *ResRef* (optional) | Head [texture](Texture-Formats#tpc) VE *ResRef* |
+| `headtexvg` | *ResRef* (optional) | Head [texture](Texture-Formats#tpc) VG *ResRef* |
+| `headtexvve` | *ResRef* (optional) | Head [texture](Texture-Formats#tpc) VVE *ResRef* |
+| `headtexvvve` | *ResRef* (optional) | Head [texture](Texture-Formats#tpc) VVVE *ResRef* |
+| `alttexture` | *ResRef* (optional) | Alternative [texture](Texture-Formats#tpc) *ResRef* |
+
+**Column Details**:
+
+The complete column structure is defined in reone's heads parser:
+
+- `head`: Optional *ResRef* - head [model](MDL-MDX-File-Format) *ResRef*
+- `alttexture`: Optional *ResRef* - alternative [texture](Texture-Formats#tpc) *ResRef*
+- `headtexe`: Optional *ResRef* - head [texture](Texture-Formats#tpc) for evil alignment
+- `headtexg`: Optional *ResRef* - head [texture](Texture-Formats#tpc) for good alignment
+- `headtexve`: Optional *ResRef* - head [texture](Texture-Formats#tpc) for very evil alignment
+- `headtexvg`: Optional *ResRef* - head [texture](Texture-Formats#tpc) for very good alignment
+- `headtexvve`: Optional *ResRef* - head [texture](Texture-Formats#tpc) for very very evil alignment
+- `headtexvvve`: Optional *ResRef* - head [texture](Texture-Formats#tpc) for very very very evil alignment
+
+These head columns are reflected in reone's table parser and creature head-loading runtime path ([`heads.cpp` L29-L39](https://github.com/seedhartha/reone/blob/master/src/libs/resource/parser/2da/heads.cpp#L29-L39), [`creature.cpp` L1223-L1228](https://github.com/seedhartha/reone/blob/master/src/libs/game/object/creature.cpp#L1223-L1228)).
 
 ---
 

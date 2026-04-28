@@ -28,7 +28,7 @@ jobs:
     outputs:
       tools_matrix: ${{ steps.detect.outputs.tools_matrix }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - name: Discover tools and compile scripts
         id: detect
@@ -140,7 +140,7 @@ jobs:
       #qt_version: ${#{ steps.set_env.outputs.qt_version }}
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - name: Install PowerShell on non-Windows
         if: ${{ (success() || failure()) && runner.os != 'Windows' }}
@@ -209,7 +209,7 @@ jobs:
             architecture: x86
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - name: Install PowerShell on non-Windows
         if: ${{ (success() || failure()) && runner.os != 'Windows' }}
@@ -249,7 +249,7 @@ jobs:
 
       - name: Cache UPX
         if: ${{ (success() || failure()) && runner.os != 'macOS' }}
-        uses: actions/cache@v4.3.0
+        uses: actions/cache@v5.0.5
         id: cache-upx
         with:
           path: upx-dir
@@ -415,7 +415,7 @@ jobs:
 
       - name: Cache pip packages (Linux/macOS)
         if: ${{ (success() || failure()) && runner.os != 'Windows' }}
-        uses: actions/cache@v4.3.0
+        uses: actions/cache@v5.0.5
         id: cache-pip-unix
         with:
           path: |
@@ -437,7 +437,7 @@ jobs:
 
       - name: Cache pip packages (Windows)
         if: ${{ (success() || failure()) && runner.os == 'Windows' }}
-        uses: actions/cache@v4.3.0
+        uses: actions/cache@v5.0.5
         id: cache-pip-windows
         with:
           path: ${{ steps.pip-cache-path.outputs.path }}
@@ -576,7 +576,7 @@ jobs:
       - name: Upload compiled binaries attempt 1
         if: ${{ (success() || failure()) && !env.ACT }}
         id: upload_attempt_1
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: publish_${{ matrix.tool.build_name }}_${{ matrix.os }}_${{ matrix.python-version }}_${{ matrix.architecture }}
           path: ./dist/**
@@ -586,7 +586,7 @@ jobs:
       - name: Upload compiled binaries attempt 2
         id: upload_attempt_2
         if: ${{ (success() || failure()) && !env.ACT && steps.upload_attempt_1.outcome == 'failure' }}
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: publish_${{ matrix.tool.build_name }}_${{ matrix.os }}_${{ matrix.python-version }}_${{ matrix.architecture }}
           path: ./dist/**
@@ -596,7 +596,7 @@ jobs:
       - name: Upload compiled binaries attempt 3
         id: upload_attempt_3
         if: ${{ (success() || failure()) && !env.ACT && steps.upload_attempt_2.outcome == 'failure' }}
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: publish_${{ matrix.tool.build_name }}_${{ matrix.os }}_${{ matrix.python-version }}_${{ matrix.architecture }}
           path: ./dist/**
@@ -606,7 +606,7 @@ jobs:
       - name: Upload compiled binaries attempt 4
         id: upload_attempt_4
         if: ${{ (success() || failure()) && !env.ACT && steps.upload_attempt_3.outcome == 'failure' }}
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: publish_${{ matrix.tool.build_name }}_${{ matrix.os }}_${{ matrix.python-version }}_${{ matrix.architecture }}
           path: ./dist/**
@@ -616,7 +616,7 @@ jobs:
       - name: Upload compiled binaries attempt 5
         id: upload_attempt_5
         if: ${{ (success() || failure()) && !env.ACT && steps.upload_attempt_4.outcome == 'failure' }}
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: publish_${{ matrix.tool.build_name }}_${{ matrix.os }}_${{ matrix.python-version }}_${{ matrix.architecture }}
           path: ./dist/**
@@ -726,7 +726,7 @@ jobs:
       filesToArchive: ${{ steps.set-matrix.outputs.matrixJson }}
     steps:
       - name: Download all artifacts
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           path: published_workflow_builds/
           pattern: publish_*
@@ -872,7 +872,7 @@ jobs:
 
       - name: Upload all repackages for next job
         if: ${{ success() || failure() }}
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: all_tool_dists_onearchive
           path: packaged_artifacts/**
@@ -890,14 +890,14 @@ jobs:
     steps:
       - name: Download repackages from package job
         if: ${{ success() || failure() }}
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           path: all_tool_dists_onearchive
           pattern: all_tool_dists*
 
       - name: Upload re-packaged artifact
         if: ${{ success() || failure() }}
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: ${{ matrix.artifactb }}
           path: all_tool_dists_onearchive/all_tool_dists_onearchive/${{ matrix.artifactb }}

@@ -10,16 +10,6 @@ Like all game resources, GFF files are resolved through the standard [resource r
 
 GFF files work alongside [2DA](2DA-File-Format) configuration tables, [TLK](Audio-and-Localization-Formats#tlk) localized strings, [MDL/MDX](MDL-MDX-File-Format) 3D models, and [NCS](NCS-File-Format) compiled scripts. Historical editors include K-GFF ([LucasForums thread](https://www.lucasforumsarchive.com/thread/149407), [Deadly Stream listing](https://deadlystream.com/files/file/719-k-gff/)) and KotOR Tool; for current editing, use [Holocron Toolset](Holocron-Toolset-Getting-Started).
 
-## Recovered engine anchors
-
-| Concept | Tri-binary anchor |
-| ------- | ----------------- |
-| Label-to-field ordinal lookup | `GetFieldByLabel @ (/K1/k1_win_gog_swkotor.exe @ 0x00411630, /TSL/k2_win_gog_aspyr_swkotor2.exe @ 0x00623a40, /Other BioWare Engines/Aurora/nwmain.exe @ 0x14019fcc0)` |
-| Struct field record lookup | `GetField @ (/K1/k1_win_gog_swkotor.exe @ 0x00410990, /TSL/k2_win_gog_aspyr_swkotor2.exe @ 0x006238d0, /Other BioWare Engines/Aurora/nwmain.exe @ 0x14019fc20)` |
-| List payload count lookup | `GetListCount @ (/K1/k1_win_gog_swkotor.exe @ 0x00411940, /TSL/k2_win_gog_aspyr_swkotor2.exe @ 0x00624970, /Other BioWare Engines/Aurora/nwmain.exe @ 0x1401a0370)` |
-| `ResRef` field decode | `ReadFieldCResRef @ (/K1/k1_win_gog_swkotor.exe @ 0x00411e10, /TSL/k2_win_gog_aspyr_swkotor2.exe @ 0x00624fa0, /Other BioWare Engines/Aurora/nwmain.exe @ 0x1401a12d0)` |
-| `CExoLocString` field decode | `ReadFieldCExoLocString @ (/K1/k1_win_gog_swkotor.exe @ 0x00411fd0, /TSL/k2_win_gog_aspyr_swkotor2.exe @ 0x00625240, /Other BioWare Engines/Aurora/nwmain.exe @ 0x1401a0f80)` |
-
 ## Table of Contents
 
 - GFF — Generic File Format

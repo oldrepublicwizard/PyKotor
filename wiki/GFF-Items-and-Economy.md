@@ -59,12 +59,12 @@ PyKotor models UTI templates with the dedicated [`UTI` data class and `read_uti`
 | `BaseItem` | [int32](GFF-File-Format#gff-data-types) | Index into [`baseitems.2da`](2DA-File-Format#baseitems2da) (defines item type) |
 | `Cost` | UInt32 | Base value in credits |
 | `AddCost` | UInt32 | Additional cost from properties |
-| `Plot` | [byte](GFF-File-Format#gff-data-types) | Plot-critical item (cannot be sold/destroyed) |
-| `Charges` | [byte](GFF-File-Format#gff-data-types) | Number of uses remaining |
+| `Plot` | byte | Plot-critical item (cannot be sold/destroyed) |
+| `Charges` | byte | Number of uses remaining |
 | `StackSize` | [word](GFF-File-Format#gff-data-types) | Current stack quantity |
-| `ModelVariation` | [byte](GFF-File-Format#gff-data-types) | [model](MDL-MDX-File-Format) variation index [[`uti.py` L82](https://github.com/OpenKotOR/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/uti.py#L82)] |
-| `BodyVariation` | [byte](GFF-File-Format#gff-data-types) | Body variation for armor [[`uti.py` L81](https://github.com/OpenKotOR/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/uti.py#L81)] |
-| `TextureVar` | [byte](GFF-File-Format#gff-data-types) | [texture](Texture-Formats#tpc) variation for armor [[`uti.py` L83](https://github.com/OpenKotOR/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/uti.py#L83)] |
+| `ModelVariation` | byte | [model](MDL-MDX-File-Format) variation index [[`uti.py` L82](https://github.com/OpenKotOR/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/uti.py#L82)] |
+| `BodyVariation` | byte | Body variation for armor [[`uti.py` L81](https://github.com/OpenKotOR/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/uti.py#L81)] |
+| `TextureVar` | byte | [texture](Texture-Formats#tpc) variation for armor [[`uti.py` L83](https://github.com/OpenKotOR/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/uti.py#L83)] |
 
 **BaseItem types** (from [`baseitems.2da`](2DA-File-Format#baseitems2da)); row index into the 2DA defines item type.
 
@@ -73,18 +73,18 @@ PyKotor models UTI templates with the dedicated [`UTI` data class and `read_uti`
 | Field | Type | Description |
 | ----- | ---- | ----------- |
 | `PropertiesList` | [List](GFF-File-Format#gff-data-types) | Item properties and enchantments |
-| `Upgradable` | [byte](GFF-File-Format#gff-data-types) | Can accept upgrades (KotOR1 only) |
-| `UpgradeLevel` | [byte](GFF-File-Format#gff-data-types) | Current upgrade tier (KotOR2 only) |
+| `Upgradable` | byte | Can accept upgrades (KotOR1 only) |
+| `UpgradeLevel` | byte | Current upgrade tier (KotOR2 only) |
 
 **PropertiesList Struct fields:**
 
 - `PropertyName` ([word](GFF-File-Format#gff-data-types)): Index into [`itempropdef.2da`](2DA-File-Format#itempropdef2da)
 - `Subtype` ([word](GFF-File-Format#gff-data-types)): Property subtype/category
-- `CostTable` ([byte](GFF-File-Format#gff-data-types)): Cost table index
+- `CostTable` (byte): Cost table index
 - `CostValue` ([word](GFF-File-Format#gff-data-types)): Cost value
-- `Param1` ([byte](GFF-File-Format#gff-data-types)): First parameter
-- `Param1Value` ([byte](GFF-File-Format#gff-data-types)): First parameter value
-- `ChanceAppear` ([byte](GFF-File-Format#gff-data-types)): Percentage chance to appear on randomly generated loot; default 100 [[`uti.py` L169](https://github.com/OpenKotOR/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/uti.py#L169)]
+- `Param1` (byte): First parameter
+- `Param1Value` (byte): First parameter value
+- `ChanceAppear` (byte): Percentage chance to appear on randomly generated loot; default 100 [[`uti.py` L169](https://github.com/OpenKotOR/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/uti.py#L169)]
 
 **Property types** are defined entirely in [`itempropdef.2da`](2DA-File-Format#itempropdef2da); the `PropertyName` field indexes into this table which maps each row to its subtype table, cost table, and parameter tables. PyKotor serializes each `UTIProperty` without enumerating property-type names in code — all valid property names derive from the 2DA at runtime [[`uti.py` L165–L176](https://github.com/OpenKotOR/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/uti.py#L165)].
 
@@ -92,8 +92,8 @@ PyKotor models UTI templates with the dedicated [`UTI` data class and `read_uti`
 
 | Field | Type | Description |
 | ----- | ---- | ----------- |
-| `WeaponColor` (KotOR2) | [byte](GFF-File-Format#gff-data-types) | Blade color for lightsabers |
-| `WeaponWhoosh` (KotOR2) | [byte](GFF-File-Format#gff-data-types) | Whoosh sound type |
+| `WeaponColor` (KotOR2) | byte | Blade color for lightsabers |
+| `WeaponWhoosh` (KotOR2) | byte | Whoosh sound type |
 
 **Lightsaber colors** (KotOR2 `WeaponColor`):
 
@@ -105,10 +105,10 @@ PyKotor models UTI templates with the dedicated [`UTI` data class and `read_uti`
 
 | Field | Type | Description |
 | ----- | ---- | ----------- |
-| `BodyVariation` | [byte](GFF-File-Format#gff-data-types) | Body [model](MDL-MDX-File-Format) variation [[`uti.py` L81](https://github.com/OpenKotOR/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/uti.py#L81)] |
-| `TextureVar` | [byte](GFF-File-Format#gff-data-types) | [texture](Texture-Formats#tpc) variation [[`uti.py` L83](https://github.com/OpenKotOR/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/uti.py#L83)] |
-| `ModelVariation` | [byte](GFF-File-Format#gff-data-types) | [model](MDL-MDX-File-Format) type [[`uti.py` L82](https://github.com/OpenKotOR/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/uti.py#L82)] |
-| `ArmorRulesType` (KotOR2) | [byte](GFF-File-Format#gff-data-types) | Armor class category |
+| `BodyVariation` | byte | Body [model](MDL-MDX-File-Format) variation [[`uti.py` L81](https://github.com/OpenKotOR/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/uti.py#L81)] |
+| `TextureVar` | byte | [texture](Texture-Formats#tpc) variation [[`uti.py` L83](https://github.com/OpenKotOR/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/uti.py#L83)] |
+| `ModelVariation` | byte | [model](MDL-MDX-File-Format) type [[`uti.py` L82](https://github.com/OpenKotOR/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/uti.py#L82)] |
+| `ArmorRulesType` (KotOR2) | byte | Armor class category |
 
 **Armor [model](MDL-MDX-File-Format) Variations:**
 
@@ -120,10 +120,10 @@ PyKotor models UTI templates with the dedicated [`UTI` data class and `read_uti`
 
 | Field | Type | Description |
 | ----- | ---- | ----------- |
-| `Plot` | [byte](GFF-File-Format#gff-data-types) | Cannot be sold or destroyed |
-| `Stolen` | [byte](GFF-File-Format#gff-data-types) | Marked as stolen |
-| `Cursed` | [byte](GFF-File-Format#gff-data-types) | Cannot be unequipped |
-| `Identified` | [byte](GFF-File-Format#gff-data-types) | Player has identified the item |
+| `Plot` | byte | Cannot be sold or destroyed |
+| `Stolen` | byte | Marked as stolen |
+| `Cursed` | byte | Cannot be unequipped |
+| `Identified` | byte | Player has identified the item |
 
 **Plot Item Behavior:**
 
@@ -135,7 +135,7 @@ PyKotor models UTI templates with the dedicated [`UTI` data class and `read_uti`
 
 | Field | Type | Description |
 | ----- | ---- | ----------- |
-| `Upgradable` | [byte](GFF-File-Format#gff-data-types) | Item accepts upgrade items |
+| `Upgradable` | byte | Item accepts upgrade items |
 
 **Upgrade Mechanism:**
 
@@ -148,10 +148,10 @@ PyKotor models UTI templates with the dedicated [`UTI` data class and `read_uti`
 
 | Field | Type | Description |
 | ----- | ---- | ----------- |
-| `UpgradeLevel` | [byte](GFF-File-Format#gff-data-types) | Current upgrade tier (0-2) |
-| `WeaponColor` | [byte](GFF-File-Format#gff-data-types) | Lightsaber blade color |
-| `WeaponWhoosh` | [byte](GFF-File-Format#gff-data-types) | Swing sound type |
-| `ArmorRulesType` | [byte](GFF-File-Format#gff-data-types) | Armor restriction category |
+| `UpgradeLevel` | byte | Current upgrade tier (0-2) |
+| `WeaponColor` | byte | Lightsaber blade color |
+| `WeaponWhoosh` | byte | Swing sound type |
+| `ArmorRulesType` | byte | Armor restriction category |
 
 **KotOR2 Upgrade Slots:**
 
@@ -161,9 +161,9 @@ Weapons and armor may have upgrade slots defined in [`baseitems.2da`](2DA-File-F
 
 | Field | Type | Description |
 | ----- | ---- | ----------- |
-| `ModelVariation` | [byte](GFF-File-Format#gff-data-types) | Base [model](MDL-MDX-File-Format) index [[`uti.py` L82](https://github.com/OpenKotOR/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/uti.py#L82)] |
-| `BodyVariation` | [byte](GFF-File-Format#gff-data-types) | Body [model](MDL-MDX-File-Format) for armor [[`uti.py` L81](https://github.com/OpenKotOR/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/uti.py#L81)] |
-| `TextureVar` | [byte](GFF-File-Format#gff-data-types) | [texture](Texture-Formats#tpc) variant [[`uti.py` L83](https://github.com/OpenKotOR/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/uti.py#L83)] |
+| `ModelVariation` | byte | Base [model](MDL-MDX-File-Format) index [[`uti.py` L82](https://github.com/OpenKotOR/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/uti.py#L82)] |
+| `BodyVariation` | byte | Body [model](MDL-MDX-File-Format) for armor [[`uti.py` L81](https://github.com/OpenKotOR/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/uti.py#L81)] |
+| `TextureVar` | byte | [texture](Texture-Formats#tpc) variant [[`uti.py` L83](https://github.com/OpenKotOR/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/uti.py#L83)] |
 
 **[model](MDL-MDX-File-Format) Resolution:**
 
@@ -173,7 +173,7 @@ Item model names are derived from the `ModelResRef` column in [`baseitems.2da`](
 
 | Field | Type | Description |
 | ----- | ---- | ----------- |
-| `PaletteID` | [byte](GFF-File-Format#gff-data-types) | Toolset palette category |
+| `PaletteID` | byte | Toolset palette category |
 | `Comment` | [CExoString](GFF-File-Format#gff-data-types) | Designer notes/documentation |
 
 **Toolset Integration:**

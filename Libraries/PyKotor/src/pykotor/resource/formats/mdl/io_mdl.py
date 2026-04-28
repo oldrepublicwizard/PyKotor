@@ -45,7 +45,7 @@ from bioware_kaitai_formats.mdx import Mdx
 
 from pykotor.common.misc import Color, Game
 from pykotor.common.stream import BinaryReader, BinaryWriter
-from pykotor.resource.formats._base import BiowareResource
+from pykotor.resource.formats._base import ComparableMixin
 from pykotor.resource.formats.mdl.mdl_data import (
     MDL,
     MDLAnimation,
@@ -2257,7 +2257,7 @@ def _calculate_tangent_space(
     return tangent, binormal
 
 
-class MDLBinaryReader(BiowareResource):
+class MDLBinaryReader(ComparableMixin):
     """Binary MDL/MDX file reader.
 
     This class provides loading of MDL (model) and MDX (model extension) files.
@@ -3171,7 +3171,7 @@ class MDLBinaryReader(BiowareResource):
         return controller
 
 
-class MDLBinaryWriter(BiowareResource):
+class MDLBinaryWriter(ComparableMixin):
     """Binary MDL/MDX file writer.
 
     Writes MDL (model) and MDX (model extension) files from MDL data structures.

@@ -19,7 +19,7 @@ Together, those layers parse installer configuration, build an ordered list of p
 
 ## Toolchain flow (high-level)
 
-End-to-end story: __Holocron Toolset__ and other editors produce assets; __HoloPatcher__ INI describes install and merge steps; __players__ run HoloPatcher against the __game root__; __PyKotor CLI__ and __KotorDiff__ support headless packaging and regression diffs; __KotORModSync__ optionally helps manage multi-mod setups. This stack is complementary, not exclusive. Reader-facing overview and “when to use what” lives on [Home — KotOR modding toolchain](Home#documentation).
+End-to-end story: **Holocron Toolset** and other editors produce assets; **HoloPatcher** INI describes install and merge steps; **players** run HoloPatcher against the **game root**; **PyKotor CLI** and **KotorDiff** support headless packaging and regression diffs; **KotORModSync** optionally helps manage multi-mod setups. This stack is complementary, not exclusive. Reader-facing overview and “when to use what” lives on [Home — KotOR modding toolchain](Home#documentation).
 
 ```mermaid
 flowchart LR
@@ -45,7 +45,7 @@ flowchart LR
 
 source code @ [Tools/HoloPatcher/src](https://github.com/OpenKotOR/PyKotor/blob/92f5fb81a7b9642085c67b7b48ddd50f2df4378d/Tools/HoloPatcher/src/holopatcher/__main__.py)
 
-This is a simple __GUI interface__ to _HoloPatcher_. What you'll find here:
+This is a simple **GUI interface** to _HoloPatcher_. What you'll find here:
 
 - Tools such as:
   - [_fix iOS case sensitivity_](https://github.com/OpenKotOR/PyKotor/blob/92f5fb81a7b9642085c67b7b48ddd50f2df4378d/Tools/HoloPatcher/src/holopatcher/app.py#L970)
@@ -124,34 +124,34 @@ patches_list: list[PatcherModifications] = [
 ]
 ```
 
-The priority order differs from classic TSLPatcher for practical reasons. For example, if a mod installs a whole [dialog.tlk](Audio-and-Localization-Formats#tlk), it is more useful for InstallList to run before TLKList. Likewise, HoloPatcher compiles a script before any later [NCS](NCS-File-Format) binary edits.
+The priority order has been changed for various reasons, mostly relating to useability. For example, if a mod wanted to overwrite a whole [dialog.tlk](Audio-and-Localization-Formats#tlk) for some reason it makes sense that InstallList patch should run before TLKList. As for the compilelist vs hacklist discrepancy, it makes more sense that users would want to compile a script and then potentially edit the [NCS](NCS-File-Format).
 
-These order changes are intended to preserve expected mod outcomes while making the workflow more usable. If you find a package where the changed order affects output, report it as a compatibility issue.
+We doubt these priority order changes will affect the output of any mods. If you discover one, please report an issue.
 
 ### Final Validations Before Modifications
 
 - Patcher will once again check if [changes.ini](https://github.com/OpenKotOR/PyKotor/blob/92f5fb81a7b9642085c67b7b48ddd50f2df4378d/Libraries/PyKotor/src/pykotor/tslpatcher/config.py#L113) is found on disk
 - Patcher will determine if the kotor directory is valid. Uses various heuristics of what's known about the files to safely determine if it's TSL or k1.
 
-- Prepare the [CompileList]: Before the patch loop runs, the patcher copies all files in the namespace `tslpatchdata` folder matching the `.nss` extension to a temporary directory. If there is a `nwscript.nss`, it automatically appends an [InstallList](TSLPatcher-InstallList-Syntax) patch for that file into the Override folder. This is done because some versions of `nwnnsscomp.exe`, especially the KOTOR Tool variant, expect `nwscript.nss` to be in Override rather than `tslpatchdata`.
+- **Prepare the [CompileList]:** Before the patch loop runs, the patcher will first copy all the files in the namespace tslpatchdata folder matching '.nss' extension to a temporary directory. If there is a 'nwscript.nss', it will automatically append a patch to [InstallList] the nwscript.nss to the Override folder. This is done because some versions of nwnnsscomp.exe will rely on nwscript.nss being in Override rather than tslpatchdata. Specifically the KOTOR Tool version of nwnnsscomp.exe
 
-### _The Patch Loop_
+### **_The Patch Loop_**
 
 source code @ [pykotor.tslpatcher.patcher](https://github.com/OpenKotOR/PyKotor/blob/92f5fb81a7b9642085c67b7b48ddd50f2df4378d/Libraries/PyKotor/src/pykotor/tslpatcher/patcher.py#L356)
 
-At this point HoloPatcher starts applying patches and modifying the installation. A simple `for patch in all_patches` loop runs, wrapped in a `try-except`. This mirrors classic TSLPatcher behavior: when one specific patch fails, the error is logged and processing continues with the next patch.
+HoloPatcher is _finally_ ready to start applying the patches and modifying the installation. A simple `for patch in all_patches` loop runs, wrapped in a `try-except`. The try-except behavior is directly what TSLPatcher itself will do. Anytime a specific patch fails, it'll log the error and continue the next one.
 
-Step 1: The patch routine first determines whether the mod is intended to be installed into a capsule, and whether the file or resource to be patched already exists in the target KOTOR path.
+**Step 1:** The patch routine first determines whether the mod is intending to be installed into a capsule, and if the file/resource to be patched already exists in the KOTOR path.
 
 - If the resource exists, back it up to a timestamped directory in the `backup` folder.
 - If the resource does not exist, write the patch's intended filepath into the `remove these files.txt` file.
 - If the patch intends to install into a capsule (`.mod` / `.erf` / [`.rim`](Container-Formats#rim) / `.sav`) and the capsule DOES NOT exist, throw a FileNotFoundError (matches tslpatcher behavior)
 
-Step 2: [Log the operation](https://github.com/OpenKotOR/PyKotor/blob/92f5fb81a7b9642085c67b7b48ddd50f2df4378d/Libraries/PyKotor/src/pykotor/tslpatcher/patcher.py#L265), such as `patching existing file in the 'path' folder`.
+**Step 2: [Log the operation](https://github.com/OpenKotOR/PyKotor/blob/92f5fb81a7b9642085c67b7b48ddd50f2df4378d/Libraries/PyKotor/src/pykotor/tslpatcher/patcher.py#L265)**, such as `patching existing file in the 'path' folder'.
 
 - Note: [Replacements are handled differently (src code `skip_if_not_replace=True`)](https://github.com/OpenKotOR/PyKotor/blob/92f5fb81a7b9642085c67b7b48ddd50f2df4378d/Libraries/PyKotor/src/pykotor/tslpatcher/mods/template.py#L41) for both [CompileList] and [InstallList]
 
-Step 3: Look up the resource to patch. Determine [where to find the source file](https://github.com/OpenKotOR/PyKotor/blob/92f5fb81a7b9642085c67b7b48ddd50f2df4378d/Libraries/PyKotor/src/pykotor/tslpatcher/patcher.py#L191) that should be patched.
+**Step 3: Lookup the Resource to Patch**: Determine [where to find the source file](https://github.com/OpenKotOR/PyKotor/blob/92f5fb81a7b9642085c67b7b48ddd50f2df4378d/Libraries/PyKotor/src/pykotor/tslpatcher/patcher.py#L191) that should be patched.
 
 - Check if file should be replaced or doesn't exist at output. If either condition passes, load from the mod path
 - Otherwise, load the file to be patched from the destination if it exists.
@@ -159,11 +159,11 @@ Step 3: Look up the resource to patch. Determine [where to find the source file]
   - If destination is intended to be inside of a capsule, pull the resource from the capsule.
 - Log error on failure (IO exceptions, permission issues, etc.)
 
-Step 4: Patch the resource found in step 3. Apply the modifications to the source file determined there.
+**Step 4: Patch the resource found in step 3.**: Apply the modifications to the source file determined by step 3.
 
 - If holopatcher determined that there's nothing to write back to disk (e.g. [CompileList] was called on an include file), continue to the next patch and stop here.
 
-Step 5: Handle `!OverrideType`. TSLPatcher supports configurable override handling. If a file is being installed into a capsule and that file already exists in Override, the patcher can be configured with three actions:
+**Step 5. Handle `!OverrideType`**: A widely unknown TSLPatcher feature is configurable nature of override handling. If a file is being installed into a capsule, and that file already exists in Override, there are 3 actions that the patcher can be configured with:
 
 ```python
 class OverrideType:
@@ -183,15 +183,15 @@ Capsule formats:
 
 source code @ [tslpatcher.mods.template](https://github.com/OpenKotOR/PyKotor/blob/92f5fb81a7b9642085c67b7b48ddd50f2df4378d/Libraries/PyKotor/src/pykotor/tslpatcher/mods/template.py#L25)
 
-Step 6: Save the resource. Save the resource to the KOTOR path on disk. `!DefaultDestination`, `!Destination`, and `!Filename` or `!SaveAs` configure this.
+**Step 6: Save the resource**: Save the resource to the KOTOR path on disk. `!DefaultDestination` and `!Destination` and `!Filename`/`!SaveAs` configure this.
 
-Step 7: Repeat from step 1 for the next patch until all patches have been completed.
+**Step 7:** Repeat from **Step 1** for the next patch, until all patches have been completed.
 
 ### All patches complete, cleanup
 
-Step 8: Clean up post-processed scripts. If [`SaveProcessedScripts=0`](https://github.com/OpenKotOR/PyKotor/blob/92f5fb81a7b9642085c67b7b48ddd50f2df4378d/Libraries/PyKotor/src/pykotor/tslpatcher/patcher.py#L395), or if the setting is absent from [changes.ini](https://github.com/OpenKotOR/PyKotor/blob/92f5fb81a7b9642085c67b7b48ddd50f2df4378d/Libraries/PyKotor/src/pykotor/tslpatcher/config.py#L113), remove the temp folder created in the final validations stage.
+**Step 8: Cleanup post-processed scripts**: If [`SaveProcessedScripts=0`](https://github.com/OpenKotOR/PyKotor/blob/92f5fb81a7b9642085c67b7b48ddd50f2df4378d/Libraries/PyKotor/src/pykotor/tslpatcher/patcher.py#L395) or not available in the [changes.ini](https://github.com/OpenKotOR/PyKotor/blob/92f5fb81a7b9642085c67b7b48ddd50f2df4378d/Libraries/PyKotor/src/pykotor/tslpatcher/config.py#L113), cleanup the temp folder created in the **Final Validations**.
 
-Step 9: Calculate the total patches completed.
+**Step 8:** Calculate the total patches completed.
 
 ### See also
 

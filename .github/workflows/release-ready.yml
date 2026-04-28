@@ -39,7 +39,7 @@ jobs:
       tool_path: ${{ steps.validate.outputs.tool_path }}
       requires_qt: ${{ steps.validate.outputs.requires_qt }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - name: Validate version format and locate tool
         id: validate
@@ -205,7 +205,7 @@ jobs:
     needs: validate-version
     if: needs.validate-version.outputs.valid == 'true'
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           fetch-depth: 0
 
@@ -232,10 +232,10 @@ jobs:
     needs: validate-version
     if: needs.validate-version.outputs.valid == 'true'
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - name: Setup Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v6
         with:
           python-version: '3.8'
 
@@ -273,7 +273,7 @@ jobs:
     needs: validate-version
     if: needs.validate-version.outputs.valid == 'true'
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - name: Verify compile scripts exist
         run: |
@@ -304,10 +304,10 @@ jobs:
       matrix:
         os: [windows-latest, ubuntu-20.04]
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - name: Setup Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v6
         with:
           python-version: '3.8'
 
@@ -340,10 +340,10 @@ jobs:
           - os: macos-12
             architecture: x86
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - name: Setup Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v6
         with:
           python-version: '3.8'
 

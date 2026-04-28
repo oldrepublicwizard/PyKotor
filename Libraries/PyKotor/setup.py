@@ -3,9 +3,7 @@ from __future__ import annotations
 import os
 import sys
 
-from pathlib import Path
-
-from setuptools import Extension, find_packages, setup
+from setuptools import Extension, setup
 from setuptools.command.build_ext import build_ext
 
 
@@ -26,23 +24,6 @@ class OptionalBuildExt(build_ext):
                 file=sys.stderr,
             )
 
-
-def read_requirements() -> list[str]:
-    """Read requirements from requirements.txt file."""
-    requirements_path = Path(__file__).parent / "requirements.txt"
-    if not requirements_path.exists():
-        return []
-
-    requirements: list[str] = []
-    with open(requirements_path, encoding="utf-8") as f:
-        for line in f:
-            line = line.strip()
-            # Skip empty lines and comments
-            if line and not line.startswith("#"):
-                requirements.append(line)
-    return requirements
-
-
 # C extensions for GL acceleration.
 ext_modules = [
     Extension(
@@ -57,19 +38,7 @@ ext_modules = [
 
 
 setup(
-    name="pykotor",
-    version="2.1.0",
-    description="Read, modify and write files used by KotOR's game engine.",
-    packages=find_packages(where="src"),
-    package_dir={"": "src"},
-    install_requires=read_requirements(),
-    python_requires=">=3.8",
+    # Project metadata, dependencies, and scripts are defined in pyproject.toml.
     ext_modules=ext_modules,
     cmdclass={"build_ext": OptionalBuildExt},
-    entry_points={
-        "console_scripts": [
-            "pykotor=pykotor.cli.__main__:main",
-            "pykotorcli=pykotor.cli.__main__:main",
-        ],
-    },
 )

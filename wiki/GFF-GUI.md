@@ -50,7 +50,7 @@ All controls share these base properties:
 | `CONTROLTYPE` | [int32](GFF-File-Format#gff-data-types) | Control type identifier (see Control types) |
 | `ID` | [int32](GFF-File-Format#gff-data-types) | Unique control ID for script references |
 | `TAG` | [CExoString](GFF-File-Format#gff-data-types) | Control tag identifier |
-| `Obj_Locked` | [byte](GFF-File-Format#gff-data-types) | Lock state (0=unlocked, 1=locked) |
+| `Obj_Locked` | byte | Lock state (0=unlocked, 1=locked) |
 | `Obj_Parent` | [CExoString](GFF-File-Format#gff-data-types) | Parent control tag (for hierarchy) |
 | `Obj_ParentID` | [int32](GFF-File-Format#gff-data-types) | Parent control ID (for hierarchy) |
 | `ALPHA` | float | Opacity/transparency (0.0=transparent, 1.0=opaque) |
@@ -89,7 +89,7 @@ All controls share these base properties:
 | `INNEROFFSET` | [int32](GFF-File-Format#gff-data-types) | Inner padding X-axis (pixels) |
 | `INNEROFFSETY` | [int32](GFF-File-Format#gff-data-types) | Inner padding Y-axis (pixels, optional) |
 | `COLOR` | vector | Border color modulation (RGB, 0.0-1.0) |
-| `PULSING` | [byte](GFF-File-Format#gff-data-types) | Pulsing [animation](MDL-MDX-File-Format#animation-header) flag (0=off, 1=on) |
+| `PULSING` | byte | Pulsing [animation](MDL-MDX-File-Format#animation-header) flag (0=off, 1=on) |
 
 **Border Rendering:**
 
@@ -109,7 +109,7 @@ All controls share these base properties:
 | `FONT` | *ResRef* | Font [texture](Texture-Formats#tpc) resource ([TPC](Texture-Formats#tpc) or TGA) |
 | `ALIGNMENT` | [int32](GFF-File-Format#gff-data-types) | Text alignment flags (bitfield) |
 | `COLOR` | vector | Text color (RGB, 0.0-1.0) |
-| `PULSING` | [byte](GFF-File-Format#gff-data-types) | Pulsing [animation](MDL-MDX-File-Format#animation-header) flag (0=off, 1=on) |
+| `PULSING` | byte | Pulsing [animation](MDL-MDX-File-Format#animation-header) flag (0=off, 1=on) |
 
 **Text Alignment values:**
 
@@ -156,7 +156,7 @@ All controls share these base properties:
 | `INNEROFFSET` | [int32](GFF-File-Format#gff-data-types) | Inner padding X-axis |
 | `INNEROFFSETY` | [int32](GFF-File-Format#gff-data-types) | Inner padding Y-axis (optional) |
 | `COLOR` | vector | Highlight color modulation |
-| `PULSING` | [byte](GFF-File-Format#gff-data-types) | Pulsing [animation](MDL-MDX-File-Format#animation-header) flag |
+| `PULSING` | byte | Pulsing [animation](MDL-MDX-File-Format#animation-header) flag |
 
 **Highlight Behavior:**
 
@@ -177,7 +177,7 @@ All controls share these base properties:
 | `INNEROFFSET` | [int32](GFF-File-Format#gff-data-types) | Inner padding X-axis |
 | `INNEROFFSETY` | [int32](GFF-File-Format#gff-data-types) | Inner padding Y-axis (optional) |
 | `COLOR` | vector | Selected state color modulation |
-| `PULSING` | [byte](GFF-File-Format#gff-data-types) | Pulsing [animation](MDL-MDX-File-Format#animation-header) flag |
+| `PULSING` | byte | Pulsing [animation](MDL-MDX-File-Format#animation-header) flag |
 
 **HILIGHTSELECTED Struct:**
 
@@ -191,7 +191,7 @@ All controls share these base properties:
 | `INNEROFFSET` | [int32](GFF-File-Format#gff-data-types) | Inner padding X-axis |
 | `INNEROFFSETY` | [int32](GFF-File-Format#gff-data-types) | Inner padding Y-axis (optional) |
 | `COLOR` | vector | Combined state color modulation |
-| `PULSING` | [byte](GFF-File-Format#gff-data-types) | Pulsing [animation](MDL-MDX-File-Format#animation-header) flag |
+| `PULSING` | byte | Pulsing [animation](MDL-MDX-File-Format#animation-header) flag |
 
 **State Priority:**
 
@@ -211,8 +211,8 @@ All controls share these base properties:
 | `PADDING` | [int32](GFF-File-Format#gff-data-types) | Spacing between items (pixels) |
 | `MAXVALUE` | [int32](GFF-File-Format#gff-data-types) | Maximum scroll value (total items - visible items) |
 | `CURVALUE` | [int32](GFF-File-Format#gff-data-types) | Current scroll position |
-| `LOOPING` | [byte](GFF-File-Format#gff-data-types) | Loop scrolling (0=no, 1=yes) |
-| `LEFTSCROLLBAR` | [byte](GFF-File-Format#gff-data-types) | Scrollbar on left side (0=right, 1=left) |
+| `LOOPING` | byte | Loop scrolling (0=no, 1=yes) |
+| `LEFTSCROLLBAR` | byte | Scrollbar on left side (0=right, 1=left) |
 
 **ListBox Behavior:**
 
@@ -234,7 +234,7 @@ All controls share these base properties:
 | `HILIGHTSELECTED` | Struct | Item highlight when selected |
 | `SELECTED` | Struct | Item appearance when selected |
 | `TEXT` | Struct | Item text properties |
-| `ISSELECTED` | [byte](GFF-File-Format#gff-data-types) | Default selected state |
+| `ISSELECTED` | byte | Default selected state |
 
 **ScrollBar (type 9):**
 
@@ -245,7 +245,7 @@ All controls share these base properties:
 | `MAXVALUE` | [int32](GFF-File-Format#gff-data-types) | Maximum scroll value |
 | `VISIBLEVALUE` | [int32](GFF-File-Format#gff-data-types) | Number of visible items in viewport |
 | `CURVALUE` | [int32](GFF-File-Format#gff-data-types) | Current scroll position |
-| `DRAWMODE` | [byte](GFF-File-Format#gff-data-types) | Drawing mode (0=normal, other values unused) |
+| `DRAWMODE` | byte | Drawing mode (0=normal, other values unused) |
 
 **ScrollBar Behavior:**
 
@@ -281,7 +281,7 @@ All controls share these base properties:
 | `PROGRESS` | Struct | Progress fill appearance |
 | `CURVALUE` | [int32](GFF-File-Format#gff-data-types) | Current progress value (0-100) |
 | `MAXVALUE` | [int32](GFF-File-Format#gff-data-types) | Maximum value (typically 100) |
-| `STARTFROMLEFT` | [byte](GFF-File-Format#gff-data-types) | Fill direction (0=right, 1=left) |
+| `STARTFROMLEFT` | byte | Fill direction (0=right, 1=left) |
 
 **ProgressBar Behavior:**
 
@@ -301,7 +301,7 @@ All controls share these base properties:
 | `INNEROFFSET` | [int32](GFF-File-Format#gff-data-types) | Inner padding X-axis |
 | `INNEROFFSETY` | [int32](GFF-File-Format#gff-data-types) | Inner padding Y-axis (optional) |
 | `COLOR` | vector | Progress fill color modulation |
-| `PULSING` | [byte](GFF-File-Format#gff-data-types) | Pulsing [animation](MDL-MDX-File-Format#animation-header) flag |
+| `PULSING` | byte | Pulsing [animation](MDL-MDX-File-Format#animation-header) flag |
 
 **CheckBox (type 7):**
 
@@ -309,7 +309,7 @@ All controls share these base properties:
 | ----- | ---- | ----------- |
 | `SELECTED` | Struct | Appearance when checked |
 | `HILIGHTSELECTED` | Struct | Appearance when checked and hovered |
-| `ISSELECTED` | [byte](GFF-File-Format#gff-data-types) | Default checked state (0=unchecked, 1=checked) |
+| `ISSELECTED` | byte | Default checked state (0=unchecked, 1=checked) |
 
 **CheckBox Behavior:**
 
@@ -397,7 +397,7 @@ All controls share these base properties:
 | `HILIGHT` | Struct | Item highlight on hover |
 | `HILIGHTSELECTED` | Struct | Item highlight when selected |
 | `SELECTED` | Struct | Item appearance when selected |
-| `ISSELECTED` | [byte](GFF-File-Format#gff-data-types) | Default selected state |
+| `ISSELECTED` | byte | Default selected state |
 
 **ProtoItem Behavior:**
 

@@ -5,7 +5,7 @@ The standalone KotorDiff tool now ships inside PyKotor CLI and follows the same 
 ## Behavior
 
 - Supplying any diff paths keeps execution headless; omitting paths or passing `--gui` launches the Tkinter UI (`Libraries/PyKotor/src/pykotor/diff_tool/__main__.py` L20-L120).
-- CLI arguments are shared between the dedicated entry points and the `pykotorcli diff` subcommand (`Libraries/PyKotor/src/pykotor/diff_tool/cli.py` L26-L147).
+- CLI arguments are shared between the dedicated scripts (`kotordiff`, `kotordiff`, `diff`) and the `pykotorcli diff` subcommand (`Libraries/PyKotor/src/pykotor/diff_tool/cli.py` L26-L147).
 - Headless execution builds a `KotorDiffConfig` and routes to the n-way differ (`Libraries/PyKotor/src/pykotor/diff_tool/cli.py` L168-L238).
 
 ## CLI Usage
@@ -31,21 +31,21 @@ Module capsules may be `.rim` ([RIM File Format](Container-Formats#rim)), `.mod`
 
 ## Headless pipeline: NSS -> pack -> diff (P1)
 
-This pipeline automates compile, pack, and diff steps so you can review what changed against a baseline installation or scaffold incremental TSLPatcher output.
+**Goal:** Automate compile, pack resources into a module or tree layout, then diff against a baseline installation to review what changed or to scaffold incremental TSLPatcher output.
 
-Prerequisites are the [CLI quickstart](https://github.com/OpenKotOR/PyKotor/blob/master/Libraries/PyKotor/CLI_QUICKSTART.md), a configured NSS compiler if you compile outside Holocron (`uvx PyKotor config --global nssCompiler …`), and either two game roots or a workspace folder plus an install tree for comparison.
+**Prerequisites:** [CLI quickstart](https://github.com/OpenKotOR/PyKotor/blob/master/Libraries/PyKotor/CLI_QUICKSTART.md), configured NSS compiler if you compile outside Holocron (`uvx PyKotor config --global nssCompiler …`), two game roots or a workspace folder vs install.
 
-Use this sequence:
+**Steps:**
 
-1. Compile from the repo or virtual environment with `uvx PyKotor compile --file yourscript.nss`, or batch compile per the CLI quickstart, so the `.ncs` matches what the game will load.
-2. Pack with `uvx PyKotor pack`, or export through Holocron, to place scripts, GFFs, and 2DAs into `override/` or a module layout under your staging directory. See the quickstart Pack and Compile sections.
-3. Diff with `pykotorcli diff` using `--path1` for the baseline install and `--path2` for the staged or modded install. Add `--filter` if the scope should stay limited to one module. Use `--tslpatchdata`, `--ini`, and optional `--incremental` when generating patcher-oriented output.
+1. **Compile:** From the repo / venv, `uvx PyKotor compile --file yourscript.nss` (or batch compile per CLI quickstart) so `.ncs` matches what the game loads.
+2. **Pack:** Use `uvx PyKotor pack` (or Holocron export) to place scripts, GFFs, and 2DAs into `override/` or a module layout under your staging directory—see quickstart **Pack** and **Compile** sections.
+3. **Diff:** Run `pykotorcli diff` with `--path1` baseline install and `--path2` staged or modded install; add `--filter` for one module if scope is large. Use `--tslpatchdata` / `--ini` / `--incremental` when generating patcher-oriented output (examples above).
 
-Verify in game by loading the affected module and confirming that the compiled script runs and resources resolve per [Concepts — resource resolution](Concepts#resource-resolution-order).
+**Verify in-game:** Load the affected module; confirm the compiled script runs and resources resolve per [Concepts — resource resolution](Concepts#resource-resolution-order).
 
-Alternatives include a Holocron-only compile plus manual copy workflow, or diffing two ZIP backups without KotorDiff, which is slower and does not produce TSLPatcher scaffolding.
+**Alternatives:** Holocron-only compile + manual copy; diff two ZIP backups without KotorDiff (slower, no TSLPatcher scaffold).
 
-Common failures include packing stale `.ncs` content because `--noCompile` was used unintentionally, diffing paths that are not both game roots or otherwise comparable trees, and incremental INI conflicts. When the test install is dirty, rerun after a [HoloPatcher restore](HoloPatcher#installing-mods).
+**Common failures:** Forgetting `--noCompile` vs compile when packing stale `.ncs`; diffing paths that are not both game roots or comparable trees; incremental INI conflicts—re-run after a [HoloPatcher restore](HoloPatcher#installing-mods) on the test install.
 
 Key flags:
 

@@ -51,23 +51,23 @@ UTC support in PyKotor is implemented by the in-memory `UTC` model and GFF reade
 | ----- | ---- | ----------- |
 | `Appearance_Type` | UInt32 | Index into [`appearance.2da`](2DA-File-Format#appearance2da) |
 | `PortraitId` | [word](GFF-File-Format#gff-data-types) | Index into [`portraits.2da`](2DA-File-Format#portraits2da); 65535 (0xFFFF) = use Portrait ResRef instead |
-| `Gender` | [byte](GFF-File-Format#gff-data-types) | 0=Male, 1=Female, 2=Both, 3=Other, 4=None [[`utc.py` L221](https://github.com/OpenKotOR/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/utc.py#L221)] |
-| `Race` | [byte](GFF-File-Format#gff-data-types) | Index into [`racialtypes.2da`](2DA-File-Format#racialtypes2da) [[`utc.py` L219](https://github.com/OpenKotOR/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/utc.py#L219)]. |
-| `SubraceIndex` | [byte](GFF-File-Format#gff-data-types) | Index into subrace.2da; refines race (e.g. subspecies). |
-| `BodyVariation` | [byte](GFF-File-Format#gff-data-types) | Body [model](MDL-MDX-File-Format) variation index [[`utc.py` L231](https://github.com/OpenKotOR/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/utc.py#L231)] |
-| `TextureVar` | [byte](GFF-File-Format#gff-data-types) | [texture](Texture-Formats#tpc) variation index [[`utc.py` L232](https://github.com/OpenKotOR/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/utc.py#L232)] |
+| `Gender` | byte | 0=Male, 1=Female, 2=Both, 3=Other, 4=None [[`utc.py` L221](https://github.com/OpenKotOR/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/utc.py#L221)] |
+| `Race` | byte | Index into [`racialtypes.2da`](2DA-File-Format#racialtypes2da) [[`utc.py` L219](https://github.com/OpenKotOR/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/utc.py#L219)]. |
+| `SubraceIndex` | byte | Index into subrace.2da; refines race (e.g. subspecies). |
+| `BodyVariation` | byte | Body [model](MDL-MDX-File-Format) variation index [[`utc.py` L231](https://github.com/OpenKotOR/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/utc.py#L231)] |
+| `TextureVar` | byte | [texture](Texture-Formats#tpc) variation index [[`utc.py` L232](https://github.com/OpenKotOR/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/resource/generics/utc.py#L232)] |
 | `SoundSetFile` | [word](GFF-File-Format#gff-data-types) | Index into [sound set table](Audio-and-Localization-Formats#ssf) |
 
 ## Core Stats & Attributes
 
 | Field | Type | Description |
 | ----- | ---- | ----------- |
-| `Str` | [byte](GFF-File-Format#gff-data-types) | Strength score (3-255) |
-| `Dex` | [byte](GFF-File-Format#gff-data-types) | Dexterity score (3-255) |
-| `Con` | [byte](GFF-File-Format#gff-data-types) | Constitution score (3-255) |
-| `Int` | [byte](GFF-File-Format#gff-data-types) | Intelligence score (3-255) |
-| `Wis` | [byte](GFF-File-Format#gff-data-types) | Wisdom score (3-255) |
-| `Cha` | [byte](GFF-File-Format#gff-data-types) | Charisma score (3-255) |
+| `Str` | byte | Strength score (3-255) |
+| `Dex` | byte | Dexterity score (3-255) |
+| `Con` | byte | Constitution score (3-255) |
+| `Int` | byte | Intelligence score (3-255) |
+| `Wis` | byte | Wisdom score (3-255) |
+| `Cha` | byte | Charisma score (3-255) |
 | `HitPoints` | [int16](GFF-File-Format#gff-data-types) | Current hit points |
 | `CurrentHitPoints` | [int16](GFF-File-Format#gff-data-types) | Alias for hit points |
 | `MaxHitPoints` | [int16](GFF-File-Format#gff-data-types) | Maximum hit points |
@@ -93,7 +93,7 @@ UTC support in PyKotor is implemented by the in-memory `UTC` model and GFF reade
 
 **SkillList Struct fields:**
 
-- `Rank` ([byte](GFF-File-Format#gff-data-types)): Skill rank value
+- `Rank` (byte): Skill rank value
 
 **FeatList Struct fields:**
 
@@ -104,17 +104,17 @@ UTC support in PyKotor is implemented by the in-memory `UTC` model and GFF reade
 | Field | Type | Description |
 | ----- | ---- | ----------- |
 | `FactionID` | [word](GFF-File-Format#gff-data-types) | Faction identifier (determines hostility) |
-| `NaturalAC` | [byte](GFF-File-Format#gff-data-types) | Natural armor class bonus |
+| `NaturalAC` | byte | Natural armor class bonus |
 | `ChallengeRating` | float | CR for encounter calculations |
-| `PerceptionRange` | [byte](GFF-File-Format#gff-data-types) | Perception distance category |
+| `PerceptionRange` | byte | Perception distance category |
 | `WalkRate` | [int32](GFF-File-Format#gff-data-types) | Row index into creaturespeed.2da; sets walk/run movement speed used for pathfinding and animation. |
-| `Interruptable` | [byte](GFF-File-Format#gff-data-types) | Can be interrupted during actions |
-| `NoPermDeath` | [byte](GFF-File-Format#gff-data-types) | Cannot permanently die |
-| `IsPC` | [byte](GFF-File-Format#gff-data-types) | Is player character |
-| `Plot` | [byte](GFF-File-Format#gff-data-types) | Plot-critical (cannot die) |
-| `MinOneHP` | [byte](GFF-File-Format#gff-data-types) | Cannot drop below 1 HP |
-| `PartyInteract` | [byte](GFF-File-Format#gff-data-types) | Shows party selection interface |
-| `Hologram` | [byte](GFF-File-Format#gff-data-types) | Rendered as hologram |
+| `Interruptable` | byte | Can be interrupted during actions |
+| `NoPermDeath` | byte | Cannot permanently die |
+| `IsPC` | byte | Is player character |
+| `Plot` | byte | Plot-critical (cannot die) |
+| `MinOneHP` | byte | Cannot drop below 1 HP |
+| `PartyInteract` | byte | Shows party selection interface |
+| `Hologram` | byte | Rendered as hologram |
 
 ## Equipment & Inventory
 
@@ -129,7 +129,7 @@ UTC support in PyKotor is implemented by the in-memory `UTC` model and GFF reade
 - `InventoryRes` (*ResRef*): [UTI](GFF-File-Format#uti-item) template *ResRef*
 - `Repos_PosX` ([word](GFF-File-Format#gff-data-types)): Inventory grid X position
 - `Repos_Posy` ([word](GFF-File-Format#gff-data-types)): Inventory grid Y position
-- `Dropable` ([byte](GFF-File-Format#gff-data-types)): Can be dropped/removed
+- `Dropable` (byte): Can be dropped/removed
 
 **Equip_ItemList Struct fields:**
 
@@ -159,15 +159,15 @@ UTC support in PyKotor is implemented by the in-memory `UTC` model and GFF reade
 
 **Alignment:**
 
-- `GoodEvil` ([byte](GFF-File-Format#gff-data-types)): 0-100 scale (0=Dark, 100=Light)
-- `LawfulChaotic` ([byte](GFF-File-Format#gff-data-types)): Unused in KotOR
+- `GoodEvil` (byte): 0-100 scale (0=Dark, 100=Light)
+- `LawfulChaotic` (byte): Unused in KotOR
 
 **Multiplayer (Unused in KotOR):**
 
 - `Deity` ([CExoString](GFF-File-Format#gff-data-types))
 - `Subrace` ([CExoString](GFF-File-Format#gff-data-types))
-- `Morale` ([byte](GFF-File-Format#gff-data-types))
-- `MorealBreak` ([byte](GFF-File-Format#gff-data-types))
+- `Morale` (byte)
+- `MorealBreak` (byte)
 
 **Special Abilities:**
 
@@ -256,14 +256,14 @@ PyKotor implements DLG as a graph of entries, replies, and links with GFF-based 
 | `DelayEntry` | [int32](GFF-File-Format#gff-data-types) | Delay before conversation starts |
 | `DelayReply` | [int32](GFF-File-Format#gff-data-types) | Delay before player reply options appear |
 | `NumWords` | [int32](GFF-File-Format#gff-data-types) | Total word count (unused) |
-| `PreventSkipping` | [byte](GFF-File-Format#gff-data-types) | Prevents skipping dialogue lines |
-| `Skippable` | [byte](GFF-File-Format#gff-data-types) | Allows skipping dialogue |
+| `PreventSkipping` | byte | Prevents skipping dialogue lines |
+| `Skippable` | byte | Allows skipping dialogue |
 | `Sound` | *ResRef* | Background sound loop |
 | `AmbientTrack` | [int32](GFF-File-Format#gff-data-types) | Background music track ID |
 | `CameraModel` | *ResRef* | Camera [model](MDL-MDX-File-Format) for cutscenes |
-| `ComputerType` | [byte](GFF-File-Format#gff-data-types) | Interface style (0=Modern, 1=Ancient) |
-| `ConversationType` | [byte](GFF-File-Format#gff-data-types) | 0=Human, 1=Computer, 2=Other |
-| `OldHitCheck` | [byte](GFF-File-Format#gff-data-types) | Legacy hit check flag (unused) |
+| `ComputerType` | byte | Interface style (0=Modern, 1=Ancient) |
+| `ConversationType` | byte | 0=Human, 1=Computer, 2=Other |
+| `OldHitCheck` | byte | Legacy hit check flag (unused) |
 
 **Conversation types:**
 
@@ -338,7 +338,7 @@ Links connect [nodes](MDL-MDX-File-Format#node-structures) and define flow contr
 | `Index` | [int32](GFF-File-Format#gff-data-types) | Index of target [node](MDL-MDX-File-Format#node-structures) in Entry/Reply list |
 | `Active` | *ResRef* | Conditional script (returns TRUE/FALSE) |
 | `Script` | *ResRef* | Action script (executed on transition) |
-| `IsChild` | [byte](GFF-File-Format#gff-data-types) | 1 if linking to [node](MDL-MDX-File-Format#node-structures) in list, 0 if logic link |
+| `IsChild` | byte | 1 if linking to [node](MDL-MDX-File-Format#node-structures) in list, 0 if logic link |
 | `LinkComment` | [CExoString](GFF-File-Format#gff-data-types) | Developer comment |
 
 **Conditional Logic:**

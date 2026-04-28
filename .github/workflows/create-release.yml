@@ -40,7 +40,7 @@ jobs:
       tool_dir: ${{ steps.config.outputs.tool_dir }}
       build_name: ${{ steps.config.outputs.build_name }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - name: Detect tool and validate version
         id: config
@@ -208,7 +208,7 @@ jobs:
     if: github.event.inputs.skip_version_bump != 'true'
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
 
@@ -279,7 +279,7 @@ jobs:
     if: always() && needs.validate.result == 'success' && (needs.bump-version.result == 'success' || needs.bump-version.result == 'skipped')
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           ref: master
           fetch-depth: 0

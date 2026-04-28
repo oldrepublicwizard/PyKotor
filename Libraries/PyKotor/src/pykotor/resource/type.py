@@ -36,7 +36,7 @@ from typing import TYPE_CHECKING, NamedTuple, TypeVar, Union, cast
 from xml.etree.ElementTree import ParseError
 
 from pykotor.common.stream import BinaryReader, BinaryWriter
-from pykotor.resource.formats._base import BiowareResource  # type: ignore[import-untyped]
+from pykotor.resource.formats._base import BiowareResource, ComparableMixin  # type: ignore[import-untyped]
 from utility.common.misc_string.mutable_str import WrappedStr
 
 if TYPE_CHECKING:
@@ -93,7 +93,7 @@ def autoclose(func: Callable[..., R]) -> Callable[..., R]:
     return _autoclose
 
 
-class ResourceReader(BiowareResource):
+class ResourceReader(ComparableMixin):
     def __init__(
         self,
         source: SOURCE_TYPES,
@@ -132,7 +132,7 @@ class ResourceReader(BiowareResource):
         self._reader.close()
 
 
-class ResourceWriter(BiowareResource):
+class ResourceWriter(ComparableMixin):
     def __init__(
         self,
         target: TARGET_TYPES,
@@ -164,107 +164,11 @@ class ResourceTuple(NamedTuple):
 
     type_id: int
     extension: str
-    category: Literal[
-        "Chitin",
-        "Archives",
-        "Crowd Attributes",
-        "Paths",
-        "Lips",
-        "Quests",
-        "Walkmeshes",
-        "Waypoints",
-        "Journals",
-        "Merchants",
-        "Materials",
-        "Cutscenes",
-        "Items",
-        "Fonts",
-        "Soundsets",
-        "Save Data",
-        "Images",
-        "Videos",
-        "Audio",
-        "Text Files",
-        "Other",
-        "Models",
-        "Textures",
-        "Scripts",
-        "Modules",
-        "Module Data",
-        "Creatures",
-        "2D Arrays",
-        "Talk Tables",
-        "Dialogs",
-        "Palettes",
-        "Triggers",
-        "Sounds",
-        "Factions",
-        "Encounters",
-        "Doors",
-        "Placeables",
-        "Defaults",
-        "GUIs",
-        "Unused",
-    ]
+    category: Literal[ "Chitin", "Archives", "Crowd Attributes", "Paths", "Lips", "Quests", "Walkmeshes", "Waypoints", "Journals", "Merchants", "Materials", "Cutscenes", "Items", "Fonts", "Soundsets", "Save Data", "Images", "Videos", "Audio", "Text Files", "Other", "Models", "Textures", "Scripts", "Modules", "Module Data", "Creatures", "2D Arrays", "Talk Tables", "Dialogs", "Palettes", "Triggers", "Sounds", "Factions", "Encounters", "Doors", "Placeables", "Defaults", "GUIs", "Unused", ]
     contents: Literal["binary", "plaintext", "gff", "erf", "lips", "video", "xml"]
     is_invalid: bool = False
-    target_member: (
-        Literal[
-            "LIP",
-            "DLG",
-            "2DA",
-            "TLK",
-            "SSF",
-            "PTH",
-            "UTW",
-            "IFO",
-            "JRL",
-            "UTM",
-            "GUI",
-            "UTP",
-            "FAC",
-            "UTD",
-            "UTS",
-            "UTE",
-            "UTT",
-            "UTI",
-            "UTC",
-            "GIT",
-            "GFF",
-            "RES",
-            "BMP",
-            "MVE",
-            "TGA",
-            "WAV",
-            "PLT",
-            "INI",
-            "BMU",
-            "MPG",
-            "TXT",
-            "WMA",
-            "WMV",
-            "XMV",
-            "PLH",
-            "TEX",
-            "MDL",
-            "THG",
-            "FNT",
-            "LUA",
-            "SLT",
-            "NSS",
-            "NCS",
-            "MOD",
-            "ARE",
-            "SET",
-            "BIP",
-            "JPG2",
-            "PWC",
-        ]
-        | None
-    ) = None
-    supported_engines: tuple[
-        BiowareEngine, ...
-    ] = ()  # Empty tuple as default, use tuple for immutability
+    target_member: ( Literal[ "LIP", "DLG", "2DA", "TLK", "SSF", "PTH", "UTW", "IFO", "JRL", "UTM", "GUI", "UTP", "FAC", "UTD", "UTS", "UTE", "UTT", "UTI", "UTC", "GIT", "GFF", "RES", "BMP", "MVE", "TGA", "WAV", "PLT", "INI", "BMU", "MPG", "TXT", "WMA", "WMV", "XMV", "PLH", "TEX", "MDL", "THG", "FNT", "LUA", "SLT", "NSS", "NCS", "MOD", "ARE", "SET", "BIP", "JPG2", "PWC"] | None ) = None
+    supported_engines: tuple[BiowareEngine, ...] = ()  # Empty tuple as default, use tuple for immutability
 
 
 def _resolve_resource_target_member(target_member: str | None) -> ResourceType | None:
@@ -1897,6 +1801,7 @@ class ResourceType(Enum):
 
     def __bool__(self) -> bool:
         return not self.is_invalid
+
 
     def __repr__(self) -> str:
         if self.name == "INVALID" or not self.is_invalid:

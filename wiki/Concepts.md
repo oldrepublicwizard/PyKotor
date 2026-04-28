@@ -2,16 +2,6 @@
 
 This page is limited to concepts that can be stated directly from PyKotor source and from recovered Odyssey-family engine routines in three binaries: KotOR I, KotOR II, and Aurora `nwmain.exe`. [[PyKotor `SearchLocation`](https://github.com/OpenKotOR/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/installation.py#L67-L104), [PyKotor `ResRef`](https://github.com/OpenKotOR/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/common/misc.py#L24-L55), [PyKotor `LocalizedString`](https://github.com/OpenKotOR/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/common/language.py#L624-L775)]
 
-## Recovered engine anchors
-
-| Concept | Tri-binary anchor |
-| ------- | ----------------- |
-| Resource existence lookup | `CExoResMan::Exists @ (/K1/k1_win_gog_swkotor.exe @ 0x00408bc0, /TSL/k2_win_gog_aspyr_swkotor2.exe @ 0x0061b830, /Other BioWare Engines/Aurora/nwmain.exe @ 0x14018f590)` |
-| KEY-table maintenance | `CExoKeyTable::RebuildTable @ (/K1/k1_win_gog_swkotor.exe @ 0x00410260, /TSL/k2_win_gog_aspyr_swkotor2.exe @ 0x006304a0, /Other BioWare Engines/Aurora/nwmain.exe @ 0x14018ccf0)` |
-| GFF ResRef decode | `CResGFF::ReadFieldCResRef @ (/K1/k1_win_gog_swkotor.exe @ 0x00411e10, /TSL/k2_win_gog_aspyr_swkotor2.exe @ 0x00624fa0, /Other BioWare Engines/Aurora/nwmain.exe @ 0x1401a12d0)` |
-| GFF LocalizedString decode | `CResGFF::ReadFieldCExoLocString @ (/K1/k1_win_gog_swkotor.exe @ 0x00411fd0, /TSL/k2_win_gog_aspyr_swkotor2.exe @ 0x00625240, /Other BioWare Engines/Aurora/nwmain.exe @ 0x1401a0f80)` |
-| Localized text selection | `CExoLocString::GetString @ (/K1/k1_win_gog_swkotor.exe @ 0x005ea130, /TSL/k2_win_gog_aspyr_swkotor2.exe @ 0x006077c0, /Other BioWare Engines/Aurora/nwmain.exe @ 0x140169920)` |
-
 ## Resource identity and lookup
 
 Odyssey lookups are keyed by a resource identity, not by an arbitrary filesystem path: the request is a **ResRef plus resource type**, and PyKotor normalizes user-facing queries into that pair before dispatching them through its installation search API. [[PyKotor `ResRef`](https://github.com/OpenKotOR/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/common/misc.py#L24-L55), [PyKotor `location()` normalization](https://github.com/OpenKotOR/PyKotor/blob/master/Libraries/PyKotor/src/pykotor/extract/installation.py#L1727-L1794)]

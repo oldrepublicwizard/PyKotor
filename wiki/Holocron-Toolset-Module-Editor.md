@@ -4,13 +4,13 @@ The Module Editor is the primary workspace for editing module content in 3D or 2
 
 Open it from the Main Window via **Tools** -> **Module Designer**.
 
-The typical workflow is to load a module, navigate the viewport to the location you want to edit, place or select instances, adjust position and orientation, and then save. For building a new area from scratch, use the [Map Builder](Holocron-Toolset-Map-Builder) instead.
+**Typical workflow:** Load a module -> navigate the viewport to the location you want to edit -> place or select instances -> adjust position and orientation -> save. For building a new area from scratch, use the [Map Builder](Holocron-Toolset-Map-Builder) instead.
 
 ## Controls
 
 You can edit the controls in **Settings** (Main Window) under the **Module Designer** section.
 
-Double-clicking an instance in the instance list snaps the camera to that object's location.
+**Tip:** Double-clicking an instance in the instance list snaps the camera to that object's location.
 
 ### Default controls (3D)
 

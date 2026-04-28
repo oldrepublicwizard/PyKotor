@@ -4,7 +4,7 @@ The Map Builder creates new playable indoor areas from existing room models, wit
 
 Open it from the Main Window via **Tools** -> **Indoor Map Builder**.
 
-The typical workflow is to select a kit, meaning a set of room models from a specific game area, place rooms on the canvas, snap connections between them as shown by green lines, and then use **File** -> **Build** to output a ready-to-play module to the game's `Modules/` folder.
+**Typical workflow:** Select a kit (a set of room models from a specific game area) -> place rooms on the canvas -> snap connections between them (shown as green lines) -> **File** -> **Build** to output a ready-to-play module to the game's `Modules/` folder.
 
 ## Kits
 

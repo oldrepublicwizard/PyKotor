@@ -100,7 +100,7 @@ SWKotORII:The Sith Lords game (though it will work with SWKotOR1 as well). Its p
 intended use is as an installer-type of application to distribute with Mods to make them easier
 to install and make compatible with other Mods.
 
-Modder quick reference: Point TSLPatcher at your **game root directory** (the folder containing `swkotor.exe` or `swkotor2.exe` and the `override` folder), not at the override folder itself. Use 2DAList and TLKList to **merge** 2DA and TLK changes so multiple mods can coexist; raw file copies overwrite. Make sure "Make Backups" is enabled so you can revert. If using Steam Workshop (e.g. TSLRCM), direct TSLPatcher to the Workshop mod folder when installing mods that must merge with it. For concepts (override, resource order, ResRef), see:
+**Modder quick reference:** Point TSLPatcher at your **game root directory** (the folder containing `swkotor.exe` or `swkotor2.exe` and the `override` folder), not at the override folder itself. Use 2DAList and TLKList to **merge** 2DA and TLK changes so multiple mods can coexist; raw file copies overwrite. Make sure "Make Backups" is enabled so you can revert. If using Steam Workshop (e.g. TSLRCM), direct TSLPatcher to the Workshop mod folder when installing mods that must merge with it. For concepts (override, resource order, ResRef), see:
 
 - [Concepts](Concepts)
 - [Mod-Creation-Best-Practices](Mod-Creation-Best-Practices)
@@ -192,7 +192,7 @@ Among other things:
 file. Due to the complex format and vast possibility of potential changes of script files, such
 files will have to be merged manually. Please include the [NSS](NSS-File-Format) source code files with your
 mod to allow people to do this if necessary. When creating new scripts for your mod, you
-should name them in a way (using a custom prefix or suffix in the _ResRef_ filename) that
+should name them in a way (using a custom prefix or suffix in the *ResRef* filename) that
 makes you reasonable certain others would not name their scripts the same way, to avoid
 this problem.
 
@@ -274,7 +274,7 @@ your mod into this new folder. Carefully examine the resulting files in this fak
 folder to make sure everything has ended up as you intended. It is easy to make mistakes,
 and this way you save both yourself and the users of your MOD some headache later on. :)
 
-Advanced:
+**Advanced:**
 TSLPatcher.exe accepts two optional command line parameters. If  present, the
 first parameter must be the name of an INI file with TSLPatcher settings that
 will be used instead of changes.ini. The second parameter must be the name of
@@ -303,11 +303,11 @@ To Create a new changes.ini file, select "New..." from the file menu. The tree v
 panel should now update to show 6 different sections. Click on the section you want to modify
 to switch the right panel to that view.
 
-Note:
+**Note:**
 Whenever there is a button with a blue circle with a white "i" inside, clicking that
 button will display (hopefully) useful information about that feature in ChangeEdit.
 
-Important:
+**Important:**
 Keep in mind as you read on that all files and modifiers are processed in the
 order they are listed. This usually doesn't matter, but if several modifiers
 depend on each other (i.e. a new row in [portraits.2da](2DA-File-Format#portraits2da) refer to a new row in
@@ -446,7 +446,7 @@ modified version of that same [2DA file](2DA-File-Format).
 ChangeEdit will now compare the files for differences and fabricate Modifiers to reflect its
 findings.
 
-Very important: The Compare function will only look for differing values with no contextual
+**Very Important:** The Compare function will only look for differing values with no contextual
 knowledge of how those values are used. Thus, if there are any fields that
 should have special token values assigned, you will have to go through the
 fabricated modifiers and add those tokens by hand.
@@ -479,7 +479,7 @@ values from the original row.
 This lets you add a new column at the far right in the [2DA file](2DA-File-Format). Note that not all [2DA](2DA-File-Format) files will
 react to having new columns added.
 
-Note:
+**Note:**
 In addition to creating new modifiers from scratch using the above mentioned buttons,
 you can select an existing modifier and copy it, and make the desired changes to it. This
 may be useful when you need to make many Modifiers that are very similar, with only
@@ -523,7 +523,7 @@ When you are done, add this column to the list by pressing the right arrow icon.
 columns you wish to assign values to in the same manner. If you need to edit the value of a
 column you have already added, select it in the list to the right and press the left arrow icon.
 
-Default value:
+**Default value**
 Any columns you have not assigned a value to will have the default value **** set.
 
 ###### 3.3.2.1.1. Special "columns"
@@ -581,7 +581,7 @@ any other columns you wish to change values for in the same manner. If you need 
 value of a column you have already added, select it in the list to the right and press the left
 arrow icon.
 
-Note:
+**Note:**
 Only add columns you wish to change the values for. The values in all other columns
 will be kept untouched.
 
@@ -720,7 +720,7 @@ modifying existing files) or should be saved (if adding new files). There are tw
 inserted (if not already existing or the Replace setting is set) into this container file instead of
 being placed in the override folder.
 
-Important:
+**Important:**
 If you set an [ERF](Container-Formats#erf) or [RIM](Container-Formats#rim) file to save your modified files in you must specify the
 relative path from the game folder to where the [ERF](Container-Formats#erf) or [RIM](Container-Formats#rim) file is located. If, for
 example, you want to modify a [GFF file](GFF-File-Format) within the file myarea.mod located in
@@ -755,7 +755,7 @@ token there.
 Press the up arrow icon to save the Modifier to the list. To edit a field value you have already
 entered, select it in the list and press the down arrow icon.
 
-Note:
+**Note:**
 A few complex field types requires a somewhat more arcane procedure to specify their
 value:
 
@@ -777,7 +777,7 @@ decimal values.
 STRUCT and LIST fields have no value, since they only contain other fields and carry
 no data themselves.
 
-Note:
+**Note:**
 In TSLPatcher v1.2.7b9 and onward it is possible to use the value stored in a
 2DAMEMORY# token as field path+name to modify a value. This can be useful in
 situations where you need to dynamically update fields that don't exist in the file
@@ -826,7 +826,7 @@ This specifies where in the [GFF](GFF-File-Format) field tree you wish to add th
 the field at the root (top) level of the [GFF file](GFF-File-Format). Separate each field label (or list index) in the
 hierarchy with a backslash ("\\") character if you wish to add your fields deeper in the tree.
 
-Note:
+**Note:**
 You may add new fields below a STRUCT or LIST parent field only. LIST fields can
 only contain STRUCT fields, while STRUCT field can contain fields of any type.
 
@@ -849,11 +849,11 @@ this field to -1 if your ExoLocString doesn't use any value in [dialog.tlk](Audi
 ##### 3.4.2.6. type Id
 
 This field is only used when adding STRUCT type fields. When adding a STRUCT, you may set
-its type ID here. If it is not otherwise needed, set it to 0. The type ID is used for different things depending on
+its type ID here. If unused, just set it to 0. The type ID is used for different things depending on
 what your STRUCT is used for. Check with a [GFF](GFF-File-Format) Editor if it appears to be used used for what
 you are trying to do. The type Id must be a number, 0 or larger.
 
-Note:
+**Note:**
 If your struct is added to a LIST, putting ListIndex in this box will make TSLPatcher
 insert the index the STRUCT was added as in the parent LIST as type ID. This is used in
 some places, such as in the Categories LIST in global.jrl where the type Id matches
@@ -912,13 +912,13 @@ on the situation and type of files you work with it will be more or less useful.
 may need some manual tweaking afterwards to function as intended when they refer to other
 data, or need dynamic data inserted.
 
-Note:
+**Note:**
 ChangeEdit will only detect and make Modifiers for the type of operations that the
 TSLPatcher is capable of performing on the [GFF files](GFF-File-Format). E.g. if the modified file has
 deleted fields compared to the original ChangeEdit will not notice, since TSLPatcher
 currently is unable to delete fields from [GFF files](GFF-File-Format).
 
-Important:
+**Important:**
 Keep in mind that ChangeEdit will make modifiers directly for the new data it
 finds, in the order it finds them in the file, without any knowledge about how
 this data is used or interlinked with other fields. Always double-check the
@@ -931,7 +931,7 @@ The Install files section lets you configure the TSLPatcher to move files that i
 in any of the previous sections to their proper place. You can use it to help the user put files in
 their proper location (override, Modules, StreamVoice folders etc).
 
-Important:
+**Important:**
 Do not add any files that have been modified by any of the other sections to the
 InstallList, or the modified files might be overwritten! The other sections
 already modify files in the game folder. The only exception to this is [ERF files](Container-Formats#erf)
@@ -947,7 +947,7 @@ E.g. to install a file in the _HuttHap folder inside the AVO folder inside the S
 type in StreamVoice\\AVO\\_HuttHap in the Folder name box. If the specified folder(s) do not
 already exist in the user's game folder, they will be created.
 
-Note:
+**Note:**
 If you want to put files directly into the game folder, set the folder name to
 ".\\".
 
@@ -992,7 +992,7 @@ Destination box blank or set it to "override" (without the quotation marks). If 
 file to be saved inside a [MOD](Container-Formats#erf), [ERF](Container-Formats#erf), or [RIM](Container-Formats#rim) file instead, put the relative path (from the game
 folder) and name of that [ERF](Container-Formats#erf) format file in this box.
 
-Important:
+**Important:**
 You must specify the relative path from the main game folder to where the
 [ERF](Container-Formats#erf) or [RIM](Container-Formats#rim) file you want to save your recompile script in exists. If you for
 example want to save your script inside the myarea.mod file located in the
@@ -1005,7 +1005,7 @@ folder. If someone needs that functionality, please let me know.
 Press the up arrow icon to add your new [NSS file](NSS-File-Format) to the list. Double-click a file in the list or
 select it and press the down arrow icon to edit an entry in the list.
 
-Important:
+**Important:**
 If your script uses any include files, all those include files must be placed in the
 same folder as the script, but not added to the Script Source list unless you
 need the TSLPatcher to change anything in them.
@@ -1027,7 +1027,7 @@ using the BarkString() function, your source code script line might look like:
 ChangeObjectAppearance(OBJECT_SELF, #2DAMEMORY1#);
 BarkString(OBJECT_INVALID, #StrRef0#, 25, 20);
 
-Important:
+**Important:**
 For this to work, the files nwnnsscomp.exe and nwscript.nss must be placed
 within the tslpatchdata folder, even if you use multiple Setup Groups within
 subfolders.  As of version 1.2.7b4, a modified version of nwnnsscomp, made by
@@ -1070,9 +1070,9 @@ modify a fresh copy of the [SSF file](Audio-and-Localization-Formats#ssf) from t
 with the same name in override, check the Replace file... check box near the bottom of the [SSF](Audio-and-Localization-Formats#ssf)
 panel.
 
-Note:
+**Note:**
 The Unknown(#) sound entries are present in the [SSF](Audio-and-Localization-Formats#ssf) format, but I have been unable to
-determine what they are used for, or if they are reserved or otherwise not yet identified. If you figure
+determine what they are used for, or if they are just reserved and unused. If you figure
 out what any of those entries are for, please let me know.
 
 ### 3.8. Setup List
@@ -1081,7 +1081,7 @@ This section is not accessible from the Tree View since it is independent of a p
 changes.ini file. This functionality is accessed from the files menu. This functionality was added
 in TSLPatcher v1.2.7.
 
-Quick overview:
+**Quick overview**
 A Setup List is a way  of providing more than one possible way of installing a Mod from the
 same Installer. It may for example be used to let the user choose to update a previously
 installed version of the Mod, or install it completely from scratch. Technically it will allow you
@@ -1097,7 +1097,7 @@ use, the associated INI and RTF file are loaded and the main TSLPatcher window i
 before. If the namespaces.ini file does not exist within the tslpatchdata folder, TSLPatcher will not
 show this dialog box and just go to the main window like it usually does.
 
-Configuration:
+**Configuration**
 To configure a namespaces.ini file, launch ChangeEdit.exe and choose Setup Lists from the file
 menu. In this submenu you can choose to either create a new namespaces.ini file, or open an
 existing one for editing. If you create a new one, note that it must always be named exactly
@@ -1116,33 +1116,33 @@ you should pick something that helps you remember what the setup is.
 To edit the values of a selected or newly created Setup, use the input boxes in the panel to the
 right. The following fields are available:
 
-Config file name: This is the name of the INI file the TSLPatcher will look in for instructions
+**Config file name**  - This is the name of the INI file the TSLPatcher will look in for instructions
 on what to do. This is usually changes.ini, but you can specify another name here if you have
 more than one configuration file in the tslpatchdata folder.
 
-Info file name: This is the name of the RTF format document that will be displayed in the text
+**Info file name** – This is the name of the RTF format document that will be displayed in the text
 area in the main TSLPatcher window, usually containing the ReadMe file or special installation
 instructions. This is usually info.rtf, but you can pick another name for your setup if you have
 several in the tslpatchdata folder.
 
-data folder: This field is optional. If left blank the TSLPatcher will look for the two above
+**data folder** – This field is optional. If left blank the TSLPatcher will look for the two above
 named files, as well as any data files that are to be installed, within the tslpatchdata folder as
 usual. If this field is set to the name of a sub-folder created within the tslpatchdata folder,
 TSLPatcher expects the above named INI and RTF file, along with all data files that should be
 
 installed, to be present within that folder instead of in the tslpatchdata folder.
 
-Name: This is a descriptive name of this particular setup. This text will be displayed in the
+**Name** – This is a descriptive name of this particular setup. This text will be displayed in the
 dropdown menu in TSLPatcher where the user can choose which Setup to use for installation.
 
-Description: This is a short description text of this Setup, which should explain what it means.
+**Description** – This is a short description text of this Setup, which should explain what it means.
 This text will be displayed in the information box in TSLPatcher when the user selects the Setup
 in the dropdown menu.
 
 When you have typed in your desired values, press the Save Changes button to commit the
 values to the namespaces.ini file.
 
-Important:
+**Important:**
 For multiple setups that are placed in sub-folders and use nwnnsscomp.exe to
 recompile scripts using include files before installing them you must place
 nwnnsscomp.exe and nwscript.nss in the tslpatchdata folder, not in the individual
@@ -1181,7 +1181,6 @@ Me: Make sure you don't have copies of those files within sub-folders of your ov
 The TSLPatcher only looks for files to modify in the override folder itself, not in sub-folders.
 
 <a id="44-failed-installation--reverting-files"></a>
-
 ### 4.4. Failed installation – reverting files
 
 You: Something went wrong during Mod installation. How do I undo the changes that have

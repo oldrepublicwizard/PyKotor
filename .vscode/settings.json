@@ -105,7 +105,7 @@
   ],
   "python.envFile": "${workspaceFolder}/.env",
   "python.defaultInterpreterPath": "${workspaceFolder}\\.venv\\Scripts\\python.exe",
-  "python.languageServer": "Default",
+  "python.languageServer": "None",
   "python.locator": "js",
   "python.useEnvironmentsExtension": false,
   "python.linting.enabled": true,

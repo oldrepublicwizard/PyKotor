@@ -6,15 +6,15 @@ HoloPatcher is PyKotor's modern implementation of the TSLPatcher workflow. For m
 
 Start with [TSLPatcher's Official Readme](TSLPatcher's-Official-Readme) if you need the original syntax reference. Use this page for the practical author workflow, current PyKotor-backed behavior, and the places where HoloPatcher documents features more clearly than the historical readme did.
 
-Verified against source files:
+**Verified against source files:**
 
 - `Libraries/PyKotor/src/pykotor/tslpatcher/` - core parser, patch model, and merge logic
 - `Libraries/PyKotor/src/pykotor/tslpatcher/mods/` - per-format patch implementations
 - `Tools/HoloPatcher/src/holopatcher/` - GUI flow, namespace handling, logging, and backup behavior
 
-Implementation: [`Libraries/PyKotor/src/pykotor/tslpatcher/`](https://github.com/OpenKotOR/PyKotor/tree/master/Libraries/PyKotor/src/pykotor/tslpatcher/)
+**Implementation:** [`Libraries/PyKotor/src/pykotor/tslpatcher/`](https://github.com/OpenKotOR/PyKotor/tree/master/Libraries/PyKotor/src/pykotor/tslpatcher/)
 
-Other mod installers and managers:
+**Other mod installers and managers:**
 
 - **[TSLPatcher](https://github.com/Fair-Strides/TSLPatcher)** - Original Perl TSLPatcher by stoffe (reference implementation)
 - **[Kotor-Patch-Manager](https://github.com/LaneDibello/Kotor-Patch-Manager)** - Alternative mod manager with different patching approach
@@ -22,11 +22,11 @@ Other mod installers and managers:
 
   - Canonical (th3w1zard1/KotORModSync): <https://github.com/th3w1zard1/KotORModSync/tree/c8b0d10ce3fd7525d593d34a3be8d151da7d3387>
 
-KotORModSync in practice: Use HoloPatcher, or an equivalent patcher, to **apply** each mod’s `tslpatchdata` to a game installation. Use **KotORModSync** when you need help **tracking**, ordering, or syncing many installs across folders or team members. It is **not** a drop-in substitute for reading `[2DAList]` / `[TLKList]` rules; those remain defined by TSLPatcher/HoloPatcher INI. Repository: **`th3w1zard1/KotORModSync`** (verify file paths on the repo default branch before adding deep `#L` links in the wiki).
+**KotORModSync in practice:** Use HoloPatcher (or equivalent) to **apply** each mod’s `tslpatchdata` to a game installation. Use **KotORModSync** when you need help **tracking**, ordering, or syncing many installs across folders or team members. It is **not** a drop-in substitute for reading `[2DAList]` / `[TLKList]` rules—those remain defined by TSLPatcher/HoloPatcher INI. Repository: **`th3w1zard1/KotORModSync`** (verify file paths on the repo default branch before adding deep `#L` links in the wiki).
 
-Community context: End users and mod authors often coordinate around [Deadly Stream — HoloPatcher](https://deadlystream.com/files/file/2243-holopatcher/) (downloads + discussion). Large distributions such as [KOTOR 1 Community Patch](https://deadlystream.com/files/file/1258-kotor-1-community-patch/) show what real-world HoloPatcher packaging looks like. Use those releases for workflow examples and player expectations; use this wiki and the TSLPatcher syntax pages as the source of truth for INI semantics.
+**Community context:** End users and mod authors often coordinate around [Deadly Stream — HoloPatcher](https://deadlystream.com/files/file/2243-holopatcher/) (downloads + discussion). Large distributions such as [KOTOR 1 Community Patch](https://deadlystream.com/files/file/1258-kotor-1-community-patch/) show what real-world HoloPatcher packaging looks like. Use those releases for workflow examples and player expectations; use this wiki and the TSLPatcher syntax pages as the source of truth for INI semantics.
 
-Related PyKotor tools:
+**Related PyKotor Tools:**
 
 - [`Tools/HolocronToolset/`](https://github.com/OpenKotOR/PyKotor/tree/master/Tools/HolocronToolset) - Integrated HoloPatcher [GUI](GFF-File-Format#gui-graphical-user-interface)
 - [`Libraries/PyKotor/src/pykotor/tslpatcher/mods/`](https://github.com/OpenKotOR/PyKotor/tree/master/Libraries/PyKotor/src/pykotor/tslpatcher/mods) - Individual patching modules
@@ -46,9 +46,9 @@ Related PyKotor tools:
 
 ## Walkthrough: first HoloPatcher mod (TLK + 2DA + InstallList)
 
-Goal: Ship a minimal TSLPatcher-compatible package that adds a dialog string, touches one [2DA](2DA-File-Format) row, and installs one loose file without replacing whole vanilla tables.
+**Goal:** Ship a minimal TSLPatcher-compatible package that adds a dialog string, touches one [2DA](2DA-File-Format) row, and installs one loose file without replacing whole vanilla tables.
 
-Prerequisites:
+**Prerequisites:**
 
 - [TSLPatcher's Official Readme](TSLPatcher's-Official-Readme) (skim)
 - Syntax references open while you work:
@@ -57,7 +57,7 @@ Prerequisites:
   - [2DAList](TSLPatcher-2DAList-Syntax)
 - HoloPatcher pointed at a **test** game copy
 
-Steps:
+**Steps:**
 
 1. **Layout:** `YourMod/tslpatchdata/changes.ini` plus any side files (e.g. `mymod.tlk` fragment, source 2DA snippet, loose file to copy).
 2. **TLK:** In `[TLKList]`, reference a TLK patch file and add or modify rows per [TSLPatcher TLKList Syntax](TSLPatcher-TLKList-Syntax). Prefer **merge** operations over replacing entire `dialog.tlk` unless you intend a total replacement (replace-style examples appear under **[TLK](Audio-and-Localization-Formats#tlk) replacements** in [HoloPatcher changes](#holopatcher-changes--new-features) below).
@@ -66,14 +66,13 @@ Steps:
 5. **Namespaces:** If you offer variants, add `namespaces.ini`; otherwise one `changes.ini` is enough.
 6. **Install and inspect:** Run HoloPatcher against a test install and read the log before you launch the game.
 
-Verify in-game: Confirm the loose file appears where expected, then confirm the TLK and 2DA changes in a tool or test dialogue before shipping.
+**Verify in-game:** Confirm the loose file appears where expected, then confirm the TLK and 2DA changes in a tool or test dialogue before shipping.
 
-Alternatives: For learning GFF-only flows, follow [Tutorial: Creating a new store](Tutorial-Creating-a-New-Store) in Holocron. For headless builds, use [CLI quickstart](https://github.com/OpenKotOR/PyKotor/blob/master/Libraries/PyKotor/CLI_QUICKSTART.md).
+**Alternatives:** For learning GFF-only flows, follow [Tutorial: Creating a new store](Tutorial-Creating-a-New-Store) in Holocron. For headless builds, use [CLI quickstart](https://github.com/OpenKotOR/PyKotor/blob/master/Libraries/PyKotor/CLI_QUICKSTART.md).
 
-Common failures: pointing the patcher at `override/` instead of the **game root**, reinstalling the same option without [restore backup](Installing-Mods-with-HoloPatcher), and shipping bad relative paths in InstallList. See [Mod Creation Best Practices](Mod-Creation-Best-Practices#tslpatcher-setup-and-2datlk-merging).
+**Common failures:** pointing the patcher at `override/` instead of the **game root**, reinstalling the same option without [restore backup](Installing-Mods-with-HoloPatcher), and shipping bad relative paths in InstallList. See [Mod Creation Best Practices](Mod-Creation-Best-Practices#tslpatcher-setup-and-2datlk-merging).
 
 <a id="holopatcher-changes--new-features"></a>
-
 ## HoloPatcher changes & New Features
 
 ### [TLK](Audio-and-Localization-Formats#tlk) replacements
@@ -99,7 +98,7 @@ Don't use the 'ignore' syntax or the 'range' syntax, these won't be documented o
 
 This is a TSLPatcher feature that was [not documented in the TSLPatcher readme](https://github.com/OpenKotOR/PyKotor/wiki/TSLPatcher's-Official-Readme). Public examples are rare. The main known references are [Stoffe's HLFP mod](https://deadlystream.com/files/file/832-high-level-force-powers/) and a few historical forum archives.
 
-Due to this feature being highly undocumented and only one known public usage, our implementation might not match every historical edge case. If you find an old TSLPatcher mod that produces different HACKList results than HoloPatcher, [please report them here](https://github.com/OpenKotOR/PyKotor/issues/24).
+Due to this feature being highly undocumented and only one known usage, our implementation might not match exactly. If you happen to find an old TSLPatcher mod that produces different HACKList results than HoloPatcher, [please report them here](https://github.com/OpenKotOR/PyKotor/issues/24)
 
 In continuation, HoloPatcher's [HACKList] will use the following syntax:
 
@@ -118,7 +117,7 @@ This will:
 - Modify offset dec 20 (hex 0x14) of `script_to_modify.ncs` and overwrite that offset with the value of StrRef5.
 - Modify offset dec 40 (hex 0x28) of `script_to_modify.ncs` and overwrite that offset with the value of 2DAMEMORY10.
 - Modify offset dec 60 (hex 0x3C) of `script_to_modify.ncs` and overwrite that offset with the value of dec 65535 (hex 0xFFFF) i.e. the maximum possible value.
-In short, HACKList writes numeric or token-derived values to the [NCS](NCS-File-Format) offsets named in the INI. Unprefixed numeric literals use the legacy default width, while explicit `u8`, `u16`, and `u32` prefixes control the written size.
+In short, HACKList writes unsigned WORD values (two bytes each) to the [NCS](NCS-File-Format) offsets named in the INI.
 
 ### For more information on HoloPatcher's implementation
 

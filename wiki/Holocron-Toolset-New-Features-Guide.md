@@ -8,20 +8,24 @@ The most impactful recent additions to the Holocron Toolset are listed below. Ea
 
 ### 1. Navigate to Favorites instantly
 
-This feature jumps directly to any bookmarked resource with one click.
+**What it does:** Jump directly to any bookmarked resource with one click.
+
+**How to use:**
 
 1. Bookmark resources (Ctrl+B or right-click -> Add to Favorites)
 2. Open Favorites (Ctrl+Shift+B)
 3. Select a favorite -> Click "Go To"
 4. Instantly navigates to that resource in the file browser
 
-It removes the need to search through thousands of files to find frequently used resources.
+**Why it's useful:** No more searching through thousands of files to find frequently used resources.
 
 ---
 
 ### 2. Rename resources safely
 
-This feature renames resources with automatic validation and safety checks.
+**What it does:** Rename resources with automatic validation and safety checks.
+
+**How to use:**
 
 1. Right-click any resource in Override folder
 2. Select "Rename..."
@@ -29,20 +33,22 @@ This feature renames resources with automatic validation and safety checks.
 4. Confirm if file exists
 5. Resource renamed and refreshed in browser
 
-Safety features include:
+**Safety features:**
 
 - Only works in Override folder (protects core game files)
 - Automatically preserves file extensions
 - Detects name collisions before renaming
 - Shows clear error messages if something goes wrong
 
-For example, you can rename `my_texture.tpc` to `character_head.tpc` in seconds.
+**Example:** Rename `my_texture.tpc` -> `character_head.tpc` in seconds.
 
 ---
 
 ### 3. Move resources (Cut/Paste)
 
-This feature moves resources between folders using familiar Cut/Paste behavior.
+**What it does:** Move resources between folders using familiar Cut/Paste.
+
+**How to use:**
 
 1. Select resource(s) in Override
 2. Cut (Ctrl+X or right-click -> Cut)
@@ -50,31 +56,35 @@ This feature moves resources between folders using familiar Cut/Paste behavior.
 4. Paste (Ctrl+V or right-click -> Paste)
 5. Resources moved, model updated automatically
 
-For example, you can organize your Override folder by moving all textures into a `textures/` subfolder.
+**Example:** Organize your Override folder by moving all textures into a `textures/` subfolder.
 
 ---
 
 ### 4. Batch operations
 
-Batch operations process dozens or hundreds of files at once with progress tracking.
+**What it does:** Process dozens or hundreds of files at once with progress tracking.
+
+**How to use:**
 
 1. Select multiple resources (Shift+Click or Ctrl+Click)
 2. Right-click -> "Batch Operations..." (or Ctrl+Shift+O)
-3. Choose an operation:
-   - Extract All -- Save all to a folder
-   - Duplicate All to Override -- Copy all to Override
-   - Delete All -- Remove all, with confirmation
-   - Rename with Pattern -- Bulk rename with wildcards
+3. Choose operation:
+   - **Extract All** -- Save all to a folder
+   - **Duplicate All to Override** -- Copy all to Override
+   - **Delete All** -- Remove all (with confirmation)
+   - **Rename with Pattern** -- Bulk rename with wildcards
 4. Watch progress bar
 5. Get summary: "Success: 47, Failed: 0, Skipped: 2"
 
-For example, you can extract 100 texture files to a backup folder in under 10 seconds.
+**Example:** Extract 100 texture files to a backup folder in under 10 seconds.
 
 ---
 
 ### 5. Rename with pattern
 
-This feature renames multiple files using wildcard patterns.
+**What it does:** Rename multiple files using wildcard patterns.
+
+**How to use:**
 
 1. Select files to rename
 2. Batch Operations -> "Rename with Pattern"
@@ -84,7 +94,7 @@ This feature renames multiple files using wildcard patterns.
 6. Click OK
 7. All matching files renamed instantly
 
-Examples:
+**Examples:**
 
 - `texture_*` -> `char_*` renames `texture_001.tpc` to `char_001.tpc`
 - `temp_*` -> `*` removes "temp_" prefix from all files
@@ -94,7 +104,9 @@ Examples:
 
 ### 6. Open With... dialog
 
-This dialog lets you choose which editor to open a resource in.
+**What it does:** Choose which editor to open a resource in.
+
+**How to use:**
 
 1. Right-click any resource
 2. Select "Open With..."
@@ -102,15 +114,17 @@ This dialog lets you choose which editor to open a resource in.
 4. Select preferred editor
 5. Resource opens in chosen editor
 
-For example, you can edit a DLG in the generic GFF editor to see raw structure, or use the specialized dialog tree editor.
+**Example:** Edit a DLG in the generic GFF editor to see raw structure, or use the specialized dialog tree editor.
 
-Supported editors include Dialog Editor, Creature Editor, Placeable Editor, Door Editor, Item Editor, Trigger Editor, Sound Editor, Waypoint Editor, 2DA Editor, Script Editor, Texture Editor, Model Editor, and more.
+**Supported editors:** Dialog Editor, Creature Editor, Placeable Editor, Door Editor, Item Editor, Trigger Editor, Sound Editor, Waypoint Editor, 2DA Editor, Script Editor, Texture Editor, Model Editor, and more.
 
 ---
 
 ### 7. Create new resources
 
-This feature creates new resources from templates with one dialog.
+**What it does:** Create new resources from templates with one dialog.
+
+**How to use:**
 
 1. Right-click on any folder OR File -> New
 2. Select "New Resource..."
@@ -120,21 +134,23 @@ This feature creates new resources from templates with one dialog.
 6. Resource created with proper structure
 7. Optional: Open immediately in appropriate editor
 
-What gets created depends on the selected type:
+**What gets created:**
 
-- 2DA files: minimal valid 2DA header
-- Script files (NSS): empty text file ready for coding
-- GFF files (UTC, DLG, and similar files): minimal valid GFF structure with TemplateResRef
-- Text files (TXT, TXI): empty text file
+- **2DA files:** Minimal valid 2DA header
+- **Script files (NSS):** Empty text file ready for coding
+- **GFF files (UTC, DLG, etc.):** Minimal valid GFF structure with TemplateResRef
+- **Text files (TXT, TXI):** Empty text file
 
 ---
 
 ### 8. Save editors (Ctrl+S)
 
-This command saves editor changes back to your installation.
+**What it does:** Save editor changes back to your installation.
 
-- Single editor open: Ctrl+S saves immediately.
-- Multiple editors open: Ctrl+S shows a dialog with all open editors, where you can choose Save selected, Save All, or Cancel.
+**How to use:**
+
+- **Single editor open:** Ctrl+S -> editor saves immediately
+- **Multiple editors open:** Ctrl+S -> dialog shows all open editors; choose Save selected, Save All, or Cancel
 
 Saves go to the Override folder (or current location); file browser refreshes; "Saved: filename.ext" message shown.
 
@@ -142,20 +158,24 @@ Saves go to the Override folder (or current location); file browser refreshes; "
 
 ### 9. Favorite star indicator
 
-This indicator shows a star in the status bar when the selected resource is bookmarked. Select any resource and, if it is in your favorites, the status bar shows "1 item(s) selected ★".
+**What it does:** Shows a star in the status bar when the selected resource is bookmarked.
+
+**How to use:** Select any resource; if it's in your favorites, status bar shows "1 item(s) selected ★".
 
 ---
 
 ### 10. Command palette enhancements
 
-These enhancements provide quick keyboard access to all features.
+**What it does:** Quick access to all features via keyboard.
+
+**How to use:**
 
 1. Press Ctrl+Shift+P (Command Palette)
 2. Type to filter: "save", "new", "batch", "open", etc.
 3. Select command
 4. Command executes immediately
 
-New commands added include File: Save Editor, File: Open With..., File: New Resource, all batch operations, and all navigation commands.
+**New commands added:** File: Save Editor, File: Open With..., File: New Resource, all batch operations, all navigation commands.
 
 ---
 

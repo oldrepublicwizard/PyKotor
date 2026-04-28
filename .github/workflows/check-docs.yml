@@ -16,7 +16,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Check for broken links
         uses: peter-evans/link-checker@v1
@@ -28,7 +28,7 @@ jobs:
         run: python helper_scripts/wiki_scripts/audit_markdown_link_relevance.py
 
       - name: Check markdown formatting
-        uses: DavidAnson/markdownlint-cli2-action@v15
+        uses: DavidAnson/markdownlint-cli2-action@v23
         with:
           globs: |
             **/*.md

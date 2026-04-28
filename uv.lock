@@ -2903,7 +2903,7 @@ wheels = [
 
 [[package]]
 name = "pykotor"
-version = "2.3.11"
+version = "2.3.12"
 source = { editable = "Libraries/PyKotor" }
 dependencies = [
     { name = "bioware-kaitai-formats" },
@@ -3093,7 +3093,7 @@ provides-extras = ["all", "dev", "encodings", "exp", "extra", "font", "gl", "gl-
 
 [[package]]
 name = "pykotor-workspace"
-version = "2.3.5"
+version = "2.3.12"
 source = { editable = "." }
 dependencies = [
     { name = "holocrontoolset" },
@@ -3108,11 +3108,84 @@ dependencies = [
     { name = "pykotor", extra = ["render"] },
 ]
 
+[package.optional-dependencies]
+all = [
+    { name = "pykotor", extra = ["encodings", "exp", "extra", "font", "gl", "render", "updater"] },
+]
+dev = [
+    { name = "pykotor", extra = ["dev"] },
+]
+encodings = [
+    { name = "pykotor", extra = ["encodings"] },
+]
+exp = [
+    { name = "pykotor", extra = ["exp"] },
+]
+extra = [
+    { name = "pykotor", extra = ["extra"] },
+]
+font = [
+    { name = "pykotor", extra = ["font"] },
+]
+gl = [
+    { name = "pykotor", extra = ["gl"] },
+]
+gl-exp = [
+    { name = "pykotor", extra = ["gl-exp"] },
+]
+render = [
+    { name = "pykotor", extra = ["render"] },
+]
+updater = [
+    { name = "pykotor", extra = ["updater"] },
+]
+
 [package.dev-dependencies]
 dev = [
+    { name = "astroid", version = "3.2.4", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.9'" },
+    { name = "astroid", version = "3.3.11", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.9'" },
+    { name = "autoflake" },
+    { name = "mypy", version = "1.9.0", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.9'" },
+    { name = "mypy", version = "1.19.1", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.9'" },
+    { name = "mypy-extensions" },
+    { name = "pyflakes", version = "3.2.0", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.9'" },
+    { name = "pylint", marker = "python_full_version < '3.9'" },
+    { name = "pytest" },
+    { name = "pytest-cov", version = "5.0.0", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.9'" },
+    { name = "pytest-cov", version = "7.0.0", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.9'" },
+    { name = "pytest-html", version = "3.2.0", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.9'" },
+    { name = "pytest-html", version = "4.2.0", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.9'" },
+    { name = "pytest-json-report" },
+    { name = "pytest-metadata", version = "2.0.4", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.9'" },
+    { name = "pytest-metadata", version = "3.1.1", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.9'" },
     { name = "pytest-qt", version = "4.4.0", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.9'" },
     { name = "pytest-qt", version = "4.5.0", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.9'" },
     { name = "pytest-timeout" },
+    { name = "pytest-xdist", version = "3.6.1", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.9'" },
+    { name = "pytest-xdist", version = "3.8.0", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.9'" },
+    { name = "python-dateutil" },
+    { name = "python-dotenv", version = "1.0.1", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.9'" },
+    { name = "python-dotenv", version = "1.2.1", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.9'" },
+    { name = "python-multipart", version = "0.0.20", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.10'" },
+    { name = "python-multipart", version = "0.0.22", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.10'" },
+    { name = "ruff" },
+    { name = "snakeviz", version = "2.2.1", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.9'" },
+    { name = "snakeviz", version = "2.2.2", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.9'" },
+    { name = "tomli", version = "2.4.0", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version != '3.11.*'" },
+    { name = "tomli-w", marker = "python_full_version >= '3.12'" },
+    { name = "types-cffi", marker = "python_full_version >= '3.9'" },
+    { name = "types-colorama", marker = "python_full_version >= '3.9'" },
+    { name = "types-defusedxml", marker = "python_full_version >= '3.9'" },
+    { name = "types-pillow", marker = "python_full_version >= '3.9'" },
+    { name = "types-psutil", marker = "python_full_version >= '3.9'" },
+    { name = "types-pywin32", marker = "python_full_version >= '3.9' and sys_platform == 'win32'" },
+    { name = "types-pyyaml", marker = "python_full_version >= '3.9'" },
+    { name = "types-requests", marker = "python_full_version >= '3.9'" },
+    { name = "types-send2trash", marker = "python_full_version >= '3.9'" },
+    { name = "types-setuptools", marker = "python_full_version >= '3.9'" },
+    { name = "typing-extensions", version = "4.8.0", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.9'" },
+    { name = "typing-extensions", version = "4.15.0", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.9'" },
+    { name = "typing-inspection", marker = "python_full_version >= '3.9'" },
 ]
 
 [package.metadata]
@@ -3121,15 +3194,71 @@ requires-dist = [
     { name = "holopatcher", git = "https://github.com/OpenKotOR/HoloPatcher" },
     { name = "holopazaak", git = "https://github.com/OpenKotOR/HoloPazaak" },
     { name = "kotordiff", git = "https://github.com/OpenKotOR/KotorDiff" },
-    { name = "matplotlib", specifier = ">=3.7.5" },
+    { name = "matplotlib", marker = "python_full_version < '3.9'", specifier = ">=3.7.5,<3.9.4" },
+    { name = "matplotlib", marker = "python_full_version >= '3.9'", specifier = ">=3.9.4" },
     { name = "numpy", specifier = ">=1.24.4" },
+    { name = "pykotor", extras = ["dev"], marker = "extra == 'dev'", editable = "Libraries/PyKotor" },
+    { name = "pykotor", extras = ["encodings"], marker = "extra == 'encodings'", editable = "Libraries/PyKotor" },
+    { name = "pykotor", extras = ["encodings", "exp", "extra", "font", "gl", "updater", "render"], marker = "extra == 'all'", editable = "Libraries/PyKotor" },
+    { name = "pykotor", extras = ["exp"], marker = "extra == 'exp'", editable = "Libraries/PyKotor" },
+    { name = "pykotor", extras = ["extra"], marker = "extra == 'extra'", editable = "Libraries/PyKotor" },
+    { name = "pykotor", extras = ["font"], marker = "extra == 'font'", editable = "Libraries/PyKotor" },
+    { name = "pykotor", extras = ["gl"], marker = "extra == 'gl'", editable = "Libraries/PyKotor" },
+    { name = "pykotor", extras = ["gl-exp"], marker = "extra == 'gl-exp'", editable = "Libraries/PyKotor" },
     { name = "pykotor", extras = ["render"], editable = "Libraries/PyKotor" },
+    { name = "pykotor", extras = ["render"], marker = "extra == 'render'", editable = "Libraries/PyKotor" },
+    { name = "pykotor", extras = ["updater"], marker = "extra == 'updater'", editable = "Libraries/PyKotor" },
 ]
+provides-extras = ["all", "encodings", "exp", "extra", "font", "gl", "gl-exp", "updater", "render", "dev"]
 
 [package.metadata.requires-dev]
 dev = [
-    { name = "pytest-qt", specifier = ">=4.4.0" },
+    { name = "astroid", marker = "python_full_version < '3.9'", specifier = ">=3.2.0,<3.5.0" },
+    { name = "astroid", marker = "python_full_version >= '3.9'", specifier = ">=3.2.0" },
+    { name = "autoflake", specifier = ">=2.3.1" },
+    { name = "mypy", marker = "python_full_version < '3.9'", specifier = ">=1.0.0,<1.10.0" },
+    { name = "mypy", marker = "python_full_version >= '3.9'", specifier = ">=1.19.1" },
+    { name = "mypy-extensions", marker = "python_full_version >= '3.8'", specifier = ">=1.1.0" },
+    { name = "pyflakes", marker = "python_full_version < '3.9'", specifier = ">=2.0.0,<3.4.0" },
+    { name = "pylint", marker = "python_full_version < '3.9'", specifier = ">=2.0.0,<3.3.9" },
+    { name = "pytest", marker = "python_full_version < '3.9'", specifier = ">=7.0.0,<8.0.0" },
+    { name = "pytest", marker = "python_full_version >= '3.9'", specifier = ">=7.0.0" },
+    { name = "pytest-cov", specifier = ">=4.0.0" },
+    { name = "pytest-html", marker = "python_full_version < '3.9'", specifier = ">=3.0.0,<4.0.0" },
+    { name = "pytest-html", marker = "python_full_version >= '3.9'", specifier = ">=4.2.0" },
+    { name = "pytest-json-report", specifier = ">=1.5.0" },
+    { name = "pytest-metadata", marker = "python_full_version < '3.9'", specifier = ">=2.0.0,<3.0.0" },
+    { name = "pytest-metadata", marker = "python_full_version >= '3.9'", specifier = ">=3.1.1" },
+    { name = "pytest-qt", marker = "python_full_version < '3.9'", specifier = ">=4.4.0,<4.5.0" },
+    { name = "pytest-qt", marker = "python_full_version >= '3.9'", specifier = ">=4.5.0" },
     { name = "pytest-timeout", specifier = ">=2.4.0" },
+    { name = "pytest-xdist", marker = "python_full_version < '3.9'", specifier = ">=2.0.0,<3.8.0" },
+    { name = "pytest-xdist", marker = "python_full_version >= '3.9'", specifier = ">=3.8.0" },
+    { name = "python-dateutil", specifier = ">=2.9.0.post0" },
+    { name = "python-dotenv", marker = "python_full_version < '3.9'" },
+    { name = "python-dotenv", marker = "python_full_version >= '3.9'", specifier = ">=1.2.1" },
+    { name = "python-multipart", marker = "python_full_version < '3.10'", specifier = ">=0.0.9,<0.0.21" },
+    { name = "python-multipart", marker = "python_full_version >= '3.10'", specifier = ">=0.0.22" },
+    { name = "ruff", marker = "python_full_version < '3.9'", specifier = ">=0.5.3,<0.6.0" },
+    { name = "ruff", marker = "python_full_version >= '3.9'", specifier = ">=0.5.3" },
+    { name = "snakeviz", marker = "python_full_version < '3.9'" },
+    { name = "snakeviz", marker = "python_full_version >= '3.9'", specifier = ">=2.2.2" },
+    { name = "tomli", marker = "python_full_version < '3.11'", specifier = ">=2.4.0" },
+    { name = "tomli", marker = "python_full_version >= '3.12'", specifier = ">=2.4.0" },
+    { name = "tomli-w", marker = "python_full_version >= '3.12'", specifier = ">=1.2.0" },
+    { name = "types-cffi", marker = "python_full_version >= '3.9'", specifier = ">=1.17.0.20250915" },
+    { name = "types-colorama", marker = "python_full_version >= '3.9'", specifier = ">=0.4.15.20250801" },
+    { name = "types-defusedxml", marker = "python_full_version >= '3.9'", specifier = ">=0.7.0.20250822" },
+    { name = "types-pillow", marker = "python_full_version >= '3.9'", specifier = ">=10.2.0.20240822" },
+    { name = "types-psutil", marker = "python_full_version >= '3.9'", specifier = ">=7.2.2.20260130" },
+    { name = "types-pywin32", marker = "python_full_version >= '3.9' and sys_platform == 'win32'", specifier = ">=38" },
+    { name = "types-pyyaml", marker = "python_full_version >= '3.9'", specifier = ">=6.0.12.20250915" },
+    { name = "types-requests", marker = "python_full_version >= '3.9'", specifier = ">=2.32.4.20260107" },
+    { name = "types-send2trash", marker = "python_full_version >= '3.9'", specifier = ">=2.1.0.20260117" },
+    { name = "types-setuptools", marker = "python_full_version >= '3.9'", specifier = ">=80.10.0.20260124" },
+    { name = "typing-extensions", marker = "python_full_version < '3.9'", specifier = ">=4.5.0,<4.9.0" },
+    { name = "typing-extensions", marker = "python_full_version >= '3.9'", specifier = ">=4.15.0" },
+    { name = "typing-inspection", marker = "python_full_version >= '3.9'", specifier = ">=0.4.2" },
 ]
 
 [[package]]

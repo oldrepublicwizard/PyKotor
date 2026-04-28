@@ -28,15 +28,15 @@ Holocron builds on PyKotor’s **installation** and **chitin** stack: `chitin.ke
 | Toolset installation wrapper | [`HTInstallation` L60+](https://github.com/OpenKotOR/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Tools/HolocronToolset/src/toolset/data/installation.py#L60) — extends PyKotor `Installation` with 2DA name constants |
 | 2DA registry (PyKotor) | [`TwoDARegistry` L551+](https://github.com/OpenKotOR/PyKotor/blob/a8daa4091b067e8424ae537793224e6b178ee9d8/Libraries/PyKotor/src/pykotor/extract/twoda.py#L551) in `twoda.py` |
 
-Cross-reference these other engines and parsers when you need implementation parallels rather than wiki source-of-truth behavior:
+**Cross-reference (other engines / parsers)**
 
-- [reone](https://github.com/seedhartha/reone) — resource manager and KEY/BIF-style loading live under `src/libs/resource/`. Treat this as library behavior rather than wiki source-of-truth behavior.
-- [KotOR.js](https://github.com/KobaltBlu/KotOR.js) — game resource loading and [KEY](Container-Formats#key)-style resolution in the TypeScript resource pipeline. When adding anchors, search the repo for:
+- **[reone](https://github.com/seedhartha/reone)** — resource manager and KEY/BIF-style loading live under `src/libs/resource/` (generic Aurora archive stack; treat as **library** behavior, not wiki SSOT).
+- **[KotOR.js](https://github.com/KobaltBlu/KotOR.js)** — game resource loading and [KEY](Container-Formats#key)-style resolution in the TS resource pipeline. When adding anchors, search the repo for:
 
   - `KEY`
   - `BIF`
   - `ResourceLoader`
-- [Kotor.NET](https://github.com/NickHugi/Kotor.NET) — managed KEY/BIF and installation helpers under `Formats/` and related resource projects. Use blob search for `Chitin` or `KEY` when pinning `#L` links.
+- **[Kotor.NET](https://github.com/NickHugi/Kotor.NET)** — managed KEY/BIF and installation helpers under `Formats/` and resource projects; use blob search for `Chitin` / `KEY` when pinning `#L` links.
 
 ### Community context (workflow)
 

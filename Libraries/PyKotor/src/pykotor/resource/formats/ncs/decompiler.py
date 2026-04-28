@@ -18,7 +18,7 @@ from dataclasses import dataclass, field
 from typing import TYPE_CHECKING
 
 from pykotor.common.misc import Game  # pyright: ignore[reportMissingImports]
-from pykotor.resource.formats._base import BiowareResource
+from pykotor.resource.formats._base import ComparableMixin
 from pykotor.resource.formats.ncs.ncs_data import (
     NCSInstructionType,  # pyright: ignore[reportMissingImports]
 )
@@ -80,7 +80,7 @@ class DecompileError(Exception):
 
 
 @dataclass
-class ExpressionNode(BiowareResource):
+class ExpressionNode(ComparableMixin):
     """Represents an expression node in the decompiled AST."""
 
     expr_type: str
@@ -168,7 +168,7 @@ class ExpressionNode(BiowareResource):
 
 
 @dataclass
-class BasicBlock(BiowareResource):
+class BasicBlock(ComparableMixin):
     """Represents a basic block in the control flow graph."""
 
     start_index: int
@@ -185,7 +185,7 @@ class BasicBlock(BiowareResource):
 
 
 @dataclass
-class ControlStructure(BiowareResource):
+class ControlStructure(ComparableMixin):
     """Represents a recovered control structure (if, while, etc.)."""
 
     structure_type: str  # "if", "while", "do_while", "for", "switch"
@@ -197,7 +197,7 @@ class ControlStructure(BiowareResource):
     cases: dict = field(default_factory=dict)
 
 
-class NCSDecompiler(BiowareResource):
+class NCSDecompiler(ComparableMixin):
     """Decompiles NCS bytecode to NSS source code.
 
     Based on DeNCS implementation, this decompiler reconstructs NSS source
