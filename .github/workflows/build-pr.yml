@@ -380,7 +380,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Check build results
-        uses: actions/github-script@v7
+        uses: actions/github-script@v9
         with:
           script: |
             // Get tools matrix from detect-changes
