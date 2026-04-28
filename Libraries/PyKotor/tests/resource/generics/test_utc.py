@@ -26,7 +26,8 @@ if UTILITY_PATH.joinpath("utility").exists():
 from typing import TYPE_CHECKING
 
 from pykotor.common.misc import EquipmentSlot
-from pykotor.resource.formats.gff import read_gff
+
+from pykotor.resource.formats.gff import bytes_gff, read_gff
 from pykotor.resource.generics.utc import (
     bytes_utc,
     construct_utc,
@@ -231,6 +232,24 @@ class TestUTC(TestCase):
         gff = dismantle_utc(construct_utc(gff))
         utc = construct_utc(gff)
         self.validate_io(utc)
+
+    def test_read_utc_binary_roundtrip(self) -> None:
+        """Binary path exercises Kaitai pre-check before ``read_gff`` (creature templates vs other GFF types)."""
+        gff = read_gff(TEST_UTC_XML.encode("utf-8"), file_format=ResourceType.GFF_XML)
+        utc = construct_utc(gff)
+        binary = bytes_gff(dismantle_utc(utc), ResourceType.GFF)
+        utc2 = read_utc(binary)
+        self.validate_io(utc2)
+
+    def test_read_utc_rejects_non_utc_binary_gff(self) -> None:
+        """Mislabeled binary GFF (e.g. door as creature) must fail fast with a clear error."""
+        gff = read_gff(TEST_UTC_XML.encode("utf-8"), file_format=ResourceType.GFF_XML)
+        utc = construct_utc(gff)
+        binary = bytearray(bytes_gff(dismantle_utc(utc), ResourceType.GFF))
+        binary[0:4] = b"UTI "
+        with self.assertRaises(ValueError) as ctx:
+            read_utc(bytes(binary))
+        self.assertIn("UTC", str(ctx.exception))
 
     def test_file_io(self):
         """Test reading from a temporary file to ensure file-based reading still works."""
