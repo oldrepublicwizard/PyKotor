@@ -61,6 +61,11 @@ class TestInputState(unittest.TestCase):
         self.assertFalse(state.up_key)
         self.assertFalse(state.down_key)
 
+    def test_default_pan_button_false(self):
+        """Virtual pan button defaults off so normal clicks are unchanged."""
+        state = InputState()
+        self.assertFalse(state.pan_button)
+
 
 class TestCameraControllerSettings(unittest.TestCase):
     """Tests for the CameraControllerSettings dataclass."""
@@ -153,6 +158,26 @@ class TestCameraController(unittest.TestCase):
         self.assertIsNotNone(self.controller.state)
         self.assertEqual(self.controller.mode, CameraMode.NONE)
 
+    def test_has_pending_motion_instance_attribute(self):
+        """has_pending_motion is bound in __init__ so callers never hit AttributeError."""
+        self.assertTrue(
+            callable(self.controller.has_pending_motion),
+            "has_pending_motion must be callable on every instance",
+        )
+        self.assertFalse(self.controller.has_pending_motion())
+
+    def test_has_pending_motion_true_when_smoothing_lags(self):
+        """When current state has not caught target, pending motion is reported."""
+        self.controller.state.target_focal_point = vec3(100.0, 0.0, 0.0)
+        self.controller.state.current_focal_point = vec3(0.0, 0.0, 0.0)
+        self.assertTrue(self.controller.has_pending_motion())
+
+    def test_has_pending_motion_respects_epsilon(self):
+        """Sub-epsilon deltas are treated as converged."""
+        self.controller.state.current_focal_point = vec3(0.0, 0.0, 0.0)
+        self.controller.state.target_focal_point = vec3(1e-6, 0.0, 0.0)
+        self.assertFalse(self.controller.has_pending_motion(epsilon=1e-4))
+
     def test_mode_detection_orbit_middle_mouse(self):
         """Test that middle mouse triggers orbit mode."""
         input_state = InputState(middle_button=True)
@@ -177,6 +202,13 @@ class TestCameraController(unittest.TestCase):
     def test_mode_detection_pan_shift_middle(self):
         """Test that Shift+Middle mouse triggers pan mode."""
         input_state = InputState(middle_button=True, shift_held=True)
+        self.controller._determine_mode(input_state)
+
+        self.assertEqual(self.controller.mode, CameraMode.PAN)
+
+    def test_mode_detection_pan_virtual_pan_button(self):
+        """Virtual pan_button forces pan (e.g. Ctrl+LMB bound by the host)."""
+        input_state = InputState(pan_button=True)
         self.controller._determine_mode(input_state)
 
         self.assertEqual(self.controller.mode, CameraMode.PAN)
