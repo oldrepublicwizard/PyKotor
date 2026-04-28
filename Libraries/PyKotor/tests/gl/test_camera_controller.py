@@ -19,7 +19,7 @@ from pykotor.gl import vec3
 
 # Handle optional pykotor.gl dependency
 try:
-    from pykotor.gl.scene.camera import Camera
+    from pykotor.gl.scene.camera import Camera, _wrap_angle_pi
     from pykotor.gl.scene.camera_controller import (
         CameraController,
         CameraControllerSettings,
@@ -456,6 +456,49 @@ class TestCameraController(unittest.TestCase):
         self.assertEqual(self.camera.x, 25)
         self.assertEqual(self.camera.y, 35)
         self.assertEqual(self.camera.z, 45)
+
+
+class TestCameraAngleWrapping(unittest.TestCase):
+    """Regression tests for camera angle normalization (orbit / free-rotate paths)."""
+
+    def test_wrap_angle_pi_normalizes_to_principal_range(self):
+        """Angles are folded with (a+pi) % 2pi - pi; +pi maps to -pi (same direction as orbit yaw loops)."""
+        self.assertAlmostEqual(_wrap_angle_pi(0.0), 0.0, places=9)
+        self.assertAlmostEqual(_wrap_angle_pi(math.pi), -math.pi, places=9)
+        self.assertAlmostEqual(_wrap_angle_pi(-math.pi), -math.pi, places=9)
+        self.assertAlmostEqual(abs(_wrap_angle_pi(3 * math.pi)), math.pi, places=9)
+        self.assertAlmostEqual(abs(_wrap_angle_pi(-3 * math.pi)), math.pi, places=9)
+        self.assertAlmostEqual(_wrap_angle_pi(10 * math.pi + 0.1), 0.1, places=9)
+
+    def test_rotate_without_clamp_wraps_yaw_and_pitch(self):
+        """Large deltas must not leave angles unbounded (prevents float drift in long sessions)."""
+        cam = Camera()
+        cam.yaw = 0.0
+        cam.pitch = math.pi / 2
+        cam.rotate(yaw=4 * math.pi, pitch=0.0, clamp=False)
+        self.assertAlmostEqual(cam.yaw, 0.0, places=9)
+        cam.rotate(yaw=0.0, pitch=10.0, clamp=False)
+        self.assertGreater(cam.pitch, -math.pi)
+        self.assertLessEqual(cam.pitch, math.pi)
+
+    def test_rotate_with_clamp_respects_pitch_limits(self):
+        """Clamped orbit pitch must stay inside (lower, upper) even when limits are degenerate."""
+        cam = Camera()
+        cam.pitch = math.pi / 2
+        cam.rotate(0.0, 10.0, clamp=True, lower_limit=0.0, upper_limit=math.pi)
+        self.assertGreater(cam.pitch, 0.0)
+        self.assertLess(cam.pitch, math.pi)
+        # Degenerate limits: both sides collapse to a single allowed pitch
+        cam2 = Camera()
+        cam2.pitch = math.pi / 2
+        cam2.rotate(0.0, 5.0, clamp=True, lower_limit=1.0, upper_limit=1.0)
+        self.assertAlmostEqual(cam2.pitch, 1.0, places=9)
+
+    def test_lerp_angle_shortest_path_over_wrap(self):
+        """Smoothing must interpolate across the ±pi seam without a full spin."""
+        ctrl = CameraController(Camera())
+        result = ctrl._lerp_angle(3 * math.pi / 4, -3 * math.pi / 4, 0.5)
+        self.assertAlmostEqual(result, math.pi, places=9)
 
 
 class TestCameraModeEnum(unittest.TestCase):
