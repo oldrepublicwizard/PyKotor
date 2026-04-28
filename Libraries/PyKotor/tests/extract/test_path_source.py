@@ -1,121 +1,159 @@
+"""Tests for shared path / game resolution used by CLI and diff workflows."""
+
 from __future__ import annotations
 
-import pathlib
-import sys
-import tempfile
-import unittest
+import logging
+from argparse import Namespace
 from pathlib import Path
-from unittest import TestCase
+from typing import cast
 
-THIS_SCRIPT_PATH: pathlib.Path = pathlib.Path(__file__).resolve()
-PYKOTOR_PATH: pathlib.Path = THIS_SCRIPT_PATH.parents[3].joinpath("src")
-UTILITY_PATH: pathlib.Path = THIS_SCRIPT_PATH.parents[5].joinpath("Libraries", "Utility", "src")
+import pytest
+from loggerplus import RobustLogger
 
-
-def add_sys_path(p: pathlib.Path) -> None:
-    working_dir: str = str(p)
-    if working_dir not in sys.path:
-        sys.path.append(working_dir)
-
-
-if PYKOTOR_PATH.joinpath("pykotor").exists():
-    add_sys_path(PYKOTOR_PATH)
-if UTILITY_PATH.joinpath("utility").exists():
-    add_sys_path(UTILITY_PATH)
-
-from pykotor.common.misc import Game  # noqa: E402
-from pykotor.extract.path_source import (  # noqa: E402
+from pykotor.common.misc import Game
+from pykotor.extract.file import ResourceIdentifier
+from pykotor.extract.path_source import (
     detect_source_path_type,
     parse_game_arg,
+    resolve_source_path_from_args,
     resolve_resource_source,
 )
+from pykotor.resource.formats.rim import RIM, write_rim
+from pykotor.resource.type import ResourceType
 
 
-class TestParseGameArg(TestCase):
-    def test_none_and_whitespace(self) -> None:
-        self.assertIsNone(parse_game_arg(None))
-        self.assertIsNone(parse_game_arg(""))
-        self.assertIsNone(parse_game_arg("   \t"))
-
-    def test_k1_aliases(self) -> None:
-        for value in ("k1", "KOTOR", "KoToR1", "  k1  "):
-            with self.subTest(value=value):
-                self.assertEqual(parse_game_arg(value), Game.K1)
-
-    def test_k2_aliases(self) -> None:
-        for value in ("k2", "TSL", "kotor2"):
-            with self.subTest(value=value):
-                self.assertEqual(parse_game_arg(value), Game.K2)
-
-    def test_unknown_returns_none(self) -> None:
-        self.assertIsNone(parse_game_arg("not-a-game"))
-        self.assertIsNone(parse_game_arg("xbox"))
-        self.assertIsNone(parse_game_arg("k3"))
-
-
-class TestDetectSourcePathType(TestCase):
-    def test_missing_path_capsule_suffix(self) -> None:
-        with tempfile.TemporaryDirectory() as tmp:
-            path = Path(tmp) / "missing.mod"
-            self.assertFalse(path.exists())
-            self.assertEqual(detect_source_path_type(path), "capsule")
-
-    def test_missing_path_non_capsule(self) -> None:
-        with tempfile.TemporaryDirectory() as tmp:
-            path = Path(tmp) / "missing.txt"
-            self.assertFalse(path.exists())
-            self.assertEqual(detect_source_path_type(path), "file")
-
-    def test_game_root_with_chitin(self) -> None:
-        with tempfile.TemporaryDirectory() as tmp:
-            root = Path(tmp)
-            (root / "chitin.key").write_bytes(b"fake")
-            self.assertEqual(detect_source_path_type(root), "game_root")
-
-    def test_folder_without_chitin(self) -> None:
-        with tempfile.TemporaryDirectory() as tmp:
-            root = Path(tmp)
-            self.assertEqual(detect_source_path_type(root), "folder")
-
-    def test_existing_standalone_capsule_file(self) -> None:
-        with tempfile.NamedTemporaryFile(suffix=".erf", delete=False) as handle:
-            path = Path(handle.name)
-            handle.write(b"\x00")
-        try:
-            self.assertEqual(detect_source_path_type(path), "capsule")
-        finally:
-            path.unlink(missing_ok=True)
-
-    def test_plain_file(self) -> None:
-        with tempfile.NamedTemporaryFile(suffix=".txt", delete=False) as handle:
-            path = Path(handle.name)
-        try:
-            self.assertEqual(detect_source_path_type(path), "file")
-        finally:
-            path.unlink(missing_ok=True)
+@pytest.mark.parametrize(
+    ("raw", "expected"),
+    [
+        (None, None),
+        ("", None),
+        ("   ", None),
+        ("k1", Game.K1),
+        ("KOTOR", Game.K1),
+        ("kotor1", Game.K1),
+        ("k2", Game.K2),
+        ("TSL", Game.K2),
+        ("kotor2", Game.K2),
+        ("not-a-game", None),
+    ],
+)
+def test_parse_game_arg_accepts_known_aliases_and_rejects_unknown(
+    raw: str | None, expected: Game | None
+) -> None:
+    assert parse_game_arg(raw) == expected
 
 
-class TestResolveResourceSource(TestCase):
-    def test_folder_source_has_kind_folder(self) -> None:
-        with tempfile.TemporaryDirectory() as tmp:
-            folder = Path(tmp) / "resources"
-            folder.mkdir()
-            resolved = resolve_resource_source(folder)
-            self.assertEqual(resolved.kind, "folder")
-            self.assertIsNone(resolved.installation)
-            self.assertEqual(resolved.folders, (folder,))
+def test_detect_source_path_type_classifies_paths(tmp_path: Path) -> None:
+    assert detect_source_path_type(tmp_path / "missing.txt") == "file"
+    assert detect_source_path_type(tmp_path / "missing.rim") == "capsule"
 
-    def test_game_root_sets_installation(self) -> None:
-        with tempfile.TemporaryDirectory() as tmp:
-            root = Path(tmp) / "game"
-            root.mkdir()
-            (root / "chitin.key").write_bytes(b"fake")
-            (root / "swkotor.exe").write_bytes(b"fake")
+    game_root = tmp_path / "game"
+    game_root.mkdir()
+    (game_root / "chitin.key").write_bytes(b"")
+    assert detect_source_path_type(game_root) == "game_root"
 
-            resolved = resolve_resource_source(root)
-            self.assertEqual(resolved.kind, "game_root")
-            self.assertIsNotNone(resolved.installation)
+    plain = tmp_path / "folder"
+    plain.mkdir()
+    assert detect_source_path_type(plain) == "folder"
+
+    rim_path = tmp_path / "standalone.rim"
+    rim = RIM()
+    rim.set_data("x", ResourceType.TXT, b"data")
+    write_rim(rim, rim_path)
+    assert detect_source_path_type(rim_path) == "capsule"
 
 
-if __name__ == "__main__":
-    unittest.main()
+def test_resolve_source_path_from_args_prefers_explicit_path(tmp_path: Path, caplog: pytest.LogCaptureFixture) -> None:
+    chosen = tmp_path / "explicit"
+    chosen.mkdir()
+    logger = cast(RobustLogger, logging.getLogger("test_path_source_explicit"))
+    args = Namespace(path=str(chosen), game="k1", path_index=0)
+
+    with caplog.at_level(logging.DEBUG):
+        assert resolve_source_path_from_args(args, logger) == chosen
+    assert caplog.text == ""
+
+
+def test_resolve_source_path_from_args_auto_detects_game_root(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, caplog: pytest.LogCaptureFixture
+) -> None:
+    game_root = tmp_path / "K1Root"
+    game_root.mkdir()
+    (game_root / "chitin.key").write_bytes(b"")
+    monkeypatch.setattr(
+        "pykotor.extract.path_source.get_kotor_paths_from_default",
+        lambda: {Game.K1: [game_root], Game.K2: []},
+    )
+
+    logger = cast(RobustLogger, logging.getLogger("test_path_source_autodetect"))
+    args = Namespace(path=None, game="k1", path_index=0)
+
+    with caplog.at_level(logging.INFO):
+        assert resolve_source_path_from_args(args, logger) == game_root
+    assert "auto-detected" in caplog.text
+
+
+def test_resolve_source_path_from_args_rejects_out_of_range_path_index(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, caplog: pytest.LogCaptureFixture
+) -> None:
+    a = tmp_path / "a"
+    b = tmp_path / "b"
+    a.mkdir()
+    b.mkdir()
+    monkeypatch.setattr(
+        "pykotor.extract.path_source.get_kotor_paths_from_default",
+        lambda: {Game.K1: [a, b], Game.K2: []},
+    )
+
+    logger = cast(RobustLogger, logging.getLogger("test_path_source_index"))
+    args = Namespace(path=None, game="k1", path_index=5)
+
+    with caplog.at_level(logging.ERROR):
+        assert resolve_source_path_from_args(args, logger) is None
+    assert "out of range" in caplog.text
+
+
+def test_resolve_source_path_from_args_errors_when_no_paths_for_game(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, caplog: pytest.LogCaptureFixture
+) -> None:
+    monkeypatch.setattr(
+        "pykotor.extract.path_source.get_kotor_paths_from_default",
+        lambda: {Game.K1: [], Game.K2: []},
+    )
+    logger = cast(RobustLogger, logging.getLogger("test_path_source_no_paths"))
+    args = Namespace(path=None, game="k1", path_index=0)
+
+    with caplog.at_level(logging.ERROR):
+        assert resolve_source_path_from_args(args, logger) is None
+    assert "No default" in caplog.text and "K1" in caplog.text
+
+
+def test_resolve_source_path_from_args_errors_without_path_or_game(
+    caplog: pytest.LogCaptureFixture,
+) -> None:
+    logger = cast(RobustLogger, logging.getLogger("test_path_source_no_game"))
+    args = Namespace(path=None, game=None, path_index=0)
+
+    with caplog.at_level(logging.ERROR):
+        assert resolve_source_path_from_args(args, logger) is None
+    assert "--path" in caplog.text or "--game" in caplog.text
+
+
+def test_resolve_resource_source_on_folder_finds_nested_resource(tmp_path: Path) -> None:
+    root = tmp_path / "mod_folder"
+    nested = root / "deep" / "here"
+    nested.mkdir(parents=True)
+    data_path = nested / "hello.txt"
+    data_path.write_bytes(b"hi")
+
+    resolved = resolve_resource_source(root)
+    assert resolved.kind == "folder"
+    assert resolved.installation is None
+
+    results = resolved.resources(
+        [ResourceIdentifier.from_path(data_path)],
+    )
+    identifier = ResourceIdentifier.from_path(data_path)
+    result = results[identifier]
+    assert result is not None
+    assert result.data == b"hi"
