@@ -99,6 +99,7 @@ jobs:
           script: |
             const issue = context.payload.issue;
             if (!issue) return;
+            if (context.payload.action !== 'opened') return;
 
             const { data: comments } = await github.rest.issues.listComments({
               owner: context.repo.owner,
