@@ -70,7 +70,7 @@ authors = [{ name = "Nick Hugi" }, { name = "th3w1zard1" }]
 maintainers = [{ name = "th3w1zard1", email = "boden.crouch@gmail.com" }]
 dependencies = [
   "pykotor[render]>=2.3.12",
-  "holocrontoolset>=4.0.0b31",
+  "holocrontoolset @ git+https://github.com/OpenKotOR/HolocronToolset",
   "holopatcher>=2.0.0a3",
   "holopazaak>=2.0.0",
   "kotordiff>=1.0.1",
@@ -268,7 +268,7 @@ keywords = ["editor", "holocron", "holopatcher", "kotor", "library", "pykotor", 
 [tool.poetry.dependencies]
 python = "^3.8"
 pykotor = "^2.3.12"
-holocrontoolset = ">=4.0.0b31"
+holocrontoolset = { git = "https://github.com/OpenKotOR/HolocronToolset" }
 holopatcher = ">=2.0.0a3"
 holopazaak = ">=2.0.0"
 kotordiff = ">=1.0.1"
