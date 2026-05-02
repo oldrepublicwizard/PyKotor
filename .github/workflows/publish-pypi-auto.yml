@@ -260,7 +260,13 @@ jobs:
           echo "Building ${{ matrix.package.name }} version ${{ matrix.package.version }}"
           echo "Path: ${{ matrix.package.path }}"
           echo "Current PyPI version: ${{ matrix.package.pypi_version || 'none' }}"
-          python -m build
+          # pykotor is expected to publish a portable sdist; some CI contexts
+          # can emit platform-tagged wheels that PyPI rejects for this project.
+          if [ "${{ matrix.package.name }}" = "pykotor" ]; then
+            python -m build --sdist
+          else
+            python -m build
+          fi
 
       - name: Check package with twine
         working-directory: ${{ matrix.package.path }}
