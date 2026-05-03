@@ -2,12 +2,13 @@
 
 from __future__ import annotations
 
+import logging
 from dataclasses import dataclass
 
 from pykotor.common.indoorkit import KitComponent
 from pykotor.common.indoormap import EmbeddedKit, IndoorMap, IndoorMapRoom, _ensure_embedded_kit
 from pykotor.common.tilekit import TileKit
-from pykotor.tools.tile_bwm import generate_flat_floor_quad, merge_translated_bwms
+from pykotor.tools.tile_bwm import generate_flat_floor_quad, merge_translated_bwms, rotate_bwm_at_origin
 
 from utility.common.geometry import Vector3
 
@@ -76,7 +77,8 @@ def tile_layout_to_merged_bwm(tile_kit: TileKit, layout: TileLayout):
             ty = wy + tpl.offset.y
             tz = tpl.offset.z
             if tpl.wok is not None and tpl.wok.faces:
-                pieces.append((tpl.wok, tx, ty, tz))
+                bwm_piece = rotate_bwm_at_origin(tpl.wok, tpl.rotation)
+                pieces.append((bwm_piece, tx, ty, tz))
             else:
                 flat = generate_flat_floor_quad(
                     min_x=wx,
@@ -95,11 +97,16 @@ def _embedded_floor_component(
     embedded_kit: EmbeddedKit,
     tile_kit: TileKit,
     merged_bwm,
+    layout: TileLayout,
     *,
     room_name: str,
 ) -> KitComponent:
-    mdl = next((t.mdl for t in tile_kit.floors if t.mdl), b"")
-    mdx = next((t.mdx for t in tile_kit.floors if t.mdx), b"")
+    from pykotor.tools.tile_mdl import tile_layout_to_merged_mdl_mdx
+
+    mdl, mdx = tile_layout_to_merged_mdl_mdx(tile_kit, layout)
+    if len(mdl) < 12:
+        mdl = next((t.mdl for t in tile_kit.floors if t.mdl), b"")
+        mdx = next((t.mdx for t in tile_kit.floors if t.mdx), b"")
     return KitComponent(
         embedded_kit,
         name=room_name,
@@ -125,7 +132,7 @@ def apply_tile_layout_to_map(
     ek = _ensure_embedded_kit(kits)
 
     merged = tile_layout_to_merged_bwm(tile_kit, layout)
-    comp = _embedded_floor_component(ek, tile_kit, merged, room_name="Tile floor")
+    comp = _embedded_floor_component(ek, tile_kit, merged, layout, room_name="Tile floor")
 
     if replace_existing_tile_room:
         indoor.rooms = [r for r in indoor.rooms if r.component.id != "__tile_floor__"]
@@ -140,3 +147,38 @@ def apply_tile_layout_to_map(
     indoor.rooms.insert(0, room)
     indoor.tile_layout = tile_layout_to_dict(layout)
     indoor.indoor_map_version = max(indoor.indoor_map_version, 2)
+
+
+def reconcile_tile_layout_for_build(
+    indoor: IndoorMap,
+    *,
+    tile_kits: list[TileKit],
+    kits: list,
+    logger: logging.Logger | None = None,
+) -> bool:
+    """If ``tile_layout`` is set but no ``__tile_floor__`` room exists, compile the grid once.
+
+    Use after loading a ``.indoor`` file so CLI and Toolset builds match maps that only
+    persisted layout metadata. Returns ``True`` when :func:`apply_tile_layout_to_map` ran.
+    """
+    if not indoor.tile_layout:
+        return False
+    if any(r.component.id == "__tile_floor__" for r in indoor.rooms):
+        return False
+    layout = tile_layout_from_dict(indoor.tile_layout)
+    if layout is None:
+        if logger is not None:
+            logger.warning("tile_layout present but invalid; skipping tile floor reconcile.")
+        return False
+    tk = next((t for t in tile_kits if t.kit_id == layout.kit_id), None)
+    if tk is None:
+        if logger is not None:
+            logger.warning(
+                "tile_layout kit_id %r not found among loaded tile kits; skipping reconcile.",
+                layout.kit_id,
+            )
+        return False
+    apply_tile_layout_to_map(indoor, tk, layout, kits)
+    if logger is not None:
+        logger.info("Reconciled tile_layout into embedded __tile_floor__ room for kit %r.", tk.kit_id)
+    return True

@@ -34,6 +34,19 @@ class QuaternionWXYZ:
             return cls()
         return cls(float(data[0]), float(data[1]), float(data[2]), float(data[3]))
 
+    def rotate_vector(self, v: Vector3) -> Vector3:
+        """Rotate *v* by this unit quaternion (Hamilton convention w,x,y,z)."""
+        qx, qy, qz = self.x, self.y, self.z
+        qw = self.w
+        vx, vy, vz = v.x, v.y, v.z
+        tx = 2 * (qy * vz - qz * vy)
+        ty = 2 * (qz * vx - qx * vz)
+        tz = 2 * (qx * vy - qy * vx)
+        cx = qy * tz - qz * ty
+        cy = qz * tx - qx * tz
+        cz = qx * ty - qy * tx
+        return Vector3(vx + qw * tx + cx, vy + qw * ty + cy, vz + qw * tz + cz)
+
 
 @dataclass
 class TileTemplate:

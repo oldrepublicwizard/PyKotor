@@ -205,6 +205,7 @@ def _organize_commands_by_category() -> dict[str, list[str]]:
             "indoormap-build",
             "indoor-extract",
             "indoormap-extract",
+            "indoor-kit-migrate-v1-to-v2",
         ],
         "Patching": ["batch-patch", "patch-file", "patch-folder", "patch-game-root"],
     }
@@ -1511,6 +1512,23 @@ Compare two paths and show differences. Supports any combination of:
         choices=["debug", "info", "warning", "error", "critical"],
         default="info",
         help="Logging level",
+    )
+
+    indoor_kit_migrate_parser = subparsers.add_parser(
+        "indoor-kit-migrate-v1-to-v2",
+        help="Convert a v1 indoor kit JSON (components) to format_version 2 (tile templates)",
+    )
+    indoor_kit_migrate_parser.add_argument(
+        "--input",
+        "-i",
+        required=True,
+        help="Input v1 kit JSON file",
+    )
+    indoor_kit_migrate_parser.add_argument(
+        "--output",
+        "-o",
+        required=True,
+        help="Output v2 kit JSON file",
     )
 
     # Batch patching commands

@@ -17,6 +17,7 @@ from pykotor.cli.indoor_builder import resolve_game_argument
 from pykotor.common.indoormap import IndoorMap
 from pykotor.common.modulekit import ModuleKitManager
 from pykotor.extract.installation import Installation
+from pykotor.common.tilekit import TileKit
 from pykotor.tools.indoorkit import kits_for_indoor_build, load_kits_unified
 from pykotor.tools.indoormap import (
     build_mod_from_indoor_file_modulekit,
@@ -25,6 +26,7 @@ from pykotor.tools.indoormap import (
     extract_indoor_from_module_name,
 )
 from pykotor.tools.path import CaseAwarePath
+from pykotor.tools.tilemap_compile import reconcile_tile_layout_for_build
 from utility.misc import ensure_directory_exists
 from utility.string_util import normalize_string
 
@@ -52,6 +54,7 @@ class _ResolvedContext:
     kits_path: Path | None
     installation: Installation
     kits: list[Kit]
+    tile_kits: list[TileKit]
 
 
 def _apply_log_level(args: Namespace, logger: RobustLogger) -> None:
@@ -271,6 +274,7 @@ def _resolve_context(args: Namespace, logger: RobustLogger):
             kits_path=kits_path,
             installation=installation,
             kits=[],
+            tile_kits=[],
         )
 
     if kits_path is None:
@@ -295,6 +299,7 @@ def _resolve_context(args: Namespace, logger: RobustLogger):
         kits_path=kits_path,
         installation=installation,
         kits=kits,
+        tile_kits=tile_kits,
     )
 
 
@@ -380,6 +385,12 @@ def cmd_indoor_build(args: Namespace, logger: RobustLogger) -> int:  # noqa: PLR
             indoor = IndoorMap()
             missing = indoor.load(input_path.read_bytes(), kits)
             _log_missing_rooms(logger, missing)
+            reconcile_tile_layout_for_build(
+                indoor,
+                tile_kits=context.tile_kits,
+                kits=kits,
+                logger=logger,
+            )
 
             if args.module_filename:
                 indoor.module_id = normalize_string(args.module_filename)

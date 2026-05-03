@@ -4,8 +4,21 @@ from __future__ import annotations
 
 from copy import deepcopy
 
+from pykotor.common.tilekit import QuaternionWXYZ
 from pykotor.resource.formats.bwm.bwm_data import BWM, BWMFace, BWMType
 from utility.common.geometry import SurfaceMaterial, Vector3
+
+
+def rotate_bwm_at_origin(bwm: BWM, rotation: QuaternionWXYZ) -> BWM:
+    """Deep-copy *bwm* and rotate all face vertices about the origin by *rotation*."""
+    out = deepcopy(bwm)
+    if not out.faces:
+        return out
+    for face in out.faces:
+        face.v1 = rotation.rotate_vector(face.v1)
+        face.v2 = rotation.rotate_vector(face.v2)
+        face.v3 = rotation.rotate_vector(face.v3)
+    return out
 
 
 def merge_translated_bwms(sources: list[tuple[BWM, float, float, float]]) -> BWM:

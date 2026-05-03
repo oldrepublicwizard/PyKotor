@@ -74,6 +74,7 @@ from pykotor.cli.commands import (
     cmd_xml2tlk,
 )
 from pykotor.cli.commands.indoor_builder import cmd_indoor_build, cmd_indoor_extract
+from pykotor.cli.commands.indoor_kit_migrate import cmd_indoor_kit_migrate_v1_to_v2
 from pykotor.cli.logger import setup_logger
 
 if TYPE_CHECKING:
@@ -240,6 +241,8 @@ def cli_main(argv: Sequence[str]) -> int:  # noqa: PLR0911, PLR0912, PLR0915
             return cmd_indoor_build(args, logger)
         if args.command in ("indoor-extract", "indoormap-extract"):
             return cmd_indoor_extract(args, logger)
+        if args.command == "indoor-kit-migrate-v1-to-v2":
+            return cmd_indoor_kit_migrate_v1_to_v2(args, logger)
         # Patching commands
         if args.command == "batch-patch":
             return cmd_batch_patch(args, logger)

@@ -35,6 +35,15 @@ PyKotor `format_version: 2` JSON matches the **on-disk contract** used by Kotor.
 
 On-disk: `templates` do **not** require `.wok` (Kotor.NET v0.1 may be MDL-only). PyKotor may **merge** per-piece WOKs when present, or **generate** walkable BWM at build from floor geometry.
 
+- **Template `.wok` + `rotation`:** merged walkmesh vertices are rotated about the origin by the template quaternion, then translated to the cell position (plus template `offset`).
+- **Flat floor fallback** (no per-piece WOK): proc-gen quads lie in X/Y at fixed Z; template **rotation is not applied** to that fallback (documented limitation).
+
+**Build MDL:** For `__tile_floor__`, PyKotor composes each placed floor template’s MDL/MDX via `pykotor.tools.tile_mdl.tile_layout_to_merged_mdl_mdx`: per-cell `model.transform` (world XY + offset + Z yaw from quaternion), then attaches subtrees under one root for binary emit. On failure or missing geometry it falls back to the first floor template’s MDL as before.
+
+## v1 → v2 migration (CLI)
+
+Lossy conversion for authoring: `pykotor indoor-kit-migrate-v1-to-v2 --input <v1.json> --output <v2.json>` maps each v1 `components[]` entry to a **floor** template (`id` / `resref` = component `id`). Ceilings/walls/corners/doorframes are left empty; door definitions are copied when present.
+
 ## `.indoor` map: `tile_layout` (PyKotor extension)
 
 Optional: `format_version`, `kit_id`, `cell_size`, `grid_w`, `grid_h`, `floor_cells` (row-major, `template_id` or `null`).
