@@ -181,6 +181,20 @@ class TestCameraController(unittest.TestCase):
 
         self.assertEqual(self.controller.mode, CameraMode.PAN)
 
+    def test_mode_detection_pan_alt_middle(self):
+        """Alt+MMB pan matches Unity-style binding (same plane as Shift+MMB)."""
+        input_state = InputState(middle_button=True, alt_held=True)
+        self.controller._determine_mode(input_state)
+
+        self.assertEqual(self.controller.mode, CameraMode.PAN)
+
+    def test_mode_detection_zoom_ctrl_middle(self):
+        """Ctrl+MMB selects zoom-drag mode (Blender dolly), not orbit."""
+        input_state = InputState(middle_button=True, ctrl_held=True)
+        self.controller._determine_mode(input_state)
+
+        self.assertEqual(self.controller.mode, CameraMode.ZOOM)
+
     def test_mode_detection_pan_virtual_button(self):
         """Virtual pan_button forces pan (e.g. Ctrl+LMB bindings)."""
         input_state = InputState(pan_button=True)
@@ -201,6 +215,13 @@ class TestCameraController(unittest.TestCase):
         self.controller._determine_mode(input_state)
 
         self.assertEqual(self.controller.mode, CameraMode.ZOOM)
+
+    def test_mode_detection_right_shift_not_zoom(self):
+        """RMB+Shift must not enter zoom-drag (avoids conflicting with other bindings)."""
+        input_state = InputState(right_button=True, shift_held=True)
+        self.controller._determine_mode(input_state)
+
+        self.assertEqual(self.controller.mode, CameraMode.NONE)
 
     def test_mode_detection_none(self):
         """Test that no input results in NONE mode."""
@@ -431,6 +452,62 @@ class TestCameraController(unittest.TestCase):
         self.assertEqual(self.camera.x, 25)
         self.assertEqual(self.camera.y, 35)
         self.assertEqual(self.camera.z, 45)
+
+    def test_sync_from_camera_picks_up_external_camera_mutation(self):
+        """After code snaps the Camera directly, sync_from_camera refreshes controller state."""
+        self.controller.settings.enable_smoothing = False
+        self.camera.x = 1.0
+        self.camera.y = 2.0
+        self.camera.z = 3.0
+        self.camera.yaw = 0.7
+        self.camera.pitch = 1.1
+        self.camera.distance = 22.0
+
+        self.controller.sync_from_camera()
+
+        self.assertAlmostEqual(self.controller.state.target_focal_point.x, 1.0)
+        self.assertAlmostEqual(self.controller.state.target_focal_point.y, 2.0)
+        self.assertAlmostEqual(self.controller.state.target_focal_point.z, 3.0)
+        self.assertAlmostEqual(self.controller.state.target_yaw, 0.7)
+        self.assertAlmostEqual(self.controller.state.target_pitch, 1.1)
+        self.assertAlmostEqual(self.controller.state.target_distance, 22.0)
+
+    def test_has_pending_motion_false_when_targets_match(self):
+        """Smoothing idle: current and target state aligned -> no pending motion."""
+        self.controller.settings.enable_smoothing = False
+        self.controller.update(InputState(), delta_time=0.016)
+        self.assertFalse(self.controller.has_pending_motion())
+
+    def test_has_pending_motion_true_when_smoothing_lags(self):
+        """When targets differ from current, editor can wait on smoothing to finish."""
+        self.controller.settings.enable_smoothing = True
+        self.controller.state.current_focal_point = vec3(0.0, 0.0, 0.0)
+        self.controller.state.target_focal_point = vec3(10.0, 0.0, 0.0)
+        self.assertTrue(self.controller.has_pending_motion())
+
+    def test_zoom_scroll_with_zoom_to_cursor_offsets_focal_point(self):
+        """Off-center cursor + zoom-to-cursor should move focal point, not only distance."""
+        self.controller.settings.enable_smoothing = False
+        self.controller.settings.zoom_to_cursor = True
+        focal_before = (
+            self.controller.state.target_focal_point.x,
+            self.controller.state.target_focal_point.y,
+            self.controller.state.target_focal_point.z,
+        )
+        input_state = InputState(
+            scroll_delta=50.0,
+            viewport_width=800.0,
+            viewport_height=600.0,
+            mouse_x=700.0,
+            mouse_y=100.0,
+        )
+        self.controller.update(input_state, delta_time=0.016)
+        focal_after = (
+            self.controller.state.target_focal_point.x,
+            self.controller.state.target_focal_point.y,
+            self.controller.state.target_focal_point.z,
+        )
+        self.assertNotEqual(focal_before, focal_after)
 
 
 class TestCameraRotateAngleWrapping(unittest.TestCase):
