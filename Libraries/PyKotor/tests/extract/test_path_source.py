@@ -93,6 +93,24 @@ def test_resolve_source_path_from_args_auto_detects_game_root(
     assert "auto-detected" in caplog.text
 
 
+def test_resolve_source_path_from_args_rejects_negative_path_index(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, caplog: pytest.LogCaptureFixture
+) -> None:
+    game_root = tmp_path / "K1Root"
+    game_root.mkdir()
+    monkeypatch.setattr(
+        "pykotor.extract.path_source.get_kotor_paths_from_default",
+        lambda: {Game.K1: [game_root], Game.K2: []},
+    )
+
+    logger = cast(RobustLogger, logging.getLogger("test_path_source_negative_index"))
+    args = Namespace(path=None, game="k1", path_index=-1)
+
+    with caplog.at_level(logging.ERROR):
+        assert resolve_source_path_from_args(args, logger) is None
+    assert "out of range" in caplog.text
+
+
 def test_resolve_source_path_from_args_rejects_out_of_range_path_index(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch, caplog: pytest.LogCaptureFixture
 ) -> None:
@@ -157,3 +175,27 @@ def test_resolve_resource_source_on_folder_finds_nested_resource(tmp_path: Path)
     result = results[identifier]
     assert result is not None
     assert result.data == b"hi"
+
+
+def test_resolved_resource_source_matching_identifiers_filters_glob_and_restype(
+    tmp_path: Path,
+) -> None:
+    """``matching_identifiers`` powers CLI glob filters; mistakes regress bulk operations."""
+    root = tmp_path / "assets"
+    root.mkdir()
+    (root / "alpha.txt").write_bytes(b"a")
+    (root / "beta.ncs").write_bytes(b"\x00")
+
+    resolved = resolve_resource_source(root)
+    assert resolved.kind == "folder"
+
+    all_ids = resolved.matching_identifiers()
+    assert len(all_ids) == 2
+
+    txt_only = resolved.matching_identifiers(restype=ResourceType.TXT)
+    assert len(txt_only) == 1
+    assert txt_only[0].resname == "alpha"
+
+    beta_glob = resolved.matching_identifiers(glob_pattern="beta*")
+    assert len(beta_glob) == 1
+    assert beta_glob[0].restype == ResourceType.NCS
