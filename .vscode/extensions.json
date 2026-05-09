@@ -30,6 +30,7 @@
         "ms-vscode.notepadplusplus-keybindings",
         "ms-vscode.powershell",
         "alefragnani.project-manager",
-        "neikeq.godot-csharp-vscode"
+        "neikeq.godot-csharp-vscode",
+        "mkhl.shfmt"
     ]
 }
