@@ -12,8 +12,19 @@ from pathlib import Path
 from typing import TYPE_CHECKING, cast
 
 THIS_SCRIPT_PATH = pathlib.Path(__file__).resolve()
-PYKOTOR_PATH = THIS_SCRIPT_PATH.parents[5].joinpath("Libraries", "PyKotor", "src")
-UTILITY_PATH = THIS_SCRIPT_PATH.parents[5].joinpath("Libraries", "Utility", "src")
+
+
+def _repo_root(start: pathlib.Path) -> pathlib.Path:
+    for ancestor in (start, *start.parents):
+        if (ancestor / "Libraries" / "PyKotor" / "src" / "pykotor").is_dir():
+            return ancestor
+    # Fallback: Libraries/PyKotor/tests/tslpatcher/<this>.py -> parents[4] is repo root
+    return start.parents[4]
+
+
+_REPO_ROOT = _repo_root(THIS_SCRIPT_PATH)
+PYKOTOR_PATH = _REPO_ROOT / "Libraries" / "PyKotor" / "src"
+UTILITY_PATH = _REPO_ROOT / "Libraries" / "PyKotor" / "src" / "utility"
 
 
 def add_sys_path(p: pathlib.Path):

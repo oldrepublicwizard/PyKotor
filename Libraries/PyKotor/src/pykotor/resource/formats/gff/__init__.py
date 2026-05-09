@@ -14,6 +14,7 @@ from pykotor.resource.formats.gff.io_gff import (
     GFFBinaryReader,
     GFFBinaryWriter,
 )
+from pykotor.resource.formats.gff.io_gff_json import GFFJSONWriter
 from pykotor.resource.formats.gff.io_gff_xml import (
     GFFXMLReader,
     GFFXMLWriter,
@@ -24,8 +25,8 @@ __all__ = [
     "GFF",
     "GFFBinaryReader",
     "GFFBinaryWriter",
+    "GFFJSONWriter",
     "GFFComparisonResult",
-    "GFFContent",
     "GFFContent",
     "GFFFieldType",
     "GFFList",

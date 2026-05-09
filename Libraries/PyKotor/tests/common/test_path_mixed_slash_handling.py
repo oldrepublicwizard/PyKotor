@@ -14,8 +14,18 @@ from pathlib import Path, PosixPath, PurePath, PurePosixPath, PureWindowsPath, W
 from unittest import mock
 
 THIS_SCRIPT_PATH = pathlib.Path(__file__).resolve()
-PYKOTOR_PATH = THIS_SCRIPT_PATH.parents[3].joinpath("src")
-UTILITY_PATH = THIS_SCRIPT_PATH.parents[5].joinpath("Libraries", "Utility", "src")
+
+
+def _repo_root(start: pathlib.Path) -> pathlib.Path:
+    for ancestor in (start, *start.parents):
+        if (ancestor / "Libraries" / "PyKotor" / "src" / "pykotor").is_dir():
+            return ancestor
+    return start.parents[4]
+
+
+_REPO_ROOT = _repo_root(THIS_SCRIPT_PATH)
+PYKOTOR_PATH = _REPO_ROOT / "Libraries" / "PyKotor" / "src"
+UTILITY_PATH = _REPO_ROOT / "Libraries" / "PyKotor" / "src" / "utility"
 
 
 def add_sys_path(p: pathlib.Path):

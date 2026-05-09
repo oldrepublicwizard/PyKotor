@@ -76,12 +76,7 @@ class TLKXMLReader(ResourceReader):
                 )
             index = int(id_str)
 
-            text = string.text
-            if text is None:
-                raise ValueError(
-                    "The text content is missing for a string element in the TLK XML. Each <string>"
-                    f" element must contain text content. Problematic element with id '{id_str}': {ET.tostring(string, encoding='unicode')}",
-                )
+            text = string.text if string.text is not None else ""
             self._tlk.entries[index].text = text
 
             sound = string.get("sound")

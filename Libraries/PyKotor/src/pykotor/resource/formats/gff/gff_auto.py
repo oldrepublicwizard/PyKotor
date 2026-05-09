@@ -10,9 +10,9 @@ from typing import TYPE_CHECKING
 
 import json
 from pykotor.common.stream import BinaryReader
-from pykotor.resource.formats._base import BiowareEncoder
 from pykotor.resource.formats.gff.gff_data import GFFContent
 from pykotor.resource.formats.gff.io_gff import GFFBinaryReader, GFFBinaryWriter
+from pykotor.resource.formats.gff.io_gff_json import GFFJSONWriter
 from pykotor.resource.formats.gff.io_gff_xml import GFFXMLReader, GFFXMLWriter
 from pykotor.resource.type import RESOURCE_FORMAT, ResourceType, ToolsetFormat
 from pykotor.tools.encoding import decode_bytes_with_fallbacks
@@ -385,11 +385,7 @@ def write_gff(
     elif file_format.name.endswith("_XML") and file_format.target_type().is_gff():
         GFFXMLWriter(gff, target).write()
     elif file_format.name.endswith("_JSON") and file_format.target_type().is_gff():
-        json_dump = json.dumps(gff, cls=BiowareEncoder, indent=4)
-        from pykotor.common.stream import BinaryWriter
-
-        with BinaryWriter.to_auto(target) as writer:
-            writer.write_bytes(json_dump.encode())
+        GFFJSONWriter(gff, target).write()
     else:
         msg = "Unsupported format specified; use GFF, GFF_XML, or GFF_JSON."
         raise ValueError(msg)
