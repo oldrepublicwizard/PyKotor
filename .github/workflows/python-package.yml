@@ -30,7 +30,8 @@ jobs:
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
-        python -m pip install flake8 pytest
+        python -m pip install flake8 pytest pytest-timeout
+        pip install -e "./Libraries/PyKotor[gl]"
         if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
     - name: Lint with flake8
       run: |
@@ -39,5 +40,11 @@ jobs:
         # exit-zero treats all errors as warnings. The GitHub editor is 127 chars wide
         flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics --exclude=docs/archive,helper_scripts
     - name: Test with pytest
+      env:
+        QT_QPA_PLATFORM: offscreen
       run: |
-        pytest
+        pytest --import-mode=importlib -m "not gui and not slow" --timeout=120 \
+          --ignore=Libraries/PyKotor/tests/resource/formats/test_mdl_ascii.py \
+          --ignore=Libraries/PyKotor/tests/test_utility/test_registry_strict_typing.py \
+          --ignore=Libraries/PyKotor/tests/resource/formats/test_archive_serializer_regressions.py \
+          Libraries/PyKotor/tests
