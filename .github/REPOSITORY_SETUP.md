@@ -95,23 +95,22 @@ All labels have been created via GitHub API:
 
 ### Automation
 
-8. **stale.yml** - Mark stale issues and PRs
-9. **pr-check.yml** - PR validation and size checks
-10. **label.yml** - Auto-label PRs based on files
-11. **issue-automation.yml** - Auto-label issues and welcome new contributors
-12. **auto-merge.yml** - Auto-merge Dependabot PRs
+8. **pr-check.yml** - PR validation and size checks
+9. **label.yml** - Auto-label PRs based on files
+10. **issue-automation.yml** - Auto-label issues and welcome new contributors
+11. **auto-merge.yml** - Auto-merge Dependabot PRs
 
 ### Additional Workflows
 
-13. **validate-pr.yml** - Validate PR format and content
-14. **changelog.yml** - Generate changelog on release
-15. **license-check.yml** - Check license headers
-16. **performance.yml** - Performance benchmarks
-17. **compatibility.yml** - Compatibility testing
-18. **package-size.yml** - Check package sizes
-19. **check-typos.yml** - Typo checking
-20. **check-docs.yml** - Documentation validation
-21. **backup.yml** - Weekly repository backups
+12. **validate-pr.yml** - Validate PR format and content
+13. **changelog.yml** - Generate changelog on release
+14. **license-check.yml** - Check license headers
+15. **performance.yml** - Performance benchmarks
+16. **compatibility.yml** - Compatibility testing
+17. **package-size.yml** - Check package sizes
+18. **check-typos.yml** - Typo checking
+19. **check-docs.yml** - Documentation validation
+20. **backup.yml** - Weekly repository backups
 
 ## Dependabot Configuration
 

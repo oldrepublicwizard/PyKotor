@@ -510,49 +510,6 @@ updates:
       include: "scope"
 """
 
-# Stale Issues Workflow
-stale_workflow = """name: Mark Stale Issues and PRs
-
-on:
-  schedule:
-    - cron: '0 0 * * *'
-  workflow_dispatch:
-
-permissions:
-  issues: write
-  pull-requests: write
-
-jobs:
-  stale:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Mark stale issues and PRs
-        uses: actions/stale@v9
-        with:
-          repo-token: ${{ secrets.GITHUB_TOKEN }}
-          stale-issue-message: |
-            This issue has been automatically marked as stale because it has not had recent activity.
-            It will be closed if no further activity occurs within 7 days. Thank you for your contributions.
-          stale-pr-message: |
-            This pull request has been automatically marked as stale because it has not had recent activity.
-            It will be closed if no further activity occurs within 7 days. Thank you for your contributions.
-          close-issue-message: |
-            This issue was automatically closed due to inactivity. If you believe this was done in error,
-            please reopen the issue or create a new one.
-          close-pr-message: |
-            This pull request was automatically closed due to inactivity. If you believe this was done in error,
-            please reopen the pull request or create a new one.
-          stale-issue-label: 'stale'
-          stale-pr-label: 'stale'
-          days-before-issue-stale: 60
-          days-before-pr-stale: 30
-          days-before-issue-close: 7
-          days-before-pr-close: 7
-          exempt-issue-labels: 'pinned,security,bug,enhancement'
-          exempt-pr-labels: 'pinned,security,work-in-progress'
-          operations-per-run: 30
-"""
-
 # PR Check Workflow
 pr_check_workflow = """name: PR Checks
 
@@ -707,7 +664,6 @@ workflows = {
     "release.yml": release_workflow,
     "codeql.yml": codeql_workflow,
     "dependency-review.yml": dependency_review_workflow,
-    "stale.yml": stale_workflow,
     "pr-check.yml": pr_check_workflow,
     "label.yml": label_workflow,
 }
