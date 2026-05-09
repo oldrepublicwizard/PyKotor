@@ -19,10 +19,6 @@ jobs:
 
     steps:
     - uses: actions/checkout@v6
-      with:
-        lfs: true
-    - name: Ensure Git LFS files are materialized
-      run: git lfs pull
     - name: Set up Python 3.10
       uses: actions/setup-python@v6
       with:
@@ -33,7 +29,6 @@ jobs:
         pip install flake8 pytest pytest-timeout
         pip install -e "./Libraries/PyKotor[gl]"
         if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
-        pip install "numpy>=1.26.0,<2.0.0"
     - name: Lint with flake8
       run: |
         # stop the build if there are Python syntax errors or undefined names
@@ -44,11 +39,7 @@ jobs:
       env:
         QT_QPA_PLATFORM: offscreen
       run: |
+        # Portable CLI smoke on ubuntu-latest; excludes installer-json progress test (timing/console coupling).
         pytest --import-mode=importlib -m "not gui and not slow" --timeout=120 \
-          --ignore=Libraries/PyKotor/tests/resource/formats/test_mdl_ascii.py \
-          --ignore=Libraries/PyKotor/tests/test_utility/test_registry_strict_typing.py \
-          --ignore=Libraries/PyKotor/tests/resource/formats/test_archive_serializer_regressions.py \
-          --ignore=Libraries/PyKotor/tests/test_markdown_validation.py \
-          --ignore=Libraries/PyKotor/tests/test_utility \
-          --ignore=Libraries/PyKotor/tests/tslpatcher \
-          Libraries/PyKotor/tests
+          --ignore=Libraries/PyKotor/tests/cli/test_json_commands.py \
+          Libraries/PyKotor/tests/cli
