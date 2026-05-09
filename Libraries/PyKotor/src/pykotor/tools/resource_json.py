@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import base64
 import json
+import os
 import sys
 
 from dataclasses import dataclass
@@ -205,6 +206,13 @@ def _format_progress_bar(percent: float) -> str:
 
 
 def _supports_live_progress(stream: TextIO) -> bool:
+    # In CI/automation, stderr may still report as a TTY; live "\r" updates bypass
+    # logger.info, so caplog and log aggregators would miss percentage milestones.
+    env_true = {"true", "1", "yes"}
+    if os.environ.get("CI", "").strip().lower() in env_true:
+        return False
+    if os.environ.get("GITHUB_ACTIONS", "").strip().lower() in env_true:
+        return False
     isatty = getattr(stream, "isatty", None)
     return bool(callable(isatty) and isatty())
 

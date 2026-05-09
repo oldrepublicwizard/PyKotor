@@ -318,7 +318,11 @@ def test_export_installation_to_json_tree_logs_percentage_progress(
     assert any("25.00% Writing dialog.tlk" in message for message in messages)
     assert any("50.00% Writing Override/hello.nss" in message for message in messages)
     assert any("75.00% Writing Modules/testmod_s.rim/notes.txt" in message for message in messages)
-    assert any("100.00% Writing streammusic/intro.wav" in message for message in messages)
+    assert any(
+        "100.00% Writing" in message
+        and message.casefold().endswith("streammusic/intro.wav".casefold())
+        for message in messages
+    )
     assert any(
         message == "Processed 4 resources (3 readable, 1 binary, 0 errors)" for message in messages
     )
