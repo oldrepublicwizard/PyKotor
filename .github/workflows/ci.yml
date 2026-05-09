@@ -91,6 +91,14 @@ jobs:
           uv pip install -e "Libraries/PyKotor[all]"
           uv pip install -e .[dev]
 
+      - name: Set up Node.js (TGA↔TPC ndix parity)
+        uses: actions/setup-node@v6
+        with:
+          node-version: "20"
+
+      - name: Install ref-tga2tpc npm dependencies
+        run: npm --prefix vendor/ref-tga2tpc install --ignore-scripts
+
       - name: Verify imports
         run: |
           python -c "import pykotor; print('PyKotor imported successfully')"
@@ -100,6 +108,7 @@ jobs:
       - name: Run tests
         run: |
           pytest tests/ -v --tb=short --maxfail=5
+          pytest Libraries/PyKotor/tests/resource/formats/test_tpc.py -v --tb=short --import-mode=importlib --maxfail=5
         continue-on-error: ${{ matrix.python-version == '3.8' || matrix.python-version == '3.9' }}
 
       - name: Upload test results

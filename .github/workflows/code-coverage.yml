@@ -22,6 +22,8 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v6
+        with:
+          submodules: recursive
 
       - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v6
@@ -40,9 +42,19 @@ jobs:
           uv pip install -e "Libraries/PyKotor[all]"
           uv pip install pytest pytest-cov pytest-xdist coverage[toml]
 
+      - name: Set up Node.js (TGA↔TPC ndix parity)
+        uses: actions/setup-node@v6
+        with:
+          node-version: "20"
+
+      - name: Install ref-tga2tpc npm dependencies
+        run: npm --prefix vendor/ref-tga2tpc install --ignore-scripts
+
       - name: Run tests with coverage
         run: |
           pytest tests/ \
+            Libraries/PyKotor/tests/resource/formats/test_tpc.py \
+            --import-mode=importlib \
             --cov=Libraries/PyKotor/src/pykotor \
             --cov-report=xml \
             --cov-report=html \

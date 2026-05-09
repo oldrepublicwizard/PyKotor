@@ -1,7 +1,9 @@
 from __future__ import annotations
 
+import hashlib
 import os
 from pathlib import Path
+from typing import Optional
 import shutil
 import struct
 import subprocess
@@ -20,8 +22,64 @@ from pykotor.resource.formats.tpc.convert.dxt.compress_dxt_ndix import (
     ndix_compressor_available,
 )
 from pykotor.resource.formats.tpc.manipulate.mipmap_ndix import _js_round, downsample_rgba_ndix
+from pykotor.resource.formats.tpc.io_tpc import TPCBinaryWriter
 from pykotor.resource.formats.tpc.tga2tpc import build_tpc_from_tga_bytes
 from pykotor.resource.formats.tpc.tpc_data import TPC, TPCLayer, TPCMipmap, TPCTextureFormat
+
+# ``N_BelHd.tga`` (512×512 retail-style head texture): vendored under ``fixtures/`` for ndix vs PyKotor parity.
+_N_BELHD_TGA_FIXTURE = Path(__file__).resolve().parent / "fixtures" / "N_BelHd.tga"
+# SHA256 of ``headless_export.cjs`` output for that file (ndixUR tga2tpc / ``tpc.js`` + Compressonator, May 2026).
+_N_BELHD_TPC_SHA256_HEX = "80f17fe537921735f1a5714c1cdedda8c072bed3181dadb236db091a6af19c35"
+
+
+def _ndix_headless_export_script() -> Optional[Path]:
+    """Resolve ``vendor/ref-tga2tpc/headless_export.cjs`` from any ``Libraries/PyKotor/tests/...`` cwd."""
+    here = Path(__file__).resolve()
+    for ancestor in here.parents:
+        candidate = ancestor / "vendor" / "ref-tga2tpc" / "headless_export.cjs"
+        if candidate.is_file():
+            return candidate
+    return None
+
+
+def _ndix_headless_three_js(script: Path) -> Path:
+    return script.parent / "node_modules" / "three" / "three.js"
+
+
+def _run_headless_ndix_tpc(tga_bytes: bytes, script: Path) -> bytes:
+    """Same stack as ndixUR Electron tga2tpc: ``tpc.js`` + TGALoader + Compressonator (see ``headless_export.cjs``)."""
+    node = shutil.which("node")
+    if not node:
+        msg = "node not on PATH"
+        raise AssertionError(msg)
+    with tempfile.TemporaryDirectory() as tmp:
+        tin = Path(tmp) / "in.tga"
+        tout = Path(tmp) / "out.tpc"
+        tin.write_bytes(tga_bytes)
+        proc = subprocess.run(
+            [node, str(script), str(tin), str(tout)],
+            capture_output=True,
+            timeout=180,
+            check=False,
+        )
+        if proc.returncode != 0:
+            err = proc.stderr.decode("utf-8", errors="replace")
+            msg = f"headless_export failed ({proc.returncode}): {err}"
+            raise AssertionError(msg)
+        return tout.read_bytes()
+
+
+def _pykotor_tpc_bytes_from_tga_ndix(raw_tga: bytes) -> bytes:
+    """``tga2tpc.build_tpc_from_tga_bytes`` + ``TPCBinaryWriter`` with ndix DXT blocks (``PYKOTOR_DXT_COMPRESSOR=ndix``)."""
+    with tempfile.TemporaryDirectory() as tmp:
+        out = Path(tmp) / "out.tpc"
+        os.environ["PYKOTOR_DXT_COMPRESSOR"] = "ndix"
+        try:
+            tpc = build_tpc_from_tga_bytes(raw_tga, compression="auto", generate_mipmaps=True)
+            TPCBinaryWriter(tpc, out).write()
+        finally:
+            os.environ.pop("PYKOTOR_DXT_COMPRESSOR", None)
+        return out.read_bytes()
 
 
 def _minimal_uncompressed_tga(width: int, height: int, pixel_depth: int) -> bytes:
@@ -191,6 +249,71 @@ class TestTPCData(unittest.TestCase):
         finally:
             os.environ.pop("PYKOTOR_DXT_COMPRESSOR", None)
         self.assertEqual(py_out, cli_out)
+
+
+class TestTga2tpcNdixHeadlessParity(unittest.TestCase):
+    """Byte-for-byte parity: PyKotor ``tga2tpc`` pipeline vs ndixUR ``headless_export.cjs`` (same ``tpc.js`` rules).
+
+    PyKotor side: :func:`~pykotor.resource.formats.tpc.tga2tpc.build_tpc_from_tga_bytes` applies the same
+    auto compression and ndix-style RGBA mips as ``vendor/ref-tga2tpc/tpc.js`` ``prepare()`` / ``generateDetailLevel``;
+    DXT mip payloads use ``PYKOTOR_DXT_COMPRESSOR=ndix`` (``ndix_compress_cli.cjs``, same Compressonator defaults as the tool).
+
+    Reference side: ``vendor/ref-tga2tpc/headless_export.cjs`` loads that ``tpc.js`` with TGALoader and the same
+    ``tpc.settings`` defaults (flip off, interpolation on, compression auto, compressor normal).
+    """
+
+    @classmethod
+    def setUpClass(cls):
+        cls._script = _ndix_headless_export_script()
+        cls._three = _ndix_headless_three_js(cls._script) if cls._script else None
+
+    def _require_headless_stack(self) -> Path:
+        if self._script is None:
+            self.skipTest("headless_export.cjs not found (checkout PyKotor repo root with vendor/ref-tga2tpc)")
+        if not ndix_compressor_available():
+            self.skipTest("ndix DXT stack unavailable (node or ndix_compress_cli.cjs)")
+        if shutil.which("node") is None:
+            self.skipTest("node not on PATH")
+        if self._three is None or not self._three.is_file():
+            self.skipTest("run: npm --prefix vendor/ref-tga2tpc install")
+        return self._script
+
+    def _assert_tga_parity_sha256(self, raw_tga: bytes) -> None:
+        script = self._require_headless_stack()
+        ref = _run_headless_ndix_tpc(raw_tga, script)
+        py = _pykotor_tpc_bytes_from_tga_ndix(raw_tga)
+        self.assertEqual(
+            hashlib.sha256(ref).digest(),
+            hashlib.sha256(py).digest(),
+            "SHA256 mismatch between headless ndix TPC and PyKotor tga2tpc (ndix DXT)",
+        )
+        self.assertEqual(ref, py, "TPC payloads differ after matching hash (unexpected)")
+
+    def test_parity_4x4_32bpp_auto_dxt5_mips_sha256(self):
+        raw = _minimal_uncompressed_tga(4, 4, 32)
+        self._assert_tga_parity_sha256(raw)
+
+    def test_parity_4x4_24bpp_auto_dxt1_mips_sha256(self):
+        raw = _minimal_uncompressed_tga(4, 4, 24)
+        self._assert_tga_parity_sha256(raw)
+
+    def test_parity_n_belhd_tga_matches_ndix_headless_sha256(self):
+        """``N_BelHd.tga`` must match ndix ``headless_export.cjs`` byte-for-byte (pinned SHA256)."""
+        if not _N_BELHD_TGA_FIXTURE.is_file():
+            self.skipTest(f"missing fixture {_N_BELHD_TGA_FIXTURE} (add from game/mod source)")
+        raw = _N_BELHD_TGA_FIXTURE.read_bytes()
+        script = self._require_headless_stack()
+        ref = _run_headless_ndix_tpc(raw, script)
+        py = _pykotor_tpc_bytes_from_tga_ndix(raw)
+        ref_hex = hashlib.sha256(ref).hexdigest()
+        py_hex = hashlib.sha256(py).hexdigest()
+        self.assertEqual(
+            ref_hex,
+            _N_BELHD_TPC_SHA256_HEX,
+            "ndix headless TPC for N_BelHd.tga changed; update _N_BELHD_TPC_SHA256_HEX if intentional",
+        )
+        self.assertEqual(py_hex, _N_BELHD_TPC_SHA256_HEX, "PyKotor TPC SHA256 must match ndix golden")
+        self.assertEqual(ref, py, "PyKotor TPC bytes must equal ndix headless output")
 
 
 class TestMipmapNdix(unittest.TestCase):
