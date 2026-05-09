@@ -37,7 +37,13 @@ def find_test_models(
     mdx_dict: dict[str, FileResource] = {}
 
     for game_path in game_paths:
-        installation = Installation(game_path)
+        chitin_key = game_path / "chitin.key"
+        if not chitin_key.is_file():
+            continue
+        try:
+            installation = Installation(game_path)
+        except ValueError:
+            continue
         # Use generator and type filtering for speed, avoid repeated mapping/creation
         for res in installation:
             restype = res.restype()

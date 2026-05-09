@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import errno
 import importlib
 import os
 import re
@@ -216,7 +217,7 @@ def detect_mdl(
     Raises:
     ------
         FileNotFoundError: If the file could not be found.
-        IsADirectoryError: If the specified path is a directory (Unix-like systems only).
+        IsADirectoryError: If the specified path is a directory.
         PermissionError: If the file could not be accessed.
 
     Returns:
@@ -235,6 +236,16 @@ def detect_mdl(
         # if "," in first4:
         #    return ResourceType.MDL_CSV
         # return ResourceType.INVALID
+
+    if isinstance(source, (str, os.PathLike)):
+        path = Path(os.fspath(source))
+        try:
+            if path.is_dir():
+                raise IsADirectoryError(errno.EISDIR, os.strerror(errno.EISDIR), os.fspath(path))
+        except IsADirectoryError:
+            raise
+        except OSError:
+            pass
 
     file_format: RESOURCE_FORMAT
     try:
