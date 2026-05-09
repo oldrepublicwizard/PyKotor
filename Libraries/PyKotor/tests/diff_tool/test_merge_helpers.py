@@ -10,7 +10,7 @@ THIS_SCRIPT_PATH = Path(__file__).resolve()
 PYKOTOR_PATH = THIS_SCRIPT_PATH.parents[2].joinpath("src")
 
 
-def add_sys_path(p: pathlib.Path) -> None:
+def add_sys_path(p: Path) -> None:
     working_dir = str(p)
     if working_dir not in sys.path:
         sys.path.append(working_dir)
