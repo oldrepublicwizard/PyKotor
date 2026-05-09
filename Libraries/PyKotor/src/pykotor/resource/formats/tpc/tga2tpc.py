@@ -12,7 +12,15 @@ Usage
         --compression auto --txi texture.txi --numx 4 --numy 4 --fps 15
 
 The implementation is intentionally self-contained and converts through the
-``pykotor`` writers so produced files match the rest of the toolchain.
+``pykotor`` writers so produced files match the rest of the toolchain. Automatic
+compression follows ndixUR ``tga2tpc`` (``tpc.js``) / xoreos-style rules: TGA
+header depth 8→greyscale, 24→DXT1, 32→DXT5 (including fully opaque 32-bit TGAs).
+
+**Byte parity with ndixUR tga2tpc (Compressonator):** set environment variable
+``PYKOTOR_DXT_COMPRESSOR=ndix`` and ensure ``node`` is on ``PATH``. PyKotor then
+shells out to ``vendor_ndix_compressonator/ndix_compress_cli.cjs`` for each DXT1/DXT5
+mipmap (same defaults as the Electron tool’s normal profile: RefinementSteps 2,
+channel weighting on). Pure-Python squish remains the default when unset.
 
 References:
 ----------
@@ -25,6 +33,7 @@ References:
 from __future__ import annotations
 
 import argparse
+import io
 import sys
 
 from pathlib import Path
@@ -70,7 +79,14 @@ def _split_flipbook(image: TGAImage, num_x: int, num_y: int) -> list[TGAImage]:
                 buffer[dst_offset : dst_offset + frame_width * 4] = image.data[
                     src_offset : src_offset + frame_width * 4
                 ]
-            frames.append(TGAImage(width=frame_width, height=frame_height, data=bytes(buffer)))
+            frames.append(
+                TGAImage(
+                    width=frame_width,
+                    height=frame_height,
+                    data=bytes(buffer),
+                    source_pixel_depth=image.source_pixel_depth,
+                ),
+            )
     return frames
 
 
@@ -87,7 +103,14 @@ def _split_cubemap(image: TGAImage) -> list[TGAImage]:
             src = (face * face_height + row) * stride
             dst = row * image.width * 4
             buffer[dst : dst + image.width * 4] = image.data[src : src + image.width * 4]
-        faces.append(TGAImage(width=image.width, height=face_height, data=bytes(buffer)))
+        faces.append(
+            TGAImage(
+                width=image.width,
+                height=face_height,
+                data=bytes(buffer),
+                source_pixel_depth=image.source_pixel_depth,
+            ),
+        )
     return faces
 
 
@@ -128,7 +151,13 @@ def _create_layer(
 ) -> TPCLayer:
     layer = TPCLayer()
     if generate_mipmaps:
-        layer.set_single(frame.width, frame.height, frame.data, TPCTextureFormat.RGBA)
+        layer.set_single(
+            frame.width,
+            frame.height,
+            frame.data,
+            TPCTextureFormat.RGBA,
+            rgba_mipmap_ndix=True,
+        )
     else:
         layer.mipmaps = [
             TPCMipmap(
@@ -146,11 +175,17 @@ def _select_target_format(
     *,
     grayscale: bool,
     has_alpha: bool,
+    source_pixel_depth: int,
 ) -> TPCTextureFormat:
     if compression == "auto":
-        if grayscale:
+        # Match ndixUR tga2tpc / Holocron-style rules (see vendor/ref-tga2tpc/tpc.js prepare()):
+        # Use TGA header depth only — do not infer "greyscale" from R=G=B pixels or 32-bit
+        # opaque TGAs would wrongly become Greyscale / DXT1.
+        if source_pixel_depth <= 8:
             return TPCTextureFormat.Greyscale
-        return TPCTextureFormat.DXT5 if has_alpha else TPCTextureFormat.DXT1
+        if source_pixel_depth == 24:
+            return TPCTextureFormat.DXT1
+        return TPCTextureFormat.DXT5
     if compression == "none":
         if grayscale:
             return TPCTextureFormat.Greyscale
@@ -178,13 +213,19 @@ def _build_texture(
 
     has_alpha = any(_has_alpha_channel(frame) for frame in frames)
     grayscale = all(_is_grayscale(frame) for frame in frames)
+    source_pixel_depth = frames[0].source_pixel_depth
 
     tpc = TPC()
     tpc.layers = [_create_layer(frame, generate_mipmaps=generate_mipmaps) for frame in frames]
     tpc._format = TPCTextureFormat.RGBA  # noqa: SLF001
     tpc.alpha_test = alpha_test
 
-    target_format = _select_target_format(compression, grayscale=grayscale, has_alpha=has_alpha)
+    target_format = _select_target_format(
+        compression,
+        grayscale=grayscale,
+        has_alpha=has_alpha,
+        source_pixel_depth=source_pixel_depth,
+    )
     if target_format != TPCTextureFormat.RGBA:
         tpc.convert(target_format)
     else:
@@ -212,6 +253,86 @@ def _build_texture(
         tpc.is_animated = True
 
     return tpc
+
+
+def build_tpc_from_tga_bytes(
+    raw_tga: bytes | bytearray,
+    *,
+    txi_lines: Sequence[str] | None = None,
+    compression: str = "auto",
+    generate_mipmaps: bool = True,
+    alpha_test: float = 1.0,
+) -> TPC:
+    """Build a KotOR-ready ``TPC`` from raw uncompressed TGA bytes (``tga2tpc`` defaults).
+
+    Same compression / mipmap / header rules as :func:`build_tpc_from_tga_path`, without
+    reading from disk. Optional ``txi_lines`` are merged like a ``.txi`` sidecar (already
+    split into lines; no ``_compose_txi_lines`` cube/flipbook injection unless present).
+    """
+    base_image = read_tga(io.BytesIO(bytes(raw_tga)))
+    composed = _compose_txi_lines(
+        [line.rstrip() for line in (txi_lines or ()) if line.strip()],
+        cube=False,
+        num_x=0,
+        num_y=0,
+        fps=0.0,
+    )
+    return _build_texture(
+        [base_image],
+        compression=compression,
+        generate_mipmaps=generate_mipmaps,
+        txi_lines=composed,
+        cube=False,
+        num_x=0,
+        num_y=0,
+        alpha_test=alpha_test,
+    )
+
+
+def build_tpc_from_tga_path(
+    tga_path: Path,
+    *,
+    txi_path: Path | None = None,
+    compression: str = "auto",
+    generate_mipmaps: bool = True,
+    alpha_test: float = 1.0,
+) -> TPC:
+    """Build a KotOR-ready ``TPC`` from an uncompressed TGA (same defaults as :func:`run_cli`).
+
+    Uses :func:`read_tga` on the file (single image; no ``--cube`` / flipbook splitting).
+    When ``txi_path`` is ``None``, a ``.txi`` beside ``tga_path`` is picked up if present,
+    matching Holocron / CLI sidecar behavior.
+
+    Args:
+        tga_path: Path to a ``.tga`` file.
+        txi_path: Optional explicit ``.txi`` path; if omitted, uses ``tga_path`` with
+            ``.txi`` suffix when that file exists.
+        compression: Same values as CLI ``--compression`` (``auto``, ``none``, ``dxt1``, ``dxt5``).
+        generate_mipmaps: When false, only the base mip is kept (CLI ``--no-mipmaps``).
+        alpha_test: Stored in the TPC header (CLI ``--alpha-test``).
+
+    Returns:
+        Loaded :class:`TPC` instance ready for :func:`write_tpc` / :class:`TPCBinaryWriter`.
+    """
+    tga_path = Path(tga_path)
+    if not tga_path.is_file():
+        msg = f"TGA file not found: {tga_path}"
+        raise FileNotFoundError(msg)
+
+    raw_tga = tga_path.read_bytes()
+
+    txi_file = Path(txi_path) if txi_path is not None else tga_path.with_suffix(".txi")
+    raw_lines: list[str] = []
+    if txi_file.is_file():
+        raw_lines = txi_file.read_text(encoding="utf-8", errors="ignore").splitlines()
+
+    return build_tpc_from_tga_bytes(
+        raw_tga,
+        txi_lines=raw_lines,
+        compression=compression,
+        generate_mipmaps=generate_mipmaps,
+        alpha_test=alpha_test,
+    )
 
 
 def _load_txi_lines(path: Path | None) -> list[str]:

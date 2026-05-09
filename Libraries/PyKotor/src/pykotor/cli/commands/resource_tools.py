@@ -14,6 +14,7 @@ from typing import TYPE_CHECKING
 
 from pykotor.resource.formats.bwm import BWM, read_bwm, write_bwm, write_bwm_ascii
 from pykotor.resource.formats.bwm.bwm_data import BWMType
+from pykotor.resource.formats.tpc.convert.dxt.compress_dxt_ndix import ndix_compressor_available
 from pykotor.tools.resources import (
     convert_ascii_to_bwm,
     convert_ascii_to_mdl,
@@ -50,12 +51,28 @@ def cmd_texture_convert(args: Namespace, logger: Logger) -> int:
                 pathlib.Path(args.output) if args.output else input_path.with_suffix(".tpc")
             )
             txi_path = pathlib.Path(args.txi) if args.txi else None
-            convert_tga_to_tpc(
-                input_path,
-                output_path,
-                txi_input_path=txi_path,
-                target_format=None,  # Auto-detect format
-            )
+            if getattr(args, "ndix_dxt", False) and not ndix_compressor_available():
+                logger.error(
+                    "--ndix-dxt requires Node.js on PATH and vendored ndix_compress_cli.cjs "
+                    "(see Libraries/PyKotor/.../vendor_ndix_compressonator/).",
+                )
+                return 1
+            prev_ndix = os.environ.get("PYKOTOR_DXT_COMPRESSOR")
+            if getattr(args, "ndix_dxt", False):
+                os.environ["PYKOTOR_DXT_COMPRESSOR"] = "ndix"
+            try:
+                convert_tga_to_tpc(
+                    input_path,
+                    output_path,
+                    txi_input_path=txi_path,
+                    target_format=None,  # Auto-detect format
+                )
+            finally:
+                if getattr(args, "ndix_dxt", False):
+                    if prev_ndix is None:
+                        os.environ.pop("PYKOTOR_DXT_COMPRESSOR", None)
+                    else:
+                        os.environ["PYKOTOR_DXT_COMPRESSOR"] = prev_ndix
             logger.info(f"Converted {input_path.name} to {output_path.name}")  # noqa: G004
     except Exception:
         logger.exception(f"Failed to convert texture {input_path}")  # noqa: G004

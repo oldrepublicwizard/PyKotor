@@ -2,12 +2,22 @@
 
 from __future__ import annotations
 
+from pykotor.resource.formats.tpc.convert.dxt.compress_dxt_ndix import (
+    ndix_compressor_available,
+    rgba_to_dxt1_ndix,
+    rgba_to_dxt5_ndix,
+    use_ndix_compressor,
+)
+from pykotor.resource.formats.tpc.convert.rgb import rgb_to_rgba
+
 
 def rgb_to_dxt1(
     rgb_data: bytes | bytearray,
     width: int,
     height: int,
 ) -> bytearray:
+    if use_ndix_compressor() and ndix_compressor_available():
+        return bytearray(rgba_to_dxt1_ndix(rgb_to_rgba(rgb_data), width, height))
     dxt1_data = bytearray()
     for y in range(0, height, 4):
         for x in range(0, width, 4):
@@ -38,6 +48,8 @@ def rgba_to_dxt5(
     width: int,
     height: int,
 ) -> bytearray:
+    if use_ndix_compressor() and ndix_compressor_available():
+        return bytearray(rgba_to_dxt5_ndix(rgba_data, width, height))
     dxt5_data = bytearray()
     for y in range(0, height, 4):
         for x in range(0, width, 4):
@@ -83,7 +95,9 @@ def _compress_dxt3_block(
     src: list[int],
 ) -> None:
     _compress_alpha_block_dxt3(dest, src)
-    _compress_color_block(dest[8:], src)
+    color_dest = bytearray(8)
+    _compress_color_block(color_dest, src)
+    dest[8:16] = color_dest
 
 
 def _compress_alpha_block_dxt3(
@@ -98,7 +112,9 @@ def _compress_alpha_block_dxt3(
 
 def _compress_dxt5_block(dest: bytearray, src: list[int]) -> None:
     _compress_alpha_block_dxt5(dest, src)
-    _compress_color_block(dest[8:], src)
+    color_dest = bytearray(8)
+    _compress_color_block(color_dest, src)
+    dest[8:16] = color_dest
 
 
 def _compress_alpha_block_dxt5(

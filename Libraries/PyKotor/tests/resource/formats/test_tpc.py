@@ -1,11 +1,53 @@
 from __future__ import annotations
 
+import os
+from pathlib import Path
+import shutil
+import struct
+import subprocess
+import tempfile
 import unittest
 
-from pykotor.resource.formats.tpc.convert.dxt.compress_dxt import rgb_to_dxt1
-from pykotor.resource.formats.tpc.convert.dxt.decompress_dxt import dxt1_to_rgb, dxt1_to_rgba
+from pykotor.resource.formats.tpc.convert.dxt.compress_dxt import rgb_to_dxt1, rgba_to_dxt5
+from pykotor.resource.formats.tpc.convert.dxt.decompress_dxt import (
+    dxt1_to_rgb,
+    dxt1_to_rgba,
+    dxt5_to_rgba,
+)
 from pykotor.resource.formats.tpc.convert.rgb import rgb_to_rgba
+from pykotor.resource.formats.tpc.convert.dxt.compress_dxt_ndix import (
+    NDIX_COMPRESS_CLI,
+    ndix_compressor_available,
+)
+from pykotor.resource.formats.tpc.manipulate.mipmap_ndix import _js_round, downsample_rgba_ndix
+from pykotor.resource.formats.tpc.tga2tpc import build_tpc_from_tga_bytes
 from pykotor.resource.formats.tpc.tpc_data import TPC, TPCLayer, TPCMipmap, TPCTextureFormat
+
+
+def _minimal_uncompressed_tga(width: int, height: int, pixel_depth: int) -> bytes:
+    """True-color type-2 TGA, top-left origin (descriptor 0x20)."""
+    hdr = struct.pack(
+        "<BBBHHBHHHHBB",
+        0,
+        0,
+        2,
+        0,
+        0,
+        0,
+        0,
+        0,
+        width,
+        height,
+        pixel_depth,
+        0x20,
+    )
+    if pixel_depth == 24:
+        row = b"\xff\xff\xff" * width  # BGR white
+        return hdr + row * height
+    if pixel_depth == 32:
+        row = b"\xff\xff\xff\xff" * width
+        return hdr + row * height
+    raise ValueError(pixel_depth)
 
 
 class TestTPCData(unittest.TestCase):
@@ -99,6 +141,77 @@ class TestTPCData(unittest.TestCase):
         mipmap = self.tpc.layers[0].mipmaps[0]
         self.assertEqual(mipmap.tpc_format, TPCTextureFormat.RGBA)
         self.assertTrue(all(alpha == 0 for alpha in mipmap.data[3::4]))
+
+    def test_dxt5_encode_roundtrip_preserves_color_channels(self):
+        """DXT5 encoder must write the color block into the final payload."""
+        width, height = 4, 4
+        rgba = bytes([255, 0, 0, 255] * (width * height))
+
+        compressed = rgba_to_dxt5(rgba, width, height)
+        decompressed = dxt5_to_rgba(compressed, width, height)
+
+        self.assertEqual(len(compressed), 16)
+        self.assertEqual(decompressed[3], 255)
+        self.assertGreater(decompressed[0], 0)
+        self.assertEqual(decompressed[1], 0)
+        self.assertEqual(decompressed[2], 0)
+
+    def test_tga2tpc_auto_32bpp_opaque_uses_dxt5(self):
+        """ndixUR tga2tpc uses DXT5 for any 32-bit TGA, not DXT1 when alpha is all 0xFF."""
+        raw = _minimal_uncompressed_tga(4, 4, 32)
+        tpc = build_tpc_from_tga_bytes(raw, compression="auto", generate_mipmaps=False)
+        self.assertEqual(tpc.format(), TPCTextureFormat.DXT5)
+
+    def test_tga2tpc_auto_24bpp_uses_dxt1(self):
+        raw = _minimal_uncompressed_tga(4, 4, 24)
+        tpc = build_tpc_from_tga_bytes(raw, compression="auto", generate_mipmaps=False)
+        self.assertEqual(tpc.format(), TPCTextureFormat.DXT1)
+
+    def test_ndix_compressor_matches_standalone_node_cli(self):
+        """With PYKOTOR_DXT_COMPRESSOR=ndix, DXT5 bytes match a direct ndix_compress_cli.cjs call."""
+        if not ndix_compressor_available():
+            self.skipTest("node or vendored ndix_compress_cli.cjs missing")
+        rgba = bytes([255]) * 64
+        tmp = Path(tempfile.mkdtemp()) / "rgba.raw"
+        tmp.write_bytes(rgba)
+        node = shutil.which("node")
+        assert node is not None
+        r = subprocess.run(
+            [node, str(NDIX_COMPRESS_CLI), "5", "4", "4", str(tmp)],
+            capture_output=True,
+            check=False,
+        )
+        self.assertEqual(r.returncode, 0, r.stderr.decode("utf-8", errors="replace"))
+        cli_out = r.stdout
+        os.environ["PYKOTOR_DXT_COMPRESSOR"] = "ndix"
+        try:
+            from pykotor.resource.formats.tpc.convert.dxt.compress_dxt import rgba_to_dxt5
+
+            py_out = bytes(rgba_to_dxt5(rgba, 4, 4))
+        finally:
+            os.environ.pop("PYKOTOR_DXT_COMPRESSOR", None)
+        self.assertEqual(py_out, cli_out)
+
+
+class TestMipmapNdix(unittest.TestCase):
+    """Regression tests for ndixUR-aligned RGBA mip generation (``mipmap_ndix``)."""
+
+    def test_js_round_half_up_not_python_bankers(self):
+        self.assertEqual(_js_round(0.5), 1)
+        self.assertEqual(_js_round(2.5), 3)
+        self.assertEqual(round(2.5), 2)
+
+    def test_bicubic_2x2_to_1x1_is_all_zero_like_js(self):
+        parent = bytearray([10, 20, 30, 255] * 4)
+        for interp in (True, False):
+            with self.subTest(interpolation=interp):
+                out = downsample_rgba_ndix(parent, 2, 2, 1, interpolation=interp)
+                self.assertEqual(out, bytearray(4))
+
+    def test_box_filter_even_parent_4x4_to_2x2(self):
+        parent = bytearray([255, 0, 0, 255] * 16)
+        out = downsample_rgba_ndix(parent, 4, 4, 1, interpolation=False)
+        self.assertEqual(out, bytearray([255, 0, 0, 255] * 4))
 
 
 if __name__ == "__main__":

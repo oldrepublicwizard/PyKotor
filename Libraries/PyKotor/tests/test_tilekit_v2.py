@@ -11,6 +11,7 @@ import pytest
 from pykotor.common.indoormap import IndoorMap
 from pykotor.common.tilekit import QuaternionWXYZ, TileKit, TileTemplate, TileTemplateKind
 from pykotor.resource.formats.bwm.bwm_data import BWM, BWMFace, BWMType
+from pykotor.tools import tilekit_io
 from pykotor.tools.indoor_kit_migrate import migrate_kit_json_v1_to_v2
 from pykotor.tools.indoorkit import kits_for_indoor_build, load_kits_unified
 from pykotor.tools.tilekit_io import load_tile_kit_v2_from_dict, load_tile_kit_v2_json_file
@@ -27,6 +28,188 @@ from utility.common.geometry import Vector3
 
 
 FIXTURES = Path(__file__).resolve().parent / "fixtures" / "kits_v2"
+
+
+def test_load_kotor_net_v0_1_kit_shape(tmp_path: Path):
+    kit_path = tmp_path / "sandral.kit"
+    (tmp_path / "sandral").mkdir()
+    kit_path.write_text(
+        json.dumps(
+            {
+                "id": "sandral",
+                "version": 3,
+                "name": "Sandral Estate",
+                "format": "0.1",
+                "tiles": [
+                    {
+                        "id": "tile_a",
+                        "name": "Tile A",
+                        "defaultFloorID": "floor_a",
+                        "defaultCeilingID": "ceiling_a",
+                        "wallHooks": [
+                            {
+                                "defaultWallID": "wall_a",
+                                "position": [1.0, 2.0, 3.0],
+                                "orientation": [0.0, 0.0, 0.70710678, 0.70710678],
+                            }
+                        ],
+                        "innerCornerHooks": [
+                            {
+                                "defaultInnerCornerID": "inner_a",
+                                "position": [4.0, 5.0, 6.0],
+                                "orientation": [0.0, 0.0, 0.0, 1.0],
+                                "adjacencies": [0, 1],
+                            }
+                        ],
+                        "outerCornerHooks": [
+                            {
+                                "defaultOuterCornerID": "outer_a",
+                                "position": [7.0, 8.0, 9.0],
+                                "orientation": [0.0, 0.0, 0.0, 1.0],
+                                "adjacencies": [2, 3],
+                            }
+                        ],
+                    }
+                ],
+                "floors": [{"id": "floor_a", "name": "Floor A", "model": "floor_a"}],
+                "ceilings": [{"id": "ceiling_a", "name": "Ceiling A", "model": "ceiling_a"}],
+                "doorframes": [
+                    {
+                        "id": "doorframe_a",
+                        "name": "Doorframe A",
+                        "model": "doorframe_a",
+                        "hooks": [
+                            {
+                                "position": [10.0, 11.0, 12.0],
+                                "orientation": [0.0, 0.0, 0.0, 1.0],
+                            }
+                        ],
+                    }
+                ],
+                "walls": [
+                    {
+                        "id": "wall_a",
+                        "name": "Wall A",
+                        "model": "wall_a",
+                        "doorframeID": "doorframe_a",
+                    },
+                    {
+                        "id": "wall_plain",
+                        "name": "Plain Wall",
+                        "model": "wall_plain",
+                        "doorframeID": "",
+                    },
+                ],
+                "innerCorners": [{"id": "inner_a", "name": "Inner A", "model": "inner_a"}],
+                "outerCorners": [{"id": "outer_a", "name": "Outer A", "model": "outer_a"}],
+                "objects": [{"id": "object_a", "name": "Object A", "model": "object_a"}],
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    kit = load_tile_kit_v2_json_file(kit_path)
+
+    assert kit is not None
+    assert kit.kit_id == "sandral"
+    assert kit.version == 3
+    assert kit.formats_serializer == "Kotor.NET KitSerializer_V0_1"
+    assert kit.tiles[0].template_id == "tile_a"
+    assert kit.tiles[0].default_floor_id == "floor_a"
+    assert kit.tiles[0].wall_hooks[0].default_wall_id == "wall_a"
+    assert kit.tiles[0].wall_hooks[0].position == Vector3(1.0, 2.0, 3.0)
+    assert kit.tiles[0].wall_hooks[0].orientation.w == pytest.approx(0.70710678)
+    assert kit.tiles[0].wall_hooks[0].orientation.z == pytest.approx(0.70710678)
+    assert kit.walls[0].doorframe_id == "doorframe_a"
+    assert kit.walls[0].can_be_door is True
+    assert kit.walls[1].doorframe_id == ""
+    assert kit.walls[1].can_be_door is False
+    assert kit.doorframes[0].hooks[0].position == Vector3(10.0, 11.0, 12.0)
+    assert kit.inner_corners[0].template_id == "inner_a"
+    assert kit.outer_corners[0].template_id == "outer_a"
+    assert kit.objects[0].template_id == "object_a"
+
+
+def test_load_kotor_net_kit_rejects_mismatched_filename(tmp_path: Path):
+    kit_path = tmp_path / "wrong_name.kit"
+    kit_path.write_text(
+        json.dumps(
+            {
+                "id": "sandral",
+                "version": 1,
+                "name": "Sandral Estate",
+                "format": "0.1",
+                "tiles": [],
+                "floors": [],
+                "ceilings": [],
+                "doorframes": [],
+                "walls": [],
+                "innerCorners": [],
+                "outerCorners": [],
+                "objects": [],
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    with pytest.raises(ValueError, match="Kit ID sandral does not match filename wrong_name.kit"):
+        load_tile_kit_v2_json_file(kit_path)
+
+
+def test_kotor_net_kit_roundtrip_dict_preserves_serializer_shape(tmp_path: Path):
+    kit_path = tmp_path / "sandral.kit"
+    (tmp_path / "sandral").mkdir()
+    kit_path.write_text(
+        json.dumps(
+            {
+                "id": "sandral",
+                "version": 1,
+                "name": "Sandral Estate",
+                "format": "0.1",
+                "tiles": [
+                    {
+                        "id": "tile_a",
+                        "name": "Tile A",
+                        "defaultFloorID": "floor_a",
+                        "defaultCeilingID": "ceiling_a",
+                        "wallHooks": [
+                            {
+                                "defaultWallID": "wall_a",
+                                "position": [1.0, 2.0, 3.0],
+                                "orientation": [0.0, 0.0, 0.70710678, 0.70710678],
+                            }
+                        ],
+                        "innerCornerHooks": [],
+                        "outerCornerHooks": [],
+                    }
+                ],
+                "floors": [{"id": "floor_a", "name": "Floor A", "model": "floor_a"}],
+                "ceilings": [{"id": "ceiling_a", "name": "Ceiling A", "model": "ceiling_a"}],
+                "doorframes": [],
+                "walls": [{"id": "wall_a", "name": "Wall A", "model": "wall_a", "doorframeID": ""}],
+                "innerCorners": [],
+                "outerCorners": [],
+                "objects": [],
+            }
+        ),
+        encoding="utf-8",
+    )
+    kit = load_tile_kit_v2_json_file(kit_path)
+    assert kit is not None
+
+    out = tilekit_io.tile_kit_v2_to_kotor_net_dict(kit)
+
+    assert out["format"] == "0.1"
+    assert out["id"] == "sandral"
+    assert out["version"] == 1
+    assert "templates" not in out
+    assert out["tiles"][0]["wallHooks"][0]["orientation"] == [
+        0.0,
+        0.0,
+        pytest.approx(0.70710678),
+        pytest.approx(0.70710678),
+    ]
+    assert out["floors"][0] == {"id": "floor_a", "name": "Floor A", "model": "floor_a"}
 
 
 def test_load_tile_kit_v2_minimal_no_geometry():

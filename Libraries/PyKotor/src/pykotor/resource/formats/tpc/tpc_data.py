@@ -6,7 +6,7 @@ Observed retail behavior:
 ----------
         KotOR loads textures from ``.tpc`` resources (and related sidecar metadata) using the
         proprietary header + mip chain layout this package models. It has been observed that
-        retail data uses DXT1/DXT3/DXT5 and uncompressed RGB/RGBA payloads consistent with
+        retail ``.tpc`` data uses DXT1/DXT5 and uncompressed RGB/RGBA payloads consistent with
         other Aurora-era titles.
 
 """
@@ -50,7 +50,7 @@ from pykotor.resource.formats.tpc.convert.rgb import (
     rgba_to_grey,
     rgba_to_rgb,
 )
-from pykotor.resource.formats.tpc.manipulate.downsample import downsample_dxt, downsample_rgb
+from pykotor.resource.formats.tpc.manipulate.downsample import downsample_rgb
 from pykotor.resource.formats.tpc.manipulate.dxt_manipulate import (
     flip_horizontally_dxt,
     flip_vertically_dxt,
@@ -415,6 +415,9 @@ class TPCLayer(ComparableMixin):
     """A layer in a TPC texture, containing mipmaps."""
 
     mipmaps: list[TPCMipmap] = field(default_factory=list)
+    _layer_width: int = field(default=0, repr=False, compare=False)
+    _layer_height: int = field(default=0, repr=False, compare=False)
+    _rgba_mipmap_ndix: bool = field(default=False, repr=False, compare=False)
 
     def set_single(
         self,
@@ -422,11 +425,16 @@ class TPCLayer(ComparableMixin):
         height: int,
         data: bytes | bytearray,
         tpc_format: TPCTextureFormat,
+        *,
+        rgba_mipmap_ndix: bool = False,
     ):
         """Given a single mipmap, progressively create smaller mipmaps and set them all to the layer."""
         if not isinstance(data, bytearray):
             data = bytearray(data)
         self.mipmaps.clear()
+        self._layer_width = width
+        self._layer_height = height
+        self._rgba_mipmap_ndix = rgba_mipmap_ndix
         mm_width, mm_height = width, height
 
         while mm_width > 0 and mm_height > 0:
@@ -478,17 +486,38 @@ class TPCLayer(ComparableMixin):
             mm_width >>= 1
             mm_height >>= 1
 
-    @classmethod
     def _downsample(
-        cls,
+        self,
         data: bytearray,
         width: int,
         height: int,
         tpc_format: TPCTextureFormat,
     ) -> bytearray:
         """Downsample the given mipmap data to the next smaller mipmap size."""
-        if tpc_format.is_dxt():
-            return downsample_dxt(data, width, height, tpc_format.bytes_per_block())
+        nw, nh = max(1, width // 2), max(1, height // 2)
+        if self._rgba_mipmap_ndix and tpc_format == TPCTextureFormat.RGBA:
+            from pykotor.resource.formats.tpc.manipulate.mipmap_ndix import downsample_rgba_ndix
+
+            mip_idx = len(self.mipmaps)
+            return downsample_rgba_ndix(
+                data,
+                self._layer_width,
+                self._layer_height,
+                mip_idx,
+                interpolation=True,
+            )
+        if tpc_format == TPCTextureFormat.DXT1:
+            rgb = dxt1_to_rgb(data, width, height)
+            small = downsample_rgb(bytearray(rgb), width, height, 3)
+            return rgb_to_dxt1(small, nw, nh)
+        if tpc_format == TPCTextureFormat.DXT3:
+            rgba = dxt3_to_rgba(data, width, height)
+            small = downsample_rgb(bytearray(rgba), width, height, 4)
+            return rgba_to_dxt3(small, nw, nh)
+        if tpc_format == TPCTextureFormat.DXT5:
+            rgba = dxt5_to_rgba(data, width, height)
+            small = downsample_rgb(bytearray(rgba), width, height, 4)
+            return rgba_to_dxt5(small, nw, nh)
         return downsample_rgb(data, width, height, tpc_format.bytes_per_pixel())
 
     def copy(self) -> Self:

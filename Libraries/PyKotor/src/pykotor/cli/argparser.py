@@ -936,6 +936,12 @@ Extract files from Bioware archive formats including:
     texture_parser.add_argument("--output", "-o", dest="output", help="Output texture file")
     texture_parser.add_argument("--txi", help="TXI file path (for TPC<->TGA conversion)")
     texture_parser.add_argument("--format", help="TPC format type (for TGA->TPC)")
+    texture_parser.add_argument(
+        "--ndix-dxt",
+        action="store_true",
+        dest="ndix_dxt",
+        help="TGA→TPC only: use vendored ndixUR Compressonator via Node for DXT1/DXT5 (tga2tpc default parity); requires node on PATH",
+    )
 
     sound_parser = subparsers.add_parser(
         "sound-convert", help="Convert sound files (WAV<->clean WAV)"

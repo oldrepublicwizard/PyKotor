@@ -30,9 +30,13 @@ class TGAImage(ComparableMixin):
     width: int
     height: int
     data: bytes  # RGBA8888, row-major, origin = top-left
+    #: Bits per pixel from the TGA header (8 / 24 / 32). Used for TPC ``auto`` compression
+    #: to match ndixUR ``tga2tpc`` / xoreos-style tools (32-bit sources → DXT5 even when opaque).
+    source_pixel_depth: int = 32
 
     @property
     def pixel_depth(self) -> int:
+        """Effective channel width after decode; data is always expanded to RGBA8."""
         return 32
 
 
@@ -135,7 +139,12 @@ def read_tga(stream: BinaryIO) -> TGAImage:
     if (descriptor & 0x20) == 0:
         _flip_vertically(rgba, width, height, 4)
 
-    return TGAImage(width=width, height=height, data=bytes(rgba))
+    return TGAImage(
+        width=width,
+        height=height,
+        data=bytes(rgba),
+        source_pixel_depth=int(pixel_depth),
+    )
 
 
 def write_tga(image: TGAImage, stream: BinaryIO, rle: bool = False) -> None:

@@ -16,6 +16,7 @@ from typing import List, Union
 from pykotor.common.stream import BinaryReader
 from pykotor.resource.formats.tpc import TPC, read_tpc, write_tpc
 from pykotor.resource.formats.tpc.io_tga import TPCTGAReader
+from pykotor.resource.formats.tpc.tga2tpc import build_tpc_from_tga_path
 from pykotor.resource.type import ResourceType
 from pykotor.tools.path import CaseAwarePath
 
@@ -116,6 +117,10 @@ def convert_single_texture(
         raise FileExistsError(os.fspath(dst))
     if suf == ".tpc":
         tpc = read_tpc(path)
+    elif out_fmt == ResourceType.TPC:
+        txi_side = path.with_suffix(".txi")
+        txi_arg = txi_side if txi_side.is_file() else None
+        tpc = build_tpc_from_tga_path(path, txi_path=txi_arg)
     else:
         tpc = _load_tga_for_convert(path)
     write_tpc(tpc, dst, file_format=out_fmt)

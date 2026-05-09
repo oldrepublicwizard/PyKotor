@@ -102,7 +102,7 @@ class TPCBinaryReader(ResourceReader):
         enumerated in ``tpc_data`` (DXT and uncompressed RGB/RGBA variants).
 
         Note: TPC (Texture Pack Container) files store texture data with mipmaps, compression,
-        and various texture formats (DXT1, DXT3, DXT5, RGB, RGBA) used throughout KotOR.
+        and various texture formats (DXT1, DXT5, RGB, RGBA) used in KotOR ``.tpc`` payloads.
 
     """
 
@@ -144,6 +144,7 @@ class TPCBinaryReader(ResourceReader):
             self._reader.read_uint8(),
             self._reader.read_uint8(),
         )
+        # Compressed: KotOR TPC uses 0x02=DXT1 and 0x04=DXT5 only (see xoreos tpc.cpp).
         tpc_format: TPCTextureFormat = {
             (True, 2): TPCTextureFormat.DXT1,
             (True, 4): TPCTextureFormat.DXT5,
@@ -216,9 +217,7 @@ class TPCBinaryReader(ResourceReader):
                 self._mipmap_count += 1
 
         if compressed and not self._tpc.is_animated:
-            expected_size: int = (
-                (width * height) // 2 if tpc_format == TPCTextureFormat.DXT1 else width * height
-            )
+            expected_size: int = tpc_format.get_size(width, height)
             if data_size != expected_size:
                 raise ValueError(
                     f"Invalid data size for a texture of {width}x{height} pixels and format {tpc_format!r}"

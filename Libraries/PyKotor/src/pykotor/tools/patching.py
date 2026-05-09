@@ -38,7 +38,8 @@ from pykotor.resource.formats.gff import (
 from pykotor.resource.formats.gff.gff_auto import bytes_gff
 from pykotor.resource.formats.rim.rim_auto import write_rim
 from pykotor.resource.formats.rim.rim_data import RIM
-from pykotor.resource.formats.tpc.io_tga import TPCTGAReader, TPCTGAWriter
+from pykotor.resource.formats.tpc.io_tga import TPCTGAWriter
+from pykotor.resource.formats.tpc.tga2tpc import build_tpc_from_tga_bytes
 from pykotor.resource.formats.tpc.io_tpc import TPCBinaryReader, TPCBinaryWriter
 from pykotor.resource.formats.tpc.tpc_auto import bytes_tpc
 from pykotor.resource.formats.tpc.tpc_data import TPC
@@ -289,7 +290,7 @@ def patch_resource(
     if resource.restype().extension.lower() == "tga" and config.convert_tga == "TGA to TPC":
         log_message(config, f"Converting TGA at {resource.path_ident()} to TPC...")
         try:
-            return TPCTGAReader(resource.data()).load()
+            return build_tpc_from_tga_bytes(resource.data())
         except Exception:  # pylint: disable=W0718  # noqa: BLE001
             log_message(
                 config, f"[Error] loading TGA '{resource.identifier()}' at '{resource.filepath()}'!"
