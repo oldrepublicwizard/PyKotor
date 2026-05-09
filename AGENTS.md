@@ -61,8 +61,9 @@ This works after a successful `uv sync --all-packages --all-extras`. **Python 3.
 
 ## Learned Workspace Facts
 
-- Wiki resource-format pages should separate binary/game behavior from toolset implementation details; BWM documentation should stay focused on BWM/WOK/PWK/DWK rather than LYT, MDL, or tooling material.
 - Installation and resource lookup tools must treat resource resolution order as a core invariant and expose priority behavior clearly when users need control.
 - For wiki pages that enumerate references, vendors, or implementations, use normal markdown list syntax with one entry per line instead of comma-joined run-on lines.
 - Holocron indoor-builder and Module Designer should converge on one editor surface over time; avoid treating IndoorMapBuilder and Module Designer as a permanent legacy versus modern split.
 - For TGA to TPC in PyKotor, prefer the shared `read_tga` / `write_tpc` pipeline as the canonical API surface instead of parallel conversion helpers or duplicate entry points.
+- Shell scripts meant for bash (Git Bash, WSL, Linux, macOS) should be committed with LF line endings; CRLF can break `bash` and WSL with `$'\r'` or `bash -n` failures.
+- Do not add or re-enable GitHub Actions workflows that automatically mark issues or PRs stale or close them for inactivity unless the user explicitly wants that automation.
