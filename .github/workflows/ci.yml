@@ -40,7 +40,7 @@ jobs:
           tools_root = Path("Tools")
 
           libraries = [f"Libraries/{d}" for d in list_dirs(libraries_root)]
-            tools = [f"Tools/{d}" for d in list_dirs(tools_root)]
+          tools = [f"Tools/{d}" for d in list_dirs(tools_root)]
 
           with open(os.environ["GITHUB_OUTPUT"], "a") as fh:
               fh.write(f"libraries_matrix={json.dumps(libraries)}\n")

@@ -385,7 +385,6 @@ def compile_with_abstract_compatible(
     game: Game,
     compiler_identifier: str,
 ):
-    global CUR_FAILED_EXT
     try:
         if isinstance(compiler, ExternalNCSCompiler):
             compiler_identifier = f"nwnnsscomp.exe({compiler_identifier})"

@@ -122,7 +122,7 @@ jobs:
       - name: Install system dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y libgl1-mesa-dev libgl1-mesa-glx xvfb
+          sudo apt-get install -y libgl1 libgl1-mesa-dev xvfb
 
       - name: Install extensions
         run: |

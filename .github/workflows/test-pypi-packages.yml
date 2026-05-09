@@ -64,7 +64,7 @@ jobs:
         if: runner.os == 'Linux'
         run: |
           sudo apt-get update
-          sudo apt-get install -y libgl1-mesa-glx libgl1-mesa-dev xvfb
+          sudo apt-get install -y libgl1 libgl1-mesa-dev xvfb
 
       - name: Determine package index
         id: index
