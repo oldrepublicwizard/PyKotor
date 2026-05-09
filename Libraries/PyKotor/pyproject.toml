@@ -115,6 +115,7 @@ encodings = [
 exp = ["fusepy>=3.0.1", "pywin32>=38; sys_platform == \"win32\""]
 extra = [
   "PyYAML>=6.0",
+  "Send2Trash>=1.8.0",
   "colorama>=0.4.6",
   "comtypes>=1.4.0; sys_platform == \"win32\"",
   "gputil>=1.4.0",
@@ -182,6 +183,7 @@ requests = [
 fusepy = { version = ">=3.0.1", optional = true }
 pywin32 = { version = ">=38", optional = true }
 PyYAML = { version = ">=6.0", optional = true }
+Send2Trash = { version = ">=1.8.0", optional = true }
 colorama = { version = ">=0.4.6", optional = true }
 comtypes = { version = ">=1.4.0", optional = true }
 gputil = { version = ">=1.4.0", optional = true }
@@ -210,10 +212,10 @@ Issues = "https://github.com/OpenKotOR/PyKotor/issues"
 Repository = "https://github.com/OpenKotOR/PyKotor.git"
 
 [tool.poetry.extras]
-all = ["charset-normalizer", "fusepy", "pywin32", "PyYAML", "colorama", "comtypes", "gputil", "psutil", "pillow", "PyGLM", "PyOpenGL", "numpy", "certifi", "pycryptodome", "requests"]
+all = ["charset-normalizer", "fusepy", "pywin32", "PyYAML", "Send2Trash", "colorama", "comtypes", "gputil", "psutil", "pillow", "PyGLM", "PyOpenGL", "numpy", "certifi", "pycryptodome", "requests"]
 encodings = ["charset-normalizer"]
 exp = ["fusepy", "pywin32"]
-extra = ["PyYAML", "colorama", "comtypes", "gputil", "psutil"]
+extra = ["PyYAML", "Send2Trash", "colorama", "comtypes", "gputil", "psutil"]
 font = ["pillow"]
 gl = ["PyGLM", "PyOpenGL", "numpy"]
 gl_exp = ["moderngl"]

@@ -25,6 +25,17 @@ from pykotor.tools.resource_json import (
 )
 
 
+def _resource_bytes_to_plaintext(
+    raw: bytes,
+    restype: ResourceType,
+) -> tuple[str, Any] | None:
+    """Return ``(encoding, payload)`` for embedded plaintext serialization, or ``None`` if only base64."""
+    ser = serialize_resource_payload(raw, restype, mode="embedded")
+    if ser.encoding == "base64":
+        return None
+    return ser.encoding, ser.payload
+
+
 def _serialize_archive_resource(raw: bytes, restype: ResourceType, *, embed_plaintext: bool):
     if embed_plaintext:
         return serialize_resource_payload(raw, restype, mode="embedded")
