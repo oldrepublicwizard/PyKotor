@@ -915,11 +915,10 @@ class Mdl(KaitaiStruct):
             return self._m_animations
 
         if self.model_header.animation_count > 0:
-            pass
             _pos = self._io.pos()
-            self._io.seek(self.data_start + self.animation_offsets[i])
             self._m_animations = []
             for i in range(self.model_header.animation_count):
+                self._io.seek(self.data_start + self.animation_offsets[i])
                 self._m_animations.append(Mdl.AnimationHeader(self._io, self, self._root))
 
             self._io.seek(_pos)

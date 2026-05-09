@@ -37,6 +37,7 @@ from pykotor.cli.commands import (
     cmd_investigate_module,
     cmd_json22da,
     cmd_json2gff,
+    cmd_lip2json,
     cmd_json2lip,
     cmd_json2ssf,
     cmd_json2tlk,

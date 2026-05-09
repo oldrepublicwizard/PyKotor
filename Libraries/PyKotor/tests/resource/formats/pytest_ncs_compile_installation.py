@@ -174,9 +174,6 @@ def collect_all_scripts(
 
 
 def extract_all_scripts():
-    global ALL_SCRIPTS
-    global SYMLINK_MAP
-
     for game, scripts in ALL_SCRIPTS.items():
         game_name: Literal["K1", "TSL"] = "K1" if game.is_k1() else "TSL"
         print(f"Extracting {len(scripts)} {game_name} scripts...")

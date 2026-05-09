@@ -111,7 +111,6 @@ def collect_all_gffs(
 
 def extract_all_gffs():
     """Performs the actual disk extraction (directory creation) for GFFs."""
-    global ALL_GFFS
     for game, gff_list in ALL_GFFS.items():
         for resource, gff_convert_filepath in gff_list:
             # Create directory
