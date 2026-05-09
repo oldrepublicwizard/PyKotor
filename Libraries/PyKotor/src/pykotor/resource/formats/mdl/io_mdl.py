@@ -505,7 +505,7 @@ class _Node:
         if self.header.type_id & MDLNodeFlags.AABB and self.trimesh is not None:
             # Read the AABB tree offset (aabbloc)
             # MDLOps stores this as (absolute_offset - 12), but since BinaryReader has
-            # set_offset(+12) applied, the raw value can be used directly without adjustment.
+            # the MDL reader base is the geometry payload (resource offset + 12); use raw values directly.
             aabb_offset_raw: int = reader.read_int32()
             # Do NOT add 12 here - the reader's offset is already adjusted
             self.trimesh.offset_to_aabb = max(0, aabb_offset_raw)
@@ -525,7 +525,7 @@ class _Node:
             return self
 
         # MDLOps stores offsets as (absolute_offset - 12), but since BinaryReader has
-        # set_offset(+12) applied, the raw value can be used directly without adjustment.
+        # the MDL reader base is the geometry payload (resource offset + 12); use raw values directly.
         child_loc: int = self.header.offset_to_children
         if (
             child_loc in (0, 0xFFFFFFFF)
@@ -584,7 +584,7 @@ class _Node:
         # The AABB tree is written IMMEDIATELY after the aabbloc field, not after all node data
         if self.header.type_id & MDLNodeFlags.AABB and self.trimesh is not None:
             # aabbloc: offset to first AABB node, in the same coordinate system as other MDL
-            # loc fields after BinaryReader.set_offset(+12) — i.e. bytes from geometry payload start.
+            # loc fields are bytes from the geometry payload start (12 bytes into the MDL resource).
             #
             # MDLOps uses pack("L", (tell(BMDLOUT) - 12) + 4) where tell is the absolute file
             # position of this field; our BinaryWriter position is already geometry-relative (no
@@ -1327,7 +1327,7 @@ class _TrimeshHeader:
         reader: BinaryReader,
     ):
         # NOTE: MDL offsets are stored relative to the start of the MDL data block.
-        # MDLBinaryReader already compensates for the leading 12-byte wrapper via `BinaryReader.set_offset(+12)`.
+        # MDLBinaryReader opens the stream at offset+12 so the leading 12-byte wrapper is skipped.
         # Therefore, loc fields in the file can be used directly with this reader.
         def _loc(off: int) -> int:
             return off
@@ -2296,14 +2296,25 @@ class MDLBinaryReader(ComparableMixin):
         fast_load: bool = False,
         skip_aabb: bool = False,
     ):
-        self._reader: BinaryReader = BinaryReader.from_auto(source, offset)
+        # KotOR MDL files begin with a 12-byte preamble; all in-file offsets are relative to the first
+        # byte after that preamble. Open the reader at (resource offset + 12) so seeks match file offsets.
+        #
+        # IMPORTANT: Do not use BinaryReader.set_offset(offset+12) after from_auto(offset): seek() adds the
+        # current base offset again, which double-counts non-zero `offset` (BIF/chitin slices) and breaks
+        # parsing (wrong stream position and bogus exceed_check failures).
+        mdl_preamble = 12
+        mdl_base = offset + mdl_preamble
+        if size > 0:
+            mdl_size: int | None = max(size - mdl_preamble, 0)
+        else:
+            mdl_size = None
 
-        self._reader_ext: BinaryReader | None = (
-            None if source_ext is None else BinaryReader.from_auto(source_ext, offset_ext)
-        )
+        self._reader: BinaryReader = BinaryReader.from_auto(source, mdl_base, mdl_size)
 
-        # first 12 bytes do not count in offsets used within the file
-        self._reader.set_offset(self._reader.offset() + 12)
+        self._reader_ext: BinaryReader | None = None
+        if source_ext is not None:
+            ext_size: int | None = None if size_ext <= 0 else size_ext
+            self._reader_ext = BinaryReader.from_auto(source_ext, offset_ext, ext_size)
 
         self._fast_load: bool = fast_load
         self._skip_aabb: bool = skip_aabb
@@ -2521,7 +2532,7 @@ class MDLBinaryReader(ComparableMixin):
                         bbox_max: Vector3 = reader.read_vector3()
                         # Read 4 int32s: left child offset, right child offset, face index, unknown
                         # NOTE: Child offsets in the file are stored as (absolute_offset - 12), but since
-                        # BinaryReader has set_offset(+12) applied, these can be used directly.
+                        # Offsets are from the geometry payload start; the reader base matches, so use them directly.
                         left_child: int = reader.read_int32()
                         right_child: int = reader.read_int32()
                         face_index: int = reader.read_int32()
@@ -3024,7 +3035,7 @@ class MDLBinaryReader(ComparableMixin):
         # Skip controllers when fast loading (not needed for rendering)
         if not self._fast_load:
             # MDLOps stores offsets as (absolute_offset - 12), but since BinaryReader has
-            # set_offset(+12) applied, the raw values can be used directly without adjustment.
+            # the MDL reader base is the geometry payload (resource offset + 12); use raw values directly.
             controllers_base = bin_node.header.offset_to_controllers
             controller_data_base = bin_node.header.offset_to_controller_data
             for i in range(bin_node.header.controller_count):

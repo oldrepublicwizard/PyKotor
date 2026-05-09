@@ -24,10 +24,12 @@ Pre-existing lint violations exist; 259 ruff findings are normal on the current 
 ```
 QT_QPA_PLATFORM=offscreen uv run pytest --import-mode=importlib -m "not gui and not slow" --timeout=120 \
   --ignore=Libraries/PyKotor/tests/resource/formats/test_mdl_ascii.py \
-  --ignore=Libraries/PyKotor/tests/test_utility/test_registry_strict_typing.py
+  --ignore=Libraries/PyKotor/tests/test_utility/test_registry_strict_typing.py \
+  Libraries/PyKotor/tests
 ```
 
 **Gotchas:**
+- **Scope tests to `Libraries/PyKotor/tests`** (matches `.github/workflows/python-package.yml`). Running pytest from the repo root without that path collects other packages (e.g. Toolset) and often fails during collection.
 - **`--import-mode=importlib` is required on Linux**: Without it, pytest fails with `ModuleNotFoundError: No module named 'resource.formats'` because the test directory `Libraries/PyKotor/tests/resource/` collides with Python's stdlib `resource` module.
 
 ### System dependencies (already in snapshot)

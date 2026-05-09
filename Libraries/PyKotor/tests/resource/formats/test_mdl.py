@@ -606,6 +606,35 @@ class TestMDLEdgeCases(unittest.TestCase):
         with self.assertRaises(ValueError):
             mdl.get_by_node_id(999)
 
+    def test_read_mdl_buffered_slice_matches_standalone_file(self):
+        """Loading from offset/size into a larger buffer must match reading extracted files (e.g. BIF slices)."""
+        test_dir = Path("Libraries/PyKotor/tests/test_files/mdl")
+        mdl_path = test_dir / "c_dewback.mdl"
+        mdx_path = test_dir / "c_dewback.mdx"
+        if not mdl_path.exists():
+            self.skipTest(f"Fixture missing: {mdl_path}")
+
+        raw_mdl = mdl_path.read_bytes()
+        raw_mdx = mdx_path.read_bytes()
+        prefix_len = 8192
+        prefix = b"\xaa" * prefix_len
+        suffix = b"\xbb" * 256
+        buf_mdl = prefix + raw_mdl + suffix
+        buf_mdx = prefix + raw_mdx + suffix
+
+        direct = read_mdl(mdl_path, source_ext=mdx_path)
+        sliced = read_mdl(
+            buf_mdl,
+            offset=prefix_len,
+            size=len(raw_mdl),
+            source_ext=buf_mdx,
+            offset_ext=prefix_len,
+            size_ext=len(raw_mdx),
+        )
+
+        self.assertEqual(direct.name, sliced.name)
+        self.assertEqual(len(direct.all_nodes()), len(sliced.all_nodes()))
+
 
 # ============================================================================
 # Round-Trip Tests: Binary -> ASCII -> Binary
