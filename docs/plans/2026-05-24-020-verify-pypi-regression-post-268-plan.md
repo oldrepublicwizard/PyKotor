@@ -60,9 +60,11 @@ Plan 019 landed via PR #268 but remained `in_progress` without post-merge verifi
 
 **Local PyPI parity:** Plans 041–042 confirm published packages match workflow scripts locally (core/format imports; CLI discover→install with documented skips).
 
-**Track status (plan 051):** **Monitoring-only.** Code and local parity complete (#268–#303, plans 019–055). Await CI green on [26365458400](https://github.com/OpenKotOR/PyKotor/actions/runs/26365458400) and FC [26365415666](https://github.com/OpenKotOR/PyKotor/actions/runs/26365415666); no further workflow changes unless CI reports new failures.
+**Track status (plan 051):** **Monitoring-only.** Code and local parity complete (#268–#304, plans 019–056). Await CI green on [26365458400](https://github.com/OpenKotOR/PyKotor/actions/runs/26365458400) and FC [26365415666](https://github.com/OpenKotOR/PyKotor/actions/runs/26365415666); no further workflow changes unless CI reports new failures.
 
-**Plans:** 019–055 document the closeout track; authoritative learning in `docs/solutions/testing/verify-pypi-regression-closeout.md`.
+**Last CI check (plan 056):** 2026-05-24 — same runs still queued on `9facd78fd`; no re-dispatch.
+
+**Plans:** 019–056 document the closeout track; authoritative learning in `docs/solutions/testing/verify-pypi-regression-closeout.md`.
 
 ---
 

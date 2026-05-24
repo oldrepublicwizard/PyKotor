@@ -53,6 +53,7 @@ Post–PR #268 CI hygiene and local parity for published PyPI packages.
 - Re-enabling **`workflow_run`** trigger on verify-pypi (empty pending runs).
 - **`uv run`** for local verify slice (workspace pulls unpublished kotordiff).
 - Repeated cancel/dispatch loops without SHA drift or empty-run regression.
+- **LFG PRs when `--ci-status-only` shows the same queued run IDs** — use local check only until status or conclusion changes (plan 056).
 
 ## Local command
 
