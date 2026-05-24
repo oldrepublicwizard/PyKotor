@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import re
 import subprocess
 import sys
 import tempfile
@@ -17,6 +18,9 @@ from typing import Any
 
 REPO_ROOT = Path(__file__).resolve().parent.parent.parent
 DISCOVER_SCRIPT = REPO_ROOT / ".github" / "scripts" / "discover_tools.py"
+SOLUTION_CLOSEOUT = (
+    REPO_ROOT / "docs" / "solutions" / "testing" / "verify-pypi-regression-closeout.md"
+)
 VERIFY_WORKFLOW = "verify-pypi-regression.yml"
 FC_WORKFLOW = "commit-all-to-bleeding-edge.yml"
 
@@ -172,15 +176,78 @@ def _latest_workflow_run(workflow_file: str) -> dict[str, Any]:
     }
 
 
-def _ci_status() -> dict[str, Any]:
+def _last_ci_check_section() -> str:
+    if not SOLUTION_CLOSEOUT.is_file():
+        return ""
+    text = SOLUTION_CLOSEOUT.read_text(encoding="utf-8")
+    match = re.search(r"## Last CI check[^\n]*\n(.*?)(?=\n## |\Z)", text, re.S)
+    return match.group(1) if match else ""
+
+
+def _parse_solution_checkpoint_run_ids() -> dict[str, Any]:
+    section = _last_ci_check_section()
+    if not section:
+        return {"error": "Last CI check section not found in solution doc"}
+    verify_match = re.search(r"verify[^\[]*\[(\d+)\]", section, re.I)
+    fc_match = re.search(r"FC[^\[]*\[(\d+)\]", section, re.I)
+    if not verify_match or not fc_match:
+        return {"error": "could not parse verify/FC run IDs from Last CI check"}
+    return {
+        "verify_run_id": int(verify_match.group(1)),
+        "forward_commits_run_id": int(fc_match.group(1)),
+    }
+
+
+def _compare_checkpoint(status: dict[str, Any]) -> dict[str, Any]:
+    checkpoint = _parse_solution_checkpoint_run_ids()
+    if "error" in checkpoint:
+        return {
+            "checkpoint_unchanged": False,
+            "defer_lfg_pr": False,
+            "checkpoint_error": checkpoint["error"],
+        }
+
+    verify = status["verify_pypi"]
+    forward_commits = status["forward_commits"]
+    if "error" in verify or "error" in forward_commits:
+        return {
+            "checkpoint_unchanged": False,
+            "defer_lfg_pr": False,
+            "checkpoint_error": "gh run lookup failed",
+        }
+
+    verify_id = verify.get("run_id")
+    fc_id = forward_commits.get("run_id")
+    ids_match = (
+        verify_id == checkpoint["verify_run_id"]
+        and fc_id == checkpoint["forward_commits_run_id"]
+    )
+    still_queued = (
+        verify.get("status") == "queued"
+        and forward_commits.get("status") == "queued"
+        and not verify.get("conclusion")
+        and not forward_commits.get("conclusion")
+    )
+    return {
+        "checkpoint_unchanged": ids_match and still_queued,
+        "defer_lfg_pr": ids_match and still_queued,
+        "checkpoint_verify_run_id": checkpoint["verify_run_id"],
+        "checkpoint_forward_commits_run_id": checkpoint["forward_commits_run_id"],
+    }
+
+
+def _ci_status(*, compare_checkpoint: bool = False) -> dict[str, Any]:
     verify = _latest_workflow_run(VERIFY_WORKFLOW)
     forward_commits = _latest_workflow_run(FC_WORKFLOW)
     gh_ok = "error" not in verify and "error" not in forward_commits
-    return {
+    result: dict[str, Any] = {
         "gh_ok": gh_ok,
         "verify_pypi": verify,
         "forward_commits": forward_commits,
     }
+    if compare_checkpoint:
+        result["checkpoint"] = _compare_checkpoint(result)
+    return result
 
 
 def _print_ci_status(status: dict[str, Any], *, as_json: bool) -> None:
@@ -217,10 +284,15 @@ def main() -> None:
         action="store_true",
         help="Query latest Verify PyPI and Forward Commits runs via gh (no PyPI venv)",
     )
+    parser.add_argument(
+        "--compare-checkpoint",
+        action="store_true",
+        help="With --ci-status-only --json, compare runs to solution doc Last CI check",
+    )
     args = parser.parse_args()
 
     if args.ci_status_only:
-        status = _ci_status()
+        status = _ci_status(compare_checkpoint=args.compare_checkpoint)
         _print_ci_status(status, as_json=args.json)
         sys.exit(0 if status["gh_ok"] else 1)
 
