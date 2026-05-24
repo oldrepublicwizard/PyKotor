@@ -40,6 +40,6 @@ Core/extension PyPI install jobs passed; only CLI discovery failed.
 |-------|----------|--------|
 | PR #268 merged to master | `01edca184` | ✅ merged |
 | Local `discover_tools.py --cli-only` | Linux Python 3.14 + `tomli`; HoloPatcher, KotorDiff, KotorMCP discovered | ✅ pass (2026-05-24) |
-| Verify PyPI Regression on master | [run 26362044155](https://github.com/OpenKotOR/PyKotor/actions/runs/26362044155) on `01edca184` | ⏳ pending (queued/in_progress at closeout) |
+| Verify PyPI Regression on master | [run 26362044155](https://github.com/OpenKotOR/PyKotor/actions/runs/26362044155) on `01edca184` | ⚠️ cancelled (concurrency; fixed in PR #275) |
 
 Closeout: plan `2026-05-24-020-verify-pypi-regression-post-268-plan.md` (completed).

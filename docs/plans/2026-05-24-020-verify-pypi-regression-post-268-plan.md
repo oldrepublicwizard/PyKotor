@@ -35,7 +35,7 @@ Plan 019 landed via PR #268 but remained `in_progress` without post-merge verifi
 |-------|----------|--------|
 | Local CLI discovery | `python3 .github/scripts/discover_tools.py --cli-only --format json` → holopatcher, kotordiff, kotormcp | ✅ pass |
 | Plan 019 closeout | status `completed` | ✅ done |
-| Verify PyPI Regression CI | https://github.com/OpenKotOR/PyKotor/actions/runs/26362044155 | ⏳ pending (post-merge trigger) |
+| Verify PyPI Regression CI | https://github.com/OpenKotOR/PyKotor/actions/runs/26362044155 | ⚠️ cancelled (concurrency; fixed in PR #275) |
 
 ---
 
