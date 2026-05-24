@@ -42,7 +42,7 @@ Plan 019 landed via PR #268 but remained `in_progress` without post-merge verifi
 | Local PyPI parity (plan 041) | ephemeral venv `pip install pykotor[all]` + workflow import scripts | ✅ pass (Linux/py3; CI matrix still queued) |
 | Verify PyPI CI (post-#277) | https://github.com/OpenKotOR/PyKotor/actions/runs/26364756399 | ⏳ queued — **Check trigger** on master `2946d823e` (plan 046; cancelled stale 26364391944) |
 | Forward Commits (post-#293) | https://github.com/OpenKotOR/PyKotor/actions/runs/26364669571 | ⏳ pending — merge job queued (runner backlog; plan 045) |
-| Local FC dry-run (plan 046) | cherry-pick master→bleeding-edge + workflow restore | ✅ pass (docs conflict auto-resolved) |
+| Local full verify slice (plan 047) | PyPI `pykotor[all]` + workflow core/format imports + CLI discover→install→help | ✅ pass (kotordiff not on PyPI; CLI `--help` rc=1 skips match CI) |
 | Publish→verify dispatch (#293) | `publish-pypi-auto.yml` `trigger-verify-pypi` job | ✅ code on master; awaits next Auto-Publish with packages (plan 044) |
 | Docs-only CI fan-out | #283 `paths-ignore: docs/**` on FC + Auto-Publish | ✅ merged `f8e9de37f`; stale docs-era FC runs cancelled (plan 035) |
 
@@ -58,9 +58,9 @@ Plan 019 landed via PR #268 but remained `in_progress` without post-merge verifi
 
 **Local PyPI parity:** Plans 041–042 confirm published packages match workflow scripts locally (core/format imports; CLI discover→install with documented skips).
 
-**Plans:** 019–046 document the closeout track; plan 046 adds local FC dry-run + fresh verify dispatch on master tip.
+**Plans:** 019–047 document the closeout track; plan 047 re-runs combined local verify-pypi vertical slice while CI queued.
 
-**CI monitoring:** Verify [26364756399](https://github.com/OpenKotOR/PyKotor/actions/runs/26364756399) queued on `2946d823e`; FC [26364669571](https://github.com/OpenKotOR/PyKotor/actions/runs/26364669571) merge still pending (runner backlog).
+**CI monitoring:** Verify [26364756399](https://github.com/OpenKotOR/PyKotor/actions/runs/26364756399) and FC [26364669571](https://github.com/OpenKotOR/PyKotor/actions/runs/26364669571) still queued (runner backlog); no re-dispatch in plan 047.
 
 ---
 
