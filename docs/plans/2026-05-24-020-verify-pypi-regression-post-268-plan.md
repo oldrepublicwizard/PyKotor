@@ -40,8 +40,9 @@ Plan 019 landed via PR #268 but remained `in_progress` without post-merge verifi
 | Stale branch cleanup | `fix/pypi-verify-regression-concurrency` deleted (merged #275, stray docs) | ✅ plan 026 |
 | Local CLI PyPI parity (plan 042) | holopatcher/kotormcp install from PyPI; kotordiff not on PyPI; `--help` rc=1 (workflow continue-on-error) | ✅ pass (parity with CI skip semantics; py3.14 local) |
 | Local PyPI parity (plan 041) | ephemeral venv `pip install pykotor[all]` + workflow import scripts | ✅ pass (Linux/py3; CI matrix still queued) |
-| Verify PyPI CI (post-#277) | https://github.com/OpenKotOR/PyKotor/actions/runs/26364756399 | ⏳ queued — **Check trigger** on `2946d823e` (plan 046) |
-| Forward Commits (post-#297) | https://github.com/OpenKotOR/PyKotor/actions/runs/26364901538 | ⏳ queued — merge on `b05826167` (plan 048 script; plan 049) |
+| Verify PyPI CI (post-#277) | https://github.com/OpenKotOR/PyKotor/actions/runs/26364992933 | ⏳ queued — **Check trigger** on `4881930aa` (plan 050; cancelled stale 26364756399) |
+| Forward Commits (post-#298) | https://github.com/OpenKotOR/PyKotor/actions/runs/26364956110 | ⏳ queued — merge on `4881930aa` (plan 049) |
+| Solution doc (plan 050) | `docs/solutions/testing/verify-pypi-regression-closeout.md` | ✅ prefer/defer/avoid + local command |
 | Local verify script (plan 048) | `python3 .github/scripts/local_verify_pypi_slice.py` | ✅ pass (replaces manual plan 047 slice) |
 | Publish→verify dispatch (#293) | `publish-pypi-auto.yml` `trigger-verify-pypi` job | ✅ code on master; awaits next Auto-Publish with packages (plan 044) |
 | Docs-only CI fan-out | #283 `paths-ignore: docs/**` on FC + Auto-Publish | ✅ merged `f8e9de37f`; stale docs-era FC runs cancelled (plan 035) |
@@ -58,9 +59,9 @@ Plan 019 landed via PR #268 but remained `in_progress` without post-merge verifi
 
 **Local PyPI parity:** Plans 041–042 confirm published packages match workflow scripts locally (core/format imports; CLI discover→install with documented skips).
 
-**Plans:** 019–049 document the closeout track; plan 049 wires local verify script into AGENTS.md and workflow header.
+**Plans:** 019–050 document the closeout track; plan 050 adds `docs/solutions/testing/verify-pypi-regression-closeout.md`.
 
-**CI monitoring:** Verify [26364756399](https://github.com/OpenKotOR/PyKotor/actions/runs/26364756399) and FC [26364901538](https://github.com/OpenKotOR/PyKotor/actions/runs/26364901538) queued (runner backlog).
+**CI monitoring:** Verify [26364992933](https://github.com/OpenKotOR/PyKotor/actions/runs/26364992933) and FC [26364956110](https://github.com/OpenKotOR/PyKotor/actions/runs/26364956110) queued (runner backlog).
 
 ---
 
