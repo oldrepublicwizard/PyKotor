@@ -40,7 +40,7 @@ Plan 019 landed via PR #268 but remained `in_progress` without post-merge verifi
 | Stale branch cleanup | `fix/pypi-verify-regression-concurrency` deleted (merged #275, stray docs) | ✅ plan 026 |
 | Local CLI PyPI parity (plan 042) | holopatcher/kotormcp install from PyPI; kotordiff not on PyPI; `--help` rc=1 (workflow continue-on-error) | ✅ pass (parity with CI skip semantics; py3.14 local) |
 | Local PyPI parity (plan 041) | ephemeral venv `pip install pykotor[all]` + workflow import scripts | ✅ pass (Linux/py3; CI matrix still queued) |
-| Verify PyPI CI (post-#277) | https://github.com/OpenKotOR/PyKotor/actions/runs/26364391944 | ⏳ queued — **Check trigger** scheduled (plan 040; no re-dispatch in 041) |
+| Verify PyPI CI (post-#277) | https://github.com/OpenKotOR/PyKotor/actions/runs/26364391944 | ⏳ queued — **Check trigger** scheduled; plan 043 removes `workflow_run` trigger |
 | Forward Commits (post-#288) | https://github.com/OpenKotOR/PyKotor/actions/runs/26363668835 | ⏳ queued — merge job scheduled; superseded dispatch 26363563890 cancelled (plan 040) |
 | Docs-only CI fan-out | #283 `paths-ignore: docs/**` on FC + Auto-Publish | ✅ merged `f8e9de37f`; stale docs-era FC runs cancelled (plan 035) |
 
@@ -48,15 +48,15 @@ Plan 019 landed via PR #268 but remained `in_progress` without post-merge verifi
 
 ## Track closeout (2026-05-24)
 
-**Code landed:** #268 (test-cli-tools), #275/#280 (verify concurrency + gate), #277 (FC repair), #283 (docs paths-ignore), #286 (FC workflow_dispatch), #288 (FC concurrency).
+**Code landed:** #268 (test-cli-tools), #275/#280 (verify concurrency + gate), #277 (FC repair), #283 (docs paths-ignore), #286 (FC workflow_dispatch), #288 (FC concurrency), plan 043 (verify `workflow_run` removed).
 
-**Scheduling validated:** Verify PyPI gate job and FC merge job appear on all post-fix dispatches (not empty-cancelled).
+**Scheduling validated:** Verify PyPI gate job and FC merge job appear on post-fix dispatches (not empty-cancelled). `workflow_run` verify triggers removed after empty-job pending noise (plan 043).
 
 **External blocker:** GitHub Actions runner backlog prevents full matrix / FC cherry-pick completion; local smoke (discovery + core imports) passes on every LFG slice.
 
 **Local PyPI parity:** Plans 041–042 confirm published packages match workflow scripts locally (core/format imports; CLI discover→install with documented skips).
 
-**Plans:** 019–042 document the closeout track; no further workflow changes required unless CI reveals new failures.
+**Plans:** 019–043 document the closeout track; post-publish verify dispatch from Auto-Publish deferred.
 
 ---
 

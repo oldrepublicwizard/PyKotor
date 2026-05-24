@@ -5,7 +5,6 @@
 # Runs on:
 # - Manual dispatch
 # - Weekly schedule
-# - After successful "Auto-Publish to PyPI" workflow
 
 name: Verify PyPI Regression
 
@@ -23,14 +22,10 @@ on:
   schedule:
     # Run weekly on Sundays at 00:00 UTC
     - cron: '0 0 * * 0'
-  workflow_run:
-    workflows: ["Auto-Publish to PyPI"]
-    types: [completed]
 
 concurrency:
-  # Isolate manual/scheduled runs from workflow_run noise (failed Auto-Publish triggers).
   group: verify-pypi-${{ github.event_name }}-${{ github.ref }}
-  cancel-in-progress: false  # avoid cancel storm from repeated workflow_run triggers
+  cancel-in-progress: false
 
 env:
   PYPI_SOURCE: ${{ inputs.pypi_source || 'pypi' }}
