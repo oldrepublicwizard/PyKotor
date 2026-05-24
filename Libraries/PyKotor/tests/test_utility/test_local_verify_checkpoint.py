@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import importlib.util
 import io
+import json
 import subprocess
 import sys
 import unittest
@@ -160,6 +161,18 @@ class TestCheckpointParsing(unittest.TestCase):
         )
         self.assertNotEqual(result.returncode, 0)
         self.assertIn("--exit-on-defer requires", result.stderr)
+
+    def test_monitor_preflight_shorthand(self) -> None:
+        result = subprocess.run(
+            [sys.executable, str(SCRIPT_PATH), "--monitor-preflight"],
+            capture_output=True,
+            text=True,
+            cwd=REPO_ROOT,
+            check=False,
+        )
+        self.assertEqual(result.returncode, 0, msg=result.stderr)
+        payload = json.loads(result.stdout)
+        self.assertTrue(payload.get("lfg_deferred"))
 
 
 if __name__ == "__main__":

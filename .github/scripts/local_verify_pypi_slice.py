@@ -288,7 +288,11 @@ def _apply_lfg_defer(status: dict[str, Any], *, exit_on_defer: bool) -> bool:
 def main() -> None:
     parser = argparse.ArgumentParser(
         description="Local verify-pypi regression slice (published packages)",
-        epilog="Example: python3 .github/scripts/local_verify_pypi_slice.py",
+        epilog=(
+            "Examples:\n"
+            "  python3 .github/scripts/local_verify_pypi_slice.py\n"
+            "  python3 .github/scripts/local_verify_pypi_slice.py --monitor-preflight"
+        ),
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
     )
     parser.add_argument(
@@ -311,7 +315,18 @@ def main() -> None:
         action="store_true",
         help="With --ci-status-only --compare-checkpoint, emit lfg_deferred when checkpoint unchanged",
     )
+    parser.add_argument(
+        "--monitor-preflight",
+        action="store_true",
+        help="Shorthand for --ci-status-only --json --compare-checkpoint --exit-on-defer",
+    )
     args = parser.parse_args()
+
+    if args.monitor_preflight:
+        args.ci_status_only = True
+        args.json = True
+        args.compare_checkpoint = True
+        args.exit_on_defer = True
 
     if args.exit_on_defer and not (args.ci_status_only and args.compare_checkpoint):
         parser.error("--exit-on-defer requires --ci-status-only and --compare-checkpoint")

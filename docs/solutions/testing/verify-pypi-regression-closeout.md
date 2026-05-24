@@ -61,8 +61,10 @@ Post–PR #268 CI hygiene and local parity for published PyPI packages.
 Before `/lfg` on this track:
 
 ```bash
-python3 .github/scripts/local_verify_pypi_slice.py --ci-status-only --json --compare-checkpoint --exit-on-defer
+python3 .github/scripts/local_verify_pypi_slice.py --monitor-preflight
 ```
+
+Equivalent to `--ci-status-only --json --compare-checkpoint --exit-on-defer` (plan 063).
 
 When JSON includes `"lfg_deferred": true`, defer monitoring LFG until verify/FC status, conclusion, or run IDs change. Unit tests: `python3 -m unittest Libraries.PyKotor.tests.test_utility.test_local_verify_checkpoint`.
 

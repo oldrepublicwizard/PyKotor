@@ -21,14 +21,14 @@ python3 .github/scripts/local_verify_pypi_slice.py
 python3 .github/scripts/local_verify_pypi_slice.py --json
 python3 .github/scripts/local_verify_pypi_slice.py --ci-status-only --json
 python3 .github/scripts/local_verify_pypi_slice.py --ci-status-only --json --compare-checkpoint
-python3 .github/scripts/local_verify_pypi_slice.py --ci-status-only --json --compare-checkpoint --exit-on-defer
+python3 .github/scripts/local_verify_pypi_slice.py --monitor-preflight
 ```
 
-Use system **`python3`**, not `uv run`: workspace resolution can fail on unpublished packages (e.g. kotordiff). The script uses an ephemeral venv and installs `pykotor[all]` from PyPI. Documented CLI skips (kotordiff not on PyPI; `--help` rc≠0) match CI `continue-on-error` behavior. **`--json`** prints a machine-readable pass/skip/fail summary for agents. **`--ci-status-only`** queries latest Verify PyPI / Forward Commits runs via `gh` without installing packages (monitoring-only track). **`--compare-checkpoint`** adds a `checkpoint` object with `defer_lfg_pr` when run IDs and queued status match the solution doc **Last CI check** (plan 059). **`--exit-on-defer`** adds `lfg_deferred: true` and prints a stderr hint when the checkpoint is unchanged (plan 061).
+Use system **`python3`**, not `uv run`: workspace resolution can fail on unpublished packages (e.g. kotordiff). The script uses an ephemeral venv and installs `pykotor[all]` from PyPI. Documented CLI skips (kotordiff not on PyPI; `--help` rc≠0) match CI `continue-on-error` behavior. **`--json`** prints a machine-readable pass/skip/fail summary for agents. **`--ci-status-only`** queries latest Verify PyPI / Forward Commits runs via `gh` without installing packages (monitoring-only track). **`--compare-checkpoint`** adds a `checkpoint` object with `defer_lfg_pr` when run IDs and queued status match the solution doc **Last CI check** (plan 059). **`--exit-on-defer`** adds `lfg_deferred: true` and prints a stderr hint when the checkpoint is unchanged (plan 061). **`--monitor-preflight`** is shorthand for all four monitoring flags (plan 063).
 
 See also `docs/solutions/testing/verify-pypi-regression-closeout.md` for prefer/defer/avoid guidance and CI closeout history.
 
-When `checkpoint.defer_lfg_pr` or `lfg_deferred` is true, defer further LFG PRs on this track until status or conclusion changes (plans 056–061).
+When `checkpoint.defer_lfg_pr` or `lfg_deferred` is true, defer further LFG PRs on this track until status or conclusion changes (plans 056–063).
 
 ### Lint
 
