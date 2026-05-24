@@ -16,6 +16,7 @@ from __future__ import annotations
 import tempfile
 import unittest
 
+import pytest
 from pathlib import Path
 from typing import ClassVar, Final
 
@@ -33,6 +34,8 @@ from qtpy.QtWidgets import (
     QTreeView,
     QWidget,
 )
+
+pytestmark = pytest.mark.gui
 
 # =============================================================================
 # TEST CONSTANTS

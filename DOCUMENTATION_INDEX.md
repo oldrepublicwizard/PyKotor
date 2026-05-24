@@ -1,257 +1,130 @@
 # PyKotor Documentation Index
 
-Complete guide to all PyKotor documentation, organized by topic and audience.
+Complete guide to PyKotor documentation, organized by topic and audience.
 
-**📊 Visual Map**: [PyKotor Documentation Map](https://www.figma.com/online-whiteboard/create-diagram/5f6fc88c-9d82-4fa3-b9ac-08f8166d2a14) - Interactive diagram showing all documentation relationships
+## Knowledgebase navigation (agents & contributors)
+
+**Start here for implementation and debugging:**
+
+1. **[STRATEGY.md](STRATEGY.md)** — product intent, metrics, active tracks
+2. **[AGENTS.md](AGENTS.md)** — KB map, canonical pytest command, tool gotchas
+3. **[docs/plans/](docs/plans/)** — active execution plans
+4. **[docs/solutions/](docs/solutions/)** — validated learnings (YAML frontmatter)
+5. **[wiki/](wiki/)** — public format and RE specifications
+6. **[docs/](docs/)** — implementation deep dives (e.g. [TSLPatchData index](docs/INDEX.md))
 
 ## Quick Navigation
 
-### 🚀 Getting Started
-- **[README.md](README.md)** - Project overview, installation, quick start
-- **[SETUP.md](docs/SETUP.md)** - Detailed development environment setup
-- **[QUICK_START.md](docs/QUICK_START.md)** - Targeted test commands for TSLPatcher
+### Getting Started
 
-### 🎨 Design & Architecture
-- **[FIGMA_INTEGRATION_SUMMARY.md](FIGMA_INTEGRATION_SUMMARY.md)** - ⭐ **Start here!** Complete Figma integration overview
-- **[FIGMA_DIAGRAMS.md](FIGMA_DIAGRAMS.md)** - 22 interactive architectural diagrams
-- **[Design System Rules](.cursor/rules/design_system_rules.md)** - Comprehensive UI design system
-- **[Code Connect Examples](FIGMA_CODE_CONNECT_EXAMPLES.md)** - Figma-to-code mappings
+- **[README.md](README.md)** — Project overview, installation, quick start
+- **[CONTRIBUTING.md](CONTRIBUTING.md)** — How to contribute (includes scoped pytest)
+- **[AGENTS.md](AGENTS.md)** — Agent runbook and test commands
 
-### 🛠️ Development
-- **[CONTRIBUTING.md](CONTRIBUTING.md)** - How to contribute to the project
-- **[CONVENTIONS.md](CONVENTIONS.md)** - Code conventions and standards
-- **[POWERSHELL.md](POWERSHELL.md)** - PowerShell setup for Windows
+### Design & Architecture
 
-### 📚 Reference Documentation
-- **[PyKotor Library Docs](Libraries/PyKotor/docs/)** - Core library API documentation
-- **[Project Wiki](https://github.com/OpenKotOR/PyKotor/wiki)** - Community documentation
-- **[File Format Documentation](wiki/)** - Game file format specifications
+- **[FIGMA_INTEGRATION_SUMMARY.md](FIGMA_INTEGRATION_SUMMARY.md)** — Figma integration overview
+- **[FIGMA_DIAGRAMS.md](FIGMA_DIAGRAMS.md)** — Architectural diagrams
+- **[Design System Rules](.cursor/rules/design_system_rules.md)** — UI design system
+- **[Code Connect Examples](FIGMA_CODE_CONNECT_EXAMPLES.md)** — Figma-to-code mappings
 
-### 🔧 Tool-Specific Documentation
-- **[HolocronToolset](Tools/HolocronToolset/README.md)** - GUI editor suite
-- **[HoloPatcher](Tools/HoloPatcher/README.md)** - Mod installer
-- **[KotorDiff](Tools/KotorDiff/README.md)** - Diff tool
-- **[BatchPatcher](Tools/BatchPatcher/README.md)** - Batch processing
-- **[HoloPazaak](Tools/HoloPazaak/README.md)** - Pazaak game
+### Development
+
+- **[CONTRIBUTING.md](CONTRIBUTING.md)** — Contribution guidelines
+- **[CONVENTIONS.md](CONVENTIONS.md)** — Code conventions
+- **[POWERSHELL.md](POWERSHELL.md)** — PowerShell setup for Windows
+
+### Reference Documentation
+
+- **[PyKotor Library Docs](Libraries/PyKotor/docs/)** — Core library API documentation
+- **[Project Wiki](https://github.com/OpenKotOR/PyKotor/wiki)** — Community documentation
+- **[File Format Documentation](wiki/)** — In-tree game file format specifications
+
+### Validated learnings (solutions)
+
+| Topic | Doc |
+|-------|-----|
+| BWM / walkmesh authority | [docs/solutions/documentation/authoritative-bwm-wiki-from-re-and-pipelines.md](docs/solutions/documentation/authoritative-bwm-wiki-from-re-and-pipelines.md) |
+| Save/load engine parity | [docs/solutions/logic-errors/kotor-save-load-1-1-python-from-re.md](docs/solutions/logic-errors/kotor-save-load-1-1-python-from-re.md) |
+| TSLPatcher parity harness | [docs/solutions/testing/tslpatcher-parity-harness-mvp.md](docs/solutions/testing/tslpatcher-parity-harness-mvp.md) |
+
+### Tool-Specific Documentation
+
+- **[HolocronToolset](Tools/HolocronToolset/README.md)** — GUI editor suite
+- **[HoloPatcher](Tools/HoloPatcher/README.md)** — Mod installer
+- **[KotorDiff](Tools/KotorDiff/README.md)** — Diff tool
+- **[BatchPatcher](Tools/BatchPatcher/README.md)** — Batch processing
+- **[HoloPazaak](Tools/HoloPazaak/README.md)** — Pazaak game
 
 ---
 
 ## By Audience
 
 ### For New Developers
-1. Read [README.md](README.md) for project overview
-2. Follow [SETUP.md](docs/SETUP.md) for environment setup
-3. Review [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines
-4. Check [FIGMA_DIAGRAMS.md](FIGMA_DIAGRAMS.md) for architecture understanding
 
-### For UI/UX Designers
-1. Start with [FIGMA_INTEGRATION_SUMMARY.md](FIGMA_INTEGRATION_SUMMARY.md)
-2. Review [Design System Rules](.cursor/rules/design_system_rules.md)
-3. Explore [FigJam Diagrams](FIGMA_DIAGRAMS.md) for system architecture
-4. Reference [Code Connect Examples](FIGMA_CODE_CONNECT_EXAMPLES.md) for component mappings
+1. Read [README.md](README.md) for project overview
+2. Follow [CONTRIBUTING.md](CONTRIBUTING.md) for environment and test commands
+3. Use [AGENTS.md](AGENTS.md) for scoped pytest and Linux gotchas
+4. Check [FIGMA_DIAGRAMS.md](FIGMA_DIAGRAMS.md) for architecture context
 
 ### For Contributors
+
 1. Read [CONTRIBUTING.md](CONTRIBUTING.md) first
 2. Follow [CONVENTIONS.md](CONVENTIONS.md) for code style
-3. Check [SETUP.md](docs/SETUP.md) for dev environment
-4. Reference appropriate tool README for your work area
+3. Reference [AGENTS.md](AGENTS.md) for CI-aligned test commands
+4. Check [docs/solutions/](docs/solutions/) before changing documented areas
 
 ### For AI Assistants
-1. Consult [Design System Rules](.cursor/rules/design_system_rules.md) for UI components
-2. Reference [FIGMA_DIAGRAMS.md](FIGMA_DIAGRAMS.md) for architectural context
-3. Follow patterns in [Code Connect Examples](FIGMA_CODE_CONNECT_EXAMPLES.md)
-4. Check [CONVENTIONS.md](CONVENTIONS.md) for code standards
+
+1. Read [AGENTS.md](AGENTS.md) KB map and pytest block
+2. Consult [STRATEGY.md](STRATEGY.md) for metric-linked paths
+3. Check [docs/solutions/](docs/solutions/) for prefer/defer/avoid in documented domains
+4. Follow [Design System Rules](.cursor/rules/design_system_rules.md) for Holocron UI work
 
 ---
 
-## By Topic
+## Quick Reference
 
-### Architecture & Design
-| Document | Description | Lines |
-|----------|-------------|-------|
-| [FIGMA_INTEGRATION_SUMMARY.md](FIGMA_INTEGRATION_SUMMARY.md) | Complete integration overview | 400+ |
-| [FIGMA_DIAGRAMS.md](FIGMA_DIAGRAMS.md) | 22 architectural diagrams | 200+ |
-| [Design System Rules](.cursor/rules/design_system_rules.md) | UI design system documentation | 550+ |
-| [Code Connect Examples](FIGMA_CODE_CONNECT_EXAMPLES.md) | Figma-to-code mappings | 500+ |
-| [.cursor/rules/README.md](.cursor/rules/README.md) | Design system quick reference | 120+ |
+### Essential test command
 
-### Development Setup
-| Document | Description | Purpose |
-|----------|-------------|---------|
-| [SETUP.md](docs/SETUP.md) | Development environment | Full setup guide |
-| [QUICK_START.md](docs/QUICK_START.md) | Quick test commands | Fast onboarding |
-| [POWERSHELL.md](POWERSHELL.md) | Windows PowerShell setup | Windows dev |
-
-### Code Guidelines
-| Document | Description | Scope |
-|----------|-------------|-------|
-| [CONTRIBUTING.md](CONTRIBUTING.md) | Contribution guidelines | All contributors |
-| [CONVENTIONS.md](CONVENTIONS.md) | Code conventions | All code |
-| [.github/copilot-instructions.md](.github/copilot-instructions.md) | AI coding guidelines | AI assistants |
-
-### Tools & Libraries
-| Tool | Main README | Additional Docs |
-|------|-------------|-----------------|
-| PyKotor Library | [Libraries/PyKotor/README.md](Libraries/PyKotor/README.md) | [docs/](Libraries/PyKotor/docs/) |
-| HolocronToolset | [Tools/HolocronToolset/README.md](Tools/HolocronToolset/README.md) | [CONVENTIONS.md](Tools/HolocronToolset/CONVENTIONS.md) |
-| HoloPatcher | [Tools/HoloPatcher/README.md](Tools/HoloPatcher/README.md) | - |
-| KotorDiff | [Tools/KotorDiff/README.md](Tools/KotorDiff/README.md) | - |
-| BatchPatcher | [Tools/BatchPatcher/README.md](Tools/BatchPatcher/README.md) | - |
-| HoloPazaak | [Tools/HoloPazaak/README.md](Tools/HoloPazaak/README.md) | - |
-
-### Game Research
-| Document | Description | Status |
-|----------|-------------|--------|
-| [KOTOR_ENTRY_POINT_ANALYSIS.md](docs/KOTOR_ENTRY_POINT_ANALYSIS.md) | Entry point analysis | WIP |
-| [wiki/](wiki/) | File format specs | Reference |
-| [vendor/](vendor/) | External research | Archive |
-
----
-
-## Documentation Coverage
-
-### ✅ Comprehensive Coverage
-- Project overview and quick start
-- Development environment setup
-- Design system and UI components
-- Architectural diagrams (22 total)
-- Code examples and patterns
-- Tool-specific guides
-
-### 🚧 Areas for Expansion
-- Video tutorials
-- More code examples
-- API reference (autogenerated)
-- Performance optimization guides
-- Deployment procedures
-
----
-
-## Documentation Statistics
-
-### Files Created (This Session)
-- **FIGMA_INTEGRATION_SUMMARY.md** - 400+ lines
-- **FIGMA_DIAGRAMS.md** - 200+ lines
-- **FIGMA_CODE_CONNECT_EXAMPLES.md** - 500+ lines
-- **.cursor/rules/design_system_rules.md** - 550+ lines
-- **.cursor/rules/README.md** - 120+ lines
-- **DOCUMENTATION_INDEX.md** - This file
-
-**Total New Documentation**: 1,770+ lines
-
-### Diagrams Created
-- **Total Diagrams**: 22
-- **Accessible via**: FigJam web links
-- **Categories**: Architecture, Tools, Core Systems, UI, Development
-
-### Component Examples
-- **Qt Widgets**: 5 complete implementations
-- **Design Patterns**: 10+ documented patterns
-- **Code Snippets**: 50+ examples
-
----
-
-## Maintenance
-
-### Update Frequency
-- **Design System**: Quarterly reviews
-- **Diagrams**: After major architectural changes
-- **Code Examples**: When APIs change
-- **Tool READMEs**: Per release
-
-### Responsibilities
-- **Core Maintainers**: Architecture and design system docs
-- **Tool Maintainers**: Tool-specific READMEs
-- **Community**: Wiki and examples
-
-### How to Contribute to Docs
-1. Follow [CONTRIBUTING.md](CONTRIBUTING.md) guidelines
-2. Update related diagrams if applicable
-3. Add examples for complex features
-4. Keep documentation in sync with code
-
----
-
-## External Resources
-
-### Community
-- **GitHub Discussions**: [PyKotor Discussions](https://github.com/OpenKotOR/PyKotor/discussions)
-- **Issue Tracker**: [GitHub Issues](https://github.com/OpenKotOR/PyKotor/issues)
-
-### Game Modding Resources
-- **DeadlyStream**: KotOR modding community
-- **KotOR Tool**: Legacy Windows modding tool
-- **xoreos**: Open-source KotOR engine
-
----
-
-## Quick Reference Cards
-
-### Essential Commands
 ```bash
-# End users: run tools (use --refresh for latest version)
-uvx --refresh holocrontoolset
-uvx --refresh holopatcher
-uvx --refresh kotordiff
-uvx --refresh pykotor --help
-
-# Developers: run from local source (use --with-editable for latest)
-uvx --with-editable Libraries/PyKotor --with-editable Tools/HolocronToolset holocrontoolset
-uv run --directory Libraries/PyKotor/src --module pykotor --help
-
-# Run tests
-pytest
-pytest tests/test_tslpatcher/
-
-# Build distributions
-uv run compile/compile_toolset.ps1
+QT_QPA_PLATFORM=offscreen uv run pytest --import-mode=importlib -m "not gui and not slow" --timeout=120 \
+  --ignore=Libraries/PyKotor/tests/resource/formats/test_mdl_ascii.py \
+  --ignore=Libraries/PyKotor/tests/test_utility/test_registry_strict_typing.py \
+  --ignore=Libraries/PyKotor/tests/test_utility/test_file_dialog_components.py \
+  Libraries/PyKotor/tests
 ```
 
-### Essential File Locations
+Parity harness smoke:
+
+```bash
+QT_QPA_PLATFORM=offscreen uv run pytest --import-mode=importlib -m "not gui and not slow" --timeout=120 \
+  Libraries/PyKotor/tests/tslpatcher/parity/test_parity_harness.py -v
+```
+
+### Essential file locations
+
 ```
 PyKotor/
-├── Libraries/PyKotor/      # Core library
-├── Tools/                  # All tools
-├── docs/                   # Documentation
-├── .cursor/rules/          # Design system rules
-├── FIGMA_*.md             # Figma integration docs
-└── pyproject.toml         # Workspace config
+├── STRATEGY.md             # Product metrics and tracks
+├── AGENTS.md               # Agent KB map + pytest
+├── Libraries/PyKotor/      # Core library + tests
+├── Tools/                  # Holocron, HoloPatcher, KotorDiff, …
+├── docs/plans/             # Execution plans
+├── docs/solutions/         # Validated learnings
+├── wiki/                   # Format specs
+└── pyproject.toml          # Workspace config
 ```
 
-### Key Concepts
-- **HTInstallation**: Game installation manager
-- **ResourceType**: Enum for file types
-- **GFF**: Generic File Format (most game files)
-- **2DA**: Table format (CSV-like)
-- **TLK**: Talk table (string resources)
-- **TSLPatcher**: Mod installer format
+---
+
+## Removed / relocated paths
+
+These paths are **not** maintained at the locations previously listed here:
+
+- `docs/SETUP.md` — use [CONTRIBUTING.md](CONTRIBUTING.md) and [README.md](README.md)
+- `docs/QUICK_START.md` — use [docs/INDEX.md](docs/INDEX.md) (TSLPatchData) and [AGENTS.md](AGENTS.md#tests)
 
 ---
 
-## Version History
-
-### v1.0.0 (2026-01-31)
-- ✅ Complete Figma integration documentation
-- ✅ 22 architectural diagrams
-- ✅ Design system rules
-- ✅ Code Connect examples
-- ✅ Comprehensive documentation index
-
----
-
-## Contact & Support
-
-**Maintainers**: PyKotor Team  
-**Repository**: https://github.com/OpenKotOR/PyKotor  
-**License**: LGPL-3.0-or-later
-
-For questions or issues:
-1. Check this documentation index
-2. Search existing GitHub issues
-3. Create a new issue with details
-4. Reference specific documentation files
-
----
-
-**Last Updated**: 2026-01-31  
-**Documentation Version**: 1.0.0
+**Last Updated**: 2026-05-23

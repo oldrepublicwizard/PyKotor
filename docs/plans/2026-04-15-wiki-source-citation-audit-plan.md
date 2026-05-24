@@ -1,3 +1,10 @@
+---
+title: Wiki source-citation audit plan
+status: active
+date: 2026-04-15
+supersedes: docs/plans/wiki-source-audit-plan.md
+---
+
 # Wiki source-citation audit plan
 
 Goal: rewrite each wiki page from source-derived material only, with sentence-level citations. If a statement cannot be tied to code, package metadata, repository structure, or an explicitly preserved source repository, remove it instead of paraphrasing it without evidence.
@@ -7,6 +14,9 @@ Working rules:
 - Edit one wiki page at a time.
 - Prefer local monorepo source first, then external code repositories and preserved-source repositories.
 - Keep planning and audit state in `docs/plans/`, not in the wiki pages themselves.
+- For engine-behavior pages, require at least three-binary corroboration before retaining gameplay or runtime claims (merged from superseded `wiki-source-audit-plan.md`).
+- Default binary comparison set for Odyssey-engine behavior: `/K1/k1_win_gog_swkotor.exe`, `/TSL/k2_win_gog_aspyr_swkotor2.exe`, and `/Other BioWare Engines/Aurora/nwmain.exe` unless a different third comparator is more appropriate for the topic.
+- Delete or replace any prose that cannot be traced to a specific source.
 
 Current corroboration set:
 

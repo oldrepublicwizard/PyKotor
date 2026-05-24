@@ -176,14 +176,15 @@ Use meaningful branch names:
 
 ### 3. Test Your Changes
 
-Run the full test suite before committing:
+Run the scoped test suite before committing (see [Testing](#testing) for the full command):
 
 ```bash
-# Run tests
-pytest
-
-# Run with coverage
-pytest --cov=pykotor --cov-report=html
+QT_QPA_PLATFORM=offscreen uv run pytest --import-mode=importlib -m "not gui and not slow" --timeout=120 \
+  --ignore=Libraries/PyKotor/tests/resource/formats/test_mdl_ascii.py \
+  --ignore=Libraries/PyKotor/tests/test_utility/test_registry_strict_typing.py \
+  --ignore=Libraries/PyKotor/tests/test_utility/test_file_dialog_components.py \
+  --ignore=Libraries/PyKotor/tests/test_utility/test_keyboard_accessibility_conformance.py \
+  Libraries/PyKotor/tests
 ```
 
 ### 4. Check Code Quality
@@ -287,44 +288,62 @@ ruff format .
 # Type check
 mypy Libraries/PyKotor/src/pykotor
 
-# Test
-pytest
+# Test (scoped; see Testing section)
+QT_QPA_PLATFORM=offscreen uv run pytest --import-mode=importlib -m "not gui and not slow" --timeout=120 \
+  --ignore=Libraries/PyKotor/tests/resource/formats/test_mdl_ascii.py \
+  --ignore=Libraries/PyKotor/tests/test_utility/test_registry_strict_typing.py \
+  --ignore=Libraries/PyKotor/tests/test_utility/test_file_dialog_components.py \
+  --ignore=Libraries/PyKotor/tests/test_utility/test_keyboard_accessibility_conformance.py \
+  Libraries/PyKotor/tests
 ```
 
 ## Testing
 
 ### Running Tests
 
-**Basic test run:**
+Use the scoped command from [`AGENTS.md`](AGENTS.md#tests) (matches [`.github/workflows/python-package.yml`](.github/workflows/python-package.yml)):
+
 ```bash
-pytest
+QT_QPA_PLATFORM=offscreen uv run pytest --import-mode=importlib -m "not gui and not slow" --timeout=120 \
+  --ignore=Libraries/PyKotor/tests/resource/formats/test_mdl_ascii.py \
+  --ignore=Libraries/PyKotor/tests/test_utility/test_registry_strict_typing.py \
+  --ignore=Libraries/PyKotor/tests/test_utility/test_file_dialog_components.py \
+  --ignore=Libraries/PyKotor/tests/test_utility/test_keyboard_accessibility_conformance.py \
+  Libraries/PyKotor/tests
 ```
+
+**Gotchas:**
+
+- **Scope tests to `Libraries/PyKotor/tests`**. Running pytest from the repo root without that path collects other packages (e.g. Toolset) and often fails during collection.
+- **Linux requires `--import-mode=importlib`**. Without it, pytest fails with `ModuleNotFoundError: No module named 'resource.formats'` because the test directory `Libraries/PyKotor/tests/resource/` collides with Python's stdlib `resource` module.
 
 **With verbose output:**
-```bash
-pytest -v
-```
 
-**With coverage report:**
 ```bash
-pytest --cov=pykotor --cov-report=html
+QT_QPA_PLATFORM=offscreen uv run pytest --import-mode=importlib -m "not gui and not slow" --timeout=120 \
+  --ignore=Libraries/PyKotor/tests/resource/formats/test_mdl_ascii.py \
+  --ignore=Libraries/PyKotor/tests/test_utility/test_registry_strict_typing.py \
+  --ignore=Libraries/PyKotor/tests/test_utility/test_file_dialog_components.py \
+  --ignore=Libraries/PyKotor/tests/test_utility/test_keyboard_accessibility_conformance.py \
+  Libraries/PyKotor/tests -v
 ```
 
 **Run specific tests:**
+
 ```bash
 # Specific file
-pytest tests/test_specific.py
+uv run pytest --import-mode=importlib Libraries/PyKotor/tests/test_specific.py
 
 # Specific test
-pytest tests/test_specific.py::test_function_name
+uv run pytest --import-mode=importlib Libraries/PyKotor/tests/test_specific.py::test_function_name
 
 # Pattern matching
-pytest -k "test_pattern"
+uv run pytest --import-mode=importlib -k "test_pattern" Libraries/PyKotor/tests
 ```
 
 ### Writing Tests
 
-Place tests in the `tests/` directory following these conventions:
+Place tests under `Libraries/PyKotor/tests/` following these conventions:
 
 **File naming:**
 - `test_*.py` for test files
@@ -358,7 +377,7 @@ def test_resource_type_invalid_extension():
 ### Before Submitting
 
 Ensure your changes:
-- [ ] Pass all tests (`pytest`)
+- [ ] Pass all tests (scoped command in [`AGENTS.md`](AGENTS.md#tests))
 - [ ] Pass linting (`ruff check .`)
 - [ ] Are formatted correctly (`ruff format .`)
 - [ ] Include type hints where appropriate

@@ -124,8 +124,11 @@ class TestGFFDispatch(unittest.TestCase):
         self.assertFalse(SUPPORTED_GFF_RESOURCE_TYPES & UNSUPPORTED_GFF_RESOURCE_TYPES)
 
     def test_alias_types_resolve_to_supported_pipelines(self) -> None:
-        self.assertIsNotNone(get_gff_resource_pipeline(ResourceType.FAC_XML))
-        self.assertIsNotNone(get_gff_resource_pipeline(ResourceType.GUI_XML))
-        self.assertIsNotNone(get_gff_resource_pipeline(ResourceType.BTD))
+        # BT* templates map to U* pipelines via _BIOWARE_TEMPLATE_TARGETS.
         self.assertIsNotNone(get_gff_resource_pipeline(ResourceType.BTI))
-        self.assertIsNotNone(get_gff_resource_pipeline(ResourceType.RES_XML))
+        self.assertIsNotNone(get_gff_resource_pipeline(ResourceType.BTD))
+        # Plaintext XML aliases (FAC.XML, etc.) resolve through target_member to canonical
+        # GFF types; verify those canonical pipelines are registered.
+        self.assertIsNotNone(get_gff_resource_pipeline(ResourceType.FAC))
+        self.assertIsNotNone(get_gff_resource_pipeline(ResourceType.GUI))
+        self.assertIsNotNone(get_gff_resource_pipeline(ResourceType.RES))

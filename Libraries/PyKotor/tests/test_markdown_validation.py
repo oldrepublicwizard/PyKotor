@@ -15,6 +15,8 @@ from urllib.parse import unquote, urlparse
 
 import pytest
 
+pytestmark = [pytest.mark.slow]
+
 REPO_ROOT = Path(__file__).parent.parent.parent.parent
 WIKI_DIR = REPO_ROOT / "wiki"
 MARKDOWNLINT_CONFIG = REPO_ROOT / ".markdownlint-cli2.jsonc"

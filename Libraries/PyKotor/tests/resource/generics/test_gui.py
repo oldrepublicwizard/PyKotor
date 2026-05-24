@@ -50,10 +50,11 @@ from utility.common.geometry import Vector2, Vector4
 if TYPE_CHECKING:
     from pykotor.resource.formats.gff.gff_data import GFF
 
-TEST_FILE_1 = r"Libraries\PyKotor\tests\test_files\name_x.gui"
-TEST_FILE_2 = r"Libraries\PyKotor\tests\test_files\pazaakgame_p.gui"
-TEST_FILE_3 = r"Libraries\PyKotor\tests\test_files\component_p.gui"
-TEST_FILE_4 = r"Libraries\PyKotor\tests\test_files\inventory_x.gui"
+TEST_FILES_DIR = THIS_SCRIPT_PATH.parents[1] / "test_files"
+TEST_FILE_1 = str(TEST_FILES_DIR / "name_x.gui")
+TEST_FILE_2 = str(TEST_FILES_DIR / "pazaakgame_p.gui")
+TEST_FILE_3 = str(TEST_FILES_DIR / "component_p.gui")
+TEST_FILE_4 = str(TEST_FILES_DIR / "inventory_x.gui")
 K1_PATH: str | None = os.environ.get(
     "K1_PATH", "C:\\Program Files (x86)\\Steam\\steamapps\\common\\swkotor"
 )
@@ -62,6 +63,10 @@ K2_PATH: str | None = os.environ.get(
 )
 
 
+@unittest.skipUnless(
+    os.path.isfile(TEST_FILE_1),
+    f"GUI fixture not present: {TEST_FILE_1}",
+)
 class TestGUI(TestCase):
     def setUp(self):
         self.log_messages: list[str] = [os.linesep]

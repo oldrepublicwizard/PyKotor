@@ -216,6 +216,7 @@ class TestPathlibMixedSlashes(unittest.TestCase):
                 assert hash(path1) != hash(path2)
                 assert test_set != {CustomPath("TEST/path/to/nothing/")}
 
+    @unittest.skipIf(os.name != "nt", "Test only supported on NT systems.")
     def test_windows_case_hashing_custom_path(self):
         path1, path2 = (
             CustomPath("test\\\\path\\to\\nothing\\"),
@@ -557,6 +558,7 @@ class TestPathlibMixedSlashes(unittest.TestCase):
         assert str(CustomWindowsPath("C:/./Users/../test/").resolve()) == "C:\\test"
         assert str(CustomWindowsPath("~/folder/")) == "~\\folder"
 
+    @unittest.skipIf(os.name != "nt", "Test only supported on NT systems.")
     def test_custom_path_edge_cases_windows_custom_pure_windows_path(self):
         assert str(CustomPureWindowsPath("C:/")) == "C:"
         assert str(CustomPureWindowsPath("C:\\")) == "C:"

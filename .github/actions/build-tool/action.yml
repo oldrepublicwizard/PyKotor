@@ -58,7 +58,7 @@ runs:
       shell: pwsh
       run: |
         $toolPath = "${{ inputs.tool_path }}"
-        $toolDir = [System.IO.Path]::GetFileName($toolPath.TrimEnd('/', '\\'))
+        $toolDir = [System.IO.Path]::GetFileName($toolPath.TrimEnd([char[]]@('/', '\')))
         $displayName = if ("${{ inputs.tool_display_name }}") { "${{ inputs.tool_display_name }}" } else { $toolDir }
         $artifactName = "${displayName}_${{ runner.os }}_${{ inputs.architecture }}"
         if ("${{ inputs.tool_requires_qt }}" -eq "true") {
@@ -143,7 +143,7 @@ runs:
       run: |
         try {
           $toolPath = "${{ inputs.tool_path }}"
-          $toolDir = [System.IO.Path]::GetFileName($toolPath.TrimEnd('/', '\\'))
+          $toolDir = [System.IO.Path]::GetFileName($toolPath.TrimEnd([char[]]@('/', '\')))
           $venvName = ".venv_${toolDir}_${{ runner.os }}_${{ inputs.python_version }}_${{ inputs.architecture }}"
 
           $depsArgs = @(
@@ -160,17 +160,37 @@ runs:
             )
           }
 
-          Write-Host "Installing dependencies via compile/deps_tool.ps1: $($depsArgs -join ' ')"
-          & ./compile/deps_tool.ps1 @depsArgs
-          if ($LASTEXITCODE -ne 0) { throw "deps_tool.ps1 failed with exit code $LASTEXITCODE" }
-
-          # Compute venv Python path (used in later steps)
           $repoRoot = (Get-Location).Path
           $venvPython = if ("${{ runner.os }}" -eq "Windows") {
             Join-Path $repoRoot "$venvName/Scripts/python.exe"
           } else {
             Join-Path $repoRoot "$venvName/bin/python"
           }
+
+          # In CI, setup-python already provisioned Python; avoid install_python_venv.ps1 downloads.
+          if ($env:GITHUB_ACTIONS -eq "true") {
+            if (-not (Test-Path -LiteralPath $venvPython)) {
+              python -m venv $venvName
+              if ($LASTEXITCODE -ne 0) { throw "python -m venv failed with exit code $LASTEXITCODE" }
+            }
+            if (-not (Test-Path -LiteralPath $venvPython)) {
+              throw "Venv python not found at $venvPython after python -m venv"
+            }
+            # deps_tool.py runs with venv python (--skip-venv); tomli must be in the venv on Py3.8.
+            & $venvPython -m pip install --disable-pip-version-check tomli
+            if ($LASTEXITCODE -ne 0) { throw "pip install tomli into venv failed with exit code $LASTEXITCODE" }
+            $env:pythonExePath = $venvPython
+            Write-Host "Using Actions-hosted Python venv: $venvPython"
+          } else {
+            # tool_metadata.py and deps_tool.py require tomli on Python < 3.11.
+            python -m pip install --disable-pip-version-check tomli
+            if ($LASTEXITCODE -ne 0) { throw "pip install tomli failed with exit code $LASTEXITCODE" }
+          }
+
+          Write-Host "Installing dependencies via compile/deps_tool.ps1: $($depsArgs -join ' ')"
+          & ./compile/deps_tool.ps1 @depsArgs
+          if ($LASTEXITCODE -ne 0) { throw "deps_tool.ps1 failed with exit code $LASTEXITCODE" }
+
           if (-not (Test-Path -LiteralPath $venvPython)) {
             throw "Venv python not found at $venvPython"
           }

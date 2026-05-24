@@ -153,3 +153,4 @@ vendor/KotOR.js/vendor/PyKotor/
 .tmp_whl/
 
 tmpinstallation-json-all/
+.compound-engineering/*.local.yaml

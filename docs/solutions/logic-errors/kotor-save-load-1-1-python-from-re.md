@@ -14,24 +14,38 @@ root_cause: |
   compatibility. The fix was to implement dedicated flows that mirror the engine
   step-by-step using reverse-engineering as the source of truth.
 solution: |
-  Implemented save_load_flow_k1.py and save_load_flow_tsl.py with engine-identical
-  sequence; SAVE_LOAD_ENGINE_BEHAVIOR.md as single source of truth; RE reports for
-  K1 and TSL; tests in test_save_load_flow_k1.py. K1 disk threshold from
-  HasEnoughDiskSpaceForSaveGame: K1_MIN_FREE_BYTES_ENGINE = 26_214_400 (~25 MiB).
+  Implemented save_load_flow_k1.py and save_load_flow_tsl.py with engine-aligned
+  sequence; RE summary in wiki/reverse_engineering_findings.md (Save / Load System);
+  tests in test_save_load_flow_k1.py. K1 disk threshold from HasEnoughDiskSpaceForSaveGame:
+  K1_MIN_FREE_BYTES_ENGINE = 26_214_400 (~25 MiB). Exhaustive byte-level parity tracked
+  in todos/001-pending-p2-exhaustive-1-1-save-load-python-from-agdec.md.
 prevention: |
-  Update SAVE_LOAD_ENGINE_BEHAVIOR.md and flow modules when changing save/load
-  behavior; run test_save_load_flow_k1.py; use flow functions as single source of
-  engine order; prefer SaveFolderEntry to delegate to flow when 1:1 required.
+  Update wiki/reverse_engineering_findings.md and flow modules when changing save/load
+  behavior; run test_save_load_flow_k1.py. Use flow functions for engine-parity order;
+  use SaveFolderEntry for convenience when strict ordering is not required. docs/reva_roadmap/
+  is gitignored local RE workspace only.
 related_docs: |
-  docs/reva_roadmap/SAVE_LOAD_ENGINE_BEHAVIOR.md, KOTOR_SAVE_LOAD_RE_REPORT.md,
-  KOTOR_SAVE_LOAD_TSL_RE_REPORT.md, KOTOR_SAVE_LOAD_RE_AGENT_NATIVE_AUDIT.md,
-  AGENTS.md, .cursor/plans/kotor_save_load_re_via_agdec_mcp_b9f4946a.plan.md
+  wiki/reverse_engineering_findings.md (Save / Load System), helper_scripts/agdec_save_load/README.md,
+  todos/001-pending-p2-exhaustive-1-1-save-load-python-from-agdec.md, .cursorrules,
+  .cursor/skills/assembly-transpile-parity/SKILL.md
 category: logic-errors
+doc_status: partially_stale
+last_verified: 2026-05-23
 ---
 
 # KOTOR/TSL Save/Load 1:1 Python from Binary RE
 
-Reverse-engineered K1 and TSL save/load from game binaries (`k1_win_gog_swkotor.exe`, `k2_win_gog_aspyr_swkotor2.exe`) via the user-agdec-http (AgentDecompile) MCP and implemented engine-identical Python flows in `save_load_flow_k1.py` and `save_load_flow_tsl.py` with matching sequence, disk check, paths, screenshot, and component order.
+Reverse-engineered K1 and TSL save/load from game binaries (`k1_win_gog_swkotor.exe`, `k2_win_gog_aspyr_swkotor2.exe`) via AgentDecompile MCP and implemented engine-aligned Python flows in `save_load_flow_k1.py` and `save_load_flow_tsl.py`.
+
+## Status (2026-05-23)
+
+**Sequence-aligned flows landed** — disk checks, directory creation, screenshot timing, and component order match the RE-derived sequence in the flow modules and tests.
+
+**Known gaps** — byte-level golden-SAV verification, full TSL StallEventSaveGame mapping, and exhaustive LoadGame/LoadModule callee documentation remain open; tracked in `todos/001-pending-p2-exhaustive-1-1-save-load-python-from-agdec.md`.
+
+**Dual API by design** — `run_k1_save_flow` / `run_k1_load_flow` (and TSL equivalents) are the engine-parity surface. `SaveFolderEntry.save()` / `load()` use a different order and do not delegate to flow functions; callers needing 1:1 behavior must use the flow modules directly.
+
+**Canonical RE docs** — checked-in summary: `wiki/reverse_engineering_findings.md` (Save / Load System). `docs/reva_roadmap/` is gitignored local agent workspace; not present in a fresh clone.
 
 ---
 
@@ -45,8 +59,8 @@ PyKotor's save/load logic did not follow the exact order of operations used by t
 
 ### Single source of truth
 
-- **`docs/reva_roadmap/SAVE_LOAD_ENGINE_BEHAVIOR.md`** — Defines K1 save path (SaveGame), load path (LoadGame), DoSaveGameScreenShot, and TSL load (FUN_007b2f00) / save (StallEventSaveGame) with exact step order.
-- **RE details:** `docs/reva_roadmap/KOTOR_SAVE_LOAD_RE_REPORT.md` (K1), `docs/reva_roadmap/KOTOR_SAVE_LOAD_TSL_RE_REPORT.md` (TSL offsets 0x1f0b4, 0x100fc, 0x1f254, etc.).
+- **`wiki/reverse_engineering_findings.md`** (Save / Load System section) — Checked-in K1/TSL save/load RE summary with step order and addresses.
+- **Local RE workspace:** `docs/reva_roadmap/` (gitignored) may hold detailed RE reports and caches when present; use `helper_scripts/agdec_save_load/` for the agdec pipeline.
 
 ### K1 flow module — `Libraries/PyKotor/src/pykotor/extract/save_load_flow_k1.py`
 
@@ -68,7 +82,8 @@ PyKotor's save/load logic did not follow the exact order of operations used by t
 
 ### Integration
 
-- `SaveFolderEntry.save()` / `load()` can delegate to `run_k1_save_flow` / `run_k1_load_flow` or `run_tsl_save_flow` / `run_tsl_load_flow` when engine-identical behavior is required.
+- **`SaveFolderEntry.save()` / `load()`** — Convenience API with a different load order (`sav → partytable → save_info → globals`) and screenshot written last on save. Does not delegate to flow functions.
+- **Flow modules** — Use `run_k1_save_flow` / `run_k1_load_flow` (or TSL equivalents) when engine-parity order and disk gates are required.
 
 ---
 
@@ -86,14 +101,11 @@ Expect: All tests in `test_save_load_flow_k1.py` pass (disk helpers, directory h
 
 ## Related documentation
 
-- **AGENTS.md** — Reverse engineering (agdec-http MCP): Ghidra/binary workflow, tool usage, wiki policy.
-- **docs/reva_roadmap/KOTOR_SAVE_LOAD_RE_REPORT.md** — K1 save/load RE report (function list, addresses, disassembly) via user-agdec-http.
-- **docs/reva_roadmap/KOTOR_SAVE_LOAD_TSL_RE_REPORT.md** — TSL save/load RE report for `k2_win_gog_aspyr_swkotor2.exe`.
-- **docs/reva_roadmap/KOTOR_SAVE_LOAD_RE_AGENT_NATIVE_AUDIT.md** — Agent-native audit of save/load RE plan and workflow.
-- **docs/reva_roadmap/SAVE_LOAD_ENGINE_BEHAVIOR.md** — K1/TSL save/load engine behavior spec (1:1).
-- **.cursor/plans/kotor_save_load_re_via_agdec_mcp_b9f4946a.plan.md** — Phased save/load RE plan (phases 1–11).
-- **.cursor/skills/assembly-transpile-parity/SKILL.md** — Skill for decompile/transpile parity using subagents (disassembly -> Python/C with comparison).
-- **wiki/reverse_engineering_findings.md** — RE findings; engine architecture, agdec-http usage.
+- **`.cursorrules`** — Game-engine fidelity rules; mandatory K1+TSL RE via agentdecompile.
+- **`wiki/reverse_engineering_findings.md`** — Save / Load System RE summary.
+- **`helper_scripts/agdec_save_load/README.md`** — AgentDecompile save/load RE pipeline.
+- **`todos/001-pending-p2-exhaustive-1-1-save-load-python-from-agdec.md`** — Remaining exhaustive 1:1 acceptance criteria.
+- **`.cursor/skills/assembly-transpile-parity/SKILL.md`** — Decompile/transpile parity workflow.
 
 ---
 
@@ -101,12 +113,12 @@ Expect: All tests in `test_save_load_flow_k1.py` pass (disk helpers, directory h
 
 ### Best practices
 
-- When changing save/load behavior: update `docs/reva_roadmap/SAVE_LOAD_ENGINE_BEHAVIOR.md` and the corresponding flow module (`save_load_flow_k1.py` or `save_load_flow_tsl.py`); run `Libraries/PyKotor/tests/extract/test_save_load_flow_k1.py`.
+- When changing save/load behavior: update `wiki/reverse_engineering_findings.md` (Save/Load section) and the corresponding flow module (`save_load_flow_k1.py` or `save_load_flow_tsl.py`); run `Libraries/PyKotor/tests/extract/test_save_load_flow_k1.py`. Optional local RE notes under gitignored `docs/reva_roadmap/` may be updated for developer convenience but are not required in fresh clones.
 
 ### Avoiding drift
 
-- Treat the **flow functions** as the single source of engine order; avoid duplicating or reordering steps in `SaveFolderEntry` or elsewhere.
-- When 1:1 with the engine is required, have **SaveFolderEntry** call `run_k1_save_flow` / `run_k1_load_flow` (or TSL equivalents) instead of reimplementing the sequence.
+- Treat the **flow functions** as the engine-parity API; do not assume `SaveFolderEntry` matches engine order.
+- When 1:1 with the engine is required, call `run_k1_save_flow` / `run_k1_load_flow` (or TSL equivalents) directly instead of `SaveFolderEntry.save()` / `load()`.
 
 ### Test cases
 
@@ -115,6 +127,6 @@ Expect: All tests in `test_save_load_flow_k1.py` pass (disk helpers, directory h
 
 ### When to use flow modules vs SaveFolderEntry.save() / load()
 
-- Use **flow modules** when you need engine-identical order and steps (e.g. tooling that must match the binary, RE validation, or 1:1 tests).
+- Use **flow modules** when you need engine-parity order, disk gates, and screenshot timing (tooling, RE validation, 1:1 tests).
 - Use **SaveFolderEntry.save()** / **load()** when you only need to read or write save data and strict engine ordering is not required.
-- Prefer having `SaveFolderEntry` delegate to the flow functions when the caller needs 1:1 behavior.
+- Optional future work: opt-in delegation from `SaveFolderEntry` to flow functions (see `todos/001-…`).

@@ -11,6 +11,7 @@ from pathlib import Path  # noqa: E402
 from typing import TYPE_CHECKING
 
 import pytest
+from _pytest.outcomes import Skipped
 
 THIS_SCRIPT_PATH = pathlib.Path(__file__)
 PYKOTOR_PATH = THIS_SCRIPT_PATH.parents[4].joinpath("src")
@@ -200,6 +201,8 @@ def pytest_runtest_makereport(
     if "setup" in call.when:
         return None
     if call.excinfo is not None and call.when == "call":
+        if call.excinfo.errisinstance(Skipped):
+            return None
         longrepr: str = format_exception_with_variables(
             call.excinfo.value, call.excinfo.type, call.excinfo.tb
         )

@@ -1,4 +1,13 @@
+---
+title: Wiki Source Audit Plan (superseded)
+status: superseded
+date: 2026-04-01
+superseded_by: docs/plans/2026-04-15-wiki-source-citation-audit-plan.md
+---
+
 # Wiki Source Audit Plan
+
+> **Superseded:** Use [2026-04-15-wiki-source-citation-audit-plan.md](2026-04-15-wiki-source-citation-audit-plan.md) as the authoritative wiki audit plan. Tri-binary sourcing rules from this document were merged into that plan.
 
 This plan tracks the ongoing rewrite of wiki content so that every retained statement is backed by concrete repository sources, generated package artifacts, or reverse-engineering results.
 

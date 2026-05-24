@@ -135,7 +135,7 @@ def _prepare_root_layout(root: Path, game: Game) -> None:
 
     for subdir in (
         "data",
-        "modules",
+        "Modules",
         "override",
         "streammusic",
         "streamsounds",
@@ -241,7 +241,7 @@ def create_installation(
     if with_override:
         _write_stream_resources(root / "override", override_resources)
 
-    modules_dir = root / "modules"
+    modules_dir = root / "Modules"
     modules_resources = dict(modules_resources or {})
     if not is_k2:
         modules_resources.setdefault("global.mod", {})

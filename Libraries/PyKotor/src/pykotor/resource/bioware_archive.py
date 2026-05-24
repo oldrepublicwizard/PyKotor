@@ -10,7 +10,6 @@ from typing import TYPE_CHECKING, TypeVar, cast
 from pykotor.common.misc import ResRef  # type: ignore[import-untyped]
 from pykotor.extract.file import ResourceIdentifier  # type: ignore[import-untyped]
 from pykotor.resource.formats._base import (  # type: ignore[import-untyped]
-    BiowareResource,
     ComparableMixin,
 )
 

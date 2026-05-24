@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import re
 
 from dataclasses import asdict, dataclass
 from pathlib import Path
@@ -58,6 +59,8 @@ class ToolMetadata:
     version_key: Optional[str]
     release_tag_suffix: Optional[str]
     script_names: List[str]
+    min_python: str
+    validate_py38: bool
 
     @property
     def is_cli(self) -> bool:
@@ -175,6 +178,19 @@ def _infer_version_info(
     return None, None, str(tag_suffix) if tag_suffix else None
 
 
+def _parse_min_python(requires_python: Optional[str]) -> Tuple[int, int]:
+    if not requires_python:
+        return (3, 8)
+    match = re.search(r">=\s*(\d+)\.(\d+)", requires_python)
+    if match:
+        return (int(match.group(1)), int(match.group(2)))
+    return (3, 8)
+
+
+def _validate_py38(min_python: Tuple[int, int]) -> bool:
+    return min_python <= (3, 8)
+
+
 def discover_tools(repo_root: Optional[Path] = None) -> List[ToolMetadata]:
     repo_root = repo_root or Path(__file__).resolve().parent
     tools_dir = repo_root / "Tools"
@@ -213,6 +229,12 @@ def discover_tools(repo_root: Optional[Path] = None) -> List[ToolMetadata]:
         version_file, version_key, tag_suffix = _infer_version_info(
             tool_root, package_name, tool_table
         )
+        requires_python = project_table.get("requires-python")
+        min_py = _parse_min_python(
+            str(requires_python) if requires_python is not None else None
+        )
+        min_python = f"{min_py[0]}.{min_py[1]}"
+        validate_py38 = _validate_py38(min_py)
 
         discovered.append(
             ToolMetadata(
@@ -240,6 +262,8 @@ def discover_tools(repo_root: Optional[Path] = None) -> List[ToolMetadata]:
                 version_key=version_key,
                 release_tag_suffix=tag_suffix or build_name,
                 script_names=script_names,
+                min_python=min_python,
+                validate_py38=validate_py38,
             )
         )
 

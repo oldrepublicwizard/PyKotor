@@ -6,7 +6,7 @@ import os
 import sys
 
 from argparse import SUPPRESS, ArgumentParser, RawDescriptionHelpFormatter
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING
 
 from pykotor.cli.version import VERSION
 

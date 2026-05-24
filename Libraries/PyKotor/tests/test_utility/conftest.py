@@ -59,6 +59,28 @@ from typing import Any, Iterator
 
 from test_helpers.profiling_and_timeout import profile_if_enabled
 
+_STRICT_TYPING_MODULES = frozenset(
+    {
+        "test_actions_executor_strict_typing.py",
+        "test_mutable_str_strict_typing.py",
+        "test_registry_strict_typing.py",
+        "test_string_util_strict_typing.py",
+        "test_sys_attributes_strict_typing.py",
+    }
+)
+
+
+def pytest_collection_modifyitems(items: list[pytest.Item]) -> None:
+    """Mark Qt-heavy utility tests so CI can skip them with ``-m 'not gui'``."""
+    for item in items:
+        path = Path(str(getattr(item, "path", item.fspath)))
+        if path.parent.name != "test_utility":
+            continue
+        if path.name in _STRICT_TYPING_MODULES:
+            continue
+        if not any(marker.name == "gui" for marker in item.iter_markers()):
+            item.add_marker(pytest.mark.gui)
+
 
 @pytest.hookimpl(hookwrapper=True)
 def pytest_runtest_call(item: pytest.Item) -> Iterator[None]:

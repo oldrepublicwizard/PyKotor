@@ -503,6 +503,19 @@ warn_unused_configs = true
 [tool.pylintrc]
 max-line-length = 100
 
+[tool.pylint.MASTER]
+ignore-paths = [
+  "^\\.venv/.*$",
+  "^vendor/.*$",
+  "^Tools/.*/src/toolset/uic/.*$",
+]
+
+[tool.pylint."MESSAGES CONTROL"]
+disable = [
+  "duplicate-code",
+]
+max-line-length = 100
+
 [tool.pyright]
 analyzeUnannotatedFunctions = true
 deprecateTypingAliases = false

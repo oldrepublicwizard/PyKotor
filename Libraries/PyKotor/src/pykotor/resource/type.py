@@ -36,7 +36,7 @@ from typing import TYPE_CHECKING, NamedTuple, TypeVar, Union, cast
 from xml.etree.ElementTree import ParseError
 
 from pykotor.common.stream import BinaryReader, BinaryWriter
-from pykotor.resource.formats._base import BiowareResource, ComparableMixin  # type: ignore[import-untyped]
+from pykotor.resource.formats._base import ComparableMixin  # type: ignore[import-untyped]
 from utility.common.misc_string.mutable_str import WrappedStr
 
 if TYPE_CHECKING:

@@ -21,8 +21,11 @@ from __future__ import annotations
 import tempfile
 import unittest
 
+import pytest
 from pathlib import Path
 from typing import ClassVar, Final
+
+pytestmark = pytest.mark.gui
 
 from qtpy.QtCore import QCoreApplication, Qt
 from qtpy.QtTest import QSignalSpy, QTest

@@ -44,6 +44,7 @@ jobs:
       - uses: actions/checkout@v6
         with:
           fetch-depth: 0
+          submodules: recursive
 
       - name: Setup Python
         uses: actions/setup-python@v6
@@ -132,8 +133,9 @@ jobs:
           changed_tools = []
 
           for tool in all_tools:
-              tool_dir = Path(tool["path"])
               tool_dir_name = tool["directory"]
+              tool_path = tool.get("path") or tool.get("relative_path") or f"Tools/{tool_dir_name}"
+              tool_dir = Path(tool_path)
               tool_changed = any(f.startswith(f"Tools/{tool_dir_name}/") for f in changed_files)
               tool_name_lower = tool_dir_name.lower()
 
@@ -141,8 +143,10 @@ jobs:
                   "tool_dir": tool_dir_name,
                   "build_name": tool.get("build_name") or tool.get("name") or tool_dir_name,
                   "display_name": tool.get("display_name") or tool_dir_name,
-                  "path": tool.get("path") or f"Tools/{tool_dir_name}",
+                  "path": tool_path,
                   "requires_qt": tool.get("requires_qt", False),
+                  "min_python": tool.get("min_python", "3.8"),
+                  "validate_py38": tool.get("validate_py38", True),
                   "changed": tool_changed,
                   "has_config": find_config_file(tool_dir, tool_name_lower) is not None,
               }
@@ -178,6 +182,8 @@ jobs:
                   "path": t["path"],
                   "requires_qt": t["requires_qt"],
                   "has_config": t["has_config"],
+                  "min_python": t.get("min_python", "3.8"),
+                  "validate_py38": t.get("validate_py38", True),
               }
               for t in changed_tools
           ]
@@ -211,6 +217,8 @@ jobs:
     if: needs.detect-changes.outputs.any_tool == 'true'
     steps:
       - uses: actions/checkout@v6
+        with:
+          submodules: recursive
 
       - name: Setup Python
         uses: actions/setup-python@v6
@@ -353,13 +361,21 @@ jobs:
             architecture: x64
     steps:
       - uses: actions/checkout@v6
+        with:
+          submodules: recursive
 
       - name: Setup Python
         uses: actions/setup-python@v6
         with:
           python-version: '3.8'
 
+      - name: Skip Py3.8 validation (requires Python ${{ matrix.tool.min_python }}+)
+        if: matrix.tool.validate_py38 != true
+        run: |
+          echo "Skipping Py3.8 dry-run: ${{ matrix.tool.display_name }} requires Python ${{ matrix.tool.min_python }}+"
+
       - name: Build ${{ matrix.tool.display_name }} (validation)
+        if: matrix.tool.validate_py38 == true
         uses: ./.github/actions/build-tool
         with:
           tool_path: ${{ matrix.tool.path }}

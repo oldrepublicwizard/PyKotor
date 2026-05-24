@@ -10,7 +10,7 @@ From repo root:
 uv run python helper_scripts/agdec_save_load/run_pipeline.py
 ```
 
-This reads `docs/reva_roadmap/agdec_cache/k1_save_load_cache.json`, runs codegen (prepends cache provenance to `save_load_flow_k1.py`), and runs pytest on `test_save_load_flow_k1.py`. Expect 12 passed.
+This reads `docs/reva_roadmap/agdec_cache/k1_save_load_cache.json` (or set `AGDEC_SAVE_LOAD_CACHE` to override), runs codegen (prepends cache provenance to `save_load_flow_k1.py`), and runs pytest on `test_save_load_flow_k1.py`. The cache path is optional local RE workspace — fresh clones may build or copy a cache per [Building the cache](#building-the-cache) below.
 
 ## Building the cache
 

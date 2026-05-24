@@ -108,8 +108,14 @@ class TestTSLPatcher(unittest.TestCase):
             }
         )
         assets_dir = Path(__file__).resolve().parents[1] / "files"
-        shutil.copy(assets_dir / "complex.tlk", self.tslpatchdata_path / "complex.tlk")
-        shutil.copy(assets_dir / "append.tlk", self.tslpatchdata_path / "append.tlk")
+        complex_tlk_path = assets_dir / "complex.tlk"
+        append_tlk_path = assets_dir / "append.tlk"
+        if not complex_tlk_path.is_file() or not append_tlk_path.is_file():
+            self.skipTest(
+                f"TLK fixtures not present under {assets_dir} (complex.tlk / append.tlk)"
+            )
+        shutil.copy(complex_tlk_path, self.tslpatchdata_path / "complex.tlk")
+        shutil.copy(append_tlk_path, self.tslpatchdata_path / "append.tlk")
 
         # write it to a real file
         write_tlk(
