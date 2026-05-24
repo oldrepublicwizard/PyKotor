@@ -38,7 +38,8 @@ Plan 019 landed via PR #268 but remained `in_progress` without post-merge verifi
 | Verify PyPI Regression CI | https://github.com/OpenKotOR/PyKotor/actions/runs/26362044155 | ⚠️ cancelled (concurrency; fixed in PR #275) |
 | Master track (2026-05-24) | #273/#270/#277 merged; forward-commits repaired in #277 | ✅ closed on `35b01ca9b` |
 | Stale branch cleanup | `fix/pypi-verify-regression-concurrency` deleted (merged #275, stray docs) | ✅ plan 026 |
-| Verify PyPI CI (post-#277) | https://github.com/OpenKotOR/PyKotor/actions/runs/26364391944 | ⏳ queued — **Check trigger** scheduled (plan 040; stale 26363420578 cancelled) |
+| Local PyPI parity (plan 041) | ephemeral venv `pip install pykotor[all]` + workflow import scripts | ✅ pass (Linux/py3; CI matrix still queued) |
+| Verify PyPI CI (post-#277) | https://github.com/OpenKotOR/PyKotor/actions/runs/26364391944 | ⏳ queued — **Check trigger** scheduled (plan 040; no re-dispatch in 041) |
 | Forward Commits (post-#288) | https://github.com/OpenKotOR/PyKotor/actions/runs/26363668835 | ⏳ queued — merge job scheduled; superseded dispatch 26363563890 cancelled (plan 040) |
 | Docs-only CI fan-out | #283 `paths-ignore: docs/**` on FC + Auto-Publish | ✅ merged `f8e9de37f`; stale docs-era FC runs cancelled (plan 035) |
 
@@ -52,7 +53,9 @@ Plan 019 landed via PR #268 but remained `in_progress` without post-merge verifi
 
 **External blocker:** GitHub Actions runner backlog prevents full matrix / FC cherry-pick completion; local smoke (discovery + core imports) passes on every LFG slice.
 
-**Plans:** 019–040 document the closeout track; no further workflow changes required unless CI reveals new failures.
+**Local PyPI parity:** Plan 041 confirms published `pykotor[all]` on PyPI passes core/format import scripts (single-platform venv).
+
+**Plans:** 019–041 document the closeout track; no further workflow changes required unless CI reveals new failures.
 
 ---
 
