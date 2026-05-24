@@ -29,7 +29,7 @@ on:
 
 concurrency:
   group: verify-pypi-${{ github.ref }}
-  cancel-in-progress: true
+  cancel-in-progress: false  # avoid cancel storm from repeated workflow_run triggers
 
 env:
   PYPI_SOURCE: ${{ inputs.pypi_source || 'pypi' }}
@@ -39,6 +39,7 @@ permissions:
 
 jobs:
   test-pykotor-core:
+    if: ${{ github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success' }}
     name: PyKotor Core - Python ${{ matrix.python-version }} (${{ matrix.os }})
     runs-on: ${{ matrix.os }}
     strategy:
@@ -106,6 +107,7 @@ jobs:
           "
 
   test-pykotor-extensions:
+    if: ${{ github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success' }}
     name: PyKotor Extensions - Python ${{ matrix.python-version }}
     runs-on: ubuntu-latest
     needs: test-pykotor-core
@@ -156,6 +158,7 @@ jobs:
           " || true
 
   test-cli-tools:
+    if: ${{ github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success' }}
     name: CLI Tools - Python ${{ matrix.python-version }}
     runs-on: ubuntu-latest
     needs: test-pykotor-core
@@ -234,6 +237,7 @@ jobs:
         continue-on-error: true
 
   report:
+    if: ${{ github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success' }}
     name: Generate Report
     runs-on: ubuntu-latest
     needs: [test-pykotor-core, test-pykotor-extensions, test-cli-tools]
