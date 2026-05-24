@@ -17,6 +17,8 @@ from typing import Any
 
 REPO_ROOT = Path(__file__).resolve().parent.parent.parent
 DISCOVER_SCRIPT = REPO_ROOT / ".github" / "scripts" / "discover_tools.py"
+VERIFY_WORKFLOW = "verify-pypi-regression.yml"
+FC_WORKFLOW = "commit-all-to-bleeding-edge.yml"
 
 CORE_CHECK = """
 import pykotor
@@ -138,6 +140,67 @@ def _cli_slice(venv_python: Path, *, quiet: bool, checks: list[dict[str, Any]]) 
     return True
 
 
+def _latest_workflow_run(workflow_file: str) -> dict[str, Any]:
+    result = subprocess.run(
+        [
+            "gh",
+            "run",
+            "list",
+            f"--workflow={workflow_file}",
+            "--limit",
+            "1",
+            "--json",
+            "databaseId,status,conclusion,headSha,url",
+        ],
+        cwd=REPO_ROOT,
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    if result.returncode != 0:
+        return {"error": result.stderr.strip() or "gh run list failed"}
+    runs = json.loads(result.stdout or "[]")
+    if not runs:
+        return {"error": "no runs found"}
+    run = runs[0]
+    return {
+        "run_id": run.get("databaseId"),
+        "status": run.get("status"),
+        "conclusion": run.get("conclusion"),
+        "head_sha": run.get("headSha"),
+        "url": run.get("url"),
+    }
+
+
+def _ci_status() -> dict[str, Any]:
+    verify = _latest_workflow_run(VERIFY_WORKFLOW)
+    forward_commits = _latest_workflow_run(FC_WORKFLOW)
+    gh_ok = "error" not in verify and "error" not in forward_commits
+    return {
+        "gh_ok": gh_ok,
+        "verify_pypi": verify,
+        "forward_commits": forward_commits,
+    }
+
+
+def _print_ci_status(status: dict[str, Any], *, as_json: bool) -> None:
+    if as_json:
+        print(json.dumps(status, indent=2))
+        return
+    print("=== CI STATUS ===")
+    for label, key in (("Verify PyPI", "verify_pypi"), ("Forward Commits", "forward_commits")):
+        run = status[key]
+        if "error" in run:
+            print(f"{label}: ERROR — {run['error']}")
+            continue
+        print(
+            f"{label}: {run.get('status')} "
+            f"(conclusion={run.get('conclusion') or 'pending'}) "
+            f"sha={run.get('head_sha')} "
+            f"{run.get('url')}",
+        )
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(
         description="Local verify-pypi regression slice (published packages)",
@@ -149,7 +212,18 @@ def main() -> None:
         action="store_true",
         help="Print machine-readable summary JSON to stdout (suppresses progress logs)",
     )
+    parser.add_argument(
+        "--ci-status-only",
+        action="store_true",
+        help="Query latest Verify PyPI and Forward Commits runs via gh (no PyPI venv)",
+    )
     args = parser.parse_args()
+
+    if args.ci_status_only:
+        status = _ci_status()
+        _print_ci_status(status, as_json=args.json)
+        sys.exit(0 if status["gh_ok"] else 1)
+
     quiet = args.json
     checks: list[dict[str, Any]] = []
 

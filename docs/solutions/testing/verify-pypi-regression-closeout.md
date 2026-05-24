@@ -37,7 +37,7 @@ Post–PR #268 CI hygiene and local parity for published PyPI packages.
 
 ## Prefer
 
-- **`python3 .github/scripts/local_verify_pypi_slice.py`** when Verify PyPI CI is queued or unavailable.
+- **`python3 .github/scripts/local_verify_pypi_slice.py --ci-status-only --json`** for fast CI monitoring without a PyPI venv.
 - **Gate job (`Check trigger`)** before verify matrix jobs — never schedule matrix on empty/cancelled runs.
 - **`workflow_dispatch` + weekly cron** as verify triggers; **publish→verify dispatch** (#293) after Auto-Publish with packages.
 - **`paths-ignore: docs/**`** on Forward Commits and Auto-Publish.

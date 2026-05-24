@@ -19,9 +19,10 @@ When validating published PyPI packages (same checks as `.github/workflows/verif
 ```bash
 python3 .github/scripts/local_verify_pypi_slice.py
 python3 .github/scripts/local_verify_pypi_slice.py --json
+python3 .github/scripts/local_verify_pypi_slice.py --ci-status-only --json
 ```
 
-Use system **`python3`**, not `uv run`: workspace resolution can fail on unpublished packages (e.g. kotordiff). The script uses an ephemeral venv and installs `pykotor[all]` from PyPI. Documented CLI skips (kotordiff not on PyPI; `--help` rc≠0) match CI `continue-on-error` behavior. **`--json`** prints a machine-readable pass/skip/fail summary for agents.
+Use system **`python3`**, not `uv run`: workspace resolution can fail on unpublished packages (e.g. kotordiff). The script uses an ephemeral venv and installs `pykotor[all]` from PyPI. Documented CLI skips (kotordiff not on PyPI; `--help` rc≠0) match CI `continue-on-error` behavior. **`--json`** prints a machine-readable pass/skip/fail summary for agents. **`--ci-status-only`** queries latest Verify PyPI / Forward Commits runs via `gh` without installing packages (monitoring-only track).
 
 See also `docs/solutions/testing/verify-pypi-regression-closeout.md` for prefer/defer/avoid guidance and CI closeout history.
 
