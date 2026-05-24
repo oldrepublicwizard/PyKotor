@@ -14,8 +14,8 @@ name: Auto-Publish to PyPI
 
 on:
   push:
-    # Run on all pushes, but we'll filter to default branch in the job
-    # This is necessary because GitHub Actions doesn't support dynamic branch filtering
+    paths-ignore:
+      - 'docs/**'
   workflow_dispatch:
     # Allow manual execution on any branch or tag
 

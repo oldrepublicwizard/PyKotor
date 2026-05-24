@@ -5,6 +5,8 @@ on:
     branches:
       - '*'
       - '!bleeding-edge'
+    paths-ignore:
+      - 'docs/**'
 
 permissions:
   contents: write
