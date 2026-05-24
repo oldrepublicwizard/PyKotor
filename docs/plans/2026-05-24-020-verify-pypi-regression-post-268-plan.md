@@ -40,8 +40,9 @@ Plan 019 landed via PR #268 but remained `in_progress` without post-merge verifi
 | Stale branch cleanup | `fix/pypi-verify-regression-concurrency` deleted (merged #275, stray docs) | ✅ plan 026 |
 | Local CLI PyPI parity (plan 042) | holopatcher/kotormcp install from PyPI; kotordiff not on PyPI; `--help` rc=1 (workflow continue-on-error) | ✅ pass (parity with CI skip semantics; py3.14 local) |
 | Local PyPI parity (plan 041) | ephemeral venv `pip install pykotor[all]` + workflow import scripts | ✅ pass (Linux/py3; CI matrix still queued) |
-| Verify PyPI CI (post-#277) | https://github.com/OpenKotOR/PyKotor/actions/runs/26364391944 | ⏳ queued — **Check trigger** scheduled; `workflow_run` removed in #292 (plan 043) |
+| Verify PyPI CI (post-#277) | https://github.com/OpenKotOR/PyKotor/actions/runs/26364756399 | ⏳ queued — **Check trigger** on master `2946d823e` (plan 046; cancelled stale 26364391944) |
 | Forward Commits (post-#293) | https://github.com/OpenKotOR/PyKotor/actions/runs/26364669571 | ⏳ pending — merge job queued (runner backlog; plan 045) |
+| Local FC dry-run (plan 046) | cherry-pick master→bleeding-edge + workflow restore | ✅ pass (docs conflict auto-resolved) |
 | Publish→verify dispatch (#293) | `publish-pypi-auto.yml` `trigger-verify-pypi` job | ✅ code on master; awaits next Auto-Publish with packages (plan 044) |
 | Docs-only CI fan-out | #283 `paths-ignore: docs/**` on FC + Auto-Publish | ✅ merged `f8e9de37f`; stale docs-era FC runs cancelled (plan 035) |
 
@@ -57,9 +58,9 @@ Plan 019 landed via PR #268 but remained `in_progress` without post-merge verifi
 
 **Local PyPI parity:** Plans 041–042 confirm published packages match workflow scripts locally (core/format imports; CLI discover→install with documented skips).
 
-**Plans:** 019–045 document the closeout track; plan 044 adds post-publish verify dispatch (replaces removed workflow_run); plan 045 syncs CI evidence URLs.
+**Plans:** 019–046 document the closeout track; plan 046 adds local FC dry-run + fresh verify dispatch on master tip.
 
-**CI monitoring:** FC [26364669571](https://github.com/OpenKotOR/PyKotor/actions/runs/26364669571) and verify [26364391944](https://github.com/OpenKotOR/PyKotor/actions/runs/26364391944) remain queued on runner backlog (2026-05-24); no re-dispatch per plan 040.
+**CI monitoring:** Verify [26364756399](https://github.com/OpenKotOR/PyKotor/actions/runs/26364756399) queued on `2946d823e`; FC [26364669571](https://github.com/OpenKotOR/PyKotor/actions/runs/26364669571) merge still pending (runner backlog).
 
 ---
 
