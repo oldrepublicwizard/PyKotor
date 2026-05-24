@@ -38,7 +38,7 @@ Plan 019 landed via PR #268 but remained `in_progress` without post-merge verifi
 | Verify PyPI Regression CI | https://github.com/OpenKotOR/PyKotor/actions/runs/26362044155 | ⚠️ cancelled (concurrency; fixed in PR #275) |
 | Master track (2026-05-24) | #273/#270/#277 merged; forward-commits repaired in #277 | ✅ closed on `35b01ca9b` |
 | Stale branch cleanup | `fix/pypi-verify-regression-concurrency` deleted (merged #275, stray docs) | ✅ plan 026 |
-| Verify PyPI CI (post-#277) | https://github.com/OpenKotOR/PyKotor/actions/runs/26362999987 | ⏳ pending (manual dispatch; runner backlog) |
+| Verify PyPI CI (post-#277) | https://github.com/OpenKotOR/PyKotor/actions/runs/26363113375 | ⏳ queued (post-#280 gate fix; runner backlog) |
 | Forward Commits (post-#277) | https://github.com/OpenKotOR/PyKotor/actions/runs/26362905607 | ⏳ queued; local dry-run ✅ (plan 030) |
 
 ---

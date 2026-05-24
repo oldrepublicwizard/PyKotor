@@ -30,11 +30,12 @@ Runs 26362999987 (workflow_dispatch) and 26363039361 (workflow_run) completed **
 
 ## Verification
 
-| Check | Expected |
-|-------|----------|
-| workflow_dispatch | jobs scheduled (not empty cancelled) |
-| failed workflow_run | gate succeeds; test jobs skipped; workflow not cancelled |
-| Local discovery | unchanged (holopatcher, kotordiff, kotormcp) |
+| Check | Evidence | Result |
+|-------|----------|--------|
+| workflow_dispatch | [26363113375](https://github.com/OpenKotOR/PyKotor/actions/runs/26363113375) — gate job scheduled | ✅ pass (not empty-cancelled) |
+| workflow_run (failed publish) | [26363111385](https://github.com/OpenKotOR/PyKotor/actions/runs/26363111385) — gate queued | ✅ pass (gate present) |
+| Local discovery | holopatcher, kotordiff, kotormcp | ✅ pass |
+| Full test matrix | runner backlog | ⏳ queued |
 
 ## Scope Boundaries
 
