@@ -48,7 +48,7 @@ Plan 019 landed via PR #268 but remained `in_progress` without post-merge verifi
 
 ## Track closeout (2026-05-24)
 
-**Code landed:** #268 (test-cli-tools), #275/#280 (verify concurrency + gate), #277 (FC repair), #283 (docs paths-ignore), #286 (FC workflow_dispatch), #288 (FC concurrency), plan 043 (verify `workflow_run` removed).
+**Code landed:** #268 (test-cli-tools), #275/#280 (verify concurrency + gate), #277 (FC repair), #283 (docs paths-ignore), #286 (FC workflow_dispatch), #288 (FC concurrency), plan 043 (verify `workflow_run` removed), plan 044 (publish→verify dispatch).
 
 **Scheduling validated:** Verify PyPI gate job and FC merge job appear on post-fix dispatches (not empty-cancelled). `workflow_run` verify triggers removed after empty-job pending noise (plan 043).
 
@@ -56,7 +56,7 @@ Plan 019 landed via PR #268 but remained `in_progress` without post-merge verifi
 
 **Local PyPI parity:** Plans 041–042 confirm published packages match workflow scripts locally (core/format imports; CLI discover→install with documented skips).
 
-**Plans:** 019–043 document the closeout track; post-publish verify dispatch from Auto-Publish deferred.
+**Plans:** 019–044 document the closeout track; plan 044 adds post-publish verify dispatch (replaces removed workflow_run).
 
 ---
 

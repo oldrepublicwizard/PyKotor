@@ -317,6 +317,31 @@ jobs:
           echo "Published ${{ matrix.package.name }} version ${{ matrix.package.version }}"
           echo "Previous PyPI version: ${{ matrix.package.pypi_version || 'none' }}"
 
+  trigger-verify-pypi:
+    needs: [check-default-branch, discover-packages, publish-packages]
+    if: >-
+      needs.check-default-branch.outputs.should_run == 'true' &&
+      needs.discover-packages.outputs.packages != '[]' &&
+      needs.publish-packages.result == 'success'
+    runs-on: ubuntu-latest
+    permissions:
+      actions: write
+      contents: read
+    steps:
+      - name: Dispatch Verify PyPI Regression
+        uses: actions/github-script@v9
+        with:
+          script: |
+            const ref = '${{ needs.check-default-branch.outputs.default_branch }}';
+            await github.rest.actions.createWorkflowDispatch({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              workflow_id: 'verify-pypi-regression.yml',
+              ref,
+              inputs: { pypi_source: 'pypi' },
+            });
+            core.info(`Dispatched verify-pypi-regression.yml on ${ref}`);
+
   # Summary
   summary:
     needs: [check-default-branch, discover-packages, build-packages, publish-packages]
