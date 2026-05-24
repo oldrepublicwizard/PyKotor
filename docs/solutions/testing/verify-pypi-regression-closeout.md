@@ -38,6 +38,7 @@ Post–PR #268 CI hygiene and local parity for published PyPI packages.
 ## Prefer
 
 - **`python3 .github/scripts/local_verify_pypi_slice.py --ci-status-only --json`** for fast CI monitoring without a PyPI venv.
+- **`--compare-checkpoint --exit-on-defer`** to detect unchanged monitoring checkpoint and emit `lfg_deferred: true` (plans 059–061; PR #308).
 - **Gate job (`Check trigger`)** before verify matrix jobs — never schedule matrix on empty/cancelled runs.
 - **`workflow_dispatch` + weekly cron** as verify triggers; **publish→verify dispatch** (#293) after Auto-Publish with packages.
 - **`paths-ignore: docs/**`** on Forward Commits and Auto-Publish.
@@ -53,7 +54,17 @@ Post–PR #268 CI hygiene and local parity for published PyPI packages.
 - Re-enabling **`workflow_run`** trigger on verify-pypi (empty pending runs).
 - **`uv run`** for local verify slice (workspace pulls unpublished kotordiff).
 - Repeated cancel/dispatch loops without SHA drift or empty-run regression.
-- **LFG PRs when `--ci-status-only` shows the same queued run IDs** — use local check only until status or conclusion changes (plan 056).
+- **LFG PRs when `lfg_deferred: true`** — run agent defer check below instead of opening monitoring-only PRs (plans 056–062).
+
+## Agent defer check
+
+Before `/lfg` on this track:
+
+```bash
+python3 .github/scripts/local_verify_pypi_slice.py --ci-status-only --json --compare-checkpoint --exit-on-defer
+```
+
+When JSON includes `"lfg_deferred": true`, defer monitoring LFG until verify/FC status, conclusion, or run IDs change. Unit tests: `python3 -m unittest Libraries.PyKotor.tests.test_utility.test_local_verify_checkpoint`.
 
 ## Local command
 
@@ -71,7 +82,7 @@ python3 .github/scripts/local_verify_pypi_slice.py --json
 
 ## Plans index
 
-Plans **019–058** under `docs/plans/2026-05-24-*` document the closeout track; plan **020** is the authoritative verification table.
+Plans **019–062** under `docs/plans/2026-05-24-*` document the closeout track; plan **020** is the authoritative verification table.
 
 ## Last CI check (plan 058)
 

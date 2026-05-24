@@ -4,6 +4,7 @@
 #
 # Local parity (ephemeral venv, no GitHub Actions):
 #   python3 .github/scripts/local_verify_pypi_slice.py
+#   python3 .github/scripts/local_verify_pypi_slice.py --ci-status-only --json --compare-checkpoint --exit-on-defer
 #
 # Runs on:
 # - Manual dispatch
