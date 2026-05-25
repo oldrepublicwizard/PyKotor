@@ -23,6 +23,7 @@ python3 .github/scripts/local_verify_pypi_slice.py --ci-status-only --json
 python3 .github/scripts/local_verify_pypi_slice.py --ci-status-only --json --compare-checkpoint
 python3 .github/scripts/local_verify_pypi_slice.py --monitor-preflight
 python3 .github/scripts/local_verify_pypi_slice.py --monitor-preflight --strict-defer-exit  # exit 2 when deferred
+python3 .github/scripts/local_verify_pypi_slice.py --ci-status-only --emit-checkpoint-snippet  # Last CI check markdown
 ```
 
 Use system **`python3`**, not `uv run`: workspace resolution can fail on unpublished packages (e.g. kotordiff). The script uses an ephemeral venv and installs `pykotor[all]` from PyPI. Documented CLI skips (kotordiff not on PyPI; `--help` rc≠0) match CI `continue-on-error` behavior. **`--json`** prints a machine-readable pass/skip/fail summary for agents. **`--ci-status-only`** queries latest Verify PyPI / Forward Commits runs via `gh` without installing packages (monitoring-only track). **`--compare-checkpoint`** adds a `checkpoint` object with `defer_lfg_pr` when run IDs and queued status match the solution doc **Last CI check** (plan 059). **`--exit-on-defer`** adds `lfg_deferred: true` and prints a stderr hint when the checkpoint is unchanged (plan 061). **`--monitor-preflight`** is shorthand for all four monitoring flags (plan 063). **`--strict-defer-exit`** exits **2** when deferred so `/lfg` can stop before noop PRs (plan 064); exit **0** when monitoring may proceed.

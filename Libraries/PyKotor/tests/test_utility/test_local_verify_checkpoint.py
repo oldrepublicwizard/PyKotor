@@ -59,6 +59,78 @@ class TestCheckpointParsing(unittest.TestCase):
         self.assertEqual(result["verify_run_id"], 26372746392)
         self.assertEqual(result["forward_commits_run_id"], 26365648344)
 
+    def test_parse_canonical_table_fallback(self) -> None:
+        doc = """# Closeout
+
+## CI canonical runs
+
+| Workflow | Run | Notes |
+|----------|-----|-------|
+| Verify PyPI | [26372746392](url) | queued |
+| Forward Commits | [26365648344](url) | queued |
+"""
+        mock_path = mock.MagicMock()
+        mock_path.is_file.return_value = True
+        mock_path.read_text.return_value = doc
+        with patch.object(mod, "SOLUTION_CLOSEOUT", mock_path):
+            with patch.object(mod, "_last_ci_check_section", return_value=""):
+                result = mod._parse_solution_checkpoint_run_ids()
+        self.assertEqual(result["verify_run_id"], 26372746392)
+        self.assertEqual(result["forward_commits_run_id"], 26365648344)
+
+    def test_format_checkpoint_snippet(self) -> None:
+        status = {
+            "verify_pypi": {
+                "run_id": 26372746392,
+                "status": "queued",
+                "head_sha": "8916e2ffe1b57169693b2c9d9ea2b63eeb7fed8f",
+                "url": "https://example.com/verify",
+            },
+            "forward_commits": {
+                "run_id": 26365648344,
+                "status": "queued",
+                "head_sha": "3b6b74640233c44369662616a3ab1d178abe9afc",
+                "url": "https://example.com/fc",
+            },
+        }
+        snippet = mod._format_checkpoint_snippet(status)
+        self.assertIn("26372746392", snippet)
+        self.assertIn("26365648344", snippet)
+        self.assertIn("8916e2f", snippet)
+
+    def test_ci_status_human_output_does_not_crash(self) -> None:
+        result = subprocess.run(
+            [
+                sys.executable,
+                str(SCRIPT_PATH),
+                "--ci-status-only",
+                "--compare-checkpoint",
+            ],
+            capture_output=True,
+            text=True,
+            cwd=REPO_ROOT,
+            check=False,
+        )
+        self.assertEqual(result.returncode, 0, msg=result.stderr)
+        self.assertIn("=== CI STATUS ===", result.stdout)
+
+    def test_emit_checkpoint_snippet(self) -> None:
+        result = subprocess.run(
+            [
+                sys.executable,
+                str(SCRIPT_PATH),
+                "--ci-status-only",
+                "--emit-checkpoint-snippet",
+            ],
+            capture_output=True,
+            text=True,
+            cwd=REPO_ROOT,
+            check=False,
+        )
+        self.assertEqual(result.returncode, 0, msg=result.stderr)
+        self.assertIn("verify [", result.stdout)
+        self.assertIn("FC [", result.stdout)
+
     def test_parse_run_ids_from_last_ci_check(self) -> None:
         with patch.object(mod, "SOLUTION_CLOSEOUT", Path("/unused")):
             with patch.object(mod, "_last_ci_check_section", return_value=SAMPLE_LAST_CHECK):
@@ -68,7 +140,8 @@ class TestCheckpointParsing(unittest.TestCase):
 
     def test_parse_missing_section_returns_error(self) -> None:
         with patch.object(mod, "_last_ci_check_section", return_value=""):
-            result = mod._parse_solution_checkpoint_run_ids()
+            with patch.object(mod, "_parse_canonical_table_run_ids", return_value={"error": "no table"}):
+                result = mod._parse_solution_checkpoint_run_ids()
         self.assertIn("error", result)
 
     def test_compare_defer_when_queued_and_ids_match(self) -> None:

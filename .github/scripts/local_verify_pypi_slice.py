@@ -223,18 +223,31 @@ def _last_ci_check_section() -> str:
     return match.group(1) if match else ""
 
 
+def _parse_canonical_table_run_ids() -> dict[str, Any]:
+    if not SOLUTION_CLOSEOUT.is_file():
+        return {"error": "solution doc not found"}
+    text = SOLUTION_CLOSEOUT.read_text(encoding="utf-8")
+    verify_match = re.search(r"\| Verify PyPI \| \[(\d+)\]", text)
+    fc_match = re.search(r"\| Forward Commits \| \[(\d+)\]", text)
+    if not verify_match or not fc_match:
+        return {"error": "could not parse verify/FC run IDs from canonical runs table"}
+    return {
+        "verify_run_id": int(verify_match.group(1)),
+        "forward_commits_run_id": int(fc_match.group(1)),
+    }
+
+
 def _parse_solution_checkpoint_run_ids() -> dict[str, Any]:
     section = _last_ci_check_section()
-    if not section:
-        return {"error": "Last CI check section not found in solution doc"}
-    verify_ids = [int(match) for match in re.findall(r"verify[^\[]*\[(\d+)\]", section, re.I)]
-    fc_ids = [int(match) for match in re.findall(r"FC[^\[]*\[(\d+)\]", section, re.I)]
-    if not verify_ids or not fc_ids:
-        return {"error": "could not parse verify/FC run IDs from Last CI check"}
-    return {
-        "verify_run_id": verify_ids[-1],
-        "forward_commits_run_id": fc_ids[-1],
-    }
+    if section:
+        verify_ids = [int(match) for match in re.findall(r"verify[^\[]*\[(\d+)\]", section, re.I)]
+        fc_ids = [int(match) for match in re.findall(r"FC[^\[]*\[(\d+)\]", section, re.I)]
+        if verify_ids and fc_ids:
+            return {
+                "verify_run_id": verify_ids[-1],
+                "forward_commits_run_id": fc_ids[-1],
+            }
+    return _parse_canonical_table_run_ids()
 
 
 def _compare_checkpoint(status: dict[str, Any]) -> dict[str, Any]:
@@ -343,6 +356,23 @@ def _ci_status(*, compare_checkpoint: bool = False) -> dict[str, Any]:
     return result
 
 
+def _format_checkpoint_snippet(status: dict[str, Any]) -> str:
+    verify = status["verify_pypi"]
+    forward_commits = status["forward_commits"]
+    verify_id = verify.get("run_id", "?")
+    fc_id = forward_commits.get("run_id", "?")
+    verify_sha = (verify.get("head_sha") or "")[:7]
+    fc_sha = (forward_commits.get("head_sha") or "")[:7]
+    verify_status = verify.get("status") or "unknown"
+    fc_status = forward_commits.get("status") or "unknown"
+    verify_url = verify.get("url") or f"https://github.com/OpenKotOR/PyKotor/actions/runs/{verify_id}"
+    fc_url = forward_commits.get("url") or f"https://github.com/OpenKotOR/PyKotor/actions/runs/{fc_id}"
+    return (
+        f"**2026-05-24:** verify [{verify_id}]({verify_url}) **{verify_status}** on `{verify_sha}`; "
+        f"FC [{fc_id}]({fc_url}) **{fc_status}** on `{fc_sha}`."
+    )
+
+
 def _print_ci_status(status: dict[str, Any], *, as_json: bool) -> None:
     if as_json:
         print(json.dumps(status, indent=2))
@@ -359,6 +389,7 @@ def _print_ci_status(status: dict[str, Any], *, as_json: bool) -> None:
             f"sha={run.get('head_sha')} "
             f"{run.get('url')}",
         )
+    checkpoint = status.get("checkpoint")
     if isinstance(checkpoint, dict) and checkpoint.get("defer_lfg_pr"):
         print("Checkpoint: unchanged (defer_lfg_pr)")
     elif isinstance(checkpoint, dict) and checkpoint.get("defer_reason"):
@@ -366,6 +397,9 @@ def _print_ci_status(status: dict[str, Any], *, as_json: bool) -> None:
         action = checkpoint.get("recommended_action")
         if action:
             print(f"Recommended: {action}")
+        note = checkpoint.get("fc_sha_stale_note")
+        if note:
+            print(f"Note: {note}")
 
 
 def _apply_lfg_defer(status: dict[str, Any], *, exit_on_defer: bool) -> bool:
@@ -422,6 +456,11 @@ def main() -> None:
         action="store_true",
         help="With --exit-on-defer, exit 2 when lfg_deferred (0=proceed, 1=gh error)",
     )
+    parser.add_argument(
+        "--emit-checkpoint-snippet",
+        action="store_true",
+        help="With --ci-status-only, print Last CI check markdown snippet to stdout",
+    )
     args = parser.parse_args()
 
     if args.monitor_preflight:
@@ -436,10 +475,16 @@ def main() -> None:
     if args.strict_defer_exit and not args.exit_on_defer:
         parser.error("--strict-defer-exit requires --exit-on-defer or --monitor-preflight")
 
+    if args.emit_checkpoint_snippet and not args.ci_status_only:
+        parser.error("--emit-checkpoint-snippet requires --ci-status-only")
+
     if args.ci_status_only:
         status = _ci_status(compare_checkpoint=args.compare_checkpoint)
         deferred = _apply_lfg_defer(status, exit_on_defer=args.exit_on_defer)
-        _print_ci_status(status, as_json=args.json)
+        if args.emit_checkpoint_snippet:
+            print(_format_checkpoint_snippet(status))
+        else:
+            _print_ci_status(status, as_json=args.json)
         if not status["gh_ok"]:
             sys.exit(1)
         if deferred and args.strict_defer_exit:
