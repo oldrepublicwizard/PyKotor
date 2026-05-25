@@ -23,10 +23,25 @@ SOLUTION_CLOSEOUT = (
     REPO_ROOT / "docs" / "solutions" / "testing" / "verify-pypi-regression-closeout.md"
 )
 PLAN_020 = REPO_ROOT / "docs" / "plans" / "2026-05-24-020-verify-pypi-regression-post-268-plan.md"
-PLAN_TRACK_CAP = "073"
+PLAN_TRACK_CAP = "074"
 _AUTO_APPLY_PROCEED_REASONS = frozenset({"update_monitoring_docs", "investigate_ci_drift"})
+_DISPATCH_PROCEED_REASONS = frozenset({"refresh_verify_dispatch", "refresh_fc_dispatch"})
 VERIFY_WORKFLOW = "verify-pypi-regression.yml"
 FC_WORKFLOW = "commit-all-to-bleeding-edge.yml"
+_DISPATCH_PROCEED_CONFIG: dict[str, dict[str, Any]] = {
+    "refresh_verify_dispatch": {
+        "workflow": VERIFY_WORKFLOW,
+        "ref": "master",
+        "inputs": ["pypi_source=pypi"],
+        "cancel_run_key": "verify_pypi",
+    },
+    "refresh_fc_dispatch": {
+        "workflow": FC_WORKFLOW,
+        "ref": "master",
+        "inputs": [],
+        "cancel_run_key": "forward_commits",
+    },
+}
 
 _TERMINAL_CONCLUSIONS = frozenset(
     {
@@ -889,6 +904,137 @@ def _apply_lfg_proceed(status: dict[str, Any]) -> None:
     status["lfg_proceed_reason"] = proceed_reason
 
 
+def _format_dispatch_command(config: dict[str, Any]) -> str:
+    parts = ["gh", "workflow", "run", config["workflow"], "--ref", config["ref"]]
+    for inp in config.get("inputs") or []:
+        parts.extend(["-f", inp])
+    return " ".join(parts)
+
+
+def _gh_run_cancel(run_id: int | str) -> dict[str, Any]:
+    result = subprocess.run(
+        ["gh", "run", "cancel", str(run_id)],
+        cwd=REPO_ROOT,
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    return {
+        "ok": result.returncode == 0,
+        "stdout": result.stdout.strip(),
+        "stderr": result.stderr.strip(),
+    }
+
+
+def _gh_workflow_dispatch(workflow_file: str, ref: str, inputs: list[str]) -> dict[str, Any]:
+    cmd = ["gh", "workflow", "run", workflow_file, "--ref", ref]
+    for inp in inputs:
+        cmd.extend(["-f", inp])
+    result = subprocess.run(
+        cmd,
+        cwd=REPO_ROOT,
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    return {
+        "ok": result.returncode == 0,
+        "command": " ".join(cmd),
+        "stdout": result.stdout.strip(),
+        "stderr": result.stderr.strip(),
+    }
+
+
+def _should_cancel_stale_for_dispatch(
+    proceed_reason: str,
+    status: dict[str, Any],
+    checkpoint: dict[str, Any],
+) -> bool:
+    config = _DISPATCH_PROCEED_CONFIG.get(proceed_reason)
+    if not config:
+        return False
+    run_key = config.get("cancel_run_key")
+    if not run_key:
+        return False
+    run = status.get(run_key) or {}
+    if not _is_active_run(run):
+        return False
+    if proceed_reason == "refresh_verify_dispatch":
+        return bool(checkpoint.get("verify_sha_stale"))
+    if proceed_reason == "refresh_fc_dispatch":
+        return bool(checkpoint.get("fc_sha_stale") and checkpoint.get("fc_sha_stale_benign") is False)
+    return False
+
+
+def _build_dispatch_plan(status: dict[str, Any]) -> dict[str, Any] | None:
+    checkpoint = status.get("checkpoint")
+    if not isinstance(checkpoint, dict) or checkpoint.get("defer_lfg_pr"):
+        return None
+    proceed_reason = checkpoint.get("proceed_reason")
+    if proceed_reason not in _DISPATCH_PROCEED_REASONS:
+        return None
+    config = _DISPATCH_PROCEED_CONFIG[proceed_reason]
+    steps: list[dict[str, Any]] = []
+    if _should_cancel_stale_for_dispatch(proceed_reason, status, checkpoint):
+        run_key = config["cancel_run_key"]
+        run = status.get(run_key) or {}
+        run_id = run.get("run_id")
+        if run_id:
+            steps.append(
+                {
+                    "action": "cancel_run",
+                    "run_id": run_id,
+                    "command": f"gh run cancel {run_id}",
+                }
+            )
+    steps.append(
+        {
+            "action": "workflow_dispatch",
+            "workflow": config["workflow"],
+            "ref": config["ref"],
+            "inputs": list(config.get("inputs") or []),
+            "command": _format_dispatch_command(config),
+        }
+    )
+    return {
+        "proceed_reason": proceed_reason,
+        "steps": steps,
+    }
+
+
+def _maybe_dispatch_on_proceed(
+    status: dict[str, Any],
+    *,
+    execute: bool,
+    cancel_stale: bool,
+) -> dict[str, Any] | None:
+    plan = _build_dispatch_plan(status)
+    if plan is None:
+        return None
+    plan["dry_run"] = not execute
+    if not execute:
+        return plan
+    dispatch_ok = True
+    for step in plan["steps"]:
+        if step["action"] == "cancel_run":
+            if cancel_stale:
+                step["result"] = _gh_run_cancel(step["run_id"])
+                dispatch_ok = dispatch_ok and bool(step["result"].get("ok"))
+            else:
+                step["skipped"] = True
+                step["skip_reason"] = "pass --cancel-stale to cancel active run before dispatch"
+        elif step["action"] == "workflow_dispatch":
+            step["result"] = _gh_workflow_dispatch(
+                step["workflow"],
+                step["ref"],
+                step.get("inputs") or [],
+            )
+            dispatch_ok = dispatch_ok and bool(step["result"].get("ok"))
+    plan["executed"] = True
+    plan["ok"] = dispatch_ok
+    return plan
+
+
 def _maybe_auto_apply_on_proceed(
     status: dict[str, Any],
     *,
@@ -992,6 +1138,21 @@ def main() -> None:
         action="store_true",
         help="With --compare-checkpoint, dry-run or write doc_apply when proceed_reason allows",
     )
+    parser.add_argument(
+        "--dispatch-on-proceed",
+        action="store_true",
+        help="With --compare-checkpoint, preview or execute gh workflow dispatch when proceed_reason allows",
+    )
+    parser.add_argument(
+        "--execute",
+        action="store_true",
+        help="With --dispatch-on-proceed, run gh workflow run (default dry-run)",
+    )
+    parser.add_argument(
+        "--cancel-stale",
+        action="store_true",
+        help="With --dispatch-on-proceed --execute, cancel stale active run before dispatch",
+    )
     args = parser.parse_args()
 
     if args.monitor_preflight:
@@ -1027,6 +1188,15 @@ def main() -> None:
 
     if args.auto_apply_on_proceed and not args.compare_checkpoint:
         parser.error("--auto-apply-on-proceed requires --compare-checkpoint")
+
+    if args.dispatch_on_proceed and not args.compare_checkpoint:
+        parser.error("--dispatch-on-proceed requires --compare-checkpoint")
+
+    if args.execute and not args.dispatch_on_proceed:
+        parser.error("--execute requires --dispatch-on-proceed")
+
+    if args.cancel_stale and not args.dispatch_on_proceed:
+        parser.error("--cancel-stale requires --dispatch-on-proceed")
 
     if args.ci_status_only:
         include_snippet = (
@@ -1069,6 +1239,25 @@ def main() -> None:
                         "LFG doc apply: monitoring docs updated from live gh.",
                         file=sys.stderr,
                     )
+        if args.dispatch_on_proceed:
+            dispatch_result = _maybe_dispatch_on_proceed(
+                status,
+                execute=args.execute,
+                cancel_stale=args.cancel_stale,
+            )
+            if dispatch_result is not None:
+                status["dispatch_on_proceed"] = dispatch_result
+                if dispatch_result.get("executed"):
+                    if dispatch_result.get("ok"):
+                        print(
+                            "LFG dispatch: workflow_dispatch executed (see dispatch_on_proceed.steps).",
+                            file=sys.stderr,
+                        )
+                    else:
+                        print(
+                            "LFG dispatch: one or more gh steps failed (see dispatch_on_proceed.steps).",
+                            file=sys.stderr,
+                        )
         if args.validate_checkpoint_doc:
             validation = status.get("doc_validation") or _validate_checkpoint_doc(status)
             if args.json:
@@ -1089,6 +1278,10 @@ def main() -> None:
             sys.exit(1)
         if deferred and args.strict_defer_exit:
             sys.exit(2)
+        if args.dispatch_on_proceed and args.execute:
+            dispatch = status.get("dispatch_on_proceed") or {}
+            if dispatch.get("executed") and not dispatch.get("ok"):
+                sys.exit(2)
         sys.exit(0)
 
     quiet = args.json

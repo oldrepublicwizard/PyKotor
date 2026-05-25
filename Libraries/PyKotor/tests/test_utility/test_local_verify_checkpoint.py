@@ -434,7 +434,7 @@ Monitoring.
         self.assertTrue(changes["forward_commits_row"])
         self.assertTrue(changes["plans_index"])
         self.assertIn("https://example.com/10", patched)
-        self.assertIn("019–073", patched)
+        self.assertIn("019–074", patched)
 
     def test_apply_lfg_proceed_sets_fields(self) -> None:
         status: dict[str, Any] = {
@@ -1012,6 +1012,102 @@ last_verified: 2026-01-01
         )
         self.assertNotEqual(result.returncode, 0)
         self.assertIn("--strict-defer-exit requires", result.stderr)
+
+    def test_build_dispatch_plan_verify_refresh(self) -> None:
+        status: dict[str, Any] = {
+            "verify_pypi": {
+                "run_id": 100,
+                "status": "queued",
+                "conclusion": "",
+            },
+            "forward_commits": {"run_id": 200, "status": "completed", "conclusion": "success"},
+            "checkpoint": {
+                "defer_lfg_pr": False,
+                "proceed_reason": "refresh_verify_dispatch",
+                "verify_sha_stale": True,
+            },
+        }
+        plan = mod._build_dispatch_plan(status)
+        self.assertIsNotNone(plan)
+        assert plan is not None
+        self.assertEqual(plan["proceed_reason"], "refresh_verify_dispatch")
+        actions = [step["action"] for step in plan["steps"]]
+        self.assertEqual(actions, ["cancel_run", "workflow_dispatch"])
+        dispatch = plan["steps"][-1]
+        self.assertEqual(dispatch["workflow"], mod.VERIFY_WORKFLOW)
+        self.assertIn("pypi_source=pypi", dispatch["inputs"])
+
+    def test_build_dispatch_plan_fc_refresh(self) -> None:
+        status: dict[str, Any] = {
+            "verify_pypi": {"run_id": 100, "status": "completed", "conclusion": "success"},
+            "forward_commits": {
+                "run_id": 200,
+                "status": "in_progress",
+                "conclusion": "",
+            },
+            "checkpoint": {
+                "defer_lfg_pr": False,
+                "proceed_reason": "refresh_fc_dispatch",
+                "fc_sha_stale": True,
+                "fc_sha_stale_benign": False,
+            },
+        }
+        plan = mod._build_dispatch_plan(status)
+        self.assertIsNotNone(plan)
+        assert plan is not None
+        dispatch = plan["steps"][-1]
+        self.assertEqual(dispatch["workflow"], mod.FC_WORKFLOW)
+
+    def test_build_dispatch_plan_skips_when_deferred(self) -> None:
+        status: dict[str, Any] = {
+            "checkpoint": {
+                "defer_lfg_pr": True,
+                "proceed_reason": "refresh_verify_dispatch",
+                "verify_sha_stale": True,
+            }
+        }
+        self.assertIsNone(mod._build_dispatch_plan(status))
+
+    def test_maybe_dispatch_on_proceed_execute_mocked(self) -> None:
+        status: dict[str, Any] = {
+            "verify_pypi": {"run_id": 100, "status": "queued", "conclusion": ""},
+            "forward_commits": {"run_id": 200, "status": "completed", "conclusion": "success"},
+            "checkpoint": {
+                "defer_lfg_pr": False,
+                "proceed_reason": "refresh_verify_dispatch",
+                "verify_sha_stale": True,
+            },
+        }
+        with patch.object(mod, "_gh_run_cancel", return_value={"ok": True}) as mock_cancel:
+            with patch.object(mod, "_gh_workflow_dispatch", return_value={"ok": True}) as mock_dispatch:
+                result = mod._maybe_dispatch_on_proceed(
+                    status,
+                    execute=True,
+                    cancel_stale=True,
+                )
+        self.assertIsNotNone(result)
+        assert result is not None
+        self.assertTrue(result["executed"])
+        self.assertTrue(result["ok"])
+        mock_cancel.assert_called_once_with(100)
+        mock_dispatch.assert_called_once()
+
+    def test_execute_requires_dispatch_on_proceed(self) -> None:
+        result = subprocess.run(
+            [
+                sys.executable,
+                str(SCRIPT_PATH),
+                "--ci-status-only",
+                "--compare-checkpoint",
+                "--execute",
+            ],
+            capture_output=True,
+            text=True,
+            cwd=REPO_ROOT,
+            check=False,
+        )
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn("--execute requires --dispatch-on-proceed", result.stderr)
 
 
 if __name__ == "__main__":
