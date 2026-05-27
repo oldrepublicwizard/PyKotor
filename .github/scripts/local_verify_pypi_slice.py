@@ -24,7 +24,7 @@ SOLUTION_CLOSEOUT = (
     REPO_ROOT / "docs" / "solutions" / "testing" / "verify-pypi-regression-closeout.md"
 )
 PLAN_020 = REPO_ROOT / "docs" / "plans" / "2026-05-24-020-verify-pypi-regression-post-268-plan.md"
-PLAN_TRACK_CAP = "096"
+PLAN_TRACK_CAP = "097"
 LFG_EXIT_CODES: dict[int, str] = {
     0: "proceed, merge_ready, or monitoring_complete",
     1: "gh_error",
@@ -1073,6 +1073,44 @@ def _build_merge_actions(number: int | None) -> dict[str, str]:
     }
 
 
+def _oldest_started_at_hours(details: list[dict[str, str]]) -> tuple[str, float | None]:
+    started_values = [
+        str(detail.get("started_at") or "")
+        for detail in details
+        if detail.get("started_at")
+    ]
+    if not started_values:
+        return "", None
+    oldest = min(started_values)
+    return oldest, _hours_since_iso(oldest)
+
+
+def _fetch_pr_checks_crosscheck(pr_number: int, rollup_total: int) -> dict[str, Any]:
+    result = subprocess.run(
+        ["gh", "pr", "checks", str(pr_number), "--json", "name,state"],
+        cwd=REPO_ROOT,
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    if result.returncode != 0:
+        err = result.stderr.strip() or result.stdout.strip() or "gh pr checks failed"
+        return {"ok": False, "error": err}
+    checks = json.loads(result.stdout)
+    state_counts: dict[str, int] = {}
+    for check in checks:
+        state = str(check.get("state") or "UNKNOWN")
+        state_counts[state] = state_counts.get(state, 0) + 1
+    gh_total = len(checks)
+    return {
+        "ok": True,
+        "gh_checks_total": gh_total,
+        "rollup_checks_total": rollup_total,
+        "rollup_vs_gh_delta": rollup_total - gh_total,
+        "gh_state_counts": state_counts,
+    }
+
+
 def _build_pr_ci_bottlenecks(pr_status: dict[str, Any]) -> dict[str, Any]:
     in_progress = sorted(
         list(pr_status.get("in_progress_check_details") or []),
@@ -1090,13 +1128,17 @@ def _build_pr_ci_bottlenecks(pr_status: dict[str, Any]) -> dict[str, Any]:
     pending_count = int(pr_status.get("checks_pending") or 0)
     in_progress_count = int(pr_status.get("checks_in_progress") or 0)
     queue_backlog = pending_count > 0 and in_progress_count == 0
-    return {
+    oldest_at, oldest_hours = _oldest_started_at_hours(queued)
+    result: dict[str, Any] = {
         "in_progress": in_progress,
         "queued_longest_wait": queued[:8],
         "in_progress_count": len(in_progress),
         "queued_count": len(queued),
         "queue_backlog": queue_backlog,
+        "oldest_queued_started_at": oldest_at,
+        "oldest_queued_age_hours": round(oldest_hours, 2) if oldest_hours is not None else None,
     }
+    return result
 
 
 def _evaluate_pr_watch_stall(
@@ -1215,6 +1257,16 @@ def _apply_pr_merge_status(status: dict[str, Any]) -> None:
     else:
         status.pop("next_failed_check", None)
     status["pr_ci_bottlenecks"] = _build_pr_ci_bottlenecks(pr_status)
+    bottlenecks = status["pr_ci_bottlenecks"]
+    if isinstance(number, int):
+        crosscheck = _fetch_pr_checks_crosscheck(
+            number,
+            int(pr_status.get("checks_total") or 0),
+        )
+        if crosscheck.get("ok"):
+            status["pr_checks_crosscheck"] = crosscheck
+        else:
+            status.pop("pr_checks_crosscheck", None)
     if pr_status.get("lfg_merge_blocked") == "pr_merge_conflicts":
         status["merge_hint"] = f"Resolve PR merge conflicts before merge: {url}"
     elif pr_status.get("lfg_merge_blocked") == "pr_checks_failed":
@@ -1224,8 +1276,18 @@ def _apply_pr_merge_status(status: dict[str, Any]) -> None:
     elif pr_status.get("lfg_merge_blocked") == "pr_checks_pending":
         names = _format_check_list(list(pr_status.get("pending_checks") or []))
         detail = f" ({names})" if names else ""
+        backlog_note = ""
+        if bottlenecks.get("queue_backlog"):
+            pending_n = pr_status.get("checks_pending", 0)
+            age = bottlenecks.get("oldest_queued_age_hours")
+            if isinstance(age, (int, float)):
+                backlog_note = (
+                    f" — runner backlog ({pending_n} queued, 0 running; oldest ~{age:.1f}h)"
+                )
+            else:
+                backlog_note = f" — runner backlog ({pending_n} queued, 0 running)"
         status["merge_hint"] = (
-            f"Monitoring complete; wait for PR checks{detail}: {url} — run: {actions['watch_checks']}"
+            f"Monitoring complete; wait for PR checks{detail}{backlog_note}: {url} — run: {actions['watch_checks']}"
         )
     elif pr_status.get("lfg_merge_blocked") == "pr_merged":
         status["merge_hint"] = (
