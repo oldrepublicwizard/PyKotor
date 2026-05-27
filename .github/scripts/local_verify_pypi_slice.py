@@ -24,7 +24,7 @@ SOLUTION_CLOSEOUT = (
     REPO_ROOT / "docs" / "solutions" / "testing" / "verify-pypi-regression-closeout.md"
 )
 PLAN_020 = REPO_ROOT / "docs" / "plans" / "2026-05-24-020-verify-pypi-regression-post-268-plan.md"
-PLAN_TRACK_CAP = "103"
+PLAN_TRACK_CAP = "104"
 LFG_EXIT_CODES: dict[int, str] = {
     0: "proceed, merge_ready, or monitoring_complete",
     1: "gh_error",
@@ -1270,7 +1270,8 @@ def _fetch_pr_merge_status() -> dict[str, Any]:
 
 _MERGE_WATCH_CMD = (
     "python3 .github/scripts/local_verify_pypi_slice.py "
-    "--lfg-merge-watch --watch-interval 30 --watch-stall-polls 12"
+    "--lfg-merge-watch --watch-interval 30 --watch-stall-polls 12 "
+    "--watch-heartbeat-polls 12"
 )
 
 
@@ -1485,6 +1486,18 @@ def _count_unchanged_watch_polls(history: list[dict[str, Any]]) -> int:
     return count
 
 
+def _should_emit_watch_heartbeat(
+    progress_unchanged: bool,
+    unchanged_streak: int,
+    heartbeat_polls: int,
+) -> bool:
+    if not progress_unchanged:
+        return False
+    if heartbeat_polls <= 0:
+        return False
+    return unchanged_streak > 0 and unchanged_streak % heartbeat_polls == 0
+
+
 def _resolve_watch_timeout_seconds(
     watch_timeout: float | None,
     *,
@@ -1533,6 +1546,7 @@ def _build_pr_watch_summary(status: dict[str, Any]) -> dict[str, Any]:
         "rollup_vs_gh_delta": crosscheck.get("rollup_vs_gh_delta"),
         "recommended_action": (status.get("pr_ci_recommendation") or {}).get("action"),
         "unchanged_polls": _count_unchanged_watch_polls(history),
+        "heartbeat_polls": int(status.get("pr_watch_heartbeats") or 0),
     }
 
 
@@ -1547,6 +1561,7 @@ def _format_pr_watch_summary_line(summary: dict[str, Any]) -> str:
     severe = summary.get("queue_backlog_severe")
     cross_delta = summary.get("rollup_vs_gh_delta")
     unchanged = summary.get("unchanged_polls")
+    heartbeats = summary.get("heartbeat_polls")
     extra = ""
     if severe:
         extra = f" severe_backlog=true"
@@ -1554,6 +1569,8 @@ def _format_pr_watch_summary_line(summary: dict[str, Any]) -> str:
         extra = f"{extra} rollup_delta={cross_delta:+d}"
     if isinstance(unchanged, int) and unchanged:
         extra = f"{extra} unchanged_polls={unchanged}"
+    if isinstance(heartbeats, int) and heartbeats:
+        extra = f"{extra} heartbeat_polls={heartbeats}"
     return (
         f"result={result} polls={polls} percent_delta={delta_text} "
         f"queue_events={queue_events} duration={duration_text}{extra}"
@@ -1575,6 +1592,7 @@ def _watch_pr_merge_status(
     timeout_sec: float,
     stall_polls: int,
     exit_on_queue_stall: bool = False,
+    heartbeat_polls: int = 12,
 ) -> None:
     if not status.get("lfg_track_complete"):
         return
@@ -1582,6 +1600,8 @@ def _watch_pr_merge_status(
     polls = 0
     status["pr_watch_history"] = []
     status["pr_queue_stall_events"] = []
+    status["pr_watch_heartbeats"] = 0
+    status["pr_watch_unchanged_streak"] = 0
     status["pr_watch_started_monotonic"] = time.monotonic()
     try:
         while True:
@@ -1608,11 +1628,22 @@ def _watch_pr_merge_status(
             history.append(snapshot)
             progress_unchanged = prev_key is not None and progress_key == prev_key
             if progress_unchanged:
+                unchanged_streak = int(status.get("pr_watch_unchanged_streak") or 0) + 1
+            else:
+                unchanged_streak = 0
+            status["pr_watch_unchanged_streak"] = unchanged_streak
+            heartbeat = _should_emit_watch_heartbeat(
+                progress_unchanged,
+                unchanged_streak,
+                heartbeat_polls,
+            )
+            use_compact = progress_unchanged and not heartbeat
+            if use_compact:
                 poll_line = _format_compact_watch_poll_line(snapshot)
             else:
                 poll_line = _format_watch_poll_line(pr_status)
             next_name = (status.get("next_pending_check") or {}).get("name")
-            if next_name and not progress_unchanged:
+            if next_name and not use_compact:
                 poll_line = f"{poll_line} next={next_name}"
             bottlenecks = status.get("pr_ci_bottlenecks") or {}
             in_prog = bottlenecks.get("in_progress") or []
@@ -1620,7 +1651,7 @@ def _watch_pr_merge_status(
                 age = bottlenecks.get("oldest_queued_age_hours")
                 if isinstance(age, (int, float)):
                     poll_line = f"{poll_line} queue_age={age:.1f}h"
-                if not progress_unchanged:
+                if not use_compact:
                     cross = status.get("pr_checks_crosscheck") or {}
                     delta = cross.get("rollup_vs_gh_delta")
                     if isinstance(delta, int):
@@ -1629,12 +1660,15 @@ def _watch_pr_merge_status(
                     sample = queued[0].get("name") if queued else next_name
                     if sample:
                         poll_line = f"{poll_line} queue_backlog={sample}"
-            elif in_prog and not progress_unchanged:
+            elif in_prog and not use_compact:
                 oldest = in_prog[0]
                 poll_line = (
                     f"{poll_line} bottleneck={oldest.get('name')} "
                     f"({oldest.get('workflow')})"
                 )
+            if heartbeat:
+                poll_line = f"{poll_line} heartbeat=1"
+                status["pr_watch_heartbeats"] = int(status.get("pr_watch_heartbeats") or 0) + 1
             print(
                 f"PR watch poll {polls}: {poll_line}",
                 file=sys.stderr,
@@ -2517,6 +2551,12 @@ def main() -> None:
         help="Exit watch early on queue backlog stall (default: continue until timeout/ready/failed)",
     )
     parser.add_argument(
+        "--watch-heartbeat-polls",
+        type=int,
+        default=12,
+        help="Emit full poll line every N unchanged polls (default 12; 0 disables)",
+    )
+    parser.add_argument(
         "--lfg-closeout",
         action="store_true",
         help="Shorthand for --lfg-refresh with --write (terminal doc/dispatch closeout, not dry-run)",
@@ -2735,6 +2775,7 @@ def main() -> None:
                 timeout_sec=args.watch_timeout,
                 stall_polls=max(0, args.watch_stall_polls),
                 exit_on_queue_stall=args.watch_exit_on_queue_stall,
+                heartbeat_polls=max(0, args.watch_heartbeat_polls),
             )
         if status.get("lfg_track_complete") and status.get("merge_hint"):
             status["proceed_hint"] = status["merge_hint"]
