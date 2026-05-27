@@ -24,7 +24,7 @@ SOLUTION_CLOSEOUT = (
     REPO_ROOT / "docs" / "solutions" / "testing" / "verify-pypi-regression-closeout.md"
 )
 PLAN_020 = REPO_ROOT / "docs" / "plans" / "2026-05-24-020-verify-pypi-regression-post-268-plan.md"
-PLAN_TRACK_CAP = "095"
+PLAN_TRACK_CAP = "096"
 LFG_EXIT_CODES: dict[int, str] = {
     0: "proceed, merge_ready, or monitoring_complete",
     1: "gh_error",
@@ -1260,6 +1260,72 @@ def _format_watch_poll_line(pr_status: dict[str, Any]) -> str:
     return base
 
 
+def _resolve_watch_timeout_seconds(
+    watch_timeout: float | None,
+    *,
+    lfg_merge_watch: bool,
+) -> float:
+    if watch_timeout is not None:
+        return watch_timeout
+    return 7200.0 if lfg_merge_watch else 1800.0
+
+
+def _build_pr_watch_summary(status: dict[str, Any]) -> dict[str, Any]:
+    history = list(status.get("pr_watch_history") or [])
+    if not history:
+        return {}
+    first = history[0]
+    last = history[-1]
+    start_pct = first.get("completion_percent")
+    end_pct = last.get("completion_percent")
+    start_pending = first.get("checks_pending")
+    end_pending = last.get("checks_pending")
+    percent_delta: int | None = None
+    pending_delta: int | None = None
+    if isinstance(start_pct, int) and isinstance(end_pct, int):
+        percent_delta = end_pct - start_pct
+    if isinstance(start_pending, int) and isinstance(end_pending, int):
+        pending_delta = end_pending - start_pending
+    started = status.get("pr_watch_started_monotonic")
+    duration_sec: float | None = None
+    if isinstance(started, (int, float)):
+        duration_sec = round(max(0.0, time.monotonic() - float(started)), 1)
+    return {
+        "polls": len(history),
+        "lfg_pr_watch_result": status.get("lfg_pr_watch_result"),
+        "start_completion_percent": start_pct,
+        "end_completion_percent": end_pct,
+        "completion_percent_delta": percent_delta,
+        "start_checks_pending": start_pending,
+        "end_checks_pending": end_pending,
+        "checks_pending_delta": pending_delta,
+        "queue_stall_events": len(list(status.get("pr_queue_stall_events") or [])),
+        "watch_duration_sec": duration_sec,
+    }
+
+
+def _format_pr_watch_summary_line(summary: dict[str, Any]) -> str:
+    result = summary.get("lfg_pr_watch_result") or "unknown"
+    polls = summary.get("polls", 0)
+    delta = summary.get("completion_percent_delta")
+    delta_text = f"{delta:+d}%" if isinstance(delta, int) else "n/a"
+    queue_events = summary.get("queue_stall_events", 0)
+    duration = summary.get("watch_duration_sec")
+    duration_text = f"{duration:.0f}s" if isinstance(duration, (int, float)) else "n/a"
+    return (
+        f"result={result} polls={polls} percent_delta={delta_text} "
+        f"queue_events={queue_events} duration={duration_text}"
+    )
+
+
+def _finalize_pr_watch(status: dict[str, Any]) -> None:
+    summary = _build_pr_watch_summary(status)
+    if not summary:
+        return
+    status["pr_watch_summary"] = summary
+    print(f"PR watch summary: {_format_pr_watch_summary_line(summary)}", file=sys.stderr)
+
+
 def _watch_pr_merge_status(
     status: dict[str, Any],
     *,
@@ -1274,66 +1340,77 @@ def _watch_pr_merge_status(
     polls = 0
     status["pr_watch_history"] = []
     status["pr_queue_stall_events"] = []
-    while True:
-        _apply_pr_merge_status(status)
-        pr_status = status.get("pr_merge_status") or {}
-        polls += 1
-        status["pr_watch_polls"] = polls
-        progress = pr_status.get("pr_ci_progress") or {}
-        snapshot = {
-            "poll": polls,
-            "completion_percent": progress.get("completion_percent"),
-            "checks_pending": pr_status.get("checks_pending"),
-            "checks_in_progress": pr_status.get("checks_in_progress"),
-            "checks_success": pr_status.get("checks_success"),
-            "next_check": (status.get("next_pending_check") or {}).get("name"),
-        }
-        history = status.setdefault("pr_watch_history", [])
-        history.append(snapshot)
-        poll_line = _format_watch_poll_line(pr_status)
-        next_name = (status.get("next_pending_check") or {}).get("name")
-        if next_name:
-            poll_line = f"{poll_line} next={next_name}"
-        bottlenecks = status.get("pr_ci_bottlenecks") or {}
-        in_prog = bottlenecks.get("in_progress") or []
-        if bottlenecks.get("queue_backlog"):
-            queued = bottlenecks.get("queued_longest_wait") or []
-            sample = queued[0].get("name") if queued else next_name
-            if sample:
-                poll_line = f"{poll_line} queue_backlog={sample}"
-        elif in_prog:
-            oldest = in_prog[0]
-            poll_line = (
-                f"{poll_line} bottleneck={oldest.get('name')} "
-                f"({oldest.get('workflow')})"
+    status["pr_watch_started_monotonic"] = time.monotonic()
+    try:
+        while True:
+            _apply_pr_merge_status(status)
+            pr_status = status.get("pr_merge_status") or {}
+            polls += 1
+            status["pr_watch_polls"] = polls
+            progress = pr_status.get("pr_ci_progress") or {}
+            snapshot = {
+                "poll": polls,
+                "completion_percent": progress.get("completion_percent"),
+                "checks_pending": pr_status.get("checks_pending"),
+                "checks_in_progress": pr_status.get("checks_in_progress"),
+                "checks_queued": pr_status.get("checks_queued"),
+                "checks_success": pr_status.get("checks_success"),
+                "next_check": (status.get("next_pending_check") or {}).get("name"),
+            }
+            history = status.setdefault("pr_watch_history", [])
+            history.append(snapshot)
+            poll_line = _format_watch_poll_line(pr_status)
+            next_name = (status.get("next_pending_check") or {}).get("name")
+            if next_name:
+                poll_line = f"{poll_line} next={next_name}"
+            bottlenecks = status.get("pr_ci_bottlenecks") or {}
+            in_prog = bottlenecks.get("in_progress") or []
+            if bottlenecks.get("queue_backlog"):
+                queued = bottlenecks.get("queued_longest_wait") or []
+                sample = queued[0].get("name") if queued else next_name
+                if sample:
+                    poll_line = f"{poll_line} queue_backlog={sample}"
+            elif in_prog:
+                oldest = in_prog[0]
+                poll_line = (
+                    f"{poll_line} bottleneck={oldest.get('name')} "
+                    f"({oldest.get('workflow')})"
+                )
+            print(
+                f"PR watch poll {polls}: {poll_line}",
+                file=sys.stderr,
             )
-        print(
-            f"PR watch poll {polls}: {poll_line}",
-            file=sys.stderr,
-        )
-        if stall_polls > 1 and len(history) >= stall_polls:
-            recent = history[-stall_polls:]
-            stall = _evaluate_pr_watch_stall(
-                recent,
-                stall_polls=stall_polls,
-                interval_sec=interval_sec,
-                bottlenecks=bottlenecks,
-                next_name=next_name,
-            )
-            if stall is not None:
-                if stall["lfg_pr_watch_result"] == "queue_stalled":
-                    status["pr_queue_stalled"] = True
-                    status.setdefault("pr_queue_stall_events", []).append(
-                        {
-                            "poll": polls,
-                            "hint": stall["merge_hint"],
-                        }
-                    )
-                    print(
-                        f"PR queue backlog (continuing watch): {stall['merge_hint']}",
-                        file=sys.stderr,
-                    )
-                    if exit_on_queue_stall:
+            if stall_polls > 1 and len(history) >= stall_polls:
+                recent = history[-stall_polls:]
+                stall = _evaluate_pr_watch_stall(
+                    recent,
+                    stall_polls=stall_polls,
+                    interval_sec=interval_sec,
+                    bottlenecks=bottlenecks,
+                    next_name=next_name,
+                )
+                if stall is not None:
+                    if stall["lfg_pr_watch_result"] == "queue_stalled":
+                        status["pr_queue_stalled"] = True
+                        status.setdefault("pr_queue_stall_events", []).append(
+                            {
+                                "poll": polls,
+                                "hint": stall["merge_hint"],
+                            }
+                        )
+                        print(
+                            f"PR queue backlog (continuing watch): {stall['merge_hint']}",
+                            file=sys.stderr,
+                        )
+                        if exit_on_queue_stall:
+                            status["pr_watch_stalled"] = True
+                            status["lfg_pr_watch_result"] = stall["lfg_pr_watch_result"]
+                            status["lfg_merge_blocked"] = stall["lfg_merge_blocked"]
+                            status["merge_hint"] = stall["merge_hint"]
+                            status["proceed_hint"] = stall["merge_hint"]
+                            print(f"PR watch stalled: {status['merge_hint']}", file=sys.stderr)
+                            return
+                    else:
                         status["pr_watch_stalled"] = True
                         status["lfg_pr_watch_result"] = stall["lfg_pr_watch_result"]
                         status["lfg_merge_blocked"] = stall["lfg_merge_blocked"]
@@ -1341,54 +1418,48 @@ def _watch_pr_merge_status(
                         status["proceed_hint"] = stall["merge_hint"]
                         print(f"PR watch stalled: {status['merge_hint']}", file=sys.stderr)
                         return
+            if not pr_status.get("ok"):
+                status["lfg_pr_watch_result"] = "no_pr"
+                return
+            if pr_status.get("pr_merge_ready"):
+                status["lfg_pr_watch_result"] = "ready"
+                if status.get("merge_hint"):
+                    status["proceed_hint"] = status["merge_hint"]
+                return
+            if pr_status.get("lfg_merge_blocked") in {
+                "pr_merge_conflicts",
+                "pr_merged",
+                "pr_closed",
+            }:
+                status["lfg_pr_watch_result"] = str(pr_status.get("lfg_merge_blocked"))
+                if status.get("merge_hint"):
+                    status["proceed_hint"] = status["merge_hint"]
+                return
+            if pr_status.get("lfg_merge_blocked") == "pr_checks_failed":
+                status["lfg_pr_watch_result"] = "failed"
+                if status.get("merge_hint"):
+                    status["proceed_hint"] = status["merge_hint"]
+                return
+            if time.monotonic() >= deadline:
+                bottlenecks = status.get("pr_ci_bottlenecks") or {}
+                if bottlenecks.get("queue_backlog"):
+                    pending = pr_status.get("checks_pending", 0)
+                    status["lfg_pr_watch_result"] = "queue_timeout"
+                    status["pr_watch_timeout"] = True
+                    status["pr_queue_stalled"] = True
+                    status["lfg_merge_blocked"] = "pr_queue_stalled"
+                    status["merge_hint"] = (
+                        f"PR CI timed out during queue backlog ({pending} checks queued, 0 running)"
+                    )
                 else:
-                    status["pr_watch_stalled"] = True
-                    status["lfg_pr_watch_result"] = stall["lfg_pr_watch_result"]
-                    status["lfg_merge_blocked"] = stall["lfg_merge_blocked"]
-                    status["merge_hint"] = stall["merge_hint"]
-                    status["proceed_hint"] = stall["merge_hint"]
-                    print(f"PR watch stalled: {status['merge_hint']}", file=sys.stderr)
-                    return
-        if not pr_status.get("ok"):
-            status["lfg_pr_watch_result"] = "no_pr"
-            return
-        if pr_status.get("pr_merge_ready"):
-            status["lfg_pr_watch_result"] = "ready"
-            if status.get("merge_hint"):
-                status["proceed_hint"] = status["merge_hint"]
-            return
-        if pr_status.get("lfg_merge_blocked") in {
-            "pr_merge_conflicts",
-            "pr_merged",
-            "pr_closed",
-        }:
-            status["lfg_pr_watch_result"] = str(pr_status.get("lfg_merge_blocked"))
-            if status.get("merge_hint"):
-                status["proceed_hint"] = status["merge_hint"]
-            return
-        if pr_status.get("lfg_merge_blocked") == "pr_checks_failed":
-            status["lfg_pr_watch_result"] = "failed"
-            if status.get("merge_hint"):
-                status["proceed_hint"] = status["merge_hint"]
-            return
-        if time.monotonic() >= deadline:
-            bottlenecks = status.get("pr_ci_bottlenecks") or {}
-            if bottlenecks.get("queue_backlog"):
-                pending = pr_status.get("checks_pending", 0)
-                status["lfg_pr_watch_result"] = "queue_timeout"
-                status["pr_watch_timeout"] = True
-                status["pr_queue_stalled"] = True
-                status["lfg_merge_blocked"] = "pr_queue_stalled"
-                status["merge_hint"] = (
-                    f"PR CI timed out during queue backlog ({pending} checks queued, 0 running)"
-                )
-            else:
-                status["lfg_pr_watch_result"] = "timeout"
-                status["pr_watch_timeout"] = True
-            if status.get("merge_hint"):
-                status["proceed_hint"] = status["merge_hint"]
-            return
-        time.sleep(max(0.0, interval_sec))
+                    status["lfg_pr_watch_result"] = "timeout"
+                    status["pr_watch_timeout"] = True
+                if status.get("merge_hint"):
+                    status["proceed_hint"] = status["merge_hint"]
+                return
+            time.sleep(max(0.0, interval_sec))
+    finally:
+        _finalize_pr_watch(status)
 
 
 def _compute_lfg_exit_code(
@@ -2063,8 +2134,8 @@ def main() -> None:
     parser.add_argument(
         "--watch-timeout",
         type=float,
-        default=1800.0,
-        help="Max seconds for --lfg-pr-watch before timeout (default 1800)",
+        default=None,
+        help="Max seconds for --lfg-pr-watch before timeout (default 1800, 7200 for --lfg-merge-watch)",
     )
     parser.add_argument(
         "--watch-stall-polls",
@@ -2109,6 +2180,12 @@ def main() -> None:
     if args.lfg_merge_watch:
         args.lfg_merge_gate = True
         args.lfg_pr_watch = True
+
+    if args.watch_timeout is None:
+        args.watch_timeout = _resolve_watch_timeout_seconds(
+            None,
+            lfg_merge_watch=args.lfg_merge_watch,
+        )
 
     if args.lfg_merge_gate:
         args.lfg_gate = True
