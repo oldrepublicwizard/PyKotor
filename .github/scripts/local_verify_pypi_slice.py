@@ -24,12 +24,17 @@ SOLUTION_CLOSEOUT = (
     REPO_ROOT / "docs" / "solutions" / "testing" / "verify-pypi-regression-closeout.md"
 )
 PLAN_020 = REPO_ROOT / "docs" / "plans" / "2026-05-24-020-verify-pypi-regression-post-268-plan.md"
-PLAN_TRACK_CAP = "099"
+PLAN_TRACK_CAP = "100"
 LFG_EXIT_CODES: dict[int, str] = {
     0: "proceed, merge_ready, or monitoring_complete",
     1: "gh_error",
     2: "deferred or dispatch_or_sync_failed",
-    3: "pr_checks_pending, pr_checks_failed, pr_merge_conflicts, pr_watch_stalled, pr_queue_stalled, no_open_pr, pr_merged, or pr_closed",
+    3: (
+        "pr_checks_pending, pr_checks_failed, pr_merge_conflicts, pr_watch_stalled, "
+        "pr_queue_stalled, no_open_pr, pr_merged, or pr_closed; may suffix "
+        ":watch_queue, :defer_external, :watch, :fix_checks, or :resolve_conflicts "
+        "from pr_ci_recommendation"
+    ),
 }
 _AUTO_APPLY_PROCEED_REASONS = frozenset({"update_monitoring_docs", "investigate_ci_drift"})
 _DISPATCH_PROCEED_REASONS = frozenset({"refresh_verify_dispatch", "refresh_fc_dispatch"})
@@ -1701,8 +1706,32 @@ def _compute_lfg_exit_reason(
         if not blocked:
             pr_status = status.get("pr_merge_status") or {}
             blocked = pr_status.get("lfg_merge_blocked")
-        return str(blocked or "pr_not_ready")
+        base = str(blocked or "pr_not_ready")
+        rec = status.get("pr_ci_recommendation") or {}
+        action = str(rec.get("action") or "")
+        if action and action not in {base, "review", "no_pr", "merge"}:
+            if action in {
+                "watch_queue",
+                "defer_external",
+                "watch",
+                "fix_checks",
+                "resolve_conflicts",
+            }:
+                return f"{base}:{action}"
+        return base
     return "unknown"
+
+
+def _emit_lfg_strict_exit_stderr(status: dict[str, Any], exit_code: int) -> None:
+    reason = status.get("lfg_exit_reason")
+    if reason is None:
+        return
+    line = f"LFG exit: code={exit_code} reason={reason}"
+    rec = status.get("pr_ci_recommendation") or {}
+    command = rec.get("command")
+    if command:
+        line = f"{line} command={command}"
+    print(line, file=sys.stderr)
 
 
 def _emit_track_complete_stderr(status: dict[str, Any]) -> None:
@@ -2656,6 +2685,8 @@ def main() -> None:
                     deferred=deferred,
                 )
                 status["lfg_exit_codes"] = LFG_EXIT_CODES
+                if exit_code != 0:
+                    _emit_lfg_strict_exit_stderr(status, exit_code)
             _print_ci_status(status, as_json=args.json)
         if not status["gh_ok"]:
             sys.exit(1)
