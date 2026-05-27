@@ -446,7 +446,7 @@ Monitoring.
         self.assertTrue(changes["forward_commits_row"])
         self.assertTrue(changes["plans_index"])
         self.assertIn("https://example.com/10", patched)
-        self.assertIn("019–100", patched)
+        self.assertIn("019–101", patched)
 
     def test_dedupe_preserve_order(self) -> None:
         self.assertEqual(
@@ -554,6 +554,82 @@ Monitoring.
         )
         self.assertIn("complete=62%", line)
         self.assertIn("skipped=", line)
+
+    def test_watch_snapshot_progress_key_and_compact_line(self) -> None:
+        snapshot = {
+            "completion_percent": 4,
+            "checks_pending": 27,
+            "checks_in_progress": 0,
+            "checks_success": 1,
+            "checks_failed": 0,
+        }
+        self.assertEqual(
+            mod._watch_snapshot_progress_key(snapshot),
+            (4, 27, 0, 1, 0),
+        )
+        self.assertIn("unchanged complete=4%", mod._format_compact_watch_poll_line(snapshot))
+
+    def test_count_unchanged_watch_polls(self) -> None:
+        history = [
+            {"completion_percent": 4, "checks_pending": 27, "checks_in_progress": 0, "checks_success": 1, "checks_failed": 0},
+            {"completion_percent": 4, "checks_pending": 27, "checks_in_progress": 0, "checks_success": 1, "checks_failed": 0},
+            {"completion_percent": 8, "checks_pending": 25, "checks_in_progress": 1, "checks_success": 2, "checks_failed": 0},
+            {"completion_percent": 8, "checks_pending": 25, "checks_in_progress": 1, "checks_success": 2, "checks_failed": 0},
+        ]
+        self.assertEqual(mod._count_unchanged_watch_polls(history), 2)
+
+    def test_watch_pr_merge_status_compact_unchanged_polls(self) -> None:
+        status: dict[str, Any] = {"lfg_track_complete": True}
+        pending_status = {
+            "ok": True,
+            "number": 308,
+            "url": "https://github.com/example/pr/308",
+            "lfg_merge_blocked": "pr_checks_pending",
+            "checks_pending": 27,
+            "checks_in_progress": 0,
+            "checks_success": 1,
+            "checks_failed": 0,
+            "checks_skipped": 0,
+            "pr_ci_progress": {"completion_percent": 4, "remaining": 27, "total": 28},
+            "pending_check_details": [
+                {
+                    "name": "label",
+                    "started_at": "2026-05-27T21:30:00Z",
+                    "workflow": "CI",
+                    "details_url": "",
+                },
+            ],
+            "pr_merge_ready": False,
+        }
+        calls = {"n": 0}
+
+        def fetch_side() -> dict[str, Any]:
+            calls["n"] += 1
+            if calls["n"] >= 3:
+                return {
+                    "ok": True,
+                    "number": 308,
+                    "url": "https://github.com/example/pr/308",
+                    "pr_merge_ready": True,
+                    "lfg_merge_blocked": None,
+                }
+            return dict(pending_status)
+
+        with patch.object(mod, "_fetch_pr_merge_status", side_effect=fetch_side):
+            with patch.object(mod.time, "sleep"):
+                with patch("sys.stderr", new_callable=io.StringIO) as err:
+                    mod._watch_pr_merge_status(
+                        status,
+                        interval_sec=0.0,
+                        timeout_sec=60.0,
+                        stall_polls=99,
+                    )
+        output = err.getvalue()
+        self.assertIn("PR watch poll 2: unchanged", output)
+        self.assertIn("queue_age=", output)
+        self.assertNotIn("rollup_delta=", output.split("PR watch poll 2:")[1].split("\n")[0])
+        summary = status.get("pr_watch_summary") or {}
+        self.assertEqual(summary.get("unchanged_polls"), 1)
 
     def test_compute_lfg_exit_code_no_open_pr(self) -> None:
         code = mod._compute_lfg_exit_code(
