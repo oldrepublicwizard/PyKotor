@@ -24,7 +24,7 @@ SOLUTION_CLOSEOUT = (
     REPO_ROOT / "docs" / "solutions" / "testing" / "verify-pypi-regression-closeout.md"
 )
 PLAN_020 = REPO_ROOT / "docs" / "plans" / "2026-05-24-020-verify-pypi-regression-post-268-plan.md"
-PLAN_TRACK_CAP = "106"
+PLAN_TRACK_CAP = "107"
 LFG_EXIT_CODES: dict[int, str] = {
     0: "proceed, merge_ready, or monitoring_complete",
     1: "gh_error",
@@ -432,6 +432,21 @@ def _compare_checkpoint(status: dict[str, Any]) -> dict[str, Any]:
                 "ci_drift_note": (
                     f"verify run {verify_id} vs doc {checkpoint['verify_run_id']}; "
                     f"FC run {fc_id} vs doc {checkpoint['forward_commits_run_id']}"
+                ),
+            }
+        )
+        return result
+
+    if fc_sha_stale and fc_sha_stale_benign is None and fc_active:
+        fc_status = _run_display_label(forward_commits)
+        result.update(
+            {
+                "checkpoint_unchanged": True,
+                "defer_lfg_pr": True,
+                "defer_reason": "FC run still active; classify SHA gap after terminal",
+                "fc_stale_gap_pending_note": (
+                    f"FC {fc_status} on {fc_head[:7] if fc_head else '?'} "
+                    f"vs master {master_sha[:7] if master_sha else '?'}"
                 ),
             }
         )
@@ -1907,7 +1922,7 @@ def _build_lfg_agent_briefing(status: dict[str, Any]) -> dict[str, Any]:
     checkpoint = status.get("checkpoint") or {}
     extra_notes: list[str] = []
     if isinstance(checkpoint, dict):
-        for key in ("ci_drift_note", "fc_stale_gap_note"):
+        for key in ("ci_drift_note", "fc_stale_gap_note", "fc_stale_gap_pending_note"):
             note = checkpoint.get(key)
             if isinstance(note, str) and note:
                 extra_notes.append(note)

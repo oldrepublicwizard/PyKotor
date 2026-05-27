@@ -359,7 +359,7 @@ Monitoring.
         self.assertIn("queued_hours", result)
         self.assertIn("created_at", result)
 
-    def test_compare_no_defer_when_fc_benign_unknown(self) -> None:
+    def test_compare_defer_when_fc_active_and_benign_unknown(self) -> None:
         status = {
             "verify_pypi": {
                 "run_id": 26372746392,
@@ -382,8 +382,9 @@ Monitoring.
             with patch.object(mod, "_git_origin_master_sha", return_value=_MASTER_SHA):
                 with patch.object(mod, "_commits_since_are_docs_only", return_value=None):
                     result = mod._compare_checkpoint(status)
-        self.assertFalse(result["defer_lfg_pr"])
-        self.assertIn("could not be classified", result.get("defer_reason", ""))
+        self.assertTrue(result["defer_lfg_pr"])
+        self.assertIn("still active", result.get("defer_reason", ""))
+        self.assertIn("fc_stale_gap_pending_note", result)
 
     def test_compare_doc_update_recommended_when_terminal(self) -> None:
         status = {
@@ -446,7 +447,7 @@ Monitoring.
         self.assertTrue(changes["forward_commits_row"])
         self.assertTrue(changes["plans_index"])
         self.assertIn("https://example.com/10", patched)
-        self.assertIn("019–106", patched)
+        self.assertIn("019–107", patched)
 
     def test_dedupe_preserve_order(self) -> None:
         self.assertEqual(
@@ -2277,6 +2278,74 @@ last_verified: 2026-01-01
                     result = mod._compare_checkpoint(status)
         self.assertEqual(result.get("proceed_reason"), "investigate_ci_drift")
         self.assertIn("26543899770", result.get("ci_drift_note", ""))
+
+    def test_compare_defer_classify_gap_when_fc_active(self) -> None:
+        status = {
+            "verify_pypi": {
+                "run_id": 26372746392,
+                "status": "completed",
+                "conclusion": "success",
+                "head_sha": _MASTER_SHA,
+            },
+            "forward_commits": {
+                "run_id": 26543899770,
+                "status": "queued",
+                "conclusion": "",
+                "head_sha": _FC_SHA,
+            },
+        }
+        with patch.object(mod, "_parse_solution_checkpoint_run_ids") as mock_parse:
+            mock_parse.return_value = {
+                "verify_run_id": 26372746392,
+                "forward_commits_run_id": 26543899770,
+            }
+            with patch.object(mod, "_git_origin_master_sha", return_value=_MASTER_SHA):
+                with patch.object(mod, "_commits_since_are_docs_only", return_value=None):
+                    result = mod._compare_checkpoint(status)
+        self.assertTrue(result.get("defer_lfg_pr"))
+        self.assertNotIn("proceed_reason", result)
+        self.assertIn("fc_stale_gap_pending_note", result)
+        self.assertIn("queued", result.get("fc_stale_gap_pending_note", ""))
+
+    def test_compare_classify_gap_when_fc_terminal_benign_unknown(self) -> None:
+        status = {
+            "verify_pypi": {
+                "run_id": 26372746392,
+                "status": "completed",
+                "conclusion": "success",
+                "head_sha": _MASTER_SHA,
+            },
+            "forward_commits": {
+                "run_id": 26543899770,
+                "status": "completed",
+                "conclusion": "success",
+                "head_sha": _FC_SHA,
+            },
+        }
+        with patch.object(mod, "_parse_solution_checkpoint_run_ids") as mock_parse:
+            mock_parse.return_value = {
+                "verify_run_id": 26372746392,
+                "forward_commits_run_id": 26543899770,
+            }
+            with patch.object(mod, "_git_origin_master_sha", return_value=_MASTER_SHA):
+                with patch.object(mod, "_commits_since_are_docs_only", return_value=None):
+                    result = mod._compare_checkpoint(status)
+        self.assertFalse(result.get("defer_lfg_pr"))
+        self.assertEqual(result.get("proceed_reason"), "classify_fc_stale_gap")
+        self.assertIn("fc_stale_gap_note", result)
+
+    def test_build_lfg_agent_briefing_defer_fc_active_pending(self) -> None:
+        briefing = mod._build_lfg_agent_briefing(
+            {
+                "lfg_deferred": True,
+                "proceed_hint": "python3 .github/scripts/local_verify_pypi_slice.py --lfg-gate",
+                "checkpoint": {
+                    "fc_stale_gap_pending_note": "FC queued on def1234 vs master abc1234",
+                },
+            }
+        )
+        self.assertEqual(briefing["action"], "defer")
+        self.assertIn("FC queued", briefing["notes"][0])
 
     def test_last_ci_check_section_extracts_block(self) -> None:
         mock_path = mock.MagicMock()
