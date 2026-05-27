@@ -24,7 +24,7 @@ SOLUTION_CLOSEOUT = (
     REPO_ROOT / "docs" / "solutions" / "testing" / "verify-pypi-regression-closeout.md"
 )
 PLAN_020 = REPO_ROOT / "docs" / "plans" / "2026-05-24-020-verify-pypi-regression-post-268-plan.md"
-PLAN_TRACK_CAP = "098"
+PLAN_TRACK_CAP = "099"
 LFG_EXIT_CODES: dict[int, str] = {
     0: "proceed, merge_ready, or monitoring_complete",
     1: "gh_error",
@@ -1239,6 +1239,85 @@ def _fetch_pr_merge_status() -> dict[str, Any]:
     return result
 
 
+_MERGE_WATCH_CMD = (
+    "python3 .github/scripts/local_verify_pypi_slice.py "
+    "--lfg-merge-watch --watch-interval 30 --watch-stall-polls 12"
+)
+
+
+def _build_pr_queue_backlog_note(bottlenecks: dict[str, Any]) -> str:
+    if not bottlenecks.get("queue_backlog"):
+        return ""
+    age = bottlenecks.get("oldest_queued_age_hours")
+    severe = bottlenecks.get("queue_backlog_severe")
+    note = "PR CI queued behind GitHub runners (external backlog)"
+    if isinstance(age, (int, float)):
+        note += f"; oldest queued ~{age:.1f}h"
+    if severe:
+        note += "; severe (>=4h) — defer per closeout"
+    return note
+
+
+def _build_pr_ci_recommendation(status: dict[str, Any]) -> dict[str, str]:
+    pr_status = status.get("pr_merge_status") or {}
+    actions = status.get("merge_actions") or {}
+    if not pr_status.get("ok"):
+        return {
+            "action": "no_pr",
+            "reason": "no open PR on branch",
+            "command": "",
+        }
+    if pr_status.get("pr_merge_ready"):
+        return {
+            "action": "merge",
+            "reason": "PR CI complete",
+            "command": str(actions.get("merge_squash_auto") or ""),
+        }
+    blocked = str(status.get("lfg_merge_blocked") or pr_status.get("lfg_merge_blocked") or "")
+    if blocked == "pr_merge_conflicts":
+        return {
+            "action": "resolve_conflicts",
+            "reason": "PR has merge conflicts",
+            "command": "",
+        }
+    if blocked == "pr_checks_failed":
+        return {
+            "action": "fix_checks",
+            "reason": "PR checks failed",
+            "command": str(actions.get("list_failed") or ""),
+        }
+    if blocked in {"pr_merged", "pr_closed"}:
+        return {
+            "action": blocked.replace("pr_", ""),
+            "reason": f"PR {blocked.replace('pr_', '')}",
+            "command": "",
+        }
+    bottlenecks = status.get("pr_ci_bottlenecks") or {}
+    if blocked in {"pr_checks_pending", "pr_queue_stalled"}:
+        if bottlenecks.get("queue_backlog_severe"):
+            return {
+                "action": "defer_external",
+                "reason": "severe runner queue backlog (>=4h)",
+                "command": _MERGE_WATCH_CMD,
+            }
+        if bottlenecks.get("queue_backlog"):
+            return {
+                "action": "watch_queue",
+                "reason": "runner queue backlog (0 in progress)",
+                "command": _MERGE_WATCH_CMD,
+            }
+        return {
+            "action": "watch",
+            "reason": "PR CI pending",
+            "command": str(actions.get("watch_checks") or _MERGE_WATCH_CMD),
+        }
+    return {
+        "action": "review",
+        "reason": "review pr_merge_status",
+        "command": str(actions.get("watch_checks") or ""),
+    }
+
+
 def _apply_pr_merge_status(status: dict[str, Any]) -> None:
     if not status.get("lfg_track_complete"):
         return
@@ -1310,6 +1389,12 @@ def _apply_pr_merge_status(status: dict[str, Any]) -> None:
         status["merge_hint"] = f"Monitoring complete; review PR status: {url}"
     if pr_status.get("lfg_merge_blocked"):
         status["lfg_merge_blocked"] = pr_status["lfg_merge_blocked"]
+    status["pr_ci_recommendation"] = _build_pr_ci_recommendation(status)
+    backlog_note = _build_pr_queue_backlog_note(bottlenecks)
+    if backlog_note:
+        status["pr_queue_backlog_note"] = backlog_note
+    else:
+        status.pop("pr_queue_backlog_note", None)
 
 
 def _format_watch_poll_line(pr_status: dict[str, Any]) -> str:
@@ -1375,6 +1460,7 @@ def _build_pr_watch_summary(status: dict[str, Any]) -> dict[str, Any]:
         "end_oldest_queued_age_hours": bottlenecks.get("oldest_queued_age_hours"),
         "queue_backlog_severe": bottlenecks.get("queue_backlog_severe"),
         "rollup_vs_gh_delta": crosscheck.get("rollup_vs_gh_delta"),
+        "recommended_action": (status.get("pr_ci_recommendation") or {}).get("action"),
     }
 
 
@@ -1447,6 +1533,13 @@ def _watch_pr_merge_status(
             bottlenecks = status.get("pr_ci_bottlenecks") or {}
             in_prog = bottlenecks.get("in_progress") or []
             if bottlenecks.get("queue_backlog"):
+                age = bottlenecks.get("oldest_queued_age_hours")
+                if isinstance(age, (int, float)):
+                    poll_line = f"{poll_line} queue_age={age:.1f}h"
+                cross = status.get("pr_checks_crosscheck") or {}
+                delta = cross.get("rollup_vs_gh_delta")
+                if isinstance(delta, int):
+                    poll_line = f"{poll_line} rollup_delta={delta:+d}"
                 queued = bottlenecks.get("queued_longest_wait") or []
                 sample = queued[0].get("name") if queued else next_name
                 if sample:
