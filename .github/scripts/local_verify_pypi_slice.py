@@ -24,7 +24,7 @@ SOLUTION_CLOSEOUT = (
     REPO_ROOT / "docs" / "solutions" / "testing" / "verify-pypi-regression-closeout.md"
 )
 PLAN_020 = REPO_ROOT / "docs" / "plans" / "2026-05-24-020-verify-pypi-regression-post-268-plan.md"
-PLAN_TRACK_CAP = "084"
+PLAN_TRACK_CAP = "085"
 _AUTO_APPLY_PROCEED_REASONS = frozenset({"update_monitoring_docs", "investigate_ci_drift"})
 _DISPATCH_PROCEED_REASONS = frozenset({"refresh_verify_dispatch", "refresh_fc_dispatch"})
 VERIFY_WORKFLOW = "verify-pypi-regression.yml"
@@ -912,6 +912,17 @@ def _recompare_checkpoint_status(status: dict[str, Any], *, targets: list[str]) 
     _refine_lfg_checkpoint(status, targets=targets)
 
 
+def _dedupe_preserve_order(names: list[str]) -> list[str]:
+    seen: set[str] = set()
+    unique: list[str] = []
+    for name in names:
+        if name in seen:
+            continue
+        seen.add(name)
+        unique.append(name)
+    return unique
+
+
 def _summarize_pr_checks(checks: list[dict[str, Any]]) -> dict[str, Any]:
     pending = 0
     failed = 0
@@ -945,6 +956,8 @@ def _summarize_pr_checks(checks: list[dict[str, Any]]) -> dict[str, Any]:
         merge_blocked = "pr_checks_failed"
     elif pending > 0:
         merge_blocked = "pr_checks_pending"
+    pending_checks = _dedupe_preserve_order(pending_checks)
+    failed_checks = _dedupe_preserve_order(failed_checks)
     return {
         "checks_total": len(checks),
         "checks_pending": pending,
@@ -1008,11 +1021,50 @@ def _apply_pr_merge_status(status: dict[str, Any]) -> None:
         detail = f" ({names})" if names else ""
         status["merge_hint"] = f"Monitoring complete; wait for PR checks{detail}: {url}"
     elif pr_status.get("pr_merge_ready"):
-        status["merge_hint"] = f"Monitoring complete; PR ready to merge: {url}"
+        number = pr_status.get("number")
+        merge_cmd = f"gh pr merge {number} --squash --auto" if number else "gh pr merge --squash --auto"
+        status["merge_hint"] = f"Monitoring complete; PR ready to merge: {url} ({merge_cmd})"
     else:
         status["merge_hint"] = f"Monitoring complete; review PR status: {url}"
     if pr_status.get("lfg_merge_blocked"):
         status["lfg_merge_blocked"] = pr_status["lfg_merge_blocked"]
+
+
+def _watch_pr_merge_status(
+    status: dict[str, Any],
+    *,
+    interval_sec: float,
+    timeout_sec: float,
+) -> None:
+    if not status.get("lfg_track_complete"):
+        return
+    deadline = time.monotonic() + max(0.0, timeout_sec)
+    polls = 0
+    while True:
+        _apply_pr_merge_status(status)
+        pr_status = status.get("pr_merge_status") or {}
+        polls += 1
+        status["pr_watch_polls"] = polls
+        if not pr_status.get("ok"):
+            status["lfg_pr_watch_result"] = "no_pr"
+            return
+        if pr_status.get("pr_merge_ready"):
+            status["lfg_pr_watch_result"] = "ready"
+            if status.get("merge_hint"):
+                status["proceed_hint"] = status["merge_hint"]
+            return
+        if pr_status.get("lfg_merge_blocked") == "pr_checks_failed":
+            status["lfg_pr_watch_result"] = "failed"
+            if status.get("merge_hint"):
+                status["proceed_hint"] = status["merge_hint"]
+            return
+        if time.monotonic() >= deadline:
+            status["lfg_pr_watch_result"] = "timeout"
+            status["pr_watch_timeout"] = True
+            if status.get("merge_hint"):
+                status["proceed_hint"] = status["merge_hint"]
+            return
+        time.sleep(max(0.0, interval_sec))
 
 
 def _emit_track_complete_stderr(status: dict[str, Any]) -> None:
@@ -1417,12 +1469,18 @@ def _build_proceed_hint(status: dict[str, Any], *, blocked: str | None) -> str:
 
 def _resolve_lfg_mode(
     *,
+    lfg_merge_gate: bool,
     lfg_closeout: bool,
     lfg_gate: bool,
     lfg_preflight: bool,
     lfg_refresh: bool,
+    lfg_pr_watch: bool,
     dry_run: bool,
 ) -> str | None:
+    if lfg_pr_watch:
+        return "pr_watch"
+    if lfg_merge_gate:
+        return "merge_gate"
     if lfg_closeout:
         return "closeout"
     if lfg_gate:
@@ -1464,6 +1522,8 @@ def main() -> None:
             "Examples:\n"
             "  python3 .github/scripts/local_verify_pypi_slice.py\n"
             "  python3 .github/scripts/local_verify_pypi_slice.py --lfg-gate\n"
+            "  python3 .github/scripts/local_verify_pypi_slice.py --lfg-merge-gate\n"
+            "  python3 .github/scripts/local_verify_pypi_slice.py --lfg-merge-gate --lfg-pr-watch\n"
             "  python3 .github/scripts/local_verify_pypi_slice.py --lfg-preflight\n"
             "  python3 .github/scripts/local_verify_pypi_slice.py --lfg-refresh --dry-run\n"
             "  python3 .github/scripts/local_verify_pypi_slice.py --lfg-closeout\n"
@@ -1587,6 +1647,28 @@ def main() -> None:
         help="Shorthand for --lfg-preflight --strict-defer-exit (full JSON then exit 2 when deferred)",
     )
     parser.add_argument(
+        "--lfg-merge-gate",
+        action="store_true",
+        help="Shorthand for --lfg-gate --strict-pr-ci-exit (exit 3 while PR CI pending)",
+    )
+    parser.add_argument(
+        "--lfg-pr-watch",
+        action="store_true",
+        help="Poll pr_merge_status until ready, failed, or --watch-timeout (requires --lfg-gate or --ci-status-only)",
+    )
+    parser.add_argument(
+        "--watch-interval",
+        type=float,
+        default=30.0,
+        help="Seconds between --lfg-pr-watch polls (default 30)",
+    )
+    parser.add_argument(
+        "--watch-timeout",
+        type=float,
+        default=1800.0,
+        help="Max seconds for --lfg-pr-watch before timeout (default 1800)",
+    )
+    parser.add_argument(
         "--lfg-closeout",
         action="store_true",
         help="Shorthand for --lfg-refresh with --write (terminal doc/dispatch closeout, not dry-run)",
@@ -1614,6 +1696,10 @@ def main() -> None:
         help="Seconds between dispatch poll attempts",
     )
     args = parser.parse_args()
+
+    if args.lfg_merge_gate:
+        args.lfg_gate = True
+        args.strict_pr_ci_exit = True
 
     if args.lfg_closeout:
         args.lfg_refresh = True
@@ -1662,6 +1748,9 @@ def main() -> None:
 
     if args.strict_defer_exit and not args.exit_on_defer:
         parser.error("--strict-defer-exit requires --exit-on-defer or --monitor-preflight")
+
+    if args.lfg_pr_watch and not (args.lfg_gate or args.ci_status_only):
+        parser.error("--lfg-pr-watch requires --lfg-gate or --ci-status-only")
 
     if args.emit_checkpoint_snippet and not args.ci_status_only:
         parser.error("--emit-checkpoint-snippet requires --ci-status-only")
@@ -1781,14 +1870,22 @@ def main() -> None:
         _apply_lfg_proceed(status)
         _apply_lfg_track_complete(status)
         _apply_pr_merge_status(status)
+        if args.lfg_pr_watch:
+            _watch_pr_merge_status(
+                status,
+                interval_sec=args.watch_interval,
+                timeout_sec=args.watch_timeout,
+            )
         if status.get("lfg_track_complete") and status.get("merge_hint"):
             status["proceed_hint"] = status["merge_hint"]
         _emit_track_complete_stderr(status)
         lfg_mode = _resolve_lfg_mode(
+            lfg_merge_gate=args.lfg_merge_gate,
             lfg_closeout=args.lfg_closeout,
             lfg_gate=args.lfg_gate,
             lfg_preflight=args.lfg_preflight,
             lfg_refresh=args.lfg_refresh,
+            lfg_pr_watch=args.lfg_pr_watch,
             dry_run=args.dry_run,
         )
         if lfg_mode is not None:

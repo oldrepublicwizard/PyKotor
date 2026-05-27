@@ -446,7 +446,24 @@ Monitoring.
         self.assertTrue(changes["forward_commits_row"])
         self.assertTrue(changes["plans_index"])
         self.assertIn("https://example.com/10", patched)
-        self.assertIn("019–084", patched)
+        self.assertIn("019–085", patched)
+
+    def test_dedupe_preserve_order(self) -> None:
+        self.assertEqual(
+            mod._dedupe_preserve_order(["a", "b", "a", "c", "b"]),
+            ["a", "b", "c"],
+        )
+
+    def test_summarize_pr_checks_dedupes_pending_names(self) -> None:
+        summary = mod._summarize_pr_checks(
+            [
+                {"name": "Analyze (python)", "conclusion": "", "status": "QUEUED"},
+                {"name": "Analyze (python)", "conclusion": "", "status": "IN_PROGRESS"},
+                {"name": "build", "conclusion": "", "status": "QUEUED"},
+            ]
+        )
+        self.assertEqual(summary["pending_checks"], ["Analyze (python)", "build"])
+        self.assertEqual(summary["checks_pending"], 3)
 
     def test_summarize_pr_checks_skipped_not_pending(self) -> None:
         summary = mod._summarize_pr_checks(
@@ -520,6 +537,51 @@ Monitoring.
             mod._apply_pr_merge_status(status)
         self.assertIn("pr_merge_status", status)
         self.assertIn("Analyze (python)", status["merge_hint"])
+
+    def test_apply_pr_merge_ready_includes_merge_cmd(self) -> None:
+        status: dict[str, Any] = {"lfg_track_complete": True}
+        with patch.object(
+            mod,
+            "_fetch_pr_merge_status",
+            return_value={
+                "ok": True,
+                "number": 308,
+                "url": "https://github.com/example/pr/308",
+                "pr_merge_ready": True,
+                "lfg_merge_blocked": None,
+            },
+        ):
+            mod._apply_pr_merge_status(status)
+        self.assertIn("gh pr merge 308 --squash --auto", status["merge_hint"])
+
+    def test_watch_pr_merge_status_ready(self) -> None:
+        status: dict[str, Any] = {"lfg_track_complete": True}
+        calls = {"n": 0}
+
+        def fetch_side() -> dict[str, Any]:
+            calls["n"] += 1
+            if calls["n"] == 1:
+                return {
+                    "ok": True,
+                    "number": 308,
+                    "url": "https://github.com/example/pr/308",
+                    "lfg_merge_blocked": "pr_checks_pending",
+                    "pending_checks": ["build"],
+                    "pr_merge_ready": False,
+                }
+            return {
+                "ok": True,
+                "number": 308,
+                "url": "https://github.com/example/pr/308",
+                "pr_merge_ready": True,
+                "lfg_merge_blocked": None,
+            }
+
+        with patch.object(mod, "_fetch_pr_merge_status", side_effect=fetch_side):
+            with patch.object(mod.time, "sleep"):
+                mod._watch_pr_merge_status(status, interval_sec=0.0, timeout_sec=60.0)
+        self.assertEqual(status["lfg_pr_watch_result"], "ready")
+        self.assertEqual(status["pr_watch_polls"], 2)
 
     def test_refine_lfg_checkpoint_monitoring_complete(self) -> None:
         status: dict[str, Any] = {
@@ -1399,23 +1461,51 @@ last_verified: 2026-01-01
     def test_resolve_lfg_mode_closeout(self) -> None:
         self.assertEqual(
             mod._resolve_lfg_mode(
+                lfg_merge_gate=False,
                 lfg_closeout=True,
                 lfg_gate=False,
                 lfg_preflight=False,
                 lfg_refresh=True,
+                lfg_pr_watch=False,
                 dry_run=False,
             ),
             "closeout",
         )
         self.assertEqual(
             mod._resolve_lfg_mode(
+                lfg_merge_gate=False,
                 lfg_closeout=False,
                 lfg_gate=True,
                 lfg_preflight=True,
                 lfg_refresh=True,
+                lfg_pr_watch=False,
                 dry_run=True,
             ),
             "gate",
+        )
+        self.assertEqual(
+            mod._resolve_lfg_mode(
+                lfg_merge_gate=True,
+                lfg_closeout=False,
+                lfg_gate=True,
+                lfg_preflight=True,
+                lfg_refresh=True,
+                lfg_pr_watch=False,
+                dry_run=True,
+            ),
+            "merge_gate",
+        )
+        self.assertEqual(
+            mod._resolve_lfg_mode(
+                lfg_merge_gate=False,
+                lfg_closeout=False,
+                lfg_gate=True,
+                lfg_preflight=True,
+                lfg_refresh=True,
+                lfg_pr_watch=True,
+                dry_run=True,
+            ),
+            "pr_watch",
         )
 
     def test_lfg_closeout_cli_sets_mode(self) -> None:
