@@ -24,7 +24,7 @@ SOLUTION_CLOSEOUT = (
     REPO_ROOT / "docs" / "solutions" / "testing" / "verify-pypi-regression-closeout.md"
 )
 PLAN_020 = REPO_ROOT / "docs" / "plans" / "2026-05-24-020-verify-pypi-regression-post-268-plan.md"
-PLAN_TRACK_CAP = "091"
+PLAN_TRACK_CAP = "092"
 LFG_EXIT_CODES: dict[int, str] = {
     0: "proceed, merge_ready, or monitoring_complete",
     1: "gh_error",
@@ -961,6 +961,7 @@ def _summarize_pr_checks(checks: list[dict[str, Any]]) -> dict[str, Any]:
     pending_checks: list[str] = []
     failed_checks: list[str] = []
     pending_check_details: list[dict[str, str]] = []
+    in_progress_check_details: list[dict[str, str]] = []
     failed_check_details: list[dict[str, str]] = []
     for check in checks:
         detail = _check_detail_record(check)
@@ -988,6 +989,7 @@ def _summarize_pr_checks(checks: list[dict[str, Any]]) -> dict[str, Any]:
             in_progress += 1
             pending_checks.append(name)
             pending_check_details.append(detail)
+            in_progress_check_details.append(detail)
         elif check_status in {"queued", "pending", "waiting"}:
             pending += 1
             queued += 1
@@ -1012,6 +1014,7 @@ def _summarize_pr_checks(checks: list[dict[str, Any]]) -> dict[str, Any]:
     pending_checks = _dedupe_preserve_order(pending_checks)
     failed_checks = _dedupe_preserve_order(failed_checks)
     pending_check_details = _dedupe_check_details(pending_check_details)
+    in_progress_check_details = _dedupe_check_details(in_progress_check_details)
     failed_check_details = _dedupe_check_details(failed_check_details)
     terminal = success + failed + skipped
     total = len(checks)
@@ -1030,6 +1033,7 @@ def _summarize_pr_checks(checks: list[dict[str, Any]]) -> dict[str, Any]:
         "pending_checks": pending_checks,
         "failed_checks": failed_checks,
         "pending_check_details": pending_check_details,
+        "in_progress_check_details": in_progress_check_details,
         "failed_check_details": failed_check_details,
         "pr_ci_progress": {
             "terminal": terminal,
@@ -1062,6 +1066,16 @@ def _build_merge_actions(number: int | None) -> dict[str, str]:
         "list_failed": "gh pr checks --failed",
         "merge_squash_auto": "gh pr merge --squash --auto",
     }
+
+
+def _pick_next_pending_check(pr_status: dict[str, Any]) -> dict[str, str] | None:
+    in_progress = list(pr_status.get("in_progress_check_details") or [])
+    if in_progress:
+        return in_progress[0]
+    pending = list(pr_status.get("pending_check_details") or [])
+    if pending:
+        return pending[0]
+    return None
 
 
 def _fetch_pr_merge_status() -> dict[str, Any]:
@@ -1111,24 +1125,28 @@ def _apply_pr_merge_status(status: dict[str, Any]) -> None:
     url = pr_status.get("url") or ""
     number = pr_status.get("number")
     status["merge_actions"] = _build_merge_actions(number if isinstance(number, int) else None)
-    pending_details = list(pr_status.get("pending_check_details") or [])
-    if pending_details:
-        status["next_pending_check"] = pending_details[0]
-    elif "next_pending_check" in status:
-        del status["next_pending_check"]
+    actions = status["merge_actions"]
+    next_pending = _pick_next_pending_check(pr_status)
+    if next_pending:
+        status["next_pending_check"] = next_pending
+    else:
+        status.pop("next_pending_check", None)
+    failed_details = list(pr_status.get("failed_check_details") or [])
+    if failed_details:
+        status["next_failed_check"] = failed_details[0]
+    else:
+        status.pop("next_failed_check", None)
     if pr_status.get("lfg_merge_blocked") == "pr_merge_conflicts":
         status["merge_hint"] = f"Resolve PR merge conflicts before merge: {url}"
     elif pr_status.get("lfg_merge_blocked") == "pr_checks_failed":
         names = _format_check_list(list(pr_status.get("failed_checks") or []))
         detail = f" ({names})" if names else ""
-        failed_cmd = f"gh pr checks {number} --failed" if number else "gh pr checks --failed"
-        status["merge_hint"] = f"Fix failing PR checks{detail}: {url} — run: {failed_cmd}"
+        status["merge_hint"] = f"Fix failing PR checks{detail}: {url} — run: {actions['list_failed']}"
     elif pr_status.get("lfg_merge_blocked") == "pr_checks_pending":
         names = _format_check_list(list(pr_status.get("pending_checks") or []))
         detail = f" ({names})" if names else ""
-        watch_cmd = f"gh pr checks {number} --watch" if number else "gh pr checks --watch"
         status["merge_hint"] = (
-            f"Monitoring complete; wait for PR checks{detail}: {url} — run: {watch_cmd}"
+            f"Monitoring complete; wait for PR checks{detail}: {url} — run: {actions['watch_checks']}"
         )
     elif pr_status.get("lfg_merge_blocked") == "pr_merged":
         status["merge_hint"] = (
@@ -1137,8 +1155,9 @@ def _apply_pr_merge_status(status: dict[str, Any]) -> None:
     elif pr_status.get("lfg_merge_blocked") == "pr_closed":
         status["merge_hint"] = f"PR closed without merge: {url}"
     elif pr_status.get("pr_merge_ready"):
-        merge_cmd = f"gh pr merge {number} --squash --auto" if number else "gh pr merge --squash --auto"
-        status["merge_hint"] = f"Monitoring complete; PR ready to merge: {url} ({merge_cmd})"
+        status["merge_hint"] = (
+            f"Monitoring complete; PR ready to merge: {url} ({actions['merge_squash_auto']})"
+        )
     else:
         status["merge_hint"] = f"Monitoring complete; review PR status: {url}"
     if pr_status.get("lfg_merge_blocked"):
@@ -1177,8 +1196,12 @@ def _watch_pr_merge_status(
         pr_status = status.get("pr_merge_status") or {}
         polls += 1
         status["pr_watch_polls"] = polls
+        poll_line = _format_watch_poll_line(pr_status)
+        next_name = (status.get("next_pending_check") or {}).get("name")
+        if next_name:
+            poll_line = f"{poll_line} next={next_name}"
         print(
-            f"PR watch poll {polls}: {_format_watch_poll_line(pr_status)}",
+            f"PR watch poll {polls}: {poll_line}",
             file=sys.stderr,
         )
         if not pr_status.get("ok"):

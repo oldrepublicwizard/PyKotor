@@ -446,7 +446,7 @@ Monitoring.
         self.assertTrue(changes["forward_commits_row"])
         self.assertTrue(changes["plans_index"])
         self.assertIn("https://example.com/10", patched)
-        self.assertIn("019–091", patched)
+        self.assertIn("019–092", patched)
 
     def test_dedupe_preserve_order(self) -> None:
         self.assertEqual(
@@ -495,7 +495,8 @@ Monitoring.
         self.assertEqual(summary["checks_queued"], 1)
         self.assertEqual(summary["checks_pending"], 2)
         self.assertEqual(len(summary["pending_check_details"]), 1)
-        self.assertEqual(summary["pending_check_details"][0]["details_url"], "https://example.com/job/1")
+        self.assertEqual(len(summary["in_progress_check_details"]), 1)
+        self.assertEqual(summary["in_progress_check_details"][0]["details_url"], "https://example.com/job/1")
         self.assertEqual(len(summary["failed_check_details"]), 1)
         self.assertEqual(summary["failed_check_details"][0]["workflow"], "Lint")
 
@@ -628,6 +629,43 @@ Monitoring.
             mod._apply_pr_merge_status(status)
         self.assertIn("watch_checks", status["merge_actions"])
         self.assertEqual(status["next_pending_check"]["name"], "build")
+
+    def test_pick_next_pending_check_prefers_in_progress(self) -> None:
+        picked = mod._pick_next_pending_check(
+            {
+                "in_progress_check_details": [
+                    {"name": "running", "details_url": "https://example.com/r", "workflow": "CI"},
+                ],
+                "pending_check_details": [
+                    {"name": "queued", "details_url": "https://example.com/q", "workflow": "CI"},
+                ],
+            }
+        )
+        self.assertEqual(picked["name"], "running")
+
+    def test_apply_pr_merge_status_next_failed_check(self) -> None:
+        status: dict[str, Any] = {"lfg_track_complete": True}
+        with patch.object(
+            mod,
+            "_fetch_pr_merge_status",
+            return_value={
+                "ok": True,
+                "number": 308,
+                "url": "https://example.com/pr/308",
+                "lfg_merge_blocked": "pr_checks_failed",
+                "failed_check_details": [
+                    {
+                        "name": "lint",
+                        "details_url": "https://example.com/job/fail",
+                        "workflow": "Lint",
+                    }
+                ],
+                "pr_merge_ready": False,
+            },
+        ):
+            mod._apply_pr_merge_status(status)
+        self.assertEqual(status["next_failed_check"]["name"], "lint")
+        self.assertEqual(status["merge_actions"]["list_failed"], "gh pr checks 308 --failed")
 
     def test_compute_lfg_exit_reason_merge_ready(self) -> None:
         reason = mod._compute_lfg_exit_reason(
@@ -844,6 +882,9 @@ Monitoring.
                     "url": "https://github.com/example/pr/308",
                     "lfg_merge_blocked": "pr_checks_pending",
                     "pending_checks": ["build"],
+                    "in_progress_check_details": [
+                        {"name": "build", "details_url": "https://example.com/job/1", "workflow": "CI"},
+                    ],
                     "pr_merge_ready": False,
                 }
             return {
@@ -861,6 +902,7 @@ Monitoring.
         self.assertEqual(status["lfg_pr_watch_result"], "ready")
         self.assertEqual(status["pr_watch_polls"], 2)
         self.assertIn("PR watch poll 1:", err.getvalue())
+        self.assertIn("next=build", err.getvalue())
 
     def test_refine_lfg_checkpoint_monitoring_complete(self) -> None:
         status: dict[str, Any] = {
