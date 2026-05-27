@@ -52,7 +52,8 @@ Post–PR #268 CI hygiene and local parity for published PyPI packages.
 - **`--lfg-closeout`** — same as **`--lfg-refresh --write`**; apply monitoring doc updates when CI is terminal (plan 080).
 - **`lfg_mode`** in JSON — `gate`, `preflight`, `refresh`, or `closeout` for agent routing (plan 080).
 - **`lfg_track_complete`** — docs synced and terminal CI recorded; no closeout PR needed (plan 082).
-- **`pr_merge_status`** / **`merge_hint`** — open PR check rollup when track complete (plan 083).
+- **`pr_merge_status`** / **`merge_hint`** — open PR check rollup when track complete; includes **`pr_merge_ready`**, **`lfg_merge_blocked`**, and check names (plan 083–084).
+- **`--strict-pr-ci-exit`** — exit **3** when track complete but PR checks pending/failed (plan 084).
 - **`--prefetch-git`** — `git fetch origin master` before checkpoint compare (plan 082).
 - **Gate job (`Check trigger`)** before verify matrix jobs — never schedule matrix on empty/cancelled runs.
 - **`workflow_dispatch` + weekly cron** as verify triggers; **publish→verify dispatch** (#293) after Auto-Publish with packages.
@@ -99,7 +100,7 @@ When JSON includes `"lfg_deferred": true`, defer monitoring LFG until verify/FC 
 4. **Docs** — terminal CI (`proceed_reason: update_monitoring_docs`) updates via **`--lfg-closeout`** or **`--lfg-refresh`** (no `--dry-run`).
 5. **Dispatch** — SHA drift uses dispatch helpers; **`classify_fc_stale_gap`** → **`--prefetch-git --lfg-gate`** (plan 083).
 
-6. **Complete** — when JSON includes **`lfg_track_complete: true`**, monitoring docs match live gh; read **`merge_hint`** and **`pr_merge_status`** for open PR readiness (plan 083).
+6. **Complete** — when **`lfg_track_complete: true`**, read **`pr_merge_status.pr_merge_ready`** and **`merge_hint`**. Use **`--strict-pr-ci-exit`** with **`--lfg-gate`** to exit **3** while PR CI is pending (plan 084).
 7. **Prefetch** — when blocked on **`classify_fc_stale_gap`**, run **`--prefetch-git --lfg-gate`** (plan 083).
 
 ```bash
@@ -125,12 +126,12 @@ python3 .github/scripts/local_verify_pypi_slice.py --json
 
 ## Plans index
 
-Plans **019–083** under `docs/plans/2026-05-24-*` document the closeout track; plan **020** is the authoritative verification table.
+Plans **019–084** under `docs/plans/2026-05-24-*` document the closeout track; plan **020** is the authoritative verification table.
 
-## Last CI check (plan 083)
+## Last CI check (plan 084)
 
 **2026-05-27:** verify [26372746392](https://github.com/OpenKotOR/PyKotor/actions/runs/26372746392) **success** on `8916e2f`; FC [26365648344](https://github.com/OpenKotOR/PyKotor/actions/runs/26365648344) **success** on `3b6b746`.
 
-## Track status (plan 083)
+## Track status (plan 084)
 
-**Monitoring-only (plan 083).** Canonical runs verify [26372746392](https://github.com/OpenKotOR/PyKotor/actions/runs/26372746392) and FC [26365648344](https://github.com/OpenKotOR/PyKotor/actions/runs/26365648344) completed **success**. No workflow YAML changes on this track unless new CI failures appear.
+**Monitoring-only (plan 084).** Canonical runs verify [26372746392](https://github.com/OpenKotOR/PyKotor/actions/runs/26372746392) and FC [26365648344](https://github.com/OpenKotOR/PyKotor/actions/runs/26365648344) completed **success**. No workflow YAML changes on this track unless new CI failures appear.

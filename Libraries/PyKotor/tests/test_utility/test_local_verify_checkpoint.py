@@ -446,7 +446,46 @@ Monitoring.
         self.assertTrue(changes["forward_commits_row"])
         self.assertTrue(changes["plans_index"])
         self.assertIn("https://example.com/10", patched)
-        self.assertIn("019–083", patched)
+        self.assertIn("019–084", patched)
+
+    def test_summarize_pr_checks_skipped_not_pending(self) -> None:
+        summary = mod._summarize_pr_checks(
+            [
+                {"name": "label", "conclusion": "SKIPPED", "status": "COMPLETED"},
+                {"name": "build", "conclusion": "", "status": "QUEUED"},
+            ]
+        )
+        self.assertEqual(summary["checks_skipped"], 1)
+        self.assertEqual(summary["checks_pending"], 1)
+        self.assertEqual(summary["pending_checks"], ["build"])
+        self.assertFalse(summary["pr_merge_ready"])
+
+    def test_summarize_pr_checks_merge_ready(self) -> None:
+        summary = mod._summarize_pr_checks(
+            [
+                {"name": "test", "conclusion": "SUCCESS", "status": "COMPLETED"},
+                {"name": "lint", "conclusion": "SKIPPED", "status": "COMPLETED"},
+            ]
+        )
+        self.assertTrue(summary["pr_merge_ready"])
+        self.assertIsNone(summary["lfg_merge_blocked"])
+
+    def test_apply_pr_merge_status_failed_names(self) -> None:
+        status: dict[str, Any] = {"lfg_track_complete": True}
+        with patch.object(
+            mod,
+            "_fetch_pr_merge_status",
+            return_value={
+                "ok": True,
+                "url": "https://example.com/pr/1",
+                "lfg_merge_blocked": "pr_checks_failed",
+                "failed_checks": ["Check File Sizes", "devskim"],
+                "pr_merge_ready": False,
+            },
+        ):
+            mod._apply_pr_merge_status(status)
+        self.assertIn("Check File Sizes", status["merge_hint"])
+        self.assertEqual(status["lfg_merge_blocked"], "pr_checks_failed")
 
     def test_recompare_checkpoint_status(self) -> None:
         status: dict[str, Any] = {
@@ -473,13 +512,14 @@ Monitoring.
             return_value={
                 "ok": True,
                 "url": "https://github.com/example/pr/308",
-                "checks_failed": 0,
-                "checks_pending": 1,
+                "lfg_merge_blocked": "pr_checks_pending",
+                "pending_checks": ["Analyze (python)"],
+                "pr_merge_ready": False,
             },
         ):
             mod._apply_pr_merge_status(status)
         self.assertIn("pr_merge_status", status)
-        self.assertIn("wait for PR checks", status["merge_hint"])
+        self.assertIn("Analyze (python)", status["merge_hint"])
 
     def test_refine_lfg_checkpoint_monitoring_complete(self) -> None:
         status: dict[str, Any] = {

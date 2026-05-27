@@ -62,9 +62,9 @@ Plan 019 landed via PR #268 but remained `in_progress` without post-merge verifi
 
 **Track status (plan 051):** **Monitoring-only.** Code and local parity complete (#268–#306, plans 019–066). Await CI green on [26372746392](https://github.com/OpenKotOR/PyKotor/actions/runs/26372746392) and FC [26365648344](https://github.com/OpenKotOR/PyKotor/actions/runs/26365648344); no further workflow changes unless CI reports new failures.
 
-**Last CI check (plan 083):** 2026-05-27 — verify [26372746392](https://github.com/OpenKotOR/PyKotor/actions/runs/26372746392) success on `8916e2f`; FC [26365648344](https://github.com/OpenKotOR/PyKotor/actions/runs/26365648344) success on `3b6b746`.
+**Last CI check (plan 084):** 2026-05-27 — verify [26372746392](https://github.com/OpenKotOR/PyKotor/actions/runs/26372746392) success on `8916e2f`; FC [26365648344](https://github.com/OpenKotOR/PyKotor/actions/runs/26365648344) success on `3b6b746`.
 
-**Plans:** 019–083 document the closeout track; authoritative learning in `docs/solutions/testing/verify-pypi-regression-closeout.md`.
+**Plans:** 019–084 document the closeout track; authoritative learning in `docs/solutions/testing/verify-pypi-regression-closeout.md`.
 
 ---
 

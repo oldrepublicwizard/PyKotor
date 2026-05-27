@@ -24,7 +24,7 @@ SOLUTION_CLOSEOUT = (
     REPO_ROOT / "docs" / "solutions" / "testing" / "verify-pypi-regression-closeout.md"
 )
 PLAN_020 = REPO_ROOT / "docs" / "plans" / "2026-05-24-020-verify-pypi-regression-post-268-plan.md"
-PLAN_TRACK_CAP = "083"
+PLAN_TRACK_CAP = "084"
 _AUTO_APPLY_PROCEED_REASONS = frozenset({"update_monitoring_docs", "investigate_ci_drift"})
 _DISPATCH_PROCEED_REASONS = frozenset({"refresh_verify_dispatch", "refresh_fc_dispatch"})
 VERIFY_WORKFLOW = "verify-pypi-regression.yml"
@@ -912,6 +912,60 @@ def _recompare_checkpoint_status(status: dict[str, Any], *, targets: list[str]) 
     _refine_lfg_checkpoint(status, targets=targets)
 
 
+def _summarize_pr_checks(checks: list[dict[str, Any]]) -> dict[str, Any]:
+    pending = 0
+    failed = 0
+    success = 0
+    skipped = 0
+    pending_checks: list[str] = []
+    failed_checks: list[str] = []
+    for check in checks:
+        name = str(check.get("name") or "unknown")
+        conclusion = (check.get("conclusion") or "").lower()
+        check_status = (check.get("status") or "").lower()
+        if conclusion == "success":
+            success += 1
+        elif conclusion in {"failure", "cancelled", "timed_out", "action_required"}:
+            failed += 1
+            failed_checks.append(name)
+        elif conclusion in {"skipped", "neutral"}:
+            skipped += 1
+        elif check_status in {"queued", "in_progress", "pending", "waiting"}:
+            pending += 1
+            pending_checks.append(name)
+        elif check_status == "completed" and not conclusion:
+            pending += 1
+            pending_checks.append(name)
+        else:
+            pending += 1
+            pending_checks.append(name)
+    merge_ready = failed == 0 and pending == 0
+    merge_blocked: str | None = None
+    if failed > 0:
+        merge_blocked = "pr_checks_failed"
+    elif pending > 0:
+        merge_blocked = "pr_checks_pending"
+    return {
+        "checks_total": len(checks),
+        "checks_pending": pending,
+        "checks_failed": failed,
+        "checks_success": success,
+        "checks_skipped": skipped,
+        "pending_checks": pending_checks,
+        "failed_checks": failed_checks,
+        "pr_merge_ready": merge_ready,
+        "lfg_merge_blocked": merge_blocked,
+    }
+
+
+def _format_check_list(names: list[str], *, limit: int = 5) -> str:
+    if not names:
+        return ""
+    shown = names[:limit]
+    suffix = f" (+{len(names) - limit} more)" if len(names) > limit else ""
+    return ", ".join(shown) + suffix
+
+
 def _fetch_pr_merge_status() -> dict[str, Any]:
     result = subprocess.run(
         ["gh", "pr", "view", "--json", "number,url,state,mergeable,statusCheckRollup"],
@@ -925,28 +979,14 @@ def _fetch_pr_merge_status() -> dict[str, Any]:
         return {"ok": False, "error": err}
     payload = json.loads(result.stdout)
     checks = payload.get("statusCheckRollup") or []
-    pending = 0
-    failed = 0
-    success = 0
-    for check in checks:
-        conclusion = (check.get("conclusion") or "").lower()
-        check_status = (check.get("status") or "").lower()
-        if conclusion == "success":
-            success += 1
-        elif conclusion in {"failure", "cancelled", "timed_out", "action_required"}:
-            failed += 1
-        elif check_status in {"queued", "in_progress", "pending", "waiting"} or not conclusion:
-            pending += 1
+    summary = _summarize_pr_checks(checks)
     return {
         "ok": True,
         "number": payload.get("number"),
         "url": payload.get("url"),
         "state": payload.get("state"),
         "mergeable": payload.get("mergeable"),
-        "checks_total": len(checks),
-        "checks_pending": pending,
-        "checks_failed": failed,
-        "checks_success": success,
+        **summary,
     }
 
 
@@ -959,12 +999,20 @@ def _apply_pr_merge_status(status: dict[str, Any]) -> None:
         status["merge_hint"] = "Monitoring complete; no open PR on this branch"
         return
     url = pr_status.get("url") or ""
-    if pr_status.get("checks_failed", 0) > 0:
-        status["merge_hint"] = f"Fix failing PR checks before merge: {url}"
-    elif pr_status.get("checks_pending", 0) > 0:
-        status["merge_hint"] = f"Monitoring complete; wait for PR checks then merge: {url}"
-    else:
+    if pr_status.get("lfg_merge_blocked") == "pr_checks_failed":
+        names = _format_check_list(list(pr_status.get("failed_checks") or []))
+        detail = f" ({names})" if names else ""
+        status["merge_hint"] = f"Fix failing PR checks{detail}: {url}"
+    elif pr_status.get("lfg_merge_blocked") == "pr_checks_pending":
+        names = _format_check_list(list(pr_status.get("pending_checks") or []))
+        detail = f" ({names})" if names else ""
+        status["merge_hint"] = f"Monitoring complete; wait for PR checks{detail}: {url}"
+    elif pr_status.get("pr_merge_ready"):
         status["merge_hint"] = f"Monitoring complete; PR ready to merge: {url}"
+    else:
+        status["merge_hint"] = f"Monitoring complete; review PR status: {url}"
+    if pr_status.get("lfg_merge_blocked"):
+        status["lfg_merge_blocked"] = pr_status["lfg_merge_blocked"]
 
 
 def _emit_track_complete_stderr(status: dict[str, Any]) -> None:
@@ -1454,6 +1502,11 @@ def main() -> None:
         help="Shorthand for --ci-status-only --json --compare-checkpoint --exit-on-defer --include-checkpoint-snippet",
     )
     parser.add_argument(
+        "--strict-pr-ci-exit",
+        action="store_true",
+        help="With track complete, exit 3 when pr_merge_ready is false (0=ready, 1=gh error)",
+    )
+    parser.add_argument(
         "--strict-defer-exit",
         action="store_true",
         help="With --exit-on-defer, exit 2 when lfg_deferred (0=proceed, 1=gh error)",
@@ -1811,6 +1864,10 @@ def main() -> None:
             sys.exit(1)
         if deferred and args.strict_defer_exit:
             sys.exit(2)
+        if args.strict_pr_ci_exit and status.get("lfg_track_complete"):
+            pr_status = status.get("pr_merge_status") or {}
+            if pr_status.get("ok") and not pr_status.get("pr_merge_ready"):
+                sys.exit(3)
         if args.dispatch_on_proceed and args.execute:
             dispatch = status.get("dispatch_on_proceed") or {}
             if dispatch.get("executed") and not dispatch.get("ok"):
