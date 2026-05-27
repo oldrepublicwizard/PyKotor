@@ -24,7 +24,7 @@ SOLUTION_CLOSEOUT = (
     REPO_ROOT / "docs" / "solutions" / "testing" / "verify-pypi-regression-closeout.md"
 )
 PLAN_020 = REPO_ROOT / "docs" / "plans" / "2026-05-24-020-verify-pypi-regression-post-268-plan.md"
-PLAN_TRACK_CAP = "100"
+PLAN_TRACK_CAP = "101"
 LFG_EXIT_CODES: dict[int, str] = {
     0: "proceed, merge_ready, or monitoring_complete",
     1: "gh_error",
@@ -1419,6 +1419,36 @@ def _format_watch_poll_line(pr_status: dict[str, Any]) -> str:
     return base
 
 
+def _watch_snapshot_progress_key(snapshot: dict[str, Any]) -> tuple[Any, ...]:
+    return (
+        snapshot.get("completion_percent"),
+        snapshot.get("checks_pending"),
+        snapshot.get("checks_in_progress"),
+        snapshot.get("checks_success"),
+        snapshot.get("checks_failed"),
+    )
+
+
+def _format_compact_watch_poll_line(snapshot: dict[str, Any]) -> str:
+    percent = snapshot.get("completion_percent")
+    pending = snapshot.get("checks_pending")
+    pct_text = f"{percent}%" if isinstance(percent, int) else "n/a"
+    pending_text = pending if isinstance(pending, int) else "n/a"
+    return f"unchanged complete={pct_text} pending={pending_text}"
+
+
+def _count_unchanged_watch_polls(history: list[dict[str, Any]]) -> int:
+    if len(history) < 2:
+        return 0
+    count = 0
+    for index in range(1, len(history)):
+        if _watch_snapshot_progress_key(history[index]) == _watch_snapshot_progress_key(
+            history[index - 1]
+        ):
+            count += 1
+    return count
+
+
 def _resolve_watch_timeout_seconds(
     watch_timeout: float | None,
     *,
@@ -1466,6 +1496,7 @@ def _build_pr_watch_summary(status: dict[str, Any]) -> dict[str, Any]:
         "queue_backlog_severe": bottlenecks.get("queue_backlog_severe"),
         "rollup_vs_gh_delta": crosscheck.get("rollup_vs_gh_delta"),
         "recommended_action": (status.get("pr_ci_recommendation") or {}).get("action"),
+        "unchanged_polls": _count_unchanged_watch_polls(history),
     }
 
 
@@ -1479,11 +1510,14 @@ def _format_pr_watch_summary_line(summary: dict[str, Any]) -> str:
     duration_text = f"{duration:.0f}s" if isinstance(duration, (int, float)) else "n/a"
     severe = summary.get("queue_backlog_severe")
     cross_delta = summary.get("rollup_vs_gh_delta")
+    unchanged = summary.get("unchanged_polls")
     extra = ""
     if severe:
         extra = f" severe_backlog=true"
     if isinstance(cross_delta, int):
         extra = f"{extra} rollup_delta={cross_delta:+d}"
+    if isinstance(unchanged, int) and unchanged:
+        extra = f"{extra} unchanged_polls={unchanged}"
     return (
         f"result={result} polls={polls} percent_delta={delta_text} "
         f"queue_events={queue_events} duration={duration_text}{extra}"
@@ -1527,13 +1561,22 @@ def _watch_pr_merge_status(
                 "checks_in_progress": pr_status.get("checks_in_progress"),
                 "checks_queued": pr_status.get("checks_queued"),
                 "checks_success": pr_status.get("checks_success"),
+                "checks_failed": pr_status.get("checks_failed"),
                 "next_check": (status.get("next_pending_check") or {}).get("name"),
             }
             history = status.setdefault("pr_watch_history", [])
+            prev_key = (
+                _watch_snapshot_progress_key(history[-1]) if history else None
+            )
+            progress_key = _watch_snapshot_progress_key(snapshot)
             history.append(snapshot)
-            poll_line = _format_watch_poll_line(pr_status)
+            progress_unchanged = prev_key is not None and progress_key == prev_key
+            if progress_unchanged:
+                poll_line = _format_compact_watch_poll_line(snapshot)
+            else:
+                poll_line = _format_watch_poll_line(pr_status)
             next_name = (status.get("next_pending_check") or {}).get("name")
-            if next_name:
+            if next_name and not progress_unchanged:
                 poll_line = f"{poll_line} next={next_name}"
             bottlenecks = status.get("pr_ci_bottlenecks") or {}
             in_prog = bottlenecks.get("in_progress") or []
@@ -1541,15 +1584,16 @@ def _watch_pr_merge_status(
                 age = bottlenecks.get("oldest_queued_age_hours")
                 if isinstance(age, (int, float)):
                     poll_line = f"{poll_line} queue_age={age:.1f}h"
-                cross = status.get("pr_checks_crosscheck") or {}
-                delta = cross.get("rollup_vs_gh_delta")
-                if isinstance(delta, int):
-                    poll_line = f"{poll_line} rollup_delta={delta:+d}"
-                queued = bottlenecks.get("queued_longest_wait") or []
-                sample = queued[0].get("name") if queued else next_name
-                if sample:
-                    poll_line = f"{poll_line} queue_backlog={sample}"
-            elif in_prog:
+                if not progress_unchanged:
+                    cross = status.get("pr_checks_crosscheck") or {}
+                    delta = cross.get("rollup_vs_gh_delta")
+                    if isinstance(delta, int):
+                        poll_line = f"{poll_line} rollup_delta={delta:+d}"
+                    queued = bottlenecks.get("queued_longest_wait") or []
+                    sample = queued[0].get("name") if queued else next_name
+                    if sample:
+                        poll_line = f"{poll_line} queue_backlog={sample}"
+            elif in_prog and not progress_unchanged:
                 oldest = in_prog[0]
                 poll_line = (
                     f"{poll_line} bottleneck={oldest.get('name')} "
