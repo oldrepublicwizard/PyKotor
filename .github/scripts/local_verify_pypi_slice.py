@@ -24,12 +24,12 @@ SOLUTION_CLOSEOUT = (
     REPO_ROOT / "docs" / "solutions" / "testing" / "verify-pypi-regression-closeout.md"
 )
 PLAN_020 = REPO_ROOT / "docs" / "plans" / "2026-05-24-020-verify-pypi-regression-post-268-plan.md"
-PLAN_TRACK_CAP = "092"
+PLAN_TRACK_CAP = "093"
 LFG_EXIT_CODES: dict[int, str] = {
     0: "proceed, merge_ready, or monitoring_complete",
     1: "gh_error",
     2: "deferred or dispatch_or_sync_failed",
-    3: "pr_checks_pending, pr_checks_failed, pr_merge_conflicts, no_open_pr, pr_merged, or pr_closed",
+    3: "pr_checks_pending, pr_checks_failed, pr_merge_conflicts, pr_watch_stalled, no_open_pr, pr_merged, or pr_closed",
 }
 _AUTO_APPLY_PROCEED_REASONS = frozenset({"update_monitoring_docs", "investigate_ci_drift"})
 _DISPATCH_PROCEED_REASONS = frozenset({"refresh_verify_dispatch", "refresh_fc_dispatch"})
@@ -932,10 +932,15 @@ def _dedupe_preserve_order(names: list[str]) -> list[str]:
 def _check_detail_record(check: dict[str, Any]) -> dict[str, str]:
     workflow = check.get("workflowName") or check.get("context") or ""
     name = str(check.get("name") or check.get("context") or "unknown")
+    started_raw = str(check.get("startedAt") or "")
+    started_at = ""
+    if started_raw and not started_raw.startswith("0001-"):
+        started_at = started_raw
     return {
         "name": name,
         "details_url": str(check.get("detailsUrl") or check.get("targetUrl") or ""),
         "workflow": str(workflow),
+        "started_at": started_at,
     }
 
 
@@ -1068,6 +1073,28 @@ def _build_merge_actions(number: int | None) -> dict[str, str]:
     }
 
 
+def _build_pr_ci_bottlenecks(pr_status: dict[str, Any]) -> dict[str, Any]:
+    in_progress = sorted(
+        list(pr_status.get("in_progress_check_details") or []),
+        key=lambda detail: detail.get("started_at") or "9999",
+    )
+    in_progress_names = {detail["name"] for detail in in_progress}
+    queued = sorted(
+        [
+            detail
+            for detail in (pr_status.get("pending_check_details") or [])
+            if detail.get("name") not in in_progress_names
+        ],
+        key=lambda detail: detail.get("started_at") or "9999",
+    )
+    return {
+        "in_progress": in_progress,
+        "queued_longest_wait": queued[:8],
+        "in_progress_count": len(in_progress),
+        "queued_count": len(queued),
+    }
+
+
 def _pick_next_pending_check(pr_status: dict[str, Any]) -> dict[str, str] | None:
     in_progress = list(pr_status.get("in_progress_check_details") or [])
     if in_progress:
@@ -1136,6 +1163,7 @@ def _apply_pr_merge_status(status: dict[str, Any]) -> None:
         status["next_failed_check"] = failed_details[0]
     else:
         status.pop("next_failed_check", None)
+    status["pr_ci_bottlenecks"] = _build_pr_ci_bottlenecks(pr_status)
     if pr_status.get("lfg_merge_blocked") == "pr_merge_conflicts":
         status["merge_hint"] = f"Resolve PR merge conflicts before merge: {url}"
     elif pr_status.get("lfg_merge_blocked") == "pr_checks_failed":
@@ -1186,24 +1214,68 @@ def _watch_pr_merge_status(
     *,
     interval_sec: float,
     timeout_sec: float,
+    stall_polls: int,
 ) -> None:
     if not status.get("lfg_track_complete"):
         return
     deadline = time.monotonic() + max(0.0, timeout_sec)
     polls = 0
+    status["pr_watch_history"] = []
     while True:
         _apply_pr_merge_status(status)
         pr_status = status.get("pr_merge_status") or {}
         polls += 1
         status["pr_watch_polls"] = polls
+        progress = pr_status.get("pr_ci_progress") or {}
+        snapshot = {
+            "poll": polls,
+            "completion_percent": progress.get("completion_percent"),
+            "checks_pending": pr_status.get("checks_pending"),
+            "checks_in_progress": pr_status.get("checks_in_progress"),
+            "checks_success": pr_status.get("checks_success"),
+            "next_check": (status.get("next_pending_check") or {}).get("name"),
+        }
+        history = status.setdefault("pr_watch_history", [])
+        history.append(snapshot)
         poll_line = _format_watch_poll_line(pr_status)
         next_name = (status.get("next_pending_check") or {}).get("name")
         if next_name:
             poll_line = f"{poll_line} next={next_name}"
+        bottlenecks = status.get("pr_ci_bottlenecks") or {}
+        in_prog = bottlenecks.get("in_progress") or []
+        if in_prog:
+            oldest = in_prog[0]
+            poll_line = (
+                f"{poll_line} bottleneck={oldest.get('name')} "
+                f"({oldest.get('workflow')})"
+            )
         print(
             f"PR watch poll {polls}: {poll_line}",
             file=sys.stderr,
         )
+        if (
+            stall_polls > 1
+            and len(history) >= stall_polls
+        ):
+            recent = history[-stall_polls:]
+            percents = [entry.get("completion_percent") for entry in recent]
+            pending_counts = [entry.get("checks_pending") for entry in recent]
+            if (
+                len(set(percents)) == 1
+                and percents[0] is not None
+                and len(set(pending_counts)) == 1
+            ):
+                status["pr_watch_stalled"] = True
+                status["lfg_pr_watch_result"] = "stalled"
+                status["lfg_merge_blocked"] = "pr_watch_stalled"
+                stall_min = (stall_polls * interval_sec) / 60.0
+                status["merge_hint"] = (
+                    f"PR CI stalled ~{stall_min:.0f}m at {percents[0]}% complete "
+                    f"(bottleneck: {in_prog[0].get('name') if in_prog else next_name or 'unknown'})"
+                )
+                status["proceed_hint"] = status["merge_hint"]
+                print(f"PR watch stalled: {status['merge_hint']}", file=sys.stderr)
+                return
         if not pr_status.get("ok"):
             status["lfg_pr_watch_result"] = "no_pr"
             return
@@ -1911,6 +1983,12 @@ def main() -> None:
         help="Max seconds for --lfg-pr-watch before timeout (default 1800)",
     )
     parser.add_argument(
+        "--watch-stall-polls",
+        type=int,
+        default=6,
+        help="Flag stall when completion_percent unchanged for N polls (default 6; 0 disables)",
+    )
+    parser.add_argument(
         "--lfg-closeout",
         action="store_true",
         help="Shorthand for --lfg-refresh with --write (terminal doc/dispatch closeout, not dry-run)",
@@ -2121,6 +2199,7 @@ def main() -> None:
                 status,
                 interval_sec=args.watch_interval,
                 timeout_sec=args.watch_timeout,
+                stall_polls=max(0, args.watch_stall_polls),
             )
         if status.get("lfg_track_complete") and status.get("merge_hint"):
             status["proceed_hint"] = status["merge_hint"]
