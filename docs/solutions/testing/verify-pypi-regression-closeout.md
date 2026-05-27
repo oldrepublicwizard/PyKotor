@@ -92,7 +92,7 @@ When JSON includes `"lfg_deferred": true`, defer monitoring LFG until verify/FC 
 
 1. **Briefing** — run **`--lfg-preflight`** (or **`--lfg-gate`** before `/lfg` work). Read `proceed_hint`, `checkpoint`, `doc_validation`, `lfg_refresh_plan`, and embedded dry-runs.
 2. **Defer** — if `lfg_deferred` or `lfg_refresh_blocked: deferred`, stop until CI moves.
-3. **Refresh** — when `proceed_hint` ends with **`--lfg-refresh`**, run it (or **`--lfg-refresh --dry-run`** first).
+3. **Refresh** — when `proceed_hint` ends with **`--lfg-closeout`**, run it (or **`--lfg-refresh --dry-run`** first for drift).
 4. **Docs** — terminal CI (`proceed_reason: update_monitoring_docs`) updates via **`--lfg-closeout`** or **`--lfg-refresh`** (no `--dry-run`).
 5. **Dispatch** — SHA drift (`refresh_verify_dispatch` / `refresh_fc_dispatch`) uses dispatch helpers; **`classify_fc_stale_gap`** needs local git history — not auto-fixable.
 
@@ -118,12 +118,12 @@ python3 .github/scripts/local_verify_pypi_slice.py --json
 
 ## Plans index
 
-Plans **019–080** under `docs/plans/2026-05-24-*` document the closeout track; plan **020** is the authoritative verification table.
+Plans **019–081** under `docs/plans/2026-05-24-*` document the closeout track; plan **020** is the authoritative verification table.
 
-## Last CI check (plan 066)
+## Last CI check (plan 081)
 
 **2026-05-27:** verify [26372746392](https://github.com/OpenKotOR/PyKotor/actions/runs/26372746392) **success** on `8916e2f`; FC [26365648344](https://github.com/OpenKotOR/PyKotor/actions/runs/26365648344) **success** on `3b6b746`.
 
-## Track status (plan 051)
+## Track status (plan 081)
 
-**Monitoring-only.** No further workflow YAML changes unless CI reports new failures after runs [26372746392](https://github.com/OpenKotOR/PyKotor/actions/runs/26372746392) and [26365648344](https://github.com/OpenKotOR/PyKotor/actions/runs/26365648344) complete.
+**Monitoring-only (plan 081).** Canonical runs verify [26372746392](https://github.com/OpenKotOR/PyKotor/actions/runs/26372746392) and FC [26365648344](https://github.com/OpenKotOR/PyKotor/actions/runs/26365648344) completed **success**. No workflow YAML changes on this track unless new CI failures appear.

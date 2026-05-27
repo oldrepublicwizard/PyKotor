@@ -446,7 +446,7 @@ Monitoring.
         self.assertTrue(changes["forward_commits_row"])
         self.assertTrue(changes["plans_index"])
         self.assertIn("https://example.com/10", patched)
-        self.assertIn("019–080", patched)
+        self.assertIn("019–081", patched)
 
     def test_apply_lfg_proceed_sets_fields(self) -> None:
         status: dict[str, Any] = {
@@ -1298,7 +1298,7 @@ last_verified: 2026-01-01
             {"checkpoint": {"proceed_reason": "update_monitoring_docs"}},
             blocked=None,
         )
-        self.assertIn("--lfg-refresh", hint)
+        self.assertIn("--lfg-closeout", hint)
         self.assertNotIn("--dry-run", hint)
 
     def test_build_proceed_hint_investigate_drift(self) -> None:
@@ -1306,7 +1306,36 @@ last_verified: 2026-01-01
             {"checkpoint": {"proceed_reason": "investigate_ci_drift"}},
             blocked=None,
         )
-        self.assertIn("--lfg-refresh", hint)
+        self.assertIn("--lfg-refresh --dry-run", hint)
+
+    def test_build_proceed_hint_classify_fc_blocked(self) -> None:
+        hint = mod._build_proceed_hint({"checkpoint": {}}, blocked="classify_fc_stale_gap")
+        self.assertIn("git fetch origin master", hint)
+
+    def test_replace_canonical_table_row_idempotent(self) -> None:
+        row = "| Verify PyPI | [99](https://new) | Check trigger success on `abc1234` |\n"
+        new_text, changed = mod._replace_canonical_table_row(
+            row,
+            "Verify PyPI",
+            99,
+            "https://new",
+            "Check trigger success on `abc1234`",
+        )
+        self.assertTrue(changed)
+        _again, changed_again = mod._replace_canonical_table_row(
+            new_text,
+            "Verify PyPI",
+            99,
+            "https://new",
+            "Check trigger success on `abc1234`",
+        )
+        self.assertFalse(changed_again)
+
+    def test_replace_last_ci_check_heading(self) -> None:
+        doc = "## Last CI check (plan 066)\n\n**body**\n"
+        new_text, changed = mod._replace_last_ci_check_heading(doc)
+        self.assertTrue(changed)
+        self.assertIn(f"plan {mod.PLAN_TRACK_CAP}", new_text)
 
     def test_lfg_preflight_cli_includes_proceed_hint(self) -> None:
         result = subprocess.run(

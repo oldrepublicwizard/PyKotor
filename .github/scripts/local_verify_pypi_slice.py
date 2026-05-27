@@ -24,7 +24,7 @@ SOLUTION_CLOSEOUT = (
     REPO_ROOT / "docs" / "solutions" / "testing" / "verify-pypi-regression-closeout.md"
 )
 PLAN_020 = REPO_ROOT / "docs" / "plans" / "2026-05-24-020-verify-pypi-regression-post-268-plan.md"
-PLAN_TRACK_CAP = "080"
+PLAN_TRACK_CAP = "081"
 _AUTO_APPLY_PROCEED_REASONS = frozenset({"update_monitoring_docs", "investigate_ci_drift"})
 _DISPATCH_PROCEED_REASONS = frozenset({"refresh_verify_dispatch", "refresh_fc_dispatch"})
 VERIFY_WORKFLOW = "verify-pypi-regression.yml"
@@ -654,7 +654,7 @@ def _replace_frontmatter_field(text: str, field: str, value: str) -> tuple[str, 
     if count == 0:
         return text, False
     new_text = text[: match.start(1)] + new_frontmatter + text[match.end(1) :]
-    return new_text, True
+    return new_text, new_text != text
 
 
 def _replace_plan020_verification_row(
@@ -666,7 +666,7 @@ def _replace_plan020_verification_row(
     pattern = rf"(\| {re.escape(row_label)} \| )[^\|]+( \| )[^\|]+(\|)"
     replacement = rf"\1{url}\2 {result_cell}\3"
     new_text, count = re.subn(pattern, replacement, text, count=1)
-    return new_text, count == 1
+    return new_text, count == 1 and new_text != text
 
 
 def _replace_plan020_plans_index(text: str) -> tuple[str, bool]:
@@ -676,7 +676,7 @@ def _replace_plan020_plans_index(text: str) -> tuple[str, bool]:
     )
     pattern = r"^\*\*Plans:\*\* 019–\d+ document the closeout track;.*$"
     new_text, count = re.subn(pattern, new_line, text, count=1, flags=re.M)
-    return new_text, count == 1
+    return new_text, count == 1 and new_text != text
 
 
 def _patch_plan020(text: str, status: dict[str, Any]) -> tuple[str, dict[str, bool]]:
@@ -708,16 +708,53 @@ def _patch_plan020(text: str, status: dict[str, Any]) -> tuple[str, dict[str, bo
     return new_text, changes
 
 
-def _replace_last_ci_check_section(text: str, snippet: str) -> tuple[str, bool]:
-    match = re.search(r"(## Last CI check[^\n]*\n\n)(.*?)(\n## |\Z)", text, re.S)
+def _replace_last_ci_check_heading(text: str) -> tuple[str, bool]:
+    new_header = f"## Last CI check (plan {PLAN_TRACK_CAP})"
+    pattern = r"## Last CI check \(plan \d+\)"
+    new_text, count = re.subn(pattern, new_header, text, count=1)
+    return new_text, count == 1 and new_text != text
+
+
+def _replace_track_status_section(text: str, status: dict[str, Any]) -> tuple[str, bool]:
+    verify = status["verify_pypi"]
+    forward_commits = status["forward_commits"]
+    if verify.get("conclusion") != "success" or forward_commits.get("conclusion") != "success":
+        return text, False
+    verify_id = verify.get("run_id", "?")
+    fc_id = forward_commits.get("run_id", "?")
+    verify_url = verify.get("url") or f"https://github.com/OpenKotOR/PyKotor/actions/runs/{verify_id}"
+    fc_url = forward_commits.get("url") or f"https://github.com/OpenKotOR/PyKotor/actions/runs/{fc_id}"
+    new_body = (
+        f"**Monitoring-only (plan {PLAN_TRACK_CAP}).** Canonical runs "
+        f"verify [{verify_id}]({verify_url}) and FC [{fc_id}]({fc_url}) completed **success**. "
+        "No workflow YAML changes on this track unless new CI failures appear."
+    )
+    heading = f"## Track status (plan {PLAN_TRACK_CAP})"
+    match = re.search(r"(## Track status \(plan \d+\)\n\n)(.*?)(\n## |\Z)", text, re.S)
     if not match:
         return text, False
     old_body = match.group(2).strip()
+    old_heading = match.group(1).split("\n", 1)[0]
+    heading_only = old_heading != heading and old_body == new_body.strip()
+    if old_body == new_body.strip() and old_heading == heading:
+        return text, False
+    replacement = f"{heading}\n\n{new_body}\n{match.group(3)}"
+    new_text = text[: match.start()] + replacement + text[match.end() :]
+    return new_text, new_text != text or heading_only
+
+
+def _replace_last_ci_check_section(text: str, snippet: str) -> tuple[str, bool]:
+    text, heading_changed = _replace_last_ci_check_heading(text)
+    match = re.search(r"(## Last CI check[^\n]*\n\n)(.*?)(\n## |\Z)", text, re.S)
+    if not match:
+        return text, heading_changed
+    old_body = match.group(2).strip()
     new_body = snippet.strip()
     if old_body == new_body:
-        return text, False
+        return text, heading_changed
     replacement = f"{match.group(1)}{new_body}\n{match.group(3)}"
-    return text[: match.start()] + replacement + text[match.end() :], True
+    new_text = text[: match.start()] + replacement + text[match.end() :]
+    return new_text, True
 
 
 def _replace_canonical_table_row(
@@ -730,13 +767,13 @@ def _replace_canonical_table_row(
     pattern = rf"(\| {re.escape(workflow_label)} \| )\[(\d+)\]\([^)]+\)( \| )[^|]+(\|)"
     replacement = rf"\1[{run_id}]({url})\3 {notes}\4"
     new_text, count = re.subn(pattern, replacement, text, count=1)
-    return new_text, count == 1
+    return new_text, count == 1 and new_text != text
 
 
 def _replace_plan020_last_ci_line(text: str, new_line: str) -> tuple[str, bool]:
     pattern = r"^\*\*Last CI check \(plan \d+\):\*\*.*$"
     new_text, count = re.subn(pattern, new_line, text, count=1, flags=re.M)
-    return new_text, count == 1
+    return new_text, count == 1 and new_text != text
 
 
 def _patch_solution_closeout(text: str, status: dict[str, Any], snippet: str) -> tuple[str, dict[str, bool]]:
@@ -745,6 +782,7 @@ def _patch_solution_closeout(text: str, status: dict[str, Any], snippet: str) ->
         "verify_table_row": False,
         "forward_commits_table_row": False,
         "last_verified": False,
+        "track_status": False,
     }
     new_text, changes["last_ci_check"] = _replace_last_ci_check_section(text, snippet)
     new_text, changes["last_verified"] = _replace_frontmatter_field(
@@ -775,6 +813,7 @@ def _patch_solution_closeout(text: str, status: dict[str, Any], snippet: str) ->
             fc_url,
             fc_note,
         )
+    new_text, changes["track_status"] = _replace_track_status_section(new_text, status)
     return new_text, changes
 
 
@@ -1194,12 +1233,23 @@ def _build_proceed_hint(status: dict[str, Any], *, blocked: str | None) -> str:
     script = "python3 .github/scripts/local_verify_pypi_slice.py"
     if blocked == "deferred":
         return f"{script} --lfg-gate"
+    if blocked == "classify_fc_stale_gap":
+        return (
+            f"{script} --monitor-preflight --include-proceed-actions "
+            "# git fetch origin master first"
+        )
     if blocked in _LFG_REFRESH_BLOCKED_REASONS:
         return f"{script} --monitor-preflight --include-proceed-actions"
     checkpoint = status.get("checkpoint")
     proceed_reason = checkpoint.get("proceed_reason") if isinstance(checkpoint, dict) else None
-    if proceed_reason in _AUTO_APPLY_PROCEED_REASONS or proceed_reason in _DISPATCH_PROCEED_REASONS:
+    if proceed_reason == "update_monitoring_docs":
+        return f"{script} --lfg-closeout"
+    if proceed_reason == "investigate_ci_drift":
+        return f"{script} --lfg-refresh --dry-run"
+    if proceed_reason in _DISPATCH_PROCEED_REASONS:
         return f"{script} --lfg-refresh"
+    if proceed_reason in _AUTO_APPLY_PROCEED_REASONS:
+        return f"{script} --lfg-closeout"
     return f"{script} --lfg-preflight"
 
 
