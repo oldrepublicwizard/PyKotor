@@ -74,6 +74,7 @@ Post–PR #268 CI hygiene and local parity for published PyPI packages.
 - **`lfg_agent_briefing`** consolidated action/command/notes/progress/exit fields when track complete (plan 103).
 - **`--watch-heartbeat-polls`** full poll line every N unchanged polls (default 12); **`pr_watch_summary.heartbeat_polls`** (plan 104).
 - Preflight dry-run always sets **`lfg_refresh_dry_run`**; **`lfg_agent_briefing`** for **`blocked_refresh`** / defer (plan 105).
+- Run ID drift checked before unclassified FC SHA stale; **`ci_drift_note`** + **`investigate_ci_drift`** briefing (plan 106).
 - **`pr_merged`** / **`pr_closed`** lifecycle blocked states (plan 091).
 - **`--lfg-closeout`** — same as **`--lfg-refresh --write`**; apply monitoring doc updates when CI is terminal (plan 080).
 - **`lfg_mode`** in JSON — `gate`, `merge_gate`, `pr_watch`, `preflight`, `refresh`, or `closeout` for agent routing (plans 080, 085).
@@ -150,16 +151,16 @@ python3 .github/scripts/local_verify_pypi_slice.py --json
 | Workflow | Run | Notes |
 |----------|-----|-------|
 | Verify PyPI | [26372746392](https://github.com/OpenKotOR/PyKotor/actions/runs/26372746392) |  Check trigger success on `8916e2f`|
-| Forward Commits | [26365648344](https://github.com/OpenKotOR/PyKotor/actions/runs/26365648344) |  merge success on `3b6b746`|
+| Forward Commits | [26543899770](https://github.com/OpenKotOR/PyKotor/actions/runs/26543899770) |  merge queued on `bcb5586`|
 
 ## Plans index
 
-Plans **019–105** under `docs/plans/2026-05-24-*` document the closeout track; plan **020** is the authoritative verification table.
+Plans **019–106** under `docs/plans/2026-05-24-*` document the closeout track; plan **020** is the authoritative verification table.
 
-## Last CI check (plan 105)
+## Last CI check (plan 106)
 
-**2026-05-27:** verify [26372746392](https://github.com/OpenKotOR/PyKotor/actions/runs/26372746392) **success** on `8916e2f`; FC [26365648344](https://github.com/OpenKotOR/PyKotor/actions/runs/26365648344) **success** on `3b6b746`.
+**2026-05-27:** verify [26372746392](https://github.com/OpenKotOR/PyKotor/actions/runs/26372746392) **success** on `8916e2f`; FC [26543899770](https://github.com/OpenKotOR/PyKotor/actions/runs/26543899770) **queued** on `bcb5586`.
 
-## Track status (plan 105)
+## Track status (plan 106)
 
-**Monitoring-only (plan 105).** Canonical runs verify [26372746392](https://github.com/OpenKotOR/PyKotor/actions/runs/26372746392) and FC [26365648344](https://github.com/OpenKotOR/PyKotor/actions/runs/26365648344) completed **success**. No workflow YAML changes on this track unless new CI failures appear.
+**Monitoring-only (plan 106).** Canonical runs verify [26372746392](https://github.com/OpenKotOR/PyKotor/actions/runs/26372746392) and FC [26365648344](https://github.com/OpenKotOR/PyKotor/actions/runs/26365648344) completed **success**. No workflow YAML changes on this track unless new CI failures appear.
