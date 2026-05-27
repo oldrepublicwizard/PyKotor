@@ -446,7 +446,7 @@ Monitoring.
         self.assertTrue(changes["forward_commits_row"])
         self.assertTrue(changes["plans_index"])
         self.assertIn("https://example.com/10", patched)
-        self.assertIn("019–097", patched)
+        self.assertIn("019–098", patched)
 
     def test_dedupe_preserve_order(self) -> None:
         self.assertEqual(
@@ -938,6 +938,41 @@ Monitoring.
         self.assertIn("runner backlog", status["merge_hint"])
         self.assertIn("oldest ~", status["merge_hint"])
         self.assertIn("pr_checks_crosscheck", status)
+
+    def test_queue_backlog_severe(self) -> None:
+        pr_status = {
+            "checks_pending": 5,
+            "checks_in_progress": 0,
+            "in_progress_check_details": [],
+            "pending_check_details": [
+                {"name": "old", "started_at": "2026-05-27T10:00:00Z", "workflow": "CI"},
+            ],
+        }
+        with patch.object(mod, "_hours_since_iso", return_value=5.0):
+            bottlenecks = mod._build_pr_ci_bottlenecks(pr_status)
+        self.assertTrue(bottlenecks["queue_backlog_severe"])
+
+    def test_queue_stall_event_dedupe_by_pending(self) -> None:
+        events = [{"poll": 1, "checks_pending": 26, "hint": "backlog"}]
+        last_pending = events[-1].get("checks_pending")
+        self.assertFalse(last_pending != 26)
+        self.assertTrue(last_pending != 25)
+
+    def test_build_pr_watch_summary_includes_crosscheck(self) -> None:
+        status: dict[str, Any] = {
+            "lfg_pr_watch_result": "ready",
+            "pr_watch_history": [
+                {"completion_percent": 4, "checks_pending": 26},
+                {"completion_percent": 100, "checks_pending": 0},
+            ],
+            "pr_queue_stall_events": [],
+            "pr_watch_started_monotonic": mod.time.monotonic() - 10.0,
+            "pr_ci_bottlenecks": {"oldest_queued_age_hours": 0.5, "queue_backlog_severe": False},
+            "pr_checks_crosscheck": {"rollup_vs_gh_delta": 2},
+        }
+        summary = mod._build_pr_watch_summary(status)
+        self.assertEqual(summary.get("rollup_vs_gh_delta"), 2)
+        self.assertFalse(summary.get("queue_backlog_severe"))
 
     def test_evaluate_pr_watch_stall_queue(self) -> None:
         recent = [
