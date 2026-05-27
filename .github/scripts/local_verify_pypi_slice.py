@@ -24,7 +24,7 @@ SOLUTION_CLOSEOUT = (
     REPO_ROOT / "docs" / "solutions" / "testing" / "verify-pypi-regression-closeout.md"
 )
 PLAN_020 = REPO_ROOT / "docs" / "plans" / "2026-05-24-020-verify-pypi-regression-post-268-plan.md"
-PLAN_TRACK_CAP = "085"
+PLAN_TRACK_CAP = "086"
 _AUTO_APPLY_PROCEED_REASONS = frozenset({"update_monitoring_docs", "investigate_ci_drift"})
 _DISPATCH_PROCEED_REASONS = frozenset({"refresh_verify_dispatch", "refresh_fc_dispatch"})
 VERIFY_WORKFLOW = "verify-pypi-regression.yml"
@@ -923,15 +923,41 @@ def _dedupe_preserve_order(names: list[str]) -> list[str]:
     return unique
 
 
+def _check_detail_record(check: dict[str, Any]) -> dict[str, str]:
+    workflow = check.get("workflowName") or check.get("context") or ""
+    return {
+        "name": str(check.get("name") or "unknown"),
+        "details_url": str(check.get("detailsUrl") or ""),
+        "workflow": str(workflow),
+    }
+
+
+def _dedupe_check_details(details: list[dict[str, str]]) -> list[dict[str, str]]:
+    seen: set[str] = set()
+    unique: list[dict[str, str]] = []
+    for item in details:
+        name = item["name"]
+        if name in seen:
+            continue
+        seen.add(name)
+        unique.append(item)
+    return unique
+
+
 def _summarize_pr_checks(checks: list[dict[str, Any]]) -> dict[str, Any]:
     pending = 0
+    in_progress = 0
+    queued = 0
     failed = 0
     success = 0
     skipped = 0
     pending_checks: list[str] = []
     failed_checks: list[str] = []
+    pending_check_details: list[dict[str, str]] = []
+    failed_check_details: list[dict[str, str]] = []
     for check in checks:
         name = str(check.get("name") or "unknown")
+        detail = _check_detail_record(check)
         conclusion = (check.get("conclusion") or "").lower()
         check_status = (check.get("status") or "").lower()
         if conclusion == "success":
@@ -939,17 +965,29 @@ def _summarize_pr_checks(checks: list[dict[str, Any]]) -> dict[str, Any]:
         elif conclusion in {"failure", "cancelled", "timed_out", "action_required"}:
             failed += 1
             failed_checks.append(name)
+            failed_check_details.append(detail)
         elif conclusion in {"skipped", "neutral"}:
             skipped += 1
-        elif check_status in {"queued", "in_progress", "pending", "waiting"}:
+        elif check_status == "in_progress":
             pending += 1
+            in_progress += 1
             pending_checks.append(name)
+            pending_check_details.append(detail)
+        elif check_status in {"queued", "pending", "waiting"}:
+            pending += 1
+            queued += 1
+            pending_checks.append(name)
+            pending_check_details.append(detail)
         elif check_status == "completed" and not conclusion:
             pending += 1
+            queued += 1
             pending_checks.append(name)
+            pending_check_details.append(detail)
         else:
             pending += 1
+            queued += 1
             pending_checks.append(name)
+            pending_check_details.append(detail)
     merge_ready = failed == 0 and pending == 0
     merge_blocked: str | None = None
     if failed > 0:
@@ -958,14 +996,20 @@ def _summarize_pr_checks(checks: list[dict[str, Any]]) -> dict[str, Any]:
         merge_blocked = "pr_checks_pending"
     pending_checks = _dedupe_preserve_order(pending_checks)
     failed_checks = _dedupe_preserve_order(failed_checks)
+    pending_check_details = _dedupe_check_details(pending_check_details)
+    failed_check_details = _dedupe_check_details(failed_check_details)
     return {
         "checks_total": len(checks),
         "checks_pending": pending,
+        "checks_in_progress": in_progress,
+        "checks_queued": queued,
         "checks_failed": failed,
         "checks_success": success,
         "checks_skipped": skipped,
         "pending_checks": pending_checks,
         "failed_checks": failed_checks,
+        "pending_check_details": pending_check_details,
+        "failed_check_details": failed_check_details,
         "pr_merge_ready": merge_ready,
         "lfg_merge_blocked": merge_blocked,
     }
@@ -1012,22 +1056,31 @@ def _apply_pr_merge_status(status: dict[str, Any]) -> None:
         status["merge_hint"] = "Monitoring complete; no open PR on this branch"
         return
     url = pr_status.get("url") or ""
+    number = pr_status.get("number")
     if pr_status.get("lfg_merge_blocked") == "pr_checks_failed":
         names = _format_check_list(list(pr_status.get("failed_checks") or []))
         detail = f" ({names})" if names else ""
-        status["merge_hint"] = f"Fix failing PR checks{detail}: {url}"
+        failed_cmd = f"gh pr checks {number} --failed" if number else "gh pr checks --failed"
+        status["merge_hint"] = f"Fix failing PR checks{detail}: {url} — run: {failed_cmd}"
     elif pr_status.get("lfg_merge_blocked") == "pr_checks_pending":
         names = _format_check_list(list(pr_status.get("pending_checks") or []))
         detail = f" ({names})" if names else ""
         status["merge_hint"] = f"Monitoring complete; wait for PR checks{detail}: {url}"
     elif pr_status.get("pr_merge_ready"):
-        number = pr_status.get("number")
         merge_cmd = f"gh pr merge {number} --squash --auto" if number else "gh pr merge --squash --auto"
         status["merge_hint"] = f"Monitoring complete; PR ready to merge: {url} ({merge_cmd})"
     else:
         status["merge_hint"] = f"Monitoring complete; review PR status: {url}"
     if pr_status.get("lfg_merge_blocked"):
         status["lfg_merge_blocked"] = pr_status["lfg_merge_blocked"]
+
+
+def _format_watch_poll_line(pr_status: dict[str, Any]) -> str:
+    pending = pr_status.get("checks_pending", 0)
+    in_progress = pr_status.get("checks_in_progress", 0)
+    failed = pr_status.get("checks_failed", 0)
+    success = pr_status.get("checks_success", 0)
+    return f"success={success} pending={pending} in_progress={in_progress} failed={failed}"
 
 
 def _watch_pr_merge_status(
@@ -1045,6 +1098,10 @@ def _watch_pr_merge_status(
         pr_status = status.get("pr_merge_status") or {}
         polls += 1
         status["pr_watch_polls"] = polls
+        print(
+            f"PR watch poll {polls}: {_format_watch_poll_line(pr_status)}",
+            file=sys.stderr,
+        )
         if not pr_status.get("ok"):
             status["lfg_pr_watch_result"] = "no_pr"
             return
@@ -1469,6 +1526,7 @@ def _build_proceed_hint(status: dict[str, Any], *, blocked: str | None) -> str:
 
 def _resolve_lfg_mode(
     *,
+    lfg_merge_watch: bool,
     lfg_merge_gate: bool,
     lfg_closeout: bool,
     lfg_gate: bool,
@@ -1477,6 +1535,8 @@ def _resolve_lfg_mode(
     lfg_pr_watch: bool,
     dry_run: bool,
 ) -> str | None:
+    if lfg_merge_watch or (lfg_merge_gate and lfg_pr_watch):
+        return "merge_watch"
     if lfg_pr_watch:
         return "pr_watch"
     if lfg_merge_gate:
@@ -1524,6 +1584,7 @@ def main() -> None:
             "  python3 .github/scripts/local_verify_pypi_slice.py --lfg-gate\n"
             "  python3 .github/scripts/local_verify_pypi_slice.py --lfg-merge-gate\n"
             "  python3 .github/scripts/local_verify_pypi_slice.py --lfg-merge-gate --lfg-pr-watch\n"
+            "  python3 .github/scripts/local_verify_pypi_slice.py --lfg-merge-watch\n"
             "  python3 .github/scripts/local_verify_pypi_slice.py --lfg-preflight\n"
             "  python3 .github/scripts/local_verify_pypi_slice.py --lfg-refresh --dry-run\n"
             "  python3 .github/scripts/local_verify_pypi_slice.py --lfg-closeout\n"
@@ -1647,6 +1708,11 @@ def main() -> None:
         help="Shorthand for --lfg-preflight --strict-defer-exit (full JSON then exit 2 when deferred)",
     )
     parser.add_argument(
+        "--lfg-merge-watch",
+        action="store_true",
+        help="Shorthand for --lfg-merge-gate --lfg-pr-watch (poll until PR CI ready/failed/timeout)",
+    )
+    parser.add_argument(
         "--lfg-merge-gate",
         action="store_true",
         help="Shorthand for --lfg-gate --strict-pr-ci-exit (exit 3 while PR CI pending)",
@@ -1696,6 +1762,10 @@ def main() -> None:
         help="Seconds between dispatch poll attempts",
     )
     args = parser.parse_args()
+
+    if args.lfg_merge_watch:
+        args.lfg_merge_gate = True
+        args.lfg_pr_watch = True
 
     if args.lfg_merge_gate:
         args.lfg_gate = True
@@ -1880,6 +1950,7 @@ def main() -> None:
             status["proceed_hint"] = status["merge_hint"]
         _emit_track_complete_stderr(status)
         lfg_mode = _resolve_lfg_mode(
+            lfg_merge_watch=args.lfg_merge_watch,
             lfg_merge_gate=args.lfg_merge_gate,
             lfg_closeout=args.lfg_closeout,
             lfg_gate=args.lfg_gate,

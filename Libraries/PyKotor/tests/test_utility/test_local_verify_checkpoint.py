@@ -446,7 +446,7 @@ Monitoring.
         self.assertTrue(changes["forward_commits_row"])
         self.assertTrue(changes["plans_index"])
         self.assertIn("https://example.com/10", patched)
-        self.assertIn("019–085", patched)
+        self.assertIn("019–086", patched)
 
     def test_dedupe_preserve_order(self) -> None:
         self.assertEqual(
@@ -464,6 +464,40 @@ Monitoring.
         )
         self.assertEqual(summary["pending_checks"], ["Analyze (python)", "build"])
         self.assertEqual(summary["checks_pending"], 3)
+
+    def test_summarize_pr_checks_in_progress_and_details(self) -> None:
+        summary = mod._summarize_pr_checks(
+            [
+                {
+                    "name": "build",
+                    "conclusion": "",
+                    "status": "IN_PROGRESS",
+                    "detailsUrl": "https://example.com/job/1",
+                    "workflowName": "CI",
+                },
+                {
+                    "name": "build",
+                    "conclusion": "",
+                    "status": "QUEUED",
+                    "detailsUrl": "https://example.com/job/2",
+                    "workflowName": "CI",
+                },
+                {
+                    "name": "lint",
+                    "conclusion": "FAILURE",
+                    "status": "COMPLETED",
+                    "detailsUrl": "https://example.com/job/3",
+                    "workflowName": "Lint",
+                },
+            ]
+        )
+        self.assertEqual(summary["checks_in_progress"], 1)
+        self.assertEqual(summary["checks_queued"], 1)
+        self.assertEqual(summary["checks_pending"], 2)
+        self.assertEqual(len(summary["pending_check_details"]), 1)
+        self.assertEqual(summary["pending_check_details"][0]["details_url"], "https://example.com/job/1")
+        self.assertEqual(len(summary["failed_check_details"]), 1)
+        self.assertEqual(summary["failed_check_details"][0]["workflow"], "Lint")
 
     def test_summarize_pr_checks_skipped_not_pending(self) -> None:
         summary = mod._summarize_pr_checks(
@@ -494,6 +528,7 @@ Monitoring.
             "_fetch_pr_merge_status",
             return_value={
                 "ok": True,
+                "number": 308,
                 "url": "https://example.com/pr/1",
                 "lfg_merge_blocked": "pr_checks_failed",
                 "failed_checks": ["Check File Sizes", "devskim"],
@@ -502,6 +537,7 @@ Monitoring.
         ):
             mod._apply_pr_merge_status(status)
         self.assertIn("Check File Sizes", status["merge_hint"])
+        self.assertIn("gh pr checks 308 --failed", status["merge_hint"])
         self.assertEqual(status["lfg_merge_blocked"], "pr_checks_failed")
 
     def test_recompare_checkpoint_status(self) -> None:
@@ -579,9 +615,11 @@ Monitoring.
 
         with patch.object(mod, "_fetch_pr_merge_status", side_effect=fetch_side):
             with patch.object(mod.time, "sleep"):
-                mod._watch_pr_merge_status(status, interval_sec=0.0, timeout_sec=60.0)
+                with patch("sys.stderr", new_callable=io.StringIO) as err:
+                    mod._watch_pr_merge_status(status, interval_sec=0.0, timeout_sec=60.0)
         self.assertEqual(status["lfg_pr_watch_result"], "ready")
         self.assertEqual(status["pr_watch_polls"], 2)
+        self.assertIn("PR watch poll 1:", err.getvalue())
 
     def test_refine_lfg_checkpoint_monitoring_complete(self) -> None:
         status: dict[str, Any] = {
@@ -1461,6 +1499,7 @@ last_verified: 2026-01-01
     def test_resolve_lfg_mode_closeout(self) -> None:
         self.assertEqual(
             mod._resolve_lfg_mode(
+                lfg_merge_watch=False,
                 lfg_merge_gate=False,
                 lfg_closeout=True,
                 lfg_gate=False,
@@ -1473,6 +1512,7 @@ last_verified: 2026-01-01
         )
         self.assertEqual(
             mod._resolve_lfg_mode(
+                lfg_merge_watch=False,
                 lfg_merge_gate=False,
                 lfg_closeout=False,
                 lfg_gate=True,
@@ -1485,6 +1525,7 @@ last_verified: 2026-01-01
         )
         self.assertEqual(
             mod._resolve_lfg_mode(
+                lfg_merge_watch=False,
                 lfg_merge_gate=True,
                 lfg_closeout=False,
                 lfg_gate=True,
@@ -1497,6 +1538,7 @@ last_verified: 2026-01-01
         )
         self.assertEqual(
             mod._resolve_lfg_mode(
+                lfg_merge_watch=False,
                 lfg_merge_gate=False,
                 lfg_closeout=False,
                 lfg_gate=True,
@@ -1506,6 +1548,19 @@ last_verified: 2026-01-01
                 dry_run=True,
             ),
             "pr_watch",
+        )
+        self.assertEqual(
+            mod._resolve_lfg_mode(
+                lfg_merge_watch=True,
+                lfg_merge_gate=True,
+                lfg_closeout=False,
+                lfg_gate=True,
+                lfg_preflight=True,
+                lfg_refresh=True,
+                lfg_pr_watch=True,
+                dry_run=True,
+            ),
+            "merge_watch",
         )
 
     def test_lfg_closeout_cli_sets_mode(self) -> None:
