@@ -446,7 +446,7 @@ Monitoring.
         self.assertTrue(changes["forward_commits_row"])
         self.assertTrue(changes["plans_index"])
         self.assertIn("https://example.com/10", patched)
-        self.assertIn("019–092", patched)
+        self.assertIn("019–093", patched)
 
     def test_dedupe_preserve_order(self) -> None:
         self.assertEqual(
@@ -816,8 +816,74 @@ Monitoring.
                 "pr_merge_ready": False,
             },
         ):
-            mod._watch_pr_merge_status(status, interval_sec=0.0, timeout_sec=60.0)
+            mod._watch_pr_merge_status(
+                status, interval_sec=0.0, timeout_sec=60.0, stall_polls=99
+            )
         self.assertEqual(status["lfg_pr_watch_result"], "pr_merge_conflicts")
+
+    def test_check_detail_record_started_at(self) -> None:
+        detail = mod._check_detail_record(
+            {
+                "name": "build",
+                "startedAt": "2026-05-24T12:00:00Z",
+                "detailsUrl": "https://example.com/job/1",
+                "workflowName": "CI",
+            }
+        )
+        self.assertEqual(detail["started_at"], "2026-05-24T12:00:00Z")
+        empty = mod._check_detail_record({"name": "queued", "startedAt": "0001-01-01T00:00:00Z"})
+        self.assertEqual(empty["started_at"], "")
+
+    def test_build_pr_ci_bottlenecks_sorted(self) -> None:
+        pr_status = {
+            "in_progress_check_details": [
+                {"name": "new", "started_at": "2026-05-24T13:00:00Z", "workflow": "CI"},
+                {"name": "old", "started_at": "2026-05-24T12:00:00Z", "workflow": "CI"},
+            ],
+            "pending_check_details": [
+                {"name": "queued", "started_at": "", "workflow": "CI"},
+            ],
+        }
+        bottlenecks = mod._build_pr_ci_bottlenecks(pr_status)
+        self.assertEqual(bottlenecks["in_progress"][0]["name"], "old")
+        self.assertEqual(bottlenecks["queued_longest_wait"][0]["name"], "queued")
+
+    def test_watch_pr_merge_status_stalled(self) -> None:
+        status: dict[str, Any] = {"lfg_track_complete": True}
+        stalled_progress = {
+            "ok": True,
+            "number": 308,
+            "url": "https://github.com/example/pr/308",
+            "lfg_merge_blocked": "pr_checks_pending",
+            "pr_merge_ready": False,
+            "checks_pending": 10,
+            "checks_in_progress": 2,
+            "pr_ci_progress": {"completion_percent": 42},
+            "in_progress_check_details": [
+                {
+                    "name": "CodeQL",
+                    "started_at": "2026-05-24T10:00:00Z",
+                    "workflow": "Analyze",
+                    "details_url": "https://example.com/1",
+                },
+            ],
+            "pending_check_details": [],
+        }
+
+        with patch.object(mod, "_fetch_pr_merge_status", return_value=stalled_progress):
+            with patch.object(mod.time, "sleep"):
+                with patch("sys.stderr", new_callable=io.StringIO) as err:
+                    mod._watch_pr_merge_status(
+                        status,
+                        interval_sec=30.0,
+                        timeout_sec=3600.0,
+                        stall_polls=3,
+                    )
+        self.assertEqual(status["lfg_pr_watch_result"], "stalled")
+        self.assertTrue(status["pr_watch_stalled"])
+        self.assertEqual(len(status["pr_watch_history"]), 3)
+        self.assertIn("bottleneck=CodeQL", err.getvalue())
+        self.assertIn("PR watch stalled:", err.getvalue())
 
     def test_recompare_checkpoint_status(self) -> None:
         status: dict[str, Any] = {
@@ -898,9 +964,15 @@ Monitoring.
         with patch.object(mod, "_fetch_pr_merge_status", side_effect=fetch_side):
             with patch.object(mod.time, "sleep"):
                 with patch("sys.stderr", new_callable=io.StringIO) as err:
-                    mod._watch_pr_merge_status(status, interval_sec=0.0, timeout_sec=60.0)
+                    mod._watch_pr_merge_status(
+                        status,
+                        interval_sec=0.0,
+                        timeout_sec=60.0,
+                        stall_polls=99,
+                    )
         self.assertEqual(status["lfg_pr_watch_result"], "ready")
         self.assertEqual(status["pr_watch_polls"], 2)
+        self.assertEqual(len(status["pr_watch_history"]), 2)
         self.assertIn("PR watch poll 1:", err.getvalue())
         self.assertIn("next=build", err.getvalue())
 
