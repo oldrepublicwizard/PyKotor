@@ -446,7 +446,7 @@ Monitoring.
         self.assertTrue(changes["forward_commits_row"])
         self.assertTrue(changes["plans_index"])
         self.assertIn("https://example.com/10", patched)
-        self.assertIn("019–103", patched)
+        self.assertIn("019–104", patched)
 
     def test_dedupe_preserve_order(self) -> None:
         self.assertEqual(
@@ -577,6 +577,84 @@ Monitoring.
             {"completion_percent": 8, "checks_pending": 25, "checks_in_progress": 1, "checks_success": 2, "checks_failed": 0},
         ]
         self.assertEqual(mod._count_unchanged_watch_polls(history), 2)
+
+    def test_should_emit_watch_heartbeat(self) -> None:
+        self.assertFalse(
+            mod._should_emit_watch_heartbeat(True, 11, 12),
+        )
+        self.assertTrue(
+            mod._should_emit_watch_heartbeat(True, 12, 12),
+        )
+        self.assertFalse(
+            mod._should_emit_watch_heartbeat(True, 12, 0),
+        )
+
+    def test_watch_pr_merge_status_heartbeat_poll(self) -> None:
+        status: dict[str, Any] = {"lfg_track_complete": True}
+        pending_status = {
+            "ok": True,
+            "number": 308,
+            "url": "https://github.com/example/pr/308",
+            "lfg_merge_blocked": "pr_checks_pending",
+            "checks_pending": 27,
+            "checks_in_progress": 0,
+            "checks_success": 1,
+            "checks_failed": 0,
+            "checks_skipped": 0,
+            "pr_ci_progress": {"completion_percent": 4, "remaining": 27, "total": 28},
+            "pending_check_details": [
+                {
+                    "name": "label",
+                    "started_at": "2026-05-27T21:30:00Z",
+                    "workflow": "CI",
+                    "details_url": "",
+                },
+            ],
+            "pr_merge_ready": False,
+        }
+        calls = {"n": 0}
+
+        def fetch_side() -> dict[str, Any]:
+            calls["n"] += 1
+            if calls["n"] >= 14:
+                return {
+                    "ok": True,
+                    "number": 308,
+                    "url": "https://github.com/example/pr/308",
+                    "pr_merge_ready": True,
+                    "lfg_merge_blocked": None,
+                }
+            return dict(pending_status)
+
+        with patch.object(mod, "_fetch_pr_merge_status", side_effect=fetch_side):
+            with patch.object(
+                mod,
+                "_fetch_pr_checks_crosscheck",
+                return_value={
+                    "ok": True,
+                    "gh_checks_total": 26,
+                    "rollup_checks_total": 28,
+                    "rollup_vs_gh_delta": 2,
+                    "gh_state_counts": {"QUEUED": 25},
+                },
+            ):
+                with patch.object(mod.time, "sleep"):
+                    with patch("sys.stderr", new_callable=io.StringIO) as err:
+                        mod._watch_pr_merge_status(
+                            status,
+                            interval_sec=0.0,
+                            timeout_sec=60.0,
+                            stall_polls=99,
+                            heartbeat_polls=12,
+                        )
+        output = err.getvalue()
+        self.assertIn("PR watch poll 13:", output)
+        poll13 = output.split("PR watch poll 13:")[1].split("\n")[0]
+        self.assertIn("heartbeat=1", poll13)
+        self.assertIn("success=", poll13)
+        self.assertIn("rollup_delta=", poll13)
+        summary = status.get("pr_watch_summary") or {}
+        self.assertEqual(summary.get("heartbeat_polls"), 1)
 
     def test_watch_pr_merge_status_compact_unchanged_polls(self) -> None:
         status: dict[str, Any] = {"lfg_track_complete": True}
