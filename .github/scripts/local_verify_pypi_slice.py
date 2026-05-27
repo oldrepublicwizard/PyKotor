@@ -24,12 +24,12 @@ SOLUTION_CLOSEOUT = (
     REPO_ROOT / "docs" / "solutions" / "testing" / "verify-pypi-regression-closeout.md"
 )
 PLAN_020 = REPO_ROOT / "docs" / "plans" / "2026-05-24-020-verify-pypi-regression-post-268-plan.md"
-PLAN_TRACK_CAP = "090"
+PLAN_TRACK_CAP = "091"
 LFG_EXIT_CODES: dict[int, str] = {
     0: "proceed, merge_ready, or monitoring_complete",
     1: "gh_error",
     2: "deferred or dispatch_or_sync_failed",
-    3: "pr_checks_pending, pr_checks_failed, pr_merge_conflicts, or no_open_pr",
+    3: "pr_checks_pending, pr_checks_failed, pr_merge_conflicts, no_open_pr, pr_merged, or pr_closed",
 }
 _AUTO_APPLY_PROCEED_REASONS = frozenset({"update_monitoring_docs", "investigate_ci_drift"})
 _DISPATCH_PROCEED_REASONS = frozenset({"refresh_verify_dispatch", "refresh_fc_dispatch"})
@@ -1050,6 +1050,20 @@ def _format_check_list(names: list[str], *, limit: int = 5) -> str:
     return ", ".join(shown) + suffix
 
 
+def _build_merge_actions(number: int | None) -> dict[str, str]:
+    if number:
+        return {
+            "watch_checks": f"gh pr checks {number} --watch",
+            "list_failed": f"gh pr checks {number} --failed",
+            "merge_squash_auto": f"gh pr merge {number} --squash --auto",
+        }
+    return {
+        "watch_checks": "gh pr checks --watch",
+        "list_failed": "gh pr checks --failed",
+        "merge_squash_auto": "gh pr merge --squash --auto",
+    }
+
+
 def _fetch_pr_merge_status() -> dict[str, Any]:
     result = subprocess.run(
         ["gh", "pr", "view", "--json", "number,url,state,mergeable,statusCheckRollup"],
@@ -1075,6 +1089,13 @@ def _fetch_pr_merge_status() -> dict[str, Any]:
     if payload.get("mergeable") == "CONFLICTING":
         result["pr_merge_ready"] = False
         result["lfg_merge_blocked"] = "pr_merge_conflicts"
+    pr_state = (payload.get("state") or "").upper()
+    if pr_state == "MERGED":
+        result["pr_merge_ready"] = False
+        result["lfg_merge_blocked"] = "pr_merged"
+    elif pr_state == "CLOSED":
+        result["pr_merge_ready"] = False
+        result["lfg_merge_blocked"] = "pr_closed"
     return result
 
 
@@ -1089,6 +1110,12 @@ def _apply_pr_merge_status(status: dict[str, Any]) -> None:
         return
     url = pr_status.get("url") or ""
     number = pr_status.get("number")
+    status["merge_actions"] = _build_merge_actions(number if isinstance(number, int) else None)
+    pending_details = list(pr_status.get("pending_check_details") or [])
+    if pending_details:
+        status["next_pending_check"] = pending_details[0]
+    elif "next_pending_check" in status:
+        del status["next_pending_check"]
     if pr_status.get("lfg_merge_blocked") == "pr_merge_conflicts":
         status["merge_hint"] = f"Resolve PR merge conflicts before merge: {url}"
     elif pr_status.get("lfg_merge_blocked") == "pr_checks_failed":
@@ -1103,6 +1130,12 @@ def _apply_pr_merge_status(status: dict[str, Any]) -> None:
         status["merge_hint"] = (
             f"Monitoring complete; wait for PR checks{detail}: {url} — run: {watch_cmd}"
         )
+    elif pr_status.get("lfg_merge_blocked") == "pr_merged":
+        status["merge_hint"] = (
+            f"PR merged: {url} — re-run python3 .github/scripts/local_verify_pypi_slice.py --lfg-gate on master"
+        )
+    elif pr_status.get("lfg_merge_blocked") == "pr_closed":
+        status["merge_hint"] = f"PR closed without merge: {url}"
     elif pr_status.get("pr_merge_ready"):
         merge_cmd = f"gh pr merge {number} --squash --auto" if number else "gh pr merge --squash --auto"
         status["merge_hint"] = f"Monitoring complete; PR ready to merge: {url} ({merge_cmd})"
@@ -1156,8 +1189,12 @@ def _watch_pr_merge_status(
             if status.get("merge_hint"):
                 status["proceed_hint"] = status["merge_hint"]
             return
-        if pr_status.get("lfg_merge_blocked") == "pr_merge_conflicts":
-            status["lfg_pr_watch_result"] = "conflicts"
+        if pr_status.get("lfg_merge_blocked") in {
+            "pr_merge_conflicts",
+            "pr_merged",
+            "pr_closed",
+        }:
+            status["lfg_pr_watch_result"] = str(pr_status.get("lfg_merge_blocked"))
             if status.get("merge_hint"):
                 status["proceed_hint"] = status["merge_hint"]
             return

@@ -446,7 +446,7 @@ Monitoring.
         self.assertTrue(changes["forward_commits_row"])
         self.assertTrue(changes["plans_index"])
         self.assertIn("https://example.com/10", patched)
-        self.assertIn("019–090", patched)
+        self.assertIn("019–091", patched)
 
     def test_dedupe_preserve_order(self) -> None:
         self.assertEqual(
@@ -582,6 +582,52 @@ Monitoring.
         ):
             mod._apply_pr_merge_status(status)
         self.assertEqual(status["lfg_merge_blocked"], "no_open_pr")
+
+    def test_build_merge_actions_with_number(self) -> None:
+        actions = mod._build_merge_actions(308)
+        self.assertIn("gh pr checks 308 --watch", actions["watch_checks"])
+        self.assertIn("gh pr merge 308 --squash --auto", actions["merge_squash_auto"])
+
+    def test_fetch_pr_merge_status_merged(self) -> None:
+        payload = {
+            "number": 308,
+            "url": "https://example.com/pr/308",
+            "state": "MERGED",
+            "mergeable": "UNKNOWN",
+            "statusCheckRollup": [],
+        }
+        with patch.object(
+            mod.subprocess,
+            "run",
+            return_value=mock.Mock(returncode=0, stdout=json.dumps(payload), stderr=""),
+        ):
+            result = mod._fetch_pr_merge_status()
+        self.assertEqual(result["lfg_merge_blocked"], "pr_merged")
+        self.assertFalse(result["pr_merge_ready"])
+
+    def test_apply_pr_merge_status_merge_actions_and_next_pending(self) -> None:
+        status: dict[str, Any] = {"lfg_track_complete": True}
+        with patch.object(
+            mod,
+            "_fetch_pr_merge_status",
+            return_value={
+                "ok": True,
+                "number": 308,
+                "url": "https://example.com/pr/308",
+                "lfg_merge_blocked": "pr_checks_pending",
+                "pending_check_details": [
+                    {
+                        "name": "build",
+                        "details_url": "https://example.com/job/1",
+                        "workflow": "CI",
+                    }
+                ],
+                "pr_merge_ready": False,
+            },
+        ):
+            mod._apply_pr_merge_status(status)
+        self.assertIn("watch_checks", status["merge_actions"])
+        self.assertEqual(status["next_pending_check"]["name"], "build")
 
     def test_compute_lfg_exit_reason_merge_ready(self) -> None:
         reason = mod._compute_lfg_exit_reason(
@@ -733,7 +779,7 @@ Monitoring.
             },
         ):
             mod._watch_pr_merge_status(status, interval_sec=0.0, timeout_sec=60.0)
-        self.assertEqual(status["lfg_pr_watch_result"], "conflicts")
+        self.assertEqual(status["lfg_pr_watch_result"], "pr_merge_conflicts")
 
     def test_recompare_checkpoint_status(self) -> None:
         status: dict[str, Any] = {
