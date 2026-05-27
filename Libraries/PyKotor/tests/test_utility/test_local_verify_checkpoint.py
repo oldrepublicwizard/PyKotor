@@ -447,7 +447,7 @@ Monitoring.
         self.assertTrue(changes["forward_commits_row"])
         self.assertTrue(changes["plans_index"])
         self.assertIn("https://example.com/10", patched)
-        self.assertIn("019–108", patched)
+        self.assertIn("019–109", patched)
 
     def test_dedupe_preserve_order(self) -> None:
         self.assertEqual(
@@ -2414,6 +2414,79 @@ last_verified: 2026-01-01
         status = {"lfg_defer_reason": "fc_active_pending"}
         reason = mod._compute_lfg_exit_reason(status, 2, deferred=True)
         self.assertEqual(reason, "deferred:fc_active_pending")
+
+    def test_classify_gh_error_rate_limit(self) -> None:
+        self.assertEqual(
+            mod._classify_gh_error_message("HTTP 403: API rate limit exceeded"),
+            "rate_limited",
+        )
+
+    def test_summarize_gh_lookup_rate_limited(self) -> None:
+        status = {
+            "gh_ok": False,
+            "verify_pypi": {"error": "HTTP 403: API rate limit exceeded"},
+            "forward_commits": {"error": "HTTP 403: API rate limit exceeded"},
+        }
+        summary = mod._summarize_gh_lookup(status)
+        self.assertIsNotNone(summary)
+        assert summary is not None
+        self.assertEqual(summary["primary_kind"], "rate_limited")
+        self.assertIn("verify:", summary["note"])
+
+    def test_build_lfg_agent_briefing_gh_unavailable(self) -> None:
+        briefing = mod._build_lfg_agent_briefing(
+            {
+                "gh_ok": False,
+                "gh_lookup": {
+                    "primary_kind": "rate_limited",
+                    "note": "verify: HTTP 403: API rate limit exceeded",
+                },
+                "proceed_hint": (
+                    "python3 .github/scripts/local_verify_pypi_slice.py "
+                    "--lfg-preflight  # retry when GitHub API rate limit resets"
+                ),
+            }
+        )
+        self.assertEqual(briefing["action"], "gh_unavailable")
+        self.assertEqual(briefing["reason"], "gh_error:rate_limited")
+        self.assertIn("rate limit", briefing["notes"][0])
+
+    def test_compute_lfg_exit_reason_gh_rate_limited(self) -> None:
+        status = {"gh_lookup": {"primary_kind": "rate_limited"}}
+        self.assertEqual(
+            mod._compute_lfg_exit_reason(status, 1, deferred=False),
+            "gh_error:rate_limited",
+        )
+
+    def test_build_proceed_hint_gh_rate_limited(self) -> None:
+        hint = mod._build_proceed_hint(
+            {
+                "gh_ok": False,
+                "gh_lookup": {"primary_kind": "rate_limited"},
+            },
+            blocked="fix_gh_lookup",
+        )
+        self.assertIn("--lfg-preflight", hint)
+        self.assertIn("rate limit", hint)
+
+    def test_ci_status_attaches_gh_lookup_on_failure(self) -> None:
+        with patch.object(mod, "_latest_workflow_run") as mock_run:
+            mock_run.side_effect = [
+                {"error": "HTTP 403: API rate limit exceeded"},
+                {"error": "HTTP 403: API rate limit exceeded"},
+            ]
+            status = mod._ci_status(compare_checkpoint=True)
+        self.assertFalse(status["gh_ok"])
+        self.assertIn("gh_lookup", status)
+        self.assertEqual(status["gh_lookup"]["primary_kind"], "rate_limited")
+
+    def test_should_emit_lfg_agent_briefing_stderr_gh_unavailable(self) -> None:
+        self.assertTrue(
+            mod._should_emit_lfg_agent_briefing_stderr(
+                {"action": "gh_unavailable"},
+                0,
+            )
+        )
 
     def test_build_proceed_hint_fc_active_pending(self) -> None:
         hint = mod._build_proceed_hint(

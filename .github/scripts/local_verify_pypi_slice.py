@@ -24,7 +24,7 @@ SOLUTION_CLOSEOUT = (
     REPO_ROOT / "docs" / "solutions" / "testing" / "verify-pypi-regression-closeout.md"
 )
 PLAN_020 = REPO_ROOT / "docs" / "plans" / "2026-05-24-020-verify-pypi-regression-post-268-plan.md"
-PLAN_TRACK_CAP = "108"
+PLAN_TRACK_CAP = "109"
 LFG_EXIT_CODES: dict[int, str] = {
     0: "proceed, merge_ready, or monitoring_complete",
     1: "gh_error",
@@ -244,6 +244,56 @@ def _latest_workflow_run(workflow_file: str) -> dict[str, Any]:
         if queued_hours is not None:
             payload["queued_hours"] = round(queued_hours, 2)
     return payload
+
+
+def _classify_gh_error_message(message: str) -> str:
+    lower = message.lower()
+    if "rate limit" in lower or "403" in lower:
+        return "rate_limited"
+    if "401" in lower or "authentication" in lower or "not logged" in lower:
+        return "auth"
+    if "network" in lower or "connection" in lower or "timed out" in lower:
+        return "network"
+    return "unknown"
+
+
+def _summarize_gh_lookup(status: dict[str, Any]) -> dict[str, Any] | None:
+    if status.get("gh_ok"):
+        return None
+    errors: list[dict[str, str]] = []
+    for label, key in (("verify", "verify_pypi"), ("FC", "forward_commits")):
+        run = status.get(key)
+        if isinstance(run, dict) and run.get("error"):
+            msg = str(run["error"])
+            errors.append(
+                {
+                    "workflow": label,
+                    "error": msg,
+                    "kind": _classify_gh_error_message(msg),
+                }
+            )
+    if not errors:
+        return None
+    kinds = [entry["kind"] for entry in errors]
+    if "rate_limited" in kinds:
+        primary_kind = "rate_limited"
+    elif "auth" in kinds:
+        primary_kind = "auth"
+    elif "network" in kinds:
+        primary_kind = "network"
+    else:
+        primary_kind = "unknown"
+    note_parts: list[str] = []
+    for entry in errors:
+        snippet = entry["error"]
+        if len(snippet) > 160:
+            snippet = f"{snippet[:157]}..."
+        note_parts.append(f"{entry['workflow']}: {snippet}")
+    return {
+        "errors": errors,
+        "primary_kind": primary_kind,
+        "note": "; ".join(note_parts),
+    }
 
 
 def _git_prefetch_origin_master() -> dict[str, Any]:
@@ -628,6 +678,10 @@ def _ci_status(
         result["doc_validation"] = _validate_checkpoint_doc(result)
     if include_checkpoint_snippet:
         result["checkpoint_snippet"] = _format_checkpoint_snippet(result)
+    gh_lookup = _summarize_gh_lookup(result)
+    if gh_lookup is not None:
+        result["gh_lookup"] = gh_lookup
+        result["gh_lookup_note"] = gh_lookup["note"]
     return result
 
 
@@ -1837,6 +1891,10 @@ def _compute_lfg_exit_reason(
             return "monitoring_complete"
         return "proceed"
     if exit_code == 1:
+        gh_lookup = status.get("gh_lookup") or {}
+        kind = gh_lookup.get("primary_kind")
+        if isinstance(kind, str) and kind and kind != "unknown":
+            return f"gh_error:{kind}"
         return "gh_error"
     if exit_code == 2:
         if deferred:
@@ -1882,6 +1940,26 @@ def _emit_lfg_strict_exit_stderr(status: dict[str, Any], exit_code: int) -> None
 
 
 def _build_lfg_agent_briefing(status: dict[str, Any]) -> dict[str, Any]:
+    proceed_hint = str(status.get("proceed_hint") or "")
+    script = "python3 .github/scripts/local_verify_pypi_slice.py"
+    if not status.get("gh_ok"):
+        gh_lookup = status.get("gh_lookup") or {}
+        notes: list[str] = []
+        note = gh_lookup.get("note")
+        if isinstance(note, str) and note:
+            notes.append(note)
+        kind = str(gh_lookup.get("primary_kind") or "unknown")
+        command = proceed_hint or f"{script} --lfg-preflight"
+        if kind == "rate_limited":
+            command = f"{script} --lfg-preflight  # retry when GitHub API rate limit resets"
+        return {
+            "action": "gh_unavailable",
+            "command": command,
+            "reason": f"gh_error:{kind}",
+            "notes": notes,
+            "merge_ready": False,
+            "blocked": "fix_gh_lookup",
+        }
     if status.get("lfg_track_complete"):
         pr_status = status.get("pr_merge_status") or {}
         rec = status.get("pr_ci_recommendation") or {}
@@ -1992,7 +2070,7 @@ def _should_emit_lfg_agent_briefing_stderr(
 ) -> bool:
     if exit_code != 0:
         return True
-    return briefing.get("action") in {"defer", "blocked_refresh", "investigate_ci_drift"}
+    return briefing.get("action") in {"defer", "blocked_refresh", "investigate_ci_drift", "gh_unavailable"}
 
 
 def _emit_track_complete_stderr(status: dict[str, Any]) -> None:
@@ -2410,6 +2488,11 @@ def _build_proceed_hint(status: dict[str, Any], *, blocked: str | None) -> str:
         return f"{script} --lfg-gate"
     if blocked == "classify_fc_stale_gap":
         return f"{script} --prefetch-git --lfg-gate"
+    if blocked == "fix_gh_lookup" or not status.get("gh_ok"):
+        gh_lookup = status.get("gh_lookup") or {}
+        if gh_lookup.get("primary_kind") == "rate_limited":
+            return f"{script} --lfg-preflight  # retry when GitHub API rate limit resets"
+        return f"{script} --ci-status-only --compare-checkpoint --json  # retry gh lookup"
     if blocked in _LFG_REFRESH_BLOCKED_REASONS:
         return f"{script} --monitor-preflight --include-proceed-actions"
     checkpoint = status.get("checkpoint")
@@ -3001,6 +3084,13 @@ def main() -> None:
                     deferred=deferred,
                 )
                 status["lfg_exit_codes"] = LFG_EXIT_CODES
+            elif not status.get("gh_ok"):
+                status["lfg_exit_code"] = 1
+                status["lfg_exit_reason"] = _compute_lfg_exit_reason(
+                    status,
+                    1,
+                    deferred=deferred,
+                )
             _apply_lfg_agent_briefing(status)
             briefing = status.get("lfg_agent_briefing")
             exit_code = int(status.get("lfg_exit_code", 0))
