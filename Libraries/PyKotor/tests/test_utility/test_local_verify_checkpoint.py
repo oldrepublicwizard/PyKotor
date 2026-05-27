@@ -446,7 +446,7 @@ Monitoring.
         self.assertTrue(changes["forward_commits_row"])
         self.assertTrue(changes["plans_index"])
         self.assertIn("https://example.com/10", patched)
-        self.assertIn("019–077", patched)
+        self.assertIn("019–078", patched)
 
     def test_apply_lfg_proceed_sets_fields(self) -> None:
         status: dict[str, Any] = {
@@ -1252,6 +1252,42 @@ last_verified: 2026-01-01
         )
         self.assertNotEqual(result.returncode, 0)
         self.assertIn("--dry-run requires --lfg-refresh", result.stderr)
+
+    def test_build_proceed_hint_deferred(self) -> None:
+        hint = mod._build_proceed_hint({"checkpoint": {}}, blocked="deferred")
+        self.assertIn("--monitor-preflight --strict-defer-exit", hint)
+
+    def test_build_proceed_hint_terminal(self) -> None:
+        hint = mod._build_proceed_hint(
+            {"checkpoint": {"proceed_reason": "update_monitoring_docs"}},
+            blocked=None,
+        )
+        self.assertIn("--lfg-refresh", hint)
+        self.assertNotIn("--dry-run", hint)
+
+    def test_build_proceed_hint_investigate_drift(self) -> None:
+        hint = mod._build_proceed_hint(
+            {"checkpoint": {"proceed_reason": "investigate_ci_drift"}},
+            blocked=None,
+        )
+        self.assertIn("--lfg-refresh", hint)
+
+    def test_lfg_preflight_cli_includes_proceed_hint(self) -> None:
+        result = subprocess.run(
+            [sys.executable, str(SCRIPT_PATH), "--lfg-preflight"],
+            capture_output=True,
+            text=True,
+            cwd=REPO_ROOT,
+            check=False,
+        )
+        self.assertEqual(result.returncode, 0, msg=result.stderr or result.stdout)
+        payload = json.loads(result.stdout)
+        self.assertIn("proceed_hint", payload)
+        self.assertTrue(payload.get("lfg_refresh_dry_run"))
+        if payload.get("lfg_refresh_blocked"):
+            self.assertIn("lfg_refresh_blocked", payload)
+        else:
+            self.assertIn("lfg_refresh_plan", payload)
 
     def test_refresh_runs_after_dispatch_uses_poll_metadata(self) -> None:
         status: dict[str, Any] = {

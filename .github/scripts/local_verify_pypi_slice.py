@@ -24,7 +24,7 @@ SOLUTION_CLOSEOUT = (
     REPO_ROOT / "docs" / "solutions" / "testing" / "verify-pypi-regression-closeout.md"
 )
 PLAN_020 = REPO_ROOT / "docs" / "plans" / "2026-05-24-020-verify-pypi-regression-post-268-plan.md"
-PLAN_TRACK_CAP = "077"
+PLAN_TRACK_CAP = "078"
 _AUTO_APPLY_PROCEED_REASONS = frozenset({"update_monitoring_docs", "investigate_ci_drift"})
 _DISPATCH_PROCEED_REASONS = frozenset({"refresh_verify_dispatch", "refresh_fc_dispatch"})
 VERIFY_WORKFLOW = "verify-pypi-regression.yml"
@@ -1190,6 +1190,19 @@ def _build_lfg_refresh_plan(status: dict[str, Any]) -> dict[str, Any]:
     }
 
 
+def _build_proceed_hint(status: dict[str, Any], *, blocked: str | None) -> str:
+    script = "python3 .github/scripts/local_verify_pypi_slice.py"
+    if blocked == "deferred":
+        return f"{script} --monitor-preflight --strict-defer-exit"
+    if blocked in _LFG_REFRESH_BLOCKED_REASONS:
+        return f"{script} --monitor-preflight --include-proceed-actions"
+    checkpoint = status.get("checkpoint")
+    proceed_reason = checkpoint.get("proceed_reason") if isinstance(checkpoint, dict) else None
+    if proceed_reason in _AUTO_APPLY_PROCEED_REASONS or proceed_reason in _DISPATCH_PROCEED_REASONS:
+        return f"{script} --lfg-refresh"
+    return f"{script} --lfg-preflight"
+
+
 def _maybe_auto_apply_on_proceed(
     status: dict[str, Any],
     *,
@@ -1319,6 +1332,11 @@ def main() -> None:
         help="With --dispatch-on-proceed --execute, re-fetch gh runs and apply doc updates when run ID changes",
     )
     parser.add_argument(
+        "--lfg-preflight",
+        action="store_true",
+        help="Shorthand for --monitor-preflight --lfg-refresh --dry-run (full agent briefing)",
+    )
+    parser.add_argument(
         "--lfg-refresh",
         action="store_true",
         help="One-shot refresh: compare checkpoint, apply docs, dispatch, cancel stale, sync docs (blocked when deferred)",
@@ -1341,6 +1359,11 @@ def main() -> None:
         help="Seconds between dispatch poll attempts",
     )
     args = parser.parse_args()
+
+    if args.lfg_preflight:
+        args.monitor_preflight = True
+        args.lfg_refresh = True
+        args.dry_run = True
 
     if args.lfg_refresh:
         args.ci_status_only = True
@@ -1462,18 +1485,25 @@ def main() -> None:
             blocked = _lfg_refresh_blocked(status, deferred=deferred)
             if blocked:
                 status["lfg_refresh_blocked"] = blocked
+                status["proceed_hint"] = _build_proceed_hint(status, blocked=blocked)
                 print(
                     f"LFG refresh blocked: {blocked} (see AGENTS.md).",
                     file=sys.stderr,
                 )
-                _print_ci_status(status, as_json=args.json)
-                if not status["gh_ok"]:
-                    sys.exit(1)
-                sys.exit(2)
-            status["lfg_refresh"] = True
-            status["lfg_refresh_plan"] = _build_lfg_refresh_plan(status)
-            if args.dry_run:
-                status["lfg_refresh_dry_run"] = True
+                if not args.dry_run:
+                    _print_ci_status(status, as_json=args.json)
+                    if not status["gh_ok"]:
+                        sys.exit(1)
+                    sys.exit(2)
+            else:
+                status["lfg_refresh"] = True
+                status["lfg_refresh_plan"] = _build_lfg_refresh_plan(status)
+                status["proceed_hint"] = _build_proceed_hint(status, blocked=None)
+                if args.dry_run:
+                    status["lfg_refresh_dry_run"] = True
+        elif args.monitor_preflight:
+            blocked = _lfg_refresh_blocked(status, deferred=deferred)
+            status["proceed_hint"] = _build_proceed_hint(status, blocked=blocked)
         _apply_lfg_proceed(status)
         if args.auto_apply_on_proceed:
             doc_apply = _maybe_auto_apply_on_proceed(status, write=args.write, targets=targets)
