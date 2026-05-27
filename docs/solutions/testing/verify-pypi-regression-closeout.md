@@ -76,6 +76,7 @@ Post–PR #268 CI hygiene and local parity for published PyPI packages.
 - Preflight dry-run always sets **`lfg_refresh_dry_run`**; **`lfg_agent_briefing`** for **`blocked_refresh`** / defer (plan 105).
 - Run ID drift checked before unclassified FC SHA stale; **`ci_drift_note`** + **`investigate_ci_drift`** briefing (plan 106).
 - Defer **`classify_fc_stale_gap`** while FC run is still active; **`fc_stale_gap_pending_note`** on defer (plan 107).
+- **`lfg_defer_reason`** semantic defer codes (e.g. **`fc_active_pending`**) and compounded exit **2** reason (plan 108).
 - **`pr_merged`** / **`pr_closed`** lifecycle blocked states (plan 091).
 - **`--lfg-closeout`** — same as **`--lfg-refresh --write`**; apply monitoring doc updates when CI is terminal (plan 080).
 - **`lfg_mode`** in JSON — `gate`, `merge_gate`, `pr_watch`, `preflight`, `refresh`, or `closeout` for agent routing (plans 080, 085).
@@ -156,9 +157,9 @@ python3 .github/scripts/local_verify_pypi_slice.py --json
 
 ## Plans index
 
-Plans **019–107** under `docs/plans/2026-05-24-*` document the closeout track; plan **020** is the authoritative verification table.
+Plans **019–108** under `docs/plans/2026-05-24-*` document the closeout track; plan **020** is the authoritative verification table.
 
-## Last CI check (plan 106)
+## Last CI check (plan 108)
 
 **2026-05-27:** verify [26372746392](https://github.com/OpenKotOR/PyKotor/actions/runs/26372746392) **success** on `8916e2f`; FC [26543899770](https://github.com/OpenKotOR/PyKotor/actions/runs/26543899770) **queued** on `bcb5586`.
 
