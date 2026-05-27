@@ -24,12 +24,12 @@ SOLUTION_CLOSEOUT = (
     REPO_ROOT / "docs" / "solutions" / "testing" / "verify-pypi-regression-closeout.md"
 )
 PLAN_020 = REPO_ROOT / "docs" / "plans" / "2026-05-24-020-verify-pypi-regression-post-268-plan.md"
-PLAN_TRACK_CAP = "093"
+PLAN_TRACK_CAP = "094"
 LFG_EXIT_CODES: dict[int, str] = {
     0: "proceed, merge_ready, or monitoring_complete",
     1: "gh_error",
     2: "deferred or dispatch_or_sync_failed",
-    3: "pr_checks_pending, pr_checks_failed, pr_merge_conflicts, pr_watch_stalled, no_open_pr, pr_merged, or pr_closed",
+    3: "pr_checks_pending, pr_checks_failed, pr_merge_conflicts, pr_watch_stalled, pr_queue_stalled, no_open_pr, pr_merged, or pr_closed",
 }
 _AUTO_APPLY_PROCEED_REASONS = frozenset({"update_monitoring_docs", "investigate_ci_drift"})
 _DISPATCH_PROCEED_REASONS = frozenset({"refresh_verify_dispatch", "refresh_fc_dispatch"})
@@ -1087,11 +1087,62 @@ def _build_pr_ci_bottlenecks(pr_status: dict[str, Any]) -> dict[str, Any]:
         ],
         key=lambda detail: detail.get("started_at") or "9999",
     )
+    pending_count = int(pr_status.get("checks_pending") or 0)
+    in_progress_count = int(pr_status.get("checks_in_progress") or 0)
+    queue_backlog = pending_count > 0 and in_progress_count == 0
     return {
         "in_progress": in_progress,
         "queued_longest_wait": queued[:8],
         "in_progress_count": len(in_progress),
         "queued_count": len(queued),
+        "queue_backlog": queue_backlog,
+    }
+
+
+def _evaluate_pr_watch_stall(
+    recent: list[dict[str, Any]],
+    *,
+    stall_polls: int,
+    interval_sec: float,
+    bottlenecks: dict[str, Any],
+    next_name: str | None,
+) -> dict[str, str] | None:
+    percents = [entry.get("completion_percent") for entry in recent]
+    pending_counts = [entry.get("checks_pending") for entry in recent]
+    in_progress_counts = [entry.get("checks_in_progress") for entry in recent]
+    if len(set(percents)) != 1 or percents[0] is None:
+        return None
+    if len(set(pending_counts)) != 1:
+        return None
+    pending_val = pending_counts[-1]
+    if not isinstance(pending_val, int) or pending_val <= 0:
+        return None
+    max_in_progress = max(
+        (count if isinstance(count, int) else 0 for count in in_progress_counts),
+        default=0,
+    )
+    stall_min = (stall_polls * interval_sec) / 60.0
+    percent = percents[0]
+    in_prog = list(bottlenecks.get("in_progress") or [])
+    if max_in_progress == 0:
+        queued = list(bottlenecks.get("queued_longest_wait") or [])
+        sample = queued[0].get("name") if queued else next_name or "unknown"
+        return {
+            "lfg_pr_watch_result": "queue_stalled",
+            "lfg_merge_blocked": "pr_queue_stalled",
+            "merge_hint": (
+                f"PR CI queue backlog ~{stall_min:.0f}m: {pending_val} checks queued, "
+                f"0 running ({percent}% complete; next queued: {sample})"
+            ),
+        }
+    bottleneck_name = in_prog[0].get("name") if in_prog else next_name or "unknown"
+    return {
+        "lfg_pr_watch_result": "stalled",
+        "lfg_merge_blocked": "pr_watch_stalled",
+        "merge_hint": (
+            f"PR CI job hang ~{stall_min:.0f}m at {percent}% complete "
+            f"(bottleneck: {bottleneck_name})"
+        ),
     }
 
 
@@ -1243,7 +1294,12 @@ def _watch_pr_merge_status(
             poll_line = f"{poll_line} next={next_name}"
         bottlenecks = status.get("pr_ci_bottlenecks") or {}
         in_prog = bottlenecks.get("in_progress") or []
-        if in_prog:
+        if bottlenecks.get("queue_backlog"):
+            queued = bottlenecks.get("queued_longest_wait") or []
+            sample = queued[0].get("name") if queued else next_name
+            if sample:
+                poll_line = f"{poll_line} queue_backlog={sample}"
+        elif in_prog:
             oldest = in_prog[0]
             poll_line = (
                 f"{poll_line} bottleneck={oldest.get('name')} "
@@ -1253,27 +1309,23 @@ def _watch_pr_merge_status(
             f"PR watch poll {polls}: {poll_line}",
             file=sys.stderr,
         )
-        if (
-            stall_polls > 1
-            and len(history) >= stall_polls
-        ):
+        if stall_polls > 1 and len(history) >= stall_polls:
             recent = history[-stall_polls:]
-            percents = [entry.get("completion_percent") for entry in recent]
-            pending_counts = [entry.get("checks_pending") for entry in recent]
-            if (
-                len(set(percents)) == 1
-                and percents[0] is not None
-                and len(set(pending_counts)) == 1
-            ):
+            stall = _evaluate_pr_watch_stall(
+                recent,
+                stall_polls=stall_polls,
+                interval_sec=interval_sec,
+                bottlenecks=bottlenecks,
+                next_name=next_name,
+            )
+            if stall is not None:
                 status["pr_watch_stalled"] = True
-                status["lfg_pr_watch_result"] = "stalled"
-                status["lfg_merge_blocked"] = "pr_watch_stalled"
-                stall_min = (stall_polls * interval_sec) / 60.0
-                status["merge_hint"] = (
-                    f"PR CI stalled ~{stall_min:.0f}m at {percents[0]}% complete "
-                    f"(bottleneck: {in_prog[0].get('name') if in_prog else next_name or 'unknown'})"
-                )
-                status["proceed_hint"] = status["merge_hint"]
+                status["lfg_pr_watch_result"] = stall["lfg_pr_watch_result"]
+                status["lfg_merge_blocked"] = stall["lfg_merge_blocked"]
+                status["merge_hint"] = stall["merge_hint"]
+                status["proceed_hint"] = stall["merge_hint"]
+                if stall["lfg_pr_watch_result"] == "queue_stalled":
+                    status["pr_queue_stalled"] = True
                 print(f"PR watch stalled: {status['merge_hint']}", file=sys.stderr)
                 return
         if not pr_status.get("ok"):
