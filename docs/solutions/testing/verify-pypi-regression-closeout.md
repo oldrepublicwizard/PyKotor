@@ -50,7 +50,9 @@ Post–PR #268 CI hygiene and local parity for published PyPI packages.
 - **`--lfg-preflight`** — monitor JSON + refresh dry-run + **`proceed_hint`** (plan 078).
 - **`--lfg-gate`** — same as **`--lfg-preflight --strict-defer-exit`**; full briefing then exit **2** when deferred (plan 079).
 - **`--lfg-merge-gate`** — same as **`--lfg-gate --strict-pr-ci-exit`**; exit **3** while PR CI blocks merge (plan 085).
+- **`--lfg-merge-watch`** — same as **`--lfg-merge-gate --lfg-pr-watch`**; poll with stderr progress (plan 086).
 - **`--lfg-pr-watch`** — poll **`pr_merge_status`** until ready, failed, or timeout (plan 085).
+- **`pending_check_details`** / **`failed_check_details`** — job URLs and workflow names in rollup JSON (plan 086).
 - **`--lfg-closeout`** — same as **`--lfg-refresh --write`**; apply monitoring doc updates when CI is terminal (plan 080).
 - **`lfg_mode`** in JSON — `gate`, `merge_gate`, `pr_watch`, `preflight`, `refresh`, or `closeout` for agent routing (plans 080, 085).
 - **`lfg_track_complete`** — docs synced and terminal CI recorded; no closeout PR needed (plan 082).
@@ -102,7 +104,7 @@ When JSON includes `"lfg_deferred": true`, defer monitoring LFG until verify/FC 
 4. **Docs** — terminal CI (`proceed_reason: update_monitoring_docs`) updates via **`--lfg-closeout`** or **`--lfg-refresh`** (no `--dry-run`).
 5. **Dispatch** — SHA drift uses dispatch helpers; **`classify_fc_stale_gap`** → **`--prefetch-git --lfg-gate`** (plan 083).
 
-6. **Complete** — when **`lfg_track_complete: true`**, read **`pr_merge_status.pr_merge_ready`** and **`merge_hint`**. Use **`--lfg-merge-gate`** (or **`--lfg-gate --strict-pr-ci-exit`**) to exit **3** while PR CI is pending (plans 084–085). Poll with **`--lfg-merge-gate --lfg-pr-watch`** while waiting on PR checks.
+6. **Complete** — when **`lfg_track_complete: true`**, read **`pr_merge_status.pr_merge_ready`**, **`failed_check_details`**, and **`merge_hint`**. Use **`--lfg-merge-gate`** (or **`--lfg-gate --strict-pr-ci-exit`**) to exit **3** while PR CI is pending (plans 084–085). Poll with **`--lfg-merge-watch`** while waiting on PR checks (plan 086).
 7. **Prefetch** — when blocked on **`classify_fc_stale_gap`**, run **`--prefetch-git --lfg-gate`** (plan 083).
 
 ```bash
@@ -110,7 +112,7 @@ python3 .github/scripts/local_verify_pypi_slice.py --lfg-preflight
 python3 .github/scripts/local_verify_pypi_slice.py --lfg-refresh --dry-run
 python3 .github/scripts/local_verify_pypi_slice.py --lfg-closeout
 python3 .github/scripts/local_verify_pypi_slice.py --lfg-merge-gate
-python3 .github/scripts/local_verify_pypi_slice.py --lfg-merge-gate --lfg-pr-watch
+python3 .github/scripts/local_verify_pypi_slice.py --lfg-merge-watch
 python3 .github/scripts/local_verify_pypi_slice.py --prefetch-git --lfg-gate
 ```
 
@@ -130,12 +132,12 @@ python3 .github/scripts/local_verify_pypi_slice.py --json
 
 ## Plans index
 
-Plans **019–085** under `docs/plans/2026-05-24-*` document the closeout track; plan **020** is the authoritative verification table.
+Plans **019–086** under `docs/plans/2026-05-24-*` document the closeout track; plan **020** is the authoritative verification table.
 
-## Last CI check (plan 085)
+## Last CI check (plan 086)
 
 **2026-05-27:** verify [26372746392](https://github.com/OpenKotOR/PyKotor/actions/runs/26372746392) **success** on `8916e2f`; FC [26365648344](https://github.com/OpenKotOR/PyKotor/actions/runs/26365648344) **success** on `3b6b746`.
 
-## Track status (plan 085)
+## Track status (plan 086)
 
-**Monitoring-only (plan 085).** Canonical runs verify [26372746392](https://github.com/OpenKotOR/PyKotor/actions/runs/26372746392) and FC [26365648344](https://github.com/OpenKotOR/PyKotor/actions/runs/26365648344) completed **success**. No workflow YAML changes on this track unless new CI failures appear.
+**Monitoring-only (plan 086).** Canonical runs verify [26372746392](https://github.com/OpenKotOR/PyKotor/actions/runs/26372746392) and FC [26365648344](https://github.com/OpenKotOR/PyKotor/actions/runs/26365648344) completed **success**. No workflow YAML changes on this track unless new CI failures appear.
