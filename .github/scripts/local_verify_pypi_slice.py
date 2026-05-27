@@ -24,7 +24,7 @@ SOLUTION_CLOSEOUT = (
     REPO_ROOT / "docs" / "solutions" / "testing" / "verify-pypi-regression-closeout.md"
 )
 PLAN_020 = REPO_ROOT / "docs" / "plans" / "2026-05-24-020-verify-pypi-regression-post-268-plan.md"
-PLAN_TRACK_CAP = "104"
+PLAN_TRACK_CAP = "105"
 LFG_EXIT_CODES: dict[int, str] = {
     0: "proceed, merge_ready, or monitoring_complete",
     1: "gh_error",
@@ -1852,50 +1852,70 @@ def _emit_lfg_strict_exit_stderr(status: dict[str, Any], exit_code: int) -> None
 
 
 def _build_lfg_agent_briefing(status: dict[str, Any]) -> dict[str, Any]:
-    if not status.get("lfg_track_complete"):
-        return {}
-    pr_status = status.get("pr_merge_status") or {}
-    rec = status.get("pr_ci_recommendation") or {}
-    progress = pr_status.get("pr_ci_progress") or {}
-    notes: list[str] = []
-    for key in ("pr_queue_backlog_note", "pr_checks_crosscheck_note"):
-        value = status.get(key)
-        if isinstance(value, str) and value:
-            notes.append(value)
-    blocked = status.get("lfg_merge_blocked") or pr_status.get("lfg_merge_blocked")
-    if not pr_status.get("ok"):
-        briefing: dict[str, Any] = {
-            "action": rec.get("action") or "no_pr",
-            "command": rec.get("command") or "",
-            "reason": rec.get("reason") or "no open PR on branch",
-            "notes": notes,
-            "pr_number": None,
-            "pr_url": "",
+    if status.get("lfg_track_complete"):
+        pr_status = status.get("pr_merge_status") or {}
+        rec = status.get("pr_ci_recommendation") or {}
+        progress = pr_status.get("pr_ci_progress") or {}
+        notes: list[str] = []
+        for key in ("pr_queue_backlog_note", "pr_checks_crosscheck_note"):
+            value = status.get(key)
+            if isinstance(value, str) and value:
+                notes.append(value)
+        blocked = status.get("lfg_merge_blocked") or pr_status.get("lfg_merge_blocked")
+        if not pr_status.get("ok"):
+            briefing: dict[str, Any] = {
+                "action": rec.get("action") or "no_pr",
+                "command": rec.get("command") or "",
+                "reason": rec.get("reason") or "no open PR on branch",
+                "notes": notes,
+                "pr_number": None,
+                "pr_url": "",
+                "merge_ready": False,
+                "blocked": blocked or "no_open_pr",
+                "completion_percent": None,
+                "checks_pending": None,
+                "checks_in_progress": None,
+            }
+        else:
+            briefing = {
+                "action": rec.get("action") or "",
+                "command": rec.get("command") or "",
+                "reason": rec.get("reason") or "",
+                "notes": notes,
+                "pr_number": pr_status.get("number"),
+                "pr_url": pr_status.get("url") or "",
+                "merge_ready": bool(pr_status.get("pr_merge_ready")),
+                "blocked": blocked,
+                "completion_percent": progress.get("completion_percent"),
+                "checks_pending": pr_status.get("checks_pending"),
+                "checks_in_progress": pr_status.get("checks_in_progress"),
+            }
+        if "lfg_exit_code" in status:
+            briefing["exit_code"] = status["lfg_exit_code"]
+        if status.get("lfg_exit_reason"):
+            briefing["exit_reason"] = status["lfg_exit_reason"]
+        return briefing
+    proceed_hint = str(status.get("proceed_hint") or "")
+    if status.get("lfg_deferred"):
+        return {
+            "action": "defer",
+            "command": proceed_hint,
+            "reason": "deferred",
+            "notes": [],
             "merge_ready": False,
-            "blocked": blocked or "no_open_pr",
-            "completion_percent": None,
-            "checks_pending": None,
-            "checks_in_progress": None,
+            "blocked": "deferred",
         }
-    else:
-        briefing = {
-            "action": rec.get("action") or "",
-            "command": rec.get("command") or "",
-            "reason": rec.get("reason") or "",
-            "notes": notes,
-            "pr_number": pr_status.get("number"),
-            "pr_url": pr_status.get("url") or "",
-            "merge_ready": bool(pr_status.get("pr_merge_ready")),
-            "blocked": blocked,
-            "completion_percent": progress.get("completion_percent"),
-            "checks_pending": pr_status.get("checks_pending"),
-            "checks_in_progress": pr_status.get("checks_in_progress"),
+    blocked_refresh = status.get("lfg_refresh_blocked")
+    if blocked_refresh:
+        return {
+            "action": "blocked_refresh",
+            "command": proceed_hint,
+            "reason": str(blocked_refresh),
+            "notes": [],
+            "merge_ready": False,
+            "blocked": str(blocked_refresh),
         }
-    if "lfg_exit_code" in status:
-        briefing["exit_code"] = status["lfg_exit_code"]
-    if status.get("lfg_exit_reason"):
-        briefing["exit_reason"] = status["lfg_exit_reason"]
-    return briefing
+    return {}
 
 
 def _apply_lfg_agent_briefing(status: dict[str, Any]) -> None:
@@ -1917,6 +1937,15 @@ def _emit_lfg_agent_briefing_stderr(briefing: dict[str, Any]) -> None:
     if isinstance(percent, int):
         parts.append(f"complete={percent}%")
     print(f"LFG briefing: {' '.join(parts)}", file=sys.stderr)
+
+
+def _should_emit_lfg_agent_briefing_stderr(
+    briefing: dict[str, Any],
+    exit_code: int,
+) -> bool:
+    if exit_code != 0:
+        return True
+    return briefing.get("action") in {"defer", "blocked_refresh"}
 
 
 def _emit_track_complete_stderr(status: dict[str, Any]) -> None:
@@ -2747,11 +2776,32 @@ def main() -> None:
             if blocked:
                 status["lfg_refresh_blocked"] = blocked
                 status["proceed_hint"] = _build_proceed_hint(status, blocked=blocked)
+                if args.dry_run:
+                    status["lfg_refresh_dry_run"] = True
                 print(
                     f"LFG refresh blocked: {blocked} (see AGENTS.md).",
                     file=sys.stderr,
                 )
                 if not args.dry_run:
+                    lfg_mode = _resolve_lfg_mode(
+                        lfg_merge_watch=args.lfg_merge_watch,
+                        lfg_merge_gate=args.lfg_merge_gate,
+                        lfg_closeout=args.lfg_closeout,
+                        lfg_gate=args.lfg_gate,
+                        lfg_preflight=args.lfg_preflight,
+                        lfg_refresh=args.lfg_refresh,
+                        lfg_pr_watch=args.lfg_pr_watch,
+                        dry_run=args.dry_run,
+                    )
+                    if lfg_mode is not None:
+                        status["lfg_mode"] = lfg_mode
+                    _apply_lfg_agent_briefing(status)
+                    briefing = status.get("lfg_agent_briefing")
+                    if isinstance(briefing, dict) and _should_emit_lfg_agent_briefing_stderr(
+                        briefing,
+                        2,
+                    ):
+                        _emit_lfg_agent_briefing_stderr(briefing)
                     _print_ci_status(status, as_json=args.json)
                     if not status["gh_ok"]:
                         sys.exit(1)
@@ -2764,7 +2814,11 @@ def main() -> None:
                     status["lfg_refresh_dry_run"] = True
         elif args.monitor_preflight:
             blocked = _lfg_refresh_blocked(status, deferred=deferred)
+            if blocked:
+                status["lfg_refresh_blocked"] = blocked
             status["proceed_hint"] = _build_proceed_hint(status, blocked=blocked)
+            if args.dry_run:
+                status["lfg_refresh_dry_run"] = True
         _apply_lfg_proceed(status)
         _apply_lfg_track_complete(status)
         _apply_pr_merge_status(status)
@@ -2877,14 +2931,17 @@ def main() -> None:
                     deferred=deferred,
                 )
                 status["lfg_exit_codes"] = LFG_EXIT_CODES
-                _apply_lfg_agent_briefing(status)
+            _apply_lfg_agent_briefing(status)
+            briefing = status.get("lfg_agent_briefing")
+            exit_code = int(status.get("lfg_exit_code", 0))
+            if args.strict_defer_exit or args.strict_pr_ci_exit:
                 if exit_code != 0:
                     _emit_lfg_strict_exit_stderr(status, exit_code)
-                    briefing = status.get("lfg_agent_briefing")
-                    if isinstance(briefing, dict):
-                        _emit_lfg_agent_briefing_stderr(briefing)
-            else:
-                _apply_lfg_agent_briefing(status)
+            if isinstance(briefing, dict) and _should_emit_lfg_agent_briefing_stderr(
+                briefing,
+                exit_code,
+            ):
+                _emit_lfg_agent_briefing_stderr(briefing)
             _print_ci_status(status, as_json=args.json)
         if not status["gh_ok"]:
             sys.exit(1)
