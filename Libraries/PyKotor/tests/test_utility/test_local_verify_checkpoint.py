@@ -446,7 +446,7 @@ Monitoring.
         self.assertTrue(changes["forward_commits_row"])
         self.assertTrue(changes["plans_index"])
         self.assertIn("https://example.com/10", patched)
-        self.assertIn("019–098", patched)
+        self.assertIn("019–099", patched)
 
     def test_dedupe_preserve_order(self) -> None:
         self.assertEqual(
@@ -938,6 +938,43 @@ Monitoring.
         self.assertIn("runner backlog", status["merge_hint"])
         self.assertIn("oldest ~", status["merge_hint"])
         self.assertIn("pr_checks_crosscheck", status)
+        rec = status.get("pr_ci_recommendation") or {}
+        self.assertEqual(rec.get("action"), "watch_queue")
+        self.assertIn("pr_queue_backlog_note", status)
+
+    def test_pr_ci_recommendation_merge_ready(self) -> None:
+        status: dict[str, Any] = {
+            "pr_merge_status": {"ok": True, "pr_merge_ready": True},
+            "merge_actions": {"merge_squash_auto": "gh pr merge 308 --squash --auto"},
+        }
+        rec = mod._build_pr_ci_recommendation(status)
+        self.assertEqual(rec["action"], "merge")
+        self.assertIn("gh pr merge", rec["command"])
+
+    def test_pr_ci_recommendation_defer_severe(self) -> None:
+        status: dict[str, Any] = {
+            "pr_merge_status": {"ok": True, "lfg_merge_blocked": "pr_checks_pending"},
+            "lfg_merge_blocked": "pr_checks_pending",
+            "pr_ci_bottlenecks": {
+                "queue_backlog": True,
+                "queue_backlog_severe": True,
+                "oldest_queued_age_hours": 5.0,
+            },
+            "merge_actions": {},
+        }
+        rec = mod._build_pr_ci_recommendation(status)
+        self.assertEqual(rec["action"], "defer_external")
+
+    def test_build_pr_queue_backlog_note(self) -> None:
+        note = mod._build_pr_queue_backlog_note(
+            {
+                "queue_backlog": True,
+                "oldest_queued_age_hours": 5.0,
+                "queue_backlog_severe": True,
+            }
+        )
+        self.assertIn("severe", note)
+        self.assertIn("5.0h", note)
 
     def test_queue_backlog_severe(self) -> None:
         pr_status = {
