@@ -446,7 +446,7 @@ Monitoring.
         self.assertTrue(changes["forward_commits_row"])
         self.assertTrue(changes["plans_index"])
         self.assertIn("https://example.com/10", patched)
-        self.assertIn("019–099", patched)
+        self.assertIn("019–100", patched)
 
     def test_dedupe_preserve_order(self) -> None:
         self.assertEqual(
@@ -803,6 +803,54 @@ Monitoring.
             deferred=False,
         )
         self.assertEqual(reason, "pr_checks_pending")
+
+    def test_compute_lfg_exit_reason_pending_watch_queue(self) -> None:
+        reason = mod._compute_lfg_exit_reason(
+            {
+                "lfg_merge_blocked": "pr_checks_pending",
+                "pr_ci_recommendation": {
+                    "action": "watch_queue",
+                    "reason": "runner queue backlog",
+                    "command": "watch-cmd",
+                },
+            },
+            3,
+            deferred=False,
+        )
+        self.assertEqual(reason, "pr_checks_pending:watch_queue")
+
+    def test_compute_lfg_exit_reason_pending_defer_external(self) -> None:
+        reason = mod._compute_lfg_exit_reason(
+            {
+                "lfg_merge_blocked": "pr_checks_pending",
+                "pr_ci_recommendation": {"action": "defer_external"},
+            },
+            3,
+            deferred=False,
+        )
+        self.assertEqual(reason, "pr_checks_pending:defer_external")
+
+    def test_compute_lfg_exit_reason_failed_fix_checks(self) -> None:
+        reason = mod._compute_lfg_exit_reason(
+            {
+                "lfg_merge_blocked": "pr_checks_failed",
+                "pr_ci_recommendation": {"action": "fix_checks"},
+            },
+            3,
+            deferred=False,
+        )
+        self.assertEqual(reason, "pr_checks_failed:fix_checks")
+
+    def test_emit_lfg_strict_exit_stderr(self) -> None:
+        status: dict[str, Any] = {
+            "lfg_exit_reason": "pr_checks_pending:watch_queue",
+            "pr_ci_recommendation": {"command": "watch-cmd"},
+        }
+        with patch.object(mod.sys, "stderr", new_callable=io.StringIO) as err:
+            mod._emit_lfg_strict_exit_stderr(status, 3)
+        self.assertIn("code=3", err.getvalue())
+        self.assertIn("watch_queue", err.getvalue())
+        self.assertIn("watch-cmd", err.getvalue())
 
     def test_watch_pr_merge_status_conflicts(self) -> None:
         status: dict[str, Any] = {"lfg_track_complete": True}
