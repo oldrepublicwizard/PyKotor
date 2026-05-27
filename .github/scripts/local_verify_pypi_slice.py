@@ -24,7 +24,7 @@ SOLUTION_CLOSEOUT = (
     REPO_ROOT / "docs" / "solutions" / "testing" / "verify-pypi-regression-closeout.md"
 )
 PLAN_020 = REPO_ROOT / "docs" / "plans" / "2026-05-24-020-verify-pypi-regression-post-268-plan.md"
-PLAN_TRACK_CAP = "094"
+PLAN_TRACK_CAP = "095"
 LFG_EXIT_CODES: dict[int, str] = {
     0: "proceed, merge_ready, or monitoring_complete",
     1: "gh_error",
@@ -1266,12 +1266,14 @@ def _watch_pr_merge_status(
     interval_sec: float,
     timeout_sec: float,
     stall_polls: int,
+    exit_on_queue_stall: bool = False,
 ) -> None:
     if not status.get("lfg_track_complete"):
         return
     deadline = time.monotonic() + max(0.0, timeout_sec)
     polls = 0
     status["pr_watch_history"] = []
+    status["pr_queue_stall_events"] = []
     while True:
         _apply_pr_merge_status(status)
         pr_status = status.get("pr_merge_status") or {}
@@ -1319,15 +1321,34 @@ def _watch_pr_merge_status(
                 next_name=next_name,
             )
             if stall is not None:
-                status["pr_watch_stalled"] = True
-                status["lfg_pr_watch_result"] = stall["lfg_pr_watch_result"]
-                status["lfg_merge_blocked"] = stall["lfg_merge_blocked"]
-                status["merge_hint"] = stall["merge_hint"]
-                status["proceed_hint"] = stall["merge_hint"]
                 if stall["lfg_pr_watch_result"] == "queue_stalled":
                     status["pr_queue_stalled"] = True
-                print(f"PR watch stalled: {status['merge_hint']}", file=sys.stderr)
-                return
+                    status.setdefault("pr_queue_stall_events", []).append(
+                        {
+                            "poll": polls,
+                            "hint": stall["merge_hint"],
+                        }
+                    )
+                    print(
+                        f"PR queue backlog (continuing watch): {stall['merge_hint']}",
+                        file=sys.stderr,
+                    )
+                    if exit_on_queue_stall:
+                        status["pr_watch_stalled"] = True
+                        status["lfg_pr_watch_result"] = stall["lfg_pr_watch_result"]
+                        status["lfg_merge_blocked"] = stall["lfg_merge_blocked"]
+                        status["merge_hint"] = stall["merge_hint"]
+                        status["proceed_hint"] = stall["merge_hint"]
+                        print(f"PR watch stalled: {status['merge_hint']}", file=sys.stderr)
+                        return
+                else:
+                    status["pr_watch_stalled"] = True
+                    status["lfg_pr_watch_result"] = stall["lfg_pr_watch_result"]
+                    status["lfg_merge_blocked"] = stall["lfg_merge_blocked"]
+                    status["merge_hint"] = stall["merge_hint"]
+                    status["proceed_hint"] = stall["merge_hint"]
+                    print(f"PR watch stalled: {status['merge_hint']}", file=sys.stderr)
+                    return
         if not pr_status.get("ok"):
             status["lfg_pr_watch_result"] = "no_pr"
             return
@@ -1351,8 +1372,19 @@ def _watch_pr_merge_status(
                 status["proceed_hint"] = status["merge_hint"]
             return
         if time.monotonic() >= deadline:
-            status["lfg_pr_watch_result"] = "timeout"
-            status["pr_watch_timeout"] = True
+            bottlenecks = status.get("pr_ci_bottlenecks") or {}
+            if bottlenecks.get("queue_backlog"):
+                pending = pr_status.get("checks_pending", 0)
+                status["lfg_pr_watch_result"] = "queue_timeout"
+                status["pr_watch_timeout"] = True
+                status["pr_queue_stalled"] = True
+                status["lfg_merge_blocked"] = "pr_queue_stalled"
+                status["merge_hint"] = (
+                    f"PR CI timed out during queue backlog ({pending} checks queued, 0 running)"
+                )
+            else:
+                status["lfg_pr_watch_result"] = "timeout"
+                status["pr_watch_timeout"] = True
             if status.get("merge_hint"):
                 status["proceed_hint"] = status["merge_hint"]
             return
@@ -2041,6 +2073,11 @@ def main() -> None:
         help="Flag stall when completion_percent unchanged for N polls (default 6; 0 disables)",
     )
     parser.add_argument(
+        "--watch-exit-on-queue-stall",
+        action="store_true",
+        help="Exit watch early on queue backlog stall (default: continue until timeout/ready/failed)",
+    )
+    parser.add_argument(
         "--lfg-closeout",
         action="store_true",
         help="Shorthand for --lfg-refresh with --write (terminal doc/dispatch closeout, not dry-run)",
@@ -2252,6 +2289,7 @@ def main() -> None:
                 interval_sec=args.watch_interval,
                 timeout_sec=args.watch_timeout,
                 stall_polls=max(0, args.watch_stall_polls),
+                exit_on_queue_stall=args.watch_exit_on_queue_stall,
             )
         if status.get("lfg_track_complete") and status.get("merge_hint"):
             status["proceed_hint"] = status["merge_hint"]
