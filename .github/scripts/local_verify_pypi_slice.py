@@ -24,7 +24,7 @@ SOLUTION_CLOSEOUT = (
     REPO_ROOT / "docs" / "solutions" / "testing" / "verify-pypi-regression-closeout.md"
 )
 PLAN_020 = REPO_ROOT / "docs" / "plans" / "2026-05-24-020-verify-pypi-regression-post-268-plan.md"
-PLAN_TRACK_CAP = "166"
+PLAN_TRACK_CAP = "167"
 LFG_EXIT_CODES: dict[int, str] = {
     0: "proceed, merge_ready, or monitoring_complete",
     1: "gh_error",
@@ -1731,7 +1731,6 @@ def _format_preflight_watch_poll_line(
             parts.append("queue_warn=true")
     if status.get("lfg_deferred"):
         _apply_lfg_agent_briefing(status)
-        briefing = status.get("lfg_agent_briefing") or {}
         primary_action = status.get("primary_action")
         if isinstance(primary_action, str) and primary_action:
             parts.append(f"primary_action={primary_action}")
@@ -1768,12 +1767,13 @@ def _format_preflight_watch_poll_line(
         briefing_action = status.get("briefing_action")
         if isinstance(briefing_action, str) and briefing_action:
             parts.append(f"action={briefing_action}")
-        notes_count = _format_briefing_notes_count(briefing)
-        if notes_count is not None:
-            parts.append(f"notes={notes_count}")
-        merge_ready = _format_briefing_merge_ready(briefing)
-        if merge_ready is not None:
-            parts.append(f"merge_ready={merge_ready}")
+        notes = status.get("briefing_notes")
+        if isinstance(notes, list) and notes:
+            parts.append(f"notes={len(notes)}")
+        if "briefing_merge_ready" in status:
+            parts.append(
+                f"merge_ready={'true' if status['briefing_merge_ready'] else 'false'}"
+            )
         verify_run_id = status.get("verify_run_id")
         if verify_run_id is not None:
             parts.append(f"verify_run={verify_run_id}")
