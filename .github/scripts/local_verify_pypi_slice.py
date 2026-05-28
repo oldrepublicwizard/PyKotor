@@ -24,7 +24,7 @@ SOLUTION_CLOSEOUT = (
     REPO_ROOT / "docs" / "solutions" / "testing" / "verify-pypi-regression-closeout.md"
 )
 PLAN_020 = REPO_ROOT / "docs" / "plans" / "2026-05-24-020-verify-pypi-regression-post-268-plan.md"
-PLAN_TRACK_CAP = "150"
+PLAN_TRACK_CAP = "151"
 LFG_EXIT_CODES: dict[int, str] = {
     0: "proceed, merge_ready, or monitoring_complete",
     1: "gh_error",
@@ -1749,6 +1749,9 @@ def _format_preflight_watch_poll_line(
         queue_note = status.get("queue_backlog_note")
         if isinstance(queue_note, str) and queue_note:
             parts.append(f"queue_note={_format_queue_backlog_note_stderr(queue_note)}")
+        blocked = status.get("blocked")
+        if isinstance(blocked, str) and blocked:
+            parts.append(f"blocked={blocked}")
     return " ".join(parts)
 
 
