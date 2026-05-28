@@ -496,7 +496,7 @@ Monitoring.
         self.assertTrue(changes["forward_commits_row"])
         self.assertTrue(changes["plans_index"])
         self.assertIn("https://example.com/10", patched)
-        self.assertIn("019–132", patched)
+        self.assertIn("019–133", patched)
 
     def test_dedupe_preserve_order(self) -> None:
         self.assertEqual(
@@ -1481,20 +1481,24 @@ Monitoring.
     def test_watch_summary_includes_active_runs(self) -> None:
         deferred_status = {
             "gh_ok": True,
-            "checkpoint": {"defer_lfg_pr": True},
+            "checkpoint": {
+                "defer_lfg_pr": True,
+                "defer_reason": "same canonical runs still active on unchanged checkpoint",
+            },
             "verify_pypi": {"run_id": 1, "status": "queued", "conclusion": "", "queued_hours": 1.5},
             "forward_commits": {"run_id": 2, "status": "queued", "conclusion": "", "queued_hours": 1.0},
         }
         with patch.object(mod, "_ci_status", return_value=deferred_status):
             with patch.object(mod, "_refine_lfg_checkpoint"):
-                with patch.object(mod.time, "sleep"):
-                    with patch.object(mod.time, "monotonic", side_effect=[0.0, 0.0, 100.0]):
-                        status = mod._watch_lfg_preflight_defer(
-                            targets=["solution"],
-                            prefetch_git=False,
-                            interval_sec=0.0,
-                            timeout_sec=5.0,
-                        )
+                with patch.object(mod, "_defer_preflight_watch_recommended", return_value=True):
+                    with patch.object(mod.time, "sleep"):
+                        with patch.object(mod.time, "monotonic", side_effect=[0.0, 0.0, 100.0]):
+                            status = mod._watch_lfg_preflight_defer(
+                                targets=["solution"],
+                                prefetch_git=False,
+                                interval_sec=0.0,
+                                timeout_sec=5.0,
+                            )
         summary = status.get("preflight_watch_summary") or {}
         self.assertEqual(summary.get("active_runs"), ["verify", "fc"])
         self.assertEqual(summary.get("gh_watch_summary"), "verify:1,fc:2")
@@ -3311,16 +3315,35 @@ last_verified: 2026-01-01
         self.assertNotIn("preflight watch poll", line)
 
     def test_format_preflight_watch_poll_line_gh_watch(self) -> None:
+        status: dict[str, Any] = {
+            "lfg_deferred": True,
+            "lfg_defer_reason": "unchanged_active_runs",
+            "checkpoint": {
+                "defer_lfg_pr": True,
+                "defer_reason": "same canonical runs still active on unchanged checkpoint",
+            },
+            "verify_pypi": {"run_id": 1, "status": "queued", "conclusion": "", "queued_hours": 1.5},
+            "forward_commits": {"run_id": 2, "status": "queued", "conclusion": "", "queued_hours": 1.0},
+        }
+        with patch.object(mod, "_defer_preflight_watch_recommended", return_value=True):
+            line = mod._format_preflight_watch_poll_line(1, status)
+        self.assertIn("gh_watch=verify:1,fc:2", line)
+        self.assertIn("active_runs=verify,fc", line)
+        self.assertIn("queued=1.5h", line)
+        self.assertIn("expected_after=closeout", line)
+        self.assertIn("primary_action=gate_watch", line)
+
+    def test_format_preflight_watch_poll_line_queue_warn(self) -> None:
         line = mod._format_preflight_watch_poll_line(
             1,
             {
                 "lfg_defer_reason": "unchanged_active_runs",
-                "verify_pypi": {"run_id": 1, "status": "queued", "conclusion": ""},
-                "forward_commits": {"run_id": 2, "status": "queued", "conclusion": ""},
+                "verify_pypi": {"run_id": 1, "status": "queued", "conclusion": "", "queued_hours": 2.5},
+                "forward_commits": {"run_id": 2, "status": "queued", "conclusion": "", "queued_hours": 1.0},
             },
         )
-        self.assertIn("gh_watch=verify:1,fc:2", line)
-        self.assertIn("active_runs=verify,fc", line)
+        self.assertIn("queued=2.5h", line)
+        self.assertIn("queue_warn=true", line)
 
     def test_format_preflight_watch_summary_line_includes_next_hint(self) -> None:
         line = mod._format_preflight_watch_summary_line(

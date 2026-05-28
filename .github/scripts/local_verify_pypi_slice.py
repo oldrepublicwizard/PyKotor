@@ -24,7 +24,7 @@ SOLUTION_CLOSEOUT = (
     REPO_ROOT / "docs" / "solutions" / "testing" / "verify-pypi-regression-closeout.md"
 )
 PLAN_020 = REPO_ROOT / "docs" / "plans" / "2026-05-24-020-verify-pypi-regression-post-268-plan.md"
-PLAN_TRACK_CAP = "132"
+PLAN_TRACK_CAP = "133"
 LFG_EXIT_CODES: dict[int, str] = {
     0: "proceed, merge_ready, or monitoring_complete",
     1: "gh_error",
@@ -1702,6 +1702,25 @@ def _format_preflight_watch_poll_line(
     gh_watch = _build_gh_watch_from_status(status)
     if gh_watch:
         parts.append(f"gh_watch={gh_watch}")
+    queue_context = _build_defer_queue_context(status)
+    max_queued = queue_context.get("max_queued_hours")
+    if isinstance(max_queued, (int, float)):
+        parts.append(f"queued={float(max_queued):.1f}h")
+    if queue_context.get("queue_backlog_severe"):
+        parts.append("queue_backlog=true")
+    elif queue_context.get("queue_backlog_warning"):
+        parts.append("queue_warn=true")
+    if status.get("lfg_deferred"):
+        _apply_lfg_agent_briefing(status)
+        briefing = status.get("lfg_agent_briefing") or {}
+        primary_action = briefing.get("primary_action")
+        if isinstance(primary_action, str) and primary_action:
+            parts.append(f"primary_action={primary_action}")
+        expected_after = briefing.get("expected_after_terminal")
+        if isinstance(expected_after, dict):
+            after_action = expected_after.get("action")
+            if isinstance(after_action, str) and after_action:
+                parts.append(f"expected_after={after_action}")
     return " ".join(parts)
 
 
