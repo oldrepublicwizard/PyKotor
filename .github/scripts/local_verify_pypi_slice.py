@@ -24,7 +24,7 @@ SOLUTION_CLOSEOUT = (
     REPO_ROOT / "docs" / "solutions" / "testing" / "verify-pypi-regression-closeout.md"
 )
 PLAN_020 = REPO_ROOT / "docs" / "plans" / "2026-05-24-020-verify-pypi-regression-post-268-plan.md"
-PLAN_TRACK_CAP = "156"
+PLAN_TRACK_CAP = "157"
 LFG_EXIT_CODES: dict[int, str] = {
     0: "proceed, merge_ready, or monitoring_complete",
     1: "gh_error",
@@ -1697,6 +1697,7 @@ def _format_preflight_watch_poll_line(
         )
         if isinstance(master_sha, str) and isinstance(fc_head, str):
             parts.append(f"sha_gap={fc_head[:7]}:{master_sha[:7]}")
+    emit_briefing_status = bool(status.get("lfg_deferred"))
     for key, label in (("forward_commits", "fc"), ("verify_pypi", "verify")):
         run = status.get(key)
         if not isinstance(run, dict) or "error" in run:
@@ -1704,7 +1705,8 @@ def _format_preflight_watch_poll_line(
         run_id = run.get("run_id")
         if run_id is not None:
             parts.append(f"{label}={run_id}")
-        parts.append(f"{label}_status={_run_display_label(run)}")
+        if not emit_briefing_status:
+            parts.append(f"{label}_status={_run_display_label(run)}")
         queued = run.get("queued_hours")
         if isinstance(queued, (int, float)):
             parts.append(f"{label}_queued={queued:.1f}h")
@@ -1770,6 +1772,12 @@ def _format_preflight_watch_poll_line(
         fc_run_id = status.get("fc_run_id")
         if fc_run_id is not None:
             parts.append(f"fc_run={fc_run_id}")
+        verify_status = status.get("verify_status")
+        if isinstance(verify_status, str) and verify_status:
+            parts.append(f"verify_status={verify_status}")
+        fc_status = status.get("fc_status")
+        if isinstance(fc_status, str) and fc_status:
+            parts.append(f"fc_status={fc_status}")
     return " ".join(parts)
 
 
