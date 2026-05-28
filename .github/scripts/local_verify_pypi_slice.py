@@ -24,7 +24,7 @@ SOLUTION_CLOSEOUT = (
     REPO_ROOT / "docs" / "solutions" / "testing" / "verify-pypi-regression-closeout.md"
 )
 PLAN_020 = REPO_ROOT / "docs" / "plans" / "2026-05-24-020-verify-pypi-regression-post-268-plan.md"
-PLAN_TRACK_CAP = "140"
+PLAN_TRACK_CAP = "141"
 LFG_EXIT_CODES: dict[int, str] = {
     0: "proceed, merge_ready, or monitoring_complete",
     1: "gh_error",
@@ -1882,6 +1882,7 @@ def _watch_lfg_preflight_defer(
     queue_context = _build_defer_queue_context(status)
     if queue_context.get("max_queued_hours") is not None or queue_context.get("queue_backlog"):
         summary["queue_context"] = queue_context
+    _mirror_queue_context_fields(summary, summary.get("queue_context") if isinstance(summary.get("queue_context"), dict) else None)
     if status.get("lfg_deferred"):
         _apply_lfg_agent_briefing(status)
         briefing = status.get("lfg_agent_briefing") or {}
@@ -2468,6 +2469,27 @@ def _build_defer_queue_context(status: dict[str, Any]) -> dict[str, Any]:
     return context
 
 
+def _mirror_queue_context_fields(
+    target: dict[str, Any],
+    queue_context: dict[str, Any] | None,
+) -> None:
+    keys = (
+        "queue_backlog",
+        "queue_backlog_severe",
+        "queue_backlog_warning",
+        "max_queued_hours",
+    )
+    if not isinstance(queue_context, dict) or not queue_context:
+        for key in keys:
+            target.pop(key, None)
+        return
+    for key in keys:
+        if key in queue_context:
+            target[key] = queue_context[key]
+        else:
+            target.pop(key, None)
+
+
 def _build_defer_post_terminal_commands(status: dict[str, Any]) -> dict[str, str]:
     script = "python3 .github/scripts/local_verify_pypi_slice.py"
     commands: dict[str, str] = {
@@ -2716,6 +2738,7 @@ def _apply_lfg_agent_briefing(status: dict[str, Any]) -> None:
             status["queue_context"] = queue_context
         else:
             status.pop("queue_context", None)
+        _mirror_queue_context_fields(status, queue_context if isinstance(queue_context, dict) else None)
         expected_after = briefing.get("expected_after_terminal")
         if isinstance(expected_after, dict) and expected_after:
             status["expected_after_terminal"] = expected_after
@@ -2768,6 +2791,10 @@ def _apply_lfg_agent_briefing(status: dict[str, Any]) -> None:
         status.pop("gh_watch_summary", None)
         status.pop("active_runs", None)
         status.pop("queue_context", None)
+        status.pop("queue_backlog", None)
+        status.pop("queue_backlog_severe", None)
+        status.pop("queue_backlog_warning", None)
+        status.pop("max_queued_hours", None)
         status.pop("expected_after_terminal", None)
         status.pop("primary_action", None)
         status.pop("watch_recommended", None)

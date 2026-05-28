@@ -496,7 +496,7 @@ Monitoring.
         self.assertTrue(changes["forward_commits_row"])
         self.assertTrue(changes["plans_index"])
         self.assertIn("https://example.com/10", patched)
-        self.assertIn("019–140", patched)
+        self.assertIn("019–141", patched)
 
     def test_dedupe_preserve_order(self) -> None:
         self.assertEqual(
@@ -1102,7 +1102,7 @@ Monitoring.
             "lfg_deferred": True,
             "lfg_defer_reason": "unchanged_active_runs",
             "checkpoint": {"defer_lfg_pr": True},
-            "verify_pypi": {"run_id": 1, "status": "queued", "conclusion": "", "queued_hours": 0.5, "url": "https://example.com/runs/1"},
+            "verify_pypi": {"run_id": 1, "status": "queued", "conclusion": "", "queued_hours": 2.5, "url": "https://example.com/runs/1"},
             "forward_commits": {"run_id": 2, "status": "queued", "conclusion": "", "queued_hours": 0.3, "url": "https://example.com/runs/2"},
         }
         with patch.object(mod, "_defer_preflight_watch_recommended", return_value=True):
@@ -1113,6 +1113,9 @@ Monitoring.
         self.assertEqual(status.get("active_runs"), ["verify", "fc"])
         queue_context = status.get("queue_context") or {}
         self.assertIn("max_queued_hours", queue_context)
+        self.assertTrue(status.get("queue_backlog_warning"))
+        self.assertFalse(status.get("queue_backlog"))
+        self.assertEqual(status.get("max_queued_hours"), queue_context.get("max_queued_hours"))
         expected_after = status.get("expected_after_terminal") or {}
         self.assertEqual(expected_after.get("action"), "closeout")
         self.assertEqual(status.get("primary_action"), "gate_watch")
@@ -1550,6 +1553,8 @@ Monitoring.
         self.assertEqual(summary.get("verify_status"), "queued")
         self.assertEqual(summary.get("fc_status"), "queued")
         self.assertEqual(summary.get("blocked"), "deferred")
+        self.assertTrue(summary.get("queue_backlog_warning"))
+        self.assertEqual(summary.get("max_queued_hours"), 1.5)
 
     def test_build_drift_expected_after_prefers_closeout(self) -> None:
         expected = mod._build_drift_expected_after(
