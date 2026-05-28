@@ -24,7 +24,7 @@ SOLUTION_CLOSEOUT = (
     REPO_ROOT / "docs" / "solutions" / "testing" / "verify-pypi-regression-closeout.md"
 )
 PLAN_020 = REPO_ROOT / "docs" / "plans" / "2026-05-24-020-verify-pypi-regression-post-268-plan.md"
-PLAN_TRACK_CAP = "172"
+PLAN_TRACK_CAP = "173"
 LFG_EXIT_CODES: dict[int, str] = {
     0: "proceed, merge_ready, or monitoring_complete",
     1: "gh_error",
@@ -1679,7 +1679,11 @@ def _watch_label_display(watch_label: str) -> str:
 
 def _lfg_briefing_fallback(status: dict[str, Any]) -> dict[str, Any]:
     briefing = status.get("lfg_agent_briefing")
-    return briefing if isinstance(briefing, dict) else {}
+    if isinstance(briefing, dict):
+        return briefing
+    if isinstance(status.get("action"), str):
+        return status
+    return {}
 
 
 def _lfg_briefing_mirror_stderr_parts(status: dict[str, Any]) -> list[str]:
@@ -3098,105 +3102,45 @@ def _apply_lfg_agent_briefing(status: dict[str, Any]) -> None:
         status.pop("gh_watch_command", None)
 
 
-def _emit_lfg_agent_briefing_stderr(briefing: dict[str, Any]) -> None:
-    action = briefing.get("action") or "unknown"
+def _lfg_briefing_drift_field_names(briefing: dict[str, Any]) -> list[str]:
+    drift = briefing.get("drift")
+    if not isinstance(drift, dict):
+        return []
+    fields = drift.get("fields") or []
+    return [
+        str(entry.get("field"))
+        for entry in fields
+        if isinstance(entry, dict) and entry.get("field")
+    ]
+
+
+def _emit_lfg_agent_briefing_stderr(status: dict[str, Any]) -> None:
+    briefing = _lfg_briefing_fallback(status)
+    action = status.get("briefing_action") or briefing.get("action") or "unknown"
     parts = [f"action={action}"]
-    if action == "defer" and briefing.get("reason"):
-        parts.append(f"reason={briefing['reason']}")
-    if action == "defer" and briefing.get("watch_recommended"):
-        parts.append("watch_recommended=true")
-        if briefing.get("primary_action"):
-            parts.append(f"primary_action={briefing['primary_action']}")
     if action == "defer":
-        queue_context = briefing.get("queue_context")
-        if isinstance(queue_context, dict):
-            max_queued = queue_context.get("max_queued_hours")
-            if isinstance(max_queued, (int, float)):
-                parts.append(f"queued={float(max_queued):.1f}h")
-            if queue_context.get("queue_backlog_severe"):
-                parts.append("queue_backlog=true")
-            elif queue_context.get("queue_backlog_warning"):
-                parts.append("queue_warn=true")
-        expected_after = briefing.get("expected_after_terminal")
-        if isinstance(expected_after, dict):
-            after_action = expected_after.get("action")
-            if isinstance(after_action, str) and after_action:
-                parts.append(f"expected_after={after_action}")
-        sha_gap = briefing.get("sha_gap")
-        if isinstance(sha_gap, dict):
-            short = sha_gap.get("short")
-            if isinstance(short, str) and short:
-                parts.append(f"sha_gap={short}")
-        active_runs = briefing.get("active_runs")
-        if isinstance(active_runs, list) and active_runs:
-            parts.append(f"active_runs={','.join(str(label) for label in active_runs)}")
-    if briefing.get("action") == "investigate_ci_drift" and briefing.get("wait_recommended"):
+        reason = (
+            status.get("briefing_reason")
+            or status.get("lfg_defer_reason")
+            or briefing.get("reason")
+        )
+        if isinstance(reason, str) and reason:
+            parts.append(f"reason={reason}")
+    wait_recommended = status.get("wait_recommended")
+    if wait_recommended is None:
+        wait_recommended = briefing.get("wait_recommended")
+    if action == "investigate_ci_drift" and wait_recommended:
         parts.append("wait=true")
-        if briefing.get("primary_action"):
-            parts.append(f"primary_action={briefing['primary_action']}")
-        queue_context = briefing.get("queue_context")
-        if isinstance(queue_context, dict):
-            max_queued = queue_context.get("max_queued_hours")
-            if isinstance(max_queued, (int, float)):
-                parts.append(f"queued={float(max_queued):.1f}h")
-            if queue_context.get("queue_backlog_severe"):
-                parts.append("queue_backlog=true")
-            elif queue_context.get("queue_backlog_warning"):
-                parts.append("queue_warn=true")
-        expected_after = briefing.get("expected_after_terminal")
-        if isinstance(expected_after, dict):
-            after_action = expected_after.get("action")
-            if isinstance(after_action, str) and after_action:
-                parts.append(f"expected_after={after_action}")
-        drift = briefing.get("drift")
-        if isinstance(drift, dict):
-            fields = drift.get("fields") or []
-            field_names = [
-                str(entry.get("field"))
-                for entry in fields
-                if isinstance(entry, dict) and entry.get("field")
-            ]
-            if field_names:
-                parts.append(f"drift_fields={','.join(field_names)}")
-        active_runs = briefing.get("active_runs")
-        if isinstance(active_runs, list) and active_runs:
-            parts.append(f"active_runs={','.join(str(label) for label in active_runs)}")
-    elif briefing.get("action") == "investigate_ci_drift":
-        expected_after = briefing.get("expected_after_terminal")
-        if isinstance(expected_after, dict):
-            after_action = expected_after.get("action")
-            if isinstance(after_action, str) and after_action:
-                parts.append(f"expected_after={after_action}")
-        drift = briefing.get("drift")
-        if isinstance(drift, dict):
-            fields = drift.get("fields") or []
-            field_names = [
-                str(entry.get("field"))
-                for entry in fields
-                if isinstance(entry, dict) and entry.get("field")
-            ]
-            if field_names:
-                parts.append(f"drift_fields={','.join(field_names)}")
+    drift_fields = _lfg_briefing_drift_field_names(briefing)
+    if drift_fields:
+        parts.append(f"drift_fields={','.join(drift_fields)}")
+    skip_prefixes = {"action=", "briefing_reason="}
+    for part in _lfg_briefing_mirror_stderr_parts(status):
+        if any(part.startswith(prefix) for prefix in skip_prefixes):
+            continue
+        parts.append(part)
     if "exit_code" in briefing:
         parts.append(f"exit={briefing['exit_code']}")
-    if briefing.get("blocked"):
-        parts.append(f"blocked={briefing['blocked']}")
-    fc_run_id = briefing.get("fc_run_id")
-    if fc_run_id is not None:
-        parts.append(f"fc_run={fc_run_id}")
-    verify_run_id = briefing.get("verify_run_id")
-    if verify_run_id is not None:
-        parts.append(f"verify_run={verify_run_id}")
-    monitor_commands = briefing.get("monitor_commands")
-    if isinstance(monitor_commands, dict):
-        gh_watch = _format_gh_watch_summary(briefing)
-        if gh_watch:
-            parts.append(f"gh_watch={gh_watch}")
-        watch_cmd = monitor_commands.get("watch_fc_run") or monitor_commands.get(
-            "watch_verify_run"
-        )
-        if isinstance(watch_cmd, str) and watch_cmd:
-            parts.append(f"watch={watch_cmd}")
     percent = briefing.get("completion_percent")
     if isinstance(percent, int):
         parts.append(f"complete={percent}%")
@@ -4169,7 +4113,7 @@ def main() -> None:
                         briefing,
                         2,
                     ):
-                        _emit_lfg_agent_briefing_stderr(briefing)
+                        _emit_lfg_agent_briefing_stderr(status)
                     _print_ci_status(status, as_json=args.json)
                     if not status["gh_ok"]:
                         sys.exit(1)
@@ -4318,7 +4262,7 @@ def main() -> None:
                 briefing,
                 exit_code,
             ):
-                _emit_lfg_agent_briefing_stderr(briefing)
+                _emit_lfg_agent_briefing_stderr(status)
             _print_ci_status(status, as_json=args.json)
         if not status["gh_ok"]:
             sys.exit(1)

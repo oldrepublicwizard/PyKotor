@@ -496,7 +496,7 @@ Monitoring.
         self.assertTrue(changes["forward_commits_row"])
         self.assertTrue(changes["plans_index"])
         self.assertIn("https://example.com/10", patched)
-        self.assertIn("019–172", patched)
+        self.assertIn("019–173", patched)
 
     def test_dedupe_preserve_order(self) -> None:
         self.assertEqual(
@@ -1549,6 +1549,27 @@ Monitoring.
         self.assertIn("verify_run=26549547772", output)
         self.assertIn("fc_run=26549293445", output)
         self.assertIn("gh_watch=verify:26549547772,fc:26549293445", output)
+
+    def test_emit_lfg_agent_briefing_stderr_prefers_top_level_status(self) -> None:
+        with patch.object(mod.sys, "stderr", new_callable=io.StringIO) as err:
+            mod._emit_lfg_agent_briefing_stderr(
+                {
+                    "verify_run_id": 999,
+                    "fc_run_id": 1000,
+                    "gh_watch_summary": "verify:999,fc:1000",
+                    "lfg_agent_briefing": {
+                        "action": "defer",
+                        "reason": "unchanged_active_runs",
+                        "verify_run_id": 1,
+                        "fc_run_id": 2,
+                    },
+                }
+            )
+        output = err.getvalue()
+        self.assertIn("verify_run=999", output)
+        self.assertIn("fc_run=1000", output)
+        self.assertIn("gh_watch=verify:999,fc:1000", output)
+        self.assertIn("reason=unchanged_active_runs", output)
 
     def test_format_gh_watch_summary_fc_only(self) -> None:
         summary = mod._format_gh_watch_summary(
