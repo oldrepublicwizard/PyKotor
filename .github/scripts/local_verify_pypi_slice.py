@@ -24,7 +24,7 @@ SOLUTION_CLOSEOUT = (
     REPO_ROOT / "docs" / "solutions" / "testing" / "verify-pypi-regression-closeout.md"
 )
 PLAN_020 = REPO_ROOT / "docs" / "plans" / "2026-05-24-020-verify-pypi-regression-post-268-plan.md"
-PLAN_TRACK_CAP = "116"
+PLAN_TRACK_CAP = "117"
 LFG_EXIT_CODES: dict[int, str] = {
     0: "proceed, merge_ready, or monitoring_complete",
     1: "gh_error",
@@ -2172,16 +2172,33 @@ def _defer_preflight_watch_recommended(status: dict[str, Any]) -> bool:
     }
 
 
+def _build_defer_sha_gap_detail(status: dict[str, Any]) -> dict[str, Any] | None:
+    checkpoint = status.get("checkpoint")
+    if not isinstance(checkpoint, dict):
+        return None
+    if not checkpoint.get("fc_sha_stale") and not checkpoint.get("fc_stale_gap_pending_note"):
+        return None
+    forward_commits = status.get("forward_commits")
+    fc = forward_commits if isinstance(forward_commits, dict) else {}
+    master_sha = checkpoint.get("master_sha")
+    fc_head_sha = fc.get("head_sha")
+    detail: dict[str, Any] = {
+        "fc_sha_stale": bool(checkpoint.get("fc_sha_stale")),
+        "master_sha": master_sha,
+        "fc_head_sha": fc_head_sha,
+    }
+    queued_hours = fc.get("queued_hours")
+    if isinstance(queued_hours, (int, float)):
+        detail["queued_hours"] = round(float(queued_hours), 2)
+    if isinstance(master_sha, str) and isinstance(fc_head_sha, str):
+        detail["short"] = f"{fc_head_sha[:7]}:{master_sha[:7]}"
+    return detail
+
+
 def _build_defer_monitor_commands(briefing: dict[str, Any]) -> dict[str, str]:
     script = "python3 .github/scripts/local_verify_pypi_slice.py"
-    command = briefing.get("command")
-    preflight_retry = (
-        str(command)
-        if isinstance(command, str) and command
-        else f"{script} --lfg-preflight --json"
-    )
     commands: dict[str, str] = {
-        "preflight_retry": preflight_retry,
+        "preflight_retry": f"{script} --lfg-preflight --json",
         "preflight_watch": f"{script} --lfg-preflight-watch --json",
     }
     fc_run_id = briefing.get("fc_run_id")
@@ -2286,6 +2303,9 @@ def _build_lfg_agent_briefing(status: dict[str, Any]) -> dict[str, Any]:
         }
         _attach_active_run_refs(status, briefing)
         briefing["monitor_commands"] = _build_defer_monitor_commands(briefing)
+        sha_gap = _build_defer_sha_gap_detail(status)
+        if sha_gap is not None:
+            briefing["sha_gap"] = sha_gap
         if _defer_preflight_watch_recommended(status):
             briefing["watch_recommended"] = True
             briefing["command"] = briefing["monitor_commands"]["preflight_watch"]
@@ -2340,6 +2360,12 @@ def _emit_lfg_agent_briefing_stderr(briefing: dict[str, Any]) -> None:
         parts.append(f"reason={briefing['reason']}")
     if action == "defer" and briefing.get("watch_recommended"):
         parts.append("watch_recommended=true")
+    if action == "defer":
+        sha_gap = briefing.get("sha_gap")
+        if isinstance(sha_gap, dict):
+            short = sha_gap.get("short")
+            if isinstance(short, str) and short:
+                parts.append(f"sha_gap={short}")
     if action == "investigate_ci_drift" and briefing.get("wait_recommended"):
         parts.append("wait=true")
         drift = briefing.get("drift")

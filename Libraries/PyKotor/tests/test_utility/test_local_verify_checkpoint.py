@@ -496,7 +496,7 @@ Monitoring.
         self.assertTrue(changes["forward_commits_row"])
         self.assertTrue(changes["plans_index"])
         self.assertIn("https://example.com/10", patched)
-        self.assertIn("019–116", patched)
+        self.assertIn("019–117", patched)
 
     def test_dedupe_preserve_order(self) -> None:
         self.assertEqual(
@@ -2507,8 +2507,56 @@ last_verified: 2026-01-01
         )
         self.assertIn("preflight_watch", monitor)
         self.assertIn("--lfg-preflight-watch", monitor["preflight_watch"])
+        self.assertIn("--lfg-preflight --json", monitor["preflight_retry"])
+        self.assertNotIn("preflight-watch", monitor["preflight_retry"])
         self.assertTrue(briefing["watch_recommended"])
         self.assertIn("--lfg-preflight-watch", briefing["command"])
+        sha_gap = briefing["sha_gap"]
+        self.assertEqual(sha_gap["fc_head_sha"], None)
+        self.assertFalse(sha_gap["fc_sha_stale"])
+
+    def test_build_defer_sha_gap_detail_fc_active(self) -> None:
+        detail = mod._build_defer_sha_gap_detail(
+            {
+                "checkpoint": {
+                    "fc_sha_stale": True,
+                    "master_sha": "8916e2ffe1b57169693b2c9d9ea2b63eeb7fed8f",
+                    "fc_stale_gap_pending_note": "FC queued on 7d85438 vs master 8916e2f",
+                },
+                "forward_commits": {
+                    "head_sha": "7d85438b090178c8c8924abc46565f7c6ded19",
+                    "queued_hours": 0.12,
+                },
+            }
+        )
+        self.assertIsNotNone(detail)
+        assert detail is not None
+        self.assertEqual(detail["short"], "7d85438:8916e2f")
+        self.assertEqual(detail["queued_hours"], 0.12)
+
+    def test_build_lfg_agent_briefing_defer_fc_active_sha_gap(self) -> None:
+        briefing = mod._build_lfg_agent_briefing(
+            {
+                "lfg_deferred": True,
+                "lfg_defer_reason": "fc_active_pending",
+                "proceed_hint": "python3 .github/scripts/local_verify_pypi_slice.py --lfg-preflight-watch --json",
+                "checkpoint": {
+                    "fc_sha_stale": True,
+                    "master_sha": "8916e2ffe1b57169693b2c9d9ea2b63eeb7fed8f",
+                    "fc_stale_gap_pending_note": "FC queued on 7d85438 vs master 8916e2f",
+                },
+                "forward_commits": {
+                    "run_id": 26547475742,
+                    "status": "queued",
+                    "conclusion": "",
+                    "head_sha": "7d85438b090178c8c8924abc46565f7c6ded19",
+                    "url": "https://example.com/runs/26547475742",
+                    "queued_hours": 0.1,
+                },
+            }
+        )
+        self.assertIn("sha_gap", briefing)
+        self.assertEqual(briefing["sha_gap"]["short"], "7d85438:8916e2f")
 
     def test_build_defer_monitor_commands_verify_active(self) -> None:
         commands = mod._build_defer_monitor_commands(
@@ -2531,6 +2579,7 @@ last_verified: 2026-01-01
                     "blocked": "deferred",
                     "watch_recommended": True,
                     "fc_run_id": 26546235822,
+                    "sha_gap": {"short": "7d85438:8916e2f"},
                     "monitor_commands": {
                         "watch_fc_run": "gh run watch 26546235822 --exit-status",
                     },
@@ -2539,6 +2588,7 @@ last_verified: 2026-01-01
         output = err.getvalue()
         self.assertIn("reason=fc_active_pending", output)
         self.assertIn("watch_recommended=true", output)
+        self.assertIn("sha_gap=7d85438:8916e2f", output)
         self.assertIn("fc_run=26546235822", output)
         self.assertIn("watch=gh run watch 26546235822 --exit-status", output)
 
