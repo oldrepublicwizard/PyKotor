@@ -24,7 +24,7 @@ SOLUTION_CLOSEOUT = (
     REPO_ROOT / "docs" / "solutions" / "testing" / "verify-pypi-regression-closeout.md"
 )
 PLAN_020 = REPO_ROOT / "docs" / "plans" / "2026-05-24-020-verify-pypi-regression-post-268-plan.md"
-PLAN_TRACK_CAP = "110"
+PLAN_TRACK_CAP = "111"
 LFG_EXIT_CODES: dict[int, str] = {
     0: "proceed, merge_ready, or monitoring_complete",
     1: "gh_error",
@@ -538,18 +538,46 @@ def _compare_checkpoint(status: dict[str, Any]) -> dict[str, Any]:
         )
         return result
 
-    if not runs_active:
+    verify_terminal = not verify_active
+    fc_terminal = not fc_active
+
+    if verify_terminal and fc_terminal:
         result.update(
             {
                 "checkpoint_unchanged": False,
                 "defer_lfg_pr": False,
-                "defer_reason": "verify or FC run reached terminal status",
+                "defer_reason": "verify and FC runs reached terminal status",
                 "recommended_action": "Record conclusions in plan 020 and solution doc Last CI check",
                 "doc_update_recommended": True,
                 "proceed_reason": "update_monitoring_docs",
             }
         )
         return result
+
+    defer_reason = "same canonical runs still active on unchanged checkpoint"
+    if fc_active and verify_terminal:
+        defer_reason = "FC run still active; defer doc closeout until terminal"
+        fc_status = _run_display_label(forward_commits)
+        queued_hours = forward_commits.get("queued_hours")
+        queue_suffix = ""
+        if isinstance(queued_hours, (int, float)):
+            queue_suffix = f"; queued {queued_hours:.1f}h"
+        closeout_note = f"FC {fc_status} still active{queue_suffix}"
+        if fc_sha_stale and fc_sha_stale_benign is True:
+            closeout_note = (
+                f"{closeout_note}; docs-only SHA gap (benign, await FC terminal)"
+            )
+        result["fc_active_closeout_note"] = closeout_note
+    elif verify_active and fc_terminal:
+        defer_reason = "verify run still active; defer doc closeout until terminal"
+        verify_status = _run_display_label(verify)
+        queued_hours = verify.get("queued_hours")
+        queue_suffix = ""
+        if isinstance(queued_hours, (int, float)):
+            queue_suffix = f"; queued {queued_hours:.1f}h"
+        result["verify_active_closeout_note"] = (
+            f"verify {verify_status} still active{queue_suffix}"
+        )
 
     backlog_notes: list[str] = []
     for label, run in (("verify", verify), ("FC", forward_commits)):
@@ -563,10 +591,10 @@ def _compare_checkpoint(status: dict[str, Any]) -> dict[str, Any]:
         {
             "checkpoint_unchanged": True,
             "defer_lfg_pr": True,
-            "defer_reason": "same canonical runs still active on unchanged checkpoint",
+            "defer_reason": defer_reason,
         }
     )
-    if fc_sha_stale:
+    if fc_sha_stale and runs_active:
         if fc_sha_stale_benign:
             result["fc_sha_stale_note"] = (
                 "FC run SHA behind master but intervening commits are docs-only; "
@@ -1961,7 +1989,7 @@ def _emit_lfg_strict_exit_stderr(status: dict[str, Any], exit_code: int) -> None
 def _build_lfg_agent_briefing(status: dict[str, Any]) -> dict[str, Any]:
     proceed_hint = str(status.get("proceed_hint") or "")
     script = "python3 .github/scripts/local_verify_pypi_slice.py"
-    if not status.get("gh_ok"):
+    if status.get("gh_ok") is False:
         gh_lookup = status.get("gh_lookup") or {}
         notes: list[str] = []
         note = gh_lookup.get("note")
@@ -2030,7 +2058,13 @@ def _build_lfg_agent_briefing(status: dict[str, Any]) -> dict[str, Any]:
     checkpoint = status.get("checkpoint") or {}
     extra_notes: list[str] = []
     if isinstance(checkpoint, dict):
-        for key in ("ci_drift_note", "fc_stale_gap_note", "fc_stale_gap_pending_note"):
+        for key in (
+            "ci_drift_note",
+            "fc_stale_gap_note",
+            "fc_stale_gap_pending_note",
+            "fc_active_closeout_note",
+            "verify_active_closeout_note",
+        ):
             note = checkpoint.get(key)
             if isinstance(note, str) and note:
                 extra_notes.append(note)
@@ -2177,8 +2211,12 @@ def _resolve_lfg_defer_reason(checkpoint: dict[str, Any] | None) -> str | None:
     if not isinstance(checkpoint, dict) or not checkpoint.get("defer_lfg_pr"):
         return None
     defer_reason = str(checkpoint.get("defer_reason") or "")
-    if defer_reason.startswith("FC run still active"):
+    if defer_reason.startswith("FC run still active; classify SHA gap"):
         return "fc_active_pending"
+    if defer_reason == "FC run still active; defer doc closeout until terminal":
+        return "fc_active_closeout"
+    if defer_reason == "verify run still active; defer doc closeout until terminal":
+        return "verify_active_closeout"
     if defer_reason == "same canonical runs still active on unchanged checkpoint":
         return "unchanged_active_runs"
     return "deferred"
@@ -2478,7 +2516,7 @@ def _maybe_sync_docs_after_dispatch(
 
 
 def _lfg_refresh_blocked(status: dict[str, Any], *, deferred: bool) -> str | None:
-    if not status.get("gh_ok"):
+    if status.get("gh_ok") is False:
         return "gh_unavailable"
     checkpoint = status.get("checkpoint")
     if deferred or (isinstance(checkpoint, dict) and checkpoint.get("defer_lfg_pr")):
@@ -2508,12 +2546,14 @@ def _build_proceed_hint(status: dict[str, Any], *, blocked: str | None) -> str:
     script = "python3 .github/scripts/local_verify_pypi_slice.py"
     if blocked == "deferred":
         defer_reason = _resolve_lfg_defer_reason(status.get("checkpoint"))
-        if defer_reason == "fc_active_pending":
+        if defer_reason in {"fc_active_pending", "fc_active_closeout"}:
             return f"{script} --lfg-preflight  # re-check when FC run reaches terminal"
+        if defer_reason == "verify_active_closeout":
+            return f"{script} --lfg-preflight  # re-check when verify run reaches terminal"
         return f"{script} --lfg-gate"
     if blocked == "classify_fc_stale_gap":
         return f"{script} --prefetch-git --lfg-gate"
-    if blocked in {"fix_gh_lookup", "gh_unavailable"} or not status.get("gh_ok"):
+    if blocked in {"fix_gh_lookup", "gh_unavailable"} or status.get("gh_ok") is False:
         gh_lookup = status.get("gh_lookup") or {}
         if gh_lookup.get("primary_kind") == "rate_limited":
             return f"{script} --lfg-preflight  # retry when GitHub API rate limit resets"
@@ -3109,7 +3149,7 @@ def main() -> None:
                     deferred=deferred,
                 )
                 status["lfg_exit_codes"] = LFG_EXIT_CODES
-            elif not status.get("gh_ok"):
+            elif status.get("gh_ok") is False:
                 status["lfg_exit_code"] = 1
                 status["lfg_exit_reason"] = _compute_lfg_exit_reason(
                     status,

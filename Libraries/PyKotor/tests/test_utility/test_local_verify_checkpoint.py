@@ -386,7 +386,7 @@ Monitoring.
         self.assertIn("still active", result.get("defer_reason", ""))
         self.assertIn("fc_stale_gap_pending_note", result)
 
-    def test_compare_doc_update_recommended_when_terminal(self) -> None:
+    def test_compare_doc_update_recommended_when_both_terminal(self) -> None:
         status = {
             "verify_pypi": {
                 "run_id": 26372746392,
@@ -396,8 +396,8 @@ Monitoring.
             },
             "forward_commits": {
                 "run_id": 26365648344,
-                "status": "queued",
-                "conclusion": "",
+                "status": "completed",
+                "conclusion": "success",
                 "head_sha": _MASTER_SHA,
             },
         }
@@ -410,6 +410,55 @@ Monitoring.
                 result = mod._compare_checkpoint(status)
         self.assertTrue(result.get("doc_update_recommended"))
         self.assertEqual(result.get("proceed_reason"), "update_monitoring_docs")
+
+    def test_compare_defer_closeout_when_fc_active_verify_terminal_benign(self) -> None:
+        status = {
+            "verify_pypi": {
+                "run_id": 26372746392,
+                "status": "completed",
+                "conclusion": "success",
+                "head_sha": _MASTER_SHA,
+            },
+            "forward_commits": {
+                "run_id": 26543899770,
+                "status": "queued",
+                "conclusion": "",
+                "head_sha": _FC_SHA,
+                "queued_hours": 1.0,
+            },
+        }
+        with patch.object(mod, "_parse_solution_checkpoint_run_ids") as mock_parse:
+            mock_parse.return_value = {
+                "verify_run_id": 26372746392,
+                "forward_commits_run_id": 26543899770,
+            }
+            with patch.object(mod, "_git_origin_master_sha", return_value=_MASTER_SHA):
+                with patch.object(mod, "_commits_since_are_docs_only", return_value=True):
+                    result = mod._compare_checkpoint(status)
+        self.assertTrue(result.get("defer_lfg_pr"))
+        self.assertNotIn("proceed_reason", result)
+        self.assertIn("fc_active_closeout_note", result)
+        self.assertIn("queued 1.0h", result.get("fc_active_closeout_note", ""))
+
+    def test_resolve_lfg_defer_reason_fc_active_closeout(self) -> None:
+        checkpoint = {
+            "defer_lfg_pr": True,
+            "defer_reason": "FC run still active; defer doc closeout until terminal",
+        }
+        self.assertEqual(mod._resolve_lfg_defer_reason(checkpoint), "fc_active_closeout")
+
+    def test_build_proceed_hint_fc_active_closeout(self) -> None:
+        hint = mod._build_proceed_hint(
+            {
+                "checkpoint": {
+                    "defer_lfg_pr": True,
+                    "defer_reason": "FC run still active; defer doc closeout until terminal",
+                }
+            },
+            blocked="deferred",
+        )
+        self.assertIn("--lfg-preflight", hint)
+        self.assertIn("terminal", hint)
 
     def test_replace_frontmatter_field(self) -> None:
         doc = "---\ntitle: Test\nlast_verified: 2026-01-01\n---\n\nBody"
@@ -447,7 +496,7 @@ Monitoring.
         self.assertTrue(changes["forward_commits_row"])
         self.assertTrue(changes["plans_index"])
         self.assertIn("https://example.com/10", patched)
-        self.assertIn("019–110", patched)
+        self.assertIn("019–111", patched)
 
     def test_dedupe_preserve_order(self) -> None:
         self.assertEqual(
@@ -2203,7 +2252,7 @@ last_verified: 2026-01-01
         self.assertTrue(result["verify_sha_stale"])
         self.assertIn("workflow_dispatch", result.get("recommended_action", ""))
 
-    def test_compare_no_defer_when_verify_completed(self) -> None:
+    def test_compare_defer_when_fc_active_verify_completed_same_sha(self) -> None:
         status = {
             "verify_pypi": {
                 "run_id": 26365458400,
@@ -2225,7 +2274,8 @@ last_verified: 2026-01-01
             }
             with patch.object(mod, "_git_origin_master_sha", return_value="abc123"):
                 result = mod._compare_checkpoint(status)
-        self.assertFalse(result["defer_lfg_pr"])
+        self.assertTrue(result["defer_lfg_pr"])
+        self.assertIn("fc_active_closeout_note", result)
 
     def test_compare_no_defer_on_run_id_drift(self) -> None:
         status = {
