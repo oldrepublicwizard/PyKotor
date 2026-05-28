@@ -496,7 +496,39 @@ Monitoring.
         self.assertTrue(changes["forward_commits_row"])
         self.assertTrue(changes["plans_index"])
         self.assertIn("https://example.com/10", patched)
-        self.assertIn("019–175", patched)
+        self.assertIn("019–176", patched)
+
+    def test_mirror_lfg_flat_fields_from_briefing(self) -> None:
+        target: dict[str, Any] = {"existing": True}
+        briefing: dict[str, Any] = {
+            "action": "investigate_ci_drift",
+            "reason": "fc_active_pending",
+            "command": "python3 .github/scripts/local_verify_pypi_slice.py --lfg-gate-watch --json",
+            "active_runs": ["fc"],
+            "verify_run_id": 1,
+            "fc_run_id": 2,
+            "wait_recommended": True,
+            "drift": {"fields": [{"field": "forward_commits_run_id"}]},
+            "monitor_commands": {
+                "watch_fc_run": "gh run watch 2 --exit-status",
+            },
+        }
+        mod._mirror_lfg_flat_fields(briefing, target, clear_missing=True)
+        self.assertEqual(target.get("briefing_action"), "investigate_ci_drift")
+        self.assertEqual(target.get("briefing_reason"), "fc_active_pending")
+        self.assertIn("--lfg-gate-watch", target.get("briefing_command") or "")
+        self.assertEqual(target.get("active_runs"), ["fc"])
+        self.assertEqual(target.get("verify_run_id"), 1)
+        self.assertEqual(target.get("fc_run_id"), 2)
+        self.assertTrue(target.get("wait_recommended"))
+        self.assertEqual(
+            (target.get("ci_drift") or {}).get("fields"),
+            [{"field": "forward_commits_run_id"}],
+        )
+        self.assertEqual(
+            target.get("gh_watch_command"),
+            "gh run watch 2 --exit-status",
+        )
 
     def test_dedupe_preserve_order(self) -> None:
         self.assertEqual(
