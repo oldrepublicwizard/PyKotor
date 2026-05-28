@@ -496,7 +496,28 @@ Monitoring.
         self.assertTrue(changes["forward_commits_row"])
         self.assertTrue(changes["plans_index"])
         self.assertIn("https://example.com/10", patched)
-        self.assertIn("019–192", patched)
+        self.assertIn("019–193", patched)
+
+    def test_build_preflight_watch_summary_flat_hb_alias(self) -> None:
+        status: dict[str, Any] = {
+            "preflight_watch_history": [],
+            "lfg_preflight_watch_result": "timeout",
+            "preflight_flat_keys_heartbeats": 2,
+        }
+        summary = mod._build_preflight_watch_summary(status)
+        self.assertEqual(summary.get("flat_keys_heartbeat_polls"), 2)
+        self.assertEqual(summary.get("flat_hb"), 2)
+
+    def test_should_emit_preflight_flat_keys_heartbeat_summary_flat_hb(self) -> None:
+        self.assertTrue(
+            mod._should_emit_preflight_flat_keys_heartbeat_summary(
+                {
+                    "flat_hb": 1,
+                    "unchanged_flat_keys_polls": 12,
+                    "heartbeat_every": 12,
+                }
+            )
+        )
 
     def test_build_preflight_watch_summary_heartbeat_every_alias(self) -> None:
         status: dict[str, Any] = {
@@ -644,9 +665,10 @@ Monitoring.
             flat_keys_heartbeat_polls=12,
         )
         self.assertIn("flat_keys=", line)
-        self.assertIn("flat_keys_heartbeat=1", line)
+        self.assertIn("flat_hb=1", line)
         self.assertIn("heartbeat_every=12", line)
         self.assertNotIn("flat_unchanged=true", line)
+        self.assertNotIn("flat_keys_heartbeat=", line)
 
     def test_build_preflight_watch_summary_flat_keys_heartbeat_polls(self) -> None:
         status: dict[str, Any] = {

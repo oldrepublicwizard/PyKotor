@@ -24,7 +24,7 @@ SOLUTION_CLOSEOUT = (
     REPO_ROOT / "docs" / "solutions" / "testing" / "verify-pypi-regression-closeout.md"
 )
 PLAN_020 = REPO_ROOT / "docs" / "plans" / "2026-05-24-020-verify-pypi-regression-post-268-plan.md"
-PLAN_TRACK_CAP = "192"
+PLAN_TRACK_CAP = "193"
 LFG_EXIT_CODES: dict[int, str] = {
     0: "proceed, merge_ready, or monitoring_complete",
     1: "gh_error",
@@ -1985,7 +1985,7 @@ def _format_preflight_watch_poll_line(
             ]
             mirror_parts.append("flat_unchanged=true")
         elif flat_keys_unchanged and emit_flat_keys_heartbeat:
-            mirror_parts.append("flat_keys_heartbeat=1")
+            mirror_parts.append("flat_hb=1")
         if flat_keys_unchanged and flat_keys_heartbeat_polls > 0:
             mirror_parts.append(f"heartbeat_every={flat_keys_heartbeat_polls}")
         parts.extend(mirror_parts)
@@ -2016,7 +2016,20 @@ def _build_preflight_watch_summary(status: dict[str, Any]) -> dict[str, Any]:
     }
     if watch_heartbeat_polls > 0:
         summary["heartbeat_every"] = watch_heartbeat_polls
+    flat_keys_heartbeats = int(status.get("preflight_flat_keys_heartbeats") or 0)
+    if flat_keys_heartbeats > 0:
+        summary["flat_hb"] = flat_keys_heartbeats
     return summary
+
+
+def _preflight_flat_keys_heartbeat_count(summary: dict[str, Any]) -> int:
+    flat_hb = summary.get("flat_hb")
+    if isinstance(flat_hb, int) and flat_hb > 0:
+        return flat_hb
+    heartbeats = summary.get("flat_keys_heartbeat_polls")
+    if isinstance(heartbeats, int) and heartbeats > 0:
+        return heartbeats
+    return 0
 
 
 def _preflight_watch_heartbeat_interval(summary: dict[str, Any]) -> int:
@@ -2030,8 +2043,8 @@ def _preflight_watch_heartbeat_interval(summary: dict[str, Any]) -> int:
 
 
 def _should_emit_preflight_flat_keys_heartbeat_summary(summary: dict[str, Any]) -> bool:
-    heartbeats = summary.get("flat_keys_heartbeat_polls")
-    if not isinstance(heartbeats, int) or heartbeats <= 0:
+    heartbeats = _preflight_flat_keys_heartbeat_count(summary)
+    if heartbeats <= 0:
         return False
     unchanged = summary.get("unchanged_flat_keys_polls")
     if not isinstance(unchanged, int):
@@ -2061,8 +2074,8 @@ def _format_preflight_watch_summary_line(
         if isinstance(watch_heartbeat, int) and watch_heartbeat > 0:
             parts.append(f"heartbeat_every={watch_heartbeat}")
     if _should_emit_preflight_flat_keys_heartbeat_summary(summary):
-        heartbeats = summary.get("flat_keys_heartbeat_polls")
-        if isinstance(heartbeats, int):
+        heartbeats = _preflight_flat_keys_heartbeat_count(summary)
+        if heartbeats > 0:
             parts.append(f"flat_hb={heartbeats}")
     start_reason = summary.get("start_defer_reason")
     end_reason = summary.get("end_defer_reason")
