@@ -496,7 +496,42 @@ Monitoring.
         self.assertTrue(changes["forward_commits_row"])
         self.assertTrue(changes["plans_index"])
         self.assertIn("https://example.com/10", patched)
-        self.assertIn("019–176", patched)
+        self.assertIn("019–177", patched)
+
+    def test_lfg_flat_field_keys_constant(self) -> None:
+        self.assertIn("verify_run_id", mod.LFG_FLAT_FIELD_KEYS)
+        self.assertIn("wait_recommended", mod.LFG_FLAT_FIELD_KEYS)
+        self.assertIn("ci_drift", mod.LFG_FLAT_FIELD_KEYS)
+
+    def test_apply_lfg_agent_briefing_sets_flat_field_keys(self) -> None:
+        status: dict[str, Any] = {
+            "checkpoint": {"proceed_reason": "investigate_ci_drift"},
+            "doc_validation": {
+                "drift": [{"field": "forward_commits_run_id", "doc": 1, "live": 2}],
+            },
+            "verify_pypi": {
+                "run_id": 1,
+                "status": "completed",
+                "conclusion": "success",
+            },
+            "forward_commits": {
+                "run_id": 2,
+                "status": "queued",
+                "conclusion": "",
+            },
+        }
+        mod._apply_lfg_agent_briefing(status)
+        self.assertEqual(status.get("lfg_flat_field_keys"), list(mod.LFG_FLAT_FIELD_KEYS))
+
+    def test_mirror_preflight_watch_summary_flat_field_keys(self) -> None:
+        summary: dict[str, Any] = {"polls": 1}
+        status: dict[str, Any] = {
+            "lfg_flat_field_keys": list(mod.LFG_FLAT_FIELD_KEYS),
+            "primary_action": "gate_watch",
+        }
+        mod._mirror_preflight_watch_summary_from_status(status, summary)
+        self.assertEqual(summary.get("lfg_flat_field_keys"), list(mod.LFG_FLAT_FIELD_KEYS))
+        self.assertEqual(summary.get("primary_action"), "gate_watch")
 
     def test_mirror_lfg_flat_fields_from_briefing(self) -> None:
         target: dict[str, Any] = {"existing": True}

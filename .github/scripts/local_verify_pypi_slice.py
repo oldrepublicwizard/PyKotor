@@ -24,7 +24,7 @@ SOLUTION_CLOSEOUT = (
     REPO_ROOT / "docs" / "solutions" / "testing" / "verify-pypi-regression-closeout.md"
 )
 PLAN_020 = REPO_ROOT / "docs" / "plans" / "2026-05-24-020-verify-pypi-regression-post-268-plan.md"
-PLAN_TRACK_CAP = "176"
+PLAN_TRACK_CAP = "177"
 LFG_EXIT_CODES: dict[int, str] = {
     0: "proceed, merge_ready, or monitoring_complete",
     1: "gh_error",
@@ -36,6 +36,42 @@ LFG_EXIT_CODES: dict[int, str] = {
         "from pr_ci_recommendation"
     ),
 }
+_LFG_RUN_REF_FIELDS = (
+    "verify_run_id",
+    "fc_run_id",
+    "verify_run_url",
+    "fc_run_url",
+    "verify_status",
+    "fc_status",
+)
+LFG_FLAT_FIELD_KEYS: tuple[str, ...] = (
+    "active_runs",
+    "gh_watch_summary",
+    "queue_context",
+    "queue_backlog",
+    "queue_backlog_severe",
+    "queue_backlog_warning",
+    "max_queued_hours",
+    "queue_backlog_note",
+    "expected_after_terminal",
+    "primary_action",
+    "watch_recommended",
+    "post_terminal_commands",
+    "wait_command",
+    "briefing_command",
+    "monitor_commands",
+    *_LFG_RUN_REF_FIELDS,
+    "blocked",
+    "briefing_action",
+    "briefing_reason",
+    "briefing_notes",
+    "briefing_merge_ready",
+    "sha_gap",
+    "sha_gap_short",
+    "gh_watch_command",
+    "wait_recommended",
+    "ci_drift",
+)
 _AUTO_APPLY_PROCEED_REASONS = frozenset({"update_monitoring_docs", "investigate_ci_drift"})
 _DISPATCH_PROCEED_REASONS = frozenset({"refresh_verify_dispatch", "refresh_fc_dispatch"})
 VERIFY_WORKFLOW = "verify-pypi-regression.yml"
@@ -1975,16 +2011,6 @@ def _format_preflight_watch_summary_line(
     return " ".join(parts)
 
 
-_LFG_RUN_REF_FIELDS = (
-    "verify_run_id",
-    "fc_run_id",
-    "verify_run_url",
-    "fc_run_url",
-    "verify_status",
-    "fc_status",
-)
-
-
 def _mirror_lfg_flat_fields(
     source: dict[str, Any],
     target: dict[str, Any],
@@ -2150,6 +2176,9 @@ def _mirror_preflight_watch_summary_from_status(
         clear_missing=False,
         queue_context_filter=True,
     )
+    flat_keys = status.get("lfg_flat_field_keys")
+    if isinstance(flat_keys, list) and flat_keys:
+        summary["lfg_flat_field_keys"] = list(flat_keys)
 
 
 def _watch_lfg_preflight_defer(
@@ -3099,8 +3128,10 @@ def _apply_lfg_agent_briefing(status: dict[str, Any]) -> None:
         _attach_gh_watch_summary(briefing)
         status["lfg_agent_briefing"] = briefing
         _mirror_lfg_flat_fields(briefing, status, clear_missing=True)
+        status["lfg_flat_field_keys"] = list(LFG_FLAT_FIELD_KEYS)
     else:
         status.pop("lfg_agent_briefing", None)
+        status.pop("lfg_flat_field_keys", None)
         _mirror_lfg_flat_fields({}, status, clear_missing=True)
 
 

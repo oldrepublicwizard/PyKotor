@@ -139,6 +139,7 @@ Post–PR #268 CI hygiene and local parity for published PyPI packages.
 - Top-level gate JSON **`wait_recommended`** and **`ci_drift`** flattened from investigate-drift briefing; watch summary JSON mirrors both (plan 174).
 - Shared mirror stderr emits **`wait=true`** and **`drift_fields=`** from top-level status; briefing emit reuses helper (plan 175).
 - **`_mirror_lfg_flat_fields`** shared by apply and preflight watch summary JSON mirrors (plan 176).
+- Gate JSON includes **`lfg_flat_field_keys`** legend listing top-level flattened briefing fields (plan 177).
 - **`--lfg-preflight-watch`** — poll preflight until defer clears or timeout (default 7200s); `preflight_watch_summary` with `next_hint` (plan 114).
 - **`--lfg-gate-watch`** — gate + preflight-watch; defer **`post_terminal_commands`** for after FC terminal; primary wait command for defer/drift (plans 118–119).
 - **`investigate_ci_drift`** briefing includes structured **`drift`**, **`refresh_commands`**, and **`wait_recommended`** when runs are still active (plan 115).
@@ -222,7 +223,7 @@ python3 .github/scripts/local_verify_pypi_slice.py --json
 
 ## Plans index
 
-Plans **019–176** under `docs/plans/2026-05-24-*` document the closeout track; plan **020** is the authoritative verification table.
+Plans **019–177** under `docs/plans/2026-05-24-*` document the closeout track; plan **020** is the authoritative verification table.
 
 ## Last CI check (plan 123)
 
