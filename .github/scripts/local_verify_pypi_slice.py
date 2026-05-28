@@ -24,7 +24,7 @@ SOLUTION_CLOSEOUT = (
     REPO_ROOT / "docs" / "solutions" / "testing" / "verify-pypi-regression-closeout.md"
 )
 PLAN_020 = REPO_ROOT / "docs" / "plans" / "2026-05-24-020-verify-pypi-regression-post-268-plan.md"
-PLAN_TRACK_CAP = "159"
+PLAN_TRACK_CAP = "160"
 LFG_EXIT_CODES: dict[int, str] = {
     0: "proceed, merge_ready, or monitoring_complete",
     1: "gh_error",
@@ -1710,10 +1710,10 @@ def _format_preflight_watch_poll_line(
         queued = run.get("queued_hours")
         if isinstance(queued, (int, float)):
             parts.append(f"{label}_queued={queued:.1f}h")
-    active_runs = _build_active_runs_list(status)
-    if active_runs:
-        parts.append(f"active_runs={','.join(active_runs)}")
     if not emit_briefing_status:
+        active_runs = _build_active_runs_list(status)
+        if active_runs:
+            parts.append(f"active_runs={','.join(active_runs)}")
         gh_watch = _build_gh_watch_from_status(status)
         if gh_watch:
             parts.append(f"gh_watch={gh_watch}")
@@ -1736,6 +1736,9 @@ def _format_preflight_watch_poll_line(
             after_action = expected_after.get("action")
             if isinstance(after_action, str) and after_action:
                 parts.append(f"expected_after={after_action}")
+        active_runs = status.get("active_runs")
+        if isinstance(active_runs, list) and active_runs:
+            parts.append(f"active_runs={','.join(str(label) for label in active_runs)}")
         if briefing.get("watch_recommended"):
             parts.append("watch_recommended=true")
         gh_watch_command = _extract_gh_watch_command(briefing)
