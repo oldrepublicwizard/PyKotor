@@ -496,7 +496,7 @@ Monitoring.
         self.assertTrue(changes["forward_commits_row"])
         self.assertTrue(changes["plans_index"])
         self.assertIn("https://example.com/10", patched)
-        self.assertIn("019–167", patched)
+        self.assertIn("019–168", patched)
 
     def test_dedupe_preserve_order(self) -> None:
         self.assertEqual(
@@ -4183,6 +4183,39 @@ last_verified: 2026-01-01
             }
         )
         self.assertIn("gh_watch=verify:1,fc:2", line)
+
+    def test_format_preflight_watch_summary_line_run_refs(self) -> None:
+        line = mod._format_preflight_watch_summary_line(
+            {
+                "lfg_preflight_watch_result": "timeout",
+                "polls": 2,
+                "watch_duration_sec": 5.0,
+                "verify_run_id": 1,
+                "fc_run_id": 2,
+                "verify_run_url": "https://example.com/runs/1",
+                "fc_run_url": "https://example.com/runs/2",
+            }
+        )
+        self.assertIn("verify_run=1", line)
+        self.assertIn("fc_run=2", line)
+        self.assertIn("verify_run_url=https://example.com/runs/1", line)
+        self.assertIn("fc_run_url=https://example.com/runs/2", line)
+
+    def test_format_gate_watch_summary_line_run_refs(self) -> None:
+        line = mod._format_preflight_watch_summary_line(
+            {
+                "lfg_preflight_watch_result": "timeout",
+                "polls": 2,
+                "watch_duration_sec": 5.0,
+                "verify_run_id": 1,
+                "fc_run_id": 2,
+                "verify_run_url": "https://example.com/runs/1",
+                "fc_run_url": "https://example.com/runs/2",
+            },
+            watch_label="gate",
+        )
+        self.assertIn("verify_run=1", line)
+        self.assertIn("fc_run=2", line)
 
     def test_format_preflight_watch_summary_line_queued(self) -> None:
         line = mod._format_preflight_watch_summary_line(

@@ -24,7 +24,7 @@ SOLUTION_CLOSEOUT = (
     REPO_ROOT / "docs" / "solutions" / "testing" / "verify-pypi-regression-closeout.md"
 )
 PLAN_020 = REPO_ROOT / "docs" / "plans" / "2026-05-24-020-verify-pypi-regression-post-268-plan.md"
-PLAN_TRACK_CAP = "167"
+PLAN_TRACK_CAP = "168"
 LFG_EXIT_CODES: dict[int, str] = {
     0: "proceed, merge_ready, or monitoring_complete",
     1: "gh_error",
@@ -1874,6 +1874,18 @@ def _format_preflight_watch_summary_line(
         parts.append(f"primary_action={primary_action}")
     if summary.get("watch_recommended"):
         parts.append("watch_recommended=true")
+    verify_run_id = summary.get("verify_run_id")
+    if verify_run_id is not None:
+        parts.append(f"verify_run={verify_run_id}")
+    fc_run_id = summary.get("fc_run_id")
+    if fc_run_id is not None:
+        parts.append(f"fc_run={fc_run_id}")
+    verify_run_url = summary.get("verify_run_url")
+    if isinstance(verify_run_url, str) and verify_run_url:
+        parts.append(f"verify_run_url={_format_run_url_stderr(verify_run_url)}")
+    fc_run_url = summary.get("fc_run_url")
+    if isinstance(fc_run_url, str) and fc_run_url:
+        parts.append(f"fc_run_url={_format_run_url_stderr(fc_run_url)}")
     verify_status = summary.get("verify_status")
     if isinstance(verify_status, str) and verify_status:
         parts.append(f"verify_status={verify_status}")
