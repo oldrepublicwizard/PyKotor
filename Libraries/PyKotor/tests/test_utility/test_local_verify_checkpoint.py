@@ -496,7 +496,7 @@ Monitoring.
         self.assertTrue(changes["forward_commits_row"])
         self.assertTrue(changes["plans_index"])
         self.assertIn("https://example.com/10", patched)
-        self.assertIn("019–164", patched)
+        self.assertIn("019–165", patched)
 
     def test_dedupe_preserve_order(self) -> None:
         self.assertEqual(
@@ -3623,6 +3623,40 @@ last_verified: 2026-01-01
         self.assertIn("watch=gh run watch 2 --exit-status", line)
         self.assertIn("briefing_command=", line)
         self.assertIn("--lfg-gate-watch", line)
+
+    def test_format_gate_watch_poll_line_primary_action_once(self) -> None:
+        status: dict[str, Any] = {
+            "lfg_deferred": True,
+            "lfg_defer_reason": "unchanged_active_runs",
+            "checkpoint": {
+                "defer_lfg_pr": True,
+                "defer_reason": "same canonical runs still active on unchanged checkpoint",
+            },
+            "verify_pypi": {
+                "run_id": 1,
+                "status": "queued",
+                "conclusion": "",
+                "queued_hours": 1.5,
+            },
+            "forward_commits": {
+                "run_id": 2,
+                "status": "queued",
+                "conclusion": "",
+                "queued_hours": 1.0,
+            },
+        }
+        with patch.object(mod, "_defer_preflight_watch_recommended", return_value=True):
+            line = mod._format_preflight_watch_poll_line(
+                2,
+                status,
+                watch_label="gate",
+            )
+        tokens = line.split()
+        self.assertIn("gate watch poll", line)
+        self.assertIn("primary_action=gate_watch", tokens)
+        self.assertIn("expected_after=closeout", tokens)
+        self.assertEqual(sum(1 for token in tokens if token == "primary_action=gate_watch"), 1)
+        self.assertEqual(sum(1 for token in tokens if token == "expected_after=closeout"), 1)
 
     def test_format_gate_watch_poll_line_active_runs_once(self) -> None:
         status: dict[str, Any] = {
