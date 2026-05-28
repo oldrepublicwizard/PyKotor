@@ -88,6 +88,7 @@ Post–PR #268 CI hygiene and local parity for published PyPI packages.
 - **`investigate_ci_drift`** briefing adds **`expected_after_terminal`**, **`primary_action: gate_watch`**, and **`queue_context`** on wait paths; stderr **`expected_after=refresh_dry_run`** (plan 123).
 - Defer briefing **`active_runs`** list and stderr **`active_runs=fc`**; closeout-style defer prefers **`expected_after_terminal.action=closeout`** (plan 124).
 - Strict exit stderr and briefing stderr include **`verify_run=`**; exit line carries **`expected_after`** / **`active_runs`** from briefing (plan 125).
+- Briefing stderr **`gh_watch=verify:ID,fc:ID`** when multiple active gh watches; watch summary JSON includes **`active_runs`** (plan 126).
 - **`--lfg-preflight-watch`** — poll preflight until defer clears or timeout (default 7200s); `preflight_watch_summary` with `next_hint` (plan 114).
 - **`--lfg-gate-watch`** — gate + preflight-watch; defer **`post_terminal_commands`** for after FC terminal; primary wait command for defer/drift (plans 118–119).
 - **`investigate_ci_drift`** briefing includes structured **`drift`**, **`refresh_commands`**, and **`wait_recommended`** when runs are still active (plan 115).
@@ -171,7 +172,7 @@ python3 .github/scripts/local_verify_pypi_slice.py --json
 
 ## Plans index
 
-Plans **019–125** under `docs/plans/2026-05-24-*` document the closeout track; plan **020** is the authoritative verification table.
+Plans **019–126** under `docs/plans/2026-05-24-*` document the closeout track; plan **020** is the authoritative verification table.
 
 ## Last CI check (plan 123)
 

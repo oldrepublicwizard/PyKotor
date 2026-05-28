@@ -24,7 +24,7 @@ SOLUTION_CLOSEOUT = (
     REPO_ROOT / "docs" / "solutions" / "testing" / "verify-pypi-regression-closeout.md"
 )
 PLAN_020 = REPO_ROOT / "docs" / "plans" / "2026-05-24-020-verify-pypi-regression-post-268-plan.md"
-PLAN_TRACK_CAP = "125"
+PLAN_TRACK_CAP = "126"
 LFG_EXIT_CODES: dict[int, str] = {
     0: "proceed, merge_ready, or monitoring_complete",
     1: "gh_error",
@@ -1815,6 +1815,9 @@ def _watch_lfg_preflight_defer(
     summary = _build_preflight_watch_summary(status)
     blocked = _lfg_refresh_blocked(status, deferred=bool(status.get("lfg_deferred")))
     summary["next_hint"] = _build_proceed_hint(status, blocked=blocked)
+    active_runs = _build_active_runs_list(status)
+    if active_runs:
+        summary["active_runs"] = active_runs
     status["preflight_watch_summary"] = summary
     label = _watch_label_display(watch_label)
     print(
@@ -2375,6 +2378,23 @@ def _build_defer_monitor_commands(briefing: dict[str, Any]) -> dict[str, str]:
     return commands
 
 
+def _format_gh_watch_summary(briefing: dict[str, Any]) -> str:
+    monitor_commands = briefing.get("monitor_commands")
+    if not isinstance(monitor_commands, dict):
+        return ""
+    parts: list[str] = []
+    for label, cmd_key, id_key in (
+        ("verify", "watch_verify_run", "verify_run_id"),
+        ("fc", "watch_fc_run", "fc_run_id"),
+    ):
+        if cmd_key not in monitor_commands:
+            continue
+        run_id = briefing.get(id_key)
+        if run_id is not None:
+            parts.append(f"{label}:{run_id}")
+    return ",".join(parts)
+
+
 def _build_lfg_agent_briefing(status: dict[str, Any]) -> dict[str, Any]:
     proceed_hint = str(status.get("proceed_hint") or "")
     script = "python3 .github/scripts/local_verify_pypi_slice.py"
@@ -2628,6 +2648,9 @@ def _emit_lfg_agent_briefing_stderr(briefing: dict[str, Any]) -> None:
         parts.append(f"verify_run={verify_run_id}")
     monitor_commands = briefing.get("monitor_commands")
     if isinstance(monitor_commands, dict):
+        gh_watch = _format_gh_watch_summary(briefing)
+        if gh_watch:
+            parts.append(f"gh_watch={gh_watch}")
         watch_cmd = monitor_commands.get("watch_fc_run") or monitor_commands.get(
             "watch_verify_run"
         )

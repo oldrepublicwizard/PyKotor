@@ -496,7 +496,7 @@ Monitoring.
         self.assertTrue(changes["forward_commits_row"])
         self.assertTrue(changes["plans_index"])
         self.assertIn("https://example.com/10", patched)
-        self.assertIn("019–125", patched)
+        self.assertIn("019–126", patched)
 
     def test_dedupe_preserve_order(self) -> None:
         self.assertEqual(
@@ -1421,11 +1421,47 @@ Monitoring.
                     "verify_run_id": 26549547772,
                     "fc_run_id": 26549293445,
                     "active_runs": ["verify", "fc"],
+                    "monitor_commands": {
+                        "watch_verify_run": "gh run watch 26549547772 --exit-status",
+                        "watch_fc_run": "gh run watch 26549293445 --exit-status",
+                    },
                 }
             )
         output = err.getvalue()
         self.assertIn("verify_run=26549547772", output)
         self.assertIn("fc_run=26549293445", output)
+        self.assertIn("gh_watch=verify:26549547772,fc:26549293445", output)
+
+    def test_format_gh_watch_summary_fc_only(self) -> None:
+        summary = mod._format_gh_watch_summary(
+            {
+                "fc_run_id": 26549293445,
+                "monitor_commands": {
+                    "watch_fc_run": "gh run watch 26549293445 --exit-status",
+                },
+            }
+        )
+        self.assertEqual(summary, "fc:26549293445")
+
+    def test_watch_summary_includes_active_runs(self) -> None:
+        deferred_status = {
+            "gh_ok": True,
+            "checkpoint": {"defer_lfg_pr": True},
+            "verify_pypi": {"run_id": 1, "status": "queued", "conclusion": ""},
+            "forward_commits": {"run_id": 2, "status": "queued", "conclusion": ""},
+        }
+        with patch.object(mod, "_ci_status", return_value=deferred_status):
+            with patch.object(mod, "_refine_lfg_checkpoint"):
+                with patch.object(mod.time, "sleep"):
+                    with patch.object(mod.time, "monotonic", side_effect=[0.0, 0.0, 100.0]):
+                        status = mod._watch_lfg_preflight_defer(
+                            targets=["solution"],
+                            prefetch_git=False,
+                            interval_sec=0.0,
+                            timeout_sec=5.0,
+                        )
+        summary = status.get("preflight_watch_summary") or {}
+        self.assertEqual(summary.get("active_runs"), ["verify", "fc"])
 
     def test_build_drift_expected_after_prefers_closeout(self) -> None:
         expected = mod._build_drift_expected_after(
