@@ -84,6 +84,7 @@ Post–PR #268 CI hygiene and local parity for published PyPI packages.
 - Defer briefing **`monitor_commands`** — `watch_fc_run` / `watch_verify_run` + `preflight_retry` + `preflight_watch`; primary **`command`** uses preflight-watch when active; structured **`sha_gap`** when FC lags master (plans 113–117).
 - Defer **`queue_context`** and **`primary_action: gate_watch`**; fc_active_pending sets **`queue_backlog_note`** when queued ≥ 4h (plan 120).
 - Gate-watch poll stderr uses **`gate watch`** label; defer stderr **`queued=X.Xh`** from **`max_queued_hours`**; watch summary includes **`next_hint`** (plan 121).
+- Defer briefing **`expected_after_terminal`** (prefetch_gate → gate → preflight); **`queue_backlog_warning`** at ≥2h with stderr **`queue_warn=true`**; watch summary **`reason=start->end`** (plan 122).
 - **`--lfg-preflight-watch`** — poll preflight until defer clears or timeout (default 7200s); `preflight_watch_summary` with `next_hint` (plan 114).
 - **`--lfg-gate-watch`** — gate + preflight-watch; defer **`post_terminal_commands`** for after FC terminal; primary wait command for defer/drift (plans 118–119).
 - **`investigate_ci_drift`** briefing includes structured **`drift`**, **`refresh_commands`**, and **`wait_recommended`** when runs are still active (plan 115).
@@ -167,7 +168,7 @@ python3 .github/scripts/local_verify_pypi_slice.py --json
 
 ## Plans index
 
-Plans **019–121** under `docs/plans/2026-05-24-*` document the closeout track; plan **020** is the authoritative verification table.
+Plans **019–122** under `docs/plans/2026-05-24-*` document the closeout track; plan **020** is the authoritative verification table.
 
 ## Last CI check (plan 118)
 

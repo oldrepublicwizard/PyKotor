@@ -8,7 +8,7 @@ import json
 import subprocess
 import sys
 import unittest
-from datetime import date
+from datetime import date, datetime, timedelta, timezone
 from pathlib import Path
 from typing import Any
 from unittest import mock
@@ -496,7 +496,7 @@ Monitoring.
         self.assertTrue(changes["forward_commits_row"])
         self.assertTrue(changes["plans_index"])
         self.assertIn("https://example.com/10", patched)
-        self.assertIn("019–121", patched)
+        self.assertIn("019–122", patched)
 
     def test_dedupe_preserve_order(self) -> None:
         self.assertEqual(
@@ -1399,6 +1399,9 @@ Monitoring.
         self.assertIn("complete=4%", output)
 
     def test_apply_pr_merge_status_queue_backlog_hint(self) -> None:
+        recent_start = (
+            datetime.now(timezone.utc) - timedelta(hours=1)
+        ).strftime("%Y-%m-%dT%H:%M:%SZ")
         status: dict[str, Any] = {"lfg_track_complete": True}
         with patch.object(
             mod,
@@ -1415,7 +1418,7 @@ Monitoring.
                 "pending_check_details": [
                     {
                         "name": "label",
-                        "started_at": "2026-05-27T21:30:00Z",
+                        "started_at": recent_start,
                         "workflow": "CI",
                         "details_url": "",
                     },
@@ -2597,7 +2600,75 @@ last_verified: 2026-01-01
             }
         )
         self.assertTrue(context["queue_backlog"])
+        self.assertFalse(context["queue_backlog_warning"])
         self.assertEqual(context["max_queued_hours"], 4.2)
+
+    def test_build_defer_queue_context_warning(self) -> None:
+        context = mod._build_defer_queue_context(
+            {"forward_commits": {"queued_hours": 2.5}}
+        )
+        self.assertFalse(context["queue_backlog"])
+        self.assertTrue(context["queue_backlog_warning"])
+        self.assertEqual(context["max_queued_hours"], 2.5)
+
+    def test_build_defer_expected_after_terminal_prefetch_gate(self) -> None:
+        expected = mod._build_defer_expected_after_terminal(
+            {
+                "preflight": "python3 .github/scripts/local_verify_pypi_slice.py --lfg-preflight --json",
+                "gate": "python3 .github/scripts/local_verify_pypi_slice.py --lfg-gate",
+                "prefetch_gate": "python3 .github/scripts/local_verify_pypi_slice.py --prefetch-git --lfg-gate",
+            }
+        )
+        self.assertIsNotNone(expected)
+        assert expected is not None
+        self.assertEqual(expected["action"], "prefetch_gate")
+        self.assertIn("--prefetch-git", expected["command"])
+
+    def test_defer_briefing_expected_after_terminal(self) -> None:
+        briefing = mod._build_lfg_agent_briefing(
+            {
+                "gh_ok": True,
+                "lfg_deferred": True,
+                "lfg_defer_reason": "fc_active_pending",
+                "proceed_hint": "python3 .github/scripts/local_verify_pypi_slice.py --lfg-gate-watch --json",
+                "checkpoint": {
+                    "fc_sha_stale": True,
+                    "fc_stale_gap_pending_note": "FC queued on 573c9d4 vs master 8916e2f",
+                },
+                "forward_commits": {
+                    "run_id": 26548176325,
+                    "status": "queued",
+                    "conclusion": "",
+                    "head_sha": "573c9d4bb474ed3ffdb871d3e081431a51f31702",
+                    "queued_hours": 0.5,
+                },
+            }
+        )
+        expected_after = briefing.get("expected_after_terminal")
+        self.assertIsInstance(expected_after, dict)
+        assert isinstance(expected_after, dict)
+        self.assertEqual(expected_after["action"], "prefetch_gate")
+
+    def test_emit_defer_briefing_stderr_expected_after_and_queue_warn(self) -> None:
+        with patch.object(mod.sys, "stderr", new_callable=io.StringIO) as err:
+            mod._emit_lfg_agent_briefing_stderr(
+                {
+                    "action": "defer",
+                    "reason": "fc_active_pending",
+                    "queue_context": {
+                        "max_queued_hours": 2.5,
+                        "queue_backlog_warning": True,
+                    },
+                    "expected_after_terminal": {
+                        "action": "prefetch_gate",
+                        "command": "python3 .github/scripts/local_verify_pypi_slice.py --prefetch-git --lfg-gate",
+                    },
+                }
+            )
+        output = err.getvalue()
+        self.assertIn("queue_warn=true", output)
+        self.assertIn("expected_after=prefetch_gate", output)
+        self.assertNotIn("queue_backlog=true", output)
 
     def test_emit_defer_briefing_stderr_queue_backlog(self) -> None:
         with patch.object(mod.sys, "stderr", new_callable=io.StringIO) as err:
@@ -3015,6 +3086,18 @@ last_verified: 2026-01-01
         self.assertIn("result=timeout", line)
         self.assertIn("next=", line)
         self.assertIn("--lfg-gate-watch", line)
+
+    def test_format_preflight_watch_summary_line_reason_transition(self) -> None:
+        line = mod._format_preflight_watch_summary_line(
+            {
+                "lfg_preflight_watch_result": "proceed",
+                "polls": 4,
+                "watch_duration_sec": 30.0,
+                "start_defer_reason": "fc_active_pending",
+                "end_defer_reason": "investigate_ci_drift",
+            }
+        )
+        self.assertIn("reason=fc_active_pending->investigate_ci_drift", line)
 
     def test_apply_lfg_defer_skipped_when_disabled(self) -> None:
         status: dict[str, Any] = {"checkpoint": {"defer_lfg_pr": True}}
