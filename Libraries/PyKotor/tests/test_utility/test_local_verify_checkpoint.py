@@ -496,7 +496,7 @@ Monitoring.
         self.assertTrue(changes["forward_commits_row"])
         self.assertTrue(changes["plans_index"])
         self.assertIn("https://example.com/10", patched)
-        self.assertIn("019–127", patched)
+        self.assertIn("019–128", patched)
 
     def test_dedupe_preserve_order(self) -> None:
         self.assertEqual(
@@ -1462,6 +1462,13 @@ Monitoring.
         )
         self.assertEqual(summary, "fc:26549293445")
 
+    def test_build_gh_watch_from_status(self) -> None:
+        status = {
+            "verify_pypi": {"run_id": 1, "status": "queued", "conclusion": ""},
+            "forward_commits": {"run_id": 2, "status": "in_progress", "conclusion": ""},
+        }
+        self.assertEqual(mod._build_gh_watch_from_status(status), "verify:1,fc:2")
+
     def test_watch_summary_includes_active_runs(self) -> None:
         deferred_status = {
             "gh_ok": True,
@@ -1481,6 +1488,7 @@ Monitoring.
                         )
         summary = status.get("preflight_watch_summary") or {}
         self.assertEqual(summary.get("active_runs"), ["verify", "fc"])
+        self.assertEqual(summary.get("gh_watch_summary"), "verify:1,fc:2")
 
     def test_build_drift_expected_after_prefers_closeout(self) -> None:
         expected = mod._build_drift_expected_after(
@@ -3323,6 +3331,17 @@ last_verified: 2026-01-01
             }
         )
         self.assertIn("active_runs=verify,fc", line)
+
+    def test_format_preflight_watch_summary_line_gh_watch(self) -> None:
+        line = mod._format_preflight_watch_summary_line(
+            {
+                "lfg_preflight_watch_result": "timeout",
+                "polls": 2,
+                "watch_duration_sec": 5.0,
+                "gh_watch_summary": "verify:1,fc:2",
+            }
+        )
+        self.assertIn("gh_watch=verify:1,fc:2", line)
 
     def test_apply_lfg_defer_skipped_when_disabled(self) -> None:
         status: dict[str, Any] = {"checkpoint": {"defer_lfg_pr": True}}

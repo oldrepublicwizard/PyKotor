@@ -24,7 +24,7 @@ SOLUTION_CLOSEOUT = (
     REPO_ROOT / "docs" / "solutions" / "testing" / "verify-pypi-regression-closeout.md"
 )
 PLAN_020 = REPO_ROOT / "docs" / "plans" / "2026-05-24-020-verify-pypi-regression-post-268-plan.md"
-PLAN_TRACK_CAP = "127"
+PLAN_TRACK_CAP = "128"
 LFG_EXIT_CODES: dict[int, str] = {
     0: "proceed, merge_ready, or monitoring_complete",
     1: "gh_error",
@@ -1749,6 +1749,9 @@ def _format_preflight_watch_summary_line(
     active_runs = summary.get("active_runs")
     if isinstance(active_runs, list) and active_runs:
         parts.append(f"active_runs={','.join(str(label) for label in active_runs)}")
+    gh_watch = summary.get("gh_watch_summary")
+    if isinstance(gh_watch, str) and gh_watch:
+        parts.append(f"gh_watch={gh_watch}")
     return " ".join(parts)
 
 
@@ -1821,6 +1824,9 @@ def _watch_lfg_preflight_defer(
     active_runs = _build_active_runs_list(status)
     if active_runs:
         summary["active_runs"] = active_runs
+    gh_watch = _build_gh_watch_from_status(status)
+    if gh_watch:
+        summary["gh_watch_summary"] = gh_watch
     status["preflight_watch_summary"] = summary
     label = _watch_label_display(watch_label)
     print(
@@ -2221,6 +2227,18 @@ def _build_active_runs_list(status: dict[str, Any]) -> list[str]:
         if isinstance(run, dict) and "error" not in run and _is_active_run(run):
             active_runs.append(label)
     return active_runs
+
+
+def _build_gh_watch_from_status(status: dict[str, Any]) -> str:
+    parts: list[str] = []
+    for key, label in (("verify_pypi", "verify"), ("forward_commits", "fc")):
+        run = status.get(key)
+        if not isinstance(run, dict) or "error" in run or not _is_active_run(run):
+            continue
+        run_id = run.get("run_id")
+        if run_id is not None:
+            parts.append(f"{label}:{run_id}")
+    return ",".join(parts)
 
 
 def _build_ci_drift_detail(status: dict[str, Any]) -> dict[str, Any]:
