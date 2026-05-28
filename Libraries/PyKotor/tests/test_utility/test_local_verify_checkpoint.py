@@ -496,7 +496,7 @@ Monitoring.
         self.assertTrue(changes["forward_commits_row"])
         self.assertTrue(changes["plans_index"])
         self.assertIn("https://example.com/10", patched)
-        self.assertIn("019–128", patched)
+        self.assertIn("019–129", patched)
 
     def test_dedupe_preserve_order(self) -> None:
         self.assertEqual(
@@ -1090,6 +1090,7 @@ Monitoring.
             mod._apply_lfg_agent_briefing(status)
         briefing = status.get("lfg_agent_briefing") or {}
         self.assertEqual(briefing.get("gh_watch_summary"), "verify:1,fc:2")
+        self.assertEqual(status.get("gh_watch_summary"), "verify:1,fc:2")
 
     def test_watch_pr_merge_status_conflicts(self) -> None:
         status: dict[str, Any] = {"lfg_track_complete": True}
@@ -3295,6 +3296,18 @@ last_verified: 2026-01-01
         )
         self.assertIn("gate watch poll", line)
         self.assertNotIn("preflight watch poll", line)
+
+    def test_format_preflight_watch_poll_line_gh_watch(self) -> None:
+        line = mod._format_preflight_watch_poll_line(
+            1,
+            {
+                "lfg_defer_reason": "unchanged_active_runs",
+                "verify_pypi": {"run_id": 1, "status": "queued", "conclusion": ""},
+                "forward_commits": {"run_id": 2, "status": "queued", "conclusion": ""},
+            },
+        )
+        self.assertIn("gh_watch=verify:1,fc:2", line)
+        self.assertIn("active_runs=verify,fc", line)
 
     def test_format_preflight_watch_summary_line_includes_next_hint(self) -> None:
         line = mod._format_preflight_watch_summary_line(
