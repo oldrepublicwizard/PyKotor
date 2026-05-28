@@ -496,7 +496,49 @@ Monitoring.
         self.assertTrue(changes["forward_commits_row"])
         self.assertTrue(changes["plans_index"])
         self.assertIn("https://example.com/10", patched)
-        self.assertIn("019–187", patched)
+        self.assertIn("019–188", patched)
+
+    def test_build_preflight_watch_summary_watch_heartbeat_polls(self) -> None:
+        status: dict[str, Any] = {
+            "preflight_watch_history": [],
+            "lfg_preflight_watch_result": "timeout",
+            "preflight_watch_heartbeat_polls": 12,
+        }
+        summary = mod._build_preflight_watch_summary(status)
+        self.assertEqual(summary.get("watch_heartbeat_polls"), 12)
+
+    def test_should_emit_preflight_flat_keys_heartbeat_summary(self) -> None:
+        self.assertTrue(
+            mod._should_emit_preflight_flat_keys_heartbeat_summary(
+                {
+                    "flat_keys_heartbeat_polls": 1,
+                    "unchanged_flat_keys_polls": 12,
+                    "watch_heartbeat_polls": 12,
+                }
+            )
+        )
+        self.assertFalse(
+            mod._should_emit_preflight_flat_keys_heartbeat_summary(
+                {
+                    "flat_keys_heartbeat_polls": 1,
+                    "unchanged_flat_keys_polls": 5,
+                    "watch_heartbeat_polls": 12,
+                }
+            )
+        )
+
+    def test_format_preflight_watch_summary_line_omits_early_heartbeat_polls(self) -> None:
+        line = mod._format_preflight_watch_summary_line(
+            {
+                "polls": 6,
+                "lfg_preflight_watch_result": "timeout",
+                "flat_keys_heartbeat_polls": 1,
+                "unchanged_flat_keys_polls": 5,
+                "watch_heartbeat_polls": 12,
+            },
+            watch_label="gate",
+        )
+        self.assertNotIn("flat_keys_heartbeat_polls=", line)
 
     def test_format_preflight_watch_poll_line_flat_keys_heartbeat(self) -> None:
         status: dict[str, Any] = {
@@ -576,6 +618,8 @@ Monitoring.
                 "polls": 13,
                 "result": "timeout",
                 "flat_keys_heartbeat_polls": 1,
+                "unchanged_flat_keys_polls": 12,
+                "watch_heartbeat_polls": 12,
             },
             watch_label="gate",
         )

@@ -24,7 +24,7 @@ SOLUTION_CLOSEOUT = (
     REPO_ROOT / "docs" / "solutions" / "testing" / "verify-pypi-regression-closeout.md"
 )
 PLAN_020 = REPO_ROOT / "docs" / "plans" / "2026-05-24-020-verify-pypi-regression-post-268-plan.md"
-PLAN_TRACK_CAP = "187"
+PLAN_TRACK_CAP = "188"
 LFG_EXIT_CODES: dict[int, str] = {
     0: "proceed, merge_ready, or monitoring_complete",
     1: "gh_error",
@@ -1654,23 +1654,6 @@ def _count_unchanged_watch_polls(history: list[dict[str, Any]]) -> int:
     return count
 
 
-def _count_unchanged_preflight_flat_keys_polls(history: list[dict[str, Any]]) -> int:
-    if len(history) < 2:
-        return 0
-    count = 0
-    for index in range(1, len(history)):
-        prev_keys = history[index - 1].get("flat_keys")
-        curr_keys = history[index].get("flat_keys")
-        if (
-            isinstance(prev_keys, list)
-            and isinstance(curr_keys, list)
-            and prev_keys
-            and prev_keys == curr_keys
-        ):
-            count += 1
-    return count
-
-
 def _should_emit_watch_heartbeat(
     progress_unchanged: bool,
     unchanged_streak: int,
@@ -2031,7 +2014,21 @@ def _build_preflight_watch_summary(status: dict[str, Any]) -> dict[str, Any]:
         "watch_duration_sec": duration_sec,
         "unchanged_flat_keys_polls": _count_unchanged_preflight_flat_keys_polls(history),
         "flat_keys_heartbeat_polls": int(status.get("preflight_flat_keys_heartbeats") or 0),
+        "watch_heartbeat_polls": int(status.get("preflight_watch_heartbeat_polls") or 0),
     }
+
+
+def _should_emit_preflight_flat_keys_heartbeat_summary(summary: dict[str, Any]) -> bool:
+    heartbeats = summary.get("flat_keys_heartbeat_polls")
+    if not isinstance(heartbeats, int) or heartbeats <= 0:
+        return False
+    unchanged = summary.get("unchanged_flat_keys_polls")
+    if not isinstance(unchanged, int):
+        return False
+    interval = summary.get("watch_heartbeat_polls")
+    if not isinstance(interval, int) or interval <= 0:
+        return True
+    return unchanged >= interval
 
 
 def _format_preflight_watch_summary_line(
@@ -2047,9 +2044,10 @@ def _format_preflight_watch_summary_line(
     unchanged_flat = summary.get("unchanged_flat_keys_polls")
     if isinstance(unchanged_flat, int) and unchanged_flat:
         parts.append(f"unchanged_flat_keys_polls={unchanged_flat}")
-    flat_keys_heartbeats = summary.get("flat_keys_heartbeat_polls")
-    if isinstance(flat_keys_heartbeats, int) and flat_keys_heartbeats:
-        parts.append(f"flat_keys_heartbeat_polls={flat_keys_heartbeats}")
+    if _should_emit_preflight_flat_keys_heartbeat_summary(summary):
+        heartbeats = summary.get("flat_keys_heartbeat_polls")
+        if isinstance(heartbeats, int):
+            parts.append(f"flat_keys_heartbeat_polls={heartbeats}")
     start_reason = summary.get("start_defer_reason")
     end_reason = summary.get("end_defer_reason")
     if (
@@ -2086,6 +2084,7 @@ def _watch_lfg_preflight_defer(
     previous_flat_keys: list[str] | None = None
     flat_keys_unchanged_streak = 0
     status["preflight_flat_keys_heartbeats"] = 0
+    status["preflight_watch_heartbeat_polls"] = max(0, flat_keys_heartbeat_polls)
     while True:
         polls += 1
         prefetch_result = None
@@ -3231,6 +3230,23 @@ def _build_lfg_flat_field_values(source: dict[str, Any]) -> dict[str, Any]:
 
 def _build_lfg_flat_field_keys_present(flat_values: dict[str, Any]) -> list[str]:
     return [key for key in LFG_FLAT_FIELD_KEYS if key in flat_values]
+
+
+def _count_unchanged_preflight_flat_keys_polls(history: list[dict[str, Any]]) -> int:
+    if len(history) < 2:
+        return 0
+    count = 0
+    for index in range(1, len(history)):
+        prev_keys = history[index - 1].get("flat_keys")
+        curr_keys = history[index].get("flat_keys")
+        if (
+            isinstance(prev_keys, list)
+            and isinstance(curr_keys, list)
+            and prev_keys
+            and prev_keys == curr_keys
+        ):
+            count += 1
+    return count
 
 
 def _mirror_preflight_watch_summary_from_status(
