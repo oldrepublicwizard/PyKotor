@@ -24,7 +24,7 @@ SOLUTION_CLOSEOUT = (
     REPO_ROOT / "docs" / "solutions" / "testing" / "verify-pypi-regression-closeout.md"
 )
 PLAN_020 = REPO_ROOT / "docs" / "plans" / "2026-05-24-020-verify-pypi-regression-post-268-plan.md"
-PLAN_TRACK_CAP = "186"
+PLAN_TRACK_CAP = "187"
 LFG_EXIT_CODES: dict[int, str] = {
     0: "proceed, merge_ready, or monitoring_complete",
     1: "gh_error",
@@ -2068,27 +2068,6 @@ def _format_preflight_watch_summary_line(
     return " ".join(parts)
 
 
-def _mirror_preflight_watch_summary_from_status(
-    status: dict[str, Any],
-    summary: dict[str, Any],
-) -> None:
-    _mirror_lfg_flat_fields(
-        status,
-        summary,
-        clear_missing=False,
-        queue_context_filter=True,
-    )
-    flat_keys = status.get("lfg_flat_field_keys")
-    if isinstance(flat_keys, list) and flat_keys:
-        summary["lfg_flat_field_keys"] = list(flat_keys)
-    flat_values = _build_lfg_flat_field_values(summary)
-    if flat_values:
-        summary["lfg_flat_field_values"] = flat_values
-        summary["lfg_flat_field_keys_present"] = _build_lfg_flat_field_keys_present(
-            flat_values
-        )
-
-
 def _watch_lfg_preflight_defer(
     *,
     targets: list[str],
@@ -3252,6 +3231,27 @@ def _build_lfg_flat_field_values(source: dict[str, Any]) -> dict[str, Any]:
 
 def _build_lfg_flat_field_keys_present(flat_values: dict[str, Any]) -> list[str]:
     return [key for key in LFG_FLAT_FIELD_KEYS if key in flat_values]
+
+
+def _mirror_preflight_watch_summary_from_status(
+    status: dict[str, Any],
+    summary: dict[str, Any],
+) -> None:
+    _mirror_lfg_flat_fields(
+        status,
+        summary,
+        clear_missing=False,
+        queue_context_filter=True,
+    )
+    flat_keys = status.get("lfg_flat_field_keys")
+    if isinstance(flat_keys, list) and flat_keys:
+        summary["lfg_flat_field_keys"] = list(flat_keys)
+    flat_values = _build_lfg_flat_field_values(summary)
+    if flat_values:
+        summary["lfg_flat_field_values"] = flat_values
+        summary["lfg_flat_field_keys_present"] = _build_lfg_flat_field_keys_present(
+            flat_values
+        )
 
 
 def _lfg_flat_field_keys_present_stderr(source: dict[str, Any]) -> list[str]:
