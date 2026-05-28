@@ -24,7 +24,7 @@ SOLUTION_CLOSEOUT = (
     REPO_ROOT / "docs" / "solutions" / "testing" / "verify-pypi-regression-closeout.md"
 )
 PLAN_020 = REPO_ROOT / "docs" / "plans" / "2026-05-24-020-verify-pypi-regression-post-268-plan.md"
-PLAN_TRACK_CAP = "145"
+PLAN_TRACK_CAP = "146"
 LFG_EXIT_CODES: dict[int, str] = {
     0: "proceed, merge_ready, or monitoring_complete",
     1: "gh_error",
@@ -1815,6 +1815,9 @@ def _format_preflight_watch_summary_line(
         parts.append(f"notes={len(notes)}")
     if "briefing_merge_ready" in summary:
         parts.append(f"merge_ready={'true' if summary['briefing_merge_ready'] else 'false'}")
+    queue_note = summary.get("queue_backlog_note")
+    if isinstance(queue_note, str) and queue_note:
+        parts.append(f"queue_note={_format_queue_backlog_note_stderr(queue_note)}")
     return " ".join(parts)
 
 
@@ -1894,6 +1897,7 @@ def _watch_lfg_preflight_defer(
     if queue_context.get("max_queued_hours") is not None or queue_context.get("queue_backlog"):
         summary["queue_context"] = queue_context
     _mirror_queue_context_fields(summary, summary.get("queue_context") if isinstance(summary.get("queue_context"), dict) else None)
+    _mirror_queue_backlog_note(summary, summary.get("queue_context") if isinstance(summary.get("queue_context"), dict) else None)
     if status.get("lfg_deferred"):
         _apply_lfg_agent_briefing(status)
         briefing = status.get("lfg_agent_briefing") or {}
@@ -2350,6 +2354,11 @@ def _emit_lfg_strict_exit_stderr(status: dict[str, Any], exit_code: int) -> None
         merge_ready = _format_briefing_merge_ready(briefing)
         if merge_ready is not None:
             line = f"{line} merge_ready={merge_ready}"
+        queue_context = briefing.get("queue_context")
+        if isinstance(queue_context, dict):
+            note = queue_context.get("note")
+            if isinstance(note, str) and note:
+                line = f"{line} queue_note={_format_queue_backlog_note_stderr(note)}"
     print(line, file=sys.stderr)
 
 
@@ -2498,6 +2507,24 @@ def _build_defer_queue_context(status: dict[str, Any]) -> dict[str, Any]:
     if isinstance(note, str) and note:
         context["note"] = note
     return context
+
+
+def _mirror_queue_backlog_note(
+    target: dict[str, Any],
+    queue_context: dict[str, Any] | None,
+) -> None:
+    if isinstance(queue_context, dict):
+        note = queue_context.get("note")
+        if isinstance(note, str) and note:
+            target["queue_backlog_note"] = note
+            return
+    target.pop("queue_backlog_note", None)
+
+
+def _format_queue_backlog_note_stderr(note: str) -> str:
+    if len(note) <= 96:
+        return note
+    return f"{note[:93]}..."
 
 
 def _mirror_queue_context_fields(
@@ -2804,6 +2831,7 @@ def _apply_lfg_agent_briefing(status: dict[str, Any]) -> None:
         else:
             status.pop("queue_context", None)
         _mirror_queue_context_fields(status, queue_context if isinstance(queue_context, dict) else None)
+        _mirror_queue_backlog_note(status, queue_context if isinstance(queue_context, dict) else None)
         expected_after = briefing.get("expected_after_terminal")
         if isinstance(expected_after, dict) and expected_after:
             status["expected_after_terminal"] = expected_after
@@ -2872,6 +2900,7 @@ def _apply_lfg_agent_briefing(status: dict[str, Any]) -> None:
         status.pop("queue_backlog_severe", None)
         status.pop("queue_backlog_warning", None)
         status.pop("max_queued_hours", None)
+        status.pop("queue_backlog_note", None)
         status.pop("expected_after_terminal", None)
         status.pop("primary_action", None)
         status.pop("watch_recommended", None)

@@ -496,7 +496,7 @@ Monitoring.
         self.assertTrue(changes["forward_commits_row"])
         self.assertTrue(changes["plans_index"])
         self.assertIn("https://example.com/10", patched)
-        self.assertIn("019–145", patched)
+        self.assertIn("019–146", patched)
 
     def test_dedupe_preserve_order(self) -> None:
         self.assertEqual(
@@ -1064,7 +1064,7 @@ Monitoring.
                 "expected_after_terminal": {"action": "closeout"},
                 "active_runs": ["fc"],
                 "gh_watch_summary": "fc:26549293445",
-                "queue_context": {"max_queued_hours": 1.5},
+                "queue_context": {"max_queued_hours": 1.5, "note": "Runner backlog ~3h"},
                 "watch_recommended": True,
                 "fc_run_id": 26549293445,
                 "verify_status": "queued",
@@ -1095,6 +1095,7 @@ Monitoring.
         self.assertIn("briefing_reason=unchanged_active_runs", output)
         self.assertIn("notes=1", output)
         self.assertIn("merge_ready=false", output)
+        self.assertIn("queue_note=Runner backlog ~3h", output)
 
     def test_emit_lfg_strict_exit_stderr_watch_recommended(self) -> None:
         status: dict[str, Any] = {
@@ -1144,6 +1145,7 @@ Monitoring.
         self.assertEqual(status.get("briefing_reason"), "unchanged_active_runs")
         self.assertEqual(status.get("briefing_notes"), ["Runner backlog ~3h"])
         self.assertFalse(status.get("briefing_merge_ready"))
+        self.assertEqual(status.get("queue_backlog_note"), "Runner backlog ~3h")
 
     def test_watch_pr_merge_status_conflicts(self) -> None:
         status: dict[str, Any] = {"lfg_track_complete": True}
@@ -1570,6 +1572,7 @@ Monitoring.
         self.assertEqual(summary.get("briefing_reason"), "unchanged_active_runs")
         self.assertEqual(summary.get("briefing_notes"), ["Runner backlog ~3h"])
         self.assertFalse(summary.get("briefing_merge_ready"))
+        self.assertEqual(summary.get("queue_backlog_note"), "Runner backlog ~3h")
         self.assertTrue(summary.get("queue_backlog_warning"))
         self.assertEqual(summary.get("max_queued_hours"), 2.5)
 

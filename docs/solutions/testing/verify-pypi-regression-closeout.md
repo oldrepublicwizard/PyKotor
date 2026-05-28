@@ -108,6 +108,7 @@ Post–PR #268 CI hygiene and local parity for published PyPI packages.
 - Top-level gate JSON **`briefing_notes`** when checkpoint notes populate briefing; watch summary mirrors; strict exit and summary one-liner add **`notes=N`** (plan 143).
 - Top-level gate JSON **`briefing_reason`**; watch summary mirrors it; strict exit and summary one-liner add **`briefing_reason=`** (plan 144).
 - Top-level gate JSON **`briefing_merge_ready`**; watch summary mirrors it; strict exit and summary one-liner add **`merge_ready=`** (plan 145).
+- Top-level gate JSON **`queue_backlog_note`** flattened from **`queue_context.note`**; watch summary mirrors; strict exit and summary one-liner add truncated **`queue_note=`** (plan 146).
 - **`--lfg-preflight-watch`** — poll preflight until defer clears or timeout (default 7200s); `preflight_watch_summary` with `next_hint` (plan 114).
 - **`--lfg-gate-watch`** — gate + preflight-watch; defer **`post_terminal_commands`** for after FC terminal; primary wait command for defer/drift (plans 118–119).
 - **`investigate_ci_drift`** briefing includes structured **`drift`**, **`refresh_commands`**, and **`wait_recommended`** when runs are still active (plan 115).
@@ -191,7 +192,7 @@ python3 .github/scripts/local_verify_pypi_slice.py --json
 
 ## Plans index
 
-Plans **019–145** under `docs/plans/2026-05-24-*` document the closeout track; plan **020** is the authoritative verification table.
+Plans **019–146** under `docs/plans/2026-05-24-*` document the closeout track; plan **020** is the authoritative verification table.
 
 ## Last CI check (plan 123)
 
