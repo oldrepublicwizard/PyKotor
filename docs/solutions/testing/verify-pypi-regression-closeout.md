@@ -78,6 +78,7 @@ Post–PR #268 CI hygiene and local parity for published PyPI packages.
 - Defer **`classify_fc_stale_gap`** while FC run is still active; **`fc_stale_gap_pending_note`** on defer (plan 107).
 - **`lfg_defer_reason`** semantic defer codes (e.g. **`fc_active_pending`**) and compounded exit **2** reason (plan 108).
 - **`gh_lookup`** / **`gh_lookup_note`** and **`gh_unavailable`** briefing when `gh` fails (plan 109).
+- **`doc_checkpoint_snapshot`** from solution doc when `gh_ok` false; blocked state **`gh_unavailable`** (plan 110).
 - **`pr_merged`** / **`pr_closed`** lifecycle blocked states (plan 091).
 - **`--lfg-closeout`** — same as **`--lfg-refresh --write`**; apply monitoring doc updates when CI is terminal (plan 080).
 - **`lfg_mode`** in JSON — `gate`, `merge_gate`, `pr_watch`, `preflight`, `refresh`, or `closeout` for agent routing (plans 080, 085).
@@ -158,7 +159,7 @@ python3 .github/scripts/local_verify_pypi_slice.py --json
 
 ## Plans index
 
-Plans **019–109** under `docs/plans/2026-05-24-*` document the closeout track; plan **020** is the authoritative verification table.
+Plans **019–110** under `docs/plans/2026-05-24-*` document the closeout track; plan **020** is the authoritative verification table.
 
 ## Last CI check (plan 108)
 
