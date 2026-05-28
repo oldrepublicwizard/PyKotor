@@ -457,7 +457,7 @@ Monitoring.
             },
             blocked="deferred",
         )
-        self.assertIn("--lfg-preflight", hint)
+        self.assertIn("--lfg-gate-watch", hint)
         self.assertIn("terminal", hint)
 
     def test_replace_frontmatter_field(self) -> None:
@@ -496,7 +496,7 @@ Monitoring.
         self.assertTrue(changes["forward_commits_row"])
         self.assertTrue(changes["plans_index"])
         self.assertIn("https://example.com/10", patched)
-        self.assertIn("019–118", patched)
+        self.assertIn("019–119", patched)
 
     def test_dedupe_preserve_order(self) -> None:
         self.assertEqual(
@@ -1347,9 +1347,9 @@ Monitoring.
         }
         briefing = mod._build_lfg_agent_briefing(status)
         self.assertTrue(briefing["wait_recommended"])
-        self.assertIn("--lfg-preflight-watch", briefing["command"])
+        self.assertIn("--lfg-gate-watch", briefing["command"])
         self.assertEqual(briefing["fc_run_id"], 26547437912)
-        self.assertIn("preflight_watch", briefing["monitor_commands"])
+        self.assertIn("gate_watch", briefing["refresh_commands"])
         self.assertNotIn("closeout", briefing["refresh_commands"])
 
     def test_build_proceed_hint_investigate_drift_active_fc(self) -> None:
@@ -1361,7 +1361,7 @@ Monitoring.
             },
             blocked=None,
         )
-        self.assertIn("--lfg-preflight-watch", hint)
+        self.assertIn("--lfg-gate-watch", hint)
 
     def test_emit_investigate_drift_stderr_wait_and_fields(self) -> None:
         with patch.object(mod.sys, "stderr", new_callable=io.StringIO) as err:
@@ -2480,7 +2480,7 @@ last_verified: 2026-01-01
                 "lfg_defer_reason": "fc_active_pending",
                 "proceed_hint": (
                     "python3 .github/scripts/local_verify_pypi_slice.py "
-                    "--lfg-preflight-watch --json  # poll until active runs reach terminal"
+                    "--lfg-gate-watch --json  # poll until active runs reach terminal"
                 ),
                 "checkpoint": {
                     "fc_stale_gap_pending_note": "FC queued on def1234 vs master abc1234",
@@ -2513,7 +2513,7 @@ last_verified: 2026-01-01
         self.assertIn("prefetch_gate", briefing["post_terminal_commands"])
         self.assertNotIn("preflight-watch", monitor["preflight_retry"])
         self.assertTrue(briefing["watch_recommended"])
-        self.assertIn("--lfg-preflight-watch", briefing["command"])
+        self.assertIn("--lfg-gate-watch", briefing["command"])
         sha_gap = briefing["sha_gap"]
         self.assertEqual(sha_gap["fc_head_sha"], None)
         self.assertTrue(sha_gap["fc_sha_stale"])
@@ -2884,8 +2884,44 @@ last_verified: 2026-01-01
             },
             blocked="deferred",
         )
-        self.assertIn("--lfg-preflight-watch", hint)
+        self.assertIn("--lfg-gate-watch", hint)
         self.assertIn("terminal", hint)
+
+    def test_build_proceed_hint_investigate_drift_active_fc_gate_watch(self) -> None:
+        hint = mod._build_proceed_hint(
+            {
+                "checkpoint": {"proceed_reason": "investigate_ci_drift"},
+                "forward_commits": {"status": "queued", "conclusion": ""},
+                "verify_pypi": {"status": "completed", "conclusion": "success"},
+            },
+            blocked=None,
+        )
+        self.assertIn("--lfg-gate-watch", hint)
+
+    def test_primary_watch_command_prefers_gate_watch(self) -> None:
+        command = mod._primary_watch_command(
+            {
+                "preflight_watch": "python3 .github/scripts/local_verify_pypi_slice.py --lfg-preflight-watch --json",
+                "gate_watch": "python3 .github/scripts/local_verify_pypi_slice.py --lfg-gate-watch --json",
+            }
+        )
+        self.assertIn("--lfg-gate-watch", command)
+
+    def test_format_preflight_watch_poll_line_includes_sha_gap(self) -> None:
+        line = mod._format_preflight_watch_poll_line(
+            1,
+            {
+                "lfg_defer_reason": "fc_active_pending",
+                "checkpoint": {"master_sha": "8916e2ffe1b57169693b2c9d9ea2b63eeb7fed8f"},
+                "forward_commits": {
+                    "run_id": 1,
+                    "status": "queued",
+                    "conclusion": "",
+                    "head_sha": "573c9d4bb474ed3ffdb871d3e081431a51f31702",
+                },
+            },
+        )
+        self.assertIn("sha_gap=573c9d4:8916e2f", line)
 
     def test_apply_lfg_defer_skipped_when_disabled(self) -> None:
         status: dict[str, Any] = {"checkpoint": {"defer_lfg_pr": True}}

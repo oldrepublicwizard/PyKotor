@@ -83,7 +83,7 @@ Post–PR #268 CI hygiene and local parity for published PyPI packages.
 - Defer briefing includes active **`fc_run_id`** / **`fc_run_url`** (and verify when active) (plan 112).
 - Defer briefing **`monitor_commands`** — `watch_fc_run` / `watch_verify_run` + `preflight_retry` + `preflight_watch`; primary **`command`** uses preflight-watch when active; structured **`sha_gap`** when FC lags master (plans 113–117).
 - **`--lfg-preflight-watch`** — poll preflight until defer clears or timeout (default 7200s); `preflight_watch_summary` with `next_hint` (plan 114).
-- **`--lfg-gate-watch`** — gate + preflight-watch; defer **`post_terminal_commands`** for after FC terminal (plan 118).
+- **`--lfg-gate-watch`** — gate + preflight-watch; defer **`post_terminal_commands`** for after FC terminal; primary wait command for defer/drift (plans 118–119).
 - **`investigate_ci_drift`** briefing includes structured **`drift`**, **`refresh_commands`**, and **`wait_recommended`** when runs are still active (plan 115).
 - **`pr_merged`** / **`pr_closed`** lifecycle blocked states (plan 091).
 - **`--lfg-closeout`** — same as **`--lfg-refresh --write`**; apply monitoring doc updates when CI is terminal (plan 080).

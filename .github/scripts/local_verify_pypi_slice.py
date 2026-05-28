@@ -24,7 +24,7 @@ SOLUTION_CLOSEOUT = (
     REPO_ROOT / "docs" / "solutions" / "testing" / "verify-pypi-regression-closeout.md"
 )
 PLAN_020 = REPO_ROOT / "docs" / "plans" / "2026-05-24-020-verify-pypi-regression-post-268-plan.md"
-PLAN_TRACK_CAP = "118"
+PLAN_TRACK_CAP = "119"
 LFG_EXIT_CODES: dict[int, str] = {
     0: "proceed, merge_ready, or monitoring_complete",
     1: "gh_error",
@@ -1644,9 +1644,30 @@ def _is_lfg_checkpoint_deferred(status: dict[str, Any]) -> bool:
     return isinstance(checkpoint, dict) and bool(checkpoint.get("defer_lfg_pr"))
 
 
+def _primary_watch_command(commands: dict[str, str]) -> str:
+    gate_watch = commands.get("gate_watch")
+    if isinstance(gate_watch, str) and gate_watch:
+        return gate_watch
+    preflight_watch = commands.get("preflight_watch")
+    if isinstance(preflight_watch, str) and preflight_watch:
+        return preflight_watch
+    return ""
+
+
 def _format_preflight_watch_poll_line(polls: int, status: dict[str, Any]) -> str:
     reason = status.get("lfg_defer_reason") or "deferred"
     parts = [f"LFG preflight watch poll {polls}: deferred=true reason={reason}"]
+    checkpoint = status.get("checkpoint")
+    if isinstance(checkpoint, dict):
+        master_sha = checkpoint.get("master_sha")
+        forward_commits = status.get("forward_commits")
+        fc_head = (
+            forward_commits.get("head_sha")
+            if isinstance(forward_commits, dict)
+            else None
+        )
+        if isinstance(master_sha, str) and isinstance(fc_head, str):
+            parts.append(f"sha_gap={fc_head[:7]}:{master_sha[:7]}")
     for key, label in (("forward_commits", "fc"), ("verify_pypi", "verify")):
         run = status.get(key)
         if not isinstance(run, dict) or "error" in run:
@@ -2151,6 +2172,7 @@ def _build_drift_refresh_commands(status: dict[str, Any]) -> dict[str, str]:
         "refresh_dry_run": f"{script} --lfg-refresh --dry-run",
         "preflight_retry": f"{script} --lfg-preflight --json",
         "preflight_watch": f"{script} --lfg-preflight-watch --json",
+        "gate_watch": f"{script} --lfg-gate-watch --json",
     }
     verify = status.get("verify_pypi")
     forward_commits = status.get("forward_commits")
@@ -2329,7 +2351,7 @@ def _build_lfg_agent_briefing(status: dict[str, Any]) -> dict[str, Any]:
             briefing["sha_gap"] = sha_gap
         if _defer_preflight_watch_recommended(status):
             briefing["watch_recommended"] = True
-            briefing["command"] = briefing["monitor_commands"]["preflight_watch"]
+            briefing["command"] = _primary_watch_command(briefing["monitor_commands"])
         return briefing
     blocked_refresh = status.get("lfg_refresh_blocked")
     if blocked_refresh:
@@ -2347,7 +2369,7 @@ def _build_lfg_agent_briefing(status: dict[str, Any]) -> dict[str, Any]:
         refresh_commands = _build_drift_refresh_commands(status)
         command = proceed_hint
         if drift.get("wait_recommended"):
-            command = refresh_commands["preflight_watch"]
+            command = _primary_watch_command(refresh_commands)
         briefing = {
             "action": "investigate_ci_drift",
             "command": command,
@@ -2851,7 +2873,7 @@ def _build_proceed_hint(status: dict[str, Any], *, blocked: str | None) -> str:
             "unchanged_active_runs",
         }:
             return (
-                f"{script} --lfg-preflight-watch --json  "
+                f"{script} --lfg-gate-watch --json  "
                 "# poll until active runs reach terminal"
             )
         return f"{script} --lfg-gate"
@@ -2874,7 +2896,7 @@ def _build_proceed_hint(status: dict[str, Any], *, blocked: str | None) -> str:
         drift = _build_ci_drift_detail(status)
         if drift.get("wait_recommended"):
             return (
-                f"{script} --lfg-preflight-watch --json  "
+                f"{script} --lfg-gate-watch --json  "
                 "# wait for active runs before refresh dry-run"
             )
         return f"{script} --lfg-refresh --dry-run"
