@@ -24,7 +24,7 @@ SOLUTION_CLOSEOUT = (
     REPO_ROOT / "docs" / "solutions" / "testing" / "verify-pypi-regression-closeout.md"
 )
 PLAN_020 = REPO_ROOT / "docs" / "plans" / "2026-05-24-020-verify-pypi-regression-post-268-plan.md"
-PLAN_TRACK_CAP = "139"
+PLAN_TRACK_CAP = "140"
 LFG_EXIT_CODES: dict[int, str] = {
     0: "proceed, merge_ready, or monitoring_complete",
     1: "gh_error",
@@ -1801,6 +1801,9 @@ def _format_preflight_watch_summary_line(
     fc_status = summary.get("fc_status")
     if isinstance(fc_status, str) and fc_status:
         parts.append(f"fc_status={fc_status}")
+    blocked = summary.get("blocked")
+    if isinstance(blocked, str) and blocked:
+        parts.append(f"blocked={blocked}")
     return " ".join(parts)
 
 
@@ -1910,6 +1913,9 @@ def _watch_lfg_preflight_defer(
             value = briefing.get(field)
             if value is not None:
                 summary[field] = value
+        blocked = briefing.get("blocked")
+        if isinstance(blocked, str) and blocked:
+            summary["blocked"] = blocked
     status["preflight_watch_summary"] = summary
     label = _watch_label_display(watch_label)
     print(
@@ -2309,6 +2315,9 @@ def _emit_lfg_strict_exit_stderr(status: dict[str, Any], exit_code: int) -> None
         fc_status = briefing.get("fc_status")
         if isinstance(fc_status, str) and fc_status:
             line = f"{line} fc_status={fc_status}"
+        blocked = briefing.get("blocked")
+        if isinstance(blocked, str) and blocked:
+            line = f"{line} blocked={blocked}"
     print(line, file=sys.stderr)
 
 
@@ -2749,6 +2758,11 @@ def _apply_lfg_agent_briefing(status: dict[str, Any]) -> None:
                 status[field] = value
             else:
                 status.pop(field, None)
+        blocked = briefing.get("blocked")
+        if isinstance(blocked, str) and blocked:
+            status["blocked"] = blocked
+        else:
+            status.pop("blocked", None)
     else:
         status.pop("lfg_agent_briefing", None)
         status.pop("gh_watch_summary", None)
@@ -2766,6 +2780,7 @@ def _apply_lfg_agent_briefing(status: dict[str, Any]) -> None:
         status.pop("fc_run_url", None)
         status.pop("verify_status", None)
         status.pop("fc_status", None)
+        status.pop("blocked", None)
 
 
 def _emit_lfg_agent_briefing_stderr(briefing: dict[str, Any]) -> None:
