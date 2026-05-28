@@ -496,7 +496,7 @@ Monitoring.
         self.assertTrue(changes["forward_commits_row"])
         self.assertTrue(changes["plans_index"])
         self.assertIn("https://example.com/10", patched)
-        self.assertIn("019–170", patched)
+        self.assertIn("019–171", patched)
 
     def test_dedupe_preserve_order(self) -> None:
         self.assertEqual(
@@ -1101,6 +1101,39 @@ Monitoring.
         self.assertIn("watch=gh run watch 26549293445 --exit-status", output)
         self.assertIn("briefing_command=", output)
         self.assertIn("--lfg-gate-watch", output)
+
+    def test_emit_lfg_strict_exit_stderr_prefers_top_level_status(self) -> None:
+        status: dict[str, Any] = {
+            "lfg_exit_reason": "deferred:fc_active_pending",
+            "primary_action": "gate_watch",
+            "max_queued_hours": 4.0,
+            "queue_backlog": True,
+            "lfg_agent_briefing": {
+                "primary_action": "legacy_action",
+                "queue_context": {"max_queued_hours": 1.0},
+            },
+        }
+        with patch.object(mod.sys, "stderr", new_callable=io.StringIO) as err:
+            mod._emit_lfg_strict_exit_stderr(status, 2)
+        output = err.getvalue()
+        self.assertIn("primary_action=gate_watch", output)
+        self.assertNotIn("primary_action=legacy_action", output)
+        self.assertIn("queued=4.0h", output)
+        self.assertIn("queue_backlog=true", output)
+
+    def test_lfg_briefing_mirror_stderr_parts_shared_helper(self) -> None:
+        status: dict[str, Any] = {
+            "primary_action": "gate_watch",
+            "briefing_action": "defer",
+            "max_queued_hours": 2.0,
+            "queue_backlog_warning": True,
+        }
+        parts = mod._lfg_briefing_mirror_stderr_parts(status)
+        joined = " ".join(parts)
+        self.assertIn("primary_action=gate_watch", joined)
+        self.assertIn("action=defer", joined)
+        self.assertIn("queued=2.0h", joined)
+        self.assertIn("queue_warn=true", joined)
 
     def test_emit_lfg_strict_exit_stderr_watch_recommended(self) -> None:
         status: dict[str, Any] = {

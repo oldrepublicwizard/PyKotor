@@ -24,7 +24,7 @@ SOLUTION_CLOSEOUT = (
     REPO_ROOT / "docs" / "solutions" / "testing" / "verify-pypi-regression-closeout.md"
 )
 PLAN_020 = REPO_ROOT / "docs" / "plans" / "2026-05-24-020-verify-pypi-regression-post-268-plan.md"
-PLAN_TRACK_CAP = "170"
+PLAN_TRACK_CAP = "171"
 LFG_EXIT_CODES: dict[int, str] = {
     0: "proceed, merge_ready, or monitoring_complete",
     1: "gh_error",
@@ -1677,6 +1677,170 @@ def _watch_label_display(watch_label: str) -> str:
     return "preflight watch"
 
 
+def _lfg_briefing_fallback(status: dict[str, Any]) -> dict[str, Any]:
+    briefing = status.get("lfg_agent_briefing")
+    return briefing if isinstance(briefing, dict) else {}
+
+
+def _lfg_briefing_mirror_stderr_parts(status: dict[str, Any]) -> list[str]:
+    parts: list[str] = []
+    briefing = _lfg_briefing_fallback(status)
+
+    primary_action = status.get("primary_action")
+    if not isinstance(primary_action, str) or not primary_action:
+        primary_action = briefing.get("primary_action")
+    if isinstance(primary_action, str) and primary_action:
+        parts.append(f"primary_action={primary_action}")
+
+    expected_after = status.get("expected_after_terminal")
+    if not isinstance(expected_after, dict):
+        expected_after = briefing.get("expected_after_terminal")
+    if isinstance(expected_after, dict):
+        after_action = expected_after.get("action")
+        if isinstance(after_action, str) and after_action:
+            parts.append(f"expected_after={after_action}")
+
+    active_runs = status.get("active_runs")
+    if not isinstance(active_runs, list) or not active_runs:
+        active_runs = briefing.get("active_runs")
+    if isinstance(active_runs, list) and active_runs:
+        parts.append(f"active_runs={','.join(str(label) for label in active_runs)}")
+
+    watch_recommended = status.get("watch_recommended")
+    if not watch_recommended:
+        watch_recommended = briefing.get("watch_recommended")
+    if watch_recommended:
+        parts.append("watch_recommended=true")
+
+    gh_watch_command = status.get("gh_watch_command")
+    if not isinstance(gh_watch_command, str) or not gh_watch_command:
+        gh_watch_command = _extract_gh_watch_command(briefing)
+    if isinstance(gh_watch_command, str) and gh_watch_command:
+        parts.append(f"watch={gh_watch_command}")
+
+    command = status.get("briefing_command") or status.get("wait_command")
+    if not isinstance(command, str) or not command:
+        command = briefing.get("command")
+    if isinstance(command, str) and command:
+        parts.append(f"briefing_command={_format_briefing_command_stderr(command)}")
+
+    sha_gap_short = status.get("sha_gap_short")
+    if not isinstance(sha_gap_short, str) or not sha_gap_short:
+        sha_gap_short = _format_briefing_sha_gap_short(briefing)
+    if isinstance(sha_gap_short, str) and sha_gap_short:
+        parts.append(f"sha_gap={sha_gap_short}")
+
+    queue_note = status.get("queue_backlog_note")
+    if not isinstance(queue_note, str) or not queue_note:
+        queue_context = briefing.get("queue_context")
+        if isinstance(queue_context, dict):
+            nested_note = queue_context.get("note")
+            if isinstance(nested_note, str) and nested_note:
+                queue_note = nested_note
+    if isinstance(queue_note, str) and queue_note:
+        parts.append(f"queue_note={_format_queue_backlog_note_stderr(queue_note)}")
+
+    blocked = status.get("blocked")
+    if not isinstance(blocked, str) or not blocked:
+        blocked = briefing.get("blocked")
+    if isinstance(blocked, str) and blocked:
+        parts.append(f"blocked={blocked}")
+
+    briefing_reason = status.get("briefing_reason")
+    if not isinstance(briefing_reason, str) or not briefing_reason:
+        briefing_reason = briefing.get("reason")
+    if isinstance(briefing_reason, str) and briefing_reason:
+        parts.append(f"briefing_reason={briefing_reason}")
+
+    briefing_action = status.get("briefing_action")
+    if not isinstance(briefing_action, str) or not briefing_action:
+        briefing_action = briefing.get("action")
+    if isinstance(briefing_action, str) and briefing_action:
+        parts.append(f"action={briefing_action}")
+
+    notes = status.get("briefing_notes")
+    if not isinstance(notes, list) or not notes:
+        notes = briefing.get("notes")
+    if isinstance(notes, list) and notes:
+        parts.append(f"notes={len(notes)}")
+
+    if "briefing_merge_ready" in status:
+        parts.append(
+            f"merge_ready={'true' if status['briefing_merge_ready'] else 'false'}"
+        )
+    else:
+        merge_ready = _format_briefing_merge_ready(briefing)
+        if merge_ready is not None:
+            parts.append(f"merge_ready={merge_ready}")
+
+    verify_run_id = status.get("verify_run_id")
+    if verify_run_id is None:
+        verify_run_id = briefing.get("verify_run_id")
+    if verify_run_id is not None:
+        parts.append(f"verify_run={verify_run_id}")
+
+    fc_run_id = status.get("fc_run_id")
+    if fc_run_id is None:
+        fc_run_id = briefing.get("fc_run_id")
+    if fc_run_id is not None:
+        parts.append(f"fc_run={fc_run_id}")
+
+    verify_run_url = status.get("verify_run_url")
+    if not isinstance(verify_run_url, str) or not verify_run_url:
+        verify_run_url = briefing.get("verify_run_url")
+    if isinstance(verify_run_url, str) and verify_run_url:
+        parts.append(f"verify_run_url={_format_run_url_stderr(verify_run_url)}")
+
+    fc_run_url = status.get("fc_run_url")
+    if not isinstance(fc_run_url, str) or not fc_run_url:
+        fc_run_url = briefing.get("fc_run_url")
+    if isinstance(fc_run_url, str) and fc_run_url:
+        parts.append(f"fc_run_url={_format_run_url_stderr(fc_run_url)}")
+
+    verify_status = status.get("verify_status")
+    if not isinstance(verify_status, str) or not verify_status:
+        verify_status = briefing.get("verify_status")
+    if isinstance(verify_status, str) and verify_status:
+        parts.append(f"verify_status={verify_status}")
+
+    fc_status = status.get("fc_status")
+    if not isinstance(fc_status, str) or not fc_status:
+        fc_status = briefing.get("fc_status")
+    if isinstance(fc_status, str) and fc_status:
+        parts.append(f"fc_status={fc_status}")
+
+    gh_watch_summary = status.get("gh_watch_summary")
+    if not isinstance(gh_watch_summary, str) or not gh_watch_summary:
+        gh_watch_summary = briefing.get("gh_watch_summary")
+    if not isinstance(gh_watch_summary, str) or not gh_watch_summary:
+        gh_watch_summary = _format_gh_watch_summary(briefing)
+    if isinstance(gh_watch_summary, str) and gh_watch_summary:
+        parts.append(f"gh_watch={gh_watch_summary}")
+
+    max_queued = status.get("max_queued_hours")
+    queue_backlog_severe = status.get("queue_backlog_severe")
+    queue_backlog = status.get("queue_backlog")
+    queue_backlog_warning = status.get("queue_backlog_warning")
+    if not isinstance(max_queued, (int, float)):
+        queue_context = briefing.get("queue_context")
+        if isinstance(queue_context, dict):
+            nested_queued = queue_context.get("max_queued_hours")
+            if isinstance(nested_queued, (int, float)):
+                max_queued = nested_queued
+            if not queue_backlog_severe and not queue_backlog:
+                queue_backlog_severe = queue_context.get("queue_backlog_severe")
+                queue_backlog = queue_context.get("queue_backlog")
+                queue_backlog_warning = queue_context.get("queue_backlog_warning")
+    if isinstance(max_queued, (int, float)):
+        parts.append(f"queued={float(max_queued):.1f}h")
+    if queue_backlog_severe or queue_backlog:
+        parts.append("queue_backlog=true")
+    elif queue_backlog_warning:
+        parts.append("queue_warn=true")
+
+    return parts
+
+
 def _format_preflight_watch_poll_line(
     polls: int,
     status: dict[str, Any],
@@ -1731,77 +1895,7 @@ def _format_preflight_watch_poll_line(
             parts.append("queue_warn=true")
     if status.get("lfg_deferred"):
         _apply_lfg_agent_briefing(status)
-        primary_action = status.get("primary_action")
-        if isinstance(primary_action, str) and primary_action:
-            parts.append(f"primary_action={primary_action}")
-        expected_after = status.get("expected_after_terminal")
-        if isinstance(expected_after, dict):
-            after_action = expected_after.get("action")
-            if isinstance(after_action, str) and after_action:
-                parts.append(f"expected_after={after_action}")
-        active_runs = status.get("active_runs")
-        if isinstance(active_runs, list) and active_runs:
-            parts.append(f"active_runs={','.join(str(label) for label in active_runs)}")
-        if status.get("watch_recommended"):
-            parts.append("watch_recommended=true")
-        gh_watch_command = status.get("gh_watch_command")
-        if isinstance(gh_watch_command, str) and gh_watch_command:
-            parts.append(f"watch={gh_watch_command}")
-        command = status.get("briefing_command")
-        if isinstance(command, str) and command:
-            parts.append(
-                f"briefing_command={_format_briefing_command_stderr(command)}"
-            )
-        sha_gap_short = status.get("sha_gap_short")
-        if isinstance(sha_gap_short, str) and sha_gap_short:
-            parts.append(f"sha_gap={sha_gap_short}")
-        queue_note = status.get("queue_backlog_note")
-        if isinstance(queue_note, str) and queue_note:
-            parts.append(f"queue_note={_format_queue_backlog_note_stderr(queue_note)}")
-        blocked = status.get("blocked")
-        if isinstance(blocked, str) and blocked:
-            parts.append(f"blocked={blocked}")
-        briefing_reason = status.get("briefing_reason")
-        if isinstance(briefing_reason, str) and briefing_reason:
-            parts.append(f"briefing_reason={briefing_reason}")
-        briefing_action = status.get("briefing_action")
-        if isinstance(briefing_action, str) and briefing_action:
-            parts.append(f"action={briefing_action}")
-        notes = status.get("briefing_notes")
-        if isinstance(notes, list) and notes:
-            parts.append(f"notes={len(notes)}")
-        if "briefing_merge_ready" in status:
-            parts.append(
-                f"merge_ready={'true' if status['briefing_merge_ready'] else 'false'}"
-            )
-        verify_run_id = status.get("verify_run_id")
-        if verify_run_id is not None:
-            parts.append(f"verify_run={verify_run_id}")
-        fc_run_id = status.get("fc_run_id")
-        if fc_run_id is not None:
-            parts.append(f"fc_run={fc_run_id}")
-        verify_run_url = status.get("verify_run_url")
-        if isinstance(verify_run_url, str) and verify_run_url:
-            parts.append(f"verify_run_url={_format_run_url_stderr(verify_run_url)}")
-        fc_run_url = status.get("fc_run_url")
-        if isinstance(fc_run_url, str) and fc_run_url:
-            parts.append(f"fc_run_url={_format_run_url_stderr(fc_run_url)}")
-        verify_status = status.get("verify_status")
-        if isinstance(verify_status, str) and verify_status:
-            parts.append(f"verify_status={verify_status}")
-        fc_status = status.get("fc_status")
-        if isinstance(fc_status, str) and fc_status:
-            parts.append(f"fc_status={fc_status}")
-        gh_watch_summary = status.get("gh_watch_summary")
-        if isinstance(gh_watch_summary, str) and gh_watch_summary:
-            parts.append(f"gh_watch={gh_watch_summary}")
-        max_queued = status.get("max_queued_hours")
-        if isinstance(max_queued, (int, float)):
-            parts.append(f"queued={float(max_queued):.1f}h")
-        if status.get("queue_backlog_severe") or status.get("queue_backlog"):
-            parts.append("queue_backlog=true")
-        elif status.get("queue_backlog_warning"):
-            parts.append("queue_warn=true")
+        parts.extend(_lfg_briefing_mirror_stderr_parts(status))
     return " ".join(parts)
 
 
@@ -2460,78 +2554,10 @@ def _emit_lfg_strict_exit_stderr(status: dict[str, Any], exit_code: int) -> None
     crosscheck_note = status.get("pr_checks_crosscheck_note")
     if crosscheck_note:
         line = f"{line} crosscheck={crosscheck_note}"
-    briefing = status.get("lfg_agent_briefing")
-    if isinstance(briefing, dict):
-        if briefing.get("primary_action"):
-            line = f"{line} primary_action={briefing['primary_action']}"
-        expected_after = briefing.get("expected_after_terminal")
-        if isinstance(expected_after, dict):
-            after_action = expected_after.get("action")
-            if isinstance(after_action, str) and after_action:
-                line = f"{line} expected_after={after_action}"
-        active_runs = briefing.get("active_runs")
-        if isinstance(active_runs, list) and active_runs:
-            line = f"{line} active_runs={','.join(str(label) for label in active_runs)}"
-        queue_context = briefing.get("queue_context")
-        if isinstance(queue_context, dict):
-            max_queued = queue_context.get("max_queued_hours")
-            if isinstance(max_queued, (int, float)):
-                line = f"{line} queued={float(max_queued):.1f}h"
-            if queue_context.get("queue_backlog_severe"):
-                line = f"{line} queue_backlog=true"
-            elif queue_context.get("queue_backlog_warning"):
-                line = f"{line} queue_warn=true"
-        gh_watch = briefing.get("gh_watch_summary")
-        if not isinstance(gh_watch, str) or not gh_watch:
-            gh_watch = _format_gh_watch_summary(briefing)
-        if gh_watch:
-            line = f"{line} gh_watch={gh_watch}"
-        if briefing.get("watch_recommended"):
-            line = f"{line} watch_recommended=true"
-        fc_run_id = briefing.get("fc_run_id")
-        if fc_run_id is not None:
-            line = f"{line} fc_run={fc_run_id}"
-        verify_run_id = briefing.get("verify_run_id")
-        if verify_run_id is not None:
-            line = f"{line} verify_run={verify_run_id}"
-        verify_status = briefing.get("verify_status")
-        if isinstance(verify_status, str) and verify_status:
-            line = f"{line} verify_status={verify_status}"
-        fc_status = briefing.get("fc_status")
-        if isinstance(fc_status, str) and fc_status:
-            line = f"{line} fc_status={fc_status}"
-        blocked = briefing.get("blocked")
-        if isinstance(blocked, str) and blocked:
-            line = f"{line} blocked={blocked}"
-        action = briefing.get("action")
-        if isinstance(action, str) and action:
-            line = f"{line} action={action}"
-        reason = briefing.get("reason")
-        if isinstance(reason, str) and reason:
-            line = f"{line} briefing_reason={reason}"
-        notes_count = _format_briefing_notes_count(briefing)
-        if notes_count is not None:
-            line = f"{line} notes={notes_count}"
-        merge_ready = _format_briefing_merge_ready(briefing)
-        if merge_ready is not None:
-            line = f"{line} merge_ready={merge_ready}"
-        queue_context = briefing.get("queue_context")
-        if isinstance(queue_context, dict):
-            note = queue_context.get("note")
-            if isinstance(note, str) and note:
-                line = f"{line} queue_note={_format_queue_backlog_note_stderr(note)}"
-        sha_gap_short = _format_briefing_sha_gap_short(briefing)
-        if sha_gap_short is not None:
-            line = f"{line} sha_gap={sha_gap_short}"
-        gh_watch_command = _extract_gh_watch_command(briefing)
-        if gh_watch_command is not None:
-            line = f"{line} watch={gh_watch_command}"
-        command = briefing.get("command")
-        if isinstance(command, str) and command:
-            line = (
-                f"{line} briefing_command="
-                f"{_format_briefing_command_stderr(command)}"
-            )
+    if isinstance(status.get("lfg_agent_briefing"), dict):
+        suffix = " ".join(_lfg_briefing_mirror_stderr_parts(status))
+        if suffix:
+            line = f"{line} {suffix}"
     print(line, file=sys.stderr)
 
 

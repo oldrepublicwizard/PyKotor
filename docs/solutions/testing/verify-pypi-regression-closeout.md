@@ -133,6 +133,7 @@ Post–PR #268 CI hygiene and local parity for published PyPI packages.
 - Watch summary one-liner stderr adds **`verify_run=`** / **`fc_run=`** and truncated run URLs (plan 168).
 - Watch summary one-liner stderr prefers top-level **`queued=`** / queue flags over nested **`queue_context`** (plan 169).
 - **`preflight_watch_summary`** copies defer briefing mirrors from top-level **`status`** after **`_apply_lfg_agent_briefing`**, not nested **`lfg_agent_briefing`** (plan 170).
+- Strict exit and deferred poll stderr share **`_lfg_briefing_mirror_stderr_parts`**, preferring top-level **`status`** with briefing fallback (plan 171).
 - **`--lfg-preflight-watch`** — poll preflight until defer clears or timeout (default 7200s); `preflight_watch_summary` with `next_hint` (plan 114).
 - **`--lfg-gate-watch`** — gate + preflight-watch; defer **`post_terminal_commands`** for after FC terminal; primary wait command for defer/drift (plans 118–119).
 - **`investigate_ci_drift`** briefing includes structured **`drift`**, **`refresh_commands`**, and **`wait_recommended`** when runs are still active (plan 115).
