@@ -496,7 +496,7 @@ Monitoring.
         self.assertTrue(changes["forward_commits_row"])
         self.assertTrue(changes["plans_index"])
         self.assertIn("https://example.com/10", patched)
-        self.assertIn("019–171", patched)
+        self.assertIn("019–172", patched)
 
     def test_dedupe_preserve_order(self) -> None:
         self.assertEqual(

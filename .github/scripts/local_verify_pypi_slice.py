@@ -24,7 +24,7 @@ SOLUTION_CLOSEOUT = (
     REPO_ROOT / "docs" / "solutions" / "testing" / "verify-pypi-regression-closeout.md"
 )
 PLAN_020 = REPO_ROOT / "docs" / "plans" / "2026-05-24-020-verify-pypi-regression-post-268-plan.md"
-PLAN_TRACK_CAP = "171"
+PLAN_TRACK_CAP = "172"
 LFG_EXIT_CODES: dict[int, str] = {
     0: "proceed, merge_ready, or monitoring_complete",
     1: "gh_error",
@@ -1822,6 +1822,16 @@ def _lfg_briefing_mirror_stderr_parts(status: dict[str, Any]) -> list[str]:
     queue_backlog = status.get("queue_backlog")
     queue_backlog_warning = status.get("queue_backlog_warning")
     if not isinstance(max_queued, (int, float)):
+        own_queue_context = status.get("queue_context")
+        if isinstance(own_queue_context, dict):
+            nested_queued = own_queue_context.get("max_queued_hours")
+            if isinstance(nested_queued, (int, float)):
+                max_queued = nested_queued
+            if not queue_backlog_severe and not queue_backlog:
+                queue_backlog_severe = own_queue_context.get("queue_backlog_severe")
+                queue_backlog = own_queue_context.get("queue_backlog")
+                queue_backlog_warning = own_queue_context.get("queue_backlog_warning")
+    if not isinstance(max_queued, (int, float)):
         queue_context = briefing.get("queue_context")
         if isinstance(queue_context, dict):
             nested_queued = queue_context.get("max_queued_hours")
@@ -1943,88 +1953,7 @@ def _format_preflight_watch_summary_line(
     if isinstance(next_hint, str) and next_hint:
         hint = next_hint if len(next_hint) <= 96 else f"{next_hint[:93]}..."
         parts.append(f"next={hint}")
-    active_runs = summary.get("active_runs")
-    if isinstance(active_runs, list) and active_runs:
-        parts.append(f"active_runs={','.join(str(label) for label in active_runs)}")
-    gh_watch = summary.get("gh_watch_summary")
-    if isinstance(gh_watch, str) and gh_watch:
-        parts.append(f"gh_watch={gh_watch}")
-    max_queued = summary.get("max_queued_hours")
-    queue_backlog = summary.get("queue_backlog")
-    queue_backlog_severe = summary.get("queue_backlog_severe")
-    queue_backlog_warning = summary.get("queue_backlog_warning")
-    if not isinstance(max_queued, (int, float)):
-        queue_context = summary.get("queue_context")
-        if isinstance(queue_context, dict):
-            nested_queued = queue_context.get("max_queued_hours")
-            if isinstance(nested_queued, (int, float)):
-                max_queued = nested_queued
-            if not queue_backlog_severe and not queue_backlog:
-                queue_backlog_severe = queue_context.get("queue_backlog_severe")
-                queue_backlog = queue_context.get("queue_backlog")
-                queue_backlog_warning = queue_context.get("queue_backlog_warning")
-    if isinstance(max_queued, (int, float)):
-        parts.append(f"queued={float(max_queued):.1f}h")
-    if queue_backlog_severe or queue_backlog:
-        parts.append("queue_backlog=true")
-    elif queue_backlog_warning:
-        parts.append("queue_warn=true")
-    expected_after = summary.get("expected_after_terminal")
-    if isinstance(expected_after, dict):
-        after_action = expected_after.get("action")
-        if isinstance(after_action, str) and after_action:
-            parts.append(f"expected_after={after_action}")
-    primary_action = summary.get("primary_action")
-    if isinstance(primary_action, str) and primary_action:
-        parts.append(f"primary_action={primary_action}")
-    if summary.get("watch_recommended"):
-        parts.append("watch_recommended=true")
-    verify_run_id = summary.get("verify_run_id")
-    if verify_run_id is not None:
-        parts.append(f"verify_run={verify_run_id}")
-    fc_run_id = summary.get("fc_run_id")
-    if fc_run_id is not None:
-        parts.append(f"fc_run={fc_run_id}")
-    verify_run_url = summary.get("verify_run_url")
-    if isinstance(verify_run_url, str) and verify_run_url:
-        parts.append(f"verify_run_url={_format_run_url_stderr(verify_run_url)}")
-    fc_run_url = summary.get("fc_run_url")
-    if isinstance(fc_run_url, str) and fc_run_url:
-        parts.append(f"fc_run_url={_format_run_url_stderr(fc_run_url)}")
-    verify_status = summary.get("verify_status")
-    if isinstance(verify_status, str) and verify_status:
-        parts.append(f"verify_status={verify_status}")
-    fc_status = summary.get("fc_status")
-    if isinstance(fc_status, str) and fc_status:
-        parts.append(f"fc_status={fc_status}")
-    blocked = summary.get("blocked")
-    if isinstance(blocked, str) and blocked:
-        parts.append(f"blocked={blocked}")
-    briefing_action = summary.get("briefing_action")
-    if isinstance(briefing_action, str) and briefing_action:
-        parts.append(f"action={briefing_action}")
-    briefing_reason = summary.get("briefing_reason")
-    if isinstance(briefing_reason, str) and briefing_reason:
-        parts.append(f"briefing_reason={briefing_reason}")
-    notes = summary.get("briefing_notes")
-    if isinstance(notes, list) and notes:
-        parts.append(f"notes={len(notes)}")
-    if "briefing_merge_ready" in summary:
-        parts.append(f"merge_ready={'true' if summary['briefing_merge_ready'] else 'false'}")
-    queue_note = summary.get("queue_backlog_note")
-    if isinstance(queue_note, str) and queue_note:
-        parts.append(f"queue_note={_format_queue_backlog_note_stderr(queue_note)}")
-    sha_gap_short = summary.get("sha_gap_short")
-    if isinstance(sha_gap_short, str) and sha_gap_short:
-        parts.append(f"sha_gap={sha_gap_short}")
-    gh_watch_command = summary.get("gh_watch_command")
-    if isinstance(gh_watch_command, str) and gh_watch_command:
-        parts.append(f"watch={gh_watch_command}")
-    briefing_command = summary.get("briefing_command")
-    if isinstance(briefing_command, str) and briefing_command:
-        parts.append(
-            f"briefing_command={_format_briefing_command_stderr(briefing_command)}"
-        )
+    parts.extend(_lfg_briefing_mirror_stderr_parts(summary))
     return " ".join(parts)
 
 
