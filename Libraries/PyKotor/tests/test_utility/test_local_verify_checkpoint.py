@@ -496,7 +496,7 @@ Monitoring.
         self.assertTrue(changes["forward_commits_row"])
         self.assertTrue(changes["plans_index"])
         self.assertIn("https://example.com/10", patched)
-        self.assertIn("019–135", patched)
+        self.assertIn("019–136", patched)
 
     def test_dedupe_preserve_order(self) -> None:
         self.assertEqual(
@@ -1112,6 +1112,9 @@ Monitoring.
         self.assertTrue(status.get("watch_recommended"))
         post_terminal = status.get("post_terminal_commands") or {}
         self.assertIn("closeout", post_terminal)
+        self.assertIn("--lfg-gate-watch", status.get("wait_command") or "")
+        monitor_commands = status.get("monitor_commands") or {}
+        self.assertIn("gate_watch", monitor_commands)
 
     def test_watch_pr_merge_status_conflicts(self) -> None:
         status: dict[str, Any] = {"lfg_track_complete": True}
@@ -1523,6 +1526,9 @@ Monitoring.
         self.assertTrue(summary.get("watch_recommended"))
         post_terminal = summary.get("post_terminal_commands") or {}
         self.assertIn("closeout", post_terminal)
+        self.assertIn("--lfg-gate-watch", summary.get("wait_command") or "")
+        monitor_commands = summary.get("monitor_commands") or {}
+        self.assertIn("gate_watch", monitor_commands)
 
     def test_build_drift_expected_after_prefers_closeout(self) -> None:
         expected = mod._build_drift_expected_after(
