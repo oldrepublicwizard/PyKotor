@@ -24,7 +24,7 @@ SOLUTION_CLOSEOUT = (
     REPO_ROOT / "docs" / "solutions" / "testing" / "verify-pypi-regression-closeout.md"
 )
 PLAN_020 = REPO_ROOT / "docs" / "plans" / "2026-05-24-020-verify-pypi-regression-post-268-plan.md"
-PLAN_TRACK_CAP = "119"
+PLAN_TRACK_CAP = "120"
 LFG_EXIT_CODES: dict[int, str] = {
     0: "proceed, merge_ready, or monitoring_complete",
     1: "gh_error",
@@ -493,8 +493,7 @@ def _compare_checkpoint(status: dict[str, Any]) -> dict[str, Any]:
         queue_suffix = ""
         if isinstance(queued_hours, (int, float)):
             queue_suffix = f"; queued {queued_hours:.1f}h"
-        result.update(
-            {
+        pending_update: dict[str, Any] = {
                 "checkpoint_unchanged": True,
                 "defer_lfg_pr": True,
                 "defer_reason": "FC run still active; classify SHA gap after terminal",
@@ -503,7 +502,11 @@ def _compare_checkpoint(status: dict[str, Any]) -> dict[str, Any]:
                     f"vs master {master_sha[:7] if master_sha else '?'}{queue_suffix}"
                 ),
             }
-        )
+        if isinstance(queued_hours, (int, float)) and queued_hours >= _QUEUE_BACKLOG_HOURS:
+            pending_update["queue_backlog_note"] = (
+                f"FC queued {queued_hours:.1f}h (external runner backlog)"
+            )
+        result.update(pending_update)
         return result
 
     if fc_sha_stale and fc_sha_stale_benign is None:
@@ -2222,6 +2225,31 @@ def _build_defer_sha_gap_detail(status: dict[str, Any]) -> dict[str, Any] | None
     return detail
 
 
+def _build_defer_queue_context(status: dict[str, Any]) -> dict[str, Any]:
+    checkpoint = status.get("checkpoint") if isinstance(status.get("checkpoint"), dict) else {}
+    max_queued: float | None = None
+    for key in ("forward_commits", "verify_pypi"):
+        run = status.get(key)
+        if not isinstance(run, dict) or "error" in run:
+            continue
+        queued_hours = run.get("queued_hours")
+        if isinstance(queued_hours, (int, float)):
+            value = float(queued_hours)
+            if max_queued is None or value > max_queued:
+                max_queued = value
+    queue_backlog = max_queued is not None and max_queued >= _QUEUE_BACKLOG_HOURS
+    note = checkpoint.get("queue_backlog_note")
+    context: dict[str, Any] = {
+        "queue_backlog": queue_backlog,
+        "queue_backlog_severe": queue_backlog,
+    }
+    if max_queued is not None:
+        context["max_queued_hours"] = round(max_queued, 2)
+    if isinstance(note, str) and note:
+        context["note"] = note
+    return context
+
+
 def _build_defer_post_terminal_commands(status: dict[str, Any]) -> dict[str, str]:
     script = "python3 .github/scripts/local_verify_pypi_slice.py"
     commands: dict[str, str] = {
@@ -2330,6 +2358,7 @@ def _build_lfg_agent_briefing(status: dict[str, Any]) -> dict[str, Any]:
             "fc_stale_gap_pending_note",
             "fc_active_closeout_note",
             "verify_active_closeout_note",
+            "queue_backlog_note",
         ):
             note = checkpoint.get(key)
             if isinstance(note, str) and note:
@@ -2349,8 +2378,11 @@ def _build_lfg_agent_briefing(status: dict[str, Any]) -> dict[str, Any]:
         sha_gap = _build_defer_sha_gap_detail(status)
         if sha_gap is not None:
             briefing["sha_gap"] = sha_gap
+        queue_context = _build_defer_queue_context(status)
+        briefing["queue_context"] = queue_context
         if _defer_preflight_watch_recommended(status):
             briefing["watch_recommended"] = True
+            briefing["primary_action"] = "gate_watch"
             briefing["command"] = _primary_watch_command(briefing["monitor_commands"])
         return briefing
     blocked_refresh = status.get("lfg_refresh_blocked")
@@ -2403,7 +2435,12 @@ def _emit_lfg_agent_briefing_stderr(briefing: dict[str, Any]) -> None:
         parts.append(f"reason={briefing['reason']}")
     if action == "defer" and briefing.get("watch_recommended"):
         parts.append("watch_recommended=true")
+        if briefing.get("primary_action"):
+            parts.append(f"primary_action={briefing['primary_action']}")
     if action == "defer":
+        queue_context = briefing.get("queue_context")
+        if isinstance(queue_context, dict) and queue_context.get("queue_backlog_severe"):
+            parts.append("queue_backlog=true")
         sha_gap = briefing.get("sha_gap")
         if isinstance(sha_gap, dict):
             short = sha_gap.get("short")

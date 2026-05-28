@@ -496,7 +496,7 @@ Monitoring.
         self.assertTrue(changes["forward_commits_row"])
         self.assertTrue(changes["plans_index"])
         self.assertIn("https://example.com/10", patched)
-        self.assertIn("019–119", patched)
+        self.assertIn("019–120", patched)
 
     def test_dedupe_preserve_order(self) -> None:
         self.assertEqual(
@@ -2446,6 +2446,33 @@ last_verified: 2026-01-01
         self.assertIn("fc_stale_gap_pending_note", result)
         self.assertIn("queued", result.get("fc_stale_gap_pending_note", ""))
 
+    def test_compare_fc_active_pending_queue_backlog_note(self) -> None:
+        status = {
+            "verify_pypi": {
+                "run_id": 26372746392,
+                "status": "completed",
+                "conclusion": "success",
+                "head_sha": _MASTER_SHA,
+            },
+            "forward_commits": {
+                "run_id": 26543899770,
+                "status": "queued",
+                "conclusion": "",
+                "head_sha": _FC_SHA,
+                "queued_hours": 4.5,
+            },
+        }
+        with patch.object(mod, "_parse_solution_checkpoint_run_ids") as mock_parse:
+            mock_parse.return_value = {
+                "verify_run_id": 26372746392,
+                "forward_commits_run_id": 26543899770,
+            }
+            with patch.object(mod, "_git_origin_master_sha", return_value=_MASTER_SHA):
+                with patch.object(mod, "_commits_since_are_docs_only", return_value=None):
+                    result = mod._compare_checkpoint(status)
+        self.assertIn("queue_backlog_note", result)
+        self.assertIn("4.5h", result["queue_backlog_note"])
+
     def test_compare_classify_gap_when_fc_terminal_benign_unknown(self) -> None:
         status = {
             "verify_pypi": {
@@ -2513,6 +2540,7 @@ last_verified: 2026-01-01
         self.assertIn("prefetch_gate", briefing["post_terminal_commands"])
         self.assertNotIn("preflight-watch", monitor["preflight_retry"])
         self.assertTrue(briefing["watch_recommended"])
+        self.assertEqual(briefing["primary_action"], "gate_watch")
         self.assertIn("--lfg-gate-watch", briefing["command"])
         sha_gap = briefing["sha_gap"]
         self.assertEqual(sha_gap["fc_head_sha"], None)
@@ -2560,6 +2588,31 @@ last_verified: 2026-01-01
         )
         self.assertIn("sha_gap", briefing)
         self.assertEqual(briefing["sha_gap"]["short"], "7d85438:8916e2f")
+
+    def test_build_defer_queue_context_severe(self) -> None:
+        context = mod._build_defer_queue_context(
+            {
+                "forward_commits": {"queued_hours": 4.2},
+                "checkpoint": {"queue_backlog_note": "FC queued 4.2h (external runner backlog)"},
+            }
+        )
+        self.assertTrue(context["queue_backlog"])
+        self.assertEqual(context["max_queued_hours"], 4.2)
+
+    def test_emit_defer_briefing_stderr_queue_backlog(self) -> None:
+        with patch.object(mod.sys, "stderr", new_callable=io.StringIO) as err:
+            mod._emit_lfg_agent_briefing_stderr(
+                {
+                    "action": "defer",
+                    "reason": "fc_active_pending",
+                    "watch_recommended": True,
+                    "primary_action": "gate_watch",
+                    "queue_context": {"queue_backlog_severe": True},
+                }
+            )
+        output = err.getvalue()
+        self.assertIn("primary_action=gate_watch", output)
+        self.assertIn("queue_backlog=true", output)
 
     def test_build_defer_monitor_commands_verify_active(self) -> None:
         commands = mod._build_defer_monitor_commands(

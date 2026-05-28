@@ -64,7 +64,7 @@ Plan 019 landed via PR #268 but remained `in_progress` without post-merge verifi
 
 **Last CI check (plan 118):** 2026-05-27 — verify [26372746392](https://github.com/OpenKotOR/PyKotor/actions/runs/26372746392) success on `8916e2f`; FC [26548176325](https://github.com/OpenKotOR/PyKotor/actions/runs/26548176325) queued on `573c9d4`.
 
-**Plans:** 019–119 document the closeout track; authoritative learning in `docs/solutions/testing/verify-pypi-regression-closeout.md`.
+**Plans:** 019–120 document the closeout track; authoritative learning in `docs/solutions/testing/verify-pypi-regression-closeout.md`.
 
 ---
 
