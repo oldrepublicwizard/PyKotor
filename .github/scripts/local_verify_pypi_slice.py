@@ -24,7 +24,7 @@ SOLUTION_CLOSEOUT = (
     REPO_ROOT / "docs" / "solutions" / "testing" / "verify-pypi-regression-closeout.md"
 )
 PLAN_020 = REPO_ROOT / "docs" / "plans" / "2026-05-24-020-verify-pypi-regression-post-268-plan.md"
-PLAN_TRACK_CAP = "162"
+PLAN_TRACK_CAP = "163"
 LFG_EXIT_CODES: dict[int, str] = {
     0: "proceed, merge_ready, or monitoring_complete",
     1: "gh_error",
@@ -1708,7 +1708,7 @@ def _format_preflight_watch_poll_line(
         if not emit_briefing_status:
             parts.append(f"{label}_status={_run_display_label(run)}")
         queued = run.get("queued_hours")
-        if isinstance(queued, (int, float)):
+        if isinstance(queued, (int, float)) and not emit_briefing_status:
             parts.append(f"{label}_queued={queued:.1f}h")
     if not emit_briefing_status:
         active_runs = _build_active_runs_list(status)

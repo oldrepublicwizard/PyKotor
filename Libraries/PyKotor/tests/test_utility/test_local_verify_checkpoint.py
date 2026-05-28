@@ -496,7 +496,7 @@ Monitoring.
         self.assertTrue(changes["forward_commits_row"])
         self.assertTrue(changes["plans_index"])
         self.assertIn("https://example.com/10", patched)
-        self.assertIn("019–162", patched)
+        self.assertIn("019–163", patched)
 
     def test_dedupe_preserve_order(self) -> None:
         self.assertEqual(
@@ -3566,6 +3566,10 @@ last_verified: 2026-01-01
         self.assertIn("active_runs=verify,fc", tokens)
         self.assertEqual(sum(1 for token in tokens if token == "active_runs=verify,fc"), 1)
         self.assertIn("queued=1.5h", line)
+        tokens = line.split()
+        self.assertEqual(sum(1 for token in tokens if token == "queued=1.5h"), 1)
+        self.assertNotIn("verify_queued=1.5h", tokens)
+        self.assertNotIn("fc_queued=1.0h", tokens)
         self.assertIn("expected_after=closeout", line)
         self.assertIn("primary_action=gate_watch", line)
         self.assertIn("watch_recommended=true", line)
@@ -3879,6 +3883,17 @@ last_verified: 2026-01-01
         self.assertNotIn("verify_run=1", tokens)
         self.assertNotIn("fc_run=2", tokens)
 
+    def test_format_preflight_watch_poll_line_per_run_queued_when_not_deferred(self) -> None:
+        status: dict[str, Any] = {
+            "lfg_defer_reason": "unchanged_active_runs",
+            "verify_pypi": {"run_id": 1, "status": "queued", "conclusion": "", "queued_hours": 1.5},
+            "forward_commits": {"run_id": 2, "status": "queued", "conclusion": "", "queued_hours": 1.0},
+        }
+        line = mod._format_preflight_watch_poll_line(1, status)
+        tokens = line.split()
+        self.assertIn("verify_queued=1.5h", tokens)
+        self.assertIn("fc_queued=1.0h", tokens)
+
     def test_format_preflight_watch_poll_line_run_status_once(self) -> None:
         status: dict[str, Any] = {
             "lfg_deferred": True,
@@ -3954,6 +3969,8 @@ last_verified: 2026-01-01
         self.assertEqual(sum(1 for token in tokens if token == "queued=2.5h"), 1)
         self.assertIn("queue_warn=true", tokens)
         self.assertEqual(sum(1 for token in tokens if token == "queue_warn=true"), 1)
+        self.assertNotIn("verify_queued=2.5h", tokens)
+        self.assertNotIn("fc_queued=1.0h", tokens)
 
     def test_format_gate_watch_poll_line_queue_backlog_once(self) -> None:
         status: dict[str, Any] = {
