@@ -496,7 +496,7 @@ Monitoring.
         self.assertTrue(changes["forward_commits_row"])
         self.assertTrue(changes["plans_index"])
         self.assertIn("https://example.com/10", patched)
-        self.assertIn("019–120", patched)
+        self.assertIn("019–121", patched)
 
     def test_dedupe_preserve_order(self) -> None:
         self.assertEqual(
@@ -2607,12 +2607,29 @@ last_verified: 2026-01-01
                     "reason": "fc_active_pending",
                     "watch_recommended": True,
                     "primary_action": "gate_watch",
-                    "queue_context": {"queue_backlog_severe": True},
+                    "queue_context": {
+                        "queue_backlog_severe": True,
+                        "max_queued_hours": 4.2,
+                    },
                 }
             )
         output = err.getvalue()
         self.assertIn("primary_action=gate_watch", output)
         self.assertIn("queue_backlog=true", output)
+        self.assertIn("queued=4.2h", output)
+
+    def test_emit_defer_briefing_stderr_queued_hours_not_severe(self) -> None:
+        with patch.object(mod.sys, "stderr", new_callable=io.StringIO) as err:
+            mod._emit_lfg_agent_briefing_stderr(
+                {
+                    "action": "defer",
+                    "reason": "fc_active_pending",
+                    "queue_context": {"max_queued_hours": 0.33},
+                }
+            )
+        output = err.getvalue()
+        self.assertIn("queued=0.3h", output)
+        self.assertNotIn("queue_backlog=true", output)
 
     def test_build_defer_monitor_commands_verify_active(self) -> None:
         commands = mod._build_defer_monitor_commands(
@@ -2975,6 +2992,29 @@ last_verified: 2026-01-01
             },
         )
         self.assertIn("sha_gap=573c9d4:8916e2f", line)
+        self.assertIn("preflight watch poll", line)
+
+    def test_format_gate_watch_poll_line_label(self) -> None:
+        line = mod._format_preflight_watch_poll_line(
+            2,
+            {"lfg_defer_reason": "fc_active_pending"},
+            watch_label="gate",
+        )
+        self.assertIn("gate watch poll", line)
+        self.assertNotIn("preflight watch poll", line)
+
+    def test_format_preflight_watch_summary_line_includes_next_hint(self) -> None:
+        line = mod._format_preflight_watch_summary_line(
+            {
+                "lfg_preflight_watch_result": "timeout",
+                "polls": 3,
+                "watch_duration_sec": 12.0,
+                "next_hint": "python3 .github/scripts/local_verify_pypi_slice.py --lfg-gate-watch --json",
+            }
+        )
+        self.assertIn("result=timeout", line)
+        self.assertIn("next=", line)
+        self.assertIn("--lfg-gate-watch", line)
 
     def test_apply_lfg_defer_skipped_when_disabled(self) -> None:
         status: dict[str, Any] = {"checkpoint": {"defer_lfg_pr": True}}

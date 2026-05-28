@@ -24,7 +24,7 @@ SOLUTION_CLOSEOUT = (
     REPO_ROOT / "docs" / "solutions" / "testing" / "verify-pypi-regression-closeout.md"
 )
 PLAN_020 = REPO_ROOT / "docs" / "plans" / "2026-05-24-020-verify-pypi-regression-post-268-plan.md"
-PLAN_TRACK_CAP = "120"
+PLAN_TRACK_CAP = "121"
 LFG_EXIT_CODES: dict[int, str] = {
     0: "proceed, merge_ready, or monitoring_complete",
     1: "gh_error",
@@ -1657,9 +1657,22 @@ def _primary_watch_command(commands: dict[str, str]) -> str:
     return ""
 
 
-def _format_preflight_watch_poll_line(polls: int, status: dict[str, Any]) -> str:
+def _watch_label_display(watch_label: str) -> str:
+    normalized = watch_label.strip().lower()
+    if normalized == "gate":
+        return "gate watch"
+    return "preflight watch"
+
+
+def _format_preflight_watch_poll_line(
+    polls: int,
+    status: dict[str, Any],
+    *,
+    watch_label: str = "preflight",
+) -> str:
     reason = status.get("lfg_defer_reason") or "deferred"
-    parts = [f"LFG preflight watch poll {polls}: deferred=true reason={reason}"]
+    label = _watch_label_display(watch_label)
+    parts = [f"LFG {label} poll {polls}: deferred=true reason={reason}"]
     checkpoint = status.get("checkpoint")
     if isinstance(checkpoint, dict):
         master_sha = checkpoint.get("master_sha")
@@ -1705,12 +1718,21 @@ def _build_preflight_watch_summary(status: dict[str, Any]) -> dict[str, Any]:
     }
 
 
-def _format_preflight_watch_summary_line(summary: dict[str, Any]) -> str:
+def _format_preflight_watch_summary_line(
+    summary: dict[str, Any],
+    *,
+    watch_label: str = "preflight",
+) -> str:
     result = summary.get("lfg_preflight_watch_result") or "unknown"
     polls = summary.get("polls", 0)
     duration = summary.get("watch_duration_sec")
     duration_text = f"{duration:.0f}s" if isinstance(duration, (int, float)) else "n/a"
-    return f"result={result} polls={polls} duration={duration_text}"
+    parts = [f"result={result} polls={polls} duration={duration_text}"]
+    next_hint = summary.get("next_hint")
+    if isinstance(next_hint, str) and next_hint:
+        hint = next_hint if len(next_hint) <= 96 else f"{next_hint[:93]}..."
+        parts.append(f"next={hint}")
+    return " ".join(parts)
 
 
 def _watch_lfg_preflight_defer(
@@ -1719,6 +1741,7 @@ def _watch_lfg_preflight_defer(
     prefetch_git: bool,
     interval_sec: float,
     timeout_sec: float,
+    watch_label: str = "preflight",
 ) -> dict[str, Any]:
     deadline = time.monotonic() + max(0.0, timeout_sec)
     polls = 0
@@ -1761,7 +1784,10 @@ def _watch_lfg_preflight_defer(
                 if isinstance(queued, (int, float)):
                     snapshot[f"{prefix}_queued_hours"] = round(float(queued), 2)
         history.append(snapshot)
-        print(_format_preflight_watch_poll_line(polls, status), file=sys.stderr)
+        print(
+            _format_preflight_watch_poll_line(polls, status, watch_label=watch_label),
+            file=sys.stderr,
+        )
         if not still_deferred:
             watch_result = "proceed"
             break
@@ -1776,13 +1802,14 @@ def _watch_lfg_preflight_defer(
     blocked = _lfg_refresh_blocked(status, deferred=bool(status.get("lfg_deferred")))
     summary["next_hint"] = _build_proceed_hint(status, blocked=blocked)
     status["preflight_watch_summary"] = summary
+    label = _watch_label_display(watch_label)
     print(
-        f"Preflight watch summary: {_format_preflight_watch_summary_line(summary)}",
+        f"LFG {label} summary: {_format_preflight_watch_summary_line(summary, watch_label=watch_label)}",
         file=sys.stderr,
     )
     next_hint = summary.get("next_hint")
     if isinstance(next_hint, str) and next_hint:
-        print(f"Preflight watch next: {next_hint}", file=sys.stderr)
+        print(f"LFG {label} next: {next_hint}", file=sys.stderr)
     return status
 
 
@@ -2439,8 +2466,12 @@ def _emit_lfg_agent_briefing_stderr(briefing: dict[str, Any]) -> None:
             parts.append(f"primary_action={briefing['primary_action']}")
     if action == "defer":
         queue_context = briefing.get("queue_context")
-        if isinstance(queue_context, dict) and queue_context.get("queue_backlog_severe"):
-            parts.append("queue_backlog=true")
+        if isinstance(queue_context, dict):
+            max_queued = queue_context.get("max_queued_hours")
+            if isinstance(max_queued, (int, float)):
+                parts.append(f"queued={float(max_queued):.1f}h")
+            if queue_context.get("queue_backlog_severe"):
+                parts.append("queue_backlog=true")
         sha_gap = briefing.get("sha_gap")
         if isinstance(sha_gap, dict):
             short = sha_gap.get("short")
@@ -3358,11 +3389,13 @@ def main() -> None:
         if args.prefetch_git and args.compare_checkpoint and not args.lfg_preflight_watch:
             prefetch_result = _git_prefetch_origin_master()
         if args.lfg_preflight_watch:
+            watch_label = "gate" if args.lfg_gate_watch else "preflight"
             status = _watch_lfg_preflight_defer(
                 targets=targets,
                 prefetch_git=args.prefetch_git,
                 interval_sec=max(0.0, args.watch_interval),
                 timeout_sec=max(0.0, args.watch_timeout),
+                watch_label=watch_label,
             )
             deferred = bool(status.get("lfg_deferred"))
             if deferred:
