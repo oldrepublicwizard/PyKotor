@@ -496,7 +496,37 @@ Monitoring.
         self.assertTrue(changes["forward_commits_row"])
         self.assertTrue(changes["plans_index"])
         self.assertIn("https://example.com/10", patched)
-        self.assertIn("019–183", patched)
+        self.assertIn("019–184", patched)
+
+    def test_count_unchanged_preflight_flat_keys_polls(self) -> None:
+        history = [
+            {"flat_keys": ["primary_action", "fc_run_id"]},
+            {"flat_keys": ["primary_action", "fc_run_id"]},
+            {"flat_keys": ["primary_action", "fc_run_id", "verify_run_id"]},
+        ]
+        self.assertEqual(mod._count_unchanged_preflight_flat_keys_polls(history), 1)
+
+    def test_build_preflight_watch_summary_unchanged_flat_keys(self) -> None:
+        status: dict[str, Any] = {
+            "preflight_watch_history": [
+                {"flat_keys": ["primary_action", "fc_run_id"]},
+                {"flat_keys": ["primary_action", "fc_run_id"]},
+            ],
+            "lfg_preflight_watch_result": "timeout",
+        }
+        summary = mod._build_preflight_watch_summary(status)
+        self.assertEqual(summary.get("unchanged_flat_keys_polls"), 1)
+
+    def test_format_preflight_watch_summary_line_unchanged_flat_keys(self) -> None:
+        line = mod._format_preflight_watch_summary_line(
+            {
+                "lfg_preflight_watch_result": "timeout",
+                "polls": 3,
+                "watch_duration_sec": 12.0,
+                "unchanged_flat_keys_polls": 2,
+            }
+        )
+        self.assertIn("unchanged_flat_keys_polls=2", line)
 
     def test_format_preflight_watch_poll_line_omits_unchanged_flat_keys(self) -> None:
         status: dict[str, Any] = {

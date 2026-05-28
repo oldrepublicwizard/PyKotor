@@ -24,7 +24,7 @@ SOLUTION_CLOSEOUT = (
     REPO_ROOT / "docs" / "solutions" / "testing" / "verify-pypi-regression-closeout.md"
 )
 PLAN_020 = REPO_ROOT / "docs" / "plans" / "2026-05-24-020-verify-pypi-regression-post-268-plan.md"
-PLAN_TRACK_CAP = "183"
+PLAN_TRACK_CAP = "184"
 LFG_EXIT_CODES: dict[int, str] = {
     0: "proceed, merge_ready, or monitoring_complete",
     1: "gh_error",
@@ -1654,6 +1654,23 @@ def _count_unchanged_watch_polls(history: list[dict[str, Any]]) -> int:
     return count
 
 
+def _count_unchanged_preflight_flat_keys_polls(history: list[dict[str, Any]]) -> int:
+    if len(history) < 2:
+        return 0
+    count = 0
+    for index in range(1, len(history)):
+        prev_keys = history[index - 1].get("flat_keys")
+        curr_keys = history[index].get("flat_keys")
+        if (
+            isinstance(prev_keys, list)
+            and isinstance(curr_keys, list)
+            and prev_keys
+            and prev_keys == curr_keys
+        ):
+            count += 1
+    return count
+
+
 def _should_emit_watch_heartbeat(
     progress_unchanged: bool,
     unchanged_streak: int,
@@ -2002,6 +2019,7 @@ def _build_preflight_watch_summary(status: dict[str, Any]) -> dict[str, Any]:
         "start_defer_reason": first_reason,
         "end_defer_reason": last_reason,
         "watch_duration_sec": duration_sec,
+        "unchanged_flat_keys_polls": _count_unchanged_preflight_flat_keys_polls(history),
     }
 
 
@@ -2015,6 +2033,9 @@ def _format_preflight_watch_summary_line(
     duration = summary.get("watch_duration_sec")
     duration_text = f"{duration:.0f}s" if isinstance(duration, (int, float)) else "n/a"
     parts = [f"result={result} polls={polls} duration={duration_text}"]
+    unchanged_flat = summary.get("unchanged_flat_keys_polls")
+    if isinstance(unchanged_flat, int) and unchanged_flat:
+        parts.append(f"unchanged_flat_keys_polls={unchanged_flat}")
     start_reason = summary.get("start_defer_reason")
     end_reason = summary.get("end_defer_reason")
     if (
@@ -2258,7 +2279,6 @@ def _watch_lfg_preflight_defer(
                 queued = run.get("queued_hours")
                 if isinstance(queued, (int, float)):
                     snapshot[f"{prefix}_queued_hours"] = round(float(queued), 2)
-        history.append(snapshot)
         print(
             _format_preflight_watch_poll_line(
                 polls,
@@ -2271,7 +2291,9 @@ def _watch_lfg_preflight_defer(
         if status.get("lfg_deferred"):
             current_flat_keys = _lfg_flat_field_keys_present_stderr(status)
             if current_flat_keys:
+                snapshot["flat_keys"] = list(current_flat_keys)
                 previous_flat_keys = current_flat_keys
+        history.append(snapshot)
         if not still_deferred:
             watch_result = "proceed"
             break
