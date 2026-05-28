@@ -24,7 +24,7 @@ SOLUTION_CLOSEOUT = (
     REPO_ROOT / "docs" / "solutions" / "testing" / "verify-pypi-regression-closeout.md"
 )
 PLAN_020 = REPO_ROOT / "docs" / "plans" / "2026-05-24-020-verify-pypi-regression-post-268-plan.md"
-PLAN_TRACK_CAP = "147"
+PLAN_TRACK_CAP = "148"
 LFG_EXIT_CODES: dict[int, str] = {
     0: "proceed, merge_ready, or monitoring_complete",
     1: "gh_error",
@@ -1648,6 +1648,18 @@ def _is_lfg_checkpoint_deferred(status: dict[str, Any]) -> bool:
     return isinstance(checkpoint, dict) and bool(checkpoint.get("defer_lfg_pr"))
 
 
+def _extract_gh_watch_command(briefing: dict[str, Any]) -> str | None:
+    monitor_commands = briefing.get("monitor_commands")
+    if not isinstance(monitor_commands, dict):
+        return None
+    watch_cmd = monitor_commands.get("watch_fc_run") or monitor_commands.get(
+        "watch_verify_run"
+    )
+    if isinstance(watch_cmd, str) and watch_cmd:
+        return watch_cmd
+    return None
+
+
 def _primary_watch_command(commands: dict[str, str]) -> str:
     gate_watch = commands.get("gate_watch")
     if isinstance(gate_watch, str) and gate_watch:
@@ -1821,6 +1833,9 @@ def _format_preflight_watch_summary_line(
     sha_gap_short = summary.get("sha_gap_short")
     if isinstance(sha_gap_short, str) and sha_gap_short:
         parts.append(f"sha_gap={sha_gap_short}")
+    gh_watch_command = summary.get("gh_watch_command")
+    if isinstance(gh_watch_command, str) and gh_watch_command:
+        parts.append(f"watch={gh_watch_command}")
     return " ".join(parts)
 
 
@@ -1944,6 +1959,9 @@ def _watch_lfg_preflight_defer(
         _mirror_briefing_notes(summary, briefing)
         _mirror_briefing_merge_ready(summary, briefing)
         _mirror_briefing_sha_gap(summary, briefing)
+        gh_watch_command = _extract_gh_watch_command(briefing)
+        if gh_watch_command is not None:
+            summary["gh_watch_command"] = gh_watch_command
     status["preflight_watch_summary"] = summary
     label = _watch_label_display(watch_label)
     print(
@@ -2366,6 +2384,9 @@ def _emit_lfg_strict_exit_stderr(status: dict[str, Any], exit_code: int) -> None
         sha_gap_short = _format_briefing_sha_gap_short(briefing)
         if sha_gap_short is not None:
             line = f"{line} sha_gap={sha_gap_short}"
+        gh_watch_command = _extract_gh_watch_command(briefing)
+        if gh_watch_command is not None:
+            line = f"{line} watch={gh_watch_command}"
     print(line, file=sys.stderr)
 
 
@@ -2925,6 +2946,11 @@ def _apply_lfg_agent_briefing(status: dict[str, Any]) -> None:
         _mirror_briefing_notes(status, briefing)
         _mirror_briefing_merge_ready(status, briefing)
         _mirror_briefing_sha_gap(status, briefing)
+        gh_watch_command = _extract_gh_watch_command(briefing)
+        if gh_watch_command is not None:
+            status["gh_watch_command"] = gh_watch_command
+        else:
+            status.pop("gh_watch_command", None)
     else:
         status.pop("lfg_agent_briefing", None)
         status.pop("gh_watch_summary", None)
@@ -2954,6 +2980,7 @@ def _apply_lfg_agent_briefing(status: dict[str, Any]) -> None:
         status.pop("briefing_merge_ready", None)
         status.pop("sha_gap", None)
         status.pop("sha_gap_short", None)
+        status.pop("gh_watch_command", None)
 
 
 def _emit_lfg_agent_briefing_stderr(briefing: dict[str, Any]) -> None:

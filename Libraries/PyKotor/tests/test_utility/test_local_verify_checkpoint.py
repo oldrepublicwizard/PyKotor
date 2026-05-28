@@ -496,7 +496,7 @@ Monitoring.
         self.assertTrue(changes["forward_commits_row"])
         self.assertTrue(changes["plans_index"])
         self.assertIn("https://example.com/10", patched)
-        self.assertIn("019–147", patched)
+        self.assertIn("019–148", patched)
 
     def test_dedupe_preserve_order(self) -> None:
         self.assertEqual(
@@ -1096,6 +1096,7 @@ Monitoring.
         self.assertIn("notes=1", output)
         self.assertIn("merge_ready=false", output)
         self.assertIn("queue_note=Runner backlog ~3h", output)
+        self.assertIn("watch=gh run watch 26549293445 --exit-status", output)
 
     def test_emit_lfg_strict_exit_stderr_watch_recommended(self) -> None:
         status: dict[str, Any] = {
@@ -1146,6 +1147,10 @@ Monitoring.
         self.assertEqual(status.get("briefing_notes"), ["Runner backlog ~3h"])
         self.assertFalse(status.get("briefing_merge_ready"))
         self.assertEqual(status.get("queue_backlog_note"), "Runner backlog ~3h")
+        self.assertEqual(
+            status.get("gh_watch_command"),
+            "gh run watch 2 --exit-status",
+        )
 
     def test_watch_pr_merge_status_conflicts(self) -> None:
         status: dict[str, Any] = {"lfg_track_complete": True}
@@ -1575,6 +1580,10 @@ Monitoring.
         self.assertEqual(summary.get("queue_backlog_note"), "Runner backlog ~3h")
         self.assertTrue(summary.get("queue_backlog_warning"))
         self.assertEqual(summary.get("max_queued_hours"), 2.5)
+        self.assertEqual(
+            summary.get("gh_watch_command"),
+            "gh run watch 2 --exit-status",
+        )
 
     def test_build_drift_expected_after_prefers_closeout(self) -> None:
         expected = mod._build_drift_expected_after(
@@ -2861,6 +2870,75 @@ last_verified: 2026-01-01
         with patch.object(mod.sys, "stderr", new_callable=io.StringIO) as err:
             mod._emit_lfg_strict_exit_stderr(status, 2)
         self.assertIn("sha_gap=7d85438:8916e2f", err.getvalue())
+
+    def test_extract_gh_watch_command_prefers_fc(self) -> None:
+        command = mod._extract_gh_watch_command(
+            {
+                "monitor_commands": {
+                    "watch_verify_run": "gh run watch 1 --exit-status",
+                    "watch_fc_run": "gh run watch 2 --exit-status",
+                }
+            }
+        )
+        self.assertEqual(command, "gh run watch 2 --exit-status")
+
+    def test_extract_gh_watch_command_verify_only(self) -> None:
+        command = mod._extract_gh_watch_command(
+            {
+                "monitor_commands": {
+                    "watch_verify_run": "gh run watch 1 --exit-status",
+                }
+            }
+        )
+        self.assertEqual(command, "gh run watch 1 --exit-status")
+
+    def test_apply_lfg_agent_briefing_gh_watch_command_top_level(self) -> None:
+        status: dict[str, Any] = {
+            "lfg_deferred": True,
+            "lfg_defer_reason": "fc_active_pending",
+            "proceed_hint": "python3 .github/scripts/local_verify_pypi_slice.py --lfg-preflight-watch --json",
+            "forward_commits": {
+                "run_id": 26546235822,
+                "status": "queued",
+                "conclusion": "",
+                "head_sha": "7d85438b090178c8c8924abc46565f7c6ded19",
+                "url": "https://example.com/runs/26546235822",
+                "queued_hours": 0.1,
+            },
+            "checkpoint": {
+                "fc_sha_stale": True,
+                "master_sha": "8916e2ffe1b57169693b2c9d9ea2b63eeb7fed8f",
+            },
+        }
+        mod._apply_lfg_agent_briefing(status)
+        self.assertEqual(
+            status.get("gh_watch_command"),
+            "gh run watch 26546235822 --exit-status",
+        )
+
+    def test_emit_lfg_strict_exit_stderr_gh_watch_command(self) -> None:
+        status: dict[str, Any] = {
+            "lfg_exit_reason": "deferred:fc_active_pending",
+            "lfg_agent_briefing": {
+                "monitor_commands": {
+                    "watch_fc_run": "gh run watch 26546235822 --exit-status",
+                }
+            },
+        }
+        with patch.object(mod.sys, "stderr", new_callable=io.StringIO) as err:
+            mod._emit_lfg_strict_exit_stderr(status, 2)
+        self.assertIn("watch=gh run watch 26546235822 --exit-status", err.getvalue())
+
+    def test_format_preflight_watch_summary_line_gh_watch_command(self) -> None:
+        line = mod._format_preflight_watch_summary_line(
+            {
+                "lfg_preflight_watch_result": "timeout",
+                "polls": 2,
+                "watch_duration_sec": 5.0,
+                "gh_watch_command": "gh run watch 26546235822 --exit-status",
+            }
+        )
+        self.assertIn("watch=gh run watch 26546235822 --exit-status", line)
 
     def test_build_defer_queue_context_severe(self) -> None:
         context = mod._build_defer_queue_context(
