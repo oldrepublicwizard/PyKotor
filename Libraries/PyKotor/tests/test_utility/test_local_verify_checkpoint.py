@@ -496,7 +496,33 @@ Monitoring.
         self.assertTrue(changes["forward_commits_row"])
         self.assertTrue(changes["plans_index"])
         self.assertIn("https://example.com/10", patched)
-        self.assertIn("019–188", patched)
+        self.assertIn("019–189", patched)
+
+    def test_format_preflight_watch_summary_line_watch_heartbeat_polls(self) -> None:
+        line = mod._format_preflight_watch_summary_line(
+            {
+                "polls": 5,
+                "lfg_preflight_watch_result": "timeout",
+                "unchanged_flat_keys_polls": 3,
+                "watch_heartbeat_polls": 12,
+            },
+            watch_label="gate",
+        )
+        self.assertIn("unchanged_flat_keys_polls=3", line)
+        self.assertIn("watch_heartbeat_polls=12", line)
+
+    def test_format_preflight_watch_summary_line_omits_watch_heartbeat_without_unchanged(
+        self,
+    ) -> None:
+        line = mod._format_preflight_watch_summary_line(
+            {
+                "polls": 2,
+                "lfg_preflight_watch_result": "proceed",
+                "unchanged_flat_keys_polls": 0,
+                "watch_heartbeat_polls": 12,
+            },
+        )
+        self.assertNotIn("watch_heartbeat_polls=", line)
 
     def test_build_preflight_watch_summary_watch_heartbeat_polls(self) -> None:
         status: dict[str, Any] = {
@@ -608,9 +634,11 @@ Monitoring.
                 "polls": 3,
                 "watch_duration_sec": 12.0,
                 "unchanged_flat_keys_polls": 2,
+                "watch_heartbeat_polls": 12,
             }
         )
         self.assertIn("unchanged_flat_keys_polls=2", line)
+        self.assertIn("watch_heartbeat_polls=12", line)
 
     def test_format_preflight_watch_summary_line_flat_keys_heartbeat_polls(self) -> None:
         line = mod._format_preflight_watch_summary_line(

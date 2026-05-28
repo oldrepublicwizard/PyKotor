@@ -24,7 +24,7 @@ SOLUTION_CLOSEOUT = (
     REPO_ROOT / "docs" / "solutions" / "testing" / "verify-pypi-regression-closeout.md"
 )
 PLAN_020 = REPO_ROOT / "docs" / "plans" / "2026-05-24-020-verify-pypi-regression-post-268-plan.md"
-PLAN_TRACK_CAP = "188"
+PLAN_TRACK_CAP = "189"
 LFG_EXIT_CODES: dict[int, str] = {
     0: "proceed, merge_ready, or monitoring_complete",
     1: "gh_error",
@@ -2044,6 +2044,9 @@ def _format_preflight_watch_summary_line(
     unchanged_flat = summary.get("unchanged_flat_keys_polls")
     if isinstance(unchanged_flat, int) and unchanged_flat:
         parts.append(f"unchanged_flat_keys_polls={unchanged_flat}")
+        watch_heartbeat = summary.get("watch_heartbeat_polls")
+        if isinstance(watch_heartbeat, int) and watch_heartbeat > 0:
+            parts.append(f"watch_heartbeat_polls={watch_heartbeat}")
     if _should_emit_preflight_flat_keys_heartbeat_summary(summary):
         heartbeats = summary.get("flat_keys_heartbeat_polls")
         if isinstance(heartbeats, int):
