@@ -24,7 +24,7 @@ SOLUTION_CLOSEOUT = (
     REPO_ROOT / "docs" / "solutions" / "testing" / "verify-pypi-regression-closeout.md"
 )
 PLAN_020 = REPO_ROOT / "docs" / "plans" / "2026-05-24-020-verify-pypi-regression-post-268-plan.md"
-PLAN_TRACK_CAP = "173"
+PLAN_TRACK_CAP = "174"
 LFG_EXIT_CODES: dict[int, str] = {
     0: "proceed, merge_ready, or monitoring_complete",
     1: "gh_error",
@@ -2037,6 +2037,11 @@ def _mirror_preflight_watch_summary_from_status(
     gh_watch_command = status.get("gh_watch_command")
     if isinstance(gh_watch_command, str) and gh_watch_command:
         summary["gh_watch_command"] = gh_watch_command
+    if status.get("wait_recommended"):
+        summary["wait_recommended"] = True
+    ci_drift = status.get("ci_drift")
+    if isinstance(ci_drift, dict) and ci_drift:
+        summary["ci_drift"] = ci_drift
 
 
 def _watch_lfg_preflight_defer(
@@ -3069,6 +3074,15 @@ def _apply_lfg_agent_briefing(status: dict[str, Any]) -> None:
             status["gh_watch_command"] = gh_watch_command
         else:
             status.pop("gh_watch_command", None)
+        if briefing.get("wait_recommended"):
+            status["wait_recommended"] = True
+        else:
+            status.pop("wait_recommended", None)
+        drift = briefing.get("drift")
+        if isinstance(drift, dict) and drift:
+            status["ci_drift"] = drift
+        else:
+            status.pop("ci_drift", None)
     else:
         status.pop("lfg_agent_briefing", None)
         status.pop("gh_watch_summary", None)
@@ -3100,6 +3114,8 @@ def _apply_lfg_agent_briefing(status: dict[str, Any]) -> None:
         status.pop("sha_gap", None)
         status.pop("sha_gap_short", None)
         status.pop("gh_watch_command", None)
+        status.pop("wait_recommended", None)
+        status.pop("ci_drift", None)
 
 
 def _lfg_briefing_drift_field_names(briefing: dict[str, Any]) -> list[str]:

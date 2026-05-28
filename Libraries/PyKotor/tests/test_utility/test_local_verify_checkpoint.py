@@ -496,7 +496,7 @@ Monitoring.
         self.assertTrue(changes["forward_commits_row"])
         self.assertTrue(changes["plans_index"])
         self.assertIn("https://example.com/10", patched)
-        self.assertIn("019–173", patched)
+        self.assertIn("019–174", patched)
 
     def test_dedupe_preserve_order(self) -> None:
         self.assertEqual(
@@ -1496,6 +1496,48 @@ Monitoring.
         self.assertEqual(expected_after["action"], "refresh_dry_run")
         self.assertIn("queue_context", briefing)
         self.assertEqual(briefing["active_runs"], ["fc"])
+
+    def test_apply_lfg_agent_briefing_wait_drift_top_level(self) -> None:
+        status: dict[str, Any] = {
+            "proceed_hint": "python3 .github/scripts/local_verify_pypi_slice.py --lfg-refresh --dry-run",
+            "checkpoint": {"proceed_reason": "investigate_ci_drift"},
+            "doc_validation": {
+                "drift": [
+                    {
+                        "field": "forward_commits_run_id",
+                        "doc": 1,
+                        "live": 2,
+                    }
+                ],
+            },
+            "verify_pypi": {
+                "run_id": 1,
+                "status": "completed",
+                "conclusion": "success",
+            },
+            "forward_commits": {
+                "run_id": 2,
+                "status": "queued",
+                "conclusion": "",
+            },
+        }
+        mod._apply_lfg_agent_briefing(status)
+        self.assertTrue(status.get("wait_recommended"))
+        ci_drift = status.get("ci_drift") or {}
+        self.assertIn("fields", ci_drift)
+
+    def test_mirror_preflight_watch_summary_wait_drift(self) -> None:
+        summary: dict[str, Any] = {"polls": 1}
+        status: dict[str, Any] = {
+            "wait_recommended": True,
+            "ci_drift": {"fields": [{"field": "forward_commits_run_id"}]},
+        }
+        mod._mirror_preflight_watch_summary_from_status(status, summary)
+        self.assertTrue(summary.get("wait_recommended"))
+        self.assertEqual(
+            (summary.get("ci_drift") or {}).get("fields"),
+            [{"field": "forward_commits_run_id"}],
+        )
 
     def test_emit_drift_briefing_stderr_wait_expected_after(self) -> None:
         with patch.object(mod.sys, "stderr", new_callable=io.StringIO) as err:
