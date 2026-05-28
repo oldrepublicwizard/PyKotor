@@ -496,7 +496,7 @@ Monitoring.
         self.assertTrue(changes["forward_commits_row"])
         self.assertTrue(changes["plans_index"])
         self.assertIn("https://example.com/10", patched)
-        self.assertIn("019–124", patched)
+        self.assertIn("019–125", patched)
 
     def test_dedupe_preserve_order(self) -> None:
         self.assertEqual(
@@ -1056,6 +1056,22 @@ Monitoring.
         self.assertIn("watch_queue", err.getvalue())
         self.assertIn("watch-cmd", err.getvalue())
 
+    def test_emit_lfg_strict_exit_stderr_defer_briefing(self) -> None:
+        status: dict[str, Any] = {
+            "lfg_exit_reason": "deferred:unchanged_active_runs",
+            "lfg_agent_briefing": {
+                "primary_action": "gate_watch",
+                "expected_after_terminal": {"action": "closeout"},
+                "active_runs": ["fc"],
+            },
+        }
+        with patch.object(mod.sys, "stderr", new_callable=io.StringIO) as err:
+            mod._emit_lfg_strict_exit_stderr(status, 2)
+        output = err.getvalue()
+        self.assertIn("primary_action=gate_watch", output)
+        self.assertIn("expected_after=closeout", output)
+        self.assertIn("active_runs=fc", output)
+
     def test_watch_pr_merge_status_conflicts(self) -> None:
         status: dict[str, Any] = {"lfg_track_complete": True}
         with patch.object(
@@ -1361,6 +1377,7 @@ Monitoring.
         assert isinstance(expected_after, dict)
         self.assertEqual(expected_after["action"], "refresh_dry_run")
         self.assertIn("queue_context", briefing)
+        self.assertEqual(briefing["active_runs"], ["fc"])
 
     def test_emit_drift_briefing_stderr_wait_expected_after(self) -> None:
         with patch.object(mod.sys, "stderr", new_callable=io.StringIO) as err:
@@ -1369,6 +1386,7 @@ Monitoring.
                     "action": "investigate_ci_drift",
                     "wait_recommended": True,
                     "primary_action": "gate_watch",
+                    "active_runs": ["fc"],
                     "queue_context": {"max_queued_hours": 0.5},
                     "expected_after_terminal": {
                         "action": "refresh_dry_run",
@@ -1392,6 +1410,22 @@ Monitoring.
         self.assertIn("expected_after=refresh_dry_run", output)
         self.assertIn("drift_fields=forward_commits_run_id,verify_run_id", output)
         self.assertIn("queued=0.5h", output)
+        self.assertIn("active_runs=fc", output)
+
+    def test_emit_defer_briefing_stderr_verify_run(self) -> None:
+        with patch.object(mod.sys, "stderr", new_callable=io.StringIO) as err:
+            mod._emit_lfg_agent_briefing_stderr(
+                {
+                    "action": "defer",
+                    "reason": "unchanged_active_runs",
+                    "verify_run_id": 26549547772,
+                    "fc_run_id": 26549293445,
+                    "active_runs": ["verify", "fc"],
+                }
+            )
+        output = err.getvalue()
+        self.assertIn("verify_run=26549547772", output)
+        self.assertIn("fc_run=26549293445", output)
 
     def test_build_drift_expected_after_prefers_closeout(self) -> None:
         expected = mod._build_drift_expected_after(

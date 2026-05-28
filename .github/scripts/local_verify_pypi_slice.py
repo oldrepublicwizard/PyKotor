@@ -24,7 +24,7 @@ SOLUTION_CLOSEOUT = (
     REPO_ROOT / "docs" / "solutions" / "testing" / "verify-pypi-regression-closeout.md"
 )
 PLAN_020 = REPO_ROOT / "docs" / "plans" / "2026-05-24-020-verify-pypi-regression-post-268-plan.md"
-PLAN_TRACK_CAP = "124"
+PLAN_TRACK_CAP = "125"
 LFG_EXIT_CODES: dict[int, str] = {
     0: "proceed, merge_ready, or monitoring_complete",
     1: "gh_error",
@@ -2174,6 +2174,18 @@ def _emit_lfg_strict_exit_stderr(status: dict[str, Any], exit_code: int) -> None
     crosscheck_note = status.get("pr_checks_crosscheck_note")
     if crosscheck_note:
         line = f"{line} crosscheck={crosscheck_note}"
+    briefing = status.get("lfg_agent_briefing")
+    if isinstance(briefing, dict):
+        if briefing.get("primary_action"):
+            line = f"{line} primary_action={briefing['primary_action']}"
+        expected_after = briefing.get("expected_after_terminal")
+        if isinstance(expected_after, dict):
+            after_action = expected_after.get("action")
+            if isinstance(after_action, str) and after_action:
+                line = f"{line} expected_after={after_action}"
+        active_runs = briefing.get("active_runs")
+        if isinstance(active_runs, list) and active_runs:
+            line = f"{line} active_runs={','.join(str(label) for label in active_runs)}"
     print(line, file=sys.stderr)
 
 
@@ -2510,6 +2522,9 @@ def _build_lfg_agent_briefing(status: dict[str, Any]) -> dict[str, Any]:
             briefing["monitor_commands"] = _build_defer_monitor_commands(briefing)
             briefing["primary_action"] = "gate_watch"
             briefing["queue_context"] = _build_defer_queue_context(status)
+            active_runs = _build_active_runs_list(status)
+            if active_runs:
+                briefing["active_runs"] = active_runs
         return briefing
     return {}
 
@@ -2582,6 +2597,9 @@ def _emit_lfg_agent_briefing_stderr(briefing: dict[str, Any]) -> None:
             ]
             if field_names:
                 parts.append(f"drift_fields={','.join(field_names)}")
+        active_runs = briefing.get("active_runs")
+        if isinstance(active_runs, list) and active_runs:
+            parts.append(f"active_runs={','.join(str(label) for label in active_runs)}")
     elif briefing.get("action") == "investigate_ci_drift":
         expected_after = briefing.get("expected_after_terminal")
         if isinstance(expected_after, dict):
@@ -2605,6 +2623,9 @@ def _emit_lfg_agent_briefing_stderr(briefing: dict[str, Any]) -> None:
     fc_run_id = briefing.get("fc_run_id")
     if fc_run_id is not None:
         parts.append(f"fc_run={fc_run_id}")
+    verify_run_id = briefing.get("verify_run_id")
+    if verify_run_id is not None:
+        parts.append(f"verify_run={verify_run_id}")
     monitor_commands = briefing.get("monitor_commands")
     if isinstance(monitor_commands, dict):
         watch_cmd = monitor_commands.get("watch_fc_run") or monitor_commands.get(
