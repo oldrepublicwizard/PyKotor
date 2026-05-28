@@ -496,7 +496,7 @@ Monitoring.
         self.assertTrue(changes["forward_commits_row"])
         self.assertTrue(changes["plans_index"])
         self.assertIn("https://example.com/10", patched)
-        self.assertIn("019–134", patched)
+        self.assertIn("019–135", patched)
 
     def test_dedupe_preserve_order(self) -> None:
         self.assertEqual(
@@ -1110,6 +1110,8 @@ Monitoring.
         self.assertEqual(expected_after.get("action"), "closeout")
         self.assertEqual(status.get("primary_action"), "gate_watch")
         self.assertTrue(status.get("watch_recommended"))
+        post_terminal = status.get("post_terminal_commands") or {}
+        self.assertIn("closeout", post_terminal)
 
     def test_watch_pr_merge_status_conflicts(self) -> None:
         status: dict[str, Any] = {"lfg_track_complete": True}
@@ -1519,6 +1521,8 @@ Monitoring.
         self.assertEqual(expected_after.get("action"), "closeout")
         self.assertEqual(summary.get("primary_action"), "gate_watch")
         self.assertTrue(summary.get("watch_recommended"))
+        post_terminal = summary.get("post_terminal_commands") or {}
+        self.assertIn("closeout", post_terminal)
 
     def test_build_drift_expected_after_prefers_closeout(self) -> None:
         expected = mod._build_drift_expected_after(
@@ -3344,6 +3348,7 @@ last_verified: 2026-01-01
         self.assertIn("queued=1.5h", line)
         self.assertIn("expected_after=closeout", line)
         self.assertIn("primary_action=gate_watch", line)
+        self.assertIn("watch_recommended=true", line)
 
     def test_format_preflight_watch_poll_line_queue_warn(self) -> None:
         line = mod._format_preflight_watch_poll_line(

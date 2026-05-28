@@ -24,7 +24,7 @@ SOLUTION_CLOSEOUT = (
     REPO_ROOT / "docs" / "solutions" / "testing" / "verify-pypi-regression-closeout.md"
 )
 PLAN_020 = REPO_ROOT / "docs" / "plans" / "2026-05-24-020-verify-pypi-regression-post-268-plan.md"
-PLAN_TRACK_CAP = "134"
+PLAN_TRACK_CAP = "135"
 LFG_EXIT_CODES: dict[int, str] = {
     0: "proceed, merge_ready, or monitoring_complete",
     1: "gh_error",
@@ -1721,6 +1721,8 @@ def _format_preflight_watch_poll_line(
             after_action = expected_after.get("action")
             if isinstance(after_action, str) and after_action:
                 parts.append(f"expected_after={after_action}")
+        if briefing.get("watch_recommended"):
+            parts.append("watch_recommended=true")
     return " ".join(parts)
 
 
@@ -1882,6 +1884,9 @@ def _watch_lfg_preflight_defer(
             summary["primary_action"] = primary_action
         if briefing.get("watch_recommended"):
             summary["watch_recommended"] = True
+        post_terminal = briefing.get("post_terminal_commands")
+        if isinstance(post_terminal, dict) and post_terminal:
+            summary["post_terminal_commands"] = post_terminal
     status["preflight_watch_summary"] = summary
     label = _watch_label_display(watch_label)
     print(
@@ -2681,6 +2686,11 @@ def _apply_lfg_agent_briefing(status: dict[str, Any]) -> None:
             status["watch_recommended"] = True
         else:
             status.pop("watch_recommended", None)
+        post_terminal = briefing.get("post_terminal_commands")
+        if isinstance(post_terminal, dict) and post_terminal:
+            status["post_terminal_commands"] = post_terminal
+        else:
+            status.pop("post_terminal_commands", None)
     else:
         status.pop("lfg_agent_briefing", None)
         status.pop("gh_watch_summary", None)
@@ -2689,6 +2699,7 @@ def _apply_lfg_agent_briefing(status: dict[str, Any]) -> None:
         status.pop("expected_after_terminal", None)
         status.pop("primary_action", None)
         status.pop("watch_recommended", None)
+        status.pop("post_terminal_commands", None)
 
 
 def _emit_lfg_agent_briefing_stderr(briefing: dict[str, Any]) -> None:
