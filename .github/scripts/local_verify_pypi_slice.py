@@ -24,7 +24,7 @@ SOLUTION_CLOSEOUT = (
     REPO_ROOT / "docs" / "solutions" / "testing" / "verify-pypi-regression-closeout.md"
 )
 PLAN_020 = REPO_ROOT / "docs" / "plans" / "2026-05-24-020-verify-pypi-regression-post-268-plan.md"
-PLAN_TRACK_CAP = "113"
+PLAN_TRACK_CAP = "114"
 LFG_EXIT_CODES: dict[int, str] = {
     0: "proceed, merge_ready, or monitoring_complete",
     1: "gh_error",
@@ -1630,10 +1630,131 @@ def _resolve_watch_timeout_seconds(
     watch_timeout: float | None,
     *,
     lfg_merge_watch: bool,
+    lfg_preflight_watch: bool = False,
 ) -> float:
     if watch_timeout is not None:
         return watch_timeout
-    return 7200.0 if lfg_merge_watch else 1800.0
+    if lfg_merge_watch or lfg_preflight_watch:
+        return 7200.0
+    return 1800.0
+
+
+def _is_lfg_checkpoint_deferred(status: dict[str, Any]) -> bool:
+    checkpoint = status.get("checkpoint")
+    return isinstance(checkpoint, dict) and bool(checkpoint.get("defer_lfg_pr"))
+
+
+def _format_preflight_watch_poll_line(polls: int, status: dict[str, Any]) -> str:
+    reason = status.get("lfg_defer_reason") or "deferred"
+    parts = [f"LFG preflight watch poll {polls}: deferred=true reason={reason}"]
+    for key, label in (("forward_commits", "fc"), ("verify_pypi", "verify")):
+        run = status.get(key)
+        if not isinstance(run, dict) or "error" in run:
+            continue
+        run_id = run.get("run_id")
+        if run_id is not None:
+            parts.append(f"{label}={run_id}")
+        parts.append(f"{label}_status={_run_display_label(run)}")
+        queued = run.get("queued_hours")
+        if isinstance(queued, (int, float)):
+            parts.append(f"{label}_queued={queued:.1f}h")
+    return " ".join(parts)
+
+
+def _build_preflight_watch_summary(status: dict[str, Any]) -> dict[str, Any]:
+    history = list(status.get("preflight_watch_history") or [])
+    started = status.get("preflight_watch_started_monotonic")
+    duration_sec: float | None = None
+    if isinstance(started, (int, float)):
+        duration_sec = round(max(0.0, time.monotonic() - float(started)), 1)
+    first_reason = None
+    last_reason = None
+    if history:
+        first_reason = history[0].get("lfg_defer_reason")
+        last_reason = history[-1].get("lfg_defer_reason")
+    return {
+        "polls": len(history),
+        "lfg_preflight_watch_result": status.get("lfg_preflight_watch_result"),
+        "start_defer_reason": first_reason,
+        "end_defer_reason": last_reason,
+        "watch_duration_sec": duration_sec,
+    }
+
+
+def _format_preflight_watch_summary_line(summary: dict[str, Any]) -> str:
+    result = summary.get("lfg_preflight_watch_result") or "unknown"
+    polls = summary.get("polls", 0)
+    duration = summary.get("watch_duration_sec")
+    duration_text = f"{duration:.0f}s" if isinstance(duration, (int, float)) else "n/a"
+    return f"result={result} polls={polls} duration={duration_text}"
+
+
+def _watch_lfg_preflight_defer(
+    *,
+    targets: list[str],
+    prefetch_git: bool,
+    interval_sec: float,
+    timeout_sec: float,
+) -> dict[str, Any]:
+    deadline = time.monotonic() + max(0.0, timeout_sec)
+    polls = 0
+    history: list[dict[str, Any]] = []
+    status: dict[str, Any] = {}
+    status["preflight_watch_started_monotonic"] = time.monotonic()
+    watch_result = "proceed"
+    while True:
+        polls += 1
+        prefetch_result = None
+        if prefetch_git:
+            prefetch_result = _git_prefetch_origin_master()
+        status = _ci_status(
+            compare_checkpoint=True,
+            include_checkpoint_snippet=True,
+        )
+        if prefetch_result is not None:
+            status["git_prefetch"] = prefetch_result
+        if prefetch_git and prefetch_result and prefetch_result.get("ok"):
+            _recompare_checkpoint_status(status, targets=targets)
+        else:
+            _refine_lfg_checkpoint(status, targets=targets)
+        still_deferred = _is_lfg_checkpoint_deferred(status)
+        if still_deferred:
+            status["lfg_deferred"] = True
+            _apply_lfg_defer_metadata(status)
+        else:
+            status.pop("lfg_deferred", None)
+        snapshot = {
+            "poll": polls,
+            "lfg_deferred": still_deferred,
+            "lfg_defer_reason": status.get("lfg_defer_reason"),
+        }
+        for key, prefix in (("forward_commits", "fc"), ("verify_pypi", "verify")):
+            run = status.get(key)
+            if isinstance(run, dict) and "error" not in run:
+                snapshot[f"{prefix}_run_id"] = run.get("run_id")
+                snapshot[f"{prefix}_status"] = _run_display_label(run)
+                queued = run.get("queued_hours")
+                if isinstance(queued, (int, float)):
+                    snapshot[f"{prefix}_queued_hours"] = round(float(queued), 2)
+        history.append(snapshot)
+        print(_format_preflight_watch_poll_line(polls, status), file=sys.stderr)
+        if not still_deferred:
+            watch_result = "proceed"
+            break
+        if time.monotonic() >= deadline:
+            watch_result = "timeout"
+            break
+        time.sleep(max(0.0, interval_sec))
+    status["preflight_watch_history"] = history
+    status["preflight_watch_polls"] = polls
+    status["lfg_preflight_watch_result"] = watch_result
+    summary = _build_preflight_watch_summary(status)
+    status["preflight_watch_summary"] = summary
+    print(
+        f"Preflight watch summary: {_format_preflight_watch_summary_line(summary)}",
+        file=sys.stderr,
+    )
+    return status
 
 
 def _build_pr_watch_summary(status: dict[str, Any]) -> dict[str, Any]:
@@ -2008,7 +2129,10 @@ def _build_defer_monitor_commands(briefing: dict[str, Any]) -> dict[str, str]:
         if isinstance(command, str) and command
         else f"{script} --lfg-preflight --json"
     )
-    commands: dict[str, str] = {"preflight_retry": preflight_retry}
+    commands: dict[str, str] = {
+        "preflight_retry": preflight_retry,
+        "preflight_watch": f"{script} --lfg-preflight-watch --json",
+    }
     fc_run_id = briefing.get("fc_run_id")
     if fc_run_id is not None:
         commands["watch_fc_run"] = f"gh run watch {fc_run_id} --exit-status"
@@ -2629,12 +2753,15 @@ def _resolve_lfg_mode(
     lfg_closeout: bool,
     lfg_gate: bool,
     lfg_preflight: bool,
+    lfg_preflight_watch: bool,
     lfg_refresh: bool,
     lfg_pr_watch: bool,
     dry_run: bool,
 ) -> str | None:
     if lfg_merge_watch or (lfg_merge_gate and lfg_pr_watch):
         return "merge_watch"
+    if lfg_preflight_watch:
+        return "preflight_watch"
     if lfg_pr_watch:
         return "pr_watch"
     if lfg_merge_gate:
@@ -2684,6 +2811,7 @@ def main() -> None:
             "  python3 .github/scripts/local_verify_pypi_slice.py --lfg-merge-gate --lfg-pr-watch\n"
             "  python3 .github/scripts/local_verify_pypi_slice.py --lfg-merge-watch\n"
             "  python3 .github/scripts/local_verify_pypi_slice.py --lfg-preflight\n"
+            "  python3 .github/scripts/local_verify_pypi_slice.py --lfg-preflight-watch\n"
             "  python3 .github/scripts/local_verify_pypi_slice.py --lfg-refresh --dry-run\n"
             "  python3 .github/scripts/local_verify_pypi_slice.py --lfg-closeout\n"
             "  python3 .github/scripts/local_verify_pypi_slice.py --prefetch-git --lfg-gate"
@@ -2801,6 +2929,11 @@ def main() -> None:
         help="Shorthand for --monitor-preflight --lfg-refresh --dry-run (full agent briefing)",
     )
     parser.add_argument(
+        "--lfg-preflight-watch",
+        action="store_true",
+        help="Shorthand for --lfg-preflight with polling until defer clears or --watch-timeout",
+    )
+    parser.add_argument(
         "--lfg-gate",
         action="store_true",
         help="Shorthand for --lfg-preflight --strict-defer-exit (full JSON then exit 2 when deferred)",
@@ -2882,10 +3015,15 @@ def main() -> None:
         args.lfg_merge_gate = True
         args.lfg_pr_watch = True
 
+    if args.lfg_preflight_watch:
+        args.lfg_preflight = True
+        args.strict_defer_exit = True
+
     if args.watch_timeout is None:
         args.watch_timeout = _resolve_watch_timeout_seconds(
             None,
             lfg_merge_watch=args.lfg_merge_watch,
+            lfg_preflight_watch=args.lfg_preflight_watch,
         )
 
     if args.lfg_merge_gate:
@@ -2942,6 +3080,9 @@ def main() -> None:
 
     if args.lfg_pr_watch and not (args.lfg_gate or args.ci_status_only):
         parser.error("--lfg-pr-watch requires --lfg-gate or --ci-status-only")
+
+    if args.lfg_preflight_watch and args.lfg_pr_watch:
+        parser.error("--lfg-preflight-watch cannot be combined with --lfg-pr-watch")
 
     if args.emit_checkpoint_snippet and not args.ci_status_only:
         parser.error("--emit-checkpoint-snippet requires --ci-status-only")
@@ -3001,21 +3142,43 @@ def main() -> None:
             or args.lfg_refresh
             or args.compare_checkpoint
         )
-        prefetch_result = None
-        if args.prefetch_git and args.compare_checkpoint:
-            prefetch_result = _git_prefetch_origin_master()
-        status = _ci_status(
-            compare_checkpoint=args.compare_checkpoint,
-            include_checkpoint_snippet=include_snippet,
-        )
         targets = [part.strip() for part in args.apply_targets.split(",") if part.strip()]
-        if prefetch_result is not None:
-            status["git_prefetch"] = prefetch_result
-        if args.compare_checkpoint:
-            if prefetch_result is not None and prefetch_result.get("ok"):
-                _recompare_checkpoint_status(status, targets=targets)
-            else:
-                _refine_lfg_checkpoint(status, targets=targets)
+        prefetch_result = None
+        if args.prefetch_git and args.compare_checkpoint and not args.lfg_preflight_watch:
+            prefetch_result = _git_prefetch_origin_master()
+        if args.lfg_preflight_watch:
+            status = _watch_lfg_preflight_defer(
+                targets=targets,
+                prefetch_git=args.prefetch_git,
+                interval_sec=max(0.0, args.watch_interval),
+                timeout_sec=max(0.0, args.watch_timeout),
+            )
+            deferred = bool(status.get("lfg_deferred"))
+            if deferred:
+                checkpoint = status.get("checkpoint")
+                defer_detail = (
+                    checkpoint.get("defer_reason")
+                    if isinstance(checkpoint, dict)
+                    else None
+                ) or "monitoring checkpoint unchanged"
+                print(
+                    f"LFG deferred: {defer_detail} (see AGENTS.md).",
+                    file=sys.stderr,
+                )
+        else:
+            status = _ci_status(
+                compare_checkpoint=args.compare_checkpoint,
+                include_checkpoint_snippet=include_snippet,
+            )
+            if prefetch_result is not None:
+                status["git_prefetch"] = prefetch_result
+            if args.compare_checkpoint:
+                if prefetch_result is not None and prefetch_result.get("ok"):
+                    _recompare_checkpoint_status(status, targets=targets)
+                else:
+                    _refine_lfg_checkpoint(status, targets=targets)
+            deferred = _apply_lfg_defer(status, exit_on_defer=args.exit_on_defer)
+            _apply_lfg_defer_metadata(status)
         if args.apply_checkpoint_snippet:
             apply_result = _apply_checkpoint_snippet(
                 status,
@@ -3054,6 +3217,7 @@ def main() -> None:
                         lfg_closeout=args.lfg_closeout,
                         lfg_gate=args.lfg_gate,
                         lfg_preflight=args.lfg_preflight,
+                        lfg_preflight_watch=args.lfg_preflight_watch,
                         lfg_refresh=args.lfg_refresh,
                         lfg_pr_watch=args.lfg_pr_watch,
                         dry_run=args.dry_run,
@@ -3105,6 +3269,7 @@ def main() -> None:
             lfg_closeout=args.lfg_closeout,
             lfg_gate=args.lfg_gate,
             lfg_preflight=args.lfg_preflight,
+            lfg_preflight_watch=args.lfg_preflight_watch,
             lfg_refresh=args.lfg_refresh,
             lfg_pr_watch=args.lfg_pr_watch,
             dry_run=args.dry_run,

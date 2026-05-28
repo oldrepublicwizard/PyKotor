@@ -496,7 +496,7 @@ Monitoring.
         self.assertTrue(changes["forward_commits_row"])
         self.assertTrue(changes["plans_index"])
         self.assertIn("https://example.com/10", patched)
-        self.assertIn("019–113", patched)
+        self.assertIn("019–114", patched)
 
     def test_dedupe_preserve_order(self) -> None:
         self.assertEqual(
@@ -2416,6 +2416,8 @@ last_verified: 2026-01-01
             monitor["watch_fc_run"],
             "gh run watch 26546235822 --exit-status",
         )
+        self.assertIn("preflight_watch", monitor)
+        self.assertIn("--lfg-preflight-watch", monitor["preflight_watch"])
 
     def test_build_defer_monitor_commands_verify_active(self) -> None:
         commands = mod._build_defer_monitor_commands(
@@ -2446,6 +2448,87 @@ last_verified: 2026-01-01
         self.assertIn("reason=fc_active_pending", output)
         self.assertIn("fc_run=26546235822", output)
         self.assertIn("watch=gh run watch 26546235822 --exit-status", output)
+
+    def test_watch_lfg_preflight_defer_proceed(self) -> None:
+        deferred_status = {
+            "gh_ok": True,
+            "checkpoint": {"defer_lfg_pr": True, "defer_reason": "FC run still active"},
+            "forward_commits": {
+                "run_id": 1,
+                "status": "queued",
+                "conclusion": "",
+            },
+        }
+        proceed_status = {
+            "gh_ok": True,
+            "checkpoint": {
+                "defer_lfg_pr": False,
+                "proceed_reason": "update_monitoring_docs",
+            },
+            "forward_commits": {
+                "run_id": 1,
+                "status": "completed",
+                "conclusion": "success",
+            },
+        }
+        with patch.object(mod, "_ci_status", side_effect=[deferred_status, proceed_status]):
+            with patch.object(mod, "_refine_lfg_checkpoint"):
+                with patch.object(mod.time, "sleep"):
+                    status = mod._watch_lfg_preflight_defer(
+                        targets=["solution", "plan020"],
+                        prefetch_git=False,
+                        interval_sec=0.0,
+                        timeout_sec=60.0,
+                    )
+        self.assertEqual(status["lfg_preflight_watch_result"], "proceed")
+        self.assertFalse(status.get("lfg_deferred"))
+        summary = status.get("preflight_watch_summary") or {}
+        self.assertEqual(summary.get("polls"), 2)
+
+    def test_watch_lfg_preflight_defer_timeout(self) -> None:
+        deferred_status = {
+            "gh_ok": True,
+            "checkpoint": {"defer_lfg_pr": True},
+            "forward_commits": {"run_id": 1, "status": "queued", "conclusion": ""},
+        }
+        with patch.object(mod, "_ci_status", return_value=deferred_status):
+            with patch.object(mod, "_refine_lfg_checkpoint"):
+                with patch.object(mod.time, "sleep"):
+                    with patch.object(mod.time, "monotonic", side_effect=[0.0, 0.0, 100.0]):
+                        status = mod._watch_lfg_preflight_defer(
+                            targets=["solution"],
+                            prefetch_git=False,
+                            interval_sec=0.0,
+                            timeout_sec=5.0,
+                        )
+        self.assertEqual(status["lfg_preflight_watch_result"], "timeout")
+        self.assertTrue(status.get("lfg_deferred"))
+
+    def test_resolve_lfg_mode_preflight_watch(self) -> None:
+        self.assertEqual(
+            mod._resolve_lfg_mode(
+                lfg_merge_watch=False,
+                lfg_merge_gate=False,
+                lfg_closeout=False,
+                lfg_gate=False,
+                lfg_preflight=True,
+                lfg_preflight_watch=True,
+                lfg_refresh=True,
+                lfg_pr_watch=False,
+                dry_run=True,
+            ),
+            "preflight_watch",
+        )
+
+    def test_resolve_watch_timeout_preflight_watch(self) -> None:
+        self.assertEqual(
+            mod._resolve_watch_timeout_seconds(
+                None,
+                lfg_merge_watch=False,
+                lfg_preflight_watch=True,
+            ),
+            7200.0,
+        )
 
     def test_last_ci_check_section_extracts_block(self) -> None:
         mock_path = mock.MagicMock()
@@ -2946,6 +3029,7 @@ last_verified: 2026-01-01
                 lfg_closeout=True,
                 lfg_gate=False,
                 lfg_preflight=False,
+                lfg_preflight_watch=False,
                 lfg_refresh=True,
                 lfg_pr_watch=False,
                 dry_run=False,
@@ -2959,6 +3043,7 @@ last_verified: 2026-01-01
                 lfg_closeout=False,
                 lfg_gate=True,
                 lfg_preflight=True,
+                lfg_preflight_watch=False,
                 lfg_refresh=True,
                 lfg_pr_watch=False,
                 dry_run=True,
@@ -2972,6 +3057,7 @@ last_verified: 2026-01-01
                 lfg_closeout=False,
                 lfg_gate=True,
                 lfg_preflight=True,
+                lfg_preflight_watch=False,
                 lfg_refresh=True,
                 lfg_pr_watch=False,
                 dry_run=True,
@@ -2985,6 +3071,7 @@ last_verified: 2026-01-01
                 lfg_closeout=False,
                 lfg_gate=True,
                 lfg_preflight=True,
+                lfg_preflight_watch=False,
                 lfg_refresh=True,
                 lfg_pr_watch=True,
                 dry_run=True,
@@ -2998,6 +3085,7 @@ last_verified: 2026-01-01
                 lfg_closeout=False,
                 lfg_gate=True,
                 lfg_preflight=True,
+                lfg_preflight_watch=False,
                 lfg_refresh=True,
                 lfg_pr_watch=True,
                 dry_run=True,
