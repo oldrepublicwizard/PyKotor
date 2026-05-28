@@ -24,7 +24,7 @@ SOLUTION_CLOSEOUT = (
     REPO_ROOT / "docs" / "solutions" / "testing" / "verify-pypi-regression-closeout.md"
 )
 PLAN_020 = REPO_ROOT / "docs" / "plans" / "2026-05-24-020-verify-pypi-regression-post-268-plan.md"
-PLAN_TRACK_CAP = "138"
+PLAN_TRACK_CAP = "139"
 LFG_EXIT_CODES: dict[int, str] = {
     0: "proceed, merge_ready, or monitoring_complete",
     1: "gh_error",
@@ -1795,6 +1795,12 @@ def _format_preflight_watch_summary_line(
         parts.append(f"primary_action={primary_action}")
     if summary.get("watch_recommended"):
         parts.append("watch_recommended=true")
+    verify_status = summary.get("verify_status")
+    if isinstance(verify_status, str) and verify_status:
+        parts.append(f"verify_status={verify_status}")
+    fc_status = summary.get("fc_status")
+    if isinstance(fc_status, str) and fc_status:
+        parts.append(f"fc_status={fc_status}")
     return " ".join(parts)
 
 
@@ -1893,7 +1899,14 @@ def _watch_lfg_preflight_defer(
         monitor_commands = briefing.get("monitor_commands")
         if isinstance(monitor_commands, dict) and monitor_commands:
             summary["monitor_commands"] = monitor_commands
-        for field in ("verify_run_id", "fc_run_id", "verify_run_url", "fc_run_url"):
+        for field in (
+            "verify_run_id",
+            "fc_run_id",
+            "verify_run_url",
+            "fc_run_url",
+            "verify_status",
+            "fc_status",
+        ):
             value = briefing.get(field)
             if value is not None:
                 summary[field] = value
@@ -2290,6 +2303,12 @@ def _emit_lfg_strict_exit_stderr(status: dict[str, Any], exit_code: int) -> None
         verify_run_id = briefing.get("verify_run_id")
         if verify_run_id is not None:
             line = f"{line} verify_run={verify_run_id}"
+        verify_status = briefing.get("verify_status")
+        if isinstance(verify_status, str) and verify_status:
+            line = f"{line} verify_status={verify_status}"
+        fc_status = briefing.get("fc_status")
+        if isinstance(fc_status, str) and fc_status:
+            line = f"{line} fc_status={fc_status}"
     print(line, file=sys.stderr)
 
 
@@ -2717,7 +2736,14 @@ def _apply_lfg_agent_briefing(status: dict[str, Any]) -> None:
             status["monitor_commands"] = monitor_commands
         else:
             status.pop("monitor_commands", None)
-        for field in ("verify_run_id", "fc_run_id", "verify_run_url", "fc_run_url"):
+        for field in (
+            "verify_run_id",
+            "fc_run_id",
+            "verify_run_url",
+            "fc_run_url",
+            "verify_status",
+            "fc_status",
+        ):
             value = briefing.get(field)
             if value is not None:
                 status[field] = value
@@ -2738,6 +2764,8 @@ def _apply_lfg_agent_briefing(status: dict[str, Any]) -> None:
         status.pop("fc_run_id", None)
         status.pop("verify_run_url", None)
         status.pop("fc_run_url", None)
+        status.pop("verify_status", None)
+        status.pop("fc_status", None)
 
 
 def _emit_lfg_agent_briefing_stderr(briefing: dict[str, Any]) -> None:

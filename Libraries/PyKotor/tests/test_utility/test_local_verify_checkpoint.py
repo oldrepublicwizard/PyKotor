@@ -496,7 +496,7 @@ Monitoring.
         self.assertTrue(changes["forward_commits_row"])
         self.assertTrue(changes["plans_index"])
         self.assertIn("https://example.com/10", patched)
-        self.assertIn("019–138", patched)
+        self.assertIn("019–139", patched)
 
     def test_dedupe_preserve_order(self) -> None:
         self.assertEqual(
@@ -1067,6 +1067,8 @@ Monitoring.
                 "queue_context": {"max_queued_hours": 1.5},
                 "watch_recommended": True,
                 "fc_run_id": 26549293445,
+                "verify_status": "queued",
+                "fc_status": "queued",
                 "monitor_commands": {
                     "watch_fc_run": "gh run watch 26549293445 --exit-status",
                 },
@@ -1081,6 +1083,8 @@ Monitoring.
         self.assertIn("gh_watch=fc:26549293445", output)
         self.assertIn("queued=1.5h", output)
         self.assertIn("fc_run=26549293445", output)
+        self.assertIn("verify_status=queued", output)
+        self.assertIn("fc_status=queued", output)
 
     def test_emit_lfg_strict_exit_stderr_watch_recommended(self) -> None:
         status: dict[str, Any] = {
@@ -1120,6 +1124,8 @@ Monitoring.
         self.assertEqual(status.get("fc_run_id"), 2)
         self.assertEqual(status.get("verify_run_url"), "https://example.com/runs/1")
         self.assertEqual(status.get("fc_run_url"), "https://example.com/runs/2")
+        self.assertEqual(status.get("verify_status"), "queued")
+        self.assertEqual(status.get("fc_status"), "queued")
 
     def test_watch_pr_merge_status_conflicts(self) -> None:
         status: dict[str, Any] = {"lfg_track_complete": True}
@@ -1538,6 +1544,8 @@ Monitoring.
         self.assertEqual(summary.get("fc_run_id"), 2)
         self.assertEqual(summary.get("verify_run_url"), "https://example.com/runs/1")
         self.assertEqual(summary.get("fc_run_url"), "https://example.com/runs/2")
+        self.assertEqual(summary.get("verify_status"), "queued")
+        self.assertEqual(summary.get("fc_status"), "queued")
 
     def test_build_drift_expected_after_prefers_closeout(self) -> None:
         expected = mod._build_drift_expected_after(
