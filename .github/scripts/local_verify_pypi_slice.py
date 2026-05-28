@@ -24,7 +24,7 @@ SOLUTION_CLOSEOUT = (
     REPO_ROOT / "docs" / "solutions" / "testing" / "verify-pypi-regression-closeout.md"
 )
 PLAN_020 = REPO_ROOT / "docs" / "plans" / "2026-05-24-020-verify-pypi-regression-post-268-plan.md"
-PLAN_TRACK_CAP = "174"
+PLAN_TRACK_CAP = "175"
 LFG_EXIT_CODES: dict[int, str] = {
     0: "proceed, merge_ready, or monitoring_complete",
     1: "gh_error",
@@ -1852,6 +1852,20 @@ def _lfg_briefing_mirror_stderr_parts(status: dict[str, Any]) -> list[str]:
     elif queue_backlog_warning:
         parts.append("queue_warn=true")
 
+    action = status.get("briefing_action")
+    if not isinstance(action, str) or not action:
+        action = status.get("action")
+    if not isinstance(action, str) or not action:
+        action = briefing.get("action")
+    wait_recommended = status.get("wait_recommended")
+    if wait_recommended is None:
+        wait_recommended = briefing.get("wait_recommended")
+    if action == "investigate_ci_drift" and wait_recommended:
+        parts.append("wait=true")
+    drift_fields = _lfg_briefing_drift_field_names(status)
+    if drift_fields:
+        parts.append(f"drift_fields={','.join(drift_fields)}")
+
     return parts
 
 
@@ -3118,8 +3132,13 @@ def _apply_lfg_agent_briefing(status: dict[str, Any]) -> None:
         status.pop("ci_drift", None)
 
 
-def _lfg_briefing_drift_field_names(briefing: dict[str, Any]) -> list[str]:
-    drift = briefing.get("drift")
+def _lfg_briefing_drift_field_names(status: dict[str, Any]) -> list[str]:
+    ci_drift = status.get("ci_drift")
+    if isinstance(ci_drift, dict):
+        drift = ci_drift
+    else:
+        briefing = _lfg_briefing_fallback(status)
+        drift = briefing.get("drift")
     if not isinstance(drift, dict):
         return []
     fields = drift.get("fields") or []
@@ -3142,14 +3161,6 @@ def _emit_lfg_agent_briefing_stderr(status: dict[str, Any]) -> None:
         )
         if isinstance(reason, str) and reason:
             parts.append(f"reason={reason}")
-    wait_recommended = status.get("wait_recommended")
-    if wait_recommended is None:
-        wait_recommended = briefing.get("wait_recommended")
-    if action == "investigate_ci_drift" and wait_recommended:
-        parts.append("wait=true")
-    drift_fields = _lfg_briefing_drift_field_names(briefing)
-    if drift_fields:
-        parts.append(f"drift_fields={','.join(drift_fields)}")
     skip_prefixes = {"action=", "briefing_reason="}
     for part in _lfg_briefing_mirror_stderr_parts(status):
         if any(part.startswith(prefix) for prefix in skip_prefixes):

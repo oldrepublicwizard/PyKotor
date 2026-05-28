@@ -496,7 +496,7 @@ Monitoring.
         self.assertTrue(changes["forward_commits_row"])
         self.assertTrue(changes["plans_index"])
         self.assertIn("https://example.com/10", patched)
-        self.assertIn("019–174", patched)
+        self.assertIn("019–175", patched)
 
     def test_dedupe_preserve_order(self) -> None:
         self.assertEqual(
@@ -1134,6 +1134,46 @@ Monitoring.
         self.assertIn("action=defer", joined)
         self.assertIn("queued=2.0h", joined)
         self.assertIn("queue_warn=true", joined)
+
+    def test_lfg_briefing_mirror_stderr_parts_wait_drift(self) -> None:
+        status: dict[str, Any] = {
+            "briefing_action": "investigate_ci_drift",
+            "wait_recommended": True,
+            "ci_drift": {
+                "fields": [
+                    {"field": "forward_commits_run_id"},
+                    {"field": "verify_run_id"},
+                ],
+            },
+            "fc_run_id": 26549293445,
+        }
+        joined = " ".join(mod._lfg_briefing_mirror_stderr_parts(status))
+        self.assertIn("wait=true", joined)
+        self.assertIn("drift_fields=forward_commits_run_id,verify_run_id", joined)
+        self.assertIn("fc_run=26549293445", joined)
+
+    def test_emit_lfg_strict_exit_stderr_investigate_drift(self) -> None:
+        status: dict[str, Any] = {
+            "lfg_exit_reason": "deferred:fc_active_pending",
+            "briefing_action": "investigate_ci_drift",
+            "wait_recommended": True,
+            "ci_drift": {
+                "fields": [{"field": "forward_commits_run_id"}],
+            },
+            "fc_run_id": 26547437912,
+            "lfg_agent_briefing": {
+                "action": "investigate_ci_drift",
+                "wait_recommended": True,
+                "drift": {"fields": [{"field": "forward_commits_run_id"}]},
+            },
+        }
+        with patch.object(mod.sys, "stderr", new_callable=io.StringIO) as err:
+            mod._emit_lfg_strict_exit_stderr(status, 2)
+        output = err.getvalue()
+        self.assertIn("wait=true", output)
+        self.assertIn("drift_fields=forward_commits_run_id", output)
+        self.assertIn("action=investigate_ci_drift", output)
+        self.assertIn("fc_run=26547437912", output)
 
     def test_emit_lfg_strict_exit_stderr_watch_recommended(self) -> None:
         status: dict[str, Any] = {
