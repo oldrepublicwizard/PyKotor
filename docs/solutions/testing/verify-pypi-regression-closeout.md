@@ -94,6 +94,7 @@ Post–PR #268 CI hygiene and local parity for published PyPI packages.
 - Top-level gate JSON **`gh_watch_summary`**; watch poll stderr **`gh_watch=`** (plan 129).
 - Top-level gate JSON **`active_runs`**; strict exit stderr **`queued=`** / queue flags (plan 130).
 - Top-level gate JSON **`queue_context`**; watch summary JSON/one-liner **`queued=`** (plan 131).
+- Top-level gate JSON **`expected_after_terminal`** / **`primary_action`**; watch summary mirrors both (plan 132).
 - **`--lfg-preflight-watch`** — poll preflight until defer clears or timeout (default 7200s); `preflight_watch_summary` with `next_hint` (plan 114).
 - **`--lfg-gate-watch`** — gate + preflight-watch; defer **`post_terminal_commands`** for after FC terminal; primary wait command for defer/drift (plans 118–119).
 - **`investigate_ci_drift`** briefing includes structured **`drift`**, **`refresh_commands`**, and **`wait_recommended`** when runs are still active (plan 115).
@@ -177,7 +178,7 @@ python3 .github/scripts/local_verify_pypi_slice.py --json
 
 ## Plans index
 
-Plans **019–131** under `docs/plans/2026-05-24-*` document the closeout track; plan **020** is the authoritative verification table.
+Plans **019–132** under `docs/plans/2026-05-24-*` document the closeout track; plan **020** is the authoritative verification table.
 
 ## Last CI check (plan 123)
 

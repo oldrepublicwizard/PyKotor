@@ -24,7 +24,7 @@ SOLUTION_CLOSEOUT = (
     REPO_ROOT / "docs" / "solutions" / "testing" / "verify-pypi-regression-closeout.md"
 )
 PLAN_020 = REPO_ROOT / "docs" / "plans" / "2026-05-24-020-verify-pypi-regression-post-268-plan.md"
-PLAN_TRACK_CAP = "131"
+PLAN_TRACK_CAP = "132"
 LFG_EXIT_CODES: dict[int, str] = {
     0: "proceed, merge_ready, or monitoring_complete",
     1: "gh_error",
@@ -1764,6 +1764,14 @@ def _format_preflight_watch_summary_line(
             parts.append("queue_backlog=true")
         elif queue_context.get("queue_backlog_warning"):
             parts.append("queue_warn=true")
+    expected_after = summary.get("expected_after_terminal")
+    if isinstance(expected_after, dict):
+        after_action = expected_after.get("action")
+        if isinstance(after_action, str) and after_action:
+            parts.append(f"expected_after={after_action}")
+    primary_action = summary.get("primary_action")
+    if isinstance(primary_action, str) and primary_action:
+        parts.append(f"primary_action={primary_action}")
     return " ".join(parts)
 
 
@@ -1842,6 +1850,15 @@ def _watch_lfg_preflight_defer(
     queue_context = _build_defer_queue_context(status)
     if queue_context.get("max_queued_hours") is not None or queue_context.get("queue_backlog"):
         summary["queue_context"] = queue_context
+    if status.get("lfg_deferred"):
+        _apply_lfg_agent_briefing(status)
+        briefing = status.get("lfg_agent_briefing") or {}
+        expected_after = briefing.get("expected_after_terminal")
+        if isinstance(expected_after, dict) and expected_after:
+            summary["expected_after_terminal"] = expected_after
+        primary_action = briefing.get("primary_action")
+        if isinstance(primary_action, str) and primary_action:
+            summary["primary_action"] = primary_action
     status["preflight_watch_summary"] = summary
     label = _watch_label_display(watch_label)
     print(
@@ -2625,11 +2642,23 @@ def _apply_lfg_agent_briefing(status: dict[str, Any]) -> None:
             status["queue_context"] = queue_context
         else:
             status.pop("queue_context", None)
+        expected_after = briefing.get("expected_after_terminal")
+        if isinstance(expected_after, dict) and expected_after:
+            status["expected_after_terminal"] = expected_after
+        else:
+            status.pop("expected_after_terminal", None)
+        primary_action = briefing.get("primary_action")
+        if isinstance(primary_action, str) and primary_action:
+            status["primary_action"] = primary_action
+        else:
+            status.pop("primary_action", None)
     else:
         status.pop("lfg_agent_briefing", None)
         status.pop("gh_watch_summary", None)
         status.pop("active_runs", None)
         status.pop("queue_context", None)
+        status.pop("expected_after_terminal", None)
+        status.pop("primary_action", None)
 
 
 def _emit_lfg_agent_briefing_stderr(briefing: dict[str, Any]) -> None:
