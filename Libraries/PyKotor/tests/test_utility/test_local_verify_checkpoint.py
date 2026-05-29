@@ -496,7 +496,20 @@ Monitoring.
         self.assertTrue(changes["forward_commits_row"])
         self.assertTrue(changes["plans_index"])
         self.assertIn("https://example.com/10", patched)
-        self.assertIn("019–205", patched)
+        self.assertIn("019–206", patched)
+
+    def test_build_preflight_watch_summary_flat_unchanged_max_streak_fallback(self) -> None:
+        status: dict[str, Any] = {
+            "preflight_watch_history": [
+                {"flat_unchanged": 2},
+                {"flat_unchanged": 1},
+            ],
+            "lfg_preflight_watch_result": "timeout",
+        }
+        summary = mod._build_preflight_watch_summary(status)
+        self.assertEqual(summary.get("unchanged_flat_keys_polls"), 2)
+        self.assertEqual(summary.get("flat_unchanged"), 2)
+        self.assertEqual(summary.get("max_flat_unchanged"), 2)
 
     def test_preflight_watch_summary_flat_stderr_parts_unchanged(self) -> None:
         parts = mod._preflight_watch_summary_flat_stderr_parts(

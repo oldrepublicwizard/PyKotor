@@ -24,7 +24,7 @@ SOLUTION_CLOSEOUT = (
     REPO_ROOT / "docs" / "solutions" / "testing" / "verify-pypi-regression-closeout.md"
 )
 PLAN_020 = REPO_ROOT / "docs" / "plans" / "2026-05-24-020-verify-pypi-regression-post-268-plan.md"
-PLAN_TRACK_CAP = "205"
+PLAN_TRACK_CAP = "206"
 LFG_EXIT_CODES: dict[int, str] = {
     0: "proceed, merge_ready, or monitoring_complete",
     1: "gh_error",
@@ -2074,13 +2074,17 @@ def _build_preflight_watch_summary(status: dict[str, Any]) -> dict[str, Any]:
     flat_keys_heartbeats = int(status.get("preflight_flat_keys_heartbeats") or 0)
     if flat_keys_heartbeats <= 0:
         flat_keys_heartbeats = _max_preflight_flat_hb_total(history)
+    unchanged_flat_keys_polls = _count_unchanged_preflight_flat_keys_polls(history)
+    max_flat_unchanged = _max_preflight_flat_unchanged_streak(history)
+    if unchanged_flat_keys_polls <= 0 and max_flat_unchanged > 0:
+        unchanged_flat_keys_polls = max_flat_unchanged
     summary: dict[str, Any] = {
         "polls": len(history),
         "lfg_preflight_watch_result": status.get("lfg_preflight_watch_result"),
         "start_defer_reason": first_reason,
         "end_defer_reason": last_reason,
         "watch_duration_sec": duration_sec,
-        "unchanged_flat_keys_polls": _count_unchanged_preflight_flat_keys_polls(history),
+        "unchanged_flat_keys_polls": unchanged_flat_keys_polls,
         "flat_keys_heartbeat_polls": flat_keys_heartbeats,
         "watch_heartbeat_polls": watch_heartbeat_polls,
     }
@@ -2089,10 +2093,8 @@ def _build_preflight_watch_summary(status: dict[str, Any]) -> dict[str, Any]:
     if flat_keys_heartbeats > 0:
         summary["flat_hb"] = flat_keys_heartbeats
         summary["flat_hb_total"] = flat_keys_heartbeats
-    unchanged_flat_keys_polls = summary["unchanged_flat_keys_polls"]
     if isinstance(unchanged_flat_keys_polls, int) and unchanged_flat_keys_polls > 0:
         summary["flat_unchanged"] = unchanged_flat_keys_polls
-    max_flat_unchanged = _max_preflight_flat_unchanged_streak(history)
     if max_flat_unchanged > 0:
         summary["max_flat_unchanged"] = max_flat_unchanged
     return summary
