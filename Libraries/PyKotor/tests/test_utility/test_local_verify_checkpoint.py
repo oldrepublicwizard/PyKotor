@@ -496,7 +496,32 @@ Monitoring.
         self.assertTrue(changes["forward_commits_row"])
         self.assertTrue(changes["plans_index"])
         self.assertIn("https://example.com/10", patched)
-        self.assertIn("019–203", patched)
+        self.assertIn("019–204", patched)
+
+    def test_preflight_watch_poll_flat_stderr_parts_unchanged(self) -> None:
+        parts = mod._preflight_watch_poll_flat_stderr_parts(
+            ["flat_keys=primary_action", "flat_fields=1"],
+            flat_keys_unchanged=True,
+            flat_keys_unchanged_streak=3,
+            flat_keys_heartbeat_polls=12,
+        )
+        self.assertIn("flat_unchanged=3", parts)
+        self.assertNotIn("flat_keys=primary_action", " ".join(parts))
+        self.assertIn("heartbeat_every=12", parts)
+
+    def test_preflight_watch_poll_flat_stderr_parts_heartbeat(self) -> None:
+        parts = mod._preflight_watch_poll_flat_stderr_parts(
+            ["flat_keys=primary_action"],
+            flat_keys_unchanged=True,
+            flat_keys_unchanged_streak=12,
+            flat_keys_heartbeat_polls=12,
+            flat_keys_heartbeat_count=2,
+        )
+        joined = " ".join(parts)
+        self.assertIn("flat_keys=primary_action", joined)
+        self.assertIn("flat_hb=2", joined)
+        self.assertIn("heartbeat_every=12", joined)
+        self.assertNotIn("flat_unchanged=", joined)
 
     def test_format_preflight_watch_poll_line_flat_unchanged_streak(self) -> None:
         status: dict[str, Any] = {

@@ -24,7 +24,7 @@ SOLUTION_CLOSEOUT = (
     REPO_ROOT / "docs" / "solutions" / "testing" / "verify-pypi-regression-closeout.md"
 )
 PLAN_020 = REPO_ROOT / "docs" / "plans" / "2026-05-24-020-verify-pypi-regression-post-268-plan.md"
-PLAN_TRACK_CAP = "203"
+PLAN_TRACK_CAP = "204"
 LFG_EXIT_CODES: dict[int, str] = {
     0: "proceed, merge_ready, or monitoring_complete",
     1: "gh_error",
@@ -1907,6 +1907,44 @@ def _lfg_briefing_mirror_stderr_parts(status: dict[str, Any]) -> list[str]:
     return parts
 
 
+def _preflight_watch_poll_flat_stderr_parts(
+    mirror_parts: list[str],
+    *,
+    flat_keys_unchanged: bool,
+    flat_keys_unchanged_streak: int,
+    flat_keys_heartbeat_polls: int,
+    flat_keys_heartbeat_count: int | None = None,
+) -> list[str]:
+    emit_flat_keys_heartbeat = _should_emit_watch_heartbeat(
+        flat_keys_unchanged,
+        flat_keys_unchanged_streak,
+        flat_keys_heartbeat_polls,
+    )
+    if flat_keys_unchanged and not emit_flat_keys_heartbeat:
+        parts = [
+            part
+            for part in mirror_parts
+            if not part.startswith("flat_keys=")
+            and not part.startswith("flat_fields=")
+        ]
+        parts.append(
+            f"flat_unchanged={flat_keys_unchanged_streak if flat_keys_unchanged_streak > 0 else 1}"
+        )
+    elif flat_keys_unchanged and emit_flat_keys_heartbeat:
+        parts = list(mirror_parts)
+        heartbeat_count = (
+            flat_keys_heartbeat_count
+            if isinstance(flat_keys_heartbeat_count, int) and flat_keys_heartbeat_count > 0
+            else 1
+        )
+        parts.append(f"flat_hb={heartbeat_count}")
+    else:
+        parts = list(mirror_parts)
+    if flat_keys_unchanged and flat_keys_heartbeat_polls > 0:
+        parts.append(f"heartbeat_every={flat_keys_heartbeat_polls}")
+    return parts
+
+
 def _format_preflight_watch_poll_line(
     polls: int,
     status: dict[str, Any],
@@ -1972,31 +2010,15 @@ def _format_preflight_watch_poll_line(
             and current_flat_keys
             and previous_flat_keys == current_flat_keys
         )
-        emit_flat_keys_heartbeat = _should_emit_watch_heartbeat(
-            flat_keys_unchanged,
-            flat_keys_unchanged_streak,
-            flat_keys_heartbeat_polls,
+        parts.extend(
+            _preflight_watch_poll_flat_stderr_parts(
+                mirror_parts,
+                flat_keys_unchanged=flat_keys_unchanged,
+                flat_keys_unchanged_streak=flat_keys_unchanged_streak,
+                flat_keys_heartbeat_polls=flat_keys_heartbeat_polls,
+                flat_keys_heartbeat_count=flat_keys_heartbeat_count,
+            )
         )
-        if flat_keys_unchanged and not emit_flat_keys_heartbeat:
-            mirror_parts = [
-                part
-                for part in mirror_parts
-                if not part.startswith("flat_keys=")
-                and not part.startswith("flat_fields=")
-            ]
-            mirror_parts.append(
-                f"flat_unchanged={flat_keys_unchanged_streak if flat_keys_unchanged_streak > 0 else 1}"
-            )
-        elif flat_keys_unchanged and emit_flat_keys_heartbeat:
-            heartbeat_count = (
-                flat_keys_heartbeat_count
-                if isinstance(flat_keys_heartbeat_count, int) and flat_keys_heartbeat_count > 0
-                else 1
-            )
-            mirror_parts.append(f"flat_hb={heartbeat_count}")
-        if flat_keys_unchanged and flat_keys_heartbeat_polls > 0:
-            mirror_parts.append(f"heartbeat_every={flat_keys_heartbeat_polls}")
-        parts.extend(mirror_parts)
     return " ".join(parts)
 
 
