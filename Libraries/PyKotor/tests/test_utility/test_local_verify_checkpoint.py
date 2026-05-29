@@ -496,7 +496,7 @@ Monitoring.
         self.assertTrue(changes["forward_commits_row"])
         self.assertTrue(changes["plans_index"])
         self.assertIn("https://example.com/10", patched)
-        self.assertIn("019–200", patched)
+        self.assertIn("019–201", patched)
 
     def test_format_preflight_watch_poll_line_flat_unchanged_streak(self) -> None:
         status: dict[str, Any] = {
@@ -656,8 +656,11 @@ Monitoring.
         history = status.get("preflight_watch_history") or []
         self.assertEqual(len(history), 3)
         self.assertNotIn("flat_hb", history[0])
+        self.assertNotIn("flat_hb_total", history[0])
         self.assertEqual(history[1].get("flat_hb"), 1)
+        self.assertEqual(history[1].get("flat_hb_total"), 1)
         self.assertEqual(history[2].get("flat_hb"), 2)
+        self.assertEqual(history[2].get("flat_hb_total"), 2)
         summary = status.get("preflight_watch_summary") or {}
         self.assertEqual(summary.get("flat_hb_total"), 2)
 
