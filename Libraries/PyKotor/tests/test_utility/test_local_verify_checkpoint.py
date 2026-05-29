@@ -496,7 +496,52 @@ Monitoring.
         self.assertTrue(changes["forward_commits_row"])
         self.assertTrue(changes["plans_index"])
         self.assertIn("https://example.com/10", patched)
-        self.assertIn("019–195", patched)
+        self.assertIn("019–196", patched)
+
+    def test_watch_lfg_preflight_defer_history_flat_unchanged_streak(self) -> None:
+        deferred_status: dict[str, Any] = {
+            "gh_ok": True,
+            "checkpoint": {
+                "defer_lfg_pr": True,
+                "defer_reason": "fc_active_pending",
+            },
+            "doc_validation": {
+                "drift": [{"field": "forward_commits_run_id", "doc": 1, "live": 2}],
+            },
+            "verify_pypi": {
+                "run_id": 1,
+                "status": "completed",
+                "conclusion": "success",
+            },
+            "forward_commits": {
+                "run_id": 2,
+                "status": "queued",
+                "conclusion": "",
+            },
+        }
+        with patch.object(
+            mod, "_ci_status", side_effect=[deferred_status, deferred_status, deferred_status]
+        ):
+            with patch.object(mod, "_refine_lfg_checkpoint"):
+                with patch.object(mod, "_defer_preflight_watch_recommended", return_value=True):
+                    with patch.object(mod.time, "sleep"):
+                        with patch.object(
+                            mod.time,
+                            "monotonic",
+                            side_effect=[0.0, 0.0, 0.0, 0.0, 100.0, 100.0],
+                        ):
+                            status = mod._watch_lfg_preflight_defer(
+                                targets=["solution"],
+                                prefetch_git=False,
+                                interval_sec=0.0,
+                                timeout_sec=5.0,
+                                flat_keys_heartbeat_polls=12,
+                            )
+        history = status.get("preflight_watch_history") or []
+        self.assertEqual(len(history), 3)
+        self.assertNotIn("flat_unchanged", history[0])
+        self.assertEqual(history[1].get("flat_unchanged"), 1)
+        self.assertEqual(history[2].get("flat_unchanged"), 2)
 
     def test_build_preflight_watch_summary_flat_unchanged_alias(self) -> None:
         status: dict[str, Any] = {

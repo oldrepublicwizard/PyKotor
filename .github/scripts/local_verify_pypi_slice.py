@@ -24,7 +24,7 @@ SOLUTION_CLOSEOUT = (
     REPO_ROOT / "docs" / "solutions" / "testing" / "verify-pypi-regression-closeout.md"
 )
 PLAN_020 = REPO_ROOT / "docs" / "plans" / "2026-05-24-020-verify-pypi-regression-post-268-plan.md"
-PLAN_TRACK_CAP = "195"
+PLAN_TRACK_CAP = "196"
 LFG_EXIT_CODES: dict[int, str] = {
     0: "proceed, merge_ready, or monitoring_complete",
     1: "gh_error",
@@ -2186,6 +2186,8 @@ def _watch_lfg_preflight_defer(
         )
         if current_flat_keys:
             snapshot["flat_keys"] = list(current_flat_keys)
+            if flat_keys_unchanged_streak > 0:
+                snapshot["flat_unchanged"] = flat_keys_unchanged_streak
             if _should_emit_watch_heartbeat(
                 bool(
                     previous_flat_keys is not None
@@ -2197,6 +2199,7 @@ def _watch_lfg_preflight_defer(
                 status["preflight_flat_keys_heartbeats"] = (
                     int(status.get("preflight_flat_keys_heartbeats") or 0) + 1
                 )
+                snapshot["flat_hb"] = 1
             previous_flat_keys = current_flat_keys
         history.append(snapshot)
         if not still_deferred:
