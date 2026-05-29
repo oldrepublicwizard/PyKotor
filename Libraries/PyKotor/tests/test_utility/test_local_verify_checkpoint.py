@@ -496,7 +496,7 @@ Monitoring.
         self.assertTrue(changes["forward_commits_row"])
         self.assertTrue(changes["plans_index"])
         self.assertIn("https://example.com/10", patched)
-        self.assertIn("019–198", patched)
+        self.assertIn("019–199", patched)
 
     def test_format_preflight_watch_poll_line_flat_unchanged_streak(self) -> None:
         status: dict[str, Any] = {
@@ -614,6 +614,53 @@ Monitoring.
         self.assertEqual(summary.get("max_flat_unchanged"), 2)
         self.assertNotIn("max_flat_unchanged=", mod._format_preflight_watch_summary_line(summary))
 
+    def test_watch_lfg_preflight_defer_history_flat_hb_cumulative(self) -> None:
+        deferred_status: dict[str, Any] = {
+            "gh_ok": True,
+            "checkpoint": {
+                "defer_lfg_pr": True,
+                "defer_reason": "fc_active_pending",
+            },
+            "doc_validation": {
+                "drift": [{"field": "forward_commits_run_id", "doc": 1, "live": 2}],
+            },
+            "verify_pypi": {
+                "run_id": 1,
+                "status": "completed",
+                "conclusion": "success",
+            },
+            "forward_commits": {
+                "run_id": 2,
+                "status": "queued",
+                "conclusion": "",
+            },
+        }
+        with patch.object(
+            mod, "_ci_status", side_effect=[deferred_status, deferred_status, deferred_status]
+        ):
+            with patch.object(mod, "_refine_lfg_checkpoint"):
+                with patch.object(mod, "_defer_preflight_watch_recommended", return_value=True):
+                    with patch.object(mod.time, "sleep"):
+                        with patch.object(
+                            mod.time,
+                            "monotonic",
+                            side_effect=[0.0, 0.0, 0.0, 0.0, 100.0, 100.0],
+                        ):
+                            status = mod._watch_lfg_preflight_defer(
+                                targets=["solution"],
+                                prefetch_git=False,
+                                interval_sec=0.0,
+                                timeout_sec=5.0,
+                                flat_keys_heartbeat_polls=1,
+                            )
+        history = status.get("preflight_watch_history") or []
+        self.assertEqual(len(history), 3)
+        self.assertNotIn("flat_hb", history[0])
+        self.assertEqual(history[1].get("flat_hb"), 1)
+        self.assertEqual(history[2].get("flat_hb"), 2)
+        summary = status.get("preflight_watch_summary") or {}
+        self.assertEqual(summary.get("flat_hb_total"), 2)
+
     def test_build_preflight_watch_summary_flat_unchanged_alias(self) -> None:
         status: dict[str, Any] = {
             "preflight_watch_history": [
@@ -646,6 +693,13 @@ Monitoring.
         summary = mod._build_preflight_watch_summary(status)
         self.assertEqual(summary.get("flat_keys_heartbeat_polls"), 2)
         self.assertEqual(summary.get("flat_hb"), 2)
+        self.assertEqual(summary.get("flat_hb_total"), 2)
+
+    def test_preflight_flat_keys_heartbeat_count_prefers_flat_hb_total(self) -> None:
+        self.assertEqual(
+            mod._preflight_flat_keys_heartbeat_count({"flat_hb_total": 3, "flat_hb": 2}),
+            3,
+        )
 
     def test_should_emit_preflight_flat_keys_heartbeat_summary_flat_hb(self) -> None:
         self.assertTrue(
@@ -804,9 +858,10 @@ Monitoring.
             previous_flat_keys=previous,
             flat_keys_unchanged_streak=12,
             flat_keys_heartbeat_polls=12,
+            flat_keys_heartbeat_count=2,
         )
         self.assertIn("flat_keys=", line)
-        self.assertIn("flat_hb=1", line)
+        self.assertIn("flat_hb=2", line)
         self.assertIn("heartbeat_every=12", line)
         self.assertNotIn("flat_unchanged=1", line)
         self.assertNotIn("flat_keys_heartbeat=", line)
