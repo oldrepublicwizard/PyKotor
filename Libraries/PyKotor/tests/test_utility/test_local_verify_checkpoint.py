@@ -496,7 +496,38 @@ Monitoring.
         self.assertTrue(changes["forward_commits_row"])
         self.assertTrue(changes["plans_index"])
         self.assertIn("https://example.com/10", patched)
-        self.assertIn("019–197", patched)
+        self.assertIn("019–198", patched)
+
+    def test_format_preflight_watch_poll_line_flat_unchanged_streak(self) -> None:
+        status: dict[str, Any] = {
+            "lfg_deferred": True,
+            "lfg_defer_reason": "fc_active_pending",
+            "checkpoint": {"proceed_reason": "investigate_ci_drift"},
+            "doc_validation": {
+                "drift": [{"field": "forward_commits_run_id", "doc": 1, "live": 2}],
+            },
+            "verify_pypi": {
+                "run_id": 1,
+                "status": "completed",
+                "conclusion": "success",
+            },
+            "forward_commits": {
+                "run_id": 2,
+                "status": "queued",
+                "conclusion": "",
+            },
+        }
+        first_status = dict(status)
+        mod._format_preflight_watch_poll_line(1, first_status)
+        previous = mod._lfg_flat_field_keys_present_stderr(first_status)
+        line = mod._format_preflight_watch_poll_line(
+            4,
+            dict(status),
+            previous_flat_keys=previous,
+            flat_keys_unchanged_streak=3,
+        )
+        self.assertIn("flat_unchanged=3", line)
+        self.assertNotIn("flat_unchanged=1", line)
 
     def test_max_preflight_flat_unchanged_streak(self) -> None:
         history = [
