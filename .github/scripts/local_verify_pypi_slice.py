@@ -24,7 +24,7 @@ SOLUTION_CLOSEOUT = (
     REPO_ROOT / "docs" / "solutions" / "testing" / "verify-pypi-regression-closeout.md"
 )
 PLAN_020 = REPO_ROOT / "docs" / "plans" / "2026-05-24-020-verify-pypi-regression-post-268-plan.md"
-PLAN_TRACK_CAP = "202"
+PLAN_TRACK_CAP = "203"
 LFG_EXIT_CODES: dict[int, str] = {
     0: "proceed, merge_ready, or monitoring_complete",
     1: "gh_error",
@@ -2000,6 +2000,43 @@ def _format_preflight_watch_poll_line(
     return " ".join(parts)
 
 
+def _count_unchanged_preflight_flat_keys_polls(history: list[dict[str, Any]]) -> int:
+    if len(history) < 2:
+        return 0
+    count = 0
+    for index in range(1, len(history)):
+        prev_keys = history[index - 1].get("flat_keys")
+        curr_keys = history[index].get("flat_keys")
+        if (
+            isinstance(prev_keys, list)
+            and isinstance(curr_keys, list)
+            and prev_keys
+            and prev_keys == curr_keys
+        ):
+            count += 1
+    return count
+
+
+def _max_preflight_flat_unchanged_streak(history: list[dict[str, Any]]) -> int:
+    max_streak = 0
+    for entry in history:
+        streak = entry.get("flat_unchanged")
+        if isinstance(streak, int) and streak > max_streak:
+            max_streak = streak
+    return max_streak
+
+
+def _max_preflight_flat_hb_total(history: list[dict[str, Any]]) -> int:
+    max_hb = 0
+    for entry in history:
+        hb = entry.get("flat_hb_total")
+        if not isinstance(hb, int) or hb <= 0:
+            hb = entry.get("flat_hb")
+        if isinstance(hb, int) and hb > max_hb:
+            max_hb = hb
+    return max_hb
+
+
 def _build_preflight_watch_summary(status: dict[str, Any]) -> dict[str, Any]:
     history = list(status.get("preflight_watch_history") or [])
     started = status.get("preflight_watch_started_monotonic")
@@ -3305,43 +3342,6 @@ def _build_lfg_flat_field_values(source: dict[str, Any]) -> dict[str, Any]:
 
 def _build_lfg_flat_field_keys_present(flat_values: dict[str, Any]) -> list[str]:
     return [key for key in LFG_FLAT_FIELD_KEYS if key in flat_values]
-
-
-def _count_unchanged_preflight_flat_keys_polls(history: list[dict[str, Any]]) -> int:
-    if len(history) < 2:
-        return 0
-    count = 0
-    for index in range(1, len(history)):
-        prev_keys = history[index - 1].get("flat_keys")
-        curr_keys = history[index].get("flat_keys")
-        if (
-            isinstance(prev_keys, list)
-            and isinstance(curr_keys, list)
-            and prev_keys
-            and prev_keys == curr_keys
-        ):
-            count += 1
-    return count
-
-
-def _max_preflight_flat_unchanged_streak(history: list[dict[str, Any]]) -> int:
-    max_streak = 0
-    for entry in history:
-        streak = entry.get("flat_unchanged")
-        if isinstance(streak, int) and streak > max_streak:
-            max_streak = streak
-    return max_streak
-
-
-def _max_preflight_flat_hb_total(history: list[dict[str, Any]]) -> int:
-    max_hb = 0
-    for entry in history:
-        hb = entry.get("flat_hb_total")
-        if not isinstance(hb, int) or hb <= 0:
-            hb = entry.get("flat_hb")
-        if isinstance(hb, int) and hb > max_hb:
-            max_hb = hb
-    return max_hb
 
 
 def _mirror_preflight_watch_summary_from_status(
