@@ -496,7 +496,7 @@ Monitoring.
         self.assertTrue(changes["forward_commits_row"])
         self.assertTrue(changes["plans_index"])
         self.assertIn("https://example.com/10", patched)
-        self.assertIn("019–194", patched)
+        self.assertIn("019–195", patched)
 
     def test_build_preflight_watch_summary_flat_unchanged_alias(self) -> None:
         status: dict[str, Any] = {
@@ -692,7 +692,7 @@ Monitoring.
         self.assertIn("flat_keys=", line)
         self.assertIn("flat_hb=1", line)
         self.assertIn("heartbeat_every=12", line)
-        self.assertNotIn("flat_unchanged=true", line)
+        self.assertNotIn("flat_unchanged=1", line)
         self.assertNotIn("flat_keys_heartbeat=", line)
 
     def test_build_preflight_watch_summary_flat_keys_heartbeat_polls(self) -> None:
@@ -774,7 +774,7 @@ Monitoring.
         first_status = dict(status)
         first = mod._format_preflight_watch_poll_line(1, first_status)
         self.assertIn("flat_keys=", first)
-        self.assertNotIn("flat_unchanged=true", first)
+        self.assertNotIn("flat_unchanged=1", first)
         previous = mod._lfg_flat_field_keys_present_stderr(first_status)
         second = mod._format_preflight_watch_poll_line(
             2,
@@ -783,7 +783,8 @@ Monitoring.
         )
         self.assertNotIn("flat_keys=", second)
         self.assertNotIn("flat_fields=", second)
-        self.assertIn("flat_unchanged=true", second)
+        self.assertIn("flat_unchanged=1", second)
+        self.assertNotIn("flat_unchanged=true", second)
         self.assertIn("heartbeat_every=12", second)
 
     def test_format_preflight_watch_poll_line_flat_keys_changed(self) -> None:
@@ -805,7 +806,7 @@ Monitoring.
             previous_flat_keys=["primary_action"],
         )
         self.assertIn("flat_keys=", line)
-        self.assertNotIn("flat_unchanged=true", line)
+        self.assertNotIn("flat_unchanged=1", line)
 
     def test_lfg_flat_field_keys_present_stderr(self) -> None:
         keys = mod._lfg_flat_field_keys_present_stderr(
