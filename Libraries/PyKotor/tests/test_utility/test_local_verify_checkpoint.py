@@ -496,7 +496,44 @@ Monitoring.
         self.assertTrue(changes["forward_commits_row"])
         self.assertTrue(changes["plans_index"])
         self.assertIn("https://example.com/10", patched)
-        self.assertIn("019–196", patched)
+        self.assertIn("019–197", patched)
+
+    def test_max_preflight_flat_unchanged_streak(self) -> None:
+        history = [
+            {"flat_keys": ["a"]},
+            {"flat_keys": ["a"], "flat_unchanged": 1},
+            {"flat_keys": ["a", "b"]},
+            {"flat_keys": ["a", "b"], "flat_unchanged": 1},
+        ]
+        self.assertEqual(mod._count_unchanged_preflight_flat_keys_polls(history), 2)
+        self.assertEqual(mod._max_preflight_flat_unchanged_streak(history), 1)
+
+    def test_build_preflight_watch_summary_max_flat_unchanged(self) -> None:
+        status: dict[str, Any] = {
+            "preflight_watch_history": [
+                {"flat_keys": ["a"]},
+                {"flat_keys": ["a"], "flat_unchanged": 1},
+                {"flat_keys": ["a", "b"]},
+                {"flat_keys": ["a", "b"], "flat_unchanged": 1},
+            ],
+            "lfg_preflight_watch_result": "timeout",
+        }
+        summary = mod._build_preflight_watch_summary(status)
+        self.assertEqual(summary.get("flat_unchanged"), 2)
+        self.assertEqual(summary.get("max_flat_unchanged"), 1)
+
+    def test_format_preflight_watch_summary_line_max_flat_unchanged(self) -> None:
+        line = mod._format_preflight_watch_summary_line(
+            {
+                "polls": 4,
+                "lfg_preflight_watch_result": "timeout",
+                "flat_unchanged": 2,
+                "max_flat_unchanged": 1,
+                "watch_heartbeat_polls": 12,
+            },
+        )
+        self.assertIn("flat_unchanged=2", line)
+        self.assertIn("max_flat_unchanged=1", line)
 
     def test_watch_lfg_preflight_defer_history_flat_unchanged_streak(self) -> None:
         deferred_status: dict[str, Any] = {
@@ -542,6 +579,9 @@ Monitoring.
         self.assertNotIn("flat_unchanged", history[0])
         self.assertEqual(history[1].get("flat_unchanged"), 1)
         self.assertEqual(history[2].get("flat_unchanged"), 2)
+        summary = status.get("preflight_watch_summary") or {}
+        self.assertEqual(summary.get("max_flat_unchanged"), 2)
+        self.assertNotIn("max_flat_unchanged=", mod._format_preflight_watch_summary_line(summary))
 
     def test_build_preflight_watch_summary_flat_unchanged_alias(self) -> None:
         status: dict[str, Any] = {

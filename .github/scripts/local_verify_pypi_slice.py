@@ -24,7 +24,7 @@ SOLUTION_CLOSEOUT = (
     REPO_ROOT / "docs" / "solutions" / "testing" / "verify-pypi-regression-closeout.md"
 )
 PLAN_020 = REPO_ROOT / "docs" / "plans" / "2026-05-24-020-verify-pypi-regression-post-268-plan.md"
-PLAN_TRACK_CAP = "196"
+PLAN_TRACK_CAP = "197"
 LFG_EXIT_CODES: dict[int, str] = {
     0: "proceed, merge_ready, or monitoring_complete",
     1: "gh_error",
@@ -2022,6 +2022,9 @@ def _build_preflight_watch_summary(status: dict[str, Any]) -> dict[str, Any]:
     unchanged_flat_keys_polls = summary["unchanged_flat_keys_polls"]
     if isinstance(unchanged_flat_keys_polls, int) and unchanged_flat_keys_polls > 0:
         summary["flat_unchanged"] = unchanged_flat_keys_polls
+    max_flat_unchanged = _max_preflight_flat_unchanged_streak(history)
+    if max_flat_unchanged > 0:
+        summary["max_flat_unchanged"] = max_flat_unchanged
     return summary
 
 
@@ -2081,6 +2084,13 @@ def _format_preflight_watch_summary_line(
     unchanged_flat = _preflight_unchanged_flat_keys_polls(summary)
     if unchanged_flat:
         parts.append(f"flat_unchanged={unchanged_flat}")
+        max_flat_unchanged = summary.get("max_flat_unchanged")
+        if (
+            isinstance(max_flat_unchanged, int)
+            and max_flat_unchanged > 0
+            and max_flat_unchanged < unchanged_flat
+        ):
+            parts.append(f"max_flat_unchanged={max_flat_unchanged}")
         watch_heartbeat = summary.get("watch_heartbeat_polls")
         if not isinstance(watch_heartbeat, int) or watch_heartbeat <= 0:
             watch_heartbeat = summary.get("heartbeat_every")
@@ -3292,6 +3302,15 @@ def _count_unchanged_preflight_flat_keys_polls(history: list[dict[str, Any]]) ->
         ):
             count += 1
     return count
+
+
+def _max_preflight_flat_unchanged_streak(history: list[dict[str, Any]]) -> int:
+    max_streak = 0
+    for entry in history:
+        streak = entry.get("flat_unchanged")
+        if isinstance(streak, int) and streak > max_streak:
+            max_streak = streak
+    return max_streak
 
 
 def _mirror_preflight_watch_summary_from_status(
