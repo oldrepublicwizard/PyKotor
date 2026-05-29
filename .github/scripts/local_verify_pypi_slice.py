@@ -24,7 +24,7 @@ SOLUTION_CLOSEOUT = (
     REPO_ROOT / "docs" / "solutions" / "testing" / "verify-pypi-regression-closeout.md"
 )
 PLAN_020 = REPO_ROOT / "docs" / "plans" / "2026-05-24-020-verify-pypi-regression-post-268-plan.md"
-PLAN_TRACK_CAP = "210"
+PLAN_TRACK_CAP = "211"
 LFG_EXIT_CODES: dict[int, str] = {
     0: "proceed, merge_ready, or monitoring_complete",
     1: "gh_error",
@@ -2136,6 +2136,12 @@ def _should_emit_preflight_flat_keys_heartbeat_summary(summary: dict[str, Any]) 
     return unchanged >= interval
 
 
+def _preflight_flat_hb_total_for_stderr(summary: dict[str, Any]) -> int:
+    if not _should_emit_preflight_flat_keys_heartbeat_summary(summary):
+        return 0
+    return _preflight_flat_keys_heartbeat_count(summary)
+
+
 def _preflight_watch_poll_flat_stderr_parts(
     mirror_parts: list[str],
     *,
@@ -2185,10 +2191,9 @@ def _preflight_watch_summary_flat_stderr_parts(summary: dict[str, Any]) -> list[
         heartbeat_interval = _preflight_watch_heartbeat_interval(summary)
         if heartbeat_interval > 0:
             parts.append(f"heartbeat_every={heartbeat_interval}")
-    if _should_emit_preflight_flat_keys_heartbeat_summary(summary):
-        heartbeats = _preflight_flat_keys_heartbeat_count(summary)
-        if heartbeats > 0:
-            parts.append(f"flat_hb_total={heartbeats}")
+    flat_hb_total = _preflight_flat_hb_total_for_stderr(summary)
+    if flat_hb_total > 0:
+        parts.append(f"flat_hb_total={flat_hb_total}")
     return parts
 
 
