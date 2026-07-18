@@ -703,8 +703,8 @@ def main():
     )
     parser.add_argument(
         "--target",
-        default="OpenKotOR/PyKotor",
-        help="Target repository (default: OpenKotOR/PyKotor)",
+        default="oldrepublicwizard/PyKotor",
+        help="Target repository (default: oldrepublicwizard/PyKotor)",
     )
     parser.add_argument(
         "--fix-only",

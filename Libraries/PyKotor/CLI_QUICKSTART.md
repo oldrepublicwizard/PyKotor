@@ -240,4 +240,4 @@ uvx PyKotor --help
 uvx PyKotor <command> --help
 ```
 
-For issues or questions, visit the [PyKotor repository](https://github.com/OpenKotOR/PyKotor).
+For issues or questions, visit the [PyKotor repository](https://github.com/oldrepublicwizard/PyKotor).

@@ -741,8 +741,8 @@ def _format_checkpoint_snippet(status: dict[str, Any]) -> str:
     fc_sha = (forward_commits.get("head_sha") or "")[:7]
     verify_label = _run_display_label(verify)
     fc_label = _run_display_label(forward_commits)
-    verify_url = verify.get("url") or f"https://github.com/OpenKotOR/PyKotor/actions/runs/{verify_id}"
-    fc_url = forward_commits.get("url") or f"https://github.com/OpenKotOR/PyKotor/actions/runs/{fc_id}"
+    verify_url = verify.get("url") or f"https://github.com/oldrepublicwizard/PyKotor/actions/runs/{verify_id}"
+    fc_url = forward_commits.get("url") or f"https://github.com/oldrepublicwizard/PyKotor/actions/runs/{fc_id}"
     return (
         f"**{date.today().isoformat()}:** verify [{verify_id}]({verify_url}) **{verify_label}** on `{verify_sha}`; "
         f"FC [{fc_id}]({fc_url}) **{fc_label}** on `{fc_sha}`."
@@ -768,8 +768,8 @@ def _format_plan020_last_ci_line(status: dict[str, Any]) -> str:
     fc_id = forward_commits.get("run_id", "?")
     verify_sha = (verify.get("head_sha") or "")[:7]
     fc_sha = (forward_commits.get("head_sha") or "")[:7]
-    verify_url = verify.get("url") or f"https://github.com/OpenKotOR/PyKotor/actions/runs/{verify_id}"
-    fc_url = forward_commits.get("url") or f"https://github.com/OpenKotOR/PyKotor/actions/runs/{fc_id}"
+    verify_url = verify.get("url") or f"https://github.com/oldrepublicwizard/PyKotor/actions/runs/{verify_id}"
+    fc_url = forward_commits.get("url") or f"https://github.com/oldrepublicwizard/PyKotor/actions/runs/{fc_id}"
     verify_label = _run_display_label(verify)
     fc_label = _run_display_label(forward_commits)
     return (
@@ -877,8 +877,8 @@ def _replace_track_status_section(text: str, status: dict[str, Any]) -> tuple[st
         return text, False
     verify_id = verify.get("run_id", "?")
     fc_id = forward_commits.get("run_id", "?")
-    verify_url = verify.get("url") or f"https://github.com/OpenKotOR/PyKotor/actions/runs/{verify_id}"
-    fc_url = forward_commits.get("url") or f"https://github.com/OpenKotOR/PyKotor/actions/runs/{fc_id}"
+    verify_url = verify.get("url") or f"https://github.com/oldrepublicwizard/PyKotor/actions/runs/{verify_id}"
+    fc_url = forward_commits.get("url") or f"https://github.com/oldrepublicwizard/PyKotor/actions/runs/{fc_id}"
     new_body = (
         f"**Monitoring-only (plan {PLAN_TRACK_CAP}).** Canonical runs "
         f"verify [{verify_id}]({verify_url}) and FC [{fc_id}]({fc_url}) completed **success**. "

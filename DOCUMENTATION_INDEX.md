@@ -37,7 +37,7 @@ Complete guide to PyKotor documentation, organized by topic and audience.
 ### Reference Documentation
 
 - **[PyKotor Library Docs](Libraries/PyKotor/docs/)** — Core library API documentation
-- **[Project Wiki](https://github.com/OpenKotOR/PyKotor/wiki)** — Community documentation
+- **[Project Wiki](https://github.com/oldrepublicwizard/PyKotor/wiki)** — Community documentation
 - **[File Format Documentation](wiki/)** — In-tree game file format specifications
 
 ### Validated learnings (solutions)

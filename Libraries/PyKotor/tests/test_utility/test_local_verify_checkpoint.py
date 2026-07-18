@@ -38,7 +38,7 @@ _FC_SHA = "def1234567890"
 _STALE_VERIFY_SHA = "fed9876543210"
 
 SAMPLE_LAST_CHECK = """
-**2026-05-24:** `--ci-status-only --json` — verify [26365458400](https://github.com/OpenKotOR/PyKotor/actions/runs/26365458400) still **queued** on `9facd78fd`; FC [26365648344](https://github.com/OpenKotOR/PyKotor/actions/runs/26365648344) **queued** on `3b6b74640`.
+**2026-05-24:** `--ci-status-only --json` — verify [26365458400](https://github.com/oldrepublicwizard/PyKotor/actions/runs/26365458400) still **queued** on `9facd78fd`; FC [26365648344](https://github.com/oldrepublicwizard/PyKotor/actions/runs/26365648344) **queued** on `3b6b74640`.
 """
 
 SAMPLE_DOC = f"""# Closeout

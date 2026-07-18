@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Validate and migrate releases from NickHugi/PyKotor to OpenKotOR/PyKotor.
+Validate and migrate releases from NickHugi/PyKotor to oldrepublicwizard/PyKotor.
 Ensures 100% accuracy with full metadata preservation.
 """
 
@@ -127,7 +127,7 @@ def update_release(target_repo: str, release_id: int, release_data: dict[str, An
 
 def main():
     source_repo = "NickHugi/PyKotor"
-    target_repo = "OpenKotOR/PyKotor"
+    target_repo = "oldrepublicwizard/PyKotor"
 
     print("=" * 70)
     print("VALIDATING AND MIGRATING RELEASES - 100% ACCURACY CHECK")

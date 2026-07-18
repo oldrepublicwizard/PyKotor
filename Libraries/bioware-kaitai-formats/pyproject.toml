@@ -22,9 +22,9 @@ classifiers = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/OpenKotOR/bioware-kaitai-formats"
-Repository = "https://github.com/OpenKotOR/bioware-kaitai-formats.git"
-Documentation = "https://github.com/OpenKotOR/PyKotor/wiki"
+Homepage = "https://github.com/KotORPublicDomain/bioware-kaitai-formats"
+Repository = "https://github.com/KotORPublicDomain/bioware-kaitai-formats.git"
+Documentation = "https://github.com/oldrepublicwizard/PyKotor/wiki"
 
 [project.optional-dependencies]
 dev = ["pytest>=7.0", "pytest-timeout>=2.4.0"]

@@ -23,7 +23,7 @@ A clear workflow for when and how to use **best-practices-researcher**, **repo-r
   - **repo-research-analyst:** Before writing or restructure; to map format -> code (PyKotor + vendor), list files with .md links, and audit See Also / Implementation sections.
   - **parallel-web-search:** Default for lookups, fact-check, “research X”; every claim cited inline; mandatory Sources section.
   - **parallel-deep-research:** Only when user explicitly asks for deep/exhaustive/comprehensive research; output to dated files; in wiki use summary + link only.
-- **Wiki reference pattern:** PyKotor: `[path](https://github.com/OpenKotOR/PyKotor/blob/master/path#Lx-Ly)`. Vendor: `https://github.com/th3w1zard1/<repo>/blob/master/...`. Add Implementation/Reference sections where missing (e.g. BWM-File-Format, DDS-File-Format, empty References in 2DA/GFF/LYT/ERF).
+- **Wiki reference pattern:** PyKotor: `[path](https://github.com/oldrepublicwizard/PyKotor/blob/master/path#Lx-Ly)`. Vendor: `https://github.com/th3w1zard1/<repo>/blob/master/...`. Add Implementation/Reference sections where missing (e.g. BWM-File-Format, DDS-File-Format, empty References in 2DA/GFF/LYT/ERF).
 - **agdec-http:** Prefer for game behavior, format semantics, and binary layout; use list-functions, search-everything, get-function, execute-script (Ghidra), etc. Wiki stays conceptual; no tool names or raw RE dumps (per AGENTS.md).
 
 ## Vendor permalink validation (done)

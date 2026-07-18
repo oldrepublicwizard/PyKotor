@@ -1,10 +1,10 @@
 # PyKotor
 
 [![PyPI](https://img.shields.io/pypi/v/pykotor.svg)](https://pypi.org/project/pykotor/)
-[![docs](https://img.shields.io/badge/docs-wiki-blue.svg)](https://github.com/OpenKotOR/PyKotor/wiki)
+[![docs](https://img.shields.io/badge/docs-wiki-blue.svg)](https://github.com/oldrepublicwizard/PyKotor/wiki)
 [![license: LGPL v3+](https://img.shields.io/badge/license-LGPL%20v3%2B-lightgrey.svg)](https://www.gnu.org/licenses/lgpl-3.0.html)
-[![CI](https://github.com/OpenKotOR/PyKotor/actions/workflows/ci.yml/badge.svg)](https://github.com/OpenKotOR/PyKotor/actions/workflows/ci.yml)
-[![pre-commit](https://results.pre-commit.ci/badge/github/OpenKotOR/PyKotor/main.svg)](https://results.pre-commit.ci/latest/github/OpenKotOR/PyKotor/main)
+[![CI](https://github.com/oldrepublicwizard/PyKotor/actions/workflows/ci.yml/badge.svg)](https://github.com/oldrepublicwizard/PyKotor/actions/workflows/ci.yml)
+[![pre-commit](https://results.pre-commit.ci/badge/github/oldrepublicwizard/PyKotor/main.svg)](https://results.pre-commit.ci/latest/github/oldrepublicwizard/PyKotor/main)
 
 **PyKotor** is a modern Python library and toolset for reading, writing, and modding resources from the Star Wars: Knights of the Old Republic (KOTOR, K1) and The Sith Lords (KOTOR II, TSL) game engines.
 
@@ -21,10 +21,10 @@
 
 ## Documentation & Community
 
-- 📚 **Docs / Usage:** [Wiki & Getting Started](https://github.com/OpenKotOR/PyKotor/wiki)
-- 🐛 **Bugs:** [GitHub Issues](https://github.com/OpenKotOR/PyKotor/issues)
+- 📚 **Docs / Usage:** [Wiki & Getting Started](https://github.com/oldrepublicwizard/PyKotor/wiki)
+- 🐛 **Bugs:** [GitHub Issues](https://github.com/oldrepublicwizard/PyKotor/issues)
 - 💬 **Community Discord:** [Invite Link](https://discord.gg/4bEyeF3)
-- 🌟 **Changelog:** [Releases](https://github.com/OpenKotOR/PyKotor/releases)
+- 🌟 **Changelog:** [Releases](https://github.com/oldrepublicwizard/PyKotor/releases)
 
 ## Quick Install
 
@@ -70,7 +70,7 @@ Major types:
 - Containers: BIF, ERF, KEY, MOD, RIM
 - Resources: GFF/UT*, GIT, DLG, ARE, UTP, UTI, UTC, UTS, UTM, UTR, UTT, JRL, TLK, etc.
 - 2DA, SSF, NCS/NSS, NDB, models, textures, etc.
-See [Wiki Format Coverage](https://github.com/OpenKotOR/PyKotor/wiki/Format-Support-Matrix).
+See [Wiki Format Coverage](https://github.com/oldrepublicwizard/PyKotor/wiki/Format-Support-Matrix).
 
 ## Development & Contributing
 
@@ -78,16 +78,16 @@ See [Wiki Format Coverage](https://github.com/OpenKotOR/PyKotor/wiki/Format-Supp
 2. `poetry install` or `uv pip install -e .[dev]`
 3. Run `pytest` and `ruff check .` and `mypy --strict` before submitting PRs.
 
-For feature requests, new formats, or reverse-engineering findings, see [CONTRIBUTING.md](https://github.com/OpenKotOR/PyKotor/blob/master/CONTRIBUTING.md).
+For feature requests, new formats, or reverse-engineering findings, see [CONTRIBUTING.md](https://github.com/oldrepublicwizard/PyKotor/blob/master/CONTRIBUTING.md).
 
 ---
 
 ## License
 
-LGPL-3.0-or-later (see [LICENSE](https://github.com/OpenKotOR/PyKotor/blob/master/LICENSE))
+LGPL-3.0-or-later (see [LICENSE](https://github.com/oldrepublicwizard/PyKotor/blob/master/LICENSE))
 
 ---
 
-> Format behavior is cross-checked against retail KotOR I and TSL builds; tooling can use REVA MCP helpers where that helps. Maintainer-facing workflow notes live in the [project wiki](https://github.com/OpenKotOR/PyKotor/wiki/Reverse-Engineering-Workflow).
+> Format behavior is cross-checked against retail KotOR I and TSL builds; tooling can use REVA MCP helpers where that helps. Maintainer-facing workflow notes live in the [project wiki](https://github.com/oldrepublicwizard/PyKotor/wiki/Reverse-Engineering-Workflow).
 
 
