@@ -104,7 +104,7 @@ def get_all_releases(repo: str) -> list[dict[str, Any]]:
 
 def main():
     source_repo = "NickHugi/PyKotor"
-    target_repo = "OpenKotOR/PyKotor"
+    target_repo = "oldrepublicwizard/PyKotor"
 
     print("=" * 70)
     print("ATTEMPTING TO FIX RELEASE DATES VIA GRAPHQL")
@@ -143,7 +143,7 @@ def main():
     print("SOLUTION: Manual Fix Required")
     print("=" * 70)
     print("\nYou must manually edit each release via the web interface:")
-    print("https://github.com/OpenKotOR/PyKotor/releases")
+    print("https://github.com/oldrepublicwizard/PyKotor/releases")
     print("\nOr use a browser automation tool to edit them programmatically.")
     print(f"\nTotal releases needing date fixes: {len(date_fixes)}")
     print("\nKey releases (patcher):")

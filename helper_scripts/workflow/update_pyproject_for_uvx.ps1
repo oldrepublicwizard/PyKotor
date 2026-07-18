@@ -79,7 +79,7 @@ function Update-PyProjectToml {
             $readmeContent = @"
 # $projectName
 
-Part of the [PyKotor](https://github.com/OpenKotOR/PyKotor) ecosystem.
+Part of the [PyKotor](https://github.com/oldrepublicwizard/PyKotor) ecosystem.
 
 ## Installation
 
@@ -116,14 +116,14 @@ LGPL-3.0-or-later
         # Check if this is a tool that depends on pykotor
         $parentDir = Split-Path -Leaf (Split-Path -Parent $ProjectPath)
         if ($parentDir -eq "Tools") {
-            $content = $content -replace '"pykotor>=[\d.]+"', '"pykotor @ git+https://github.com/OpenKotOR/PyKotor-lib.git"'
+            $content = $content -replace '"pykotor>=[\d.]+"', '"pykotor @ git+https://github.com/oldrepublicwizard/PyKotor-lib.git"'
             $changes += "Updated pykotor dependency to git URL"
         }
     }
     
     # 3. Update pykotorgl dependency
     if ($content -match '"pykotorgl>=[\d.]+"') {
-        $content = $content -replace '"pykotorgl>=[\d.]+"', '"pykotorgl @ git+https://github.com/OpenKotOR/PyKotorGL.git"'
+        $content = $content -replace '"pykotorgl>=[\d.]+"', '"pykotorgl @ git+https://github.com/oldrepublicwizard/PyKotorGL.git"'
         $changes += "Updated pykotorgl dependency to git URL"
     }
     

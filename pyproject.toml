@@ -251,11 +251,11 @@ pykotorcli = "pykotor.cli.__main__:main"
 
 
 [project.urls]
-documentation = "https://github.com/OpenKotOR/PyKotor/blob/master/README.md"
-homepage = "https://github.com/OpenKotOR/PyKotor"
-issues = "https://github.com/OpenKotOR/PyKotor/issues"
-repository = "https://github.com/OpenKotOR/PyKotor.git"
-#Changelog = "https://github.com/OpenKotOR/PyKotor/blob/master/CHANGELOG.md"
+documentation = "https://github.com/oldrepublicwizard/PyKotor/blob/master/README.md"
+homepage = "https://github.com/oldrepublicwizard/PyKotor"
+issues = "https://github.com/oldrepublicwizard/PyKotor/issues"
+repository = "https://github.com/oldrepublicwizard/PyKotor.git"
+#Changelog = "https://github.com/oldrepublicwizard/PyKotor/blob/master/CHANGELOG.md"
 
 [tool.poetry]
 name = "pykotor-workspace"
@@ -417,10 +417,10 @@ pykotor = "pykotor.cli.__main__:main"
 pykotorcli = "pykotor.cli.__main__:main"
 
 [tool.poetry.urls]
-Documentation = "https://github.com/OpenKotOR/PyKotor/blob/master/README.md"
-Homepage = "https://github.com/OpenKotOR/PyKotor"
-Repository = "https://github.com/OpenKotOR/PyKotor.git"
-Issues = "https://github.com/OpenKotOR/PyKotor/issues"
+Documentation = "https://github.com/oldrepublicwizard/PyKotor/blob/master/README.md"
+Homepage = "https://github.com/oldrepublicwizard/PyKotor"
+Repository = "https://github.com/oldrepublicwizard/PyKotor.git"
+Issues = "https://github.com/oldrepublicwizard/PyKotor/issues"
 
 ########################################################
 ## define only linter configurations below this point ##

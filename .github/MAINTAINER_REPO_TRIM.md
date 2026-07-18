@@ -25,7 +25,7 @@ pip install git-filter-repo
 1. **Fresh clone** (filter-repo refuses to run on the main repo by design):
 
    ```bash
-   git clone https://github.com/OpenKotOR/PyKotor.git PyKotor-trim
+   git clone https://github.com/oldrepublicwizard/PyKotor.git PyKotor-trim
    cd PyKotor-trim
    ```
 
@@ -59,7 +59,7 @@ pip install git-filter-repo
 5. **Replace the remote** (filter-repo removes remotes) and force-push:
 
    ```bash
-   git remote add origin https://github.com/OpenKotOR/PyKotor.git
+   git remote add origin https://github.com/oldrepublicwizard/PyKotor.git
    # Coordinate with team before force-push
    git push --force --all origin
    git push --force --tags origin
@@ -83,7 +83,7 @@ pip install git-filter-repo
 If the repo hasn’t been trimmed yet, use a **shallow clone** to avoid long or stuck full clones:
 
 ```bash
-git clone --depth 1 https://github.com/OpenKotOR/PyKotor.git
+git clone --depth 1 https://github.com/oldrepublicwizard/PyKotor.git
 cd PyKotor
 ```
 
